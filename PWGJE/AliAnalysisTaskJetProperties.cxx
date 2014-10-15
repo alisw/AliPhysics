@@ -1037,13 +1037,13 @@ void AliAnalysisTaskJetProperties::FillJetProperties(TList *jetlist){
   if(fDebug > 2) printf("AliAnalysisTaskJetProperties::FillJetProperties() \n");
   
   for(Int_t iJet=0; iJet < jetlist->GetEntries(); iJet++){
-    Float_t JetPt;Float_t JetPhi;Float_t JetEta;Float_t JetE;
+    Float_t JetPt;Float_t JetPhi;Float_t JetEta; // Float_t JetE;
     AliAODJet *jet = dynamic_cast<AliAODJet*>(jetlist->At(iJet));
     if(!jet)continue;
     JetEta = jet->Eta();
     JetPhi = jet->Phi();
     JetPt  = jet->Pt();
-    JetE   = jet->E();
+    //    JetE   = jet->E();
     fh2EtaJet ->Fill(JetPt,JetEta);
     fh2PhiJet ->Fill(JetPt,JetPhi);
     fh2PtJet  ->Fill(JetPt,JetPt);
@@ -1064,7 +1064,8 @@ void AliAnalysisTaskJetProperties::FillJetProperties(TList *jetlist){
       if(fTrackType==kTrackUndef)continue;
       	Float_t TrackEta=-99.0; Float_t TrackPt=-99.0; Float_t TrackPhi=-99.0;
 	Float_t FF=-99.0;       Float_t DelEta=-99.0;  Float_t DelPhi=-99.0; 
-	Float_t DelR=-99.0;     Float_t AreaJ=-99.0;   Float_t Ksi=-99.0;
+	Float_t DelR=-99.0;     // Float_t AreaJ=-99.0;   
+	Float_t Ksi=-99.0;
 	if(fTrackType==kTrackAOD){
 	  AliAODTrack *trackaod = dynamic_cast<AliAODTrack*>(fTrackListJet->At(j));
 	  if(!trackaod)continue;
@@ -1092,7 +1093,7 @@ void AliAnalysisTaskJetProperties::FillJetProperties(TList *jetlist){
 	DelPhi      = TMath::Abs(JetPhi - TrackPhi);
 	if(DelPhi>TMath::Pi())DelPhi = TMath::Abs(DelPhi-TMath::TwoPi());
 	DelR        = TMath::Sqrt(DelEta*DelEta + DelPhi*DelPhi);
-	AreaJ       = TMath::Pi()*DelR*DelR;
+	// AreaJ       = TMath::Pi()*DelR*DelR;
 	fh2EtaTrack ->Fill(JetPt,TrackEta);
 	fh2PhiTrack ->Fill(JetPt,TrackPhi);
 	fh2PtTrack  ->Fill(JetPt,TrackPt);

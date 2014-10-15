@@ -7,35 +7,20 @@
  * See cxx source for full Copyright notice                               */
  
 /**
- * Class for for NetParticle Distributions
+ * Class for NetParticle Distributions
  * -- Create input for distributions
  * Authors: Jochen Thaeder <jochen@thaeder.de>
  *          Michael Weber <m.weber@cern.ch>
  */
 
 #include "THnSparse.h"
-#include "TH1F.h"
-#include "TF1.h"
+#include "TList.h"
 
-#include "AliAnalysisNetParticleHelper.h"
+#include "AliAnalysisNetParticleBase.h"
 
-class AliESDtrack;
-class AliMCEvent;
-class AliStack;
-class AliPIDResponse;
-class AliESDInputHandler;
-class AliESDtrackCuts;
-class AliAODInputHandler;
-
-class AliAnalysisNetParticleDistribution : public TNamed {
+class AliAnalysisNetParticleDistribution : public AliAnalysisNetParticleBase {
 
  public:
-
-  /*
-   * ---------------------------------------------------------------------------------
-   *                            Constructor / Destructor
-   * ---------------------------------------------------------------------------------
-   */
 
   AliAnalysisNetParticleDistribution();
   virtual ~AliAnalysisNetParticleDistribution();
@@ -46,20 +31,16 @@ class AliAnalysisNetParticleDistribution : public TNamed {
    * ---------------------------------------------------------------------------------
    */
 
-  /** Initialize */
-  Int_t Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts* cuts, Bool_t isMC, Int_t trackCutBit);
+  /** Process Event - implements purely virtual method */
+  virtual void Process();
 
-  /** Add histograms to outlist */
-  void CreateHistograms(TList *outList);
+  /*
+   * ---------------------------------------------------------------------------------
+   *                                 Setter/Getter
+   * ---------------------------------------------------------------------------------
+   */
 
-  /** Setup Event */
-  Int_t SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler, AliMCEvent *mcEvent);
-
-  /** Reset Event */
-  void ResetEvent();
-
-  /** Process NetParticle Distributions */ 
-  Int_t Process();
+  void SetOutList(TList* l) {fOutList = l;}
 
   ///////////////////////////////////////////////////////////////////////////////////
 
@@ -70,9 +51,24 @@ class AliAnalysisNetParticleDistribution : public TNamed {
 
   /*
    * ---------------------------------------------------------------------------------
-   *                           Process - Private
+   *                                Methods - private
    * ---------------------------------------------------------------------------------
    */
+
+  /** Event-wise Initialization - implements virtual method */
+  virtual void Init();
+
+  /** Event-wise Reset - implements virtual method */
+  virtual void Reset();
+
+  /** HistSet-wise Reset */
+ void ResetHistSet();
+
+  /** Create the efficiency / contamination THnSparseD  - implements virtual method */
+  virtual void CreateHistograms();
+
+  // -----------------------------------------------------------------------
+
    /** Process ESD/AOD tracks and fill histograms */
   Int_t ProcessTracks();
 
@@ -86,10 +82,12 @@ class AliAnalysisNetParticleDistribution : public TNamed {
    */
 
   /** Add set of histograms */
-  void AddHistSet(const Char_t *name, const Char_t *title);
+  void AddHistSetCent(const Char_t *name, const Char_t *title);
+  void AddHistSetCentPt(const Char_t *name, const Char_t *title);
 
   /** Fill set of histograms */
-  void FillHistSet(const Char_t *name, Double_t *np);
+  void FillHistSetCent(const Char_t *name, Int_t idx, Bool_t isMC);
+  void FillHistSetCentPt(const Char_t *name, Int_t idx, Bool_t isMC);
 
   /*
    * ---------------------------------------------------------------------------------
@@ -97,38 +95,22 @@ class AliAnalysisNetParticleDistribution : public TNamed {
    * ---------------------------------------------------------------------------------
    */
 
-  AliAnalysisNetParticleHelper *fHelper;        //! Ptr to helper class
-  // =======================================================================
-  Int_t                 fPdgCode;               // PDG code of particle to be found 
   // =======================================================================
   TList                *fOutList;               //! Output data container
-  // =======================================================================
-  AliESDEvent          *fESD;                   //! Ptr to ESD event
-  AliESDtrackCuts      *fESDTrackCuts;          //! ESD cuts  
-  AliPIDResponse       *fPIDResponse;           //! Ptr to PID response Object
-  // -----------------------------------------------------------------------
-  AliAODEvent          *fAOD;                   //! Ptr to AOD event
-  TClonesArray         *fArrayMC;               //! array of MC particles
-  Int_t                 fAODtrackCutBit;        //  Track filter bit for AOD tracks
-  // -----------------------------------------------------------------------
-  Bool_t                fIsMC;                  //  Is MC event
-  AliMCEvent           *fMCEvent;               //! Ptr to MC event
-  AliStack             *fStack;                 //! Ptr to stack
   // =======================================================================
   Int_t                 fOrder;                 //  Max order of higher order distributions
   // -----------------------------------------------------------------------
   Int_t                 fNNp;                   //  N sets of arrays of particle/anti-particle counts
-  Double_t            **fNp;                    //  Array of particle/anti-particle counts
+  Int_t               **fNp;                    //  Array of particle/anti-particle counts
+  Int_t              ***fNpPt;                  //  Array of particle/anti-particle per ptBin counts
 
   Int_t                 fNMCNp;                 //  N sets of arrays of MC particle/anti-particle counts
-  Double_t            **fMCNp;                  //  Array of MC particle/anti-particle counts
+  Int_t               **fMCNp;                  //  Array of MC particle/anti-particle counts
+  Int_t              ***fMCNpPt;                //  Array of MC particle/anti-particle per ptBin counts
   // -----------------------------------------------------------------------
-  Double_t            **fFactp;                 //  Array of particle/anti-particle factorial
+  Double_t            **fRedFactp;              //  Array of particle/anti-particle reduced factorial
   // =======================================================================
-  Float_t               fCentralityBin;         //  Centrality of current event  
-  Int_t                 fNTracks;               //  N Tracks in the current event
-  // =======================================================================
-  THnSparseF           *fHnTrackUnCorr;         //  THnSparseF : uncorrected probe particles
+  THnSparseD           *fHnTrackUnCorr;         //  THnSparseD : uncorrected probe particles
   // -----------------------------------------------------------------------
 
   ClassDef(AliAnalysisNetParticleDistribution, 1);

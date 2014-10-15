@@ -55,7 +55,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   double PionMass = 0.13956995;
   double KaonMass = 0.493677;
-  const int cMu=3;
+  const int cMu=1;
   const int cKt=3;
 
   //-------Single track cuts------------------------------------------------->
@@ -70,7 +70,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   // Switches for QA analyses
  
-  int runmults[4] = {1, 1, 1, 0};
+  int runmults[4] = {1, 0, 0, 0};
   int multbins[5] = {0, 100, 300, 500, 900};
 
   //.................................................

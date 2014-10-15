@@ -1,5 +1,5 @@
-/
-// *** Configuration script for phi->KK analysis with 2010 runs ***
+//
+// *** Configuration script for D0 analysis ***
 // 
 // A configuration script for RSN package needs to define the followings:
 //
@@ -23,10 +23,12 @@ Bool_t ConfigD0
    Float_t         	   trackDCAcutMin = 0.0,
    Float_t		   trackDCAZcutMax = 2.0,
    Int_t           	   NTPCcluster = 70,
+   Double_t                NTPCcrratio = 0.8,
    Int_t		   minSPDclt = 0,
    Double_t                minpt = 0.15,
    Short_t     		   maxSisters = 2,
    Bool_t                  checkP = kTRUE,
+   Bool_t      		   useNTPCclt = kTRUE,
    Bool_t                  minDCAcutFixed = kFALSE,
    Bool_t                  maxDCAcutFixed = kFALSE,
    Bool_t                  ptdepPIDcut = kFALSE,
@@ -62,6 +64,7 @@ Bool_t ConfigD0
    
    // integrated pion cut
    AliRsnCutDaughterD0 *cutPi = new AliRsnCutDaughterD0("cutPionForD0", AliPID::kPion);
+   //cutPi->SetNoPID(kTRUE);
    cutPi->SetTPCPionPIDCut(nsigmaTPCPi);
    cutPi->SetTOFPionPIDCut(nsigmaTOFPi);
    cutPi->SetPtDependentPIDCut(ptdepPIDcut);
@@ -71,15 +74,17 @@ Bool_t ConfigD0
    if(maxDCAcutFixed)cutQuality->SetDCARmax(trackDCAcutMax);	         
    else cutQuality->SetDCARPtFormula(formula);
    if(minDCAcutFixed) cutQuality->SetDCARmin(trackDCAcutMin);
-   else cutQuality->SetDCARPtFormulaMin(formulaMin); 
-   cutQuality->SetTPCminNClusters(NTPCcluster);
+   else cutQuality->SetDCARPtFormulaMin(formulaMin);
+   if(useNTPCclt)cutQuality->SetTPCminNClusters(NTPCcluster);
+   if(!useNTPCclt)cutQuality->SetMinNCrossedRowsTPC(NTPCcluster,kTRUE);
+   if(!useNTPCclt)cutQuality->SetMinNCrossedRowsOverFindableClsTPC(NTPCcrratio,kTRUE);
    cutQuality->SetPtRange(minpt,1E20);
    cutQuality->SetEtaRange(mineta, maxeta);
    cutQuality->SetDCAZmax(trackDCAZcutMax);
    cutQuality->SetSPDminNClusters(minSPDclt);
    cutQuality->SetITSminNClusters(0);
-   cutQuality->SetITSmaxChi2(36);
-   cutQuality->SetTPCmaxChi2(4.0);
+   cutQuality->SetITSmaxChi2(1E20);
+   cutQuality->SetTPCmaxChi2(1E20);
    cutQuality->SetRejectKinkDaughters();
    cutQuality->Print();
   	         
@@ -96,6 +101,7 @@ Bool_t ConfigD0
    
    // integrated kaon cut
    AliRsnCutDaughterD0 *cutK = new AliRsnCutDaughterD0("cutKaonForD0", AliPID::kKaon);
+   //cutK->SetNoPID(kTRUE);
    cutK->SetTPCKaonPIDCut(nsigmaTPCKa);
    cutK->SetTOFKaonPIDCut(nsigmaTOFKa);
    cutK->SetPtDependentPIDCut(ptdepPIDcut);	
@@ -106,14 +112,16 @@ Bool_t ConfigD0
    else cutQuality->SetDCARPtFormula(formula);
    if(minDCAcutFixed) cutQuality->SetDCARmin(trackDCAcutMin);
    else cutQuality->SetDCARPtFormulaMin(formulaMin);
-   cutQuality->SetTPCminNClusters(NTPCcluster);
+   if(useNTPCclt)cutQuality->SetTPCminNClusters(NTPCcluster);
+   if(!useNTPCclt)cutQuality->SetMinNCrossedRowsTPC(NTPCcluster,kTRUE);
+   if(!useNTPCclt)cutQuality->SetMinNCrossedRowsOverFindableClsTPC(NTPCcrratio,kTRUE);
    cutQuality->SetPtRange(minpt,1E20);
    cutQuality->SetEtaRange(mineta, maxeta);
    cutQuality->SetDCAZmax(trackDCAZcutMax);
    cutQuality->SetSPDminNClusters(minSPDclt);
    cutQuality->SetITSminNClusters(0);
-   cutQuality->SetITSmaxChi2(36);
-   cutQuality->SetTPCmaxChi2(4.0);
+   cutQuality->SetITSmaxChi2(1E20);
+   cutQuality->SetTPCmaxChi2(1E20);
    cutQuality->SetRejectKinkDaughters();
    cutQuality->Print();
 	
@@ -126,6 +134,9 @@ Bool_t ConfigD0
    // add to task
    Int_t iCutK = task->AddTrackCuts(cutSetK);
    
+   
+   
+   ////////////////////////////////////////////////////////////////////////////////////////////////
   
   // -- Values ------------------------------------------------------------------------------------
   /* invariant mass     */ Int_t imID       = task->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
@@ -263,10 +274,12 @@ Bool_t ConfigD0
    // create output
    AliRsnMiniOutput *out = task->CreateOutput("D0_True2", mode.Data(), "TRUE");
    // selection settings
-   out->SetCharge(0, '+');
-   out->SetCharge(1, '-');
+   out->SetCutID(0, iCutK);
+   out->SetCutID(1, iCutPi);
    out->SetDaughter(0, AliRsnDaughter::kKaon);
    out->SetDaughter(1, AliRsnDaughter::kPion);
+   out->SetCharge(0, '+');
+   out->SetCharge(1, '-');
    out->SetMotherPDG(-421);
    out->SetMotherMass(1.86486);
    // pair cuts
@@ -310,6 +323,45 @@ Bool_t ConfigD0
    
    // create output
    AliRsnMiniOutput *out = task->CreateOutput("D0_TrueMC2", mode.Data(), "MOTHER");
+   // selection settings
+   out->SetDaughter(0, AliRsnDaughter::kKaon);
+   out->SetDaughter(1, AliRsnDaughter::kPion);
+   out->SetMotherPDG(-421);
+   out->SetMotherMass(1.86486);
+   // pair cuts
+   out->SetPairCuts(cutsPairY);
+   // binnings
+   out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
+   out->AddAxis(ptID, 200, 0.0, 20.0);
+   //out->AddAxis(yID, 100, -1, 1);
+
+   if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
+   else out->AddAxis(centID, 400, 0.0, 400.0);
+   
+   
+   // GENERATED MOTHERS IN THE ACCEPTANCE
+   
+   TString mode = "SPARSE";
+   
+   // create output
+   AliRsnMiniOutput *out = task->CreateOutput("D0_TrueMC_InAcc1", mode.Data(), "MOTHER_IN_ACC");
+   // selection settings
+   out->SetDaughter(0, AliRsnDaughter::kKaon);
+   out->SetDaughter(1, AliRsnDaughter::kPion);
+   out->SetMotherPDG(421);
+   out->SetMotherMass(1.86486);
+   // pair cuts
+   out->SetPairCuts(cutsPairY);
+   // binnings
+   out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
+   out->AddAxis(ptID, 200, 0.0, 20.0);
+   //out->AddAxis(yID, 100, -1, 1);
+
+   if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
+   else out->AddAxis(centID, 400, 0.0, 400.0);
+   
+   // create output
+   AliRsnMiniOutput *out = task->CreateOutput("D0_TrueMC_InAcc2", mode.Data(), "MOTHER_IN_ACC");
    // selection settings
    out->SetDaughter(0, AliRsnDaughter::kKaon);
    out->SetDaughter(1, AliRsnDaughter::kPion);

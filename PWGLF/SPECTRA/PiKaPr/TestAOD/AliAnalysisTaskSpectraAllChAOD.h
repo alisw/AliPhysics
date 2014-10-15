@@ -43,7 +43,8 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
     fnDCABins(60),
     fDCAmin(-3),
     fDCAmax(3),
-    fDCAzCut(0)
+    fDCAzCut(0),
+    fQvecGen(0)
       {}
   AliAnalysisTaskSpectraAllChAOD(const char *name);
   virtual ~AliAnalysisTaskSpectraAllChAOD() {
@@ -89,6 +90,8 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
   void SetDCAmax(Double_t val)                        { fDCAmax = val; }
   Bool_t GetDCA(const AliAODTrack* trk, Double_t * p);
   void SetDCAzCut(Double_t val)                        { fDCAzCut = val; }
+  
+  void GetQvecGen(Bool_t val) { fQvecGen = val; } //enable Qvec from generated
 
  private:
   
@@ -112,10 +115,13 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
   Double_t                         fDCAmin;                // min DCA value
   Double_t                         fDCAmax;                // max DCA value
   Double_t                         fDCAzCut;               //cut on DCA z
+  
+  Bool_t fQvecGen; //enable Qvec from generated
+  
   AliAnalysisTaskSpectraAllChAOD(const AliAnalysisTaskSpectraAllChAOD&);
   AliAnalysisTaskSpectraAllChAOD& operator=(const AliAnalysisTaskSpectraAllChAOD&);
   
-  ClassDef(AliAnalysisTaskSpectraAllChAOD, 9);
+  ClassDef(AliAnalysisTaskSpectraAllChAOD, 10);
 };
 
 #endif

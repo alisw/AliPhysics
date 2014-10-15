@@ -106,11 +106,11 @@ public:
    * Bits of the trigger pattern
    */
   enum { 
-    /** In-elastic collision */
+    /** In-elastic collision - really MBOR*/
     kInel        = 0x0001, 
     /** In-elastic collision with at least one SPD tracklet */
     kInelGt0     = 0x0002, 
-    /** Non-single diffractive collision */
+    /** Non-single diffractive collision - (V0AND||FASTOR>5) */
     kNSD         = 0x0004, 
     /** Empty bunch crossing */
     kEmpty       = 0x0008, 
@@ -299,13 +299,45 @@ public:
    * @return Always true
    */
   Bool_t IsFolder() const { return kTRUE; } // Always true 
-
+  /** 
+   * Check if the data has been secondary corrected by MC maps 
+   * 
+   * @return true if secondary corrected via MC maps
+   */
   Bool_t IsSecondaryCorrected() const { return TestBit(kSecondary); }
+  /** 
+   * Check if vertex bias correction was applied 
+   * 
+   * @return true if MC based vertex bias was applied 
+   */
   Bool_t IsVertexBiasCorrected() const { return TestBit(kVertexBias); }
+  /** 
+   * Check if acceptance correction (from dead strips) was applied 
+   * 
+   * @return true if acceptance correction was applied 
+   */
   Bool_t IsAcceptanceCorrected() const { return TestBit(kAcceptance); }
+  /** 
+   * Check if merging efficiency (from MC) was applied 
+   * 
+   * @return true if merging efficiency was applied
+   */
   Bool_t IsMergingEfficiencyCorrected() const { 
     return TestBit(kMergingEfficiency); }
+  /** 
+   * Check if an empirical correction was applied in the event level. 
+   * 
+   * @return True if the empirical correction was applied per event. 
+   */
   Bool_t IsEmpiricalCorrected() const { return TestBit(kEmpirical); }
+  /** 
+   * Check if the output is the sum (not average) in regions of
+   * overlap between detectors.
+   * 
+   * 
+   * @return true if the sum (not average) is stored in overlap
+   * regions.
+   */
   Bool_t IsSumSignal() const { return TestBit(kSum); }
   /** 
    * Print content 
@@ -382,15 +414,13 @@ public:
   /** 
    * Get the event centrality 
    * 
-   * 
-   * @return 
+   * @return Centrality 
    */
   Float_t GetCentrality() const { return fCentrality; }
   /** 
    * Check if we have a valid centrality 
    * 
-   * 
-   * @return 
+   * @return true if the centrality information is valid 
    */
   Bool_t  HasCentrality() const { return !(fCentrality  < 0); }
   /** 

@@ -2,9 +2,14 @@
 // Author : Gustavo Conesa;  Marie Germain.
 
 TString kAnaIsoPhotonName = "";
+Int_t   kDebug         = -1;
+TString kCalorimeter   = "EMCAL";
+TString kData = "";
+TString kPrint = 0 ;
+ 
 AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone          = 0.4,
-                                                      const Float_t  pth           = 5.,
-                                                      const Bool_t   leading       = kTRUE,
+                                                      const Float_t  pth           = 2.,
+                                                      const Bool_t   leading       = kFALSE,
                                                       const Bool_t   timecut       = kFALSE,
                                                       const TString  calorimeter   = "EMCAL",
                                                       const Bool_t   simu          = kFALSE,
@@ -16,15 +21,23 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
                                                       const Int_t    maxCen        = -1,
                                                       const Float_t  deltaphicut   = 0.03,
                                                       const Float_t  deltaetacut   = 0.02,
-                                                      const Int_t    disttobad     = 0,
-                                                      const Int_t    nlmMax        =  2,
+                                                      const Float_t  tmin          = -30.,
+                                                      const Float_t  tmax          = 30.,
+                                                      const Bool_t   trackTcut     = kFALSE,
+                                                      const Int_t    disttobad     = 2,
+                                                      const Int_t    nlmMax        =  20,
                                                       const Bool_t   qaan          = kFALSE,
                                                       const Bool_t   primvtx       = kTRUE,
                                                       const Bool_t   notrackcut    = kTRUE,
+                                                      const Bool_t   rdmtrigger    = kFALSE,
+                                                      const TString  tag           = "",
                                                       const Int_t    debug         = -1,
                                                       const Bool_t   print         = kFALSE
                                                       )
 {
+kDebug = debug;
+kCalorimeter  = calorimeter ;
+kPrint = print ;
   // Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
   
   printf("AddTaskIsoPhoton() - Settings: cone %2.2f, pth %2.2f, timeCut On %d, NLM max cut %d, calorimeter %s, simu %d, exotic %d, non lin %d, trigger %s, TM %d, qa %d, debug %d, centrality %d-%d\n",
@@ -55,7 +68,10 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
 
   // Name for containers
   
-  kAnaIsoPhotonName = Form("%s_Trig%s_TM%d_%1.3f_dB%d_R%1.1f_Pt%1.1f",calorimeter.Data(), trigger.Data(),tm,deltaphicut,disttobad,cone,pth);
+ if(tag!="")
+ kAnaIsoPhotonName = Form("%s_Trig%s_TM%d_%1.3f_dB%d_R%1.1f_Pt%1.1f_%s",calorimeter.Data(), trigger.Data(),tm,deltaphicut,disttobad,cone,pth,tag.Data());
+ else
+ kAnaIsoPhotonName = Form("%s_Trig%s_TM%d_%1.3f_dB%d_R%1.1f_Pt%1.1f",calorimeter.Data(), trigger.Data(),tm,deltaphicut,disttobad,cone,pth);
 
   if(maxCen>=0) kAnaIsoPhotonName+=Form("Cen%d_%d",minCen,maxCen);
     
@@ -69,7 +85,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
   
   // General frame setting and configuration
   maker->SetReader   (ConfigureReader   (mgr->GetInputEventHandler()->GetDataType(),useKinematics,simu,
-                                         calorimeter,nonlin, timecut, primvtx, notrackcut,minCen, maxCen, debug,print));
+                                         calorimeter,nonlin, timecut, primvtx, notrackcut,tmin,tmax,trackTcut,minCen, maxCen, debug,print));
   maker->SetCaloUtils(ConfigureCaloUtils(nonlin,exotic,simu,timecut,debug,print));
   
   // Analysis tasks setting and configuration
@@ -80,11 +96,20 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
   //  Int_t thresType  = AliIsolationCut::kPtThresIC;//  AliIsolationCut::kSumPtFracIC ; 
   Int_t thresType  = AliIsolationCut::kSumPtIC ; 
   
+ if(!rdmtrigger)
+{
   // Photon analysis
   maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,tm,deltaphicut,deltaetacut,disttobad,nlmMax,simu,debug,print), n++); // Photon cluster selection
   
   // Isolation analysis
   maker->AddAnalysis(ConfigureIsolationAnalysis(calorimeter,"Photon", partInCone,thresType,cone, pth,tm,leading,kFALSE,simu,debug,print), n++); // Photon isolation
+}
+else
+{
+  maker->AddAnalysis(ConfigureRandomTriggerAnalysis(), n++); 
+  maker->AddAnalysis(ConfigureIsolationAnalysis(calorimeter,Form("RandomTrigger%s",kCalorimeter.Data()), partInCone,thresType,cone, pth,tm,leading,kFALSE,simu,debug,print), n++);// Ghost trigger isolation  
+}
+
 
   // QA histograms on clusters or tracks
   if(qaan)
@@ -142,8 +167,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
 //____________________________________
 AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKinematics = kFALSE, Bool_t simu = kFALSE,
                                      TString calorimeter = "EMCAL", Bool_t nonlin = kTRUE, Bool_t timecut = kFALSE,
-                                     Bool_t primvtx = kFALSE, Bool_t notrackcut = kFALSE, Float_t minCen = -1, 
-                                     Float_t maxCen = -1, Int_t debug = -1, Bool_t print = kFALSE)
+                                     Bool_t primvtx = kFALSE, Bool_t notrackcut = kFALSE, Float_t tmin, Float_t tmax,
+                                     Bool_t trackTcut = kFALSE, Float_t minCen = -1, Float_t maxCen = -1,
+                                     Int_t debug = -1, Bool_t print = kFALSE)
 {
   // Init reader settings: event selection, basic cluster track cuts, etc
   
@@ -210,7 +236,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKi
       printf("Set time cut \n");
       reader->SwitchOnUseEMCALTimeCut();
       //Absolute window
-      reader->SetEMCALTimeCut(-30.,30.); // default is -25ns-20ns
+      reader->SetEMCALTimeCut(tmin,tmax); // default is -25ns-20ns
     }
     else
     {
@@ -231,7 +257,11 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKi
   reader->SwitchOffRecalculateVertexBC();
   reader->SwitchOffVertexBCEventSelection();
   
+if(trackTcut)
+  reader->SwitchOnUseTrackTimeCut();
+else
   reader->SwitchOffUseTrackTimeCut();
+
   reader->SetTrackTimeCut(0,50);
   
   reader->SwitchOffUseTrackDCACut();
@@ -247,13 +277,13 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKi
     //reader->SwitchOnConstrainTrackToVertex();
     
 //    if(kYears>2010)
-    {
+//    {
       //Hybrids 2011
       AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001008);
       reader->SetTrackCuts(esdTrackCuts);
       AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10011008);
       reader->SetTrackComplementaryCuts(esdTrackCuts2);
-    }
+//    }
 //    else
 //    {
 //      //Hybrids 2010
@@ -653,6 +683,66 @@ AliAnaChargedParticles* ConfigureChargedAnalysis(Bool_t simulation, Int_t debugL
   
 }
 
+AliAnaRandomTrigger* ConfigureRandomTriggerAnalysis(TString detector = "")
+{
+  
+  AliAnaRandomTrigger *ana = new AliAnaRandomTrigger();
+  ana->SetDebug(kDebug); //10 for lots of messages
+  
+  if(detector=="") detector = kCalorimeter;
+  ana->SetDetector(detector);
+
+  // selection cuts
+  ana->SetMinPt(4.); 
+  ana->SetMaxPt(61.);   
+  
+  if     (detector=="EMCAL")
+  {
+    ana->SetEtaCut(-0.27,0.27);
+    ana->SetPhiCut(103*TMath::DegToRad(), 157*TMath::DegToRad());
+  }
+  else if(detector=="PHOS")
+  {
+    ana->SetEtaCut(-0.13,0.13);
+    ana->SetPhiCut(260*TMath::DegToRad(), 320*TMath::DegToRad());
+  }
+  else if(detector=="CTS")
+  {
+    ana->SetEtaCut(-0.9,0.9);
+    ana->SetPhiCut(0, TMath::TwoPi());
+  }
+  
+  // AOD branch
+  if(!kData.Contains("delta")) 
+  {
+    ana->SetOutputAODName(Form("RandomTrigger%s%s",detector.Data(),kAnaIsoPhotonName.Data()));
+    ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  }
+  else 
+    ana->SetInputAODName(Form("RandomTrigger%s%s",detector.Data(),kAnaIsoPhotonName.Data()));
+  
+  printf("Set RandomTrigger%s%s\n",detector.Data(),kAnaIsoPhotonName.Data());
+  
+  //Set Histograms name tag, bins and ranges
+  
+  ana->AddToHistogramsName(Form("AnaRandomTrigger%s_",detector.Data()));
+  
+  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
+  
+  if(detector=="CTS")
+  {
+    ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
+    ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
+  }
+  
+  if(kPrint) ana->Print("");
+  
+  return ana;
+  
+}
+
+
+
 //________________________________________________________
 void ConfigureMC(AliAnaCaloTrackCorrBaseClass* ana, Bool_t simu = kFALSE)
 {
@@ -668,7 +758,7 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
 {
   // Set common bins for all analysis and MC histograms filling
     
-  histoRanges->SetHistoPtRangeAndNBins(-0.25, 99.75, 200) ; // Energy and pt histograms
+  histoRanges->SetHistoPtRangeAndNBins(0., 100., 200) ; // Energy and pt histograms
   
   if(calorimeter=="EMCAL")
   {

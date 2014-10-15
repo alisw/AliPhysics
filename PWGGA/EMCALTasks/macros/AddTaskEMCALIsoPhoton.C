@@ -5,7 +5,9 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
 						     TString trigbitname = "kEMC7",
 						     TString geoname="EMCAL_COMPLETEV1",
 						     TString pathstrsel = "/",
-						     TString trackSelType = "standard"
+						     TString trackSelType = "standard",
+						     Int_t   distToBadCh = 0,
+						     Bool_t  useComplTrCuts = kFALSE
 						     )
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -33,6 +35,7 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
   ana->SetPathStringSelect(pathstrsel.Data());
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
   AliESDtrackCuts *cutsp = new AliESDtrackCuts;
+  AliESDtrackCuts *cutscomp = new AliESDtrackCuts;
   if(trackSelType == "standard"){
     cutsp->SetMinNClustersTPC(70);
     cutsp->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
@@ -44,19 +47,26 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
     cutsp->SetDCAToVertex2D(kTRUE);
     cutsp->SetPtRange(0.2);
     cutsp->SetEtaRange(-1.0,1.0);
+    cutscomp = cutsp;
+    printf("standard tracks selected ++++++++++++++++++++\n");
   }
   if(trackSelType == "hybrid"){
     cutsp = CreateTrackCutsPWGJE(10001008);
+    cutscomp =  CreateTrackCutsPWGJE(10011008);
+    cutsp->SetPtRange(0.2);
+    cutscomp->SetPtRange(0.2);
     ana->SetHybridOn();
-  }
-  if(trackSelType == "hybridp"){
-    cutsp = CreateTrackCutsPWGJE(10011008);
-    ana->SetHybridOn();
+    printf("hybrid tracks selected ++++++++++++++++++++\n");
   }
   ana->SetPrimTrackCuts(cutsp);
+  if(useComplTrCuts)
+    ana->SetComplTrackCuts(cutscomp);
+  else
+    ana->SetComplTrackCuts(cutsp);
   ana->SetPeriod(period.Data());
   ana->SetGeoName(geoname.Data());  
   //ana->SetTrackFilterBit(128);
+  ana->SetDistanceToBadCh(distToBadCh);
   mgr->AddTask(ana);
   TString containername = "histEMCIsoPhoton."+trigbitname;
   TString containernameQA = "histosQA."+trigbitname;

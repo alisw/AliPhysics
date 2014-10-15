@@ -29,8 +29,8 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fEmpiricalCorrection(0),
     fMeanVsC(0),
     fCentMethod("VOM"),
-  fPileupMask(0),
-  fAnaUtil(),
+    fPileupMask(0),
+    fAnaUtil(),
     fCheckSPDOutlier(false)
 {
   // 
@@ -577,8 +577,8 @@ AliBasedNdetaTask::ProjectX(const TH2D* h,
   if (useRoot) 
     return h->ProjectionX(name, firstbin, lastbin, (error ? "e" : ""));
   
-  TAxis* xaxis = h->GetXaxis();
-  TAxis* yaxis = h->GetYaxis();
+  const TAxis* xaxis = h->GetXaxis();
+  const TAxis* yaxis = h->GetYaxis();
   TH1D*  ret   = new TH1D(name, h->GetTitle(), xaxis->GetNbins(), 
 			  xaxis->GetXmin(), xaxis->GetXmax());
   static_cast<const TAttLine*>(h)->Copy(*ret);

@@ -71,7 +71,8 @@ AliAnalysisTaskSpectraAllChAOD::AliAnalysisTaskSpectraAllChAOD(const char *name)
   fnDCABins(60),
   fDCAmin(-3),
   fDCAmax(3),
-  fDCAzCut(999999.)
+  fDCAzCut(999999.),
+  fQvecGen(0)
 {
   // Default constructor
   DefineInput(0, TChain::Class());
@@ -126,11 +127,11 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   fOutput->Add(NSparseHistTrk);
   
   //dimensions of THnSparse for stack
-  const Int_t nvarst=6;
-  //                                             pt          cent    IDgen        isph        y    etaselected
-  Int_t    binsHistRealSt[nvarst] = {      nptBins,  fnCentBins,        3,         2,        2,             1};
-  Double_t xminHistRealSt[nvarst] = {         0.,           0.,      -0.5,      -0.5,    -0.5,            0.5};
-  Double_t xmaxHistRealSt[nvarst] = {       10.,        100.,      2.5,       1.5,      0.5,           1.5};
+  const Int_t nvarst=7;
+  //                                             pt          cent    IDgen        isph        y    etaselected       Qvec gen
+  Int_t    binsHistRealSt[nvarst] = {      nptBins,  fnCentBins,        3,         2,        2,             1,      fnQvecBins};
+  Double_t xminHistRealSt[nvarst] = {         0.,           0.,      -0.5,      -0.5,    -0.5,            0.5,              0.};
+  Double_t xmaxHistRealSt[nvarst] = {       10.,        100.,      2.5,       1.5,      0.5,           1.5,      fQvecUpperLim};
   THnSparseF* NSparseHistSt = new THnSparseF("NSparseHistSt","NSparseHistSt",nvarst,binsHistRealSt,xminHistRealSt,xmaxHistRealSt);
   NSparseHistSt->GetAxis(0)->SetTitle("#it{p}_{T,gen}");
   NSparseHistSt->SetBinEdges(0,ptBins);
@@ -145,14 +146,16 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   NSparseHistSt->GetAxis(4)->SetName("y");
   NSparseHistSt->GetAxis(5)->SetTitle("etaselected");
   NSparseHistSt->GetAxis(5)->SetName("etaselected");
+  NSparseHistSt->GetAxis(6)->SetTitle("Q vec gen");
+  NSparseHistSt->GetAxis(6)->SetName("Q_vec_gen");
   fOutput->Add(NSparseHistSt);
   
   //dimensions of THnSparse for the normalization
-  const Int_t nvarev=3;
-  //                                             cent             Q vec                Nch
-  Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins,           fnNchBins};
-  Double_t xminHistRealEv[nvarev] = {           0.,               0.,                   0.};
-  Double_t xmaxHistRealEv[nvarev] = {       100.,  fQvecUpperLim,               2000.};
+  const Int_t nvarev=4;
+  //                                             cent             Q vec                Nch    Qvec gen
+  Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins,           fnNchBins,      fnQvecBins};
+  Double_t xminHistRealEv[nvarev] = {           0.,               0.,                   0.,             0.};
+  Double_t xmaxHistRealEv[nvarev] = {       100.,  fQvecUpperLim,               2000.,       fQvecUpperLim};
   THnSparseF* NSparseHistEv = new THnSparseF("NSparseHistEv","NSparseHistEv",nvarev,binsHistRealEv,xminHistRealEv,xmaxHistRealEv);
   NSparseHistEv->GetAxis(0)->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
   NSparseHistEv->GetAxis(0)->SetName(Form("%s_cent",fEventCuts->GetCentralityMethod().Data()));
@@ -160,6 +163,8 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   NSparseHistEv->GetAxis(1)->SetName("Q_vec");
   NSparseHistEv->GetAxis(2)->SetTitle("N charged");
   NSparseHistEv->GetAxis(2)->SetName("N_ch");
+  NSparseHistEv->GetAxis(3)->SetTitle("Q vec gen");
+  NSparseHistEv->GetAxis(3)->SetName("Q_vec_gen");
   fOutput->Add(NSparseHistEv);
   
   PostData(1, fOutput  );
@@ -188,15 +193,21 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
   if(!fEventCuts->IsSelected(fAOD,fTrackCuts))return;//event selection
 
   //Default TPC priors
-  //if(fHelperPID->GetPIDType()==kBayes)fHelperPID->GetPIDCombined()->SetDefaultTPCPriors();//FIXME maybe this can go in the UserCreateOutputObject?
+  if(fHelperPID->GetPIDType()==kBayes)fHelperPID->GetPIDCombined()->SetDefaultTPCPriors();//FIXME we should modify the task to change priors
   
-  Double_t Qvec=0.;//in case of MC we save space in the memory
-  if(!fIsMC){
+  Double_t Qvec=0.;
+  if(fIsQvecCalibMode){
+    if(fVZEROside==0)Qvec=fEventCuts->GetqV0A();
+    else if (fVZEROside==1)Qvec=fEventCuts->GetqV0C();
+  }
+  else Qvec=fEventCuts->GetQvecPercentile(fVZEROside);
+  
+  Double_t QvecMC = 0.;
+  if(fIsMC){
     if(fIsQvecCalibMode){
-      if(fVZEROside==0)Qvec=fEventCuts->GetqV0A();
-      else if (fVZEROside==1)Qvec=fEventCuts->GetqV0C();
+      QvecMC = fEventCuts->CalculateQVectorMC(fVZEROside);
     }
-    else Qvec=fEventCuts->GetQvecPercentile(fVZEROside);
+    else QvecMC = fEventCuts->GetQvecPercentileMC(fVZEROside);
   }
   
   Double_t Cent=fEventCuts->GetCent();
@@ -221,13 +232,14 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
 	  if(partMC->Eta()>=fTrackCuts->GetEtaMin() && partMC->Eta()<=fTrackCuts->GetEtaMax())etaselected=1.;
 	  
 	  //pt     cent    IDgen        isph        y
- 	  Double_t varSt[6];
+ 	  Double_t varSt[7];
 	  varSt[0]=partMC->Pt();
 	  varSt[1]=Cent;
 	  varSt[2]=(Double_t)fHelperPID->GetParticleSpecies(partMC);
 	  varSt[3]=(Double_t)partMC->IsPhysicalPrimary();
 	  varSt[4]=partMC->Y();
 	  varSt[5]=etaselected;
+	  varSt[6]=QvecMC;
 	  ((THnSparseF*)fOutput->FindObject("NSparseHistSt"))->Fill(varSt);//stack loop
 	  
 	  //Printf("a particle");
@@ -280,7 +292,8 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
       Double_t varTrk[8];
       varTrk[0]=track->Pt();
       varTrk[1]=Cent;
-      varTrk[2]=Qvec;
+      if(fIsMC && fQvecGen) varTrk[2]=QvecMC;
+        else varTrk[2]=Qvec;
       varTrk[3]=(Double_t)IDrec;
       varTrk[4]=(Double_t)IDgen;
       varTrk[5]=(Double_t)isph;
@@ -311,10 +324,11 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
     Nch++;
   } // end loop on tracks
   
-  Double_t varEv[3];
+  Double_t varEv[4];
   varEv[0]=Cent;
   varEv[1]=Qvec;
   varEv[2]=Nch;
+  varEv[3]=QvecMC;
   ((THnSparseF*)fOutput->FindObject("NSparseHistEv"))->Fill(varEv);//event loop
   
   PostData(1, fOutput  );

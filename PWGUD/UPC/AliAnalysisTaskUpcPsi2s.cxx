@@ -73,7 +73,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s()
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
-    fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),
+    fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),fHistDiLeptonMass(0),
     fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),
@@ -96,7 +96,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name)
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
-    fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),
+    fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),fHistDiLeptonMass(0),
     fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),
@@ -124,9 +124,18 @@ void AliAnalysisTaskUpcPsi2s::Init()
   for(Int_t i=0; i<ntrg; i++) fTrigger[i] = kFALSE;
   for(Int_t i=0; i<4; i++) {
   	fTOFphi[i] = -666;
-	fPIDMuon[i] = -666;
-	fPIDElectron[i] = -666;
-	fPIDPion[i] = -666;
+	fPIDTPCMuon[i] = -666;
+	fPIDTPCElectron[i] = -666;
+	fPIDTPCPion[i] = -666;
+	fPIDTPCKaon[i] = -666;
+	fPIDTPCProton[i] = -666;
+	
+	fPIDTOFMuon[i] = -666;
+	fPIDTOFElectron[i] = -666;
+	fPIDTOFPion[i] = -666;
+	fPIDTOFKaon[i] = -666;
+	fPIDTOFProton[i] = -666;
+	
 	fTriggerInputsMC[i] = kFALSE;
 	}
   for(Int_t i=0; i<3; i++){
@@ -198,9 +207,17 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fJPsiTree ->Branch("fTOFtrig2", &fTOFtrig2, "fTOFtrig2/O");
   fJPsiTree ->Branch("fTOFphi", &fTOFphi[0], "fTOFphi[4]/D");
   
-  fJPsiTree ->Branch("fPIDMuon", &fPIDMuon[0], "fPIDMuon[4]/D");
-  fJPsiTree ->Branch("fPIDElectron", &fPIDElectron[0], "fPIDElectron[4]/D");
-  fJPsiTree ->Branch("fPIDPion", &fPIDPion[0], "fPIDPion[4]/D");
+  fJPsiTree ->Branch("fPIDTPCMuon", &fPIDTPCMuon[0], "fPIDTPCMuon[4]/D");
+  fJPsiTree ->Branch("fPIDTPCElectron", &fPIDTPCElectron[0], "fPIDTPCElectron[4]/D");
+  fJPsiTree ->Branch("fPIDTPCPion", &fPIDTPCPion[0], "fPIDTPCPion[4]/D");
+  fJPsiTree ->Branch("fPIDTPCKaon", &fPIDTPCKaon[0], "fPIDTPCKaon[4]/D");
+  fJPsiTree ->Branch("fPIDTPCProton", &fPIDTPCProton[0], "fPIDTPCProton[4]/D");
+  
+  fJPsiTree ->Branch("fPIDTOFMuon", &fPIDTOFMuon[0], "fPIDTOFMuon[4]/D");
+  fJPsiTree ->Branch("fPIDTOFElectron", &fPIDTOFElectron[0], "fPIDTOFElectron[4]/D");
+  fJPsiTree ->Branch("fPIDTOFPion", &fPIDTOFPion[0], "fPIDTOFPion[4]/D");
+  fJPsiTree ->Branch("fPIDTOFKaon", &fPIDTOFKaon[0], "fPIDTOFKaon[4]/D");
+  fJPsiTree ->Branch("fPIDTOFProton", &fPIDTOFProton[0], "fPIDTOFProton[4]/D");
   
   fJPsiTree ->Branch("fVtxPos", &fVtxPos[0], "fVtxPos[3]/D");
   fJPsiTree ->Branch("fVtxErr", &fVtxErr[0], "fVtxErr[3]/D");
@@ -246,9 +263,17 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fPsi2sTree ->Branch("fTOFtrig2", &fTOFtrig2, "fTOFtrig2/O");
   fPsi2sTree ->Branch("fTOFphi", &fTOFphi[0], "fTOFphi[4]/D");
   
-  fPsi2sTree ->Branch("fPIDMuon", &fPIDMuon[0], "fPIDMuon[4]/D");
-  fPsi2sTree ->Branch("fPIDElectron", &fPIDElectron[0], "fPIDElectron[4]/D");
-  fPsi2sTree ->Branch("fPIDPion", &fPIDPion[0], "fPIDPion[4]/D");
+  fPsi2sTree ->Branch("fPIDTPCMuon", &fPIDTPCMuon[0], "fPIDTPCMuon[4]/D");
+  fPsi2sTree ->Branch("fPIDTPCElectron", &fPIDTPCElectron[0], "fPIDTPCElectron[4]/D");
+  fPsi2sTree ->Branch("fPIDTPCPion", &fPIDTPCPion[0], "fPIDTPCPion[4]/D");
+  fPsi2sTree ->Branch("fPIDTPCKaon", &fPIDTPCKaon[0], "fPIDTPCKaon[4]/D");
+  fPsi2sTree ->Branch("fPIDTPCProton", &fPIDTPCProton[0], "fPIDTPCProton[4]/D");
+  
+  fPsi2sTree ->Branch("fPIDTOFMuon", &fPIDTOFMuon[0], "fPIDTOFMuon[4]/D");
+  fPsi2sTree ->Branch("fPIDTOFElectron", &fPIDTOFElectron[0], "fPIDTOFElectron[4]/D");
+  fPsi2sTree ->Branch("fPIDTOFPion", &fPIDTOFPion[0], "fPIDTOFPion[4]/D");
+  fPsi2sTree ->Branch("fPIDTOFKaon", &fPIDTOFKaon[0], "fPIDTOFKaon[4]/D");
+  fPsi2sTree ->Branch("fPIDTOFProton", &fPIDTOFProton[0], "fPIDTOFProton[4]/D");
   
   fPsi2sTree ->Branch("fVtxPos", &fVtxPos[0], "fVtxPos[3]/D");
   fPsi2sTree ->Branch("fVtxErr", &fVtxErr[0], "fVtxErr[3]/D");
@@ -287,6 +312,9 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   
   fHistCcup2TriggersPerRun = new TH1D("fHistCcup2TriggersPerRun", "fHistCcup2TriggersPerRun", 33000, 167000.5, 200000.5);
   fListTrig->Add(fHistCcup2TriggersPerRun);
+  
+  fHistCint1TriggersPerRun = new TH1D("fHistCint1TriggersPerRun", "fHistCint1TriggersPerRun", 33000, 167000.5, 200000.5);
+  fListTrig->Add(fHistCint1TriggersPerRun);
   
   fHistZedTriggersPerRun = new TH1D("fHistZedTriggersPerRun", "fHistZedTriggersPerRun", 33000, 167000.5, 200000.5);
   fListTrig->Add(fHistZedTriggersPerRun);
@@ -478,6 +506,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODtrig()
   if(trigger.Contains("CCUP4-B")) fHistCcup4TriggersPerRun->Fill(fRunNum); //CCUP4 triggers
   if(trigger.Contains("CCUP7-B")) fHistCcup7TriggersPerRun->Fill(fRunNum); //CCUP7 triggers
   if(trigger.Contains("CCUP2-B")) fHistCcup2TriggersPerRun->Fill(fRunNum); //CCUP2 triggers
+  
+  if(trigger.Contains("CINT1")) fHistCint1TriggersPerRun->Fill(fRunNum); //CINT1 triggers
   
   if(trigger.Contains("CVLN_B2-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - synchronously downscaled
   if(trigger.Contains("CVLN_R1-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - randomly downscaled
@@ -748,6 +778,843 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
  
   PostData(4, fListHist);
 
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskUpcPsi2s::RunAODtree()
+{
+  //input event
+  AliAODEvent *aod = (AliAODEvent*) InputEvent();
+  if(!aod) return;
+
+  if(isMC) RunAODMC(aod);
+
+  //input data
+  const char *filnam = ((TTree*) GetInputData(0))->GetCurrentFile()->GetName();
+  fDataFilnam->Clear();
+  fDataFilnam->SetString(filnam);
+  fEvtNum = ((TTree*) GetInputData(0))->GetTree()->GetReadEntry();
+  fRunNum = aod ->GetRunNumber();
+
+  //Trigger
+  TString trigger = aod->GetFiredTriggerClasses();
+  
+  fTrigger[0]  = trigger.Contains("CCUP4-B"); // Central UPC Pb-Pb 2011
+  fTrigger[1]  = trigger.Contains("CCUP2-B"); // Double gap
+  fTrigger[2]  = trigger.Contains("CCUP7-B"); // Central UPC p-Pb 2013
+  fTrigger[3]  = trigger.Contains("CINT1");
+  
+  Bool_t isTriggered = kFALSE;
+  for(Int_t i=0; i<ntrg; i++) {
+    if( fTrigger[i] ) isTriggered = kTRUE;
+  }
+  if(!isMC && !isTriggered ) return;
+
+  //trigger inputs
+  fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
+  fL1inputs = aod->GetHeader()->GetL1TriggerInputs();  
+
+  //Event identification
+  fPerNum = aod ->GetPeriodNumber();
+  fOrbNum = aod ->GetOrbitNumber();
+  fBCrossNum = aod ->GetBunchCrossNumber();
+
+  //primary vertex
+  AliAODVertex *fAODVertex = aod->GetPrimaryVertex();
+  fVtxContrib = fAODVertex->GetNContributors();
+  fVtxPos[0] = fAODVertex->GetX();
+  fVtxPos[1] = fAODVertex->GetY();
+  fVtxPos[2] = fAODVertex->GetZ();
+  Double_t CovMatx[6];
+  fAODVertex->GetCovarianceMatrix(CovMatx); 
+  fVtxErr[0] = CovMatx[0];
+  fVtxErr[1] = CovMatx[1];
+  fVtxErr[2] = CovMatx[2];
+  fVtxChi2 = fAODVertex->GetChi2();
+  fVtxNDF = fAODVertex->GetNDF();
+
+  //Tracklets
+  fNtracklets = aod->GetTracklets()->GetNumberOfTracklets();
+
+  //VZERO, ZDC
+  AliAODVZERO *fV0data = aod ->GetVZEROData();
+  AliAODZDC *fZDCdata = aod->GetZDCData();
+  
+  fV0Adecision = fV0data->GetV0ADecision();
+  fV0Cdecision = fV0data->GetV0CDecision();
+  fZDCAenergy = fZDCdata->GetZNATowerEnergy()[0];
+  fZDCCenergy = fZDCdata->GetZNCTowerEnergy()[0];
+  
+  fNLooseTracks = 0;
+  
+  //Track loop - loose cuts
+  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
+    AliAODTrack *trk = aod->GetTrack(itr);
+    if( !trk ) continue;
+    if(!(trk->TestFilterBit(1<<0))) continue;
+
+      if(!(trk->GetStatus() & AliAODTrack::kTPCrefit) ) continue;
+      if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
+      if(trk->GetTPCNcls() < 20)continue;
+      fNLooseTracks++; 
+  }//Track loop -loose cuts
+  
+  Int_t nGoodTracks=0;
+  Int_t TrackIndex[5] = {-1,-1,-1,-1,-1};
+  
+  //Two track loop
+  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
+    AliAODTrack *trk = aod->GetTrack(itr);
+    if( !trk ) continue;
+    if(!(trk->TestFilterBit(1<<0))) continue;
+    
+      if(!(trk->GetStatus() & AliAODTrack::kTPCrefit) ) continue;
+      if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
+      if(trk->GetTPCNcls() < 70)continue;
+      if(trk->Chi2perNDF() > 4)continue;
+      if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1))) continue;
+      Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
+      AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
+      if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      delete trk_clone;
+      if(TMath::Abs(dca[1]) > 2) continue;
+      Double_t cut_DCAxy = (0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
+      if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
+      
+     
+      TrackIndex[nGoodTracks] = itr;
+      nGoodTracks++;
+				  
+      if(nGoodTracks > 2) break;  
+  }//Track loop
+  
+  fJPsiAODTracks->Clear("C");
+  if(nGoodTracks == 2){
+  
+   	  TDatabasePDG *pdgdat = TDatabasePDG::Instance();
+	  TParticlePDG *partMuon = pdgdat->GetParticle( 13 );
+  	  Double_t muonMass = partMuon->Mass();  
+          TParticlePDG *partElectron = pdgdat->GetParticle( 11 );
+          Double_t electronMass = partElectron->Mass();  
+  	  TParticlePDG *partPion = pdgdat->GetParticle( 211 );
+  	  Double_t pionMass = partPion->Mass();
+  
+  	  Double_t KFcov[21];
+  	  Double_t KFpar[6];
+	  Double_t KFmass = pionMass;
+	  Double_t fRecTPCsignal;
+  	  AliKFParticle *KFpart[2];
+  	  AliKFVertex *KFvtx = new AliKFVertex();
+  	  KFvtx->SetField(aod->GetMagneticField()); 
+  
+  	  for(Int_t i=0; i<2; i++){
+	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[i]);
+		
+		Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
+		AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
+      		if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      		delete trk_clone;
+				
+		new((*fJPsiAODTracks)[i]) AliAODTrack(*trk); 
+		((AliAODTrack*)((*fJPsiAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
+		
+		fPIDTPCMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
+		fPIDTPCElectron[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
+		fPIDTPCPion[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+		fPIDTPCKaon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kKaon);
+		fPIDTPCProton[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton);
+		
+		fPIDTOFMuon[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kMuon);
+		fPIDTOFElectron[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kElectron);
+		fPIDTOFPion[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kPion);
+		fPIDTOFKaon[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kKaon);
+		fPIDTOFProton[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);
+						
+		trk->GetPosition(KFpar);
+    		trk->PxPyPz(KFpar+3);
+    		trk->GetCovMatrix(KFcov);
+		
+		if(trk->Pt() > 1){   
+      			fRecTPCsignal = trk->GetTPCsignal();      
+      			if(fRecTPCsignal > 40 && fRecTPCsignal < 70) KFmass = muonMass;
+      			if(fRecTPCsignal > 70 && fRecTPCsignal < 100)KFmass = electronMass;
+			}
+		else KFmass = pionMass;
+		
+		KFpart[i] = new AliKFParticle();
+    		KFpart[i]->SetField(aod->GetMagneticField());
+    		KFpart[i]->AliKFParticleBase::Initialize(KFpar,KFcov,(Int_t) trk->Charge(), KFmass);
+		KFvtx->AddDaughter(*KFpart[i]); 
+		
+		
+		Double_t pos[3]={0,0,0};
+    		AliExternalTrackParam *parTrk = new AliExternalTrackParam();
+		parTrk->CopyFromVTrack((AliVTrack*) trk);
+      		if(!parTrk->GetXYZAt(378,aod->GetMagneticField(),pos)) fTOFphi[i] = -666;
+    		else {
+		     fTOFphi[i] =  TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
+    		     if(fTOFphi[i] < 0) fTOFphi[i]+=(2*TMath::Pi()*TMath::RadToDeg());
+		     }
+		delete parTrk;		
+  		}
+  fKfVtxPos[0]= KFvtx->GetX();
+  fKfVtxPos[1]= KFvtx->GetY();
+  fKfVtxPos[2]= KFvtx->GetZ();
+  for(UInt_t i=0; i<2; i++)delete KFpart[i];
+  delete KFvtx; 
+
+  if(!isMC) fJPsiTree ->Fill();
+  }
+  
+   nGoodTracks = 0;
+   //Four track loop
+  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
+    AliAODTrack *trk = aod->GetTrack(itr);
+    if( !trk ) continue;
+    if(!(trk->TestFilterBit(1<<0))) continue;
+
+      if(!(trk->GetStatus() & AliAODTrack::kTPCrefit) ) continue;
+      if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
+      if(trk->GetTPCNcls() < 50)continue;
+      if(trk->Chi2perNDF() > 4)continue;
+      Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
+      AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
+      if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      delete trk_clone;
+      if(TMath::Abs(dca[1]) > 2) continue;
+      Double_t cut_DCAxy = 4*(0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
+      if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
+
+      TrackIndex[nGoodTracks] = itr;
+      nGoodTracks++;
+				  
+      if(nGoodTracks > 4) break;  
+  }//Track loop
+      
+  fPsi2sAODTracks->Clear("C");  
+  if(nGoodTracks == 4){
+
+  	  TDatabasePDG *pdgdat = TDatabasePDG::Instance();
+	  TParticlePDG *partMuon = pdgdat->GetParticle( 13 );
+  	  Double_t muonMass = partMuon->Mass();  
+          TParticlePDG *partElectron = pdgdat->GetParticle( 11 );
+          Double_t electronMass = partElectron->Mass();  
+  	  TParticlePDG *partPion = pdgdat->GetParticle( 211 );
+  	  Double_t pionMass = partPion->Mass();
+  
+  	  Double_t KFcov[21];
+  	  Double_t KFpar[6];
+	  Double_t KFmass = pionMass;
+	  Double_t fRecTPCsignal;
+  	  AliKFParticle *KFpart[4];
+  	  AliKFVertex *KFvtx = new AliKFVertex();
+  	  KFvtx->SetField(aod->GetMagneticField()); 
+	  	  
+  	  for(Int_t i=0; i<4; i++){
+	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[i]);
+		
+		Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
+		AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
+      		if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      		delete trk_clone;
+		
+		new((*fPsi2sAODTracks)[i]) AliAODTrack(*trk);
+		((AliAODTrack*)((*fPsi2sAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
+		
+		
+		fPIDTPCMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
+		fPIDTPCElectron[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
+		fPIDTPCPion[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+		fPIDTPCKaon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kKaon);
+		fPIDTPCProton[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton);
+		
+		fPIDTOFMuon[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kMuon);
+		fPIDTOFElectron[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kElectron);
+		fPIDTOFPion[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kPion);
+		fPIDTOFKaon[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kKaon);
+		fPIDTOFProton[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);
+						
+		trk->GetPosition(KFpar);
+    		trk->PxPyPz(KFpar+3);
+    		trk->GetCovMatrix(KFcov);
+		
+		if(trk->Pt() > 1){   
+      			fRecTPCsignal = trk->GetTPCsignal();      
+      			if(fRecTPCsignal > 40 && fRecTPCsignal < 70) KFmass = muonMass;
+      			if(fRecTPCsignal > 70 && fRecTPCsignal < 100)KFmass = electronMass;
+			}
+		else KFmass = pionMass;
+		
+		KFpart[i] = new AliKFParticle();
+    		KFpart[i]->SetField(aod->GetMagneticField());
+    		KFpart[i]->AliKFParticleBase::Initialize(KFpar,KFcov,(Int_t) trk->Charge(), KFmass);
+		KFvtx->AddDaughter(*KFpart[i]); 
+				
+		Double_t pos[3]={0,0,0};
+    		AliExternalTrackParam *parTrk = new AliExternalTrackParam();
+		parTrk->CopyFromVTrack((AliVTrack*) trk);
+      		if(!parTrk->GetXYZAt(378,aod->GetMagneticField(),pos)) fTOFphi[i] = -666;
+    		else {
+		     fTOFphi[i] =  TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
+    		     if(fTOFphi[i] < 0) fTOFphi[i]+=(2*TMath::Pi()*TMath::RadToDeg());
+		     }
+		delete parTrk; 		
+  		}
+  fKfVtxPos[0]= KFvtx->GetX();
+  fKfVtxPos[1]= KFvtx->GetY();
+  fKfVtxPos[2]= KFvtx->GetZ();
+  for(UInt_t i=0; i<4; i++)delete KFpart[i];
+  delete KFvtx; 
+  if(!isMC) fPsi2sTree ->Fill();
+  }
+  
+  if(isMC){
+  	fJPsiTree ->Fill();
+	fPsi2sTree ->Fill();
+  }
+  
+  PostData(1, fJPsiTree);
+  PostData(2, fPsi2sTree);
+
+}//RunAOD
+
+
+//_____________________________________________________________________________
+void AliAnalysisTaskUpcPsi2s::RunAODMC(AliAODEvent *aod)
+{
+
+  fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
+  fTriggerInputsMC[0] = kFALSE;//0SM2
+  fTriggerInputsMC[1] = fL0inputs & (1 << 0);//0VBA
+  fTriggerInputsMC[2] = fL0inputs & (1 << 1);//0VBC
+  fTriggerInputsMC[3] = fL0inputs & (1 << 9);//0OMU
+
+  fGenPart->Clear("C");
+
+  TClonesArray *arrayMC = (TClonesArray*) aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+  if(!arrayMC) return;
+
+  Int_t nmc=0;
+  //loop over mc particles
+  for(Int_t imc=0; imc<arrayMC->GetEntriesFast(); imc++) {
+    AliAODMCParticle *mcPart = (AliAODMCParticle*) arrayMC->At(imc);
+    if(!mcPart) continue;
+
+    if(mcPart->GetMother() >= 0) continue;
+
+    TParticle *part = (TParticle*) fGenPart->ConstructedAt(nmc++);
+    part->SetMomentum(mcPart->Px(), mcPart->Py(), mcPart->Pz(), mcPart->E());
+    part->SetPdgCode(mcPart->GetPdgCode());
+    part->SetUniqueID(imc);
+  }//loop over mc particles
+
+}//RunAODMC
+
+
+//_____________________________________________________________________________
+void AliAnalysisTaskUpcPsi2s::RunESDtrig()
+{
+
+  //input event
+  AliESDEvent *esd = (AliESDEvent*) InputEvent();
+  if(!esd) return;
+
+  fRunNum = esd ->GetRunNumber();
+  //Trigger
+  TString trigger = esd->GetFiredTriggerClasses();
+  
+  if(trigger.Contains("CCUP4-B")) fHistCcup4TriggersPerRun->Fill(fRunNum); //CCUP4 triggers
+  if(trigger.Contains("CCUP7-B")) fHistCcup7TriggersPerRun->Fill(fRunNum); //CCUP7 triggers
+  if(trigger.Contains("CCUP2-B")) fHistCcup2TriggersPerRun->Fill(fRunNum); //CCUP2 triggers
+  
+  if(trigger.Contains("CVLN_B2-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - synchronously downscaled
+  if(trigger.Contains("CVLN_R1-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - randomly downscaled
+  
+  if(esd->GetHeader()->IsTriggerInputFired("1ZED")) fHistZedTriggersPerRun->Fill(fRunNum); //1ZED trigger inputs
+  
+   //MB, Central and SemiCentral triggers
+  AliCentrality *centrality = esd->GetCentrality();
+  UInt_t selectionMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  
+  //Double_t percentile = centrality->GetCentralityPercentile("V0M");
+  Double_t percentile = centrality->GetCentralityPercentileUnchecked("V0M");
+  
+  if(((selectionMask & AliVEvent::kMB) == AliVEvent::kMB) && percentile<=80 && percentile>=0) fHistMBTriggersPerRun->Fill(fRunNum);
+  
+  if(((selectionMask & AliVEvent::kCentral) == AliVEvent::kCentral) && percentile<=6 && percentile>=0 && (trigger.Contains("CVHN_R2-B"))) fHistCentralTriggersPerRun->Fill(fRunNum);
+
+  if(((selectionMask & AliVEvent::kSemiCentral) == AliVEvent::kSemiCentral) && percentile<=50 && percentile>=15) fHistSemiCentralTriggersPerRun->Fill(fRunNum);
+
+  
+PostData(3, fListTrig);
+
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskUpcPsi2s::RunESDhist()
+{
+
+  TDatabasePDG *pdgdat = TDatabasePDG::Instance();
+  
+  TParticlePDG *partMuon = pdgdat->GetParticle( 13 );
+  Double_t muonMass = partMuon->Mass();
+  
+  TParticlePDG *partElectron = pdgdat->GetParticle( 11 );
+  Double_t electronMass = partElectron->Mass();
+  
+  TParticlePDG *partPion = pdgdat->GetParticle( 211 );
+  Double_t pionMass = partPion->Mass();
+
+  //input event
+  AliESDEvent *esd = (AliESDEvent*) InputEvent();
+  if(!esd) return;
+
+  fHistNeventsJPsi->Fill(1);
+  fHistNeventsPsi2s->Fill(1);
+
+  //Trigger
+  TString trigger = esd->GetFiredTriggerClasses();
+  
+  if(!isMC && !trigger.Contains("CCUP") ) return;
+  
+  fHistNeventsJPsi->Fill(2);
+  fHistNeventsPsi2s->Fill(2);
+
+  //primary vertex
+  AliESDVertex *fESDVertex = (AliESDVertex*) esd->GetPrimaryVertex();
+  fVtxContrib = fESDVertex->GetNContributors();
+  if(fVtxContrib < 2) return;
+  
+  fHistNeventsJPsi->Fill(3);
+  fHistNeventsPsi2s->Fill(3);
+
+  //VZERO, ZDC
+  AliESDVZERO *fV0data = esd->GetVZEROData();
+  AliESDZDC *fZDCdata = esd->GetESDZDC();
+  
+  fV0Adecision = fV0data->GetV0ADecision();
+  fV0Cdecision = fV0data->GetV0CDecision();
+  if(fV0Adecision != AliESDVZERO::kV0Empty || fV0Cdecision != AliESDVZERO::kV0Empty) return;
+  
+  fZDCAenergy = fZDCdata->GetZN2TowerEnergy()[0];
+  fZDCCenergy = fZDCdata->GetZN1TowerEnergy()[0];
+  if( fZDCAenergy > 8200 || fZDCCenergy > 8200) return;
+  
+  fHistNeventsJPsi->Fill(4);
+  fHistNeventsPsi2s->Fill(4);
+
+   Int_t nGoodTracks=0;
+  //Two tracks loop
+  Int_t TrackIndex[5] = {-1,-1,-1,-1,-1};
+  
+  TLorentzVector vLepton[4], vPion[4], vCandidate, vDilepton;
+  Short_t qLepton[4], qPion[4];
+  UInt_t nLepton=0, nPion=0, nHighPt=0;
+  Double_t fRecTPCsignal[5];
+  Int_t mass[3]={-1,-1,-1};
+
+ //Two Track loop
+  for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
+    AliESDtrack *trk = esd->GetTrack(itr);
+    if( !trk ) continue;
+
+      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
+      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
+      if(trk->GetTPCNcls() < 70)continue;
+      if(trk->GetTPCchi2()/trk->GetTPCNcls() > 4)continue;
+      if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1))) continue;
+      Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;
+      if(!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam)) continue;
+      trk->GetImpactParameters(dca[0],dca[1]);
+      if(TMath::Abs(dca[1]) > 2) continue;
+      if(TMath::Abs(dca[1]) > 0.2) continue;
+      
+      TrackIndex[nGoodTracks] = itr;
+      nGoodTracks++;
+      if(nGoodTracks > 2) break;   
+  }//Track loop
+
+  
+  if(nGoodTracks == 2){
+  	  fHistNeventsJPsi->Fill(5);
+  	  for(Int_t i=0; i<2; i++){
+	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[i]);		
+      		if(trk->Pt() > 1) nHighPt++;     
+      		fRecTPCsignal[nLepton] = trk->GetTPCsignal();     
+      		qLepton[nLepton] = trk->Charge();
+      		if(fRecTPCsignal[nLepton] > 40 && fRecTPCsignal[nLepton] < 70){
+      				vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
+				mass[nLepton] = 0;
+				}
+      		if(fRecTPCsignal[nLepton] > 70 && fRecTPCsignal[nLepton] < 100){
+      				vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), electronMass);
+				mass[nLepton] = 1;
+				}
+       		nLepton++;		
+  		}		
+  	if(nLepton == 2){
+	 	if(qLepton[0]*qLepton[1] > 0) fHistNeventsJPsi->Fill(6);
+		if(qLepton[0]*qLepton[1] < 0){
+			fHistNeventsJPsi->Fill(7);
+			if(nHighPt > 0){
+				fHistNeventsJPsi->Fill(8);
+				fHistTPCsignalJPsi->Fill(fRecTPCsignal[0],fRecTPCsignal[1]);
+				if(nHighPt == 2) fHistNeventsJPsi->Fill(9);
+				if(mass[0] == mass[1] && mass[0] != -1) {
+					fHistNeventsJPsi->Fill(10);
+					vCandidate = vLepton[0]+vLepton[1];
+					if( vCandidate.M() > 2.8 && vCandidate.M() < 3.2) fHistDiLeptonPtJPsi->Fill(vLepton[0].Pt(),vLepton[1].Pt());
+					if(mass[0] == 0) {
+						fHistDiMuonMass->Fill(vCandidate.M());
+						fHistNeventsJPsi->Fill(11);
+						}
+  					if(mass[0] == 1) {
+						fHistDiElectronMass->Fill(vCandidate.M());
+						fHistNeventsJPsi->Fill(12);
+   						}
+					}
+				}
+			}
+		}
+  }
+  nGoodTracks = 0; nLepton=0; nPion=0; nHighPt=0;
+  mass[0]= -1; mass[1]= -1, mass[2]= -1;
+  
+    //Four Track loop
+  for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
+    AliESDtrack *trk = esd->GetTrack(itr);
+    if( !trk ) continue;
+
+      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
+      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
+      if(trk->GetTPCNcls() < 50)continue;
+      if(trk->GetTPCchi2()/trk->GetTPCNcls() > 4)continue;
+      Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;
+      if(!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam)) continue;
+      trk->GetImpactParameters(dca[0],dca[1]);
+      if(TMath::Abs(dca[1]) > 2) continue;
+      
+      TrackIndex[nGoodTracks] = itr;
+      nGoodTracks++;
+      if(nGoodTracks > 4) break;   
+  }//Track loop
+  
+  if(nGoodTracks == 4){
+  	  fHistNeventsPsi2s->Fill(5);
+  	  for(Int_t i=0; i<4; i++){
+	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[i]);
+		
+      		if(trk->Pt() > 1){   
+      			fRecTPCsignal[nLepton] = trk->GetTPCsignal();      
+      			qLepton[nLepton] = trk->Charge();
+      			if(fRecTPCsignal[nLepton] > 40 && fRecTPCsignal[nLepton] < 70){
+      					vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
+					mass[nLepton] = 0;
+					}
+      			if(fRecTPCsignal[nLepton] > 70 && fRecTPCsignal[nLepton] < 100){
+      					vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), electronMass);
+					mass[nLepton] = 1;
+					}
+			nLepton++;
+			}
+		else{
+			qPion[nPion] = trk->Charge();
+			vPion[nPion].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), pionMass);
+			nPion++;
+			}
+				      
+      		if(nLepton > 2 || nPion > 2) break;
+    		}
+	if((nLepton == 2) && (nPion == 2)){
+		fHistNeventsPsi2s->Fill(6);
+		if(qLepton[0]*qLepton[1] > 0) fHistNeventsPsi2s->Fill(7);
+		if(qPion[0]*qPion[1] > 0) fHistNeventsPsi2s->Fill(8);
+		if((qLepton[0]*qLepton[1] > 0) && (qPion[0]*qPion[1] > 0)) fHistNeventsPsi2s->Fill(9);
+		if((qLepton[0]*qLepton[1] < 0) && (qPion[0]*qPion[1] < 0)){
+			fHistNeventsPsi2s->Fill(10);
+	 		if(mass[0] == mass[1]) {
+				fHistNeventsPsi2s->Fill(11); 
+  				vCandidate = vLepton[0]+vLepton[1]+vPion[0]+vPion[1];
+  				vDilepton = vLepton[0]+vLepton[1];
+				fHistPsi2sMassVsPt->Fill(vCandidate.M(),vCandidate.Pt());
+				if(vCandidate.Pt() < 0.15) fHistPsi2sMassCoherent->Fill(vCandidate.M());
+				if(mass[0] == 0) fHistNeventsPsi2s->Fill(12);	
+  				if(mass[0] == 1) fHistNeventsPsi2s->Fill(13);
+				}
+			}
+		}
+  }
+  
+  PostData(4, fListHist);
+
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskUpcPsi2s::RunESDtree()
+{
+
+  //input event
+  AliESDEvent *esd = (AliESDEvent*) InputEvent();
+  if(!esd) return;
+  
+  if(isMC) RunESDMC(esd);
+
+  //input data
+  const char *filnam = ((TTree*) GetInputData(0))->GetCurrentFile()->GetName();
+  fDataFilnam->Clear();
+  fDataFilnam->SetString(filnam);
+  fEvtNum = ((TTree*) GetInputData(0))->GetTree()->GetReadEntry();
+  fRunNum = esd->GetRunNumber();
+
+   //Trigger
+  TString trigger = esd->GetFiredTriggerClasses();
+  
+  fTrigger[0]  = trigger.Contains("CCUP4-B"); // Central UPC Pb-Pb 2011
+  fTrigger[1]  = trigger.Contains("CCUP2-B"); // Double gap
+  fTrigger[2]  = trigger.Contains("CCUP7-B"); // Central UPC p-Pb 2013
+  
+  Bool_t isTriggered = kFALSE;
+  for(Int_t i=0; i<ntrg; i++) {
+    if( fTrigger[i] ) isTriggered = kTRUE;
+  }
+  if(!isMC && !isTriggered ) return;
+  
+  //trigger inputs
+  fL0inputs = esd->GetHeader()->GetL0TriggerInputs();
+  fL1inputs = esd->GetHeader()->GetL1TriggerInputs();
+  
+  //TOF trigger info (0OMU)
+  fTOFtrig1 = esd->GetHeader()->IsTriggerInputFired("0OMU");
+  fTOFtrig2 = esd->GetHeader()->GetActiveTriggerInputs().Contains("0OMU") ? ((esd->GetHeader()) ? esd->GetHeader()->IsTriggerInputFired("0OMU") : kFALSE) : TESTBIT(esd->GetHeader()->GetL0TriggerInputs(), (kFALSE) ? 21 : 9);
+
+  //Event identification
+  fPerNum = esd->GetPeriodNumber();
+  fOrbNum = esd->GetOrbitNumber();
+  fBCrossNum = esd->GetBunchCrossNumber();
+
+  //primary vertex
+  AliESDVertex *fESDVertex = (AliESDVertex*) esd->GetPrimaryVertex();
+  fVtxContrib = fESDVertex->GetNContributors();
+  fVtxPos[0] = fESDVertex->GetX();
+  fVtxPos[1] = fESDVertex->GetY();
+  fVtxPos[2] = fESDVertex->GetZ();
+  Double_t CovMatx[6];
+  fESDVertex->GetCovarianceMatrix(CovMatx); 
+  fVtxErr[0] = CovMatx[0];
+  fVtxErr[1] = CovMatx[1];
+  fVtxErr[2] = CovMatx[2];
+  fVtxChi2 = fESDVertex->GetChi2();
+  fVtxNDF = fESDVertex->GetNDF();
+
+  //Tracklets
+  fNtracklets = esd->GetMultiplicity()->GetNumberOfTracklets();
+
+  //VZERO, ZDC
+  AliESDVZERO *fV0data = esd->GetVZEROData();
+  AliESDZDC *fZDCdata = esd->GetESDZDC();
+  
+  fV0Adecision = fV0data->GetV0ADecision();
+  fV0Cdecision = fV0data->GetV0CDecision();
+  fZDCAenergy = fZDCdata->GetZN2TowerEnergy()[0];
+  fZDCCenergy = fZDCdata->GetZN1TowerEnergy()[0];
+
+  fNLooseTracks = 0;
+  
+  //Track loop - loose cuts
+  for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
+    AliESDtrack *trk = esd->GetTrack(itr);
+    if( !trk ) continue;
+
+      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
+      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
+      if(trk->GetTPCNcls() < 20)continue;
+      fNLooseTracks++; 
+  }//Track loop -loose cuts
+  
+  Int_t nGoodTracks=0;
+  Int_t TrackIndex[5] = {-1,-1,-1,-1,-1};
+  
+  //Two Track loop
+  for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
+    AliESDtrack *trk = esd->GetTrack(itr);
+    if( !trk ) continue;
+
+      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
+      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
+      if(trk->GetTPCNcls() < 70)continue;
+      if(trk->GetTPCchi2()/trk->GetTPCNcls() > 4)continue;
+      if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1))) continue;
+      Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;
+      if(!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam)) continue;
+      trk->GetImpactParameters(dca[0],dca[1]);
+      if(TMath::Abs(dca[1]) > 2) continue;
+      if(TMath::Abs(dca[0]) > 0.2) continue;
+      
+      TrackIndex[nGoodTracks] = itr;
+      nGoodTracks++;
+      if(nGoodTracks > 2) break;   
+  }//Track loop
+
+  fJPsiESDTracks->Clear("C");
+  if(nGoodTracks == 2){
+  	  for(Int_t i=0; i<2; i++){
+	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[i]);
+		
+		AliExternalTrackParam cParam;
+      		trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam);// to get trk->GetImpactParameters(DCAxy,DCAz);
+				
+		new((*fJPsiESDTracks)[i]) AliESDtrack(*trk); 
+		
+		fPIDTPCMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
+		fPIDTPCElectron[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
+		fPIDTPCPion[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+		fPIDTPCKaon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kKaon);
+		fPIDTPCProton[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton);
+		
+		fPIDTOFMuon[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kMuon);
+		fPIDTOFElectron[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kElectron);
+		fPIDTOFPion[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kPion);
+		fPIDTOFKaon[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kKaon);
+		fPIDTOFProton[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);		
+		
+		Double_t pos[3]={0,0,0};
+    		if(!trk->GetXYZAt(378,esd->GetMagneticField(),pos)) fTOFphi[i] = -666;
+    		else {
+		     fTOFphi[i] =  TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
+    		     if(fTOFphi[i] < 0) fTOFphi[i]+=(2*TMath::Pi()*TMath::RadToDeg());
+		     } 		
+  		}
+  if(!isMC) fJPsiTree ->Fill();
+  }
+  
+  nGoodTracks = 0;
+  //Four track loop
+  for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
+    AliESDtrack *trk = esd->GetTrack(itr);
+    if( !trk ) continue;
+
+      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
+      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
+      if(trk->GetTPCNcls() < 50)continue;
+      if(trk->GetTPCchi2()/trk->GetTPCNcls() > 4)continue;
+      Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;
+      if(!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam)) continue;
+      trk->GetImpactParameters(dca[0],dca[1]);
+      if(TMath::Abs(dca[1]) > 2) continue;
+      
+      TrackIndex[nGoodTracks] = itr;
+      nGoodTracks++;
+      if(nGoodTracks > 4) break;   
+  }//Track loop
+  
+  fPsi2sESDTracks->Clear("C");
+  if(nGoodTracks == 4){
+  	  for(Int_t i=0; i<4; i++){
+	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[i]);
+		
+		AliExternalTrackParam cParam;
+      		trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam);// to get trk->GetImpactParameters(DCAxy,DCAz);
+
+		new((*fPsi2sESDTracks)[i]) AliESDtrack(*trk);
+		
+		fPIDTPCMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
+		fPIDTPCElectron[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
+		fPIDTPCPion[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+		fPIDTPCKaon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kKaon);
+		fPIDTPCProton[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton);
+		
+		fPIDTOFMuon[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kMuon);
+		fPIDTOFElectron[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kElectron);
+		fPIDTOFPion[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kPion);
+		fPIDTOFKaon[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kKaon);
+		fPIDTOFProton[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);		
+		 
+		Double_t pos[3]={0,0,0};
+    		if(!trk->GetXYZAt(378,esd->GetMagneticField(),pos)) fTOFphi[i] = -666;
+    		else {
+		     fTOFphi[i] =  TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
+    		     if(fTOFphi[i] < 0) fTOFphi[i]+=(2*TMath::Pi()*TMath::RadToDeg());
+		     } 		
+  		}
+  if(!isMC) fPsi2sTree ->Fill();
+  }
+  
+  if(isMC){
+  	fJPsiTree ->Fill();
+	fPsi2sTree ->Fill();
+  }
+ 
+  PostData(1, fJPsiTree);
+  PostData(2, fPsi2sTree);
+
+}//RunESD
+
+
+//_____________________________________________________________________________
+void AliAnalysisTaskUpcPsi2s::RunESDMC(AliESDEvent* esd)
+{
+
+  AliTriggerAnalysis *fTrigAna = new AliTriggerAnalysis();
+  fTrigAna->SetAnalyzeMC(isMC);
+  
+  if(fTrigAna->SPDFiredChips(esd,1,kFALSE,2) > 1) fTriggerInputsMC[0] = kTRUE;
+  if(fTrigAna->SPDFiredChips(esd,1,kFALSE,2) < 2) fTriggerInputsMC[0] = kFALSE;
+
+  fTriggerInputsMC[1] = esd->GetHeader()->IsTriggerInputFired("0OMU");
+  fTriggerInputsMC[2] = esd->GetHeader()->IsTriggerInputFired("0VBA");
+  fTriggerInputsMC[3] = esd->GetHeader()->IsTriggerInputFired("0VBC");
+
+  fGenPart->Clear("C");
+
+  AliMCEvent *mc = MCEvent();
+  if(!mc) return;
+
+  Int_t nmc = 0;
+  //loop over mc particles
+  for(Int_t imc=0; imc<mc->GetNumberOfTracks(); imc++) {
+    AliMCParticle *mcPart = (AliMCParticle*) mc->GetTrack(imc);
+    if(!mcPart) continue;
+
+    if(mcPart->GetMother() >= 0) continue;
+
+    TParticle *part = (TParticle*) fGenPart->ConstructedAt(nmc++);
+    part->SetMomentum(mcPart->Px(), mcPart->Py(), mcPart->Pz(), mcPart->E());
+    part->SetPdgCode(mcPart->PdgCode());
+    part->SetUniqueID(imc);
+  }//loop over mc particles
+
+}//RunESDMC
+
+
+
+//_____________________________________________________________________________
+void AliAnalysisTaskUpcPsi2s::Terminate(Option_t *) 
+{
+
+  cout<<"Analysis complete."<<endl;
+}//Terminate
+
+//_____________________________________________________________________________
+Double_t AliAnalysisTaskUpcPsi2s::GetMedian(Double_t *daArray) {
+    // Allocate an array of the same size and sort it.
+    Double_t dpSorted[4];
+    for (Int_t i = 0; i < 4; ++i) {
+        dpSorted[i] = daArray[i];
+    }
+    for (Int_t i = 3; i > 0; --i) {
+        for (Int_t j = 0; j < i; ++j) {
+            if (dpSorted[j] > dpSorted[j+1]) {
+                Double_t dTemp = dpSorted[j];
+                dpSorted[j] = dpSorted[j+1];
+                dpSorted[j+1] = dTemp;
+            }
+        }
+    }
+
+    // Middle or average of middle values in the sorted array.
+    Double_t dMedian = 0.0;
+    dMedian = (dpSorted[2] + dpSorted[1])/2.0;
+    
+    return dMedian;
 }
 
 //_____________________________________________________________________________
@@ -1136,802 +2003,4 @@ for(Int_t i=0; i<4; i++){
   }   
 }//Tight cuts
 
-
-}
-//_____________________________________________________________________________
-void AliAnalysisTaskUpcPsi2s::RunAODtree()
-{
-  //input event
-  AliAODEvent *aod = (AliAODEvent*) InputEvent();
-  if(!aod) return;
-
-  if(isMC) RunAODMC(aod);
-
-  //input data
-  const char *filnam = ((TTree*) GetInputData(0))->GetCurrentFile()->GetName();
-  fDataFilnam->Clear();
-  fDataFilnam->SetString(filnam);
-  fEvtNum = ((TTree*) GetInputData(0))->GetTree()->GetReadEntry();
-  fRunNum = aod ->GetRunNumber();
-
-  //Trigger
-  TString trigger = aod->GetFiredTriggerClasses();
-  
-  fTrigger[0]  = trigger.Contains("CCUP4-B"); // Central UPC Pb-Pb 2011
-  fTrigger[1]  = trigger.Contains("CCUP2-B"); // Double gap
-  fTrigger[2]  = trigger.Contains("CCUP7-B"); // Central UPC p-Pb 2013
-  
-  Bool_t isTriggered = kFALSE;
-  for(Int_t i=0; i<ntrg; i++) {
-    if( fTrigger[i] ) isTriggered = kTRUE;
-  }
-  if(!isMC && !isTriggered ) return;
-
-  //trigger inputs
-  fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
-  fL1inputs = aod->GetHeader()->GetL1TriggerInputs();  
-
-  //Event identification
-  fPerNum = aod ->GetPeriodNumber();
-  fOrbNum = aod ->GetOrbitNumber();
-  fBCrossNum = aod ->GetBunchCrossNumber();
-
-  //primary vertex
-  AliAODVertex *fAODVertex = aod->GetPrimaryVertex();
-  fVtxContrib = fAODVertex->GetNContributors();
-  fVtxPos[0] = fAODVertex->GetX();
-  fVtxPos[1] = fAODVertex->GetY();
-  fVtxPos[2] = fAODVertex->GetZ();
-  Double_t CovMatx[6];
-  fAODVertex->GetCovarianceMatrix(CovMatx); 
-  fVtxErr[0] = CovMatx[0];
-  fVtxErr[1] = CovMatx[1];
-  fVtxErr[2] = CovMatx[2];
-  fVtxChi2 = fAODVertex->GetChi2();
-  fVtxNDF = fAODVertex->GetNDF();
-
-  //Tracklets
-  fNtracklets = aod->GetTracklets()->GetNumberOfTracklets();
-
-  //VZERO, ZDC
-  AliAODVZERO *fV0data = aod ->GetVZEROData();
-  AliAODZDC *fZDCdata = aod->GetZDCData();
-  
-  fV0Adecision = fV0data->GetV0ADecision();
-  fV0Cdecision = fV0data->GetV0CDecision();
-  fZDCAenergy = fZDCdata->GetZNATowerEnergy()[0];
-  fZDCCenergy = fZDCdata->GetZNCTowerEnergy()[0];
-  
-  fNLooseTracks = 0;
-  
-  //Track loop - loose cuts
-  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = aod->GetTrack(itr);
-    if( !trk ) continue;
-    if(!(trk->TestFilterBit(1<<0))) continue;
-
-      if(!(trk->GetStatus() & AliAODTrack::kTPCrefit) ) continue;
-      if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
-      if(trk->GetTPCNcls() < 20)continue;
-      fNLooseTracks++; 
-  }//Track loop -loose cuts
-  
-  Int_t nGoodTracks=0;
-  Int_t TrackIndex[5] = {-1,-1,-1,-1,-1};
-  
-  //Two track loop
-  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = aod->GetTrack(itr);
-    if( !trk ) continue;
-    if(!(trk->TestFilterBit(1<<0))) continue;
-    
-      if(!(trk->GetStatus() & AliAODTrack::kTPCrefit) ) continue;
-      if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
-      if(trk->GetTPCNcls() < 70)continue;
-      if(trk->Chi2perNDF() > 4)continue;
-      if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1))) continue;
-      Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
-      AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
-      if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
-      delete trk_clone;
-      if(TMath::Abs(dca[1]) > 2) continue;
-      Double_t cut_DCAxy = (0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
-      if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
-      
-     
-      TrackIndex[nGoodTracks] = itr;
-      nGoodTracks++;
-				  
-      if(nGoodTracks > 2) break;  
-  }//Track loop
-  
-  fJPsiAODTracks->Clear("C");
-  if(nGoodTracks == 2){
-  
-   	  TDatabasePDG *pdgdat = TDatabasePDG::Instance();
-	  TParticlePDG *partMuon = pdgdat->GetParticle( 13 );
-  	  Double_t muonMass = partMuon->Mass();  
-          TParticlePDG *partElectron = pdgdat->GetParticle( 11 );
-          Double_t electronMass = partElectron->Mass();  
-  	  TParticlePDG *partPion = pdgdat->GetParticle( 211 );
-  	  Double_t pionMass = partPion->Mass();
-  
-  	  Double_t KFcov[21];
-  	  Double_t KFpar[6];
-	  Double_t KFmass = pionMass;
-	  Double_t fRecTPCsignal;
-  	  AliKFParticle *KFpart[2];
-  	  AliKFVertex *KFvtx = new AliKFVertex();
-  	  KFvtx->SetField(aod->GetMagneticField()); 
-  
-  	  for(Int_t i=0; i<2; i++){
-	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[i]);
-		
-		Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
-		AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
-      		if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
-      		delete trk_clone;
-				
-		new((*fJPsiAODTracks)[i]) AliAODTrack(*trk); 
-		((AliAODTrack*)((*fJPsiAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
-		
-		fPIDMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
-		fPIDElectron[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
-		fPIDPion[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
-						
-		trk->GetPosition(KFpar);
-    		trk->PxPyPz(KFpar+3);
-    		trk->GetCovMatrix(KFcov);
-		
-		if(trk->Pt() > 1){   
-      			fRecTPCsignal = trk->GetTPCsignal();      
-      			if(fRecTPCsignal > 40 && fRecTPCsignal < 70) KFmass = muonMass;
-      			if(fRecTPCsignal > 70 && fRecTPCsignal < 100)KFmass = electronMass;
-			}
-		else KFmass = pionMass;
-		
-		KFpart[i] = new AliKFParticle();
-    		KFpart[i]->SetField(aod->GetMagneticField());
-    		KFpart[i]->AliKFParticleBase::Initialize(KFpar,KFcov,(Int_t) trk->Charge(), KFmass);
-		KFvtx->AddDaughter(*KFpart[i]); 
-		
-		
-		Double_t pos[3]={0,0,0};
-    		AliExternalTrackParam *parTrk = new AliExternalTrackParam();
-		parTrk->CopyFromVTrack((AliVTrack*) trk);
-      		if(!parTrk->GetXYZAt(378,aod->GetMagneticField(),pos)) fTOFphi[i] = -666;
-    		else {
-		     fTOFphi[i] =  TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
-    		     if(fTOFphi[i] < 0) fTOFphi[i]+=(2*TMath::Pi()*TMath::RadToDeg());
-		     }
-		delete parTrk;		
-  		}
-  fKfVtxPos[0]= KFvtx->GetX();
-  fKfVtxPos[1]= KFvtx->GetY();
-  fKfVtxPos[2]= KFvtx->GetZ();
-  for(UInt_t i=0; i<2; i++)delete KFpart[i];
-  delete KFvtx; 
-
-  if(!isMC) fJPsiTree ->Fill();
-  }
-  
-   nGoodTracks = 0;
-   //Four track loop
-  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = aod->GetTrack(itr);
-    if( !trk ) continue;
-    if(!(trk->TestFilterBit(1<<0))) continue;
-
-      if(!(trk->GetStatus() & AliAODTrack::kTPCrefit) ) continue;
-      if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
-      if(trk->GetTPCNcls() < 50)continue;
-      if(trk->Chi2perNDF() > 4)continue;
-      Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
-      AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
-      if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
-      delete trk_clone;
-      if(TMath::Abs(dca[1]) > 2) continue;
-      Double_t cut_DCAxy = 4*(0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
-      if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
-
-      TrackIndex[nGoodTracks] = itr;
-      nGoodTracks++;
-				  
-      if(nGoodTracks > 4) break;  
-  }//Track loop
-      
-  fPsi2sAODTracks->Clear("C");  
-  if(nGoodTracks == 4){
-
-  	  TDatabasePDG *pdgdat = TDatabasePDG::Instance();
-	  TParticlePDG *partMuon = pdgdat->GetParticle( 13 );
-  	  Double_t muonMass = partMuon->Mass();  
-          TParticlePDG *partElectron = pdgdat->GetParticle( 11 );
-          Double_t electronMass = partElectron->Mass();  
-  	  TParticlePDG *partPion = pdgdat->GetParticle( 211 );
-  	  Double_t pionMass = partPion->Mass();
-  
-  	  Double_t KFcov[21];
-  	  Double_t KFpar[6];
-	  Double_t KFmass = pionMass;
-	  Double_t fRecTPCsignal;
-  	  AliKFParticle *KFpart[4];
-  	  AliKFVertex *KFvtx = new AliKFVertex();
-  	  KFvtx->SetField(aod->GetMagneticField()); 
-	  	  
-  	  for(Int_t i=0; i<4; i++){
-	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[i]);
-		
-		Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
-		AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
-      		if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
-      		delete trk_clone;
-		
-		new((*fPsi2sAODTracks)[i]) AliAODTrack(*trk);
-		((AliAODTrack*)((*fPsi2sAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
-		
-		
-		fPIDMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
-		fPIDElectron[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
-		fPIDPion[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);		
-				
-		trk->GetPosition(KFpar);
-    		trk->PxPyPz(KFpar+3);
-    		trk->GetCovMatrix(KFcov);
-		
-		if(trk->Pt() > 1){   
-      			fRecTPCsignal = trk->GetTPCsignal();      
-      			if(fRecTPCsignal > 40 && fRecTPCsignal < 70) KFmass = muonMass;
-      			if(fRecTPCsignal > 70 && fRecTPCsignal < 100)KFmass = electronMass;
-			}
-		else KFmass = pionMass;
-		
-		KFpart[i] = new AliKFParticle();
-    		KFpart[i]->SetField(aod->GetMagneticField());
-    		KFpart[i]->AliKFParticleBase::Initialize(KFpar,KFcov,(Int_t) trk->Charge(), KFmass);
-		KFvtx->AddDaughter(*KFpart[i]); 
-				
-		Double_t pos[3]={0,0,0};
-    		AliExternalTrackParam *parTrk = new AliExternalTrackParam();
-		parTrk->CopyFromVTrack((AliVTrack*) trk);
-      		if(!parTrk->GetXYZAt(378,aod->GetMagneticField(),pos)) fTOFphi[i] = -666;
-    		else {
-		     fTOFphi[i] =  TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
-    		     if(fTOFphi[i] < 0) fTOFphi[i]+=(2*TMath::Pi()*TMath::RadToDeg());
-		     }
-		delete parTrk; 		
-  		}
-  fKfVtxPos[0]= KFvtx->GetX();
-  fKfVtxPos[1]= KFvtx->GetY();
-  fKfVtxPos[2]= KFvtx->GetZ();
-  for(UInt_t i=0; i<4; i++)delete KFpart[i];
-  delete KFvtx; 
-  if(!isMC) fPsi2sTree ->Fill();
-  }
-  
-  if(isMC){
-  	fJPsiTree ->Fill();
-	fPsi2sTree ->Fill();
-  }
-  
-  PostData(1, fJPsiTree);
-  PostData(2, fPsi2sTree);
-
-}//RunAOD
-
-
-//_____________________________________________________________________________
-void AliAnalysisTaskUpcPsi2s::RunAODMC(AliAODEvent *aod)
-{
-
-  fGenPart->Clear("C");
-
-  TClonesArray *arrayMC = (TClonesArray*) aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-  if(!arrayMC) return;
-
-  Int_t nmc=0;
-  //loop over mc particles
-  for(Int_t imc=0; imc<arrayMC->GetEntriesFast(); imc++) {
-    AliAODMCParticle *mcPart = (AliAODMCParticle*) arrayMC->At(imc);
-    if(!mcPart) continue;
-
-    if(mcPart->GetMother() >= 0) continue;
-
-    TParticle *part = (TParticle*) fGenPart->ConstructedAt(nmc++);
-    part->SetMomentum(mcPart->Px(), mcPart->Py(), mcPart->Pz(), mcPart->E());
-    part->SetPdgCode(mcPart->GetPdgCode());
-    part->SetUniqueID(imc);
-  }//loop over mc particles
-
-}//RunAODMC
-
-
-//_____________________________________________________________________________
-void AliAnalysisTaskUpcPsi2s::RunESDtrig()
-{
-
-  //input event
-  AliESDEvent *esd = (AliESDEvent*) InputEvent();
-  if(!esd) return;
-
-  fRunNum = esd ->GetRunNumber();
-  //Trigger
-  TString trigger = esd->GetFiredTriggerClasses();
-  
-  if(trigger.Contains("CCUP4-B")) fHistCcup4TriggersPerRun->Fill(fRunNum); //CCUP4 triggers
-  if(trigger.Contains("CCUP7-B")) fHistCcup7TriggersPerRun->Fill(fRunNum); //CCUP7 triggers
-  if(trigger.Contains("CCUP2-B")) fHistCcup2TriggersPerRun->Fill(fRunNum); //CCUP2 triggers
-  
-  if(trigger.Contains("CVLN_B2-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - synchronously downscaled
-  if(trigger.Contains("CVLN_R1-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - randomly downscaled
-  
-  if(esd->GetHeader()->IsTriggerInputFired("1ZED")) fHistZedTriggersPerRun->Fill(fRunNum); //1ZED trigger inputs
-  
-   //MB, Central and SemiCentral triggers
-  AliCentrality *centrality = esd->GetCentrality();
-  UInt_t selectionMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  
-  //Double_t percentile = centrality->GetCentralityPercentile("V0M");
-  Double_t percentile = centrality->GetCentralityPercentileUnchecked("V0M");
-  
-  if(((selectionMask & AliVEvent::kMB) == AliVEvent::kMB) && percentile<=80 && percentile>=0) fHistMBTriggersPerRun->Fill(fRunNum);
-  
-  if(((selectionMask & AliVEvent::kCentral) == AliVEvent::kCentral) && percentile<=6 && percentile>=0 && (trigger.Contains("CVHN_R2-B"))) fHistCentralTriggersPerRun->Fill(fRunNum);
-
-  if(((selectionMask & AliVEvent::kSemiCentral) == AliVEvent::kSemiCentral) && percentile<=50 && percentile>=15) fHistSemiCentralTriggersPerRun->Fill(fRunNum);
-
-  
-PostData(3, fListTrig);
-
-}
-//_____________________________________________________________________________
-void AliAnalysisTaskUpcPsi2s::RunESDhist()
-{
-
-  TDatabasePDG *pdgdat = TDatabasePDG::Instance();
-  
-  TParticlePDG *partMuon = pdgdat->GetParticle( 13 );
-  Double_t muonMass = partMuon->Mass();
-  
-  TParticlePDG *partElectron = pdgdat->GetParticle( 11 );
-  Double_t electronMass = partElectron->Mass();
-  
-  TParticlePDG *partPion = pdgdat->GetParticle( 211 );
-  Double_t pionMass = partPion->Mass();
-
-  //input event
-  AliESDEvent *esd = (AliESDEvent*) InputEvent();
-  if(!esd) return;
-
-  fHistNeventsJPsi->Fill(1);
-  fHistNeventsPsi2s->Fill(1);
-
-  //Trigger
-  TString trigger = esd->GetFiredTriggerClasses();
-  
-  if(!isMC && !trigger.Contains("CCUP") ) return;
-  
-  fHistNeventsJPsi->Fill(2);
-  fHistNeventsPsi2s->Fill(2);
-
-  //primary vertex
-  AliESDVertex *fESDVertex = (AliESDVertex*) esd->GetPrimaryVertex();
-  fVtxContrib = fESDVertex->GetNContributors();
-  if(fVtxContrib < 2) return;
-  
-  fHistNeventsJPsi->Fill(3);
-  fHistNeventsPsi2s->Fill(3);
-
-  //VZERO, ZDC
-  AliESDVZERO *fV0data = esd->GetVZEROData();
-  AliESDZDC *fZDCdata = esd->GetESDZDC();
-  
-  fV0Adecision = fV0data->GetV0ADecision();
-  fV0Cdecision = fV0data->GetV0CDecision();
-  if(fV0Adecision != AliESDVZERO::kV0Empty || fV0Cdecision != AliESDVZERO::kV0Empty) return;
-  
-  fZDCAenergy = fZDCdata->GetZN2TowerEnergy()[0];
-  fZDCCenergy = fZDCdata->GetZN1TowerEnergy()[0];
-  if( fZDCAenergy > 8200 || fZDCCenergy > 8200) return;
-  
-  fHistNeventsJPsi->Fill(4);
-  fHistNeventsPsi2s->Fill(4);
-
-   Int_t nGoodTracks=0;
-  //Two tracks loop
-  Int_t TrackIndex[5] = {-1,-1,-1,-1,-1};
-  
-  TLorentzVector vLepton[4], vPion[4], vCandidate, vDilepton;
-  Short_t qLepton[4], qPion[4];
-  UInt_t nLepton=0, nPion=0, nHighPt=0;
-  Double_t fRecTPCsignal[5];
-  Int_t mass[3]={-1,-1,-1};
-
- //Two Track loop
-  for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
-    AliESDtrack *trk = esd->GetTrack(itr);
-    if( !trk ) continue;
-
-      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
-      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
-      if(trk->GetTPCNcls() < 70)continue;
-      if(trk->GetTPCchi2()/trk->GetTPCNcls() > 4)continue;
-      if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1))) continue;
-      Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;
-      if(!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam)) continue;
-      trk->GetImpactParameters(dca[0],dca[1]);
-      if(TMath::Abs(dca[1]) > 2) continue;
-      if(TMath::Abs(dca[1]) > 0.2) continue;
-      
-      TrackIndex[nGoodTracks] = itr;
-      nGoodTracks++;
-      if(nGoodTracks > 2) break;   
-  }//Track loop
-
-  
-  if(nGoodTracks == 2){
-  	  fHistNeventsJPsi->Fill(5);
-  	  for(Int_t i=0; i<2; i++){
-	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[i]);		
-      		if(trk->Pt() > 1) nHighPt++;     
-      		fRecTPCsignal[nLepton] = trk->GetTPCsignal();     
-      		qLepton[nLepton] = trk->Charge();
-      		if(fRecTPCsignal[nLepton] > 40 && fRecTPCsignal[nLepton] < 70){
-      				vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
-				mass[nLepton] = 0;
-				}
-      		if(fRecTPCsignal[nLepton] > 70 && fRecTPCsignal[nLepton] < 100){
-      				vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), electronMass);
-				mass[nLepton] = 1;
-				}
-       		nLepton++;		
-  		}		
-  	if(nLepton == 2){
-	 	if(qLepton[0]*qLepton[1] > 0) fHistNeventsJPsi->Fill(6);
-		if(qLepton[0]*qLepton[1] < 0){
-			fHistNeventsJPsi->Fill(7);
-			if(nHighPt > 0){
-				fHistNeventsJPsi->Fill(8);
-				fHistTPCsignalJPsi->Fill(fRecTPCsignal[0],fRecTPCsignal[1]);
-				if(nHighPt == 2) fHistNeventsJPsi->Fill(9);
-				if(mass[0] == mass[1] && mass[0] != -1) {
-					fHistNeventsJPsi->Fill(10);
-					vCandidate = vLepton[0]+vLepton[1];
-					if( vCandidate.M() > 2.8 && vCandidate.M() < 3.2) fHistDiLeptonPtJPsi->Fill(vLepton[0].Pt(),vLepton[1].Pt());
-					if(mass[0] == 0) {
-						fHistDiMuonMass->Fill(vCandidate.M());
-						fHistNeventsJPsi->Fill(11);
-						}
-  					if(mass[0] == 1) {
-						fHistDiElectronMass->Fill(vCandidate.M());
-						fHistNeventsJPsi->Fill(12);
-   						}
-					}
-				}
-			}
-		}
-  }
-  nGoodTracks = 0; nLepton=0; nPion=0; nHighPt=0;
-  mass[0]= -1; mass[1]= -1, mass[2]= -1;
-  
-    //Four Track loop
-  for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
-    AliESDtrack *trk = esd->GetTrack(itr);
-    if( !trk ) continue;
-
-      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
-      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
-      if(trk->GetTPCNcls() < 50)continue;
-      if(trk->GetTPCchi2()/trk->GetTPCNcls() > 4)continue;
-      Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;
-      if(!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam)) continue;
-      trk->GetImpactParameters(dca[0],dca[1]);
-      if(TMath::Abs(dca[1]) > 2) continue;
-      
-      TrackIndex[nGoodTracks] = itr;
-      nGoodTracks++;
-      if(nGoodTracks > 4) break;   
-  }//Track loop
-  
-  if(nGoodTracks == 4){
-  	  fHistNeventsPsi2s->Fill(5);
-  	  for(Int_t i=0; i<4; i++){
-	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[i]);
-		
-      		if(trk->Pt() > 1){   
-      			fRecTPCsignal[nLepton] = trk->GetTPCsignal();      
-      			qLepton[nLepton] = trk->Charge();
-      			if(fRecTPCsignal[nLepton] > 40 && fRecTPCsignal[nLepton] < 70){
-      					vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
-					mass[nLepton] = 0;
-					}
-      			if(fRecTPCsignal[nLepton] > 70 && fRecTPCsignal[nLepton] < 100){
-      					vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), electronMass);
-					mass[nLepton] = 1;
-					}
-			nLepton++;
-			}
-		else{
-			qPion[nPion] = trk->Charge();
-			vPion[nPion].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), pionMass);
-			nPion++;
-			}
-				      
-      		if(nLepton > 2 || nPion > 2) break;
-    		}
-	if((nLepton == 2) && (nPion == 2)){
-		fHistNeventsPsi2s->Fill(6);
-		if(qLepton[0]*qLepton[1] > 0) fHistNeventsPsi2s->Fill(7);
-		if(qPion[0]*qPion[1] > 0) fHistNeventsPsi2s->Fill(8);
-		if((qLepton[0]*qLepton[1] > 0) && (qPion[0]*qPion[1] > 0)) fHistNeventsPsi2s->Fill(9);
-		if((qLepton[0]*qLepton[1] < 0) && (qPion[0]*qPion[1] < 0)){
-			fHistNeventsPsi2s->Fill(10);
-	 		if(mass[0] == mass[1]) {
-				fHistNeventsPsi2s->Fill(11); 
-  				vCandidate = vLepton[0]+vLepton[1]+vPion[0]+vPion[1];
-  				vDilepton = vLepton[0]+vLepton[1];
-				fHistPsi2sMassVsPt->Fill(vCandidate.M(),vCandidate.Pt());
-				if(vCandidate.Pt() < 0.15) fHistPsi2sMassCoherent->Fill(vCandidate.M());
-				if(mass[0] == 0) fHistNeventsPsi2s->Fill(12);	
-  				if(mass[0] == 1) fHistNeventsPsi2s->Fill(13);
-				}
-			}
-		}
-  }
-  
-  PostData(4, fListHist);
-
-}
-
-//_____________________________________________________________________________
-void AliAnalysisTaskUpcPsi2s::RunESDtree()
-{
-
-  //input event
-  AliESDEvent *esd = (AliESDEvent*) InputEvent();
-  if(!esd) return;
-  
-  if(isMC) RunESDMC(esd);
-
-  //input data
-  const char *filnam = ((TTree*) GetInputData(0))->GetCurrentFile()->GetName();
-  fDataFilnam->Clear();
-  fDataFilnam->SetString(filnam);
-  fEvtNum = ((TTree*) GetInputData(0))->GetTree()->GetReadEntry();
-  fRunNum = esd->GetRunNumber();
-
-   //Trigger
-  TString trigger = esd->GetFiredTriggerClasses();
-  
-  fTrigger[0]  = trigger.Contains("CCUP4-B"); // Central UPC Pb-Pb 2011
-  fTrigger[1]  = trigger.Contains("CCUP2-B"); // Double gap
-  fTrigger[2]  = trigger.Contains("CCUP7-B"); // Central UPC p-Pb 2013
-  
-  Bool_t isTriggered = kFALSE;
-  for(Int_t i=0; i<ntrg; i++) {
-    if( fTrigger[i] ) isTriggered = kTRUE;
-  }
-  if(!isMC && !isTriggered ) return;
-  
-  //trigger inputs
-  fL0inputs = esd->GetHeader()->GetL0TriggerInputs();
-  fL1inputs = esd->GetHeader()->GetL1TriggerInputs();
-  
-  //TOF trigger info (0OMU)
-  fTOFtrig1 = esd->GetHeader()->IsTriggerInputFired("0OMU");
-  fTOFtrig2 = esd->GetHeader()->GetActiveTriggerInputs().Contains("0OMU") ? ((esd->GetHeader()) ? esd->GetHeader()->IsTriggerInputFired("0OMU") : kFALSE) : TESTBIT(esd->GetHeader()->GetL0TriggerInputs(), (kFALSE) ? 21 : 9);
-
-  //Event identification
-  fPerNum = esd->GetPeriodNumber();
-  fOrbNum = esd->GetOrbitNumber();
-  fBCrossNum = esd->GetBunchCrossNumber();
-
-  //primary vertex
-  AliESDVertex *fESDVertex = (AliESDVertex*) esd->GetPrimaryVertex();
-  fVtxContrib = fESDVertex->GetNContributors();
-  fVtxPos[0] = fESDVertex->GetX();
-  fVtxPos[1] = fESDVertex->GetY();
-  fVtxPos[2] = fESDVertex->GetZ();
-  Double_t CovMatx[6];
-  fESDVertex->GetCovarianceMatrix(CovMatx); 
-  fVtxErr[0] = CovMatx[0];
-  fVtxErr[1] = CovMatx[1];
-  fVtxErr[2] = CovMatx[2];
-  fVtxChi2 = fESDVertex->GetChi2();
-  fVtxNDF = fESDVertex->GetNDF();
-
-  //Tracklets
-  fNtracklets = esd->GetMultiplicity()->GetNumberOfTracklets();
-
-  //VZERO, ZDC
-  AliESDVZERO *fV0data = esd->GetVZEROData();
-  AliESDZDC *fZDCdata = esd->GetESDZDC();
-  
-  fV0Adecision = fV0data->GetV0ADecision();
-  fV0Cdecision = fV0data->GetV0CDecision();
-  fZDCAenergy = fZDCdata->GetZN2TowerEnergy()[0];
-  fZDCCenergy = fZDCdata->GetZN1TowerEnergy()[0];
-
-  fNLooseTracks = 0;
-  
-  //Track loop - loose cuts
-  for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
-    AliESDtrack *trk = esd->GetTrack(itr);
-    if( !trk ) continue;
-
-      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
-      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
-      if(trk->GetTPCNcls() < 20)continue;
-      fNLooseTracks++; 
-  }//Track loop -loose cuts
-  
-  Int_t nGoodTracks=0;
-  Int_t TrackIndex[5] = {-1,-1,-1,-1,-1};
-  
-  //Two Track loop
-  for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
-    AliESDtrack *trk = esd->GetTrack(itr);
-    if( !trk ) continue;
-
-      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
-      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
-      if(trk->GetTPCNcls() < 70)continue;
-      if(trk->GetTPCchi2()/trk->GetTPCNcls() > 4)continue;
-      if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1))) continue;
-      Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;
-      if(!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam)) continue;
-      trk->GetImpactParameters(dca[0],dca[1]);
-      if(TMath::Abs(dca[1]) > 2) continue;
-      if(TMath::Abs(dca[0]) > 0.2) continue;
-      
-      TrackIndex[nGoodTracks] = itr;
-      nGoodTracks++;
-      if(nGoodTracks > 2) break;   
-  }//Track loop
-
-  fJPsiESDTracks->Clear("C");
-  if(nGoodTracks == 2){
-  	  for(Int_t i=0; i<2; i++){
-	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[i]);
-		
-		AliExternalTrackParam cParam;
-      		trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam);// to get trk->GetImpactParameters(DCAxy,DCAz);
-				
-		new((*fJPsiESDTracks)[i]) AliESDtrack(*trk); 
-		
-		fPIDMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
-		fPIDElectron[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
-		fPIDPion[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);		
-		
-		Double_t pos[3]={0,0,0};
-    		if(!trk->GetXYZAt(378,esd->GetMagneticField(),pos)) fTOFphi[i] = -666;
-    		else {
-		     fTOFphi[i] =  TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
-    		     if(fTOFphi[i] < 0) fTOFphi[i]+=(2*TMath::Pi()*TMath::RadToDeg());
-		     } 		
-  		}
-  if(!isMC) fJPsiTree ->Fill();
-  }
-  
-  nGoodTracks = 0;
-  //Four track loop
-  for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
-    AliESDtrack *trk = esd->GetTrack(itr);
-    if( !trk ) continue;
-
-      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
-      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
-      if(trk->GetTPCNcls() < 50)continue;
-      if(trk->GetTPCchi2()/trk->GetTPCNcls() > 4)continue;
-      Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;
-      if(!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam)) continue;
-      trk->GetImpactParameters(dca[0],dca[1]);
-      if(TMath::Abs(dca[1]) > 2) continue;
-      
-      TrackIndex[nGoodTracks] = itr;
-      nGoodTracks++;
-      if(nGoodTracks > 4) break;   
-  }//Track loop
-  
-  fPsi2sESDTracks->Clear("C");
-  if(nGoodTracks == 4){
-  	  for(Int_t i=0; i<4; i++){
-	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[i]);
-		
-		AliExternalTrackParam cParam;
-      		trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam);// to get trk->GetImpactParameters(DCAxy,DCAz);
-
-		new((*fPsi2sESDTracks)[i]) AliESDtrack(*trk);
-		
-		fPIDMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
-		fPIDElectron[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
-		fPIDPion[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);		
-		 
-		Double_t pos[3]={0,0,0};
-    		if(!trk->GetXYZAt(378,esd->GetMagneticField(),pos)) fTOFphi[i] = -666;
-    		else {
-		     fTOFphi[i] =  TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
-    		     if(fTOFphi[i] < 0) fTOFphi[i]+=(2*TMath::Pi()*TMath::RadToDeg());
-		     } 		
-  		}
-  if(!isMC) fPsi2sTree ->Fill();
-  }
-  
-  if(isMC){
-  	fJPsiTree ->Fill();
-	fPsi2sTree ->Fill();
-  }
- 
-  PostData(1, fJPsiTree);
-  PostData(2, fPsi2sTree);
-
-}//RunESD
-
-
-//_____________________________________________________________________________
-void AliAnalysisTaskUpcPsi2s::RunESDMC(AliESDEvent* esd)
-{
-
-  AliTriggerAnalysis *fTrigAna = new AliTriggerAnalysis();
-  fTrigAna->SetAnalyzeMC(isMC);
-  
-  if(fTrigAna->SPDFiredChips(esd,1,kFALSE,2) > 1) fTriggerInputsMC[0] = kTRUE;
-  if(fTrigAna->SPDFiredChips(esd,1,kFALSE,2) < 2) fTriggerInputsMC[0] = kFALSE;
-
-  fTriggerInputsMC[1] = esd->GetHeader()->IsTriggerInputFired("0OMU");
-  fTriggerInputsMC[2] = esd->GetHeader()->IsTriggerInputFired("0VBA");
-  fTriggerInputsMC[3] = esd->GetHeader()->IsTriggerInputFired("0VBC");
-
-  fGenPart->Clear("C");
-
-  AliMCEvent *mc = MCEvent();
-  if(!mc) return;
-
-  Int_t nmc = 0;
-  //loop over mc particles
-  for(Int_t imc=0; imc<mc->GetNumberOfTracks(); imc++) {
-    AliMCParticle *mcPart = (AliMCParticle*) mc->GetTrack(imc);
-    if(!mcPart) continue;
-
-    if(mcPart->GetMother() >= 0) continue;
-
-    TParticle *part = (TParticle*) fGenPart->ConstructedAt(nmc++);
-    part->SetMomentum(mcPart->Px(), mcPart->Py(), mcPart->Pz(), mcPart->E());
-    part->SetPdgCode(mcPart->PdgCode());
-    part->SetUniqueID(imc);
-  }//loop over mc particles
-
-}//RunESDMC
-
-
-
-//_____________________________________________________________________________
-void AliAnalysisTaskUpcPsi2s::Terminate(Option_t *) 
-{
-
-  cout<<"Analysis complete."<<endl;
-}//Terminate
-
-//_____________________________________________________________________________
-Double_t AliAnalysisTaskUpcPsi2s::GetMedian(Double_t *daArray) {
-    // Allocate an array of the same size and sort it.
-    Double_t dpSorted[4];
-    for (Int_t i = 0; i < 4; ++i) {
-        dpSorted[i] = daArray[i];
-    }
-    for (Int_t i = 3; i > 0; --i) {
-        for (Int_t j = 0; j < i; ++j) {
-            if (dpSorted[j] > dpSorted[j+1]) {
-                Double_t dTemp = dpSorted[j];
-                dpSorted[j] = dpSorted[j+1];
-                dpSorted[j+1] = dTemp;
-            }
-        }
-    }
-
-    // Middle or average of middle values in the sorted array.
-    Double_t dMedian = 0.0;
-    dMedian = (dpSorted[2] + dpSorted[1])/2.0;
-    
-    return dMedian;
 }

@@ -25,6 +25,8 @@
 
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
+#include <TF1.h>
 #include <THnSparse.h>
 #include <TDatabasePDG.h>
 #include <TMath.h>
@@ -110,7 +112,8 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction()
   fVertUtil(0),
   fselectForUpgrade(0),  
   fskipEventSelection(kFALSE),
-  fZvtxUpgr(10.)
+  fZvtxUpgr(10.),
+  fWeightPt(0x0)
 {
   //Default constructor
 }
@@ -163,7 +166,8 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction()
       fVertUtil(0),
       fselectForUpgrade(0),
       fskipEventSelection(kFALSE),
-      fZvtxUpgr(10.)
+      fZvtxUpgr(10.),
+      fWeightPt(0x0)
   {
     // Constructor
     
@@ -172,7 +176,7 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction()
     // Output slot #0 writes into a TH1 container
 
   //Standard pt bin
-  fnbins=SetStandardCuts(fptbins);// THIS TO SET NBINS AND BINNING
+  fnbins=SetStandardCuts();// THIS TO SET NBINS AND BINNING
  
   DefineOutput(1, TH1F::Class());
   DefineOutput(2, TH1F::Class());
@@ -239,7 +243,8 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction(const char *name,
     fVertUtil(0),
     fselectForUpgrade(0),
     fskipEventSelection(kFALSE),
-    fZvtxUpgr(10.)
+    fZvtxUpgr(10.),
+    fWeightPt(0x0)
 {
   // Constructor
   if(fCutsTight){
@@ -252,7 +257,7 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction(const char *name,
   //Check consistency between sets of cuts:
   if(cutsA->GetNPtBins()!=cutsB->GetNPtBins()){
     printf("Different number of pt bins between the two sets of cuts: SWITCH TO STANDARD CUTS \n");
-    fnbins=SetStandardCuts(fptbins);
+    fnbins=SetStandardCuts();
   }
   else{
     fCutsTight=new AliRDHFCutsD0toKpi(*cutsA);
@@ -410,7 +415,7 @@ AliAnalysisTaskSECharmFraction::~AliAnalysisTaskSECharmFraction()
     delete flistTghCutsOther;
     flistTghCutsOther=0;
   }
-  
+  delete fWeightPt;
   delete   fVertUtil;
 }  
 
@@ -801,6 +806,12 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hInvMassD0NCsign,*hInvMassD0barNCsign;
   TH2F *hInvMassPtNCsign=new TH2F("hInvMassPtNCsign","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
   flistNoCutsSignal->Add(hInvMassPtNCsign);
+
+  TH3F *hInvMassPtSelSignOnlyNCsign=new TH3F("hInvMassPtSelSignOnlyNCsign","Candidate p_{t} Vs invariant mass vs sel case for signal only",600,1.600,2.200,72,0.,36.,3,0.5,3.5);
+  flistNoCutsSignal->Add(hInvMassPtSelSignOnlyNCsign);
+  TH3F *hInvMassPtSelReflOnlyNCsign=new TH3F("hInvMassPtSelReflOnlyNCsign","Candidate p_{t} Vs invariant mass vs sel case for reflections only",600,1.600,2.200,72,0.,36.,3,0.5,3.5);
+  flistNoCutsSignal->Add(hInvMassPtSelReflOnlyNCsign);
+
   THnSparseF *hSparseNCsign=new THnSparseF("hSparseNCsign","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseNCsign->SetBinEdges(0,massbins);
   hSparseNCsign->SetBinEdges(1,massbins);
@@ -1445,6 +1456,11 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hd0zD0ptNCfromB;
   TH1F *hInvMassD0NCfromB,*hInvMassD0barNCfromB;
   TH2F *hInvMassPtNCfromB=new TH2F("hInvMassPtNCfromB","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
+  TH3F *hInvMassPtSelSignOnlyNCfromB=new TH3F("hInvMassPtSelSignOnlyNCfromB","Candidate p_{t} Vs invariant mass vs sel case for signal only",600,1.600,2.200,72,0.,36.,3,0.5,3.5);
+  flistNoCutsFromB->Add(hInvMassPtSelSignOnlyNCfromB);
+  TH3F *hInvMassPtSelReflOnlyNCfromB=new TH3F("hInvMassPtSelReflOnlyNCfromB","Candidate p_{t} Vs invariant mass vs sel case for reflections only",600,1.600,2.200,72,0.,36.,3,0.5,3.5);
+  flistNoCutsFromB->Add(hInvMassPtSelReflOnlyNCfromB);
+
   THnSparseF *hSparseNCfromB=new THnSparseF("hSparseNCfromB","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseNCfromB->SetBinEdges(0,massbins);
   hSparseNCfromB->SetBinEdges(1,massbins);
@@ -1757,6 +1773,11 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hd0zD0ptNCfromDstar;
   TH1F *hInvMassD0NCfromDstar,*hInvMassD0barNCfromDstar;
   TH2F *hInvMassPtNCfromDstar=new TH2F("hInvMassPtNCfromDstar","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
+  TH3F *hInvMassPtSelSignOnlyNCfromDstar=new TH3F("hInvMassPtSelSignOnlyNCfromDstar","Candidate p_{t} Vs invariant mass vs sel case for signal only",600,1.600,2.200,72,0.,36.,3,0.5,3.5);
+  flistNoCutsFromDstar->Add(hInvMassPtSelSignOnlyNCfromDstar);
+  TH3F *hInvMassPtSelReflOnlyNCfromDstar=new TH3F("hInvMassPtSelReflOnlyNCfromDstar","Candidate p_{t} Vs invariant mass vs sel case for reflections only",600,1.600,2.200,72,0.,36.,3,0.5,3.5);
+  flistNoCutsFromDstar->Add(hInvMassPtSelReflOnlyNCfromDstar);
+
   THnSparseF *hSparseNCfromDstar=new THnSparseF("hSparseNCfromDstar","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseNCfromDstar->SetBinEdges(0,massbins);
   hSparseNCfromDstar->SetBinEdges(1,massbins);
@@ -2354,6 +2375,11 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hd0zD0ptLSCsign;
   TH1F *hInvMassD0LSCsign,*hInvMassD0barLSCsign;
   TH2F *hInvMassPtLSCsign=new TH2F("hInvMassPtLSCsign","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
+  TH3F *hInvMassPtSelSignOnlyLSCsign=new TH3F("hInvMassPtSelSignOnlyLSCsign","Candidate p_{t} Vs invariant mass vs sel case for signal only",600,1.600,2.200,72,0.,36.,3,0.5,3.5);
+  flistLsCutsSignal->Add(hInvMassPtSelSignOnlyLSCsign);
+  TH3F *hInvMassPtSelReflOnlyLSCsign=new TH3F("hInvMassPtSelReflOnlyLSCsign","Candidate p_{t} Vs invariant mass vs sel case for reflections only",600,1.600,2.200,72,0.,36.,3,0.5,3.5);
+  flistLsCutsSignal->Add(hInvMassPtSelReflOnlyLSCsign);
+
   THnSparseF *hSparseLSCsign=new THnSparseF("hSparseLSCsign","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseLSCsign->SetBinEdges(0,massbins);
   hSparseLSCsign->SetBinEdges(1,massbins);
@@ -2989,6 +3015,12 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hd0zD0ptLSCfromB;
   TH1F *hInvMassD0LSCfromB,*hInvMassD0barLSCfromB;
   TH2F *hInvMassPtLSCfromB=new TH2F("hInvMassPtLSCfromB","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
+
+  TH3F *hInvMassPtSelSignOnlyLSCfromB=new TH3F("hInvMassPtSelSignOnlyLSCfromB","Candidate p_{t} Vs invariant mass vs sel case for signal only",600,1.600,2.200,72,0.,36.,3,0.5,3.5);
+  flistLsCutsFromB->Add(hInvMassPtSelSignOnlyLSCfromB);
+  TH3F *hInvMassPtSelReflOnlyLSCfromB=new TH3F("hInvMassPtSelReflOnlyLSCfromB","Candidate p_{t} Vs invariant mass vs sel case for reflections only",600,1.600,2.200,72,0.,36.,3,0.5,3.5);
+  flistLsCutsFromB->Add(hInvMassPtSelReflOnlyLSCfromB);
+
   THnSparseF *hSparseLSCfromB=new THnSparseF("hSparseLSCfromB","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseLSCfromB->SetBinEdges(0,massbins);
   hSparseLSCfromB->SetBinEdges(1,massbins);
@@ -3300,6 +3332,11 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hd0zD0ptLSCfromDstar;
   TH1F *hInvMassD0LSCfromDstar,*hInvMassD0barLSCfromDstar;
   TH2F *hInvMassPtLSCfromDstar=new TH2F("hInvMassPtLSCfromDstar","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
+  TH3F *hInvMassPtSelSignOnlyLSCfromDstar=new TH3F("hInvMassPtSelSignOnlyLSCfromDstar","Candidate p_{t} Vs invariant mass vs sel case for signal only",600,1.600,2.200,72,0.,36.,3,0.5,3.5);
+  flistLsCutsFromDstar->Add(hInvMassPtSelSignOnlyLSCfromDstar);
+  TH3F *hInvMassPtSelReflOnlyLSCfromDstar=new TH3F("hInvMassPtSelReflOnlyLSCfromDstar","Candidate p_{t} Vs invariant mass vs sel case for reflections only",600,1.600,2.200,72,0.,36.,3,0.5,3.5);
+  flistLsCutsFromDstar->Add(hInvMassPtSelReflOnlyLSCfromDstar);
+
   THnSparseF *hSparseLSCfromDstar=new THnSparseF("hSparseLSCfromDstar","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseLSCfromDstar->SetBinEdges(0,massbins);
   hSparseLSCfromDstar->SetBinEdges(1,massbins);
@@ -3903,6 +3940,12 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hd0zD0ptTGHCsign;
   TH1F *hInvMassD0TGHCsign,*hInvMassD0barTGHCsign;
   TH2F *hInvMassPtTGHCsign=new TH2F("hInvMassPtTGHCsign","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
+  TH3F *hInvMassPtSelSignOnlyTGHCsign=new TH3F("hInvMassPtSelSignOnlyTGHCsign","Candidate p_{t} Vs invariant mass vs sel case for signal only",600,1.600,2.200,72,0.,36.,3,0.5,3.5);
+  flistTghCutsSignal->Add(hInvMassPtSelSignOnlyTGHCsign);
+  TH3F *hInvMassPtSelReflOnlyTGHCsign=new TH3F("hInvMassPtSelReflOnlyTGHCsign","Candidate p_{t} Vs invariant mass vs sel case for reflections only",600,1.600,2.200,72,0.,36.,3,0.5,3.5);
+  flistTghCutsSignal->Add(hInvMassPtSelReflOnlyTGHCsign);
+
+
   THnSparseF *hSparseTGHCsign=new THnSparseF("hSparseTGHCsign","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseTGHCsign->SetBinEdges(0,massbins);
   hSparseTGHCsign->SetBinEdges(1,massbins);
@@ -4538,6 +4581,12 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hd0zD0ptTGHCfromB;
   TH1F *hInvMassD0TGHCfromB,*hInvMassD0barTGHCfromB;
   TH2F *hInvMassPtTGHCfromB=new TH2F("hInvMassPtTGHCfromB","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
+  TH3F *hInvMassPtSelSignOnlyTGHCfromB=new TH3F("hInvMassPtSelSignOnlyTGHCfromB","Candidate p_{t} Vs invariant mass vs sel case for signal only",600,1.600,2.200,72,0.,36.,3,0.5,3.5);
+  flistTghCutsFromB->Add(hInvMassPtSelSignOnlyTGHCfromB);
+  TH3F *hInvMassPtSelReflOnlyTGHCfromB=new TH3F("hInvMassPtSelReflOnlyTGHCfromB","Candidate p_{t} Vs invariant mass vs sel case for reflections only",600,1.600,2.200,72,0.,36.,3,0.5,3.5);
+  flistTghCutsFromB->Add(hInvMassPtSelReflOnlyTGHCfromB);
+
+
   THnSparseF *hSparseTGHCfromB=new THnSparseF("hSparseTGHCfromB","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseTGHCfromB->SetBinEdges(0,massbins);
   hSparseTGHCfromB->SetBinEdges(1,massbins);
@@ -4847,6 +4896,12 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hInvMassD0TGHCfromDstar,*hInvMassD0barTGHCfromDstar;
   TH1F *hetaTGHCfromDstar;
   TH2F *hInvMassPtTGHCfromDstar=new TH2F("hInvMassPtTGHCfromDstar","Candidate p_{t} Vs invariant mass",330,1.700,2.030,200,0.,20.);
+
+  TH3F *hInvMassPtSelSignOnlyTGHCfromDstar=new TH3F("hInvMassPtSelSignOnlyTGHCfromDstar","Candidate p_{t} Vs invariant mass vs sel case for signal only",600,1.600,2.200,72,0.,36.,3,0.5,3.5);
+  flistTghCutsFromDstar->Add(hInvMassPtSelSignOnlyTGHCfromDstar);
+  TH3F *hInvMassPtSelReflOnlyTGHCfromDstar=new TH3F("hInvMassPtSelReflOnlyTGHCfromDstar","Candidate p_{t} Vs invariant mass vs sel case for reflections only",600,1.600,2.200,72,0.,36.,3,0.5,3.5);
+  flistTghCutsFromDstar->Add(hInvMassPtSelReflOnlyTGHCfromDstar);
+
   THnSparseF *hSparseTGHCfromDstar=new THnSparseF("hSparseTGHCfromDstar","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseTGHCfromDstar->SetBinEdges(0,massbins);
   hSparseTGHCfromDstar->SetBinEdges(1,massbins);
@@ -5737,6 +5792,7 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
      //  isinacceptance = (TMath::Abs(d->EtaProng(0))<fAcceptanceCuts[0]&&TMath::Abs(d->EtaProng(1))<fAcceptanceCuts[0]); //eta acceptance 
 
     // INVESTIGATE SIGNAL TYPE : ACCESS TO MC INFORMATION
+    Int_t isD0D0barMC=0;
     if(fReadMC){
       if(fselectForUpgrade){
 	TString nameGen;	
@@ -5758,7 +5814,7 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
 	  else signallevel=-2;
 	}
 	else if (generator==0){
-	  aodDMC=GetD0toKPiSignalType(d,arrayMC,signallevel,massmumtrue,vtxTrue);
+	  aodDMC=GetD0toKPiSignalType(d,arrayMC,signallevel,massmumtrue,vtxTrue,isD0D0barMC);
 	}
 	else{
 	  signallevel=-3;
@@ -5771,7 +5827,7 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
 	}
       }      
       else {
-	aodDMC=GetD0toKPiSignalType(d,arrayMC,signallevel,massmumtrue,vtxTrue);
+	aodDMC=GetD0toKPiSignalType(d,arrayMC,signallevel,massmumtrue,vtxTrue,isD0D0barMC);
       }
     }
     else signallevel=0;
@@ -6010,22 +6066,22 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     //            CANDIDATE VARIABLES   
 
    
-    if(signallevel==1||signallevel==0)FillHistos(d,flistNoCutsSignal,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);    // else if(fusePID&&signallevel>=30&&signallevel<40)FillHistos(d,flistNoCutsSignal,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);// OLD LINE, COULD BE REMOVED 
-    else if(signallevel==2)FillHistos(d,flistNoCutsFromDstar,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
-    else if(signallevel==3||signallevel==4)FillHistos(d,flistNoCutsFromB,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
-    else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10||signallevel==11)FillHistos(d,flistNoCutsBack,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
-    else if(signallevel==5||signallevel==6)FillHistos(d,flistNoCutsOther,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
+    if(signallevel==1||signallevel==0)FillHistos(d,flistNoCutsSignal,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);    // else if(fusePID&&signallevel>=30&&signallevel<40)FillHistos(d,flistNoCutsSignal,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);// OLD LINE, COULD BE REMOVED 
+    else if(signallevel==2)FillHistos(d,flistNoCutsFromDstar,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
+    else if(signallevel==3||signallevel==4)FillHistos(d,flistNoCutsFromB,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
+    else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10||signallevel==11)FillHistos(d,flistNoCutsBack,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
+    else if(signallevel==5||signallevel==6)FillHistos(d,flistNoCutsOther,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
     
 
     
     //LOOSE CUTS Case
     if(okd0loose||okd0barloose)fNentries->Fill(14);
 
-    if(signallevel==1||signallevel==0)FillHistos(d,flistLsCutsSignal,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
-    else if(signallevel==2)FillHistos(d,flistLsCutsFromDstar,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
-    else if(signallevel==3||signallevel==4)FillHistos(d,flistLsCutsFromB,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
-    else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10||signallevel==11)FillHistos(d,flistLsCutsBack,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
-    else if(signallevel==5||signallevel==6)FillHistos(d,flistLsCutsOther,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
+    if(signallevel==1||signallevel==0)FillHistos(d,flistLsCutsSignal,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
+    else if(signallevel==2)FillHistos(d,flistLsCutsFromDstar,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
+    else if(signallevel==3||signallevel==4)FillHistos(d,flistLsCutsFromB,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
+    else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10||signallevel==11)FillHistos(d,flistLsCutsBack,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
+    else if(signallevel==5||signallevel==6)FillHistos(d,flistLsCutsOther,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
 
     //TIGHT CUTS Case
     if(okd0tight||okd0bartight){
@@ -6033,11 +6089,11 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
       nSelectedtight++; 
     }
     
-    if(signallevel==1||signallevel==0)FillHistos(d,flistTghCutsSignal,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
-    else if(signallevel==2)FillHistos(d,flistTghCutsFromDstar,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
-    else if(signallevel==3||signallevel==4)FillHistos(d,flistTghCutsFromB,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
-    else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10||signallevel==11)FillHistos(d,flistTghCutsBack,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
-    else if(signallevel==5||signallevel==6)FillHistos(d,flistTghCutsOther,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
+    if(signallevel==1||signallevel==0)FillHistos(d,flistTghCutsSignal,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
+    else if(signallevel==2)FillHistos(d,flistTghCutsFromDstar,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
+    else if(signallevel==3||signallevel==4)FillHistos(d,flistTghCutsFromB,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
+    else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10||signallevel==11)FillHistos(d,flistTghCutsBack,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
+    else if(signallevel==5||signallevel==6)FillHistos(d,flistTghCutsOther,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
     
 
     // ######## PRINTING INFO FOR D0-like candidate
@@ -6095,18 +6151,11 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
 
 
 //_________________________________________
-Int_t  AliAnalysisTaskSECharmFraction::SetStandardCuts(Float_t *&ptbinlimits){
+Int_t  AliAnalysisTaskSECharmFraction::SetStandardCuts(){
   //
   // creating cuts for D0 -> Kpi
   //
 
-  Printf("Using Default Cuts as set in AliAnalysisTaskSECharmFraction \n");
-  //  const Double_t ptmin = 0.1;
-  const Double_t ptmax = 9999.;
-  const Int_t nptbins =13;
-  const Int_t nvars=9;
-  Int_t varycuts=-1;
-  
   if(fCutsTight){
     delete fCutsTight;fCutsTight=NULL;
   }
@@ -6114,417 +6163,38 @@ Int_t  AliAnalysisTaskSECharmFraction::SetStandardCuts(Float_t *&ptbinlimits){
     delete fCutsLoose;fCutsLoose=NULL;
   }
 
-
-  fCutsTight = new AliRDHFCutsD0toKpi();
-  fCutsTight->SetName("D0toKpiCutsStandard");
+  
+  fCutsTight=new AliRDHFCutsD0toKpi("D0toKpiCutsStandard");
   fCutsTight->SetTitle("Standard Cuts for D0 analysis");
-  
-  fCutsLoose = new AliRDHFCutsD0toKpi();
-  fCutsLoose->SetName("D0toKpiCutsLoose");
+  fCutsTight->SetStandardCutsPP2010();
+  fCutsLoose=new AliRDHFCutsD0toKpi("D0toKpiCutsLoose");
   fCutsLoose->SetTitle("Loose Cuts for D0 analysis");
-  
-  // EVENT CUTS
-  fCutsTight->SetMinVtxContr(1);
-  fCutsLoose->SetMinVtxContr(1);
-  
-  // TRACKS ON SINGLE TRACKS
-  AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
-  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-  esdTrackCuts->SetRequireTPCRefit(kTRUE);
-  esdTrackCuts->SetRequireITSRefit(kTRUE);
-  //  esdTrackCuts->SetMinNClustersITS(4);
-  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-  esdTrackCuts->SetMinDCAToVertexXY(0.);
-  esdTrackCuts->SetEtaRange(-0.8,0.8);
-  esdTrackCuts->SetPtRange(0.3,1.e10);
-  
+  fCutsLoose->SetStandardCutsPP2010();
 
-  fCutsTight->AddTrackCuts(esdTrackCuts);
-  fCutsLoose->AddTrackCuts(esdTrackCuts);
-  
-  
-
-  Float_t ptbins[nptbins+1];
-  ptbins[0]=0.;
-  ptbins[1]=0.5;	
-  ptbins[2]=1.;
-  ptbins[3]=2.;
-  ptbins[4]=3.;
-  ptbins[5]=4.;
-  ptbins[6]=5.;
-  ptbins[7]=6.;
-  ptbins[8]=8.;
-  ptbins[9]=12.;
-  ptbins[10]=16.;
-  ptbins[11]=20.;
-  ptbins[12]=24.;
-  ptbins[13]=ptmax;
-
-  fCutsTight->SetGlobalIndex(nvars,nptbins);
-  fCutsLoose->SetGlobalIndex(nvars,nptbins);
-  fCutsTight->SetPtBins(nptbins+1,ptbins);
-  fCutsLoose->SetPtBins(nptbins+1,ptbins);
-  
-  /*	Float_t cutsArrayD0toKpiStand_1[9]={0.200,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-35000.*1E-8,0.7};   // pt<1 
-		Float_t cutsArrayD0toKpiStand_2[9]={0.200,200.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-30000.*1E-8,0.8}; // 1<=pt<2 
-		Float_t cutsArrayD0toKpiStand_3[9]={0.200,200.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-26000.*1E-8,0.94};   // 2<=pt<3 
-		Float_t cutsArrayD0toKpiStand_4[9]={0.200,200.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-15000.*1E-8,0.88};   // 3<=pt<5 
-		Float_t cutsArrayD0toKpiStand_5[9]={0.200,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.9};   // 5<=pt<8
-		Float_t cutsArrayD0toKpiStand_6[9]={0.200,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.9};   // 8<pt<12
-		Float_t cutsArrayD0toKpiStand_7[9]={0.200,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.9}; // pt>12
-	*/
-
-	const Int_t nvary=3;
-	Float_t varyd0xd0[nptbins][nvary]={{-35000.*1E-8,-40000.*1E-8,-50000.*1E-8},/* pt<0.5*/
-					   {-35000.*1E-8,-40000.*1E-8,-50000.*1E-8},/* 0.5<pt<1*/
-					   {-25000.*1E-8,-32000.*1E-8,-38000.*1E-8},/* 1<pt<2 */
-					   {-22000.*1E-8,-26000.*1E-8,-30000.*1E-8},/* 2<pt<3 */
-					   {-12000.*1E-8,-15000.*1E-8,-20000.*1E-8},/* 3<pt<4 */
-					   {-12000.*1E-8,-15000.*1E-8,-20000.*1E-8},/* 4<pt<5 */
-					   {-5000.*1E-8,-10000.*1E-8,-15000.*1E-8},/* 5<pt<6 */
-					   {-5000.*1E-8,-10000.*1E-8,-15000.*1E-8},/* 6<pt<8 */
-					   {-0.*1E-8,-10000.*1E-8,-12000.*1E-8},/* 8<pt<12 */
-					   {5000.*1E-8,-5000.*1E-8,-10000.*1E-8},/* 12<pt<16 */
-					   {5000.*1E-8,-5000.*1E-8,-10000.*1E-8},/* 16<pt<20 */
-					   {5000.*1E-8,-5000.*1E-8,-10000.*1E-8},/* 20<pt<24 */
-					   {5000.*1E-8,-5000.*1E-8,-10000.*1E-8}};/* pt>24 */
-       
-
-	Float_t varyCosPoint[nptbins][nvary]={{0.75,0.80,0.85},/* 0<pt<0.5 */
-					      {0.75,0.80,0.85},/* 0.5<pt<1*/
-					      {0.75,0.80,0.85},/* 1<pt<2 */
-					      {0.92,0.94,0.95},/* 2<pt<3 */
-					      {0.85,0.88,0.91},/* 3<pt<4 */
-					      {0.85,0.88,0.91},/* 4<pt<5 */
-					      {0.88,0.90,0.92},/* 5<pt<6 */
-					      {0.88,0.90,0.92},/* 6<pt<8 */
-					      {0.85,0.90,0.92},/* 8<pt<12 */
-					      {0.85,0.90,0.92},/* 12<pt<16 */
-					      {0.8,0.85,0.9},/* 16<pt<20 */
-					      {0.8,0.85,0.9},/* 20<pt<24 */
-					      {0.75,0.82,0.9}};/* pt>24 */
+  fCutsTight->SetUseSpecialCuts(kTRUE);
+  fCutsLoose->SetUseSpecialCuts(kTRUE);
+  fCutsTight->SetRemoveDaughtersFromPrim(kTRUE);
+  fCutsLoose->SetRemoveDaughtersFromPrim(kTRUE);
 	
-
-	
-	if(varycuts==-1){//DEFAULT CUTS
-	  varycuts=11;
-	  varyd0xd0[9][1]=-10000.*1E-8;
-	  varyd0xd0[10][1]=-10000.*1E-8;
-	  varyd0xd0[11][1]=-10000.*1E-8;	  
-	  varyd0xd0[12][1]=-10000.*1E-8;
-	}
-	Int_t vcd0xd0=varycuts/10;
-	Int_t vccospoint=varycuts%10;
-	// ######################## STAND VARY CUTS  ###########################################	
-	Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.400,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,varyd0xd0[0][vcd0xd0],varyCosPoint[0][vccospoint]},/* 0<pt<0.5*/
-							{0.400,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,varyd0xd0[1][vcd0xd0],varyCosPoint[1][vccospoint]},/* 0.5<pt<1*/
-							{0.400,300.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,varyd0xd0[2][vcd0xd0],varyCosPoint[2][vccospoint]},/* 1<pt<2 */
-							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,varyd0xd0[3][vcd0xd0],varyCosPoint[3][vccospoint]},/* 2<pt<3 */
-							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,varyd0xd0[4][vcd0xd0],varyCosPoint[4][vccospoint]},/* 3<pt<4 */
-							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,varyd0xd0[5][vcd0xd0],varyCosPoint[5][vccospoint]},/* 4<pt<5*/     
-							{0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,varyd0xd0[6][vcd0xd0],varyCosPoint[6][vccospoint]},/* 5<pt<6 */
-							{0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,varyd0xd0[7][vcd0xd0],varyCosPoint[7][vccospoint]},/* 6<pt<8 */
-							{0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,varyd0xd0[8][vcd0xd0],varyCosPoint[8][vccospoint]},/* 8<pt<12 */
-							{0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,varyd0xd0[9][vcd0xd0],varyCosPoint[9][vccospoint]},/*12< pt <16*/
-							{0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,varyd0xd0[10][vcd0xd0],varyCosPoint[10][vccospoint]}, /*16< pt <20*/
-							{0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,varyd0xd0[11][vcd0xd0],varyCosPoint[11][vccospoint]}, /*20< pt <24*/
-							{0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,varyd0xd0[12][vcd0xd0],varyCosPoint[12][vccospoint]}
-	};/* pt > 24*/
-	
-	Float_t cutsMatrixD0toKpiLoose[nptbins][nvars]={{0.400,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-35000.*1E-8,0.73},/* pt<0.5*/
-							{0.400,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-35000.*1E-8,0.73},/* 0.5<pt<1*/
-							{0.400,300.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-25000.*1E-8,0.75},/* 1<pt<2 */
-							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-15000.*1E-8,0.8},/* 2<pt<3 */
-							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85},/* 3<pt<4 */
-							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85},/* 4<pt<5 */
-							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85},/* 5<pt<6 */
-							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85},/* 6<pt<8 */
-							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-5000.*1E-8,0.85},/* 8<pt<12 */
-							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.*1E-8,0.85},/* 12<pt<16 */
-							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,0.*1E-8,0.85},/* 16<pt<20 */
-							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,0.*1E-8,0.85},/* 20<pt<24 */
-							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,0.*1E-8,0.85}};/* pt>24 */
-	
-	
-	//CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
-	Float_t **cutsMatrixTransposeStand=new Float_t*[nvars];
-	for(Int_t iv=0;iv<nvars;iv++)cutsMatrixTransposeStand[iv]=new Float_t[nptbins];
-	Float_t **cutsMatrixTransposeLoose=new Float_t*[nvars];
-	for(Int_t iv=0;iv<nvars;iv++)cutsMatrixTransposeLoose[iv]=new Float_t[nptbins];
-
-	for (Int_t ibin=0;ibin<nptbins;ibin++){
-	  for (Int_t ivar = 0; ivar<nvars; ivar++){
-	    cutsMatrixTransposeStand[ivar][ibin]=cutsMatrixD0toKpiStand[ibin][ivar];
-	    cutsMatrixTransposeLoose[ivar][ibin]=cutsMatrixD0toKpiLoose[ibin][ivar];
-	    //printf("cutsMatrixD0toKpi[%d][%d] = %f\n",ibin, ivar,cutsMatrixD0toKpiStand[ibin][ivar]);
-	  }
-	}
+  fCutsTight->SetLowPt(kFALSE,0.);  
+  fCutsTight->SetMaximumPforPID(999.);
+ 
+  fCutsLoose->SetLowPt(kTRUE,3.);  
+  fCutsLoose->SetMaximumPforPID(999.);
+  // PILE UP REJECTION
+  fCutsTight->SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
+  fCutsLoose->SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
 
 
+  fnbins=fCutsTight->GetNPtBins();
+  if(fptbins)delete fptbins;
+  fptbins=fCutsTight->GetPtBinLimits();
+  
 
-	fCutsTight->SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
-	fCutsLoose->SetCuts(nvars,nptbins,cutsMatrixTransposeLoose);
-
-
-	for (Int_t ivar = 0; ivar<nvars; ivar++){
-	  delete [] cutsMatrixTransposeStand[ivar];
-	  delete [] cutsMatrixTransposeLoose[ivar];
-	}
-	delete [] cutsMatrixTransposeStand;
-	cutsMatrixTransposeStand=NULL;
-	delete [] cutsMatrixTransposeLoose;
-	cutsMatrixTransposeLoose=NULL;
-
-
-
-	fCutsTight->SetUseSpecialCuts(kTRUE);
-	fCutsLoose->SetUseSpecialCuts(kTRUE);
-	fCutsTight->SetRemoveDaughtersFromPrim(kTRUE);
-	fCutsLoose->SetRemoveDaughtersFromPrim(kTRUE);
-	// PID SETTINGS
-	AliAODPidHF* pidObj=new AliAODPidHF();
-	//pidObj->SetName("pid4D0");
-	Int_t mode=1;
-	const Int_t nlims=2;
-	Double_t plims[nlims]={0.6,0.8}; //TPC limits in momentum [GeV/c]
-	Bool_t compat=kTRUE; //effective only for this mode
-	Bool_t asym=kTRUE;
-	Double_t sigmas[5]={2.,1.,0.,3.,0.}; //to be checked and to be modified with new implementation of setters by Rossella
-	pidObj->SetAsym(asym);// if you want to use the asymmetric bands in TPC
-	pidObj->SetMatch(mode);
-	pidObj->SetPLimit(plims,nlims);
-	pidObj->SetSigma(sigmas);
-	pidObj->SetCompat(compat);
-	pidObj->SetTPC(kTRUE);
-	pidObj->SetTOF(kTRUE);
-
-	fCutsTight->SetPidHF(pidObj);
-	fCutsLoose->SetPidHF(pidObj);
-	delete pidObj; pidObj=NULL;
-	fCutsTight->SetUsePID(kTRUE);
-	fCutsLoose->SetUsePID(kTRUE);
-
-	fCutsTight->SetUseDefaultPID(kFALSE);
-	fCutsLoose->SetUseDefaultPID(kFALSE);
-
-	// PILE UP REJECTION
-	fCutsTight->SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
-	fCutsLoose->SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
-
-	ptbinlimits=ptbins;
-	fCutsTight->PrintAll();
-
-
-	return nptbins;
+  return fnbins;
  
 }
 
-
-//_________________________________________
-Int_t AliAnalysisTaskSECharmFraction::SetStandardCuts(Double_t pt,Double_t invMassCut){
-  // UPV: this should set the cut object
-
-  //#############
-  // TEMPORARY: to be change in :
-  //             for(j<nptbins)
-  //                       if pt < standardptbin[j+1]
-  //                            SetCuts, bin=j
-  //                            break 
-  //                            
-  // the way the cuts are set is for further development
-  //   (to be interfaced with AliAnalsysTaskSETuneCuts)
-  //
-  // Cuts: 
-  // 0 = inv. mass half width [GeV]
-  // 1 = dca [cm]
-  // 2 = cosThetaStar
-  // 3 = pTK [GeV/c]
-  // 4 = pTPi [GeV/c]
-  // 5 = d0K [cm]   upper limit!
-  // 6 = d0Pi [cm]  upper limit!
-  // 7 = d0d0 [cm^2]
-  // 8 = cosThetaPoint  
-  Int_t ptbin=-1;
-
- 
-
-  /*//#######################################################################
-  //###########################################################################
-  //                    STANDARD SETS OF CUTS ("tight"~PPR like;  commented loose are more stringent than "tight")
-  // #########################################################################
-  Int_t ptbin=-1;
-  if(pt>0. && pt<=1.) {
-  ptbin=0;
-    fCutsTight->SetD0toKpiCuts(invMassCut,0.04,0.8,0.5,0.5,0.05,0.05,-0.0002,0.5);
-    // fCutsLoose->SetD0toKpiCuts(invMassCut,0.04,0.8,0.5,0.5,0.05,0.05,-0.00025,0.7);
-    fCutsLoose->SetD0toKpiCuts(invMassCut,0.04,0.8,0.3,0.3,1.,1.,-0.0002,0.7);
-  }   
-  if(pt>1. && pt<=2.) {
-    ptbin=1;  
-    fCutsTight->SetD0toKpiCuts(invMassCut,0.03,0.8,0.6,0.6,0.05,0.05,-0.0002,0.6);
-    //fCutsLoose->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
-    fCutsLoose->SetD0toKpiCuts(invMassCut,0.03,0.8,0.3,0.3,1.,1.,-0.0001,0.7);
-    //printf("I'm in the bin %d\n",ptbin);
-  }
-  if(pt>2. && pt<=3.) {
-    ptbin=2;  
-    fCutsTight->SetD0toKpiCuts(invMassCut,0.03,0.8,0.6,0.6,0.05,0.05,-0.0002,0.6);
-    //fCutsLoose->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
-    fCutsLoose->SetD0toKpiCuts(invMassCut,0.03,0.8,0.3,0.3,1.,1.,-0.0001,0.7);
-    //printf("I'm in the bin %d\n",ptbin);
-  } 
-  if(pt>3. && pt<=5.){
-    ptbin=3;  
-    fCutsTight->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,0.05,0.05,-0.0001,0.8);
-    //    fCutsLoose->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.8);
-    fCutsLoose->SetD0toKpiCuts(invMassCut,0.03,0.8,0.4,0.4,1.,1.,-0.0001,0.75);
-    //printf("I'm in the bin %d\n",ptbin);
-  }
-  if(pt>5.){
-    ptbin=4;
-    fCutsTight->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,0.05,0.05,-0.00005,0.8);
-    //    fCutsLoose->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.9);
-    fCutsLoose->SetD0toKpiCuts(invMassCut,0.03,0.8,0.5,0.5,1.,1.,-0.00005,0.75);
-  }//if(pt>5)
-  return ptbin;
-  //############################################################################
-  */
-
-
-
-  /* //#######################################################################
-     //################# VARY CUTS for d0xd0 STUDY  ##########################
-
-if(pt>0. && pt<=1.) {
-     ptbin=0;
-     fCutsTight->SetD0toKpiCuts(invMassCut,0.04,0.8,0.5,0.5,0.05,0.05,-0.0002,0.5);
-     // fCutsLoose->SetD0toKpiCuts(invMassCut,0.04,0.8,0.5,0.5,0.05,0.05,-0.00025,0.7);
-     fCutsLoose->SetD0toKpiCuts(invMassCut,0.04,0.8,0.3,0.3,1.,1.,-0.0002,0.7);
-     }  
-     if(pt>1. && pt<=2.) {
-     ptbin=1;  
-     fCutsTight->SetD0toKpiCuts(invMassCut,0.03,0.8,0.6,0.6,0.05,0.05,0.2,0.6);
-     //fCutsLoose->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
-     fCutsLoose->SetD0toKpiCuts(invMassCut,0.03,0.8,0.3,0.3,1.,1.,-0.0001,0.1);
-     //printf("I'm in the bin %d\n",ptbin);
-     }
-     if(pt>2. && pt<=3.) {
-     ptbin=2;  
-     fCutsTight->SetD0toKpiCuts(invMassCut,0.03,0.8,0.6,0.6,0.05,0.05,0.2,0.6);
-     //fCutsLoose->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
-     fCutsLoose->SetD0toKpiCuts(invMassCut,0.03,0.8,0.3,0.3,1.,1.,-0.0001,0.1);
-     //printf("I'm in the bin %d\n",ptbin);
-     }  
-     if(pt>3. && pt<=5.){
-     ptbin=3;  
-     fCutsTight->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,0.05,0.05,0.2,0.8);
-     //    fCutsLoose->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.8);
-     fCutsLoose->SetD0toKpiCuts(invMassCut,0.03,0.3,0.4,0.4,1.,1.,-0.0001,0.1);
-     //printf("I'm in the bin %d\n",ptbin);
-     }
-     if(pt>5.){
-     ptbin=4;
-     fCutsTight->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,0.05,0.05,0.2,0.8);
-     //    fCutsLoose->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.9);
-     fCutsLoose->SetD0toKpiCuts(invMassCut,0.03,0.8,0.5,0.5,1.,1.,-0.00005,0.1);
-     }//if(pt>5)
-     return ptbin;
-     //     #################################################################
-  */    
-
-  //##########################################################################
-  //################## CUTS with d0xd0 cut released  #########################
-  //###                    and TGHC cuts d0K and d0Pi to 0.1 instead of 0.05
-  //### USED FOR PHDthesis
-  //##########################################################################
- 
-  /* if(pt>0. && pt<=1.) {
-     ptbin=0;
-     fCutsTight->SetD0toKpiCuts(invMassCut,0.04,0.8,0.5,0.5,0.1,0.1,-0.000,0.5);
-     // fCutsLoose->SetD0toKpiCuts(invMassCut,0.04,0.8,0.5,0.5,0.05,0.05,-0.00025,0.7);
-     fCutsLoose->SetD0toKpiCuts(invMassCut,0.04,0.8,0.3,0.3,1.,1.,-0.000,0.7);
-     }   
-     if(pt>1. && pt<=2.) {
-     ptbin=1;  
-     fCutsTight->SetD0toKpiCuts(invMassCut,0.03,0.8,0.6,0.6,0.1,0.1,-0.000,0.6);
-     //fCutsLoose->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
-     fCutsLoose->SetD0toKpiCuts(invMassCut,0.03,0.8,0.4,0.4,1.,1.,-0.0000,0.7);
-     //printf("I'm in the bin %d\n",ptbin);
-     }
-     if(pt>2. && pt<=3.) {
-     ptbin=2;  
-     fCutsTight->SetD0toKpiCuts(invMassCut,0.03,0.8,0.6,0.6,0.1,0.1,-0.000,0.6);
-     //fCutsLoose->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
-     fCutsLoose->SetD0toKpiCuts(invMassCut,0.03,0.8,0.4,0.4,1.,1.,-0.000,0.7);
-     //printf("I'm in the bin %d\n",ptbin);
-     } 
-     if(pt>3. && pt<=5.){
-     ptbin=3;  
-     fCutsTight->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,0.1,0.1,-0.000,0.8);
-     //    fCutsLoose->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.8);
-     fCutsLoose->SetD0toKpiCuts(invMassCut,0.03,0.8,0.5,0.5,1.,1.,-0.000,0.75);
-     //printf("I'm in the bin %d\n",ptbin);
-     }
-     if(pt>5.){
-     ptbin=4;
-     fCutsTight->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,0.1,0.1,-0.0000,0.8);
-     //    fCutsLoose->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.9);
-     fCutsLoose->SetD0toKpiCuts(invMassCut,0.03,0.8,0.5,0.5,1.,1.,-0.0000,0.75);
-     }//if(pt>5)
-     return ptbin;
-  */
-
-
-
-
-  //########## LOOKING FOR SIGNAL #####################
-  /*  
-  if(pt>0. && pt<=1.) {
-    ptbin=0;
-    fCutsTight->SetD0toKpiCuts(5*invMassCut,0.03,0.8,0.3,0.3,0.1,0.1,-0.00035,0.7);
-    // fCutsLoose->SetD0toKpiCuts(invMassCut,0.04,0.8,0.5,0.5,0.05,0.05,-0.00025,0.7);
-    fCutsLoose->SetD0toKpiCuts(5*invMassCut,0.04,0.8,0.3,0.3,0.1,0.1,-0.00025,0.7);
-  }   
-  if(pt>1. && pt<=2.) {
-    ptbin=1;  
-    fCutsTight->SetD0toKpiCuts(5*invMassCut,0.02,0.8,0.4,0.4,0.1,0.1,-0.00035,0.8);
-    //fCutsLoose->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
-    fCutsLoose->SetD0toKpiCuts(5*invMassCut,0.03,0.8,0.3,0.3,0.1,0.1,-0.0025,0.75);
-    //printf("I'm in the bin %d\n",ptbin);
-  }
-  if(pt>2. && pt<=3.) {
-    ptbin=2;  
-    fCutsTight->SetD0toKpiCuts(5*invMassCut,0.02,0.8,0.7,0.7,0.1,0.1,-0.00026,0.94);
-    //fCutsLoose->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
-    fCutsLoose->SetD0toKpiCuts(5*invMassCut,0.02,0.8,0.7,0.7,0.1,0.1,-0.0002,0.92);
-    //printf("I'm in the bin %d\n",ptbin);
-  } 
-  if(pt>3. && pt<=5.){
-    ptbin=3;  
-    fCutsTight->SetD0toKpiCuts(5*invMassCut,0.02,0.8,0.7,0.7,0.1,0.1,-0.00015,0.88);
-    //    fCutsLoose->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.8);
-    fCutsLoose->SetD0toKpiCuts(5*invMassCut,0.02,0.8,0.7,0.7,0.1,0.1,-0.00015,0.9);
-    //printf("I'm in the bin %d\n",ptbin);
-  }
-  if(pt>5.&& pt<=8.){
-    ptbin=4;
-    fCutsTight->SetD0toKpiCuts(5*invMassCut,0.015,0.8,0.7,0.7,0.1,0.1,-0.0001,0.9);
-    //    fCutsLoose->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.9);
-    fCutsLoose->SetD0toKpiCuts(5*invMassCut,0.02,0.8,0.7,0.7,0.1,0.1,-0.0000,0.88);
-  }//if(pt>5)
-  if(pt>8.&&pt<=12.){
-    ptbin=5;
-    fCutsTight->SetD0toKpiCuts(5*invMassCut,0.015,0.8,0.7,0.7,0.1,0.1,-0.0001,0.9);
-    //    fCutsLoose->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.9);
-    fCutsLoose->SetD0toKpiCuts(5*invMassCut,0.015,0.8,0.7,0.7,0.1,0.1,-0.0005,0.88);
-  }//if(pt>5)
-  
-  return ptbin;
-  */
-  printf("AliAnalysisTaskSECharmFraction::Obsolete method! Parameters pt=%f,invmasscut=%f not used \n",pt,invMassCut);
-  return ptbin;  
-
-}
 
 //__________________________________________________________
 void AliAnalysisTaskSECharmFraction::CheckInvMassD0(AliAODRecoDecayHF2Prong *d,Double_t &invMassD0,Double_t &invMassD0bar,Bool_t &isPeakD0,Bool_t &isPeakD0bar,Bool_t &isSideBandD0,Bool_t &isSideBandD0bar){
@@ -6549,7 +6219,7 @@ void AliAnalysisTaskSECharmFraction::CheckInvMassD0(AliAODRecoDecayHF2Prong *d,D
 	
 
 //__________________________________________________________________
-AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const AliAODRecoDecayHF2Prong *d,TClonesArray *arrayMC,Int_t &signaltype,Double_t &massMumTrue,Double_t *primaryVtx){
+AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const AliAODRecoDecayHF2Prong *d,TClonesArray *arrayMC,Int_t &signaltype,Double_t &massMumTrue,Double_t *primaryVtx,Int_t &isD0D0bar){
   //THIS METHOD CHECK THE TYPE OF SIGNAL/BACKGROUND THE CANDIDATE IS. 
   //  IF (!AND ONLY IF) THE TWO DAUGHTERS COME FROM A COMMONE MOTHER A FAKE TRUE SECONDARY VERTEX IS CONSTRUCTED (aodDMC)  
   //
@@ -6583,6 +6253,9 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const Al
     return aodDMC;    
   }
   
+  mum1=(AliAODMCParticle*)arrayMC->At(labMum);  
+  if(mum1->GetPdgCode()==421)isD0D0bar=1;
+  else if(mum1->GetPdgCode()==-421)isD0D0bar=2;
   // get daughter AOD tracks
   AliAODTrack *trk0 = (AliAODTrack*)d->GetDaughter(0);
   AliAODTrack *trk1 = (AliAODTrack*)d->GetDaughter(1);
@@ -6602,7 +6275,7 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const Al
   
   b1=(AliAODMCParticle*)arrayMC->At(trk0->GetLabel());
   b2=(AliAODMCParticle*)arrayMC->At(trk1->GetLabel());
-  mum1=(AliAODMCParticle*)arrayMC->At(labMum);  
+
   massMumTrue=mum1->GetCalcMass();
   aodDMC=ConstructFakeTrueSecVtx(b1,b2,mum1,primaryVtx);
  
@@ -6925,7 +6598,7 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::ConstructFakeTrueSecVtx(const
 }
 
 //________________________________________________________
-Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TList *&list,Int_t ptbin,Int_t okD0,Int_t okD0bar,Double_t invMassD0,Double_t invMassD0bar,Bool_t isPeakD0,Bool_t isPeakD0bar,Bool_t isSideBandD0,Bool_t isSideBandD0bar,Double_t massmumtrue,AliAODRecoDecayHF *aodDMC,Double_t *vtxTrue){//FILL THE HISTOGRAMS: TAKE THE HISTOS FROM THE list NAME
+Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TList *&list,Int_t ptbin,Int_t okD0,Int_t okD0bar,Double_t invMassD0,Double_t invMassD0bar,Bool_t isPeakD0,Bool_t isPeakD0bar,Bool_t isSideBandD0,Bool_t isSideBandD0bar,Double_t massmumtrue,AliAODRecoDecayHF *aodDMC,Double_t *vtxTrue,Int_t isD0D0barMC){//FILL THE HISTOGRAMS: TAKE THE HISTOS FROM THE list NAME
 
   
   if((!okD0)&&(!okD0bar))return kTRUE;
@@ -7112,6 +6785,28 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
   str.Append("_pt");
   str+=ptbin;
   if(fsplitMassD0D0bar&&okD0bar)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0bar);
+  
+
+  if(fReadMC&&(namehist.Contains("fromDstar")||namehist.Contains("sign")||namehist.Contains("fromB"))){
+    str="hInvMassPtSelSignOnly";
+    str.Append(namehist.Data());
+    Int_t sel=0;
+    if(okD0)sel+=1;
+    if(okD0bar)sel+=2;
+    Double_t w=1;
+    if(fWeightPt){
+      w=fWeightPt->Eval(pt);
+    }
+
+    if(okD0&&isD0D0barMC==1)((TH3F*)list->FindObject(str.Data()))->Fill(invMassD0,pt,sel,w);
+    if(okD0bar&&isD0D0barMC==2)((TH3F*)list->FindObject(str.Data()))->Fill(invMassD0bar,pt,sel,w);
+
+    str="hInvMassPtSelReflOnly";
+    str.Append(namehist.Data());
+
+    if(okD0&&isD0D0barMC==2)((TH3F*)list->FindObject(str.Data()))->Fill(invMassD0,pt,sel,w);
+    if(okD0bar&&isD0D0barMC==1)((TH3F*)list->FindObject(str.Data()))->Fill(invMassD0bar,pt,sel,w);
+  }
   
 
   // FILLING OF THE SPARSE HISTO
@@ -7606,13 +7301,23 @@ AliAODVertex* AliAnalysisTaskSECharmFraction::GetPrimaryVtxSkipped(AliAODEvent *
  }
 
 
+//_______________________________________________
+void AliAnalysisTaskSECharmFraction::SetPtWeightsFromDataPbPb276overLHC12a17a(){
+  // Method cp paste from AliCFTaskVertexingHF
+  // ad-hoc weight function from ratio of 
+  // D0 pt spectra in PbPb 2011 0-10% centrality and
+ // pt spectra from MC production LHC12a17a (PYTHIA Perugia0 with pthard bins)
+  if(fWeightPt) delete fWeightPt;
+  fWeightPt=new TF1("funcWeight","[0]+[1]/TMath::Power(x,[2])",0.05,50.);
+  fWeightPt->SetParameter(0,1.43116e-02);
+  fWeightPt->SetParameter(1,4.37758e+02);
+  fWeightPt->SetParameter(2,3.08583);
+
+}
 
 
 
-
-
-
-
+//_______________________________
 void AliAnalysisTaskSECharmFraction::Terminate(const Option_t*){
   //TERMINATE METHOD: NOTHING TO DO
 

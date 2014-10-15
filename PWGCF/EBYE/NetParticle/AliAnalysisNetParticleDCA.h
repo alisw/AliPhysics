@@ -7,7 +7,7 @@
  * See cxx source for full Copyright notice                               */
 
 /**
- * Class for for NetParticle Distributions
+ * Class for NetParticle Distributions
  * -- DCA distributions
  * Authors: Jochen Thaeder <jochen@thaeder.de>
  *          Michael Weber <m.weber@cern.ch>
@@ -15,23 +15,11 @@
 
 #include "THnSparse.h"
 
-#include "AliAnalysisNetParticleHelper.h"
+#include "AliAnalysisNetParticleBase.h"
 
-class AliESDEvent;
-class AliESDInputHandler;
-class AliMCEvent;
-class AliStack;
-class AliAODInputHandler;
-
-class AliAnalysisNetParticleDCA : public TNamed {
+class AliAnalysisNetParticleDCA : public AliAnalysisNetParticleBase {
 
  public:
-
-  /*
-   * ---------------------------------------------------------------------------------
-   *                            Constructor / Destructor
-   * ---------------------------------------------------------------------------------
-   */
 
   AliAnalysisNetParticleDCA();
   virtual ~AliAnalysisNetParticleDCA();
@@ -42,26 +30,20 @@ class AliAnalysisNetParticleDCA : public TNamed {
    * ---------------------------------------------------------------------------------
    */
 
-  /** Initialize */
-  void Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts *cuts, AliESDtrackCuts *cutsBkg);
-
-  /** Setup Event */
-  Int_t SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler, AliMCEvent *mcEvent);
-
-  /** Reset Event */
-  void ResetEvent();
-
-  /** Process Event */
-  void Process();
+  /** Process Event - implements purely virtual method */
+  virtual void Process();
 
   /*
    * ---------------------------------------------------------------------------------
-   *                                    Getter
+   *                                    Setter / Getter
    * ---------------------------------------------------------------------------------
    */
 
+  /** Set Background ESD Track Cuts */
+  void SetESDTrackCutsBkg(AliESDtrackCuts *p) {fESDTrackCutsBkg = p;}
+
   /** Get Ptr to DCA THnSparse */
-  THnSparseF* GetHnDCA() {return fHnDCA;}
+  THnSparseD* GetHnDCA() {return fHnDCA;}
 
   ///////////////////////////////////////////////////////////////////////////////////
 
@@ -70,47 +52,30 @@ class AliAnalysisNetParticleDCA : public TNamed {
   AliAnalysisNetParticleDCA(const AliAnalysisNetParticleDCA&); // not implemented
   AliAnalysisNetParticleDCA& operator=(const AliAnalysisNetParticleDCA&); // not implemented
 
-
-
   /*
    * ---------------------------------------------------------------------------------
    *                                Methods - private
    * ---------------------------------------------------------------------------------
    */
 
-  /** Create the efficiency / contamination THnSparseF */
-  void CreateHistograms();
+  /** Create the efficiency / contamination THnSparseD  
+   *    implements purely virtual method 
+   */
+  virtual void CreateHistograms();
 
-  /** Fill DCA ThnSparse */
-  void FillDCA(); 
+  /** Get contamination index of track */
+  Int_t GetContIdxTrack(Int_t label, Int_t sign);
 
-  /** Check if particle is contamination */
-  Int_t CheckDCATrack(Int_t label);
-  //  void CheckDCATrack(Int_t label, Float_t sign, Int_t idxTrack);
-#if 0      
   /*
    * ---------------------------------------------------------------------------------
    *                             Members - private
    * ---------------------------------------------------------------------------------
    */
-#endif
-  AliAnalysisNetParticleHelper *fHelper;      //! Ptr to helper class
 
-  // --- ESD only ----------------------------------------------------------
-
-  AliESDEvent        *fESD;                   //! ESD object
-  AliESDtrackCuts    *fESDTrackCuts;          //! ESD cuts  
+  // =======================================================================
   AliESDtrackCuts    *fESDTrackCutsBkg;       //! ESD cuts  
-  
-  // --- MC only -----------------------------------------------------------
-
-  AliStack           *fStack;                 //! Ptr to stack
-  AliMCEvent         *fMCEvent;               //! Ptr to MC event
-
-  // -----------------------------------------------------------------------
-
-  THnSparseF         *fHnDCA;                 //  THnSparseF contamination DCA
-
+  // =======================================================================
+  THnSparseD         *fHnDCA;                 //  THnSparseD contamination DCA
   // -----------------------------------------------------------------------
 
   ClassDef(AliAnalysisNetParticleDCA, 1);

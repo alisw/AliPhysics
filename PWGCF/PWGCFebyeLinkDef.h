@@ -44,8 +44,17 @@
 #pragma link C++ class AliEbyEPidTaskFastGen+;
 #pragma link C++ class AliEbyEPidTTask+;
 #pragma link C++ class AliEbyEPidTTaskMC+;
+#pragma link C++ class AliEbyEPidRatioBase+;
+#pragma link C++ class AliEbyEPidRatioDCA+;
+#pragma link C++ class AliEbyEPidRatioQA+;
+#pragma link C++ class AliEbyEPidRatioPhy+;
+#pragma link C++ class AliEbyEPidRatioEffCont+;
+#pragma link C++ class AliEbyEPidRatioHelper+;
+#pragma link C++ class AliEbyEPidRatioTask+;
 
+#pragma link C++ class AliAnalysisNetParticleBase+;
 #pragma link C++ class AliAnalysisNetParticleDCA+;
+#pragma link C++ class AliAnalysisNetParticleQA+;
 #pragma link C++ class AliAnalysisNetParticleDistribution+;
 #pragma link C++ class AliAnalysisNetParticleEffCont+;
 #pragma link C++ class AliAnalysisNetParticleHelper+;

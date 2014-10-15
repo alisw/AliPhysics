@@ -15,6 +15,7 @@
 
 class TH1F;
 class TH2F;
+class TF1;
 class AliAODDEvent;
 class AliAODMCHeader;
 class AliAODRecoDecayHF2Prong;
@@ -59,15 +60,14 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   }  
   void SetAcceptanceCut(const Double_t eta=0.8,const Double_t nITSpoints=5.,const Double_t nSPDpoints=2.){fAcceptanceCuts[0]=eta;fAcceptanceCuts[1]=nITSpoints;fAcceptanceCuts[2]=nSPDpoints;}
   void SetStandardMassSelection();
-  Int_t SetStandardCuts(Double_t pt,Double_t invMassCut);
-  Int_t SetStandardCuts(Float_t *&ptbinlimits);
+  Int_t SetStandardCuts();
   void CheckInvMassD0(AliAODRecoDecayHF2Prong *d,Double_t &invMassD0,Double_t &invMassD0bar,Bool_t &isPeakD0,Bool_t &isPeakD0bar,Bool_t &isSideBandD0,Bool_t &isSideBandD0bar);
   void SetAnalysisLevel(Int_t level){fFastAnalysis=level;}
   void SetCheckBitD0flag(Bool_t checkfl){fcheckD0Bit=checkfl;}
   Bool_t GetCheckBitD0flag(){return fcheckD0Bit;}
   Int_t GetAnalysisLevel(){return fFastAnalysis;}
   Int_t CheckOrigin(const TClonesArray* arrayMC, const AliAODMCParticle *mcPartCandidate)const;
-  AliAODRecoDecayHF *GetD0toKPiSignalType(const AliAODRecoDecayHF2Prong *d,TClonesArray *arrayMC,Int_t &signaltype,Double_t &massMumTrue,Double_t *primaryVtx);
+  AliAODRecoDecayHF *GetD0toKPiSignalType(const AliAODRecoDecayHF2Prong *d,TClonesArray *arrayMC,Int_t &signaltype,Double_t &massMumTrue,Double_t *primaryVtx,Int_t &isD0D0bar);
   AliAODRecoDecayHF *GetD0toKPiSignalTypeObsolete(const AliAODRecoDecayHF2Prong *d,TClonesArray *arrayMC,Int_t &signaltype,Double_t &massMumTrue,Double_t *primaryVtx);
   AliAODRecoDecayHF* ConstructFakeTrueSecVtx(const AliAODMCParticle *b1,const AliAODMCParticle *b2,const AliAODMCParticle *mum,Double_t *primaryVtxTrue);
   void SetUseMC(Bool_t useMC){fUseMC=useMC;}
@@ -79,6 +79,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   void SetRejecCandidateMCUpgrade(Bool_t selection){fselectForUpgrade=selection;}
   void SetSkipEventSelection(Bool_t skip){fskipEventSelection=skip;}
   void SetMaxZvtxForSkipEventSelection(Double_t zmax){fZvtxUpgr=zmax;}
+  void SetPtWeightsFromDataPbPb276overLHC12a17a();
   /* ######### THE FOLLOWING IS FOR FURTHER IMPLEMENATION ############
      Int_t GetPtBin(Double_t pt)const;
      void SetD0Cuts(Int_t ptbin,Double_t &*d0cutsLoose,Double_t &*d0cutsTight);
@@ -109,7 +110,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   //  Int_t SetCuts(AliAnalysisTaskSECharmFraction *alchfr,Double_t pt,Double_t invMassCut);
   
  private:
-  Bool_t FillHistos(AliAODRecoDecayHF2Prong *d,TList *&list,Int_t ptbin,Int_t okD0,Int_t okD0bar,Double_t invMassD0,Double_t invMassD0bar,Bool_t isPeakD0,Bool_t isPeakD0bar,Bool_t isSideBandD0,Bool_t isSideBandD0bar,Double_t massmumtrue,AliAODRecoDecayHF *aodDMC,Double_t *vtxTrue);
+  Bool_t FillHistos(AliAODRecoDecayHF2Prong *d,TList *&list,Int_t ptbin,Int_t okD0,Int_t okD0bar,Double_t invMassD0,Double_t invMassD0bar,Bool_t isPeakD0,Bool_t isPeakD0bar,Bool_t isSideBandD0,Bool_t isSideBandD0bar,Double_t massmumtrue,AliAODRecoDecayHF *aodDMC,Double_t *vtxTrue,Int_t isD0D0barMC);
   void FillHistoMCproperties(TClonesArray *arrayMC);
 
   AliRDHFCutsD0toKpi *fCutsLoose;        // Loose cuts object
@@ -159,6 +160,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   Bool_t fselectForUpgrade;               // switch to reject candidates from HIJING and not Pythia for upgrade studies
   Bool_t fskipEventSelection;               // switch to skip event selection (for upgrade studies)
   Double_t fZvtxUpgr;                       // cut value on max zvtx used ONLY if fskipEventSelection is kTRUE
+  TF1 *fWeightPt;                           // function with pt weights used only for MC histos for reflections and signal mass shape
   /*  Bool_t       fD0usecuts;            // Switch on the use of the cuts             TO BE IMPLEMENTED 
       Bool_t       fcheckMC;              //  Switch on MC check: minimum check is same mother  TO BE IMPLEMENTED
       Bool_t       fcheckMCD0;           //  check the mother is a D0                  TO BE IMPLEMENTED
@@ -169,7 +171,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
       Bool_t  fStudyd0fromBTrue;         // Flag for analyze true impact par of D0 from B       TO BE IMPLEMENTED 
       Bool_t  fStudyPureBackground;      // Flag to study the background (reverse the selection on the signal)     TO BE IMPLEMENTED 
       Double_t  fSideBands;                //Side bands selection (see cxx)            TO BE IMPLEMENTED
-  */
+  */ 
   AliAnalysisTaskSECharmFraction(const AliAnalysisTaskSECharmFraction&); // not implemented
   AliAnalysisTaskSECharmFraction& operator=(const AliAnalysisTaskSECharmFraction&); // not implemented
   

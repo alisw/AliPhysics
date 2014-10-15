@@ -130,7 +130,7 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
   if ( isV0 &&
        ( (pdgDg[1]==2212 && pdgDg[0]==310) ||
 	 (pdgDg[1]==211 && pdgDg[0]==3122) ) ) {
-    AliWarning("Please, pay attention: first element in AliAODRecoCascadeHF object must be the bachelor and second one V0. Skipping!");
+    AliWarning(Form("Please, pay attention: first element in AliAODRecoCascadeHF object must be the bachelor and second one V0. Skipping! (pdgDg[0] = %d, (pdgDg[1] = %d)", pdgDg[0], pdgDg[1]));
     return -1;
   }
 

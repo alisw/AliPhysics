@@ -42,9 +42,9 @@ class AliAnalysisTaskEMCALMesonGGSDM : public AliAnalysisTaskSE {
   void         SetFidEtaMinMax(Double_t kEtamin, Double_t kEtamax){ fEtamin = kEtamin; fEtamax = kEtamax; }
   
  private:
-  static const int zvtx_bins = 16;
-  static const int mult_bins = 25;
-  static const unsigned int poolDepth = 20;
+  static const int zvtx_bins = 8;
+  static const int mult_bins = 7;
+  static const unsigned int poolDepth = 80;
   
   Int_t GetMultBin(Int_t mult);
   Int_t GetZvtxBin(Double_t vertZ);

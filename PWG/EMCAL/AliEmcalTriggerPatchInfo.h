@@ -37,8 +37,11 @@ class AliEmcalTriggerPatchInfo: public TObject {
   Int_t    GetEdgeCellY() const { return fEdgeCell[1]; }
   void     GetCellIndices( AliEMCALGeometry *geom, TArrayI *cells );
   
+  Bool_t   IsLevel0() const { return (Bool_t)((fTriggerBits >> (fOffSet + kL0))&(!(fTriggerBits >> 25))&1); }
   Bool_t   IsJetLow() const { return (Bool_t)((fTriggerBits >> (fOffSet + kL1JetLow))&(!(fTriggerBits >> 25))&1); }
   Bool_t   IsJetHigh() const { return (Bool_t)((fTriggerBits >> (fOffSet + kL1JetHigh))&(!(fTriggerBits >> 25))&1); }
+  Bool_t   IsGammaLow() const { return (Bool_t)((fTriggerBits >> (fOffSet + kL1GammaLow))&(!(fTriggerBits >> 25))&1); }
+  Bool_t   IsGammaHigh() const { return (Bool_t)((fTriggerBits >> (fOffSet + kL1GammaHigh))&(!(fTriggerBits >> 25))&1); }
   Bool_t   IsMainTrigger() const { return (Bool_t)((fTriggerBits >> 24)&(!(fTriggerBits >> 25))&1); }
   Bool_t   IsJetLowSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + kL1JetLow))&(fTriggerBits >> 25)&1); }
   Bool_t   IsJetHighSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + kL1JetHigh))&(fTriggerBits >> 25)&1); }

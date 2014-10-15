@@ -2,16 +2,17 @@
 
 AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
   AliGenerator   *genGen,
-  const char     *tracksName   = "GenParticles",
-  const char     *taskName     = "JetEmbeddingFromGenTask",
-  const Double_t  minPt        = 10,
-  const Double_t  maxPt        = 10,
-  const Double_t  minEta       = -0.9,
-  const Double_t  maxEta       = 0.9,
-  const Double_t  minPhi       = 0,
-  const Double_t  maxPhi       = TMath::Pi() * 2,
-  const Bool_t    copyArray    = kTRUE,
-  const Bool_t    drawQA       = kFALSE
+  const char     *tracksName     = "GenParticles",
+  const char     *taskName       = "JetEmbeddingFromGenTask",
+  const Double_t  minPt          = 10,
+  const Double_t  maxPt          = 10,
+  const Double_t  minEta         = -0.9,
+  const Double_t  maxEta         = 0.9,
+  const Double_t  minPhi         = 0,
+  const Double_t  maxPhi         = TMath::Pi() * 2,
+  const Bool_t    copyArray      = kTRUE,
+  const Bool_t    drawQA         = kFALSE,
+  const char     *partonInfoName = ""
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -36,8 +37,11 @@ AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
   //-------------------------------------------------------
 
   AliJetEmbeddingFromGenTask *jetEmb = new AliJetEmbeddingFromGenTask(taskName,drawQA);
+  // if pythia is used as a generator, tell it not to print the event history to the screen
+  if(TString(genGen->IsA()->GetName()).EqualTo("AliGenPythia")) genGen->AliGenPythia::SetEventListRange(0, 0);
   jetEmb->SetGen(genGen);
   jetEmb->SetTracksName(tracksName);
+  jetEmb->SetPartonInfoName(partonInfoName);
   jetEmb->SetEtaRange(minEta, maxEta);
   jetEmb->SetPhiRange(minPhi, maxPhi);
   jetEmb->SetPtRange(minPt, maxPt);

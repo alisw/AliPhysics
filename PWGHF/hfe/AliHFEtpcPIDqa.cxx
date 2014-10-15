@@ -194,7 +194,7 @@ void AliHFEtpcPIDqa::Initialize(){
   const Double_t kMaxEta = 0.9;
 
   // Quantities where one can switch between low and high resolution
-  Int_t kPbins = fQAmanager->HasHighResolutionHistos() ? 1000 : 100;
+  Int_t kPbins = (fQAmanager->HasHighResolutionHistos() || fQAmanager->HasMidResolutionHistos()) ? 1000 : 100;
   Int_t kDedxbins = fQAmanager->HasHighResolutionHistos() ? 400 : 200;
   Int_t kSigmaBins = fQAmanager->HasHighResolutionHistos() ? 1400 : 240;
   kSigmaBins = fQAmanager->HasMidResolutionHistos() ? 400 : kSigmaBins;

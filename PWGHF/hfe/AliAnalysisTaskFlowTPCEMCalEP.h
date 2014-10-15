@@ -72,84 +72,81 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
   
 
-  AliESDEvent        		*fESD;	            		//! ESD object
+  AliESDEvent        	*fESD;	            		//! ESD object
   AliAODEvent           *fAOD;                  //! AOD object
   AliVEvent             *fVevent;               //! VEvent
   AliPIDResponse        *fpidResponse;          //! PID response
 
   AliMCEvent            *fMC;                   //! MC object
     
-  TList              		*fOutputList;		        //! output list
+  TList              	*fOutputList;		        //! output list
   
   AliESDtrackCuts     	*fTrackCuts;      		  //! ESD track cuts
-  AliHFEcuts 		        *fCuts;                 //! Cut Collection
+  AliHFEcuts 		*fCuts;                 //! Cut Collection
   AliSelectNonHFE       *fNonHFE;               //! Select non heavy flavour electrons
 
-  Bool_t 		            fIdentifiedAsOutInz;    //! Out Of Range in z
-  Bool_t 		            fPassTheEventCut;       //! Pass The Event Cut
-  Bool_t 		            fRejectKinkMother;      //! Reject Kink Mother
-  Bool_t 		            fIsMC;                  //! flag for MC analysis   
+  Bool_t 		fIdentifiedAsOutInz;    //! Out Of Range in z
+  Bool_t 		fPassTheEventCut;       //! Pass The Event Cut
+  Bool_t 		fRejectKinkMother;      //! Reject Kink Mother
+  Bool_t 		fIsMC;                  //! flag for MC analysis   
   Bool_t                fIsAOD;                 //! flag for AOD analysis
 
-  Double_t 		          fVz;                    //! z position of the primary vertex
-  AliCFManager 		      *fCFM;                  //! Correction Framework Manager
-  AliHFEpid 		        *fPID;                  //! PID
-  AliHFEpidQAmanager 	  *fPIDqa;		            //! PID QA manager
-  Double_t 		          fOpeningAngleCut;	      //! openingAngle cut for non-HFE selection
-  Double_t		          fInvmassCut;		        //! invariant mass cut  for non-HFE selection
-  Double_t		          fChi2Cut;               //! Chi2 cut  for non-HFE selection
-  Double_t		          fDCAcut;                //! DCA cut  for non-HFE selection
-  Float_t		            fminCent;               //! min centrality
-  Float_t		            fmaxCent;               //! max centrality
+  Double_t 		fVz;                    //! z position of the primary vertex
+  AliCFManager 		*fCFM;                  //! Correction Framework Manager
+  AliHFEpid 		*fPID;                  //! PID
+  AliHFEpidQAmanager 	*fPIDqa;		            //! PID QA manager
+  Double_t 		fOpeningAngleCut;	      //! openingAngle cut for non-HFE selection
+  Double_t	        fInvmassCut;		        //! invariant mass cut  for non-HFE selection
+  Double_t	        fChi2Cut;               //! Chi2 cut  for non-HFE selection
+  Double_t	        fDCAcut;                //! DCA cut  for non-HFE selection
+  Float_t	        fminCent;               //! min centrality
+  Float_t	        fmaxCent;               //! max centrality
   TString               fnonHFEalgorithm;       //! algorithm to select non-HFE pairs (KF or DCA) 
 
-  TH1F			            *fNoEvents;		          //! no of events
-  TH1F			            *fTrkpt;		            //! track pt
-  TH2F			            *fTrkEovPBef;		        //! track E/p before HFE pid
-  TH2F			            *fTrkEovPAft;		        //! track E/p after HFE pid
-  TH2F			            *fdEdxBef;		          //! track dEdx vs p before HFE pid
-  TH2F			            *fdEdxAft;		          //! track dEdx vs p after HFE pid
-  TH1F			            *fPhotoElecPt;		      //! photonic elec pt 
-  TH1F			            *fSemiInclElecPt;	      //! Semi inclusive ele pt
-  THnSparse		          *fMCphotoElecPt;	      //! pt distribution (MC)
+  TH1F		        *fNoEvents;		          //! no of events
+  TH1F		        *fTrkpt;		            //! track pt
+  TH2F		        *fTrkEovPBef;		        //! track E/p before HFE pid
+  TH2F		        *fTrkEovPAft;		        //! track E/p after HFE pid
+  TH2F		        *fdEdxBef;		          //! track dEdx vs p before HFE pid
+  TH2F		        *fdEdxAft;		          //! track dEdx vs p after HFE pid
+  TH1F		        *fPhotoElecPt;		      //! photonic elec pt 
+  TH1F		        *fSemiInclElecPt;	      //! Semi inclusive ele pt
+  THnSparse	        *fMCphotoElecPt;	      //! pt distribution (MC)
   
-  TH1F			            *fTrackPtBefTrkCuts;	  //! Track pt before track cuts	
-  TH1F			            *fTrackPtAftTrkCuts;	  //! Track pt after track cuts
-  TH2F			            *fTPCnsigma;		        //! TPC n sigma vs p	
+  TH1F		        *fTrackPtBefTrkCuts;	  //! Track pt before track cuts	
+  TH1F		        *fTrackPtAftTrkCuts;	  //! Track pt after track cuts
+  TH2F		        *fTPCnsigma;		        //! TPC n sigma vs p	
   
-  TH1F			            *fCent;			            //! centrality
-  TH1F			            *fevPlaneV0A;		        //! V0A event plane distribution
-  TH1F			            *fevPlaneV0C;		        //! V0C event plane distribution
-  TH1F			            *fevPlaneV0;		        //! V0 event plane distribution
-  TH1F			            *fevPlaneTPC;		        //! TPC event plane distribution
-  TH1F			            *fTPCsubEPres;		      //! TPC event plane resolution
-  THnSparse		          *fEPres;		            //! event plane resolution
-  THnSparse		          *fCorr;			            //! correlations
-  THnSparse		          *feTPCV2;		            //! inclusive eletron v2 (only TPC PID)
-  THnSparse		          *feV2;			            //! inclusive eletron v2 (TPC + EMCAL PID)
-  THnSparse		          *fphoteV2;		          //! photonic electron v2 (TPC + EMCAL PID)
-  THnSparse		          *fChargPartV2;		      //! charged particle v2
+  TH1F		        *fCent;			            //! centrality
+  TH2F		        *fevPlaneV0;		        //! V0 event plane distribution
+  TH1F		        *fTPCsubEPres;		      //! TPC event plane resolution
+  THnSparse	        *fEPres;		            //! event plane resolution
+  THnSparse	        *fCorr;			            //! correlations
+  THnSparse	        *feTPCV2;		            //! inclusive eletron v2 (only TPC PID)
+  THnSparse	        *feV2;			            //! inclusive eletron v2 (TPC + EMCAL PID)
+  THnSparse	        *fphoteV2;		          //! photonic electron v2 (TPC + EMCAL PID)
+  THnSparse	        *fChargPartV2;		      //! charged particle v2
     
-  TH2F			            *fGammaWeight;		      //! gamma weight
-  TH2F			            *fPi0Weight;		        //! pi0 weight
-  TH2F			            *fEtaWeight;		        //! eta weight
-  TH2F			            *fD0Weight;		          //! D0 weight
-  TH2F			            *fDplusWeight;		      //! D+ weight
-  TH2F			            *fDminusWeight;		      //! D- weight
+  TH2F		        *fGammaWeight;		      //! gamma weight
+  TH2F		        *fPi0Weight;		        //! pi0 weight
+  TH2F		        *fEtaWeight;		        //! eta weight
+  TH2F		        *fD0Weight;		          //! D0 weight
+  TH2F		        *fDplusWeight;		      //! D+ weight
+  TH2F		        *fDminusWeight;		      //! D- weight
   
-  TH1F			            *fDe[6];
-  TH1F			            *fD0e[6];
-  TH1F			            *fDpluse[6];
-  TH1F			            *fDminuse[6];
+  TH1F		        *fDe[6];
+  TH1F		        *fD0e[6];
+  TH1F		        *fDpluse[6];
+  TH1F		        *fDminuse[6];
   
-  TH2F			            *fD0_e;
+  TH2F		        *fD0_e;
   
-  TH1F			            *fTot_pi0e;		          //! inclusive electron
-  TH1F			            *fPhot_pi0e;		        //! ULS pair 
-  TH1F			            *fPhotBCG_pi0e;		      //! LS pair
-  TH1F			            *fTot_etae;		          //! inclusive electron
-  TH1F			            *fPhot_etae;		        //! ULS pair 
-  TH1F			            *fPhotBCG_etae;		      //! LS pair
+  TH1F		        *fTot_pi0e;		          //! inclusive electron
+  TH1F		        *fPhot_pi0e;		        //! ULS pair 
+  TH1F		        *fPhotBCG_pi0e;		      //! LS pair
+  TH1F		        *fTot_etae;		          //! inclusive electron
+  TH1F		        *fPhot_etae;		        //! ULS pair 
+  TH1F		        *fPhotBCG_etae;		      //! LS pair
 
   TH1F                  *fInvMass;		          //! Invariant mass of ULS pairs
   TH1F                  *fInvMassBack;		      //! Invariant mass if LS pairs

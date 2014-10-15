@@ -76,6 +76,7 @@ AliAnalysisTaskJetSpectraAOD* AddTaskJetSpectraAOD(
   Float_t EtaJetMin = EtaMin + jetParameterR;
   Float_t EtaJetMax = EtaMax - jetParameterR;
   task->SetEtaJet(EtaJetMin,EtaJetMax);
+  task->SetJetParameterR(jetParameterR);
   
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   

@@ -12,6 +12,8 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_dca1
  int    useWeights              = 0, 
  int    centralityMethod        = 4,
  int    chargeSet               = 1,
+ double zMin                   = -10.,
+ double zMax                   =  10.,
  int    trackFilterBit          = 128,
  int    nClusterMin             = 80, 
  double eta1Min                 = -0.8,
@@ -77,8 +79,8 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_dca1
     return 0;
     }
 
-  double zMin                   = -10.;
-  double zMax                   =  10.;
+  //double zMin                   = -10.;
+  //double zMax                   =  10.;
   double ptMin                  =  0.2;
   double ptMax                  =  2.0;
   double dedxMin                =  0.0;

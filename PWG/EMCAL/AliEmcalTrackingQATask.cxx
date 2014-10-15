@@ -22,6 +22,8 @@ ClassImp(AliEmcalTrackingQATask)
 AliEmcalTrackingQATask::AliEmcalTrackingQATask() : 
   AliAnalysisTaskEmcal("AliEmcalTrackingQA", kTRUE),
   fSelectHIJING(kTRUE),
+  fDoSigma1OverPt(kFALSE),
+  fDoSigmaPtOverPtGen(kFALSE),
   fGeneratorLevel(0),
   fDetectorLevel(0),
   fNPtHistBins(0),
@@ -32,6 +34,8 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask() :
   fPhiHistBins(0),
   fNCentHistBins(0),
   fCentHistBins(0),
+  fNPtRelDiffHistBins(0),
+  fPtRelDiffHistBins(0),
   fNPtResHistBins(0),
   fPtResHistBins(0),
   f1OverPtResHistBins(0),
@@ -53,6 +57,8 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask() :
 AliEmcalTrackingQATask::AliEmcalTrackingQATask(const char *name) : 
   AliAnalysisTaskEmcal(name, kTRUE),
   fSelectHIJING(kTRUE),
+  fDoSigma1OverPt(kFALSE),
+  fDoSigmaPtOverPtGen(kFALSE),
   fGeneratorLevel(0),
   fDetectorLevel(0),
   fNPtHistBins(0),
@@ -63,6 +69,8 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask(const char *name) :
   fPhiHistBins(0),
   fNCentHistBins(0),
   fCentHistBins(0),
+  fNPtRelDiffHistBins(0),
+  fPtRelDiffHistBins(0),
   fNPtResHistBins(0),
   fPtResHistBins(0),
   f1OverPtResHistBins(0),
@@ -115,13 +123,27 @@ void AliEmcalTrackingQATask::GenerateHistoBins()
   fCentHistBins[3] = 50;
   fCentHistBins[4] = 90;
 
-  fNPtResHistBins = 200;
+  fNPtResHistBins = 175;
   fPtResHistBins = new Double_t[fNPtResHistBins+1];
-  GenerateFixedBinArray(fNPtResHistBins, -2, 2, fPtResHistBins);
+  GenerateFixedBinArray(50, 0, 0.05, fPtResHistBins);
+  GenerateFixedBinArray(25, 0.05, 0.10, fPtResHistBins+50);
+  GenerateFixedBinArray(25, 0.10, 0.20, fPtResHistBins+75);
+  GenerateFixedBinArray(30, 0.20, 0.50, fPtResHistBins+100);
+  GenerateFixedBinArray(25, 0.50, 1.00, fPtResHistBins+130);
+  GenerateFixedBinArray(20, 1.00, 2.00, fPtResHistBins+155);
 
-  fN1OverPtResHistBins = 100;
+  fNPtRelDiffHistBins = 200;
+  fPtRelDiffHistBins = new Double_t[fNPtRelDiffHistBins+1];
+  GenerateFixedBinArray(fNPtRelDiffHistBins, -2, 2, fPtRelDiffHistBins);
+
+  fN1OverPtResHistBins = 385;
   f1OverPtResHistBins = new Double_t[fN1OverPtResHistBins+1];
-  GenerateFixedBinArray(fN1OverPtResHistBins, 0, 1, f1OverPtResHistBins);
+  GenerateFixedBinArray(100, 0, 0.02, f1OverPtResHistBins);
+  GenerateFixedBinArray(60, 0.02, 0.05, f1OverPtResHistBins+100);
+  GenerateFixedBinArray(50, 0.05, 0.1, f1OverPtResHistBins+160);
+  GenerateFixedBinArray(50, 0.1, 0.2, f1OverPtResHistBins+210);
+  GenerateFixedBinArray(75, 0.2, 0.5, f1OverPtResHistBins+260);
+  GenerateFixedBinArray(50, 0.5, 1.5, f1OverPtResHistBins+335);
 
   fNIntegerHistBins = 10;
   fIntegerHistBins = new Double_t[fNIntegerHistBins+1];
@@ -200,10 +222,18 @@ void AliEmcalTrackingQATask::AllocateDetectorLevelTHnSparse()
   dim++;
 
   if (fIsEsd) {
-    title[dim] = "#sigma(1/#it{p}_{T}) (GeV/#it{c})^{-1}";
-    nbins[dim] = fN1OverPtResHistBins;
-    binEdges[dim] = f1OverPtResHistBins;
-    dim++;
+    if (fDoSigma1OverPt) {
+      title[dim] = "#sigma(1/#it{p}_{T}) (GeV/#it{c})^{-1}";
+      nbins[dim] = fN1OverPtResHistBins;
+      binEdges[dim] = f1OverPtResHistBins;
+      dim++;
+    }
+    else {
+      title[dim] = "#sigma(#it{p}_{T}) / #it{p}_{T}";
+      nbins[dim] = fNPtResHistBins;
+      binEdges[dim] = fPtResHistBins;
+      dim++;
+    }    
   }
  
   fTracks = new THnSparseF("fTracks","fTracks",dim,nbins);
@@ -311,10 +341,18 @@ void AliEmcalTrackingQATask::AllocateMatchedParticlesTHnSparse()
   binEdges[dim] = fPhiHistBins;
   dim++;
 
-  title[dim] = "(#it{p}_{T}^{gen} - #it{p}_{T}^{det}) / #it{p}_{T}^{gen}";
-  nbins[dim] = fNPtResHistBins;
-  binEdges[dim] = fPtResHistBins;
-  dim++;
+  if (fDoSigmaPtOverPtGen) {
+    title[dim] = "(#it{p}_{T}^{gen} - #it{p}_{T}^{det}) / #it{p}_{T}^{gen}";
+    nbins[dim] = fNPtRelDiffHistBins;
+    binEdges[dim] = fPtRelDiffHistBins;
+    dim++;
+  }
+  else {
+    title[dim] = "(#it{p}_{T}^{gen} - #it{p}_{T}^{det}) / #it{p}_{T}^{det}";
+    nbins[dim] = fNPtRelDiffHistBins;
+    binEdges[dim] = fPtRelDiffHistBins;
+    dim++;
+  }
 
   title[dim] = "track type";
   nbins[dim] = 3;
@@ -394,6 +432,8 @@ void AliEmcalTrackingQATask::FillDetectorLevelTHnSparse(Double_t cent, Double_t 
       contents[i] = trackPhi;
     else if (title=="#sigma(1/#it{p}_{T}) (GeV/#it{c})^{-1}")
       contents[i] = sigma1OverPt;
+    else if (title=="#sigma(#it{p}_{T}) / #it{p}_{T}")
+      contents[i] = sigma1OverPt*trackPt;
     else if (title=="MC Generator")
       contents[i] = mcGen;
     else if (title=="track type")
@@ -455,6 +495,8 @@ void AliEmcalTrackingQATask::FillMatchedParticlesTHnSparse(Double_t cent, Double
       contents[i] = trackPhi;
     else if (title=="(#it{p}_{T}^{gen} - #it{p}_{T}^{det}) / #it{p}_{T}^{gen}")
       contents[i] = (partPt - trackPt) / partPt;
+    else if (title=="(#it{p}_{T}^{gen} - #it{p}_{T}^{det}) / #it{p}_{T}^{det}")
+      contents[i] = (partPt - trackPt) / trackPt;
     else if (title=="track type")
       contents[i] = (Double_t)trackType;
     else 

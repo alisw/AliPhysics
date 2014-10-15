@@ -7,8 +7,8 @@ AliJetEmbeddingFromPYTHIATask* AddTaskJetEmbeddingFromPYTHIA(
   const char     *clusName      = "",
   const char     *cellsName     = "EMCALCells",
   const char     *MCPartName    = "",
-  const char     *simpath       = "alien:///alice/sim/2012/LHC12a15e_fix/%d/%d/AOD141/%04d/AliAOD.root",
-  Int_t           nPtHard       = 11,
+  const char     *simpath       = "alien:///alice/sim/2012/LHC12a15e_fix/%d/%d/AOD149/%04d/AliAOD.root",
+  Int_t           nPtHard       = 0,
   Double_t       *ptHardScaling = 0,
   const char     *aodTreeName   = "aodTree",
   const char     *aodTracksName = "tracks",
@@ -19,7 +19,7 @@ AliJetEmbeddingFromPYTHIATask* AddTaskJetEmbeddingFromPYTHIA(
   Bool_t          includeNoITS  = kFALSE,
   Double_t        minCent       = -1,
   Double_t        maxCent       = -1,
-  UInt_t          mask          = AliVEvent::kAny,
+  UInt_t          mask          = 0,
   Double_t        minJetPt      = 0,
   const Bool_t    copyArray     = kFALSE,  
   const Bool_t    makeQA        = kFALSE,
@@ -79,19 +79,28 @@ AliJetEmbeddingFromPYTHIATask* AddTaskJetEmbeddingFromPYTHIA(
   }
   else {
     if (!runPeriod.IsNull())
-      ::Warning("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.", runPeriod.Data());
+      ::Warning("AddTaskJetEmbeddingFromPYTHIA","Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.", runPeriod.Data());
   }
 
   jetEmb->SetPYTHIAPath(simpath);
 
-  if (nPtHard > 0) {
-    if (ptHardScaling==0) {
-      ptHardScaling = new Double_t[nPtHard];
-      for (Int_t i = 0; i < nPtHard; i++)
-	ptHardScaling[i] = 1;
-    }
-    jetEmb->SetPtHardBinScaling(nPtHard, ptHardScaling);
+  if (nPtHard == 0 || ptHardScaling == 0) { // the pt hard bin scaling was not provided, use the default for LHC12a15e_fix AOD149
+    ::Warning("AddTaskJetEmbeddingFromPYTHIA","The pT hard bin scaling has not been provided, will use the default for LHC12a15e_fix AOD149!", runPeriod.Data());
+    nPtHard = 11;
+    ptHardScaling = new Double_t[nPtHard];
+    ptHardScaling [0]  = 0;
+    ptHardScaling [1]  = 5.135193e-05;
+    ptHardScaling [2]  = 5.859497e-06;
+    ptHardScaling [3]  = 4.444755e-07;
+    ptHardScaling [4]  = 4.293118e-08;
+    ptHardScaling [5]  = 5.154750e-09;
+    ptHardScaling [6]  = 6.958612e-10;
+    ptHardScaling [7]  = 1.149828e-10;
+    ptHardScaling [8]  = 2.520137e-11;
+    ptHardScaling [9]  = 6.222240e-12;
+    ptHardScaling [10] = 2.255832e-12;
   }
+  jetEmb->SetPtHardBinScaling(nPtHard, ptHardScaling);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

@@ -13,8 +13,10 @@
 /// \author R. Arnaldi 5/5/08 and L. Aphecetche January 2011
 
 #ifndef ALIANALYSISTASKSE_H
-#  include "AliAnalysisTaskSE.h"
+#include "AliAnalysisTaskSE.h"
 #endif
+
+#include "TMatrixD.h"
 
 class AliAnalysisFilter;
 
@@ -39,6 +41,8 @@ public:
   void SetMCMode(Int_t mcMode) { fMCMode=mcMode; }
   
   void PrintTask(Option_t *option="", Int_t indent=0) const;
+
+  void ConvertCovMatrixMUON2AOD(const TMatrixD& covMUON, Double_t covAOD[21]);
   
 private:
   AliAnalysisTaskESDMuonFilter(const AliAnalysisTaskESDMuonFilter&);

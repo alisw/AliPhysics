@@ -126,10 +126,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
   ,fTrackPtAftTrkCuts(0)
   ,fTPCnsigma(0)
   ,fCent(0)
-  ,fevPlaneV0A(0)
-  ,fevPlaneV0C(0)
   ,fevPlaneV0(0)
-  ,fevPlaneTPC(0)
   ,fTPCsubEPres(0)
   ,fEPres(0)
   ,fCorr(0)
@@ -223,10 +220,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
   ,fTrackPtAftTrkCuts(0)	 	  
   ,fTPCnsigma(0)
   ,fCent(0)
-  ,fevPlaneV0A(0)
-  ,fevPlaneV0C(0)
   ,fevPlaneV0(0)
-  ,fevPlaneTPC(0)
   ,fTPCsubEPres(0)
   ,fEPres(0)
   ,fCorr(0)
@@ -325,6 +319,16 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     if(!fIsAOD) fPID->InitializePID(fESD->GetRunNumber());
   }
  
+  Bool_t SelColl = kTRUE;
+  if(GetCollisionCandidates()==AliVEvent::kAny)
+  {
+     SelColl = kFALSE;
+     TString firedTrigger;
+     firedTrigger = fESD->GetFiredTriggerClasses();
+     if(firedTrigger.Contains("CVLN_B2-B-NOPF-ALLNOTRD") || firedTrigger.Contains("CVLN_R1-B-NOPF-ALLNOTRD") || firedTrigger.Contains("CSEMI_R1-B-NOPF-ALLNOTRD"))SelColl=kTRUE;
+     if(!SelColl)return;
+  }
+
   if(fIsMC)fMC = MCEvent();
   AliStack* stack = NULL;
   if(fIsMC && fMC) stack = fMC->Stack();
@@ -361,15 +365,13 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 
   Double_t evPlaneV0A = TVector2::Phi_0_2pi(fESD->GetEventplane()->GetEventplane("V0A",fESD,2));
   if(evPlaneV0A > TMath::Pi()) evPlaneV0A = evPlaneV0A - TMath::Pi();
-  fevPlaneV0A->Fill(evPlaneV0A);
 
   Double_t evPlaneV0C = TVector2::Phi_0_2pi(fESD->GetEventplane()->GetEventplane("V0C",fESD,2));
   if(evPlaneV0C > TMath::Pi()) evPlaneV0C = evPlaneV0C - TMath::Pi();
-  fevPlaneV0C->Fill(evPlaneV0C);
 
   Double_t evPlaneV0 = TVector2::Phi_0_2pi(fESD->GetEventplane()->GetEventplane("V0",fESD,2));
   if(evPlaneV0 > TMath::Pi()) evPlaneV0 = evPlaneV0 - TMath::Pi();
-  fevPlaneV0->Fill(evPlaneV0);
+  fevPlaneV0->Fill(evPlaneV0,cent);
 
   AliEventplane* esdTPCep = fESD->GetEventplane();
   TVector2 *standardQ = 0x0;
@@ -383,7 +385,6 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
   TVector2 qVectorfortrack;
   qVectorfortrack.Set(qx,qy);
   Float_t evPlaneTPC = TVector2::Phi_0_2pi(qVectorfortrack.Phi())/2.;
-  fevPlaneTPC->Fill(evPlaneTPC);
 
   //Event plane resolutions
 
@@ -400,7 +401,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 
   // --> 3 event method (V0, V0A, and V0C EP)
 
-  Double_t Qx2pos = -999., Qy2pos = -999., Qx2neg = -999., Qy2neg = -999., Qweight = 1;
+  Double_t Qx2pos = 0., Qy2pos = 0., Qx2neg = 0., Qy2neg = 0., Qweight = 1;
 
   for(Int_t iTracks = 0; iTracks < fVevent->GetNumberOfTracks(); iTracks++) {
 
@@ -422,6 +423,8 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, trackEP)) continue;
 
     if (trackEP->Pt() < 2) Qweight = trackEP->Pt()/2;
+    if (trackEP->Pt() >= 2) Qweight = 1;
+
 
     if(trackEP->Eta()>0 && trackEP->Eta()<0.8){
       Qx2pos += Qweight*TMath::Cos(2*trackEP->Phi());
@@ -436,9 +439,12 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
   Double_t evPlaneTPCneg = TMath::ATan2(Qy2neg, Qx2neg)/2;
   Double_t evPlaneTPCpos = TMath::ATan2(Qy2pos, Qx2pos)/2;
 
-  Double_t evPlaneRes[7]={GetCos2DeltaPhi(evPlaneV0A,evPlaneV0C),GetCos2DeltaPhi(evPlaneV0A,evPlaneTPC),
-      GetCos2DeltaPhi(evPlaneV0C,evPlaneTPC),GetCos2DeltaPhi(evPlaneV0,evPlaneTPCpos),
-      GetCos2DeltaPhi(evPlaneV0,evPlaneTPCneg),GetCos2DeltaPhi(evPlaneTPCpos,evPlaneTPCneg),cent};
+  //cout<<evPlaneTPCneg << "	"<<evPlaneTPCpos<< endl;
+
+
+  Double_t evPlaneRes[4]={GetCos2DeltaPhi(evPlaneV0,evPlaneTPCpos),
+                          GetCos2DeltaPhi(evPlaneV0,evPlaneTPCneg),
+                          GetCos2DeltaPhi(evPlaneTPCpos,evPlaneTPCneg),cent};
   fEPres->Fill(evPlaneRes);
 
   // MC
@@ -733,20 +739,17 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     hfetrack.SetPbPb();
     if(!fPID->IsSelected(&hfetrack, NULL, "", fPIDqa)) pidpassed = 0;
   
-    Double_t corrV2[7]={phi,cent,pt,EovP,GetCos2DeltaPhi(phi,evPlaneTPC),GetCos2DeltaPhi(phi,evPlaneV0A),
-    GetCos2DeltaPhi(phi,evPlaneV0C)};
+    Double_t corrV2[5]={phi,cent,pt,EovP,GetCos2DeltaPhi(phi,evPlaneV0)};
     fChargPartV2->Fill(corrV2); 
 
     if(fTPCnSigma >= -0.5){
-      Double_t correctedV2[5]={cent,pt,GetCos2DeltaPhi(phi,evPlaneCorrTPC),GetCos2DeltaPhi(phi,evPlaneV0A),
-      GetCos2DeltaPhi(phi,evPlaneV0C)};
+      Double_t correctedV2[3]={cent,pt,GetCos2DeltaPhi(phi,evPlaneV0)};
       feTPCV2->Fill(correctedV2);
     }
 
     if(pidpassed==0) continue;
 
-    Double_t correctedV2[5]={cent,pt,GetCos2DeltaPhi(phi,evPlaneCorrTPC),GetCos2DeltaPhi(phi,evPlaneV0A),
-     GetCos2DeltaPhi(phi,evPlaneV0C)};
+    Double_t correctedV2[3]={cent,pt,GetCos2DeltaPhi(phi,evPlaneV0)};
 
     feV2->Fill(correctedV2);
     fTrkEovPAft->Fill(pt,EovP);
@@ -838,25 +841,16 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
   fCent = new TH1F("fCent","Centrality",100,0,100) ;
   fOutputList->Add(fCent);
   
-  fevPlaneV0A = new TH1F("fevPlaneV0A","V0A EP",100,0,TMath::Pi());
-  fOutputList->Add(fevPlaneV0A);
-  
-  fevPlaneV0C = new TH1F("fevPlaneV0C","V0C EP",100,0,TMath::Pi());
-  fOutputList->Add(fevPlaneV0C);
-  
-  fevPlaneV0 = new TH1F("fevPlaneV0","V0 EP",100,0,TMath::Pi());
+  fevPlaneV0 = new TH2F("fevPlaneV0","V0 EP",100,0,TMath::Pi(),90,0,90);
   fOutputList->Add(fevPlaneV0);
 
-  fevPlaneTPC = new TH1F("fevPlaneTPC","TPC EP",100,0,TMath::Pi());
-  fOutputList->Add(fevPlaneTPC);
-    
   fTPCsubEPres = new TH1F("fTPCsubEPres","TPC subevent plane resolution",100,-1,1);
   fOutputList->Add(fTPCsubEPres);
   
-  Int_t binsv1[7]={100,100,100,100,100,100,90}; // V0A-V0C, V0A-TPC, V0C-TPC, V0-TPCpos, V0-TPCneg, TPCpos-TPCneg, cent
-  Double_t xminv1[7]={-1,-1,-1,-1,-1,-1,0};
-  Double_t xmaxv1[7]={1,1,1,1,1,1,90};
-  fEPres = new THnSparseD ("fEPres","EP resolution",7,binsv1,xminv1,xmaxv1);
+  Int_t binsv1[4]={100,100,100,90}; // V0-TPCpos, V0-TPCneg, TPCpos-TPCneg, cent
+  Double_t xminv1[4]={-1,-1,-1,0};
+  Double_t xmaxv1[4]={1,1,1,90};
+  fEPres = new THnSparseD ("fEPres","EP resolution",4,binsv1,xminv1,xmaxv1);
   fOutputList->Add(fEPres);
 	
   //phi,fTPCnSigma,cent,pt,EovP,GetDeltaPhi(phi,evPlaneV0),GetCos2DeltaPhi(phi,evPlaneV0), fFlagPhotonicElec, fFlagPhotonicElecBCG,m02,m20
@@ -866,10 +860,10 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
   fCorr = new THnSparseD ("fCorr","Correlations",11,binsv2,xminv2,xmaxv2);
   fOutputList->Add(fCorr);
     
-  Int_t binsv3[5]={90,100,100,100,100}; // cent, pt, TPCcos2DeltaPhi, V0Acos2DeltaPhi, V0Ccos2DeltaPhi
-  Double_t xminv3[5]={0,0,-1,-1,-1};
-  Double_t xmaxv3[5]={90,50,1,1,1}; 
-  feV2 = new THnSparseD ("feV2","inclusive electron v2",5,binsv3,xminv3,xmaxv3);
+  Int_t binsv3[3]={90,100,100}; // cent, pt, V0cos2DeltaPhi
+  Double_t xminv3[3]={0,0,-1};
+  Double_t xmaxv3[3]={90,50,1}; 
+  feV2 = new THnSparseD ("feV2","inclusive electron v2",3,binsv3,xminv3,xmaxv3);
   fOutputList->Add(feV2);
   
   Int_t binsv4[5]={90,100,100,100,100}; // cent, pt, TPCdeltaPhi, V0AdeltaPhi, V0CdeltaPhi
@@ -878,16 +872,16 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
   fphoteV2 = new THnSparseD ("fphoteV2","photonic electron v2",5,binsv4,xminv4,xmaxv4);
   fOutputList->Add(fphoteV2);
   
-  Int_t binsv5[7]={100,90,100,100,100,100,100}; // phi, cent, pt, EovP, TPCdeltaPhi, V0AdeltaPhi, V0CdeltaPhi
-  Double_t xminv5[7]={0,0,0,0,-1,-1,-1};
-  Double_t xmaxv5[7]={2*TMath::Pi(),90,50,3,1,1,1}; 
-  fChargPartV2 = new THnSparseD ("fChargPartV2","Charged particle v2",7,binsv5,xminv5,xmaxv5);
+  Int_t binsv5[5]={100,90,100,100,100}; // phi, cent, pt, EovP, V0deltaPhi
+  Double_t xminv5[5]={0,0,0,0,-1};
+  Double_t xmaxv5[5]={2*TMath::Pi(),90,50,3,1}; 
+  fChargPartV2 = new THnSparseD ("fChargPartV2","Charged particle v2",5,binsv5,xminv5,xmaxv5);
   fOutputList->Add(fChargPartV2);
   
-  Int_t binsv6[5]={90,100,100,100,100}; // cent, pt, TPCdeltaPhi, V0AdeltaPhi, V0CdeltaPhi
-  Double_t xminv6[5]={0,0,-1,-1,-1};
-  Double_t xmaxv6[5]={90,50,1,1,1}; 
-  feTPCV2 = new THnSparseD ("feTPCV2","inclusive electron v2 (TPC)",5,binsv6,xminv6,xmaxv6);
+  Int_t binsv6[3]={90,100,100}; // cent, pt, V0deltaPhi
+  Double_t xminv6[3]={0,0,-1};
+  Double_t xmaxv6[3]={90,50,1}; 
+  feTPCV2 = new THnSparseD ("feTPCV2","inclusive electron v2 (TPC)",3,binsv6,xminv6,xmaxv6);
   fOutputList->Add(feTPCV2);
   
   //EovP,fTPCnSigma,partPt,fFlagPhotonicElec,fFlagPhotonicElecBCG,whichPart,cent,pt,firstMother,secondMother,thirdMother,iHijing,motherPt,secondMotherPt,thirdMotherPt

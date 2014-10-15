@@ -2,7 +2,7 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
 							    TString  data      = "PbPb2010", 
 							    Float_t  minCen    = 0.,
 							    Float_t  maxCen    = 40.,
-							    Float_t  fractionSharedTPCcls = 0.4,
+							    Float_t  fractionSharedTPCcls = 1.,
 							    Bool_t   sepInjec  = kTRUE,
 							    Bool_t   isMC      = kFALSE,
 							    Bool_t   doQA      = kTRUE,
@@ -39,6 +39,7 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
   task->SetCollisionType(data);
   task->SetCentrality(minCen,maxCen);
   // trigger particle
+  //task->SetTriggerFilterBit(272);
   task->SetTriggerPt(ptMinTrig,ptMaxTrig);
   task->SetTriggerEta(etaMaxTrig);
   task->SetCheckIDTrig(checkIDTrig);

@@ -236,6 +236,12 @@ public:
    * @param use If true, make separate branches for each ring. 
    */
   void SetStorePerRing(Bool_t use) { fStorePerRing = use; }
+  /** 
+   * For which triggers to add internally
+   * 
+   * @param mask Trigger mask as defined in AliAODForwardMult
+   */
+  void SetAddMask(UInt_t mask)  { fAddMask = mask; }
 protected: 
   /** 
    * Constructor 
@@ -256,7 +262,9 @@ protected:
       fAODEP(),
       fRingSums(),
       fDoTiming(false), 
-      fHTiming(0)
+      fHTiming(0),
+      fHStatus(0),
+      fAddMask(AliAODForwardMult::kInel)
   {}
   /** 
    * Copy constructor 
@@ -331,9 +339,10 @@ protected:
   AliAODForwardEP        fAODEP;        // Output object
   AliForwardUtil::Histos fRingSums;     // Cache histograms 
   Bool_t                 fDoTiming;     // Whether to do timing or not
-  TProfile*              fHTiming;
-
-  ClassDef(AliForwardMultiplicityBase,5) // Forward multiplicity class
+  TProfile*              fHTiming;      // Timing histogram 
+  TH1*                   fHStatus;      // Status histogram
+  UInt_t                 fAddMask;      // For which triggers to add internally
+  ClassDef(AliForwardMultiplicityBase,6) // Forward multiplicity class
 };
 
 #endif
