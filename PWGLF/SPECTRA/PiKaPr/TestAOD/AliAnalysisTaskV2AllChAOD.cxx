@@ -108,7 +108,8 @@ AliAnalysisTaskV2AllChAOD::AliAnalysisTaskV2AllChAOD(const char *name) : AliAnal
   fIsRecoEff(0),
   fRecoEffList(0),
   fQvecGen(0),
-  fnNchBins(400)
+  fnNchBins(400),
+  fDoCentrSystCentrality(0)
 {
   
   for (Int_t i = 0; i< 9; i++){
@@ -464,7 +465,7 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
   if(fIsMC && fQvecGen) Qvec = QvecMC;
   else Qvec = QvecVZERO;
 
-  Double_t Cent=fEventCuts->GetCent();
+  Double_t Cent=(fDoCentrSystCentrality)?1.01*fEventCuts->GetCent():fEventCuts->GetCent();
   fCentrality->Fill(Cent);
   
   Int_t centV0 = -1;
