@@ -301,9 +301,7 @@ class AliAODEvent : public AliVEvent {
   virtual const Float_t* GetVZEROEqFactors() const {return fHeader?fHeader->GetVZEROEqFactors():0x0;}
   virtual Float_t        GetVZEROEqMultiplicity(Int_t i) const;
   virtual void   SetVZEROEqFactors(Float_t factors[64]) const {
-    SetVZEROEqFactors(&factors[0]);}
-  void           SetVZEROEqFactors(const Float_t *factors) const {
-    if(fHeader && factors)
+    if(fHeader)
       fHeader->SetVZEROEqFactors(factors);}
 
   //ZDC
