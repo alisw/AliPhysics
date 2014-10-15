@@ -133,11 +133,12 @@ void AliZDCReconstructor::Init()
 
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase"); 
   if (!entry) AliFatal("LHC clock-phase shift is not found in OCDB !");
-  AliLHCClockPhase *phaseLHC = (AliLHCClockPhase*)entry->GetObject();
-  // 4/2/2011 According to A. Di Mauro BEAM1 measurement is more reliable 
-  // than BEAM2 and therefore also than the average of the 2
-  fMeanPhase = phaseLHC->GetMeanPhaseB1();
-    
+  else{
+    AliLHCClockPhase *phaseLHC = (AliLHCClockPhase*)entry->GetObject();
+    // 4/2/2011 According to A. Di Mauro BEAM1 measurement is more reliable 
+    // than BEAM2 and therefore also than the average of the 2
+    fMeanPhase = phaseLHC->GetMeanPhaseB1();
+  }  
   if(fIsCalibrationMB==kFALSE)  
     AliInfo(Form("\n\n ***** ZDC reconstruction initialized for %s @ %1.0f + %1.0f GeV *****\n\n",
     	beamType.Data(), fBeamEnergy, fBeamEnergy));
@@ -182,9 +183,10 @@ void AliZDCReconstructor::Init(TString beamType, Float_t beamEnergy)
 
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase"); 
   if (!entry) AliFatal("LHC clock-phase shift is not found in OCDB !");
-  AliLHCClockPhase *phaseLHC = (AliLHCClockPhase*)entry->GetObject();
-  fMeanPhase = phaseLHC->GetMeanPhase();
-  
+  else{
+    AliLHCClockPhase *phaseLHC = (AliLHCClockPhase*)entry->GetObject();
+    fMeanPhase = phaseLHC->GetMeanPhase();
+  }
   fESDZDC = new AliESDZDC();
   
   AliInfo(Form("\n\n ***** ZDC reconstruction initialized for %s @ %1.0f + %1.0f GeV *****\n\n",
@@ -229,7 +231,7 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
   // -- Reading out-of-time signals (last kNch entries) for current event
   if(fPedSubMode==1){
     for(Int_t iDigit=kNch; iDigit<digNentries; iDigit++){
-       if(i<=kNch) ootDigi[i] = digitsTree->GetEntry(iDigit);
+       if(i<=kNch) ootDigi[i-1] = digitsTree->GetEntry(iDigit);
        else AliWarning(" Can't read more out of time values: index>kNch !!!\n");
        i++;
     }
@@ -1461,14 +1463,16 @@ AliZDCPedestals* AliZDCReconstructor::GetPedestalData() const
 {
 
   // Getting pedestal calibration object for ZDC set
-
+  AliZDCPedestals *calibdata = 0x0;
   AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/Pedestals");
   if(!entry) AliFatal("No calibration data loaded!");
-  entry->SetOwner(kFALSE);
+  else{
+    entry->SetOwner(kFALSE);
 
-  AliZDCPedestals *calibdata = dynamic_cast<AliZDCPedestals*>  (entry->GetObject());
-  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
+    calibdata = dynamic_cast<AliZDCPedestals*>  (entry->GetObject());
+    if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
 
+  }
   return calibdata;
 }
 
@@ -1477,14 +1481,15 @@ AliZDCEnCalib* AliZDCReconstructor::GetEnergyCalibData() const
 {
 
   // Getting energy and equalization calibration object for ZDC set
-
+  AliZDCEnCalib *calibdata = 0x0;
   AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/EnergyCalib");
   if(!entry) AliFatal("No calibration data loaded!");  
-  entry->SetOwner(kFALSE);
+  else{
+    entry->SetOwner(kFALSE);
 
-  AliZDCEnCalib *calibdata = dynamic_cast<AliZDCEnCalib*> (entry->GetObject());
-  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
-
+    calibdata = dynamic_cast<AliZDCEnCalib*> (entry->GetObject());
+    if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
+  }
   return calibdata;
 }
 
@@ -1493,14 +1498,15 @@ AliZDCSaturationCalib* AliZDCReconstructor::GetSaturationCalibData() const
 {
 
   // Getting energy and equalization calibration object for ZDC set
-
+  AliZDCSaturationCalib *calibdata = 0x0;
   AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/SaturationCalib");
   if(!entry) AliFatal("No calibration data loaded!");  
-  entry->SetOwner(kFALSE);
+  else{
+    entry->SetOwner(kFALSE);
 
-  AliZDCSaturationCalib *calibdata = dynamic_cast<AliZDCSaturationCalib*> (entry->GetObject());
-  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
-
+    calibdata = dynamic_cast<AliZDCSaturationCalib*> (entry->GetObject());
+    if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
+  }
   return calibdata;
 }
 
@@ -1509,14 +1515,15 @@ AliZDCTowerCalib* AliZDCReconstructor::GetTowerCalibData() const
 {
 
   // Getting energy and equalization calibration object for ZDC set
-
+  AliZDCTowerCalib *calibdata = 0x0;
   AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/TowerCalib");
   if(!entry) AliFatal("No calibration data loaded!");  
-  entry->SetOwner(kFALSE);
+  else{
+    entry->SetOwner(kFALSE);
 
-  AliZDCTowerCalib *calibdata = dynamic_cast<AliZDCTowerCalib*> (entry->GetObject());
-  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
-
+    calibdata = dynamic_cast<AliZDCTowerCalib*> (entry->GetObject());
+    if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
+  }
   return calibdata;
 }
 
@@ -1525,14 +1532,15 @@ AliZDCMBCalib* AliZDCReconstructor::GetMBCalibData() const
 {
 
   // Getting energy and equalization calibration object for ZDC set
-
+  AliZDCMBCalib *calibdata = 0x0;
   AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/MBCalib");
   if(!entry) AliFatal("No calibration data loaded!");  
-  entry->SetOwner(kFALSE);
+  else{
+    entry->SetOwner(kFALSE);
 
-  AliZDCMBCalib *calibdata = dynamic_cast<AliZDCMBCalib*> (entry->GetObject());
-  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
-
+    calibdata = dynamic_cast<AliZDCMBCalib*> (entry->GetObject());
+    if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
+  }
   return calibdata;
 }
 
@@ -1541,13 +1549,15 @@ AliZDCTDCCalib* AliZDCReconstructor::GetTDCCalibData() const
 {
 
   // Getting TDC object for ZDC 
-
+  AliZDCTDCCalib *calibdata = 0x0;
   AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/TDCCalib");
   if(!entry) AliFatal("No calibration data loaded!");  
-  entry->SetOwner(kFALSE);
+  else{
+    entry->SetOwner(kFALSE);
 
-  AliZDCTDCCalib *calibdata = dynamic_cast<AliZDCTDCCalib*> (entry->GetObject());
-  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
+    calibdata = dynamic_cast<AliZDCTDCCalib*> (entry->GetObject());
+    if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
 
+  }
   return calibdata;
 }

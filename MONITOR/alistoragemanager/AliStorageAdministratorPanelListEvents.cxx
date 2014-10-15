@@ -181,17 +181,18 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
 	AddFrame(fStatusLabel,new TGLayoutHints(kLHintsExpandX | kLHintsLeft));
 
 	//buttons
-	AddFrame(new TGTextButton(this,"Close",BUTTON_CLOSE),
+	fCloseButton = new TGTextButton(this,"Close",BUTTON_CLOSE);
+	AddFrame(fCloseButton,
 		 new TGLayoutHints(kLHintsLeft));
-
-	AddFrame(new TGTextButton(this,"Get event's list",BUTTON_GET_LIST),
+	fGetListButton = new TGTextButton(this,"Get event's list",BUTTON_GET_LIST);
+	AddFrame(fGetListButton,
 		 new TGLayoutHints(kLHintsRight));
-
-	AddFrame(new TGTextButton(this,"Mark selected event",BUTTON_MARK_EVENT),
+	fMarkButton = new TGTextButton(this,"Mark selected event",BUTTON_MARK_EVENT);
+	AddFrame(fMarkButton,
 		 new TGLayoutHints(kLHintsRight));
-
-    AddFrame(new TGTextButton(this,"Load event",BUTTON_LOAD_EVENT),
-             new TGLayoutHints(kLHintsRight));
+	fLoadButton = new TGTextButton(this,"Load event",BUTTON_LOAD_EVENT);
+	AddFrame(fLoadButton,
+		 new TGLayoutHints(kLHintsRight));
     
 
 	//event's list
@@ -389,4 +390,37 @@ Bool_t AliStorageAdministratorPanelListEvents::ProcessMessage(Long_t msg, Long_t
 	}
 
 	return false;
+}
+	
+void AliStorageAdministratorPanelListEvents::SetOfflineMode(Bool_t ison)
+{
+
+  if (ison) {
+    fProtonProtonCheckButton->SetDisabledAndSelected(ison);
+    fLeadLeadCheckButton->SetDisabledAndSelected(ison);
+    fTempCheckButton->SetDisabledAndSelected(ison);
+    fPermCheckButton->SetDisabledAndSelected(ison);
+  }
+  else {
+    fProtonProtonCheckButton->SetEnabled(!ison);
+    fLeadLeadCheckButton->SetEnabled(!ison);
+    fTempCheckButton->SetEnabled(!ison);
+    fPermCheckButton->SetEnabled(!ison);
+    fProtonProtonCheckButton->SetOn();
+    fLeadLeadCheckButton->SetOn();
+    fTempCheckButton->SetOn();
+    fPermCheckButton->SetOn();
+  }
+
+  fRunNumberMinEntry->SetState(!ison);
+  fRunNumberMaxEntry->SetState(!ison);
+  fEventNumberMinEntry->SetState(!ison);
+  fEventNumberMaxEntry->SetState(!ison);
+  fMultiplicityMinEntry->SetState(!ison);
+  fMultiplicityMaxEntry->SetState(!ison);
+
+  fCloseButton->SetEnabled(!ison);
+  fGetListButton->SetEnabled(!ison);
+  fMarkButton->SetEnabled(!ison);
+  fLoadButton->SetEnabled(!ison);
 }

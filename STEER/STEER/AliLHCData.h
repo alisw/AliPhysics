@@ -45,6 +45,7 @@ class AliLHCData : public TObject
  public:
   enum          {kStart,kNStor};
   enum BeamID_t {kBeam1,kBeam2};
+  enum BgID_t   {kBg1,kBg2,kBg3,kNBGs};
   enum Proj_t   {kX,kY};
   enum Side_t   {kLeft,kRight};
   enum Collim_t {kTCTVB4L2, kTCTVB4R2, kTCLIA4R2, kNCollimators};
@@ -58,8 +59,18 @@ class AliLHCData : public TObject
 	kBunchConf,kFillNum,kBunchLgtNB,kBunchLgt,kBunchLgtFillB,
 	kRCInjSch,kRCBeta,kRCCrossAng,kRCVang,
 	kBeamSzAcqMode,kBeamSzSigH,kBeamSzSigV,kBeamSzEmittH,kBeamSzEmittV,kBeamSzSigHErr,kBeamSzSigVErr,
-	kCollPos,kLumiAlice,kBckgAlice
-	,kNRecordTypes};
+	kCollPos,
+	kBPTXdeltaTB1B2,
+	kBPTXdeltaTRMSB1B2,
+	kBPTXPhase,
+	kBPTXPhaseRMS,
+	kBPTXPhaseShift,
+	//
+	kALILumiTotalInst,
+	kALILumiTotalDeliveredStabBeam,
+	kALILumiBunchInst,
+	kALIBackground,
+	kNRecordTypes};
   //
   //le
  public:
@@ -103,7 +114,17 @@ class AliLHCData : public TObject
   Int_t GetNRCAngleV()                            const {return fRCAngV[kNStor];}
   //
   Int_t GetNLumiAlice()                           const {return fLumiAlice[kNStor];}
-  Int_t GetNBckgAlice()                           const {return fBckgAlice[kNStor];}
+  Int_t GetNLumiAliceSBDelivered()                const {return fLumiAliceStB[kNStor];}
+  Int_t GetNLumiAliceBunch()                      const {return fLumiAliceBbB[kNStor];}  
+  //
+  Int_t GetNBckgAlice(int bg)                     const {return (bg>-1&&bg<kNBGs) ? fBckgAlice[bg][kNStor] : -1;}
+  //
+  Int_t GetNBPTXdeltaTB1B2()                      const {return fBPTXdTB1B2[kNStor];}
+  Int_t GetNBPTXdeltaTRMSB1B2()                   const {return fBPTXdTRMSB1B2[kNStor];}
+  Int_t GetNBPTXPhase(int bm)                     const {return GoodPairID(bm)?fBPTXPhase[bm][kNStor]:-1;}
+  Int_t GetNBPTXPhaseRMS(int bm)                  const {return GoodPairID(bm)?fBPTXPhaseRMS[bm][kNStor]:-1;}
+  Int_t GetNBPTXPhaseShift(int bm)                const {return GoodPairID(bm)?fBPTXPhaseShift[bm][kNStor]:-1;}
+  //
   //
   Int_t GetNCollimatorJawPos(int coll,int jaw)    const;
   //
@@ -127,14 +148,23 @@ class AliLHCData : public TObject
   AliLHCDipValF* GetRCAngleV(int i=0)                     const; 
   AliLHCDipValF* GetCollimJawPos(int coll, int jaw, int i=0) const;
   //
-  AliLHCDipValF* GetLumiAliceRecord(int i=0)              const; 
-  AliLHCDipValF* GetBckgAliceRecord(int i=0)              const; 
+  AliLHCDipValF* GetLumiAlice(int i=0)                    const; 
+  AliLHCDipValF* GetLumiAliceSBDelivered(int i=0)         const; 
+  AliLHCDipValF* GetLumiAliceBunch(int i=0)               const; 
+  AliLHCDipValF* GetBckgAlice(int bg, int i=0)            const; 
+  //
+  AliLHCDipValF* GetBPTXdeltaTB1B2(int i=0)               const;
+  AliLHCDipValF* GetBPTXdeltaTRMSB1B2(int i=0)            const;
+  AliLHCDipValF* GetBPTXPhase(int bm, int i=0)            const;
+  AliLHCDipValF* GetBPTXPhaseRMS(int bm, int i=0)         const;
+  AliLHCDipValF* GetBPTXPhaseShift(int bm, int i=0)       const;
   //
   Float_t        GetLumiAlice(Double_t tstamp)            const;
-  Float_t        GetBckgAlice(Double_t tstamp)            const;
+  Float_t        GetLumiAliceSBDelivered(Double_t tstamp) const;
+  Float_t        GetBckgAlice(Int_t bg,Double_t tstamp)   const;
   //
-  Float_t        GetLumiInstAlice(Double_t tstamp)        const;
-  Float_t        GetBckgInstAlice(Double_t tstamp)        const;
+  //  Float_t        GetLumiInstAlice(Double_t tstamp)        const;
+  //  Float_t        GetBckgInstAlice(Double_t tstamp)        const;
   //
   void           FlagInteractingBunches(const Int_t beam1[2],const Int_t beam2[2]);
   TObject*       FindRecValidFor(int start,int nrec, double tstamp) const;
@@ -166,8 +196,17 @@ class AliLHCData : public TObject
   const Int_t* GetOffsRCBetaStar()                        const {return fRCBeta;}
   const Int_t* GetOffsRCAngleH()                          const {return fRCAngH;}
   const Int_t* GetOffsRCAngleV()                          const {return fRCAngV;}
+  //
   const Int_t* GetOffsLumiAlice()                         const {return fLumiAlice;}
-  const Int_t* GetOffsBckgAlice()                         const {return fBckgAlice;}
+  const Int_t* GetOffsLumiAliceSBDelivered()              const {return fLumiAliceStB;}
+  const Int_t* GetOffsLumiAliceBunch()                    const {return fLumiAliceBbB;}
+  const Int_t* GetOffsBckgAlice(int bg)                   const {return (bg>-1&&bg<kNBGs) ? fBckgAlice[bg] : 0;}
+  //
+  const Int_t* GetOffsBPTXdeltaTB1B2()                       const {return fBPTXdTB1B2;}
+  const Int_t* GetOffsBPTXdeltaTRMSB1B2()                    const {return fBPTXdTRMSB1B2;}
+  const Int_t* GetOffsBPTXPhase(int bm)                      const {return GoodPairID(bm)?fBPTXPhase[bm]:0;}
+  const Int_t* GetOffsBPTXPhaseRMS(int bm)                   const {return GoodPairID(bm)?fBPTXPhaseRMS[bm]:0;}
+  const Int_t* GetOffsBPTXPhaseShift(int bm)                 const {return GoodPairID(bm)?fBPTXPhaseShift[bm]:0;}
   //
   const Int_t* GetOffsCollimatorJawPos(int coll,int jaw)  const;
   //
@@ -178,9 +217,8 @@ class AliLHCData : public TObject
   static Int_t GetBCId(int bucket, int beamID)                  {return (TMath::Abs(bucket)/10 + (beamID==0 ? kOffsBeam1:kOffsBeam2))%kMaxBSlots;}
   //
   // for retrofitting, these methods has to be public
-  void                  FillLumiAlice(Int_t nrec, Int_t* time, Double_t* val);
-  void                  FillBckgAlice(Int_t nrec, Int_t* time, Double_t* val);
-
+  //  void                  FillLumiAliceOFL(Int_t nrec, Int_t* time, Double_t* val);
+  //  void                  FillBckgAliceOFL(Int_t nrec, Int_t* time, Double_t* val);
 
  protected:
   //
@@ -238,8 +276,17 @@ class AliLHCData : public TObject
   //
   // here we will store the luminosity and the background measured by Alice. We store the value integrated from the start of fill.
   // the inst. value can be obtained as its derivative
-  Int_t           fLumiAlice[2];                      // luminosity measured by Alice                  : Float  |kLumiAlice
-  Int_t           fBckgAlice[2];                      // background measured by Alice                  : Float  |kLumiAlice
+  Int_t           fLumiAlice[2];                      // luminosity measured by Alice, Total_Inst      : Float  |kALILumiTotalInst
+  Int_t           fLumiAliceStB[2];                   // luminosity measured by Alice, Deli.StabBeam   : Float  |kALILumiTotalDeliveredStabBeam
+  Int_t           fLumiAliceBbB[2];                   // luminosity measured by Alice, B-by-B          : Float  |kALILumiBunchInst
+  //
+  Int_t           fBckgAlice[kNBGs][2];               // backgrounds measured by Alice                 : Float  |kALIBackground1,2,3
+  //
+  Int_t           fBPTXdTB1B2[2];                     // BPTX_deltaT_B1_B2                             : Float  |kBPTXdeltaTB1B2,
+  Int_t           fBPTXdTRMSB1B2[2];                  // BPTX_deltaTRMS_B1_B2                          : Float  |kBPTXdeltaTRMSB1B2,
+  Int_t           fBPTXPhase[2][2];                   // BPTX_Phase_B1, and BPTX_Phase_B2              : Float  |kBPTXPhase
+  Int_t           fBPTXPhaseRMS[2][2];                // BPTX_PhaseRMS_B1, and BPTX_PhaseRMS_B2        : Float  |kBPTXPhaseRMS
+  Int_t           fBPTXPhaseShift[2][2];              // BPTX_Phase_Shift_B1 and BPTX_Phase_Shift_B2   : Float  |kBPTXPhaseShift 
   //
   Int_t           fCollimators[kNCollimators][kNJaws][2];// collimator jaws positions                  : Float  |kCollPos
   //
@@ -254,7 +301,7 @@ class AliLHCData : public TObject
   const Char_t*   fkFile2Process;                      //! name of DCS file
   const TMap*     fkMap2Process;                       //! DCS map to process 
 
-  ClassDef(AliLHCData,3)
+  ClassDef(AliLHCData,4)
 };
 
 
@@ -344,12 +391,40 @@ inline AliLHCDipValF* AliLHCData::GetCollimJawPos(int coll, int jaw, int i) cons
 	  i>=0 && i<fCollimators[coll][jaw][kNStor]) ? (AliLHCDipValF*)fData[fCollimators[coll][jaw][kStart]+i]:0;
 }
 
-inline AliLHCDipValF* AliLHCData::GetLumiAliceRecord(int i) const { // get record on integrated luminosity
+inline AliLHCDipValF* AliLHCData::GetLumiAlice(int i) const { // get record on integrated luminosity
   return (i>=0 && i<fLumiAlice[kNStor]) ? (AliLHCDipValF*)fData[fLumiAlice[kStart]+i]:0;
 }
 
-inline AliLHCDipValF* AliLHCData::GetBckgAliceRecord(int i) const { // get record on integrated background
-  return (i>=0 && i<fBckgAlice[kNStor]) ? (AliLHCDipValF*)fData[fBckgAlice[kStart]+i]:0;
+inline AliLHCDipValF* AliLHCData::GetLumiAliceSBDelivered(int i) const { // get record on st.beam delivered luminosity
+  return (i>=0 && i<fLumiAliceStB[kNStor]) ? (AliLHCDipValF*)fData[fLumiAliceStB[kStart]+i]:0;
+}
+
+inline AliLHCDipValF* AliLHCData::GetLumiAliceBunch(int i) const { // get record on b-by-b luminosity
+  return (i>=0 && i<fLumiAliceBbB[kNStor]) ? (AliLHCDipValF*)fData[fLumiAliceBbB[kStart]+i]:0;
+}
+
+inline AliLHCDipValF* AliLHCData::GetBckgAlice(int bg, int i) const { // get record on integrated background
+  return (bg>=0&&bg<kNBGs&&i>=0&&i<fBckgAlice[bg][kNStor]) ? (AliLHCDipValF*)fData[fBckgAlice[bg][kStart]+i]:0;
+}
+
+inline AliLHCDipValF* AliLHCData::GetBPTXdeltaTB1B2(int i) const { // get record 
+  return (i>=0 && i<fBPTXdTB1B2[kNStor]) ? (AliLHCDipValF*)fData[fBPTXdTB1B2[kStart]+i]:0;
+}
+
+inline AliLHCDipValF* AliLHCData::GetBPTXdeltaTRMSB1B2(int i) const { // get record 
+  return (i>=0 && i<fBPTXdTRMSB1B2[kNStor]) ? (AliLHCDipValF*)fData[fBPTXdTRMSB1B2[kStart]+i]:0;
+}
+
+inline AliLHCDipValF* AliLHCData::GetBPTXPhase(int bm, int i) const { // get record 
+  return (GoodPairID(bm) && i>=0 && i<fBPTXPhase[bm][kNStor]) ? (AliLHCDipValF*)fData[fBPTXPhase[bm][kStart]+i]:0;
+}
+
+inline AliLHCDipValF* AliLHCData::GetBPTXPhaseRMS(int bm, int i) const { // get record 
+  return (GoodPairID(bm) && i>=0 && i<fBPTXPhaseRMS[bm][kNStor]) ? (AliLHCDipValF*)fData[fBPTXPhaseRMS[bm][kStart]+i]:0;
+}
+
+inline AliLHCDipValF* AliLHCData::GetBPTXPhaseShift(int bm, int i) const { // get record 
+  return (GoodPairID(bm) && i>=0 && i<fBPTXPhaseShift[bm][kNStor]) ? (AliLHCDipValF*)fData[fBPTXPhaseShift[bm][kStart]+i]:0;
 }
 
 inline Float_t AliLHCData::GetLumiAlice(Double_t tStamp) const { // get closest in time value on integrated luminosity
@@ -357,10 +432,18 @@ inline Float_t AliLHCData::GetLumiAlice(Double_t tStamp) const { // get closest 
   return idx<0 ? -1 : ((AliLHCDipValF*)fData[fLumiAlice[kStart]+idx])->GetValue();
 }
 
-inline Float_t AliLHCData::GetBckgAlice(Double_t tStamp) const { // get closest in time value on integrated bckg
-  int idx = FindEntryValidFor(fBckgAlice[kStart],fBckgAlice[kNStor],tStamp);
-  return idx<0 ? -1 : ((AliLHCDipValF*)fData[fBckgAlice[kStart]+idx])->GetValue();
+inline Float_t AliLHCData::GetLumiAliceSBDelivered(Double_t tStamp) const { // get closest in time value on delivered luminosity
+  int idx = FindEntryValidFor(fLumiAliceStB[kStart],fLumiAliceStB[kNStor],tStamp);
+  return idx<0 ? -1 : ((AliLHCDipValF*)fData[fLumiAliceStB[kStart]+idx])->GetValue();
 }
+
+inline Float_t AliLHCData::GetBckgAlice(int bg,Double_t tStamp) const { // get closest in time value on integrated bckg
+  if (bg<0||bg>=kNBGs) return 0;
+  int idx = FindEntryValidFor(fBckgAlice[bg][kStart],fBckgAlice[bg][kNStor],tStamp);
+  return idx<0 ? -1 : ((AliLHCDipValF*)fData[fBckgAlice[bg][kStart]+idx])->GetValue();
+}
+
+
 
 inline Int_t AliLHCData::FindEntryValidFor(int start,int nrec, double tstamp) const
 {

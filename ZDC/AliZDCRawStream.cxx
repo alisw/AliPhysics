@@ -997,9 +997,11 @@ AliZDCChMap* AliZDCRawStream::GetChMap() const
 
   AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/ChMap");
   if(!entry) AliFatal("No calibration data loaded!");  
+  else{
+   
+    AliZDCChMap *calibdata = dynamic_cast<AliZDCChMap*> (entry->GetObject());
+    if(!calibdata) AliFatal("Wrong calibration object in calibration  file!");
 
-  AliZDCChMap *calibdata = dynamic_cast<AliZDCChMap*> (entry->GetObject());
-  if(!calibdata) AliFatal("Wrong calibration object in calibration  file!");
-
-  return calibdata;
+    return calibdata;
+  }
 }

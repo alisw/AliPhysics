@@ -46,6 +46,7 @@
 #include "AliTRDtrackletWord.h"
 #include "AliTRDtrackletMCM.h"
 #include "AliTRDonlineTrackMatching.h"
+#include "AliTRDcalibDB.h"
 
 #define SETFLG(n,f) ((n) |= f)
 #define CLRFLG(n,f) ((n) &= ~f)
@@ -122,7 +123,9 @@ AliTRDReconstructor::~AliTRDReconstructor()
   //
   // Destructor
   //
-
+  AliTRDcalibDB* calib = AliTRDcalibDB::Instance();
+  if (calib) calib->Invalidate();
+  //
   if(fClusterizer){
     delete fClusterizer;
     fClusterizer = NULL;
@@ -241,16 +244,16 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   }
 
   ResetContainers();
-  AliTRDclusterizer clusterizer(fgTaskNames[AliTRDrecoParam::kClusterizer], fgTaskNames[AliTRDrecoParam::kClusterizer]);
-  clusterizer.SetReconstructor(this);
-  clusterizer.SetUseLabels(kTRUE);
-  clusterizer.SetStoreRawSignals(kTRUE);
-  clusterizer.OpenOutput(clusterTree);
-  clusterizer.ReadDigits(digitsTree);
-  clusterizer.ReadTracklets();
-  clusterizer.ReadTracks();
-  clusterizer.MakeClusters();
-  fgNTimeBins = clusterizer.GetNTimeBins();
+  //  AliTRDclusterizer clusterizer(fgTaskNames[AliTRDrecoParam::kClusterizer], fgTaskNames[AliTRDrecoParam::kClusterizer]);
+  fClusterizer->SetReconstructor(this);
+  fClusterizer->SetUseLabels(kTRUE);
+  fClusterizer->SetStoreRawSignals(kTRUE);
+  fClusterizer->OpenOutput(clusterTree);
+  fClusterizer->ReadDigits(digitsTree);
+  fClusterizer->ReadTracklets();
+  fClusterizer->ReadTracks();
+  fClusterizer->MakeClusters();
+  fgNTimeBins = fClusterizer->GetNTimeBins();
 }
 
 //_____________________________________________________________________________

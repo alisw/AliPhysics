@@ -51,40 +51,49 @@
 ClassImp(AliLHCData)
 
 const Char_t* AliLHCData::fgkDCSNames[] = {
-  "LHC_IntensityBeam%1d_totalIntensity",
-  "LHC_BeamIntensityPerBunchBeam%1d_averageBeamIntensity",
-  "LHC_BeamIntensityPerBunchBeam%1d_Average_BunchIntensities",
+  "LHC_IntensityBeam%1d_totalIntensity"
+  ,"LHC_BeamIntensityPerBunchBeam%1d_averageBeamIntensity"
+  ,"LHC_BeamIntensityPerBunchBeam%1d_Average_BunchIntensities"
   //
-  "LHC_LumAverageBRANB_4%c2_acqMode",
-  "LHC_LumAverageBRANB_4%c2_meanLuminosity",
-  "LHC_LumAverageBRANB_4%c2_meanLuminosityError",
-  "LHC_BeamLuminosityPerBunchBRANB_4%c2_Average_BunchLuminosity",
-  "LHC_BeamLuminosityPerBunchBRANB_4%c2_BunchLuminosityError",
-  "LHC_LumAverageBRANB_4%c2_meanCrossingAngle",
-  "LHC_LumAverageBRANB_4%c2_meanCrossingAngleError",
-  "LHC_CirculatingBunchConfig_Beam%d",
-  "LHC_FillNumber",
+  ,"LHC_LumAverageBRANB_4%c2_acqMode"
+  ,"LHC_LumAverageBRANB_4%c2_meanLuminosity"
+  ,"LHC_LumAverageBRANB_4%c2_meanLuminosityError"
+  ,"LHC_BeamLuminosityPerBunchBRANB_4%c2_Average_BunchLuminosity"
+  ,"LHC_BeamLuminosityPerBunchBRANB_4%c2_BunchLuminosityError"
+  ,"LHC_LumAverageBRANB_4%c2_meanCrossingAngle"
+  ,"LHC_LumAverageBRANB_4%c2_meanCrossingAngleError"
+  ,"LHC_CirculatingBunchConfig_Beam%d"
+  ,"LHC_FillNumber"
   //
-  "LHC_BunchLengthBeam%1d_nBunches",
-  "LHC_BunchLengthBeam%1d_bunchesLenghts",
-  "LHC_BunchLengthBeam%1d_filledBuckets",
+  ,"LHC_BunchLengthBeam%1d_nBunches"
+  ,"LHC_BunchLengthBeam%1d_bunchesLenghts"
+  ,"LHC_BunchLengthBeam%1d_filledBuckets"
   //
-  "LHC_RunControl_ActiveInjectionScheme",
-  "LHC_RunControl_BetaStar",
-  "LHC_RunControl_IP2_Xing_Murad",
-  "LHC_RunControl_IP2_ALICE_Murad",
+  ,"LHC_RunControl_ActiveInjectionScheme"
+  ,"LHC_RunControl_BetaStar"
+  ,"LHC_RunControl_IP2_Xing_Murad"
+  ,"LHC_RunControl_IP2_ALICE_Murad"
 
-  "LHC_BeamSizeBeam%1d_acqMode",
-  "LHC_BeamSizeBeam%1d_sigmaH",
-  "LHC_BeamSizeBeam%1d_sigmaV",
-  "LHC_BeamSizeBeam%1d_emittanceH",
-  "LHC_BeamSizeBeam%1d_emittanceV",
-  "LHC_BeamSizeBeam%1d_errorSigmaH",
-  "LHC_BeamSizeBeam%1d_errorSigmaV",
+  ,"LHC_BeamSizeBeam%1d_acqMode"
+  ,"LHC_BeamSizeBeam%1d_sigmaH"
+  ,"LHC_BeamSizeBeam%1d_sigmaV"
+  ,"LHC_BeamSizeBeam%1d_emittanceH"
+  ,"LHC_BeamSizeBeam%1d_emittanceV"
+  ,"LHC_BeamSizeBeam%1d_errorSigmaH"
+  ,"LHC_BeamSizeBeam%1d_errorSigmaV"
   //
-  "LHC_CollimatorPos_%s_lvdt_%s",
-  "ALICE_LumiIntFill",
-  "ALICE_BckgIntFill"
+  ,"LHC_CollimatorPos_%s_lvdt_%s"
+  //
+  ,"BPTX_deltaT_B1_B2"
+  ,"BPTX_deltaTRMS_B1_B2"
+  ,"BPTX_Phase_B%1d"
+  ,"BPTX_PhaseRMS_B%1d"
+  ,"BPTX_Phase_Shift_B%1d"
+  //
+  ,"ALI_Lumi_Total_Inst"
+  ,"ALI_Lumi_Total_Delivered_StabBeam"
+  ,"ALI_Lumi_Bunch_Inst"
+  ,"ALI_Background%1d"
 };
 
 const Char_t* AliLHCData::fgkDCSColNames[] = {
@@ -183,6 +192,21 @@ Bool_t AliLHCData::FillData(double tmin, double tmax)
     snprintf(buff1,99,fgkDCSNames[kBeamSzSigVErr],ibm+1);
     FillScalarRecord(fBeamSigmaV[ibm], buff, buff1);
     //
+    //
+    snprintf(buff,99,fgkDCSNames[kBPTXPhase],ibm+1);         // ----- BPTXPhase beam 1 and 2
+    FillScalarRecord(fBPTXPhase[ibm], buff);
+    //
+    snprintf(buff,99,fgkDCSNames[kBPTXPhaseRMS],ibm+1);      // ----- BPTXPhaseRMS beam 1 and 2
+    FillScalarRecord(fBPTXPhaseRMS[ibm], buff);
+    //
+    snprintf(buff,99,fgkDCSNames[kBPTXPhaseShift],ibm+1);    // ----- BPTXPhaseShift beam 1 and 2
+    FillScalarRecord(fBPTXPhaseShift[ibm], buff);
+    //
+  }
+  //
+  for (int ibg=0;ibg<kNBGs;ibg++) {
+    snprintf(buff,99,fgkDCSNames[kALIBackground],ibg+1);    // ----- Alice backgrounds 1,2,3
+    FillScalarRecord(fBckgAlice[ibg], buff);
   }
   //
   FlagInteractingBunches(fBunchConfMeas[0],fBunchConfMeas[1]);
@@ -220,6 +244,12 @@ Bool_t AliLHCData::FillData(double tmin, double tmax)
   FillScalarRecord(fRCBeta, fgkDCSNames[kRCBeta]);          // ---- target beta 
   FillScalarRecord(fRCAngH, fgkDCSNames[kRCCrossAng]);      // ---- horisontal angle
   FillScalarRecord(fRCAngV,fgkDCSNames[kRCVang] );          // ---- vertical angle
+  //
+  FillScalarRecord(fBPTXdTB1B2,    fgkDCSNames[kBPTXdeltaTB1B2]);
+  FillScalarRecord(fBPTXdTRMSB1B2, fgkDCSNames[kBPTXdeltaTRMSB1B2]);
+  FillScalarRecord(fLumiAlice,     fgkDCSNames[kALILumiTotalInst]);
+  FillScalarRecord(fLumiAliceStB,  fgkDCSNames[kALILumiTotalDeliveredStabBeam]);  
+  FillBCLuminosities(fLumiAliceBbB,fgkDCSNames[kALILumiBunchInst],0,0);  
   //
   return kTRUE;
 }
@@ -741,6 +771,10 @@ void AliLHCData::Print(const Option_t* opt) const
   TString opts = opt;
   opts.ToLower();
   Bool_t utcTime = opts.Contains("loc") ? kFALSE:kTRUE;
+  //
+  Bool_t includeMissing = opts.Contains("m");
+  if (!includeMissing) printf("Missing records are skept, use Print(\"m\") to print missing record names\n");
+  else                 printf("Missing records are printed, remove \"m\" from Print options to skip them\n");
   Bool_t full = kTRUE;
   if (!opts.Contains("f")) {
     printf("Use Print(\"f\") to print full info\n");
@@ -753,103 +787,189 @@ void AliLHCData::Print(const Option_t* opt) const
   //
   printf("********** SETTINGS FROM RUN CONTROL **********\n");
   //
-  printf("* %-38s","Injection Scheme");
-  PrintAux(full,fRCInjScheme,opts);
+  if (fRCInjScheme[kNStor] || includeMissing) {
+    printf("* %-38s","Injection Scheme");
+    PrintAux(full,fRCInjScheme,opts);
+  }
   //
-  printf("* %-38s","Beta Star");
-  PrintAux(full,fRCBeta,opts);
+  if (fRCBeta[kNStor] || includeMissing) {
+    printf("* %-38s","Beta Star");
+    PrintAux(full,fRCBeta,opts);
+  }
   //
-  printf("* %-38s","Horisontal Crossing Angle");
-  PrintAux(full,fRCAngH,opts);
+  if (fRCAngH[kNStor] || includeMissing) {
+    printf("* %-38s","Horisontal Crossing Angle");
+    PrintAux(full,fRCAngH,opts);
+  }
   //
-  printf("* %-38s","Vertical   Crossing Angle");
-  PrintAux(full,fRCAngV,opts);
+  if (fRCAngV[kNStor] || includeMissing) {
+    printf("* %-38s","Vertical   Crossing Angle");
+    PrintAux(full,fRCAngV,opts);
+  }
   //
   for (int ib=0;ib<2;ib++) {
-    printf("* Beam%d filling  [- interacts at IR2!]  ",ib+1);
-    PrintAux(full,fBunchConfDecl[ib],opts);
+    if (fBunchConfDecl[ib][kNStor] || includeMissing) {
+      printf("* Beam%d filling  [- interacts at IR2!]  ",ib+1);
+      PrintAux(full,fBunchConfDecl[ib],opts);
+    }
   }
   //
   printf("\n**********       MEASURED DATA       **********\n");
   //
   for (int ib=0;ib<2;ib++) {
-    printf("* Beam%d filling  [- interacts at IR2!]  ",ib+1);
-    PrintAux(full,fBunchConfMeas[ib],opts);
+    if (fBunchConfMeas[ib][kNStor] || includeMissing) {
+      printf("* Beam%d filling  [- interacts at IR2!]  ",ib+1);
+      PrintAux(full,fBunchConfMeas[ib],opts);
+    }
   } 
   //
   for (int ib=0;ib<2;ib++) {
-    printf("* Beam%d total intensity                 ",ib+1);
-    PrintAux(full,fIntensTotal[ib],opts);
+    if (fIntensTotal[ib][kNStor] || includeMissing) {
+      printf("* Beam%d total intensity                 ",ib+1);
+      PrintAux(full,fIntensTotal[ib],opts);
+    }
   } 
   //
   for (int ib=0;ib<2;ib++) {
-    printf("* Beam%d total intensity (bunch average) ",ib+1);
-    PrintAux(full,fIntensTotalAv[ib],opts);
+    if (fIntensTotalAv[ib][kNStor] || includeMissing) {
+      printf("* Beam%d total intensity (bunch average) ",ib+1);
+      PrintAux(full,fIntensTotalAv[ib],opts);
+    }
   } 
   //
   for (int ib=0;ib<2;ib++) {
-    printf("* Beam%d intensity per bunch             ",ib+1);
-    PrintAux(full,fIntensPerBunch[ib],opts);
+    if (fIntensPerBunch[ib][kNStor] || includeMissing) {
+      printf("* Beam%d intensity per bunch             ",ib+1);
+      PrintAux(full,fIntensPerBunch[ib],opts);
+    }
   }
   //
   for (int ib=0;ib<2;ib++) {
-    printf("* Beam%d bunch lengths                   ",ib+1);
-    PrintAux(full,fBunchLengths[ib],opts);
+    if (fBunchLengths[ib][kNStor] || includeMissing) {
+      printf("* Beam%d bunch lengths                   ",ib+1);
+      PrintAux(full,fBunchLengths[ib],opts);
+    }
   } 
   //
   for (int ib=0;ib<2;ib++) {
-    printf("* Beam%d Horisontal emittance            ",ib+1);
-    PrintAux(full,fEmittanceH[ib],opts);
+    if (fEmittanceH[ib][kNStor] || includeMissing) {
+      printf("* Beam%d Horisontal emittance            ",ib+1);
+      PrintAux(full,fEmittanceH[ib],opts);
+    }
   }
   //
   for (int ib=0;ib<2;ib++) {
-    printf("* Beam%d Vertical emittance              ",ib+1);
-    PrintAux(full,fEmittanceV[ib],opts);
+    if (fEmittanceV[ib][kNStor] || includeMissing) {
+      printf("* Beam%d Vertical emittance              ",ib+1);
+      PrintAux(full,fEmittanceV[ib],opts);
+    }
   }
   //
   for (int ib=0;ib<2;ib++) {
-    printf("* Beam%d Horisontal sigma                ",ib+1);
-    PrintAux(full,fBeamSigmaH[ib],opts);
+    if (fBeamSigmaH[ib][kNStor] || includeMissing) {
+      printf("* Beam%d Horisontal sigma                ",ib+1);
+      PrintAux(full,fBeamSigmaH[ib],opts);
+    }
   }
   //
   for (int ib=0;ib<2;ib++) {
-    printf("* Beam%d Vertical sigma                  ",ib+1);
-    PrintAux(full,fBeamSigmaV[ib],opts);
+    if (fBeamSigmaV[ib][kNStor] || includeMissing) {
+      printf("* Beam%d Vertical sigma                  ",ib+1);
+      PrintAux(full,fBeamSigmaV[ib],opts);
+    }
   }
   //
   for (int lr=0;lr<2;lr++) {
-    printf("* Total luminosity from BRANB_4%c2       ",lr ? 'R':'L');
-    PrintAux(full,fLuminTotal[lr],opts);
+    if (fLuminTotal[lr][kNStor] || includeMissing) {
+      printf("* Total luminosity from BRANB_4%c2       ",lr ? 'R':'L');
+      PrintAux(full,fLuminTotal[lr],opts);
+    }
   } 
   //
   for (int lr=0;lr<2;lr++) {
-    printf("* Luminosity acq.mode, BRANB_4%c2        ",lr ? 'R':'L');
-    PrintAux(full,fLuminAcqMode[lr],opts+"bit");
+    if (fLuminAcqMode[lr][kNStor] || includeMissing) {
+      printf("* Luminosity acq.mode, BRANB_4%c2        ",lr ? 'R':'L');
+      PrintAux(full,fLuminAcqMode[lr],opts+"bit");
+    }
   } 
   //
   for (int lr=0;lr<2;lr++) {
-    printf("* Luminosity per BC from BRANB_4%c2      ",lr ? 'R':'L');
-    PrintAux(full,fLuminPerBC[lr],opts);
+    if (fLuminPerBC[lr][kNStor] || includeMissing) {
+      printf("* Luminosity per BC from BRANB_4%c2      ",lr ? 'R':'L');
+      PrintAux(full,fLuminPerBC[lr],opts);
+    }
   }
   //
   for (int lr=0;lr<2;lr++) {
-    printf("* Crossing angle, side %c                ",lr ? 'R':'L');
-    PrintAux(full,fCrossAngle[lr],opts);
+    if (fCrossAngle[lr][kNStor] || includeMissing) {
+      printf("* Crossing angle, side %c                ",lr ? 'R':'L');
+      PrintAux(full,fCrossAngle[lr],opts);
+    }
   }
   //
   for (int coll=0;coll<kNCollimators;coll++)
     for (int jaw=0;jaw<kNJaws;jaw++) {
-      printf("* Collimator %10s:%16s",fgkDCSColNames[coll],fgkDCSColJaws[jaw]);
-      PrintAux(full,fCollimators[coll][jaw],opts);
+      if (fCollimators[coll][jaw][kNStor] || includeMissing) {
+	printf("* Collimator %10s:%16s",fgkDCSColNames[coll],fgkDCSColJaws[jaw]);
+	PrintAux(full,fCollimators[coll][jaw],opts);
+      }
     }
   //
-  printf("* Alice fill integrated luminosity data:   ");
-  PrintAux(full,fLumiAlice,opts);
+  printf("\n**********    ALICE MEASURED DATA    **********\n");
   //
-  printf("* Alice fill integrated background data    ");
-  PrintAux(full,fBckgAlice,opts);
+  if (fLumiAlice[kNStor] || includeMissing) {
+    printf("* %-38s","Alice luminosity total");
+    PrintAux(full,fLumiAlice,opts);
+  }
   //
-
+  if (fLumiAliceStB[kNStor] || includeMissing) {
+    printf("* %-38s","Alice luminosity delivered stable beam");
+    PrintAux(full,fLumiAliceStB,opts);
+  }
+  //
+  if (fLumiAliceBbB[kNStor] || includeMissing) {
+    printf("* %-38s","Alice luminosity B-by-B, stable beam");
+    PrintAux(full,fLumiAliceBbB,opts);
+  }
+  //
+  for (int ib=0;ib<3;ib++) {
+    if (fBckgAlice[ib][kNStor] || includeMissing) {
+      printf("* Alice background%d                     ",ib+1);
+      PrintAux(full,fBckgAlice[ib],opts);
+    }
+  }
+  //
+  if (fBPTXdTB1B2[kNStor] || includeMissing) {
+    printf("* %-38s","BPTX DeltaT Beam1 Beam2");
+    PrintAux(full,fBPTXdTB1B2,opts);
+  }
+  //
+  if (fBPTXdTRMSB1B2[kNStor] || includeMissing) {
+    printf("* %-38s","BPTX DeltaT RMS Beam1 Beam2");
+    PrintAux(full,fBPTXdTRMSB1B2,opts);
+  }
+  //
+  for (int ib=0;ib<2;ib++) {
+    if (fBPTXPhase[ib][kNStor] || includeMissing) {
+      printf("* BPTX Phase Beam%d                      ",ib+1);
+      PrintAux(full,fBPTXPhase[ib],opts);
+    }
+  }
+  //
+  for (int ib=0;ib<2;ib++) {
+    if (fBPTXPhaseRMS[ib][kNStor] || includeMissing) {
+      printf("* BPTX Phase RMS Beam%d                  ",ib+1);
+      PrintAux(full,fBPTXPhaseRMS[ib],opts);
+    }
+  }
+  //
+  for (int ib=0;ib<2;ib++) {
+    if (fBPTXPhaseShift[ib][kNStor] || includeMissing) {
+      printf("* BPTX Phase Shift Beam%d                ",ib+1);
+      PrintAux(full,fBPTXPhaseShift[ib],opts);
+    }
+  }
+  //
 }
 
 //___________________________________________________________________
@@ -887,11 +1007,19 @@ void AliLHCData::Clear(const Option_t *)
     fRCAngH[i] = 0;
     fRCAngV[i] = 0;
     fLumiAlice[i] = 0;
-    fBckgAlice[i] = 0;    
+    fLumiAliceStB[i] = 0;
+    fLumiAliceBbB[i] = 0;
+    for (int ibg=kNBGs;ibg--;) fBckgAlice[ibg][i] = 0;
+    fBPTXdTB1B2[i] = 0;
+    fBPTXdTRMSB1B2[i] = 0;
     //
     for (int icl=kNCollimators;icl--;) for (int jaw=kNJaws;jaw--;) fCollimators[icl][jaw][i]=0;
     //
     for (int j=2;j--;) {
+      fBPTXPhase[j][i] = 0;
+      fBPTXPhaseRMS[j][i] = 0;
+      fBPTXPhaseShift[j][i] = 0;
+      //
       fBunchConfDecl[j][i] = 0;
       fBunchConfMeas[j][i] = 0;
       fBunchLengths[j][i] = 0;
@@ -1041,8 +1169,11 @@ Int_t AliLHCData::GetMeanIntensity(int beamID, Double_t &colliding, Double_t &no
   return nrec;
 }
 
+/***************************************************************************************
+// this is for the obsolete retrofitting
+
 //___________________________________________________________________
-void AliLHCData::FillLumiAlice(Int_t nrec, Int_t* timeArr, Double_t* valArr)
+void AliLHCData::FillLumiAliceOFL(Int_t nrec, Int_t* timeArr, Double_t* valArr)
 {
   // Create a record for lumi integrated from the beginning of fill
   // We need dedicated method since this info comes from Alice (not LHCDip) as instantaneous values
@@ -1084,7 +1215,7 @@ void AliLHCData::FillLumiAlice(Int_t nrec, Int_t* timeArr, Double_t* valArr)
 }
 
 //___________________________________________________________________
-void AliLHCData::FillBckgAlice(Int_t nrec, Int_t* timeArr, Double_t* valArr)
+void AliLHCData::FillBckgAliceOFL(Int_t nrec, Int_t* timeArr, Double_t* valArr)
 {
   // Create a record for lumi integrated from the beginning of fill
   // We need dedicated method since this info comes from Alice (not LHCDip) as instantaneous values
@@ -1124,13 +1255,16 @@ void AliLHCData::FillBckgAlice(Int_t nrec, Int_t* timeArr, Double_t* valArr)
   printf("Stored %d Alice Integrated Background records out of %d provided\n",fBckgAlice[kNStor],nrec);
 }
 
+***************************************************************************************/
+
+/*
 //_____________________________________________________________________________
 Float_t AliLHCData::GetLumiInstAlice(Double_t tStamp) const 
 {
   // get closest in time value on inst luminosity
   int idx = FindEntryValidFor(fLumiAlice[kStart],fLumiAlice[kNStor],tStamp);
   if (idx<0) return -1;
-  AliLHCDipValF *rec=GetLumiAliceRecord(idx),*rec1=GetLumiAliceRecord(idx>0 ? idx-1:idx+1);
+  AliLHCDipValF *rec=GetLumiAlice(idx),*rec1=GetLumiAlice(idx>0 ? idx-1:idx+1);
   if (!rec || !rec1) return -1;
   double dt = rec->GetTimeStamp() - rec1->GetTimeStamp();
   return TMath::Abs(dt)>1e-6 ? (rec->GetValue()-rec1->GetValue())/dt : -1;
@@ -1147,6 +1281,7 @@ Float_t AliLHCData::GetBckgInstAlice(Double_t tStamp) const
   double dt = rec->GetTimeStamp() - rec1->GetTimeStamp();
   return TMath::Abs(dt)>1e-6 ? (rec->GetValue()-rec1->GetValue())/dt : -1;
 }
+*/
 
 //_____________________________________________________________________________
 TGraph* AliLHCData::ExportGraph(Int_t *coord, Int_t elID) const

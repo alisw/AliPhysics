@@ -9,6 +9,7 @@
 
 #include "AliEveEventManagerEditor.h"
 #include "AliEveEventManager.h"
+#include "AliEveConfigManager.h"
 
 #include <AliESDEvent.h>
 
@@ -21,6 +22,11 @@
 #include <TGLabel.h>
 
 #include "Riostream.h"
+
+#ifdef ZMQ
+#include "AliStorageAdministratorPanelListEvents.h"
+#include "AliStorageAdministratorPanelMarkEvent.h"
+#endif
 
 //______________________________________________________________________________
 // GUI editor for AliEveEventManager.
@@ -179,15 +185,17 @@ AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr) :
     fTrigSel->Connect("Selected(char*)", cls, this, "DoSetTrigSel()");
 
     fStorageStatus = MkLabel(f,"Storage: Waiting",0,8,8);
+    fEventServerStatus = MkLabel(f,"Event Server: Waiting",0,10,10);
       
   }
     
   fEventInfo = new TGTextView(this, 400, 600);
   AddFrame(fEventInfo, new TGLayoutHints(kLHintsNormal | kLHintsExpandX | kLHintsExpandY));
 
-  fM->Connect("NewEventLoaded()", cls, this, "Update()");
-    fM->Connect("StorageManagerOk()",cls,this,"StorageManagerChangedState(=1)");
-    fM->Connect("StorageManagerDown()",cls,this,"StorageManagerChangedState(=0)");
+   fM->Connect("NewEventLoaded()", cls, this, "Update(=1)");
+   fM->Connect("NoEventLoaded()", cls, this, "Update(=0)");
+   fM->Connect("StorageManagerOk()",cls,this,"StorageManagerChangedState(=1)");
+   fM->Connect("StorageManagerDown()",cls,this,"StorageManagerChangedState(=0)");
 
   SetCleanup(kDeepCleanup);
   Layout();
@@ -215,7 +223,13 @@ void AliEveEventManagerWindow::DoPrevEvent()
 {
   // Load previous event
   // fM->PrevEvent();
-  fM->GotoEvent(1);
+  if (fM->IsOnlineMode()) {
+    fM->GotoEvent(1);
+  }
+  else {
+    fM->GotoEvent((Int_t) fEventId->GetNumber()-1);
+
+  }
 
 }
 
@@ -224,8 +238,12 @@ void AliEveEventManagerWindow::DoNextEvent()
 {
   // Load next event
   // fM->NextEvent();
-  fM->GotoEvent(2);
-
+  if (fM->IsOnlineMode()) {
+    fM->GotoEvent(2);
+  }
+  else {
+    fM->GotoEvent((Int_t) fEventId->GetNumber()+1);
+  }
 }
 
 //______________________________________________________________________________
@@ -266,7 +284,7 @@ void AliEveEventManagerWindow::DoSetAutoLoad()
   // Set the auto-load flag
 
   fM->SetAutoLoad(fAutoLoad->IsOn());
-  Update();
+  Update(fM->NewEventAvailable());
 }
 
 //______________________________________________________________________________
@@ -286,72 +304,140 @@ void AliEveEventManagerWindow::DoSetTrigSel()
 }
 
 //______________________________________________________________________________
-void AliEveEventManagerWindow::Update()
+void AliEveEventManagerWindow::Update(int state)
 {
-  // Update current event, number of available events, list of active triggers
 
   Bool_t autoLoad = fM->GetAutoLoad();
   Bool_t extCtrl  = fM->IsUnderExternalControl();
   Bool_t evNavOn  = !autoLoad && !extCtrl;
 
-  // fFirstEvent->SetEnabled(evNavOn);
-  // fPrevEvent ->SetEnabled(evNavOn);
-  // fLastEvent ->SetEnabled(evNavOn);
-  fFirstEvent->SetEnabled(!autoLoad);
-  fPrevEvent ->SetEnabled(!autoLoad);
-  fLastEvent ->SetEnabled(!autoLoad);
-  fNextEvent ->SetEnabled(!autoLoad);
-  fRefresh   ->SetEnabled(evNavOn);
+#ifdef ZMQ
 
-  fEventId->SetNumber(fM->GetEventId());
-  fEventId->SetState(evNavOn);
-  fInfoLabel->SetText(Form("/ %d", fM->GetMaxEventId()));
+  AliESDEvent*  esd = fM->GetESD();
+  AliStorageAdministratorPanelListEvents* listEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
+  AliEveConfigManager *configManager = AliEveConfigManager::GetMaster();
 
-  fAutoLoad->SetState(fM->GetAutoLoad() ? kButtonDown : kButtonUp);
-  fAutoLoadTime->SetValue(fM->GetAutoLoadTime());
+  if (!fM->IsOnlineMode()) {
 
-  // Loop over active trigger classes
-  if (fM->GetESD()) {
-    for(Int_t iTrig = 0; iTrig < AliESDRun::kNTriggerClasses; iTrig++) {
-      TString trigName = fM->GetESD()->GetESDRun()->GetTriggerClass(iTrig);
-      if (trigName.IsNull()) {
-	if (fTrigSel->GetListBox()->GetEntry(iTrig)) {
-	  if (fTrigSel->GetSelected() == iTrig) fTrigSel->Select(-1);
-	  fTrigSel->RemoveEntry(iTrig);
-	}
-	continue;
-      }
-      if (!fTrigSel->FindEntry(trigName.Data()))
-	fTrigSel->AddEntry(trigName.Data(),iTrig);
-    }
+      listEventsTab->SetOfflineMode(kTRUE);
+      configManager->DisableStoragePopup();
+
+      fFirstEvent->SetEnabled(!autoLoad);
+      fPrevEvent ->SetEnabled(!autoLoad);
+      fLastEvent ->SetEnabled(!autoLoad);
+      fNextEvent ->SetEnabled(!autoLoad);
+      fMarkEvent ->SetEnabled(kFALSE);
+
+      fInfoLabel->SetText(Form("/ %d", fM->GetMaxEventId()));
+
   }
-  fTrigSel->SetEnabled(!evNavOn);
+  else if (1 == state && fStorageStatus->GetText()->Contains("DOWN")) {
+    fEventServerStatus->SetText("Event Server: OK");
+    fFirstEvent->SetEnabled(kFALSE);
+    fPrevEvent ->SetEnabled(kFALSE);
+    fLastEvent ->SetEnabled(!autoLoad);
+    fNextEvent ->SetEnabled(kFALSE);
+    fMarkEvent ->SetEnabled(kFALSE);
+    listEventsTab->SetOfflineMode(kTRUE);
+    fInfoLabel->SetText(Form("/ %d",fM->GetEventId()));
+  }
+  else if (0 == state && fStorageStatus->GetText()->Contains("DOWN")) {
+    fEventServerStatus->SetText("Event Server: Waiting");
+    fFirstEvent->SetEnabled(kFALSE);
+    fPrevEvent ->SetEnabled(kFALSE);
+    fLastEvent ->SetEnabled(!autoLoad);
+    fNextEvent ->SetEnabled(kFALSE);
+    fMarkEvent ->SetEnabled(kFALSE);
+    listEventsTab->SetOfflineMode(kTRUE);
+  }
+  else if (0 == state && fStorageStatus->GetText()->Contains("OK")) {
+    fEventServerStatus->SetText("Event Server: Waiting");
+    fFirstEvent->SetEnabled(!autoLoad);
+    fPrevEvent ->SetEnabled(!autoLoad);
+    fLastEvent ->SetEnabled(!autoLoad);
+    fNextEvent ->SetEnabled(!autoLoad);
+    fMarkEvent ->SetEnabled(kTRUE);
+    listEventsTab->SetOfflineMode(kFALSE);
+  }
+  else {
+    fEventServerStatus->SetText("Event Server: OK");
+    fFirstEvent->SetEnabled(!autoLoad);
+    fPrevEvent ->SetEnabled(!autoLoad);
+    fLastEvent ->SetEnabled(!autoLoad);
+    fNextEvent ->SetEnabled(!autoLoad);
+    fMarkEvent ->SetEnabled(kTRUE);
+    listEventsTab->SetOfflineMode(kFALSE);
+  }
+#endif
 
-  fEventInfo->LoadBuffer(fM->GetEventInfoHorizontal());
+  if (1 == state) {
+    fRefresh   ->SetEnabled(evNavOn);
 
-  Layout();
+    fEventId->SetNumber(fM->GetEventId());
+    fEventId->SetState(evNavOn);
+    // fInfoLabel->SetText(Form("/ %d", fM->GetMaxEventId()));
+
+    fAutoLoad->SetState(fM->GetAutoLoad() ? kButtonDown : kButtonUp);
+    fAutoLoadTime->SetValue(fM->GetAutoLoadTime());
+
+    // Loop over active trigger classes
+    if (fM->GetESD()) {
+      for(Int_t iTrig = 0; iTrig < AliESDRun::kNTriggerClasses; iTrig++) {
+	TString trigName = fM->GetESD()->GetESDRun()->GetTriggerClass(iTrig);
+	if (trigName.IsNull()) {
+	  if (fTrigSel->GetListBox()->GetEntry(iTrig)) {
+	    if (fTrigSel->GetSelected() == iTrig) fTrigSel->Select(-1);
+	    fTrigSel->RemoveEntry(iTrig);
+	  }
+	  continue;
+	}
+	if (!fTrigSel->FindEntry(trigName.Data()))
+	  fTrigSel->AddEntry(trigName.Data(),iTrig);
+      }
+    }
+    fTrigSel->SetEnabled(!evNavOn);
+
+    fEventInfo->LoadBuffer(fM->GetEventInfoHorizontal());
+
+    Layout();
+  }
 }
 
 void AliEveEventManagerWindow::StorageManagerChangedState(int state)
 {
+#ifdef ZMQ
+
+  Bool_t autoLoad = fM->GetAutoLoad();
+  AliStorageAdministratorPanelListEvents* listEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
+  AliEveConfigManager *configManager = AliEveConfigManager::GetMaster();
+
+  if (fM->IsOnlineMode()) {
     if (state == 0)
-    {
+      {
         fStorageStatus->SetText("Storage: DOWN");
-        fMarkEvent->SetEnabled(false);
-        fNextEvent->SetEnabled(false);
-        fLastEvent->SetEnabled(false);
-        fPrevEvent->SetEnabled(false);
-        fFirstEvent->SetEnabled(false);
-    }
+        fMarkEvent->SetEnabled(kFALSE);
+        fNextEvent->SetEnabled(kFALSE);
+        fLastEvent->SetEnabled(!autoLoad);
+        fPrevEvent->SetEnabled(kFALSE);
+        fFirstEvent->SetEnabled(kFALSE);
+	listEventsTab->SetOfflineMode(kTRUE);
+	configManager->DisableStoragePopup();
+	fEventId->SetState(kFALSE);
+      }
     else if(state == 1)
-    {
+      {
+	listEventsTab->SetOfflineMode(kFALSE);
+
         fStorageStatus->SetText("Storage: OK");
-        fMarkEvent->SetEnabled(true);
-        fNextEvent->SetEnabled(true);
-        fLastEvent->SetEnabled(true);
-        fPrevEvent->SetEnabled(true);
-        fFirstEvent->SetEnabled(true);
-    }
+        fMarkEvent->SetEnabled(kTRUE);
+        fNextEvent->SetEnabled(!autoLoad);
+        fLastEvent->SetEnabled(!autoLoad);
+        fPrevEvent->SetEnabled(!autoLoad);
+        fFirstEvent->SetEnabled(!autoLoad);
+	fEventId->SetState(!autoLoad);
+      }
+  }
+#endif
 }
 
 //------------------------------------------------------------------------------

@@ -52,6 +52,11 @@ private:
   TList                 *fListQAitsSA;      //! List with ITS SA QA histograms
   TList                 *fListQAitsPureSA;  //! List with ITS pure SA QA histograms
   TList                 *fListQAtpc;        //! List with TPC QA histograms
+  TList                 *fListQAtpcBasic;   //! Sub-list with TPC QA histograms - basic
+  TList                 *fListQAtpcMCtruth; //! Sub-list with TPC QA histograms - only MC truth identified particles
+  TList                 *fListQAtpcHybrid;  //! Sub-list with TPC QA histograms - the "hybrid" scenario
+  TList                 *fListQAtpcOROChigh;//! Sub-list with TPC QA histograms - the "OROChigh" scenario
+  TList                 *fListQAtpcV0;      //! Sub-list with TPC QA histograms - V0s
   TList                 *fListQAtrd;        //! List with TRD QA histograms
   TList                 *fListQAtrdNsig;    //! List with TRD QA histograms for Nsigma approach
   TList                 *fListQAtrdNsigTPCTOF; //! List with TRD QA histograms for Nsigma approach after TPC and TOF selection
@@ -69,7 +74,7 @@ private:
 
   //qa object initialisation
   void SetupITSqa();
-  void SetupTPCqa();
+  void SetupTPCqa(Bool_t fillMC, Bool_t fill11h, Bool_t fillV0);
   void SetupTRDqa();
   void SetupTOFqa();
   void SetupT0qa();
@@ -94,7 +99,15 @@ private:
   void FillTOFHMPIDqa();
   void FillTPCTOFqa();
   void FillQAinfo();
-  
+
+  // Adding TPC Histograms - called in SetupTPCqa
+  void AddTPCHistogramsSignal(TList *sublist, const char *scenario);
+  void AddTPCHistogramsNsigma(TList *sublist, const char *scenario, Int_t scnumber);
+
+  // Fill TPC Histograms - called in FillTPCqa
+  void FillTPCHistogramsSignal(TList *sublist, Int_t scenario, AliVTrack *track, Int_t nTracks);
+  void FillTPCHistogramsNsigma(TList *sublist, Int_t scenario, AliVTrack *track, Int_t nTracks);
+
   //
   void SetRecoInfo();
   

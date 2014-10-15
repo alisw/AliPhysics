@@ -55,6 +55,7 @@ AliITSUCATrackingStation::AliITSUCATrackingStation()
 ,fIndex()
 ,fFoundBins(0)
 ,fSortedClInfo(0)
+,fDetectors()
 {
   // def. c-tor
 }
@@ -84,6 +85,7 @@ AliITSUCATrackingStation::AliITSUCATrackingStation(int nzbins,int nphibins,
 ,fIndex()
 ,fFoundBins(0)
 ,fSortedClInfo(0)
+,fDetectors()
 {
   // c-tor
   Init(lr,geo);
