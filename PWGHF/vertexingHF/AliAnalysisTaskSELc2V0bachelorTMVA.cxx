@@ -952,14 +952,14 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
       AliAODMCParticle* daugh1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labeldaugh1));
       Int_t pdgCodeDaugh0 = TMath::Abs(daugh0->GetPdgCode());
       Int_t pdgCodeDaugh1 = TMath::Abs(daugh1->GetPdgCode());
-      AliAODMCParticle* bachelorMC = daugh0;
+      //      AliAODMCParticle* bachelorMC = daugh0;
       AliAODMCParticle* v0MC = daugh1;
       AliDebug(2, Form("pdgCodeDaugh0 = %d, pdgCodeDaugh1 = %d", pdgCodeDaugh0, pdgCodeDaugh1));
       if ((pdgCodeDaugh0 == 311 && pdgCodeDaugh1 == 2212) || (pdgCodeDaugh0 == 2212 && pdgCodeDaugh1 == 311)){ 
 	// we are in the case of Lc --> K0 + p; now we have to check if the K0 decays in K0S, and if this goes in pi+pi-
 	/// first, we set the bachelor and the v0: above we assumed first proton and second V0, but we could have to change it:
 	if (pdgCodeDaugh0 == 311 && pdgCodeDaugh1 == 2212) {
-	  bachelorMC = daugh1;
+	  // bachelorMC = daugh1;
 	  v0MC = daugh0;
 	}
 	AliDebug(2, Form("Number of Daughters of v0 = %d", v0MC->GetNDaughters()));
