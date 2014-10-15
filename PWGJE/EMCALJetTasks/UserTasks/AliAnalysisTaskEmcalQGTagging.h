@@ -39,6 +39,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   void SetMCTask(Int_t f)                                   { fIsMC       = f   ; }
   void SetEmbeddingTask(Int_t f)                            { fIsEmbedding       = f   ; }
   void SetIsConstSub(Bool_t f)                              { fIsConstSub     = f   ; }
+  void SetJetPtThreshold(Float_t f)                         { fPtThreshold     = f   ; }
   void SetRMatching(Float_t f)                              { fRMatching = f ;}
 
  protected:
@@ -67,6 +68,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Int_t                               fIsMC;
   Int_t                               fIsEmbedding;
   Bool_t                              fIsConstSub;
+  Float_t                             fPtThreshold;
   Float_t                             fRMatching;
   
   TH2F                                *fPhiJetCorr6;
