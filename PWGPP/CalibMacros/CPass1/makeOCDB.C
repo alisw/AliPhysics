@@ -65,6 +65,8 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
   if (gSystem->AccessPathName("TPC", kFileExists)==0) {  
     AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Correction","local://");
   }
+  AliMagF* fld = TGeoGlobalMagField::Instance()->GetField();
+  Double_t bz = fld->SolenoidField();
 
   // TPC part
   AliTPCPreprocessorOffline *procesTPC = 0;

@@ -65,7 +65,8 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
   if (gSystem->AccessPathName("TPC", kFileExists)==0) {  
     AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Correction","local://");
   }
-
+  AliMagF* fld = TGeoGlobalMagField::Instance()->GetField();
+  Double_t bz = fld->SolenoidField();
   // TPC part
   AliTPCPreprocessorOffline *procesTPC = 0;
   if (detStr.Contains("TPC")){
@@ -79,7 +80,7 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
 
     // Make timegain calibration
     //proces.CalibTimeGain("CalibObjects.root", runNumber,AliCDBRunRange::Infinity(),targetOCDBstorage);
-    procesTPC->CalibTimeGain("CalibObjects.root", runNumber,runNumber,targetStorage);
+    if (TMath::Abs(bz)>0) procesTPC->CalibTimeGain("CalibObjects.root", runNumber,runNumber,targetStorage);
     
     // Make vdrift calibration
     //proces.CalibTimeVdrift("CalibObjects.root",runNumber,AliCDBRunRange::Infinity(),targetOCDBstorage);
