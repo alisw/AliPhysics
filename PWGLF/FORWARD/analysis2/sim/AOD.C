@@ -7,13 +7,20 @@
  * 
  * @note Do not modify this script. 
  *
- * This script reads in two other scripts 
+ * This script reads in 4 other scripts 
  *
  * - GRP.C to load the global run parameters for the selected run,
  *   such as collision system, energy, etc.
  * 
  * - AODConfig.C which defines a number of functions that return
  *   either true or false.  The tasks added depends on these functions
+ *
+ * - BaseConfig.C which defines some base classes 
+ * 
+ * - DetConfig.C which defines which detectors are active and on. 
+ *
+ * Users can customize QAConfig.C and DetConfig.C according to their
+ * needs
  */
 /** Path to CDB */
 const char *cdbPath = "raw://";
@@ -614,6 +621,7 @@ void AOD(UInt_t run, const char* xmlfile=0, Int_t stage=0)
   //
   gROOT->Macro(Form("GRP.C(%d)", run));
   gROOT->Macro("AODConfig.C");
+  gROOT->Macro("BaseConfig.C");
   gROOT->Macro("DetConfig.C");
 
   // --- Some settings -----------------------------------------------

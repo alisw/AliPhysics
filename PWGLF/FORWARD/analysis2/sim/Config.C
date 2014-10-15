@@ -1,4 +1,33 @@
+/**
+ * @file   Config.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Oct 15 13:03:28 2014
+ * 
+ * @brief  Configuration of the simulation back-end 
+ *
+ * @note Do not modify this script. 
+ *
+ * This script depends on the two global variables detCfg and grp
+ * already being defined, typically by executing the scripts GRP.C and
+ * DetConfig.C from Simulate.C. 
+ *
+ * New event generator set-ups should be added to the class Setup. 
+ * 
+ * 
+ */
+
 // -------------------------------------------------------------------
+/** 
+ * Class that defines the set-up.  
+ *
+ * - The seed of the random number generator is read from the
+ *   environment if present.
+ *
+ * - The event generator type is read from the environment if present.
+ *   Otherwise we try to deduce it from the global object "grp".
+ * 
+ * - The impact parameter range is read from the environment if present. 
+ */
 struct Setup
 {
   TString runType;    // Event generator chosen
@@ -83,6 +112,10 @@ struct Setup
 
     Print();
   }
+  /** 
+   * Prinf information 
+   * 
+   */
   void Print()
   {
     Printf("=======================================================\n"
@@ -106,6 +139,10 @@ struct Setup
     else if (grp->IsPA() || grp->IsAP()) runType = "dpmjet";
     else if (grp->IsAA())                runType = "hijing";
   }
+  /** 
+   * Load the general libraries needed 
+   * 
+   */
   void LoadGen() {
     if (!gROOT->GetClass("AliStructFuncType")) 
       gSystem->Load("liblhapdf");      // Parton density functions
@@ -199,6 +236,11 @@ struct Setup
       Fatal("", "Invalid run type \"%s\" specified", runType.Data());
     return g;
   }
+  /** 
+   * Make our decayer 
+   * 
+   * @return Newly allocated decayer or null
+   */
   TVirtualMCDecayer* MakeDecayer()
   {
     if (runType.BeginsWith("hydjet")) return 0;
@@ -215,6 +257,13 @@ struct Setup
 
   // === PYTHIA ========================================================
   // Normal 
+  /** 
+   * Greate a pythia6 event generator 
+   * 
+   * @param tune Possible tune 
+   * 
+   * @return newly allocated generator or null
+   */
   AliGenerator* Pythia(const TString & tune)
   {
     // Int_t kCTEQ6l = 8;
@@ -303,6 +352,14 @@ struct Setup
     }
     return pythia;
   }
+  /** 
+   * Create a Pythia6 generator for high-flavor physics 
+   * 
+   * @param type    Which kind 
+   * @param harder  If true, make harder processes 
+   * 
+   * @return Newly allocated generator or null
+   */
   AliGenerator* PythiaHF(Int_t type, Bool_t harder=0) 
   { 
     LoadPythia();
@@ -411,7 +468,7 @@ struct Setup
     return cocktail;
   }
   /** 
-   * Make a DPMJet generator for AA, pA, or Ap. 
+   * Make a DPMJet generator for pp, AA, pA, or Ap. 
    * 
    * @param fragments If true, make fragments 
    * 
@@ -604,6 +661,10 @@ struct Setup
   }
 };
 
+/** 
+ * Configure the simulation backend 
+ * 
+ */
 void Config()
 {
   // --- Get settings from environment variables --------------------
@@ -634,9 +695,6 @@ void Config()
   rl->SetNumberOfEventsPerFile(1000);
   gAlice->SetRunLoader(rl);
 
-  // --- Trigger configuration ---------------------------------------
-  // AliSimulation::Instance()->SetTriggerConfig(grp->IsAA() ? "Pb-Pb" : "p-p");
-
   //
   //=======================================================================
   // Steering parameters for ALICE simulation
@@ -660,10 +718,10 @@ void Config()
   gMC->SetProcess("MULS",1);
   gMC->SetProcess("RAYL",1);
   
-  Float_t cut = 1.e-3;        // 1MeV cut by default
-  Float_t tofmax = 1.e10;
 
   // --- Tracking cuts -----------------------------------------------
+  Float_t cut = 1.e-3;        // 1MeV cut by default
+  Float_t tofmax = 1.e10;
   gMC->SetCut("CUTGAM", cut);
   gMC->SetCut("CUTELE", cut);
   gMC->SetCut("CUTNEU", cut);

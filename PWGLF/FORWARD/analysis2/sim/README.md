@@ -344,9 +344,6 @@ All arguments are passed on to other script e.g., `simrun.sh`
 * _dir_:   Directory where intermediate data can be found
 * _stage_: Stage to execute
 
-
 Local Variables:
   mode: markdown
 End:
-
-

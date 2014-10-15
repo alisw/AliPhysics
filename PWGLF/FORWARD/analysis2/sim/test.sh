@@ -22,6 +22,7 @@ files="AOD.C	\
 	AODConfig.C	\
 	Check.C		\
 	Config.C	\
+	BaseConfig.C	\
         DetConfig.C	\
 	OCDBConfig.C	\
 	GRP.C		\

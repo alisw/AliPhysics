@@ -1,4 +1,15 @@
+/**
+ * @file   Tag.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Oct 15 13:28:47 2014
+ * 
+ * @brief  Update tags 
+ */
 //____________________________________________________________________
+/** 
+ * Tag files 
+ * 
+ */
 void Tag() 
 {
   const char* turl = gSystem->Getenv("ALIEN_JDL_OUTPUTDIR");
@@ -26,6 +37,13 @@ void Tag()
 }
 
 //____________________________________________________________________
+/** 
+ * Extract production information from path 
+ * 
+ * @param fPeriod  On return, the period
+ * @param fPass    On return, the possible pass number 
+ * @param fName    On return, the full name 
+ */
 void GetProductionInfo(TString &fPeriod, TString &fPass, TString &fName) 
 {
   const char* turl = gSystem->Getenv("ALIEN_JDL_OUTPUTDIR");
@@ -43,6 +61,13 @@ void GetProductionInfo(TString &fPeriod, TString &fPass, TString &fName)
 }
   
 //____________________________________________________________________
+/** 
+ * Get the AliROOT, ROOT, and GEANT3 versions from the JDL packages
+ * 
+ * @param fAliroot On return, the AliROOT version 
+ * @param froot    On return, the ROOT version 
+ * @param fgeant   On return, the GEANT3 version 
+ */
 void GetVersions(TString &fAliroot, TString &froot, TString &fgeant) 
 {
   const char* fver = gSystem->Getenv("ALIEN_JDL_PACKAGES");
@@ -69,6 +94,11 @@ void GetVersions(TString &fAliroot, TString &froot, TString &fgeant)
 }
 
 //____________________________________________________________________
+/** 
+ * Get the global univeral identifier of the ESD file 
+ * 
+ * @param guid 
+ */
 void GetGUID(TString &guid) 
 {
   ofstream myfile ("guid.txt");
@@ -93,6 +123,20 @@ void GetGUID(TString &guid)
 
 
 //____________________________________________________________________
+/** 
+ * Update the tags 
+ * 
+ * @param faliroot  AliROOT version 
+ * @param froot     ROOT version
+ * @param fgeant    GEANT3 version
+ * @param turl      UrL we're at 
+ * @param guid      Global universal identifier 
+ * @param fperiod   Period
+ * @param fpass     Pass
+ * @param fname     Full name 
+ * 
+ * @return 
+ */
 Bool_t UpdateTag(TString faliroot, 
 		 TString froot, 
 		 TString fgeant, 

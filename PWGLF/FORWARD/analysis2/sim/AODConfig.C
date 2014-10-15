@@ -1,3 +1,7 @@
+/**
+ * Configuration of AOD pass.  The base class VirtualAODCfg is
+ * declared in AOD.C
+ */
 struct AODCfg : public VirtualAODCfg
 {
   /** 
@@ -61,6 +65,10 @@ struct AODCfg : public VirtualAODCfg
   /* @} */
 };
 
+/** 
+ * Creating our configuration 
+ * 
+ */
 void AODConfig()
 {
   Info("AODConfig", "Creating configuration object");

@@ -8,14 +8,20 @@
  * @note Do not modify this script. 
  *
  *
- * This script reads in two other scripts 
+ * This script reads in 4 other scripts 
  *
  * - GRP.C to load the global run parameters for the selected run,
  *   such as collision system, energy, etc.
  * 
  * - AODConfig.C which defines a number of functions that return
  *   either true or false.  The tasks added depends on these functions
+ *
+ * - BaseConfig.C which defines some base classes 
  * 
+ * - DetConfig.C which defines which detectors are active and on. 
+ * 
+ * Users can customize QAConfig.C and DetConfig.C according to their
+ * needs
  */
 // Trigger mask.
 UInt_t kTriggerInt        = AliVEvent::kAnyINT;
@@ -622,6 +628,7 @@ void QA(UInt_t      run,
   // Get GRP parameters.  Defines global "grp" as a pointer to GRPData
   //
   gROOT->Macro(Form("GRP.C(%d)", run));
+  gROOT->Macro("BaseConfig.C");
   gROOT->Macro("QAConfig.C");
   gROOT->Macro("DetConfig.C");
   qaCfg->Print();

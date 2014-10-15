@@ -2,15 +2,16 @@
 # To submit this JDL:
 #
 #   alien_submit alien:@data@/JDL \
-#      <run number> <N_jobs> <N_events> <tag> <generator>
+#      <run number> <N_jobs> <N_events> <tag> <generator> [<more>]
 #
 # where 
 #
-#   <run number>   is the run number 
-#   <N_jobs>       is the number of sub-jobs 
-#   <N_events>     is the number of events per sub-job
-#   <tag>          is a single-word tag 
-#   <generator>    is the name of the generator 
+#   $1: <run number>   is the run number 
+#   $2: <N_jobs>       is the number of sub-jobs 
+#   $3: <N_events>     is the number of events per sub-job
+#   $4: <tag>          is a single-word tag 
+#   $5: <generator>    is the name of the generator 
+#   $6: <more>         is more arguments for simrun.sh 
 #
 # The output is written to alien:@out@/test/<tag>
 #
@@ -21,15 +22,15 @@ Jobtag={
 };
 
 Packages = {
-	"VO_ALICE@AliRoot::@aliroot@",
-	"VO_ALICE@GEANT3::@geant@",
-	"VO_ALICE@ROOT::@root@",
-	"VO_ALICE@APISCONFIG::V1.1x",
-	"VO_ALICE@boost::v1_43_0",
-	"VO_ALICE@cgal::v3.6",
-	"VO_ALICE@fastjet::v2.4.2",
-	"VO_ALICE@jemalloc::v3.0.0"
-};
+	 "VO_ALICE@AliRoot::@aliroot@",
+	 "VO_ALICE@GEANT3::@geant@",
+	 "VO_ALICE@ROOT::@root@",
+	 "VO_ALICE@APISCONFIG::V1.1x",
+	 "VO_ALICE@boost::v1_43_0",
+	 "VO_ALICE@cgal::v3.6",
+	 "VO_ALICE@fastjet::v2.4.2",
+	 "VO_ALICE@jemalloc::v3.0.0"
+	 };
 
 
 TTL="72000";
@@ -40,6 +41,7 @@ Requirements=member(other.GridPartitions,"PDC08_2");
 Validationcommand="/alice/validation/validation.sh";
 
 InputFile={
+	"LF:@data@/BaseConfig.C",
 	"LF:@data@/Check.C",
 	"LF:@data@/Config.C",
 	"LF:@data@/DetConfig.C",
@@ -57,11 +59,11 @@ InputFile={
 };
 
 Output = {
-	"log_archive:stderr.log,stdout.log,tag.log,sim.log,rec.log,check.log,qa.log,aod.log@disk=1",
-        "QA_archive.zip:QAresults*.root,event_stat*.root,trending*.root,fileinfo*.log,*.stat.qa*@disk=2",
-        "root_archive.zip:galice.root,Kinematics.root,TrackRefs.root,Trigger.root,AliESDs.root,AliESDfriends.root,Run*.root,ITS.RecPoints.root,@disk=2",
-        "aod_archive.zip:pyxsec*.root,AODQA.root,AliAOD*.root,FilterEvents_Trees*.root,*.stat.aod@disk=3",
-        "EventStat_temp*.root@disk=2"
+       "log_archive:*.log@disk=1",
+       "QA_archive.zip:QAresults*.root,event_stat*.root,trending*.root,*.stat.qa*@disk=2",
+	"root_archive.zip:galice.root,Kinematics.root,TrackRefs.root,Trigger.root,AliESD*.root,Run*.root,*.RecPoints.root,check.root@disk=2",
+	"aod_archive.zip:pyxsec*.root,AODQA.root,AliAOD*.root,FilterEvents_Trees*.root,*.stat.aod@disk=3",
+	"EventStat_temp*.root@disk=2"
 };
 
 OutputDir="@out@/$4/$1/#alien_counter_03i#";
@@ -72,7 +74,11 @@ JDLVariables={
 };
 
 #
-splitarguments="--run $1 --event $3 --process $5 --qa --aod --check --number #alien_counter# --bmin 0 --bmax 3";
+splitarguments="--run $1 --event $3 --process $5 --qa --aod --check --number #alien_counter# $6";
 split="production:1-$2";
 
 Workdirectorysize={"10000MB"};
+
+# Local Variables:
+#  mode: conf-javaprop
+# End:
