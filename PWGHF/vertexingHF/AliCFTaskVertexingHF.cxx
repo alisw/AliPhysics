@@ -133,7 +133,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fIsPPData(kFALSE),
   fIsPPbData(kFALSE),
   fUseAdditionalCuts(kFALSE),
-  fUseCutsForTMVA(kFALSE)
+  fUseCutsForTMVA(kFALSE),
+  fUseCascadeTaskForLctoV0bachelor(kFALSE)
 {
   //
   //Default ctor
@@ -194,7 +195,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fIsPPData(kFALSE),
   fIsPPbData(kFALSE),
   fUseAdditionalCuts(kFALSE),
-  fUseCutsForTMVA(kFALSE)
+  fUseCutsForTMVA(kFALSE),
+  fUseCascadeTaskForLctoV0bachelor(kFALSE)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -486,6 +488,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   PostData(2,fCFManager->GetParticleContainer()) ;
   PostData(3,fCorrelation) ;	
 
+  AliDebug(3,Form("*** Processing event %d\n", fEvents));
+
   if (fFillFromGenerated){
     AliWarning("Flag to fill container with generated value ON ---> dca, d0pi, d0K, d0xd0, cosPointingAngle will be set as dummy!");
   }
@@ -635,16 +639,20 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   }
   case 22:{
     // Lc ->  K0S+proton
-    //    cfVtxHF = new AliCFVertexingHFLctoV0bachelor(mcArray, fOriginDselection,fGenLctoV0bachelorOption); 
-    cfVtxHF = new AliCFVertexingHFCascade(mcArray, fOriginDselection);
-    ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGcascade(4122);
-    ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGbachelor(2212);
-    ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGneutrDaugh(310);
-    ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGneutrDaughForMC(311);
-    ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGneutrDaughPositive(211);
-    ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGneutrDaughNegative(211);
-    ((AliCFVertexingHFCascade*)cfVtxHF)->SetPrimaryVertex(aodVtx);
-    if (fUseAdditionalCuts) ((AliCFVertexingHFCascade*)cfVtxHF)->SetUseCutsForTMVA(fUseCutsForTMVA);
+    if (fUseCascadeTaskForLctoV0bachelor){
+      cfVtxHF = new AliCFVertexingHFCascade(mcArray, fOriginDselection);
+      ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGcascade(4122);
+      ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGbachelor(2212);
+      ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGneutrDaugh(310);
+      ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGneutrDaughForMC(311);
+      ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGneutrDaughPositive(211);
+      ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGneutrDaughNegative(211);
+      ((AliCFVertexingHFCascade*)cfVtxHF)->SetPrimaryVertex(aodVtx);
+      if (fUseAdditionalCuts) ((AliCFVertexingHFCascade*)cfVtxHF)->SetUseCutsForTMVA(fUseCutsForTMVA);
+    }
+    else {
+      cfVtxHF = new AliCFVertexingHFLctoV0bachelor(mcArray, fOriginDselection,fGenLctoV0bachelorOption);
+    }
     break;
   }
   case 31:
@@ -855,7 +863,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       //MC 
       fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepGenerated, fWeight);
       icountMC++;
-      AliDebug(3,"MC cointainer filled \n");
+      AliDebug(3,"MC container filled \n");
 			
       // MC in acceptance
       // check the MC-Acceptance level cuts
