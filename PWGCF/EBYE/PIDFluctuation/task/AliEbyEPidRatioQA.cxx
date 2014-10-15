@@ -242,7 +242,7 @@ void AliEbyEPidRatioQA::Process() {
 			      track->GetTPCmomentum(),track->GetTPCsignal(),pid[0],pid[1],pid[2],
 			      static_cast<Double_t>(isProbeParticle)};   
       Double_t aTrackb[9] = {fCentralityBin,0,
-			     track->Charge(),
+			     static_cast<Double_t>(track->Charge()),
 			     track->Pt(),track->Eta(),yP, 
 			     track->Phi(),dca[0],dca[1]};
       fHnQAa->Fill(aTracka);

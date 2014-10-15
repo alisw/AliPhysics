@@ -401,8 +401,8 @@ void AliEbyEPidRatioEffCont::CheckContTrack(AliVTrack *track, Int_t iPid, Int_t 
       deltaPhi -= TMath::TwoPi();
   }
 
-  Double_t hnContMc[8]  = {fCentralityBin,iPid,signMC,contPart,particle->Eta(),particle->Y(),particle->Phi(),particle->Pt()};
-  Double_t hnContRec[8] = {fCentralityBin,iPid,signRec,contPart, track->Eta(),yRec,track->Phi(),track->Pt()};
+  Double_t hnContMc[8]  = {fCentralityBin,static_cast<Double_t>(iPid),signMC,static_cast<Double_t>(contPart),particle->Eta(),particle->Y(),particle->Phi(),particle->Pt()};
+  Double_t hnContRec[8] = {fCentralityBin,static_cast<Double_t>(iPid),signRec,static_cast<Double_t>(contPart), track->Eta(),yRec,track->Phi(),track->Pt()};
   fHnContMc->Fill(hnContMc);
   fHnContRec->Fill(hnContRec);
    
