@@ -1,3 +1,4 @@
+
 # **************************************************************************
 # * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
 # *                                                                        *
@@ -13,23 +14,23 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-# MUON libraries
-add_subdirectory(MUONcore)
-add_subdirectory(MUONbase)
-add_subdirectory(MUONcalib)
-add_subdirectory(MUONcalign)
-add_subdirectory(MUONevaluation)
-add_subdirectory(MUONgeometry)
-add_subdirectory(MUONgraphics)
-add_subdirectory(MUONmapping)
-add_subdirectory(MUONmpgraphics)
-add_subdirectory(MUONraw)
-add_subdirectory(MUONrec)
-add_subdirectory(MUONshuttle)
-add_subdirectory(MUONsim)
-add_subdirectory(MUONtrigger)
+# Compiler major and minor version
+#       - CLANG_MAJOR.CLANG_MINOR or
+#       - GCC_MAJOR.GCC_MINOR.GCC_PATCH
 
-# Install data folder
-install(DIRECTORY data DESTINATION MUON)
+message(STATUS "Found ${CMAKE_CXX_COMPILER_ID} compiler, version ${CMAKE_CXX_COMPILER_VERSION}")
 
-message(STATUS "MUON enabled")
+# Clang compiler
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    string(REGEX REPLACE "^.*[ ]([0-9]+)\\.[0-9].*$" "\\1" CLANG_MAJOR "${CMAKE_CXX_COMPILER_VERSION}")
+    string(REGEX REPLACE "^.*[ ][0-9]+\\.([0-9]).*$" "\\1" CLANG_MINOR "${CMAKE_CXX_COMPILER_VERSION}")
+    message(STATUS "Compiler MAJOR ${CLANG_MAJOR}, MINOR ${CLANG_MINOR}")
+endif()
+
+# GNU compiler
+if(CMAKE_COMPILER_IS_GNUCXX)
+    string(REGEX REPLACE "^([0-9]+).*$"                   "\\1" GCC_MAJOR "${CMAKE_CXX_COMPILER_VERSION}")
+    string(REGEX REPLACE "^[0-9]+\\.([0-9]+).*$"          "\\1" GCC_MINOR "${CMAKE_CXX_COMPILER_VERSION}")
+    string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+).*$" "\\1" GCC_PATCH "${CMAKE_CXX_COMPILER_VERSION}")
+    message(STATUS "Compiler major ${GCC_MAJOR}, minor ${GCC_MINOR}, patch ${GCC_PATCH}")
+endif()

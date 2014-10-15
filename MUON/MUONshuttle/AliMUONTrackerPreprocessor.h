@@ -13,11 +13,11 @@
 //  Author Laurent Aphecetche
 
 #include "AliMUONPreprocessor.h"
+#include "AliMUONGainSubprocessor.h"
 
 class AliMUONPedestalSubprocessor;
 class AliMUONGMSSubprocessor;
 class AliMUONHVSubprocessor;
-class AliMUONGainSubprocessor;
 class AliMUONOccupancySubprocessor;
 
 class TObjArray;

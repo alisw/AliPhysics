@@ -1,3 +1,18 @@
+# **************************************************************************
+# * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+# *                                                                        *
+# * Author: The ALICE Off-line Project.                                    *
+# * Contributors are mentioned in the code where appropriate.              *
+# *                                                                        *
+# * Permission to use, copy, modify and distribute this software and its   *
+# * documentation strictly for non-commercial purposes is hereby granted   *
+# * without fee, provided that the above copyright notice appears in all   *
+# * copies and that both the copyright notice and this permission notice   *
+# * appear in the supporting documentation. The authors make no claims     *
+# * about the suitability of this software for any purpose. It is          *
+# * provided "as is" without express or implied warranty.                  *
+# **************************************************************************
+
 # General purpose functions
 
 # Generation of the dictionaries
@@ -12,7 +27,7 @@ macro(generate_dictionary DNAME LDNAME DHDRS DINCDIRS)
     endforeach()
     
     # Generate the dictionary
-    message(STATUS "Generating dictionary ${DNAME} for ${LDNAME}")
+#    message(STATUS "Generating dictionary ${DNAME} for ${LDNAME}")
     
 #    message(STATUS "${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx")
 #    message(STATUS "${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.h")
@@ -49,7 +64,7 @@ macro(generate_rootmap LIBNAME LIBDEPS LINKDEF)
         endif()
     endforeach()
     
-    message(STATUS "Generating ROOT map for ${LIBNAME}")
+#    message(STATUS "Generating ROOT map for ${LIBNAME}")
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lib${LIBNAME}.rootmap
                        COMMAND LD_LIBRARY_PATH=${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOT_LIBMAP}
                        ARGS -o ${CMAKE_CURRENT_BINARY_DIR}/lib${LIBNAME}.rootmap -l lib${LIBNAME}.so -d ${LOCAL_DEPS} -c ${LINKDEF}
