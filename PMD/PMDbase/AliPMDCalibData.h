@@ -4,7 +4,8 @@
  * See cxx source for full Copyright notice                               */
 
 
-class TNamed;
+#include "TNamed.h"
+
 class AliCDBEntry;
 class AliPMD;
 
