@@ -1,39 +1,12 @@
-struct VirtualOCDBCfg
-{
-  /** 
-   * This member function must return the default prefix. 
-   * 
-   * @return Prefix of OCDB specific storages
-   */
-  virtual const char* Prefix() const { return ""; }
-  /** 
-   * This member function should define the real setup. 
-   * 
-   * @param forSim Whether we're setting up for simulations or not 
-   */
-  virtual void Init(Bool_t forSim) 
-  {
-    ::Fatal("VirtualOCDBConfig", "Dummy init called - redefine!");
-  }
-  /** 
-   * Set the specific storage for a given key (possibly wild-carded). 
-   * 
-   * @param key    Key 
-   * @param ideal  Whether it is residual or ideal
-   */
-  void AddStore(const char*    key, 
-		Bool_t         ideal)
-  {
-    AliCDBManager* cdb = AliCDBManager::Instance();
-    const char* prefix = Prefix();
-    TString     path   = Form("alien://Folder=/alice/simulation/%s/%s",
-			      prefix, !ideal ? "Residual" : "Ideal");
-    ::Info("AddStore", "%s -> %s", key, path.Data());
-    cdb->SetSpecificStorage(key, path);
-  }
-};
-VirtualOCDBCfg* ocdbCfg = 0;
-
+/**
+ * @file   OCDBConfig.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Oct 15 13:19:34 2014
+ * 
+ * @brief  Particular setup of specific storages
+ * 
+ * This is used by Simulate.C, Reconstruct.C
+ */
 /** 
  * Specific implementation.  Note, this requires that GRP.C has been
  * loaded and exectuted before calling Init.
@@ -74,6 +47,6 @@ void OCDBConfig()
   ::Info("OCDBConfig", "Creating OCDB configuration");
   ocdbCfg = new OCDBCfg;
 }
-
-
-
+// 
+// EOF
+// 

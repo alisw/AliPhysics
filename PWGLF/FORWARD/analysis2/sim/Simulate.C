@@ -1,3 +1,10 @@
+/**
+ * @file   Simulate.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Oct 15 13:28:09 2014
+ * 
+ * @brief  Steering script for the simulation 
+ */
 /** 
  * Run the simulation 
  * 
@@ -8,11 +15,15 @@ void Simulate(Int_t nev=1, UInt_t run=0)
 {
   // -----------------------------------------------------------------
   // 
-  // Get GRP parameters.  Defines global "grp" as a pointer to GRPData
-  //
+  // - Get GRP parameters.  Defines global "grp" as a pointer to GRPData
+  // - Load base class definitions in BaseConfig.C
+  // - Get which detectors are turned on in "detCfg". 
+  // - Create the OCDB configuration object "ocdbCfg"
+  // 
   gROOT->Macro(Form("GRP.C(%d)", run));
-  gROOT->Macro("DetConfig.C");
-  gROOT->Macro("OCDBConfig.C");
+  gROOT->Macro("BaseConfig.C");
+  gROOT->Macro("DetConfig.C"); 
+  gROOT->Macro("OCDBConfig.C"); 
 
   // --- Get GRP to deduce collision system --------------------------
   Bool_t         isAA  = grp->IsAA();

@@ -1,3 +1,17 @@
+/**
+ * @file   PlotSysInfo.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Oct 15 13:21:47 2014
+ * 
+ * @brief  A script to plot information from system watch files
+ */
+/** 
+ * Make a canvas 
+ * 
+ * @param title Title on canvas 
+ * 
+ * @return The canvas 
+ */
 TVirtualPad* MakeCanvas(const char* title="")
 {
   static Int_t cId = 0;
@@ -7,15 +21,21 @@ TVirtualPad* MakeCanvas(const char* title="")
   c->cd();
   return c;
 }
-
+/** 
+ * Summarize the usage 
+ * 
+ * @param tree tree to look in 
+ * @param exp  expression to draw 
+ * @param cut  Cut to use 
+ * @param draw Whether to draw or not 
+ * 
+ * @return The summed usage 
+ */
 Double_t SumUsage(TTree*      tree, 
 		  const char* exp, 
 		  const char* cut, 
 		  bool        draw=false)
 {
-  //
-  // return sum of usage
-  //
   if (draw) MakeCanvas(Form("%s [%s]", exp, cut));
   
   Int_t  entries = tree->Draw(exp, cut, (draw ? "" : "goff"));
@@ -24,6 +44,16 @@ Double_t SumUsage(TTree*      tree,
   Double_t mean = TMath::Mean(entries, tree->GetV1());
   return entries * mean;
 }
+/** 
+ * Return the most heavy load 
+ * 
+ * @param tree  tree to look in 
+ * @param exp   expression to draw 
+ * @param cut   Cut to use 
+ * @param order Off set
+ * 
+ * @return Most heavy usage 
+ */
 Double_t TopUsage(TTree*      tree, 
 		  const char* exp, 
 		  const char* cut, 
@@ -40,6 +70,19 @@ Double_t TopUsage(TTree*      tree,
   
   return value;
 }
+/** 
+ * Extract a histogram from a resource spec 
+ * 
+ * @param tree    tree to look in 
+ * @param exp     expression to draw 
+ * @param cut     Cut to use 
+ * @param name    Name of histogram
+ * @param xtitle  X axis title
+ * @param ytitle  Y axis title 
+ * @param draw    If true, draw 
+ * 
+ * @return The extract histogram or null
+ */
   
 TH1* ExtractHist(TTree*      tree,
 		 const char* exp, 
@@ -65,7 +108,16 @@ TH1* ExtractHist(TTree*      tree,
   return ret;
 }
 		 
-		 
+/** 
+ * Print some information to output stream
+ *  
+ * @param o             Stream
+ * @param name          Step
+ * @param dT            Change in time
+ * @param dVM           Change in VM usage
+ * @param alldT         Sum of time
+ * @param alldVM        Sum of VM usage 
+ */		 
 void Print(std::ostream& o,
 	   const char*   name, 
 	   Double_t      dT, 
@@ -79,7 +131,10 @@ void Print(std::ostream& o,
     << 100*(alldT  > 0 ? dT  / alldT  : 0) << "\t" 
     << 100*(alldVM > 0 ? dVM / alldVM : 0) << std::endl;
 }
-
+/**
+ * Detectors
+ * 
+ */
 const char* dets[] = {"ITS", 
 		      "TPC", 
 		      "TRD", 
@@ -97,12 +152,15 @@ const char* dets[] = {"ITS",
 		      "HLT",
 		      0 };
 
-
+/** 
+ * Plot information from one file 
+ * 
+ * @param file  File to plot from 
+ * @param draw  Drawing flags
+ */
 void
 Plot1SysInfo(const char* file, UShort_t draw=0x1)
 {
-  // gROOT->LoadMacro("$ALICE_ROOT/../master-src/macros/PlotSys.C+");
-
   // --- Create output file and tree ---------------------------------
   TString rootOut(file); 
   rootOut.ReplaceAll(".log", ".root");
@@ -110,8 +168,8 @@ Plot1SysInfo(const char* file, UShort_t draw=0x1)
   Info("", "Writing to ROOT file %s", rootOut.Data());
   TFile* out  = TFile::Open(rootOut, "RECREATE");
   TTree* tree = AliSysInfo::MakeTree(file);
-
-
+  tree->SetName("T");
+  
   
   // --- Create ASCII output ------------------------------------------
   TString sumOut(rootOut); 
@@ -167,16 +225,25 @@ Plot1SysInfo(const char* file, UShort_t draw=0x1)
     idet++;
   }
   ascii.close();
-
+  tree->Write();
+  out->Write();
+  out->ls();
   new TBrowser;
 }
 
-  
-
+/** 
+ * Plot for one job both simulation and reconstruction usage 
+ * 
+ * @param pid Job identifier 
+ */
+void
 PlotSysInfo(ULong_t pid=431808952)
 {
   Plot1SysInfo(Form("%d_simwatch.log", pid));
   Plot1SysInfo(Form("%d_recowatch.log", pid));
 }
+// 
+// EOF
+// 
 
   

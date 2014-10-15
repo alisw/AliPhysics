@@ -1,3 +1,10 @@
+/**
+ * @file   Reconstruct.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Oct 15 13:27:45 2014
+ * 
+ * @brief  Steering script for the reconstruction 
+ */
 /** 
  * Run the reconstruction 
  * 
@@ -7,9 +14,13 @@ void Reconstruct(UInt_t run)
 {
   // -----------------------------------------------------------------
   // 
-  // Get GRP parameters.  Defines global "grp" as a pointer to GRPData
-  //
+  // - Get GRP parameters.  Defines global "grp" as a pointer to GRPData
+  // - Load base class definitions in BaseConfig.C
+  // - Get which detectors are turned on in "detCfg". 
+  // - Create the OCDB configuration object "ocdbCfg"
+  // 
   gROOT->Macro(Form("GRP.C(%d)", run));
+  gROOT->Macro("BaseConfig.C");
   gROOT->Macro("DetConfig.C"); 
   gROOT->Macro("OCDBConfig.C"); 
 
@@ -24,13 +35,13 @@ void Reconstruct(UInt_t run)
   AliReconstruction reco;
   TString enable;  
   detCfg->GetRecoString(enable);
-  if (is10h) enable.ReplaceAll("MUON", "");
+  // if (is10h) enable.ReplaceAll("MUON", "");
   reco.SetRunReconstruction(enable);
 
   // -----------------------------------------------------------------
   //
   // switch off cleanESD, write ESDfriends and Alignment data, clean
-  // up rec-points
+  // up rec-points (except for ITS)
   // 
   reco.SetCleanESD(kFALSE);
   reco.SetWriteESDfriend();
@@ -65,7 +76,14 @@ void Reconstruct(UInt_t run)
     reco.SetRecoParam("ZDC",AliZDCRecoParamPbPb::GetHighFluxParam(2760));
 
   // --- Override some settings in the ITS reco ----------------------
-  if (is10h) {
+  // 
+  // This was needed for the ITS stand-alone tracks to be produced in
+  // LHC14b8a and LHC14b8b.  However, using the LowMult reco-param
+  // object for all events means using AliITSVertexer3D irrespective
+  // of multiplicity.  AliITSVertexer3D can use more than 4GB of
+  // memory for central Hijing events, which means that the jobs are
+  // likely to hit the 8GB hard limit.
+  if (false && is10h) {
     printf("Overriding ITS/Calib/RecoParam for run %d to do "
 	   "reco even in absence of trigger\n", grp->run);
     man->SetRun(grp->run);

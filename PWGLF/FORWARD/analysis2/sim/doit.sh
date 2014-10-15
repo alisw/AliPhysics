@@ -247,6 +247,7 @@ push()
 	GRP.C			\
 	Simulate.C		\
 	Config.C		\
+	BaseConfig.C		\
 	DetConfig.C		\
 	OCDBConfig.C		\
 	Reconstruct.C		\

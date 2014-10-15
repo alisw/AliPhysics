@@ -1,3 +1,12 @@
+/**
+ * @file   Check.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Oct 15 13:01:59 2014
+ * 
+ * @brief  Run check of reconstructed and simulated data. 
+ *
+ * @note Do not modify this script 
+ */
 #if !defined( __CINT__) || defined(__MAKECINT__)
 #include <TROOT.h>
 #include <TFile.h>

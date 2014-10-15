@@ -43,6 +43,7 @@ Arguments = "$4 $1 $4_Stage_$2.xml $2";
 InputFile = {
 	"LF:@data@/$4.C",
 	"LF:@data@/$4Config.C",
+	"LF:@data@/BaseConfig.C",
 	"LF:@data@/DetConfig.C",
 	"LF:@data@/GRP.C",
 	"LF:@data@/fmd_corrections.root",
@@ -62,6 +63,6 @@ JDLVariables = {
    "OutputDir"
 };
 Workdirectorysize = {"10000MB"};
-#
-# EOF
-#
+# Local Variables:
+#  mode: conf-javaprop
+# End:

@@ -81,7 +81,10 @@ while true ; do
 	alien_spy $pid $file > $tmp
     fi
     l1=`stat -c %s $tmp`
-    l2=`stat -c %s $log` 
+    l2=0
+    if test -f $log ; then 
+	l2=`stat -c %s $log` 
+    fi
     if test $l1 -ge $l2 ; then 
 	mv $tmp $log
     else 
