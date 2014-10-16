@@ -19,7 +19,7 @@
 #include <TObjArray.h>
 #include <TParticle.h>
 #include <TClonesArray.h>
-#include "Dcommon.h"
+#include "DCommon.h"
 #include "TDime.h"
 
 #ifndef WIN32
@@ -72,12 +72,12 @@ TDime::~TDime()
     CUTS.rmax = 1.8; 
     CUTS.rmin = -1.8;
     CUTS.ecut = 2.;
-    strcpy(FLAGS.pflag,     "rho       ");
-    strcpy(FLAGS.fsi,       "true      ");
-    strcpy(FLAGS.ppbar,     "false     ");
-    strcpy(FLAGS.cuts,      "true      ");
-    strcpy(FLAGS.unw,       "true      ");
-    strcpy(FF.formf,        "orexp     ");
+    strcpy(FLAGS.pflag,     "rho      ");
+    strcpy(FLAGS.fsi,       "true     ");
+    strcpy(FLAGS.ppbar,     "false    ");
+    strcpy(FLAGS.cuts,      "true     ");
+    strcpy(FLAGS.unw,       "true     ");
+    strcpy(FF.formf,        "orexp    ");
     dimeinit();
 }
 
