@@ -286,7 +286,10 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fRefMult(c.fRefMult),
   fZvtxCorrectedNtrkEstimator(c.fZvtxCorrectedNtrkEstimator),
   fIsPPData(c.fIsPPData),
-  fIsPPbData(c.fIsPPbData)
+  fIsPPbData(c.fIsPPbData),
+  fUseAdditionalCuts(c.fUseAdditionalCuts),
+  fUseCutsForTMVA(c.fUseCutsForTMVA),
+  fUseCascadeTaskForLctoV0bachelor(c.fUseCascadeTaskForLctoV0bachelor)
 {
   //
   // Copy Constructor
@@ -1081,7 +1084,34 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	      if (fDecayChannel == 32) tempPid=(recoPidSelection >0 || recoPidSelection == isPartOrAntipart);
 
 	      if (tempPid){
-		fCFManager->GetParticleContainer()->Fill(containerInput, kStepRecoPID, fWeight);
+		Double_t weigPID = 1.;
+		if (fDecayChannel == 2){ // D0 with Bayesian PID using weights
+		  if(((AliRDHFCutsD0toKpi*)fCuts)->GetCombPID() && (((AliRDHFCutsD0toKpi*)fCuts)->GetBayesianStrategy() == AliRDHFCutsD0toKpi::kBayesWeight || ((AliRDHFCutsD0toKpi*)fCuts)->GetBayesianStrategy() == AliRDHFCutsD0toKpi::kBayesWeightNoFilter)){
+		    if (isPartOrAntipart == 1){
+		      weigPID = ((AliRDHFCutsD0toKpi*)fCuts)->GetWeightsNegative()[AliPID::kKaon] * ((AliRDHFCutsD0toKpi*)fCuts)->GetWeightsPositive()[AliPID::kPion];
+		    }else if (isPartOrAntipart == 2){
+		      weigPID = ((AliRDHFCutsD0toKpi*)fCuts)->GetWeightsPositive()[AliPID::kKaon] * ((AliRDHFCutsD0toKpi*)fCuts)->GetWeightsNegative()[AliPID::kPion];
+		    }
+		    if ((weigPID  < 0) || (weigPID > 1)) weigPID = 0.;
+		  }
+		}else if (fDecayChannel == 33){ // Ds with Bayesian PID using weights
+		  if(((AliRDHFCutsDstoKKpi*)fCuts)->GetPidOption()==AliRDHFCutsDstoKKpi::kBayesianWeights){
+		    Int_t labDau0=((AliAODTrack*)charmCandidate->GetDaughter(0))->GetLabel();
+		    AliAODMCParticle* firstDau=(AliAODMCParticle*)mcArray->UncheckedAt(TMath::Abs(labDau0));
+		    if(firstDau){
+		      Int_t pdgCode0=TMath::Abs(firstDau->GetPdgCode());
+		      if(pdgCode0==321){
+			weigPID=((AliRDHFCutsDstoKKpi*)fCuts)->GetWeightForKKpi();
+		      }else if(pdgCode0==211){
+			weigPID=((AliRDHFCutsDstoKKpi*)fCuts)->GetWeightForpiKK();
+		      }
+		      if ((weigPID  < 0) || (weigPID > 1)) weigPID = 0.;
+		    }else{
+		      weigPID=0.;
+		    }
+		  }
+		}
+		fCFManager->GetParticleContainer()->Fill(containerInput, kStepRecoPID, fWeight*weigPID);
 		icountRecoPID++;
 		AliDebug(3,"Reco PID cuts passed and container filled \n");
 		if(!fAcceptanceUnf){
