@@ -91,7 +91,7 @@ using std::endl;
 ClassImp(AliAnalysisTaskVZEROEqFactorTask)
 
 AliAnalysisTaskVZEROEqFactorTask::AliAnalysisTaskVZEROEqFactorTask()
-  : AliAnalysisTaskSE(), fListHist(0), fEqFactors(0), fCalibData(0), fRunNumber(0), fHistEventCounter(0)
+: AliAnalysisTaskSE(), fListHist(0), fEqFactors(0), fCalibData(0), fRunNumber(0), fHistEventCounter(0), fisAOD(kFALSE)
 //------------------------------------------------
 // Tree Variables 
 {
@@ -99,7 +99,7 @@ AliAnalysisTaskVZEROEqFactorTask::AliAnalysisTaskVZEROEqFactorTask()
 }
 
 AliAnalysisTaskVZEROEqFactorTask::AliAnalysisTaskVZEROEqFactorTask(const char *name) 
-  : AliAnalysisTaskSE(name), fListHist(0), fEqFactors(0), fCalibData(0), fRunNumber(0), fHistEventCounter(0)
+  : AliAnalysisTaskSE(name), fListHist(0), fEqFactors(0), fCalibData(0), fRunNumber(0), fHistEventCounter(0), fisAOD(kFALSE)
 {
   // Constructor
   DefineOutput(1, TList::Class());
@@ -151,42 +151,62 @@ void AliAnalysisTaskVZEROEqFactorTask::UserExec(Option_t *)
   // Called for each event
 
    AliESDEvent *lESDevent = 0x0;
+   AliAODEvent *lAODevent = 0x0;
   // Connect to the InputEvent   
   // After these lines, we should have an ESD/AOD event + the number of V0s in it.
 
    // Appropriate for ESD analysis! 
    //Count Processed Events 
-   fHistEventCounter->Fill(0.5);  
-      
-   lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
-   if (!lESDevent) {
-      AliWarning("ERROR: lESDevent not available \n");
-      return;
+   fHistEventCounter->Fill(0.5);
+
+   if(fisAOD) {
+     lAODevent = dynamic_cast<AliAODEvent*>( InputEvent() );
+     if (!lAODevent) {
+       AliError("AOD event not available \n");
+       return;
+     }
+   } else {
+     lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
+     if (!lESDevent) {
+       AliError("ESD event not available \n");
+       return;
+     }
    }
-   fHistEventCounter->Fill(1.5);    
+   fHistEventCounter->Fill(1.5);
        
    
    //Acquire ESDRun object - Will be needed to invoke AliESDEvent::SetVZEROEqFactors
-   const AliESDRun *lESDRun = lESDevent->GetESDRun();
-   if (!lESDRun) {
-      AliWarning("ERROR: lESDRun not available, won't be able to write Equalization Factors! Exiting. \n");
-      return;
+   Int_t runNumber=-1;
+   // const AliESDRun *lESDRun;
+   if(fisAOD) {
+     runNumber = lAODevent->GetRunNumber();
+       } else {
+   //   lESDRun = lESDevent->GetESDRun();
+   //   if (!lESDRun) {
+   //     AliError("ERROR: lESDRun not available, won't be able to write Equalization Factors! Exiting. \n");
+   //     return;
+   //   }
+     runNumber = lESDevent->GetRunNumber();
    }
-
-   fHistEventCounter->Fill(2.5);  
+   fHistEventCounter->Fill(2.5);
 
    //CDB Processing only necessary if Run Number changed! Check for change (no need to redo this every event) 
-   if( lESDevent->GetRunNumber() != fRunNumber ){ 
+   if( runNumber != fRunNumber ){
       AliWarning("Run Changed! Reloading CDB values!");
       //Load CDB Entries - Mirroring AliVZEROReconstructor
-      AliCDBEntry *entry7 = AliCDBManager::Instance()->Get("VZERO/Calib/EqualizationFactors");
-      if (!entry7) AliFatal("ERROR: VZERO equalization factors are not found in OCDB !");
+      AliCDBManager *cdbmanager = AliCDBManager::Instance();
+      cdbmanager->SetDefaultStorage("raw://");
+      cdbmanager->SetRun(runNumber);
+      if(!cdbmanager) AliFatal("No CDB Manager !");
+      AliCDBEntry *entry7 = cdbmanager->Get("VZERO/Calib/EqualizationFactors");
+      if (!entry7) AliFatal("VZERO equalization factors are not found in OCDB !");
       fEqFactors = (TH1F*)entry7->GetObject();
 
       //Load Calibration object fCalibData
       fCalibData = GetCalibData(); // Mirror AliVZEROReconstructor Functionality 
-      fRunNumber = lESDevent->GetRunNumber(); //New Run 
+      fRunNumber = runNumber; //New Run
    }
+   if(!fCalibData) AliFatal("No VZERO CalibData Object found!");
 
 
    Float_t factors[64];
@@ -198,9 +218,14 @@ void AliAnalysisTaskVZEROEqFactorTask::UserExec(Option_t *)
    for(Int_t i = 0; i < 64; ++i) { 
       factors[i] *= (64./factorSum);
    }
-   lESDevent->SetVZEROEqFactors(factors);
-   fHistEventCounter->Fill(3.5);  
 
+   // Set the equalized factors
+   if(fisAOD) {
+     lAODevent->SetVZEROEqFactors(factors);
+   } else {
+     lESDevent->SetVZEROEqFactors(factors);
+   }
+   fHistEventCounter->Fill(3.5);
 
    // Post output data.
    PostData(1, fListHist);
