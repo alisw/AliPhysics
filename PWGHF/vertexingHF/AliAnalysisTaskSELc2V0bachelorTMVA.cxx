@@ -939,7 +939,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
       AliDebug(2, Form("MC particle %d is not a Lc: its pdg code is %d", iPart, pdg));
       continue;
     }
-    AliInfo(Form("Step 0 ok: MC particle %d is a Lc: its pdg code is %d", iPart, pdg));
+    AliDebug(2, Form("Step 0 ok: MC particle %d is a Lc: its pdg code is %d", iPart, pdg));
     Int_t labeldaugh0 = mcPart->GetDaughter(0);
     Int_t labeldaugh1 = mcPart->GetDaughter(1);
     if (labeldaugh0 <= 0 || labeldaugh1 <= 0){
@@ -947,19 +947,19 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
       continue;
     }
     else if (labeldaugh1 - labeldaugh0 == 1){
-      AliInfo(Form("Step 1 ok: The MC particle has correct daughters!!"));
+      AliDebug(2, Form("Step 1 ok: The MC particle has correct daughters!!"));
       AliAODMCParticle* daugh0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labeldaugh0));
       AliAODMCParticle* daugh1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labeldaugh1));
       Int_t pdgCodeDaugh0 = TMath::Abs(daugh0->GetPdgCode());
       Int_t pdgCodeDaugh1 = TMath::Abs(daugh1->GetPdgCode());
-      AliAODMCParticle* bachelorMC = daugh0;
+      //      AliAODMCParticle* bachelorMC = daugh0;
       AliAODMCParticle* v0MC = daugh1;
       AliDebug(2, Form("pdgCodeDaugh0 = %d, pdgCodeDaugh1 = %d", pdgCodeDaugh0, pdgCodeDaugh1));
       if ((pdgCodeDaugh0 == 311 && pdgCodeDaugh1 == 2212) || (pdgCodeDaugh0 == 2212 && pdgCodeDaugh1 == 311)){ 
 	// we are in the case of Lc --> K0 + p; now we have to check if the K0 decays in K0S, and if this goes in pi+pi-
 	/// first, we set the bachelor and the v0: above we assumed first proton and second V0, but we could have to change it:
 	if (pdgCodeDaugh0 == 311 && pdgCodeDaugh1 == 2212) {
-	  bachelorMC = daugh1;
+	  // bachelorMC = daugh1;
 	  v0MC = daugh0;
 	}
 	AliDebug(2, Form("Number of Daughters of v0 = %d", v0MC->GetNDaughters()));
@@ -968,7 +968,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
 	  continue;
 	}
 	else { // So far: Lc --> K0 + p, K0 with 1 daughter 
-	  AliInfo("Step 2 ok: The K0 does decay in 1 body only! ");
+	  AliDebug(2, "Step 2 ok: The K0 does decay in 1 body only! ");
 	  Int_t labelK0daugh = v0MC->GetDaughter(0);
 	  AliAODMCParticle* partK0S = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0daugh));
 	  if(!partK0S){
@@ -982,7 +982,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
 	      continue;
 	    }
 	    else { // So far: Lc --> K0 + p, K0 --> K0S, K0S in 2 bodies
-	      AliInfo("Step 3 ok: The K0 daughter is a K0S and does decay in 2 bodies");
+	      AliDebug(2, "Step 3 ok: The K0 daughter is a K0S and does decay in 2 bodies");
 	      Int_t labelK0Sdaugh0 = partK0S->GetDaughter(0);
 	      Int_t labelK0Sdaugh1 = partK0S->GetDaughter(1);
 	      AliAODMCParticle* daughK0S0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0Sdaugh0));
@@ -992,12 +992,12 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
 		continue;
 	      }
 	      else { // So far: Lc --> K0 + p, K0 --> K0S, K0S in 2 bodies that we can access
-		AliInfo("Step 4 ok: Could access K0S daughters, continuing...");
+		AliDebug(2, "Step 4 ok: Could access K0S daughters, continuing...");
 		Int_t pdgK0Sdaugh0 = daughK0S0->GetPdgCode();
 		Int_t pdgK0Sdaugh1 = daughK0S1->GetPdgCode();
 		if (TMath::Abs(pdgK0Sdaugh0) != 211 || TMath::Abs(pdgK0Sdaugh1) != 211){
 		  AliDebug(2, "The K0S does not decay in pi+pi-, continuing");
-		  AliInfo("The K0S does not decay in pi+pi-, continuing");
+		  //AliInfo("The K0S does not decay in pi+pi-, continuing");
 		}
 		else { // Full chain: Lc --> K0 + p, K0 --> K0S, K0S --> pi+pi-
 		  if (fAnalCuts->IsInFiducialAcceptance(mcPart->Pt(), mcPart->Y())) {

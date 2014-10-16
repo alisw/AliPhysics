@@ -126,24 +126,27 @@ void AliEbyEPidRatioDCA::Process() {
     // -- Fill THnSparse 
     
     if(iPid != 0) {   
-      Double_t hnDCA[10] = {fCentralityBin,0,  track->Charge(), 
+      Double_t hnDCA[10] = {fCentralityBin,0.,  
+			    static_cast<Double_t>(track->Charge()), 
 			    track->Eta(), 
 			    yP, 
 			    track->Phi(), 
 			    track->Pt(), 
-			    contIdx,
-			    isDCArAccepted, 
+			    static_cast<Double_t>(contIdx),
+			    static_cast<Double_t>(isDCArAccepted), 
 			    dca[0]};
       fHnDCA->Fill(hnDCA);
     }      
     
-    Double_t hnDCA[10] = {fCentralityBin, iPid, track->Charge(), 
+    Double_t hnDCA[10] = {fCentralityBin, 
+			  static_cast<Double_t>(iPid), 
+			  static_cast<Double_t>(track->Charge()), 
 			  track->Eta(), 
 			  yP, 
 			  track->Phi(), 
 			  track->Pt(), 
-			  contIdx,
-			  isDCArAccepted, 
+			  static_cast<Double_t>(contIdx),
+			  static_cast<Double_t>(isDCArAccepted), 
 			  dca[0]};
       fHnDCA->Fill(hnDCA);
 

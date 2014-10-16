@@ -16,7 +16,10 @@ function runcommand()
 
     echo "* $type : $scr"
     echo "* $type : $scr" >&2
-    
+    date 
+    echo "Starting ${type} ${scr}" >> $log
+    date >> $log 
+
     time aliroot -b -q -x $scr 2> /dev/stdout | tee -a $log 
     local ext=$?
     local exp=${5-0}
@@ -35,6 +38,14 @@ function runcommand()
         echo "* $scr finished with the expected exit code ($exp), moving on"
         echo "* $scr finished with the expected exit code ($exp), moving on" >&2
     fi
+
+    echo "End of ${type} ${scr}" >> $log
+    date >> $log
+    echo "Disk usage in kB per file:" >> $log 
+    du -sk * | sort -n -r >> $log 
+    echo "Total disk usage: " >> $log 
+    du -sh . >> $log
+
 }
 
 #
@@ -69,6 +80,7 @@ DC_EVENT="1"
 number=0
 runAODTrain=0
 runQATrain=0
+runCheck=0
 
 while test "x$1" != "x"; do
     option="$1"
@@ -89,6 +101,10 @@ while test "x$1" != "x"; do
 	--number)       number="$1";		shift ;;
 	--qa)           runQATrain=1		      ;;
 	--aod)          runAODTrain=1		      ;;
+	--check)        runCheck=1                    ;;
+	--no-aod)       runAODTrain=0                 ;;
+	--no-qa)        runQATrain=0		      ;;
+	--no-check)     runCheck=0                    ;;
 	*) echo "Unkown option: $option" >&2
     esac
 done
@@ -148,19 +164,33 @@ ls -l
 
 echo "SIMRUN: Now read to process"
 
+# --- Run simulation (out: hits, digits, sdigits) --------------------
 runcommand "SIMULATION"     "Simulate.C($DC_EVENT,$DC_RUN)" 	sim.log     5
+rm -f *.Hits.root
+
+# --- Run reconstruction (in: digits, sdigits, raw out: ESDs) --------
 runcommand "RECONSTRUCTION" "Reconstruct.C($DC_RUN)" 		rec.log    10
+rm -f *.Digits.root *.SDigits.root
+cleanRecPoints 0
+
+# --- Create tags (in: ESDs) -----------------------------------------
 runcommand "TAG"            "Tag.C"         			tag.log    50
-runcommand "CHECK" 	    "Check.C"    			check.log  60
+
+# --- Run the check --------------------------------------------------
+if test $runCheck -gt 0 ; then 
+    runcommand "CHECK" 	    "Check.C"    			check.log  60
+fi
+
+# --- Possibly run QA analysis ---------------------------------------
 if test $runQATrain -gt 0 ; then 
     runcommand "QA"         "QA.C($DC_RUN)"  		        qa.log    100
 fi
+
+# --- Possibly run AOD analysis --------------------------------------
 if test $runAODTrain -gt 0 ; then 
     runcommand "AOD"        "AOD.C($DC_RUN)"  		        aod.log   100
 fi
 
-rm -f *.Hits.root *.Digits.root *.SDigits.root
-cleanRecPoints 0
 
 exit 0
 #

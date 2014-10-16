@@ -137,8 +137,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SetNBackgroundBins(Int_t n)           { if(n < 19) fNBkgBin = n ; }
   void         SetBackgroundLimits(Int_t i,Float_t l){ if(i <= fNBkgBin) fBkgBinLimit[i] = l; }
 
-  void         SwitchOnPtTrigBinShowerShapeHistoFill()  { fFillPtTrigBinSSHistograms = kTRUE ; }
-  void         SwitchOffPtTrigBinShowerShapeHistoFill() { fFillPtTrigBinSSHistograms = kFALSE; }
+  void         SwitchOnPtTrigBinHistoFill()          { fFillPtTrigBinHistograms = kTRUE ; }
+  void         SwitchOffPtTrigBinHistoFill()         { fFillPtTrigBinHistograms = kFALSE; }
   void         SetNPtTrigBins(Int_t n)               { if(n < 19) fNPtTrigBin = n ; }
   void         SetPtTrigLimits(Int_t i,Float_t l)    { if(i <= fNPtTrigBin) fPtTrigBinLimit[i] = l; }
 
@@ -182,7 +182,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNBkgBin;                              // Number of bins on pt content in cone
   Float_t  fBkgBinLimit[20];                      // Pt bin limits on pt content in the cone
 
-  Bool_t   fFillPtTrigBinSSHistograms;            // Fill histograms for different bins in pt trigger
+  Bool_t   fFillPtTrigBinHistograms;              // Fill histograms for different bins in pt trigger
   Int_t    fNPtTrigBin;                           // Number of bins on pt trigger
   Float_t  fPtTrigBinLimit[20];                   // Pt bin limits on pt trigger
   
@@ -430,18 +430,26 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtLambda0TRD[2];                     //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
   TH2F *   fhELambda1TRD[2];                      //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
 
-  TH1F **  fhPtLeadConeBin ;                      //![fNBkgBin] Candidate shower shape distribution depending on bin of cone leading particle
-  TH1F **  fhSumPtConeBin  ;                      //![fNBkgBin] Candidate shower shape distribution depending on bin of cone sum pt
-  TH1F **  fhPtLeadConeBinMC ;                    //![fNBkgBin*fgkNmcTypes] Candidate shower shape distribution depending on bin of cone leading particle, per MC particle
-  TH1F **  fhSumPtConeBinMC  ;                    //![fNBkgBin*fgkNmcTypes] Candidate shower shape distribution depending on bin of cone sum pt, per MC particle
+  TH1F **  fhPtLeadConeBin ;                      //![fNBkgBin] Candidate Pt distribution depending on bin of cone leading particle
+  TH1F **  fhSumPtConeBin  ;                      //![fNBkgBin] Candidate Pt distribution depending on bin of cone sum pt
+  TH1F **  fhPtLeadConeBinMC ;                    //![fNBkgBin*fgkNmcTypes] Candidate Pt distribution depending on bin of cone leading particle, per MC particle
+  TH1F **  fhSumPtConeBinMC  ;                    //![fNBkgBin*fgkNmcTypes] Candidate Pt distribution depending on bin of cone sum pt, per MC particle
 
-  TH1F **  fhPtLeadConeBinDecay ;                 //![fNBkgBin*fNDecayBits] Candidate shower shape distribution depending on bin of cone leading particle, tagged as decay
-  TH1F **  fhSumPtConeBinDecay  ;                 //![fNBkgBin*fNDecayBits] Candidate shower shape distribution depending on bin of cone sum pt, tagged as decay
+  TH1F **  fhPtLeadConeBinDecay ;                 //![fNBkgBin*fNDecayBits] Candidate Pt distribution depending on bin of cone leading particle, tagged as decay
+  TH1F **  fhSumPtConeBinDecay  ;                 //![fNBkgBin*fNDecayBits] Candidate Pte distribution depending on bin of cone sum pt, tagged as decay
   
   TH2F **  fhPtLeadConeBinLambda0 ;               //![fNBkgBin] Candidate shower shape distribution depending on bin of cone leading particle
   TH2F **  fhSumPtConeBinLambda0  ;               //![fNBkgBin] Candidate shower shape distribution depending on bin of cone sum pt
   TH2F **  fhPtLeadConeBinLambda0MC ;             //![fNBkgBin*fgkNmcTypes] Candidate shower shape distribution depending on bin of cone leading particle, per MC particle
   TH2F **  fhSumPtConeBinLambda0MC  ;             //![fNBkgBin*fgkNmcTypes] Candidate shower shape distribution depending on bin of cone sum pt, per MC particle
+
+  TH1F **  fhPtTrigBinPtLeadCone ;                //![fNPtTrigBin] Candidate pt bin, distribution of cone leading particle pt
+  TH1F **  fhPtTrigBinSumPtCone  ;                //![fNPtTrigBin] Candidate pt bin, distribution of cone sum particle pt
+  TH1F **  fhPtTrigBinPtLeadConeMC ;              //![fNPtTrigBin*fgkNmcTypes] Candidate pt bin, distribution of cone leading particle pt, per MC particle
+  TH1F **  fhPtTrigBinSumPtConeMC  ;              //![fNPtTrigBin*fgkNmcTypes] Candidate pt bin, distribution of cone sum particle pt, per MC particle
+  
+  TH1F **  fhPtTrigBinPtLeadConeDecay ;           //![fNBkgBin*fNDecayBits] Candidate pt bin, distribution of cone leading particle pt, tagged as decay
+  TH1F **  fhPtTrigBinSumPtConeDecay  ;           //![fNBkgBin*fNDecayBits] Candidate pt bin, distribution of cone sum particle pt, tagged as decay
 
   TH2F **  fhPtTrigBinLambda0vsPtLeadCone ;       //![fNPtTrigBin] Candidate shower shape distribution depending vs cone leading particle in pT trigger bins
   TH2F **  fhPtTrigBinLambda0vsSumPtCone  ;       //![fNPtTrigBin] Candidate shower shape distribution depending vs of cone sum pt in pT trigger bins
@@ -474,7 +482,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,30)
+  ClassDef(AliAnaParticleIsolation,31)
 } ;
 
 

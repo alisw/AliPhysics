@@ -101,7 +101,7 @@ namespace EMCalTriggerPtAnalysis {
   }
 
   //______________________________________________________________________________
-  void AliEMCalHistoContainer::CreateTH1(const char *name, const char *title, int nbins, double xmin, double xmax) throw(HistoContainerContentException){
+  void AliEMCalHistoContainer::CreateTH1(const char *name, const char *title, int nbins, double xmin, double xmax, Option_t *opt) throw(HistoContainerContentException){
     /*
      * Create a new TH1 within the container. The histogram name also contains the parent group(s) according to the common
      * group notation.
@@ -120,12 +120,15 @@ namespace EMCalTriggerPtAnalysis {
     if(parent->FindObject(hname.Data()))
       throw HistoContainerContentException(hname.Data(), dirname.Data(), HistoContainerContentException::kHistDuplicationException);
     TH1 *hist = new TH1D(hname.Data(), title, nbins, xmin, xmax);
-    hist->Sumw2();
+    TString optionstring(opt);
+    optionstring.ToLower();
+    if(optionstring.Contains("s"))
+      hist->Sumw2();
     parent->Add(hist);
   }
 
   //______________________________________________________________________________
-  void AliEMCalHistoContainer::CreateTH1(const char *name, const char *title, int nbins, const double *xbins) throw(HistoContainerContentException){
+  void AliEMCalHistoContainer::CreateTH1(const char *name, const char *title, int nbins, const double *xbins, Option_t *opt) throw(HistoContainerContentException){
     /*
      * Create a new TH1 within the container. The histogram name also contains the parent group(s) according to the common
      * group notation.
@@ -143,12 +146,15 @@ namespace EMCalTriggerPtAnalysis {
     if(parent->FindObject(hname.Data()))
       throw HistoContainerContentException(hname, dirname.Data(), HistoContainerContentException::kHistDuplicationException);
     TH1 *hist = new TH1D(hname.Data(), title, nbins, xbins);
-    hist->Sumw2();
+    TString optionstring(opt);
+    optionstring.ToLower();
+    if(optionstring.Contains("s"))
+      hist->Sumw2();
     parent->Add(hist);
   }
 
   //______________________________________________________________________________
-  void AliEMCalHistoContainer::CreateTH1(const char *name, const char *title, const TArrayD &xbins) throw(HistoContainerContentException){
+  void AliEMCalHistoContainer::CreateTH1(const char *name, const char *title, const TArrayD &xbins, Option_t *opt) throw(HistoContainerContentException){
     /*
      * Create a new TH1 within the container. The histogram name also contains the parent group(s) according to the common
      * group notation.
@@ -165,13 +171,16 @@ namespace EMCalTriggerPtAnalysis {
     if(parent->FindObject(hname.Data()))
       throw HistoContainerContentException(hname.Data(), dirname.Data(), HistoContainerContentException::kHistDuplicationException);
     TH1 *hist = new TH1D(hname.Data(), title, xbins.GetSize()-1, xbins.GetArray());
-    hist->Sumw2();
+    TString optionstring(opt);
+    optionstring.ToLower();
+    if(optionstring.Contains("s"))
+      hist->Sumw2();
     parent->Add(hist);
   }
 
   //______________________________________________________________________________
   void AliEMCalHistoContainer::CreateTH2(const char *name, const char *title,
-      int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax) throw(HistoContainerContentException){
+      int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, Option_t *opt) throw(HistoContainerContentException){
     /*
      * Create a new TH2 within the container. The histogram name also contains the parent group(s) according to the common
      * group notation.
@@ -193,12 +202,16 @@ namespace EMCalTriggerPtAnalysis {
     if(parent->FindObject(hname.Data()))
       throw HistoContainerContentException(hname.Data(), dirname.Data(), HistoContainerContentException::kHistDuplicationException);
     TH2 *hist = new TH2D(hname.Data(), title, nbinsx, xmin, xmax, nbinsy, ymin, ymax);
+    TString optionstring(opt);
+    optionstring.ToLower();
+    if(optionstring.Contains("s"))
+      hist->Sumw2();
     parent->Add(hist);
   }
 
   //______________________________________________________________________________
   void AliEMCalHistoContainer::CreateTH2(const char *name, const char *title,
-      int nbinsx, const double *xbins, int nbinsy, const double *ybins) throw(HistoContainerContentException){
+      int nbinsx, const double *xbins, int nbinsy, const double *ybins, Option_t *opt) throw(HistoContainerContentException){
     /*
      * Create a new TH2 within the container. The histogram name also contains the parent group(s) according to the common
      * group notation.
@@ -218,12 +231,15 @@ namespace EMCalTriggerPtAnalysis {
     if(parent->FindObject(hname.Data()))
       throw HistoContainerContentException(hname.Data(), dirname.Data(), HistoContainerContentException::kHistDuplicationException);
     TH2 *hist = new TH2D(hname.Data(), title, nbinsx, xbins, nbinsy, ybins);
-    hist->Sumw2();
+    TString optionstring(opt);
+    optionstring.ToLower();
+    if(optionstring.Contains("s"))
+      hist->Sumw2();
     parent->Add(hist);
   }
 
   //______________________________________________________________________________
-  void AliEMCalHistoContainer::CreateTH2(const char *name, const char *title, const TArrayD &xbins, const TArrayD &ybins) throw(HistoContainerContentException){
+  void AliEMCalHistoContainer::CreateTH2(const char *name, const char *title, const TArrayD &xbins, const TArrayD &ybins, Option_t *opt) throw(HistoContainerContentException){
     /*
      * Create a new TH2 within the container. The histogram name also contains the parent group(s) according to the common
      * group notation.
@@ -241,13 +257,16 @@ namespace EMCalTriggerPtAnalysis {
     if(parent->FindObject(hname.Data()))
       throw HistoContainerContentException(hname.Data(), dirname.Data(), HistoContainerContentException::kHistDuplicationException);
     TH2 *hist = new TH2D(hname.Data(), title, xbins.GetSize() - 1, xbins.GetArray(), ybins.GetSize() - 1, ybins.GetArray());
-    hist->Sumw2();
+    TString optionstring(opt);
+    optionstring.ToLower();
+    if(optionstring.Contains("s"))
+      hist->Sumw2();
     parent->Add(hist);
   }
 
   //______________________________________________________________________________
   void AliEMCalHistoContainer::CreateTH3(const char* name, const char* title, int nbinsx, double xmin, double xmax,
-      int nbinsy, double ymin, double ymax, int nbinsz, double zmin, double zmax) throw (HistoContainerContentException) {
+      int nbinsy, double ymin, double ymax, int nbinsz, double zmin, double zmax, Option_t *opt) throw (HistoContainerContentException) {
     /*
      * Create a new TH3 within the container. The histogram name also contains the parent group(s) according to the common
      * group notation.
@@ -270,13 +289,16 @@ namespace EMCalTriggerPtAnalysis {
     if(parent->FindObject(hname.Data()))
       throw HistoContainerContentException(hname.Data(), dirname.Data(), HistoContainerContentException::kHistDuplicationException);
     TH3 *hist = new TH3D(hname.Data(), title, nbinsx, xmin, xmax, nbinsy, ymin, ymax, nbinsz, zmin, zmax);
-    hist->Sumw2();
+    TString optionstring(opt);
+    optionstring.ToLower();
+    if(optionstring.Contains("s"))
+      hist->Sumw2();
     parent->Add(hist);
   }
 
   //______________________________________________________________________________
   void AliEMCalHistoContainer::CreateTH3(const char* name, const char* title, int nbinsx, const double* xbins,
-      int nbinsy, const double* ybins, int nbinsz, const double* zbins) throw (HistoContainerContentException) {
+      int nbinsy, const double* ybins, int nbinsz, const double* zbins, Option_t *opt) throw (HistoContainerContentException) {
     /*
      * Create a new TH3 within the container. The histogram name also contains the parent group(s) according to the common
      * group notation.
@@ -298,13 +320,16 @@ namespace EMCalTriggerPtAnalysis {
     if(parent->FindObject(hname.Data()))
       throw HistoContainerContentException(hname.Data(), dirname.Data(), HistoContainerContentException::kHistDuplicationException);
     TH3 *hist = new TH3D(hname.Data(), title, nbinsx, xbins, nbinsy, ybins, nbinsz, zbins);
-    hist->Sumw2();
+    TString optionstring(opt);
+    optionstring.ToLower();
+    if(optionstring.Contains("s"))
+      hist->Sumw2();
     parent->Add(hist);
   }
 
   //______________________________________________________________________________
   void AliEMCalHistoContainer::CreateTH3(const char* name, const char* title, const TArrayD& xbins, const TArrayD& ybins,
-      const TArrayD& zbins) throw (HistoContainerContentException) {
+      const TArrayD& zbins, Option_t *opt) throw (HistoContainerContentException) {
     /*
      * Create a new TH3 within the container. The histogram name also contains the parent group(s) according to the common
      * group notation.
@@ -323,13 +348,16 @@ namespace EMCalTriggerPtAnalysis {
     if(parent->FindObject(hname.Data()))
       throw HistoContainerContentException(hname.Data(), dirname.Data(), HistoContainerContentException::kHistDuplicationException);
     TH3 *hist = new TH3D(hname.Data(), title, xbins.GetSize()-1, xbins.GetArray(), ybins.GetSize()-1, ybins.GetArray(), zbins.GetSize()-1, zbins.GetArray());
-    hist->Sumw2();
+    TString optionstring(opt);
+    optionstring.ToLower();
+    if(optionstring.Contains("s"))
+      hist->Sumw2();
     parent->Add(hist);
   }
 
   //______________________________________________________________________________
   void AliEMCalHistoContainer::CreateTHnSparse(const char *name, const char *title,
-      int ndim, const int *nbins, const double *min, const double *max) throw(HistoContainerContentException){
+      int ndim, const int *nbins, const double *min, const double *max, Option_t *opt) throw(HistoContainerContentException){
     /*
      * Create a new THnSparse within the container. The histogram name also contains the parent group(s) according to the common
      * group notation.
@@ -349,12 +377,15 @@ namespace EMCalTriggerPtAnalysis {
     if(parent->FindObject(hname.Data()))
       throw HistoContainerContentException(hname.Data(), dirname.Data(), HistoContainerContentException::kHistDuplicationException);
     THnSparseD *hist = new THnSparseD(hname.Data(), title, ndim, nbins, min, max);
-    hist->Sumw2();
+    TString optionstring(opt);
+    optionstring.ToLower();
+    if(optionstring.Contains("s"))
+      hist->Sumw2();
     parent->Add(hist);
   }
 
   //______________________________________________________________________________
-  void AliEMCalHistoContainer::CreateTHnSparse(const char *name, const char *title, int ndim, const TAxis **axes) throw(HistoContainerContentException){
+  void AliEMCalHistoContainer::CreateTHnSparse(const char *name, const char *title, int ndim, const TAxis **axes, Option_t *opt) throw(HistoContainerContentException){
     /*
      * Create a new THnSparse within the container. The histogram name also contains the parent group(s) according to the common
      * group notation.
@@ -382,7 +413,10 @@ namespace EMCalTriggerPtAnalysis {
     THnSparseD *hsparse = new THnSparseD(hname.Data(), title, ndim, nbins.GetArray(), xmin.GetArray(), xmax.GetArray());
     for(int id = 0; id < ndim; ++id)
       *(hsparse->GetAxis(id)) = *(axes[id]);
-    hsparse->Sumw2();
+    TString optionstring(opt);
+    optionstring.ToLower();
+    if(optionstring.Contains("s"))
+      hsparse->Sumw2();
     parent->Add(hsparse);
   }
 

@@ -1,4 +1,33 @@
+/**
+ * @file   Config.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Oct 15 13:03:28 2014
+ * 
+ * @brief  Configuration of the simulation back-end 
+ *
+ * @note Do not modify this script. 
+ *
+ * This script depends on the two global variables detCfg and grp
+ * already being defined, typically by executing the scripts GRP.C and
+ * DetConfig.C from Simulate.C. 
+ *
+ * New event generator set-ups should be added to the class Setup. 
+ * 
+ * 
+ */
+
 // -------------------------------------------------------------------
+/** 
+ * Class that defines the set-up.  
+ *
+ * - The seed of the random number generator is read from the
+ *   environment if present.
+ *
+ * - The event generator type is read from the environment if present.
+ *   Otherwise we try to deduce it from the global object "grp".
+ * 
+ * - The impact parameter range is read from the environment if present. 
+ */
 struct Setup
 {
   TString runType;    // Event generator chosen
@@ -83,6 +112,10 @@ struct Setup
 
     Print();
   }
+  /** 
+   * Prinf information 
+   * 
+   */
   void Print()
   {
     Printf("=======================================================\n"
@@ -106,6 +139,10 @@ struct Setup
     else if (grp->IsPA() || grp->IsAP()) runType = "dpmjet";
     else if (grp->IsAA())                runType = "hijing";
   }
+  /** 
+   * Load the general libraries needed 
+   * 
+   */
   void LoadGen() {
     if (!gROOT->GetClass("AliStructFuncType")) 
       gSystem->Load("liblhapdf");      // Parton density functions
@@ -175,27 +212,35 @@ struct Setup
   {
     Bool_t asym = grp->IsPA()||grp->IsAP();
     TString& rt = runType;
-    if (rt.EndsWith("perugia0chadr"))     return PythiaHF(0);
-    if (rt.EndsWith("perugia0bchadr"))    return PythiaHF(1);
-    if (rt.EndsWith("perugia0cele"))      return PythiaHF(2);
-    if (rt.EndsWith("perugia0bele"))      return PythiaHF(3);
-    if (rt.EndsWith("perugia0jspi2e"))    return PythiaHF(4);
-    if (rt.EndsWith("perugia0btojspi2e")) return PythiaHF(5);
-    if (rt.BeginsWith("pythia"))          return Pythia(rt);
-    if (rt.BeginsWith("hijing2000hf"))    return HFCocktail(rt);
-    if (rt.BeginsWith("hijing2000"))      return Hijing(asym, 
+    AliGenerator* g = 0;
+    if      (rt.EndsWith("perugia0chadr"))     g=PythiaHF(0);
+    else if (rt.EndsWith("perugia0bchadr"))    g=PythiaHF(1);
+    else if (rt.EndsWith("perugia0cele"))      g=PythiaHF(2);
+    else if (rt.EndsWith("perugia0bele"))      g=PythiaHF(3);
+    else if (rt.EndsWith("perugia0jspi2e"))    g=PythiaHF(4);
+    else if (rt.EndsWith("perugia0btojspi2e")) g=PythiaHF(5);
+    else if (rt.BeginsWith("pythia"))          g=Pythia(rt);
+    else if (rt.BeginsWith("hijing2000hf"))    g=HFCocktail(rt);
+    else if (rt.BeginsWith("hijing2000"))      g=Hijing(asym, 
 							false, 2.3);
-    if (rt.BeginsWith("hijing"))          return Hijing(asym, 
+    else if (rt.BeginsWith("hijing"))          g=Hijing(asym, 
 							grp->IsAA(), 0);
-    if (rt.BeginsWith("ampthf"))          return HFCocktail(rt);
-    if (rt.BeginsWith("ampt"))            return Ampt();
-    if (rt.BeginsWith("dpmjet"))          return Dpmjet();
-    if (rt.BeginsWith("phojet"))          return Dpmjet();
-    if (rt.BeginsWith("hydjet"))          return Hydjet();
+    else if (rt.BeginsWith("ampthf"))          g=HFCocktail(rt);
+    else if (rt.BeginsWith("ampt"))            g=Ampt();
+    else if (rt.BeginsWith("dpmjet"))          g=Dpmjet();
+    else if (rt.BeginsWith("phojet"))          g=Dpmjet();
+    else if (rt.BeginsWith("hydjet"))          g=Hydjet();
 
-    Fatal("", "Invalid run type \"%s\" specified", runType.Data());
-    return 0;
+    if (g) g->SetVertexSmear(AliGenerator::kPerEvent);
+    else 
+      Fatal("", "Invalid run type \"%s\" specified", runType.Data());
+    return g;
   }
+  /** 
+   * Make our decayer 
+   * 
+   * @return Newly allocated decayer or null
+   */
   TVirtualMCDecayer* MakeDecayer()
   {
     if (runType.BeginsWith("hydjet")) return 0;
@@ -212,6 +257,13 @@ struct Setup
 
   // === PYTHIA ========================================================
   // Normal 
+  /** 
+   * Greate a pythia6 event generator 
+   * 
+   * @param tune Possible tune 
+   * 
+   * @return newly allocated generator or null
+   */
   AliGenerator* Pythia(const TString & tune)
   {
     // Int_t kCTEQ6l = 8;
@@ -300,6 +352,14 @@ struct Setup
     }
     return pythia;
   }
+  /** 
+   * Create a Pythia6 generator for high-flavor physics 
+   * 
+   * @param type    Which kind 
+   * @param harder  If true, make harder processes 
+   * 
+   * @return Newly allocated generator or null
+   */
   AliGenerator* PythiaHF(Int_t type, Bool_t harder=0) 
   { 
     LoadPythia();
@@ -408,7 +468,7 @@ struct Setup
     return cocktail;
   }
   /** 
-   * Make a DPMJet generator for AA, pA, or Ap. 
+   * Make a DPMJet generator for pp, AA, pA, or Ap. 
    * 
    * @param fragments If true, make fragments 
    * 
@@ -601,10 +661,10 @@ struct Setup
   }
 };
 
-
-
-
-
+/** 
+ * Configure the simulation backend 
+ * 
+ */
 void Config()
 {
   // --- Get settings from environment variables --------------------
@@ -635,9 +695,6 @@ void Config()
   rl->SetNumberOfEventsPerFile(1000);
   gAlice->SetRunLoader(rl);
 
-  // --- Trigger configuration ---------------------------------------
-  // AliSimulation::Instance()->SetTriggerConfig(grp->IsAA() ? "Pb-Pb" : "p-p");
-
   //
   //=======================================================================
   // Steering parameters for ALICE simulation
@@ -661,10 +718,10 @@ void Config()
   gMC->SetProcess("MULS",1);
   gMC->SetProcess("RAYL",1);
   
-  Float_t cut = 1.e-3;        // 1MeV cut by default
-  Float_t tofmax = 1.e10;
 
   // --- Tracking cuts -----------------------------------------------
+  Float_t cut = 1.e-3;        // 1MeV cut by default
+  Float_t tofmax = 1.e10;
   gMC->SetCut("CUTGAM", cut);
   gMC->SetCut("CUTELE", cut);
   gMC->SetCut("CUTNEU", cut);
@@ -692,47 +749,23 @@ void Config()
   // --- Go back to galice.root --------------------------------------
   rl->CdGAFile();
   
-  // --- Switch on and off detectors ---------------------------------
-  Int_t iABSO  = 1;
-  Int_t iACORDE= 0;
-  Int_t iDIPO  = 1;
-  Int_t iEMCAL = 1;
-  Int_t iFMD   = 1;
-  Int_t iFRAME = 1;
-  Int_t iHALL  = 1;
-  Int_t iITS   = 1;
-  Int_t iMAG   = 1;
-  Int_t iMUON  = 1;
-  Int_t iPHOS  = 1;
-  Int_t iPIPE  = 1;
-  Int_t iPMD   = 1;
-  Int_t iHMPID = 1;
-  Int_t iSHIL  = 1;
-  Int_t iT0    = 1;
-  Int_t iTOF   = 1;
-  Int_t iTPC   = 1;
-  Int_t iTRD   = 1;
-  Int_t iVZERO = 1;
-  Int_t iZDC   = 1;
-  
-
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
   
   
-  if (iMAG)    new AliMAG("MAG", "Magnet");
-  if (iABSO)   new AliABSOv3("ABSO", "Muon Absorber");
-  if (iDIPO)   new AliDIPOv3("DIPO", "Dipole version 3");
-  if (iHALL)   new AliHALLv3("HALL", "Alice Hall");
-  if (iFRAME)  (new AliFRAMEv2("FRAME", "Space Frame"))->SetHoles(1);
-  if (iSHIL)   new AliSHILv3("SHIL", "Shielding Version 3");
-  if (iPIPE)   new AliPIPEv3("PIPE", "Beam Pipe");
-  if (iITS)    new AliITSv11("ITS","ITS v11");
-  // if (iITS)   new AliITSv11Hybrid("ITS","ITS v11Hybrid");
-  if (iTPC)    new AliTPCv2("TPC", "Default");
-  if (iTOF)    new AliTOFv6T0("TOF", "normal TOF");
-  if (iHMPID)  new AliHMPIDv3("HMPID", "normal HMPID");
-  if (iZDC) {
+  if (detCfg->UseMAG())   new AliMAG("MAG", "Magnet");
+  if (detCfg->UseABSO())  new AliABSOv3("ABSO", "Muon Absorber");
+  if (detCfg->UseDIPO())  new AliDIPOv3("DIPO", "Dipole version 3");
+  if (detCfg->UseHALL())  new AliHALLv3("HALL", "Alice Hall");
+  if (detCfg->UseFRAME()) (new AliFRAMEv2("FRAME", "Space Frame"))->SetHoles(1);
+  if (detCfg->UseSHIL())  new AliSHILv3("SHIL", "Shielding Version 3");
+  if (detCfg->UsePIPE())  new AliPIPEv3("PIPE", "Beam Pipe");
+  if (detCfg->UseITS())   new AliITSv11("ITS","ITS v11");
+  // if (detCfg->UseITS())   new AliITSv11Hybrid("ITS","ITS v11Hybrid");
+  if (detCfg->UseTPC())   new AliTPCv2("TPC", "Default");
+  if (detCfg->UseTOF())   new AliTOFv6T0("TOF", "normal TOF");
+  if (detCfg->UseHMPID()) new AliHMPIDv3("HMPID", "normal HMPID");
+  if (detCfg->UseZDC()) {
     AliZDC *ZDC = 0;
     if (grp->period.EqualTo("LHC10h")) {
       // Need to use older ZDC for PbPb 
@@ -760,7 +793,7 @@ void Config()
       ZDC->SetBeamEnergy(82.*grp->beamEnergy/208.);
     }
   }
-  if (iTRD) {
+  if (detCfg->UseTRD()) {
     AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
     AliTRDgeometry *geoTRD = TRD->GetGeometry();
     // Total of 18 super modules. We turn them all off by default 
@@ -796,18 +829,18 @@ void Config()
       geoTRD->SetSMstatus(13,1);
     }      
   }
-  if (iFMD)    new AliFMDv1("FMD", "normal FMD");
-  if (iMUON) {
+  if (detCfg->UseFMD())    new AliFMDv1("FMD", "normal FMD");
+  if (detCfg->UseMUON()) {
     AliMUON *MUON = new AliMUONv1("MUON", "default");
     MUON->SetTriggerEffCells(1); // not needed if raw masks
     MUON->SetTriggerResponseV1(2);
   }
-  if (iPHOS)   new AliPHOSv1("PHOS", "noCPV_Modules123");
-  if (iPMD)    new AliPMDv1("PMD", "normal PMD");
-  if (iT0)     new AliT0v1("T0", "T0 Detector");
-  if (iEMCAL)  new AliEMCALv2("EMCAL", "EMCAL_COMPLETE12SMV1");
-  if (iACORDE) new AliACORDEv1("ACORDE", "normal ACORDE");
-  if (iVZERO)  new AliVZEROv7("VZERO", "normal VZERO");
+  if (detCfg->UsePHOS())   new AliPHOSv1("PHOS", "noCPV_Modules123");
+  if (detCfg->UsePMD())    new AliPMDv1("PMD", "normal PMD");
+  if (detCfg->UseT0())     new AliT0v1("T0", "T0 Detector");
+  if (detCfg->UseEMCAL())  new AliEMCALv2("EMCAL", "EMCAL_COMPLETE12SMV1");
+  if (detCfg->UseACORDE()) new AliACORDEv1("ACORDE", "normal ACORDE");
+  if (detCfg->UseVZERO())  new AliVZEROv7("VZERO", "normal VZERO");
 }
 
 
