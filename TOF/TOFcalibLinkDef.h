@@ -9,5 +9,6 @@
 #pragma link off all functions;
  
 #pragma link C++ class AliTOFAnalysisTaskCalibPass0+;
+#pragma link C++ class AliTOFAnalysisTaskCalibTree+;
 
 #endif
