@@ -80,13 +80,13 @@ using namespace std;
 ClassImp(AliAnalysisTaskJetMatching)
 
 AliAnalysisTaskJetMatching::AliAnalysisTaskJetMatching() : AliAnalysisTaskEmcalJet("AliAnalysisTaskJetMatching", kTRUE), 
-    fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fSourceRho(0), fSourceRhoName(0), fTargetRho(0), fTargetRhoName(0), fUseScaledRho(0), fSourceRadius(0.3), fTargetRadius(0.3), fMatchingScheme(kGeoEtaPhi), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistMatchedSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistSourceMatchedJetPt(0), fHistDetectorResponseProb(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistDiJet(0), fHistDiJetLeadingJet(0), fHistDiJetDPhi(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(200), fMatchEta(.3), fMatchPhi(.3), fMatchR(.08), fDoDetectorResponse(kFALSE), fMatchConstituents(kTRUE), fMinFracRecoveredConstituents(.5), fMinFracRecoveredConstituentPt(0.5), fGetBijection(kTRUE), fh1Trials(0x0), fh1AvgTrials(0x0), fh1Xsec(0x0), fAvgTrials(0) {
+    fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fSourceRho(0), fSourceRhoName(0), fTargetRho(0), fTargetRhoName(0), fUseScaledRho(0), fSourceRadius(0.3), fTargetRadius(0.3), fMatchingScheme(kGeoEtaPhi), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistMatchedSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistSourceMatchedJetPt(0), fHistDetectorResponseProb(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistDiJet(0), fHistDiJetLeadingJet(0), fHistDiJetDPhi(0), fHistDiJetDPt(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(200), fMatchEta(.3), fMatchPhi(.3), fMatchR(.08), fDoDetectorResponse(kFALSE), fMatchConstituents(kTRUE), fMinFracRecoveredConstituents(.5), fMinFracRecoveredConstituentPt(0.5), fGetBijection(kTRUE), fh1Trials(0x0), fh1AvgTrials(0x0), fh1Xsec(0x0), fAvgTrials(0) {
     // default constructor
     ClearMatchedJetsCache();
 }
 //_____________________________________________________________________________
 AliAnalysisTaskJetMatching::AliAnalysisTaskJetMatching(const char* name) : AliAnalysisTaskEmcalJet(name, kTRUE),
-    fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fSourceRho(0), fSourceRhoName(0), fTargetRho(0), fTargetRhoName(0), fUseScaledRho(0), fSourceRadius(0.3), fTargetRadius(0.3), fMatchingScheme(kGeoEtaPhi), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistMatchedSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistSourceMatchedJetPt(0), fHistDetectorResponseProb(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistDiJet(0), fHistDiJetLeadingJet(0), fHistDiJetDPhi(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(200), fMatchEta(.3), fMatchPhi(.3), fMatchR(.08), fDoDetectorResponse(kFALSE), fMatchConstituents(kTRUE), fMinFracRecoveredConstituents(0.5), fMinFracRecoveredConstituentPt(0.5), fGetBijection(kTRUE), fh1Trials(0x0), fh1AvgTrials(0x0), fh1Xsec(0x0), fAvgTrials(0) {
+    fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fSourceRho(0), fSourceRhoName(0), fTargetRho(0), fTargetRhoName(0), fUseScaledRho(0), fSourceRadius(0.3), fTargetRadius(0.3), fMatchingScheme(kGeoEtaPhi), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistMatchedSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistSourceMatchedJetPt(0), fHistDetectorResponseProb(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistDiJet(0), fHistDiJetLeadingJet(0), fHistDiJetDPhi(0), fHistDiJetDPt(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(200), fMatchEta(.3), fMatchPhi(.3), fMatchR(.08), fDoDetectorResponse(kFALSE), fMatchConstituents(kTRUE), fMinFracRecoveredConstituents(0.5), fMinFracRecoveredConstituentPt(0.5), fGetBijection(kTRUE), fh1Trials(0x0), fh1AvgTrials(0x0), fh1Xsec(0x0), fAvgTrials(0) {
     // constructor
     ClearMatchedJetsCache();
     DefineInput(0, TChain::Class());
@@ -190,6 +190,7 @@ void AliAnalysisTaskJetMatching::UserCreateOutputObjects()
             fHistDiJet = BookTH2F("fHistDiJet", "matched di-jet #varphi", "matched di-jet #eta", 100, 0., TMath::TwoPi(), 100, -5., 5.);
             fHistDiJetLeadingJet = BookTH2F("fHistDiJetLeadingJet", "leading jet #varphi", "leadingd jet #eta", 100, 0., TMath::TwoPi(), 100, -5., 5.);
             fHistDiJetDPhi = BookTH1F("fHistDiJetDPhi", "leading jet #varphi - (matched jet #varphi - #pi)", 100, -1.*TMath::Pi(), TMath::Pi());
+            fHistDiJetDPt = BookTH1F("fHistDiJetDPt", "leading jet p_{T} - sub leading jet p_{T} (GeV/c)", 100, -25, 25);
         } break;
         default : break;
     }
@@ -287,17 +288,19 @@ Bool_t AliAnalysisTaskJetMatching::Run()
         // cluttered code - should be cleaned up and merged into one
         case kGeoEtaPhi : {
             DoGeometricMatchingEtaPhi();
+            // break if no jet was matched
+            if(!fMatchedJetContainer[1][0]) return kTRUE;
         } break;
         case kGeoR : {
             DoGeometricMatchingR();
+            // break if no jet was matched
+            if(!fMatchedJetContainer[1][0]) return kTRUE;
         } break;
         case kDiJet : {
             DoDiJetMatching();
         } break;
         default : break;
     }
-    // break if no jet was matched
-    if(!fMatchedJetContainer[1][0]) return kTRUE;
     // optional step two: get a bijection (avoid duplicate matches)
     if(fGetBijection)           GetBijection();
     // optional step three: match constituents within matched jets
@@ -427,6 +430,7 @@ void AliAnalysisTaskJetMatching::DoDiJetMatching()
         if(TMath::Abs(sourcePhi-targetPhi) < fMatchPhi) {
             fHistDiJet->Fill(subLeadingJet->Phi(), subLeadingJet->Eta());
             fHistDiJetDPhi->Fill(sourcePhi-targetPhi);
+            fHistDiJetDPt->Fill(leadingJet->Pt() - subLeadingJet->Pt());
         }
     }
 }
@@ -599,7 +603,7 @@ void AliAnalysisTaskJetMatching::FillMatchedJetHistograms()
 //_____________________________________________________________________________
 AliEmcalJet* AliAnalysisTaskJetMatching::GetLeadingJet(TClonesArray* source, Int_t &leadingJetIndex, Double_t etaMin, Double_t etaMax) 
 {
-    // return the leading jet within given acceptance
+    // return the leading jet within giiven acceptance
     Int_t iJets(source->GetEntriesFast());
     Double_t pt(0);
     AliEmcalJet* leadingJet(0x0);
@@ -615,21 +619,23 @@ AliEmcalJet* AliAnalysisTaskJetMatching::GetLeadingJet(TClonesArray* source, Int
     return leadingJet;
 }
 //_____________________________________________________________________________
-AliEmcalJet* AliAnalysisTaskJetMatching::GetSubLeadingJet(TClonesArray* source, Int_t leadingJetIndex, Int_t &subLeadingJetIndex, Double_t etaMin, Double_t etaMax) 
+AliEmcalJet* AliAnalysisTaskJetMatching::GetSubLeadingJet(TClonesArray* source, Int_t leadingJetIndex, Int_t &subLeadingJetIndex) 
 {
-    // return the leading jet within given acceptance
+    // return the sub-leading jet within given acceptance
     // same as GetLeadingJet() but skips the leading jet (so returned jet is 
     // sub-leading by design)
+    // there is no eta requirement on the location of the sub-leading jet
     Int_t iJets(source->GetEntriesFast());
     // if the leading jet isn't given, retrieve it
-    if(leadingJetIndex < 0) GetLeadingJet(source, leadingJetIndex, etaMin, etaMax);
-    Double_t pt(0);
-    AliEmcalJet* leadingJet(0x0);
+    if(leadingJetIndex < 0) GetLeadingJet(source, leadingJetIndex);
+    AliEmcalJet *leadingJet(0x0), *prevLeadingJet(static_cast<AliEmcalJet*>(source->At(leadingJetIndex)));
+    if(!prevLeadingJet) return 0x0;
+    Double_t pt(0), leadingPt(prevLeadingJet->Pt());
     for(Int_t i(0); i < iJets; i++) {
         if(i == leadingJetIndex) continue;
         AliEmcalJet* jet = static_cast<AliEmcalJet*>(source->At(i));
-        if(jet->Eta() < etaMin || jet->Eta() > etaMax) continue;
-        if(jet->Pt() > pt) {
+        // check if jet is actually sub-leading
+        if(jet->Pt() > pt && jet->Pt() <= leadingPt) {
            leadingJet = jet;
            pt = leadingJet->Pt();
            subLeadingJetIndex = i;
