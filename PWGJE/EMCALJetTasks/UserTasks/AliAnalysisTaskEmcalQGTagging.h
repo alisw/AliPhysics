@@ -85,7 +85,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalQGTagging(const AliAnalysisTaskEmcalQGTagging&);            // not implemented
   AliAnalysisTaskEmcalQGTagging &operator=(const AliAnalysisTaskEmcalQGTagging&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalQGTagging, 1)
+  ClassDef(AliAnalysisTaskEmcalQGTagging, 2)
 };
 #endif
 
