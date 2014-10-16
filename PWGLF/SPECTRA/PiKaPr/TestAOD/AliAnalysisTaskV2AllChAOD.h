@@ -81,7 +81,8 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
     fIsRecoEff(0),
     fRecoEffList(0),
     fQvecGen(0),
-    fnNchBins(400)
+    fnNchBins(400),
+	fDoCentrSystCentrality(0)
       {}
   AliAnalysisTaskV2AllChAOD(const char *name);
   virtual ~AliAnalysisTaskV2AllChAOD() {
@@ -136,10 +137,12 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   void     SetQvecCut(Float_t qmin,Float_t qmax)      { fCutSmallQperc = qmin; fCutLargeQperc = qmax; }
   void     SetFillTHn (Bool_t val) { fFillTHn = val; }
   
-  void GetQvecGen(Bool_t val) { fQvecGen = val; } //enable Qvec from generated
+  void SetQvecGen(Bool_t val) { fQvecGen = val; } //enable Qvec from generated
 
   void SetnNchBins(Int_t val) { fnNchBins = val; }
   
+  void SetDoCentrSystCentrality(Bool_t val) { fDoCentrSystCentrality = val; } //enable systematic for centrality
+
  private:
   
   AliAODEvent                   * fAOD;                         //! AOD object
@@ -248,6 +251,8 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   
   Bool_t fQvecGen; //enable Qvec from generated
   Int_t  fnNchBins; //Ncharged
+  Bool_t fDoCentrSystCentrality; //systematic check on centrality estimation
+
   
   AliAnalysisTaskV2AllChAOD(const AliAnalysisTaskV2AllChAOD&);
   AliAnalysisTaskV2AllChAOD& operator=(const AliAnalysisTaskV2AllChAOD&);

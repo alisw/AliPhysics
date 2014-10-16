@@ -538,6 +538,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelorTMVA(const char* cutFile
   task->SetFillFromGenerated(kFALSE);
   task->SetCFManager(man); //here is set the CF manager
   task->SetDecayChannel(22);
+  task->SetUseCascadeTaskForLctoV0bachelor(kTRUE);
+  task->SetUseAdditionalCuts(kFALSE);
   task->SetUseAdditionalCuts(kTRUE);
   task->SetUseCutsForTMVA(kFALSE);
   task->SetUseFlatPtWeight(useFlatPtWeight); 
@@ -645,6 +647,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelorTMVA(const char* cutFile
   Printf("Fake selection = %d", (Int_t)task->GetFakeSelection());
   Printf("RejectCandidateIfNotFromQuark selection = %d", (Int_t)task->GetRejectCandidateIfNotFromQuark());
   Printf("UseMCVertex selection = %d", (Int_t)task->GetUseMCVertex());
+  Printf("UseCascadeTask = %d", (Int_t)task->GetUseCascadeTaskForLctoV0bachelor());
   Printf("***************END CONTAINER SETTINGS *****************\n");
 
 
@@ -712,21 +715,21 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelorTMVA(const char* cutFile
   output4name= "Cuts";
   output5name= "coutProfDst";
   if(!isKeepDfromB) {
-    outputfile += ":PWG3_D2H_CFtaskDstartoKpipi";
+    outputfile += ":PWG3_D2H_CFtaskLctoK0SpCascade";
     output1name="CFHFchist0";
     output3name+="_cOnly";
     output4name+="_cOnly";
     output5name+="_cOnly";
   }
   else  if(isKeepDfromBOnly){
-    outputfile += ":PWG3_D2H_CFtaskDstartoKpiKeepDfromBOnly";
+    outputfile += ":PWG3_D2H_CFtaskLctoK0SpCascadeKeepDfromBOnly";
     output1name="CFHFchist0DfromB";
     output3name+="_bOnly";
     output4name+="_bOnly";
     output5name+="_bOnly";
   }
   else{
-    outputfile += ":PWG3_D2H_CFtaskDstartoKpiKeepDfromB";
+    outputfile += ":PWG3_D2H_CFtaskLctoK0SpCascadeKeepDfromB";
     output1name="CFHFchist0allD";
     output3name+="_all";
     output4name+="_all";

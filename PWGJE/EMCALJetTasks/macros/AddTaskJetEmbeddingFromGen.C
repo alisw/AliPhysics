@@ -14,14 +14,14 @@ AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
   const Double_t  minPhi         = 0,
   const Double_t  maxPhi         = TMath::Pi() * 2,
   const Bool_t    copyArray      = kTRUE,
-  const Bool_t    drawQA         = kFALSE,
-  const char     *partonInfoName = ""
+  const Bool_t    drawQA         = kTRUE,
+  const char     *partonInfoName = "PartonInfo"
 )
 {
   AliGenerator *genGen = NULL;
   if(genType==0) { //PYTHIA Perugia 2011
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddMCGenPythia.C");
-    genGen = AddMCGenPythia(ecms, ptHardMin, ptHardMax, 2, genType);
+    genGen = AddMCGenPythia(ecms, ptHardMin, ptHardMax, 2);
   }
   else if(genType==1 || genType==2) { //QPYTHIA and PYQUEN
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddMCGenQuench.C");
@@ -49,7 +49,7 @@ AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
   const Double_t  minPhi         = 0,
   const Double_t  maxPhi         = TMath::Pi() * 2,
   const Bool_t    copyArray      = kTRUE,
-  const Bool_t    drawQA         = kFALSE,
+  const Bool_t    drawQA         = kTRUE,
   const char     *partonInfoName = ""
 )
 {  
