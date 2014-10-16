@@ -41,7 +41,7 @@ class AliRawReader;
 #include "AliDetector.h"
 #include "AliEMCALGeometry.h" 
 #include "AliEMCALTrigger.h" 
-class AliEMCALRawUtils;
+#include "AliEMCALRawUtils.h"
 #include "AliReconstructor.h"
 class AliEMCALTriggerData;
 
