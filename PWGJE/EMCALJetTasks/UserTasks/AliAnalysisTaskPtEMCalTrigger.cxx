@@ -94,6 +94,7 @@ namespace EMCalTriggerPtAnalysis {
     fEtaRange.SetLimits(-0.8, 0.8);
     fPtRange.SetLimits(0.15, 100.);
     fEnergyRange.SetLimits(0., 1000.);
+    fVertexRange.SetLimits(-10., 10.);
     SetMakeGeneralHistograms(kTRUE);
   }
 
@@ -296,6 +297,7 @@ namespace EMCalTriggerPtAnalysis {
     const AliVVertex *vtxTracks = fInputEvent->GetPrimaryVertex(),
         *vtxSPD = GetSPDVertex();
     if(!(vtxTracks && vtxSPD)) return false;
+    if(!fVertexRange.IsInRange(vtxTracks->GetZ())) return false;
     if(vtxTracks->GetNContributors() < 1 || vtxSPD->GetNContributors() < 1) return false;
 
     double triggers[5]; memset(triggers, 0, sizeof(double) * 5);
@@ -484,12 +486,12 @@ namespace EMCalTriggerPtAnalysis {
     definitions.insert(std::pair<double,double>(15., 0.5));
     definitions.insert(std::pair<double,double>(25., 1.));
     definitions.insert(std::pair<double,double>(40., 2.5));
-    definitions.insert(std::pair<double,double>(60., 5.));
-    definitions.insert(std::pair<double,double>(100., 5.));
+    definitions.insert(std::pair<double,double>(50., 5.));
+    definitions.insert(std::pair<double,double>(100., 10.));
     double currentval = 0;
     for(std::map<double,double>::iterator id = definitions.begin(); id != definitions.end(); ++id){
       double limit = id->first, binwidth = id->second;
-      while(currentval <= limit){
+      while(currentval < limit){
         currentval += binwidth;
         mybinning.push_back(currentval);
       }
@@ -508,10 +510,10 @@ namespace EMCalTriggerPtAnalysis {
      * @param binning: Array where to store the results.
      */
     std::vector<double> mybinning;
-    double currentval = -40;
+    double currentval = -10;
     mybinning.push_back(currentval);
-    while(currentval <= 40.){
-      currentval += 1.;
+    while(currentval <= 10.){
+      currentval += 5.;
       mybinning.push_back(currentval);
     }
     binning.Set(mybinning.size());
