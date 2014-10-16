@@ -24,4 +24,4 @@ add_subdirectory(EMCALsim)
 install(DIRECTORY macros DESTINATION ACORDE)
 install(DIRECTORY doc DESTINATION ACORDER)
 
-message(STATUS "ACORDE enabled")
+message(STATUS "EMCAL enabled")

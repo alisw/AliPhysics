@@ -14,26 +14,36 @@
 # **************************************************************************
 
 # Module
-set(MODULE ESDfilter)
+set(MODULE PHOSsim)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/ANALYSIS/${MODULE})
+include_directories(${CMAKE_SOURCE_DIR}/PHOS/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${CMAKE_SOURCE_DIR}/EMCAL/EMCALUtils
-                    ${CMAKE_SOURCE_DIR}/OADB
-                    ${CMAKE_SOURCE_DIR}/STEER/AOD
+                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatabase
+                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatarec
+                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatasim
+                    ${CMAKE_SOURCE_DIR}/PHOS/PHOSbase
+                    ${CMAKE_SOURCE_DIR}/PHOS/PHOSUtils
+                    ${CMAKE_SOURCE_DIR}/STEER/CDB
                     ${CMAKE_SOURCE_DIR}/STEER/ESD
+                    ${CMAKE_SOURCE_DIR}/STEER/STEER
                     ${CMAKE_SOURCE_DIR}/STEER/STEERBase
                    )
 
-# Sources
+# Sources in alphabetical order
 set(SRCS
-    AliAnalysisTaskESDfilter.cxx
-  )
+    AliPHOSCPVDigit.cxx
+    AliPHOS.cxx
+    AliPHOSQADataMakerSim.cxx
+    AliPHOSTick.cxx
+    AliPHOSv0.cxx
+    AliPHOSv1.cxx
+    AliPHOSv2.cxx
+    AliPHOSvFast.cxx
+    AliPHOSvImpacts.cxx
+   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -45,7 +55,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSIS ANALYSISalice OADB AOD ESD STEERBase EMCALUtils)
+set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec RAWDatasim PHOSbase PHOSUtils)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 
@@ -62,6 +72,7 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
 install(TARGETS ${MODULE}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib)
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib)
+
 install(FILES ${HDRS} DESTINATION include)

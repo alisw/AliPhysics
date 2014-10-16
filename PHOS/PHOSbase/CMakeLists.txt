@@ -14,26 +14,62 @@
 # **************************************************************************
 
 # Module
-set(MODULE ESDfilter)
+set(MODULE PHOSbase)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/ANALYSIS/${MODULE})
+include_directories(${CMAKE_SOURCE_DIR}/PHOS/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${CMAKE_SOURCE_DIR}/EMCAL/EMCALUtils
-                    ${CMAKE_SOURCE_DIR}/OADB
-                    ${CMAKE_SOURCE_DIR}/STEER/AOD
+                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatabase
+                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatarec
+                    ${CMAKE_SOURCE_DIR}/PHOS/PHOSrec
+                    ${CMAKE_SOURCE_DIR}/PHOS/PHOSsim
+                    ${CMAKE_SOURCE_DIR}/PHOS/PHOSUtils
+                    ${CMAKE_SOURCE_DIR}/STEER/CDB
                     ${CMAKE_SOURCE_DIR}/STEER/ESD
+                    ${CMAKE_SOURCE_DIR}/STEER/STEER
                     ${CMAKE_SOURCE_DIR}/STEER/STEERBase
                    )
 
-# Sources
+# Sources in alphabetical order
 set(SRCS
-    AliAnalysisTaskESDfilter.cxx
-  )
+    AliPHOSCalibData.cxx
+    AliPHOSClusterizer.cxx
+    AliPHOSCpvCalibData.cxx
+    AliPHOSCpvRecPoint.cxx
+    AliPHOSDigit.cxx
+    AliPHOSDigitizer.cxx
+    AliPHOSEmcBadChannelsMap.cxx
+    AliPHOSEmcCalibData.cxx
+    AliPHOSEmcRecPoint.cxx
+    AliPHOSFastRecParticle.cxx
+    AliPHOSGeometry.cxx
+    AliPHOSHit.cxx
+    AliPHOSImpact.cxx
+    AliPHOSLoader.cxx
+    AliPHOSModuleMisalignment.cxx
+    AliPHOSPID.cxx
+    AliPHOSPulseGenerator.cxx
+    AliPHOSQAChecker.cxx
+    AliPHOSRawDigiProducer.cxx
+    AliPHOSRawFitterv0.cxx
+    AliPHOSRawFitterv1.cxx
+    AliPHOSRawFitterv2.cxx
+    AliPHOSRawFitterv3.cxx
+    AliPHOSRawFitterv4.cxx
+    AliPHOSRecoParam.cxx
+    AliPHOSRecParticle.cxx
+    AliPHOSRecPoint.cxx
+    AliPHOSSDigitizer.cxx
+    AliPHOSSimParam.cxx
+    AliPHOSSurvey1.cxx
+    AliPHOSSurvey.cxx
+    AliPHOSTrackSegment.cxx
+    AliPHOSTrackSegmentMaker.cxx
+    AliPHOSTrigger.cxx
+    AliPHOSTriggerParameters.cxx
+   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -45,7 +81,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSIS ANALYSISalice OADB AOD ESD STEERBase EMCALUtils)
+set(LIBDEPS STEERBase STEER CDB ESD RAWDatabase RAWDatarec PHOSUtils PHOSrec PHOSsim)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 
@@ -62,6 +98,7 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
 install(TARGETS ${MODULE}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib)
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib)
+
 install(FILES ${HDRS} DESTINATION include)

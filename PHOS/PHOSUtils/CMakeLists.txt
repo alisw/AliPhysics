@@ -14,26 +14,24 @@
 # **************************************************************************
 
 # Module
-set(MODULE ESDfilter)
+set(MODULE PHOSUtils)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/ANALYSIS/${MODULE})
+include_directories(${CMAKE_SOURCE_DIR}/PHOS/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${CMAKE_SOURCE_DIR}/EMCAL/EMCALUtils
-                    ${CMAKE_SOURCE_DIR}/OADB
-                    ${CMAKE_SOURCE_DIR}/STEER/AOD
-                    ${CMAKE_SOURCE_DIR}/STEER/ESD
                     ${CMAKE_SOURCE_DIR}/STEER/STEERBase
                    )
 
-# Sources
+# Sources in alphabetical order
 set(SRCS
-    AliAnalysisTaskESDfilter.cxx
-  )
+    AliPHOSCPVBaseGeometry.cxx
+    AliPHOSCPVGeometry.cxx
+    AliPHOSEMCAGeometry.cxx
+    AliPHOSGeoUtils.cxx
+    AliPHOSSupportGeometry.cxx
+   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -45,7 +43,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSIS ANALYSISalice OADB AOD ESD STEERBase EMCALUtils)
+set(LIBDEPS STEERBase)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 
@@ -54,6 +52,7 @@ add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
+add_definitions(-D__PHOSUTIL__)
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
@@ -62,6 +61,7 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
 install(TARGETS ${MODULE}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib)
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib)
+
 install(FILES ${HDRS} DESTINATION include)
