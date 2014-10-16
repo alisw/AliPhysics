@@ -113,6 +113,21 @@ public:
   AliJTH1D fhBgAssocPta;     // background pta distribution in pta and eta gap bins
   AliJTH1D fhBgAssocPtaR;    // background pta distribution in pta and R gap bins
   
+  // JV // Invariant mass histograms
+  AliJTH1D fhInvariantMassXe;    // Invariant mass histogram in xlong bins
+  AliJTH1D fhInvariantMassKlong; // Invariant mass histogram in klong bins
+  AliJTH1D fhInvariantMassPta;   // Invariant mass histogram in pta bins
+
+  // Like sign bins for invariant mass
+  AliJTH1D fhInvariantMassXeLikeSign;    // Invariant mass histogram in xlong bins for like sign pairs
+  AliJTH1D fhInvariantMassKlongLikeSign; // Invariant mass histogram in klong bins for like sign pair
+  AliJTH1D fhInvariantMassPtaLikeSign;   // Invariant mass histogram in pta bins for like sign pairs
+
+  // Unlike sign bins for invariant mass
+  AliJTH1D fhInvariantMassXeUnlikeSign;    // Invariant mass histogram in xlong bins for unlike sign pairs
+  AliJTH1D fhInvariantMassKlongUnlikeSign; // Invariant mass histogram in klong bins for unlike sign pair
+  AliJTH1D fhInvariantMassPtaUnlikeSign;   // Invariant mass histogram in pta bins for unlike sign pairs
+
   AliJTH1D fhDphiAssocIsolTrigg ; // comment me
   AliJTProfile fhMeanPtAssoc ; // comment me
   AliJTProfile fhMeanZtAssoc ; // comment me
@@ -161,18 +176,45 @@ public:
   AliJTH1D     fhxEN, fhxEF,  fhxEFIsolTrigg; // comment me
   AliJTH1D     fhPoutF; // comment me
   AliJTH1D	   fhxEPtBin; // all=0,near=1,far=2
-                        // xe bins
-  AliJTH1D     fhJT;  // comment me
-  AliJTH1D     fhJTBg;  // comment me
-  AliJTH1D     fhJTBgR;  // comment me
-                         // klong bins
-  AliJTH1D     fhJTKlong;  // comment me
-  AliJTH1D     fhJTKlongBg;  // comment me
-  AliJTH1D     fhJTKlongBgR;  // comment me
-                              // pta bins
-  AliJTH1D     fhJTPta;  // comment me
-  AliJTH1D     fhJTPtaBg;  // comment me
-  AliJTH1D     fhJTPtaBgR;  // comment me
+
+  // jT distribution and background in xlong bins
+  AliJTH1D     fhJT;     // jt distribution in xlong bins
+  AliJTH1D     fhJTBg;   // eta gap background in xlong bins
+  AliJTH1D     fhJTBgR;  // R-gap background in xlong bins
+ 
+  AliJTH1D     fhJTLikeSign;     // jt distribution for like sign pairs
+  AliJTH1D     fhJTBgLikeSign;   // eta gap background for like sign pair
+  AliJTH1D     fhJTBgRLikeSign;  // R-gap background for like sign pairs
+
+  AliJTH1D     fhJTUnlikeSign;     // jt distribution for unlike sign pairs
+  AliJTH1D     fhJTBgUnlikeSign;   // eta gap background for unlike sign pair
+  AliJTH1D     fhJTBgRUnlikeSign;  // R-gap background for unlike sign pairs
+
+  // jT distribution and background in klong bins
+  AliJTH1D     fhJTKlong;     // jT distribution in klong bins
+  AliJTH1D     fhJTKlongBg;   // eta gap background in klong bins
+  AliJTH1D     fhJTKlongBgR;  // R-gap background in klong bins
+ 
+  AliJTH1D     fhJTKlongLikeSign;     // jt distribution for like sign pairs
+  AliJTH1D     fhJTKlongBgLikeSign;   // eta gap background for like sign pair
+  AliJTH1D     fhJTKlongBgRLikeSign;  // R-gap background for like sign pairs
+
+  AliJTH1D     fhJTKlongUnlikeSign;     // jt distribution for unlike sign pairs
+  AliJTH1D     fhJTKlongBgUnlikeSign;   // eta gap background for unlike sign pair
+  AliJTH1D     fhJTKlongBgRUnlikeSign;  // R-gap background for unlike sign pairs
+
+  // jT distribution and background in pta bins
+  AliJTH1D     fhJTPta;     // jT distribution in pTa bins
+  AliJTH1D     fhJTPtaBg;   // eta gap background in pTa bins
+  AliJTH1D     fhJTPtaBgR;  // R-gap background in pTa bins
+ 
+  AliJTH1D     fhJTPtaLikeSign;     // jt distribution for like sign pairs
+  AliJTH1D     fhJTPtaBgLikeSign;   // eta gap background for like sign pair
+  AliJTH1D     fhJTPtaBgRLikeSign;  // R-gap background for like sign pairs
+
+  AliJTH1D     fhJTPtaUnlikeSign;     // jt distribution for unlike sign pairs
+  AliJTH1D     fhJTPtaBgUnlikeSign;   // eta gap background for unlike sign pair
+  AliJTH1D     fhJTPtaBgRUnlikeSign;  // R-gap background for unlike sign pairs
   
   //FK//mix2    inclusve spectra
 
