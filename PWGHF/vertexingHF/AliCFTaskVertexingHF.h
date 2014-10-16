@@ -239,6 +239,9 @@ public:
 	void SetUseCutsForTMVA(Bool_t useCutsForTMVA) { fDecayChannel == 22 ? fUseCutsForTMVA = useCutsForTMVA : fUseAdditionalCuts = kFALSE;}
 	Bool_t GetUseCutsForTMVA() const {return fUseCutsForTMVA;}
 
+	void SetUseCascadeTaskForLctoV0bachelor(Bool_t useCascadeTaskForLctoV0bachelor) {fUseCascadeTaskForLctoV0bachelor = useCascadeTaskForLctoV0bachelor;}
+	Bool_t GetUseCascadeTaskForLctoV0bachelor() const {return fUseCascadeTaskForLctoV0bachelor;}
+
 protected:
 	AliCFManager   *fCFManager;   //  pointer to the CF manager
 	TH1I *fHistEventsProcessed;   //! simple histo for monitoring the number of events processed
@@ -295,8 +298,9 @@ protected:
 	Bool_t fUseAdditionalCuts;  // flag to use additional cuts needed for Lc --> K0S + p, TMVA
 	Bool_t fUseCutsForTMVA;     // flag to use additional cuts needed for Lc --> K0S + p, TMVA
 	                            // these are the pre-selection cuts for the TMVA
+	Bool_t fUseCascadeTaskForLctoV0bachelor;   // flag to define which task to use for Lc --> K0S+p
    
-	ClassDef(AliCFTaskVertexingHF,21); // class for HF corrections as a function of many variables
+	ClassDef(AliCFTaskVertexingHF,22); // class for HF corrections as a function of many variables
 };
 
 #endif

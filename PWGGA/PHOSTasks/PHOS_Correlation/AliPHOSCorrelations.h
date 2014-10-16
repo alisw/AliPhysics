@@ -60,14 +60,14 @@ public:
   void SwitchOffPionEfficiency()                                                  { fUseEfficiency = kFALSE              ; }
 
   void EnableTOFCut(const Bool_t enable, const Double_t TOFCut)                   { fTOFCutEnabled=enable; fTOFCut=TOFCut; }
+  
   void SetSigmaWidth(const Double_t sigmaWidth)                                   { fNSigmaWidth = sigmaWidth            ; }
   void SetMassMeanParametrs(const Double_t par[2])  ;
   void SetMassSigmaParametrs(const Double_t par[4]) ;
-  void SetMassWindow(const Double_t massMean, const Double_t massSigma)           { fMassInvMeanMin = massMean; fMassInvMeanMax = massSigma ; }
-  void SetPtAssocBins(TArrayD * arr)                                              { fAssocBins.Set(arr->GetSize(), arr->GetArray())         ; } 
+  void SetMassWindow(const Double_t min, const Double_t max)                      { fMassInvMeanMin = min; fMassInvMeanMax = max    ; }
+  void SetPtAssocBins(TArrayD * arr)                                              { fAssocBins.Set(arr->GetSize(), arr->GetArray()) ; } 
   void SetCentralityBinning(const TArrayD& edges, const TArrayI& nMixed) ;
   void SetCentralityBorders(const Double_t& downLimit , const Double_t& upLimit) ;
-
   void SwitchOnMassParametrisation()                                              { fUseMassWindowParametrisation = true ; }
   void SwitchOffMassParametrisation()                                             { fUseMassWindowParametrisation = false; }
 
