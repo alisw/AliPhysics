@@ -137,6 +137,8 @@ fhDphiTriggerJet(0x0),
 fhDphiTriggerJetAccept(0x0),
 fhCentrality(0x0),
 fhCentralityAccept(0x0),
+fhNofMultipleTriggers(0x0),
+fhDeltaRMultTriggers(0x0),
 //fHJetPtRaw(0x0),
 //fHLeadingJetPtRaw(0x0), 
 //fHDphiVsJetPtAll(0x0), 
@@ -165,6 +167,8 @@ fhEntriesToMedian(0x0),
 fhEntriesToMedianGen(0x0),
 fhCellAreaToMedian(0x0),
 fhCellAreaToMedianGen(0x0),
+fhNofMultipleTriggersGen(0x0),
+fhDeltaRMultTriggersGen(0x0),
 fIsChargedMC(0),
 fIsKine(0),
 fIsFullMC(0),
@@ -266,6 +270,8 @@ fhDphiTriggerJet(0x0),
 fhDphiTriggerJetAccept(0x0),
 fhCentrality(0x0),
 fhCentralityAccept(0x0),
+fhNofMultipleTriggers(0x0),
+fhDeltaRMultTriggers(0x0),
 //fHJetPtRaw(0x0),
 //fHLeadingJetPtRaw(0x0), 
 //fHDphiVsJetPtAll(0x0), 
@@ -294,6 +300,8 @@ fhEntriesToMedian(0x0),
 fhEntriesToMedianGen(0x0),
 fhCellAreaToMedian(0x0),
 fhCellAreaToMedianGen(0x0),
+fhNofMultipleTriggersGen(0x0),
+fhDeltaRMultTriggersGen(0x0),
 fIsChargedMC(0),
 fIsKine(0),
 fIsFullMC(0),
@@ -401,6 +409,8 @@ fhDphiTriggerJet(a.fhDphiTriggerJet),
 fhDphiTriggerJetAccept(a.fhDphiTriggerJetAccept),
 fhCentrality(a.fhCentrality),
 fhCentralityAccept(a.fhCentralityAccept),
+fhNofMultipleTriggers(a.fhNofMultipleTriggers),
+fhDeltaRMultTriggers(a.fhDeltaRMultTriggers),
 //fHJetPtRaw(a.fHJetPtRaw),
 //fHLeadingJetPtRaw(a.fHLeadingJetPtRaw),
 //fHDphiVsJetPtAll(a.fHDphiVsJetPtAll),
@@ -429,6 +439,8 @@ fhEntriesToMedian(a.fhEntriesToMedian),
 fhEntriesToMedianGen(a.fhEntriesToMedianGen),
 fhCellAreaToMedian(a.fhCellAreaToMedian),
 fhCellAreaToMedianGen(a.fhCellAreaToMedianGen),
+fhNofMultipleTriggersGen(a.fhNofMultipleTriggersGen),
+fhDeltaRMultTriggersGen(a.fhDeltaRMultTriggersGen),
 fIsChargedMC(a.fIsChargedMC),
 fIsKine(a.fIsKine),
 fIsFullMC(a.fIsFullMC),
@@ -711,6 +723,9 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
    fhEntriesToMedian = new TH1D("fhEntriesToMedian","fhEntriesToMedian",30,0,30);
    fhCellAreaToMedian =  new TH1D("fhCellAreaToMedian", "fhCellAreaToMedian", 75,0,1.5);
 
+   fhNofMultipleTriggers = new TH1D("fhNofMultipleTriggers","fhNofMultipleTriggers",100,0,100);
+   fhDeltaRMultTriggers = new  TH1D("fhDeltaRMultTriggers","fhDeltaRMultTriggers", 100,0,4);  
+
    if(!fIsKine){
       fOutputList->Add(fhJetPhi);
       fOutputList->Add(fhTriggerPhi);
@@ -728,6 +743,8 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
       fOutputList->Add(fhCentralityAccept);
       fOutputList->Add(fhEntriesToMedian);
       fOutputList->Add(fhCellAreaToMedian);
+      fOutputList->Add(fhNofMultipleTriggers);
+      fOutputList->Add(fhDeltaRMultTriggers);
    }
    // raw spectra of INCLUSIVE jets  
    //Centrality, pTjet, A
@@ -855,6 +872,13 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
       fhCellAreaToMedianGen  = (TH1D*) fhCellAreaToMedian->Clone("fhCellAreaToMedianGen");
       fhCellAreaToMedianGen->SetTitle(Form("%s Gen MC", fhCellAreaToMedian->GetTitle())); 
       fOutputList->Add(fhCellAreaToMedianGen);
+
+      fhNofMultipleTriggersGen = (TH1D*) fhNofMultipleTriggers->Clone("fhNofMultipleTriggersGen"); 
+      fOutputList->Add(fhNofMultipleTriggersGen);
+
+      fhDeltaRMultTriggersGen  = (TH1D*) fhDeltaRMultTriggers->Clone("fhDeltaRMultTriggersGen");
+      fOutputList->Add(fhDeltaRMultTriggersGen);
+
    }
    //-------------------------------------
    //     pythia histograms
@@ -1134,7 +1158,6 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
    //==============  analyze generator level MC  ================ 
    TList particleListGen; //list of tracks in MC
 
-
    if(fIsChargedMC || fIsKine){
 
       if(fIsKine){  //pure kine
@@ -1255,6 +1278,25 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
          if(ntriggersMC>0){ //there is at least one trigger 
             Int_t rnd     = fRandom->Integer(ntriggersMC); //0 to ntriggers-1
             indexTriggGen = triggersMC[rnd];
+
+            fhNofMultipleTriggersGen->Fill(ntriggersMC-1);
+            if(ntriggersMC>1){
+               Double_t deltaPhi, deltaEta, deltaR;
+               for(Int_t ia=0; ia<ntriggersMC-1; ia++){
+                  AliVParticle* tGenI = (AliVParticle*) particleListGen.At(ia);  
+                  if(!tGenI) continue;
+                  for(Int_t ib=ia+1; ib<ntriggersMC; ib++){
+                     AliVParticle* tGenII = (AliVParticle*) particleListGen.At(ib);  
+                     if(!tGenII) continue;
+                        
+                        deltaPhi = RelativePhi(tGenI->Phi(),tGenII->Phi());
+                        deltaEta = tGenI->Eta()-tGenII->Eta(); 
+                        deltaR = sqrt(deltaPhi*deltaPhi + deltaEta*deltaEta);
+                        fhDeltaRMultTriggersGen->Fill(deltaR);
+                  }
+               }
+            } 
+
          }else{
             indexTriggGen = -1; //trigger not found
          }
@@ -1742,6 +1784,7 @@ Int_t  AliAnalysisTaskJetCorePP::GetListOfTracks(TList *list){
    Double_t ptmax = -10;
    Int_t    triggers[200];
    Int_t    ntriggers = 0; //index in triggers array
+ 
 
    for(Int_t it = 0; it < aodevt->GetNumberOfTracks(); it++){
       AliAODTrack *tr = aodevt->GetTrack(it);
@@ -1774,6 +1817,23 @@ Int_t  AliAnalysisTaskJetCorePP::GetListOfTracks(TList *list){
    if(fHardest==0 && ntriggers>0){ //select random inclusive trigger
       Int_t rnd = fRandom->Integer(ntriggers); //0 to ntriggers-1
       index     = triggers[rnd];
+
+      fhNofMultipleTriggers->Fill(ntriggers-1);
+      if(ntriggers>1){
+         Double_t deltaPhi, deltaEta, deltaR;
+         for(Int_t ia=0; ia<ntriggers-1; ia++){
+            AliVParticle* tGeni = (AliVParticle*) list->At(ia);  
+            if(!tGeni) continue;
+            for(Int_t ib=ia+1; ib<ntriggers; ib++){
+               AliVParticle* tGenii = (AliVParticle*) list->At(ib);  
+               if(!tGenii) continue;
+               deltaPhi = RelativePhi(tGeni->Phi(),tGenii->Phi());
+               deltaEta = tGeni->Eta()-tGenii->Eta(); 
+               deltaR   = sqrt(deltaPhi*deltaPhi + deltaEta*deltaEta);
+               fhDeltaRMultTriggers->Fill(deltaR);
+            }
+         }
+      }
    }
 
    return index;
