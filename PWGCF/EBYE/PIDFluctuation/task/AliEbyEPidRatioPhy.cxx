@@ -375,10 +375,10 @@ Int_t AliEbyEPidRatioPhy::ProcessTracks() {
     
     if (fIsQA) {
       if (iPid != 0) {
-	Double_t aTrack[7] = {Double_t(fCentralityBin), 0, track->Charge(), track->Eta(),yP,track->Phi(),track->Pt()};
+	Double_t aTrack[7] = {static_cast<Double_t>(fCentralityBin), 0, static_cast<Double_t>(track->Charge()), track->Eta(),yP,track->Phi(),track->Pt()};
 	fHnTrackUnCorrRec->Fill(aTrack);
       }
-      Double_t aTrack[7] = {Double_t(fCentralityBin), iPid, track->Charge(), track->Eta(),yP,track->Phi(),track->Pt()};
+      Double_t aTrack[7] = {static_cast<Double_t>(fCentralityBin), static_cast<Double_t>(iPid), static_cast<Double_t>(track->Charge()), track->Eta(),yP,track->Phi(),track->Pt()};
       fHnTrackUnCorrRec->Fill(aTrack);
     }
 
@@ -498,10 +498,10 @@ Int_t AliEbyEPidRatioPhy::ProcessParticles() {
     if (fIsQA) {
       Float_t signMC    = (particle->PdgCode() < 0) ? -1. : 1.;
       if (iPid != 0) {
-	Double_t aTrack[7] = {Double_t(fCentralityBin), 0, signMC, particle->Eta(),yMC,particle->Phi(),particle->Pt()};
+	Double_t aTrack[7] = {static_cast<Double_t>(fCentralityBin), 0, static_cast<Double_t>(signMC), particle->Eta(),yMC,particle->Phi(),particle->Pt()};
 	fHnTrackUnCorrMc->Fill(aTrack);
       }
-      Double_t aTrack[7] = {Double_t(fCentralityBin), iPid, signMC, particle->Eta(),yMC,particle->Phi(),particle->Pt()};
+      Double_t aTrack[7] = {static_cast<Double_t>(fCentralityBin), static_cast<Double_t>(iPid), static_cast<Double_t>(signMC), particle->Eta(),yMC,particle->Phi(),particle->Pt()};
       fHnTrackUnCorrMc->Fill(aTrack);
     }
 

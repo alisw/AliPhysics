@@ -39,6 +39,7 @@ public:
   void AddCutsForAOD(AliESDtrackCuts *trackCuts, UInt_t filterBits);
   void SetEtaRange(double etamin, double etamax) { fEtaRange.SetLimits(etamin, etamax); }
   void SetPtRange(double ptmin, double ptmax) { fPtRange.SetLimits(ptmin, ptmax); }
+  void SetClusterEnergyRange(double emin, double emax) { fEnergyRange.SetLimits(emin,emax); }
   void SetSwapEta() { fSwapEta = kTRUE; }
   void UseTriggersFromTriggerMaker() { fUseTriggersFromTriggerMaker = kTRUE; }
 
@@ -64,6 +65,7 @@ private:
   // Cuts
   AliCutValueRange<double>      fEtaRange;              // Eta Selection Range
   AliCutValueRange<double>	  fPtRange;				  // Pt Selection Range
+  AliCutValueRange<double>    fEnergyRange;     // Cluster energy selection range
   Bool_t						  fSwapEta;				  // Allow swapping of the eta sign in asymmetric collision systems
   Bool_t 						  fUseTriggersFromTriggerMaker; // Use trigger classes from trigger maker
 

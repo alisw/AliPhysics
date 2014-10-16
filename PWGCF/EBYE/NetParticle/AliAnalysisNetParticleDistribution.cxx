@@ -385,7 +385,7 @@ Int_t AliAnalysisNetParticleDistribution::ProcessTracks() {
       yP,                                     //  2 rapidity
       track->Phi(),                           //  3 phi
       track->Pt(),                            //  4 pt
-      track->Charge()                         //  5 sign
+      static_cast<Double_t>(track->Charge())                         //  5 sign
     };
     
     fHnTrackUnCorr->Fill(aTrack);

@@ -44,7 +44,8 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
     fDCAmin(-3),
     fDCAmax(3),
     fDCAzCut(0),
-    fQvecGen(0)
+    fQvecGen(0),
+	fDoCentrSystCentrality(0)
       {}
   AliAnalysisTaskSpectraAllChAOD(const char *name);
   virtual ~AliAnalysisTaskSpectraAllChAOD() {
@@ -91,7 +92,8 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
   Bool_t GetDCA(const AliAODTrack* trk, Double_t * p);
   void SetDCAzCut(Double_t val)                        { fDCAzCut = val; }
   
-  void GetQvecGen(Bool_t val) { fQvecGen = val; } //enable Qvec from generated
+  void SetQvecGen(Bool_t val) { fQvecGen = val; } //enable Qvec from generated
+  void SetDoCentrSystCentrality(Bool_t val) { fDoCentrSystCentrality = val; } //enable systematic for centrality
 
  private:
   
@@ -117,6 +119,7 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
   Double_t                         fDCAzCut;               //cut on DCA z
   
   Bool_t fQvecGen; //enable Qvec from generated
+  Bool_t fDoCentrSystCentrality; //systematic check on centrality estimation
   
   AliAnalysisTaskSpectraAllChAOD(const AliAnalysisTaskSpectraAllChAOD&);
   AliAnalysisTaskSpectraAllChAOD& operator=(const AliAnalysisTaskSpectraAllChAOD&);

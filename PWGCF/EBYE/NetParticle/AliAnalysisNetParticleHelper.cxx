@@ -139,7 +139,7 @@ const Int_t   AliAnalysisNetParticleHelper::fgkfHistNBinsRap     = Int_t((AliAna
 									  AliAnalysisNetParticleHelper::fgkfHistRangeRap[0]) / 
 									 AliAnalysisNetParticleHelper::fgkfHistBinWitdthRap) +1;
 
-const Float_t AliAnalysisNetParticleHelper::fgkfHistRangePhi[]   = {0.0, TMath::TwoPi()};
+const Float_t AliAnalysisNetParticleHelper::fgkfHistRangePhi[]   = {0.0, static_cast<Float_t>(TMath::TwoPi())};
 const Int_t   AliAnalysisNetParticleHelper::fgkfHistNBinsPhi     = 42 ;
 
 const Float_t AliAnalysisNetParticleHelper::fgkfHistRangePt[]    = {0.2, 2.9}; // {0.2, 5.}; // was {0.3, 2.22}
