@@ -296,37 +296,49 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
   AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(event);
   Int_t multTPC = 0;
   Int_t multGlobal = 0; 
-  // these estimates only work for esd's
-  multTPC = fStandardTPCcuts->Count(event);
-  multGlobal = fStandardGlobalCuts->Count(event);
 
-  if ( fCutTPCmultiplicityOutliers && esdevent )
+  // to remove multiplicity outliers, an explicit cut on the correlation 
+  // between global and tpc only tracks can be made by counting the two
+  // sets. as counting is expensive, only count when qa is requested or cut is enabeled
+  // the cut criteria are different for different data takign periods
+  // and (of course) cut criteria, specific routines exist for 10h, 11h data
+  // and esds (by calling AliFlowTrackCuts) or aods (evaluated here explicitely)
+  if(esdevent && (fQA || fCutTPCmultiplicityOutliers)) 
   {
     //this is pretty slow as we check the event track by track twice
     //this cut will work for 2010 PbPb data and is dependent on
     //TPC and ITS reco efficiency (e.g. geometry, calibration etc)
-    if (multTPC > ( 23+1.216*multGlobal)) {pass=kFALSE;}
-    if (multTPC < (-20+1.087*multGlobal)) {pass=kFALSE;}
+    multTPC = fStandardTPCcuts->Count(event);
+    multGlobal = fStandardGlobalCuts->Count(event);
+    if(fCutTPCmultiplicityOutliers) {
+      if (multTPC > ( 23+1.216*multGlobal)) pass = kFALSE;
+      if (multTPC < (-20+1.087*multGlobal)) pass = kFALSE;
+    }
   }
-
-  if(fCutTPCmultiplicityOutliersAOD && aodevent) {
-    //similar (slow) cut for aod's. will work for both 2010 and 2010 pbpb data. 
-    //this should be moved to AliFlowTrackCuts::Count()
-    //but at this moment the flow track cuts does not know the data that is passed
+  if(aodevent && (fQA || fCutTPCmultiplicityOutliersAOD)) 
+  {
+    //similar (slow) cut for aod's. will work for both 2010 and 2010 pbpb data
+    //but the user is responsible that this object is configured
+    //correctly to select the dataset
+    //FIXME data could dynamically be determined by this class via the
+    //runnumber
     Int_t nTracks(aodevent->GetNumberOfTracks());
     for(Int_t iTracks = 0; iTracks < nTracks; iTracks++) { 
-        AliAODTrack* track = aodevent->GetTrack(iTracks);
-        if(!track) continue;
-        if (!track || track->Pt() < .2 || track->Pt() > 5.0 || TMath::Abs(track->Eta()) > .8 || track->GetTPCNcls() < 70 || !track->GetDetPid() || track->GetDetPid()->GetTPCsignal() < 10.0)  continue;  // general quality cut
-        if (track->TestFilterBit(1) && track->Chi2perNDF() > 0.2) multTPC++;
-        if (!track->TestFilterBit(16) || track->Chi2perNDF() < 0.1) continue;
-        Double_t b[2] = {-99., -99.};
-        Double_t bCov[3] = {-99., -99., -99.};
-        AliAODTrack copy(*track);
-        if (copy.PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov) && TMath::Abs(b[0]) < 0.3 && TMath::Abs(b[1]) < 0.3) multGlobal++;
+      AliAODTrack* track = aodevent->GetTrack(iTracks);
+      if(!track) continue;
+      if (!track || track->Pt() < .2 || track->Pt() > 5.0 || TMath::Abs(track->Eta()) > .8 || track->GetTPCNcls() < 70 || !track->GetDetPid() || track->GetDetPid()->GetTPCsignal() < 10.0)  continue;  // general quality cut
+      if (track->TestFilterBit(1) && track->Chi2perNDF() > 0.2) multTPC++;
+      if (!track->TestFilterBit(16) || track->Chi2perNDF() < 0.1) continue;
+      Double_t b[2] = {-99., -99.};
+      Double_t bCov[3] = {-99., -99., -99.};
+      AliAODTrack copy(*track);
+      if (copy.PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov) && TMath::Abs(b[0]) < 0.3 && TMath::Abs(b[1]) < 0.3) multGlobal++;
     }
-    if(!fData2011 && (multTPC < (-40.3+1.22*multGlobal) || multTPC > (32.1+1.59*multGlobal))) pass = kFALSE;
-    if(fData2011  && (multTPC < (-36.73 + 1.48*multGlobal) || multTPC > (62.87 + 1.78*multGlobal))) pass = kFALSE;
+    if(fCutTPCmultiplicityOutliersAOD) 
+    {
+      if(!fData2011 && (multTPC < (-40.3+1.22*multGlobal) || multTPC > (32.1+1.59*multGlobal))) pass = kFALSE;
+      else if(fData2011  && (multTPC < (-36.73 + 1.48*multGlobal) || multTPC > (62.87 + 1.78*multGlobal))) pass = kFALSE;
+    }
   }
 
   if (fQA)
