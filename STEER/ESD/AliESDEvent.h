@@ -372,6 +372,8 @@ public:
   AliESDtrack *GetTrack(Int_t i) const {return (fTracks)?(AliESDtrack*)fTracks->At(i) : 0;}
   Int_t  AddTrack(const AliESDtrack *t);
 
+  AliESDtrack *GetVTrack(Int_t i) const {return GetTrack(i);}
+
   /// add new track at the end of tracks array and return instance
   AliESDtrack* NewTrack();
   
