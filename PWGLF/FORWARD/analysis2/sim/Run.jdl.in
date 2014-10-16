@@ -10,9 +10,9 @@
 #   $2: <N_jobs>       is the number of sub-jobs 
 #   $3: <N_events>     is the number of events per sub-job
 #   $4: <tag>          is a single-word tag 
-#   $5: <generator>    is the name of the generator 
-#   $6: <more>         is more arguments for simrun.sh 
-#
+#   $5: <more>         is more arguments for simrun.sh 
+#   ...
+#    
 # The output is written to alien:@out@/test/<tag>
 #
 Executable="@bin@/run.sh";
@@ -45,6 +45,7 @@ InputFile={
 	"LF:@data@/Check.C",
 	"LF:@data@/Config.C",
 	"LF:@data@/DetConfig.C",
+	"LF:@data@/EGConfig.C",
 	"LF:@data@/OCDBConfig.C",
 	"LF:@data@/Reconstruct.C",
 	"LF:@data@/Simulate.C",
@@ -73,8 +74,8 @@ JDLVariables={
 	"OutputDir"
 };
 
-#
-splitarguments="--run $1 --event $3 --process $5 --qa --aod --check --number #alien_counter# $6";
+
+splitarguments="--run $1 --event $3 --number #alien_counter# $5";
 split="production:1-$2";
 
 Workdirectorysize={"10000MB"};

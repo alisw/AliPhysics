@@ -205,16 +205,21 @@ deduced from the AliROOT version.
 
 The `Config.C` configuration script has been trimmed down
 considerably.  The script is now very generic since most settings are
-derived from the GRP data.  The only thing that remains to be selected
-in this script is the event generator.
+derived from the GRP data.  
+
+## `EGConfig.C`
 
 When selecting the event generator, a more versatile and configurable
 approach has been taken.  `Config.C` defines the class `Setup` with
 the constructor `Setup::Setup(const char* genName)`.  Here `genName`
-is passed verbatim from the `Run.jdl` JDL file. The method
-`Setup::MakeGenerator()` then internally has a switch on this string
-to find the chosen event generator.  If no suitable generator can be
-found, the script will fail with a `Fatal` signal.
+is passed verbatim from the `Run.jdl` JDL file. The string is then
+passed to method `VirtualEGCfg::MakeGenerator` which in turn calls the
+virtual `VirtualEGCfg::CreateGenerator`.  This can be overwritten in a
+derived class to make particular event generators.  The provided
+implementation in `EGConfig.C` (loaded by `Config.C`) internally has a
+switch on this string to find the chosen event generator.  If no
+suitable generator can be found, the script will fail with a `Fatal`
+signal.
 
 Generators are specified as
 
@@ -223,8 +228,8 @@ Generators are specified as
 where _sub-type_ (and _sub-sub-type_) are optional.  Currently defined
 event generators are (case insensitive)
 
-* `pythia` Pythia6 Min.Bias. Optional sub-types
-    * `perugia0` Perugia0 tune. Optional sub-sub-types
+* `pythia` Pythia6 Min.Bias. Optional sub-types:
+    * `perugia0` Perugia0 tune. Optional sub-sub-types:
         * `chadr` Heavy flavour charm w/hadronic decay signals added
 		* `bchadr` Heavy flavour beauty/charm w/hadronic decay signals added
 		* `cele` Heavy flavour charm signals added
@@ -236,20 +241,23 @@ event generators are (case insensitive)
           sub-sub-type
     	* `_flat` for flat multiplicity probability from 0 to 200
 	* `jets` Jets in central barrel
-* `hijing` Hijing Min.Bias. Optional sub-types. For pPb and Pbp a
-  cocktail with slow neutrons is made 
+* `hijing` Hijing Min.Bias. For pPb and Pbp a
+  cocktail with slow neutrons is made.  Optional sub-types:
     * `2000` No quenching and hard pT cut at 2.3GeV. Possible
-      sub-sub-types are
+      sub-sub-types are:
 	    * `hf` Random heavy flavour signal added (see for pythia
           above).
-* `ampt` AMPT min bias. Possible sub types are
+* `ampt` AMPT min bias. Possible sub types are:
     * `hf` Random heavy flavour signal added (see for pythia
           above).
 * `dpmjet`
 * `phojet` Same as `dpmjet`
 * `hydjet` 
 
-More generators can easily be added. 
+More generators can easily be added.  The idea is to have a standard
+`EGConfig.C` which can be expanded upon, but if a user has very
+special requirements it is possible to provide ones own `EGConfig.C`
+script. 
 
 
 ## JDL Parameters
@@ -260,7 +268,14 @@ More generators can easily be added.
 * _n jobs_: Number of sub-jobs to commit
 * _n events_: Number of events per sub-job
 * _tag_: The tag to put in produced files under (e.g., `LHC14z9a`)
-
+* _other_: A colon (:) separated list of options and arguments for
+  `simrun.sh`. These can include
+   * `bmin`:_LEAST_B_ The smallest impact parameter to make
+   * `bmax`:_LARGEST_B_ The largest impact parameter to make
+   * `process`:_EG_STRING_ The event generator to use.
+  that is, to specify using DpmJet with an impact parameter range of 0
+  to 5fm, one must pass `process:dpmjet:bmin:0:bmax:5`
+ 
 ### `Merge.jdl`
 
 * _run number_:  The run number
