@@ -93,6 +93,7 @@ namespace EMCalTriggerPtAnalysis {
     // Set default cuts
     fEtaRange.SetLimits(-0.8, 0.8);
     fPtRange.SetLimits(0.15, 100.);
+    fEnergyRange.SetLimits(0., 1000.);
     SetMakeGeneralHistograms(kTRUE);
   }
 
@@ -263,7 +264,7 @@ namespace EMCalTriggerPtAnalysis {
     TIter patchIter(this->fTriggerPatchInfo);
     while((triggerpatch = dynamic_cast<AliEmcalTriggerPatchInfo *>(patchIter()))){
       double triggerpatchinfo[4] = {triggerpatch->GetPatchE(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
-      double triggerpatchinfoamp[4] = {triggerpatch->GetADCAmp(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
+      double triggerpatchinfoamp[4] = {static_cast<double>(triggerpatch->GetADCAmp()), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
       double triggerpatchinfoer[4] = {triggerpatch->GetADCAmpGeVRough(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
       if(triggerpatch->IsJetHigh()){
         fHistos->FillTHnSparse("EnergyJetHigh", triggerpatchinfo);
@@ -438,6 +439,7 @@ namespace EMCalTriggerPtAnalysis {
     for(int icl = 0; icl < fInputEvent->GetNumberOfCaloClusters(); icl++){
       clust = fInputEvent->GetCaloCluster(icl);
       if(!clust->IsEMCAL()) continue;
+      if(!fEnergyRange.IsInRange(clust->E())) continue;
       if(triggers[0]) FillClusterHist("MinBias", clust, false, zv, isPileupEvent, triggers[0]);
       if(!triggerstrings.size())	// Non-EMCal-triggered
         FillClusterHist("NoEMCal", clust, false, zv, isPileupEvent, triggers[0]);
@@ -452,6 +454,7 @@ namespace EMCalTriggerPtAnalysis {
       TIter clustIter(fCaloClusters);
       while((clust = dynamic_cast<const AliVCluster *>(clustIter()))){
         if(!clust->IsEMCAL()) continue;
+        if(!fEnergyRange.IsInRange(clust->E())) continue;
         if(triggers[0]) FillClusterHist("MinBias", clust, true, zv, isPileupEvent, triggers[0]);
         if(!triggerstrings.size())	// Non-EMCal-triggered
           FillClusterHist("NoEMCal", clust, true, zv, isPileupEvent, triggers[0]);
