@@ -13,7 +13,9 @@ Bool_t ConfigD0
    AliRsnMiniAnalysisTask *task, 
    Bool_t                  isPP,
    Bool_t                  isMC,
-   Bool_t                  monitor = kTRUE,  
+   Bool_t                  monitor = kTRUE,
+   Bool_t      		   centortracklets = kTRUE, 
+   Bool_t      		   sanityhistos = kTRUE, 
    Float_t         	   nsigmaTPCPi = 3.0,
    Float_t         	   nsigmaTPCKa = 3.0,
    Float_t         	   nsigmaTOFPi = 2.0,
@@ -151,6 +153,7 @@ Bool_t ConfigD0
   /* first daughter dca */ Int_t daug1dcaID = task->CreateValue(AliRsnMiniValue::kFirstDaughterDCA, kFALSE);
   /* second daughter dca*/ Int_t daug2dcaID = task->CreateValue(AliRsnMiniValue::kSecondDaughterDCA, kFALSE);
   /* number of Sisters  */ Int_t nsistID    = task->CreateValue(AliRsnMiniValue::kNSisters, kFALSE);
+  /* number of trackl.  */ Int_t trackletsID = task->CreateValue(AliRsnMiniValue::kTracklets, kFALSE);
    
    //
    // -- Create all needed outputs -----------------------------------------------------------------
@@ -165,16 +168,16 @@ Bool_t ConfigD0
    
    if(!isMC || doCalculationInMC == kTRUE){
    
-   Bool_t   use     [8] = { 1	    ,  1       ,  1	  ,  1	     ,  1	 ,  1	     ,  1       ,  1	  };
-   Bool_t   useIM   [8] = { 1	    ,  1       ,  1	  ,  1	     ,  1	 ,  1	     ,  1       ,  1	  };
+   Bool_t   use     [8] = { 1	    ,  1       ,  1	  ,  1	     ,  1        ,  1	     ,  1       ,  1	  };
+   Bool_t   useIM   [8] = { 1	    ,  1       ,  1	  ,  1	     ,  1        ,  1	     ,  1       ,  1	  };
    TString  name    [8] = {"Unlike1", "Unlike2", "Mixing1", "Mixing2", "RotateK1", "RotateK2", "LikePP" , "LikeMM"};
    TString  comp    [8] = {"PAIR"   , "PAIR"   , "MIX"	  , "MIX"    , "ROTATE1" , "ROTATE1" , "PAIR"   , "PAIR"  };
    TString  output  [8] = {"SPARSE" , "SPARSE" , "SPARSE" , "SPARSE" , "SPARSE"  , "SPARSE"  , "SPARSE" , "SPARSE"};
-   Char_t   charge1 [8] = {'-'	    , '+'      , '-'	  , '+'      , '-'	 , '+'	     , '+'      , '-'	  };
-   Char_t   charge2 [8] = {'+'	    , '-'      , '+'	  , '-'      , '+'	 , '-'	     , '+'      , '-'	  };
-   Int_t    cutID1  [8] = { iCutK   ,  iCutK   ,  iCutK   ,  iCutK   ,  iCutK	 ,  iCutK    ,  iCutK   ,  iCutK  };
-   Int_t    cutID2  [8] = { iCutPi  ,  iCutPi  ,  iCutPi  ,  iCutPi  ,  iCutPi	 ,  iCutPi   ,  iCutPi  ,  iCutPi };
-   Int_t    ipdg    [8] = { 421     , -421     ,  421	  , -421     ,  421	 , -421      ,  421     , -421	  };
+   Char_t   charge1 [8] = {'-'	    , '+'      , '-'	  , '+'      , '-'       , '+'	     , '+'      , '-'	  };
+   Char_t   charge2 [8] = {'+'	    , '-'      , '+'	  , '-'      , '+'       , '-'	     , '+'      , '-'	  };
+   Int_t    cutID1  [8] = { iCutK   ,  iCutK   ,  iCutK   ,  iCutK   ,  iCutK    ,  iCutK    ,  iCutK   ,  iCutK  };
+   Int_t    cutID2  [8] = { iCutPi  ,  iCutPi  ,  iCutPi  ,  iCutPi  ,  iCutPi   ,  iCutPi   ,  iCutPi  ,  iCutPi };
+   Int_t    ipdg    [8] = { 421     , -421     ,  421	  , -421     ,  421      , -421      ,  421     , -421	  };
    Double_t mass    [8] = { 1.86486 ,  1.86486 ,  1.86486 ,  1.86486 ,  1.86486  ,  1.86486  ,  1.86486 ,  1.86486};
    
    for (Int_t i = 0; i < 8; i++) {
@@ -202,19 +205,71 @@ Bool_t ConfigD0
       // axis Y: transverse momentum
       out->AddAxis(ptID, 200, 0.0, 20.0);
       
-      // axiz Z: rapidity
-      //out->AddAxis(yID, 100, -1, 1);
+      // axiz Z: pseudorapidity
+      if(sanityhistos==kTRUE) out->AddAxis(etaID, 100, -1, 1);
+         
       
-      // more axis: daughter's dca product and more
-      //out->AddAxis(dcapID, 100, -0.001, 0.001);      
-      //out->AddAxis(daug1ptID, 150, 0.0, 15.0);
-      //out->AddAxis(daug2ptID, 150, 0.0, 15.0);
-      //out->AddAxis(daug1dcaID, 200, -1.0, 1.0);
-      //out->AddAxis(daug2dcaID, 200, -1.0, 1.0);    
-      
-      if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
+      if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
+       		   else out->AddAxis(trackletsID, 400, 0.0, 400.0);}
       else out->AddAxis(centID, 400, 0.0, 400.0);
    }
+
+   if(sanityhistos==kTRUE){
+
+   // SANITY CHECK HISTOS
+   
+   TString mode = "SPARSE";
+   
+   // create output
+   AliRsnMiniOutput *out = task->CreateOutput("D0_MixingPP", mode.Data(), "MIX");
+   // selection settings
+   out->SetCutID(0, iCutK);
+   out->SetCutID(1, iCutPi);
+   out->SetDaughter(0, AliRsnDaughter::kKaon);
+   out->SetDaughter(1, AliRsnDaughter::kPion);
+   out->SetCharge(0, '+');
+   out->SetCharge(1, '+');
+   out->SetMotherPDG(421);
+   out->SetMotherMass(1.86486);
+   // pair cuts
+   out->SetPairCuts(cutsPair);
+  
+   // binnings
+   out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
+   out->AddAxis(ptID, 200, 0.0, 20.0);
+   out->AddAxis(etaID, 100, -1, 1);
+
+
+   if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
+       		else out->AddAxis(trackletsID, 400, 0.0, 400.0);}
+   else out->AddAxis(centID, 400, 0.0, 400.0);
+   
+   // create output
+   AliRsnMiniOutput *out = task->CreateOutput("D0_MixingMM", mode.Data(), "MIX");
+   // selection settings
+   out->SetCutID(0, iCutK);
+   out->SetCutID(1, iCutPi);
+   out->SetDaughter(0, AliRsnDaughter::kKaon);
+   out->SetDaughter(1, AliRsnDaughter::kPion);
+   out->SetCharge(0, '-');
+   out->SetCharge(1, '-');
+   out->SetMotherPDG(-421);
+   out->SetMotherMass(1.86486);
+   // pair cuts
+   out->SetPairCuts(cutsPair);
+   
+   // binnings
+   out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
+   out->AddAxis(ptID, 200, 0.0, 20.0);
+   out->AddAxis(etaID, 100, -1, 1);
+
+   if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
+       		else out->AddAxis(trackletsID, 400, 0.0, 400.0);}
+   else out->AddAxis(centID, 400, 0.0, 400.0);
+
+
+   }
+
    
    }
    
@@ -268,7 +323,8 @@ Bool_t ConfigD0
    //out->AddAxis(dcapID, 100, -0.001, 0.001);
    //out->AddAxis(nsistID, 10, 0, 5);
 
-   if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
+   if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
+       		else out->AddAxis(trackletsID, 400, 0.0, 400.0);}
    else out->AddAxis(centID, 400, 0.0, 400.0);
    
    // create output
@@ -296,7 +352,8 @@ Bool_t ConfigD0
    //out->AddAxis(dcapID, 100, -0.001, 0.001);
    //out->AddAxis(nsistID, 10, 0, 5);
 
-   if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
+   if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
+       		else out->AddAxis(trackletsID, 400, 0.0, 400.0);}
    else out->AddAxis(centID, 400, 0.0, 400.0);
    
    
@@ -318,7 +375,8 @@ Bool_t ConfigD0
    out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
 
-   if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
+   if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
+       		else out->AddAxis(trackletsID, 400, 0.0, 400.0);}
    else out->AddAxis(centID, 400, 0.0, 400.0);
    
    // create output
@@ -335,7 +393,8 @@ Bool_t ConfigD0
    out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
 
-   if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
+   if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
+       		else out->AddAxis(trackletsID, 400, 0.0, 400.0);}
    else out->AddAxis(centID, 400, 0.0, 400.0);
    
    
@@ -357,7 +416,8 @@ Bool_t ConfigD0
    out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
 
-   if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
+  if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
+       	       else out->AddAxis(trackletsID, 400, 0.0, 400.0);}
    else out->AddAxis(centID, 400, 0.0, 400.0);
    
    // create output
@@ -374,7 +434,8 @@ Bool_t ConfigD0
    out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
 
-   if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
+   if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
+       		else out->AddAxis(trackletsID, 400, 0.0, 400.0);}
    else out->AddAxis(centID, 400, 0.0, 400.0);
    
    
