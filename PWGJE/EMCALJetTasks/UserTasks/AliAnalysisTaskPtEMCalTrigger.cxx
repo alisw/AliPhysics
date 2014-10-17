@@ -65,6 +65,8 @@ namespace EMCalTriggerPtAnalysis {
                 		    fListTrackCuts(NULL),
                 		    fEtaRange(),
                 		    fPtRange(),
+                		    fEnergyRange(),
+                		    fVertexRange(),
                 		    fSwapEta(kFALSE),
                 		    fUseTriggersFromTriggerMaker(kFALSE)
   {
@@ -80,6 +82,8 @@ namespace EMCalTriggerPtAnalysis {
                 		    fListTrackCuts(NULL),
                 		    fEtaRange(),
                 		    fPtRange(),
+                        fEnergyRange(),
+                        fVertexRange(),
                 		    fSwapEta(kFALSE),
                 		    fUseTriggersFromTriggerMaker(kFALSE)
   {
