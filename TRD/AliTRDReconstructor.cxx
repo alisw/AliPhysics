@@ -249,6 +249,7 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   fClusterizer->SetUseLabels(kTRUE);
   fClusterizer->SetStoreRawSignals(kTRUE);
   fClusterizer->OpenOutput(clusterTree);
+  fClusterizer->ResetRecPoints();
   fClusterizer->ReadDigits(digitsTree);
   fClusterizer->ReadTracklets();
   fClusterizer->ReadTracks();
