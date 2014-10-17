@@ -690,8 +690,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 
   // Multiplicity definition with tracklets
   Double_t nTracklets = 0;
-  Int_t nTrackletsEta10 = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.);
-  Int_t nTrackletsEta16 = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.6,1.6);
+  Int_t nTrackletsEta10 = static_cast<Int_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.));
+  Int_t nTrackletsEta16 = static_cast<Int_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.6,1.6));
   nTracklets = (Double_t)nTrackletsEta10;
   if(fMultiplicityEstimator==kNtrk10to16) { nTracklets = (Double_t)(nTrackletsEta16 - nTrackletsEta10); }
 
@@ -712,7 +712,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   if(fUseNchWeight){
     Int_t nChargedMCPhysicalPrimary=AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(mcArray,-1.0,1.0);
     if(!fUseTrackletsWeight) fWeight *= GetNchWeight(nChargedMCPhysicalPrimary);
-    else fWeight *= GetNchWeight(nTracklets);
+    else fWeight *= GetNchWeight(static_cast<Int_t>(nTracklets));
     AliDebug(2,Form("Using Nch weights, Mult=%d Weight=%f\n",nChargedMCPhysicalPrimary,fWeight));
   }
   Double_t eventWeight=fWeight;
