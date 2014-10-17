@@ -187,6 +187,8 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   TH1F * hPeakT0ACVsRun=new TH1F("hPeakT0ACVsRun","Peak value of T0AC (gaussian fit);;t0AC (ps)",nRuns,0., nRuns);
   TH1F * hT0fillResVsRun=new TH1F("hT0fillResVsRun","t0_fill spread;;t0_spread (ps)",nRuns,0., nRuns);
 	
+  TH1F * hGoodChannelsRatio=new TH1F("hGoodChannelsRatio","Fraction of TOF good channels;;fraction of good channels",nRuns, 0., nRuns);//, 100, 0. , 1.);
+  hGoodChannelsRatio->SetDrawOption("E");
 	
   lista.Add(hAvMulti);
   lista.Add(hAvDiffTimeVsRun);
@@ -211,6 +213,8 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   lista.Add(hPeakT0CVsRun);
   lista.Add(hPeakT0ACVsRun);
   lista.Add(hT0fillResVsRun);
+  lista.Add(hGoodChannelsRatio);
+
   char runlabel[6];
    
   for (Int_t irun=0;irun<nRuns;irun++){
@@ -292,6 +296,11 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
     hMatchEffVsRunNormToGoodCh->SetLineColor(kBlue);
     hMatchEffVsRunNormToGoodCh->SetLineWidth(2);
      
+    hGoodChannelsRatio->SetBinContent(irun+1, goodChannelRatio);
+    hGoodChannelsRatio->SetLineColor(kMagenta+2);
+    hGoodChannelsRatio->SetLineWidth(2);
+    hGoodChannelsRatio->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
     hPeakT0AVsRun->SetBinContent(irun+1,peakT0A);
     hPeakT0AVsRun->SetBinError(irun+1,spreadT0A);
     hPeakT0AVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
@@ -313,98 +322,105 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   lista.Write();
   fout->Close();
     
-  TCanvas* cPeakDiffTimeVsRun = new TCanvas("cPeakDiffTimeVsRun","cPeakDiffTimeVsRun", 50,50,750,550);
+  gStyle->SetOptStat(10);
+
+  TCanvas* cPeakDiffTimeVsRun = new TCanvas("cPeakDiffTimeVsRun","cPeakDiffTimeVsRun", 50,50,1050, 550);
   hPeakDiffTimeVsRun->GetYaxis()->SetRangeUser(-50.,50.);
   hPeakDiffTimeVsRun->Draw();
   cPeakDiffTimeVsRun->Print(Form("%s/cPeakDiffTimeVsRun.png",plotDir.Data()));
 	
-  TCanvas* cSpreadDiffTimeVsRun = new TCanvas("cSpreadDiffTimeVsRun","cSpreadDiffTimeVsRun", 50,50,750,550);
+  TCanvas* cSpreadDiffTimeVsRun = new TCanvas("cSpreadDiffTimeVsRun","cSpreadDiffTimeVsRun", 50,50,1050, 550);
   hSpreadDiffTimeVsRun->GetYaxis()->SetRangeUser(200.,400.);
   hSpreadDiffTimeVsRun->Draw();
   cSpreadDiffTimeVsRun->Print(Form("%s/cSpreadDiffTimeVsRun.png",plotDir.Data()));
   
-  TCanvas* cMatchEffVsRun = new TCanvas("cMatchEffVsRun","cMatchEffVsRun",50, 50, 750,550);
+  TCanvas* cMatchEffVsRun = new TCanvas("cMatchEffVsRun","cMatchEffVsRun",50, 50, 1050, 550);
   hMatchEffVsRun->GetYaxis()->SetRangeUser(0.,1.);
   hMatchEffVsRun->Draw();
   cMatchEffVsRun->Print(Form("%s/cMatchEffVsRun.png",plotDir.Data()));
   
-  TCanvas* cMatchEffNormToGoodCh = new TCanvas("cMatchEffNormToGoodCh","cMatchEffNormToGoodCh",50, 50,750,550);
+  TCanvas* cMatchEffNormToGoodCh = new TCanvas("cMatchEffNormToGoodCh","cMatchEffNormToGoodCh",50, 50,1050, 550);
   hMatchEffVsRunNormToGoodCh->GetYaxis()->SetRangeUser(0.,1.);
   hMatchEffVsRunNormToGoodCh->Draw();
   cMatchEffNormToGoodCh->Print(Form("%s/cMatchEffNormToGoodCh.png",plotDir.Data()));
-	
-  TCanvas* cPeakT0AVsRun = new TCanvas("cPeakT0AVsRun","cPeakT0AVsRun", 50,50,750,550);
-  hPeakT0AVsRun->Draw();
-  cPeakT0AVsRun->Print(Form("%s/cPeakT0AVsRun.png",plotDir.Data()));
-  
-  TCanvas* cPeakT0CVsRun = new TCanvas("cPeakT0CVsRun","cPeakT0CVsRun", 50,50,750,550);
-  hPeakT0CVsRun->Draw();
-  cPeakT0CVsRun->Print(Form("%s/cPeakT0CVsRun.png",plotDir.Data()));
-  
-  TCanvas* cPeakT0ACVsRun = new TCanvas("cPeakT0ACVsRun","cPeakT0ACVsRun", 50,50,750,550);
-  hPeakT0ACVsRun->Draw();
-  cPeakT0ACVsRun->Print(Form("%s/cPeakT0ACVsRun.png",plotDir.Data()));
-  
-  TCanvas* cT0fillResVsRun = new TCanvas("cT0fillResVsRun","cT0fillResVsRun", 50,50,750,550);
-  hT0fillResVsRun->Draw();
-  cT0fillResVsRun->Print(Form("%s/cT0fillResVsRun.png",plotDir.Data()));
 
-  if (displayAll) {
-    TCanvas* cAvDiffTimeVsRun = new TCanvas("cAvDiffTimeVsRun","cAvDiffTimeVsRun",50,50,750,550);
+  TCanvas* cGoodCh = new TCanvas("cGoodCh","cGoodCh",50, 50,1050, 550);
+  hGoodChannelsRatio->GetYaxis()->SetRangeUser(0.75,1.);
+  hGoodChannelsRatio->Draw();
+  cGoodCh->Print(Form("%s/cGoodCh.png",plotDir.Data()));
+
+  if (displayAll) {	
+    TCanvas* cPeakT0AVsRun = new TCanvas("cPeakT0AVsRun","cPeakT0AVsRun", 50,50,1050, 550);
+    hPeakT0AVsRun->Draw();
+    cPeakT0AVsRun->Print(Form("%s/cPeakT0AVsRun.png",plotDir.Data()));
+  
+    TCanvas* cPeakT0CVsRun = new TCanvas("cPeakT0CVsRun","cPeakT0CVsRun", 50,50,1050, 550);
+    hPeakT0CVsRun->Draw();
+    cPeakT0CVsRun->Print(Form("%s/cPeakT0CVsRun.png",plotDir.Data()));
+  
+    TCanvas* cPeakT0ACVsRun = new TCanvas("cPeakT0ACVsRun","cPeakT0ACVsRun", 50,50,1050, 550);
+    hPeakT0ACVsRun->Draw();
+    cPeakT0ACVsRun->Print(Form("%s/cPeakT0ACVsRun.png",plotDir.Data()));
+  
+    TCanvas* cT0fillResVsRun = new TCanvas("cT0fillResVsRun","cT0fillResVsRun", 50,50,1050, 550);
+    hT0fillResVsRun->Draw();
+    cT0fillResVsRun->Print(Form("%s/cT0fillResVsRun.png",plotDir.Data()));
+
+    TCanvas* cAvDiffTimeVsRun = new TCanvas("cAvDiffTimeVsRun","cAvDiffTimeVsRun",50,50,1050, 550);
     gPad->SetGridx();
     gPad->SetGridy();
     hAvDiffTimeVsRun->Draw();
     cAvDiffTimeVsRun->Print(Form("%s/cAvDiffTimeVsRun.png",plotDir.Data()));
 	  
-    TCanvas* cAvTimeVsRun = new TCanvas("cAvTimeVsRun","cAvTimeVsRun", 50,50,750,550);
+    TCanvas* cAvTimeVsRun = new TCanvas("cAvTimeVsRun","cAvTimeVsRun", 50,50,1050, 550);
     hAvTimeVsRun->Draw();
     cAvTimeVsRun->Print(Form("%s/cAvTimeVsRun.png",plotDir.Data()));
 	  
-    TCanvas* cPeakTimeVsRun = new TCanvas("cPeakTimeVsRun","cPeakTimeVsRun", 50,50,750,550);
+    TCanvas* cPeakTimeVsRun = new TCanvas("cPeakTimeVsRun","cPeakTimeVsRun", 50,50,1050, 550);
     hPeakTimeVsRun->Draw();
     cPeakTimeVsRun->Print(Form("%s/cPeakTimeVsRun.png",plotDir.Data()));
 	  
-    TCanvas* cSpreadTimeVsRun = new TCanvas("cSpreadTimeVsRun","cSpreadTimeVsRun", 50,50,750,550);
+    TCanvas* cSpreadTimeVsRun = new TCanvas("cSpreadTimeVsRun","cSpreadTimeVsRun", 50,50,1050, 550);
     hSpreadTimeVsRun->Draw();
     cSpreadTimeVsRun->Print(Form("%s/cSpreadTimeVsRun.png",plotDir.Data()));
 	  
-    TCanvas* cAvRawTimeVsRun = new TCanvas("cAvRawTimeVsRun","cAvRawTimeVsRun", 50,50,750,550);
+    TCanvas* cAvRawTimeVsRun = new TCanvas("cAvRawTimeVsRun","cAvRawTimeVsRun", 50,50,1050, 550);
     hAvRawTimeVsRun->Draw();
     cAvRawTimeVsRun->Print(Form("%s/cAvRawTimeVsRun.png",plotDir.Data()));
 	  
-    TCanvas* cPeakRawTimeVsRun = new TCanvas("cPeakRawTimeVsRun","cPeakRawTimeVsRun", 50,50,750,550);
+    TCanvas* cPeakRawTimeVsRun = new TCanvas("cPeakRawTimeVsRun","cPeakRawTimeVsRun", 50,50,1050, 550);
     hPeakRawTimeVsRun->Draw();
     cPeakRawTimeVsRun->Print(Form("%s/cPeakRawTimeVsRun.png",plotDir.Data()));
 	  
-    TCanvas* cSpreadRawTimeVsRun = new TCanvas("cSpreadRawTimeVsRun","cSpreadRawTimeVsRun", 50,50,750,550);
+    TCanvas* cSpreadRawTimeVsRun = new TCanvas("cSpreadRawTimeVsRun","cSpreadRawTimeVsRun", 50,50,1050, 550);
     hSpreadRawTimeVsRun->Draw();
     cSpreadRawTimeVsRun->Print(Form("%s/cSpreadRawTimeVsRun.png",plotDir.Data()));
 	  
-    TCanvas* cAvTotVsRun = new TCanvas("cAvTotVsRun","cAvTotVsRun", 50,50,750,550);
+    TCanvas* cAvTotVsRun = new TCanvas("cAvTotVsRun","cAvTotVsRun", 50,50,1050, 550);
     hAvTotVsRun->Draw();
     cAvTotVsRun->Print(Form("%s/cAvTotVsRun.png",plotDir.Data()));
 	  
-    TCanvas* cPeakTotVsRun = new TCanvas("cPeakTotVsRun","cPeakTotVsRun", 50,50,750,550);
+    TCanvas* cPeakTotVsRun = new TCanvas("cPeakTotVsRun","cPeakTotVsRun", 50,50,1050, 550);
     hPeakTotVsRun->Draw();
     cPeakTotVsRun->Print(Form("%s/cPeakTotVsRun.png",plotDir.Data()));
 	  
-    TCanvas* cSpreadTotVsRun = new TCanvas("cSpreadTotVsRun","cSpreadTotVsRun", 50,50,750,550);
+    TCanvas* cSpreadTotVsRun = new TCanvas("cSpreadTotVsRun","cSpreadTotVsRun", 50,50,1050, 550);
     hSpreadTotVsRun->Draw();
     cSpreadTotVsRun->Print(Form("%s/cSpreadTotVsRun.png",plotDir.Data()));
 	  
-    TCanvas* cNegTimeRatioVsRun = new TCanvas("cNegTimeRatioVsRun","cNegTimeRatioVsRun", 50,50,750,550);
+    TCanvas* cNegTimeRatioVsRun = new TCanvas("cNegTimeRatioVsRun","cNegTimeRatioVsRun", 50,50,1050, 550);
     hNegTimeRatioVsRun->Draw();
     cNegTimeRatioVsRun->Print(Form("%s/cNegTimeRatioVsRun.png",plotDir.Data()));
 	  
-    TCanvas* cOrphansRatioVsRun = new TCanvas("cOrphansRatioVsRun","cOrphansRatioVsRun", 50,50,750,550);
+    TCanvas* cOrphansRatioVsRun = new TCanvas("cOrphansRatioVsRun","cOrphansRatioVsRun", 50,50,1050, 550);
     hOrphansRatioVsRun->Draw();
     cOrphansRatioVsRun->Print(Form("%s/cOrphansRatioVsRun.png",plotDir.Data()));
 	  
-    TCanvas* cMeanLVsRun = new TCanvas("cMeanLVsRun","cMeanLVsRun", 50,50,750,550);
+    TCanvas* cMeanLVsRun = new TCanvas("cMeanLVsRun","cMeanLVsRun", 50,50,1050, 550);
     hMeanLVsRun->Draw();
     cMeanLVsRun->Print(Form("%s/cMeanLVsRun.png",plotDir.Data()));
 	  
-    TCanvas* cNegLRatioVsRun = new TCanvas("cNegLRatioVsRun","cNegLRatioVsRun", 50,50,750,550);
+    TCanvas* cNegLRatioVsRun = new TCanvas("cNegLRatioVsRun","cNegLRatioVsRun", 50,50,1050, 550);
     hNegLRatioVsRun->Draw();
     cNegLRatioVsRun->Print(Form("%s/cNegLRatioVsRun.png",plotDir.Data()));
   }

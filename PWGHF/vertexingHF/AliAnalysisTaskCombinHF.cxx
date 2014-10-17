@@ -364,7 +364,7 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   }
   
   
-  Int_t nMassBins=fMaxMass*1000.-fMinMass*1000.;
+  Int_t nMassBins=static_cast<Int_t>(fMaxMass*1000.-fMinMass*1000.);
   Double_t maxm=fMinMass+nMassBins*0.001;
   fMassVsPtVsY=new TH3F("hMassVsPtVsY","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
   fMassVsPtVsY->Sumw2();

@@ -692,7 +692,7 @@ Bool_t AliCFVertexingHF::RecoAcceptStep(AliESDtrackCuts **trackCuts) const
 	
 	Bool_t bRecoAccStep = kFALSE;
 	
-	Float_t etaCutMin, ptCutMin, etaCutMax, ptCutMax;
+	Float_t etaCutMin=0, ptCutMin=0, etaCutMax=0, ptCutMax=0;
 	
 	Float_t etaProng=0., ptProng=0.; 
 	

@@ -193,11 +193,12 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
 	  Double_t fraction = jetCont->GetFractionSharedPt(jet1);
 	  if(fraction<fMinFractionShared) continue;
 	  partonsInfo = (AliStackPartonInfo*) jetContTrue->GetStackPartonInfo();     
-	  
+	  if(!partonsInfo) return 0;
 	}
 	else {
 	  partonsInfo = (AliStackPartonInfo*) jetCont->GetStackPartonInfo(); 
 	  jet2=jet1;
+          if(!partonsInfo) return 0;
 	}
 	
 	Double_t jp1=(jet2->Phi())-(partonsInfo->GetPartonPhi6()); 
