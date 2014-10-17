@@ -14,6 +14,39 @@ class AliNamedArrayI;
 
 class AliEmcalContainer : public TNamed {
  public:
+  enum RejectionReason {
+    // General
+    kNullObject = 1<<0,
+    kPtCut = 1<<1,
+    kAcceptanceCut = 1<<2,
+    kBitMapCut = 1<<3,
+    // leave bits 4-7 free for future implementations
+    
+    // AliParticleContainer
+    kMCFlag = 1<<8,
+    kMCGeneratorCut = 1<<9,
+    kChargeCut = 1<<10,
+    // leave bits 11-12 free for future implementations
+
+    // AliClusterContainer
+    kIsEMCalCut = 1<<13,
+    kTimeCut = 1<<14,
+    kEnergyCut = 1<<15,
+    // leave bits 16-17 free for future implementations
+
+    // AliJetContainer
+    kAreaCut = 1<<18,
+    kAreaEmcCut = 1<<19,
+    kZLeadingChCut = 1<<20,
+    kZLeadingEmcCut = 1<<21,
+    kNEFCut = 1<<22,
+    kMinLeadPtCut = 1<<23,
+    kMaxTrackPtCut = 1<<24,
+    kMaxClusterPtCut = 1<<25,
+    kFlavourCut = 1<<26,
+    kTagStatus = 1<<27
+  };
+
   AliEmcalContainer();
   AliEmcalContainer(const char *name); 
   virtual ~AliEmcalContainer(){;}
@@ -30,6 +63,8 @@ class AliEmcalContainer : public TNamed {
   void                        SetArrayName(const char *n)         { fClArrayName = n                  ; }
   void                        SetIsParticleLevel(Bool_t b)        { fIsParticleLevel = b              ; }
   void                        SortArray()                         { fClArray->Sort()                  ; }
+  UInt_t                      GetRejectionReason()                { return fRejectionReason           ; }
+  UInt_t                      TestRejectionReason(UInt_t rs)      { return fRejectionReason & rs      ; }
 
  protected:
   TString                     fClArrayName;             // name of branch
@@ -39,6 +74,7 @@ class AliEmcalContainer : public TNamed {
   Int_t                       fCurrentID;               //!current ID for automatic loops
   AliNamedArrayI             *fLabelMap;                //!Label-Index map
   Double_t                    fVertex[3];               //!event vertex array
+  UInt_t                      fRejectionReason;         //!reject reason bit map for the last call to an accept object function
 
  private:
   AliEmcalContainer(const AliEmcalContainer& obj); // copy constructor

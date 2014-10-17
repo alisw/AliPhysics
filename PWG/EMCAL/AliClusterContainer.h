@@ -16,9 +16,9 @@ class AliClusterContainer : public AliEmcalContainer {
   AliClusterContainer(const char *name); 
   virtual ~AliClusterContainer(){;}
 
-  Bool_t                      AcceptCluster(AliVCluster         *vp) const;
-  AliVCluster                *GetAcceptCluster(Int_t i)              const;
-  AliVCluster                *GetAcceptClusterWithLabel(Int_t lab)   const;
+  Bool_t                      AcceptCluster(AliVCluster         *vp)      ;
+  AliVCluster                *GetAcceptCluster(Int_t i)                   ;
+  AliVCluster                *GetAcceptClusterWithLabel(Int_t lab)        ;
   AliVCluster                *GetCluster(Int_t i)                    const;
   AliVCluster                *GetClusterWithLabel(Int_t lab)         const;
   AliVCluster                *GetLeadingCluster(const char* opt="")       ;
