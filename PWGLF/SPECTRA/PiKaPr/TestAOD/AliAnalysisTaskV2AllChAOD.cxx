@@ -108,6 +108,7 @@ AliAnalysisTaskV2AllChAOD::AliAnalysisTaskV2AllChAOD(const char *name) : AliAnal
   fIsRecoEff(0),
   fRecoEffList(0),
   fQvecGen(0),
+  fQgenType(0),
   fnNchBins(400),
   fDoCentrSystCentrality(0)
 {
@@ -194,10 +195,10 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
   if( fFillTHn ){ 
     //dimensions of THnSparse for Q vector checks
     const Int_t nvarev=7;
-    //                                             cent         q-rec_perc        qvec-rec        q-gen_perc     qvec-gen             Nch      qrec-qgen
-    Int_t    binsHistRealEv[nvarev] = {     fnCentBins,              100,        fnQvecBins,            100,    fnQvecBins,     fnNchBins,        20};
-    Double_t xminHistRealEv[nvarev] = {             0.,               0.,                0.,             0.,            0.,            0.,      -10.};
-    Double_t xmaxHistRealEv[nvarev] = {           100.,             100.,     fQvecUpperLim,           100., fQvecUpperLim,         2000.,       10.};
+    //                                             cent         q-rec_perc        qvec-rec      q-gen_tracks   qvec-gen_vzero             Nch      qrec-qgen
+    Int_t    binsHistRealEv[nvarev] = {     fnCentBins,              100,        fnQvecBins,     fnQvecBins,       fnQvecBins,     fnNchBins,       40};
+    Double_t xminHistRealEv[nvarev] = {             0.,               0.,                0.,             0.,               0.,            0.,      -2.};
+    Double_t xmaxHistRealEv[nvarev] = {           100.,             100.,     fQvecUpperLim,  fQvecUpperLim,    fQvecUpperLim,         2000.,       2.};
     
     THnSparseF* NSparseHistEv = new THnSparseF("NSparseHistEv","NSparseHistEv",nvarev,binsHistRealEv,xminHistRealEv,xmaxHistRealEv);
     NSparseHistEv->GetAxis(0)->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
@@ -209,11 +210,11 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
     NSparseHistEv->GetAxis(2)->SetTitle("q-vec rec");
     NSparseHistEv->GetAxis(2)->SetName("Qrec");
     
-    NSparseHistEv->GetAxis(3)->SetTitle("q-vec gen percentile");
-    NSparseHistEv->GetAxis(3)->SetName("Qgen_perc");
+    NSparseHistEv->GetAxis(3)->SetTitle("q-vec gen tracks");
+    NSparseHistEv->GetAxis(3)->SetName("Qgen_tracks");
     
-    NSparseHistEv->GetAxis(4)->SetTitle("q-vec gen");
-    NSparseHistEv->GetAxis(4)->SetName("Qgen");
+    NSparseHistEv->GetAxis(4)->SetTitle("q-vec gen vzero");
+    NSparseHistEv->GetAxis(4)->SetName("Qgen_vzero");
     
     NSparseHistEv->GetAxis(5)->SetTitle("Ncharged");
     NSparseHistEv->GetAxis(5)->SetName("Nch");
@@ -459,7 +460,7 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
   //Get q-vector percentile.
   Double_t QvecVZERO=fEventCuts->GetQvecPercentile(fVZEROside);
   
-  Double_t QvecMC = fEventCuts->GetQvecPercentileMC(fVZEROside);
+  Double_t QvecMC = fEventCuts->GetQvecPercentileMC(fVZEROside, fQgenType);
 
   Double_t Qvec=0.;
   if(fIsMC && fQvecGen) Qvec = QvecMC;
@@ -681,11 +682,16 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
     varEv[0]=Cent;
     varEv[1]=(Double_t)QvecVZERO; // qvec_rec_perc
     varEv[2]=(Double_t)qvzero; // qvec from VZERO
-    varEv[3]=(Double_t)QvecMC; // qvec_gen_perc
-    varEv[4]=(Double_t)fEventCuts->GetQvecMC(); // qvec_gen
+    
+    Double_t qgen_tracks = (Double_t)fEventCuts->CalculateQVectorMC(fVZEROside, 0);
+    varEv[3]= (Double_t)qgen_tracks;
+    
+    Double_t qgen_vzero = fEventCuts->CalculateQVectorMC(fVZEROside, 1);
+    varEv[4]= (Double_t)qgen_vzero;
+    
     varEv[5]=(Double_t)fEventCuts->GetNch(); // Nch
     
-    Double_t delta_q = qvzero- (Double_t)fEventCuts->GetQvecMC();
+    Double_t delta_q = qgen_tracks - qgen_vzero;
     varEv[6]=(Double_t)delta_q;
     
     ((THnSparseF*)fOutput->FindObject("NSparseHistEv"))->Fill(varEv);//event loop
