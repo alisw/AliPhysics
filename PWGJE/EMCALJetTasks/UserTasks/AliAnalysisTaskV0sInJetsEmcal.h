@@ -111,8 +111,8 @@ private:
   // EMCal containers
   AliJetContainer* fJetsCont; //! Signal Jets
   AliJetContainer* fJetsBgCont; //! Background Jets
-  AliParticleContainer* fTracksCont; //! Tracks
-  AliClusterContainer* fCaloClustersCont; //! Clusters
+//  AliParticleContainer* fTracksCont; //! Tracks
+//  AliClusterContainer* fCaloClustersCont; //! Clusters
 
   // event cuts
   Double_t fdCutVertexZ; // [cm] maximum |z| of primary vertex
