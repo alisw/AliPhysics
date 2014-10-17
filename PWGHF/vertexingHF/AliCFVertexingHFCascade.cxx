@@ -625,7 +625,7 @@ Double_t AliCFVertexingHFCascade::GetEtaProng(Int_t iProng) const
     AliAODRecoCascadeHF* cascade = (AliAODRecoCascadeHF*)fRecoCandidate;
 
     Double_t etaProng =-9999;
-    AliAODRecoDecay* neutrDaugh; 
+    AliAODRecoDecay* neutrDaugh=0; 
     if (fPDGcascade == 413) neutrDaugh = cascade->Get2Prong();
     else if (fPDGcascade == 4122) neutrDaugh = cascade->Getv0();
     if (iProng==0) etaProng = neutrDaugh->EtaProng(0);
@@ -648,7 +648,7 @@ Double_t AliCFVertexingHFCascade::GetPtProng(Int_t iProng) const
 
     AliAODRecoCascadeHF* cascade = (AliAODRecoCascadeHF*)fRecoCandidate;
     Double_t ptProng= -9999;
-    AliAODRecoDecay* neutrDaugh; 
+    AliAODRecoDecay* neutrDaugh=0; 
     if (fPDGcascade == 413) neutrDaugh = cascade->Get2Prong();
     else if (fPDGcascade == 4122) neutrDaugh = cascade->Getv0();
     if (iProng == 0) ptProng = neutrDaugh->PtProng(0);
