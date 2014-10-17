@@ -237,15 +237,17 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   
   if(withetacorrection || withmultcorrection) {
     AliHFEpidTPC *tpcpid = pid->GetDetPID(AliHFEpid::kTPCpid);
-    TF1 *etaCorr = GetEtaCorrection();
-    if(etaCorr && withetacorrection){
-      tpcpid->SetEtaCorrection(etaCorr);
-      printf("TPC dE/dx Eta correction %p\n",etaCorr);
+    TF1 *etaCorrMean = GetEtaCorrection("LHC11h_etaCorrMean");
+    TF1 *etaCorrWdth = GetEtaCorrection("LHC11h_etaCorrWidth");
+    if(etaCorrMean && etaCorrWdth && withetacorrection){
+      tpcpid->SetEtaCorrections(etaCorrMean, etaCorrWdth);
+      printf("TPC dE/dx Eta correction %p %p\n",etaCorrMean,etaCorrWdth);
     }
-    TF1 *centCorr = GetCentralityCorrection();
-    if(centCorr && withmultcorrection){
-      tpcpid->SetCentralityCorrection(centCorr);
-      printf("TPC dE/dx multiplicity correction %p\n",centCorr);
+    TF1 *centCorrMean = GetCentralityCorrection("LHC11h_multCorrMean");
+    TF1 *centCorrWdth = GetCentralityCorrection("LHC11h_multCorrWidth");
+    if(centCorrMean && centCorrWdth && withmultcorrection){
+      tpcpid->SetCentralityCorrections(centCorrMean, centCorrWdth);
+      printf("TPC dE/dx multiplicity correction %p %p\n",centCorrMean,centCorrWdth);
     }
   }
  
