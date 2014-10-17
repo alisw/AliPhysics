@@ -203,7 +203,7 @@ void AliHFEtpcPIDqa::Initialize(){
   // 1st histogram: TPC dEdx: (species, p, dEdx, step)
   Int_t nBinsdEdx[kNdim] = {kPIDbins, kPbins, kDedxbins, kSteps, kCentralityBins, kEtabins, 50};
   Double_t mindEdx[kNdim] =  {kMinPID, kMinP, 20., 0., 0., kMinEta, 0};
-  Double_t maxdEdx[kNdim] =  {kMaxPID, kMaxP, 160, 2., 11., kMaxEta, 2000};
+  Double_t maxdEdx[kNdim] =  {kMaxPID, kMaxP, 130, 2., 11., kMaxEta, 2000};
   fHistos->CreateTHnSparse("tpcDedx", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Selection Step; Centrality; Eta; pVx contrib", kNdim, nBinsdEdx, mindEdx, maxdEdx);
   
   // 2nd histogram: TPC sigmas: (species, p nsigma, step)
@@ -222,7 +222,6 @@ void AliHFEtpcPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::
   //
   AliDebug(1, Form("QA started for TPC PID for step %d", (Int_t)step));
   AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
-  Float_t centrality = track->GetCentrality();
   Int_t species = track->GetAbInitioPID();
   if(species >= AliPID::kSPECIES) species = -1;
 
@@ -233,12 +232,16 @@ void AliHFEtpcPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::
   contentSignal[1] = tpcpid ? tpcpid->GetP(track->GetRecTrack(), anatype) : 0.;
   contentSignal[2] = GetTPCsignal(track->GetRecTrack(), anatype);
   contentSignal[3] = step;
-  contentSignal[4] = centrality;
+  contentSignal[4] = track->GetCentrality();
   contentSignal[5] = GetEta(track->GetRecTrack(), anatype);
   contentSignal[6] = fQAmanager->HasFillMultiplicity() ? track->GetMultiplicity() : 0;
   fHistos->Fill("tpcDedx", contentSignal);
 
-  contentSignal[2] = pidResponse ? pidResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron) : -100.; 
+  if(track->HasCorrectedTPCnSigma())
+    contentSignal[2] = track->GetCorrectedTPCnSigma();
+  else
+    contentSignal[2] = pidResponse ? pidResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron) : -100.;
+  
   fHistos->Fill("tpcnSigma", contentSignal);
 }
 
