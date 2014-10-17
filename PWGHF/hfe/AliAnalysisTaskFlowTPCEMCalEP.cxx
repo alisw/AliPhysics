@@ -455,7 +455,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
       int fPDG = particle->GetPdgCode(); 
       double pTMC = particle->Pt();
       double etaMC = particle->Eta();
-      if(fabs(etaMC)>0.7)continue;
+      if(fabs(etaMC)>0.67)continue;
 
       Bool_t MChijing = fMC->IsFromBGEvent(iParticle);
       int iHijing = 1;
@@ -495,7 +495,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     AliVTrack *vtrack = dynamic_cast<AliVTrack*>(vparticle);
     AliESDtrack *track = dynamic_cast<AliESDtrack*>(vparticle);
 
-    if (TMath::Abs(track->Eta())>0.7) continue;
+    if (TMath::Abs(track->Eta())>0.67) continue;
  
     fTrackPtBefTrkCuts->Fill(track->Pt());
 
@@ -854,7 +854,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
   fOutputList->Add(fEPres);
 	
   //phi,fTPCnSigma,cent,pt,EovP,GetDeltaPhi(phi,evPlaneV0),GetCos2DeltaPhi(phi,evPlaneV0), fFlagPhotonicElec, fFlagPhotonicElecBCG,m02,m20
-  Int_t binsv2[11]={100,200,90,100,100,100,100,3,3,100,100}; 
+  Int_t binsv2[11]={100,200,90,100,100,120,100,3,3,100,100}; 
   Double_t xminv2[11]={0,-5,0,0,0,0,-1,-1,-1,0,0};
   Double_t xmaxv2[11]={2*TMath::Pi(),5,90,50,3,TMath::Pi(),1,2,2,1,1}; 
   fCorr = new THnSparseD ("fCorr","Correlations",11,binsv2,xminv2,xmaxv2);
@@ -1055,7 +1055,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::InitParameters()
   fTrackCuts->SetAcceptKinkDaughters(kFALSE);
   fTrackCuts->SetRequireTPCRefit(kTRUE);
   fTrackCuts->SetRequireITSRefit(kTRUE);
-  fTrackCuts->SetEtaRange(-0.7,0.7);
+  fTrackCuts->SetEtaRange(-0.67,0.67);
   fTrackCuts->SetRequireSigmaToVertex(kTRUE);
   fTrackCuts->SetMaxChi2PerClusterTPC(3.5);
   fTrackCuts->SetMinNClustersTPC(100);
@@ -1070,3 +1070,4 @@ void AliAnalysisTaskFlowTPCEMCalEP::InitParameters()
   fNonHFE->SetTrackCuts(-3.5,3.5,fTrackCuts);
 
 }
+
