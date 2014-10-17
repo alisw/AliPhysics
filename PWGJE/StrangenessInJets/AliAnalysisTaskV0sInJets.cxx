@@ -3049,7 +3049,7 @@ AliAODJet* AliAnalysisTaskV0sInJets::GetMedianCluster(const TClonesArray* array,
     iIndex = ((fRandom->Rndm() > 0.5) ? iIndex1 : iIndex2);
 //    printf("AliAnalysisTaskV0sInJets::GetMedianCluster: Even, median index = %d or %d -> %d/%d\n", iIndex1, iIndex2, iIndex, iNCl);
   }
-  iIndexMed = (vecListClusters[iIndex])[0];
+  iIndexMed = Int_t((vecListClusters[iIndex])[0]);
 
 //  printf("AliAnalysisTaskV0sInJets::GetMedianCluster: getting median cluster %d/%d ok, rho = %g\n", iIndexMed, iNClTot, (vecListClusters[iIndex])[1]);
   clusterMed = (AliAODJet*)(array->At(iIndexMed));
