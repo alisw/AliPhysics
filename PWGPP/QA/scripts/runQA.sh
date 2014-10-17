@@ -87,6 +87,9 @@ updateQA()
     [[ ! ${detectorScript} =~ .*\.sh$ ]] && continue
     detector=${detectorScript%.sh}
     detector=${detector##*/}
+    #by default we expect the container in the QA root file to de named like
+    #the detector
+    detectorQAcontainerName=${detector}
     
     #skip if excluded
     if [[ "${excludeDetectors}" =~ ${detector} ]]; then
@@ -187,7 +190,7 @@ updateQA()
         #perform some default actions:
         #if trending.root not created, create a default one
         if [[ ! -f trending.root ]]; then
-          aliroot -b -q -l "$ALICE_ROOT/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detector}\",\"trending.root\",\"trending\",\"recreate\")" 2>&1 | tee -a runLevelQA.log
+          aliroot -b -q -l "$ALICE_ROOT/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detectorQAcontainerName}\",\"trending.root\",\"trending\",\"recreate\")" 2>&1 | tee -a runLevelQA.log
         fi
         if [[ -f trending.root ]]; then
           #cache the touched production + an example file to guarantee consistent run data parsing
