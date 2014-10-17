@@ -110,14 +110,14 @@ AliADCalibData* AliADQADataMakerRec::GetCalibData() const
 
   AliCDBEntry *entry=0;
 
-  entry = man->Get("AD/Calib/Data",fRun);
-  if(!entry){
-    AliWarning("Load of calibration data from default storage failed!");
-    AliWarning("Calibration data will be loaded from local storage ($ALICE_ROOT)");
+  //entry = man->Get("AD/Calib/Data",fRun);
+  //if(!entry){
+    //AliWarning("Load of calibration data from default storage failed!");
+    //AliWarning("Calibration data will be loaded from local storage ($ALICE_ROOT)");
 	
     man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     entry = man->Get("AD/Calib/Data",fRun);
-  }
+  //}
   // Retrieval of data in directory AD/Calib/Data:
 
   AliADCalibData *calibdata = 0;
@@ -220,14 +220,14 @@ void AliADQADataMakerRec::MakeDigits()
 }
 
 //____________________________________________________________________________
-void AliADQADataMakerRec::MakeDigits(TTree *digitTree)
+void AliADQADataMakerRec::MakeDigits(TTree* /*digitTree*/)
 {
 
 }
 
 
 //____________________________________________________________________________
-void AliADQADataMakerRec::MakeESDs(AliESDEvent * esd)
+void AliADQADataMakerRec::MakeESDs(AliESDEvent* /*esd*/)
 {
  
 }
@@ -477,10 +477,10 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       // Fill HPTDC Time Histograms
       timeCorr[offlineCh] = CorrectLeadingTime(offlineCh,time[offlineCh],adc[offlineCh]);
 
-      const Float_t p1 = 2.50; // photostatistics term in the time resolution
-      const Float_t p2 = 3.00; // sleewing related term in the time resolution
+      //const Float_t p1 = 2.50; // photostatistics term in the time resolution
+      //const Float_t p2 = 3.00; // sleewing related term in the time resolution
       if(timeCorr[offlineCh]>-1024 + 1.e-6){
-	Float_t nphe = adc[offlineCh]*kChargePerADC/(fCalibData->GetGain(offlineCh)*TMath::Qe());
+	//Float_t nphe = adc[offlineCh]*kChargePerADC/(fCalibData->GetGain(offlineCh)*TMath::Qe());
 	Float_t timeErr = 1;
 	/*/
 	if (nphe>1.e-6) timeErr = TMath::Sqrt(kIntTimeRes*kIntTimeRes+
@@ -592,7 +592,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 }
 
 //____________________________________________________________________________ 
-Float_t AliADQADataMakerRec::CorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const
+Float_t AliADQADataMakerRec::CorrectLeadingTime(Int_t /*i*/, Float_t time, Float_t /*adc*/) const
 {
   // Correct the leading time
   // for slewing effect and
