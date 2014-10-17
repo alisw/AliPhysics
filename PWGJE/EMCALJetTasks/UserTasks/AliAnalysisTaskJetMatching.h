@@ -97,7 +97,7 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
             fNoMatchedJets = 0;
         }
         AliEmcalJet*            GetLeadingJet(TClonesArray* source, Int_t &leadingJetIndex, Double_t etaMin = -.7, Double_t etaMax = .7);
-        AliEmcalJet*            GetSubLeadingJet(TClonesArray* source, Int_t leadingJetIndex, Int_t &subLeadingJetIndex, Double_t etaMin = -.7, Double_t etaMax = .7);
+        AliEmcalJet*            GetSubLeadingJet(TClonesArray* source, Int_t leadingJetIndex, Int_t &subLeadingJetIndex);
         void                    PrintInfo() const;
         virtual void            Terminate(Option_t* option);
 
@@ -140,6 +140,7 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
         TH2F*                   fHistDiJet;             //! matched dijet eta, phi
         TH2F*                   fHistDiJetLeadingJet;   //! leading jet (for dijet) eta, phi
         TH1F*                   fHistDiJetDPhi;         //! dijet dphi
+        TH1F*                   fHistDiJetDPt;          //! dijet dpt
         TH1F*                   fHistAnalysisSummary;   //! flags
         TProfile*               fProfQAMatched;         //! QA spreads of matched jets
         TProfile*               fProfQA;                //! QA spreads of source and target jets
