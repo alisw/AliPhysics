@@ -591,7 +591,7 @@ void AliTPCcalibLaser::Process(AliVEvent *event) {
 
   fEvent = event;
   if (!fEvent) {
-      Printf("****ERROR AliTPCcalibLaser::Process(): Event not available!!********");
+      //Printf("****ERROR AliTPCcalibLaser::Process(): Event not available!!********");
     return;
   }
   fEventFriend=fEvent->FindFriend();

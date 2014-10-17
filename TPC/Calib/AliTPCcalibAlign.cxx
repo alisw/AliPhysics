@@ -480,6 +480,7 @@ void AliTPCcalibAlign::Process(AliVEvent *event) {
   //
   for (Int_t i0=0;i0<ntracks;++i0) {
     AliVTrack *track0 = event->GetVTrack(i0);
+    if(!track0) continue;
     //AliESDfriendTrack *friendTrack = 0;
     TObject *calibObject=0;
     AliTPCseed *seed0 = 0;
@@ -507,6 +508,7 @@ void AliTPCcalibAlign::Process(AliVEvent *event) {
   //select pairs - for alignment  
   for (Int_t i0=0;i0<ntracks;++i0) {
       AliVTrack *track0 = event->GetVTrack(i0);
+      if(!track0) continue;
     //    if (track0->GetTPCNcls()<kminCl) continue;
     track0->GetImpactParameters(dca0[0],dca0[1]);
     //    if (TMath::Abs(dca0[0])>30) continue;
@@ -514,6 +516,7 @@ void AliTPCcalibAlign::Process(AliVEvent *event) {
     for (Int_t i1=0;i1<ntracks;++i1) {
       if (i0==i1) continue;
       AliVTrack *track1 = event->GetVTrack(i1);
+      if(!track1) continue;
       //      if (track1->GetTPCNcls()<kminCl) continue;
       track1->GetImpactParameters(dca1[0],dca1[1]);
       // fast cuts on dca and theta

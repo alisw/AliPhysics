@@ -379,7 +379,7 @@ void AliTPCcalibTime::Process(AliVEvent *event){
 
     //Printf("*******************AliTPCcalibTime::Process()*******************");
   if(!event) {
-      Printf("ERROR AliTPCcalibTime::Process(): NO EVENT AVAILABLE!");
+      //Printf("ERROR AliTPCcalibTime::Process(): NO EVENT AVAILABLE!");
       return;
   }
   if (event->GetNumberOfTracks()<2) {
@@ -389,7 +389,7 @@ void AliTPCcalibTime::Process(AliVEvent *event){
   //AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
   AliVfriendEvent *friendEvent=event->FindFriend();
   if (!friendEvent) {
-    Printf("ERROR AliTPCcalibTime::Process(): NO FRIEND AVAILABLE!");
+    //Printf("ERROR AliTPCcalibTime::Process(): NO FRIEND AVAILABLE!");
     return;
   }
   if (friendEvent->TestSkipBit()) return;
@@ -539,11 +539,11 @@ void AliTPCcalibTime::ProcessCosmic(const AliVEvent *const event){
   // process Cosmic event - track matching A side C side
   //
   if (!event) {
-    Printf("ERROR: event not available");
+    //Printf("ERROR: event not available");
     return;
   }  
   if (event->GetTimeStamp() == 0 ) {
-    Printf("no time stamp!");
+    //Printf("no time stamp!");
     return;
   }
   
@@ -575,6 +575,7 @@ void AliTPCcalibTime::ProcessCosmic(const AliVEvent *const event){
     clusterSideA[i]=0;
     clusterSideC[i]=0;
     AliVTrack *track = event->GetVTrack(i);
+    if(!track) continue;
     
     const AliExternalTrackParam * trackIn = track->GetInnerParam();
     const AliExternalTrackParam * trackOut = track->GetOuterParam();
@@ -843,6 +844,7 @@ void AliTPCcalibTime::ProcessBeam(const AliVEvent *const event){
   //
   for (Int_t itrack=0;itrack<ntracks;itrack++) {
     AliVTrack *track = event->GetVTrack(itrack);
+    if(!track) continue;
     const AliVfriendTrack *friendTrack = friendEvent->GetTrack(itrack);
     if (!friendTrack) continue;
     if (TMath::Abs(track->GetTgl())>kMaxTgl) continue;

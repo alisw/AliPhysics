@@ -157,10 +157,11 @@ void     AliTPCcalibCalib::Process(AliVEvent *event){
 
   for (Int_t i=0;i<ntracks;++i) {
     AliVTrack *track = event->GetVTrack(i);
+    if(!track) continue;
     const AliVfriendTrack *friendTrack = friendEvent->GetTrack(i);
     if (!friendTrack) continue;
     //track->SetFriendTrack(friendTrack);
-    fCurrentFriendTrack=(AliVfriendTrack*)(friendTrack);
+    fCurrentFriendTrack=const_cast<AliVfriendTrack*>(friendTrack);
     const AliExternalTrackParam * trackIn  = track->GetInnerParam();
     const AliExternalTrackParam * trackOut = track->GetOuterParam();
     AliExternalTrackParam * tpcOut   = (AliExternalTrackParam *)(friendTrack->GetTPCOut());
