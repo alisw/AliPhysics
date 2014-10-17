@@ -829,7 +829,7 @@ void drawBFPsi2D(const char* lhcPeriod = "LHC11h",
   gHistBalanceFunction->SetTitle("");
   gHistBalanceFunction->GetYaxis()->SetTitleOffset(1.4);
   gHistBalanceFunction->GetYaxis()->SetNdivisions(10);
-  gHistBalanceFunction->GetXaxis()->SetRangeUser(-1.4,1.4); 
+  //gHistBalanceFunction->GetXaxis()->SetRangeUser(-1.4,1.4); 
   gHistBalanceFunction->GetXaxis()->SetNdivisions(10);
   gHistBalanceFunction->GetYaxis()->SetTitle("#Delta #varphi (rad)");
   gHistBalanceFunction->DrawCopy("lego2");
@@ -1099,14 +1099,26 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
     // need to restrict to near side in case of dphi
     if(!kProjectInEta) gHistBalanceFunctionSubtracted->GetXaxis()->SetRangeUser(-TMath::Pi()/2,TMath::Pi()/2);
 
-    if(bReduceRangeForMoments){
+   if(bReduceRangeForMoments){
 
+      // safety check:
       // default (for 2<pT,assoc<3<pT,trig<4)
-      Double_t rangeReduced = 1.0;
-
+      Double_t rangeReduced = 1.2;
       //for 3<pT,assoc<8<pT,trig<15
       if(ptTriggerMax>10){
-	rangeReduced = 0.3;
+	rangeReduced = 0.35;
+      }
+
+      // new define range by fit!
+      gHistBalanceFunctionSubtracted->Fit("gaus","","");
+      Double_t sigmaGaus = gHistBalanceFunctionSubtracted->GetFunction("gaus")->GetParameter(2);
+
+      // if safety check OK, set rangeReduced to 3 sigma of gauss fit
+      if(3*sigmaGaus > rangeReduced){
+	cout<<"RANGE REDUCE ERROR: "<<3*sigmaGaus<<" > "<<rangeReduced<<endl;
+      }
+      else{
+	rangeReduced = 3*sigmaGaus;
       }
 
       cout<<"Use reduced range = "<<rangeReduced<<endl;
@@ -1432,6 +1444,16 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   TH2D *gHistNN = dynamic_cast<TH2D *>(f->Get("gHistNNCorrelationFunctions"));
   if(!gHistNN) return;
 
+  // in order to get unzoomed (in older versions used smaller user ranger)
+  Int_t binMinX = gHistPN->GetXaxis()->FindBin(gHistPN->GetXaxis()->GetXmin()+0.00001);
+  Int_t binMaxX = gHistPN->GetXaxis()->FindBin(gHistPN->GetXaxis()->GetXmax()-0.00001);
+  Int_t binMinY = gHistPN->GetYaxis()->FindBin(gHistPN->GetYaxis()->GetXmin()+0.00001);
+  Int_t binMaxY = gHistPN->GetYaxis()->FindBin(gHistPN->GetYaxis()->GetXmax()-0.00001);
+  gHistPN->GetXaxis()->SetRange(binMinX,binMaxX); gHistPN->GetYaxis()->SetRange(binMinY,binMaxY);
+  gHistNP->GetXaxis()->SetRange(binMinX,binMaxX); gHistNP->GetYaxis()->SetRange(binMinY,binMaxY);
+  gHistPP->GetXaxis()->SetRange(binMinX,binMaxX); gHistPP->GetYaxis()->SetRange(binMinY,binMaxY);
+  gHistNN->GetXaxis()->SetRange(binMinX,binMaxX); gHistNN->GetYaxis()->SetRange(binMinY,binMaxY);
+
   gHistPN->Sumw2();
   gHistPP->Sumw2();
   gHistPN->Add(gHistPP,-1);
@@ -1455,7 +1477,7 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   gHistBalanceFunction2D->GetZaxis()->SetNdivisions(10);
   gHistBalanceFunction2D->GetYaxis()->SetTitleOffset(1.4);
   gHistBalanceFunction2D->GetYaxis()->SetNdivisions(10);
-  gHistBalanceFunction2D->GetXaxis()->SetRangeUser(-1.4,1.4); 
+  //gHistBalanceFunction2D->GetXaxis()->SetRangeUser(-1.4,1.4); 
   gHistBalanceFunction2D->GetXaxis()->SetNdivisions(10);
   gHistBalanceFunction2D->DrawCopy("lego2");
   gPad->SetTheta(30); // default is 30
@@ -1569,8 +1591,6 @@ void mergeBFPsi2D(TString momDirectory = "./",
   //Author: Panos.Christakoglou@nikhef.nl
   TGaxis::SetMaxDigits(3);
   gStyle->SetPalette(55,0);
-
-  cout<<"REDUCE"<<bReduceRangeForMoments<<"  "<<endl;
 
   const Int_t nMaxDirectories = 4; // maximum number of directories to merge (set to 4 for now)
   TString sDirectory[nMaxDirectories];
