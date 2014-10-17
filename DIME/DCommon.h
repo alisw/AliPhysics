@@ -71,6 +71,7 @@ COMMON_BLOCK_DEF(hepeupCommon, HEPEUP);
       Double_t rts;
       Double_t mmes;
       Double_t yx;
+      Int_t    iin;
     } varsCommon;
 
 #define VARS COMMON_BLOCK(VARS, vars)
@@ -99,7 +100,6 @@ COMMON_BLOCK_DEF(hepeupCommon, HEPEUP);
       common/ff/formf
   */
    typedef struct {
-     Int_t iin;
      char pflag[10];
      char fsi[10];
      char ppbar[10];
