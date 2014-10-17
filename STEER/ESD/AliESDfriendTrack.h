@@ -58,6 +58,17 @@ public:
   const AliExternalTrackParam * GetITSOut() const {return fITSOut;} 
   const AliExternalTrackParam * GetTRDIn()  const {return fTRDIn;} 
 
+  //used in calibration
+  Int_t GetTrackParamTPCOut( AliExternalTrackParam &p ) const {
+      if(!GetTPCOut()) return -1;
+      p=*GetTPCOut();
+      return 0;}
+
+  Int_t GetTrackParamITSOut( AliExternalTrackParam &p ) const {
+      if(!GetITSOut()) return -1;
+      p=*GetITSOut();
+      return 0;}
+
   void SetITSIndices(Int_t* indices, Int_t n);
   void SetTPCIndices(Int_t* indices, Int_t n);
   void SetTRDIndices(Int_t* indices, Int_t n);
