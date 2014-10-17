@@ -128,6 +128,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fAllIsoNoUeEtMcGamma(0),
   fMCDirPhotonPtEtaPhiNoClus(0),
   fInvMassWithConeVsEtAndIso(0),
+  fInConePairedClusEtVsCandEt(0),
   fHnOutput(0),
   fQAList(0),
   fNTracks(0),     
@@ -242,6 +243,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fAllIsoNoUeEtMcGamma(0),
   fMCDirPhotonPtEtaPhiNoClus(0),
   fInvMassWithConeVsEtAndIso(0),
+  fInConePairedClusEtVsCandEt(0),
   fHnOutput(0),
   fQAList(0),
   fNTracks(0),     
@@ -385,6 +387,9 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
 
   fInvMassWithConeVsEtAndIso = new TH3F("hInvMassWithConeVsEtAndIso","M_{cand+in_cone_clus} vs E_{T}^{cand} vs. E_{T}^{ISO} (EMC+Trk) (0.1<M02<0.3 only)",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,400,0,1,1000,0,200);
   fOutputList->Add(fInvMassWithConeVsEtAndIso);
+
+  fInConePairedClusEtVsCandEt = new TH2F("hInConePairedClusEtVsCandEt","E_{T}^{partner} vs. E_{T}^{cand} (R<0.4, 0.110<m_{#gamma#gamma}<0.165);E_{T}^{cand};E_{T}^{partner}",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,200,0,40);
+  fOutputList->Add(fInConePairedClusEtVsCandEt);
 
   Int_t nEt=fNBinsPt*5, nM02=400, nCeIso=1000, nTrIso=1000,  nAllIso=1000,  nCeIsoNoUE=1000,  nAllIsoNoUE=1000, nTrClDphi=200, nTrClDeta=100, nClEta=140, nClPhi=128, nTime=60, nMult=100, nPhoMcPt=fNBinsPt;
   Int_t bins[] = {nEt, nM02, nCeIso, nTrIso, nAllIso, nCeIsoNoUE, nAllIsoNoUE, nTrClDphi, nTrClDeta,nClEta,nClPhi,nTime,nMult,nPhoMcPt};
@@ -971,6 +976,8 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
 	lvec.SetPtEtaPhiM(EtCl,vec.Eta(),vec.Phi(),0);
 	TLorentzVector lpair = lv + lvec;
 	fInConeInvMass += Form(";%f",lpair.M());
+	if(lpair.M()>0.11 && lpair.M()<0.165)
+	  fInConePairedClusEtVsCandEt->Fill(EtCl,Et);
       }
       if(R<0.04)
 	totcore += nEt;

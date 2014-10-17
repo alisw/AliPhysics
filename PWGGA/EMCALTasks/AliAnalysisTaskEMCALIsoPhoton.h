@@ -166,6 +166,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fAllIsoNoUeEtMcGamma;       //!all iso distribution (without UE subtraction) vs. Et clus for clusters comming from a MC prompt photon
   TH3F        *fMCDirPhotonPtEtaPhiNoClus; //!pt x eta x phi for prompt photons that didn't produce clusters
   TH3F        *fInvMassWithConeVsEtAndIso; //!Candidate Et vs. Inv Mass with in cone cluster vs. Iso(EMC+trk), only for 0.1<M02<0.3 clusters
+  TH2F        *fInConePairedClusEtVsCandEt;//!Et of the paired cluster (0.11<m<0.165 GeV) vs. candidate Et
   THnSparse   *fHnOutput;                  //!Output matrix with 7 dimensions
 
   //QA histos
