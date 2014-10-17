@@ -155,6 +155,15 @@ TString GetFullPath ( TString filename )
   return fullPath;
 }
 
+//_____________________________________________________________________________
+TString GetBaseName ( TString filename )
+{
+  TString baseName = gSystem->BaseName(filename);
+  Int_t idx = baseName.Index("#");
+  if ( idx > 0 ) baseName.Remove(0,idx+1);
+  return baseName;
+}
+
 
 //_____________________________________________________________________________
 void CopyDir(TDirectory *source) {
@@ -198,7 +207,7 @@ Bool_t GetQAInfo ( const char* qaFileName, TString dirNames = "MUON_QA MTR_Chamb
 {
   LoadLibs();
 
-  TString outFilename = gSystem->BaseName(qaFileName);
+  TString outFilename = GetBaseName(qaFileName);
   TString inFullPath = GetFullPath(qaFileName);
   TString outFullPath = GetFullPath(outFilename);
   if ( inFullPath == outFullPath ) {
@@ -280,9 +289,9 @@ void AddTrigVars ( TString filename, TList &parList )
   Int_t nHistos = sizeof(hChNames)/sizeof(hChNames[0]);
   for ( Int_t ihisto=0; ihisto<nHistos; ihisto++ ) {
     TH1* histo = (TH1*)inList->FindObject(hChNames[ihisto].Data());
-    if ( ! histo ) continue;
+    Double_t currVal = ( histo ) ? histo->GetBinContent(ibin) : 0.;
     for ( Int_t ibin=1; ibin<=4; ibin++ ) {
-      AddTreeVariable(parList, Form("%s%i",hChNames[ihisto].Data(),ibin),'F',histo->GetBinContent(ibin));
+      AddTreeVariable(parList, Form("%s%i",hChNames[ihisto].Data(),ibin),'F',currVal);
     }
   }
   delete file;
@@ -294,9 +303,10 @@ void MakeTrend ( const char* qaFile, Int_t runNumber, UInt_t force = trigQA, UIn
   Bool_t isOk = GetQAInfo(qaFile);
   if ( ! isOk ) return;
 
-  terminateQA(gSystem->BaseName(qaFile),force,mask);
+  TString inFilename = GetBaseName(qaFile);
 
-  TString inFilename = gSystem->BaseName(qaFile);
+  terminateQA(inFilename,force,mask);
+
   TList parList;
   parList.SetOwner();
   AddTreeVariable(parList, "run", 'I', runNumber);
