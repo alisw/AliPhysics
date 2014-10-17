@@ -21,7 +21,8 @@ AliEmcalContainer::AliEmcalContainer():
   fIsParticleLevel(kFALSE),
   fClArray(0),
   fCurrentID(0),
-  fLabelMap(0)
+  fLabelMap(0),
+  fRejectionReason(0)
 {
   // Default constructor.
 
@@ -38,7 +39,8 @@ AliEmcalContainer::AliEmcalContainer(const char *name):
   fIsParticleLevel(kFALSE),
   fClArray(0),
   fCurrentID(0),
-  fLabelMap(0)
+  fLabelMap(0),
+  fRejectionReason(0)
 {
   // Standard constructor.
 

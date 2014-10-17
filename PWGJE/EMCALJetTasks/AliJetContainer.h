@@ -76,13 +76,13 @@ class AliJetContainer : public AliEmcalContainer {
 
   AliEmcalJet                *GetLeadingJet(const char* opt="")          ;
   AliEmcalJet                *GetJet(Int_t i)                       const;
-  AliEmcalJet                *GetAcceptJet(Int_t i)                 const;
+  AliEmcalJet                *GetAcceptJet(Int_t i)                      ;
   AliEmcalJet                *GetJetWithLabel(Int_t lab)            const;
-  AliEmcalJet                *GetAcceptJetWithLabel(Int_t lab)      const;
+  AliEmcalJet                *GetAcceptJetWithLabel(Int_t lab)           ;
   AliEmcalJet                *GetNextAcceptJet(Int_t i=-1)               ;
   AliEmcalJet                *GetNextJet(Int_t i=-1)                     ;
   void                        GetMomentum(TLorentzVector &mom, Int_t i) const;
-  Bool_t                      AcceptJet(AliEmcalJet* jet)           const;
+  Bool_t                      AcceptJet(AliEmcalJet* jet)                ;
   Bool_t                      AcceptBiasJet(AliEmcalJet* jet)       const;
   Int_t                       GetFlavourCut()                       const    {return fFlavourSelection;}
   Int_t                       GetNJets()                            const    {return GetNEntries();}
