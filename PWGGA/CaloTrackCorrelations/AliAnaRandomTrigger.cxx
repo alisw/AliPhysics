@@ -37,7 +37,7 @@ ClassImp(AliAnaRandomTrigger)
 //__________________________________________
 AliAnaRandomTrigger::AliAnaRandomTrigger() : 
     AliAnaCaloTrackCorrBaseClass(),
-    fDetector("EMCAL"), fRandom(0), fNRandom(0),
+    fDetector(kEMCAL),  fRandom(0), fNRandom(0),
     fhE(0),             fhPt(0),
     fhPhi(0),           fhEta(0), 
     fhEtaPhi(0) 
@@ -54,8 +54,8 @@ Bool_t AliAnaRandomTrigger::ExcludeDeadBadRegions(Float_t eta, Float_t phi)
 {
   // Check if there is a dead or bad region in a detector
   // Now only EMCAL
-  
-  if(fDetector!="EMCAL") return kFALSE;
+
+  if(fDetector!=kEMCAL) return kFALSE;
   
   //-------------------------------------
   // Get the corresponding cell in EMCAL, check if it exists in acceptance (phi gaps, borders)
@@ -65,7 +65,7 @@ Bool_t AliAnaRandomTrigger::ExcludeDeadBadRegions(Float_t eta, Float_t phi)
   if(!GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(eta,phi, absId)) return kTRUE; // remove if out of EMCAL acceptance, phi gaps
   
   Int_t icol = -1, irow = -1, iRCU = -1;
-  Int_t sm = GetCaloUtils()->GetModuleNumberCellIndexes(absId,"EMCAL", icol, irow, iRCU);
+  Int_t sm = GetCaloUtils()->GetModuleNumberCellIndexes(absId,kEMCAL, icol, irow, iRCU);
   
   //printf("eta %f, phi %f, ieta %d, iphi %d, sm %d\n",eta,phi,icol,irow,sm);
   
@@ -142,7 +142,7 @@ TObjString *  AliAnaRandomTrigger::GetAnalysisCuts()
   
   snprintf(onePar,buffersize,"--- AliAnaRandomTrigger ---\n") ;
   parList+=onePar ;	
-  snprintf(onePar,buffersize,"Detector: %s\n"    , fDetector.Data()) ;
+  snprintf(onePar,buffersize,"Detector: <%d>\n"    , fDetector) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"N per event = %d\n", fNRandom       ) ;
   parList+=onePar ;
@@ -225,7 +225,7 @@ void AliAnaRandomTrigger::Print(const Option_t * opt) const
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
   AliAnaCaloTrackCorrBaseClass::Print(" ");	
 
-  printf("Detector = %s\n",  fDetector.Data());
+  printf("Detector = %d\n",  fDetector);
   printf("Min E   = %3.2f - Max E   = %3.2f\n", GetMinPt(), GetMaxPt());
   printf("Min Eta = %3.2f - Max Eta = %3.2f\n", fEtaCut[0], fEtaCut[1]);
   printf("Min Phi = %3.2f - Max Phi = %3.2f\n", fPhiCut[0], fPhiCut[1]);
@@ -264,7 +264,7 @@ void  AliAnaRandomTrigger::MakeAnalysisFillAOD()
     mom.SetPtEtaPhiM(pt,eta,phi,0);
     
     AliAODPWG4Particle trigger = AliAODPWG4Particle(mom);
-    trigger.SetDetector(fDetector);
+    trigger.SetDetectorTag(fDetector);
     
     if(GetDebug() > 1) 
       printf("AliAnaRandomTrigger::MakeAnalysisFillAOD() -  iRandom %d, Trigger e %2.2f pt %2.2f, phi %2.2f, eta %2.2f \n",

@@ -1236,7 +1236,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     if(TMath::Abs(vert[2])> GetZvertexCut()) return; 
         
     AliAODPWG4Particle tr = AliAODPWG4Particle(mom[0],mom[1],mom[2],0);
-    tr.SetDetector("CTS");
+    tr.SetDetectorTag(kCTS);
     tr.SetLabel(track->GetLabel());
     tr.SetTrackLabel(track->GetID(),-1);
     tr.SetChargedBit(track->Charge()>0);

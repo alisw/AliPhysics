@@ -984,7 +984,7 @@ void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
     if(pt < fMinAssocPt || pt > fMaxAssocPt) continue ;
     
     AliAODPWG4Particle * mixedTrack = new AliAODPWG4Particle(mom[0],mom[1],mom[2],0);
-    mixedTrack->SetDetector("CTS");
+    mixedTrack->SetDetectorTag(kCTS);
     mixedTrack->SetChargedBit(track->Charge()>0);
     mixEventTracks->Add(mixedTrack);
   }
@@ -1075,7 +1075,7 @@ void AliAnaParticleHadronCorrelation::FillNeutralEventMixPool()
     if(pt < fMinAssocPt || pt > fMaxAssocPt) continue ;
     
     AliAODPWG4Particle * mixedCalo = new AliAODPWG4Particle(mom);
-    mixedCalo->SetDetector("EMCAL");
+    mixedCalo->SetDetectorTag(kEMCAL);
     mixEventCalo->Add(mixedCalo);
   }
   
