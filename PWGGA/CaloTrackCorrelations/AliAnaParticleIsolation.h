@@ -77,6 +77,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   // Analysis Setters and Getters
   
+  TString      GetTriggerDetectorString()      const { return fIsoDetectorString ; }
   TString      GetTriggerDetector()            const { return fIsoDetector       ; }
   Int_t        GetNCones()                     const { return fNCones            ; }
   Int_t        GetNPtThresFrac()               const { return fNPtThresFrac      ; }
@@ -87,7 +88,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   Int_t        GetMCIndex(Int_t mcTag);
   
-  void         SetTriggerDetector(TString & det)     { fIsoDetector     = det    ; }
+  void         SetTriggerDetector(TString & det)     ;
+  void         SetTriggerDetector(Int_t  det)        ;
   void         SetNCones(Int_t ncs)                  { fNCones          = ncs    ; }
   void         SetNPtThresFrac(Int_t npt)            { fNPtThresFrac    = npt    ; }
   void         SetConeSizes(Int_t i, Float_t r)      { fConeSizes[i]    = r      ; }
@@ -162,7 +164,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
  private:
   
-  TString  fIsoDetector ;                         // Candidate particle for isolation detector ;
+  Int_t    fIsoDetector ;                         // Candidate particle for isolation detector ;
+  TString  fIsoDetectorString ;                   // Candidate particle for isolation detector ;
   Bool_t   fReMakeIC ;                            // Do isolation analysis
   Bool_t   fMakeSeveralIC ;                       // Do analysis for different IC
   Bool_t   fFillTMHisto;                          // Fill track matching plots
@@ -196,6 +199,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Float_t  fPtThresholds[5] ;                     //! Array with pt thresholds to test
   Float_t  fPtFractions[5] ;                      //! Array with pt thresholds to test frac
   Float_t  fSumPtThresholds[5] ;                  //! Array with pt thresholds to test frac
+  
+  TLorentzVector fMomentum;                       //! Temporary vector, avoid creation per event
+  TLorentzVector fMomIso;                         //! Temporary vector, avoid creation per event
+  TLorentzVector fMomDaugh1;                      //! Temporary vector, avoid creation per event
+  TLorentzVector fMomDaugh2;                      //! Temporary vector, avoid creation per event
   
   //Histograms  
   
@@ -482,7 +490,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,31)
+  ClassDef(AliAnaParticleIsolation,32)
 } ;
 
 
