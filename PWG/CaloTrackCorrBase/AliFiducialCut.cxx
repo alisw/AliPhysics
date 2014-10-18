@@ -79,24 +79,24 @@ AliFiducialCut::~AliFiducialCut()
 }
 
 
-//________________________________________________________________________________
-Bool_t AliFiducialCut::IsInFiducialCut(TLorentzVector momentum, TString det) const
-{
-  // Selects EMCAL or PHOS cluster or CTS track if it is inside eta-phi defined regions
-  Int_t idet = -1;
-  if     (det=="EMCAL") idet = kEMCAL;
-  else if(det=="PHOS" ) idet = kPHOS;
-  else if(det=="CTS")   idet = kCTS;
-  else if(det=="DCAL")  idet = kDCAL;
-  else if(det.Contains("DCAL") && det.Contains("PHOS")) idet = kDCALPHOS;
-  else
-  {
-    AliFatal(Form("Detector < %s > not known!", det.Data()));
-    return kFALSE;
-  }
-  
-  return IsInFiducialCut(momentum.Eta(), momentum.Phi(), idet);
-}
+////________________________________________________________________________________
+//Bool_t AliFiducialCut::IsInFiducialCut(TLorentzVector momentum, TString det) const
+//{
+//  // Selects EMCAL or PHOS cluster or CTS track if it is inside eta-phi defined regions
+//  Int_t idet = -1;
+//  if     (det=="EMCAL") idet = kEMCAL;
+//  else if(det=="PHOS" ) idet = kPHOS;
+//  else if(det=="CTS")   idet = kCTS;
+//  else if(det=="DCAL")  idet = kDCAL;
+//  else if(det.Contains("DCAL") && det.Contains("PHOS")) idet = kDCALPHOS;
+//  else
+//  {
+//    AliFatal(Form("Detector < %s > not known!", det.Data()));
+//    return kFALSE;
+//  }
+//  
+//  return IsInFiducialCut(momentum.Eta(), momentum.Phi(), idet);
+//}
 
 //________________________________________________________________________________
 Bool_t AliFiducialCut::IsInFiducialCut(Float_t eta, Float_t phi, Int_t det) const
