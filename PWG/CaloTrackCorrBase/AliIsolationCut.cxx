@@ -197,7 +197,7 @@ Float_t AliIsolationCut::GetCellDensity(AliAODPWG4ParticleCorrelation * pCandida
     {
       //Get absolute (col,row) of candidate
       Int_t iEta=-1, iPhi=-1, iRCU = -1;      
-      Int_t nSupMod = cu->GetModuleNumberCellIndexes(absId, pCandidate->GetDetector(), iEta, iPhi, iRCU);
+      Int_t nSupMod = cu->GetModuleNumberCellIndexes(absId, pCandidate->GetDetectorTag(), iEta, iPhi, iRCU);
       
       Int_t colC = iEta;
       if (nSupMod % 2) colC =  AliEMCALGeoParams::fgkEMCALCols + iEta ;
@@ -285,7 +285,7 @@ void AliIsolationCut::GetCoeffNormBadCell(AliAODPWG4ParticleCorrelation * pCandi
     {
       //Get absolute (col,row) of candidate
       Int_t iEta=-1, iPhi=-1, iRCU = -1;
-      Int_t nSupMod = cu->GetModuleNumberCellIndexes(absId, pCandidate->GetDetector(),
+      Int_t nSupMod = cu->GetModuleNumberCellIndexes(absId, pCandidate->GetDetectorTag(),
                                                      iEta, iPhi, iRCU);
       
       Int_t colC = iEta;

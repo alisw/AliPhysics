@@ -714,8 +714,8 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   // Get the 2 max indeces and do inv mass
   //---------------------------------------------------------------------
   
-  TString  calorimeter = "EMCAL";
-  if(cluster->IsPHOS()) calorimeter = "PHOS";
+  Int_t  calorimeter = AliCalorimeterUtils::kEMCAL;
+  if(cluster->IsPHOS()) calorimeter = AliCalorimeterUtils::kPHOS;
 
   if     ( nMax == 2 )
   {

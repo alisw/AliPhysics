@@ -295,7 +295,7 @@ public:
   virtual Bool_t         IsTrackMatched(AliVCluster * cluster, AliVEvent* event) {
    return GetCaloPID()->IsTrackMatched(cluster, fCaloUtils, event) ; } 
   
-  virtual Int_t          GetModuleNumberCellIndexes(Int_t absId, const TString & calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const {
+  virtual Int_t          GetModuleNumberCellIndexes(Int_t absId, Int_t calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const {
 	  return fCaloUtils->GetModuleNumberCellIndexes(absId, calo, icol, irow,iRCU) ; }
   
   virtual Int_t          GetModuleNumber(AliAODPWG4Particle * part) const {

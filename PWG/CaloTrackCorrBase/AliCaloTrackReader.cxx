@@ -1839,7 +1839,7 @@ void AliCaloTrackReader::FillInputPHOS()
         Int_t vindex = 0 ;
         if (fMixedEvent)
           vindex = fMixedEvent->EventIndexForCaloCluster(iclus);
-        if( GetCaloUtils()->ClusterContainsBadChannel("PHOS",clus->GetCellsAbsId(), clus->GetNCells()))
+        if( GetCaloUtils()->ClusterContainsBadChannel(kPHOS,clus->GetCellsAbsId(), clus->GetNCells()))
           continue;
         if(!GetCaloUtils()->CheckCellFiducialRegion(clus, fInputEvent->GetPHOSCells()))
           continue;
