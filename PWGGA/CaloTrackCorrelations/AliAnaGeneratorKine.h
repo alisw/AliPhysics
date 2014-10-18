@@ -54,7 +54,7 @@ public:
     
   void    MakeAnalysisFillHistograms() ;
   
-  void    SetTriggerDetector( TString name ) { fTriggerDetector = name ; }
+  void    SetTriggerDetector( Int_t det )    { fTriggerDetector = det  ; }
   
   void    SetMinChargedPt   ( Float_t pt )   { fMinChargedPt    = pt   ; }
   void    SetMinNeutralPt   ( Float_t pt )   { fMinNeutralPt    = pt   ; }
@@ -68,8 +68,8 @@ public:
   
 private:
   
-  TString     fTriggerDetector;             //! trigger detector, for fiducial region
-  
+  Int_t       fTriggerDetector;             //! trigger detector, for fiducial region
+
   AliFiducialCut* fFidCutTrigger;           //! fiducial cut for the trigger detector
   
   Float_t     fMinChargedPt;                //! Minimum energy for charged particles in correlation

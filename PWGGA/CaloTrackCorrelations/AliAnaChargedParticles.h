@@ -47,6 +47,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t  fFillTrackBCHistograms;           // Fill histograms for tracks with TOF BC=0 or not related histograms
   Bool_t  fFillVertexBC0Histograms;         // Fill histograms for tracks with vertex BC=0 or not related histograms
+  TLorentzVector fMomentum;                 //! Temporary momentum container
   
   //Histograms
   TH1F * fhNtracks;                         //! track multiplicity distribution

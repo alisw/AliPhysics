@@ -271,7 +271,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
   //Check acceptance selection
   if(IsFiducialCutOn())
   {
-    Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,GetCalorimeter()) ;
+    Bool_t in = GetFiducialCut()->IsInFiducialCut(mom.Eta(),mom.Phi(),GetCalorimeter()) ;
     if(! in ) return kFALSE ;
   }
   
@@ -427,7 +427,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     inacceptance = kTRUE;
     
     // Check same fidutial borders as in data analysis on top of real acceptance if real was requested.
-    if( IsFiducialCutOn() && !GetFiducialCut()->IsInFiducialCut(lv,GetCalorimeter())) inacceptance = kFALSE ;
+    if( IsFiducialCutOn() && !GetFiducialCut()->IsInFiducialCut(lv.Eta(),lv.Phi(),GetCalorimeter())) inacceptance = kFALSE ;
     
     // Check if photons hit the Calorimeter acceptance
     if(IsRealCaloAcceptanceOn()) // defined on base class
