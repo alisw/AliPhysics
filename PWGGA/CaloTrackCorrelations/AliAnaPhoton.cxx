@@ -2464,9 +2464,6 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     // Remember to relax time cuts in the reader
     if( IsPileUpAnalysisOn() ) FillPileUpHistograms(calo,cells, absIdMax);
     
-    // Add number of local maxima to AOD, method name in AOD to be FIXED
-    aodph.SetFiducialArea(nMaxima);
-    
     // Add AOD with photon object to aod branch
     AddAODParticle(aodph);
     

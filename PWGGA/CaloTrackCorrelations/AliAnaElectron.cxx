@@ -1189,7 +1189,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       fhdEdxvsPCutEOverP  ->Fill(track->P(),dEdx);
     }
     
-    //Apply a mild cut on the cluster SS and check the value of dEdX and EOverP
+    // Apply a mild cut on the cluster SS and check the value of dEdX and EOverP
     Float_t m02 = calo->GetM02();
     if(m02 > 0.1 && m02 < 0.4)
     {
@@ -1223,7 +1223,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     if(pid == AliCaloPID::kChargedHadron) pidIndex = 1;
   
     //--------------------------------------------------------------------------------------
-    //Play with the MC stack if available
+    // Play with the MC stack if available
     //--------------------------------------------------------------------------------------
     
     //Check origin of the candidates
@@ -1320,7 +1320,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       WeightHistograms(calo);
     
     //-----------------------------------------
-    //PID Shower Shape selection or bit setting
+    // PID Shower Shape selection or bit setting
     //-----------------------------------------
     
     // Data, PID check on
@@ -1370,6 +1370,9 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 
       aodpart.SetDetector(GetCalorimeter());
       //printf("Index %d, Id %d, iaod %d\n",icalo, calo->GetID(),GetOutputAODBranch()->GetEntriesFast());
+      
+      aodpart.SetM02(calo->GetM02());
+      aodpart.SetNLM(nMaxima);
       
       //...............................................
       //Set bad channel distance bit
