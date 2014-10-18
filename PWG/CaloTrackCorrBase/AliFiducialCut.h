@@ -5,7 +5,7 @@
 
 //_________________________________________________________________________
 // Class for track/cluster acceptance selection
-// Selection in Central barrel, EMCAL and PHOS
+// Selection in Central barrel, DCAL and PHOS
 //  
 // Several selection regions possible for the different
 // detectors
@@ -27,24 +27,28 @@ public:
   virtual  ~AliFiducialCut() ;//virtual dtor
   
   void      InitParameters();
-    
-  Bool_t    CheckFiducialRegion(TLorentzVector lv,
-                                const TArrayF* minphi, const TArrayF* maxphi, 
+
+  Bool_t    CheckFiducialRegion(Float_t eta, Float_t phi,
+                                const TArrayF* minphi, const TArrayF* maxphi,
                                 const TArrayF* mineta, const TArrayF* maxeta) const ;
-  
+
   Bool_t    IsInFiducialCut    (TLorentzVector lv, TString det) const ;
+  Bool_t    IsInFiducialCut    (Float_t eta, Float_t phi, Int_t det) const ;
   
   void      DoCTSFiducialCut  (Bool_t b)     { fCTSFiducialCut   = b    ; }
   void      DoEMCALFiducialCut(Bool_t b)     { fEMCALFiducialCut = b    ; }
   void      DoPHOSFiducialCut (Bool_t b)     { fPHOSFiducialCut  = b    ; }
+  void      DoDCALFiducialCut (Bool_t b)     { fDCALFiducialCut  = b    ; }
   
   Bool_t    GetCTSFiducialCutStatus()  const { return fCTSFiducialCut   ; }
   Bool_t    GetEMCALFiducialCut()      const { return fEMCALFiducialCut ; }
   Bool_t    GetPHOSFiducialCutStatus() const { return fPHOSFiducialCut  ; }
-  
+  Bool_t    GetDCALFiducialCut()       const { return fDCALFiducialCut  ; }
+
   void      SetSimpleCTSFiducialCut  (Float_t abseta, Float_t phimin, Float_t phimax) ;
   void      SetSimpleEMCALFiducialCut(Float_t abseta, Float_t phimin, Float_t phimax) ;
   void      SetSimplePHOSFiducialCut (Float_t abseta, Float_t phimin, Float_t phimax) ;
+  void      SetSimpleDCALFiducialCut (Float_t abseta, Float_t phimin, Float_t phimax) ;
   
   void      Print(const Option_t * opt)const;
   
@@ -96,10 +100,29 @@ public:
                                               { fPHOSFidCutMinPhi->Set(size,array)  ; }
   TArrayF * GetPHOSFidCutMinPhiArray() const  { return fPHOSFidCutMinPhi            ; }
   
+  void      AddDCALFidCutMaxEtaArray(Int_t size, Float_t* array)
+  { fDCALFidCutMaxEta->Set(size,array) ; }
+  TArrayF * GetDCALFidCutMaxEtaArray() const { return fDCALFidCutMaxEta           ; }
+  
+  void      AddDCALFidCutMaxPhiArray(Int_t size, Float_t* array)
+  { fDCALFidCutMaxPhi->Set(size,array) ; }
+  TArrayF * GetDCALFidCutMaxPhiArray() const { return fDCALFidCutMaxPhi           ; }
+  
+  void      AddDCALFidCutMinEtaArray(Int_t size, Float_t* array)
+  { fDCALFidCutMinEta->Set(size,array) ; }
+  TArrayF * GetDCALFidCutMinEtaArray() const { return fDCALFidCutMinEta           ; }
+  
+  void      AddDCALFidCutMinPhiArray(Int_t size, Float_t* array)
+  { fDCALFidCutMinPhi->Set(size,array) ; }
+  TArrayF * GetDCALFidCutMinPhiArray() const { return fDCALFidCutMinPhi           ; }
+
+  enum detector {kEMCAL = 0, kPHOS = 1, kCTS = 2, kDCAL = 3, kDCALPHOS = 4 };
+  
 private:
   
   //Detector acceptance cuts
   Bool_t    fEMCALFiducialCut ;  // Apply fiducial cuts to EMCAL clusters
+  Bool_t    fDCALFiducialCut  ;  // Apply fiducial cuts to DCAL clusters
   Bool_t    fPHOSFiducialCut  ;  // Apply fiducial cuts to PHOS clusters
   Bool_t    fCTSFiducialCut   ;  // Apply fiducial cuts to  CTS tracks
   
@@ -118,10 +141,15 @@ private:
   TArrayF * fPHOSFidCutMaxEta ;  // Take particles in PHOS with eta < fPHOSFidCutMaxEta
   TArrayF * fPHOSFidCutMaxPhi ;  // Take particles in PHOS with phi > fPHOSFidCutMaxPhi
   
+  TArrayF * fDCALFidCutMinEta ; // Take particles in DCAL with eta > fDCALFidCutMinEta
+  TArrayF * fDCALFidCutMinPhi ; // Take particles in DCAL with phi > fDCALFidCutMinPhi
+  TArrayF * fDCALFidCutMaxEta ; // Take particles in DCAL with eta < fDCALFidCutMaxEta
+  TArrayF * fDCALFidCutMaxPhi ; // Take particles in DCAL with phi > fDCALFidCutMaxPhi
+  
   AliFiducialCut(              const AliFiducialCut & g) ; // cpy ctor
   AliFiducialCut & operator = (const AliFiducialCut & g) ; // cpy assignment
   
-  ClassDef(AliFiducialCut,1)
+  ClassDef(AliFiducialCut,2)
   
 } ;
 
