@@ -87,6 +87,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
 
  protected:
+  void                        SetRejectionReasonLabels(TAxis* axis);
   Double_t*                   GenerateFixedBinArray(Int_t n, Double_t min, Double_t max) const;
   void                        GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array) const;
   void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
@@ -173,9 +174,10 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TObjArray                   fParticleCollArray;          // particle/track collection array
   TObjArray                   fClusterCollArray;           // cluster collection array
   AliEmcalTriggerPatchInfo   *fMainTriggerPatch;           // main trigger patch, will be cached after calling GetMainTriggerPatch() first time
-  ULong_t                 	  fTriggers;                // list of fired triggers
+  ULong_t                     fTriggers;                   // list of fired triggers
 
   TList                      *fOutput;                     //!output list
+  TH1                        *fHistEventCount;             //!incoming and selected events
   TH1                        *fHistTrialsAfterSel;         //!total number of trials per pt hard bin after selection
   TH1                        *fHistEventsAfterSel;         //!total number of events per pt hard bin after selection
   TProfile                   *fHistXsectionAfterSel;       //!x section from pythia header

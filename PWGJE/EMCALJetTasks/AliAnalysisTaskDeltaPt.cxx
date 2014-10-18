@@ -45,6 +45,7 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() :
   fEmbCaloClustersCont(0),
   fRandTracksCont(0),
   fRandCaloClustersCont(0),
+  fHistRhovsCent(0),
   fHistRCPhiEta(0), 
   fHistRCPt(0),
   fHistRCPtExLJ(0),
@@ -114,6 +115,7 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt(const char *name) :
   fEmbCaloClustersCont(0),
   fRandTracksCont(0),
   fRandCaloClustersCont(0),
+  fHistRhovsCent(0),
   fHistRCPhiEta(0), 
   fHistRCPt(0),
   fHistRCPtExLJ(0),
@@ -218,6 +220,11 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   AllocateHistogramArrays();
+
+  fHistRhovsCent = new TH2F("fHistRhovsCent", "fHistRhovsCent", 101, -1,  100, fNbins, 0, fMaxBinPt*2);
+  fHistRhovsCent->GetXaxis()->SetTitle("Centrality (%)");
+  fHistRhovsCent->GetYaxis()->SetTitle("#rho (GeV/c * rad^{-1})");
+  fOutput->Add(fHistRhovsCent);
 
   fJetsCont = GetJetContainer("Jets");
   fTracksCont = GetParticleContainer("Tracks");
@@ -431,6 +438,8 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
 Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
 {
   // Fill histograms.
+
+  fHistRhovsCent->Fill(fCent, fRhoVal);
 
   // ************
   // Random cones

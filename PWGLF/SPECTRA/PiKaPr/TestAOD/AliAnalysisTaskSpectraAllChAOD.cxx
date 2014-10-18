@@ -73,6 +73,7 @@ AliAnalysisTaskSpectraAllChAOD::AliAnalysisTaskSpectraAllChAOD(const char *name)
   fDCAmax(3),
   fDCAzCut(999999.),
   fQvecGen(0),
+  fQgenType(0),
   fDoCentrSystCentrality(0)
 {
   // Default constructor
@@ -206,9 +207,9 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
   Double_t QvecMC = 0.;
   if(fIsMC){
     if(fIsQvecCalibMode){
-      QvecMC = fEventCuts->CalculateQVectorMC(fVZEROside);
+      QvecMC = fEventCuts->CalculateQVectorMC(fVZEROside, fQgenType);
     }
-    else QvecMC = fEventCuts->GetQvecPercentileMC(fVZEROside);
+    else QvecMC = fEventCuts->GetQvecPercentileMC(fVZEROside, fQgenType);
   }
   
   Double_t Cent=(fDoCentrSystCentrality)?1.01*fEventCuts->GetCent():fEventCuts->GetCent();

@@ -94,14 +94,14 @@ AliVCluster* AliClusterContainer::GetCluster(Int_t i) const
 }
 
 //________________________________________________________________________
-AliVCluster* AliClusterContainer::GetAcceptCluster(Int_t i) const 
+AliVCluster* AliClusterContainer::GetAcceptCluster(Int_t i) 
 {
   //Return pointer to cluster if cluster is accepted
 
   AliVCluster *vc = GetCluster(i);
-  if(!vc) return 0;
+  if (!vc) return 0;
 
-  if(AcceptCluster(vc))
+  if (AcceptCluster(vc))
     return vc;
   else {
     AliDebug(2,"Cluster not accepted.");
@@ -119,7 +119,7 @@ AliVCluster* AliClusterContainer::GetClusterWithLabel(Int_t lab) const
 }
 
 //________________________________________________________________________
-AliVCluster* AliClusterContainer::GetAcceptClusterWithLabel(Int_t lab) const 
+AliVCluster* AliClusterContainer::GetAcceptClusterWithLabel(Int_t lab)  
 {
   //Get particle with label lab in array
   
@@ -171,40 +171,54 @@ void AliClusterContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
 }
 
 //________________________________________________________________________
-Bool_t AliClusterContainer::AcceptCluster(AliVCluster *clus) const
+Bool_t AliClusterContainer::AcceptCluster(AliVCluster *clus)
 {
   // Return true if cluster is accepted.
 
-  if (!clus)
+  fRejectionReason = 0;
+
+  if (!clus) {
+    fRejectionReason |= kNullObject;
     return kFALSE;
+  }
       
-  if (!clus->IsEMCAL())
+  if (!clus->IsEMCAL()) {
+    fRejectionReason |= kIsEMCalCut;
     return kFALSE;
+  }
 
   if (clus->GetLabel() > fMinMCLabel) {
     if (clus->TestBits(fMCClusterBitMap) != (Int_t)fMCClusterBitMap) {
       AliDebug(2,"MC Cluster not accepted because of MC bit map.");
+      fRejectionReason |= kBitMapCut;
       return kFALSE;
     }
   }
   else {
     if (clus->TestBits(fClusterBitMap) != (Int_t)fClusterBitMap) {
       AliDebug(2,"Cluster not accepted because of bit map.");
+      fRejectionReason |= kBitMapCut;
       return kFALSE;
     }
   }
 
-  if (clus->GetTOF() > fClusTimeCutUp || clus->GetTOF() < fClusTimeCutLow)
+  if (clus->GetTOF() > fClusTimeCutUp || clus->GetTOF() < fClusTimeCutLow) {
+    fRejectionReason |= kTimeCut;
     return kFALSE;
+  }
 
-  if (clus->E()<fClusECut)
+  if (clus->E()<fClusECut) {
+    fRejectionReason |= kEnergyCut;
     return kFALSE;
+  }
 
   TLorentzVector nPart;
   clus->GetMomentum(nPart, const_cast<Double_t*>(fVertex));
 
-  if (nPart.Et() < fClusPtCut)
+  if (nPart.Et() < fClusPtCut) {
+    fRejectionReason |= kPtCut;
     return kFALSE;
+  }
   
   return kTRUE;
 }
