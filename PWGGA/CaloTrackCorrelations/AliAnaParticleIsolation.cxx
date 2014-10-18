@@ -258,8 +258,8 @@ fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0)
   {
     fhTrackMatchedDEta[i] = 0 ;             fhTrackMatchedDPhi[i] = 0 ;   fhTrackMatchedDEtaDPhi  [i] = 0 ;
     fhdEdx            [i] = 0 ;             fhEOverP          [i] = 0 ;   fhTrackMatchedMCParticle[i] = 0 ;
-    fhELambda0        [i] = 0 ;             fhELambda1        [i] = 0 ;   fhPtLambda0       [i] = 0 ;
-    fhELambda0TRD     [i] = 0 ;             fhELambda1TRD     [i] = 0 ;   fhPtLambda0TRD    [i] = 0 ;
+    fhELambda0        [i] = 0 ;             fhPtLambda0       [i] = 0 ;   //fhELambda1        [i] = 0 ;
+    fhELambda0TRD     [i] = 0 ;             fhPtLambda0TRD    [i] = 0 ;   //fhELambda1TRD     [i] = 0 ;
     
     // Number of local maxima in cluster
     fhNLocMax        [i] = 0 ;
@@ -1169,7 +1169,7 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
   if(!fFillTMHisto && !fFillSSHisto && !fFillBackgroundBinHistograms && !fFillTaggedDecayHistograms) return;
   
   Int_t  clusterID = pCandidate->GetCaloLabel(0) ;
-  Int_t  nMaxima   = pCandidate->GetFiducialArea(); // bad name, just place holder for the moment
+  Int_t  nMaxima   = pCandidate->GetNLM();
   Int_t  mcTag     = pCandidate->GetTag() ;
   Bool_t isolated  = pCandidate->IsIsolated();
   
@@ -1179,16 +1179,8 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
     return;
   }
   
-  Int_t iclus = -1;
-  TObjArray* clusters = 0x0;
-  if     (GetCalorimeter() == "EMCAL") clusters = GetEMCALClusters();
-  else if(GetCalorimeter() == "PHOS" ) clusters = GetPHOSClusters();
-  
-  if(!clusters) return;
-  
-  AliVCluster *cluster = FindCluster(clusters,clusterID,iclus);
 
-  Float_t m02    = cluster->GetM02() ;
+  Float_t m02    = pCandidate->GetM02() ;
   Float_t energy = pCandidate->E();
   Float_t pt     = pCandidate->Pt();
   Float_t eta    = pCandidate->Eta();
@@ -1198,8 +1190,8 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
   // Candidates tagged as decay in another analysis (AliAnaPi0EbE)
   if(fFillTaggedDecayHistograms)
   {
-    Int_t decayTag = pCandidate->GetBtag(); // temporary
-    if(decayTag < 0) decayTag = 0; // temporary
+    Int_t decayTag = pCandidate->DecayTag();
+    if(decayTag < 0) decayTag = 0;
 
     for(Int_t ibit = 0; ibit < fNDecayBits; ibit++)
     {
@@ -1266,8 +1258,8 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
     // Check if it was a decay
     if(fFillTaggedDecayHistograms && m02 < 0.3)
     {
-      Int_t decayTag = pCandidate->GetBtag(); // temporary
-      if(decayTag < 0) decayTag = 0;    // temporary
+      Int_t decayTag = pCandidate->DecayTag();
+      if(decayTag < 0) decayTag = 0;
       for(Int_t ibit = 0; ibit < fNDecayBits; ibit++)
       {
         if(GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit]))
@@ -1348,8 +1340,8 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
     // Check if it was a decay
     if( fFillTaggedDecayHistograms && m02 < 0.3 )
     {
-      Int_t decayTag = pCandidate->GetBtag(); // temporary
-      if(decayTag < 0) decayTag = 0;    // temporary
+      Int_t decayTag = pCandidate->DecayTag();
+      if(decayTag < 0) decayTag = 0;
       for(Int_t ibit = 0; ibit < fNDecayBits; ibit++)
       {
         if(GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit]))
@@ -1401,7 +1393,7 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
   {
     fhELambda0 [isolated]->Fill(energy, m02);
     fhPtLambda0[isolated]->Fill(pt,     m02);
-    fhELambda1 [isolated]->Fill(energy, m02);
+    //fhELambda1 [isolated]->Fill(energy, m20);
     
     if(IsDataMC())
     {
@@ -1415,11 +1407,11 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
     }
     
     if(GetCalorimeter() == "EMCAL" &&  GetFirstSMCoveredByTRD() >= 0 &&
-       GetModuleNumber(cluster) >= GetFirstSMCoveredByTRD()  )
+       GetModuleNumber(pCandidate) >= GetFirstSMCoveredByTRD()  )
     {
       fhELambda0TRD [isolated]->Fill(energy, m02 );
       fhPtLambda0TRD[isolated]->Fill(pt    , m02 );
-      fhELambda1TRD [isolated]->Fill(energy, m02 );
+      //fhELambda1TRD [isolated]->Fill(energy, m20 );
     }
     
     if(fFillNLMHistograms)
@@ -1434,6 +1426,15 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
   // Track matching dependent histograms
   if(fFillTMHisto)
   {
+    Int_t iclus = -1;
+    TObjArray* clusters = 0x0;
+    if     (GetCalorimeter() == "EMCAL") clusters = GetEMCALClusters();
+    else if(GetCalorimeter() == "PHOS" ) clusters = GetPHOSClusters();
+    
+    if(!clusters) return;
+    
+    AliVCluster *cluster = FindCluster(clusters,clusterID,iclus);
+    
     Float_t dZ  = cluster->GetTrackDz();
     Float_t dR  = cluster->GetTrackDx();
     
@@ -3001,12 +3002,12 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhELambda0[iso]->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhELambda0[iso]) ;
         
-        fhELambda1[iso]  = new TH2F
-        (Form("hELambda1%s",isoName[iso].Data()),
-         Form("%s cluster: #it{E} vs #lambda_{1}, %s",isoTitle[iso].Data(),parTitle.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhELambda1[iso]->SetYTitle("#lambda_{1}^{2}");
-        fhELambda1[iso]->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhELambda1[iso]) ;
+//        fhELambda1[iso]  = new TH2F
+//        (Form("hELambda1%s",isoName[iso].Data()),
+//         Form("%s cluster: #it{E} vs #lambda_{1}, %s",isoTitle[iso].Data(),parTitle.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+//        fhELambda1[iso]->SetYTitle("#lambda_{1}^{2}");
+//        fhELambda1[iso]->SetXTitle("#it{E} (GeV)");
+//        outputContainer->Add(fhELambda1[iso]) ;
         
         fhPtLambda0[iso]  = new TH2F
         (Form("hPtLambda0%s",isoName[iso].Data()),
@@ -3044,12 +3045,12 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           fhELambda0TRD[iso]->SetXTitle("#it{E} (GeV)");
           outputContainer->Add(fhELambda0TRD[iso]) ;
           
-          fhELambda1TRD[iso]  = new TH2F
-          (Form("hELambda1TRD%s",isoName[iso].Data()),
-           Form("%s cluster: #it{E} vs #lambda_{1}, SM behind TRD, %s",isoTitle[iso].Data(),parTitle.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-          fhELambda1TRD[iso]->SetYTitle("#lambda_{1}^{2}");
-          fhELambda1TRD[iso]->SetXTitle("#it{E} (GeV)");
-          outputContainer->Add(fhELambda1TRD[iso]) ;
+//          fhELambda1TRD[iso]  = new TH2F
+//          (Form("hELambda1TRD%s",isoName[iso].Data()),
+//           Form("%s cluster: #it{E} vs #lambda_{1}, SM behind TRD, %s",isoTitle[iso].Data(),parTitle.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+//          fhELambda1TRD[iso]->SetYTitle("#lambda_{1}^{2}");
+//          fhELambda1TRD[iso]->SetXTitle("#it{E} (GeV)");
+//          outputContainer->Add(fhELambda1TRD[iso]) ;
         }
         
         if(fFillNLMHistograms)
@@ -4124,7 +4125,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       }//Histograms with MC
       
       if(fFillNLMHistograms)
-        fhPtNLocMaxIso ->Fill(pt,aod->GetFiducialArea()) ; // remember to change method name
+        fhPtNLocMaxIso ->Fill(pt,aod->GetNLM()) ;
       
       if(IsHighMultiplicityAnalysisOn())
       {
@@ -4169,7 +4170,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       }
       
       if(fFillNLMHistograms)
-        fhPtNLocMaxNoIso ->Fill(pt,aod->GetFiducialArea()); // remember to change method name
+        fhPtNLocMaxNoIso ->Fill(pt,aod->GetNLM());
       
       if(IsPileUpAnalysisOn())
       {
@@ -4671,8 +4672,8 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
   Int_t   decayTag = 0;
   if(fFillTaggedDecayHistograms)
   {
-    decayTag = ph->GetBtag(); // temporary
-    if(decayTag < 0) decayTag = 0; // temporary
+    decayTag = ph->DecayTag();
+    if(decayTag < 0) decayTag = 0; 
   }
 
   if(GetDebug() > 0)

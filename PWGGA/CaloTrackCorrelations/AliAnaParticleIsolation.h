@@ -425,10 +425,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   // Shower Shape histograms
   TH2F *   fhELambda0[2];                         //! Shower shape of (non) isolated photons (do not apply SS cut previously)  
   TH2F *   fhPtLambda0[2];                        //! Shower shape of (non) isolated photons (do not apply SS cut previously)
-  TH2F *   fhELambda1[2];                         //! Shower shape of (non) isolated photons (do not apply SS cut previously)
+  //TH2F *   fhELambda1[2];                         //! Shower shape of (non) isolated photons (do not apply SS cut previously)
   TH2F *   fhELambda0TRD[2];                      //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
   TH2F *   fhPtLambda0TRD[2];                     //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
-  TH2F *   fhELambda1TRD[2];                      //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
+  //TH2F *   fhELambda1TRD[2];                      //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
 
   TH1F **  fhPtLeadConeBin ;                      //![fNBkgBin] Candidate Pt distribution depending on bin of cone leading particle
   TH1F **  fhSumPtConeBin  ;                      //![fNBkgBin] Candidate Pt distribution depending on bin of cone sum pt
