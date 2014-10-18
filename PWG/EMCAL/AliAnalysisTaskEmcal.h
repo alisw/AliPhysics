@@ -87,6 +87,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
 
  protected:
+  void                        SetRejectionReasonLabels(TAxis* axis);
   Double_t*                   GenerateFixedBinArray(Int_t n, Double_t min, Double_t max) const;
   void                        GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array) const;
   void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
