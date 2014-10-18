@@ -258,7 +258,7 @@ updateQA()
       #go to a temp dir to do the period level stuff in a completely clean dir
       tmpPeriodLevelQAdir="${tmpProductionDir}/periodLevelQA"
       echo
-      echo tmpPeriodLevelQAdir="${tmpProductionDir}/periodLevelQA"
+      echo tmpPeriodLevelQAdir="${tmpPeriodLevelQAdir}"
       if ! mkdir -p ${tmpPeriodLevelQAdir}; then continue; fi
       cd ${tmpPeriodLevelQAdir}
 
