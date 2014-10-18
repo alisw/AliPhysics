@@ -174,9 +174,10 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TObjArray                   fParticleCollArray;          // particle/track collection array
   TObjArray                   fClusterCollArray;           // cluster collection array
   AliEmcalTriggerPatchInfo   *fMainTriggerPatch;           // main trigger patch, will be cached after calling GetMainTriggerPatch() first time
-  ULong_t                 	  fTriggers;                // list of fired triggers
+  ULong_t                     fTriggers;                   // list of fired triggers
 
   TList                      *fOutput;                     //!output list
+  TH1                        *fHistEventCount;             //!incoming and selected events
   TH1                        *fHistTrialsAfterSel;         //!total number of trials per pt hard bin after selection
   TH1                        *fHistEventsAfterSel;         //!total number of events per pt hard bin after selection
   TProfile                   *fHistXsectionAfterSel;       //!x section from pythia header
