@@ -2878,8 +2878,8 @@ Bool_t AliAnaParticleHadronCorrelation::GetDecayPhotonMomentum(AliAODPWG4Particl
     printf("AliAnaParticleHadronCorrelation::GetDecayPhotonMomentum() - indexPhoton1 = %d, indexPhoton2 = %d \n", indexPhoton1, indexPhoton2);
   
   TObjArray * clusters  = 0x0 ;
-  if(trigger->GetDetector()=="EMCAL") clusters = GetEMCALClusters() ;
-  else                                clusters = GetPHOSClusters()  ;
+  if(trigger->GetDetectorTag()==kEMCAL) clusters = GetEMCALClusters() ;
+  else                                  clusters = GetPHOSClusters()  ;
   
   for(Int_t iclus = 0; iclus < clusters->GetEntriesFast(); iclus++)
   {
@@ -3071,7 +3071,7 @@ Bool_t AliAnaParticleHadronCorrelation::IsTriggerTheEventLeadingParticle()
   {
     // Select the calorimeter cluster list
     TObjArray * nePl = 0x0;
-    if      (pLeading->GetDetector() == "PHOS" )
+    if      (pLeading->GetDetectorTag() == kPHOS )
       nePl = GetPHOSClusters();
     else
       nePl = GetEMCALClusters();
@@ -3206,15 +3206,15 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     //
     Int_t clID1  = particle->GetCaloLabel(0) ;
     Int_t clID2  = particle->GetCaloLabel(1) ; // for photon clusters should not be set.
-    if( GetDebug() > 1 ) printf("%s Trigger : id1 %d, id2 %d, min %f, max %f, det %s\n",
-           GetInputAODName().Data(),clID1,clID2,fM02MinCut,fM02MaxCut,(particle->GetDetector()).Data());
+    if( GetDebug() > 1 ) printf("%s Trigger : id1 %d, id2 %d, min %f, max %f, det %d\n",
+           GetInputAODName().Data(),clID1,clID2,fM02MinCut,fM02MaxCut,particle->GetDetectorTag());
     
     if(clID1 > 0 && clID2 < 0 && fM02MaxCut > 0 && fM02MinCut > 0)
     {
 //      Int_t iclus = -1;
 //      TObjArray* clusters = 0x0;
-//      if     (particle->GetDetector() == "EMCAL") clusters = GetEMCALClusters();
-//      else if(particle->GetDetector() == "PHOS" ) clusters = GetPHOSClusters();
+//      if     (particle->GetDetectorTag() == kEMCAL) clusters = GetEMCALClusters();
+//      else if(particle->GetDetectorTag() == kPHOS ) clusters = GetPHOSClusters();
 //      
 //      if(clusters)
 //      {
@@ -3244,7 +3244,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     //
     if(IsFiducialCutOn())
     {
-      Bool_t in = GetFiducialCut()->IsInFiducialCut(*particle->Momentum(),particle->GetDetector()) ;
+      Bool_t in = GetFiducialCut()->IsInFiducialCut(particle->Eta(),particle->Phi(),particle->GetDetectorTag()) ;
       if(! in ) continue ;
     }
     
@@ -4151,7 +4151,7 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
       particle->Momentum(momentum);
       
       //Particles in CTS acceptance, make sure to use the same selection as in the reader
-      Bool_t inCTS =  GetReader()->GetFiducialCut()->IsInFiducialCut(momentum,"CTS");
+      Bool_t inCTS =  GetReader()->GetFiducialCut()->IsInFiducialCut(momentum.Eta(),momentum.Phi(),kCTS);
       //printf("Accepted? %d; pt %2.2f, eta %2.2f, phi %2.2f\n",inCTS,momentum.Pt(),momentum.Eta(),momentum.Phi()*TMath::RadToDeg());
       if( !inCTS ) continue;
       
@@ -4213,7 +4213,7 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
       TLorentzVector momentum(part->Px(),part->Py(),part->Pz(),part->E());
       
       //Particles in CTS acceptance, make sure to use the same selection as in the reader
-      Bool_t inCTS =  GetReader()->GetFiducialCut()->IsInFiducialCut(momentum,"CTS");
+      Bool_t inCTS =  GetReader()->GetFiducialCut()->IsInFiducialCut(momentum.Eta(),momentum.Phi(),kCTS);
       //printf("Accepted? %d; pt %2.2f, eta %2.2f, phi %2.2f\n",inCTS,momentum.Pt(),momentum.Eta(),momentum.Phi()*TMath::RadToDeg());
       if( !inCTS ) continue;
       

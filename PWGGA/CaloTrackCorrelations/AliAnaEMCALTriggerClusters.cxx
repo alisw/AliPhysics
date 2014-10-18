@@ -1041,7 +1041,7 @@ void  AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()
     //Check acceptance selection
     if(IsFiducialCutOn())
     {
-      Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,"EMCAL") ;
+      Bool_t in = GetFiducialCut()->IsInFiducialCut(mom.Eta(),mom.Phi(),kEMCAL) ;
       if(! in ) continue ;
     }
     

@@ -1502,8 +1502,8 @@ void AliAnaPi0::FillAcceptanceHistograms()
     // Check if photons hit desired acceptance in the fidutial borders fixed in the analysis
     if(IsFiducialCutOn())
     {
-      if( inacceptance1 && !GetFiducialCut()->IsInFiducialCut(lv1,GetCalorimeter()) ) inacceptance1 = kFALSE ;
-      if( inacceptance2 && !GetFiducialCut()->IsInFiducialCut(lv2,GetCalorimeter()) ) inacceptance2 = kFALSE ;
+      if( inacceptance1 && !GetFiducialCut()->IsInFiducialCut(lv1.Eta(), lv1.Phi(), GetCalorimeter()) ) inacceptance1 = kFALSE ;
+      if( inacceptance2 && !GetFiducialCut()->IsInFiducialCut(lv2.Eta(), lv2.Phi(), GetCalorimeter()) ) inacceptance2 = kFALSE ;
     }
     
     if(fFillArmenterosThetaStar) FillArmenterosThetaStar(pdg,lvmeson,lv1,lv2);

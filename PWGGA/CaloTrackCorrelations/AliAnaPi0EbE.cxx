@@ -3305,7 +3305,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     //Check acceptance selection
     if(IsFiducialCutOn())
     {
-      Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,GetCalorimeter()) ;
+      Bool_t in = GetFiducialCut()->IsInFiducialCut(mom.Eta(),mom.Phi(),GetCalorimeter()) ;
       if(! in ) continue ;
     }
     

@@ -184,7 +184,7 @@ Bool_t  AliAnaElectron::ClusterSelected(AliVCluster* calo, TLorentzVector mom, I
   //.......................................
   //Check acceptance selection
   if(IsFiducialCutOn()){
-    Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,GetCalorimeter()) ;
+    Bool_t in = GetFiducialCut()->IsInFiducialCut(mom.Eta(),mom.Phi(),GetCalorimeter()) ;
     if(! in ) return kFALSE ;
   }
   if(GetDebug() > 2) printf("Fiducial cut passed \n");

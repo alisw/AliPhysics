@@ -37,7 +37,7 @@ ClassImp(AliAnaGeneratorKine)
 //__________________________________________
 AliAnaGeneratorKine::AliAnaGeneratorKine() : 
 AliAnaCaloTrackCorrBaseClass(), 
-fTriggerDetector(""),
+fTriggerDetector(),
 fFidCutTrigger(0),
 fMinChargedPt(0),    fMinNeutralPt(0),
 fStack(0),
@@ -710,7 +710,7 @@ void AliAnaGeneratorKine::GetXE(TLorentzVector trigger,
     if( pt < fMinChargedPt)    continue ;
     
     particle->Momentum(chPartLV);
-    Bool_t inTPC = GetFiducialCut()->IsInFiducialCut(chPartLV,"CTS") ;
+    Bool_t inTPC = GetFiducialCut()->IsInFiducialCut(chPartLV.Eta(),chPartLV.Phi(),kCTS) ;
     
     if(!inTPC) continue;
     
@@ -801,7 +801,7 @@ void AliAnaGeneratorKine::InitParameters()
   //Initialize the parameters of the analysis.
   AddToHistogramsName("AnaGenKine_");
   
-  fTriggerDetector = "EMCAL";
+  fTriggerDetector = kEMCAL;
   
   fMinChargedPt    = 0.2;
   fMinNeutralPt    = 0.3;
@@ -881,7 +881,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
     if( status != 1) continue ;
 
     // Select all particles in at least the TPC acceptance
-    Bool_t inTPC = GetFiducialCut()->IsInFiducialCut(trigger,"CTS") ;
+    Bool_t inTPC = GetFiducialCut()->IsInFiducialCut(trigger.Eta(),trigger.Phi(),kCTS) ;
     if(!inTPC) continue;
     
     Float_t pt     = particle->Pt();
@@ -922,7 +922,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
       }
       
       //Calorimeter acceptance
-      Bool_t inCalo = GetFiducialCut()->IsInFiducialCut(trigger,GetCalorimeter()) ;
+      Bool_t inCalo = GetFiducialCut()->IsInFiducialCut(trigger.Eta(),trigger.Phi(),GetCalorimeter()) ;
       if(!inCalo) continue;
       
       if( ptMaxNeutEMCAL < pt ) ptMaxNeutEMCAL = pt;
@@ -1069,7 +1069,7 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     // Recover the kinematics:
     particle->Momentum(trigger);
     
-    Bool_t in = GetFiducialCutForTrigger()->IsInFiducialCut(trigger,fTriggerDetector) ;
+    Bool_t in = GetFiducialCutForTrigger()->IsInFiducialCut(trigger.Eta(),trigger.Phi(),fTriggerDetector) ;
     if(! in ) continue ;
 
     if( GetDebug() > 2) printf("Select trigger particle %d: pdg %d status %d, mother index %d, pT %2.2f, eta %2.2f, phi %2.2f \n",

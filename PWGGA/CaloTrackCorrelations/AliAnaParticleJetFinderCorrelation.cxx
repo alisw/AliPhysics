@@ -2392,7 +2392,7 @@ void AliAnaParticleJetFinderCorrelation::FindMCgenInfo(){
 	      if(GetDebug() > 3) printf("In EMCAL Real acceptance? %d\n",inacceptance);
 	    }
 	    else{
-	      if(GetFiducialCut()->IsInFiducialCut(lv,"EMCAL")) inacceptance = kTRUE ;
+	      if(GetFiducialCut()->IsInFiducialCut(lv.Eta(),lv.Phi(),kEMCAL)) inacceptance = kTRUE ;
 	      if(GetDebug() > 3) printf("In EMCAL fiducial cut acceptance? %d\n",inacceptance);
 	    }
 	  }else{//no EMCAL nor EMCALGeoMatrixSet
