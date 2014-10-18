@@ -135,8 +135,14 @@ public:
 
   // Common analysis switchs 
   
-  virtual TString        GetCalorimeter()                 const  { return fCalorimeter           ; }
-  virtual void           SetCalorimeter(TString & calo)          { fCalorimeter = calo           ; }
+  enum detector { kEMCAL = AliFiducialCut::kEMCAL, kPHOS = AliFiducialCut::kPHOS,
+                  kCTS   = AliFiducialCut::kCTS  , kDCAL = AliFiducialCut::kDCAL,
+                  kDCALPHOS = AliFiducialCut::kDCALPHOS } ;
+
+  virtual Int_t          GetCalorimeter()                 const  { return fCalorimeter          ; }
+  virtual TString        GetCalorimeterString()           const  { return fCalorimeterString    ; }
+  virtual void           SetCalorimeter(TString & calo);
+  virtual void           SetCalorimeter(Int_t calo) ;
 
   virtual Bool_t         IsDataMC()                        const { return fDataMC                ; }
   virtual void           SwitchOnDataMC()                        { fDataMC = kTRUE ;
@@ -304,7 +310,8 @@ private:
   
   Bool_t                     fDataMC ;             // Flag to access MC data when using ESD or AOD     
   Int_t                      fDebug ;              // Debug level
-  TString                    fCalorimeter ;        // Calorimeter selection
+  Int_t                      fCalorimeter ;        // Calorimeter selection
+  TString                    fCalorimeterString ;  // Calorimeter selection
   Bool_t                     fCheckFidCut ;        // Do analysis for clusters in defined region
   Bool_t                     fCheckRealCaloAcc ;   // When analysis of MC particle kinematics, check their hit in Calorimeter in Real Geometry or use FidCut
   Bool_t                     fCheckCaloPID ;       // Do analysis for calorimeters
