@@ -996,7 +996,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     
     // Check only certain regions
     Bool_t in = kTRUE;
-    if(IsFiducialCutOn()) in =  GetFiducialCut()->IsInFiducialCut(mom,GetCalorimeter()) ;
+    if(IsFiducialCutOn()) in =  GetFiducialCut()->IsInFiducialCut(mom.Eta(),mom.Phi(),GetCalorimeter()) ;
     if(!in) continue;
     
     // MC labels
@@ -3226,7 +3226,7 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,   TLorentzVector 
     
     //Check only certain regions
     Bool_t in2 = kTRUE;
-    if(IsFiducialCutOn()) in2 =  GetFiducialCut()->IsInFiducialCut(mom2,GetCalorimeter()) ;
+    if(IsFiducialCutOn()) in2 =  GetFiducialCut()->IsInFiducialCut(mom2.Eta(),mom2.Phi(),GetCalorimeter()) ;
     if(!in2) continue;	
     
     //Get module of cluster
@@ -3501,7 +3501,7 @@ void AliAnaCalorimeterQA::MCHistograms()
       
       Bool_t inacceptance = kTRUE;
       // Check same fidutial borders as in data analysis on top of real acceptance if real was requested.
-      if( IsFiducialCutOn() && !GetFiducialCut()->IsInFiducialCut(mom,GetCalorimeter()) ) inacceptance = kFALSE ;
+      if( IsFiducialCutOn() && !GetFiducialCut()->IsInFiducialCut(mom.Eta(),mom.Phi(),GetCalorimeter()) ) inacceptance = kFALSE ;
       
       if(IsRealCaloAcceptanceOn()) // defined on base class
       {
