@@ -38,7 +38,7 @@ class AliAnaRandomTrigger : public AliAnaCaloTrackCorrBaseClass {
   
   void         Print(const Option_t * opt) const;
   
-  void         SetDetector(TString detector)       { fDetector  = detector ; }  
+  void         SetDetector(Int_t detector)         { fDetector  = detector ; }
   
   void         SetEtaCut(Float_t min, Float_t max) { fEtaCut[0] = min ; fEtaCut[1] = max;}
   
@@ -48,7 +48,7 @@ class AliAnaRandomTrigger : public AliAnaCaloTrackCorrBaseClass {
   
  private:
   
-  TString    fDetector ; // Detector : EMCAL, PHOS, CTS
+  Int_t      fDetector ; // Detector : EMCAL, PHOS, CTS
   Float_t    fEtaCut[2]; // Eta acceptance
   Float_t    fPhiCut[2]; // Phi acceptance, radians
   TRandom3   fRandom   ; // Random generator
@@ -61,11 +61,10 @@ class AliAnaRandomTrigger : public AliAnaCaloTrackCorrBaseClass {
   TH2F     * fhEta;      //! eta distribution vs pT, negative
   TH2F     * fhEtaPhi;   //! eta vs phi distribution of positive charge  
 
-
   AliAnaRandomTrigger(              const AliAnaRandomTrigger & r) ; // cpy ctor
   AliAnaRandomTrigger & operator = (const AliAnaRandomTrigger & r) ; //cpy assignment
   
-  ClassDef(AliAnaRandomTrigger,2)
+  ClassDef(AliAnaRandomTrigger,3)
 
 } ;
 

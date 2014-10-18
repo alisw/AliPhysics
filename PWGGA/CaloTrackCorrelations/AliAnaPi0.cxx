@@ -211,7 +211,7 @@ TObjString * AliAnaPi0::GetAnalysisCuts()
   parList+=onePar ;
   snprintf(onePar,buffersize,"Z vertex position: -%f < z < %f \n",GetZvertexCut(),GetZvertexCut()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Calorimeter: %s \n",GetCalorimeter().Data()) ;
+  snprintf(onePar,buffersize,"Calorimeter: %s \n",GetCalorimeterString().Data()) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"Number of modules: %d \n",fNModules) ;
   parList+=onePar ;
@@ -235,7 +235,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   
   // Init the number of modules, set in the class AliCalorimeterUtils
   fNModules = GetCaloUtils()->GetNumberOfSuperModulesUsed();
-  if(GetCalorimeter()=="PHOS" && fNModules > 4) fNModules = 4;
+  if(GetCalorimeter()==kPHOS && fNModules > 4) fNModules = 4;
   
   //create event containers
   fEventsList = new TList*[GetNCentrBin()*GetNZvertBin()*GetNRPBin()] ;
@@ -259,7 +259,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   fhReMod                = new TH2F*[fNModules]   ;
   fhMiMod                = new TH2F*[fNModules]   ;
   
-  if(GetCalorimeter() == "PHOS")
+  if(GetCalorimeter() == kPHOS)
   {
     fhReDiffPHOSMod        = new TH2F*[fNModules]   ;  
     fhMiDiffPHOSMod        = new TH2F*[fNModules]   ;
@@ -1079,7 +1079,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhReMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhReMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
       outputContainer->Add(fhReMod[imod]) ;
-      if(GetCalorimeter()=="PHOS")
+      if(GetCalorimeter()==kPHOS)
       {
         snprintf(key, buffersize,"hReDiffPHOSMod_%d",imod) ;
         snprintf(title, buffersize,"Real pairs PHOS, clusters in different Modules: %s",(pairnamePHOS[imod]).Data()) ;
@@ -1118,7 +1118,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         fhMiMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
         outputContainer->Add(fhMiMod[imod]) ;
         
-        if(GetCalorimeter()=="PHOS"){
+        if(GetCalorimeter()==kPHOS){
           snprintf(key, buffersize,"hMiDiffPHOSMod_%d",imod) ;
           snprintf(title, buffersize,"Mixed pairs PHOS, clusters in different Modules: %s",(pairnamePHOS[imod]).Data()) ;
           fhMiDiffPHOSMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
@@ -1508,7 +1508,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
     
     if(fFillArmenterosThetaStar) FillArmenterosThetaStar(pdg,lvmeson,lv1,lv2);
 
-    if(GetCalorimeter()=="EMCAL" && inacceptance1 && inacceptance2 && fCheckAccInSector)
+    if(GetCalorimeter()==kEMCAL && inacceptance1 && inacceptance2 && fCheckAccInSector)
     {
       Int_t absID1=0;
       Int_t absID2=0;
@@ -1545,7 +1545,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
     
     if(GetDebug() > 2)
       printf("Accepted in %s?: m (%2.2f,%2.2f,%2.2f), p1 (%2.2f,%2.2f,%2.2f), p2 (%2.2f,%2.2f,%2.2f) : in1 %d, in2 %d\n",
-             GetCalorimeter().Data(),
+             GetCalorimeterString().Data(),
              mesonPt,mesonYeta,mesonPhi,
              lv1.Pt(),lv1.Eta(),lv1.Phi()*TMath::RadToDeg(),
              lv2.Pt(),lv2.Eta(),lv2.Phi()*TMath::RadToDeg(),
@@ -1967,8 +1967,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     
   //Get shower shape information of clusters
   TObjArray *clusters = 0;
-  if     (GetCalorimeter()=="EMCAL") clusters = GetEMCALClusters();
-  else if(GetCalorimeter()=="PHOS" ) clusters = GetPHOSClusters() ;
+  if     (GetCalorimeter()==kEMCAL) clusters = GetEMCALClusters();
+  else if(GetCalorimeter()==kPHOS ) clusters = GetPHOSClusters() ;
   
   //---------------------------------
   //First loop on photons/clusters
@@ -2119,7 +2119,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         if(module1==module2 && module1 >=0 && module1<fNModules)
           fhReMod[module1]->Fill(pt,m) ;
         
-        if(GetCalorimeter()=="EMCAL")
+        if(GetCalorimeter()==kEMCAL)
         {
           // Same sector
           Int_t j=0;
@@ -2374,7 +2374,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             if(module1==module2 && module1 >=0 && module1<fNModules)
               fhMiMod[module1]->Fill(pt,m) ;
             
-            if(GetCalorimeter()=="EMCAL")
+            if(GetCalorimeter()==kEMCAL)
             {
               // Same sector
               Int_t j=0;
