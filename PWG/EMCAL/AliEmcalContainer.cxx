@@ -97,3 +97,14 @@ Int_t AliEmcalContainer::GetIndexFromLabel(Int_t lab) const
     return lab; 
   }
 }
+
+//________________________________________________________________________
+UShort_t AliEmcalContainer::GetRejectionReasonBitPosition() const
+{ 
+  // Returns the highest bit in the rejection map.
+
+  UInt_t rs = fRejectionReason;
+  UShort_t p = 0;
+  while (rs >>= 1) { p++; }
+  return p;
+}

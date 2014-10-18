@@ -52,19 +52,20 @@ class AliEmcalContainer : public TNamed {
   virtual ~AliEmcalContainer(){;}
 
   TClonesArray               *GetArray()                          { return fClArray                   ; }
-  const TString&              GetArrayName()                const { return fClArrayName               ; }
-  Int_t                       GetCurrentID()                const { return fCurrentID-1               ; }
-  Bool_t                      GetIsParticleLevel()          const { return fIsParticleLevel           ; }
-  Int_t                       GetIndexFromLabel(Int_t lab)  const;
-  Int_t                       GetNEntries()                 const { return fClArray->GetEntriesFast() ; }
+  const TString&              GetArrayName()                  const { return fClArrayName               ; }
+  Int_t                       GetCurrentID()                  const { return fCurrentID-1               ; }
+  Bool_t                      GetIsParticleLevel()            const { return fIsParticleLevel           ; }
+  Int_t                       GetIndexFromLabel(Int_t lab)    const;
+  Int_t                       GetNEntries()                   const { return fClArray->GetEntriesFast() ; }
   virtual void                GetMomentum(TLorentzVector &mom, Int_t i) const = 0;
-  void                        ResetCurrentID(Int_t i=0)           { fCurrentID = i                    ; }
+  void                        ResetCurrentID(Int_t i=0)             { fCurrentID = i                    ; }
   virtual void                SetArray(AliVEvent *event);
-  void                        SetArrayName(const char *n)         { fClArrayName = n                  ; }
-  void                        SetIsParticleLevel(Bool_t b)        { fIsParticleLevel = b              ; }
-  void                        SortArray()                         { fClArray->Sort()                  ; }
-  UInt_t                      GetRejectionReason()                { return fRejectionReason           ; }
-  UInt_t                      TestRejectionReason(UInt_t rs)      { return fRejectionReason & rs      ; }
+  void                        SetArrayName(const char *n)           { fClArrayName = n                  ; }
+  void                        SetIsParticleLevel(Bool_t b)          { fIsParticleLevel = b              ; }
+  void                        SortArray()                           { fClArray->Sort()                  ; }
+  UInt_t                      GetRejectionReason()            const { return fRejectionReason           ; }
+  UInt_t                      TestRejectionReason(UInt_t rs)  const { return fRejectionReason & rs      ; }
+  UShort_t                    GetRejectionReasonBitPosition() const;
 
  protected:
   TString                     fClArrayName;             // name of branch

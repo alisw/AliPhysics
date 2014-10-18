@@ -348,12 +348,6 @@ Bool_t AliJetContainer::AcceptJet(AliEmcalJet *jet)
     return kFALSE;
   }
 
-  if (jet->TestBits(fJetBitMap) != (Int_t)fJetBitMap) {
-    AliDebug(11,"Cut rejecting jet: Bit map");
-    fRejectionReason |= kBitMapCut;
-    return kFALSE;
-  }
-
   if (jet->Pt() <= fJetPtCut) {
     AliDebug(11,Form("Cut rejecting jet: JetPtCut %.1f",fJetPtCut));
     fRejectionReason |= kPtCut;
@@ -369,6 +363,12 @@ Bool_t AliJetContainer::AcceptJet(AliEmcalJet *jet)
   if (jetEta < fJetMinEta || jetEta > fJetMaxEta || jetPhi < fJetMinPhi || jetPhi > fJetMaxPhi) {
     AliDebug(11,"Cut rejecting jet: Acceptance");
     fRejectionReason |= kAcceptanceCut;
+    return kFALSE;
+  }
+
+  if (jet->TestBits(fJetBitMap) != (Int_t)fJetBitMap) {
+    AliDebug(11,"Cut rejecting jet: Bit map");
+    fRejectionReason |= kBitMapCut;
     return kFALSE;
   }
 

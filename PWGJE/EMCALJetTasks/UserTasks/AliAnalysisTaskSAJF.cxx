@@ -15,6 +15,7 @@
 #include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
 #include "AliLog.h"
+#include "AliJetContainer.h"
 
 #include "AliAnalysisTaskSAJF.h"
 
@@ -24,6 +25,7 @@ ClassImp(AliAnalysisTaskSAJF)
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskSAJF", kTRUE),
   fHistoType(1),
+  fHistRejectionReason(0),
   fHistTracksJetPt(0),
   fHistClustersJetPt(0),
   fHistTracksPtDist(0),
@@ -54,6 +56,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fHistoType(1),
+  fHistRejectionReason(0),
   fHistTracksJetPt(0),
   fHistClustersJetPt(0),
   fHistTracksPtDist(0),
@@ -83,7 +86,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
 //________________________________________________________________________
 void AliAnalysisTaskSAJF::AllocateTHnSparse()
 {
-    TString title[20]= {""};
+  TString title[20]= {""};
   Int_t nbins[20]  = {0};
   Double_t min[20] = {0.};
   Double_t max[20] = {0.};
@@ -339,6 +342,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
   fHistClustersJetPt = new TH2*[fNcentBins];
   fHistTracksPtDist = new TH2*[fNcentBins];
   fHistClustersPtDist = new TH2*[fNcentBins];
+  fHistRejectionReason = new TH2*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     TString histname;
@@ -378,6 +382,15 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
       fHistClustersPtDist[i]->GetZaxis()->SetTitle("counts");
       fOutput->Add(fHistClustersPtDist[i]);
     }
+
+    histname = "fHistRejectionReason_";
+    histname += i;
+    fHistRejectionReason[i] = new TH2F(histname, histname, 32, 0, 32, 100, 0, 250);
+    fHistRejectionReason[i]->GetXaxis()->SetTitle("Rejection reason");
+    fHistRejectionReason[i]->GetYaxis()->SetTitle("p_{T,jet} (GeV/c)");
+    fHistRejectionReason[i]->GetZaxis()->SetTitle("counts");
+    SetRejectionReasonLabels(fHistRejectionReason[i]->GetXaxis());
+    fOutput->Add(fHistRejectionReason[i]);
   }
 
   PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
@@ -389,22 +402,23 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
 {
   // Fill histograms.
 
-  if (!fJets) {
-    AliError(Form("%s - Jet array not provided, returning...", GetName()));
-    return kFALSE;
-  }
+  AliJetContainer *jets = static_cast<AliJetContainer*>(fJetCollArray.At(0));
 
-  for (Int_t ij = 0; ij < fJets->GetEntriesFast(); ij++) {
+  if (!jets) return kFALSE;
+  
+  AliEmcalJet* jet = 0;
 
-    AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(ij));
-
+  jets->ResetCurrentID();
+  while ((jet = jets->GetNextJet())) {
     if (!jet) {
-      AliError(Form("Could not receive jet %d", ij));
+      AliError("Could not receive jet!");
       continue;
     }
 
-    if (!AcceptJet(jet))
+    if (!jets->AcceptJet(jet)) {
+      fHistRejectionReason[fCentBin]->Fill(jets->GetRejectionReasonBitPosition(), jet->Pt());
       continue;
+    }
 
     Float_t ptLeading = GetLeadingHadronPt(jet);
     Float_t corrPt = jet->Pt() - fRhoVal * jet->Area();

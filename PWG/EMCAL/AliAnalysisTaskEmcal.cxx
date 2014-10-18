@@ -1282,3 +1282,40 @@ Double_t* AliAnalysisTaskEmcal::GenerateFixedBinArray(Int_t n, Double_t min, Dou
 
   return array;
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcal::SetRejectionReasonLabels(TAxis* axis)
+{
+  axis->SetBinLabel(1,  "NullObject");
+  axis->SetBinLabel(2,  "Pt");
+  axis->SetBinLabel(3,  "Acceptance");
+  axis->SetBinLabel(4,  "BitMap");
+  axis->SetBinLabel(5,  "Bit4");
+  axis->SetBinLabel(6,  "Bit5");
+  axis->SetBinLabel(7,  "Bit6");
+  axis->SetBinLabel(8,  "Bit7");
+  axis->SetBinLabel(9,  "MCFlag");
+  axis->SetBinLabel(10, "MCGenerator");
+  axis->SetBinLabel(11, "ChargeCut");
+  axis->SetBinLabel(12, "Bit11");
+  axis->SetBinLabel(13, "Bit12");
+  axis->SetBinLabel(14, "IsEMCal");
+  axis->SetBinLabel(15, "Time");
+  axis->SetBinLabel(16, "Energy");
+  axis->SetBinLabel(17, "Bit16");
+  axis->SetBinLabel(18, "Bit17");
+  axis->SetBinLabel(19, "Area");
+  axis->SetBinLabel(20, "AreaEmc");
+  axis->SetBinLabel(21, "ZLeadingCh");
+  axis->SetBinLabel(22, "ZLeadingEmc");
+  axis->SetBinLabel(23, "NEF");
+  axis->SetBinLabel(24, "MinLeadPt");
+  axis->SetBinLabel(25, "MaxTrackPt");
+  axis->SetBinLabel(26, "MaxClusterPt");
+  axis->SetBinLabel(27, "Flavour");
+  axis->SetBinLabel(28, "TagStatus");
+  axis->SetBinLabel(29, "Bit28");
+  axis->SetBinLabel(30, "Bit29");
+  axis->SetBinLabel(31, "Bit30");
+  axis->SetBinLabel(32, "Bit31");
+}
