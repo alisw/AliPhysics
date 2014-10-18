@@ -433,7 +433,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
    //retrieve charm candidates selected
    Int_t candidates = 0;
    Int_t njets=fJetCont->GetNJets();
-   Printf("N jets in this event %d",njets);
+   //Printf("N jets in this event %d",njets);
    if(!fJetOnlyMode) {
       candidates = fCandidateArray->GetEntriesFast();
   

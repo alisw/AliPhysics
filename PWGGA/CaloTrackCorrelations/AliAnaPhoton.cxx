@@ -538,7 +538,8 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 }
 
 //________________________________________________________________________________
-void AliAnaPhoton::FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cells)
+void AliAnaPhoton::FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cells,
+                                        Int_t absIdMax)
 {
   // Fill some histograms to understand pile-up
   
@@ -561,9 +562,7 @@ void AliAnaPhoton::FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cel
   if(GetReader()->IsPileUpFromSPD()) fhTimePtPhotonSPD->Fill(pt,time);
   
   // cells inside the cluster
-  Float_t maxCellFraction = 0.;
-  Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell( cells, cluster, maxCellFraction);
-  
+
   //Loop on cells inside cluster, max cell must be over 100 MeV and time in BC=0
   if(cells->GetCellAmplitude(absIdMax) > 0.1 && TMath::Abs(time) < 30)
   {
@@ -637,8 +636,9 @@ void AliAnaPhoton::FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cel
   
 }
 
-//____________________________________________________________________________________
-void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag)
+//_______________________________________________________________________________
+void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
+                                              Int_t mcTag, Int_t maxCellFraction)
 {
   //Fill cluster Shower Shape histograms
   
@@ -801,13 +801,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag)
       fhEmbeddedSignalFractionEnergy->Fill(clusterE,fraction);
       
     }  // embedded fraction
-    
-    // Get the fraction of the cluster energy that carries the cell with highest energy
-    Float_t maxCellFraction = 0.;
-    Int_t absID = GetCaloUtils()->GetMaxEnergyCell(cells, cluster,maxCellFraction);
-    
-    if( absID < 0 ) AliFatal("Wrong absID");
-      
+        
     // Check the origin and fill histograms
     
     Int_t mcIndex = -1;
@@ -2356,7 +2350,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     if(!ClusterSelected(calo,mom,nMaxima)) continue;
     
     //----------------------------
-    //Create AOD for analysis
+    // Create AOD for analysis
     //----------------------------
     AliAODPWG4Particle aodph = AliAODPWG4Particle(mom);
     
@@ -2393,13 +2387,20 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     }//Work with stack also
     
     //--------------------------------------------------------
-    //Fill some shower shape histograms before PID is applied
+    // Fill some shower shape histograms before PID is applied
     //--------------------------------------------------------
     
-    FillShowerShapeHistograms(calo,tag);
+    Float_t maxCellFraction = 0;
+    Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells, calo, maxCellFraction);
+    if( absIdMax < 0 ) AliFatal("Wrong absID");
+    
+    FillShowerShapeHistograms(calo,tag,maxCellFraction);
+    
+    aodph.SetM02(calo->GetM02());
+    aodph.SetNLM(nMaxima);
     
     //-------------------------------------
-    //PID selection or bit setting
+    // PID selection or bit setting
     //-------------------------------------
     
     //...............................................
@@ -2445,17 +2446,25 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     fhNLocMax->Fill(calo->E(),nMaxima);
     
+    // Few more control histograms for selected clusters
+    fhMaxCellDiffClusterE->Fill(calo->E() ,maxCellFraction);
+    fhNCellsE            ->Fill(calo->E() ,calo->GetNCells());
+    fhTimePt             ->Fill(mom.Pt()  ,calo->GetTOF()*1.e9);
+    
+    if(cells)
+    {
+      for(Int_t icell = 0; icell <  calo->GetNCells(); icell++)
+        fhCellsE->Fill(calo->E(),cells->GetCellAmplitude(calo->GetCellsAbsId()[icell]));
+    }
+    
     // Matching after cuts
     if( fFillTMHisto )          FillTrackMatchingResidualHistograms(calo,1);
     
     // Fill histograms to undertand pile-up before other cuts applied
     // Remember to relax time cuts in the reader
-    if( IsPileUpAnalysisOn() ) FillPileUpHistograms(calo,cells);
+    if( IsPileUpAnalysisOn() ) FillPileUpHistograms(calo,cells, absIdMax);
     
-    // Add number of local maxima to AOD, method name in AOD to be FIXED
-    aodph.SetFiducialArea(nMaxima);
-    
-    //Add AOD with photon object to aod branch
+    // Add AOD with photon object to aod branch
     AddAODParticle(aodph);
     
   }//loop
@@ -2524,40 +2533,25 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       fhPtCentralityPhoton ->Fill(ptcluster,cen) ;
       fhPtEventPlanePhoton ->Fill(ptcluster,ep ) ;
     }
+  
+//    Comment this part, not needed but in case to know how to do it in the future
+//    //Get original cluster, to recover some information
+//    AliVCaloCells* cells    = 0;
+//    TObjArray * clusters    = 0;
+//    if(GetCalorimeter() == "EMCAL")
+//    {
+//      cells    = GetEMCALCells();
+//      clusters = GetEMCALClusters();
+//    }
+//    else
+//    {
+//      cells    = GetPHOSCells();
+//      clusters = GetPHOSClusters();
+//    }
     
-    //Get original cluster, to recover some information
-    AliVCaloCells* cells    = 0;
-    TObjArray * clusters    = 0;
-    if(GetCalorimeter() == "EMCAL")
-    {
-      cells    = GetEMCALCells();
-      clusters = GetEMCALClusters();
-    }
-    else
-    {
-      cells    = GetPHOSCells();
-      clusters = GetPHOSClusters();
-    }
-    
-    Int_t iclus = -1;
-    AliVCluster *cluster = FindCluster(clusters,ph->GetCaloLabel(0),iclus);
-    if(cluster)
-    {
-      Float_t maxCellFraction = 0;
-      Int_t absID = GetCaloUtils()->GetMaxEnergyCell(cells, cluster, maxCellFraction);
-      if( absID < 0 ) AliFatal("Wrong absID");
-
-      // Control histograms
-      fhMaxCellDiffClusterE->Fill(ph->E() ,maxCellFraction);
-      fhNCellsE            ->Fill(ph->E() ,cluster->GetNCells());
-      fhTimePt             ->Fill(ph->Pt(),cluster->GetTOF()*1.e9);
-
-      if(cells)
-      {
-        for(Int_t icell = 0; icell <  cluster->GetNCells(); icell++)
-          fhCellsE->Fill(ph->E(),cells->GetCellAmplitude(cluster->GetCellsAbsId()[icell]));
-      }
-    }
+//    Int_t iclus = -1;
+//    AliVCluster *cluster = FindCluster(clusters,ph->GetCaloLabel(0),iclus);
+//    if(cluster)
     
     //.......................................
     //Play with the MC data if available

@@ -1691,7 +1691,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     fhSelectedJetChAreaVsPtJet->Fill(ptJet,jet->EffectiveAreaCharged());
     fhSelectedJetNjet->Fill(nJets);
     fhSelectedNtracks->Fill(GetCTSTracks()->GetEntriesFast());//to be checked
-    fhSelectedPhotonNLMVsPt->Fill(ptTrig,particlecorr->GetFiducialArea());
+    fhSelectedPhotonNLMVsPt->Fill(ptTrig,particlecorr->GetNLM());
     
     
     if(clusterID < 0 ){
@@ -1836,7 +1836,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     
     fGamPt      = ptTrig;
     //fGamLambda0  = ;//filled earlier
-    fGamNLM      = particlecorr->GetFiducialArea();
+    fGamNLM      = particlecorr->GetNLM();
     //fGamSumPtCh  = ;//filled earlier
     //fGamTime     = particlecorr->GetTOF();//filled earlier
     //fGamNcells   = particlecorr->GetNCells();//filled earlier

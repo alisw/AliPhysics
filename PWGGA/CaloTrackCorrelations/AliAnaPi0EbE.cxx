@@ -2888,9 +2888,8 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       }
       
       // Check the invariant mass for different selection on the local maxima
-      // Name of AOD method TO BE FIXED
-      Int_t nMaxima1 = photon1->GetFiducialArea();
-      Int_t nMaxima2 = photon2->GetFiducialArea();
+      Int_t nMaxima1 = photon1->GetNLM();
+      Int_t nMaxima2 = photon2->GetNLM();
       
       mom = mom1+mom2;
       
@@ -2946,17 +2945,16 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       // Tag both photons as decay if not done before
       // set the corresponding bit for pi0 or eta or "side" case
       //
-      Int_t bit1 = photon1->GetBtag(); // temporary
-      if( bit1 < 0 ) bit1 = 0 ; // temporary
+      Int_t bit1 = photon1->DecayTag();
+      if( bit1 < 0 ) bit1 = 0 ;
       if( !GetNeutralMesonSelection()->CheckDecayBit(bit1) )
       {
         if( GetDebug() > 1 )
           printf("AliAnaPi0EbE::MakeInvMassInCalorimeter - pT1 %2.2f; bit requested %d; decay bit1: In %d, ",
                  mom1.Pt(), GetNeutralMesonSelection()->GetDecayBit(), bit1);
         
-        photon1->SetTagged(kTRUE); // temporary
         GetNeutralMesonSelection()->SetDecayBit(bit1);
-        photon1->SetBtag(bit1); // temporary
+        photon1->SetDecayTag(bit1);
         
         if( GetDebug() > 1 )
           printf("Out %d \n", bit1);
@@ -2979,17 +2977,16 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         }
       }
       
-      Int_t bit2 = photon2->GetBtag(); // temporary
-      if( bit2 < 0 ) bit2 = 0 ; // temporary
+      Int_t bit2 = photon2->DecayTag();
+      if( bit2 < 0 ) bit2 = 0 ;
       if( !GetNeutralMesonSelection()->CheckDecayBit(bit2) )
       {
         if( GetDebug() > 1 )
           printf("AliAnaPi0EbE::MakeInvMassInCalorimeter - pT2 %2.2f; bit requested %d; decay bit2: In %d, ",
                  mom2.Pt(), GetNeutralMesonSelection()->GetDecayBit(), bit2);
         
-        photon2->SetTagged(kTRUE); // temporary
         GetNeutralMesonSelection()->SetDecayBit(bit2);
-        photon2->SetBtag(bit2); // temporary
+        photon2->SetDecayTag(bit2);
         
         if( GetDebug() > 1 )
           printf("Out %d \n", bit2);
@@ -3137,7 +3134,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       Double_t epair = mom.E();
       Float_t ptpair = mom.Pt();
       
-      Int_t nMaxima = photon1->GetFiducialArea();
+      Int_t nMaxima = photon1->GetNLM();
       if(fFillAllNLMHistograms)
       {
         if     (nMaxima==1) fhMassPairLocMax[0]->Fill(epair,mass);
@@ -3178,13 +3175,13 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       // Tag both photons as decay if not done before
       // set the corresponding bit for pi0 or eta or "side" case
       //
-      Int_t bit1 = photon1->GetBtag(); // temporary
-      if( bit1 < 0 ) bit1 = 0 ; // temporary
+      Int_t bit1 = photon1->DecayTag();
+      if( bit1 < 0 ) bit1 = 0 ;
       if( !GetNeutralMesonSelection()->CheckDecayBit(bit1) )
       {
-        photon1->SetTagged(kTRUE); // temporary
         GetNeutralMesonSelection()->SetDecayBit(bit1);
-        photon1->SetBtag(bit1); // temporary
+        photon1->SetDecayTag(bit1);
+        
         fhPtDecay->Fill(photon1->Pt());
         
         //Fill some histograms about shower shape
@@ -3203,13 +3200,12 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         }
       }
       
-      Int_t bit2 = photon2->GetBtag(); // temporary
-      if( bit2 < 0 ) bit2 = 0 ; // temporary
+      Int_t bit2 = photon2->DecayTag();
+      if( bit2 < 0 ) bit2 = 0 ;
       if( !GetNeutralMesonSelection()->CheckDecayBit(bit2) )
       {
-        photon2->SetTagged(kTRUE); // temporary
         GetNeutralMesonSelection()->SetDecayBit(bit2);
-        photon2->SetBtag(bit2); // temporary
+        photon2->SetDecayTag(bit2);
       }
       
       //Mass of selected pairs
@@ -3652,7 +3648,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     aodpi0.SetIdentifiedParticleType(idPartType);
     
     // Add number of local maxima to AOD, method name in AOD to be FIXED
-    aodpi0.SetFiducialArea(nMaxima);
+    aodpi0.SetNLM(nMaxima);
     
     aodpi0.SetTag(tag);
 

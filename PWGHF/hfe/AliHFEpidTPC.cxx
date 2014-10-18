@@ -51,6 +51,10 @@ AliHFEpidTPC::AliHFEpidTPC() :
   , fLineCrossingsEnabled(0)
   , fkEtaCorrection(NULL)
   , fkCentralityCorrection(NULL)
+  , fkEtaMeanCorrection(NULL)
+  , fkEtaWidthCorrection(NULL)
+  , fkCentralityMeanCorrection(NULL)
+  , fkCentralityWidthCorrection(NULL)
   , fHasCutModel(kFALSE)
   , fUseOnlyOROC(kFALSE)
   , fNsigmaTPC(3)
@@ -78,6 +82,10 @@ AliHFEpidTPC::AliHFEpidTPC(const char* name) :
   , fLineCrossingsEnabled(0)
   , fkEtaCorrection(NULL)
   , fkCentralityCorrection(NULL)
+  , fkEtaMeanCorrection(NULL)
+  , fkEtaWidthCorrection(NULL)
+  , fkCentralityMeanCorrection(NULL)
+  , fkCentralityWidthCorrection(NULL)
   , fHasCutModel(kFALSE)
   , fUseOnlyOROC(kFALSE)
   , fNsigmaTPC(3)
@@ -103,6 +111,10 @@ AliHFEpidTPC::AliHFEpidTPC(const AliHFEpidTPC &ref) :
   , fLineCrossingsEnabled(0)
   , fkEtaCorrection(NULL)
   , fkCentralityCorrection(NULL)
+  , fkEtaMeanCorrection(NULL)
+  , fkEtaWidthCorrection(NULL)
+  , fkCentralityMeanCorrection(NULL)
+  , fkCentralityWidthCorrection(NULL)
   , fHasCutModel(ref.fHasCutModel)
   , fUseOnlyOROC(ref.fUseOnlyOROC)
   , fNsigmaTPC(2)
@@ -135,6 +147,10 @@ void AliHFEpidTPC::Copy(TObject &o) const{
 
   target.fkEtaCorrection = fkEtaCorrection;
   target.fkCentralityCorrection = fkCentralityCorrection;
+  target.fkEtaMeanCorrection = fkEtaMeanCorrection;
+  target.fkEtaWidthCorrection = fkEtaWidthCorrection;
+  target.fkCentralityMeanCorrection = fkCentralityMeanCorrection;
+  target.fkCentralityWidthCorrection = fkCentralityWidthCorrection;
   target.fLineCrossingsEnabled = fLineCrossingsEnabled;
   target.fHasCutModel = fHasCutModel;
   target.fUseOnlyOROC = fUseOnlyOROC;
@@ -199,6 +215,13 @@ Int_t AliHFEpidTPC::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
     }
   }
   else if(fkEtaCorrection || fkCentralityCorrection){*/
+  Double_t correctedTPCnSigma=0.;
+  Bool_t TPCnSigmaCorrected=kFALSE;
+  if((fkEtaMeanCorrection&&fkEtaWidthCorrection)||
+     (fkCentralityMeanCorrection&&fkCentralityWidthCorrection)){
+    TPCnSigmaCorrected=kTRUE;
+    correctedTPCnSigma=GetCorrectedTPCnSigma(track->GetRecTrack()->Eta(), track->GetMultiplicity(), fkPIDResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron));
+  }
   if(fkEtaCorrection || fkCentralityCorrection){
     // Correction available
     // apply it on copy
@@ -225,13 +248,16 @@ Int_t AliHFEpidTPC::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
   }
   AliHFEpidObject tpctrack(*track);
   tpctrack.SetRecTrack(rectrack);
+  if(TPCnSigmaCorrected)tpctrack.SetCorrectedTPCnSigma(correctedTPCnSigma);
   
   // QA before selection (after correction)
   if(pidqa) pidqa->ProcessTrack(&tpctrack, AliHFEpid::kTPCpid, AliHFEdetPIDqa::kBeforePID);
   AliDebug(1, "Doing TPC PID based on n-Sigma cut approach");
   
   // make copy of the track in order to allow for applying the correction 
-  Float_t nsigma = fUsedEdx ? rectrack->GetTPCsignal() : fkPIDResponse->NumberOfSigmasTPC(rectrack, AliPID::kElectron);
+  Float_t nsigma=correctedTPCnSigma;
+  if(!TPCnSigmaCorrected)
+    nsigma = fUsedEdx ? rectrack->GetTPCsignal() : fkPIDResponse->NumberOfSigmasTPC(rectrack, AliPID::kElectron);
   AliDebug(1, Form("TPC NSigma: %f", nsigma));
   // exclude crossing points:
   // Determine the bethe values for each particle species
@@ -349,6 +375,23 @@ void AliHFEpidTPC::ApplyCentralityCorrection(AliVTrack *track, Double_t centrali
     AliAODPid *pid = aodtrack->GetDetPid();
     if(pid && fkCentralityCorrection->Eval(centralityEstimator)>0.0) pid->SetTPCsignal(original/fkCentralityCorrection->Eval(centralityEstimator));
   }
+}
+
+//___________________________________________________________________
+Double_t AliHFEpidTPC::GetCorrectedTPCnSigma(Double_t eta, Double_t centralityEstimator, Double_t tpcNsigma) const{
+  //
+  // Apply correction for the eta dependence
+  // N.B. This correction has to be applied on a copy track
+  //
+  Double_t corrtpcNsigma = tpcNsigma;
+  AliDebug(1, Form("Applying correction function %s\n", fkEtaCorrection->GetName()));
+  if(fkEtaMeanCorrection&&fkEtaWidthCorrection){
+    if(TMath::Abs(fkEtaWidthCorrection->Eval(eta))>0.0000001) corrtpcNsigma=(corrtpcNsigma-fkEtaMeanCorrection->Eval(eta))/fkEtaWidthCorrection->Eval(eta);
+  }
+  if(fkCentralityMeanCorrection&&fkCentralityWidthCorrection) {
+    if(TMath::Abs(fkCentralityWidthCorrection->Eval(centralityEstimator))>0.0000001) corrtpcNsigma=(corrtpcNsigma-fkCentralityMeanCorrection->Eval(centralityEstimator))/fkCentralityWidthCorrection->Eval(centralityEstimator);
+  }
+  return corrtpcNsigma;
 }
 
 //___________________________________________________________________

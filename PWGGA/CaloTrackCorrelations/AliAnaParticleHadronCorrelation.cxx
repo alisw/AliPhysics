@@ -3211,17 +3211,20 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     
     if(clID1 > 0 && clID2 < 0 && fM02MaxCut > 0 && fM02MinCut > 0)
     {
-      Int_t iclus = -1;
-      TObjArray* clusters = 0x0;
-      if     (particle->GetDetector() == "EMCAL") clusters = GetEMCALClusters();
-      else if(particle->GetDetector() == "PHOS" ) clusters = GetPHOSClusters();
+//      Int_t iclus = -1;
+//      TObjArray* clusters = 0x0;
+//      if     (particle->GetDetector() == "EMCAL") clusters = GetEMCALClusters();
+//      else if(particle->GetDetector() == "PHOS" ) clusters = GetPHOSClusters();
+//      
+//      if(clusters)
+//      {
+//        AliVCluster *cluster = FindCluster(clusters,clID1,iclus);
+//        Float_t m02 = cluster->GetM02();
+//        if(m02 > fM02MaxCut || m02 < fM02MinCut) continue ;
+//      }
       
-      if(clusters)
-      {
-        AliVCluster *cluster = FindCluster(clusters,clID1,iclus);
-        Float_t m02 = cluster->GetM02();
-        if(m02 > fM02MaxCut || m02 < fM02MinCut) continue ;
-      }
+      Float_t m02 = particle->GetM02();
+      if(m02 > fM02MaxCut || m02 < fM02MinCut) continue ;
       
       fhPtTriggerSSCut->Fill(pt);
     }
@@ -3302,24 +3305,23 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     
     if(fDecayTrigger)
     {
-      Int_t decayTag = particle->GetBtag(); // temporary
-      if(decayTag > 0)
+      Int_t decayTag = particle->DecayTag();
+      if(decayTag < 0) decayTag = 0;
+      
+      for(Int_t ibit = 0; ibit<fNDecayBits; ibit++)
       {
-        for(Int_t ibit = 0; ibit<fNDecayBits; ibit++)
+        if(GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit]))
         {
-          if(GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit]))
+          fhPtDecayTrigger[ibit]->Fill(pt);
+          
+          if(IsDataMC() && mcIndex >=0 && mcIndex < fgkNmcTypes)
           {
-            fhPtDecayTrigger[ibit]->Fill(pt);
-            
-            if(IsDataMC() && mcIndex >=0 && mcIndex < fgkNmcTypes)
-            {
-              fhPtDecayTriggerMC[ibit][mcIndex]->Fill(pt);
-              if(lostDecayPair && mcIndex==2 )
-                fhPtDecayTriggerMC[ibit][7]->Fill(pt);
-            }
+            fhPtDecayTriggerMC[ibit][mcIndex]->Fill(pt);
+            if(lostDecayPair && mcIndex==2 )
+              fhPtDecayTriggerMC[ibit][7]->Fill(pt);
           }
-        }
-      }
+        }// check bit
+      }// bit loop
     }
     
     //
@@ -3387,8 +3389,8 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
   if(fDecayTrigger)
   {
     //decay = aodParticle->IsTagged();
-    decayTag = aodParticle->GetBtag(); // temporary
-    if(decayTag < 0) decayTag = 0; // temporary
+    decayTag = aodParticle->DecayTag();
+    if(decayTag < 0) decayTag = 0;
 //    printf("Correlation: pT %2.2f, BTag %d, Tagged %d\n",ptTrig, decayTag, aodParticle->IsTagged());
 //    printf("\t check bit Pi0 %d, Eta %d,  Pi0Side %d, EtaSide %d\n",
 //           GetNeutralMesonSelection()->CheckDecayBit(decayTag,AliNeutralMesonSelection::kPi0),
