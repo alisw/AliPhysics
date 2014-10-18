@@ -99,7 +99,9 @@ public:
   //------------------------------------------------------------
   
   // detector identificator enum, used here and in AliAnaCaloTrackBaseClass and derived classes
-  enum detector {kEMCAL = 0, kPHOS = 1, kCTS = 2, kDCAL = 3, kDCALPHOS = 4 };
+  enum detector { kEMCAL = AliFiducialCut::kEMCAL, kPHOS = AliFiducialCut::kPHOS,
+                  kCTS   = AliFiducialCut::kCTS  , kDCAL = AliFiducialCut::kDCAL,
+                  kDCALPHOS = AliFiducialCut::kDCALPHOS } ;
 
   // Minimum pt setters and getters
   
