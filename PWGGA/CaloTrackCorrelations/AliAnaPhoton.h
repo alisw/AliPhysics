@@ -55,7 +55,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   void         FillAcceptanceHistograms();
   
-  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag) ;
+  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag, Int_t maxCellEFraction) ;
   
   void         SwitchOnFillShowerShapeHistograms()    { fFillSSHistograms      = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistograms()   { fFillSSHistograms      = kFALSE ; }  
@@ -68,7 +68,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnTMHistoFill()                  { fFillTMHisto           = kTRUE  ; }
   void         SwitchOffTMHistoFill()                 { fFillTMHisto           = kFALSE ; }
 
-  void         FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cells) ;
+  void         FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cells, Int_t absIdMax) ;
  
   // Analysis parameters setters getters
     
