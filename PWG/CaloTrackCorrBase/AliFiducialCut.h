@@ -32,7 +32,7 @@ public:
                                 const TArrayF* minphi, const TArrayF* maxphi,
                                 const TArrayF* mineta, const TArrayF* maxeta) const ;
 
-  Bool_t    IsInFiducialCut    (TLorentzVector lv, TString det) const ;
+  //Bool_t    IsInFiducialCut    (TLorentzVector lv, TString det) const ;
   Bool_t    IsInFiducialCut    (Float_t eta, Float_t phi, Int_t det) const ;
   
   void      DoCTSFiducialCut  (Bool_t b)     { fCTSFiducialCut   = b    ; }

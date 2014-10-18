@@ -180,7 +180,7 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle,
   
   if(fFillPHOS && momentum.Pt() > fPHOSPtMin)
   {
-    if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"PHOS")) return;
+    if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum.Eta(),momentum.Phi(),kPHOS)) return;
 	  
     Int_t index = iParticle ;
     Int_t pdg = TMath::Abs(particle->GetPdgCode());
@@ -204,7 +204,7 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle,
   if(fFillEMCAL  && momentum.Pt() > fEMCALPtMin)
   {
 	  
-    if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"EMCAL")) return;
+    if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum.Eta(),momentum.Phi(),kEMCAL)) return;
 	  
     Int_t index = iParticle ;
     Int_t pdg = TMath::Abs(particle->GetPdgCode());
@@ -275,7 +275,7 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
         if(fFillCTS && (momentum.Pt() > fCTSPtMin)){
           //Particles in CTS acceptance
           
-          if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) continue;
+          if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum.Eta(),momentum.Phi(),kCTS)) continue;
           
           if(TMath::Abs(pdg) == 11 && GetStack()->Particle(particle->GetFirstMother())->GetPdgCode()==22) continue ;
           
