@@ -472,7 +472,8 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillAOD()
     
     // Second cluster loop
     AliAODPWG4Particle* calo2 = 0;
-    for(Int_t jaod = iaod + 1 ; jaod < naod ; jaod++) {
+    for(Int_t jaod = iaod + 1 ; jaod < naod ; jaod++)
+    {
       //Check if set previously as converted couple, if so skip its use.
       if (indexConverted[jaod]) continue;
       //printf("Check Conversion indeces %d and %d\n",iaod,jaod);
@@ -511,12 +512,9 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillAOD()
         //the clusters.
         
         TObjArray * clusters    = 0; 
-        if(calo->GetDetector() == "EMCAL"){
-          clusters = GetEMCALClusters();
-        }
-        else{
-          clusters = GetPHOSClusters();
-        }
+        if(calo->GetDetectorTag() == kEMCAL) clusters = GetEMCALClusters();
+        else                                 clusters = GetPHOSClusters();
+        
         
         Int_t iclus = -1;
         AliVCluster *cluster1 = FindCluster(clusters,calo ->GetCaloLabel(0),iclus); 
@@ -658,7 +656,8 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillAOD()
     
     //..........................................................................................................
     //Pair selected as converted, remove both clusters or recombine them into a photon and put them in the AOD
-    if(bConverted){ 
+    if(bConverted)
+    {
       //Add to AOD
       if(fAddConvertedPairsToAOD){
         //Create AOD of pair analysis
@@ -669,7 +668,7 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillAOD()
         //printf("Index %d, Id %d\n",iaod, calo->GetID());
         //Set the indeces of the original caloclusters  
         aodpair.SetCaloLabel(calo->GetCaloLabel(0),id2);
-        aodpair.SetDetector(calo->GetDetector());
+        aodpair.SetDetectorTag(calo->GetDetectorTag());
         aodpair.SetIdentifiedParticleType(calo->GetIdentifiedParticleType());
         aodpair.SetTag(calo ->GetTag());
         aodpair.SetTagged(kTRUE);

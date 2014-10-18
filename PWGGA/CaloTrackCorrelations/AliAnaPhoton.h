@@ -17,7 +17,6 @@
 // --- ROOT system ---
 class TH2F ;
 class TH1F;
-class TString ;
 class TObjString;
 class TList ;
 
