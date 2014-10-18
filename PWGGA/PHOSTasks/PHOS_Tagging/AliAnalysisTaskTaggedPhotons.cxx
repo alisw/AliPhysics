@@ -770,7 +770,9 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     
     TLorentzVector momentum ;
     clu->GetMomentum(momentum, vtx5);
-    AliCaloPhoton *p = new ((*fPHOSEvent)[inList]) AliCaloPhoton(momentum.Px(),momentum.Py(),momentum.Pz(),clu->E() );
+    momentum*= clu->GetCoreEnergy()/momentum.E() ;
+    
+    AliCaloPhoton *p = new ((*fPHOSEvent)[inList]) AliCaloPhoton(momentum.Px(),momentum.Py(),momentum.Pz(),clu->GetCoreEnergy() );
     inList++;
     
     Int_t isolation = EvalIsolation(&momentum,kTRUE) ;
