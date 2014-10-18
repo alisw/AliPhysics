@@ -1,4 +1,8 @@
 #!/bin/bash
+# process QA output into plots and trending
+# run without arguments for examples
+# origin: Mikolaj Krzewicki, mkrzewic@cern.ch
+#
 if [ ${BASH_VERSINFO} -lt 4 ]; then
   echo "bash version >= 4 needed, you have ${BASH_VERSION}, exiting..."
   exit 1
