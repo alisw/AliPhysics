@@ -289,8 +289,8 @@ void AddTrigVars ( TString filename, TList &parList )
   Int_t nHistos = sizeof(hChNames)/sizeof(hChNames[0]);
   for ( Int_t ihisto=0; ihisto<nHistos; ihisto++ ) {
     TH1* histo = (TH1*)inList->FindObject(hChNames[ihisto].Data());
-    Double_t currVal = ( histo ) ? histo->GetBinContent(ibin) : 0.;
     for ( Int_t ibin=1; ibin<=4; ibin++ ) {
+      Double_t currVal = ( histo ) ? histo->GetBinContent(ibin) : 0.;
       AddTreeVariable(parList, Form("%s%i",hChNames[ihisto].Data(),ibin),'F',currVal);
     }
   }
