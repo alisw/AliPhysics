@@ -140,13 +140,15 @@ Bool_t AliFiducialCut::IsInFiducialCut(Float_t eta, Float_t phi, Int_t det) cons
 }
 
 //___________________________________________________________________________________________
-Bool_t AliFiducialCut::CheckFiducialRegion(Float_t eta, Float_t phi,
+Bool_t AliFiducialCut::CheckFiducialRegion(Float_t eta, Float_t phiOrg,
                                            const TArrayF* minphi, const TArrayF* maxphi, 
                                            const TArrayF* mineta, const TArrayF* maxeta) const 
 {
   //Given the selection regions in Eta and Phi, check if particle is in this region.
   
+  Float_t phi = phiOrg;
 	if(phi < 0) phi+=TMath::TwoPi() ;
+  
 	//printf("IsInFiducialCut::Det: %s, phi = %f, eta = %f\n", det.Data(),phi*TMath::RadToDeg(), eta);
   
   Int_t netaregions = maxeta->GetSize();
