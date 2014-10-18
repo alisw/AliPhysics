@@ -2767,7 +2767,7 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
   // Calculate weights and fill histograms
     
   AliVCaloCells* cells = 0;
-  if(GetCalorimeter() == "EMCAL") cells = GetEMCALCells();
+  if(GetCalorimeter() == kEMCAL) cells = GetEMCALCells();
   else                        cells = GetPHOSCells();
   
   // First recalculate energy in case non linearity was applied
@@ -2833,7 +2833,7 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
   }
 
   //Recalculate shower shape for different W0
-  if(GetCalorimeter()=="EMCAL")
+  if(GetCalorimeter()==kEMCAL)
   {
     Float_t l0org = clus->GetM02();
     Float_t l1org = clus->GetM20();
@@ -2968,7 +2968,7 @@ TObjString *  AliAnaInsideClusterInvariantMass::GetAnalysisCuts()
   snprintf(onePar,buffersize,"--- AliAnaInsideClusterInvariantMass ---\n") ;
   parList+=onePar ;	
   
-  snprintf(onePar,buffersize,"Calorimeter: %s\n",        GetCalorimeter().Data()) ;
+  snprintf(onePar,buffersize,"Calorimeter: %s\n",         GetCalorimeterString().Data()) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"fNLocMaxCutE =%2.2f \n",    GetCaloUtils()->GetLocalMaximaCutE()) ;
   parList+=onePar ;
@@ -6304,11 +6304,11 @@ void AliAnaInsideClusterInvariantMass::Init()
   //Init
   //Do some checks
   
-  if(GetCalorimeter() == "PHOS" && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD())
+  if(GetCalorimeter() == kPHOS && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD())
   {
     AliFatal("!!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
   }
-  else  if(GetCalorimeter() == "EMCAL" && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD())
+  else  if(GetCalorimeter() == kEMCAL && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD())
   {
     AliFatal("!!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
   }
@@ -6362,12 +6362,12 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
   AliVCaloCells* cells = 0x0;
 
   //Select the Calorimeter of the photon
-  if(GetCalorimeter() == "PHOS")
+  if(GetCalorimeter() == kPHOS)
   {
     pl    = GetPHOSClusters();
     cells = GetPHOSCells();
   }
-  else if (GetCalorimeter() == "EMCAL")
+  else if (GetCalorimeter() == kEMCAL)
   {
     pl    = GetEMCALClusters();
     cells = GetEMCALCells();
@@ -6375,11 +6375,11 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
   
   if(!pl || !cells) 
   {
-    Info("MakeAnalysisFillHistograms","TObjArray with %s clusters is NULL!\n",GetCalorimeter().Data());
+    Info("MakeAnalysisFillHistograms","TObjArray with %s clusters is NULL!\n",GetCalorimeterString().Data());
     return;
   }  
   
-	if(GetCalorimeter() == "PHOS") return; // Not implemented for PHOS yet
+	if(GetCalorimeter() == kPHOS) return; // Not implemented for PHOS yet
 
   for(Int_t icluster = 0; icluster < pl->GetEntriesFast(); icluster++)
   {
@@ -6627,7 +6627,7 @@ void AliAnaInsideClusterInvariantMass::Print(const Option_t * opt) const
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
   AliAnaCaloTrackCorrBaseClass::Print("");
-  printf("Calorimeter     =     %s\n",  GetCalorimeter().Data()) ;
+  printf("Calorimeter     =     %s\n",  GetCalorimeterString().Data()) ;
   if(GetCaloUtils()) printf("Loc. Max. E > %2.2f\n",       GetCaloUtils()->GetLocalMaximaCutE());
   if(GetCaloUtils()) printf("Loc. Max. E Diff > %2.2f\n",  GetCaloUtils()->GetLocalMaximaCutEDiff());
   printf("Min. N Cells =%d \n",         fMinNCells) ;

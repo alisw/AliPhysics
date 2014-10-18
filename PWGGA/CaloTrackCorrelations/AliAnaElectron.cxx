@@ -262,7 +262,7 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTa
   fhLam1E[pidIndex] ->Fill(energy,lambda1);
   fhDispE[pidIndex] ->Fill(energy,disp);
   
-  if(GetCalorimeter() == "EMCAL" &&  GetFirstSMCoveredByTRD() >= 0 &&
+  if(GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD() >= 0 &&
      GetModuleNumber(cluster) >= GetFirstSMCoveredByTRD() )
   {
     fhLam0ETRD[pidIndex]->Fill(energy,lambda0);
@@ -285,7 +285,7 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTa
       fhPhiLam0HighE[pidIndex]   ->Fill(phi,   lambda0);
     }
     
-    if(GetCalorimeter() == "EMCAL")
+    if(GetCalorimeter() == kEMCAL)
     {
       GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), GetReader()->GetInputEvent()->GetEMCALCells(), cluster,
                                                                                    l0, l1, dispp, dEta, dPhi, sEta, sPhi, sEtaPhi);
@@ -309,8 +309,8 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTa
   if(IsDataMC())
   {
     AliVCaloCells* cells = 0;
-    if(GetCalorimeter() == "EMCAL") cells = GetEMCALCells();
-    else                        cells = GetPHOSCells();
+    if(GetCalorimeter() == kEMCAL) cells = GetEMCALCells();
+    else                           cells = GetPHOSCells();
     
     //Fill histograms to check shape of embedded clusters
     Float_t fraction = 0;
@@ -418,7 +418,7 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTa
     
     fhMCELambda0[pidIndex][index]    ->Fill(energy, lambda0);
     
-    if(GetCalorimeter() == "EMCAL" && !fFillOnlySimpleSSHisto)
+    if(GetCalorimeter() == kEMCAL && !fFillOnlySimpleSSHisto)
     {
       fhMCEDispEta        [pidIndex][index]-> Fill(energy,dEta);
       fhMCEDispPhi        [pidIndex][index]-> Fill(energy,dPhi);
@@ -441,7 +441,7 @@ TObjString *  AliAnaElectron::GetAnalysisCuts()
   
   snprintf(onePar,buffersize,"--- AliAnaElectron ---\n") ;
   parList+=onePar ;	
-  snprintf(onePar,buffersize,"Calorimeter: %s\n",GetCalorimeter().Data()) ;
+  snprintf(onePar,buffersize,"Calorimeter: %s\n",GetCalorimeterString().Data()) ;
   parList+=onePar ;
   snprintf(onePar,buffersize," %2.2f < dEdx < %2.2f  \n",fdEdxMin,fdEdxMax) ;
   parList+=onePar ;  
@@ -664,7 +664,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       fhDispE[pidIndex]->SetXTitle("E (GeV) ");
       outputContainer->Add(fhDispE[pidIndex]);
       
-      if(GetCalorimeter() == "EMCAL" &&  GetFirstSMCoveredByTRD() >=0 )
+      if(GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD() >=0 )
       {
         fhLam0ETRD[pidIndex]  = new TH2F (Form("h%sLam0ETRD",pidParticle[pidIndex].Data()),
                                           Form("%s: #lambda_{0}^{2} vs E, EMCAL SM covered by TRD",pidParticle[pidIndex].Data()), 
@@ -734,7 +734,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
         fhPhiLam0HighE[pidIndex]->SetXTitle("#phi");
         outputContainer->Add(fhPhiLam0HighE[pidIndex]);  
         
-        if(GetCalorimeter() == "EMCAL")
+        if(GetCalorimeter() == kEMCAL)
         {
           fhDispEtaE[pidIndex]  = new TH2F (Form("h%sDispEtaE",pidParticle[pidIndex].Data()),
                                             Form("%s: #sigma^{2}_{#eta #eta} = #Sigma w_{i}(#eta_{i} - <#eta>)^{2}/ #Sigma w_{i} vs E",pidParticle[pidIndex].Data()),  
@@ -812,7 +812,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
           fhMCELambda0[pidIndex][i]->SetXTitle("E (GeV)");
           outputContainer->Add(fhMCELambda0[pidIndex][i]) ; 
           
-          if(GetCalorimeter()=="EMCAL" && !fFillOnlySimpleSSHisto)
+          if(GetCalorimeter()==kEMCAL && !fFillOnlySimpleSSHisto)
           {
             fhMCEDispEta[pidIndex][i]  = new TH2F (Form("h%sEDispEtaE_MC%s",pidParticle[pidIndex].Data(),pnamess[i].Data()),
                                                    Form("cluster from %s : %s like, #sigma^{2}_{#eta #eta} = #Sigma w_{i}(#eta_{i} - <#eta>)^{2}/ #Sigma w_{i} vs E",ptypess[i].Data(),pidParticle[pidIndex].Data()),
@@ -1064,11 +1064,11 @@ void AliAnaElectron::Init()
   
   //Init
   //Do some checks
-  if(GetCalorimeter() == "PHOS" && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD()){
+  if(GetCalorimeter() == kPHOS && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD()){
     printf("AliAnaElectron::Init() - !!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
     abort();
   }
-  else  if(GetCalorimeter() == "EMCAL" && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD()){
+  else  if(GetCalorimeter() == kEMCAL && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD()){
     printf("AliAnaElectron::Init() - !!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
     abort();
   }
@@ -1109,14 +1109,12 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
   
   //Select the Calorimeter of the photon
   TObjArray * pl = 0x0; 
-  if(GetCalorimeter() == "PHOS")
-    pl = GetPHOSClusters();
-  else if (GetCalorimeter() == "EMCAL")
-    pl = GetEMCALClusters();
+  if      (GetCalorimeter() == kPHOS)  pl = GetPHOSClusters();
+  else if (GetCalorimeter() == kEMCAL) pl = GetEMCALClusters();
   
   if(!pl)
   {
-    Info("MakeAnalysisFillAOD","TObjArray with %s clusters is NULL!\n",GetCalorimeter().Data());
+    Info("MakeAnalysisFillAOD","TObjArray with %s clusters is NULL!\n",GetCalorimeterString().Data());
     return;
   }
   
@@ -1125,7 +1123,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
   Int_t nCaloClusters = pl->GetEntriesFast();
   //List to be used in conversion analysis, to tag the cluster as candidate for conversion
   
-  if(GetDebug() > 0) printf("AliAnaElectron::MakeAnalysisFillAOD() - input %s cluster entries %d\n", GetCalorimeter().Data(), nCaloClusters);
+  if(GetDebug() > 0) printf("AliAnaElectron::MakeAnalysisFillAOD() - input %s cluster entries %d\n", GetCalorimeterString().Data(), nCaloClusters);
   
   //----------------------------------------------------
   // Fill AOD with PHOS/EMCAL AliAODPWG4Particle objects
@@ -1158,8 +1156,8 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     // Cluster selection
     //--------------------------------------
     AliVCaloCells* cells    = 0;
-    if(GetCalorimeter() == "EMCAL") cells = GetEMCALCells();
-    else                        cells = GetPHOSCells();
+    if(GetCalorimeter() == kEMCAL) cells = GetEMCALCells();
+    else                           cells = GetPHOSCells();
     
     Int_t nMaxima = GetCaloUtils()->GetNumberOfLocalMaxima(calo, cells); // NLM
     if(!ClusterSelected(calo,mom,nMaxima)) continue;
@@ -1368,7 +1366,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       aodpart.SetCaloLabel (calo ->GetID(),-1);
       aodpart.SetTrackLabel(track->GetID(),-1);
 
-      aodpart.SetDetector(GetCalorimeter());
+      aodpart.SetDetectorTag(GetCalorimeter());
       //printf("Index %d, Id %d, iaod %d\n",icalo, calo->GetID(),GetOutputAODBranch()->GetEntriesFast());
       
       aodpart.SetM02(calo->GetM02());
@@ -1454,7 +1452,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
     else if(pdg == AliCaloPID::kChargedHadron) pidIndex = 1;
     else                                       continue    ;
           
-    if(ph->GetDetector() != GetCalorimeter()) continue;
+    if(((Int_t) ph->GetDetectorTag()) != GetCalorimeter()) continue;
     
     if(GetDebug() > 2) 
       printf("AliAnaElectron::MakeAnalysisFillHistograms() - ID Electron: pt %f, phi %f, eta %f\n", ph->Pt(),ph->Phi(),ph->Eta()) ;
@@ -1664,7 +1662,7 @@ void AliAnaElectron::Print(const Option_t * opt) const
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
   AliAnaCaloTrackCorrBaseClass::Print(" ");
 
-  printf("Calorimeter            =     %s\n", GetCalorimeter().Data()) ;
+  printf("Calorimeter            =     %s\n", GetCalorimeterString().Data()) ;
   printf(" %2.2f < dEdx < %2.2f  \n",fdEdxMin,fdEdxMax) ;
   printf(" %2.2f <  E/P < %2.2f  \n",fEOverPMin,fEOverPMax) ;
   printf("Min Distance to Bad Channel   = %2.1f\n",fMinDist);
@@ -1684,8 +1682,8 @@ void AliAnaElectron::WeightHistograms(AliVCluster *clus)
   if(!fFillWeightHistograms || GetMixedEvent()) return;
   
   AliVCaloCells* cells = 0;
-  if(GetCalorimeter() == "EMCAL") cells = GetEMCALCells();
-  else                        cells = GetPHOSCells();
+  if(GetCalorimeter() == kEMCAL) cells = GetEMCALCells();
+  else                           cells = GetPHOSCells();
   
   // First recalculate energy in case non linearity was applied
   Float_t  energy = 0;
@@ -1728,8 +1726,8 @@ void AliAnaElectron::WeightHistograms(AliVCluster *clus)
   }        
   
   //Recalculate shower shape for different W0
-  if(GetCalorimeter()=="EMCAL"){
-    
+  if(GetCalorimeter()==kEMCAL)
+  {
     Float_t l0org = clus->GetM02();
     Float_t l1org = clus->GetM20();
     Float_t dorg  = clus->GetDispersion();
