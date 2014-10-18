@@ -220,16 +220,39 @@ void AliFiducialCut::InitParameters()
   fPHOSFidCutMaxPhi = new TArrayF(1);
   fPHOSFidCutMaxPhi->SetAt(320.,0); 
   
-  fDCALFidCutMinEta = new TArrayF(1);
-  fDCALFidCutMinEta->SetAt(-0.7,0);
-  fDCALFidCutMaxEta = new TArrayF(1);
-  fDCALFidCutMaxEta->SetAt( 0.7,0);
+//  fDCALFidCutMinEta = new TArrayF(1);
+//  fDCALFidCutMinEta->SetAt(-0.7,0);
+//  fDCALFidCutMaxEta = new TArrayF(1);
+//  fDCALFidCutMaxEta->SetAt( 0.7,0);
+//  
+//  fDCALFidCutMinPhi = new TArrayF(1);
+//  fDCALFidCutMinPhi->SetAt(260.,0);
+//  fDCALFidCutMaxPhi = new TArrayF(1);
+//  fDCALFidCutMaxPhi->SetAt(327.,0);
   
-  fDCALFidCutMinPhi = new TArrayF(1);
+  // Divide DCal in 3 regions:
+  // A (C?) side : -0.70<eta<-0.15, 260<phi<320
+  // C (A?) side :  0.15<eta< 0.70, 260<phi<320
+  // 1/3 SM      : -0.70<eta< 0.70, 320<phi<327
+  
+  fDCALFidCutMinEta = new TArrayF(3);
+  fDCALFidCutMinEta->SetAt(-0.7 ,0);
+  fDCALFidCutMinEta->SetAt( 0.15,1);
+  fDCALFidCutMinEta->SetAt(-0.7 ,2);
+  fDCALFidCutMaxEta = new TArrayF(3);
+  fDCALFidCutMaxEta->SetAt(-0.15,0);
+  fDCALFidCutMaxEta->SetAt( 0.7 ,1);
+  fDCALFidCutMaxEta->SetAt( 0.7 ,2);
+  
+  fDCALFidCutMinPhi = new TArrayF(3);
   fDCALFidCutMinPhi->SetAt(260.,0);
-  fDCALFidCutMaxPhi = new TArrayF(1);
+  fDCALFidCutMinPhi->SetAt(260.,1);
+  fDCALFidCutMinPhi->SetAt(320.,2);
+  fDCALFidCutMaxPhi = new TArrayF(3);
+  fDCALFidCutMaxPhi->SetAt(320.,0);
+  fDCALFidCutMaxPhi->SetAt(320.,0);
   fDCALFidCutMaxPhi->SetAt(327.,0);
-  
+
 }
 
 
