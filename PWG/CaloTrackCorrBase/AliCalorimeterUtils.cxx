@@ -858,7 +858,7 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEv
 	//Get the EMCAL/PHOS module number that corresponds to this particle
 	
 	Int_t absId = -1;
-	if(particle->GetDetector()==kEMCAL)
+	if(particle->GetDetectorTag()==kEMCAL)
   {
 		fEMCALGeo->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(), absId);
     
@@ -868,7 +868,7 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEv
     
 		return fEMCALGeo->GetSuperModuleNumber(absId) ;
 	}//EMCAL
-	else if(particle->GetDetector()==kPHOS)
+	else if(particle->GetDetectorTag()==kPHOS)
   {
     // In case we use the MC reader, the input are TParticles,
     // in this case use the corresponing method in PHOS Geometry to get the particle.
