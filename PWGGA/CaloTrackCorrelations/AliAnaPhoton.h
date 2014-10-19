@@ -50,7 +50,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   // Analysis methods
   
-  Bool_t       ClusterSelected(AliVCluster* cl, TLorentzVector mom, Int_t nlm) ;
+  Bool_t       ClusterSelected(AliVCluster* cl, Int_t nlm) ;
   
   void         FillAcceptanceHistograms();
   
@@ -127,6 +127,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillOnlySimpleSSHisto;                  // Fill selected cluster histograms, selected SS histograms
   Int_t    fNOriginHistograms;                      // Fill only NOriginHistograms of the 14 defined types
   Int_t    fNPrimaryHistograms;                     // Fill only NPrimaryHistograms of the 7 defined types
+  
+  TLorentzVector fMomentum;                         //! Cluster momentum
   
   //Histograms 
   TH1F * fhClusterCutsE [10];                       //! control histogram on the different photon selection cuts, E
@@ -312,7 +314,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,37)
+  ClassDef(AliAnaPhoton,38)
 
 } ;
  
