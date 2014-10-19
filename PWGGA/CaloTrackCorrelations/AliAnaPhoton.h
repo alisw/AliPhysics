@@ -129,6 +129,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNPrimaryHistograms;                     // Fill only NPrimaryHistograms of the 7 defined types
   
   TLorentzVector fMomentum;                         //! Cluster momentum
+  TLorentzVector fPrimaryMom;                       //! Primary MC momentum
   
   //Histograms 
   TH1F * fhClusterCutsE [10];                       //! control histogram on the different photon selection cuts, E

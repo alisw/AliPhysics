@@ -61,6 +61,7 @@ AliAnaCaloTrackCorrBaseClass(),
   fGammaConeSize(0.3),fUseBackgroundSubtractionGamma(kFALSE),fSaveGJTree(kTRUE),
   fMostEnergetic(kFALSE),fMostOpposite(kTRUE), fUseHistogramJetBkg(kTRUE),
   fUseHistogramTracks(kTRUE),fUseHistogramJetTracks(kTRUE),fMCStudies(kFALSE),fGenerator(0),
+  fMomentum(),
   fhDeltaEta(0), /*fhDeltaPhi(0),*/fhDeltaPhiCorrect(0),fhDeltaPhi0PiCorrect(0), fhDeltaPt(0), fhPtRatio(0), fhPt(0),
   fhFFz(0),fhFFxi(0),fhFFpt(0),fhNTracksInCone(0),
   fhJetFFz(0),fhJetFFxi(0),fhJetFFpt(0),fhJetFFzCor(0),fhJetFFxiCor(0),
@@ -1715,25 +1716,24 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
       
       fGamSumPtNeu=0;
       fGamNclusters=0;
-      TLorentzVector mom ;
       //TVector3 p3Tmp;
       //Double_t scalarProduct=0;
       //Double_t vectorLength=particlecorr->P();
       for(Int_t icalo=0; icalo <clusters->GetEntriesFast(); icalo++){
         AliVCluster* calo = (AliVCluster *) clusters->At(icalo);
         if(clusterID==calo->GetID()) continue;//the same cluster as trigger
-        calo->GetMomentum(mom,vertex) ;//Assume that come from vertex in straight line
+        calo->GetMomentum(fMomentum,vertex) ;//Assume that come from vertex in straight line
         //printf("min pt %f\n",GetMinPt());
-        if(mom.Pt()<GetMinPt()) continue; //<<hardcoded here //FIXME 0.5 check if correct
-        p3Tmp.SetXYZ(mom.Px(),mom.Py(),mom.Pz());
+        if(fMomentum.Pt()<GetMinPt()) continue; //<<hardcoded here //FIXME 0.5 check if correct
+        p3Tmp.SetXYZ(fMomentum.Px(),fMomentum.Py(),fMomentum.Pz());
         //calculate sum pt in the cone
         if( TMath::Sqrt((particlecorr->Eta()-p3Tmp.Eta())*(particlecorr->Eta()-p3Tmp.Eta()) +
                         (particlecorr->Phi()-p3Tmp.Phi())*(particlecorr->Phi()-p3Tmp.Phi()) )<fGammaConeSize ){
-          //scalarProduct = particlecorr->Px()*mom.Px() + particlecorr->Py()*mom.Py() + particlecorr->Pz()*mom.Pz();
-          //scalarProduct/=mom.P();
+          //scalarProduct = particlecorr->Px()*fMomentum.Px() + particlecorr->Py()*fMomentum.Py() + particlecorr->Pz()*fMomentum.Pz();
+          //scalarProduct/=fMomentum.P();
           //scalarProduct/=vectorLength;
           //if(scalarProduct>TMath::Cos(0.3)) {//FIXME photon radius
-          fGamSumPtNeu+=mom.Pt();
+          fGamSumPtNeu+=fMomentum.Pt();
           fGamNclusters++;
         }
       }
@@ -2380,8 +2380,7 @@ void AliAnaParticleJetFinderCorrelation::FindMCgenInfo(){
 	  fhMCPhotonEtaPhi->Fill(photonPhi,photonEta);
 	  
 	  //Check if photons hit the Calorimeter
-	  TLorentzVector lv;
-	  lv.SetPxPyPzE(prim->Px(),prim->Py(),prim->Pz(),prim->E());
+	  fMomentum.SetPxPyPzE(prim->Px(),prim->Py(),prim->Pz(),prim->E());
 	  inacceptance = kFALSE;
 	  if(GetCaloUtils()->IsEMCALGeoMatrixSet()){
 	    fhMCPhotonCuts->Fill(4);
@@ -2392,7 +2391,7 @@ void AliAnaParticleJetFinderCorrelation::FindMCgenInfo(){
 	      if(GetDebug() > 3) printf("In EMCAL Real acceptance? %d\n",inacceptance);
 	    }
 	    else{
-	      if(GetFiducialCut()->IsInFiducialCut(lv.Eta(),lv.Phi(),kEMCAL)) inacceptance = kTRUE ;
+	      if(GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kEMCAL)) inacceptance = kTRUE ;
 	      if(GetDebug() > 3) printf("In EMCAL fiducial cut acceptance? %d\n",inacceptance);
 	    }
 	  }else{//no EMCAL nor EMCALGeoMatrixSet
