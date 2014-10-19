@@ -34,92 +34,93 @@ public:
 
   TList * GetCreateOutputObjects();
 
-  void InitParameters();
+  void    InitParameters();
   
-  void Print(const Option_t * opt) const;
+  void    Print(const Option_t * opt) const;
   
-  Bool_t AreJetsRecalculated() const {return fReMakeJet ; } 
-  void SwitchOnJetsRecalculation(){fReMakeJet = kTRUE; }
-  void SwitchOffJetsRecalculation(){fReMakeJet = kFALSE; }
+  Bool_t  AreJetsRecalculated()  const { return fReMakeJet  ; }
+  void    SwitchOnJetsRecalculation()  { fReMakeJet = kTRUE ; }
+  void    SwitchOffJetsRecalculation() { fReMakeJet = kFALSE; }
   
-  Bool_t AreJetsOnlyInCTS() const {return fJetsOnlyInCTS ; } 
-  void SwitchOnJetsOnlyInCTS(){fJetsOnlyInCTS = kTRUE; }
-  void SwitchOffJetsOnlyInCTS(){fJetsOnlyInCTS = kFALSE; }
+  Bool_t  AreJetsOnlyInCTS() const { return fJetsOnlyInCTS  ; }
+  void    SwitchOnJetsOnlyInCTS()  { fJetsOnlyInCTS = kTRUE ; }
+  void    SwitchOffJetsOnlyInCTS() { fJetsOnlyInCTS = kFALSE; }
   
-  Bool_t AreSeveralConeAndPtCuts() const {return fSeveralConeAndPtCuts ; }
-  void SwitchOnSeveralConeAndPtCuts(){fSeveralConeAndPtCuts = kTRUE ;}
-  void SwitchOffSeveralConeAndPtCuts(){fSeveralConeAndPtCuts = kFALSE ;}
+  Bool_t  AreSeveralConeAndPtCuts() const { return fSeveralConeAndPtCuts   ; }
+  void    SwitchOnSeveralConeAndPtCuts()  { fSeveralConeAndPtCuts = kTRUE  ; }
+  void    SwitchOffSeveralConeAndPtCuts() { fSeveralConeAndPtCuts = kFALSE ; }
   
-  Bool_t IsPbPb() const {return fPbPb ; }
-  void SetppCollisions(){fPbPb = kFALSE; }
-  void SetPbPbCollisions(){fPbPb = kTRUE; }
+  Bool_t  IsPbPb()      const { return fPbPb  ; }
+  void    SetppCollisions()   { fPbPb = kFALSE; }
+  void    SetPbPbCollisions() { fPbPb = kTRUE ; }
   
-  Double_t GetDeltaPhiMaxCut() const {return fDeltaPhiMaxCut ; }
-  Double_t GetDeltaPhiMinCut() const {return fDeltaPhiMinCut ; }
-  Double_t GetLeadingRatioMaxCut() const {return fLeadingRatioMaxCut ; }
-  Double_t GetLeadingRatioMinCut() const {return fLeadingRatioMinCut ; }
+  Double_t GetDeltaPhiMaxCut()     const { return fDeltaPhiMaxCut     ; }
+  Double_t GetDeltaPhiMinCut()     const { return fDeltaPhiMinCut     ; }
+  Double_t GetLeadingRatioMaxCut() const { return fLeadingRatioMaxCut ; }
+  Double_t GetLeadingRatioMinCut() const { return fLeadingRatioMinCut ; }
 
-  Double_t GetPtTriggerSelectionCut() const {return fPtTriggerSelectionCut ; }
-  Double_t GetJetRatioMaxCut() const {return fJetRatioMaxCut ; }
-  Double_t GetJetRatioMinCut() const {return fJetRatioMinCut ; }  
+  Double_t GetPtTriggerSelectionCut() const { return fPtTriggerSelectionCut ; }
+  Double_t GetJetRatioMaxCut()        const { return fJetRatioMaxCut        ; }
+  Double_t GetJetRatioMinCut()        const { return fJetRatioMinCut        ; }
 
   void SetPtTriggerSelectionCut(Double_t cut){fPtTriggerSelectionCut = cut; }
   void SetJetSelectionMode(UInt_t select){ fSelect= select ; }
   
-  Int_t     GetJetNCones()             const {return fJetNCone ; }
-  Int_t     GetJetNPtThres()           const {return fJetNPt ; }
-  Float_t   GetJetCone()               const {return fJetCone ; }
-  Float_t   GetJetPtThreshold()        const {return fJetPtThreshold ; }
-  Float_t   GetJetPtThresPbPb()        const {return fJetPtThresPbPb ; }
-  Float_t   GetJetCones(Int_t i)       const {return fJetCones[i] ; }
-  Float_t   GetJetPtThreshold(Int_t i) const {return fJetPtThres[i] ; }
-  TString   GetJetConeName(Int_t i)    const {return fJetNameCones[i] ; }
-  TString   GetJetPtThresName(Int_t i) const {return fJetNamePtThres[i] ; }
+  Int_t     GetJetNCones()             const { return fJetNCone          ; }
+  Int_t     GetJetNPtThres()           const { return fJetNPt            ; }
+  Float_t   GetJetCone()               const { return fJetCone           ; }
+  Float_t   GetJetPtThreshold()        const { return fJetPtThreshold    ; }
+  Float_t   GetJetPtThresPbPb()        const { return fJetPtThresPbPb    ; }
+  Float_t   GetJetCones(Int_t i)       const { return fJetCones[i]       ; }
+  Float_t   GetJetPtThreshold(Int_t i) const { return fJetPtThres[i]     ; }
+  TString   GetJetConeName(Int_t i)    const { return fJetNameCones[i]   ; }
+  TString   GetJetPtThresName(Int_t i) const { return fJetNamePtThres[i] ; }
   
 
-  void SetDeltaPhiCutRange(Double_t phimin, Double_t phimax)
-  {fDeltaPhiMaxCut =phimax;  fDeltaPhiMinCut =phimin;}
-  void SetLeadingRatioCutRange(Double_t ratiomin, Double_t ratiomax)
-  {fLeadingRatioMaxCut =ratiomax;  fLeadingRatioMinCut = ratiomin ; }
+  void      SetDeltaPhiCutRange(Double_t phimin, Double_t phimax)
+                                             { fDeltaPhiMaxCut =phimax;  fDeltaPhiMinCut =phimin;}
+  void      SetLeadingRatioCutRange(Double_t ratiomin, Double_t ratiomax)
+                                            { fLeadingRatioMaxCut =ratiomax;  fLeadingRatioMinCut = ratiomin ; }
 
-  void SetJetNCones(Int_t n){fJetNCone = n ; }
-  void SetJetNPtThresholds(Int_t n){fJetNPt = n ; }
-  void SetJetCones(Int_t i, Float_t cone, TString sc) {fJetCones[i] = cone ; fJetNameCones[i] = sc; };
-  void SetCone(Float_t cone) {fJetCone = cone; }
-  void SetJetPtThreshold(Float_t pt){fJetPtThreshold = pt; };
-  void SetJetPtThresPbPb(Float_t pt){fJetPtThresPbPb = pt; };
-  void SetJetPtThresholds(Int_t i,Float_t pt, TString spt){fJetPtThres[i] = pt ; fJetNamePtThres[i] = spt; };
+  void      SetJetNCones(Int_t n)         { fJetNCone = n ; }
+  void      SetJetNPtThresholds(Int_t n)  { fJetNPt   = n ; }
+  void      SetJetCones(Int_t i, Float_t cone, TString sc)
+                                          { fJetCones[i] = cone ; fJetNameCones[i] = sc; };
+  void      SetCone(Float_t cone)         { fJetCone        = cone ; }
+  void      SetJetPtThreshold(Float_t pt) { fJetPtThreshold = pt   ; }
+  void      SetJetPtThresPbPb(Float_t pt) { fJetPtThresPbPb = pt   ; }
+  void      SetJetPtThresholds(Int_t i,Float_t pt, TString spt)
+                                          { fJetPtThres[i] = pt ; fJetNamePtThres[i] = spt; }
   
-  void SetJetRatioCutRange(Double_t ratiomin, Double_t ratiomax)
-  {fJetRatioMaxCut =ratiomax;  fJetRatioMinCut = ratiomin ; }
-  void SetJetCTSRatioCutRange(Double_t ratiomin, Double_t ratiomax)
-  {fJetCTSRatioMaxCut =ratiomax;  fJetCTSRatioMinCut = ratiomin ; }
+  void      SetJetRatioCutRange(Double_t ratiomin, Double_t ratiomax)
+                                          { fJetRatioMaxCut =ratiomax;  fJetRatioMinCut = ratiomin ; }
+  void      SetJetCTSRatioCutRange(Double_t ratiomin, Double_t ratiomax)
+                                          { fJetCTSRatioMaxCut =ratiomax;  fJetCTSRatioMinCut = ratiomin ; }
   
-  Bool_t OnlyIsolated() const {return fSelectIsolated ; }
-  void SelectIsolated(Bool_t select) {fSelectIsolated = select ; }
+  Bool_t    OnlyIsolated()          const { return fSelectIsolated   ; }
+  void      SelectIsolated(Bool_t select) { fSelectIsolated = select ; }
     
  private:
   
-  Double_t CalculateJetRatioLimit(const Double_t ptTrig, const Double_t *param, const Double_t *x) const ;
+  Double_t  CalculateJetRatioLimit(const Double_t ptTrig, const Double_t *param, const Double_t *x) const ;
   
-  void FillJetHistos(AliAODPWG4ParticleCorrelation * particle, const TLorentzVector  leading, const TLorentzVector jet, const TString type, const TString lastname);
+  void      FillJetHistos(AliAODPWG4ParticleCorrelation * particle, const TLorentzVector jet, const TString & type, const TString & lastname);
   
-  TList * GetOutputContainer() const {return fOutCont; }
+  TList *   GetOutputContainer() const {return fOutCont; }
   
-  Bool_t IsJetSelected(const Double_t ptTrig, const Double_t ptjet) const ;
-  Bool_t IsParticleInJetCone(const Double_t eta, Double_t phi, const Double_t etal, Double_t phil) const ;
+  Bool_t    IsJetSelected(const Double_t ptTrig, const Double_t ptjet) const ;
+  Bool_t    IsParticleInJetCone(const Double_t eta, Double_t phi, const Double_t etal, Double_t phil) const ;
   
-  void GetLeadingCharge(AliAODPWG4ParticleCorrelation* const particle, TLorentzVector & pLeading) const ;
-  void GetLeadingPi0   (AliAODPWG4ParticleCorrelation* const particle, TLorentzVector & pLeading) ;
-  Bool_t GetLeadingParticle(AliAODPWG4ParticleCorrelation *particle, TLorentzVector &  pLeading)  ;
+  void      GetLeadingCharge  (AliAODPWG4ParticleCorrelation * particle) ;
+  void      GetLeadingPi0     (AliAODPWG4ParticleCorrelation * particle) ;
+  Bool_t    GetLeadingParticle(AliAODPWG4ParticleCorrelation * particle) ;
   
-  void MakeAnalysisFillAOD();
-  void MakeAnalysisFillHistograms();   
-  void MakeAODJet(AliAODPWG4ParticleCorrelation * particle, const TLorentzVector pLeading) ; 
-  void MakeJetFromAOD(AliAODPWG4ParticleCorrelation * particle, const TLorentzVector pLeading, 
-		      TLorentzVector & jet, TLorentzVector & bkg) const ; 
+  void      MakeAnalysisFillAOD();
+  void      MakeAnalysisFillHistograms();
+  void      MakeAODJet(AliAODPWG4ParticleCorrelation * particle) ;
+  void      MakeJetFromAOD(AliAODPWG4ParticleCorrelation * particle) ;
   
-  Bool_t  SelectCluster(AliVCluster * calo, Double_t *vertex, TLorentzVector & mom, Int_t & pdg) ;
+  Bool_t    SelectCluster(AliVCluster * calo, Double_t *vertex, TLorentzVector & mom, Int_t & pdg) ;
   
  private:
   
@@ -153,19 +154,29 @@ public:
   Double_t   fJetXMax1[6]; //X Factor to set jet max limit for pp
   Double_t   fJetXMax2[6]; //X Factor to set jet max limit for PbPb
   
-  Int_t      fJetNCone ;            // Number of jet cones sizes, maximum 5
-  Int_t      fJetNPt   ;            // Number of jet particle pT threshold, maximum 5
-  Double_t   fJetCone  ;            // Jet cone sizes under study (!fSeveralConeAndPtCuts)
-  Double_t   fJetCones[5];         // Jet cone sizes under study (fSeveralConeAndPtCuts)
-  TString    fJetNameCones[5];     // String name of cone to append to histos
-  Double_t   fJetPtThreshold;       // Jet pT threshold under study(!fSeveralConeAndPtCuts)
-  Double_t   fJetPtThresPbPb;       // Jet pT threshold under study(!fSeveralConeAndPtCuts)
-  Double_t   fJetPtThres[5];       // Jet pT threshold under study(fSeveralConeAndPtCuts)
-  TString    fJetNamePtThres[5];   // String name of pt th to append to histos
+  Int_t      fJetNCone ;             // Number of jet cones sizes, maximum 5
+  Int_t      fJetNPt   ;             // Number of jet particle pT threshold, maximum 5
+  Double_t   fJetCone  ;             // Jet cone sizes under study (!fSeveralConeAndPtCuts)
+  Double_t   fJetCones[5];           // Jet cone sizes under study (fSeveralConeAndPtCuts)
+  TString    fJetNameCones[5];       // String name of cone to append to histos
+  Double_t   fJetPtThreshold;        // Jet pT threshold under study(!fSeveralConeAndPtCuts)
+  Double_t   fJetPtThresPbPb;        // Jet pT threshold under study(!fSeveralConeAndPtCuts)
+  Double_t   fJetPtThres[5];         // Jet pT threshold under study(fSeveralConeAndPtCuts)
+  TString    fJetNamePtThres[5];     // String name of pt th to append to histos
   Double_t   fPtTriggerSelectionCut; // Jet pt to change to low pt jets analysis
-  UInt_t     fSelect  ;   //kTRUE: Selects all jets, no limits.
-  Bool_t     fSelectIsolated ;      // Select only trigger particles isolated
+  UInt_t     fSelect  ;              // kTRUE: Selects all jets, no limits.
+  Bool_t     fSelectIsolated ;       // Select only trigger particles isolated
 
+  TVector3       fTrackVector;       //! track vector
+  TLorentzVector fBkgMom;            //! bkg momentum
+  TLorentzVector fJetMom;            //! jet momentum
+  TLorentzVector fJetConstMom;       //! jet constituent momentum
+  TLorentzVector fLeadingMom;        //! leading particle momentum
+  TLorentzVector fLeadingPi0Mom;     //! leading particle momentum
+  TLorentzVector fLeadingPhoMom1;    //! leading particle momentum
+  TLorentzVector fLeadingPhoMom2;    //! leading particle momentum
+  TLorentzVector fLeadingChargeMom;  //! leading particle momentum
+  
   //Histograms
   //Leading particle distributions
   TList *  fOutCont ; //! Container for histograms
@@ -249,7 +260,7 @@ public:
   AliAnaParticleJetLeadingConeCorrelation(const AliAnaParticleJetLeadingConeCorrelation & g) ; // cpy ctor
   AliAnaParticleJetLeadingConeCorrelation & operator = (const AliAnaParticleJetLeadingConeCorrelation & g) ;//cpy assignment
   
-  ClassDef(AliAnaParticleJetLeadingConeCorrelation,1)
+  ClassDef(AliAnaParticleJetLeadingConeCorrelation,2)
  } ;
  
 
