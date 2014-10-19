@@ -75,9 +75,9 @@ fMinCellsAngleOverlap(0),
 fNCones(0),                       fNPtThresFrac(0),
 fConeSizes(),                     fPtThresholds(),
 fPtFractions(),                   fSumPtThresholds(),
-//Temporary TLorentzVectors
 fMomentum(),                      fMomIso(),
 fMomDaugh1(),                     fMomDaugh2(),
+fTrackVector(),
 // Histograms
 fhEIso(0),                        fhPtIso(0),
 fhPtCentralityIso(0),             fhPtEventPlaneIso(0),
@@ -3794,7 +3794,6 @@ Bool_t AliAnaParticleIsolation::IsTriggerTheNearSideEventLeadingParticle(Int_t &
   
   // Compare if it is the leading of all tracks
   
-  TVector3 p3;
   for(Int_t ipr = 0;ipr < GetCTSTracks()->GetEntriesFast() ; ipr ++ )
   {
     AliVTrack * track = (AliVTrack *) (GetCTSTracks()->At(ipr)) ;
@@ -3802,9 +3801,9 @@ Bool_t AliAnaParticleIsolation::IsTriggerTheNearSideEventLeadingParticle(Int_t &
     if(track->GetID() == pLeading->GetTrackLabel(0) || track->GetID() == pLeading->GetTrackLabel(1) ||
        track->GetID() == pLeading->GetTrackLabel(2) || track->GetID() == pLeading->GetTrackLabel(3)   ) continue ;
     
-    p3.SetXYZ(track->Px(),track->Py(),track->Pz());
-    Float_t pt   = p3.Pt();
-    Float_t phi  = p3.Phi() ;
+    fTrackVector.SetXYZ(track->Px(),track->Py(),track->Pz());
+    Float_t pt   = fTrackVector.Pt();
+    Float_t phi  = fTrackVector.Phi() ;
     if(phi < 0) phi+=TMath::TwoPi();
     
     //skip this event if near side associated particle pt larger than trigger
@@ -4351,7 +4350,6 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       //printf("OK pi0 %d, ndaugh %d\n",okpi0,ndaugh);
       Int_t d1Pdg = 0, d1Status = 0; Bool_t ok1 = kFALSE;
       Int_t d2Pdg = 0, d2Status = 0; Bool_t ok2 = kFALSE;
-      TLorentzVector daugh1mom, daugh2mom;
      
       if ( ndaugh > 0 ) fMomDaugh1 = GetMCAnalysisUtils()->GetDaughter(0,i,GetReader(),d1Pdg, d1Status,ok1, pi0d1Label);
       if ( ndaugh > 1 ) fMomDaugh2 = GetMCAnalysisUtils()->GetDaughter(1,i,GetReader(),d2Pdg, d2Status,ok2, pi0d2Label);
