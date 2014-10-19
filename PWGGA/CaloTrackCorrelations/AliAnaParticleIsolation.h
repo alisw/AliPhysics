@@ -204,6 +204,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TLorentzVector fMomIso;                         //! Temporary vector, avoid creation per event
   TLorentzVector fMomDaugh1;                      //! Temporary vector, avoid creation per event
   TLorentzVector fMomDaugh2;                      //! Temporary vector, avoid creation per event
+  TVector3       fTrackVector;                    //! Temporary vector, avoid creation per event
   
   //Histograms  
   

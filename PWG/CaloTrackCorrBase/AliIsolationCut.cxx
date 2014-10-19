@@ -456,7 +456,6 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
   if(plCTS && 
      (fPartInCone==kOnlyCharged || fPartInCone==kNeutralAndCharged))
   {
-    TVector3 p3;
     for(Int_t ipr = 0;ipr < plCTS->GetEntries() ; ipr ++ )
     {
       AliVTrack* track = dynamic_cast<AliVTrack*>(plCTS->At(ipr)) ; 
@@ -467,10 +466,10 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
         if(track->GetID() == pCandidate->GetTrackLabel(0) || track->GetID() == pCandidate->GetTrackLabel(1) || 
            track->GetID() == pCandidate->GetTrackLabel(2) || track->GetID() == pCandidate->GetTrackLabel(3)   ) continue ;
         
-        p3.SetXYZ(track->Px(),track->Py(),track->Pz());
-        pt  = p3.Pt();
-        eta = p3.Eta();
-        phi = p3.Phi() ;
+        fTrackVector.SetXYZ(track->Px(),track->Py(),track->Pz());
+        pt  = fTrackVector.Pt();
+        eta = fTrackVector.Eta();
+        phi = fTrackVector.Phi() ;
       }
       else
       {// Mixed event stored in AliAODPWG4Particles
