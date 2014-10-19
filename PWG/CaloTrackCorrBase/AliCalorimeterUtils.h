@@ -152,6 +152,7 @@ class AliCalorimeterUtils : public TObject {
   void          SetPHOSChannelStatusMap (TObjArray *map)   { fPHOSBadChannelMap  = map                                ; }
 	
   Bool_t        ClusterContainsBadChannel(Int_t calo,UShort_t* cellList, Int_t nCells);
+  Bool_t        ClusterContainsBadChannel(TString /*calo*/,UShort_t* /*cellList*/, Int_t /*nCells*/); // Stupid thing to do but just to avoid compilation break in AliTrackComparisonESD while I find the authors
 	
   // Mask clusters in front of frame, EMCAL only
   Int_t         GetNMaskCellColumns()                const { return fNMaskCellColumns;}
