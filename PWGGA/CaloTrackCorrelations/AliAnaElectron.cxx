@@ -59,6 +59,7 @@ AliAnaElectron::AliAnaElectron() :
     fdEdxMin(0.),                         fdEdxMax (200.), 
     fEOverPMin(0),                        fEOverPMax (2),
     fAODParticle(0),
+    fMomentum(),                          fMomentumMC(),                         fProdVertex(),
     // Histograms
     fhdEdxvsE(0),                         fhdEdxvsP(0),                 
     fhEOverPvsE(0),                       fhEOverPvsP(0),
@@ -158,17 +159,17 @@ AliAnaElectron::AliAnaElectron() :
 }
 
 //____________________________________________________________________________
-Bool_t  AliAnaElectron::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int_t nMaxima)
+Bool_t  AliAnaElectron::ClusterSelected(AliVCluster* calo, Int_t nMaxima)
 {
   //Select clusters if they pass different cuts
   if(GetDebug() > 2) 
     printf("AliAnaElectron::ClusterSelected() Current Event %d; Before selection : E %2.2f, pT %2.2f, Ecl %2.2f, phi %2.2f, eta %2.2f\n",
            GetReader()->GetEventNumber(),
-           mom.E(), mom.Pt(),calo->E(),mom.Phi()*TMath::RadToDeg(),mom.Eta());
+           fMomentum.E(), fMomentum.Pt(),calo->E(),fMomentum.Phi()*TMath::RadToDeg(),fMomentum.Eta());
   
   //.......................................
   //If too small or big energy, skip it
-  if(mom.E() < GetMinEnergy() || mom.E() > GetMaxEnergy() ) return kFALSE ; 
+  if(fMomentum.E() < GetMinEnergy() || fMomentum.E() > GetMaxEnergy() ) return kFALSE ; 
   if(GetDebug() > 2) printf("\t Cluster %d Pass E Cut \n",calo->GetID());
   
   //.......................................
@@ -184,7 +185,7 @@ Bool_t  AliAnaElectron::ClusterSelected(AliVCluster* calo, TLorentzVector mom, I
   //.......................................
   //Check acceptance selection
   if(IsFiducialCutOn()){
-    Bool_t in = GetFiducialCut()->IsInFiducialCut(mom.Eta(),mom.Phi(),GetCalorimeter()) ;
+    Bool_t in = GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),GetCalorimeter()) ;
     if(! in ) return kFALSE ;
   }
   if(GetDebug() > 2) printf("Fiducial cut passed \n");
@@ -215,7 +216,7 @@ Bool_t  AliAnaElectron::ClusterSelected(AliVCluster* calo, TLorentzVector mom, I
   if(GetDebug() > 0) 
     printf("AliAnaElectron::ClusterSelected() Current Event %d; After  selection : E %2.2f, pT %2.2f, Ecl %2.2f, phi %2.2f, eta %2.2f\n",
            GetReader()->GetEventNumber(), 
-           mom.E(), mom.Pt(),calo->E(),mom.Phi()*TMath::RadToDeg(),mom.Eta());
+           fMomentum.E(), fMomentum.Pt(),calo->E(),fMomentum.Phi()*TMath::RadToDeg(),fMomentum.Eta());
   
   //All checks passed, cluster selected
   return kTRUE;
@@ -243,19 +244,10 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTa
   
   Float_t l0   = 0., l1   = 0.;
   Float_t dispp= 0., dEta = 0., dPhi    = 0.; 
-  Float_t sEta = 0., sPhi = 0., sEtaPhi = 0.;    
+  Float_t sEta = 0., sPhi = 0., sEtaPhi = 0.;
   
-  TLorentzVector mom;
-  if(GetReader()->GetDataType() != AliCaloTrackReader::kMC)
-  {
-    cluster->GetMomentum(mom,GetVertex(0)) ;}//Assume that come from vertex in straight line
-  else{
-    Double_t vertex[]={0,0,0};
-    cluster->GetMomentum(mom,vertex) ;
-  }
-  
-  Float_t eta = mom.Eta();
-  Float_t phi = mom.Phi();
+  Float_t eta = fMomentum.Eta();
+  Float_t phi = fMomentum.Phi();
   if(phi < 0) phi+=TMath::TwoPi();
   
   fhLam0E[pidIndex] ->Fill(energy,lambda0);
@@ -355,11 +347,12 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTa
         
         //Compare the primary depositing more energy with the rest, if no photon/electron as comon ancestor (conversions), count as other particle
         Int_t ancPDG = 0, ancStatus = -1;
-        TLorentzVector momentum; TVector3 prodVertex;
         Int_t ancLabel = 0;
         Int_t noverlaps = 1;      
-        for (UInt_t ilab = 0; ilab < cluster->GetNLabels(); ilab++ ) {
-          ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(cluster->GetLabels()[0],cluster->GetLabels()[ilab], GetReader(),ancPDG,ancStatus,momentum,prodVertex);
+        for (UInt_t ilab = 0; ilab < cluster->GetNLabels(); ilab++ )
+        {
+          ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(cluster->GetLabels()[0],cluster->GetLabels()[ilab], GetReader(),
+                                                               ancPDG,ancStatus,fMomentumMC,fProdVertex);
           if(ancPDG!=22 && TMath::Abs(ancPDG)!=11) noverlaps++;
         }
         
@@ -424,7 +417,7 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTa
       fhMCEDispPhi        [pidIndex][index]-> Fill(energy,dPhi);
       fhMCESumEtaPhi      [pidIndex][index]-> Fill(energy,sEtaPhi);
       fhMCEDispEtaPhiDiff [pidIndex][index]-> Fill(energy,dPhi-dEta);
-      if(dEta+dPhi>0)fhMCESphericity     [pidIndex][index]-> Fill(energy,(dPhi-dEta)/(dEta+dPhi));
+      if(dEta+dPhi>0) fhMCESphericity[pidIndex][index]-> Fill(energy,(dPhi-dEta)/(dEta+dPhi));
     }
     
   }//MC data
@@ -1119,7 +1112,6 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
   }
   
   //Init arrays, variables, get number of clusters
-  TLorentzVector mom, mom2 ;
   Int_t nCaloClusters = pl->GetEntriesFast();
   //List to be used in conversion analysis, to tag the cluster as candidate for conversion
   
@@ -1146,10 +1138,10 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     //Cluster selection, not charged, with photon id and in fiducial cut	  
     if(GetReader()->GetDataType() != AliCaloTrackReader::kMC)
     {
-      calo->GetMomentum(mom,GetVertex(evtIndex)) ;}//Assume that come from vertex in straight line
+      calo->GetMomentum(fMomentum,GetVertex(evtIndex)) ;}//Assume that come from vertex in straight line
     else{
       Double_t vertex[]={0,0,0};
-      calo->GetMomentum(mom,vertex) ;
+      calo->GetMomentum(fMomentum,vertex) ;
     }
     
     //--------------------------------------
@@ -1160,7 +1152,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     else                           cells = GetPHOSCells();
     
     Int_t nMaxima = GetCaloUtils()->GetNumberOfLocalMaxima(calo, cells); // NLM
-    if(!ClusterSelected(calo,mom,nMaxima)) continue;
+    if(!ClusterSelected(calo,nMaxima)) continue;
     
     //-------------------------------------
     // PID selection via dE/dx
@@ -1339,15 +1331,15 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     }
         
     if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - Photon selection cuts passed: pT %3.2f, pdg %d\n",
-                              mom.Pt(), pid);
+                              fMomentum.Pt(), pid);
     
     Float_t maxCellFraction = 0;
     Int_t absID = GetCaloUtils()->GetMaxEnergyCell(cells, calo,maxCellFraction);
-    if ( absID >= 0 )fhMaxCellDiffClusterE[pidIndex]->Fill(mom.E(),maxCellFraction);
+    if ( absID >= 0 )fhMaxCellDiffClusterE[pidIndex]->Fill(fMomentum.E(),maxCellFraction);
     
-    fhNCellsE[pidIndex] ->Fill(mom.E(),calo->GetNCells());
-    fhNLME   [pidIndex] ->Fill(mom.E(),nMaxima);
-    fhTimeE  [pidIndex] ->Fill(mom.E(),calo->GetTOF()*1.e9);
+    fhNCellsE[pidIndex] ->Fill(fMomentum.E(),calo->GetNCells());
+    fhNLME   [pidIndex] ->Fill(fMomentum.E(),nMaxima);
+    fhTimeE  [pidIndex] ->Fill(fMomentum.E(),calo->GetTOF()*1.e9);
 
     
     //----------------------------
@@ -1357,7 +1349,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     //Add AOD with electron/hadron object to aod branch
     if ( pid == fAODParticle || fAODParticle == 0 ) 
     {
-      AliAODPWG4Particle aodpart = AliAODPWG4Particle(mom);
+      AliAODPWG4Particle aodpart = AliAODPWG4Particle(fMomentum);
       
       //...............................................
       //Set the indeces of the original caloclusters (MC, ID), and calorimeter

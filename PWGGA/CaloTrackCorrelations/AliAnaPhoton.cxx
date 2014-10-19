@@ -61,7 +61,7 @@ fNCellsCut(0),
 fNLMCutMin(-1),               fNLMCutMax(10),
 fFillSSHistograms(kFALSE),    fFillOnlySimpleSSHisto(1),
 fNOriginHistograms(8),        fNPrimaryHistograms(4),
-fMomentum(),
+fMomentum(),                  fPrimaryMom(),
 // Histograms
 
 // Control histograms
@@ -344,7 +344,6 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   
   TParticle        * primStack = 0;
   AliAODMCParticle * primAOD   = 0;
-  TLorentzVector lv;
   
   // Get the ESD MC particles container
   AliStack * stack = 0;
@@ -386,7 +385,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       //       prim->GetName(), prim->GetPdgCode());
       
       //Photon kinematics
-      primStack->Momentum(lv);
+      primStack->Momentum(fMomentum);
       
       photonY = 0.5*TMath::Log((primStack->Energy()+primStack->Pz())/(primStack->Energy()-primStack->Pz())) ;
     }
@@ -405,7 +404,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       if(primAOD->E() == TMath::Abs(primAOD->Pz()))  continue ; //Protection against floating point exception
       
       //Photon kinematics
-      lv.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
+      fMomentum.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
 
       photonY = 0.5*TMath::Log((primAOD->E()+primAOD->Pz())/(primAOD->E()-primAOD->Pz())) ;
     }
@@ -414,13 +413,13 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     if(pdg != 22 ) continue ;
     
     // If too small or too large pt, skip, same cut as for data analysis
-    photonPt  = lv.Pt () ;
+    photonPt  = fMomentum.Pt () ;
     
     if(photonPt < GetMinPt() || photonPt > GetMaxPt() ) continue ;
     
-    photonE   = lv.E  () ;
-    photonEta = lv.Eta() ;
-    photonPhi = lv.Phi() ;
+    photonE   = fMomentum.E  () ;
+    photonEta = fMomentum.Eta() ;
+    photonPhi = fMomentum.Phi() ;
     
     if(photonPhi < 0) photonPhi+=TMath::TwoPi();
     
@@ -428,7 +427,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     inacceptance = kTRUE;
     
     // Check same fidutial borders as in data analysis on top of real acceptance if real was requested.
-    if( IsFiducialCutOn() && !GetFiducialCut()->IsInFiducialCut(lv.Eta(),lv.Phi(),GetCalorimeter())) inacceptance = kFALSE ;
+    if( IsFiducialCutOn() && !GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),GetCalorimeter())) inacceptance = kFALSE ;
     
     // Check if photons hit the Calorimeter acceptance
     if(IsRealCaloAcceptanceOn()) // defined on base class
@@ -2567,11 +2566,11 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       Float_t eprim   = 0;
       Float_t ptprim  = 0;
       Bool_t ok = kFALSE;
-      TLorentzVector primary = GetMCAnalysisUtils()->GetMother(label,GetReader(),ok);
+      fPrimaryMom = GetMCAnalysisUtils()->GetMother(label,GetReader(),ok);
       if(ok)
       {
-        eprim   = primary.Energy();
-        ptprim  = primary.Pt();
+        eprim   = fPrimaryMom.Energy();
+        ptprim  = fPrimaryMom.Pt();
       }
       
       Int_t tag =ph->GetTag();
