@@ -116,10 +116,12 @@ class AliIsolationCut : public TObject {
   Int_t      fDebug;             // Debug level
   Bool_t     fFracIsThresh;      // Use threshold instead of fraction when pt leading is small
   
+  TLorentzVector fMomentum;      //! momentum of cluster
+  
   AliIsolationCut(              const AliIsolationCut & g) ; // cpy ctor
   AliIsolationCut & operator = (const AliIsolationCut & g) ; // cpy assignment
   
-  ClassDef(AliIsolationCut,7)
+  ClassDef(AliIsolationCut,9)
 } ;
 
 

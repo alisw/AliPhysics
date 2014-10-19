@@ -58,7 +58,8 @@ fPtFraction(0.),
 fICMethod(0),
 fPartInCone(0),
 fDebug(-1),
-fFracIsThresh(1)
+fFracIsThresh(1),
+fMomentum()
 {
   //default ctor
   
@@ -585,7 +586,6 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
   if(plNe &&
      (fPartInCone==kOnlyNeutral || fPartInCone==kNeutralAndCharged))
   {
-    TLorentzVector mom ;
     
     for(Int_t ipr = 0;ipr < plNe->GetEntries() ; ipr ++ )
     {
@@ -608,11 +608,11 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
            pid->IsTrackMatched(calo,reader->GetCaloUtils(),reader->GetInputEvent()) ) continue ;
         
         //Assume that come from vertex in straight line
-        calo->GetMomentum(mom,reader->GetVertex(evtIndex)) ;
+        calo->GetMomentum(fMomentum,reader->GetVertex(evtIndex)) ;
         
-        pt  = mom.Pt()  ;
-        eta = mom.Eta() ;
-        phi = mom.Phi() ;
+        pt  = fMomentum.Pt()  ;
+        eta = fMomentum.Eta() ;
+        phi = fMomentum.Phi() ;
       }
       else 
       {// Mixed event stored in AliAODPWG4Particles
