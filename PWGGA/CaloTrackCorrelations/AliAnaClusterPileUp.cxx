@@ -41,6 +41,7 @@ ClassImp(AliAnaClusterPileUp)
 AliAnaClusterPileUp::AliAnaClusterPileUp() :
 AliAnaCaloTrackCorrBaseClass(),
 fNCellsCut(0),
+fMomentum(),
 // Histograms
 fhTimePtNoCut(0),                     fhTimePtSPD(0),
 fhTimeNPileUpVertSPD(0),              fhTimeNPileUpVertTrack(0),
@@ -378,7 +379,6 @@ void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
 
   if(GetDebug() > 0) printf("AliAnaClusterPileUp::MakeAnalysisFillAOD() - input %s cluster entries %d\n", GetCalorimeterString().Data(), nCaloClusters);
   //Init variables
-  TLorentzVector mom;
   Int_t   idMax = 0;
   Float_t ptMax = 0;
   Float_t  tMax = 0;
@@ -390,13 +390,13 @@ void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
     
     if(!calo)  continue; // it should not happen, but just in case
     
-    calo->GetMomentum(mom,GetVertex(0)) ;
+    calo->GetMomentum(fMomentum,GetVertex(0)) ;
   
-    Float_t  ecluster  = mom.E();
-    Float_t ptcluster  = mom.Pt();
+    Float_t  ecluster  = fMomentum.E();
+    Float_t ptcluster  = fMomentum.Pt();
     Float_t l0cluster  = calo->GetM02();
-    Float_t etacluster = mom.Eta();
-    Float_t phicluster = mom.Phi();
+    Float_t etacluster = fMomentum.Eta();
+    Float_t phicluster = fMomentum.Phi();
     if(phicluster < 0) phicluster+=TMath::TwoPi();
     Float_t tofcluster   = calo->GetTOF()*1.e9;
     
@@ -413,7 +413,7 @@ void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
     //Check acceptance selection
     if(IsFiducialCutOn())
     {
-      Bool_t in = GetFiducialCut()->IsInFiducialCut(mom.Eta(),mom.Phi(),GetCalorimeter()) ;
+      Bool_t in = GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),GetCalorimeter()) ;
       if(! in ) continue;
     }
 

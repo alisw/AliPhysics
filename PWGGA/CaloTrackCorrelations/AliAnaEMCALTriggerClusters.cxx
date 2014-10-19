@@ -40,11 +40,12 @@
 
 ClassImp(AliAnaEMCALTriggerClusters)
 
-//____________________________
+//______________________________________________________
 AliAnaEMCALTriggerClusters::AliAnaEMCALTriggerClusters() :
 AliAnaCaloTrackCorrBaseClass(),
 fRejectTrackMatch(0),         fNCellsCut(0),
 fMinM02(0),                   fMaxM02(0),
+fMomentum(),
 // Histograms
 fhE(0),                       fhESelected(0),
 fhEtaPhi(0),                  fhEtaPhiSelected(0),
@@ -146,12 +147,10 @@ void AliAnaEMCALTriggerClusters::FillBadTriggerEventHistogram()
     return;
   }
   
-  TLorentzVector momBadClus;
+  badClusTrig->GetMomentum(fMomentum,GetVertex(0));
   
-  badClusTrig->GetMomentum(momBadClus,GetVertex(0));
-  
-  Float_t etaclusterBad = momBadClus.Eta();
-  Float_t phiclusterBad = momBadClus.Phi();
+  Float_t etaclusterBad = fMomentum.Eta();
+  Float_t phiclusterBad = fMomentum.Phi();
   if( phiclusterBad < 0 ) phiclusterBad+=TMath::TwoPi();
   Float_t tofclusterBad = badClusTrig->GetTOF()*1.e9;
   Float_t eclusterBad   = badClusTrig->E();
@@ -378,7 +377,7 @@ TObjString *  AliAnaEMCALTriggerClusters::GetAnalysisCuts()
   return new TObjString(parList) ;
 }
 
-//________________________________________________________________________
+//___________________________________________________________
 TList *  AliAnaEMCALTriggerClusters::GetCreateOutputObjects()
 {
   // Create histograms to be saved in output file and
@@ -957,7 +956,7 @@ TList *  AliAnaEMCALTriggerClusters::GetCreateOutputObjects()
   
 }
 
-//_______________________
+//_____________________________________
 void AliAnaEMCALTriggerClusters::Init()
 {
   
@@ -970,7 +969,7 @@ void AliAnaEMCALTriggerClusters::Init()
   
 }
 
-//____________________________________________________________________________
+//_______________________________________________
 void AliAnaEMCALTriggerClusters::InitParameters()
 {
   
@@ -984,7 +983,7 @@ void AliAnaEMCALTriggerClusters::InitParameters()
   
 }
 
-//__________________________________________________________________
+//____________________________________________________________
 void  AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()
 {
   //Do photon analysis and fill aods
@@ -1003,7 +1002,6 @@ void  AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()
   
   Int_t nCaloClusters = pl->GetEntriesFast();
   Int_t idTrig        = GetReader()->GetTriggerClusterIndex();
-  TLorentzVector mom;
 
   if(GetDebug() > 0) printf("AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms() - Input cluster entries %d\n", nCaloClusters);
   
@@ -1013,12 +1011,12 @@ void  AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()
 	  AliVCluster * calo =  (AliVCluster*) (pl->At(icalo));
     //printf("calo %d, %f\n",icalo,calo->E());
     
-    calo->GetMomentum(mom,GetVertex(0)) ;
+    calo->GetMomentum(fMomentum,GetVertex(0)) ;
     
     Float_t tofcluster = calo->GetTOF()*1.e9;
-    Float_t ecluster   = mom.E();
-    Float_t etacluster = mom.Eta();
-    Float_t phicluster = mom.Phi();
+    Float_t ecluster   = fMomentum.E();
+    Float_t etacluster = fMomentum.Eta();
+    Float_t phicluster = fMomentum.Phi();
     if(phicluster < 0) phicluster+=TMath::TwoPi();
     
     FillRawClusterTriggerBCHistograms(calo->GetID(),ecluster,tofcluster,etacluster,phicluster);
@@ -1041,7 +1039,7 @@ void  AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()
     //Check acceptance selection
     if(IsFiducialCutOn())
     {
-      Bool_t in = GetFiducialCut()->IsInFiducialCut(mom.Eta(),mom.Phi(),kEMCAL) ;
+      Bool_t in = GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kEMCAL) ;
       if(! in ) continue ;
     }
     
