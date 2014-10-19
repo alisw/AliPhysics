@@ -71,6 +71,8 @@ fPHOSCellAmpMin(0),                    fMinInvMassECut(0),
 fExoNECrossCuts(0),                    fExoECrossCuts(),
 fExoNDTimeCuts(0),                     fExoDTimeCuts(),    
 
+fClusterMomentum(),                    fClusterMomentum2(),
+fPrimaryMomentum(),
 //Histograms
 fhE(0),                                fhPt(0),                                
 fhPhi(0),                              fhEta(0),                               fhEtaPhiE(0),
@@ -891,23 +893,15 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
     }// fill cell-cluster histogram loop
     
   }//check time and energy of cells respect to max energy cell if cluster of more than 1 cell
-  
-  // Get vertex for photon momentum calculation and event selection
-  Double_t v[3] = {0,0,0}; //vertex ;
-  //GetReader()->GetVertex(v); // 
-  
-  TLorentzVector mom  ;
-  clus->GetMomentum(mom,v); 
-  
-  Float_t e   = mom.E();
-  Float_t pt  = mom.Pt();
-  Float_t eta = mom.Eta();
-  Float_t phi = mom.Phi();
+    
+  Float_t e   = fClusterMomentum.E();
+  Float_t pt  = fClusterMomentum.Pt();
+  Float_t eta = fClusterMomentum.Eta();
+  Float_t phi = fClusterMomentum.Phi();
   if(phi < 0) phi +=TMath::TwoPi();
   
-  if(GetDebug() > 0) {
+  if(GetDebug() > 0)
     printf("AliAnaCalorimeterQA::ClusterHistograms() - cluster: E %2.3f, pT %2.3f, eta %2.3f, phi %2.3f \n",e,pt,eta,phi*TMath::RadToDeg());
-  }
   
   fhE     ->Fill(e);	
   if(nModule >=0 && nModule < fNModules) fhEMod->Fill(e,nModule);
@@ -951,7 +945,6 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
                                                 AliVCaloCells* cells)
 {
   // Fill clusters related histograms
-  TLorentzVector mom  ;
   Int_t  nLabel                = 0  ;
   Int_t *labels                = 0x0;
   Int_t  nCaloClusters         = caloClusters->GetEntriesFast() ;
@@ -992,11 +985,11 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     }    
     
     // Get cluster kinematics
-    clus->GetMomentum(mom,v); 
+    clus->GetMomentum(fClusterMomentum,v);
     
     // Check only certain regions
     Bool_t in = kTRUE;
-    if(IsFiducialCutOn()) in =  GetFiducialCut()->IsInFiducialCut(mom.Eta(),mom.Phi(),GetCalorimeter()) ;
+    if(IsFiducialCutOn()) in =  GetFiducialCut()->IsInFiducialCut(fClusterMomentum.Eta(),fClusterMomentum.Phi(),GetCalorimeter()) ;
     if(!in) continue;
     
     // MC labels
@@ -1048,7 +1041,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     
     nCaloClustersAccepted++;
     nModule = GetModuleNumber(clus);
-    if(nModule >=0 && nModule < fNModules && mom.E() > 2*fCellAmpMin)
+    if(nModule >=0 && nModule < fNModules && fClusterMomentum.E() > 2*fCellAmpMin)
      nClustersInModule[nModule]++;
         
     // Cluster weights
@@ -1061,11 +1054,11 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     Int_t  mcOK = kFALSE;
     Int_t  pdg  = -1;
     if(IsDataMC() && nLabel > 0 && labels) 
-      mcOK = ClusterMCHistograms(mom, matched, labels, nLabel, pdg);
+      mcOK = ClusterMCHistograms(matched, labels, nLabel, pdg);
 
     // Matched clusters with tracks, also do some MC comparison, needs input from ClusterMCHistograms
     if( matched &&  fFillAllTMHisto)
-      ClusterMatchedWithTrackHistograms(clus,mom,mcOK,pdg);	        
+      ClusterMatchedWithTrackHistograms(clus,mcOK,pdg);
     
     // Invariant mass
     // Try to reduce background with a mild shower shape cut and no more than 1 maxima 
@@ -1073,7 +1066,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     if(fFillAllPi0Histo && nCaloClusters > 1 && nCaloCellsPerCluster > 1 && 
        GetCaloUtils()->GetNumberOfLocalMaxima(clus,cells) == 1 && 
        clus->GetM02() < 0.5 && clus->E() > fMinInvMassECut)
-      InvariantMassHistograms(iclus, mom, nModule, caloClusters,cells);
+      InvariantMassHistograms(iclus, nModule, caloClusters,cells);
     
   }//cluster loop
   
@@ -1092,9 +1085,9 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
   
 }
 
-//__________________________________________________________________________________________
-Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(TLorentzVector mom, Bool_t matched,
-                                                const Int_t * labels, Int_t nLabels, Int_t & pdg )
+//__________________________________________________________________________________
+Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * labels,
+                                                Int_t nLabels, Int_t & pdg )
 {
   
   //Fill histograms only possible when simulation
@@ -1110,9 +1103,9 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(TLorentzVector mom, Bool_t match
     printf("AliAnaCalorimeterQA::ClusterMCHistograms() - Primaries: nlabels %d\n",nLabels);
   }  
   
-  Float_t e   = mom.E();
-  Float_t eta = mom.Eta();
-  Float_t phi = mom.Phi();
+  Float_t e   = fClusterMomentum.E();
+  Float_t eta = fClusterMomentum.Eta();
+  Float_t phi = fClusterMomentum.Phi();
   if(phi < 0) phi +=TMath::TwoPi();
   
   AliAODMCParticle * aodprimary  = 0x0;
@@ -1414,16 +1407,15 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(TLorentzVector mom, Bool_t match
   
 }
 
-//________________________________________________________________________________________________
-void AliAnaCalorimeterQA::ClusterMatchedWithTrackHistograms(AliVCluster *clus, TLorentzVector mom, 
-                                                            Bool_t okPrimary, Int_t pdg)
+//_________________________________________________________________________________________________________
+void AliAnaCalorimeterQA::ClusterMatchedWithTrackHistograms(AliVCluster *clus, Bool_t okPrimary, Int_t pdg)
 {
   //Histograms for clusters matched with tracks
   
-  Float_t e   = mom.E();
-  Float_t pt  = mom.Pt();
-  Float_t eta = mom.Eta();
-  Float_t phi = mom.Phi();
+  Float_t e   = fClusterMomentum.E();
+  Float_t pt  = fClusterMomentum.Pt();
+  Float_t eta = fClusterMomentum.Eta();
+  Float_t phi = fClusterMomentum.Phi();
   if(phi < 0) phi +=TMath::TwoPi();
 
   fhECharged   ->Fill(e);
@@ -3191,9 +3183,8 @@ Float_t AliAnaCalorimeterQA::GetECross(Int_t absID, AliVCaloCells* cells, Float_
   
 }
 
-//__________________________________________________________________________________________________
-void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,   TLorentzVector mom,
-                                                  Int_t nModule, const TObjArray* caloClusters,
+//___________________________________________________________________________________________________________
+void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,  Int_t nModule, const TObjArray* caloClusters,
                                                   AliVCaloCells * cells) 
 {
   // Fill Invariant mass histograms
@@ -3205,7 +3196,6 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,   TLorentzVector 
   //GetReader()->GetVertex(v);
   
   Int_t nModule2      = -1;
-  TLorentzVector mom2 ;
   Int_t nCaloClusters = caloClusters->GetEntriesFast();
   
   for(Int_t jclus = iclus + 1 ; jclus < nCaloClusters ; jclus++) 
@@ -3222,11 +3212,11 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,   TLorentzVector 
        clus2->GetM02() > 0.5 || clus2->E() < fMinInvMassECut ) continue;
     
     //Get cluster kinematics
-    clus2->GetMomentum(mom2,v);
+    clus2->GetMomentum(fClusterMomentum2,v);
     
     //Check only certain regions
     Bool_t in2 = kTRUE;
-    if(IsFiducialCutOn()) in2 =  GetFiducialCut()->IsInFiducialCut(mom2.Eta(),mom2.Phi(),GetCalorimeter()) ;
+    if(IsFiducialCutOn()) in2 =  GetFiducialCut()->IsInFiducialCut(fClusterMomentum2.Eta(),fClusterMomentum2.Phi(),GetCalorimeter()) ;
     if(!in2) continue;	
     
     //Get module of cluster
@@ -3235,15 +3225,16 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,   TLorentzVector 
     //Fill histograms
     
     //All modules
-    fhIM  ->Fill((mom+mom2).Pt(),(mom+mom2).M());
+    fhIM  ->Fill((fClusterMomentum+fClusterMomentum2).Pt(),(fClusterMomentum+fClusterMomentum2).M());
 
     //Single module
     if(nModule == nModule2 && nModule >= 0 && nModule < fNModules)
-      fhIMMod[nModule]->Fill((mom+mom2).Pt(),(mom+mom2).M());
+      fhIMMod[nModule]->Fill((fClusterMomentum+fClusterMomentum2).Pt(),(fClusterMomentum+fClusterMomentum2).M());
     
     
     //Asymetry histograms
-    fhAsym->Fill((mom+mom2).Pt(),TMath::Abs((mom.E()-mom2.E())/(mom.E()+mom2.E())));
+    fhAsym->Fill((fClusterMomentum+fClusterMomentum2).Pt(),
+                 TMath::Abs((fClusterMomentum.E()-fClusterMomentum2.E())/(fClusterMomentum.E()+fClusterMomentum2.E())));
     
   }// 2nd cluster loop
   
@@ -3399,7 +3390,6 @@ void AliAnaCalorimeterQA::MCHistograms()
   
   TParticle        * primStack = 0;
   AliAODMCParticle * primAOD   = 0;
-  TLorentzVector mom  ;
   
   // Get the ESD MC particles container
   AliStack * stack = 0;
@@ -3447,7 +3437,7 @@ void AliAnaCalorimeterQA::MCHistograms()
       //printf("Take : i %d, %s, pdg %d, status %d \n",i, primStack->GetName(), pdg, status);
       
       //Photon kinematics
-      primStack->Momentum(mom);
+      primStack->Momentum(fPrimaryMomentum);
     }
     else
     {
@@ -3472,18 +3462,18 @@ void AliAnaCalorimeterQA::MCHistograms()
       //printf("Take : i %d, %s, pdg %d, status %d \n",i, primAOD->GetName(), pdg, status);
       
       //kinematics
-      mom.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
+      fPrimaryMomentum.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
     }
 
-    Float_t eMC    = mom.E();
+    Float_t eMC    = fPrimaryMomentum.E();
     if(eMC < 0.2) continue;
-    Float_t ptMC   = mom.E();
+    Float_t ptMC   = fPrimaryMomentum.E();
     
-    Float_t etaMC  = mom.Eta();
+    Float_t etaMC  = fPrimaryMomentum.Eta();
     // Only particles in |eta| < 1
     if (TMath::Abs(etaMC) > 1) continue;
     
-    Float_t phiMC  = mom.Phi();
+    Float_t phiMC  = fPrimaryMomentum.Phi();
     if(phiMC < 0)
       phiMC  += TMath::TwoPi();
     
@@ -3501,7 +3491,8 @@ void AliAnaCalorimeterQA::MCHistograms()
       
       Bool_t inacceptance = kTRUE;
       // Check same fidutial borders as in data analysis on top of real acceptance if real was requested.
-      if( IsFiducialCutOn() && !GetFiducialCut()->IsInFiducialCut(mom.Eta(),mom.Phi(),GetCalorimeter()) ) inacceptance = kFALSE ;
+      if( IsFiducialCutOn() && !GetFiducialCut()->IsInFiducialCut(fPrimaryMomentum.Eta(),fPrimaryMomentum.Phi(),GetCalorimeter()) )
+        inacceptance = kFALSE ;
       
       if(IsRealCaloAcceptanceOn()) // defined on base class
       {
