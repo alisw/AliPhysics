@@ -55,10 +55,10 @@ class AliMCAnalysisUtils : public TObject {
   Int_t   CheckCommonAncestor(Int_t index1, Int_t index2, const AliCaloTrackReader* reader, 
 			      Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum, TVector3 & v) ;
   
-  Int_t   CheckOrigin(Int_t label, const AliCaloTrackReader * reader, TString calorimeter) ;
+  Int_t   CheckOrigin(Int_t label, const AliCaloTrackReader * reader, Int_t calorimeter) ;
   
   //Check the label of the most significant particle but do checks on the rest of the contributing labels
-  Int_t   CheckOrigin       (const Int_t *label,  Int_t nlabels, const AliCaloTrackReader * reader, TString calorimeter) ;
+  Int_t   CheckOrigin       (const Int_t *label,  Int_t nlabels, const AliCaloTrackReader * reader, Int_t calorimeter) ;
   Int_t   CheckOriginInStack(const Int_t *labels, Int_t nlabels, AliStack * stack               , const TObjArray *arrayCluster) ; // ESD
   Int_t   CheckOriginInAOD  (const Int_t *labels, Int_t nlabels, const TClonesArray* mcparticles, const TObjArray *arrayCluster) ; // AOD
   

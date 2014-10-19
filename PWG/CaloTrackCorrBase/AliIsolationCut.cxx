@@ -187,7 +187,7 @@ Float_t AliIsolationCut::GetCellDensity(AliAODPWG4ParticleCorrelation * pCandida
   if(phiC<0) phiC+=TMath::TwoPi();
   Float_t etaC  = pCandidate->Eta() ;
   
-  if(pCandidate->GetDetector()=="EMCAL")
+  if(pCandidate->GetDetectorTag() == AliCaloTrackReader::kEMCAL)
   {
     AliEMCALGeometry* eGeom = AliEMCALGeometry::GetInstance();
     AliCalorimeterUtils *cu = reader->GetCaloUtils();
@@ -275,7 +275,7 @@ void AliIsolationCut::GetCoeffNormBadCell(AliAODPWG4ParticleCorrelation * pCandi
   if(phiC<0) phiC+=TMath::TwoPi();
   Float_t etaC  = pCandidate->Eta() ;
   
-  if(pCandidate->GetDetector()=="EMCAL")
+  if(pCandidate->GetDetectorTag() == AliCaloTrackReader::kEMCAL)
   {
     AliEMCALGeometry* eGeom = AliEMCALGeometry::GetInstance();
     AliCalorimeterUtils *cu = reader->GetCaloUtils();

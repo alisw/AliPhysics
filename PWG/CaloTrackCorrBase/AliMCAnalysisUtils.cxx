@@ -219,7 +219,7 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2,
 
 //________________________________________________________________________________________
 Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label, Int_t nlabels,
-                                      const AliCaloTrackReader* reader, TString calorimeter)
+                                      const AliCaloTrackReader* reader, Int_t calorimeter)
 {
   // Play with the montecarlo particles if available.
   
@@ -231,8 +231,8 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label, Int_t nlabels,
   }
   
   TObjArray* arrayCluster = 0;
-  if      ( calorimeter == "EMCAL" ) arrayCluster = reader->GetEMCALClusters();
-  else if ( calorimeter ==  "PHOS" ) arrayCluster= reader->GetPHOSClusters();
+  if      ( calorimeter == AliCaloTrackReader::kEMCAL ) arrayCluster = reader->GetEMCALClusters();
+  else if ( calorimeter == AliCaloTrackReader::kPHOS  ) arrayCluster = reader->GetPHOSClusters ();
   
   //Select where the information is, ESD-galice stack or AOD mcparticles branch
   if(reader->ReadStack()){
@@ -246,7 +246,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label, Int_t nlabels,
 }
 
 //____________________________________________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckOrigin(Int_t label, const AliCaloTrackReader* reader, TString calorimeter)
+Int_t AliMCAnalysisUtils::CheckOrigin(Int_t label, const AliCaloTrackReader* reader, Int_t calorimeter)
 {
   // Play with the montecarlo particles if available.
   
@@ -258,8 +258,8 @@ Int_t AliMCAnalysisUtils::CheckOrigin(Int_t label, const AliCaloTrackReader* rea
   }
   
   TObjArray* arrayCluster = 0;
-  if      ( calorimeter == "EMCAL" ) arrayCluster = reader->GetEMCALClusters();
-  else if ( calorimeter ==  "PHOS" ) arrayCluster= reader->GetPHOSClusters();
+  if      ( calorimeter == AliCaloTrackReader::kEMCAL ) arrayCluster = reader->GetEMCALClusters();
+  else if ( calorimeter == AliCaloTrackReader::kPHOS  ) arrayCluster = reader->GetPHOSClusters();
   
   Int_t labels[]={label};
   
@@ -747,8 +747,10 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, Int_t nlabels,
         CheckOverlapped2GammaDecay(labels,nlabels, iParent, mcparticles, tag); //set to kMCPi0 if 2 gammas in same cluster
         // In case it did not merge, check if the decay companion is lost
         if(!CheckTagBit(tag, kMCPi0) && !CheckTagBit(tag,kMCDecayPairInCalo) && !CheckTagBit(tag,kMCDecayPairLost))
+        {
           CheckLostDecayPair(arrayCluster,iMom, iParent, mcparticles, tag);
-
+        }
+        
         //printf("Bit set is Merged %d, Pair in calo %d, Lost %d\n",CheckTagBit(tag, kMCPi0),CheckTagBit(tag,kMCDecayPairInCalo),CheckTagBit(tag,kMCDecayPairLost));
       }
       else if (pPdg == 221)
@@ -1225,7 +1227,7 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray   * arrayCluster,
                                                const TClonesArray* mcparticles, Int_t & tag)
 {
   // Check on AODs if the current decay photon has the second photon companion lost.
-  
+
   if(!arrayCluster || iMom < 0 || iParent < 0|| !mcparticles) return;
 
   AliAODMCParticle * parent = (AliAODMCParticle*) mcparticles->At(iParent);
