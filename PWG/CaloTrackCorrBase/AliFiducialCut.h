@@ -17,7 +17,7 @@
 #include <TArrayF.h> 
 
 class TString ;
-class TLorentzVector ;
+//class TLorentzVector ;
 
 
 class AliFiducialCut : public TObject {
