@@ -29,7 +29,6 @@
   
   
 // --- ROOT system --- 
-#include <TLorentzVector.h>
 #include <TObjArray.h>
 
 // --- AliRoot system --- 
@@ -412,7 +411,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
                                         Int_t   & n, 
                                         Int_t   & nfrac, 
                                         Float_t & coneptsum, Float_t & ptLead,
-                                        Bool_t  & isolated) const
+                                        Bool_t  & isolated) 
 {
   //Search in cone around a candidate particle if it is isolated 
   Float_t ptC   = pCandidate->Pt() ;

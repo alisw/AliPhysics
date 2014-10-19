@@ -16,6 +16,7 @@
 // --- ROOT system --- 
 #include <TObject.h>
 class TObjArray ;
+#include <TLorentzVector.h>
 
 // --- ANALYSIS system ---
 class AliAODPWG4ParticleCorrelation ;
@@ -49,7 +50,7 @@ class AliIsolationCut : public TObject {
                               AliCaloPID * pid, 
                               Bool_t bFillAOD,
                               AliAODPWG4ParticleCorrelation  * pCandidate, TString aodObjArrayName,
-                              Int_t &n, Int_t & nfrac, Float_t &ptSum, Float_t &ptLead, Bool_t & isolated) const ;
+                              Int_t &n, Int_t & nfrac, Float_t &ptSum, Float_t &ptLead, Bool_t & isolated) ;
   
   void       Print(const Option_t * opt) const ;
   
