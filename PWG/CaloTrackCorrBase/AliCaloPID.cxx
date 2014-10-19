@@ -1061,7 +1061,6 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
   
   Int_t nMatches = cluster->GetNTracksMatched();
   AliVTrack * track = 0;
-  Double_t p[3];
 
   if(nMatches > 0)
   {
@@ -1099,12 +1098,10 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
         
     if(cluster->IsPHOS()) 
     {
-      track->GetPxPyPz(p) ;
-      TLorentzVector trackmom(p[0],p[1],p[2],0);
       Int_t charge = track->Charge();
       Double_t mf  = event->GetMagneticField();
-      if(TestPHOSChargedVeto(dR, dZ, trackmom.Pt(), charge, mf ) < fPHOSRCut) return kTRUE;
-      else                                                                    return kFALSE;
+      if(TestPHOSChargedVeto(dR, dZ, track->Pt(), charge, mf ) < fPHOSRCut) return kTRUE;
+      else                                                                  return kFALSE;
       
     }//PHOS
     else //EMCAL
