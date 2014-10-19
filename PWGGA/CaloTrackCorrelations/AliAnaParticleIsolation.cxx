@@ -4298,7 +4298,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     // Consider only final state particles, but this depends on generator,
     // status 1 is the usual one, in case of not being ok, leave the possibility
     // to not consider this.
-    if(pdg == 22 && status != 1 && GetMCAnalysisUtils()->GetMCGenerator()!="" ) continue ;
+    if( pdg == 22 && status != 1 &&
+        GetMCAnalysisUtils()->GetMCGenerator() != AliMCAnalysisUtils::kBoxLike ) continue ;
     
     // If too small or too large pt, skip, same cut as for data analysis
     photonPt  = fMomentum.Pt () ;
@@ -4422,7 +4423,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         // Consider only final state particles, but this depends on generator,
         // status 1 is the usual one, in case of not being ok, leave the possibility
         // to not consider this.
-        if( partInConeStatus != 1 && GetMCAnalysisUtils()->GetMCGenerator()!="" ) continue ;
+        if( partInConeStatus != 1 &&
+            GetMCAnalysisUtils()->GetMCGenerator()!= AliMCAnalysisUtils::kBoxLike ) continue ;
         
         partInConeMother = mcisopStack->GetMother(0);
         partInConePt     = mcisopStack->Pt();
@@ -4441,7 +4443,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         // Consider only final state particles, but this depends on generator,
         // status 1 is the usual one, in case of not being ok, leave the possibility
         // to not consider this.
-        if( partInConeStatus != 1 && GetMCAnalysisUtils()->GetMCGenerator()!="" ) continue ;
+        if( partInConeStatus != 1 &&
+            GetMCAnalysisUtils()->GetMCGenerator() != AliMCAnalysisUtils::kBoxLike ) continue ;
         
         partInConeMother = mcisopAOD->GetMother();
         partInConePt     = mcisopAOD->Pt();
