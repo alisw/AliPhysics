@@ -26,6 +26,7 @@
 #include "AliHLTITSAgent.h"
 #include "AliHLTOUT.h"
 #include "AliHLTDAQ.h"
+#include "AliDAQ.h"
 
 // header files of library components
 #include "AliHLTITSCompressRawDataSDDComponent.h"
@@ -62,6 +63,11 @@ AliHLTITSAgent::AliHLTITSAgent()
 AliHLTITSAgent::~AliHLTITSAgent()
 {
   // see header file for class documentation
+}
+
+UInt_t AliHLTITSAgent::GetDetectorMask() const
+{
+  return AliDAQ::kITS;
 }
 
 int AliHLTITSAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,

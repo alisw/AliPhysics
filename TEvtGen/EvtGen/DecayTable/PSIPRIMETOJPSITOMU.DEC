@@ -1,0 +1,12 @@
+###
+Decay psi(2S)
+1.000 J/psi   pi+     pi-                             VVPIPI; #[Reconstructed PDG2011]
+Enddecay
+
+Decay J/psi
+### from DECAY.DEC
+1.000 e+   e-                PHOTOS VLL;
+Enddecay
+
+
+End

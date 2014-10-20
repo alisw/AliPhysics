@@ -4,10 +4,10 @@
 #include <TParticle.h>
 #include <TMath.h>
 #include "AliRun.h"
+#include "AliLog.h"
 #include "AliMC.h"
 #include <AliITSUSegmentationPix.h>
 #include "AliITSUClusterizer.h"
-#include "AliITSUClusterPix.h"
 #include "AliITSUGeomTGeo.h"
 #include "AliITSUSegmentationPix.h"
 #include "AliITSdigit.h"
@@ -39,8 +39,6 @@ AliITSUClusterizer::AliITSUClusterizer(Int_t initNRow)
   ,fPartFreelistBptr(0)
   ,fCandFreelistBptr(0)
 #ifdef _ClusterTopology_
-  ,fTreeTopology(0)
-  ,fFileTopology(0)
   ,fTopology(0)
   ,fMinCol(0)
   ,fMinRow(0)
@@ -49,6 +47,14 @@ AliITSUClusterizer::AliITSUClusterizer(Int_t initNRow)
   SetUniqueID(0);
   // c-tor
   SetNRow(initNRow);
+//
+#ifdef _ClusterTopology_
+  AliInfo("*********************************************************************");
+  AliInfo("ATTENTION: YOU ARE RUNNING IN SPECIAL MODE OF STORING CLUSTER PATTERN");
+  AliInfo("*********************************************************************");
+#endif //_ClusterTopology_
+
+//
 }
 
 //______________________________________________________________________________
@@ -95,9 +101,6 @@ AliITSUClusterizer::~AliITSUClusterizer()
   delete[] fPartFreelistBptr;
   delete[] fCandFreelistBptr;
   //
-#ifdef _ClusterTopology_
-  SaveTopologyTree();
-#endif //_ClusterTopology_
 }
 
 //______________________________________________________________________________
@@ -202,7 +205,7 @@ void AliITSUClusterizer::Transform(AliITSUClusterPix *cluster,AliITSUClusterizer
     //
     ++n;
   }
-  UChar_t nx=1,nz=1;
+  Int_t nx=1,nz=1;
   double dx = xmx-xmn, dz = zmx-zmn;
   if (n>1) {
     double fac=1./n;
@@ -215,14 +218,22 @@ void AliITSUClusterizer::Transform(AliITSUClusterPix *cluster,AliITSUClusterizer
   }
   x -= fLorAngCorrection;  // LorentzAngle correction
   cluster->SetX(x);
-  cluster->SetZ(z);
+  cluster->SetZ(z);  
   cluster->SetY(0);
   cluster->SetSigmaZ2(nz>1 ? dz*dz*k1to12 : pz*pz*k1to12);
   cluster->SetSigmaY2(nx>1 ? dx*dx*k1to12 : px*px*k1to12);
   cluster->SetSigmaYZ(0);
   cluster->SetFrameLoc();
-  cluster->SetNxNzN(nx,nz,n);
+  if (n>AliITSUClusterPix::kMaskNPix) n = AliITSUClusterPix::kMaskNPix;
+  cluster->SetNxNzN(nx>AliITSUClusterPix::kMaskNX ? AliITSUClusterPix::kMaskNX : nx,
+		    nz>AliITSUClusterPix::kMaskNZ ? AliITSUClusterPix::kMaskNZ : nz,
+		    n>AliITSUClusterPix::kMaskNPix ? AliITSUClusterPix::kMaskNPix : n);		    
   cluster->SetQ(charge); // note: this is MC info
+  //  if (cluster->GetNPix()!=n || cluster->GetNx()!=nx || cluster->GetNz()!=nz) {
+  //  printf("PROBLEM: %d %d %d -> %d %d %d\n",nx,nz,n,
+  //	   cluster->GetNx(),cluster->GetNz(),cluster->GetNPix());
+  //  cluster->Dump();
+  //  }
   //
   if (!fRawData) {
     CheckLabels();
@@ -235,7 +246,7 @@ void AliITSUClusterizer::Transform(AliITSUClusterPix *cluster,AliITSUClusterizer
   //    printf("mod %d: (%.4lf,%.4lf)cm\n",fVolID,x,z);
   //
 #ifdef _ClusterTopology_
-  FillClusterTopology(cand);
+  FillClusterTopology(cand,cluster);
 #endif //_ClusterTopology_
   //
 }
@@ -384,7 +395,7 @@ void AliITSUClusterizer::CheckLabels()
     if (label>=ntracks) continue;
     TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
     kine[i] = part->Energy() - part->GetCalcMass(); // kinetic energy 
-    if (kine[i] < 0.02) {    // reduce soft particles from the same cluster
+    if (kine[i] < 0.001) {    // reduce soft particles from the same cluster
       Int_t m=part->GetFirstMother();
       if (m<0) continue; // primary
       //
@@ -418,68 +429,52 @@ void AliITSUClusterizer::CheckLabels()
 #ifdef _ClusterTopology_
 //
 //______________________________________________________________________
-void AliITSUClusterizer::FillClusterTopology(AliITSUClusterizerClusterCand *cand) 
+void AliITSUClusterizer::FillClusterTopology(const AliITSUClusterizerClusterCand *cand, AliITSUClusterPix* cl) const 
 {
-  // fill special tree with cluster topology bit pattern
+  // fill cluster topology bit pattern
   //
-  enum {kMaxColSpan=30,kMaxRowSpan=30};
   //
-  Int_t mnCol=999999,mxCol=0,mnRow=999999,mxRow=0;
+  UShort_t mnCol=0xffff,mxCol=0,mnRow=0xffff,mxRow=0;
   for (AliITSUClusterizerClusterDigit *idigit=cand->fFirstDigit;idigit;idigit=idigit->fNext) {
     AliITSdigit* dig = idigit->fDigit;
-    if (mnCol>dig->GetCoord1()) mnCol = dig->GetCoord1();
-    if (mxCol<dig->GetCoord1()) mxCol = dig->GetCoord1();
-    if (mnRow>dig->GetCoord2()) mnRow = dig->GetCoord2();
-    if (mxRow<dig->GetCoord2()) mxRow = dig->GetCoord2();    
+    if (mnCol>dig->GetCoord1()) mnCol = (UShort_t)dig->GetCoord1();
+    if (mxCol<dig->GetCoord1()) mxCol = (UShort_t)dig->GetCoord1();
+    if (mnRow>dig->GetCoord2()) mnRow = (UShort_t)dig->GetCoord2();
+    if (mxRow<dig->GetCoord2()) mxRow = (UShort_t)dig->GetCoord2();    
   }
-  int nColSpan = mxCol-mnCol+1;
-  int nRowSpan = mxRow-mnRow+1;
-  if (nColSpan<kMaxColSpan && nRowSpan<kMaxRowSpan) {
-    fTopology.Clear();
-    fTopology.SetBitNumber(nColSpan*nRowSpan-1,kFALSE); // set the size
-    fTopology.SetUniqueID( (nRowSpan<<8) + nColSpan );
-    for (AliITSUClusterizerClusterDigit *idigit=cand->fFirstDigit;idigit;idigit=idigit->fNext) {
-      AliITSdigit* dig = idigit->fDigit;
-      fTopology.SetBitNumber( (dig->GetCoord2()-mnRow)*nColSpan + (dig->GetCoord1()-mnCol) );
+  UShort_t nColSpan = UShort_t(mxCol-mnCol+1);
+  UShort_t nRowSpan = UShort_t(mxRow-mnRow+1);
+  UShort_t nColSpanW = nColSpan;
+  UShort_t nRowSpanW = nRowSpan;
+  if (nColSpan*nRowSpan>AliITSUClusterPix::kMaxPatternBits) { // need to store partial info
+    // will crtail largest dimension
+    if (nColSpan>nRowSpan) {
+      if ( (nColSpanW=AliITSUClusterPix::kMaxPatternBits/nRowSpan)==0 ) {
+	nColSpanW = 1;
+	nRowSpanW = AliITSUClusterPix::kMaxPatternBits;
+      }
     }
-    if (!fTreeTopology) InitTopologyTree();
-    AliInfo(Form("Fill Topology, lr %d",fLayerID));
-    fMinCol = mnCol;
-    fMinRow = mnRow;
-    fTreeTopology->Fill();
+    else {
+      if ( (nRowSpanW=AliITSUClusterPix::kMaxPatternBits/nColSpan)==0 ) {
+	nRowSpanW = 1;
+	nColSpanW = AliITSUClusterPix::kMaxPatternBits;
+      }
+    }
+  }
+  cl->ResetPattern();
+  //
+  cl->SetPatternRowSpan(nRowSpanW,nRowSpanW<nRowSpan);
+  cl->SetPatternColSpan(nColSpanW,nColSpanW<nColSpan);
+  cl->SetPatternMinRow(mnRow);
+  cl->SetPatternMinCol(mnCol);
+  //
+  for (AliITSUClusterizerClusterDigit *idigit=cand->fFirstDigit;idigit;idigit=idigit->fNext) {
+    AliITSdigit* dig = idigit->fDigit;
+    UInt_t ir = dig->GetCoord2()-mnRow;
+    UInt_t ic = dig->GetCoord1()-mnCol;
+    if (ir<nRowSpanW && ic<nColSpanW) cl->SetPixel(ir,ic);
   }
   //
-}
-
-//______________________________________________________________________
-void AliITSUClusterizer::InitTopologyTree() 
-{
-  // create output tree for the topology stydy
-  if (fFileTopology || fTreeTopology) AliFatal("Topology structures are already created");
-  TDirectory* cdr = gDirectory;
-  fFileTopology = TFile::Open("clusterTopology.root","recreate");
-  fFileTopology->cd();
-  fTreeTopology = new TTree("clTop","ClusterTopology");
-  fTreeTopology->Branch("tp","TBits",&fTopology);
-  fTreeTopology->Branch("volID",&fVolID);  
-  fTreeTopology->Branch("mnCol",&fMinCol);  
-  fTreeTopology->Branch("mnRow",&fMinRow);  
-  cdr->cd();
-}
-
-//______________________________________________________________________
-void AliITSUClusterizer::SaveTopologyTree() 
-{
-  // write output tree for the topology stydy
-  AliInfo("Storing cluster topology tree");
-  if (!fFileTopology || !fTreeTopology) {AliError("Topology structures are not created"); return;}
-  fFileTopology->cd();
-  fTreeTopology->Write();
-  delete fTreeTopology;
-  fFileTopology->Close();
-  delete fFileTopology;
-  fTreeTopology = 0;
-  fFileTopology = 0;
 }
 
 #endif //_ClusterTopology_

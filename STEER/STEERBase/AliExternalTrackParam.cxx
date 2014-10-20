@@ -1234,7 +1234,7 @@ Double_t bz) const {
 }
 
 Double_t 
-AliExternalTrackParam::GetPredictedChi2(Double_t p[2],Double_t cov[3]) const {
+AliExternalTrackParam::GetPredictedChi2(const Double_t p[2],const Double_t cov[3]) const {
   //----------------------------------------------------------------
   // Estimate the chi2 of the space point "p" with the cov. matrix "cov"
   //----------------------------------------------------------------
@@ -1252,7 +1252,7 @@ AliExternalTrackParam::GetPredictedChi2(Double_t p[2],Double_t cov[3]) const {
 }
 
 Double_t AliExternalTrackParam::
-GetPredictedChi2(Double_t p[3],Double_t covyz[3],Double_t covxyz[3]) const {
+GetPredictedChi2(const Double_t p[3],const Double_t covyz[3],const Double_t covxyz[3]) const {
   //----------------------------------------------------------------
   // Estimate the chi2 of the 3D space point "p" and
   // the full covariance matrix "covyz" and "covxyz"
@@ -1303,11 +1303,11 @@ GetPredictedChi2(const AliExternalTrackParam *t) const {
   // and estimated at the same reference plane.
   //----------------------------------------------------------------
 
-  if (TMath::Abs(1. - t->GetAlpha()/GetAlpha()) > FLT_EPSILON) {
+  if (TMath::Abs(t->GetAlpha()-GetAlpha()) > FLT_EPSILON) {
       AliError("The reference systems of the tracks differ !");
       return kVeryBig;
   }
-  if (TMath::Abs(1. - t->GetX()/GetX()) > FLT_EPSILON) {
+  if (TMath::Abs(t->GetX()-GetX()) > FLT_EPSILON) {
       AliError("The reference of the tracks planes differ !");
       return kVeryBig;
   }
@@ -1445,7 +1445,7 @@ Double_t *p,Double_t *cov,Bool_t updated) const {
   return res;
 }
 
-Bool_t AliExternalTrackParam::Update(Double_t p[2], Double_t cov[3]) {
+Bool_t AliExternalTrackParam::Update(const Double_t p[2], const Double_t cov[3]) {
   //------------------------------------------------------------------
   // Update the track parameters with the space point "p" having
   // the covariance matrix "cov"

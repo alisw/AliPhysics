@@ -58,13 +58,15 @@ public:
   static const Double_t fMisalignmentMagnitude;   // Expected misalignment magnitude (for MC, waiting for OCDB)
 
   static const Int_t fNMaxMuonsForPCA = 10;
+  static const Int_t fNMaxPileUpEvents = 5;         // Max events to consider for pile-up studies
+  static const Int_t fLabelOffsetMC = 10000000;     // Offset to be added to MC labels of tracks from merged underlying and pile-up events
 
 protected:
 
   AliMFTConstants() : TObject() {}
   virtual ~AliMFTConstants(){}
 
-  ClassDef(AliMFTConstants, 3)    // MFT global constants 
+  ClassDef(AliMFTConstants, 4)    // MFT global constants 
 
 };
 	

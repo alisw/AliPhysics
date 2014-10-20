@@ -1,6 +1,6 @@
 #include "f_FilHep.h"
 #include "Tauola.h"
-#include "Log.h"
+#include "TauolaLog.h"
 
 namespace Tauolapp
 {

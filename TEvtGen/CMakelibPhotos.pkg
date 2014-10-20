@@ -26,47 +26,47 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  
-Photos/forW-MEc.cxx
-Photos/forZ-MEc.cxx
-Photos/Log.cxx
-Photos/PH_HEPEVT_Interface.cxx
-Photos/PhotosBranch.cxx
-Photos/photosC.cxx
-Photos/Photos.cxx
-Photos/PhotosDebugRandom.cxx
-Photos/PhotosEvent.cxx
-Photos/PhotosHEPEVTEvent.cxx
-Photos/PhotosHEPEVTParticle.cxx
-Photos/PhotosHepMCEvent.cxx
-Photos/PhotosHepMCParticle.cxx
-Photos/PhotosParticle.cxx
-Photos/PhotosRandom.cxx
-Photos/PhotosUtilities.cxx
+Photos/src/photos-fortran/forW-MEc.cxx
+Photos/src/photos-fortran/forZ-MEc.cxx
+Photos/src/photos-fortran/photosC.cxx
+Photos/src/utilities/Log.cxx
+Photos/src/utilities/PhotosRandom.cxx
+Photos/src/utilities/PhotosUtilities.cxx
+Photos/src/utilities/PhotosDebugRandom.cxx
+Photos/src/photosFortranInterfaces/PH_HEPEVT_Interface.cxx
+Photos/src/photosCInterfaces/PhotosBranch.cxx
+Photos/src/photosCInterfaces/PhotosParticle.cxx
+Photos/src/photosCInterfaces/Photos.cxx
+Photos/src/photosCInterfaces/PhotosEvent.cxx
+Photos/src/eventRecordInterfaces/PhotosHEPEVTEvent.cxx
+Photos/src/eventRecordInterfaces/PhotosHEPEVTParticle.cxx
+Photos/src/eventRecordInterfaces/PhotosHepMCEvent.cxx
+Photos/src/eventRecordInterfaces/PhotosHepMCParticle.cxx
 )
 
 
 
 set ( HDRS  
-Photos/f_Init.h
-Photos/forW-MEc.h
-Photos/forZ-MEc.h
-Photos/Log.h
-Photos/PH_HEPEVT_Interface.h
-Photos/PhotosBranch.h
-Photos/PhotosDebugRandom.h
-Photos/PhotosEvent.h
-Photos/Photos.h
-Photos/PhotosHEPEVTEvent.h
-Photos/PhotosHEPEVTParticle.h
-Photos/PhotosHepMCEvent.h
-Photos/PhotosHepMCParticle.h
-Photos/PhotosParticle.h
-Photos/PhotosRandom.h
-Photos/PhotosUtilities.h
+Photos/src/photosFortranInterfaces/f_Init.h
+Photos/src/photos-fortran/forW-MEc.h
+Photos/src/photos-fortran/forZ-MEc.h
+Photos/src/utilities/Log.h
+Photos/src/photosFortranInterfaces/PH_HEPEVT_Interface.h
+Photos/src/photosCInterfaces/PhotosBranch.h
+Photos/src/utilities/PhotosDebugRandom.h
+Photos/src/photosCInterfaces/PhotosEvent.h
+Photos/src/photosCInterfaces/Photos.h
+Photos/src/eventRecordInterfaces/PhotosHEPEVTEvent.h
+Photos/src/eventRecordInterfaces/PhotosHEPEVTParticle.h
+Photos/src/eventRecordInterfaces/PhotosHepMCEvent.h
+Photos/src/eventRecordInterfaces/PhotosHepMCParticle.h
+Photos/src/photosCInterfaces/PhotosParticle.h
+Photos/src/utilities/PhotosRandom.h
+Photos/src/utilities/PhotosUtilities.h
 )
 
 
-set ( EINCLUDE TEvtGen TEvtGen/HepMC TEvtGen/Photos) 
+set ( EINCLUDE TEvtGen TEvtGen/HepMC TEvtGen/Photos/src/photosFortranInterfaces TEvtGen/Photos/src/photos-fortran TEvtGen/Photos/src/photosCInterfaces TEvtGen/Photos/src/eventRecordInterfaces TEvtGen/Photos/src/utilities ) 
 
 
 

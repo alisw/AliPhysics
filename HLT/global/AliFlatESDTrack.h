@@ -100,6 +100,7 @@ class AliFlatESDTrack :public AliVTrack {
     const AliFlatExternalTrackParam *f = GetFlatTrackParam();
     return (f) ?f->GetPt() : kVeryBig;
   }
+  virtual Bool_t GetXYZ(Double_t *p) const;
   // -------------------------------------------------------------------------------
 
   // ---------------------------------------------------------------------------------

@@ -56,19 +56,11 @@ class AliEMCALv0 : public AliEMCAL {
   void CreateEmod(const char* mother="SMOD", const char* child="EMOD");
   void CreateAlFrontPlate(const char* mother="EMOD", const char* child="ALFP");
   // TRD1
-  void Trd1Tower3X3(const double *parSCM0);
-  void Trd1Tower4X4() const;
-  void PbInTrap(const double parTRAP[11], TString n);
+  void Trd1Tower3X3(const Double_t *parSCM0);
+  void PbInTrap(const Double_t parTRAP[11], TString n);
   // 1X1 case - Nov 22, 2006
-  void Trd1Tower1X1(double *parSCM0);
-  void PbInTrd1(const double *parTrd1, TString n);
-  // TRD2 - 1th design
-  void Scm0InTrd2(const AliEMCALGeometry * g, const Double_t emodPar[5], Double_t parSCM0[5]);
-  void Division2X2InScm0(const AliEMCALGeometry * g, const Double_t parSCM0[5]);
-  void PbInTrapForTrd2(const double *parTRAP, TString name);
-  // TRD2 - 2th design
-  void PbmoInTrd2(const AliEMCALGeometry * g, const Double_t emodPar[5], Double_t parPBMO[5]);
-  void Division2X2InPbmo(const AliEMCALGeometry * g, const Double_t parPBMO[5]);
+  void Trd1Tower1X1(Double_t *parSCM0);
+  void PbInTrd1(const Double_t *parTrd1, TString n);
 
   TList  *GetShishKebabModules() const {return fShishKebabModules;}
   AliEMCALShishKebabTrd1Module *GetShishKebabModule(Int_t neta=0);

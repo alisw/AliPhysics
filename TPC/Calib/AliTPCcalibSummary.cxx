@@ -229,8 +229,8 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
   //
   //L3 data 
   //
-  Float_t bz=AliTPCcalibDB::GetBz(irun);               
-  Char_t  l3pol=AliTPCcalibDB::GetL3Polarity(irun);    
+  Float_t bz=AliTPCcalibDB::GetBz(irun);
+  Char_t  l3pol=AliTPCcalibDB::GetL3Polarity(irun);
   //
   //QA data processing
   //
@@ -277,7 +277,7 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
     TVectorD vecTemp[10];
     for (Int_t itype=0; itype<5; itype++)
       for (Int_t iside=0; iside<2; iside++){
-	fitter= tempMap->GetLinearFitter(itype,iside,tstamp);	  
+	fitter= tempMap->GetLinearFitter(itype,iside,tstamp);
 	if (!fitter) continue;
 	fitter->Eval();
 	fitter->GetParameters(vecTemp[itype+iside*5]);
@@ -365,38 +365,56 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
     Bool_t dataTakingActive=fCalibDB->IsDataTakingActive((time_t)itime);
     
     //tempMap->GetLinearFitter(0,0,itime);
+    // parameter description is as follows: // <name>;<unit>;<group>;<array type/array info>
+    //      <name> should also include the unit; e.g. IROC anode voltage (V))
+    // where group is e.g.
+    //       o HV:              for High Voltage information
+    //       o Environment:     for environmental information (temperature; pressure)
+    //       o Pulser:          Calibartion pulser information
+    //       o CE:              Central electrode inforamtion
+    //       o Noise Pedestals: Noise and Pedestal information
+    //       o ALTRO:           ALTRO configuration information
+    //
+    // <array type> describes the information stored in the elements of a TVectorT<> variable
+    // this can e.g. be
+    //       o Sector:   The array has 36 entries; one per sector (A00-A17 and C00 to C17)
+    //       o Sector-A: The array has 18 entries; one per sector on the A-Side (A00-A17)
+    //       o Sector-C: The array has 18 entries; one per sector on the C-Side (C00-C17)
+    //       o ROC:      The array has 72 entries; one per ROC (IA00-IA17, IC00-IC17, OA00-OA17, OC00-OC17)
+    //       o Parameters from a fit: in this case the description per parameter should be given
     (*fPcstream)<<"dcs"<<
-      "run="<<irun<<
-      "time="<<itime<<
-      "startTimeGRP="<<startTimeGRP<<
-      "stopTimeGRP="<<stopTimeGRP<<
-      "dataTakingActive="<<dataTakingActive<<
+      "run="<<irun<< // Run number
+      "time="<<itime<< // Time stamp of calibration entry
+      "startTimeGRP="<<startTimeGRP<< // Start time of run from GRP
+      "stopTimeGRP="<<stopTimeGRP<< // Stop time of run from GRP
+      "dataTakingActive="<<dataTakingActive<< // If data taking is active
       //run type
-      "runType.="<<&runType<<
+      "runType.="<<&runType<< // Run Type; e.g. PHYSICS; LASER; COSMIC; PEDESTAL; PULSER
       // voltage setting
-      "VIROC.="               << &voltagesIROC<<
-      "VIROCMedian.="         << &voltagesIROCMedian<<
-      "VIROCNominal.="        << &voltagesIROCNominal <<
-      "VIROCCurrentNominal.=" << &voltagesIROCCurrentNominal <<
-      "VIROCGoodHVFraction.=" << &voltagesIROCGoodFraction <<
-      "VIROCStatus.="         << &voltagesIROCStatus <<
+      "VIROC.="               << &voltagesIROC               << // IROC anode voltage [calib interval] (V);HV;Sector
+      "VIROCMedian.="         << &voltagesIROCMedian         << // IROC anode voltage [Median of run] (V);HV;Sector
+      "VIROCNominal.="        << &voltagesIROCNominal        << // IROC anode voltage [global nominal] (V);HV;Sector
+      "VIROCCurrentNominal.=" << &voltagesIROCCurrentNominal << // IROC anode voltage [current nominal] (V);HV;Sector
+      "VIROCGoodHVFraction.=" << &voltagesIROCGoodFraction   << // IROC anode voltage [fraction of good settings];-;HV;Sector
+      "VIROCStatus.="         << &voltagesIROCStatus         << // IROC HV status;-;HV;Sector
       //
-      "VOROC.="               << &voltagesOROC<<
-      "VOROCMedian.="         << &voltagesOROCMedian<<
-      "VOROCNominal.="        << &voltagesOROCNominal <<
-      "VOROCCurrentNominal.=" << &voltagesOROCCurrentNominal <<
-      "VOROCGoodHVFraction.=" << &voltagesOROCGoodFraction <<
-      "VOROCStatus.="         << &voltagesOROCStatus <<
-      "medianVIROC="<<voltIROC<<
-      "medianVOROC="<<voltOROC<<
-      "coverIA=" << coverIA <<
-      "coverIC=" << coverIC <<
-      "coverOA=" << coverOA <<
-      "coverOC=" << coverOC <<
-      "skirtA=" << skirtA <<
-      "skirtC=" << skirtC <<
-      "ggOffA=" << ggOffA <<
-      "ggOffC=" << ggOffC <<
+      "VOROC.="               << &voltagesOROC               << // OROC anode voltage [calib interval] (V);HV;Sector
+      "VOROCMedian.="         << &voltagesOROCMedian         << // OROC anode voltage [Median of run] (V);HV;Sector
+      "VOROCNominal.="        << &voltagesOROCNominal        << // OROC anode voltage [global nominal] (V);HV;Sector
+      "VOROCCurrentNominal.=" << &voltagesOROCCurrentNominal << // OROC anode voltage [current nominal] (V);HV;Sector
+      "VOROCGoodHVFraction.=" << &voltagesOROCGoodFraction   << // OROC anode voltage [fraction of good settings];-;HV;Sector
+      "VOROCStatus.="         << &voltagesOROCStatus         << // OROC HV status;-;HV;Sector
+      //
+      "medianVIROC="          << voltIROC                    << // IROC anode voltage [median of all IROCs] (V);HV
+      "medianVOROC="          << voltOROC                    << // OROC anode voltage [median of all OROCs] (V);HV
+      "coverIA="              << coverIA                     << // Cover voltage IROC A-Side (V);HV
+      "coverIC="              << coverIC                     << // Cover voltage IROC C-Side (V);HV
+      "coverOA="              << coverOA                     << // Cover voltage OROC A-Side (V);HV
+      "coverOC="              << coverOC                     << // Cover voltage OROC C-Side (V);HV
+      "skirtA="               << skirtA                      << // Skirt voltage IROC A-Side (V);HV
+      "skirtC="               << skirtC                      << // Skirt voltage IROC C-Side (V);HV
+      "ggOffA="               << ggOffA                      << // Gating grid offset voltage A-Side (V);HV
+      "ggOffC="               << ggOffC                      << // Gating grid offset voltage C-Side (V);HV
       //
       "ptrel0="<<ptrelative0<<  // deltaTP/TP  - A side
       "ptrel1="<<ptrelative1<<  // deltaTP/TPC - C side
@@ -408,18 +426,19 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
       //
       "press="<<valuePressure<<
       "press2="<<valuePressure2<<
-      "temp00.="<<&vecTemp[0]<<
-      "temp10.="<<&vecTemp[1]<<
-      "temp20.="<<&vecTemp[2]<<
-      "temp30.="<<&vecTemp[3]<<
-      "temp40.="<<&vecTemp[4]<<
-      "temp01.="<<&vecTemp[5]<<
-      "temp11.="<<&vecTemp[6]<<
-      "temp21.="<<&vecTemp[7]<<
-      "temp31.="<<&vecTemp[8]<<
-      "temp41.="<<&vecTemp[9]<<
-      "tempSkirtA.="<<&vecSkirtTempA<<
-      "tempSkirtC.="<<&vecSkirtTempC;
+      "temp00.="<<&vecTemp[0]<< // T-Fit ROC A-Side;Environment;Mean Temp (#circC);dT/dgx (K/cm);dT/dgy (K/cm)
+      "temp10.="<<&vecTemp[1]<< // T-Fit OFC A-Side;Environment;Mean Temp (#circC);dT/dz (K/cm);dT/d#phi (K/rad)
+      "temp20.="<<&vecTemp[2]<< // T-Fit IFC+TS A-Side;Environment;Mean Temp (#circC);dT/dz (K/cm);dT/d#phi (K/rad)
+      "temp30.="<<&vecTemp[3]<< // T-Fit Skirt A-Side;Environment;Mean Temp (#circC);dT/dgx (K/cm);dT/dgy (K/cm)
+      "temp40.="<<&vecTemp[4]<< // T-Fit IFC A-Side;Environment;Mean Temp (#circC);dT/dz (K/cm);dT/d#phi (K/rad)
+      "temp01.="<<&vecTemp[5]<< // T-Fit ROC C-Side;Environment;Mean Temp (#circC);dT/dgx (K/cm);dT/dgy (K/cm)
+      "temp11.="<<&vecTemp[6]<< // T-Fit OFC C-Side;Environment;Mean Temp (#circC);dT/dz (K/cm);dT/d#phi (K/rad)
+      "temp21.="<<&vecTemp[7]<< // T-Fit IFC+TS C-Side;Environment;Mean Temp (#circC);dT/dz (K/cm);dT/d#phi (K/rad)
+      "temp31.="<<&vecTemp[8]<< // T-Fit Skirt C-Side;Environment;Mean Temp (#circC);dT/dgx (K/cm);dT/dgy (K/cm)
+      "temp41.="<<&vecTemp[9]<< // T-Fit IFC C-Side;Environment;Mean Temp (#circC);dT/dz (K/cm);dT/d#phi (K/rad)
+      //
+      "tempSkirtA.="<<&vecSkirtTempA<< // T Skirt A-Side;Environment;Sector-A
+      "tempSkirtC.="<<&vecSkirtTempC;  // T Skirt C-Side;Environment;Sector-C
 
     ProcessDrift(irun, itime);
     ProcessDriftCE(irun,itime);
@@ -435,12 +454,12 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
 
     (*fPcstream)<<"dcs"<<	
       //noise data
-      "meanNoise.="<<&vNoiseMean<<
-      "meanNoiseSen.="<<&vNoiseMeanSenRegions<<
-      "rmsNoise.="<<&vNoiseRMS<<
-      "rmsNoiseSen.="<<&vNoiseRMSSenRegions<<
-      "zeroNoise="<<nonMaskedZero<<
-      "nNaN="<<nNaN<<  
+      "meanNoise.="    << &vNoiseMean           << // Mean Noise;Noise Pedestals;All Pads;IROCs;OROCs small pads;OROCs large pads
+      "meanNoiseSen.=" << &vNoiseMeanSenRegions << // Mean Noise in sensitive regions;Noise Pedestals;All Pads;IROCs;OROCs small pads;OROCs large pads
+      "rmsNoise.="     << &vNoiseRMS            << // RMS Noise;Noise Pedestals;All Pads;IROCs;OROCs small pads;OROCs large pads
+      "rmsNoiseSen.="  << &vNoiseRMSSenRegions  << // RMS Noise in sensitive regions;Noise Pedestals;All Pads;IROCs;OROCs small pads;OROCs large pads
+      "zeroNoise="     << nonMaskedZero         << // Pads with zero noise;Noise Pedestals
+      "nNaN="          << nNaN                  << // Pads with NaN noise;Noise Pedestals
       //QA data
       "occQA.="  << &vQaOcc  <<
       "qQA.="    << &vQaQtot <<
@@ -449,48 +468,57 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
       "timePulser.=" << &vTimePulser <<
       "nOffPulser="<<nOffChannels<<
       //altro data
-      "nMasked="<<nMasked<<
+      "nMasked="<< nMasked << // Number of masked pads;ALTRO
+      //
       //ce data -Jens version
-      "CEfitA.="<<&fitResultsA<<
-      "CEfitC.="<<&fitResultsC<<
-      "nmaskedCE="<<nmaskedCE<<
-      "chi2ACE="<<chi2ACE<<
-      "chi2CCE="<<chi2CCE<<
+      //
+      "CEfitA.="        << &fitResultsA  << // CE-Fit A-Side;CE;Offset (timebins);IROC/OROC Offset (timebins);dt/dgx (timebins/cm);dt/dgy (timebins/cm);dt/dlx common (timebins/cm);dt/dlx IROCs (timebins/cm)
+      "CEfitC.="        << &fitResultsC  << // CE Fit C-Side;CE;Offset (timebins);IROC/OROC Offset (timebins);dt/dgx (timebins/cm);dt/dgy (timebins/cm);dt/dlx common (timebins/cm);dt/dlx IROCs (timebins/cm)
+      "nmaskedCE="      << nmaskedCE     << // CE Number of outliers;CE
+      "chi2ACE="        << chi2ACE       << // CE-Fit Chi^{2} A-Side;CE
+      "chi2CCE="        << chi2CCE       << // CE-Fit Chi^{2} C-Side;CE
+      //
       //ce data new - MI version
-      "CEfitAMI.="<<&fitCEResultsA<<
-      "CEfitCMI.="<<&fitCEResultsC<<
-      "chi2CEA="<<chi2CEA<<
-      "chi2CEC="<<chi2CEC<<
+      //
+      "CEfitAMI.="      << &fitCEResultsA<< // CE-Fit A-Side [MI];CE;Offset (timebins);IROC/OROC Offset (timebins);dt/dgx (timebins/cm);dt/dgy (timebins/cm);dt/dlx common (timebins/cm);dt/dlx IROCs (timebins/cm)
+      "CEfitCMI.="      << &fitCEResultsC<< // CE-Fit C-Side [MI];CE;Offset (timebins);IROC/OROC Offset (timebins);dt/dgx (timebins/cm);dt/dgy (timebins/cm);dt/dlx common (timebins/cm);dt/dlx IROCs (timebins/cm)
+      "chi2CEA="        << chi2CEA       << // CE-Fit Chi^{2} A-Side [MI];CE
+      "chi2CEC="        << chi2CEC       << // CE-Fit Chi^{2} C-Side [MI];CE
       //
       //ce graph data
-      "CEgrTEntries.="<<&vecTEntries<<
-      "CEgrTMean.="<<&vecTMean<<
-      "CEgrTRMS.="<<&vecTRMS<<
-      "CEgrTMedian.="<<&vecTMedian<<
-      "CEgrQEntries.="<<&vecQEntries<<
-      "CEgrQMean.="<<&vecQMean<<
-      "CEgrQRMS.="<<&vecQRMS<<
-      "CEgrQMedian.="<<&vecQMedian<<
-      "CEgrDriftA="<<driftTimeA<<
-      "CEgrDriftC="<<driftTimeC<<
+      //
+      "CEgrTEntries.="   << &vecTEntries << // CE-graph drift time - entries;CE;ROC
+      "CEgrTMean.="      << &vecTMean    << // CE-graph mean drift time;CE;ROC
+      "CEgrTRMS.="       << &vecTRMS     << // CE-graph RMS of drift time;CE;ROC
+      "CEgrTMedian.="    << &vecTMedian  << // CE-graph median drift time;CE;ROC
+      "CEgrQEntries.="   << &vecQEntries << // CE-graph charge - entries;CE;ROC
+      "CEgrQMean.="      << &vecQMean    << // CE-graph mean charge;CE;ROC
+      "CEgrQRMS.="       << &vecQRMS     << // CE-graph RMS charge;CE;ROC
+      "CEgrQMedian.="    << &vecQMedian  << // CE-graph median charge;CE;ROC
+      "CEgrDriftA="      << driftTimeA   << // CE median drift time A-Side;CE
+      "CEgrDriftC="      << driftTimeC   << // CE median drift time C-Side;CE
+      //
       //calib raw data
-      "nFailL1="<<nFailL1<<
+      //
+      "nFailL1="         << nFailL1      << // RCU synchonisation failures;ALTRO
       // b field
-      "Bz="<< bz <<
-      "L3polarity="<<l3pol<<
+      "Bz="              << bz           << // Magnetic Field (T);Environment
+      "L3polarity="      << l3pol        << // L3 polarity;Environment
       // production information
-      "nalien="<<nalien<<
-      "nRawAlien="<<nRawAlien<<
-      "nlocal="<<nlocal<<
-      "nRawLocal="<<nRawLocal<<
-      //comparisons with ref data
-      "pedestalDeviations.="<<&pedestalDeviations<<
-      "noiseDeviations.="<<&noiseDeviations<<
-      "pulserQdeviations.="<<&pulserQdeviations<<
+      "nalien="          << nalien       << // obsolete
+      "nRawAlien="       << nRawAlien    << // obsolete
+      "nlocal="          << nlocal       << // obsolete
+      "nRawLocal="       <<nRawLocal     << // obsolete
+      //
+      // comparisons with ref data
+      //
+      "pedestalDeviations.=" << &pedestalDeviations << // Pedestal variation to ref (fraction);Noise Pedestals;>#pm 0.5 ADC;>#pm 1 ADC;>#pm 1.5 ADC;>#pm 2.0 ADC
+      "noiseDeviations.="    << &noiseDeviations    << // Noise var to ref (fraction);Noise Pedestals;>5%;>10%;>15%;>20%
+      "pulserQdeviations.="  << &pulserQdeviations  << // Pulser-Q var to ref (fraction);Pulser;>0.5%;>1%;>5%;>10%
       //         "pulserVarQMean="<<varQMean<<
-      "pulserNpadsOutOneTB="<<npadsOutOneTB<<
-      "pulserNpadsOffAdd="<<npadsOffAdd<<
-      "driftCorrCosmAll="<<dvCorr<<
+      "pulserNpadsOutOneTB=" << npadsOutOneTB       << // Number of pads with Pulser time var >#pm 1 tb to ROC mean;Pulser
+      "pulserNpadsOffAdd="   << npadsOffAdd         << // Number of pads without signal but signal in ref;Pulser
+      "driftCorrCosmAll="    << dvCorr              <<
       "\n";
   }//end run loop
 }
@@ -511,8 +539,8 @@ void AliTPCcalibSummary::ProcessDrift(Int_t run, Int_t timeStamp){
   static Double_t     vlaserA[3]={0,0,0};
   static Double_t     vlaserC[3]={0,0,0};
   static Double_t     vcosmicAll=0;
-  static Double_t     vdrift1=0;
-  vdrift1=fCalibDB->GetVDriftCorrectionTime(timeStamp,run,0,1);
+  static Double_t     vdrift1=0;                                // TODO: repeated below, obsolete?
+  vdrift1=fCalibDB->GetVDriftCorrectionTime(timeStamp,run,0,1); // TODO: repeated below, obsolete?
 
   if (array){
     laserA[0]=(TGraphErrors*)array->FindObject("GRAPH_MEAN_DELAY_LASER_ALL_A");
@@ -523,22 +551,28 @@ void AliTPCcalibSummary::ProcessDrift(Int_t run, Int_t timeStamp){
     laserC[2]=(TGraphErrors*)array->FindObject("GRAPH_MEAN_GLOBALYGRADIENT_LASER_ALL_C");
     cosmicAll =(TGraphErrors*)array->FindObject("TGRAPHERRORS_MEAN_VDRIFT_COSMICS_ALL");
   }
+
+  //
+  // TODO: the information stored in vlaserXX, vcosmicAll and vclaserXX,vccosmicAll 
+  //       seem to be redundant information do we need to keep vlaserXX vcosmicAll
+  //
   if (laserA[0]) vlaserA[0]= AliTPCcalibDButil::EvalGraphConst(laserA[0],timeStamp);
   if (laserA[1]) vlaserA[1]= AliTPCcalibDButil::EvalGraphConst(laserA[1],timeStamp);
   if (laserA[2]) vlaserA[2]= AliTPCcalibDButil::EvalGraphConst(laserA[2],timeStamp);
   if (laserC[0]) vlaserC[0]= AliTPCcalibDButil::EvalGraphConst(laserC[0],timeStamp);
   if (laserC[1]) vlaserC[1]= AliTPCcalibDButil::EvalGraphConst(laserC[1],timeStamp);
   if (laserC[2]) vlaserC[2]= AliTPCcalibDButil::EvalGraphConst(laserC[2],timeStamp);
-  if (cosmicAll) vcosmicAll= AliTPCcalibDButil::EvalGraphConst(cosmicAll,timeStamp); 
+  if (cosmicAll) vcosmicAll= AliTPCcalibDButil::EvalGraphConst(cosmicAll,timeStamp);
   (*fPcstream)<<"dcs"<<
-    "vlaserA0="<<vlaserA[0]<<
-    "vlaserA1="<<vlaserA[1]<<
-    "vlaserA2="<<vlaserA[2]<<
-    "vlaserC0="<<vlaserC[0]<<
-    "vlaserC1="<<vlaserC[1]<<
-    "vlaserC2="<<vlaserC[2]<<
-    "vcosmicAll="<<vcosmicAll<<
-    "vdrift1="<<vdrift1;
+    "vlaserA0="   << vlaserA[0] << // Laser offset A-Side;Drift            //TODO: Obsolete
+    "vlaserA1="   << vlaserA[1] << // Laser drift correction A-Side;Drift  //TODO: Obsolete
+    "vlaserA2="   << vlaserA[2] << // Laser gy correction A-Side;Drift     //TODO: Obsolete
+    "vlaserC0="   << vlaserC[0] << // Laser offset C-Side;Drift            //TODO: Obsolete
+    "vlaserC1="   << vlaserC[1] << // Laser drift correction C-Side;Drift  //TODO: Obsolete
+    "vlaserC2="   << vlaserC[2] << // Laser gy correction C-Side;Drift     //TODO: Obsolete
+    "vcosmicAll=" << vcosmicAll << // Cosmic drift corrrection;Drift       //TODO: Obsolete
+    //
+    "vdrift1="    << vdrift1;      // Combined drift correction ;Drift      // TODO: repeated below, obsolete?
 
   //
   // define distance to measurement
@@ -546,9 +580,9 @@ void AliTPCcalibSummary::ProcessDrift(Int_t run, Int_t timeStamp){
   static Double_t dlaserA=0; 
   static Double_t dlaserC=0; 
   static Double_t dcosmic=0; 
-  static Double_t slaserA=0; 
-  static Double_t slaserC=0; 
-  static Double_t scosmic=0; 
+  static Double_t slaserA=0; //TODO: Obsolete?
+  static Double_t slaserC=0; //TODO: Obsolete?
+  static Double_t scosmic=0; //TODO: Obsolete?
   static Double_t  vclaserA[3]={0,0,0};
   static Double_t  vclaserC[3]={0,0,0};
   static Double_t  vccosmicAll=0;
@@ -558,19 +592,19 @@ void AliTPCcalibSummary::ProcessDrift(Int_t run, Int_t timeStamp){
   }  
   if (cosmicAll) AliTPCcalibDButil::GetNearest(cosmicAll,timeStamp,dcosmic,vccosmicAll);
   (*fPcstream)<<"dcs"<<
-    "vclaserA0="<<vclaserA[0]<<
-    "vclaserA1="<<vclaserA[1]<<
-    "vclaserA2="<<vclaserA[2]<<
-    "vclaserC0="<<vclaserC[0]<<
-    "vclaserC1="<<vclaserC[1]<<
-    "vclaserC2="<<vclaserC[2]<<
-    "vccosmicAll="<<vccosmicAll<<
-    "dlaserA="<<dlaserA<<
-    "dlaserC="<<dlaserC<<
-    "dcosmic="<<dcosmic<<
-    "slaserA="<<slaserA<<
-    "slaserC="<<slaserC<<
-    "scosmic="<<scosmic;
+    "vclaserA0="   << vclaserA[0]<< // Laser offset A-Side;Drift
+    "vclaserA1="   << vclaserA[1]<< // Laser drift correction A-Side;Drift
+    "vclaserA2="   << vclaserA[2]<< // Laser gy correction A-Side;Drift
+    "vclaserC0="   << vclaserC[0]<< // Laser offset A-Side;Drift
+    "vclaserC1="   << vclaserC[1]<< // Laser drift correction A-Side;Drift
+    "vclaserC2="   << vclaserC[2]<< // Laser gy correction A-Side;Drift
+    "vccosmicAll=" << vccosmicAll<< // Cosmic drift corrrection;Drift
+    "dlaserA="     << dlaserA    << // Distance to laser measurement A-Side;Drift
+    "dlaserC="     << dlaserC    << // Distance to laser measurement C-Side;Drift
+    "dcosmic="     << dcosmic    << // Distance to cosmics measurement A-Side;Drift
+    "slaserA="     << slaserA    << //TODO: Obsolete?
+    "slaserC="     << slaserC    << //TODO: Obsolete?
+    "scosmic="     << scosmic;      //TODO: Obsolete?
 
   static TGeoMatrix * matrixAlign=0;
   static Double_t twistX=0;
@@ -620,6 +654,7 @@ void AliTPCcalibSummary::ProcessDriftCE(Int_t run,Int_t timeStamp){
   ltime0A  = fDButil->GetLaserTime0(run,timeStamp,36000,0);
   ltime0C  = fDButil->GetLaserTime0(run,timeStamp,36000,1);
   //
+  // TODO: are the values tdriftCE and tcdriftCE redundant and need both be kept?
   for (Int_t i=0; i<arrT->GetEntries();i++){
     tdriftCE[i]=0;
     vdriftCE[i]=0;
@@ -629,8 +664,9 @@ void AliTPCcalibSummary::ProcessDriftCE(Int_t run,Int_t timeStamp){
     Double_t deltaT,gry;
     AliTPCcalibDButil::GetNearest(graph,timeStamp,deltaT,gry);
     tndriftCE[i]=graph->GetN();
-    tcdriftCE[i]=gry;	       
-    tddriftCE[i]=deltaT;	       
+    tcdriftCE[i]=gry;
+    tddriftCE[i]=deltaT;
+    // TODO: use tdriftCE or tndriftCE
     if (i%36<18){
       vdriftCE[i] =(param->GetZLength(i)/(tdriftCE[i]*param->GetTSample()*(1.-ltime0A)-param->GetL1Delay()))/param->GetDriftV();
     }else{
@@ -639,13 +675,13 @@ void AliTPCcalibSummary::ProcessDriftCE(Int_t run,Int_t timeStamp){
   }
   // export values
   (*fPcstream)<<"dcs"<<  
-    "tdriftCE.="<<&tdriftCE<<    // arrival time 
-    "vdriftCE.="<<&vdriftCE<<    // derived drift velocity per chamber 
-    "tndriftCE.="<<&tndriftCE<<  // number of points (chambers)
-    "tcdriftCE.="<<&tcdriftCE<<  // constant evaluation - nearest point used
-    "tddriftCE.="<<&tddriftCE<<  // distance to closest measuement
-    "ltime0A="<<ltime0A<<        // laser offset expected in reconstruction
-    "ltime0C="<<ltime0C;         // laser offset expected in reconstruction 
+    "tdriftCE.="  << &tdriftCE  << // CE arrival time;CE;Sector                  // TODO: obsolete, redundant?
+    "vdriftCE.="  << &vdriftCE  << // CE derived drift velocity;CE;Sector
+    "tndriftCE.=" << &tndriftCE << // CE number of points;CE;Sector
+    "tcdriftCE.=" << &tcdriftCE << // CE arrival time - nearest point;CE;Sector
+    "tddriftCE.=" << &tddriftCE << // CE distance to closest measuement;CE;Sector
+    "ltime0A="    << ltime0A    << // CE laser offset A-Side;CE
+    "ltime0C="    << ltime0C     ; // CE laser offset C-Side;CE
    }
 
 
@@ -682,37 +718,37 @@ void AliTPCcalibSummary::ProcessDriftAll(Int_t run,Int_t timeStamp){
   //
   vdriftITS= fDButil->GetVDriftTPCITS(dits, run,timeStamp);
   //
-  ltime0A  = fDButil->GetLaserTime0(run,timeStamp,36000,0);
-  ltime0C  = fDButil->GetLaserTime0(run,timeStamp,36000,1);
+  ltime0A  = fDButil->GetLaserTime0(run,timeStamp,36000,0); // TODO: not used, needed?
+  ltime0C  = fDButil->GetLaserTime0(run,timeStamp,36000,1); // TODO: not used, needed?
 
   (*fPcstream)<<"dcs"<<  
     //
-    "vdriftCEA="<<vdriftCEA<<   // drift velocity CE
-    "vdriftCEC="<<vdriftCEC<<
-    "vdriftCEM="<<vdriftCEM<<
-    "dcea="<<dcea<<
-    "dcec="<<dcec<<
-    "dcem="<<dcem<<
-    "vdriftLTA="<<vdriftLTA<<   // drift velocity laser tracks
-    "vdriftLTC="<<vdriftLTC<<
-    "vdriftLTM="<<vdriftLTM<<
-    "dla="<<dla<<
-    "dlc="<<dlc<<
-    "dlm="<<dlm<<
-    "vdriftLTAon="<<vdriftLTAon<<   // drift velocity laser tracks and CE from online algorithm
-    "vdriftLTCon="<<vdriftLTCon<<
-    "vdriftLTMon="<<vdriftLTMon<<
-    "dlaOn="<<dlaon<<
-    "dlcOn="<<dlcon<<
-    "dlmOn="<<dlmon<<
+    "vdriftCEA="   << vdriftCEA   << // CE drift correction A-Side;Drift
+    "vdriftCEC="   << vdriftCEC   << // CE drift correction C-Side;Drift
+    "vdriftCEM="   << vdriftCEM   << // CE drift correction Mean;Drift
+    "dcea="        << dcea        << // CE distance to closest measurement A-Side;Drift
+    "dcec="        << dcec        << // CE distance to closest measurement C-Side;Drift
+    "dcem="        << dcem        << // CE distance to closest measurement Mean;Drift
+    "vdriftLTA="   << vdriftLTA   << // Offline Laser track vdrift correction A-Side;Drift
+    "vdriftLTC="   << vdriftLTC   << // Offline Laser track vdrift correction C-Side;Drift
+    "vdriftLTM="   << vdriftLTM   << // Offline Laser track vdrift correction Mean;Drift
+    "dla="         << dla         << // Offline Laser track distance to closest measurement A-Side;Drift
+    "dlc="         << dlc         << // Offline Laser track distance to closest measurement C-Side;Drift
+    "dlm="         << dlm         << // Offline Laser track distance to closest measurement Mean;Drift
+    "vdriftLTAon=" << vdriftLTAon << // Online Laser track vdrift correction A-Side;Drift
+    "vdriftLTCon=" << vdriftLTCon << // Online Laser track vdrift correction C-Side;Drift
+    "vdriftLTMon=" << vdriftLTMon << // Online Laser track vdrift correction Mean;Drift
+    "dlaOn="       << dlaon       << // Online Laser track distance to closest measurement A-Side;Drift
+    "dlcOn="       << dlcon       << // Online Laser track distance to closest measurement C-Side;Drift
+    "dlmOn="       << dlmon       << // Online Laser track distance to closest measurement Mean;Drift
     //
     //
-    "vdriftITS="<<vdriftITS<<
-    "dits="<<dits<<
-    "ctime0="<<ctime0<<
-    "vdriftP="<<vdriftP<<       // drift velocity comsic 
-    "dp="<<dp<<
-    "vdrift1="<<vdrift1;        // combined drift velocity
+    "vdriftITS="   << vdriftITS   << // TPC-ITS vdrift correction;Drift
+    "dits="        << dits        << // TPC-ITS vdrift correction distance to closest measurement;Drift
+    "ctime0="      << ctime0      << // Trigger offset correction;Drift
+    "vdriftP="     << vdriftP     << // Cosmics vdrift correction;Drift
+    "dp="          << dp          << // Cosmics vdrift correction distance to closest measurement;Drift
+    "vdrift1="     << vdrift1      ; // combined drift velocity;Drift
 
 }
 
@@ -914,46 +950,46 @@ void AliTPCcalibSummary::ProcessGain(Int_t irun, Int_t timeStamp){
     if (graphMIP) gainMIP = AliTPCcalibDButil::EvalGraphConst(graphMIP,timeStamp);
     if (graphCosmic) gainCosmic = AliTPCcalibDButil::EvalGraphConst(graphCosmic,timeStamp);
     if (graphAttach) attachMIP = AliTPCcalibDButil::EvalGraphConst(graphAttach,timeStamp);
-    if (graphMIP)  AliTPCcalibDButil::GetNearest(graphMIP, timeStamp, dMIP,dummy);    
+    if (graphMIP)  AliTPCcalibDButil::GetNearest(graphMIP, timeStamp, dMIP,dummy);
   }
     
   // time dependence of gain 
   (*fPcstream)<<"dcs"<<
-    "grPadEqualMax.=" << &ggrPadEqualMax <<
-    "grPadEqualTot.=" << &ggrPadEqualTot <<
-    "rocGainIROC.="            << &vGainGraphIROC        <<          
-    "rocGainOROCMedium.="      << &vGainGraphOROCmed     <<
-    "rocGainOROCLong.="        << &vGainGraphOROClong    <<
-    "rocGainErrIROC.="         << &vGainGraphIROCErr     <<
-    "rocGainErrOROCMedium.="   << &vGainGraphOROCmedErr  <<
-    "rocGainErrOROCLong.="     << &vGainGraphOROClongErr <<
-    "vGainQMaxGraphRegion.="   << &vGainQMaxGraphRegion<<
-    "vGainQTotGraphRegion.="   << &vGainQTotGraphRegion<<
+    "grPadEqualMax.="             << &ggrPadEqualMax             <<
+    "grPadEqualTot.="             << &ggrPadEqualTot             <<
+    "rocGainIROC.="               << &vGainGraphIROC             <<
+    "rocGainOROCMedium.="         << &vGainGraphOROCmed          <<
+    "rocGainOROCLong.="           << &vGainGraphOROClong         <<
+    "rocGainErrIROC.="            << &vGainGraphIROCErr          <<
+    "rocGainErrOROCMedium.="      << &vGainGraphOROCmedErr       <<
+    "rocGainErrOROCLong.="        << &vGainGraphOROClongErr      <<
+    "vGainQMaxGraphRegion.="      << &vGainQMaxGraphRegion       <<
+    "vGainQTotGraphRegion.="      << &vGainQTotGraphRegion       <<
     //
-    "vFitDipAngleParMaxShort.="   << &vFitDipAngleParMaxShort<<
-    "vFitDipAngleParMaxMedium.="  << &vFitDipAngleParMaxMedium<<
-    "vFitDipAngleParMaxLong.="    << &vFitDipAngleParMaxLong<<
-    "vFitDipAngleParMaxAbsolute.="<< &vFitDipAngleParMaxAbsolute<<
+    "vFitDipAngleParMaxShort.="   << &vFitDipAngleParMaxShort    <<
+    "vFitDipAngleParMaxMedium.="  << &vFitDipAngleParMaxMedium   <<
+    "vFitDipAngleParMaxLong.="    << &vFitDipAngleParMaxLong     <<
+    "vFitDipAngleParMaxAbsolute.="<< &vFitDipAngleParMaxAbsolute <<
     //
-    "vFitDipAngleParTotShort.="   << &vFitDipAngleParTotShort<<
-    "vFitDipAngleParTotMedium.="  << &vFitDipAngleParTotMedium<<
-    "vFitDipAngleParTotLong.="    << &vFitDipAngleParTotLong<<
-    "vFitDipAngleParTotAbsolute.="<< &vFitDipAngleParTotAbsolute<<    
+    "vFitDipAngleParTotShort.="   << &vFitDipAngleParTotShort    <<
+    "vFitDipAngleParTotMedium.="  << &vFitDipAngleParTotMedium   <<
+    "vFitDipAngleParTotLong.="    << &vFitDipAngleParTotLong     <<
+    "vFitDipAngleParTotAbsolute.="<< &vFitDipAngleParTotAbsolute <<
     //
-    "grDipAngleMaxShort.="        << &ggrDipAngleMaxShort    <<
-    "grDipAngleMaxMedium.="       << &ggrDipAngleMaxMedium   <<
-    "grDipAngleMaxLong.="         << &ggrDipAngleMaxLong     <<
-    "grDipAngleMaxAbsolute.="     << &ggrDipAngleMaxAbsolute <<
+    "grDipAngleMaxShort.="        << &ggrDipAngleMaxShort        <<
+    "grDipAngleMaxMedium.="       << &ggrDipAngleMaxMedium       <<
+    "grDipAngleMaxLong.="         << &ggrDipAngleMaxLong         <<
+    "grDipAngleMaxAbsolute.="     << &ggrDipAngleMaxAbsolute     <<
     //
-    "grDipAngleTotShort.="        << &ggrDipAngleTotShort    <<
-    "grDipAngleTotMedium.="       << &ggrDipAngleTotMedium   <<
-    "grDipAngleTotLong.="         << &ggrDipAngleTotLong     <<
-    "grDipAngleTotAbsolute.="     << &ggrDipAngleTotAbsolute <<
+    "grDipAngleTotShort.="        << &ggrDipAngleTotShort        <<
+    "grDipAngleTotMedium.="       << &ggrDipAngleTotMedium       <<
+    "grDipAngleTotLong.="         << &ggrDipAngleTotLong         <<
+    "grDipAngleTotAbsolute.="     << &ggrDipAngleTotAbsolute     <<
     //
-    "gainMIP="                 << gainMIP                <<
-    "attachMIP="               << attachMIP              <<
-    "dMIP="                    << dMIP                   <<
-    "gainCosmic="              << gainCosmic;
+    "gainMIP="                    << gainMIP                     <<
+    "attachMIP="                  << attachMIP                   <<
+    "dMIP="                       << dMIP                        <<
+    "gainCosmic="                 << gainCosmic                   ;
 }
 
 
@@ -1033,10 +1069,10 @@ void AliTPCcalibSummary::ProcessDriftCERef(){
     TVectorD param;
     TMatrixD covar;
     tree->SetAlias("dt","CETmean.fElements-R.CETmean.fElements");
-    TCut cutAll ="inCE&&inCER&&abs(CETmean.fElements-R.CETmean.fElements)<0.5"; 
+    TCut cutAll ="inCE&&inCER&&abs(CETmean.fElements-R.CETmean.fElements)<0.5";
     TString  fstringG="";              // global part
     fstringG+="ly.fElements++";
-    fstringG+="(lx.fElements-134.)++";  
+    fstringG+="(lx.fElements-134.)++";
     for (Int_t isec=0; isec<72; isec++){
       TStatToolkit::FitPlane(tree,"0.264*dt", fstringG.Data(),Form("sector==%d",isec)+cutAll, chi2,npoints,param,covar,-1,0, 10000000, kFALSE);
       if (npoints<3) continue;
@@ -1067,20 +1103,20 @@ void AliTPCcalibSummary::ProcessDriftCERef(){
 
   }
   (*fPcstream)<<"dcs"<<     // CE information
-    "CETSector.="<<&sec<<    // sector numbers
-    "CETRefA.="<<&vecASide<<   // diff to reference A side
-    "CETRefC.="<<&vecCSide<<   // diff to reference C side    
+    "CETSector.="  << &sec      << // sector numbers
+    "CETRefA.="    << &vecASide << // diff to reference A side
+    "CETRefC.="    << &vecCSide << // diff to reference C side
     //                      // fit in respect to reference data
-    "CETRef0.="<<&vec0<<    // offset change
-    "CETRefY.="<<&vecLy<<   // slope y change - rad
-    "CETRefX.="<<&vecLx<<   // slope x change - rad
-    "CETRefChi2.="<<&vecChi2<<    // chi2 (rms in cm)
-    "CETRefN.="<<&vecN<<     //number of accepted points
+    "CETRef0.="    << &vec0     << // offset change
+    "CETRefY.="    << &vecLy    << // slope y change - rad
+    "CETRefX.="    << &vecLx    << // slope x change - rad
+    "CETRefChi2.=" << &vecChi2  << // chi2 (rms in cm)
+    "CETRefN.="    << &vecN     << //number of accepted points
     //                       // fit in respect per mean per side
-    "CET0.="<<&vecA0<<       // offset change
-    "CETY.="<<&vecALy<<      // slope y change - rad
-    "CETX.="<<&vecALx<<      // slope x change - rad
-    "CETChi2.="<<&vecAChi2;  // chi2 (rms in cm)
+    "CET0.="       << &vecA0    << // offset change
+    "CETY.="       << &vecALy   << // slope y change - rad
+    "CETX.="       << &vecALx   << // slope x change - rad
+    "CETChi2.="    << &vecAChi2  ; // chi2 (rms in cm)
 }
 
 void AliTPCcalibSummary::ProcessPulserRef(){
@@ -1144,18 +1180,18 @@ void AliTPCcalibSummary::ProcessPulserRef(){
     isCalc=kTRUE;
   }
   (*fPcstream)<<"dcs"<<     // Pulser information
-    "PulserTSector.="<<&sec<<    // sector numbers
+    "PulserTSector.="  << &sec     << // sector numbers
     //                      // fit in respect to reference
-    "PulserTRef0.="<<&vec0<<    // offset change
-    "PulserTRefY.="<<&vecLy<<   // slope y change - rad
-    "PulserTRefX.="<<&vecLx<<   // slope x change - rad
-    "PulserTRefChi2.="<<&vecChi2<<    // chi2 (rms in cm)
-    "PulserTRefN.="<<&vecN<<     //number of accepted points
+    "PulserTRef0.="    << &vec0    << // offset change
+    "PulserTRefY.="    << &vecLy   << // slope y change - rad
+    "PulserTRefX.="    << &vecLx   << // slope x change - rad
+    "PulserTRefChi2.=" << &vecChi2 << // chi2 (rms in cm)
+    "PulserTRefN.="    << &vecN    << //number of accepted points
     //                       // fit in respect per mean per side
-    "PulserT0.="<<&vecA0<<       // offset change
-    "PulserTY.="<<&vecALy<<      // slope y change - rad
-    "PulserTX.="<<&vecALx<<      // slope x change - rad
-    "PulserTChi2.="<<&vecAChi2;  // chi2 (rms in cm)
+    "PulserT0.="       << &vecA0   << // offset change
+    "PulserTY.="       << &vecALy  << // slope y change - rad
+    "PulserTX.="       << &vecALx  << // slope x change - rad
+    "PulserTChi2.="    << &vecAChi2 ; // chi2 (rms in cm)
 }
 
 void AliTPCcalibSummary::ProcessCurrent(Int_t irun, Int_t itime){
@@ -1213,7 +1249,7 @@ void AliTPCcalibSummary::ProcessCurrent(Int_t irun, Int_t itime){
 	  Double_t startTime=sensor->GetStartTime();
 	  Double_t * time = new Double_t[gr->GetN()];
 	  for (Int_t ip=0; ip<gr->GetN(); ip++){ time[ip]= (gr->GetX()[ip]*3600.)+startTime;}	  
-	  gr=new TGraph(gr->GetN(), time, gr->GetY());	
+	  gr=new TGraph(gr->GetN(), time, gr->GetY());
 	  delete [] time;
 	}      
       }
@@ -1238,7 +1274,7 @@ void AliTPCcalibSummary::ProcessCurrent(Int_t irun, Int_t itime){
       minROC[isec]=TMath::MinElement(lastBin-firstBin, &(gr->GetY()[firstBin]));
       maxROC[isec]=TMath::MaxElement(lastBin-firstBin, &(gr->GetY()[firstBin]));
       meanROC[isec]=TMath::Mean(lastBin-firstBin, &(gr->GetY()[firstBin]));
-      medianROC[isec]=TMath::Median(lastBin-firstBin, &(gr->GetY()[firstBin]));       
+      medianROC[isec]=TMath::Median(lastBin-firstBin, &(gr->GetY()[firstBin]));
       graph2 = new TGraph(lastBin-firstBin, &(gr->GetX()[firstBin]), &(gr->GetY()[firstBin]));
       delete currentArray2->At(isec);
       currentArray2->AddAt(graph2,isec);
@@ -1252,38 +1288,38 @@ void AliTPCcalibSummary::ProcessCurrent(Int_t irun, Int_t itime){
   medianIOROC=TMath::Median(36, &(meanROC.GetMatrixArray()[36]));
   //
   (*fPcstream)<<"dcs"<<     // current information
-    "isec.="<<&sector<<                       //sector number
-    "IIROC.="<<&currentIROC<<               // current sample at given moment
-    "IOROC.="<<&currentOROC<<               // current sample at given moment
-    "medianIIROC="<<medcurIROC<<            // median at given moment 
-    "medianIOROC="<<medcurOROC<<            // median at given moment
+    "isec.="        << &sector      << // sector number
+    "IIROC.="       << &currentIROC << // current sample at given moment
+    "IOROC.="       << &currentOROC << // current sample at given moment
+    "medianIIROC="  << medcurIROC   << // median at given moment
+    "medianIOROC="  << medcurOROC   << // median at given moment
     //
-    "minIROC.="<<&minROC<<                  // minimum in +-5 min 
-    "maxIROC.="<<&maxROC<<                  // maximum in +-5 min
-    "meanIROC.="<<&meanROC<<                // mean in +-5 min
-    "medianIROC.="<<&medianROC<<              // median in +-5 min
-    "meanIIROC5="<<meanIIROC<<               // mean current in IROC +-5 minutes 
-    "meanIOROC5="<<meanIOROC<<               // mean current in OROC 
-    "medianIIROC5="<<medianIIROC<<           // median current in IROC 
-    "medianIOROC5="<<medianIOROC;           // medianan current in OROC 
+    "minIROC.="     << &minROC      << // minimum in +-5 min
+    "maxIROC.="     << &maxROC      << // maximum in +-5 min
+    "meanIROC.="    << &meanROC     << // mean in +-5 min
+    "medianIROC.="  << &medianROC   << // median in +-5 min
+    "meanIIROC5="   << meanIIROC    << // mean current in IROC +-5 minutes
+    "meanIOROC5="   << meanIOROC    << // mean current in OROC
+    "medianIIROC5=" << medianIIROC  << // median current in IROC
+    "medianIOROC5=" << medianIOROC   ; // medianan current in OROC
    
 
   (*fPcstream)<<"current"<<     // current information
-    "time="<<itime<<
-    "isec.="<<&sector<<                       //sector number
-    "IIROC.="<<&currentIROC<<               // current sample at given moment
-    "IOROC.="<<&currentOROC<<               // current sample at given moment
-    "medianIIROC="<<medcurIROC<<            // median at given moment 
-    "medianIOROC="<<medcurOROC<<            // median at given moment
+    "time="         << itime        <<
+    "isec.="        << &sector      << // sector number
+    "IIROC.="       << &currentIROC << // current sample at given moment
+    "IOROC.="       << &currentOROC << // current sample at given moment
+    "medianIIROC="  << medcurIROC   << // median at given moment
+    "medianIOROC="  << medcurOROC   << // median at given moment
     //
-    "minIROC.="<<&minROC<<                  // minimum in +-5 min 
-    "maxIROC.="<<&maxROC<<                  // maximum in +-5 min
-    "meanIROC.="<<&meanROC<<                // mean in +-5 min
-    "medianIROC.="<<&medianROC<<              // median in +-5 min
-    "meanIIROC5="<<meanIIROC<<               // mean current in IROC +-5 minutes 
-    "meanIOROC5="<<meanIOROC<<               // mean current in OROC 
-    "medianIIROC5="<<medianIIROC<<           // median current in IROC 
-    "medianIOROC5="<<medianIOROC<< // medianan current in OROC 
+    "minIROC.="     << &minROC      << // minimum in +-5 min
+    "maxIROC.="     << &maxROC      << // maximum in +-5 min
+    "meanIROC.="    << &meanROC     << // mean in +-5 min
+    "medianIROC.="  << &medianROC   << // median in +-5 min
+    "meanIIROC5="   << meanIIROC    << // mean current in IROC +-5 minutes
+    "meanIOROC5="   << meanIOROC    << // mean current in OROC
+    "medianIIROC5=" << medianIIROC  << // median current in IROC
+    "medianIOROC5=" << medianIOROC  << // medianan current in OROC
     "\n";
 
 }

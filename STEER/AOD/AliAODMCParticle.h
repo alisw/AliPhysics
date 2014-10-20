@@ -71,24 +71,29 @@ class AliAODMCParticle: public AliVParticle {
     virtual Int_t GetNDaughters  () const { return fDaughter[1]>0 ? fDaughter[1]-fDaughter[0]+1 : (fDaughter[0]>0 ? 1:0 ) ;}
     virtual void SetMother(Int_t im){fMother = im;}
     virtual Int_t GetMother() const {return fMother;}
+
+    virtual Int_t   GetFirstDaughter()   const {return fDaughter[0];}
+    virtual Int_t   GetLastDaughter()    const {return fDaughter[1];}
+
     virtual void Print(const Option_t *opt = "") const;
     virtual Int_t GetPdgCode() const { return fPdgCode;}
     virtual Int_t PdgCode()    const { return GetPdgCode();}
-    
+    virtual void    SetGeneratorIndex(Short_t i) {fGeneratorIndex = i;}
+    virtual Short_t GetGeneratorIndex() const {return fGeneratorIndex;}
     enum { kPrimary = 1<<0, kPhysicalPrim = 1<<1, kSecondaryFromWeakDecay = 1<<2, kSecondaryFromMaterial = 1 <<3}; // use only the first 8bits!
-    void SetFlag(UInt_t flag){fFlag = flag;} // carefull flag encodes three different types of information 
-    UInt_t GetFlag() const {return fFlag;}
+    virtual void SetFlag(UInt_t flag){fFlag = flag;} // carefull flag encodes three different types of information 
+    virtual UInt_t GetFlag() const {return fFlag;}
 
 
     // for the status we use the upper 16 bits/2 bytes of the flag word
     void SetStatus(Int_t status){
       if(status<0)return; // a TParticle can have a negative status, catch this here and do nothing
-      fFlag &= 0xffff;   // reset the upper bins keep the lower bins
+      fFlag &= 0xffff;    // reset the upper bins keep the lower bins
       fFlag |= (((UInt_t)status)<<16); // bit shift by 16
     }
-    ULong_t GetStatus() const {
+    virtual UInt_t GetStatus() const {
       // bit shift by 16
-      return ULong_t(fFlag>>16);
+      return fFlag>>16;
     }
 
     // Bitwise operations
@@ -96,7 +101,7 @@ class AliAODMCParticle: public AliVParticle {
       if(b)fFlag |= kPrimary;
       else fFlag &= ~kPrimary;
     }
-    Bool_t IsPrimary() const {return ((fFlag&kPrimary)==kPrimary);} 
+    virtual Bool_t IsPrimary() const {return ((fFlag&kPrimary)==kPrimary);} 
 
     void SetPhysicalPrimary(Bool_t b = kTRUE){
      if(b)fFlag |= kPhysicalPrim;
@@ -152,7 +157,7 @@ class AliAODMCParticle: public AliVParticle {
   Double32_t       fVy;                   // [0.,0.,12] y of production vertex
   Double32_t       fVz;                   // [0.,0.,12] z of production vertex
   Double32_t       fVt;                   // [0.,0.,12] t of production vertex
-
+  Short_t          fGeneratorIndex;       //! Index of generator in cocktail     
   // Copy the uniquID to another data member? unique ID is correctly handled 
   // via TOBject Copy construct but not by AliVParticle ctor (no passing of 
   // TParticles
@@ -170,7 +175,7 @@ class AliAODMCParticle: public AliVParticle {
     };
   */
 
-  ClassDef(AliAODMCParticle,7)  // AliVParticle realisation for AODMCParticles
+  ClassDef(AliAODMCParticle,8)  // AliVParticle realisation for AODMCParticles
 
 };
 

@@ -25,7 +25,7 @@
 #include <cassert>
 
 #include "TSystem.h"
-
+#include "AliDAQ.h"
 #include "AliHLTZDCAgent.h"
 
 #include "AliHLTErrorGuard.h"
@@ -56,6 +56,11 @@ AliHLTZDCAgent::AliHLTZDCAgent()  :
 AliHLTZDCAgent::~AliHLTZDCAgent()
 {
   // see header file for class documentation
+}
+
+UInt_t AliHLTZDCAgent::GetDetectorMask() const
+{
+  return AliDAQ::kZDC;
 }
 
 int AliHLTZDCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,

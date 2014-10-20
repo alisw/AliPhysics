@@ -109,7 +109,7 @@ class AliLog: public TObject
   static ostream& Stream(EType_t type, UInt_t level,
                          const char* module, const char* className,
                          const char* function, const char* file, Int_t line);
-
+  static void TestException(Int_t level=10); 
  private:
 
 		// constructor is made private for implementing a singleton

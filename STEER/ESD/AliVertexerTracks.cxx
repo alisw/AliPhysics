@@ -1928,6 +1928,11 @@ Bool_t AliVertexerTracks::FindNextVertexMV()
     // create indices
     int ntrk = fTrkArraySel.GetEntries();
     int nindices = fCurrentVertex->GetNContributors() - (fConstraint ? 1:0);
+    if (nindices<1) {
+      delete fCurrentVertex;
+      fCurrentVertex = 0;
+      return kFALSE;
+    }
     UShort_t *indices = 0;
     if (nindices>0) indices = new UShort_t[nindices];
     int nadded = 0;
@@ -1937,8 +1942,10 @@ Bool_t AliVertexerTracks::FindNextVertexMV()
       t->SetBit(kBitAccounted);
       indices[nadded++] = fIdSel[itr];
     }
-    if (nadded!=nindices) printf("Mismatch : NInd: %d Nadd: %d\n",nindices,nadded);
-    fCurrentVertex->SetIndices(nindices,indices);
+    if (nadded!=nindices) {
+      printf("Mismatch : NInd: %d Nadd: %d\n",nindices,nadded);
+    }
+    fCurrentVertex->SetIndices(nadded,indices);
     // set vertex title
     TString title="VertexerTracksMVNoConstraint";
     if(fConstraint) title="VertexerTracksMVWithConstraint";

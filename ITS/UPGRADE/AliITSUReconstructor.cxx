@@ -29,7 +29,7 @@
 #include "AliESDEvent.h"
 
 #include "AliTracker.h"
-#include "AliITSUTrackerGlo.h"
+#include "AliITSUTrackerCooked.h"
 
 #include "AliITSUGeomTGeo.h"
 #include "AliITSUSegmentationPix.h"
@@ -181,7 +181,27 @@ void AliITSUReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) c
 AliTracker* AliITSUReconstructor::CreateTracker() const
 {
   // create a ITS tracker
-  AliITSUTrackerGlo* tracker = new AliITSUTrackerGlo((AliITSUReconstructor*)this);
+  Int_t opt = GetRecoParam()->GetTracker();
+  Bool_t sa = GetRecoParam()->GetSAonly();
+
+  Info("CreateTracker","Creating the ITSU tracker %d in mode %d",opt,sa);
+
+  AliTracker *tracker=0;
+  switch (opt) {
+  case 0:
+     tracker = new AliITSUTrackerGlo((AliITSUReconstructor*)this);
+     break;
+  case 1:
+     tracker = new AliITSUTrackerCooked((AliITSUReconstructor*)this);
+     ((AliITSUTrackerCooked*)tracker)->SetSAonly(sa);
+     break;
+  // case 2:
+  //    tracker = new AliITSUTrackerSA((AliITSUReconstructor*)this);
+  //    ((AliITSUTrackerSA*)tracker)->SetSAonly(sa);
+  //    break;
+  default:
+     AliFatal("Undefined ITSU tracker type !");
+  }
  
   return tracker;
  
@@ -191,8 +211,8 @@ AliTracker* AliITSUReconstructor::CreateTracker() const
 AliVertexer* AliITSUReconstructor::CreateVertexer() const
 {
   // create a ITS vertexer
-  // to be implemented for the upgrade
-  AliInfo("Creating dummy vertexer");
+  // 
+  AliInfo("Creating vertexer using tracklets with the first 3 ITS layers");
   //  AliDebug(1,"ITSU vertexer should be initiated here\n");
   return new AliITSUVertexer();
 }

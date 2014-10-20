@@ -1,7 +1,7 @@
 #include <fstream>
 #include <cstring>
 #include <vector>
-#include "Log.h"
+#include "TauolaLog.h"
 #include "Tauola.h"
 #include "TauolaEvent.h"
 

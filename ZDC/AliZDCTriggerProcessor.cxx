@@ -80,7 +80,7 @@ UInt_t AliZDCTriggerProcessor::ProcessEvent()
   
   if((mbTriggered == kTRUE) || (cenTriggered == kTRUE) || 
      (semicenTriggered == kTRUE) || (emdTriggered == kTRUE)){
-      return 1;
+      return ctpInput;
   }
   else{
     return 0;

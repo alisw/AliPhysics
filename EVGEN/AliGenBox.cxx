@@ -153,7 +153,7 @@ void AliGenBox::GenerateN(Int_t ntimes)
 	      TMath::Cos(2*random[0]*TMath::Pi())*
 	      TMath::Sqrt(-2*TMath::Log(random[1]));
 	}
-	PushTrack(fTrackIt,-1,fIpart,p,origin,polar,time,kPPrimary,nt);
+	PushTrack(fTrackIt,-1,fIpart,p,origin,polar,time,kPPrimary,nt, 1., 1);
     }
 
     AliGenEventHeader* header = new AliGenEventHeader("BOX");

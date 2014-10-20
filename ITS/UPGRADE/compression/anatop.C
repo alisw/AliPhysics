@@ -171,7 +171,7 @@ void ProcessModule(int nc)
     }
     //
     if (newPatt) {
-      TBits* pt = new TBits(*redPar);
+      TBits* pt = new TBits(*refPat);
       patterns.AddLast(pt);
       if (pattCount.GetSize()<nPatterns+100) {
 	pattCount.Set(nPatterns+100);

@@ -44,6 +44,7 @@ HepMC/IO_HERWIG.cc
 HepMC/PdfInfo.cc
 HepMC/Polarization.cc
 HepMC/SearchVector.cc
+HepMC/SimpleVector.icc
 HepMC/StreamHelpers.cc
 HepMC/StreamInfo.cc
 HepMC/WeightContainer.cc
@@ -79,7 +80,6 @@ HepMC/PythiaWrapper6_4_WIN32.h
 HepMC/PythiaWrapper.h
 HepMC/SearchVector.h
 HepMC/SimpleVector.h
-HepMC/SimpleVector.icc
 HepMC/StreamHelpers.h
 HepMC/StreamInfo.h
 HepMC/TempParticleMap.h

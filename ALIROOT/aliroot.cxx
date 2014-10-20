@@ -39,6 +39,14 @@
 #include <AliRun.h>
 #include "Riostream.h"
 #include "ARVersion.h"
+// STD
+#include <iostream>
+#include <algorithm>
+#include <sstream>
+#include <stdexcept>
+#include <functional>
+#include <AliLog.h>
+
 
 #if defined __linux
 //On linux Fortran wants this, so we give to it!
@@ -58,6 +66,8 @@ extern "C" void g95_runtime_start();
 
 using std::cout;
 using std::endl;
+using std::exception;
+using std::cerr;
 
 //_____________________________________________________________________________
 int main(int argc, char **argv)
@@ -89,7 +99,7 @@ int main(int argc, char **argv)
   // Create new configuration 
   
   new AliRun("gAlice","The ALICE Off-line Simulation Framework");
-    
+  AliLog::GetRootLogger();  // force AliLog to initialize at start time
   // Start interactive geant
   
   TRint *theApp = new TRint("aliroot", &argc, argv);
@@ -98,7 +108,13 @@ int main(int argc, char **argv)
 #endif
   
   // --- Start the event loop ---
-  theApp->Run();
+  //  run.Info("Start AliRoot");
+  try{
+    theApp->Run();  
+  } catch(const exception &e){
+    cerr << "Excception catched" << e.what() << endl;
+    AliLog::Message(0, "Exception catched", "ROOT", NULL, "Exception catched", NULL, 0);
+  }
   
   return(0);
 }

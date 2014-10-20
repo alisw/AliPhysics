@@ -45,6 +45,7 @@
 #include "EMCAL/AliEMCALv2.h"
 #include "ACORDE/AliACORDEv1.h"
 #include "VZERO/AliVZEROv7.h"
+#include "MFT/AliMFT.h"
 #include <TVirtualMagField.h>
 #endif
 
@@ -280,6 +281,7 @@ void Config()
   Int_t   iEMCAL =  0;
   Int_t   iACORDE=  0;
   Int_t   iVZERO =  0;
+  Int_t   iMFT   =  1;
   rl->CdGAFile();
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
@@ -334,7 +336,8 @@ void Config()
     {
       //=================== PIPE parameters ============================
 
-      AliPIPE *PIPE = new AliPIPEupgrade("PIPE", "Beam Pipe",0,1.8,0.08,40.0);
+      //AliPIPE *PIPE = new AliPIPEupgrade("PIPE", "Beam Pipe",1.8,0.06);
+      AliPIPE *PIPE = new AliPIPEupgrade("PIPE", "Beam Pipe");
       //AliPIPE *PIPE = new AliPIPEv3("PIPE", "Beam Pipe");
     }
  
@@ -447,6 +450,10 @@ void Config()
       AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
     }
 
+  if (iMFT)
+    {
+      AliMFT *MFT = new AliMFT("MFT", "normal MFT");
+    }
 
 }
 

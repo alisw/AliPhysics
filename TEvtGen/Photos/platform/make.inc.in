@@ -1,0 +1,26 @@
+PREFIX        = @prefix@
+HEPMCLOCATION = @with_hepmc@
+
+F77      = @F77@
+F77FLAGS = @FFLAGS@ -fPIC -fno-automatic -fno-backslash -ffixed-line-length-132
+FFLAGS   = $(F77FLAGS)
+
+LD       = @F77@
+LDFLAGS  = -g -lstdc++
+SOFLAGS  = -shared
+
+RANLIB   = @RANLIB@
+AR       = ar
+DIFF    = diff -ib
+
+CPP     = @DIRECT_CPP@
+CPPFLAGS= -C -P -traditional-cpp
+
+CC      = @CXX@
+CFLAGS  = @CXXFLAGS@ -fPIC -Wall -Wno-write-strings
+
+GCC     = @CC@
+GCCFLAGS= -O3 -fomit-frame-pointer -DHAVE_UNDERSCORE
+
+#Uncomment to compile with debug mode turned on
+#DEBUG = -D"_LOG_DEBUG_MODE_"

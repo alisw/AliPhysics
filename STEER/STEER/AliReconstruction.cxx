@@ -334,7 +334,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fMaxVMEM(0)
 {
 // create reconstruction object with default parameters
-  gGeoManager = NULL;
+  AliGeomManager::Destroy();
   
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     fReconstructor[iDet] = NULL;
@@ -1641,15 +1641,34 @@ void AliReconstruction::Begin(TTree *)
 	  snapshotFileOut="OCDB.root";
   }
 
-  if (!MisalignGeometry(fLoadAlignData)) {
-    Abort("MisalignGeometry", TSelector::kAbortProcess);
-    return;
+  TString detStr(fLoadAlignData);
+  if (!toCDBSnapshot) {
+    if (!MisalignGeometry(fLoadAlignData)) {
+      Abort("MisalignGeometry", TSelector::kAbortProcess);
+      return;
+    }
+  } else {
+    // when creating the snapshot, load the CDB alignment objects without applying them to the geometry
+    for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+      if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+      if (!strcmp(fgkDetectorName[iDet],"HLT")) continue;
+      if (AliGeomManager::GetNalignable(fgkDetectorName[iDet]) != 0)
+      {
+        TString detAlignPath = fgkDetectorName[iDet];
+        detAlignPath += "/Align/Data";
+        AliCDBManager::Instance()->Get(detAlignPath);
+      }
+    } // end loop over detectors
+    if(AliGeomManager::GetNalignable("GRP") != 0)
+      AliCDBManager::Instance()->Get("GRP/Align/Data");
   }
 
   const TMap* cdbCache = AliCDBManager::Instance()->GetEntryCache();
-  if(cdbCache->Contains("GRP/Geometry/Data"))
-	  AliCDBManager::Instance()->UnloadFromCache("GRP/Geometry/Data");
-  if(!toCDBSnapshot) AliCDBManager::Instance()->UnloadFromCache("*/Align/*");
+  if(!toCDBSnapshot) {
+    if(cdbCache->Contains("GRP/Geometry/Data"))
+      AliCDBManager::Instance()->UnloadFromCache("GRP/Geometry/Data");
+    AliCDBManager::Instance()->UnloadFromCache("*/Align/*");
+  }
   AliSysInfo::AddStamp("MisalignGeom");
 
   if (!InitGRP()) {
@@ -1974,9 +1993,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   static Long_t oldMres=0;
   static Long_t oldMvir=0;
   static Float_t oldCPU=0;
-  // static Long_t aveDMres=0;
-  // static Long_t aveDMvir=0;
-  // static Float_t aveDCPU=0;
+  static Long_t aveDMres=0;
+  static Long_t aveDMvir=0;
+  static Float_t aveDCPU=0;
 
   AliCodeTimerAuto("",0);
 
@@ -2489,6 +2508,19 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 		 nbf,fMemCountESDHLT,fhlttree->GetTotBytes(),fhlttree->GetZipBytes()));        
   }
     
+    gSystem->GetProcInfo(&procInfo);
+    Long_t dMres=(procInfo.fMemResident-oldMres)/1024;
+    Long_t dMvir=(procInfo.fMemVirtual-oldMvir)/1024;
+    Float_t dCPU=procInfo.fCpuUser+procInfo.fCpuSys-oldCPU;
+    aveDMres+=(dMres-aveDMres)/(iEvent-fFirstEvent+1);
+    aveDMvir+=(dMvir-aveDMvir)/(iEvent-fFirstEvent+1);
+    aveDCPU+=(dCPU-aveDCPU)/(iEvent-fFirstEvent+1);
+    AliInfo(Form("======================= End Event %d: Res %ld(%3ld <%3ld>) Vir %ld(%3ld <%3ld>) CPU %5.2f <%5.2f> ===================",
+                iEvent, procInfo.fMemResident/1024, dMres, aveDMres, procInfo.fMemVirtual/1024, dMvir, aveDMvir, dCPU, aveDCPU));
+    oldMres=procInfo.fMemResident;
+    oldMvir=procInfo.fMemVirtual;
+    oldCPU=procInfo.fCpuUser+procInfo.fCpuSys;
+  
     
   return kTRUE;
 }
@@ -3664,6 +3696,7 @@ void AliReconstruction::CleanUp()
 {
 // delete trackers and the run loader and close and delete the file
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+    if (fReconstructor[iDet]) fReconstructor[iDet]->SetRecoParam(NULL);
     delete fReconstructor[iDet];
     fReconstructor[iDet] = NULL;
     fLoader[iDet] = NULL;
@@ -4098,7 +4131,9 @@ Bool_t AliReconstruction::GetEventInfo()
     fEventInfo.SetEventType(fRawReader->GetType());
 
     ULong64_t mask = fRawReader->GetClassMask();
+    ULong64_t maskNext50 = fRawReader->GetClassMaskNext50();
     fEventInfo.SetTriggerMask(mask);
+    fEventInfo.SetTriggerMaskNext50(maskNext50);
     UInt_t clmask = fRawReader->GetDetectorPattern()[0];
     fEventInfo.SetTriggerCluster(AliDAQ::ListOfTriggeredDetectors(clmask));
 
@@ -4126,6 +4161,7 @@ Bool_t AliReconstruction::GetEventInfo()
     if (fRunLoader && (!fRunLoader->LoadTrigger())) {
       aCTP = fRunLoader->GetTrigger();
       fEventInfo.SetTriggerMask(aCTP->GetClassMask());
+      fEventInfo.SetTriggerMaskNext50(aCTP->GetClassMaskNext50());
       // get inputs from actp - just get
       AliESDHeader* esdheader = fesd->GetHeader();
       esdheader->SetL0TriggerInputs(aCTP->GetL0TriggerInputs());

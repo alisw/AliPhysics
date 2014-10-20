@@ -1744,7 +1744,7 @@ void AliMUONClusterFinderMLEM::Simple(AliMUONCluster& cluster)
 {
 /// Process simple cluster (small number of pads) without EM-procedure
 
-  Int_t nForFit = 1, clustFit[1] = {0}, nfit;
+  Int_t nForFit = 1, clustFit[1] = {0};
   Double_t parOk[3] = {0.}; 
   TObjArray *clusters[1]; 
   clusters[0] = fPixArray;
@@ -1767,7 +1767,7 @@ void AliMUONClusterFinderMLEM::Simple(AliMUONCluster& cluster)
     */
     if (!pad->IsSaturated()) pad->SetStatus(fgkUseForFit);
   }
-  nfit = fSplitter->Fit(cluster,1, nForFit, clustFit, clusters, parOk, fClusterList, fHistMlem);
+  fSplitter->Fit(cluster,1, nForFit, clustFit, clusters, parOk, fClusterList, fHistMlem);
 }
 
 //_____________________________________________________________________________

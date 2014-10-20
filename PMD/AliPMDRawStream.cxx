@@ -107,7 +107,6 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
   Int_t dataSize = fRawReader->GetDataSize();
   Int_t totaldataword = dataSize/4;
 
-
   if (dataSize <= 0) return -1;
 
   UInt_t data = 0;
@@ -202,7 +201,6 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
       for (Int_t i = 0; i < kblHLen; i++)
 	{
 	    iwordddl++;
-
 	    blHeaderWord[i] = (Int_t) GetNextWord();
 	}
 
@@ -260,7 +258,6 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 		  Int_t ich  = (data >> 12) & 0x003F;
 		  Int_t imcm = (data >> 18) & 0x07FF;
 		  Int_t ibit = (data >> 31) & 0x0001;
-
 		  if (imcm == 0)
 		    {
 		      AliWarning(Form("FEE address WRONG:: Module %d Patch Bus %d MCM %d",imodule,pbusid,imcm));
@@ -318,6 +315,8 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 
 	    } // patch bus loop
 
+//SKP added break next line (Reqd. if only one patch Bus)
+	  if (iwordddl == totaldataword) break;
 
 	  if (dspHeader.GetPaddingWord() == 1)
 	  {
@@ -332,10 +331,12 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 
 
 	} // end of DSP
+//SKP added break next line (Reqd. if only one patch Bus)
+	  if (iwordddl == totaldataword) break;
 
     } // end of BLOCK
-  
-  return iddl;
+ 
+ return iddl;
 }
 //_____________________________________________________________________________
 void AliPMDRawStream::GetRowCol(Int_t imodule, Int_t pbusid,

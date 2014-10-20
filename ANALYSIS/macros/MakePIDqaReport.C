@@ -1,3 +1,22 @@
+#include "TH1.h"
+#include "TH2.h"
+#include "TCanvas.h"
+#include "TFile.h"
+#include "TLine.h"
+#include "TList.h"
+#include "TMath.h"
+#include "TPaveText.h"
+#include "TObjArray.h"
+#include "TString.h"
+#include "TStyle.h"
+#include "TROOT.h"
+#include "TSystem.h"
+#include "TF1.h"
+#include "TPDF.h"
+#include "TColor.h"
+
+#include "AliPID.h"
+
 void SetupStyle();
 TH2* Get2DHistogramfromList(TList *pidqalist, const char* listname, const char* histoname);
 void AddFit(TH2* h2d);
@@ -28,13 +47,13 @@ void MakePIDqaReport(const char* inputFile, const char* outputFile="PIDqaReport.
 
   TFile f(inputFile);
   if (!f.IsOpen()){
-    printf("Could not open file '%s'\n",f.GetName())
+    printf("Could not open file '%s'\n",f.GetName());
     return;
   }
 
   TList *qaList = (TList*) f.Get("PIDqa");
   if (!qaList){
-    printf("Could not fine list 'PIDqa' in file '%s'\n",f.GetName())
+    printf("Could not fine list 'PIDqa' in file '%s'\n",f.GetName());
     return;
   }
 
@@ -107,7 +126,7 @@ void MakePIDqaReport(const char* inputFile, const char* outputFile="PIDqaReport.
   fCanvas->Clear();
 
   // TPC Response info
-  TObjArray *qaInfo=(TObjArray*)PIDqa->FindObject("QAinfo");
+  TObjArray *qaInfo=(TObjArray*)qaList->FindObject("QAinfo");
   TObjArray *tpcInfo=0x0;
   if (qaInfo && (tpcInfo=(TObjArray*)qaInfo->FindObject("TPC_info"))){
     TObjArray *tpcSplineInfo=(TObjArray*)tpcInfo->FindObject("TPC_spline_names");

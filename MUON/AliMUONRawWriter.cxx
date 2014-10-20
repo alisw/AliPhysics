@@ -480,7 +480,6 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
   UInt_t word;
   Int_t* buffer = 0;
   Int_t index;
-  Int_t locCard;
   UChar_t locDec, trigY, posY, posX, regOut;
   UInt_t regInpLpt;
   UInt_t regInpHpt;
@@ -646,7 +645,6 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
 
       if (locTrg)
       {
-        locCard = locTrg->LoCircuit();
         locDec  = locTrg->GetLoDecision();
         trigY   = locTrg->LoTrigY();
         posY    = locTrg->LoStripY();

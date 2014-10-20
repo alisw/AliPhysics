@@ -145,6 +145,8 @@
 #include "Riostream.h"
 #include "TRandom.h"
 #include <sstream>
+
+#include "AliSysInfo.h"
 using namespace std;
 
 AliTPCcalibAlign* AliTPCcalibAlign::fgInstance = 0;
@@ -449,7 +451,7 @@ AliTPCcalibAlign::~AliTPCcalibAlign() {
   for (Int_t i=0; i<4; i++){
     delete fTrackletDelta[i];   // tracklet residuals
   }
-
+  
 
 }
 
@@ -478,6 +480,7 @@ void AliTPCcalibAlign::Process(AliVEvent *event) {
   //
   for (Int_t i0=0;i0<ntracks;++i0) {
     AliVTrack *track0 = event->GetVTrack(i0);
+    if(!track0) continue;
     //AliESDfriendTrack *friendTrack = 0;
     TObject *calibObject=0;
     AliTPCseed *seed0 = 0;
@@ -505,6 +508,7 @@ void AliTPCcalibAlign::Process(AliVEvent *event) {
   //select pairs - for alignment  
   for (Int_t i0=0;i0<ntracks;++i0) {
       AliVTrack *track0 = event->GetVTrack(i0);
+      if(!track0) continue;
     //    if (track0->GetTPCNcls()<kminCl) continue;
     track0->GetImpactParameters(dca0[0],dca0[1]);
     //    if (TMath::Abs(dca0[0])>30) continue;
@@ -512,6 +516,7 @@ void AliTPCcalibAlign::Process(AliVEvent *event) {
     for (Int_t i1=0;i1<ntracks;++i1) {
       if (i0==i1) continue;
       AliVTrack *track1 = event->GetVTrack(i1);
+      if(!track1) continue;
       //      if (track1->GetTPCNcls()<kminCl) continue;
       track1->GetImpactParameters(dca1[0],dca1[1]);
       // fast cuts on dca and theta
@@ -921,8 +926,8 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
   //
   // linear parameters
   //
-  Double_t parLine1[10];
-  Double_t parLine2[10];
+  Double_t parLine1[10]={0};
+  Double_t parLine2[10]={0};
   TMatrixD par1(4,1),cov1(4,4),par2(4,1),cov2(4,4);
   Bool_t useInnerOuter = kFALSE;
   if (s1%36!=s2%36) useInnerOuter = fUseInnerOuter;  // for left - right alignment bot sectors refit can be used if specified
@@ -1525,16 +1530,33 @@ TLinearFitter* AliTPCcalibAlign::GetOrMakeFitter6(Int_t s1,Int_t s2) {
   //                     - rotation x-y
   //                     - tilting x-z, y-z
   static Int_t counter6=0;
-  static TF1 f6("f6","x[0]++x[1]++x[2]++x[3]++x[4]++x[5]");
+  //static TF1 f6("f6","x[0]++x[1]++x[2]++x[3]++x[4]++x[5]");  // change in the back compatibility in root - 
   TLinearFitter * fitter = GetFitter6(s1,s2);
   if (fitter) return fitter;
-  //  fitter=new TLinearFitter(6,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]");
-  fitter=new TLinearFitter(&f6,"");
+  fitter=new TLinearFitter(6,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]");
+  //fitter=new TLinearFitter(&f6,"");
   fitter->StoreData(kFALSE);
   fFitterArray6.AddAt(fitter,GetIndex(s1,s2));
   counter6++;
   //  if (GetDebugLevel()>0) cerr<<"Creating fitter6 "<<s1<<","<<s2<<"  :  "<<counter6<<endl;
   return fitter;
+  /*
+  //    as root changed interface at some moment I put here also the test - which should be unit test in future:
+  TLinearFitter fitter(6,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]");
+  for (Int_t i=0; i<10000; i++) { 
+    x[0]=i; 
+    x[1]=i*i; 
+    x[2]=i*i*i; 
+    x[3]=TMath::Power(i,1/2.); 
+    x[4]=TMath::Power(i,1/3.); 
+    x[5]=TMath::Power(i,1/4.); 
+    fitter.AddPoint(x,i*i*i);
+  }
+  fitter.Eval();
+  fitter.GetParameters(vec);
+  vec.Print();
+  => result of the fit should = for all vector elements except of element 2; - it was the case with root v5-34-09
+   */
 }
 
 
@@ -3819,3 +3841,155 @@ void AliTPCcalibAlign::MakeReportDyPhi(TFile */*output*/){
 }
 
 
+//______________________________________________________________________________
+void AliTPCcalibAlign::Streamer(TBuffer &R__b)
+{
+  // Stream an object of class AliTPCcalibAlign.
+  Bool_t isDebug=AliLog::GetDebugLevel("","AliTPCcalibAlign")>0;
+  if (isDebug) AliSysInfo::SetVerbose(kTRUE);
+
+  if (R__b.IsReading()) {
+    //    R__b.ReadClassBuffer(AliTPCcalibAlign::Class(),this);
+    UInt_t R__s, R__c;
+    Version_t R__v = R__b.ReadVersion(&R__s, &R__c);
+
+    AliTPCcalibBase::Streamer(R__b); // Stream the base class
+
+    // Read the "big data members" from the same Root directory
+    // Attention: the gDirectory may NOT correspond to the file of the buffer
+    if (gDirectory){
+      //      printf("READING from %s\n",gDirectory->GetPath());
+      for (Int_t i=0; i<2; ++i){
+	TString hisName=TString::Format("AliTPCcalibAlign.%s.fClusterDelta_%d",GetName(),i);
+	TObject* obX = gDirectory->Get(hisName.Data());
+	if (obX) fClusterDelta[i] = dynamic_cast<THn*>(obX);//gDirectory->Get((hisName).Data()));
+	if (!fClusterDelta[i]) AliWarning(Form("fClusterDelta[%d] is not read",i));
+      }
+      //
+      for (Int_t i=0; i<4; ++i){
+	TString hisName=TString::Format("AliTPCcalibAlign.%s.fTrackletDelta_%d",GetName(),i);
+	TObject* obX = gDirectory->Get(hisName.Data());
+	if (obX) fTrackletDelta[i] = dynamic_cast<THnSparse*>(obX);//gDirectory->Get((hisName).Data()));
+	if (!fTrackletDelta[i]) AliWarning(Form("fTrackletDelta[%d] is not read",i));
+      }
+    }
+    else {
+      AliError("gDirectory pointer is null");
+    }
+    // If the "big data members"were not in the file, try to read them from the object
+    // This is suppose to restore the backward compatibility
+    for (Int_t i=0; i<2; ++i) {
+      if (!fClusterDelta[i]) R__b >> fClusterDelta[i];
+    }
+
+    for (Int_t i=0; i<4; ++i) {
+      if (!fTrackletDelta[i]) R__b >> fTrackletDelta[i];
+    }
+
+    // Read all the other data members. This is error prone,
+    // please make sure this part is updated if you change the data members
+    fDphiHistArray.Streamer(R__b);
+    fDthetaHistArray.Streamer(R__b);
+    fDyHistArray.Streamer(R__b);
+    fDzHistArray.Streamer(R__b);
+
+    fDyPhiHistArray.Streamer(R__b);
+    fDzThetaHistArray.Streamer(R__b);
+    
+    fDphiZHistArray.Streamer(R__b);
+    fDthetaZHistArray.Streamer(R__b);
+    fDyZHistArray.Streamer(R__b);
+    fDzZHistArray.Streamer(R__b);
+      
+    fFitterArray12.Streamer(R__b);
+    fFitterArray9.Streamer(R__b);
+    fFitterArray6.Streamer(R__b);
+    
+    fMatrixArray12.Streamer(R__b);
+    fMatrixArray9.Streamer(R__b);
+    fMatrixArray6.Streamer(R__b);
+
+    fCombinedMatrixArray6.Streamer(R__b);
+
+    R__b.ReadFastArray(fPoints,72*72);
+
+    R__b >> fNoField;
+    R__b >> fXIO;
+    R__b >> fXmiddle;
+    R__b >> fXquadrant;
+    
+    fArraySectorIntParam.Streamer(R__b);
+    fArraySectorIntCovar.Streamer(R__b);
+
+    R__b >> fSectorParamA;
+    R__b >> fSectorCovarA;
+    R__b >> fSectorParamC;
+    R__b >> fSectorCovarC;
+    
+    R__b >> fUseInnerOuter;
+    R__b >> fgkMergeEntriesCut; // Should we write the static member?
+  } else {
+    // R__b.WriteClassBuffer(AliTPCcalibAlign::Class(),this);
+    if (isDebug) AliSysInfo::AddStamp("aliengStreamer::Start");
+
+    R__b.WriteVersion(AliTPCcalibAlign::IsA());
+    AliTPCcalibBase::Streamer(R__b); // Stream the base class
+
+    // Write the "big data members directly in the file in parallel with the object itself
+    for (Int_t i=0; i<2; ++i){
+      if (fClusterDelta[i]) fClusterDelta[i]->Write(TString::Format("AliTPCcalibAlign.%s.fClusterDelta_%d",GetName(),i).Data());
+    }
+
+    if (isDebug) AliSysInfo::AddStamp("alignStreamer::fClusterDelta");
+
+    for (Int_t i=0; i<4; ++i){
+      if (fTrackletDelta[i]) fTrackletDelta[i]->Write(TString::Format("AliTPCcalibAlign.%s.fTrackletDelta_%d",GetName(),i).Data());
+    }
+
+    if (isDebug) AliSysInfo::AddStamp("alignStreamer::fTrackletDelta");
+
+    // Write all the other data members. This is error prone,
+    // please make sure this part is updated if you change the data members
+    fDphiHistArray.Streamer(R__b);
+    fDthetaHistArray.Streamer(R__b);
+    fDyHistArray.Streamer(R__b);
+    fDzHistArray.Streamer(R__b);
+
+    fDyPhiHistArray.Streamer(R__b);
+    fDzThetaHistArray.Streamer(R__b);
+    
+    fDphiZHistArray.Streamer(R__b);
+    fDthetaZHistArray.Streamer(R__b);
+    fDyZHistArray.Streamer(R__b);
+    fDzZHistArray.Streamer(R__b);
+      
+    fFitterArray12.Streamer(R__b);
+    fFitterArray9.Streamer(R__b);
+    fFitterArray6.Streamer(R__b);
+
+    fMatrixArray12.Streamer(R__b);
+    fMatrixArray9.Streamer(R__b);
+    fMatrixArray6.Streamer(R__b);
+
+    fCombinedMatrixArray6.Streamer(R__b);
+
+    R__b.WriteFastArray(fPoints,72*72);
+
+    R__b << fNoField;
+    R__b << fXIO;
+    R__b << fXmiddle;
+    R__b << fXquadrant;
+    
+    fArraySectorIntParam.Streamer(R__b);
+    fArraySectorIntCovar.Streamer(R__b);
+
+    R__b << fSectorParamA;
+    R__b << fSectorCovarA;
+    R__b << fSectorParamC;
+    R__b << fSectorCovarC;
+    
+    R__b << fUseInnerOuter;
+    R__b << fgkMergeEntriesCut; // Should we write the static member?
+    if (isDebug) AliSysInfo::AddStamp("alignStreamer::DefaultStreamer");
+  }
+}

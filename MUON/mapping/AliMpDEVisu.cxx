@@ -447,9 +447,9 @@ void AliMpDEVisu::DrawSlat(Option_t* option, Bool_t popup)
 
   AliMpSlatMotifMap mm;
   
-  AliMpSt345Reader reader(dataStreams,&mm);  
-  AliMpSlat* slatCurrent = reader.ReadSlat(nameType.Data(), fCurrentPlane);
-  AliMpSlat* slatOther   = reader.ReadSlat(nameType.Data(), AliMp::OtherPlaneType(fCurrentPlane));
+  AliMpSt345Reader reader(&mm);
+  AliMpSlat* slatCurrent = reader.ReadSlat(dataStreams,nameType.Data(), fCurrentPlane);
+  AliMpSlat* slatOther   = reader.ReadSlat(dataStreams,nameType.Data(), AliMp::OtherPlaneType(fCurrentPlane));
   
   AliMpVPainter* painter = AliMpVPainter::CreatePainter(slatCurrent);
   painter->Draw(option);
@@ -481,11 +481,11 @@ void AliMpDEVisu::DrawQuadrant(Option_t* option, Bool_t popup)
 
   AliMpDataStreams dataStreams;
   
-  AliMpSectorReader readerCurrent(dataStreams, station, fCurrentPlane);
-  AliMpSector* sectorCurrent = readerCurrent.BuildSector();
+  AliMpSectorReader readerCurrent(station, fCurrentPlane);
+  AliMpSector* sectorCurrent = readerCurrent.BuildSector(dataStreams);
     
-  AliMpSectorReader readerOther(dataStreams, station, AliMp::OtherPlaneType(fCurrentPlane));
-  AliMpSector* sectorOther = readerOther.BuildSector();
+  AliMpSectorReader readerOther(station, AliMp::OtherPlaneType(fCurrentPlane));
+  AliMpSector* sectorOther = readerOther.BuildSector(dataStreams);
   
   AliMpVPainter *painter = AliMpVPainter::CreatePainter(sectorCurrent);
   painter->Draw(option);

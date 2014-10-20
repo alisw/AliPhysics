@@ -34,6 +34,10 @@ public:
   // Object size function
   static Double_t EstimateObjectSize(TObject* object);
   static  TTree* Test();
+  
+  static void SetVerbose(Bool_t v=kFALSE)   {fgVerbose = v;}
+  static Bool_t GetVerbose()                {return fgVerbose;} 
+
 private:
   AliSysInfo(const AliSysInfo& source);
   AliSysInfo& operator= (const AliSysInfo& rec);
@@ -44,6 +48,7 @@ private:
   static AliSysInfo *   fInstance; //instance pointer
   StampCallback_t *fCallBackFunc; // call back functions
   Int_t           fNCallBack;        // number of call back functions
+  static Bool_t   fgVerbose;      // do we want actually to write the stamps ?
   ClassDef(AliSysInfo,0)
 };
 

@@ -57,7 +57,7 @@ class AliTRDcalibDB : public TObject {
 
   static AliTRDcalibDB               *Instance();
   static void                         Terminate();
-
+  virtual                            ~AliTRDcalibDB();
   void                                SetRun(Long64_t run);
   Long64_t                            GetRun() const { return fRun; }
 
@@ -97,6 +97,7 @@ class AliTRDcalibDB : public TObject {
   Int_t                               GetNumberOfTimeBinsDCS();
   void                                GetFilterType(TString &filterType);
   void                                GetGlobalConfiguration(TString &config);
+  void                                GetGlobalConfigurationByChamber(TString &config,Int_t par, Int_t opt=0);
   void                                GetGlobalConfigurationVersion(TString &version);
   Int_t                               GetNumberOfParsDCS(TString cname, Char_t delimiter='_');
   Int_t                               GetNumberOfOptsDCS(TString cname, Int_t cfgType);
@@ -142,6 +143,7 @@ class AliTRDcalibDB : public TObject {
  protected:
 
   AliTRDtrapConfig*                   LoadTrapConfig(const TString &name = "", const TString &version = "");
+  Int_t                               GetNumberOfTimeBinsDCSBoard(); // Old method as fallback for patched OCDB 
 
   // For caching see also implentation of GetCachedCDBObject in the .cxx file
   enum { kIDVdriftPad = 0
@@ -208,7 +210,6 @@ class AliTRDcalibDB : public TObject {
   AliTRDcalibDB();                                  //  This is a singleton, constructor is private!  
   AliTRDcalibDB(const AliTRDcalibDB &c);   
   AliTRDcalibDB &operator=(const AliTRDcalibDB &c); 
-  virtual ~AliTRDcalibDB();
 
   ClassDef(AliTRDcalibDB, 8)                        //  Provides central access to the CDB
 

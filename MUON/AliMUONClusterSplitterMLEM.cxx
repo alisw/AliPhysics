@@ -271,7 +271,6 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
   Double_t xmax = mlem->GetXaxis()->GetXmax() + mlem->GetXaxis()->GetBinWidth(1);
   Double_t ymin = mlem->GetYaxis()->GetXmin() - mlem->GetYaxis()->GetBinWidth(1);
   Double_t ymax = mlem->GetYaxis()->GetXmax() + mlem->GetYaxis()->GetBinWidth(1);
-  Double_t xPad = 0, yPad = 99999;
   
   // Number of pads to use and number of virtual pads
   Int_t npads = 0, nVirtual = 0, nfit0 = nfit;
@@ -286,22 +285,6 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
     if ( pad->IsReal() )
     {
       ++npads;
-      if (yPad > 9999) 
-      { 
-        xPad = pad->X();
-        yPad = pad->Y();
-      } 
-      else 
-      {
-        if (pad->DY() < pad->DX() ) 
-        {
-          yPad = pad->Y();
-        }
-        else 
-        {
-          xPad = pad->X();
-        }
-      }
     }
   }
   
@@ -429,7 +412,7 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
   Double_t param0[2][8]={{0},{0}}, deriv[2][8]={{0},{0}}; 
   Double_t shift[8]={0}, stepMax, derMax, parmin[8]={0}, parmax[8]={0}, func2[2]={0}, shift0;
   Double_t delta[8]={0}, scMax, dder[8], estim, shiftSave = 0;
-  Int_t min, max, nCall = 0, nLoop, idMax = 0, iestMax = 0, nFail;
+  Int_t min, max, nCall = 0, nLoop, idMax = 0, nFail;
   Double_t rad, dist[3] = {0};
     
   // Try to fit with one-track hypothesis, then 2-track. If chi2/dof is 
@@ -555,7 +538,6 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
 	if (es > estim) 
         { 
 	  estim = es;
-	  iestMax = j;
 	}
           
 	// Too big step
@@ -1082,7 +1064,7 @@ AliMUONClusterSplitterMLEM::Merge(const AliMUONCluster& cluster,
 {
   /// Merge the group of clusters with the one having the strongest coupling with them
   
-  Int_t indx, indx1, npxclu, npxclu1, imax=0;
+  Int_t indx, indx1, npxclu, imax=0;
   TObjArray *pix, *pix1;
   Double_t couplMax;
   
@@ -1104,8 +1086,7 @@ AliMUONClusterSplitterMLEM::Merge(const AliMUONCluster& cluster,
     } // for (Int_t icl1=0;
       // Add to it
     pix1 = clusters[imax];
-    npxclu1 = pix1->GetEntriesFast();
-    // Add pixels 
+    // Add pixels
     for (Int_t i = 0; i < npxclu; ++i) 
     { 
       pix1->Add(pix->UncheckedAt(i)); 

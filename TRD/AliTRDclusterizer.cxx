@@ -1303,8 +1303,11 @@ Float_t AliTRDclusterizer::Unfold(Double_t eps, Int_t layer, const Double_t *con
     irc = calibration->PadResponse(ampRight,maxRight,layer,newRightSignal);
 
     // Calculate new overlapping ratio
-    ratio = TMath::Min((Double_t) 1.0
-                      ,newLeftSignal[2] / (newLeftSignal[2] + newRightSignal[0]));
+    // Coverity
+    if (irc != 0) {
+      ratio = TMath::Min((Double_t) 1.0
+                        ,newLeftSignal[2] / (newLeftSignal[2] + newRightSignal[0]));
+    }
 
   }
 

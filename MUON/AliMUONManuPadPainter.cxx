@@ -235,7 +235,7 @@ AliMUONManuPadPainter::PaintArea(const AliMUONVTrackerData& data,
   BackupStyle();
     
   gVirtualX->SetLineColor(-1);
-  gVirtualX->SetFillStyle(1);
+  gVirtualX->SetFillStyle(1001);
   
   const AliMpVSegmentation* seg = AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(fDetElemId,fManuId);
   

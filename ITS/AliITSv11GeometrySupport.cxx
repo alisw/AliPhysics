@@ -9802,7 +9802,7 @@ void AliITSv11GeometrySupport::ITSTPCSupports(TGeoVolume *moth,
 
 
   // We have all shapes: now create the real volumes
-  TGeoMedium *medAlcoa   = mgr->GetMedium("ITS_ALUMINUM$"); // To code!!!!!!
+  TGeoMedium *medAlcoa   = mgr->GetMedium("ITS_ALCOAAL$");
   TGeoMedium *medHokotol = mgr->GetMedium("ITS_HOKOTOL$");
   TGeoMedium *medAnticor = mgr->GetMedium("ITS_ANTICORODAL$");
   TGeoMedium *medErgal   = mgr->GetMedium("ITS_ERGAL$");

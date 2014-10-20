@@ -43,6 +43,7 @@
 #include "AliMUONESDInterface.h"
 #include "AliMuonForwardTrack.h"
 #include "AliMUONConstants.h"
+#include "TGrid.h"
 
 ClassImp(AliMFTTrackerMU)
 
@@ -132,6 +133,10 @@ Int_t AliMFTTrackerMU::LoadClusters(TTree *cTree) {
   for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
     AliInfo(Form("plane %02d: nClusters = %d\n", iPlane, fMFTClusterArray[iPlane]->GetEntries()));
   }
+
+  AddClustersFromUnderlyingEvent();
+  AddClustersFromPileUpEvents();
+
   SeparateFrontBackClusters();
 
   return 0;
@@ -251,6 +256,8 @@ Int_t AliMFTTrackerMU::Clusters2Tracks(AliESDEvent *event) {
       
       Int_t nCandidates = fCandidateTracks->GetEntriesFast();
       for (Int_t iCandidate=0; iCandidate<nCandidates; iCandidate++) {
+
+	if (!(fCandidateTracks->UncheckedAt(iCandidate))) continue;
 	fCurrentTrack = (AliMuonForwardTrack*) fCandidateTracks->UncheckedAt(iCandidate);
 
 	// if the old track is compatible with the new cluster, the track is updated and inserted as new track in the array 
@@ -293,6 +300,7 @@ Int_t AliMFTTrackerMU::Clusters2Tracks(AliESDEvent *event) {
 
     for (Int_t iFinalCandidate=0; iFinalCandidate<nFinalTracks; iFinalCandidate++) {
       
+      if (!(fCandidateTracks->UncheckedAt(iFinalCandidate))) continue;
       AliMuonForwardTrack *finalTrack = (AliMuonForwardTrack*) fCandidateTracks->UncheckedAt(iFinalCandidate);
       Int_t nMFTClusters  = finalTrack->GetNMFTClusters();
 
@@ -573,19 +581,20 @@ Bool_t AliMFTTrackerMU::IsCorrectMatch(AliMFTCluster *cluster, Int_t labelMC) {
 
 void AliMFTTrackerMU::GetVertexFromMC() {
 
-  AliRunLoader *fRunLoader = AliRunLoader::Open("galice.root");
-  if (!fRunLoader) {
+  AliRunLoader *runLoader = AliRunLoader::Open("galice.root");
+  if (!runLoader) {
     AliError("no run loader found in file galice.root");
     return;
   }
 
-  fRunLoader->CdGAFile();
-  fRunLoader->LoadgAlice();
-  fRunLoader->LoadHeader();
-  fRunLoader->GetEvent(gAlice->GetEvNumber());
+  runLoader->CdGAFile();
+  runLoader->LoadgAlice();
+  runLoader->LoadHeader();
+  runLoader->GetEvent(gAlice->GetEvNumber());
   
   TArrayF vtx(3);
-  fRunLoader->GetHeader()->GenEventHeader()->PrimaryVertex(vtx);
+  runLoader->GetHeader()->GenEventHeader()->PrimaryVertex(vtx);
+  AliInfo(Form("Primary vertex from MC found in (%f, %f, %f)\n",vtx[0], vtx[1], vtx[2]));
 
   fXExtrapVertex = gRandom->Gaus(vtx[0], AliMFTConstants::fPrimaryVertexResX);
   fYExtrapVertex = gRandom->Gaus(vtx[1], AliMFTConstants::fPrimaryVertexResY);
@@ -595,6 +604,105 @@ void AliMFTTrackerMU::GetVertexFromMC() {
   AliInfo(Form("Set ESD vertex from MC (%f +/- %f,  %f +/- %f,  %f)", 
 	       fXExtrapVertex,fXExtrapVertexError,fYExtrapVertex,fYExtrapVertexError,fZExtrapVertex));
   
+}
+
+//======================================================================================================================================
+
+void AliMFTTrackerMU::AddClustersFromUnderlyingEvent() {
+
+  AliInfo("Adding clusters from underlying event");
+
+  if (!fMFT) return;
+
+  TGrid::Connect("alien://");
+
+  TFile* fileWithClustersToAdd = TFile::Open(fMFT->GetFileNameForUnderlyingEvent());
+  if (!fileWithClustersToAdd) return;
+  if (!(fileWithClustersToAdd->IsOpen())) return;
+  if (!(fileWithClustersToAdd->cd(Form("Event%d",fMFT->GetUnderlyingEventID())))) return;
+
+  TClonesArray *recPointsPerPlaneToAdd[AliMFTConstants::fNMaxPlanes] = {0};
+  TTree *treeIn = 0;
+
+  for (Int_t iPlane=0; iPlane<AliMFTConstants::fNMaxPlanes; iPlane++) recPointsPerPlaneToAdd[iPlane] = new TClonesArray("AliMFTCluster");
+
+  treeIn = (TTree*) gDirectory->Get("TreeR");
+
+  for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
+    if (!(treeIn->GetBranch(Form("Plane_%02d",iPlane)))) {
+      for (Int_t jPlane=0; jPlane<AliMFTConstants::fNMaxPlanes; jPlane++) delete recPointsPerPlaneToAdd[jPlane];
+      return;
+    }
+    else treeIn->SetBranchAddress(Form("Plane_%02d",iPlane), &(recPointsPerPlaneToAdd[iPlane]));
+  }
+
+  treeIn -> GetEntry(0);
+
+  for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
+    printf("plane %d -> before = %d ",iPlane,fMFTClusterArray[iPlane]->GetEntries());
+    Int_t nClusters = recPointsPerPlaneToAdd[iPlane]->GetEntries();
+    for (Int_t iCluster=0; iCluster<nClusters; iCluster++) {
+      AliMFTCluster *newCluster = (AliMFTCluster*) recPointsPerPlaneToAdd[iPlane]->At(iCluster);
+      for (Int_t iTrack=0; iTrack<newCluster->GetNMCTracks(); iTrack++) newCluster->SetMCLabel(iTrack, newCluster->GetMCLabel(iTrack)+AliMFTConstants::fLabelOffsetMC);
+      new ((*fMFTClusterArray[iPlane])[fMFTClusterArray[iPlane]->GetEntries()]) AliMFTCluster(*newCluster);
+    }
+    printf("after = %d\n",fMFTClusterArray[iPlane]->GetEntries());
+  }
+
+  for (Int_t jPlane=0; jPlane<AliMFTConstants::fNMaxPlanes; jPlane++) delete recPointsPerPlaneToAdd[jPlane];
+
+}
+
+//======================================================================================================================================
+
+void AliMFTTrackerMU::AddClustersFromPileUpEvents() {
+
+  AliInfo("Adding clusters from pile-up event(s)");
+
+  if (!fMFT) return;
+
+  TGrid::Connect("alien://");
+
+  TFile* fileWithClustersToAdd = TFile::Open(fMFT->GetFileNameForPileUpEvents());
+  if (!fileWithClustersToAdd) return;
+  if (!(fileWithClustersToAdd->IsOpen())) return;
+
+  TClonesArray *recPointsPerPlaneToAdd[AliMFTConstants::fNMaxPlanes] = {0};
+  TTree *treeIn = 0;
+
+  for (Int_t iPileUp=0; iPileUp<AliMFTConstants::fNMaxPileUpEvents; iPileUp++) {
+    
+    if (!(fileWithClustersToAdd->cd(Form("Event%d",fMFT->GetPileUpEventID(iPileUp))))) continue;
+    
+    for (Int_t iPlane=0; iPlane<AliMFTConstants::fNMaxPlanes; iPlane++) recPointsPerPlaneToAdd[iPlane] = new TClonesArray("AliMFTCluster");
+    
+    treeIn = (TTree*) gDirectory->Get("TreeR");
+    
+    for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
+      if (!(treeIn->GetBranch(Form("Plane_%02d",iPlane)))) {
+	for (Int_t jPlane=0; jPlane<AliMFTConstants::fNMaxPlanes; jPlane++) delete recPointsPerPlaneToAdd[jPlane];
+	return;
+      }
+      else treeIn->SetBranchAddress(Form("Plane_%02d",iPlane), &(recPointsPerPlaneToAdd[iPlane]));
+    }
+
+    treeIn -> GetEntry(0);
+    
+    for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
+      printf("plane %d -> before = %d ",iPlane,fMFTClusterArray[iPlane]->GetEntries());
+      Int_t nClusters = recPointsPerPlaneToAdd[iPlane]->GetEntries();
+      for (Int_t iCluster=0; iCluster<nClusters; iCluster++) {
+	AliMFTCluster *newCluster = (AliMFTCluster*) recPointsPerPlaneToAdd[iPlane]->At(iCluster);
+	for (Int_t iTrack=0; iTrack<newCluster->GetNMCTracks(); iTrack++) newCluster->SetMCLabel(iTrack, newCluster->GetMCLabel(iTrack)+AliMFTConstants::fLabelOffsetMC);
+	new ((*fMFTClusterArray[iPlane])[fMFTClusterArray[iPlane]->GetEntries()]) AliMFTCluster(*newCluster);
+      }
+      printf("after = %d\n",fMFTClusterArray[iPlane]->GetEntries());
+    }
+
+    for (Int_t jPlane=0; jPlane<AliMFTConstants::fNMaxPlanes; jPlane++) delete recPointsPerPlaneToAdd[jPlane];
+
+  }
+
 }
 
 //======================================================================================================================================

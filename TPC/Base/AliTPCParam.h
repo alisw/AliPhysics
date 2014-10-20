@@ -310,6 +310,8 @@ public:
   Int_t GetNPadsUp(Int_t irow) const;     //get the number of pads in row irow
   Int_t GetNPads(Int_t isector,Int_t irow) const{
      return ( (isector < fNInnerSector) ?GetNPadsLow(irow) : GetNPadsUp(irow));} 
+  Int_t GetWireSegment(Int_t sector, Int_t row) const ;    // get Anode wire segment index IROC --> [0,4], OROC[0,7]
+  Int_t GetNPadsPerSegment(Int_t segmentID) const;         // get number of pads for a given Anode wire segment
 
   Float_t GetYInner(Int_t irow) const; // wire length in low sec row
   Float_t GetYOuter(Int_t irow) const; // wire length in up sec row  

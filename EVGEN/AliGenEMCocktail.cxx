@@ -57,14 +57,14 @@ AliGenEMCocktail::AliGenEMCocktail()
    fWeightingMode(kNonAnalog),
    fNPart(1000),
   fYieldArray(),
-  fPtSelect(0),
-  fCentrality(0),
-  fV2Systematic(0),
+  fPtSelect(AliGenEMlib::kPizero7TeVpp),
+  fCentrality(AliGenEMlib::kpp),
+  fV2Systematic(AliGenEMlib::kNoV2Sys),
   fForceConv(kFALSE),
-  fSelectedParticles(kGenHadrons)
+  fSelectedParticles(kGenPizero)
 {
   // Constructor
-
+  SetHeaviestHadron(kGenPhi);
 }
 
 //_________________________________________________________________________
@@ -72,6 +72,15 @@ AliGenEMCocktail::~AliGenEMCocktail()
 {
   // Destructor
 
+}
+
+//_________________________________________________________________________
+void AliGenEMCocktail::SetHeaviestHadron(ParticeGenerator_t part)
+{
+  Int_t val=kGenPizero;
+  while(val<part) val|=val<<1;
+
+  fSelectedParticles=val;
 }
 
 //_________________________________________________________________________
@@ -101,7 +110,9 @@ void AliGenEMCocktail::CreateCocktail()
   AliGenParam *genpizero=0;
   Char_t namePizero[10];    
   snprintf(namePizero,10,"Pizero");    
+    //fNPart/0.925: increase number of particles so that we have the chosen number of particles in the chosen eta range
   genpizero = new AliGenParam(fNPart/0.925, new AliGenEMlib(), AliGenEMlib::kPizero, "DUMMY");
+    //fYMin/0.925: increase eta range, so that the electron yield is constant (<5% change) over the chosen eta range
   genpizero->SetYRange(fYMin/0.925, fYMax/0.925);
   AddSource2Generator(namePizero,genpizero);
   TF1 *fPtPizero = genpizero->GetPt();

@@ -481,8 +481,8 @@ Int_t AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   Int_t chipKey;
   Int_t col, row; 
   UInt_t module, colM, rowM;
-  Bool_t isFiredChip[1200];
-  for(Int_t ichK=0; ichK<1200; ichK++) isFiredChip[ichK] = kFALSE;
+  //  Bool_t isFiredChip[1200];
+  //  for(Int_t ichK=0; ichK<1200; ichK++) isFiredChip[ichK] = kFALSE;
   Bool_t isOnlineFiredChip[1200];
   for(Int_t iOnlineKey=0; iOnlineKey<1200; iOnlineKey++) isOnlineFiredChip[iOnlineKey] = kFALSE;
   UInt_t nFastOr[2]={0,0};
@@ -497,7 +497,7 @@ Int_t AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
       row   = rawStreamSPD.GetChipRow();
       isOnlineFiredChip[iEq*60+iHalfStave*10+iChip] = kTRUE;
       chipKey = rawStreamSPD.GetOfflineChipKeyFromOnline(iEq,iHalfStave,iChip);
-      isFiredChip[chipKey] = kTRUE;
+      //      isFiredChip[chipKey] = kTRUE;
 
       rawStreamSPD.OnlineToOffline(iEq, iHalfStave, iChip, col, row, module, colM, rowM);
 

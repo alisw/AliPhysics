@@ -30,6 +30,7 @@
 #include <TSystem.h>
 #include <TError.h>
 #include <TROOT.h>
+#include "TObjString.h"
 
 ClassImp(AliOADBContainer);
 
@@ -38,6 +39,7 @@ AliOADBContainer::AliOADBContainer() :
   TNamed(),
   fArray(0),
   fDefaultList(0),
+  fPassNames(0),
   fLowerLimits(),
   fUpperLimits(),
   fEntries(0)
@@ -49,6 +51,7 @@ AliOADBContainer::AliOADBContainer(const char* name) :
   TNamed(name, "OADBContainer"),
   fArray(new TObjArray(100)),
   fDefaultList(new TList()),
+  fPassNames(new TObjArray(100)),
   fLowerLimits(),
   fUpperLimits(),
   fEntries(0)
@@ -63,6 +66,7 @@ AliOADBContainer::~AliOADBContainer()
   // destructor
   if (fArray)       delete fArray;
   if (fDefaultList) delete fDefaultList;
+  if (fPassNames)   delete fPassNames;
 
 }
 
@@ -71,6 +75,7 @@ AliOADBContainer::AliOADBContainer(const AliOADBContainer& cont) :
   TNamed(cont),
   fArray(cont.fArray),
   fDefaultList(cont.fDefaultList),
+  fPassNames(cont.fPassNames),
   fLowerLimits(cont.fLowerLimits),
   fUpperLimits(cont.fUpperLimits),
   fEntries(cont.fEntries)
@@ -93,6 +98,7 @@ AliOADBContainer& AliOADBContainer::operator=(const AliOADBContainer& cont)
 	fLowerLimits[i] = cont.fLowerLimits[i]; 
 	fUpperLimits[i] = cont.fUpperLimits[i];
 	fArray->AddAt(cont.fArray->At(i), i);
+	if (cont.fPassNames) if (cont.fPassNames->At(i)) fPassNames->AddAt(cont.fPassNames->At(i), i);
     }
   }
   //
@@ -105,13 +111,17 @@ AliOADBContainer& AliOADBContainer::operator=(const AliOADBContainer& cont)
   return *this;
 }
 
-void AliOADBContainer::AppendObject(TObject* obj, Int_t lower, Int_t upper)
+void AliOADBContainer::AppendObject(TObject* obj, Int_t lower, Int_t upper, TString passName)
 {
+  if (!fPassNames) { // create array of pass names for compatibility with old format
+    fPassNames = new TObjArray(100);
+    for (Int_t i=0;i<fArray->GetEntriesFast();i++) fPassNames->Add(new TObjString(""));
+  }
   //
   // Append a new object to the list 
   //
   // Check that there is no overlap with existing run ranges
-  Int_t index = HasOverlap(lower, upper);
+  Int_t index = HasOverlap(lower, upper, passName);
   
   if (index != -1) {
     AliFatal(Form("Ambiguos validity range (%5d, %5.5d-%5.5d) !\n", index,lower,upper));
@@ -122,15 +132,20 @@ void AliOADBContainer::AppendObject(TObject* obj, Int_t lower, Int_t upper)
   fEntries++;
   fLowerLimits.Set(fEntries);
   fUpperLimits.Set(fEntries);
-
   // Add the object
   fLowerLimits[fEntries - 1] = lower;
   fUpperLimits[fEntries - 1] = upper;
   fArray->Add(obj);
+  fPassNames->Add(new TObjString(passName.Data()));
 }
 
 void AliOADBContainer::RemoveObject(Int_t idx)
 {
+  if (!fPassNames) { // create array of pass names for compatibility with old format
+    fPassNames = new TObjArray(100);
+    for (Int_t i=0;i<fArray->GetEntriesFast();i++) fPassNames->Add(new TObjString(""));
+  }
+
   //
   // Remove object from the list 
 
@@ -145,18 +160,23 @@ void AliOADBContainer::RemoveObject(Int_t idx)
   // Remove the object
   TObject* obj = fArray->RemoveAt(idx);
   delete obj;
+
+  TObject* pass = fPassNames->RemoveAt(idx);
+  delete pass;
   //
   // Adjust the run ranges and shrink the array
   for (Int_t i = idx; i < (fEntries-1); i++) {
     fLowerLimits[i] = fLowerLimits[i + 1]; 
     fUpperLimits[i] = fUpperLimits[i + 1];
     fArray->AddAt(fArray->At(i+1), i);
+    fPassNames->AddAt(fPassNames->At(i+1),i);
   }
   fArray->RemoveAt(fEntries - 1);
+  fPassNames->RemoveAt(fEntries - 1);
   fEntries--;
 }
 
-void AliOADBContainer::UpdateObject(Int_t idx, TObject* obj, Int_t lower, Int_t upper)
+void AliOADBContainer::UpdateObject(Int_t idx, TObject* obj, Int_t lower, Int_t upper, TString passName)
 {
   //
   // Update an existing object, at a given position 
@@ -176,7 +196,7 @@ void AliOADBContainer::UpdateObject(Int_t idx, TObject* obj, Int_t lower, Int_t 
   fLowerLimits[idx] = -1;
   fUpperLimits[idx] = -1;
   // Check that there is no overlap with existing run ranges  
-  Int_t index = HasOverlap(lower, upper);
+  Int_t index = HasOverlap(lower, upper,passName);
   if (index != -1) {
     AliFatal(Form("Ambiguos validity range (%5d, %5.5d-%5.5d) !\n", index,lower,upper));
     return;
@@ -186,6 +206,8 @@ void AliOADBContainer::UpdateObject(Int_t idx, TObject* obj, Int_t lower, Int_t 
   //printf("idx %d obj %llx\n", idx, obj);
   fLowerLimits[idx] = lower;
   fUpperLimits[idx] = upper;
+  TObjString* pass = (TObjString*) fPassNames->At(idx);
+  pass->SetString(passName.Data());
   fArray->AddAt(obj, idx);
 
 }
@@ -202,7 +224,7 @@ void  AliOADBContainer::CleanDefaultList()
   fDefaultList->Delete();
 }
 
-Int_t AliOADBContainer::GetIndexForRun(Int_t run) const
+Int_t AliOADBContainer::GetIndexForRun(Int_t run, TString passName) const
 {
   //
   // Find the index for a given run 
@@ -211,7 +233,8 @@ Int_t AliOADBContainer::GetIndexForRun(Int_t run) const
   Int_t index = -1;
   for (Int_t i = 0; i < fEntries; i++) 
     {
-      if (run >= fLowerLimits[i] && run <= fUpperLimits[i])
+	if (fPassNames) if (fPassNames->At(i)) if (passName.CompareTo(fPassNames->At(i)->GetName())) continue;
+	if (run >= fLowerLimits[i] && run <= fUpperLimits[i])
 	{
 	  found++;
 	  index = i;
@@ -227,11 +250,12 @@ Int_t AliOADBContainer::GetIndexForRun(Int_t run) const
   return index;
 }
 
-TObject* AliOADBContainer::GetObject(Int_t run, const char* def) const
+TObject* AliOADBContainer::GetObject(Int_t run, const char* def, TString passName) const
 {
   // Return object for given run or default if not found
   TObject* obj = 0;
-  Int_t idx = GetIndexForRun(run);
+  Int_t idx = GetIndexForRun(run,passName);
+  if (idx == -1) idx = GetIndexForRun(run); // try default pass for this run range
   if (idx == -1) {
     // no object found, try default
     obj = fDefaultList->FindObject(def);
@@ -251,6 +275,14 @@ TObject* AliOADBContainer::GetObjectByIndex(Int_t run) const
   // Return object for given index
   return (fArray->At(run));
 }
+
+TObject* AliOADBContainer::GetPassNameByIndex(Int_t idx) const
+{
+  // Return object for given index
+  if (!fPassNames) return NULL; 
+  return (fPassNames->At(idx));
+}
+
 
 void AliOADBContainer::WriteToFile(const char* fname) const
 {
@@ -294,7 +326,6 @@ Int_t AliOADBContainer::InitFromFile(const char* fname, const char* key)
     file = TFile::Open(fname);
   }
 
-    // 
     // Initialize object from file
     if (!file) return (1);
     AliOADBContainer* cont  = 0;
@@ -312,11 +343,15 @@ Int_t AliOADBContainer::InitFromFile(const char* fname, const char* key)
     fLowerLimits.Set(fEntries);
     fUpperLimits.Set(fEntries);
     if(fEntries > fArray->GetSize()) fArray->Expand(fEntries);
+    if (!fPassNames) fPassNames = new TObjArray(100);
+    if(fEntries > fPassNames->GetSize()) fPassNames->Expand(fEntries);
 
     for (Int_t i = 0; i < fEntries; i++) {
 	fLowerLimits[i] = cont->LowerLimit(i); 
 	fUpperLimits[i] = cont->UpperLimit(i);
 	fArray->AddAt(cont->GetObjectByIndex(i), i);
+	TObject* passName = cont->GetPassNameByIndex(i);
+	fPassNames->AddAt(passName ? passName : new TObjString(""), i);
     }
     if (!fDefaultList) fDefaultList = new TList(); 
     TIter next(cont->GetDefaultList());
@@ -344,11 +379,12 @@ void AliOADBContainer::List()
 
 }
 
-Int_t AliOADBContainer::HasOverlap(Int_t lower, Int_t upper) const
+Int_t AliOADBContainer::HasOverlap(Int_t lower, Int_t upper, TString passName) const
 {
   //
   // Checks for overlpapping validity regions
   for (Int_t i = 0; i < fEntries; i++) {
+    if (fPassNames) if (fPassNames->At(i)) if (passName.CompareTo(fPassNames->At(i)->GetName())) continue;
     if ((lower >= fLowerLimits[i] && lower <= fUpperLimits[i]) ||
 	(upper >= fLowerLimits[i] && upper <= fUpperLimits[i]))
       {
@@ -367,7 +403,8 @@ void AliOADBContainer::Browse(TBrowser *b)
 
   if (b) {
     for (Int_t i = 0; i < fEntries; i++) {
-      b->Add(fArray->At(i),Form("%9.9d - %9.9d", fLowerLimits[i], fUpperLimits[i]));
+      TString pass = !fPassNames ? " - " : (fPassNames->At(i) ? Form(" - %s",fPassNames->At(i)->GetName()) : " - ");
+      b->Add(fArray->At(i),Form("%9.9d - %9.9d%s", fLowerLimits[i], fUpperLimits[i],pass.CompareTo(" - ")? pass.Data() :""));
     }
     TIter next(fDefaultList);
     TObject* obj;

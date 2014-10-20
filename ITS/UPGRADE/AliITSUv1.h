@@ -51,6 +51,7 @@ class AliITSUv1 : public AliITSU {
   void           AddAlignableVolumesChip(int lr, int st, int sst, int md, int ch, TString& parent,Int_t &lastUID) const;
 
   virtual void   CreateGeometry();
+  	  void   CreateSuppCyl(const Bool_t innerBarrel,TGeoVolume *dest,const TGeoManager *mgr=gGeoManager);
   virtual void   CreateMaterials();
   virtual void   DefineLayer(Int_t nlay,Double_t phi0,Double_t r,Double_t zlen,Int_t nstav,
 			     Int_t nunit, Double_t lthick=0.,Double_t dthick=0.,UInt_t detType=0, Int_t buildFlag=0);

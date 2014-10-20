@@ -37,7 +37,7 @@ public:
             Int_t   GetTrackPDGMother() const { return fPDGMother; }
  
 protected:
-	  Float_t fModule;	  
+	  Int_t fModule;	  
           Float_t   fEk;            // kinetic energy of the entering particle
           Float_t   fPt;            // Local transverse momentum of the particle
           Float_t   fPx;            // Local Px momentum of the particle

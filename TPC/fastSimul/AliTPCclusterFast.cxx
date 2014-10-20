@@ -102,7 +102,7 @@ public:
   AliTPCtrackFast();
   void Add(AliTPCtrackFast &track2);
   void MakeTrack();
-  static void Simul(const char* simul, Int_t ntracks);
+  static void Simul(const char* simul, Int_t ntracks, Double_t diff);
   Double_t  CookdEdxNtot(Double_t f0,Float_t f1);
   Double_t  CookdEdxQtot(Double_t f0,Float_t f1);
   Double_t  CookdEdxNtotThr(Double_t f0,Float_t f1, Double_t thr, Int_t dEdxMode);
@@ -414,7 +414,7 @@ Double_t  AliTPCtrackFast::CookdEdx(Int_t npoints, Double_t *amp,Double_t f0,Flo
   return sum1/sum0;
 }
 
-void AliTPCtrackFast::Simul(const char* fname, Int_t ntracks){
+void AliTPCtrackFast::Simul(const char* fname, Int_t ntracks, Double_t diffFactor){
   //
   // 
   //
@@ -426,7 +426,8 @@ void AliTPCtrackFast::Simul(const char* fname, Int_t ntracks){
     if (gRandom->Rndm()>0.5) fast.fMNprim=1./(0.00001+gRandom->Rndm()*0.1);
 
     fast.fDiff =0.01 +0.35*gRandom->Rndm();
-    fast.fDiffLong =  fast.fDiff*0.6/1.;
+    //    fast.fDiffLong =  fast.fDiff*0.6/1.;
+    fast.fDiffLong =  fast.fDiff*diffFactor/1.;
     //
     fast.fAngleY   = 4.0*(gRandom->Rndm()-0.5);
     fast.fAngleZ   = 4.0*(gRandom->Rndm()-0.5);

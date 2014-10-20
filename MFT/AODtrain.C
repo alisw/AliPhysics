@@ -167,7 +167,7 @@ void AddAnalysisTasks(Int_t merge, const char *cdb_location){
    // Physics selection task
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
       mgr->RegisterExtraFile("event_stat.root");
-      AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(kFALSE);
+      AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(kTRUE);
 //      AliOADBPhysicsSelection * oadbDefaultPbPb = CreateOADBphysicsSelection();      
 //      physSelTask->GetPhysicsSelection()->SetCustomOADBObjects(oadbDefaultPbPb,0,0);
 //      if (!merge) mgr->AddStatisticsTask(AliVEvent::kAny);

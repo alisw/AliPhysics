@@ -29,7 +29,9 @@ public:
 	virtual ~AliHLTMUONAgent();
 
 	// The following methods are all inherited from AliHLTModuleAgent:
-	
+
+	UInt_t GetDetectorMask() const;
+
 	/**
 	 * Register all processing configurations belonging to the dimuon HLT
 	 * library with the AliHLTConfigurationHandler.

@@ -39,16 +39,18 @@ class AliVCaloCells : public TNamed
   virtual void     Sort()                          = 0;
   
   virtual Bool_t   GetCell(Short_t pos, Short_t &cellNumber, Double_t &amplitude, Double_t &time, Int_t &mclabel,    Double_t  &efrac) const = 0;
-  virtual Bool_t   SetCell(Short_t pos, Short_t  cellNumber, Double_t  amplitude, Double_t  time, Int_t  mclabel=-1, Double_t   efrac=0)     = 0;
+  virtual Bool_t   SetCell(Short_t pos, Short_t  cellNumber, Double_t  amplitude, Double_t  time, Int_t  mclabel=-1, Double_t   efrac=0, Bool_t isHG=kTRUE)     = 0;
   
   virtual Short_t  GetNumberOfCells() const              = 0;
   virtual void     SetNumberOfCells(Int_t n)             = 0;
   
   virtual Double_t GetCellAmplitude(Short_t cellNumber)  = 0;
+  virtual Bool_t   GetCellHighGain(Short_t cellNumber)   = 0;
   virtual Double_t GetCellTime(Short_t cellNumber)       = 0;
   virtual Short_t  GetCellPosition(Short_t cellNumber)   = 0;
-  
+    
   virtual Double_t GetAmplitude(Short_t pos)  const      = 0;
+  virtual Bool_t   GetHighGain(Short_t pos)   const      = 0;
   virtual Double_t GetTime(Short_t pos)       const      = 0;
   virtual Short_t  GetCellNumber(Short_t pos) const      = 0;
 

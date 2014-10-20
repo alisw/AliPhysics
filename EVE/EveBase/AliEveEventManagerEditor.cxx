@@ -147,6 +147,8 @@ AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr) :
     b->Connect("Clicked()", cls, this, "DoNextEvent()");
     fLastEvent = b = MkTxtButton(f, "Last", width);
     b->Connect("Clicked()", cls, this, "DoLastEvent()");
+    fMarkEvent = b = MkTxtButton(f, "Mark", width);
+    b->Connect("Clicked()", cls, this, "DoMarkEvent()");
 
     MkLabel(f, "||", 0, 8, 8);
 
@@ -175,12 +177,17 @@ AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr) :
     fTrigSel->Select(-1,kFALSE);
     f->AddFrame(fTrigSel, new TGLayoutHints(kLHintsNormal, 10, 5, 0, 0));
     fTrigSel->Connect("Selected(char*)", cls, this, "DoSetTrigSel()");
-  }
 
+    fStorageStatus = MkLabel(f,"Storage: Waiting",0,8,8);
+      
+  }
+    
   fEventInfo = new TGTextView(this, 400, 600);
   AddFrame(fEventInfo, new TGLayoutHints(kLHintsNormal | kLHintsExpandX | kLHintsExpandY));
 
   fM->Connect("NewEventLoaded()", cls, this, "Update()");
+    fM->Connect("StorageManagerOk()",cls,this,"StorageManagerChangedState(=1)");
+    fM->Connect("StorageManagerDown()",cls,this,"StorageManagerChangedState(=0)");
 
   SetCleanup(kDeepCleanup);
   Layout();
@@ -207,14 +214,18 @@ void AliEveEventManagerWindow::DoFirstEvent()
 void AliEveEventManagerWindow::DoPrevEvent()
 {
   // Load previous event
-  fM->PrevEvent();
+  // fM->PrevEvent();
+  fM->GotoEvent(1);
+
 }
 
 //______________________________________________________________________________
 void AliEveEventManagerWindow::DoNextEvent()
 {
   // Load next event
-  fM->NextEvent();
+  // fM->NextEvent();
+  fM->GotoEvent(2);
+
 }
 
 //______________________________________________________________________________
@@ -222,6 +233,13 @@ void AliEveEventManagerWindow::DoLastEvent()
 {
   // Load previous event
   fM->GotoEvent(-1);
+}
+
+//______________________________________________________________________________
+void AliEveEventManagerWindow::DoMarkEvent()
+{
+  // Mark current event
+  fM->MarkCurrentEvent();
 }
 
 //______________________________________________________________________________
@@ -276,9 +294,12 @@ void AliEveEventManagerWindow::Update()
   Bool_t extCtrl  = fM->IsUnderExternalControl();
   Bool_t evNavOn  = !autoLoad && !extCtrl;
 
-  fFirstEvent->SetEnabled(evNavOn);
-  fPrevEvent ->SetEnabled(evNavOn);
-  fLastEvent ->SetEnabled(evNavOn);
+  // fFirstEvent->SetEnabled(evNavOn);
+  // fPrevEvent ->SetEnabled(evNavOn);
+  // fLastEvent ->SetEnabled(evNavOn);
+  fFirstEvent->SetEnabled(!autoLoad);
+  fPrevEvent ->SetEnabled(!autoLoad);
+  fLastEvent ->SetEnabled(!autoLoad);
   fNextEvent ->SetEnabled(!autoLoad);
   fRefresh   ->SetEnabled(evNavOn);
 
@@ -309,6 +330,28 @@ void AliEveEventManagerWindow::Update()
   fEventInfo->LoadBuffer(fM->GetEventInfoHorizontal());
 
   Layout();
+}
+
+void AliEveEventManagerWindow::StorageManagerChangedState(int state)
+{
+    if (state == 0)
+    {
+        fStorageStatus->SetText("Storage: DOWN");
+        fMarkEvent->SetEnabled(false);
+        fNextEvent->SetEnabled(false);
+        fLastEvent->SetEnabled(false);
+        fPrevEvent->SetEnabled(false);
+        fFirstEvent->SetEnabled(false);
+    }
+    else if(state == 1)
+    {
+        fStorageStatus->SetText("Storage: OK");
+        fMarkEvent->SetEnabled(true);
+        fNextEvent->SetEnabled(true);
+        fLastEvent->SetEnabled(true);
+        fPrevEvent->SetEnabled(true);
+        fFirstEvent->SetEnabled(true);
+    }
 }
 
 //------------------------------------------------------------------------------

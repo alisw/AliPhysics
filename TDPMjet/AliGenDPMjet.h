@@ -83,6 +83,7 @@ class AliGenDPMjet : public AliGenMC
     Int_t         fSelectAll;      // Flag to write the full event
     Int_t         fFlavor;         // Selected particle flavor 4: charm+beauty 5: beauty
     Int_t         fTrials;         // Number of trials
+    Int_t         fNprimaries;     // Number of generated particles
     Int_t         fSpectators;     // put spectators on stack
     Int_t 	  fSpecn;	   // Num. of spectator neutrons
     Int_t 	  fSpecp;	   // Num. of spectator protons

@@ -54,7 +54,7 @@ protected:
     Float_t  fUQJets[4][10];             // Unquenched trigger jets
     Double_t fZquench[4];                // Quenching fraction
     Float_t  fPtHard;                    // pT hard
-    Float_t  fXsection;                  //Cross-section
+    Float_t  fXsection;                  // Cross-section
 
     ClassDef(AliGenPythiaEventHeader,7)  // Event header for Pythia event
 };

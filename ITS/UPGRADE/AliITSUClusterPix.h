@@ -4,8 +4,15 @@
 #include "AliCluster.h"
 #include <TMath.h>
 
+// uncomment this to have cluster topology in stored
+
+#define _ClusterTopology_  
+
+#define CLUSTER_VERSION 2 
+
 class TGeoHMatrix;
 class AliITSUGeomTGeo;
+
 
 
 class AliITSUClusterPix : public AliCluster
@@ -24,7 +31,12 @@ class AliITSUClusterPix : public AliCluster
     ,kSortIdTrkYZ = BIT(1)    // sort according to ID, then Y,Z of tracking frame
     ,kSortBits = kSortIdLocXZ|kSortIdTrkYZ
   };
-
+  enum {kOffsNZ=0,kMaskNZ=0xff,kOffsNX=8,kMaskNX=0xff,kOffsNPix=16,kMaskNPix=0x1ff,kOffsClUse=25,kMaskClUse=0x7f};
+  //
+#ifdef _ClusterTopology_
+  enum {kMaxPatternBits=32*16, kMaxPatternBytes=kMaxPatternBits/8,
+	kSpanMask=0x7fff,kTruncateMask=0x8000};
+#endif
  public:
   AliITSUClusterPix();
   AliITSUClusterPix(const AliITSUClusterPix& cluster);
@@ -49,15 +61,15 @@ class AliITSUClusterPix : public AliCluster
   void    GetLocalXYZ(Float_t xyz[3])                       const;
   void    GetTrackingXYZ(Float_t xyz[3])                    const; 
   //
-  void    SetNxNzN(UChar_t nx,UChar_t nz,UShort_t n)              {fNxNzN = ( ((n&0xff)<<16)) + ((nx&0xff)<<8) + (nz&0xff);}
+  void    SetNxNzN(UChar_t nx,UChar_t nz,UShort_t n)              {fNxNzN = ((n&kMaskNPix)<<kOffsNPix) + ((nx&kMaskNX)<<kOffsNX) + ((nz&kMaskNZ)<<kOffsNZ);}
   void    SetClUsage(Int_t n);
   void    ModClUsage(Bool_t used=kTRUE)                           {used ? IncClUsage() : DecClUsage();}
   void    IncClUsage()                                            {SetClUsage(GetClUsage()+1); IncreaseClusterUsage();}
   void    DecClUsage();
-  Int_t   GetNx()                                           const {return (fNxNzN>>8)&0xff;}
-  Int_t   GetNz()                                           const {return fNxNzN&0xff;}
-  Int_t   GetNPix()                                         const {return (fNxNzN>>16)&0xff;}
-  Int_t   GetClUsage()                                      const {return (fNxNzN>>24)&0xff;}
+  Int_t   GetNx()                                           const {return (fNxNzN>>kOffsNX)&kMaskNX;}
+  Int_t   GetNz()                                           const {return (fNxNzN>>kOffsNZ)&kMaskNZ;}
+  Int_t   GetNPix()                                         const {return (fNxNzN>>kOffsNPix)&kMaskNPix;}
+  Int_t   GetClUsage()                                      const {return (fNxNzN>>kOffsClUse)&kMaskClUse;}
   //
   void    SetQ(UShort_t q)                                        {fCharge = q;}
   Int_t   GetQ()                                            const {return fCharge;}
@@ -86,16 +98,45 @@ class AliITSUClusterPix : public AliCluster
   static  SortMode_t           SortModeIdTrkYZ()            {return kSortIdTrkYZ;}
   static  SortMode_t           SortModeIdLocXZ()            {return kSortIdLocXZ;}
   //
+#ifdef _ClusterTopology_
+  Int_t    GetPatternRowSpan()                       const  {return fPatternNRows&kSpanMask;}
+  Int_t    GetPatternColSpan()                       const  {return fPatternNCols&kSpanMask;}
+  Bool_t   IsPatternRowsTruncated()                  const  {return fPatternNRows&kTruncateMask;}
+  Bool_t   IsPatternColsTruncated()                  const  {return fPatternNRows&kTruncateMask;}
+  Bool_t   IsPatternTruncated()                      const  {return IsPatternRowsTruncated()||IsPatternColsTruncated();}
+  void     SetPatternRowSpan(UShort_t nr, Bool_t truncated);
+  void     SetPatternColSpan(UShort_t nc, Bool_t truncated);
+  void     SetPatternMinRow(UShort_t row)            {fPatternMinRow = row;}
+  void     SetPatternMinCol(UShort_t col)            {fPatternMinCol = col;}
+  void     ResetPattern();
+  Bool_t   TestPixel(UShort_t row,UShort_t col)      const;
+  void     SetPixel(UShort_t row,UShort_t col, Bool_t fired=kTRUE);
+  void     GetPattern(UChar_t patt[kMaxPatternBytes]) {for(Int_t i=0; i<kMaxPatternBytes; i++) patt[i]=fPattern[i];}
+  Int_t    GetPatternMinRow()                        const {return fPatternMinRow;}
+  Int_t    GetPatternMinCol()                        const {return fPatternMinCol;}
+
+#endif
+  //
  protected:
   //
   UShort_t                fCharge;        //  charge (for MC studies only)
   UShort_t                fRecoInfo;      //! space reserved for reco time manipulations
   Int_t                   fNxNzN;         //  effective cluster size in X (1st byte) and Z (2nd byte) directions 
-                                          //  and total Npix(3d byte). 4th byte is used for clusters usage counter
+                                          //  and total Npix(next 9 bits). last 7 bits are used for clusters usage counter
   static UInt_t           fgMode;         //! general mode (sorting mode etc)
   static AliITSUGeomTGeo* fgGeom;         //! pointer on the geometry data
 
-  ClassDef(AliITSUClusterPix,2)
+#ifdef  _ClusterTopology_
+  UShort_t fPatternNRows;                 // pattern span in rows
+  UShort_t fPatternNCols;                 // pattern span in columns
+  UShort_t fPatternMinRow;                // pattern start row
+  UShort_t fPatternMinCol;                // pattern start column
+  UChar_t  fPattern[kMaxPatternBytes];    // cluster topology
+  //
+  ClassDef(AliITSUClusterPix,CLUSTER_VERSION+1)
+#else
+  ClassDef(AliITSUClusterPix,CLUSTER_VERSION)
+#endif
 };
 
 //______________________________________________________
@@ -109,8 +150,8 @@ inline void AliITSUClusterPix::DecClUsage() {
 //______________________________________________________
 inline void AliITSUClusterPix::SetClUsage(Int_t n) {
   // set cluster usage counter
-  fNxNzN &= 0x00ffffff;
-  fNxNzN |= (n&0xff)<<24;
+  fNxNzN &= ~(kMaskClUse<<kOffsClUse);
+  fNxNzN |= (n&kMaskClUse)<<kOffsClUse;
   if (n<2) SetBit(kShared,kFALSE);
   if (!n)  SetBit(kUsed,kFALSE);
 }

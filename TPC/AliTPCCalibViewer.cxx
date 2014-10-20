@@ -1427,7 +1427,6 @@ TH1F* AliTPCCalibViewer::Integrate(TH1F *const histogram, Float_t mean, Float_t 
          shist->SetNameTitle("Cumulative","Cumulative S(t, #mu, #sigma)");
          shist->Draw();  
          
-         return macro_example_canvas_Integrate;
       }  
       End_Macro
    */ 

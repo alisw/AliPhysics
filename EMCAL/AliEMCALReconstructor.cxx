@@ -103,7 +103,7 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   if(!fCalibData)
     {
       AliCDBEntry *entry = (AliCDBEntry*) 
-	AliCDBManager::Instance()->Get("EMCAL/Calib/Data");
+      AliCDBManager::Instance()->Get("EMCAL/Calib/Data");
       if (entry) fCalibData =  (AliEMCALCalibData*) entry->GetObject();
     }
   
@@ -114,7 +114,7 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   if(!fPedestalData)
     {
       AliCDBEntry *entry = (AliCDBEntry*) 
-	AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
+      AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
       if (entry) fPedestalData =  (AliCaloCalibPedestal*) entry->GetObject();
     }
   
@@ -151,30 +151,31 @@ AliEMCALReconstructor::~AliEMCALReconstructor()
 
   //AliDebug(2, "Mark.");
 
-  if(fGeom)              delete fGeom;
+  ////RS  if(fGeom)              delete fGeom;
   
   //No need to delete, recovered from OCDB
   //if(fCalibData)         delete fCalibData;
   //if(fPedestalData)      delete fPedestalData;
   
-  if(fgDigitsArr){
-    fgDigitsArr->Clear("C");
-    delete fgDigitsArr; 
-  }
+  if(fgDigitsArr) fgDigitsArr->Clear("C");
+  delete fgDigitsArr; 
+  fgDigitsArr = 0;
   
-  if(fgClustersArr){
-    fgClustersArr->Clear();
-    delete fgClustersArr; 
-  }
+  if(fgClustersArr) fgClustersArr->Clear();
+  delete fgClustersArr; 
+  fgClustersArr = 0;
   
-  if(fgTriggerDigits){
-    fgTriggerDigits->Clear();
-    delete fgTriggerDigits; 
-  }
+  if(fgTriggerDigits) fgTriggerDigits->Clear();
+  delete fgTriggerDigits; 
+  fgTriggerDigits = 0;
   
-  if(fgRawUtils)         delete fgRawUtils;
-  if(fgClusterizer)      delete fgClusterizer;
-  if(fgTriggerProcessor) delete fgTriggerProcessor;
+  delete fgRawUtils;
+  fgRawUtils = 0;
+  delete fgClusterizer;
+  fgClusterizer = 0;
+  
+  delete fgTriggerProcessor;
+  fgTriggerProcessor = 0;
   
   if(fMatches) { fMatches->Delete(); delete fMatches; fMatches = 0;}
   
@@ -479,7 +480,10 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
           } // all primaries in digit      
         } // select primary label
         
-        emcCells.SetCell(idignew,dig->GetId(),energy, time,digLabel);   
+        Bool_t highGain = kFALSE;
+        if( dig->GetType() == AliEMCALDigit::kHG ) highGain = kTRUE;
+        
+        emcCells.SetCell(idignew,dig->GetId(),energy, time,digLabel,0.,highGain);
         idignew++;
       }
     }

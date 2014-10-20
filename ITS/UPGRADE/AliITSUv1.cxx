@@ -421,8 +421,49 @@ void AliITSUv1::CreateGeometry() {
     }
     fUpGeom[j]->CreateLayer(dest);
   }
+  CreateSuppCyl(kTRUE,wrapVols[0]);
+  CreateSuppCyl(kFALSE,wrapVols[2]);
+
   delete[] wrapVols; // delete pointer only, not the volumes
   //
+}
+
+//____________________________________________________________
+//Service Barrel
+void AliITSUv1::CreateSuppCyl(const Bool_t innerBarrel,TGeoVolume *dest,const TGeoManager *mgr){
+  // Creates the Service Barrel (as a simple cylinder) for IB and OB
+  // Inputs:
+  //         innerBarrel : if true, build IB service barrel, otherwise for OB
+  //         dest        : the mother volume holding the service barrel
+  //         mgr         : the gGeoManager pointer (used to get the material)
+  //
+
+  Double_t rminIB =  4.7;
+  Double_t rminOB = 43.4;
+  Double_t zLenOB ;
+  Double_t cInt	= 0.22; //dimensioni cilindro di supporto interno
+  Double_t cExt	= 1.00; //dimensioni cilindro di supporto esterno
+//  Double_t phi1   =  180;
+//  Double_t phi2   =  360;
+
+
+  TGeoMedium *medCarbonFleece = mgr->GetMedium("ITS_CarbonFleece$");
+
+  if (innerBarrel){
+    zLenOB=((TGeoTube*)(dest->GetShape()))->GetDz();
+//    TGeoTube*ibSuppSh = new TGeoTubeSeg(rminIB,rminIB+cInt,zLenOB,phi1,phi2);
+    TGeoTube*ibSuppSh = new TGeoTube(rminIB,rminIB+cInt,zLenOB);
+    TGeoVolume *ibSupp = new TGeoVolume("ibSuppCyl",ibSuppSh,medCarbonFleece);
+    dest->AddNode(ibSupp,1);
+  }
+  else {
+    zLenOB=((TGeoTube*)(dest->GetShape()))->GetDz();
+    TGeoTube*obSuppSh=new TGeoTube(rminOB,rminOB+cExt,zLenOB);
+    TGeoVolume *obSupp=new TGeoVolume("obSuppCyl",obSuppSh,medCarbonFleece);
+    dest->AddNode(obSupp,1);
+  }
+
+  return;
 }
 
 //______________________________________________________________________

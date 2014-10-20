@@ -35,6 +35,8 @@
 #include <TSystem.h>
 
 #include "AliLog.h"
+ 
+#include "AliVTrack.h"
 
 #include "AliTRDPIDResponseObject.h"
 #include "AliTRDPIDResponse.h"
@@ -112,6 +114,188 @@ Bool_t AliTRDPIDResponse::Load(const Char_t * filename){
   AliDebug(2, Form("Successfully loaded References for %d Momentum bins", fkPIDResponseObject->GetNumberOfMomentumBins()));
   return kTRUE;
 }
+
+
+
+//____________________________________________________________
+Double_t AliTRDPIDResponse::GetNumberOfSigmas(const AliVTrack *track, AliPID::EParticleType type) const
+{
+  //
+  //calculate the TRD nSigma
+  //
+
+  const Double_t badval = -9999;
+  Double_t info[5]; for(int i=0; i<5; i++){info[i]=badval;}
+
+  const Double_t delta = GetSignalDelta(track, type, kFALSE, info);
+
+  const Double_t mean = info[0];
+  const Double_t res = info[1];
+  if(res<0){
+    return badval;
+  }
+
+  const Double_t sigma = mean*res;
+  const Double_t eps = 1e-12;
+  return delta/(sigma + eps);
+}
+
+//____________________________________________________________
+Double_t AliTRDPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EParticleType type, Bool_t ratio/*=kFALSE*/, Double_t *info/*=0x0*/) const
+{
+  //
+  //calculate the TRD signal difference w.r.t. the expected
+  //output other information in info[]
+  //
+
+  //============================================================================================>>>>>>>>>>>>
+  //Data production dependent, in the end should go to OADB
+  //============================================================================================
+  //~/.task/TRDdEdx/2013output/resolution$ r bgmean.root
+  // hfit;1  1.521e+00 , 7.294e-01 , 8.066e+00 , 2.146e-02 , 3.137e+01 , 7.160e-15 , 2.838e+00 , 1.100e+01 , (14290.45/67) conv_runlist_LHC13b.pass3.root trdncls/trdnch>=18 && trdnch>=6 && tpcncls>120 && pidV0>=1          
+  // hscn0_wid;1     -4.122e-01 , 1.019e+00 , -1.319e-01 , (15071.70/120) conv_runlist_LHC13b.pass3.root tpcncls>120 && pidV0>=1
+
+  //mean signal parametrization
+  Double_t meanpars[]={1.521e+00 , 7.294e-01 , 8.066e+00 , 2.146e-02 , 3.137e+01 , 7.160e-15 , 2.838e+00 , 1.100e+01};
+  const Int_t nmp = sizeof(meanpars)/sizeof(Double_t);
+
+  if(type==AliPID::kProton){
+    const Double_t tmpproton[]={2.026e+00 , -1.462e-04 , 1.202e+00 , 1.162e-01 , 2.092e+00 , -3.018e-02 , 3.665e+00 , 3.487e-07};
+    for(Int_t ii=0; ii<nmp; ii++){
+      meanpars[ii] = tmpproton[ii];
+    }
+  }
+  else if(type==AliPID::kPion || type==AliPID::kElectron){
+    const Double_t tmppe[]={1.508e+00 , 7.356e-01 , 8.002e+00 , 1.932e-02 , 3.058e+01 , 5.114e-18 , 3.561e+00 , 1.408e+01};
+    for(Int_t ii=0; ii<nmp; ii++){
+      meanpars[ii] = tmppe[ii];
+    }
+  }
+
+  //resolution parametrization
+  const Double_t respars[]={-4.122e-01 , 1.019e+00 , -1.319e-01};
+
+  //cut on number of chambers
+  const Double_t cutch = 6;
+
+  //cut on mean number of clusters per chamber
+  const Double_t cutclsperch = 18;
+  //============================================================================================<<<<<<<<<<<<<
+
+
+  const Double_t badval = -9999;
+
+  const Double_t nch = track->GetTRDNchamberdEdx();
+  if(nch < cutch){
+    return badval;
+  }
+
+  const Double_t ncls = track->GetTRDNclusterdEdx();
+  if( ncls/nch < cutclsperch){
+    return badval;
+  }
+
+  Double_t pTRD = -999;
+  for(Int_t ich=0; ich<6; ich++){
+    pTRD = track->GetTRDmomentum(ich);
+    if(pTRD>0)
+      break;
+  }
+  if(pTRD<0){
+    return badval;
+  }
+
+  const Double_t bg = pTRD/AliPID::ParticleMass(type);
+  const Double_t expsig = MeandEdxTR(&bg, meanpars);
+
+  if(info){
+    info[0]= expsig;
+    info[1]= ResolutiondEdxTR(&ncls, respars);
+  }
+
+  const Double_t eps = 1e-10;
+
+  if(ratio){
+    return track->GetTRDsignal()/(expsig +  eps);
+  }
+  else{
+    return track->GetTRDsignal() - expsig;
+  }
+}
+
+
+Double_t AliTRDPIDResponse::ResolutiondEdxTR(const Double_t * xx,  const Double_t * par)
+{
+  //
+  //resolution 
+  //npar=3
+  //
+
+  const Double_t ncls = xx[0];
+
+  return par[0]+par[1]*TMath::Power(ncls, par[2]);
+}
+
+Double_t AliTRDPIDResponse::MeandEdxTR(const Double_t * xx,  const Double_t * pin)
+{
+  //
+  //ALEPH+LOGISTIC parametrization for dEdx+TR, in unit of MIP
+  //npar = 8 = 3+5
+  //
+
+  Double_t ptr[4]={0};
+  for(int ii=0; ii<3; ii++){
+    ptr[ii+1]=pin[ii];
+  }
+  return MeanTR(xx,ptr) + MeandEdx(xx,&(pin[3]));
+}
+
+Double_t AliTRDPIDResponse::MeanTR(const Double_t * xx,  const Double_t * par)
+{
+  //
+  //LOGISTIC parametrization for TR, in unit of MIP
+  //npar = 4
+  //
+                                                                                                                                                                                                                                                        
+  const Double_t bg = xx[0];
+  const Double_t gamma = sqrt(1+bg*bg);
+
+  const Double_t p0 = TMath::Abs(par[1]);
+  const Double_t p1 = TMath::Abs(par[2]);
+  const Double_t p2 = TMath::Abs(par[3]);
+
+  const Double_t zz = TMath::Log(gamma);
+  const Double_t tryield = p0/( 1 + TMath::Exp(-p1*(zz-p2)) );
+
+  return par[0]+tryield;
+}
+
+Double_t AliTRDPIDResponse::MeandEdx(const Double_t * xx,  const Double_t * par)
+{
+  //
+  //ALEPH parametrization for dEdx
+  //npar = 5
+  //
+
+  const Double_t bg = xx[0];
+  const Double_t beta = bg/TMath::Sqrt(1.+ bg*bg);
+
+  const Double_t p0 = TMath::Abs(par[0]);
+  const Double_t p1 = TMath::Abs(par[1]);
+
+  const Double_t p2 = TMath::Abs(par[2]);
+
+  const Double_t p3 = TMath::Abs(par[3]);
+  const Double_t p4 = TMath::Abs(par[4]);
+
+  const Double_t aa = TMath::Power(beta, p3);
+
+  const Double_t bb = TMath::Log( p2 + TMath::Power(1./bg, p4) );
+
+  return (p1-aa-bb)*p0/aa;
+
+}
+
 
 //____________________________________________________________
 Int_t AliTRDPIDResponse::GetResponse(Int_t n, const Double_t * const dedx, const Float_t * const p, Double_t prob[AliPID::kSPECIES],ETRDPIDMethod PIDmethod,Bool_t kNorm) const

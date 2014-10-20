@@ -29,9 +29,9 @@
 
 #endif
 
-void init() 
+void init()
 {
-/// Set include path and load libraries which are not 
+/// Set include path and load libraries which are not
 /// linked with aliroot
 
   // Redefine include paths as some macros need
@@ -57,18 +57,18 @@ void init()
   gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
   gSystem->Load("libMUONshuttle.so");
   gSystem->Load("libMUONevaluation.so");
-  gSystem->Load("liblhapdf.so");     
-  gSystem->Load("libpythia6.so");    
+  gSystem->Load("liblhapdf.so");
+  gSystem->Load("libpythia6.so");
   gSystem->Load("libgeant321.so");
   gSystem->Load("libEG");
   gSystem->Load("libEGPythia6");
   gSystem->Load("libAliPythia6.so");
-  
+
   // libraries needed for Config.C
   gSystem->Load("libSTRUCT.so");
   gSystem->Load("libITSbase.so");
   gSystem->Load("libITSsim.so");
-}  
+}
 
 void loadmacro(const TString& macroName)
 {
@@ -78,16 +78,15 @@ void loadmacro(const TString& macroName)
   path += macroName;
   path += ".C++";
   gROOT->LoadMacro(path.Data());
-}  
+}
 
-void loadmacros () 
+void loadmacros ()
 {
   init();
 
   loadmacro("AddTaskMuonAlignment");       // Javier
-  loadmacro("AddTaskMuonReAlign");         // Javier
-  loadmacro("DecodeRecoCocktail");         // Hermine, Alessandro     
-  loadmacro("Config");                     //      
+  loadmacro("DecodeRecoCocktail");         // Hermine, Alessandro
+  loadmacro("Config");                     //
   loadmacro("DIMUONFakes");                // Philippe P.
   loadmacro("fastMUONGen");                // Hermine, Alessandro
   loadmacro("fastMUONSim");                // Hermine, Alessandro
@@ -97,9 +96,9 @@ void loadmacros ()
   loadmacro("MakeMUONRecoParamArray");     // Philippe P.
   loadmacro("MakeMUONSingleRecoParam");    // Philippe P.
   loadmacro("MergeMuonLight");             // Hermine, Alessandro
-  loadmacro("MUONAlignment");              // Javier   
-  loadmacro("MUONChamberMaterialBudget");  // Philippe P.   
-  loadmacro("MUONCheck");                  // Frederic          
+  loadmacro("MUONAlignment");              // Javier
+  loadmacro("MUONChamberMaterialBudget");  // Philippe P.
+  loadmacro("MUONCheck");                  // Frederic
   loadmacro("MUONCheckDI");                // Artur
   loadmacro("MUONCheckMisAligner");        // Javier
   loadmacro("MUONClusterInfo");            // Philippe P.
@@ -110,12 +109,12 @@ void loadmacros ()
   loadmacro("MUONGenerateGeometryData");   // Ivana
   loadmacro("MUONGenerateTestGMS");        // Ivana
   loadmacro("MUONGeometryViewingHelper");  // Ivana
-  loadmacro("MUONmassPlot_ESD");           // Christian    
+  loadmacro("MUONmassPlot_ESD");           // Christian
   loadmacro("MUONOfflineShift");           // Laurent
   loadmacro("MUONplotefficiency");         // Christian
-  loadmacro("MUONRawStreamTracker");       // Christian   
-  loadmacro("MUONRawStreamTrigger");       // Christian 
-  loadmacro("MUONReCalcGlobalTrigger");    // Bogdan       
+  loadmacro("MUONRawStreamTracker");       // Christian
+  loadmacro("MUONRawStreamTrigger");       // Christian
+  loadmacro("MUONReCalcGlobalTrigger");    // Bogdan
   loadmacro("MUONRecoCheck");              // Hermine, Alessandro
   loadmacro("MUONRefit");                  // Philippe P.
   loadmacro("MUONStatusMap");              // Laurent
@@ -127,12 +126,12 @@ void loadmacros ()
   loadmacro("MUONSurveyCh5");              // Javier
   loadmacro("MUONSurveyCh8L");             // Javier
   loadmacro("MUONTimeRawStreamTracker");   // Artur
-  loadmacro("MUONTimeRawStreamTrigger");   // Artur 
+  loadmacro("MUONTimeRawStreamTrigger");   // Artur
   loadmacro("MUONTrigger");                // Bogdan
   loadmacro("MUONTriggerChamberEfficiency"); // Diego
   loadmacro("MUONTriggerEfficiency");      // Bogdan
   loadmacro("MUONTriggerEfficiencyPt");    // Bogdan
-  loadmacro("ReadRecoCocktail");           // Hermine, Alessandro   
+  loadmacro("ReadRecoCocktail");           // Hermine, Alessandro
   loadmacro("runDataReconstruction");      // Laurent
   loadmacro("runReconstruction");          // Laurent
   loadmacro("runSimulation");              // Laurent

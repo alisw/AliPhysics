@@ -771,7 +771,7 @@ void AliTPCclusterer::Digits2Clusters()
 	Float_t dig=digarr.CurrentDigit();
 	if (dig<=fParam->GetZeroSup()) continue;
 	Int_t j=digarr.CurrentRow()+3, i=digarr.CurrentColumn()+3;
-	Float_t gain = gainROC->GetValue(row,digarr.CurrentColumn());
+        Float_t gain = gainROC->GetValue(row,digarr.CurrentColumn());
 	Int_t bin = i*fMaxTime+j;
 	if (gain>0){
 	  fBins[bin]=dig/gain;
@@ -1428,6 +1428,18 @@ Int_t AliTPCclusterer::ReadHLTClusters()
   const Int_t kNOS = fParam->GetNOuterSector();
   const Int_t kNS = kNIS + kNOS;
   fNclusters  = 0;
+
+  // noise and dead channel treatment -- should be the same as in offline clusterizer
+  const AliTPCCalPad * gainTPC  = AliTPCcalibDB::Instance() -> GetPadGainFactor();
+  const AliTPCCalPad * noiseTPC = AliTPCcalibDB::Instance() -> GetPadNoise();
+
+  // charge thresholds
+  // TODO: In the offline cluster finder there are also cuts in time and pad direction
+  //       do they need to be included here? Most probably this is not possible
+  //       since we don't have the charge information
+  const Float_t minMaxCutAbs       = fRecoParam -> GetMinMaxCutAbs();
+  const Float_t minMaxCutSigma     = fRecoParam -> GetMinMaxCutSigma();
+  
   
   // make sure that all clusters from the previous event are cleared
   pClusterAccess->Clear("event");
@@ -1460,6 +1472,10 @@ Int_t AliTPCclusterer::ReadHLTClusters()
     Int_t nClusterSector=0;
     Int_t nRows=fParam->GetNRow(fSector);
 
+    // active channel map and noise map for current sector
+    const AliTPCCalROC * gainROC  = gainTPC  -> GetCalROC(fSector);  // pad gains per given sector
+    const AliTPCCalROC * noiseROC = noiseTPC -> GetCalROC(fSector); // noise per given sector
+    
     for (fRow = 0; fRow < nRows; fRow++) {
       fRowCl->SetID(fParam->GetIndex(fSector, fRow));
       if (fOutput) fOutput->GetBranch("Segment")->SetAddress(&fRowCl);
@@ -1482,6 +1498,26 @@ Int_t AliTPCclusterer::ReadHLTClusters()
 	AliTPCclusterMI* cluster=dynamic_cast<AliTPCclusterMI*>(clusterArray->At(i));
 	if (!cluster) continue;
 	if (cluster->GetRow()!=fRow) continue;
+
+        const Int_t   currentPad = TMath::Nint(cluster->GetPad());
+        const Float_t maxCharge  = cluster->GetMax();
+        
+        const Float_t gain       = gainROC  -> GetValue(fRow, currentPad);
+        const Float_t noise      = noiseROC -> GetValue(fRow, currentPad);
+
+        // check if cluster is on an active pad
+        // TODO: PadGainFactor should only contain 1 or 0. However in Digits2Clusters
+        //       this is treated as a real gain factor per pad. Is the implementation
+        //       below fine?
+        if (!(gain>0)) continue;
+
+        // check if the cluster is on a too noisy pad
+        if (noise>fRecoParam->GetMaxNoise()) continue;
+
+        // check if the charge is above the required minimum
+        if (maxCharge<minMaxCutAbs)         continue;
+        if (maxCharge<minMaxCutSigma*noise) continue;
+        
 	nClusterSector++;
 	AddCluster(*cluster, NULL, 0);
       }

@@ -11,7 +11,8 @@
 //-------------------------------------------------------------------------
 
 #include <TNamed.h>
-
+#include <TBits.h>
+class TList;
 class AliVHeader : public TNamed {
 
  public :
@@ -26,7 +27,7 @@ class AliVHeader : public TNamed {
   virtual ULong64_t GetTriggerMask()        const = 0;
   virtual UChar_t   GetTriggerCluster()     const = 0;
   virtual UInt_t    GetEventType()          const = 0;
-  
+  virtual TList*    GetCocktailHeaders()    {return 0;}
   /*
   virtual void SetBunchCrossNumber(UShort_t nBx)   = 0;
   virtual void SetOrbitNumber(UInt_t nOr)          = 0;
@@ -35,6 +36,12 @@ class AliVHeader : public TNamed {
   virtual void SetTriggerCluster(UChar_t trigClus) = 0;
   virtual void SetEventType(UInt_t evttype)        = 0;
   */
+  virtual UInt_t   GetL0TriggerInputs() const {return 0;}
+  virtual UInt_t   GetL1TriggerInputs() const {return 0;}
+  virtual UShort_t GetL2TriggerInputs() const {return 0;}
+  virtual TBits  GetIRInt2InteractionMap() const { static TBits dummy; return dummy; }
+  virtual TBits  GetIRInt1InteractionMap() const { static TBits dummy; return dummy; }
+
 
   virtual void Print(Option_t* option = "") const  = 0;
     

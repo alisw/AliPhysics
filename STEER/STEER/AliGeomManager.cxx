@@ -105,6 +105,16 @@ Int_t AliGeomManager::fgNalignable[fgkNDetectors] = {0,0, 0, 0, 0, 0, 0, 0, 0, 0
 TGeoManager* AliGeomManager::fgGeometry = 0x0;
 
 //_____________________________________________________________________________
+void AliGeomManager::Destroy()
+{
+  // destroy the manager as well as gGeoManager (if it was not attached to fgGeometry)
+  TGeoManager::UnlockGeometry();
+  delete gGeoManager;
+  fgGeometry = gGeoManager = 0;
+  ResetPNEntriesLUT();
+}
+
+//_____________________________________________________________________________
 void AliGeomManager::LoadGeometry(const char *geomFileName)
 {
   // initialization
@@ -1583,7 +1593,7 @@ void AliGeomManager::InitNalignable()
 }
   
 //_____________________________________________________________________________
-Bool_t AliGeomManager::ApplyAlignObjsFromCDB(const char* AlignDetsList)
+Bool_t AliGeomManager::ApplyAlignObjsFromCDB(const char* alignDetsList)
 {
   // Calls AddAlignObjsFromCDBSingleDet for the detectors appearing in
   // the list passed as argument (called by AliSimulation and
@@ -1604,8 +1614,8 @@ Bool_t AliGeomManager::ApplyAlignObjsFromCDB(const char* AlignDetsList)
   TString alObjsNotLoaded="";
   TString alObjsLoaded="";
 
-  TString AlignDetsString(AlignDetsList);
-  TObjArray *detsarr = AlignDetsString.Tokenize(' ');
+  TString alignDetsString(alignDetsList);
+  TObjArray *detsarr = alignDetsString.Tokenize(' ');
   TIter iter(detsarr);
   TObjString *str = 0;
   

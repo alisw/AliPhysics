@@ -830,12 +830,11 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
      calibTowZP2[gi+5] = equalTowZP2[gi+5]*calibEne[3];
   }
   //
-  Float_t sumZEM[]={0,0}, calibZEM1[]={0,0}, calibZEM2[]={0,0};
+  Float_t calibZEM1[]={0,0}, calibZEM2[]={0,0};
   calibZEM1[0] = corrADCZEM1[0]*calibEne[4];
   calibZEM1[1] = corrADCZEM1[1]*calibEne[4];
   calibZEM2[0] = corrADCZEM2[0]*calibEne[5];
   calibZEM2[1] = corrADCZEM2[1]*calibEne[5];
-  for(Int_t k=0; k<2; k++) sumZEM[k] = calibZEM1[k] + calibZEM2[k];
   // Ch. debug
   /*printf("\n ------------- CALIBRATION -------------\n");
   printf(" ADCZN1 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
@@ -1032,12 +1031,11 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   calibSumZN2[1] = calibSumZN2[1]*calibEne[2];
   calibSumZP2[1] = calibSumZP2[1]*calibEne[3];
   //
-  Float_t sumZEM[]={0,0}, calibZEM1[]={0,0}, calibZEM2[]={0,0};
+  Float_t calibZEM1[]={0,0}, calibZEM2[]={0,0};
   calibZEM1[0] = corrADCZEM1[0]*calibEne[4];
   calibZEM1[1] = corrADCZEM1[1]*calibEne[4];
   calibZEM2[0] = corrADCZEM2[0]*calibEne[5];
   calibZEM2[1] = corrADCZEM2[1]*calibEne[5];
-  for(Int_t k=0; k<2; k++) sumZEM[k] = calibZEM1[k] + calibZEM2[k];
     
   // ******	Energy calibration of detector responses
   Float_t calibTowZN1[10], calibTowZN2[10], calibTowZP1[10], calibTowZP2[10];

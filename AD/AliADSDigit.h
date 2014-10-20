@@ -26,7 +26,7 @@ class AliADSDigit: public AliDigit  {
                         AliADSDigit(const AliADSDigit& /*sdigit*/); 
                         AliADSDigit& operator = (const AliADSDigit& /*sdigit*/); 
 
-    Int_t               fPMNumber;      // PhotoMultiplier number (0 to 63)
+    Int_t               fPMNumber;      // PhotoMultiplier number (0 to 16)
     Int_t               fNBins;         // Number of charge bins
     Float_t*            fCharges;       //[fNBins] Array with charges
 

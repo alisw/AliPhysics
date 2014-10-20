@@ -320,14 +320,14 @@ void AliTPCcalibTimeGain::Process(AliVEvent *event) {
     //Printf("AliTPCcalibTimeGain::Process(event)...");
 
   if (!event) {
-    Printf("ERROR AliTPCcalibTimeGain::Process(): event not available");
+    //Printf("ERROR AliTPCcalibTimeGain::Process(): event not available");
     return;
   }
 
   AliVfriendEvent *friendEvent=event->FindFriend();
 
   if (!friendEvent) {
-      Printf("ERROR AliTPCcalibTimeGain::Process(): friendEvent not available");
+      //Printf("ERROR AliTPCcalibTimeGain::Process(): friendEvent not available");
    return;
   }
   //Printf("friendEvent->TestSkipBit() = %d",friendEvent->TestSkipBit() );
@@ -352,7 +352,7 @@ void AliTPCcalibTimeGain::ProcessCosmicEvent(AliVEvent *event) {
 
   AliVfriendEvent *friendEvent=event->FindFriend();
   if (!friendEvent) {
-   Printf("ERROR AliTPCcalibTimeGain::ProcessCosmicEvent(): ESDfriend not available");
+   //Printf("ERROR AliTPCcalibTimeGain::ProcessCosmicEvent(): ESDfriend not available");
    return;
   }
   //
@@ -417,7 +417,7 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
 
   AliVfriendEvent *friendEvent=event->FindFriend();
   if (!friendEvent) {
-   Printf("ERROR AliTPCcalibTimeGain::ProcessBeamEvent(): ESDfriend not available");
+   //Printf("ERROR AliTPCcalibTimeGain::ProcessBeamEvent(): ESDfriend not available");
    return;
   }
   //
@@ -431,10 +431,12 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
   for (Int_t i=0;i<nFriendTracks;++i) { // begin track loop
 
     AliVTrack *track = event->GetVTrack(i);
-    if (!track) {Printf("***ERROR*** : track not available");  continue;}
+    if (!track) {
+        //Printf("***ERROR*** : track not available");
+        continue;}
     const AliVfriendTrack *friendTrack = friendEvent->GetTrack(i);
     if (!friendTrack) {
-        Printf("ERROR ProcessBeamEvent(): friendTrack is not available!");
+        //Printf("ERROR ProcessBeamEvent(): friendTrack is not available!");
         continue;
     }
         
@@ -513,7 +515,7 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
      event->GetV0(v0dummy, iv0);
      AliESDv0 *v0 = &v0dummy;
 
-     if (!v0) Printf("ERROR AliTPCcalibTimeGain::ProcessBeamEvent(): ESDv0 not available! ");
+     //if (!v0) Printf("ERROR AliTPCcalibTimeGain::ProcessBeamEvent(): ESDv0 not available! ");
 
     if (!v0->GetOnFlyStatus()) continue;
     if (v0->GetEffMass(0,0) > 0.02) continue; // select low inv. mass
@@ -526,7 +528,7 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
     for(Int_t idaughter = 0; idaughter < 2; idaughter++) { // daughter loop
       Int_t index = idaughter == 0 ? v0->GetPindex() : v0->GetNindex();
       AliVTrack * trackP = event->GetVTrack(index);
-      if (!trackP) Printf("***ERROR*** trackP not available!");
+      if (!trackP) continue; //Printf("***ERROR*** trackP not available!");
       const AliVfriendTrack *friendTrackP = friendEvent->GetTrack(index);
       if (!friendTrackP) continue;
       const AliExternalTrackParam * trackPIn = trackP->GetInnerParam();

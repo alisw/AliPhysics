@@ -37,17 +37,18 @@ class  AliCaloRawAnalyzerComparison
 {
  public:
   AliCaloRawAnalyzerComparison();
-  virtual ~AliCaloRawAnalyzerComparison();
+  virtual ~AliCaloRawAnalyzerComparison() {;}
+  
   void Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, 
-		 const UInt_t altrocfg1,  const UInt_t altrocfg2, const int event, const int col, const int row ); 
+                 const UInt_t altrocfg1,  const UInt_t altrocfg2, const int event, const int col, const int row );
   
   void EventChanged();
 
   void WriteHistograms();
 
  private:
-  AliCaloRawAnalyzerComparison( const AliCaloRawAnalyzerComparison   & );
-  AliCaloRawAnalyzerComparison   & operator = ( const  AliCaloRawAnalyzerComparison  & );
+  AliCaloRawAnalyzerComparison                ( const AliCaloRawAnalyzerComparison  & );
+  AliCaloRawAnalyzerComparison   & operator = ( const AliCaloRawAnalyzerComparison  & );
 
   void IntiHistograms( std::vector <AliCaloRawAnalyzer*> analyzers, AliCaloRawAnalyzer* ref );
 
@@ -60,13 +61,12 @@ class  AliCaloRawAnalyzerComparison
   TH1D *fAmpDiff[NANALYZERS]; // Difference in amplitude between reference
   TH1D *fTofDiff[NANALYZERS]; // Difference in tof between reference
   TH1D *fTofResDifferential[NANALYZERS]; //differntial tof resolution 
-  TH1D *fTofResAbsolute[NANALYZERS]; //differntial tof resolution 
-  
+  TH1D *fTofResAbsolute[NANALYZERS]; //differntial tof resolution
 
   std::vector <AliCaloRawAnalyzer*> fRawAnalyzers; // raw analyzers
   AliCaloRawAnalyzer *fReferenceAnalyzer; // reference analyzer
   
-  int fMod; // SuperModule index
+  int fMod;     // SuperModule index
   int fMonCol1; // column index, for tower 1
   int fMonRow1; // row index, for tower 1
   int fMonCol2; // column index, for tower 2

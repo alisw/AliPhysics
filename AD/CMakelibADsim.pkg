@@ -31,8 +31,8 @@ set ( SRCS
     AliADv1.cxx 
     AliADhit.cxx 
     AliADDigitizer.cxx 
-#    AliADBuffer.cxx 
-#    AliADQADataMakerSim.cxx
+    AliADBuffer.cxx 
+    AliADQADataMakerSim.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

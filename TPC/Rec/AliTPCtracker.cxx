@@ -339,7 +339,7 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
   Double_t rdistance2  = rdistancey2+rdistancez2;
   //Int_t  accept =0;
   
-  if (AliTPCReconstructor::StreamLevel()>2) {
+  if (AliTPCReconstructor::StreamLevel()>2 && ( (fIteration>0)|| (seed->GetNumberOfClusters()>20))) {
     //  if (AliTPCReconstructor::StreamLevel()>2 && seed->GetNumberOfClusters()>20) {
     Float_t rmsy2 = seed->GetCurrentSigmaY2();
     Float_t rmsz2 = seed->GetCurrentSigmaZ2();
@@ -572,6 +572,7 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	iotrack.~AliESDtrack();
 	new(&iotrack) AliESDtrack;
 	iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);
+        iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
 	iotrack.SetTPCPoints(pt->GetPoints());
 	iotrack.SetKinkIndexes(pt->GetKinkIndexes());
 	iotrack.SetV0Indexes(pt->GetV0Indexes());
@@ -586,6 +587,7 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	iotrack.~AliESDtrack();
 	new(&iotrack) AliESDtrack;
 	iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);
+        iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
 	iotrack.SetTPCPoints(pt->GetPoints());
 	//iotrack.SetTPCindex(i);
 	iotrack.SetKinkIndexes(pt->GetKinkIndexes());
@@ -605,6 +607,7 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	  iotrack.~AliESDtrack();
 	  new(&iotrack) AliESDtrack;
 	  iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
+	  iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
 	  //iotrack.SetTPCindex(i);
 	  iotrack.SetTPCPoints(pt->GetPoints());
 	  iotrack.SetKinkIndexes(pt->GetKinkIndexes());
@@ -625,6 +628,7 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	iotrack.~AliESDtrack();
 	new(&iotrack) AliESDtrack;
 	iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
+        iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
 	iotrack.SetTPCPoints(pt->GetPoints());
 	iotrack.SetKinkIndexes(pt->GetKinkIndexes());
 	iotrack.SetV0Indexes(pt->GetV0Indexes());
@@ -643,6 +647,7 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	  iotrack.~AliESDtrack();
 	  new(&iotrack) AliESDtrack;
 	  iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
+	  iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
 	  iotrack.SetTPCPoints(pt->GetPoints());
 	  iotrack.SetKinkIndexes(pt->GetKinkIndexes());
 	  iotrack.SetV0Indexes(pt->GetV0Indexes());
@@ -665,6 +670,7 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	iotrack.~AliESDtrack();
 	new(&iotrack) AliESDtrack;
 	iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
+        iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
 	iotrack.SetTPCPoints(pt->GetPoints());
 	iotrack.SetKinkIndexes(pt->GetKinkIndexes());
 	iotrack.SetV0Indexes(pt->GetV0Indexes());

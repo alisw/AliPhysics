@@ -102,6 +102,7 @@ using std::setprecision;
 ClassImp(AliSysInfo)
 
 AliSysInfo* AliSysInfo::fInstance=0;
+Bool_t AliSysInfo::fgVerbose = kTRUE;
 
 AliSysInfo::AliSysInfo():
     TObject(),
@@ -175,6 +176,7 @@ AliSysInfo * AliSysInfo::Instance(){
 void AliSysInfo::AddStamp(const char *sname, Int_t id0, Int_t id1, Int_t id2, Int_t id3){
   //
   // 
+  if (!fgVerbose) return;
   //
   //
   TTimeStamp stamp;

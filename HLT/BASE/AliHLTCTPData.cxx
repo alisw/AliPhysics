@@ -506,3 +506,43 @@ std::string AliHLTCTPData::TriggerMaskToString(AliHLTTriggerMask_t mask) const
   return stream.str();
 }
 
+//______________________________________________________________________________
+void AliHLTCTPData::Streamer(TBuffer &R__b)
+{
+   // Custom streamer. It converts objects of version 1 and 2 to version 3
+
+   if (R__b.IsReading()) {
+      UInt_t R__s, R__c;
+      Version_t R__v = R__b.ReadVersion(&R__s, &R__c);
+
+      ULong64_t fMaskOld = 0; // version 1-2
+      ULong64_t fTriggersOld = 0; // version 1-2
+
+      switch(R__v) {
+      case 0:
+	// No IO for class version 0. Probably the line below is not needed
+	R__b.SkipObjectAny();
+	break;
+      case 1:
+      case 2:
+	// Version 1 and 2 of the class contain two ULong64_t numbers
+	// that have to be converted to bitset<100>
+	R__b.ReadULong64(fMaskOld);
+	for (Int_t i=0; i<64; ++i) fMask.set(i,TESTBIT(fMaskOld,i));
+
+	R__b.ReadULong64(fTriggersOld);
+	for (Int_t i=0; i<64; ++i) fTriggers.set(i,TESTBIT(fTriggersOld,i));
+
+	// Calling the streamers of the data members that did not change
+	fClassIds.Streamer(R__b);
+	fCounters.Streamer(R__b);
+	// R__b.SkipObjectAny();
+	break;
+      default:
+	R__b.ReadClassBuffer(AliHLTCTPData::Class(),this, R__v, R__s, R__c);
+      }
+   } else {
+     // Write objects of the current class version
+      R__b.WriteClassBuffer(AliHLTCTPData::Class(),this);
+   }
+}

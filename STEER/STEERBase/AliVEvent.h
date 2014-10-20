@@ -25,7 +25,7 @@
 #include "TRefArray.h"
 #include "AliTOFHeader.h"
 #include "AliVTrdTrack.h"
-
+#include "AliVMultiplicity.h"
 class AliVfriendEvent;
 class AliCentrality;
 class AliEventplane;
@@ -38,10 +38,6 @@ class AliESDVertex;
 class AliVTrack;
 
 class AliVEvent : public TObject {
- private:
-  // disable some methods from AliVEvent interface
-
-  ULong64_t GetTriggerMaskNext50() const { return 0; }
 
 public:
   enum EDataLayoutType { kESD, kMC, kAOD, kMixed, kFlat };
@@ -179,6 +175,8 @@ public:
   const TGeoHMatrix* GetEMCALMatrix(Int_t /*i*/)   const {return NULL;}
   virtual AliVCaloTrigger *GetCaloTrigger(TString /*calo*/) const {return NULL;} 
 
+	
+  // Primary vertex
   virtual Bool_t IsPileupFromSPD(Int_t /*minContributors*/, 
 				 Double_t /*minZdist*/, 
 				 Double_t /*nSigmaZdist*/, 
@@ -187,6 +185,10 @@ public:
 				 const{
     return kFALSE;
   }
+
+  // Tracklets
+  virtual AliVMultiplicity* GetMultiplicity() const {return 0;}
+  virtual Int_t             GetNumberOfITSClusters(Int_t) const {return 0;}
 
   virtual Bool_t IsPileupFromSPDInMultBins() const {
     return kFALSE;    

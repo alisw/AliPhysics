@@ -31,6 +31,7 @@
 
 // header files of library components
 #include "AliHLTGlobalTrackMergerComponent.h"
+#include "AliHLTGlobalCompareFlatComponent.h"
 #include "AliHLTGlobalEsdToFlatConverterComponent.h"
 #include "AliHLTGlobalFlatEsdConverterComponent.h"
 #include "AliHLTGlobalEsdConverterComponent.h"
@@ -80,6 +81,7 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   assert(pHandler);
   if (!pHandler) return -EINVAL;
   pHandler->AddComponent(new AliHLTGlobalEsdToFlatConverterComponent);
+  pHandler->AddComponent(new AliHLTGlobalCompareFlatComponent);
   pHandler->AddComponent(new AliHLTGlobalFlatEsdTestComponent);
   pHandler->AddComponent(new AliHLTGlobalTrackMergerComponent);
   pHandler->AddComponent(new AliHLTGlobalFlatEsdConverterComponent);
@@ -143,7 +145,7 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
   // assembly of the global ESD
 
   // define the inputs to the global ESD
-  TString esdInputs="TPC-globalmerger TPC-mcTrackMarker ITS-tracker TPC-ClusterTransformation GLOBAL-vertexer ITS-SPD-vertexer TPC-dEdx VZERO-RECO";
+  TString esdInputs="TPC-globalmerger TPC-mcTrackMarker ITS-tracker TPC-ClusterTransformation GLOBAL-vertexer ITS-SPD-vertexer TPC-dEdx VZERO-RECO ITS-SAPtracker";
 
   // check for the availibility
   pTokens=esdInputs.Tokenize(" ");
@@ -171,6 +173,8 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
   pHandler->CreateConfiguration("GLOBAL-esd-converter", "GlobalEsdConverter", esdInputs.Data(), "");
   pHandler->CreateConfiguration("GLOBAL-flat-esd-test", "GlobalFlatEsdTest", "GLOBAL-esd-converter GLOBAL-flat-esd-converter", "");
   pHandler->CreateConfiguration("esd-to-flat-conversion", "GlobalEsdToFlatConverter", "GLOBAL-esd-converter", "");
+  pHandler->CreateConfiguration("compare-flat", "GlobalCompareFlat", "GLOBAL-flat-esd-converter esd-to-flat-conversion", "");
+  //pHandler->CreateConfiguration("compare-flat", "GlobalCompareFlat", "GLOBAL-flat-esd-converter", "");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //

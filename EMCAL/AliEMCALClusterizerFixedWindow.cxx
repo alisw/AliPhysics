@@ -131,9 +131,9 @@ AliEMCALClusterizerFixedWindow::~AliEMCALClusterizerFixedWindow()
 	delete[] fClustersArray[i];
 	fClustersArray[i] = 0;
       }
-      delete[] fClustersArray;
-      fClustersArray = 0;
     }
+    delete[] fClustersArray;
+    fClustersArray = 0;
   }
 
 }
@@ -333,9 +333,9 @@ void AliEMCALClusterizerFixedWindow::ExecOnce()
 	delete[] fClustersArray[i];
 	fClustersArray[i] = 0;
       }
-      delete[] fClustersArray;
-      fClustersArray = 0;
     }
+    delete[] fClustersArray;
+    fClustersArray = 0;
   }
 
   fClustersArray = new AliEMCALDigit**[fNTotalClus];

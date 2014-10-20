@@ -2312,7 +2312,7 @@ void AliZDCv4::StepManager()
       //printf("\t Particle: mass = %1.3f, E = %1.3f GeV, pz = %1.2f GeV -> stopped in volume %s\n", 
       //     TVirtualMC::GetMC()->TrackMass(), p[3], p[2], TVirtualMC::GetMC()->CurrentVolName());
       //
-      /*if(ipr!=0){
+      if(ipr<0){
         printf("\n\t **********************************\n");
         printf("\t ********** Side C **********\n");
         printf("\t # of particles in IT = %d\n",fpLostITC);
@@ -2324,7 +2324,7 @@ void AliZDCv4::StepManager()
         printf("\t # of particles in TDI = %d\n",fpLostTDI);
         printf("\t # of particles in VColl = %d\n",fpcVCollA);
         printf("\t **********************************\n");
-      }*/
+      }
       TVirtualMC::GetMC()->StopTrack();
       return;
   }

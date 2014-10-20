@@ -404,7 +404,7 @@ AliCDBEntry* AliCDBLocal::GetEntry(const AliCDBId& queryId) {
 
   TString errMessage(TString::Format("No valid CDB object found! request was: %s", queryId.ToString().Data()));
   if (!dataId || !dataId->IsSpecified()){
-    AliError(Form("The data ID is undefined!"));
+    AliError(Form("No file found matching this id!"));
     throw std::runtime_error(errMessage.Data());
     return NULL;
   }

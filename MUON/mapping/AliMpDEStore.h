@@ -55,16 +55,16 @@ class AliMpDEStore : public  TObject {
     // methods
     Bool_t IsPlaneType(const TString& planeTypeName);
  
-    Bool_t ReadDENames(AliMp::StationType stationType, 
+    Bool_t ReadDENames(const AliMpDataStreams& dataStreams,
+                       AliMp::StationType stationType,
                        AliMq::Station12Type station12Type = AliMq::kNotSt12);
-    void   FillDEs();
+    void   FillDEs(const AliMpDataStreams& dataStreams);
 
     // static data members	
     static AliMpDEStore* fgInstance;       ///< Singleton instance
     static const char    fgkCommentPrefix; ///< Comment prefix in DE names file
 
     // data members	
-    const AliMpDataStreams&  fkDataStreams; //!< Data streams
     AliMpExMap  fDetElements; ///< Map between DE Ids and DE objects
       
   ClassDef(AliMpDEStore,1)  // The manager class for definition of detection element types

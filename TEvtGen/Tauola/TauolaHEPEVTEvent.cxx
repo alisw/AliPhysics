@@ -1,6 +1,6 @@
 #include "TauolaHEPEVTEvent.h"
 
-#include "Log.h"
+#include "TauolaLog.h"
 
 namespace Tauolapp
 {

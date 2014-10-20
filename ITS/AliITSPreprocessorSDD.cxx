@@ -134,7 +134,11 @@ UInt_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
   if(feefil){
     retfscf=fscanf(feefil,"%d \n",&amSamplFreq);
     fclose(feefil);
-    Log(Form("AM sampling frequency = %d MHz",amSamplFreq));
+    if(retfscf<0){
+      Log("Error reading from fee.conf. AM sampling set at 40 MHz by default");
+    }else{
+      Log(Form("AM sampling frequency = %d MHz",amSamplFreq));
+    }
   }else{
     Log("File fee.conf not found. AM sampling set at 40 MHz by default");
   }
@@ -172,6 +176,7 @@ UInt_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
 	}
 
 	retfscf=fscanf(basFil,"%d %d %d\n",&im,&is,&isgoodmod);
+	if(retfscf<0) isgoodmod=kFALSE;
 	if(!isgoodmod){
 	  if(isid==0){
 	    sid0ok=kFALSE;
@@ -278,6 +283,10 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
 	  continue;
 	}
 	retfscf=fscanf(injFil,"%d",&polDeg);
+	if(retfscf<0){
+	  Log(Form("File %s has bad format.",inpFileName.Data()));
+	  continue;
+	}
 	while (!feof(injFil)){
 	  retfscf=fscanf(injFil,"%d %u ",&evNumb,&timeStamp);
 	  if(evNumb==-99){

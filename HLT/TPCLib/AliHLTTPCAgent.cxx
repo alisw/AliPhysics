@@ -31,6 +31,7 @@
 #include "AliCDBEntry.h"
 #include "AliTPCParam.h"
 #include "AliTPCRecoParam.h"
+#include "AliDAQ.h"
 #include "TObject.h"
 
 /** global instance for agent registration */
@@ -85,6 +86,11 @@ AliHLTTPCAgent::AliHLTTPCAgent()
 AliHLTTPCAgent::~AliHLTTPCAgent()
 {
   // see header file for class documentation
+}
+
+UInt_t AliHLTTPCAgent::GetDetectorMask() const
+{
+  return AliDAQ::kTPC;
 }
 
 int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,

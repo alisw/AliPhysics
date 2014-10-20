@@ -31,8 +31,12 @@
 #include "AliESDZDC.h"
 #include "AliESDACORDE.h"
 #include "AliESDAD.h"
+#include "AliMultiplicity.h"
 
+// AliESDtrack has to be included so that the compiler 
+// knows its inheritance tree (= that it is a AliVParticle).
 #include "AliESDtrack.h"
+// same for AliESDVertex (which is a AliVVertex)
 #include "AliESDVertex.h"
 // same for CaloCells and CaloClusters (which is a AliVCaloCells, AliVCluster)
 #include "AliESDCaloCluster.h"
@@ -43,15 +47,14 @@
 #include "AliESDTOFCluster.h"
 #include "AliESDTOFHit.h"
 #include "AliESDTOFMatch.h"
-#include "AliESDv0.h"
-#include "AliESDkink.h"
 #include "AliESDfriend.h"
 
+class AliESDv0;
+class AliESDkink;
 class AliESDHLTtrack;
 class AliESDVertex;
 class AliESDPmdTrack;
 class AliESDFMD;
-class AliMultiplicity;
 class AliRawDataErrorLog;
 class AliESDRun;
 class AliESDTrdTrigger;
@@ -72,6 +75,7 @@ class AliESDCosmicTrack;
 
 class TList;
 class TString;
+
 
 class AliESDEvent : public AliVEvent {
 public:
@@ -325,15 +329,16 @@ public:
 
   TClonesArray *GetESDTOFClusters() const {return fESDTOFClusters;}
   TClonesArray *GetESDTOFHits() const {return fESDTOFHits;}
-  TClonesArray *GetESDTOFMatches() const {return fESDTOFMatchess;}
+  TClonesArray *GetESDTOFMatches() const {return fESDTOFMatches;}
 
   void SetTOFcluster(Int_t ntofclusters,AliESDTOFCluster *cluster,Int_t *mapping=NULL);
   void SetTOFcluster(Int_t ntofclusters,AliESDTOFCluster *cluster[],Int_t *mapping=NULL);
   Int_t GetNTOFclusters() const {return fESDTOFClusters ? fESDTOFClusters->GetEntriesFast() : 0;}
 
+  Int_t GetNumberOfITSClusters(Int_t lr) const {return fSPDMult ? fSPDMult->GetNumberOfITSClusters(lr) : 0;}
   void SetMultiplicity(const AliMultiplicity *mul);
 
-  const AliMultiplicity *GetMultiplicity() const {return fSPDMult;}
+  AliMultiplicity *GetMultiplicity() const {return fSPDMult;}
   void   EstimateMultiplicity(Int_t &tracklets,Int_t &trITSTPC,Int_t &trITSSApure,
 			      Double_t eta=1.,Bool_t useDCAFlag=kTRUE,Bool_t useV0Flag=kTRUE) const;
 
@@ -366,6 +371,8 @@ public:
 
   AliESDtrack *GetTrack(Int_t i) const {return (fTracks)?(AliESDtrack*)fTracks->At(i) : 0;}
   Int_t  AddTrack(const AliESDtrack *t);
+
+  AliESDtrack *GetVTrack(Int_t i) const {return GetTrack(i);}
 
   /// add new track at the end of tracks array and return instance
   AliESDtrack* NewTrack();
@@ -434,15 +441,10 @@ public:
   void AddTrdTracklet(const AliESDTrdTracklet *trkl);
   void AddTrdTracklet(UInt_t trackletWord, Short_t hcid, Int_t label = -1);
 
+  using AliVEvent::GetV0;
   AliESDv0 *GetV0(Int_t i) const {
     return (AliESDv0*)(fV0s?fV0s->At(i):0x0);
   }
-
-  Int_t GetV0(AliESDv0 &v0dum, Int_t i) const {
-        if(!GetV0(i)) return -1;
-        v0dum=*GetV0(i);
-        return 0;}
-
   Int_t AddV0(const AliESDv0 *v);
 
   AliESDcascade *GetCascade(Int_t i) const {
@@ -600,7 +602,7 @@ protected:
   TClonesArray *fCosmicTracks;     //! Tracks created by cosmics finder
   TClonesArray *fESDTOFClusters;    //! TOF clusters
   TClonesArray *fESDTOFHits;        //! TOF hits (used for clusters)
-  TClonesArray *fESDTOFMatchess;      //! TOF matching info (with the reference to tracks)
+  TClonesArray *fESDTOFMatches;    //! TOF matching info (with the reference to tracks)
   TClonesArray *fErrorLogs;        //! Raw-data reading error messages
  
   Bool_t fOldMuonStructure;        //! Flag if reading ESD with old MUON structure
@@ -626,6 +628,5 @@ protected:
 
   ClassDef(AliESDEvent,23)  //ESDEvent class 
 };
-  
 #endif 
 

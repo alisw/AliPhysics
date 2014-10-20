@@ -185,11 +185,11 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(TClonesArray *alldigits) {
   cout<<"this is module "<<fModule;
   cout<<endl;
   cout<<endl;
-  */
+ 
   Int_t layer = 4;
   if (fModule>fLastSSD1) 
     layer = 5;
-
+  */
   //--------------------------------------------------------
   // start 1D-clustering from the first digit in the digits array
   //
@@ -510,9 +510,10 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input)
 	  continue;
 	}
 	
-	Int_t layer = 4;
+	/*	Int_t layer = 4;
 	if (fModule>fLastSSD1) 
 	  layer = 5;
+	*/
 
 	AliITSCalibrationSSD* cal = (AliITSCalibrationSSD*)fDetTypeRec->GetCalibrationModel(fModule);
 	if( !cal ){
@@ -1298,7 +1299,7 @@ FindClustersSSD(const Ali1Dcluster* neg, Int_t nn,
       //
       if ( (cnegative[ip]==2) && cpositive[negativepair[10*ip]]==2){ 
 	Float_t minchargediff =4.;
-	Float_t minchargeratio =0.2;
+	//	Float_t minchargeratio =0.2;
 
 	Int_t j=-1;
 	for (Int_t di=0;di<cnegative[ip];di++){
@@ -1309,7 +1310,7 @@ FindClustersSSD(const Ali1Dcluster* neg, Int_t nn,
 	  if (TMath::Abs(ratio)<0.2){
 	    j =jc;
 	    minchargediff = TMath::Abs(chargedif);
-	    minchargeratio = TMath::Abs(ratio);
+	    //	    minchargeratio = TMath::Abs(ratio);
 	  }
 	}
 	if (j<0) continue;  // not proper cluster      

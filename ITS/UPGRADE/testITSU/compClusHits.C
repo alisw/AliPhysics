@@ -48,6 +48,7 @@ typedef struct {
   Float_t phi;
   Float_t xyz[3];
   Float_t dX;
+  Float_t dY;
   Float_t dZ;  
   Bool_t split;  
   Bool_t prim;
@@ -135,6 +136,7 @@ void compClusHits(int nev=-1)
   trOut->Branch("phi"  , &cSum.phi  ,"phi/F");  
   trOut->Branch("xyz",   cSum.xyz,  "xyz[3]/F");  
   trOut->Branch("dX"  , &cSum.dX   ,"dX/F");
+  trOut->Branch("dY"  , &cSum.dY   ,"dY/F");
   trOut->Branch("dZ"  , &cSum.dZ   ,"dZ/F");  
   trOut->Branch("split",&cSum.split,"split/O");
   trOut->Branch("prim", &cSum.prim, "prim/O");
@@ -190,11 +192,10 @@ void compClusHits(int nev=-1)
 	int modID = cl->GetVolumeId();
 	
 	//------------ check if this is a split cluster
-	int sInL = modID - gm->GetFirstChipIndex(ilr);
 	if (!cl->TestBit(kSplCheck)) {
 	  cl->SetBit(kSplCheck);
 	  // check if there is no other cluster with same label on this module
-	  AliITSURecoSens* sens = lr->GetSensor(sInL);
+	  AliITSURecoSens* sens = lr->GetSensorFromID(modID);
 	  int nclSn = sens->GetNClusters();
 	  int offs = sens->GetFirstClusterId();
 	  //	printf("To check for %d (mod:%d) N=%d from %d\n",icl,modID,nclSn,offs);
@@ -243,11 +244,18 @@ void compClusHits(int nev=-1)
 	  //
 	  int nh = htArr->GetEntriesFast();
 	  AliITSUHit *pHit=0;
+	  double dst2Max = 1e33;
 	  for (int ih=nh;ih--;) {
 	    AliITSUHit* tHit = (AliITSUHit*)htArr->At(ih);
 	    if (tHit->GetChip()!=modID) continue;
-	    pHit = tHit;
-	    break;
+	    tHit->GetPositionG(xg1,yg1,zg1);
+	    tHit->GetPositionG0(xg0,yg0,zg0,tg0);
+	    double gxyzHDif[3] = { (xg1+xg0)/2 - xyzClGlo[0], (yg1+yg0)/2 - xyzClGlo[1], (zg1+zg0)/2 - xyzClGlo[2] };
+	    double dst2 = gxyzHDif[0]*gxyzHDif[0] + gxyzHDif[1]*gxyzHDif[1] + gxyzHDif[2]*gxyzHDif[2];
+	    if (dst2<dst2Max) {
+	      pHit = tHit;
+	      dst2Max = dst2;
+	    }
 	  }
 	  if (!pHit) {
 	    printf("did not find MChit for label %d on module %d ",il,modID); 
@@ -286,6 +294,7 @@ void compClusHits(int nev=-1)
 	  cSum.q    = cl->GetQ();
 	  cSum.split = cl->TestBit(kSplit);
 	  cSum.dX = (txyzH[0]-xyzClTr[0])*1e4;
+	  cSum.dY = (txyzH[1]-xyzClTr[1])*1e4;
 	  cSum.dZ = (txyzH[2]-xyzClTr[2])*1e4;
 	  int label = cl->GetLabel(0);
 	  TParticle* part = 0;

@@ -32,13 +32,15 @@ set ( CSRCS )
 set ( EINCLUDE )
 set ( ELIBSDIR )
 
-set ( ELIBS  EveBase EveDet MUONmapping MUONevaluation MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw MUONtrigger MUONcore TPCsim TPCrec TPCbase TPCutil ITSbase ITSsim ITSrec ITSUpgradeBase ITSUpgradeSim PMDbase PMDsim PMDrec TRDbase TRDsim TRDrec FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSUtils PHOSbase PHOSsim PHOSrec ACORDEbase ACORDEsim ACORDErec HMPIDbase HMPIDrec HMPIDsim ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec EMCALUtils EMCALbase EMCALsim EMCALrec EMCALraw BCM STRUCT T0base T0sim T0rec STEER CDB AOD ESD STEERBase ANALYSISalice ANALYSIS THijing hijing THbtp TEPEMGEN FASTSIM microcern RAWDatasim RAWDatarec RAWDatabase HLTbase XMLParser STAT OADB)
+set ( ELIBS  EveBase EveDet MUONmapping MUONevaluation MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw MUONtrigger MUONcore TPCsim TPCrec TPCbase TPCutil ITSbase ITSsim ITSrec ITSUpgradeBase ITSUpgradeSim PMDbase PMDsim PMDrec TRDbase TRDsim TRDrec FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSUtils PHOSbase PHOSsim PHOSrec ACORDEbase ACORDEsim ACORDErec HMPIDbase HMPIDrec HMPIDsim ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec EMCALUtils EMCALbase EMCALsim EMCALrec EMCALraw BCM STRUCT T0base T0sim T0rec STEER CDB AOD ESD STEERBase ANALYSISalice ANALYSIS THijing hijing THbtp TEPEMGEN FASTSIM microcern RAWDatasim RAWDatarec RAWDatabase HLTbase XMLParser STAT OADB MONITOR)
 
 if(PYTHIA6)
-  list (APPEND ELIBS EVGEN)
+  list (APPEND ELIBS EVGEN HepMC HepMCParser)
 endif(PYTHIA6)
 
-set ( PACKBLIBS  ${ROOTCLIBS} ${ROOTPLIBS} -lTreePlayer -lGeomPainter -lGed -lRGL -lEve ${SYSLIBS} )
+set (ARPACKS FMDbase FMDsim FMDrec ACORDEbase ACORDEsim ACORDErec HMPIDbase HMPIDsim HMPIDrec ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec MFTbase MFTsim MFTrec EMCALUtils EMCALbase EMCALsim EMCALrec T0base T0sim T0rec TOFbase TOFsim TOFrec TRDbase TRDsim TRDrec PMDbase PMDsim PMDrec MUONmapping MUONmapping MUONgeometry MUONbase MUONsim MUONrec MUONraw PHOSUtils PHOSbase PHOSsim PHOSrec HLTbase ITSbase ITSsim ITSrec STRUCT TPCbase TPCsim TPCrec TPCfast STEER CDB ESD STEERBase RAWDatabase RAWDatasim RAWDatarec MDC TRIGGERbase)
+
+set ( PACKBLIBS  ${ROOTCLIBS} ${ROOTPLIBS} -lTreePlayer -lGeomPainter -lGed -lRGL -lEve -lMONITOR ${SYSLIBS} )
 
 if( ALICE_TARGET STREQUAL "macosx")
 			
@@ -60,6 +62,13 @@ if( ALICE_TARGET STREQUAL "macosx")
 	set ( ELIBSDIR ${ELIBSDIR} ${FINK_ROOT}/lib)
 	
 endif( ALICE_TARGET STREQUAL "macosx")
+
+set ( ELIBS ${ELIBS} EveBase MONITOR )
+
+if(ZEROMQ_FOUND)
+set ( ELIBS ${ELIBS} MONITORzmq )
+set ( CXXFLAGS  "-DZMQ ${CXXFLAGS}") 
+ENDIF(ZEROMQ_FOUND)
 
 install (DIRECTORY macros 
 	 DESTINATION EVE/ 

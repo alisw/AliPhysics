@@ -59,8 +59,9 @@ class AliMpManuStore : public  TObject {
     AliMpManuStore& operator=(const AliMpManuStore& rhs);
  
     // methods
-    Bool_t ReadData(const AliMpDetElement* detElement, Int_t& nofManus);
-    Bool_t ReadManuSerial();
+    Bool_t ReadData(const AliMpDataStreams& dataStreams,
+                    const AliMpDetElement* detElement, Int_t& nofManus);
+    Bool_t ReadManuSerial(const AliMpDataStreams& dataStreams);
     
     // not yet in use methods
     void   ReplaceManu(Int_t detElemId, Int_t manuId, Int_t serialNb);
@@ -71,7 +72,6 @@ class AliMpManuStore : public  TObject {
     static Bool_t          fgWarnIfDoublon; ///< Option to warn about doublons
 
     // data members	
-    const AliMpDataStreams& fkDataStreams; //!< Data streams
     mutable TExMap fManuToSerialNbs; ///< Map from manuId to serial #   
     mutable TExMap fSerialNbToManus; ///< Map manu serial # to manuId
     mutable TExMap fNofManusInDE;    ///< Number of manus with serial nbs in DE

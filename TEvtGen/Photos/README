@@ -1,0 +1,48 @@
+Photos C++ Interface
+--------------------
+Web page  http://www.ph.unimelb.edu.au/~ndavidson/photos/doxygen/
+
+Documentation is in documentation/latex_documentation, type "make" there
+
+To compile the interface:
+- Execute "./configure" (if the path to HepMC is not set with
+                        HEPMCLOCATION, use "./configure --with-hepmc=<path>"
+                        or use "./configure --without-hepmc")
+- Execute "make"
+
+--------------------------------------
+  Alternatively cofiguration scripts based on autotools can be used.
+  In this case 'cd platform', './use-LCG-config.sh' and             
+  follow the instructions in the freshly created './INSTALL' readme file.
+  The configure file in the directory 'examples' will be absent.         
+  The instructions collected below should be then ignored.               
+  Under MAC OS one may need to remove '-lfreetype' from                  
+  'examples/Makefile'                                                    
+-------------------------------------- 
+
+To run the examples, "cd examples". There "./configure" and "make" as well.
+For some of the examples to work, pythia8.1 and MC-Tester will be needed.
+The most basic example does not need them.
+
+NOTE:
+On CERN platforms (lxplus, lxplus4, lxplus5...) the software located 
+in the /afs/cern.ch/sw/lcg/ directory can be used. For that purpose execute:
+
+source platform/afs.paths.sh (or source platform/afs.paths.csh)
+
+prior to  "./configure" executed without any parameters. The same paths will
+be used by examples there;  "./configure" in the examples direcotry after
+compiling the interface as well. 
+
+Paths defined in platform/afs.paths.sh:
+
+export HEPMCLOCATION=/afs/cern.ch/sw/lcg/external/HepMC/2.03.11/slc4_amd64_gcc34
+export PYTHIALOCATION=/afs/cern.ch/sw/lcg/external/MCGenerators/pythia8/135/slc4_amd64_gcc34
+export TAUOLALOCATION=/afs/cern.ch/sw/lcg/external/MCGenerators/tauola++/1.0.2a/slc4_amd64_gcc34
+export MCTESTERLOCATION=/afs/cern.ch/sw/lcg/external/MCGenerators/mctester/1.24/slc4_amd64_gcc34
+
+export PATH=/afs/cern.ch/sw/lcg/app/releases/ROOT/5.22.00/slc4_amd64_gcc34/root/bin:$PATH
+
+can be modified.
+
+Last Modified: T. Przedzinski, 07 Dec. 2011

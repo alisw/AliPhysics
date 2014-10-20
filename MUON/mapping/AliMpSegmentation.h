@@ -106,6 +106,7 @@ class AliMpSegmentation : public  TObject {
     AliMpSegmentation& operator=(const AliMpSegmentation& rhs);
 
     AliMpVSegmentation* CreateMpSegmentation(
+                              const AliMpDataStreams& dataStreams,
                               Int_t detElemId, AliMp::CathodType cath);
                               
 
@@ -115,7 +116,6 @@ class AliMpSegmentation : public  TObject {
     static AliMpSegmentation* fgInstance; ///< Singleton instance
 
     // data members
-    const AliMpDataStreams&  fkDataStreams;  //!< Data streams
     AliMpDEStore*      fDetElements;    ///< Detection element store
     AliMpStringObjMap  fMpSegmentations;///< Map of mapping segmentations to DE seg names
     AliMpExMap         fElCardsMap;     ///< Map of el. cards IDs to segmentations

@@ -934,8 +934,10 @@ int AliHLTTRDTriggerComponent::MatchTRDTracksHLT(){
 
       //## use cuts here
       hltTrackPreSel[iHltTrack++] = isRelevant;
-      if (iHltTrack >= fkMaxRefTracks)
+      if (iHltTrack >= fkMaxRefTracks) {
 	LogError("maximum number of HLT tracks exceeded.");
+	break;
+      }
     } // loop over HLT tracks;
 
     // search for matching HLT track for each GTU track
@@ -1776,7 +1778,7 @@ Int_t AliHLTTRDTriggerComponent::EstimateTrackDistance(AliExternalTrackParam *re
   Double_t ptrkl2[3];
   UInt_t trklDet;
   UShort_t trklLayer;
-  UInt_t stack_gtu;
+  // UInt_t stack_gtu;
   UShort_t stackInSector;
 
   AliTRDpadPlane* padPlane;
@@ -1785,7 +1787,7 @@ Int_t AliHLTTRDTriggerComponent::EstimateTrackDistance(AliExternalTrackParam *re
     if ((layerMask >> iLayer) & 1){
       trklDet = stack*6 + iLayer;
       trklLayer = iLayer;
-      stack_gtu = stack;
+      // stack_gtu = stack;
       stackInSector = stack % 5;
 
       // local coordinates of the outer end point of the tracklet

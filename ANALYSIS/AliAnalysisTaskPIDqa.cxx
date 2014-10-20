@@ -64,6 +64,8 @@ fListQAitsSA(0x0),
 fListQAitsPureSA(0x0),
 fListQAtpc(0x0),
 fListQAtrd(0x0),
+fListQAtrdNsig(0x0),
+fListQAtrdNsigTPCTOF(0x0),
 fListQAtof(0x0),
 fListQAt0(0x0),
 fListQAemcal(0x0),
@@ -93,6 +95,8 @@ fListQAitsSA(0x0),
 fListQAitsPureSA(0x0),
 fListQAtpc(0x0),
 fListQAtrd(0x0),
+fListQAtrdNsig(0x0),
+fListQAtrdNsigTPCTOF(0x0),
 fListQAtof(0x0),
 fListQAt0(0x0),
 fListQAemcal(0x0),
@@ -175,6 +179,14 @@ void AliAnalysisTaskPIDqa::UserCreateOutputObjects()
   fListQAtrd=new TList;
   fListQAtrd->SetOwner();
   fListQAtrd->SetName("TRD");
+
+  fListQAtrdNsig=new TList;
+  fListQAtrdNsig->SetOwner();
+  fListQAtrdNsig->SetName("TRDnSigma");
+  
+  fListQAtrdNsigTPCTOF=new TList;
+  fListQAtrdNsigTPCTOF->SetOwner();
+  fListQAtrdNsigTPCTOF->SetName("TRDnSigma_TPCTOF");
   
   fListQAtof=new TList;
   fListQAtof->SetOwner();
@@ -518,15 +530,40 @@ void AliAnalysisTaskPIDqa::FillTRDqa()
     if(fPIDResponse->ComputeTRDProbability(track, AliPID::kSPECIES, likelihoods) != AliPIDResponse::kDetPidOk) continue;
     Int_t ntracklets = 0;
     Double_t momentum = -1.;
-    for(Int_t itl = 0; itl < 6; itl++)
-      if(track->GetTRDmomentum(itl) > 0.){
+    for(Int_t itl = 0; itl < 6; itl++) {
+      if(track->GetTRDmomentum(itl) > 0.) {
         ntracklets++;
         if(momentum < 0) momentum = track->GetTRDmomentum(itl);
-    } 
+      }
+    }
+    
     for(Int_t ispecie = 0; ispecie < AliPID::kSPECIES; ispecie++){
       TH2F *hLike = (TH2F *)fListQAtrd->At(ntracklets*AliPID::kSPECIES+ispecie);
       if (hLike) hLike->Fill(momentum,likelihoods[ispecie]);
     }
+
+    //=== nSigma and signal ===
+    for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
+      TH2 *h=(TH2*)fListQAtrdNsig->At(ispecie);
+      TH2 *hTPCTOF=(TH2*)fListQAtrdNsigTPCTOF->At(ispecie);
+      if (!h || !hTPCTOF) continue;
+      Float_t nSigmaTPC=fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType)ispecie);
+      Float_t nSigmaTRD=fPIDResponse->NumberOfSigmas(AliPIDResponse::kTRD, track, (AliPID::EParticleType)ispecie);
+      Float_t nSigmaTOF=fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, (AliPID::EParticleType)ispecie);
+      h->Fill(momentum,nSigmaTRD);
+
+      if (TMath::Abs(nSigmaTPC)<3 && TMath::Abs(nSigmaTOF)<3) {
+        hTPCTOF->Fill(momentum,nSigmaTRD);
+      }
+    }
+
+    TH2 *h=(TH2*)fListQAtrdNsig->Last();
+    
+    if (h) {
+      Double_t sig=track->GetTRDsignal();
+      h->Fill(momentum,sig);
+    }
+    
   }
 }
 
@@ -1205,6 +1242,35 @@ void AliAnalysisTaskPIDqa::SetupTRDqa()
       fListQAtrd->Add(hLikeP);
     }
   }
+
+  // === nSigma Values and signal ===
+  for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
+    TH2F *hNsigmaP = new TH2F(Form("hNsigmaP_TRD_%s",AliPID::ParticleName(ispecie)),
+                              Form("TRD n#sigma %s vs. p;p [GeV]; n#sigma",AliPID::ParticleName(ispecie)),
+                              vX->GetNrows()-1,vX->GetMatrixArray(),
+                              100,-10,10);
+    fListQAtrdNsig->Add(hNsigmaP);
+  }
+
+  TH2F *hSig = new TH2F("hSigP_TRD",
+                        "TRD signal vs. p;p [GeV]; TRD signal [arb. units]",
+                        vX->GetNrows()-1,vX->GetMatrixArray(),
+                        100,0,100);
+  fListQAtrdNsig->Add(hSig);
+
+  fListQAtrd->Add(fListQAtrdNsig);
+
+  // === Same after 3 sigma in TPC and TOF
+  for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
+    TH2F *hNsigmaP = new TH2F(Form("hNsigmaP_TRD_TPCTOF_%s",AliPID::ParticleName(ispecie)),
+                              Form("TRD n#sigma %s vs. p after 3#sigma cut in TPC&TOF;p [GeV]; n#sigma",AliPID::ParticleName(ispecie)),
+                              vX->GetNrows()-1,vX->GetMatrixArray(),
+                              100,-10,10);
+    fListQAtrdNsigTPCTOF->Add(hNsigmaP);
+  }
+  
+  fListQAtrd->Add(fListQAtrdNsigTPCTOF);
+  
   delete vX;
 }
 

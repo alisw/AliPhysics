@@ -56,10 +56,9 @@ ClassImp(AliMpSt345Reader)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMpSt345Reader::AliMpSt345Reader(const AliMpDataStreams& dataStreams, AliMpSlatMotifMap* motifMap) 
+AliMpSt345Reader::AliMpSt345Reader(AliMpSlatMotifMap* motifMap)
 : 
 TObject(),
-fkDataStreams(dataStreams),
 fMotifMap(motifMap)
 {
   ///
@@ -77,19 +76,19 @@ AliMpSt345Reader::~AliMpSt345Reader()
 
 //_____________________________________________________________________________
 AliMpPCB*
-AliMpSt345Reader::ReadPCB(const char* pcbType)
+AliMpSt345Reader::ReadPCB(const AliMpDataStreams& dataStreams,
+                          const char* pcbType)
 { 
   ///
   /// Create a new AliMpPCB object, by reading it from file.
   /// The returned object must be deleted by the client
   
   istream& in 
-    = fkDataStreams.
+    = dataStreams.
         CreateDataStream(AliMpFiles::SlatPCBFilePath(
                              AliMp::kStation345, pcbType));
  
-  AliMpMotifReader reader(fkDataStreams, 
-                          AliMp::kStation345, AliMq::kNotSt12, AliMp::kNonBendingPlane); 
+  AliMpMotifReader reader(AliMp::kStation345, AliMq::kNotSt12, AliMp::kNonBendingPlane); 
   // note that the nonbending
   // parameter is of no use for station345, as far as reading motif is 
   // concerned, as all motifs are supposed to be in the same directory
@@ -137,7 +136,7 @@ AliMpSt345Reader::ReadPCB(const char* pcbType)
       if (!motifType)
       {
         AliDebug(1,Form("Reading motifType %s from file",sMotifType.Data()));
-        motifType = reader.BuildMotifType(sMotifType.Data());
+        motifType = reader.BuildMotifType(dataStreams, sMotifType.Data());
         fMotifMap->AddMotifType(motifType);
       }
       else
@@ -156,14 +155,15 @@ AliMpSt345Reader::ReadPCB(const char* pcbType)
 
 //_____________________________________________________________________________
 AliMpSlat*
-AliMpSt345Reader::ReadSlat(const char* slatType, AliMp::PlaneType planeType)
+AliMpSt345Reader::ReadSlat(const AliMpDataStreams& dataStreams,
+                           const char* slatType, AliMp::PlaneType planeType)
 {
   ///
   /// Create a new AliMpSlat object, by reading it from file.
   /// The returned object must be deleted by the client.
   
   istream& in 
-    = fkDataStreams.
+    = dataStreams.
         CreateDataStream(AliMpFiles::SlatFilePath(
                              AliMp::kStation345, slatType, planeType));
 
@@ -194,7 +194,7 @@ AliMpSt345Reader::ReadSlat(const char* slatType, AliMp::PlaneType planeType)
       TString pcbName(tmp(0,blankPos));
       TString manus(tmp(blankPos+1,tmp.Length()-blankPos));
       
-      AliMpPCB* pcbType = ReadPCB(pcbName.Data());	  
+      AliMpPCB* pcbType = ReadPCB(dataStreams,pcbName.Data());
       if (!pcbType)
 	    {
         AliErrorClass(Form("Cannot read pcbType=%s",pcbName.Data()));

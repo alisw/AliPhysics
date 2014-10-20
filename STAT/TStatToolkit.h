@@ -71,13 +71,15 @@ class TStatToolkit : public TObject
   static void   Constrain1D(const TString &input, const TString filter, TVectorD &param, TMatrixD & covar, Double_t mean, Double_t sigma);
   static TString  MakeFitString(const TString &input, const TVectorD &param, const TMatrixD & covar, Bool_t verbose=kFALSE);
   //
-  // TTree function for the trneding
+  // TTree function for the trending
   //
   static Int_t  MakeStatAlias(TTree * tree, const char * expr, const char * cut, const char * alias);
   static Int_t  SetStatusAlias(TTree * tree, const char * expr, const char * cut, const char * alias);
-  static TMultiGraph*  MakeStatusMultGr(TTree * tree, const char * expr, const char * cut, const char * alias, Int_t igr);  
+  static TMultiGraph*  MakeStatusMultGr(TTree * tree, const char * expr, const char * cut, const char * alias, Int_t igr=0);  
   static void  AddStatusPad(TCanvas* c1, Float_t padratio, Float_t bottommargin);
   static void  DrawStatusGraphs(TObjArray* oaMultGr);
+  static TTree*  WriteStatusToTree(TObject* oStatusGr);
+  static TMultiGraph*  MakeStatusLines(TTree * tree, const char * expr, const char * cut, const char * alias);
   //
   // TTree function for robust draw
   //
@@ -86,7 +88,7 @@ class TStatToolkit : public TObject
   // TestFunctions:
   //
  static  void TestGausFit(Int_t nhistos=5000);
-
+ static  void CheckTreeAliases(TTree * tree, Int_t ncheck);
  ClassDef(TStatToolkit,0) // Various mathematical tools for physics analysis - which are not included in ROOT TMath
  
 };

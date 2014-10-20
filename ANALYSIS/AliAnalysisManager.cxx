@@ -305,8 +305,8 @@ void AliAnalysisManager::CreateReadCache()
       return;
    }
    gEnv->SetValue("TFile.AsyncPrefetching",(Int_t)fAsyncReading);
-   if (fAsyncReading) gEnv->SetValue("Cache.Directory",Form("file://%s/cache", gSystem->WorkingDirectory()));
-   if (fAsyncReading) gEnv->SetValue("TFile.AsyncReading",1);
+//   if (fAsyncReading) gEnv->SetValue("Cache.Directory",Form("file://%s/cache", gSystem->WorkingDirectory()));
+//   if (fAsyncReading) gEnv->SetValue("TFile.AsyncReading",1);
    fTree->SetCacheSize(fCacheSize);
    TTreeCache::SetLearnEntries(1);  //<<< we can take the decision after 1 entry
    if (!fAutoBranchHandling && !fRequestedBranches.IsNull()) {
@@ -553,6 +553,7 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
    AliAnalysisTask *task;
    // Call CreateOutputObjects for all tasks
    Bool_t getsysInfo = ((fNSysInfo>0) && (fMode==kLocalAnalysis))?kTRUE:kFALSE;
+   if (getsysInfo) AliSysInfo::SetVerbose(kTRUE); 
    Bool_t dirStatus = TH1::AddDirectoryStatus();
    Int_t itask = 0;
    while ((task=(AliAnalysisTask*)next())) {
@@ -1057,6 +1058,7 @@ void AliAnalysisManager::Terminate()
    TIter next(fTasks);
    TStopwatch timer;
    Bool_t getsysInfo = ((fNSysInfo>0) && (fMode==kLocalAnalysis))?kTRUE:kFALSE;
+   if (getsysInfo) AliSysInfo::SetVerbose(kTRUE);
    // Call Terminate() for tasks
    Int_t itask = 0;
    while (!IsSkipTerminate() && (task=(AliAnalysisTask*)next())) {
@@ -1705,8 +1707,10 @@ void AliAnalysisManager::PrintStatus(Option_t *option) const
       return;
    }   
    Bool_t getsysInfo = ((fNSysInfo>0) && (fMode==kLocalAnalysis))?kTRUE:kFALSE;
-   if (getsysInfo)
+   if (getsysInfo) {
+      AliSysInfo::SetVerbose(kTRUE);
       Info("PrintStatus", "System information will be collected each %lld events", fNSysInfo);
+   }   
    AliAnalysisDataContainer *cont = fCommonInput;
    if (!cont) cont = (AliAnalysisDataContainer*)fInputs->At(0);
    printf("=== TOP CONTAINER:\n");
@@ -1886,7 +1890,10 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
    }   
 
    Bool_t getsysInfo = ((fNSysInfo>0) && (fMode==kLocalAnalysis))?kTRUE:kFALSE;
-   if (getsysInfo) AliSysInfo::AddStamp("Start", 0);
+   if (getsysInfo) {
+      AliSysInfo::SetVerbose(kTRUE); 
+      AliSysInfo::AddStamp("Start", 0);
+   }   
    // Initialize locally all tasks (happens for all modes)
    TIter next(fTasks);
    AliAnalysisTask *task;
@@ -2291,7 +2298,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
          return;
       }   
       cont->SetData(fTree); // This set activity for all tasks reading only from the top container
-      Long64_t entry = fTree->GetTree()->GetReadEntry();
+      Long64_t entry = fTree->GetTree()->GetReadEntry();      
 //
 //    Call BeginEvent() for optional input/output and MC services 
       if (fInputEventHandler)   fInputEventHandler  ->BeginEvent(entry);
@@ -2310,7 +2317,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       Int_t itask = 0;
       while ((task=(AliAnalysisTask*)next1())) {
          task->SetActive(kTRUE);
-	  if (fDebug >1) {
+         if (fDebug >1) {
             cout << "    Executing task " << task->GetName() << endl;
          }
          if (fStatistics) fStatistics->StartTimer(GetTaskIndex(task), task->GetName(), task->ClassName());

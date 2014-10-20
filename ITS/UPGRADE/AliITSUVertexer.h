@@ -18,7 +18,7 @@ class AliITSUVertexer : public AliVertexer {
  public:
   
   // Constructors and destructors
-  AliITSUVertexer(Double_t phicut=0.02,Double_t zcut=0.005,Double_t paircut=0.1, Double_t clustercut=0.5, Int_t clcontrib=3);
+  AliITSUVertexer(Double_t phicut=0.005,Double_t zcut=0.002,Double_t paircut=0.04, Double_t clustercut=0.8, Int_t clcontrib=5);
   virtual ~AliITSUVertexer();
 
   // Public methods

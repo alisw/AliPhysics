@@ -19,6 +19,8 @@
 #include "./AliFlatESDTrack.h"
 #include "./AliFlatTPCCluster.h"
 #include "./AliFlatExternalTrackParam.h"
+#include "./AliFlatESDTrigger.h"
+#include "./AliFlatESDV0.h"
 #include "Riostream.h"
 #endif   
 
@@ -62,7 +64,7 @@ cout<<"vtx SPD: "<<(Bool_t) flatEsd->GetFlatPrimaryVertexSPD()
 	  <<endl;
 
 // compare tracks
-if(verbose){
+if(verbose){/*
 	static const int nExt = 4;
 	  AliFlatESDTrack *track = const_cast<AliFlatESDTrack*> ( flatEsd->GetTracks() );
 	  //new (track)AliFlatESDTrack(1);
@@ -96,36 +98,51 @@ cout<<" GetX"<<iExt<<" :"  << (ext[iExt] ? ext[iExt]->GetX(): -9999) <<endl;
 	cout<<" 1/pt"<<iExt<<" :"  <<  (ext[iExt] ? ext[iExt]->GetSigned1Pt(): -9999)  <<endl;
 			
 
-}
-	
-		cout<<" nTPCclusters: "<<track->GetNumberOfTPCClusters()<< endl;
-		cout<<" nITSclusters: "<<track->GetNumberOfITSClusters()<< endl;
-
-// read clusters
-#if 0
-	Int_t nCl = track->GetNumberOfTPCClusters();
-	if(nCl && verbose > 1){
-	
-    for (Int_t idxRow = 0; idxRow <  nCl; idxRow++){
-		cout<<"rowNr "<< idxRow<<endl;
-      
-		AliFlatTPCCluster * cl = track->GetTPCCluster(idxRow);
-
-			 	cout<<" idx fX fY fZ  fSigmaY2 fSigmaZ2 fCharge fQMax fPadRow" <<endl;
-				if(cl) {
-				cout<< idxRow <<" "<< cl->GetX()<<" "<< cl->GetY()<<" "<< cl->GetZ()<<" "<< cl->GetSigmaY2()<<" "<< cl->GetSigmaZ2()<<" "<< cl->GetCharge()<<" "<< cl->GetQMax() <<" "<< cl->GetPadRow()<<endl;
-				
-				}
-				else cout <<"----------------------------------------------------"<<endl;
-		}
-	}
-#endif
-	
-	
+}	
       track = const_cast<AliFlatESDTrack*> (track->GetNextTrack());
 	  
 	  
 	  }
+	  
+*/
+	  
+	  
+	  // compare triggers
+	  
+	  /*
+		cout<<"------------------\ntriggers\n------------------\n";
+    AliFlatESDTrigger * trigger =const_cast<AliFlatESDTrigger*>(flatEsd->GetTriggerClasses() ) ;
+    for( Int_t i = 0; i < flatEsd->GetNumberOfTriggerClasses() ; i++ ){
+      cout<<"\nnew trigger\n";
+			cout<<"AliFlatESDTrigger::GetSize"<<trigger->GetSize()<<endl;
+			cout<<"AliFlatESDTrigger::GetTriggerIndex"<<trigger->GetTriggerIndex()<<endl;
+			cout<< "AliFlatESDTrigger::GetTriggerClassName"<<trigger->GetTriggerClassName()<<endl;
+			
+      trigger= trigger->GetNextTriggerNonConst();
+    }
+	  **/
+	  
+	  // compare v0s
+
+	  
+	if(flatEsd->GetNumberOfV0s()  ){
+		cout<<"------------------\nv0s\n------------------\n";
+		
+    AliFlatESDV0 * v0 = const_cast<AliFlatESDV0*>(flatEsd->GetV0s() ) ;
+    for( Int_t i = 0; i < flatEsd->GetNumberOfV0s(); i++ ){
+      cout<<"\nnew v0\n";
+			cout<<"AliFlatESDV0::GetSize "<<v0->GetSize()<<endl; 
+			cout<<"AliFlatESDV0::GetNegTrackID "<<v0->GetNegTrackID()<<endl ; 
+			cout<<"AliFlatESDV0::GetPosTrackID "<<v0->GetPosTrackID()<<endl; 
+			
+      v0 = v0->GetNextV0NonConst();
+    }
+	}
+	  
+	  
+	  
+	  
+	  
 }
 
   //  Printf("curr: %p \t + %d = %p , diff:%p", curr, flatEsd->GetSize() ,curr+ flatEsd->GetSize(), endBuff-(curr+ flatEsd->GetSize())   );

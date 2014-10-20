@@ -1,9 +1,9 @@
 #ifndef ALIMULTIPLICITY_H
 #define ALIMULTIPLICITY_H
 
-#include <TObject.h>
 #include <TBits.h>
 #include <TMath.h>
+#include "AliVMultiplicity.h"
 class AliRefArray;
 
 ////////////////////////////////////////////////////////
@@ -11,16 +11,11 @@ class AliRefArray;
 ////   to stored in the ESD                           //
 ////////////////////////////////////////////////////////
 
-class AliMultiplicity : public TObject {
+class AliMultiplicity : public AliVMultiplicity {
 
  public:
   //
-  enum {kMultTrackRefs  =BIT(14), // in new format (old is default for bwd.comp.) multiple cluster->track references are allowed
-	kScaleDThtbySin2=BIT(15), // scale Dtheta by 1/sin^2(theta). Default is DON'T scale, for bwd.comp.
-	kSPD2Sng        =BIT(16)  // are SPD2 singles stored?
-  };   
   AliMultiplicity();               // default constructor
-  // standard constructor
   AliMultiplicity(Int_t ntr,Float_t *th, Float_t *ph, Float_t *dth, Float_t *dph, Int_t *labels,
          Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps, Int_t *labelss, Short_t nfcL1, Short_t nfcL2, const TBits & fFastOrFiredChips);
   AliMultiplicity(Int_t ntr, Int_t ns, Short_t nfcL1, Short_t nfcL2, const TBits & fFastOr);
@@ -34,28 +29,39 @@ class AliMultiplicity : public TObject {
   void    SetMultTrackRefs(Bool_t v)                {SetBit(kMultTrackRefs,v);}
   Bool_t  GetScaleDThetaBySin2T()             const {return TestBit(kScaleDThtbySin2);}
   void    SetScaleDThetaBySin2T(Bool_t v)           {SetBit(kScaleDThtbySin2,v);}
-
   //
-  Int_t GetNumberOfTracklets() const {return fNtracks;}
-  Double_t GetTheta(Int_t i) const { 
+  // methods supported on AliVMultiplicity level >>>
+  //
+  virtual  Int_t    GetNumberOfTracklets() const {return fNtracks;}
+  virtual  Double_t GetTheta(Int_t i)      const { 
     if(i>=0 && i<fNtracks) return fTh[i];
     Error("GetTheta","Invalid track number %d",i); return -9999.;
   }
-  Double_t GetEta(Int_t i) const { 
-    if(i>=0 && i<fNtracks) return -TMath::Log(TMath::Tan(fTh[i]/2.));
-    Error("GetEta","Invalid track number %d",i); return -9999.;
-  }
-  Double_t GetPhi(Int_t i) const { 
+  virtual  Double_t GetPhi(Int_t i)        const { 
     if(i>=0 && i<fNtracks) return fPhi[i];
     Error("GetPhi","Invalid track number %d",i); return -9999.;
   }
-  Double_t GetDeltaTheta(Int_t i) const {
-    if(fDeltTh && i>=0 && i<fNtracks) return fDeltTh[i];
-    Error("GetDeltaTheta","DeltaTheta not available in data or Invalid track number %d(max %d)",i, fNtracks); return -9999.;
-  }
-  Double_t GetDeltaPhi(Int_t i) const {
+  virtual Double_t GetDeltaPhi(Int_t i)    const {
     if(i>=0 && i<fNtracks) return fDeltPhi[i];
     Error("GetDeltaPhi","Invalid track number %d",i); return -9999.;
+  }
+  virtual Int_t GetLabel(Int_t i, Int_t layer) const;
+  virtual void  SetLabel(Int_t i, Int_t layer, Int_t label);
+  //
+  // array getters
+  virtual Double_t* GetTheta()       const {return (Double_t*)fTh;}
+  virtual Double_t* GetPhi()         const {return (Double_t*)fPhi;}
+  virtual Double_t* GetDeltPhi()     const {return (Double_t*)fDeltPhi;}
+  virtual Int_t*    GetLabels()      const {return (Int_t*)fLabels;}  
+  virtual Int_t*    GetLabels2()     const {return (Int_t*)fLabelsL2;}
+  //
+  virtual void Print(Option_t *opt="") const;
+  //
+  // methods supported on AliVMultiplicity level <<<
+  //
+  Double_t GetDeltaTheta(Int_t i)          const {
+    if(fDeltTh && i>=0 && i<fNtracks) return fDeltTh[i];
+    Error("GetDeltaTheta","DeltaTheta not available in data or Invalid track number %d(max %d)",i, fNtracks); return -9999.;
   }
 
   Double_t  CalcDist(Int_t it)  const;
@@ -63,17 +69,14 @@ class AliMultiplicity : public TObject {
   Float_t GetPhiAll(int icl, int lr) const;
   Int_t   GetLabelAll(int icl, int lr) const;
 
-  Int_t GetLabel(Int_t i, Int_t layer) const;
-  void  SetLabel(Int_t i, Int_t layer, Int_t label);
   Int_t GetLabelSingle(Int_t i) const;
   Int_t GetLabelSingleLr(Int_t i, Int_t layer) const;
   void  SetLabelSingle(Int_t i, Int_t label);
 
   Bool_t FreeClustersTracklet(Int_t i, Int_t mode) const;
   Bool_t FreeSingleCluster(Int_t i, Int_t mode)    const;
-
   
-// methods to access single cluster information
+  // methods to access single cluster information
   Int_t SetNumberOfSingleClustersSPD2(Int_t n) {return fNsingleSPD2 = n;}
   Int_t GetNumberOfSingleClusters() const {return fNsingle;}
   Int_t GetNumberOfSingleClustersLr(Int_t lr) const;
@@ -93,12 +96,12 @@ class AliMultiplicity : public TObject {
     if(i>=0 && i<fNsingle) return fThsingle[i];
     Error("GetThetaSingle","Invalid cluster number %d",i); return -9999.;
   }
-
+  
   Double_t GetPhiSingle(Int_t i) const { 
     if(i>=0 && i<fNsingle) return fPhisingle[i];
     Error("GetPhisingle","Invalid cluster number %d",i); return -9999.;
   }
-
+  
   Double_t GetPhiSingleLr(Int_t i, Int_t lr) const { 
     if (lr==1) {
       if (!AreSPD2SinglesStored()) {Error("GetPhiSingle","Invalid cluster number %d for lr %d",i,lr); return -9999.;}
@@ -130,14 +133,9 @@ class AliMultiplicity : public TObject {
   Int_t  GetSingleClusterTrackIDs(Int_t i, Int_t mode, UInt_t* refs, UInt_t maxRef) const;
 
   // array getters
-  Double_t* GetTheta()       const {return (Double_t*)fTh;}
-  Double_t* GetPhi()         const {return (Double_t*)fPhi;}
   Double_t* GetDeltTheta()   const {return (Double_t*)fDeltTh;}
-  Double_t* GetDeltPhi()     const {return (Double_t*)fDeltPhi;}
   Double_t* GetThetaSingle() const {return (Double_t*)fThsingle;}
   Double_t* GetPhiSingle()   const {return (Double_t*)fPhisingle;}
-  Int_t*    GetLabels()      const {return (Int_t*)fLabels;}  
-  Int_t*    GetLabels2()     const {return (Int_t*)fLabelsL2;}
   Int_t*    GetLabelsSingle()      const {return (Int_t*)fLabelssingle;} 
 
   void AttachTracklet2TrackRefs(AliRefArray* l1t1,AliRefArray* l1t2,AliRefArray* l2t1,AliRefArray* l2t2) {
@@ -161,8 +159,6 @@ class AliMultiplicity : public TObject {
   Float_t GetNStdDev()                      const {return fNStdDev;}
 
   //
-  virtual void Print(Option_t *opt="") const;
-
   protected:
   void Duplicate(const AliMultiplicity &m);  // used by copy ctr.
 
@@ -193,7 +189,7 @@ class AliMultiplicity : public TObject {
   TBits fFastOrFiredChips;   // Map of FastOr fired chips
   TBits fClusterFiredChips;  // Map of fired chips (= at least one cluster)
 
-  ClassDef(AliMultiplicity,19);
+  ClassDef(AliMultiplicity,20);
 };
 
 inline Int_t AliMultiplicity::GetLabel(Int_t i, Int_t layer) const

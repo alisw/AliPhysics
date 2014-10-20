@@ -3662,22 +3662,14 @@ Bool_t AliShuttle::TouchFile()
 	TString dir;
 	dir.Form("%s%d/SHUTTLE_DONE", fConfig->GetAlienPath(), GetCurrentYear());
 	// checking whether directory for touch command exists
-	TString commandLs;
-	commandLs.Form("ls %s",dir.Data());
-	TGridResult *resultLs = dynamic_cast<TGridResult*>(gGrid->Command(commandLs));
-	if (!resultLs){
-		Log("SHUTTLE",Form("No result for %s command, returning without touching",commandLs.Data()));
+        TGridResult* resultLs = gGrid->Ls(dir.Data());
+	if (!resultLs){ // unfortunately we don't get this for ls of a non existing dir
+		Log("SHUTTLE",Form("No result for \"Ls(\"%s\")\", returning without touching", dir.Data()));
 		return kFALSE;
 	}
-	TMap *mapLs = dynamic_cast<TMap*>(resultLs->At(0));
-	if (!mapLs){
-		Log("SHUTTLE",Form("No map for %s command, returning without touching",commandLs.Data()));
-		delete resultLs;
-		resultLs = 0x0;
-		return kFALSE;
-	}
-	TObjString *valueLsPath = dynamic_cast<TObjString*>(mapLs->GetValue("path"));
-	if (!valueLsPath || (valueLsPath->GetString()).CompareTo(dir)!=1){ 
+
+        if ( resultLs->GetEntries() == 1 && !resultLs->GetFileName(0) ) {
+          // this is what we currently get for ls of a non existing dir
 		Log("SHUTTLE",Form("No directory %s found, creating it",dir.Data()));
 
 		// creating the directory
@@ -3698,39 +3690,63 @@ Bool_t AliShuttle::TouchFile()
 	delete resultLs;
 	resultLs = 0x0;
 
-	TString command;
-	command.Form("touch %s/%i", dir.Data(), GetCurrentRun());
-	Log("SHUTTLE", Form("Creating entry in file catalog: %s", command.Data()));
-	TGridResult *resultTouch = dynamic_cast<TGridResult*>(gGrid->Command(command));
-	if (!resultTouch){
-		Log("SHUTTLE",Form("No result for touching command, returning without touching for run %i",GetCurrentRun()));
+        // Before trying to touch, check that the file is not already there (the touch would fail forever, leaving the run in pending)
+        TString lsFileCommand;
+        lsFileCommand.Form("ls %s/%i", dir.Data(), GetCurrentRun());
+        TGridResult *resultLsFile = dynamic_cast<TGridResult*>(gGrid->Command(lsFileCommand));
+	if (!resultLsFile){
+		Log("SHUTTLE",Form("No result for file ls command, returning without touching for run %i",GetCurrentRun()));
 		return kFALSE;
 	}
-	TMap *mapTouch = dynamic_cast<TMap*>(resultTouch->At(0));
-	if (!mapTouch){
-		Log("SHUTTLE",Form("No map for touching command, returning without touching for run %i",GetCurrentRun()));
-		delete resultTouch;
-		resultTouch = 0x0; 
+        TMap *mapLsFile = dynamic_cast<TMap*>(resultLsFile->At(0));
+	if (!mapLsFile){
+		Log("SHUTTLE",Form("No map for file ls command, returning without touching for run %i",GetCurrentRun()));
+		delete resultLsFile;
+		resultLsFile = 0x0; 
 		return kFALSE;
 	}
-	TObjString *valueTouch = dynamic_cast<TObjString*>(mapTouch->GetValue("__result__"));
-	if (!valueTouch){
-		Log("SHUTTLE",Form("No value for \"__result__\" key set in the map for touching command, returning without touching for run %i",GetCurrentRun()));
-		delete resultTouch;
-		resultTouch = 0x0; 
-		return kFALSE;
-	}
-	if (valueTouch->GetString()!="1"){
-		Log("SHUTTLE",Form("Failing the touching command, returning without touching for run %i",GetCurrentRun()));
-		delete resultTouch;
-		resultTouch = 0x0; 
-		return kFALSE;
-	}
-	delete resultTouch;
-	resultTouch = 0x0; 
-	Log("SHUTTLE", "Sucessfully touched the file");
-	return kTRUE;
+	TObjString *valueLsFile = dynamic_cast<TObjString*>(mapLsFile->GetValue("name"));
+	if (valueLsFile){
+		Log("SHUTTLE",Form("\"name\" key set in the map for file ls command. Touchfile for run %i already there.",GetCurrentRun()));
+                Log("SHUTTLE", "The file was already there, did not touch it.");
+        }else{
+                TString command;
+                command.Form("touch %s/%i", dir.Data(), GetCurrentRun());
+                Log("SHUTTLE", Form("Creating entry in file catalog: %s", command.Data()));
+                TGridResult *resultTouch = dynamic_cast<TGridResult*>(gGrid->Command(command));
+                if (!resultTouch){
+                        Log("SHUTTLE",Form("No result for touching command, returning without touching for run %i",GetCurrentRun()));
+                        return kFALSE;
+                }
+                TMap *mapTouch = dynamic_cast<TMap*>(resultTouch->At(0));
+                if (!mapTouch){
+                        Log("SHUTTLE",Form("No map for touching command, returning without touching for run %i",GetCurrentRun()));
+                        delete resultTouch;
+                        resultTouch = 0x0; 
+                        return kFALSE;
+                }
+                TObjString *valueTouch = dynamic_cast<TObjString*>(mapTouch->GetValue("__result__"));
+                if (!valueTouch){
+                        Log("SHUTTLE",Form("No value for \"__result__\" key set in the map for touching command, returning without touching for run %i",GetCurrentRun()));
+                        delete resultTouch;
+                        resultTouch = 0x0; 
+                        return kFALSE;
+                }
+                if (valueTouch->GetString()!="1"){
+                        Log("SHUTTLE",Form("Failing the touching command, returning without touching for run %i",GetCurrentRun()));
+                        delete resultTouch;
+                        resultTouch = 0x0; 
+                        return kFALSE;
+                }
+                delete resultLsFile;
+                resultLsFile = 0x0; 
+                delete resultTouch;
+                resultTouch = 0x0;
+                Log("SHUTTLE", "Sucessfully touched the file");
+        }
+        return kTRUE;
 }
+
 //______________________________________________________________________________________________
 UInt_t AliShuttle::GetStartTimeDCSQuery()
 {

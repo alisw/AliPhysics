@@ -12,9 +12,9 @@
 #ifndef ALIAODTRACKLETS_H
 #define ALIAODTRACKLETS_H
 
-#include <TNamed.h>
+#include "AliVMultiplicity.h"
 
-class AliAODTracklets : public TNamed 
+class AliAODTracklets : public AliVMultiplicity
 {
  public:
   AliAODTracklets();
@@ -26,15 +26,24 @@ class AliAODTracklets : public TNamed
 
   void CreateContainer(Int_t nTracks);
   void DeleteContainer();
+  virtual void Clear(Option_t* )         {AliVMultiplicity::Clear(); DeleteContainer();}
 
   Bool_t SetTracklet(Int_t pos, Double32_t theta, Double32_t phi, Double32_t deltaPhi, Int_t labelL1, Int_t labelL2);
 
-  Int_t GetNumberOfTracklets() const { return fNTracks; }
-  inline Double32_t GetTheta(Int_t i) const;
-  inline Double32_t GetPhi(Int_t i) const;
-  inline Double32_t GetDeltaPhi(Int_t i) const;
-  inline Int_t   GetLabel(Int_t i, Int_t layer) const;
-  inline void    SetLabel(Int_t i, Int_t layer,Int_t label);
+
+  virtual Int_t    GetNumberOfTracklets() const { return fNTracks; }
+  virtual Double_t GetTheta(Int_t i)      const;
+  virtual Double_t GetPhi(Int_t i)        const;
+  virtual Double_t GetDeltaPhi(Int_t i)   const;
+  virtual Int_t    GetLabel(Int_t i, Int_t layer) const;
+  virtual void     SetLabel(Int_t i, Int_t layer,Int_t label);
+  //
+  virtual Double_t* GetTheta()       const {return (Double_t*)fTheta;}
+  virtual Double_t* GetPhi()         const {return (Double_t*)fPhi;}
+  virtual Double_t* GetDeltPhi()     const {return (Double_t*)fDeltaPhi;}
+  virtual Int_t*    GetLabels()      const {return (Int_t*)fLabels;}  
+  virtual Int_t*    GetLabels2()     const {return (Int_t*)fLabelsL2;}
+  virtual void Print(Option_t *opt="") const;
 
  protected:
   Int_t      fNTracks;       // Number of tracklets
@@ -45,58 +54,8 @@ class AliAODTracklets : public TNamed
   Int_t      *fLabelsL2;     //[fNTracks] array with labels of cluster in L2 used for the tracklet
 
 
-  ClassDef(AliAODTracklets, 3);
+  ClassDef(AliAODTracklets, 4);
 };
-
-Double32_t AliAODTracklets::GetTheta(Int_t i) const 
-{ 
-  if (i>=0 && i<fNTracks) 
-  {
-    return fTheta[i];
-  }
-  else 
-    Error("GetTheta","Invalid track number %d",i); return -9999.;
-}
-
-Double32_t AliAODTracklets::GetPhi(Int_t i) const 
-{ 
-  if (i>=0 && i<fNTracks) 
-  {
-    return fPhi[i];
-  }
-  else 
-    Error("GetPhi","Invalid track number %d",i); return -9999.;
-}
-
-Double32_t AliAODTracklets::GetDeltaPhi(Int_t i) const 
-{
-  if (i>=0 && i<fNTracks) 
-  {
-    return fDeltaPhi[i];
-  }
-  else 
-    Error("GetDeltaPhi","Invalid track number %d",i); return -9999.;
-}
-
-Int_t AliAODTracklets::GetLabel(Int_t i, Int_t layer) const 
-{
-  if (i>=0 && i<fNTracks) 
-  {
-    return (layer == 0) ? fLabels[i] : fLabelsL2[i];
-  }
-  else 
-    Error("GetLabel","Invalid track number %d",i); return -9999;
-}
-
-
-void AliAODTracklets::SetLabel(Int_t i, Int_t layer,Int_t label)  
-{
-  if (i>=0 && i<fNTracks) 
-  {
-    if(layer == 0) fLabels[i] = label;
-    else fLabelsL2[i] = label;
-  }
-}
 
 
 #endif

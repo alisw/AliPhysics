@@ -416,7 +416,7 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
 
   Int_t rv = 0 ; 
   Int_t lay, lad, det;
-  Int_t indexlast = 0;
+
   Int_t index1 = 0;
   int offsRW = fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()];
   fSDDhRawsTask = 0;
@@ -615,10 +615,10 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
     hddl->GetYaxis()->SetTitle("DDL Number");
     rv = fAliITSQADataMakerRec->Add2RawsList(hddl,fOnlineOffsetRaws+offsRW, expert, !image, !saveCorr);
     fSDDhRawsTask++;
-    Int_t indexlast1 = 0;
-    
+
+    Int_t  indexlast1 = 0;
     fTimeBinSize = 4;
-    indexlast = 0;
+
     index1 = 0;
     indexlast1 = fSDDhRawsTask;
     for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
@@ -692,7 +692,6 @@ Int_t AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   }
   
   Int_t cnt = 0;
-  Int_t ildcID = -1;
   Int_t iddl = -1;
   Int_t isddmod = -1;
   Int_t coord1, coord2, signal, moduleSDD, activeModule, index1; 
@@ -705,7 +704,6 @@ Int_t AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
       for(Int_t jddl=0;jddl<totalddl;jddl++){ddldata[jddl]=kFALSE;}
       //}
   while(stream->Next()) {
-    ildcID = rawReader->GetLDCId();
     iddl = rawReader->GetDDLID();// - fgkDDLIDshift;
     if(iddl<0)isddmod=-1;
     //printf("----------------------iddl %i\n",iddl);

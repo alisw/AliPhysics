@@ -72,41 +72,46 @@ AliEMCALRawUtils::AliEMCALRawUtils( Algo::fitAlgorithm fitAlgo) : fNoiseThreshol
 								  fUseFALTRO(kTRUE),
 								  fRawAnalyzer(0),
 								  fTriggerRawDigitMaker(0x0)
-{ // ctor; set up fit algo etc
+{
+  // ctor; set up fit algo etc
+  
   SetFittingAlgorithm(fitAlgo);
+  
   const TObjArray* maps = AliEMCALRecParam::GetMappings();
+  
   if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
-  for(Int_t i = 0; i < 4; i++) 
-    {
-      fMapping[i] = (AliAltroMapping*)maps->At(i);
-    }
+  
+  for(Int_t i = 0; i < 4; i++)
+  {
+    fMapping[i] = (AliAltroMapping*)maps->At(i);
+  }
   
   AliRunLoader *rl = AliRunLoader::Instance();
-  if (rl && rl->GetAliRun()) 
-    {
+  if (rl && rl->GetAliRun())
+  {
     AliEMCAL * emcal = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"));
     if(emcal)
-      {
-	fGeom = emcal->GetGeometry();
-      }
-    else 
-      {
-	AliDebug(1, Form("Using default geometry in raw reco"));
-	fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
-      }
-    } 
-  else 
+    {
+      fGeom = emcal->GetGeometry();
+    }
+    else
     {
       AliDebug(1, Form("Using default geometry in raw reco"));
       fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
     }
+  }
+  else
+  {
+    AliDebug(1, Form("Using default geometry in raw reco"));
+    fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
+  }
   
   if(!fGeom) AliFatal(Form("Could not get geometry!"));
   fTriggerRawDigitMaker = new AliEMCALTriggerRawDigitMaker();
 }
 
 
-AliEMCALRawUtils::~AliEMCALRawUtils() 
+AliEMCALRawUtils::~AliEMCALRawUtils()
 {
   //dtor
   delete fRawAnalyzer;
@@ -279,7 +284,7 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain
 void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, const AliCaloCalibPedestal* pedbadmap, TClonesArray *digitsTRG, AliEMCALTriggerData* trgData)
 {
   //conversion of raw data to digits
-  if(digitsArr) digitsArr->Clear("C"); 
+  if ( digitsArr) digitsArr->Clear("C"); 
   if (!digitsArr) { Error("Raw2Digits", "no digits found !");return;}
   if (!reader) {Error("Raw2Digits", "no raw reader found !");return;}
   AliEMCALTriggerSTURawStream inSTU(reader);

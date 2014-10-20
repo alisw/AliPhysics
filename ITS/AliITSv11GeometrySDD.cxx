@@ -1913,7 +1913,7 @@ TGeoVolumeAssembly *AliITSv11GeometrySDD::CreateLadder(Int_t iLay) {
     cableHV[iSegment].SetInitialNode(virtualLadder);
   };
   Double_t x1[3], x2[3], x3[3],
-	   vY[3] = {0,1,0}, vZ[3] = {0,0,1}, vYZ[3]={0,1,1};
+    vY[3] = {0,1,0}, vZ[3] = {0,0,1};
 
   x1[0] = -fgkTransitHVtailXpos;
   x2[0] = -fgkTransitHVtailXpos;
@@ -1940,7 +1940,7 @@ TGeoVolumeAssembly *AliITSv11GeometrySDD::CreateLadder(Int_t iLay) {
     cableHV[iSegment].CreateAndInsertBoxCableSegment(2,0);
   };
 
-  vYZ[2] = -1;
+  //  vYZ[2] = -1;
   x1[0] = fgkTransitHVtailXpos;
   x2[0] = fgkTransitHVtailXpos;
   x3[0] = fgkTransitHVtailXpos;
@@ -5441,14 +5441,14 @@ TGeoVolumeAssembly *AliITSv11GeometrySDD::CreateDetectorsAssembly(Int_t iLay) {
 //
   
   Int_t    nDetectors   = fgkLay3Ndet;
-  Double_t ladderLength = fgkLay3LadderLength;
+  //  Double_t ladderLength = fgkLay3LadderLength;
   Double_t *sensorZPos  = fLay3sensorZPos;
   TGeoVolume *sensorSDD = fSDDsensor3;
 
   if (iLay==3) {}
   else if (iLay==4) {
     nDetectors   = fgkLay4Ndet;
-    ladderLength = fgkLay4LadderLength;
+    //    ladderLength = fgkLay4LadderLength;
     sensorZPos   = fLay4sensorZPos;
     sensorSDD    = fSDDsensor4;
   } else {

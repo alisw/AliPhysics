@@ -64,6 +64,8 @@ public:
   /// Dummy implementation
   virtual AliCluster *GetCluster(Int_t /*index*/) const {return 0;}
 
+  void AddClustersFromUnderlyingEvent();
+  void AddClustersFromPileUpEvents();
 
 protected:
 

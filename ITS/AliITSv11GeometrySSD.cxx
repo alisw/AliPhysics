@@ -3870,8 +3870,9 @@ void AliITSv11GeometrySSD::SetLadder(){
   /////////////////////////////////////////////////////////////////////////////						
   /// Generating Ladder Mother Volume Containing Ladder 
   /////////////////////////////////////////////////////////////////////////////		 
-  TGeoXtru* laddershape[fgkladdernumber];	
+  /*  TGeoXtru* laddershape[fgkladdernumber];	
   for(Int_t i=0; i<fgkladdernumber; i++) laddershape[i] = new TGeoXtru(2);
+  */
   const Int_t kmothervertexnumber = 8;  
   Double_t xmothervertex[fgkladdernumber][kmothervertexnumber];
   Double_t ymothervertex[fgkladdernumber][kmothervertexnumber];
@@ -4094,6 +4095,7 @@ void AliITSv11GeometrySSD::SetLadder(){
 									j<2?1:2,fladdercablematrix[i][j]);
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 void AliITSv11GeometrySSD::SetLayer(){
 ////////////////////////////////////////////////////////////////////////////////

@@ -80,7 +80,8 @@ AliTPCPIDResponse::AliTPCPIDResponse():
   fCurrentEventMultiplicity(0),
   fCorrFuncMultiplicity(0x0),
   fCorrFuncMultiplicityTanTheta(0x0),
-  fCorrFuncSigmaMultiplicity(0x0)
+  fCorrFuncSigmaMultiplicity(0x0),
+  fSplineArray()
 {
   //
   //  The default constructor
@@ -184,7 +185,8 @@ AliTPCPIDResponse::AliTPCPIDResponse(const AliTPCPIDResponse& that):
   fCurrentEventMultiplicity(that.fCurrentEventMultiplicity),
   fCorrFuncMultiplicity(0x0),
   fCorrFuncMultiplicityTanTheta(0x0),
-  fCorrFuncSigmaMultiplicity(0x0)
+  fCorrFuncSigmaMultiplicity(0x0),
+  fSplineArray()
 {
   //copy ctor
   for (Int_t i=0; i<fgkNumberOfGainScenarios; i++) {fRes0[i]=that.fRes0[i];fResN2[i]=that.fResN2[i];}

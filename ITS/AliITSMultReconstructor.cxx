@@ -813,8 +813,6 @@ void AliITSMultReconstructor::FlagClustersInOverlapRegions (Int_t iC1, Int_t iC2
 {
   // Flags clusters in the overlapping regions
   Float_t distClSameMod=0.;
-  Float_t distClSameModMin=0.;
-  Int_t   iClOverlap =0;
   Float_t meanRadiusLay1 = 3.99335; // average radius inner layer
   Float_t meanRadiusLay2 = 7.37935; // average radius outer layer;
 
@@ -841,23 +839,12 @@ void AliITSMultReconstructor::FlagClustersInOverlapRegions (Int_t iC1, Int_t iC2
         distClSameMod = TMath::Sqrt(TMath::Power(deZproj/fZetaOverlapCut,2)+TMath::Power(dePhi/fPhiOverlapCut,2));
         if (distClSameMod<=1.) fOverlapFlagClustersLay[0][iiC1]=kTRUE;
 
-//        if (distClSameMod<=1.) {
-//          if (distClSameModMin==0. || distClSameMod<distClSameModMin) {
-//            distClSameModMin=distClSameMod;
-//            iClOverlap=iiC1;
-//          } 
-//        }
-
-
       } // end adjacent modules
     } 
   } // end Loop on inner layer clusters
 
-//  if (distClSameModMin!=0.) fOverlapFlagClustersLay[0][iClOverlap]=kTRUE;
 
   distClSameMod=0.;
-  distClSameModMin=0.;
-  iClOverlap =0;
   // Loop on outer layer clusters
   for (Int_t iiC2=0; iiC2<fNClustersLay[1]; iiC2++) {
     if (!fOverlapFlagClustersLay[1][iiC2]) {
@@ -875,18 +862,9 @@ void AliITSMultReconstructor::FlagClustersInOverlapRegions (Int_t iC1, Int_t iC2
         distClSameMod = TMath::Sqrt(TMath::Power(deZproj/fZetaOverlapCut,2)+TMath::Power(dePhi/fPhiOverlapCut,2));
         if (distClSameMod<=1.) fOverlapFlagClustersLay[1][iiC2]=kTRUE;
 
-//        if (distClSameMod<=1.) {
-//          if (distClSameModMin==0. || distClSameMod<distClSameModMin) {
-//            distClSameModMin=distClSameMod;
-//            iClOverlap=iiC2;
-//          }
-//        }
-
       } // end adjacent modules
     }
   } // end Loop on outer layer clusters
-
-//  if (distClSameModMin!=0.) fOverlapFlagClustersLay[1][iClOverlap]=kTRUE;
 
 }
 

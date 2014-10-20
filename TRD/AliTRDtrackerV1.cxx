@@ -956,7 +956,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     // tilt correction options
     // 0 : no correction
     // 2 : pseudo tilt correction
-    if(!ptrTracklet->FitRobust(fGeom->GetPadPlane(ily, stk), prod>0., t.Charge())){
+    if(!ptrTracklet->FitRobust(fGeom->GetPadPlane(ily, stk), matrix, t.GetBz(), t.Charge())){
       t.SetErrStat(AliTRDtrackV1::kNoFit, ily);
       AliDebug(4, "Failed Tracklet Fit");
       continue;

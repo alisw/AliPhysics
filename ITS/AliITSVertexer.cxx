@@ -226,8 +226,8 @@ void AliITSVertexer::WriteCurrentVertex(){
   fCurrentVertex->SetName("Vertex");
   //  const char * name = fCurrentVertex->GetName();
   //  itsLoader->SetVerticesContName(name);
-  Int_t rc = itsLoader->PostVertex(fCurrentVertex);
-  rc = itsLoader->WriteVertices();
+  itsLoader->PostVertex(fCurrentVertex);
+  itsLoader->WriteVertices();
 }
 
 //______________________________________________________________________

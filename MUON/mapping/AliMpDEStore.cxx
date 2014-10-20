@@ -96,7 +96,6 @@ AliMpDEStore* AliMpDEStore::ReadData(const AliMpDataStreams& dataStreams,
 //______________________________________________________________________________
 AliMpDEStore::AliMpDEStore(const AliMpDataStreams& dataStreams)
 : TObject(),
-  fkDataStreams(dataStreams),
   fDetElements()
 {  
 /// Standard constructor
@@ -105,13 +104,12 @@ AliMpDEStore::AliMpDEStore(const AliMpDataStreams& dataStreams)
   fDetElements.SetOwner(true);
 
   // Create all detection elements
-  FillDEs();
+  FillDEs(dataStreams);
 }
 
 //______________________________________________________________________________
 AliMpDEStore::AliMpDEStore(TRootIOCtor* ioCtor)
 : TObject(),
-  fkDataStreams(ioCtor),
   fDetElements(ioCtor)
 {  
 /// Constructor for IO
@@ -153,7 +151,8 @@ Bool_t AliMpDEStore::IsPlaneType(const TString& planeTypeName)
 
 //______________________________________________________________________________
 Bool_t
-AliMpDEStore::ReadDENames(AliMp::StationType station, 
+AliMpDEStore::ReadDENames(const AliMpDataStreams& dataStreams,
+                          AliMp::StationType station,
                           AliMq::Station12Type station12)
 { 
 /// Read det element names for cath = 0 from the file specified by name
@@ -161,7 +160,7 @@ AliMpDEStore::ReadDENames(AliMp::StationType station,
 
   // Open stream
   istream& in 
-    = fkDataStreams.
+    = dataStreams.
         CreateDataStream(AliMpFiles::DENamesFilePath(station, station12));
   
   // Read plane types per cathods
@@ -265,14 +264,14 @@ AliMpDEStore::ReadDENames(AliMp::StationType station,
 }
 
 //______________________________________________________________________________
-void AliMpDEStore::FillDEs()
+void AliMpDEStore::FillDEs(const AliMpDataStreams& dataStreams)
 {
 /// Fill DE names from files
   AliDebugClass(2,"");
-  Bool_t result1 = ReadDENames(AliMp::kStation12, AliMq::kStation1);
-  Bool_t result2 = ReadDENames(AliMp::kStation12, AliMq::kStation2);
-  Bool_t result3 = ReadDENames(AliMp::kStation345);
-  Bool_t result4 = ReadDENames(AliMp::kStationTrigger);
+  Bool_t result1 = ReadDENames(dataStreams, AliMp::kStation12, AliMq::kStation1);
+  Bool_t result2 = ReadDENames(dataStreams, AliMp::kStation12, AliMq::kStation2);
+  Bool_t result3 = ReadDENames(dataStreams, AliMp::kStation345);
+  Bool_t result4 = ReadDENames(dataStreams, AliMp::kStationTrigger);
   
   Bool_t result = result1 && result2 && result3 && result4;
   if ( ! result ) {

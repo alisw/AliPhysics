@@ -13,9 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
- $Id$
-*/
+
 
 ////////////////////////////////////////////////////////////////////////
 // This class defines the "Standard" reconstruction for the ITS       // 
@@ -30,6 +28,7 @@
 #include "AliITSClusterFinder.h"
 #include "AliITSClusterFinderV2SPD.h"
 #include "AliITSClusterFinderV2SDD.h"
+#include "AliITSClusterFinderSDDfast.h"
 #include "AliITSClusterFinderV2SSD.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSDDLModuleMapSDD.h"
@@ -55,6 +54,7 @@
 #include "AliRunLoader.h"
 #include "AliDataLoader.h"
 #include "AliITSLoader.h"
+
 
 class AliITSDriftSpeedArraySDD;
 class AliITSCorrMapSDD;
@@ -510,7 +510,6 @@ Bool_t AliITSDetTypeRec::GetCalibrationSPD(Bool_t cacheStatus) {
     AliWarning("Can not get SPD calibration from calibration database !");
     return kFALSE;
   }
-
   fNMod[0] = calNoisySPD->GetEntries();
 
   AliITSCalibration* cal;
@@ -713,7 +712,7 @@ Bool_t AliITSDetTypeRec::GetCalibrationSSD(Bool_t cacheStatus) {
 }
 
 //________________________________________________________________
-void AliITSDetTypeRec::SetDefaultClusterFindersV2(Bool_t rawdata){
+void AliITSDetTypeRec::SetDefaultClusterFindersV2(Bool_t rawdata, Bool_t fastSDD){
 
   //Set defaults for cluster finder V2
 
@@ -738,7 +737,12 @@ void AliITSDetTypeRec::SetDefaultClusterFindersV2(Bool_t rawdata){
     //SDD
     if(dettype==1){
       if(!GetReconstructionModel(dettype)){
-	clf = new AliITSClusterFinderV2SDD(this);
+	if(fastSDD){
+	  clf = new AliITSClusterFinderSDDfast(this);
+	}
+	else {
+	  clf = new AliITSClusterFinderV2SDD(this);
+	}
 	clf->InitGeometry();
 	if(!rawdata) clf->SetDigits(DigitsAddress(1));
 	SetReconstructionModel(dettype,clf);
@@ -881,8 +885,8 @@ void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastent
     SetDefaultClusterFindersV2();
     AliDebug(1,"V2 cluster finder has been selected \n");
   }else{
-    SetDefaultClusterFindersV2();
-    AliInfo("Cluster Finder Option not implemented, V2 cluster finder will be used \n");    
+    SetDefaultClusterFindersV2(kFALSE,kTRUE);
+    AliDebug(1,"SPD and SSD V2 Cluster Finder - SDD fast Cluster Finder \n");    
   }
 
   

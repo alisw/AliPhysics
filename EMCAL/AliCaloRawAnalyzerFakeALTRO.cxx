@@ -34,22 +34,26 @@ using namespace std;
 ClassImp( AliCaloRawAnalyzerFakeALTRO )
 
 
-AliCaloRawAnalyzerFakeALTRO::AliCaloRawAnalyzerFakeALTRO() : AliCaloRawAnalyzerFitter("Chi Square Fit", "LMS")
+AliCaloRawAnalyzerFakeALTRO::AliCaloRawAnalyzerFakeALTRO() : AliCaloRawAnalyzerFitter("Chi Square Fit", "FakeAltro")
 {
+  // constructor
+  
   fAlgo= Algo::kFakeAltro;
 }
 
-
 AliCaloRawAnalyzerFakeALTRO::~AliCaloRawAnalyzerFakeALTRO()
 {
+  // destructor
+  
   //delete fTf1;
 }
 
-
 AliCaloFitResults
-AliCaloRawAnalyzerFakeALTRO::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 )
+AliCaloRawAnalyzerFakeALTRO::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector,
+                                      UInt_t altrocfg1, UInt_t altrocfg2 )
 {
   // Extracting signal parameters using fitting
+  
   short maxampindex; //index of maximum amplitude
   short maxamp; //Maximum amplitude
   int index = SelectBunch( bunchvector,  &maxampindex,  &maxamp );

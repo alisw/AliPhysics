@@ -68,14 +68,16 @@ public:
     // "Trackable" criteria
     Float_t  GetTPCTrackLength(Float_t bz, Float_t ptmin, Int_t &counter, Float_t deadWidth, Float_t zMax=230. );
     // Navigation
-    Int_t GetMother()        const {return fMother;}
+    virtual Int_t GetMother()        const {return fMother;}
     Int_t GetFirstDaughter() const {return fFirstDaughter;}
     Int_t GetLastDaughter()  const {return fLastDaughter;}
     void  SetMother(Int_t idx)        {fMother        = idx;}
     void  SetFirstDaughter(Int_t idx) {fFirstDaughter = idx;}
     void  SetLastDaughter(Int_t idx)  {fLastDaughter  = idx;}
     void  SetLabel(Int_t label)       {fLabel         = label;}
-	    
+    virtual void    SetGeneratorIndex(Short_t i) {fGeneratorIndex = i;}
+    virtual Short_t GetGeneratorIndex() const {return fGeneratorIndex;}
+    
  private:
     TParticle *fParticle;             // The wrapped TParticle
     TObjArray *fTrackReferences;      // Array to track references
@@ -84,7 +86,7 @@ public:
     Int_t      fMother;               // Mother particles
     Int_t      fFirstDaughter;        // First daughter
     Int_t      fLastDaughter;         // LastDaughter
-    
+    Short_t    fGeneratorIndex;       // !Generator index in cocktail  
   ClassDef(AliMCParticle,0)  // AliVParticle realisation for MCParticles
 };
 

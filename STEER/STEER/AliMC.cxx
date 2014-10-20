@@ -228,10 +228,6 @@ void  AliMC::AddParticles()
   // Add particles (not present in Geant3 or Geant4)
   //
   
-  // --------------------------------------------------------------------
-  // An example of adding a particle He5 with defined decay mode
-  // (TO BE REMOVED after a useful code is added)
-  
   cout << "########## AliMC::AddParticles"  << endl;
 
   //Hypertriton
@@ -239,16 +235,15 @@ void  AliMC::AddParticles()
   //Anti-Hypertriton
   TVirtualMC::GetMC()->DefineParticle(-1010010030, "AntiHyperTriton", kPTHadron, 2.99131 , 1.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 3, kFALSE);
 
-//Hyper hydrogen 4
+  //Hyper hydrogen 4
   TVirtualMC::GetMC()->DefineParticle(1010010040, "Hyperhydrog4", kPTHadron, 3.931 , 1.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 4, kFALSE);
   //Anti-Hyper hydrogen 4
   TVirtualMC::GetMC()->DefineParticle(-1010010040, "AntiHyperhydrog4", kPTHadron, 3.931 , 1.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 4, kFALSE);
 
-//Hyper helium 4
+  //Hyper helium 4
   TVirtualMC::GetMC()->DefineParticle(1010020040, "Hyperhelium4", kPTHadron, 3.929 , 2.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 4, kFALSE);
   //Anti-Hyper helium 4
   TVirtualMC::GetMC()->DefineParticle(-1010020040, "AntiHyperhelium4", kPTHadron, 3.929 , 2.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 4, kFALSE);
-
 
   //Lambda-Neutron 
   TVirtualMC::GetMC()->DefineParticle(1010000020, "LambdaNeutron", kPTNeutron, 2.054 , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
@@ -257,9 +252,9 @@ void  AliMC::AddParticles()
   TVirtualMC::GetMC()->DefineParticle(-1010000020, "AntiLambdaNeutron", kPTNeutron, 2.054 , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
 
   //H-Dibaryon
-  TVirtualMC::GetMC()->DefineParticle(1020000020, "Hdibaryon", kPTNeutron, 2.21, 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+  TVirtualMC::GetMC()->DefineParticle(1020000020, "Hdibaryon", kPTNeutron, 2.23, 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
   //Anti-H-Dibaryon
-  TVirtualMC::GetMC()->DefineParticle(-1020000020, "AntiHdibaryon", kPTNeutron, 2.21  , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+  TVirtualMC::GetMC()->DefineParticle(-1020000020, "AntiHdibaryon", kPTNeutron, 2.23, 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
 
   //Xi-Proton
   TVirtualMC::GetMC()->DefineParticle(1030000020, "Xi0Proton", kPTHadron, 2.248 , 1.0, 1.333e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
@@ -273,7 +268,13 @@ void  AliMC::AddParticles()
   //Anti-Lambda-Neutron-Neutron
   TVirtualMC::GetMC()->DefineParticle(-1010000030, "AntiLambdaNeutronNeutron", kPTNeutron, 2.982 , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
   
-  
+  //Resonances not in Generators
+  // f0(980) assume 70 MeV as width (PDG: 40 to 100 MeV)
+  TVirtualMC::GetMC()->DefineParticle(9010221, "f0_980", kPTNeutron, 0.98 , 0.0, 9.403e-24,"Hadron", 7e-2, 0, 0, 0, 0, 0, 0, 0, 0, kTRUE);
+
+  // f2(1270) (PDG: width = 185 MeV)
+  TVirtualMC::GetMC()->DefineParticle(225, "f2_1270", kPTNeutron, 1.275 , 0.0, 3.558e-24,"Hadron", 0.185, 0, 0, 0, 0, 0, 0, 0, 0, kTRUE);
+
   // Define the 2- and 3-body phase space decay for the Hyper-Triton
   Int_t mode[6][3];                  
   Float_t bratio[6];
@@ -530,7 +531,41 @@ void  AliMC::AddParticles()
   
   TVirtualMC::GetMC()->SetDecayMode(-1010000030,abratio6,amode6);
 
-  // end of the example
+  ///////////////////////////////////////////////////////////////////
+  
+  // Define the 2-body phase space decay for the f0(980)
+//  Int_t mode[6][3];
+//  Float_t bratio[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+    bratio[kz] = 0.;
+    mode[kz][0] = 0;
+    mode[kz][1] = 0;
+    mode[kz][2] = 0;
+  }
+  bratio[0] = 100.;
+  mode[0][0] = 211; // pion
+  mode[0][1] = -211; // pion
+  
+  TVirtualMC::GetMC()->SetDecayMode(9010221,bratio,mode);
+
+    // Define the 2-body phase space decay for the f2(1270)
+//  Int_t mode[6][3];
+//  Float_t bratio[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+    bratio[kz] = 0.;
+    mode[kz][0] = 0;
+    mode[kz][1] = 0;
+    mode[kz][2] = 0;
+  }
+  bratio[0] = 100.;
+  mode[0][0] = 211; // pion
+  mode[0][1] = -211; // pion
+  
+  TVirtualMC::GetMC()->SetDecayMode(225,bratio,mode);
+
+
   // --------------------------------------------------------------------
 }  
   

@@ -91,8 +91,8 @@ public:
   void      CookLabels();
   Bool_t    CookPID();
   Bool_t    Fit(UChar_t opt=0); // OBSOLETE
-  Bool_t    FitRobust(AliTRDpadPlane *pp, Bool_t sgn, Int_t chg, Int_t opt=0);
-  Double_t  EstimatedCrossPoint(AliTRDpadPlane *pp);
+  Bool_t    FitRobust(AliTRDpadPlane *pp, TGeoHMatrix *mdet, Float_t bz, Int_t chg, Int_t opt=0);
+  Double_t  EstimatedCrossPoint(AliTRDpadPlane *pp, Float_t bz);
   Bool_t    Init(const AliTRDtrackV1 *track);
   void      Init(const AliRieman *fit);
   Bool_t    IsEqual(const TObject *inTracklet) const;
@@ -216,8 +216,8 @@ public:
 
 protected:
   void      Copy(TObject &ref) const;
-  void      UnbiasDZDX(Bool_t rc);
-  Double_t  UnbiasY(Bool_t rc, Bool_t sgn, Int_t chg);
+  void      UnbiasDZDX(Bool_t rc, Float_t bz);
+  Double_t  UnbiasY(Bool_t rc, Float_t bz);
 
 private:
   inline void SetN(Int_t n);
@@ -312,11 +312,12 @@ Double_t AliTRDseedV1::GetS2XcrossDZDX(Double_t absdzdx) const
 //____________________________________________________________
 Double_t AliTRDseedV1::GetS2DZDX(Float_t dzdx) const
 {
-//   Double_t p0[] = {0.03925, 0.03178},
-//            p1[] = {0.06316, 0.06669};
+  // Error parametrization for dzdx.
+  // TODO Should be layer dependent 
+  
   Double_t p0[] = {0.02835, 0.03925},
            p1[] = {0.04746, 0.06316};
-  
+           
   Double_t s2(p0[IsRowCross()]+p1[IsRowCross()]*dzdx*dzdx);
   s2*=s2;
   return s2;

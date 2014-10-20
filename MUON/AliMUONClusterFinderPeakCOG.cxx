@@ -815,9 +815,6 @@ void AliMUONClusterFinderPeakCOG::FindCluster(AliMUONCluster& cluster,
     nonb[0] = 0;
     nonb[1] = 1;
   }
-  Bool_t samex = kFALSE, samey = kFALSE;
-  if (TMath::Abs(dim0.X()-dim1.X()) < fgkDistancePrecision) samex = kTRUE; // the same X pad size on both planes 
-  if (TMath::Abs(dim0.Y()-dim1.Y()) < fgkDistancePrecision) samey = kTRUE; // the same Y pad size on both planes 
 
   // Drop all pixels from the array - pick up only the ones from the cluster
   //fPixArray->Delete();

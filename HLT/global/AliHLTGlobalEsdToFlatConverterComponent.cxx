@@ -35,6 +35,7 @@
 #include "TTree.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "AliSysInfo.h"
 
 using namespace std;
 
@@ -98,8 +99,8 @@ AliHLTComponentDataType AliHLTGlobalEsdToFlatConverterComponent::GetOutputDataTy
 // #################################################################################
 void AliHLTGlobalEsdToFlatConverterComponent::GetOutputDataSize( ULong_t& constBase, Double_t& inputMultiplier ) {
   // see header file for class documentation
-  constBase = 100000;
-  inputMultiplier = 1.0;
+  constBase = 10000;
+  inputMultiplier = 10.0;
 }
 
 
@@ -196,86 +197,56 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoDeinit() {
 Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
 						    const AliHLTComponentBlockData* /*blocks*/, 
 						    AliHLTComponentTriggerData& /*trigData*/,
-						    AliHLTUInt8_t* /*outputPtr*/, 
-						    AliHLTUInt32_t& /*size*/,
+						    AliHLTUInt8_t* outputPtr, 
+						    AliHLTUInt32_t& size,
 						    AliHLTComponentBlockDataList& outputBlocks) {
   // see header file for class documentation
 
-  printf("AliHLTGlobalEsdToFlatConverterComponent::DoEvent\n");
+	
+	
+	
+  AliSysInfo::AddStamp("AliHLTGlobalEsdToFlatConverterComponent::DoEvent.Start");
   Int_t iResult=0;
 
+	
+	
+  size_t maxOutputSize = size;
+  size = 0;
+	
   // -- Only use data event
   if (!IsDataEvent()) 
     return 0;
   
    AliESDEvent *esd;
-
-#if 0
-  AliESDEvent *pEsd;
-  const TTree *tree;
-	
-	
-  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDTree | kAliHLTDataOriginOut); iter != NULL; iter = GetNextInputObject() ) {
-    cout<<"Found ESD tree in esd test component !!!"<<endl;
-		
-    tree = dynamic_cast<const TTree*>(iter);
-		if(tree)
-			pEsd->ReadFromTree( const_cast< TTree*>(tree) );
-    if( pEsd ){
-      cout<<"N ESD tracks: "<<pEsd->GetNumberOfTracks()<<endl;
-			iResult=1;
-    } else {
-      cout<<"ESD pointer is NULL "<<endl;
-    }
-		
-		
-		
-  }
-	
-#endif
 	
 	
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject | kAliHLTDataOriginOut); iter != NULL; iter = GetNextInputObject() ) {
-    cout<<"Found ESD in esd test component !!!"<<endl;
     esd =dynamic_cast<AliESDEvent*>(const_cast<TObject*>(iter));
     if( esd ){
       esd->GetStdContent();
-      cout<<"N ESD tracks: "<<esd->GetNumberOfTracks()<<endl;
 			iResult=1;
     } else {
-      cout<<"ESD pointer is NULL "<<endl;
     }
   }
 
    for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject | kAliHLTDataOriginOut); iter != NULL; iter = GetNextInputObject() ) {     
      //fBenchmark.AddInput(pBlock->fSize);
-    cout<<"Found ESD friend in esd test component !!!"<<endl;
     const AliESDfriend *esdFriend = dynamic_cast<const AliESDfriend*>(iter);
     if( esdFriend ){
-      cout<<"N friend tracks: "<<esdFriend->GetNumberOfTracks()<<endl;
     } else {
-      cout<<"ESD friend pointer is NULL "<<endl;
     }
   }
-  
-	/*
-	
-   if (iResult>=0) {            
+           
  
-		 
-  Bool_t useESDFriends = 0;
  AliFlatESDEvent *flatEsd ;
-  Byte_t *mem = new Byte_t[AliFlatESDEvent::EstimateSize(const_cast<AliESDEvent*>(esd), useESDFriends)];
 
-    flatEsd = reinterpret_cast<AliFlatESDEvent*>(mem);
+    flatEsd = reinterpret_cast<AliFlatESDEvent*>(outputPtr);
     new (flatEsd) AliFlatESDEvent;
-//  flatEsd->Fill(esd,useESDFriends);  
+  flatEsd->SetFromESD(AliFlatESDEvent::EstimateSize(esd),esd, kTRUE); 
 		 
-		 
-		 
-		 
-		 
-		 
+	
+	if( maxOutputSize > flatEsd->GetSize() ){
+	
     AliHLTComponentBlockData outBlock;
     FillBlockData( outBlock );
     outBlock.fOffset = size;
@@ -284,11 +255,19 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
     outBlock.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification( 0, 35, 0, 5 );
 
     outputBlocks.push_back( outBlock );
-      
+
     size += outBlock.fSize;
-  }
- */
+		
+	}
+	
+	else {
+		
+	return 0;	
+	}
  
+ 
+	
+  AliSysInfo::AddStamp("AliHLTGlobalEsdToFlatConverterComponent::DoEvent.Stop",0, flatEsd->GetSize(),flatEsd->GetNumberOfV0s(),flatEsd->GetNumberOfTracks());
  
  
   return iResult;

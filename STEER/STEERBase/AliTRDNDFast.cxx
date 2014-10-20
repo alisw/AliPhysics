@@ -116,9 +116,10 @@ AliTRDNDFast &AliTRDNDFast::operator=(const AliTRDNDFast &ref){
 	fNDim=ref.fNDim;
 	fTitle=ref.fTitle;
 	fFunc = ref.fFunc;
-	fHistos=ref.fHistos;
 	for(Int_t idim=0;idim<fNDim;idim++){
-	    for(Int_t ipar=0;ipar<kNpar;ipar++)fPars[idim][ipar]=ref.fPars[idim][ipar];
+	  fHistos[idim]=(TH1F*)ref.fHistos[idim]->Clone(Form("%s_axis_%d",GetName(),idim));
+	  fHistos[idim]->SetDirectory(0);
+	  for(Int_t ipar=0;ipar<kNpar;ipar++)fPars[idim][ipar]=ref.fPars[idim][ipar];
 	}
     }
     return *this;

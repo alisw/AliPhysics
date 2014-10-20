@@ -3,7 +3,7 @@
 # RPM Naming Tags
 Name: alimdc
 Version:  @ALIROOT_BRANCH_SPEC@
-Release: @GIT_SHA1@
+Release: @GIT_SHORT_SHA1@
 Summary: AliRoot MDC static libraries
 License: CERN Alice Offline
 Vendor: ALICE Core Offline Group

@@ -108,7 +108,7 @@ Int_t AliFlatESDTrack::FillExternalTrackParam(const AliExternalTrackParam* param
 
   if (!param) return -1;
 
-  Printf("  DEBUG: CONTENT %d >> %p + 0x%07llx = %p", flag, fContent, fContentSize, fContent + fContentSize);
+  //Printf("  DEBUG: CONTENT %d >> %p + 0x%07llx = %p", flag, fContent, fContentSize, fContent + fContentSize);
 
   AliFlatExternalTrackParam * current = reinterpret_cast<AliFlatExternalTrackParam*> (fContent + fContentSize);
   current->SetExternalTrackParam( param );    
@@ -120,3 +120,11 @@ Int_t AliFlatESDTrack::FillExternalTrackParam(const AliExternalTrackParam* param
 
 
 // _______________________________________________________________________________________________________
+Bool_t AliFlatESDTrack::GetXYZ(Double_t *p) const {
+  const AliFlatExternalTrackParam *f = GetFlatTrackParam();
+  if (!f) { return kFALSE; }
+  p[0]=f->GetX();
+  p[1]=f->GetY();
+  p[2]=f->GetZ();
+  return kTRUE;
+}

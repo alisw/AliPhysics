@@ -318,10 +318,12 @@ AliTPCcalibDB::~AliTPCcalibDB()
   //
   // destructor
   //
-  delete fIonTailArray; 
+  //delete fIonTailArray; 
   delete fActiveChannelMap;
   delete fGrRunState;
+  fgInstance = 0;
 }
+
 AliTPCCalPad* AliTPCcalibDB::GetDistortionMap(Int_t i) const {
   //
   // get distortion map - due E field distortions
@@ -494,7 +496,7 @@ void AliTPCcalibDB::Update(){
   //Calibration ION tail data
   entry          = GetCDBEntry("TPC/Calib/IonTail");
   if (entry){
-    delete fIonTailArray; fIonTailArray=NULL;
+    //delete fIonTailArray; fIonTailArray=NULL;
     entry->SetOwner(kTRUE);
      fIonTailArray=(TObjArray*)(entry->GetObject());
      fIonTailArray->SetOwner(); //own the keys
@@ -1646,6 +1648,15 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
   const Int_t stopTimeGRP  = grp->GetTimeEnd();
 
   //
+  // In case we use a generated GRP we cannot make use of the start time and end time information
+  // therefore we cannot calculate proper HV information and will skip this
+  //
+  if (startTimeGRP==0 && stopTimeGRP==0) {
+    AliWarning("Using a generated GRP with 'GetTimeStart()' and 'GetTimeEnd()' == 0. Cannot calculate HV information.");
+    return;
+  }
+
+  //
   // check active state by analysing the scalers
   //
   // initialise graph with active running
@@ -2160,6 +2171,10 @@ Bool_t AliTPCcalibDB::CreateGUITree(const char* filename){
   UpdateNonRec();  // load all infromation now
 
   AliTPCPreprocessorOnline prep;
+  if (GetActiveChannelMap()) prep.AddComponent(new AliTPCCalPad(*GetActiveChannelMap()));
+
+  // gain map
+  if (GetDedxGainFactor()) prep.AddComponent(new AliTPCCalPad(*GetDedxGainFactor()));
   //noise and pedestals
   if (GetPedestals()) prep.AddComponent(new AliTPCCalPad(*(GetPedestals())));
   if (GetPadNoise() ) prep.AddComponent(new AliTPCCalPad(*(GetPadNoise())));

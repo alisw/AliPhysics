@@ -207,8 +207,8 @@ Int_t AliTRDtrapConfigHandler::LoadConfig()
     fTrapConfig->SetTrapReg(AliTRDtrapConfig::kEBSF, 1, iDet);  // 0: store filtered; 1: store unfiltered
 
     // zs applied to data stored in event buffer (sel. by EBSF)
-    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kEBIS, 15 << 2, iDet); // single indicator threshold (plus two digits)
-    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kEBIT, 30 << 2, iDet); // sum indicator threshold (plus two digits)
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kEBIS, 15, iDet); // single indicator threshold (plus two digits)
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kEBIT, 30, iDet); // sum indicator threshold (plus two digits)
     fTrapConfig->SetTrapReg(AliTRDtrapConfig::kEBIL, 0xf0, iDet);   // lookup table
     fTrapConfig->SetTrapReg(AliTRDtrapConfig::kEBIN, 0, iDet);      // neighbour sensitivity
 
@@ -606,7 +606,7 @@ Bool_t AliTRDtrapConfigHandler::AddValues(UInt_t det, UInt_t cmd, UInt_t extali,
     for(Int_t linkPair=0; linkPair<fgkMaxLinkPairs; linkPair++) {
       if(AliTRDfeeParam::ExtAliToAli(extali, linkPair, rocType, mcmList, mcmListSize)!=0) {
 	Int_t i=0;
-        while(mcmList[i] != -1 && i<mcmListSize) {
+        while((i < mcmListSize) && (mcmList[i] != -1)) {
           if(mcmList[i]==127) {
 	    AliDebug(1, Form("broadcast write to %s: 0x%08x",
 			     fTrapConfig->GetRegName((AliTRDtrapConfig::TrapReg_t) mcmReg), data));

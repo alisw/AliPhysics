@@ -51,12 +51,10 @@ ClassImp(AliMpMotifReader)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMpMotifReader::AliMpMotifReader(const AliMpDataStreams& dataStreams,
-                                   AliMp::StationType station, 
+AliMpMotifReader::AliMpMotifReader(AliMp::StationType station,
                                    AliMq::Station12Type station12,
-                                   AliMp::PlaneType plane) 
+                                   AliMp::PlaneType plane)
   : TObject(),
-    fkDataStreams(dataStreams),
     fStationType(station),
     fStation12Type(station12),
     fPlaneType(plane)
@@ -75,7 +73,9 @@ AliMpMotifReader::~AliMpMotifReader()
 //
 
 //_____________________________________________________________________________
-AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
+AliMpMotifType* AliMpMotifReader::BuildMotifType(
+                                       const AliMpDataStreams& dataStreams,
+                                       const TString& motifTypeId)
 {
 /// Read the streams describing a motif in the "$MINSTALL/data" directory
 /// and fill the AliMpMotifType structure with.
@@ -85,15 +85,15 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
   // Open streams
   //
   istream& padPosStream 
-    = fkDataStreams.
+    = dataStreams.
         CreateDataStream(AliMpFiles::PadPosFilePath(
                             fStationType, fStation12Type, fPlaneType, motifTypeId));
   istream& bergToGCStream 
-    = fkDataStreams.
+    = dataStreams.
         CreateDataStream(AliMpFiles::BergToGCFilePath(fStationType, fStation12Type));
       
   istream& motifTypeStream 
-    = fkDataStreams.
+    = dataStreams.
         CreateDataStream(AliMpFiles::MotifFilePath(
                             fStationType, fStation12Type, fPlaneType, motifTypeId));
 
@@ -242,7 +242,8 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
 
 //_____________________________________________________________________________
 AliMpMotifSpecial*  
-AliMpMotifReader::BuildMotifSpecial(const TString& motifID,
+AliMpMotifReader::BuildMotifSpecial(const AliMpDataStreams& dataStreams,
+                                    const TString& motifID,
                                     AliMpMotifType* motifType,
                                     Double_t scale)
 {
@@ -252,7 +253,7 @@ AliMpMotifReader::BuildMotifSpecial(const TString& motifID,
   // Open streams
   //
   istream& in 
-    = fkDataStreams.
+    = dataStreams.
         CreateDataStream(AliMpFiles::MotifSpecialFilePath(
                              fStationType, fStation12Type, fPlaneType, motifID));
 

@@ -98,7 +98,7 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
     
   for (Int_t d=0; d<nDigits; d++) {    
     AliADdigit* digit = (AliADdigit*) fDigitsArray->At(d);
-    Int_t module = digit->GetCell();
+    Int_t module = digit->PMNumber();
  //   printf("AD Module: %d\n",module);
     ADHits[module] = kTRUE;
   }  

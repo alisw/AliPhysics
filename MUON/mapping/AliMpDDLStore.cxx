@@ -126,7 +126,6 @@ AliMpDDLStore* AliMpDDLStore::ReadData(const AliMpDataStreams& dataStreams,
 //______________________________________________________________________________
 AliMpDDLStore::AliMpDDLStore(const AliMpDataStreams& dataStreams)
         : TObject(),
-        fkDataStreams(dataStreams),
         fDDLs(fgkNofDDLs+fgkNofTriggerDDLs), // FIXEME
         fBusPatches(),
         fManuList12(),
@@ -145,19 +144,18 @@ AliMpDDLStore::AliMpDDLStore(const AliMpDataStreams& dataStreams)
     AliMpSegmentation::ReadData(dataStreams, true);
     
   // Create all detection elements
-  ReadDDLs();
-  ReadTrigger();
+  ReadDDLs(dataStreams);
+  ReadTrigger(dataStreams);
   SetTriggerDDLs();
   SetManus();
-  ReadBusPatchSpecial();
+  ReadBusPatchSpecial(dataStreams);
   SetPatchModules();
-  ReadBusPatchInfo();
+  ReadBusPatchInfo(dataStreams);
 }
 
 //______________________________________________________________________________
 AliMpDDLStore::AliMpDDLStore(TRootIOCtor* ioCtor)
         : TObject(),
-        fkDataStreams(ioCtor),
         fDDLs(),
         fBusPatches(ioCtor),
         fRegionalTrigger(ioCtor)
@@ -220,12 +218,12 @@ Int_t AliMpDDLStore::GetBusPatchIndex(Int_t detElemId, Int_t manuId) const
 }
 
 //______________________________________________________________________________
-Bool_t AliMpDDLStore::ReadDDLs() 
+Bool_t AliMpDDLStore::ReadDDLs(const AliMpDataStreams& dataStreams)
 {
     /// Read ddl <-> bus patch file
 
     istream& in 
-      = fkDataStreams.
+      = dataStreams.
           CreateDataStream(AliMpFiles::BusPatchFilePath());
 
     char line[255];
@@ -312,11 +310,11 @@ Bool_t AliMpDDLStore::ReadDDLs()
 }
 
 //______________________________________________________________________________
-Bool_t  AliMpDDLStore::ReadTrigger() 
+Bool_t  AliMpDDLStore::ReadTrigger(const AliMpDataStreams& dataStreams)
 {
     /// create trigger DDL object and Global crate object
   
-  if ( ! fRegionalTrigger.ReadData(fkDataStreams) ) return false;
+  if ( ! fRegionalTrigger.ReadData(dataStreams) ) return false;
 
   return true;
 }
@@ -489,13 +487,13 @@ Bool_t AliMpDDLStore::SetManus()
 }
 
 //______________________________________________________________________________
-Bool_t AliMpDDLStore::ReadBusPatchSpecial()
+Bool_t AliMpDDLStore::ReadBusPatchSpecial(const AliMpDataStreams& dataStreams)
 {
 /// Read file with bus patches with a special order of manus
 /// and reset the manus arrays filled via SetManu function
 
   istream& in 
-    = fkDataStreams.
+    = dataStreams.
         CreateDataStream(AliMpFiles::BusPatchSpecialFilePath());
 
   char line[255];
@@ -593,6 +591,7 @@ Bool_t AliMpDDLStore::SetPatchModules()
                 newResult = busPatch->SetNofManusPerModule(fManuBridge2[GetManuListIndex(idDE)].At(i));
             else
                 newResult = busPatch->SetNofManusPerModule();
+            result = result && newResult;
         }
     }
 
@@ -600,12 +599,12 @@ Bool_t AliMpDDLStore::SetPatchModules()
 }
 
 //______________________________________________________________________________
-Bool_t AliMpDDLStore::ReadBusPatchInfo() 
+Bool_t AliMpDDLStore::ReadBusPatchInfo(const AliMpDataStreams& dataStreams)
 {
     /// read the buspatch info file and set buspatch info
 
     istream& in 
-      = fkDataStreams.
+      = dataStreams.
           CreateDataStream(AliMpFiles::BusPatchInfoFilePath());
 
     char line[255];

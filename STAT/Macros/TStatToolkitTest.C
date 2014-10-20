@@ -14,12 +14,13 @@
 #include "TGraphErrors.h"
 #include "TCut.h"
 #include "TCanvas.h"
+#include "TLinearFitter.h"
 
 TObjArray arrayFit(3);
-Int_t kMarkers[10]={25,24,20,21};
-Int_t kColors[10]={1,2,4,3};
-const char * names[10] = {"LTM","LThisto","LTMhisto1"};
-const char * distNames[10] = {"Gauss","Gauss+flat","Gauss(m)+0.2*Gauss(m+5#sigma)","Gauss(m)+0.3*Gauss(m+3#sigma)"};
+Int_t kMarkers[10]={25,24,20,21,22};
+Int_t kColors[10]={1,2,4,3,6};
+const char * names[10] = {"LTM","LThisto","LTMhistoPar","Gaus fit", "Gaus in range"};
+const char * distNames[10] = {"Gauss","Gauss+flat","Gauss(m)+0.2*Gauss(m+5#sigma)","Gauss(m)+0.4*Gauss(m+5#sigma)"};
 
 
 void TestLTM(Int_t nevents=10000){
@@ -44,6 +45,10 @@ void TestLTM(Int_t nevents=10000){
   TVectorD sigmaLTMHisto(6);
   TVectorD meanLTMHisto1(6);
   TVectorD sigmaLTMHisto1(6);
+  TVectorD meanLTMHistoPar(6);
+  TVectorD sigmaLTMHistoPar(6);
+  TVectorD meanLTMHistoGausLim(6);
+  TVectorD sigmaLTMHistoGausLim(6);
   TVectorD paramLTM(10);
   //
   for (Int_t iltm=0; iltm<6; iltm++) vecLTM[iltm]=0.99999*(0.5+iltm/10.);
@@ -74,7 +79,7 @@ void TestLTM(Int_t nevents=10000){
 	}
       }
       if (distType==3) {
-	if (gRandom->Rndm()>0.3) {                     //  gauss + second gaus 4 sigma away
+	if (gRandom->Rndm()>0.4) {                     //  gauss + second gaus 5 sigma away
 	  value=gRandom->Gaus(mean,sigma);
 	}else{
 	  value=gRandom->Gaus(mean+5*sigma,sigma);
@@ -106,6 +111,49 @@ void TestLTM(Int_t nevents=10000){
       TStatToolkit::LTMHisto(&histo, paramLTM,  vecLTM[iltm]);
       meanLTMHisto[iltm]=paramLTM[1];
       sigmaLTMHisto[iltm]=paramLTM[2];
+      //
+      // graph fit
+      //
+      Int_t binC=histo.GetXaxis()->FindBin(paramLTM[1]);
+      Int_t bin0=TMath::Max(histo.GetXaxis()->FindBin(paramLTM[1]-5*paramLTM[2]),1);
+      Int_t bin1=TMath::Min(histo.GetXaxis()->FindBin(paramLTM[1]+5*paramLTM[2]),histo.GetXaxis()->GetNbins()) ;
+      if ( (bin0-bin1) <3){
+	bin0=TMath::Max(binC-2,1);
+	bin1=TMath::Min(binC+2, histo.GetXaxis()->GetNbins());
+      }
+      //
+      /* test input:
+	 TH1F histo("aaa","aaa",100,-10,10);for (Int_t i=0; i<10000; i++) histo.Fill(gRandom->Gaus(2,1));
+      */
+      
+      TLinearFitter fitter(3,"hyp2");
+      for (Int_t ibin=bin0; ibin<bin1; ibin++){
+	Double_t x=histo.GetXaxis()->GetBinCenter(ibin);
+	Double_t y=histo.GetBinContent(ibin);
+	Double_t sy=histo.GetBinError(ibin);
+	Double_t xxx[3]={x,x*x};
+	if (y>3.*sy){
+	  fitter.AddPoint(xxx,TMath::Log(y),sy/y);
+	}
+      }
+      if (fitter.GetNpoints()>3){
+	fitter.Eval();
+	// f(x)=[0]+[1]*x+[2]*x*x;
+	// f(x)=s*(x0-x0)^2+s
+	Double_t parSigma=TMath::Sqrt(2*TMath::Abs(fitter.GetParameter(2)));
+	Double_t parMean=-fitter.GetParameter(1)/(2.*fitter.GetParameter(2));  
+	histo.Fit(&fg,"QN","QN", paramLTM[1]-5*paramLTM[2], paramLTM[1]+5*paramLTM[2]);
+	meanLTMHistoPar[iltm]=parMean;
+	sigmaLTMHistoPar[iltm]=parSigma;
+	meanLTMHistoGausLim[iltm]=fg.GetParameter(1);
+	sigmaLTMHistoGausLim[iltm]=fg.GetParameter(2);
+      }else{
+	meanLTMHistoPar[iltm]=paramLTM[1];
+	sigmaLTMHistoPar[iltm]=paramLTM[2];
+	meanLTMHistoGausLim[iltm]=meanG;
+	sigmaLTMHistoGausLim[iltm]=rmsG;	
+      }
+
     }
     (*pcstream)<<"ltm"<<
       //Input
@@ -125,10 +173,13 @@ void TestLTM(Int_t nevents=10000){
       "meanLTM.="<<&meanLTM<<
       "meanLTMHisto.="<<&meanLTMHisto<<
       "meanLTMHisto1.="<<&meanLTMHisto1<<
+      "meanLTMHistoPar.="<<&meanLTMHistoPar<<
+      "meanLTMHistoGausLim.="<<&meanLTMHistoGausLim<<
       //
       "sigmaLTM.="<<&sigmaLTM<<
       "sigmaLTMHisto.="<<&sigmaLTMHisto<<
-      "sigmaLTMHisto1.="<<&sigmaLTMHisto1<<      
+      "sigmaLTMHistoPar.="<<&sigmaLTMHistoPar<<      
+      "sigmaLTMHistoGausLim.="<<&sigmaLTMHistoGausLim<<      
       "\n";
   }
   delete pcstream;
@@ -146,7 +197,7 @@ void TestLTM(Int_t nevents=10000){
   TH1 * hisResol[10]={0};
   TGraphErrors * grSigma[10]={0};
   TCanvas *canvasLTM= new TCanvas("canvasLTM","canvasLTM",800,700);
-  canvasLTM->Divide(2,2);
+  canvasLTM->Divide(2,2,0,0);
   for (Int_t itype=0; itype<4; itype++){
     canvasLTM->cd(itype+1);
     TCut cutType=TString::Format("distType==0%d",itype).Data();
@@ -154,15 +205,21 @@ void TestLTM(Int_t nevents=10000){
     hisLTMTrunc[0]= (TH2*)(tree->GetHistogram()->Clone());
     tree->Draw("sqrt(npoints-2)*(meanLTMHisto.fElements-mean)/sigma:vecLTM.fElements>>hisLTMHisto(6,0.45,1.05,100,-10,10)",cutType+"npoints>50&&sigma>0.1","colzgoff");
     hisLTMTrunc[1]= (TH2*)tree->GetHistogram()->Clone();
-    tree->Draw("sqrt(npoints-2)*(meanLTMHisto1.fElements-mean)/sigma:vecLTM.fElements>>hisLTMHist1(6,0.45,1.05,100,-10,10)",cutType+"npoints>50&&sigma>0.1","colzgoff");
+    tree->Draw("sqrt(npoints-2)*(meanLTMHistoPar.fElements-mean)/sigma:vecLTM.fElements>>hisLTMHist1(6,0.45,1.05,100,-10,10)",cutType+"npoints>50&&sigma>0.1","colzgoff");
     hisLTMTrunc[2]= (TH2*)tree->GetHistogram()->Clone();
-    TLegend * legend = new TLegend(0.5,0.7,0.9,0.9,distNames[itype]);
+    tree->Draw("sqrt(npoints-2)*(meanG-mean)/sigma:vecLTM.fElements>>hisLTMHist1(6,0.45,1.05,100,-10,10)",cutType+"npoints>50&&sigma>0.1","colzgoff");
+    hisLTMTrunc[3]= (TH2*)tree->GetHistogram()->Clone();
+    tree->Draw("sqrt(npoints-2)*(meanLTMHistoGausLim.fElements-mean)/sigma:vecLTM.fElements>>hisLTMHist1(6,0.45,1.05,100,-10,10)",cutType+"npoints>50&&sigma>0.1","colzgoff");
+    hisLTMTrunc[4]= (TH2*)tree->GetHistogram()->Clone();
+    TLegend * legend = new TLegend(0.5,0.7,0.88,0.88,distNames[itype]);
     legend->SetBorderSize(0);
-    for (Int_t ihis=0; ihis<3; ihis++){
+    for (Int_t ihis=0; ihis<5; ihis++){
       // MakeStat1D(TH2 * his, Int_t deltaBin, Double_t fraction, Int_t returnType, Int_t markerStyle, Int_t markerColor);
-      grSigma[ihis]=TStatToolkit::MakeStat1D( hisLTMTrunc[ihis],0,0.99,5,kMarkers[ihis],kColors[ihis]);
+      grSigma[ihis]=TStatToolkit::MakeStat1D( hisLTMTrunc[ihis],0,0.99,1,kMarkers[ihis],kColors[ihis]);
+      grSigma[ihis]->SetMaximum(5.0);
+      grSigma[ihis]->SetMinimum(0.5);
       grSigma[ihis]->GetXaxis()->SetTitle("LTM fraction");
-      grSigma[ihis]->GetYaxis()->SetTitle("#sigma_{meas}/sigma_{gauss}");
+      grSigma[ihis]->GetYaxis()->SetTitle("#sigma_{meas}/#sigma_{Theor.}");
       if (ihis==0)grSigma[ihis]->Draw("alp");
       if (ihis>0)grSigma[ihis]->Draw("lp");
       legend->AddEntry(grSigma[ihis],names[ihis],"p");

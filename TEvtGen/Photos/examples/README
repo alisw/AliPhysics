@@ -1,0 +1,35 @@
+Photos C++ Interface - Examples
+-------------------------------
+
+1)
+To compile:
+-  "./configure"
+-  "make"
+
+2)
+The examples require more software than the interface itself:
+
+./configure --with-tauola=<path>         - provides path for Tauola
+./configure --with-pythia8=<path>        - provides path for Pythia8
+./configure --with-mc-tester=<path>      - provides path for MC-Tester
+
+To use MC-Tester, ROOT must be installed and
+its path provided via the PATH variable.
+
+3)
+If afs paths were used during interface compilation,
+all these paths are set alredy and 
+can not be changed.
+
+4)
+Examples require:
+photos_hepevt_example.exe        - does not require any new libraries
+photos_standalone_example.exe    - require HepMC
+single_photos_gun_example.exe    - require HepMC, Pythia8
+photosLCG_pythia_example.exe     - require HepMC, Pythia8
+photos_pythia_example.exe        - require HepMC, Pythia8, ROOT and MC-Tester
+tauola_photos_pythia_example.exe - require HepMC, Pythia8, Tauola, ROOT and MC-Tester
+
+
+
+Last Modified: T. Przedzinski, 07 Dec. 2011

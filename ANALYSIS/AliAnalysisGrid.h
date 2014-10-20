@@ -91,7 +91,6 @@ enum EPluginBits {
    virtual void        SetMasterResubmitThreshold(Int_t percentage)      = 0;
    virtual void        SetNtestFiles(Int_t nfiles)                       = 0;
    virtual void        SetJDLName(const char *name="analysis.jdl")       = 0;
-   virtual void        SetPreferedSE(const char *se)                     = 0;
    virtual void        SetProductionMode(Int_t mode=1)                   = 0;
    virtual void        SetRegisterExcludes(const char *list)             = 0;
    virtual void        SetRunPrefix(const char *prefix)                  = 0;

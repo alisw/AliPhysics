@@ -39,12 +39,11 @@ using std::istream;
 class AliMpSectorReader : public TObject
 {
   public:
-    AliMpSectorReader(const AliMpDataStreams& dataStreams,
-                      AliMq::Station12Type station, AliMp::PlaneType plane);
+    AliMpSectorReader(AliMq::Station12Type station, AliMp::PlaneType plane);
     virtual ~AliMpSectorReader();
   
     // methods   
-    AliMpSector*  BuildSector();
+    AliMpSector*  BuildSector(const AliMpDataStreams& dataStreams);
     
   private:  
     /// Not implemented
@@ -66,21 +65,30 @@ class AliMpSectorReader : public TObject
     static const TString&  GetPadRowSegmentKeyword();
   
    // methods
-    void  ReadSectorData(istream& in);
-    void  ReadZoneData(istream& in);
-    void  ReadSubZoneData(istream& in, AliMpZone* zone);
-    void  ReadRowSegmentsData(istream& in,
-                          AliMpZone* zone, AliMpSubZone* subZone);
-    AliMpVMotif*  ReadMotifData(istream& in, AliMpZone* zone);
-    void  ReadSectorSpecialData(istream& in, AliMp::XDirection direction);
-    void  ReadMotifsSpecialData(istream& in);
-    void  ReadRowSpecialData(istream& in, AliMp::XDirection direction);
-    void  ReadRowSegmentSpecialData(istream& in,
-                          AliMpVRowSegmentSpecial* segment,
-			  AliMp::XDirection direction);
-  
+    void  ReadSectorData(const AliMpDataStreams& dataStreams,
+                         istream& in);
+    void  ReadZoneData(const AliMpDataStreams& dataStreams,
+                         istream& in);
+    void  ReadSubZoneData(const AliMpDataStreams& dataStreams,
+                         istream& in, AliMpZone* zone);
+    void  ReadRowSegmentsData(const AliMpDataStreams& dataStreams,
+                         istream& in,
+                         AliMpZone* zone, AliMpSubZone* subZone);
+
+    AliMpVMotif*  ReadMotifData(const AliMpDataStreams& dataStreams,
+                         istream& in, AliMpZone* zone);
+    void  ReadSectorSpecialData(const AliMpDataStreams& dataStreams,
+                         istream& in, AliMp::XDirection direction);
+    void  ReadMotifsSpecialData(const AliMpDataStreams& dataStreams,
+                         istream& in);
+    void  ReadRowSpecialData(const AliMpDataStreams& dataStreams,
+                         istream& in, AliMp::XDirection direction);
+    void  ReadRowSegmentSpecialData(const AliMpDataStreams& dataStreams,
+                         istream& in,
+                         AliMpVRowSegmentSpecial* segment,
+                         AliMp::XDirection direction);
+
     // data members  
-    const AliMpDataStreams&  fkDataStreams; ///< data streams
     AliMq::Station12Type  fStationType; ///< station type 
     AliMp::PlaneType      fPlaneType;   ///< plane type 
     AliMpSector*          fSector;      ///< sector

@@ -25,6 +25,7 @@
 #include <cassert>
 #include "AliHLTRCUAgent.h"
 #include "AliHLTDAQ.h"
+#include "AliDAQ.h"
 
 // header files of library components
 #include "AliHLTAltroChannelSelectorComponent.h"
@@ -49,6 +50,11 @@ AliHLTRCUAgent::AliHLTRCUAgent()
 AliHLTRCUAgent::~AliHLTRCUAgent()
 {
   // see header file for class documentation
+}
+
+UInt_t AliHLTRCUAgent::GetDetectorMask() const
+{
+  return AliDAQ::kTPC;
 }
 
 int AliHLTRCUAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,

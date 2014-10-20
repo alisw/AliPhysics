@@ -78,7 +78,9 @@ public:
    *  @return     always kTRUE;
    */
   Bool_t IsSortable() const  { return kTRUE; }
-
+  virtual Bool_t IsPrimary()  const  { return kFALSE; }
+  virtual void    SetFlag(UInt_t) {;}
+  virtual UInt_t  GetFlag() const {return 0;}  
 
   // coordinate system conversions
   Bool_t   Local2GlobalMomentum(Double_t p[3], Double_t alpha) const;
@@ -86,9 +88,13 @@ public:
   Bool_t   Global2LocalMomentum(Double_t p[3], Short_t charge, Double_t &alpha) const;
   Bool_t   Global2LocalPosition(Double_t r[3], Double_t alpha) const;
 
-  
-
-  ClassDef(AliVParticle, 5)  // base class for particles
+  //Navigation
+  virtual Int_t   GetMother()   const {return -1;}
+  virtual Int_t   GetFirstDaughter()   const {return -1;}
+  virtual Int_t   GetLastDaughter()    const {return -1;}
+  virtual void    SetGeneratorIndex(Short_t) {;}
+  virtual Short_t GetGeneratorIndex() const {return -1;}
+  ClassDef(AliVParticle, 3)  // base class for particles
 };
 
 #endif

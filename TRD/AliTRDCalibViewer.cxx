@@ -775,10 +775,12 @@ Bool_t AliTRDCalibViewer::DumpOCDBtoTreeDetails(const Char_t* runListFilename,
     if(!grpObject)
       cout << "No GRP info available for this run " << endl;
 
-    time_t startTimeGRP = 0;
+    // Coverity
+    //time_t startTimeGRP = 0;
     TObjString runType("");
     if(grpObject) {
-      startTimeGRP = grpObject->GetTimeStart();
+      // Coverity
+      //startTimeGRP = grpObject->GetTimeStart();
       TTimeStamp start(grpObject->GetTimeStart());
       TTimeStamp end(grpObject->GetTimeEnd());
       cout << "Start time: " << start.GetDate()/10000 << "/" 

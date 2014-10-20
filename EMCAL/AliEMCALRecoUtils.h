@@ -49,7 +49,7 @@ public:
   void     Print(const Option_t*) const;
 
   //enums
-  enum     NonlinearityFunctions{kPi0MC=0,kPi0GammaGamma=1,kPi0GammaConversion=2,kNoCorrection=3,kBeamTest=4,kBeamTestCorrected=5,kPi0MCv2=6,kPi0MCv3=7,kBeamTestCorrectedv2=8};
+  enum     NonlinearityFunctions{kPi0MC=0,kPi0GammaGamma=1,kPi0GammaConversion=2,kNoCorrection=3,kBeamTest=4,kBeamTestCorrected=5,kPi0MCv2=6,kPi0MCv3=7,kBeamTestCorrectedv2=8,kSDMv5=9,kPi0MCv5=10};
   enum     PositionAlgorithms{kUnchanged=-1,kPosTowerIndex=0, kPosTowerGlobal=1};
   enum     ParticleType{kPhoton=0, kElectron=1,kHadron =2, kUnknown=-1};
   enum     { kNCuts = 12 }; //track matching Marcel
@@ -226,7 +226,7 @@ public:
                                           const TObjArray * clusterArr, 
                                           Float_t &dEta, Float_t &dPhi);
   static Bool_t ExtrapolateTrackToEMCalSurface(AliVTrack *track, /*note, on success the call will change the track*/
-                                               Double_t emcalR=440, Double_t mass=0.1396, Double_t step=20); 
+                                               Double_t emcalR=440, Double_t mass=0.1396, Double_t step=20, Double_t minpT=0.35); 
   static Bool_t ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, 
                                                Double_t emcalR, Double_t mass, Double_t step, 
                                                Float_t &eta, Float_t &phi, Float_t &pt);

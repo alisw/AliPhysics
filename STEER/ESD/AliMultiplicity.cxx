@@ -7,7 +7,7 @@ ClassImp(AliMultiplicity)
 
 //______________________________________________________________________
 AliMultiplicity::AliMultiplicity():
-  TObject(),
+AliVMultiplicity("AliMultiplicity",""),  // must be named like that to be searchable in ESDEvent
   fNtracks(0),
   fNsingle(0),
   fNsingleSPD2(0),
@@ -40,7 +40,7 @@ AliMultiplicity::AliMultiplicity():
 
 //______________________________________________________________________
 AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *th,  Float_t *ph, Float_t *dth, Float_t *dph, Int_t *labels, Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps, Int_t *labelss, Short_t nfcL1, Short_t nfcL2, const TBits & fFastOr):
-  TObject(),
+  AliVMultiplicity("AliMultiplicity",""),
   fNtracks(ntr),
   fNsingle(ns),
   fNsingleSPD2(0),
@@ -100,7 +100,7 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *th,  Float_t *ph, Float_t *
 
 //______________________________________________________________________
 AliMultiplicity::AliMultiplicity(Int_t ntr, Int_t ns, Short_t nfcL1, Short_t nfcL2, const TBits & fFastOr) :
-  TObject(),
+  AliVMultiplicity("AliMultiplicity",""),
   fNtracks(ntr),
   fNsingle(ns),
   fNsingleSPD2(0),
@@ -152,7 +152,7 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Int_t ns, Short_t nfcL1, Short_t nfc
 
 //______________________________________________________________________
 AliMultiplicity::AliMultiplicity(const AliMultiplicity& m):
-  TObject(m),
+  AliVMultiplicity(m),
   fNtracks(m.fNtracks),
   fNsingle(m.fNsingle),
   fNsingleSPD2(m.fNsingleSPD2),
@@ -185,7 +185,7 @@ AliMultiplicity::AliMultiplicity(const AliMultiplicity& m):
 AliMultiplicity &AliMultiplicity::operator=(const AliMultiplicity& m){
   // assignment operator
   if(this == &m)return *this;
-  ((TObject *)this)->operator=(m);
+  ((AliVMultiplicity*)this)->operator=(m);
 
   if(fTh)delete [] fTh;fTh = 0;
   if(fPhi)delete [] fPhi;fPhi = 0; 
@@ -309,7 +309,7 @@ AliMultiplicity::~AliMultiplicity(){
 void AliMultiplicity::Clear(Option_t*)
 {
   // reset all
-  TObject::Clear();
+  AliVMultiplicity::Clear();
   if(fTh)delete [] fTh;fTh = 0;
   if(fPhi)delete [] fPhi;fPhi = 0; 
   if(fDeltTh)delete [] fDeltTh;fDeltTh = 0; 

@@ -371,7 +371,7 @@ int AliHLTTRDPreprocessorComponent::DoEvent(const AliHLTComponentEventData& hltE
   // read and process GTU tracks
   UInt_t numGtuTracks = fGtuTrackArray->GetEntriesFast();
   AliESDTrdTrack *trdTrack = NULL;
-  UInt_t stack;
+  // UInt_t stack;
   Int_t refIndex[6];
 
   for (UInt_t iTrack = 0; iTrack < numGtuTracks; iTrack++) {
@@ -379,7 +379,7 @@ int AliHLTTRDPreprocessorComponent::DoEvent(const AliHLTComponentEventData& hltE
     if (trdTrack){
 
       AliTRDrawStream::AssignTracklets(trdTrack, trackletIndex, refIndex);
-      stack = trdTrack->GetStack();
+      // stack = trdTrack->GetStack();
 
       for (Int_t iLayer = 0; iLayer < 6; ++iLayer) {
 	AliESDTrdTracklet *trkl = (refIndex[iLayer] > -1) ? (AliESDTrdTracklet*) trklList.At(refIndex[iLayer]) : 0x0;

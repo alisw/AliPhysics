@@ -19,11 +19,11 @@
 /// \class AliMUONAlignmentTask
 /// AliAnalysisTask to align the MUON spectrometer.
 /// The Task reads as input ESDs and feeds the MUONTracks to AliMUONAlignment.
-/// The alignment itself is performed by AliMillepede.
+/// The alignment itself is performed by AliMillePede2.
 /// A OCDB entry is written with the alignment parameters.
-/// A list of graph are written to monitor the alignment parameters.
 ///
 /// \author Javier Castillo, CEA/Saclay - Irfu/SPhN
+/// \author Hugo Pereira Da Costa, CEA/Saclay - Irfu/SPhN
 //-----------------------------------------------------------------------------
 
 // this class header must always come first
@@ -31,14 +31,15 @@
 
 // local header must come before system headers
 #include "AliAnalysisManager.h"
+#include "AliAlignObjMatrix.h"
 #include "AliAODInputHandler.h"
 #include "AliAODHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
+#include "AliCDBEntry.h"
 #include "AliESDInputHandler.h"
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
-#include "AliMagF.h"
 #include "AliCDBStorage.h"
 #include "AliCDBManager.h"
 #include "AliGRPManager.h"
@@ -46,9 +47,13 @@
 #include "AliCDBId.h"
 #include "AliGeomManager.h"
 
+#include "AliMagF.h"
+#include "AliMillePedeRecord.h"
 #include "AliMpCDB.h"
 #include "AliMUONCDB.h"
 #include "AliMUONAlignment.h"
+#include "AliMUONConstants.h"
+#include "AliMUONRecoParam.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackExtrap.h"
 #include "AliMUONTrackParam.h"
@@ -56,9 +61,13 @@
 #include "AliMUONESDInterface.h"
 
 // system headers
+#include <cassert>
 #include <fstream>
+
+// root headers
 #include <TString.h>
 #include <TError.h>
+#include <TFile.h>
 #include <TGraphErrors.h>
 #include <TTree.h>
 #include <TChain.h>
@@ -72,28 +81,27 @@ ClassImp(AliMUONAlignmentTask)
 ///\endcond
 
 //________________________________________________________________________
-AliMUONAlignmentTask::AliMUONAlignmentTask(const char *name, const char *newalignocdb, const char *oldalignocdb, const char *defaultocdb, const char *geofilename):
+AliMUONAlignmentTask::AliMUONAlignmentTask( const char *name ):
   AliAnalysisTaskSE(name),
   fReadRecords( kFALSE ),
   fWriteRecords( kFALSE ),
   fDoAlignment( kTRUE ),
+  fMergeAlignmentCDBs( kTRUE ),
+  fForceBField( kFALSE ),
+  fBFieldOn( kFALSE ),
   fAlign(0x0),
-  fGeoFilename(geofilename),
-  fDefaultStorage(defaultocdb),
-  fOldAlignStorage(oldalignocdb),
-  fNewAlignStorage(newalignocdb),
-  fOldGeoTransformer(NULL),
-  fNewGeoTransformer(NULL),
+  fDefaultStorage(),
+  fOldAlignStorage(),
+  fNewAlignStorage( "local://ReAlignOCDB" ),
+  fOldGeoTransformer(0x0),
+  fNewGeoTransformer(0x0),
   fLoadOCDBOnce(kFALSE),
   fOCDBLoaded(kFALSE),
+  fEvent(0),
   fTrackTot(0),
   fTrackOk(0),
-  fLastRunNumber(-1),
-  fMSDEx(0x0),
-  fMSDEy(0x0),
-  fMSDEz(0x0),
-  fMSDEp(0x0),
-  fList(0x0),
+  fRunNumberMin(0),
+  fRunNumberMax(0),
   fRecords(0x0),
   fRecordCount(0)
 {
@@ -102,119 +110,26 @@ AliMUONAlignmentTask::AliMUONAlignmentTask(const char *name, const char *newalig
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
 
-  // Output slot #0 writes NTuple/histos into a TList
-  DefineOutput(1, TList::Class());
-
   // initialize parameters ...
-  for(Int_t k=0;k<4*156;k++)
+  for(Int_t k=0;k<AliMUONAlignment::fNGlobal;k++)
   {
     fParameters[k]=0.;
     fErrors[k]=0.;
     fPulls[k]=0.;
   }
 
+  // create alignment object
+  fAlign = new AliMUONAlignment();
+
+  // create old geometry transformer
   fOldGeoTransformer = new AliMUONGeometryTransformer();
 
 }
 
 //________________________________________________________________________
-AliMUONAlignmentTask::AliMUONAlignmentTask(const AliMUONAlignmentTask& other):
-  AliAnalysisTaskSE(other),
-  fReadRecords( other.fReadRecords ),
-  fWriteRecords( other.fWriteRecords ),
-  fDoAlignment( other.fDoAlignment ),
-  fAlign( other.fAlign ),
-  fGeoFilename( other.fGeoFilename ),
-  fDefaultStorage( other.fDefaultStorage ),
-  fOldAlignStorage( other.fOldAlignStorage ),
-  fNewAlignStorage( other.fNewAlignStorage ),
-  fOldGeoTransformer( other.fOldGeoTransformer ),
-  fNewGeoTransformer( other.fNewGeoTransformer ),
-  fLoadOCDBOnce( other.fLoadOCDBOnce ),
-  fOCDBLoaded( other.fOCDBLoaded ),
-  fTrackTot( other.fTrackTot ),
-  fTrackOk( other.fTrackOk ),
-  fLastRunNumber( other.fLastRunNumber ),
-  fMSDEx( other.fMSDEx ),
-  fMSDEy( other.fMSDEy ),
-  fMSDEz( other.fMSDEz ),
-  fMSDEp( other.fMSDEp ),
-  fList( other.fList ),
-  fRecords( other.fRecords ),
-  fRecordCount( other.fRecordCount )
-{
-
-  // initialize parameters
-  for(Int_t k=0;k<4*156;k++)
-  {
-
-    fParameters[k]=other.fParameters[k];
-    fErrors[k]=other.fErrors[k];
-    fPulls[k]=other.fPulls[k];
-
-  }
-
-}
-
-//________________________________________________________________________
-AliMUONAlignmentTask& AliMUONAlignmentTask::operator=(const AliMUONAlignmentTask& other)
-{
-  /// Assignment
-  if(&other == this) return *this;
-  AliAnalysisTaskSE::operator=(other);
-
-  fReadRecords = other.fReadRecords;
-  fWriteRecords = other.fWriteRecords;
-  fDoAlignment = other.fDoAlignment;
-
-  // this breaks in destructor
-  fAlign = other.fAlign;
-
-  fGeoFilename = other.fGeoFilename;
-  fDefaultStorage = other.fDefaultStorage;
-  fOldAlignStorage = other.fOldAlignStorage;
-  fNewAlignStorage = other.fNewAlignStorage;
-
-  // this breaks in destructor
-  fOldGeoTransformer = other.fOldGeoTransformer;
-  fNewGeoTransformer = other.fNewGeoTransformer;
-
-  fLoadOCDBOnce = other.fLoadOCDBOnce;
-  fOCDBLoaded = other.fOCDBLoaded;
-  fTrackTot = other.fTrackTot;
-  fTrackOk = other.fTrackOk;
-  fLastRunNumber = other.fLastRunNumber;
-  fMSDEx = other.fMSDEx;
-  fMSDEy = other.fMSDEy;
-  fMSDEz = other.fMSDEz;
-  fMSDEp = other.fMSDEp;
-  fList = other.fList;
-  fRecords = other.fRecords;
-  fRecordCount = other.fRecordCount;
-
-  // initialize parameters ...
-  for( Int_t k=0; k<4*156; ++k)
-  {
-
-    fParameters[k]=other.fParameters[k];
-    fErrors[k]=other.fErrors[k];
-    fPulls[k]=other.fPulls[k];
-
-  }
-
-  return *this;
-}
-
-//________________________________________________________________________
 AliMUONAlignmentTask::~AliMUONAlignmentTask()
 {
-  /*
-  it is safe to delete NULL pointers, so
-  there is no need to test their validity here.
-  However, it crashes here, because of incorrect assignment operator
-  and copy constructor, resulting in double deletion of objects.
-  Would require deep copy instead.
-  */
+  /// destructor
   delete fAlign;
   delete fOldGeoTransformer;
   delete fNewGeoTransformer;
@@ -223,22 +138,10 @@ AliMUONAlignmentTask::~AliMUONAlignmentTask()
 //________________________________________________________________________
 void AliMUONAlignmentTask::LocalInit()
 {
-  /// Local initialization, called once per task on the client machine
-  /// where the analysis train is assembled
-
-  // print configuration
-  AliInfo( Form( "fReadRecords: %s", (fReadRecords ? "kTRUE":"kFALSE" ) ) );
-  AliInfo( Form( "fWriteRecords: %s", (fWriteRecords ? "kTRUE":"kFALSE" ) ) );
-  AliInfo( Form( "fDoAlignment: %s", (fDoAlignment ? "kTRUE":"kFALSE" ) ) );
-
-  // consistency checks between flags
-  /* need at least one of the flags set to true */
-  if( !( fReadRecords || fWriteRecords || fDoAlignment ) )
-  { AliFatal( "Need at least one of the three flags fReadRecords, fWriteRecords and fDoAlignment set to kTRUE" ); }
-
-  /* cannot read and write records at the same time */
-  if( fReadRecords && fWriteRecords )
-  { AliFatal( "Cannot set both fReadRecords and fWriteRecords to kTRUE at the same time" ); }
+  /**
+  Local initialization, called once per task on the client machine
+  where the analysis train is assembled
+  **/
 
   /* must run alignment when reading records */
   if( fReadRecords && !fDoAlignment )
@@ -249,80 +152,81 @@ void AliMUONAlignmentTask::LocalInit()
 
   }
 
-  // Set initial values here, good guess may help convergence
-  // St 1
-  //  Int_t iPar = 0;
-  //  fParameters[iPar++] =  0.010300 ;  fParameters[iPar++] =  0.010600 ;  fParameters[iPar++] =  0.000396 ;
+  // print configuration
+  if( fRunNumberMin > 0 || fRunNumberMax > 0 )
+  { AliInfo( Form( "run range: %i - %i", fRunNumberMin, fRunNumberMax ) ); }
 
-  fAlign = new AliMUONAlignment();
-  fAlign->InitGlobalParameters(fParameters);
+  AliInfo( Form( "fReadRecords: %s", (fReadRecords ? "kTRUE":"kFALSE" ) ) );
+  AliInfo( Form( "fWriteRecords: %s", (fWriteRecords ? "kTRUE":"kFALSE" ) ) );
+  AliInfo( Form( "fDoAlignment: %s", (fDoAlignment ? "kTRUE":"kFALSE" ) ) );
 
-//  AliCDBManager::Instance()->Print();
-//
-//  fAlign->SetGeometryTransformer(fOldGeoTransformer);
+  if( fDoAlignment )
+  {
+    // merge alignment DB flag is irrelevant if not actually performing the alignemnt
+    AliInfo( Form( "fMergeAlignmentCDBs: %s", (fMergeAlignmentCDBs ? "kTRUE":"kFALSE" ) ) );
+  }
+
+  // storage elements
+  if( !fDefaultStorage.IsNull() ) AliInfo( Form( "fDefaultStorage: %s", fDefaultStorage.Data() ) );
+  if( !fOldAlignStorage.IsNull() ) AliInfo( Form( "fOldAlignStorage: %s", fOldAlignStorage.Data() ) );
+
+  if( fDoAlignment )
+  {
+    // new alignment storage is irrelevant if not actually performing the alignemnt
+    if( !fNewAlignStorage.IsNull() ) AliInfo( Form( "fNewAlignStorage: %s", fNewAlignStorage.Data() ) );
+    else AliFatal( "Invalid new alignment storage path" );
+  }
+
+  if( !fReadRecords )
+  {
+    // following flags are only relevant if not reading records
+    if( fForceBField ) AliInfo( Form( "fBFieldOn: %s", (fBFieldOn ? "kTRUE":"kFALSE" ) ) );
+    else AliInfo( "fBFieldOn: from GRP" );
+  }
+
+  // consistency checks between flags
+  /* need at least one of the flags set to true */
+  if( !( fReadRecords || fWriteRecords || fDoAlignment ) )
+  { AliFatal( "Need at least one of the three flags fReadRecords, fWriteRecords and fDoAlignment set to kTRUE" ); }
+
+  /* cannot read and write records at the same time */
+  if( fReadRecords && fWriteRecords )
+  { AliFatal( "Cannot set both fReadRecords and fWriteRecords to kTRUE at the same time" ); }
+
+  /*
+  fix detectors
+  warning, counting chambers from 1.
+  this must be done before calling the Init method
+  */
+  if( fDoAlignment )
+  {
+
+    fAlign->FixChamber(1);
+    fAlign->FixChamber(10);
+
+  } else {
+
+    AliInfo( "Not fixing detector elements, since alignment is not required" );
+
+  }
+
+  // initialize
+  fAlign->Init();
 
   // Do alignment with magnetic field off
-  fAlign->SetBFieldOn(kFALSE);
-
-  // Set tracking station to use
-  //  Bool_t bStOnOff[5] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
-  Bool_t bChOnOff[10] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
-
-  // Set degrees of freedom to align (see AliMUONAlignment)
-  fAlign->AllowVariations(bChOnOff);
+  fAlign->SetBFieldOn( fBFieldOn );
 
   // Set expected resolution (see AliMUONAlignment)
   fAlign->SetSigmaXY(0.15,0.10);
 
-  // Fix parameters or add constraints here
-  //   for (Int_t iSt=0; iSt<5; iSt++)
-  //     if (!bStOnOff[iSt]) fAlign->FixStation(iSt+1);
-  for (Int_t iCh=0; iCh<10; iCh++)
-    if (!bChOnOff[iCh]) fAlign->FixChamber(iCh+1);
-
-  // Left and right sides of the detector are independent, one can choose to align
-  // only one side
-  Bool_t bSpecLROnOff[2] = {kTRUE,kTRUE};
-  fAlign->FixHalfSpectrometer(bChOnOff,bSpecLROnOff);
-
-  fAlign->SetChOnOff(bChOnOff);
-  fAlign->SetSpecLROnOff(bChOnOff);
-
-    // Here we can fix some detection elements
-  //  fAlign->FixDetElem(908);
-	//  fAlign->FixDetElem(1012);
-	fAlign->FixDetElem(608);
-
-  // Set predifined global constrains: X, Y, P, XvsZ, YvsZ, PvsZ, XvsY, YvsY, PvsY
-//   Bool_t bVarXYT[9] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
-//   Bool_t bDetTLBR[4] = {kFALSE,kTRUE,kFALSE,kTRUE};
-  //  fAlign->AddConstraints(bChOnOff,bVarXYT,bDetTLBR,bSpecLROnOff);
+  // initialize global parameters to provided values
+  fAlign->InitGlobalParameters(fParameters);
 
 }
 
 //________________________________________________________________________
 void AliMUONAlignmentTask::UserCreateOutputObjects()
 {
-
-  if( fDoAlignment )
-  {
-
-    // Creating graphs
-    fMSDEx = new TGraphErrors(156);
-    fMSDEy = new TGraphErrors(156);
-    fMSDEz = new TGraphErrors(156);
-    fMSDEp = new TGraphErrors(156);
-
-    // Add Ntuples to the list
-    fList = new TList();
-    fList->Add(fMSDEx);
-    fList->Add(fMSDEy);
-    fList->Add(fMSDEz);
-    fList->Add(fMSDEp);
-
-    fList->SetOwner(kTRUE);
-    PostData(1, fList);
-  }
 
   // connect AOD output
   if( fWriteRecords )
@@ -332,13 +236,13 @@ void AliMUONAlignmentTask::UserCreateOutputObjects()
     {
 
       // get AOD output handler and add Branch
-      fRecords = new TClonesArray( "AliMUONAlignmentTrackRecord", 0 );
+      fRecords = new TClonesArray( "AliMillePedeRecord", 0 );
       fRecords->SetName( "records" );
       handler->AddBranch("TClonesArray", &fRecords);
 
       fRecordCount = 0;
 
-    } else AliInfo( "Error: invalid output event handler" );
+    } else AliFatal( "Error: invalid output event handler" );
 
   }
 
@@ -347,10 +251,14 @@ void AliMUONAlignmentTask::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliMUONAlignmentTask::UserExec(Option_t *)
 {
-  // print configuration
-//  AliInfo( Form( "fReadRecords: %s", (fReadRecords ? "kTRUE":"kFALSE" ) ) );
-//  AliInfo( Form( "fWriteRecords: %s", (fWriteRecords ? "kTRUE":"kFALSE" ) ) );
-//  AliInfo( Form( "fDoAlignment: %s", (fDoAlignment ? "kTRUE":"kFALSE" ) ) );
+
+  // do nothing if run number not in range
+  if( fRunNumberMin > 0 && fCurrentRunNumber < fRunNumberMin ) return;
+  if( fRunNumberMax > 0 && fCurrentRunNumber > fRunNumberMax ) return;
+
+  // increase event count
+  ++fEvent;
+
   // clear array
   if( fWriteRecords && fRecords )
   {
@@ -358,10 +266,8 @@ void AliMUONAlignmentTask::UserExec(Option_t *)
     fRecordCount = 0;
   }
 
-  // local track parameters
-  Double_t trackParams[8] = {0.,0.,0.,0.,0.,0.,0.,0.};
-
-  if( fReadRecords ) {
+  if( fReadRecords )
+  {
 
     AliAODEvent* lAOD( dynamic_cast<AliAODEvent*>(InputEvent() ) );
 
@@ -388,12 +294,14 @@ void AliMUONAlignmentTask::UserExec(Option_t *)
     for( Int_t index = 0; index < lRecordsCount; ++index )
     {
 
-      if( AliMUONAlignmentTrackRecord* record = dynamic_cast<AliMUONAlignmentTrackRecord*>( records->UncheckedAt(index) ) )
+      if( AliMillePedeRecord* record = dynamic_cast<AliMillePedeRecord*>( records->UncheckedAt(index) ) )
       {
 
-        fAlign->ProcessTrack( record, fDoAlignment );
-        if( fDoAlignment )
-        { fAlign->LocalFit( fTrackOk++, trackParams, 0 ); }
+        fAlign->ProcessTrack( record );
+        ++fTrackOk;
+
+        if(!(fTrackTot%100))
+        { AliInfo( Form( "Processed %i Tracks and %i were fitted.", fTrackTot, fTrackOk ) ); }
 
       } else AliInfo( Form( "Invalid record at %i", index ) );
 
@@ -411,20 +319,7 @@ void AliMUONAlignmentTask::UserExec(Option_t *)
       return;
     }
 
-// HUGO: Comment out check on run number, to be able to run on MC
-//     if (!lESD->GetRunNumber())
-//     {
-//       AliInfo( Form( "Current Run Number: %i", lESD->GetRunNumber() ) );
-//       return;
-//     }
-
-    //  if (lESD->GetRunNumber()!=fLastRunNumber){
-    //    fLastRunNumber = lESD->GetRunNumber();
-    //    Prepare(fGeoFilename.Data(),fDefaultOCDB.Data(),fMisAlignOCDB.Data());
-    //  }
-
     Int_t nTracks = Int_t(lESD->GetNumberOfMuonTracks());
-//    cout << " there are " << nTracks << " tracks" << endl;
     for( Int_t iTrack = 0; iTrack < nTracks; iTrack++ )
     {
 
@@ -433,8 +328,6 @@ void AliMUONAlignmentTask::UserExec(Option_t *)
       if (!esdTrack->ContainTriggerData()) continue;
 
       Double_t invBenMom = esdTrack->GetInverseBendingMomentum();
-      //     fInvBenMom->Fill(invBenMom);
-      //     fBenMom->Fill(1./invBenMom);
       if (TMath::Abs(invBenMom)<=1.04)
       {
 
@@ -442,55 +335,46 @@ void AliMUONAlignmentTask::UserExec(Option_t *)
         AliMUONESDInterface::ESDToMUON(*esdTrack, track);
 
         // process track and retrieve corresponding records, for storage
-        const AliMUONAlignmentTrackRecord* lRecords( fAlign->ProcessTrack( &track, fDoAlignment ) );
-
-        // do the fit, if required
-        if( fDoAlignment ) fAlign->LocalFit(fTrackOk++,trackParams,0);
-        else fTrackOk++;
+        const AliMillePedeRecord* lRecords( fAlign->ProcessTrack( &track, fDoAlignment ) );
+        ++fTrackOk;
 
         // store in array
         if( fWriteRecords && fRecords )
-        {					
-          new((*fRecords)[fRecordCount]) AliMUONAlignmentTrackRecord( *lRecords );
+        {
+          new((*fRecords)[fRecordCount]) AliMillePedeRecord( *lRecords );
           ++fRecordCount;
         }
 
-      }			
-			
+      }
+
       ++fTrackTot;
 
-      if(!(fTrackTot%1000))
+      if(!(fTrackTot%100))
       { AliInfo( Form( "Processed %i Tracks and %i were fitted.", fTrackTot, fTrackOk ) ); }
 
-//      cout << "Processed " << fTrackTot << " Tracks." << endl;
       // Post final data. Write histo list to a file with option "RECREATE"
-      PostData(1,fList);
+      // PostData(1,fList);
 
     }
 
     // save AOD
-    if( fWriteRecords && fRecordCount > 0 ) { 
+    if( fWriteRecords && fRecordCount > 0 )
+    {
       AliAODHandler* handler = dynamic_cast<AliAODHandler*>( AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler() );
       if( handler )
-	{
-//			printf("handler: %p\n",handler);
-			AliAODEvent* aod = handler->GetAOD();
-//			printf("aod: %p\n",aod);
-			AliAODHeader* header = aod->GetHeader();
-//			printf("header: %p\n",header);
-			header->SetRunNumber(lESD->GetRunNumber());
-//			printf("RunNumber: %d\n",lESD->GetRunNumber());
-			AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
-	} else AliInfo( "Error: invalid output event handler" );
+      {
+        AliAODEvent* aod = handler->GetAOD();
+        AliAODHeader* header = aod->GetHeader();
+        header->SetRunNumber(lESD->GetRunNumber());
+        AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
+
+      } else AliInfo( "Error: invalid output event handler" );
+
     }
 
   }
 
 }
-
-//________________________________________________________________________
-void AliMUONAlignmentTask::Terminate(const Option_t*)
-{ return; }
 
 //________________________________________________________________________
 void AliMUONAlignmentTask::FinishTaskOutput()
@@ -507,164 +391,283 @@ void AliMUONAlignmentTask::FinishTaskOutput()
 
   // Perform global fit
   fAlign->GlobalFit(fParameters,fErrors,fPulls);
-
-//   // Update pointers reading them from the output slot
-//   fList = (TList*)GetOutputData(0);
-//   fMSDEx = (TGraphErrors*)fList->At(0);
-//   fMSDEy = (TGraphErrors*)fList->At(1);
-//   fMSDEz = (TGraphErrors*)fList->At(2);
-//   fMSDEp = (TGraphErrors*)fList->At(3);
-
-  // Store results
-  Double_t DEid[156] = {0};
-  Double_t MSDEx[156] = {0};
-  Double_t MSDEy[156] = {0};
-  Double_t MSDEz[156] = {0};
-  Double_t MSDEp[156] = {0};
-  Double_t DEidErr[156] = {0};
-  Double_t MSDExErr[156] = {0};
-  Double_t MSDEyErr[156] = {0};
-  Double_t MSDEzErr[156] = {0};
-  Double_t MSDEpErr[156] = {0};
-  Int_t lNDetElem = 4*2+4*2+18*2+26*2+26*2;
-  Int_t lNDetElemCh[10] = {4,4,4,4,18,18,26,26,26,26};
-  // Int_t lSNDetElemCh[10] = {4,8,12,16,34,52,78,104,130,156};
   Int_t idOffset = 0; // 400
   Int_t lSDetElemCh = 0;
-  for(Int_t iDE=0; iDE<lNDetElem; iDE++)
+
+  for( Int_t iDE=0; iDE<AliMUONAlignment::fgNDetElem; iDE++ )
   {
 
-    DEidErr[iDE] = 0.;
-    DEid[iDE] = idOffset+100;
-    DEid[iDE] += iDE;
+    Int_t detElemId = idOffset+100;
+    detElemId += iDE;
     lSDetElemCh = 0;
     for(Int_t iCh=0; iCh<9; iCh++)
     {
-      lSDetElemCh += lNDetElemCh[iCh];
 
+      lSDetElemCh += AliMUONAlignment::fgNDetElemCh[iCh];
       if (iDE>=lSDetElemCh)
       {
-        DEid[iDE] += 100;
-        DEid[iDE] -= lNDetElemCh[iCh];
+        detElemId += 100;
+        detElemId -= AliMUONAlignment::fgNDetElemCh[iCh];
       }
 
     }
 
-    MSDEx[iDE]=fParameters[4*iDE+0];
-    MSDEy[iDE]=fParameters[4*iDE+1];
-    MSDEz[iDE]=fParameters[4*iDE+3];
-    MSDEp[iDE]=fParameters[4*iDE+2];
-    MSDExErr[iDE]=(Double_t)fAlign->GetParError(4*iDE+0);
-    MSDEyErr[iDE]=(Double_t)fAlign->GetParError(4*iDE+1);
-    MSDEzErr[iDE]=(Double_t)fAlign->GetParError(4*iDE+3);
-    MSDEpErr[iDE]=(Double_t)fAlign->GetParError(4*iDE+2);
-    fMSDEx->SetPoint(iDE,DEid[iDE],fParameters[4*iDE+0]);
-    fMSDEx->SetPointError(iDE,DEidErr[iDE],(Double_t)fAlign->GetParError(4*iDE+0));
-    fMSDEy->SetPoint(iDE,DEid[iDE],fParameters[4*iDE+1]);
-    fMSDEy->SetPointError(iDE,DEidErr[iDE],(Double_t)fAlign->GetParError(4*iDE+1));
-    fMSDEz->SetPoint(iDE,DEid[iDE],fParameters[4*iDE+3]);
-    fMSDEz->SetPointError(iDE,DEidErr[iDE],(Double_t)fAlign->GetParError(4*iDE+3));
-    fMSDEp->SetPoint(iDE,DEid[iDE],fParameters[4*iDE+2]);
-    fMSDEp->SetPointError(iDE,DEidErr[iDE],(Double_t)fAlign->GetParError(4*iDE+2));
-
   }
 
   // Post final data. Write histo list to a file with option "RECREATE"
-  PostData(1,fList);
+  // PostData(1,fList);
 
-  // HUGO: stop here to test reproducibility
-	//  return;
+  // store misalignments from OCDB into old transformers
+  if( fMergeAlignmentCDBs )
+  { SaveMisAlignmentData( fOldGeoTransformer ); }
 
   // Re Align
-  fNewGeoTransformer = fAlign->ReAlign(fOldGeoTransformer,fParameters,true);
-  //  newTransform->WriteTransformations("transform2ReAlign.dat");
+  fNewGeoTransformer = fAlign->ReAlign( fOldGeoTransformer, fParameters, true );
 
   // Generate realigned data in local cdb
   const TClonesArray* array = fNewGeoTransformer->GetMisAlignmentData();
 
   // 100 mum residual resolution for chamber misalignments?
-  fAlign->SetAlignmentResolution(array,-1,0.01,0.01,0.004,0.003);
+  fAlign->SetAlignmentResolution( array, -1, 0.01, 0.01, 0.004, 0.003 );
 
   // CDB manager
   AliLog::SetGlobalDebugLevel(2);
-  AliCDBManager* cdbm = AliCDBManager::Instance();
-  // cdbManager->SetDefaultStorage(fDefaultOCDB.Data());
 
-	// recover default storage full name (raw:// cannot be used to set specific storage)
-	TString defaultStorage(cdbm->GetDefaultStorage()->GetType());
-	if (defaultStorage == "alien") defaultStorage += Form("://folder=%s", cdbm->GetDefaultStorage()->GetBaseFolder().Data());
-	else defaultStorage += Form("://%s", cdbm->GetDefaultStorage()->GetBaseFolder().Data());
+  // recover default storage full name (raw:// cannot be used to set specific storage)
+  AliCDBManager* cdbManager = AliCDBManager::Instance();
 
-	if (fOldAlignStorage != "none") cdbm->UnloadFromCache("MUON/Align/Data");
-	if (!fNewAlignStorage.IsNull()) cdbm->SetSpecificStorage("MUON/Align/Data",fNewAlignStorage.Data());
-	//	else cdbm->SetSpecificStorage("MUON/Align/Data",fDefaultStorage.Data());
-	else cdbm->SetSpecificStorage("MUON/Align/Data",defaultStorage.Data());
+  // unload old alignment path
+  if( cdbManager->GetEntryCache()->Contains("MUON/Align/Data") )
+  { cdbManager->UnloadFromCache("MUON/Align/Data"); }
 
+  // load new alignment path
+  if( !fNewAlignStorage.IsNull() ) cdbManager->SetSpecificStorage("MUON/Align/Data",fNewAlignStorage.Data());
+  else {
 
+    TString defaultStorage(cdbManager->GetDefaultStorage()->GetType());
+    if (defaultStorage == "alien") defaultStorage += Form("://folder=%s", cdbManager->GetDefaultStorage()->GetBaseFolder().Data());
+    else defaultStorage += Form("://%s", cdbManager->GetDefaultStorage()->GetBaseFolder().Data());
+    cdbManager->SetSpecificStorage("MUON/Align/Data",defaultStorage.Data());
+
+  }
+
+  // create new DB entry
   AliCDBMetaData* cdbData = new AliCDBMetaData();
   cdbData->SetResponsible("Dimuon Offline project");
   cdbData->SetComment("MUON alignment objects with residual misalignment");
   AliCDBId id("MUON/Align/Data", 0, AliCDBRunRange::Infinity());
-  cdbm->Put(const_cast<TClonesArray*>(array), id, cdbData);
-
-	gSystem->Exec("cp -a ReAlignOCDB/MUON/Align/Data/Run0_999999999_v0_s0.root Run0_999999999_v0_s0.root");
-	gSystem->Exec("ls -l");
+  cdbManager->Put(const_cast<TClonesArray*>(array), id, cdbData);
 
 }
 
 //________________________________________________________________________
 void AliMUONAlignmentTask::NotifyRun()
 {
-  
-  if (fOCDBLoaded && fLoadOCDBOnce) { AliError(Form("OCDB already loaded %d %d",fOCDBLoaded,fLoadOCDBOnce));
+
+  /// run number (re)initialization
+
+  // propagate run number to fAlign
+  if( fAlign ) fAlign->SetRunNumber( fCurrentRunNumber );
+
+  // update ocdb
+  if (fOCDBLoaded && fLoadOCDBOnce)
+  {
+    AliError(Form("OCDB already loaded %d %d",fOCDBLoaded,fLoadOCDBOnce));
     return;
   }
 
-  AliCDBManager* cdbm = AliCDBManager::Instance();
-  cdbm->SetDefaultStorage(fDefaultStorage.Data());
-//	cdbm->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  AliCDBManager* cdbManager = AliCDBManager::Instance();
 
-  // HUGO: add to comment out the specific settings below in order to be able to run.
-  //cdbm->SetSpecificStorage("GRP/GRP/Data",fDefaultStorage.Data());
-	//cdbm->SetSpecificStorage("GRP/Geometry/data",fDefaultStorage.Data());
-	//cdbm->SetSpecificStorage("MUON/Calib/MappingData",fDefaultStorage.Data());
-	cdbm->SetRun(fCurrentRunNumber);
-
-  if (!AliMUONCDB::LoadField()) { AliError("Problem field"); return;}
-
-  // set the magnetic field for track extrapolations
-  AliMUONTrackExtrap::SetField();
-
-  if (!AliMUONCDB::LoadMapping(kTRUE)) { AliError("Problem mapping"); return;}
-
-	// recover default storage full name (raw:// cannot be used to set specific storage)
-	TString defaultStorage(cdbm->GetDefaultStorage()->GetType());
-	if (defaultStorage == "alien") defaultStorage += Form("://folder=%s", cdbm->GetDefaultStorage()->GetBaseFolder().Data());
-	else defaultStorage += Form("://%s", cdbm->GetDefaultStorage()->GetBaseFolder().Data());
-
-	// reset existing geometry/alignment if any
-	if (cdbm->GetEntryCache()->Contains("GRP/Geometry/Data")) cdbm->UnloadFromCache("GRP/Geometry/Data");
-	if (cdbm->GetEntryCache()->Contains("MUON/Align/Data")) cdbm->UnloadFromCache("MUON/Align/Data");
-	if (AliGeomManager::GetGeometry()) AliGeomManager::GetGeometry()->UnlockGeometry();
-
-	// get original geometry transformer
-	AliGeomManager::LoadGeometry();
-	if (!AliGeomManager::GetGeometry()) { AliError("Problem geometry"); return;}
-	if (fOldAlignStorage != "none")
+  // Initialize default storage
+  if( !( cdbManager->IsDefaultStorageSet() || fDefaultStorage.IsNull() ) )
   {
 
-		if (!fOldAlignStorage.IsNull()) cdbm->SetSpecificStorage("MUON/Align/Data",fOldAlignStorage.Data());
-		else cdbm->SetSpecificStorage("MUON/Align/Data",defaultStorage.Data());
-		//		else cdbm->SetSpecificStorage("MUON/Align/Data",fDefaultStorage.Data());
-		
-    AliGeomManager::ApplyAlignObjsFromCDB("MUON");
+    AliInfo( Form( "Initializing default storage: %s", fDefaultStorage.Data() ) );
+    cdbManager->SetDefaultStorage(fDefaultStorage.Data());
+
+  } else if( !fDefaultStorage.IsNull() ) {
+
+    AliInfo( "Default storage already set. Ignoring fDefaultStorage" );
+
+  } else {
+
+    AliInfo( "Default storage already set" );
 
   }
 
-  // fOldGeoTransformer = new AliMUONGeometryTransformer();
-	fOldGeoTransformer->LoadGeometryData();
-	fAlign->SetGeometryTransformer(fOldGeoTransformer);
+  // Initialize run number
+  if( cdbManager->GetRun() < 0 )
+  {
+    AliInfo( Form( "Setting run number: %i", fCurrentRunNumber ) );
+    cdbManager->SetRun(fCurrentRunNumber);
+  }
 
-	fOCDBLoaded = kTRUE;
+  // following initialization is not needed when reading records
+  if( !fReadRecords )
+  {
+
+    // load magnetic field if needed
+    if( !TGeoGlobalMagField::Instance()->IsLocked() )
+    {
+
+      AliInfo( "Loading magnetic field" );
+      if( !AliMUONCDB::LoadField() )
+      {
+        AliError( "Failed to load magnetic field" );
+        return;
+      }
+
+    } else { AliInfo( "Magnetic field already locked" ); }
+
+    // checking magnitic field
+    if( !fForceBField )
+    {
+      AliInfo( "Reading magnetic field setup from GRP" );
+
+      // decide bFieldOn value base on dipole current
+      // propagete to Alignment class
+      // and printout
+      AliMagF* magF = dynamic_cast<AliMagF*>( TGeoGlobalMagField::Instance()->GetField() );
+      fBFieldOn = TMath::Abs( magF->GetFactorDip() ) > 1e-5;
+      fAlign->SetBFieldOn( fBFieldOn );
+      AliInfo( Form( "Dipole magnetic field factor: %.2f", magF->GetFactorDip() ) );
+      AliInfo( Form( "fBFieldOn = %s", (fBFieldOn ? "kTRUE":"kFALSE") ) );
+    }
+
+    AliInfo( "Loading muon mapping" );
+    if( !AliMUONCDB::LoadMapping(kFALSE) )
+    {
+      AliError( "Failed to load muon mapping" );
+      return;
+    }
+
+    AliInfo( "Assigning field to Track extrapolator" );
+    AliMUONTrackExtrap::SetField();
+
+  }
+
+  // load geometry if needed
+  if( !AliGeomManager::GetGeometry() )
+  {
+
+    // reset existing geometry/alignment if any
+    if( cdbManager->GetEntryCache()->Contains("GRP/Geometry/Data") )
+    {
+      AliInfo( "Unloading GRP/Geometry/Data" );
+      cdbManager->UnloadFromCache("GRP/Geometry/Data");
+    }
+
+    if( cdbManager->GetEntryCache()->Contains("MUON/Align/Data") )
+    {
+      AliInfo( Form( "Unloading MUON/Align/Data from %s", cdbManager->GetSpecificStorage( "MUON/Align/Data" )->GetBaseFolder().Data() ) );
+      cdbManager->UnloadFromCache("MUON/Align/Data");
+    }
+
+    // get original geometry transformer
+    AliInfo( "Loading geometry" );
+    AliGeomManager::LoadGeometry();
+    if (!AliGeomManager::GetGeometry())
+    {
+      AliError("Failed to load geometry");
+      return;
+    }
+
+    if (!fOldAlignStorage.IsNull())
+    {
+
+      AliInfo( Form( "Initializing MUON/Align/Data using: %s", fOldAlignStorage.Data() ) );
+      cdbManager->SetSpecificStorage("MUON/Align/Data",fOldAlignStorage.Data());
+
+    } else {
+
+      // recover default storage full name (raw:// cannot be used to set specific storage)
+      TString defaultStorage(cdbManager->GetDefaultStorage()->GetType());
+      if (defaultStorage == "alien") defaultStorage += Form("://folder=%s", cdbManager->GetDefaultStorage()->GetBaseFolder().Data());
+      else defaultStorage += Form("://%s", cdbManager->GetDefaultStorage()->GetBaseFolder().Data());
+
+      AliInfo( Form( "Re-initializing MUON/Align/Data using: %s", defaultStorage.Data() ) );
+      cdbManager->SetSpecificStorage("MUON/Align/Data",defaultStorage.Data());
+
+    }
+
+    AliInfo("Loading muon Alignment objects");
+    AliGeomManager::ApplyAlignObjsFromCDB("MUON");
+
+  } else { AliInfo( "Geometry already initialized - fOldAlignStorage ignored" ); }
+
+  // update geometry transformer and pass to Alignment object
+  AliInfo("Loading muon geometry in transformer");
+  fOldGeoTransformer->LoadGeometryData();
+  fAlign->SetGeometryTransformer(fOldGeoTransformer);
+
+  fOCDBLoaded = kTRUE;
 
 }
+
+//_____________________________________________________________________________________
+void AliMUONAlignmentTask::SaveMisAlignmentData( AliMUONGeometryTransformer* transformer ) const
+{
+
+  // clear transformer
+  transformer->ClearMisAlignmentData();
+
+  // load MUON/Align/Data from OCDB
+  AliCDBManager* cdbManager = AliCDBManager::Instance();
+  AliCDBEntry* cdbEntry = cdbManager->Get( "MUON/Align/Data" );
+  if (!cdbEntry)
+  {
+
+    AliError( "unable to load entry for path MUON/Align/Data" );
+    return;
+
+  }
+
+  // get TClonesArray and check
+  TClonesArray* misArray = (TClonesArray*)cdbEntry->GetObject();
+  if( !misArray )
+  {
+
+    AliError( "unable to load old misalignment array" );
+    return;
+
+  }
+
+  // loop over stored entries
+  for (Int_t index=0; index<misArray->GetEntriesFast(); ++index )
+  {
+
+    // load matrix and check
+    AliAlignObjMatrix* matrix = (AliAlignObjMatrix*) misArray->At( index );
+    if( !matrix )
+    {
+      AliError( Form( "unable to load matrix for index %i", index ) );
+      continue;
+    }
+
+    // get volume ID
+    AliGeomManager::ELayerID layerId;
+    Int_t moduleId;
+    matrix->GetVolUID( layerId, moduleId);
+
+    // make sure ELayerID is correct
+    assert( layerId == AliGeomManager::kMUON );
+
+    // printout
+    // AliInfo( Form( "Found matrix for %s %i", matrix->GetSymName(), moduleId ) );
+
+    // get matrix
+    TGeoHMatrix misMatrix;
+    matrix->GetMatrix(misMatrix);
+
+    // add to geometry transformer
+    // need the detector element
+    // "detElement->GetId()"
+    // see fOldGeoTransformer->GetMisAlignmentData( ... )
+
+    if( TString( matrix->GetSymName() ).Contains( "DE" ) ) transformer->AddMisAlignDetElement( moduleId,  misMatrix);
+    else transformer->AddMisAlignModule( moduleId,  misMatrix);
+  }
+
+  return;
+}
+

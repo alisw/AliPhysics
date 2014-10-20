@@ -42,6 +42,8 @@ class AliHLTITSAgent : public AliHLTModuleAgent {
   /** destructor */
   virtual ~AliHLTITSAgent();
 
+  UInt_t GetDetectorMask() const;
+
   /**
    * Inherited from AliHLTModuleAgent
    * Register all configurations belonging to this module with the

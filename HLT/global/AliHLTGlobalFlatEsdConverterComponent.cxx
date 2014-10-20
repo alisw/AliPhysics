@@ -65,6 +65,7 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCClusterMCData.h"
 #include "AliHLTTPCTransform.h"
+#include "AliSysInfo.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalFlatEsdConverterComponent)
@@ -240,7 +241,11 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 {
   // see header file for class documentation
 
+  AliSysInfo::AddStamp("AliHLTGlobalFlatEsdConverterComponent::DoEvent.Start");
+	
+	
   int iResult=0;
+	bool benchmark = true;
 
   if (!IsDataEvent()) return iResult;
 
@@ -796,18 +801,22 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     break;
   }
 
+  fBenchmark.Stop(0);  
+  //HLTWarning( fBenchmark.GetStatistics() );
+  
   if( err ){
     HLTWarning( "Output buffer size %d exceeded, flat ESD friend event is not stored", maxOutputSize );
     return -ENOSPC;
   } 
   
 
-  fBenchmark.Stop(0);
-  HLTWarning( fBenchmark.GetStatistics() );
-  if( err ){
-    HLTWarning( "Output buffer size %d exceeded, flat ESD event is not stored", maxOutputSize );
-    return -ENOSPC;
-  } 
+  if(benchmark){		
+    Double_t statistics[10]; 
+    TString names[10];
+    fBenchmark.GetStatisticsData(statistics, names);
+    fBenchmark.Reset();
+    AliSysInfo::AddStamp("AliHLTGlobalFlatEsdConverterComponent::DoEvent.Stop", (int)(statistics[1]), (int)(statistics[2]),flatEsd->GetNumberOfV0s(),flatEsd->GetNumberOfTracks() );
+  }
   
   return 0;
 }

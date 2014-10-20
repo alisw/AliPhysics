@@ -1,0 +1,140 @@
+##### Lambda_b decays: 50% Lambda_c pi - 50% with Lc as final state
+Decay Lambda_b0
+0.500   Lambda_c+ pi-                                   PHSP; #[Reconstructed PDG2011]
+0.050000000 Lambda_c+ e-      anti-nu_e                     PHSP; #[Reconstructed PDG2011]
+0.050000000 Lambda_c+ mu-     anti-nu_mu                    PHSP; #[Reconstructed PDG2011]
+0.01720    Lambda_c+        tau- anti-nu_tau            PHSP;
+0.02200    Lambda_c+       pi-     pi+       pi-        PHSP;
+0.00055    Lambda_c+       K-                           PHSP;
+0.02200    Lambda_c+       D_s-                         PHSP;
+0.04400    Lambda_c+       D_s*-                        PHSP;
+0.01000    Lambda_c+       rho-                     PHSP;
+0.02000    Lambda_c+       a_1-                     PHSP;
+0.056000000 Lambda_c+ pi+     pi-     mu-     anti-nu_mu    PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.056000000 Lambda_c+ pi+     pi-     e-      anti-nu_e     PHSP;  #[New mode added] #[Reconstructed PDG2011]
+Enddecay
+
+Decay anti-Lambda_b0
+0.50 anti-Lambda_c- pi+                              PHSP; #[Reconstructed PDG2011]
+0.050000000 anti-Lambda_c- e+      nu_e                     PHSP; #[Reconstructed PDG2011]
+0.050000000 anti-Lambda_c- mu+     nu_mu                    PHSP; #[Reconstructed PDG2011]
+0.01720    anti-Lambda_c-        tau+ nu_tau            PHSP;
+0.02200    anti-Lambda_c-  pi+     pi+       pi-        PHSP;
+0.00055    anti-Lambda_c-  K+                           PHSP;
+0.02200    anti-Lambda_c-  D_s+                         PHSP;
+0.04400    anti-Lambda_c-  D_s*+                        PHSP;
+0.01000    anti-Lambda_c-  rho+         PHSP;
+0.02000    anti-Lambda_c-  a_1+         PHSP;
+0.056000000 anti-Lambda_c- pi-     pi+     mu+     nu_mu    PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.056000000 anti-Lambda_c- pi-     pi+     e+      nu_e     PHSP;  #[New mode added] #[Reconstructed PDG2011]
+Enddecay
+
+Decay B+
+0.004840000 anti-D0 pi+                                     PHSP; #[Reconstructed PDG2011]
+Enddecay
+
+Decay B-
+0.004840000 D0 pi-                                     PHSP; #[Reconstructed PDG2011]
+Enddecay
+
+Decay B0
+0.002760000 D*-     pi+                                     SVS; #[Reconstructed PDG2011]
+Enddecay
+
+Decay anti-B0
+0.002760000 D*+     pi-                                     SVS; #[Reconstructed PDG2011]
+Enddecay
+
+#####
+Decay D+
+0.094000     K-      pi+     pi+                             D_DALITZ; 
+0.019000     anti-K*0     pi+                                    PHSP; 
+0.004660214  phi          pi+                                     SVS; 
+0.002179902  anti-K*0      K+                                     SVS;
+Enddecay
+
+Decay D-
+0.094000     K+      pi-     pi-                             D_DALITZ; 
+0.019000     K*0     pi-                                         PHSP; 
+0.004660214  phi          pi-                                     SVS;
+0.002179902  K*0      K-                                          SVS;
+Enddecay
+
+Decay D0
+0.038900000 K-      pi+                                          PHSP; 
+#0.013300000 K-      pi+       pi+        pi-                     PHSP; 
+#0.005305586 K-      pi+       rho0                               PHSP; 
+#0.024000000 anti-K*0       pi+           pi-                     PHSP;
+Enddecay
+
+Decay anti-D0
+0.038900000 K+      pi-                                          PHSP; 
+#0.013300000 K+      pi-       pi-        pi+                     PHSP; 
+#0.005305586 K+      pi-       rho0                               PHSP; 
+#0.024000000 K*0            pi-           pi+                     PHSP; 
+Enddecay
+
+Decay D_s+
+0.030490600 anti-K*0 K+                                     SVS; 
+0.045000000 phi     pi+                                     SVS; 
+Enddecay
+
+Decay D_s-
+0.030490600   K*0    K-                                     SVS; 
+0.045000000   phi     pi-                                     SVS; 
+Enddecay
+
+Decay Lambda_c+
+0.016000000 p+      anti-K*0                                PYTHIA         0; 
+0.008600000 Delta++ K-                                      PYTHIA         0; 
+0.02800000  p+      K-      pi+                             PHSP;  
+0.01800000  Lambda(1520)0 pi+                                PYTHIA         0; 
+0.010700000 Lambda0 pi+                                     PYTHIA         0;
+0.023000000 p+      anti-K0                                 PYTHIA         0;
+Enddecay
+
+CDecay anti-Lambda_c-
+
+############# decay phi, K*0, rho, delta++, Lambda0, Lambda(1520)0 ##################
+Decay K*0
+1.000       K+      pi-                                          VSS;
+Enddecay
+
+Decay anti-K*0
+1.000       K-      pi+                                          VSS;
+Enddecay
+
+Decay phi
+1.000       K+      K-                                           VSS; 
+Enddecay
+
+Decay rho0
+1.000        pi+     pi-                                          VSS;
+Enddecay
+
+Decay Delta++
+1.0000       p+      pi+                                         PHSP;
+Enddecay
+
+Decay anti-Delta--
+1.0000       anti-p-   pi-                                       PHSP;
+Enddecay 
+
+Decay Lambda(1520)0
+1.000        p+        K-                                         PHSP;
+Enddecay
+
+Decay anti-Lambda(1520)0
+1.000      anti-p-      K+                                       PHSP;
+Enddecay
+
+Decay Lambda0
+1.000      p+      pi-                                     PHSP; 
+Enddecay
+
+Decay anti-Lambda0
+1.000     anti-p-  pi+                                     PHSP;
+Enddecay
+#####################################################################
+
+End

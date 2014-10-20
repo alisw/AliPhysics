@@ -208,7 +208,7 @@ Bool_t AliAODZDC::GetZNCentroidInPbPb(Float_t beamEne, Double_t centrZNC[2], Dou
   //
   for(Int_t i=0; i<5; i++){
     zncEnergy += fZNCTowerEnergy[i];
-    znaEnergy += fZNCTowerEnergy[i];
+    znaEnergy += fZNATowerEnergy[i];
   }
   for(Int_t i=0; i<4; i++){
     if(fZNCTowerEnergy[i+1]>0.) {

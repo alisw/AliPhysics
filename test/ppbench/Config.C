@@ -19,7 +19,7 @@ enum PprRun_t
     kMuonCocktailCent1HighPt, kMuonCocktailPer1HighPt, kMuonCocktailPer4HighPt,
     kMuonCocktailCent1Single, kMuonCocktailPer1Single, kMuonCocktailPer4Single,
     kFlow_2_2000, kFlow_10_2000, kFlow_6_2000, kFlow_6_5000,
-    kHIJINGplus, kRunMax
+    kHIJINGplus, kRunMax, kHepMC
 };
 
 const char* pprRunName[] = {
@@ -41,7 +41,8 @@ const char* pprRunName[] = {
     "kMuonCocktailCent1", "kMuonCocktailPer1", "kMuonCocktailPer4",  
     "kMuonCocktailCent1HighPt", "kMuonCocktailPer1HighPt", "kMuonCocktailPer4HighPt",
     "kMuonCocktailCent1Single", "kMuonCocktailPer1Single", "kMuonCocktailPer4Single",
-    "kFlow_2_2000", "kFlow_10_2000", "kFlow_6_2000", "kFlow_6_5000", "kHIJINGplus"
+    "kFlow_2_2000", "kFlow_10_2000", "kFlow_6_2000", "kFlow_6_5000",
+    "kHIJINGplus", "kRunMax", "kHepMC"
 };
 
 enum PprRad_t
@@ -1404,6 +1405,22 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
         gener->SetProjectile("A", 208, 82) ; 
         gener->SetTarget("A", 208, 82) ; 
         gGener = gener;
+      }
+        break;
+      case kHepMC:
+      {
+        comment = comment.Append(":HepMC test");
+        AliGenReaderHepMC *reader = new AliGenReaderHepMC();
+        reader->SetFileName("crmc_eposlhc_323355159_p_p_3500.hepmc");
+        AliGenExtFile *gener = new AliGenExtFile(-1);
+        gener->SetReader(reader);
+        gener->SetMomentumRange(0, 999999.);
+        gener->SetPhiRange(0., 360.);
+        // Set pseudorapidity range from -8 to 8.
+        Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
+        Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min
+        gener->SetThetaRange(thmin,thmax);
+        gGener=gener;
       }
         break;
       default: break;

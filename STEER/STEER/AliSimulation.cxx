@@ -103,6 +103,18 @@
 // The number of events per file has to be set before the simulation of      //
 // hits. Otherwise it has no effect.                                         //
 //                                                                           //
+// The trigger configuration is set by the method SetTriggerConfig(X)        //
+// X can take three kinds of values                                          //
+//                                                                           //
+//  - The exact string "none" - case insensitive.  In this case, not trigger //
+//    information is generated from the digits.                              //
+//  - The empty string or "ocdb" - case insensitive.  In this case the       //
+//    trigger configuration is read from OCDB                                //
+//  - Some string - say "p-p" - in which case the configuration is read from //
+//    fixed files in $ALICE_ROOT/GRP/CTP/ - say $ALICE_ROOT/GRP/CTP/p-p.cfg  //
+//                                                                           //
+// Default is to read from OCDB.                                             //
+//                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TFile.h>
@@ -731,8 +743,13 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   AliSysInfo::AddStamp("Hits2Digits");
   
   
-  // digits -> trigger
-  if (!fTriggerConfig.IsNull() && !RunTrigger(fTriggerConfig,fMakeDigits)) {
+  // digits -> trigger.  Set trigger configuration to "none" - any
+  // case - to not generate the trigger information.  Set the trigger
+  // configuration to some string X to read from file at
+  // $ALICE_ROOT/GRP/CTP/X.  Set the trigger configuration to the
+  // empty string or "ocdb" - any case - to read from OCDB.
+  if (!fTriggerConfig.EqualTo("none",TString::kIgnoreCase) && 
+      !RunTrigger(fTriggerConfig,fMakeDigits)) {
     if (fStopOnError) return kFALSE;
   }
 

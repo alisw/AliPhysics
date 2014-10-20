@@ -1,0 +1,663 @@
+###
+### C -> mu + X 
+###
+Decay D+
+###
+0.055000000 anti-K*0 mu+     nu_mu                          PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.094000000 anti-K0 mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.002773020 anti-K_10 mu+     nu_mu                         PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.002927076 anti-K_2*0 mu+     nu_mu                        PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.003312218 pi0     mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.002002736 eta     mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.000385142 eta'    mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.002500000 rho0    mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.002156793 omega   mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.039000000 K-      pi+     mu+     nu_mu                   PHOTOS   PHSP; #[Reconstructed PDG2011]
+0.001078397 anti-K0 pi0     mu+     nu_mu                   PHOTOS   PHSP; #[Reconstructed PDG2011]
+#
+0.000382000 mu+     nu_mu                                   PHOTOS   SLN; #[Reconstructed PDG2011]
+Enddecay
+
+
+Decay D-
+#
+0.055000000 K*0     mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.094000000 K0      mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.002773020 K_10    mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.002927076 K_2*0   mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.003312218 pi0     mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.002002736 eta     mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.000385142 eta'    mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.002500000 rho0    mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.002156793 omega   mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.039000000 K+      pi-     mu-     anti-nu_mu              PHOTOS   PHSP; #[Reconstructed PDG2011]
+0.001078397 K0      pi0     mu-     anti-nu_mu              PHOTOS   PHSP; #[Reconstructed PDG2011]
+#
+0.000382000 mu-     anti-nu_mu                              PHOTOS   SLN; #[Reconstructed PDG2011]
+Enddecay
+
+Decay D0
+###
+0.019800000 K*-     mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.033100000 K-      mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.000815539 K_1-    mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.001374504 K_2*-   mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.002370000 pi-     mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.002015940 rho-    mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.001007970 anti-K0 pi-     mu+     nu_mu                   PHOTOS   PHSP; #[Reconstructed PDG2011]
+0.000549802 K-      pi0     mu+     nu_mu                   PHOTOS   PHSP; #[Reconstructed PDG2011]
+###
+Enddecay
+
+Decay anti-D0
+###
+0.019800000 K*+     mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.033100000 K+      mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.000818960 K_1+    mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.001380270 K_2*+   mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.002370000 pi+     mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.002024397 rho+    mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.001012198 K0      pi+     mu-     anti-nu_mu              PHOTOS   PHSP; #[Reconstructed PDG2011]
+0.000552108 K+      pi0     mu-     anti-nu_mu              PHOTOS   PHSP; #[Reconstructed PDG2011]
+###
+Enddecay
+
+Decay D_s+
+###
+0.018309605 phi     mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.022845082 eta     mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.008186726 eta'    mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.002058115 anti-K0 mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.000762265 anti-K*0 mu+     nu_mu                          PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.005800000 mu+     nu_mu                                   PHOTOS  SLN; #[Reconstructed PDG2011]
+###
+Enddecay
+
+Decay D_s-
+###
+0.018309605 phi     mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.022845082 eta     mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.008186726 eta'    mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.002058115 K0      mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.000762265 K*0     mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.005800000 mu-     anti-nu_mu                              PHOTOS    SLN; #[Reconstructed PDG2011]
+###
+Enddecay
+
+Decay Lambda_c+
+###
+0.020000000 mu+     nu_mu   Lambda0                         PYTHIA         42; #[Reconstructed PDG2011]
+0.00500         mu+     nu_mu   Sigma0  PYTHIA         42;
+0.00500         mu+     nu_mu   Sigma*0         PYTHIA         42;
+0.00300         mu+     nu_mu   n0      PYTHIA         42;
+0.00200         mu+     nu_mu   Delta0  PYTHIA         42;
+0.00600         mu+     nu_mu   p+      pi-     PYTHIA         42;
+0.00600         mu+     nu_mu   n0      pi0     PYTHIA         42;
+###
+Enddecay
+
+CDecay anti-Lambda_c-
+
+Decay Xi_c0
+0.020        mu+       nu_mu           Xi-         PYTHIA 42;
+0.005        mu+       nu_mu           Xi*-         PYTHIA 42;
+Enddecay
+
+CDecay anti-Xi_c0
+
+Decay Xi_c+
+0.028        mu+       nu_mu           Xi0         PYTHIA 42;
+0.007        mu+       nu_mu           Xi*0         PYTHIA 42;
+Enddecay
+
+CDecay Xi_c-
+
+
+Decay Omega_c0
+1.0   mu+     nu_mu         Omega-         PYTHIA 42;
+Enddecay
+
+CDecay anti-Omega_c0
+
+####
+### B hadrons
+####
+Decay B0
+########
+##### B0 -> mu + X
+########
+0.050100000 D*-     mu+     nu_mu                           PHOTOS HQET 0.77 1.33 0.92; #[Reconstructed PDG2011]
+0.021700000 D-      mu+     nu_mu                           PHOTOS ISGW2; #[Reconstructed PDG2011]
+0.0054   D_1-   mu+  nu_mu           PHOTOS ISGW2;
+0.0020   D_0*-   mu+  nu_mu          PHOTOS  ISGW2;
+0.0050   D'_1-   mu+  nu_mu          PHOTOS  ISGW2;
+0.0022   D_2*-   mu+  nu_mu          PHOTOS  ISGW2;
+0.0003   D*-  pi0   mu+  nu_mu       PHOTOS GOITY_ROBERTS;
+0.004900000 anti-D*0 pi-     mu+     nu_mu                  PHOTOS     GOITY_ROBERTS; #[Reconstructed PDG2011]
+0.0010   D-   pi0   mu+  nu_mu       PHOTOS GOITY_ROBERTS;
+0.0000   anti-D0  pi-   mu+  nu_mu    PHOTOS    GOITY_ROBERTS;
+#
+#
+0.000134000 pi-     mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.000247000 rho-    mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.000000   D(2S)- mu+  nu_mu       PHOTOS  ISGW2;
+0.000000   D*(2S)- mu+  nu_mu      PHOTOS  ISGW2;
+0.001892   Xu-  mu+  nu_mu             VUB 4.8 1.29 0.22 20 0.30 0.55 1.20 0.61 1.26 0.85 1.34 1.08 1.41 1.21 1.48 1.30 1.55 1.30 1.61 1.33 1.67 1.36 1.73 1.39 1.79 1.33 1.84 1.42 1.90 1.39 1.95 1.39 2.00 1.37 2.50 1.30 3.00 0.74 3.50 0.99 4.00 1.09 4.50 1.00;
+#
+0.000000450 K0      mu+     mu-                             PHOTOS BTOSLLBALL; #[Reconstructed PDG2011]
+0.000001050 K*0     mu+     mu-                             PHOTOS BTOSLLBALL; #[Reconstructed PDG2011]
+0.0000025 Xsd  mu+   mu-   PHOTOS BTOXSLL 4.8 0.2 0.0 0.41;
+
+########
+##### B0 -> J/psi + X
+#######
+#       B -> cc= s
+0.000435500 J/psi   K_S0                                    SVS; #[Reconstructed PDG2011]
+0.000435500 J/psi   K_L0                                    SVS; #[Reconstructed PDG2011]
+#
+#
+0.001330000 J/psi   K*0                                     SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus; #[Reconstructed PDG2011]
+0.000017600 J/psi   pi0                                     SVS; #[Reconstructed PDG2011]
+0.000027000 J/psi   rho0                                    SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus; #[Reconstructed PDG2011]
+0.00003     J/psi  omega            SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus;
+0.000000000 J/psi   K+      pi-                             PHSP; #[Reconstructed PDG2011]
+0.0001     J/psi  K0  pi0           PHSP;
+0.001300000 J/psi   K_10                                    SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0; #[Reconstructed PDG2011]
+0.0001     J/psi  K'_10             SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0;
+0.0005     J/psi  K_2*0              PHSP;
+0.000094000 J/psi   phi     K0                              PHSP; #[Reconstructed PDG2011]
+####
+0.000871000 J/psi   K0                                      PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000310000 J/psi   omega   K0                              PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000009500 J/psi   eta                                     PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000019000 J/psi   pi+     pi-                             PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000460000 J/psi   K0      pi+     pi-                     PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000540000 J/psi   K0      rho0                            PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000800000 J/psi   K*+     pi-                             PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000660000 J/psi   K*0     pi+     pi-                     PHSP;  #[New mode added] #[Reconstructed PDG2011]
+#########
+###### B -> psi(2S) + X 
+#########
+###
+0.000310000 psi(2S) K_S0                                    SVS; #[Reconstructed PDG2011]
+0.000310000 psi(2S) K_L0                                    SVS; #[Reconstructed PDG2011]
+#
+#
+0.000610000 psi(2S) K*0                                     SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus; #[Reconstructed PDG2011]
+0.0004     psi(2S)  K+  pi-          PHSP;
+0.0002     psi(2S)  K0  pi0          PHSP;
+0.0002     psi(2S)  K0  pi-  pi+     PHSP;
+0.0001     psi(2S)  K0  pi0  pi0     PHSP;
+0.0001     psi(2S)  K+  pi-  pi0     PHSP;
+0.0004     psi(2S)  K_10              PHSP;
+###
+0.000620000 psi(2S) K0                                      PHSP;  #[New mode added] #[Reconstructed PDG2011]
+Enddecay
+
+Decay anti-B0
+########
+##### anti-B0 -> mu + X
+########
+0.050100000 D*+     mu-     anti-nu_mu                      PHOTOS  HQET 0.77 1.33 0.92; #[Reconstructed PDG2011]
+0.021700000 D+      mu-     anti-nu_mu                      PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.0054   D_1+   mu-  anti-nu_mu         PHOTOS  ISGW2;
+0.0020   D_0*+   mu-  anti-nu_mu         PHOTOS  ISGW2;
+0.0050   D'_1+   mu-  anti-nu_mu         PHOTOS  ISGW2;
+0.0022   D_2*+   mu-  anti-nu_mu         PHOTOS  ISGW2;
+0.0003   D*+  pi0   mu-  anti-nu_mu    PHOTOS   GOITY_ROBERTS;
+0.004900000 D*0     pi+     mu-     anti-nu_mu              PHOTOS   GOITY_ROBERTS; #[Reconstructed PDG2011]
+0.0010   D+   pi0   mu-  anti-nu_mu    PHOTOS   GOITY_ROBERTS;
+0.0000   D0   pi+   mu-  anti-nu_mu    PHOTOS   GOITY_ROBERTS;
+#
+0.000134000 pi+     mu-     anti-nu_mu                      PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.000247000 rho+    mu-     anti-nu_mu                      PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.000000   D(2S)+ mu-  anti-nu_mu       PHOTOS   ISGW2;
+0.000000   D*(2S)+ mu-  anti-nu_mu      PHOTOS    ISGW2;
+0.001892   Xu+  mu-  anti-nu_mu      PHOTOS       VUB 4.8 1.29 0.22 20 0.30 0.55 1.20 0.61 1.26 0.85 1.34 1.08 1.41 1.21 1.48 1.30 1.55 1.30 1.61 1.33 1.67 1.36 1.73 1.39 1.79 1.33 1.84 1.42 1.90 1.39 1.95 1.39 2.00 1.37 2.50 1.30 3.00 0.74 3.50 0.99 4.00 1.09 4.50 1.00;
+#
+0.000000450 anti-K0 mu+     mu-                             PHOTOS BTOSLLBALL; #[Reconstructed PDG2011]
+0.000001050 anti-K*0 mu+     mu-                            PHOTOS BTOSLLBALL; #[Reconstructed PDG2011]
+0.0000025 anti-Xsd  mu+   mu-   PHOTOS BTOXSLL 4.8 0.2 0.0 0.41;
+########
+##### anti-B0 -> J/psi + X
+########
+0.000435500 J/psi   K_S0                                    SVS; #[Reconstructed PDG2011]
+0.000435500 J/psi   K_L0                                    SVS; #[Reconstructed PDG2011]
+#
+#
+0.001330000 J/psi   anti-K*0                                SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus; #[Reconstructed PDG2011]
+0.000017600 J/psi   pi0                                     SVS; #[Reconstructed PDG2011]
+0.000027000 J/psi   rho0                                    SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus; #[Reconstructed PDG2011]
+0.000030     J/psi  omega             SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus;
+0.000000000 J/psi   K-      pi+                             PHSP; #[Reconstructed PDG2011]
+0.0001     J/psi  anti-K0   pi0           PHSP;
+0.001300000 J/psi   anti-K_10                               SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0; #[Reconstructed PDG2011]
+0.0001     J/psi  anti-K'_10             SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0;
+0.0005     J/psi  anti-K_2*0              PHSP;
+0.000094000 J/psi   phi     anti-K0                         PHSP; #[Reconstructed PDG2011]
+###
+0.000871000 J/psi   anti-K0                                 PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000310000 J/psi   omega   anti-K0                         PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000009500 J/psi   eta                                     PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000019000 J/psi   pi-     pi+                             PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000460000 J/psi   anti-K0 pi-     pi+                     PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000540000 J/psi   anti-K0 rho0                            PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000800000 J/psi   K*-     pi+                             PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000660000 J/psi   anti-K*0 pi-     pi+                    PHSP;  #[New mode added] #[Reconstructed PDG2011]
+###########
+##### anti-B0 -> psi(2S) + X
+###########
+###
+0.000310000 psi(2S) K_S0                                    SVS; #[Reconstructed PDG2011]
+0.000310000 psi(2S) K_L0                                    SVS; #[Reconstructed PDG2011]
+#
+0.000610000 psi(2S) anti-K*0                                SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus; #[Reconstructed PDG2011]
+0.0004     psi(2S)  K-  pi+          PHSP;
+0.0002     psi(2S)  anti-K0   pi0          PHSP;
+0.0002     psi(2S)  anti-K0   pi+  pi-     PHSP;
+0.0001     psi(2S)  anti-K0   pi0  pi0     PHSP;
+0.0001     psi(2S)  K-  pi+  pi0     PHSP;
+0.0004     psi(2S)  anti-K_10              PHSP;
+###
+0.000620000 psi(2S) anti-K0                                 PHSP;  #[New mode added] #[Reconstructed PDG2011]
+Enddecay
+
+Decay B+
+########
+####  B+ -> mu + X
+########
+0.056800000 anti-D*0 mu+     nu_mu                          PHOTOS   HQET 0.77 1.33 0.92; #[Reconstructed PDG2011]
+0.022300000 anti-D0 mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.0040   anti-D_10   mu+  nu_mu       PHOTOS   ISGW2;
+0.0024   anti-D_0*0   mu+  nu_mu      PHOTOS    ISGW2;
+0.0007   anti-D'_10   mu+  nu_mu      PHOTOS    ISGW2;
+0.0018   anti-D_2*0   mu+  nu_mu      PHOTOS    ISGW2;
+0.006100000 D*-     pi+     mu+     nu_mu                   PHOTOS    GOITY_ROBERTS; #[Reconstructed PDG2011]
+0.0003   anti-D*0  pi0   mu+   nu_mu  PHOTOS         GOITY_ROBERTS;
+0.0000   D-   pi+   mu+   nu_mu       PHOTOS    GOITY_ROBERTS;
+0.0010   anti-D0  pi0   mu+   nu_mu   PHOTOS        GOITY_ROBERTS;
+#
+0.000077000 pi0     mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.000037000 eta     mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.000128000 rho0    mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.000115000 omega   mu+     nu_mu                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.000270   eta'   mu+  nu_mu       PHOTOS  ISGW2;
+0.000000   anti-D(2S)0 mu+  nu_mu  PHOTOS  ISGW2;
+0.000000   anti-D*(2S)0 mu+  nu_mu PHOTOS  ISGW2;
+0.001948   Xu0   mu+  nu_mu         VUB 4.8 1.29 0.22 20 0.30 0.54 1.20 0.95 1.26 0.78 1.34 0.98 1.41 0.91 1.48 1.23 1.55 1.36 1.61 1.39 1.67 1.38 1.73 1.43 1.79 1.41 1.84 1.42 1.90 1.45 1.95 1.40 2.00 1.42 2.50 1.31 3.00 1.36 3.50 1.15 4.00 1.01 4.50 1.51;
+#
+0.000000520 K+      mu+     mu-                             PHOTOS BTOSLLBALL; #[Reconstructed PDG2011]
+0.000001160 K*+     mu+     mu-                             PHOTOS BTOSLLBALL; #[Reconstructed PDG2011]
+0.0000025 Xsu  mu+   mu-   PHOTOS BTOXSLL 4.8 0.2 0.0 0.41;
+
+########
+###  B+ -> J/psi + X 
+#######
+#
+#   B -> cc= s          sum = 1.92%
+#
+0.001014000 J/psi   K+                                      SVS; #[Reconstructed PDG2011]
+0.001430000 J/psi   K*+                                     SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus; #[Reconstructed PDG2011]
+0.000049000 J/psi   pi+                                     SVS; #[Reconstructed PDG2011]
+0.000050000 J/psi   rho+                                    SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus; #[Reconstructed PDG2011]
+0.0002   J/psi K0  pi+                    PHSP;
+0.0001   J/psi K+  pi0                    PHSP;
+0.0001   J/psi K'_1+                       SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0;
+0.0005   J/psi K_2*+                       PHSP;
+0.001800000 J/psi   K_1+                                    SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0; #[Reconstructed PDG2011]
+0.000052000 J/psi   phi     K+                              PHSP; #[Reconstructed PDG2011]
+#
+####
+0.001070000 J/psi   K+      pi+     pi-                     PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000108000 J/psi   eta     K+                              PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000350000 J/psi   omega   K+                              PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000011800 J/psi   p+      anti-Lambda0                    PHSP;  #[New mode added] #[Reconstructed PDG2011]
+########
+###  B+ -> ps(2S) + X 
+#######
+0.000646000 psi(2S) K+                                      SVS; #[Reconstructed PDG2011]
+0.000620000 psi(2S) K*+                                     SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus; #[Reconstructed PDG2011]
+0.0004   psi(2S) K0  pi+                   PHSP;
+0.0002   psi(2S) K+  pi0                   PHSP;
+0.001900000 psi(2S) K+      pi-     pi+                     PHSP; #[Reconstructed PDG2011]
+0.0001   psi(2S) K+  pi0  pi0              PHSP;
+0.0001   psi(2S) K0  pi+  pi0              PHSP;
+0.0004   psi(2S)  K_1+                     PHSP;
+###
+0.000025800 psi(2S) pi+                                     PHSP;  #[New mode added] #[Reconstructed PDG2011]
+Enddecay
+
+
+Decay B-
+#########
+##### B- -> mu + X
+#########
+0.056800000 D*0     mu-     anti-nu_mu                      PHOTOS   HQET 0.77 1.33 0.92; #[Reconstructed PDG2011]
+0.022300000 D0      mu-     anti-nu_mu                      PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.0040   D_10  mu-  anti-nu_mu         PHOTOS   ISGW2;
+0.0024   D_0*0  mu-  anti-nu_mu        PHOTOS    ISGW2;
+0.0007   D'_10  mu-  anti-nu_mu        PHOTOS    ISGW2;
+0.0018   D_2*0  mu-  anti-nu_mu        PHOTOS    ISGW2;
+0.006100000 D*+     pi-     mu-     anti-nu_mu              PHOTOS   GOITY_ROBERTS; #[Reconstructed PDG2011]
+0.0003   D*0   pi0   mu-   anti-nu_mu  PHOTOS   GOITY_ROBERTS;
+0.0000   D+    pi-   mu-   anti-nu_mu  PHOTOS   GOITY_ROBERTS;
+0.0010   D0    pi0   mu-   anti-nu_mu  PHOTOS   GOITY_ROBERTS;
+0.000077000 pi0     mu-     anti-nu_mu                      PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.000037000 eta     mu-     anti-nu_mu                      PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.000128000 rho0    mu-     anti-nu_mu                      PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.000115000 omega   mu-     anti-nu_mu                      PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.000270   eta'   mu-  anti-nu_mu       PHOTOS   ISGW2;
+0.000000   D(2S)0 mu-  anti-nu_mu       PHOTOS   ISGW2;
+0.000000   D*(2S)0 mu-  anti-nu_mu      PHOTOS   ISGW2;
+0.001948   Xu0   mu-  anti-nu_mu         VUB 4.8 1.29 0.22 20 0.30 0.54 1.20 0.95 1.26 0.78 1.34 0.98 1.41 0.91 1.48 1.23 1.55 1.36 1.61 1.39 1.67 1.38 1.73 1.43 1.79 1.41 1.84 1.42 1.90 1.45 1.95 1.40 2.00 1.42 2.50 1.31 3.00 1.36 3.50 1.15 4.00 1.01 4.50 1.51;
+#
+0.000000520 K-      mu+     mu-                             PHOTOS BTOSLLBALL; #[Reconstructed PDG2011]
+0.000001160 K*-     mu+     mu-                             PHOTOS BTOSLLBALL; #[Reconstructed PDG2011]
+0.0000025 anti-Xsu  mu+   mu-   PHOTOS BTOXSLL 4.8 0.2 0.0 0.41;
+
+########
+### B- -> J/psi + X 
+#######
+#
+#   B -> cc= s          sum = 1.92%
+#
+0.001014000 J/psi   K-                                      SVS; #[Reconstructed PDG2011]
+0.001430000 J/psi   K*-                                     SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus; #[Reconstructed PDG2011]
+0.000049000 J/psi   pi-                                     SVS; #[Reconstructed PDG2011]
+0.000050000 J/psi   rho-                                    SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus; #[Reconstructed PDG2011]
+0.0002   J/psi anti-K0   pi-                    PHSP;
+0.0001   J/psi K-  pi0                    PHSP;
+0.0001   J/psi K'_1-                       SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0;
+0.0005   J/psi K_2*-                       PHSP;
+0.001800000 J/psi   K_1-                                    SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0; #[Reconstructed PDG2011]
+0.000052000 J/psi   phi     K-                              PHSP; #[Reconstructed PDG2011]
+#
+0.001070000 J/psi   K-      pi-     pi+                     PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000108000 J/psi   eta     K-                              PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000350000 J/psi   omega   K-                              PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000011800 J/psi   anti-p- Lambda0                         PHSP;  #[New mode added] #[Reconstructed PDG2011]
+
+########
+### B- -> psi(2S) + X 
+#######
+###
+0.000646000 psi(2S) K-                                      SVS; #[Reconstructed PDG2011]
+0.000620000 psi(2S) K*-                                     SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus; #[Reconstructed PDG2011]
+0.0004   psi(2S) anti-K0   pi-                   PHSP;
+0.0002   psi(2S) K-  pi0                   PHSP;
+0.001900000 psi(2S) K-      pi+     pi-                     PHSP; #[Reconstructed PDG2011]
+0.0001   psi(2S) K-  pi0  pi0              PHSP;
+0.0001   psi(2S) anti-K0   pi-  pi0              PHSP;
+0.0004     psi(2S)  K_1-              PHSP;
+###
+0.000025800 psi(2S) pi-                                     PHSP;  #[New mode added] #[Reconstructed PDG2011]
+
+Enddecay
+
+Decay B_s0
+#######
+### B_s0 -> mu + X 
+#######
+0.0210   D_s-     mu+    nu_mu        PHOTOS  ISGW2;
+0.0490   D_s*-    mu+    nu_mu        PHOTOS  ISGW2;
+0.0040   D_s1-    mu+    nu_mu        PHOTOS  ISGW2;
+0.0040   D_s0*-   mu+    nu_mu        PHOTOS  ISGW2;
+0.0070   D'_s1-   mu+    nu_mu        PHOTOS  ISGW2;
+0.0070   D_s2*-   mu+    nu_mu        PHOTOS  ISGW2;
+###
+0.000200    K-          mu+        nu_mu        PHOTOS  ISGW2;
+0.000300    K*-         mu+        nu_mu        PHOTOS  ISGW2;
+0.000300    K_1-        mu+        nu_mu        PHOTOS  ISGW2;
+0.000200    K'_1-       mu+        nu_mu        PHOTOS  ISGW2;
+#PR LHCb add Bs -> mu+ mu-
+0.0000000035 mu+        mu-                                PHSP;
+0.0000023   phi    mu+    mu-                  BTOSLLALI;
+#######
+### B_s0 -> J/psi + X
+#######
+0.00064     J/psi       eta'                               SVS;
+0.00032     J/psi       eta                                SVS;
+0.001300000 J/psi   phi                                     SVV_HELAMP  1.0 0.0 1.0 0.0 1.0 0.0; #[Reconstructed PDG2011]
+0.00008     J/psi       K0                                 SVS;
+0.00070     J/psi       K-          K+                     PHSP;
+0.00070     J/psi       anti-K0     K0                     PHSP;
+0.00070     J/psi       K0          K-         pi+         PHSP;
+0.00070     J/psi       anti-K0     K0         pi0         PHSP;
+0.00070     J/psi       K-          K+         pi0         PHSP;
+# LHCb PR 04/02/04 Add (cc) phi n pi(+/0)
+0.00039   J/psi   phi      pi+  pi-  PHSP;
+0.00039   J/psi   phi      pi0  pi0  PHSP;
+# LHCb PR Add (cc) phi eta(') + npi like in CDF QQ
+0.0002    J/psi   eta      pi+  pi-  PHSP;
+0.0002    J/psi   eta      pi0  pi0  PHSP;
+0.0004    J/psi   eta'     pi+  pi-  PHSP;
+0.0004    J/psi   eta'     pi0  pi0  PHSP;
+0.0002    J/psi   pi+      pi-       PHSP;
+0.0002    J/psi   pi0      pi0       PHSP;
+# PR LHCb 04/08/2004 : add Bs -> phi mu mu, phi e e
+0.0000023   phi    e+     e-                   BTOSLLALI;
+#######
+### B_s0 -> psi(2S) + X
+#######
+0.00064     J/psi       eta'                               SVS;
+0.00032     J/psi       eta                                SVS;
+0.001300000 J/psi   phi                                     SVV_HELAMP  1.0 0.0 1.0 0.0 1.0 0.0; #[Reconstructed PDG2011]
+0.00008     J/psi       K0                                 SVS;
+0.00070     J/psi       K-          K+                     PHSP;
+0.00070     J/psi       anti-K0     K0                     PHSP;
+0.00070     J/psi       K0          K-         pi+         PHSP;
+0.00070     J/psi       anti-K0     K0         pi0         PHSP;
+0.00070     J/psi       K-          K+         pi0         PHSP;
+# LHCb PR 04/02/04 Add (cc) phi n pi(+/0)
+0.00039   J/psi   phi      pi+  pi-  PHSP;
+0.00039   J/psi   phi      pi0  pi0  PHSP;
+# LHCb PR Add (cc) phi eta(') + npi like in CDF QQ
+0.0002    J/psi   eta      pi+  pi-  PHSP;
+0.0002    J/psi   eta      pi0  pi0  PHSP;
+0.0004    J/psi   eta'     pi+  pi-  PHSP;
+0.0004    J/psi   eta'     pi0  pi0  PHSP;
+0.0002    J/psi   pi+      pi-       PHSP;
+0.0002    J/psi   pi0      pi0       PHSP;
+# PR LHCb 04/08/2004 : add Bs -> phi mu mu, phi e e
+0.0000023   phi    e+     e-                   BTOSLLALI;
+Enddecay
+
+Decay anti-B_s0
+########
+#### anti-B_s0 -> mu + X
+########
+0.0210   D_s+     mu-    anti-nu_mu   PHOTOS  ISGW2;
+0.0490   D_s*+    mu-    anti-nu_mu   PHOTOS  ISGW2;
+0.0040   D_s1+    mu-    anti-nu_mu   PHOTOS  ISGW2;
+0.0040   D_s0*+   mu-    anti-nu_mu   PHOTOS  ISGW2;
+0.0070   D'_s1+   mu-    anti-nu_mu   PHOTOS  ISGW2;
+0.0070   D_s2*+   mu-    anti-nu_mu   PHOTOS  ISGW2;
+###
+0.000200    K+          mu-        anti-nu_mu        PHOTOS  ISGW2;
+0.000300    K*+         mu-        anti-nu_mu        PHOTOS  ISGW2;
+0.000300    K_1+        mu-        anti-nu_mu        PHOTOS  ISGW2;
+0.000200    K'_1+       mu-        anti-nu_mu        PHOTOS  ISGW2;
+###
+0.0000023   phi    mu-    mu+                  BTOSLLALI;
+########
+#### anti-B_s0 -> J/psi + X
+########
+0.00064   J/psi   eta'               SVS;
+0.00032   J/psi   eta                SVS;
+0.001300000 J/psi   phi                                     SVV_HELAMP  1.0 0.0 1.0 0.0 1.0 0.0; #[Reconstructed PDG2011]
+0.00008   J/psi   K0                 SVS;
+0.00070   J/psi   K-       K+        PHSP;
+0.00070   J/psi   anti-K0  K0        PHSP;
+0.00070   J/psi   anti-K0  K+   pi-  PHSP;
+0.00070   J/psi   anti-K0  K0   pi0  PHSP;
+0.00070   J/psi   K-       K+   pi0  PHSP;
+# LHCb PR 04/02/04 Add (cc) phi n pi(+/0)
+0.00039   J/psi   phi      pi+  pi-  PHSP;
+0.00039   J/psi   phi      pi0  pi0  PHSP;
+# LHCb PR add (cc) phi eta(') + npi see CDF QQ
+0.0002    J/psi   eta      pi+  pi-  PHSP;
+0.0002    J/psi   eta      pi0  pi0  PHSP;
+0.0004    J/psi   eta'     pi+  pi-  PHSP;
+0.0004    J/psi   eta'     pi0  pi0  PHSP;
+0.0002    J/psi   pi+      pi-       PHSP;
+0.0002    J/psi   pi0      pi0       PHSP;
+# PR LHCb 04/08/2004 : add Bs -> phi mu mu, phi e e
+0.0000023   phi    e-     e+                   BTOSLLALI;
+########
+#### anti-B_s0 -> psi(2S) + X
+########
+0.000465  psi(2S) eta'               SVS;
+0.000235  psi(2S) eta                SVS;
+0.000680000 psi(2S) phi                                     SVV_HELAMP  1.0 0.0 1.0 0.0 1.0 0.0; #[Reconstructed PDG2011]
+0.0003    psi(2S) K-       K+        PHSP;
+0.0003    psi(2S) anti-K0  K0        PHSP;
+0.0003    psi(2S) anti-K0  K+    pi- PHSP;
+0.0003    psi(2S) anti-K0  K0    pi0 PHSP;
+0.0003    psi(2S) K-       K+    pi0 PHSP;
+0.00034   psi(2S) phi      pi+  pi-  PHSP;
+0.00034   psi(2S) phi      pi0  pi0  PHSP;
+0.0002    psi(2S) eta      pi+  pi-  PHSP;
+0.0002    psi(2S) eta      pi0  pi0  PHSP;
+0.0004    psi(2S) eta'     pi+  pi-  PHSP;
+0.0004    psi(2S) eta'     pi0  pi0  PHSP;
+0.0002    psi(2S) pi+      pi-       PHSP;
+0.0002    psi(2S) pi0      pi0       PHSP;
+Enddecay
+
+Decay Lambda_b0
+########
+### Lambda_b0 -> mu + X
+########
+0.050000000 Lambda_c+ mu-     anti-nu_mu                    PHSP; #[Reconstructed PDG2011]
+0.006300000 Lambda_c(2593)+ mu-     anti-nu_mu              PHSP; #[Reconstructed PDG2011]
+0.011000000 Lambda_c(2625)+ mu-     anti-nu_mu              PHSP; #[Reconstructed PDG2011]
+###
+0.056000000 Lambda_c+ pi+     pi-     mu-     anti-nu_mu    PHSP;  #[New mode added] #[Reconstructed PDG2011]
+########
+### Lambda_b0 -> J/psi + X
+########
+0.00047    Lambda0         J/psi                        PHSP;
+########
+### Lambda_b0 -> psi(2S) + X
+########
+0.00038    Lambda0         psi(2S)                      PHSP;
+Enddecay
+
+Decay anti-Lambda_b0
+########
+### anti-Lambda_b0 -> mu + X
+########
+0.050000000 anti-Lambda_c- mu+     nu_mu                    PHSP; #[Reconstructed PDG2011]
+0.006300000 anti-Lambda_c(2593)- mu+     nu_mu              PHSP; #[Reconstructed PDG2011]
+0.011000000 anti-Lambda_c(2625)- mu+     nu_mu              PHSP; #[Reconstructed PDG2011]
+###
+0.056000000 anti-Lambda_c- pi-     pi+     mu+     nu_mu    PHSP;  #[New mode added] #[Reconstructed PDG2011]
+########
+### anti-Lambda_b0 -> J/psi + X
+########
+0.00047    anti-Lambda0    J/psi                        PHSP;
+########
+### anti-Lambda_b0 -> psi(2S) + X
+########
+0.00038    anti-Lambda0    psi(2S)                      PHSP;
+Enddecay
+
+Decay Xi_b-
+########
+### Xi_b- -> mu + X
+########
+0.05460    Xi_c0      mu-   anti-nu_mu                  PHSP;
+########
+### Xi_b- -> J/psi + X
+########
+0.00047    Xi-        J/psi                             PHSP;
+########
+### Xi_b- -> psi(2S) + X
+########
+0.00038    Xi-        psi(2S)                           PHSP;
+Enddecay
+
+Decay anti-Xi_b+
+########
+### Xi_b- -> mu + X
+########
+0.05460    anti-Xi_c0      mu+   nu_mu                  PHSP;
+########
+### Xi_b- -> J/psi + X
+########
+0.00047    anti-Xi+        J/psi                        PHSP;
+########
+### Xi_b- -> psi(2S) + X
+########
+0.00038    anti-Xi+        psi(2S)                      PHSP;
+Enddecay
+
+Decay Xi_b0
+########
+### Xi_b0 -> mu + X
+########
+0.05460    Xi_c+      mu-   anti-nu_mu                  PHSP;
+########
+### Xi_b0 -> J/psi + X
+########
+0.00047    Xi0        J/psi                             PHSP;
+Enddecay
+
+Decay anti-Xi_b0
+########
+### anti-Xi_b0 -> mu + X
+########
+0.05460    anti-Xi_c-      mu+   nu_mu                  PHSP;
+########
+### anti-Xi_b0 -> J/psi + X
+########
+0.00047    anti-Xi0        J/psi                        PHSP;
+Enddecay
+
+Decay Omega_b-
+########
+### Omega_b- -> mu + X
+########
+0.05460    Omega_c0      mu-   anti-nu_mu               PHSP;
+########
+### Omega_b- -> J/psi + X
+########
+0.00047    Omega-        J/psi                          PHSP;
+########
+### Omega_b- -> psi(2S) + X
+########
+0.00038    Omega-        psi(2S)                        PHSP;
+Enddecay
+
+Decay anti-Omega_b+
+########
+### Omega_b+ -> mu + X
+########
+0.05460    anti-Omega_c0      mu+   nu_mu               PHSP;
+########
+### Omega_b+ -> J/psi + X
+########
+0.00047    anti-Omega+        J/psi                     PHSP;
+########
+### Omega_b+ -> psi(2S) + X
+########
+0.00038    anti-Omega+        psi(2S)                   PHSP;
+Enddecay
+
+
+
+#######
+### J/psi -> mu+ mu-  -  psi(2S) -> mu+ mu-
+#######
+Decay J/psi
+### from DECAY.DEC
+1.000 mu+   mu-                PHOTOS VLL;
+Enddecay
+
+Decay psi(2S)
+### from DECAY.DEC
+1.000 mu+   mu-                PHOTOS VLL;
+Enddecay
+
+End
+

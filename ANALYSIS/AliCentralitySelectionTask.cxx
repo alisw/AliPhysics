@@ -1222,12 +1222,17 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
   if (esd) {
     if (strcmp(esd->GetESDRun()->GetBeamType(), "A-A") == 0) runType=0;
-    else runType=1;  
+    else runType=1;
+    if (strcmp(esd->GetESDRun()->GetBeamType(), "p-p") == 0) runType=2;  
   } else {
     Int_t runNumber = event->GetRunNumber();
     if ((runNumber >= 136851 && runNumber <= 139517) ||  // LHC10h
 	(runNumber >= 166529 && runNumber <= 170593))    // LHC11h
       runType=0;
+    else if ((runNumber >= 188355 && runNumber <= 188366) ||  // LHC12h 
+	     (runNumber >= 195344 && runNumber <= 197692))    // LHC13h 
+      runType=1;
+    else runType=2;
   }
 
   esdCent = event->GetCentrality();
@@ -1736,7 +1741,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     if (fPHS) fHOutCentV0MPHS->Fill(fCentV0M);
 
     if (((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB) && (runType==0)) ||
-	((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7) && (runType==1))) { // fill the QA histograms only for MB events!
+	((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7) && (runType==1)) || 
+	((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB) && (runType==2)) ) { // fill the QA histograms only for MB events!
 
       fHOutQuality->Fill(fQuality);
       fHOutVertex->Fill(zvtx);

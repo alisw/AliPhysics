@@ -75,6 +75,7 @@ public:
   void     SetBackCorrectVdrift(Bool_t backCorrectVdrift)            { fBackCorrectVdrift = backCorrectVdrift; }
   void     SetNoExBUsedInReco(Bool_t noExBUsedInReco)                { fNoExBUsedInReco    = noExBUsedInReco;   };
   void     SetSwitchOnValidation(Bool_t switchOnValidation)          { fSwitchOnValidation = switchOnValidation;};
+  void     SetSwitchOnChamberStatus(Bool_t switchOnChamberStatus)    { fSwitchOnChamberStatus = switchOnChamberStatus;};
   void     SetRMSBadCalibratedGain(Double_t rms)                     { fRMSBadCalibratedGain = rms;};
   void     SetRMSBadCalibratedVdrift(Double_t rms)                   { fRMSBadCalibratedVdrift = rms;};
   void     SetRMSBadCalibratedExB(Double_t rms)                      { fRMSBadCalibratedExB = rms;};
@@ -230,6 +231,7 @@ public:
   Int_t    fSubVersionExBUsed;            // SubVersionExBUsed
   Bool_t   fNoExBUsedInReco;              // ExB not used yet in the reco
   Bool_t   fSwitchOnValidation;           // Validation
+  Bool_t   fSwitchOnChamberStatus;        // ChamberStatus
   Bool_t   fVdriftValidated;              // Vdrift validation
   Bool_t   fExBValidated;                 // ExB validation
   Bool_t   fT0Validated;                  // T0 validation
@@ -278,7 +280,7 @@ private:
   Bool_t fPHQon;                 //switch of PHQ
   Bool_t fDebugPHQon;                 //switch of DebugPHQ
 
-  ClassDef(AliTRDPreprocessorOffline,4)
+  ClassDef(AliTRDPreprocessorOffline,5)
 };
 
 #endif

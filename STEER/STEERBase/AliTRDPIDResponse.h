@@ -59,6 +59,13 @@ class AliTRDPIDResponse : public TObject {
     AliTRDPIDResponse& operator=(const AliTRDPIDResponse &ref);
     ~AliTRDPIDResponse();
     
+    Double_t GetNumberOfSigmas(const AliVTrack *track, AliPID::EParticleType type) const;
+    Double_t GetSignalDelta( const AliVTrack* track, AliPID::EParticleType type, Bool_t ratio=kFALSE, Double_t *info=0x0) const;
+    static Double_t MeandEdx(const Double_t * xx, const Double_t * par);
+    static Double_t MeanTR(const Double_t * xx, const Double_t * par);
+    static Double_t MeandEdxTR(const Double_t * xx, const Double_t * par);
+    static Double_t ResolutiondEdxTR(const Double_t * xx,  const Double_t * par);
+
     Int_t    GetResponse(Int_t n, const Double_t * const dedx, const Float_t * const p, Double_t prob[AliPID::kSPECIES],ETRDPIDMethod PIDmethod=kLQ1D, Bool_t kNorm=kTRUE) const;
     inline ETRDNslices  GetNumberOfSlices(ETRDPIDMethod PIDmethod=kLQ1D) const;
     

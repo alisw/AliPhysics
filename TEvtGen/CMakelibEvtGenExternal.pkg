@@ -58,6 +58,7 @@ set (EVTGEN_TAUOLA "ON")
 set ( CXXFLAGS "${CXXFLAGS} -D EVTGEN_PYTHIA -D EVTGEN_PHOTOS -D EVTGEN_TAUOLA")
 
 
-set ( EINCLUDE TEvtGen EVGEN TEvtGen/Photos TEvtGen/Tauola TEvtGen/HepMC/ PYTHIA8)
+set ( EINCLUDE TEvtGen EVGEN TEvtGen/Tauola TEvtGen/HepMC/ PYTHIA8 TEvtGen/Photos/src/photosFortranInterfaces TEvtGen/Photos/src/photos-fortran 
+TEvtGen/Photos/src/photosCInterfaces TEvtGen/Photos/src/eventRecordInterfaces TEvtGen/Photos/src/utilities ) 
 
 

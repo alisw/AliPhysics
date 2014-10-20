@@ -198,6 +198,91 @@ void AliPDG::AddParticlesToPdgDataBase()
 		       2.5e-15, 3, "Ion", ionCode);
   }
 
+  ionCode = 1010010040;
+  if(!pdgDB->GetParticle(ionCode)){
+    pdgDB->AddParticle("Hyperhydrog4","Hyperhydrog4", 3.931, kFALSE,
+		       2.5e-15, 3, "Ion", ionCode);
+  }
+
+  ionCode = -1010010040;
+  if(!pdgDB->GetParticle(ionCode)){
+    pdgDB->AddParticle("AntiHyperhydrog4","AntiHyperhydrog4", 3.931, kFALSE,
+		       2.5e-15, 3, "Ion", ionCode);
+  }
+
+  ionCode = 1010020040;
+  if(!pdgDB->GetParticle(ionCode)){
+    pdgDB->AddParticle("Hyperhelium4","Hyperhelium4", 3.929, kFALSE,
+		       2.5e-15, 6, "Ion", ionCode);
+  }
+
+  ionCode = -1010020040;
+  if(!pdgDB->GetParticle(ionCode)){
+    pdgDB->AddParticle("AntiHyperTriton","AntiHyperTriton", 3.929, kFALSE,
+		       2.5e-15, 6, "Ion", ionCode);
+  }
+
+  ionCode = 1010000020;
+  if(!pdgDB->GetParticle(ionCode)){
+    pdgDB->AddParticle("LambdaNeutron","LambdaNeutron", 2.054, kFALSE,
+		       2.5e-15, 0, "Special", ionCode);
+  }
+
+  ionCode = -1010000020;
+  if(!pdgDB->GetParticle(ionCode)){
+    pdgDB->AddParticle("AntiLambdaNeutron","AntiLambdaNeutron", 2.054, kFALSE,
+		       2.5e-15, 0, "Special", ionCode);
+  }
+
+  ionCode = 1020000020;
+  if(!pdgDB->GetParticle(ionCode)){
+    pdgDB->AddParticle("Hdibaryon","Hdibaryon", 2.23, kFALSE,
+		       2.5e-15, 0, "Special", ionCode);
+  }
+
+  ionCode = -1020000020;
+  if(!pdgDB->GetParticle(ionCode)){
+    pdgDB->AddParticle("AntiHdibaryon","AntiHdibaryon", 2.23, kFALSE,
+		       2.5e-15, 0, "Special", ionCode);
+  }
+
+  ionCode = 1010000030;
+  if(!pdgDB->GetParticle(ionCode)){
+    pdgDB->AddParticle("LambdaNeutronNeutron","LambdaNeutronNeutron", 2.982, kFALSE,
+		       2.5e-15, 0, "Special", ionCode);
+  }
+
+  ionCode = -1010000030;
+  if(!pdgDB->GetParticle(ionCode)){
+    pdgDB->AddParticle("AntiLambdaNeutronNeutron","AntiLambdaNeutronNeutron", 2.982, kFALSE,
+		       2.5e-15, 0, "Special", ionCode);
+  }
+
+  ionCode = 1030000020;
+  if(!pdgDB->GetParticle(ionCode)){
+    pdgDB->AddParticle("Xi0Proton","Xi0Proton", 2.248, kFALSE,
+		       5e-15, 3, "Ion", ionCode);
+  }
+
+  ionCode = -1030000020;
+  if(!pdgDB->GetParticle(ionCode)){
+    pdgDB->AddParticle("AntiXi0Proton","AntiXi0Proton", 2.248, kFALSE,
+		       5e-15, 3, "Ion", ionCode);
+  }
+
+  // Special resonances
+
+  ionCode = 9010221;
+  if(!pdgDB->GetParticle(ionCode)){
+    pdgDB->AddParticle("f0_980","f0_980", 0.980, kFALSE,
+		       0.07, 0, "Resonance", ionCode);
+  }
+
+  ionCode = 225;
+  if(!pdgDB->GetParticle(ionCode)){
+    pdgDB->AddParticle("f2_1270","f2_1270", 1.275, kFALSE,
+		       0.185, 0, "Resonance", ionCode);
+  }
 
 }
 

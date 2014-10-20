@@ -1,0 +1,294 @@
+DETECTOR ALGORITHM for PMD
+++++++++++++++++++++++++++
+This is a brief note on pmd da:
+ - how to get info at P@2
+ - how it works
+ - the codes
+ - Producing DA codes
+ - Deployment procedures.  
+
+Author: Satyajit Jena
+Date: 14 Nov 2009
+Updated: Wed Aug  4 11:03:37 CEST 2010
+++++++++++++++++++++++++++
+
+Information is added at:
+https://twiki.cern.ch/twiki/bin/view/ALICE/DA
+
+Detail of Central DA Framework can be found here:
+https://aliceinfo.cern.ch/DAQ/index.php?q=products/detector-algorithms
+
+++++++++++++++++++++++++++
+Important Note:
+++++++++++++++++++++++++++
+Please note that: The informatoins are also kept in the DA code
+header, it is the requirements for DA framework. Please nver change 
+the values. it should look like:
+
+PMD DA for online calibration
+
+contact: basanta@iitb.ac.in, Satyajit.Jena@cern.ch
+Link: https://twiki.cern.ch/twiki/bin/view/ALICE/DA
+Reference run:/afs/cern.ch/user/s/sjena/public/run83496.raw
+Run Type: PHYSICS
+DA Type: MON
+Number of events needed: 1 million for PB+PB, 200 milion for p+p
+Input Files: PMD/Calib/Mapping/Run0_999999999_v0_s0.root, PMD_PED.root, 
+             PMD_GAIN_CONFIGFILE, pmd_gain_tempfile.dat
+Output Files: PMDGAINS.root, to be exported to the DAQ FES
+Trigger types used: PHYSICS_EVENT
+
+
+and 
+
+/*
+PMD DA for online calibration
+
+contact: basanta@iitb.ac.in, Satyajit.Jena@cern.ch
+Link: https://twiki.cern.ch/twiki/bin/view/ALICE/DA
+Reference Run:/afs/cern.ch/user/s/sjena/public/run83496.raw
+Run Type: PEDESTAL
+DA Type: LDC
+Number of events needed: 1000
+Input Files: PMD/Calib/Mapping/Run0_999999999_v0_s0.root
+Output Files: pmd_ped.root, to be exported to the DAQ FXS, pedestal230*.ped
+Trigger types used: PHYSICS_EVENT
+
+*/
+
+This infomration can be accessed in P@2 machince via rpm -qip command
+
+e.g. 
+rpm -qip daqDA-PMD-GAIN-36451-trunk.36552.i386.rpm
+
+it will show all the following information it has:
+
+[pmdldc01] /home/pmd/AliSoft/AliRoot >  rpm -qip  daqDA-PMD-PEDESTAL-36451-trunk.36552.i386.rpm
+Name        : daqDA-PMD-PEDESTAL           Relocations: /opt/daqDA-PMD-PEDESTAL
+Version     : 36451                             Vendor: (none)
+Release     : trunk.36552                   Build Date: Mon 09 Nov 2009 01:51:47 PM CET
+Install Date: (not installed)               Build Host: pmdldc01.cern.ch
+Group       : Applications/Alice            Source RPM: daqDA-PMD-PEDESTAL-36451-trunk.36552.src.rpm
+Size        : 65331468                      License: CERN Alice DAQ/Offine
+Signature   : (none)
+Summary     : PMD Detector Algorithm
+Description :
+This is the PMD PEDESTAL DA for online calibration.
+It uses data from PMD and  detectors at run time.
+Build requires: daqDAlib, date, AliRoot trunk.36552, ROOT 5.24.00.
+Runtime requires: date.
+Contact: basanta@phy.iitb.ac.in, Satyajit.Jena@cern.ch
+Link:
+Reference Run: /afs/cern.ch/user/s/sjena/public/run83496.raw
+Run type: PEDESTAL
+DA type: LDC
+Number of events needed: 1000
+Input files: PMD/Calib/Mapping
+Output files: pmd_ped.root, to be exported to the DAQ FXS, pedestal230*.ped
+Trigger types used: PHYSICS_EVENT
+
+================================
+A Brief Infromation about PMD DA
+================================
+
+PMD has two types of detector algorithm. One algorithm is for the 
+pedestal data and the other one is for the online gain calibration.
+
+Pedestal DA
+============
+Pedestal DA is to calculate the mean pedestal value and the root 
+mean square value for each channel. The output is written in a 
+root file and finally goes to the OCDB
+
+for offline reconstruction.
+--------------
+At the same time this pedestal da also writes the pedestal values 
+in ASCII file corresponding to each DDL. This file is appropriately 
+converted to the right format and is loaded
+
+to the MARC for pedestal suppression while taking data. The ASCII files are:
+
+     pedestal2304.ped 
+     pedestal2305.ped
+     pedestal2306.ped
+     pedestal2307.ped
+     pedestal2308.ped
+     pedestal2309.ped
+
+Six files corresponding to 6 DDL. This is our original configuration.
+
+However, in the year 2009, we have 4 DDL. The corresponding files are:
+
+     pedestal2304.ped
+     pedestal2305.ped
+     pedestal2308.ped
+     pedestal2309.ped
+
+  --Two DDLs are for PREshower plane (2304, 2305) and two DDLs (2308, 2309) 
+    are for CPV plane.
+
+  --The input to this da code is the mapping file which can be found here 
+    (Run0_999999999_v0_s0.root).
+
+This file can be taken from here or from 
+$ALICE_ROOT/OCDB/PMD/Calib/Mapping/Run0_999999999_v0_s0.root.
+
+* Run0_999999999_v0_s0.root: Run0_999999999_v0_s0.root
+
+This file has to be stored in the DAQ database and will be fetched from the 
+DAQ database and kept in a local directory as
+
+localOCDB/PMD/Calib/Mapping/Run0_999999999_v0_s0.root.
+
+The output of pedestal da is "PMD_PED.root" which contains mean and rms of 
+each channel in a tree. One copy goes to the DAQ database for pedestal 
+subtraction while running the gain DA and another copy goes to FES and 
+ultimately to the OCDB for offline reconstruction.
+
+The pedestal run for validation can be found here
+
+/afs/cern.ch/user/s/sjena/public/run83496.raw
+
+PMDGAINda:
+=========
+PMDGAIN da calculates the relative gain of individual channel.
+
+The input to this program are the following files.
+
+    Mapping file which is mentioned above and can also be taken from here 
+    * Run0_999999999_v0_s0.root: Run0_999999999_v0_s0.root. During the 
+    run this file is fetched from the DAQ database and The other input 
+    is "PMD_GAIN_CONFIGFILE" which can be either taken from here 
+    PMD_GAIN_CONFIGFILE: PMD_GAIN_CONFIGFILE or from 
+    $ALICE_ROOT/PMD/PMD_GAIN_CONFIGFILE. This file has 5 words. 
+
+    filestatus    : 0 or 1 (to start a new run or not) 
+    xvar      : variance define (say 5 sigma) to define the hot cell 
+    totevt    : incremented event number 
+    maxevt    : Total number of Physics event required to find gain 
+    hotevtsize : after these many events, the hot cell file will be generated
+
+    PMD_PED.root : A copy of this file is already in the DAQ database. 
+    Before every run this is copied from the DAQ database and kept in the 
+    local directory for further use. 
+
+Output files:
+------------
+PMDGAINS.root
+PMD_MEAN_SM.root
+
+Input/Output files:
+
+1. PMD_HOT.root : This is the output of gain DA and it is again reused by the DA.
+
+2. pmd_gain_tempfile.dat : This is an ASCII file and generated by gain DA 
+   and again taken as the input in the next run.
+
+    If filestatus = 0, the temporary file "pmd_gain_tempfile.dat" 
+    is generated. 
+
+    If filestatus = 1, the temporary file "pmd_gain_tempfile.dat" 
+    is fetched from the DAQ database. 
+
+
+The file for gain da validation can be found here
+/afs/cern.ch/user/s/sjena/public/run83496.raw
+
+Detail logics and implimentation can be understood by looking at the
+code with a minimal knowledge of PMD data structures. 
+The Link to Codes:
+
+PEDESTALda http://alisoft.cern.ch/viewvc/trunk/PMD/PMDPEDESTALda.cxx?root=AliRoot&view=log
+GAINda http://alisoft.cern.ch/viewvc/trunk/PMD/PMDGAINda.cxx?root=AliRoot&view=log 
+
+=======================
+How to build PMD DA
+=======================
+Building of the DAs is handled in Aliroot. You can find below some hints on 
+how to build DAs, but this is no official documentation (such documentation 
+has been requested). In case of problems please report directly to the 
+Offline team. Build targets for DAs are created by cmake. Before invoking cmake, 
+in addition to the standard Aliroot settings (see README_CMake in Aliroot), 
+one should make sure it will detect the DA dependencies, or DA compile errors may follow:
+
+    DATE: launch DATE setup with . /date/setup.sh
+    AMORE: make sure amore-config is in the path, e.g. export PATH=${PATH}:/opt/amore
+    daqDA-lib: export DAQDALIB_PATH=/opt/daqDA-lib
+
+Sourcing the following example environment should allow to build DAs using 
+default dependencies installation path:
+. DAbuildenv.sh
+
+Afte cmake is invoked, one can build DAs with one of the following targets:
+
+   make daqDA-PMD-all : build all DAs for detector 
+   make daqDA-PMD-rpm : build DA RPM packages 
+  
+   make daqDA-PMD-PEDESTAL : build a given DA
+   make daqDA-PMD-PEDESTAL-rpm : build a given DA RPM
+
+   make daqDA-PMD-GAIN : build a given DA
+   make daqDA-PMD-GAIN-rpm : build a given DA RPM
+
+RPMs are created in the build directory. Binaries are stored under ./lib/tgt_linuxx8664gcc
+
+======================
+DA testing information
+======================
+It is possible to fully test the DAs outside of the production framework. 
+It can be done by setting a number of environment variable, as described 
+in the example DAtestenv.sh
+
+
+    # This is an example DA test environment
+    # Put DB files needed by DA in $DAQDA_TEST_DIR
+    # and then launch the DA with DAexe DAtestfile.
+    # DA local output files will be in $TESTDIR directory
+    # and exported files (FXS, AMORE, DaqDetDB) will go to $DAQDA_TEST_DIR.
+
+    # to change according to local settings
+    TESTDIR=/tmp/DAtest
+    export        DAQDALIB_PATH=.../daqDAlib
+
+    # to be left unchanged
+    export        PATH=/bin:/usr/bin
+    export        ROOTSYS=NULL
+    unset         ALICE_ROOT
+    export        DAQDA_TEST_DIR=${TESTDIR}/db
+    export        AMORE_NO_DB_DIR=${TESTDIR}/db
+    export        DATE_RUN_NUMBER=12345
+    export        DATE_DETECTOR_CODE=TST
+    export        AMORE_NO_DB=true
+    export        DATE_ROLE_NAME=myrole
+    export        DIM_DNS_NODE=noname
+
+    mkdir -p $TESTDIR
+    mkdir -p $DAQDA_TEST_DIR
+    cd $TESTDIR
+
+=================================
+Detector DA deployment procedure (cc from DA page)
+=================================
+The detector team should contact the DAQ team (alice-datesupport@cern.ch) 
+and the following steps should be done (in parenthesis, the responsible 
+of each action is indicated):
+
+   1. define the calibrations tasks, DAs and corresponding run types in 
+      the ECS (detector team)
+   2. commit code in Aliroot and test it (detector team)
+   3. contact DAQ team to ask for DA release and provide raw data 
+      test files (detector team)
+   4. build RPM (DAQ team)
+   5. compliance checks with DA framework packaging and documentation 
+      guidelines. (DAQ team)
+   6. in case of fulfillment of the requirements, the DA is considered 
+      validated for deployment and the detector team is informed (DAQ team)
+   7. deploy and exercise the DA on a real setup with the full DAQ chain 
+      and the detector hardware (detector team)
+   8. all the above steps are mandatory before allowing the usage of the 
+      detector DA in production, ie during cosmic runs
+   9. changes in detector DA code (detector team) imply the repetition of 
+      steps 2 to 7
+
+Please feel free to contact me (sjena@cern.ch, satya.ino@gmail.com) to know
+more or in case of any trouble. 

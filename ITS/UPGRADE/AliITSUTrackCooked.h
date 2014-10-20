@@ -18,6 +18,7 @@ public:
     AliITSUTrackCooked();
     AliITSUTrackCooked(const AliITSUTrackCooked &t);
     AliITSUTrackCooked(const AliESDtrack &t);
+    AliITSUTrackCooked &operator=(const AliITSUTrackCooked &tr);
     virtual ~AliITSUTrackCooked();
     
 //These functions must be provided
@@ -31,11 +32,11 @@ public:
     Int_t Compare(const TObject *o) const;
     Bool_t GetPhiZat(Double_t r,Double_t &phi,Double_t &z) const;
 
+    void SetChi2(Double_t chi2) { AliKalmanTrack::SetChi2(chi2); }
     void SetClusterIndex(Int_t layer, Int_t index);
     void ResetClusters();
     
 private:
-    AliITSUTrackCooked &operator=(const AliITSUTrackCooked &tr);
     Int_t fIndex[2*AliITSUTrackerCooked::kNLayers]; // indices of associated clusters
   
     ClassDef(AliITSUTrackCooked,1)   //ITSU stand-alone track
