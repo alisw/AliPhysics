@@ -39,7 +39,7 @@ ClassImp(AliFiducialCut)
 //________________________________
 AliFiducialCut::AliFiducialCut() : 
 TObject(),
-fEMCALFiducialCut(0),   fPHOSFiducialCut(0),    fCTSFiducialCut(0),
+fEMCALFiducialCut(0),   fDCALFiducialCut(0),    fPHOSFiducialCut(0),     fCTSFiducialCut(0),
 fCTSFidCutMinEta(0x0),  fCTSFidCutMinPhi(0x0),  fCTSFidCutMaxEta(0x0),   fCTSFidCutMaxPhi(0x0),
 fEMCALFidCutMinEta(0x0),fEMCALFidCutMinPhi(0x0),fEMCALFidCutMaxEta(0x0), fEMCALFidCutMaxPhi(0x0),
 fPHOSFidCutMinEta(0x0), fPHOSFidCutMinPhi(0x0), fPHOSFidCutMaxEta(0x0),  fPHOSFidCutMaxPhi(0x0),
@@ -239,10 +239,10 @@ void AliFiducialCut::InitParameters()
   
   fDCALFidCutMinEta = new TArrayF(3);
   fDCALFidCutMinEta->SetAt(-0.7 ,0);
-  fDCALFidCutMinEta->SetAt( 0.15,1);
+  fDCALFidCutMinEta->SetAt( 0.20,1);
   fDCALFidCutMinEta->SetAt(-0.7 ,2);
   fDCALFidCutMaxEta = new TArrayF(3);
-  fDCALFidCutMaxEta->SetAt(-0.15,0);
+  fDCALFidCutMaxEta->SetAt(-0.20,0);
   fDCALFidCutMaxEta->SetAt( 0.7 ,1);
   fDCALFidCutMaxEta->SetAt( 0.7 ,2);
   
