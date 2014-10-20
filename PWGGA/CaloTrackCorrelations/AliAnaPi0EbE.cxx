@@ -3515,7 +3515,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     fhSelectedMass       ->Fill(fMomentum.E() ,mass);
     fhSelectedMassPt     ->Fill(fMomentum.Pt(),mass);
     fhSelectedMassSplitPt->Fill(ptSplit ,mass);
-    if(fFillAllNLMHistograms) fhSelectedMassPtLocMax[indexMax]->Fill(fMomentum.Pt(),mass);
+    fhSelectedMassPtLocMax[indexMax]->Fill(fMomentum.Pt(),mass);
 
     Int_t   nSM  = GetModuleNumber(calo);
     if(nSM < GetCaloUtils()->GetNumberOfSuperModulesUsed() && nSM >=0 && fFillAllNLMHistograms)
