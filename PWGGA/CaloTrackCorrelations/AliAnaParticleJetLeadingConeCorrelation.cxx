@@ -56,8 +56,9 @@ ClassImp(AliAnaParticleJetLeadingConeCorrelation)
     fJetRatioMaxCut(0.),  fJetRatioMinCut(0.), 
     fJetNCone(0),fJetNPt(0), fJetCone(0), 
     fJetPtThreshold(0),fJetPtThresPbPb(0),
-    fPtTriggerSelectionCut(0.0), fSelect(0),
-    fSelectIsolated(0),	
+    fPtTriggerSelectionCut(0.0), fSelect(0),fSelectIsolated(0),
+    fTrackVector(),fBkgMom(),fJetMom(),fJetConstMom(),
+    fLeadingMom(),fLeadingPhoMom1(),fLeadingPhoMom2(),fLeadingChargeMom(),
     //Histograms
     fOutCont(0x0),
     //Leading
