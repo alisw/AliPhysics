@@ -637,16 +637,16 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
     //MC signal
     if(fReadMC){
-      TH1F* tmpSt = new TH1F(nameSgn.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries",200,1.5648,2.1648);
+      TH1F* tmpSt = new TH1F(nameSgn.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries",600,1.5648,2.1648);
 
       TH1F *tmpSl=(TH1F*)tmpSt->Clone();
       tmpSt->Sumw2();
       tmpSl->Sumw2();
 
       //Reflection: histo filled with D0Mass which pass the cut (also) as D0bar and with D0bar which pass (also) the cut as D0
-      TH1F* tmpRt = new TH1F(nameRfl.Data(), "Reflected signal invariant mass - MC; M [GeV]; Entries",200,1.5648,2.1648);
+      TH1F* tmpRt = new TH1F(nameRfl.Data(), "Reflected signal invariant mass - MC; M [GeV]; Entries",600,1.5648,2.1648);
       //TH1F *tmpRl=(TH1F*)tmpRt->Clone();
-      TH1F* tmpBt = new TH1F(nameBkg.Data(), "Background invariant mass - MC; M [GeV]; Entries",200,1.5648,2.1648);
+      TH1F* tmpBt = new TH1F(nameBkg.Data(), "Background invariant mass - MC; M [GeV]; Entries",600,1.5648,2.1648);
       //TH1F *tmpBl=(TH1F*)tmpBt->Clone();
       tmpBt->Sumw2();
       //tmpBl->Sumw2();
@@ -660,7 +660,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     }
 
     //mass
-    TH1F* tmpMt = new TH1F(nameMass.Data(),"D^{0} invariant mass; M [GeV]; Entries",200,1.5648,2.1648);
+    TH1F* tmpMt = new TH1F(nameMass.Data(),"D^{0} invariant mass; M [GeV]; Entries",600,1.5648,2.1648);
     //TH1F *tmpMl=(TH1F*)tmpMt->Clone();
     tmpMt->Sumw2();
     //tmpMl->Sumw2();
@@ -716,7 +716,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 	  fDistr->Add(hcosthpointd0d0S);
 
 	  //to compare with AliAnalysisTaskCharmFraction
-	  TH1F* tmpS27t = new TH1F(nameSgn27.Data(),"D^{0} invariant mass in M(D^{0}) +/- 27 MeV - MC; M [GeV]; Entries",200,1.5648,2.1648);
+	  TH1F* tmpS27t = new TH1F(nameSgn27.Data(),"D^{0} invariant mass in M(D^{0}) +/- 27 MeV - MC; M [GeV]; Entries",600,1.5648,2.1648);
 	  TH1F *tmpS27l=(TH1F*)tmpS27t->Clone();
 	  tmpS27t->Sumw2();
 	  tmpS27l->Sumw2();
@@ -823,14 +823,14 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
     //MC signal
     if(fReadMC){
-      TH2F* tmpStPt = new TH2F(nameSgnPt.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries; Pt[GeV/c]",200,1.5648,2.16484,nbins2dPt,binInPt,binFinPt);
+      TH2F* tmpStPt = new TH2F(nameSgnPt.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries; Pt[GeV/c]",600,1.5648,2.16484,nbins2dPt,binInPt,binFinPt);
       TH2F *tmpSlPt=(TH2F*)tmpStPt->Clone();
       tmpStPt->Sumw2();
       tmpSlPt->Sumw2();
       
       //Reflection: histo filled with D0MassV1 which pass the cut (also) as D0bar and with D0bar which pass (also) the cut as D0
-      TH2F* tmpRtPt = new TH2F(nameRflPt.Data(), "Reflected signal invariant mass - MC; M [GeV]; Entries; Pt[GeV/c]",200,1.5648,2.1648,nbins2dPt,binInPt,binFinPt);
-      TH2F* tmpBtPt = new TH2F(nameBkgPt.Data(), "Background invariant mass - MC; M [GeV]; Entries; Pt[GeV/c]",200,1.5648,2.1648,nbins2dPt,binInPt,binFinPt);
+      TH2F* tmpRtPt = new TH2F(nameRflPt.Data(), "Reflected signal invariant mass - MC; M [GeV]; Entries; Pt[GeV/c]",600,1.5648,2.1648,nbins2dPt,binInPt,binFinPt);
+      TH2F* tmpBtPt = new TH2F(nameBkgPt.Data(), "Background invariant mass - MC; M [GeV]; Entries; Pt[GeV/c]",600,1.5648,2.1648,nbins2dPt,binInPt,binFinPt);
       tmpBtPt->Sumw2();
       tmpRtPt->Sumw2();
       
@@ -844,7 +844,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
       //       cout<<"***************************************"<<endl<<endl;
     }
 
-    TH2F* tmpMtPt = new TH2F(nameMassPt.Data(),"D^{0} invariant mass; M [GeV]; Entries; Pt[GeV/c]",200,1.5648,2.1648,nbins2dPt,binInPt,binFinPt);
+    TH2F* tmpMtPt = new TH2F(nameMassPt.Data(),"D^{0} invariant mass; M [GeV]; Entries; Pt[GeV/c]",600,1.5648,2.1648,nbins2dPt,binInPt,binFinPt);
     tmpMtPt->Sumw2();      
 
     fOutputMassPt->Add(tmpMtPt);
@@ -866,11 +866,11 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
       nameRflY+=i;
       //MC signal
       if(fReadMC){
-	TH2F* tmpStY = new TH2F(nameSgnY.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries; y",200,1.5648,2.16484,nbins2dY,binInY,binFinY);
+	TH2F* tmpStY = new TH2F(nameSgnY.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries; y",600,1.5648,2.16484,nbins2dY,binInY,binFinY);
 	tmpStY->Sumw2();
 	//Reflection: histo filled with D0MassV1 which pass the cut (also) as D0bar and with D0bar which pass (also) the cut as D0
-	TH2F* tmpRtY = new TH2F(nameRflY.Data(), "Reflected signal invariant mass - MC; M [GeV]; Entries; y",200,1.5648,2.1648,nbins2dY,binInY,binFinY);
-	TH2F* tmpBtY = new TH2F(nameBkgY.Data(), "Background invariant mass - MC; M [GeV]; Entries; y",200,1.5648,2.1648,nbins2dY,binInY,binFinY);
+	TH2F* tmpRtY = new TH2F(nameRflY.Data(), "Reflected signal invariant mass - MC; M [GeV]; Entries; y",600,1.5648,2.1648,nbins2dY,binInY,binFinY);
+	TH2F* tmpBtY = new TH2F(nameBkgY.Data(), "Background invariant mass - MC; M [GeV]; Entries; y",600,1.5648,2.1648,nbins2dY,binInY,binFinY);
 	tmpBtY->Sumw2();
 	tmpRtY->Sumw2();
       
@@ -878,7 +878,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 	fOutputMassY->Add(tmpRtY);
 	fOutputMassY->Add(tmpBtY);
       }
-      TH2F* tmpMtY = new TH2F(nameMassY.Data(),"D^{0} invariant mass; M [GeV]; Entries; y",200,1.5648,2.1648,nbins2dY,binInY,binFinY);
+      TH2F* tmpMtY = new TH2F(nameMassY.Data(),"D^{0} invariant mass; M [GeV]; Entries; y",600,1.5648,2.1648,nbins2dY,binInY,binFinY);
       tmpMtY->Sumw2();      
       fOutputMassY->Add(tmpMtY);
     }

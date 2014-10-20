@@ -31,11 +31,13 @@ class AliVEvent;
 class AliMultiplicity; 
 class AliAODTracklets;  // XZhang 20120615
 class AliAODTrack;
+class AliESDtrack;
 class AliESDPmdTrack;
 class AliFlowBayesianPID;
 class AliESDkink;
 class AliESDv0;
 class AliESDVZERO;
+class AliPIDResponse;
 
 class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
@@ -46,6 +48,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   AliFlowTrackCuts& operator=(const AliFlowTrackCuts& someCuts);
   virtual ~AliFlowTrackCuts();
 
+  static AliFlowTrackCuts* GetAODTrackCutsForFilterBit(UInt_t bit = 1, TString suffix = "");
   static AliFlowTrackCuts* GetStandardTPCStandaloneTrackCuts();
   static AliFlowTrackCuts* GetStandardTPCStandaloneTrackCuts2010();
   static AliFlowTrackCuts* GetStandardGlobalTrackCuts2010();
@@ -65,7 +68,10 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                             kV0,    //neutral reconstructed v0 particle
                             kVZERO, //forward VZERO detector
                             kMUON,  // XZhang 20120604
-                            kKink
+                            kKink,
+                            kAODFilterBit,
+                            kUserA, // reserved for custom cuts
+                            kUserB  // reserved for custom cuts
                           };
   enum trackParameterMix  { kPure, 
                             kTrackWithMCkine, 
@@ -175,7 +181,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Int_t GetPmdDetPlane()const {return fPmdDet; }
   Float_t GetPmdAdc()const {return fPmdAdc;}
   Float_t GetPmdNcell() const {return fPmdNcell; }
-  Float_t GetBeta(const AliVTrack* t);
+  Float_t GetBeta(const AliVTrack* t, Bool_t QAmode = kFALSE);
   Float_t Getdedx(const AliESDtrack* t) const;
   Float_t GetBayesianProb() const {return fProbBayes;};
   AliFlowBayesianPID* GetBayesianResponse() const {return  fBayesianResponse;}
@@ -291,6 +297,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
       fVZEROgainEqualizationPerRing = kTRUE;       // must be true for this option
   }
   Bool_t GetUseVZERORing(Int_t i) const {return fUseVZERORing[i];}
+
+  void SetNumberOfSigmas(Float_t val) {fNsigmaCut2 = val*val;};
+  Float_t GetNumberOfSigmas() const {return TMath::Sqrt(fNsigmaCut2);};
 
  protected:
   //AliFlowTrack* MakeFlowTrackSPDtracklet() const;
@@ -420,7 +429,10 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t fUseVZERORing[8];      // kTRUE means the ring is included
   static const Int_t fgkNumberOfVZEROtracks=64; //number of VZERO channels
 
-  ClassDef(AliFlowTrackCuts,13)
+  AliPIDResponse *fPIDResponse;            //! Pid reponse to manage Nsigma cuts
+  Float_t fNsigmaCut2;                     // Number of sigma^2 (cut value) for TPC+TOF nsigma cut
+
+  ClassDef(AliFlowTrackCuts,14)
 };
 
 #endif

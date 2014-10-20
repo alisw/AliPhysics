@@ -1,8 +1,5 @@
-//
 // Macro designed for use with the AliAnalysisTaskDptDptCorrelations task.
-//
 // Author: Prabhat Pujahari & Claude Pruneau, Wayne State
-// 
 //           system:  0: PbPb                 1: pPb
 //      singlesOnly:  0: full correlations    1: singles only
 //       useWeights:  0: no                   1: yes
@@ -10,23 +7,27 @@
 //        chargeSet:  0: ++    1: +-    2: -+    3: --
 /////////////////////////////////////////////////////////////////////////////////
 AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_dca1
-(int    system                 = 0,
- int    singlesOnly            = 0,
- int    useWeights             = 1, 
- int    centralityMethod       = 4,
- int    chargeSet              = 1,
- int    trackFilterBit         = 128,
- int    nClusterMin            = 80, 
- double etaMin                 = -0.9,
- double etaMax                 = 0.9,
- double dcaZMin                = -2.0,
- double dcaZMax                =  2.0,
- double dcaXYMin               = -2.4,
- double dcaXYMax               =  2.4,
- int nCentrality               =  4,
- Bool_t trigger                = kFALSE,
- const char* taskname          = "dcaz2",
- char *inputHistogramFileName  = "alien:///alice/cern.ch/user/p/prabhat/CalibFiles/PbPbCalib_dca1.root")
+(int    system                  = 0,
+ int    singlesOnly             = 0,
+ int    useWeights              = 0, 
+ int    centralityMethod        = 4,
+ int    chargeSet               = 1,
+ double zMin                   = -10.,
+ double zMax                   =  10.,
+ int    trackFilterBit          = 128,
+ int    nClusterMin             = 80, 
+ double eta1Min                 = -0.8,
+ double eta1Max                 = 0.8,
+ double eta2Min                 = -0.8,
+ double eta2Max                 = 0.8,
+ double dcaZMin                 = -3.2,
+ double dcaZMax                 =  3.2,
+ double dcaXYMin                = -2.4,
+ double dcaXYMax                =  2.4,
+ int nCentrality                =  1,
+ Bool_t trigger                 = kFALSE,
+ const char* taskname           = "dcaz2",
+ char *inputHistogramFileName   = "alien:///alice/cern.ch/user/p/prabhat/CalibFiles/PbPbCalib_dca1.root")
   
 {
   // Set Default Configuration of this analysis
@@ -35,7 +36,6 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_dca1
   int    rejectPileup           = 1;
   int    rejectPairConversion   = 1;
   int    sameFilter             = 1;
-
   
   //int    nCentrality;
   double minCentrality[10];
@@ -51,18 +51,6 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_dca1
 	minCentrality[2] = 30.; maxCentrality[2] = 40.;	
 	minCentrality[3] = 60.; maxCentrality[3] = 70.;	
 	
-	//nCentrality = 10;
-	/*minCentrality[0] = 0.0; maxCentrality[0] = 5.0;
-	minCentrality[1] = 5.0; maxCentrality[1] = 10.;
-	minCentrality[2] = 10.; maxCentrality[2] = 20.;
-	minCentrality[3] = 20.; maxCentrality[3] = 30.;
-	minCentrality[4] = 30.; maxCentrality[4] = 40.;
-	minCentrality[5] = 40.; maxCentrality[5] = 50.;
-	minCentrality[6] = 50.; maxCentrality[6] = 60.;
-	minCentrality[7] = 60.; maxCentrality[7] = 70.;
-	minCentrality[8] = 70.; maxCentrality[8] = 80.;
-	minCentrality[9] = 80.; maxCentrality[9] = 90.;
-	*/
       }
     else
       {
@@ -91,8 +79,8 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_dca1
     return 0;
     }
 
-  double zMin                   = -10.;
-  double zMax                   =  10.;
+  //double zMin                   = -10.;
+  //double zMax                   =  10.;
   double ptMin                  =  0.2;
   double ptMax                  =  2.0;
   double dedxMin                =  0.0;
@@ -147,7 +135,7 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_dca1
         }
 
       part1Name += "eta";
-      part1Name += int(1000*etaMax);
+      part1Name += int(1000*eta1Max);
       part1Name += "_";
       part1Name += int(1000*ptMin);
       part1Name += "pt";
@@ -159,7 +147,7 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_dca1
       part1Name += "_";
 
       part2Name += "eta";
-      part2Name += int(1000*etaMax);
+      part2Name += int(1000*eta2Max);
       part2Name += "_";
       part2Name += int(1000*ptMin);
       part2Name += "pt";
@@ -260,12 +248,12 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_dca1
       task->SetCentrality(          minCentrality[iCentrality], maxCentrality[iCentrality]);
       task->SetPtMin1(              ptMin           ); 
       task->SetPtMax1(              ptMax           ); 
-      task->SetEtaMin1(             etaMin          ); 
-      task->SetEtaMax1(             etaMax          ); 
+      task->SetEtaMin1(             eta1Min          ); 
+      task->SetEtaMax1(             eta1Max          ); 
       task->SetPtMin2(              ptMin           ); 
       task->SetPtMax2(              ptMax           ); 
-      task->SetEtaMin2(             etaMin          ); 
-      task->SetEtaMax2(             etaMax          ); 
+      task->SetEtaMin2(             eta2Min          ); 
+      task->SetEtaMax2(             eta2Max          ); 
       task->SetDcaZMin(             dcaZMin         ); 
       task->SetDcaZMax(             dcaZMax         ); 
       task->SetDcaXYMin(            dcaXYMin        ); 

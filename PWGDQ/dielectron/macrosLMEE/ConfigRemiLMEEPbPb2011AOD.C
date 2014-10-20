@@ -1,10 +1,9 @@
 //#include "PWGDQ/dielectron/macrosLMEE/LMEECutLib.C"
-
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
 void EnableMC();
 
-TString names=("noPairing;TPCTOFCentnoRej;TPCTOFSemiCent1noRej;TPCTOFSemiCent2noRej;TPCTOFPerinoRej;TPCTOFAllCentnoRej;TPCTOFCentRej;TPCTOFSemiCent1Rej;TPCTOFSemiCent2Rej;TPCTOFPeriRej;TPCTOFAllCentRej;");
+TString names=("noPairing;ITSTPCTOFCentnoRej;ITSTPCTOFSemiCent1noRej;ITSTPCTOFSemiCent2noRej;ITSTPCTOFPerinoRej;ITSTPCTOFCentInvMLowRP;ITSTPCTOFSemiCent1InvMLowRP;ITSTPCTOFSemiCent2InvMLowRP;ITSTPCTOFPeriInvMLowRP;ITSTPCTOFCentInvMMiddleRP;ITSTPCTOFSemiCent1InvMMiddleRP;ITSTPCTOFSemiCent2InvMMiddleRP;ITSTPCTOFPeriInvMMiddleRP;ITSTPCTOFCentInvMHighRP;ITSTPCTOFSemiCent1InvMHighRP;ITSTPCTOFSemiCent2InvMHighRP;ITSTPCTOFPeriInvMHighRP;ITSTPCTOFCentInvMLowMag;ITSTPCTOFSemiCent1InvMLowMag;ITSTPCTOFSemiCent2InvMLowMag;ITSTPCTOFPeriInvMLowMag;ITSTPCTOFCentInvMMiddleMag;ITSTPCTOFSemiCent1InvMMiddleMag;ITSTPCTOFSemiCent2InvMMiddleMag;ITSTPCTOFPeriInvMMiddleMag;ITSTPCTOFCentInvMHighMag;ITSTPCTOFSemiCent1InvMHighMag;ITSTPCTOFSemiCent2InvMHighMag;ITSTPCTOFPeriInvMHighMag");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
@@ -16,9 +15,11 @@ AliDielectron* ConfigRemiLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALS
 
   Int_t selectedPID=-1;
   Int_t selectedCentrality=-1;
-  Int_t selectedPairCut=-1;
+    Int_t selectedPairInvMassCut=-1;
+    Int_t selectedPairInOutCut = -1;
   Bool_t rejectionStep=kFALSE;
-  Bool_t PairCut=kFALSE;
+  Bool_t PairInvMassCut=kFALSE;
+  Bool_t PairInOutCut=kFALSE;
   LMEECutLibRemi*  LMCL = new LMEECutLibRemi();
 
   //
@@ -39,84 +40,374 @@ AliDielectron* ConfigRemiLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALS
 	new AliDielectron(Form
 		("%s",name.Data()),
 		Form("Track cuts: %s",name.Data()));
-  //      die->SetZDCRecenteringFilename("/home/tanizaki/nfs/ZDCrpH1Recentering/ZDCRecenteringProfile.root");
-  //  die->SetZDCRecenteringFilename("alien:///alice/cern.ch/user/r/rtanizak/ZDCrpH1/ZDCRecentProf/ZDCRecenteringProfile.root")
+
+  //  TString ZDCRecenteringfile = "alien:///alice/cern.ch/user/r/rtanizak/ZDCrpH1/ZDCRecentProf/ZDCRecenteringProfile.root";
+    TString ZDCRecenteringfile = "/home/tanizaki/nfs/ZDCrpH1Recentering/ZDCRecenteringProfile.root";
+
+  die->SetZDCRecenteringFilename(ZDCRecenteringfile);
+
 
   //Setup AnalysisSelection:
   if (cutDefinition==0) {
 	//not yet implemented
   }
   else if (cutDefinition==1) {
-    selectedPID = LMEECutLibRemi::kPbPb2011TPCandTOFwide;
+    selectedPID = LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
     selectedCentrality = LMEECutLibRemi::kPbPb2011Central;
     rejectionStep = kFALSE;
-    PairCut = kFALSE;
+    PairInvMassCut = kFALSE;
 
   }
   else if (cutDefinition==2) {
-    selectedPID = LMEECutLibRemi::kPbPb2011TPCandTOFwide;
+    selectedPID = LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
     selectedCentrality = LMEECutLibRemi::kPbPb2011SemiCentral1;
     rejectionStep = kFALSE;
-    PairCut = kFALSE;
+    PairInvMassCut = kFALSE;
 
   }
   else if (cutDefinition==3) {
-    selectedPID = LMEECutLibRemi::kPbPb2011TPCandTOFwide;
+    selectedPID = LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
     selectedCentrality = LMEECutLibRemi::kPbPb2011SemiCentral2;
     rejectionStep = kFALSE;
-    PairCut = kFALSE;
+    PairInvMassCut = kFALSE;
 
   }
   else if (cutDefinition==4) {
-    selectedPID = LMEECutLibRemi::kPbPb2011TPCandTOFwide;
+    selectedPID = LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
     selectedCentrality = LMEECutLibRemi::kPbPb2011Peripheral;
     rejectionStep = kFALSE;
-    PairCut = kFALSE;
+    PairInvMassCut = kFALSE;
 
   }
+
+  //////////////////////////////////////////////////////////
+
   else if (cutDefinition==5) {
-    selectedPID = LMEECutLibRemi::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLibRemi::kPbPb2011AllCentral;
+    selectedPID = LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011Central;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassLow;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011RP;
     rejectionStep = kFALSE;
-    PairCut = kFALSE;
-
-  }
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+      }
 
   else if (cutDefinition==6) {
-	selectedPID = LMEECutLibRemi::kPbPb2011TPCandTOFwide;
-	selectedCentrality = LMEECutLibRemi::kPbPb2011Central;
-	rejectionStep = kFALSE;
-        PairCut = kTRUE;
+    selectedPID = LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011SemiCentral1;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassLow;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011RP;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+
+  else if (cutDefinition==7) {
+    selectedPID = LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011SemiCentral2;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassLow;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011RP;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+
+  else if (cutDefinition==8) {
+    selectedPID = LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011Peripheral;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassLow;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011RP;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+
+  else if (cutDefinition==9) {
+    selectedPID = LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011Central;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassMiddle;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011RP;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+
+  else if (cutDefinition==10) {
+    selectedPID = LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011SemiCentral1;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassMiddle;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011RP;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+
+  else if (cutDefinition==11) {
+    selectedPID = LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011SemiCentral2;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassMiddle;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011RP;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+
+  else if (cutDefinition==12) {
+    selectedPID = LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011Peripheral;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassMiddle;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011RP;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+
+  else if (cutDefinition==13) {
+    selectedPID = LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011Central;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassHigh;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011RP;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+
+  else if (cutDefinition==14) {
+    selectedPID = LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011SemiCentral1;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassHigh;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011RP;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+
+  else if (cutDefinition==15) {
+    selectedPID = LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011SemiCentral2;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassHigh;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011RP;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+
+  else if (cutDefinition==16) {
+    selectedPID = LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011Peripheral;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassHigh;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011RP;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
 
   }
-  else if (cutDefinition==7) {
+
+  //////////////////////////////////////////////////////////
+
+  else if (cutDefinition==17) {
+    selectedPID =  LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011Central;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassLow;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011Mag;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+
+  else if (cutDefinition==18) {
+    selectedPID =  LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011SemiCentral1;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassLow;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011Mag;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+  else if (cutDefinition==19) {
+    selectedPID =  LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011SemiCentral2;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassLow;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011Mag;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+
+  else if (cutDefinition==20) {
+    selectedPID =  LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011Peripheral;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassLow;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011Mag;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+
+  else if (cutDefinition==21) {
+    selectedPID =  LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011Central;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassMiddle;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011Mag;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+
+  else if (cutDefinition==22) {
+    selectedPID =  LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011SemiCentral1;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassMiddle;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011Mag;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+  else if (cutDefinition==23) {
+    selectedPID =  LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011SemiCentral2;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassMiddle;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011Mag;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+  else if (cutDefinition==24) {
+    selectedPID =  LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011Peripheral;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassMiddle;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011Mag;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+
+  else if (cutDefinition==25) {
+    selectedPID =  LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011Central;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassHigh;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011Mag;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+  else if (cutDefinition==26) {
+    selectedPID =  LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011SemiCentral1;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassHigh;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011Mag;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+  else if (cutDefinition==27) {
+    selectedPID =  LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011SemiCentral2;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassHigh;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011Mag;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+  else if (cutDefinition==28) {
+    selectedPID =  LMEECutLibRemi::kPbPb2011pidITSTPCTOF;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011Peripheral;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011MassHigh;
+    selectedPairInOutCut = LMEECutLibRemi::kPbPb2011Mag;
+    rejectionStep = kFALSE;
+    PairInvMassCut = kTRUE;
+    PairInOutCut = kTRUE;
+  }
+
+
+
+
+
+    /*
+    ///////////////////////////////////////////////////////////
+  else if (cutDefinition==21) {
+    selectedPID = LMEECutLibRemi::kPbPb2011TPCandTOFwide
+    selectedCentrality = LMEECutLibRemi::kPbPb2011Central;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011RP;
+    //selectedPairMCut = LMEECutLibRemi::kPbPb2011MassAll;
+    rejectionStep = kFALSE;
+    PairCut=kTRUE;
+    PolaCut=kTRUE;
+  }
+  else if (cutDefinition==22) {
     selectedPID = LMEECutLibRemi::kPbPb2011TPCandTOFwide;
     selectedCentrality = LMEECutLibRemi::kPbPb2011SemiCentral1;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011RP;
+    // selectedPairMCut = LMEECutLibRemi::kPbPb2011MassMiddle;
     rejectionStep = kFALSE;
-    PairCut = kTRUE;
-
+    PairCut=kTRUE;
+    PolaCut=kTRUE;
   }
-  else if (cutDefinition==8) {
+  else if (cutDefinition==23) {
     selectedPID = LMEECutLibRemi::kPbPb2011TPCandTOFwide;
     selectedCentrality = LMEECutLibRemi::kPbPb2011SemiCentral2;
+    // selectedPairMCut = LMEECutLibRemi::kPbPb2011MassMiddle;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011RP;
     rejectionStep = kFALSE;
-    PairCut = kTRUE;
+    PairCut=kTRUE;
+    PolaCut=kTRUE;
 
   }
-  else if (cutDefinition==9) {
+  else if (cutDefinition==24) {
     selectedPID = LMEECutLibRemi::kPbPb2011TPCandTOFwide;
     selectedCentrality = LMEECutLibRemi::kPbPb2011Peripheral;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011RP;
+    // selectedPairMCut = LMEECutLibRemi::kPbPb2011MassMiddle;
     rejectionStep = kFALSE;
-    PairCut = kTRUE;
+    PairCut=kTRUE;
+    PolaCut=kTRUE;
 
   }
-  else if (cutDefinition==10) {
+
+    /////////////////////////////////////////////////////////
+  else if (cutDefinition==25) {
     selectedPID = LMEECutLibRemi::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLibRemi::kPbPb2011AllCentral;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011Central;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011Mag;
+    // selectedPairMCut = LMEECutLibRemi::kPbPb2011MassAll;
     rejectionStep = kFALSE;
-    PairCut = kTRUE;
+    PairCut=kTRUE;
+    PolaCut=kTRUE;
 
   }
+
+  else if (cutDefinition==26) {
+    selectedPID = LMEECutLibRemi::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011SemiCentral1;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011Mag;
+    // selectedPairMCut = LMEECutLibRemi::kPbPb2011MassMiddle;
+    rejectionStep = kFALSE;
+    PairCut=kTRUE;
+    PolaCut=kTRUE;
+
+  }
+  else if (cutDefinition==27) {
+    selectedPID = LMEECutLibRemi::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011SemiCentral2;
+    // selectedPairMCut = LMEECutLibRemi::kPbPb2011MassMiddle;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011Mag;
+    rejectionStep = kFALSE;
+    PairCut=kTRUE;
+    PolaCut=kTRUE;
+
+  }
+  else if (cutDefinition==28) {
+    selectedPID = LMEECutLibRemi::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLibRemi::kPbPb2011Peripheral;
+    selectedPairInvMassCut = LMEECutLibRemi::kPbPb2011Mag;
+    // selectedPairMCut = LMEECutLibRemi::kPbPb2011MassMiddle;
+    rejectionStep = kFALSE;
+    PairCut=kTRUE;
+    PolaCut=kTRUE;
+
+  }
+
+    */
 
   else {
 	cout << " =============================== " << endl;
@@ -132,11 +423,50 @@ AliDielectron* ConfigRemiLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALS
 
   //switch off KF PArticle:
   die->SetUseKF(kFALSE);
-
+  /*
   if (selectedPID == LMEECutLibRemi::kPbPb2011NoPID) {
 	  die->SetNoPairing();
    }
+  */
 
+
+
+  die->GetEventFilter().AddCuts( LMCL->GetCentralityCuts(selectedCentrality));
+  
+  //  die->GetTrackFilter().AddCuts( LMCL->GetTrackCutsAna(selectedPID) );
+  die->GetTrackFilter().AddCuts( LMCL->GetPIDCutsAna(selectedPID) );
+  //  die->GetPairFilter().AddCuts( LMCL->GetPairCutsAna(selectedPID,kFALSE) );
+
+    
+  if (PairInvMassCut)
+    die->GetPairFilter().AddCuts( LMCL->GetPairCutsInvMass(selectedPairInvMassCut));
+  
+  
+      
+  if(PairInOutCut)
+        die->GetPairFilter().AddCuts( LMCL->GetPairCutsInOut(selectedPairInOutCut));
+  
+  
+
+  /*
+
+  if(PairCut){
+    if (rejectionStep) {
+      die->GetPairPreFilterLegs().AddCuts(LMCL->GetPIDCutsAna(selectedPID) );
+      die->GetPairPreFilter().AddCuts( LMCL->GetPairPreFilterCuts(selectedPairCut));
+      die->GetPairFilter().AddCuts( LMCL->GetPairCuts(selectedPairCut));
+    }
+    else {
+      //      die->GetPairFilter().AddCuts( LMCL->GetPairCutsInvMass(selectedPairCut));
+      die->GetPairFilter().AddCuts( LMCL->GetPairCuts(selectedPID));
+
+
+      //  die->GetPairFilter().AddCuts( LMCL->GetPairCuts4(selectedPairMCut));
+    }
+  }
+  */
+
+  /*
   if (rejectionStep) {
     if (ESDanalysis) {
       die->GetTrackFilter().AddCuts( LMCL->GetESDTrackCutsAna(selectedPID) );
@@ -170,7 +500,7 @@ AliDielectron* ConfigRemiLMEEPbPb2011AOD(Int_t cutDefinition, Bool_t hasMC=kFALS
   }
   //Introduce NULL-check for pp?
   die->GetEventFilter().AddCuts(LMCL->GetCentralityCuts(selectedCentrality));
-
+  */
 
 
 
@@ -261,32 +591,26 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 		1,0.,1.,AliDielectronVarManager::kNevents);
 	histos->UserHistogram("Event","Centrality","Centrality;Centrality [%]","0,10,20,40,80,100,101",
 		AliDielectronVarManager::kCentrality);
-	/*        histos->UserHistogram("Event","v0ACrpH2","VZERO-AC;v0ACrpH2",
+
+
+	histos->UserHistogram("Event","v0ACrpH2","VZERO-AC;v0ACrpH2",
 			      100,-2.0,2.0,
 			      AliDielectronVarManager::kv0ACrpH2);
-        histos->UserHistogram("Event","v0ArpH2","VZERO-A;v0ArpH2",
+	histos->UserHistogram("Event","v0ArpH2","VZERO-A;v0ArpH2",
 			      100,-2.0,2.0,
 			      AliDielectronVarManager::kv0ArpH2);
-        histos->UserHistogram("Event","v0CrpH2","VZERO-C;v0CrpH2",
+	histos->UserHistogram("Event","v0CrpH2","VZERO-C;v0CrpH2",
 			      100,-2.0,2.0,
 			      AliDielectronVarManager::kv0CrpH2);
-        histos->UserHistogram("Event","v0ArpH2_vs_v0CrpH2","VZERO-A vs VZERO-C;v0ArpH2;v0CrpH2",
-                              100,-2.0,2.0,100, -2.0, 2.0,
-                              AliDielectronVarManager::kv0ArpH2,AliDielectronVarManager::kv0CrpH2);
-	//	histos->UserHistgram("Event","resov0ACrpH2","VZERO-A;v0ArpH2",
-	//			     100, -2.0,2.0, AliDielectronVarManager::kresov0ACrpH2);
-	*/
+	histos->UserHistogram("Event","RadomRP","RandomRP;RandomRP",
+			      100,-2.0,2.0,
+			      AliDielectronVarManager::kRandomRP);
+
 
 	histos->UserHistogram("Event","ZDCArpH1","ZDC-ZN-A;ZDCrpH1",
                               100,-3.5,3.5,
-                              AliDielectronVarManager::kZDCArpH1);
-	/*        histos->UserHistogram("Event","ZDCrpResH1","ZDC;ZDCrpResH1",
-                              100,-3.5,3.5,
-                              AliDielectronVarManager::kZDCrpResH1);
-	histos->UserHistogram("Event","v0ZDCrpRes","ZDC;v0ZDCrpRes",
-                              100,-3.5,3.5,
-                              AliDielectronVarManager::kv0ZDCrpRes);
-	*/
+                              AliDielectronVarManager::kZDCACrpH1);
+
         histos->UserProfile("Event","ZDCrpResH1Prof","ZDC;ZDCrpResH1",
 			    AliDielectronVarManager::kZDCrpResH1, 
 			    10, 0, 100,
@@ -307,48 +631,25 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 	histos->UserHistogram("Event","kYvPrim","VartexY;vertex_y",
 			      100,0.2,0.3,
 			      AliDielectronVarManager::kYvPrim);
+
+
 	
 
-
-        histos->UserHistogram("Pair","InvMassAllPairplaneMagInPro","Inner Product of Mag and ee plane vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
-			      1000, 0.0,1.0,100,-2.0,2.0,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneMagInPro);
-	histos->UserHistogram("Pair","InvMassLowPairplaneMagInPro","ee plane Mag component vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
-			      300, 0.0,0.03,100,-2.0,2.0,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneMagInPro);
-	histos->UserHistogram("Pair","InvMassMiddlePairplaneMagInPro","ee plane Mag component vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
-			       180,0.12, 0.3,100,-2.0,2.0,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneMagInPro);
-	histos->UserHistogram("Pair","InvMassHighPairplaneMagInPro","ee plane Mag component vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
-			       200, 0.3, 0.5,100,-2.0,2.0,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneMagInPro);
-
-
-        histos->UserHistogram("Pair","PtAllPairplaneMagInPro","ee plane Mag component vs Pt;Pt [GeV];Phi [rad]",
-                              500,0.0,10.0,100,-2.0,2.0,AliDielectronVarManager::kPt,AliDielectronVarManager::kPairPlaneMagInPro);
-        histos->UserHistogram("Pair","PtLowPairplaneMagInPro","ee plane Mag component vs Pt;Pt [GeV];Phi [rad]",
-			      100,0.0,1.0,100,-2.0,2.0,AliDielectronVarManager::kPt,AliDielectronVarManager::kPairPlaneMagInPro);
-        histos->UserHistogram("Pair","PtMiddlePairplaneMagInPro","ee plane Mag component vs Pt;Pt [GeV];Phi [rad]",
-			      100,1.0,2.0,100,-2.0,2.0,AliDielectronVarManager::kPt,AliDielectronVarManager::kPairPlaneMagInPro);
-        histos->UserHistogram("Pair","PtHighPairplaneMagInPro","ee plane Mag component vs Pt;Pt [GeV];Phi [rad]",
-			      200,2.0,10.0,100,-2.0,2.0,AliDielectronVarManager::kPt,AliDielectronVarManager::kPairPlaneMagInPro);
-
-
-	/*	histos->UserHistogram("Pair","AllInvMassPtPairplaneMagInPro","ee plane Mag component",
-			      1000,0.0 ,0.5,500,0.0,10.0,100,-2.0,2.0,
-			      AliDielectronVarManager::kM,AliDielectronVarManager::kPt,AliDielectronVarManager::kPairPlaneMagInPro,
-			      kFALSE,kFALSE,kFALSE,999);
-	*/
-
-	
-	//		histos->UserHistogram("Pair","AllInvMassPtPairplaneMagInPro","ee plane Mag component vs Pt;Inv.Mass[GeV];Pt [GeV];Phi [rad]",
-	//	                              1000,0.0,0.5,500,0.0,10.0,100,-2.0,2.0,
-	//				      AliDielectronVarManager::kM,AliDielectronVarManager::kPt,AliDielectronVarManager::kPairPlaneMagInPro);
-	
 
   //add histograms to Track classes
-	/*  histos->UserHistogram("Track","Pt","Pt;Pt [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPt);
-  histos->UserHistogram("Track","Px","Px;Px [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPx);
-  histos->UserHistogram("Track","Py","Py;Py [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPy);
-  histos->UserHistogram("Track","Pz","Pz;Pz [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPz);
-  histos->UserHistogram("Track","P","P;P [GeV];#tracks",200,0,20.,AliDielectronVarManager::kP);
-	*/
+
+        histos->UserHistogram("Track","Pt","Pt;Pt [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPt);
+        histos->UserHistogram("Track","Px","Px;Px [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPx);
+        histos->UserHistogram("Track","Py","Py;Py [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPy);
+        histos->UserHistogram("Track","Pz","Pz;Pz [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPz);
+
+
+        histos->UserHistogram("Track","Eta","Eta; Eta;#tracks",
+                              200,-2,2,AliDielectronVarManager::kEta);
+        histos->UserHistogram("Track","Phi","Phi; Phi;#tracks",
+                              200,0.,3.15,AliDielectronVarManager::kPhi);
+
+
   /*
   histos->UserHistogram("Track","NclsSFracTPC","NclsSFracTPC; NclsSFracTPC;#tracks",200,0,10.,AliDielectronVarManager::kNclsSFracTPC);
   histos->UserHistogram("Track","TPCclsDiff","TPCclsDiff; TPCclsDiff;#tracks",200,0,10.,AliDielectronVarManager::kTPCclsDiff);
@@ -421,7 +722,97 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
 	  histos->UserHistogram("Pair","InvMassOpeningAngle","Opening Angle vs Inv.Mass;Inv. Mass [GeV];#pairs",
 		  500,0.0,5.0,200,0.,6.3,AliDielectronVarManager::kM,AliDielectronVarManager::kOpeningAngle);
+
+
+	  histos->UserHistogram("Pair","Pt","Pt;Pt [GeV];#tracks",300,0,30.,AliDielectronVarManager::kPt);
+	  histos->UserHistogram("Pair","Px","Px;Px [GeV];#tracks",300,0,30.,AliDielectronVarManager::kPx);
+	  histos->UserHistogram("Pair","Py","Py;Py [GeV];#tracks",300,0,30.,AliDielectronVarManager::kPy);
+	  histos->UserHistogram("Pair","Pz","Pz;Pz [GeV];#tracks",300,0,30.,AliDielectronVarManager::kPz);
+	  histos->UserHistogram("Pair","Phi","Phi;Phi[rad];#counts",100,-3.15,3.15,AliDielectronVarManager::kPhi );
+
+
+	  histos->UserHistogram("Pair","DeltaPhiv0ArpH2","Phi;Phi[rad];#counts",
+				100,-3.15,3.15,AliDielectronVarManager::kDeltaPhiv0ArpH2);
+	  histos->UserHistogram("Pair","DeltaPhiv0CrpH2","Phi;Phi[rad];#counts",
+				100,-3.15,3.15,AliDielectronVarManager::kDeltaPhiv0CrpH2);
+	  histos->UserHistogram("Pair","DeltaPhiv0ACrpH2","Phi;Phi[rad];#counts",
+				100,-3.15,3.15,AliDielectronVarManager::kDeltaPhiv0ACrpH2);
+	  histos->UserHistogram("Pair","DeltaPhiRandomRP","Phi;Phi[rad];#counts",
+				100,-3.15,3.15,AliDielectronVarManager::kDeltaPhiRandomRP);
+
+
+	  histos->UserHistogram("Pair","PairPlaneAngle2C","Phi;Phi[rad];#counts",
+				100,0,1.6,AliDielectronVarManager::kPairPlaneAngle2C);
+	  histos->UserHistogram("Pair","PairPlaneAngle3C","Phi;Phi[rad];#counts",
+				100,0,1.6,AliDielectronVarManager::kPairPlaneAngle3C);
+	  histos->UserHistogram("Pair","PairPlaneAngle4C","Phi;Phi[rad];#counts",
+				100,0,1.6,AliDielectronVarManager::kPairPlaneAngle4C);
+	  histos->UserHistogram("Pair","PairPlaneAngleRan","Phi;Phi[rad];#counts",
+				100,0,1.6,AliDielectronVarManager::kPairPlaneAngle3Ran);
+
+
+	  //2D Histo Plot
+
+	  histos->UserHistogram("Pair","InvMAllPP1C","Inv.Mass vs PairPlaneAngle;Inv. Mass [GeV];Phi [rad]",500,0.0,0.50,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneAngle1C);
+
+	  histos->UserHistogram("Pair","InvMAllPP2C","Inv.Mass vs PairPlaneAngle;Inv. Mass [GeV];Phi [rad]",500,0.0,0.50,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneAngle2C);
+
+	  histos->UserHistogram("Pair","InvMAllPP3C","Inv.Mass vs PairPlaneAngle;Inv. Mass [GeV];Phi [rad]",500,0.0,0.50,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneAngle3C);
+
+	  histos->UserHistogram("Pair","InvMAllPP4C","Inv.Mass vs PairPlaneAngle;Inv. Mass [GeV];Phi [rad]",500,0.0,0.50,100,0.,3.15,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneAngle4C);
+
+
+          histos->UserHistogram("Pair","PtAllPP1C","Pair Pt vs PairPlaneAngle;Pt [GeV];Phi [rad]",
+				 500,0.,10.0,100,0.,3.15,AliDielectronVarManager::kPt, AliDielectronVarManager::kPairPlaneAngle1C);
+
+	  histos->UserHistogram("Pair","PtAllPP2C","Pair Pt vs PairPlaneAngle;Pt [GeV];Phi [rad]",
+				 500,0.,10.0,100,0.,3.15,AliDielectronVarManager::kPt, AliDielectronVarManager::kPairPlaneAngle2C);
+
+	  histos->UserHistogram("Pair","PtAllPP3C","Pair Pt vs PairPlaneAngle;Pt [GeV];Phi [rad]",
+				 500,0.,10.0,100,0.,3.15,AliDielectronVarManager::kPt, AliDielectronVarManager::kPairPlaneAngle3C);
+
+	  histos->UserHistogram("Pair","PtAllPP4C","Pair Pt vs PairPlaneAngle;Pt [GeV];Phi [rad]",
+				 500,0.,10.0,100,0.,3.15,AliDielectronVarManager::kPt, AliDielectronVarManager::kPairPlaneAngle4C);
+
 	  /*
+        histos->UserHistogram("Pair","InvMassAllPairplaneMagInPro","Inner Product of Mag and ee plane vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
+                              1000, 0.0,1.0,100,-2.0,2.0,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneMagInPro);
+        histos->UserHistogram("Pair","InvMassLowPairplaneMagInPro","ee plane Mag component vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
+                              300, 0.0,0.03,100,-2.0,2.0,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneMagInPro);
+        histos->UserHistogram("Pair","InvMassMiddlePairplaneMagInPro","ee plane Mag component vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
+                               180,0.12, 0.3,100,-2.0,2.0,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneMagInPro);
+        histos->UserHistogram("Pair","InvMassHighPairplaneMagInPro","ee plane Mag component vs Inv.Mass;Inv. Mass [GeV];Phi [rad]",
+                               200, 0.3, 0.5,100,-2.0,2.0,AliDielectronVarManager::kM,AliDielectronVarManager::kPairPlaneMagInPro);
+	  */
+
+	  histos->UserHistogram("Pair","DeltaPhiv0CrpH2","Phi;Phi[rad];#counts",
+				100,-3.15,3.15,AliDielectronVarManager::kDeltaPhiv0CrpH2);
+
+	  histos->UserHistogram("Pair","PtAllPairplaneMagInPro","ee plane Mag component vs Pt;Pt [GeV];Phi [rad]",
+				500,0.0,10.0,100,-2.0,2.0,AliDielectronVarManager::kPt,AliDielectronVarManager::kPairPlaneMagInPro);
+	  histos->UserHistogram("Pair","PtLowPairplaneMagInPro","ee plane Mag component vs Pt;Pt [GeV];Phi [rad]",
+				100,0.0,1.0,100,-2.0,2.0,AliDielectronVarManager::kPt,AliDielectronVarManager::kPairPlaneMagInPro);
+	  histos->UserHistogram("Pair","PtMiddlePairplaneMagInPro","ee plane Mag component vs Pt;Pt [GeV];Phi [rad]",
+				100,1.0,2.0,100,-2.0,2.0,AliDielectronVarManager::kPt,AliDielectronVarManager::kPairPlaneMagInPro);
+	  histos->UserHistogram("Pair","PtHighPairplaneMagInPro","ee plane Mag component vs Pt;Pt [GeV];Phi [rad]",
+				200,2.0,10.0,100,-2.0,2.0,AliDielectronVarManager::kPt,AliDielectronVarManager::kPairPlaneMagInPro);
+	  
+
+	  /*
+                        histos->UserHistogram("Pair","AllInvMassPtPairplaneMagInPro","ee plane Mag component;Inv.Mass[GeV];Pt[GeV];Phi[red]",
+                              1000,0.0 ,0.5,500,0.0,10.0,100,-2.0,2.0,
+                                              AliDielectronVarManager::kM,AliDielectronVarManager::kPt,AliDielectronVarManager::kPairPlaneMagInPro);
+	  */
+
+
+	  //              histos->UserHistogram("Pair","AllInvMassPtPairplaneMagInPro","ee plane Mag component vs Pt;Inv.Mass[GeV];Pt [GeV];Phi [rad]",
+	  //                                    1000,0.0,0.5,500,0.0,10.0,100,-2.0,2.0,
+	  //                                    AliDielectronVarManager::kM,AliDielectronVarManager::kPt,AliDielectronVarManager::kPairPlaneMagInPro);
+
+
+	  /*
+
+
 	  //add histograms to Track classes
 	  histos->UserHistogram("Pre","Pt","Pt;Pt [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPt);
 
@@ -502,3 +893,5 @@ void EnableMC() {
   MCenabled=kTRUE;
 }
 
+
+//  LocalWords:  cutDefinition

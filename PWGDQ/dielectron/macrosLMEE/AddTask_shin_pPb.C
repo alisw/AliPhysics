@@ -64,7 +64,7 @@ AliAnalysisTask *AddTask_shin_pPb(){
                          containerName.Data());
   
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer("sweber_EventStat",
+    mgr->CreateContainer("EventStat",
                          TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
                          containerName.Data());

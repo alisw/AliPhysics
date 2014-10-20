@@ -200,6 +200,10 @@ public:
   void                   SetGlobalEmissionPoint(const AliFemtoThreeVector& aPos);
   void                   SetGlobalEmissionPoint(Double_t aRx, Double_t aRy, Double_t aRz);
  
+
+  void SetPrimaryVertex(double *vertex);
+  void GetPrimaryVertex(double *vertex);
+
   //Alice stuff
   enum {
     kITSin=0x0001,kITSout=0x0002,kITSrefit=0x0004,kITSpid=0x0008,
@@ -287,6 +291,8 @@ public:
   Int_t                  fPDGPid;        // True PID of the particle
   Double_t               fMass;          // True particle mass
   AliFemtoThreeVector   *fGlobalEmissionPoint;
+
+  double fVertex[3];
 
 };
 

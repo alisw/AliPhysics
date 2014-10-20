@@ -676,7 +676,8 @@ Double_t AliEMCalpi0ClusterEvaluationTask ::GetMaxCellEnergy(const AliVCluster *
      }
 
     if(!esd){
-    cells = aod->GetEMCALCells();
+      if (aod)cells = aod->GetEMCALCells();
+	   else cells = 0;
      }
 
     if (!cells)
@@ -727,7 +728,12 @@ void AliEMCalpi0ClusterEvaluationTask::FillMixed( const TLorentzVector& p1, cons
      esdCent     = esd->GetCentrality();
      }
     if(!esd){
-     esdCent     = aod->GetCentrality();
+     if (aod){
+		esdCent     = aod->GetCentrality();
+	 } else {
+		esdCent = NULL;
+		return; 
+	 } 	 
      }
 
     //fleche pour pointers, otherwise point.

@@ -16,8 +16,8 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
 
   // Set versions of used packages
    plugin->SetAPIVersion("V1.1x");
-   plugin->SetROOTVersion("v5-34-08-4");
-   plugin->SetAliROOTVersion("v5-05-63-AN");
+   plugin->SetROOTVersion("v5-34-08-6");
+   plugin->SetAliROOTVersion("vAN-20140623");
   // Declare input data to be processed.
 
   // Method 1: Create automatically XML collections using alien 'find' command.
@@ -76,7 +76,11 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
 	 outputDir = outputDir + "LHC10hPass2";
 	 if(runnum==0){
 	   plugin->AddRunNumber(139465);
-	   outputDir = outputDir + "Run139465";
+// 	   plugin->AddRunNumber(138442);
+// 	   plugin->AddRunNumber(138364);
+// 	   plugin->AddRunNumber(138396);
+// 	   plugin->AddRunNumber(137722);
+	   //outputDir = outputDir + "Run139465";
 	 }
 	 if(runnum==1){
 	   plugin->AddRunNumber(138442);
@@ -100,8 +104,30 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
 	 plugin->SetDataPattern("*ESDs/pass2/*ESDs.root");
 	 plugin->SetRunPrefix("000");   // real data
 	 //plugin->AddRunNumber(169099);
-	 plugin->AddRunNumber(168464);
+	 if(runnum==0){
+	   plugin->AddRunNumber(168464);
+	 }
 	 outputDir = outputDir + "LHC11hPass2";
+	 if(runnum==1){
+	   plugin->AddRunNumber(169588);
+	   outputDir +="169588";
+	 }
+	 if(runnum==2){
+	   plugin->AddRunNumber(170268);
+	   outputDir +="170268";
+	 }
+	 if(runnum==3){
+	   plugin->AddRunNumber(170207);
+	   outputDir +="170207";
+	 }
+	 if(runnum==4){
+	   plugin->AddRunNumber(168512);
+	   outputDir +="168512";
+	 }
+	 if(runnum==5){
+	   plugin->AddRunNumber(170311);
+	   outputDir +="170311";
+	 }
        }
     }
     else{
@@ -155,18 +181,29 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
 	plugin->SetGridDataDir(" /alice/sim/2013/LHC13d2");
 	plugin->AddRunNumber(139465);//probably our focus now
       }
-      if(production==5){//2011 production - not perfect but the best fit
+      if(production==5){//2011 production - warning only 0-10%
 	cout<<"I am here setting grid data dir"<<endl;
-	outputDir = outputDir + "LHC14a6";
-	plugin->SetGridDataDir(" /alice/sim/2014/LHC14a6");
-// 	  outputDir = outputDir + "LHC11a4_bisTEST";
-// 	  plugin->SetGridDataDir("/alice/sim/LHC11a4_bis");
-// 	plugin->AddRunNumber(139465);
-// 	plugin->AddRunNumber(137161);
-// 	outputDir = outputDir + "LHC14a1a";
-// 	plugin->SetGridDataDir(" /alice/sim/2014/LHC14a1a");
+	outputDir = outputDir + "LHC12d3";
+	plugin->SetGridDataDir("/alice/sim/2012/LHC12d3");
 	plugin->AddRunNumber(168464);//probably our focus now
-	//plugin->AddRunNumber(169238);//test 18 Mar 14 - does this let me submit jobs?
+      }
+      if(production==6){//2011 production - 0-10%
+	cout<<"I am here setting grid data dir"<<endl;
+	outputDir = outputDir + "LHC13e1a";
+	plugin->SetGridDataDir("/alice/sim/2013/LHC13e1a");
+	plugin->AddRunNumber(168464);//probably our focus now
+      }
+      if(production==7){//2011 production - 10-50%
+	cout<<"I am here setting grid data dir"<<endl;
+	outputDir = outputDir + "LHC13e1b";
+	plugin->SetGridDataDir("/alice/sim/2013/LHC13e1b");
+	plugin->AddRunNumber(168464);//probably our focus now
+      }
+      if(production==8){//2011 production - 50-90%
+	cout<<"I am here setting grid data dir"<<endl;
+	outputDir = outputDir + "LHC13e1c";
+	plugin->SetGridDataDir("/alice/sim/2013/LHC13e1c");
+	plugin->AddRunNumber(168464);//probably our focus now
       }
 
 
@@ -212,7 +249,7 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
   plugin->SetAnalysisMacro("DavidEtAnalysis.C");
   // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore). The optimum for an analysis
   // is correlated with the run time - count few hours TTL per job, not minutes !
-  plugin->SetSplitMaxInputFileNumber(20);
+  plugin->SetSplitMaxInputFileNumber(50);
   // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
   //plugin->SetMaxInitFailed(50);
   // Optionally resubmit threshold.

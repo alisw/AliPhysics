@@ -180,6 +180,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void RejectionPileUpVertexRangeEventCut();  
     void SelectSpecialTrigger(const Char_t *trgclust, Int_t runMin = 0, Int_t runMax = 999999999); 
     void SetDebugStreaming() {SetBit(kTreeStream);};
+    void SetWeightHist() {SetBit(kWeightHist);};
     Bool_t CheckTRDTriggerESD(AliESDEvent *ev);
     Bool_t CheckTRDTrigger(AliVEvent *ev);
     void DrawTRDTrigger(AliESDEvent *ev);
@@ -190,13 +191,15 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
       kHasMCdata = BIT(19),
       kAODanalysis = BIT(20),
       kBackgroundInitialized = BIT(21),
-      kTreeStream = BIT(22)
+      kTreeStream = BIT(22),
+      kWeightHist = BIT(23)
     };
 
     Bool_t FillProductionVertex(const AliVParticle * const track) const;
     void MakeParticleContainer();
     void MakeEventContainer();
     void InitHistoITScluster();
+    void InitHistoRadius();
     void InitContaminationQA();
     const Char_t *GetSpecialTrigger(Int_t run);
     void ProcessMC();

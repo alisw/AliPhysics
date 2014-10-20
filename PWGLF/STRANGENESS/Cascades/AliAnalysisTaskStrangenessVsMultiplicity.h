@@ -35,6 +35,7 @@ class THnSparse;
 class AliESDpid;
 class AliESDtrackCuts;
 class AliAnalysisUtils;
+class AliPPVsMultUtils;
 class AliESDEvent;
 class AliPhysicsSelection;
 class AliCFContainer;
@@ -60,6 +61,9 @@ class AliAnalysisTaskStrangenessVsMultiplicity : public AliAnalysisTaskSE {
 //---------------------------------------------------------------------------------------
   //Task Configuration: Meant to enable quick re-execution of vertexer if needed
   void SetRunVertexers ( Bool_t lRunVertexers = kTRUE) { fkRunVertexers = lRunVertexers; }
+//---------------------------------------------------------------------------------------
+  //Task Configuration: Skip Event Selections after trigger (VZERO test) 
+  void SetSkipEventSelection ( Bool_t lSkipEventSelection = kTRUE) { fkSkipEventSelection = lSkipEventSelection; }
 //---------------------------------------------------------------------------------------
 //Setters for the V0 Vertexer Parameters
   void SetV0VertexerMaxChisquare   ( Double_t lParameter ){ fV0VertexerSels[0] = lParameter; }
@@ -92,6 +96,8 @@ class AliAnalysisTaskStrangenessVsMultiplicity : public AliAnalysisTaskSE {
 
   AliPIDResponse *fPIDResponse;     // PID response object
   AliESDtrackCuts *fESDtrackCuts;   // ESD track cuts used for primary track definition
+  AliPPVsMultUtils *fPPVsMultUtils; //
+  AliAnalysisUtils *fUtils;         // analysis utils (for MV pileup selection)
 
   //Objects Controlling Task Behaviour 
   Bool_t fkSaveV0Tree;              //if true, save TTree
@@ -99,6 +105,7 @@ class AliAnalysisTaskStrangenessVsMultiplicity : public AliAnalysisTaskSE {
 
   //Objects Controlling Task Behaviour: has to be streamed! 
   Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts *** only for CASCADES! *** 
+  Bool_t    fkSkipEventSelection;     // if true, will only perform TRIGGER selection (currently kMB, to change) 
   Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
   Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
 
@@ -114,10 +121,30 @@ class AliAnalysisTaskStrangenessVsMultiplicity : public AliAnalysisTaskSE {
   Float_t fCentrality_V0M;         //! 
   Float_t fCentrality_V0AEq;       //! 
   Float_t fCentrality_V0CEq;       //! 
-  Float_t fCentrality_V0MEq;       //! 
+  Float_t fCentrality_V0MEq;       //!
+  Float_t fCustomCentrality_V0M; //!
+  Float_t fCustomCentrality_V0MEq; //!
   Int_t fRefMultEta5;              //!
   Int_t fRefMultEta8;              //!   
   Int_t fRunNumber;                //!
+    
+    //Event Characterization Variables - optional
+    Bool_t fEvSel_HasAtLeastSPDVertex;      //!
+    Bool_t fEvSel_VtxZCut;                  //!
+    Bool_t fEvSel_IsNotPileup;              //!
+    Bool_t fEvSel_IsNotPileupMV;            //!
+    Bool_t fEvSel_IsNotPileupInMultBins;    //!
+    Bool_t fEvSel_Triggered;                //!
+    
+    //Other Selections: more dedicated filtering to be studied!
+    Int_t fEvSel_nTracklets;              //!
+    Int_t fEvSel_nSPDClusters;            //!
+    Float_t fEvSel_VtxZ; //! the actual value
+    Int_t fEvSel_nSPDPrimVertices; //! pileup vertices
+    Float_t fEvSel_distZ; //! distance between largest vertices
+    Int_t fEvSel_nContributors; //!
+    Int_t fEvSel_nContributorsPileup; //! 
+    
 
 //===========================================================================================
 //   Variables for V0 Tree
@@ -156,6 +183,7 @@ class AliAnalysisTaskStrangenessVsMultiplicity : public AliAnalysisTaskSE {
   Float_t fTreeVariableCentV0AEq;  //!
   Float_t fTreeVariableCentV0CEq;  //!
   Float_t fTreeVariableCentV0MEq;  //!
+  Float_t fTreeVariableCustomCentV0M; //!
   Float_t fTreeVariableAmpV0A;     //!
   Float_t fTreeVariableAmpV0C;     //!
   Float_t fTreeVariableAmpV0AEq;   //!
@@ -206,6 +234,7 @@ class AliAnalysisTaskStrangenessVsMultiplicity : public AliAnalysisTaskSE {
   Float_t fTreeCascVarCentV0AEq;  //!
   Float_t fTreeCascVarCentV0CEq;  //!
   Float_t fTreeCascVarCentV0MEq;  //!
+  Float_t fTreeCascVarCustomCentV0M;    //!
   Float_t fTreeCascVarAmpV0A;     //!
   Float_t fTreeCascVarAmpV0C;     //!
   Float_t fTreeCascVarAmpV0AEq;   //!

@@ -148,6 +148,7 @@ protected:
      * @param vzMax       Maximum IP z coordinate
      * @param data        Data histogram 
      * @param mc          MC histogram
+     * @param checkPileup If true, check for pile-up (global flag)
      */
     virtual Bool_t ProcessEvent(const AliAODForwardMult* forward, 
 				Int_t                    triggerMask,
@@ -155,21 +156,18 @@ protected:
 				Double_t                 vzMin, 
 				Double_t                 vzMax, 
 				const TH2D*              data, 
-				const TH2D*              mc);
+				const TH2D*              mc,
+				Bool_t                   checkPileup);
     /** 
      * End of processing 
      * 
      * @param sums        List of sums
      * @param results     Output list of results
      * @param scheme      Normalisation scheme options
-     * @param shapeCorr   Shape correction or nil
      * @param trigEff     Trigger efficiency 
      * @param trigEff0    0-bin trigger efficiency 
-     * @param symmetrice  Whether to symmetrice the results
-     * @param rebin       Whether to rebin the results
      * @param rootProj    If true, use TH2::ProjectionX
      * @param corrEmpty   Whether to correct for empty bins
-     * @param cutEdges    Whether to cut edges when rebinning
      * @param triggerMask Trigger mask 
      * @param color       Marker colour 
      * @param marker      Marker style 
@@ -179,14 +177,10 @@ protected:
     virtual void End(TList*      sums, 
 		     TList*      results,
 		     UShort_t    scheme,
-		     const TH2F* shapeCorr, 
 		     Double_t    trigEff,
 		     Double_t    trigEff0,
-		     Bool_t      symmetrice,
-		     Int_t       rebin, 
 		     Bool_t      rootProj,
 		     Bool_t      corrEmpty, 
-		     Bool_t      cutEdges, 
 		     Int_t       triggerMask,
 		     Int_t       marker,
 		     Int_t       color,

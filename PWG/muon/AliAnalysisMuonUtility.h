@@ -58,6 +58,7 @@ class AliAnalysisMuonUtility : public TObject {
   static Bool_t IsTrkChamberHit( Int_t chamber, const AliVParticle* track );
   static UInt_t GetMUONTrigHitsMapTrk ( const AliVParticle* track );
   static UInt_t GetMUONTrigHitsMapTrg ( const AliVParticle* track );
+  static Int_t GetMuonTrigDevSign ( const AliVParticle* track );
   static Int_t GetLoCircuit ( const AliVParticle* track );
   static TLorentzVector GetTrackPair ( const AliVParticle* track1, const AliVParticle* track2 );
 

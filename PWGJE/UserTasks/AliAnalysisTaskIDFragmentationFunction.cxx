@@ -47,6 +47,7 @@
 #include "AliAnalysisHelperJetTasks.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSE.h"
+#include "AliAnalysisUtils.h"
 #include "AliVParticle.h"
 #include "AliVEvent.h"
 
@@ -170,6 +171,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fQATrackPhiMax(0)
    ,fCommonHistList(0)
    ,fh1EvtSelection(0)
+   ,fh1VtxSelection(0)
    ,fh1VertexNContributors(0)
    ,fh1VertexZ(0)
    ,fh1EvtMult(0)
@@ -186,6 +188,11 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fh1nGenBckgJets(0)
    ,fh2PtRecVsGenPrim(0)
    ,fh2PtRecVsGenSec(0)
+   ,fhDCA_XY(0)
+   ,fhDCA_Z(0)
+   ,fhJetPtRefMultEta5(0)
+   ,fhJetPtRefMultEta8(0)
+   ,fhJetPtMultPercent(0)
    ,fQATrackHistosRecEffGen(0)  
    ,fQATrackHistosRecEffRec(0)
    ,fQATrackHistosSecRecNS(0)   
@@ -246,6 +253,8 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    
    ,fOnlyLeadingJets(kFALSE)
    
+   ,fAnaUtils(0)
+   
    // PID framework
    ,fNumInclusivePIDtasks(0)
    ,fNumJetPIDtasks(0)
@@ -277,6 +286,12 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
     fIDFFHistosRecCuts[i] = 0x0;
     fIDFFHistosGen[i] = 0x0;
+    
+    fhDCA_XY_prim_MCID[i] = 0x0;
+    fhDCA_Z_prim_MCID[i] = 0x0;
+    
+    fhDCA_XY_sec_MCID[i] = 0x0;
+    fhDCA_Z_sec_MCID[i] = 0x0;
   }
 }
 
@@ -390,6 +405,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fQATrackPhiMax(0)  
   ,fCommonHistList(0)
   ,fh1EvtSelection(0)
+  ,fh1VtxSelection(0)
   ,fh1VertexNContributors(0)
   ,fh1VertexZ(0)
   ,fh1EvtMult(0)
@@ -406,6 +422,11 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fh1nGenBckgJets(0)
   ,fh2PtRecVsGenPrim(0)
   ,fh2PtRecVsGenSec(0)
+  ,fhDCA_XY(0)
+  ,fhDCA_Z(0)
+  ,fhJetPtRefMultEta5(0)
+  ,fhJetPtRefMultEta8(0)
+  ,fhJetPtMultPercent(0)
   ,fQATrackHistosRecEffGen(0)  
   ,fQATrackHistosRecEffRec(0)
   ,fQATrackHistosSecRecNS(0) 
@@ -463,6 +484,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fProNtracksLeadingJetRecSecSsc(0)
   ,fRandom(0)
   ,fOnlyLeadingJets(kFALSE)
+  ,fAnaUtils(0)
   // PID framework
   ,fNumInclusivePIDtasks(0)
   ,fNumJetPIDtasks(0)
@@ -494,6 +516,12 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
     fIDFFHistosRecCuts[i] = 0x0;
     fIDFFHistosGen[i] = 0x0;
+    
+    fhDCA_XY_prim_MCID[i] = 0x0;
+    fhDCA_Z_prim_MCID[i] = 0x0;
+    
+    fhDCA_XY_sec_MCID[i] = 0x0;
+    fhDCA_Z_sec_MCID[i] = 0x0;
   }
   
   DefineOutput(1,TList::Class());
@@ -609,6 +637,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fQATrackPhiMax(copy.fQATrackPhiMax)
   ,fCommonHistList(copy.fCommonHistList)
   ,fh1EvtSelection(copy.fh1EvtSelection)
+  ,fh1VtxSelection(copy.fh1VtxSelection)
   ,fh1VertexNContributors(copy.fh1VertexNContributors)
   ,fh1VertexZ(copy.fh1VertexZ)
   ,fh1EvtMult(copy.fh1EvtMult)
@@ -625,6 +654,11 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fh1nGenBckgJets(copy.fh1nGenBckgJets)
   ,fh2PtRecVsGenPrim(copy.fh2PtRecVsGenPrim)
   ,fh2PtRecVsGenSec(copy.fh2PtRecVsGenSec)
+  ,fhDCA_XY(copy.fhDCA_XY)
+  ,fhDCA_Z(copy.fhDCA_Z)
+  ,fhJetPtRefMultEta5(copy.fhJetPtRefMultEta5)
+  ,fhJetPtRefMultEta8(copy.fhJetPtRefMultEta8)
+  ,fhJetPtMultPercent(copy.fhJetPtMultPercent)
   ,fQATrackHistosRecEffGen(copy.fQATrackHistosRecEffGen)  
   ,fQATrackHistosRecEffRec(copy.fQATrackHistosRecEffRec)  
   ,fQATrackHistosSecRecNS(copy.fQATrackHistosSecRecNS)  
@@ -682,6 +716,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fProNtracksLeadingJetRecSecSsc(copy.fProNtracksLeadingJetRecSecSsc)
   ,fRandom(copy.fRandom)
   ,fOnlyLeadingJets(copy.fOnlyLeadingJets)
+  ,fAnaUtils(copy.fAnaUtils)
   // PID framework
   ,fNumInclusivePIDtasks(copy.fNumInclusivePIDtasks)
   ,fNumJetPIDtasks(copy.fNumJetPIDtasks)
@@ -719,6 +754,23 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
     fIDFFHistosGen[i] = 0x0;
     if (copy.fIDFFHistosGen[i])
       fIDFFHistosGen[i] = copy.fIDFFHistosGen[i];
+    
+    
+    fhDCA_XY_prim_MCID[i] = 0x0;
+    if (copy.fhDCA_XY_prim_MCID[i])
+      fhDCA_XY_prim_MCID[i] = copy.fhDCA_XY_prim_MCID[i];
+    
+    fhDCA_Z_prim_MCID[i] = 0x0;
+    if (copy.fhDCA_Z_prim_MCID[i])
+      fhDCA_Z_prim_MCID[i] = copy.fhDCA_Z_prim_MCID[i];
+    
+    fhDCA_XY_sec_MCID[i] = 0x0;
+    if (copy.fhDCA_XY_sec_MCID[i])
+      fhDCA_XY_sec_MCID[i] = copy.fhDCA_XY_sec_MCID[i];
+    
+    fhDCA_Z_sec_MCID[i] = 0x0;
+    if (copy.fhDCA_Z_sec_MCID[i])
+      fhDCA_Z_sec_MCID[i] = copy.fhDCA_Z_sec_MCID[i];
   }
   
   if (fNumInclusivePIDtasks > 0) {
@@ -874,6 +926,7 @@ AliAnalysisTaskIDFragmentationFunction& AliAnalysisTaskIDFragmentationFunction::
     fQATrackPhiMax                 = o.fQATrackPhiMax;  
     fCommonHistList                = o.fCommonHistList;
     fh1EvtSelection                = o.fh1EvtSelection;
+    fh1VtxSelection                = o.fh1VtxSelection;
     fh1VertexNContributors         = o.fh1VertexNContributors;
     fh1VertexZ                     = o.fh1VertexZ;
     fh1EvtMult                     = o.fh1EvtMult;
@@ -908,6 +961,11 @@ AliAnalysisTaskIDFragmentationFunction& AliAnalysisTaskIDFragmentationFunction::
     fh2DeltaPtVsJetPtEmbedded      = o.fh2DeltaPtVsJetPtEmbedded;
     fh2DeltaPtVsRecJetPtEmbedded   = o.fh2DeltaPtVsRecJetPtEmbedded;
     fh1DeltaREmbedded              = o.fh1DeltaREmbedded;
+    fhDCA_XY                       = o.fhDCA_XY;
+    fhDCA_Z                        = o.fhDCA_Z;
+    fhJetPtRefMultEta5             = o.fhJetPtRefMultEta5;
+    fhJetPtRefMultEta8             = o.fhJetPtRefMultEta8;
+    fhJetPtMultPercent             = o.fhJetPtMultPercent;
     fQABckgHisto0RecCuts           = o.fQABckgHisto0RecCuts;  
     fQABckgHisto0Gen               = o.fQABckgHisto0Gen;      
     fQABckgHisto1RecCuts           = o.fQABckgHisto1RecCuts;  
@@ -944,6 +1002,7 @@ AliAnalysisTaskIDFragmentationFunction& AliAnalysisTaskIDFragmentationFunction::
     fProNtracksLeadingJetRecSecSsc = o.fProNtracksLeadingJetRecSecSsc;
     fRandom                        = o.fRandom;
     fOnlyLeadingJets               = o.fOnlyLeadingJets;
+    fAnaUtils                      = o.fAnaUtils;
     
     // PID framework
    fUseInclusivePIDtask            = o.fUseInclusivePIDtask;
@@ -969,6 +1028,22 @@ AliAnalysisTaskIDFragmentationFunction& AliAnalysisTaskIDFragmentationFunction::
       fIDFFHistosGen[i] = 0x0;
       if (o.fIDFFHistosGen[i])
         fIDFFHistosGen[i] = o.fIDFFHistosGen[i];
+      
+      fhDCA_XY_prim_MCID[i] = 0x0;
+      if (o.fhDCA_XY_prim_MCID[i])
+        fhDCA_XY_prim_MCID[i] = o.fhDCA_XY_prim_MCID[i];
+      
+      fhDCA_Z_prim_MCID[i] = 0x0;
+      if (o.fhDCA_Z_prim_MCID[i])
+        fhDCA_Z_prim_MCID[i] = o.fhDCA_Z_prim_MCID[i];
+      
+      fhDCA_XY_sec_MCID[i] = 0x0;
+      if (o.fhDCA_XY_sec_MCID[i])
+        fhDCA_XY_sec_MCID[i] = o.fhDCA_XY_sec_MCID[i];
+      
+      fhDCA_Z_sec_MCID[i] = 0x0;
+      if (o.fhDCA_Z_sec_MCID[i])
+        fhDCA_Z_sec_MCID[i] = o.fhDCA_Z_sec_MCID[i];
     }
   }
   
@@ -1070,6 +1145,9 @@ AliAnalysisTaskIDFragmentationFunction::~AliAnalysisTaskIDFragmentationFunction(
     
   delete [] fJetPIDtask;
   fJetPIDtask = 0x0;
+  
+  delete fAnaUtils;
+  fAnaUtils = 0x0;
 }
 
 //______________________________________________________________________________________________________
@@ -1597,6 +1675,18 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
   fh1EvtSelection->GetXaxis()->SetBinLabel(5,"vertex z: rejected");
   fh1EvtSelection->GetXaxis()->SetBinLabel(6,"vertex type: rejected");
   
+  fh1VtxSelection            = new TH1F("fh1VtxSelection", "Vertex Selection", 10, -1, 9);
+  fh1VtxSelection->GetXaxis()->SetBinLabel(1,"Undef");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(2,"Primary");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(3,"Kink");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(4,"V0");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(5,"Cascade");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(6,"Multi");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(7,"SPD");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(8,"PileUpSPD");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(9,"PileUpTracks");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(10,"TPC");
+  
   fh1VertexNContributors     = new TH1F("fh1VertexNContributors", "Vertex N contributors", 2500,-.5, 2499.5);
   fh1VertexZ                 = new TH1F("fh1VertexZ", "Vertex z distribution", 30, -15., 15.);
   fh1EvtMult 	             = new TH1F("fh1EvtMult","Event multiplicity, track pT cut > 150 MeV/c, |#eta| < 0.9",120,0.,12000.);
@@ -2034,6 +2124,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
   Bool_t recJetsEff = (fJetTypeRecEff != kJetsUndef) ? kTRUE : kFALSE;
 
   fCommonHistList->Add(fh1EvtSelection);
+  fCommonHistList->Add(fh1VtxSelection);
   fCommonHistList->Add(fh1EvtMult);
   fCommonHistList->Add(fh1EvtCent);
   fCommonHistList->Add(fh1VertexNContributors);
@@ -2245,21 +2336,13 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
       for(Int_t ii=0; ii<5; ii++)  fCommonHistList->Add(fProDelRPtSumRecSecSsc[ii]);
     }
   }
+  
+  // Default analysis utils
+  fAnaUtils = new AliAnalysisUtils();
+  
+  // Not used yet, but to be save, forward vertex z cut to analysis utils object
+  fAnaUtils->SetMaxVtxZ(fMaxVertexZ);
 
-  // =========== Switch on Sumw2 for all histos ===========
-  for (Int_t i=0; i<fCommonHistList->GetEntries(); ++i){
-    TH1 *h1 = dynamic_cast<TH1*>(fCommonHistList->At(i));
-    if (h1) h1->Sumw2();
-    else{
-      THnSparse *hnSparse = dynamic_cast<THnSparse*>(fCommonHistList->At(i));
-      if(hnSparse) hnSparse->Sumw2();
-    }
-  }
-  
-  TH1::AddDirectory(oldStatus);
-  
-  
-  
   // Load PID framework if desired
   if(fDebug > 1) Printf("AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects() -> Loading PID framework");
   
@@ -2319,6 +2402,83 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
       }
     }
   }
+  
+  const Int_t nRefMultBins = 100;
+  const Double_t refMultUp = 100.;
+  const Double_t refMultDown = 0.;
+  
+  const Int_t nJetPtBins = 20;
+  const Double_t jetPtUp = 100.;
+  const Double_t jetPtDown = 0.;
+  
+  const Int_t nCentBins = 12;
+  const Double_t binsCentpp[nCentBins+1] =   { 0, 0.01, 0.1, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
+  
+  fhJetPtRefMultEta5 = new TH2F("fhJetPtRefMultEta5",
+                                "Correlation between jet energy and event multiplicity (|#eta| < 0.5);Ref. mult. (|#eta| < 0.5);#it{p}_{T, jet}^{ch} (GeV/#it{c})",
+                                nRefMultBins, refMultDown, refMultUp, nJetPtBins, jetPtDown, jetPtUp);
+  fhJetPtRefMultEta8 = new TH2F("fhJetPtRefMultEta8",
+                                "Correlation between jet energy and event multiplicity (|#eta| < 0.8);Ref. mult. (|#eta| < 0.8);#it{p}_{T, jet}^{ch} (GeV/#it{c})",
+                                nRefMultBins, refMultDown, refMultUp, nJetPtBins, jetPtDown, jetPtUp);
+  fhJetPtMultPercent  = new TH2F("fhJetPtMultPercent",
+                                "Correlation between jet energy and event multiplicity percentile (V0M);Multiplicity Percentile (V0M);#it{p}_{T, jet}^{ch} (GeV/#it{c})",
+                                nCentBins, binsCentpp, nJetPtBins, jetPtDown, jetPtUp);
+  fCommonHistList->Add(fhJetPtRefMultEta5);
+  fCommonHistList->Add(fhJetPtRefMultEta8);
+  fCommonHistList->Add(fhJetPtMultPercent);
+  
+  if (fUseJetPIDtask) {
+    const Int_t nPtBins = 68;
+    Double_t binsPt[nPtBins+1] = {0. ,  0.05, 0.1,  0.15, 0.2,  0.25, 0.3,  0.35, 0.4,  0.45,
+           0.5,  0.55, 0.6,  0.65, 0.7,  0.75, 0.8,  0.85, 0.9,  0.95,
+           1.0,  1.1 , 1.2,  1.3 , 1.4,  1.5 , 1.6,  1.7 , 1.8,  1.9 ,
+           2.0,  2.2 , 2.4,  2.6 , 2.8,  3.0 , 3.2,  3.4 , 3.6,  3.8 ,
+           4.0,  4.5 , 5.0,  5.5 , 6.0,  6.5 , 7.0,  8.0 , 9.0,  10.0,
+           11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0,
+           26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 40.0, 45.0, 50.0 };
+    
+    const Int_t DCAbins = 320;
+    const Double_t DCA_Z_max = 3.5;
+    const Double_t DCA_XY_max = 2.5;
+    
+    fhDCA_XY = new TH2F("fhDCA_XY", "All rec. tracks;#it{p}_{T} (GeV/#it{c});DCA_{XY}", nPtBins, binsPt,  DCAbins, -DCA_XY_max, DCA_XY_max);
+    fhDCA_Z = new TH2F("fhDCA_Z",   "All rec. tracks;#it{p}_{T} (GeV/#it{c});DCA_{Z}",  nPtBins, binsPt,  DCAbins, -DCA_Z_max,  DCA_Z_max);
+    fCommonHistList->Add(fhDCA_XY);
+    fCommonHistList->Add(fhDCA_Z);
+    
+    for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
+      fhDCA_XY_prim_MCID[i] = new TH2F(Form("fhDCA_XY_prim_MCID_%s", AliPID::ParticleShortName(i)),
+                                       Form("Rec. %s (prim.);#it{p}_{T} (GeV/#it{c});DCA_{XY}", AliPID::ParticleLatexName(i)),
+                                       nPtBins, binsPt,  DCAbins, -DCA_XY_max, DCA_XY_max);
+      fhDCA_Z_prim_MCID[i]  = new TH2F(Form("fhDCA_Z_prim_MCID_%s", AliPID::ParticleShortName(i)),
+                                       Form("Rec. %s (prim.);#it{p}_{T} (GeV/#it{c});DCA_{Z}", AliPID::ParticleLatexName(i)),
+                                       nPtBins, binsPt,  DCAbins, -DCA_Z_max, DCA_Z_max);
+      fCommonHistList->Add(fhDCA_XY_prim_MCID[i]);
+      fCommonHistList->Add(fhDCA_Z_prim_MCID[i]);
+      
+      fhDCA_XY_sec_MCID[i] = new TH2F(Form("fhDCA_XY_sec_MCID_%s", AliPID::ParticleShortName(i)),
+                                      Form("Rec. %s (sec.);#it{p}_{T} (GeV/#it{c});DCA_{XY}", AliPID::ParticleLatexName(i)),
+                                      nPtBins, binsPt,  DCAbins, -DCA_XY_max, DCA_XY_max);
+      fhDCA_Z_sec_MCID[i]  = new TH2F(Form("fhDCA_Z_sec_MCID_%s", AliPID::ParticleShortName(i)),
+                                      Form("Rec. %s (sec.);#it{p}_{T} (GeV/#it{c});DCA_{Z}", AliPID::ParticleLatexName(i)),
+                                      nPtBins, binsPt,  DCAbins, -DCA_Z_max, DCA_Z_max);
+      fCommonHistList->Add(fhDCA_XY_sec_MCID[i]);
+      fCommonHistList->Add(fhDCA_Z_sec_MCID[i]);
+    }
+  }
+  
+  
+  // =========== Switch on Sumw2 for all histos ===========
+  for (Int_t i=0; i<fCommonHistList->GetEntries(); ++i){
+    TH1 *h1 = dynamic_cast<TH1*>(fCommonHistList->At(i));
+    if (h1) h1->Sumw2();
+    else{
+      THnSparse *hnSparse = dynamic_cast<THnSparse*>(fCommonHistList->At(i));
+      if(hnSparse) hnSparse->Sumw2();
+    }
+  }
+  
+  TH1::AddDirectory(oldStatus);
 
   if(fDebug > 2) Printf("AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects() -> Posting Output");
   
@@ -2440,6 +2600,11 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
     }
   }
   
+  // Retrieve reference multiplicities in |eta|<0.8 and <0.5
+  const Int_t refMult5 = fAOD->GetHeader()->GetRefMultiplicityComb05();
+  const Int_t refMult8 = fAOD->GetHeader()->GetRefMultiplicityComb08();
+  const Double_t centPercentPP = fAnaUtils->GetMultiplicityPercentile(fAOD, "V0M");
+  
   
   // Count events with trigger selection, note: Set centrality percentile fix to -1 for pp for PID framework
   if (fUseJetPIDtask) {
@@ -2519,13 +2684,29 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
   
   if (fDebug > 1) Printf("%s:%d event ACCEPTED ...",(char*)__FILE__,__LINE__); 
   fh1EvtSelection->Fill(0.);
+  fh1VtxSelection->Fill(primVtx->GetType());
   fh1EvtCent->Fill(centPercent);
 	
 	// Set centrality percentile fix to -1 for pp to be used for the PID framework
 	if (fIsPP)
 		centPercent = -1;
 
-
+  
+  
+  // Call ConfigureTaskForCurrentEvent of PID tasks to ensure that everything is set up properly for the current event
+  // (e.g. run/period dependence of max eta variation map)
+  if (fUseInclusivePIDtask) {
+    for (Int_t i = 0; i < fNumInclusivePIDtasks; i++)
+      fInclusivePIDtask[i]->ConfigureTaskForCurrentEvent(fAOD);
+  }
+  
+  if (fUseJetPIDtask) {
+    for (Int_t i = 0; i < fNumJetPIDtasks; i++)
+      fJetPIDtask[i]->ConfigureTaskForCurrentEvent(fAOD);
+  }
+  
+  
+  
   //___ get MC information __________________________________________________________________
 
   fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
@@ -3104,7 +3285,6 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
       }
     }
     
-    
     for(Int_t ij=0; ij<nRecJetsCuts; ++ij){
       
       AliAODJet* jet = (AliAODJet*)(fJetsRecCuts->At(ij));
@@ -3112,7 +3292,11 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
       if(fQAMode&2 && (ij==0)) fQAJetHistosRecCutsLeading->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt() );
       
       if((ij==0) || !fOnlyLeadingJets){ // leading jets or all jets
-	
+
+        fhJetPtRefMultEta5->Fill(refMult5, jet->Pt());
+        fhJetPtRefMultEta8->Fill(refMult8, jet->Pt());
+        fhJetPtMultPercent->Fill(centPercentPP, jet->Pt());
+      
 	Double_t ptFractionEmbedded = 0; 
 	AliAODJet* embeddedJet = 0; 
 
@@ -3261,12 +3445,51 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
           }
         }
         
+        Bool_t filledDCA = kFALSE;
+        
         for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
           if ((!fJetPIDtask[i]->GetUseTPCCutMIGeo() && !fJetPIDtask[i]->GetUseTPCnclCut()) ||
               (survivedTPCCutMIGeo && fJetPIDtask[i]->GetUseTPCCutMIGeo()) ||
               (survivedTPCnclCut && fJetPIDtask[i]->GetUseTPCnclCut())) {
-                if (fJetPIDtask[i]->IsInAcceptedEtaRange(TMath::Abs(aodtrack->Eta())))
-                  fJetPIDtask[i]->ProcessTrack(aodtrack, pdg, centPercent, jetPt);
+            if (fJetPIDtask[i]->IsInAcceptedEtaRange(TMath::Abs(aodtrack->Eta()))) {
+                fJetPIDtask[i]->ProcessTrack(aodtrack, pdg, centPercent, jetPt);
+                  
+              // Fill DCA histo (once) if at least one of the PID tasks accecpts the track
+              if (!filledDCA) {
+                filledDCA = kTRUE;
+                
+                Double_t dca[2] = {0., 0.}; // 0: xy; 1: z
+                if (aodtrack->IsGlobalConstrained()) {
+                  dca[0] = aodtrack->DCA();
+                  dca[1] = aodtrack->ZAtDCA();
+                }
+                else {
+                  Double_t v[3]   = {0, };
+                  Double_t pos[3] = {0, };
+                  primVtx->GetXYZ(v);
+                  aodtrack->GetXYZ(pos);
+                  dca[0] = pos[0] - v[0];
+                  dca[1] = pos[1] - v[1];
+                }
+                
+                // "Unidentified" for data and MC
+                fhDCA_XY->Fill(pT, dca[0]);
+                fhDCA_Z->Fill(pT, dca[1]);
+                
+                // "Identified" for MC
+                if (gentrack && mcID != AliPID::kUnknown) {
+                  // MC
+                  if (gentrack->IsPhysicalPrimary()) {
+                    fhDCA_XY_prim_MCID[mcID]->Fill(pT, dca[0]);
+                    fhDCA_Z_prim_MCID[mcID]->Fill(pT, dca[1]);
+                  }
+                  else {
+                    fhDCA_XY_sec_MCID[mcID]->Fill(pT, dca[0]);
+                    fhDCA_Z_sec_MCID[mcID]->Fill(pT, dca[1]);
+                  }
+                }
+              }
+            }
           }
         }
         

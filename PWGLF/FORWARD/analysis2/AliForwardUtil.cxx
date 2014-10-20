@@ -87,17 +87,19 @@ ULong_t AliForwardUtil::AliROOTBranch()
   if (str.EqualTo(top)) return ret = 0xFFFFFFFF;
 
   TObjArray*   tokens = str.Tokenize("-");
-  TObjString*  pMajor = static_cast<TObjString*>(tokens->At(0));
-  TObjString*  pMinor = static_cast<TObjString*>(tokens->At(1));
-  TObjString*  pRelea = (tokens->GetEntries() > 2 ? 
-    static_cast<TObjString*>(tokens->At(2)) : 0);
-  TObjString* pAn     = (tokens->GetEntries() > 3 ? 
-    static_cast<TObjString*>(tokens->At(3)) : 0);
-  TString sMajor = pMajor->String().Strip(TString::kLeading, '0');
-  TString sMinor = pMinor->String().Strip(TString::kLeading, '0');
-  TString sRelea = (pRelea ? pRelea->String() : "");
-  sRelea = sRelea.Strip(TString::kLeading, '0');
-
+  TObjString*  pMajor = tokens->GetEntries()>0 ? 
+    (static_cast<TObjString*>(tokens->At(0))) : 0;
+  TObjString*  pMinor = tokens->GetEntries()>1 ? 
+    (static_cast<TObjString*>(tokens->At(1))) : 0;
+  TObjString*  pRelea = tokens->GetEntries() > 2 ? 
+    static_cast<TObjString*>(tokens->At(2)) : 0;
+  TObjString* pAn     = tokens->GetEntries() > 3 ? 
+    static_cast<TObjString*>(tokens->At(3)) : 0;
+  TString sMajor,sMinor,sRelea;
+  if (pMajor) sMajor = pMajor->String().Strip(TString::kLeading, '0'); 
+  if (pMinor) sMinor = pMinor->String().Strip(TString::kLeading, '0');
+  if (pRelea) sRelea = pRelea->String().Strip(TString::kLeading, '0');
+  //
   ret = (((sMajor.Atoi() & 0xFF) << 12) |
     ((sMinor.Atoi() & 0xFF) <<  8) |
     ((sRelea.Atoi() & 0xFF) <<  4) |

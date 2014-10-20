@@ -449,7 +449,6 @@ void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeV
 	      const Float_t kLimit = 0.02 * 3;
 	      
 	      Float_t dphistarminabs = 1e5;
-	      Float_t dphistarmin = 1e5;
 
 	      if (TMath::Abs(dphistar1) < kLimit || TMath::Abs(dphistar2) < kLimit || dphistar1 * dphistar2 < 0 )
 		{
@@ -460,7 +459,6 @@ void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeV
 		      
 		      if (dphistarabs < dphistarminabs)
 			{
-			  dphistarmin = dphistar;
 			  dphistarminabs = dphistarabs;
 			}
 		    }

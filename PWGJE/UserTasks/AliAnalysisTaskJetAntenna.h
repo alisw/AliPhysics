@@ -156,9 +156,9 @@ private:
    TList *fOutputList;                        //! output data container
    
     TH1I  *fHistEvtSelection;                  //! event selection statistic
-     TH1F*      fh1JetEntries;             //centrality bias of triggers 
+     TH2F*      fh2JetEntries;             //centrality bias of triggers 
      TH2F*      fh2Circularity;             //jet density
-    
+     TH2F*      fh2JetAxisPhi;              //smearing jet axis
      THnSparse   *fhnJetTM;               //Recoil jet spectrum
 
 

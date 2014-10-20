@@ -1,8 +1,6 @@
 #ifndef ALIJETEMBEDDINGFROMPYTHIATASK_H
 #define ALIJETEMBEDDINGFROMPYTHIATASK_H
 
-// $Id$
-
 #include "AliJetEmbeddingFromAODTask.h"
 #include <TArrayD.h>
 
@@ -28,30 +26,31 @@ class AliJetEmbeddingFromPYTHIATask : public AliJetEmbeddingFromAODTask {
   void           SetLHC11hAnchorRuns(Bool_t a=kTRUE)               { fLHC11hAnchorRun                           = a ; }
   void           SetFileTable(THashTable *t)                       { fFileTable                                 = t ; }
   void           SetUseAsVetoTable(Bool_t v)                       { fUseAsVetoTable                            = v ; }
-  void           SetMinEntriesFromFile(Int_t r)                    { fMinEntriesFromFile                        = r ; }
+  void           SetMinEntriesPerPtHardBin(Int_t r)                { fMinEntriesPerPtHardBin                    = r ; }
 
  protected:
-  Bool_t         ExecOnce()           ;// intialize task
-  Bool_t         GetNextEntry()       ;// get next entry in current tree
-  Int_t          GetRandomPtHardBin() ;// get a radnom pt hard bin according to fPtHardBinScaling
-  TFile         *GetNextFile()        ;// get next file
+  Bool_t           ExecOnce()               ;// intialize task
+  Bool_t           GetNextEntry()           ;// get next entry in current tree
+  Int_t            GetRandomPtHardBin()     ;// get a radnom pt hard bin according to fPtHardBinScaling
+  TFile           *GetNextFile()            ;// get next file
 
-  TString        fPYTHIAPath          ;// Path of the PYTHIA production
-  TArrayD        fPtHardBinScaling    ;// Pt hard bin scaling
-  Bool_t         fLHC11hAnchorRun     ;// LHC11h anchor runs
-  Int_t          fAnchorRun           ;// Anchor run
-  THashTable    *fFileTable           ;// Table of allowed/vetoed files
-  Bool_t         fUseAsVetoTable      ;// Use fFileTable as a veto table
-  Int_t          fMinEntriesFromFile  ;// Minimum number of embedded events before changing file
-  Int_t          fCurrentPtHardBin    ;//!Pt hard bin of the current open file
-  TParameter<int> *fPtHardBinParam    ;//!Pt hard bin param
+  TString          fPYTHIAPath              ;// Path of the PYTHIA production
+  TArrayD          fPtHardBinScaling        ;// Pt hard bin scaling
+  Bool_t           fLHC11hAnchorRun         ;// LHC11h anchor runs
+  Int_t            fAnchorRun               ;// Anchor run
+  THashTable      *fFileTable               ;// Table of allowed/vetoed files
+  Bool_t           fUseAsVetoTable          ;// Use fFileTable as a veto table
+  Int_t            fMinEntriesPerPtHardBin  ;// Minimum number of embedded events before changing pt hard bin, if < 0 change pt hard bin only when reach eof 
+  Int_t            fCurrentPtHardBin        ;//!Pt hard bin of the current open file
+  TParameter<int> *fPtHardBinParam          ;//!Pt hard bin param
+  Int_t            fPtHardBinCount          ;//!Number of event embedded from the current pt hard bin
 
-  TH1           *fHistPtHardBins      ;//!Embeded pt hard bin distribution
+  TH1             *fHistPtHardBins          ;//!Embeded pt hard bin distribution
 
  private:
   AliJetEmbeddingFromPYTHIATask(const AliJetEmbeddingFromPYTHIATask&);            // not implemented
   AliJetEmbeddingFromPYTHIATask &operator=(const AliJetEmbeddingFromPYTHIATask&); // not implemented
 
-  ClassDef(AliJetEmbeddingFromPYTHIATask, 3) // Jet embedding from PYTHIA task
+  ClassDef(AliJetEmbeddingFromPYTHIATask, 4) // Jet embedding from PYTHIA task
 };
 #endif

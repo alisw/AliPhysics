@@ -4,8 +4,10 @@ set ( SRCS
   AliOADBPhysicsSelection.cxx 
   AliOADBFillingScheme.cxx 
   AliOADBTriggerAnalysis.cxx 
-  AliOADBTrackFix.cxx 
-  )
+  AliOADBTrackFix.cxx
+)
+
+file(GLOB_RECURSE OTHERS "*.root")
 
 string(REPLACE ".cxx" ".h" HDRS  "${SRCS}")
 

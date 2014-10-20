@@ -39,6 +39,7 @@ public:
   void AddVariable(AliDielectronVarManager::ValueTypes type, Int_t nbins,
                    Double_t min, Double_t max, Bool_t log=kFALSE);
   void AddVariable(AliDielectronVarManager::ValueTypes type, const char* binLimitStr);
+  void AddVariable(AliDielectronVarManager::ValueTypes type, TVectorD* const bins);
 
   void SetDepth(UShort_t depth) { fDepth=depth; }
   UShort_t GetDepth()     const { return fDepth; }

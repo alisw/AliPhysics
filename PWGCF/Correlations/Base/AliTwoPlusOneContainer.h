@@ -26,9 +26,9 @@ class AliTwoPlusOneContainer : public TNamed
 
   virtual ~AliTwoPlusOneContainer();
   
-  enum PlotKind {kSameNS = 0, kSameAS, kMixedNS, kMixedAS, kMixedCombNS, kMixedCombAS};
+  enum PlotKind {kSameNS = 0, kSameAS, kMixedNS, kMixedAS, kMixedCombNS, kMixedCombAS, k1plus1, kBackgroundSameNS, kBackgroundSameAS, kMixed1plus1};
 
-  void FillCorrelations(Double_t centrality, Float_t zVtx, AliTwoPlusOneContainer::PlotKind step, TObjArray* triggerNear, TObjArray* triggerAway, TObjArray* assocNear, TObjArray* assocAway, Double_t weight);
+  void FillCorrelations(Double_t centrality, Float_t zVtx, AliTwoPlusOneContainer::PlotKind step, TObjArray* triggerNear, TObjArray* triggerAway, TObjArray* assocNear, TObjArray* assocAway, Double_t weight, Bool_t is1plus1, Bool_t isBackgroundSame);
   
   AliUEHist* GetData() {return fTwoPlusOne;}
   Double_t getTriggerPt1Min() {return fTriggerPt1Min;}
@@ -60,7 +60,7 @@ protected:
   Double_t fAlpha;                   //minimum energy for the first trigger particle
   Int_t fMergeCount;	             // counts how many objects have been merged together
   
-  ClassDef(AliTwoPlusOneContainer, 2)  // underlying event histogram container
+  ClassDef(AliTwoPlusOneContainer, 3)  // underlying event histogram container
 };
 
 

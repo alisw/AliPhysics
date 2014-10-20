@@ -29,14 +29,13 @@ public:
   : TrainSetup(name)
   {
     // General options
+    fOptions.Add("sys",   "SYSTEM",  "1:pp, 2:PbPb, 3:pPb", "");
     fOptions.Add("mc", "Do MC analysis");
     fOptions.Add("max-mom", "2|3|4|5", "Max flow moment to analyse", "5");
     fOptions.Add("use-cent", "Whether to use the impact parameter for centrality");
     fOptions.Add("mc-vtx", "Whether to get the vertex from the MC header");
-    fOptions.Add("afterburner", "[eta,phi,b,pid]", "What to afterburn", "");
-    fOptions.Add("ab-type", "1|2|3|4", "Type of afterburner", "");
-    fOptions.Add("ab-order", "2|3|4|5|6", "Order of afterburner", "");
     fOptions.Add("fwd-dets", "[fmd,vzero]", "Forward detectors", "fmd+vzero");
+    fOptions.Add("afterburner", "Whether to afterburn");
     fOptions.Set("type", "AOD");
     fOptions.Show(std::cout);
     // QC specific options
@@ -86,16 +85,15 @@ protected:
   void AddQCTasks()
   {
     // --- Get the parameters ----------------------------------------
+    UShort_t sys      = fOptions.AsInt("sys", 0);
     Int_t    moment   = fOptions.AsInt("max-mom");
     TString  fwdDets  = fOptions.Get("fwd-dets");
     TString  types    = fOptions.Get("qc-type");
     Double_t egValue  = fOptions.AsDouble("eg-value");
-    Bool_t   useCent  = fOptions.AsBool("use-cent");
     TString  tracks   = fOptions.Get("tracks");
+    Bool_t   useCent  = fOptions.AsBool("use-cent");
     Bool_t   useMCVtx = fOptions.AsBool("mc-vtx");
-    TString  addFlow  = fOptions.Get("afterburner");
-    Int_t    abType   = fOptions.AsInt("ab-type");
-    Int_t    abOrder  = fOptions.AsInt("ab-order");
+    Bool_t   addFlow  = fOptions.AsBool("afterburner");
     Bool_t   satVtx   = fOptions.AsBool("sat-vtx");
     Double_t fmdCut   = fOptions.AsDouble("outlier-fmd");
     Double_t spdCut   = fOptions.AsDouble("outlier-spd");
@@ -109,19 +107,19 @@ protected:
     Bool_t onlyTr     = tracks.Contains("only");
     Bool_t tpcTr      = tracks.Contains("tpc");
     Bool_t hybridTr   = tracks.Contains("hybrid");
+    Bool_t ispA = (sys == 3 ? kTRUE : kFALSE);
 
-    TString args(TString::Format("AddTaskForwardFlowQC.C(%d,\"%%s\",%%d,%%d,%d,%f,%f,%f,%%d,%d,%d,%d,\"%s\",%d,%d)",
+    TString args(TString::Format("AddTaskForwardFlowQC.C(%d,\"%%s\",%%d,%%d,%d,%f,%f,%f,%%d,%d,%d,%d,%d,%d)",
 			moment,
 			mc, 
 			fmdCut, 
 			spdCut,
 			egValue,
 			useCent,
+			ispA,
 			useMCVtx,
 			satVtx, 
-			addFlow.Data(), 
-			abType, 
-			abOrder));
+			addFlow));
     
     // --- Add the task ----------------------------------------------
     if (doFMD) {

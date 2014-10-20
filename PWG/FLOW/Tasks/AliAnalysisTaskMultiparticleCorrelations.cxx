@@ -52,6 +52,7 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fFillMultCorrelationsHist(kFALSE),
  fCalculateQvector(kFALSE),
  fCalculateDiffQvectors(kFALSE),
+ fProduction(""),
  fCalculateCorrelations(kFALSE),
  fCalculateIsotropic(kFALSE),
  fCalculateSame(kFALSE),
@@ -170,6 +171,7 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fFillMultCorrelationsHist(kFALSE),
  fCalculateQvector(kFALSE),
  fCalculateDiffQvectors(kFALSE),
+ fProduction(""),
  fCalculateCorrelations(kFALSE),
  fCalculateIsotropic(kFALSE),
  fCalculateSame(kFALSE),
@@ -322,7 +324,8 @@ void AliAnalysisTaskMultiparticleCorrelations::UserCreateOutputObjects()
    {
     if(!fWeightsHist[rp][ppe])
     {
-     fWeightsHist[rp][ppe] = GetHistogramWithWeights(TString(Form("%s/%s",gSystem->pwd(),"weights.root")).Data(),TString(this->fName).Data(),type[rp].Data(),variable[ppe].Data());
+     if(fProduction.EqualTo("")){Fatal(sMethodName.Data(),"fProduction is empty, for one reason or another...");}
+     fWeightsHist[rp][ppe] = GetHistogramWithWeights(TString(Form("%s/%s",gSystem->pwd(),"weights.root")).Data(),TString(this->fName).Data(),type[rp].Data(),variable[ppe].Data(),fProduction.Data());
     }
     if(!fWeightsHist[rp][ppe])
     {

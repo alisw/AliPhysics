@@ -344,6 +344,8 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
     printf("Error: no primary vertex found!\n");
     return;
   }
+  if(!pvStatus && this->fDebug)
+    printf("bad pv status\n");
   if(TMath::Abs(pv->GetZ())>15)
     return;
   if(this->fDebug)
@@ -619,8 +621,8 @@ void AliAnalysisTaskEMCALPhoton::FillMyCells()
   if (!fVCells)
     return;
   Int_t ncells = fVCells->GetNumberOfCells();
-  Int_t mcel = 0, maxcelid=-1;
-  Double_t maxcellE = 0, maxcellEta=0, maxcellPhi=0;
+  Int_t mcel = 0;//, maxcelid=-1;
+  Double_t maxcellE = 0;//, maxcellEta=0, maxcellPhi=0;
   for(Int_t icell = 0; icell<ncells; icell++){
     Int_t absID = TMath::Abs(fVCells->GetCellNumber(icell));
     AliPhotonCellObj *mycell = static_cast<AliPhotonCellObj*>(fMyCells->New(mcel++));
@@ -634,9 +636,9 @@ void AliAnalysisTaskEMCALPhoton::FillMyCells()
     /*if(!fIsMC)*/fGeom->EtaPhiFromIndex(absID,eta,phi);
     if(maxcellE<fVCells->GetCellAmplitude(absID)){
       maxcellE = fVCells->GetCellAmplitude(absID);
-      maxcellEta = eta;
+      /*maxcellEta = eta;
       maxcellPhi = phi;
-      maxcelid = absID;
+      maxcelid = absID;*/
     }
     Float_t theta = 2*TMath::ATan(TMath::Exp(-eta));
     mycell->fAbsID = absID;

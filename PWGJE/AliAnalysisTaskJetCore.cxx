@@ -699,9 +699,10 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 
    if(fFlagRandom==0){
      if(externalBackground)rho = externalBackground->GetBackground(0);}
-   if(fFlagRandom==1){
+   if(fFlagRandom==2){
       if(externalBackground)rho = externalBackground->GetBackground(2);}
-
+   if(fFlagRandom==3){
+      if(externalBackground)rho = externalBackground->GetBackground(3);}
    // fetch jets
    TClonesArray *aodJets[2];
    aodJets[0]=0;
@@ -756,7 +757,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    Double_t phibig=0.;
    Double_t etasmall=0;
    Double_t ptsmall=0;
-   Double_t areasmall=0;
+   //   Double_t areasmall=0;
    Double_t phismall=0.;
          
   
@@ -764,7 +765,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    Int_t iCount=0; 
    Int_t trigJet=-1;
    Int_t trigBBTrack=-1;
-   Int_t trigInTrack=-1;
+   //   Int_t trigInTrack=-1;
    fRPAngle = aod->GetHeader()->GetEventplane();     
 
    if(fHardest==0 || fHardest==1){
@@ -890,7 +891,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 		       if(iCount==0){                        
 			 trigJet=i;
 			 trigBBTrack=nT;
-			 trigInTrack=ippt;
+			 //			 trigInTrack=ippt;
 			 iCount=iCount+1;} 
 		       
    
@@ -900,7 +901,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 			   etasmall  = jetsmall->Eta();
 			   phismall = jetsmall->Phi();
 			   ptsmall   = jetsmall->Pt();
-			   areasmall = jetsmall->EffectiveAreaCharged();
+			   //			   areasmall = jetsmall->EffectiveAreaCharged();
 			   Double_t tmpDeltaR=(phismall-phibig)*(phismall-phibig)+(etasmall-etabig)*(etasmall-etabig);
 			   tmpDeltaR=TMath::Sqrt(tmpDeltaR);
 			   //Fraction in the jet core  
@@ -1288,7 +1289,7 @@ Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t 
     Int_t index=-1;
     Double_t ptmax=-10;
     Double_t dphi=0;
-    Double_t dif=0;
+    // Double_t dif=0;
     Int_t iCount=0;
     for(int it = 0;it < aod->GetNumberOfTracks();++it){
       AliAODTrack *tr = aod->GetTrack(it);
@@ -1300,7 +1301,8 @@ Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t 
       if(TMath::Abs(dphi)<TMath::Pi()-0.6) continue;
       if(tr->Pt()>ptmax){ ptmax=tr->Pt();
       index=iCount-1;
-      dif=dphi;  }}
+      //  dif=dphi; 
+      }}
   
       return index;
 

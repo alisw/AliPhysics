@@ -744,24 +744,36 @@ Double_t AliDielectronPair::PairPlaneMagInnerProduct(Double_t ZDCrpH1) const
 
   // Calculate inner product of the strong magnetic field and electron pair plane
 
-  if(ZDCrpH1 == 0.) return -9999.;
+  if(TMath::Abs(ZDCrpH1 - 999.) < 1e-10) return -9999.;
 
   Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
   Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
 
-  px1 = fD1.GetPx();
-  py1 = fD1.GetPy();
-  pz1 = fD1.GetPz();
+  if(fD1.GetQ()<0){
+    px1 = fD1.GetPx();
+    py1 = fD1.GetPy();
+    pz1 = fD1.GetPz();
 
+    px2 = fD2.GetPx();
+    py2 = fD2.GetPy();
+    pz2 = fD2.GetPz();
 
-  px2 = fD2.GetPx();
-  py2 = fD2.GetPy();
-  pz2 = fD2.GetPz();
+  }else{
+    px1 = fD2.GetPx();
+    py1 = fD2.GetPy();
+    pz1 = fD2.GetPz();
+
+    px2 = fD1.GetPx();
+    py2 = fD1.GetPy();
+    pz2 = fD1.GetPz();
+
+  }
+
 
   // normal vector of ee plane
-  Double_t pnorx = py2*pz1 - pz2*py1;
-  Double_t pnory = pz2*px1 - px2*pz1;
-  Double_t pnorz = px2*py1 - py2*px1;
+  Double_t pnorx = py1*pz2 - pz1*py2;
+  Double_t pnory = pz1*px2 - px1*pz2;
+  Double_t pnorz = px1*py2 - py1*px2;
   Double_t pnor  = TMath::Sqrt( pnorx*pnorx + pnory*pnory + pnorz*pnorz );
 
   //unit vector
@@ -769,7 +781,8 @@ Double_t AliDielectronPair::PairPlaneMagInnerProduct(Double_t ZDCrpH1) const
   Double_t upny = -9999.;
   //Double_t upnz = -9999.;
 
-  if (pnor == 0) return -9999.;
+  if (TMath::Abs(pnor) < 1e-10) return -9999.;
+
   upnx= pnorx/pnor;
   upny= pnory/pnor;
   //upnz= pnorz/pnor;

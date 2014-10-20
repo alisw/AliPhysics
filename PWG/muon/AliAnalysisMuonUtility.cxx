@@ -202,6 +202,13 @@ UInt_t AliAnalysisMuonUtility::GetMUONTrigHitsMapTrg ( const AliVParticle* track
 }
 
 //________________________________________________________________________
+Int_t AliAnalysisMuonUtility::GetMuonTrigDevSign ( const AliVParticle* track )
+{
+  /// Get trigger deviation sign
+  return ( IsAODTrack(track) ) ? const_cast<AliAODTrack*>(static_cast<const AliAODTrack*>(track))->GetMuonTrigDevSign() : static_cast<const AliESDMuonTrack*>(track)->GetMuonTrigDevSign();
+}
+
+//________________________________________________________________________
 Int_t AliAnalysisMuonUtility::GetLoCircuit ( const AliVParticle* track )
 {
   /// Get local board
@@ -363,19 +370,12 @@ Bool_t AliAnalysisMuonUtility::IsPrimary ( const AliVParticle* mcParticle, const
 {
   /// Check if the particle is primary
   
-  Bool_t isPrimary = kFALSE;
-  if ( IsAODMCTrack(mcParticle) ) isPrimary = static_cast<const AliAODMCParticle*>(mcParticle)->IsPrimary();
+  if ( IsAODMCTrack(mcParticle) ) return static_cast<const AliAODMCParticle*>(mcParticle)->IsPrimary();
   else if ( mcEvent ) {
-    // First get the index of the current particle in the stack.
-    // For this: get the mother, and get its daughter.
-    // Since the mother can have many daughters, you can come up to a "sister"
-    // of the particle. Nevertheless, if it is primary, then also the particle itself should be.
-    Int_t imother = static_cast<const AliMCParticle*> (mcParticle)->GetMother();
-    if ( imother < 0 ) isPrimary = kTRUE;
-    else if ( static_cast<const AliMCParticle*>(mcEvent->GetTrack(imother))->GetFirstDaughter() < const_cast<AliMCEvent*>(mcEvent)->GetNumberOfPrimaries() ) isPrimary = kTRUE;
+    return ( mcParticle->GetLabel() < const_cast<AliMCEvent*>(mcEvent)->GetNumberOfPrimaries() );
   }
   else AliWarningClass("There is no MC info");
-  return isPrimary;
+  return kFALSE;
 }
 
 //________________________________________________________________________

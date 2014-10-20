@@ -9,7 +9,10 @@ AliAnalysisTask*  AddAliTwoParticlePIDCorrTask(TString  SampleType="pPb",//pp,pP
 					       const char* outputFileName = 0,
 					       const char* containerName = "TwoParticlePIDCorr",
 					       const char* QAContainername = "TwoParticlePIDCorr_PIDQA",
-					       const char* folderName = "PWGCF_TwoParticlePIDCorr"
+					       const char* folderName = "PWGCF_TwoParticlePIDCorr",
+					       Bool_t RequestEventPlane=kFALSE,
+					       const char* EPContainername = "TwoParticlePIDCorr_EP"
+
 )
 {
 
@@ -50,10 +53,13 @@ AliAnalysisTask*  AddAliTwoParticlePIDCorrTask(TString  SampleType="pPb",//pp,pP
 
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(QAContainername, TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:%s", outputFileName, folderName));
 
+  if(RequestEventPlane==kTRUE) AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(EPContainername, TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:%s", outputFileName, folderName));
+
   
   mgr->ConnectInput  (PIDCorr, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput (PIDCorr, 1, coutput1 );
   mgr->ConnectOutput (PIDCorr, 2, coutput2 );
+if(RequestEventPlane==kTRUE)  mgr->ConnectOutput (PIDCorr, 3, coutput3 );
 
   return PIDCorr;
 }

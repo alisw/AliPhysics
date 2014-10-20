@@ -77,20 +77,6 @@ Bool_t AliAnalysisTaskEmcalJet::AcceptBiasJet(AliEmcalJet *jet, Int_t c)
 }
 
 //________________________________________________________________________
-Float_t* AliAnalysisTaskEmcalJet::GenerateFixedBinArray(Int_t n, Float_t min, Float_t max) const
-{
-  Float_t *bins = new Float_t[n+1];
-
-  Float_t binWidth = (max-min)/n;
-  bins[0] = min;
-  for (Int_t i = 1; i <= n; i++) {
-    bins[i] = bins[i-1]+binWidth;
-  }
-
-  return bins;
-}
-
-//________________________________________________________________________
 Double_t AliAnalysisTaskEmcalJet::GetLeadingHadronPt(AliEmcalJet *jet, Int_t c)
 {
 

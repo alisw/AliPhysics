@@ -858,7 +858,7 @@ void AliAnalysisCombinedHadronSpectra::BinLogAxis(const TH1 *h) {
   //
   // Method for the correct logarithmic binning of histograms
   //
-  TAxis *axis = h->GetXaxis();
+  TAxis *axis = const_cast<TAxis*>(h->GetXaxis());
   int bins = axis->GetNbins();
 
   Double_t from = axis->GetXmin();

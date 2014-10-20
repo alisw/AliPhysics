@@ -23,7 +23,10 @@ AliParticleContainer::AliParticleContainer():
   fParticleMaxPhi(10),
   fTrackBitMap(0),
   fMCTrackBitMap(0),
-  fMinMCLabel(0)
+  fMinMCLabel(0),
+  fMCFlag(0),
+  fGeneratorIndex(-1),
+  fCharge(-1)
 {
   // Default constructor.
 
@@ -40,7 +43,10 @@ AliParticleContainer::AliParticleContainer(const char *name):
   fParticleMaxPhi(10),
   fTrackBitMap(0),
   fMCTrackBitMap(0),
-  fMinMCLabel(0)
+  fMinMCLabel(0),
+  fMCFlag(0),
+  fGeneratorIndex(-1),
+  fCharge(-1)
 {
   // Standard constructor.
 
@@ -81,7 +87,7 @@ AliVParticle* AliParticleContainer::GetParticle(Int_t i) const
 {
   //Get i^th jet in array
 
-  if(i<0 || i>fClArray->GetEntriesFast()) return 0;
+  if(i<0 || i>=fClArray->GetEntriesFast()) return 0;
   AliVParticle *vp = static_cast<AliVParticle*>(fClArray->At(i));
   return vp;
 
@@ -95,7 +101,7 @@ AliVParticle* AliParticleContainer::GetAcceptParticle(Int_t i) const {
   if(!vp) return 0;
 
   if(AcceptParticle(vp))
-    return vp;
+      return vp;
   else {
     AliDebug(2,"Particle not accepted.");
     return 0;
@@ -119,6 +125,7 @@ AliVParticle* AliParticleContainer::GetAcceptParticleWithLabel(Int_t lab) const
   Int_t i = GetIndexFromLabel(lab);
   return GetAcceptParticle(i);
 }
+
 
 //________________________________________________________________________
 AliVParticle* AliParticleContainer::GetNextAcceptParticle(Int_t i) 
@@ -189,6 +196,15 @@ Bool_t AliParticleContainer::AcceptParticle(AliVParticle *vp) const
 
   if (vp->Eta() < fParticleMinEta || vp->Eta() > fParticleMaxEta || 
       vp->Phi() < fParticleMinPhi || vp->Phi() > fParticleMaxPhi)
+    return kFALSE;
+
+  if ((vp->GetFlag() & fMCFlag) != fMCFlag) 
+    return kFALSE;
+
+  if (fGeneratorIndex >= 0 && fGeneratorIndex != vp->GetGeneratorIndex())
+    return kFALSE;
+
+  if (fCharge>=0 && fCharge != vp->Charge() )
     return kFALSE;
   
   return kTRUE;

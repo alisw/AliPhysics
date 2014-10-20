@@ -43,8 +43,8 @@ class AliConversionCuts : public AliAnalysisCuts {
       kisHeavyIon,                  
       kCentralityMin,               
       kCentralityMax,               
-      kselectV0AND,                 
-      kmultiplicityMethod,             
+      kSelectSpecialTriggerAlias,                 
+      kSelectSubTriggerClass,             
       kremovePileUp,                
       kExtraSignals, 
       kv0FinderType,                
@@ -158,9 +158,6 @@ class AliConversionCuts : public AliAnalysisCuts {
    void FillV0EtaAfterdEdxCuts(Float_t v0Eta){if(hEtaDistV0sAfterdEdxCuts)hEtaDistV0sAfterdEdxCuts->Fill(v0Eta);}
    void SetEtaShift(Double_t etaShift) {
       fEtaShift = etaShift;
-      fLineCutZRSlope = tan(2*atan(exp(-fEtaCut + etaShift)));
-      if(fEtaCutMin > -0.1)
-         fLineCutZRSlopeMin = tan(2*atan(exp(-fEtaCutMin + etaShift)));
    }
    void SetEtaShift(TString pPbOrPbp) {
       Double_t etaShift = 0.0;
@@ -168,9 +165,6 @@ class AliConversionCuts : public AliAnalysisCuts {
       else if(!pPbOrPbp.CompareTo("Pbp")) etaShift =  0.465;
       
       fEtaShift = etaShift;
-      fLineCutZRSlope = tan(2*atan(exp(-fEtaCut + etaShift)));
-      if(fEtaCutMin > -0.1)
-         fLineCutZRSlopeMin = tan(2*atan(exp(-fEtaCutMin + etaShift)));
    }
    Double_t GetEtaShift() {return fEtaShift;}
    Bool_t GetDoEtaShift(){return fDoEtaShift;}
@@ -254,7 +248,8 @@ class AliConversionCuts : public AliAnalysisCuts {
    Bool_t SetPhotonAsymmetryCut(Int_t doPhotonAsymmetryCut);
    Bool_t SetRemovePileUp(Int_t removePileUp);  
    Bool_t SetMultiplicityMethod(Int_t multiplicityMethod);
-   Int_t SetSelectSpecialTrigger(Int_t selectSpecialTrigger);
+   Bool_t SetSelectSpecialTrigger(Int_t selectSpecialTrigger);
+   Bool_t SetSelectSubTriggerClass (Int_t selectSpecialSubTriggerClass);
    Bool_t SetCosPAngleCut(Int_t cosCut);
    Bool_t SetPsiPairCut(Int_t psiCut);
    Bool_t SetSharedElectronCut(Int_t sharedElec);
@@ -349,6 +344,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    Bool_t fUseTOFpid; // flag to use tof pid
    Int_t fMultiplicityMethod; // selected multiplicity method
    Int_t fSpecialTrigger; // flag
+   Int_t fSpecialSubTrigger; // flag
    Bool_t fRemovePileUp; //flag
    Float_t fOpeningAngle; // min opening angle for meson
    Float_t fPsiPairCut;
@@ -427,9 +423,11 @@ class AliConversionCuts : public AliAnalysisCuts {
    Bool_t fPreSelCut; // Flag for preselection cut used in V0Reader
    Bool_t fTriggerSelectedManually; // Flag for manual trigger selection
    TString fSpecialTriggerName; // Name of the Special Triggers
+   TString fSpecialSubTriggerName; // Name of the Special Triggers
+   Int_t fNSpecialSubTriggerOptions;
 private:
 
-   ClassDef(AliConversionCuts,8)
+   ClassDef(AliConversionCuts,9)
 };
 
 

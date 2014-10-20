@@ -888,7 +888,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(eta0, phi0, absId0);
   GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(eta1, phi1, absId1);
   
-  if(absId1 < 0 || absId1 < 0)
+  if(absId0 < 0 || absId1 < 0)
   {
     //printf("AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(() -  Photon hit AbsId: photon0 %d - photon1 %d\n",absId0,absId1);
     return;
@@ -6217,7 +6217,7 @@ void AliAnaInsideClusterInvariantMass::GetMCIndex(AliVCluster* cluster,
   
   // Assign mc index depending on MC bit set, to be used in histograms arrays
     
-  tag	= GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(),cluster->GetNLabels(), GetReader());
+  tag	= GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(),cluster->GetNLabels(), GetReader(),fCalorimeter);
   
   if      ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) &&
            !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) mcindex = kmcPi0;

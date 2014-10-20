@@ -124,6 +124,11 @@ public:
                                                                                                                                 fCandidateMinPt = minpt;
                                                                                                                                 fCandidateMaxPt = maxpt;
                                                                                                                                 fCandidateEtaPtCut = kTRUE;}
+   void                                 SetCandidateMinMaxY(Double_t min, Double_t max){
+       fCandidateMinY = min;
+       fCandidateMaxY = max;
+       fCandidateYCut = kTRUE;
+   }
    void                                 GetCandidateEtaAndPt(Double_t etapt[4]) const { etapt[0] = fCandidateMinEta;
                                                                                         etapt[1] = fCandidateMaxEta;
                                                                                         etapt[2] = fCandidateMinPt;
@@ -161,6 +166,9 @@ private:
    Double_t             fCandidateMaxEta; // maximum eta for candidates
    Double_t             fCandidateMinPt; // minimum pt for candidates
    Double_t             fCandidateMaxPt; // maximum pt for candidates
+   Bool_t               fCandidateYCut; // y cut on candidates
+   Double_t             fCandidateMinY; // min y value for candidate
+   Double_t             fCandidateMaxY; // max y value for canddiates
    Double_t             fPIDConfig[7]; // configure pid routine
    Double_t             fDCAConfig[5]; // configure dca routine
    Int_t                fMixingParameters[3]; // mixing: poolsize, mixing tracks, pool buffer
@@ -220,7 +228,7 @@ private:
    AliPIDCombined*      fPIDCombined;   // pid combined
    AliAnalysisTaskPhiFlow(const AliAnalysisTaskPhiFlow&); // Not implemented
    AliAnalysisTaskPhiFlow& operator=(const AliAnalysisTaskPhiFlow&); // Not implemented
-   void                 MakeTrack(Double_t, Double_t, Double_t, Double_t, Int_t , Int_t[]) const;
+   void                 MakeTrack(Double_t, Double_t, Double_t, Double_t, Int_t , Int_t[], Double_t p = 0., Double_t pz = 0.) const;
 
    ClassDef(AliAnalysisTaskPhiFlow, 7);
 };

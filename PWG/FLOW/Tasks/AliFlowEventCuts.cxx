@@ -415,7 +415,7 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
       if( TMath::Abs(tVtxZ-tSPDVtxZ) > 0.5 ) pass = kFALSE;
     }
     AliCentrality* centr = aodevent->GetHeader()->GetCentralityP();
-    if(fCutTPCmultiplicityOutliers){
+    if(fCutTPCmultiplicityOutliers || fCutTPCmultiplicityOutliersAOD){
       Double_t v0Centr  = centr->GetCentralityPercentile("V0M");
       Double_t trkCentr = centr->GetCentralityPercentile("TRK"); 
       if(TMath::Abs(v0Centr-trkCentr) > 5) pass = kFALSE;

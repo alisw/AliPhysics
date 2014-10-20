@@ -129,7 +129,7 @@ void AliTwoPlusOneContainer::DeleteContainers()
 
 
 //____________________________________________________________________
-void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx, AliTwoPlusOneContainer::PlotKind step, TObjArray* triggerNear, TObjArray* triggerAway, TObjArray* assocNear, TObjArray* assocAway, Double_t weight)
+void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx, AliTwoPlusOneContainer::PlotKind step, TObjArray* triggerNear, TObjArray* triggerAway, TObjArray* assocNear, TObjArray* assocAway, Double_t weight, Bool_t is1plus1, Bool_t isBackgroundSame)
 {
   //Fill Correlations fills the UEHist fTwoPlusOne with the 2+1 correlation
   //the input variables centrality and zVtx are the centrality and the z vertex of the event
@@ -138,6 +138,11 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
   AliCFContainer* track_hist = fTwoPlusOne->GetTrackHist(AliUEHist::kToward);
   AliCFContainer* event_hist = fTwoPlusOne->GetEventHist();
   AliUEHist::CFStep stepUEHist = static_cast<AliUEHist::CFStep>(step);
+
+  //in case of the computation of the background in the same event there are two possible positions: delta phi = +/- pi/2
+  //both positions are used so the results could only be weighted with 0.5*weight
+  if(isBackgroundSame)
+    weight *= 0.5;
 
   for (Int_t i=0; i<triggerNear->GetEntriesFast(); i++){
     AliVParticle* part = (AliVParticle*) triggerNear->UncheckedAt(i);
@@ -156,33 +161,53 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
     Int_t triggerAway_entries = triggerAway->GetEntriesFast();
     AliVParticle* found_particle[triggerAway_entries];
 
-    for (Int_t j=0; j<triggerAway_entries; j++){
-      AliVParticle* part2 = (AliVParticle*) triggerAway->UncheckedAt(j);
+    //have to fake the away side triggers for the 1+1 analysis
+    if(is1plus1){
+      found_particle[ind_found] = part;//in 1plus1 use first trigger particle also as pseudo second trigger particle
+      ind_max_found_pt = ind_found;
+      ind_found = 1;
+    }else{
+      //normal 2+1 analysis
+      for (Int_t j=0; j<triggerAway_entries; j++){
+	AliVParticle* part2 = (AliVParticle*) triggerAway->UncheckedAt(j);
 
-      Double_t part2_pt = part2->Pt();
-      //check if pT of trigger 2 is within the trigger range
-      //also pt of trigger 2 needs to be smaller than the pt of trigger 1 (to have an ordering if both pt are close to each other)
-      if(part2_pt<fTriggerPt2Min || part2_pt>fTriggerPt2Max || part2_pt>part_pt)
-	continue;
+	Double_t part2_pt = part2->Pt();
+	//check if pT of trigger 2 is within the trigger range
+	//also pt of trigger 2 needs to be smaller than the pt of trigger 1 (to have an ordering if both pt are close to each other)
+	if(part2_pt<fTriggerPt2Min || part2_pt>fTriggerPt2Max || part2_pt>part_pt)
+	  continue;
       
-       // don't use the same particle (is in any case impossible because the Delta phi angle will be 0)
-      if(part==part2){
-	continue;
-      }
+	// don't use the same particle (is in any case impossible because the Delta phi angle will be 0)
+	if(part==part2){
+	  continue;
+	}
 	
-      Double_t dphi_triggers = part_phi-part2->Phi();
-
-      if(dphi_triggers>1.5*TMath::Pi()) dphi_triggers -= TMath::TwoPi();
-      else if(dphi_triggers<-0.5*TMath::Pi()) dphi_triggers += TMath::TwoPi();
+	Double_t dphi_triggers = part_phi-part2->Phi();
 	
-      dphi_triggers -= TMath::Pi();
-      if(TMath::Abs(dphi_triggers)>fAlpha)
-	continue;
+	if(dphi_triggers>1.5*TMath::Pi()) dphi_triggers -= TMath::TwoPi();
+	else if(dphi_triggers<-0.5*TMath::Pi()) dphi_triggers += TMath::TwoPi();
+      
+	//if 2+1 analysis check if trigger particles have a delta phi = pi +/- alpha
+	if(!isBackgroundSame)
+	  dphi_triggers -= TMath::Pi();
+	else if(isBackgroundSame){
+	  //shift defined area of delta phi
+	  if(dphi_triggers>TMath::Pi()) dphi_triggers -= TMath::TwoPi();
+	
+	  //look at delta phi = +/- pi/2
+	  if(dphi_triggers<0)
+	    dphi_triggers += 0.5*TMath::Pi();
+	  else if(dphi_triggers>0)
+	    dphi_triggers -= 0.5*TMath::Pi();
+	}
+	if(TMath::Abs(dphi_triggers)>fAlpha)
+	  continue;
 
-      found_particle[ind_found] = part2;
-      if(ind_max_found_pt==-1 || part2_pt>found_particle[ind_max_found_pt]->Pt()) ind_max_found_pt = ind_found;
-      ind_found++;
-    }//end loop to search for the second trigger particle
+	found_particle[ind_found] = part2;
+	if(ind_max_found_pt==-1 || part2_pt>found_particle[ind_max_found_pt]->Pt()) ind_max_found_pt = ind_found;
+	ind_found++;
+      }//end loop to search for the second trigger particle
+    }
 
     //if no second trigger particle was found continue to search for the next first trigger particle
     if(ind_found==0)
@@ -199,13 +224,14 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
 	vars[3] = found_particle[ind_max_found_pt]->Pt();
 
 	event_hist->Fill(vars, stepUEHist, weight);//near side
-	
-	for(Int_t k=0; k< ind_found; k++){
-	  vars[3] = found_particle[k]->Pt();
-	  event_hist->Fill(vars, stepUEHist+1, weight);//away side
-	}
-    }
 
+	if(!is1plus1)
+	  for(Int_t k=0; k< ind_found; k++){
+	    vars[3] = found_particle[k]->Pt();
+	    event_hist->Fill(vars, stepUEHist+1, weight);//away side
+	  }
+    }
+ 
     //add correlated particles on the near side
     for (Int_t k=0; k<assocNear->GetEntriesFast(); k++){
       AliVParticle* part3 = (AliVParticle*) assocNear->UncheckedAt(k);
@@ -239,6 +265,10 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
 
       track_hist->Fill(vars, stepUEHist, weight);
     }
+
+    //search only for the distribution of the 2nd trigger particle
+    if(is1plus1)
+      continue;
 
     //add correlated particles on the away side
     for (Int_t k=0; k<assocAway->GetEntriesFast(); k++){

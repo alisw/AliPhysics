@@ -9,7 +9,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: March 18, 2014.								      //
+	//		version: September 16, 2014.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -106,10 +106,16 @@ public:
 	void SetNonHFEangleCut(Double_t AngleCut) { fAngleCut = AngleCut; fAngleCutFlag = kTRUE;};
 	void SetNonHFEchi2Cut(Double_t Chi2Cut) { fChi2Cut = Chi2Cut; fChi2CutFlag = kTRUE;};
 	void SetNonHFEdcaCut(Double_t DCAcut) { fDCAcut = DCAcut; fDCAcutFlag = kTRUE;};
+	
+	//DCA cut main particle
+	void SetdcaCut(Double_t DCAcutr, Double_t DCAcutz) { fDCAcutr = DCAcutr; fDCAcutz = DCAcutz;};
+	
 	void SetUseEMCal() { fUseEMCal=kTRUE;};
 	void SetUseTrigger() { fUseTrigger=kTRUE;};
+	void SetUseTender() { fUseTender=kTRUE;};
 	void SetUseShowerShapeCut(Bool_t UseShowerShapeCut=kFALSE) { fUseShowerShapeCut=UseShowerShapeCut;};
 	void SetBackground(Bool_t FillBackground=kFALSE) { fFillBackground=FillBackground;};
+	void SetEoverPnsigma(Bool_t EoverPnsigma=kFALSE) { fEoverPnsigma=EoverPnsigma;};
 	void SetEMCalTriggerEG1() { fEMCEG1=kTRUE; };
 	void SetEMCalTriggerEG2() { fEMCEG2=kTRUE; };
 	void SetCentralityEstimator(Int_t Estimator) { fEstimator=Estimator; }; //0 = V0A, 1 = Other
@@ -144,14 +150,17 @@ private:
 	Bool_t ContainsBadChannel(TString calorimeter,UShort_t* cellList, Int_t nCells);
 	TArrayI GetTriggerPatches(Bool_t IsEventEMCALL0, Bool_t IsEventEMCALL1);
 	Double_t CalculateWeight(Int_t pdg_particle, Double_t x);
+	Double_t SetEoverPCutPtDependentMC(Double_t pt);
 	
 		//Flags for specifics analysis
 	Bool_t 				fCorrelationFlag;
 	Bool_t				fIsMC;
 	Bool_t				fUseEMCal;
 	Bool_t				fUseTrigger;
+	Bool_t				fUseTender;
 	Bool_t				fUseShowerShapeCut;
 	Bool_t				fFillBackground;
+	Bool_t				fEoverPnsigma;
 	Bool_t				fAssocWithSPD;
 	
 	
@@ -226,6 +235,14 @@ private:
 	TH1F				*fPtElec_ULS2;
 	TH1F				*fPtElec_LS2;
 	
+		//mc closure
+	TH1F				*fPtElec_ULS_mc_closure;
+	TH1F				*fPtElec_LS_mc_closure;
+	TH1F				*fPtElec_ULS2_mc_closure;
+	TH1F				*fPtElec_LS2_mc_closure;
+	
+	
+	
 	TH1F				*fPtElec_ULS_weight;
 	TH1F				*fPtElec_LS_weight;
 	TH1F				*fPtElec_ULS2_weight;
@@ -236,13 +253,24 @@ private:
 	TH2F				*fTOF01;
 	TH2F				*fTOF02;
 	TH2F				*fTOF03;
-	TH1F				*fpid;		
+	TH1F				*fpid;	
+	TH2F				*fEoverP_pt_true_electrons;
+	TH2F				*fEoverP_pt_true_hadrons;
+	TH2F				*fEoverP_pt_true_electrons0;
+	TH2F				*fEoverP_pt_true_hadrons0;
 	TH2F				**fEoverP_pt;
 	TH2F				**fEoverP_tpc;
+	TH2F				**fEoverP_tpc_p_trigger;
+	TH2F				**fEoverP_tpc_pt_trigger;
 	TH1F				**fTPC_pt;
 	TH2F				**fTPC_p;
 	TH1F				**fTPCnsigma_pt;
 	TH2F				**fTPCnsigma_p;
+	
+	TH2F				*fTPCnsigma_p_TPC;
+	TH2F				*fTPCnsigma_p_TPC_on_EMCal_acc;
+	TH2F				*fTPCnsigma_p_TPC_EoverP_cut;
+	
 	TH2F				*fTPCnsigma_pt_2D;
 	TH2F				*fShowerShapeCut;
 	TH2F				*fShowerShapeM02_EoverP;
@@ -346,6 +374,9 @@ private:
 	Double_t			fAngleCut;
 	Double_t			fChi2Cut;
 	Double_t			fDCAcut;
+	Double_t			fDCAcutr;
+	Double_t			fDCAcutz;
+	
 	Bool_t				fMassCutFlag;
 	Bool_t				fAngleCutFlag;
 	Bool_t				fChi2CutFlag;

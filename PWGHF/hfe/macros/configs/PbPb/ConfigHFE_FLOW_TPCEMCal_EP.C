@@ -1,4 +1,4 @@
-AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC){
+AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC, Double_t openingAngle, Double_t invMass,TString nonHFEalgorithm){
   //
   // HFE standard task configuration
   //
@@ -11,17 +11,19 @@ AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC){
   hfecuts->SetMinRatioTPCclusters(0.6);
   hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
   hfecuts->SetMinNClustersITS(3);
-  hfecuts->SetCutITSpixel(AliHFEextraCuts::kFirst);
+  hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);
   hfecuts->SetCheckITSLayerStatus(kFALSE);
   hfecuts->SetVertexRange(10.);
   hfecuts->SetTOFPIDStep(kFALSE);
-  hfecuts->SetPtRange(2, 50);
+  hfecuts->SetPtRange(1.5, 50);
   hfecuts->SetMaxImpactParam(1,2);
   
   AliAnalysisTaskFlowTPCEMCalEP *task = new AliAnalysisTaskFlowTPCEMCalEP("HFE v2");
   printf("task ------------------------ %p\n ", task);
   task->SetHFECuts(hfecuts);
-  task->SetInvariantMassCut(0.05);
+  task->SetOpeningAngleCut(openingAngle);
+  task->SetInvariantMassCut(invMass);
+  task->SetNonHFEalgorithm(nonHFEalgorithm);
 
   // Define PID
   AliHFEpid *pid = task->GetPID();

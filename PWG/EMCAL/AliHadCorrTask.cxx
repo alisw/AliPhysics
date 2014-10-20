@@ -582,8 +582,8 @@ void AliHadCorrTask::DoTrackLoop()
       if (!emccluster) continue;
 
       AliVCluster *cluster = emccluster->GetCluster();
-      if (!cluster->IsEMCAL()) continue;
       if (!cluster) continue;
+      if (!cluster->IsEMCAL()) continue;
 
       Double_t etadiff = 999;
       Double_t phidiff = 999;

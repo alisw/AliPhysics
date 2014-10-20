@@ -1,7 +1,8 @@
 AliAnalysisTaskEmcalBadCells *AddTaskEmcalBadCells(
 						   const char *CentEst             = "V0A",
 						   Int_t       pSel                = AliVEvent::kINT7,
-						   TString     kEmcalCellsName     = "emcalCells"
+						   TString     kEmcalCellsName     = "emcalCells",
+						   TString     tag                 = ""
 ) {
 
   // #### Define manager and data container names
@@ -19,7 +20,7 @@ AliAnalysisTaskEmcalBadCells *AddTaskEmcalBadCells(
       return NULL;
     }
 
-  TString wagonName = "EmcalBadCells";
+  TString wagonName = Form("EmcalBadCells%s",tag.Data());
 
   //Configure DiJet task
   AliAnalysisTaskEmcalBadCells *task = new AliAnalysisTaskEmcalBadCells(wagonName.Data(),kTRUE);

@@ -231,7 +231,6 @@ Bool_t AliSpectraAODEventCuts::CheckMultiplicityCut()
 //______________________________________________________
 Bool_t AliSpectraAODEventCuts::CheckQVectorCut()
 { 
-  Double_t qxEPVZERO = -999., qyEPVZERO = -999.;
   Double_t qVZERO = -999.;
   Double_t psi=-999.;
   
@@ -239,8 +238,8 @@ Bool_t AliSpectraAODEventCuts::CheckQVectorCut()
     qVZERO=CalculateQVectorLHC10h();
     psi=fPsiV0A;
   }else{
-    psi=fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD,10,2,qxEPVZERO,qyEPVZERO);//FIXME we can a flag for 2010 and 2011
-    qVZERO= TMath::Sqrt(qxEPVZERO*qxEPVZERO + qyEPVZERO*qyEPVZERO);
+    qVZERO=CalculateQVector();
+    psi=fPsiV0A;
   }
   
   //cut on q vector
@@ -372,6 +371,43 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorLHC10h(){
   ((TH2F*)fOutput->FindObject("fQVecCCor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fqV0C);
   
   return fqV0A; //FIXME we have to combine VZERO-A and C
+}
+
+//______________________________________________________
+Double_t AliSpectraAODEventCuts::CalculateQVector(){
+  
+  //V0 info    
+  Double_t Qxa2 = 0, Qya2 = 0;
+  Double_t Qxc2 = 0, Qyc2 = 0;
+  
+  AliAODVZERO* aodV0 = fAOD->GetVZEROData();
+  
+  for (Int_t iv0 = 0; iv0 < 64; iv0++) {
+    
+    Float_t multv0 = aodV0->GetMultiplicity(iv0);
+  
+    ((TH2F*)fOutput->FindObject("fV0M"))->Fill(iv0,multv0);
+    
+  }
+
+  fPsiV0A = fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD,8,2,Qxa2,Qya2); // V0A
+  fPsiV0C = fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD,9,2,Qxc2,Qyc2); // V0C
+  
+  ((TH2F*)fOutput->FindObject("fPsiACor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fPsiV0A);
+  ((TH2F*)fOutput->FindObject("fPsiCCor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fPsiV0C);
+  
+  fqV0A = TMath::Sqrt((Qxa2*Qxa2 + Qya2*Qya2));
+  fqV0C = TMath::Sqrt((Qxc2*Qxc2 + Qyc2*Qyc2));
+  fqV0Ax = Qxa2;
+  fqV0Cx = Qxc2;
+  fqV0Ay = Qya2;
+  fqV0Cy = Qyc2;
+  
+  ((TH2F*)fOutput->FindObject("fQVecACor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fqV0A);
+  ((TH2F*)fOutput->FindObject("fQVecCCor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fqV0C);
+  
+  return fqV0A; //FIXME we have to combine VZERO-A and C
+  
 }
 
 //______________________________________________________
@@ -642,6 +678,45 @@ Double_t AliSpectraAODEventCuts::GetQvecPercentile(Int_t v0side){
   if(percentile>100. || percentile<0.) return -999.;
 
   return percentile;
+}
+
+//______________________________________________________
+Double_t AliSpectraAODEventCuts::CalculateQVectorMC(Int_t v0side){
+  
+  if(!fIsMC) return -999.;
+  
+  // 1. get MC array
+  TClonesArray *arrayMC = (TClonesArray*) fAOD->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+  
+  if (!arrayMC) AliFatal("Error: MC particles branch not found!\n");
+  
+  Double_t Qx2mc = 0., Qy2mc = 0.;
+  Int_t mult2mc = 0;
+  
+  Int_t nMC = arrayMC->GetEntries();
+      
+  // 2. loop on generated
+  for (Int_t iMC = 0; iMC < nMC; iMC++){
+    AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
+  
+    // 3. set VZERO side - FIXME Add TPC!
+    Double_t EtaVZERO[2] = {-999.,-999.};
+    if(v0side==0/*V0A*/){ EtaVZERO[0] = 2.8; EtaVZERO[1] = 5.1; } 
+    if(v0side==1/*V0C*/){ EtaVZERO[0] = -3.7; EtaVZERO[1] = -1.7; } 
+    
+    if(partMC->Eta()<EtaVZERO[0] || partMC->Eta()>EtaVZERO[1]) continue;
+    
+    // 4. Calculate Qvec components
+    
+    Qx2mc += TMath::Cos(2.*partMC->Phi());
+    Qy2mc += TMath::Sin(2.*partMC->Phi());
+    mult2mc++;
+    
+  }
+  
+  // 5. return q vector
+  return TMath::Sqrt((Qx2mc*Qx2mc + Qy2mc*Qy2mc)/mult2mc);
+  
 }
 
 //______________________________________________________

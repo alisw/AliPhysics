@@ -50,6 +50,7 @@
 #include "AliV0ReaderV1.h"
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
+#include "AliTRDTriggerAnalysis.h"
 
 class iostream;
 
@@ -62,8 +63,8 @@ const char* AliConversionCuts::fgkCutNames[AliConversionCuts::kNCuts] = {
    "HeavyIon",//0
    "CentralityMin",//1
    "CentralityMax",//2
-   "SelectV0AND",//3
-   "MultiplicityMethod",//4
+   "SelectSpecialTrigger",//3
+   "SelectSpecialSubTriggerClass",//4
    "RemovePileUp",//5
    "RejectExtraSignals",//6
    "V0FinderType",//7
@@ -156,6 +157,7 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fUseTOFpid(kFALSE),
    fMultiplicityMethod(0),
    fSpecialTrigger(0),
+   fSpecialSubTrigger(0),
    fRemovePileUp(kFALSE),
    fOpeningAngle(0.005),
    fPsiPairCut(10000),
@@ -232,7 +234,9 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fAddedSignalPDGCode(0),
    fPreSelCut(kFALSE),
    fTriggerSelectedManually(kFALSE),
-   fSpecialTriggerName("")
+   fSpecialTriggerName(""),
+   fSpecialSubTriggerName(""),
+   fNSpecialSubTriggerOptions(0)
 
 {
    InitPIDResponse();
@@ -313,6 +317,7 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    fUseTOFpid(ref.fUseTOFpid),
    fMultiplicityMethod(ref.fMultiplicityMethod),
    fSpecialTrigger(ref.fSpecialTrigger),
+   fSpecialSubTrigger(ref.fSpecialSubTrigger),
    fRemovePileUp(ref.fRemovePileUp),
    fOpeningAngle(ref.fOpeningAngle),
    fPsiPairCut(ref.fPsiPairCut),
@@ -389,7 +394,9 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    fAddedSignalPDGCode(ref.fAddedSignalPDGCode),
    fPreSelCut(ref.fPreSelCut),
    fTriggerSelectedManually(ref.fTriggerSelectedManually),
-   fSpecialTriggerName(ref.fSpecialTriggerName)
+   fSpecialTriggerName(ref.fSpecialTriggerName),
+   fSpecialSubTriggerName(ref.fSpecialSubTriggerName),
+   fNSpecialSubTriggerOptions(ref.fNSpecialSubTriggerOptions)
 {
    // Copy Constructor
    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -835,10 +842,10 @@ Bool_t AliConversionCuts::PhotonIsSelectedMC(TParticle *particle,AliStack *fMCSt
    if (particle->GetPdgCode() == 22){
 
 
-      if( particle->Eta() > (fEtaCut + fEtaShift) || particle->Eta() < (-fEtaCut + fEtaShift) )
+     if( particle->Eta() > (fEtaCut) || particle->Eta() < (-fEtaCut) )
          return kFALSE;
       if(fEtaCutMin>-0.1){
-         if( particle->Eta() < (fEtaCutMin + fEtaShift) && particle->Eta() > (-fEtaCutMin + fEtaShift) )
+         if( particle->Eta() < (fEtaCutMin) && particle->Eta() > (-fEtaCutMin) )
             return kFALSE;
       }
 
@@ -877,13 +884,13 @@ Bool_t AliConversionCuts::PhotonIsSelectedMC(TParticle *particle,AliStack *fMCSt
          return kFALSE; // no reconstruction below the Pt cut
       }
 
-      if( ePos->Eta() > (fEtaCut + fEtaShift) || ePos->Eta() < (-fEtaCut + fEtaShift) ||
-          eNeg->Eta() > (fEtaCut + fEtaShift) || eNeg->Eta() < (-fEtaCut + fEtaShift) )
+      if( ePos->Eta() > (fEtaCut) || ePos->Eta() < (-fEtaCut) ||
+          eNeg->Eta() > (fEtaCut) || eNeg->Eta() < (-fEtaCut) )
          return kFALSE;
 
       if(fEtaCutMin > -0.1){
-         if( (ePos->Eta() < (fEtaCutMin + fEtaShift) && ePos->Eta() > (-fEtaCutMin + fEtaShift)) ||
-             (eNeg->Eta() < (fEtaCutMin + fEtaShift) && eNeg->Eta() > (-fEtaCutMin + fEtaShift)) )
+         if( (ePos->Eta() < (fEtaCutMin) && ePos->Eta() > (-fEtaCutMin)) ||
+             (eNeg->Eta() < (fEtaCutMin) && eNeg->Eta() > (-fEtaCutMin)) )
             return kFALSE;
       }
 
@@ -922,10 +929,10 @@ Bool_t AliConversionCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClon
    if(!aodmcArray)return kFALSE;
 
    if (particle->GetPdgCode() == 22){
-      if( particle->Eta() > (fEtaCut + fEtaShift) || particle->Eta() < (-fEtaCut + fEtaShift) )
+      if( particle->Eta() > (fEtaCut) || particle->Eta() < (-fEtaCut) )
          return kFALSE;
       if(fEtaCutMin>-0.1){
-         if( particle->Eta() < (fEtaCutMin + fEtaShift) && particle->Eta() > (-fEtaCutMin + fEtaShift) )
+         if( particle->Eta() < (fEtaCutMin) && particle->Eta() > (-fEtaCutMin) )
             return kFALSE;
       }
 
@@ -966,13 +973,13 @@ Bool_t AliConversionCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClon
          return kFALSE; // no reconstruction below the Pt cut
       }
 
-      if( ePos->Eta() > (fEtaCut + fEtaShift) || ePos->Eta() < (-fEtaCut + fEtaShift) ||
-          eNeg->Eta() > (fEtaCut + fEtaShift) || eNeg->Eta() < (-fEtaCut + fEtaShift) )
+      if( ePos->Eta() > (fEtaCut) || ePos->Eta() < (-fEtaCut) ||
+          eNeg->Eta() > (fEtaCut) || eNeg->Eta() < (-fEtaCut) )
          return kFALSE;
 
       if(fEtaCutMin > -0.1){
-         if( (ePos->Eta() < (fEtaCutMin + fEtaShift) && ePos->Eta() > (-fEtaCutMin + fEtaShift)) ||
-             (eNeg->Eta() < (fEtaCutMin + fEtaShift) && eNeg->Eta() > (-fEtaCutMin + fEtaShift)) )
+         if( (ePos->Eta() < (fEtaCutMin) && ePos->Eta() > (-fEtaCutMin)) ||
+             (eNeg->Eta() < (fEtaCutMin) && eNeg->Eta() > (-fEtaCutMin)) )
             return kFALSE;
       }
 
@@ -1272,12 +1279,12 @@ Bool_t AliConversionCuts::AcceptanceCuts(AliConversionPhotonBase *photon) {
    cutIndex++;
 
 
-   if( photon->GetPhotonEta() > (fEtaCut + fEtaShift)    || photon->GetPhotonEta() < (-fEtaCut + fEtaShift) ){
+   if( photon->GetPhotonEta() > (fEtaCut)    || photon->GetPhotonEta() < (-fEtaCut) ){
       if(hAcceptanceCuts)hAcceptanceCuts->Fill(cutIndex);
       return kFALSE;
    }
    if(fEtaCutMin>-0.1){
-      if( photon->GetPhotonEta() < (fEtaCutMin + fEtaShift) && photon->GetPhotonEta() > (-fEtaCutMin + fEtaShift) ){
+      if( photon->GetPhotonEta() < (fEtaCutMin) && photon->GetPhotonEta() > (-fEtaCutMin) ){
          if(hAcceptanceCuts)hAcceptanceCuts->Fill(cutIndex);
          return kFALSE;
       }
@@ -1361,14 +1368,14 @@ Bool_t AliConversionCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrack * po
    cutIndex++;
 
    // Acceptance
-   if( posTrack->Eta() > (fEtaCut + fEtaShift) || posTrack->Eta() < (-fEtaCut + fEtaShift) ||
-       negTrack->Eta() > (fEtaCut + fEtaShift) || negTrack->Eta() < (-fEtaCut + fEtaShift) ){
+   if( posTrack->Eta() > (fEtaCut) || posTrack->Eta() < (-fEtaCut) ||
+       negTrack->Eta() > (fEtaCut) || negTrack->Eta() < (-fEtaCut) ){
       if(hTrackCuts)hTrackCuts->Fill(cutIndex);
       return kFALSE;
    }
    if(fEtaCutMin>-0.1){
-      if( (posTrack->Eta() < (fEtaCutMin + fEtaShift) && posTrack->Eta() > (-fEtaCutMin + fEtaShift)) ||
-          (negTrack->Eta() < (fEtaCutMin + fEtaShift) && negTrack->Eta() > (-fEtaCutMin + fEtaShift)) ){
+      if( (posTrack->Eta() < (fEtaCutMin) && posTrack->Eta() > (-fEtaCutMin)) ||
+          (negTrack->Eta() < (fEtaCutMin) && negTrack->Eta() > (-fEtaCutMin)) ){
          if(hTrackCuts)hTrackCuts->Fill(cutIndex);
          return kFALSE;
       }
@@ -1683,23 +1690,23 @@ Bool_t AliConversionCuts::AcceptanceCut(TParticle *particle, TParticle * ePos,TP
    }
 
 
-   if( particle->Eta() > (fEtaCut + fEtaShift) || particle->Eta() < (-fEtaCut + fEtaShift) ){
+   if( particle->Eta() > (fEtaCut) || particle->Eta() < (-fEtaCut) ){
       return kFALSE;
    }
-   if( ePos->Eta() > (fEtaCut + fEtaShift) || ePos->Eta() < (-fEtaCut + fEtaShift) ){
+   if( ePos->Eta() > (fEtaCut) || ePos->Eta() < (-fEtaCut) ){
       return kFALSE;
    }
-   if( eNeg->Eta() > (fEtaCut + fEtaShift) || eNeg->Eta() < (-fEtaCut + fEtaShift) ){
+   if( eNeg->Eta() > (fEtaCut) || eNeg->Eta() < (-fEtaCut) ){
       return kFALSE;
    }
    if(fEtaCutMin>-0.1){
-      if( particle->Eta() < (fEtaCutMin + fEtaShift) && particle->Eta() > (-fEtaCutMin + fEtaShift) ){
+      if( particle->Eta() < (fEtaCutMin) && particle->Eta() > (-fEtaCutMin) ){
          return kFALSE;
       }
-      if( ePos->Eta() < (fEtaCutMin + fEtaShift) && ePos->Eta() > (-fEtaCutMin + fEtaShift) ){
+      if( ePos->Eta() < (fEtaCutMin) && ePos->Eta() > (-fEtaCutMin) ){
          return kFALSE;
       }
-      if( eNeg->Eta() < (fEtaCutMin + fEtaShift) && eNeg->Eta() > (-fEtaCutMin + fEtaShift) ){
+      if( eNeg->Eta() < (fEtaCutMin) && eNeg->Eta() > (-fEtaCutMin) ){
          return kFALSE;
       }
    }
@@ -1738,9 +1745,9 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
 	 cout << "I have to find: " <<  fNameHistoReweightingPi0.Data() << endl;
      TH1D *hReweightMCHistPi0temp = (TH1D*)f->Get(fNameHistoReweightingPi0.Data());
      hReweightMCHistPi0 = new TH1D(*hReweightMCHistPi0temp);
-     hReweightMCHistPi0->SetDirectory(0);
      if (hReweightMCHistPi0) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingPi0.Data(),fPathTrFReweighting.Data() ));
      else AliWarning(Form("%s not found in %s", fNameHistoReweightingPi0.Data() ,fPathTrFReweighting.Data()));
+	 hReweightMCHistPi0->SetDirectory(0);
   }
   if (fNameFitDataPi0.CompareTo("") != 0 && fDoReweightHistoMCPi0 ){
 	  cout << "I have to find: " <<  fNameFitDataPi0.Data() << endl;
@@ -1754,9 +1761,9 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
 	 cout << "I have to find: " <<  fNameHistoReweightingEta.Data() << endl;
      TH1D *hReweightMCHistEtatemp = (TH1D*)f->Get(fNameHistoReweightingEta.Data());
      hReweightMCHistEta = new TH1D(*hReweightMCHistEtatemp);
-     hReweightMCHistEta->SetDirectory(0);
      if (hReweightMCHistEta) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingEta.Data(),fPathTrFReweighting.Data() ));
      else AliWarning(Form("%s not found in %s", fNameHistoReweightingEta.Data(),fPathTrFReweighting.Data() ));
+	 hReweightMCHistEta->SetDirectory(0);
   }
 
   if (fNameFitDataEta.CompareTo("") != 0 && fDoReweightHistoMCEta){
@@ -1771,9 +1778,9 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
 	 cout << "I have to find: " <<  fNameHistoReweightingK0s.Data() << endl;
      TH1D *hReweightMCHistK0stemp = (TH1D*)f->Get(fNameHistoReweightingK0s.Data());
      hReweightMCHistK0s = new TH1D(*hReweightMCHistK0stemp);
-     hReweightMCHistK0s->SetDirectory(0);
      if (hReweightMCHistK0s) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingK0s.Data(),fPathTrFReweighting.Data() ));
      else AliWarning(Form("%s not found in %s", fNameHistoReweightingK0s.Data(),fPathTrFReweighting.Data() ));
+	 hReweightMCHistK0s->SetDirectory(0);
   }
 
   if (fNameFitDataK0s.CompareTo("") != 0 && fDoReweightHistoMCK0s){
@@ -1919,16 +1926,16 @@ Bool_t AliConversionCuts::SetCut(cutIds cutID, const Int_t value) {
          return kTRUE;
       } else return kFALSE;
 
-   case kselectV0AND:
+   case kSelectSpecialTriggerAlias:
       if( SetSelectSpecialTrigger(value)) {
-         fCuts[kselectV0AND] = value;
+         fCuts[kSelectSpecialTriggerAlias] = value;
          UpdateCutString();
          return kTRUE;
       } else return kFALSE;
 
-   case kmultiplicityMethod:
-      if( SetMultiplicityMethod(value)) {
-         fCuts[kmultiplicityMethod] = value;
+   case kSelectSubTriggerClass:
+      if( SetSelectSubTriggerClass(value)) {
+         fCuts[kSelectSubTriggerClass] = value;
          UpdateCutString();
          return kTRUE;
       } else return kFALSE;
@@ -2048,6 +2055,13 @@ void AliConversionCuts::PrintCuts() {
 
 void AliConversionCuts::PrintCutsWithValues() {
    // Print out current Cut Selection with value
+	printf("\nConversion cutnumber \n");
+	for(Int_t ic = 0; ic < kNCuts; ic++) {
+		printf("%d",fCuts[ic]);
+	}
+	printf("\n\n");
+
+	
    if (fIsHeavyIon == 0) {
       printf("Running in pp mode \n");
       if (fSpecialTrigger == 0){
@@ -2058,8 +2072,8 @@ void AliConversionCuts::PrintCutsWithValues() {
          printf("\t only events where SDD was present will be analysed \n");
       } else if (fSpecialTrigger == 3){
          printf("\t only events where SDD was present will be analysed and triggered by VOAND\n");
-      } else if (fSpecialTrigger > 3){   
-         printf("\t only events triggered by %s \n", fSpecialTriggerName.Data());
+      } else if (fSpecialTrigger > 3){ 
+         printf("\t only events triggered by %s %s\n", fSpecialTriggerName.Data(), fSpecialSubTriggerName.Data());
       }
    } else if (fIsHeavyIon == 1){ 
       printf("Running in PbPb mode \n");
@@ -2084,7 +2098,7 @@ void AliConversionCuts::PrintCutsWithValues() {
       if (fSpecialTrigger == 0){
         printf("\t only events triggered by kMB, kCentral, kSemiCentral will be analysed \n");
       } else if (fSpecialTrigger > 4){   
-         printf("\t only events triggered by %s \n", fSpecialTriggerName.Data());
+         printf("\t only events triggered by %s %s\n", fSpecialTriggerName.Data(), fSpecialSubTriggerName.Data());
       }
    } else if (fIsHeavyIon == 2){
       printf("Running in pPb mode \n");
@@ -2099,21 +2113,33 @@ void AliConversionCuts::PrintCutsWithValues() {
       if (fSpecialTrigger == 0){
         printf("\t only events triggered by kINT7 will be analysed \n");
       } else if (fSpecialTrigger > 4){   
-         printf("\t only events triggered by %s \n", fSpecialTriggerName.Data());
+         printf("\t only events triggered by %s %s\n", fSpecialTriggerName.Data(), fSpecialSubTriggerName.Data());
       }
    }
-   printf("Electron cuts: \n");
+   printf("MC event cuts: \n");
+   if (fRejectExtraSignals == 0) printf("\t no rejection was applied \n");
+	else if (fRejectExtraSignals == 1) printf("\t only MB header will be inspected \n");
+	else if (fRejectExtraSignals > 1) printf("\t special header have been selected \n");
+	
+   printf("Electron cuts & Secondary Track Cuts - only track from secondaries enter analysis: \n");
+   printf("\t no like sign pairs from V0s \n");
+   if (!fUseCorrectedTPCClsInfo) printf("\t # TPC clusters > %3.2f \n", fMinClsTPC);
    if (fEtaCutMin > -0.1) printf("\t %3.2f < eta_{e} < %3.2f\n", fEtaCutMin, fEtaCut );
      else printf("\t eta_{e} < %3.2f\n", fEtaCut );
    printf("\t p_{T,e} > %3.2f\n", fSinglePtCut );
-   printf("\t %3.2f < n sigma e < %3.2f\n", fPIDnSigmaBelowElectronLine, fPIDnSigmaAboveElectronLine );
+   printf("\t TPC refit \n");
+   printf("\t no kinks \n");
+   printf("\t accept: %3.2f < n sigma_{e,TPC} < %3.2f\n", fPIDnSigmaBelowElectronLine, fPIDnSigmaAboveElectronLine );
+   printf("\t reject: %3.2f < p_{e,T} < %3.2f, n sigma_{pi,TPC} < %3.2f\n", fPIDMinPnSigmaAbovePionLine, fPIDMaxPnSigmaAbovePionLine, fPIDnSigmaAbovePionLine );
+   printf("\t reject: p_{e,T} > %3.2f, n sigma_{pi,TPC} < %3.2f\n", fPIDMaxPnSigmaAbovePionLine, fPIDnSigmaAbovePionLineHighPt );
+   if (fDoPionRejectionLowP) printf("\t reject: p_{e,T} < %3.2f, -%3.2f < n sigma_{pi,TPC} < %3.2f\n", fPIDMinPPionRejectionLowP, fPIDnSigmaAtLowPAroundPionLine, fPIDnSigmaAtLowPAroundPionLine );
+   if (fDoKaonRejectionLowP) printf("\t reject: -%3.2f < n sigma_{K,TPC} < %3.2f\n", fPIDnSigmaAtLowPAroundKaonLine, fPIDnSigmaAtLowPAroundKaonLine );
+   if (fDoProtonRejectionLowP) printf("\t reject: -%3.2f < n sigma_{K,TPC} < %3.2f\n", fPIDnSigmaAtLowPAroundProtonLine, fPIDnSigmaAtLowPAroundProtonLine );
+   if (fUseTOFpid) printf("\t accept: %3.2f < n sigma_{e,TOF} < %3.2f\n", fTofPIDnSigmaBelowElectronLine, fTofPIDnSigmaAboveElectronLine);
    
    printf("Photon cuts: \n");
-   printf("\t %3.2f < R_{conv} < %3.2f\n", fMinR, fMaxR );
-   printf("\t Z_{conv} < %3.2f\n", fMaxZ );
-   if (fEtaCutMin > -0.1) printf("\t %3.2f < eta_{conv} < %3.2f\n", fEtaCutMin, fEtaCut );
-     else printf("\t eta_{conv} < %3.2f\n", fEtaCut );
-   printf("\t p_{T,gamma} > %3.2f\n", fPtCut );	 
+   if (fUseOnFlyV0Finder) printf("\t using Onfly V0 finder \n");
+   else printf("\t using Offline V0 finder \n");
    if (fDo2DQt){
 	  printf("\t 2 dimensional q_{T} cut applied with maximum of %3.2f \n", fQtMax );
    } else {
@@ -2124,7 +2150,14 @@ void AliConversionCuts::PrintCutsWithValues() {
    } else {
       printf("\t chi^{2} max cut chi^{2} < %3.2f \n", fChi2CutConversion ); 
 	  printf("\t psi_{pair} max cut |psi_{pair}| < %3.2f \n", fPsiPairCut ); 
-   }	   
+   }	      
+   printf("\t %3.2f < R_{conv} < %3.2f\n", fMinR, fMaxR );
+   printf("\t Z_{conv} < %3.2f\n", fMaxZ );
+   if (fEtaCutMin > -0.1) printf("\t %3.2f < eta_{conv} < %3.2f\n", fEtaCutMin, fEtaCut );
+     else printf("\t eta_{conv} < %3.2f\n", fEtaCut );
+   if (fDoPhotonAsymmetryCut) printf("\t for p_{T,track} > %3.2f,  A_{gamma} < %3.2f \n", fMinPPhotonAsymmetryCut, fMinPhotonAsymmetry  );
+   if (fUseCorrectedTPCClsInfo) printf("\t #cluster TPC/ #findable clusters TPC (corrected for radius) > %3.2f\n", fMinClsTPCToF );
+   printf("\t p_{T,gamma} > %3.2f\n", fPtCut );	 
    printf("\t cos(Theta_{point}) > %3.2f \n", fCosPAngleCut );
    printf("\t dca_{R} < %3.2f \n", fDCARPrimVtxCut );
    printf("\t dca_{Z} < %3.2f \n", fDCAZPrimVtxCut );
@@ -2212,7 +2245,7 @@ Bool_t AliConversionCuts::SetCentralityMax(Int_t maxCentrality)
    return kTRUE;
 }
 ///________________________________________________________________________
-Int_t AliConversionCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
+Bool_t AliConversionCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
 {// Set Cut
 
    switch(selectSpecialTrigger){
@@ -2230,35 +2263,298 @@ Int_t AliConversionCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
       break;
    // allows to run MB & 6 other different trigger classes in parallel with the same photon cut
    case 4:
-      fSpecialTrigger=4; // different trigger class as MB
+      fSpecialTrigger=4; // trigger alias kTRD 
+      fOfflineTriggerMask=AliVEvent::kTRD;
       fTriggerSelectedManually = kTRUE;
+	  fSpecialTriggerName="AliVEvent::kTRD";
       break;
    case 5:
-      fSpecialTrigger=4; // different trigger class as MB
+      fSpecialTrigger=5; // trigger alias kEMC
+      fOfflineTriggerMask=AliVEvent::kEMC7 | AliVEvent::kEMC8 | AliVEvent::kEMC1 ;
       fTriggerSelectedManually = kTRUE;
+	  fSpecialTriggerName="AliVEvent::kEMC7/kEMC8/kEMC1";
       break;
    case 6:
-      fSpecialTrigger=4; // different trigger class as MB
+      fSpecialTrigger=6; // trigger alias kPHI
+      fOfflineTriggerMask=AliVEvent::kPHI7 | AliVEvent::kPHI1 | AliVEvent::kPHI8 | AliVEvent::kPHOSPb;
       fTriggerSelectedManually = kTRUE;
+	  fSpecialTriggerName="AliVEvent::kPHI7/kPHI1/kPHI8/kPHOSPb";
       break;
    case 7:
-      fSpecialTrigger=4; // different trigger class as MB
+      fSpecialTrigger=7; // trigger alias kHighMult
+      fOfflineTriggerMask=AliVEvent::kHighMult;
       fTriggerSelectedManually = kTRUE;
+	  fSpecialTriggerName="AliVEvent::kHighMult";
       break;
     case 8:
-      fSpecialTrigger=4; // different trigger class as MB
+      fSpecialTrigger=8; // trigger alias kEMCEGA
+      fOfflineTriggerMask=AliVEvent::kEMCEGA;
       fTriggerSelectedManually = kTRUE;
+	  fSpecialTriggerName="AliVEvent::kEMCEGA";
       break;
     case 9:
-      fSpecialTrigger=4; // different trigger class as MB
+      fSpecialTrigger=9; // trigger alias kEMCEJE
+      fOfflineTriggerMask=AliVEvent::kEMCEJE;
       fTriggerSelectedManually = kTRUE;
+	  fSpecialTriggerName="AliVEvent::kEMCEJE";
       break;
    default:
       AliError("Warning: Special Trigger Not known");
-      return kFALSE;
+      return 0;
    }
-   return kTRUE;
+   return 1;
 }
+
+///________________________________________________________________________
+Bool_t AliConversionCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerClass)
+{// Set Cut
+
+	if (fSpecialTrigger == 1){ //V0AND with different detectors
+		switch(selectSpecialSubTriggerClass){
+		case 0: //with VZERO
+			fSpecialTrigger=1;
+			fSpecialSubTrigger=0; 
+// 			AliInfo("Info: Nothing to be done");
+			break;
+		case 1: //with TZERO
+			fSpecialTrigger=0;
+			fSpecialSubTrigger=0; 
+			fOfflineTriggerMask=AliVEvent::kINT8;
+			fTriggerSelectedManually = kTRUE;
+			fSpecialTriggerName="AliVEvent::kINT8";
+			break;
+		default:
+			AliError("Warning: Special Subtrigger Class Not known");
+			return 0;
+		}	
+			
+	} else if (fSpecialTrigger == 4){ // Subdivision of TRD trigger classes
+		switch(selectSpecialSubTriggerClass){
+		case 0: // all together
+			fSpecialSubTrigger=0; 
+			fSpecialSubTriggerName="";
+// 			AliInfo("Info: Nothing to be done");
+			break;
+		case 1: // 7WUHSH - V0AND with single electron in TRD & EMCAL
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="7WUHEE";
+			break;
+		case 2: // 8WUHSH - T0AND with single electron in TRD & EMCAL
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="8WUHEE";
+			break;
+		case 3: // 7WUHSE - V0AND with single high pt electron in TRD
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="7WUHSE";
+			break;
+		case 4: // 8WUHSE - T0AND with single high pt electron in TRD
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="8WUHSE";
+			break;
+		case 5: // 7WUHJE - V0AND with jet in TRD
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="7WUHJT";
+			break;
+		case 6: // 8WUHJE - T0AND with jet in TRD
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="8WUHJT";
+			break;
+		case 7: // 7WUHQU - V0AND with dielectron pair in TRD
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="7WUHQU";
+			break;
+		case 8: // 8WUHQU - T0AND with dielectron pair in TRD
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="8WUHQU";
+			break;
+		default:
+			AliError("Warning: Special Subtrigger Class Not known");
+			return 0;
+		}		   
+	} else if (fSpecialTrigger == 5){ // Subdivision of kEMC trigger classes
+		switch(selectSpecialSubTriggerClass){
+		case 0: // all together
+			fSpecialSubTrigger=0; 
+			fSpecialSubTriggerName="";
+// 			AliInfo("Info: Nothing to be done");
+			break;
+		case 1: // CEMC1 - V0OR and EMCAL fired
+			fOfflineTriggerMask=AliVEvent::kEMC1;
+			fSpecialTriggerName="AliVEvent::kEMC1";
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="CEMC1";
+			break;
+		case 2: // CEMC7 - V0AND and EMCAL fired 
+			fSpecialSubTrigger=1; 
+			fOfflineTriggerMask=AliVEvent::kEMC7;
+			fSpecialTriggerName="AliVEvent::kEMC7";
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="CEMC7";
+			break;
+		case 3: // CEMC8  - T0OR and EMCAL fired
+			fOfflineTriggerMask=AliVEvent::kEMC8;
+			fSpecialTriggerName="AliVEvent::kEMC8";
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="CEMC8";
+			break;
+		default:
+			AliError("Warning: Special Subtrigger Class Not known");
+			return 0;
+		}		   
+	}  else if (fSpecialTrigger == 6){ // Subdivision of kPHI trigger classes
+		switch(selectSpecialSubTriggerClass){
+		case 0: // all together
+			fSpecialSubTrigger=0; 
+			fSpecialSubTriggerName="";
+// 			AliInfo("Info: Nothing to be done");
+			break;
+		case 1: // CEMC1 - V0OR and EMCAL fired
+			fOfflineTriggerMask=AliVEvent::kPHI1;
+			fSpecialTriggerName="AliVEvent::kPHI1";
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="CPHI1";
+			break;
+		case 2: // CEMC7 - V0AND and EMCAL fired 
+			fSpecialSubTrigger=1; 
+			fOfflineTriggerMask=AliVEvent::kPHI7;
+			fSpecialTriggerName="AliVEvent::kPHI7";
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="CPHI7";
+			break;
+		case 3: // CEMC8  - T0OR and EMCAL fired
+			fOfflineTriggerMask=AliVEvent::kPHI8;
+			fSpecialTriggerName="AliVEvent::kPHI8";
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="CPHI8";
+			break;
+		default:
+			AliError("Warning: Special Subtrigger Class Not known");
+			return 0;
+		}		   
+	} else if (fSpecialTrigger == 7){ // Subdivision of kHighMult trigger classes
+		switch(selectSpecialSubTriggerClass){
+		case 0: // all together
+			fSpecialSubTrigger=0; 
+			fSpecialSubTriggerName="";
+// 			AliInfo("Info: Nothing to be done");
+			break;
+		case 1: // CSHM1 - V0OR and high mult fired
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="CSHM1";
+			break;
+		case 2: // CSHM7 - V0AND and high mult fired 
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="CSHM7";
+			break;
+		case 3: // CSHM8  - T0OR and high mult fired
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="CSHM8";
+			break;
+		default:
+			AliError("Warning: Special Subtrigger Class Not known");
+			return 0;
+		}		   
+	}  else if (fSpecialTrigger == 8){ // Subdivision of kEMCEGA trigger classes
+		switch(selectSpecialSubTriggerClass){
+		case 0: // all together
+			fSpecialSubTrigger=0; 
+			fSpecialSubTriggerName="";
+// 			AliInfo("Info: Nothing to be done");
+			break;
+		case 1: // 7EGA - CINT7 EGA
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="7EGA";
+			break;
+		case 2: // 8EGA - CINT8 EGA
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="8EGA";
+			break;
+		case 3: // 7EG1 - CINT7 EG1
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="7EG1";
+			break;
+		case 4: // 8EG1 - CINT8 EG1
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="8EG1";
+			break;
+		case 5: // 7EG2 - CINT7 EG2
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="7EG2";
+			break;
+		case 6: // 8EG2 - CINT8 EG2
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="8EG2";
+			break;
+		default:
+			AliError("Warning: Special Subtrigger Class Not known");
+			return 0;
+		}		   
+	} else if (fSpecialTrigger == 9){ // Subdivision of kEMCEGA trigger classes
+		switch(selectSpecialSubTriggerClass){
+		case 0: // all together
+			fSpecialSubTrigger=0; 
+			fSpecialSubTriggerName="";
+// 			AliInfo("Info: Nothing to be done");
+			break;
+		case 1: // 7EJE - CINT7 EJE
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="7EJE";
+			break;
+		case 2: // 8EJE - CINT8 EJE
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="8EJE";
+			break;
+		case 3: // 7EJ1 - CINT7 EJ1
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="7EJ1";
+			break;
+		case 4: // 8EJ1 - CINT8 EJ1
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="8EJ1";
+			break;
+		case 5: // 7EJ2 - CINT7 EJ2
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="7EJ2";
+			break;
+		case 6: // 8EJ2 - CINT8 EJ2
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="8EJ2";
+			break;
+		default:
+			AliError("Warning: Special Subtrigger Class Not known");
+			return 0;
+		}		   
+	}
+	return 1;
+}
+
 ///________________________________________________________________________
 Bool_t AliConversionCuts::SetMultiplicityMethod(Int_t multiplicityMethod)
 {
@@ -3322,8 +3618,7 @@ Bool_t AliConversionCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCE
          {  13,  11}, // 85
          {   0,   0}  // 90
       };
-
-   Int_t column = -1;
+   Int_t column = 0;
    if(event->IsA()==AliESDEvent::Class()) column = 0;
    if(event->IsA()==AliAODEvent::Class()) column = 1;
 
@@ -3449,129 +3744,161 @@ Int_t AliConversionCuts::GetNumberOfContributorsVtx(AliVEvent *event){
 Bool_t AliConversionCuts::IsTriggerSelected(AliVEvent *fInputEvent)
 {
 
-   AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+	AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+// 	AliTRDTriggerAnalysis *trdSelection=  new AliTRDTriggerAnalysis();
+// 	trdSelection->CalcTriggers(fInputEvent);
+	
+	UInt_t isSelected = AliVEvent::kAny;
+	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->GetPeriodName();
+	//    cout << 	periodName.Data() << endl;
+	
+	if (fInputHandler==NULL) return kFALSE;
+	if( fInputHandler->GetEventSelection() || fInputEvent->IsA()==AliAODEvent::Class()) {
+	
+		TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();  
+		if (!fTriggerSelectedManually){
+			if (fPreSelCut) fOfflineTriggerMask = AliVEvent::kAny;
+			else {
+				if (fIsHeavyIon == 1) fOfflineTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
+				else if (fIsHeavyIon == 2) fOfflineTriggerMask = AliVEvent::kINT7;
+				else if (periodName.CompareTo("LHC11c") == 0 || periodName.CompareTo("LHC11d") == 0 || periodName.CompareTo("LHC11e") == 0 || periodName.CompareTo("LHC11f") == 0 || periodName.CompareTo("LHC11g") == 0  || periodName.CompareTo("LHC12a") == 0 || periodName.CompareTo("LHC12b") == 0 || periodName.CompareTo("LHC12c") == 0 || periodName.CompareTo("LHC12d") == 0 || periodName.CompareTo("LHC12f") == 0  || periodName.CompareTo("LHC12g") == 0  || periodName.CompareTo("LHC12h") == 0  || periodName.CompareTo("LHC12i") == 0  ||periodName.CompareTo("LHC13g") == 0 ) {
+					fOfflineTriggerMask = AliVEvent::kINT7;      
+	// 				cout << "will take kINT7 as trigger mask" << endl; 
+				}	
+				else fOfflineTriggerMask = AliVEvent::kMB;
+			}
+		}
+		// Get the actual offline trigger mask for the event and AND it with the
+		// requested mask. If no mask requested select by default the event.
+	//       if (fPreSelCut) cout << "Trigger selected from outside: "<< fTriggerSelectedManually <<"\t Offline Trigger mask for Precut: " << fOfflineTriggerMask << endl;
+	//       else cout << "Trigger selected from outside: "<< fTriggerSelectedManually <<"\t Offline Trigger mask: " << fOfflineTriggerMask << endl;
 
-   UInt_t isSelected = AliVEvent::kAny;
-   TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->GetPeriodName();
-//    cout << 	periodName.Data() << endl;
-   
-   if (fInputHandler==NULL) return kFALSE;
-   if( fInputHandler->GetEventSelection() || fInputEvent->IsA()==AliAODEvent::Class()) {
-      if (!fTriggerSelectedManually){
-         if (fPreSelCut) fOfflineTriggerMask = AliVEvent::kAny;
-         else {
-            if (fIsHeavyIon == 1) fOfflineTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
-            else if (fIsHeavyIon == 2) fOfflineTriggerMask = AliVEvent::kINT7;
-            else if (periodName.CompareTo("LHC11c") == 0 || periodName.CompareTo("LHC11d") == 0 || periodName.CompareTo("LHC11e") == 0 || periodName.CompareTo("LHC11f") == 0 || periodName.CompareTo("LHC11g") == 0  || periodName.CompareTo("LHC12a") == 0 || periodName.CompareTo("LHC12b") == 0 || periodName.CompareTo("LHC12c") == 0 || periodName.CompareTo("LHC12d") == 0 || periodName.CompareTo("LHC12f") == 0  || periodName.CompareTo("LHC12g") == 0  || periodName.CompareTo("LHC12h") == 0  || periodName.CompareTo("LHC12i") == 0  ||periodName.CompareTo("LHC13g") == 0 ) {
-				fOfflineTriggerMask = AliVEvent::kINT7;      
-// 				cout << "will take kINT7 as trigger mask" << endl; 
-			}	
-            else fOfflineTriggerMask = AliVEvent::kMB;
-         }
-      }
-      // Get the actual offline trigger mask for the event and AND it with the
-      // requested mask. If no mask requested select by default the event.
-//       if (fPreSelCut) cout << "Trigger selected from outside: "<< fTriggerSelectedManually <<"\t Offline Trigger mask for Precut: " << fOfflineTriggerMask << endl;
-//       else cout << "Trigger selected from outside: "<< fTriggerSelectedManually <<"\t Offline Trigger mask: " << fOfflineTriggerMask << endl;
+		if (fOfflineTriggerMask){
+			isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();		 
+			if (isSelected && !fPreSelCut){
+// 				if (fSpecialTriggerName.Contains("kTRD")){ // make special selection for TRD trigger
+// 					Bool_t bTRDHasFiredConfirmed= 0; // bool whether the TRD has triggered and has been read out due to that trigger & should have triggered
+// 					Bool_t bTRDClassContainedInTriggerList= 1; //check whether the trigger list contains the requested trigger
+// 					if (fSpecialSubTrigger>0){
+// 						if (fSpecialSubTriggerName.Contains("HSE")){
+// 							bTRDHasFiredConfirmed = trdSelection->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHSE);
+// 						} else if (fSpecialSubTriggerName.Contains("HJT")){
+// 							bTRDHasFiredConfirmed = trdSelection->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHJT);
+// 						} else if (fSpecialSubTriggerName.Contains("HEE")){
+// 							bTRDHasFiredConfirmed = trdSelection->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHEE);
+// 						} else if (fSpecialSubTriggerName.Contains("HQU")){	
+// 							bTRDHasFiredConfirmed = trdSelection->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHQU);
+// 						}
+// 						if (!firedTrigClass.Contains(fSpecialSubTriggerName.Data())) bTRDClassContainedInTriggerList = 0;
+// 					} else {
+// 						bTRDHasFiredConfirmed = trdSelection->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHQU)  || trdSelection->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHSE) || trdSelection->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHJT) || trdSelection->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHEE);
+// 					}	
+// 					if (!bTRDHasFiredConfirmed || !bTRDClassContainedInTriggerList)  isSelected = 0;									
+// 				} else { // more general condition for all other sub-triggers
+// 					if (fSpecialTriggerName.Contains("kEMCE"))cout << fSpecialTriggerName.Data() << "\t" <<fSpecialSubTriggerName.Data()<< endl;
+					if (fSpecialSubTrigger>0){
+						if (!firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 0;
+					}	 
+// 					if (fSpecialTriggerName.Contains("kEMCE"))cout <<firedTrigClass << endl;
+// 				}
+			}				
+		} 	 
+	}
+	fIsSDDFired = !(fInputHandler->IsEventSelected() & AliVEvent::kFastOnly);
 
-      if (fOfflineTriggerMask)
-         isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
-   }
-   fIsSDDFired = !(fInputHandler->IsEventSelected() & AliVEvent::kFastOnly);
+	// Fill Histogram
+	if(hTriggerClass){
+		if (fIsSDDFired) hTriggerClass->Fill(33);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClass->Fill(0);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)hTriggerClass->Fill(1);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMUON)hTriggerClass->Fill(2);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kHighMult)hTriggerClass->Fill(3);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kEMC1)hTriggerClass->Fill(4);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kCINT5)hTriggerClass->Fill(5);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kCMUS5)hTriggerClass->Fill(6);
+	//       if (fInputHandler->IsEventSelected() & AliVEvent::kMUSPB)hTriggerClass->Fill(6);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMUSH7)hTriggerClass->Fill(7);
+	//       if (fInputHandler->IsEventSelected() & AliVEvent::kMUSHPB)hTriggerClass->Fill(7);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMUL7)hTriggerClass->Fill(8);
+	//       if (fInputHandler->IsEventSelected() & AliVEvent::kMuonLikePB)hTriggerClass->Fill(8);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMUU7)hTriggerClass->Fill(9);
+	//       if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikePB)hTriggerClass->Fill(9);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7)hTriggerClass->Fill(10);
+	//       if (fInputHandler->IsEventSelected() & AliVEvent::kEMC8)hTriggerClass->Fill(10);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMUS7)hTriggerClass->Fill(11);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kPHI1)hTriggerClass->Fill(12);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kPHI7)hTriggerClass->Fill(13);
+	//       if (fInputHandler->IsEventSelected() & AliVEvent::kPHI8)hTriggerClass->Fill(13);
+	//       if (fInputHandler->IsEventSelected() & AliVEvent::kPHOSPb)hTriggerClass->Fill(13);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kEMCEJE)hTriggerClass->Fill(14);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kEMCEGA)hTriggerClass->Fill(15);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kCentral)hTriggerClass->Fill(16);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)hTriggerClass->Fill(17);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kDG5)hTriggerClass->Fill(18);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kZED)hTriggerClass->Fill(19);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kSPI7)hTriggerClass->Fill(20);
+	//       if (fInputHandler->IsEventSelected() & AliVEvent::kSPI)hTriggerClass->Fill(20);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kINT8)hTriggerClass->Fill(21);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMuonSingleLowPt8)hTriggerClass->Fill(22);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMuonSingleHighPt8)hTriggerClass->Fill(23);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMuonLikeLowPt8)hTriggerClass->Fill(24);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikeLowPt8)hTriggerClass->Fill(25);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikeLowPt0)hTriggerClass->Fill(26);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kUserDefined)hTriggerClass->Fill(27);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kTRD)hTriggerClass->Fill(28);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kFastOnly)hTriggerClass->Fill(29);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kAnyINT)hTriggerClass->Fill(30);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kAny)hTriggerClass->Fill(31);
+		if (!fInputHandler->IsEventSelected()) hTriggerClass->Fill(34);
+	}
 
-   // Fill Histogram
-   if(hTriggerClass){
-      if (fIsSDDFired) hTriggerClass->Fill(33);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClass->Fill(0);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)hTriggerClass->Fill(1);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMUON)hTriggerClass->Fill(2);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kHighMult)hTriggerClass->Fill(3);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kEMC1)hTriggerClass->Fill(4);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kCINT5)hTriggerClass->Fill(5);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kCMUS5)hTriggerClass->Fill(6);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMUSPB)hTriggerClass->Fill(6);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMUSH7)hTriggerClass->Fill(7);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMUSHPB)hTriggerClass->Fill(7);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMUL7)hTriggerClass->Fill(8);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMuonLikePB)hTriggerClass->Fill(8);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMUU7)hTriggerClass->Fill(9);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikePB)hTriggerClass->Fill(9);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7)hTriggerClass->Fill(10);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kEMC8)hTriggerClass->Fill(10);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMUS7)hTriggerClass->Fill(11);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kPHI1)hTriggerClass->Fill(12);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kPHI7)hTriggerClass->Fill(13);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kPHI8)hTriggerClass->Fill(13);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kPHOSPb)hTriggerClass->Fill(13);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kEMCEJE)hTriggerClass->Fill(14);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kEMCEGA)hTriggerClass->Fill(15);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kCentral)hTriggerClass->Fill(16);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)hTriggerClass->Fill(17);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kDG5)hTriggerClass->Fill(18);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kZED)hTriggerClass->Fill(19);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kSPI7)hTriggerClass->Fill(20);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kSPI)hTriggerClass->Fill(20);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kINT8)hTriggerClass->Fill(21);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMuonSingleLowPt8)hTriggerClass->Fill(22);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMuonSingleHighPt8)hTriggerClass->Fill(23);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMuonLikeLowPt8)hTriggerClass->Fill(24);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikeLowPt8)hTriggerClass->Fill(25);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikeLowPt0)hTriggerClass->Fill(26);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kUserDefined)hTriggerClass->Fill(27);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kTRD)hTriggerClass->Fill(28);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kFastOnly)hTriggerClass->Fill(29);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kAnyINT)hTriggerClass->Fill(30);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kAny)hTriggerClass->Fill(31);
-      if (!fInputHandler->IsEventSelected()) hTriggerClass->Fill(34);
-   }
+	if(hTriggerClassSelected && isSelected){
+		if (!fIsSDDFired) hTriggerClassSelected->Fill(33);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClassSelected->Fill(0);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)hTriggerClassSelected->Fill(1);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMUON)hTriggerClassSelected->Fill(2);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kHighMult)hTriggerClassSelected->Fill(3);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kEMC1)hTriggerClassSelected->Fill(4);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kCINT5)hTriggerClassSelected->Fill(5);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kCMUS5)hTriggerClassSelected->Fill(6);
+	//       if (fInputHandler->IsEventSelected() & AliVEvent::kMUSPB)hTriggerClassSelected->Fill(6);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMUSH7)hTriggerClassSelected->Fill(7);
+	//       if (fInputHandler->IsEventSelected() & AliVEvent::kMUSHPB)hTriggerClassSelected->Fill(7);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMUL7)hTriggerClassSelected->Fill(8);
+	//       if (fInputHandler->IsEventSelected() & AliVEvent::kMuonLikePB)hTriggerClassSelected->Fill(8);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMUU7)hTriggerClassSelected->Fill(9);
+	//       if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikePB)hTriggerClassSelected->Fill(9);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7)hTriggerClassSelected->Fill(10);
+	//       if (fInputHandler->IsEventSelected() & AliVEvent::kEMC8)hTriggerClassSelected->Fill(10);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMUS7)hTriggerClassSelected->Fill(11);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kPHI1)hTriggerClassSelected->Fill(12);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kPHI7)hTriggerClassSelected->Fill(13);
+	//       if (fInputHandler->IsEventSelected() & AliVEvent::kPHI8)hTriggerClassSelected->Fill(13);
+	//       if (fInputHandler->IsEventSelected() & AliVEvent::kPHOSPb)hTriggerClassSelected->Fill(13);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kEMCEJE)hTriggerClassSelected->Fill(14);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kEMCEGA)hTriggerClassSelected->Fill(15);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kCentral)hTriggerClassSelected->Fill(16);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)hTriggerClassSelected->Fill(17);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kDG5)hTriggerClassSelected->Fill(18);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kZED)hTriggerClassSelected->Fill(19);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kSPI7)hTriggerClassSelected->Fill(20);
+	//       if (fInputHandler->IsEventSelected() & AliVEvent::kSPI)hTriggerClassSelected->Fill(20);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kINT8)hTriggerClassSelected->Fill(21);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMuonSingleLowPt8)hTriggerClassSelected->Fill(22);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMuonSingleHighPt8)hTriggerClassSelected->Fill(23);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMuonLikeLowPt8)hTriggerClassSelected->Fill(24);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikeLowPt8)hTriggerClassSelected->Fill(25);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikeLowPt0)hTriggerClassSelected->Fill(26);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kUserDefined)hTriggerClassSelected->Fill(27);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kTRD)hTriggerClassSelected->Fill(28);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kFastOnly)hTriggerClassSelected->Fill(29);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kAnyINT)hTriggerClassSelected->Fill(30);
+		if (fInputHandler->IsEventSelected() & AliVEvent::kAny)hTriggerClassSelected->Fill(31);
+	}
 
-   if(hTriggerClassSelected && isSelected){
-      if (!fIsSDDFired) hTriggerClassSelected->Fill(33);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClassSelected->Fill(0);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)hTriggerClassSelected->Fill(1);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMUON)hTriggerClassSelected->Fill(2);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kHighMult)hTriggerClassSelected->Fill(3);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kEMC1)hTriggerClassSelected->Fill(4);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kCINT5)hTriggerClassSelected->Fill(5);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kCMUS5)hTriggerClassSelected->Fill(6);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMUSPB)hTriggerClassSelected->Fill(6);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMUSH7)hTriggerClassSelected->Fill(7);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMUSHPB)hTriggerClassSelected->Fill(7);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMUL7)hTriggerClassSelected->Fill(8);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMuonLikePB)hTriggerClassSelected->Fill(8);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMUU7)hTriggerClassSelected->Fill(9);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikePB)hTriggerClassSelected->Fill(9);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7)hTriggerClassSelected->Fill(10);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kEMC8)hTriggerClassSelected->Fill(10);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMUS7)hTriggerClassSelected->Fill(11);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kPHI1)hTriggerClassSelected->Fill(12);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kPHI7)hTriggerClassSelected->Fill(13);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kPHI8)hTriggerClassSelected->Fill(13);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kPHOSPb)hTriggerClassSelected->Fill(13);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kEMCEJE)hTriggerClassSelected->Fill(14);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kEMCEGA)hTriggerClassSelected->Fill(15);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kCentral)hTriggerClassSelected->Fill(16);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)hTriggerClassSelected->Fill(17);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kDG5)hTriggerClassSelected->Fill(18);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kZED)hTriggerClassSelected->Fill(19);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kSPI7)hTriggerClassSelected->Fill(20);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kSPI)hTriggerClassSelected->Fill(20);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kINT8)hTriggerClassSelected->Fill(21);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMuonSingleLowPt8)hTriggerClassSelected->Fill(22);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMuonSingleHighPt8)hTriggerClassSelected->Fill(23);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMuonLikeLowPt8)hTriggerClassSelected->Fill(24);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikeLowPt8)hTriggerClassSelected->Fill(25);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikeLowPt0)hTriggerClassSelected->Fill(26);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kUserDefined)hTriggerClassSelected->Fill(27);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kTRD)hTriggerClassSelected->Fill(28);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kFastOnly)hTriggerClassSelected->Fill(29);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kAnyINT)hTriggerClassSelected->Fill(30);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kAny)hTriggerClassSelected->Fill(31);
-   }
+	if(!isSelected)return kFALSE;
 
-   if(!isSelected)return kFALSE;
-
-   return kTRUE;
+	return kTRUE;
 
 }
 
@@ -3753,7 +4080,7 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
 	if(MCEvent->IsA()==AliMCEvent::Class()){
 		cHeader = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
 		if(cHeader) headerFound = kTRUE;
-		fMCStack = dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
+		if(dynamic_cast<AliMCEvent*>(MCEvent))fMCStack = dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
 	}
 	if(MCEvent->IsA()==AliAODEvent::Class()){ // MCEvent is a AODEvent in case of AOD
 		cHeaderAOD = dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
@@ -3974,19 +4301,21 @@ Int_t AliConversionCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, A
 	}
 	else if(InputEvent->IsA()==AliAODEvent::Class()){
 		TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(InputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-		AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index));
-		if(!aodMCParticle) return 1; // Photon Without a Mother ? --> Accepted
-		if(!aodMCParticle->IsPrimary()){
-			if( aodMCParticle->GetMother() < 0) return 1;// Secondary Particle without Mother??
-			return IsParticleFromBGEvent(aodMCParticle->GetMother(),MCStack,InputEvent);
-		}
-		index = abs(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index))->GetLabel());
-		for(Int_t i = 0;i<fnHeaders;i++){
-			if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
-				accepted = 1;
-				if(i == 0) accepted = 2; // MB Header
+		if (AODMCTrackArray){
+			AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index));
+			if(!aodMCParticle) return 1; // Photon Without a Mother ? --> Accepted
+			if(!aodMCParticle->IsPrimary()){
+				if( aodMCParticle->GetMother() < 0) return 1;// Secondary Particle without Mother??
+				return IsParticleFromBGEvent(aodMCParticle->GetMother(),MCStack,InputEvent);
 			}
-		}
+			index = abs(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index))->GetLabel());
+			for(Int_t i = 0;i<fnHeaders;i++){
+				if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
+					accepted = 1;
+					if(i == 0) accepted = 2; // MB Header
+				}
+			}
+		}	
 	}
 
 	return accepted;
@@ -4028,176 +4357,180 @@ Int_t AliConversionCuts::IsEventAcceptedByConversionCut(AliConversionCuts *Reade
 
 //_________________________________________________________________________
 Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliStack *MCStack, AliVEvent *InputEvent){
-   if (!(period.CompareTo("LHC12f1a") == 0 || period.CompareTo("LHC12f1b") == 0  || period.CompareTo("LHC12i3") == 0 || period.CompareTo("LHC11a10a") == 0 || period.CompareTo("LHC11a10b") == 0 || period.CompareTo("LHC11a10b_bis") == 0 || period.CompareTo("LHC11a10a_bis") == 0 || period.CompareTo("LHC11a10b_plus") == 0 || period.Contains("LHC13d2")|| period.Contains("LHC14a1") || 
-   period.CompareTo("LHC13e7") == 0 || period.Contains("LHC13b2_efix") || period.CompareTo("LHC14b2") == 0 )) return 1.;
+	if (!(period.CompareTo("LHC12f1a") == 0 || period.CompareTo("LHC12f1b") == 0  || period.CompareTo("LHC12i3") == 0 || period.CompareTo("LHC11a10a") == 0 || period.CompareTo("LHC11a10b") == 0 || period.CompareTo("LHC11a10b_bis") == 0 || period.CompareTo("LHC11a10a_bis") == 0 || period.CompareTo("LHC11a10b_plus") == 0 || period.Contains("LHC13d2")|| period.Contains("LHC14a1") || 
+	period.CompareTo("LHC13e7") == 0 || period.Contains("LHC13b2_efix") || period.CompareTo("LHC14b2") == 0 )) return 1.;
 
-   Int_t kCaseGen = 0;
-   for (Int_t i = 0; i < fnHeaders; i++){
-      if (index >= fNotRejectedStart[i] && index < fNotRejectedEnd[i]+1){
-         if (fGeneratorNames[i].CompareTo("Pythia") == 0){
-            kCaseGen = 1;
-         } else if (fGeneratorNames[i].CompareTo("DPMJET") == 0){
-            kCaseGen = 2;
-         } else if (fGeneratorNames[i].CompareTo("HIJING") == 0 ||
-                    fGeneratorNames[i].CompareTo("Hijing") == 0 ||
-                    fGeneratorNames[i].Contains("hijing")){
-            kCaseGen = 3;
-         } else if (fGeneratorNames[i].CompareTo("BOX") == 0){
-             kCaseGen = 4;
-         } else if (fGeneratorNames[i].CompareTo("PARAM") == 0){
-            kCaseGen = 5;
-         } else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound") == 0){
-            kCaseGen = 6;
-         } else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound_Pythia") == 0){
-            kCaseGen = 1;
-         } else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound_Phojet") == 0){
-            kCaseGen = 2;
-         } else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound_Hijing") == 0){
-            kCaseGen = 3;
-         }
-         if (period.Contains("LHC13d2") || period.CompareTo("LHC13e7") == 0 || period.Contains("LHC13b2_efix")  || period.Contains("LHC14a1") || period.CompareTo("LHC14b2") == 0 ){
-            kCaseGen = 3;
-         }
-      }
-   }
-   if (kCaseGen == 0) return 1;
+	Int_t kCaseGen = 0;
+	for (Int_t i = 0; i < fnHeaders; i++){
+		if (index >= fNotRejectedStart[i] && index < fNotRejectedEnd[i]+1){
+			if (fGeneratorNames[i].CompareTo("Pythia") == 0){
+				kCaseGen = 1;
+			} else if (fGeneratorNames[i].CompareTo("DPMJET") == 0){
+				kCaseGen = 2;
+			} else if (fGeneratorNames[i].CompareTo("HIJING") == 0 ||
+						fGeneratorNames[i].CompareTo("Hijing") == 0 ||
+						fGeneratorNames[i].Contains("hijing")){
+				kCaseGen = 3;
+			} else if (fGeneratorNames[i].CompareTo("BOX") == 0){
+				kCaseGen = 4;
+			} else if (fGeneratorNames[i].CompareTo("PARAM") == 0){
+				kCaseGen = 5;
+			} else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound") == 0){
+				kCaseGen = 6;
+			} else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound_Pythia") == 0){
+				kCaseGen = 1;
+			} else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound_Phojet") == 0){
+				kCaseGen = 2;
+			} else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound_Hijing") == 0){
+				kCaseGen = 3;
+			}
+			if (period.Contains("LHC13d2") || period.CompareTo("LHC13e7") == 0 || period.Contains("LHC13b2_efix")  || period.Contains("LHC14a1") || period.CompareTo("LHC14b2") == 0 ){
+				kCaseGen = 3;
+			}
+		}
+	}
+	if (kCaseGen == 0) return 1;
 
 
-   Double_t mesonPt = 0;
-   Double_t mesonMass = 0;
-   Int_t PDGCode = 0;
-   if(!InputEvent || InputEvent->IsA()==AliESDEvent::Class()){
-      mesonPt = ((TParticle*)MCStack->Particle(index))->Pt();
-      mesonMass = ((TParticle*)MCStack->Particle(index))->GetCalcMass();
-      PDGCode = ((TParticle*)MCStack->Particle(index))->GetPdgCode();
-   }
-   else if(InputEvent->IsA()==AliAODEvent::Class()){
-      TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(InputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-      AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index));
-      mesonPt = aodMCParticle->Pt();
-      mesonMass = aodMCParticle->GetCalcMass();
-      PDGCode = aodMCParticle->GetPdgCode();
-   }
+	Double_t mesonPt = 0;
+	Double_t mesonMass = 0;
+	Int_t PDGCode = 0;
+	if(!InputEvent || InputEvent->IsA()==AliESDEvent::Class()){
+		mesonPt = ((TParticle*)MCStack->Particle(index))->Pt();
+		mesonMass = ((TParticle*)MCStack->Particle(index))->GetCalcMass();
+		PDGCode = ((TParticle*)MCStack->Particle(index))->GetPdgCode();
+	}
+	else if(InputEvent->IsA()==AliAODEvent::Class()){
+		TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(InputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+		if (AODMCTrackArray){
+			AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index));
+			mesonPt = aodMCParticle->Pt();
+			mesonMass = aodMCParticle->GetCalcMass();
+			PDGCode = aodMCParticle->GetPdgCode();
+		} else {
+			return 1;
+		}	
+	}
 
-   Float_t functionResultMC = 1.;
-   if (kCaseGen == 1){ // Pythia 6
-      Float_t dNdyMC = 2.1462;
-      Float_t nMC = 7.06055;
-      Float_t tMC = 0.12533;
-      if ( PDGCode ==  111){
-         dNdyMC = 2.1462;
-         nMC = 7.06055;
-         tMC = 0.12533;
-      } else if ( PDGCode ==  221){
-         dNdyMC = 0.2357;
-         nMC = 5.9105;
-         tMC = 0.1525;
-      }
-      functionResultMC = dNdyMC / ( 2 * TMath::Pi())*(nMC-1.)*(nMC-2.) / (nMC*tMC*(nMC*tMC+mesonMass*(nMC-2.)))  * TMath::Power(1.+(TMath::Sqrt(mesonPt*mesonPt+mesonMass*mesonMass)-mesonMass)/(nMC*tMC), -nMC);
-   } else if (kCaseGen == 2){ // Phojet
-      Float_t dNdyMC = 2.35978;
-      Float_t nMC = 6.81795;
-      Float_t tMC = 0.11492;
-      if ( PDGCode ==  111){
-         dNdyMC = 2.35978;
-         nMC = 6.81795;
-         tMC = 0.11492;
-      } else if ( PDGCode ==  221){
-         dNdyMC = 0.3690;
-         nMC = 5.55809;
-         tMC = 0.13387;
-      }
-      functionResultMC = dNdyMC / ( 2 * TMath::Pi())*(nMC-1.)*(nMC-2.) / (nMC*tMC*(nMC*tMC+mesonMass*(nMC-2.)))  * TMath::Power(1.+(TMath::Sqrt(mesonPt*mesonPt+mesonMass*mesonMass)-mesonMass)/(nMC*tMC), -nMC);
-   } else if (kCaseGen == 4){ // BOX generators pp
-//       functionResultMC = 1./sqrt(1.-mesonMass*mesonMass/((mesonMass*mesonMass+mesonPt*mesonPt)*cosh(mesonY)*cosh(mesonY)));
-      Float_t a = 0.23437;
-      Float_t b = 5.6661;
-      Float_t c = -1430.5863;
-      Float_t d = -0.6966624;
-      Float_t e = 252.3742;
-      if ( PDGCode ==  111){
-         a = 0.23437;
-         b = 5.6661;
-         c = -1430.5863;
-         d = -0.6966624;
-         e = 252.3742;
-      } else if ( PDGCode ==  221){
-         a = 0.10399;
-         b = 4.35311;
-         c = -12.17723;
-         d = -0.01172;
-         e =1.85140;
-      }
-      functionResultMC = a*TMath::Power(mesonPt,-1.*(b+c/(TMath::Power(mesonPt,d)+e)))*1./mesonPt *1./1.6 *1./(2.* TMath::Pi());
-//       cout << functionResultMC << endl;
-   } else if (kCaseGen == 3 ){ // HIJING
-      if ( PDGCode ==  111 && fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0){
-         functionResultMC = hReweightMCHistPi0->Interpolate(mesonPt);
-      }
-      if ( PDGCode ==  221 && fDoReweightHistoMCEta && hReweightMCHistEta!= 0x0){
-         functionResultMC = hReweightMCHistEta->Interpolate(mesonPt);
-      }
-      if ( PDGCode ==  310 && fDoReweightHistoMCK0s && hReweightMCHistK0s!= 0x0){
-         functionResultMC = hReweightMCHistK0s->Interpolate(mesonPt);
-      }
-   }
+	Float_t functionResultMC = 1.;
+	if (kCaseGen == 1){ // Pythia 6
+		Float_t dNdyMC = 2.1462;
+		Float_t nMC = 7.06055;
+		Float_t tMC = 0.12533;
+		if ( PDGCode ==  111){
+			dNdyMC = 2.1462;
+			nMC = 7.06055;
+			tMC = 0.12533;
+		} else if ( PDGCode ==  221){
+			dNdyMC = 0.2357;
+			nMC = 5.9105;
+			tMC = 0.1525;
+		}
+		functionResultMC = dNdyMC / ( 2 * TMath::Pi())*(nMC-1.)*(nMC-2.) / (nMC*tMC*(nMC*tMC+mesonMass*(nMC-2.)))  * TMath::Power(1.+(TMath::Sqrt(mesonPt*mesonPt+mesonMass*mesonMass)-mesonMass)/(nMC*tMC), -nMC);
+	} else if (kCaseGen == 2){ // Phojet
+		Float_t dNdyMC = 2.35978;
+		Float_t nMC = 6.81795;
+		Float_t tMC = 0.11492;
+		if ( PDGCode ==  111){
+			dNdyMC = 2.35978;
+			nMC = 6.81795;
+			tMC = 0.11492;
+		} else if ( PDGCode ==  221){
+			dNdyMC = 0.3690;
+			nMC = 5.55809;
+			tMC = 0.13387;
+		}
+		functionResultMC = dNdyMC / ( 2 * TMath::Pi())*(nMC-1.)*(nMC-2.) / (nMC*tMC*(nMC*tMC+mesonMass*(nMC-2.)))  * TMath::Power(1.+(TMath::Sqrt(mesonPt*mesonPt+mesonMass*mesonMass)-mesonMass)/(nMC*tMC), -nMC);
+	} else if (kCaseGen == 4){ // BOX generators pp
+	//       functionResultMC = 1./sqrt(1.-mesonMass*mesonMass/((mesonMass*mesonMass+mesonPt*mesonPt)*cosh(mesonY)*cosh(mesonY)));
+		Float_t a = 0.23437;
+		Float_t b = 5.6661;
+		Float_t c = -1430.5863;
+		Float_t d = -0.6966624;
+		Float_t e = 252.3742;
+		if ( PDGCode ==  111){
+			a = 0.23437;
+			b = 5.6661;
+			c = -1430.5863;
+			d = -0.6966624;
+			e = 252.3742;
+		} else if ( PDGCode ==  221){
+			a = 0.10399;
+			b = 4.35311;
+			c = -12.17723;
+			d = -0.01172;
+			e =1.85140;
+		}
+		functionResultMC = a*TMath::Power(mesonPt,-1.*(b+c/(TMath::Power(mesonPt,d)+e)))*1./mesonPt *1./1.6 *1./(2.* TMath::Pi());
+	//       cout << functionResultMC << endl;
+	} else if (kCaseGen == 3 ){ // HIJING
+		if ( PDGCode ==  111 && fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0){
+			functionResultMC = hReweightMCHistPi0->Interpolate(mesonPt);
+		}
+		if ( PDGCode ==  221 && fDoReweightHistoMCEta && hReweightMCHistEta!= 0x0){
+			functionResultMC = hReweightMCHistEta->Interpolate(mesonPt);
+		}
+		if ( PDGCode ==  310 && fDoReweightHistoMCK0s && hReweightMCHistK0s!= 0x0){
+			functionResultMC = hReweightMCHistK0s->Interpolate(mesonPt);
+		}
+	}
 
-   Float_t functionResultData = 1;
-   if (kCaseGen == 1 || kCaseGen == 2 || kCaseGen == 4 ){
-      Float_t dNdyData = 2.2328;
-      Float_t nData = 7.1473;
-      Float_t tData = 0.1346;
-      if ( PDGCode ==  111){
-         dNdyData = 2.2328;
-         nData = 7.1473;
-         tData = 0.1346;
-      } else if ( PDGCode ==  221){
-         dNdyData = 0.38992; //be careful this fit is not optimal, eta in data still has problems
-         nData = 5.72778;
-         tData = 0.13835;
-      }
-      functionResultData = dNdyData / ( 2 * TMath::Pi())*(nData-1.)*(nData-2.) / (nData*tData*(nData*tData+mesonMass*(nData-2.)))  * TMath::Power(1.+(TMath::Sqrt(mesonPt*mesonPt+mesonMass*mesonMass)-mesonMass)/(nData*tData), -nData);
-//       cout << functionResultData << endl;
-   } else {
-      if ( PDGCode ==  111 && fDoReweightHistoMCPi0 && fFitDataPi0!= 0x0){
-         functionResultData = fFitDataPi0->Eval(mesonPt);
-      }
-      if ( PDGCode ==  221 && fDoReweightHistoMCEta && fFitDataEta!= 0x0){
-         functionResultData = fFitDataEta->Eval(mesonPt);
-      }
-      if ( PDGCode ==  310 && fDoReweightHistoMCK0s && fFitDataK0s!= 0x0){
-         functionResultData = fFitDataK0s->Eval(mesonPt);
-      }
+	Float_t functionResultData = 1;
+	if (kCaseGen == 1 || kCaseGen == 2 || kCaseGen == 4 ){
+		Float_t dNdyData = 2.2328;
+		Float_t nData = 7.1473;
+		Float_t tData = 0.1346;
+		if ( PDGCode ==  111){
+			dNdyData = 2.2328;
+			nData = 7.1473;
+			tData = 0.1346;
+		} else if ( PDGCode ==  221){
+			dNdyData = 0.38992; //be careful this fit is not optimal, eta in data still has problems
+			nData = 5.72778;
+			tData = 0.13835;
+		}
+		functionResultData = dNdyData / ( 2 * TMath::Pi())*(nData-1.)*(nData-2.) / (nData*tData*(nData*tData+mesonMass*(nData-2.)))  * TMath::Power(1.+(TMath::Sqrt(mesonPt*mesonPt+mesonMass*mesonMass)-mesonMass)/(nData*tData), -nData);
+	//       cout << functionResultData << endl;
+	} else {
+		if ( PDGCode ==  111 && fDoReweightHistoMCPi0 && fFitDataPi0!= 0x0){
+			functionResultData = fFitDataPi0->Eval(mesonPt);
+		}
+		if ( PDGCode ==  221 && fDoReweightHistoMCEta && fFitDataEta!= 0x0){
+			functionResultData = fFitDataEta->Eval(mesonPt);
+		}
+		if ( PDGCode ==  310 && fDoReweightHistoMCK0s && fFitDataK0s!= 0x0){
+			functionResultData = fFitDataK0s->Eval(mesonPt);
+		}
 
-   }
+	}
 
-   Double_t weight = 1;
-   if (PDGCode ==  111 || PDGCode ==  221){
-      if (functionResultData != 0. && functionResultMC != 0. && isfinite(functionResultData) && isfinite(functionResultMC)){
-         weight = functionResultData/functionResultMC;
-         if ( kCaseGen == 3){
-            if (PDGCode ==  111){ 
-               if (!(fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0 && PDGCode ==  111)){
-                  weight = 1.;
-               }
-            } 
-            if (PDGCode ==  221){ 
-               if (!(fDoReweightHistoMCEta && hReweightMCHistEta!= 0x0 && PDGCode ==  221)){
-                  weight = 1.;
-               }
-            }
-         }
-         if (!isfinite(functionResultData)) weight = 1.;
-         if (!isfinite(weight)) weight = 1.;
-      }
-   } else if (PDGCode ==  310 && functionResultMC != 0 && isfinite(functionResultMC)){
-        weight = functionResultMC;
-   }
+	Double_t weight = 1;
+	if (PDGCode ==  111 || PDGCode ==  221){
+		if (functionResultData != 0. && functionResultMC != 0. && isfinite(functionResultData) && isfinite(functionResultMC)){
+			weight = functionResultData/functionResultMC;
+			if ( kCaseGen == 3){
+				if (PDGCode ==  111){ 
+				if (!(fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0 && PDGCode ==  111)){
+					weight = 1.;
+				}
+				} 
+				if (PDGCode ==  221){ 
+				if (!(fDoReweightHistoMCEta && hReweightMCHistEta!= 0x0 && PDGCode ==  221)){
+					weight = 1.;
+				}
+				}
+			}
+			if (!isfinite(functionResultData)) weight = 1.;
+			if (!isfinite(weight)) weight = 1.;
+		}
+	} else if (PDGCode ==  310 && functionResultMC != 0 && isfinite(functionResultMC)){
+			weight = functionResultMC;
+	}
 
-//    if (fModCentralityClass == 0 && fCentralityMin == 4 && fCentralityMax == 6 && PDGCode ==  111){
-//        cout << period.Data() << "\t" << kCaseGen << "\t" <<fModCentralityClass<< "\t" <<fCentralityMin<< "\t" <<fCentralityMax << "\t" << mesonPt << "\t" <<mesonMass<< "\t"<<functionResultData << "\t"<< functionResultMC << "\t" << weight <<endl;
-//    }
-   return weight;
+	//    if (fModCentralityClass == 0 && fCentralityMin == 4 && fCentralityMax == 6 && PDGCode ==  111){
+	//        cout << period.Data() << "\t" << kCaseGen << "\t" <<fModCentralityClass<< "\t" <<fCentralityMin<< "\t" <<fCentralityMax << "\t" << mesonPt << "\t" <<mesonMass<< "\t"<<functionResultData << "\t"<< functionResultMC << "\t" << weight <<endl;
+	//    }
+	return weight;
 }
 ///________________________________________________________________________
 AliConversionCuts* AliConversionCuts::GetStandardCuts2010PbPb(){

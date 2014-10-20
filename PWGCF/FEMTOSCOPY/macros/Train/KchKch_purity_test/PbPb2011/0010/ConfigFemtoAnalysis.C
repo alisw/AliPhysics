@@ -1,21 +1,21 @@
-
-/*********************************************************************
- *                                                                   *
- * ConfigFemtoAnalysis.C - configuration macro for the femtoscopic   *
- * analysis, meant as a QA process for two-particle effects          *
- *                                                                   *
- * Author: Adam Kisiel (Adam.Kisiel@cern.ch)                         *
- *                                                                   *
- *********************************************************************/
-
-#if !defined(__CINT__) || defined(__MAKECINT_)
-#include "AliFemtoManager.h"
-#include "AliFemtoEventReaderESDChain.h"
-#include "AliFemtoEventReaderESDChainKine.h"
-#include "AliFemtoEventReaderAODChain.h"
-#include "AliFemtoSimpleAnalysis.h"
-#include "AliFemtoBasicEventCut.h"
-#include "AliFemtoESDTrackCut.h"
+ 
+/********************************************************************* 
+ *                                                                   * 
+ * ConfigFemtoAnalysis.C - configuration macro for the femtoscopic   * 
+ * analysis, meant as a QA process for two-particle effects          * 
+ *                                                                   * 
+ * Author: Adam Kisiel (Adam.Kisiel@cern.ch)                         * 
+ *                                                                   * 
+ *********************************************************************/ 
+ 
+#if !defined(__CINT__) || defined(__MAKECINT_) 
+#include "AliFemtoManager.h" 
+#include "AliFemtoEventReaderESDChain.h" 
+#include "AliFemtoEventReaderESDChainKine.h" 
+#include "AliFemtoEventReaderAODChain.h" 
+#include "AliFemtoSimpleAnalysis.h" 
+#include "AliFemtoBasicEventCut.h" 
+#include "AliFemtoESDTrackCut.h" 
 #include "AliFemtoKKTrackCut.h"
 #include "AliFemtoCorrFctn.h"
 #include "AliFemtoCutMonitorParticleYPt.h"
@@ -69,16 +69,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   //=======Double track cuts=================================================<
 
   // Switches for QA analyses
-  // int runmults[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
-  // int multbins[11] = {30, 70, 150, 310, 590, 990, 1570, 2370, 2370, 2370, 6500};
-
+ 
   int runmults[4] = {1, 0, 0, 0};
-  //int multbins[11] = {0, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900};
-  //Orig Kch in PbPb
-  //int multbins[cMu+1] = {0, 100, 300, 500, 900};
-  //Test for flat part of centrality distribution....
   int multbins[5] = {0, 100, 300, 500, 900};
- // int multbins[5] = {0, 50, 300, 500, 900};
+
   //.................................................
 
   int runch[2] = {1, 1};
@@ -87,7 +81,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   
   int runktdep = 1;
 //YS  double ktrng[cKt+1] = {0.2, 0.36, 0.48, 0.6, 1.0, 1.5};
-  double ktrng[cKt+1] = {0.2, 0.4, 0.6, 1.5};
+  double ktrng[cKt+1] = {0.2, 0.4, 0.6, 1.3};
 
 // double ktrng[8] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 2.0};
 
@@ -218,7 +212,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  else if (ichg == 1)
 	    dtc1etaphitpc[aniter]->SetCharge(-1.0);
 	    
-	  dtc1etaphitpc[aniter]->SetPt(0.14,1.5);
+	  dtc1etaphitpc[aniter]->SetPt(0.14,1.3);
 	  //	  dtc1etaphitpc[aniter]->SetEta(-1.2,1.2);
 	  dtc1etaphitpc[aniter]->SetEta(-0.8,0.8); //0.5
 	  // 	//    dtc1etaphitpc[aniter]->SetEta(-0.5,0.5);
@@ -291,7 +285,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  }
 
 	  
-
+/*
 	  cutPass1YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass1%stpcM%i", chrgs[ichg], imult), 0.493677);
 	  cutFail1YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutFail1%stpcM%i", chrgs[ichg], imult), 0.493677);
 	  dtc1etaphitpc[aniter]->AddCutMonitor(cutPass1YPtetaphitpc[aniter], cutFail1YPtetaphitpc[aniter]);
@@ -299,7 +293,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  cutPass1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass1%stpcM%i", chrgs[ichg], imult),1);
 	  cutFail1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail1%stpcM%i", chrgs[ichg], imult),1);
 	  dtc1etaphitpc[aniter]->AddCutMonitor(cutPass1PIDetaphitpc[aniter], cutFail1PIDetaphitpc[aniter]);
-
+*/
 	  
 	 // sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
 	//  sqpcetaphitpc[aniter] = new AliFemtoShareQualityTPCEntranceSepPairCut();

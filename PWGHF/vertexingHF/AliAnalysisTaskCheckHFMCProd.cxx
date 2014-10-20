@@ -11,6 +11,7 @@
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliGenerator.h"
+#include "AliVertexingHFUtils.h"
 #include "AliMultiplicity.h"
 #include <TParticle.h>
 #include <TSystem.h>
@@ -490,25 +491,26 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       Int_t iPart=-1;
       Int_t iType=0;
       Int_t iSpecies=-1;
+      Int_t dummy[4];
       if(absPdg==421){
 	iSpecies=0;
-	iType=CheckD0Decay(i,stack);
-	if(iType>=0) iPart=0;	
+	iType=AliVertexingHFUtils::CheckD0Decay(stack,i,dummy); 
+	if(iType>0) iPart=0;	
       }
       else if(absPdg==411){
 	iSpecies=1;
-	iType=CheckDplusDecay(i,stack);
-	if(iType>=0) iPart=1;
+	iType=AliVertexingHFUtils::CheckDplusDecay(stack,i,dummy);
+	if(iType>0) iPart=1;
       }
       else if(absPdg==413){
 	iSpecies=2;
-	iType=CheckDstarDecay(i,stack);
-	if(iType>=0) iPart=2;
+	iType=AliVertexingHFUtils::CheckDstarDecay(stack,i,dummy);
+	if(iType>0) iPart=2;
       }
       else if(absPdg==431){
 	iSpecies=3;
-	iType=CheckDsDecay(i,stack);
-	if(iType==0 || iType==1) iPart=3;
+	iType=AliVertexingHFUtils::CheckDsDecay(stack,i,dummy);
+	if(iType==1 || iType==2) iPart=3;
       }
       else if(absPdg==4122){
 	iSpecies=4;
@@ -553,48 +555,12 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       Double_t distz=part->Vz()-mcVert->GetZ();
       Double_t distToVert=TMath::Sqrt(distx*distx+disty*disty+distz*distz);
       fHistMotherID->Fill(part->GetFirstMother());
-      TParticle* runningpart=part;
-      Int_t iFromB=-1;
-      Int_t pdgmoth=-1;
-      if(fSearchUpToQuark){
-	while(1){
-	  Int_t labmoth=runningpart->GetFirstMother();
-	  if(labmoth==-1) break;
-	  TParticle *mot=(TParticle*)stack->Particle(labmoth);
-	  pdgmoth=TMath::Abs(mot->GetPdgCode());
-	  if(pdgmoth==5){ 
-	    iFromB=1;
-	    break;
-	  }else if(pdgmoth==4){
-	    iFromB=0;
-	    break;
-	  }
-	  runningpart=mot;
-	}
-      }else{
-	iFromB=0;
-	while(1){
-	  Int_t labmoth=runningpart->GetFirstMother();
-	  if(labmoth==-1) break;
-	  TParticle *mot=(TParticle*)stack->Particle(labmoth);
-	  pdgmoth=TMath::Abs(mot->GetPdgCode());
-	  if(pdgmoth>=500 && pdgmoth<=599){ 
-	    iFromB=1;
-	    break;
-	  }
-	  if(pdgmoth>=5000 && pdgmoth<=5999){ 
-	    iFromB=1;
-	    break;
-	  }
-	  runningpart=mot;
-	}
-      }
-
-      if(iFromB==0){
+      Int_t iFromB=AliVertexingHFUtils::CheckOrigin(stack,part,fSearchUpToQuark);
+      if(iFromB==4){
 	fHistYPtPromptAllDecay[iSpecies]->Fill(part->Pt(),rapid);
 	fHistOriginPrompt->Fill(distToVert);
       }
-      else if(iFromB==1){
+      else if(iFromB==5){
 	fHistYPtFeeddownAllDecay[iSpecies]->Fill(part->Pt(),rapid);
 	fHistOriginFeeddown->Fill(distToVert);
       }
@@ -602,16 +568,16 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       if(iPart<0) continue;
       if(iType<0) continue;
       nCharmed++;
-      if(iPart==0 && iType<=1){
-	fHistYPtD0byDecChannel[iType]->Fill(part->Pt(),rapid);
-      }else if(iPart==1 && iType<=1){
-	fHistYPtDplusbyDecChannel[iType]->Fill(part->Pt(),rapid);
-      }else if(iPart==3 && iType<=1){
-	fHistYPtDsbyDecChannel[iType]->Fill(part->Pt(),rapid);
+      if(iPart==0 && iType>0 && iType<=2){
+	fHistYPtD0byDecChannel[iType-1]->Fill(part->Pt(),rapid);
+      }else if(iPart==1 && iType>0 && iType<=2){
+	fHistYPtDplusbyDecChannel[iType-1]->Fill(part->Pt(),rapid);
+      }else if(iPart==3 &&  iType>0 && iType<=2){
+	fHistYPtDsbyDecChannel[iType-1]->Fill(part->Pt(),rapid);
       }
       
-      if(iFromB==0 && iPart>=0 && iPart<5) fHistYPtPrompt[iPart]->Fill(part->Pt(),rapid);
-      else if(iFromB==1 && iPart>=0 && iPart<5) fHistYPtFeeddown[iPart]->Fill(part->Pt(),rapid);      
+      if(iFromB==4 && iPart>=0 && iPart<5) fHistYPtPrompt[iPart]->Fill(part->Pt(),rapid);
+      else if(iFromB==5 && iPart>=0 && iPart<5) fHistYPtFeeddown[iPart]->Fill(part->Pt(),rapid);      
     }
 
     for(Int_t i=0; i<nTracks; i++){
@@ -652,300 +618,6 @@ void AliAnalysisTaskCheckHFMCProd::Terminate(Option_t */*option*/)
 
 
 
-
-//______________________________________________________________________________
-Int_t AliAnalysisTaskCheckHFMCProd::CheckD0Decay(Int_t labD0, AliStack* stack) const{
-
-  if(labD0<0) return -1;
-  TParticle* dp = (TParticle*)stack->Particle(labD0);
-  Int_t pdgdp=dp->GetPdgCode();
-  Int_t nDau=dp->GetNDaughters();
-
-  if(nDau==2){
-    Int_t nKaons=0;
-    Int_t nPions=0;
-    for(Int_t iDau=dp->GetFirstDaughter(); iDau<=dp->GetLastDaughter(); iDau++){
-      if(iDau<0) return -1;
-      TParticle* dau=(TParticle*)stack->Particle(iDau);
-      Int_t pdgdau=dau->GetPdgCode();
-      if(TMath::Abs(pdgdau)==321){
-	if(pdgdp>0 && pdgdau>0) return -1;
-	if(pdgdp<0 && pdgdau<0) return -1;
-	nKaons++;
-      }else if(TMath::Abs(pdgdau)==211){
-	if(pdgdp<0 && pdgdau>0) return -1;
-	if(pdgdp>0 && pdgdau<0) return -1;
-	nPions++;
-      }else{
-	return -1;
-      }
-    }
-    if(nPions!=1) return -1;
-    if(nKaons!=1) return -1;
-    for(Int_t iDau=dp->GetFirstDaughter(); iDau<=dp->GetLastDaughter(); iDau++){
-      if(iDau<0) return -1;
-    }
-    return 0;
-  }
-
-  if(nDau==3 || nDau==4){
-    Int_t nKaons=0;
-    Int_t nPions=0;
-    for(Int_t iDau=dp->GetFirstDaughter(); iDau<=dp->GetLastDaughter(); iDau++){
-      if(iDau<0) return -1;
-      TParticle* dau=(TParticle*)stack->Particle(iDau);
-      Int_t pdgdau=dau->GetPdgCode();
-      if(TMath::Abs(pdgdau)==321){
-	if(pdgdp>0 && pdgdau>0) return -1;
-	if(pdgdp<0 && pdgdau<0) return -1;
-	nKaons++;
-      }else if(TMath::Abs(pdgdau)==113 || TMath::Abs(pdgdau)==313){
-	for(Int_t resDau=dau->GetFirstDaughter(); resDau<=dau->GetLastDaughter(); resDau++){
-	  if(resDau<0) return -1;
-	  TParticle* resdau=(TParticle*)stack->Particle(resDau);
-	  Int_t pdgresdau=resdau->GetPdgCode();
-	  if(TMath::Abs(pdgresdau)==321){
-	    if(pdgdp>0 && pdgresdau>0) return -1;
-	    if(pdgdp<0 && pdgresdau<0) return -1;
-	    nKaons++;
-	  }
-	  if(TMath::Abs(pdgresdau)==211){
-	    nPions++;
-	  }
-	}
-      }else if(TMath::Abs(pdgdau)==211){
-	  nPions++;
-      }else{
-	return -1;
-      }
-    }
-    if(nPions!=3) return -1;
-    if(nKaons!=1) return -1;
-    for(Int_t iDau=dp->GetFirstDaughter(); iDau<=dp->GetLastDaughter(); iDau++){
-      if(iDau<0) return -1;
-    }
-    return 1;
-  }
-  
-  return -1;
-}
-
-
-//______________________________________________________________________________
-Int_t AliAnalysisTaskCheckHFMCProd::CheckDplusDecay(Int_t labDplus, AliStack* stack) const{
-
-  if(labDplus<0) return -1;
-  TParticle* dp = (TParticle*)stack->Particle(labDplus);
-  Int_t pdgdp=dp->GetPdgCode();
-  Int_t nDau=dp->GetNDaughters();
-
-  if(nDau==3){
-    Int_t nKaons=0;
-    Int_t nPions=0;
-    for(Int_t iDau=dp->GetFirstDaughter(); iDau<=dp->GetLastDaughter(); iDau++){
-      if(iDau<0) return -1;
-      TParticle* dau=(TParticle*)stack->Particle(iDau);
-      Int_t pdgdau=dau->GetPdgCode();
-      if(TMath::Abs(pdgdau)==321){
-	if(pdgdp>0 && pdgdau>0) return -1;
-	if(pdgdp<0 && pdgdau<0) return -1;
-	nKaons++;
-      }else if(TMath::Abs(pdgdau)==211){
-	if(pdgdp<0 && pdgdau>0) return -1;
-	if(pdgdp>0 && pdgdau<0) return -1;
-	nPions++;
-      }else{
-	return -1;
-      }
-    }
-    if(nPions!=2) return -1;
-    if(nKaons!=1) return -1;
-    for(Int_t iDau=dp->GetFirstDaughter(); iDau<=dp->GetLastDaughter(); iDau++){
-      if(iDau<0) return -1;
-    }
-    return 0;
-  }
-
-  if(nDau==2){
-    Int_t nKaons=0;
-    Int_t nPions=0;
-    for(Int_t iDau=dp->GetFirstDaughter(); iDau<=dp->GetLastDaughter(); iDau++){
-      if(iDau<0) return -1;
-      TParticle* dau=(TParticle*)stack->Particle(iDau);
-      Int_t pdgdau=dau->GetPdgCode();
-      if(TMath::Abs(pdgdau)==313){
-	for(Int_t resDau=dau->GetFirstDaughter(); resDau<=dau->GetLastDaughter(); resDau++){
-	  if(resDau<0) return -1;
-	  TParticle* resdau=(TParticle*)stack->Particle(resDau);
-	  Int_t pdgresdau=resdau->GetPdgCode();
-	  if(TMath::Abs(pdgresdau)==321){
-	    if(pdgdp>0 && pdgresdau>0) return -1;
-	    if(pdgdp<0 && pdgresdau<0) return -1;
-	    nKaons++;
-	  }
-	  if(TMath::Abs(pdgresdau)==211){
-	    if(pdgdp<0 && pdgresdau>0) return -1;
-	    if(pdgdp>0 && pdgresdau<0) return -1;
-	    nPions++;
-	  }
-	}
-      }else if(TMath::Abs(pdgdau)==211){
-	  if(pdgdp<0 && pdgdau>0) return -1;
-	  if(pdgdp>0 && pdgdau<0) return -1;
-	  nPions++;
-      }else{
-	return -1;
-      }
-    }
-    if(nPions!=2) return -1;
-    if(nKaons!=1) return -1;
-    for(Int_t iDau=dp->GetFirstDaughter(); iDau<=dp->GetLastDaughter(); iDau++){
-      if(iDau<0) return -1;
-    }
-    return 1;
-  }
-  return -1;
-}
-
-//______________________________________________________________________________
-Int_t AliAnalysisTaskCheckHFMCProd::CheckDsDecay(Int_t labDs, AliStack* stack) const{
-  // Ds decay
-  if(labDs<0) return -1;
-  TParticle* dp = (TParticle*)stack->Particle(labDs);
-  Int_t pdgdp=dp->GetPdgCode();
-  Int_t nDau=dp->GetNDaughters();
-
-  if(nDau==3){
-    Int_t nKaons=0;
-    Int_t nPions=0;
-    for(Int_t iDau=dp->GetFirstDaughter(); iDau<=dp->GetLastDaughter(); iDau++){
-      if(iDau<0) return -1;
-      TParticle* dau=(TParticle*)stack->Particle(iDau);
-      Int_t pdgdau=dau->GetPdgCode();
-      if(TMath::Abs(pdgdau)==321){
-	nKaons++;
-      }else if(TMath::Abs(pdgdau)==211){
-	if(pdgdp<0 && pdgdau>0) return -1;
-	if(pdgdp>0 && pdgdau<0) return -1;
-	nPions++;
-      }else{
-	return -1;
-      }
-    }
-    if(nPions!=1) return -1;
-    if(nKaons!=2) return -1;
-    for(Int_t iDau=dp->GetFirstDaughter(); iDau<=dp->GetLastDaughter(); iDau++){
-      if(iDau<0) return -1;
-    }
-    return 2;
-  }
-
-  if(nDau==2){
-    Int_t nKaons=0;
-    Int_t nPions=0;
-    Bool_t isPhi=kFALSE;
-    Bool_t isk0st=kFALSE;
-    for(Int_t iDau=dp->GetFirstDaughter(); iDau<=dp->GetLastDaughter(); iDau++){
-      if(iDau<0) return -1;
-      TParticle* dau=(TParticle*)stack->Particle(iDau);
-      Int_t pdgdau=dau->GetPdgCode();
-      if(TMath::Abs(pdgdau)==313){
-	isk0st=kTRUE;
-	for(Int_t resDau=dau->GetFirstDaughter(); resDau<=dau->GetLastDaughter(); resDau++){
-	  if(resDau<0) return -1;
-	  TParticle* resdau=(TParticle*)stack->Particle(resDau);
-	  Int_t pdgresdau=resdau->GetPdgCode();
-	  if(TMath::Abs(pdgresdau)==321){
-	    nKaons++;
-	  }
-	  if(TMath::Abs(pdgresdau)==211){
-	    if(pdgdp<0 && pdgresdau>0) return -1;
-	    if(pdgdp>0 && pdgresdau<0) return -1;
-	    nPions++;
-	  }
-	}
-      }else if(TMath::Abs(pdgdau)==333){
-	isPhi=kTRUE;
-	for(Int_t resDau=dau->GetFirstDaughter(); resDau<=dau->GetLastDaughter(); resDau++){
-	  if(resDau<0) return -1;	  
-	  TParticle* resdau=(TParticle*)stack->Particle(resDau);
-	  if(!resdau) return -1;
-	  Int_t pdgresdau=resdau->GetPdgCode();	  
-	  if(TMath::Abs(pdgresdau)==321){
-	    nKaons++;
-	  }else{
-	    return -1;
-	  }
-	}
-      }else if(TMath::Abs(pdgdau)==211){
-	if(pdgdp<0 && pdgdau>0) return -1;
-	if(pdgdp>0 && pdgdau<0) return -1;
-	nPions++;
-      }else if(TMath::Abs(pdgdau)==321){
-	nKaons++;
-      }else{
-	return -1;
-      }
-    }
-    if(nPions!=1) return -1;
-    if(nKaons!=2) return -1;
-    for(Int_t iDau=dp->GetFirstDaughter(); iDau<=dp->GetLastDaughter(); iDau++){
-      if(iDau<0) return -1;
-    }
-    if(isk0st) return 1;
-    else if(isPhi) return 0;
-    else return 3;
-  } 
-  return -1;
-}
-
-//______________________________________________________________________________
-Int_t AliAnalysisTaskCheckHFMCProd::CheckDstarDecay(Int_t labDstar, AliStack* stack) const{
-
-  if(labDstar<0) return -1;
-  TParticle* dp = (TParticle*)stack->Particle(labDstar);
-  Int_t pdgdp=dp->GetPdgCode();
-  Int_t nDau=dp->GetNDaughters();
-  if(nDau!=2) return -1;
-
-  Int_t nKaons=0;
-  Int_t nPions=0;
-  for(Int_t iDau=dp->GetFirstDaughter(); iDau<=dp->GetLastDaughter(); iDau++){
-    if(iDau<0) return -1;
-    TParticle* dau=(TParticle*)stack->Particle(iDau);
-    Int_t pdgdau=dau->GetPdgCode();
-    if(TMath::Abs(pdgdau)==421){
-      for(Int_t resDau=dau->GetFirstDaughter(); resDau<=dau->GetLastDaughter(); resDau++){
-	if(resDau<0) return -1;
-	TParticle* resdau=(TParticle*)stack->Particle(resDau);
-	Int_t pdgresdau=resdau->GetPdgCode();
-	if(TMath::Abs(pdgresdau)==321){
-	  if(pdgdp>0 && pdgresdau>0) return -1;
-	  if(pdgdp<0 && pdgresdau<0) return -1;
-	  nKaons++;
-	}
-	if(TMath::Abs(pdgresdau)==211){
-	  if(pdgdp<0 && pdgresdau>0) return -1;
-	  if(pdgdp>0 && pdgresdau<0) return -1;
-	  nPions++;
-	}
-      }
-    }else if(TMath::Abs(pdgdau)==211){
-      if(pdgdp<0 && pdgdau>0) return -1;
-      if(pdgdp>0 && pdgdau<0) return -1;
-      nPions++;
-    }else{
-      return -1;
-    }
-  }
-  if(nPions!=2) return -1;
-  if(nKaons!=1) return -1;
-  for(Int_t iDau=dp->GetFirstDaughter(); iDau<=dp->GetLastDaughter(); iDau++){
-    if(iDau<0) return -1;
-  }
-  return 0;  
-  
-}
 
 //______________________________________________________________________________
 Int_t AliAnalysisTaskCheckHFMCProd::CheckLcDecay(Int_t labLc, AliStack* stack) const{

@@ -315,16 +315,18 @@ void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outC
   Double_t effValues[3][2*kNch];
   const Int_t kNgraphs = kNch*3*2+3;
   TObjArray effList(kNgraphs);
+  effList.SetOwner();
   const Int_t kNeffVsRun = kNgraphs+1;
   TObjArray effVsRunList(kNeffVsRun);
   
   effName = "totalEffEvolution";
   effTitle = "Multinomial probability of firing at least 3/4 chambers";
-  TH1D* totalEff = new TH1D(effName.Data(), effTitle.Data(), 0, 0., 1.);
+  TH1D* totalEff = new TH1D(effName.Data(), effTitle.Data(), 1, 0., 1.);
   effVsRunList.AddAt(totalEff, kNeffVsRun-1);
 
   TString runNumString = "";
   for ( Int_t irun=0; irun<runNumArray.GetEntries(); irun++ ) {
+    effList.Clear();
     runNumString = runNumArray.At(irun)->GetName();
 
     // Search corresponding file (for sorting)
@@ -348,6 +350,10 @@ void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outC
     
     TList* trigEffList = (TList*)file->FindObjectAny("triggerChamberEff");
     if ( ! trigEffList ) printf("Warning: histo list not found in %s. Check directly in file\n", filename.Data());
+    if ( trigEffList->GetEntries() == 0 ) {
+      printf("Warning: empty trigger list in file %s. Probably no MUON info there. Skip.\n", filename.Data());
+      continue;
+    }
     
     TH1* histoDen = 0x0;
     for ( Int_t icount=0; icount<AliMUONTriggerEfficiencyCells::kNcounts; icount++ ) {
@@ -358,7 +364,7 @@ void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outC
       }
       
       TH1* histoNum = GetHisto(effName, file, trigEffList);
-      TGraphAsymmErrors* graph = new TGraphAsymmErrors(histoNum, histoDen);
+      TGraphAsymmErrors* graph = new TGraphAsymmErrors(histoNum, histoDen,"e0");
       effName.ReplaceAll("Count","Eff");
       graph->SetName(effName.Data());
       effList.AddAt(graph, GetEffIndex(0, icount-1));
@@ -376,7 +382,7 @@ void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outC
       for ( Int_t ich=0; ich<kNch; ich++ ) {
         for ( Int_t icount=0; icount<AliMUONTriggerEfficiencyCells::kNcounts-1; icount++ ) {
           TObject* obj = trigChEff.GetEffObject(2-iel, icount, ich);
-          effList.AddAt(obj, GetEffIndex(iel, icount, ich));
+          effList.AddAt(obj->Clone(Form("%s_cloned",obj->GetName())), GetEffIndex(iel, icount, ich));
         }
       }
     }
@@ -401,7 +407,7 @@ void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outC
                 effName += Form("Ch%i", 11+ich);
                 effTitle += Form(" for chamber %i", 11+ich);
               }
-              effHisto = new TH2D(effName.Data(), effTitle.Data(), 0, 0., 1., graph->GetN(), xpt-0.5, xpt-0.5+(Double_t)graph->GetN());
+              effHisto = new TH2D(effName.Data(), effTitle.Data(), 1, 0., 1., graph->GetN(), xpt-0.5, xpt-0.5+(Double_t)graph->GetN());
               effVsRunList.AddAt(effHisto, ihisto);
             }
             Int_t currBin = effHisto->Fill(runNumString.Data(), xpt, ypt);
@@ -512,7 +518,7 @@ void MaskTrending ( TObjArray runNumArray, TString defaultStorage, TList& outCan
     for(Int_t ich=0; ich<kNch; ich++){
       histoName = Form("%sMaskCh%i", cathName.Data(), 11+ich);
       histoTitle = Form("Chamber %i - %s: fraction of masked channels", 11+ich, cathName.Data());
-      TH2* histo = new TH2D(histoName.Data(), histoTitle.Data(),0,0.,1., 234, 0.5, 234. + 0.5);
+      TH2* histo = new TH2D(histoName.Data(), histoTitle.Data(),1,0.,1., 234, 0.5, 234. + 0.5);
       histo->GetYaxis()->SetTitle("Board Id");
       histo->SetOption("COLZ");
       Int_t imask = 2*ich + icath;

@@ -62,8 +62,13 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   enum ptResolutionAxes { kPtResJetPt = 0, kPtResGenPt = 1, kPtResRecPt = 2, kPtResCharge = 3, kPtResCentrality = 4, kPtResNumAxes = 5 };
   
+  enum qaSharedClsAxes { kQASharedClsJetPt = 0, kQASharedClsPt = 1, kQASharedClsNumSharedCls = 2, kQASharedClsPadRow = 3,
+                         kQASharedClsNumAxes = 4 };
+  
   enum dEdxCheckAxes { kDeDxCheckPID = 0, kDeDxCheckP = 1, kDeDxCheckJetPt = 2, kDeDxCheckEtaAbs = 3 , kDeDxCheckDeDx = 4,
                        kDeDxCheckNumAxes = 5 };
+  
+  enum binZeroStudyAxes { kBinZeroStudyCentrality = 0, kBinZeroStudyGenPt = 1, kBinZeroStudyGenEta = 2, kBinZeroStudyNumAxes = 3 };
   
   enum efficiencyAxes { kEffMCID = 0, kEffTrackPt = 1, kEffTrackEta = 2, kEffTrackCharge = 3, kEffCentrality = 4, kEffJetPt = 5,
                         kEffZ = 6, kEffXi = 7, kEffNumAxes = 8 };
@@ -75,7 +80,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   enum TOFpidInfo { kNoTOFinfo = -2, kNoTOFpid = -1, kTOFpion = 0, kTOFkaon = 1, kTOFproton = 2, kNumTOFspecies = 3,
                     kNumTOFpidInfoBins = 5 };
   
-  enum EventCounterType { kTriggerSel = 0, kTriggerSelAndVtxCut = 1, kTriggerSelAndVtxCutAndZvtxCut = 2 };
+  enum EventCounterType { kTriggerSel = 0, kTriggerSelAndVtxCut = 1, kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection = 2,
+                          kTriggerSelAndVtxCutAndZvtxCut = 3 };
   
   static Int_t PDGtoMCID(Int_t pdg);
   
@@ -85,6 +91,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   static Double_t GetMCStrangenessFactorCMS(AliMCEvent* mcEvent, AliMCParticle* daughter);
   
   static Bool_t IsSecondaryWithStrangeMotherMC(AliMCEvent* mcEvent, Int_t partLabel);
+  
+  virtual void ConfigureTaskForCurrentEvent(AliVEvent* event);
   
   Int_t GetIndexOfChargeAxisData() const
     { return fStoreAdditionalJetInformation ? kDataCharge : kDataCharge - fgkNumJetAxes; };
@@ -126,6 +134,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   ErrorCode SetParamsForConvolutedGaus(Double_t gausMean, Double_t gausSigma);
   
   const TString GetCentralityEstimator() const { return fCentralityEstimator; };
+  const TString GetPPCentralityEstimator() const {
+    TString ppCentEstimator = fCentralityEstimator; ppCentEstimator = ppCentEstimator.ReplaceAll("ppMult", ""); return ppCentEstimator; }
   void SetCentralityEstimator(TString estimator) { fCentralityEstimator = estimator; };
   
   Double_t GetCentralityPercentile(AliVEvent* evt) const;
@@ -148,6 +158,9 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   Bool_t GetDoDeDxCheck() const { return fDoDeDxCheck; };
   void SetDoDeDxCheck(Bool_t flag) { fDoDeDxCheck = flag; };
+  
+  Bool_t GetDoBinZeroStudy() const { return fDoBinZeroStudy; };
+  void SetDoBinZeroStudy(Bool_t flag) { fDoBinZeroStudy = flag; };
   
   Bool_t GetStoreCentralityPercentile() const { return fStoreCentralityPercentile; };
   void SetStoreCentralityPercentile(Bool_t flag) { fStoreCentralityPercentile = flag; };
@@ -187,6 +200,9 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Bool_t SetEtaAbsCutRange(Double_t lowerLimit, Double_t upperLimit);
   
   Bool_t IsInAcceptedEtaRange(Double_t etaAbs) const { return (etaAbs >= fEtaAbsCutLow && etaAbs <= fEtaAbsCutUp); };
+  
+  AliAnalysisTaskPIDV0base::PileUpRejectionType GetPileUpRejectionType() const { return fPileUpRejectionType; };
+  void SetPileUpRejectionType(AliAnalysisTaskPIDV0base::PileUpRejectionType newType) { fPileUpRejectionType = newType; };
   
   Double_t GetSystematicScalingSplinesThreshold() const { return fSystematicScalingSplinesThreshold; };
   void SetSystematicScalingSplinesThreshold(Double_t threshold) { fSystematicScalingSplinesThreshold = threshold; };
@@ -260,25 +276,28 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   virtual void SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Double_t* binsCent, Double_t* binsJetPt) const;
   virtual void SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt) const;
   virtual void SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt, Double_t* binsCent) const;
+  virtual void SetUpSharedClsHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt) const;
   virtual void SetUpDeDxCheckHist(THnSparse* hist, const Double_t* binsPt, const Double_t* binsJetPt, const Double_t* binsEtaAbs) const;
+  virtual void SetUpBinZeroStudyHist(THnSparse* hist, const Double_t* binsCent, const Double_t* binsPt) const;
   virtual void SetUpPIDcombined();
   
   static const Int_t fgkNumJetAxes; // Number of additional axes for jets
   static const Double_t fgkEpsilon; // Double_t threshold above zero
   static const Int_t fgkMaxNumGenEntries; // Maximum number of generated detector responses per track and delta(Prime) and associated species
 
- private:
   static const Double_t fgkOneOverSqrt2; // = 1. / TMath::Sqrt2();
   
+ private:
   Int_t fRun; // Current run number
   AliPIDCombined* fPIDcombined; //! PID combined object
   
   Bool_t fInputFromOtherTask; // If set to kTRUE, no events are processed and the input must be fed in from another task. If set to kFALSE, normal event processing
   
-  Bool_t fDoPID; // Only do PID processing (and post the output), if flag is set to kTRUE
-  Bool_t fDoEfficiency; // Only do efficiency processing (and post the output), if flag is set to kTRUE
-  Bool_t fDoPtResolution; // Only do pT resolution processing (and post the output), if flag is set to kTRUE
-  Bool_t fDoDeDxCheck; // Only check dEdx, if flag set to kTRUE
+  Bool_t fDoPID; // Do PID processing (and post the output), if flag is set to kTRUE
+  Bool_t fDoEfficiency; // Do efficiency processing (and post the output), if flag is set to kTRUE
+  Bool_t fDoPtResolution; // Do pT resolution processing (and post the output), if flag is set to kTRUE
+  Bool_t fDoDeDxCheck; // Check dEdx, if flag set to kTRUE
+  Bool_t fDoBinZeroStudy; // Do bin zero study, if flag is set to kTRUE
   
   Bool_t fStoreCentralityPercentile; // If set to kTRUE, store centrality percentile for each event. In case of kFALSE (appropriate for pp), centrality percentile will be set to -1 for every event
   Bool_t fStoreAdditionalJetInformation; // If set to kTRUE, additional jet information like jetPt, z, xi will be stored in the THnSparses
@@ -304,6 +323,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   Double_t fEtaAbsCutLow; // Lower cut value on |eta|
   Double_t fEtaAbsCutUp;  // Upper cut value on |eta|
+  
+  AliAnalysisTaskPIDV0base::PileUpRejectionType fPileUpRejectionType; // Which pile-up rejection is used (if any)
   
   // For systematic studies
   Bool_t   fDoAnySystematicStudiesOnTheExpectedSignal; // Internal flag indicating whether any systematic studies are going to be performed
@@ -380,11 +401,16 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   TAxis* fDeltaPrimeAxis; //! Axis holding the deltaPrime binning
   TH1D* fhMaxEtaVariation; //! Histo holding the maximum deviation of the eta correction factor from unity vs. 1/dEdx(splines)
   
-  TH1D* fhEventsProcessed; //! Histo holding the number of processed events (i.e. passing trigger selection, vtx and zvtx cuts
+  TH1D* fhEventsProcessed; //! Histo holding the number of processed events (i.e. passing trigger selection, vtx and zvtx cuts and (if enabled) pile-up rejection)
   TH1D* fhEventsTriggerSel; //! Histo holding the number of events passing trigger selection
   TH1D* fhEventsTriggerSelVtxCut; //! Histo holding the number of events passing trigger selection and vtx cut
+  TH1D* fhEventsProcessedNoPileUpRejection; //! Histo holding the number of processed events before pile-up rejection
   
-  TH2D* fhSkippedTracksForSignalGeneration; //! Number of tracks that have been skipped for the signal generation
+  THnSparseD* fChargedGenPrimariesTriggerSel; //! Histo holding the generated charged primary yields for triggered events
+  THnSparseD* fChargedGenPrimariesTriggerSelVtxCut; //! Histo holding the generated charged primary yields for triggered events passing vertex cuts
+  THnSparseD* fChargedGenPrimariesTriggerSelVtxCutZ; //! Histo holding the generated charged primary yields for triggered events passing vertex cuts (including cut on z)
+  THnSparseD* fChargedGenPrimariesTriggerSelVtxCutZPileUpRej; //! Histo holding the generated charged primary yields for triggered events passing vertex cuts (including cut on z) and pile-up rejection
+  
   THnSparseD* fhMCgeneratedYieldsPrimaries; //! Histo holding the generated (no reco, no cuts) primary particle yields in considered eta range
   
   TH2D* fh2FFJetPtRec;            //! Number of reconstructed jets vs. jetPt and centrality
@@ -396,6 +422,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   AliCFContainer* fContainerEff; //! Container for efficiency determination
   
   THnSparseD* fPtResolution[AliPID::kSPECIES]; //! Pt Resolution for the individual species
+  THnSparseD* fQASharedCls; //! QA for shared clusters
   
   THnSparseD* fDeDxCheck; //! dEdx check
   
@@ -406,7 +433,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   AliAnalysisTaskPID(const AliAnalysisTaskPID&); // not implemented
   AliAnalysisTaskPID& operator=(const AliAnalysisTaskPID&); // not implemented
   
-  ClassDef(AliAnalysisTaskPID, 19);
+  ClassDef(AliAnalysisTaskPID, 21);
 };
 
 
@@ -533,6 +560,14 @@ inline Bool_t AliAnalysisTaskPID::IncrementEventCounter(Double_t centralityPerce
     
     fhEventsProcessed->Fill(centralityPercentile);
   }
+  else if (type == kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection) {
+    if (!fhEventsProcessedNoPileUpRejection) {
+      AliError("Histogram for number of events (kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection) not initialised -> cannot be incremented!");
+      return kFALSE;
+    }
+    
+    fhEventsProcessedNoPileUpRejection->Fill(centralityPercentile);
+  }
   
   
   return kTRUE;
@@ -599,6 +634,8 @@ inline Int_t AliAnalysisTaskPID::GetParticleFractionHistoNbinsCentrality() const
 //_____________________________________________________________________________
 inline Double_t AliAnalysisTaskPID::GetCentralityPercentile(AliVEvent* evt) const
 {
+  // WARNING: This function may not be used in case of special pp centrality estimators which require different handling
+  // (and sometimes ESD events)
   if (!evt)
     return -1;
   

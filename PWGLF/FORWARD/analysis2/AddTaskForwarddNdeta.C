@@ -29,17 +29,15 @@
  * @ingroup pwglf_forward_dndeta
  */
 AliAnalysisTask*
-AddTaskForwarddNdeta(const char* trig     = "INEL", 
+AddTaskForwarddNdeta(const char* config   = "dNdetaConfig.C",
+		     const char* trig     = "INEL", 
 		     Double_t    vzMin    = -10, 
 		     Double_t    vzMax    = +10, 
-		     Bool_t      useCent  = false,
+		     const char* cent     = "none",
 		     const char* scheme   = 0,
-		     Bool_t      cutEdges = false,
 		     Double_t    trigEff  = 1, 
 		     Double_t    trigEff0 = 1,
-		     Bool_t      corrEmpty= false,
-		     Bool_t      satVtx   = false,
-		     const char* mcanalysisfilename = "/home/hehi/alex/work/dispVtxDNdeta/mcCorrectionPos.root")
+		     Bool_t      satVtx   = false)
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
@@ -58,8 +56,6 @@ AddTaskForwarddNdeta(const char* trig     = "INEL",
 
   // --- Make our object ---------------------------------------------
   AliForwarddNdetaTask* task = new AliForwarddNdetaTask("Forward");
-  //Set the filename of the corresponding MC analysis
-  task->SetMCFinalCorrFilename(mcanalysisfilename);
   
   // Set the vertex range to use 
   task->SetIpZRange(vzMin, vzMax);
@@ -68,20 +64,12 @@ AddTaskForwarddNdeta(const char* trig     = "INEL",
   // Set the trigger efficiency 
   task->SetTriggerEff(trigEff); // 0.997535);
   task->SetTriggerEff0(trigEff0); 
-  // Whether to cut edges when re-binning 
-  task->SetCutEdges(cutEdges);
-  // Whether to correct for empty bins when projecting 
-  // task->SetCorrEmpty(true);
-  task->SetCorrEmpty(corrEmpty);
-  // Whether to use TH2::ProjectionX 
-  task->SetUseROOTProjectX(false);
   // Bit mask of 
   // 
   //    kNone           Normalise to accepted events 
   //    kEventLevel     Normalise to all events in selected range 
   //    kAltEventLevel  Normalise to all events in selected range 
   //    kBackground     Also correct for background triggers 
-  //    kShape          Correct shape 
   // 
   // kNone, kEventLevel, and kAltEventLevel are mutually exclusive.
   // If neither kEventLevel, nor kAltEventLevel is specified, then
@@ -89,8 +77,8 @@ AddTaskForwarddNdeta(const char* trig     = "INEL",
   // sense with kEventLevel and kAltEventLevel.  Furthermore, there
   // are some constants that encode the common cases
   //     
-  //    kFull    = kEventLevel |  kBackground | kShape 
-  //    kAltFull = kAltEventLevel |  kBackground | kShape 
+  //    kFull    = kEventLevel |  kBackground  
+  //    kAltFull = kAltEventLevel |  kBackground  
   // 
   // Default is kFull
   task->SetNormalizationScheme(AliBasedNdetaTask::kFull);
@@ -99,14 +87,22 @@ AddTaskForwarddNdeta(const char* trig     = "INEL",
   // Note, that a bin specified as a-b, covers the interval from a,
   // inclusive to b exclusive.  An upper bound of 100 is treated
   // especially, and the upper bound is inclusive in that case .
-  if (useCent) {
-    Short_t bins[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 100 };
-    task->SetCentralityAxis(10, bins);
+  if (cent) {
+    Info("", "Centrality estimator is %s (AddTask)", cent);
+    if (task->SetCentralityMethod(cent)) {
+      Short_t bins[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 100 };
+      task->SetCentralityAxis(10, bins);
+    }
   }
   // Set satellite vertex flag
   task->SetSatelliteVertices(satVtx);
 
+  // Set-up task using a script 
+  task->Configure(config);
+  
+  // Connect to manager 
   task->Connect(0,0);
+
   return task;
 }
 

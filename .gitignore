@@ -1,3 +1,11 @@
+.gitignore
+AliRootXcode/
+AliRootXcode.xcodeproj/
+AliRootXcode/**
+*.DS_Store
+*.xworkspace
+*.xcodeproj
+
 # Compiled Object files
 *.slo
 *.lo
@@ -36,6 +44,8 @@ G__*.h
 # Backup files from common editors
 *.swp
 *~
+.[#]*
+[#]*[#]
 
 # /
 /bin
@@ -43,6 +53,7 @@ G__*.h
 /include
 /tmp
 /build
+/DA
 
 # /test/
 /test/*/*.root
@@ -58,3 +69,6 @@ G__*.h
 /RPMS
 /alimdc-root
 rpm-tmp.*
+/Debug
+.cproject
+.project

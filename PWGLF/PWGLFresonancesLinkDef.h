@@ -31,6 +31,7 @@
 #pragma link C++ class AliRsnCutMomentumComparison+;
 #pragma link C++ class AliRsnCutTOFMatch+;
 #pragma link C++ class AliRsnCutPhi+;
+#pragma link C++ class AliRsnCutDelta+;
 #pragma link C++ class AliRsnCutKaonForPhi2010+;
 #pragma link C++ class AliRsnCutKaonForPhi2010PP+;
 #pragma link C++ class AliRsnCutPion2010PP+;

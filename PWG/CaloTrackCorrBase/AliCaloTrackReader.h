@@ -30,8 +30,8 @@ class AliAODEvent;
 class AliMCEvent;
 class AliMixedEvent;
 class AliAODMCHeader;
-class AliESDtrackCuts;
 class AliCentrality;
+class AliESDtrackCuts;
 //class AliTriggerAnalysis;
 class AliEventplane;
 class AliVCluster;
@@ -48,8 +48,9 @@ class AliCaloTrackReader : public TObject {
 
 public: 
   
-  AliCaloTrackReader() ;          // ctor
-  virtual ~AliCaloTrackReader() ; // virtual dtor
+                  AliCaloTrackReader() ; // ctor
+  virtual        ~AliCaloTrackReader() ; // virtual dtor
+  void            DeletePointers();
   
   //--------------------------------
   // General methods
@@ -162,7 +163,7 @@ public:
                                                              fEMCALTimeCutMax = b          ; } // ns
   
   void             SetEMCALParametrizedMinTimeCut(Int_t i, Float_t par) { fEMCALParamTimeCutMin[i] = par ; } 
-  void             SetEMCALParametrizedMaxTimeCut(Int_t i, Float_t par) { fEMCALParamTimeCutMax[i] = par ; } 
+  void             SetEMCALParametrizedMaxTimeCut(Int_t i, Float_t par) { fEMCALParamTimeCutMax[i] = par ; }
   
   void             SwitchOnUseEMCALTimeCut()               { fUseEMCALTimeCut = kTRUE      ; }
   void             SwitchOffUseEMCALTimeCut()              { fUseEMCALTimeCut = kFALSE     ; }
@@ -180,17 +181,7 @@ public:
   virtual void     SwitchOnFiducialCut()                   { fCheckFidCut = kTRUE          ; 
                                                              fFiducialCut = new AliFiducialCut() ; }
   virtual void     SwitchOffFiducialCut()                  { fCheckFidCut = kFALSE         ; }
-  
-  // Cluster origin
-  
-  Bool_t           IsEMCALCluster(AliVCluster *clus) const;
-  Bool_t           IsPHOSCluster (AliVCluster *clus) const;
-  
-  // Patch for cluster origin for Old AODs implementation
-  
-  void             SwitchOnOldAODs()                       { fOldAOD = kTRUE               ; }
-  void             SwitchOffOldAODs()                      { fOldAOD = kFALSE              ; }
-  
+    
   // Cluster/track/cells switchs
   
   Bool_t           IsCTSSwitchedOn()                 const { return fFillCTS               ; }
@@ -276,14 +267,21 @@ public:
   TString          GetFiredTriggerClassName()        const { return fFiredTriggerClassName   ; }
   TString          GetFiredTriggerClasses()          const { return GetInputEvent()->GetFiredTriggerClasses() ; }
   
+  
+  // Event selection when mixed event is used
+  
   UInt_t           GetEventTriggerMask()             const { return fEventTriggerMask        ; }
   void             SetEventTriggerMask(UInt_t evtTrig = AliVEvent::kAny) 
                                                            { fEventTriggerMask = evtTrig     ; }
+  UInt_t           GetMixEventTriggerMask()          const { return fMixEventTriggerMask     ; }
+  void             SetMixEventTriggerMask(UInt_t evtTrig = AliVEvent::kAnyINT)
+                                                           { fMixEventTriggerMask = evtTrig  ; }
 	Bool_t           IsEventTriggerAtSEOn()            const { return fEventTriggerAtSE        ; }
   void             SwitchOnEventTriggerAtSE()              { fEventTriggerAtSE      = kTRUE  ; }
   void             SwitchOffEventTriggerAtSE()             { fEventTriggerAtSE      = kFALSE ; }
 		
-	
+  // EMCal Triggered events selection, studies
+  
   TArrayI          GetTriggerPatches(Int_t tmin, Int_t tmax);
   void             MatchTriggerCluster(TArrayI patches);
 
@@ -325,9 +323,6 @@ public:
   void             SwitchOnTriggerClusterTimeRecal ()      { fTriggerClusterTimeRecal  = kTRUE  ; }
   void             SwitchOffTriggerClusterTimeRecal()      { fTriggerClusterTimeRecal  = kFALSE ; }
   
-  UInt_t           GetMixEventTriggerMask()             const { return fMixEventTriggerMask  ; }
-  void             SetMixEventTriggerMask(UInt_t evtTrig = AliVEvent::kAnyINT) 
-                                                           { fMixEventTriggerMask = evtTrig  ; }
 	void             SetEventTriggerBit();
 	Bool_t           IsEventMinimumBias()              const { return fEventTrigMinBias        ; }
 	Bool_t           IsEventCentral()                  const { return fEventTrigCentral        ; }
@@ -344,6 +339,8 @@ public:
   void             SwitchOnEMCALEventRejectionWith2Thresholds()  { fRejectEMCalTriggerEventsWith2Tresholds = kTRUE  ; }
   void             SwitchOffEMCALEventRejectionWith2Thresholds() { fRejectEMCalTriggerEventsWith2Tresholds = kFALSE ; }
 	
+  // Other event rejections criteria
+  
   void             SwitchOnPileUpEventRejection()          { fDoPileUpEventRejection= kTRUE  ; }
   void             SwitchOffPileUpEventRejection()         { fDoPileUpEventRejection= kFALSE ; }
   Bool_t           IsPileUpEventRejectionDone()      const { return fDoPileUpEventRejection  ; }
@@ -384,6 +381,8 @@ public:
   
   Bool_t           IsSelectEventTimeStampOn()              {return  fTimeStampEventSelect    ; }
   
+  // Event tagging as pile-up
+  
   Bool_t           IsPileUpFromSPD()               const ;
   Bool_t           IsPileUpFromEMCal()             const ;
   Bool_t           IsPileUpFromSPDAndEMCal()       const ;
@@ -417,44 +416,49 @@ public:
   // Track selection
   
   ULong_t          GetTrackStatus()                  const { return fTrackStatus          ; }
-  void             SetTrackStatus(ULong_t bit)             { fTrackStatus = bit           ; }		
+  void             SetTrackStatus(ULong_t bit)             { fTrackStatus = bit           ; }
 
-  ULong_t          GetTrackFilterMask()              const { return fTrackFilterMask       ; }
-  void             SetTrackFilterMask(ULong_t bit)         { fTrackFilterMask = bit       ; }
-  
-  ULong_t          GetTrackFilterMaskComplementary() const { return fTrackFilterMaskComplementary       ; }
-  void             SetTrackFilterMaskComplementary(ULong_t bit) {   fTrackFilterMaskComplementary = bit ; }
-  
-  AliESDtrackCuts* GetTrackCuts()                    const { return fESDtrackCuts         ; }
-  void             SetTrackCuts(AliESDtrackCuts * cuts)    ;
-
-  AliESDtrackCuts* GetTrackComplementaryCuts()       const { return fESDtrackComplementaryCuts ; }
-  void             SetTrackComplementaryCuts(AliESDtrackCuts * cuts)  ;
-
-  
-  void             SwitchOnConstrainTrackToVertex()        { fConstrainTrack     = kTRUE  ; } 
-  void             SwitchOffConstrainTrackToVertex()       { fConstrainTrack     = kFALSE ; }
-  
-  void             SwitchOnAODHybridTrackSelection()       { fSelectHybridTracks = kTRUE  ; } 
-  void             SwitchOffAODHybridTrackSelection()      { fSelectHybridTracks = kFALSE ; }      
-
-  void             SwitchOnAODPrimaryTrackSelection()      { fSelectPrimaryTracks = kTRUE  ; }
-  void             SwitchOffAODPrimaryTrackSelection()     { fSelectPrimaryTracks = kFALSE ; }
+  virtual Bool_t   SelectTrack(AliVTrack* , Double_t*)     { return kFALSE                ; } // See AOD/ESD reader
   
   void             SwitchOnTrackHitSPDSelection()          { fSelectSPDHitTracks = kTRUE  ; }
   void             SwitchOffTrackHitSPDSelection()         { fSelectSPDHitTracks = kFALSE ; }
-
-  void             SwitchOnAODTrackSharedClusterSelection() { fSelectFractionTPCSharedClusters = kTRUE  ; }
-  void             SwitchOffAODTrackSharedClusterSelection(){ fSelectFractionTPCSharedClusters = kFALSE ; }
-
-  void             SetTPCSharedClusterFraction(Float_t fr) { fCutTPCSharedClustersFraction = fr   ; }
-  Float_t          GetTPCSharedClusterFraction() const     { return fCutTPCSharedClustersFraction ; }
   
   Int_t            GetTrackMultiplicity()            const { return fTrackMult            ; }
   Float_t          GetTrackMultiplicityEtaCut()      const { return fTrackMultEtaCut      ; }
   void             SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut = eta       ; }		
   
-  // Calorimeter specific and patches
+  // virtual for AODReader
+  
+  virtual ULong_t  GetTrackFilterMask()               const { return 0 ; }
+  virtual void     SetTrackFilterMask(ULong_t)              { ; }
+  
+  virtual ULong_t  GetTrackFilterMaskComplementary()  const { return 0 ; }
+  virtual void     SetTrackFilterMaskComplementary(ULong_t) { ; }
+  
+  virtual void     SwitchOnAODHybridTrackSelection()        { ; }
+  virtual void     SwitchOffAODHybridTrackSelection()       { ; }
+  
+  virtual void     SwitchOnAODPrimaryTrackSelection()       { ; }
+  virtual void     SwitchOffAODPrimaryTrackSelection()      { ; }
+  
+  virtual void     SwitchOnAODTrackSharedClusterSelection() { ; }
+  virtual void     SwitchOffAODTrackSharedClusterSelection(){ ; }
+  
+  virtual void     SetTPCSharedClusterFraction(Float_t)     { ; }
+  virtual Float_t  GetTPCSharedClusterFraction() const      { return 0 ; }
+
+  // virtual for ESDReader
+  
+  virtual AliESDtrackCuts* GetTrackCuts()              const { return 0 ; }
+  virtual AliESDtrackCuts* GetTrackComplementaryCuts() const { return 0 ; }
+  
+  virtual void     SetTrackCuts(AliESDtrackCuts *)               { ; }
+  virtual void     SetTrackComplementaryCuts(AliESDtrackCuts *)  { ; }
+  
+  virtual void     SwitchOnConstrainTrackToVertex()  { ; }
+  virtual void     SwitchOffConstrainTrackToVertex() { ; }
+
+  // Calorimeter pure LED events selection
   void             AnalyzeOnlyLED()                        { fAnaLED             = kTRUE  ; }
   void             AnalyzeOnlyPhysics()                    { fAnaLED             = kFALSE ; }
   
@@ -466,9 +470,9 @@ public:
   virtual Double_t* GetVertex(Int_t evtIndex)        const { return fVertex[evtIndex]            ; }
   virtual void      GetVertex(Double_t vertex[3],    const Int_t evtIndex) const ;
   virtual void      FillVertexArray();
-  virtual Bool_t    CheckForPrimaryVertex();
-  virtual Float_t   GetZvertexCut()                  const { return fZvtxCut                     ; } //cut on vertex position  
-  virtual void      SetZvertexCut(Float_t zcut=10.)        { fZvtxCut=zcut                       ; } //cut on vertex position
+  virtual Bool_t    CheckForPrimaryVertex()          const { return kTRUE                        ; } // algorithm in ESD/AOD Readers
+  virtual Float_t   GetZvertexCut()                  const { return fZvtxCut                     ; } // cut on vertex position
+  virtual void      SetZvertexCut(Float_t zcut=10.)        { fZvtxCut=zcut                       ; } // cut on vertex position
 
   //--------------------------
   // Centrality / Event Plane
@@ -500,8 +504,8 @@ public:
   Int_t   GetLastCaloMixedEvent()                    const { return fLastMixedCaloEvent          ; }
   Int_t   GetLastTracksMixedEvent ()                 const { return fLastMixedTracksEvent        ; }
   
-  TList * GetListWithMixedEventsForCalo  (Int_t bi)  const { if(fListMixedCaloEvents)   return fListMixedCaloEvents[bi]     ; else return 0 ; }
-  TList * GetListWithMixedEventsForTracks(Int_t bi)  const { if(fListMixedTracksEvents) return fListMixedTracksEvents [bi]  ; else return 0 ; }  
+  TList * GetListWithMixedEventsForCalo  (Int_t bi)  const { if(fListMixedCaloEvents)   return fListMixedCaloEvents  [bi] ; else return 0 ; }
+  TList * GetListWithMixedEventsForTracks(Int_t bi)  const { if(fListMixedTracksEvents) return fListMixedTracksEvents[bi] ; else return 0 ; }
    
   Bool_t  ListWithMixedEventsForCaloExists()         const { if(fListMixedCaloEvents) return kTRUE  ;
                                                              else                     return kFALSE ; }
@@ -672,18 +676,10 @@ public:
   Bool_t           fSelectEmbeddedClusters;    // Use only simulated clusters that come from embedding.
   
   ULong_t          fTrackStatus        ;       // Track selection bit, select tracks refitted in TPC, ITS ...
-  ULong_t          fTrackFilterMask    ;       // Track selection bit, for AODs (any difference with track status?)
-  ULong_t          fTrackFilterMaskComplementary;       // Complementary Track selection bit, for AODs in case hybrid option selected
-  AliESDtrackCuts *fESDtrackCuts       ;       // Track cut
-  AliESDtrackCuts *fESDtrackComplementaryCuts; // Track cut, complementary cuts for hybrids
-  Bool_t           fConstrainTrack     ;       // Constrain Track to vertex
-  Bool_t           fSelectHybridTracks ;       // Select CTS tracks of type hybrid (only for AODs)
-  Bool_t           fSelectPrimaryTracks ;      // Select CTS tracks of type hybrid (only for AODs)
   Bool_t           fSelectSPDHitTracks ;       // Ensure that track hits SPD layers
-  Bool_t           fSelectFractionTPCSharedClusters; // Accept only TPC tracks with over a given fraction of shared clusters
-  Float_t          fCutTPCSharedClustersFraction;    // Fraction of TPC shared clusters to be accepted.
   Int_t            fTrackMult          ;       // Track multiplicity
   Float_t          fTrackMultEtaCut    ;       // Track multiplicity eta cut
+  
   Bool_t           fReadStack          ;       // Access kine information from stack
   Bool_t	         fReadAODMCParticles ;       // Access kine information from filtered AOD MC particles
 	
@@ -723,7 +719,6 @@ public:
   Int_t            fLastMixedCaloEvent ;       //  Temporary container with the last event added to the mixing list for photons
   
   Bool_t           fWriteOutputDeltaAOD;       // Write the created delta AOD objects into file  
-	Bool_t           fOldAOD;                    // Old AODs, before revision 4.20
   
   Int_t            fV0ADC[2]    ;              // Integrated V0 signal
   Int_t            fV0Mul[2]    ;              // Integrated V0 Multiplicity
@@ -811,7 +806,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,67)
+  ClassDef(AliCaloTrackReader,68)
   
 } ;
 

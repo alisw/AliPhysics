@@ -39,11 +39,13 @@ class AliMCAnalysisUtils : public TObject {
   //then charged particles on line 4,                                                                                    
   //followed by other and unknown on line 5                                                                              
   enum mcTypes { kMCPhoton,     kMCPrompt,      kMCFragmentation, kMCISR,    
-                 kMCPi0Decay,   kMCEtaDecay,    kMCOtherDecay,    kMCConversion,
-                 kMCElectron,   kMCEFromCFromB, kMCEFromC,        kMCEFromB, kMCZDecay,   kMCWDecay,
+                 kMCPi0Decay,   kMCEtaDecay,    kMCOtherDecay,
+                 kMCDecayPairLost, kMCDecayPairInCalo,
+                 kMCDecayDalitz,kMCConversion,  kMCElectron,
+                 kMCEFromCFromB,kMCEFromC,      kMCEFromB,        kMCZDecay, kMCWDecay,
                  kMCMuon,       kMCPion,        kMCPi0,           kMCKaon,   kMCEta,      kMCProton,   
                  kMCAntiProton, kMCNeutron,     kMCAntiNeutron,
-                 kMCOther,      kMCUnknown,     kMCBadLabel                                                                                         } ;
+                 kMCUnknown,    kMCBadLabel                                                         } ;
   
   //--------------------------------------
   // Methods to check origin of clusters
@@ -52,15 +54,18 @@ class AliMCAnalysisUtils : public TObject {
   Int_t   CheckCommonAncestor(Int_t index1, Int_t index2, const AliCaloTrackReader* reader, 
 			      Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum, TVector3 & v) ;
   
-  Int_t   CheckOrigin(Int_t label, const AliCaloTrackReader * reader) ;
+  Int_t   CheckOrigin(Int_t label, const AliCaloTrackReader * reader, TString calorimeter) ;
   
   //Check the label of the most significant particle but do checks on the rest of the contributing labels
-  Int_t   CheckOrigin       (const Int_t *label,  Int_t nlabels, const AliCaloTrackReader * reader) ;
-  Int_t   CheckOriginInStack(const Int_t *labels, Int_t nlabels, AliStack * stack)                ; // ESD
-  Int_t   CheckOriginInAOD  (const Int_t *labels, Int_t nlabels, const TClonesArray* mcparticles) ; // AOD
+  Int_t   CheckOrigin       (const Int_t *label,  Int_t nlabels, const AliCaloTrackReader * reader, TString calorimeter) ;
+  Int_t   CheckOriginInStack(const Int_t *labels, Int_t nlabels, AliStack * stack               , const TObjArray *arrayCluster) ; // ESD
+  Int_t   CheckOriginInAOD  (const Int_t *labels, Int_t nlabels, const TClonesArray* mcparticles, const TObjArray *arrayCluster) ; // AOD
   
-  void    CheckOverlapped2GammaDecay(const Int_t *labels, Int_t nlabels, Int_t mesonIndex, AliStack * stack, Int_t & tag); // ESD
+  void    CheckOverlapped2GammaDecay(const Int_t *labels, Int_t nlabels, Int_t mesonIndex, AliStack * stack,                Int_t & tag); // ESD
   void    CheckOverlapped2GammaDecay(const Int_t *labels, Int_t nlabels, Int_t mesonIndex, const TClonesArray* mcparticles, Int_t & tag); // AOD
+  
+  void    CheckLostDecayPair(const TObjArray *arrayCluster, Int_t iMom, Int_t iParent, AliStack* stack,                 Int_t & tag); // ESD
+  void    CheckLostDecayPair(const TObjArray *arrayCluster, Int_t iMom, Int_t iParent, const TClonesArray* mcparticles, Int_t & tag); // AOD
   
   TLorentzVector GetMother     (Int_t label,const AliCaloTrackReader* reader, Bool_t & ok);
   TLorentzVector GetMother     (Int_t label,const AliCaloTrackReader* reader, Int_t & pdg, Int_t & status, Bool_t & ok);

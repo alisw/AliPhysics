@@ -33,6 +33,9 @@
 #include "AliTPCPIDResponse.h" 
 #include "AliInputEventHandler.h"
 #include "AliAnalysisManager.h"
+#include "AliGenEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliGenHijingEventHeader.h"
 //class AliPWG0Helper;
 //#include "$ALICE_ROOT/PWG0/AliPWG0Helper.h"
 
@@ -45,6 +48,9 @@ Int_t AliAnalysisHadEtMonteCarlo::fgNumSmearWidths = 4;
 Float_t AliAnalysisHadEtMonteCarlo::fgSmearWidths[4] = {0.005,0.006,0.007,0.008};
 
 AliAnalysisHadEtMonteCarlo::AliAnalysisHadEtMonteCarlo():AliAnalysisHadEt()
+							,checkLabelForHIJING(kFALSE)
+							,fNMCProducedMin(0)
+							,fNMCProducedMax(0)
 							,fSimPiKPEt(0)
 							,fSimRawEtTPC(0)
 							,fSimRawEtITS(0)
@@ -97,12 +103,17 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     return 0;
   }
   AliStack *stack = mcEvent->Stack();
+
+  if(checkLabelForHIJING) SetGeneratorMinMaxParticles(mcEvent);
   fCentBin= -1;
   fGoodEvent = kTRUE;//for p+p collisions if we made it this far we have a good event
-  if(fDataSet==20100){//If this is Pb+Pb
-    AliCentrality *centrality = realEvent->GetCentrality();
-    if(fNCentBins<21) fCentBin= centrality->GetCentralityClass10(fCentralityMethod);
-    else{ fCentBin= centrality->GetCentralityClass5(fCentralityMethod);}
+  if(fDataSet==20100 ||fDataSet==2011 ){//If this is Pb+Pb
+//     AliCentrality *centrality2 = realEvent->GetCentrality();
+//     if(fNCentBins<21) fCentBin= centrality2->GetCentralityClass10(fCentralityMethod);
+//     else{ fCentBin= centrality2->GetCentralityClass5(fCentralityMethod);}
+//     cout<<"centrality "<<fCentBin<<endl;
+    AliCentrality *centrality =  realEvent->GetCentrality();
+    fCentBin = GetCentralityBin(fNCentBins, centrality);
     if(fCentBin ==-1) fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
   }
   AnalyseEvent(ev);
@@ -167,6 +178,9 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     for (Int_t iTrack = 0; iTrack < nGoodTracks; iTrack++)
       {
 	AliESDtrack *track = dynamic_cast<AliESDtrack*> (list->At(iTrack));
+	UInt_t label = (UInt_t)TMath::Abs(track->GetLabel());
+	//if(checkLabelForHIJING && !IsHIJINGLabel(label,mcEvent,stack) ){cout<<"I am rejecting this particle because it is not HIJING"<<endl;}
+	if(checkLabelForHIJING && !IsHIJINGLabel(label,mcEvent,stack) ) continue;
 	if (!track)
 	  {
 	    Printf("ERROR: Could not get track %d", iTrack);
@@ -218,7 +232,6 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 
 	  FillHisto2D(Form("dEdxAll%s",cutName->Data()),track->P(),dEdx,1.0);
 
-	  UInt_t label = (UInt_t)TMath::Abs(track->GetLabel());
 	    TParticle  *simPart  = stack->Particle(label);
 	  if(!simPart) {
 	    Printf("no MC particle\n"); 	 	
@@ -1059,6 +1072,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
     // Let's play with the stack!
     AliStack *stack = mcEvent->Stack();
 
+
     Int_t nPrim = stack->GetNtrack();
 
     Float_t fSimPiKPEtPtSmeared = 0;
@@ -1077,6 +1091,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
     {
 
       TParticle *part = stack->Particle(iPart);//This line is identified as a loss of memory by valgrind, however, the pointer still belongs to the stack, so it's the stack's problem
+
+	if(checkLabelForHIJING && !IsHIJINGLabel(iPart,mcEvent,stack) ) continue;
 
         if (!part)
 	  {
@@ -1711,7 +1727,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
     FillHisto1D("SimPiKPEt",fSimPiKPEt,1.0);
     FillHisto1D("SimRawEtTPC",fSimRawEtTPC,1.0);
     FillHisto1D("SimRawEtITS",fSimRawEtITS,1.0);
-    if(fDataSet!=20100 && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kND){
+    if((fDataSet!=20100 || fDataSet==2011) && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kND){
       FillHisto1D("SimHadEtND",fSimHadEt,1.0);
       FillHisto1D("SimTotEtND",fSimTotEt,1.0);
       FillHisto1D("NEventsND",0.5,1);
@@ -1735,7 +1751,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	FillHisto1D("SimRawEtNDMBITS",fSimRawEtITS,1.0);
       }
     }
-    if(fDataSet!=20100 && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kSD){
+    if((fDataSet!=20100||fDataSet==2011) && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kSD){
       FillHisto1D("SimHadEtSD",fSimHadEt,1.0);
       FillHisto1D("SimTotEtSD",fSimTotEt,1.0);
       FillHisto1D("NEventsSD",0.5,1);
@@ -1759,7 +1775,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	FillHisto1D("SimRawEtSDMBITS",fSimRawEtITS,1.0);
       }
     }
-    if(fDataSet!=20100 && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kDD){
+    if((fDataSet!=20100 || fDataSet==2011) && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kDD){
       FillHisto1D("SimHadEtDD",fSimHadEt,1.0);
       FillHisto1D("SimTotEtDD",fSimTotEt,1.0);
       FillHisto1D("NEventsDD",0.5,1);
@@ -1853,7 +1869,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
       CreateEtaPtHisto2D("EtNSimulatedAntiProtonEnhanced","Number of simulated #bar{p}");
     }
     CreateEtaPtHisto2D("EtNSimulatedChargedHadron","Number of simulated charged hadrons");
-    if(fDataSet==20100){//If this is Pb+Pb
+    if(fDataSet==20100 || fDataSet==2011){//If this is Pb+Pb
       Int_t width = 5;
       if(fNCentBins<21) width = 10;
       for(Int_t i=0;i<fNCentBins;i++){
@@ -2025,7 +2041,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
 	CreateEtaPtHisto2D(Form("EtNReconstructed%sAntiProtonEnhanced",cutName->Data()),"Reconstructed E_{T} from #bar{p}");
       }
       CreateEtaPtHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),"Reconstructed E_{T} from charged hadrons");
-      if(fDataSet==20100){//If this is Pb+Pb
+      if(fDataSet==20100||fDataSet==2011){//If this is Pb+Pb
 	Int_t width = 5;
 	if(fNCentBins<21) width = 10;
 	for(Int_t j=0;j<fNCentBins;j++){
@@ -2102,7 +2118,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   Float_t maxEt = 100.0;
   Float_t minEtPiKP = 0.0;
   Float_t maxEtPiKP = 100.0;
-  if(fDataSet==20100){
+  if(fDataSet==20100 || fDataSet==2011){
     maxEt=4000.0;
     maxEtPiKP = 2500;
   }
@@ -2135,7 +2151,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   TString *sPHOS = new TString("PHOS");
   float etDiff = 1.5;
   float etDiffLow = etDiff;
-  if(fDataSet!=20100){//If this is p+p
+  if(fDataSet!=20100 && fDataSet!=2011){//If this is p+p
     etDiffLow = 2.5;
   }
 
@@ -2265,7 +2281,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   CreateHisto1D("SimHadEtDDV0AND","Simulated Hadronic E_{T}","Simulated Hadronic E_{T} for doubly diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimTotEtDDMB","Simulated Total E_{T}","Simulated Total E_{T} for doubly diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimHadEtDDMB","Simulated Hadronic E_{T}","Simulated Hadronic E_{T} for doubly diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
-  if(fDataSet==20100){
+  if(fDataSet==20100||fDataSet==2011){
     Int_t width = 5;
     if(fNCentBins<21) width = 10;
     for(Int_t j=0;j<fNCentBins;j++){
@@ -2479,7 +2495,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
     CreatePtHisto1D("pTrecITS","p_{T}^{rec}","p_{T}^{rec}","Number of particles");
     CreatePtHisto1D("pTrecTPC","p_{T}^{rec}","p_{T}^{rec}","Number of particles");
     CreatePtHisto1D("pTrecTPCITS","p_{T}^{rec}","p_{T}^{rec}","Number of particles");
-    if(fDataSet==20100){
+    if(fDataSet==20100||fDataSet==2011){
       Int_t width = 5;
       if(fNCentBins<21) width = 10;
       for(Int_t j=0;j<fNCentBins;j++){
@@ -2494,4 +2510,115 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   }
 
 }
+
+void AliAnalysisHadEtMonteCarlo::SetGeneratorMinMaxParticles(AliMCEvent *eventMC){
+  // In case of access only to hijing particles in cocktail
+  // get the min and max labels
+  // TODO: Check when generator is not the first one ...
+  
+  fNMCProducedMin = 0;
+  fNMCProducedMax = 0;
+  
+  AliGenEventHeader * eventHeader = eventMC->GenEventHeader();
+  
+  AliGenCocktailEventHeader *cocktail = dynamic_cast<AliGenCocktailEventHeader *>(eventHeader);
+  
+  if(!cocktail) return ;
+    
+  TList *genHeaders = cocktail->GetHeaders();
+  
+  Int_t nGenerators = genHeaders->GetEntries();
+  //printf("N generators %d \n", nGenerators);
+  
+  for(Int_t igen = 0; igen < nGenerators; igen++)
+    {
+      AliGenEventHeader * eventHeader2 = (AliGenEventHeader*)genHeaders->At(igen) ;
+      TString name = eventHeader2->GetName();
+      
+      //printf("Generator %d: Class Name %s, Name %s, title %s \n",igen, eventHeader2->ClassName(), name.Data(), eventHeader2->GetTitle());
+      
+      fNMCProducedMin = fNMCProducedMax;
+      fNMCProducedMax+= eventHeader2->NProduced();
+      
+      if(name.Contains("Hijing",TString::kIgnoreCase)){
+	//cout<<"Found HIJING event and set range "<<fNMCProducedMin<<"-"<<fNMCProducedMax<<endl;
+	return ;
+      }
+    }
+        
+}
+AliGenEventHeader* AliAnalysisHadEtMonteCarlo::GetGenEventHeader(AliMCEvent *eventMC) const
+{
+  // Return pointer to Generated event header
+  // If requested and cocktail, search for the hijing generator
+  AliGenEventHeader * eventHeader = eventMC->GenEventHeader();
+  AliGenCocktailEventHeader *cocktail = dynamic_cast<AliGenCocktailEventHeader *>(eventHeader);
+  
+  if(!cocktail) return 0x0 ;
+  
+  TList *genHeaders = cocktail->GetHeaders();
+  
+  Int_t nGenerators = genHeaders->GetEntries();
+  //printf("N generators %d \n", nGenerators);
+  
+  for(Int_t igen = 0; igen < nGenerators; igen++)
+    {
+      AliGenEventHeader * eventHeader2 = (AliGenEventHeader*)genHeaders->At(igen) ;
+      TString name = eventHeader2->GetName();
+      
+      //printf("Generator %d: Class Name %s, Name %s, title %s \n",igen, eventHeader2->ClassName(), name.Data(), eventHeader2->GetTitle());
+      
+      if(name.Contains("Hijing",TString::kIgnoreCase)) return eventHeader2 ;
+    }
+  
+  return 0x0;
+  
+}
+Bool_t AliAnalysisHadEtMonteCarlo::IsHIJINGLabel(Int_t label,AliMCEvent *eventMC,AliStack *stack)
+{
+ 
+  // Find if cluster/track was generated by HIJING
+  
+  AliGenHijingEventHeader*  hijingHeader =  dynamic_cast<AliGenHijingEventHeader *> (GetGenEventHeader(eventMC));
+  
+  //printf("header %p, label %d\n",hijingHeader,label);
+  
+  if(!hijingHeader || label < 0 ) return kFALSE;
+  
+  
+  //printf("pass a), N produced %d\n",nproduced);
+  
+  if(label >= fNMCProducedMin && label < fNMCProducedMax)
+  {
+    //printf(" accept!, label is smaller than produced, N %d\n",nproduced);
+
+    return kTRUE;
+  }
+  
+  if(!stack) return kFALSE;
+  
+  Int_t nprimaries = stack->GetNtrack();
+  
+  if(label > nprimaries) return kFALSE;
+    
+  TParticle * mom = stack->Particle(label);
+    
+  Int_t iMom = label;
+  Int_t iParent = mom->GetFirstMother();
+  while(iParent!=-1){
+    if(iParent >= fNMCProducedMin && iParent < fNMCProducedMax){
+      return kTRUE;
+    }
+      
+    iMom = iParent;
+    mom = stack->Particle(iMom);
+    iParent = mom->GetFirstMother();
+  }
+    
+  return kFALSE ;
+    
+}
+
+
+
 

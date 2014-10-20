@@ -1,5 +1,5 @@
 AliAnalysisTaskSE *AddTaskLambdac(TString finname,Bool_t storeNtuple,Bool_t readMC,Bool_t MCPid,Bool_t realPid,Bool_t resPid,Bool_t useKF,
-				  Bool_t fillVarHists=kFALSE, Bool_t priorsHists=kFALSE, Bool_t multiplicityHists=kFALSE, Int_t syst=0, TString postname="")
+				  Bool_t fillVarHists=kFALSE, Bool_t priorsHists=kFALSE, Bool_t multiplicityHists=kFALSE, Int_t syst=0, Int_t bit=0,  TString postname="")
 {
   //==============================================================================                                                      
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -52,6 +52,10 @@ AliAnalysisTaskSE *AddTaskLambdac(TString finname,Bool_t storeNtuple,Bool_t read
   lambdacTask->SetPriorsHists(priorsHists);
   lambdacTask->SetMultiplicityHists(multiplicityHists);
   lambdacTask->SetAnalysis(kTRUE);
+
+  //bit:0 nocut, 1:LcCut, 2:LcPID, 3: Both
+  lambdacTask->SetUseFilterBitCut(bit==1||bit==3?1:0);
+  lambdacTask->SetUseFilterBitPID(bit>1?1:0);
 
   lambdacTask->SetDebugLevel(0);
   if(useKF) {

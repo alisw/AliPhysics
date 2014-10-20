@@ -24,8 +24,8 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Int_t test,
   //plugin->SetFileForTestMode("files.txt"); // file should contain path name to a local directory containg *ESDs.root etc
   // Set versions of used packages 
    plugin->SetAPIVersion("V1.1x");
-   plugin->SetROOTVersion("v5-34-08");
-   plugin->SetAliROOTVersion("v5-05-55-AN");
+   plugin->SetROOTVersion("v5-34-08-6");
+   plugin->SetAliROOTVersion("vAN-20140624");
   // Declare input data to be processed.
 
    plugin->AddIncludePath("-I$ALICE_ROOT/PWGUD/base  -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/PWGPP -I$ALICE_ROOT/PWGPP/ITS");
@@ -47,12 +47,15 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Int_t test,
   // the content is compatible (using or not tags)
   //plugin->AddDataFile("tag.xml");
   //   plugin->AddDataFile("/alice/data/2008/LHC08c/000057657/raw/Run57657.Merged.RAW.tag.root");
+   TString outputdir = "etPbPbSim";
+   if(data)outputdir = "etPbPbData";
   if(dataset==20100){//PbPb 2.76 TeV
     if(data){//185 jobs
       cout<<"Running over data"<<endl;
       plugin->SetGridDataDir("/alice/data/2010/LHC10h");//PbPb data
       plugin->SetDataPattern("*ESDs/pass2/*ESDs.root");
       plugin->SetRunPrefix("000");   // real data
+
     }
     else{
       cout<<"Running over MC"<<endl;
@@ -71,15 +74,69 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Int_t test,
       }
       if(material==11){//OK it's a cheat but this runs on AMPT
 	plugin->SetGridDataDir(" /alice/sim/LHC11a9a");//PbPb simulation
+	plugin->AddRunNumber(137366);
       }
       plugin->SetDataPattern("*ESDs.root");
       //plugin->SetGridWorkingDir("etPbPbSim");
     }
-    plugin->AddRunNumber(139465);
-//     plugin->AddRunNumber(137366);
-//     plugin->AddRunNumber(137161);
+    if(simflag==0){//not really using it as a simflag but that way I don't need a new argument...
+      plugin->AddRunNumber(139465);
+      outputdir += "139465";
+    }
+    if(simflag==1){//not really using it as a simflag but that way I don't need a new argument...
+      outputdir += "138442";
+      plugin->AddRunNumber(138442);
+    }
+    if(simflag==2){//not really using it as a simflag but that way I don't need a new argument...
+      outputdir += "138364";
+      plugin->AddRunNumber(138364);
+    }
+    if(simflag==3){//not really using it as a simflag but that way I don't need a new argument...
+      outputdir += "138396";
+      plugin->AddRunNumber(138396);
+    }
+    if(simflag==4){//not really using it as a simflag but that way I don't need a new argument...
+      outputdir += "137722";
+      plugin->AddRunNumber(137722);
+    }
+    if(simflag==5){//not really using it as a simflag but that way I don't need a new argument...
+      outputdir += "137366";
+      plugin->AddRunNumber(137366);
+    }
+    if(simflag==6){//not really using it as a simflag but that way I don't need a new argument...
+      outputdir += "137161";
+      plugin->AddRunNumber(137161);
+    }
+    cout<<"writing to "<<outputdir.Data()<<endl;
   }
   else{
+    if(dataset==2011){//PbPb 2.76 TeV
+      if(data){//185 jobs
+	cout<<"Running over data"<<endl;
+	 plugin->SetGridDataDir("/alice/data/2011/LHC11h_2");//PbPb data
+	 plugin->SetDataPattern("*ESDs/pass2/*ESDs.root");
+	 plugin->SetRunPrefix("000");   // real data
+      }
+      else{
+	cout<<"Running over MC"<<endl;
+	if(simflag==0){//2011 production - 0-10%
+	  cout<<"I am here setting grid data dir"<<endl;
+// 	  outputDir = outputDir + "LHC13e1a";
+	  plugin->SetGridDataDir("/alice/sim/2013/LHC13e1a");
+	}
+	if(simflag==1){//2011 production - 0-10%
+	  cout<<"I am here setting grid data dir"<<endl;
+// 	  outputDir = outputDir + "LHC13e1a";
+	  plugin->SetGridDataDir("/alice/sim/2013/LHC13e1b");
+	}
+	if(simflag==2){//2011 production - 0-10%
+	  cout<<"I am here setting grid data dir"<<endl;
+// 	  outputDir = outputDir + "LHC13e1a";
+	  plugin->SetGridDataDir("/alice/sim/2013/LHC13e1b");
+	}
+      }
+      plugin->AddRunNumber(168464);
+    }
     if(dataset==2009){//pp 900 GeV
       if(data){//only 233 jobs!
 	cout<<"Running over data"<<endl;
@@ -223,7 +280,7 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Int_t test,
 	plugin->SetRunPrefix("000");   // real data
       }
       else{//sim- 346 jobs
-	plugin->SetGridDataDir(" /alice/sim/2013/LHC13b3");//
+	plugin->SetGridDataDir("/alice/sim/2013/LHC13b3");//
       }
       plugin->AddRunNumber("195483");
     }
@@ -232,10 +289,11 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Int_t test,
 
   if(dataset==20100){//PbPb 2.76 TeV
     if(data){
-      plugin->SetGridWorkingDir("etPbPbData");
+      //plugin->SetGridWorkingDir("etPbPbData");
+      plugin->SetGridWorkingDir(outputdir.Data());
     }
     else{
-      if(material==0){plugin->SetGridWorkingDir("etPbPbSim");}
+      if(material==0){plugin->SetGridWorkingDir(outputdir.Data());}
       if(material==-1) plugin->SetGridWorkingDir("etPbPbSimMatBudLow");
       if(material==1) plugin->SetGridWorkingDir("etPbPbSimMatBudHigh");
       if(material==10)  plugin->SetGridWorkingDir("etPbPbSimDPMJET");
@@ -243,6 +301,16 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Int_t test,
     }
   }
   else{
+    if(dataset==2011){//PbPb 2.76 TeV
+      if(data){
+	plugin->SetGridWorkingDir("etPbPbData2011");
+      }
+      else{
+	if(simflag==0){plugin->SetGridWorkingDir("etPbPbSim2011LHC13e1a");}
+	if(simflag==1){plugin->SetGridWorkingDir("etPbPbSim2011LHC13e1b");}
+	if(simflag==2){plugin->SetGridWorkingDir("etPbPbSim2011LHC13e1c");}
+      }
+    }
     if(dataset==2009){//pp 900 GeV
       if(data){
 	plugin->SetGridWorkingDir("etpp900GeVData");
@@ -260,7 +328,7 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Int_t test,
     }
     if(dataset==20111){//pp 2.76 TeV
       if(data){
-	plugin->SetGridWorkingDir("etpp276TeVData");
+	//plugin->SetGridWorkingDir("etpp276TeVData");
       }
       else{
 	if(altV0Scale) plugin->SetGridWorkingDir("etpp276TeVSimAlt");
@@ -303,6 +371,7 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Int_t test,
     }
   }
 
+    cout<<"writing to "<<outputdir.Data()<<endl;
 
   // Define alien work directory where all files will be copied. Relative to alien $HOME.
   //plugin->SetGridWorkingDir("et");

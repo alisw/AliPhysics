@@ -21,6 +21,8 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
    gSystem->Load("libSTEERBase.so");
    gSystem->Load("libTENDER.so");
    gSystem->Load("libTENDERSupplies.so");
+   
+   Int_t isHeavyIon = 0;
       
    // ================== GetAnalysisManager ===============================
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -41,46 +43,67 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
    //=========  Set Cutnumber for V0Reader ================================
    
 		        
-   TString cutnumber = "00000000000840010015000000"; 
+   //TString cutnumber = "00000000000840010015000000"; 
+   TString cutnumberPhoton = "002084000002200000000";
+   TString cutnumberEvent  = "0000000"; 
+		
+   
    AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
    
    //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-   if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
-      AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
-      
-      fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
-      fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
-      fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
+	if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
+	  
+		AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
+		
+		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
+		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
+		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
 
-      if (!mgr) {
-         Error("AddTask_V0ReaderV1", "No analysis manager found.");
-         return;
-      }
+		if (!mgr) {
+			Error("AddTask_V0ReaderV1", "No analysis manager found.");
+			return;
+		}
 
-      // Set AnalysisCut Number
-      AliConversionCuts *fCuts=NULL;
-      if(cutnumber!=""){
-         fCuts= new AliConversionCuts(cutnumber.Data(),cutnumber.Data());
-         fCuts->SetPreSelectionCutFlag(kTRUE);
-         if(fCuts->InitializeCutsFromCutString(cutnumber.Data())){
-            fV0ReaderV1->SetConversionCuts(fCuts);
-            fCuts->SetFillCutHistograms("",kTRUE);
-         }
-      }
-      fV0ReaderV1->Init();
+		AliConvEventCuts *fEventCuts=NULL;
+		if(cutnumberEvent!=""){
+			fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
+			fEventCuts->SetPreSelectionCutFlag(kTRUE);
+			if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
+				fV0ReaderV1->SetEventCuts(fEventCuts);
+				fEventCuts->SetFillCutHistograms("",kTRUE);
+			}
+		}
 
-      AliLog::SetGlobalLogLevel(AliLog::kInfo);
+		// Set AnalysisCut Number
+		AliConversionPhotonCuts *fCuts=NULL;
+		if(cutnumberPhoton!=""){
+			fCuts= new AliConversionPhotonCuts(cutnumberPhoton.Data(),cutnumberPhoton.Data());
+			fCuts->SetPreSelectionCutFlag(kTRUE);
+			fCuts->SetIsHeavyIon(isHeavyIon);
+			if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
+				fV0ReaderV1->SetConversionCuts(fCuts);
+				fCuts->SetFillCutHistograms("",kTRUE);
+			}
+		}
+		if(inputHandler->IsA()==AliAODInputHandler::Class()){
+		// AOD mode
+			fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+		}
+		fV0ReaderV1->Init();
 
-      //connect input V0Reader
-      mgr->AddTask(fV0ReaderV1);
-      mgr->ConnectInput(fV0ReaderV1,0,cinput);
+		AliLog::SetGlobalLogLevel(AliLog::kInfo);
 
-   }
+		//connect input V0Reader
+		mgr->AddTask(fV0ReaderV1);
+		mgr->ConnectInput(fV0ReaderV1,0,cinput);
+
+	}
+
 
    
-   if( !(AliDalitzElectronSelector*)mgr->GetTask("ElectronSelector") ){
+  if( !(AliDalitzElectronSelector*)mgr->GetTask("ElectronSelector") ){
 
-
+ 
 
    AliDalitzElectronSelector *fElectronSelector = new AliDalitzElectronSelector("ElectronSelector");
 
@@ -92,7 +115,7 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 
    AliDalitzElectronCuts *fElecCuts=0;
 
-   TString ElecCuts = "900054000000020000";
+   TString ElecCuts = "90005400000002000000";
 
 
 
@@ -111,11 +134,16 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
    }
 
    fElectronSelector->Init();
+   mgr->AddTask(fElectronSelector);
+    //connect input fElectronSelector
+
+   mgr->ConnectInput (fElectronSelector,0,cinput);
+   
  }
 
 
 
-   mgr->AddTask(fElectronSelector);
+   
 
 
 
@@ -132,32 +160,33 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
    
    // Cut Numbers to use in Analysis
    Int_t numberOfCuts = 2;
-
-   TString *ConvCutarray 		= new TString[numberOfCuts];
-   TString *MesonCutarray 		= new TString[numberOfCuts];
-   TString *ElecCutarray    		= new TString[numberOfCuts];
    
-            
+   TString *eventCutArray   = new TString[numberOfCuts];
+   TString *photonCutArray  = new TString[numberOfCuts];
+   TString *MesonCutarray   = new TString[numberOfCuts];
+   TString *ElecCutarray    = new TString[numberOfCuts];
    
+               
    
 
    if(trainConfig == 1){
-     //TOF PID
-     ConvCutarray[0] = "00000110020936630278000000"; MesonCutarray[0] = "01631031009";ElecCutarray[0] = "904784032531026210";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
-     ConvCutarray[1] = "00000110020936630278000000"; MesonCutarray[1] = "01631031009";ElecCutarray[1] = "904784042531026210";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
+     //TOF PID															     				
+     eventCutArray[0]="0000011"; photonCutArray[0] = "002093663027800000000"; MesonCutarray[0] = "01631031009000";ElecCutarray[0] = "90478403253102621000";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
+     eventCutArray[1]="0000011"; photonCutArray[1] = "002093663027800000000"; MesonCutarray[1] = "01631031009000";ElecCutarray[1] = "90478404253102621000";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
     } else if (trainConfig == 2) {
      //TOF PID
-     ConvCutarray[0] = "00000110020936630278000000"; MesonCutarray[0] = "01631031009";ElecCutarray[0] = "904784032531026210";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
-     ConvCutarray[1] = "00000110020936630278000000"; MesonCutarray[1] = "01631031009";ElecCutarray[1] = "904784042531026210";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
+     eventCutArray[0]="0000011"; photonCutArray[0] = "002093663027800000000"; MesonCutarray[0] = "01631031009000";ElecCutarray[0] = "90478403253102621000";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
+     eventCutArray[1]="0000011"; photonCutArray[1] = "002093663027800000000"; MesonCutarray[1] = "01631031009000";ElecCutarray[1] = "90478404253102621000";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
     } else if (trainConfig == 3) {
      //TOF PID
-     ConvCutarray[0] = "00000110020936630278000000"; MesonCutarray[0] = "01631031009";ElecCutarray[0] = "904784032531026210";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
-     ConvCutarray[1] = "00000110020936630278000000"; MesonCutarray[1] = "01631031009";ElecCutarray[1] = "904784042531026210";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
+     eventCutArray[0]="0000011"; photonCutArray[0] = "002093663027800000000"; MesonCutarray[0] = "01631031009000";ElecCutarray[0] = "90478403253102621000";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
+     eventCutArray[1]="0000011"; photonCutArray[1] = "002093663027800000000"; MesonCutarray[1] = "01631031009000";ElecCutarray[1] = "90478404253102621000";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
     } else {
       Error(Form("GammaConvDalitzV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
    }
 
+   TList  *EventCutList = new TList();
    TList  *ConvCutList  = new TList();
    TList  *MesonCutList = new TList();
    TList  *ElecCutList  = new TList();
@@ -165,9 +194,11 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
    TList *HeaderList = new TList();
    TObjString *Header2 = new TObjString("BOX");
    HeaderList->Add(Header2);
-
+   
+   EventCutList->SetOwner(kTRUE);
+   AliConvEventCuts **analysisEventCuts 	= new AliConvEventCuts*[numberOfCuts];
    ConvCutList->SetOwner(kTRUE);
-   AliConversionCuts **analysisCuts 		= new AliConversionCuts*[numberOfCuts];
+   AliConversionPhotonCuts **analysisCuts 	= new AliConversionPhotonCuts*[numberOfCuts];
    MesonCutList->SetOwner(kTRUE);
    AliConversionMesonCuts **analysisMesonCuts 	= new AliConversionMesonCuts*[numberOfCuts];
    ElecCutList->SetOwner(kTRUE);
@@ -178,10 +209,16 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
    for(Int_t i = 0; i<numberOfCuts; i++){
      
      
-      TString cutName( Form("%s_%s_%s",ConvCutarray[i].Data(),ElecCutarray[i].Data(),MesonCutarray[i].Data() ) );
+      TString cutName( Form("%s_%s_%s_%s",eventCutArray[i].Data(),photonCutArray[i].Data(),ElecCutarray[i].Data(),MesonCutarray[i].Data() ) );
     
-      analysisCuts[i] = new AliConversionCuts();
-      analysisCuts[i]->InitializeCutsFromCutString(ConvCutarray[i].Data());
+      analysisEventCuts[i] = new AliConvEventCuts();
+      analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
+      EventCutList->Add(analysisEventCuts[i]);
+      analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
+      
+      
+      analysisCuts[i] = new AliConversionPhotonCuts();
+      analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
       ConvCutList->Add(analysisCuts[i]);
       analysisCuts[i]->SetFillCutHistograms("",kFALSE);
    
@@ -195,19 +232,13 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
       analysisElecCuts[i]->InitializeCutsFromCutString(ElecCutarray[i].Data());
       ElecCutList->Add(analysisElecCuts[i]);
       analysisElecCuts[i]->SetFillCutHistograms("",kFALSE,cutName); 
-      //analysisElecCuts[i]->PrintCuts();
-
-
-
-
-
- 
       
-      analysisCuts[i]->SetAcceptedHeader(HeaderList);
+      
+      analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
      
    }
    
- 
+   task->SetEventCutList(numberOfCuts,EventCutList);
    task->SetConversionCutList(numberOfCuts,ConvCutList);
    task->SetMesonCutList(MesonCutList);
    task->SetElectronCutList(ElecCutList);
@@ -218,7 +249,7 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 
    //connect containers
    AliAnalysisDataContainer *coutput =
-      mgr->CreateContainer(Form("GammaConvDalitzV1_%i",trainConfig), TList::Class(),
+   mgr->CreateContainer(Form("GammaConvDalitzV1_%i",trainConfig), TList::Class(),
                            AliAnalysisManager::kOutputContainer,Form("GammaConvV1_%i.root",trainConfig));
 
    mgr->AddTask(task);

@@ -42,6 +42,7 @@ public:
     Float_t GetTotalNumberOfChargedHadrons(){return nChargedHadronsTotal;}
     
     void SetEMinCorrection(const Double_t factor) { fEMinCorrection = factor; }
+    void MakeQATree(){fMakeQATree = kTRUE;}
 
 protected:
 
@@ -49,6 +50,12 @@ protected:
     virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField);
 
     virtual Double_t GetCorrectionModification(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr, Int_t cent);//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
+
+    TTree *fQATree; //! Tree for holding information about funny events in PHOS
+    Bool_t fMakeQATree;//boolean for whether or not to make it
+    Int_t fClusterMultiplicity;
+    Int_t fTrackMultiplicity;
+    Int_t fEventID;
 
     AliAnalysisHadEtCorrections *fCorrections;//!//corrections needed for hadronic et
 
@@ -75,6 +82,7 @@ protected:
     TH2D *fClusterPositionAllEnergy;//! // Position of clusters
     TH1F *fClusterEnergy;//! // Distribution of cluster energies
     TH2F *fClusterEnergyCent;//! // Distribution of cluster energies vs centrality bin
+    TH2F *fClusterEnergyModifiedTrackMatchesCent;//! // Distribution of cluster energies vs centrality bin
     TH2F *fClusterEnergyCentMatched;//! // Distribution of cluster energies vs centrality bin
     TH2F *fClusterEnergyCentNotMatched;//! // Distribution of cluster energies vs centrality bin
     TH1F *fClusterEt;//! // Distribution of cluster energies

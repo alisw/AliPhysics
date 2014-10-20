@@ -26,6 +26,7 @@ class AliCFContainer;
 class AliCFGridSparse;
 class THnBase;
 class AliTHn;
+class TProfile;
 
 
 #include <TObject.h> //LRCParticlePID is a derived class from"TObject"
@@ -113,7 +114,13 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
     void SetMaxNofMixingTracks(Int_t MaxNofMixingTracks) {fMaxNofMixingTracks=MaxNofMixingTracks;}               //Check it every time
   void SetCentralityEstimator(TString CentralityMethod) { fCentralityMethod = CentralityMethod;}
   void SetSampleType(TString SampleType) {fSampleType=SampleType;}
-  void SetRequestEventPlane(Bool_t RequestEventPlane){fRequestEventPlane=RequestEventPlane;}
+  void SetRequestEventPlane(Bool_t RequestEventPlane,Bool_t V2,Bool_t V3,TString EPdetector,Bool_t IsAfter2011){
+fRequestEventPlane=RequestEventPlane;
+fV2=V2;
+fV3=V3;
+fEPdet=EPdetector;
+fIsAfter2011=IsAfter2011;
+}
   void SetAnalysisType(TString AnalysisType){fAnalysisType=AnalysisType;}
   void SetFilterBit(Int_t FilterBit) {fFilterBit=FilterBit;}
   void SetTrackStatus(UInt_t status) { fTrackStatus = status; }
@@ -217,10 +224,34 @@ fPtTOFPIDmax=PtTOFPIDmax;
 
  void SetEffcorectionfilePathName(TString efffilename) {fefffilename=efffilename;}
  
- private:
+
+  //PID Type
+  void SetPIDType(PIDType PIDmethod) { fPIDType = PIDmethod; }
+  PIDType GetPIDType() {return fPIDType; }
+  //NSigma cut
+  //set cut on beyesian probability
+  void SetBayesCut(Double_t cut){fBayesCut=cut;}
+  void SetdiffPIDcutvalues(Bool_t diffPIDcutvalues,Double_t PIDCutval1, Double_t PIDCutval2, Double_t PIDCutval3,Double_t PIDCutval4){
+    fdiffPIDcutvalues=diffPIDcutvalues;
+    fPIDCutval1=PIDCutval1;
+    fPIDCutval2=PIDCutval2;
+    fPIDCutval3=PIDCutval3;
+    fPIDCutval4=PIDCutval4;
+  }
+ void  SetRandomizeReactionPlane(Bool_t RandomizeReactionPlane){fRandomizeReactionPlane=RandomizeReactionPlane;}
+ 
+   //****************************************************************************************EP related part
+  void OpenInfoCalbration(Int_t run);
+  void SetTPCclusterN(Int_t ncl){fNcluster=ncl;};
+   //****************************************************************************************EP related part
+
+
+ private:                                                                                      
  //histograms
     TList *fOutput;        //! Output list
     TList *fOutputList;        //! Output list
+    TList *fList;              //! List for output objects
+
 
     TString    fCentralityMethod;     // Method to determine centrality
     TString    fSampleType;     // pp,p-Pb,Pb-Pb
@@ -299,6 +330,10 @@ fPtTOFPIDmax=PtTOFPIDmax;
     TH2F *fEventnobaryon;//!
     TH2F *fEventnomeson;//!
     TH2F *fhistJetTrigestimate;//!
+    TH3F* fTwoTrackDistancePtdip;//!
+    TH3F* fTwoTrackDistancePtdipmix;//!
+    TH3F* fTwoTrackDistancePt[2];    //! control histograms for two-track efficiency study: dphi*_min vs deta (0 = before cut, 1 = after cut)
+    TH3F* fTwoTrackDistancePtmix[2];    //! control histograms for two-track efficiency study: dphi*_min vs deta (0 = before cut, 1 = after cut)
 
     TH2D* fCentralityCorrelation;  //! centrality vs Tracks multiplicity
  //VZERO calibration
@@ -317,9 +352,61 @@ fPtTOFPIDmax=PtTOFPIDmax;
     TH2F *fHistVZEROCvsVZEROAmultiplicity;//!
     TH2F *fHistEQVZEROCvsEQVZEROAmultiplicity;//!
     TH2F *fHistVZEROSignal;//!
-    TH2F *fHistEventPlaneReco;//!
     TH2F *fHistEventPlaneTruth;//!
     TH2D *fHistPsiMinusPhi;//! psi - phi QA histogram
+    TH3F *fEventPlanePID;//!
+   //****************************************************************************************EP related part
+
+    Float_t evplaneMC,fgPsi2v0a,fgPsi2v0c,fgPsi2tpc; // current Psi2
+   Float_t fgPsi3v0a,fgPsi3v0c,fgPsi3tpc; // current Psi3
+   Float_t fgPsi2v0aMC,fgPsi2v0cMC,fgPsi2tpcMC; // current Psi2
+   Float_t fgPsi3v0aMC,fgPsi3v0cMC,fgPsi3tpcMC,gReactionPlane; // current Psi3
+  Bool_t fV2; // switch to set the harmonics
+  Bool_t fV3; // switch to set the harmonics
+  Bool_t fIsAfter2011; // switch for 2011 and later runs
+
+  //    Int_t nCentrBin = 9;          //  cenrality bins
+
+  //
+  // Cuts and options
+  //
+
+  Int_t fRun;                       // current run checked to load VZERO calibrations
+
+  Int_t fNcluster;           // Numer of TPC cluster required
+
+  TString fEPdet; //Set the name of the event plane to be used to reconstruct the event plane
+    
+  // Output objects
+  TProfile *fMultV0;                //! object containing VZERO calibration information
+  Float_t fV0Cpol;          //! loaded by OADB
+  Float_t fV0Apol;          //! loaded by OADB
+  Float_t fMeanQ[9][2][2];           // and recentering
+  Float_t fWidthQ[9][2][2];          // ...
+  Float_t fMeanQv3[9][2][2];         // also for v3
+  Float_t fWidthQv3[9][2][2];        // ...
+
+  TProfile *fHResTPCv0A2;   //! TProfile for subevent resolution (output)
+  TProfile *fHResTPCv0C2;   //! TProfile for subevent resolution (output)
+  TProfile *fHResv0Cv0A2;   //! TProfile for subevent resolution (output)
+  TProfile *fHResTPCv0A3;    //! also for v3
+  TProfile *fHResTPCv0C3;   //! also for v3
+  TProfile *fHResv0Cv0A3;   //! also for v3
+
+ TProfile *fHResMA2;   //! TProfile for subevent resolution (output)
+  TProfile *fHResMC2;   //! TProfile for subevent resolution (output)
+  TProfile *fHResAC2;   //! TProfile for subevent resolution (output)
+  TProfile *fHResMA3;    //! also for v3
+  TProfile *fHResMC3;   //! also for v3
+  TProfile *fHResAC3;   //! also for v3
+
+  TH2F *fPhiRPTPC;          //! EP distribution vs. centrality (v2)
+  TH2F *fPhiRPTPCv3;          //! EP distribution vs. centrality (v2)
+  TH2F *fPhiRPv0A;          //! EP distribution vs. centrality (v2)
+  TH2F *fPhiRPv0C;          //! EP distribution vs. centrality (v2)
+  TH2F *fPhiRPv0Av3;      //! EP distribution vs. centrality (v3)
+  TH2F *fPhiRPv0Cv3;      //! EP distribution vs. centrality (v3)
+    //****************************************************************************************EP related part
 
     TH2F* fControlConvResoncances; //! control histograms for cuts on conversions and resonances
 
@@ -339,7 +426,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
     TH1F *fProtonPhi;//!
     // TH3F *fHistocentNSigmaTPC;//! nsigma TPC
     // TH3F *fHistocentNSigmaTOF;//! nsigma TOF 
-    
+ 
     AliTHn *fCorrelatonTruthPrimary;//!
     AliTHn *fCorrelatonTruthPrimarymix;//!
     AliTHn *fTHnCorrUNID;//!
@@ -353,7 +440,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
     AliTHn* fTrackHistEfficiency[6]; //! container for tracking efficiency and contamination (all particles filled including leading one): axes: eta, pT, particle species:::::::::0 pion, 1 kaon,2 proton,3 mesons,4 kaons+protons,5 all
 
     
-    TH1F *fHistQA[16]; //!                  gReactionPlane
+    TH1F *fHistQA[16]; //!                  
      
    
     THnSparse *effcorection[6];//!
@@ -363,16 +450,18 @@ fPtTOFPIDmax=PtTOFPIDmax;
   Double_t* GetBinning(const char* configuration, const char* tag, Int_t& nBins);
 
 
-  void Fillcorrelation(Double_t gReactionPlane,TObjArray *trackstrig,TObjArray *tracksasso,Double_t cent,Float_t vtx,Float_t weight,Bool_t firstTime,Float_t bSign,Bool_t fPtOrder,Bool_t twoTrackEfficiencyCut,Bool_t mixcase,TString fillup);//mixcase=kTRUE in case of mixing; 
+  void Fillcorrelation(Float_t ReactionPlane,TObjArray *trackstrig,TObjArray *tracksasso,Double_t cent,Float_t vtx,Float_t weight,Bool_t firstTime,Float_t bSign,Bool_t fPtOrder,Bool_t twoTrackEfficiencyCut,Bool_t mixcase,TString fillup);//mixcase=kTRUE in case of mixing; 
  Float_t GetTrackbyTrackeffvalue(AliAODTrack* track,Double_t cent,Float_t evzvtx, Int_t parpid);
 
+ //Fill PID and Event planes
+ void FillPIDEventPlane(Double_t centrality,Int_t par,Float_t trigphi,Float_t fReactionPlane);
+
 //Mixing functions
-  void DefineEventPool();
+ // void DefineEventPool();
   AliEventPoolManager    *fPoolMgr;//! 
   TClonesArray          *fArrayMC;//!
   TString          fAnalysisType;          // "MC", "ESD", "AOD"
   TString fefffilename;
-
     //PID part histograms
 
   //PID functions
@@ -395,16 +484,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
   //set PID Combined
   void SetPIDCombined(AliPIDCombined *obj){fPIDCombined=obj;}
   AliPIDCombined *GetPIDCombined(){return fPIDCombined;}
-  //set cut on beyesian probability
-  void SetBayesCut(Double_t cut){fBayesCut=cut;}
-  void SetdiffPIDcutvalues(Bool_t diffPIDcutvalues,Double_t PIDCutval1, Double_t PIDCutval2, Double_t PIDCutval3,Double_t PIDCutval4){
-    fdiffPIDcutvalues=diffPIDcutvalues;
-    fPIDCutval1=PIDCutval1;
-    fPIDCutval2=PIDCutval2;
-    fPIDCutval3=PIDCutval3;
-    fPIDCutval4=PIDCutval4;
-  }
- void  SetRandomizeReactionPlane(Bool_t RandomizeReactionPlane){fRandomizeReactionPlane=RandomizeReactionPlane;}
+ 
   Double_t GetBayesCut(){return fBayesCut;}
   Int_t GetIDBayes(AliAODTrack *trk, Bool_t FIllQAHistos);//calculate the PID according to bayesian PID
   UInt_t CalcPIDCombined(AliAODTrack *track,Int_t detMask, Double_t* prob) const;
@@ -468,7 +548,7 @@ Float_t GetInvMassSquaredCheap(Float_t pt1, Float_t eta1, Float_t phi1, Float_t 
   Bool_t AcceptEventCentralityWeight(Double_t centrality);
 
   //get event plane
-  Double_t GetEventPlane(AliAODEvent *event,Bool_t truth);
+  Float_t GetEventPlane(AliAODEvent *event,Bool_t truth,Double_t v0Centr);
   Double_t GetAcceptedEventMultiplicity(AliAODEvent *aod,Bool_t truth);//returns centrality after event(mainly vertex) selection IsEventAccepted  GetAcceptedEventMultiplicity
   
   //get vzero equalization

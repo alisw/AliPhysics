@@ -33,6 +33,7 @@ set ( SRCS
  PHOSTasks/PHOS_PbPb/AliAnalysisTaskPi0FlowMC.cxx
  PHOSTasks/PHOS_PbPb/AliAnalysisTaskPi0FlowMCAOD.cxx
  PHOSTasks/PHOS_PbPb/AliAnalysisTaskPi0FlowMCHijing.cxx
+ PHOSTasks/PHOS_PbPb/AliAnalysisTaskPi0FlowMCParamWeights.cxx
  PHOSTasks/PHOS_PbPb/AliPHOSTenderTask.cxx
  PHOSTasks/PHOS_PbPb_MC/AliPHOSHijingEfficiency.cxx
  PHOSTasks/PHOS_embedding/AliPHOSEmbedding.cxx
@@ -57,7 +58,7 @@ set ( DHDR  PWGGAPHOSTasksLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE  PWGGA/PWGGAUtils PWGGA/PHOSTasks/PHOS_pp_pi0 PWGGA/PHOSTasks/CaloCellQA PWGGA/PHOSTasks/omega3pi PHOS STEER/ESD STEER/STEERBase ANALYSIS)
+set ( EINCLUDE  PWGGA/PWGGAUtils PWGGA/PHOSTasks/PHOS_pp_pi0 PWGGA/PHOSTasks/CaloCellQA PWGGA/PHOSTasks/omega3pi PWGGA/PHOSTasks/PHOS_PbPb_MC PHOS STEER/ESD STEER/STEERBase ANALYSIS ANALYSIS/Tender)
 
 install (FILES PHOSTasks/CaloCellQA/macros/AddTaskCaloCellsQA.C 
 	       PHOSTasks/CaloCellQA/macros/AddTaskPHOSQA.C 

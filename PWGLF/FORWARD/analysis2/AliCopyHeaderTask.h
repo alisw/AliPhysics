@@ -10,6 +10,7 @@
  * @ingroup pwglf_forward_tasks 
  */
 #include <AliAnalysisTaskSE.h>
+class AliESDVertex;
 
 /**
  * Task to copy header from ESD to AOD 
@@ -64,6 +65,15 @@ public:
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *option);
   /* @} */
+protected:
+  /** 
+   * Copy an ESD primary vertex to the AOD 
+   * 
+   * @param aod   Where to copy to
+   * @param vtx   Vertex (if any) to copy to
+   * @param type  Type of vertex 
+   */
+  void CopyVertex(AliAODEvent& aod, const AliESDVertex* vtx, Int_t type); 
 
   ClassDef(AliCopyHeaderTask,1); // Task to copy header from ESD to AOD
 };

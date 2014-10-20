@@ -554,7 +554,7 @@ public:
    * @param prodLetter Period letter
    */
   QATrender(Bool_t keep, 
-	    Bool_t single, 
+	    Bool_t /*single*/, 
 	    Int_t  prodYear, 
 	    char   prodLetter) 
     : QABase("data", (prodYear < 2000 ? 2000 : 0) + prodYear,
@@ -754,7 +754,13 @@ public:
   void CleanStack(THStack* stack, const char* what)
   {
     TList*   l = stack->GetHists();
-
+    if (!l || l->GetEntries() <= 0) {
+      Warning("CleanStack", "No histograms in stack %s", stack->GetName());
+      return;
+    }
+    Printf("Stack to clean %s", stack->GetName());
+    l->ls();
+    
     // Clean up list of histogram.  Histograms with no entries or 
     // no functions are deleted.  We have to do this using the TObjLink 
     // objects stored in the list since ROOT cannot guaranty the validity 
@@ -781,6 +787,8 @@ public:
    */
   Bool_t ProcessELossFitter()
   {
+    if (!fEnergyFitter) return true;
+
     MakeCanvasTitle("Summary of energy loss fits");
 
     THStack* chi2  = static_cast<THStack*>(GetObject(fEnergyFitter, "chi2"));
@@ -802,6 +810,10 @@ public:
       THStack* stacks[] = { chi2, c, delta, xi, sigma, 0 };
       for (int i = 0; i < 5; i++) { 
 	THStack*     stack = stacks[i];
+	if (!stack->GetHists() || stack->GetHists()->GetEntries() < 0) {
+	  Warning("", "No histograms in stack %s", stack->GetName());
+	  continue;
+	}
 	TVirtualPad* p     = GetPad(i+1);
 	// stack->GetHists()->ls();
 
@@ -1163,20 +1175,34 @@ public:
     const char* folder = "ForwardResults";
     TList* forward = static_cast<TList*>(fCurrentFile->Get(folder));
     if (!forward) { 
-      Error("GetLists", "List %s not found in %s", folder, 
-	    fCurrentFile->GetName());
-      return false;
+      const char* folder2 = "ForwardQAResults";
+      forward = static_cast<TList*>(fCurrentFile->Get(folder2));
+      if (!forward) { 
+	const char* folder3 = "forwardQAResults";
+	forward = static_cast<TList*>(fCurrentFile->Get(folder3));
+	if (!forward) {
+	  Error("GetLists", "List %s/%s/%s not found in %s", 
+		folder, folder2, folder3, fCurrentFile->GetName());
+	  return false;
+	}
+      }
+    }
+    
+    fEventInspector    = GetSubList(forward, "fmdEventInspector");
+    if (!fEventInspector) { 
+      const char* sfolder = "ForwardSums";
+      forward = static_cast<TList*>(fCurrentFile->Get(sfolder));
     }
 
-    fSharingFilter     = GetSubList(forward, "fmdSharingFilter");
     fEventInspector    = GetSubList(forward, "fmdEventInspector");
+    fSharingFilter     = GetSubList(forward, "fmdSharingFilter");
     fDensityCalculator = GetSubList(forward, "fmdDensityCalculator");
     fEnergyFitter      = GetSubList(forward, "fmdEnergyFitter");
-    
+
     if (!fSharingFilter)     return false; 
     if (!fEventInspector)    return false;
     if (!fDensityCalculator) return false;
-    if (!fEnergyFitter)     return false;
+    // if (!fEnergyFitter)      return false;
 
     return true;
   }

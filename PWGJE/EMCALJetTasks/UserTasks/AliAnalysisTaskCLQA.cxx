@@ -491,7 +491,7 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
     AliVVZERO *vzero = InputEvent()->GetVZEROData();
     Double_t v0a = vzero->GetMTotV0A();
     Double_t v0c = vzero->GetMTotV0C();
-    Double_t v0m = vzero->GetMTotV0A()+vzero->GetMTotV0C();
+    //Double_t v0m = vzero->GetMTotV0A()+vzero->GetMTotV0C();
     fHists[112]->Fill(Mall);
     fHists[113]->Fill(M);
     fHists[117]->Fill(v0a,M);

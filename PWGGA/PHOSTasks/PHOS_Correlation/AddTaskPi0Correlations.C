@@ -1,24 +1,22 @@
 AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
-							const char* options = "11h",
-							UInt_t offlineTriggerMask = AliVEvent::kCentral,
-							AliPHOSCorrelations::TriggerSelection internalTriggerSelection = AliPHOSCorrelations::kNoSelection,
-							Double_t sigmaWidth = 3.,
-							Int_t downCentLimit = 0,
-							Int_t upCentLimit = 90 )
+						const char* options = "11h",
+						Double_t sigmaWidth = 3.,
+						Int_t downCentLimit = 0,
+						Int_t upCentLimit = 90 )
 {
-	//Author: Ponomarenko Daniil 
+	//Author: Ponomarenko Daniil (Daniil.Ponomarenko@cern.ch)
 	/* $Id$ */
 
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr) 
 	{
-		::Error("AddTaskPi0CorrelationsL", "No analysis manager to connect to");
+		::Error("AddTaskPi0Correlations", "No analysis manager to connect to");
 		return NULL;
 	}
 
 	if (!mgr->GetInputEventHandler()) 
 	{
-		::Error("AddTaskPi0CorrelationsL", "This task requires an input event handler");
+		::Error("AddTaskPi0Correlations", "This task requires an input event handler");
 		return NULL;
 	}
 	
@@ -35,7 +33,7 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 	TString sName = TString (name) + sigmaBorder + centralityBorder ;
 
 
-	AliPHOSCorrelations* task = new AliPHOSCorrelations(Form("%sTask", sName.Data()),internalTriggerSelection);
+	AliPHOSCorrelations* task = new AliPHOSCorrelations( Form("%sTask", sName.Data()) );
 
 	if( TString(options).Contains("10h") )	{
 		task->SetPeriod( AliPHOSCorrelations::kLHC10h );
@@ -44,70 +42,72 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 	if( TString(options).Contains("11h") )	{
 		task->SetPeriod( AliPHOSCorrelations::kLHC11h );
 		task->SetCentralityEstimator("V0M");
+		if( downCentLimit == 0 && upCentLimit == 10 ) 
+		{
+			Double_t meanParametrs[2]  = { -4.03237e-05, 0.138352 };
+			Double_t sigmaParametrs[4] = { 0.00722915, 1.24329e-08, 0.00553326, 0.00128347 };
+			task->SetMassMeanParametrs(meanParametrs);
+			task->SetMassSigmaParametrs(sigmaParametrs);
+		}
+
+		if( downCentLimit == 20 && upCentLimit == 50 ) 
+		{
+			Double_t meanParametrs[2]  = { 1.00796e-05, 0.136096 };
+			Double_t sigmaParametrs[4] = { 0.00100059, 1.10485, 0.00570446, 0.00100001 };
+			task->SetMassMeanParametrs(meanParametrs);
+			task->SetMassSigmaParametrs(sigmaParametrs);
+		}
+
 	}
 	if( TString(options).Contains("13") )	{
 		task->SetPeriod( AliPHOSCorrelations::kLHC13 );
 		task->SetCentralityEstimator("V0A");
+		if( downCentLimit == 0 && upCentLimit == 10 ) 
+		{
+			Double_t meanParametrs[2]  = { -1.15288e-05, 0.134496 };
+			Double_t sigmaParametrs[4] = {0.00541561, 1.55431e-15, 0.00661674, 0.00899229 };
+			task->SetMassMeanParametrs(meanParametrs);
+			task->SetMassSigmaParametrs(sigmaParametrs);
+		}
+
+		if( downCentLimit == 20 && upCentLimit == 50 ) 
+		{
+			Double_t meanParametrs[2]  = { -8.28487e-06, 0.134528 };
+			Double_t sigmaParametrs[4] = { 0.0070921, 2.05058e-12, 0.00660061, 0.00750263 };
+			task->SetMassMeanParametrs(meanParametrs);
+			task->SetMassSigmaParametrs(sigmaParametrs);
+		}
 	}
 
 
 	// Binning 
-	//Any:
-	if( AliVEvent::kAny == offlineTriggerMask ) 
-	{
-		const int nbins = 8;
-		Double_t cbin[nbins+1] = {0., 10., 20., 30., 40., 50., 60., 70., 80.};
-		TArrayD tbin(nbins+1, cbin);
-		Int_t    nMixed[nbins] = {6, 40, 40, 40, 40, 80, 80, 80};
-		TArrayI tNMixed(nbins, nMixed);
-		task->SetCentralityBinning(tbin, tNMixed);
-	}
+	// TODO: Make other binning for 0-10% and 20-50%
 	//Central:
-	if( AliVEvent::kCentral == offlineTriggerMask ) 
+	if( downCentLimit == 0 && upCentLimit == 10 ) 
 	{
-		const int nbins = 4;
-		Double_t cbin[nbins+1] = {0., 5., 8., 9., 10.};
+		const int nbins = 5;
+		Double_t cbin[nbins+1] = {0., 2., 4., 6., 8., 10.};
 		TArrayD tbin(nbins+1, cbin);
-		Int_t    nMixed[nbins] = {6, 6, 6, 6};
+		Int_t    nMixed[nbins] = {100, 100, 100, 100, 100};
 		TArrayI tNMixed(nbins, nMixed);
 		task->SetCentralityBinning(tbin, tNMixed);
 	}
 	// SemiCentral:
-	if( AliVEvent::kSemiCentral == offlineTriggerMask ) 
+	if( downCentLimit == 20 && upCentLimit == 50 ) 
 	{
-		const int nbins = 8;
-		Double_t cbin[nbins+1] = {10., 11., 12., 13., 15., 20., 30., 40., 50.};
+		const int nbins = 6;
+		Double_t cbin[nbins+1] = {20., 25., 30., 35., 40., 45., 50.};
 		TArrayD tbin(nbins+1, cbin);
-		Int_t    nMixed[nbins] = {40, 40, 40, 40, 40, 40, 40, 40};
-		TArrayI tNMixed(nbins, nMixed);
-		task->SetCentralityBinning(tbin, tNMixed);
-	}
-	//INT7:
-	if( AliVEvent::kINT7 == offlineTriggerMask || AliVEvent::kPHI7 == offlineTriggerMask) 
-	{
-		const int nbins = 8;
-		Double_t cbin[nbins+1] = {0., 10., 20., 30., 40., 50., 60., 70., 80.};
-		TArrayD tbin(nbins+1, cbin);
-		Int_t    nMixed[nbins] = {6, 40, 40, 40, 40, 80, 80, 80};
-		TArrayI tNMixed(nbins, nMixed);
-		task->SetCentralityBinning(tbin, tNMixed);
-	}
-	// MB or PHOS Trigger:
-	if( AliVEvent::kMB == offlineTriggerMask || AliVEvent::kPHOSPb == offlineTriggerMask ) 
-	{
-		const int nbins = 8;
-		Double_t cbin[nbins+1] = {0., 10., 20., 30., 40., 50., 60., 70., 80.};
-		TArrayD tbin(nbins+1, cbin);
-		Int_t    nMixed[nbins] = {6, 40, 40, 40, 40, 80, 80, 80};
+		Int_t    nMixed[nbins] = {100, 100, 100, 100, 100, 100};
 		TArrayI tNMixed(nbins, nMixed);
 		task->SetCentralityBinning(tbin, tNMixed);
 	}
 
-	task->SelectCollisionCandidates(offlineTriggerMask);
-	task->SetInternalTriggerSelection(internalTriggerSelection);
-	task->EnableTOFCut(true, 100.e-9);
+	task->EnableTOFCut(false, 100.e-9);
+	task->SelectCollisionCandidates(AliVEvent::kAny);
 	task->SetCentralityBorders(downCentLimit , upCentLimit) ;
 	task->SetSigmaWidth(sigmaWidth);
+	task->SetUseEfficiency(true);
 
 	mgr->AddTask(task);
 	mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );

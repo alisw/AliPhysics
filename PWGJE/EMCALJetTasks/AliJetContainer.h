@@ -38,6 +38,7 @@ class AliJetContainer : public AliEmcalContainer {
   void LoadRhoMass(AliVEvent *event);
 
   void                        SetJetAcceptanceType(JetAcceptanceType type)         { fJetAcceptanceType          = type ; }
+  void                        PrintCuts();
   void                        ResetCuts();
   void                        SetJetEtaPhiEMCAL() ;
   void                        SetJetEtaPhiTPC()   ;

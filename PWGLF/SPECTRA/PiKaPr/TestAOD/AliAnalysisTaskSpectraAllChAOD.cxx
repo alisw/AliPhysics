@@ -66,7 +66,12 @@ AliAnalysisTaskSpectraAllChAOD::AliAnalysisTaskSpectraAllChAOD(const char *name)
   fnQvecBins(100),
   fnNchBins(200),
   fIsQvecCalibMode(0),
-  fQvecUpperLim(100)
+  fQvecUpperLim(100),
+  fIsAOD160(1),
+  fnDCABins(60),
+  fDCAmin(-3),
+  fDCAmax(3),
+  fDCAzCut(999999.)
 {
   // Default constructor
   DefineInput(0, TChain::Class());
@@ -91,13 +96,15 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   // binning common to all the THn
   const Double_t ptBins[] = {0.20,0.30,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.2,1.4,1.6,1.8,2.0,2.4,2.8,3.2,3.6,4.0,5.0,6.0,7.0,8.0,9.0,10.,12.,15.,20.,25.,30.,35.,40.,50.,75.,100.};
   const Int_t nptBins=34;
+  //const Double_t ptBins[] = {0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.6,1.8,2.0,2.4,2.8,3.2,3.6,4.0,5.0,6.0,7.0,8.0,9.0,10.,12.,15.,20.,25.,30.,35.,40.,50.,75.,100.};
+  //const Int_t nptBins=44;
   
   //dimensions of THnSparse for tracks
-  const Int_t nvartrk=7;
-  //                                             pt          cent          Q vec     IDrec      IDgen       isph         y
-  Int_t    binsHistRealTrk[nvartrk] = {      nptBins, fnCentBins,     fnQvecBins,        4,        3,         2,        2};
-  Double_t xminHistRealTrk[nvartrk] = {         0.,          0.,              0.,       -.5,      -0.5,      -0.5,    -0.5};
-  Double_t xmaxHistRealTrk[nvartrk] = {       10.,       100., fQvecUpperLim,      3.5,      2.5,       1.5,     0.5};    
+  const Int_t nvartrk=8;
+  //                                             pt          cent          Q vec       IDrec          IDgen        isph         y             DCA 
+  Int_t    binsHistRealTrk[nvartrk] = {      nptBins, fnCentBins,     fnQvecBins,        4,             3,          3,        2,        fnDCABins};
+  Double_t xminHistRealTrk[nvartrk] = {         0.,          0.,              0.,       -.5,          -0.5,        0.5,      -0.5,          fDCAmin};
+  Double_t xmaxHistRealTrk[nvartrk] = {       10.,       100.,     fQvecUpperLim,       3.5,      2.5,        3.5,      0.5,         fDCAmax};    
   THnSparseF* NSparseHistTrk = new THnSparseF("NSparseHistTrk","NSparseHistTrk",nvartrk,binsHistRealTrk,xminHistRealTrk,xmaxHistRealTrk);
   NSparseHistTrk->GetAxis(0)->SetTitle("#it{p}_{T,rec}");
   NSparseHistTrk->GetAxis(0)->SetName("pT_rec");
@@ -114,14 +121,16 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   NSparseHistTrk->GetAxis(5)->SetName("isph");
   NSparseHistTrk->GetAxis(6)->SetTitle("y");
   NSparseHistTrk->GetAxis(6)->SetName("y");
+  NSparseHistTrk->GetAxis(7)->SetTitle("dca");
+  NSparseHistTrk->GetAxis(7)->SetName("dca");
   fOutput->Add(NSparseHistTrk);
   
   //dimensions of THnSparse for stack
-  const Int_t nvarst=6;
-  //                                             pt          cent    IDgen        isph        y    etaselected
-  Int_t    binsHistRealSt[nvarst] = {      nptBins,  fnCentBins,        3,         2,        2,             1};
-  Double_t xminHistRealSt[nvarst] = {         0.,           0.,      -0.5,      -0.5,    -0.5,            0.5};
-  Double_t xmaxHistRealSt[nvarst] = {       10.,        100.,      2.5,       1.5,      0.5,           1.5};
+  const Int_t nvarst=7;
+  //                                             pt          cent    IDgen        isph        y    etaselected       Qvec gen
+  Int_t    binsHistRealSt[nvarst] = {      nptBins,  fnCentBins,        3,         2,        2,             1,      fnQvecBins};
+  Double_t xminHistRealSt[nvarst] = {         0.,           0.,      -0.5,      -0.5,    -0.5,            0.5,              0.};
+  Double_t xmaxHistRealSt[nvarst] = {       10.,        100.,      2.5,       1.5,      0.5,           1.5,      fQvecUpperLim};
   THnSparseF* NSparseHistSt = new THnSparseF("NSparseHistSt","NSparseHistSt",nvarst,binsHistRealSt,xminHistRealSt,xmaxHistRealSt);
   NSparseHistSt->GetAxis(0)->SetTitle("#it{p}_{T,gen}");
   NSparseHistSt->SetBinEdges(0,ptBins);
@@ -136,14 +145,16 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   NSparseHistSt->GetAxis(4)->SetName("y");
   NSparseHistSt->GetAxis(5)->SetTitle("etaselected");
   NSparseHistSt->GetAxis(5)->SetName("etaselected");
+  NSparseHistSt->GetAxis(6)->SetTitle("Q vec gen");
+  NSparseHistSt->GetAxis(6)->SetName("Q_vec_gen");
   fOutput->Add(NSparseHistSt);
   
   //dimensions of THnSparse for the normalization
-  const Int_t nvarev=3;
-  //                                             cent             Q vec                Nch
-  Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins,           fnNchBins};
-  Double_t xminHistRealEv[nvarev] = {           0.,               0.,                   0.};
-  Double_t xmaxHistRealEv[nvarev] = {       100.,  fQvecUpperLim,               2000.};
+  const Int_t nvarev=4;
+  //                                             cent             Q vec                Nch    Qvec gen
+  Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins,           fnNchBins,      fnQvecBins};
+  Double_t xminHistRealEv[nvarev] = {           0.,               0.,                   0.,             0.};
+  Double_t xmaxHistRealEv[nvarev] = {       100.,  fQvecUpperLim,               2000.,       fQvecUpperLim};
   THnSparseF* NSparseHistEv = new THnSparseF("NSparseHistEv","NSparseHistEv",nvarev,binsHistRealEv,xminHistRealEv,xmaxHistRealEv);
   NSparseHistEv->GetAxis(0)->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
   NSparseHistEv->GetAxis(0)->SetName(Form("%s_cent",fEventCuts->GetCentralityMethod().Data()));
@@ -151,6 +162,8 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   NSparseHistEv->GetAxis(1)->SetName("Q_vec");
   NSparseHistEv->GetAxis(2)->SetTitle("N charged");
   NSparseHistEv->GetAxis(2)->SetName("N_ch");
+  NSparseHistEv->GetAxis(3)->SetTitle("Q vec gen");
+  NSparseHistEv->GetAxis(3)->SetName("Q_vec_gen");
   fOutput->Add(NSparseHistEv);
   
   PostData(1, fOutput  );
@@ -179,15 +192,20 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
   if(!fEventCuts->IsSelected(fAOD,fTrackCuts))return;//event selection
 
   //Default TPC priors
-  if(fHelperPID->GetPIDType()==kBayes)fHelperPID->GetPIDCombined()->SetDefaultTPCPriors();//FIXME maybe this can go in the UserCreateOutputObject?
+  //if(fHelperPID->GetPIDType()==kBayes)fHelperPID->GetPIDCombined()->SetDefaultTPCPriors();//FIXME maybe this can go in the UserCreateOutputObject?
   
-  Double_t Qvec=0.;//in case of MC we save space in the memory
-  if(!fIsMC){
+  Double_t Qvec=0.;
+  if(fIsQvecCalibMode){
+    if(fVZEROside==0)Qvec=fEventCuts->GetqV0A();
+    else if (fVZEROside==1)Qvec=fEventCuts->GetqV0C();
+  }
+  else Qvec=fEventCuts->GetQvecPercentile(fVZEROside);
+  
+  Double_t QvecMC = 0.;
+  if(fIsMC){
     if(fIsQvecCalibMode){
-      if(fVZEROside==0)Qvec=fEventCuts->GetqV0A();
-      else if (fVZEROside==1)Qvec=fEventCuts->GetqV0C();
+      QvecMC = fEventCuts->CalculateQVectorMC(fVZEROside);
     }
-    else Qvec=fEventCuts->GetQvecPercentile(fVZEROside);
   }
   
   Double_t Cent=fEventCuts->GetCent();
@@ -212,13 +230,14 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
 	  if(partMC->Eta()>=fTrackCuts->GetEtaMin() && partMC->Eta()<=fTrackCuts->GetEtaMax())etaselected=1.;
 	  
 	  //pt     cent    IDgen        isph        y
- 	  Double_t varSt[6];
+ 	  Double_t varSt[7];
 	  varSt[0]=partMC->Pt();
 	  varSt[1]=Cent;
 	  varSt[2]=(Double_t)fHelperPID->GetParticleSpecies(partMC);
 	  varSt[3]=(Double_t)partMC->IsPhysicalPrimary();
 	  varSt[4]=partMC->Y();
 	  varSt[5]=etaselected;
+	  varSt[6]=QvecMC;
 	  ((THnSparseF*)fOutput->FindObject("NSparseHistSt"))->Fill(varSt);//stack loop
 	  
 	  //Printf("a particle");
@@ -239,7 +258,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
       Double_t y= track->Y(fHelperPID->GetMass((AliHelperParticleSpecies_t)IDrec));
       Int_t IDgen=kSpUndefined;//set if MC
       Int_t isph=-999;
-      //Int_t iswd=-999;
+//       Int_t iswd=-999;
       
       if (arrayMC) {
 	AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(TMath::Abs(track->GetLabel()));
@@ -250,10 +269,25 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
 	IDgen=fHelperPID->GetParticleSpecies(partMC);
 	isph=partMC->IsPhysicalPrimary();
 	//iswd=partMC->IsSecondaryFromWeakDecay();//FIXME not working on old productions - removed Apr 8th 2014
+	
+	if(fIsAOD160){// enabled for new ADO160 only
+	  if(partMC->IsSecondaryFromWeakDecay()) isph=2.;
+	  if(partMC->IsSecondaryFromMaterial()) isph=3.;
+
+	}
       }
       
+      /*** DCA ***/
+      Double_t dcaxy = -999.;
+      Double_t dcaz = -999.;
+      
+      Double_t p[2]; 
+      if(GetDCA(track,p)){ dcaxy=p[0]; dcaz=p[1];}
+      
+      if(dcaz >= fDCAzCut) continue;
+      
     //pt     cent    Q vec     IDrec     IDgen       isph      y
-      Double_t varTrk[7];
+      Double_t varTrk[8];
       varTrk[0]=track->Pt();
       varTrk[1]=Cent;
       varTrk[2]=Qvec;
@@ -261,6 +295,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
       varTrk[4]=(Double_t)IDgen;
       varTrk[5]=(Double_t)isph;
       varTrk[6]=y;
+      varTrk[7]=dcaxy;
       ((THnSparseF*)fOutput->FindObject("NSparseHistTrk"))->Fill(varTrk);//track loop
       
       //for nsigma PID fill double counting of ID
@@ -286,16 +321,39 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
     Nch++;
   } // end loop on tracks
   
-  Double_t varEv[3];
+  Double_t varEv[4];
   varEv[0]=Cent;
   varEv[1]=Qvec;
   varEv[2]=Nch;
+  varEv[3]=QvecMC;
   ((THnSparseF*)fOutput->FindObject("NSparseHistEv"))->Fill(varEv);//event loop
   
   PostData(1, fOutput  );
   PostData(2, fEventCuts);
   PostData(3, fTrackCuts);
   PostData(4, fHelperPID);
+}
+
+//_________________________________________________________________
+Bool_t  AliAnalysisTaskSpectraAllChAOD::GetDCA(const AliAODTrack* trk, Double_t * p){
+  
+  //AliAODTrack::DCA(): for newest AOD fTrack->DCA() always gives -999. This should fix.
+  //FIXME should update EventCuts?
+  //FIXME add track->GetXYZ(p) method
+  
+  double xyz[3],cov[3];
+  
+  if (!trk->GetXYZ(xyz)) { // dca is not stored
+    AliExternalTrackParam etp;
+    etp.CopyFromVTrack(trk);
+    AliVEvent* ev = (AliVEvent*)trk->GetEvent();
+    if (!ev) {/*printf("Event is not connected to the track\n");*/ return kFALSE;}
+    if (!etp.PropagateToDCA(ev->GetPrimaryVertex(), ev->GetMagneticField(),999,xyz,cov)) return kFALSE; // failed, track is too far from vertex
+  }
+  p[0] = xyz[0];
+  p[1] = xyz[1];
+  return kTRUE;
+
 }
 
 //_________________________________________________________________

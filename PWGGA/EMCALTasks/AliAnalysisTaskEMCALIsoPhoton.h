@@ -21,6 +21,7 @@ class AliVCluster;
 class AliMCEvent;
 class AliStack;
 class TParticle;
+class AliAODMCParticle;
 class TGeoHMatrix;
 
 #include "AliAnalysisTaskSE.h"
@@ -55,6 +56,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   SetPeriod(const char *n)               { fPeriod             = n;       }
   void                   SetTriggerBit(const char *tb)          { fTrigBit            = tb;      }
   void                   SetPrimTrackCuts(AliESDtrackCuts *c)   { fPrTrCuts           = c;       }
+  void                   SetComplTrackCuts(AliESDtrackCuts *c)  { fCompTrCuts         = c;       }
   void                   SetTrainMode(Bool_t t)                 { fIsTrain            = t;       }
   void                   SetMcMode(Bool_t mc)                   { fIsMc               = mc;      }
   void                   SetDebugOn(Bool_t d)                   { fDebug              = d;       }
@@ -70,19 +72,26 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                  SetEtPtHistoBinning(Int_t n, 
 					    Double_t lowx, 
 					    Double_t highx)     { fNBinsPt = n; fPtBinLowEdge = lowx; fPtBinHighEdge = highx; }
-
-
+  void                  SetRemoveMatchClus(Bool_t b)            { fRemMatchClus       = b;       }
+  void                  SetMinIsoClusE(Double_t emin)           { fMinIsoClusE        = emin;    }
+  void                  SetTrCoreRemoval(Bool_t b)              { fTrCoreRem          = b;       }
+  void                  SetClusTDiff(Double_t diff)             { fClusTDiff          = diff;    }
+  void                  SetPileUpRejSPD()                       { fPileUpRejSPD       = kTRUE;   }
+  void                  SetDistanceToBadCh(Double_t d)          { fDistToBadChan      = d;       }
  protected:
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
   TObjArray             *fAODClusters;           //!pointer to EMCal clusters
   TObjArray             *fSelPrimTracks;         //!pointer to ESD primary tracks
   TClonesArray          *fTracks;                //!track input array
+  TClonesArray          *fAODMCParticles;        //!MC particles array for AOD analysis
   AliESDCaloCells       *fESDCells;              //!pointer to EMCal cells, esd
   AliAODCaloCells       *fAODCells;              //!pointer to EMCal cells, aod  
   AliESDtrackCuts       *fPrTrCuts;              //pointer to hold the prim track cuts
+  AliESDtrackCuts       *fCompTrCuts;            //pointer to hold complementary track cuts (a la Gustavo)
   AliEMCALGeometry      *fGeom;                  // geometry utils
   TString                fGeoName;               // geometry name (def = EMCAL_FIRSTYEARV1)
   AliOADBContainer      *fOADBContainer;         //!OADB container used to load misalignment matrices
+  TVector3               fVecPv;                 // vector to hold the event's primary vertex
   TString                fPeriod;                // string to the LHC period
   TString                fTrigBit;               // string to the trigger bit name
   Bool_t                 fIsTrain;               // variable to set train mode
@@ -111,8 +120,13 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Int_t                  fNBinsPt;               // set the number of bins in axis of histograms filled with pt (or Et)
   Double_t               fPtBinLowEdge;          // low edge of the first pt (Et) bin
   Double_t               fPtBinHighEdge;         // high edge of the first pt (Et) bin
-
-
+  Bool_t                 fRemMatchClus;          // flag to remove completely a cluster matched from the isolation
+  Double_t               fMinIsoClusE;           // minimum energy for a cluster to be counted in the iso cone
+  Int_t                  fNCuts;                 // number of cuts (QA purposes)
+  Bool_t                 fTrCoreRem;             // flag to set the removal of the core in track isolation (true removes it, default)
+  Double_t               fClusTDiff;             // variable to hold the time diff between the candidate cluster and the isolation clusters
+  Bool_t                 fPileUpRejSPD;          // flag to set pile-up rejection via SPD (multiple vertices)
+  Double_t               fDistToBadChan;         // distance to bad channel
   
  private:
   AliESDEvent *fESD;      //! ESD object
@@ -128,6 +142,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH1F        *fRecoPV;                    //!histogram to record if an event has a prim. vert.
   TH1F        *fPVtxZ;                     //!primary vertex Z before cut
   TH1F        *fTrMultDist;                //!track multiplicity distribution
+  TH2F        *fClusEtCPVSBGISO;           //!iso-all vs. clusters Et after CPV and 0.1<M02<0.3
+  TH2F        *fClusEtCPVBGISO;            //!iso-all vs. clusters Et after CPV and 0.5<M02<2.0
   TH3F        *fMCDirPhotonPtEtaPhi;       //!direct produced photon pt, eta, phi
   TH3F        *fMCIsoDirPhotonPtEtaPhi;    //!direct produced photon pt, eta, phi, isolated @ mc level
   TH2F        *fMCDirPhotonPtEtIso;        //!direct produced photon pt and isolation pt @ mc level
@@ -140,8 +156,11 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fNClusPerPho;               //!delta-eta x delta-phi(reco-mc)
   TH2F        *fMcPtInConeBG;              //!sum of mc-pt of "primary" particles inside de cone, as a function of NET-ISO in BG template
   TH2F        *fMcPtInConeSBG;             //!sum of mc-pt of "primary" particles inside de cone, as a function of NET-ISO in SBG range
-  TH2F        *fMcPtInConeBGnoUE;          //!sum of mc-pt of "primary" particles inside de cone, as a function of NET-ISO in BG template no UE sub
-  TH2F        *fMcPtInConeSBGnoUE;         //!sum of mc-pt of "primary" particles inside de cone, as a function of NET-ISO in SBG range no UE sub
+  TH2F        *fMcPtInConeBGnoUE;          //!sum of mc-pt of "primary" particles inside de cone, as a function of ISO in BG template no UE sub
+  TH2F        *fMcPtInConeSBGnoUE;         //!sum of mc-pt of "primary" particles inside de cone, as a function of ISO in SBG range no UE sub
+  TH2F        *fMcPtInConeTrBGnoUE;        //!sum of mc-pt of "primary" particles inside de cone, as a function of trk only ISO in BG template no UE sub
+  TH2F        *fMcPtInConeTrSBGnoUE;       //!sum of mc-pt of "primary" particles inside de cone, as a function of trk only ISO in SBG range no UE sub
+  TH2F        *fMcPtInConeMcPhoPt;         //!sum of mc-pt of "primary" particles inside de cone, as a function of prompt photon mc-pt
   TH2F        *fAllIsoEtMcGamma;           //!all iso distribution vs. Et clus for clusters comming from a MC prompt photon
   TH2F        *fAllIsoNoUeEtMcGamma;       //!all iso distribution (without UE subtraction) vs. Et clus for clusters comming from a MC prompt photon
   TH3F        *fMCDirPhotonPtEtaPhiNoClus; //!pt x eta x phi for prompt photons that didn't produce clusters
@@ -158,6 +177,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH1F        *fEmcClusETM1;      //!emcal track matched cluster energy (TracDx,z method)
   TH1F        *fEmcClusETM2;      //!emcal track matched cluster energy (track->GetEMCALcluster() method)
   TH1F        *fEmcClusNotExo;    //!cluster energy (exotics removed)
+  TH2F        *fEmcClusEClusCuts; //!cluster E spectrum per cluster cut (none, exotic, exo+cpv1, exo+cpv1+time, exo+cpv1+time+m02)
   TH2F        *fEmcClusEPhi;      //!cluster E spectrum vs. phi
   TH2F        *fEmcClusEPhiCut;   //!cluster E spectrum vs. phi in "triggered event"
   TH2F        *fEmcClusEEta;      //!cluster E spectrum vs. eta
@@ -167,6 +187,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fTrackPtEta;       //!selected tracks pt vs. eta
   TH2F        *fTrackPtEtaCut;    //!selected tracks pt vs. eta in "triggered event"
   TH2F        *fMaxCellEPhi;      //!max cell energy vs. cell phi
+  TH2F        *fDetaDphiFromTM;   //!dphi vs deta of track->GetEMCALcluster() clusters
+  TH2F        *fEoverPvsE;        //!E/p for tracks with 80<TPCsignal<100 vs cluster E (check material)
 
 
   AliAnalysisTaskEMCALIsoPhoton(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented

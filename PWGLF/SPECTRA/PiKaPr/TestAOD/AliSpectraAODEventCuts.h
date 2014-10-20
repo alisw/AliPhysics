@@ -146,6 +146,8 @@ class AliSpectraAODEventCuts : public TNamed
   Bool_t OpenInfoCalbration(Int_t run);
   Short_t  GetCentrCode(AliVEvent* ev);
   
+  Double_t CalculateQVector();
+  
   Float_t  NumberOfEvents()     { return ((TH1I*)fOutput->FindObject("fHistoCuts"))->GetBinContent(kAcceptedEvents+1); }
   Float_t  NumberOfProcessedEvents()     { return ((TH1I*)fOutput->FindObject("fHistoCuts"))->GetBinContent(kProcessedEvents+1); }
   Float_t  NumberOfPhysSelEvents()     { return ((TH1I*)fOutput->FindObject("fHistoCuts"))->GetBinContent(kPhysSelEvents+1); }
@@ -156,6 +158,8 @@ class AliSpectraAODEventCuts : public TNamed
   Bool_t CheckSplineArray(TObjArray * splarr);
   TObjArray *GetSplineArrayV0A() { return fSplineArrayV0A; }
   TObjArray *GetSplineArrayV0C() { return fSplineArrayV0C; }
+  
+  Double_t CalculateQVectorMC(Int_t v0side);
 
  private:
   

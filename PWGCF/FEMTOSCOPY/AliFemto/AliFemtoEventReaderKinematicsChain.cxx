@@ -195,6 +195,9 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
       	  //getting next track
       TParticle *kinetrack= fStack->Particle(i);
 
+
+
+
       //setting multiplicity
         realnofTracks++;//real number of tracks (only primary particles)
 
@@ -249,15 +252,26 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 					
 	//Momentum
       double pxyz[3];
-      // double rxyz[3];
+      double rxyz[3];
      
-	pxyz[0]=kinetrack->Px();
-	pxyz[1]=kinetrack->Py();
-	pxyz[2]=kinetrack->Pz();
+      pxyz[0]=kinetrack->Px();
+      pxyz[1]=kinetrack->Py();
+      pxyz[2]=kinetrack->Pz();
+      
+      rxyz[0]=kinetrack->Vx();
+      rxyz[1]=kinetrack->Vy();
+      rxyz[2]=kinetrack->Vz();
 
-	// rxyz[0]=kinetrack->Vx();
-	// rxyz[1]=kinetrack->Vy();
-	// rxyz[2]=kinetrack->Vz();
+      AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
+      tInfo->SetPDGPid(kinetrack->GetPdgCode());
+      tInfo->SetTrueMomentum(pxyz[0], pxyz[1], pxyz[2]);
+      tInfo->SetMass(kinetrack->GetMass());
+      tInfo->SetEmissionPoint(rxyz[0]-fV1[0], rxyz[1]-fV1[1], rxyz[2]-fV1[2], 0.0);
+      trackCopy->SetHiddenInfo(tInfo);
+
+      trackCopy->SetTrueMomentum(pxyz[0], pxyz[1], pxyz[2]);
+      trackCopy->SetEmissionPoint(rxyz[0]-fV1[0], rxyz[1]-fV1[1], rxyz[2]-fV1[2], 0.0);
+
 
 	if (fRotateToEventPlane) {
 	  double tPhi = TMath::ATan2(pxyz[1], pxyz[0]);

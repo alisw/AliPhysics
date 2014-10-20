@@ -41,6 +41,7 @@
 #include "AliHFEsignalCuts.h"
 #include "AliAODMCParticle.h"
 #include "AliVTrack.h"
+#include "AliVCluster.h"
 #include "AliAODVertex.h"
 
 #include "AliHFEdebugTreeTaskAOD.h"
@@ -294,9 +295,9 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
                     << "eta="                 << etamc
                     << "phi="                 << phimc
                     << "pdg="                 << pdg
-		    << "px="                  << vx
-		    << "py="                  << vy
-		    << "pz="                  << vz
+		                << "px="                  << vx
+		                << "py="                  << vy
+		                << "pz="                  << vz
                     << "ProductionVertex="    << eR
                     << "motherPdg="           << motherPdg
                     << "source="              << source
@@ -311,7 +312,7 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
   // Loop on reconstructed tracks
   //
 
-  TArrayI *arraytrack = new TArrayI(fInputEvent->GetNumberOfTracks());
+  TArrayI arraytrack(fInputEvent->GetNumberOfTracks());
   Int_t counterdc=0;
   
   AliAODTrack *track = 0x0;
@@ -380,19 +381,17 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
     Int_t nslicetemp=0;
     Int_t trdlayer[6];
     for(Int_t iplane = 0; iplane < 6; iplane++){
-	trdlayer[iplane]=0;
+	    trdlayer[iplane]=0;
     }
 
     for(Int_t iplane = 0; iplane < 6; iplane++){
-	nslicetemp=0;
-	for(Int_t b=(iplane*8);b<((iplane*8)+8);b++)
-	{
-	    if(ntrackletsTRDPID>0)
-	    {
-		if(arraytrdsignals[b]>0.001) nslicetemp++;
+	    nslicetemp=0;
+	    for(Int_t b=(iplane*8);b<((iplane*8)+8);b++){
+	      if(ntrackletsTRDPID>0){
+		      if(arraytrdsignals[b]>0.001) nslicetemp++;
+	      }
 	    }
-	}
-	if(nslicetemp > 0) trdlayer[iplane]=1;
+	    if(nslicetemp > 0) trdlayer[iplane]=1;
     }
 
     // ITS and TRD acceptance maps
@@ -426,13 +425,13 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
     // Double counted
     Int_t doublec = 0;
     for(Int_t l=0; l < counterdc; l++){
-      Int_t iTrack2 = arraytrack->At(l);
+      Int_t iTrack2 = arraytrack.At(l);
       if(iTrack2==id) doublec=1;
     }
     //printf("Doublec %d\n",doublec);
 
     // Add the id at this place
-    arraytrack->AddAt(id,counterdc);
+    arraytrack.AddAt(id,counterdc);
     counterdc++;
 
     // Filter
@@ -441,7 +440,7 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
       filter[k]=0;
       Int_t u = 1<<k;     
       if((track->TestFilterBit(u))) {
-	filter[k] = 1;
+	      filter[k] = 1;
       } 
     }
     Int_t filter0 = filter[0];
@@ -464,6 +463,14 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
     Int_t filter17 = filter[17];
     Int_t filter18 = filter[18];
     Int_t filter19 = filter[19];
+
+    // EMCAL cluster
+    Double_t emcalEnergyOverP = -1.,
+             emcalNSigma = -1.,
+             showershape[4] = {0.,0.,0.,0.};
+    if(track->IsEMCAL()){
+      emcalNSigma = pid->NumberOfSigmasEMCAL(track, AliPID::kElectron, emcalEnergyOverP, &showershape[0]);
+    }
 
     Int_t eventnb = fEventNumber;
 
@@ -491,12 +498,14 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
       eR = TMath::Sqrt(vx*vx+vy*vy);
       
       // Get Mother PDG code of the particle
+      /*
       Int_t motherPdg = 0;
       Int_t motherlabel = TMath::Abs(mctrack->GetMother());
       if(motherlabel >= 0 && motherlabel < fAODArrayMCInfo->GetEntriesFast()){
         AliAODMCParticle *mother = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(motherlabel));
         if(mother) motherPdg = mother->GetPdgCode();
       }
+      */
       
       // derive source
       source = 5;
@@ -518,33 +527,33 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
                   << "CentralTrigger="      << isCentralTrigger
                   << "SemicentralTrigger="  << isSemicentralTrigger
                   << "EMCALtrigger="        << isEMCALTrigger
-		  << "run="                 << run
-		  << "eventnb="             << eventnb
-		  << "vx="                  << vtx[0]
+		              << "run="                 << run
+		              << "eventnb="             << eventnb
+		              << "vx="                  << vtx[0]
                   << "vy="                  << vtx[1]
                   << "vz="                  << vtx[2]
-		  << "ncontrib="            << ncontrib
-		  << "id="                  << id
-		  << "dc="                  << doublec
+		              << "ncontrib="            << ncontrib
+		              << "id="                  << id
+		              << "dc="                  << doublec
                   << "p="                   << momentum
-		  << "ptpc="                << momentumTPC
-		  << "pt="                  << transversemomentum
-		  << "eta="                 << eta
+		              << "ptpc="                << momentumTPC
+		              << "pt="                  << transversemomentum
+		              << "eta="                 << eta
                   << "phi="                 << phi
-		  << "itsrefit="            << itsrefit
-		  << "tpcrefit="            << tpcrefit
-		  << "tofpid="              << tofpid
-		  << "nclustersTPC="        << nclustersTPCfit
-		  << "nclustersTPCall="     << nclustersTPCall
+		              << "itsrefit="            << itsrefit
+		              << "tpcrefit="            << tpcrefit
+		              << "tofpid="              << tofpid
+		              << "nclustersTPC="        << nclustersTPCfit
+		              << "nclustersTPCall="     << nclustersTPCall
                   << "nclustersTPCPID="     << nclustersTPCPID
                   << "nclustersTPCshared="  << nclustersTPCshared
                   << "ncrossedRowsTPC="     << ncrossedRowsTPC
                   << "clusterRatioTPC="     << clusterRatioTPCfit
-		  << "clusterRatioTPCall="  << clusterRatioTPCall
+		              << "clusterRatioTPCall="  << clusterRatioTPCall
                   << "nclustersITS="        << nclustersITS
-	          << "nclustersTRD="        << nclustersTRD
+	                << "nclustersTRD="        << nclustersTRD
       	          << "ntrackletsTRD="       << ntrackletsTRDPID
-	          << "nslicesTRD="          << nslicesTRD
+	                << "nslicesTRD="          << nslicesTRD
                   << "trd0="                << trdlayer[0]
                   << "trd1="                << trdlayer[1]
                   << "trd2="                << trdlayer[2]
@@ -552,58 +561,63 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
                   << "trd4="                << trdlayer[4]
                   << "trd5="                << trdlayer[5]
                   << "chi2TRD="             << chi2TRD
-		  << "statusITS0="          << statusL0
+		              << "statusITS0="          << statusL0
                   << "statusITS1="          << statusL1
- 		  << "TOFsigmaEl="          << nSigmaTOF
+ 		              << "TOFsigmaEl="          << nSigmaTOF
                   << "TPCsigmaEl="          << nSigmaTPC
-		  << "TPCsigmaElcorr="      << nSigmaTPCcorr
+		              << "TPCsigmaElcorr="      << nSigmaTPCcorr
                   << "TPCdEdx="             << tPCdEdx
                   << "TPCdEdxcorr="         << tPCdEdxcorr
-		  << "dcaR="                << dcaxy
+		              << "dcaR="                << dcaxy
+                  << "EMCALEOP="            << emcalEnergyOverP
+                  << "EMCALsigmaEl="        << emcalNSigma
+                  << "showershape0="        << showershape[0]
+                  << "showershape1="        << showershape[1]
+                  << "showershape2="        << showershape[2]
+                  << "showershape3="        << showershape[3]
                   << "dcaZ="                << dcaz
-		  << "kinkdaughter="        << kink
-		  << "kinkmother="          << kinkmotherpass
-		  << "nbofmotherkink="      << numberofmotherkink
-		  << "filter0="             << filter0
-		  << "filter1="             << filter1
-		  << "filter2="             << filter2
-		  << "filter3="             << filter3
-		  << "filter4="             << filter4
-		  << "filter5="             << filter5
-		  << "filter6="             << filter6
-		  << "filter7="             << filter7
-		  << "filter8="             << filter8
-		  << "filter9="             << filter9
-		  << "filter10="            << filter10
-		  << "filter11="            << filter11
-		  << "filter12="            << filter12
-		  << "filter13="            << filter13
-		  << "filter14="            << filter14
-		  << "filter15="            << filter15
-		  << "filter16="            << filter16
-		  << "filter17="            << filter17
-		  << "filter18="            << filter18
-		  << "filter19="            << filter19
-		  << "mcp="                 << momentummc
+		              << "kinkdaughter="        << kink
+		              << "kinkmother="          << kinkmotherpass
+		              << "nbofmotherkink="      << numberofmotherkink
+		              << "filter0="             << filter0
+		              << "filter1="             << filter1
+		              << "filter2="             << filter2
+		              << "filter3="             << filter3
+		              << "filter4="             << filter4
+		              << "filter5="             << filter5
+		              << "filter6="             << filter6
+		              << "filter7="             << filter7
+		              << "filter8="             << filter8
+		              << "filter9="             << filter9
+		              << "filter10="            << filter10
+		              << "filter11="            << filter11
+		              << "filter12="            << filter12
+		              << "filter13="            << filter13
+		              << "filter14="            << filter14
+		              << "filter15="            << filter15
+		              << "filter16="            << filter16
+		              << "filter17="            << filter17
+		              << "filter18="            << filter18
+		              << "filter19="            << filter19
+		              << "mcp="                 << momentummc
                   << "mcpt="                << transversemomentummc
-		  << "mceta="               << etamc
+		              << "mceta="               << etamc
                   << "mcphi="               << phimc
                   << "mcpdg="               << pdg
-		  << "source="              << source
-		  << "px="                  << vx
+		              << "source="              << source
+		              << "px="                  << vx
                   << "py="                  << vy
                   << "pz="                  << vz
-		  << "eR="                  << eR
-		  << "mccharge="            << chargemc
-		  << "signal="              << signal
-		  << "\n";
+		              << "eR="                  << eR
+		              << "mccharge="            << chargemc
+		              << "signal="              << signal
+		              << "\n";
 
  
     //printf("after\n");
 
   }
   
-  arraytrack->~TArrayI();
   fEventNumber++;
 
 

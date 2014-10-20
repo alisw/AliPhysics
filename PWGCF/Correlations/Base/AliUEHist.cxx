@@ -946,7 +946,7 @@ void AliUEHist::GetHistsZVtxMult(AliUEHist::CFStep step, AliUEHist::Region regio
 }
 
 //____________________________________________________________________
-TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Bool_t normalizePerTrigger, Int_t stepForMixed)
+TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Bool_t normalizePerTrigger, Int_t stepForMixed, Int_t* trigger)
 {
   // Calls GetUEHist(...) for *each* vertex bin and multiplicity bin and performs a sum of ratios:
   // 1_N [ (same/mixed)_1 + (same/mixed)_2 + (same/mixed)_3 + ... ]
@@ -1030,7 +1030,7 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   //     Printf("%f", tracksMixed->Integral());
       Float_t binWidthEta = tracksMixed->GetYaxis()->GetBinWidth(1);
     
-      if (step == kCFStepBiasStudy && !trackMixedAllStep6)
+      if (stepForMixed == -1 && step == kCFStepBiasStudy && !trackMixedAllStep6)
       {
 	// get mixed event normalization by assuming full acceptance at deta at 0 (integrate over dphi), excluding (0, 0)
 	Float_t phiExclude = 0.41;
@@ -1226,6 +1226,8 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
       if (totalEvents > 0)
 	totalTracks->Scale(1.0 / totalEvents);
     }
+    if(trigger!=NULL)
+      *trigger = (Int_t)totalEvents;
   
     // normalizate to dphi width
     Float_t normalization = totalTracks->GetXaxis()->GetBinWidth(1);

@@ -367,7 +367,7 @@ void AliHFEreducedEventCreatorESD::UserExec(Option_t *){
       hfemcpart.SetSource(source);
       */
       hfemcpart.SetSource(static_cast<Int_t>(fSignalCuts->GetSignalSource(mctrack)));
-      hfemcpart.SetElectronSource(fSignalCuts->GetMCQAObject()->GetElecSource(mctrack));
+      hfemcpart.SetElectronSource(fSignalCuts->GetMCQAObject()->GetElecSource(mctrack,kTRUE));
       fHFEevent->AddMCParticle(&hfemcpart);
     }
   }
@@ -467,7 +467,7 @@ void AliHFEreducedEventCreatorESD::UserExec(Option_t *){
         hfetrack.SetMCSource(source); 
         */
         hfetrack.SetMCSource(static_cast<Int_t>(fSignalCuts->GetSignalSource(track))); 
-        hfetrack.SetMCElectronSource(fSignalCuts->GetMCQAObject()->GetElecSource(mctrack));
+        hfetrack.SetMCElectronSource(fSignalCuts->GetMCQAObject()->GetElecSource(mctrack,kTRUE));
       } else {
         AliDebug(2, "Associated MC particle not found");
       }

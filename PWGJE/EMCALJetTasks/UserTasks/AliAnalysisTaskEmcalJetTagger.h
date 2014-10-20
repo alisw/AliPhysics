@@ -74,7 +74,8 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
   TH2F            **fh2PtJet1VsLeadPtAllSel;      //!all jets after std selection
   TH2F            **fh2PtJet1VsLeadPtTagged;      //!tagged jets
   TH2F            **fh2PtJet1VsPtJet2;            //!pT of base jet vs tagged jet
-
+  TH2F            **fh2PtJet2VsRelPt;             //!pT of tagged jet vs pt base jet / pt tagged jet
+  
   TH3F             *fh3PtJetDEtaDPhiConst;        //!pt jet vs delta eta vs delta phi of constituents
   TH2F             *fh2PtJetDRConst;              //!pt jet vs delta R of constituents
   TH3F             *fh3PtJetAreaDRConst;          //!pt jet vs Area vs delta R of constituents
@@ -82,7 +83,7 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetTagger(const AliAnalysisTaskEmcalJetTagger&);            // not implemented
   AliAnalysisTaskEmcalJetTagger &operator=(const AliAnalysisTaskEmcalJetTagger&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetTagger, 3)
+  ClassDef(AliAnalysisTaskEmcalJetTagger, 5)
 };
 #endif
 

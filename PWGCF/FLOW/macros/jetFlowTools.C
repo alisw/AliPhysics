@@ -26,7 +26,7 @@ void jetFlowTools() {
         return;
     } else printf(" > Found detector response < \n");
 
-    // get a TList from the AliAnalysisRhoVnModulation task
+    // get a TList from the AliAnalysisJetV2 task
     TFile f("AnalysisResults.root");
     if(f.IsZombie()) {
         printf(" > read error ! < \n");

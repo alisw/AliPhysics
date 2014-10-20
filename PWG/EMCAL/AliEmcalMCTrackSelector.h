@@ -1,12 +1,12 @@
-#ifndef ALIEMCALMCTRACKSELECTOR_H
-#define ALIEMCALMCTRACKSELECTOR_H
-
-// $Id$
+#ifndef ALIEMCALMCTRAKCSELECTOR_H
+#define ALIEMCALMCTRAKCSELECTOR_H
 
 class TClonesArray;
 class TString;
-class TH1I;
+class AliVEvent;
+class AliMCEvent;
 class AliNamedArrayI;
+class AliAODMCParticle;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -19,31 +19,37 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
   void UserCreateOutputObjects();
   void UserExec(Option_t *option);
 
-  void SetChargedMC(Bool_t c = kTRUE)                { fChargedMC        = c    ; }
-  void SetEtaMax(Double_t e)                         { fEtaMax           = e    ; }
-  void SetRejectNK(Bool_t r = kTRUE)                 { fRejectNK         = r    ; }
-  void SetTracksOutName(const char *name)            { fTracksOutName    = name ; }
+  void SetOnlyPhysPrim(Bool_t s)                        { fOnlyPhysPrim     = s    ; }  
+  void SetChargedMC(Bool_t c = kTRUE)                   { fChargedMC        = c    ; }
+  void SetEtaMax(Double_t e)                            { fEtaMax           = e    ; }
+  void SetRejectNK(Bool_t r = kTRUE)                    { fRejectNK         = r    ; }
+  void SetOnlyHIJING(Bool_t s)                          { fOnlyHIJING       = s    ; }
+  void SetParticlesOutName(const char *name)            { fParticlesOutName = name ; }
 
  protected:
-  Int_t              GetNumberOfTracks() const;
-  AliVParticle      *GetTrack(Int_t i);
-  void               AddTrack(AliVParticle *track, Int_t nacc);
+  void                      ConvertMCParticles();    // for ESD analysis
+  void                      CopyMCParticles();       // for AOD analysis
 
-  TString            fTracksOutName;        // name of output track array
-  Bool_t             fRejectNK;             // true = reject k0l and neutrons
-  Bool_t             fChargedMC;            // true = only charged particles
-  TString            fTracksMapName;        // name of the track map
-  Double_t           fEtaMax;               // maximum eta to accept tracks
-  Bool_t             fInit;                 //!true = task initialized
-  Bool_t             fEsdMode;              //!switch for ESD/AOD mode
-  TClonesArray      *fTracksIn;             //!track array in (AOD only)
-  TClonesArray      *fTracksOut;            //!track array out
-  AliNamedArrayI    *fTracksMap;            //!track mapping
+  TString                   fParticlesOutName;     // name of output particle array
+  Bool_t                    fOnlyPhysPrim;         // true = only physical primary particles
+  Bool_t                    fRejectNK;             // true = reject K_0^L and neutrons
+  Bool_t                    fChargedMC;            // true = only charged particles
+  Bool_t                    fOnlyHIJING;           // true = only HIJING particles
+  Double_t                  fEtaMax;               // maximum eta to accept particles
+  TString                   fParticlesMapName;     //!name of the particle map
+  Bool_t                    fInit;                 //!true = task initialized
+  TClonesArray             *fParticlesIn;          //!particle array in (AOD)
+  TClonesArray             *fParticlesOut;         //!particle array out
+  AliNamedArrayI           *fParticlesMap;         //!particle index/label
+  AliVEvent                *fEvent;                //!event
+  AliMCEvent               *fMC;                   //!MC event (ESD)
+  Bool_t                    fIsESD;                //!ESD or AOD analysis
+  Bool_t                    fDisabled;             //!Disable task if a problem occurs at initialization
 
  private:
   AliEmcalMCTrackSelector(const AliEmcalMCTrackSelector&);            // not implemented
   AliEmcalMCTrackSelector &operator=(const AliEmcalMCTrackSelector&); // not implemented
 
-  ClassDef(AliEmcalMCTrackSelector, 2); // Task to select tracks in MC events
+  ClassDef(AliEmcalMCTrackSelector, 3); // Task to select particle in MC events
 };
 #endif

@@ -68,6 +68,8 @@
 #include "AliKFParticle.h"
 #include "AliESDVZERO.h"
 #include "AliFlowCommonConstants.h"
+#include "AliAnalysisManager.h"
+#include "AliPIDResponse.h"
 
 ClassImp(AliFlowTrackCuts)
 
@@ -157,7 +159,9 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fCurrCentr(0.0),
   fVZEROgainEqualization(NULL),
   fApplyRecentering(kFALSE),
-  fVZEROgainEqualizationPerRing(kFALSE)
+  fVZEROgainEqualizationPerRing(kFALSE),
+  fPIDResponse(NULL),
+  fNsigmaCut2(9)
 {
   //io constructor 
   SetPriors(); //init arrays
@@ -262,7 +266,9 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fCurrCentr(0.0),
   fVZEROgainEqualization(NULL),
   fApplyRecentering(kFALSE),
-  fVZEROgainEqualizationPerRing(kFALSE)
+  fVZEROgainEqualizationPerRing(kFALSE),
+  fPIDResponse(NULL),
+  fNsigmaCut2(9)
 {
   //constructor 
   SetTitle("AliFlowTrackCuts");
@@ -369,7 +375,9 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fCurrCentr(0.0),
   fVZEROgainEqualization(NULL),
   fApplyRecentering(that.fApplyRecentering),
-  fVZEROgainEqualizationPerRing(that.fVZEROgainEqualizationPerRing)
+  fVZEROgainEqualizationPerRing(that.fVZEROgainEqualizationPerRing),
+  fPIDResponse(that.fPIDResponse),
+  fNsigmaCut2(that.fNsigmaCut2)
 {
   //copy constructor
   printf(" \n\n claling copy ctor \n\n" );
@@ -513,6 +521,9 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   }
   for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = that.fUseVZERORing[i];
 
+  fPIDResponse = that.fPIDResponse;
+  fNsigmaCut2 = that.fNsigmaCut2;
+
   return *this;
 }
 
@@ -535,6 +546,13 @@ void AliFlowTrackCuts::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
   Clear();
   fEvent=event;
   fMCevent=mcEvent;
+
+  // Get PID response
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  if(man){
+    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+    if(inputHandler) fPIDResponse=inputHandler->GetPIDResponse();
+  }
 
   //do the magic for ESD
   AliESDEvent* myESD = dynamic_cast<AliESDEvent*>(event);
@@ -1186,6 +1204,8 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
   if (fQA) {
     // changed 04062014 used to be filled before possible PID cut
     Double_t momTPC = track->GetTPCmomentum();
+    QAbefore( 0)->Fill(momTPC,GetBeta(track, kTRUE));
+    if(pass) QAafter( 0)->Fill(momTPC, GetBeta(track, kTRUE));
     QAbefore( 1)->Fill(momTPC,dedx);
     QAbefore( 5)->Fill(track->Pt(),track->DCA());
     QAbefore( 6)->Fill(track->Pt(),track->ZAtDCA());
@@ -1386,6 +1406,16 @@ Int_t AliFlowTrackCuts::Count(AliVEvent* event)
 }
 
 //-----------------------------------------------------------------------
+AliFlowTrackCuts* AliFlowTrackCuts::GetAODTrackCutsForFilterBit(UInt_t bit, TString suffix)
+{
+  // object which in its default form only cuts on filterbit (for AOD analysis)
+  AliFlowTrackCuts* cuts = new AliFlowTrackCuts(Form("AOD fitlerbit %i, %s", (int)bit, suffix.Data()));
+  cuts->SetMinimalTPCdedx(-999999999);
+  cuts->SetAODfilterBit(bit);
+  cuts->SetParamType(AliFlowTrackCuts::kAODFilterBit);
+  return cuts;
+}  
+//-----------------------------------------------------------------------
 AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts()
 {
   //returns the lhc10h vzero track cuts, this function
@@ -1400,16 +1430,25 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts()
 AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2010()
 {
   //get standard VZERO cuts
-  AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard vzero flow cuts 2010");
-  cuts->SetParamType(kVZERO);
+  //DISCLAIMER: LHC10h VZERO calibration consists (by default) of two steps
+  //1) re-weigting of signal
+  //2) re-centering of q-vectors
+  //step 2 is available only for n==2 and n==3, for the higher harmonics the user
+  //is repsonsible for making sure the q-sub distributions are (sufficiently) flat
+  //or a sensible NUA procedure is applied !
+  AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard vzero flow cuts");
+  cuts->SetParamType(AliFlowTrackCuts::kVZERO);
   cuts->SetEtaRange( -10, +10 );
+  cuts->SetEtaGap(-1., 1.);
   cuts->SetPhiMin( 0 );
   cuts->SetPhiMax( TMath::TwoPi() );
   // options for the reweighting
   cuts->SetVZEROgainEqualizationPerRing(kFALSE);
   cuts->SetApplyRecentering(kTRUE);
-  // to exclude a ring , do e.g.
+  // to exclude a ring , do e.g. 
   // cuts->SetUseVZERORing(7, kFALSE);
+  // excluding a ring will break the re-centering as re-centering relies on a 
+  // database file which tuned to receiving info from all rings
   return cuts;
 }
 //-----------------------------------------------------------------------
@@ -1421,6 +1460,10 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2011()
   //if recentering is enableded, the sub-q vectors
   //will be taken from the event header, so make sure to run 
   //the VZERO event plane selection task before this task !
+  //DISCLAIMER: recentering is only available for n==2
+  //for the higher harmonics the user
+  //is repsonsible for making sure the q-sub distributions are (sufficiently) flat
+  //or a sensible NUA procedure is applied !
   //recentering replaces the already evaluated q-vectors, so 
   //when chosen, additional settings (e.g. excluding rings) 
   //have no effect. recentering is true by default
@@ -1434,6 +1477,7 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2011()
   AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard vzero flow cuts 2011");
   cuts->SetParamType(kVZERO);
   cuts->SetEtaRange( -10, +10 );
+  cuts->SetEtaGap(-1., 1.);
   cuts->SetPhiMin( 0 );
   cuts->SetPhiMax( TMath::TwoPi() );
   cuts->SetApplyRecentering(kTRUE);
@@ -2541,6 +2585,9 @@ Bool_t AliFlowTrackCuts::PassesAODpidCut(const AliAODTrack* track )
   case kTPCbayesian:
       if (!PassesTPCbayesianCut(track)) pass=kFALSE;
       break;
+  case kTPCTOFNsigma:
+      if (!PassesTPCTOFNsigmaCut(track)) pass = kFALSE;
+      break;
   default:
     return kTRUE;
     break;
@@ -2650,7 +2697,7 @@ Bool_t AliFlowTrackCuts::PassesTOFbetaSimpleCut(const AliESDtrack* track )
 }
 
 //-----------------------------------------------------------------------
-Float_t AliFlowTrackCuts::GetBeta(const AliVTrack* track)
+Float_t AliFlowTrackCuts::GetBeta(const AliVTrack* track, Bool_t QAmode)
 {
   //get beta
   Double_t integratedTimes[9] = {-1.0,-1.0,-1.0,-1.0,-1.0, -1.0, -1.0, -1.0, -1.0};
@@ -2661,6 +2708,7 @@ Float_t AliFlowTrackCuts::GetBeta(const AliVTrack* track)
   Float_t l = integratedTimes[0]*c;  
   Float_t trackT0 = fESDpid.GetTOFResponse().GetStartTime(p);
   Float_t timeTOF = track->GetTOFsignal()- trackT0; 
+  if(QAmode && timeTOF <= 0) return -999;   // avoid division by zero when filling 'before' qa histograms
   return l/timeTOF/c;
 }
 //-----------------------------------------------------------------------
@@ -3246,7 +3294,7 @@ Bool_t AliFlowTrackCuts::PassesTPCbayesianCut(const AliESDtrack* track)
 //-----------------------------------------------------------------------
 Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(const AliAODTrack* track)
 {  
-//check is track passes bayesian combined TOF+TPC pid cut
+  //check is track passes bayesian combined TOF+TPC pid cut
   Bool_t goodtrack = (track->GetStatus() & AliESDtrack::kTOFout) &&
                      (track->GetStatus() & AliESDtrack::kTIME) &&
                      (track->GetTOFsignal() > 12000) &&
@@ -3256,7 +3304,6 @@ Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(const AliAODTrack* track)
        return kFALSE;
 
   Bool_t statusMatchingHard = TPCTOFagree(track);
-//ciao
   if (fRequireStrictTOFTPCagreement && (!statusMatchingHard))
        return kFALSE;
 
@@ -3446,8 +3493,22 @@ Bool_t AliFlowTrackCuts::PassesTPCTOFNsigmaCut(const AliAODTrack* track)
     // do a simple combined cut on the n sigma from tpc and tof
     // with information of the pid response object (needs pid response task)
     // stub, not implemented yet
+    if(!fPIDResponse) return kFALSE;
     if(!track) return kFALSE;
-    return kFALSE;
+
+    // check TOF status
+    if ((track->GetStatus()&AliVTrack::kTOFout)==0) return kFALSE;
+    if ((track->GetStatus()&AliVTrack::kTIME)==0) return kFALSE;
+
+    // check TPC status
+    if(track->GetTPCsignal() < 10) return kFALSE;
+
+    Float_t nsigmaTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC,track,fParticleID);
+    Float_t nsigmaTOF = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF,track,fParticleID);
+
+    Float_t nsigma2 = nsigmaTPC*nsigmaTPC + nsigmaTOF*nsigmaTOF;
+
+    return (nsigma2 < fNsigmaCut2);
 
 }
 //-----------------------------------------------------------------------------
@@ -3456,8 +3517,22 @@ Bool_t AliFlowTrackCuts::PassesTPCTOFNsigmaCut(const AliESDtrack* track)
     // do a simple combined cut on the n sigma from tpc and tof
     // with information of the pid response object (needs pid response task)
     // stub, not implemented yet
+    if(!fPIDResponse) return kFALSE;
     if(!track) return kFALSE;
-    return kFALSE;
+
+    // check TOF status
+    if ((track->GetStatus()&AliVTrack::kTOFout)==0) return kFALSE;
+    if ((track->GetStatus()&AliVTrack::kTIME)==0) return kFALSE;
+
+    // check TPC status
+    if(track->GetTPCsignal() < 10) return kFALSE;
+
+    Float_t nsigmaTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC,track,fParticleID);
+    Float_t nsigmaTOF = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF,track,fParticleID);
+
+    Float_t nsigma2 = nsigmaTPC*nsigmaTPC + nsigmaTOF*nsigmaTOF;
+
+    return (nsigma2 < fNsigmaCut2);
 
 }
 

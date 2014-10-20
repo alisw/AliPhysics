@@ -1600,7 +1600,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
     // V0 loop
     Int_t nV0s = fOutputAOD->GetNumberOfV0s();
     AliAODv0 *myV0;
-    Double_t dQT, dALPHA, dPT, dMASS=0.0;
+    Double_t /*dQT, dALPHA, dPT,*/ dMASS=0.0;
     for (Int_t i=0; i!=nV0s; ++i) {
       myV0 = (AliAODv0*) fOutputAOD->GetV0(i);
       if(!myV0) continue;
@@ -1618,9 +1618,9 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
       }
 
       if(pass){// 1 lambda, 2 antilambda, 3=K0s
-	dPT=myV0->Pt();
-	dQT=myV0->PtArmV0();
-	dALPHA=myV0->AlphaV0();
+	//dPT=myV0->Pt();
+	//dQT=myV0->PtArmV0();
+	//dALPHA=myV0->AlphaV0();
 
 	Int_t iPos, iNeg;
 	AliAODTrack *iT=(AliAODTrack*) myV0->GetDaughter(0);
@@ -2042,8 +2042,8 @@ Int_t AliAnalysisTaskVnV0::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAOD,Int_t
     fPID->ComputeProb(iT,tAOD); // compute Bayesian probabilities
     Float_t nsigmaTPC[8];
 
-    Int_t tofMatch=0;
-    Int_t tofMatch2=0;
+//    Int_t tofMatch=0;
+//    Int_t tofMatch2=0;
 
     if(iT->GetDetPid()){ // check the PID object is available
       for(Int_t iS=0;iS < 8;iS++){
@@ -2057,8 +2057,8 @@ Int_t AliAnalysisTaskVnV0::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAOD,Int_t
     }
 
 
-    if(fPID->GetCurrentMask(1)) // if TOF is present
-      tofMatch = 1;
+//    if(fPID->GetCurrentMask(1)) // if TOF is present
+//      tofMatch = 1;
 
 //     Float_t tofMismProbMC = fPID->GetTOFMismProb(); // TOF mismatch probability requested to be lower than 50% for TOF analysis 
 
@@ -2078,8 +2078,8 @@ Int_t AliAnalysisTaskVnV0::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAOD,Int_t
 	nsigmaTPC2[iS] = 10;
     }
 
-    if(fPID->GetCurrentMask(1)) // if TOF is present
-      tofMatch2 = 1;
+//    if(fPID->GetCurrentMask(1)) // if TOF is present
+//      tofMatch2 = 1;
 
 //     Float_t tofMismProbMC2 = fPID->GetTOFMismProb(); // TOF mismatch probability requested to be lower than 50% for TOF analysis 
 

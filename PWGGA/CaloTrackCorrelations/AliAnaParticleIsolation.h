@@ -39,9 +39,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         CalculateTrackUEBand   (AliAODPWG4ParticleCorrelation * pCandidate,
                                        Float_t & etaBand, Float_t & phiBand) ;
   
-  void         CalculateCaloSignalInCone    (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumCluster) ;
+  void         CalculateCaloSignalInCone    (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumCluster, Float_t & coneptLeadCluster) ;
   void         CalculateCaloCellSignalInCone(AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumCell) ;
-  void         CalculateTrackSignalInCone   (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumTrack  ) ;
+  void         CalculateTrackSignalInCone   (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumTrack  , Float_t & coneptLeadTrack  ) ;
 
 
   void         CalculateNormalizeUEBandPerUnitArea(AliAODPWG4ParticleCorrelation * pCandidate,
@@ -70,13 +70,16 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         FillAcceptanceHistograms();
  
   void         FillTrackMatchingShowerShapeControlHistograms(AliAODPWG4ParticleCorrelation  * pCandidate,
-                                                             AliCaloPID * pid) ;
+                                                             Float_t coneptsum, Float_t coneleadpt, Int_t mcIndex) ;
   
-  void         MakeSeveralICAnalysis( AliAODPWG4ParticleCorrelation * ph ) ; 
+  Bool_t       IsTriggerTheNearSideEventLeadingParticle(Int_t & idLeading);
+  
+  void         MakeSeveralICAnalysis( AliAODPWG4ParticleCorrelation * ph, Int_t mcIndex ) ;
   
   // Analysis Setters and Getters
   
   TString      GetCalorimeter()                const { return fCalorimeter       ; }
+  TString      GetTriggerDetector()            const { return fIsoDetector       ; }
   Int_t        GetNCones()                     const { return fNCones            ; }
   Int_t        GetNPtThresFrac()               const { return fNPtThresFrac      ; }
   Float_t      GetConeSizes(Int_t i)           const { return fConeSizes[i]      ; }
@@ -84,14 +87,19 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Float_t      GetSumPtThresholds(Int_t i)     const { return fSumPtThresholds[i]; }
   Float_t      GetPtFractions(Int_t i)         const { return fPtFractions[i]    ; }
   
+  Int_t        GetMCIndex(Int_t mcTag);
+  
   void         SetCalorimeter(TString & det)         { fCalorimeter     = det    ; }
+  void         SetTriggerDetector(TString & det)     { fIsoDetector     = det    ; }
   void         SetNCones(Int_t ncs)                  { fNCones          = ncs    ; }
   void         SetNPtThresFrac(Int_t npt)            { fNPtThresFrac    = npt    ; }
   void         SetConeSizes(Int_t i, Float_t r)      { fConeSizes[i]    = r      ; }
   void         SetPtThresholds(Int_t i, Float_t pt)  { fPtThresholds[i] = pt     ; }
   void         SetPtFractions(Int_t i, Float_t pt)   { fPtFractions[i]  = pt     ; } 
   void 	       SetSumPtThresholds(Int_t i, Float_t pt){ fSumPtThresholds[i] = pt ; }
-  
+
+  void         SetMinCellsAngleOverlap(Float_t n)    { fMinCellsAngleOverlap = n ; }
+
   
   Bool_t       IsReIsolationOn()               const { return fReMakeIC          ; }
   void         SwitchOnReIsolation()                 { fReMakeIC      = kTRUE    ; }
@@ -110,36 +118,81 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnSSHistoFill()                 { fFillSSHisto   = kTRUE    ; }
   void         SwitchOffSSHistoFill()                { fFillSSHisto   = kFALSE   ; }
 
-  //Histogrammes setters and getters
+  Bool_t       IsLeadingOnlyOn()               const { return fLeadingOnly       ; }
+  void         SwitchOnLeadingOnly()                 { fLeadingOnly    = kTRUE   ; }
+  void         SwitchOffLeadingOnly()                { fLeadingOnly    = kFALSE  ; }
   
-  void         SetHistoPtSumRangeAndNBins(Float_t min, Float_t max, Int_t n)       {
-    fHistoNPtSumBins = n ;    fHistoPtSumMax = max ;    fHistoPtSumMin = min ;     }
+  void         SwitchOnCheckNeutralClustersForLeading() { fCheckLeadingWithNeutralClusters = kTRUE  ; }
+  void         SwitchOffCheckNeutralClustersForLeading(){ fCheckLeadingWithNeutralClusters = kFALSE ; }
   
-  Int_t        GetHistoNPtSumBins()            const { return fHistoNPtSumBins   ; }
-  Float_t      GetHistoPtSumMin()              const { return fHistoPtSumMin     ; }
-  Float_t      GetHistoPtSumMax()              const { return fHistoPtSumMax     ; }
+  void         SwitchOnUEBandSubtractionHistoFill()  { fFillUEBandSubtractHistograms   = kTRUE    ; }
+  void         SwitchOffUEBandSubtractionHistoFill() { fFillUEBandSubtractHistograms   = kFALSE   ; }
+
+  void         SwitchOnCellHistoFill()               { fFillCellHistograms = kTRUE ; }
+  void         SwitchOffCellHistoFill()              { fFillCellHistograms = kFALSE; }
+
+  void         SwitchOnHighMultiplicityHistoFill()   { fFillHighMultHistograms = kTRUE ; }
+  void         SwitchOffHighMultiplicityHistoFill()  { fFillHighMultHistograms = kFALSE; }
+
+  void         SwitchOnNLMHistoFill()                { fFillNLMHistograms = kTRUE ; }
+  void         SwitchOffNLMHistoFill()               { fFillNLMHistograms = kFALSE; }
   
-  void         SetHistoPtInConeRangeAndNBins(Float_t min, Float_t max, Int_t n)    {
-    fHistoNPtInConeBins = n ; fHistoPtInConeMax = max ; fHistoPtInConeMin = min  ; }
+  void         SwitchOnDecayTaggedHistoFill()        { fFillTaggedDecayHistograms = kTRUE ; }
+  void         SwitchOffDecayTaggedHistoFill()       { fFillTaggedDecayHistograms = kFALSE; }
+  void         SetNDecayBits(Int_t n)                { fNDecayBits = n               ; }
+  void         SetDecayBits(Int_t i, UInt_t bit)     { if(i < 4) fDecayBits[i] = bit ; }
   
-  Int_t        GetHistoNPtInConeBins()         const { return fHistoNPtInConeBins; }
-  Float_t      GetHistoPtInConeMin()           const { return fHistoPtInConeMin  ; }
-  Float_t      GetHistoPtInConeMax()           const { return fHistoPtInConeMax  ; }
+  void         SwitchOnBackgroundBinHistoFill()      { fFillBackgroundBinHistograms = kTRUE ; }
+  void         SwitchOffBackgroundBinHistoFill()     { fFillBackgroundBinHistograms = kFALSE; }
+  void         SetNBackgroundBins(Int_t n)           { if(n < 19) fNBkgBin = n ; }
+  void         SetBackgroundLimits(Int_t i,Float_t l){ if(i <= fNBkgBin) fBkgBinLimit[i] = l; }
+
+  void         SwitchOnPrimariesInConeSelection()    { fSelectPrimariesInCone = kTRUE ; }
+  void         SwitchOffPrimariesInConeSelection()   { fSelectPrimariesInCone = kFALSE; }
+
+  void         SwitchOnPrimariesPi0DecayStudy()      { fMakePrimaryPi0DecayStudy = kTRUE ; }
+  void         SwitchOffPrimariesPi0DecayStudy()     { fMakePrimaryPi0DecayStudy = kFALSE; }
   
- // For histograms in arrays, index in the array, corresponding to a particle
-  enum mcPTypes   { kmcPPhoton = 0,       kmcPPi0Decay = 1,       kmcPOtherDecay = 2,  kmcPOther = 3,
-                    kmcPPrompt = 4,       kmcPFragmentation = 5,  kmcPISR = 6           };
+  // For primary histograms in arrays, index in the array, corresponding to a photon origin
+  enum mcPrimTypes { kmcPrimPhoton = 0, kmcPrimPi0Decay = 1, kmcPrimOtherDecay  = 2,
+                     kmcPrimPrompt = 3, kmcPrimFrag     = 4, kmcPrimISR         = 5, kmcPrimPi0 = 6 } ;
+  static const Int_t fgkNmcPrimTypes = 7;
   
+  // For histograms in arrays, index in the array, corresponding to any particle origin
+  enum mcTypes     { kmcPhoton   = 0, kmcPrompt     = 1, kmcFragment         = 2,
+                     kmcPi0      = 3, kmcPi0Decay   = 4, kmcPi0DecayLostPair = 5,
+                     kmcEtaDecay = 6, kmcOtherDecay = 7,
+                     kmcElectron = 8, kmcHadron     = 9                          } ;
+  static const Int_t fgkNmcTypes = 10;
+
  private:
   
   TString  fCalorimeter ;                         // Calorimeter where neutral particles in cone for isolation are;
+  TString  fIsoDetector ;                         // Candidate particle for isolation detector ;
   Bool_t   fReMakeIC ;                            // Do isolation analysis
   Bool_t   fMakeSeveralIC ;                       // Do analysis for different IC
   Bool_t   fFillPileUpHistograms;                 // Fill pile-up related histograms
   Bool_t   fFillTMHisto;                          // Fill track matching plots
   Bool_t   fFillSSHisto;                          // Fill Shower shape plots
+  Bool_t   fFillUEBandSubtractHistograms;         // Fill histograms working on the UE subtraction
+  Bool_t   fFillCellHistograms;                   // Fill cell histograms
+  Bool_t   fFillHighMultHistograms;               // Fill high multiplicity histograms
+  Bool_t   fFillTaggedDecayHistograms;            // Fill histograms for clusters tagged as decay
+  Int_t    fNDecayBits ;                          // in case of study of decay triggers, select the decay bit
+  UInt_t   fDecayBits[4] ;                        // in case of study of decay triggers, select the decay bit
+  Bool_t   fFillNLMHistograms;                    // Fill NLM histograms
+  Bool_t   fLeadingOnly;                          // Do isolation with leading particle
+  Bool_t   fCheckLeadingWithNeutralClusters;      // Compare the trigger candidate to Leading pT with the clusters pT, by default only charged
+  Bool_t   fSelectPrimariesInCone;                // In primary particle isolation studies, select only particles in isolation cone within detector acceptance and E cut.
+  Bool_t   fMakePrimaryPi0DecayStudy;             // Fill dedicated histograms for primary decay photons
+  
+  Bool_t   fFillBackgroundBinHistograms;          // Fill histograms for different bins in pt content of the cone
+  Int_t    fNBkgBin;                              // Number of bins on pt content in cone
+  Float_t  fBkgBinLimit[20];                      // Pt bin limits on pt content in the cone
 
-  // Analysis data members for multiple cones and pt thresholds 
+  Float_t  fMinCellsAngleOverlap;                 // Number of cells that define the cluster overlap
+  
+  // Analysis data members for multiple cones and pt thresholds
   Int_t    fNCones ;                              //! Number of cone sizes to test
   Int_t    fNPtThresFrac ;                        //! Number of ptThres and ptFrac to test
   
@@ -162,10 +215,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhENoIso ;                             //! Number of not isolated leading particles vs Energy
   TH1F *   fhPtNoIso ;                            //! Number of not isolated leading particles vs pT
   TH2F *   fhPtNLocMaxNoIso ;                     //! Number of not isolated particles vs NLM in cluster
-  TH1F *   fhPtDecayIso ;                         //! Number of isolated Pi0 decay particles (invariant mass tag)
-  TH1F *   fhPtDecayNoIso ;                       //! Number of not isolated Pi0 decay leading particles (invariant mass tag)
-  TH2F *   fhEtaPhiDecayIso ;                     //! eta vs phi of isolated Pi0 decay particles
-  TH2F *   fhEtaPhiDecayNoIso ;                   //! eta vs phi of not isolated leading Pi0 decay particles
+  TH1F *   fhPtDecayIso[4] ;                      //! Number of isolated Pi0 decay particles (invariant mass tag)
+  TH1F *   fhPtDecayNoIso[4] ;                    //! Number of not isolated Pi0 decay leading particles (invariant mass tag)
+  TH2F *   fhEtaPhiDecayIso[4] ;                  //! eta vs phi of isolated Pi0 decay particles
+  TH2F *   fhEtaPhiDecayNoIso[4] ;                //! eta vs phi of not isolated leading Pi0 decay particles
+  TH2F *   fhPtLambda0Decay[2][4];                //! Shower shape of (non) isolated leading Pi0 decay particles (do not apply SS cut previously)
 
   TH2F *   fhPtInCone ;                           //! Cluster/track Pt in the cone
   TH2F *   fhPtClusterInCone ;                    //! Cluster Pt in the cone
@@ -193,6 +247,12 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhEtaBandCell ;                        //! Accumulated pT in Eta band to estimate UE in cone, only cells
   TH2F *   fhPhiBandCell ;                        //! Accumulated pT in Phi band to estimate UE in cone, only cells
 
+  TH2F *   fhConePtLead ;                         //! Cluster and tracks leading pt in the cone
+  TH2F *   fhConePtLeadCluster ;                  //! Clusters leading pt in the cone
+  TH2F *   fhConePtLeadTrack ;                    //! Tracks leading pt in the cone
+  TH2F *   fhConePtLeadClustervsTrack;            //! Tracks vs Clusters leading pt
+  TH2F *   fhConePtLeadClusterTrackFrac;          //! Trigger pt vs cluster/track leading pt
+  
   TH2F *   fhConeSumPt ;                          //! Cluster and tracks Sum Pt Sum Pt in the cone
   TH2F *   fhConeSumPtCellTrack ;                 //! Cells and tracks Sum Pt Sum Pt in the cone
   TH2F *   fhConeSumPtCell ;                      //! Cells Sum Pt Sum Pt in the cone
@@ -252,6 +312,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhFractionCellOutConePhiTrigEtaPhi;    //! Fraction of cone out of cells acceptance in phi, vs trigger eta-phi
   
   TH2F *   fhConeSumPtClustervsTrack ;            //! Cluster vs tracks Sum Pt Sum Pt in the cone
+  TH2F *   fhConeSumPtClusterTrackFrac ;          //! Cluster / tracks Sum Pt Sum Pt in the cone
   TH2F *   fhConeSumPtEtaUESubClustervsTrack ;    //! Cluster vs tracks Sum Pt Sum Pt in the cone, after subtraction in eta band
   TH2F *   fhConeSumPtPhiUESubClustervsTrack ;    //! Cluster vs tracks Sum Pt Sum Pt in the cone, after subtraction in phi band
   TH2F *   fhConeSumPtCellvsTrack;                //! Cell vs tracks Sum Pt Sum Pt in the cone
@@ -285,71 +346,44 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeSumPtVSUEClusterPhiBand;              //! fhConeSumPtVSUEClusterPhiBand
   
   //MC
-
-  TH2F *   fhEtaPrimMC  [7];                      //! Pt vs Eta of generated photon
-  TH1F *   fhEPrimMC    [7];                      //! Number of generated photon vs E
-  TH1F *   fhPtPrimMCiso[7];                      //! Number of generated isolated photon vs pT
-  TH1F *   fhPtIsoPrompt;                         //! Number of isolated prompt gamma 
-  TH2F *   fhPhiIsoPrompt;                        //! Phi of isolated prompt gamma
-  TH2F *   fhEtaIsoPrompt;                        //! eta of isolated prompt gamma
-  TH1F *   fhPtThresIsolatedPrompt[5][5];         //! Isolated prompt gamma with pt threshold 
-  TH1F *   fhPtFracIsolatedPrompt[5][5];          //! Isolated prompt gamma with pt frac
-  TH2F *   fhPtSumIsolatedPrompt[5];              //! Isolated prompt gamma with threshold on cone pt sume
-  TH1F *   fhPtIsoFragmentation;                  //! Number of isolated fragmentation gamma 
-  TH2F *   fhPhiIsoFragmentation;                 //! Phi of isolated fragmentation gamma
-  TH2F *   fhEtaIsoFragmentation;                 //! eta of isolated fragmentation gamma
-  TH1F *   fhPtThresIsolatedFragmentation[5][5];  //! Isolated fragmentation gamma with pt threshold 
-  TH1F *   fhPtFracIsolatedFragmentation[5][5];   //! Isolated fragmentation gamma with pt frac
-  TH2F *   fhPtSumIsolatedFragmentation[5];       //! Isolated fragmentation gamma with threshold on cone pt sume
-  TH1F *   fhPtIsoPi0;                            //! Number of isolated pi0 (2 gamma)
-  TH2F *   fhPhiIsoPi0;                           //! Phi of isolated pi0 (2 gamma)
-  TH2F *   fhEtaIsoPi0;                           //! eta of isolated pi0 (2 gamma)
-  TH1F *   fhPtThresIsolatedPi0[5][5];            //! Isolated pi0 (2 gamma) with pt threshold 
-  TH1F *   fhPtFracIsolatedPi0[5][5];             //! Isolated pi0 (2 gamma) with pt frac
-  TH2F *   fhPtSumIsolatedPi0[5];                 //! Isolated pi0 (2 gamma) with threshold on cone pt sum
-  TH1F *   fhPtIsoPi0Decay;                       //! Number of isolated pi0 decay gamma 
-  TH2F *   fhPhiIsoPi0Decay;                      //! Phi of isolated pi0 decay gamma
-  TH2F *   fhEtaIsoPi0Decay;                      //! eta of isolated pi0 decay gamma
-  TH1F *   fhPtThresIsolatedPi0Decay[5][5];       //! Isolated pi0 decay gamma with pt threshold 
-  TH1F *   fhPtFracIsolatedPi0Decay[5][5];        //! Isolated pi0 decay gamma with pt frac
-  TH2F *   fhPtSumIsolatedPi0Decay[5];            //! Isolated pi0 decay gamma with threshold on cone pt sume
-  TH1F *   fhPtIsoEtaDecay;                       //! Number of isolated eta decay gamma 
-  TH2F *   fhPhiIsoEtaDecay;                      //! Phi of isolated eta decay gamma
-  TH2F *   fhEtaIsoEtaDecay;                      //! eta of isolated eta decay gamma
-  TH1F *   fhPtThresIsolatedEtaDecay[5][5];       //! Isolated eta decay gamma with pt threshold 
-  TH1F *   fhPtFracIsolatedEtaDecay[5][5];        //! Isolated eta decay gamma with pt frac
-  TH2F *   fhPtSumIsolatedEtaDecay[5];            //! Isolated eta fecay gamma with threshold on cone pt sume  
-  TH1F *   fhPtIsoOtherDecay;                     //! Number of isolated other decay gamma 
-  TH2F *   fhPhiIsoOtherDecay;                    //! Phi of isolated other decay gamma
-  TH2F *   fhEtaIsoOtherDecay;                    //! eta of isolated other decay gamma
-  TH1F *   fhPtThresIsolatedOtherDecay[5][5];     //! Isolated OtherDecay gamma with pt threshold 
-  TH1F *   fhPtFracIsolatedOtherDecay[5][5];      //! Isolated OtherDecay gamma with pt frac
-  TH2F *   fhPtSumIsolatedOtherDecay[5];          //! Isolated OtherDecay gamma with threshold on cone pt sume
-//  TH1F *   fhPtIsoConversion;                     //! Number of isolated Conversion gamma 
-//  TH2F *   fhPhiIsoConversion;                    //! Phi of isolated Conversion gamma
-//  TH2F *   fhEtaIsoConversion;                    //! eta of isolated Conversion gamma
-//  TH1F *   fhPtThresIsolatedConversion[5][5];     //! Isolated Conversion gamma with pt threshold 
-//  TH1F *   fhPtFracIsolatedConversion[5][5];      //! Isolated Conversion gamma with pt frac
-//  TH2F *   fhPtSumIsolatedConversion[5];          //! Isolated Conversion gamma with threshold on cone pt sume
-  TH1F *   fhPtIsoHadron;                         //! Number of isolated Hadron
-  TH2F *   fhPhiIsoHadron;                        //! Phi of isolated Hadron
-  TH2F *   fhEtaIsoHadron;                        //! eta of isolated Hadron
-  TH1F *   fhPtThresIsolatedHadron[5][5];         //! Isolated Hadron gamma with pt threshold
-  TH1F *   fhPtFracIsolatedHadron[5][5];          //! Isolated Hadron gamma with pt frac
-  TH2F *   fhPtSumIsolatedHadron[5];              //! Isolated Hadron gamma with threshold on cone pt sume
-
-  // Multi Cut analysis Several IC
-  TH1F *   fhPtNoIsoPi0;                          //! Number of not isolated leading pi0 (2 gamma)
-  TH1F *   fhPtNoIsoPi0Decay;                     //! Number of not isolated leading pi0 decay gamma 
-  TH1F *   fhPtNoIsoEtaDecay;                     //! Number of not isolated leading eta decay gamma 
-  TH1F *   fhPtNoIsoOtherDecay;                   //! Number of not isolated leading other decay gamma 
-  TH1F *   fhPtNoIsoPrompt;                       //! Number of not isolated leading prompt gamma 
-  TH1F *   fhPtIsoMCPhoton;                       //! Number of isolated leading gamma 
-  TH1F *   fhPtNoIsoMCPhoton;                     //! Number of not isolated leading gamma 
-//  TH1F *   fhPtNoIsoConversion;                   //! Number of not isolated leading conversion gamma 
-  TH1F *   fhPtNoIsoFragmentation;                //! Number of not isolated leading fragmentation gamma 
-  TH1F *   fhPtNoIsoHadron;                       //! Number of not isolated leading hadrons 
+  //
+  TH2F *   fhEtaPrimMC  [fgkNmcPrimTypes];        //! Pt vs Eta of generated photon
+  TH2F *   fhPhiPrimMC  [fgkNmcPrimTypes];        //! Pt vs Phi of generated photon
+  TH1F *   fhEPrimMC    [fgkNmcPrimTypes];        //! Number of generated photon vs E
+  TH1F *   fhPtPrimMC   [fgkNmcPrimTypes];        //! Number of generated photon vs pT
+  TH1F *   fhPtPrimMCiso[fgkNmcPrimTypes];        //! Number of generated isolated photon vs pT
   
+  TH1F *   fhPtPrimMCPi0DecayPairOutOfCone;       //! Pi0 decay photons, with decay pair out of isolation cone
+  TH1F *   fhPtPrimMCPi0DecayPairOutOfAcceptance; //! Pi0 decay photons, with decay pair out of detector acceptance
+  TH1F *   fhPtPrimMCPi0DecayPairOutOfAcceptanceNoOverlap; //! Pi0 decay photons, with decay pair out of detector acceptance
+  TH1F *   fhPtPrimMCPi0DecayPairAcceptInConeLowPt;//! Pi0 decay photons, with decay pair in cone and acceptance and lower pT than threshold
+  TH1F *   fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap; //! Pi0 decay photons, with decay pair in cone and acceptance and lower pT than threshold, and do not overlap
+  TH1F *   fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE; //! Pi0 decay photons, with decay pair in cone and acceptance and lower pT than threshold, and larger than detector threshold, and do not overlap
+  TH1F *   fhPtPrimMCPi0DecayPairNoOverlap;        //! Pi0 decay photons, not overlapped decay
+
+  TH1F *   fhPtPrimMCPi0DecayIsoPairOutOfCone;       //! Pi0 decay photons, with decay pair out of isolation cone, isolated
+  TH1F *   fhPtPrimMCPi0DecayIsoPairOutOfAcceptance; //! Pi0 decay photons, with decay pair out of detector acceptance, isolated
+  TH1F *   fhPtPrimMCPi0DecayIsoPairOutOfAcceptanceNoOverlap; //! Pi0 decay photons, with decay pair out of detector acceptance, isolated
+  TH1F *   fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt;//! Pi0 decay photons, with decay pair in cone and acceptance and lower pT than threshold, isolated
+  TH1F *   fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap; //! Pi0 decay photons, with decay pair in cone and acceptance and lower pT than threshold, and do not overlap, isolated
+  TH1F *   fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE; //! Pi0 decay photons, with decay pair in cone and acceptance and lower pT than threshold, and larger than detector threshold, and do not overlap, isolated
+  TH1F *   fhPtPrimMCPi0DecayIsoPairNoOverlap;    //! Pi0 decay photons isolated, not overlapped decay
+
+  TH1F *   fhPtPrimMCPi0Overlap;                  //! Pi0 with overlapped decay photons
+  TH1F *   fhPtPrimMCPi0IsoOverlap;               //! Pi0 isolated with overlapped decay photons
+
+  
+  TH1F *   fhPtNoIsoMC  [fgkNmcTypes];            //! Number of not isolated mcTypes particle
+  TH1F *   fhPtIsoMC    [fgkNmcTypes];            //! Number of isolated mcTypes particle
+  TH2F *   fhPhiIsoMC   [fgkNmcTypes];            //! Phi of isolated mcTypes particle
+  TH2F *   fhEtaIsoMC   [fgkNmcTypes];            //! eta of isolated mcTypes particle
+  
+  TH1F *   fhPtDecayIsoMC  [4][fgkNmcTypes] ;     //! Number of isolated Pi0 decay particles (invariant mass tag) for a mcTypes particle
+  TH1F *   fhPtDecayNoIsoMC[4][fgkNmcTypes] ;     //! Number of not isolated Pi0 decay particles (invariant mass tag) for a mcTypes particle
+
+  TH2F *   fhPtLambda0MC   [fgkNmcTypes][2];      //! Shower shape of (non) isolated candidates originated by mcTypes particle (do not apply SS cut previously)
+ 
+  // Multiple cut analysis
   TH2F *   fhSumPtLeadingPt[5] ;                  //! Sum Pt in the cone
   TH2F *   fhPtLeadingPt[5] ;                     //! Particle Pt in the cone
   TH2F *   fhPerpSumPtLeadingPt[5] ;              //! Sum Pt in the cone at the perpendicular phi region to trigger axis  (phi +90)
@@ -357,30 +391,36 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
   TH1F *   fhPtThresIsolated[5][5] ;              //! Isolated particle with pt threshold 
   TH1F *   fhPtFracIsolated[5][5] ;               //! Isolated particle with pt threshold frac
-  TH1F *   fhPtSumIsolated[5][5] ;                //! Isolated particle with threshold on cone pt sum
+  TH1F *   fhSumPtIsolated[5][5] ;                //! Isolated particle with threshold on cone pt sum
   
   TH2F *   fhEtaPhiPtThresIso[5][5] ;             //! eta vs phi of isolated particles with pt threshold
-  TH2F *   fhEtaPhiPtThresDecayIso[5][5] ;        //! eta vs phi of isolated particles with pt threshold
-  TH1F *   fhPtPtThresDecayIso[5][5] ;            //! Number of isolated Pi0 decay particles (invariant mass tag) with pt threshold   
+  TH2F *   fhEtaPhiPtThresDecayIso[5][5] ;        //! eta vs phi of isolated particles with pt threshold, only for decay bit fDecayBits[0]
+  TH1F *   fhPtPtThresDecayIso[5][5] ;            //! Number of isolated Pi0 decay particles (invariant mass tag) with pt threshold,, only for decay bit fDecayBits[0]
   
   TH2F *   fhEtaPhiPtFracIso[5][5] ;              //! eta vs phi of isolated particles with pt frac
-  TH2F *   fhEtaPhiPtFracDecayIso[5][5] ;         //! eta vs phi of isolated particles with pt frac
-  TH1F *   fhPtPtFracDecayIso[5][5] ;             //! Number of isolated Pi0 decay particles (invariant mass tag) with pt fra
+  TH2F *   fhEtaPhiPtFracDecayIso[5][5] ;         //! eta vs phi of isolated particles with pt frac,, only for decay bit fDecayBits[0]
+  TH1F *   fhPtPtFracDecayIso[5][5] ;             //! Number of isolated Pi0 decay particles (invariant mass tag) with pt fra, only for decay bit fDecayBits[0]
 
   TH2F *   fhEtaPhiPtSumIso[5][5] ;               //! eta vs phi of isolated particles with pt sum
-  TH2F *   fhEtaPhiPtSumDecayIso[5][5] ;          //! eta vs phi of isolated particles with pt sum
-  TH1F *   fhPtPtSumDecayIso[5][5] ;              //! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum
+  TH2F *   fhEtaPhiPtSumDecayIso[5][5] ;          //! eta vs phi of isolated particles with pt sum,, only for decay bit fDecayBits[0]
+  TH1F *   fhPtPtSumDecayIso[5][5] ;              //! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum, only for decay bit fDecayBits[0]
   
   TH2F *   fhEtaPhiSumDensityIso[5][5];           //! Isolated particle with threshold on cone sum density
-  TH2F *   fhEtaPhiSumDensityDecayIso[5][5];      //! Isolated particle with threshold on cone sum density
+  TH2F *   fhEtaPhiSumDensityDecayIso[5][5];      //! Isolated particle with threshold on cone sum density, only for decay bit fDecayBits[0]
   TH1F *   fhPtSumDensityIso[5][5];               //! Isolated particle with threshold on cone sum density
-  TH1F *   fhPtSumDensityDecayIso[5][5];          //! Isolated decay particle with threshold on cone sum density
+  TH1F *   fhPtSumDensityDecayIso[5][5];          //! Isolated decay particle with threshold on cone sum density, only for decay bit fDecayBits[0]
   
   TH1F *   fhPtFracPtSumIso[5][5] ;               //! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum
-  TH1F *   fhPtFracPtSumDecayIso[5][5] ;          //! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum
+  TH1F *   fhPtFracPtSumDecayIso[5][5] ;          //! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum, only for decay bit fDecayBits[0]
   TH2F *   fhEtaPhiFracPtSumIso[5][5];            //! Isolated particle with threshold on cone sum density
-  TH2F *   fhEtaPhiFracPtSumDecayIso[5][5];       //! Isolated particle with threshold on cone sum density
+  TH2F *   fhEtaPhiFracPtSumDecayIso[5][5];       //! Isolated particle with threshold on cone sum density, only for decay bit fDecayBits[0]
  
+  // Multiple cut MC
+  TH1F *   fhPtThresIsolatedMC[fgkNmcTypes][5][5];//! Isolated mcTypes particle with pt threshold
+  TH1F *   fhPtFracIsolatedMC [fgkNmcTypes][5][5];//! Isolated mcTypes particle with pt frac
+  TH1F *   fhSumPtIsolatedMC  [fgkNmcTypes][5][5];//! Isolated mcTypes particle with threshold on cone pt sum
+  TH2F *   fhSumPtLeadingPtMC [fgkNmcTypes][5];   //! mcTypes particle for sum Pt, different cone
+
   // Track matching studies
   TH2F *   fhTrackMatchedDEta[2]     ;            //! Eta distance between track and cluster vs cluster E
   TH2F *   fhTrackMatchedDPhi[2]     ;            //! Phi distance between track and cluster vs cluster E
@@ -393,19 +433,15 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhELambda0[2];                         //! Shower shape of (non) isolated photons (do not apply SS cut previously)  
   TH2F *   fhPtLambda0[2];                        //! Shower shape of (non) isolated photons (do not apply SS cut previously)
   TH2F *   fhELambda1[2];                         //! Shower shape of (non) isolated photons (do not apply SS cut previously)
-  TH2F *   fhELambda0SSBkg;                       //! Shower shape of non isolated photons close to isolation threshold (do not apply SS cut previously)
   TH2F *   fhELambda0TRD[2];                      //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
   TH2F *   fhPtLambda0TRD[2];                     //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
   TH2F *   fhELambda1TRD[2];                      //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
-  TH2F *   fhELambda0MCPhoton[2];                 //! Shower shape of (non) isolated photon candidates originated by particle photon not decay (do not apply SS cut previously)
-  TH2F *   fhPtLambda0MCPhotonPrompt[2];          //! Shower shape of (non) isolated photon candidates originated by particle photon not decay (do not apply SS cut previously)
-  TH2F *   fhPtLambda0MCPhotonFrag[2];            //! Shower shape of (non) isolated photon candidates originated by particle photon not decay (do not apply SS cut previously)
-  TH2F *   fhELambda0MCPi0[2];                    //! Shower shape of (non) isolated photon candidates originated by particle 2 merged pi0 photons (do not apply SS cut previously)
-  TH2F *   fhELambda0MCPi0Decay[2];               //! Shower shape of (non) isolated photon candidates originated by particle pi0 decay photon (do not apply SS cut previously)
-  TH2F *   fhELambda0MCEtaDecay[2];               //! Shower shape of (non) isolated photon candidates originated by particle eta decay photon (do not apply SS cut previously)
-  TH2F *   fhELambda0MCOtherDecay[2];             //! Shower shape of (non) isolated photon candidates originated by particle other decay photon (do not apply SS cut previously)
-  TH2F *   fhELambda0MCHadron[2];                 //! Shower shape of (non) isolated photon candidates originated by particle other hadrons (do not apply SS cut previously)
 
+  TH2F **  fhPtLeadConeBinLambda0 ;               //![fNBkgBin] Candidate shower shape distribution depending on bin of cone leading particle
+  TH2F **  fhSumPtConeBinLambda0  ;               //![fNBkgBin] Candidate shower shape distribution depending on bin of cone sum pt
+  TH2F **  fhPtLeadConeBinLambda0MC ;             //![fNBkgBin*fgkNmcTypes] Candidate shower shape distribution depending on bin of cone leading particle, per MC particle
+  TH2F **  fhSumPtConeBinLambda0MC  ;             //![fNBkgBin*fgkNmcTypes] Candidate shower shape distribution depending on bin of cone sum pt, per MC particle
+  
   // Local maxima
   TH2F *   fhNLocMax[2];                          //! number of maxima in selected clusters
   TH2F *   fhELambda0LocMax1[2] ;                 //! E vs lambda0 of selected cluster, 1 local maxima in cluster 
@@ -429,18 +465,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhTimePileUpMainVertexZDistance;       //! time of cluster vs difference of z main vertex and pile-up vertex 
   TH2F *   fhTimePileUpMainVertexZDiamond;        //! time of cluster vs difference of z diamond and pile-up vertex 
   
-  //Histograms settings
-  Int_t    fHistoNPtSumBins;                      // Number of bins in PtSum histograms
-  Float_t  fHistoPtSumMax;                        // PtSum maximum in histogram
-  Float_t  fHistoPtSumMin;	                      // PtSum minimum in histogram
-  Int_t    fHistoNPtInConeBins;                   // Number of bins in PtInCone histogram
-  Float_t  fHistoPtInConeMax;                     // PtInCone maximum in histogram
-  Float_t  fHistoPtInConeMin;                     // PtInCone maximum in histogram 
-
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,25)
+  ClassDef(AliAnaParticleIsolation,29)
 } ;
 
 

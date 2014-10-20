@@ -66,6 +66,7 @@ AliFlowOnTheFlyEventGenerator::AliFlowOnTheFlyEventGenerator(Bool_t qa, Int_t ff
         InitGenerators();
     }
     fDecayer = decayer;         // decayer: user has ownership of decayer (see dtor)
+    if(fDecayer) fDecayer->Init();
     fAddV2Mothers = a;
     fAddV3Mothers = b;
     fAddV2Daughters = c; 
@@ -290,7 +291,6 @@ void AliFlowOnTheFlyEventGenerator::DecayOnTheFlyTracks(TClonesArray *event)
 {
     // decay the tracks using a decayer that is set in the GenerateEventsOnTheFly.C macro
     if(!fDecayer) return;       // shouldn't happen ...
-    fDecayer->Init();
     Int_t kf;
     TClonesArray*  arr = new TClonesArray("TParticle",10);
     Int_t secondaries=0;

@@ -1,4 +1,4 @@
-void AddTask_dNdPtpPb()
+void AddTask_dNdPtpPb(UInt_t uTriggerMask = AliVEvent::kINT7, Int_t iCutMode = 2014, char *contName = "dNdPtpPb" )
 {
 /*
 CheckLoadLibrary("libPWG0base");
@@ -44,7 +44,7 @@ CheckLoadLibrary("libPWG0selectors");
   //
   // Create standard esd track cuts
   //
-  Int_t cutMode = 2014;
+  Int_t cutMode = iCutMode;
 
   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
   //gROOT->LoadMacro("./CreatedNdPtTrackCuts.C");
@@ -66,7 +66,7 @@ CheckLoadLibrary("libPWG0selectors");
   task->SetUseMCInfo(hasMC);
 
   // trigger  
-  task->SelectCollisionCandidates(AliVEvent::kINT7); 
+  task->SelectCollisionCandidates(uTriggerMask); 
 
   //
   // set analysis options from the Helper here !!!
@@ -92,7 +92,7 @@ CheckLoadLibrary("libPWG0selectors");
   
   //fdNdPtAnalysis->SetTrigger(trigger);
  // fdNdPtAnalysis->SetTriggerMask(AliVEvent::kCINT5);
-  fdNdPtAnalysis->SetTriggerMask(AliVEvent::kINT7);
+  fdNdPtAnalysis->SetTriggerMask(uTriggerMask);
   //fdNdPtAnalysis->SetTriggerMask(AliVEvent::kEMC1);  
   if(hasMC) 
   {
@@ -149,7 +149,7 @@ CheckLoadLibrary("libPWG0selectors");
 
 //  AliAnalysisDataContainer *coutput = mgr->CreateContainer("jgronef_dNdPtpPb_TPCITS", TList::Class(), AliAnalysisManager::kOutputContainer, "jgronef_dNdPtpPb_TPCITS.root");   //    <-- Old Way works on Batch
  
-   AliAnalysisDataContainer *coutput = mgr->CreateContainer("dNdPtpPb", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:dNdPtHistos", mgr->GetCommonFileName())); //    <-- New Way changed to work on Grid
+   AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("%s", contName), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:dNdPtHistos", mgr->GetCommonFileName())); //    <-- New Way changed to work on Grid
   
   
   mgr->ConnectInput(task, 0, cinput);

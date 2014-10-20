@@ -1,5 +1,5 @@
 const Int_t numberOfCentralityBins = 12;
-TString centralityArray[numberOfCentralityBins] = {"0-100","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
+TString centralityArray[numberOfCentralityBins] = {"0-80","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
 
 
 const Int_t gRebin = 1;
@@ -933,7 +933,8 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
 		     TString eventClass = "Centrality",
 		     Bool_t bRootMoments = kFALSE,
 		     Bool_t kUseZYAM = kFALSE,
-		     Bool_t bReduceRangeForMoments = kFALSE) {
+		     Bool_t bReduceRangeForMoments = kFALSE,
+		     Bool_t bFWHM = kFALSE) {
   //Macro that draws the balance functions PROJECTIONS 
   //for each centrality bin for the different pT of trigger and 
   //associated particles
@@ -1292,12 +1293,37 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
   fileWeightedMean << " " << weightedMean << " " <<weightedMeanError<<endl;
   fileWeightedMean.close();
 
-
   TCanvas *c2 = new TCanvas("c2","",600,0,600,500);
   c2->SetFillColor(10); 
   c2->SetHighLightColor(10);
   c2->SetLeftMargin(0.15);
   gHistBalanceFunctionSubtracted->DrawCopy("E");
+
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
+  Double_t fwhm_spline = 0.;
+  Double_t fwhmError = 0.;
+  if (bFWHM){ 
+    AliBalancePsi *bHelper_1 = new AliBalancePsi;
+    bHelper_1->GetFWHM(kProjectInEta,gHistBalanceFunctionSubtracted,fwhm_spline,fwhmError);
+    Printf("FWHM: %lf - Error: %lf",fwhm_spline, fwhmError);
+    
+    //store and in txt files FWHM
+    TString sigmaFileName = filename;
+    if(kProjectInEta) {
+      sigmaFileName = "deltaEtaProjection_FWHM.txt"; 
+    }
+    else{
+      sigmaFileName = "deltaPhiProjection_FWHM.txt"; 
+    }    
+    ofstream fileSigma(sigmaFileName.Data(),ios::app);
+    fileSigma << " " << fwhm_spline << " " <<fwhmError<<endl;
+    fileSigma.close();
+  
+    gHistBalanceFunctionSubtracted->SetLineColor(2);
+    gHistBalanceFunctionSubtracted->SetMarkerColor(2);
+    gHistBalanceFunctionSubtracted->Draw("SAME");
+  }
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
  
   TLatex *latex = new TLatex();
   latex->SetNDC();
@@ -1340,8 +1366,8 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
 					 TString eventClass = "Multiplicity",
 					 Bool_t bRootMoments = kFALSE,
 					 Bool_t bFullPhiForEtaProjection = kFALSE,
-					 Bool_t bReduceRangeForMoments = kFALSE
-) {
+					 Bool_t bReduceRangeForMoments = kFALSE,
+					 Bool_t bFWHM = kFALSE) {
   //Macro that draws the BF distributions for each centrality bin
   //for reaction plane dependent analysis
   //Author: Panos.Christakoglou@nikhef.nl
@@ -1479,10 +1505,11 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
 		   eventClass.Data(),
 		   bRootMoments,
 		   kFALSE,
-		   bReduceRangeForMoments);
+		   bReduceRangeForMoments,
+		   bFWHM);
  }
  else{
-  drawProjections(gHistBalanceFunction2D,
+   drawProjections(gHistBalanceFunction2D,
 		   kTRUE,
 		   1,36,
 		   gCentrality,
@@ -1491,9 +1518,10 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
 		   ptAssociatedMin,ptAssociatedMax,
 		   kTRUE,
 		   eventClass.Data(),
-		  bRootMoments,
-		  kFALSE,
-		  bReduceRangeForMoments);
+		   bRootMoments,
+		   kFALSE,
+		   bReduceRangeForMoments,
+		   bFWHM);
  }
 
   drawProjections(gHistBalanceFunction2D,
@@ -1507,7 +1535,8 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   		  eventClass.Data(),
   		  bRootMoments,
 		  kFALSE,
-		  bReduceRangeForMoments);
+		  bReduceRangeForMoments,
+		  bFWHM);
 
   TString outFileName = filename;
   outFileName.ReplaceAll("correlationFunction","balanceFunction2D");
@@ -1643,17 +1672,18 @@ sFileName[iDir] += momDirectory;
  hBFOut->Scale(1./entriesOut);
 
  drawProjections(hBFOut,
-  		  kTRUE,
-  		  1,36,
-  		  gCentrality,
-  		  psiMin,psiMax,
-  		  ptTriggerMin,ptTriggerMax,
-  		  ptAssociatedMin,ptAssociatedMax,
-  		  kTRUE,
-  		  eventClass,
-  		  kTRUE,
-		  kFALSE,
-		  bReduceRangeForMoments);
+		 kTRUE,
+		 1,36,
+		 gCentrality,
+		 psiMin,psiMax,
+		 ptTriggerMin,ptTriggerMax,
+		 ptAssociatedMin,ptAssociatedMax,
+		 kTRUE,
+		 eventClass,
+		 kTRUE,
+		 kFALSE,
+		 bReduceRangeForMoments,
+		 bFWHM);
 
   drawProjections(hBFOut,
   		  kFALSE,
@@ -1666,7 +1696,8 @@ sFileName[iDir] += momDirectory;
   		  eventClass.Data(),
   		  kTRUE,
 		  kFALSE,
-		  bReduceRangeForMoments);
+		  bReduceRangeForMoments,
+		  bFWHM);
 
  // output
  TString outFileName = "balanceFunction2D.";

@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-//Source code::dphicorrelations, TaskBFpsi, AliHelperPID
 
 #include "AliTwoParticlePIDCorr.h"
 #include "AliVParticle.h"
@@ -23,6 +22,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
+#include "TProfile.h"
 #include "TList.h"
 #include "TFile.h"
 #include "TGrid.h"
@@ -69,6 +69,7 @@
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliCollisionGeometry.h"
+#include "AliOADBContainer.h"
 
 #include "AliEventPoolManager.h"
 #include "AliAnalysisUtils.h"
@@ -81,12 +82,14 @@ ClassImp(LRCParticlePID)
 const char * kPIDTypeName[]={"TPC","TOF","TPC-TOF"} ;
 const char * kDetectorName[]={"ITS","TPC","TOF"} ;
 const char * kParticleSpeciesName[]={"Pions","Kaons","Protons","Undefined"} ;
+//Source code::dphicorrelations,VnV0, TaskBFpsi, AliHelperPID, 
 
 //________________________________________________________________________
 AliTwoParticlePIDCorr::AliTwoParticlePIDCorr() // All data members should be initialised here
 :AliAnalysisTaskSE(),
   fOutput(0),
    fOutputList(0),
+  fList(0),
   fCentralityMethod("V0A"),
   fSampleType("pPb"),
  fRequestEventPlane(kFALSE),
@@ -163,6 +166,8 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr() // All data members should be ini
   fEventnobaryon(0),
   fEventnomeson(0),
  fhistJetTrigestimate(0),
+fTwoTrackDistancePtdip(0x0),
+fTwoTrackDistancePtdipmix(0x0),
   fCentralityCorrelation(0x0),
  fHistVZEROAGainEqualizationMap(0),
   fHistVZEROCGainEqualizationMap(0),
@@ -178,9 +183,50 @@ fCentralityWeights(0),
     fHistVZEROCvsVZEROAmultiplicity(0x0),
     fHistEQVZEROCvsEQVZEROAmultiplicity(0x0),
     fHistVZEROSignal(0x0),
-fHistEventPlaneReco(0x0),
 fHistEventPlaneTruth(0x0),
 fHistPsiMinusPhi(0x0),
+fEventPlanePID(0x0),
+evplaneMC(999.),
+ fgPsi2v0a(999.),
+    fgPsi2v0c(999.),
+    fgPsi2tpc(999.),
+    fgPsi3v0a(999.),
+    fgPsi3v0c(999.),
+    fgPsi3tpc(999.),
+    fgPsi2v0aMC(999.),
+    fgPsi2v0cMC(999.),
+    fgPsi2tpcMC(999.),
+    fgPsi3v0aMC(999.),
+    fgPsi3v0cMC(999.),
+    fgPsi3tpcMC(999.),
+ gReactionPlane(999.),
+  fV2(kTRUE),
+ fV3(kFALSE),
+ fIsAfter2011(kTRUE),
+  fRun(-1),
+  fNcluster(70),
+ fEPdet("V0A"),  
+ fMultV0(NULL),
+  fV0Cpol(100),
+  fV0Apol(100),
+ fHResTPCv0A2(NULL),
+fHResTPCv0C2(NULL),
+fHResv0Cv0A2(NULL),
+fHResTPCv0A3(NULL),
+fHResTPCv0C3(NULL),
+fHResv0Cv0A3(NULL),
+ fHResMA2(NULL),
+fHResMC2(NULL),
+fHResAC2(NULL),
+fHResMA3(NULL),
+fHResMC3(NULL),
+fHResAC3(NULL),
+fPhiRPTPC(NULL),
+fPhiRPTPCv3(NULL),
+fPhiRPv0A(NULL),
+fPhiRPv0C(NULL),
+fPhiRPv0Av3(NULL),
+fPhiRPv0Cv3(NULL),
  fControlConvResoncances(0),
   fHistoTPCdEdx(0x0),
   fHistoTOFbeta(0x0),
@@ -260,8 +306,11 @@ fAnalysisUtils(0x0),
     fTrackHistEfficiency[i] = NULL;
     effcorection[i]=NULL;
     //effmap[i]=NULL;
-
   }
+ for ( Int_t i = 0; i < 2; i++ ){
+   fTwoTrackDistancePt[i]=NULL;
+   fTwoTrackDistancePtmix[i]=NULL;
+}
 
  for(Int_t ipart=0;ipart<NSpecies;ipart++)
     for(Int_t ipid=0;ipid<=NSigmaPIDType;ipid++)
@@ -269,12 +318,22 @@ fAnalysisUtils(0x0),
 
  for(Int_t ipart=0;ipart<NSpecies;ipart++) {fHasDoubleCounting[ipart]=kFALSE;}
 
+  for(Int_t i = 0; i != 2; ++i)
+    for(Int_t j = 0; j != 2; ++j)
+      for(Int_t iC = 0; iC < 9; iC++){
+	fMeanQ[iC][i][j] = 0.;
+	fWidthQ[iC][i][j] = 1.;
+        fMeanQv3[iC][i][j] = 0.;
+	fWidthQv3[iC][i][j] = 1.;
+    }
+
   }
 //________________________________________________________________________
 AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data members should be initialised here
   :AliAnalysisTaskSE(name),
  fOutput(0),
    fOutputList(0),
+   fList(0),
  fCentralityMethod("V0A"),
   fSampleType("pPb"),
  fRequestEventPlane(kFALSE),
@@ -351,6 +410,8 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data membe
   fEventnobaryon(0),
   fEventnomeson(0),
   fhistJetTrigestimate(0),
+fTwoTrackDistancePtdip(0x0),
+fTwoTrackDistancePtdipmix(0x0),
   fCentralityCorrelation(0x0),
  fHistVZEROAGainEqualizationMap(0),
   fHistVZEROCGainEqualizationMap(0),
@@ -366,9 +427,50 @@ fCentralityWeights(0),
     fHistVZEROCvsVZEROAmultiplicity(0x0),
     fHistEQVZEROCvsEQVZEROAmultiplicity(0x0),
     fHistVZEROSignal(0x0),
-fHistEventPlaneReco(0x0),
 fHistEventPlaneTruth(0x0),
-fHistPsiMinusPhi(0x0),
+   fHistPsiMinusPhi(0x0),
+fEventPlanePID(0x0),
+evplaneMC(999.),
+ fgPsi2v0a(999.),
+    fgPsi2v0c(999.),
+    fgPsi2tpc(999.),
+    fgPsi3v0a(999.),
+    fgPsi3v0c(999.),
+    fgPsi3tpc(999.),
+    fgPsi2v0aMC(999.),
+    fgPsi2v0cMC(999.),
+    fgPsi2tpcMC(999.),
+    fgPsi3v0aMC(999.),
+    fgPsi3v0cMC(999.),
+    fgPsi3tpcMC(999.),
+   gReactionPlane(999.),
+ fV2(kTRUE),
+ fV3(kFALSE),
+ fIsAfter2011(kTRUE),
+  fRun(-1),
+  fNcluster(70),
+   fEPdet("V0A"),  
+ fMultV0(NULL),
+  fV0Cpol(100),
+  fV0Apol(100),
+ fHResTPCv0A2(NULL),
+fHResTPCv0C2(NULL),
+fHResv0Cv0A2(NULL),
+fHResTPCv0A3(NULL),
+fHResTPCv0C3(NULL),
+fHResv0Cv0A3(NULL),
+ fHResMA2(NULL),
+fHResMC2(NULL),
+fHResAC2(NULL),
+fHResMA3(NULL),
+fHResMC3(NULL),
+fHResAC3(NULL),
+fPhiRPTPC(NULL),
+fPhiRPTPCv3(NULL),
+fPhiRPv0A(NULL),
+fPhiRPv0C(NULL),
+fPhiRPv0Av3(NULL),
+fPhiRPv0Cv3(NULL),
   fControlConvResoncances(0), 
   fHistoTPCdEdx(0x0),
   fHistoTOFbeta(0x0),
@@ -437,7 +539,9 @@ fRemoveDuplicates(kFALSE),
  fmesoneffrequired(kFALSE),
  fkaonprotoneffrequired(kFALSE),
    fAnalysisUtils(0x0),
-  fDCAXYCut(0)         
+  fDCAXYCut(0)    
+  // The last in the above list should not have a comma after it
+     
 {
   
    for ( Int_t i = 0; i < 16; i++) { 
@@ -450,13 +554,25 @@ for ( Int_t i = 0; i < 6; i++ ){
     //effmap[i]=NULL;
   }
 
+for ( Int_t i = 0; i < 2; i++ ){
+   fTwoTrackDistancePt[i]=NULL;
+   fTwoTrackDistancePtmix[i]=NULL;
+}
+
  for(Int_t ipart=0;ipart<NSpecies;ipart++)
     for(Int_t ipid=0;ipid<=NSigmaPIDType;ipid++)
       fnsigmas[ipart][ipid]=999.;
 
    for(Int_t ipart=0;ipart<NSpecies;ipart++) {fHasDoubleCounting[ipart]=kFALSE;}
 
-  // The last in the above list should not have a comma after it
+  for(Int_t i = 0; i != 2; ++i)
+    for(Int_t j = 0; j != 2; ++j)
+      for(Int_t iC = 0; iC < 9; iC++){
+	fMeanQ[iC][i][j] = 0.;
+	fWidthQ[iC][i][j] = 1.;
+        fMeanQv3[iC][i][j] = 0.;
+	fWidthQv3[iC][i][j] = 1.;
+    }
   
   // Constructor
   // Define input and output slots here (never in the dummy constructor)
@@ -529,21 +645,30 @@ void AliTwoParticlePIDCorr::UserCreateOutputObjects()
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
+  const Int_t nPsiTOF = 10;  
+  const Int_t nCentrBin = 9;  
+
+
   fOutput = new TList();
   fOutput->SetOwner();  // IMPORTANT!  
 
   fOutputList = new TList;
   fOutputList->SetOwner();
   fOutputList->SetName("PIDQAList");
+
+  fList = new TList;
+  fList->SetOwner();
+  fList->SetName("EPQAList");
   
   fEventCounter = new TH1F("fEventCounter","EventCounter", 19, 0.5,19.5);
   fEventCounter->GetXaxis()->SetBinLabel(1,"Event Accesed");
   fEventCounter->GetXaxis()->SetBinLabel(3,"After PileUP Cut");//only for Data
   fEventCounter->GetXaxis()->SetBinLabel(5,"Have A Vertex");
   fEventCounter->GetXaxis()->SetBinLabel(7,"After vertex Cut");
-  fEventCounter->GetXaxis()->SetBinLabel(9,"After centrality flattening");
-  fEventCounter->GetXaxis()->SetBinLabel(11,"Within 0-100% centrality");
-  fEventCounter->GetXaxis()->SetBinLabel(13,"Event Analyzed");
+  fEventCounter->GetXaxis()->SetBinLabel(9,"Getting centrality");
+  fEventCounter->GetXaxis()->SetBinLabel(11,"After centrality flattening");
+  fEventCounter->GetXaxis()->SetBinLabel(13,"Within 0-100% centrality");
+  fEventCounter->GetXaxis()->SetBinLabel(15,"Event Analyzed");
   //fEventCounter->GetXaxis()->SetBinLabel(8,"Event Analysis finished");
   fOutput->Add(fEventCounter);
   
@@ -592,7 +717,7 @@ TString gmultName[4] = {"V0A_MANUAL","V0C_MANUAL","V0M_MANUAL","TRACKS_MANUAL"};
   }
   fOutput->Add(fHistRefmult);
 
-
+ if(fCentralityMethod == "V0A_MANUAL" || fCentralityMethod == "V0M_MANUAL" || fCentralityMethod == "V0C_MANUAL" ){
  //TPC vs EQVZERO multiplicity
     fHistEQVZEROvsTPCmultiplicity = new TH2F("fHistEQVZEROvsTPCmultiplicity","EqVZERO vs TPC multiplicity",10001,-0.5,10000.5,4001,-0.5,4000.5);
     fHistEQVZEROvsTPCmultiplicity->GetXaxis()->SetTitle("EqVZERO multiplicity (a.u.)");
@@ -640,19 +765,17 @@ fHistEQVZEROCvsEQVZEROAmultiplicity = new TH2F("fHistEQVZEROCvsEQVZEROAmultiplic
 
  fHistVZEROSignal = new TH2F("fHistVZEROSignal","VZERO signal vs VZERO channel;VZERO channel; Signal (a.u.)",64,0.5,64.5,3001,-0.5,30000.5);
   fOutput->Add(fHistVZEROSignal);
+ }
 }
 
- if(fSampleType=="PbPb" && fRequestEventPlane){
+ if(fRequestEventPlane){
 //Event plane
-  fHistEventPlaneReco = new TH2F("fHistEventPlaneReco",";#Psi_{2} [deg.];Centrality percentile;Counts",100,0,360.,220,-5,105);
-  fOutput->Add(fHistEventPlaneReco);
-
-//Event plane
-  fHistEventPlaneTruth = new TH2F("fHistEventPlaneTruth",";#Psi_{2} [deg.];Centrality percentile;Counts",100,0,360.,220,-5,105);
-  fOutput->Add(fHistEventPlaneTruth);
-
+ 
   fHistPsiMinusPhi = new TH2D("fHistPsiMinusPhi","",4,-0.5,3.5,100,0,2.*TMath::Pi());
-  fOutput->Add(fHistPsiMinusPhi);
+  fList->Add(fHistPsiMinusPhi);
+
+  fEventPlanePID = new TH3F("fEventPlanePID",";centrality;eventplane;PID",20,0.0,100.0,4,-0.5,3.5,4,-0.5,3.5);
+  fList->Add(fEventPlanePID);
 
  }
  
@@ -881,6 +1004,73 @@ if(fcontainPIDtrig && fcontainPIDasso){
         fmaxPtAsso=dBinsPair[3][iBinPair[3]];
         fmincentmult=dBinsPair[0][0];
         fmaxcentmult=dBinsPair[0][iBinPair[0]];
+
+	//event pool manager
+Int_t MaxNofEvents=1000;
+const Int_t NofVrtxBins=10+(1+10)*2;
+Double_t ZvrtxBins[NofVrtxBins+1]={ -10,   -8,  -6,  -4,  -2,   0,   2,   4,   6,   8,  10, 
+				       90,  92,  94,  96,  98, 100, 102, 104, 106, 108, 110, 
+				    190, 192, 194, 196, 198, 200, 202, 204, 206, 208, 210}; 
+
+if(fCentralityMethod.EndsWith("_MANUAL"))
+   {
+ const Int_t NofCentBins=10;
+ Double_t CentralityBins[NofCentBins+1]={0.,9.,14.,19.,26.,34.,44.,58.,80.,500.,1000.};//Is This binning is fine for pp, or we don't require them....
+if(fRequestEventPlane){
+    // Event plane angle (Psi) bins
+  /*
+    Double_t* psibins = NULL;
+    Int_t nPsiBins; 
+    psibins = GetBinning(fBinningString, "eventPlane", nPsiBins);
+  */
+ const Int_t  nPsiBins=6;
+ Double_t psibins[nPsiBins+1]={0.0*TMath::DegToRad(), 30.0*TMath::DegToRad(), 60.0*TMath::DegToRad(), 90.0*TMath::DegToRad(), 120.0*TMath::DegToRad(),150.0*TMath::DegToRad(),180.1*TMath::DegToRad()};
+fPoolMgr = new AliEventPoolManager(MaxNofEvents,fMaxNofMixingTracks,NofCentBins,CentralityBins,NofVrtxBins,ZvrtxBins, nPsiBins, psibins);
+// if(psibins)  delete [] psibins; 
+				    }
+
+ else{
+ const Int_t  nPsiBinsd=1;
+ Double_t psibinsd[nPsiBinsd+1]={0.0, 2000.0};
+fPoolMgr = new AliEventPoolManager(MaxNofEvents,fMaxNofMixingTracks,NofCentBins,CentralityBins,NofVrtxBins,ZvrtxBins, nPsiBinsd, psibinsd);
+
+// fPoolMgr = new AliEventPoolManager(MaxNofEvents,fMaxNofMixingTracks,NofCentBins,CentralityBins,NofVrtxBins,ZvrtxBins);
+ }  
+fPoolMgr->SetTargetValues(fMaxNofMixingTracks, 0.1, 5);
+
+   }
+ else
+   {
+ const Int_t  NofCentBins=15;
+Double_t CentralityBins[NofCentBins+1]={0., 1., 2., 3., 4., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1 };
+ if(fRequestEventPlane){
+    // Event plane angle (Psi) bins
+   /*
+    Double_t* psibins = NULL;
+    Int_t nPsiBins; 
+    psibins = GetBinning(fBinningString, "eventPlane", nPsiBins);
+   */
+ const Int_t  nPsiBins=6;
+ Double_t psibins[nPsiBins+1]={0.0*TMath::DegToRad(), 30.0*TMath::DegToRad(), 60.0*TMath::DegToRad(), 90.0*TMath::DegToRad(), 120.0*TMath::DegToRad(),150.0*TMath::DegToRad(),180.1*TMath::DegToRad()};
+fPoolMgr = new AliEventPoolManager(MaxNofEvents,fMaxNofMixingTracks,NofCentBins,CentralityBins,NofVrtxBins,ZvrtxBins, nPsiBins, psibins);
+// if(psibins)  delete [] psibins; 
+				    }
+
+ else{
+const Int_t  nPsiBinsd=1;
+ Double_t psibinsd[nPsiBinsd+1]={0.0, 2000.0};
+fPoolMgr = new AliEventPoolManager(MaxNofEvents,fMaxNofMixingTracks,NofCentBins,CentralityBins,NofVrtxBins,ZvrtxBins, nPsiBinsd, psibinsd);
+
+//fPoolMgr = new AliEventPoolManager(MaxNofEvents,fMaxNofMixingTracks,NofCentBins,CentralityBins,NofVrtxBins,ZvrtxBins);
+ }  
+fPoolMgr->SetTargetValues(fMaxNofMixingTracks, 0.1, 5);
+   }
+
+ 
+   if(!fPoolMgr){
+      AliError("Event Mixing required, but Pool Manager not initialized...");
+      return;
+    }
 
 	//fminPtComboeff=fminPtTrig;***then this value will be fixed ,even Setter can't change it's value
 	//fmaxPtComboeff=fmaxPtTrig;
@@ -1138,9 +1328,25 @@ fOutput->Add(fEventnomeson);
 fhistJetTrigestimate=new TH2F("fhistJetTrigestimate","fhistJetTrigestimate",iBinPair[0],dBinsPair[0],6,-0.5,5.5);
 fOutput->Add(fhistJetTrigestimate);
 
+   fTwoTrackDistancePtdip = new TH3F("fTwoTrackDistancePtdip", ";#Delta#eta;#Delta#varphi;#Delta p_{T}", 36, -1.8, 1.8, 72,-TMath::Pi()/2, 3*TMath::Pi()/2, 40, 0, 10);
+  fOutput->Add(fTwoTrackDistancePtdip);
 
+fTwoTrackDistancePtdipmix = new TH3F("fTwoTrackDistancePtdipmix", ";#Delta#eta;#Delta#varphi;#Delta p_{T}", 36, -1.8, 1.8, 72,-TMath::Pi()/2, 3*TMath::Pi()/2, 40, 0, 10);
+  fOutput->Add(fTwoTrackDistancePtdipmix);
+
+  TString Histttrname;
+for(Int_t jj=0;jj<2;jj++)// PID type binning
+    {
+  Histttrname="fTwoTrackDistancePt";Histttrname+=jj;
+  fTwoTrackDistancePt[jj] = new TH3F(Histttrname.Data(), ";#Delta#eta;#Delta#varphi^{*}_{min};#Delta p_{T}", 100, -0.15, 0.15, 100, -0.05, 0.05, 20, 0, 10);
+  fOutput->Add(fTwoTrackDistancePt[jj]);
+
+ Histttrname="fTwoTrackDistancePtmix";Histttrname+=jj;
+  fTwoTrackDistancePtmix[jj] = new TH3F(Histttrname.Data(), ";#Delta#eta;#Delta#varphi^{*}_{min};#Delta p_{T}", 100, -0.15, 0.15, 100, -0.05, 0.05, 20, 0, 10);
+  fOutput->Add(fTwoTrackDistancePtmix[jj]);
+    }
 //Mixing
-DefineEventPool();
+//DefineEventPool();
 
   if(fapplyTrigefficiency || fapplyAssoefficiency)
    {
@@ -1183,6 +1389,69 @@ effcorection[jj] = (THnSparseF*)fileT->Get(Nameg.Data());
 fileT->Close();
 
    }
+
+  //*************************************************************EP plots***********************************************//
+  if(fRequestEventPlane){
+  // TProfile for resolutions 3 subevents (V0A, V0C, TPC)
+  // v2
+  fHResTPCv0A2 = new TProfile("hResTPCv0A2","",nCentrBin,0,nCentrBin);
+  fHResTPCv0C2 = new TProfile("hResTPCv0C2","",nCentrBin,0,nCentrBin);
+  fHResv0Cv0A2 = new TProfile("hResv0Cv0A2","",nCentrBin,0,nCentrBin);
+
+  fList->Add(fHResTPCv0A2);
+  fList->Add(fHResTPCv0C2);
+  fList->Add(fHResv0Cv0A2);
+
+  // v3
+  fHResTPCv0A3 = new TProfile("hResTPCv0A3","",nCentrBin,0,nCentrBin);
+  fHResTPCv0C3 = new TProfile("hResTPCv0C3","",nCentrBin,0,nCentrBin);
+  fHResv0Cv0A3 = new TProfile("hResv0Cv0A3","",nCentrBin,0,nCentrBin);
+
+  fList->Add(fHResTPCv0A3);
+  fList->Add(fHResTPCv0C3);
+  fList->Add(fHResv0Cv0A3);
+
+  // MC as in the dataEP resolution (but using MC tracks)
+  if(fAnalysisType == "MCAOD"  && fV2){
+    fHResMA2 = new TProfile("hResMA2","",nCentrBin,0,nCentrBin);
+    fHResMC2 = new TProfile("hResMC2","",nCentrBin,0,nCentrBin);
+    fHResAC2 = new TProfile("hResAC2","",nCentrBin,0,nCentrBin);
+    fList->Add(fHResMA2); 
+    fList->Add(fHResMC2); 
+    fList->Add(fHResAC2); 
+  }
+  if(fAnalysisType == "MCAOD" && fV3){
+    fHResMA3 = new TProfile("hResMA3","",nCentrBin,0,nCentrBin);
+    fHResMC3 = new TProfile("hResMC3","",nCentrBin,0,nCentrBin);
+    fHResAC3 = new TProfile("hResAC3","",nCentrBin,0,nCentrBin);
+    fList->Add(fHResMA3); 
+    fList->Add(fHResMC3); 
+    fList->Add(fHResAC3); 
+  }
+
+
+  // V0A and V0C event plane distributions
+  //v2 
+  fPhiRPTPC = new TH2F("fPhiRPTPCv2","#phi distribution of EP TPC;centrality;#phi (rad)",nCentrBin,0,nCentrBin,nPsiTOF,-TMath::Pi()/2,TMath::Pi()/2);
+  fPhiRPTPCv3 = new TH2F("fPhiRPTPCv3","#phi distribution of EP TPC;centrality;#phi (rad)",nCentrBin,0,nCentrBin,nPsiTOF,-TMath::Pi()/3,TMath::Pi()/3);
+  fList->Add(fPhiRPTPC);
+  fList->Add(fPhiRPTPCv3);
+
+  fPhiRPv0A = new TH2F("fPhiRPv0Av2","#phi distribution of EP VZERO-A;centrality;#phi (rad)",nCentrBin,0,nCentrBin,nPsiTOF,-TMath::Pi()/2,TMath::Pi()/2);
+  fPhiRPv0C = new TH2F("fPhiRPv0Cv2","#phi distribution of EP VZERO-C;centrality;#phi (rad)",nCentrBin,0,nCentrBin,nPsiTOF,-TMath::Pi()/2,TMath::Pi()/2);
+  fList->Add(fPhiRPv0A);
+  fList->Add(fPhiRPv0C);
+
+  //v3
+  fPhiRPv0Av3 = new TH2F("fPhiRPv0Av3","#phi distribution of EP VZERO-A;centrality;#phi (rad)",nCentrBin,0,nCentrBin,nPsiTOF,-TMath::Pi()/3,TMath::Pi()/3);
+  fPhiRPv0Cv3 = new TH2F("fPhiRPv0Cv3","#phi distribution of EP VZERO-C;centrality;#phi (rad)",nCentrBin,0,nCentrBin,nPsiTOF,-TMath::Pi()/3,TMath::Pi()/3);
+  fList->Add(fPhiRPv0Av3);
+  fList->Add(fPhiRPv0Cv3);
+
+  fHistEventPlaneTruth = new TH2F("fHistEventPlaneTruth","#phi distribution of EP MCTRUTHheader;centrality;#phi (rad)",nCentrBin,0,nCentrBin,nPsiTOF,-TMath::Pi()/2,TMath::Pi()/2);
+  fList->Add(fHistEventPlaneTruth);
+
+  }
     
   //*****************************************************PIDQA histos*****************************************************//
 
@@ -1273,7 +1542,6 @@ fileT->Close();
     }
 
   //nsigmaDC plot
-  if(fUseExclusiveNSigma) {
   for(Int_t ipart=0;ipart<NSpecies;ipart++){
     for(Int_t ipid=0;ipid<=NSigmaPIDType;ipid++){
       Double_t miny=-10;
@@ -1286,7 +1554,7 @@ fileT->Close();
       fOutputList->Add(fHistoNSigma);
     }
   }
-  }  
+  
   //nsigmaMC plot
  if (fAnalysisType == "MCAOD"){
   for(Int_t ipart=0;ipart<NSpecies;ipart++){
@@ -1325,7 +1593,7 @@ fileT->Close();
 
   PostData(1, fOutput);              // Post data for ALL output slots >0 here, to get at least an empty histogram
   PostData(2, fOutputList);
-
+  if(fRequestEventPlane) PostData(3, fList);
   AliInfo("Finished setting up the Output");
 
   TH1::AddDirectory(oldStatus);
@@ -1366,11 +1634,19 @@ void AliTwoParticlePIDCorr::doMCAODevent()
 // count all events(physics triggered)   
   fEventCounter->Fill(1);
 
+    evplaneMC=999.;
+    fgPsi2v0aMC=999.;
+    fgPsi2v0cMC=999.;
+    fgPsi2tpcMC=999.;
+    fgPsi3v0aMC=999.;
+    fgPsi3v0cMC=999.;
+    fgPsi3tpcMC=999.;
+    gReactionPlane = 999.;
+
  // get centrality object and check quality(valid for p-Pb and Pb-Pb; coming soon for pp 7 TeV)
   Double_t cent_v0=-1.0;
   Double_t effcent=1.0;
   Double_t refmultReco =0.0;
-  Double_t gReactionPlane = -1.; 
 
 //check the PIDResponse handler
   if (!fPID) return;
@@ -1440,13 +1716,11 @@ skipParticlesAbove = eventHeader->NProduced();
  effcent=cent_v0;// This will be required for efficiency THn filling(specially in case of pp)
 
   //get the event plane in case of PbPb
-  if(fSampleType=="PbPb"){
    if(fRequestEventPlane){
-    gReactionPlane = GetEventPlane(aod,kTRUE);//get the truth event plane
-    fHistEventPlaneTruth->Fill(gReactionPlane,cent_v0);
-    if(gReactionPlane < 0) return;
+   gReactionPlane=GetEventPlane(aod,kTRUE,cent_v0);//get the truth event plane
+   if(gReactionPlane==999.) return;
  }
-  }
+  
 
    Double_t nooftrackstruth=0.0;//in case of pp this will give the multiplicity(for truth case) after the track loop(only for unidentified particles that pass  kinematic cuts)
 
@@ -1554,6 +1828,10 @@ if(ffillhistQATruth)
      }
  if(TMath::Abs(pdgtruth)!=211 && TMath::Abs(pdgtruth)!=321 && TMath::Abs(pdgtruth)!=2212)  particletypeTruth=unidentified;//*********************WARNING:: situation is different from reco MC and data case(here we don't have SpUndefined particles,because here unidentified=SpUndefined)
 
+    if(fRequestEventPlane){
+      FillPIDEventPlane(cent_v0,particletypeTruth,partMC->Phi(),gReactionPlane);
+    }
+
  // -- Fill THnSparse for efficiency and contamination calculation
  if (fSampleType=="pp" && fCentralityMethod.EndsWith("_MANUAL")) effcent=15.0;//integrated over multiplicity(so put any fixed value for each track so that practically means there is only one bin in multiplicity i.e. multiplicity intregated out )**************Important
 
@@ -1603,7 +1881,7 @@ if(tracksMCtruth && tracksMCtruth->GetEntriesFast()>0)//hadron triggered correla
   Fillcorrelation(gReactionPlane,tracksMCtruth,0,cent_v0,zVtxmc,weghtval,kFALSE,bSign,fPtOrderMCTruth,kFALSE,kFALSE,"trigIDassoIDMCTRUTH");//mixcase=kFALSE for same event case
 
 //start mixing
-AliEventPool* pool2 = fPoolMgr->GetEventPool(cent_v0, zVtxmc+200);
+ AliEventPool* pool2 = fPoolMgr->GetEventPool(cent_v0, zVtxmc+200, gReactionPlane);
 if (pool2 && pool2->IsReady())
   {//start mixing only when pool->IsReady
 if(tracksMCtruth && tracksMCtruth->GetEntriesFast()>0)
@@ -1636,13 +1914,11 @@ if(tracksMCtruth) delete tracksMCtruth;
  if (fSampleType=="pp" && fCentralityMethod.EndsWith("_MANUAL")) cent_v0=refmultReco;
  effcent=cent_v0;// This will be required for efficiency THn filling(specially in case of pp)
 
-  if(fSampleType=="PbPb"){
  if(fRequestEventPlane){
-    gReactionPlane = GetEventPlane(aod,kFALSE);//get the reconstructed event plane
-    fHistEventPlaneReco->Fill(gReactionPlane,cent_v0);
-    if(gReactionPlane < 0) return;
+   gReactionPlane = GetEventPlane(aod,kFALSE,cent_v0);//get the reconstructed event plane
+    if(gReactionPlane==999.) return;
  }
-  }
+  
    //TObjArray* tracksUNID=0;
    TObjArray* tracksUNID = new TObjArray;
    tracksUNID->SetOwner(kTRUE);
@@ -1879,6 +2155,9 @@ if(particletypeMC==SpKaon )
 
  if(particletypeMC==SpUndefined) continue;
 
+    if(fRequestEventPlane){
+      FillPIDEventPlane(cent_v0,particletypeMC,track->Phi(),gReactionPlane);
+    }
 
  //fill tracking efficiency
  if(ffillefficiency)
@@ -1938,7 +2217,7 @@ if(trackscount>0.0)
  if (fSampleType=="pPb" || fSampleType=="PbPb") fCentralityCorrelation->Fill(cent_v0, trackscount);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
 
 //count selected events having centrality betn 0-100%
- fEventCounter->Fill(11);
+ fEventCounter->Fill(13);
 
 //***************************************event no. counting
 Bool_t isbaryontrig=kFALSE;
@@ -1976,7 +2255,7 @@ if(tracksID && tracksID->GetEntriesFast()>0)//ID triggered correlation
 //still in  main event loop
 //start mixing
  if(ffilltrigassoUNID || ffilltrigIDassoUNID){//mixing with unidentified particles
-AliEventPool* pool = fPoolMgr->GetEventPool(cent_v0, zvtx);//In the pool there is tracksUNID(i.e associateds are unidentified)
+  AliEventPool* pool = fPoolMgr->GetEventPool(cent_v0, zvtx,gReactionPlane);//In the pool there is tracksUNID(i.e associateds are unidentified)
 if (pool && pool->IsReady())
   {//start mixing only when pool->IsReady
     Float_t nmix1=(Float_t)pool->GetCurrentNEvents();  
@@ -1998,7 +2277,7 @@ if(pool)
  }//mixing with unidentified particles
 
  if(ffilltrigUNIDassoID || ffilltrigIDassoID){//mixing with identified particles
-AliEventPool* pool1 = fPoolMgr->GetEventPool(cent_v0, zvtx+100);//In the pool1 there is tracksID(i.e associateds are identified)
+  AliEventPool* pool1 = fPoolMgr->GetEventPool(cent_v0, zvtx+100,gReactionPlane);//In the pool1 there is tracksID(i.e associateds are identified)
 if (pool1 && pool1->IsReady())
   {//start mixing only when pool->IsReady
   Float_t nmix2=(Float_t)pool1->GetCurrentNEvents();  
@@ -2021,7 +2300,7 @@ if(pool1)
  }//mixing with identified particles
 
   //no. of events analyzed
-fEventCounter->Fill(13);
+fEventCounter->Fill(15);
   }
 
 if(tracksUNID)  delete tracksUNID;
@@ -2050,9 +2329,16 @@ void AliTwoParticlePIDCorr::doAODevent()
 
 if (!fPID) return;//this should be available with each event even if we don't do PID selection
 
+    fgPsi2v0a=999.;
+    fgPsi2v0c=999.;
+    fgPsi2tpc=999.;
+    fgPsi3v0a=999.;
+    fgPsi3v0c=999.;
+    fgPsi3tpc=999.;
+    gReactionPlane = 999.;
+    
   Double_t cent_v0=   -999.;
   Double_t effcent=1.0;
-  Double_t gReactionPlane       = -1.; 
   Float_t bSign = 0.;
   Double_t trackscount=0;//counts particles passed filterbit cuts and kinematic cuts used in this analysis
 
@@ -2067,14 +2353,11 @@ if (!fPID) return;//this should be available with each event even if we don't do
   }
   
   //get the event plane in case of PbPb
-  if(fSampleType=="PbPb"){
     if(fRequestEventPlane){
-    gReactionPlane = GetEventPlane(aod,kFALSE);
-    fHistEventPlaneReco->Fill(gReactionPlane,cent_v0);
-    if(gReactionPlane < 0) return;
+      gReactionPlane = GetEventPlane(aod,kFALSE,cent_v0);
+    if(gReactionPlane==999.) return;
     }    
-  }
-
+  
    TObjArray*  tracksUNID= new TObjArray;//track info before doing PID
    tracksUNID->SetOwner(kTRUE);  // IMPORTANT!
 
@@ -2164,6 +2447,11 @@ if (!fPID) return;//this should be available with each event even if we don't do
 //ignore the Spundefined particles as they also contain pion, kaon, proton outside the nsigma cut(also if tracks don't have proper TOF PID in a certain Pt interval) & these tracks are actually counted when we do the the efficiency correction, so considering them as unidentified particles & doing the efficiency correction(i.e defining unidentified=pion+Kaon+proton+SpUndefined is right only without efficiency correction) for them will be two times wrong!!!!! 
   if (particletype==SpUndefined) continue;//this condition creating a modulated structure in delphi projection in mixed event case(only when we are dealing with identified particles i.e. tracksID)!!!!!!!!!!!
 
+    if(fRequestEventPlane){
+      FillPIDEventPlane(cent_v0,particletype,track->Phi(),gReactionPlane);
+    }
+
+
  //Pt, Eta , Phi distribution of the reconstructed identified particles
 if(ffillhistQAReco)
     {
@@ -2221,7 +2509,7 @@ if(trackscount<1.0){
 if(fSampleType=="pPb" || fSampleType=="PbPb") fCentralityCorrelation->Fill(cent_v0, trackscount);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
 
 //count selected events having centrality betn 0-100%
- fEventCounter->Fill(11);
+ fEventCounter->Fill(13);
 
 //***************************************event no. counting
 Bool_t isbaryontrig=kFALSE;
@@ -2263,7 +2551,7 @@ if(tracksID && tracksID->GetEntriesFast()>0)//ID triggered correlation
 
 //start mixing
  if(ffilltrigassoUNID || ffilltrigIDassoUNID){//mixing with unidentified particles
-AliEventPool* pool = fPoolMgr->GetEventPool(cent_v0, zvtx);//In the pool there is tracksUNID(i.e associateds are unidentified)
+AliEventPool* pool = fPoolMgr->GetEventPool(cent_v0, zvtx,gReactionPlane);//In the pool there is tracksUNID(i.e associateds are unidentified)
 if (pool && pool->IsReady())
   {//start mixing only when pool->IsReady
   Float_t nmix1=(Float_t)pool->GetCurrentNEvents();  
@@ -2285,7 +2573,7 @@ if(pool)
 
 
  if(ffilltrigUNIDassoID || ffilltrigIDassoID){//mixing with identified particles
-AliEventPool* pool1 = fPoolMgr->GetEventPool(cent_v0, zvtx+100);//In the pool1 there is tracksID(i.e associateds are identified)
+ AliEventPool* pool1 = fPoolMgr->GetEventPool(cent_v0, zvtx+100,gReactionPlane);//In the pool1 there is tracksID(i.e associateds are identified)
 if (pool1 && pool1->IsReady())
   {//start mixing only when pool->IsReady
   Float_t nmix2=(Float_t)pool1->GetCurrentNEvents();  
@@ -2309,7 +2597,7 @@ if(pool1)
 
 
   //no. of events analyzed
-fEventCounter->Fill(13);
+fEventCounter->Fill(15);
  
 //still in main event loop
 
@@ -2341,7 +2629,7 @@ TObjArray* AliTwoParticlePIDCorr::CloneAndReduceTrackList(TObjArray* tracks)
 }
 
 //--------------------------------------------------------------------------------
-void AliTwoParticlePIDCorr::Fillcorrelation(Double_t gReactionPlane,TObjArray *trackstrig,TObjArray *tracksasso,Double_t cent,Float_t vtx,Float_t weight,Bool_t firstTime,Float_t bSign,Bool_t fPtOrder,Bool_t twoTrackEfficiencyCut,Bool_t mixcase,TString fillup)
+void AliTwoParticlePIDCorr::Fillcorrelation(Float_t ReactionPlane,TObjArray *trackstrig,TObjArray *tracksasso,Double_t cent,Float_t vtx,Float_t weight,Bool_t firstTime,Float_t bSign,Bool_t fPtOrder,Bool_t twoTrackEfficiencyCut,Bool_t mixcase,TString fillup)
 {
 
   //before calling this function check that either trackstrig & tracksasso are available 
@@ -2509,11 +2797,17 @@ if (fOnlyOneEtaSide != 0)
     Double_t gPsiMinusPhi    =   0.;
     Double_t gPsiMinusPhiBin = -10.;
 if(fRequestEventPlane){
-    gPsiMinusPhi   = TMath::Abs(trigphi - gReactionPlane);
-    //in-plane
+    gPsiMinusPhi   = TMath::Abs(trigphi - ReactionPlane);
+    //in-plane(Note thet event plane angle has to be defined within 0 to 180 degree(do not use this if event ), otherwise the definition of in plane and out plane particles is wrong)
     if((gPsiMinusPhi <= 7.5*TMath::DegToRad())||
+      (gPsiMinusPhi >= 352.5*TMath::DegToRad())||
        ((172.5*TMath::DegToRad() <= gPsiMinusPhi)&&(gPsiMinusPhi <= 187.5*TMath::DegToRad())))
       gPsiMinusPhiBin = 0.0;
+    /*
+ if((gPsiMinusPhi <= 7.5*TMath::DegToRad())||
+       ((172.5*TMath::DegToRad() <= gPsiMinusPhi)&&(gPsiMinusPhi <= 187.5*TMath::DegToRad())))
+      gPsiMinusPhiBin = 0.0;
+    */
     //intermediate
     else if(((37.5*TMath::DegToRad() <= gPsiMinusPhi)&&(gPsiMinusPhi <= 52.5*TMath::DegToRad()))||
 	    ((127.5*TMath::DegToRad() <= gPsiMinusPhi)&&(gPsiMinusPhi <= 142.5*TMath::DegToRad()))||
@@ -2784,13 +3078,16 @@ if (fRejectResonanceDaughters > 0)
 		  dphistarminabs = dphistarabs;
 		}
 	      }
+	      if(mixcase==kFALSE)  fTwoTrackDistancePt[0]->Fill(deta, dphistarmin, TMath::Abs(pt1 - pt2));//for same event
+	      if(mixcase==kTRUE)  fTwoTrackDistancePtmix[0]->Fill(deta, dphistarmin, TMath::Abs(pt1 - pt2));//for mixed event
 
 if (dphistarminabs < twoTrackEfficiencyCutValue && TMath::Abs(deta) < twoTrackEfficiencyCutValue)
 	      {
 // 		Printf("Removed track pair %d %d with %f %f %f %f %f %f %f %f %f", i, j, deta, dphistarminabs, phi1, pt1, charge1, phi2, pt2, charge2, bSign);
 		continue;
 	      }
-//fTwoTrackDistancePt[1]->Fill(deta, dphistarmin, TMath::Abs(pt1 - pt2));
+             if(mixcase==kFALSE) fTwoTrackDistancePt[1]->Fill(deta, dphistarmin, TMath::Abs(pt1 - pt2));//for same event
+             if(mixcase==kTRUE) fTwoTrackDistancePtmix[1]->Fill(deta, dphistarmin, TMath::Abs(pt1 - pt2));//for mixed event
 
 	    }
 	  }
@@ -2802,6 +3099,11 @@ if (dphistarminabs < twoTrackEfficiencyCutValue && TMath::Abs(deta) < twoTrackEf
 	//cout<<"*******************trackeffasso="<<trackeffasso<<endl;
         Float_t deleta=trigeta-eta[j];
 	Float_t delphi=PhiRange(trigphi-asso->Phi()); 
+
+	Float_t delpt=trigpt-asso->Pt();
+	//fill it with/without two track efficiency cut	   
+	if(mixcase==kFALSE)  fTwoTrackDistancePtdip->Fill(deleta, delphi, TMath::Abs(delpt));//for same event
+	if(mixcase==kTRUE)  fTwoTrackDistancePtdipmix->Fill(deleta, delphi, TMath::Abs(delpt));//for mixed event
 
  //here get the two particle efficiency correction factor
 	Float_t effweight=trackefftrig*trackeffasso*weightperevent;
@@ -3633,6 +3935,7 @@ Float_t  AliTwoParticlePIDCorr::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t c
   return dphistar;
 }
 //_________________________________________________________________________
+/*
 void AliTwoParticlePIDCorr ::DefineEventPool()
 {
 Int_t MaxNofEvents=1000;
@@ -3640,24 +3943,28 @@ const Int_t NofVrtxBins=10+(1+10)*2;
 Double_t ZvrtxBins[NofVrtxBins+1]={ -10,   -8,  -6,  -4,  -2,   0,   2,   4,   6,   8,  10, 
 				       90,  92,  94,  96,  98, 100, 102, 104, 106, 108, 110, 
 				      190, 192, 194, 196, 198, 200, 202, 204, 206, 208, 210 
-				      };
- if (fSampleType=="pp"){
-const Int_t  NofCentBins=4;
- Double_t CentralityBins[NofCentBins+1]={0.,20., 40.,60.,200.1};//Is This binning is fine for pp, or we don't require them....
-fPoolMgr = new AliEventPoolManager(MaxNofEvents,fMaxNofMixingTracks,NofCentBins,CentralityBins,NofVrtxBins,ZvrtxBins);
- }
-if (fSampleType=="pPb" || fSampleType=="PbPb")
-  {
-const Int_t  NofCentBins=15;
+
+//default values are for centrality
+Int_t  NofCentBins=15;
 Double_t CentralityBins[NofCentBins+1]={0., 1., 2., 3., 4., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1 };
+
+ if(fCentralityMethod.EndsWith("_MANUAL"))
+   {
+ Int_t  NofCentBins=9;
+ CentralityBins[NofCentBins+1]={0.,9.,14.,19.,26.,34.,44.,58.,80.,500.};//Is This binning is fine for pp, or we don't require them....
+   }
 fPoolMgr = new AliEventPoolManager(MaxNofEvents,fMaxNofMixingTracks,NofCentBins,CentralityBins,NofVrtxBins,ZvrtxBins);
-  }
+
+
+
+  
 fPoolMgr->SetTargetValues(fMaxNofMixingTracks, 0.1, 5);
 
 //if(!fPoolMgr) return kFALSE;
 //return kTRUE;
 
 }
+*/
 //------------------------------------------------------------------------
 Double_t* AliTwoParticlePIDCorr::GetBinning(const char* configuration, const char* tag, Int_t& nBins)
 {
@@ -3816,7 +4123,7 @@ Double_t AliTwoParticlePIDCorr::GetEqualizationFactor(Int_t run, const char* sid
 }
 //________________________________________________________________________
 Double_t AliTwoParticlePIDCorr::GetReferenceMultiplicityVZEROFromAOD(AliAODEvent *event){
-  //Function that returns the reference multiplicity from AODs (data or reco MC)
+  //Function that returns the reference multiplicity from AODs (data or reco MC, Not for Truth)
   //Different ref. mult. implemented: V0M, V0A, V0C, TPC
   Double_t gRefMultiplicity = 0., gRefMultiplicityTPC = 0.;
   Double_t gRefMultiplicityVZERO = 0., gRefMultiplicityVZEROA = 0., gRefMultiplicityVZEROC = 0.;
@@ -3843,6 +4150,7 @@ Double_t AliTwoParticlePIDCorr::GetReferenceMultiplicityVZEROFromAOD(AliAODEvent
 
  }//track looop ends
 
+ if(fCentralityMethod == "V0A_MANUAL" || fCentralityMethod == "V0M_MANUAL" || fCentralityMethod == "V0C_MANUAL" ){
   //VZERO segmentation in two detectors (0-31: VZERO-C, 32-63: VZERO-A)
   for(Int_t iChannel = 0; iChannel < 64; iChannel++) {
     fHistVZEROSignal->Fill(iChannel,event->GetVZEROEqMultiplicity(iChannel));
@@ -3878,22 +4186,26 @@ Double_t AliTwoParticlePIDCorr::GetReferenceMultiplicityVZEROFromAOD(AliAODEvent
 
   //EQVZEROC vs EQVZEROA multiplicity
   fHistEQVZEROCvsEQVZEROAmultiplicity->Fill(gRefMultiplicityVZEROC,gRefMultiplicityVZEROA);
+ }
 
-
-  if(fCentralityMethod == "TRACKS_MANUAL") 
+ if(fCentralityMethod == "TRACKS_MANUAL") {
     gRefMultiplicity = gRefMultiplicityTPC;
-  else if(fCentralityMethod == "V0M_MANUAL")
+    fHistRefmult->Fill(3.,gRefMultiplicityTPC);
+ }
+ else if(fCentralityMethod == "V0M_MANUAL"){
     gRefMultiplicity = gRefMultiplicityVZERO;
-  else if(fCentralityMethod == "V0A_MANUAL")
-    gRefMultiplicity = gRefMultiplicityVZEROA;
-  else if(fCentralityMethod == "V0C_MANUAL")
-    gRefMultiplicity = gRefMultiplicityVZEROC;
+    fHistRefmult->Fill(2.,gRefMultiplicityVZERO);
 
-      //ref mult QA
-      fHistRefmult->Fill(0.,gRefMultiplicityVZEROA);
-      fHistRefmult->Fill(1.,gRefMultiplicityVZEROC);
-      fHistRefmult->Fill(2.,gRefMultiplicityVZERO);
-      fHistRefmult->Fill(3.,gRefMultiplicityTPC);
+ }
+ else if(fCentralityMethod == "V0A_MANUAL"){
+    gRefMultiplicity = gRefMultiplicityVZEROA;
+    fHistRefmult->Fill(0.,gRefMultiplicityVZEROA);
+
+ }
+ else if(fCentralityMethod == "V0C_MANUAL"){
+    gRefMultiplicity = gRefMultiplicityVZEROC;
+    fHistRefmult->Fill(1.,gRefMultiplicityVZEROC);
+ }
 
   
   return gRefMultiplicity;
@@ -4046,7 +4358,7 @@ isduplicate=kTRUE;
 }
 //-----------------------------------------------------------------------------------------
 Double_t AliTwoParticlePIDCorr::GetAcceptedEventMultiplicity(AliAODEvent *aod,Bool_t truth){
-
+  //do the event selection(zvtx, pileup, centrality/multiplicity cut) and then return the value of the centrality of that event
   if(!aod) return -1;
 
   Float_t gRefMultiplicity = -1.;
@@ -4138,9 +4450,9 @@ fHistQA[0]->Fill((trkVtx->GetX()));fHistQA[1]->Fill((trkVtx->GetY()));fHistQA[2]
  fHistQA[3]->Fill((trkVtx->GetX()));fHistQA[4]->Fill((trkVtx->GetY()));fHistQA[5]->Fill((trkVtx->GetZ()));//after vertex cut,for trkVtx only
 
  //get the centrality or multiplicity
- if(truth)  {gRefMultiplicity = GetRefMultiOrCentrality(aod,kTRUE);}//kTRUE-->for Truth case(only meaningful in case of ref multiplicity)
+ if(truth)  {gRefMultiplicity = GetRefMultiOrCentrality(aod,kTRUE);}//kTRUE-->for Truth case(only meaningful in case of ref multiplicity,in case of centrality it has no meaning)
 
- else {gRefMultiplicity = GetRefMultiOrCentrality(aod,kFALSE);}//kFALSE-->for data and RecoMc case(only meaningful in case of ref multiplicity)
+ else {gRefMultiplicity = GetRefMultiOrCentrality(aod,kFALSE);}//kFALSE-->for data and RecoMc case(only meaningful in case of ref multiplicity,in case of centrality it has no meaning)
 
   if(gRefMultiplicity<0) return -1;
 
@@ -4165,32 +4477,307 @@ fHistQA[0]->Fill((trkVtx->GetX()));fHistQA[1]->Fill((trkVtx->GetY()));fHistQA[2]
 
 }
 //--------------------------------------------------------------------------------------------------------
-Double_t AliTwoParticlePIDCorr::GetEventPlane(AliAODEvent *event,Bool_t truth){
+Float_t AliTwoParticlePIDCorr::GetEventPlane(AliAODEvent *event,Bool_t truth, Double_t v0Centr)
+{
   // Get the event plane
+ //reset Q vector info	
+
+    Int_t run = event->GetRunNumber();
+
+    if(run != fRun){
+	// Load the calibrations run dependent
+      if(! fIsAfter2011) OpenInfoCalbration(run);
+      fRun=run;
+    }
 
 
-  Float_t gVZEROEventPlane    = -10.;
-  Float_t gReactionPlane      = -10.;
-  Double_t qxTot = 0.0, qyTot = 0.0;
+  Int_t iC = -1;  
+if (v0Centr < 80){ // analysis only for 0-80% centrality classes
+ // centrality bins
+    if(v0Centr < 5) iC = 0;
+    else if(v0Centr < 10) iC = 1;
+    else if(v0Centr < 20) iC = 2;
+    else if(v0Centr < 30) iC = 3;
+    else if(v0Centr < 40) iC = 4;
+    else if(v0Centr < 50) iC = 5;
+    else if(v0Centr < 60) iC = 6;
+    else if(v0Centr < 70) iC = 7;
+    else iC = 8;
+
+
+     Int_t iCcal = iC;
+
+ //reset Q vector info	 
+    Double_t Qxa2 = 0, Qya2 = 0;
+    Double_t Qxc2 = 0, Qyc2 = 0;
+    Double_t Qxa3 = 0, Qya3 = 0;
+    Double_t Qxc3 = 0, Qyc3 = 0;
+
 
   //MC: from reaction plane
  if(truth)
 {
     AliAODMCHeader* header = (AliAODMCHeader*) event->GetList()->FindObject(AliAODMCHeader::StdBranchName());
     if (header){
-    
-      AliGenEventHeader* eventHeader = header->GetCocktailHeader(0);  // get first MC header from either ESD/AOD (including cocktail header if available)
+      evplaneMC = header->GetReactionPlaneAngle();//[0, 360]
+        //make it within [-pi/2,pi/2] to make it general
+	if(evplaneMC > TMath::Pi()/2 && evplaneMC <=  TMath::Pi()*3/2) evplaneMC-=TMath::Pi(); 
+	else if(evplaneMC > TMath::Pi()*3/2) evplaneMC-=2*TMath::Pi();
+         fHistEventPlaneTruth->Fill(iC,evplaneMC);
+	/*
+        AliGenEventHeader* eventHeader = header->GetCocktailHeader(0);  // get first MC header from either ESD/AOD (including cocktail header if available)
       if (eventHeader)
       {
 	      
 	AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*> (eventHeader);     
       
-     if (collGeometry)   gReactionPlane = collGeometry->ReactionPlaneAngle();
+	if (collGeometry){//get the reaction plane from MC header   
+	  gReactionPlane = collGeometry->ReactionPlaneAngle();//[0,180]
+ }
+      }
+	*/   
+     //taken from vnv0 code(get the TPC, V0A, V0C event plane using truth tracks)
+       TClonesArray *mcArray = NULL;
+	mcArray = (TClonesArray*)event->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+	if(mcArray){
+	  Float_t QxMCv2[3] = {0,0,0};
+	  Float_t QyMCv2[3] = {0,0,0};
+	  Float_t QxMCv3[3] = {0,0,0};
+	  Float_t QyMCv3[3] = {0,0,0};
+	  Float_t EvPlaneMCV2[3] = {0,0,0};
+	  Float_t EvPlaneMCV3[3] = {0,0,0};
+	  Float_t etaMin[3] = {2.8,-3.6,-0.8}; // A-side, C-side M-barrel
+	  Float_t etaMax[3] = {4.88,-1.8,0.8};
+
+	  // analysis on MC tracks
+	  Int_t nMCtrack = mcArray->GetEntries() ;
+
+	  // EP computation with MC tracks
+	  for(Int_t iT=0;iT < nMCtrack;iT++){
+	    AliAODMCParticle *mctr = (AliAODMCParticle*) mcArray->At(iT);
+	    if(!mctr || !(mctr->IsPrimary()) || !(mctr->Charge()) || mctr->Pt() < 0.2) continue;
+	    
+	    Float_t eta = mctr->Eta();
+  for(Int_t iD=0;iD<3;iD++){
+	      if(eta > etaMin[iD] && eta < etaMax[iD]){
+		Float_t phi = mctr->Phi();
+		QxMCv2[iD] += TMath::Cos(2*phi);
+		QyMCv2[iD] += TMath::Sin(2*phi);
+		QxMCv3[iD] += TMath::Cos(3*phi);
+		QyMCv3[iD] += TMath::Sin(3*phi);
+	      }
+	    }
+	  }
+
+	    EvPlaneMCV2[0] = TMath::ATan2(QyMCv2[0],QxMCv2[0])/2.;
+	    EvPlaneMCV2[1] = TMath::ATan2(QyMCv2[1],QxMCv2[1])/2.;
+	    EvPlaneMCV2[2] = TMath::ATan2(QyMCv2[2],QxMCv2[2])/2.;
+	    fHResMA2->Fill(Double_t(iC), TMath::Cos(2*(EvPlaneMCV2[2]-EvPlaneMCV2[0])));
+	    fHResMC2->Fill(Double_t(iC), TMath::Cos(2*(EvPlaneMCV2[2]-EvPlaneMCV2[1])));
+	    fHResAC2->Fill(Double_t(iC), TMath::Cos(2*(EvPlaneMCV2[0]-EvPlaneMCV2[1])));
+            fgPsi2v0aMC = EvPlaneMCV2[0];
+            fgPsi2v0cMC = EvPlaneMCV2[1];
+            fgPsi2tpcMC = EvPlaneMCV2[2];
+	  
+
+	    EvPlaneMCV3[0] = TMath::ATan2(QyMCv3[0],QxMCv3[0])/3.;
+	    EvPlaneMCV3[1] = TMath::ATan2(QyMCv3[1],QxMCv3[1])/3.;
+	    EvPlaneMCV3[2] = TMath::ATan2(QyMCv3[2],QxMCv3[2])/3.;
+	    fHResMA3->Fill(Double_t(iC), TMath::Cos(3*(EvPlaneMCV3[2]-EvPlaneMCV3[0])));
+	    fHResMC3->Fill(Double_t(iC), TMath::Cos(3*(EvPlaneMCV3[2]-EvPlaneMCV3[1])));
+	    fHResAC3->Fill(Double_t(iC), TMath::Cos(3*(EvPlaneMCV3[0]-EvPlaneMCV3[1])));
+            fgPsi3v0aMC = EvPlaneMCV3[0];
+            fgPsi3v0cMC = EvPlaneMCV3[1];
+            fgPsi3tpcMC = EvPlaneMCV3[2];
+	  
+	}    
     }
-    }
+
     }
  else{
-   
+    Int_t nAODTracks = event->GetNumberOfTracks();
+
+// TPC EP needed for resolution studies (TPC subevent)
+   //AliEventplane * ep = (fAOD->GetHeader())->GetEventplaneP();
+   //Double_t psiTPC = ep->GetEventplane("Q", fAOD, 2); // in range of [0, pi]
+    Double_t Qx2 = 0, Qy2 = 0;
+    Double_t Qx3 = 0, Qy3 = 0;
+
+    for(Int_t iT = 0; iT < nAODTracks; iT++) {
+      
+      AliAODTrack* aodTrack = event->GetTrack(iT);
+      
+      if (!aodTrack){
+	continue;
+      }
+      
+      Bool_t trkFlag = aodTrack->TestFilterBit(1);
+
+      if ((TMath::Abs(aodTrack->Eta()) > 0.8) || (aodTrack->Pt() < 0.2) || (aodTrack->GetTPCNcls() < fNcluster)  || !trkFlag) 
+	continue;
+	
+      Double_t b[2] = {-99., -99.};
+      Double_t bCov[3] = {-99., -99., -99.};
+
+
+      AliAODTrack param(*aodTrack);
+      if (!param.PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov)){
+	continue;
+      }
+	    
+      if ((TMath::Abs(b[0]) > 3.0) || (TMath::Abs(b[1]) > 2.4))
+	continue;
+      
+      Qx2 += TMath::Cos(2*aodTrack->Phi()); 
+      Qy2 += TMath::Sin(2*aodTrack->Phi());
+      Qx3 += TMath::Cos(3*aodTrack->Phi()); 
+      Qy3 += TMath::Sin(3*aodTrack->Phi());
+      
+    }
+    
+   Float_t evPlAng2 = TMath::ATan2(Qy2, Qx2)/2.;
+   Float_t evPlAng3 = TMath::ATan2(Qy3, Qx3)/3.;
+
+    fgPsi2tpc = evPlAng2;
+    fgPsi3tpc = evPlAng3;
+
+     fPhiRPTPC->Fill(iC,evPlAng2);
+     fPhiRPTPCv3->Fill(iC,evPlAng3);
+
+
+
+//V0 info    
+    AliAODVZERO* aodV0 = event->GetVZEROData();
+
+    for (Int_t iv0 = 0; iv0 < 64; iv0++) {
+      Double_t phiV0 = TMath::PiOver4()*(0.5 + iv0 % 8);
+      Float_t multv0 = aodV0->GetMultiplicity(iv0);
+
+      if(! fIsAfter2011){
+	if(fAnalysisType == "AOD"){//not for reco MC tracks, only for real data
+	  if (iv0 < 32){ // V0C
+	    Qxc2 += TMath::Cos(2*phiV0) * multv0*fV0Cpol/fMultV0->GetBinContent(iv0+1);
+	    Qyc2 += TMath::Sin(2*phiV0) * multv0*fV0Cpol/fMultV0->GetBinContent(iv0+1);
+	    Qxc3 += TMath::Cos(3*phiV0) * multv0*fV0Cpol/fMultV0->GetBinContent(iv0+1);
+	    Qyc3 += TMath::Sin(3*phiV0) * multv0*fV0Cpol/fMultV0->GetBinContent(iv0+1);
+	  } else {       // V0A
+	    Qxa2 += TMath::Cos(2*phiV0) * multv0*fV0Apol/fMultV0->GetBinContent(iv0+1);
+	    Qya2 += TMath::Sin(2*phiV0) * multv0*fV0Apol/fMultV0->GetBinContent(iv0+1);
+	    Qxa3 += TMath::Cos(3*phiV0) * multv0*fV0Apol/fMultV0->GetBinContent(iv0+1);
+	    Qya3 += TMath::Sin(3*phiV0) * multv0*fV0Apol/fMultV0->GetBinContent(iv0+1);
+	  }
+	}
+	else{
+	  if (iv0 < 32){ // V0C
+	    Qxc2 += TMath::Cos(2*phiV0) * multv0;//*fV0Cpol/fMultV0->GetBinContent(iv0+1);
+	    Qyc2 += TMath::Sin(2*phiV0) * multv0;//*fV0Cpol/fMultV0->GetBinContent(iv0+1);
+	    Qxc3 += TMath::Cos(3*phiV0) * multv0;//*fV0Cpol/fMultV0->GetBinContent(iv0+1);
+	    Qyc3 += TMath::Sin(3*phiV0) * multv0;//*fV0Cpol/fMultV0->GetBinContent(iv0+1);
+	  } else {       // V0A
+	    Qxa2 += TMath::Cos(2*phiV0) * multv0;//*fV0Apol/fMultV0->GetBinContent(iv0+1);
+	    Qya2 += TMath::Sin(2*phiV0) * multv0;//*fV0Apol/fMultV0->GetBinContent(iv0+1);
+	    Qxa3 += TMath::Cos(3*phiV0) * multv0;//*fV0Apol/fMultV0->GetBinContent(iv0+1);
+	    Qya3 += TMath::Sin(3*phiV0) * multv0;//*fV0Apol/fMultV0->GetBinContent(iv0+1);
+	  }
+	}
+      }
+    }
+   //grab for each centrality the proper histo with the Qx and Qy to do the recentering
+    Double_t Qxamean2 = fMeanQ[iCcal][1][0];
+    Double_t Qxarms2  = fWidthQ[iCcal][1][0];
+    Double_t Qyamean2 = fMeanQ[iCcal][1][1];
+    Double_t Qyarms2  = fWidthQ[iCcal][1][1];
+    Double_t Qxamean3 = fMeanQv3[iCcal][1][0];
+    Double_t Qxarms3  = fWidthQv3[iCcal][1][0];
+    Double_t Qyamean3 = fMeanQv3[iCcal][1][1];
+    Double_t Qyarms3  = fWidthQv3[iCcal][1][1];
+    
+    Double_t Qxcmean2 = fMeanQ[iCcal][0][0];
+    Double_t Qxcrms2  = fWidthQ[iCcal][0][0];
+    Double_t Qycmean2 = fMeanQ[iCcal][0][1];
+    Double_t Qycrms2  = fWidthQ[iCcal][0][1];	
+    Double_t Qxcmean3 = fMeanQv3[iCcal][0][0];
+    Double_t Qxcrms3  = fWidthQv3[iCcal][0][0];
+    Double_t Qycmean3 = fMeanQv3[iCcal][0][1];
+    Double_t Qycrms3  = fWidthQv3[iCcal][0][1];	
+    
+    Double_t QxaCor2 = (Qxa2 - Qxamean2)/Qxarms2;
+    Double_t QyaCor2 = (Qya2 - Qyamean2)/Qyarms2;
+    Double_t QxcCor2 = (Qxc2 - Qxcmean2)/Qxcrms2;
+    Double_t QycCor2 = (Qyc2 - Qycmean2)/Qycrms2;
+    Double_t QxaCor3 = (Qxa3 - Qxamean3)/Qxarms3;
+    Double_t QyaCor3 = (Qya3 - Qyamean3)/Qyarms3;
+    Double_t QxcCor3 = (Qxc3 - Qxcmean3)/Qxcrms3;
+    Double_t QycCor3 = (Qyc3 - Qycmean3)/Qycrms3;
+    /*
+    //to calculate 2nd order event plane with v0M
+ Double_t QxCor2 = (Qxa2 - Qxamean2 + Qxc2 - Qxcmean2)
+    /TMath::Sqrt(Qxarms2*Qxarms2 + Qxcrms2*Qxcrms2);
+  Double_t QyCor2 = (Qya2 - Qyamean2 + Qyc2 - Qycmean2)
+    /TMath::Sqrt(Qyarms2*Qyarms2 + Qycrms2*Qycrms2);
+
+  //here the calculated event plane is within -Pi to +Pi(delete it , no use here , only for definition)
+  Double_t psiV0A =(TMath::Pi() + TMath::ATan2(-QyaCor2, -QxaCor2))/2.;
+  Double_t psiV0C = (TMath::Pi() + TMath::ATan2(-QycCor2, -QxcCor2))/2.;
+  Double_t psiVZero = (TMath::Pi() + TMath::ATan2(-QyCor2, -QxCor2))/2.;
+
+    */
+
+    Float_t evPlAngV0ACor2=999.;
+    Float_t evPlAngV0CCor2=999.;
+    Float_t evPlAngV0ACor3=999.;
+    Float_t evPlAngV0CCor3=999.;
+
+   if(! fIsAfter2011){
+      if(fAnalysisType == "AOD"){
+	evPlAngV0ACor2 = TMath::ATan2(QyaCor2, QxaCor2)/2.;
+	evPlAngV0CCor2 = TMath::ATan2(QycCor2, QxcCor2)/2.;
+	evPlAngV0ACor3 = TMath::ATan2(QyaCor3, QxaCor3)/3.;
+	evPlAngV0CCor3 = TMath::ATan2(QycCor3, QxcCor3)/3.;
+      }
+      else{
+	evPlAngV0ACor2 = TMath::ATan2(Qya2, Qxa2)/2.;
+	evPlAngV0CCor2 = TMath::ATan2(Qyc2, Qxc2)/2.;
+	evPlAngV0ACor3 = TMath::ATan2(Qya3, Qxa3)/3.;
+	evPlAngV0CCor3 = TMath::ATan2(Qyc3, Qxc3)/3.;
+      }
+    }
+    else{
+      AliEventplane *ep =  event->GetEventplane();
+      evPlAngV0ACor2 = ep->GetEventplane("V0A", event, 2);
+      evPlAngV0CCor2 = ep->GetEventplane("V0C", event, 2);
+      evPlAngV0ACor3 = ep->GetEventplane("V0A", event, 3);
+      evPlAngV0CCor3 = ep->GetEventplane("V0C", event, 3);
+    }
+
+    fgPsi2v0a = evPlAngV0ACor2;
+    fgPsi2v0c = evPlAngV0CCor2;
+    fgPsi3v0a = evPlAngV0ACor3;
+    fgPsi3v0c = evPlAngV0CCor3;
+
+ // Fill EP distribution histograms evPlAng
+    
+     fPhiRPv0A->Fill(iC,evPlAngV0ACor2);
+     fPhiRPv0C->Fill(iC,evPlAngV0CCor2);
+    
+     fPhiRPv0Av3->Fill(iC,evPlAngV0ACor3);
+     fPhiRPv0Cv3->Fill(iC,evPlAngV0CCor3);
+
+    // Fill histograms needed for resolution evaluation
+    fHResTPCv0A2->Fill(Double_t(iC), TMath::Cos(2*(evPlAng2 - evPlAngV0ACor2)));
+    fHResTPCv0C2->Fill(Double_t(iC), TMath::Cos(2*(evPlAng2 - evPlAngV0CCor2)));
+    fHResv0Cv0A2->Fill(Double_t(iC), TMath::Cos(2*(evPlAngV0ACor2 - evPlAngV0CCor2)));
+    
+    fHResTPCv0A3->Fill(Double_t(iC), TMath::Cos(3*(evPlAng3 - evPlAngV0ACor3)));
+    fHResTPCv0C3->Fill(Double_t(iC), TMath::Cos(3*(evPlAng3 - evPlAngV0CCor3)));
+    fHResv0Cv0A3->Fill(Double_t(iC), TMath::Cos(3*(evPlAngV0ACor3 - evPlAngV0CCor3)));
+
+
+    /*   
+ Float_t gVZEROEventPlane    = -10.;
+  Float_t gReactionPlane      = -10.;
+  Double_t qxTot = 0.0, qyTot = 0.0;
+
     AliEventplane *ep = event->GetEventplane();
     if(ep){ 
       gVZEROEventPlane = ep->CalculateVZEROEventPlane(event,10,2,qxTot,qyTot);
@@ -4198,16 +4785,161 @@ Double_t AliTwoParticlePIDCorr::GetEventPlane(AliAODEvent *event,Bool_t truth){
       //gReactionPlane = gVZEROEventPlane*TMath::RadToDeg();
       gReactionPlane = gVZEROEventPlane;
     }
+    */
   }//AOD,ESD,ESDMC
-  return gReactionPlane; 
+ //return gReactionPlane;
+
+ //make the final 2nd order event plane within 0 to Pi
+     //using data and reco tracks only
+      if(fgPsi2v0a!=999. && fgPsi2v0a < 0.) fgPsi2v0a += TMath::Pi();
+      if(fgPsi2v0c!=999. && fgPsi2v0c < 0.) fgPsi2v0c += TMath::Pi();
+      if(fgPsi2tpc!=999. && fgPsi2tpc < 0.) fgPsi2tpc += TMath::Pi();
+      //using truth tracks only
+      if(evplaneMC!=999. && evplaneMC < 0.) evplaneMC += TMath::Pi();
+      if(fgPsi2v0aMC!=999. && fgPsi2v0aMC < 0.) fgPsi2v0aMC += TMath::Pi();
+      if(fgPsi2v0cMC!=999. && fgPsi2v0cMC < 0.) fgPsi2v0cMC += TMath::Pi();
+      if(fgPsi2tpcMC!=999. && fgPsi2tpcMC < 0.) fgPsi2tpcMC += TMath::Pi();
+      //for the time being leave the 3rd order event planes within -pi/3 t0 +pi/3
+
+      if(truth){//for truth MC
+	if(fV2 && fEPdet=="header")gReactionPlane=evplaneMC;
+	if(fV2 && fEPdet=="V0A")gReactionPlane=fgPsi2v0aMC;
+	if(fV2 && fEPdet=="V0C")gReactionPlane=fgPsi2v0cMC;
+	if(fV2 && fEPdet=="TPC")gReactionPlane=fgPsi2tpcMC;
+
+	if(fV3 && fEPdet=="V0A")gReactionPlane=fgPsi3v0aMC;
+	if(fV3 && fEPdet=="V0C")gReactionPlane=fgPsi3v0cMC;
+	if(fV3 && fEPdet=="TPC")gReactionPlane=fgPsi3tpcMC;
+}
+      else{//for data and recoMC
+	if(fV2 && fEPdet=="V0A")gReactionPlane=fgPsi2v0a;
+	if(fV2 && fEPdet=="V0C")gReactionPlane=fgPsi2v0c;
+	if(fV2 && fEPdet=="TPC")gReactionPlane=fgPsi2tpc;
+
+	if(fV3 && fEPdet=="V0A")gReactionPlane=fgPsi3v0a;
+	if(fV3 && fEPdet=="V0C")gReactionPlane=fgPsi3v0c;
+	if(fV3 && fEPdet=="TPC")gReactionPlane=fgPsi3tpc;
+
+      }
+     
+ } //centrality cut condition
+
+return gReactionPlane;
+}
+//------------------------------------------------------------------------------------------------------------------
+void AliTwoParticlePIDCorr::OpenInfoCalbration(Int_t run){
+    TString oadbfilename = "$ALICE_ROOT/OADB/PWGCF/VZERO/VZEROcalibEP.root";
+    TFile *foadb = TFile::Open(oadbfilename.Data());
+
+    if(!foadb){
+	printf("OADB file %s cannot be opened\n",oadbfilename.Data());
+	return;
+    }
+
+    AliOADBContainer *cont = (AliOADBContainer*) foadb->Get("hMultV0BefCorr");
+    if(!cont){
+	printf("OADB object hMultV0BefCorr is not available in the file\n");
+	return;	
+    }
+
+    if(!(cont->GetObject(run))){
+	printf("OADB object hMultV0BefCorr is not available for run %i (used run 137366)\n",run);
+	run = 137366;
+    }
+    fMultV0 = ((TH2F *) cont->GetObject(run))->ProfileX();
+
+    TF1 *fpol0 = new TF1("fpol0","pol0"); 
+    fMultV0->Fit(fpol0,"","",0,31);
+    fV0Cpol = fpol0->GetParameter(0);
+    fMultV0->Fit(fpol0,"","",32,64);
+    fV0Apol = fpol0->GetParameter(0);
+
+    for(Int_t iside=0;iside<2;iside++){
+	for(Int_t icoord=0;icoord<2;icoord++){
+	    for(Int_t i=0;i  < 9;i++){
+		char namecont[100];
+  		if(iside==0 && icoord==0)
+		  snprintf(namecont,100,"hQxc2_%i",i);
+		else if(iside==1 && icoord==0)
+		  snprintf(namecont,100,"hQxa2_%i",i);
+		else if(iside==0 && icoord==1)
+		  snprintf(namecont,100,"hQyc2_%i",i);
+		else if(iside==1 && icoord==1)
+		  snprintf(namecont,100,"hQya2_%i",i);
+
+		cont = (AliOADBContainer*) foadb->Get(namecont);
+		if(!cont){
+		    printf("OADB object %s is not available in the file\n",namecont);
+		    return;	
+		}
+		
+		if(!(cont->GetObject(run))){
+		    printf("OADB object %s is not available for run %i (used run 137366)\n",namecont,run);
+		    run = 137366;
+		}
+		fMeanQ[i][iside][icoord] = ((TH1F *) cont->GetObject(run))->GetMean();
+		fWidthQ[i][iside][icoord] = ((TH1F *) cont->GetObject(run))->GetRMS();
+
+		//for v3
+		if(iside==0 && icoord==0)
+		  snprintf(namecont,100,"hQxc3_%i",i);
+		else if(iside==1 && icoord==0)
+		  snprintf(namecont,100,"hQxa3_%i",i);
+		else if(iside==0 && icoord==1)
+		  snprintf(namecont,100,"hQyc3_%i",i);
+		else if(iside==1 && icoord==1)
+		  snprintf(namecont,100,"hQya3_%i",i);
+
+		cont = (AliOADBContainer*) foadb->Get(namecont);
+		if(!cont){
+		    printf("OADB object %s is not available in the file\n",namecont);
+		    return;	
+		}
+		
+		if(!(cont->GetObject(run))){
+		    printf("OADB object %s is not available for run %i (used run 137366)\n",namecont,run);
+		    run = 137366;
+		}
+		fMeanQv3[i][iside][icoord] = ((TH1F *) cont->GetObject(run))->GetMean();
+		fWidthQv3[i][iside][icoord] = ((TH1F *) cont->GetObject(run))->GetRMS();
+
+     	    }
+	}
+    }
+}
+//____________________________________________________________________
+void AliTwoParticlePIDCorr::FillPIDEventPlane(Double_t centrality,Int_t par,Float_t trigphi,Float_t fReactionPlane) 
+{
+
+ // Event plane (determine psi bin)
+    Double_t gPsiMinusPhi    =   0.;
+    Double_t gPsiMinusPhiBin = -10.;
+if(fRequestEventPlane){
+    gPsiMinusPhi   = TMath::Abs(trigphi - fReactionPlane);
+    //in-plane
+    if((gPsiMinusPhi <= 7.5*TMath::DegToRad())||
+      (gPsiMinusPhi >= 352.5*TMath::DegToRad())||
+       ((172.5*TMath::DegToRad() <= gPsiMinusPhi)&&(gPsiMinusPhi <= 187.5*TMath::DegToRad())))
+      gPsiMinusPhiBin = 0.0;
+    //intermediate
+    else if(((37.5*TMath::DegToRad() <= gPsiMinusPhi)&&(gPsiMinusPhi <= 52.5*TMath::DegToRad()))||
+	    ((127.5*TMath::DegToRad() <= gPsiMinusPhi)&&(gPsiMinusPhi <= 142.5*TMath::DegToRad()))||
+	    ((217.5*TMath::DegToRad() <= gPsiMinusPhi)&&(gPsiMinusPhi <= 232.5*TMath::DegToRad()))||
+	    ((307.5*TMath::DegToRad() <= gPsiMinusPhi)&&(gPsiMinusPhi <= 322.5*TMath::DegToRad())))
+      gPsiMinusPhiBin = 1.0;
+    //out of plane
+    else if(((82.5*TMath::DegToRad() <= gPsiMinusPhi)&&(gPsiMinusPhi <= 97.5*TMath::DegToRad()))||
+	    ((262.5*TMath::DegToRad() <= gPsiMinusPhi)&&(gPsiMinusPhi <= 277.5*TMath::DegToRad())))
+      gPsiMinusPhiBin = 2.0;
+    //everything else
+    else 
+      gPsiMinusPhiBin = 3.0;
+
+    fEventPlanePID->Fill(centrality,gPsiMinusPhiBin,(Float_t)par); 
+ }
 }
 
-
-
-
-
-
-//____________________________________________________________________
+//----------------------------------------------------------
 void AliTwoParticlePIDCorr::Terminate(Option_t *) 
 {
   // Draw result to screen, or perform fitting, normalizations
@@ -4218,149 +4950,3 @@ void AliTwoParticlePIDCorr::Terminate(Option_t *)
   
 }
 //------------------------------------------------------------------ 
-/*
-
- // get centrality object and check quality
-  Double_t cent_v0=0;
-
-
-if(fCentralityMethod=="V0M" || fCentralityMethod=="V0A" || fCentralityMethod=="V0C")//for PbPb, pPb, pp7TeV(still to be introduced)
-    {
-  AliCentrality *centralityObj=0;
-  if(aod) 
-  AliAODHeader *header = (AliAODHeader*) aod->GetHeader();
-  if(header){
-  centralityObj = header->GetCentralityP();
-  // if (centrality->GetQuality() != 0) return ;
-
-  if(centralityObj)
-  {
-if(fSampleType=="pPb" || fSampleType=="PbPb" || fSampleType=="pp")   fHistCentStats->Fill(0.,centralityObj->GetCentralityPercentile("V0M"));//only available for LHC10d at present (Quantile info)
-if(fSampleType=="pPb" || fSampleType=="PbPb")      fHistCentStats->Fill(2.,centralityObj->GetCentralityPercentile("V0A"));
-if(fSampleType=="pPb" || fSampleType=="PbPb")      fHistCentStats->Fill(4.,centralityObj->GetCentralityPercentile("V0C"));
-if(fSampleType=="pPb" || fSampleType=="PbPb")      fHistCentStats->Fill(6.,centralityObj->GetCentralityPercentile("CL1"));
-if(fSampleType=="pPb" || fSampleType=="PbPb")      fHistCentStats->Fill(8.,centralityObj->GetCentralityPercentile("ZNA")); 
-
-      cent_v0 = centralityObj->GetCentralityPercentile(fCentralityMethod);
-  }
-  else
-    {
-  cent_v0= -1;
-     }
-  }//AOD header
-    }//centralitymethod condition
-
-else if(fCentralityMethod=="V0M_MANUAL" || fCentralityMethod=="V0A_MANUAL" || fCentralityMethod=="V0C_MANUAL" || fCentralityMethod=="TRACKS_MANUAL")
-   {
-    cent_v0 = GetReferenceMultiplicityVZEROFromAOD(aod);
-    fHistrefMultiplicity->Fill(cent_v0);
-   }
- else  cent_v0= -1;
-
-
-if(fSampleType=="pPb" || fSampleType=="PbPb") if (cent_v0 < 0)  return;//for pp case it is the multiplicity
-
-
- 
-
- Float_t bSign = (aod->GetMagneticField() > 0) ? 1 : -1;//for two track efficiency cut in correlation function calculation
- Float_t bSign1=aod->GetHeader()->GetMagneticField() ;//for dca cut in ClassifyTrack(), i.e in track loop
-
-// Pileup selection ************************************************
- if(frejectPileUp)  //applicable only for TPC only tracks,not for hybrid tracks?.
-      {
- if (fAnalysisUtils && fAnalysisUtils->IsPileUpEvent(aod)) return;
-//count events after PileUP cut
-   fEventCounter->Fill(3);
-  }
-
-
- //vertex selection(is it fine for PP?)
- if ( fVertextype==1){//for pPb basically if(!fAnalysisUtils->IsVertexSelected2013pA(aod)) return; 
-  trkVtx = aod->GetPrimaryVertex();
-  if (!trkVtx || trkVtx->GetNContributors()<=0) return;
-  TString vtxTtl = trkVtx->GetTitle();
-  if (!vtxTtl.Contains("VertexerTracks")) return;
-   zvtx = trkVtx->GetZ();
-  const AliAODVertex* spdVtx = aod->GetPrimaryVertexSPD();
-  if (!spdVtx || spdVtx->GetNContributors()<=0) return;
-  TString vtxTyp = spdVtx->GetTitle();
-  Double_t cov[6]={0};
-  spdVtx->GetCovarianceMatrix(cov);
-  Double_t zRes = TMath::Sqrt(cov[5]);
-  if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
-   if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
-  }
-  else if(fVertextype==2) {//for pp and pb-pb case , taken from Jan's code
-	Int_t nVertex = aod->GetNumberOfVertices();
-  	if( nVertex > 0 ) { 
-     trkVtx = aod->GetPrimaryVertex();
-		Int_t nTracksPrim = trkVtx->GetNContributors();
-                 zvtx = trkVtx->GetZ();
-  		//if (fDebug > 1)AliInfo(Form(" Vertex in = %f with %d particles by  %s data ...",zVertex,nTracksPrim,vertex->GetName()));
-  		// Reject TPC only vertex
-		TString name(trkVtx->GetName());
-		if (name.CompareTo("PrimaryVertex") && name.CompareTo("SPDVertex"))return;
-
-		// Select a quality vertex by number of tracks?
-  		if( nTracksPrim < fnTracksVertex ) {
-		  //if (fDebug > 1) AliInfo(" Primary-vertex Selection: event REJECTED ...");
-  			return ;
-  			}
-  		// TODO remove vertexer Z events with dispersion > 0.02: Doesn't work for AOD at present
-                //if (strcmp(vertex->GetTitle(), "AliVertexerZ") == 0 && vertex->GetDispersion() > 0.02)
-                //  return kFALSE;
-		//	if (fDebug > 1) AliInfo(" Primary-vertex Selection: event ACCEPTED...");
-	}
-	else return;
-
-  }
- else if(fVertextype==0){//default case
-  trkVtx = aod->GetPrimaryVertex();
-  if (!trkVtx || trkVtx->GetNContributors()<=0) return;//proper number of contributors
-  zvtx = trkVtx->GetZ();
-  Double32_t fCov[6];
-  trkVtx->GetCovarianceMatrix(fCov);
-  if(fCov[5] == 0) return;//proper vertex resolution
-  }
-  else {
-   AliInfo("Wrong Vertextype set for Primary-vertex Selection: event REJECTED ...");
-   return;//as there is no proper sample type
-  }
-
-  fHistQA[0]->Fill((trkVtx->GetX()));fHistQA[1]->Fill((trkVtx->GetY()));fHistQA[2]->Fill((trkVtx->GetZ())); //for trkVtx only before vertex cut |zvtx|<10 cm
-
-//count events having a proper vertex
-   fEventCounter->Fill(5);
-
- if (TMath::Abs(zvtx) > fzvtxcut) return;
-
-//count events after vertex cut
-  fEventCounter->Fill(7);
-
-
- //if(!fAnalysisUtils->IsVertexSelected2013pA(aod)) return;
-  
- fHistQA[3]->Fill((trkVtx->GetX()));fHistQA[4]->Fill((trkVtx->GetY()));fHistQA[5]->Fill((trkVtx->GetZ()));//after vertex cut,for trkVtx only
-
-
- if(!aod) return; //for safety
-
- Double_t frefMult=0;
-
-//reference multiplicity for pp 7 TeV
- if ((fMultiplicityEstimator == "TRACKS_MANUAL") || (fMultiplicityEstimator == "V0M_MANUAL")|| (fMultiplicityEstimator == "V0A_MANUAL")||(fMultiplicityEstimator == "V0C_MANUAL")) {cent_v0=GetReferenceMultiplicityVZEROFromAOD(aod,bSign1);}
- else {frefMult=GetReferenceMultiplicityVZEROFromAOD(aod,bSign1);}
- 
-
-  
-// centrality weighting (optional for 2011 if central and semicentral triggers are used)
- if (fCentralityWeights && !AcceptEventCentralityWeight(cent_v0))
-  {
-    AliInfo(Form("Rejecting event because of centrality weighting: %f", cent_v0));
-    return;
-  }
-
-//count events after rejection due to centrality weighting
-  fEventCounter->Fill(9);
-*/

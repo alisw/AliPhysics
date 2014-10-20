@@ -193,6 +193,11 @@ class AliBalancePsi : public TObject {
 			      Double_t &sigma, Double_t &sigmaError,
 			      Double_t &skewness, Double_t &skewnessError,
 			      Double_t &kurtosis, Double_t &kurtosisError);
+
+  //++++++++++++++++++//
+  Double_t GetFWHM(Int_t gDeltaEtaPhi, TH1D* gHist,
+		   Double_t &fwhm_spline, Double_t &fwhmError);
+  //++++++++++++++++++//
   
   TH2D *GetQAHistHBTbefore() {return fHistHBTbefore;}
   TH2D *GetQAHistHBTafter() {return fHistHBTafter;}

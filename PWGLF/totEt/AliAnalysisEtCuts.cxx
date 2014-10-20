@@ -33,14 +33,15 @@ AliAnalysisEtCuts::AliAnalysisEtCuts() :
   ,fPhosTrackRCut(5.0)
   ,fPhosBadDistanceCut(3.0)
   
-  ,fGeometryPhosEtaAccCut(0.12)
+  ,fGeometryPhosEtaAccCut(0.1)//gives wiggle room
   ,fGeometryPhosPhiAccMinCut(-100)//260.0)
   ,fGeometryPhosPhiAccMaxCut(-40)//320.0)
   ,fGeometryPhosDetectorRadius(460.0)
 				    //
   ,fGeometryEmcalEtaAccCut(0.6)
   ,fGeometryEmcalPhiAccMinCut(80.0) // rad 1.4
-  ,fGeometryEmcalPhiAccMaxCut(180.0) // rad 3.14
+  ,fGeometryEmcalPhiAccMaxCut(120.0) // rad 2.1
+				    //,fGeometryEmcalPhiAccMaxCut(180.0) // rad 3.14
   ,fGeometryEmcalDetectorRadius(440.0)
 				    //
   ,fReconstructedVertexXCut(0.5)

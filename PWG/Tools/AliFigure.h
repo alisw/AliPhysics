@@ -27,6 +27,7 @@ class AliFigure : public TCanvas
 
   enum Status_t {
     kWorkInProgress = 0,
+    kThisWork,
     kPerformance,
     kPreliminary,
     kFinal,
@@ -61,12 +62,17 @@ class AliFigure : public TCanvas
 
   void SetTextSize(Float_t size);
 
+  void SetDisabled(Bool_t disable = kTRUE) { fDisabled = disable; }
+  Bool_t GetDisabled() const { return fDisabled; }
+
   static TStyle* Style();
 
  protected:
   void UpdateLogo();
   void UpdateLogoPos();
   void UpdatePad(TPad *pad);
+
+  Bool_t   fDisabled;
 
   Bool_t   isMC;
   Status_t fStatus;

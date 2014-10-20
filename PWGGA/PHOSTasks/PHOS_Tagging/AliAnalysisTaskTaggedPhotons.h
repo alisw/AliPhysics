@@ -41,7 +41,9 @@ public:
 
   void SetTrigger(Bool_t isPHOSTrig){fIsMB=isPHOSTrig;}
   void SetMC(Bool_t isMC=kTRUE){fIsMC=isMC;}
+  void SetFastMC(void){fIsFastMC=kTRUE;fIsMC=kTRUE; } //same as MC, but bypass event checks
   void SetPi0WeightParameters(TArrayD * ar) ;
+  void SetDustanceToBad(Float_t cut=2.5){fMinBCDistance=cut;}
 
 protected:
   void    FillMCHistos() ;
@@ -49,12 +51,12 @@ protected:
   Int_t   GetFiducialArea(const Float_t * pos)const ; //what kind of fiducial area hit the photon
   Int_t   IsSameParent(const AliCaloPhoton *p1, const AliCaloPhoton *p2) const; //Check MC genealogy; return PDG of parent
   Bool_t  IsGoodChannel(Int_t mod, Int_t ix, Int_t iz) ;
-  Bool_t  IsInPi0Band(Double_t m, Double_t pt)const; //Check if invariant mass is within pi0 peak
+  Double_t  InPi0Band(Double_t m, Double_t pt)const; //Check if invariant mass is within pi0 peak
   Bool_t  TestDisp(Double_t l0, Double_t l1, Double_t e)const  ;
   Bool_t  TestTOF(Double_t /*t*/,Double_t /*en*/)const{return kTRUE;} 
   Bool_t  TestCharged(Double_t dr,Double_t en)const ;
   void    InitGeometry() ;  //read reotation matrixes from AOD/AOD
-  Int_t   EvalIsolation(TLorentzVector * ph) ;
+  Int_t   EvalIsolation(TLorentzVector * ph,Bool_t isPhoton) ;
   Bool_t  TestLambda(Double_t pt,Double_t l1,Double_t l2) ;
   Bool_t  TestPID(Int_t iPID, AliCaloPhoton* part) ;
   Double_t PrimaryParticleWeight(AliAODMCParticle * particle) ;
@@ -73,7 +75,7 @@ private:
   TClonesArray *fStack ;             //!Pointer to MC stack
   TClonesArray * fTrackEvent ;   //!List of tracks in the event
   TClonesArray * fPHOSEvent ;    //!List of tracks in the event
-  TList   * fPHOSEvents[1][5] ; //!Previous events for mixing
+  TList   * fPHOSEvents[10][5] ; //!Previous events for mixing
   TList   * fCurrentMixedList;   //! list of previous evetns for given centrality
   AliTriggerAnalysis * fTriggerAnalysis ; //!
   AliAnalysisUtils * fUtils ;
@@ -83,14 +85,16 @@ private:
   Float_t fZmin ;               //area
   Float_t fPhimax ;             //covered by
   Float_t fPhimin ;             //full calorimeter
-  Double_t fWeightParamPi0[6] ; //Parameters to calculate weights
+  Float_t fMinBCDistance;       //minimal distance to bad channel
+  Double_t fWeightParamPi0[7] ; //Parameters to calculate weights
   //
   Double_t fCentrality;
   Int_t fCentBin ;
   Bool_t fIsMB ; //which trigger to use
   Bool_t fIsMC ; //Is this is MC
+  Bool_t fIsFastMC; //This is fast MC, bypass event checks
   TH2I * fPHOSBadMap[6] ; 
     
-  ClassDef(AliAnalysisTaskTaggedPhotons, 2);   // a PHOS photon analysis task 
+  ClassDef(AliAnalysisTaskTaggedPhotons, 3);   // a PHOS photon analysis task 
 };
 #endif // ALIANALYSISTASKTAGGEDPHOTONS_H

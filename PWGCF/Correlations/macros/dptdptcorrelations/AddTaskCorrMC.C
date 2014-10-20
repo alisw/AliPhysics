@@ -11,8 +11,8 @@
 /////////////////////////////////////////////////////////////////////////////////
 
 AliDptDptInMC *AddTaskCorrMC
-(int    singlesOnly            = 0,
- int    useWeights             = 1,
+(int    singlesOnly            = 1,
+ int    useWeights             = 0,
  int    centralityMethod       = 4,
  int    chargeSet              = 1,
  int    trackFilterBit         = 128,
@@ -22,8 +22,8 @@ AliDptDptInMC *AddTaskCorrMC
  double dcaZMax                =  3.0,
  double dcaXYMin               = -2.4,
  double dcaXYMax               =  2.4,
- int nCentrality               =  3, 
- TString anadata               = "MCAOD",
+ int nCentrality               =  5, 
+ TString anadata               = "MCAODreco",
  Bool_t NoResonances           =  kTRUE,
  Bool_t NoElectron             =  kTRUE,
  const char* taskname          = "MCTruth",
@@ -48,8 +48,10 @@ AliDptDptInMC *AddTaskCorrMC
 	{
 	  
 	  minCentrality[0] = 0.0; maxCentrality[0] = 10.0; 
-	  minCentrality[1] = 30.0; maxCentrality[1] = 40.0;
-	  minCentrality[2] = 60.0; maxCentrality[2] = 70.0;
+	  minCentrality[1] = 10.0; maxCentrality[1] = 20.0; 
+	  minCentrality[2] = 20.0; maxCentrality[2] = 30.0; 
+	  minCentrality[3] = 30.0; maxCentrality[3] = 40.0;
+	  minCentrality[4] = 60.0; maxCentrality[4] = 70.0;
 	  
 	}
       else

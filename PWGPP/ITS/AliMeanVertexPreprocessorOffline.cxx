@@ -211,10 +211,10 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
       if ((useTRKvtx==kFALSE) && (useITSSAvtx==kFALSE)){
 	AliError(Form("Also SPD vertex histograms have too few entries for fitting, return"));
 	fStatus=kLowStatistics;
-			return;		 
+	return;		 
       }
     }
-	
+    
     if((nEntriesX == 0.)&&(nEntriesY==0.) && (nEntriesZ>0.)){
       vertexerSPD3Doff = kTRUE;
       AliWarning("Vertexer SPD 3D off");
@@ -296,6 +296,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 	useSPDvtx = kTRUE;
 	fStatus=kUseOfflineSPDvtx;
       }
+      AliDebug(2, Form("xHistoRMS = %f, yHistoRMS = %f, zHistoRMS = %f", xHistoRMS, yHistoRMS, zHistoRMS)); 
     }
     
     
@@ -304,6 +305,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
       histSPDvtxX ->Fit("gaus", "M");
       fitVtxX = histSPDvtxX -> GetFunction("gaus");
       xMeanVtx = fitVtxX -> GetParameter(1);
+      xSigmaVtx = fitVtxX -> GetParameter(2);
       if (TMath::Abs(xMeanVtx) > 2.) {
 	xMeanVtx = 0.;
 	writeMeanVertexSPD=kTRUE;
@@ -312,6 +314,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
       histSPDvtxY ->Fit("gaus", "M");
       fitVtxY = histSPDvtxY -> GetFunction("gaus");
       yMeanVtx = fitVtxY -> GetParameter(1);
+      ySigmaVtx = fitVtxY -> GetParameter(2);
       if (TMath::Abs(yMeanVtx) > 2.) {
 	yMeanVtx = 0.;
 	writeMeanVertexSPD=kTRUE;
@@ -355,6 +358,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 	sigmaOnline[1] = vtxOnline->GetYRes();
 	sigmaOnline[2] = vtxOnline->GetZRes();
 	
+	AliDebug(2, Form("sigmaOnline[0] = %f, sigmaOnline[1] = %f, sigmaOnline[2] = %f", sigmaOnline[0], sigmaOnline[1], sigmaOnline[2]));
 	//vtxOnline->GetSigmaXYZ(sigmaOnline);
 	
 	if ((TMath::Abs(posOnline[0]-xMeanVtx) > 0.1) || (TMath::Abs(posOnline[1]-yMeanVtx) > 0.1) || (TMath::Abs(posOnline[2]-zMeanVtx) > 1.)){
@@ -609,28 +613,28 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
     
      if (highMultEnvironment==kTRUE || highMultppEnvironment==kTRUE){
     
-    projXvsMult -> Fit("gaus", "M", "", -0.4, 0.4);
-    sigmaFitX = projXvsMult -> GetFunction("gaus");
-    xSigmaMult = sigmaFitX->GetParameter(2);
-	  
-      if ((xSigmaMult <0) || (xSigmaMult>0.03)){
-	AliWarning(Form("Problems with luminosiy region determination, update of the postion only"));
-	xSigmaMult = 0.;
-	xSigmaVtx = 0.0120;
-	fStatus=kLumiRegCovMatrixProblem;
+       projXvsMult -> Fit("gaus", "M", "", -0.4, 0.4);
+       sigmaFitX = projXvsMult -> GetFunction("gaus");
+       xSigmaMult = sigmaFitX->GetParameter(2);
+       
+       if ((xSigmaMult <0) || (xSigmaMult>0.03)){
+	 AliWarning(Form("Problems with luminosiy region determination, update of the postion only"));
+	 xSigmaMult = 0.;
+	 xSigmaVtx = 0.0120;
+	 fStatus=kLumiRegCovMatrixProblem;
+       }
+       else{
+	 xSigmaVtx = xSigmaMult;
+	 xSigmaVtx = xSigmaVtx*1.1;
       }
-      else{
-	xSigmaVtx = xSigmaMult;
-	xSigmaVtx = xSigmaVtx*1.1;
-      }
-	  
-      projYvsMult -> Fit("gaus", "M", "", -0.2, 0.5);
-      TCanvas *c = new TCanvas("nwC", "nwC");
-      c->cd();
-      projYvsMult->Draw();
+       
+       projYvsMult -> Fit("gaus", "M", "", -0.2, 0.5);
+       TCanvas *c = new TCanvas("nwC", "nwC");
+       c->cd();
+       projYvsMult->Draw();
       sigmaFitY = projYvsMult -> GetFunction("gaus");
       ySigmaMult = sigmaFitY->GetParameter(2);
-	  
+      
       if ((ySigmaMult <0) || (ySigmaMult>0.03)){
 	AliWarning(Form("Problems with luminosiy region determination, update of the postion only"));
 	ySigmaMult = 0.;
@@ -641,12 +645,12 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 	ySigmaVtx = ySigmaMult;
 	ySigmaVtx = ySigmaVtx*1.1;
       }
-    	  
+      
       TProfile *htrkXZ = histTRKVertexXZ ->ProfileY();
       htrkXZ -> Fit("pol1", "M", "", -10., 10.);
       corrFit = htrkXZ->GetFunction("pol1");
       corrXZ = corrFit->GetParameter(1);
-	  
+      
       if (TMath::Abs(corrXZ) > 0.01) {
 	AliWarning(Form("Problems in the correlation fitting, not update the covariance matrix"));
 	corrXZ =0.;
@@ -656,12 +660,12 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 	covarXZ = corrXZ * zSigmaVtx*zSigmaVtx;
 	    
       }
-	  
+      
       TProfile *htrkYZ = histTRKVertexYZ ->ProfileY();
       htrkYZ -> Fit("pol1", "M", "", -10., 10.);
       corrFit = htrkYZ->GetFunction("pol1");
       corrYZ = corrFit->GetParameter(1);
-	  
+      
       if (TMath::Abs(corrYZ) > 0.01) {
 	AliWarning(Form("Problems in the correlation fitting, not update the covariance matrix"));
 	corrYZ =0.;
@@ -670,9 +674,9 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
       else{
 	covarYZ = corrYZ*zSigmaVtx*zSigmaVtx;
       }
-	  
+      
      }
-	
+     
      Double_t position[3], covMatrix[6];
      Double_t chi2=1.; 
      Int_t nContr=1;	

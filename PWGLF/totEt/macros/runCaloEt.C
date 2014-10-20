@@ -6,10 +6,10 @@
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
 void runCaloEt(bool submit = false, // true or false 
 	       const char *dataType="simPbPb", // "sim" or "real" etc.
-	       //const char *dataType="realPbPb", // "sim" or "real" etc.
+	       // const char *dataType="realPbPb", // "sim" or "real" etc.
 	       const char *pluginRunMode="test", // "test" or "full" or "terminate"
-	       const char *det = "EMCal",
-	       int production = 1, Bool_t withtender = kTRUE, Int_t runnum = 0, Bool_t withNonlinearity = kTRUE, Bool_t withReclusterizing = kFALSE, Int_t trackmatchcuts=0, Bool_t is2011 = kFALSE) // "PHOS" or "EMCAL" or EMCalDetail
+	       const char *det = "EMCal",//"EMCal",
+	       int production = 1, Bool_t withtender = kTRUE, Int_t runnum = 0, Bool_t withNonlinearity = kTRUE, Bool_t withReclusterizing = kFALSE, Int_t trackmatchcuts=0, Bool_t is2011 = kFALSE, Bool_t jethad = kFALSE) // "PHOS" or "EMCAL" or EMCalDetail
 {
   bool runCompiledVersion = kTRUE;
   class AliAnalysisEtCuts;
@@ -76,7 +76,12 @@ void runCaloEt(bool submit = false, // true or false
   TString detStr(det);
   TString dataStr(dataType);
   if ( detStr.Contains("PHOS") ) {
-    gSystem->CopyFile("calocorrections.PHOS.root","calocorrections.root",kTRUE);
+    if(is2011){
+      gSystem->CopyFile("calocorrections.2011.PHOS.root","calocorrections.root",kTRUE);
+    }
+    else{
+      gSystem->CopyFile("calocorrections.PHOS.root","calocorrections.root",kTRUE);
+    }
     if ( dataStr.Contains("sim") ) {
       gSystem->CopyFile("ConfigEtMonteCarlo.PHOS.C","ConfigEtMonteCarlo.C",kTRUE);
     }
@@ -85,23 +90,28 @@ void runCaloEt(bool submit = false, // true or false
     }
   }
   else{
-    gSystem->CopyFile("calocorrections.EMCAL.root","calocorrections.root",kTRUE);
-//     if(is2011){
-//       if ( dataStr.Contains("sim") ) {
-// 	gSystem->CopyFile("ConfigEtMonteCarlo.EMCAL.2011.C","ConfigEtMonteCarlo.C",kTRUE);
-//       }
-//       else{
-// 	gSystem->CopyFile("ConfigEtMonteCarlo.EMCAL.2011.data.C","ConfigEtMonteCarlo.C",kTRUE);
-//       }
-//     }
-//     else{
+    if(is2011){
+      gSystem->CopyFile("calocorrections.2011.EMCAL.root","calocorrections.root",kTRUE);
+    }
+    else{
+      gSystem->CopyFile("calocorrections.EMCAL.root","calocorrections.root",kTRUE);
+    }
+    if(is2011){
+      if ( dataStr.Contains("sim") ) {
+	gSystem->CopyFile("ConfigEtMonteCarlo.EMCAL.2011.C","ConfigEtMonteCarlo.C",kTRUE);
+      }
+      else{
+	gSystem->CopyFile("ConfigEtMonteCarlo.EMCAL.2011.data.C","ConfigEtMonteCarlo.C",kTRUE);
+      }
+    }
+    else{
       if ( dataStr.Contains("sim") ) {
 	gSystem->CopyFile("ConfigEtMonteCarlo.EMCAL.C","ConfigEtMonteCarlo.C",kTRUE);
       }
       else{
 	gSystem->CopyFile("ConfigEtMonteCarlo.EMCAL.data.C","ConfigEtMonteCarlo.C",kTRUE);
       }
-//     }
+    }
   }
 
   if(is2011){
@@ -147,6 +157,7 @@ void runCaloEt(bool submit = false, // true or false
   if(trackmatchcuts!=0){
     outputDir +=Form("TrackMatchCut%i",trackmatchcuts);
   }
+  if(jethad) outputDir+="WithJetHadronMethod";
 
   cout << " taskName " << taskName
        << " outputName " << outputName 
@@ -178,7 +189,11 @@ void runCaloEt(bool submit = false, // true or false
 //       chain->Add("/data/LHC10h8/137161/999/AliESDs.root");//Hijing Pb+Pb
 //       chain->Add("/data/LHC10h8/137161/111/AliESDs.root");//Hijing Pb+Pb
 //       chain->Add("/data/LHC10h8/137161/222/AliESDs.root");//Hijing Pb+Pb
-chain->Add("/data/LHC11a10a_bis/139465/001/AliESDs.root");
+//      chain->Add("/data/LHC14a6/168464/605/AliESDs.root");
+//chain->Add("/data/LHC11a10a_bis/139465/001/AliESDs.root");
+//      chain->Add("/data/LHC14a6/168464/605/AliESDs.root");//HIJING with embedded signals
+      chain->Add("/data/LHC12d3/168464/201/AliESDs.root");//HIJING with embedded signals - works, full acceptance
+      //chain->Add("/data/LHC14a6/168464/888/AliESDs.root");//HIJING with embedded signals
 //   chain->Add("/data/LHC11a10a_bis/139465/002/AliESDs.root");
 //   chain->Add("/data/LHC11a10a_bis/139465/003/AliESDs.root");
 //  chain->Add("/data/LHC11a10a_bis/139465/004/AliESDs.root");
@@ -258,7 +273,8 @@ chain->Add("/data/LHC11a10a_bis/139465/001/AliESDs.root");
 
     //      chain->Add("/data/tmp/10000139465010.600/AliESDs.root");
 
-   chain->Add("/data/LHC10h/pass2_rev15/10000137366041.860/AliESDs.root");
+      chain->Add("/data/LHC11h/pass2/000168464/11000168464082.94/AliESDs.root");
+      //chain->Add("/data/LHC10h/pass2_rev15/10000137366041.860/AliESDs.root");
 //       chain->Add("/data/LHC10h/pass2_rev15/10000137366041.870/AliESDs.root");
 //       chain->Add("/data/LHC10h/pass2_rev15/10000137366041.880/AliESDs.root");
 //       chain->Add("/data/LHC10h/pass2_rev15/10000137366041.890/AliESDs.root");
@@ -341,7 +357,7 @@ chain->Add("/data/LHC11a10a_bis/139465/001/AliESDs.root");
     // one can sellect what collision candidates to use
     // triggered sample only: L1 = AliVEvent::kEMCEGA, AliVEvent::kEMCEJE; L0 = AliVEvent::kEMC1, AliVEvent::kEMC7
     tender->SelectCollisionCandidates( AliVEvent::kAny );
-    tender->SetDebugLevel(2);
+    //tender->SetDebugLevel(2);
 
     //AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("histosTrgContam", TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
     //mgr->ConnectOutput(tender,1,coutput3);
@@ -371,7 +387,21 @@ chain->Add("/data/LHC11a10a_bis/139465/001/AliESDs.root");
 //                                     Bool_t tuneOnData=kFALSE, Int_t recoPass=2,
 //                                     Bool_t cachePID=kFALSE, TString detResponse="",
 //                                     Bool_t useTPCEtaCorrection = kFALSE);
-  AliAnalysisTaskPIDResponse *taskPID=AddTaskPIDResponse(isMc,kTRUE,kTRUE,2);
+//  AliAnalysisTask *AddTaskPIDResponse(Bool_t isMC=kFALSE, Bool_t autoMCesd=kTRUE,
+//                                  Bool_t tuneOnData=kFALSE, Int_t recoPass=2,
+//                                  Bool_t cachePID=kFALSE, TString detResponse="",
+//                                  Bool_t useTPCEtaCorrection = kTRUE,
+//                                  Bool_t useTPCMultiplicityCorrection = kFALSE
+//                                  Int_t  userDataRecoPass = -1)
+
+  AliAnalysisTask *taskPID;
+  if(submit){
+    taskPID=AddTaskPIDResponse(isMc);//,kTRUE,kTRUE,2,kFALSE,"",kTRUE,kFALSE,2);
+  }
+  else{
+    cout<<"Not submitting so forcing pass number locally so it doesn't crash"<<endl;
+    taskPID=AddTaskPIDResponse(isMc,kTRUE,kTRUE,2,kFALSE,"",kTRUE,kFALSE,2);
+  }
   //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
   //AddTaskPIDqa();
 

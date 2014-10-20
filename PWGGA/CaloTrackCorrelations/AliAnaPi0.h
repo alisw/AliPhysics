@@ -248,7 +248,6 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   //Pi0 Acceptance
   TH1F *   fhPrimPi0E ;                //! Spectrum of Primary
   TH1F *   fhPrimPi0Pt ;               //! Spectrum of Primary
-  TH1F *   fhPrimPi0PtRejected ;       //! Spectrum of Primary,rejected
   TH1F *   fhPrimPi0AccE ;             //! Spectrum of primary with accepted daughters
   TH1F *   fhPrimPi0AccPt ;            //! Spectrum of primary with accepted daughters
   TH2F *   fhPrimPi0Y ;                //! Rapidity distribution of primary particles  vs pT
@@ -269,7 +268,6 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   //Eta acceptance
   TH1F *   fhPrimEtaE ;                //! Spectrum of Primary
   TH1F *   fhPrimEtaPt ;               //! Spectrum of Primary
-  TH1F *   fhPrimEtaPtRejected ;       //! Spectrum of Primary, rejected
   TH1F *   fhPrimEtaAccE ;             //! Spectrum of primary with accepted daughters
   TH1F *   fhPrimEtaAccPt ;            //! Spectrum of primary with accepted daughters
   TH2F *   fhPrimEtaY ;                //! Rapidity distribution of primary particles vs pT
@@ -310,6 +308,11 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhMCPi0PtOrigin ;           //! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
   TH2F *   fhMCEtaPtOrigin ;           //! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
 
+  TH2F *   fhMCPi0ProdVertex;          //! Spectrum of selected pi0 vs production vertex
+  TH2F *   fhMCEtaProdVertex;          //! Spectrum of selected eta vs production vertex
+  TH2F *   fhPrimPi0ProdVertex;        //! Spectrum of primary pi0 vs production vertex
+  TH2F *   fhPrimEtaProdVertex;        //! Spectrum of primary eta vs production vertex
+  
   TH2F *   fhReMCFromConversion ;      //! Invariant mass of 2 clusters originated in conversions
   TH2F *   fhReMCFromNotConversion ;   //! Invariant mass of 2 clusters not originated in conversions
   TH2F *   fhReMCFromMixConversion ;   //! Invariant mass of 2 clusters one from conversion and the other not
@@ -322,7 +325,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0(              const AliAnaPi0 & api0) ; // cpy ctor
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ; // cpy assignment
   
-  ClassDef(AliAnaPi0,27)
+  ClassDef(AliAnaPi0,28)
 } ;
 
 

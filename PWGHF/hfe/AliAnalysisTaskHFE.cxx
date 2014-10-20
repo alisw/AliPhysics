@@ -465,7 +465,7 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   fQACollection->CreateTH2F("Kinkbefore", "Kink status before filter; p_{T} (GeV/c); kink status", 100, 0., 20., 3, -0.5, 2.5);
   fQACollection->CreateTH2F("Kinkafter", "Kink status after filter; p_{T} (GeV/c); kink status", 100, 0., 20., 3, -0.5, 2.5);
   fQACollection->CreateTH1F("HFPuzzle", "Source definition for electrons from HF", 11, -0.5, 10.5);
- 
+  InitHistoRadius();
   InitHistoITScluster();
   InitContaminationQA();
   fQA->Add(fQACollection);
@@ -525,6 +525,9 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
     if(fisppMultiBin) fMCQA->SetPPMultiBin();
     if(TestBit(kTreeStream)){
       fMCQA->EnableDebugStreamer();
+    }
+    if(TestBit(kWeightHist)){
+      fMCQA->EnableGetWeightHist();
     }
     fMCQA->CreatDefaultHistograms(fHistMCQA);
     fMCQA->SetBackgroundWeightFactor(fElecBackgroundFactor[0][0][0],fBinLimit);
@@ -1091,8 +1094,39 @@ void AliAnalysisTaskHFE::ProcessESD(){
     if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
     fQACollection->Fill("Kinkafter", track->Pt(), kinkstatus); 
 
+    // production radius
+    Double_t pradius[3] = {(Double_t)fCentralityF,track->Pt(),-1.};
+    Bool_t fill = kFALSE;
+    if(HasMCData()){
+      Int_t labelr = track->GetLabel();
+      if(labelr >=0) {
+	AliMCParticle *mctrackk = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(labelr));
+	if(mctrackk && (TMath::Abs(mctrackk->Particle()->GetPdgCode()) == 11)) {
+	  Int_t motherlabel = mctrackk->Particle()->GetFirstMother();
+	  if(motherlabel >= 0){
+	    AliMCParticle *mothertrack = NULL;
+	    if((mothertrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(motherlabel)))){
+	      TParticle * mother = mothertrack->Particle();
+	      Int_t  pdgmother = mother->GetPdgCode();
+	      if(pdgmother == 22) {
+		pradius[2] = mctrackk->Particle()->R();
+		fill = kTRUE;
+	      }
+	    }
+	  }
+	}
+      }
+      if(fill)  fQACollection->Fill("RadiusBefore", pradius); 
+    }
+
     // HFEcuts: ITS layers cuts
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
+  
+    // production vertex
+    if(fill)  {
+      fQACollection->Fill("RadiusAfter", pradius); 
+      FillProductionVertex(track);
+    }
   
     // HFE cuts: TOF PID and mismatch flag
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTOF, track)) continue;
@@ -1110,7 +1144,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
     }
 
     if(HasMCData()){
-      FillProductionVertex(track);
+      //FillProductionVertex(track);
 
       if(fMCQA && signal){
         fMCQA->SetCentrality(fCentralityF);
@@ -1136,7 +1170,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
          if(fisNonHFEsystematics){
            //Fill additional containers for electron source distinction
            Int_t elecSource = 0;
-           elecSource = fMCQA->GetElecSource(mctrack->Particle());
+           elecSource = fMCQA->GetElecSource(mctrack->Particle(), kTRUE);
            const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho"};
            const Char_t *levelName[kBgLevels]={"Best","Lower","Upper"};
            Int_t iName = 0;
@@ -1242,7 +1276,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
 	mcsource = fBackgroundSubtraction->FindMother(mctrack->GetLabel(),indexmother);
 	if(fBackgroundSubtraction->GetLevelBack()>=0) {
 	  if(fMCQA) {
-	    mcQAsource = fMCQA->GetElecSource(mctrack);
+	    mcQAsource = fMCQA->GetElecSource(mctrack, kTRUE);
 	    weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
 	  }
 	}
@@ -1348,7 +1382,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
           
           if(fisNonHFEsystematics){
             //Fill additional containers for electron source distinction           
-            elecSource = fMCQA->GetElecSource(mctrack->Particle());
+            elecSource = fMCQA->GetElecSource(mctrack->Particle(), kTRUE);
             const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho"};
             const Char_t *levelName[kBgLevels]={"Best","Lower","Upper"};
             Int_t iName = 0;
@@ -1413,7 +1447,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
           }       
           if(fisNonHFEsystematics){
             //Fill additional containers for electron source distinction             
-            elecSource = fMCQA->GetElecSource(mctrack->Particle());
+            elecSource = fMCQA->GetElecSource(mctrack->Particle(), kTRUE);
             const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho"};
             const Char_t *levelName[kBgLevels]={"Best","Lower","Upper"};
             Int_t iName = 0;
@@ -1645,8 +1679,32 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
     fQACollection->Fill("Kinkafter", track->Pt(), kinkstatus); 
 
+    // production radius
+    Double_t pradius[3] = {(Double_t)fCentralityF,track->Pt(),-1.};
+    Bool_t fill = kFALSE;
+    if(HasMCData()){
+      Int_t labelr = track->GetLabel();
+      if(labelr>=0) {
+	AliAODMCParticle *mctrackk = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(labelr));
+	if(mctrackk && (TMath::Abs(mctrackk->GetPdgCode()) == 11)) {
+	  Int_t motherlabel = mctrackk->GetMother();
+	  if((motherlabel>=0) && (motherlabel < fAODArrayMCInfo->GetEntriesFast())) {
+	    AliAODMCParticle *mcmothertrack = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(motherlabel));
+	    if(mcmothertrack && (TMath::Abs(mcmothertrack->GetPdgCode()) == 22)) {
+	      pradius[2] = TMath::Sqrt(mctrackk->Xv()*mctrackk->Xv()+mctrackk->Yv()*mctrackk->Yv());
+	      fill = kTRUE;
+	    }
+	  }
+	}
+      }
+      if(fill)  fQACollection->Fill("RadiusBefore", pradius); 
+    }
+
     // HFEcuts: ITS layers cuts
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
+
+    // production radius
+    if(fill) fQACollection->Fill("RadiusAfter", pradius); 
       
     // HFE cuts: TOF PID and mismatch flag
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTOF, track)) continue;
@@ -1758,8 +1816,9 @@ void AliAnalysisTaskHFE::ProcessAOD(){
         mcsource = fBackgroundSubtraction->FindMother(TMath::Abs(track->GetLabel()),indexmother);
 	if(fBackgroundSubtraction->GetLevelBack()>=0) {
 	  if(fMCQA) {
-	    mcQAsource = fMCQA->GetElecSource(mctrack);
+	    mcQAsource = fMCQA->GetElecSource(mctrack, kTRUE);
 	    weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
+	    //weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactorForPrimaries(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
 	  }
 	}
       }
@@ -1836,7 +1895,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
         mcsource = fBackgroundSubtraction->FindMother(TMath::Abs(track->GetLabel()),indexmother);
 	if(fBackgroundSubtraction->GetLevelBack()>=0) {
 	  if(fMCQA) {
-	    mcQAsource = fMCQA->GetElecSource(mctrack);
+	    mcQAsource = fMCQA->GetElecSource(mctrack, kTRUE);
 	    weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
 	  }
 	}
@@ -2068,6 +2127,26 @@ void AliAnalysisTaskHFE::InitContaminationQA(){
       break;
     }  
   }
+
+}
+//____________________________________________________________
+void AliAnalysisTaskHFE::InitHistoRadius(){
+  //
+  
+  // Before   
+  const Int_t kNDim = 3;
+  const Int_t kNBins[kNDim] = {11, 35, 100};
+  const Double_t kMin[kNDim] = {0,0.1,0.01};
+  const Double_t kMax[kNDim] = {11,20.,500.};
+  fQACollection->CreateTHnSparse("RadiusBefore", "RadiusBefore; centrality; p_{T} (GeV/c);radius [cm]", kNDim, kNBins, kMin, kMax);
+  fQACollection->BinLogAxis("RadiusBefore", 1);
+  fQACollection->BinLogAxis("RadiusBefore", 2);
+
+  // After
+  fQACollection->CreateTHnSparse("RadiusAfter", "RadiusAfter; centrality; p_{T} (GeV/c);radius [cm]", kNDim, kNBins, kMin, kMax);
+  fQACollection->BinLogAxis("RadiusAfter", 1);
+  fQACollection->BinLogAxis("RadiusAfter", 2);
+
 
 }
 
@@ -2388,7 +2467,9 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTriggerESD(AliESDEvent *ev) {
 
   //  printf("TRIGGERS %s \n",ev->GetFiredTriggerClasses().Data());
 
-    fTRDTriggerAnalysismb->CalcTriggers(ev);
+    if(fWhichTRDTrigger==4) fTRDTriggerAnalysistrg->CalcTriggers(ev);
+    else fTRDTriggerAnalysismb->CalcTriggers(ev);
+
 
     // mb selection of WU events
     if(fWhichTRDTrigger==1)
@@ -2456,13 +2537,19 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTriggerESD(AliESDEvent *ev) {
 //	    trginput=ev->GetHeader()->GetL1TriggerInputs() & (1 << 10);  // HSE
 	    //	    if(trginput==1024)
 //	    if(fTRDTriggerAnalysismb->CheckCondition(AliTRDTriggerAnalysis::kHSE))
-//	    if(fTRDTriggerAnalysismb->HasFired(AliTRDTriggerAnalysis::kHSE))
-	    if(fTRDTriggerAnalysismb->HasTriggered(AliTRDTriggerAnalysis::kHSE))
+	//	    if(fTRDTriggerAnalysismb->HasTriggered(AliTRDTriggerAnalysis::kHSE))
+
+//	if(fTRDTriggerAnalysismb->HasFired(AliTRDTriggerAnalysis::kHSE)) // for mb analysis
+	if(fTRDTriggerAnalysistrg->HasFired(AliTRDTriggerAnalysis::kHSE)) // just to check clean-up effect
+	{
+            // check if pre-trigger fired
+	    if((ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))||(ev->IsTriggerClassFired("CINT7WU-S-NOPF-ALL"))||(ev->IsTriggerClassFired("CINT8WU-S-NOPF-ALL")))
 	    {
 		DrawTRDTrigger(ev);
 		DrawTRDTriggerAnalysis(ev);
 		return kTRUE;
 	    } else return kFALSE;
+	}
     }// else return kFALSE;
 //    }
     if(fWhichTRDTrigger==5)
@@ -2476,16 +2563,24 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTriggerESD(AliESDEvent *ev) {
 	    //        printf("triggerinput %i \n",trginput);
 	    //	    if(trginput==4096)
 //	    if(fTRDTriggerAnalysismb->CheckCondition(AliTRDTriggerAnalysis::kHQU))
-//          if(fTRDTriggerAnalysismb->HasFired(AliTRDTriggerAnalysis::kHQU))
-          if(fTRDTriggerAnalysismb->HasTriggered(AliTRDTriggerAnalysis::kHQU))
+//	if(fTRDTriggerAnalysismb->HasTriggered(AliTRDTriggerAnalysis::kHQU))
+        if(fTRDTriggerAnalysismb->HasFired(AliTRDTriggerAnalysis::kHQU)) // for mb analysis
 	    {
-		DrawTRDTrigger(ev);
-		DrawTRDTriggerAnalysis(ev);
-		return kTRUE;
-	    } else return kFALSE;
+		// check if pre-trigger fired
+		if((ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))||(ev->IsTriggerClassFired("CINT7WU-S-NOPF-ALL"))||(ev->IsTriggerClassFired("CINT8WU-S-NOPF-ALL")))
+		{
+		    DrawTRDTrigger(ev);
+		    DrawTRDTriggerAnalysis(ev);
+		    return kTRUE;
+		} else return kFALSE;
+	    }
     } //else return kFALSE;
 //    }
-   
+
+  
+
+
+
 
     return trdtrgevent;
 
@@ -2498,21 +2593,18 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliVEvent *ev) {
 // Check TRD trigger; pPb settings
 //
 
-    fTRDTriggerAnalysistrg->CalcTriggers(ev);
+    if(fWhichTRDTrigger<10) fTRDTriggerAnalysistrg->CalcTriggers(ev);
+    else fTRDTriggerAnalysismb->CalcTriggers(ev);
 
     // HSE cleanup
     if(fWhichTRDTrigger==6)
     {
-	if(!fTRDTriggerAnalysistrg->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHSE))
-	{
-	    return kFALSE;
-	}
-	else
+	if(fTRDTriggerAnalysistrg->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHSE)) // for rare period physics analysis
 	{
 	    //   DrawTRDTrigger(ev);
 	    DrawTRDTriggerAnalysis(ev);
 	    return kTRUE;
-	}
+	} else return kFALSE;
     }
 
  
@@ -2521,16 +2613,12 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliVEvent *ev) {
     if(fWhichTRDTrigger==7)
     {
 
-	if(!fTRDTriggerAnalysistrg->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHQU))
-	{
-	    return kFALSE;
-	}
-	else
+	if(fTRDTriggerAnalysistrg->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHQU)) // for rare period physics analysis
 	{
 	    //     DrawTRDTrigger(ev);
 	    DrawTRDTriggerAnalysis(ev);
 	    return kTRUE;
-	}
+	} else return kFALSE;
     }
 
     // HSE or HQU cleanup
@@ -2546,6 +2634,47 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliVEvent *ev) {
 	{
 	    return kFALSE; 
 	}
+    }
+
+    // HEE cleanup
+    if(fWhichTRDTrigger==9)
+    {
+
+	if(fTRDTriggerAnalysistrg->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHEE)) // for rare period physics analysis
+	{
+	    //     DrawTRDTrigger(ev);
+	    DrawTRDTriggerAnalysis(ev);
+	    return kTRUE;
+	} else return kFALSE;
+    }
+
+
+    if(fWhichTRDTrigger==11)
+    {
+	if(fTRDTriggerAnalysismb->HasTriggered(AliTRDTriggerAnalysis::kHSE))
+	{
+	  //  DrawTRDTrigger(ev);
+	    DrawTRDTriggerAnalysis(ev);
+	    return kTRUE;
+	}   else return kFALSE;
+    }
+    if(fWhichTRDTrigger==12)
+    {
+	if(fTRDTriggerAnalysismb->HasTriggered(AliTRDTriggerAnalysis::kHQU))
+	{
+	  //  DrawTRDTrigger(ev);
+	    DrawTRDTriggerAnalysis(ev);
+	    return kTRUE;
+	}   else return kFALSE;
+    }
+    if(fWhichTRDTrigger==13)
+    {
+	if(fTRDTriggerAnalysismb->HasTriggered(AliTRDTriggerAnalysis::kHEE))
+	{
+	  //  DrawTRDTrigger(ev);
+	    DrawTRDTriggerAnalysis(ev);
+	    return kTRUE;
+	}   else return kFALSE;
     }
 
     return kFALSE;

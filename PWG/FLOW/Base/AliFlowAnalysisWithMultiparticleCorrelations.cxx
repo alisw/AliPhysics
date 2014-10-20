@@ -4869,7 +4869,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::DumpThePoints(AliFlowEventSim
 
 //=======================================================================================================================
 
-TH1D *AliFlowAnalysisWithMultiparticleCorrelations::GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable)
+TH1D *AliFlowAnalysisWithMultiparticleCorrelations::GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable, const char *production)
 {
  // Access from external ROOT file the desired histogram with weights. 
 
@@ -4884,11 +4884,12 @@ TH1D *AliFlowAnalysisWithMultiparticleCorrelations::GetHistogramWithWeights(cons
  TH1D *hist = NULL; 
 
  // b) Method name: 
- TString sMethodName = "Double_t AliFlowAnalysisWithMultiparticleCorrelations::GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable)"; 
+ TString sMethodName = "Double_t AliFlowAnalysisWithMultiparticleCorrelations::GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable, const char *production)"; 
 
  // c) Basic protection for arguments:
  if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI"))){Fatal(sMethodName.Data(),"!(TString(type).EqualTo...");}
  if(!(TString(variable).EqualTo("phi") || TString(variable).EqualTo("pt") || TString(variable).EqualTo("eta"))){Fatal(sMethodName.Data(),"!(TString(variable).EqualTo...");}
+ if(!(TString(production).EqualTo("data") || TString(production).BeginsWith("LHC"))){Fatal(sMethodName.Data(),"!(TString(production).EqualTo...");}
 
  // d) Check if the external ROOT file exists at specified path:
  if(gSystem->AccessPathName(filePath,kFileExists))
@@ -4920,7 +4921,7 @@ TH1D *AliFlowAnalysisWithMultiparticleCorrelations::GetHistogramWithWeights(cons
   return NULL;
  }
  // Finally, access the desired histogram:
- hist = dynamic_cast<TH1D*>(list->FindObject(Form("%s,%s",type,variable)));
+ hist = dynamic_cast<TH1D*>(list->FindObject(Form("%s,%s,%s",type,variable,production)));
  if(!hist)
  {
   //printf("\n => if(!hist)\n\n");   
@@ -4933,7 +4934,7 @@ TH1D *AliFlowAnalysisWithMultiparticleCorrelations::GetHistogramWithWeights(cons
 
  return hist;
 
-} // TH1D *AliFlowAnalysisWithMultiparticleCorrelations::GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable)
+} // TH1D *AliFlowAnalysisWithMultiparticleCorrelations::GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable, const char *production)
 
 
 

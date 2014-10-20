@@ -44,6 +44,12 @@ public:
    void             SetValueI(Int_t value)    {fMinI = value;}
    void             SetValueD(Double_t value) {fMinD = value;}
 
+   void             SetMaxPt(Double_t value) {fMaxPt = value;}
+   void             SetMinPt(Double_t value) {fMinPt = value;}
+   void		    SetPtDepCut(Bool_t flag) {fPtDepCut = flag;}
+   void		    SetPtDepCutMaxFormula(const char *formula) {fPtDepCutMaxFormula = formula;}
+   void		    SetPtDepCutMinFormula(const char *formula) {fPtDepCutMinFormula = formula;}
+
    Bool_t           OkValueI();
    Bool_t           OkRangeI();
    Bool_t           OkValueD();
@@ -58,13 +64,24 @@ protected:
    Int_t        fMaxI;       //  upper edge of INT range (not used for value cuts)
    Double_t     fMinD;       //  lower edge of DOUBLE range or ref. value for DOUBLE CUT
    Double_t     fMaxD;       //  upper edge of DOUBLE range (not used for value cuts)
+   
+   Int_t        fMinIptdep;  //  lower edge of INT range or ref. value for INT CUT -- pt dependent
+   Int_t        fMaxIptdep;  //  upper edge of INT range (not used for value cuts) -- pt dependent
+   Double_t     fMinDptdep;  //  lower edge of DOUBLE range or ref. value for DOUBLE CUT -- pt dependent
+   Double_t     fMaxDptdep;  //  upper edge of DOUBLE range (not used for value cuts) -- pt dependent
 
    Int_t        fCutValueI;  //  cut value INT
    Double_t     fCutValueD;  //  cut value DOUBLE
+   Bool_t       fPtDepCut;     // flag to enable a pt dependent pair cut
+   Double_t     fRefPtValueD;  //  pt value for a pt dependent pair cut
+   Double_t     fMaxPt;        // maximum pt at which applying a pt dependent cut
+   Double_t     fMinPt;        // minimum pt at which applying a pt dependent cut
+   TString      fPtDepCutMaxFormula; //pt dependent cut formula
+   TString      fPtDepCutMinFormula; //pt dependent cut formula
 
    Bool_t       fCutResult;  //  tells if the cut is passed or not
 
-   ClassDef(AliRsnCut, 1)
+   ClassDef(AliRsnCut, 3)
 };
 
 #endif

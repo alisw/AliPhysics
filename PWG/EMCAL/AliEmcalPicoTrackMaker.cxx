@@ -15,6 +15,8 @@
 #include "AliLog.h"
 #include "AliPicoTrack.h"
 #include "AliVTrack.h"
+#include "AliAODMCParticle.h"
+#include "AliNamedArrayI.h"
 
 ClassImp(AliEmcalPicoTrackMaker)
 
@@ -23,6 +25,7 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker() :
   AliAnalysisTaskSE("AliEmcalPicoTrackMaker"),
   fTracksOutName("PicoTracks"),
   fTracksInName("tracks"),
+  fMCParticlesName("mcparticles"),
   fMinTrackPt(0),
   fMaxTrackPt(1000),
   fMinTrackEta(-10),
@@ -30,8 +33,12 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker() :
   fMinTrackPhi(-10),
   fMaxTrackPhi(10),
   fTrackEfficiency(1),
+  fCopyMCFlag(kFALSE),
   fTracksIn(0),
-  fTracksOut(0)
+  fTracksOut(0),
+  fMCParticles(0),
+  fMCParticlesMap(0),
+  fInit(kFALSE)
 {
   // Constructor.
 
@@ -44,6 +51,7 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker(const char *name) :
   AliAnalysisTaskSE(name),
   fTracksOutName("PicoTracks"),
   fTracksInName("tracks"),
+  fMCParticlesName("mcparticles"),
   fMinTrackPt(0),
   fMaxTrackPt(1000),
   fMinTrackEta(-10),
@@ -51,8 +59,12 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker(const char *name) :
   fMinTrackPhi(-10),
   fMaxTrackPhi(10),
   fTrackEfficiency(1),
+  fCopyMCFlag(kFALSE),
   fTracksIn(0),
-  fTracksOut(0)
+  fTracksOut(0),
+  fMCParticles(0),
+  fMCParticlesMap(0),
+  fInit(kFALSE)
 {
   // Constructor.
 
@@ -71,9 +83,6 @@ AliEmcalPicoTrackMaker::~AliEmcalPicoTrackMaker()
 void AliEmcalPicoTrackMaker::UserCreateOutputObjects()
 {
   // Create my user objects.
-
-  fTracksOut = new TClonesArray("AliPicoTrack");
-  fTracksOut->SetName(fTracksOutName);
 }
 
 //________________________________________________________________________
@@ -81,14 +90,7 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 {
   // Main loop, called for each event.
 
-  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
-  if (!am) {
-    AliError("Manager zero, returning");
-    return;
-  }
-
-  // retrieve tracks from input.
-  if (!fTracksIn) { 
+  if (!fInit) {
     fTracksIn = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksInName));
     if (!fTracksIn) {
       AliError(Form("Could not retrieve tracks %s!", fTracksInName.Data())); 
@@ -98,13 +100,37 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
       AliError(Form("%s: Collection %s does not contain AliVParticle objects!", GetName(), fTracksInName.Data())); 
       return;
     }
+    
+    fTracksOut = new TClonesArray("AliPicoTrack");
+    fTracksOut->SetName(fTracksOutName);    
+
+    // add tracks to event if not yet there
+    if (InputEvent()->FindListObject(fTracksOutName)) {
+      AliFatal(Form("Object %s already present in the event!",fTracksOutName.Data()));
+    }
+    else {
+      InputEvent()->AddObject(fTracksOut);
+    }
+
+    if (fCopyMCFlag) {
+      fMCParticles = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fMCParticlesName));
+      if (!fMCParticles) {
+	AliError(Form("Could not retrieve MC particles %s!", fMCParticlesName.Data())); 
+      }
+      if (!fMCParticles->GetClass()->GetBaseClass("AliVParticle")) {
+	AliError(Form("%s: Collection %s does not contain AliVParticle objects!", GetName(), fMCParticlesName.Data()));
+	fMCParticles = 0;
+      }
+      
+      TString mapName(fMCParticlesName);
+      mapName += "_Map";
+      fMCParticlesMap = dynamic_cast<AliNamedArrayI*>(InputEvent()->FindListObject(mapName));
+    }
+
+    fInit = kTRUE;
   }
 
-  // add tracks to event if not yet there
   fTracksOut->Delete();
-  if (!(InputEvent()->FindListObject(fTracksOutName))) {
-    InputEvent()->AddObject(fTracksOut);
-  }
 
   // loop over tracks
   const Int_t Ntracks = fTracksIn->GetEntriesFast();
@@ -145,6 +171,28 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 								     track->GetTrackPtOnEMCal(), 
 								     isEmc);
     picotrack->SetTrack(track);
+    
+    if (fCopyMCFlag && track->GetLabel() != 0) {
+      AliVParticle *mcpart = GetMCParticle(TMath::Abs(track->GetLabel()));
+      if (mcpart) {
+	UInt_t mcFlag = mcpart->GetFlag();	
+	picotrack->SetFlag(mcFlag);
+	Short_t genIndex = mcpart->GetGeneratorIndex();
+	picotrack->SetGeneratorIndex(genIndex);
+      }
+    }
+
     ++nacc;
   }
+}
+
+//________________________________________________________________________
+AliVParticle* AliEmcalPicoTrackMaker::GetMCParticle(Int_t label) 
+{
+  if (!fMCParticles) return 0;
+  Int_t index = label;
+  if (fMCParticlesMap) index = fMCParticlesMap->At(label);
+  if (index < 0 || index >= fMCParticles->GetEntriesFast()) return 0;
+  AliVParticle *part = static_cast<AliVParticle*>(fMCParticles->At(index));
+  return part;
 }

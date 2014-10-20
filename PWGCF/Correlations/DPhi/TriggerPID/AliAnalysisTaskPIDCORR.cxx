@@ -893,7 +893,7 @@ Bool_t AliAnalysisTaskPIDCORR::TwoTrackEfficiency(AliAODTrack *trig,AliAODTrack 
 	    const Float_t kLimit = ftwoTrackEfficiencyCutValue * 3;
 
 	    Float_t dphistarminabs = 1e5;
-	    Float_t dphistarmin = 1e5;
+	    //Float_t dphistarmin = 1e5;
 	    if (TMath::Abs(dphistar1) < kLimit || TMath::Abs(dphistar2) < kLimit || dphistar1 * dphistar2 < 0)
 	    {
 	      for (Double_t rad=0.8; rad<2.51; rad+=0.01) 
@@ -904,7 +904,7 @@ Bool_t AliAnalysisTaskPIDCORR::TwoTrackEfficiency(AliAODTrack *trig,AliAODTrack 
 		
 		if (dphistarabs < dphistarminabs)
 		{
-		  dphistarmin = dphistar;
+		  //dphistarmin = dphistar;
 		  dphistarminabs = dphistarabs;
 		}
 	      }
@@ -954,7 +954,7 @@ Bool_t AliAnalysisTaskPIDCORR::TwoTrackEfficiencyBg(AliAODTrack *trig,AliPIDCorr
 	    const Float_t kLimit = ftwoTrackEfficiencyCutValue * 3;
 
 	    Float_t dphistarminabs = 1e5;
-	    Float_t dphistarmin = 1e5;
+	    //Float_t dphistarmin = 1e5;
 	    if (TMath::Abs(dphistar1) < kLimit || TMath::Abs(dphistar2) < kLimit || dphistar1 * dphistar2 < 0)
 	    {
 	      for (Double_t rad=0.8; rad<2.51; rad+=0.01) 
@@ -965,7 +965,7 @@ Bool_t AliAnalysisTaskPIDCORR::TwoTrackEfficiencyBg(AliAODTrack *trig,AliPIDCorr
 		
 		if (dphistarabs < dphistarminabs)
 		{
-		  dphistarmin = dphistar;
+		  //dphistarmin = dphistar;
 		  dphistarminabs = dphistarabs;
 		}
 	      }

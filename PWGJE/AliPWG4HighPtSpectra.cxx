@@ -422,7 +422,9 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       AliAODTrack *aodtrack = fAOD->GetTrack(iTrack);
       if(!aodtrack)
         continue;
-      if( !aodtrack->TestFilterBit(fFilterMask) )
+      if((!aodtrack->TestFilterBit(fFilterMask)) || 
+         ((!fCFManagerPos->CheckParticleCuts(kStepReconstructed,aodtrack)) && (aodtrack->Charge()>0.)) ||
+         ((!fCFManagerNeg->CheckParticleCuts(kStepReconstructed,aodtrack)) && (aodtrack->Charge()<0))    )
         continue;
       else {
         track = static_cast<AliVTrack*>(aodtrack);
@@ -458,8 +460,8 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 
 	//Container with primaries
 	if(particle->IsPhysicalPrimary()) {
-	  if(particle->Charge()>0. && fCFManagerPos->CheckParticleCuts(kStepReconstructedMC,particle)) fCFManagerPos->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
-	  if(particle->Charge()<0. && fCFManagerNeg->CheckParticleCuts(kStepReconstructedMC,particle)) fCFManagerNeg->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
+	  if(particle->Charge()>0.) fCFManagerPos->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
+	  if(particle->Charge()<0.) fCFManagerNeg->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
 	  //Fill pT resolution plots for primaries
 	  //fPtRelUncertainty1PtPrim->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2())); //This has not been implemented in AOD analysis, since they are also produced by the AddTaskPWG4HighPtTrackQA.C macro
 	}

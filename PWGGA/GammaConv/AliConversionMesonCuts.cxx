@@ -58,7 +58,7 @@ const char* AliConversionMesonCuts::fgkCutNames[AliConversionMesonCuts::kNCuts] 
    "RapidityMesonCut", //4
    "RCut", //5
    "AlphaMesonCut", //6
-   "Chi2MesonCut", //7
+   "SelectionWindow", //7
    "SharedElectronCuts", //8
    "RejectToCloseV0s", //9
    "UseMCPSmearing", //10
@@ -74,7 +74,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
    fHistograms(NULL),
    fMesonKind(0),
    fMaxR(200),
-   fChi2CutMeson(1000),
+   fSelectionLow(0.08),
+   fSelectionHigh(0.145),
    fAlphaMinCutMeson(0),
    fAlphaCutMeson(1),
    fRapidityCutMeson(1),
@@ -131,7 +132,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
    fHistograms(NULL),
    fMesonKind(ref.fMesonKind),
    fMaxR(ref.fMaxR),
-   fChi2CutMeson(ref.fChi2CutMeson),
+   fSelectionLow(ref.fSelectionLow),
+   fSelectionHigh(ref.fSelectionHigh),
    fAlphaMinCutMeson(ref.fAlphaMinCutMeson),
    fAlphaCutMeson(ref.fAlphaCutMeson),
    fRapidityCutMeson(ref.fRapidityCutMeson),
@@ -450,6 +452,63 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCM
 }
 
 //________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift){
+
+	// Returns true for all pions within acceptance cuts for decay into 2 photons
+	// If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
+
+	if( !fMCStack )return kFALSE;
+
+	if( !(fMCMother->GetPdgCode() == 221 || fMCMother->GetPdgCode() == 223) ) return kFALSE;
+	
+	if( fMCMother->R()>fMaxR ) return kFALSE; // cuts on distance from collision point
+
+	Double_t rapidity = 10.;
+
+	if( fMCMother->Energy() - fMCMother->Pz() == 0 || fMCMother->Energy() + fMCMother->Pz() == 0 ){
+		rapidity=8.-fRapidityShift;
+	}
+	else{
+		rapidity = 0.5*(TMath::Log((fMCMother->Energy()+fMCMother->Pz()) / (fMCMother->Energy()-fMCMother->Pz())))-fRapidityShift;
+	}
+
+	// Rapidity Cut
+	if( abs(rapidity) > fRapidityCutMeson )return kFALSE;
+
+	// Select only -> pi+ pi- pi0
+	if( fMCMother->GetNDaughters() != 3 )return kFALSE;
+
+	TParticle *posPion = 0x0;
+	TParticle *negPion = 0x0;
+	TParticle *neutPion = 0x0;
+
+// 	cout << "\n"<< fMCMother->GetPdgCode() << "\n" << endl;
+	for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
+		
+		TParticle* temp = (TParticle*)fMCStack->Particle( index );
+// 		cout << temp->GetPdgCode() << endl;
+		switch( temp->GetPdgCode() ) {
+		case 211:
+			posPion      =  temp;
+			labelPosPion = index;
+			break;
+		case -211:
+			negPion      =  temp;
+			labelNegPion = index;
+			break;
+		case 111:
+			neutPion         =  temp;
+			labelNeutPion    = index;
+			break;
+		}
+	}
+
+	if( posPion && negPion && neutPion ) return kTRUE;
+	return kFALSE;
+}
+
+
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliStack *fMCStack,Int_t & labelelectronChiC, Int_t & labelpositronChiC, Int_t & labelgammaChiC, Double_t fRapidityShift){
    // Returns true for all ChiC within acceptance cuts for decay into JPsi + gamma -> e+ + e- + gamma
    // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
@@ -520,8 +579,6 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliSta
    }
    return kFALSE;
 }
-
-
 
 ///________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal, Double_t fRapidityShift)
@@ -664,7 +721,7 @@ Bool_t AliConversionMesonCuts::InitializeCutsFromCutString(const TString analysi
       if(!SetCut(cutIds(ii),fCuts[ii]))return kFALSE;
    }
 
-   //PrintCuts();
+   PrintCutsWithValues();
    return kTRUE;
 }
 ///________________________________________________________________________
@@ -679,9 +736,9 @@ Bool_t AliConversionMesonCuts::SetCut(cutIds cutID, const Int_t value) {
          UpdateCutString();
          return kTRUE;
       } else return kFALSE;
-   case kchi2MesonCut:
-      if( SetChi2MesonCut(value)) {
-         fCuts[kchi2MesonCut] = value;
+   case kSelectionCut:
+      if( SetSelectionWindowCut(value)) {
+         fCuts[kSelectionCut] = value;
          UpdateCutString();
          return kTRUE;
       } else return kFALSE;
@@ -783,6 +840,38 @@ void AliConversionMesonCuts::PrintCuts() {
 }
 
 ///________________________________________________________________________
+void AliConversionMesonCuts::PrintCutsWithValues() {
+   // Print out current Cut Selection with values
+	printf("\nMeson cutnumber \n");
+	for(Int_t ic = 0; ic < kNCuts; ic++) {
+		printf("%d",fCuts[ic]);
+	}
+	printf("\n\n");
+	
+	printf("Meson cuts \n");
+	printf("\t |y| < %3.2f \n", fRapidityCutMeson);
+	printf("\t theta_{open} < %3.2f\n", fOpeningAngle);
+	if (!fAlphaPtDepCut) printf("\t %3.2f < alpha < %3.2f\n", fAlphaMinCutMeson, fAlphaCutMeson);
+	printf("\t dca_{gamma,gamma} > %3.2f\n", fDCAGammaGammaCut);
+	printf("\t dca_{R, prim Vtx} > %3.2f\n", fDCARMesonPrimVtxCut); 
+	printf("\t dca_{Z, prim Vtx} > %3.2f\n\n", fDCAZMesonPrimVtxCut); 
+	printf("\t Meson selection window for further analysis %3.3f > M_{gamma,gamma} > %3.3f\n\n", fSelectionLow, fSelectionHigh); 
+	
+	 printf("Meson BG settings \n");
+	 if (!fDoBG){
+		if (!fUseRotationMethodInBG  & !fUseTrackMultiplicityForBG) printf("\t BG scheme: mixing V0 mult \n");
+		if (!fUseRotationMethodInBG  & fUseTrackMultiplicityForBG) printf("\t BG scheme: mixing track mult \n");
+		if (fUseRotationMethodInBG )printf("\t BG scheme: rotation \n");
+		if (fdoBGProbability) printf("\t -> use BG probability \n");
+		if (fBackgroundHandler) printf("\t -> use new BG handler \n");
+		printf("\t depth of pool: %d\n", fNumberOfBGEvents);
+		if (fUseRotationMethodInBG )printf("\t degree's for BG rotation: %d\n", fnDegreeRotationPMForBG);
+	 }
+	 
+}
+
+
+///________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
    // Set Cut
    switch(mesonKind){
@@ -833,29 +922,40 @@ Bool_t AliConversionMesonCuts::SetRCut(Int_t rCut){
 }
 
 ///________________________________________________________________________
-Bool_t AliConversionMesonCuts::SetChi2MesonCut(Int_t chi2MesonCut){
+Bool_t AliConversionMesonCuts::SetSelectionWindowCut(Int_t selectionCut){
    // Set Cut
-   switch(chi2MesonCut){
-   case 0:  // 100.
-      fChi2CutMeson = 100.;
+   switch(selectionCut){
+   case 0:  
+      fSelectionLow = 0.08;
+	  fSelectionHigh = 0.145;
       break;
-   case 1:  // 50.
-      fChi2CutMeson = 50.;
+   case 1:  
+      fSelectionLow = 0.1;
+	  fSelectionHigh = 0.145;
       break;
-   case 2:  // 30.
-      fChi2CutMeson = 30.;
-      break;
+   case 2:  
+	  fSelectionLow = 0.11;
+	  fSelectionHigh = 0.145;
+	  break;
    case 3:
-      fChi2CutMeson = 200.;
+	  fSelectionLow = 0.12;
+	  fSelectionHigh = 0.145;
       break;
    case 4:
-      fChi2CutMeson = 500.;
+	  fSelectionLow = 0.1;
+	  fSelectionHigh = 0.15;
       break;
    case 5:
-      fChi2CutMeson = 1000.;
+	  fSelectionLow = 0.11;
+	  fSelectionHigh = 0.15;
       break;
+   case 6:
+	  fSelectionLow = 0.12;
+	  fSelectionHigh = 0.15;
+      break;
+	  
    default:
-      cout<<"Warning: Chi2MesonCut not defined "<<chi2MesonCut<<endl;
+      cout<<"Warning: SelectionCut not defined "<<selectionCut<<endl;
       return kFALSE;
    }
    return kTRUE;
@@ -963,8 +1063,8 @@ Bool_t AliConversionMesonCuts::SetRapidityMesonCut(Int_t RapidityMesonCut){
    case 7:  //
       fRapidityCutMeson   = 0.3;
       break;
-   case 8:  //
-      fRapidityCutMeson   = 0.35;
+   case 8:  //changed, before 0.35
+      fRapidityCutMeson   = 0.25;
       break;
    case 9:  //
       fRapidityCutMeson   = 0.4;
@@ -1431,3 +1531,89 @@ void AliConversionMesonCuts::SmearParticle(AliAODConversionPhoton* photon)
    photon->SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
    photon->SetE(photon->P());
 }
+///________________________________________________________________________
+void AliConversionMesonCuts::SmearVirtualPhoton(AliAODConversionPhoton* photon)
+{
+
+   if (photon==NULL) return;
+   Double_t facPBrem = 1.;
+   Double_t facPSig = 0.;
+
+   Double_t phi=0.;
+   Double_t theta=0.;
+   Double_t P=0.;
+
+
+   P=photon->P();
+   phi=photon->Phi();
+   if( photon->P()!=0){
+      theta=acos( photon->Pz()/ photon->P());
+   }
+
+   if( fPSigSmearing != 0. || fPSigSmearingCte!=0. ){
+      facPSig = TMath::Sqrt(fPSigSmearingCte*fPSigSmearingCte+fPSigSmearing*fPSigSmearing*P*P)*fRandom.Gaus(0.,1.);
+   }
+
+   if( fPBremSmearing != 1.){
+      if(fBrem!=NULL){
+         facPBrem = fBrem->GetRandom();
+      }
+   }
+
+   photon->SetPx(facPBrem* (1+facPSig)* P*sin(theta)*cos(phi)) ;
+   photon->SetPy(facPBrem* (1+facPSig)* P*sin(theta)*sin(phi)) ;
+   photon->SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
+   
+}
+///________________________________________________________________________
+TLorentzVector AliConversionMesonCuts::SmearElectron(TLorentzVector particle)
+{
+
+   //if (particle==0) return;
+   Double_t facPBrem = 1.;
+   Double_t facPSig = 0.;
+
+   Double_t phi=0.;
+   Double_t theta=0.;
+   Double_t P=0.;
+
+
+   P=particle.P();
+   
+   
+   phi=particle.Phi();
+   if (phi < 0.) phi += 2. * TMath::Pi();
+   
+   if( particle.P()!=0){
+      theta=acos( particle.Pz()/ particle.P());
+   }
+
+   
+   Double_t fPSigSmearingHalf    =  fPSigSmearing  / 2.0;  //The parameter was set for gammas with 2 particles and here we have just one electron
+   Double_t sqrtfPSigSmearingCteHalf =  fPSigSmearingCte / 2.0 ;  //The parameter was set for gammas with 2 particles and here we have just one electron
+
+   
+   
+   if( fPSigSmearingHalf != 0. || sqrtfPSigSmearingCteHalf!=0. ){
+      facPSig = TMath::Sqrt(sqrtfPSigSmearingCteHalf*sqrtfPSigSmearingCteHalf+fPSigSmearingHalf*fPSigSmearingHalf*P*P)*fRandom.Gaus(0.,1.);
+   }
+
+   if( fPBremSmearing != 1.){
+      if(fBrem!=NULL){
+         facPBrem = fBrem->GetRandom();
+      }
+   }
+   
+   TLorentzVector SmearedParticle;
+   
+   SmearedParticle.SetXYZM( facPBrem* (1+facPSig)* P*sin(theta)*cos(phi) , facPBrem* (1+facPSig)* P*sin(theta)*sin(phi)  , 
+			  facPBrem* (1+facPSig)* P*cos(theta) , TDatabasePDG::Instance()->GetParticle(  ::kElectron   )->Mass()) ;
+   
+   //particle.SetPx(facPBrem* (1+facPSig)* P*sin(theta)*cos(phi)) ;
+   //particle.SetPy(facPBrem* (1+facPSig)* P*sin(theta)*sin(phi)) ;
+   //particle.SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
+   
+   return SmearedParticle;
+   
+}
+

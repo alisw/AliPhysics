@@ -2155,7 +2155,6 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 	  aodtracketa = TMath::Abs(aodtrack->Eta());
 	  if(aodtracketa>0.9) continue;
 	  if(!aodtrack->TestFilterBit(fFilterBit)) continue; //track filter selection
-	  if(!aodtrack->IsPrimaryCandidate()) continue; // only primaries, maybe is redundant with the previous selection...
 	  fEtaAOD->Fill(aodtrack->Eta(),aodtrack->Eta());
 	  fPhiAOD->Fill(aodtrack->Phi(),aodtrack->Phi());
 	  fPtAOD->Fill(aodtrack->Pt(),aodtrack->Pt());
@@ -2329,11 +2328,6 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 		      //		      printf("Rejecting track from track refs due to wrong filterbit! \n");
 		      continue; //track filter selection
 		    }
-		  if(!aodtrack->IsPrimaryCandidate())
-		    {
-		      //		      printf("Rejecting track from track refs due to no primary candidate! \n");
-		      continue; // only primaries
-		    }
 		  deltaPhiPt += DeltaPhiTrack(rjet, aodtrack)*aodtrack->Pt();
 		  deltaEtaPt += DeltaEtaTrack(rjet, aodtrack)*aodtrack->Pt();
 		  deltaPhiSqPt += DeltaPhiSqTrack(rjet, aodtrack)*aodtrack->Pt();
@@ -2375,7 +2369,6 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 		  if(!aodtrack) continue;
 		  if(!IsTrackInsideThisJet(aodtrack, rjet, jfr)) continue;
 		  if(!aodtrack->TestFilterBit(fFilterBit)) continue; //track filter selection
-		  if(!aodtrack->IsPrimaryCandidate()) continue; // only primaries, perhaps redundant with the previous
 		  if(aodtrack->Pt()<fMinpTVal) continue; //DATA: PT CUT
 		  deltaPhiPt += DeltaPhiTrack(rjet, aodtrack)*aodtrack->Pt();
 		  deltaEtaPt += DeltaEtaTrack(rjet, aodtrack)*aodtrack->Pt();
@@ -2453,7 +2446,6 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 		  if(!aodtrackperprec) continue;
 		  if(!IsTrackInsideThisJet(aodtrackperprec, fPerpCone, jfr)) continue;
 		  if(!aodtrackperprec->TestFilterBit(fFilterBit)) continue; //track filter selection
-		  if(!aodtrackperprec->IsPrimaryCandidate()) continue; // only primaries, perhaps redundant with the previous
 		  if(aodtrackperprec->Pt()<fMinpTVal) continue; //DATA: PT CUT
 		  deltaPhiPtPerp += DeltaPhiTrack(fPerpCone, aodtrackperprec)*aodtrackperprec->Pt();
 		  deltaEtaPtPerp += DeltaEtaTrack(fPerpCone, aodtrackperprec)*aodtrackperprec->Pt();
@@ -3826,7 +3818,6 @@ Int_t AliAnalysisTaskPartonDisc::GetNumberOfChargedTracks(Int_t percentage,AliAO
 	  if(GetDeltaR(jeteta, jetphi, tracketa, trackphi)<=jr)
 	    {
 	      if(!aodtrack->TestFilterBit(fFilterBit)) continue; //track filter selection
-	      if(!aodtrack->IsPrimaryCandidate()) continue; // only primaries
 	      if(aodtrack->Pt()<fMinpTVal) continue; // pT cut, not using track refs	      
 	      currentNumber++;
 	      fCurrentJetCharge=fCurrentJetCharge+aodtrack->Charge();
@@ -4605,7 +4596,7 @@ Bool_t AliAnalysisTaskPartonDisc::NumberOfReadEventsAOD(const char* currFile, In
 	  fnev->Close();
 	  return kFALSE;
 	}
-      fNEvents = ((TH1*)list->FindObject("NJetsH"))->GetEntries();
+      fNEvents = Int_t(((TH1*)list->FindObject("NJetsH"))->GetEntries());
       fnev->Close();
     }
   return kTRUE;
@@ -5034,7 +5025,6 @@ Int_t AliAnalysisTaskPartonDisc::GetNRecChargedTracksAboveThreshold(AliAODJet *j
       if(GetDeltaR(jeteta, jetphi, tracketa, trackphi)<=jr)
 	{
 	  if(!aodtrack->TestFilterBit(fFilterBit)) continue; //track filter selection
-	  if(!aodtrack->IsPrimaryCandidate()) continue; // only primaries
 	  if(aodtrack->Pt()<fCurrentJetMinPtNT90) continue;	      
 	  currentNumber++;		 
 	} // end if inside jet	
@@ -5084,7 +5074,6 @@ Int_t AliAnalysisTaskPartonDisc::GetRecalcNTXRec(Int_t percentage,AliAODJet *ori
 	  if(GetDeltaR(jeteta, jetphi, tracketa, trackphi)<=jr)
 	    {
 	      if(!aodtrack->TestFilterBit(fFilterBit)) continue; //track filter selection
-	      if(!aodtrack->IsPrimaryCandidate()) continue; // only primaries
 	      if(aodtrack->Pt()<fMinpTVal) continue; // pT cut, not using track refs	      
 	      currentNumber++;		 
 	      fgContainer[currentNumber-1] = aodtrack->Pt();  // save the current pt in the container
@@ -5144,7 +5133,6 @@ Int_t AliAnalysisTaskPartonDisc::GetRecalcNRecChTrUpThr(AliAODJet *jet, Int_t nt
       if(GetDeltaR(jeteta, jetphi, tracketa, trackphi)<=jr)
 	{
 	  if(!aodtrack->TestFilterBit(fFilterBit)) continue; //track filter selection
-	  if(!aodtrack->IsPrimaryCandidate()) continue; // only primaries
 	  if(aodtrack->Pt()<fCurrentJetMinPtNT90Recalc) continue;	      
 	  currentNumber++;		 
 	} // end if inside jet	
@@ -5553,7 +5541,6 @@ void AliAnalysisTaskPartonDisc::FillPerpConeHisto(TH3F *currenthisto, Int_t ntra
       aodtracketaC = TMath::Abs(aodtrackC->Eta());
       if(aodtracketaC>0.9) continue;
       if(!aodtrackC->TestFilterBit(fFilterBit)) continue; //track filter selection
-      if(!aodtrackC->IsPrimaryCandidate()) continue; // only primaries, maybe is redundant with the previous selection...
       if(fJetEvent) // if has an accepted jet, calculate the perpendicular cone
 	{
 	  if(HasPerpendicularCone()) // If there is a perpendicular cone available

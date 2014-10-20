@@ -59,6 +59,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
         kDCACut,
         kmassCut,
         kWeights,
+	kuseVPhotonMCPSmearing,
 	kNCuts
   };
 
@@ -133,7 +134,6 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t SetEtaCut(Int_t etaCut);
   Bool_t SetPtCut(Int_t ptCut);
   Bool_t SetDCACut(Int_t dcaCut);
-  void SetEtaShift(Double_t etaShift){fEtaShift = etaShift;}
   Bool_t SetMinMomPiondEdxCut(Int_t piMinMomdedxSigmaCut);
   Bool_t SetMaxMomPiondEdxCut(Int_t piMaxMomdedxSigmaCut);
   Bool_t SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut);
@@ -144,6 +144,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t SetNumberOfRotations(Int_t NumberOfRotations);
   Bool_t SetMassCut(Int_t massCut);
   Bool_t SetDoWeights(Int_t opc);
+  Bool_t SetUseVPhotonMCPmearing(Int_t useMCPSmearing);
   
   // Request Flags
 
@@ -162,6 +163,8 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t GetPtMinMassCut(){return fMassCutPtMin;}
   Double_t GetMassMinCut(){return fMassMinCut;}
   Bool_t   DoWeights(){return fDoWeights;}
+  Bool_t   GetUseVPhotonMCPmearing(){return fUseVPhotonMCPSmearing; }
+  Bool_t   GetUseElectronMCSmearing(){ return fUseElectronMCPSmearing;}
   
 
   
@@ -172,7 +175,6 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   AliESDtrackCuts *fesdTrackCuts;
 
   Double_t fEtaCut; //eta cutç
-  Double_t fEtaShift;
   Bool_t   fDoEtaCut;
   Double_t fPtMinCut;
   Double_t fPtMaxCut;
@@ -221,6 +223,8 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t fMassCutPtMin;
   Double_t fMassMinCut;
   Bool_t   fDoWeights;
+  Bool_t   fUseVPhotonMCPSmearing;
+  Bool_t   fUseElectronMCPSmearing;
 
 
   // Histograms
@@ -241,6 +245,10 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   TH2F *hTrackDCAzPtafter;
   TH2F *hTrackNFindClsPtTPCbefore;
   TH2F *hTrackNFindClsPtTPCafter;
+  TH1F *hTrackPosEtabeforeDedx;
+  TH1F *hTrackNegEtabeforeDedx;
+  TH1F *hTrackPosEtaafterDedx;
+  TH1F *hTrackNegEtaafterDedx;
   
   
 

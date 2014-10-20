@@ -263,7 +263,8 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
    //===========================================================================
 
    AliAnalysisTaskIDFragmentationFunction *task = new AliAnalysisTaskIDFragmentationFunction(
-        Form("Fragmentation_Function_%s_%s_%s_%s", branchRecJets.Data(), branchGenJets.Data(), typeJets.Data(), typeTracks.Data()));
+        Form("Fragmentation_Function_%s_%s_%s_%s_filterMaskTracks%d", branchRecJets.Data(), branchGenJets.Data(), typeJets.Data(),
+             typeTracks.Data(), filterMaskTracks));
    
    if(debug>=0) task->SetDebugLevel(debug);
    
@@ -272,6 +273,9 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
    Printf("Gen Jets %s", branchGenJets.Data());
    Printf("Jet Type %s", typeJets.Data());
    Printf("Track Type %s", typeTracks.Data());
+   
+   Printf("Radius cut: %f", radius);
+   Printf("FilterMaskTracks: %d", filterMaskTracks);
    
    // attach the filter mask and options
    TString cAdd = "";

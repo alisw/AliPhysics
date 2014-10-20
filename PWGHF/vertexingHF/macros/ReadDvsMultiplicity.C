@@ -87,7 +87,9 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
   // gInterpreter->ExecuteMacro("$ALICE_ROOT/PWGHF/vertexingHF/macros/LoadLibraries.C");
   gStyle->SetOptTitle(1);
 
-  //  for(int j=0; j<=nMultbins; j++) multlims[j] *= (68./8.8);
+  TString ntrkname="Ntracklets";
+   // for(int j=0; j<=nMultbins; j++) multlims[j] *= (68./8.8);
+   // ntrkname="Nvzero";
 
   Int_t nFiles=0;
   TObjArray* listFiles=new TObjArray();
@@ -228,7 +230,7 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
     Float_t val = multbinlow + (multbinhigh-multbinlow)/2.;
     Int_t hnbin = hNormalization->FindBin(val);
     Float_t nevents = 0.;
-    if(counter) { nevents = counter->GetNEventsForNorm(multbinlow,multbinhigh); cout << endl<<endl<<" Nevents ("<<multbinlow<<","<<multbinhigh<<") ="<<nevents<<endl<<endl<<endl;}
+    if(counter) { nevents = counter->GetNEventsForNorm(multbinlow,multbinhigh); std::cout << std::endl<<std::endl<<" Nevents ("<<multbinlow<<","<<multbinhigh<<") ="<<nevents<<std::endl<<std::endl<<std::endl;}
     hNormalization->SetBinContent(hnbin,nevents);
     //
     // Loop on pt bins
@@ -240,6 +242,8 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
       Int_t ptbinlow = hptaxis->FindBin(ptlims[iBin]);
       Int_t ptbinhigh = hptaxis->FindBin(ptlims[iBin+1])-1;
       hmass[massBin] = (TH1F*)hPtMassMult[0]->ProjectionY(Form("hmass_%d_%d",j,iBin),multbinlow,multbinhigh,ptbinlow,ptbinhigh);
+      hmass[massBin]->SetTitle( Form("%2.0f<p_{T}<%2.0f GeV/c, %s [%3.0f,%3.0f]",ptlims[iBin],ptlims[iBin+1],ntrkname.Data(),multlims[j],multlims[j+1]) );
+      //      std::cout << std::endl<<  Form("%2.0f<p_{T}<%2.0f GeV/c, %s [%3.0f,%3.0f]",ptlims[iBin],ptlims[iBin+1],ntrkname.Data(),multlims[j],multlims[j+1]) << std::endl<< std::endl;
       if(  hmass[massBin]->GetEntries() < 60 ) {
 	massBin++;
 	continue;
@@ -279,7 +283,7 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
       else if(j==5) arrchisquare5[iBin]=fitter[massBin]->GetReducedChiSquare();
       TF1* fB1=fitter[massBin]->GetBackgroundFullRangeFunc();
       TF1* fB2=fitter[massBin]->GetBackgroundRecalcFunc();
-      TF1* fM=fitter[massBin]->GetMassFunc();
+      //      TF1* fM=fitter[massBin]->GetMassFunc();
       // if(iBin==0 && fB1) funBckStore1=new TF1(*fB1);
       // if(iBin==0 && fB2) funBckStore2=new TF1(*fB2);
       // if(iBin==0 && fM) funBckStore3=new TF1(*fM);
@@ -297,7 +301,7 @@ void ReadDvsMultiplicity(Int_t analysisType=kD0toKpi,
       Float_t cntSig2=0.;
       Float_t cntErr=0.;
       massRangeForCounting = nSigmaRangeForCounting*sigmapt[iBin];
-      //      cout << " pt bin "<< iBin << " mass range = "<< massRangeForCounting<<endl;
+      //      std::cout << " pt bin "<< iBin << " mass range = "<< massRangeForCounting<<std::endl;
       Float_t minBinSum=hmassaxis->FindBin(massD-massRangeForCounting);
       Float_t maxBinSum=hmassaxis->FindBin(massD+massRangeForCounting);
       for(Int_t iMB=minBinSum; iMB<=maxBinSum; iMB++){
@@ -642,7 +646,7 @@ Bool_t LoadD0toKpiHistos(TObjArray* listFiles, TH3F** hPtMassMult, TH2F** hNtrZv
     hNtrZvtxCorr[iFile] = (TH2F*)hlist[iFile]->FindObject("hNtrCorrVsZvtx");
   }
   
-  //  cout<<" hPtMassMult:"<<hPtMassMult[0]<<endl;
+  //  std::cout<<" hPtMassMult:"<<hPtMassMult[0]<<std::endl;
 
   TString partname="Both";
   if(optPartAntiPart==kParticleOnly) partname="D0";

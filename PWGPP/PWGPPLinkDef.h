@@ -124,6 +124,11 @@
 #pragma link C++ class  AliTRDpidRefMaker+;
 #pragma link C++ class  AliTRDpidRefMakerLQ+;
 #pragma link C++ class  AliTRDpidRefMakerNN+;
+//TPC PID calibration and QA
+#pragma link C++ class  AliTPCPIDBase+;
+#pragma link C++ class  AliTPCPIDEtaTree+;
+#pragma link C++ class  AliTPCPIDEtaQA+;
+#pragma link C++ class  AliTPCcalibResidualPID+;
 // TOF QA
 #pragma link C++ class  AliAnalysisTaskTOFqa+;
 #pragma link C++ class  AliAnalysisTaskTOFqaID+;

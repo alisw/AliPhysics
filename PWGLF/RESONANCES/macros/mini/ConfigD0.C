@@ -1,5 +1,5 @@
 //
-// *** Configuration script for phi->KK analysis with 2010 runs ***
+// *** Configuration script for D0 analysis ***
 // 
 // A configuration script for RSN package needs to define the followings:
 //
@@ -12,7 +12,8 @@ Bool_t ConfigD0
 (  
    AliRsnMiniAnalysisTask *task, 
    Bool_t                  isPP,
-   Bool_t                  isMC,  
+   Bool_t                  isMC,
+   Bool_t                  monitor = kTRUE,  
    Float_t         	   nsigmaTPCPi = 3.0,
    Float_t         	   nsigmaTPCKa = 3.0,
    Float_t         	   nsigmaTOFPi = 2.0,
@@ -22,15 +23,24 @@ Bool_t ConfigD0
    Float_t         	   trackDCAcutMin = 0.0,
    Float_t		   trackDCAZcutMax = 2.0,
    Int_t           	   NTPCcluster = 70,
+   Double_t                NTPCcrratio = 0.8,
+   Int_t		   minSPDclt = 0,
    Double_t                minpt = 0.15,
    Short_t     		   maxSisters = 2,
    Bool_t                  checkP = kTRUE,
+   Bool_t      		   useNTPCclt = kTRUE,
    Bool_t                  minDCAcutFixed = kFALSE,
    Bool_t                  maxDCAcutFixed = kFALSE,
    Bool_t                  ptdepPIDcut = kFALSE,
    Bool_t      		   checkFeedDown = kTRUE,
    Bool_t      		   checkQuark = kTRUE,
+   Bool_t      		   doCalculationInMC = kTRUE,
    UShort_t    		   originDselection = 0,
+   Float_t                 mineta = -0.8,
+   Float_t                 maxeta = 0.8,
+   Float_t		   min_inv_mass = 0.6,
+   Float_t		   max_inv_mass = 2.2,
+   Int_t                   bins = 320,
    const char      	  *suffix,
    AliRsnCutSet           *cutsPairY,
    AliRsnCutSet           *cutsPair
@@ -54,6 +64,7 @@ Bool_t ConfigD0
    
    // integrated pion cut
    AliRsnCutDaughterD0 *cutPi = new AliRsnCutDaughterD0("cutPionForD0", AliPID::kPion);
+   //cutPi->SetNoPID(kTRUE);
    cutPi->SetTPCPionPIDCut(nsigmaTPCPi);
    cutPi->SetTOFPionPIDCut(nsigmaTOFPi);
    cutPi->SetPtDependentPIDCut(ptdepPIDcut);
@@ -63,15 +74,17 @@ Bool_t ConfigD0
    if(maxDCAcutFixed)cutQuality->SetDCARmax(trackDCAcutMax);	         
    else cutQuality->SetDCARPtFormula(formula);
    if(minDCAcutFixed) cutQuality->SetDCARmin(trackDCAcutMin);
-   else cutQuality->SetDCARPtFormulaMin(formulaMin); 
-   cutQuality->SetTPCminNClusters(NTPCcluster);
+   else cutQuality->SetDCARPtFormulaMin(formulaMin);
+   if(useNTPCclt)cutQuality->SetTPCminNClusters(NTPCcluster);
+   if(!useNTPCclt)cutQuality->SetMinNCrossedRowsTPC(NTPCcluster,kTRUE);
+   if(!useNTPCclt)cutQuality->SetMinNCrossedRowsOverFindableClsTPC(NTPCcrratio,kTRUE);
    cutQuality->SetPtRange(minpt,1E20);
-   cutQuality->SetEtaRange(-0.8, 0.8);
+   cutQuality->SetEtaRange(mineta, maxeta);
    cutQuality->SetDCAZmax(trackDCAZcutMax);
-   cutQuality->SetSPDminNClusters(1);
+   cutQuality->SetSPDminNClusters(minSPDclt);
    cutQuality->SetITSminNClusters(0);
-   cutQuality->SetITSmaxChi2(1E+20);
-   cutQuality->SetTPCmaxChi2(4.0);
+   cutQuality->SetITSmaxChi2(1E20);
+   cutQuality->SetTPCmaxChi2(1E20);
    cutQuality->SetRejectKinkDaughters();
    cutQuality->Print();
   	         
@@ -88,6 +101,7 @@ Bool_t ConfigD0
    
    // integrated kaon cut
    AliRsnCutDaughterD0 *cutK = new AliRsnCutDaughterD0("cutKaonForD0", AliPID::kKaon);
+   //cutK->SetNoPID(kTRUE);
    cutK->SetTPCKaonPIDCut(nsigmaTPCKa);
    cutK->SetTOFKaonPIDCut(nsigmaTOFKa);
    cutK->SetPtDependentPIDCut(ptdepPIDcut);	
@@ -98,14 +112,16 @@ Bool_t ConfigD0
    else cutQuality->SetDCARPtFormula(formula);
    if(minDCAcutFixed) cutQuality->SetDCARmin(trackDCAcutMin);
    else cutQuality->SetDCARPtFormulaMin(formulaMin);
-   cutQuality->SetTPCminNClusters(NTPCcluster);
+   if(useNTPCclt)cutQuality->SetTPCminNClusters(NTPCcluster);
+   if(!useNTPCclt)cutQuality->SetMinNCrossedRowsTPC(NTPCcluster,kTRUE);
+   if(!useNTPCclt)cutQuality->SetMinNCrossedRowsOverFindableClsTPC(NTPCcrratio,kTRUE);
    cutQuality->SetPtRange(minpt,1E20);
-   cutQuality->SetEtaRange(-0.8, 0.8);
+   cutQuality->SetEtaRange(mineta, maxeta);
    cutQuality->SetDCAZmax(trackDCAZcutMax);
-   cutQuality->SetSPDminNClusters(1);
+   cutQuality->SetSPDminNClusters(minSPDclt);
    cutQuality->SetITSminNClusters(0);
-   cutQuality->SetITSmaxChi2(1E+20);
-   cutQuality->SetTPCmaxChi2(4.0);
+   cutQuality->SetITSmaxChi2(1E20);
+   cutQuality->SetTPCmaxChi2(1E20);
    cutQuality->SetRejectKinkDaughters();
    cutQuality->Print();
 	
@@ -118,6 +134,9 @@ Bool_t ConfigD0
    // add to task
    Int_t iCutK = task->AddTrackCuts(cutSetK);
    
+   
+   
+   ////////////////////////////////////////////////////////////////////////////////////////////////
   
   // -- Values ------------------------------------------------------------------------------------
   /* invariant mass     */ Int_t imID       = task->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
@@ -142,17 +161,21 @@ Bool_t ConfigD0
    // [1] = mixing
    // [2] = like ++
    // [3] = like --
-   Bool_t   use     [8] = { 1	    ,  1       ,  1	 ,  1	    ,  1	,  1	    ,  1       ,  1	  };
-   Bool_t   useIM   [8] = { 1	    ,  1       ,  1	 ,  1	    ,  1	,  1	    ,  1       ,  1	  };
-   TString  name    [8] = {"Unlike1", "Unlike2", "Mixing1", "Mixing2", "RotateK1", "RotateK2", "LikePP" , "LikeMM" };
-   TString  comp    [8] = {"PAIR"   , "PAIR"   , "MIX"	 , "MIX"    , "ROTATE1" , "ROTATE1" , "PAIR"   , "PAIR"   };
-   TString  output  [8] = {"SPARSE" , "SPARSE" , "SPARSE" , "SPARSE" , "SPARSE"  , "SPARSE"  , "SPARSE" , "SPARSE" };
-   Char_t   charge1 [8] = {'-'	    , '+'      , '-'	 , '+'      , '-'	, '+'	    , '+'      , '-'	  };
-   Char_t   charge2 [8] = {'+'	    , '-'      , '+'	 , '-'      , '+'	, '-'	    , '+'      , '-'	  };
-   Int_t    cutID1  [8] = { iCutK   ,  iCutK   ,  iCutK   ,  iCutK   ,  iCutK	,  iCutK    ,  iCutK   ,  iCutK   };
-   Int_t    cutID2  [8] = { iCutPi  ,  iCutPi  ,  iCutPi  ,  iCutPi  ,  iCutPi	,  iCutPi   ,  iCutPi  ,  iCutPi  };
-   Int_t    ipdg    [8] = { 421     , -421     ,  421	 , -421     ,  421	, -421      ,  421     , -421	  };
-   Double_t mass    [8] = { 1.86486 ,  1.86486 ,  1.86486 ,  1.86486 ,  1.86486  ,  1.86486  ,  1.86486 ,  1.86486 };
+   
+   
+   if(!isMC || doCalculationInMC == kTRUE){
+   
+   Bool_t   use     [8] = { 1	    ,  1       ,  1	  ,  1	     ,  1	 ,  1	     ,  1       ,  1	  };
+   Bool_t   useIM   [8] = { 1	    ,  1       ,  1	  ,  1	     ,  1	 ,  1	     ,  1       ,  1	  };
+   TString  name    [8] = {"Unlike1", "Unlike2", "Mixing1", "Mixing2", "RotateK1", "RotateK2", "LikePP" , "LikeMM"};
+   TString  comp    [8] = {"PAIR"   , "PAIR"   , "MIX"	  , "MIX"    , "ROTATE1" , "ROTATE1" , "PAIR"   , "PAIR"  };
+   TString  output  [8] = {"SPARSE" , "SPARSE" , "SPARSE" , "SPARSE" , "SPARSE"  , "SPARSE"  , "SPARSE" , "SPARSE"};
+   Char_t   charge1 [8] = {'-'	    , '+'      , '-'	  , '+'      , '-'	 , '+'	     , '+'      , '-'	  };
+   Char_t   charge2 [8] = {'+'	    , '-'      , '+'	  , '-'      , '+'	 , '-'	     , '+'      , '-'	  };
+   Int_t    cutID1  [8] = { iCutK   ,  iCutK   ,  iCutK   ,  iCutK   ,  iCutK	 ,  iCutK    ,  iCutK   ,  iCutK  };
+   Int_t    cutID2  [8] = { iCutPi  ,  iCutPi  ,  iCutPi  ,  iCutPi  ,  iCutPi	 ,  iCutPi   ,  iCutPi  ,  iCutPi };
+   Int_t    ipdg    [8] = { 421     , -421     ,  421	  , -421     ,  421	 , -421      ,  421     , -421	  };
+   Double_t mass    [8] = { 1.86486 ,  1.86486 ,  1.86486 ,  1.86486 ,  1.86486  ,  1.86486  ,  1.86486 ,  1.86486};
    
    for (Int_t i = 0; i < 8; i++) {
       if (!use[i]) continue;
@@ -173,7 +196,7 @@ Bool_t ConfigD0
 
       // axis X: invmass (or resolution)
       //if (useIM[i]) 
-         out->AddAxis(imID, 320, 0.6, 2.2);
+         out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
       //else
       //   out->AddAxis(resID, 200, -0.02, 0.02);
       // axis Y: transverse momentum
@@ -193,7 +216,9 @@ Bool_t ConfigD0
       else out->AddAxis(centID, 400, 0.0, 400.0);
    }
    
+   }
    
+   if(monitor == kTRUE){
    AddMonitorOutput_PionEta(cutSetPi->GetMonitorOutput());
    AddMonitorOutput_PionY(cutSetPi->GetMonitorOutput());
    AddMonitorOutput_PionMinPt(cutSetPi->GetMonitorOutput());
@@ -209,6 +234,8 @@ Bool_t ConfigD0
    AddMonitorOutput_KaonTPC_PIDCut(cutSetK->GetMonitorOutput());
    AddMonitorOutput_KaonTOF_PIDCut(cutSetK->GetMonitorOutput());
    AddMonitorOutput_KaonNTPC(cutSetK->GetMonitorOutput());
+   }
+   
    
    if (isMC) {
    
@@ -235,7 +262,7 @@ Bool_t ConfigD0
    out->SetRejectCandidateIfNotFromQuark(checkQuark);
    out->SetDselection(originDselection);
    // binnings
-   out->AddAxis(imID, 320, 0.6, 2.2);
+   out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
    out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
    //out->AddAxis(dcapID, 100, -0.001, 0.001);
@@ -247,63 +274,8 @@ Bool_t ConfigD0
    // create output
    AliRsnMiniOutput *out = task->CreateOutput("D0_True2", mode.Data(), "TRUE");
    // selection settings
-   out->SetCharge(0, '+');
-   out->SetCharge(1, '-');
-   out->SetDaughter(0, AliRsnDaughter::kKaon);
-   out->SetDaughter(1, AliRsnDaughter::kPion);
-   out->SetMotherPDG(-421);
-   out->SetMotherMass(1.86486);
-   // pair cuts
-   out->SetPairCuts(cutsPair);
-   out->SetMaxNSisters(maxSisters);
-   out->SetCheckMomentumConservation(checkP);
-   out->SetCheckFeedDown(checkFeedDown);
-   out->SetRejectCandidateIfNotFromQuark(checkQuark);
-   out->SetDselection(originDselection);
-   // binnings
-   out->AddAxis(imID, 320, 0.6, 2.2);
-   out->AddAxis(ptID, 200, 0.0, 20.0);
-   //out->AddAxis(yID, 100, -1, 1);
-   //out->AddAxis(dcapID, 100, -0.001, 0.001);
-   //out->AddAxis(nsistID, 10, 0, 5);
-
-   if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
-   else out->AddAxis(centID, 400, 0.0, 400.0);
-   
-   
-   // INVARIANT RESOLUTION
-   
-   TString mode = "SPARSE";
-   
-   // create output
-   AliRsnMiniOutput *out = task->CreateOutput("D0_Res1", mode.Data(), "TRUE");
-   // selection settings
-   out->SetDaughter(0, AliRsnDaughter::kKaon);
-   out->SetDaughter(1, AliRsnDaughter::kPion);
-   out->SetCharge(0, '-');
-   out->SetCharge(1, '+');
-   out->SetMotherPDG(421);
-   out->SetMotherMass(1.86486);
-   // pair cuts
-   out->SetPairCuts(cutsPair);
-   out->SetMaxNSisters(maxSisters);
-   out->SetCheckMomentumConservation(checkP);
-   out->SetCheckFeedDown(checkFeedDown);
-   out->SetRejectCandidateIfNotFromQuark(checkQuark);
-   out->SetDselection(originDselection);
-   // binnings
-   out->AddAxis(resID, 200, -0.02, 0.02);
-   out->AddAxis(ptID, 200, 0.0, 20.0);
-   //out->AddAxis(yID, 100, -1, 1);
-   //out->AddAxis(dcapID, 100, -0.001, 0.001);
-   //out->AddAxis(nsistID, 10, 0, 5);
-
-   if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
-   else out->AddAxis(centID, 400, 0.0, 400.0);
-   
-   // create output
-   AliRsnMiniOutput *out = task->CreateOutput("D0_Res2", mode.Data(), "TRUE");
-   // selection settings
+   out->SetCutID(0, iCutK);
+   out->SetCutID(1, iCutPi);
    out->SetDaughter(0, AliRsnDaughter::kKaon);
    out->SetDaughter(1, AliRsnDaughter::kPion);
    out->SetCharge(0, '+');
@@ -318,7 +290,7 @@ Bool_t ConfigD0
    out->SetRejectCandidateIfNotFromQuark(checkQuark);
    out->SetDselection(originDselection);
    // binnings
-   out->AddAxis(resID, 200, -0.02, 0.02);
+   out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
    out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
    //out->AddAxis(dcapID, 100, -0.001, 0.001);
@@ -342,7 +314,7 @@ Bool_t ConfigD0
    // pair cuts
    out->SetPairCuts(cutsPairY);
    // binnings
-   out->AddAxis(imID, 320, 0.6, 2.2);
+   out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
    out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
 
@@ -359,7 +331,46 @@ Bool_t ConfigD0
    // pair cuts
    out->SetPairCuts(cutsPairY);
    // binnings
-   out->AddAxis(imID, 320, 0.6, 2.2);
+   out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
+   out->AddAxis(ptID, 200, 0.0, 20.0);
+   //out->AddAxis(yID, 100, -1, 1);
+
+   if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
+   else out->AddAxis(centID, 400, 0.0, 400.0);
+   
+   
+   // GENERATED MOTHERS IN THE ACCEPTANCE
+   
+   TString mode = "SPARSE";
+   
+   // create output
+   AliRsnMiniOutput *out = task->CreateOutput("D0_TrueMC_InAcc1", mode.Data(), "MOTHER_IN_ACC");
+   // selection settings
+   out->SetDaughter(0, AliRsnDaughter::kKaon);
+   out->SetDaughter(1, AliRsnDaughter::kPion);
+   out->SetMotherPDG(421);
+   out->SetMotherMass(1.86486);
+   // pair cuts
+   out->SetPairCuts(cutsPairY);
+   // binnings
+   out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
+   out->AddAxis(ptID, 200, 0.0, 20.0);
+   //out->AddAxis(yID, 100, -1, 1);
+
+   if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
+   else out->AddAxis(centID, 400, 0.0, 400.0);
+   
+   // create output
+   AliRsnMiniOutput *out = task->CreateOutput("D0_TrueMC_InAcc2", mode.Data(), "MOTHER_IN_ACC");
+   // selection settings
+   out->SetDaughter(0, AliRsnDaughter::kKaon);
+   out->SetDaughter(1, AliRsnDaughter::kPion);
+   out->SetMotherPDG(-421);
+   out->SetMotherMass(1.86486);
+   // pair cuts
+   out->SetPairCuts(cutsPairY);
+   // binnings
+   out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
    out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
 
@@ -379,7 +390,7 @@ void AddMonitorOutput_PionEta(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter
 
    // PionEta
    AliRsnValueDaughter *axisPionEta = new AliRsnValueDaughter("pion_eta", AliRsnValueDaughter::kEta);
-   axisPionEta->SetBins(-1.0,1.0,0.001);
+   axisPionEta->SetBins(-1.0,1.0,0.05);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorPionEta = new AliRsnListOutput("Pion_Eta", AliRsnListOutput::kHistoDefault);
@@ -396,7 +407,7 @@ void AddMonitorOutput_PionY(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *
 
    // PionY
    AliRsnValueDaughter *axisPionY = new AliRsnValueDaughter("pion_y", AliRsnValueDaughter::kY);
-   axisPionY->SetBins(-1.0,1.0,0.001);
+   axisPionY->SetBins(-1.0,1.0,0.05);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorPionY = new AliRsnListOutput("Pion_Y", AliRsnListOutput::kHistoDefault);
@@ -413,7 +424,7 @@ void AddMonitorOutput_PionMinPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaught
 
    // PionMinPt
    AliRsnValueDaughter *axisPionMinPt = new AliRsnValueDaughter("pion_minpt", AliRsnValueDaughter::kPt);
-   axisPionMinPt->SetBins(0.0,1,0.001);
+   axisPionMinPt->SetBins(0.0,1,0.05);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorPionMinPt = new AliRsnListOutput("Pion_MinPt", AliRsnListOutput::kHistoDefault);
@@ -430,7 +441,7 @@ void AddMonitorOutput_PionDCA(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter
 
    // PionDCA
    AliRsnValueDaughter *axisPionDCA = new AliRsnValueDaughter("pion_dca", AliRsnValueDaughter::kDCAXY);
-   axisPionDCA->SetBins(-1.0,1,0.001);
+   axisPionDCA->SetBins(-1.0,1,0.05);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorPionDCA = new AliRsnListOutput("Pion_DCA", AliRsnListOutput::kHistoDefault);
@@ -447,7 +458,7 @@ void AddMonitorOutput_PionTPC_PIDCut(TObjArray *mon=0,TString opt="",AliRsnLoopD
 
    // Pion PID Cut
    AliRsnValueDaughter *axisPionTPCPIDCut = new AliRsnValueDaughter("pionTPCPID", AliRsnValueDaughter::kTPCnsigmaPi);
-   axisPionTPCPIDCut->SetBins(0.0,5,0.01);
+   axisPionTPCPIDCut->SetBins(0.0,5,0.1);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorPionTPCPIDCut = new AliRsnListOutput("Pion_TPC_PID_Cut", AliRsnListOutput::kHistoDefault);
@@ -464,7 +475,7 @@ void AddMonitorOutput_PionTOF_PIDCut(TObjArray *mon=0,TString opt="",AliRsnLoopD
 
    // Pion PID Cut
    AliRsnValueDaughter *axisPionTOFPIDCut = new AliRsnValueDaughter("pionTOFPID", AliRsnValueDaughter::kTOFnsigmaPi);
-   axisPionTOFPIDCut->SetBins(0.0,5,0.01);
+   axisPionTOFPIDCut->SetBins(0.0,5,0.1);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorPionTOFPIDCut = new AliRsnListOutput("Pion_TOF_PID_Cut", AliRsnListOutput::kHistoDefault);
@@ -498,7 +509,7 @@ void AddMonitorOutput_KaonEta(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter
 
    // KaonEta
    AliRsnValueDaughter *axisKaonEta = new AliRsnValueDaughter("kaon_eta", AliRsnValueDaughter::kEta);
-   axisKaonEta->SetBins(-1.0,1.0,0.001);
+   axisKaonEta->SetBins(-1.0,1.0,0.05);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorKaonEta = new AliRsnListOutput("Kaon_Eta", AliRsnListOutput::kHistoDefault);
@@ -515,7 +526,7 @@ void AddMonitorOutput_KaonY(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *
 
    // KaonY
    AliRsnValueDaughter *axisKaonY = new AliRsnValueDaughter("kaon_y", AliRsnValueDaughter::kY);
-   axisKaonY->SetBins(-1.0,1.0,0.001);
+   axisKaonY->SetBins(-1.0,1.0,0.05);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorKaonY = new AliRsnListOutput("Kaon_Y", AliRsnListOutput::kHistoDefault);
@@ -532,7 +543,7 @@ void AddMonitorOutput_KaonMinPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaught
 
    // KaonMinPt
    AliRsnValueDaughter *axisKaonMinPt = new AliRsnValueDaughter("kaon_minpt", AliRsnValueDaughter::kPt);
-   axisKaonMinPt->SetBins(0.0,1,0.001);
+   axisKaonMinPt->SetBins(0.0,1,0.05);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorKaonMinPt = new AliRsnListOutput("Kaon_MinPt", AliRsnListOutput::kHistoDefault);
@@ -549,7 +560,7 @@ void AddMonitorOutput_KaonDCA(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter
 
    // KaonDCA
    AliRsnValueDaughter *axisKaonDCA = new AliRsnValueDaughter("kaon_dca", AliRsnValueDaughter::kDCAXY);
-   axisKaonDCA->SetBins(-1.0,1,0.001);
+   axisKaonDCA->SetBins(-1.0,1,0.05);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorKaonDCA = new AliRsnListOutput("Kaon_DCA", AliRsnListOutput::kHistoDefault);
@@ -566,7 +577,7 @@ void AddMonitorOutput_KaonTPC_PIDCut(TObjArray *mon=0,TString opt="",AliRsnLoopD
 
    // Kaon TPC PID Cut
    AliRsnValueDaughter *axisKaonTPCPIDCut = new AliRsnValueDaughter("kaonTPCPID", AliRsnValueDaughter::kTPCnsigmaK);
-   axisKaonTPCPIDCut->SetBins(0.0,5,0.01);
+   axisKaonTPCPIDCut->SetBins(0.0,5,0.1);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorKaonTPCPIDCut = new AliRsnListOutput("Kaon_TPC_PID_Cut", AliRsnListOutput::kHistoDefault);
@@ -583,7 +594,7 @@ void AddMonitorOutput_KaonTOF_PIDCut(TObjArray *mon=0,TString opt="",AliRsnLoopD
 
    // Kaon TOF PID Cut
    AliRsnValueDaughter *axisKaonTOFPIDCut = new AliRsnValueDaughter("kaonTOFPID", AliRsnValueDaughter::kTOFnsigmaK);
-   axisKaonTOFPIDCut->SetBins(0.0,5,0.01);
+   axisKaonTOFPIDCut->SetBins(0.0,5,0.1);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorKaonTOFPIDCut = new AliRsnListOutput("Kaon_TOF_PID_Cut", AliRsnListOutput::kHistoDefault);

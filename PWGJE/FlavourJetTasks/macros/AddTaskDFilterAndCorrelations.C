@@ -10,6 +10,7 @@ void *AddTaskDFilterAndCorrelations(
   Float_t R = 0.4,
   Float_t jptcut = 10.,
   const char *cutType = "TPC",
+  Int_t thnsparse=1, /*-1 = no thnsparse, 0 = heavy, 1 = light*/
   Double_t percjetareacut = 1.,
   AliAnalysisTaskEmcal::TriggerType trType=AliAnalysisTaskEmcal::kND,
   Int_t typeDjet=2
@@ -54,19 +55,37 @@ void *AddTaskDFilterAndCorrelations(
 
   printf("CREATE TASK\n"); //CREATE THE TASK
 
-  // create the task
-  AliAnalysisTaskSEDmesonsFilterCJ *taskFilter = new AliAnalysisTaskSEDmesonsFilterCJ("AnaTaskSEDmesonsFilterCJ",analysiscuts,cand);
-  if(!theMCon) reco=kTRUE;
-  taskFilter->SetMC(theMCon); //D meson settings
-  taskFilter->SetUseReco(reco);
-  taskFilter->SetName("AliAnalysisTaskSEDmesonsFilterCJ");
-  mgr->AddTask(taskFilter);
+  TString candname="DStar"; 
+  if(cand==0)  candname="D0";
+
+  TString taskFiltername="DmesonsFilterCJ";
+  taskFiltername+=candname;
+  taskFiltername+=suffix;
+  if(theMCon) taskFiltername+="MC";
+  if(!reco)   taskFiltername+="gen";
   
-    // create the task
-    
-  AliAnalysisTaskFlavourJetCorrelations *taskCorr = new AliAnalysisTaskFlavourJetCorrelations("AnaTaskFlavourJetCorrelations", 
+  AliAnalysisTaskSEDmesonsFilterCJ* taskFilter = mgr->GetTask(taskFiltername.Data());
+  if (!taskFilter){
+     taskFilter = new AliAnalysisTaskSEDmesonsFilterCJ(taskFiltername.Data(),analysiscuts,cand);
+     if(!theMCon) reco=kTRUE;
+     taskFilter->SetMC(theMCon); //D meson settings
+     taskFilter->SetUseReco(reco);
+     mgr->AddTask(taskFilter);
+  }
+
+  // create the task
+  TString taskCorrName="TaskFlavourJetCorrelations";
+  taskCorrName+=candname;
+  taskCorrName+=suffix;
+  if(theMCon) taskCorrName+="MC";
+  if(!reco)   taskCorrName+="gen";
+  taskCorrName+=cutType;
+  taskCorrName+=Form("PTj%.0f",jptcut);
+  taskCorrName+="";
+  
+  AliAnalysisTaskFlavourJetCorrelations *taskCorr = new AliAnalysisTaskFlavourJetCorrelations(taskCorrName.Data(), 
      analysiscuts, cand);
-  taskCorr->SetName("AliAnalysisTaskFlavourJetCorrelations");
+  
   taskCorr->SetJetsName(jetArrname);
   taskCorr->SetMC(theMCon);
   taskCorr->SetUseReco(reco);
@@ -79,6 +98,10 @@ void *AddTaskDFilterAndCorrelations(
      taskCorr->SetCaloTriggerPatchInfoName("EmcalTriggers");
      taskCorr->SetTriggerTypeSel(trType);
   }
+  if(thnsparse==-1)taskCorr->TurnOffTHnSparse();
+  if(thnsparse==0) taskCorr->HeavyTHnSparse();
+  if(thnsparse==1) taskCorr->LightTHnSparse();   
+    
   mgr->AddTask(taskCorr);
 
   if(theMCon) {
@@ -86,8 +109,6 @@ void *AddTaskDFilterAndCorrelations(
      if(reco) suffix+="rec";  
   }
   
-  TString candname="DStar"; 
-  if(cand==0)  candname="D0";
   
   // Create and connect containers for input/output
   TString outputfile = AliAnalysisManager::GetCommonFileName();

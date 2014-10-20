@@ -19,7 +19,8 @@ AliAODConversionParticle(),
     fdcaBetweenPhotons(1),
     fdcaZPrimVtx(100),
     fdcaRPrimVtx(100),
-    fQuality(0)
+    fQuality(0),
+    fTrueMeson(0)
    
 {
 	fLabel[0] = -1;
@@ -42,7 +43,8 @@ fWeight(1),
 fdcaBetweenPhotons(100),
 fdcaZPrimVtx(100),
 fdcaRPrimVtx(100),
-fQuality(0)
+fQuality(0),
+fTrueMeson(0)
 {
     // Set 4momentu
     SetPxPyPzE(kf->GetPx(),kf->GetPy(),kf->GetPz(),kf->GetE());
@@ -67,7 +69,8 @@ fWeight(1),
 fdcaBetweenPhotons(1),
 fdcaZPrimVtx(100),
 fdcaRPrimVtx(100),
-fQuality(0)
+fQuality(0),
+fTrueMeson(0)
 {
     // Set 4momentum
     SetPxPyPzE(y1->Px()+y2->Px(),y1->Py()+y2->Py(),y1->Pz()+y2->Pz(),y1->E()+y2->E());
@@ -80,7 +83,7 @@ fQuality(0)
     DetermineMesonQuality(y1,y2);
     // Calculate Alpha
     if((y1->E()+y2->E()) != 0){
-	fAlpha=TMath::Abs((y1->E()-y2->E())/(y1->E()+y2->E()));
+		fAlpha=TMath::Abs((y1->E()-y2->E())/(y1->E()+y2->E()));
     }
 
     // Set Chi2 to the mean chi2 of gammas
@@ -91,6 +94,46 @@ fQuality(0)
     fLabel[1]=-1;
     fLabel[2]=0;
 }
+
+AliAODConversionMother::AliAODConversionMother(AliAODConversionMother *meson,AliAODConversionPhoton *gamma):
+AliAODConversionParticle(),
+fMCLabel(-1),
+fChi2(-1),
+fOpeningAngle(-1),
+fAlpha(-1),
+fWeight(1),
+fdcaBetweenPhotons(1),
+fdcaZPrimVtx(100),
+fdcaRPrimVtx(100),
+fQuality(0),
+fTrueMeson(0)
+{
+    // Set 4momentum
+    SetPxPyPzE(meson->Px()+gamma->Px(),meson->Py()+gamma->Py(),meson->Pz()+gamma->Pz(),meson->E()+gamma->E());
+
+    // Calculate Opening Angle
+    TVector3 v1(meson->Px(),meson->Py(),meson->Pz());
+    TVector3 v2(gamma->Px(),gamma->Py(),gamma->Pz());
+    fOpeningAngle=v1.Angle(v2);
+     
+	fProductionVtx[0]=0;
+	fProductionVtx[1]=0;
+	fProductionVtx[2]=0;
+
+    // Calculate Alpha
+    if((meson->E()+gamma->E()) != 0){
+		fAlpha=TMath::Abs((meson->E()-gamma->E())/(meson->E()+gamma->E()));
+    }
+
+    // Set Chi2 to the mean chi2 of gammas
+	// fChi2=0.5*(y1->GetChi2perNDF()+y2->GetChi2perNDF());
+
+    //Set Decay Photon Labels
+    fLabel[0]=-1;
+    fLabel[1]=-1;
+    fLabel[2]=0;
+}
+
 
 AliAODConversionMother::~AliAODConversionMother() {
     // empty standard destructor

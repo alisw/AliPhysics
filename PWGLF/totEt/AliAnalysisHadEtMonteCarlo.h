@@ -13,6 +13,9 @@
 class AliVEvent;
 class TRandom;
 class AliAnalysisHadEtReconstructed;
+class AliMCEvent;
+class AliGenEventHeader;
+class AliStack;
 
 class AliAnalysisHadEtMonteCarlo : public AliAnalysisHadEt
 {
@@ -131,7 +134,17 @@ public:
     void DoTriggerChecksOnly(){kDoTriggerChecksOnly=kTRUE;}
     void SetIsOfflineV0AND(Bool_t val){kIsOfflineV0AND = val;}
     void SetIsOfflineMB(Bool_t val){kIsOfflineMB = val;}
+
+
+    void SetGeneratorMinMaxParticles(AliMCEvent *eventMC);
+    AliGenEventHeader* GetGenEventHeader(AliMCEvent *eventMC) const;
+    Bool_t IsHIJINGLabel(Int_t label,AliMCEvent *eventMC,AliStack *stack);
+    void CheckForHIJINGLabel(){checkLabelForHIJING = kTRUE;}
+
  protected:
+    Bool_t checkLabelForHIJING;//Boolean - do we need to check this data set for HIJING labels?  We don't need to do this unless there were signals embedded
+    Int_t            fNMCProducedMin;             // In case of cocktail, select particles in the list with label from this value
+    Int_t            fNMCProducedMax;             // In case of cocktail, select particles in the list with label up to this value
 
  private:
     //Declare it private to avoid compilation warning
@@ -167,8 +180,8 @@ public:
     //Float_t fSimPiKPEtSmeared[4];//simulated Et for pi,k,p smeared for each event by different momentum resolutions
     static Float_t fgSmearWidths[4];//array with widths for smearing with different momentum resultions
     static Int_t fgNumSmearWidths;//number of entries in the array above
-    TRandom *fPtSmearer;//!a TRandom used for investigating momentum smearing
-    AliAnalysisHadEtReconstructed *fHadEtReco;//!corresponding class for data reconstruction.  Used to access corrections directly used here.
+    TRandom *fPtSmearer;//a TRandom used for investigating momentum smearing
+    AliAnalysisHadEtReconstructed *fHadEtReco;//corresponding class for data reconstruction.  Used to access corrections directly used here.
 
     ClassDef(AliAnalysisHadEtMonteCarlo, 1);
 };

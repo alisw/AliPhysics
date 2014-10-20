@@ -13,6 +13,10 @@
 
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TH3F.h"
+#include "THn.h"
 #include "THnSparse.h"
 #include "TFile.h"
 #include "AliFemtoCorrFctn.h"
@@ -20,7 +24,7 @@
 class AliFemtoCorrFctnDEtaDPhiCorrections : public AliFemtoCorrFctn {
 public:
   enum CorrectionType {kNone=0, kPt=1, kEta=2};
-  enum ParticleType {kNoCorrection=0, kPion=1, kKaon=2, kProton=3, kAll=4};
+  enum ParticleType {kNoCorrection=0, kPion=1, kKaon=2, kProton=3, kAll=4, kPionMinus=5, kKaonMinus=6, kProtonMinus=7};
   typedef enum CorrectionType ReadCorrectionType;
 
   AliFemtoCorrFctnDEtaDPhiCorrections(char* title, const int& aPhiBins, const int& aEtaBins);
@@ -34,10 +38,12 @@ public:
   virtual void AddMixedPair(AliFemtoPair* aPair);
 
   virtual void Finish();
-  void SetDoPtAnalysis(int do2d);
-  void SetDoCorrections(bool doCorr);
-  void SetDoCorrectionsHist(CorrectionType doCorr);
+  void SetDoFullAnalysis(Bool_t do2d);
   double CalculateCorrectionWeight(double pT1, double pT2);
+  double CalculateCorrectionWeight(double pT1);
+  double CalculateCorrectionWeight(double pT1, double pT2, double eta1, double eta2, double phi1, double phi2, double zvert1, double zvert2);
+  void LoadCorrectionTabFromROOTFile1D(const char *file, ParticleType partType1, ParticleType partType2);
+  void LoadCorrectionTabFromROOTFile(const char *file, ParticleType partType1, ParticleType partType2, bool doPtCorr, bool doEtaCorr, bool doPhiCorr, bool doZVertCorr);
   void LoadCorrectionTabFromFile(const char *pTtab, const char *corrTab);
   void SetCorrectionTab(ParticleType partType);
   
@@ -54,21 +60,15 @@ private:
   TH1D *fDCosNumerator;              // Numerator of colinearity correlation
   TH1D *fDCosDenominator;            // Denominator of colinearity correlation
 
-  int   fDoPtAnalysis;               // set to 1 to do 2D Pt analysis
-
-  TH2D *fDPhiPtNumerator;            // Numerator of dPhi correlation vs. Pt min
-  TH2D *fDPhiPtDenominator;          // Denominator of dPhi correlation vs. Pt min
-
-  TH2D *fDCosPtNumerator;            // Numerator of colinearity correlation vs. Pt min
-  TH2D *fDCosPtDenominator;          // Denominator of colinearity correlation vs. Pt min
+  Bool_t   fDoFullAnalysis;               // set to 1 to do 2D Pt analysis
 
   TH1D *fPhi;
   TH1D *fEta;
+  TH1D *fPtSumDist;
 
   TH2D *fYtYtNumerator;
   TH2D *fYtYtDenominator; 
 
-  CorrectionType fIfCorrectionHist;
   bool fIfCorrection;
   THnSparseF *fPtCorrectionsNum;
   THnSparseF *fPtCorrectionsDen;
@@ -83,10 +83,26 @@ private:
   double fphiL;
   double fphiT;
 
+  TFile *ifileCorrTab;
+  bool fdoPtCorr;
+  bool fdoEtaCorr;
+  bool fdoPhiCorr;
+  bool fdoZVertCorr;
+  int fpartType1;
+  int fpartType2;
 
+  THnT<float>* fhntReco1;
+  THnT<float>* fhntReco2;
+  TH1F *fh1Reco1;
+  TH1F *fh1Reco2;
+  TH2F *fh2Reco1;
+  TH2F *fh2Reco2;
+  TH3F *fh3Reco1;
+  TH3F *fh3Reco2;
+  TH1D *fhCont1;
+  TH1D *fhCont2;
 
-
-
+  bool fCorr1D;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoCorrFctnDEtaDPhiCorrections, 1)

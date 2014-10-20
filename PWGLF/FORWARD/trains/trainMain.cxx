@@ -245,7 +245,7 @@ main(int argc, char** argv)
   }
   else if (!batch) {
     // Info("main", "Creating GUI application");
-    app = new TGApplication("runTrain", 0, 0);
+    app = new TApplication("runTrain", 0, 0);
   }
   if (app && !batch) app->InitializeGraphics();
 

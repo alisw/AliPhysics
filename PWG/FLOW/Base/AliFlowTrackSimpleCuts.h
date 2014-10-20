@@ -6,7 +6,7 @@
 // A simple track cut class to the the AliFlowTrackSimple for basic
 // kinematic cuts
 // author: N. van der Kolk (kolk@nikhef.nl)
-// mods: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch)
+// mods: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch), Redmer Bertens (rbertens@cern.ch)
 
 #ifndef ALIFLOWTRACKSIMPLECUTS_H
 #define ALIFLOWTRACKSIMPLECUTS_H
@@ -29,6 +29,8 @@ class AliFlowTrackSimpleCuts : public TNamed {
   void SetPtMin(Double_t min)   {this->fPtMin = min; fCutPt=kTRUE;  }
   void SetEtaMax(Double_t max)  {this->fEtaMax = max; fCutEta=kTRUE; }
   void SetEtaMin(Double_t min)  {this->fEtaMin = min; fCutEta=kTRUE; }
+  void SetEtaGap(Double_t min, Double_t max)
+        {fEtaGapMin = min, fEtaGapMax = max, fCutEtaGap = kTRUE; }
   void SetPhiMax(Double_t max)  {this->fPhiMax = max; fCutPhi=kTRUE; }
   void SetPhiMin(Double_t min)  {this->fPhiMin = min; fCutPhi=kTRUE; }
   void SetPID(Int_t pid)        {this->fPID = pid; fCutPID=kTRUE; }
@@ -42,6 +44,8 @@ class AliFlowTrackSimpleCuts : public TNamed {
   Double_t GetEtaMax() const    {return this->fEtaMax; }
   Double_t GetEtaMin() const    {return this->fEtaMin; }
   Double_t GetPhiMax() const    {return this->fPhiMax; }
+  Double_t GetEtaGapMin() const {return this->fEtaGapMin; }
+  Double_t GetEtaGapMax() const {return this->fEtaGapMax; }
   Double_t GetPhiMin() const    {return this->fPhiMin; }
   Int_t    GetPID() const       {return this->fPID; }
   Int_t    GetCharge() const    {return this->fCharge; }
@@ -64,6 +68,9 @@ class AliFlowTrackSimpleCuts : public TNamed {
   Bool_t   fCutEta; //cut on eta?
   Double_t fEtaMax; //max eta
   Double_t fEtaMin; //min eta
+  Bool_t   fCutEtaGap; //have eta gap (i.e. discontinuous rp selection in eta?)
+  Double_t fEtaGapMax; // max eta gap
+  Double_t fEtaGapMin; // min eta gap
   Bool_t   fCutPhi; //cut on phi?
   Double_t fPhiMax; //max phi
   Double_t fPhiMin; //min phi
@@ -76,7 +83,7 @@ class AliFlowTrackSimpleCuts : public TNamed {
   Double_t fMassMin; //min mass
   Int_t    fPOItype; //which poi type do we produce? (RP=0, POI=1,2,3,4,5...)
 
-  ClassDef(AliFlowTrackSimpleCuts,2)
+  ClassDef(AliFlowTrackSimpleCuts,3)
 };
 
 #endif

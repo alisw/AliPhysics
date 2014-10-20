@@ -9,6 +9,11 @@
 #
 #  origin: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
 #
+if [ ${BASH_VERSINFO} -lt 4 ]; then
+  echo "bash version >= 4 needed, you have ${BASH_VERSION}, exiting..."
+  exit 1
+fi
+
 main()
 {
   if [[ $# -lt 1 ]]; then
@@ -16,11 +21,15 @@ main()
     echo "expert: ${0##*/} alienFindCommand=\"alien_find /some/path/ file\" [opt=value]"
     echo "        ${0##*/} alienFindCommand=\"alien_find /some/path/ file\" localPathPrefix=\${PWD}"
     echo
-    echo "by default files are downloaded to current dir, or \${alienSync_localPathPrefix} if set."
+    echo "by default files are downloaded to current dir, or \${alienSync_localPathPrefix}, if set."
     echo "At least specify alienFindCommand, either on command line or in the configFile."
+    echo "the logs go by default to localPathPrefix/alienSyncLogs"
     return
   fi
   
+  #be nice and allow group members access as well (002 will create dirs with 775 and files with 664)
+  umask 0002
+
   # try to load the config file
   #[[ ! -f $1 ]] && echo "config file $1 not found, exiting..." | tee -a $logFile && exit 1
   if ! parseConfig "$@"; then return 1; fi
@@ -31,7 +40,7 @@ main()
   [[ -z ${alienSyncFilesGroupOwnership} ]] && alienSyncFilesGroupOwnership=$(id -gn)
 
   # do some accounting
-  [[ ! -d $logOutputPath ]] && echo "logOutputPath not available, creating..." && sg ${alienSyncFilesGroupOwnership} "mkdir -p $logOutputPath"
+  [[ ! -d $logOutputPath ]] && echo "logOutputPath not available, creating..." && mkdir -p $logOutputPath && chgrp ${alienSyncFilesGroupOwnership} ${logOutputPath}
   [[ ! -d $logOutputPath ]] && echo "could not create log dir, exiting..." && exit 1
   dateString=$(date +%Y-%m-%d-%H-%M)
   logFile=$logOutputPath/alienSync-$dateString.log
@@ -39,12 +48,9 @@ main()
   echo ""|tee -a $logFile
   echo log: $logFile
   
-  #be nice and allow group members access as well (002 will create dirs with 775 and files with 664)
-  umask 0002
-
   #lock
   lockFile=$logOutputPath/runningNow.lock
-  [[ -f $lockFile ]] && echo "locked. Another process running? ($lockFile)" | tee -a $logFile && exit 1
+  [[ -f $lockFile && ${allowConcurrent} -ne 1 ]] && echo "locked. Another process running? ($lockFile)" | tee -a $logFile && exit 1
   touch $lockFile
   [[ ! -f $lockFile ]] && echo "unable to create lock. exiting..." | tee -a $logFile && exit 1
 
@@ -61,6 +67,9 @@ main()
   rm -f $redoneFilesList
   touch $redoneFilesList
   updatedFilesList="${logOutputPath}/updatedFiles.list"
+  failedDownloadList="${logOutputPath}/failedDownload.list"
+  touch ${failedDownloadList}
+
 
   # check the config
   [[ -z $alienFindCommand ]] && echo "alienFindCommand not defined, exiting..." && exitScript 1
@@ -153,6 +162,12 @@ main()
     destinationdir=${destination%/*}
     [[ -n $softLinkName ]] && softlinktodestination=${destinationdir}/${softLinkName}
     tmpdestination="${destination}.aliensyncTMP"
+    
+    #if we allow concurrent running (DANGEROUS) check if somebody is already trying to process this file
+    if [[ -f ${tmpdestination} && ${allowConcurrent} -eq 1 ]]; then 
+      echo "$tmpdestination exists - concurrent donwload? skipping..."
+      continue
+    fi
 
     if [[ -n ${destinationModifyCommand} ]]; then
       #find the candidate in the database, in case there are more files trying to go to the same
@@ -183,8 +198,7 @@ main()
       [[ "$md5local" =~ "." ]] && md5local=""
 
       if [[ $forceLocalMD5recalculation -eq 1 || -z $md5local ]]; then
-        tmparrayMD5=($(md5sum ${destination}))
-        md5recalculated=${tmparrayMD5[0]}
+        md5recalculated=$(checkMD5sum ${destination})
         [[ "$md5local" != "$md5recalculated" ]] && echo "WARNING: local copy change ${destination}"
         md5local=${md5recalculated}
       fi
@@ -209,7 +223,7 @@ main()
     
     [[ -f $tmpdestination ]] && echo "WARNING: stale $tmpdestination, removing" && rm $tmpdestination
     
-    sg ${alienSyncFilesGroupOwnership} "mkdir -p ${destinationdir}"
+    mkdir -p ${destinationdir} && chgrp ${alienSyncFilesGroupOwnership} ${destinationdir}
     [[ ! -d $destinationdir ]] && echo cannot access $destinationdir && continue
 
     #check token
@@ -234,7 +248,8 @@ main()
     downloadOK=0
     #verify the downloaded md5 if available, validate otherwise...
     if [[ -n $md5alien ]]; then
-      if (echo "$md5alien  $tmpdestination"|md5sum -c --status -); then
+      md5recalculated=$(checkMD5sum ${tmpdestination})
+      if [[ ${md5alien} == ${md5recalculated} ]]; then
         echo "OK md5 after download"
         downloadOK=1
       else
@@ -269,16 +284,24 @@ main()
         echo ${destination} >> $localFileList
       fi
       [[ -n ${postCommand} ]] && ( cd ${destinationdir}; eval "${postCommand}" )
+      if grep -q ${alienFile} ${failedDownloadList}; then
+        echo "removing ${alienFile} from ${failedDownloadList}"
+        grep -v ${alienFile} ${failedDownloadList} >tmpUpdatedFailed
+        mv tmpUpdatedFailed ${failedDownloadList}
+      fi
     else
       echo "download not validated, NOT moving to ${destination}..."
       echo "removing $tmpdestination"
       rm -f $tmpdestination
+      echo ${alienFile} >> ${failedDownloadList}
       continue
     fi
 
+    [[ -f $tmpdestination ]] && echo "WARNING: tmpdestination should not still be here! removing..." && rm -r ${tmpdestination}
+
     if [[ $unzipFiles -eq 1 ]]; then
-      echo unzip $tmpdestination -d $destinationdir
-      unzip $tmpdestination -d $destinationdir
+      echo unzip -o ${destination} -d ${destinationdir}
+      unzip -o ${destination} -d ${destinationdir}
     fi
 
     echo
@@ -293,7 +316,6 @@ main()
   fi
  
   cat ${newFilesList} ${redoneFilesList} > ${updatedFilesList}
-  eval "${executeEnd}"
   
   echo alienFindCommand:
   echo "  $alienFindCommand"
@@ -309,8 +331,23 @@ main()
   echo "redone files:"
   echo
   cat $redoneFilesList
+  echo
+  echo
+  
+  #output the list of failed files to stdout, so the cronjob can mail it
+  echo '###############################'
+  echo "failed to download from alien:"
+  echo
+  local tmpfailed=$(mktemp)
+  [[ "$(cat ${failedDownloadList} | wc -l)" -gt 0 ]] && sort ${failedDownloadList} | uniq -c | awk 'BEGIN{print "#tries\t file" }{print $1 "\t " $2}' | tee ${tmpfailed}
+  
+  [[ -n ${MAILTO} ]] && echo $logFile | mail -s "alienSync ${alienFindCommand} done" ${MAILTO}
 
-  [[ -n $MAILTO ]] && echo $logFile | mail -s "alienSync $alienFindCommand done" $MAILTO
+  echo
+  echo
+  echo '###############################'
+  echo "eval ${executeEnd}"
+  eval "${executeEnd}"
 
   exitScript 0
 }
@@ -328,7 +365,7 @@ exitScript()
 alien_find()
 {
   # like a regular alien_find command
-  # output is a list with md5sums and ctimes
+  # output is a list with md5 sums and ctimes
   executable="$ALIEN_ROOT/api/bin/gbbox find"
   [[ ! -x ${executable% *} ]] && echo "### error, no $executable..." && return 1
   [[ -z $logOutputPath ]] && logOutputPath="./"
@@ -463,11 +500,21 @@ copyFromAlien()
   src="alien://${src}"
   dst=$2
   if [[ "$copyMethod" == "tfilecp" ]]; then
-    echo timeout $copyTimeout root -b -q "$copyScript(\"$src\",\"$dst\")"
-    timeout $copyTimeout root -b -q "$copyScript(\"$src\",\"$dst\")"
+    if which timeout &>/dev/null; then
+      echo timeout $copyTimeout root -b -q "$copyScript(\"$src\",\"$dst\")"
+      timeout $copyTimeout root -b -q "$copyScript(\"$src\",\"$dst\")"
+    else
+      echo root -b -q "$copyScript(\"$src\",\"$dst\")"
+      root -b -q "$copyScript(\"$src\",\"$dst\")"
+    fi
   else
-    echo timeout $copyTimeout $ALIEN_ROOT/api/bin/alien_cp $src $dst
-    timeout $copyTimeout $ALIEN_ROOT/api/bin/alien_cp $src $dst
+    if which timeout &>/dev/null; then
+      echo timeout $copyTimeout $ALIEN_ROOT/api/bin/alien_cp $src $dst
+      timeout $copyTimeout $ALIEN_ROOT/api/bin/alien_cp $src $dst
+    else
+      echo $ALIEN_ROOT/api/bin/alien_cp $src $dst
+      $ALIEN_ROOT/api/bin/alien_cp $src $dst
+    fi
   fi
 }
 
@@ -480,7 +527,6 @@ parseConfig()
   localPathPrefix="${PWD}"
   #define alienSync_localPathPrefix in your env to have a default central location
   [[ -n ${alienSync_localPathPrefix} ]] && localPathPrefix=${alienSync_localPathPrefix}
-  logOutputPath="${localPathPrefix}/alienSyncLogs"
   unzipFiles=0
   allOutputToLog=0
 
@@ -510,6 +556,24 @@ parseConfig()
     echo "${var} = ${value}"
     export ${var}="${value}"
   done
+
+  #things that by default depend on other variables should be set here, after the dependencies
+  [[ -z ${logOutputPath} ]] && logOutputPath="${localPathPrefix}/alienSyncLogs"
+}
+
+checkMD5sum()
+{
+  local file="${1}"
+  local md5=""
+  [[ ! -f ${file} ]] && return 1
+  if which md5sum &>/dev/null; then
+    local tmp=($(md5sum ${file}))
+    md5=${tmp[0]}
+  elif which md5 &>/dev/null; then
+    local tmp=($(md5 ${file}))
+    md5=${tmp[3]}
+  fi
+  echo ${md5}
 }
 
 main "$@"

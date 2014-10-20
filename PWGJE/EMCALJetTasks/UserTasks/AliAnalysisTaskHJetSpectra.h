@@ -34,7 +34,8 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskSE {
    virtual void     Terminate(Option_t *);
 
   // ######### SETTERS/GETTERS
-  void        SetAnalyzePythia(Bool_t val) {fAnalyzePythia = val;}
+  void        SetAnalyzePythia(Bool_t val) { if(val) fAnalyzePythia = kTRUE;}
+  void        SetAnalyzeMC(Int_t val); 
   void        SetUseDefaultVertexCut (Bool_t val) {fUseDefaultVertexCut = val;} 
   void        SetUsePileUpCut (Bool_t val) {fUsePileUpCut = val;} 
   void        SetNumberOfCentralityBins(Int_t val) {fNumberOfCentralityBins = val;} 
@@ -64,12 +65,16 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskSE {
   // ######### MAIN CALCULATION FUNCTIONS
   void    GetDeltaPt(Double_t rho1, Double_t &dpt1, 
                      Double_t rho2, Double_t &dpt2, 
-                     Double_t rho3, Double_t &dpt3, Double_t leadingJetExclusionProbability = 0); 
+                     Double_t rho3, Double_t &dpt3, 
+                     Double_t &rcPhi, Double_t &rcEta,
+                     Double_t leadingJetExclusionProbability = 0); 
+                     
 
 
   Double_t    GetConePt(Double_t eta, Double_t phi, Double_t radius); 
   Double_t    GetPtHard();
-  Double_t    GetPythiaPrimaryVertex();
+  Double_t    GetImpactParameter();
+  Double_t    GetSimPrimaryVertex();
 //FK//  Double_t    GetPythiaTrials();
 
   void        GetPerpendicularCone(Double_t vecPhi, Double_t vecTheta, Double_t& conePt);
@@ -86,6 +91,8 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskSE {
    Double_t EstimateBgCone();  
    Double_t GetExternalRho(); 
 
+   Bool_t DistantCones(Double_t phi1, Double_t eta1, Double_t r1, Double_t phi2, Double_t eta2, Double_t r2);
+
   // ######### STANDARD FUNCTIONS
   void      Calculate(AliVEvent* event);   
   void      ExecOnce();                    
@@ -93,6 +100,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskSE {
   TList*              fOutputList;            //! Output list
   // ########## USAGE TRIGGERS 
   Bool_t              fAnalyzePythia;         // trigger if pythia properties should be processed
+  Bool_t              fAnalyzeHijing;         // trigger if pythia properties should be processed
   Bool_t              fIsKinematics;          // trigger if data is kinematics only (for naming reasons)
   Bool_t              fUseDefaultVertexCut;   // trigger if automatic vertex cut from helper class should be done 
   Bool_t              fUsePileUpCut;          // trigger if pileup cut should be done
@@ -124,6 +132,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskSE {
   // ########## EVENT PROPERTIES
   Double_t            fCrossSection;          //! value is filled, if pythia header is accessible 
   Double_t            fTrials;                //! value is filled, if pythia header is accessible 
+  Double_t            fImpParam;              //! impact parameter from hijing
 
   // ########## GENERAL ////VARS
   TRandom3*           fRandom;                //! A random number
@@ -139,10 +148,10 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskSE {
 
    TH1I               *fHistEvtSelection;     //!  event statistics
    TH2F               *fh2Ntriggers;  //! trigger counter
-   THnSparse          *fHJetSpec;//!  TT associated spectrum of jets
-   THnSparse          *fHJetSpecSubUeMedian;//! TT associated spectrum of jets, jetPT corredted for UE cell median
-   THnSparse          *fHJetSpecSubUeCone;//! TT associated spectrum of jets, jetPT corredted for UE perp cone
-   THnSparse          *fHJetSpecSubUeCMS; //! TT associated spectrum of jets, jetPT corredted for UE CMS
+   THnSparse         *fHJetSpec;//!  TT associated spectrum of jets
+   THnSparse         *fHJetSpecSubUeMedian;//! TT associated spectrum of jets, jetPT corredted for UE cell median
+   THnSparse         *fHJetSpecSubUeCone;//! TT associated spectrum of jets, jetPT corredted for UE perp cone
+   THnSparse         *fHJetSpecSubUeCMS; //! TT associated spectrum of jets, jetPT corredted for UE CMS
 
    TH2F    *fhRhoCellMedian; //! X=rho from cell median Y=centrality
    TH2F    *fhRhoCone; //! X=rho from perp cone, Y=centrality
@@ -162,6 +171,18 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskSE {
    TH2D    *fhDeltaPtConeIncl; //! delta pT from RndCone using rho from perp cone inclusive event
    TH2D    *fhDeltaPtCMSIncl; //! delta pT from RndCone using rho CMS inclusive event
 
+   TH2D    *fhDeltaPtMedianNearSide; //!  delta pt fluctuations from near side w.r.t. trigger
+   TH2D    *fhDeltaPtMedianAwaySide;//! delta pt from away side
+   TH2D    *fhDeltaPtCMSNearSide;//! delta pt fluctuations from near side w.r.t. trigger
+   TH2D    *fhDeltaPtCMSAwaySide;//! delta pt from away side
+
+   TH2D    *fhDeltaPtMedianExclTrigCone;//! delta pt exclude a cone around trigger
+   TH2D    *fhDeltaPtCMSExclTrigCone;//!  delta pt exclude a cone around trigger
+
+   TH2D    *fhDeltaPtMedianExclAwayJet;//! delta pt exclude a cone around leading jet on away side 
+   TH2D    *fhDeltaPtCMSExclAwayJet;//!  delta pt exclude a cone around leading jet on away side
+
+
 
    TH2F     *fhJetPhi;   //! jet phi vs jet pT
    TH2F     *fhTrackPhi; //! track phi vs track pT
@@ -170,7 +191,8 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskSE {
    TH2F     *fhTrackCentVsPt; //!  X=centrality; Y= track pT
    TH1F     *fhVertexZ;  //! vertexZ inclusive
    TH1F     *fhVertexZAccept; //! vertexZ accepted after vtx cut
-   TH2F     *fhDphiTriggerJet; //! Delta phi versus jet pT
+   TH2F     *fhDphiTriggerJetMinBias; //! Delta phi versus jet pT
+   TH2F     *fhDphiTriggerJetCent20; //! Delta phi versus jet pT
    TH1F     *fhDphiTriggerJetAccept; //!Dphi of accepted jets after dphi cut
 
    TH1F     *fhCentrality;     //! centrality 
@@ -190,15 +212,24 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskSE {
    TProfile*     fh1Xsec;   //! pythia cross section and trials
    TH1F*         fh1Trials; //! trials are added
    TH1F*         fh1PtHard;  //! Pt har of the event...      
+   TH1D*         fhImpactParameter; //! impact parameter distribution hijing
+   TH1D*         fhImpactParameterTT; //! impact parameter distribution hijing versus TT
 
    Int_t  fNofRandomCones; // the number of random cones per event
+   
+   Double_t fRConesR;      // small random cone of radius R=0.1 
+   Double_t fRConesRSquared;      // small random cone of radius R=0.1 
+   Int_t    fnRCones;      // the number of small random cones R=0.1 
+   Double_t fRConePhi[50]; //! phi of small R=0.1 random cone 
+   Double_t fRConeEta[50]; //! eta of small R=0.1 random cone 
+ 
 
    //Bool_t fIsMC;   
 
   AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
   AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-  ClassDef(AliAnalysisTaskHJetSpectra, 2); // Charged jet analysis for pA
+  ClassDef(AliAnalysisTaskHJetSpectra, 3); // Charged jet analysis for pA
 
 };
 #endif

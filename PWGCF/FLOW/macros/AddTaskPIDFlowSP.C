@@ -13,8 +13,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
                                    TString fileNameBase="AnalysisResults",
                                    TString uniqueStr="Pion_02",
                                    TString Qvector ="Qa",
-                                   Int_t AODfilterBitRP = 272,
-                                   Int_t AODfilterBitPOI = 272,
+                                   Int_t AODfilterBit = 272,
                                    Int_t charge=0,
                                    Int_t MinTPCdedx = 10,
                                    Int_t ncentrality = 6,
@@ -22,7 +21,6 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
                                    Bool_t isPID = kTRUE,
                                    Bool_t VZERO = kFALSE, // use vzero sp method
                                    Bool_t is2011 = kFALSE,
-                                   Bool_t EP3sub = kFALSE,
                                    AliPID::EParticleType particleType=AliPID::kPion,
                                    AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian) {
 
@@ -38,15 +36,6 @@ Double_t minA = -0.8;//
 Double_t maxA = -0.5*EtaGap;//
 Double_t minB = +0.5*EtaGap;//
 Double_t maxB = +0.8;//
-
-
-if(EP3sub) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGCF/FLOW/macros/AddTaskVZERO.C");
-    AddTaskVZERO(kFALSE,kFALSE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kFALSE,kFALSE);
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskVZEROEPSelection.C");
-    AddTaskVZEROEPSelection();
-
-}
     
 int centrMin[9] = {0,5,10,20,30,40,50,60,70};
 int centrMax[9] = {5,10,20,30,40,50,60,70,80};
@@ -77,12 +66,12 @@ TString suffixName[ncentr];
     
 for(int icentr=0;icentr<ncentr;icentr++){
     cutsEvent[icentr] = new AliFlowEventCuts(Form("eventcuts_%d",icentr));
-    //cutsEvent[icentr]->SetUsedDataset(is2011);
+    cutsEvent[icentr]->SetLHC11h(is2011);
     cutsEvent[icentr]->SetCentralityPercentileRange(centrMin[icentr],centrMax[icentr]);
     cutsEvent[icentr]->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
-    //  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kVZERO);
-    //cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kSPD1tracklets);
-    //cutsEvent->SetNContributorsRange(2);
+    //  cutsEvent[icentr]->SetRefMultMethod(AliFlowEventCuts::kVZERO);
+    //cutsEvent[icentr]->SetCentralityPercentileMethod(AliFlowEventCuts::kSPD1tracklets);
+    //cutsEvent[icentr]->SetNContributorsRange(2);
     cutsEvent[icentr]->SetPrimaryVertexZrange(-10.,10.);
     cutsEvent[icentr]->SetQA(doQA);
     cutsEvent[icentr]->SetCutTPCmultiplicityOutliers();
@@ -92,43 +81,20 @@ for(int icentr=0;icentr<ncentr;icentr++){
     if(!VZERO){
         cutsRP[icentr] = new AliFlowTrackCuts(Form("RP_%d",icentr));
         //cutsRP[icentr]->SetParamType(rptype);
-   //     cutsRP[icentr]->SetParamMix(rpmix);
+        //cutsRP[icentr]->SetParamMix(rpmix);
         cutsRP[icentr]->SetPtRange(0.2,5.);
         cutsRP[icentr]->SetEtaRange(etamin,etamax);
         cutsRP[icentr]->SetMinNClustersTPC(70);
-        //  cutsRP->SetMinChi2PerClusterTPC(0.1);//
-        // cutsRP->SetMaxChi2PerClusterTPC(4.0);//
-        cutsRP[icentr]->SetMaxDCAToVertexXY(3.0);
+        cutsRP[icentr]->SetMinChi2PerClusterTPC(0.1);
+        cutsRP[icentr]->SetMaxChi2PerClusterTPC(4.0);
+        cutsRP[icentr]->SetMaxDCAToVertexXY(2.4);
         cutsRP[icentr]->SetMaxDCAToVertexZ(3.0);
         cutsRP[icentr]->SetAcceptKinkDaughters(kFALSE);
         cutsRP[icentr]->SetMinimalTPCdedx(MinTPCdedx);
-        cutsRP[icentr]->SetAODfilterBit(AODfilterBitRP);
+        cutsRP[icentr]->SetAODfilterBit(AODfilterBit);
     }
     
     if(VZERO) { // use vzero sub analysis
- //     if(!is2011)  cutsRP[icentr] = cutsRP[icentr]->GetStandardVZEROOnlyTrackCuts2010(); // select vzero tracks
- //     if(is2011)  cutsRP[icentr] = cutsRP[icentr]->GetStandardVZEROOnlyTrackCuts2011(); // select vzero tracks
-        
-        /*
-         
-        cutsRP[icentr] = new AliFlowTrackCuts(Form("standard_vzero_RP",icentr));
-        AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kVZERO;
-        cutsRP[icentr]->SetParamType(rptype);
-        cutsRP[icentr]->SetEtaRange( -10, +10 );
-        cutsRP[icentr]->SetPhiMin( 0 );
-        cutsRP[icentr]->SetPhiMax( TMath::TwoPi() );
-        
-        if(!is2011){
-            // options for the reweighting
-            cutsRP[icentr]->SetVZEROgainEqualizationPerRing(kFALSE);
-            cutsRP[icentr]->SetApplyRecentering(kTRUE);
-            // to exclude a ring , do e.g.
-            // cuts->SetUseVZERORing(7, kFALSE);
-        }
-        if(is2011){
-            cutsRP[icentr]->SetApplyRecentering(kTRUE);
-        }
-       */
         if(!is2011) cutsRP[icentr] = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2010(); // select vzero tracks
         if(is2011)  cutsRP[icentr] = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2011(); // select vzero tracks
         
@@ -153,6 +119,8 @@ for(int icentr=0;icentr<ncentr;icentr++){
     //SP_POI[icentr]->SetParamMix(poimix);
     SP_POI[icentr]->SetPtRange(0.2,5.);//
     SP_POI[icentr]->SetMinNClustersTPC(70);
+    SP_POI[icentr]->SetMinChi2PerClusterTPC(0.1);
+    SP_POI[icentr]->SetMaxChi2PerClusterTPC(4.0);
     if(!VZERO && Qvector=="Qa"){
         SP_POI[icentr]->SetEtaRange( +0.5*EtaGap, etamax );
         printf(" > NOTE: Using half TPC (Qa) as POI selection u < \n");
@@ -167,13 +135,11 @@ for(int icentr=0;icentr<ncentr;icentr++){
         SP_POI[icentr]->SetEtaRange( etamin,etamax );
         printf(" > NOTE: Using full TPC as POI selection u < \n");
     }
-    // SP_POI->SetMinChi2PerClusterTPC(0.1); //
-    // SP_POI->SetMaxChi2PerClusterTPC(4.0); //
-    //  SP_POI->SetRequireITSRefit(kTRUE);
-    //  SP_POI->SetRequireTPCRefit(kTRUE);
-    //  SP_POI->SetMinNClustersITS(2);
-    //  SP_POI->SetMaxChi2PerClusterITS(1.e+09);
-    SP_POI[icentr]->SetMaxDCAToVertexXY(3.0);
+    //SP_POI->SetRequireITSRefit(kTRUE);
+    //SP_POI->SetRequireTPCRefit(kTRUE);
+    //SP_POI->SetMinNClustersITS(2);
+    //SP_POI->SetMaxChi2PerClusterITS(1.e+09);
+    SP_POI[icentr]->SetMaxDCAToVertexXY(2.4);
     SP_POI[icentr]->SetMaxDCAToVertexZ(3.0);
     //SP_POI->SetDCAToVertex2D(kTRUE);
     //SP_POI->SetMaxNsigmaToVertex(1.e+10);
@@ -184,7 +150,7 @@ for(int icentr=0;icentr<ncentr;icentr++){
     //SP_POI->SetAllowTOFmismatch(kFALSE);
     SP_POI[icentr]->SetRequireStrictTOFTPCagreement(kTRUE);
     SP_POI[icentr]->SetMinimalTPCdedx(MinTPCdedx);
-    SP_POI[icentr]->SetAODfilterBit(AODfilterBitPOI);
+    SP_POI[icentr]->SetAODfilterBit(AODfilterBit);
     SP_POI[icentr]->SetQA(doQA);
     SP_POI[icentr]->SetPriors((centrMin[icentr]+centrMax[icentr])*0.5);
 
@@ -193,8 +159,9 @@ for(int icentr=0;icentr<ncentr;icentr++){
 
     //=====================================================================
  
-    if(Qvector=="Qa") suffixName[icentr] = "Qa";
-    if(Qvector=="Qb") suffixName[icentr] = "Qb";
+    if(!VZERO && Qvector=="Qa") suffixName[icentr] = "Qa";
+    if(!VZERO && Qvector=="Qb") suffixName[icentr] = "Qb";
+    if(VZERO) suffixName[icentr] = "vzero";
     suffixName[icentr] += "-highharmflow";
     suffixName[icentr] += Form("%i_", centrMin[icentr]);
     suffixName[icentr] += Form("%i_", centrMax[icentr]);
@@ -293,7 +260,6 @@ for (int icentr=0; icentr<ncentr; icentr++) {
     {
         //TODO: since this is set in a static object all analyses in an analysis train
         //will be affected.
-        cout<<"cutsRP[icentr]->GetParamType()==AliFlowTrackCuts::kVZERO"<<endl;
         taskFE[icentr]->SetHistWeightvsPhiMin(0.);
         taskFE[icentr]->SetHistWeightvsPhiMax(200.);
     }

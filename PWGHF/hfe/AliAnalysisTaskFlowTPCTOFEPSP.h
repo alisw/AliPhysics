@@ -124,6 +124,8 @@ public:
   void SetPrecisionPhi(Double_t precisionPhi) { fPrecisionPhi = precisionPhi;};
   void SetUseMCReactionPlane(Bool_t useMCReactionPlane) { fUseMCReactionPlane = useMCReactionPlane;};
   void SetUseSP(Bool_t useSP) { fSP = useSP;}
+  void SetVariableMultiplicity(Int_t variableMultiplicity) { fVariableMultiplicity = variableMultiplicity;}
+  void SetTriggerUsed(Int_t triggerUsed) { fTriggerUsed = triggerUsed;}
   void SetMCPID(Bool_t mcPID) { fMCPID = mcPID;};
   void SetNoPID(Bool_t noPID) { fNoPID = noPID;};
 
@@ -182,6 +184,8 @@ private:
   Double_t  fPrecisionPhi;  // precision phi for adding v2
   Bool_t    fUseMCReactionPlane; // use MC reaction plane
   Bool_t    fSP;        // calculate using scalar product method (instead of event plane method)
+  Int_t     fVariableMultiplicity;  // Variable used to correct for multiplicity variations (0: SPD vertex, 1: GetNumberESDtracks, )
+  Int_t     fTriggerUsed;           // Selected trigger
 
   Bool_t    fMCPID; // MC PID for electrons
   Bool_t    fNoPID; // No PID for checks
@@ -315,7 +319,7 @@ private:
   Int_t IsMotherEta(Int_t tr, AliMCEvent* mcEvent);
     
   
-  ClassDef(AliAnalysisTaskFlowTPCTOFEPSP, 2); // analysisclass
+  ClassDef(AliAnalysisTaskFlowTPCTOFEPSP, 3); // analysisclass
 };
 
 #endif

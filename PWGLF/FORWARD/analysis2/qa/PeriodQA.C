@@ -41,12 +41,20 @@ PeriodQA(const char* input,
 	 const char* pass) 
 {
   Bool_t useVar = true;
-  gROOT->SetMacroPath(Form(".:$(ANA_SRC)/qa:$(ANA_SRC)/corrs:"
-			   "$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/qa:"
-			   "$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/corrs:"
-			   "%s",
-			   gROOT->GetMacroPath()));
-  gSystem->AddIncludePath("-I${ALICE_ROOT}/PWGLF/FORWARD/analysis2/qa");
+  TString fwd(gSystem->Getenv("QA_FWD"));
+  TString mac(gROOT->GetMacroPath());
+  if (!fwd.IsNull()) {
+    mac.Prepend(Form(".:%s:",fwd.Data()));
+    gSystem->AddIncludePath(Form("-I%s", fwd.Data()));
+  }
+  else { 
+    fwd = gSystem->Getenv("ANA_SRC");
+    if (fwd.IsNull()) 
+      fwd = "$(ALICE_ROOT)/PWGLF/FORWARD/analysis2";
+    mac.Prepend(Form(".:%s/qa:%s/corrs:",fwd.Data(), fwd.Data()));
+    gSystem->AddIncludePath(Form("-I%s/qa", fwd.Data()));
+  }
+  gROOT->SetMacroPath(mac);
   gSystem->Load("libGpad");
   gSystem->Load("libTree");
 

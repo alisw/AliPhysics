@@ -26,7 +26,6 @@ class TH3D;
 class TProfile;
 
 
-
 class AliAnalysisTaskDptDptCorrelations : public AliAnalysisTaskSE
 {
 public:
@@ -318,7 +317,7 @@ protected:
   TH1F * _dcaz;
   TH1F * _dcaxy;  
 
-
+  
   // PARTICLE 1 (satisfies filter 1)
   // Primary filled quantities
   TH1F      *  _n1_1_vsPt;         

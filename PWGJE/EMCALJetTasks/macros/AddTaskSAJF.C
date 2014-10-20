@@ -47,6 +47,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   name += cutType;
 
   AliAnalysisTaskSAJF* jetTask = new AliAnalysisTaskSAJF(name);
+  jetTask->SetVzRange(-10,10);
 
   AliParticleContainer *trackCont = jetTask->AddParticleContainer(ntracks);
   AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);
@@ -59,6 +60,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
     jetCont->ConnectParticleContainer(trackCont);
     jetCont->ConnectClusterContainer(clusterCont);
     jetCont->SetLeadingHadronType(leadhadtype);
+    jetCont->SetMaxTrackPt(1000);
   }
 
   //-------------------------------------------------------

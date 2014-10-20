@@ -14,6 +14,7 @@
 
 #ifndef ROOT_TObject
 #include <TObject.h>
+#include <TMCProcess.h>
 #endif
 class AliESDEvent;
 class AliHFEpid;
@@ -72,6 +73,9 @@ public:
   Int_t GetPdgFromLabel(Int_t label) const;
 
   Bool_t IsPhysicalPrimary(Int_t label) const;  // checks if a particle is physical primary
+  Bool_t CheckGEANTProcess(Int_t label, TMCProcess process) const;
+  Bool_t IsSecondaryFromWeakDecay(Int_t label) const;
+  Bool_t IsSecondaryFromMaterial(Int_t label) const;
 
   Bool_t HaveSameMother(const AliDielectronPair *pair) const;
   
@@ -135,7 +139,7 @@ private:
 //
 inline Bool_t AliDielectronMC::IsMotherPdg(const AliDielectronPair* pair, Int_t pdgMother)
 {
-  return IsMotherPdg(pair->GetFirstDaughter(),pair->GetSecondDaughter(),pdgMother);
+  return IsMotherPdg(pair->GetFirstDaughterP(),pair->GetSecondDaughterP(),pdgMother);
 }
 //___________________________________________________________
 inline Bool_t AliDielectronMC::IsMotherPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother){
@@ -143,7 +147,7 @@ inline Bool_t AliDielectronMC::IsMotherPdg(const AliVParticle *particle1, const 
 }
 //___________________________________________________________
 inline Int_t AliDielectronMC::GetLabelMotherWithPdg(const AliDielectronPair* pair, Int_t pdgMother){
-  return GetLabelMotherWithPdg(pair->GetFirstDaughter(),pair->GetSecondDaughter(),pdgMother);
+  return GetLabelMotherWithPdg(pair->GetFirstDaughterP(),pair->GetSecondDaughterP(),pdgMother);
 }
 
 #endif

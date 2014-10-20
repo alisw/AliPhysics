@@ -1,6 +1,6 @@
 ///*******************************************************
 ///Config Description
-
+/// 14 July 2014
 ///*******************************************************
 
 AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
@@ -30,7 +30,9 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	else if(configIndex==3) 	hfecuts->SetMinNClustersTPC(80);
 	else if(configIndex==4) 	hfecuts->SetMinNClustersTPC(85);
 	else if(configIndex==5) 	hfecuts->SetMinNClustersTPC(115);
-	else if(configIndex==6) 	hfecuts->SetMinNClustersTPC(120);					//Minimum number of clusters on TPC
+	else if(configIndex==6) 	hfecuts->SetMinNClustersTPC(120);
+	else if(configIndex==80) 	hfecuts->SetMinNClustersTPC(130);
+	else if(configIndex==81) 	hfecuts->SetMinNClustersTPC(140);//Minimum number of clusters on TPC
 	else hfecuts->SetMinNClustersTPC(100);							                //Minimum number of clusters on TPC
 	
 	if(configIndex==7) hfecuts->SetMinNClustersTPCPID(70); 
@@ -45,6 +47,7 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 	//ITS
 	if(configIndex==13) hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);			//Require at least one cluster on SPD
+	else if(configIndex==82) hfecuts->SetCutITSpixel(AliHFEextraCuts::kFirst);
 	else hfecuts->SetCutITSpixel(AliHFEextraCuts::kAny);							//Require at least one cluster on SPD
 	//hfecuts->SetCutITSdrift(AliHFEextraCuts::kAny); 			                    //Require at least one cluster on SDD
 	hfecuts->SetCheckITSLayerStatus(kFALSE); 
@@ -57,8 +60,14 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 	//Additional Cuts
 	hfecuts->SetPtRange(2, 1e6);								                    //Transversal momentum range in GeV/c
+	
+	//testing this line for the DCA cut
+	//hfecuts->SetRequireDCAToVertex();
 	//DCA cut included in the analysis 12 March 2014
-	hfecuts->SetMaxImpactParam(1,2); 							                    //DCA to vertex
+	if(configIndex==18) hfecuts->SetMaxImpactParam(2,3); //changed z to 3
+	else if(configIndex==19) hfecuts->SetMaxImpactParam(0.5,1);//r,z   default on AOD 2.4, 3.2
+	else if(configIndex==83) hfecuts->SetMaxImpactParam(0.1,0.2);
+	else hfecuts->SetMaxImpactParam(1,2); 							                //DCA to vertex
 	
 	//Event Selection
 	hfecuts->SetVertexRange(10.);													//
@@ -87,6 +96,15 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 		//Bool_t isTrigger = kFALSE;
 	if(isTrigger) task->SetUseTrigger();
 	
+		//task->SetUseTender();
+
+	
+	if(configIndex==104)  task->SetdcaCut(2,3);//r,z
+	else if(configIndex==105)  task->SetdcaCut(1.5,2.5);//r,z
+	else if(configIndex==106)  task->SetdcaCut(0.5,1);//r,z
+	else if(configIndex==107)  task->SetdcaCut(0.5,1.5);//r,z
+	else if(configIndex==108)  task->SetdcaCut(0.1,0.2);//r,z
+	//else task->SetdcaCut(1,2);//r,z
 	
 		
 	if(configIndex==100){
@@ -98,12 +116,12 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 	//nonHFE cuts
 	if(configIndex==20) task->SetNonHFEmassCut(0.05);
-	else if(configIndex==21) task->SetNonHFEmassCut(0.15);
+	else if(configIndex==21) task->SetNonHFEmassCut(0.10);
 	else if(configIndex==22) task->SetNonHFEmassCut(0.03);
 	else if(configIndex==23) task->SetNonHFEmassCut(0.18);
 	else if(configIndex==24) task->SetNonHFEmassCut(0.01);
 	else if(configIndex==25) task->SetNonHFEmassCut(0.2);
-	else task->SetNonHFEmassCut(0.1);
+	else task->SetNonHFEmassCut(0.15);
 	
 	if(configIndex==26) task->SetNonHFEangleCut(0.1);
 	if(configIndex==27) task->SetNonHFEangleCut(0.15);
@@ -111,17 +129,21 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 	//partner cuts
 	
-	if(configIndex==29) task->SetAdditionalCuts(0,80);
-	if(configIndex==30) task->SetAdditionalCuts(0.5,80);
-	if(configIndex==31) task->SetAdditionalCuts(0.7,80);
-	if(configIndex==32) task->SetAdditionalCuts(0.9,80);
+	if(configIndex==29) task->SetAdditionalCuts(0.3,80);
 	
-	if(configIndex==33) task->SetAdditionalCuts(0.3,60);
-	if(configIndex==34) task->SetAdditionalCuts(0.3,70);
-	if(configIndex==35) task->SetAdditionalCuts(0.3,90);
-	if(configIndex==36) task->SetAdditionalCuts(0.3,100);
+	else if(configIndex==85) task->SetAdditionalCuts(0.2,80);
+	else if(configIndex==86) task->SetAdditionalCuts(0.4,80);
+	else if(configIndex==87) task->SetAdditionalCuts(0.6,80);	
+	else if(configIndex==30) task->SetAdditionalCuts(0.5,80);
+	else if(configIndex==31) task->SetAdditionalCuts(0.7,80);
+	else if(configIndex==32) task->SetAdditionalCuts(0.9,80);
+	else if(configIndex==84) task->SetAdditionalCuts(0.1,80);
+	else if(configIndex==33) task->SetAdditionalCuts(0,60);
+	else if(configIndex==34) task->SetAdditionalCuts(0,70);
+	else if(configIndex==35) task->SetAdditionalCuts(0,90);
+	else if(configIndex==36) task->SetAdditionalCuts(0,100);
 	 
-	 task->SetAdditionalCuts(0.3,80);
+	else task->SetAdditionalCuts(0,80);
 	 
 	
 	//eta cuts
@@ -132,8 +154,6 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	else if (configIndex==44) task->SetEtaCut(-0.5,0.5);
 	else if (configIndex==45) task->SetEtaCut(-0.4,0.4);
 	else if (configIndex==46) task->SetEtaCut(-0.3,0.3);
-		//else if (configIndex==47) task->SetEtaCut(-0.4,0.4);
-		//else if (configIndex==48) task->SetEtaCut(-0.3,0.3);
 	else task->SetEtaCut(-0.6,0.6);
 	
 	//track matching cuts
@@ -144,14 +164,31 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 
 	//E/p Cuts
 	if (configIndex==60) task->SetEoverPCut(0.85,1.2);
-	else if (configIndex==61) task->SetEoverPCut(0.75,1.25);
-	else if (configIndex==62) task->SetEoverPCut(0.70,1.2);
-	else if (configIndex==63) task->SetEoverPCut(0.80,1.25);
-	else if (configIndex==64) task->SetEoverPCut(0.9,1.3);
-	else if (configIndex==65) task->SetEoverPCut(0.95,1.3);
-	else if (configIndex==66) task->SetEoverPCut(0.75,1.2);
-	else task->SetEoverPCut(0.8,1.2);
-
+	else if (configIndex==61) task->SetEoverPCut(0.70,1.2);
+	else if (configIndex==62) task->SetEoverPCut(0.75,1.2);
+	else if (configIndex==63) task->SetEoverPCut(0.76,1.2);
+	else if (configIndex==64) task->SetEoverPCut(0.77,1.2);
+	else if (configIndex==65) task->SetEoverPCut(0.78,1.2);
+	else if (configIndex==66) task->SetEoverPCut(0.79,1.2);
+	
+	else if (configIndex==67) task->SetEoverPCut(0.81,1.2);
+	else if (configIndex==68) task->SetEoverPCut(0.82,1.2);
+	else if (configIndex==69) task->SetEoverPCut(0.83,1.2);
+	
+	else if (configIndex==88) task->SetEoverPCut(0.84,1.2);
+	else if (configIndex==89) task->SetEoverPCut(0.86,1.2);
+	
+	else if (configIndex==90) task->SetEoverPCut(0.85,1.3);
+	else if (configIndex==91) task->SetEoverPCut(0.80,1.3);
+	else if (configIndex==92) task->SetEoverPCut(0.81,1.3);
+	else if (configIndex==93) task->SetEoverPCut(0.78,1.3);
+	
+	
+	else task->SetEoverPCut(0.80,1.2);
+	
+		
+	//this line is to set the change on the E/p cut used in the efficiency calculations.
+    task->SetEoverPnsigma(kTRUE);
 	
 	
 	if(centralityIndex==0) task->SetCentrality(0,20);
@@ -205,12 +242,110 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	else if(configIndex==79)Double_t max=4.0;
 	else Double_t max=3.0;
 	
+	
+		
+   //testing hadron contamination in E/p cut
+	if(configIndex==94){
+		params[0] = 0;
+		task->SetEoverPCut(0.76,1.2);
+	}
+	if(configIndex==95){
+		params[0] = 0;
+		task->SetEoverPCut(0.78,1.2);
+	}
+	if(configIndex==96){
+		params[0] = 0;
+		task->SetEoverPCut(0.80,1.2);
+	}
+	if(configIndex==97){
+		params[0] = 0;
+		task->SetEoverPCut(0.82,1.2);
+	}
+	if(configIndex==98){
+		params[0] = 0;
+		task->SetEoverPCut(0.83,1.2);
+	}
+	if(configIndex==99){
+		params[0] = 0;
+		task->SetEoverPCut(0.84,1.2);
+	}
+	if(configIndex==100){
+		params[0] = 0;
+		task->SetEoverPCut(0.85,1.2);
+	}
+	if(configIndex==101){
+		params[0] = 0;
+		task->SetEoverPCut(0.86,1.2);
+	}
+	if(configIndex==102){
+		params[0] = 0;
+		task->SetEoverPCut(0.85,1.3);
+	}
+	if(configIndex==103){
+		params[0] = 0;
+		task->SetEoverPCut(0.86,1.3);
+	}
+	
+	//testing hadron contamination with other TPCsignal : -0.5
+	
+	if(configIndex==109){
+		params[0] = -0.5;
+		task->SetEoverPCut(0.76,1.2);
+	}
+	if(configIndex==110){
+		params[0] =  -0.5;
+		task->SetEoverPCut(0.78,1.2);
+	}
+	if(configIndex==111){
+		params[0] =  -0.5;
+		task->SetEoverPCut(0.80,1.2);
+	}
+	if(configIndex==112){
+		params[0] =  -0.5;
+		task->SetEoverPCut(0.82,1.2);
+	}
+	if(configIndex==113){
+		params[0] =  -0.5;
+		task->SetEoverPCut(0.83,1.2);
+	}
+	if(configIndex==114){
+		params[0] =  -0.5;
+		task->SetEoverPCut(0.84,1.2);
+	}
+	if(configIndex==115){
+		params[0] =  -0.5;
+		task->SetEoverPCut(0.85,1.2);
+	}
+	if(configIndex==116){
+		params[0] =  -0.5;
+		task->SetEoverPCut(0.86,1.2);
+	}
+	if(configIndex==117){
+		params[0] =  -0.5;
+		task->SetEoverPCut(0.85,1.3);
+	}
+	if(configIndex==118){
+		params[0] =  -0.5;
+		task->SetEoverPCut(0.86,1.3);
+	}
+	
+	//shower shape cut for E/p default
+	if(configIndex==119){
+		task->SetUseShowerShapeCut(kTRUE);
+			//task->SetM02Cut(0.0,0.3);
+		task->SetM20Cut(0.0,0.5);
+	}
+	
+	
+	
+	
+	
 	pid->ConfigureTPCdefaultCut(cutmodel,params,max); 
 //_______________________________________________________
 	
 ///_______________________________________________________________________________________________________________
 /// New configurations for random cuts -- March, 05, 2014 -- Values in the macro "Random_configurations.C"
-	
+	/*
 	if (configIndex==80){
 		hfecuts->SetMinNClustersTPC(86);
 		hfecuts->SetMinNClustersTPCPID(76);
@@ -391,6 +526,7 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 		Double_t params[0]=-1.15;
 		pid->ConfigureTPCdefaultCut(cutmodel,params,3.0);
 	}
+	 */
 	
 	
 ///_______________________________________________________________________________________________________________

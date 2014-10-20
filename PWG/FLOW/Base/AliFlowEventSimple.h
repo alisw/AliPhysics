@@ -90,6 +90,7 @@ class AliFlowEventSimple: public TObject {
   void TagSubeventsByCharge();
   void TagRP(const AliFlowTrackSimpleCuts* cuts );
   void TagPOI(const AliFlowTrackSimpleCuts* cuts, Int_t poiType=1);
+  void TagTracks(const AliFlowTrackSimpleCuts* cutsRP, const AliFlowTrackSimpleCuts* cutsPOI);
   void CloneTracks(Int_t n);
   void AddV1( Double_t v1 );
   void AddV2( Double_t v2 );

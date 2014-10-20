@@ -85,7 +85,9 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 	task->SetAssHadronPtRange(0.5,2.0);
 	
-	if(configIndex==11) task->SetSPDCutForHadrons()
+	task->SetAdditionalCuts(0.0,80);
+	
+	if(configIndex==11) task->SetSPDCutForHadrons();
 	
 	if(configIndex==10) task->SetCentralityEstimator(1);
 	else task->SetCentralityEstimator(0);

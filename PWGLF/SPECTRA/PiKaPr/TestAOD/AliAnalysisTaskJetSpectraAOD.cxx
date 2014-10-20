@@ -48,6 +48,7 @@
 #include "AliAODHandler.h"
 #include "AliAODJetEventBackground.h"
 #include "AliAODJet.h"
+#include "AliAnalysisHelperJetTasks.h"
 
 #include <iostream>
 
@@ -67,17 +68,24 @@ AliAnalysisTaskJetSpectraAOD::AliAnalysisTaskJetSpectraAOD(const char *name) : A
   fJetBranchName(""),
   fListJets(0),
   fBackgroundBranch(""),
+  fOfflineTrgMask(AliVEvent::kMB),
   fFilterMask(0),
-  fJetPtMin(0),
+  fJetPtMin(0x0),
   fJetEtaMin(0x0),
   fJetEtaMax(0x0),
+  fLeadPtMin(0x0),
   fnCentBins(20),
   fnQvecBins(20),
+  fnptLeadBins(4),
   fIsQvecCalibMode(0),
   fQvecUpperLim(100),
   fIsQvecCut(0),
   fQvecMin(0),
-  fQvecMax(100)
+  fQvecMax(100),
+  fHistEvtSelection(0x0),
+  fDebug(0),
+  fMinNcontributors(0),
+  fRejectPileup(0)
 {
   // Default constructor
   
@@ -113,11 +121,11 @@ void AliAnalysisTaskJetSpectraAOD::UserCreateOutputObjects()
   const Int_t nptBins=13;
   
   //dimensions of THnSparse for jets
-  const Int_t nvarjet=5;
-  //                                        pt_raw    pt_corr           cent             Q vec            rho
-  Int_t    binsHistRealJet[nvarjet] = {    nptBins,   nptBins,       fnCentBins,      fnQvecBins,          40.};
-  Double_t xminHistRealJet[nvarjet] = {         0.,        0.,             0.,                0.,           0.};
-  Double_t xmaxHistRealJet[nvarjet] = {       200.,      200.,           100.,     fQvecUpperLim,         200.};    
+  const Int_t nvarjet=6;
+  //                                        pt_raw    pt_corr           cent             Q vec            rho          pt_lead
+  Int_t    binsHistRealJet[nvarjet] = {    nptBins,   nptBins,       fnCentBins,      fnQvecBins,          40,     fnptLeadBins};
+  Double_t xminHistRealJet[nvarjet] = {         0.,        0.,             0.,                0.,           0.,              0.};
+  Double_t xmaxHistRealJet[nvarjet] = {       200.,      200.,           100.,     fQvecUpperLim,         200.,             20.};    
   THnSparseF* NSparseHistJet = new THnSparseF("NSparseHistJet","NSparseHistJet",nvarjet,binsHistRealJet,xminHistRealJet,xmaxHistRealJet);
   NSparseHistJet->GetAxis(0)->SetTitle("#it{p}_{T,raw}");
   NSparseHistJet->GetAxis(0)->SetName("pT_raw");
@@ -131,12 +139,14 @@ void AliAnalysisTaskJetSpectraAOD::UserCreateOutputObjects()
   NSparseHistJet->GetAxis(3)->SetName("Q_vec");
   NSparseHistJet->GetAxis(4)->SetTitle("rho");
   NSparseHistJet->GetAxis(4)->SetName("rho");
+  NSparseHistJet->GetAxis(5)->SetTitle("#it{p}_{T,lead}");
+  NSparseHistJet->GetAxis(5)->SetName("pT_lead");
   fOutput->Add(NSparseHistJet);
   
   //dimensions of THnSparse for the normalization
   const Int_t nvarev=3;
   //                                             cent         Q vec         rho
-  Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins,       40.};
+  Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins,       40 };
   Double_t xminHistRealEv[nvarev] = {           0.,               0.,        0.};
   Double_t xmaxHistRealEv[nvarev] = {         100.,      fQvecUpperLim,    200.};
   THnSparseF* NSparseHistEv = new THnSparseF("NSparseHistEv","NSparseHistEv",nvarev,binsHistRealEv,xminHistRealEv,xmaxHistRealEv);
@@ -150,6 +160,15 @@ void AliAnalysisTaskJetSpectraAOD::UserCreateOutputObjects()
   
 //   TH1F* fHistTest = new TH1F("fHistTest","fHistTest",nptBins-1,ptBins);
 //   fOutput->Add(fHistTest);
+
+  fHistEvtSelection = new TH1I("fHistEvtSelection", "event selection", 6, -0.5, 7.5);
+  fHistEvtSelection->GetXaxis()->SetBinLabel(1,"ACCEPTED");
+  fHistEvtSelection->GetXaxis()->SetBinLabel(2,"events IN");
+  fHistEvtSelection->GetXaxis()->SetBinLabel(3,"event selection (rejected)");
+  fHistEvtSelection->GetXaxis()->SetBinLabel(4,"centrality (rejected)");
+  fHistEvtSelection->GetXaxis()->SetBinLabel(5,"multiplicity (rejected)");
+  fHistEvtSelection->GetXaxis()->SetBinLabel(6,"ESE (rejected)");
+  fOutput->Add(fHistEvtSelection);
   
   PostData(1, fOutput  );
   PostData(2, fEventCuts);
@@ -184,10 +203,80 @@ void AliAnalysisTaskJetSpectraAOD::UserExec(Option_t *)
     fAODJets = ((AliAODHandler*)outHandler)->GetAOD();
   }
 
-// -- event selection --
+  /* -- event selection -- */
+  fHistEvtSelection->Fill(1); // number of events before event selection
 
-  //event cuts
-  if(!fEventCuts->IsSelected(fAOD,fTrackCuts))return;//event selection  //FIXME in our event selection need to put fAODJets?
+  //jet service task event selection.
+  Bool_t selected=kTRUE;
+  selected = AliAnalysisHelperJetTasks::Selected();
+  if(!selected){
+    // no selection by the service task, we continue
+    PostData(1,fOutput);
+    PostData(2, fEventCuts);
+    PostData(3, fTrackCuts);
+  return;}
+  
+  // physics selection: this is now redundant, all should appear as accepted after service task selection
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*)
+  ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+  //std::cout<<inputHandler->IsEventSelected()<<" "<<fOfflineTrgMask<<std::endl;
+  if(!(inputHandler->IsEventSelected() & fOfflineTrgMask)){
+    if(fDebug) Printf(" Trigger Selection: event REJECTED ... ");
+    fHistEvtSelection->Fill(2);
+    PostData(1,fOutput);
+    PostData(2, fEventCuts);
+    PostData(3, fTrackCuts);
+    return;
+  }
+  
+  AliAODVertex* primVtx = fAOD->GetPrimaryVertex();
+  Int_t nTracksPrim = primVtx->GetNContributors();
+  
+  if (fDebug) Printf("%s:%d primary vertex selection: %d", (char*)__FILE__,__LINE__,nTracksPrim);
+  if(nTracksPrim < fMinNcontributors){
+    if (fDebug) Printf("%s:%d primary vertex selection: event REJECTED...",(char*)__FILE__,__LINE__); 
+    fHistEvtSelection->Fill(3);
+    PostData(1,fOutput);
+    PostData(2, fEventCuts);
+    PostData(3, fTrackCuts);
+    return;
+  }
+  
+  TString primVtxName(primVtx->GetName());
+
+  if(primVtxName.CompareTo("TPCVertex",TString::kIgnoreCase) == 1){
+    if (fDebug) Printf("%s:%d primary vertex selection: TPC vertex, event REJECTED...",(char*)__FILE__,__LINE__);
+    fHistEvtSelection->Fill(4);
+    PostData(1,fOutput);
+    PostData(2, fEventCuts);
+    PostData(3, fTrackCuts);
+    return;
+  }
+
+  if(fRejectPileup && AliAnalysisHelperJetTasks::IsPileUp()){
+    if (fDebug) Printf("%s:%d SPD pileup: event REJECTED...",(char*)__FILE__,__LINE__);
+    fHistEvtSelection->Fill(5);
+    PostData(1,fOutput);
+    PostData(2, fEventCuts);
+    PostData(3, fTrackCuts);
+    return;
+  }
+
+  //ESE event cuts
+  if(!fEventCuts->IsSelected(fAOD,fTrackCuts)){
+    if (fDebug) Printf("%s:%d ESE Event selection: event REJECTED...",(char*)__FILE__,__LINE__);
+    fHistEvtSelection->Fill(6);
+    PostData(1,fOutput);
+    PostData(2, fEventCuts);
+    PostData(3, fTrackCuts);
+    return;
+  }
+  
+  if (fDebug) Printf("%s:%d event ACCEPTED ...",(char*)__FILE__,__LINE__); 
+  fHistEvtSelection->Fill(0.);
+  // accepted events  
+  // -- end event selection --
+  
   
   Double_t Qvec=0.;//in case of MC we save space in the memory
   if(!fIsMC){
@@ -201,11 +290,7 @@ void AliAnalysisTaskJetSpectraAOD::UserExec(Option_t *)
   if(fIsQvecCut && (Qvec<fQvecMin || Qvec>fQvecMax) ) return;
   
   Double_t Cent=fEventCuts->GetCent();
-  
-  // accepted events  
-  // -- end event selection --
-  
-  
+
   // get background
   AliAODJetEventBackground* externalBackground = 0;
   if(fAODJets && !externalBackground && fBackgroundBranch.Length()){
@@ -246,12 +331,17 @@ void AliAnalysisTaskJetSpectraAOD::UserExec(Option_t *)
 
     Double_t ptcorr = ptJet-rho*areaJet;
            
-    Double_t varJet[5];
+    Double_t varJet[6];
     varJet[0]=jet->Pt();
     varJet[1]=(Double_t)ptcorr;
     varJet[2]=(Double_t)Cent;
     varJet[3]=(Double_t)Qvec;
     varJet[4]=(Double_t)rho;
+    
+    AliVParticle *leadTrack = LeadingTrackFromJetRefs(jet);
+    if(fLeadPtMin>0 && leadTrack->Pt()<fLeadPtMin)continue;
+    
+    varJet[5]=(Double_t)leadTrack->Pt();
     
     ((THnSparseF*)fOutput->FindObject("NSparseHistJet"))->Fill(varJet);//jet loop
   }
@@ -279,6 +369,25 @@ void AliAnalysisTaskJetSpectraAOD::UserExec(Option_t *)
   //Printf("............. end of Exec");
   
 }
+
+//_________________________________________________________________
+AliVParticle *AliAnalysisTaskJetSpectraAOD::LeadingTrackFromJetRefs(AliAODJet* jet){
+  if(!jet)return 0;
+  TRefArray *refs = jet->GetRefTracks();
+  if(!refs) return 0;
+  AliVParticle *leading = 0;
+  Float_t fMaxPt = 0;
+  for(int i = 0;i<refs->GetEntriesFast();i++){
+    AliVParticle *tmp = dynamic_cast<AliVParticle*>(refs->At(i));
+    if(!tmp)continue;
+    if(tmp->Pt()>fMaxPt){
+      leading = tmp;
+      fMaxPt = tmp->Pt();
+    }
+  }
+  return leading;
+}
+
 //_________________________________________________________________
 void   AliAnalysisTaskJetSpectraAOD::Terminate(Option_t *)
 {
