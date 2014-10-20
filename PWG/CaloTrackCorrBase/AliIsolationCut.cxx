@@ -58,7 +58,8 @@ fICMethod(0),
 fPartInCone(0),
 fDebug(-1),
 fFracIsThresh(1),
-fMomentum()
+fMomentum(),
+fTrackVector()
 {
   //default ctor
   
