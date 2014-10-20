@@ -2854,8 +2854,8 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   
 }
 
-//____________________________________________________________________________________________________________________
-Bool_t AliAnaParticleHadronCorrelation::GetDecayPhotonMomentum(Int_t indexPhoton1, Int_t indexPhoton2, Int_t detector)
+//_____________________________________________________________________________________________________________________
+Bool_t AliAnaParticleHadronCorrelation::GetDecayPhotonMomentum(Int_t indexPhoton1, Int_t indexPhoton2, Int_t idetector)
 {
   // Get the momentum of the pi0/eta assigned decay photons
   // In case of pi0/eta trigger, we may want to check their decay correlation,
@@ -2867,8 +2867,8 @@ Bool_t AliAnaParticleHadronCorrelation::GetDecayPhotonMomentum(Int_t indexPhoton
     printf("AliAnaParticleHadronCorrelation::GetDecayPhotonMomentum() - indexPhoton1 = %d, indexPhoton2 = %d \n", indexPhoton1, indexPhoton2);
   
   TObjArray * clusters  = 0x0 ;
-  if(detector==kEMCAL) clusters = GetEMCALClusters() ;
-  else                 clusters = GetPHOSClusters()  ;
+  if(idetector==kEMCAL) clusters = GetEMCALClusters() ;
+  else                  clusters = GetPHOSClusters()  ;
   
   for(Int_t iclus = 0; iclus < clusters->GetEntriesFast(); iclus++)
   {

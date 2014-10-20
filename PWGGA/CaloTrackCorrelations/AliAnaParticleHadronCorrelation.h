@@ -45,7 +45,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t       FindLeadingOppositeHadronInWindow(AliAODPWG4ParticleCorrelation * particle);
   
-  Bool_t       GetDecayPhotonMomentum   (Int_t indexPhoton1, Int_t indexPhoton2, Int_t detector);
+  Bool_t       GetDecayPhotonMomentum   (Int_t indexPhoton1, Int_t indexPhoton2, Int_t idetector);
   
   void         MakeChargedCorrelation   (AliAODPWG4ParticleCorrelation * particle) ;
   
