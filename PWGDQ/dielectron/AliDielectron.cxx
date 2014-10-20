@@ -413,7 +413,9 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   //in case there is a histogram manager, fill the QA histograms
   if (fHistos && fSignalsMC) FillMCHistograms(ev1);
   if (fHistos) FillHistograms(ev1);
-
+  // fill histo array with event information only
+  if (fHistoArray && fHistoArray->IsEventArray()) 
+    fHistoArray->Fill(0,const_cast<Double_t *>(AliDielectronVarManager::GetData()),0x0,0x0);
 
   // clear arrays
   if (!fDontClearArrays) ClearArrays();
@@ -661,8 +663,8 @@ void AliDielectron::FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly)
 
       //fill leg information, don't fill the information twice
       if (legClass){
-        AliVParticle *d1=pair->GetFirstDaughter();
-        AliVParticle *d2=pair->GetSecondDaughter();
+        AliVParticle *d1=pair->GetFirstDaughterP();
+        AliVParticle *d2=pair->GetSecondDaughterP();
         if (!arrLegs.FindObject(d1)){
           AliDielectronVarManager::Fill(d1, values);
           fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
@@ -713,11 +715,11 @@ void AliDielectron::FillHistogramsPair(AliDielectronPair *pair,Bool_t fromPreFil
   }
 
   if (legClass){
-    AliVParticle *d1=pair->GetFirstDaughter();
+    AliVParticle *d1=pair->GetFirstDaughterP();
     AliDielectronVarManager::Fill(d1, values);
     fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
     
-    AliVParticle *d2=pair->GetSecondDaughter();
+    AliVParticle *d2=pair->GetSecondDaughterP();
     AliDielectronVarManager::Fill(d2, values);
     fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
   }
@@ -1193,9 +1195,6 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
 
   AliDielectronPair *candidate=new AliDielectronPair;
   candidate->SetKFUsage(fUseKF);
-  // switch OFF the KF usage in case of AODs && ME (since there is no MoveToSameVertex functionality)
-  Bool_t isESD=(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class());
-  if(!isESD && pairIndex>AliDielectron::kEv1MM) candidate->SetKFUsage(kFALSE);
 
   UInt_t selectedMask=(1<<fPairFilter.GetCuts()->GetEntries())-1;
   
@@ -1243,7 +1242,7 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
       PairArray(pairIndex)->Add(candidate);
       //get a new candidate
       candidate=new AliDielectronPair;
-	  candidate->SetKFUsage(fUseKF);
+      candidate->SetKFUsage(fUseKF);
     }
   }
   //delete the surplus candidate
@@ -1419,9 +1418,9 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
 	  }
 	  //fill leg information, both + and - in the same histo
 	  if (legClass){
-	    AliDielectronVarManager::Fill(pair->GetFirstDaughter(),values);
+	    AliDielectronVarManager::Fill(pair->GetFirstDaughterP(),values);
 	    fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
-	    AliDielectronVarManager::Fill(pair->GetSecondDaughter(),values);
+	    AliDielectronVarManager::Fill(pair->GetSecondDaughterP(),values);
 	    fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
 	  }
 	} //is signal
@@ -1625,6 +1624,9 @@ void AliDielectron::FillHistogramsFromPairArray(Bool_t pairInfoOnly/*=kFALSE*/)
       //histogram array for the pair
       if (fHistoArray) fHistoArray->Fill(i,pair);
 
+      // fill map
+      AliDielectronVarManager::SetFillMap(fUsedVars);
+
       //fill pair information
       if (pairClass){
         AliDielectronVarManager::Fill(pair, values);
@@ -1633,8 +1635,8 @@ void AliDielectron::FillHistogramsFromPairArray(Bool_t pairInfoOnly/*=kFALSE*/)
 
       //fill leg information, don't fill the information twice
       if (legClass){
-        AliVParticle *d1=pair->GetFirstDaughter();
-        AliVParticle *d2=pair->GetSecondDaughter();
+        AliVParticle *d1=pair->GetFirstDaughterP();
+        AliVParticle *d2=pair->GetSecondDaughterP();
         if (!arrLegs.FindObject(d1)){
           AliDielectronVarManager::Fill(d1, values);
           fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);

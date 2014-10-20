@@ -184,21 +184,24 @@ public:
     opts.ToUpper();
     Bool_t landscape = opts.Contains("LANDSCAPE");
     Bool_t few       = opts.Contains("FEW");
+    Bool_t details   = !opts.Contains("SINGLE");
+    if (opts.Contains("PORTRAIT")) landscape = false;
     CreateCanvas(out, landscape);
     
 
     fBody->cd();
-    Double_t y = .8;
-    DrawParameter(y, "Run #", Form("%lu", runNo));
-    DrawParameter(y, "System", AliForwardUtil::CollisionSystemString(sys));
-    DrawParameter(y, "#sqrt{s_{NN}}", 
-		  AliForwardUtil::CenterOfMassEnergyString(sNN));
-    DrawParameter(y, "L3 field", AliForwardUtil::MagneticFieldString(field));
-    DrawParameter(y, "Simulation", Form("%s", mc ? "yes" : "no"));
-    DrawParameter(y, "Satellite", Form("%s", sat ? "yes" : "no"));
-    PrintCanvas("Title");
+    if (details) {
+      Double_t y = .8;
+      DrawParameter(y, "Run #", Form("%lu", runNo));
+      DrawParameter(y, "System", AliForwardUtil::CollisionSystemString(sys));
+      DrawParameter(y, "#sqrt{s_{NN}}", 
+		    AliForwardUtil::CenterOfMassEnergyString(sNN));
+      DrawParameter(y, "L3 field", AliForwardUtil::MagneticFieldString(field));
+      DrawParameter(y, "Simulation", Form("%s", mc ? "yes" : "no"));
+      DrawParameter(y, "Satellite", Form("%s", sat ? "yes" : "no"));
+      PrintCanvas("Title");
+    }
       
-    Bool_t details = !opts.Contains("SINGLE");
     if (what & AliForwardCorrectionManager::kSecondaryMap) 
       DrawIt(mgr.GetSecondaryMap(), details);
     if (what & AliForwardCorrectionManager::kAcceptance) 
@@ -372,7 +375,7 @@ public:
    * @deprecated Use Run instead 
    */
   static void Summarize(const TString& what   = "", 
-			Bool_t         mc     = false,
+			Bool_t         /*mc*/ = false,
 			const TString& output = "",
 			const TString& local  = "fmd_corrections.root",
 			Option_t*      options= "")
@@ -394,7 +397,7 @@ public:
    * @deprecated Use Run instead 
    */
   static void Summarize(UShort_t       what, 
-			Bool_t         mc = false,
+			Bool_t         /*mc*/ = false,
 			const TString& output = "",
 			const TString& local  = "fmd_corrections.root",
 			Option_t*      options= "")
@@ -723,7 +726,7 @@ protected:
       PrintCanvas("#LTsecondary map#GT");
     }
   }
-  virtual void DrawIt(const AliFMDCorrNoiseGain* corr, bool details) 
+  virtual void DrawIt(const AliFMDCorrNoiseGain* corr, bool /*details*/) 
   {
     if (!corr) {
       Warning("CorrDrawer","No noise-gain correction available");

@@ -13,8 +13,6 @@ AliAnalysisTaskJetSpectraAOD* AddTaskJetSpectraAOD(
 						       UInt_t minNclsTPC=70,
 						       TString opt="",
 					               //jet settings
-					               const char * RecJet,
-					               const char * BckBranch,
 					               Float_t jetParameterR = 0.4,
 						       UInt_t filterMask = 272,
 						       Float_t ptJetMin = 0.15){
@@ -72,8 +70,6 @@ AliAnalysisTaskJetSpectraAOD* AddTaskJetSpectraAOD(
   if(mc==1)task->SetIsMC(kTRUE);
   
   //jet settings
-  task->SetBranchNames(RecJet);
-  task->SetRecBackgroundBranch(BckBranch);  
   task->SetFilterMask(filterMask); 
   task->SetJetPtMin(ptJetMin);
 

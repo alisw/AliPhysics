@@ -259,7 +259,7 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
   // Get Primary Vertex
   AliDebug(1, "Get Primary Vertex\n");
   const AliVVertex *vertex = fInputEvent->GetPrimaryVertex();
-  Double_t vtx[3];
+  Double_t vtx[3]={0.,0.,0.};
   Double_t vcov[6];
   Int_t ncontrib = -1;
   if(vertex) {
@@ -399,7 +399,7 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
       hfemcpart.SetSource(source);
       */
       hfemcpart.SetSource(static_cast<Int_t>(fSignalCuts->GetSignalSource(mctrack)));
-      hfemcpart.SetElectronSource(fSignalCuts->GetMCQAObject()->GetElecSource(mctrack));
+      hfemcpart.SetElectronSource(fSignalCuts->GetMCQAObject()->GetElecSource(mctrack,kTRUE));
 
       fHFEevent->AddMCParticle(&hfemcpart);
     }
@@ -504,7 +504,7 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
         hfetrack.SetMCSource(source); 
         */
         hfetrack.SetMCSource(static_cast<Int_t>(fSignalCuts->GetSignalSource(track))); 
-        hfetrack.SetMCElectronSource(fSignalCuts->GetMCQAObject()->GetElecSource(mctrack));
+        hfetrack.SetMCElectronSource(fSignalCuts->GetMCQAObject()->GetElecSource(mctrack,kTRUE));
       } else {
         AliDebug(2, "Associated MC particle not found\n");
       }

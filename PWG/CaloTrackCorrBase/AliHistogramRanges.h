@@ -192,6 +192,16 @@ public:
   void    SetHistoRatioRangeAndNBins       (Float_t min, Float_t max, Int_t n) {
     fHistoRatioBins      = n ; fHistoRatioMax      = max ; fHistoRatioMin      = min ; }
 
+  // Hump-Backed Plateau
+  
+  Int_t   GetHistoHBPBins()              const { return fHistoHBPBins      ; }
+  Float_t GetHistoHBPMin()               const { return fHistoHBPMin       ; }
+  Float_t GetHistoHBPMax()               const { return fHistoHBPMax       ; }
+  
+  void    SetHistoHBPRangeAndNBins       (Float_t min, Float_t max, Int_t n) {
+    fHistoHBPBins        = n ; fHistoHBPMax        = max ; fHistoHBPMin        = min ; }
+
+  
   // Vertex
   
   Int_t   GetHistoVertexDistBins()       const { return fHistoVertexDistBins ; }
@@ -281,6 +291,23 @@ public:
   void    SetHistoTrackResidualPhiRangeAndNBins(Float_t min, Float_t max, Int_t n) {
     fHistoTrackResidualPhiBins = n ; fHistoTrackResidualPhiMax = max ; fHistoTrackResidualPhiMin = min           ; }
   
+  // Isolation task, sum pt
+  
+  void    SetHistoPtSumRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoNPtSumBins = n ;    fHistoPtSumMax = max ;    fHistoPtSumMin = min ; }
+  
+  Int_t   GetHistoNPtSumBins()           const { return fHistoNPtSumBins   ; }
+  Float_t GetHistoPtSumMin()             const { return fHistoPtSumMin     ; }
+  Float_t GetHistoPtSumMax()             const { return fHistoPtSumMax     ; }
+  
+  void    SetHistoPtInConeRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoNPtInConeBins = n ; fHistoPtInConeMax = max ; fHistoPtInConeMin = min  ; }
+  
+  Int_t   GetHistoNPtInConeBins()        const { return fHistoNPtInConeBins; }
+  Float_t GetHistoPtInConeMin()          const { return fHistoPtInConeMin  ; }
+  Float_t GetHistoPtInConeMax()          const { return fHistoPtInConeMax  ; }
+
+  
 private:    
   
   Int_t    fHistoPtBins   ;                   // Number of bins in pt axis
@@ -341,6 +368,9 @@ private:
   Int_t    fHistoRatioBins;                   // ratio histogram number of bins
   Float_t  fHistoRatioMax;                    // ratio maximum value
   Float_t  fHistoRatioMin;                    // ratio minimum value
+  Int_t    fHistoHBPBins;                     // hump-backed plateau histogram number of bins
+  Float_t  fHistoHBPMax;                      // hump-backed plateau maximum value
+  Float_t  fHistoHBPMin;                      // hump-backed plateau minimum value
   Int_t    fHistoVertexDistBins;              // vertex distance histogram number of bins
   Float_t  fHistoVertexDistMax;               // vertex distance maximum value
   Float_t  fHistoVertexDistMin;               // vertex distance minimum value	
@@ -368,11 +398,18 @@ private:
   Int_t    fHistoTrackResidualPhiBins ;       // Number of bins in dPhi axis
   Float_t  fHistoTrackResidualPhiMax  ;       // Maximum value of dPhi (cluster-track) histogram range
   Float_t  fHistoTrackResidualPhiMin  ;       // Minimum value of dPhi (cluster-track) histogram range
+  Int_t    fHistoNPtSumBins;                  // Number of bins in Isolation PtSum histograms
+  Float_t  fHistoPtSumMax;                    // Isolation PtSum maximum in histogram
+  Float_t  fHistoPtSumMin;	                  // Isolation PtSum minimum in histogram
+  Int_t    fHistoNPtInConeBins;               // Number of bins in Isolation PtInCone histogram
+  Float_t  fHistoPtInConeMax;                 // Isolation PtInCone maximum in histogram
+  Float_t  fHistoPtInConeMin;                 // Isolation PtInCone maximum in histogram
+
   
   AliHistogramRanges(              const AliHistogramRanges & h) ; // cpy ctor
   AliHistogramRanges & operator = (const AliHistogramRanges & h) ; // cpy assignment
   
-  ClassDef(AliHistogramRanges,3)
+  ClassDef(AliHistogramRanges,5)
 } ;
 
 

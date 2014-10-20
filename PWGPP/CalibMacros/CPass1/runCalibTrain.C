@@ -16,9 +16,12 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   //
   // macro to run TPC calibration train 
   //
+  AliSysInfo::SetVerbose(kTRUE);
   AliLog::SetGlobalLogLevel(AliLog::kError); 
   gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/LoadLibraries.C");
   gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/ConfigCalibTrain.C");
+  gSystem->SetIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/ANALYSIS"); 
+  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/commonMacros/CleanGeom.C++");
 
   // detector tasks
   gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/AddTaskTPCCalib.C");
@@ -39,7 +42,9 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   // setting geometry and B-field from GRP
   printf("runNumber from runCalibTrain = %d\n",runNumber);
   printf("ocdb from runCalibTrain = %s\n",ocdb);
+  AliSysInfo::AddStamp("BeforeConfiguringCalibTrain");
   ConfigCalibTrain(runNumber, ocdb);
+  AliSysInfo::AddStamp("AfterConfiguringCalibTrain");  
   
   if (gROOT->LoadMacro("localOCDBaccessConfig.C")==0) {
     localOCDBaccessConfig();
@@ -59,6 +64,7 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   AliAnalysisManager *mgr  = new AliAnalysisManager("ESD to ESD", "Analysis Manager");
   // mgr->SetDebugLevel(3);
   mgr->SetNSysInfo(50);   
+  mgr->SetCacheSize(0);
 
   // Input
   AliESDInputHandler* inpHandler = new AliESDInputHandler();
@@ -74,9 +80,16 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   //  
   // Detector Tasks
   //
+  AliSysInfo::AddStamp("BeforeTPC");
   if ( detStr.Contains("TPC"))  AddTaskTPCCalib(runNumber);
+
+  AliSysInfo::AddStamp("BeforeTRD");
   if ( detStr.Contains("TRD") && detStr.Contains("TPC"))  AddTaskTRDCalib(runNumber);
+
+  AliSysInfo::AddStamp("BeforeTOF");
   if ( detStr.Contains("TOF") && detStr.Contains("TPC"))  AddTOFAnalysisTaskCalibPass0();
+
+  AliSysInfo::AddStamp("BeforeT0");
   if ( detStr.Contains("T0"))   AddTaskT0Calib(runNumber);
   //if ( detStr.Contains("ITSSPD")) tMeanVtx = AddTaskMeanVertexCalib();
   //
@@ -84,17 +97,26 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   Bool_t useTPCcrv=kFALSE;
   Bool_t writeITSTP = kFALSE;
   if (!okTPC) useTPCcrv = kFALSE;
+  AliSysInfo::AddStamp("BeforeSDD");
   AliAnalysisTaskITSAlignQA *itsAlign = AddTaskSDDCalib(0,writeITSTP,useTPCcrv);
   if (!okTPC) itsAlign->SetUseITSstandaloneTracks(kTRUE);
   if (grpData->GetL3Current()[0] < 300) itsAlign->SetMinPt(0.001); 
   //
+  // dummy task to clean geometry in Terminate >>>>
+  CleanGeom* clgmTask = new CleanGeom("cleanGeom");
+  mgr->AddTask(clgmTask);
+  AliAnalysisDataContainer *dummyInp = mgr->GetCommonInputContainer();
+  if (dummyInp) mgr->ConnectInput(clgmTask,0,dummyInp);
+
   // Run the analysis
+  AliSysInfo::AddStamp("BeforeInitAnalysis");
   if (!mgr->InitAnalysis()) {
     printf("Analysis cannot be started, returning\n");
     return;
   }
   
   mgr->PrintStatus();
+  AliSysInfo::AddStamp("BeforeStartAnalysis");
   mgr->StartAnalysis("local", chain);
   
   return;

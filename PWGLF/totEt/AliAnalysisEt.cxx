@@ -162,6 +162,7 @@ AliAnalysisEt::AliAnalysisEt() : AliAnalysisEtCommon()
 			       ,fSelector(0)
 			       ,fPIDResponse(0)
 			       ,fsub(1.0)
+			       ,fsubmeanhade(1.0)
 	       
 {}
 

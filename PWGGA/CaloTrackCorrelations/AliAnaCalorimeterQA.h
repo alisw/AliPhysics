@@ -54,7 +54,7 @@ public:
 
   void         CellInClusterPositionHistograms(AliVCluster* cluster);
     
-  void         ClusterAsymmetryHistograms(AliVCluster* clus, Int_t absIdMax, const Bool_t goodCluster );
+  void         ClusterAsymmetryHistograms(AliVCluster* clus, Int_t absIdMax, Bool_t goodCluster );
   
   void         ClusterHistograms(AliVCluster* cluster, const TObjArray *caloClusters,  AliVCaloCells * cells, 
                                  Int_t absIdMax, Double_t maxCellFraction, Float_t eCrossFrac, Double_t tmax);
@@ -81,8 +81,6 @@ public:
   
   void         MCHistograms();  
   
-  void         MCHistograms(const TLorentzVector mom, Int_t pdg);
-    
   void         WeightHistograms(AliVCluster *clus, AliVCaloCells* cells);
 
   // Setters and Getters
@@ -282,15 +280,19 @@ public:
   TH1F *   fhNCells;                          //! Number of towers/crystals with signal
   TH1F *   fhNCellsCutAmpMin;                 //! Number of towers/crystals with signal, with min amplitude
   TH1F *   fhAmplitude;                       //! Amplitude measured in towers/crystals
-  TH2F *   fhAmpId;                           //! Amplitude measured in towers/crystals vs id of tower.	
+  TH2F *   fhAmpId;                           //! Amplitude measured in towers/crystals vs id of tower.
   TH3F *   fhEtaPhiAmp;                       //! eta vs phi vs amplitude, cells
    
   TH1F *   fhTime;                            //! Time measured in towers/crystals
   TH2F *   fhTimeVz;                          //! Time measured in towers/crystals vs vertex z component, for E > 0.5
   TH2F *   fhTimeId;                          //! Time vs Absolute cell Id
-  TH2F *   fhTimeAmp;                         //! Time vs Amplitude 
+  TH2F *   fhTimeAmp;                         //! Time vs Amplitude
   
-  TH2F *   fhCellECross;                      //! 1 - Energy in cross around cell /  cell energy 
+  TH2F *   fhAmpIdLowGain;                    //! Amplitude measured in towers/crystals vs id of tower, low gain towers
+  TH2F *   fhTimeIdLowGain;                   //! Time vs Absolute cell Id, low gain
+  TH2F *   fhTimeAmpLowGain;                  //! Time vs Amplitude, low gain
+
+  TH2F *   fhCellECross;                      //! 1 - Energy in cross around cell /  cell energy
   
   //Calorimeters Correlation
   TH2F *   fhCaloCorrNClusters;               //! EMCAL vs PHOS, number of clusters	
@@ -337,6 +339,9 @@ public:
   TH2F *   fhGridCells ;                      //! Cells ordered in column/row for different module, Reco
   TH2F *   fhGridCellsE ;                     //! Cells ordered in column/row for different module, weighted with energy, Reco
   TH2F *   fhGridCellsTime ;                  //! Cells ordered in column/row for different module, weighted with time, Reco
+  TH2F *   fhGridCellsLowGain ;               //! Cells ordered in column/row for different module, Reco, low gain
+  TH2F *   fhGridCellsELowGain ;              //! Cells ordered in column/row for different module, weighted with energy, Reco, low gain
+  TH2F *   fhGridCellsTimeLowGain ;           //! Cells ordered in column/row for different module, weighted with time, Reco, low gain
   TH2F **  fhTimeAmpPerRCU;                   //! Time vs Amplitude measured in towers/crystals different RCU
   TH2F **  fhIMMod;                           //! cluster pairs invariant mass, different module,
 	
@@ -373,19 +378,23 @@ public:
   
   //Pure MC
 
-  enum mcTypes {kmcPhoton = 0, kmcPi0 = 1, kmcEta = 2, kmcElectron = 3, kmcNeHadron = 4, kmcChHadron = 5 };
+  enum mcTypes {kmcPhoton   = 0, kmcPi0        = 1, kmcEta = 2,
+                kmcElectron = 3, kmcPhotonConv = 4,
+                kmcNeHadron = 5, kmcChHadron   = 6             };
   
-  TH2F *   fhRecoMCE[6][2]  ;                 //! E   generated particle vs reconstructed E
-  TH2F *   fhRecoMCPhi[6][2] ;                //! phi generated particle vs reconstructed phi
-  TH2F *   fhRecoMCEta[6][2] ;                //! eta generated particle vs reconstructed Eta
-  TH2F *   fhRecoMCDeltaE[6][2]  ;            //! Gen-Reco E    generated particle vs reconstructed E
-  TH2F *   fhRecoMCRatioE[6][2]  ;            //! Reco/Gen E    generated particle vs reconstructed E
-  TH2F *   fhRecoMCDeltaPhi[6][2];            //! Gen-Reco phi  generated particle vs reconstructed E
-  TH2F *   fhRecoMCDeltaEta[6][2];            //! Gen-Reco eta  generated particle vs reconstructed E
+  TH2F *   fhRecoMCE[7][2]  ;                 //! E   generated particle vs reconstructed E
+  TH2F *   fhRecoMCPhi[7][2] ;                //! phi generated particle vs reconstructed phi
+  TH2F *   fhRecoMCEta[7][2] ;                //! eta generated particle vs reconstructed Eta
+  TH2F *   fhRecoMCDeltaE[7][2]  ;            //! Gen-Reco E    generated particle vs reconstructed E
+  TH2F *   fhRecoMCRatioE[7][2]  ;            //! Reco/Gen E    generated particle vs reconstructed E
+  TH2F *   fhRecoMCDeltaPhi[7][2];            //! Gen-Reco phi  generated particle vs reconstructed E
+  TH2F *   fhRecoMCDeltaEta[7][2];            //! Gen-Reco eta  generated particle vs reconstructed E
   
-  TH1F *   fhGenMCE[4]     ;                  //! pt of primary particle
+  TH1F *   fhGenMCE [4]     ;                 //! pt of primary particle
+  TH1F *   fhGenMCPt[4]     ;                 //! pt of primary particle
   TH2F *   fhGenMCEtaPhi[4] ;                 //! eta vs phi of primary particle
-  TH1F *   fhGenMCAccE[4]     ;               //! pt of primary particle, in acceptance
+  TH1F *   fhGenMCAccE [4]     ;              //! pt of primary particle, in acceptance
+  TH1F *   fhGenMCAccPt[4]     ;              //! pt of primary particle, in acceptance
   TH2F *   fhGenMCAccEtaPhi[4] ;              //! eta vs phi of primary particle, in acceptance
   
   TH2F *   fhEMVxyz    ;                      //! Electromagnetic particle production vertex
@@ -432,7 +441,7 @@ public:
   AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & qa) ;//cpy assignment
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ; // cpy ctor
   
-  ClassDef(AliAnaCalorimeterQA,28)
+  ClassDef(AliAnaCalorimeterQA,29)
 } ;
 
 

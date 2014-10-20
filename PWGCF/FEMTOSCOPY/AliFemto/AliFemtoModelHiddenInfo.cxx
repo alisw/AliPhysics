@@ -45,8 +45,8 @@ AliFemtoModelHiddenInfo::AliFemtoModelHiddenInfo(const AliFemtoModelHiddenInfo &
     SetTrueMomentumPos(aInfo.GetTrueMomentum());
   if (aInfo.GetEmissionPoint())
     SetEmissionPointPos(aInfo.GetEmissionPoint());
-  fPDGPidPos = aInfo.GetPDGPid();
-  fMassPos = aInfo.GetMass();
+  fPDGPid = aInfo.GetPDGPid();
+  fMass = aInfo.GetMass();
 
   if (aInfo.GetTrueMomentumPos())
     SetTrueMomentum(aInfo.GetTrueMomentumPos());

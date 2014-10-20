@@ -94,6 +94,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction()
    ,fJetEtaMax(0)
    ,fJetPhiMin(0)
    ,fJetPhiMax(0)
+   ,fJetMinArea(0)
    ,fFFRadius(0)
    ,fFFMinLTrackPt(-1)
    ,fFFMaxTrackPt(-1)
@@ -295,6 +296,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fJetEtaMax(0)
   ,fJetPhiMin(0)
   ,fJetPhiMax(0)
+  ,fJetMinArea(0)
   ,fFFRadius(0)
   ,fFFMinLTrackPt(-1)
   ,fFFMaxTrackPt(-1)
@@ -497,6 +499,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fJetEtaMax(copy.fJetEtaMax)
   ,fJetPhiMin(copy.fJetPhiMin)
   ,fJetPhiMax(copy.fJetPhiMax)
+  ,fJetMinArea(copy.fJetMinArea)
   ,fFFRadius(copy.fFFRadius)
   ,fFFMinLTrackPt(copy.fFFMinLTrackPt)
   ,fFFMaxTrackPt(copy.fFFMaxTrackPt)
@@ -703,6 +706,7 @@ AliAnalysisTaskFragmentationFunction& AliAnalysisTaskFragmentationFunction::oper
     fJetEtaMax                     = o.fJetEtaMax;
     fJetPhiMin                     = o.fJetPhiMin;
     fJetPhiMax                     = o.fJetPhiMin;
+    fJetMinArea                    = o.fJetMinArea;
     fFFRadius                      = o.fFFRadius;
     fFFMinLTrackPt                 = o.fFFMinLTrackPt;
     fFFMaxTrackPt                  = o.fFFMaxTrackPt;
@@ -2433,7 +2437,10 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 	
       if(GetFFMinNTracks()>0 && jettracklist->GetSize()<=GetFFMinNTracks()) isBadJet = kTRUE;
       
-      if(isBadJet) continue; 
+      if(isBadJet){
+	delete jettracklist;
+	continue; 
+      }
 
       if(ptFractionEmbedded>=fCutFractionPtEmbedded){ // if no embedding: ptFraction = cutFraction = 0
 	  
@@ -2515,7 +2522,10 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
       
       if(GetFFMinNTracks()>0 && jettracklist->GetSize()<=GetFFMinNTracks()) isBadJet = kTRUE;;
       
-      if(isBadJet) continue; 
+      if(isBadJet){
+	delete jettracklist;
+	continue; 
+      }
 
       for(Int_t it=0; it<jettracklist->GetSize(); ++it){
 	
@@ -2662,7 +2672,14 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 	if(GetFFMinNTracks()>0 && jettracklistGenSecNS->GetSize()<=GetFFMinNTracks())  isBadJetGenSec  = kTRUE;
 	if(GetFFMinNTracks()>0 && jettracklistRec->GetSize()<=GetFFMinNTracks())       isBadJetRec     = kTRUE;
 
-	if(isBadJetRec) continue;
+	if(isBadJetRec){
+	  delete jettracklistGenPrim;
+	  delete jettracklistGenSecNS;
+	  delete jettracklistGenSecS;
+	  delete jettracklistRec;
+
+	  continue;
+	}
 
 	if(fQAMode&2) fQAJetHistosRecEffLeading->FillJetQA( jetEta, jetPhi, sumPtGenLeadingJetRecEff ); 
 	
@@ -2703,7 +2720,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 						    jettracklistRec,kTRUE,fJSMode,fProNtracksLeadingJetRecSecSsc,fProDelRPtSumRecSecSsc);
         }
 	
-	delete jettracklistGenPrim;
+ 	delete jettracklistGenPrim;
 	delete jettracklistGenSecNS;
 	delete jettracklistGenSecS;
 	delete jettracklistRec;
@@ -2715,7 +2732,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 	  TList* perpjettracklistGen1 = new TList();
 	  TList* perpjettracklistGen2 = new TList();
 
-	  Double_t sumPtGenPerp  = 0.;
+	  //Double_t sumPtGenPerp  = 0.;
 	  Double_t sumPtGenPerp1 = 0.;
 	  Double_t sumPtGenPerp2 = 0.;
 	  GetTracksTiltedwrpJetAxis(TMath::Pi()/2.,fTracksAODMCCharged, perpjettracklistGen1, jet, TMath::Abs(GetFFRadius()) , sumPtGenPerp1); 
@@ -2723,13 +2740,13 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 
 	  perpjettracklistGen->AddAll(perpjettracklistGen1);
 	  perpjettracklistGen->AddAll(perpjettracklistGen2);
-	  sumPtGenPerp = 0.5*(sumPtGenPerp1+sumPtGenPerp2);
+	  //sumPtGenPerp = 0.5*(sumPtGenPerp1+sumPtGenPerp2);
 
 	  TList* perpjettracklistGenSecNS  = new TList();
 	  TList* perpjettracklistGenSecNS1 = new TList();
 	  TList* perpjettracklistGenSecNS2 = new TList();
 
-          Double_t sumPtGenPerpNS;
+          //Double_t sumPtGenPerpNS;
           Double_t sumPtGenPerpNS1;
           Double_t sumPtGenPerpNS2;
           GetTracksTiltedwrpJetAxis(TMath::Pi()/2.,fTracksAODMCChargedSecNS, perpjettracklistGenSecNS1, jet, TMath::Abs(GetFFRadius()) , sumPtGenPerpNS1); 
@@ -2737,14 +2754,14 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 
 	  perpjettracklistGenSecNS->AddAll(perpjettracklistGenSecNS1);
 	  perpjettracklistGenSecNS->AddAll(perpjettracklistGenSecNS2);
-	  sumPtGenPerpNS = 0.5*(sumPtGenPerpNS1+sumPtGenPerpNS2);
+	  //sumPtGenPerpNS = 0.5*(sumPtGenPerpNS1+sumPtGenPerpNS2);
 
 
 	  TList* perpjettracklistGenSecS  = new TList();
 	  TList* perpjettracklistGenSecS1 = new TList();
 	  TList* perpjettracklistGenSecS2 = new TList();
 
-          Double_t sumPtGenPerpS;
+          //Double_t sumPtGenPerpS;
           Double_t sumPtGenPerpS1;
           Double_t sumPtGenPerpS2;
           GetTracksTiltedwrpJetAxis(TMath::Pi()/2.,fTracksAODMCChargedSecS, perpjettracklistGenSecS1, jet, TMath::Abs(GetFFRadius()) , sumPtGenPerpS1); 
@@ -2752,7 +2769,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 
 	  perpjettracklistGenSecS->AddAll(perpjettracklistGenSecS1);
 	  perpjettracklistGenSecS->AddAll(perpjettracklistGenSecS2);
-	  sumPtGenPerpS = 0.5*(sumPtGenPerpS1+sumPtGenPerpS2);
+	  //sumPtGenPerpS = 0.5*(sumPtGenPerpS1+sumPtGenPerpS2);
 
 
           if(perpjettracklistGen->GetSize() != perpjettracklistGen1->GetSize() + perpjettracklistGen2->GetSize()){
@@ -3027,6 +3044,7 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfJets(TList *list, Int_t typ
       if(!tmp) continue;
 
       if( tmp->Pt() < fJetPtCut ) continue;
+      if( tmp->EffectiveAreaCharged() < fJetMinArea ) continue;
       if( type == kJetsRecAcceptance &&
 	  (    tmp->Eta() < fJetEtaMin
 	    || tmp->Eta() > fJetEtaMax
@@ -3133,6 +3151,7 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfJets(TList *list, Int_t typ
       if(!tmp) continue;
 	  
       if( tmp->Pt() < fJetPtCut ) continue;
+      if( tmp->EffectiveAreaCharged() < fJetMinArea ) continue;
       if( type == kJetsGenAcceptance &&
 	  (    tmp->Eta() < fJetEtaMin
 	    || tmp->Eta() > fJetEtaMax
@@ -3173,6 +3192,7 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfJets(TList *list, Int_t typ
       if(!tmp) continue;
 
       if( tmp->Pt() < fJetPtCut ) continue;
+      if( tmp->EffectiveAreaCharged() < fJetMinArea ) continue;
       if(    tmp->Eta() < fJetEtaMin
 	  || tmp->Eta() > fJetEtaMax
 	  || tmp->Phi() < fJetPhiMin
@@ -4008,17 +4028,17 @@ void AliAnalysisTaskFragmentationFunction::GetClusterTracksMedian(TList* outputl
   // get median cluster
 
   AliAODJet* medianCluster = 0;
-  Double_t   medianDensity = 0;
+  //Double_t   medianDensity = 0;
 
   if(TMath::Odd(nBckgClusters)){
     
     Int_t medianIndex = indices[(Int_t) (0.5*(nBckgClusters-1))];
     medianCluster = (AliAODJet*)(fBckgJetsRec->At(medianIndex));
     
-    Double_t clusterPt = medianCluster->Pt();
-    Double_t area      = medianCluster->EffectiveAreaCharged();
+    //Double_t clusterPt = medianCluster->Pt();
+    //Double_t area      = medianCluster->EffectiveAreaCharged();
     
-    if(area>0) medianDensity = clusterPt/area;
+    //if(area>0) medianDensity = clusterPt/area;
   }
   else{
 
@@ -4038,7 +4058,7 @@ void AliAnalysisTaskFragmentationFunction::GetClusterTracksMedian(TList* outputl
     Double_t area2      = medianCluster2->EffectiveAreaCharged();
     if(area2>0) density2 = clusterPt2/area2;
     
-    medianDensity = 0.5*(density1+density2);
+    //medianDensity = 0.5*(density1+density2);
     
     medianCluster = ( (fRandom->Rndm()>0.5) ? medianCluster1 : medianCluster2 );  // select one randomly to avoid adding areas
   }

@@ -231,6 +231,12 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fFakeRejection0(0)
   ,fFakeRejection1(0)
   ,fFakeRejection2(0)
+  ,EopFake(0)
+  ,EopTrue(0)
+  ,MatchFake(0)
+  ,MatchTrue(0)
+  ,MatchTrCheck(0)
+  ,MatchTrEop(0)
   //,fnSigEtaCorr(NULL)
 {
   //Named constructor
@@ -394,6 +400,12 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fFakeRejection0(0)
   ,fFakeRejection1(0)
   ,fFakeRejection2(0)
+  ,EopFake(0)
+  ,EopTrue(0)
+  ,MatchFake(0)
+  ,MatchTrue(0)
+  ,MatchTrCheck(0)
+  ,MatchTrEop(0)
   //,fnSigEtaCorr(NULL)
 {
 	//Default constructor
@@ -518,6 +530,23 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
       }
     } 
+
+
+  Bool_t SelColl = kTRUE;
+  //cout <<"check trigger : " << GetCollisionCandidates() << endl;  
+  //cout <<"check kAny : " << AliVEvent::kAny<< endl;  
+  if(GetCollisionCandidates()==AliVEvent::kAny)
+    {
+     //cout <<"kAny selection"<< endl;  
+     SelColl = kFALSE; 
+     TString firedTrigger;
+     firedTrigger = fESD->GetFiredTriggerClasses();
+     if(firedTrigger.Contains("CVLN_B2-B-NOPF-ALLNOTRD") || firedTrigger.Contains("CVLN_R1-B-NOPF-ALLNOTRD") || firedTrigger.Contains("CSEMI_R1-B-NOPF-ALLNOTRD"))SelColl=kTRUE; 
+  
+  //cout << "SemiCentral ? " << SelColl << endl;  
+  }
+
+  if(!SelColl)return;
 
   fNoEvents->Fill(0);
 
@@ -813,13 +842,18 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
         Bool_t MaxEmatch = kFALSE;
 
     Int_t clsId = track->GetEMCALcluster();
-    if (clsId>0){
+
+    //cout << "match ID" << clsId << " ; " << clsId_Tender << endl;
+
+    if (clsId>=0){
       AliESDCaloCluster *clust = fESD->GetCaloCluster(clsId);
+
       if(clust && clust->IsEMCAL()){
 
 	        double clustE = clust->E();
                 if(clustE==maxE)MaxEmatch = kTRUE;
                 eop = clustE/fabs(mom);
+
 
                 //double clustT = clust->GetTOF();
                 ncells = clust->GetNCells();
@@ -832,14 +866,14 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 		nmatch = clust->GetNTracksMatched();
                 emctof = clust->GetTOF();
                 //cout << "emctof = " << emctof << endl;
-                cout << "eop org = "<< eop << endl;
+                //cout << "eop org = "<< eop << endl;
                 double eoporg =  eop;
                 if(fmcData)
                   {
                    double mceopcorr = MCEopMeanCorrection(pt,cent);
                    eop += mceopcorr;
                   }
-                cout << "eop corr = " << eop << endl;
+                //cout << "eop corr = " << eop << endl;
 
 		  double valdedx[16];
 		  valdedx[0] = pt; valdedx[1] = nITS; valdedx[2] = phi; valdedx[3] = eta; valdedx[4] = fTPCnSigma;
@@ -966,6 +1000,18 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
           fFakeRejection0->Fill(TrStat,pt,mcWeight); 
           if(eop>-1.0)fFakeRejection1->Fill(TrStat,pt,mcWeight); // have match
           if(eop>0.9 && eop<1.3)fFakeRejection2->Fill(TrStat,pt,mcWeight); // have PID
+
+          if(TrStat==0)
+            {
+             EopFake->Fill(pt,eop,mcWeight);
+             MatchFake->Fill(pt,rmatch,mcWeight);
+            }  
+          else
+            {
+             EopTrue->Fill(pt,eop,mcWeight);
+             MatchTrue->Fill(pt,rmatch,mcWeight);
+            }  
+
         } 
       }
 
@@ -1602,6 +1648,28 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fFakeRejection2 = new TH2D("fFakeRejection2","TPC PID + Tr match + E/p",2,-0.5,1.5,100,0,20);
   fFakeRejection2->Sumw2();
   fOutputList->Add(fFakeRejection2);
+
+  EopFake = new TH2D("EopFake","negative track Eop",20,0,20,200,0,2);
+  EopFake->Sumw2();
+  fOutputList->Add(EopFake);
+ 
+  EopTrue = new TH2D("EopTrue","true track Eop",20,0,20,200,0,2);
+  EopTrue->Sumw2();
+  fOutputList->Add(EopTrue);
+
+  MatchFake = new TH2D("MatchFake","negative track Match",20,0,20,100,0,0.05);
+  MatchFake->Sumw2();
+  fOutputList->Add(MatchFake);
+ 
+  MatchTrue = new TH2D("MatchTrue","true track Match",20,0,20,100,0,0.05);
+  MatchTrue->Sumw2();
+  fOutputList->Add(MatchTrue);
+
+  MatchTrCheck = new TH2D("MatchTrCheck","Check Tr Match",2010,-10,2000,2010,-10,2000);
+  fOutputList->Add(MatchTrCheck);
+
+  MatchTrEop = new TH2D("MatchTrEop","Check Tr Match E/p",200,0,2,200,0,2);
+  fOutputList->Add(MatchTrEop);
 
   PostData(1,fOutputList);
 }
@@ -2251,5 +2319,4 @@ double AliAnalysisTaskHFECal::NsigmaCorrection(double tmpeta, float central)
  return shift;
 
 }
-
 

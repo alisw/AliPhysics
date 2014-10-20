@@ -343,18 +343,18 @@ void AliFemtoK0Analysis::UserCreateOutputObjects()
   TH3F* fHistMass = new TH3F("fHistMass","",kCentBins,.5,kCentBins+.5,50,0.,5.,400,.3,.7);
   fOutputList->Add(fHistMass);
   
-  TH1F *fHistMassCuts[4][5];
-  if(fCutCheck){
-   for(int iCut=0;iCut<4;iCut++){
-    for(int jCut=0;jCut<5;jCut++){
-     TString *histname = new TString("fHistMassCuts");
-     *histname += iCut;
-     *histname += jCut;
-     fHistMassCuts[iCut][jCut] = new TH1F(histname->Data(),"",400,.3,.7);
-     fOutputList->Add(fHistMassCuts[iCut][jCut]);
-    }
-   }
-  }
+  //TH1F *fHistMassCuts[4][5];
+  //if(fCutCheck){
+  // for(int iCut=0;iCut<4;iCut++){
+  //  for(int jCut=0;jCut<5;jCut++){
+  //   TString *histname = new TString("fHistMassCuts");
+  //   *histname += iCut;
+  //   *histname += jCut;
+  //   fHistMassCuts[iCut][jCut] = new TH1F(histname->Data(),"",400,.3,.7);
+  //   fOutputList->Add(fHistMassCuts[iCut][jCut]);
+  //  }
+  // }
+  //}
   //TH3F* fHistMassPtCFK0 = new TH3F("fHistMassPtCFK0","",kCentBins,.5,kCentBins+.5,50,0.,5.,200,.4,.6);
   //fOutputList->Add(fHistMassPtCFK0);
   //TH3F* fHistMassPtCFBkgK0 = new TH3F("fHistMassPtCFBkgK0","",kCentBins,.5,kCentBins+.5,50,0.,5.,200,.4,.6);
@@ -459,20 +459,24 @@ void AliFemtoK0Analysis::UserCreateOutputObjects()
    }
   }
 
-  TH3F *fHist3DOSLCutsSignal[5][5];
-  TH3F *fHist3DOSLCutsBkg[5][5];
+  TH3F *fHist3DOSLCutsSignal[3][5][3]; //3 cent bins, 5 parameters, 3 cut values
+  TH3F *fHist3DOSLCutsBkg[3][5][3];
   if(fCutCheck){
-   for(int i3D=0;i3D<5;i3D++){
+   for(int i3D=0;i3D<3;i3D++){
     for(int j3D=0;j3D<5;j3D++){
-     TString *histname = new TString("fHist3DOSLCuts");
-     *histname += i3D;
-     *histname += j3D;
-     histname->Append("Signal");
-     fHist3DOSLCutsSignal[i3D][j3D] = new TH3F(histname->Data(),"",100,-.5,.5,100,-.5,.5,100,-.5,.5);
-     fOutputList->Add(fHist3DOSLCutsSignal[i3D][j3D]);
-     histname->Replace(16,6,"Bkg");
-     fHist3DOSLCutsBkg[i3D][j3D] = new TH3F(histname->Data(),"",100,-.5,.5,100,-.5,.5,100,-.5,.5);
-     fOutputList->Add(fHist3DOSLCutsBkg[i3D][j3D]);
+     for(int k3D=0;k3D<3;k3D++){
+      TString *histname = new TString("fHist3DOSLCuts");
+      *histname += i3D;
+      *histname += j3D;
+      *histname += k3D;
+      histname->Append("Signal");
+      fHist3DOSLCutsSignal[i3D][j3D][k3D] = new TH3F(histname->Data(),"",100,-.5,.5,100,-.5,.5,100,-.5,.5);
+      fOutputList->Add(fHist3DOSLCutsSignal[i3D][j3D][k3D]);
+      histname->Replace(17,6,"Bkg");
+      cout << histname->Data() << endl;
+      fHist3DOSLCutsBkg[i3D][j3D][k3D] = new TH3F(histname->Data(),"",100,-.5,.5,100,-.5,.5,100,-.5,.5);
+      fOutputList->Add(fHist3DOSLCutsBkg[i3D][j3D][k3D]);
+     }
     }
    }
   }
@@ -554,7 +558,6 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   
   /////////////////////////////////////////////////
 
-
   //Centrality selection
 
   AliCentrality *centrality = fAOD->GetCentrality();
@@ -595,7 +598,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
    return;
   }
   if(percent > 10 && isCentral) return;
-  if(fCutCheck && percent > 5) return;	//only looking at 0-5% for Cut Check
+  if(fCutCheck && percent > 50) return;	//only looking at 0-50% for Cut Check
   ((TH1F*)fOutputList->FindObject("fHistCent"))->Fill(percent);
   
   //flatten centrality dist.
@@ -669,12 +672,12 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   const float kMassK0Short = .497614;       //true PDG masses
 
   //for cut checks
-  double kCheckMassLow	[5] = {0.49,0.485,0.48,0.47,0.45};
-  double kCheckMassHigh	[5] = {0.505,0.510,0.515,0.525,0.550};
-  double kCheckDCAK0	[5] = {0.1,0.2,0.3,0.5,1.0};
-  double kCheckDCAPi	[5] = {1.0,0.6,0.4,0.2,0.1};
-  double kCheckDCAPiPi	[5] = {0.1,0.2,0.3,0.5,1.0};
-  double kCheckAvgSep	[5] = {10.0,7.5,5.0,2.5,0.0};
+  double kCheckMassLow	[3] = {0.49,0.48,0.45};
+  double kCheckMassHigh	[3] = {0.505,0.515,0.550};
+  double kCheckDCAK0	[3] = {0.1,0.3,1.0};
+  double kCheckDCAPi	[3] = {1.0,0.4,0.1};
+  double kCheckDCAPiPi	[3] = {0.1,0.3,1.0};
+  double kCheckAvgSep	[3] = {10.0,5.0,0.0};
 
 ////////////////////////////////////////////////////////////////  
   //v0 tester
@@ -792,10 +795,10 @@ void AliFemtoK0Analysis::Exec(Option_t *)
      if(v0Dca > kMaxDCAK0) 		                   			continue;        
     }
     else{
-     if(v0->DcaNegToPrimVertex() < kCheckDCAPi[4])		    continue;
-     if(v0->DcaPosToPrimVertex() < kCheckDCAPi[4])      	continue;  
-     if(v0->DcaV0Daughters() > kCheckDCAPiPi[4])          	continue;
-     if(v0Dca > kCheckDCAK0[4]) 		                   	continue;
+     if(v0->DcaNegToPrimVertex() < kCheckDCAPi[2])		    continue;
+     if(v0->DcaPosToPrimVertex() < kCheckDCAPi[2])      	continue;  
+     if(v0->DcaV0Daughters() > kCheckDCAPiPi[2])          	continue;
+     if(v0Dca > kCheckDCAK0[2]) 		                   	continue;
     }
 
     //EVERYTHING BELOW HERE PASSES SINGLE PARTICLE CUTS, PION PID, and LOOSE MASS CUT
@@ -821,7 +824,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
      if(v0->MassK0Short() > .48 && v0->MassK0Short() < .515) goodK0 = kTRUE;
     }
     else{
-     if(v0->MassK0Short() > kCheckMassLow[4] && v0->MassK0Short() < kCheckMassHigh[4]) goodK0 = kTRUE;
+     if(v0->MassK0Short() > kCheckMassLow[2] && v0->MassK0Short() < kCheckMassHigh[2]) goodK0 = kTRUE;
     }
 
     //Check for shared daughters, using v0 DCA to judge
@@ -856,9 +859,13 @@ void AliFemtoK0Analysis::Exec(Option_t *)
 
     //for cut check
     if(fCutCheck){
-     for(int iSet=0;iSet<4;iSet++){for(int jSet=0;jSet<4;jSet++){tempK0[v0Count].fCutPass[iSet][jSet] = kFALSE;}}
-     for(int jCut = 0;jCut<5;jCut++){
-      if(v0->MassK0Short() >	kCheckMassLow[jCut] && v0->MassK0Short() < kCheckMassHigh[jCut])
+     for(int iSet=0;iSet<4;iSet++){ //number of cut pars (not counting AvgSep)
+      for(int jSet=0;jSet<3;jSet++){ //number of cut values
+       tempK0[v0Count].fCutPass[iSet][jSet] = kFALSE;
+      }
+     }
+     for(int jCut = 0;jCut<3;jCut++){
+      if(v0->MassK0Short() > kCheckMassLow[jCut] && v0->MassK0Short() < kCheckMassHigh[jCut])
        	 tempK0[v0Count].fCutPass[0][jCut] = kTRUE;
       if(v0Dca < kCheckDCAK0[jCut]) tempK0[v0Count].fCutPass[1][jCut] = kTRUE;
       if(v0->DcaPosToPrimVertex() > kCheckDCAPi[jCut] && v0->DcaNegToPrimVertex() > kCheckDCAPi[jCut])
@@ -947,16 +954,16 @@ void AliFemtoK0Analysis::Exec(Option_t *)
    {
     ((TH3F*)fOutputList->FindObject("fHistMass"))->Fill(centBin+1,tempK0[i].fPt,tempK0[i].fMass);
     
-    if(fCutCheck){
-     for(int iCut=1;iCut<4;iCut++){
-      for(int jCut=0;jCut<5;jCut++){
-       TString *histname = new TString("fHistMassCuts");
-       *histname += iCut;
-       *histname += jCut;
-       if(tempK0[i].fCutPass[iCut][jCut]) ((TH1F*)fOutputList->FindObject(histname->Data()))->Fill(tempK0[i].fMass);
-      }
-     }
-    }
+    //if(fCutCheck){
+    // for(int iCut=1;iCut<4;iCut++){
+    //  for(int jCut=0;jCut<5;jCut++){
+    //   TString *histname = new TString("fHistMassCuts");
+    //   *histname += iCut;
+    //   *histname += jCut;
+    //   if(tempK0[i].fCutPass[iCut][jCut]) ((TH1F*)fOutputList->FindObject(histname->Data()))->Fill(tempK0[i].fMass);
+    //  }
+    // }
+    //}
     
     if(tempK0[i].fK0)					//make sure particle is good (mass)
     {
@@ -1203,13 +1210,13 @@ void AliFemtoK0Analysis::Exec(Option_t *)
         if(evnum==0)((TH2F*)fOutputList->FindObject("fHistSepDPC"))->Fill(dpc,pMean);
         else ((TH2F*)fOutputList->FindObject("fHistSepDPCBkg"))->Fill(dpc,pMean);
        
-        bool SepPass[5] = {0};
+        bool SepPass[3] = {0};
         if(!fCutCheck){
          if(pMean < kMinSeparation || nMean < kMinSeparation) continue; //using the "new" method (ala Hans)
         }
         else{
-         if(pMean < kCheckAvgSep[4] || nMean < kCheckAvgSep[4]) continue;
-         for(int jCut=0;jCut<5;jCut++){
+         if(pMean < kCheckAvgSep[2] || nMean < kCheckAvgSep[2]) continue;
+         for(int jCut=0;jCut<3;jCut++){
           if(pMean > kCheckAvgSep[jCut] && nMean > kCheckAvgSep[jCut]) SepPass[jCut] = kTRUE;
          }
         }
@@ -1257,6 +1264,11 @@ void AliFemtoK0Analysis::Exec(Option_t *)
         float dPhiPsi = fabs((fEvt)->fK0Particle[i].fPhiPsi - (fEvt+evnum)->fK0Particle[j].fPhiPsi);
         if(dPhiPsi > PI) dPhiPsi = 2*PI-dPhiPsi;
 
+        int CutCentBin; //for cut check
+        if(centBin > 13) CutCentBin = 0;
+        else if(centBin > 9) CutCentBin = 1;
+        else if(centBin > 5) CutCentBin = 2;
+        else{};
         if(evnum==0) //Same Event
         {     
           //((TH3F*)fOutputList->FindObject("fHistMassQKt"))->Fill(qinv, pairKt, (fEvt)->fK0Particle[i].fMass);
@@ -1300,15 +1312,16 @@ void AliFemtoK0Analysis::Exec(Option_t *)
            if(fCutCheck){
             for(int iCut=0;iCut<4;iCut++){//different cuts (4 + AvgSep)
              bool Skip = kFALSE;
-             for(int iCut2=0;iCut2<4;iCut2++){//for setting other cuts to "3"
+             for(int iCut2=0;iCut2<4;iCut2++){//for setting other cuts to usual value
               if(iCut2 != iCut){
-               if(!(fEvt)->fK0Particle[i].fCutPass[iCut2][2] || !(fEvt+evnum)->fK0Particle[j].fCutPass[iCut2][2]) Skip = kTRUE;
+               if(!(fEvt)->fK0Particle[i].fCutPass[iCut2][1] || !(fEvt+evnum)->fK0Particle[j].fCutPass[iCut2][1]) Skip = kTRUE;
               }
              }              
-             if(!SepPass[2]) Skip = kTRUE;
+             if(!SepPass[1]) Skip = kTRUE; //set avg sep cut to usual value
              if(Skip) continue;
-             for(int jCut=0;jCut<5;jCut++){//different cut values
+             for(int jCut=0;jCut<3;jCut++){//different cut values
               TString *histname = new TString("fHist3DOSLCuts");
+              *histname += CutCentBin;
               *histname += iCut;
               *histname += jCut;
               histname->Append("Signal");
@@ -1317,14 +1330,15 @@ void AliFemtoK0Analysis::Exec(Option_t *)
              }//jcut
             }//icut
             
-            //for avg sep
+            //for avg sep cutcheck
             bool asSkip = kFALSE;
             for(int iCut=0;iCut<4;iCut++){ //other parameters
-             if(!(fEvt)->fK0Particle[i].fCutPass[iCut][2] || !(fEvt+evnum)->fK0Particle[j].fCutPass[iCut][2]) asSkip=kTRUE;
+             if(!(fEvt)->fK0Particle[i].fCutPass[iCut][1] || !(fEvt+evnum)->fK0Particle[j].fCutPass[iCut][1]) asSkip=kTRUE; //set other cuts to usual values
             }
             if(asSkip) continue;
-            for(int jCut=0;jCut<5;jCut++){
+            for(int jCut=0;jCut<3;jCut++){
              TString *histname = new TString("fHist3DOSLCuts");
+             *histname += CutCentBin;
              *histname += 4; //4 for AvgSep
              *histname += jCut;
              histname->Append("Signal");
@@ -1393,19 +1407,20 @@ void AliFemtoK0Analysis::Exec(Option_t *)
 		    }
            }
 
-           //for cut check (3D, but fCase3D set to false)
+            //for cut check (3D, but fCase3D set to false)
            if(fCutCheck){
             for(int iCut=0;iCut<4;iCut++){//different cuts (4 + AvgSep)
              bool Skip = kFALSE;
-             for(int iCut2=0;iCut2<4;iCut2++){//for setting other cuts to "3"
+             for(int iCut2=0;iCut2<4;iCut2++){//for setting other cuts to usual value
               if(iCut2 != iCut){
-               if(!(fEvt)->fK0Particle[i].fCutPass[iCut2][2] || !(fEvt+evnum)->fK0Particle[j].fCutPass[iCut2][2]) Skip = kTRUE;
+               if(!(fEvt)->fK0Particle[i].fCutPass[iCut2][1] || !(fEvt+evnum)->fK0Particle[j].fCutPass[iCut2][1]) Skip = kTRUE;
               }
              }              
-             if(!SepPass[2]) Skip = kTRUE;
+             if(!SepPass[1]) Skip = kTRUE; //set avg sep cut to usual value
              if(Skip) continue;
-             for(int jCut=0;jCut<5;jCut++){//different cut values
+             for(int jCut=0;jCut<3;jCut++){//different cut values
               TString *histname = new TString("fHist3DOSLCuts");
+              *histname += CutCentBin;
               *histname += iCut;
               *histname += jCut;
               histname->Append("Bkg");
@@ -1414,20 +1429,21 @@ void AliFemtoK0Analysis::Exec(Option_t *)
              }//jcut
             }//icut
             
-            //for avg sep
+            //for avg sep cutcheck
             bool asSkip = kFALSE;
-            for(int iCut=0;iCut<4;iCut++){
-             if(!(fEvt)->fK0Particle[i].fCutPass[iCut][2] || !(fEvt+evnum)->fK0Particle[j].fCutPass[iCut][2]) asSkip=kTRUE;
+            for(int iCut=0;iCut<4;iCut++){ //other parameters
+             if(!(fEvt)->fK0Particle[i].fCutPass[iCut][1] || !(fEvt+evnum)->fK0Particle[j].fCutPass[iCut][1]) asSkip=kTRUE; //set other cuts to usual values
             }
             if(asSkip) continue;
-            for(int jCut=0;jCut<5;jCut++){
+            for(int jCut=0;jCut<3;jCut++){
              TString *histname = new TString("fHist3DOSLCuts");
+             *histname += CutCentBin;
              *histname += 4; //4 for AvgSep
              *histname += jCut;
              histname->Append("Bkg");
              if(SepPass[jCut]) ((TH3F*)fOutputList->FindObject(histname->Data()))->Fill(qOutPRF,qSide,qLong);
             }
-           }//cutCheck  
+           }//cutCheck   
 
 
            /*if(pairKt < 1.0){

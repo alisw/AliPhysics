@@ -13,10 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
-// Analysis task for identified PHOS cluster from pi0 and take korrelation betwen hadron-pi0 angel's.
-// Authors: 	Daniil Ponomarenko (Daniil.Ponomarenko@cern.ch)
-// 		Dmitry Blau
-// 07-Feb-2014
+// Analysis task for identifion PHOS cluster from Pi0 and extracting pi0-hadron correlation.
+// Author: 	Daniil Ponomarenko <Daniil.Ponomarenko@cern.ch>
+// 20-Sept-2014
 
 #include <Riostream.h>
 #include "THashList.h"
@@ -57,6 +56,7 @@
 #include "AliAODCaloCluster.h"
 #include "AliCaloPhoton.h"
 #include "AliAODVertex.h"
+#include "AliInputEventHandler.h"
 
 using std::cout;
 using std::endl;
@@ -66,105 +66,194 @@ ClassImp(AliPHOSCorrelations)
 //_______________________________________________________________________________
 AliPHOSCorrelations::AliPHOSCorrelations()
 :AliAnalysisTaskSE(),
-        fPHOSGeo(0x0),
-	fOutputContainer(0x0),
-	fMinClusterEnergy(0.3),
-	fMinBCDistance(0),
-	fMinNCells(3),
-	fMinM02(0.2),
-	fTOFCutEnabled(1),
-	fTOFCut(100.e-9),
-	fNVtxZBins(1),
-	fCentEdges(10),
-	fCentNMixed(),
-	fNEMRPBins(9),
-	fAssocBins(),	
-	fCheckHibridGlobal(kOnlyHibridTracks),
-	fPeriod(kUndefinedPeriod),
-	fInternalTriggerSelection(kNoSelection),
-	fMaxAbsVertexZ(10.),
-	fManualV0EPCalc(false),
-	fCentCutoffDown(0.),
-	fCentCutoffUp(90),
-	fMassInvMean(0.135),
-	fMassInvSigma(0.01),
-	fSigmaWidth(0.),
-	fEvent(0x0),
-	fEventESD(0x0),
-	fEventAOD(0x0),
-	fESDtrackCuts(0x0),
-	fRunNumber(-999),
-	fInternalRunNumber(0),
-	fMultV0(0x0),
-	fV0Cpol(0.),fV0Apol(0.),
-	fEPcalibFileName("$ALICE_ROOT/OADB/PHOS/PHOSflat.root"),
+	fPHOSGeo(0x0),
+    fOutputContainer(0x0),
+    fEvent(0x0),
+    fEventESD(0x0),
+    fEventAOD(0x0),
+    fEventHandler(0),
+    fCaloPhotonsPHOS(0x0),
+    fTracksTPC(0x0),
+    fCaloPhotonsPHOSLists(0x0),
+    fTracksTPCLists(0x0),
+    fRunNumber(-999),
+    fInternalRunNumber(0),
+    fPeriod(kUndefinedPeriod),
+	fPHOSEvent(false),
+    fMBEvent(false),
+    fNVtxZBins(10),
+    fCentEdges(10),
+    fCentNMixed(),
+    fNEMRPBins(9),
+    fAssocBins(),
 	fVertexVector(),
-        	fVtxBin(0),
-	fCentralityEstimator("V0M"),
-	fCentrality(0.),
-	fCentBin(0),
-	fHaveTPCRP(0),
-	fRP(0.),
-	fEMRPBin(0),
-	fCaloPhotonsPHOS(0x0),
-	fTracksTPC(0x0),
-	fCaloPhotonsPHOSLists(0x0),
-  	fTracksTPCLists(0x0)
+    fVtxBin(0),
+    fCentralityEstimator("V0M"),
+    fCentrality(0.),
+    fCentBin(0),
+    fHaveTPCRP(0),
+    fRP(0.),
+    fEMRPBin(0),
+    fMaxAbsVertexZ(10.),
+    fCentralityLowLimit(0.),
+    fCentralityHightLimit(90),
+    fESDtrackCuts(0x0),
+    fCheckHibridGlobal(kOnlyHibridTracks),
+    fMinClusterEnergy(0.3),
+    fMinBCDistance(0),
+    fMinNCells(3),
+    fMinM02(0.2),
+    fTOFCutEnabled(1),
+    fTOFCut(100.e-9),
+    fMassInvMean(0.135),
+    fMassInvSigma(0.05),
+    fSigmaWidth(0.),
+    fUseEfficiency(true)
 {
-  //Deafult constructor, no memory allocations here
+	//Deafult constructor, no memory allocations here
+	fMassMean[0] = 1.00796e-05 ;
+	fMassMean[1] = 0.136096    ;
+	fMassSigma[0] = 0.00100059 ;
+	fMassSigma[1] = 1.10485 ;
+	fMassSigma[2] = 0.00570446 ;
+	fMassSigma[3] = 0.00100001 ;
+}
+
+//_______________________________________________________________________________
+AliPHOSCorrelations::AliPHOSCorrelations(const char *name)
+:AliAnalysisTaskSE(name),
+    fPHOSGeo(0x0),
+    fOutputContainer(0x0),
+    fEvent(0x0),
+    fEventESD(0x0),
+    fEventAOD(0x0),
+    fEventHandler(0),
+    fCaloPhotonsPHOS(0x0),
+    fTracksTPC(0x0),
+    fCaloPhotonsPHOSLists(0x0),
+    fTracksTPCLists(0x0),
+    fRunNumber(-999),
+    fInternalRunNumber(0),
+    fPeriod(kUndefinedPeriod),
+	fPHOSEvent(false),
+    fMBEvent(false),
+    fNVtxZBins(10),
+    fCentEdges(10),
+    fCentNMixed(),
+    fNEMRPBins(9),
+    fAssocBins(),
+	fVertexVector(),
+    fVtxBin(0),
+    fCentralityEstimator("V0M"),
+    fCentrality(0.),
+    fCentBin(0),
+    fHaveTPCRP(0),
+    fRP(0.),
+    fEMRPBin(0),
+    fMaxAbsVertexZ(10.),
+    fCentralityLowLimit(0.),
+    fCentralityHightLimit(90),
+    fESDtrackCuts(0x0),
+    fCheckHibridGlobal(kOnlyHibridTracks),
+    fMinClusterEnergy(0.3),
+    fMinBCDistance(0),
+    fMinNCells(3),
+    fMinM02(0.2),
+    fTOFCutEnabled(1),
+    fTOFCut(100.e-9),
+    fMassInvMean(0.135),
+    fMassInvSigma(0.05),
+    fSigmaWidth(0.),
+    fUseEfficiency(true)
+{
+    // Constructor
+    // Output slots #0 write into a TH1 container
+    DefineOutput(1,THashList::Class());
+
+    fMassMean[0] = 1.00796e-05 ;
+	fMassMean[1] = 0.136096    ;
+	fMassSigma[0] = 0.00100059 ;
+	fMassSigma[1] = 1.10485 ;
+	fMassSigma[2] = 0.00570446 ;
+	fMassSigma[3] = 0.00100001 ;
+
+    const Int_t nPtAssoc = 10 ;
+    Double_t ptAssocBins[nPtAssoc] = {0.,0.5,1.0,1.5,2.0,3.,5.,7.,10.,16} ;
+    fAssocBins.Set(nPtAssoc,ptAssocBins) ;
+
+    const int nbins = 9;
+    Double_t edges[nbins+1] = {0., 5., 10., 20., 30., 40., 50., 60., 70., 80.};
+    TArrayD centEdges( nbins+1, edges );
+    Int_t nMixed[nbins] = {4,4,6,10,20,30,50,100,100};
+    TArrayI centNMixed(nbins, nMixed);
+    SetCentralityBinning(centEdges, centNMixed);
+
+    fVertex[0] = 0; 
+    fVertex[1] = 0; 
+    fVertex[2] = 0;
+
+    SetGeometry();
+
+    ZeroingVariables();
 }
 
 //_______________________________________________________________________________
 AliPHOSCorrelations::AliPHOSCorrelations(const char *name, Period period)
 :AliAnalysisTaskSE(name),
-        fPHOSGeo(0x0),
-	fOutputContainer(0x0),
-	fMinClusterEnergy(0.3),
-	fMinBCDistance(0),
-	fMinNCells(3),
-	fMinM02(0.2),
-	fTOFCutEnabled(1),
-	fTOFCut(100.e-9),
-	fNVtxZBins(1),
-	fCentEdges(10),
-	fCentNMixed(),
-	fNEMRPBins(9),
-	fAssocBins(),	
-	fCheckHibridGlobal(kOnlyHibridTracks),
-	fPeriod(period),
-	fInternalTriggerSelection(kNoSelection),
-	fMaxAbsVertexZ(10.),
-	fManualV0EPCalc(false),
-	fCentCutoffDown(0.),
-	fCentCutoffUp(90),
-	fMassInvMean(0.135),
-	fMassInvSigma(0.01),
-	fSigmaWidth(0.),
-	fEvent(0x0),
-	fEventESD(0x0),
-	fEventAOD(0x0),
-	fESDtrackCuts(0x0),
-	fRunNumber(-999),
-	fInternalRunNumber(0),
-	fMultV0(0x0),
-	fV0Cpol(0.),fV0Apol(0.),
-	fEPcalibFileName("$ALICE_ROOT/OADB/PHOS/PHOSflat.root"),
+	fPHOSGeo(0x0),
+    fOutputContainer(0x0),
+    fEvent(0x0),
+    fEventESD(0x0),
+    fEventAOD(0x0),
+    fEventHandler(0),
+    fCaloPhotonsPHOS(0x0),
+    fTracksTPC(0x0),
+    fCaloPhotonsPHOSLists(0x0),
+    fTracksTPCLists(0x0),
+    fRunNumber(-999),
+    fInternalRunNumber(0),
+    fPeriod(period),
+	fPHOSEvent(false),
+    fMBEvent(false),
+    fNVtxZBins(10),
+    fCentEdges(10),
+    fCentNMixed(),
+    fNEMRPBins(9),
+    fAssocBins(),
 	fVertexVector(),
-        	fVtxBin(0),
-	fCentralityEstimator("V0M"),
-	fCentrality(0.),
-	fCentBin(0),
-	fHaveTPCRP(0),
-	fRP(0.),
-	fEMRPBin(0),
-	fCaloPhotonsPHOS(0x0),
-	fTracksTPC(0x0),
-	fCaloPhotonsPHOSLists(0x0),
-  	fTracksTPCLists(0x0)
+    fVtxBin(0),
+    fCentralityEstimator("V0M"),
+    fCentrality(0.),
+    fCentBin(0),
+    fHaveTPCRP(0),
+    fRP(0.),
+    fEMRPBin(0),
+    fMaxAbsVertexZ(10.),
+    fCentralityLowLimit(0.),
+    fCentralityHightLimit(90),
+    fESDtrackCuts(0x0),
+    fCheckHibridGlobal(kOnlyHibridTracks),
+    fMinClusterEnergy(0.3),
+    fMinBCDistance(0),
+    fMinNCells(3),
+    fMinM02(0.2),
+    fTOFCutEnabled(1),
+    fTOFCut(100.e-9),
+    fMassInvMean(0.135),
+    fMassInvSigma(0.05),
+    fSigmaWidth(0.),
+    fUseEfficiency(true)
 {
 	// Constructor
 	// Output slots #0 write into a TH1 container
 	DefineOutput(1,THashList::Class());
+
+	fMassMean[0] = 1.00796e-05 ;
+	fMassMean[1] = 0.136096    ;
+	fMassSigma[0] = 0.00100059 ;
+	fMassSigma[1] = 1.10485 ;
+	fMassSigma[2] = 0.00570446 ;
+	fMassSigma[3] = 0.00100001 ;
 
  	const Int_t nPtAssoc=10 ;
  	Double_t ptAssocBins[nPtAssoc]={0.,0.5,1.0,1.5,2.0,3.,5.,7.,10.,16} ;
@@ -178,10 +267,15 @@ AliPHOSCorrelations::AliPHOSCorrelations(const char *name, Period period)
 	TArrayI centNMixed(nbins, nMixed);
 	SetCentralityBinning(centEdges, centNMixed);
 
-	fVertex[0]=0; fVertex[1]=0; fVertex[2]=0; 
+	fVertex[0] = 0; 
+	fVertex[1] = 0; 
+	fVertex[2] = 0; 
 
-	fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP");
+	SetGeometry();
+
+	ZeroingVariables();
 }
+
 //_______________________________________________________________________________
 AliPHOSCorrelations::~AliPHOSCorrelations()
 {
@@ -217,34 +311,45 @@ AliPHOSCorrelations::~AliPHOSCorrelations()
 	  fOutputContainer=0x0;
 	}	  
 }
+
 //_______________________________________________________________________________
 void AliPHOSCorrelations::UserCreateOutputObjects()
 {
 	// Create histograms
   	// Called once
-	const Int_t nRuns=200 ;
+	const Int_t 	nRuns	=200 ;
+	const Int_t  	ptMult 	= 300;
+	const Double_t 	ptMin 	= 0.;
+	const Double_t 	ptMax 	= 30.;
 
 	// Create histograms
 	if(fOutputContainer != NULL) { delete fOutputContainer; }
 	fOutputContainer = new THashList();
 	fOutputContainer->SetOwner(kTRUE);
 	
-	//Event selection
-  	fOutputContainer->Add(new TH1F("hTriggerPassedEvents","Event selection passed Cuts", 20, 0., 20.) );
-
-  	fOutputContainer->Add(new TH1F("hTotSelEvents","Event selection", kTotalSelected+3, 0., double(kTotalSelected+3))) ;
-	
-	fOutputContainer->Add(new TH2F("hSelEvents","Event selection", kTotalSelected+1, 0., double(kTotalSelected+1), nRuns,0.,float(nRuns))) ;
-	fOutputContainer->Add(new TH2F("hCentrality","Event centrality", 100,0.,100.,nRuns,0.,float(nRuns))) ;
- 	fOutputContainer->Add(new TH2F("phiRPflat","RP distribution with TPC flat", 100, 0., 2.*TMath::Pi(),20,0.,100.)) ;
- 	fOutputContainer->Add(new TH2F("massWindow","mean & sigma", 100,0.1,0.18,100,0.,0.5));
+    // Event selection
+    fOutputContainer->Add(new TH1F( "hTriggerPassedEvents","Event selection passed Cuts", 	20, 0., 20.) );
+    // Analysis event's progress
+    fOutputContainer->Add(new TH1F( "hTotSelEvents","Event selection", 						15, 0., 15)) ;
+	fOutputContainer->Add(new TH2F( "hSelEvents","Event selection", kTotalSelected+1, 0., double(kTotalSelected+1), nRuns,0., float(nRuns) )) ;
+    // Centrality, Reaction plane selection
+    fOutputContainer->Add(new TH2F( "hCentrality","Event centrality of all events", 				100, 0., 100., nRuns,0., float(nRuns) 	)) ;
+    fOutputContainer->Add(new TH2F( "hCentralityTriggerEvent","Event centrality trigger events", 	100, 0., 100., nRuns,0., float(nRuns) 	)) ;
+    fOutputContainer->Add(new TH2F( "hCentralityMBEvent","Event centrality MB events", 				100, 0., 100., nRuns,0., float(nRuns) 	)) ;
+ 	fOutputContainer->Add(new TH2F( "phiRPflat","RP distribution with TPC flat", 					100, 0., 2.*TMath::Pi(), 20, 0., 100. 	)) ;
+    // Mass selection
+ 	fOutputContainer->Add(new TH2F( "massWindow","mean & sigma", 									100,0.095,0.185,500,0.,0.05));
+    fOutputContainer->Add(new TH1F( "massWindowPass","Mass selection", 								10, 0., 10.)) ;
+    // Cluster multiplisity
+ 	fOutputContainer->Add(new TH2F( "hCluEvsClu","ClusterMult vs E",								200,0.,10.,100,0.,100.)) ;
   	
 
   	// Set hists, with track's and cluster's angle distributions.
+  	SetHistPtNumTrigger(ptMult, ptMin, ptMax);
 	SetHistEtaPhi();
 	SetHistPHOSClusterMap();
-	SetHistCutDistribution();
-	SetHistPtAssoc();
+	SetHistMass	  (ptMult, ptMin, ptMax);
+	SetHistPtAssoc(ptMult, ptMin, ptMax);
 
 	// Setup photon lists
 	Int_t kapacity = fNVtxZBins * GetNumberOfCentralityBins() * fNEMRPBins;
@@ -256,6 +361,33 @@ void AliPHOSCorrelations::UserCreateOutputObjects()
 
 	PostData(1, fOutputContainer);
 }
+
+//_______________________________________________________________________________
+void AliPHOSCorrelations::SetHistPtNumTrigger(Int_t  ptMult, Double_t ptMin, Double_t ptMax)
+{
+	TString spid[4]={"all","cpv","disp","both"} ;
+	for(Int_t ipid=0; ipid<4; ipid++)	
+	{
+		fOutputContainer->Add(new TH1F(	Form("nTrigger_%s", spid[ipid].Data()), 
+										Form("Num of trigger particle %s", spid[ipid].Data()), 
+										ptMult+300, ptMin, ptMax ) );
+		TH1F *h = static_cast<TH1F*>(fOutputContainer->Last()) ;
+		h->Sumw2();
+		h->GetXaxis()->SetTitle("Pt [GEV]");
+		//h->GetYaxis()->SetTitle("#varepsilon"); // 1/efficiensy
+	}
+	for(Int_t ipid=0; ipid<4; ipid++)	
+	{
+		fOutputContainer->Add(new TH1F( Form("nTrigger_%s_MB", spid[ipid].Data()), 
+										Form("Num of trigger particle %s", spid[ipid].Data()), 
+										ptMult+300, ptMin, ptMax ) );
+		TH1F *h = static_cast<TH1F*>(fOutputContainer->Last()) ;
+		h->Sumw2();
+		h->GetXaxis()->SetTitle("Pt [GEV]");
+		//h->GetYaxis()->SetTitle("#varepsilon"); // 1/efficiensy
+	}
+}
+
 //_______________________________________________________________________________
 void AliPHOSCorrelations::SetHistEtaPhi() 
 {
@@ -264,156 +396,167 @@ void AliPHOSCorrelations::SetHistEtaPhi()
 	Float_t pi = TMath::Pi();
 
 	//===
-	fOutputContainer->Add(new TH2F("clu_phieta","Cluster's #phi & #eta distribution", 300, double(-1.8), double(-0.6), 300, double(-0.2), double(0.2) ) );
+	fOutputContainer->Add(new TH2F( "clu_phieta","Cluster's #phi & #eta distribution", 
+									300, double(-1.8), double(-0.6), 
+									300, double(-0.2), double(0.2) ) );
 	TH2F * h = static_cast<TH2F*>(fOutputContainer->Last()) ;
-    	h->GetXaxis()->SetTitle("#phi [rad]");
+    h->GetXaxis()->SetTitle("#phi [rad]");
 	h->GetYaxis()->SetTitle("#eta");
 
  	//===
-       	fOutputContainer->Add(new TH2F("clusingle_phieta","Cluster's  #phi & #eta distribution", 300, double(-1.8), double(-0.6), 300, double(-0.2), double(0.2) ) );
+       	fOutputContainer->Add(new TH2F( "clusingle_phieta","Cluster's  #phi & #eta distribution", 
+       									300, double(-1.8), double(-0.6), 
+       									300, double(-0.2), double(0.2) ) );
 	h = static_cast<TH2F*>(fOutputContainer->Last()) ;
-    	h->GetXaxis()->SetTitle("#phi [rad]");
+    h->GetXaxis()->SetTitle("#phi [rad]");
 	h->GetYaxis()->SetTitle("#eta");
  	
  	//===
- 	fOutputContainer->Add(new TH2F("track_phieta","TPC track's  #phi & #eta distribution", 200, double(-pi-0.3), double(pi+0.3), 200, double(-0.9), double(0.9) ) );
+ 	fOutputContainer->Add(new TH2F( "track_phieta","TPC track's  #phi & #eta distribution", 
+ 									200, double(-pi-0.3), double(pi+0.3), 
+ 									200, double(-0.9), double(0.9) ) );
 	h = static_cast<TH2F*>(fOutputContainer->FindObject("track_phieta")) ;
-    	h->GetXaxis()->SetTitle("#phi [rad]");
+    h->GetXaxis()->SetTitle("#phi [rad]");
 	h->GetYaxis()->SetTitle("#eta");
 } 
+
 //_______________________________________________________________________________
-void AliPHOSCorrelations::SetHistCutDistribution() 
+void AliPHOSCorrelations::SetHistMass(Int_t  ptMult, Double_t ptMin, Double_t ptMax) 
 {
-	// Set other histograms.
-	// cout<<"\nSetting output SetHist_CutDistribution...";
+	// Set mass histograms.
 
-	Int_t  PtMult = 100;
-	Double_t PtMin = 0.;
-	Double_t PtMax = 20.;
-	Double_t massMin = fMassInvMean-fMassInvSigma;
-	Double_t massMax = fMassInvMean+fMassInvSigma;
+	Double_t binMult = 400;
+	Double_t massMin = 0.0;
+	Double_t massMax = 0.4;
 
+	TString spid[4]={"all","cpv","disp","both"} ;
 
-	// Real ++++++++++++++++++++++++++++++
+	TH2F * h;
 
-	fOutputContainer->Add(new TH2F("all_mpt"," Only standard cut's ", 100, massMin, massMax, PtMult, PtMin, PtMax ) );
-	TH2F * h = static_cast<TH2F*>(fOutputContainer->Last()) ;
-    	h->GetXaxis()->SetTitle("Mass [GeV]");
-	h->GetYaxis()->SetTitle("Pt [GEV]");
+	for(Int_t ipid=0; ipid<4; ipid++)	
+	{
+		// Real ++++++++++++++++++++++++++++++
 
-	fOutputContainer->Add(new TH2F("cpv_mpt"," CPV cut ", 100, massMin, massMax, PtMult, PtMin, PtMax ) );
-	h = static_cast<TH2F*>(fOutputContainer->Last()) ;
-    	h->GetXaxis()->SetTitle("Mass [GeV]");
-	h->GetYaxis()->SetTitle("Pt [GEV]");
+		fOutputContainer->Add(new TH2F(Form("%s_mpt", spid[ipid].Data() ), "Real", 
+											binMult, massMin, massMax, 
+											ptMult, ptMin, ptMax ) );
+		h = static_cast<TH2F*>(fOutputContainer->Last()) ;
+		h->Sumw2();
+		h->GetXaxis()->SetTitle("Mass [GeV]");
+		h->GetYaxis()->SetTitle("Pt [GEV]");
 
-	fOutputContainer->Add(new TH2F("disp_mpt"," Disp cut ", 100, massMin, massMax, PtMult, PtMin, PtMax ) );
-	h = static_cast<TH2F*>(fOutputContainer->Last()) ;
-    	h->GetXaxis()->SetTitle("Mass [GeV]");
-	h->GetYaxis()->SetTitle("Pt [GEV]");
+		// MIX +++++++++++++++++++++++++
 
-	fOutputContainer->Add(new TH2F("both_mpt"," Both cuts (CPV + Disp) ", 100, massMin, massMax, PtMult, PtMin, PtMax ) );
-	h = static_cast<TH2F*>(fOutputContainer->Last()) ;
-    	h->GetXaxis()->SetTitle("Mass [GeV]");
-	h->GetYaxis()->SetTitle("Pt [GEV]");
+		fOutputContainer->Add(new TH2F(Form("mix_%s_mpt", spid[ipid].Data() ), "Mix", 
+											binMult, massMin, massMax, 
+											ptMult, ptMin, ptMax ) );
+		h = static_cast<TH2F*>(fOutputContainer->Last()) ;
+		h->Sumw2();
+	    h->GetXaxis()->SetTitle("Mass [GeV]");
+		h->GetYaxis()->SetTitle("Pt [GEV]");
+	}
 
-
-	// MIX +++++++++++++++++++++++++
-
-	fOutputContainer->Add(new TH2F("mix_all_mpt"," Only standard cut's (mix)", 100, massMin, massMax, PtMult, PtMin, PtMax ) );
-	h = static_cast<TH2F*>(fOutputContainer->Last()) ;
-    	h->GetXaxis()->SetTitle("Mass [GeV]");
-	h->GetYaxis()->SetTitle("Pt [GEV]");
-
-	fOutputContainer->Add(new TH2F("mix_cpv_mpt"," CPV cut (mix)", 100, massMin, massMax, PtMult, PtMin, PtMax ) );
-	h = static_cast<TH2F*>(fOutputContainer->Last()) ;
-    	h->GetXaxis()->SetTitle("Mass [GeV]");
-	h->GetYaxis()->SetTitle("Pt [GEV]");
-
-	fOutputContainer->Add(new TH2F("mix_disp_mpt"," Disp cut (mix)", 100, massMin, massMax, PtMult, PtMin, PtMax ) );
-	h = static_cast<TH2F*>(fOutputContainer->Last()) ;
-    	h->GetXaxis()->SetTitle("Mass [GeV]");
-	h->GetYaxis()->SetTitle("Pt [GEV]");
-
-	fOutputContainer->Add(new TH2F("mix_both_mpt"," Both cuts (CPV + Disp) (mix)", 100, massMin, massMax, PtMult, PtMin, PtMax ) );
-	h = static_cast<TH2F*>(fOutputContainer->Last()) ;
-    	h->GetXaxis()->SetTitle("Mass [GeV]");
-	h->GetYaxis()->SetTitle("Pt [GEV]");
-
-
-	// Calibration Pi0peak {REAL}
+	// Calibration PHOS Module Pi0peak {REAL}
 	for(Int_t mod=1; mod<4; mod++){
-	  fOutputContainer->Add(new TH2F(Form("both%d_mpt",mod),Form("Both cuts (CPV + Disp) mod[%d]",mod), 100, massMin, massMax, PtMult, PtMin, PtMax ) );
+	  fOutputContainer->Add(new TH2F(Form(  "both%d_mpt",mod), Form("Both cuts (CPV + Disp) mod[%d]",mod), 
+	  										binMult, massMin, massMax, 
+	  										ptMult, ptMin, ptMax ) );
 	  h = static_cast<TH2F*>(fOutputContainer->Last()) ;
-    	  h->GetXaxis()->SetTitle("Mass [GeV]");
+	  h->Sumw2();
+	  h->GetXaxis()->SetTitle("Mass [GeV]");
 	  h->GetYaxis()->SetTitle("Pt [GEV]");
 
- 	  // Calibration Pi0peak {MIX}
-	  fOutputContainer->Add(new TH2F(Form("mix_both%d_mpt",mod),Form(" Both cuts (CPV + Disp) mod[%d]",mod), 100, massMin, massMax, PtMult, PtMin, PtMax ) );
-	  h = static_cast<TH2F*>(fOutputContainer->FindObject("mix_both1_mpt")) ;
-    	  h->GetXaxis()->SetTitle("Mass [GeV]");
+ 	  // Calibration PHOS Module Pi0peak {MIX}
+	  fOutputContainer->Add(new TH2F(Form(	"mix_both%d_mpt",mod), Form(" Both cuts (CPV + Disp) mod[%d]",mod), 
+	  										binMult, massMin, massMax, 
+	  										ptMult, ptMin, ptMax ) );
+	  h = static_cast<TH2F*>(fOutputContainer->Last()) ;
+	  h->Sumw2();
+   	  h->GetXaxis()->SetTitle("Mass [GeV]");
 	  h->GetYaxis()->SetTitle("Pt [GEV]");
 	  
 	}
-
-	// cout<<"  OK!"<<endl;
 }
+
 //_______________________________________________________________________________
-void AliPHOSCorrelations::SetHistPtAssoc()
+void AliPHOSCorrelations::SetHistPtAssoc(Int_t  ptMult, Double_t ptMin, Double_t ptMax)
 {
 	Double_t pi = TMath::Pi();
 	
-	Int_t PhiMult  =  100;
-	Float_t PhiMin =  -0.5*pi;
-	Float_t PhiMax =  1.5*pi;
-	Int_t EtaMult  =  20; 
-	Float_t EtaMin = -1.;
-	Float_t EtaMax =  1.;
-	Int_t PtTrigMult = 100;
-	Float_t PtTrigMin = 0.;
-	Float_t PtTrigMax = 20.;
+	Int_t PhiMult  =  100		;
+	Float_t PhiMin =  -0.5*pi	;
+	Float_t PhiMax =  1.5*pi	;
+	Int_t EtaMult  =  20		; 
+	Float_t EtaMin = -1.		;
+	Float_t EtaMax =  1.		;
 
 	TString spid[4]={"all","cpv","disp","both"} ;
 	
 	for (int i = 0; i<fAssocBins.GetSize()-1; i++){
 	  for(Int_t ipid=0; ipid<4; ipid++){
-		fOutputContainer->Add(new TH3F(Form("%s_ptphieta_ptAssoc_%3.1f",spid[ipid].Data(),fAssocBins.At(i+1)),
-					       Form("%s_ptphieta_ptAssoc_%3.1f",spid[ipid].Data(),fAssocBins.At(i+1)), 
-					       PtTrigMult, PtTrigMin, PtTrigMax,  PhiMult, PhiMin, PhiMax, EtaMult, EtaMin, EtaMax ) );
+	  	// Main histo for ConsiderPi0s().
+		fOutputContainer->Add(new TH3F(Form("%s_ptphieta_ptAssoc_%3.1f", spid[ipid].Data(), fAssocBins.At(i+1)),
+					       Form("%s_ptphieta_ptAssoc_%3.1f", spid[ipid].Data(), fAssocBins.At(i+1)), 
+					       ptMult, ptMin, ptMax,  
+					       PhiMult, PhiMin, PhiMax, 
+					       EtaMult, EtaMin, EtaMax ) );
 		TH3F * h = static_cast<TH3F*>(fOutputContainer->Last()) ;
-    		h->GetXaxis()->SetTitle("Pt_{triger} [GEV]");
+		h->Sumw2();
+    	h->GetXaxis()->SetTitle("Pt_{triger} [GEV]");
 		h->GetYaxis()->SetTitle("#phi [rad]");
 		h->GetZaxis()->SetTitle("#eta");
 
-		fOutputContainer->Add(new TH3F(Form("mix_%s_ptphieta_ptAssoc_%3.1f",spid[ipid].Data(),fAssocBins.At(i+1)),
-					       Form("Mixed %s_ptphieta_ptAssoc_%3.1f",spid[ipid].Data(),fAssocBins.At(i+1)),
-					       PtTrigMult, PtTrigMin, PtTrigMax,  PhiMult, PhiMin, PhiMax, EtaMult, EtaMin, EtaMax ) );
+		// For ConsiderPi0s_MBSelection().
+		fOutputContainer->Add(new TH3F(Form("%s_ptphieta_ptAssoc_%3.1f_MB", spid[ipid].Data(), fAssocBins.At(i+1)),
+					       Form("%s_ptphieta_ptAssoc_%3.1f", spid[ipid].Data(), fAssocBins.At(i+1)), 
+					       ptMult, ptMin, ptMax,  
+					       PhiMult, PhiMin, PhiMax, 
+					       EtaMult, EtaMin, EtaMax ) );
 		h = static_cast<TH3F*>(fOutputContainer->Last()) ;
-    		h->GetXaxis()->SetTitle("Pt_{triger} [GEV]");
+		h->Sumw2();
+    	h->GetXaxis()->SetTitle("Pt_{triger} [GEV]");
 		h->GetYaxis()->SetTitle("#phi [rad]");
 		h->GetZaxis()->SetTitle("#eta");
 
+		// For Mixed events in ConsiderTracksMix()
+		fOutputContainer->Add(new TH3F(Form("mix_%s_ptphieta_ptAssoc_%3.1f", spid[ipid].Data(), fAssocBins.At(i+1)),
+					       Form("Mixed %s_ptphieta_ptAssoc_%3.1f", spid[ipid].Data(), fAssocBins.At(i+1)),
+					       ptMult, ptMin, ptMax,  
+					       PhiMult, PhiMin, PhiMax, 
+					       EtaMult, EtaMin, EtaMax ) );
+		h = static_cast<TH3F*>(fOutputContainer->Last()) ;
+		h->Sumw2();
+		h->GetXaxis()->SetTitle("Pt_{triger} [GEV]");
+		h->GetYaxis()->SetTitle("#phi [rad]");
+		h->GetZaxis()->SetTitle("#eta");
 	  }
 	}
 }
 
+//_______________________________________________________________________________
 void AliPHOSCorrelations::SetHistPHOSClusterMap()
 {
-	for(int i =  0; i<3; i++)
+	//  Cluster X/Z/E distribution.
+	for(int i =  0; i<5; i++)
 	{
-		//  Cluster X/Z/E distribution.
-		fOutputContainer->Add(new TH3F(Form("QA_cluXZE_mod%i", i+1),Form("PHOS Clusters XZE distribution of module %i", i+1), 100, 0, 100, 100, 0, 100, 100, 0, 10 ) );
+		fOutputContainer->Add(new TH3F( Form("QA_cluXZE_mod%i", i), Form("PHOS Clusters XZE distribution of module %i", i), 
+										70, 0, 70, 
+										60, 0, 60, 
+										200, 0, 20 ) );
 		TH3F *h = static_cast<TH3F*>(fOutputContainer->Last()) ;
-	    	h->GetXaxis()->SetTitle("X");
+	    h->GetXaxis()->SetTitle("X");
 		h->GetYaxis()->SetTitle("Z");
 		h->GetZaxis()->SetTitle("E");
 	}	
 }
+
 //_______________________________________________________________________________
 void AliPHOSCorrelations::UserExec(Option_t *) 
 {
 	// Main loop, called for each event analyze ESD/AOD 
 	// Step 0: Event Objects
-	LogProgress(0);
+    LogProgress(0);
+
 	fEvent = InputEvent();
 	if( ! fEvent ) 
 	{
@@ -421,30 +564,7 @@ void AliPHOSCorrelations::UserExec(Option_t *)
 		PostData(1, fOutputContainer);
 		return ;
 	}
-        
-	fEventESD = dynamic_cast<AliESDEvent*>(fEvent);
-	fEventAOD = dynamic_cast<AliAODEvent*>(fEvent);
-
-	{
-		FillHistogram("hTriggerPassedEvents",  0);
-
-		Bool_t isMB = (fEvent->GetTriggerMask() & (ULong64_t(1)<<1));
-		Bool_t isCentral = (fEvent->GetTriggerMask() & (ULong64_t(1)<<4));
-		Bool_t isSemiCentral = (fEvent->GetTriggerMask() & (ULong64_t(1)<<7));
-
-		if (isMB) FillHistogram("hTriggerPassedEvents",  2.);
-		if (isCentral) FillHistogram("hTriggerPassedEvents",  3.);
-		if (isSemiCentral) FillHistogram("hTriggerPassedEvents",  4.);
-	}
-
-	// For first event from data only:
-	if( fRunNumber<0)
-	{
-		if (fDebug >= 1) cout<<"Mean: "<< fMassInvMean << " Sigma: "<< fMassInvSigma
-					<<" Sigma Width: " <<fSigmaWidth <<endl;
-		if (!fSigmaWidth) FillHistogram("massWindow",  fMassInvMean, fMassInvSigma);
-		else FillHistogram("massWindow",  fMassInvMean, fMassInvSigma*fSigmaWidth);
-	}
+    LogProgress(1);
 
   	// Step 1(done once):  
 	if( fRunNumber != fEvent->GetRunNumber() )
@@ -453,16 +573,34 @@ void AliPHOSCorrelations::UserExec(Option_t *)
 		fInternalRunNumber = ConvertToInternalRunNumber(fRunNumber);
 		SetESDTrackCuts();
 	}
-	LogProgress(1);
+	LogProgress(2);
 
+	// Step 2: Preparation variables for new event
+    ZeroingVariables();
+
+	fEventESD = dynamic_cast<AliESDEvent*>(fEvent);
+	fEventAOD = dynamic_cast<AliAODEvent*>(fEvent);
+
+	// Get Event-Handler for the trigger information
+	fEventHandler= dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+	if (!fEventHandler) 
+	{
+		AliError("Could not get InputHandler");
+		PostData(1, fOutputContainer);
+		return; // Reject!
+	}
+    LogProgress(3);
+
+    // Step 3: Event trigger selection
+    // fPHOSEvent, fMBEvent
 	if( RejectTriggerMaskSelection() ) 
 	{
 		PostData(1, fOutputContainer);
 		return; // Reject!
 	}
-  	LogProgress(2);
+    LogProgress(4);
 
-	// Step 2: Vertex
+	// Step 4: Vertex
   	// fVertex, fVertexVector, fVtxBin
 	SetVertex();
 	if( RejectEventVertex() ) 
@@ -470,9 +608,9 @@ void AliPHOSCorrelations::UserExec(Option_t *)
     		PostData(1, fOutputContainer);
     		return; // Reject!
   	}
-  	LogProgress(3);
+    LogProgress(5);
 
-  	// Step 3: Centrality
+  	// Step 5: Centrality
   	// fCentrality, fCentBin
 	SetCentrality(); 
 	if( RejectEventCentrality() ) 
@@ -480,64 +618,80 @@ void AliPHOSCorrelations::UserExec(Option_t *)
     		PostData(1, fOutputContainer);
     		return; // Reject!
   	}
-  	FillHistogram("hCentrality",fCentrality,fInternalRunNumber-0.5) ;
-	LogProgress(4);
+    LogProgress(6);
+    if(fPHOSEvent) 	FillHistogram( "hCentralityTriggerEvent",	fCentrality, fInternalRunNumber-0.5 ) ;
+    if(fMBEvent) 	FillHistogram( "hCentralityMBEvent",		fCentrality, fInternalRunNumber-0.5 ) ;
+    FillHistogram( "hCentrality", fCentrality, fInternalRunNumber-0.5 ) ;
 
-	// Step 4: Reaction Plane
+	// Step 6: Reaction Plane
   	// fHaveTPCRP, fRP, fRPV0A, fRPV0C, fRPBin
 	EvalReactionPlane();  
   	fEMRPBin = GetRPBin(); 
-  	LogProgress(5);
   	
-	// Step 5: Event Photons (PHOS Clusters) selectionMakeFlat
+	// Step 7: Event Photons (PHOS Clusters) selection
 	SelectPhotonClusters();
-	if( ! fCaloPhotonsPHOS->GetEntriesFast() )	LogSelection(kHasPHOSClusters, fInternalRunNumber);
-	LogProgress(6);
+	if( ! fCaloPhotonsPHOS->GetEntriesFast() )	
+		LogSelection(kHasPHOSClusters, fInternalRunNumber);
 
-	// Step 6: Event Associated particles (TPC Tracks) selection
+	// Step 8: Event Associated particles (TPC Tracks) selection
 	SelectAccosiatedTracks();
-	
 	if( ! fTracksTPC->GetEntriesFast() )	
-	  LogSelection(kHasTPCTracks, fInternalRunNumber);
+        LogSelection(kHasTPCTracks, fInternalRunNumber);
 	LogSelection(kTotalSelected, fInternalRunNumber);
-	LogProgress(7);
 
-	// Step 7: Consider pi0 (photon/cluster) pairs.
-	ConsiderPi0s();
-	
-	// Step 8; Mixing
-	ConsiderPi0sMix();
+    // Step 9: Fill TPC's track mask
+    FillTrackEtaPhi();
+    LogProgress(7);
 
-	ConsiderTracksMix();
-	//this->ConsiderPi0sTracksMix(); // Read how make mix events!
-	LogProgress(8);
 
-	// Step 9: Make TPC's mask
-	FillTrackEtaPhi();
-	LogProgress(9);
+    // Step 10: Extract one most energetic pi0 candidate in this event.   
+    SelectTriggerPi0ME();
 
-	// Step 10: Update lists
-	UpdatePhotonLists();
-    	UpdateTrackLists();
-  
-	LogProgress(10);
+    // Step 11: Start correlation analysis.
+    if (fPHOSEvent)
+    {
+        ConsiderPi0s(); // Consider the most energetic Pi0 in this event with all tracks of this event.
+        LogProgress(8);
+    }
+    
+    if(fPeriod == kLHC13 && fMBEvent) 
+    {
+    	ConsiderPi0s_MBSelection();
+    	LogProgress(9);
+    }
 
+    // Filling mixing histograms:
+    if (fMBEvent)
+    {
+        ConsiderPi0sMix();      // Make background for extracting pi0 mass.
+        ConsiderTracksMix();  // Compare only one most energetic pi0 candidate with all tracks from previous MB events.
+
+        UpdatePhotonLists();    // Updating pull of photons.
+        UpdateTrackLists();     // Updating pull of tracks.
+        LogProgress(10);
+    }
+
+    LogProgress(14);
 	// Post output data.
 	PostData(1, fOutputContainer);
 }
+
 //_______________________________________________________________________________
 void AliPHOSCorrelations::SetESDTrackCuts()
 {
-  if( fEventESD ) {
-    // Create ESD track cut
-    fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts() ;
-    //fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
-    fESDtrackCuts->SetRequireTPCRefit(kTRUE);
-  }
+	if( fEventESD ) 
+	{
+		// Create ESD track cut
+		fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts() ;
+		fESDtrackCuts->SetRequireTPCRefit(kTRUE) ;
+	}
 }
+
 //_______________________________________________________________________________
-Int_t AliPHOSCorrelations::ConvertToInternalRunNumber(Int_t run){
-  if(fPeriod== kLHC11h){
+Int_t AliPHOSCorrelations::ConvertToInternalRunNumber(Int_t run)
+{
+	// Manual setup using data from logbook.
+	if(fPeriod== kLHC11h){
 				switch(run)
 				{
 					case  170593 : return 179 ;
@@ -1047,47 +1201,103 @@ Int_t AliPHOSCorrelations::ConvertToInternalRunNumber(Int_t run){
 					AliWarning("Period not defined");
 				}
 				return 1;
-			}
+}
 
 //_______________________________________________________________________________
 Bool_t AliPHOSCorrelations::RejectTriggerMaskSelection()
 {
+	// Analyse trigger event and reject it if it not intresting.
 	const Bool_t REJECT = true;
 	const Bool_t ACCEPT = false;
 
-	// No need to check trigger mask if no selection is done
-	if( kNoSelection == fInternalTriggerSelection )
-	return ACCEPT;
+	if( fDebug >= 2 )
+		AliInfo( Form("Event passed offline phos trigger test: %s ", fEvent->GetFiredTriggerClasses().Data() ) );
 
-	Bool_t reject = REJECT;
+	Int_t physSelMask = fEventHandler->IsEventSelected();
 
-	Bool_t isMB = (fEvent->GetTriggerMask() & (ULong64_t(1)<<1));
-	Bool_t isCentral = (fEvent->GetTriggerMask() & (ULong64_t(1)<<4));
-	Bool_t isSemiCentral = (fEvent->GetTriggerMask() & (ULong64_t(1)<<7));
+	Bool_t isAny 		 = physSelMask & AliVEvent::kAny;
+
+	Bool_t isPHI1 		 = physSelMask & AliVEvent::kPHI1;
+	Bool_t isPHI7 		 = physSelMask & AliVEvent::kPHI7;
+	Bool_t isPHI8 		 = physSelMask & AliVEvent::kPHI8;
+	Bool_t isCentral 	 = physSelMask & AliVEvent::kCentral;
+	Bool_t isSemiCentral = physSelMask & AliVEvent::kSemiCentral;
+	Bool_t isPHOSPb 	 = physSelMask & AliVEvent::kPHOSPb;
+
+	Bool_t isMB 		 = physSelMask & AliVEvent::kMB;
+	Bool_t isINT7 		 = physSelMask & AliVEvent::kINT7;
+	Bool_t isAnyINT 	 = physSelMask & AliVEvent::kAnyINT;
+
+	FillHistogram("hTriggerPassedEvents", 0 );
+	// All input events
+	if ( isAny ) 		 FillHistogram("hTriggerPassedEvents",  1.) ;		
+
+	// PHOS events.
+	if ( isPHI1 ) 		 FillHistogram("hTriggerPassedEvents",  2. );	
+	if ( isPHI7 ) 		 FillHistogram("hTriggerPassedEvents",  3. );	
+	if ( isPHI8 ) 		 FillHistogram("hTriggerPassedEvents",  4. ); 
+	if ( isCentral ) 	 FillHistogram("hTriggerPassedEvents", 	5. );	
+	if ( isSemiCentral ) FillHistogram("hTriggerPassedEvents", 	6. ); 
+	if ( isPHOSPb ) 	 FillHistogram("hTriggerPassedEvents", 	7. );	
+
+	// MB events.
+	if ( isMB ) 		 FillHistogram("hTriggerPassedEvents", 	8. );		
+	if ( isINT7 ) 		 FillHistogram("hTriggerPassedEvents", 	9. );
+	if ( isAnyINT ) 	 FillHistogram("hTriggerPassedEvents", 10. );
 
 
-	if( kCentralInclusive == fInternalTriggerSelection
-	&& isCentral ) reject = ACCEPT; // accept event.
-	else if( kCentralExclusive == fInternalTriggerSelection
-	&& isCentral && !isSemiCentral && !isMB ) reject = ACCEPT; // accept event.
+	Bool_t isTriggerEvent ;
+	Bool_t isMIXEvent 	  ;
 
-	else if( kSemiCentralInclusive == fInternalTriggerSelection
-	&& isSemiCentral ) reject = ACCEPT; // accept event
-	else if( kSemiCentralExclusive == fInternalTriggerSelection
-	&& isSemiCentral && !isCentral && !isMB ) reject = ACCEPT; // accept event.
+	fPHOSEvent 	= false ;
+	fMBEvent 	= false ;
 
-	else if( kMBInclusive == fInternalTriggerSelection
-	&& isMB ) reject = ACCEPT; // accept event.
-	else if( kMBExclusive == fInternalTriggerSelection
-	&& isMB && !isCentral && !isSemiCentral ) reject = ACCEPT; // accept event.
-
-	if( REJECT == reject )
-	return REJECT;
-	else {
-	LogSelection(kInternalTriggerMaskSelection, fInternalRunNumber);
-	return ACCEPT;
+	if(fPeriod == kLHC13) 
+	{
+		isTriggerEvent 	=  isPHI7 || isINT7 ;
+		isMIXEvent		=  isINT7 ;
+		// Working:
+		// MB + TriggerPHOS --- in real.
+		// MB --- in mixed.
+		
+		if(isTriggerEvent || isMIXEvent)
+		{
+			if ( isTriggerEvent )
+			{
+				FillHistogram("hTriggerPassedEvents", 16.);
+				fPHOSEvent = true;
+			}
+			
+			if ( isMIXEvent )
+			{
+				FillHistogram("hTriggerPassedEvents", 17.);
+				fMBEvent = true;
+			}
+			return ACCEPT;
+		}
 	}
+
+	if(fPeriod == kLHC11h) 
+	{
+		isTriggerEvent = isCentral || isSemiCentral;
+		// Working:
+		// MB --- in real and mixed.
+
+		if ( isTriggerEvent)
+		{
+			FillHistogram("hTriggerPassedEvents", 16.);
+			FillHistogram("hTriggerPassedEvents", 17.);
+			fPHOSEvent 	= true;
+			fMBEvent 	= true;
+			return ACCEPT;
+		}
+	}
+
+	// other events
+	FillHistogram("hTriggerPassedEvents",  18.); 
+	return REJECT;
 }
+
 //_______________________________________________________________________________
 void AliPHOSCorrelations::SetVertex()
 {
@@ -1100,7 +1310,7 @@ void AliPHOSCorrelations::SetVertex()
 	}
 	else
 	{
-//		AliError("Event has 0x0 Primary Vertex, defaulting to origo");
+		//AliError("Event has 0x0 Primary Vertex, defaulting to origo");
 		fVertex[0] = 0;
 		fVertex[1] = 0;
 		fVertex[2] = 0;
@@ -1109,19 +1319,19 @@ void AliPHOSCorrelations::SetVertex()
 
 	fVtxBin=0 ;// No support for vtx binning implemented.
 }
+
 //_______________________________________________________________________________
 Bool_t AliPHOSCorrelations::RejectEventVertex()
 {
-  if( ! fEvent->GetPrimaryVertex() )
-    return true; // reject
+  if( ! fEvent->GetPrimaryVertex() ) return true; // reject
   LogSelection(kHasVertex, fInternalRunNumber);
  
-  if ( TMath::Abs(fVertexVector.z()) > fMaxAbsVertexZ )
-    return true; // reject
+  if ( TMath::Abs(fVertexVector.z()) > fMaxAbsVertexZ ) return true; // reject
   LogSelection(kHasAbsVertex, fInternalRunNumber);
  
   return false; // accept event.
 }
+
 //_______________________________________________________________________________
 void AliPHOSCorrelations::SetCentrality()
 {
@@ -1134,63 +1344,73 @@ void AliPHOSCorrelations::SetCentrality()
 		fCentrality = -1.;
 	}
 
-	//cout<<"fCentrality: "<<fCentrality<<endl;
-	//FillHistogram("hCentrality",fCentrality,fInternalRunNumber-0.5) ;
 	fCentBin = GetCentralityBin(fCentrality);
 }
+
 //_______________________________________________________________________________
 Bool_t AliPHOSCorrelations::RejectEventCentrality()
 {
-	if (fCentrality<fCentCutoffDown)
+	if (fCentrality<fCentralityLowLimit)
 		return true; //reject
-	if(fCentrality>fCentCutoffUp)
-		return true;
+	if(fCentrality>fCentralityHightLimit)
+		return true; //reject
 
 	return false;  // accept event.
 }
+
 //_______________________________________________________________________________
-void AliPHOSCorrelations::SetCentralityBinning(const TArrayD& edges, const TArrayI& nMixed){
-// Define centrality bins by their edges
-  for(int i=0; i<edges.GetSize()-1; ++i)
-    if(edges.At(i) > edges.At(i+1)) AliFatal("edges are not sorted");
-  if( edges.GetSize() != nMixed.GetSize()+1) AliFatal("edges and nMixed don't have appropriate relative sizes");
-		  
-  fCentEdges = edges;
-  fCentNMixed = nMixed;
+void AliPHOSCorrelations::SetCentralityBinning(const TArrayD& edges, const TArrayI& nMixed)
+{
+	// Define centrality bins by their edges
+	for(int i=0; i<edges.GetSize()-1; ++i)
+	{
+		if(edges.At(i) > edges.At(i+1)) AliFatal("edges are not sorted");
+		if( edges.GetSize() != nMixed.GetSize()+1) AliFatal("edges and nMixed don't have appropriate relative sizes");
+	  
+		fCentEdges = edges;
+		fCentNMixed = nMixed;
+	}
 }
+
 //_______________________________________________________________________________
-Int_t AliPHOSCorrelations::GetCentralityBin(Float_t centralityV0M){
-  int lastBinUpperIndex = fCentEdges.GetSize() -1;
-  if( centralityV0M > fCentEdges[lastBinUpperIndex] ) {
-    if( fDebug >= 1 )
-      AliWarning( Form("centrality (%f) larger then upper edge of last centrality bin (%f)!", centralityV0M, fCentEdges[lastBinUpperIndex]) );
-    return lastBinUpperIndex-1;
-  }
-  if( centralityV0M < fCentEdges[0] ) {
-    if( fDebug >= 1 )
-      AliWarning( Form("centrality (%f) smaller then lower edge of first bin (%f)!", centralityV0M, fCentEdges[0]) );
-    return 0;
-  }
-		  
-  fCentBin = TMath::BinarySearch<Double_t> ( GetNumberOfCentralityBins(), fCentEdges.GetArray(), centralityV0M );
-  return fCentBin;
+Int_t AliPHOSCorrelations::GetCentralityBin(Float_t centralityV0M)
+{
+	int lastBinUpperIndex = fCentEdges.GetSize() -1;
+	if( centralityV0M > fCentEdges[lastBinUpperIndex] ) 
+	{
+		if( fDebug >= 1 )
+			AliWarning( Form("centrality (%f) larger then upper edge of last centrality bin (%f)!", centralityV0M, fCentEdges[lastBinUpperIndex]) );
+		return lastBinUpperIndex-1;
+	}
+	if( centralityV0M < fCentEdges[0] ) 
+	{
+		if( fDebug >= 1 )
+		AliWarning( Form("centrality (%f) smaller then lower edge of first bin (%f)!", centralityV0M, fCentEdges[0]) );
+		return 0;
+	}
+
+	fCentBin = TMath::BinarySearch<Double_t> ( GetNumberOfCentralityBins(), fCentEdges.GetArray(), centralityV0M );
+	return fCentBin;
 }
+
 //_______________________________________________________________________________
-void AliPHOSCorrelations::SetCentralityBorders (double down , double up ){
-  if (down < 0. || up > 100 || up<=down)
-     AliError( Form("Warning. Bad value of centrality borders. Setting as default: fCentCutoffDown=%2.f, fCentCutoffUp=%2.f",fCentCutoffDown,fCentCutoffUp) );
-  else{
-    fCentCutoffDown = down; 
-    fCentCutoffUp = up;
-    AliInfo( Form("Centrality border was set as fCentCutoffDown=%2.f, fCentCutoffUp=%2.f",fCentCutoffDown,fCentCutoffUp) );
-  }
+void AliPHOSCorrelations::SetCentralityBorders (double downLimit , double upLimit )
+{
+	if (downLimit < 0. || upLimit > 100 || upLimit<=downLimit)
+		AliError( Form("Warning. Bad value of centrality borders. Setting as default: fCentralityLowLimit=%2.f, fCentralityHightLimit=%2.f", fCentralityLowLimit, fCentralityHightLimit) );
+	else
+	{
+	fCentralityLowLimit 	= downLimit; 
+	fCentralityHightLimit 	= upLimit;
+	AliInfo( Form("Centrality border was set as fCentralityLowLimit=%2.f, fCentralityHightLimit=%2.f", fCentralityLowLimit, fCentralityHightLimit ) );
+	}
 }
 
 //_______________________________________________________________________________
 void AliPHOSCorrelations::EvalReactionPlane()
 {
 	// assigns: fHaveTPCRP and fRP
-	// also does a few histogram fills
+	// also does RP histogram fill
 
 	AliEventplane *eventPlane = fEvent->GetEventplane();
 	if( ! eventPlane ) { AliError("Event has no event plane"); return; }
@@ -1204,6 +1424,7 @@ void AliPHOSCorrelations::EvalReactionPlane()
 	}
 	else
 	{
+		//reaction plain defined
 		fHaveTPCRP = kTRUE;
 	}
 
@@ -1214,22 +1435,22 @@ void AliPHOSCorrelations::EvalReactionPlane()
 	
 	FillHistogram("phiRPflat",fRP,fCentrality) ;
 }
+
 //_______________________________________________________________________________
 Int_t AliPHOSCorrelations::GetRPBin()
 {
 	Double_t averageRP;
-	averageRP = fRP ; 	// If possible, it is better to have EP bin from TPC
-				// to have similar events for miximng (including jets etc)   (fRPV0A+fRPV0C+fRP) /3.;
-
+	averageRP = fRP ; 		// If possible, it is better to have EP bin from TPC
+							// to have similar events for miximng (including jets etc)   (fRPV0A+fRPV0C+fRP) /3.;
 	fEMRPBin = Int_t(fNEMRPBins*(averageRP)/TMath::Pi());
-
-	if( fEMRPBin > (Int_t)fNEMRPBins-1 ) 
+	if(fEMRPBin > (Int_t)fNEMRPBins-1) 
 		fEMRPBin = fNEMRPBins-1 ;
 	else 
-	if(fEMRPBin < 0) fEMRPBin=0;
+		if(fEMRPBin < 0) fEMRPBin=0;
 
 	return fEMRPBin;
 }
+
 //_______________________________________________________________________________
 void AliPHOSCorrelations::SelectPhotonClusters()
 {
@@ -1238,50 +1459,18 @@ void AliPHOSCorrelations::SelectPhotonClusters()
 	// clear (or create) array for holding events photons/clusters
 	if(fCaloPhotonsPHOS)
 		fCaloPhotonsPHOS->Clear();
-	else{
+	else
+	{
 		fCaloPhotonsPHOS = new TClonesArray("AliCaloPhoton",200);
+		fCaloPhotonsPHOS->SetOwner();
 	}
 
-	Int_t nclu = fEvent->GetNumberOfCaloClusters() ;
-	Int_t inPHOS=0 ;
-	for (Int_t i=0;  i<nclu;  i++) {
+	Int_t inPHOS = 0 ;
+
+	for (Int_t i = 0;  i < fEvent->GetNumberOfCaloClusters();  i++) 
+	{
 		AliVCluster *clu = fEvent->GetCaloCluster(i);	
-		if ( !clu->IsPHOS() ) continue ;
-		if( clu->E()< fMinClusterEnergy) continue; // reject cluster
-
-
-		Double_t distBC=clu->GetDistanceToBadChannel();
-		if(distBC<fMinBCDistance)
-			continue ;
-
-		if(clu->GetNCells() < fMinNCells) continue ;
-		if(clu->GetM02() < fMinM02)   continue ;
-
-		if(fTOFCutEnabled){
-			Double_t tof = clu->GetTOF();
-			if(TMath::Abs(tof) > fTOFCut ) continue ;
-		}
-		TLorentzVector lorentzMomentum;
-		Double_t ecore = clu->GetMCEnergyFraction();
-
-		clu->GetMomentum(lorentzMomentum, fVertex);
-		lorentzMomentum*=ecore/lorentzMomentum.E() ;
-
-		if(inPHOS>=fCaloPhotonsPHOS->GetSize()){
-			fCaloPhotonsPHOS->Expand(inPHOS+50) ;
-		}
-        
-		AliCaloPhoton * ph =new((*fCaloPhotonsPHOS)[inPHOS]) AliCaloPhoton(lorentzMomentum.X(),lorentzMomentum.Py(),lorentzMomentum.Z(),lorentzMomentum.E());
-		inPHOS++ ;
-		ph->SetCluster(clu);
-
-		Float_t cellId=clu->GetCellAbsId(0) ;
-		Int_t mod = (Int_t)TMath:: Ceil(cellId/(56*64) ) ; 
-		ph->SetModule(mod) ;
-
-		ph->SetNCells(clu->GetNCells());
-		ph->SetDispBit(clu->GetDispersion()<2.5) ;
-		ph->SetCPVBit(clu->GetEmcCpvDistance()>2.) ;
+		if (!clu->IsPHOS() || clu->E()< fMinClusterEnergy) continue; // reject cluster
 
 		Float_t  position[3];
 		clu->GetPosition(position);
@@ -1291,10 +1480,49 @@ void AliPHOSCorrelations::SelectPhotonClusters()
 		Int_t modPHOS  = relId[0] ;
 		Int_t cellXPHOS = relId[2];
 		Int_t cellZPHOS = relId[3] ;
+		
+		Double_t distBC=clu->GetDistanceToBadChannel();
+		if(distBC<fMinBCDistance) 			continue ; // reject cluster
+		if(clu->GetNCells() < fMinNCells) 	continue ; // reject cluster
+		if(clu->GetM02() < fMinM02)   		continue ; // reject cluster
+
+		if(fTOFCutEnabled)
+		{
+			Double_t tof = clu->GetTOF();
+			if(TMath::Abs(tof) > fTOFCut ) continue ;
+		}
+		TLorentzVector lorentzMomentum;
+		Double_t ecore = clu->GetCoreEnergy();
+		//Double_t ecore = clu->E();
+
+		FillHistogram("hCluEvsClu", clu->E(), clu->GetNCells()) ; 
+
+		Double_t origo[3] = {0,0,0}; // don't rely on event vertex, assume (0,0,0) ?
+		clu->GetMomentum(lorentzMomentum, origo);
+	
+		if(inPHOS>=fCaloPhotonsPHOS->GetSize())
+			fCaloPhotonsPHOS->Expand(inPHOS+50) ;
+        
+		AliCaloPhoton * ph =new((*fCaloPhotonsPHOS)[inPHOS]) AliCaloPhoton(lorentzMomentum.X(), lorentzMomentum.Py(), lorentzMomentum.Z(), lorentzMomentum.E());
+		inPHOS++ ;
+		ph->SetCluster(clu);
+
+		// Manual PHOS module number calculation
+		/*Float_t cellId=clu->GetCellAbsId(0) ;
+		Int_t mod = (Int_t)TMath:: Ceil(cellId/(56*64) ) ; */
+		ph->SetModule(modPHOS) ;
+
+		lorentzMomentum*=ecore/lorentzMomentum.E() ;
+
+		//ph->SetNCells(clu->GetNCells());
+		ph->SetMomV2(&lorentzMomentum) ;
+		ph->SetDispBit(clu->GetDispersion() < 2.5) ;
+		ph->SetCPVBit(clu->GetEmcCpvDistance() > 2.) ;
 
 		FillHistogram(Form("QA_cluXZE_mod%i", modPHOS), cellXPHOS, cellZPHOS, lorentzMomentum.E() ) ;
 	}
 }
+
 //_______________________________________________________________________________
 void AliPHOSCorrelations::SelectAccosiatedTracks()
 {
@@ -1305,217 +1533,314 @@ void AliPHOSCorrelations::SelectAccosiatedTracks()
 	{
 		fTracksTPC = new TClonesArray("TLorentzVector",12000);
 	}
-	Int_t iTracks=0 ;
-	for (Int_t i=0; i<fEvent->GetNumberOfTracks(); i++) 
+	Int_t iTracks = 0 ;
+	for (Int_t i = 0; i < fEvent->GetNumberOfTracks(); i++) 
 	{
 	  
 		AliVParticle *track = fEvent->GetTrack(i);
-	        	if(fEventESD){
-  			if(!SelectESDTrack((AliESDtrack*)track)) continue ;
+    	if(fEventESD)
+    	{
+				if(!SelectESDTrack((AliESDtrack*)track)) continue ; // reject track
 		}
-		else{
-  			if(!SelectAODTrack((AliAODTrack*)track)) continue ;		  
+		else
+		{
+  			if(!SelectAODTrack((AliAODTrack*)track)) continue ;	// reject track  
 		}
+
 		Double_t px = track->Px();
 		Double_t py = track->Py();
-		Double_t pz = track->Pz() ;
-		Double_t e = track->E() ;
+		Double_t pz = track->Pz();
+		Double_t e  = track->E() ;
 		
-		if(iTracks>=fTracksTPC->GetSize())
-                  		fTracksTPC->Expand(iTracks+50) ;
+		if(iTracks >= fTracksTPC->GetSize())
+            fTracksTPC->Expand(iTracks+50) ;
 		
-		new((*fTracksTPC)[iTracks]) TLorentzVector(px, py, pz,e);
+		new((*fTracksTPC)[iTracks]) TLorentzVector(px, py, pz, e);
 		iTracks++ ;
 	}
 }
+
+//_______________________________________________________________________________
+void AliPHOSCorrelations::SelectTriggerPi0ME()
+{
+    const Int_t nPHOS = fCaloPhotonsPHOS->GetEntriesFast() ;
+    for(Int_t i1 = 0; i1 < nPHOS-1; i1++)
+    {
+        AliCaloPhoton * ph1 = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
+        for (Int_t i2 = i1+1; i2 < nPHOS; i2++)
+        {
+            AliCaloPhoton * ph2=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i2) ;
+            TLorentzVector p12 = *ph1 + *ph2;
+
+            Double_t phiTrigger = p12.Phi() ;
+            Double_t etaTrigger = p12.Eta() ;
+
+            Double_t m 	 = p12.M() ;
+            Double_t pt  = p12.Pt();
+            Double_t eff = 1./GetEfficiency(pt);
+            int mod1 = ph1->Module() ;
+            int mod2 = ph2->Module() ;
+
+            FillHistogram("clu_phieta", 	  phiTrigger, etaTrigger );
+            FillHistogram("clusingle_phieta", ph1->Phi(), ph1->Eta() );
+            FillHistogram("clusingle_phieta", ph2->Phi(), ph2->Eta() );
+
+            FillHistogram("all_mpt", m, pt, eff );
+      
+            if ( ph1->IsCPVOK() && ph2->IsCPVOK() )
+            {
+                FillHistogram("cpv_mpt", m, pt, eff );
+	        }
+
+            if ( ph1->IsDispOK() && ph2->IsDispOK() )
+            {
+                FillHistogram("disp_mpt", m, pt, eff );
+                if ( ph1->IsCPVOK() && ph2->IsCPVOK() )
+                {
+                    FillHistogram("both_mpt", m, pt, eff );
+                    if(mod1 == mod2) // for each module
+                    {
+                        FillHistogram(Form("both%d_mpt", mod1), m, pt, eff );
+                    }
+                }
+            }
+
+            if(!TestMass(m,pt)) continue; //reject this pair
+
+            Int_t modCase = GetModCase(mod1, mod2);
+
+            //Now we choosing most energetic pi0.
+            TestPi0ME(kPidAll, p12, modCase);
+            if ( ph1->IsCPVOK() && ph2->IsCPVOK() )
+                TestPi0ME(kPidCPV, p12, modCase);
+            if ( ph1->IsDispOK() && ph2->IsDispOK() )
+            {
+                TestPi0ME(kPidDisp, p12, modCase);
+                if ( ph1->IsCPVOK() && ph2->IsCPVOK() )
+                    TestPi0ME(kPidBoth, p12, modCase);
+            }
+        }
+    }
+}
+
 //_______________________________________________________________________________
 void AliPHOSCorrelations::ConsiderPi0s()
 {
-
-  const Int_t nPHOS=fCaloPhotonsPHOS->GetEntriesFast() ;
-  for(Int_t i1=0; i1 < nPHOS-1; i1++){
-     AliCaloPhoton * ph1=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
-     for (Int_t i2=i1+1; i2<nPHOS; i2++){
-	AliCaloPhoton * ph2=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i2) ;
-	TLorentzVector p12  = *ph1  + *ph2;
-
-	Double_t phiTrigger=p12.Phi() ;
-	Double_t etaTrigger=p12.Eta() ;
-
-	Double_t m=p12.M() ;
-	Double_t pt=p12.Pt() ;
-	int mod1 = ph1->Module() ;
-	int mod2 = ph2->Module() ;
-	
-
-	FillHistogram("clu_phieta",phiTrigger,etaTrigger);
-	FillHistogram("clusingle_phieta",ph1->Phi(), ph1->Eta());
-	FillHistogram("clusingle_phieta",ph2->Phi(), ph2->Eta());
-
-
-	FillHistogram("all_mpt",m, pt);
-				
- 	if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
-			FillHistogram("cpv_mpt",m, pt);
-
-	if ( ph1->IsDispOK() && ph2->IsDispOK() ){
-           FillHistogram("disp_mpt",m, pt);
-	   if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) {
-     	      FillHistogram("both_mpt",m, pt);
-	      if(mod1 == mod2) FillHistogram(Form("both%d_mpt",mod1),m, pt);
-    	   }
+	TString spid[4] = {"all","cpv","disp","both"} ;
+    // Counting number of trigger particles.
+	for (int ipid = 0; ipid < 4; ipid++)
+	{
+		if (fMEExists[ipid])
+            FillHistogram( Form("nTrigger_%s", spid[ipid].Data()), GetMEPt(ipid), 1./GetEfficiency(GetMEPt(ipid)) );
 	}
-		  	
-	if(!TestMass(m,pt)) continue;
 
-     	// Take track's angles and compare with cluster's angles.
-	for(Int_t i3=0; i3<fTracksTPC->GetEntriesFast(); i3++){
-	   TLorentzVector * track = (TLorentzVector*)fTracksTPC->At(i3);
+    // Take track's angles and compare with trigger's angles.
+    for(Int_t i3 = 0; i3 < fTracksTPC->GetEntriesFast(); i3++)
+    {
+		TLorentzVector * track = (TLorentzVector*)fTracksTPC->At(i3);
 
-	   Double_t phiAssoc = track->Phi();
-	   Double_t etaAssoc = track->Eta();
-	   Double_t ptAssoc = track->Pt();
+		Double_t phiAssoc = track->Phi();
+		Double_t etaAssoc = track->Eta();
+		Double_t ptAssoc  = track->Pt() ;
 
-	   Double_t dPhi = phiAssoc - phiTrigger;
-	   while (dPhi > 1.5*TMath::Pi()) dPhi-=2*TMath::Pi();
-                while (dPhi < -.5*TMath::Pi()) dPhi+=2*TMath::Pi();
+		Double_t ptAssocBin = GetAssocBin(ptAssoc) ;
+		Double_t dPhi(0.), dEta(0.);
 
-   	   Double_t dEta = etaAssoc - etaTrigger; 			
-	   
-	   Double_t ptAssocBin=GetAssocBin(ptAssoc) ;
-	   FillHistogram(Form("all_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta);			
-	   if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
-	     FillHistogram(Form("cpv_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta);			
-
- 	   if ( ph1->IsDispOK() && ph2->IsDispOK() ){
-	     FillHistogram(Form("disp_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta);			
-	     if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
-	       FillHistogram(Form("both_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta);			
-   	   }
+		for (int ipid = 0; ipid < 4; ipid++)
+		{
+            if (GetMEExists(ipid))
+			{
+                dPhi = GetMEPhi(ipid) - phiAssoc;
+				while (dPhi > 1.5*TMath::Pi()) dPhi -= 2*TMath::Pi();
+				while (dPhi < -.5*TMath::Pi()) dPhi += 2*TMath::Pi();
+                dEta = GetMEEta(ipid) - etaAssoc;
+                FillHistogram( Form("%s_ptphieta_ptAssoc_%3.1f", spid[ipid].Data(), ptAssocBin), GetMEPt(ipid), dPhi, dEta, 1./GetEfficiency(GetMEPt(ipid)) );
+			}	
+		}
 	} 
-     }
-   }
+}
+
+//_______________________________________________________________________________
+void AliPHOSCorrelations::ConsiderPi0s_MBSelection()
+{
+	TString spid[4] = {"all","cpv","disp","both"} ;
+    // Counting number of trigger particles.
+	for (int ipid = 0; ipid < 4; ipid++)
+	{
+		if (GetMEExists(ipid))
+		{
+			
+            FillHistogram( Form("nTrigger_%s_MB", spid[ipid].Data()), GetMEPt(ipid), 1./GetEfficiency(GetMEPt(ipid)) );
+		}
+	}
+
+    // Take track's angles and compare with trigger's angles.
+    for(Int_t i3 = 0; i3 < fTracksTPC->GetEntriesFast(); i3++)
+    {
+		TLorentzVector * track = (TLorentzVector*)fTracksTPC->At(i3);
+
+		Double_t phiAssoc = track->Phi();
+		Double_t etaAssoc = track->Eta();
+		Double_t ptAssoc  = track->Pt();
+
+		Double_t ptAssocBin = GetAssocBin(ptAssoc) ;
+		Double_t dPhi(0.), dEta(0.);
+
+		for (int ipid = 0; ipid < 4; ipid++)
+		{
+            if (GetMEExists(ipid))
+			{
+                dPhi = GetMEPhi(ipid) - phiAssoc;
+				while (dPhi > 1.5*TMath::Pi()) dPhi -= 2*TMath::Pi();
+				while (dPhi < -.5*TMath::Pi()) dPhi += 2*TMath::Pi();
+                dEta = GetMEEta(ipid) - etaAssoc;
+                FillHistogram(Form("%s_ptphieta_ptAssoc_%3.1f_MB", spid[ipid].Data(), ptAssocBin),  GetMEPt(ipid), dPhi, dEta, 1./GetEfficiency(GetMEPt(ipid)) );
+			}	
+		}
+	} 
 }
 
 //_______________________________________________________________________________
 void AliPHOSCorrelations::ConsiderPi0sMix()
 {
-  TList * arrayList = GetCaloPhotonsPHOSList(fVtxBin, fCentBin, fEMRPBin);
-  for(Int_t evi=0; evi<arrayList->GetEntries();evi++){
-     TClonesArray * mixPHOS = static_cast<TClonesArray*>(arrayList->At(evi));
-     for (Int_t i1=0; i1 < fCaloPhotonsPHOS->GetEntriesFast(); i1++){
-	AliCaloPhoton * ph1 = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
-	for(Int_t i2=0; i2<mixPHOS->GetEntriesFast(); i2++){
-	  AliCaloPhoton * ph2 = (AliCaloPhoton*)mixPHOS->At(i2) ;
-          TLorentzVector p12  = *ph1  + *ph2;
-	  Double_t m=p12.M() ;
- 	  Double_t pt=p12.Pt() ;
-	  int mod1 = ph1->Module() ;
-	  int mod2 = ph2->Module() ;
+	TList * arrayList = GetCaloPhotonsPHOSList(fVtxBin, fCentBin, fEMRPBin);
+	for(Int_t evi = 0; evi < arrayList->GetEntries(); evi++)
+	{
+		TClonesArray * mixPHOS = static_cast<TClonesArray*>(arrayList->At(evi));
+		for (Int_t i1 = 0; i1 < fCaloPhotonsPHOS->GetEntriesFast(); i1++)
+		{
+			AliCaloPhoton * ph1 = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
+			for(Int_t i2 = 0; i2 < mixPHOS->GetEntriesFast(); i2++)
+			{
+				AliCaloPhoton * ph2 = (AliCaloPhoton*)mixPHOS->At(i2) ;
+				TLorentzVector p12 = *ph1 + *ph2;
+				Double_t m 	 = p12.M() ;
+				Double_t pt  = p12.Pt() ;
+				Double_t eff = 1./GetEfficiency(pt);
+				
+				int mod1 = ph1->Module() ;
+				int mod2 = ph2->Module() ;
 
-          FillHistogram("mix_all_mpt", m, pt);
-	  if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
-	    FillHistogram("mix_cpv_mpt",m, pt);
-	    if ( ph1->IsDispOK() && ph2->IsDispOK() ){
-	      FillHistogram("mix_disp_mpt",m, pt);
-	      if ( ph1->IsCPVOK() && ph2->IsCPVOK() ){
-		 FillHistogram("mix_both_mpt",m, pt);
-		 if (mod1 == mod2) FillHistogram(Form("mix_both%d_mpt",mod1),m, pt);
-	      }
-	    }
+				FillHistogram("mix_all_mpt", m, pt, eff);
+				if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
+				{
+					FillHistogram("mix_cpv_mpt",m, pt, eff);
+				}
+				if ( ph1->IsDispOK() && ph2->IsDispOK() )
+				{
+					FillHistogram("mix_disp_mpt",m, pt, eff);
+					if ( ph1->IsCPVOK() && ph2->IsCPVOK() )
+					{
+						FillHistogram("mix_both_mpt",m, pt, eff);
+						if (mod1 == mod2) // for each module
+						{
+							FillHistogram(Form("mix_both%d_mpt",mod1),m, pt, eff);
+						}
+					}
+				}
+			}
+		}
 	}
-     }
-  }
 }
+
 //_______________________________________________________________________________
 void AliPHOSCorrelations::ConsiderTracksMix()
 {
-  TList * arrayList = GetTracksTPCList(fVtxBin, fCentBin, fEMRPBin);
-  for (Int_t i1=0; i1 < fCaloPhotonsPHOS->GetEntriesFast(); i1++) {
-    AliCaloPhoton * ph1=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
-    for (Int_t i2=0; i2<fCaloPhotonsPHOS->GetEntriesFast(); i2++){
-      AliCaloPhoton * ph2=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i2) ;
-      TLorentzVector p12  = *ph1  + *ph2;
-      Double_t phiTrigger=p12.Phi() ;
-      Double_t etaTrigger=p12.Eta() ;
+	TString spid[4] = {"all","cpv","disp","both"} ;
 
-      Double_t m=p12.M() ;
-      Double_t pt=p12.Pt() ;
+	TList * arrayList = GetTracksTPCList(fVtxBin, fCentBin, fEMRPBin);
 
-      if(!TestMass(m,pt)) continue;
-      for(Int_t evi=0; evi<arrayList->GetEntries();evi++){
- 	TClonesArray * mixTracks = static_cast<TClonesArray*>(arrayList->At(evi));
-	for(Int_t i3=0; i3<mixTracks->GetEntriesFast(); i3++){
-  	  TLorentzVector * track = (TLorentzVector*)mixTracks->At(i3);		
+	for(Int_t evi = 0; evi < arrayList->GetEntries();evi++)
+	{
+		TClonesArray * mixTracks = static_cast<TClonesArray*>(arrayList->At(evi));
+		for(Int_t i3 = 0; i3 < mixTracks->GetEntriesFast(); i3++)
+		{
+			TLorentzVector * track = (TLorentzVector*)mixTracks->At(i3);		
 
-  	  Double_t phiAssoc = track->Phi();
- 	  Double_t etaAssoc = track->Eta();
-	  Double_t ptAssoc =  track->Pt();
+			Double_t phiAssoc = track->Phi();
+			Double_t etaAssoc = track->Eta();
+			Double_t ptAssoc  =  track->Pt();
 
-          Double_t ptAssocBin=GetAssocBin(ptAssoc) ;
-	
-	  Double_t dPhi = phiAssoc - phiTrigger;
-	  while (dPhi > 1.5*TMath::Pi()) dPhi-=2*TMath::Pi();
-	  while (dPhi < -.5*TMath::Pi()) dPhi+=2*TMath::Pi();
+			Double_t ptAssocBin = GetAssocBin(ptAssoc) ;
 
-  	  Double_t dEta = etaAssoc - etaTrigger; 			
-	  
-	  FillHistogram(Form("mix_all_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta);				
- 	  if ( ph1->IsCPVOK() && ph2->IsCPVOK() )
-	    FillHistogram(Form("mix_cpv_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta);				
+            Double_t ptTrigger(0.);
 
-	  if ( ph1->IsDispOK() && ph2->IsDispOK() ){
-	    FillHistogram(Form("mix_disp_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta);				
-	    if ( ph1->IsCPVOK() && ph2->IsCPVOK() )
-	      FillHistogram(Form("mix_both_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta);				
-	  }
+			Double_t dPhi(0.), dEta(0.);
+
+			for (int ipid = 0; ipid < 4; ipid++)
+			{
+                if (GetMEExists(ipid))
+				{
+                    dPhi = GetMEPhi(ipid) - phiAssoc;
+					while (dPhi > 1.5*TMath::Pi()) dPhi -= 2*TMath::Pi();
+					while (dPhi < -.5*TMath::Pi()) dPhi += 2*TMath::Pi();
+                    dEta = GetMEEta(ipid) - etaAssoc;
+                    ptTrigger = GetMEPt(ipid);
+
+                    FillHistogram(Form("mix_%s_ptphieta_ptAssoc_%3.1f", spid[ipid].Data(), ptAssocBin), ptTrigger, dPhi, dEta, 1./GetEfficiency(ptTrigger));
+                }	
+			}
+		}
+	} 
+}
+
+//_______________________________________________________________________________
+TList* AliPHOSCorrelations::GetCaloPhotonsPHOSList(UInt_t vtxBin, UInt_t centBin, UInt_t rpBin)
+{
+	int offset = vtxBin * GetNumberOfCentralityBins() * fNEMRPBins + centBin * fNEMRPBins + rpBin;
+	if( fCaloPhotonsPHOSLists->At(offset) ) 
+	{
+		// list exists
+		TList* list = dynamic_cast<TList*> (fCaloPhotonsPHOSLists->At(offset));
+		return list;
 	}
-     } 
-   }
-  }
+	else
+	{ 
+		// no list for this bin has been created, yet
+		TList* list = new TList();
+		fCaloPhotonsPHOSLists->AddAt(list, offset);
+		return list;
+	}
 }
-//_______________________________________________________________________________
-TList* AliPHOSCorrelations::GetCaloPhotonsPHOSList(UInt_t vtxBin, UInt_t centBin, UInt_t rpBin){
 
-  int offset = vtxBin * GetNumberOfCentralityBins() * fNEMRPBins + centBin * fNEMRPBins + rpBin;
-  if( fCaloPhotonsPHOSLists->At(offset) ) {
-    TList* list = dynamic_cast<TList*> (fCaloPhotonsPHOSLists->At(offset));
-    return list;
-  }
-  else{ // no list for this bin has been created, yet
-    TList* list = new TList();
-    fCaloPhotonsPHOSLists->AddAt(list, offset);
-    return list;
-  }
-}
 //_______________________________________________________________________________
-TList* AliPHOSCorrelations::GetTracksTPCList(UInt_t vtxBin, UInt_t centBin, UInt_t rpBin){
-		
-  int offset = vtxBin * GetNumberOfCentralityBins() * fNEMRPBins + centBin * fNEMRPBins + rpBin;
-  if( fTracksTPCLists->At(offset) ) { // list exists
-     TList* list = dynamic_cast<TList*> (fTracksTPCLists->At(offset));
-     return list;
-  }
-  else { // no list for this bin has been created, yet
-    TList* list = new TList();
-    fTracksTPCLists->AddAt(list, offset);
-    return list;
-  }
+TList* AliPHOSCorrelations::GetTracksTPCList(UInt_t vtxBin, UInt_t centBin, UInt_t rpBin)
+{		
+	int offset = vtxBin * GetNumberOfCentralityBins() * fNEMRPBins + centBin * fNEMRPBins + rpBin;
+	if( fTracksTPCLists->At(offset) ) 
+	{ 
+		// list exists
+		TList* list = dynamic_cast<TList*> (fTracksTPCLists->At(offset));
+		return list;
+	}
+	else 
+	{ 
+		// no list for this bin has been created, yet
+		TList* list = new TList();
+		fTracksTPCLists->AddAt(list, offset);
+		return list;
+	}
 }
+
 //_______________________________________________________________________________
-Double_t AliPHOSCorrelations::GetAssocBin(Double_t pt){
-  //Calculates bin 
-  for(Int_t i=1; i<fAssocBins.GetSize(); i++){
-    if(pt>fAssocBins.At(i-1) && pt<fAssocBins.At(i))
-      return fAssocBins.At(i) ;
-  }
-  return fAssocBins.At(fAssocBins.GetSize()-1) ;
+Double_t AliPHOSCorrelations::GetAssocBin(Double_t pt) const
+{
+	//Calculates bin of associated particle pt.
+	for(Int_t i=1; i<fAssocBins.GetSize(); i++)
+	{
+		if(pt>fAssocBins.At(i-1) && pt<fAssocBins.At(i))
+			return fAssocBins.At(i) ;
+	}
+
+	return fAssocBins.At(fAssocBins.GetSize()-1) ;
 }
+
 //_______________________________________________________________________________
 void AliPHOSCorrelations::FillTrackEtaPhi()
 {
 	// Distribution TPC's tracks by angles.
-	for (Int_t i1=0; i1<fTracksTPC->GetEntriesFast(); i1++){
+	for (Int_t i1=0; i1<fTracksTPC->GetEntriesFast(); i1++)
+	{
 		TLorentzVector * track = (TLorentzVector*)fTracksTPC->At(i1);
 		FillHistogram( "track_phieta", track->Phi(), track->Eta() );
 	}
@@ -1524,168 +1849,399 @@ void AliPHOSCorrelations::FillTrackEtaPhi()
 //_______________________________________________________________________________
 void AliPHOSCorrelations::UpdatePhotonLists()
 {
-  //Now we either add current events to stack or remove
-  //If no photons in current event - no need to add it to mixed
+	//Now we either add current events to stack or remove
+	//If no photons in current event - no need to add it to mixed
 
-  TList * arrayList = GetCaloPhotonsPHOSList(fVtxBin, fCentBin, fEMRPBin);
-  if( fDebug >= 2 )
-    AliInfo( Form("fCentBin=%d, fCentNMixed[]=%d",fCentBin,fCentNMixed[fCentBin]) );
-  if(fCaloPhotonsPHOS->GetEntriesFast()>0)
-  {
-    arrayList->AddFirst(fCaloPhotonsPHOS) ;
-    fCaloPhotonsPHOS=0x0;
-    if(arrayList->GetEntries() > fCentNMixed[fCentBin])
-    { // Remove redundant events
-      TClonesArray * tmp = static_cast<TClonesArray*>(arrayList->Last()) ;
-      arrayList->RemoveLast() ;
-      delete tmp; 
-    }
-  }
+	TList * arrayList = GetCaloPhotonsPHOSList(fVtxBin, fCentBin, fEMRPBin);
+	if( fDebug >= 2 )
+		AliInfo( Form("fCentBin=%d, fCentNMixed[]=%d",fCentBin,fCentNMixed[fCentBin]) );
+	if(fCaloPhotonsPHOS->GetEntriesFast()>0)
+	{
+		arrayList->AddFirst(fCaloPhotonsPHOS) ;
+		fCaloPhotonsPHOS=0x0;
+		if(arrayList->GetEntries() > fCentNMixed[fCentBin])
+		{ 
+			// Remove redundant events
+			TClonesArray * tmp = static_cast<TClonesArray*>(arrayList->Last()) ;
+			arrayList->RemoveLast() ;
+			delete tmp; 
+		}
+	}
 }
+
 //_______________________________________________________________________________
 void AliPHOSCorrelations::UpdateTrackLists()
 {
-  //Now we either add current events to stack or remove
-  //If no photons in current event - no need to add it to mixed
+	//Now we either add current events to stack or remove
+	//If no photons in current event - no need to add it to mixed
 
-  TList * arrayList = GetTracksTPCList(fVtxBin, fCentBin, fEMRPBin);
+	TList * arrayList = GetTracksTPCList(fVtxBin, fCentBin, fEMRPBin);
 
-  if( fDebug >= 2 )
-    AliInfo( Form("fCentBin=%d, fCentNMixed[]=%d",fCentBin,fCentNMixed[fCentBin]) );
-  if(fTracksTPC->GetEntriesFast()>0)
-  {
-
-    arrayList->AddFirst(fTracksTPC) ;
-    fTracksTPC=0x0;
-    if(arrayList->GetEntries() > fCentNMixed[fCentBin])
-    { // Remove redundant events
-      TClonesArray * tmp = static_cast<TClonesArray*>(arrayList->Last()) ;
-      arrayList->RemoveLast() ;
-      delete tmp; 
-    }
-  }
+	if( fDebug >= 2 )
+		AliInfo( Form("fCentBin=%d, fCentNMixed[]=%d",fCentBin,fCentNMixed[fCentBin]) );
+	if(fTracksTPC->GetEntriesFast()>0)
+	{
+		arrayList->AddFirst(fTracksTPC) ;
+		fTracksTPC=0x0;
+		if(arrayList->GetEntries() > fCentNMixed[fCentBin])
+		{ 
+			// Remove redundant events
+			TClonesArray * tmp = static_cast<TClonesArray*>(arrayList->Last()) ;
+			arrayList->RemoveLast() ;
+			delete tmp; 
+		}
+	}
 }
+
 //_______________________________________________________________________________
 Bool_t AliPHOSCorrelations::SelectESDTrack(AliESDtrack * t) const
-// Estimate if this track can be used for the RP calculation. If all right - return "TRUE"
 {
+	// Estimate if this track can be used for the RP calculation. If all right - return "TRUE"
 	Float_t pt=t->Pt();
-	if(pt<0.5 || pt>10.) return kFALSE ;
-	if(fabs( t->Eta() )>0.8) return kFALSE;
-	if(!fESDtrackCuts->AcceptTrack(t)) return kFALSE ;
+	if(pt<0.5 || pt>20.) 				return kFALSE ;
+	if(fabs( t->Eta() )>0.8) 			return kFALSE;
+	if(!fESDtrackCuts->AcceptTrack(t)) 	return kFALSE ;
 	return kTRUE ;
 }
+
 //_______________________________________________________________________________
 Bool_t AliPHOSCorrelations::SelectAODTrack(AliAODTrack * t) const
-// Estimate if this track can be used for the RP calculation. If all right - return "TRUE"
 {
+	// Estimate if this track can be used for the RP calculation. If all right - return "TRUE"
 	Float_t pt=t->Pt();
-	if(pt<0.5 || pt>10.) return kFALSE ;
+	if(pt<0.5 || pt>20.) 	 return kFALSE ;
 	if(fabs( t->Eta() )>0.8) return kFALSE;
+
 	if(fCheckHibridGlobal == kOnlyHibridTracks)
 	{
 		if(!t->IsHybridGlobalConstrainedGlobal()) 
 			return kFALSE ;
 	}
-
+	else
 	if (fCheckHibridGlobal == kWithOutHibridTracks)
 	{
 		if(t->IsHybridGlobalConstrainedGlobal()) 
 			return kFALSE ;
 	}
+	else
+	if(fCheckHibridGlobal == kAllTracks)
+		return kTRUE;
 
 	return kTRUE ;
-}
-//_______________________________________________________________________________
-void AliPHOSCorrelations::SetPeriod(Period period)
-{
-	fPeriod = period;
 }
 
 //_______________________________________________________________________________
 void AliPHOSCorrelations::LogProgress(int step)
-// Fill "step by step" hist
 {
-  //FillHistogram("hSelEvents", step+0.5, internalRunNumber-0.5);
-  FillHistogram("hTotSelEvents", step+0.5);
+	// Fill "step by step" hist
+	FillHistogram("hTotSelEvents", step+0.5);
 }
+
 //_______________________________________________________________________________
 void AliPHOSCorrelations::LogSelection(int step, int internalRunNumber)
 {
-  // the +0.5 is not realy neccisarry, but oh well... -henrik
-  FillHistogram("hSelEvents", step+0.5, internalRunNumber-0.5);
-  //FillHistogram("hTotSelEvents", step+0.5);
-}
+	// the +0.5 is not realy neccisarry, but oh well... -henrik
+	FillHistogram("hSelEvents", step+0.5, internalRunNumber-0.5);
+ }
+
 //_______________________________________________________________________________
-Bool_t AliPHOSCorrelations::TestMass(Double_t m, Double_t /*pt*/)
+Bool_t AliPHOSCorrelations::TestMass(Double_t m, Double_t pt)
 {
 	//Check if mair in pi0 peak window
 	//To make pT-dependent 
-	if (fSigmaWidth == 0.)
-		return (fMassInvMean-fMassInvSigma<m && m<fMassInvMean+fMassInvSigma) ; 
+	if (!fSigmaWidth)	// Default big window 
+	{
+		FillHistogram("massWindow", fMassInvMean, fMassInvSigma);
+        if(fMassInvMean-fMassInvSigma<m && m<fMassInvMean+fMassInvSigma)
+        {
+            FillHistogram("massWindowPass", 1);
+            return true;
+        }
+        else
+        {
+            FillHistogram("massWindowPass", 2);
+            return false;
+        }
+	}
 	else
-		return (fMassInvMean-fMassInvSigma*fSigmaWidth<m && m<fMassInvMean+fMassInvSigma*fSigmaWidth) ; 
+	{
+		// Parametrization
+		FillHistogram("massWindow", MassMeanFunktion(pt), MassSigmaFunktion(pt)*fSigmaWidth);
+        if ( MassMeanFunktion(pt)-MassSigmaFunktion(pt)*fSigmaWidth<m && m<MassMeanFunktion(pt)+MassSigmaFunktion(pt)*fSigmaWidth )
+        {
+            FillHistogram("massWindowPass", 3);
+            return true;
+        }
+        else
+        {
+            FillHistogram("massWindowPass", 4);
+            return false;
+        }
+	}
 } 
+
 //_______________________________________________________________________________
+Double_t AliPHOSCorrelations::MassMeanFunktion(Double_t &pt) const
+{
+	// Parametrization mean of mass window
+	return ( fMassMean[0]*pt + fMassMean[1] );
+}
+
+//_______________________________________________________________________________
+Double_t AliPHOSCorrelations::MassSigmaFunktion(Double_t &pt) const
+{
+	// Parametrization sigma of mass window
+	return ( -1*fMassSigma[3]*TMath::Sqrt(fMassSigma[0]*pt + fMassSigma[1]) + fMassSigma[2] );
+}
+
+//_____________________________________________________________________________
 void AliPHOSCorrelations::FillHistogram(const char * key,Double_t x)const
 {
-  //FillHistogram
-  TH1 * hist = dynamic_cast<TH1*>(fOutputContainer->FindObject(key)) ;
-  if(hist)
-    hist->Fill(x) ;
-  else
-    AliError(Form("can not find histogram (of instance TH1) <%s> ",key)) ;
+	//FillHistogram
+	TH1 * hist = dynamic_cast<TH1*>(fOutputContainer->FindObject(key)) ;
+	if(hist)
+		hist->Fill(x) ;
+	else
+		AliError(Form("can not find histogram (of instance TH1) <%s> ",key)) ;
 }
-//_______________________________________________________________________________
-void AliPHOSCorrelations::FillHistogram(const char * key, Double_t x, Double_t y) const
-{
-  //Fills 2D histograms with key
-  TObject * obj = fOutputContainer->FindObject(key);
- 
-  TH2 * th2 = dynamic_cast<TH2*> (obj);
-  if(th2) {
-    th2->Fill(x, y) ;
-    return;
-  }
 
-  AliError(Form("can not find histogram (of instance TH2) <%s> ",key)) ;
-}
-//_______________________________________________________________________________
-void AliPHOSCorrelations::FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const
+//_____________________________________________________________________________
+void AliPHOSCorrelations::FillHistogram(const char * key,Double_t x,Double_t y)const
 {
-  //Fills 3D histograms with key
-  TObject * obj = fOutputContainer->FindObject(key);
- 
-  TH3 * th3 = dynamic_cast<TH3*> (obj);
-  if(th3) {
-    th3->Fill(x, y, z) ;
-    return;
-  }
- 
-  AliError(Form("can not find histogram (of instance TH3) <%s> ",key)) ;
+	//FillHistogram
+	TH1 * th1 = dynamic_cast<TH1*> (fOutputContainer->FindObject(key));
+	if(th1)
+		th1->Fill(x, y) ;
+	else
+		AliError(Form("can not find histogram (of instance TH1) <%s> ",key)) ;
 }
+
+//_____________________________________________________________________________
+void AliPHOSCorrelations::FillHistogram(const char * key,Double_t x,Double_t y, Double_t z) const
+{
+	//Fills 1D histograms with key
+	TObject * obj = fOutputContainer->FindObject(key);
+
+	TH2 * th2 = dynamic_cast<TH2*> (obj);
+	if(th2) 
+	{
+		th2->Fill(x, y, z) ;
+		return;
+	}
+
+	TH3 * th3 = dynamic_cast<TH3*> (obj);
+	if(th3) 
+	{
+		th3->Fill(x, y, z) ;
+		return;
+	}
+
+	AliError(Form("can not find histogram (of instance TH2) <%s> ",key)) ;
+}
+
+//_____________________________________________________________________________
+void AliPHOSCorrelations::FillHistogram(const char * key,Double_t x,Double_t y, Double_t z, Double_t w) const
+{
+	//Fills 1D histograms with key
+	TObject * obj = fOutputContainer->FindObject(key);
+
+	TH3 * th3 = dynamic_cast<TH3*> (obj);
+	if(th3) 
+	{
+		th3->Fill(x, y, z, w) ;
+		return;
+	}
+
+	AliError(Form("can not find histogram (of instance TH3) <%s> ",key)) ;
+}
+
 //_____________________________________________________________________________
 void AliPHOSCorrelations::SetGeometry()
 {
-  // Initialize the PHOS geometry
-  //Init geometry
-  if(!fPHOSGeo){
-     AliOADBContainer geomContainer("phosGeo");
-     geomContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
-     TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(fRunNumber,"PHOSRotationMatrixes");
-     fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
-     for(Int_t mod=0; mod<5; mod++) {
-        if(!matrixes->At(mod)) {
-          if( fDebug )
-            AliInfo(Form("No PHOS Matrix for mod:%d, geo=%p\n", mod, fPHOSGeo));
-          continue;
-        }
-        else {
-             fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
-             if( fDebug >1 )
-               AliInfo(Form("Adding PHOS Matrix for mod:%d, geo=%p\n", mod, fPHOSGeo));
-        }
-     }
-  } 
+	// Initialize the PHOS geometry
+	//Init geometry
+	if(!fPHOSGeo)
+	{
+		AliOADBContainer geomContainer("phosGeo");
+		geomContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
+		TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(fRunNumber,"PHOSRotationMatrixes");
+		fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
+		for(Int_t mod=0; mod<5; mod++) 
+		{
+			if(!matrixes->At(mod)) 
+			{
+				if( fDebug )
+				AliInfo(Form("No PHOS Matrix for mod:%d, geo=%p\n", mod, fPHOSGeo));
+				continue;
+			}
+			else 
+			{
+				fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
+				if( fDebug >1 )
+					AliInfo(Form("Adding PHOS Matrix for mod:%d, geo=%p\n", mod, fPHOSGeo));
+			}
+		}
+	} 
 }
- 
+
+//_____________________________________________________________________________
+Double_t AliPHOSCorrelations::GetEfficiency(Double_t x) const 
+{
+	//Efficiency for Both2core only!
+	if (!fUseEfficiency)
+		return 1.;
+
+	Double_t e =1.;
+ 	// From 0 to 5 - 11h for different centrality.
+ 	/*0: 0-5%
+	1: 5-10%
+	2: 10-20%
+	3: 20-40%
+	4: 40-60%
+	5: 60-80%
+	6: 0-20%
+	7: 0-10%*/
+	Double_t par0[9] = {-798863,      339.714, 	 6407.1,  -457.778, 1283.65, -117.075, -19.3764,       0, 		0	};
+	Double_t par1[9] = {-799344,      -1852.1, 	3326.29,  -384.229, 504.046,  562.608,  130.518,       0, 		0	};
+	Double_t par2[9] = {-858904,     -1923.28,  5350.74,  -568.946, 945.497,  419.647,  101.911,       0, 		0	};
+	Double_t par3[9] = {-795652,  	 -1495.97,  2926.46,  -357.804, 478.961,  551.127,   128.86,       0, 		0	};
+	Double_t par4[9] = {-891951,  	   279626,	-123110,  -5464.75, 27470.8,   283264,  15355.1,  192762, 44828.6	};
+	Double_t par5[9] = {-1.1094e+06, -986.915,  2127.71,  -268.908, 375.594,  380.791,  89.4053,       0,       0	};
+	// Double_t par6[7] = {4.86106e+09, 4.47013e+08, -1.48079e+09, 1.47233e+08, -2.62356e+08, -1.00639e+08, -2.45629e+07, 0, 0};
+	// Double_t par7[7] = {-1.36243e+06, -26011.1, 135838, -12161.3, 24956.8, 4985.4, 1285.57, 0, 0};
+
+ 	// 8 bin for pPb13 and 0-100%
+	Double_t par8[9] = {6.87095e+06, 8.36553e+06, -3.29572e+06, 2.18688e+06, -739490, 521666, 106661, 0, 0};
+	 	
+	 
+	Double_t* pFitPoint;
+
+	if(fPeriod == kLHC11h)
+	{
+		if(x < 1.) x = 1.; 
+
+		if (fCentrality <= 5)  						pFitPoint = &par0[0];
+		if (fCentrality > 5 && fCentrality <= 10) 	pFitPoint = &par1[0];
+		if (fCentrality > 10 && fCentrality <= 20) 	pFitPoint = &par2[0];
+		if (fCentrality > 20 && fCentrality <= 40) 	pFitPoint = &par3[0];
+		if (fCentrality > 40 && fCentrality <= 60) 	pFitPoint = &par4[0];
+		if (fCentrality > 60) 						pFitPoint = &par5[0];
+
+		Double_t pFit[9];
+		for (int i = 0; i < 9; ++i)
+	 	{
+	 		pFit[i] = *(pFitPoint+i);
+	 	}
+
+		if (fCentrality > 40 && fCentrality <= 60)
+			e = TMath::Exp(-(((((1.+(pFit[1]*x))+(pFit[2]*(x*x)))+(pFit[5]*(x*(x*x))))+(pFit[7]*(x*(x*(x*x)))))/((((pFit[3]*x)+(pFit[4]*(x*x)))+(pFit[6]*(x*(x*x))))+(pFit[8]*(x*(x*(x*x))))))) ;
+		else
+			e = TMath::Exp(-((((1.+(pFit[1]*x))+(pFit[2]*(x*x)))+(pFit[5]*(x*(x*x))))/(((pFit[3]*x)+(pFit[4]*(x*x)))+(pFit[6]*(x*(x*x)))))) ;
+	}
+	else
+	if( fPeriod == kLHC13 ) 
+	{
+		pFitPoint = &par8[0];
+		Double_t pFit[9];
+		for( int i = 0; i < 9; i++ )
+	 	{
+	 		pFit[i] = *(pFitPoint+i);
+	 	}
+
+		e = TMath::Exp(-((((pFit[0]+(pFit[1]*x))+(pFit[2]*(x*x)))+(pFit[5]*(x*(x*x))))/(((1.+(pFit[3]*x))+(pFit[4]*(x*x)))+(pFit[6]*(x*(x*x)))))) ;
+	}
+	else
+	{
+		// No case
+		AliWarning(Form("No efficiensy choise. Return 1"));
+		e = 1.;
+	}
+
+	return e;
+	// return 1.; // For test.
+}
+
+//_____________________________________________________________________________
+Int_t AliPHOSCorrelations::GetModCase(Int_t &mod1, Int_t &mod2) const 
+{
+	// Return modules pair namber.
+	if(mod1 == mod2)
+	{
+		if(mod1 == 1) return 1;
+		if(mod1 == 2) return 2;
+		if(mod1 == 3) return 3;
+	}
+	else
+	{
+		if(mod1 == 1 || mod2 == 1)
+			if(mod1 == 2 || mod2 == 2)
+				return 12;
+
+		if(mod1 == 1 || mod2 == 1)
+			if(mod1 == 3 || mod2 == 3)
+				return 13;
+		if(mod1 == 2 || mod2 == 2)
+			if(mod1 == 3 || mod2 == 3)
+				return 23;
+	}
+
+	AliError(Form("No choise for mod1 = %i, mod2 = %i", mod1, mod2));
+	return 1;
+}
+
+//_____________________________________________________________________________
+void AliPHOSCorrelations::TestPi0ME(Int_t ipid, TLorentzVector p12, Int_t modCase)
+{
+	Double_t phiTrigger = p12.Phi() ;
+	Double_t etaTrigger = p12.Eta() ;
+	Double_t pt 		= p12.Pt() ;
+
+    if ( GetMEExists(ipid) )
+    {
+        if ( pt >= GetMEPt(ipid) )
+        {
+            SetMEPt(ipid,pt);
+            SetMEPhi(ipid, phiTrigger);
+            SetMEEta(ipid, etaTrigger);
+            SetMEModCase(ipid, modCase);
+        }
+    }
+    else
+    {
+        SetMEPt(ipid,pt);
+        SetMEPhi(ipid, phiTrigger);
+        SetMEEta(ipid, etaTrigger);
+        SetMEModCase(ipid, modCase);
+        SetMEExists(ipid);
+    }
+}
+
+//_____________________________________________________________________________
+void AliPHOSCorrelations::ZeroingVariables()
+{
+	// Set Phi, Eta, pT, modNumber andtrigger variable of moust energetic trigger particle to zero.
+	for (int i = 0; i < 4; ++i)
+	{
+		fMEExists[i] = false;
+		fMEPhi[i] = fMEEta[i] = fMEPt[i] = -99;
+		fMEModCase[i] = 1;
+	}
+}
+
+//_____________________________________________________________________________
+void AliPHOSCorrelations::SetMassMeanParametrs(Double_t par[2])                                      
+{ 
+	for (int i = 0; i < 2; ++i)
+	{
+		fMassMean[i] = par[i] ;  
+	}                  
+} 
+
+//_____________________________________________________________________________
+void AliPHOSCorrelations::SetMassSigmaParametrs(Double_t par[4])                                   
+{ 
+	for (int i = 0; i < 4; ++i)
+	{
+		fMassSigma[i] = par[i] ;    
+	}                  
+}

@@ -202,8 +202,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   TCanvas *c1 = new TCanvas(CanvasName.Data(),CanvasName.Data());
   c1->cd();
   
-  Int_t centBinMaxLoop = kCentBinMax;
-  if ( !isHeavyIon ) centBinMaxLoop = 1;
+  Int_t nCentBin = ( isHeavyIon ) ? kCentBinMax : 1;
   TString selectionCent;
 	       
   Int_t *colorTab = new Int_t[triggersB->GetEntriesFast()];
@@ -219,7 +218,6 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   for ( Int_t i = 0; i < triggersB->GetEntriesFast(); i++ ) colorInd->AddAt(colorTab[i],i); 
   
   Int_t nTrig = triggersB->GetEntriesFast();
-  Int_t nCentBin = kCentBinMax;
 
   TObjArray trigNoPS(nTrig*nCentBin);
   TObjArray trigWithPS(nTrig*nCentBin);
@@ -245,7 +243,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   cout<<Form("Processing for %d triggers...",triggersB->GetEntriesFast()-1)<<endl;
     
   //loop on centrality
-  for ( Int_t iCentBin = 0; iCentBin < centBinMaxLoop; iCentBin++){
+  for ( Int_t iCentBin = 0; iCentBin < nCentBin; iCentBin++){
     selectionCent = kCentBinName[iCentBin];
 		
     //Loop on trigger (last is all triggers)
@@ -377,7 +375,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     TString currTrigName = ( (TObjString*) triggersShortName->At(i) )->GetString();
     TDirectoryFile *dirFile = new TDirectoryFile( currTrigName.Data(),currTrigName.Data(),"",(TDirectory*)rootFileOut->GetMotherDir() );
     dirTrigger->AddLast( dirFile );
-    for( Int_t j = 0; j < centBinMaxLoop; j++) {
+    for( Int_t j = 0; j < nCentBin; j++) {
       TString centName = kCentLegendNameShort[j];
       TDirectoryFile *dirFileCent = new TDirectoryFile( centName.Data(),centName.Data(),"",dirFile );
       dirCent->AddLast( dirFileCent );
@@ -510,7 +508,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   TCanvas* cTrackMultB;
  	
   //loop over centrality bins
-  for ( Int_t iCentBin = 0; iCentBin < centBinMaxLoop; iCentBin++){
+  for ( Int_t iCentBin = 0; iCentBin < nCentBin; iCentBin++){
     if ( isHeavyIon ){
       legendHeader = "for ";
       legendHeader += kCentLegendName[iCentBin];
@@ -521,7 +519,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       //skip sum of all triggers
       if( iTrig == (triggersB->GetEntriesFast()-1) ) continue;
 
-      ( (TDirectoryFile*) dirCent->At( iTrig*centBinMaxLoop+iCentBin ) )->cd();
+      ( (TDirectoryFile*) dirCent->At( iTrig*nCentBin+iCentBin ) )->cd();
 
       canvasName = "RatioTrackTypes_cent";
       canvasName += iCentBin;
@@ -751,8 +749,6 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     TString command;
     TGridResult *res = 0;
     
-    //cout<<irun<<" "<<run<<endl;
-
     if(isAlienFile){
       command = Form("find %s/ %s/%s", alienBaseDir.Data(), run.Data(), QAFileName);
       res = gGrid->Command(command);
@@ -764,9 +760,10 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     else{
       res = new TGridResult();	
       
-      command = Form("find %s/*%s -name %s | xargs", alienBaseDir.Data(), run.Data(), QAFileName);
+      command = Form("find %s/*%s/ -name %s | xargs", alienBaseDir.Data(), run.Data(), QAFileName);
       TString foundFiles = gSystem->GetFromPipe(command.Data());
       TObjArray* arr = foundFiles.Tokenize(" ");
+
       for ( Int_t iarr=0; iarr<arr->GetEntries(); iarr++ ) {
         res->Add(new TObjString(arr->At(iarr)->GetName()));
       }
@@ -776,11 +773,12 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     // Loop over 'find' results and get next LFN
     TIter nextmap(res);
     TObjString *objs = 0;
-
     TObject* currObj = 0x0;
-    
+    Bool_t searchRunNr = kFALSE;
+    if ( !isAlienFile && run.Contains("*") ) searchRunNr = kTRUE;
+
     //some checks
-    while ( ( currObj=nextmap() ) ){
+    while ( ( currObj = nextmap() ) ){
       
       // get the current file url
       if(isAlienFile){
@@ -794,14 +792,23 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
 	Error("PlotMuonQA","turl/obj not found for the run %s... SKIPPING", run.Data());
 	continue;
       }
-      
-      if ( ! selectRuns.Contains(Form("%i",run.Atoi())) ) continue;
-      
+    
+      if ( searchRunNr ) {
+	TString sobjs = objs->GetString();
+	Int_t index = sobjs.Index("terminateRuns");
+	sobjs.Remove(0,index);
+	sobjs.ReplaceAll("terminateRuns/","");
+	sobjs.ReplaceAll(Form("//%s",QAFileName),"");
+	if ( sobjs.IsDigit() ) run = sobjs;
+      }
+  
+      if ( run.IsDigit() && ! selectRuns.Contains(Form("%i",run.Atoi())) ) continue;
+
       // open the outfile for this run
       TFile *runFile = TFile::Open(objs->GetString());
       if (!runFile || ! runFile->IsOpen()) {
 	Error("PlotMuonQA","failed to open file: %s", objs->GetName());
-	continue;//return;
+	continue;
       }
       runFile->Cd("MUON_QA");
       
@@ -2142,7 +2149,7 @@ Bool_t GetTriggerLists(const char* triggerList, TString listFromContainer, TObjA
     for ( Int_t iTrig = 0; iTrig < triggersInContainer->GetEntriesFast(); iTrig++ ) {
       currTrigName = triggersInContainer->At(iTrig)->GetName();
       Bool_t keep = kFALSE;
-      if ( currTrigName.Contains("-B-") && ( ! ((TString) currTrigName(0)).CompareTo("C") ) && !currTrigName.Contains("WU") && !currTrigName.Contains("UP") && !currTrigName.Contains("SPI") && !currTrigName.Contains("PHI") && !currTrigName.Contains("EMC") && !currTrigName.Contains("ZED") && !currTrigName.Contains("TRUE") && !currTrigName.Contains("SHM") ) keep = kTRUE;//cyn: to be removed once the trigger filtering is carried out in the analysis task
+      if ( ( currTrigName.Contains("-B-") ||  currTrigName.Contains("-ABCE-") ) && ( ! ((TString) currTrigName(0)).CompareTo("C") ) && !currTrigName.Contains("WU") && !currTrigName.Contains("UP") && !currTrigName.Contains("SPI") && !currTrigName.Contains("PHI") && !currTrigName.Contains("EMC") && !currTrigName.Contains("ZED") && !currTrigName.Contains("TRUE") && !currTrigName.Contains("SHM")  && !currTrigName.Contains("TPC") && !currTrigName.Contains("BEAM") && !currTrigName.Contains("1A") && !currTrigName.Contains("1C")) keep = kTRUE;//cyn: to be removed once the trigger filtering is carried out in the analysis task
       if (!keep) continue;
       for (Int_t ibeam = 0; ibeam < nColumn; ibeam++) {
 	fullTriggerList[ibeam]->AddLast( new TObjString(currTrigName) );

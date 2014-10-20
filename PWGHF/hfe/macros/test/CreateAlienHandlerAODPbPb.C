@@ -28,7 +28,7 @@ AliAnalysisGrid* CreateAlienHandlerAODPbPb()
    // Set data search pattern
    //plugin->SetDataPattern("*/pass2/AOD043/*/AliAOD.root");
    //plugin->SetDataPattern("*/pass2/AOD039/*/AliAOD.root");
-   plugin->SetDataPattern("*/pass2/AOD115/*/AliAOD.root");
+   plugin->SetDataPattern("*/pass2/AOD145/*/AliAOD.root");
    // Data pattern for reconstructed data
    //   plugin->SetDataPattern("*AliAOD.root"); //esta linea sirve para pruebas
    plugin->SetRunPrefix("000");   // real data

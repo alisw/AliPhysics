@@ -50,6 +50,7 @@ AliAnalysisTaskPIDV0base::AliAnalysisTaskPIDV0base()
   , fMC(0x0)
   , fPIDResponse(0x0)
   , fV0KineCuts(0x0)
+  , fAnaUtils(0x0)
   , fIsPbpOrpPb(kFALSE)
   , fUsePhiCut(kFALSE)
   , fTPCcutType(kNoCut)
@@ -84,6 +85,7 @@ AliAnalysisTaskPIDV0base::AliAnalysisTaskPIDV0base(const char *name)
   , fMC(0x0)
   , fPIDResponse(0x0)
   , fV0KineCuts(0x0)
+  , fAnaUtils(0x0)
   , fIsPbpOrpPb(kFALSE)
   , fUsePhiCut(kFALSE)
   , fTPCcutType(kNoCut)
@@ -140,6 +142,9 @@ AliAnalysisTaskPIDV0base::~AliAnalysisTaskPIDV0base()
   
   delete fV0motherIndex;
   fV0motherIndex = 0;
+  
+  delete fAnaUtils;
+  fAnaUtils = 0;
 }
 
 
@@ -171,6 +176,12 @@ void AliAnalysisTaskPIDV0base::UserCreateOutputObjects()
   // Only accept V0el with prod. radius within 45 cm -> PID will by systematically biased for larger values!
   Float_t gammaProdVertexRadiusCuts[2] = { 3.0, 45. }; 
   fV0KineCuts->SetGammaCutVertexR(&gammaProdVertexRadiusCuts[0]);
+  
+  // Default analysis utils
+  fAnaUtils = new AliAnalysisUtils();
+  
+  // Not used yet, but to be save, forward vertex z cut to analysis utils object
+  fAnaUtils->SetMaxVtxZ(fZvtxCutEvent);
 }
 
 
@@ -285,16 +296,63 @@ Bool_t AliAnalysisTaskPIDV0base::GetVertexIsOk(AliVEvent* event, Bool_t doVtxZcu
     
   
   // pp and PbPb
-  const AliVVertex* primaryVertex = (aod ? dynamic_cast<const AliVVertex*>(aod->GetPrimaryVertex()) :
-                                           dynamic_cast<const AliVVertex*>(esd->GetPrimaryVertexTracks()));
+  const AliVVertex* primaryVertex = 0x0;
+  if (aod) {
+    primaryVertex = dynamic_cast<const AliVVertex*>(aod->GetPrimaryVertex());
+    if (!primaryVertex || primaryVertex->GetNContributors() <= 0) 
+      return kFALSE;
     
-  if (!primaryVertex || primaryVertex->GetNContributors() <= 0)
-    return kFALSE;
+    // Reject TPC vertices
+    TString primVtxTitle(primaryVertex->GetTitle());
+    if (primVtxTitle.Contains("TPCVertex",TString::kIgnoreCase))
+      return kFALSE;
+  }
+  else {
+    primaryVertex = dynamic_cast<const AliVVertex*>(esd->GetPrimaryVertexTracks());
+    if (!primaryVertex)
+      return kFALSE;
+    
+    if (primaryVertex->GetNContributors() <= 0) {
+      // Try SPD vertex
+      primaryVertex = dynamic_cast<const AliVVertex*>(esd->GetPrimaryVertexSPD());
+      if (!primaryVertex || primaryVertex->GetNContributors() <= 0) 
+        return kFALSE;
+    }
+  }
   
   if (doVtxZcut) {
     if (TMath::Abs(primaryVertex->GetZ()) > fZvtxCutEvent) //Default: 10 cm
       return kFALSE;
   }
+  
+  return kTRUE;
+}
+
+
+//______________________________________________________________________________
+Bool_t AliAnalysisTaskPIDV0base::GetIsPileUp(AliVEvent* event, AliAnalysisTaskPIDV0base::PileUpRejectionType pileUpRejectionType) const
+{
+  // Check whether event is a pile-up event according to current AnalysisUtils object.
+  // If rejection type is kPileUpRejectionOff, kFALSE is returned.
+  // In case of errors, the error is displayed and kTRUE is returned.
+  
+  if (pileUpRejectionType == kPileUpRejectionOff)
+    return kFALSE;
+  
+  if (!event) {
+    AliError("No event!");
+    return kTRUE;
+  }
+  
+  if (!fAnaUtils) {
+    AliError("AnalysisUtils object not available!");
+    return kTRUE;
+  }
+  
+  if (pileUpRejectionType == kPileUpRejectionSPD)
+    return fAnaUtils->IsPileUpSPD(event);
+  else if (pileUpRejectionType == kPileUpRejectionMV)
+    return fAnaUtils->IsPileUpMV(event);
   
   return kTRUE;
 }

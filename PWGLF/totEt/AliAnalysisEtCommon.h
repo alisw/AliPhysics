@@ -61,7 +61,7 @@ protected:
     
     TString fHistogramNameSuffix; /** The suffix for the histogram names */
 
-    AliAnalysisEtCuts *fCuts; //! keeper of basic cuts
+    AliAnalysisEtCuts *fCuts; // keeper of basic cuts
 
     Int_t fDataSet;//Integer corresponding to data set.  Used as a switch to set appropriate track cuts.  By default set to 2010 p+p
     //2009 = 900 GeV p+p data from 2009
@@ -121,15 +121,15 @@ protected:
     Float_t K0Weight(Float_t pt);//Function which gives the factor to reweigh a K0 so it roughly matches the data
     Float_t LambdaWeight(Float_t pt);//Function which gives the factor to reweigh a Lambda so it roughly matches the data
     Float_t AntiLambdaWeight(Float_t pt);//Function which gives the factor to reweigh a Lambda so it roughly matches the data
-    TF1 *fK0PythiaD6T;//!function with Levy fit parameters for K0S in PYTHIA D6T
-    TF1 *fLambdaPythiaD6T;//!function with Levy fit parameters for Lambda in PYTHIA D6T
-    TF1 *fAntiLambdaPythiaD6T;//!function with Levy fit parameters for AntiLambda in PYTHIA D6T
-    TF1 *fK0Data;//!function with Levy fit parameters for K0S in data
-    TF1 *fLambdaData;//!function with Levy fit parameters for Lambda in data
-    TF1 *fAntiLambdaData;//!function with Levy fit parameters for AntiLambda in data
+    TF1 *fK0PythiaD6T;//function with Levy fit parameters for K0S in PYTHIA D6T
+    TF1 *fLambdaPythiaD6T;//function with Levy fit parameters for Lambda in PYTHIA D6T
+    TF1 *fAntiLambdaPythiaD6T;//function with Levy fit parameters for AntiLambda in PYTHIA D6T
+    TF1 *fK0Data;//function with Levy fit parameters for K0S in data
+    TF1 *fLambdaData;//function with Levy fit parameters for Lambda in data
+    TF1 *fAntiLambdaData;//function with Levy fit parameters for AntiLambda in data
 
-    TF1 *fLambdaEnhancement;//!function to describe lambda enhancement
-    TF1 *fProtonEnhancement;//!function to describe anti-lambda enhancement
+    TF1 *fLambdaEnhancement;//function to describe lambda enhancement
+    TF1 *fProtonEnhancement;//function to describe anti-lambda enhancement
     Float_t LambdaBaryonEnhancement(Float_t pt);//Function which gives the factor to reweigh a lambda or antilambda so it roughly matches baryon enhancement seen at RHIC
     Float_t ProtonBaryonEnhancement(Float_t pt);//Function which gives the factor to reweigh a lambda or antilambda so it roughly matches baryon enhancement seen at RHIC
     TString fCentralityMethod;//string specifying the centrality method, see https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies

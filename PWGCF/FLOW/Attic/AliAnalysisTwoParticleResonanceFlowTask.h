@@ -79,17 +79,16 @@ public:
    // setters
    void                                 SetPtBins(Float_t bin[19], Int_t n) { for(Int_t i = 0; i < n+1; i++) fPtBins[i] = bin[i]; fNPtBins = n; }
    void                                 SetdPhiBins(Float_t bin[19], Int_t n) { for(Int_t i = 0; i < n+1; i++) fdPhiBins[i] = bin[i]; fNdPhiBins = n;}
-   void                                 SetCentralityParameters(Double_t min, Double_t max, const char* a, const char* b, Bool_t c, Bool_t d) { 
-                                                                                          fCentralityMin = min; 
-                                                                                          fCentralityMax = max; 
-                                                                                          fkCentralityMethodA = a; 
-                                                                                          fkCentralityMethodB = b;
-                                                                                          fCentralityCut2010 = c; 
-											  fCentralityCut2011 = d; }
    void                                 SetPOICuts(AliFlowTrackCuts *cutsPOI) { fPOICuts = cutsPOI; }
    void                                 SetRPCuts(AliFlowTrackCuts *cutsRP) { fCutsRP = cutsRP; }
+   void                                 SetEventCuts(AliFlowEventCuts *cutsEvent) {fCutsEvent = cutsEvent; }
    void                                 SetPIDConfiguration(Float_t prob[7]) { for(Int_t i = 0; i < 7; i++) fPIDConfig[i] = prob[i]; }
-   Bool_t                               SetQA(Bool_t qa) {fQA = qa; return fQA;}
+   Bool_t                               SetQA(Bool_t qa) {
+       fQA = qa; 
+       if(fCutsEvent) fCutsEvent->SetQA(kTRUE);
+       if(fPOICuts)   fPOICuts->SetQA(kTRUE);
+       if(fCutsRP)    fCutsRP->SetQA(kTRUE);
+       return fQA;}
    void                                 SetAddTaskMacroSummary(Float_t m[12]) {for(Int_t i(0); i < 12; i++) fAddTaskMacroSummary[i] = m[i];}
    void                                 SetPOIDCAXYZ(Float_t dca[5]) { for(Int_t i = 0; i < 5; i++) fDCAConfig[i] = dca[i]; }
    void                                 SetMixingBins(Int_t c[20], Int_t v[20]) {for(Int_t i = 0; i < 20; i++) { fCentralityMixingBins[i] = c[i];
@@ -111,10 +110,6 @@ public:
                                                                                           fApplyDeltaDipCut = kTRUE; };
    //getters
    void                                 GetMixingParameters(Int_t p[3]) const { for(Int_t i = 0; i < 3; i++) p[i] = fMixingParameters[i]; } 
-   Float_t                              GetCenMin() const {return fCentralityMin; }
-   Float_t                              GetCenMax() const {return fCentralityMax; }
-   const char*                          GetCentralityMethod() const {return fkCentralityMethodA; }
-   Float_t                              GetVertexZ() const { return fVertexRange; }
    Float_t                              GetDeltaDipAngle() const {return fDeltaDipAngle; }
    Float_t                              GetDeltaDipPt() const {return fDeltaDipPt; }
    void                                 GetPIDConfiguration(Float_t prob[7]) const {for(Int_t i = 0; i < 7; i++) prob[i] = fPIDConfig[i]; }
@@ -130,10 +125,7 @@ public:
    template <typename T> Float_t        DeltaDipAngle(const T* track1, const T* track2) const;
    template <typename T> Bool_t         CheckDeltaDipAngle(const T* track1, const T* track2) const;
    template <typename T> Bool_t         CheckCandidateEtaPtCut(const T* track1, const T* track2) const;
-   template <typename T> Bool_t         EventCut(T* event);
    template <typename T> void           PlotMultiplcities(const T* event) const;
-   template <typename T> Bool_t         CheckVertex(const T* event);
-   template <typename T> Bool_t         CheckCentrality(T* event);
    void                                 InitializeBayesianPID(AliAODEvent* event);
    template <typename T> Bool_t         PassesTPCbayesianCut(T* track, Int_t species) const;
    Bool_t                               PassesDCACut(AliAODTrack* track) const;
@@ -178,6 +170,7 @@ private:
    Float_t              fMinMass; // mass range
    Float_t              fMaxMass; // mass range
    AliFlowTrackCuts     *fCutsRP; // track cuts for reference particles
+   AliFlowEventCuts     *fCutsEvent; // event cuts
    AliFlowTrackCuts     *fNullCuts; // dummy cuts for flow event tracks
    AliPIDResponse       *fPIDResponse; //! pid response object
    AliFlowEvent         *fFlowEvent; //! flow events (one for each inv mass band)

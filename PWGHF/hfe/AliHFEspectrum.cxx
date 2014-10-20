@@ -90,6 +90,7 @@ AliHFEspectrum::AliHFEspectrum(const char *name):
   fStepAfterCutsV0(-1),
   fStepGuessedUnfolding(-1),
   fNumberOfIterations(5),
+  fNRandomIter(0),
   fChargeChoosen(kAllCharge),
   fNCentralityBinAtTheEnd(0),
   fTestCentralityLow(-1),
@@ -170,13 +171,13 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
 
   Int_t kNdim = 3;
   Int_t kNcentr =1;
-  Int_t ptpr =0;
+  //Int_t ptpr =0;
   if(fBeamType==0) kNdim=3;
   if(fBeamType==1)
   {
       kNdim=4;
       kNcentr=11;
-      ptpr=1;
+      //ptpr=1;
   }
 
   Int_t dims[kNdim];
@@ -460,6 +461,19 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
     dataGridAfterFirstSteps = dataspectrumaftersubstraction;
   }
 
+  printf("cloning spectrum\n");
+  AliCFDataGrid *rawsave(NULL);
+  if(dataspectrumaftersubstraction){
+     rawsave = (AliCFDataGrid *)dataspectrumaftersubstraction->Clone("rawdata");
+  } else {
+    AliCFContainer *dataContainer = GetContainer(kDataContainer);
+    if(!dataContainer){
+      AliError("Data Container not available");
+    }
+    rawsave = new AliCFDataGrid("rawsave", "raw spectrum after subtraction",*dataContainer, fStepData);
+  }
+  printf("cloned: %p\n", rawsave);
+
   ////////////////////////////////////////////////
   // Correct for TPC efficiency from V0
   ///////////////////////////////////////////////
@@ -721,6 +735,7 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
       correctedspectrum->Write();
       alltogetherCorrection->SetName("AlltogetherCorrectedNotNormalizedSpectrum");
       alltogetherCorrection->Write();
+      rawsave->Write();
       for(Int_t binc = 0; binc < fNCentralityBinAtTheEnd; binc++){
 	      unfoldingspectrac[binc].Write();
 	      unfoldingspectracn[binc].Write();
@@ -2098,6 +2113,7 @@ TList *AliHFEspectrum::Unfold(AliCFDataGrid* const bgsubpectrum){
   AliCFUnfolding unfolding("unfolding","",fNbDimensions,fCorrelation,efficiencyD->GetGrid(),dataGrid->GetGrid(),guessedTHnSparse);
   if(fUnSetCorrelatedErrors) unfolding.UnsetCorrelatedErrors();
   unfolding.SetMaxNumberOfIterations(fNumberOfIterations);
+  if(fNRandomIter > 0) unfolding.SetNRandomIterations(fNRandomIter);
   if(fSetSmoothing) unfolding.UseSmoothing();
   unfolding.Unfold();
 
@@ -2400,7 +2416,7 @@ TGraphErrors *AliHFEspectrum::NormalizeTH1(TH1 *input,Int_t i) const {
     for(Int_t ibin = input->GetXaxis()->GetFirst(); ibin <= input->GetXaxis()->GetLast(); ibin++){
       point = ibin - input->GetXaxis()->GetFirst();
       p = input->GetXaxis()->GetBinCenter(ibin);
-      //dp = input->GetXaxis()->GetBinWidth(ibin)/2.;
+      dp = input->GetXaxis()->GetBinWidth(ibin)/2.;
       n = input->GetBinContent(ibin);
       dN = input->GetBinError(ibin);
       // New point
@@ -2807,7 +2823,7 @@ THnSparse* AliHFEspectrum::GetCharmWeights(){
 void AliHFEspectrum::SetParameterizedEff(AliCFContainer *container, AliCFContainer *containermb, AliCFContainer *containeresd, AliCFContainer *containeresdmb, Int_t *dimensions){
 
    // TOF PID efficiencies
-   Int_t ptpr;
+   Int_t ptpr=0;
    if(fBeamType==0) ptpr=0;
    if(fBeamType==1) ptpr=1;
 
@@ -3153,11 +3169,11 @@ THnSparse* AliHFEspectrum::GetBeautyIPEff(Bool_t isMCpt){
   const Int_t nCentralitybinning=11;//number of centrality bins
   Double_t kPtRange[nPtbinning1+1] = { 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};//pt bin limits
   Double_t kCentralityRange[nCentralitybinning+1] = {0.,1.,2., 3., 4., 5., 6., 7.,8.,9., 10., 11.};
-  Int_t ptpr = 0;
+  //Int_t ptpr = 0;
   Int_t nDim=1;  //dimensions of the efficiency weighting grid
   if(fBeamType==1)
   {
-    ptpr=1;
+    //ptpr=1;
     nDim=2; //dimensions of the efficiency weighting grid
   }
   Int_t nBin[1] = {nPtbinning1};
@@ -3276,11 +3292,11 @@ THnSparse* AliHFEspectrum::GetPIDxIPEff(Int_t source){
     const Int_t nCentralitybinning=11;//number of centrality bins
     Double_t kPtRange[nPtbinning1+1] = { 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};//pt bin limits
     Double_t kCentralityRange[nCentralitybinning+1] = {0.,1.,2., 3., 4., 5., 6., 7.,8.,9., 10., 11.};
-    Int_t ptpr = 0;
+    //Int_t ptpr = 0;
     Int_t nDim=1;  //dimensions of the efficiency weighting grid
     if(fBeamType==1)
     {
-	ptpr=1;
+      //ptpr=1;
 	nDim=2; //dimensions of the efficiency weighting grid
     }
     Int_t nBin[1] = {nPtbinning1};

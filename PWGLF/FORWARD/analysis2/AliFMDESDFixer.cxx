@@ -205,7 +205,7 @@ AliFMDESDFixer::FindTargetNoiseFactor(const AliESDFMD& esd, Bool_t check) const
       return 0;
     }
 #endif
-    target = esd.GetNoiseFactor();
+    target = Int_t(esd.GetNoiseFactor());
   }
   // Get the target factor - even thought the method below returns a
   // floating point value, we know that the noise factor is always
@@ -350,7 +350,7 @@ AliFMDESDFixer::Print(Option_t*) const
   AliForwardUtil::PrintTask(*this);
   gROOT->IncreaseDirLevel();
   PFB("Consider invalid null", fInvalidIsEmpty);
-  PFB("Has extra dead", fHasXtraDead);
+  PFB("Has extra dead", fHasXtraDead || fXtraDead.GetNbits() > 0);
   PFV("Reco noise factor", fRecoFactor);
   PFV("Max noise corr", fMaxNoiseCorr);
   PFB("Recalc. eta", fRecalculateEta);

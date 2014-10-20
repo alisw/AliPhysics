@@ -84,6 +84,9 @@ AliHFENonPhotonicElectron::AliHFENonPhotonicElectron(const char *name, const Cha
   ,fSelectCategory1tracks(kTRUE)
   ,fSelectCategory2tracks(kFALSE)
   ,fITSmeanShift(0.)
+  ,fITSnSigmaHigh(3.)
+  ,fITSnSigmaLow(-3.)
+  ,fminPt(0.1)
   ,fArraytrack		(NULL)
   ,fCounterPoolBackground	(0)
   ,fnumberfound			(0)
@@ -132,6 +135,9 @@ AliHFENonPhotonicElectron::AliHFENonPhotonicElectron()
   ,fSelectCategory1tracks(kTRUE)
   ,fSelectCategory2tracks(kFALSE)
   ,fITSmeanShift(0.)
+  ,fITSnSigmaHigh(3.)
+  ,fITSnSigmaLow(-3.)
+  ,fminPt(0.1)
   ,fArraytrack		(NULL)
   ,fCounterPoolBackground	(0)
   ,fnumberfound			(0)
@@ -180,6 +186,9 @@ AliHFENonPhotonicElectron::AliHFENonPhotonicElectron(const AliHFENonPhotonicElec
   ,fSelectCategory1tracks(ref.fSelectCategory1tracks)
   ,fSelectCategory2tracks(ref.fSelectCategory2tracks)
   ,fITSmeanShift(ref.fITSmeanShift)
+  ,fITSnSigmaHigh(ref.fITSnSigmaHigh)
+  ,fITSnSigmaLow(ref.fITSnSigmaLow)
+  ,fminPt(ref.fminPt)
   ,fArraytrack		(NULL)
   ,fCounterPoolBackground	(0)
   ,fnumberfound			(0)
@@ -386,17 +395,19 @@ void AliHFENonPhotonicElectron::Init()
   Double_t maxradius = 100.0;
   Double_t binLimradius[nBinsradius+1];
   for(Int_t i=0; i<=nBinsradius; i++) binLimradius[i]=(Double_t)minradius + (maxradius-minradius)/nBinsradius*(Double_t)i ;
-  const Int_t nDimIncElectronRadius = 3;  // centrality, pt_inc, radius 
-  const Int_t nBinsIncElectronRadius[nDimIncElectronRadius] = {nBinsC, fPtBinning.GetSize()-1, nBinsradius};
+  const Int_t nDimIncElectronRadius = 4;  // centrality, pt_inc, radius 
+  const Int_t nBinsIncElectronRadius[nDimIncElectronRadius] = {nBinsC, fPtBinning.GetSize()-1, nBinsradius, nBinsSource};
   fIncElectronRadius = new THnSparseF("fIncElectronRadius", "fIncElectronRadius", nDimIncElectronRadius, nBinsIncElectronRadius);
   fIncElectronRadius->SetBinEdges(0,binLimC);
   fIncElectronRadius->SetBinEdges(1,fPtBinning.GetArray());
   fIncElectronRadius->SetBinEdges(2,binLimradius);
+  fIncElectronRadius->SetBinEdges(3,binLimSource);
 
   fRecElectronRadius = new THnSparseF("fRecElectronRadius", "fRecElectronRadius", nDimIncElectronRadius, nBinsIncElectronRadius);
   fRecElectronRadius->SetBinEdges(0,binLimC);
   fRecElectronRadius->SetBinEdges(1,fPtBinning.GetArray());
   fRecElectronRadius->SetBinEdges(2,binLimradius);
+  fRecElectronRadius->SetBinEdges(2,binLimSource);
 
 /*
   // ee angle Unlike Sign
@@ -556,7 +567,7 @@ Int_t AliHFENonPhotonicElectron::CountPoolAssociated(AliVEvent *inputEvent, Int_
 
   if(fnumberfound > 0) //!count only events with an inclusive electron
   {
-    Double_t valueAssElectron[4] = {  static_cast<Double_t>(binct), -1, -1};		//Centrality	Pt	Source
+    Double_t valueAssElectron[4] = { (Double_t)binct, -1, -1};		//Centrality	Pt	Source
     Int_t iTrack2 = 0;
     Int_t indexmother2 = -1;
     AliVTrack *track2 = 0x0;
@@ -626,10 +637,11 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
   fkPIDRespons = fPIDBackground->GetPIDResponse();
 
   //Set Fill-Arrays for THnSparse
-  Double_t valueIncElectron[4]	= {  static_cast<Double_t>(binct), track1->Pt(),  static_cast<Double_t>(source), track1->Eta()};	//Centrality	Pt	Source	P	
-  Double_t valueSign[9]		= { deltaphi,  static_cast<Double_t>(binct), track1->Pt(), -1,  static_cast<Double_t>(source), -1, -1, track1->Eta(), -1};			//DeltaPhi	Centrality	Pt	InvariantMass	Source	Angle	Pt
+  Double_t valueIncElectron[4]	= { (Double_t)binct, track1->Pt(), (Double_t)source, track1->Eta()};	//Centrality	Pt	Source	P	
+  Double_t valueSign[9]		= { deltaphi, (Double_t)binct, track1->Pt(), -1, (Double_t)source, -1, -1, track1->Eta(), -1};			//DeltaPhi	Centrality	Pt	InvariantMass	Source	Angle	Pt
   //Double_t valueAngle[3]	= { -1, binct, source};	
-  Double_t valueradius[3]	= {  static_cast<Double_t>(binct), track1->Pt(), 0.};							//Angle		Centrality	Source
+  Double_t valueradius[4]	= { (Double_t)binct, track1->Pt(), 0.,(Double_t)source};	
+  
 
   Int_t pdg1 = CheckPdg(TMath::Abs(track1->GetLabel()));
   Double_t radius = Radius(TMath::Abs(track1->GetLabel()));
@@ -661,10 +673,8 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
   fWeightsSource->Fill(source,mcQAsource);
   fIncElectron->Fill(valueIncElectron,weight);
   fnumberfound++;
-  if(source == kElectronfromconversion) {
-    fIncElectronRadius->Fill(valueradius,weight);
-    //printf("radius %f\n",radius);
-  }
+  fIncElectronRadius->Fill(valueradius,weight);
+    
   //printf(Form("Inclusive Pool: TrackNr. %d, fnumberfound %d \n", iTrack1, fnumberfound));
 
   for(Int_t idex = 0; idex < fCounterPoolBackground; idex++){
@@ -710,12 +720,15 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
           switch(source){
             case kElectronfromconversion: 
                  valueSign[4] = kElectronfromconversionboth; 
+		 valueradius[3] = kElectronfromconversionboth;
                  break;
             case kElectronfrompi0: 
                  valueSign[4] = kElectronfrompi0both; 
+		 valueradius[3] = kElectronfrompi0both;
                  break;
             case kElectronfrometa:
                  valueSign[4] = kElectronfrometaboth;
+		 valueradius[3] = kElectronfrometaboth;
                  break;
           };
         }
@@ -749,7 +762,7 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
       // count unlike-sign matched pairs per inclusive based on mass cut
       if(invmass < 0.14) {
 	countsMatchUnlikesign++;
-	if(source == kElectronfromconversionboth) fRecElectronRadius->Fill(valueradius,weight);
+	fRecElectronRadius->Fill(valueradius,weight);
       }
       AliDebug(1, "Selected Unike sign");
     }
@@ -759,8 +772,8 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
   }
 
   // Fill counted
-  Double_t valCountsLS[3] = { static_cast<Double_t>(binct), track1->Pt(),  static_cast<Double_t>(countsMatchLikesign)},
-    valCountsUS[3] = { static_cast<Double_t>(binct), track1->Pt(),  static_cast<Double_t>(countsMatchUnlikesign)}; 
+  Double_t valCountsLS[3] = {(Double_t)binct, track1->Pt(), (Double_t)countsMatchLikesign},
+    valCountsUS[3] = {(Double_t)binct, track1->Pt(), (Double_t)countsMatchUnlikesign}; 
   fUSmatches->Fill(valCountsUS);
   fLSmatches->Fill(valCountsLS);
 
@@ -1181,7 +1194,7 @@ Bool_t AliHFENonPhotonicElectron::FilterCategory2Track(const AliVTrack * const t
   // electron candidates by the ITS
   //
   if(TMath::Abs(track->Pt()) > 0.3) return kFALSE;
-  if(TMath::Abs(track->Pt()) < 0.1) return kFALSE;
+  if(TMath::Abs(track->Pt()) < fminPt) return kFALSE;
   Int_t nclustersITS(0), nclustersOuter(0);
   if(isAOD){
     const AliAODTrack *aodtrack = static_cast<const AliAODTrack *>(track);
@@ -1205,7 +1218,8 @@ Bool_t AliHFENonPhotonicElectron::FilterCategory2Track(const AliVTrack * const t
   // Do ITS PID
   Double_t nsigmaITS = fPIDBackground->GetPIDResponse()->NumberOfSigmasITS(track, AliPID::kElectron);
   fHnsigmaITS->Fill(track->Pt(), nsigmaITS);
-  if(TMath::Abs(nsigmaITS - fITSmeanShift) > 3.) return kFALSE;
+  if((nsigmaITS - fITSmeanShift) > fITSnSigmaHigh ) return kFALSE;
+  if((nsigmaITS - fITSmeanShift) < fITSnSigmaLow ) return kFALSE;
   // if global track, we apply also TPC PID
   return kTRUE;
 }

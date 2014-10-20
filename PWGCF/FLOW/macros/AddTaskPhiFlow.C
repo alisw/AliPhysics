@@ -9,8 +9,6 @@
 class AliAnalysisDataContainer;
 class AliFlowTrackCuts;
 class AliFlowTrackSimpleCuts;
-class AliFlowEventCuts;
-class AliFlowEventSimpleCuts;
 class AliAnalysisDataContainer;
 
 AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysis methods

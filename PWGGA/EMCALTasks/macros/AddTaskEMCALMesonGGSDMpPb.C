@@ -1,5 +1,6 @@
-void AddTaskEMCALMesonGGSDMpPb() 
+void AddTaskEMCALMesonGGSDMpPb(Int_t calibration = 0) 
 {
+	
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskAliEMCALMesonGGSDMpPb", "No analysis manager to connect to.");
@@ -9,8 +10,9 @@ void AddTaskEMCALMesonGGSDMpPb()
   //#####################################################
   // Private Recalibrator:
      Int_t GoodTasks  [4] = {1, 0,0,0};
-     Int_t RecalScheme[4] = {8, 3,5,7};
-  //
+     Int_t RecalScheme[4] = {calibration, 3,5,7};
+  
+  // Int_t calibration: 
   // 0:  no recalibration! 
   // 1:  constant scale factor.
   // 2:  Symmetric Decay Method

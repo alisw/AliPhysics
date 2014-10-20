@@ -65,6 +65,7 @@ AliAnalysisTaskJetBackgroundSubtract::AliAnalysisTaskJetBackgroundSubtract():
   fReplaceString2("B%d"),
   fSubtraction(k4Area),
   fKeepJets(kFALSE),
+  fExclude2Leading(kTRUE),
   fInJetArrayList(0x0),
   fOutJetArrayList(0x0),
   fh2CentvsRho(0x0),
@@ -93,6 +94,7 @@ AliAnalysisTaskJetBackgroundSubtract::AliAnalysisTaskJetBackgroundSubtract(const
   fReplaceString2("B%d"),
   fSubtraction(k4Area),
   fKeepJets(kFALSE),
+  fExclude2Leading(kTRUE),
   fInJetArrayList(0x0),
   fOutJetArrayList(0x0),
   fh2CentvsRho(0x0),
@@ -412,12 +414,19 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
    if(fAODIn) cent = fAODIn->GetHeader()->GetCentrality();
 
    if(evBkg)sigma=evBkg->GetSigma(1); 
+  
+   if(fSubtraction==kArea) {rho = evBkg->GetBackground(1);
+      if(fExclude2Leading==kFALSE){
+       rho=evBkg->GetBackground(3);
+       sigma=evBkg->GetSigma(3);}}
 
-   if(fSubtraction==kArea) rho = evBkg->GetBackground(1);
    if(fSubtraction==k4Area){
+    
      rho = evBkg->GetBackground(0);
      sigma=evBkg->GetSigma(0);
    }
+ 
+   
 
    if(fSubtraction==kRhoRecalc){
      meanarea=evBkg->GetMeanarea(1);

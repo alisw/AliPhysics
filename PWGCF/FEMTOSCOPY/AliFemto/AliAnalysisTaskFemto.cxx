@@ -397,7 +397,7 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
 	// Process the event with Kine information
 	fesdck->SetESDSource(fESD);
 	fesdck->SetStackSource(fStack);
-
+	cout<<"Set Stack:"<<fStack<<endl;
 	fesdck->SetGenEventHeader(hdh);
 	fManager->ProcessEvent();
       }

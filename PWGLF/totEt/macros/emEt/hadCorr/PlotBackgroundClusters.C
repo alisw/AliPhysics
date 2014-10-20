@@ -1,6 +1,6 @@
 void SetStyles(TH1 *histo,int marker, int color,char *xtitle, char *ytitle);
 TH1* bayneseffdiv(TH1* numerator, TH1* denominator,Char_t* name) ;
-void PlotBackgroundClusters(TString filename="rootFiles/LHC11a4_bis/Et.ESD.simPbPb.EMCAL.LHC11a4_bis.root", Bool_t peripheral = kFALSE, int bin = 10, int binLast = 10, TString det = "EMCal"){
+void PlotBackgroundClusters(TString filename="rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.EMCal.LHC11a10a_bis.Run139465.root", Bool_t peripheral = kFALSE, int bin = 10, int binLast = 10, TString det = "EMCal"){
 
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
@@ -145,8 +145,8 @@ void PlotBackgroundClusters(TString filename="rootFiles/LHC11a4_bis/Et.ESD.simPb
   funcCut->SetParameter(1,-2.47491e-01);
 
 
-  TH3F  *fHistMatchedTracksEvspTBkgdvsMult = l->FindObject("fHistMatchedTracksEvspTBkgdMult");
-  TH3F  *fHistMatchedTracksEvspTSignalvsMult = l->FindObject("fHistMatchedTracksEvspTSignalMult");
+  TH3F  *fHistMatchedTracksEvspTBkgdvsMult = l->FindObject("fHistMatchedTracksEvspTBkgdvsCent");
+  TH3F  *fHistMatchedTracksEvspTSignalvsMult = l->FindObject("fHistMatchedTracksEvspTSignalvsCent");
   //DoProjectProfile2D(const char* name, const char* title, TAxis* projX, TAxis* projY, bool originalRange, bool useUF, bool useOF) const
   fHistMatchedTracksEvspTBkgdvsMult->GetZaxis()->SetRange(bin,binLast);
   TH2D *hBkgd2D = (TProfile2D*) fHistMatchedTracksEvspTBkgdvsMult->Project3D("yx");
@@ -214,7 +214,7 @@ void PlotBackgroundClusters(TString filename="rootFiles/LHC11a4_bis/Et.ESD.simPb
   funcCut->SetLineStyle(2);
   funcCut->SetLineColor(1);
 
-  TCanvas *c3 = new TCanvas("c3","c3",600,400);
+  TCanvas *c3 = new TCanvas("c3","Signal All",600,400);
   c3->SetTopMargin(0.02);
   c3->SetRightMargin(0.02);
   c3->SetBorderSize(0);
@@ -244,7 +244,7 @@ void PlotBackgroundClusters(TString filename="rootFiles/LHC11a4_bis/Et.ESD.simPb
   TProfile * profE = fHistMatchedTracksEvspTBkgd->ProfileY("Test",firstbin,firstbin+1);
   profE->Draw();
 
-  TCanvas *c4 = new TCanvas("c4","c4",600,400);
+  TCanvas *c4 = new TCanvas("c4","Background All",600,400);
   c4->SetTopMargin(0.02);
   c4->SetRightMargin(0.02);
   c4->SetBorderSize(0);
@@ -261,7 +261,7 @@ void PlotBackgroundClusters(TString filename="rootFiles/LHC11a4_bis/Et.ESD.simPb
   //funcAvgSig->Draw("same");
   lineEDep2D->Draw();
 
-  TCanvas *c7 = new TCanvas("c7","c7",600,400);
+  TCanvas *c7 = new TCanvas("c7","Background Binned",600,400);
   c7->SetTopMargin(0.02);
   c7->SetRightMargin(0.02);
   c7->SetBorderSize(0);
@@ -280,7 +280,7 @@ void PlotBackgroundClusters(TString filename="rootFiles/LHC11a4_bis/Et.ESD.simPb
   outname = "/tmp/TrackMatchingBkgd2D"+det+outnamebin+".png";
   c7->SaveAs(outname.Data());
 
-  TCanvas *c8 = new TCanvas("c8","c8",600,400);
+  TCanvas *c8 = new TCanvas("c8","Signal Binned",600,400);
   c8->SetTopMargin(0.02);
   c8->SetRightMargin(0.02);
   c8->SetBorderSize(0);
@@ -320,7 +320,7 @@ void PlotBackgroundClusters(TString filename="rootFiles/LHC11a4_bis/Et.ESD.simPb
   c9->SaveAs(outname.Data());
   return;
 
-  TCanvas *c5 = new TCanvas("c5","c5",600,400);
+  TCanvas *c5 = new TCanvas("c5","Signal Binned",600,400);
   c5->SetTopMargin(0.02);
   c5->SetRightMargin(0.02);
   c5->SetBorderSize(0);

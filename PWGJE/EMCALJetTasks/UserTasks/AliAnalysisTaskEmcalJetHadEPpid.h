@@ -21,6 +21,7 @@ class AliAODEvent;
 class AliEMCALGeometry;
 class AliEMCALRecoUtils;
 class AliESDtrack;
+class AliESDtrackCuts;
 
 // container classes
 class AliJetContainer;
@@ -37,6 +38,7 @@ class AliClusterContainer;
 #include <TMath.h>
 #include <TRandom3.h>
 #include <AliLog.h>
+#include "AliESDtrackCuts.h"
 
 // Local Rho includes
 #include "AliAnalysisTaskLocalRho.h"
@@ -56,11 +58,11 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
 
   virtual void            UserCreateOutputObjects();
   // THnSparse Setup
-  virtual THnSparse*      NewTHnSparseD(const char* name, UInt_t entries);
+  virtual THnSparse*      NewTHnSparseF(const char* name, UInt_t entries);
   virtual void            GetDimParams(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
-  virtual THnSparse*      NewTHnSparseDPID(const char* name, UInt_t entries);
+  virtual THnSparse*      NewTHnSparseFPID(const char* name, UInt_t entries);
   virtual void            GetDimParamsPID(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
-  virtual THnSparse*      NewTHnSparseDCorr(const char* name, UInt_t entries);
+  virtual THnSparse*      NewTHnSparseFCorr(const char* name, UInt_t entries);
   virtual void            GetDimParamsCorr(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
 
   // set a bun of histogram switches up
@@ -78,18 +80,26 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   void                    SetdoPID(Bool_t p)                    { doPID = p; }   // do PID switch
   void 					  SetdoPIDtrackBIAS(Bool_t PIDbias)     { doPIDtrackBIAS = PIDbias; } // do PID track bias switch
 
+  // esd track cuts setters
+  void SetTrackCuts(AliESDtrackCuts *cuts)                      { fesdTrackCuts = cuts; }
+
   // give comments setter
   void					  SetdoComments(Bool_t comm)			{ doComments = comm; } // give comment switch
 
-  // define I/O
-  void					  SetIOon(Bool_t IO)					{ doIOon = IO; } // set on IO in constructor (temp)
+  // setter switch for flavour jet analysis
+  void 					  SetFlavourJetAnalysis(Bool_t flj)     { doFlavourJetAnalysis = flj; } // set on flavour jet analysis
+  virtual void			  SetJETFlavourTag(Int_t fltag)        { fJetFlavTag = fltag; } // set manual tag #
+
+  // setter for beamtype (needed for UserCreateObjects section)
+  virtual void			  SetCollType(BeamType bm) { fBeam = bm; } // set beamtype 
 
   // getters
-  TString		  GetLocalRhoName() const		{return fLocalRhoName; }
+  TString		          GetLocalRhoName() const		{return fLocalRhoName; }
 
   // set names of some objects
   virtual void            SetLocalRhoName(const char *ln)       { fLocalRhoName = ln; }
   virtual void            SetTracksName(const char *tn)         { fTracksName = tn; }
+  virtual void			  SetTracksNameME(const char *MEtn)     { fTracksNameME = MEtn; }
   virtual void            SetJetsName(const char *jn)           { fJetsName = jn; }
 
   // bias and cuts - setters
@@ -108,6 +118,12 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   // event mixing - setters
   virtual void            SetEventMixing(Int_t yesno)		   { fDoEventMixing=yesno; }
   virtual void	          SetMixingTracks(Int_t tracks)		   { fMixingTracks = tracks; }
+  virtual void            SetNMixedTr(Int_t nmt)               { fNMIXtracks = nmt; }
+  virtual void            SetNMixedEvt(Int_t nme)              { fNMIXevents = nme; }
+
+  // event trigger/mixed selection - setters
+  virtual void            SetTriggerEventType(UInt_t te)       { fTriggerEventType = te; }
+  virtual void            SetMixedEventType(UInt_t me)         { fMixingEventType = me; }
 
   // jet container - setters
   void SetContainerAllJets(Int_t c)         { fContainerAllJets      = c;}
@@ -127,6 +143,10 @@ protected:
   virtual Int_t          GetpTtrackBin(Double_t pt) const;   // track pt bins
   virtual Int_t          GetzVertexBin(Double_t zVtx) const; // zVertex bin
   void                   SetfHistPIDcounterLabels(TH1* fHistPID) const;  // PID counter
+  void	   			     SetfHistQAcounterLabels(TH1* h) const; // QA counter
+  void                   SetfHistEvtSelQALabels(TH1* h) const; // Event Selection Counter
+  //virtual Int_t			 AcceptFlavourJet(AliEmcalJet *jet, Int_t NUM, Int_t NUM2, Int_t NUM3); // flavour jet acceptor
+  virtual Int_t			 AcceptFlavourJet(AliEmcalJet *jet, Int_t NUM); // flavour jet acceptor
 
   // parameters of detector to cut on for event
   Double_t               fPhimin;                  // phi min
@@ -141,9 +161,18 @@ protected:
   Double_t				 fJetRad;				   // jet radius
   Double_t				 fConstituentCut;          // jet constituent cut
 
+  // esd track cuts
+  AliESDtrackCuts       *fesdTrackCuts;			   // esdTrackCuts
+
   // event mixing
   Int_t			 fDoEventMixing;
   Int_t			 fMixingTracks;
+  Int_t          fNMIXtracks;
+  Int_t          fNMIXevents;
+
+  // event selection types
+  UInt_t         fTriggerEventType;
+  UInt_t         fMixingEventType;
 
   // switches for plots
   Bool_t		 doPlotGlobalRho;
@@ -165,14 +194,19 @@ protected:
   // do comment switch
   Bool_t		 doComments;
 
-  // do I/O on switch
-  Bool_t		 doIOon;
+  // do flavour jet analysis switch, and set flavour jet tag
+  Bool_t	     doFlavourJetAnalysis;
+  Int_t			 fJetFlavTag;
+
+  // beam type
+  BeamType fBeam;
 
   // local rho value
   Double_t		 fLocalRhoVal;
 
   // object names
   TString		 fTracksName;
+  TString		 fTracksNameME;
   TString		 fJetsName;
 
   // event counter
@@ -195,6 +229,15 @@ protected:
   // needed for PID, track objects
   AliESDEvent       *fESD;//!         // ESD object
   AliAODEvent	    *fAOD;//!		  // AOD object
+  AliVEvent 		*fVevent;//!   	  // Vevent object
+
+  TH1F				    *fHistEventQA;//!
+  TH1F                  *fHistEventSelectionQA;//!
+
+  TH2F                  *fHistCentZvertGA;//!
+  TH2F                  *fHistCentZvertJE;//!
+  TH2F                  *fHistCentZvertMB;//!
+  TH2F                  *fHistCentZvertAny;//!
 
   TH2F                  *fHistTPCdEdX;//!
   TH2F	                *fHistITSsignal;//!
@@ -232,6 +275,7 @@ protected:
   TH1                   *fHistMult;//!
   TH1		        	*fHistJetPhi;//!
   TH1		            *fHistTrackPhi;//!
+  TH1                   *fHistLocalRhoJetpt;//!
   TH1		            *fHistJetHaddPhiIN;//!
   TH1			        *fHistJetHaddPhiOUT;//!
   TH1			        *fHistJetHaddPhiMID;//!

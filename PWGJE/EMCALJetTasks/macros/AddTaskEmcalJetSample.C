@@ -89,3 +89,23 @@ AliAnalysisTaskEmcalJetSample* AddTaskEmcalJetSample(
   
   return jetTask;
 }
+
+AliAnalysisTaskEmcalJetSample* AddTaskEmcalJetSample( AliEmcalJetTask* jetFinderTask,
+  Int_t       nCentBins          = 1,
+  Double_t    jetareacut         = 0.6,
+  const char *type               = "EMCAL",
+  Int_t       leadhadtype        = 0,
+  const char *taskname           = "AliAnalysisTaskEmcalJetSample"
+)
+    {
+    const char* ntracks            = jetFinderTask->GetTracksName();
+    const char* nclusters          = jetFinderTask->GetClusName();
+    const char* njets              = jetFinderTask->GetJetsName();
+    const char* nrho               = jetFinderTask->GetRhoName();
+    Double_t    jetradius          = jetFinderTask->GetRadius();
+    Double_t    jetptcut           = jetFinderTask->GetMinJetPt();
+
+    AliAnalysisTaskEmcalJetSample* jetTask = AddTaskEmcalJetSample(ntracks , nclusters, njets, nrho, nCentBins, jetradius, jetptcut, jetareacut, type, leadhadtype, taskname);
+
+    return jetTask;
+    }

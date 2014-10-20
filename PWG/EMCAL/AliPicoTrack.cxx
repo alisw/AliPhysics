@@ -1,4 +1,3 @@
-// $Id$
 //
 // Track class with minimal number of information 
 // (targets at selection of primary tracks).
@@ -13,7 +12,7 @@
 AliPicoTrack::AliPicoTrack() :
   AliVTrack(),
   fPt(0), fEta(0), fPhi(0), fM(0.13957), fQ(0), fLabel(-1), fTrackType(0), 
-  fEtaEmc(0), fPhiEmc(0), fPtEmc(0), fEmcal(0), fClusId(-1), fOrig(0)
+  fEtaEmc(0), fPhiEmc(0), fPtEmc(0), fEmcal(0), fFlag(0), fGeneratorIndex(-1), fClusId(-1), fOrig(0)
 {
   // Default constructor.
 }
@@ -23,7 +22,7 @@ AliPicoTrack::AliPicoTrack(Double_t pt, Double_t eta, Double_t phi, Byte_t q, In
                            Double_t etaemc, Double_t phiemc, Double_t ptemc, Bool_t ise, Double_t mass) :
   AliVTrack(),
   fPt(pt), fEta(eta), fPhi(phi), fM(mass), fQ(q), fLabel(lab), fTrackType(type), 
-  fEtaEmc(etaemc), fPhiEmc(phiemc), fPtEmc(ptemc), fEmcal(ise), fClusId(-1), fOrig(0)
+  fEtaEmc(etaemc), fPhiEmc(phiemc), fPtEmc(ptemc), fEmcal(ise), fFlag(0), fGeneratorIndex(-1), fClusId(-1), fOrig(0)
 {
   // Constructor.
 }
@@ -33,7 +32,7 @@ AliPicoTrack::AliPicoTrack(const AliPicoTrack &pc) :
   AliVTrack(pc),
   fPt(pc.fPt), fEta(pc.fEta), fPhi(pc.fPhi), fM(pc.fM),
   fQ(pc.fQ), fLabel(pc.fLabel), fTrackType(pc.fTrackType),  
-  fEtaEmc(pc.fEtaEmc), fPhiEmc(pc.fPhiEmc), fPtEmc(pc.fPtEmc), fEmcal(pc.fEmcal),
+  fEtaEmc(pc.fEtaEmc), fPhiEmc(pc.fPhiEmc), fPtEmc(pc.fPtEmc), fEmcal(pc.fEmcal), fFlag(pc.fFlag), fGeneratorIndex(pc.fGeneratorIndex),
   fClusId(pc.fClusId), fOrig(pc.fOrig)
 {
   // Constructor.
@@ -57,6 +56,8 @@ AliPicoTrack &AliPicoTrack::operator=(const AliPicoTrack &pc)
     fPhiEmc = pc.fPhiEmc;
     fPtEmc  = pc.fPtEmc;
     fEmcal  = pc.fEmcal;
+    fFlag  = pc.fFlag;
+    fGeneratorIndex  = pc.fGeneratorIndex;
     fClusId = pc.fClusId;
     fOrig = pc.fOrig;
   }

@@ -2,7 +2,8 @@ AliAnalysisTask *AddTask_GammaConvdPhi_pp(TString v0Cut = "000001100209366300380
 					 TString pionCut = "01631031009000",
 					 Bool_t pbpb = kFALSE) {
 
-
+	////////////////////CURRENTLY NOT WORKING ///////////////////////////////
+	
   // standard with task
   printf("========================================================================================\n");
   printf("dPhiAnalysis: Initialising AliAnalysisTaskdPhi\n");

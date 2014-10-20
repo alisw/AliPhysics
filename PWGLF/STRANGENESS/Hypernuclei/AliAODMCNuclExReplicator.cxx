@@ -284,7 +284,7 @@ void AliAODMCNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
   TClonesArray *arrayMC = 0;
   AliAODMCHeader *mcHeader=0;
   Int_t mumpdg=-100;
-  Int_t mumpdgNeg=-100;
+  //  Int_t mumpdgNeg=-100;
   
 
   arrayMC = (TClonesArray*) source.GetList()->FindObject(AliAODMCParticle::StdBranchName());

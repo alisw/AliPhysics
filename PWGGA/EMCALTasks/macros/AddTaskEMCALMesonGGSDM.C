@@ -1,4 +1,4 @@
-void AddTaskEMCALMesonGGSDM() 
+void AddTaskEMCALMesonGGSDM(Int_t calibration = 0) 
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -9,8 +9,9 @@ void AddTaskEMCALMesonGGSDM()
   //#####################################################
   // Private Recalibrator:
      Int_t GoodTasks  [4] = {1, 0,0,0};
-     Int_t RecalScheme[4] = {9, 3,5,7};
+     Int_t RecalScheme[4] = {calibration, 3,5,7};
   //
+  // Int_t calibration:	 
   // 0:  no recalibration! 
   // 1:  constant scale factor.
   // 2:  Symmetric Decay Method

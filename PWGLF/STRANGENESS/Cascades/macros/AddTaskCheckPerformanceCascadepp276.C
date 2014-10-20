@@ -1,4 +1,5 @@
-AliAnalysisTaskCheckPerformanceCascadepp276 *AddTaskCheckPerformanceCascadepp276( Int_t    minnTPCcls             = 70,
+AliAnalysisTaskCheckPerformanceCascadepp276 *AddTaskCheckPerformanceCascadepp276( TString  collidingSystem        = "pp",
+                                                                                  Int_t    minnTPCcls             = 70,
                                                                                   Float_t  vtxlim                 = 10.,
                                                                                   Float_t  vtxlimmin              = 0.,
                                                                                   Bool_t   fwithsdd               = kFALSE,
@@ -32,6 +33,7 @@ AliAnalysisTaskCheckPerformanceCascadepp276 *AddTaskCheckPerformanceCascadepp276
      tasknameperf += Form("_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
    AliAnalysisTaskCheckPerformanceCascadepp276 *taskCheckPerfCascadepp276 = new AliAnalysisTaskCheckPerformanceCascadepp276(tasknameperf);
      taskCheckPerfCascadepp276->SetAnalysisType               (type);                   // "ESD" or "AOD"
+     taskCheckPerfCascadepp276->SetCollidingSystem            (collidingSystem);        // choose the collidiond system to run on: "pp" and "pPb"
      taskCheckPerfCascadepp276->SetRelaunchV0CascVertexers    (krelaunchvertexers);     // choose if reconstruct the vertex of V0 in the cascades
      taskCheckPerfCascadepp276->SetSDDSelection               (fwithsdd);               // choose if apply SDD event selection
      taskCheckPerfCascadepp276->SetQualityCutZprimVtxPos      (kTRUE);                  // choose if apply Z vtx PV position event selection

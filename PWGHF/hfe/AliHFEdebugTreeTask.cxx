@@ -247,13 +247,14 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
       else source = 5;
       
       // Momemntum at the inner wall of the TPC
+      /*
       Double_t pTPC = 0., ptTPC = 0.;
       AliTrackReference *ref = FindTrackReference(mcpart, 80, 270, AliTrackReference::kTPC);
       if(ref){
         pTPC = ref->P();
         ptTPC = ref->Pt();
       }
-
+      */
 
 
     (*fDebugTree) << "MCDebug"

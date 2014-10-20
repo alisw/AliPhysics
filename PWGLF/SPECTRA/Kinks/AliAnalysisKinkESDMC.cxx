@@ -78,7 +78,8 @@ AliAnalysisKinkESDMC::AliAnalysisKinkESDMC(const char *name)
   flengthMCK(0), flifetiMCK(0), flifetim2(0), fLHelESDK(0),flifeInt(0), flifeYuri(0), flenYuri(0), flenTrRef(0),flifeSmall(0), flifetime(0),flifTiESDK(0),  
     flifeKink(), flenHelx(0), fradPtRapMC(0), fradPtRapDC(0), fradPtRapESD(0), fRadNclcln(0),
     f1(0), f2(0),
-  fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1), fKinkRadUp(200),fKinkRadLow(130), fLowCluster(20), fLowQt(.12),  fCutsMul(0),fMaxDCAtoVtxCut(0), fPIDResponse(0)
+// fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1), fKinkRadUp(200),fKinkRadLow(130), fLowCluster(20), fLowQt(.12),  fCutsMul(0),fMaxDCAtoVtxCut(0), fPIDResponse(0)
+  fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1), fKinkRadUp(200),fKinkRadLow(130), fLowCluster(20), fLowQt(.12), fRapiK(0.7),  fCutsMul(0),fMaxDCAtoVtxCut(0), fPIDResponse(0)
 
 {
   // Constructor
@@ -130,10 +131,12 @@ void AliAnalysisKinkESDMC::UserCreateOutputObjects()
 	f2->SetParameter(1,0.2731374);
 	f2->SetParameter(2,TMath::Pi());
 //
+/*
       Double_t gPt7K0[45] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8,0.9,1.0,
                         1.1, 1.2, 1.3, 1.4, 1.5, 1.6,1.7,1.8,1.9,  2.0,
                          2.2, 2.4, 2.6, 2.8,  3.0,   3.3, 3.6, 3.9,
                          4.2, 4.6,5.0, 5.4, 5.9,  6.5,   7.0,7.5, 8.0,8.5,  9.2, 10., 11., 12., 13.5,15.0 };  // David K0
+*/
 //
 //! ! ! ! !  KINK FROM HERE --------------->
                   Double_t gPt7Comb[48] = { 
@@ -152,22 +155,23 @@ void AliAnalysisKinkESDMC::UserCreateOutputObjects()
 	fHistQtAll = new TH1F("fHistQtAll", "Q_{T} distr All Kinks ",100, 0.0,.300); 
 	fHistQt1= new TH1F("fHistQt1", "Q_{T} distribution",100, 0.0,.300); 
 	fHistQt2= new TH1F("fHistQt2", "Q_{T} distribution",100, 0.0,.300); 
-//	fHistPtKaon = new TH1F("fHistPtKaon", "P_{T}Kaon distribution",200, 0.0,10.0); 
-	fHistPtKaon = new TH1F("fHistPtKaon", "P_{T}Kaon distribution",47,gPt7Comb ); 
-	fHistPtKPDG = new TH1F("fHistPtKPDG", "P_{T}Kaon distribution",47, gPt7Comb   ); 
+	fHistPtKaon = new TH1F("fHistPtKaon", "P_{T}Kaon distribution",300, 0.0,15.0); 
+//	fHistPtKaon = new TH1F("fHistPtKaon", "P_{T}Kaon distribution",47,gPt7Comb ); 
+	fHistPtKPDG = new TH1F("fHistPtKPDG", "P_{T}Kaon distribution",300,0.0,15.0    ); 
 	fHistEta= new TH1F("fHistEta", "Eta distribution", 26,-1.3, 1.3); 
 	fHistEtaK= new TH1F("fHistEtaK", "EtaK distribution", 26,-1.3, 1.3); 
-	fptKMC= new TH1F("fptKMC", "P_{T}Kaon generated",47,  gPt7Comb  ); 
+	fptKMC= new TH1F("fptKMC", "P_{T}Kaon generated",300, 0.0, 15.0   ); 
 	fMultiplMC= new TH1F("fMultiplMC", " charge particle multipl",100, 0.0,2500.);
 	fESDMult= new TH1F("fESDMult", "charge multipliESD",100, 0.0,100.); 
 	frad= new TH1F("frad", "radius  K ESD recon",100,0.,1000.); 
 	fradMC= new TH1F("fradMC", "radius  K generated",100,0.,1000.); 
-	fKinkKaon= new TH1F("fKinkKaon", "P_{T}Kaon kinks identi", 47, gPt7Comb  ); 
-	fKinkKaonBg= new TH1F("fKinkKaonBg", "P_{T}Kaon kinks backgr",47 , gPt7Comb ); 
+	fKinkKaon= new TH1F("fKinkKaon", "P_{T}Kaon kinks identi", 300, 0.0, 15.0   ); 
+	fKinkKaonBg= new TH1F("fKinkKaonBg", "P_{T}Kaon kinks backgr",300, 0.0, 15.0  ); 
 	//fM1kaon= new TH1F("fM1kaon","Invar m(kaon) from kink->mu+netrino decay",180,0.1, 1.0); 
 	fM1kaon= new TH1F("fM1kaon","Invar m(kaon) from kink->mu+netrino decay",600,0.1, 0.7); 
-	fgenPtEtR= new TH1F("fgenPtEtR", "P_{T}Kaon distribution", 47, gPt7Comb  ); 
-	fPtKink= new TH1F("fPtKink", "P_{T}Kaon Kink  bution",47, gPt7Comb  ); 
+	fgenPtEtR= new TH1F("fgenPtEtR", "P_{T}Kaon distribution", 300, 0.0,  15.0   ); 
+	//fPtKink= new TH1F("fPtKink", "P_{T}Kaon Kink  bution",47, gPt7Comb  ); 
+	fPtKink= new TH1F("fPtKink", "P_{T}Kaon Kink  bution",300, 0.0, 15.0   ); 
 	fcodeH   = new TH2F("fcodeH", "code vrs dcode dist. kinks,K",100,0.,2500.,100,0.,2500.);
 	fdcodeH = new TH2F("fdcodeH", "code vrs dcode dist. kinks,K",100,0.,2500.,100,0.,2500.);
 	fAngMomK= new TH2F("fAngMomK","Decay angle vrs Mother Mom,K",100,0.0,10.0,80,0.,80.);
@@ -195,25 +199,26 @@ void AliAnalysisKinkESDMC::UserCreateOutputObjects()
 	fZvYv= new TH2F("fZvYv","Yv-Zv main vtx",60,-0.5,0.5, 60, -15., 15.);
 	fXvYv= new TH2F("fXvYv","Xv-Yv main vtx", 60,-1.5,1.5, 60, -1.5, 1.5);
 	fPtPrKink=new TH1F("fPtPrKink","pt of ESD  kaonKink tracks",300, 0.0,15.0);
-	fgenPtEtRP= new TH1F("fgenPtEtRP", "P_{T}Kaon distribution positive", 47, gPt7Comb  ); 
-	fgenPtEtRN= new TH1F("fgenPtEtRN", "P_{T}Kaon distribution negative", 47, gPt7Comb  ); 
-	fkinkKaonP= new TH1F("fKinkKaonP", "P_{T}Kaon distribution positive", 47, gPt7Comb  ); 
-	fkinkKaonN= new TH1F("fKinkKaonN", "P_{T}Kaon distribution negative", 47, gPt7Comb  ); 
+	fgenPtEtRP= new TH1F("fgenPtEtRP", "P_{T}Kaon distribution positive", 300, 0.0, 15.0  ); 
+	fgenPtEtRN= new TH1F("fgenPtEtRN", "P_{T}Kaon distribution negative", 300, 0.0, 15.0 ); 
+	fkinkKaonP= new TH1F("fKinkKaonP", "P_{T}Kaon distribution positive", 300, 0.0, 15.0   ); 
+	fkinkKaonN= new TH1F("fKinkKaonN", "P_{T}Kaon distribution negative",  300, 0.0, 15.0 ); 
 	frapidESDK= new TH1F("frapidESDK", "rapidity distribution", 26,-1.3, 1.3); 
 	frapidKMC = new TH1F("frapidKMC ", "rapidity distri  MC  ",26,-1.3, 1.3); 
-	fPtKPlMC= new TH1F("fPtKPlMC", "P_{T}Kaon Pos  generated", 47, gPt7Comb  ); 
-	fPtKMnMC= new TH1F("fPtKMnMC", "P_{T}Kaon Minusgenerated",47 , gPt7Comb  ); 
-	fHistPtKaoP= new TH1F("fHistPtKaoP", "P_{T}Kaon Pos ESD", 47, gPt7Comb   ); 
-	fHistPtKaoN= new TH1F("fHistPtKaoN", "P_{T}Kaon Neg ESD", 47, gPt7Comb   ); 
-	fHiPtKPDGP= new TH1F("fHiPtKPDGP", "P_{T}Kaon Pos ESD", 47,  gPt7Comb  ); 
-	fHiPtKPDGN= new TH1F("fHiPtKPDGN", "P_{T}Kaon neg ESD", 47, gPt7Comb   ); 
-	fKinKBGP  = new TH1F("fKinKBGP  ", "P_{T}Kaon Pos ESD", 47, gPt7Comb   ); 
-	fKinKBGN= new TH1F("fKinKBGN", "P_{T}Kaon neg ESD", 47, gPt7Comb   ); 
+	fPtKPlMC= new TH1F("fPtKPlMC", "P_{T}Kaon Pos  generated", 300, 0.0,  15.0   ); 
+	fPtKMnMC= new TH1F("fPtKMnMC", "P_{T}Kaon Minusgenerated",300, 0.0,  15.0 ); 
+	fHistPtKaoP= new TH1F("fHistPtKaoP", "P_{T}Kaon Pos ESD", 300, 0.0,  15.0 ); 
+	fHistPtKaoN= new TH1F("fHistPtKaoN", "P_{T}Kaon Neg ESD", 300, 0.0,  15.0  ); 
+	fHiPtKPDGP= new TH1F("fHiPtKPDGP", "P_{T}Kaon Pos ESD", 300, 0.0,  15.0  ); 
+	fHiPtKPDGN= new TH1F("fHiPtKPDGN", "P_{T}Kaon neg ESD", 300, 0.0,  15.0  ); 
+	fKinKBGP  = new TH1F("fKinKBGP  ", "P_{T}Kaon Pos ESD", 300, 0.0,  15.0 ); 
+	//fKinKBGN= new TH1F("fKinKBGN", "P_{T}Kaon neg ESD", 47, gPt7Comb   ); 
+	fKinKBGN= new TH1F("fKinKBGN", "P_{T}Kaon neg ESD",300, 0.0,  15.0   ); 
 	fQtKMu= new TH1F("fQtKMu", "Q_{T} distribution  K to mu ",100, 0.0,.300); 
 	fQtKPi= new TH1F("fQtKPi", "Q_{T} distribution K to pi",100, 0.0,.300); 
 	fQtKEl= new TH1F("fQtKEl", "Q_{T} distribution   K to elec",100, 0.0,.300); 
-	fFakepipi = new TH1F("fFakepipi", "P_{T}fake pipi   ",47 , gPt7Comb   ); 
-	fFakeKPi = new TH1F("fFakeKPi", "P_{T}fake Kpi   ", 47, gPt7Comb   ); 
+	fFakepipi = new TH1F("fFakepipi", "P_{T}fake pipi   ", 300, 0.0, 15.0  ); 
+	fFakeKPi = new TH1F("fFakeKPi", "P_{T}fake Kpi   ", 300, 0.0, 15.0   ); 
 	fDCAkink = new TH1F("fDCAkink", "DCA kink vetrex ",50, 0.0,1.0); 
 	fDCAkinkBG = new TH1F("fDCAkinkBG", "DCA kink vetrex ",50, 0.0,1.0); 
 	fPosiKink= new TH2F("fPosiKink", "Y vrx kink Vrex ",100, -300.0,300.0,100, -300, 300.); 
@@ -229,7 +234,7 @@ void AliAnalysisKinkESDMC::UserCreateOutputObjects()
   fQtKElMC= new TH1F("fQtKElMC", "Q_{T} distribution   K to elec MC",100, 0.0,.300); 
   fQtK3PiP= new TH1F("fQtK3PiP", "Q_{T} distribution K to 3pi ",100, 0.0,.300); 
   fQtK3PiM= new TH1F("fQtK3PiM", "Q_{T} distribution K to 3pi ",100, 0.0,.300); 
-  fmaxAngMomKmu= new TH2F("fmaxAngMomKmu","Decay angle vrs Mother Mom,Kmu",100,0.0,10.0,80,0.,80.);
+  fmaxAngMomKmu= new TH2F("fmaxAngMomKmu","Decay angle vrs Mother Mom,Kmu",100,0.0,10.0,120,0.,120.);
 	fPosiKinKBgZX= new TH2F("fPosiKinKBgZX", "X vrx Z kink Vrexbg ",100, -20.0,20.0,100, 0., 300.); 
 	fPosiKinKBgXY= new TH2F("fPosiKinKBgXY", "Y vrx X kink Vrexbg ",100, -300.0,300.0,100, -300, 300.); 
 	fMinvPi= new TH1F("fMinvPi","Invar m(kaon) from kink-> decay",100,0.0, 1.2); 
@@ -506,7 +511,8 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
           Double_t   etracKMC= TMath::Sqrt(particle->P() *particle->P()  + 0.493677 *0.493677  );
          Double_t rapidiKMC = 0.5 * (TMath::Log(  (etracKMC +particle->Pz())/( etracKMC-particle->Pz() )) )  ;
 
-     if ( TMath::Abs( rapidiKMC) > 0.7) continue;   // 
+     //if ( TMath::Abs( rapidiKMC) > 0.7) continue;   // 
+     if ( TMath::Abs( rapidiKMC) > fRapiK ) continue;   // 
             frapidKMC ->Fill(rapidiKMC) ;  //18/feb rapiddistr of PDG kink ESD  kaons
  
 	    

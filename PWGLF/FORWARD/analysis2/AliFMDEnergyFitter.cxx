@@ -563,7 +563,7 @@ AliFMDEnergyFitter::Print(Option_t*) const
   PFV("max(delta p/p)",    	fMaxRelParError);
   PFV("max(chi^2/nu)",	        fMaxChi2PerNDF);
   PFV("min(a_i)",	        fMinWeight);
-
+  PFV("Regularization cut",     fRegularizationCut);
   TString r = "";
   switch (fResidualMethod) { 
   case kNoResiduals:              r = "None";       break;

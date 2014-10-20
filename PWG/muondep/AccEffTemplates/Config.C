@@ -54,7 +54,13 @@ void Config()
 #if defined(__CINT__)
   gSystem->Load("liblhapdf");      // Parton density functions
   gSystem->Load("libEGPythia6");   // TGenerator interface
-  gSystem->Load("libpythia6");     // Pythia 6.2 (for decayer)
+  if ( TString("VAR_GENERATOR").Contains("pythia6",TString::kIgnoreCase) )
+  {
+    std::cout << "Setting up Pythia6 required env. variables" << std::endl;
+    VAR_PYTHIA6_INCLUDES
+    VAR_PYTHIA6_SETENV
+  }
+  else  gSystem->Load("libpythia6");     // Pythia 6.2 (for decayer)
   gSystem->Load("libAliPythia6");  // ALICE specific implementations
   gSystem->Load("libgeant321");
 
@@ -66,14 +72,6 @@ void Config()
     VAR_PYTHIA8_INCLUDES
     VAR_PYTHIA8_SETENV
   }
-  
-  if ( TString("VAR_GENERATOR").Contains("pythia6",TString::kIgnoreCase) )
-  {
-    std::cout << "Setting up Pythia6 required env. variables" << std::endl;
-    VAR_PYTHIA6_INCLUDES
-    VAR_PYTHIA6_SETENV
-  }
-  
 
 #endif
 

@@ -91,7 +91,7 @@ public:
 protected:
 
     Bool_t CheckGoodVertex(AliVParticle *track);
-    AliAnalysisHadEtCorrections *fCorrections;//!corrections needed for hadronic et
+    AliAnalysisHadEtCorrections *fCorrections;//corrections needed for hadronic et
 
     TString       fConfigFile;        // the name of the ConfigFile
     //virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField) = 0;

@@ -18,7 +18,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   const Bool_t   makeTrigger        = kTRUE,
   const Bool_t   isEmcalTrain       = kFALSE,
   const Double_t trackeff           = 1.0,
-  const Bool_t   doAODTrackProp     = kFALSE,
+  const Bool_t   doAODTrackProp     = kTRUE,
   const Bool_t   modifyMatchObjs    = kTRUE
 )
 {

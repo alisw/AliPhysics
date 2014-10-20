@@ -155,7 +155,7 @@ void AliAnalysisTaskSEPHOSpPbPi0::UserExec(Option_t *)
   // PHOS Geometry and Misalignment initialization at the first time it runs
   if(fRunNumber != fInputEvent->GetRunNumber()) {
     fRunNumber = fInputEvent->GetRunNumber();
-    PHOSInitialize(esd);
+    PHOSInitialize();
   }
 
   // Event Selection
@@ -166,25 +166,15 @@ void AliAnalysisTaskSEPHOSpPbPi0::UserExec(Option_t *)
   fHeader->FillHistosCaloCellsQA(fOutputListQA, fInputEvent->GetPHOSCells(), fPHOSGeo);
 
   // Fill PHOS cluster Clones Array
-  FillCaloClusterInfo(/*aod, esd*/);
+  FillCaloClusterInfo();
   aod = 0x0;
-
-  if (!fCaloClArr->GetEntriesFast()) return;
+  esd = 0x0;
 
   // vertex bining and centrality bining
   Int_t zvtx = (Int_t)((fHeader->Vz() + 10.)/2.);   if (zvtx<0) zvtx = 0;   if (zvtx>9) zvtx = 9;
   Int_t cent = TMath::BinarySearch<Float_t>(fCentralityBin.GetSize()-1, fCentralityBin.GetArray(), fHeader->Centrality());
   if (!fEventList[zvtx][cent]) fEventList[zvtx][cent] = new TList(); 
   TList *eventList = fEventList[zvtx][cent];
-
-  // Fill cluster histograms
-  fHeader->FillHistosCaloCluster(fOutputListQA, fCaloClArr, cent);
-
-  // Fill pi0 histograms
-  fHeader->FillHistosPi0(fOutputListRD, fCaloClArr, cent);
-
-  // Fill mixed pi0 histograms
-  fHeader->FillHistosMixPi0(fOutputListRD, fCaloClArr, eventList, cent);
 
   // Fill MC info JUST FOR ESD
   AliStack *stack = 0x0;
@@ -195,7 +185,17 @@ void AliAnalysisTaskSEPHOSpPbPi0::UserExec(Option_t *)
     }
     fHeader->FillHistosMC(fOutputListMC, stack, fCaloClArr, fPHOSGeo, cent);
   }
-  esd = 0x0;
+
+  if (!fCaloClArr->GetEntriesFast()) return;
+
+  // Fill cluster histograms
+  fHeader->FillHistosCaloCluster(fOutputListQA, fCaloClArr, cent);
+
+  // Fill pi0 histograms
+  fHeader->FillHistosPi0(fOutputListRD, fCaloClArr, cent);
+
+  // Fill mixed pi0 histograms
+  fHeader->FillHistosMixPi0(fOutputListRD, fCaloClArr, eventList, cent);
 
   // Fill event list for mixing
   if (fCaloClArr->GetEntriesFast()>0) {
@@ -221,7 +221,7 @@ void AliAnalysisTaskSEPHOSpPbPi0::Terminate(Option_t *)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEPHOSpPbPi0::PHOSInitialize(AliESDEvent* const esd)
+void AliAnalysisTaskSEPHOSpPbPi0::PHOSInitialize()
 {
   // Initialize PHOS Geometry ,misalignment and calibration 
 
@@ -233,19 +233,10 @@ void AliAnalysisTaskSEPHOSpPbPi0::PHOSInitialize(AliESDEvent* const esd)
     if (!matrixes->At(mod)) continue;
     else fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod);
   }
-
-  // sets the PHOS Misalignment vertex if ESD
-  if (esd) {
-    for (Int_t mod=0; mod<5; mod++) {
-      const TGeoHMatrix* modMatrix = fInputEvent->GetPHOSMatrix(mod);
-      if (!modMatrix) continue;
-      else fPHOSGeo->SetMisalMatrix(modMatrix, mod);
-    }
-  }
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEPHOSpPbPi0::FillCaloClusterInfo(/*AliAODEvent* const aod, AliESDEvent* const esd*/)
+void AliAnalysisTaskSEPHOSpPbPi0::FillCaloClusterInfo()
 {
   // Fill calo cluster info
   if (fCaloClArr) fCaloClArr->Clear();
@@ -255,7 +246,7 @@ void AliAnalysisTaskSEPHOSpPbPi0::FillCaloClusterInfo(/*AliAODEvent* const aod, 
   Int_t    countN       = fCaloClArr->GetEntriesFast();
   Int_t    relID[4]     = {0,0,0,0 }; // module = relID[0]; cellX = relID[2]; cellZ = relID[3];
   Float_t  position[3]  = {0.,0.,0.};
-  Double_t vtx[3]       = {0,0,0};   fHeader->GetXYZ(vtx);   TVector3 vtxVector(vtx); 
+  Double_t vtx[3]       = {0.,0.,0.};   fHeader->GetXYZ(vtx);   TVector3 vtxVector(vtx); 
 
   TClonesArray &caloRef = *fCaloClArr;
   TLorentzVector momentum;

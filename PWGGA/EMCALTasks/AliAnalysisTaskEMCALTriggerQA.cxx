@@ -47,65 +47,6 @@
 
 ClassImp(AliAnalysisTaskEMCALTriggerQA)
 
-//______________________________________________________________
-AliAnalysisTaskEMCALTriggerQA::AliAnalysisTaskEMCALTriggerQA() :
-AliAnalysisTaskSE(),
-fOutputList(0),            fRecoUtils(0x0),
-fGeoSet(0),                fGeometry(0),         fGeoName(""),
-fOADBSet(kFALSE),          fAccessOADB(kTRUE),   fOADBFilePath(""),
-fBitEGA(0),                fBitEJE(0),
-fEtaPhiEnMin(3.),
-fSTUTotal(0),              fTRUTotal(0),
-fV0Trigger(0),             fV0A(0),              fV0C(0),
-fFillV0SigHisto(1),        fFillClusAcceptHisto(0),
-fMCData(kFALSE),
-fEventMB   (0),            fEventL0   (0),
-fEventL1G  (0),            fEventL1G2 (0),
-fEventL1J  (0),            fEventL1J2 (0),
-fEventCen  (0),            fEventSem  (0),
-//Histograms
-fhNEvents(0),              fhFORAmp(0),
-fhFORAmpL1G(0),            fhFORAmpL1G2(0),
-fhFORAmpL1J(0),            fhFORAmpL1J2(0),
-fhL0Amp(0),                fhL0AmpL1G(0),        fhL0AmpL1J(0),
-fhL1Amp(0),                fhL1GAmp(0),          fhL1G2Amp(0),
-fhL1JAmp(0),               fhL1J2Amp(0),         fhL1FOREnergy(0),
-fhL0Patch(0),              fhL1GPatch(0),        fhL1G2Patch(0),
-fhL1GPatchNotFake(0),      fhL1GPatchFake(0),    fhL1GPatchNotAllFake(0),
-fhL1GPatchAllFake(0),      fhL1GPatchNotAllFakeMax(0),
-fhL1GPatchAllFakeMax(0),   fhL1GPatchNotAllFakeMaxE(0),
-fhL1GPatchAllFakeMaxE(0),  fhL1GPatchNotAllFakeE(0),
-fhL1GPatchAllFakeE(0),     fhL1GPatchFakeE(0),
-fhL1GPatchNotFakeE(0),     fhNPatchFake(0),      fhNPatchNotFake(0),
-fhL1JPatch(0),             fhL1J2Patch(0),
-fhFEESTU(0),               fhTRUSTU(0),          fhV0STU(0),
-fhGPMaxVV0TT(0),           fhJPMaxVV0TT(0),
-fhFORMeanAmp(0),           fhL0MeanAmp(0),       fhL1MeanAmp(0),
-fhL1GPatchMax(0),          fhL1G2PatchMax(0),
-fhL1JPatchMax(0),          fhL1J2PatchMax(0),
-//Histogram settings
-fNBinsSTUSignal  (2000),   fMaxSTUSignal  (200000),
-fNBinsTRUSignal  (2000),   fMaxTRUSignal  (200000),
-fNBinsV0Signal   (5000),   fMaxV0Signal   (100000),
-fNBinsSTUFEERatio(1000),   fMaxSTUFEERatio(100),
-fNBinsSTUTRURatio(1000),   fMaxSTUTRURatio(100),
-fNBinsClusterE   (500),    fMaxClusterE   (200),
-fMapCell     (),
-fMapCellL1G  (),           fMapCellL1G2 (),
-fMapCellL1J  (),           fMapCellL1J2 (),
-fMapTrigL0   (),           fMapTrigL1   (),
-fMapTrigL0L1G(),           fMapTrigL0L1J(),
-fMapTrigL1G  (),           fMapTrigL1G2 (),
-fMapTrigL1J  (),           fMapTrigL1J2 ()
-{
-  // Constructor
-	
-  InitHistogramArrays();
-  
-  DefineOutput(1, TList::Class());
-  
-}
-
 //______________________________________________________________________________
 AliAnalysisTaskEMCALTriggerQA::AliAnalysisTaskEMCALTriggerQA(const char *name) :
 AliAnalysisTaskSE(name),
@@ -143,12 +84,14 @@ fhFORMeanAmp(0),           fhL0MeanAmp(0),       fhL1MeanAmp(0),
 fhL1GPatchMax(0),          fhL1G2PatchMax(0),
 fhL1JPatchMax(0),          fhL1J2PatchMax(0),
 //Histogram settings
-fNBinsSTUSignal  (2000),   fMaxSTUSignal  (200000),
-fNBinsTRUSignal  (2000),   fMaxTRUSignal  (200000),
-fNBinsV0Signal   (5000),   fMaxV0Signal   (100000),
-fNBinsSTUFEERatio(1000),   fMaxSTUFEERatio(100),
-fNBinsSTUTRURatio(1000),   fMaxSTUTRURatio(100),
-fNBinsClusterE   (500),    fMaxClusterE   (200),
+fNBinsSTUSignal  (300),    fMaxSTUSignal  (30000),
+fNBinsTRUSignal  (300),    fMaxTRUSignal  (30000),
+fNBinsV0Signal   (300),    fMaxV0Signal   (30000),
+fNBinsSTUFEERatio(300),    fMaxSTUFEERatio(100),
+fNBinsSTUTRURatio(300),    fMaxSTUTRURatio(100),
+fNBinsClusterE   (100),    fMaxClusterE   (50),
+fNBinsClusterPhi (110),    fMaxClusterPhi (3.15),  fMinClusterPhi (1.39),
+fNBinsClusterEta (96),     fMaxClusterEta (0.7),
 fMapCell     (),
 fMapCellL1G  (),           fMapCellL1G2 (),
 fMapCellL1J  (),           fMapCellL1J2 (),
@@ -473,6 +416,7 @@ void AliAnalysisTaskEMCALTriggerQA::ClusterAnalysis()
     e   = clus->E();
     eta = mom.Eta();
     phi = mom.Phi();
+    if( phi < 0 ) phi+=TMath::TwoPi();
     
     if(e > emax)
     {
@@ -850,7 +794,7 @@ void AliAnalysisTaskEMCALTriggerQA::FillL1GammaPatchHistograms()
     }
   }
   
-  fhGPMaxVV0TT->Fill(fV0Trigger, patchMax);
+  if( fFillV0SigHisto ) fhGPMaxVV0TT->Fill(fV0Trigger, patchMax);
   if( fEventL1G )  fhL1GPatchMax ->Fill(colMax,rowMax);
   if( fEventL1G2 ) fhL1G2PatchMax->Fill(colMax,rowMax);
   
@@ -891,7 +835,7 @@ void AliAnalysisTaskEMCALTriggerQA::FillL1JetPatchHistograms()
     }
   }
   
-  fhJPMaxVV0TT->Fill(fV0Trigger, patchMax);
+  if( fFillV0SigHisto ) fhJPMaxVV0TT->Fill(fV0Trigger, patchMax);
   if( fEventL1J )  fhL1JPatchMax ->Fill(colMax,rowMax);
   if( fEventL1J2 ) fhL1J2PatchMax->Fill(colMax,rowMax);
   
@@ -1345,7 +1289,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
 	
 	
   fhNPatchNotFake   = new TH2F("hNPatchNotFake","number of Not fake patchs vs. all patchs are fake",
-                               3, 0, 3, 2000,0,2000);
+                               3, 0, 3, 200,0,1000);
   fhNPatchNotFake  ->SetYTitle("number of Not fake patchs");
   fhNPatchNotFake  ->SetXTitle("all fake event");
   fhNPatchNotFake  ->SetZTitle("counts");
@@ -1363,14 +1307,6 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL1J2Patch  ->SetYTitle("Index #phi (rows)");
   fhL1J2Patch  ->SetZTitle("counts");
   
-  if(fFillV0SigHisto)
-  {
-    fhV0STU      = new TH2I("hV0STU","Total signal STU vs V0C+V0S",
-                            fNBinsV0Signal,0,fMaxV0Signal,fNBinsSTUSignal,0,fMaxSTUSignal);
-    fhV0STU     ->SetXTitle("Signal V0C+V0A");
-    fhV0STU     ->SetYTitle("Total signal STU");
-    fhV0STU     ->SetZTitle("counts");
-  }
   
   fhFEESTU     = new TH2F("hFEESTU","STU / FEE vs channel", fNBinsSTUFEERatio,0,fMaxSTUFEERatio,30,0,30);
   fhFEESTU    ->SetXTitle("STU/FEE signal");
@@ -1381,14 +1317,6 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhTRUSTU    ->SetXTitle("STU/TRU signal");
   fhTRUSTU    ->SetYTitle("channel");
   fhTRUSTU    ->SetZTitle("counts");
-  
-  fhGPMaxVV0TT = new TH2F("hGPMaxVV0TT","Maximum patch of L1-Gamma vs V0 signal in STU",fNBinsV0Signal,0,fMaxV0Signal,1000,0,1000);
-  fhGPMaxVV0TT ->SetXTitle("V0 from STU");
-  fhGPMaxVV0TT ->SetYTitle("Patch Max");
-  
-  fhJPMaxVV0TT = new TH2F("hJPMaxVV0TT","Maximum patch of L1-Jet   vs V0 signal in STU",fNBinsV0Signal,0,fMaxV0Signal,1000,0,1000);
-  fhJPMaxVV0TT ->SetXTitle("V0 from STU");
-  fhJPMaxVV0TT ->SetYTitle("Patch Max");
   
   fhFORMeanAmp = new TProfile2D("hFORMeanAmp", "Mean FastOR(FEE) signal per Row and Column", fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhFORMeanAmp->SetXTitle("Index #eta");
@@ -1427,7 +1355,6 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL1J2PatchMax  ->SetZTitle("counts");
   
   fOutputList->Add(fhNEvents);
-  fOutputList->Add(fhV0STU);
   fOutputList->Add(fhFORAmp);
   fOutputList->Add(fhFORAmpL1G);
   fOutputList->Add(fhFORAmpL1G2);
@@ -1465,9 +1392,6 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fOutputList->Add(fhFEESTU);
   fOutputList->Add(fhTRUSTU);
   
-  fOutputList->Add(fhGPMaxVV0TT);
-  fOutputList->Add(fhJPMaxVV0TT);
-  
   fOutputList->Add(fhFORMeanAmp);
   fOutputList->Add(fhL0MeanAmp);
   fOutputList->Add(fhL1MeanAmp);
@@ -1476,6 +1400,27 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fOutputList->Add(fhL1G2PatchMax);
   fOutputList->Add(fhL1JPatchMax);
   fOutputList->Add(fhL1J2PatchMax);
+  
+  if(fFillV0SigHisto)
+  {
+    fhV0STU      = new TH2I("hV0STU","Total signal STU vs V0C+V0S",
+                            fNBinsV0Signal,0,fMaxV0Signal,fNBinsSTUSignal,0,fMaxSTUSignal);
+    fhV0STU     ->SetXTitle("Signal V0C+V0A");
+    fhV0STU     ->SetYTitle("Total signal STU");
+    fhV0STU     ->SetZTitle("counts");
+    
+    fhGPMaxVV0TT = new TH2F("hGPMaxVV0TT","Maximum patch of L1-Gamma vs V0 signal in STU",fNBinsV0Signal,0,fMaxV0Signal, 500,0,1000);
+    fhGPMaxVV0TT ->SetXTitle("V0 from STU");
+    fhGPMaxVV0TT ->SetYTitle("Patch Max");
+    
+    fhJPMaxVV0TT = new TH2F("hJPMaxVV0TT","Maximum patch of L1-Jet   vs V0 signal in STU",fNBinsV0Signal,0,fMaxV0Signal, 500,0,1000);
+    fhJPMaxVV0TT ->SetXTitle("V0 from STU");
+    fhJPMaxVV0TT ->SetYTitle("Patch Max");
+    
+    fOutputList->Add(fhV0STU);
+    fOutputList->Add(fhGPMaxVV0TT);
+    fOutputList->Add(fhJPMaxVV0TT);
+  }
   
   if(fMCData)
   {
@@ -1566,27 +1511,18 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
       fOutputList->Add(fhClusV0Max[i]);
     }
     
-    // Cluster acceptance histograms
-    Float_t etamin =-0.7;
-    Float_t etamax = 0.7;
-    Int_t neta     = 140;
-    
-    Float_t phimin = 80. *TMath::DegToRad();
-    Float_t phimax = 190.*TMath::DegToRad();
-    Int_t   nphi   = 110;
-    
     // Cluster histograms, Pseudorapidity vs Azimuthal angle
     
     fhClusEtaPhiHigh[i]    = new TH2F(Form("hClusEtaPhiHigh%s",hName[i].Data()),
                                       Form("clusters distribution #eta vs #phi for %s, E > %1.1f GeV",hTitle[i].Data(),fEtaPhiEnMin),
-                                      neta, etamin, etamax,nphi, phimin, phimax);
+                                      fNBinsClusterEta, -fMaxClusterEta, fMaxClusterEta, fNBinsClusterPhi, fMinClusterPhi, fMaxClusterPhi);
     fhClusEtaPhiHigh[i]   ->SetXTitle("#eta");
     fhClusEtaPhiHigh[i]   ->SetYTitle("#phi (rad)");
     fOutputList->Add(fhClusEtaPhiHigh[i]);
     
     fhClusEtaPhiLow[i]    = new TH2F(Form("hClusEtaPhiLow%s",hName[i].Data()),
                                      Form("clusters distribution #eta vs #phi for %s, E < %1.1f GeV",hTitle[i].Data(),fEtaPhiEnMin),
-                                     neta, etamin, etamax,nphi, phimin, phimax);
+                                     fNBinsClusterEta, -fMaxClusterEta, fMaxClusterEta, fNBinsClusterPhi, fMinClusterPhi, fMaxClusterPhi);
     fhClusEtaPhiLow[i]   ->SetXTitle("#eta");
     fhClusEtaPhiLow[i]   ->SetYTitle("#phi (rad)");
     fOutputList->Add(fhClusEtaPhiLow[i]);
@@ -1595,14 +1531,14 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
     {
       fhClusEtaPhiHighCluMax[i] = new TH2F(Form("hClusEtaPhiHighCluMax%s",hName[i].Data()),
                                            Form("maximum energy cluster per event #eta  vs #phi for %s, E > %1.1f GeV",hTitle[i].Data(),fEtaPhiEnMin),
-                                           neta, etamin, etamax,nphi, phimin, phimax);
+                                           fNBinsClusterEta, -fMaxClusterEta, fMaxClusterEta, fNBinsClusterPhi, fMinClusterPhi, fMaxClusterPhi);
       fhClusEtaPhiHighCluMax[i]->SetXTitle("#eta");
       fhClusEtaPhiHighCluMax[i]->SetYTitle("#phi (rad)");
       fOutputList->Add(fhClusEtaPhiHighCluMax[i]);
       
       fhClusEtaPhiLowCluMax[i] = new TH2F(Form("hClusEtaPhiLowCluMax%s",hName[i].Data()),
                                           Form("maximum energy cluster per event #eta  vs #phi for %s, E < %1.1f GeV",hTitle[i].Data(),fEtaPhiEnMin),
-                                          neta, etamin, etamax,nphi, phimin, phimax);
+                                          fNBinsClusterEta, -fMaxClusterEta, fMaxClusterEta, fNBinsClusterPhi, fMinClusterPhi, fMaxClusterPhi);
       fhClusEtaPhiLowCluMax[i]->SetXTitle("#eta");
       fhClusEtaPhiLowCluMax[i]->SetYTitle("#phi (rad)");
       fOutputList->Add(fhClusEtaPhiLowCluMax[i]);
@@ -1639,14 +1575,14 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
       
       fhClusEta[i]    = new TH2F(Form("hClusEta%s",hName[i].Data()),
                                  Form("clusters distribution vs #eta for %s",hTitle[i].Data()),
-                                 fNBinsClusterE,0,fMaxClusterE,neta, etamin, etamax);
+                                 fNBinsClusterE,0,fMaxClusterE,fNBinsClusterEta, -fMaxClusterEta, fMaxClusterEta);
       fhClusEta[i]   ->SetXTitle("Energy (GeV)");
       fhClusEta[i]   ->SetYTitle("#eta");
       fOutputList->Add(fhClusEta[i]);
       
       fhClusEtaMax[i] = new TH2F(Form("hClusEtaMax%s",hName[i].Data()),
                                  Form("maximum energy cluster per event vs #eta for %s",hTitle[i].Data()),
-                                 fNBinsClusterE,0,fMaxClusterE,neta, etamin, etamax);
+                                 fNBinsClusterE,0,fMaxClusterE,fNBinsClusterEta, -fMaxClusterEta, fMaxClusterEta);
       fhClusEtaMax[i]->SetXTitle("Energy (GeV)");
       fhClusEtaMax[i]->SetYTitle("#eta");
       fOutputList->Add(fhClusEtaMax[i]);
@@ -1655,14 +1591,14 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
       
       fhClusPhi[i]    = new TH2F(Form("hClusPhi%s",hName[i].Data()),
                                  Form("clusters distribution vs #phi for %s",hTitle[i].Data()),
-                                 fNBinsClusterE,0,fMaxClusterE,nphi, phimin, phimax);
+                                 fNBinsClusterE,0,fMaxClusterE, fNBinsClusterPhi, fMinClusterPhi, fMaxClusterPhi);
       fhClusPhi[i]   ->SetXTitle("Energy (GeV)");
       fhClusPhi[i]   ->SetYTitle("#phi (rad)");
       fOutputList->Add(fhClusPhi[i]);
       
       fhClusPhiMax[i] = new TH2F(Form("hClusPhiMax%s",hName[i].Data()),
                                  Form("maximum energy cluster per event vs #phi for %s",hTitle[i].Data()),
-                                 fNBinsClusterE,0,fMaxClusterE,nphi, phimin, phimax);
+                                 fNBinsClusterE,0,fMaxClusterE, fNBinsClusterPhi, fMinClusterPhi, fMaxClusterPhi);
       fhClusPhiMax[i]->SetXTitle("Energy (GeV)");
       fhClusPhiMax[i]->SetYTitle("#phi (rad)");
       fOutputList->Add(fhClusPhiMax[i]);

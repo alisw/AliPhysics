@@ -104,6 +104,8 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade()
    fkpAVertexSelection( kFALSE ),
    fEtaRefMult ( 0.5 ),
    fkRunVertexers ( kFALSE ),
+   fkDebugMode (kTRUE),
+   fkSelectPeripheral (kFALSE),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -157,6 +159,41 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade()
   fTreeCascVarkITSRefitBachelor(0),
   fTreeCascVarkITSRefitNegative(0),
   fTreeCascVarkITSRefitPositive(0),
+
+//Debug information
+//Part A: EbyE info, Run number
+fTreeCascVarRunNumber(0),
+fTreeCascVarEventNumber(0),
+
+//Part B: Shared Clusters
+fTreeCascVarNegClusters(0),
+fTreeCascVarPosClusters(0),
+fTreeCascVarBachClusters(0),
+fTreeCascVarNegSharedClusters(0),
+fTreeCascVarPosSharedClusters(0),
+fTreeCascVarBachSharedClusters(0),
+
+//Part C: All momenta
+fTreeCascVarNegPx(0),
+fTreeCascVarNegPy(0),
+fTreeCascVarNegPz(0),
+fTreeCascVarPosPx(0),
+fTreeCascVarPosPy(0),
+fTreeCascVarPosPz(0),
+fTreeCascVarBachPx(0),
+fTreeCascVarBachPy(0),
+fTreeCascVarBachPz(0),
+
+fTreeCascVarV0DecayX(0),
+fTreeCascVarV0DecayY(0),
+fTreeCascVarV0DecayZ(0),
+
+fTreeCascVarCascadeDecayX(0),
+fTreeCascVarCascadeDecayY(0),
+fTreeCascVarCascadeDecayZ(0),
+
+fTreeCascVarBadCascadeJai(0),
+fTreeCascVarDeltaDCA(0),
 
 //------------------------------------------------
 // HISTOGRAMS
@@ -219,6 +256,8 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade(const char *name)
    fkpAVertexSelection( kFALSE ),
    fEtaRefMult ( 0.5 ),
    fkRunVertexers ( kFALSE ),
+   fkDebugMode (kTRUE),
+   fkSelectPeripheral (kFALSE),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -272,6 +311,42 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade(const char *name)
    fTreeCascVarkITSRefitBachelor(0),
    fTreeCascVarkITSRefitNegative(0),
    fTreeCascVarkITSRefitPositive(0),
+
+    //Debug information
+    //Part A: EbyE info, Run number
+    fTreeCascVarRunNumber(0),
+    fTreeCascVarEventNumber(0),
+
+    //Part B: Shared Clusters
+    fTreeCascVarNegClusters(0),
+    fTreeCascVarPosClusters(0),
+    fTreeCascVarBachClusters(0),
+    fTreeCascVarNegSharedClusters(0),
+    fTreeCascVarPosSharedClusters(0),
+    fTreeCascVarBachSharedClusters(0),
+
+    //Part C: All momenta
+    fTreeCascVarNegPx(0),
+    fTreeCascVarNegPy(0),
+    fTreeCascVarNegPz(0),
+    fTreeCascVarPosPx(0),
+    fTreeCascVarPosPy(0),
+    fTreeCascVarPosPz(0),
+    fTreeCascVarBachPx(0),
+    fTreeCascVarBachPy(0),
+    fTreeCascVarBachPz(0),
+
+    fTreeCascVarV0DecayX(0),
+    fTreeCascVarV0DecayY(0),
+    fTreeCascVarV0DecayZ(0),
+
+    fTreeCascVarCascadeDecayX(0),
+    fTreeCascVarCascadeDecayY(0),
+    fTreeCascVarCascadeDecayZ(0),
+    
+    fTreeCascVarBadCascadeJai(0), 
+    fTreeCascVarDeltaDCA(0),
+
 
 //------------------------------------------------
 // HISTOGRAMS
@@ -436,14 +511,56 @@ void AliAnalysisTaskExtractCascade::UserCreateOutputObjects()
 /*28*/		fTreeCascade->Branch("fTreeCascVarBachNSigmaPion",&fTreeCascVarBachNSigmaPion,"fTreeCascVarBachNSigmaPion/F");
 /*29*/		fTreeCascade->Branch("fTreeCascVarBachNSigmaKaon",&fTreeCascVarBachNSigmaKaon,"fTreeCascVarBachNSigmaKaon/F");
     
-/*30*/		fTreeCascade->Branch("fTreeCascVarBachTransMom",&fTreeCascVarBachTransMom,"fTreeCascVarBachTransMom/F");
-/*30*/		fTreeCascade->Branch("fTreeCascVarPosTransMom",&fTreeCascVarPosTransMom,"fTreeCascVarPosTransMom/F");
-/*31*/		fTreeCascade->Branch("fTreeCascVarNegTransMom",&fTreeCascVarNegTransMom,"fTreeCascVarNegTransMom/F");
+        //Commented out: not needed since all momenta provided! (less info)
+/*30*/		//fTreeCascade->Branch("fTreeCascVarBachTransMom",&fTreeCascVarBachTransMom,"fTreeCascVarBachTransMom/F");
+/*30*/		//fTreeCascade->Branch("fTreeCascVarPosTransMom",&fTreeCascVarPosTransMom,"fTreeCascVarPosTransMom/F");
+/*31*/		//fTreeCascade->Branch("fTreeCascVarNegTransMom",&fTreeCascVarNegTransMom,"fTreeCascVarNegTransMom/F");
 
 /*29*/		fTreeCascade->Branch("fTreeCascVarkITSRefitBachelor",&fTreeCascVarkITSRefitBachelor,"fTreeCascVarkITSRefitBachelor/O");
 /*29*/		fTreeCascade->Branch("fTreeCascVarkITSRefitNegative",&fTreeCascVarkITSRefitNegative,"fTreeCascVarkITSRefitNegative/O");
 /*29*/		fTreeCascade->Branch("fTreeCascVarkITSRefitPositive",&fTreeCascVarkITSRefitPositive,"fTreeCascVarkITSRefitPositive/O");
 
+    //-----------Debugging information----------------
+
+  if(fkDebugMode){ 
+      //Only save this if requested - can be turned off
+
+      //Part A: Event-by-event, run-by-run debugging
+      fTreeCascade->Branch("fTreeCascVarRunNumber",&fTreeCascVarRunNumber,"fTreeCascVarRunNumber/I");
+      fTreeCascade->Branch("fTreeCascVarEventNumber",&fTreeCascVarEventNumber,"fTreeCascVarEventNumber/l");
+      
+      //Part B: Shared Clusters for all daughter tracks
+      fTreeCascade->Branch("fTreeCascVarNegClusters",&fTreeCascVarNegClusters,"fTreeCascVarNegClusters/I");
+      fTreeCascade->Branch("fTreeCascVarPosClusters",&fTreeCascVarPosClusters,"fTreeCascVarPosClusters/I");
+      fTreeCascade->Branch("fTreeCascVarBachClusters",&fTreeCascVarBachClusters,"fTreeCascVarBachClusters/I");
+      fTreeCascade->Branch("fTreeCascVarNegSharedClusters",&fTreeCascVarNegSharedClusters,"fTreeCascVarNegSharedClusters/I");
+      fTreeCascade->Branch("fTreeCascVarPosSharedClusters",&fTreeCascVarPosSharedClusters,"fTreeCascVarPosSharedClusters/I");
+      fTreeCascade->Branch("fTreeCascVarBachSharedClusters",&fTreeCascVarBachSharedClusters,"fTreeCascVarBachSharedClusters/I");
+      
+      //Part C: All Momenta of all daughters
+      fTreeCascade->Branch("fTreeCascVarNegPx",&fTreeCascVarNegPx,"fTreeCascVarNegPx/F");
+      fTreeCascade->Branch("fTreeCascVarNegPy",&fTreeCascVarNegPy,"fTreeCascVarNegPy/F");
+      fTreeCascade->Branch("fTreeCascVarNegPz",&fTreeCascVarNegPz,"fTreeCascVarNegPz/F");
+      fTreeCascade->Branch("fTreeCascVarPosPx",&fTreeCascVarPosPx,"fTreeCascVarPosPx/F");
+      fTreeCascade->Branch("fTreeCascVarPosPy",&fTreeCascVarPosPy,"fTreeCascVarPosPy/F");
+      fTreeCascade->Branch("fTreeCascVarPosPz",&fTreeCascVarPosPz,"fTreeCascVarPosPz/F");
+      fTreeCascade->Branch("fTreeCascVarBachPx",&fTreeCascVarBachPx,"fTreeCascVarBachPx/F");
+      fTreeCascade->Branch("fTreeCascVarBachPy",&fTreeCascVarBachPy,"fTreeCascVarBachPy/F");
+      fTreeCascade->Branch("fTreeCascVarBachPz",&fTreeCascVarBachPz,"fTreeCascVarBachPz/F");
+      
+      //Part D: Decay positions
+      fTreeCascade->Branch("fTreeCascVarV0DecayX",&fTreeCascVarV0DecayX,"fTreeCascVarV0DecayX/F");
+      fTreeCascade->Branch("fTreeCascVarV0DecayY",&fTreeCascVarV0DecayY,"fTreeCascVarV0DecayY/F");
+      fTreeCascade->Branch("fTreeCascVarV0DecayZ",&fTreeCascVarV0DecayZ,"fTreeCascVarV0DecayZ/F");
+      fTreeCascade->Branch("fTreeCascVarCascadeDecayX",&fTreeCascVarCascadeDecayX,"fTreeCascVarCascadeDecayX/F");
+      fTreeCascade->Branch("fTreeCascVarCascadeDecayY",&fTreeCascVarCascadeDecayY,"fTreeCascVarCascadeDecayY/F");
+      fTreeCascade->Branch("fTreeCascVarCascadeDecayZ",&fTreeCascVarCascadeDecayZ,"fTreeCascVarCascadeDecayZ/F");
+      
+      fTreeCascade->Branch("fTreeCascVarBadCascadeJai",&fTreeCascVarBadCascadeJai,"fTreeCascVarBadCascadeJai/O");
+      fTreeCascade->Branch("fTreeCascVarDeltaDCA",&fTreeCascVarDeltaDCA,"fTreeCascVarDeltaDCA/F");
+      //------------------------------------------------
+  }
+    
 //------------------------------------------------
 // Particle Identification Setup
 //------------------------------------------------
@@ -746,13 +863,13 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
       return;
    }
 
-/* --- Acquisition of exact event ID
-   fTreeVariableRunNumber = lESDevent->GetRunNumber();
-   fTreeVariableEventNumber =  
+    //--- Acquisition of exact event ID
+   fTreeCascVarRunNumber = lESDevent->GetRunNumber();
+   fTreeCascVarEventNumber =
     ( ( ((ULong64_t)lESDevent->GetPeriodNumber() ) << 36 ) |
       ( ((ULong64_t)lESDevent->GetOrbitNumber () ) << 12 ) |
         ((ULong64_t)lESDevent->GetBunchCrossNumber() )  );
-*/
+
         
 //------------------------------------------------
 // Multiplicity Information Acquistion
@@ -784,6 +901,15 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
         return;
       }
    }
+    
+    if( fkSelectPeripheral ){
+        if( lMultiplicity < 60 || lMultiplicity >= 80. ){
+            //Event is outside 60-80% centrality in V0M!
+            PostData(1, fListHist);
+            PostData(2, fTreeCascade);
+            return;
+        }
+    }
   
    //Set variable for filling tree afterwards!
    //---> pp case......: GetReferenceMultiplicity
@@ -991,6 +1117,7 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
     //------------------------------------------------	
 	  //Double_t lTrkgPrimaryVtxRadius3D = -500.0;
 	  //Double_t lBestPrimaryVtxRadius3D = -500.0;
+	  fTreeCascVarBadCascadeJai = kFALSE ;
 
 	  // - 1st part of initialisation : variables needed to store AliESDCascade data members
 	  Double_t lEffMassXi      = 0. ;
@@ -1081,6 +1208,10 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
 	  xi->GetXYZcascade( lPosXi[0],  lPosXi[1], lPosXi[2] ); 
 	  lXiRadius			= TMath::Sqrt( lPosXi[0]*lPosXi[0]  +  lPosXi[1]*lPosXi[1] );		
 
+    fTreeCascVarCascadeDecayX = lPosXi[0];
+    fTreeCascVarCascadeDecayY = lPosXi[1];
+    fTreeCascVarCascadeDecayZ = lPosXi[2];
+
 		// - II.Step 3 : around the tracks : Bach + V0 (ESD)
 		// ~ Necessary variables for ESDcascade data members coming from the ESDv0 part (inheritance)
 		//-------------
@@ -1112,10 +1243,26 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
       fTreeCascVarNegEta = nTrackXi->Eta();
       fTreeCascVarBachEta = bachTrackXi->Eta();
       
+      //Save shared clusters information
+      fTreeCascVarNegSharedClusters = nTrackXi->GetTPCnclsS(0,159);
+      fTreeCascVarPosSharedClusters = pTrackXi->GetTPCnclsS(0,159);
+      fTreeCascVarBachSharedClusters = bachTrackXi->GetTPCnclsS(0,159);
+      
       Double_t lBMom[3], lNMom[3], lPMom[3];
       xi->GetBPxPyPz( lBMom[0], lBMom[1], lBMom[2] );
       xi->GetPPxPyPz( lPMom[0], lPMom[1], lPMom[2] );
       xi->GetNPxPyPz( lNMom[0], lNMom[1], lNMom[2] );
+      
+      //Save all momentum information
+      fTreeCascVarNegPx = lNMom[0];
+      fTreeCascVarNegPy = lNMom[1];
+      fTreeCascVarNegPz = lNMom[2];
+      fTreeCascVarPosPx = lPMom[0];
+      fTreeCascVarPosPy = lPMom[1];
+      fTreeCascVarPosPz = lPMom[2];
+      fTreeCascVarBachPx = lBMom[0];
+      fTreeCascVarBachPy = lBMom[1];
+      fTreeCascVarBachPz = lBMom[2];
       
       fTreeCascVarBachTransMom = TMath::Sqrt( lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] );
       fTreeCascVarPosTransMom  = TMath::Sqrt( lPMom[0]*lPMom[0] + lPMom[1]*lPMom[1] );
@@ -1140,6 +1287,10 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
 	  lPosTPCClusters   = pTrackXi->GetTPCNcls();
 	  lNegTPCClusters   = nTrackXi->GetTPCNcls();
 	  lBachTPCClusters  = bachTrackXi->GetTPCNcls(); 
+	  
+      fTreeCascVarNegClusters = lNegTPCClusters;
+      fTreeCascVarPosClusters = lPosTPCClusters;
+      fTreeCascVarBachClusters = lBachTPCClusters;
 
     // 1 - Poor quality related to TPCrefit
 	  ULong_t pStatus    = pTrackXi->GetStatus();
@@ -1193,6 +1344,10 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
 	  xi->GetXYZ( lPosV0Xi[0],  lPosV0Xi[1], lPosV0Xi[2] ); 
 	  lV0RadiusXi		= TMath::Sqrt( lPosV0Xi[0]*lPosV0Xi[0]  +  lPosV0Xi[1]*lPosV0Xi[1] );
 	
+    fTreeCascVarV0DecayX = lPosV0Xi[0];
+    fTreeCascVarV0DecayY = lPosV0Xi[1];
+    fTreeCascVarV0DecayZ = lPosV0Xi[2];
+
 	  lDcaPosToPrimVertexXi 	= TMath::Abs( pTrackXi	->GetD(	lBestPrimaryVtxPos[0], 
 						   		lBestPrimaryVtxPos[1], 
 						   		lMagneticField  )     ); 
@@ -1261,6 +1416,27 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
 	  //lPhi      = xi->Phi()   *180.0/TMath::Pi();
 	  //lAlphaXi  = xi->AlphaXi();
 	  //lPtArmXi  = xi->PtArmXi();
+	  
+  //------------------------------------------------
+  // Jai Salzwedel's femto-cut: better V0 exists
+  //------------------------------------------------			  
+
+  fTreeCascVarDeltaDCA = -100;
+  Float_t DCAV0DaughtersDiff = -100; 
+  for (Int_t iv0=0; iv0<lESDevent->GetNumberOfV0s(); iv0++) {
+    AliESDv0 *v0 = lESDevent->GetV0(iv0);
+    UInt_t posV0TrackIdx = (UInt_t) v0->GetPindex();
+    UInt_t negV0TrackIdx = (UInt_t) v0->GetNindex();
+    if ((posV0TrackIdx == lIdxPosXi) && (negV0TrackIdx == lIdxNegXi)) continue;
+      // if both tracks are the same ones as the cascades V0 daughter tracks, then the V0 belongs to the cascade being analysed; so avoid it
+    if ((posV0TrackIdx == lIdxPosXi) || (negV0TrackIdx == lIdxNegXi)) {
+    DCAV0DaughtersDiff = lDcaV0DaughtersXi - v0->GetDcaV0Daughters();
+    if( fTreeCascVarDeltaDCA < DCAV0DaughtersDiff ) fTreeCascVarDeltaDCA = DCAV0DaughtersDiff;
+      if ( lDcaV0DaughtersXi > v0->GetDcaV0Daughters() )  {    // DCA comparison criterion
+        fTreeCascVarBadCascadeJai = kTRUE;
+      } //end DCA comparison 
+    } // end shares a daughter check 
+  } //end V0 loop 
 
   //------------------------------------------------
   // Set Variables for adding to tree

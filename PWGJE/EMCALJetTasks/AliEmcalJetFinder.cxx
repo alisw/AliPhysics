@@ -1,6 +1,8 @@
 // $Id$
 //
 // Standalone jet finder
+//   CINT-compatible wrapper for AliFJWrapper, can be used in macros and from the ROOT command line.
+//   Compiled code can use AliFJWrapper directly
 //
 // Authors: R.Haake
 
@@ -39,6 +41,10 @@ AliEmcalJetFinder::~AliEmcalJetFinder()
 Bool_t AliEmcalJetFinder::FindJets()
 {
   // Tidy up and check input
+  for (UInt_t i=0; i<fJetArray.size(); i++) {
+    delete fJetArray[i];
+    fJetArray[i] = 0;
+  }
   fJetArray.clear();
   fJetCount = 0;
   if(!fInputVectorIndex)
@@ -55,7 +61,7 @@ Bool_t AliEmcalJetFinder::FindJets()
     fFastjetWrapper->SetAlgorithm(fastjet::antikt_algorithm);  
   if(fJetAlgorithm == 1)
     fFastjetWrapper->SetAlgorithm(fastjet::kt_algorithm);  
-  if(fRecombScheme>0)
+  if(fRecombScheme>=0)
     fFastjetWrapper->SetRecombScheme(static_cast<fastjet::RecombinationScheme>(fRecombScheme));
 
   fFastjetWrapper->SetMaxRap(fTrackMaxEta);
@@ -89,7 +95,7 @@ Bool_t AliEmcalJetFinder::FindJets()
 
   fJetArray.resize(fJetCount);
 
-  fastjets.clear();
+  //fastjets.clear(); // will be done by the destructor at the end of the function
   fFastjetWrapper->Clear();
   fInputVectorIndex = 0;
   return kTRUE;
@@ -114,7 +120,7 @@ void AliEmcalJetFinder::FillPtHistogram(TH1* histogram)
 {
   if(!histogram)
     return;
-  for (Int_t i=0; i<fJetArray.size(); i++)
+  for (std::size_t i=0; i<fJetArray.size(); i++)
   {
     histogram->Fill(fJetArray[i]->Pt());
   }
@@ -125,7 +131,7 @@ void AliEmcalJetFinder::FillPhiHistogram(TH1* histogram)
 {
   if(!histogram)
     return;
-  for (Int_t i=0; i<fJetArray.size(); i++)
+  for (std::size_t i=0; i<fJetArray.size(); i++)
   {
     histogram->Fill(fJetArray[i]->Phi());
   }
@@ -136,7 +142,7 @@ void AliEmcalJetFinder::FillEtaHistogram(TH1* histogram)
 {
   if(!histogram)
     return;
-  for (Int_t i=0; i<fJetArray.size(); i++)
+  for (std::size_t i=0; i<fJetArray.size(); i++)
   {
     histogram->Fill(fJetArray[i]->Eta());
   }

@@ -198,6 +198,7 @@ void AliHighPtTreeAnalysis::BookHistos(){
     zbins[i] = zmin + i*(zmax-zmin)/nzbins;
   }
   // pT resol bins
+/*
   Double_t zzmin = -1.; 
   Double_t zzmax = 1.; 
   Double_t nzzbins = 200; 
@@ -205,6 +206,7 @@ void AliHighPtTreeAnalysis::BookHistos(){
   for (Int_t i=0;i<=nzzbins;i++) {
     zzbins[i] = zzmin + i*(zzmax-zzmin)/nzzbins;
   }
+*/
   // DCAr global resol bins
   Double_t zzzmin = -0.5; 
   Double_t zzzmax = 0.5; 
@@ -997,15 +999,15 @@ void AliHighPtTreeAnalysis::Make1pTresCovFits(){
 
   TBranch *br_Counts1ptRes_TPCAside   = OutTree->Branch("counts1ptRes_TPCAside",&counts1ptRes_TPCAside);
   br_Counts1ptRes_TPCAside->Fill();
-  TBranch *br_Counts1ptRes_TPCCside   = OutTree->Branch("counts1ptRes_TPCCside",&counts1ptRes_TPCAside);
+  TBranch *br_Counts1ptRes_TPCCside   = OutTree->Branch("counts1ptRes_TPCCside",&counts1ptRes_TPCCside);
   br_Counts1ptRes_TPCCside->Fill();  
   TBranch *br_cov1ptRes_TPCAside   = OutTree->Branch("cov1ptRes_TPCAside",&cov1ptRes_TPCAside);
   br_cov1ptRes_TPCAside->Fill();
-  TBranch *br_cov1ptRes_TPCCside   = OutTree->Branch("cov1ptRes_TPCCside",&cov1ptRes_TPCAside);
+  TBranch *br_cov1ptRes_TPCCside   = OutTree->Branch("cov1ptRes_TPCCside",&cov1ptRes_TPCCside);
   br_cov1ptRes_TPCCside->Fill();  
   TBranch *br_eCov1ptRes_TPCAside   = OutTree->Branch("eCov1ptRes_TPCAside",&eCov1ptRes_TPCAside);
   br_eCov1ptRes_TPCAside->Fill();
-  TBranch *br_eCov1ptRes_TPCCside   = OutTree->Branch("eCov1ptRes_TPCCside",&eCov1ptRes_TPCAside);
+  TBranch *br_eCov1ptRes_TPCCside   = OutTree->Branch("eCov1ptRes_TPCCside",&eCov1ptRes_TPCCside);
   br_eCov1ptRes_TPCCside->Fill(); 
 }
 
@@ -1295,8 +1297,8 @@ void AliHighPtTreeAnalysis::MakePowerFit(Int_t entries){
   TVectorD vecFitSlopeSecA(18), vecFitSlopeSecC(18);    // fit per sector  
   TVectorD eFitSecA(18), eFitSecC(18), eFitSlopeSecA(18), eFitSlopeSecC(18); 
   TVectorD vecFitA(3), vecFitC(3),  eFitA(3), eFitC(3);              // global fit    
-  TGraphErrors *grSlopeA[3]={0};
-  TGraphErrors *grSlopeC[3]={0};
+  //TGraphErrors *grSlopeA[3]={0x0,0x0,0x0};
+  //TGraphErrors *grSlopeC[3]={0x0,0x0,0x0};
 
   TVectorD vecChi2SecA(18), vecChi2SecC(18);
   TVectorD vecNpointsSecA(18), vecNpointsSecC(18);
@@ -1668,8 +1670,8 @@ void AliHighPtTreeAnalysis::MakePowerFit(Int_t entries){
       hisAll->Write();
       hisAside->Write();
       hisCside->Write();
-      grSlopeA[itype]= (TGraphErrors*)grAsideSlope->Clone();
-      grSlopeC[itype]= (TGraphErrors*)grCsideSlope->Clone();
+      //grSlopeA[itype]= (TGraphErrors*)grAsideSlope->Clone();
+      //grSlopeC[itype]= (TGraphErrors*)grCsideSlope->Clone();
 
       grChi2Aside->Write();
       grChi2Cside->Write();
@@ -3378,17 +3380,27 @@ AliHighPtTreeAnalysis::AliHighPtTreeAnalysis( TString file ) :
 
   TTree *tree = NULL;
   TTree *V0tree = NULL;
-  
   TFile *f = TFile::Open(file);
   if (!f) return;
   f->GetObject("highPt",tree);
   f->GetObject("V0s",V0tree);  
-  
   Bool_t highPtTreeOK=kFALSE;
   Bool_t V0sTreeOK=kFALSE;
-  if (V0tree) { if(V0tree->GetEntries() > 1) V0sTreeOK = kTRUE;}
-  if (tree)   { if(tree->GetEntries() > 1)   highPtTreeOK = kTRUE;}
+  if (V0tree) { if(V0tree->GetEntries() > 1 &&
+                   V0tree->GetBranchStatus("v0.") &&
+                   V0tree->GetBranchStatus("track0.") &&
+                   V0tree->GetBranchStatus("track1.") 
+                  )   V0sTreeOK = kTRUE;}
 
+  if (tree)   { if(tree->GetEntries() > 1 &&
+                   tree->GetBranchStatus("Bz") &&
+                   tree->GetBranchStatus("esdTrack.") &&
+                   tree->GetBranchStatus("vtxESD.") &&
+                   tree->GetBranchStatus("extTPCInnerC.") &&
+                   tree->GetBranchStatus("chi2TPCInnerC") &&
+                   tree->GetBranchStatus("mult") &&
+                   tree->GetBranchStatus("runNumber") 
+                  )   highPtTreeOK = kTRUE;}
   //   fMakePlots = kTRUE;
   if(highPtTreeOK)   
   {
@@ -3453,19 +3465,19 @@ void AliHighPtTreeAnalysis::Init(TTree *tree)
 {
   // Set branch addresses and branch pointers
   if (!tree) return;
+
   fChain = tree;
+
   TString str(fChain->GetBranch("runNumber")->GetTitle());
   if(str[str.Length()-1]=='I')
     fChain->SetBranchAddress("runNumber", &runNumberInt);
   if(str[str.Length()-1]=='D')
     fChain->SetBranchAddress("runNumber", &runNumber);
-
   str = fChain->GetBranch("Bz")->GetTitle();
   if(str[str.Length()-1]=='I')
     fChain->SetBranchAddress("Bz", &BzInt);
   if(str[str.Length()-1]=='D')
     fChain->SetBranchAddress("Bz", &Bz);
-
 
   fChain->SetBranchAddress("esdTrack.", &esdTrack);
   fChain->SetBranchAddress("vtxESD.", &vtxESD);
@@ -3474,14 +3486,12 @@ void AliHighPtTreeAnalysis::Init(TTree *tree)
   fChain->SetBranchAddress("chi2TPCInnerC", &chi2TPCInnerC);
   fChain->SetBranchAddress("mult", &mult);
   //   fChain->SetBranchAddress("Bz", &Bz);
-
   if( fChain->GetBranchStatus("particle.") ){
     hasMC = kTRUE;
     fChain->SetBranchAddress("particle.", &particle);
   }
   else
     hasMC = kFALSE;
-
 }
 
 Bool_t AliHighPtTreeAnalysis::ConnectGenericHistos( const char *genericHistoFile )

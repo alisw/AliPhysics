@@ -38,6 +38,9 @@ ClassImp(AliAnalysisTaskEmcalJetPatchTriggerQA)
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetPatchTriggerQA::AliAnalysisTaskEmcalJetPatchTriggerQA() : 
   AliAnalysisTaskEmcalJet("ChristineQA",kFALSE), 
+  fPhimin(-10), fPhimax(10),
+  fEtamin(-0.9), fEtamax(0.9),
+  fAreacut(0.0), 
   fLocalRhoVal(0),
   fHistNjetvsCent(0),
   fhnJetTriggerQA(0x0)
@@ -50,6 +53,9 @@ AliAnalysisTaskEmcalJetPatchTriggerQA::AliAnalysisTaskEmcalJetPatchTriggerQA() :
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetPatchTriggerQA::AliAnalysisTaskEmcalJetPatchTriggerQA(const char *name) :
   AliAnalysisTaskEmcalJet(name,kTRUE),
+  fPhimin(-10), fPhimax(10),
+  fEtamin(-0.9), fEtamax(0.9),
+  fAreacut(0.0), 
   fLocalRhoVal(0),
   fHistNjetvsCent(0),
   fhnJetTriggerQA(0x0)
@@ -109,27 +115,11 @@ Bool_t AliAnalysisTaskEmcalJetPatchTriggerQA::Run()
     fLocalRho = GetLocalRhoFromEvent(fLocalRhoName);
   }
 
-  // check to see if we have any tracks
-//  if (!fJets)  return kTRUE;
-
-  // get centrality bin
-//   Int_t centbin = GetCentBin(fCent);
-//   //for pp analyses we will just use the first centrality bin
-//   if (centbin == -1)
-//     centbin = 0;
-
-  // get event plane info from event
-  AliEventplane *aliEP = InputEvent()->GetEventplane();
-  if (aliEP) {
-      fEPV0  = aliEP->GetEventplane("V0" ,InputEvent());
-      fEPV0A = aliEP->GetEventplane("V0A",InputEvent());
-      fEPV0C = aliEP->GetEventplane("V0C",InputEvent());
-  }else {
-      AliWarning(Form("%s: Could not retrieve event plane information!", GetName()));
-  }
+  // check to see if we have jet object
+  if (!fJets)  return kTRUE;
 
   // find NUMBER of jets
-  const Int_t Njets = fJets->GetEntriesFast();
+  const Int_t Njets = fJets->GetEntries();
   Int_t NjetAcc = 0;
 
   // loop over jets in the event and make appropriate cuts
@@ -138,29 +128,16 @@ Bool_t AliAnalysisTaskEmcalJetPatchTriggerQA::Run()
      AliEmcalJet *jet = static_cast<AliEmcalJet*>(fJets->At(iJets));
      if (!jet)  // see if we have a jet
        continue; 
-   
-/*
-     if ((jet->Phi()<fPhimin)||(jet->Phi()>fPhimax))
-        continue;
-     if ((jet->Eta()<fEtamin)||(jet->Eta()>fEtamax))
-        continue;     
-*/
-     //cout<<"jet pt "<<jet->Pt()<<" area "<<jet->Area()<<" maxtrackpt "<<jet->MaxTrackPt()<<endl;
+     if (!AcceptMyJet(jet)) 
+       continue;
 
-     if (jet->Area()==0) // make sure jet has an area
-       continue;
-     if (jet->Pt()<0.1) // (should probably be higher..., but makes a cut on jet pT)
-       continue;
-     if (jet->MaxTrackPt()>100) // elminates fake tracks
-       continue;
+     //cout<<"jet pt "<<jet->Pt()<<" area "<<jet->Area()<<" maxtrackpt "<<jet->MaxTrackPt()<<endl;
      //This somehow needs to be fixed but I'm not sure what it does yet.  It seems the defaults are wacky.
-     if (! AcceptJet(jet)) // sees if jet is accepted
-     continue;
+//     if (! AcceptJet(jet)) // sees if jet is accepted
+//     continue;
      //  jets.push_back(jet);
 
      NjetAcc++;
-
-     //cout<<"just accepted a jet!! woot woot"<<endl;
      
      // Initializations and Calculations
      // Double_t jetphi = jet->Phi();
@@ -172,7 +149,7 @@ Bool_t AliAnalysisTaskEmcalJetPatchTriggerQA::Run()
      Double_t jetarea = -500;					// initialize jet area
      jetarea = jet->Area();		           		// jet area
 
-     Float_t dEP = -500;			                // initialize angle between jet and event plane
+     Double_t dEP = -500;			                // initialize angle between jet and event plane
      dEP = RelativeEPJET(jet->Phi(),fEPV0);
 
      // get LOCAL rho from event and fill histo's
@@ -195,7 +172,6 @@ Bool_t AliAnalysisTaskEmcalJetPatchTriggerQA::Run()
 	 }
 
     fHistNjetvsCent->Fill(fCent,NjetAcc);
-
 
   } // LOOP over JETS in event
   
@@ -229,7 +205,7 @@ Int_t AliAnalysisTaskEmcalJetPatchTriggerQA::GetCentBin(Double_t cent) const
 } 
 
 //_________________________________________________________________________
-Float_t AliAnalysisTaskEmcalJetPatchTriggerQA:: RelativeEPJET(Double_t jetAng, Double_t EPAng) const
+Double_t AliAnalysisTaskEmcalJetPatchTriggerQA:: RelativeEPJET(Double_t jetAng, Double_t EPAng) const
 { // function to calculate angle between jet and EP in the 1st quadrant (0,Pi/2)
   Double_t dphi = (EPAng - jetAng);
 
@@ -362,3 +338,18 @@ void AliAnalysisTaskEmcalJetPatchTriggerQA::GetDimParams(Int_t iEntry, TString &
 
    } // end of switch
 } // end of getting dim-params
+
+//________________________________________________________________________
+Int_t AliAnalysisTaskEmcalJetPatchTriggerQA::AcceptMyJet(AliEmcalJet *jet) {
+  //applies all jet cuts except pt
+  if ((jet->Phi()<fPhimin)||(jet->Phi()>fPhimax)) return 0;
+  if ((jet->Eta()<fEtamin)||(jet->Eta()>fEtamax)) return 0;
+  if (jet->Area()<fAreacut) return 0;
+  // prevents 0 area jets from sneaking by when area cut == 0
+  if (jet->Area()==0) return 0;
+  //exclude jets with extremely high pt tracks which are likely misreconstructed
+  if(jet->MaxTrackPt()>100) return 0;
+
+  //passed all above cuts
+  return 1;
+}

@@ -2583,11 +2583,11 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPtCascade(Double_t *px,
   Int_t nprongs=2;
   Double_t minv2,mrange;
   Double_t lolim,hilim;
-  Double_t minPt=0;
+  //  Double_t minPt=0;
   Bool_t retval=kFALSE;
   
   fMassCalc2->SetPxPyPzProngs(nprongs,px,py,pz);
-  minPt=fCutsLctoV0->GetMinPtCandidate();
+  //  minPt=fCutsLctoV0->GetMinPtCandidate();
   fOKInvMassLctoV0=kFALSE; 
   mrange=fCutsLctoV0->GetMassCut();
   lolim=fMassLambdaC-mrange;

@@ -1,0 +1,76 @@
+# 
+# To submit this JDL:
+#
+#   alien_submit alien:@data@/JDL \
+#      <run number> <N_jobs> <N_events> <tag> <generator>
+#
+# where 
+#
+#   <run number>   is the run number 
+#   <N_jobs>       is the number of sub-jobs 
+#   <N_events>     is the number of events per sub-job
+#   <tag>          is a single-word tag 
+#   <generator>    is the name of the generator 
+#
+# The output is written to alien:@out@/test/<tag>
+#
+Executable="@bin@/run.sh";
+
+Jobtag={
+	"comment:$4 ($1) $5 MC"
+};
+
+Packages = {
+	"VO_ALICE@AliRoot::@aliroot@",
+	"VO_ALICE@GEANT3::@geant@",
+	"VO_ALICE@ROOT::@root@",
+	"VO_ALICE@APISCONFIG::V1.1x",
+	"VO_ALICE@boost::v1_43_0",
+	"VO_ALICE@cgal::v3.6",
+	"VO_ALICE@fastjet::v2.4.2",
+	"VO_ALICE@jemalloc::v3.0.0"
+};
+
+
+TTL="72000";
+Price="10";
+
+Requirements=member(other.GridPartitions,"PDC08_2");
+
+Validationcommand="/alice/validation/validation.sh";
+
+InputFile={
+	"LF:@data@/Check.C",
+	"LF:@data@/Config.C",
+	"LF:@data@/Reconstruct.C",
+	"LF:@data@/Simulate.C",
+	"LF:@data@/simrun.sh",
+	"LF:@data@/Tag.C",
+	"LF:@data@/QA.C",
+	"LF:@data@/QAConfig.C",
+	"LF:@data@/AOD.C",
+	"LF:@data@/AODConfig.C",
+	"LF:@data@/GRP.C",
+	"LF:@data@/fmd_corrections.root"
+};
+
+Output = {
+	"log_archive:stderr.log,stdout.log,tag.log,sim.log,rec.log,check.log,qa.log,aod.log@disk=1",
+        "QA_archive.zip:QAresults*.root,event_stat*.root,trending*.root,fileinfo*.log,*.stat.qa*@disk=2",
+        "root_archive.zip:galice.root,Kinematics.root,TrackRefs.root,Trigger.root,AliESDs.root,AliESDfriends.root,Run*.root,ITS.RecPoints.root,@disk=2",
+        "aod_archive.zip:pyxsec*.root,AODQA.root,AliAOD*.root,FilterEvents_Trees*.root,*.stat.aod@disk=3",
+        "EventStat_temp*.root@disk=2"
+};
+
+OutputDir="@out@/$4/$1/#alien_counter_03i#";
+
+JDLVariables={
+	"Packages", 
+	"OutputDir"
+};
+
+#
+splitarguments="--run $1 --event $3 --process $5 --qa --aod --number #alien_counter#";
+split="production:1-$2";
+
+Workdirectorysize={"5000MB"};

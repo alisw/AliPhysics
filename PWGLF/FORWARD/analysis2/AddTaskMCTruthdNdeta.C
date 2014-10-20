@@ -15,7 +15,7 @@
  * @param trig      Trigger to use 
  * @param vzMin     Smallest @f$ v_z@f$
  * @param vzMax     Biggest @f$ v_z@f$
- * @param useCent   Whether to use the centrality or not
+ * @param cent      Whether to use the centrality or not
  * @param scheme    Normalisation scheme
  * @param cutEdges  Whether to cut edges when rebinning 
  * @param trigEff   Trigger efficiency 
@@ -27,15 +27,15 @@
  * @ingroup pwglf_forward_dndeta
  */
 AliAnalysisTask*
-AddTaskMCTruthdNdeta(const char* trig      = "INEL", 
+AddTaskMCTruthdNdeta(const char* config    = "dNdetaConfig.C",
+		     const char* trig      = "INEL", 
 		     Double_t    vzMin     = -10, 
 		     Double_t    vzMax     = +10, 
-		     Bool_t      useCent   = false,
+		     const char* cent      = "",
 		     const char* scheme    = 0,
-		     Bool_t      cutEdges  = false,
 		     Double_t    trigEff   = 1, 
 		     Double_t    trigEff0  = 1,
-		     Bool_t      corrEmpty = false)
+		     Bool_t      satOnly   = false)
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
@@ -52,19 +52,12 @@ AddTaskMCTruthdNdeta(const char* trig      = "INEL",
   // Set the trigger efficiency 
   task->SetTriggerEff(trigEff); // 0.997535);
   task->SetTriggerEff0(trigEff0);
-  // Whether to cut edges when re-binning 
-  task->SetCutEdges(cutEdges);
-  // Whether to correct for empty bins when projecting 
-  task->SetCorrEmpty(corrEmpty);
-  // Whether to use TH2::ProjectionX 
-  task->SetUseROOTProjectX(false);
   // Bit mask of 
   // 
   //    kNone           Normalise to accepted events 
   //    kEventLevel     Normalise to all events in selected range 
   //    kAltEventLevel  Normalise to all events in selected range 
   //    kBackground     Also correct for background triggers 
-  //    kShape          Correct shape 
   // 
   // kNone, kEventLevel, and kAltEventLevel are mutually exclusive.
   // If neither kEventLevel, nor kAltEventLevel is specified, then
@@ -72,8 +65,8 @@ AddTaskMCTruthdNdeta(const char* trig      = "INEL",
   // sense with kEventLevel and kAltEventLevel.  Furthermore, there
   // are some constants that encode the common cases
   //     
-  //    kFull    = kEventLevel |  kBackground | kShape 
-  //    kAltFull = kAltEventLevel |  kBackground | kShape 
+  //    kFull    = kEventLevel |  kBackground
+  //    kAltFull = kAltEventLevel |  kBackground
   // 
   // Default is kFull
   task->SetNormalizationScheme(AliBasedNdetaTask::kFull);
@@ -82,10 +75,20 @@ AddTaskMCTruthdNdeta(const char* trig      = "INEL",
   // Note, that a bin specified as a-b, covers the interval from a,
   // inclusive to b exclusive.  An upper bound of 100 is treated
   // especially, and the upper bound is inclusive in that case .
-  if (useCent) {
-    Short_t bins[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
-    task->SetCentralityAxis(11, bins);
+  if (cent) {
+    TString cM(cent);
+    if (task->SetCentralityMethod(cent)) {
+      Short_t bins[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
+      task->SetCentralityAxis(11, bins);
+    }
   }
+  // Set satellite vertex flag
+  task->SetSatelliteVertices(satOnly);
+
+  // Set-up task using a script 
+  task->Configure(config);
+  
+  // Connect to manager 
   task->Connect(0,0);
 
   return task;

@@ -168,8 +168,8 @@ double ktrng[8] = { 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
 	  dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);
 	  
 	  //PID method
-	  dtc1etaphitpc[aniter]->SetMass(KaonMass);
-	  dtc1etaphitpc[aniter]->SetMostProbableKaon();
+	  dtc1etaphitpc[aniter]->SetMass(PionMass);
+	  dtc1etaphitpc[aniter]->SetMostProbablePion();
           //dtc1etaphitpc[aniter]->SetPIDMethod(1);//contour
           //dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 	  //dtc1etaphitpc[aniter]->SetPIDMethod(AliFemtoESDTrackCut::kContour);
@@ -246,7 +246,9 @@ double ktrng[8] = { 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
 	      ktm = aniter*7 + ikt;
 	      ktpcuts[ktm] = new AliFemtoKTPairCut(ktrng[ikt], ktrng[ikt+1]);
 	      
-
+cqinvkttpc[ktm] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0, shqmax);
+	      cqinvkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
+	      anetaphitpc[aniter]->AddCorrFctn(cqinvkttpc[ktm]);
 
 	      if (run3d) {
 

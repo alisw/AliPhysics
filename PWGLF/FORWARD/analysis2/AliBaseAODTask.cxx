@@ -6,6 +6,8 @@
 #include <AliLog.h>
 #include <AliAODEvent.h>
 #include <TROOT.h>
+#include <TSystem.h>
+#include <TInterpreter.h>
 
 //____________________________________________________________________
 AliBaseAODTask::AliBaseAODTask()
@@ -27,7 +29,8 @@ AliBaseAODTask::AliBaseAODTask()
 {
 }
 //____________________________________________________________________
-AliBaseAODTask::AliBaseAODTask(const char* name)
+AliBaseAODTask::AliBaseAODTask(const char* name,
+			       const char* title)
   : AliAnalysisTaskSE(name),
     fTriggerMask(0xFFFFFFFF), 
     fMinIpZ(0), 
@@ -44,11 +47,43 @@ AliBaseAODTask::AliBaseAODTask(const char* name)
     fSums(0), 
     fResults(0)
 {
+  SetTitle(title && title[0] != '\0' ? title : this->ClassName());
   fCentAxis.SetName("centAxis");
   fCentAxis.SetTitle("Centrality [%]");
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
 }
+
+//____________________________________________________________________
+Bool_t 
+AliBaseAODTask::Configure(const char* macro)
+{
+  // --- Configure the task ------------------------------------------
+  TString macroPath(gROOT->GetMacroPath());
+  if (!macroPath.Contains("$(ALICE_ROOT)/PWGLF/FORWARD/analysis2")) { 
+    macroPath.Append(":$(ALICE_ROOT)/PWGLF/FORWARD/analysis2");
+    gROOT->SetMacroPath(macroPath);
+  }
+  TString mac(macro);
+  if (mac.EqualTo("-default-")) mac = DefaultConfig();
+  const char* config = gSystem->Which(gROOT->GetMacroPath(), mac.Data());
+  if (!config) {
+    AliWarningF("%s not found in %s", mac.Data(), gROOT->GetMacroPath());
+    return false;
+  }
+  // if (gInterpreter->IsLoaded(config)) 
+  // gInterpreter->UnloadFile(config);
+
+  AliInfoF("Loading configuration of '%s' from %s",  ClassName(), config);
+  gROOT->Macro(Form("%s((%s*)%p)", config, GetTitle(), this));
+  
+  Info("Configure", "Unloading configuration script");
+  gInterpreter->UnloadFile(config);
+  delete config;
+ 
+ return true;
+}
+
 //________________________________________________________________________
 void 
 AliBaseAODTask::SetTriggerMask(const char* mask)
@@ -168,7 +203,7 @@ AliBaseAODTask::UserCreateOutputObjects()
   fVertex->SetFillStyle(3001);
   fVertex->SetLineColor(kRed+2);
   fSums->Add(fVertex);
-  fAccVertex = static_cast<TH1*>(fVertex->Clone("vertexAcc"));
+  fAccVertex = static_cast<TH1D*>(fVertex->Clone("vertexAcc"));
   fAccVertex->SetTitle("IP_{z} of accepted events");
   fAccVertex->SetDirectory(0);
   fAccVertex->SetFillColor(kGreen+2);
@@ -183,7 +218,7 @@ AliBaseAODTask::UserCreateOutputObjects()
   fCent->SetLineColor(kRed+2);
   fCent->SetDirectory(0);
   fSums->Add(fCent);
-  fAccCent = static_cast<TH1*>(fCent->Clone("centAcc"));
+  fAccCent = static_cast<TH1D*>(fCent->Clone("centAcc"));
   fAccCent->SetTitle("Centrality of accepted events");
   fAccCent->SetDirectory(0);
   fAccCent->SetFillColor(kGreen+2);
@@ -194,7 +229,18 @@ AliBaseAODTask::UserCreateOutputObjects()
   if (!Book()) AliFatalF("Failed to book output objects for %s", GetName());
 
   // Store centrality axis as a histogram - which can be merged
-  fSums->Add(fCentAxis.Clone("centAxis"));
+  TH1* cH = 0;
+  if (fCentAxis.GetXbins() && fCentAxis.GetXbins()->GetSize() > 0) 
+    cH = new TH1I(fCentAxis.GetName(), fCentAxis.GetTitle(), 
+		  fCentAxis.GetNbins(), fCentAxis.GetXbins()->GetArray());
+  else 
+    cH = new TH1I(fCentAxis.GetName(), fCentAxis.GetTitle(), 
+		  fCentAxis.GetNbins(), fCentAxis.GetXmin(), 
+		  fCentAxis.GetXmax());
+  cH->GetXaxis()->SetTitle(fCentAxis.GetTitle());
+  cH->GetXaxis()->SetName(fCentAxis.GetName());
+
+  fSums->Add(cH);
   fSums->Add(AliForwardUtil::MakeParameter("trigger", ULong_t(fTriggerMask)));
   fSums->Add(AliForwardUtil::MakeParameter("count", 1));
   fSums->Add(AliForwardUtil::MakeParameter("alirootRev", 

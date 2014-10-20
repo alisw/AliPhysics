@@ -262,11 +262,11 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
   TString histname;
 
   const Int_t nbinsZ = 12;
-  Float_t binsZ[nbinsZ+1] = {0,1,2,3,4,5,6,7,8,9,10,20,1000};
+  Double_t binsZ[nbinsZ+1] = {0,1,2,3,4,5,6,7,8,9,10,20,1000};
 
-  Float_t *binsPt       = GenerateFixedBinArray(fNbins, fMinBinPt, fMaxBinPt);
-  Float_t *binsCorrPt   = GenerateFixedBinArray(fNbins*2, -fMaxBinPt, fMaxBinPt);
-  Float_t *binsArea     = GenerateFixedBinArray(50, 0, 2);
+  Double_t *binsPt       = GenerateFixedBinArray(fNbins, fMinBinPt, fMaxBinPt);
+  Double_t *binsCorrPt   = GenerateFixedBinArray(fNbins*2, -fMaxBinPt, fMaxBinPt);
+  Double_t *binsArea     = GenerateFixedBinArray(50, 0, 2);
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     if (fTracksCont || fCaloClustersCont) {
@@ -412,8 +412,7 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
 
       histname = "fHistDeltaPtEmbvsEP_";
       histname += i;
-      fHistDeltaPtEmbvsEP[i] = new TH2F(histname.Data(), histname.Data(), 
-					402, -TMath::Pi()*1.01, TMath::Pi()*3.01, fNbins * 2, -fMaxBinPt, fMaxBinPt);
+      fHistDeltaPtEmbvsEP[i] = new TH2F(histname.Data(), histname.Data(), 101, 0, TMath::Pi()*1.01, fNbins * 2, -fMaxBinPt, fMaxBinPt);
       fHistDeltaPtEmbvsEP[i]->GetXaxis()->SetTitle("#phi_{jet} - #Psi_{EP}");
       fHistDeltaPtEmbvsEP[i]->GetYaxis()->SetTitle("#delta#it{p}_{T}^{emb} (GeV/#it{c})");
       fHistDeltaPtEmbvsEP[i]->GetZaxis()->SetTitle("counts");
@@ -545,7 +544,12 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
       fHistEmbBkgArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - embJet->MCPt());
       fHistRhoVSEmbBkg[fCentBin]->Fill(fRhoVal * embJet->Area(), embJet->Pt() - embJet->MCPt());
       fHistDeltaPtEmbArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - embJet->Area() * fRhoVal - embJet->MCPt());
-      fHistDeltaPtEmbvsEP[fCentBin]->Fill(embJet->Phi() - fEPV0, embJet->Pt() - embJet->Area() * fRhoVal - embJet->MCPt());
+
+      Double_t ep = embJet->Phi() - fEPV0;
+      while (ep < 0) ep += TMath::Pi();
+      while (ep >= TMath::Pi()) ep -= TMath::Pi();
+
+      fHistDeltaPtEmbvsEP[fCentBin]->Fill(ep, embJet->Pt() - embJet->Area() * fRhoVal - embJet->MCPt());
 
       embJet = NextEmbeddedJet();
     }

@@ -47,7 +47,7 @@ AliFMDEventPlaneTask::AliFMDEventPlaneTask()
 }
 //_____________________________________________________________________
 AliFMDEventPlaneTask::AliFMDEventPlaneTask(const char* name) 
-  : AliBaseAODTask(name),
+  : AliBaseAODTask(name, "AliFMDEventPlaneTask"),
     fEventPlaneFinder("eventPlane"), // EP finder
     fHistVertexSel(0)               // Diagnostics histogram
 {

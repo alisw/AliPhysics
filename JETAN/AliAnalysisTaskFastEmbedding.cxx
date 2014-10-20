@@ -522,8 +522,8 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
       
    }
    
-   fh1AODfile = new TH1I("fh1AODfile", "overview of opened AOD files from the array", 2300, -0.5, 2299.5);
-   fh2AODevent = new TH2I("fh1AODevent","selected events;file;event", 2500,-.5,2499.5,5000,-.5,4999.5);
+   fh1AODfile = new TH1I("fh1AODfile", "overview of opened AOD files from the array", 23, -0.5, 2299.5);
+   fh2AODevent = new TH2I("fh1AODevent","selected events;file;event", 25,-.5,2499.5,50,-.5,4999.5);
    fHistList->Add(fh1AODfile);
    fHistList->Add(fh2AODevent);
 
@@ -839,7 +839,7 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
                fh1TrackPt->Fill(tmpTr->Pt());
                fh2TrackEtaPhi->Fill(tmpTr->Eta(), tmpTr->Phi());
             }
-         }
+	 }
 
          if(mcpartIN){
             Int_t nMCpart = mcpartIN->GetEntriesFast();

@@ -1,7 +1,7 @@
-AliAnalysisTaskSEPHOSpPbPi0* AddTaskPHOSpPbPi0(UInt_t triggerTag = 0, Bool_t isMCtruth=kFALSE)
+AliAnalysisTaskSEPHOSpPbPi0* AddTaskPHOSpPbPi0(UInt_t triggerTag = 0, Bool_t isMCtruth=kFALSE, Bool_t useTOFCut=kFALSE, Double_t width = 0.)
 {
 // Creates a task to analysis pi0 in p-Pb collisions with PHOS
-// Author: H. Zhu - 01/23/2014
+// Author: H. Zhu - 09/16/2014
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -40,6 +40,7 @@ AliAnalysisTaskSEPHOSpPbPi0* AddTaskPHOSpPbPi0(UInt_t triggerTag = 0, Bool_t isM
   task->SetXBins(tCent, tBuffer);
   task->SetEventCuts(cutsEvent);
   task->SetCaloClCuts(cutsCaloCl);
+  task->SetDecaliWidth(width);     // for decalibration
   task->SetRemovePileup(kTRUE);    // remove pileup events
   task->SetUseFiducialCut(kTRUE);  // use fiducial cut
   task->SetUseTOFCut(kTRUE);       // use TOF cut
@@ -53,13 +54,13 @@ AliAnalysisTaskSEPHOSpPbPi0* AddTaskPHOSpPbPi0(UInt_t triggerTag = 0, Bool_t isM
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
 
-  AliAnalysisDataContainer *output1 = mgr->CreateContainer("histosQA", TList::Class(), AliAnalysisManager::kOutputContainer, "histosPHOS.root");
+  AliAnalysisDataContainer *output1 = mgr->CreateContainer(Form("histosQA_TOF%i", useTOFCut), TList::Class(), AliAnalysisManager::kOutputContainer, "histosPHOS.root");
   mgr->ConnectOutput(task, 1, output1);
-  AliAnalysisDataContainer *output2 = mgr->CreateContainer("histosRD", TList::Class(), AliAnalysisManager::kOutputContainer, "histosPHOS.root");
+  AliAnalysisDataContainer *output2 = mgr->CreateContainer(Form("histosRD_TOF%i", useTOFCut), TList::Class(), AliAnalysisManager::kOutputContainer, "histosPHOS.root");
   mgr->ConnectOutput(task, 2, output2);
 
   if (isMCtruth) {
-    AliAnalysisDataContainer *output3 = mgr->CreateContainer("histosMC", TList::Class(), AliAnalysisManager::kOutputContainer, "histosPHOS.root");
+    AliAnalysisDataContainer *output3 = mgr->CreateContainer(Form("histosMC_TOF%i", useTOFCut), TList::Class(), AliAnalysisManager::kOutputContainer, "histosPHOS.root");
     mgr->ConnectOutput(task, 3, output3);
   }
 

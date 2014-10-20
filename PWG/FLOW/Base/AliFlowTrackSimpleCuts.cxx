@@ -20,7 +20,7 @@
 // for basic kinematic cuts
 //
 // author: N. van der Kolk (kolk@nikhef.nl)
-// mods: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch)
+// mods: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch), Redmer Bertens (rbertens@cern.ch)
 
 #include <limits.h>
 #include <float.h>
@@ -41,6 +41,9 @@ AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts(const char* name):
   fCutEta(kFALSE),
   fEtaMax(FLT_MAX),
   fEtaMin(-FLT_MAX),
+  fCutEtaGap(kFALSE),
+  fEtaGapMax(0.),
+  fEtaGapMin(0.),
   fCutPhi(kFALSE),
   fPhiMax(FLT_MAX),
   fPhiMin(-FLT_MAX),
@@ -117,6 +120,7 @@ Bool_t AliFlowTrackSimpleCuts::PassesCuts(const AliFlowTrackSimple *track) const
   if(fCutPhi) {if (track->Phi() < fPhiMin || track->Phi() >= fPhiMax ) return kFALSE;}
   if(fCutCharge) {if (track->Charge() != fCharge) return kFALSE;}
   if(fCutMass) {if (track->Mass() < fMassMin || track->Mass() >= fMassMax ) return kFALSE;}
+  if(fCutEtaGap) {if (track->Eta() > fEtaGapMin && track->Eta() < fEtaGapMax) return kFALSE;}
   //if(fCutPID) {if (track->PID() != fPID) return kFALSE;}
   return kTRUE;
 }
@@ -128,6 +132,8 @@ Bool_t AliFlowTrackSimpleCuts::PassesCuts(TParticle* track) const
   if(fCutPt)  {if (track->Pt() < fPtMin || track->Pt() >= fPtMax ) return kFALSE;}
   if(fCutEta) {if (track->Eta() < fEtaMin || track->Eta() >= fEtaMax ) return kFALSE;}
   if(fCutPhi) {if (track->Phi() < fPhiMin || track->Phi() >= fPhiMax ) return kFALSE;}
+  if(fCutEtaGap) {if (track->Eta() > fEtaGapMin && track->Eta() < fEtaGapMax) return kFALSE;}
+
   //if(fCutPID) {if (track->GetPdgCode() != fPID) return kFALSE;}
 
   //getting the charge from a tparticle is expensive

@@ -206,6 +206,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   virtual void   SetEventSelectionMask(UInt_t i){fEvtSelectionMask = i;}
   virtual void   SetEventClass(Int_t i){fEventClass = i;}
   virtual void   SetMaxVertexZ(Float_t z){fMaxVertexZ = z;}
+  virtual void   SetJetMinArea(Float_t cut){ fJetMinArea = cut; }
+
   virtual void   RejectPileupEvents(Bool_t b){fRejectPileup = b;}
   virtual void   SetJetCuts(Float_t jetPt = 5., Float_t jetEtaMin = -0.5, Float_t jetEtaMax = 0.5, 
 			    Float_t jetPhiMin = 0., Float_t jetPhiMax = 2*TMath::Pi())
@@ -255,7 +257,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     fQATrackNBinsPhi = nPhi; fQATrackPhiMin = phiMin; fQATrackPhiMax = phiMax; }
   
 
-
+  Float_t  GetJetMinArea()    const { return fJetMinArea; }
   Float_t  GetFFRadius() const { return fFFRadius; }
   Float_t  GetFFMinLTrackPt() const { return fFFMinLTrackPt; }
   Float_t  GetFFMaxTrackPt() const { return fFFMaxTrackPt; }
@@ -353,6 +355,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Float_t fJetEtaMax;     // jet eta cut
   Float_t fJetPhiMin;     // jet phi cut
   Float_t fJetPhiMax;     // jet phi cut
+  Float_t fJetMinArea;    // jet area cut
 
   Float_t fFFRadius;        // if radius > 0 construct FF from tracks within cone around jet axis, otherwise use trackRefs  
   Float_t fFFMinLTrackPt;   // reject jets with leading track with pt smaller than this value

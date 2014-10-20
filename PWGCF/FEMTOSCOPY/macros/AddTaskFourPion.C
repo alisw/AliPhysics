@@ -1,24 +1,13 @@
 AliFourPion *AddTaskFourPion(
-				 Bool_t LEGO=kTRUE, 
-				 Bool_t MCcase=kFALSE, 
-				 Bool_t PbPbcase=kTRUE, 
-				 Bool_t GenerateSignal=kFALSE, 
-				 Bool_t TabulatePairs=kFALSE, 
+			         Bool_t MCcase=kFALSE,
+			         Bool_t TabulatePairs=kFALSE,
 				 Int_t CentBinLowLimit=0, 
 				 Int_t CentBinHighLimit=1,
-				 Int_t RMax=11,
-				 Float_t fcSq=0.7,
-				 UInt_t FilterBit=7,
-				 Float_t MaxChi2NDF=10,
-				 Int_t MinTPCncls=0,
-				 Float_t MinSepPairEta=0.02,
-				 Float_t MinSepPairPhi=0.045,
-				 Float_t SigmaCutTPC=2.0,
-				 Float_t SigmaCutTOF=2.0,
 				 TString StWeightName="alien:///alice/cern.ch/user/d/dgangadh/WeightFile_FourPion.root",
 				 TString StMomResName="alien:///alice/cern.ch/user/d/dgangadh/MomResFile_FourPion.root",
 				 TString StKName="alien:///alice/cern.ch/user/d/dgangadh/KFile_FourPion.root",
-				 TString StMuonName="alien:///alice/cern.ch/user/d/dgangadh/MuonCorrection_FourPion.root"
+				 TString StMuonName="alien:///alice/cern.ch/user/d/dgangadh/MuonCorrection_FourPion.root",
+				 TString StEAName="alien:///alice/cern.ch/user/d/dgangadh/c3EAfile.root"
 			     ) {
   
   //===========================================================================
@@ -33,21 +22,28 @@ AliFourPion *AddTaskFourPion(
   // Create task
   AliFourPion *FourPionTask = new AliFourPion("FourPionTask");
   if(!FourPionTask) return NULL;
-  FourPionTask->SetLEGOCase(LEGO);
+  FourPionTask->SetLEGOCase(kTRUE);
   FourPionTask->SetMCdecision(MCcase);
-  FourPionTask->SetPbPbCase(PbPbcase);
-  FourPionTask->SetGenerateSignal(GenerateSignal);
+  FourPionTask->SetCollisionType(0);
+  FourPionTask->SetGenerateSignal(kFALSE);
   FourPionTask->SetTabulatePairs(TabulatePairs);
+  FourPionTask->SetInterpolationType(kFALSE);
   FourPionTask->SetCentBinRange(CentBinLowLimit, CentBinHighLimit);
-  FourPionTask->SetRMax(RMax);
-  FourPionTask->SetfcSq(fcSq);
-  FourPionTask->SetFilterBit(FilterBit);
-  FourPionTask->SetMaxChi2NDF(MaxChi2NDF);
-  FourPionTask->SetMinTPCncls(MinTPCncls);
-  FourPionTask->SetPairSeparationCutEta(MinSepPairEta);
-  FourPionTask->SetPairSeparationCutPhi(MinSepPairPhi);
-  FourPionTask->SetNsigmaTPC(SigmaCutTPC);
-  FourPionTask->SetNsigmaTOF(SigmaCutTOF);
+  FourPionTask->SetRMax(11);
+  FourPionTask->SetfcSq(0.7);
+  FourPionTask->SetFilterBit(7);
+  FourPionTask->SetMaxChi2NDF(10);
+  FourPionTask->SetMinTPCncls(0);
+  FourPionTask->SetPairSeparationCutEta(0.02);
+  FourPionTask->SetPairSeparationCutPhi(0.045);
+  FourPionTask->SetNsigmaTPC(2.0);
+  FourPionTask->SetNsigmaTOF(2.0);
+  //
+  FourPionTask->SetMixedChargeCut(kFALSE);
+  FourPionTask->SetMinPt(0.16);
+  FourPionTask->SetMaxPt(1.0);
+  FourPionTask->SetKT3transition(0.3);
+  FourPionTask->SetKT4transition(0.3);
   mgr->AddTask(FourPionTask);
 
 
@@ -64,7 +60,8 @@ AliFourPion *AddTaskFourPion(
   TFile *inputFileWeight = 0;
   TFile *inputFileMomRes = 0;
   TFile *inputFileFSI = 0;
-
+  TFile *inputFileMuon = 0;
+  TFile *inputFileEA = 0;
  
   if(!TabulatePairs){
     inputFileWeight = TFile::Open(StWeightName,"OLD");
@@ -92,6 +89,20 @@ AliFourPion *AddTaskFourPion(
       }
     }
     FourPionTask->SetWeightArrays( kTRUE, weightHisto );
+    //
+    //
+    inputFileEA = TFile::Open(StEAName,"OLD");
+    if (!inputFileEA){
+      cout << "Requested file:" << inputFileEA << " was not opened. ABORT." << endl;
+      return NULL;
+    }
+    TH3D *PbPbEA = 0;
+    TH3D *pPbEA = 0;
+    TH3D *ppEA = 0;
+    PbPbEA = (TH3D*)inputFileEA->Get("PbPbEA");
+    pPbEA = (TH3D*)inputFileEA->Get("pPbEA");
+    ppEA = (TH3D*)inputFileEA->Get("ppEA");
+    FourPionTask->Setc3FitEAs( kTRUE, PbPbEA, pPbEA, ppEA );
     ////////////////////////////////////////////////////
   }// TabulatePairs check
   
@@ -104,9 +115,11 @@ AliFourPion *AddTaskFourPion(
     }
     ////////////////////////////////////////////////////
     // Momentum Resolution File
-    TH2D *momResHisto2D = 0;
-    momResHisto2D = (TH2D*)inputFileMomRes->Get("MRC_C2_SC");
-    FourPionTask->SetMomResCorrections( kTRUE, momResHisto2D);
+    TH2D *momResHisto2DSC = 0;
+    TH2D *momResHisto2DMC = 0;
+    momResHisto2DSC = (TH2D*)inputFileMomRes->Get("MRC_C2_SC");
+    momResHisto2DMC = (TH2D*)inputFileMomRes->Get("MRC_C2_MC");
+    FourPionTask->SetMomResCorrections( kTRUE, momResHisto2DSC, momResHisto2DMC );
     ////////////////////////////////////////////////////
 
     // Muon corrections

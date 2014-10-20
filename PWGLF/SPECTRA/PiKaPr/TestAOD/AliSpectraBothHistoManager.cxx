@@ -73,6 +73,7 @@ AliSpectraBothHistoManager::AliSpectraBothHistoManager(const char *name,Int_t nr
       if (ihist > kNPtRecAllChHist && ihist <= kNHistPID && pidqa) BookPIDHistogram(kHistNameBoth[ihist]);  // PID histos
       if (ihist > kNHistPID && ihist <= kNHistNSig && pidqa) BookNSigHistogram(kHistNameBoth[ihist]);  // NSigmaSep histos
       if(ihist==kHistGenMulvsRawMul) BookGenMulvsRawMulHistogram(kHistNameBoth[ihist]); 
+      if(ihist==kHistDoubleCounts)BookDoubleCountsHistogram(kHistNameBoth[ihist]); 
     }
    
   TH1::AddDirectory(oldStatus);
@@ -390,5 +391,29 @@ TH2* AliSpectraBothHistoManager::GetHistogram2D(UInt_t histoType, UInt_t particl
   // returns histo based on ids, casting it to TH2*
   return (TH2*) GetHistogram1D(histoType,particleType,charge);
 
+}
+//______________________________________________________________________________________________________
+ TH2F*   AliSpectraBothHistoManager::BookDoubleCountsHistogram(const char * name)
+{
+  // Return a pt histogram with predefined binning, set the ID and add it to the output list
+  AliInfo(Form("Booking  Double Counts histogram %s", name));
+  const Double_t templBins[] = {0.05,0.1,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0};
+  Int_t nbinsTempl=52;
+   
+  TH2F * hist = new TH2F(name,"Histogram of double counts",nbinsTempl,templBins,4,-0.5,3.5);
+  hist->GetXaxis()->SetTitle("P_{T} (GeV / c)");
+  hist->GetYaxis()->SetTitle("type of doubles");
+  hist->GetYaxis()->SetBinLabel(1,"#pi+K+p");
+  hist->GetYaxis()->SetBinLabel(2,"#pi+K");
+  hist->GetYaxis()->SetBinLabel(3,"#pi+p");
+  hist->GetYaxis()->SetBinLabel(4,"K+p");
+
+  hist->SetMarkerStyle(kFullCircle);
+  hist->Sumw2();
+  fOutputList->Add(hist);
+   
+  return hist;
+
 
 }
+

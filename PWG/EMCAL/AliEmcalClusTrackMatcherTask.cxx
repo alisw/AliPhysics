@@ -242,7 +242,7 @@ Bool_t AliEmcalClusTrackMatcherTask::Run()
     } else {
       ec = dynamic_cast<AliESDCaloCluster*>(clust);
       TArrayI *arr = ec->GetTracksMatched(); 
-      arr->Set(0);
+      if(arr) arr->Set(0);
     }
     const Int_t N = partC->GetNumberOfMatchedObj();
     if (N <= 0)

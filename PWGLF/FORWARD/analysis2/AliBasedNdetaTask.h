@@ -14,6 +14,7 @@
  * 
  */
 #include "AliBaseAODTask.h"
+#include <AliAnalysisUtils.h>
 class TAxis;
 class TList;
 class TH2D;
@@ -56,21 +57,24 @@ public:
     /** 
      * Do the full normalisation 
      * @f[ 
-     *   N = \frac{1}{\epsilon_X}(N_A-N_A/N_V(N_T-N_V)) = 
-     *       \frac{1}{\epsilon_X}\frac{1}{\epsilon_V}N_A
+     *   N = (N_A-N_A/N_V(N_T-N_V)) = \frac{1}{\epsilon_V}N_A
      * @f]
      */
     kEventLevel = 0x1,
     /** 
-     * Do the shape correction
+     * Dummy 
      */
-    kShape = 0x2, 
+    kDummy = 0x2, 
     /** 
-     * Correct for background events (A+C-E). Not implemented yet
+     * Correct for background events (A+C-E)
      */
     kBackground = 0x4,
     /**
-     * Correct for the trigger efficiency from MC 
+     * Correct for the trigger efficiency
+     *
+     * @f[
+     *   N = N_A \frac{1}{\epsilon_X}
+     * @f]
      */
     kTriggerEfficiency = 0x8,
     /** 
@@ -80,7 +84,65 @@ public:
     /**
      * Do the full correction
      */
-    kFull = kEventLevel | kShape | kBackground | kTriggerEfficiency,
+    kFull = kEventLevel | kBackground | kTriggerEfficiency,
+  };
+  /**
+   * Mask for selecting pile-up 
+   */
+  enum EPileupMask { 
+    /**
+     * Use the flag from AOD 
+     */
+    kPileupNormal = 0, 
+    /** 
+     * Check the pile-up flag from SPD 
+     */
+    kPileupSPD    = 0x1, 
+    /** 
+     * Check the pileup flag from tracks 
+     */
+    kPileupTrk    = 0x2, 
+    /**
+     * Check the out-of-bunch pileup flag 
+     */
+    kPileupBC     = 0x4, 
+    /**
+     * Use the flag from AOD 
+     */
+    kPileupFull   = 0x8,
+    /** 
+     * Also accept pileup 
+     */
+    kPileupIgnore = 0x10,
+    /** 
+     * Use analysis utility class 
+     */
+    kPileupUtil = 0x20 
+  };
+
+  enum ECentralityEstimator { 
+    kCentNone,
+    kCentDefault,   // What ever stored in AOD 
+    kCentV0M,       // VZERO multiplcity 
+    kCentV0A,       // VZERO-A 
+    kCentV0A123,    // VZERO-A 
+    kCentV0C,       // VZERO-C
+    kCentFMD,       // FMD
+    kCentTrk,       // Tracks
+    kCentTkl,       // Tracklets
+    kCentCL0,       // Clusters in SPD-0
+    kCentCL1,       // Clusters in SPD-1
+    kCentCND,       // Clusters
+    kCentZNA,       // ZDC neutrons A-side
+    kCentZNC,       // ZDC neutrons C-side
+    kCentZPA,       // ZDC protons A-side
+    kCentZPC,       // ZDC protons C-side
+    kCentNPA,       // ?
+    kCentV0MvsFMD,  // V0M vs FMD
+    kCentTklvsV0M,  // Tracks vs V0M
+    kCentZEMvsZDC,  // ZDC veto vs neutrons
+    kCentTrue = 0x100, 
+    kCentEq   = 0x200
   };
   /** 
    * Constructor 
@@ -98,7 +160,7 @@ public:
    * 
    */
   virtual ~AliBasedNdetaTask();
-
+  
   /** 
    * @{ 
    * @name Task configuration 
@@ -109,18 +171,6 @@ public:
    * @param level Debug level
    */
   virtual void SetDebugLevel(Int_t level);
-  /** 
-   * Set the rebinning factor 
-   * 
-   * @param rebin Rebinning factor 
-   */
-  void SetRebinning(Int_t rebin) { fRebin = rebin; }
-  /** 
-   * Whether to cut edges when merging 
-   * 
-   * @param cut If true, cut edges 
-   */
-  void SetCutEdges(Bool_t cut) {fCutEdges = cut;}
   /** 
    * Set whether to correct for empty bins when projecting on the X axis. 
    * 
@@ -146,19 +196,39 @@ public:
    * @param e Trigger efficiency for 0-bin
    */
   void SetTriggerEff0(Double_t e) { fTriggerEff0 = e; } 
-  /** 
-   * Set the shape correction (a.k.a., track correction) for selected
-   * trigger(s)
-   * 
-   * @param h Correction
-   */
-  void SetShapeCorrection(const TH2F* h);
   /**
-    * Set satellite vertex flag
-    *
-    * @param satVtx
-    */
+   * Set satellite vertex flag
+   *
+   * @param satVtx
+   */
   void SetSatelliteVertices(Bool_t satVtx) { fSatelliteVertices = satVtx; }
+  /** 
+   * Set which centrality estimator to use - if not set, use the one
+   * from the Forward AOD object.  Note, the string is diagnosed, and
+   * if found not to be valid, then a the program terminates via a
+   * Fatal.
+   *
+   * @param method String definining centrality method (case insensitive)
+   * Typical values are 
+   * - V0M (e.g., PbPb)
+   * - V0A 
+   * - V0C 
+   * - FMD 
+   * - ZNA (e.g., pPb) 
+   * - ZNC (e.g., Pbp)
+   * - ZPA 
+   * - ZPC 
+   * - ZEMvsZDC
+   *
+   * @return true if @a method is valid estimator 
+   */
+  Bool_t SetCentralityMethod(const TString& method);
+  /**
+   * Get reference to the analysis utility 
+   *
+   * @return reference to the AliAnalysisUtils object
+   */
+  AliAnalysisUtils& GetAnalysisUtils() { return fAnaUtil; }
   /** 
    * Get a string representing the normalization scheme 
    * 
@@ -188,6 +258,12 @@ public:
    */
   void SetNormalizationScheme(const char* what);
   /** 
+   * Set the mask for checking pile-up events 
+   *
+   * @param bits A bit pattern of EPileupMask bits 
+   */
+  void SetPileupMask(UShort_t bits) { fPileupMask = bits; }
+  /** 
    * Filename of final MC correction
    * 
    * @param filename filename
@@ -197,12 +273,21 @@ public:
     fFinalMCCorrFile.Append(filename); 
   }
   /** 
-   * Load the normalization data - done automatically if not set from outside
+   * Flag whether we should disregard SPD outlier events, as flagged
+   * by AliTriggerAnalysis::IsSPDClusterVsTrackletBG. The default
+   * setting for this flags events as outliers if
+   *
+   @f[ 
+   N_{cluster} > 65 + 4 N_{tracklet}
+   @f] 
    * 
-   * @param sys system
-   * @param energy energy
+   * where @f$N_{cluster}@f$ is the total number of clusters in both
+   * SPD layers, and @f$N_{tracklet}@f$ is the total number of
+   * tracklets in the SPD.
+   * 
+   * @param check If true, then check for SPD outlier events before processing. 
    */
-  void LoadNormalizationData(UShort_t sys, UShort_t energy);  
+  void SetCheckSPDOutlier(Bool_t check=true) { fCheckSPDOutlier = check; }
   /** @} */
   /** 
    * Print information 
@@ -241,24 +326,6 @@ public:
    * @{ 
    * @name Services member functions 
    */
-  /** 
-   * Make a copy of the input histogram and rebin that histogram
-   * 
-   * @param h         Histogram to rebin
-   * @param rebin     Rebinning factor 
-   * @param cutEdges  Whether to cut edges when rebinning
-   * 
-   * @return New (rebinned) histogram
-   */
-  static TH1D* Rebin(const TH1D* h, Int_t rebin, Bool_t cutEdges=false);
-  /** 
-   * Make an extension of @a h to make it symmetric about 0 
-   * 
-   * @param h Histogram to symmertrice 
-   * 
-   * @return Symmetric extension of @a h 
-   */
-  static TH1* Symmetrice(const TH1* h);
   /** 
    * Project onto the X axis 
    * 
@@ -353,7 +420,7 @@ public:
    * collisions as a function of @f$\eta@f$ and interaction point
    * Z-coordinate @f$ IP_{z}@f$
    */
-   void SetGlobalEmpiricalcorrection(TH2D* h){fEmpiricalCorrection=h;}
+  void SetGlobalEmpiricalcorrection(TH2D* h){fEmpiricalCorrection=h;}
 protected:
   /** 
    * Copy contructor - not defined
@@ -436,6 +503,11 @@ protected:
   
   // function which applies empirical correction to the AOD object 
   Bool_t ApplyEmpiricalCorrection(const AliAODForwardMult* aod,TH2D* data);
+
+
+  static Int_t GetCentMethodID(const TString& meth);
+  static const char* GetCentMethod(UShort_t id);
+
   //==================================================================
   /**
    * Class that holds the sum of the data - possibly split into 0 or
@@ -615,6 +687,7 @@ protected:
      * @param vzMax       Maximum IP z coordinate
      * @param data        Data histogram 
      * @param mc          MC histogram
+     * @param checkPileup If true, disregard pile-up events (global flag)
      *
      * @return true if the event was selected
      */
@@ -624,7 +697,8 @@ protected:
 				Double_t                 vzMin, 
 				Double_t                 vzMax, 
 				const TH2D*              data, 
-				const TH2D*              mc);
+				const TH2D*              mc,
+				Bool_t                   checkPileup);
     /** 
      * Calculate the Event-Level normalization. 
      * 
@@ -695,11 +769,7 @@ protected:
      * @param postfix    Post fix on names
      * @param rootProj   Whether to use ROOT TH2::ProjectionX
      * @param corrEmpty  Correct for empty bins 
-     * @param shapeCorr  Shape correction to use 
      * @param scaler     Event-level normalization scaler  
-     * @param symmetrice Whether to make symmetric extensions 
-     * @param rebin      Whether to rebin
-     * @param cutEdges   Whether to cut edges when rebinning 
      * @param marker     Marker style 
      * @param color       Color of markers 
      * @param mclist      List of MC data 
@@ -709,11 +779,7 @@ protected:
 			    const char* postfix, 
 			    bool        rootProj, 
 			    bool        corrEmpty,
-			    const TH2F* shapeCorr,
 			    Double_t    scaler,
-			    bool        symmetrice, 
-			    Int_t       rebin, 
-			    bool        cutEdges, 
 			    Int_t       marker,
 			    Int_t       color, 
 			    TList*      mclist,
@@ -724,14 +790,10 @@ protected:
      * @param sums        List of sums
      * @param results     Output list of results
      * @param scheme      Normalisation scheme options
-     * @param shapeCorr   Shape correction or nil
      * @param trigEff     Trigger efficiency 
      * @param trigEff0    0-bin trigger efficiency 
-     * @param symmetrice  Whether to symmetrice the results
-     * @param rebin       Whether to rebin the results
      * @param rootProj    If true, use TH2::ProjectionX
      * @param corrEmpty   Whether to correct for empty bins
-     * @param cutEdges    Whether to cut edges when rebinning
      * @param triggerMask Trigger mask 
      * @param marker      Marker style 
      * @param color       Color of markers 
@@ -741,14 +803,10 @@ protected:
     virtual void End(TList*      sums, 
 		     TList*      results,
 		     UShort_t    scheme,
-		     const TH2F* shapeCorr, 
 		     Double_t    trigEff,
 		     Double_t    trigEff0,
-		     Bool_t      symmetrice,
-		     Int_t       rebin, 
 		     Bool_t      rootProj,
 		     Bool_t      corrEmpty, 
-		     Bool_t      cutEdges, 
 		     Int_t       triggerMask,
 		     Int_t       marker,
 		     Int_t       color,
@@ -824,21 +882,16 @@ protected:
      * 
      * @return 
      */
-    const char* GetResultName(Int_t rebin, Bool_t sym, 
-			      const char* postfix="") const;
+    const char* GetResultName(const char* postfix="") const;
     /** 
      * Get a result 
      * 
-     * @param rebin    Whether to get rebinned result
-     * @param sym      Whether to get symmetric extension
      * @param postfix  Possible postfix (e.g., "MC")
      * @param verbose  If true, complain about missing histogram
      * 
      * @return Pointer to histogram or null
      */
-    TH1* GetResult(Int_t       rebin, 
-		   Bool_t      sym, 
-		   const char* postfix="",
+    TH1* GetResult(const char* postfix="",
 		   Bool_t      verbose=true) const;
     /** 
      * Set the debug level
@@ -882,7 +935,8 @@ protected:
     virtual Bool_t CheckEvent(const AliAODForwardMult* forward, 
 			      Int_t                    triggerMask,
 			      Double_t                 vzMin, 
-			      Double_t vzMax);
+			      Double_t                 vzMax,
+			      Bool_t                   checkPileup);
     TList*   fSums;      // Output list 
     TList*   fOutput;    // Output list 
     Sum*     fSum;       // Sum histogram
@@ -897,21 +951,21 @@ protected:
 
     ClassDef(CentralityBin,4); // A centrality bin 
   };
-  Int_t           fRebin;        // Rebinning factor 
-  Bool_t          fCutEdges;     // Whether to cut edges when rebinning
-  Bool_t          fSymmetrice;   // Whether to symmetrice data 
   Bool_t          fCorrEmpty;    // Correct for empty bins 
   Bool_t          fUseROOTProj;  // Whether to use ROOT's ProjectionX
   Double_t        fTriggerEff;   // Trigger efficiency for selected trigger(s)
   Double_t        fTriggerEff0;  // Bin-0 Trigger efficiency for sel trigger(s)
-  TH2F*           fShapeCorr;    // Shape correction 
   TObjArray*      fListOfCentralities; // Centrality bins 
   UShort_t        fNormalizationScheme; // Normalization scheme
   TString         fFinalMCCorrFile; //Filename for final MC corr
   Bool_t          fSatelliteVertices; // satellite vertex flag
   TH2D*           fEmpiricalCorrection; // Empirical correction 
   TH2D* 	  fMeanVsC;         //mean signal per event vs cent
-  ClassDef(AliBasedNdetaTask,14); // Determine charged particle density
+  TString         fCentMethod;    // Centrality estimator 
+  UShort_t        fPileupMask;    // Pile-up checks 
+  AliAnalysisUtils fAnaUtil;      // Analysis utility 
+  Bool_t          fCheckSPDOutlier; // Check for SPD outliers 
+  ClassDef(AliBasedNdetaTask,17); // Determine charged particle density
 };
 
 #endif

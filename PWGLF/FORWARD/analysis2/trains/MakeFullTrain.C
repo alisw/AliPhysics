@@ -33,9 +33,10 @@ public:
     : TrainSetup(name)
   {
     // General
-    fOptions.Add("dNdeta", "Add dN/deta tasks");
-    fOptions.Add("flow", "Add flow tasks");
-    fOptions.Add("cent",  "Use centrality");
+    fOptions.Add("dNdeta",  "Add dN/deta tasks");
+    fOptions.Add("flow",    "Add flow tasks");
+    fOptions.Add("cent",    "Use centrality");
+    fOptions.Add("sat-vtx", "Use satellite interactions");
     // ESD settings
     fOptions.Add("run",   "NUMBER",  "Run number", 0);
     fOptions.Add("sys",   "SYSTEM",  "1:pp, 2:PbPb, 3:pPb", "");
@@ -46,28 +47,26 @@ public:
 		 "ForwardAODConfig.C");
     fOptions.Add("central-config", "FILE", "Forward configuration", 
 		 "CentralAODConfig.C");
-    fOptions.Add("satelitte", "Use satelitte interactions");
     fOptions.Add("corr", "DIR", "Corrections dir", "");
     // dNdeta AOD settings
-    fOptions.Add("trig",     "TYPE", "Trigger type", "INEL");
-    fOptions.Add("vzMin",    "CENTIMETER", "Min Ip Z", "-10");
-    fOptions.Add("vzMax",    "CENTIMETER", "Max Ip Z", "+10");
-    fOptions.Add("scheme",   "SCHEME", "Normalization scheme", "");
-    fOptions.Add("trigEff",  "EFFICENCY", "Trigger effeciency", "1");
-    fOptions.Add("trigEff0", "EFFICENCY", "0-bin trigger effeciency", "1");
-    fOptions.Add("cut-edges", "Cut acceptance edges");
+    fOptions.Add("dndeta-config", "FILE", "dN/deta configuration", 
+		 "dNdetaConfig.C");
+    fOptions.Add("trig",     "TYPE",       "Trigger type",             "INEL");
+    fOptions.Add("vzMin",    "CENTIMETER", "Min Ip Z",                 "-10");
+    fOptions.Add("vzMax",    "CENTIMETER", "Max Ip Z",                 "+10");
+    fOptions.Add("scheme",   "SCHEME",     "Normalization scheme",     "");
+    fOptions.Add("trigEff",  "EFFICENCY",  "Trigger effeciency",       "1");
+    fOptions.Add("trigEff0", "EFFICENCY",  "0-bin trigger effeciency", "1");
     // Flow AOD settings
-    fOptions.Add("mom", "Flow moments to analyse", "234", "234");
-    fOptions.Add("eta-gap", "Whether to use an eta-gap", "[no,yes,both]", 
-		 "both");
-    fOptions.Add("eg-value", "Set value in |eta| of the eta gap", "2.0");
-    fOptions.Add("b-cent","Whether to use the impact parameter for centrality");
-    fOptions.Add("afterburner", "What to afterburn", "[eta,phi,b,pid]", "");
-    fOptions.Add("ab-type", "Type of afterburner", "1|2|3|4", "");
-    fOptions.Add("ab-order", "Order of afterburner", "2|3|4|5|6", "");
-    fOptions.Add("sat-vtx", "Whether to use satellite interactions");
-    fOptions.Add("outlier-fmd", "Outlier cut for FMD", "NSIGMA", "4.0");
-    fOptions.Add("outlier-spd", "Outlier cut for SPD", "NSIGMA", "0.0");
+    fOptions.Add("mom",     "MOMENTS",      "Flow moments to analyse", "234");
+    fOptions.Add("eta-gap", "[no,yes,both]","Whether to use an eta-gap","both");
+    fOptions.Add("eg-value",   "DISTANCE",  "Size of eta gap",          "2.0");
+    fOptions.Add("b-cent",     "Use the impact parameter for centrality");
+    fOptions.Add("afterburner","[eta,phi,b,pid]", "What to afterburn", "");
+    fOptions.Add("ab-type",    "[1-4]",     "Type of afterburner",     "");
+    fOptions.Add("ab-order",    "[2-6]",     "Order of afterburner",    "");
+    fOptions.Add("outlier-fmd", "NSIGMA", "Outlier cut for FMD", "4.0");
+    fOptions.Add("outlier-spd", "NSIGMA", "Outlier cut for SPD", "0.0");
 
     fOptions.Set("type", "ESD"); 
     fOptions.Show(std::cout);
@@ -103,24 +102,25 @@ protected:
     gROOT->Macro("AddTaskCopyHeader.C");
 
     // --- Get options -----------------------------------------------
-    ULong_t  run = fOptions.AsInt("run", 0);
-    UShort_t sys = fOptions.AsInt("sys", 0);
-    UShort_t sNN = fOptions.AsInt("snn", 0);
-    UShort_t fld = fOptions.AsInt("field", 0);
-    Bool_t  cent = fOptions.Has("cent");
+    ULong_t  run    = fOptions.AsInt("run", 0);
+    UShort_t sys    = fOptions.AsInt("sys", 0);
+    UShort_t sNN    = fOptions.AsInt("snn", 0);
+    UShort_t fld    = fOptions.AsInt("field", 0);
+    Bool_t   cent   = fOptions.Has("cent");
+    Bool_t   satVtx = fOptions.AsBool("sat-vtx");
     TString  cor = "";
     if (fOptions.Has("corr")) cor = fOptions.Get("corr");
     
     // --- Add the task ----------------------------------------------
     TString fwdConfig = fOptions.Get("forward-config");
     gROOT->Macro(Form("AddTaskForwardMult.C(%d,%d,%d,%d,%d,\"%s\")", 
-		      mc, runNo, sys, sNN, fld, fwdConfig.Data()));
+		      mc, run, sys, sNN, fld, fwdConfig.Data()));
     fHelper->LoadAux(gSystem->Which(gROOT->GetMacroPath(), fwdConfig));
 
     // --- Add the task ----------------------------------------------
     TString cenConfig = fOptions.Get("central-config");
     gROOT->Macro(Form("AddTaskCentralMult.C(%d,%d,%d,%d,%d,\"%s\")", 
-		      mc, runNo, sys, sNN, fld, cenConfig.Data()));
+		      mc, run, sys, sNN, fld, cenConfig.Data()));
     fHelper->LoadAux(gSystem->Which(gROOT->GetMacroPath(), cenConfig));
 
     // --- Add MC particle task --------------------------------------
@@ -136,14 +136,13 @@ protected:
       Double_t vzMax  = fOptions.AsDouble("vzmax", +10);
       Double_t effT   = fOptions.AsDouble("trigEff", 1);
       Double_t effT0  = fOptions.AsDouble("trigEff0", 1);
-      Bool_t   edges  = fOptions.Has("cut-edges");
-      Bool_t   corrEm = fOptions.Has("corr-empty");
+      TString  config = fOptions.Get("dndeta-config");
 
       // --- Form arguments --------------------------------------------
       TString args;
-      args.Form("\"%s\",%f,%f,%d,\"%s\",%d,%g,%g,%d",
-		trig.Data(), vzMin, vzMax, cent, scheme.Data(),
-		edges, effT, effT0, corrEm);
+      args.Form("\"%s\",\"%s\",%f,%f,%d,\"%s\",%g,%g",
+		config.Data(),trig.Data(), vzMin, vzMax, cent, scheme.Data(),
+		effT, effT0);
       // --- Add the task ----------------------------------------------
       gROOT->Macro(Form("AddTaskForwarddNdeta.C(%s);", args.Data()));
       gROOT->Macro(Form("AddTaskCentraldNdeta.C(%s);", args.Data()));
@@ -160,7 +159,6 @@ protected:
       TString  addFlow = fOptions.Get("afterburner");
       Int_t    abType  = fOptions.AsInt("ab-type");
       Int_t    abOrder = fOptions.AsInt("ab-order");
-      Bool_t   satVtx  = fOptions.AsBool("sat-vtx");
       Double_t fmdCut  = fOptions.AsDouble("outlier-fmd");
       Double_t spdCut  = fOptions.AsDouble("outlier-spd");
 

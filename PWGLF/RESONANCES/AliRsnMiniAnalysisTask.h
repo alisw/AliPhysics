@@ -39,6 +39,7 @@ public:
    void                UseESDTriggerMask(UInt_t trgMask)     {fTriggerMask = trgMask;}
    void                UseCentrality(const char *type)    {fUseCentrality = kTRUE; fCentralityType = type; fCentralityType.ToUpper();}
    void                SetUseCentralityPatch(Bool_t isAOD049) {fUseAOD049CentralityPatch = isAOD049;}
+   void                SetUseCentralityPatchPbPb2011(Int_t centralityPatchPbPb2011) {fUseCentralityPatchPbPb2011 = centralityPatchPbPb2011;}
    void                UseMultiplicity(const char *type)  {fUseCentrality = kFALSE; fCentralityType = type; fCentralityType.ToUpper();}
    void                UseContinuousMix()                 {fContinuousMix = kTRUE;}
    void                UseBinnedMix()                     {fContinuousMix = kFALSE;}
@@ -53,6 +54,9 @@ public:
    void                SetCheckFeedDown(Bool_t checkFeedDown)      {fCheckFeedDown = checkFeedDown;}
    void                SetDselection(UShort_t originDselection);
    void 	       SetRejectCandidateIfNotFromQuark(Bool_t opt){fRejectIfNoQuark=opt;}
+   void                SetMotherAcceptanceCutMinPt(Float_t minPt)  {fMotherAcceptanceCutMinPt = minPt;}
+   void                SetMotherAcceptanceCutMaxEta(Float_t maxEta){fMotherAcceptanceCutMaxEta = maxEta;}
+   void                KeepMotherInAcceptance(Bool_t keepMotherInAcceptance) {fKeepMotherInAcceptance = keepMotherInAcceptance;}
    Int_t               AddTrackCuts(AliRsnCutSet *cuts);
    TClonesArray       *Outputs()                          {return &fHistograms;}
    TClonesArray       *Values()                           {return &fValues;}
@@ -77,7 +81,9 @@ private:
    Double_t ComputeAngle();
    Double_t ComputeCentrality(Bool_t isESD);
    Double_t ComputeMultiplicity(Bool_t isESD,TString type);
+   Double_t ComputeTracklets();
    Double_t ApplyCentralityPatchAOD049();
+   Double_t ApplyCentralityPatchPbPb2011();
    void     FillTrueMotherESD(AliRsnMiniEvent *event);
    void     FillTrueMotherAOD(AliRsnMiniEvent *event);
    void     StoreTrueMother(AliRsnMiniPair *pair, AliRsnMiniEvent *event);
@@ -89,6 +95,7 @@ private:
    Bool_t               fUseCentrality;   //  if true, use centrality for event, otherwise use multiplicity
    TString              fCentralityType;  //  definition used to choose what centrality or multiplicity to use
    Bool_t               fUseAOD049CentralityPatch; //flag to enable AOD049 centrality patch
+   Int_t                fUseCentralityPatchPbPb2011; //for PbPb 2011 centrality flattening
 
    Bool_t               fContinuousMix;   //  mixing --> technique chosen (continuous or binned)
    Int_t                fNMix;            //  mixing --> required number of mixes
@@ -101,6 +108,7 @@ private:
    TClonesArray         fValues;          //  list of values to be computed
    TH1F                *fHEventStat;      //  histogram of event statistics
    TH1F                *fHAEventsVsMulti; //  histogram of event statistics
+   TH1F                *fHAEventsVsTracklets; //  histogram of event statistics
    TH2F                *fHAEventVz;       //  histogram of vertex-z vs. multiplicity/centrality
    TH2F                *fHAEventMultiCent;//  histogram of multiplicity vs. centrality
    TH2F                *fHAEventPlane;    //  histogram of event plane vs. multiplicity/centrality
@@ -122,8 +130,11 @@ private:
    Bool_t   		fKeepDfromB;  	     // flag for the feed down from b quark decay (specific for D meson analysis)			
    Bool_t   		fKeepDfromBOnly;     // flag to keep only the charm particles that comes from beauty decays (specific for D meson analysis)
    Bool_t 		fRejectIfNoQuark;    // flag to remove events not generated with PYTHIA
+   Float_t              fMotherAcceptanceCutMinPt;              // cut value to apply when selecting the mothers inside a defined acceptance
+   Float_t              fMotherAcceptanceCutMaxEta;             // cut value to apply when selecting the mothers inside a defined acceptance
+   Bool_t               fKeepMotherInAcceptance;                // flag to keep also mothers in acceptance
 
-   ClassDef(AliRsnMiniAnalysisTask, 8);   // AliRsnMiniAnalysisTask
+   ClassDef(AliRsnMiniAnalysisTask, 11);   // AliRsnMiniAnalysisTask
 };
 
 

@@ -32,6 +32,7 @@
 #include <TLegend.h>
 #include <TLegendEntry.h>
 #include <TLatex.h>
+#include <TArrow.h>
 #include <TImage.h>
 #include <TRandom.h>
 #include <TParameter.h>
@@ -58,25 +59,25 @@ Double_t myFunc(Double_t* xp, Double_t* pp);
 struct dNdetaDrawer 
 {
   enum EFlags { 
-    kShowRatios    = 0x00001, 
-    kShowLeftRight = 0x00002, 
-    kShowSysError  = 0x00004, 
-    kShowRings     = 0x00008,
-    kCutEdges      = 0x00010,
-    kRemoveOuters  = 0x00020, 
-    kUseFinalMC    = 0x00040,
-    kUseEmpirical  = 0x00080,
-    kForceMB       = 0x00100,
-    kMirror        = 0x00200,
-    kExport        = 0x00400, 
-    kAddExec       = 0x00800,
-    kOldFormat     = 0x01000,
-    kVerbose       = 0x02000,
-    kHiRes         = 0x04000,
-    kExtraWhite    = 0x08000,
-    kLogo          = 0x10000,
-    kNoCentral     = 0x20000,
-    kNoLabels      = 0x40000,
+    kShowRatios     = 0x00001, 
+    kShowLeftRight  = 0x00002, 
+    kShowSysError   = 0x00004, 
+    kShowRings      = 0x00008,
+    kCutEdges       = 0x00010,
+    kRemoveOuters   = 0x00020, 
+    kUseFinalMC     = 0x00040,
+    kUseEmpirical   = 0x00080,
+    kForceMB        = 0x00100,
+    kMirror         = 0x00200,
+    kExport         = 0x00400, 
+    kAddExec        = 0x00800,
+    kOldFormat      = 0x01000,
+    kVerbose        = 0x02000,
+    kHiRes          = 0x04000,
+    kExtraWhite     = 0x08000,
+    kLogo           = 0x10000,
+    kNoCentral      = 0x20000,
+    kNoLabels       = 0x40000,
     kDefaultOptions = 0x1CE07
   };
   enum EOutFormat { 
@@ -198,6 +199,7 @@ struct dNdetaDrawer
       fSysString(0),         // Collision system string (read or set)
       fVtxAxis(0),           // Vertex cuts (read or set)
       fCentAxis(0),          // Centrality axis
+      fCentMeth(0),          // Centrality axis
       fTriggerEff(1),        // Trigger efficency 
       fExtTriggerEff(false), // True if fTriggerEff was read 
       fCentMin(0),           // Least centrality to plot
@@ -248,6 +250,7 @@ struct dNdetaDrawer
     if (fSysString)  { delete fSysString;  fSysString  = 0; }
     if (fVtxAxis)    { delete fVtxAxis;    fVtxAxis    = 0; }
     if (fCentAxis)   { delete fCentAxis;   fCentAxis   = 0; }
+    if (fCentMeth)   { delete fCentMeth;   fCentMeth   = 0; }
     if (fResults)    { delete fResults;    fResults    = 0; }
     if (fRatios)     { delete fRatios;     fRatios     = 0; }
     if (fOthers)     { delete fOthers;     fOthers     = 0; }
@@ -372,9 +375,9 @@ struct dNdetaDrawer
    */
   void SetTrigger(UShort_t trig)
   {
-    fTrigString = new TNamed("trigString", (trig & 0x1 ? "INEL" : 
+    fTrigString = new TNamed("trigString", (trig & 0x1 ? "MBOR" : 
 					    trig & 0x2 ? "INEL>0" : 
-					    trig & 0x4 ? "NSD" :
+					    trig & 0x4 ? "MBAND5" :
 					    trig & 0x2000 ? "V0-AND" :
 					    "unknown"));
     fTrigString->SetUniqueID(trig);
@@ -397,14 +400,130 @@ struct dNdetaDrawer
    * @{ 
    * @name Main steering functions 
    */
-  /** 
-   * Run the code to produce the final result. 
-   * 
-   * @param filename  File containing the data 
-   */
-  void Run(const char* filename="forward_dndeta.root",
-	   UInt_t flags=kDefaultOptions, UInt_t formats=kAllFormats) 
+  void Run(const char* filename="forward_dndeta.root", 
+	   const char* title="", 
+	   const char* others="all",
+	   const char* options="default",
+	   const char* formats="all",
+	   UShort_t    rebin=5,
+	   Float_t     eff=0,
+	   UShort_t    centMin=0, 
+	   UShort_t    centMax=0, 
+	   Float_t     vzMin=+999,
+	   Float_t     vzMax=-999, 
+	   const char* base="")
   {
+    TString  ostr(others); ostr.ToUpper();
+    UShort_t obits = 0x0;
+    if (ostr.EqualTo("ALL")) obits = 0xf;
+    else { 
+      if (ostr.Contains("UA5"))   obits |= 0x1;
+      if (ostr.Contains("CMS"))   obits |= 0x2;
+      if (ostr.Contains("ALICE")) obits |= 0x4;
+      if (ostr.Contains("WIP"))   obits |= 0x8;
+    }
+   
+    TString fstr(options);
+    UInt_t fbits  = 0;
+    if (fstr.EqualTo("default", TString::kIgnoreCase)) fbits = kDefaultOptions;
+    else {
+      TObjArray* farr = fstr.Tokenize(" ,");
+      TIter next(farr);
+      TObjString* ftoken = 0;
+      while ((ftoken = static_cast<TObjString*>(next()))) {
+	TString& token = ftoken->String();
+	token.ToLower();
+	if      (token.BeginsWith("ratio"))         fbits |= kShowRatios;
+        else if (token.BeginsWith("asym"))          fbits |= kShowLeftRight;
+        else if (token.BeginsWith("left"))          fbits |= kShowLeftRight;
+        else if (token.BeginsWith("syse"))          fbits |= kShowSysError;
+        else if (token.BeginsWith("rings"))         fbits |= kShowRings;
+        else if (token.BeginsWith("noedge"))        fbits |= kCutEdges;
+        else if (token.BeginsWith("noout"))         fbits |= kRemoveOuters;
+        else if (token.BeginsWith("finalmc"))       fbits |= kUseFinalMC;
+        else if (token.BeginsWith("mb"))            fbits |= kForceMB;
+        else if (token.BeginsWith("mirror"))        fbits |= kMirror;
+        else if (token.BeginsWith("export"))        fbits |= kExport;
+        else if (token.BeginsWith("exec"))          fbits |= kAddExec;
+        else if (token.BeginsWith("old"))           fbits |= kOldFormat;
+        else if (token.BeginsWith("verbose"))       fbits |= kVerbose;
+        else if (token.BeginsWith("hires"))         fbits |= kHiRes;
+        else if (token.BeginsWith("extraw"))        fbits |= kExtraWhite;
+        else if (token.BeginsWith("logo"))          fbits |= kLogo;
+        else if (token.BeginsWith("nocentr"))       fbits |= kNoCentral;
+        else if (token.BeginsWith("nolabels"))      fbits |= kNoLabels;
+        else if (token.BeginsWith("empirical"))  {
+	  fbits |= kUseEmpirical;
+	  TObjArray* parts=token.Tokenize("=");
+	  if (parts->GetEntriesFast() > 1) 
+	    SetEmpirical(parts->At(1)->GetName());
+	  delete parts;
+	}
+      }  
+      delete farr;
+    }
+    TString estr(formats); estr.ToUpper();
+    UShort_t ebits = 0x0;
+    if (ostr.EqualTo("ALL")) ebits = kAllFormats;
+    else { 
+      if (ostr.Contains("PNG"))  ebits |= kPNG;
+      if (ostr.Contains("PDF"))  ebits |= kPDF;
+      if (ostr.Contains("ROOT")) ebits |= kROOT;
+      if (ostr.Contains("C"))    ebits |= kScript;
+    }
+
+    Run(filename, title, rebin, obits, fbits, 0, 0, 0, eff, 
+	centMin, centMax, vzMin, vzMax, base, ebits);
+  }
+  /** 
+   * Run the job
+   * 
+   * @param filename  Input file name  
+   * @param title     Title to put on plot
+   * @param rebin     Rebinning factor 
+   * @param others    Which other to draw 
+   * @param flags     Flags for the drawing 
+   * @param sys       (optional) Collision system
+   * @param sNN       (optional) Collision energy 
+   * @param trg       (optional) Trigger 
+   * @param eff       (optional) Efficiency 
+   * @param centMin   (optional) Least centrality 
+   * @param centMax   (optional) Largest centrality 
+   * @param vzMin     (optional) Least @f$ IP_z@f$ 
+   * @param vzMax     (optional) Largest @f$ IP_z@f$
+   * @param base      Basename for output files
+   * @param formats   Formats to export to 
+   */
+  void Run(const char* filename, 
+	   const char* title, 
+	   UShort_t    rebin, 
+	   UShort_t    others=0x7, 
+	   UInt_t      flags=kDefaultOptions,
+	   UShort_t    sys=0,
+	   UShort_t    sNN=0, 
+	   UShort_t    trg=0, 
+	   Float_t     eff=0, 
+	   UShort_t    centMin=0, 
+	   UShort_t    centMax=0, 
+	   Float_t     vzMin=+999, 
+	   Float_t     vzMax=-999,
+	   const char* base="", 
+	   UShort_t    formats=kAllFormats)
+  {
+    SetRebin(rebin);
+    SetTitle(title);
+    SetShowOthers(others);
+    SetBase(base);
+    // d.fClusterScale = "1.06 -0.003*x +0.0119*x*x";
+    // Do the below if your input data does not contain these settings 
+    if (sNN > 0) SetSNN(sNN);     // Collision energy per nucleon pair (GeV)
+    if (sys > 0) SetSys(sys);     // Collision system (1:pp, 2:PbPB)
+    if (trg > 0) SetTrigger(trg); // Collision trigger (1:INEL, 2:INEL>0, 4:NSD)
+    if (eff > 0) SetTriggerEfficiency(eff); // Trigger efficiency
+    if (vzMin < 999 && vzMax > -999) 
+      SetVertexRange(vzMin,vzMax); // Collision vertex range (cm)
+    SetCentralityRange(centMin,centMax); // Collision vertex range (cm)
+
     fOptions          = flags;
     fFormats          = formats;
     SetForwardSysError(flags & kShowSysError ? 0.076 : 0);
@@ -450,12 +569,19 @@ struct dNdetaDrawer
 	 "   Show ratios:                      %5s\n"
 	 "   Show Left/right:                  %5s\n"
 	 "   Show rings:                       %5s\n"
-	 "   Export to file:                   %5s\n"
 	 "   Cut edges when rebinning:         %5s\n"
 	 "   Remove outer rings:               %5s\n"
-	 "   Mirror to un-covered regions:     %5s\n"
 	 "   Force minimum bias:               %5s\n"
+	 "   Mirror to un-covered regions:     %5s\n"
+	 "   Export to file:                   %5s\n"
+	 "   Add Zoom code:                    %5s\n"
+	 "   Assume old format:                %5s\n"
+	 "   Be verbose:                       %5s\n"
+	 "   Hi-resolution plot:               %5s\n"
+	 "   Extra whitespace:                 %5s\n"
+	 "   Show logo:                        %5s\n"
 	 "   Show clusters:                    %5s\n"
+	 "   Show y-axis labels:               %5s\n"
 	 "   Show other results:               0x%03x\n"
 	 "   Rebinning factor:                 %5d\n"
 	 "   Forward systematic error:         %5.1f%%\n"
@@ -468,15 +594,27 @@ struct dNdetaDrawer
 	 ((fOptions & kShowRatios)    ? "yes" : "no"), 
 	 ((fOptions & kShowLeftRight) ? "yes" : "no"),
 	 ((fOptions & kShowRings)     ? "yes" : "no"),
-	 ((fOptions & kExport)        ? "yes" : "no"), 
 	 ((fOptions & kCutEdges)      ? "yes" : "no"),
 	 ((fOptions & kRemoveOuters)  ? "yes" : "no"),
-	 ((fOptions & kMirror)        ? "yes" : "no"),
 	 ((fOptions & kForceMB)       ? "yes" : "no"),
+	 ((fOptions & kMirror)        ? "yes" : "no"),
+	 ((fOptions & kExport)        ? "yes" : "no"), 
+	 ((fOptions & kAddExec)       ? "yes" : "no"), 
+	 ((fOptions & kOldFormat)     ? "yes" : "no"), 
+	 ((fOptions & kVerbose)       ? "yes" : "no"), 
+	 ((fOptions & kHiRes)         ? "yes" : "no"), 
+	 ((fOptions & kExtraWhite)    ? "yes" : "no"), 
+	 ((fOptions & kLogo)          ? "yes" : "no"), 
 	 ((fOptions & kNoCentral)     ? "no"  : "yes"),
-	 fShowOthers, fRebin, (100*fFwdSysErr), (100*fCenSysErr), 
+	 ((fOptions & kNoLabels)      ? "no"  : "yes"),
+	 fShowOthers, 
+	 fRebin, 
+	 (100*fFwdSysErr), 
+	 (100*fCenSysErr), 
 	 (100*fTriggerEff),
-	 fTitle.Data(), fClusterScale.Data(), fFinalMC.Data(), 
+	 fTitle.Data(), 
+	 fClusterScale.Data(), 
+	 fFinalMC.Data(), 
 	 fEmpirical.Data());
 
     // --- Set the macro pathand load other data script --------------
@@ -539,26 +677,28 @@ struct dNdetaDrawer
 		empUrl.GetUrl());
 	fEmpirical = "";
       }
-      const char* empPath = empUrl.GetAnchor();
-      TObject*    fwdObj  = empirical->Get(Form("Forward/%s", empPath));
-      TObject*    cenObj  = empirical->Get(Form("Central/%s", empPath));
-      if (!(fwdObj &&
-	    (fwdObj->IsA()->InheritsFrom(TH1::Class()) || 
-	     fwdObj->IsA()->InheritsFrom(TGraphAsymmErrors::Class())))) { 
-	Warning("Run", "Didn't get the object Forward/%s from %s", 
-		empPath, empUrl.GetUrl());
-	fEmpirical = "";
-      }
-      if (useCen && !(cenObj &&
-	  (cenObj->IsA()->InheritsFrom(TH1::Class()) || 
-	   cenObj->IsA()->InheritsFrom(TGraphAsymmErrors::Class())))) { 
-	Warning("Run", "Didn't get the object Central/%s from %s", 
-		empPath, empUrl.GetUrl());
-	fEmpirical = "";
-      }
       else {
-	fwdEmp = fwdObj;
-	cenEmp = fwdObj;
+	const char* empPath = empUrl.GetAnchor();
+	TObject*    fwdObj  = empirical->Get(Form("Forward/%s", empPath));
+	TObject*    cenObj  = empirical->Get(Form("Central/%s", empPath));
+	if (!(fwdObj &&
+	      (fwdObj->IsA()->InheritsFrom(TH1::Class()) || 
+	       fwdObj->IsA()->InheritsFrom(TGraphAsymmErrors::Class())))) { 
+	  Warning("Run", "Didn't get the object Forward/%s from %s", 
+		  empPath, empUrl.GetUrl());
+	  fEmpirical = "";
+	}
+	if (useCen && !(cenObj &&
+			(cenObj->IsA()->InheritsFrom(TH1::Class()) || 
+	   cenObj->IsA()->InheritsFrom(TGraphAsymmErrors::Class())))) { 
+	  Warning("Run", "Didn't get the object Central/%s from %s", 
+		  empPath, empUrl.GetUrl());
+	  fEmpirical = "";
+	}
+	else {
+	  fwdEmp = fwdObj;
+	  cenEmp = fwdObj;
+	}
       }
     }
     if (!fEmpCorr && !fEmpirical.EqualTo("__task__")) 
@@ -626,6 +766,21 @@ struct dNdetaDrawer
 	TF1* f   = FitMerged(tmp, low, high);
 	MakeSysError(tmp, cen, fwd, f);
 	delete f;
+
+	if (fOptions & kNoCentral) { 
+	  // Split Sys error into two histograms 
+	  const char* nme  = tmp->GetName();
+	  TH1* tmpp = static_cast<TH1*>(tmp->Clone(Form("%s_a", nme)));
+	  tmp->SetName(Form("%s_c", nme));
+	  for (Int_t k = 1; k <= tmp->GetNbinsX(); k++) { 
+	    Double_t x = tmp->GetXaxis()->GetBinCenter(k);
+	    TH1* tmppp = (x < 0 ? tmpp : tmp);
+	    tmppp->SetBinError(k, 0);
+	    tmppp->SetBinContent(k, 0);
+	  }
+	  fResults->GetHists()->AddFirst(tmpp, "e5");
+	}
+
 	if (fOptions & kVerbose) 
 	  Info("", "Adding systematic error histogram %s", tmp->GetName());
 	fResults->GetHists()->AddFirst(tmp, "e5");
@@ -671,8 +826,20 @@ struct dNdetaDrawer
       fSysString  = static_cast<TNamed*>(results->FindObject("sys"));
     if (!fVtxAxis)
       fVtxAxis    = static_cast<TAxis*>(results->FindObject("vtxAxis"));
-    if (!fCentAxis) 
-      fCentAxis   = static_cast<TAxis*>(results->FindObject("centAxis"));
+    if (!fCentAxis) {
+      TObject* cO = results->FindObject("centAxis");
+      if (cO) {
+	if (cO->IsA()->InheritsFrom(TH1::Class())) {
+	  TH1* cH     = static_cast<TH1*>(cO);
+	  fCentAxis   = cH->GetXaxis();
+	}
+	else if (cO->IsA()->InheritsFrom(TAxis::Class())) 
+	  fCentAxis   = static_cast<TAxis*>(cO);
+      }
+    }
+    if (!fCentMeth) 
+      fCentMeth = results->FindObject("centEstimator");
+
     if (fTriggerEff < 0) { 
       // Allow complete overwrite by passing negative number 
       SetTriggerEfficiency(TMath::Abs(fTriggerEff));
@@ -716,6 +883,15 @@ struct dNdetaDrawer
       fCentAxis->Set(nBins, bins.GetArray());
     }
 	
+    if (fTrigString) { 
+      UInt_t mask = 0x200f & fTrigString->GetUniqueID();
+      if      (mask == 0x2)      fTrigString->SetTitle("INEL>0");
+      else if (fTriggerEff != 1) {
+	if      (mask == 0x1)    fTrigString->SetTitle("INEL");
+	else if (mask == 0x2000) fTrigString->SetTitle("NSD");
+	else if (mask == 0x4)    fTrigString->SetTitle("NSD");
+      }
+    }
 
     if (true /*fOptions & kVerbose*/) {
       TString centTxt("none");
@@ -762,10 +938,15 @@ struct dNdetaDrawer
     UShort_t sys   = (fSysString  ? fSysString->GetUniqueID() : 0);
     UShort_t trg   = (fTrigString ? fTrigString->GetUniqueID() : 0);
     UShort_t snn   = (fSNNString  ? fSNNString->GetUniqueID() : 0);
+    if (centLow < centHigh) {
+      // Possibly modify trg according to method 
+    }
     Long_t   ret   = 
       gROOT->ProcessLine(Form("RefData::GetData(%d,%d,%d,%d,%d,%d);",
 			      sys,snn,trg,centLow,centHigh,fShowOthers));
     if (!ret) {
+      Warning("", "RefData::GetData(%d,%d,0x%x,%d,%d,0x%x);",
+	      sys,snn,trg,centLow,centHigh,fShowOthers);
       Warning("FetchOthers", 
 	      "No other data for %s %s %s %3d%%-%3d%% central (0x%x)", 
 	      fSysString  ? fSysString->GetTitle()  : "unknown", 
@@ -1127,7 +1308,9 @@ struct dNdetaDrawer
     c->SetBorderSize(0);
     c->SetBorderMode(0);
 
-    PlotResults(max, y1);
+    Double_t s = Float_t(h) / 900;
+
+    PlotResults(max, y1, s);
     c->cd();
 
     PlotRatios(rmax, y2, y1);
@@ -1231,7 +1414,8 @@ struct dNdetaDrawer
       if (t.Contains("mirrored")) { mirrorSeen = true; continue; }
       if (n.Contains("syserror")) { sysErrSeen = true; continue; }
       if (unique.FindObject(t.Data())) continue;
-      TObjString* s1 = new TObjString(hist->GetTitle());
+      // TObjString* s1 = new TObjString(hist->GetTitle());
+      TParameter<float>* s1 = new TParameter<float>(t,hist->GetMarkerSize());
       s1->SetUniqueID(((hist->GetMarkerStyle() & 0xFFFF) << 16) |
 		      ((hist->GetMarkerColor() & 0xFFFF) <<  0));
       unique.Add(s1);
@@ -1245,7 +1429,8 @@ struct dNdetaDrawer
 	TString n(g->GetTitle());
 	if (n.Contains("mirrored")) continue;
 	if (unique.FindObject(n.Data())) continue;
-	TObjString* s2 = new TObjString(n);
+	// TObjString* s2 = new TObjString(n);
+	TParameter<float>* s2 = new TParameter<float>(n,g->GetMarkerSize());
 	s2->SetUniqueID(((g->GetMarkerStyle() & 0xFFFF) << 16) |
 			 ((g->GetMarkerColor() & 0xFFFF) <<  0));
 	unique.Add(s2);
@@ -1255,9 +1440,10 @@ struct dNdetaDrawer
 
     // Add legend entries for unique items only
     TIter nextu(&unique);
-    TObject* s = 0;
+    // TObject* s = 0;
+    TParameter<float>* s = 0;
     Int_t i = 0;
-    while ((s = nextu())) { 
+    while ((s = static_cast<TParameter<float>*>(nextu()))) { 
       TLegendEntry* dd = l->AddEntry(Form("data%2d", i++), 
 				     s->GetName(), "lp");
       Int_t style = (s->GetUniqueID() >> 16) & 0xFFFF;
@@ -1266,6 +1452,7 @@ struct dNdetaDrawer
       if (HasCent()) dd->SetMarkerColor(kBlack);
       else           dd->SetMarkerColor(color);
       dd->SetMarkerStyle(style);
+      dd->SetMarkerSize(s->GetVal());
     }
     if (sysErrSeen) {
       // Add entry for systematic errors 
@@ -1368,7 +1555,7 @@ struct dNdetaDrawer
    * @param max       Maximum 
    * @param yd        Bottom position of pad 
    */
-  void PlotResults(Double_t max, Double_t yd) 
+  void PlotResults(Double_t max, Double_t yd, Double_t s) 
   {
     // --- Make a sub-pad for the result itself ----------------------
     TPad* p1 = new TPad("p1", "p1", 0, yd, 1.0, 1.0, 0, 0, 0);
@@ -1396,6 +1583,11 @@ struct dNdetaDrawer
 	    //"#frac{1}{#it{N}}#kern[.1]{#frac{d#it{N}_{ch}}{d#it{#eta}}}"
 	    );
 
+    // --- Fix up marker size ---------------------------------------
+    TIter next(fResults->GetHists());
+    TH1*  h = 0;
+    while ((h = static_cast<TH1*>(next()))) 
+      h->SetMarkerSize(h->GetMarkerSize()*s);
     // --- Clear pad and re-draw ------------------------------------
     p1->Clear();
     fResults->DrawClone("nostack e1");
@@ -1404,8 +1596,18 @@ struct dNdetaDrawer
     if (fShowOthers != 0) {
       TGraphAsymmErrors* o      = 0;
       TIter              nextG(fOthers->GetListOfGraphs());
-      while ((o = static_cast<TGraphAsymmErrors*>(nextG())))
+      while ((o = static_cast<TGraphAsymmErrors*>(nextG()))) {
+	Double_t gS = s;
+	switch (o->GetMarkerStyle()) { 
+	case 29: 
+	case 30: gS *= 1.2; break; // Star		
+	case 27: 
+	case 33: gS *= 1.2; break; // Diamond
+	}
+	o->SetMarkerSize(o->GetMarkerSize()*gS);
+	  
         o->DrawClone("same p");
+      }
     }
 
     // --- Make a legend in the result pad ---------------------------
@@ -1448,14 +1650,25 @@ struct dNdetaDrawer
     UShort_t    snn = fSNNString->GetUniqueID();
     const char* sys = fSysString->GetTitle();
     if (snn == 2750) snn = 2760;
-    if (snn > 1000) eS = Form("%4.2fTeV", float(snn)/1000);
-    else            eS = Form("%3dGeV", snn);
+    if (snn < 1000)           eS = Form("%3dGeV", snn);
+    else if (snn % 1000 == 0) eS = Form("%dTeV", snn/1000);
+    else                      eS = Form("%.2fTeV", float(snn)/1000);
+    Bool_t nn = (fSysString->GetUniqueID() != 1);
+    TString tS(fTrigString->GetTitle());
+    if (HasCent()) { 
+      tS  = "by centrality";
+      UShort_t trg = fTrigString->GetUniqueID();
+      switch (trg) { 
+      case 0x10: tS.Append(" (V0M)"); break;
+      case 0x20: tS.Append(" (V0A)"); break;
+      case 0x40: tS.Append(" (ZNA)"); break;
+      case 0x80: tS.Append(" (ZNC)"); break;
+      }
+    }
+    
     TLatex* tt = new TLatex(xR, yR, Form("%s #sqrt{s%s}=%s, %s", 
-					sys, 
-					(HasCent() ? "_{NN}" : ""),
-					eS.Data(), 
-					HasCent() ? "by centrality" : 
-					fTrigString->GetTitle()));
+					 sys, (nn ? "_{NN}" : ""),
+					 eS.Data(), tS.Data()));
     tt->SetTextColor(kAliceBlue);
     tt->SetNDC();
     tt->SetTextFont(kFont);
@@ -1463,6 +1676,20 @@ struct dNdetaDrawer
     tt->Draw();
     yR -= tt->GetTextSize() + .01;
     
+    if (fSysString->GetUniqueID() == 3) { 
+      // pPb - put arrow at y_CM
+      UShort_t a1  = 1;
+      UShort_t a2  = 208;
+      UShort_t z1  = 1;
+      UShort_t z2  = 82;
+      Double_t yCM = .5 * TMath::Log(Float_t(z1*a2)/z2/a1);
+      TArrow*  a   = new TArrow(yCM, 0, yCM, 0.05*max, 0.01, "<|");
+      a->SetAngle(30);
+      a->SetFillColor(kAliceBlue);
+      a->SetLineColor(kAliceBlue);
+      a->Draw();
+    }
+
     // --- Put number of accepted events on the plot -----------------
     Int_t nev = 0;
     if (fTriggers) nev = fTriggers->GetBinContent(1);
@@ -1748,7 +1975,7 @@ struct dNdetaDrawer
   {
     if (!h) return;
     if (color < 0) return;
-    // h->SetLineColor(color);
+    h->SetLineColor(color);
     h->SetMarkerColor(color);
     // h->SetFillColor(color);
   }
@@ -2346,6 +2573,7 @@ struct dNdetaDrawer
       Warning("FixAxis", "No stack passed for %s!", ytitle);
       return;
     }
+    Bool_t supLabel = (fResults == stack && ((fOptions & kNoLabels)));
     if (force) stack->Draw("nostack e1");
 
     TH1* h = stack->GetHistogram();
@@ -2385,7 +2613,7 @@ struct dNdetaDrawer
       ya->SetNdivisions(ynDiv);
       ya->SetTitleSize(s*ya->GetTitleSize());
       ya->SetTitleOffset(/*1.15*/1.4*ya->GetTitleOffset()/s);
-      ya->SetLabelSize((fOptions & kNoLabels) ? 0 : s*ya->GetLabelSize());
+      ya->SetLabelSize(supLabel ? 0 : s*ya->GetLabelSize());
     }
   }
   //__________________________________________________________________
@@ -2601,7 +2829,11 @@ struct dNdetaDrawer
    */
   Bool_t HasCent() const 
   { 
-    return fCentAxis && fCentAxis->GetNbins() > 0 && !(fOptions & kForceMB); 
+    return (!(fOptions & kForceMB) && 
+	    fCentAxis && 
+	    (fCentAxis->GetNbins() > 1 ||
+	     (fCentAxis->GetNbins() == 1 && 
+	      fCentAxis->GetXmin() <= fCentAxis->GetXmax()))); 
   }
 
 
@@ -2638,6 +2870,7 @@ struct dNdetaDrawer
   TNamed*      fSysString;    // Collision system string (read or set)
   TAxis*       fVtxAxis;      // Vertex cuts (read or set)
   TAxis*       fCentAxis;     // Centrality axis
+  TObject*     fCentMeth;     // Centrality method 
   Float_t      fTriggerEff;   // Trigger efficiency 
   Bool_t       fExtTriggerEff;// True if read externally 
   UShort_t     fCentMin;      // Least centrality to plot
@@ -2874,22 +3107,101 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
     return;
   }
   dNdetaDrawer* pd = new dNdetaDrawer;
-  dNdetaDrawer& d = *pd;
-  d.SetRebin(rebin);
-  d.SetTitle(title);
-  d.SetShowOthers(others);
-  d.SetBase(base);
-  d.SetEmpirical("file://../empirical.root#default");
+  pd->SetEmpirical("file://../empirical.root#default");
   // d.fClusterScale = "1.06 -0.003*x +0.0119*x*x";
-  // Do the below if your input data does not contain these settings 
-  if (sNN > 0) d.SetSNN(sNN);     // Collision energy per nucleon pair (GeV)
-  if (sys > 0) d.SetSys(sys);     // Collision system (1:pp, 2:PbPB)
-  if (trg > 0) d.SetTrigger(trg); // Collision trigger (1:INEL, 2:INEL>0, 4:NSD)
-  if (eff > 0) d.SetTriggerEfficiency(eff); // Trigger efficiency
-  if (vzMin < 999 && vzMax > -999) 
-    d.SetVertexRange(vzMin,vzMax); // Collision vertex range (cm)
-  d.SetCentralityRange(centMin,centMax); // Collision vertex range (cm)
-  d.Run(filename, flags, outflg);
+  pd->Run(filename, title, rebin, others, flags, sys, sNN, trg, eff,
+	  centMin, centMax, vzMin, vzMax, base, outflg);
+}
+
+/** 
+ * Display usage information
+ * 
+ */
+void
+UsageS()
+{
+  std::ostream& o = std::cout;
+  o << "Usage: DrawdNdeta(FILE,TITLE,OTHERS,OPTIONS,FORMATS,REBIN,EFF,"
+    << "CMIN,CMAX,IPZMIN,IPZMAX,BASE)\n"
+    << "  const char* FILE   File name to open (\"forward_dndeta.root\")\n"
+    << "  const char* TITLE  Title to put on plot (\"\")\n"
+    << "  const char* OTHERS Other data to draw - more below (\"all\")\n"
+    << "  const char* FLAGS  Visualisation flags - more below (\"default\")\n"
+    << "  const char* FMT    (optional) Output formats (\"all\")\n"
+    << "  UShort_t    REBIN  (optional) Rebinning factor (5)\n"
+    << "  Float_t     EFF    (optional) Trigger efficiency\n"
+    << "  Float_t     IPZMIN (optional) Least z coordinate of IP\n"
+    << "  Float_t     IPZMAX (optional) Largest z coordinate of IP\n"
+    << "  UShort_t    CMIN   (optional) Least centrality\n"
+    << "  UShort_t    CMAX   (optional) Largest centrality\n"
+    << "  const char* BASE   (optional) base name of output files\n"
+    << "\n";
+  o << " OTHERS space separated list of\n"
+    << "  UA5     Show UA5 data (INEL,NSD, ppbar, 900GeV)\n"
+    << "  CMS     Show CMS data (NSD, pp)\n"
+    << "  ALICE   Show published ALICE data (INEL,INEL>0,NSD, pp)\n"
+    << "  WIP     Show event genertor data/work-in-progress\n"
+    << "\n";
+  o << " FMT space separated list of \n"
+    << "  PNG     Make PNG output\n"
+    << "  PDF     Make PDF output\n"
+    << "  ROOT    Make ROOT file output\n"
+    << "  C       Make ROOT script output\n"
+    << "\n";
+  o << " FLAGS is a bit mask of\n"
+    << "  ratio           Show ratios of data to other data and possibly MC\n"
+    << "  asymmetry       Show left-right asymmetry\n"
+    << "  syserror        Show systematic error band\n"
+    << "  rings           Show individual ring results (INEL only)\n"
+    << "  noedges         Cut edges when rebinning\n"
+    << "  noouters        Remove FMDxO points\n"
+    << "  finalmc         Apply `final MC' correction\n"
+    << "  empirical[=URL] Apply `Emperical' correction\n"
+    << "  mb              Force use of MB\n"
+    << "  mirror          Mirror data\n"
+    << "  export          Export results to script\n"
+    << "  exec            Add code to do combined zooms on eta axis\n"
+    << "  old             Assume old-style input\n"
+    << "  verbose         Be verbose\n"
+    << "  hires           Hi-res batch output\n"
+    << "  extrawhite      Add aditional white-space above results\n"
+    << "  logo            Add ALICE logo\n"
+    << "  nocentral       Do not plot cluster data\n"
+    << "  nolabels        No labels on y-axis\n"
+    << "\n";
+  o << "finalmc requires the file forward_dndetamc.root\n"
+    << "empirical requires the histogram at URL \n"
+    << std::endl;
+
+}
+
+void 
+Draw(const char* filename,
+     const char* title="",
+     const char* others="ALL",
+     const char* options="DEFAULT",
+     const char* outFlg="ALL",
+     UShort_t    rebin=5,
+     Float_t     eff=0, 
+     UShort_t    centMin=0, 
+     UShort_t    centMax=0, 
+     Float_t     vzMin=+999,
+     Float_t     vzMax=-999,
+     const char* base="")
+{
+  TString fname(filename);
+  fname.ToLower();
+  if (fname.CompareTo("help") == 0 || 
+      fname.CompareTo("--help") == 0) { 
+    UsageS();
+    return;
+  }
+
+  dNdetaDrawer* pd = new dNdetaDrawer;
+  pd->SetEmpirical("file://../empirical.root#default");
+
+  pd->Run(filename, title, others, options, outFlg, rebin, eff, 
+	  centMin, centMax, vzMin, vzMax, base);
 }
 //____________________________________________________________________
 //

@@ -20,5 +20,7 @@
 #pragma link C++ class AliAnaInsideClusterInvariantMass+;
 #pragma link C++ class AliAnaRandomTrigger+;
 #pragma link C++ class AliAnaGeneratorKine+;
+#pragma link C++ class AliAnaEMCALTriggerClusters+;
+#pragma link C++ class AliAnaClusterPileUp+;
 
 #endif

@@ -17,8 +17,10 @@
 
 enum {kLocal, kInteractif_xml, kInteractif_ESDList};
 
-void RunMuonQA(TString inputFileName = "AliESDs.root", Bool_t selectPhysics = kTRUE,
-	       Bool_t selectTrigger = kTRUE, Bool_t selectMatched = kFALSE, Short_t selectCharge = 0)
+void RunMuonQA(TString inputFileName = "AliESDs.root", Bool_t isMC = kFALSE, 
+	       Bool_t selectPhysics = kTRUE, Bool_t selectMatched = kTRUE, 
+	       Bool_t applyAccCut = kTRUE, Bool_t selectTrigger = kFALSE,
+	       UInt_t triggerMask = AliVEvent::kMUS7, Short_t selectCharge = 0)
 {
   TStopwatch timer;
   timer.Start();
@@ -60,7 +62,7 @@ void RunMuonQA(TString inputFileName = "AliESDs.root", Bool_t selectPhysics = kT
   
   // event selection
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  AliPhysicsSelectionTask* physicsSelection = AddTaskPhysicsSelection();
+  AliPhysicsSelectionTask* physicsSelection = AddTaskPhysicsSelection(isMC);
   if(!physicsSelection) {
     Error("RunMuonQA","AliPhysicsSelectionTask not created!");
     return;
@@ -68,7 +70,7 @@ void RunMuonQA(TString inputFileName = "AliESDs.root", Bool_t selectPhysics = kT
   
   // Muon QA analysis
   gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskMuonQA.C");
-  AliAnalysisTaskMuonQA* muonQA = AddTaskMuonQA(selectPhysics, selectTrigger, selectMatched, selectCharge);
+  AliAnalysisTaskMuonQA* muonQA = AddTaskMuonQA(selectPhysics, selectMatched, applyAccCut, selectTrigger, triggerMask, selectCharge);
   if(!muonQA) {
     Error("RunMuonQA","AliAnalysisTaskMuonQA not created!");
     return;

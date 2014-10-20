@@ -37,7 +37,7 @@ AliForwardCreateResponseMatrices::AliForwardCreateResponseMatrices()
  
 //_____________________________________________________________________
 AliForwardCreateResponseMatrices::AliForwardCreateResponseMatrices(const char* name) 
-  : AliBaseAODTask(name),
+  : AliBaseAODTask(name,"AliForwardCreateResponseMatrices"),
     fBins(), 
     fIsSelected(false)
 {

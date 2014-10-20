@@ -1,122 +1,127 @@
-void AddTask_Resolution(   TString V0ReaderCutNumber = "0000000060084001001500000000",
-                           TString TaskCutnumber = "0000000090092663743800000000",
-                           Bool_t IsMC = kTRUE, 
-                           Int_t IsHeavyIon = 0, 
-                           TString cutnumberAODBranch = "0000000060084001001500000",
-                           Bool_t doEtaShiftV0Reader = kFALSE 
+void AddTask_Resolution(	TString V0ReaderEventCutNumber 	= "8000000",
+							TString V0ReaderPhotonCutNumber = "060084001001500000000",
+							TString TaskEventCutnumber 		= "8000011",
+							TString TaskPhotonCutnumber 	= "092092170008260400000",
+							Bool_t IsMC = kTRUE, 
+							Int_t IsHeavyIon = 0, 
+							TString cutnumberAODBranch = "0000000060084001001500000",
+							Bool_t doEtaShiftV0Reader = kFALSE 
                        ){
-  
-   // Suitable Cutnumbers for the V0 Reader for
-   // PbPb: V0ReaderCutNumber =  "100000006008400100150000000"; (V0Mult MC)
-   //  or   V0ReaderCutNumber =  "500000006008400100150000000" (TPC mult MC)
-   // pPb: V0ReaderCutNumber =   "800000006008400100150000000";
-   // pp: V0ReaderCutNumber =    "000000006008400100150000000";
+	
+	//get the current analysis manager
+	// ================= Load Librariers =================================
+	gSystem->Load("libCore.so");  
+	gSystem->Load("libTree.so");
+	gSystem->Load("libGeom.so");
+	gSystem->Load("libVMC.so");
+	gSystem->Load("libPhysics.so");
+	gSystem->Load("libMinuit");
+	gSystem->Load("libSTEERBase");
+	gSystem->Load("libESD");
+	gSystem->Load("libAOD");
+	gSystem->Load("libANALYSIS");
+	gSystem->Load("libANALYSISalice");  
+	gSystem->Load("libPWGGAGammaConv.so");
+	gSystem->Load("libCDB.so");
+	gSystem->Load("libSTEER.so");
+	gSystem->Load("libSTEERBase.so");
+	gSystem->Load("libTENDER.so");
+	gSystem->Load("libTENDERSupplies.so");
+		
+	// ================== GetAnalysisManager ===============================
+	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+	if (!mgr) {
+		Error(Form("AddTask_GammaConvV1_%i",trainConfig), "No analysis manager found.");
+		return ;
+	}
 
+	// ================== GetInputEventHandler =============================
+	AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
+	
+	//========= Add PID Reponse to ANALYSIS manager ====
+	if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
+		gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+		AddTaskPIDResponse(isMC);
+	}
 
-   //get the current analysis manager
-   // ================= Load Librariers =================================
-   gSystem->Load("libCore.so");  
-   gSystem->Load("libTree.so");
-   gSystem->Load("libGeom.so");
-   gSystem->Load("libVMC.so");
-   gSystem->Load("libPhysics.so");
-   gSystem->Load("libMinuit");
-   gSystem->Load("libSTEERBase");
-   gSystem->Load("libESD");
-   gSystem->Load("libAOD");
-   gSystem->Load("libANALYSIS");
-   gSystem->Load("libANALYSISalice");  
-   gSystem->Load("libPWGGAGammaConv.so");
-   gSystem->Load("libCDB.so");
-   gSystem->Load("libSTEER.so");
-   gSystem->Load("libSTEERBase.so");
-   gSystem->Load("libTENDER.so");
-   gSystem->Load("libTENDERSupplies.so");
-      
-   // ================== GetAnalysisManager ===============================
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   if (!mgr) {
-      Error(Form("AddTask_GammaConvV1_%i",trainConfig), "No analysis manager found.");
-      return ;
-   }
+	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+	if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
+		AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
+		
+		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
+		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
+		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
 
-   // ================== GetInputEventHandler =============================
-   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
-   
-   //========= Add PID Reponse to ANALYSIS manager ====
-   if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-      AddTaskPIDResponse(isMC);
-   }
+		if (!mgr) {
+			Error("AddTask_V0ReaderV1", "No analysis manager found.");
+			return;
+		}
 
-   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-   if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
-      AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
-      
-      fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
-      fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
-      fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
+		AliConvEventCuts *fEventCuts=NULL;
+		if(V0ReaderEventCutNumber!=""){
+			fEventCuts= new AliConvEventCuts(V0ReaderEventCutNumber.Data(),V0ReaderEventCutNumber.Data());
+			fEventCuts->SetPreSelectionCutFlag(kTRUE);
+			if(fEventCuts->InitializeCutsFromCutString(V0ReaderEventCutNumber.Data())){
+				fV0ReaderV1->SetEventCuts(fEventCuts);
+				fEventCuts->SetFillCutHistograms("",kTRUE);
+				if (IsHeavyIon==2){
+					fEventCuts->SelectCollisionCandidates(AliVEvent::kINT7);
+					fEventCuts->DoEtaShift(doEtaShiftV0Reader);
+				}
+			}
+		}
 
-      if (!mgr) {
-         Error("AddTask_V0ReaderV1", "No analysis manager found.");
-         return;
-      }
+		// Set AnalysisCut Number
+		AliConversionPhotonCuts *fCuts=NULL;
+		if(V0ReaderPhotonCutNumber!=""){
+			fCuts= new AliConversionPhotonCuts(V0ReaderPhotonCutNumber.Data(),V0ReaderPhotonCutNumber.Data());
+			fCuts->SetPreSelectionCutFlag(kTRUE);
+			fCuts->SetIsHeavyIon(IsHeavyIon);
+			if(fCuts->InitializeCutsFromCutString(V0ReaderPhotonCutNumber.Data())){
+				fV0ReaderV1->SetConversionCuts(fCuts);
+				fCuts->SetFillCutHistograms("",kTRUE);
+			}
+		}
+		
+		
+		if(inputHandler->IsA()==AliAODInputHandler::Class()){
+			// AOD mode
+			fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+		}
+		fV0ReaderV1->Init();
 
-      // Set AnalysisCut Number
-      AliConversionCuts *fCuts=NULL;
-      if(V0ReaderCutNumber!=""){
-         fCuts= new AliConversionCuts(V0ReaderCutNumber.Data(),V0ReaderCutNumber.Data());
-         fCuts->SetPreSelectionCutFlag(kTRUE);
-         if(fCuts->InitializeCutsFromCutString(V0ReaderCutNumber.Data())){
-            if (IsHeavyIon==2){
-               fCuts->SelectCollisionCandidates(AliVEvent::kINT7);
-               fCuts->DoEtaShift(doEtaShiftV0Reader);
-            }
-            fV0ReaderV1->SetConversionCuts(fCuts);
-            fCuts->SetFillCutHistograms("",kTRUE);
-         }
-      }
-      
-      
-      if(inputHandler->IsA()==AliAODInputHandler::Class()){
-         // AOD mode
-         fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
-      }
-      fV0ReaderV1->Init();
+		AliLog::SetGlobalLogLevel(AliLog::kInfo);
 
-      AliLog::SetGlobalLogLevel(AliLog::kInfo);
+		//connect input V0Reader
+		mgr->AddTask(fV0ReaderV1);
+		mgr->ConnectInput(fV0ReaderV1,0,cinput);
 
-      //connect input V0Reader
-      mgr->AddTask(fV0ReaderV1);
-      mgr->ConnectInput(fV0ReaderV1,0,cinput);
+	} else {
+		Error("AddTask_V0ReaderV1", "Cannot execute AddTask, V0ReaderV1 already exists.");
+	}   
 
-   } else {
-      Error("AddTask_V0ReaderV1", "Cannot execute AddTask, V0ReaderV1 already exists.");
-   }   
+	AliConvEventCuts *analysisEventCuts = new AliConvEventCuts();
+	analysisEventCuts->InitializeCutsFromCutString(TaskEventCutnumber.Data());
+	analysisEventCuts->SetFillCutHistograms("",kFALSE);
 
-   // suitable cuts for the material Task:
-   // PbPb:  TaskCutnumber = "5680001060092663044803000000"; TPC mult in MC - 60-80% central
-   //   or:  TaskCutnumber = "1680001060092663044803000000"; V0 mult in MC  - 60-80% central
-   //  pPb:  TaskCutnumber = "8000000090092663743800000000";
-   //   pp:  TaskCutnumber = "0000000090092663743800000000";
+	AliConversionPhotonCuts *analysisCuts = new AliConversionPhotonCuts();
+	analysisCuts->InitializeCutsFromCutString(TaskPhotonCutnumber.Data());
+	analysisCuts->SetFillCutHistograms("",kFALSE);
 
-  
-   AliConversionCuts *analysisCuts = new AliConversionCuts();
-   analysisCuts->InitializeCutsFromCutString(TaskCutnumber.Data());
-   analysisCuts->SetFillCutHistograms("",kFALSE);
-   
-	 AliAnalysisTaskResolution *fResolution= new AliAnalysisTaskResolution(Form("%s_Resolution",(analysisCuts->GetCutNumber()).Data()));
-	 fResolution->SetConversionCuts(analysisCuts,IsHeavyIon);
-// 	 fResolution->SetIsMC(IsMC);
-	 mgr->AddTask(fResolution);
-    AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer(Form("GammaConvResolution_%s",TaskCutnumber.Data()), TList::Class(),
-                           AliAnalysisManager::kOutputContainer,Form("GammaConv_Resolution_%s.root",TaskCutnumber.Data()));
+	AliAnalysisTaskResolution *fResolution= new AliAnalysisTaskResolution(Form("%s_%s_Resolution",(analysisEventCuts->GetCutNumber()).Data(), (analysisCuts->GetCutNumber()).Data()));
+	fResolution->SetEventCuts(analysisEventCuts,IsHeavyIon);	
+	fResolution->SetConversionCuts(analysisCuts,IsHeavyIon);
+	fResolution->SetIsMC(IsMC);
+	mgr->AddTask(fResolution);
+	
+	AliAnalysisDataContainer *coutput1 =
+	mgr->CreateContainer(Form("GammaConvResolution_%s_%s", TaskEventCutnumber.Data(), TaskPhotonCutnumber.Data()), TList::Class(),
+						AliAnalysisManager::kOutputContainer, Form("GammaConv_Resolution_%s_%s.root", TaskEventCutnumber.Data(), TaskPhotonCutnumber.Data()));
 
-    AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
-	 mgr->ConnectInput(fResolution,  0, cinput1 );
-	 mgr->ConnectOutput (fResolution,  1, coutput1);
+	AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
+	mgr->ConnectInput(fResolution,  0, cinput1 );
+	mgr->ConnectOutput (fResolution,  1, coutput1);
    //connect containers
-   return fResolution;
+	return;
 }
 

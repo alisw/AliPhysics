@@ -45,6 +45,11 @@ ClassImp(AliAnalysisEtReconstructed);
 
 AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
         AliAnalysisEt()
+	,fQATree(0)
+	,fMakeQATree(0)
+	,fClusterMultiplicity(0)
+	,fTrackMultiplicity(0)
+	,fEventID(0)
         ,fCorrections(0)
         ,fPidCut(0)
 	,nChargedHadronsMeasured(0)
@@ -64,6 +69,7 @@ AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
 	,fClusterPositionAllEnergy(0)
 	,fClusterEnergy(0)
 	,fClusterEnergyCent(0)
+	,fClusterEnergyModifiedTrackMatchesCent(0)
 	,fClusterEnergyCentMatched(0)
 	,fClusterEnergyCentNotMatched(0)
 	,fClusterEt(0)
@@ -120,6 +126,10 @@ AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
 
 AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed()
 {//destructor
+  if(fMakeQATree){
+    //fQATree->Clear();
+    delete fQATree;
+  }
     delete fCorrections;
     delete fHistChargedPionEnergyDeposit; /** Energy deposited in calorimeter by charged pions */
     delete fHistProtonEnergyDeposit; /** Energy deposited in calorimeter by protons */
@@ -134,6 +144,7 @@ AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed()
     delete fClusterPositionAllEnergy;
     delete fClusterEnergy;
     delete fClusterEnergyCent;
+    delete fClusterEnergyModifiedTrackMatchesCent;
     delete fClusterEnergyCentMatched;
     delete fClusterEnergyCentNotMatched;
     delete fClusterEt;
@@ -226,7 +237,8 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
   Float_t etPIDAntiProtonsNoEff = 0.0;
   Float_t etPiKPMatchedNoEff = 0.0;
   Float_t multiplicity = fEsdtrackCutsTPC->GetReferenceMultiplicity(event,kTRUE);
-
+  fTrackMultiplicity = multiplicity;
+  fEventID = event->GetPeriodNumber();//This is not the event id
 
     Float_t totalMatchedPt = 0.0;
     Float_t totalPt = 0.0;
@@ -278,6 +290,9 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 
     TRefArray *caloClusters = fSelector->GetClusters();
     Int_t nCluster = caloClusters->GetEntries();
+    fClusterMultiplicity = nCluster;
+    //if we are making the QA tree and the cluster multiplicity (for PHOS) is less than expected, fill the QA tree so we know what event it was
+    if(fMakeQATree && fClusterMultiplicity < 5e-3*fTrackMultiplicity-1.5) fQATree->Fill();
 
     for (int iCluster = 0; iCluster < nCluster; iCluster++ )
     {
@@ -305,6 +320,8 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         TVector3 cp(pos);
 	fClusterPositionAll->Fill(cp.Phi(), cp.PseudoRapidity());
 	Float_t fReconstructedE = cluster->E();
+	Float_t lostEnergy = 0.0;
+	Float_t lostTrackPt = 0.0;
 	fClusterPositionAllEnergy->Fill(cp.Phi(), cp.PseudoRapidity(),GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE);
 
 	//if(TMath::Abs(cp.Eta())> fCuts->fCuts->GetGeometryEmcalEtaAccCut() || cp.Phi() >  fCuts->GetGeometryEmcalPhiAccMaxCut()*TMath::Pi()/180. ||  cp.Phi() >  fCuts->GetGeometryEmcalPhiAccMinCut()*TMath::Pi()/180.) continue;//Do not accept if cluster is not in the acceptance
@@ -313,6 +330,9 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 
 	fClusterEnergyCent->Fill(GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE,cent);
         Bool_t matched = kTRUE;//default to no track matched
+	Bool_t countasmatched = kFALSE;
+	Bool_t correctedcluster = kFALSE;
+
 	Int_t trackMatchedIndex = cluster->GetTrackMatchedIndex();//find the index of the matched track
 	matched = !(fSelector->PassTrackMatchingCut(*cluster));//PassTrackMatchingCut is false if there is a matched track
 	if(matched){//if the track match is good (, is the track good?
@@ -324,11 +344,23 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    if(matched){//if it is still matched see if the track p was less than the energy
 	      Float_t rcorr = TMath::Sin(cp.Theta())*GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE;
 	      fHistRecoRCorrVsPtVsCent->Fill(rcorr,track->Pt(), fCentClass);
-	      if(fSelector->PassMinEnergyCut( (fReconstructedE - fsub* track->P())*TMath::Sin(cp.Theta()) )){//if more energy was deposited than the momentum of the track  and more than one particle led to the cluster
+	      if(fSelector->PassMinEnergyCut( (fReconstructedE - fsub* track->P())*TMath::Sin(cp.Theta()) )  ){//if more energy was deposited than the momentum of the track  and more than one particle led to the cluster
 		// 	      if(fReconstructedE - fsub* track->P() > 0.0){
+		//cout<<"match corrected"<<endl;
 		fReconstructedE = fReconstructedE - fsub* track->P();
 		matched = kFALSE;
+		countasmatched = kTRUE;
+		correctedcluster = kTRUE;
+		lostEnergy = fsub* track->P();
+		lostTrackPt = track->Pt();
+		fClusterEnergyModifiedTrackMatchesCent->Fill(GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE,cent);
 	      }
+// 	      else{
+// 		    cerr<<"match passed ";
+// 		    cerr<<"E "<<fReconstructedE<<" fsubmeanhad "<<fsub<<" p "<< track->P();
+// 		    if(correctedcluster) cout<<" corrected";
+// 		    cerr<<endl;
+// 	      }
 	    }
 	  }
 	}
@@ -381,60 +413,62 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 		    nChargedHadronsEtMeasured500MeV+= TMath::Sin(cp.Theta())*GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE;
 		    nChargedHadronsEtTotal500MeV+= 1/eff *TMath::Sin(cp.Theta())*GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE;
 		  }
-		  fHistMatchedTracksEvspTvsCent->Fill(track->P(),TMath::Sin(cp.Theta())*GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE,cent);
-		  fHistMatchedTracksEvspTvsCentEffCorr->Fill(track->P(),effCorrEt,cent);
-		  //Weighed by the number of tracks we didn't find
-		  fHistMatchedTracksEvspTvsCentEffTMCorr->Fill(track->P(), effCorrEt,cent, (1/eff-1) );
-		  if(cent<16 && cent>11){//centralities 60-80% where false track matches are low
-		    for(int cbtest = 0; cbtest<20; cbtest++){//then we calculate the deposit matched to hadrons with different centrality bins' efficiencies
-		      float efftest = fTmCorrections->TrackMatchingEfficiency(track->Pt(),cbtest);
-		      if(TMath::Abs(efftest)<1e-5) efftest = 1.0;
-		      Double_t effCorrEttest = GetCorrectionModification(*cluster,0,0,cent)*CorrectForReconstructionEfficiency(*cluster,fReconstructedE,cbtest);
-		      fHistPeripheralMatchedTracksEvspTvsCentEffTMCorr->Fill(track->P(), effCorrEttest,cbtest, (1/efftest-1) );
-		    }
-		  }
 		  cluster->GetPosition(pos);	  
 		  TVector3 p2(pos);
 		  uncorrEt += TMath::Sin(p2.Theta())*GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE;
-		  if(uncorrEt>=0.5) fHistMatchedTracksEvspTvsCentEffTMCorr500MeV->Fill(track->P(), effCorrEt,cent, (1/eff-1) );
-                    const Double_t *pidWeights = track->PID();
-
-                    Double_t maxpidweight = 0;
-                    Int_t maxpid = 0;
-
-                    if (pidWeights)
+		  if(correctedcluster || fReconstructedE <fsubmeanhade* track->P() ){//if more energy was deposited than the momentum of the track  and more than one particle led to the cluster and the corrected energy is greater than zero
+		    fHistMatchedTracksEvspTvsCent->Fill(track->P(),TMath::Sin(cp.Theta())*GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE,cent);
+		    fHistMatchedTracksEvspTvsCentEffCorr->Fill(track->P(),effCorrEt,cent);
+		    //Weighed by the number of tracks we didn't find
+		    fHistMatchedTracksEvspTvsCentEffTMCorr->Fill(track->P(), effCorrEt,cent, (1/eff-1) );
+		    if(cent<16 && cent>11){//centralities 60-80% where false track matches are low
+		      for(int cbtest = 0; cbtest<20; cbtest++){//then we calculate the deposit matched to hadrons with different centrality bins' efficiencies
+			float efftest = fTmCorrections->TrackMatchingEfficiency(track->Pt(),cbtest);
+			if(TMath::Abs(efftest)<1e-5) efftest = 1.0;
+			Double_t effCorrEttest = GetCorrectionModification(*cluster,0,0,cent)*CorrectForReconstructionEfficiency(*cluster,fReconstructedE,cbtest);
+			fHistPeripheralMatchedTracksEvspTvsCentEffTMCorr->Fill(track->P(), effCorrEttest,cbtest, (1/efftest-1) );
+		      }
+		    }
+		    if(uncorrEt>=0.5) fHistMatchedTracksEvspTvsCentEffTMCorr500MeV->Fill(track->P(), effCorrEt,cent, (1/eff-1) );
+		  }
+		  const Double_t *pidWeights = track->PID();
+		  
+		  Double_t maxpidweight = 0;
+		  Int_t maxpid = 0;
+		  
+		  if (pidWeights)
                     {
-                        for (Int_t p =0; p < AliPID::kSPECIES; p++)
+		      for (Int_t p =0; p < AliPID::kSPECIES; p++)
                         {
-                            if (pidWeights[p] > maxpidweight)
+			  if (pidWeights[p] > maxpidweight)
                             {
-                                maxpidweight = pidWeights[p];
-                                maxpid = p;
+			      maxpidweight = pidWeights[p];
+			      maxpid = p;
                             }
                         }
-                        if (fCuts->GetHistMakeTreeDeposit() && fDepositTree)
+		      if (fCuts->GetHistMakeTreeDeposit() && fDepositTree)
                         {
-                            fEnergyDeposited =GetCorrectionModification(*cluster,0,0,cent)* fReconstructedE;
-                            fMomentumTPC = track->P();
-                            fCharge = track->Charge();
-                            fParticlePid = maxpid;
-                            fPidProb = maxpidweight;
-                            AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(track);
-                            if (!esdTrack) {
-                                AliError("Error: track does not exist");
-                            }
-                            else {
-                                if (esdTrack) fTrackPassedCut = fEsdtrackCutsTPC->AcceptTrack(esdTrack);
-                                fDepositTree->Fill();
-                            }
+			  fEnergyDeposited =GetCorrectionModification(*cluster,0,0,cent)* fReconstructedE;
+			  fMomentumTPC = track->P();
+			  fCharge = track->Charge();
+			  fParticlePid = maxpid;
+			  fPidProb = maxpidweight;
+			  AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(track);
+			  if (!esdTrack) {
+			    AliError("Error: track does not exist");
+			  }
+			  else {
+			    if (esdTrack) fTrackPassedCut = fEsdtrackCutsTPC->AcceptTrack(esdTrack);
+			    fDepositTree->Fill();
+			  }
                         }
-
-                        if (maxpidweight > fPidCut)
+		      
+		      if (maxpidweight > fPidCut)
                         {
-                            //Float_t dist = TMath::Sqrt(pos[0]*pos[0] + pos[1]*pos[1]);
-
-                            //Float_t theta = TMath::ATan(pos[2]/dist)+TMath::Pi()/2;
-
+			  //Float_t dist = TMath::Sqrt(pos[0]*pos[0] + pos[1]*pos[1]);
+			  
+			  //Float_t theta = TMath::ATan(pos[2]/dist)+TMath::Pi()/2;
+			  
                             //Float_t et = fReconstructedE * TMath::Sin(theta);
                             if (maxpid == AliPID::kProton)
                             {
@@ -474,37 +508,47 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	  //if (fReconstructedE < fClusterEnergyCut) continue;
 	  cluster->GetPosition(pos);
 	  
-	    TVector3 p2(pos);
-	    
-	    fClusterPositionAccepted->Fill(p2.Phi(), p2.PseudoRapidity());
-	    fClusterPositionAcceptedEnergy->Fill(p2.Phi(), p2.PseudoRapidity(),GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE);
-	    fClusterEnergy->Fill(GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE);
-	    fClusterEnergyCentNotMatched->Fill(GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE,cent);
-	    fHistClusterSizeVsCent->Fill(cluster->GetNCells(),cent);
-	    fClusterEt->Fill(TMath::Sin(p2.Theta())*GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE);
-	    uncorrEt += TMath::Sin(p2.Theta())*GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE;
-	    float myuncorrEt = TMath::Sin(p2.Theta())*GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE;
-	    fTotRawEt += myuncorrEt;
-
-	    Double_t effCorrEt = CorrectForReconstructionEfficiency(*cluster,fReconstructedE,cent)*GetCorrectionModification(*cluster,0,0,cent);
-	    rawSignal += myuncorrEt;
-	    effCorrSignal +=effCorrEt;
-	    //cout<<"cluster energy "<<fReconstructedE<<" eff corr Et "<<effCorrEt<<endl;
-	    fTotRawEtEffCorr += effCorrEt;
-	    fTotNeutralEt += effCorrEt;
-	    nominalRawEt += effCorrEt;
-	    if(myuncorrEt>=0.5){
-	      totEt500MeV += effCorrEt;
-	      //cout<<"test "<<myuncorrEt<<"> 0.5"<<endl;
-	    }
-	    else{
-	      //cout<<"test "<<myuncorrEt<<"< 0.5"<<endl;
-	    }
-	    nonlinHighRawEt += effCorrEt*GetCorrectionModification(*cluster,1,0,cent);
-	    nonlinLowRawEt += effCorrEt*GetCorrectionModification(*cluster,-1,0,cent);
-	    effHighRawEt += effCorrEt*GetCorrectionModification(*cluster,0,1,cent);
-	    effLowRawEt += effCorrEt*GetCorrectionModification(*cluster,0,-1,cent);
-            fNeutralMultiplicity++;
+	  TVector3 p2(pos);
+	  if(countasmatched){//These are tracks where we partially subtracted the energy but we subtracted some energy
+	    float eff = fTmCorrections->TrackMatchingEfficiency(lostTrackPt,cent);
+	    if(TMath::Abs(eff)<1e-5) eff = 1.0;
+	    //cout<<"pt "<<track->Pt()<<" eff "<<eff<<" total "<<nChargedHadronsTotal<<endl;
+	    nChargedHadronsMeasured++;
+	    nChargedHadronsTotal += 1/eff;
+	    //Double_t effCorrEt = CorrectForReconstructionEfficiency(*cluster,lostEnergy,cent);
+	    nChargedHadronsEtMeasured+= TMath::Sin(cp.Theta())*lostEnergy;
+	    //One efficiency is the gamma efficiency and the other is the track matching efficiency.
+	    nChargedHadronsEtTotal+= 1/eff *TMath::Sin(cp.Theta())*lostEnergy;	      
+	  }
+	  fClusterPositionAccepted->Fill(p2.Phi(), p2.PseudoRapidity());
+	  fClusterPositionAcceptedEnergy->Fill(p2.Phi(), p2.PseudoRapidity(),GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE);
+	  fClusterEnergy->Fill(GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE);
+	  fClusterEnergyCentNotMatched->Fill(GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE,cent);
+	  fHistClusterSizeVsCent->Fill(cluster->GetNCells(),cent);
+	  fClusterEt->Fill(TMath::Sin(p2.Theta())*GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE);
+	  uncorrEt += TMath::Sin(p2.Theta())*GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE;
+	  float myuncorrEt = TMath::Sin(p2.Theta())*GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE;
+	  fTotRawEt += myuncorrEt;
+	  
+	  Double_t effCorrEt = CorrectForReconstructionEfficiency(*cluster,fReconstructedE,cent)*GetCorrectionModification(*cluster,0,0,cent);
+	  rawSignal += myuncorrEt;
+	  effCorrSignal +=effCorrEt;
+	  //cout<<"cluster energy "<<fReconstructedE<<" eff corr Et "<<effCorrEt<<endl;
+	  fTotRawEtEffCorr += effCorrEt;
+	  fTotNeutralEt += effCorrEt;
+	  nominalRawEt += effCorrEt;
+	  if(myuncorrEt>=0.5){
+	    totEt500MeV += effCorrEt;
+	    //cout<<"test "<<myuncorrEt<<"> 0.5"<<endl;
+	  }
+	  else{
+	    //cout<<"test "<<myuncorrEt<<"< 0.5"<<endl;
+	  }
+	  nonlinHighRawEt += effCorrEt*GetCorrectionModification(*cluster,1,0,cent);
+	  nonlinLowRawEt += effCorrEt*GetCorrectionModification(*cluster,-1,0,cent);
+	  effHighRawEt += effCorrEt*GetCorrectionModification(*cluster,0,1,cent);
+	  effLowRawEt += effCorrEt*GetCorrectionModification(*cluster,0,-1,cent);
+	  fNeutralMultiplicity++;
         }
         fMultiplicity++;
     }
@@ -522,7 +566,12 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     fGammaEnergyAdded = GetGammaContribution(fNeutralMultiplicity);
     fHistGammaEnergyAdded->Fill(fGammaEnergyAdded, fNeutralMultiplicity);
 
-    Double_t removedEnergy = GetChargedContribution(fNeutralMultiplicity) + GetNeutralContribution(fNeutralMultiplicity) + GetGammaContribution(fNeutralMultiplicity) + GetSecondaryContribution(fNeutralMultiplicity);
+    //Double_t removedEnergy = GetChargedContribution(cent) + GetNeutralContribution(cent) + GetGammaContribution(cent) + GetSecondaryContribution(cent);//fNeutralMultiplicity
+    Double_t removedEnergy = GetHadronContribution(cent) + GetNeutronContribution(cent) + GetKaonContribution(cent) + GetSecondaryContribution(cent);//fNeutralMultiplicity
+    //cout<<" centbin "<<cent<<" removed energy ch "<< GetHadronContribution(cent)<<" n " << GetNeutronContribution(cent) <<" kaon "<< GetKaonContribution(cent)<<" secondary "<< GetSecondaryContribution(cent);//fNeutralMultiplicity
+    //cout<<" test min et "<<fTmCorrections->GetMinEtCorrection(cent);
+    //cout<<" test neutral "<<fTmCorrections->NeutralContr(cent);
+    //cout<<" test neutron "<<fTmCorrections->NeutralContr(cent);
     fHistRemovedEnergy->Fill(removedEnergy);
     
     fTotNeutralEtAcc = fTotNeutralEt;
@@ -536,7 +585,9 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     fHistTotAllRawEtEffCorr->Fill(fTotAllRawEtEffCorr,cent);
     //cout<<"fTotAllRawEtEffCorr "<<fTotAllRawEtEffCorr<<" fTotAllRawEt "<<fTotAllRawEt<<" fTotRawEtEffCorr "<<fTotRawEtEffCorr<<"("<<fTotNeutralEt<<")"<<" fTotRawEt "<<fTotRawEt<<endl;
     //cout<<"uncorr "<<uncorrEt<<" raw "<<nominalRawEt<<" tot raw "<<fTotNeutralEt;
-    fTotNeutralEt = fGeomCorrection * fEMinCorrection * (fTotNeutralEt - removedEnergy);
+    //cout<<" raw "<<fTotNeutralEt<<" removed "<<removedEnergy<<" etmin "<<GetMinEtCorrection(cent)<<" final ";
+    if(GetMinEtCorrection(cent)>0) fTotNeutralEt =  (fTotNeutralEt - removedEnergy)/GetMinEtCorrection(cent);
+    //cout<<fTotNeutralEt<<endl;
     //cout<<" tot corr "<<fTotNeutralEt<<endl;
     fTotEt = fTotChargedEt + fTotNeutralEt;
 // Fill the histograms...0
@@ -639,6 +690,9 @@ void AliAnalysisEtReconstructed::FillOutputList(TList* list)
 { // add some extra histograms to the ones from base class
     AliAnalysisEt::FillOutputList(list);
 
+    if(fMakeQATree){
+        list->Add(fQATree);
+    }
     list->Add(fHistChargedPionEnergyDeposit);
     list->Add(fHistProtonEnergyDeposit);
     list->Add(fHistAntiProtonEnergyDeposit);
@@ -652,6 +706,7 @@ void AliAnalysisEtReconstructed::FillOutputList(TList* list)
     list->Add(fClusterPositionAllEnergy);
     list->Add(fClusterEnergy);
     list->Add(fClusterEnergyCent);
+    list->Add(fClusterEnergyModifiedTrackMatchesCent);
     list->Add(fClusterEnergyCentMatched);
     list->Add(fClusterEnergyCentNotMatched);
     list->Add(fClusterEt);
@@ -707,10 +762,21 @@ void AliAnalysisEtReconstructed::FillOutputList(TList* list)
 void AliAnalysisEtReconstructed::CreateHistograms()
 { // add some extra histograms to the ones from base class
     AliAnalysisEt::CreateHistograms();
+    if(fMakeQATree){
+        fQATree = new TTree("fQATree", "fQATree");
+        fQATree->Branch("fClusterMultiplicity", &fClusterMultiplicity, "fClusterMultiplicity/I");
+        fQATree->Branch("fTrackMultiplicity", &fTrackMultiplicity, "fTrackMultiplicity/I");
+        fQATree->Branch("fEventID",&fEventID,"fEventID/I");
+        fQATree->Branch("fCentClass",&fCentClass,"fCentClass/I");
+    }
 
-    Int_t nbinsEt = 1000;
+    Float_t scale = 1;//scale up histograms if EMCal 2011 so we have the right range
+    if(fDataSet==2011   && !fHistogramNameSuffix.Contains("P")){
+      scale = 2.5;
+    }
+    Int_t nbinsEt = 1000*scale;
     Double_t minEt = 0;
-    Double_t maxEt = 10;
+    Double_t maxEt = 10*scale;
 
     // possibly change histogram limits
 //     if (fCuts) {
@@ -781,6 +847,12 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     fClusterEnergyCent->SetYTitle("Centrality Bin");
     fClusterEnergyCent->SetZTitle("Number of clusters");
 
+    histname = "fClusterEnergyModifiedTrackMatchesCent" + fHistogramNameSuffix;
+    fClusterEnergyModifiedTrackMatchesCent = new TH2F(histname.Data(), histname.Data(), 100, 0, 5,20,-0.5,19.5);
+    fClusterEnergyModifiedTrackMatchesCent->SetXTitle("Energy of cluster");
+    fClusterEnergyModifiedTrackMatchesCent->SetYTitle("Centrality Bin");
+    fClusterEnergyModifiedTrackMatchesCent->SetZTitle("Number of clusters");
+
     histname = "fClusterEnergyCentMatched" + fHistogramNameSuffix;
     fClusterEnergyCentMatched = new TH2F(histname.Data(), histname.Data(), 100, 0, 5,20,-0.5,19.5);
     fClusterEnergyCentMatched->SetXTitle("Energy of cluster");
@@ -813,7 +885,7 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     fHistPeripheralMatchedTracksEvspTvsCentEffTMCorr = new TH3F("fHistPeripheralMatchedTracksEvspTvsCentEffTMCorr", "fHistPeripheralMatchedTracksEvspTvsCentEffTMCorr",100, 0, 3,100,0,3,20,-0.5,19.5);
     fHistMatchedTracksEvspTvsCentEffTMCorr500MeV = new TH3F("fHistMatchedTracksEvspTvsCentEffTMCorr500MeV", "fHistMatchedTracksEvspTvsCentEffTMCorr500MeV",100, 0, 3,100,0,3,20,-0.5,19.5);
 
-    float max = 200;
+    float max = 200*scale;
     if(fHistogramNameSuffix.Contains("P")){max = 100;}
     fHistFoundHadronsvsCent = new TH2F("fHistFoundHadronsvsCent","fHistFoundHadronsvsCent",100,0,max,20,-0.5,19.5);
        fHistNotFoundHadronsvsCent = new TH2F("fHistNotFoundHadronsvsCent","fHistNotFoundHadronsvsCent",100,0,max,20,-0.5,19.5);
@@ -824,19 +896,19 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     fHistFoundHadronsEtvsCent500MeV = new TH2F("fHistFoundHadronsEtvsCent500MeV","fHistFoundHadronsEtvsCent500MeV",100,0,max,20,-0.5,19.5);
     fHistNotFoundHadronsEtvsCent500MeV = new TH2F("fHistNotFoundHadronsEtvsCent500MeV","fHistNotFoundHadronsEtvsCent500MeV",100,0,max,20,-0.5,19.5);
 
-    fHistTotRawEtEffCorr = new TH2F("fHistTotRawEtEffCorr","fHistTotRawEtEffCorr",250,0,250,20,-0.5,19.5);
-    fHistTotRawEt = new TH2F("fHistTotRawEt","fHistTotRawEt",250,0,250,20,-0.5,19.5);
-    fHistTotRawEtEffCorr500MeV = new TH2F("fHistTotRawEtEffCorr500MeV","fHistTotRawEtEffCorr500MeV",250,0,250,20,-0.5,19.5);
-    fHistTotAllRawEt = new TH2F("fHistTotAllRawEt","fHistTotAllRawEt",250,0,250,20,-0.5,19.5);
-    fHistTotAllRawEtEffCorr = new TH2F("fHistTotAllRawEtEffCorr","fHistTotAllRawEtEffCorr",250,0,250,20,-0.5,19.5);
-    fHistNClustersPhosVsEmcal = new TH3F("fHistNClustersPhosVsEmcal","fHistNClustersPhosVsEmcal",50,0,50,250,0,250,20,-0.5,19);
+    fHistTotRawEtEffCorr = new TH2F("fHistTotRawEtEffCorr","fHistTotRawEtEffCorr",250,0,250*scale,20,-0.5,19.5);
+    fHistTotRawEt = new TH2F("fHistTotRawEt","fHistTotRawEt",250,0,250*scale,20,-0.5,19.5);
+    fHistTotRawEtEffCorr500MeV = new TH2F("fHistTotRawEtEffCorr500MeV","fHistTotRawEtEffCorr500MeV",250,0,250*scale,20,-0.5,19.5);
+    fHistTotAllRawEt = new TH2F("fHistTotAllRawEt","fHistTotAllRawEt",250,0,250*scale,20,-0.5,19.5);
+    fHistTotAllRawEtEffCorr = new TH2F("fHistTotAllRawEtEffCorr","fHistTotAllRawEtEffCorr",250,0,250*scale,20,-0.5,19.5);
+    fHistNClustersPhosVsEmcal = new TH3F("fHistNClustersPhosVsEmcal","fHistNClustersPhosVsEmcal",50,0,50,250*scale,0,250*scale,20,-0.5,19);
     fHistClusterSizeVsCent = new TH2F("fHistClusterSizeVsCent","fHistClusterSizeVsCent",10,0.5,10.5,20,-0.5,19.5);
     fHistMatchedClusterSizeVsCent = new TH2F("fHistMatchedClusterSizeVsCent","fHistMatchedClusterSizeVsCent",10,0.5,10.5,20,-0.5,19.5);
-    fHistTotAllRawEtVsTotalPt = new TH2F("fHistTotAllRawEtVsTotalPt","fHistTotAllRawEtVsTotalPt",125,0,250,200,0,2000);
-    fHistTotAllRawEtVsTotalPtVsCent = new TH3F("fHistTotAllRawEtVsTotalPtVsCent","fHistTotAllRawEtVsTotalPtVsCent",125,0,250,200,0,2000,20,-0.5,19.5);
-    fHistTotMatchedRawEtVsTotalPtVsCent = new TH3F("fHistTotMatchedRawEtVsTotalPtVsCent","fHistTotMatchedRawEtVsTotalPtVsCent",250,0,250,100,0,200,20,-0.5,19.5);
+    fHistTotAllRawEtVsTotalPt = new TH2F("fHistTotAllRawEtVsTotalPt","fHistTotAllRawEtVsTotalPt",125,0,250*scale,200,0,2000);
+    fHistTotAllRawEtVsTotalPtVsCent = new TH3F("fHistTotAllRawEtVsTotalPtVsCent","fHistTotAllRawEtVsTotalPtVsCent",125,0,250*scale,200,0,2000,20,-0.5,19.5);
+    fHistTotMatchedRawEtVsTotalPtVsCent = new TH3F("fHistTotMatchedRawEtVsTotalPtVsCent","fHistTotMatchedRawEtVsTotalPtVsCent",250,0,250*scale,100,0,200,20,-0.5,19.5);
     
-    maxEt = 500;
+    maxEt = 500*scale;
     histname = "fHistNominalRawEt" + fHistogramNameSuffix;
     fHistNominalRawEt = new TH2D(histname.Data(), histname.Data(),nbinsEt,minEt,maxEt,20,-0.5,19.5);
     histname = "fHistNominalNonLinHighEt" + fHistogramNameSuffix;
@@ -848,14 +920,14 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     histname = "fHistNominalEffLowEt" + fHistogramNameSuffix;
     fHistNominalEffLowEt = new TH2D(histname.Data(), histname.Data(),nbinsEt,minEt,maxEt,20,-0.5,19.5);
 
-      Float_t maxEtRange = 25;
-      Float_t maxEtRangeHigh = 125;
+      Float_t maxEtRange = 25*scale;
+      Float_t maxEtRangeHigh = 125*scale;
       Float_t minEtRange = 0;
       Int_t nbinsMult = 100;
       Float_t maxMult = 3000;
       Float_t minMult = 0;
-      Int_t nbinsCl = 250;
-      Float_t maxCl = 500;
+      Int_t nbinsCl = 250*scale;
+      Float_t maxCl = 500*scale;
       Float_t minCl = 0;
     fHistPIDProtonsTrackMatchedDepositedVsNch = new TH2F("fHistPIDProtonsTrackMatchedDepositedVsNch","PID'd protons deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRange,nbinsMult,minMult,maxMult);
     fHistPIDAntiProtonsTrackMatchedDepositedVsNch = new TH2F("fHistPIDAntiProtonsTrackMatchedDepositedVsNch","PID'd #bar{p} E_{T} deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRange,nbinsMult,minMult,maxMult);

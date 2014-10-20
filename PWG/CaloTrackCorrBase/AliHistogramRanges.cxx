@@ -50,6 +50,7 @@ fHistoNClusCellBins(100),     fHistoNClusCellMax(100),     fHistoNClusCellMin(0)
 fHistoNCellsBins(100),        fHistoNCellsMax(100),        fHistoNCellsMin(0),
 fHistoNClustersBins(100),     fHistoNClustersMax(100),     fHistoNClustersMin(0),
 fHistoRatioBins(100),         fHistoRatioMax(100.),        fHistoRatioMin(0.),
+fHistoHBPBins(100),           fHistoHBPMax(100.),          fHistoHBPMin(0.),
 fHistoVertexDistBins(100),    fHistoVertexDistMax(100.),   fHistoVertexDistMin(0.),
 fHistoRBins(100),             fHistoRMax(1000),            fHistoRMin(-1000),
 fHistoXBins(100),             fHistoXMax(1000),            fHistoXMin(-1000),
@@ -58,7 +59,9 @@ fHistoZBins(100),             fHistoZMax(1000),            fHistoZMin(-1000),
 fHistoSSBins(0),              fHistoSSMax(0),              fHistoSSMin(0),
 fHistoDiffTimeBins(0),        fHistoDiffTimeMax(0),        fHistoDiffTimeMin(0),
 fHistoTrackResidualEtaBins(0),fHistoTrackResidualEtaMax(0),fHistoTrackResidualEtaMin(0),
-fHistoTrackResidualPhiBins(0),fHistoTrackResidualPhiMax(0),fHistoTrackResidualPhiMin(0)
+fHistoTrackResidualPhiBins(0),fHistoTrackResidualPhiMax(0),fHistoTrackResidualPhiMin(0),
+fHistoNPtSumBins(0),          fHistoPtSumMax(0.),          fHistoPtSumMin(0.),
+fHistoNPtInConeBins(0),       fHistoPtInConeMax(0.),       fHistoPtInConeMin(0.)
 {
   //Default Ctor
   
@@ -75,28 +78,31 @@ void AliHistogramRanges::InitParameters()
   fHistoPtBins           = 240 ;  fHistoPtMax           = 120   ; fHistoPtMin           = 0.  ;
   fHistoPhiBins          = 120 ;  fHistoPhiMax          = TMath::TwoPi(); fHistoPhiMin  = 0.  ;
   fHistoEtaBins          = 100 ;  fHistoEtaMax          = 1     ; fHistoEtaMin          = -1  ;
-  fHistoDeltaPhiBins     = 310 ;  fHistoDeltaPhiMax     = 4.8   ; fHistoDeltaPhiMin     = -1.7 ;
-  fHistoDeltaEtaBins     = 200 ;  fHistoDeltaEtaMax     = 2     ; fHistoDeltaEtaMin     = -2 ;
+  fHistoDeltaPhiBins     = 310 ;  fHistoDeltaPhiMax     = 4.8   ; fHistoDeltaPhiMin     = -1.7;
+  fHistoDeltaEtaBins     = 200 ;  fHistoDeltaEtaMax     = 2     ; fHistoDeltaEtaMin     = -2  ;
   fHistoMassBins         = 200 ;  fHistoMassMax         = 1.    ; fHistoMassMin         = 0.  ;
   fHistoAsymBins         = 10  ;  fHistoAsymMax         = 1.    ; fHistoAsymMin         = 0.  ;
   fHistoV0SBins          = 100 ;  fHistoV0SMax          = 10000 ; fHistoV0SMin          = 0   ;
   fHistoV0MBins          = 100;   fHistoV0MMax          = 10000 ; fHistoV0MMin          = 0   ;
-  fHistoTrMBins          = 100 ;  fHistoTrMMax          = 2000  ; fHistoTrMMin          = 0   ;
+  fHistoTrMBins          = 200 ;  fHistoTrMMax          = 200   ; fHistoTrMMin          = 0   ;
   fHistoPOverEBins       = 100 ;  fHistoPOverEMax       = 10.   ; fHistoPOverEMin       = 0.  ;
   fHistodEdxBins         = 200 ;  fHistodEdxMax         = 400.  ; fHistodEdxMin         = 0.  ;  
   fHistodRBins           = 300 ;  fHistodRMax           = 3.15  ; fHistodRMin           = 0.  ;
-  fHistoTimeBins         = 1000;  fHistoTimeMax         = 1.e3  ; fHistoTimeMin         = 0.  ;//ns
+  fHistoTimeBins         = 200;   fHistoTimeMax         = 200   ; fHistoTimeMin         =-200.;//ns
   fHistoNClusCellBins    = 200 ;  fHistoNClusCellMax    = 200   ; fHistoNClusCellMin    = 0   ;
   fHistoNCellsBins       = 300 ;  fHistoNCellsMax       = 300   ; fHistoNCellsMin       = 0   ;
   fHistoNClustersBins    = 50  ;  fHistoNClustersMax    = 50    ; fHistoNClustersMin    = 0   ;
   fHistoRatioBins        = 200 ;  fHistoRatioMax        = 2     ; fHistoRatioMin        = 0.  ;
+  fHistoHBPBins          = 200 ;  fHistoHBPMax          = 10    ; fHistoHBPMin          = 0.  ;
   fHistoVertexDistBins   = 100 ;  fHistoVertexDistMax   = 500.  ; fHistoVertexDistMin   = 0.  ;
   fHistoRBins            = 100 ;  fHistoRMax            = 500   ; fHistoRMin            = -500;//cm
   fHistoXBins            = 100 ;  fHistoXMax            = 500   ; fHistoXMin            = -500;//cm
   fHistoYBins            = 100 ;  fHistoYMax            = 500   ; fHistoYMin            = -500;//cm
   fHistoZBins            = 100 ;  fHistoZMax            = 600   ; fHistoZMin            = -500;//cm
   fHistoSSBins           = 500 ;  fHistoSSMax           = 5     ; fHistoSSMin           = 0   ;  
-  fHistoDiffTimeBins     = 800 ;  fHistoDiffTimeMax     = 400   ; fHistoDiffTimeMin     = -400;// ns
+  fHistoDiffTimeBins     = 400 ;  fHistoDiffTimeMax     = 400   ; fHistoDiffTimeMin     = -400;// ns
+  fHistoNPtSumBins       = 100 ;  fHistoPtSumMax        = 50    ; fHistoPtSumMin        = 0.  ;
+  fHistoNPtInConeBins    = 100 ;  fHistoPtInConeMax     = 50    ; fHistoPtInConeMin     = 0.  ;
   
   fHistoTrackResidualEtaBins = 100 ; fHistoTrackResidualEtaMax = 0.15 ; fHistoTrackResidualEtaMin = -0.15;
   fHistoTrackResidualPhiBins = 100 ; fHistoTrackResidualPhiMax = 0.15 ; fHistoTrackResidualPhiMin = -0.15;
@@ -130,10 +136,13 @@ void AliHistogramRanges::Print(const Option_t * /*opt*/) const
   printf("Histograms: %d < N cells   < %d, Nbin = %d\n"              , fHistoNCellsMin,      fHistoNCellsMax,      fHistoNCellsBins);
   printf("Histograms: %d < N clusters   < %d, Nbin = %d\n"           , fHistoNClustersMin,   fHistoNClustersMax,   fHistoNClustersBins);
   printf("Histograms: %3.1f < Ratio< %3.1f, Nbin = %d\n"             , fHistoRatioMin,       fHistoRatioMax,       fHistoRatioBins);
+  printf("Histograms: %3.1f < HBP< %3.1f, Nbin = %d\n"               , fHistoHBPMin,         fHistoHBPMax,         fHistoHBPBins);
   printf("Histograms: %3.1f < Vertex Distance < %3.1f,   Nbin = %d\n", fHistoVertexDistMin,  fHistoVertexDistMax,  fHistoVertexDistBins);
+  printf("Histograms: %3.1f < pT sum < %3.1f,  Nbin = %d\n"          , fHistoPtSumMin,       fHistoPtSumMax,       fHistoNPtSumBins   );
+  printf("Histograms: %3.1f < pT in cone < %3.1f, Nbin = %d\n"       , fHistoPtInConeMin,    fHistoPtInConeMax,    fHistoNPtInConeBins);
   printf("Histograms: %2.2f < Residual Eta(Z) < %2.2f,   Nbin = %d\n", fHistoTrackResidualEtaMin, fHistoTrackResidualEtaMax,fHistoTrackResidualEtaBins);
   printf("Histograms: %2.2f < Residual Phi(R,X) < %2.2f, Nbin = %d\n", fHistoTrackResidualPhiMin, fHistoTrackResidualPhiMax,fHistoTrackResidualPhiBins);
-
+  
   printf("    \n") ;
   
 } 

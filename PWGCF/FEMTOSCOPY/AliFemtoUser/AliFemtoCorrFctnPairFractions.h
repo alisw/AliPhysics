@@ -1,0 +1,54 @@
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// AliFemtoCorrFctnPairFractions - A correlation function that analyzes            //
+// two particle correlations with respect to the azimuthal angle (phi)        //
+// and pseudorapidity (eta) difference                                        //
+//                                                                            //
+// Authors: Malgorzata Janik majanik@cern.ch                                   //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+#ifndef ALIFEMTOCORRFCTNPAIRFRACTIONS_H
+#define ALIFEMTOCORRFCTNPAIRFRACTIONS_H
+
+#include "TH1F.h"
+#include "TH2F.h"
+
+#include "AliFemtoCorrFctn.h"
+
+class AliFemtoCorrFctnPairFractions : public AliFemtoCorrFctn {
+public:
+  enum CorrectionType {kNone=0, kPt=1, kEta=2};
+  typedef enum CorrectionType ReadCorrectionType;
+
+  AliFemtoCorrFctnPairFractions(char* title);
+  AliFemtoCorrFctnPairFractions(const AliFemtoCorrFctnPairFractions& aCorrFctn);
+  virtual ~AliFemtoCorrFctnPairFractions();
+
+  AliFemtoCorrFctnPairFractions& operator=(const AliFemtoCorrFctnPairFractions& aCorrFctn);
+
+  virtual AliFemtoString Report();
+  virtual void AddRealPair(AliFemtoPair* aPair);
+  virtual void AddMixedPair(AliFemtoPair* aPair);
+
+  virtual void Finish();
+  void WriteHistos();
+  virtual TList* GetOutputList();
+
+private:
+  TH1F *fPairFractions;
+  TH1F *fPairFractionsDen;
+
+  double fphiL;
+  double fphiT;
+
+
+
+#ifdef __ROOT__
+  ClassDef(AliFemtoCorrFctnPairFractions, 1)
+#endif
+};
+
+
+#endif
+

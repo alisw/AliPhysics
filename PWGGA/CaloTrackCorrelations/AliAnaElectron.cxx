@@ -262,7 +262,8 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTa
   fhLam1E[pidIndex] ->Fill(energy,lambda1);
   fhDispE[pidIndex] ->Fill(energy,disp);
   
-  if(fCalorimeter == "EMCAL" && GetModuleNumber(cluster) > 5)
+  if(fCalorimeter == "EMCAL" &&  GetFirstSMCoveredByTRD() >= 0 &&
+     GetModuleNumber(cluster) >= GetFirstSMCoveredByTRD() )
   {
     fhLam0ETRD[pidIndex]->Fill(energy,lambda0);
     fhLam1ETRD[pidIndex]->Fill(energy,lambda1);
@@ -663,7 +664,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       fhDispE[pidIndex]->SetXTitle("E (GeV) ");
       outputContainer->Add(fhDispE[pidIndex]);
       
-      if(fCalorimeter == "EMCAL")
+      if(fCalorimeter == "EMCAL" &&  GetFirstSMCoveredByTRD() >=0 )
       {
         fhLam0ETRD[pidIndex]  = new TH2F (Form("h%sLam0ETRD",pidParticle[pidIndex].Data()),
                                           Form("%s: #lambda_{0}^{2} vs E, EMCAL SM covered by TRD",pidParticle[pidIndex].Data()), 
@@ -1114,7 +1115,8 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
   else if (fCalorimeter == "EMCAL")
     pl = GetEMCALClusters();
   
-  if(!pl) {
+  if(!pl)
+  {
     Info("MakeAnalysisFillAOD","TObjArray with %s clusters is NULL!\n",fCalorimeter.Data());
     return;
   }
@@ -1130,21 +1132,23 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
   // Fill AOD with PHOS/EMCAL AliAODPWG4Particle objects
   //----------------------------------------------------
   // Loop on clusters
-  for(Int_t icalo = 0; icalo < nCaloClusters; icalo++){    
-	  
+  for(Int_t icalo = 0; icalo < nCaloClusters; icalo++)
+  {
 	  AliVCluster * calo =  (AliVCluster*) (pl->At(icalo));	
     //printf("calo %d, %f\n",icalo,calo->E());
     
     //Get the index where the cluster comes, to retrieve the corresponding vertex
     Int_t evtIndex = 0 ; 
-    if (GetMixedEvent()) {
+    if (GetMixedEvent())
+    {
       evtIndex=GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ; 
       //Get the vertex and check it is not too large in z
       if(TMath::Abs(GetVertex(evtIndex)[2])> GetZvertexCut()) continue;
     }
     
     //Cluster selection, not charged, with photon id and in fiducial cut	  
-    if(GetReader()->GetDataType() != AliCaloTrackReader::kMC){
+    if(GetReader()->GetDataType() != AliCaloTrackReader::kMC)
+    {
       calo->GetMomentum(mom,GetVertex(evtIndex)) ;}//Assume that come from vertex in straight line
     else{
       Double_t vertex[]={0,0,0};
@@ -1161,29 +1165,8 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     Int_t nMaxima = GetCaloUtils()->GetNumberOfLocalMaxima(calo, cells); // NLM
     if(!ClusterSelected(calo,mom,nMaxima)) continue;
     
-    //----------------------------
-    //Create AOD for analysis
-    //----------------------------
-    AliAODPWG4Particle aodpart = AliAODPWG4Particle(mom);
-    
-    //...............................................
-    //Set the indeces of the original caloclusters (MC, ID), and calorimeter  
-    Int_t label = calo->GetLabel();
-    aodpart.SetLabel(label);
-    aodpart.SetCaloLabel(calo->GetID(),-1);
-    aodpart.SetDetector(fCalorimeter);
-    //printf("Index %d, Id %d, iaod %d\n",icalo, calo->GetID(),GetOutputAODBranch()->GetEntriesFast());
-    
-    //...............................................
-    //Set bad channel distance bit
-    Double_t distBad=calo->GetDistanceToBadChannel() ; //Distance to bad channel
-    if     (distBad > fMinDist3) aodpart.SetDistToBad(2) ;
-    else if(distBad > fMinDist2) aodpart.SetDistToBad(1) ; 
-    else                         aodpart.SetDistToBad(0) ;
-    //printf("DistBad %f Bit %d\n",distBad, aodpart.DistToBad());
-    
     //-------------------------------------
-    //PID selection via dEdx
+    // PID selection via dE/dx
     //-------------------------------------
     
     AliVTrack *track = GetCaloUtils()->GetMatchedTrack(calo, GetReader()->GetInputEvent());
@@ -1233,11 +1216,9 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       if( eOverp < fEOverPMax && eOverp > fEOverPMin)
       {
         pid  = AliCaloPID::kElectron;
-      } //E/p
+      } // E/p
       
-    }// dEdx
-    
-    aodpart.SetIdentifiedParticleType(pid);    
+    }// dE/dx
     
     Int_t pidIndex = 0;// Electron
     if(pid == AliCaloPID::kChargedHadron) pidIndex = 1;
@@ -1247,13 +1228,13 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     //--------------------------------------------------------------------------------------
     
     //Check origin of the candidates
+    Int_t tag = -1 ;
     if(IsDataMC())
     {
-      Int_t tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader());
-      aodpart.SetTag(tag);
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(),fCalorimeter);
       
       if(GetDebug() > 0)
-        printf("AliAnaElectron::MakeAnalysisFillAOD() - Origin of candidate, bit map %d\n",aodpart.GetTag());
+        printf("AliAnaElectron::MakeAnalysisFillAOD() - Origin of candidate, bit map %d\n",tag);
          
       if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) && fhMCE[pidIndex][kmcPhoton])
       {
@@ -1334,7 +1315,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     //Fill some shower shape histograms
     //---------------------------------
 
-    FillShowerShapeHistograms(calo,aodpart.GetTag(),pid);
+    FillShowerShapeHistograms(calo,tag,pid);
   
     if(pid == AliCaloPID::kElectron)
       WeightHistograms(calo);
@@ -1351,27 +1332,60 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     
       if(GetCaloPID()->GetIdentifiedParticleType(calo)!=AliCaloPID::kPhoton)
       {
-        continue;
+        if(fAODParticle == AliCaloPID::kElectron)
+          continue;
+        
+        if(fAODParticle == 0 )
+          pid = AliCaloPID::kChargedHadron ;
       }
-      if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PDG of identified particle %d\n",aodpart.GetIdentifiedParticleType());
-      
+      if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - PDG of identified particle %d\n",pid);
     }
         
     if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - Photon selection cuts passed: pT %3.2f, pdg %d\n",
-                              aodpart.Pt(), aodpart.GetIdentifiedParticleType());
+                              mom.Pt(), pid);
     
-    //FIXME, this to MakeAnalysisFillHistograms ...
     Float_t maxCellFraction = 0;
-    
     Int_t absID = GetCaloUtils()->GetMaxEnergyCell(cells, calo,maxCellFraction);
-    if(absID>=0)fhMaxCellDiffClusterE[pidIndex]->Fill(aodpart.E(),maxCellFraction);
-    fhNCellsE[pidIndex]            ->Fill(aodpart.E(),calo->GetNCells());
-    fhNLME[pidIndex]               ->Fill(aodpart.E(),nMaxima);
-    fhTimeE[pidIndex]              ->Fill(aodpart.E(),calo->GetTOF()*1.e9);
+    if ( absID >= 0 )fhMaxCellDiffClusterE[pidIndex]->Fill(mom.E(),maxCellFraction);
+    
+    fhNCellsE[pidIndex] ->Fill(mom.E(),calo->GetNCells());
+    fhNLME   [pidIndex] ->Fill(mom.E(),nMaxima);
+    fhTimeE  [pidIndex] ->Fill(mom.E(),calo->GetTOF()*1.e9);
+
+    
+    //----------------------------
+    //Create AOD for analysis
+    //----------------------------
 
     //Add AOD with electron/hadron object to aod branch
     if ( pid == fAODParticle || fAODParticle == 0 ) 
     {
+      AliAODPWG4Particle aodpart = AliAODPWG4Particle(mom);
+      
+      //...............................................
+      //Set the indeces of the original caloclusters (MC, ID), and calorimeter
+      Int_t label = calo->GetLabel();
+      aodpart.SetLabel(label);
+      aodpart.SetCaloLabel (calo ->GetID(),-1);
+      aodpart.SetTrackLabel(track->GetID(),-1);
+
+      aodpart.SetDetector(fCalorimeter);
+      //printf("Index %d, Id %d, iaod %d\n",icalo, calo->GetID(),GetOutputAODBranch()->GetEntriesFast());
+      
+      //...............................................
+      //Set bad channel distance bit
+      Double_t distBad=calo->GetDistanceToBadChannel() ; //Distance to bad channel
+      if     (distBad > fMinDist3) aodpart.SetDistToBad(2) ;
+      else if(distBad > fMinDist2) aodpart.SetDistToBad(1) ;
+      else                         aodpart.SetDistToBad(0) ;
+      //printf("DistBad %f Bit %d\n",distBad, aodpart.DistToBad());
+
+      // MC tag
+      aodpart.SetTag(tag);
+      
+      // PID tag
+      aodpart.SetIdentifiedParticleType(pid);
+      
       AddAODParticle(aodpart);
     }
 
@@ -1393,23 +1407,26 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
   TClonesArray     * mcparticles = 0x0;
   AliAODMCParticle * aodprimary  = 0x0; 
   
-  if(IsDataMC()){
-    
-    if(GetReader()->ReadStack()){
+  if(IsDataMC())
+  {
+    if(GetReader()->ReadStack())
+    {
       stack =  GetMCStack() ;
-      if(!stack) {
+      if(!stack)
+      {
         printf("AliAnaElectron::MakeAnalysisFillHistograms() - Stack not available, is the MC handler called? STOP\n");
         abort();
       }
-      
     }
-    else if(GetReader()->ReadAODMCParticles()){
-      
+    else if(GetReader()->ReadAODMCParticles())
+    {
       //Get the list of MC particles
       mcparticles = GetReader()->GetAODMCParticles();
-      if(!mcparticles && GetDebug() > 0) 	{
+      if(!mcparticles)
+      {
         printf("AliAnaElectron::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
-      }	
+        abort();
+      }
     }
   }// is data and MC
   
@@ -1468,15 +1485,17 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       
       Float_t eprim   = 0;
       //Float_t ptprim  = 0;
-      if(GetReader()->ReadStack()){
-        
-        if(label >=  stack->GetNtrack()) {
+      if(GetReader()->ReadStack())
+      {
+        if(label >=  stack->GetNtrack())
+        {
           if(GetDebug() > 2)  printf("AliAnaElectron::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", label, stack->GetNtrack());
           continue ;
         }
         
         primary = stack->Particle(label);
-        if(!primary){
+        if(!primary)
+        {
           printf("AliAnaElectron::MakeAnalysisFillHistograms() *** no primary ***:  label %d \n", label);
           continue;
         }
@@ -1485,11 +1504,15 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
         //ptprim  = primary->Pt();
         
       }
-      else if(GetReader()->ReadAODMCParticles()){
+      else if(GetReader()->ReadAODMCParticles())
+      {
         //Check which is the input
-        if(ph->GetInputFileIndex() == 0){
+        if(ph->GetInputFileIndex() == 0)
+        {
           if(!mcparticles) continue;
-          if(label >=  mcparticles->GetEntriesFast()) {
+          
+          if(label >=  mcparticles->GetEntriesFast())
+          {
             if(GetDebug() > 2)  printf("AliAnaElectron::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", 
                                        label, mcparticles->GetEntriesFast());
             continue ;
@@ -1499,14 +1522,14 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
           
         }
         
-        if(!aodprimary){
+        if(!aodprimary)
+        {
           printf("AliAnaElectron::MakeAnalysisFillHistograms() *** no primary ***:  label %d \n", label);
           continue;
         }
         
         eprim   = aodprimary->E();
         //ptprim  = aodprimary->Pt();
-        
       }
       
       Int_t tag =ph->GetTag();
@@ -1610,7 +1633,8 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
         fhMCDeltaE[pidIndex][kmcElectron] ->Fill(ecluster,eprim-ecluster);
         
       }     
-      else if( fhMCE[pidIndex][kmcOther]){
+      else if( fhMCE[pidIndex][kmcOther])
+      {
         fhMCE  [pidIndex][kmcOther] ->Fill(ecluster);
         fhMCPt [pidIndex][kmcOther] ->Fill(ptcluster);
         fhMCPhi[pidIndex][kmcOther] ->Fill(ecluster,phicluster);

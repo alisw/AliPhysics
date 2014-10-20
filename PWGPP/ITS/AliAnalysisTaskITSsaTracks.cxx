@@ -83,6 +83,52 @@ AliAnalysisTaskITSsaTracks::AliAnalysisTaskITSsaTracks() : AliAnalysisTaskSE("IT
 			   0.85,0.90,0.95,1.00,1.20,1.40,1.60,1.80,1.90,2.00,
 			   3.00,4.00,5.00,10.0,20.0,30.0};
   SetPtBins(nbins,xbins);
+  for(Int_t ij=0; ij<kNtrackTypes; ij++){
+    fHistPt[ij]=0x0;
+    fHistPtGood[ij]=0x0;
+    fHistPtFake[ij]=0x0;
+    fHistEtaPhi[ij]=0x0;
+    fHistEtaPhiGood[ij]=0x0;
+    fHistEtaPhiFake[ij]=0x0;
+    fHistEtaPhiAny[ij]=0x0;
+    fHistEtaPhi1SPD[ij]=0x0;
+    fHistEtaPhi4Clu[ij]=0x0;
+    fHistEtaPhi6Clu[ij]=0x0;
+    fHistChi2[ij]=0x0;
+    fHistChi2Good[ij]=0x0;
+    fHistChi2Fake[ij]=0x0;
+    fHistNclu[ij]=0x0;
+    fHistNcluGood[ij]=0x0;
+    fHistNcluFake[ij]=0x0;
+    fHistdedxvsP2cls[ij]=0x0;
+    fHistdedxvsP3cls[ij]=0x0;
+    fHistdedxvsP4cls[ij]=0x0;
+  }
+ for(Int_t ij=0; ij<kNspecies; ij++){
+   fHistPtTPCITS[ij]=0x0;
+   fHistPtITSsa[ij]=0x0;
+   fHistPtITSpureSA[ij]=0x0;
+   fHistEtaPhiTPCITS[ij]=0x0;
+   fHistEtaPhiITSsa[ij]=0x0;
+   fHistEtaPhiITSpureSA[ij]=0x0;
+   fHistNcluTPCITS[ij]=0x0;
+   fHistNcluITSsa[ij]=0x0;
+   fHistNcluITSpureSA[ij]=0x0;
+   fHistd0rphiITSpureSA[ij]=0x0;
+   fHistd0zITSpureSA[ij]=0x0;
+   fHistCluInLayTPCITS[ij]=0x0;
+   fHistCluInLayITSsa[ij]=0x0;
+   fHistCluInLayITSpureSA[ij]=0x0;
+   fHistOuterLayITSpureSA[ij]=0x0;
+   fHistPtResid[ij]=0x0;
+   fHistPtRelResid[ij]=0x0;
+   fHistInvPtResid[ij]=0x0;
+   fHistInvPtRelResid[ij]=0x0;
+   fHistMCPtResid[ij]=0x0;
+   fHistMCPtRelResid[ij]=0x0;
+   fHistMCInvPtResid[ij]=0x0;
+   fHistMCInvPtRelResid[ij]=0x0;
+ }
 }
 
 
@@ -547,7 +593,7 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
     for(Int_t iLay=0; iLay<6;iLay++) track->GetITSModuleIndexInfo(iLay,idet,statusLay[iLay],xloc,zloc);
     Int_t trlabel=track->GetLabel();
     Float_t ptgen=-999.;
-    Float_t pgen=-999.;
+    //    Float_t pgen=-999.;
     Float_t pxgen=-999.;
     Float_t pygen=-999.;
     Float_t pzgen=-999.;
@@ -556,7 +602,7 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
     if(fReadMC){
       TParticle* part = stack->Particle(TMath::Abs(trlabel));
       ptgen=part->Pt();
-      pgen=part->P();
+      //     pgen=part->P();
       pxgen=part->Px();
       pygen=part->Py();
       pzgen=part->Pz();

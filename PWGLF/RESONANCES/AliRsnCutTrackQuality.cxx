@@ -50,6 +50,7 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const char *name) :
    fTPCminNClusters(0),
    fTPCmaxChi2(1E20),
    fCutMaxChi2TPCConstrainedVsGlobal(1E20),
+   fTrackMaxChi2(1E20),
    fIsUseCrossedRowsCut(kFALSE),
    fTPCminNCrossedRows(0),
    fTPCminCrossedRowsOverFindableCls(0),
@@ -88,6 +89,7 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const AliRsnCutTrackQuality &copy) 
    fTPCminNClusters(copy.fTPCminNClusters),
    fTPCmaxChi2(copy.fTPCmaxChi2),
    fCutMaxChi2TPCConstrainedVsGlobal(copy.fCutMaxChi2TPCConstrainedVsGlobal),
+   fTrackMaxChi2(copy.fTrackMaxChi2),
    fIsUseCrossedRowsCut(copy.fIsUseCrossedRowsCut),
    fTPCminNCrossedRows(copy.fTPCminNCrossedRows),
    fTPCminCrossedRowsOverFindableCls(copy.fTPCminCrossedRowsOverFindableCls),
@@ -135,6 +137,7 @@ AliRsnCutTrackQuality &AliRsnCutTrackQuality::operator=(const AliRsnCutTrackQual
    fTPCminNClusters = copy.fTPCminNClusters;
    fTPCmaxChi2 = copy.fTPCmaxChi2;
    fCutMaxChi2TPCConstrainedVsGlobal = copy.fCutMaxChi2TPCConstrainedVsGlobal;
+   fTrackMaxChi2 = copy.fTrackMaxChi2;
    fIsUseCrossedRowsCut=copy.fIsUseCrossedRowsCut;
    fTPCminNCrossedRows = copy.fTPCminNCrossedRows;
    fTPCminCrossedRowsOverFindableCls = copy.fTPCminCrossedRowsOverFindableCls;
@@ -176,6 +179,7 @@ void AliRsnCutTrackQuality::DisableAll()
    fTPCmaxChi2 = 1E20;
    fAODTestFilterBit = -1;
    fCutMaxChi2TPCConstrainedVsGlobal = 1E20;
+   fTrackMaxChi2 = 1E20;
    fIsUseCrossedRowsCut = 0;
    fTPCminNCrossedRows = 0;
    fTPCminCrossedRowsOverFindableCls = 0;
@@ -190,6 +194,26 @@ void AliRsnCutTrackQuality::DisableAll()
    }
    SetPtRange(0.0, 1E20);
    SetEtaRange(-1E20, 1E20);
+}
+
+//_________________________________________________________________________________________________
+void AliRsnCutTrackQuality::SetPtRange(Double_t a, Double_t b)
+{
+  //Set Pt range cut
+  fPt[0] = TMath::Min(a, b); 
+  fPt[1] = TMath::Max(a, b);
+  if (fESDtrackCuts) fESDtrackCuts->SetPtRange(fPt[0], fPt[1]);
+  return;
+}
+
+//_________________________________________________________________________________________________
+void AliRsnCutTrackQuality::SetEtaRange(Double_t a, Double_t b)   
+{
+  //Set Pt range cut
+  fEta[0] = TMath::Min(a, b);
+  fEta[1] = TMath::Max(a, b);
+  if (fESDtrackCuts) fESDtrackCuts->SetEtaRange(fEta[0], fEta[1]);
+  return;
 }
 
 //_________________________________________________________________________________________________
@@ -304,6 +328,10 @@ Bool_t AliRsnCutTrackQuality::CheckESD(AliESDtrack *track)
    cuts.SetMaxChi2PerClusterITS(fITSmaxChi2);
 
    // now that all is initialized, do the check
+   if (!track) {
+     AliError("Invalid track object. Rejected.");
+     return kFALSE;
+   }
    return cuts.IsSelected(track);
 }
 
@@ -358,12 +386,8 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
       return kFALSE;
    }
 
-   //check chi square
-   if (track->Chi2perNDF() > fTPCmaxChi2) {
-      AliDebug(AliLog::kDebug + 2, "Bad chi2. Rejected");
-      return kFALSE;
-   }
-   if (track->Chi2perNDF() > fITSmaxChi2) {
+   //check track chi square
+   if (track->Chi2perNDF() > fTrackMaxChi2) {
       AliDebug(AliLog::kDebug + 2, "Bad chi2. Rejected");
       return kFALSE;
    }
@@ -507,60 +531,52 @@ void AliRsnCutTrackQuality::Print(const Option_t *) const
    AliInfo(Form("fCheckOnlyFilterBit     : %i",((int) fCheckOnlyFilterBit)));
 }
 //__________________________________________________________________________________________________
-void AliRsnCutTrackQuality::SetDefaults2010()
+void AliRsnCutTrackQuality::SetDefaults2010(Bool_t useTPCCrossedRows, Bool_t useDefaultKinematicCuts)
 {
 //
 // Default settings for cuts used in 2010
 //
-   AddStatusFlag(AliESDtrack::kTPCin   , kTRUE);
-   AddStatusFlag(AliESDtrack::kTPCrefit, kTRUE);
-   AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);
-   SetPtRange(0.15, 1E+20);
-   SetEtaRange(-0.8, 0.8);
-   SetDCARPtFormula("0.0182+0.0350/pt^1.01");
-   SetDCAZmax(2.0);
-   SetSPDminNClusters(1);
-   SetITSminNClusters(0);
-   // SetITSmaxChi2(36);
-   // SetMaxChi2TPCConstrainedGlobal(36);
-   SetTPCminNClusters(70);
-   SetTPCmaxChi2(4.0);
-   SetRejectKinkDaughters();
-   SetAODTestFilterBit(5);
+  
+  fIsUseCrossedRowsCut=useTPCCrossedRows;
+  fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE, fIsUseCrossedRowsCut);
+  if (useDefaultKinematicCuts) {
+    SetPtRange(0.15, 1E+20);
+    SetEtaRange(-0.8, 0.8);
+  } 
+  SetAODTestFilterBit(5);
+  return;
 }
 
 //__________________________________________________________________________________________________
-void AliRsnCutTrackQuality::SetDefaultsHighPt2011(Bool_t useTPCCrossedRows)
+void AliRsnCutTrackQuality::SetDefaultsHighPt2011(Bool_t useTPCCrossedRows, Bool_t useDefaultKinematicCuts)
 {
 //
 // Default settings for cuts used in 2011 (for high-pT)
 //
-   fIsUseCrossedRowsCut=useTPCCrossedRows;
-   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, useTPCCrossedRows);
-   fESDtrackCuts->SetMinNCrossedRowsTPC(120); //default is min 70 crossed rows -> use 120 to go to higher pt
-   fESDtrackCuts->SetMaxFractionSharedTPCClusters(0.4);//default is not set --> use to go to higher pt
-   //fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);//already in 2011 std
-   //fESDtrackCuts->SetMaxChi2PerClusterITS(36);//already in 2011 std
-   //fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(36);//already in 2011 std
-   // AddStatusFlag(AliESDtrack::kTPCin   , kTRUE); //already in 2011 std
-   // AddStatusFlag(AliESDtrack::kTPCrefit, kTRUE);//already in 2011 std
-   // AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);//already in 2011 std
-   SetPtRange(0.15, 1E+20);
-   SetEtaRange(-0.8, 0.8);
-   SetAODTestFilterBit(10);
-   return;
+  fIsUseCrossedRowsCut=useTPCCrossedRows;
+  fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, fIsUseCrossedRowsCut);
+  fESDtrackCuts->SetMinNCrossedRowsTPC(120); //default is min 70 crossed rows -> use 120 to go to higher pt
+  fESDtrackCuts->SetMaxFractionSharedTPCClusters(0.4);//default is not set --> use to go to higher pt
+  if (useDefaultKinematicCuts) {
+    SetPtRange(0.15, 1E+20);
+    SetEtaRange(-0.8, 0.8);
+  } 
+  SetAODTestFilterBit(10);
+  return;
 }
 
 //__________________________________________________________________________________________________
-void AliRsnCutTrackQuality::SetDefaults2011(Bool_t useTPCCrossedRows)
+void AliRsnCutTrackQuality::SetDefaults2011(Bool_t useTPCCrossedRows, Bool_t useDefaultKinematicCuts)
 {
 //
 // Default std cuts 2011 with crossed rows (=70)
 //
   fIsUseCrossedRowsCut=useTPCCrossedRows;
-  fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,useTPCCrossedRows);
-  SetPtRange(0.15, 1E+20);
-  SetEtaRange(-0.8, 0.8);
+  fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,fIsUseCrossedRowsCut);
+  if (useDefaultKinematicCuts) {
+    SetPtRange(0.15, 1E+20);
+    SetEtaRange(-0.8, 0.8);
+  } 
   SetAODTestFilterBit(5);
   return;
 }

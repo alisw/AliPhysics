@@ -15,9 +15,10 @@ ClassImp(AliRsnCutPrimaryVertex)
 
 //_________________________________________________________________________________________________
 AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex
-(const char *name, Double_t maxVz, Int_t nContributors, Bool_t acceptTPC) :
+(const char *name, Double_t maxVz, Int_t nContributors, Bool_t acceptTPC, Bool_t acceptSPD) :
    AliRsnCut(name, AliRsnCut::kEvent, 0, nContributors - 1, -maxVz, maxVz + 1E-6),
    fAcceptTPC(acceptTPC),
+   fAcceptSPD(acceptSPD),
    fCheckPileUp(kFALSE)
 {
 //
@@ -78,8 +79,12 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *object)
          fCutValueI = ncTrk;
          fCutValueD = vzTrk;
       } else if (vSPD && ncSPD > 0) {
+         if (!fAcceptSPD)
+            return kFALSE;
+         else {
          fCutValueI = ncSPD;
          fCutValueD = vzSPD;
+	 }
       } else if (vTPC && ncTPC > 0) {
          if (!fAcceptTPC)
             return kFALSE;
@@ -94,31 +99,47 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *object)
       // we first check if the SPD primary vertex is there
       // if it is not, then the only available is the TPC
       // stand-alone primary vertex, which is rejected
-      AliAODVertex *aodv = aod->GetPrimaryVertexSPD();
-      if (!aodv) {
-         AliDebugClass(1, "Not found SPD vertex --> TPC only available, skipped");
-         return kFALSE;
-      }
-      // now check primary vertex
-      aodv = (AliAODVertex *)aod->GetPrimaryVertex();
-      if (CheckVertex(aodv)) {
-         AliDebugClass(1, "Vertex TRK is OK");
-         fCutValueD = aodv->GetZ();
-         fCutValueI = aodv->GetNDaughters(); //aodv->GetNContributors();
-      }
-      else {
-         aodv = aod->GetPrimaryVertexSPD();
-         if (CheckVertex(aodv)) {
-            AliDebugClass(1, "Vertex TRK is BAD, but vertex SPD is OK");
-            fCutValueD = aodv->GetZ();
-            fCutValueI = aodv->GetNDaughters(); //aodv->GetNContributors();
-         } else {
-            AliDebugClass(1, "Vertex TRK is BAD, and vertex SPD is BAD");
-            return kFALSE;
-         }
-      }
-   } else
-      return kFALSE;
+      
+      if(fAcceptSPD){
+      	AliAODVertex *aodv = aod->GetPrimaryVertexSPD();
+      	if (!aodv) {
+         	AliDebugClass(1, "Not found SPD vertex --> TPC only available, skipped");
+         	return kFALSE;
+      	}
+      	// now check primary vertex
+      	aodv = (AliAODVertex *)aod->GetPrimaryVertex();
+      	if (CheckVertex(aodv)) {
+         	AliDebugClass(1, "Vertex TRK is OK");
+         	fCutValueD = aodv->GetZ();
+         	fCutValueI = aodv->GetNDaughters(); //aodv->GetNContributors();
+      	}
+      	else {
+         	aodv = aod->GetPrimaryVertexSPD();
+         	if (CheckVertex(aodv)) {
+            	AliDebugClass(1, "Vertex TRK is BAD, but vertex SPD is OK");
+            	fCutValueD = aodv->GetZ();
+            	fCutValueI = aodv->GetNDaughters(); //aodv->GetNContributors();
+         	} else {
+            	AliDebugClass(1, "Vertex TRK is BAD, and vertex SPD is BAD");
+            	return kFALSE;
+         	}
+	 
+	 	} 
+     }
+     else{     
+ 	 const AliVVertex *vertex = aod->GetPrimaryVertex();
+  	 if(!vertex) return kFALSE;
+  	 else{
+    	 TString title=vertex->GetTitle();
+    	 if(title.Contains("Z") ) return kFALSE;
+    	 else if(title.Contains("3D") ) return kFALSE;
+	 fCutValueI = vertex->GetNContributors();
+	 fCutValueD = TMath::Abs(vertex->GetZ());
+ 	 }
+     }
+     
+     } else
+       return kFALSE;
 
    // output
    Bool_t result = ((!OkRangeI()) && OkRangeD());
@@ -134,6 +155,7 @@ void AliRsnCutPrimaryVertex::Print(const Option_t *) const
 
    AliInfo(Form("Cut name                     : %s", GetName()));
    AliInfo(Form("Accepting TPC primary vertex : %s", (fAcceptTPC ? "YES" : "NO")));
+   AliInfo(Form("Accepting SPD primary vertex : %s", (fAcceptSPD ? "YES" : "NO")));
    AliInfo(Form("Contributors range (outside) : %d - %d", fMinI, fMaxI));
    AliInfo(Form("Z-vertex     range (inside)  : %f - %f", fMinD, fMaxD));
 }

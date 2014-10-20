@@ -33,15 +33,18 @@ public:
     fOptions.Add("trig",     "TYPE", "Trigger type", "INEL");
     fOptions.Add("vzMin",    "CENTIMETER", "Min Ip Z", "-10");
     fOptions.Add("vzMax",    "CENTIMETER", "Max Ip Z", "+10");
-    fOptions.Add("scheme",   "SCHEME", "Normalization scheme", "");
+    fOptions.Add("scheme",   "SCHEME", "Normalization scheme", "EVENT,TRIGGER");
     fOptions.Add("trigEff",  "EFFICENCY", "Trigger effeciency", "1");
     fOptions.Add("trigEff0", "EFFICENCY", "0-bin trigger effeciency", "1");
-    fOptions.Add("cent",     "Use centrality");
-    fOptions.Add("cut-edges", "Cut acceptance edges");
-    fOptions.Add("corr-empty", "Correct for empty bins (deprecated)");
+    fOptions.Add("cent",     "ESTIMATOR", "Use centrality", "none");
     fOptions.Add("mc",       "Also make dN/deta for MC truth");
-    fOptions.Add("mc-corr",  "FILE", "MC corrections file", "");
     fOptions.Add("satellite","Restrict analysis to satellite events", false);
+    fOptions.Add("forward-config", "FILE", "Forward configuration", 
+		 "dNdetaConfig.C");
+    fOptions.Add("central-config", "FILE", "Central configuration", 
+		 "dNdetaConfig.C");
+    fOptions.Add("truth-config", "FILE", "MC-Truth configuration", 
+		 "dNdetaConfig.C");
   }
 protected:
   /** 
@@ -67,27 +70,35 @@ protected:
     Double_t vzMax   = fOptions.AsDouble("vzmax", +10);
     Double_t effT    = fOptions.AsDouble("trigEff", 1);
     Double_t effT0   = fOptions.AsDouble("trigEff0", 1);
-    Bool_t   cent    = fOptions.Has("cent");
-    Bool_t   edges   = fOptions.Has("cut-edges");
-    Bool_t   corrEm  = fOptions.Has("corr-empty");
+    TString  cent    = fOptions.Get("cent");
     Bool_t   mc      = fOptions.Has("mc");
-    TString  mccorr  = fOptions.AsString("mc-corr", "");
     Bool_t   satonly = fOptions.AsBool("satellite");
+    TString  fwdCfg  = fOptions.Get("forward-config");
+    TString  cenCfg  = fOptions.Get("central-config");
+    TString  mcCfg   = fOptions.Get("truth-config");
     if (!mc) mc      = fHelper->IsMC(); 
+    if (!fOptions.Has("cent")) cent="none";
+
+    // Info("", "Centrality option is '%s'", cent.Data());
+    fOptions.Show(std::cout);
 
     // --- Form arguments --------------------------------------------
-    TString args;
-    args.Form("\"%s\",%f,%f,%d,\"%s\",%d,%g,%g,%d",
-	      trig.Data(), vzMin, vzMax, cent, scheme.Data(),
-	      edges, effT, effT0, corrEm);
-    TString fargs(args);
-    fargs.Append(Form(",%d,\"%s\"",satonly, mccorr.Data()));
+    TString fargs;
+    fargs.Form("\"%s\",\"%s\",%f,%f,\"%s\",\"%s\",%g,%g,%d",
+	       fwdCfg.Data(), trig.Data(), vzMin, vzMax, cent.Data(), 
+	       scheme.Data(), effT, effT0, satonly);
+    TString cargs(fargs);
+    cargs.ReplaceAll(fwdCfg, cenCfg);
+    // Info("", "fargs=\"%s\", cargs=\"%s\"", fargs.Data(), cargs.Data()); 
 
     // --- Add the task ----------------------------------------------
     gROOT->Macro(Form("AddTaskForwarddNdeta.C(%s);", fargs.Data()));
-    gROOT->Macro(Form("AddTaskCentraldNdeta.C(%s);", args.Data()));
-    if (mc) 
-      gROOT->Macro(Form("AddTaskMCTruthdNdeta.C(%s);", args.Data()));
+    gROOT->Macro(Form("AddTaskCentraldNdeta.C(%s);", cargs.Data()));
+    if (mc) {
+      TString margs(fargs);
+      margs.ReplaceAll(fwdCfg, mcCfg);
+      gROOT->Macro(Form("AddTaskMCTruthdNdeta.C(%s);", margs.Data()));
+    }
   }
   //__________________________________________________________________
   /** 
@@ -169,8 +180,21 @@ protected:
     }
 
     o << "// Created by " << ClassName() << "\n"
-      << "// \n"
-      << "// Will draw dN/deta results from produced file\n"
+      << "Bool_t SetupDrawer(const TString& title, Bool_t old)\n"
+      << "{\n"
+      << "  const char* fwd=\"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
+      << "  gROOT->LoadMacro(Form(\"%s/DrawdNdeta.C+\",fwd));\n"
+      << "  if (title.EqualTo(\"help\",TString::kIgnoreCase)) {\n"
+      << "    if (old)\n"
+      << "      DrawdNdeta(\"help\",\"\",5); // Get the help\n"
+      << "    else\n"
+      << "      DrawdNdeta(\"help\",\"\",\"\"); // Get the help\n"
+      << "    return false;\n"
+      << "  }\n"
+      << "  return true;\n"
+      << "}\n"
+      << std::endl;
+    o << "// Will draw dN/deta results from produced file\n"
       << "// \n"
       << "// Options can be specified as needed. To get help, pass the\n"
       << "// string \"help\" for the title:\n"
@@ -190,12 +214,7 @@ protected:
       << "          Float_t        vzMin=999,\n"
       << "          Float_t        vzMax=-999)\n"
       << "{\n"
-      << "  const char* fwd=\"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
-      << "  gROOT->LoadMacro(Form(\"%s/DrawdNdeta.C+\",fwd));\n"
-      << "  if (title.EqualTo(\"help\",TString::kIgnoreCase)) {\n"
-      << "    DrawdNdeta(\"help\"); // Get the help\n"
-      << "    return;\n"
-      << "  }\n\n"
+      << "  if (!SetupDrawer(title, true)) return;\n"
       << "  DrawdNdeta(\"forward_dndeta.root\",\n"
       << "             title,\n"
       << "             rebin,\n"
@@ -209,8 +228,28 @@ protected:
       << "             centMax,\n"
       << "             vzMin,\n"
       << "             vzMax,\n"
-      <<"              \"dNdeta_<trig>\");\n"
+      << "              \"dNdeta_<trig>\");\n"
       << "}\n"
+      << std::endl;
+    o << "// Alternative using strings\n"
+      << "void Draw(const TString& title,\n"
+      << "          const TString& others=\"ALL\",\n"
+      << "          const TString& options=\"DEFAULT\",\n"
+      << "          const TString& formats=\"ALL\",\n"
+      << "          UShort_t       rebin=5,\n"
+      << "          Float_t        eff=0,\n"
+      << "          UShort_t       centMin=0,\n"
+      << "          UShort_t       centMax=0,\n"
+      << "          Float_t        vzMin=+999,\n"
+      << "          Float_t        vzMax=-999,\n"
+      << "          const TString& base="")\n"
+      << "{\n"
+      << "  if (!SetupDrawer(title, false)) return;\n"
+      << "  DrawdNdeta(\"forward_dndeta.root\",\n"
+      << "             title,others,options,formats,\n"
+      << "             rebin,eff,centMin,centMax,\n"
+      << "             vzMin,vzMax,\"dNdeta_<trig>\");\n"
+      << "}\n"  
       << "//\n"
       << "// EOF\n"
       << "//" << std::endl;

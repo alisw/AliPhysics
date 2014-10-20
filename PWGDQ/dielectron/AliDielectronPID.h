@@ -69,6 +69,7 @@ public:
 
   void SetDefaults(Int_t def);
 
+  Int_t GetNCuts() { return fNcuts;}
   //
   //Analysis cuts interface
   //const

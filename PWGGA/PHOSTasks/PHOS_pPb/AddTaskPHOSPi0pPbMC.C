@@ -1,5 +1,6 @@
-AliAnalysisTaskPi0FlowMC* AddTaskPHOSPi0pPbMC (const char* name = "PHOSPi0pPbMC",
-					    const char* options = "",
+AliAnalysisTaskPi0FlowMC* AddTaskPHOSPi0pPbMC (Bool_t kWeightsApplied = kFALSE,    
+					       const char* name = "PHOSPi0pPbMC",
+					       const char* options = "",
 					       UInt_t offlineTriggerMask = AliVEvent::kINT7,
 					       const char* centrality = "V0M",
 					       const Int_t nCentBins = 5,
@@ -25,7 +26,10 @@ AliAnalysisTaskPi0FlowMC* AddTaskPHOSPi0pPbMC (const char* name = "PHOSPi0pPbMC"
     return NULL;
   }
 
-  AliAnalysisTaskPi0FlowMC* task = new AliAnalysisTaskPi0FlowMC(Form("%sTask", name));
+  AliAnalysisTaskPi0FlowMC* task;
+
+  if(kWeightsApplied) task  = new AliAnalysisTaskPi0FlowMCParamWeights(Form("%sTask", name));
+  else task  = new AliAnalysisTaskPi0FlowMC(Form("%sTask", name));
 
   if( AliVEvent::kINT7 == offlineTriggerMask ) {
     if (nCentBins<1) {

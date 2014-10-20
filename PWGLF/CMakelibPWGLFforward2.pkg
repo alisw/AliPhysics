@@ -130,6 +130,7 @@ set ( EINCLUDE
   FORWARD/analysis2  
   FORWARD/GEO 
   PWG0 
+  OADB
   STEER/ESD 
   STEER/STEERBase)
 
@@ -279,6 +280,7 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
 		FORWARD/analysis2/DrawUnfoldedSummary.C
 		FORWARD/analysis2/ForwardAODConfig.C
 		FORWARD/analysis2/CentralAODConfig.C
+		FORWARD/analysis2/dNdetaConfig.C
                 FORWARD/analysis2/MakeAOD.C
 		FORWARD/analysis2/MakedNdeta.C
                 FORWARD/analysis2/MakeELossFits.C
@@ -288,6 +290,7 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
                 FORWARD/analysis2/MakeForwardQA.C
 		FORWARD/analysis2/MakeMCCorr.C		
                 FORWARD/analysis2/OtherData.C
+                FORWARD/analysis2/other.root
            DESTINATION PWGLF/FORWARD/analysis2 )
 
          # FORWARD/analysis2/AliFMDCorrAcceptance.h

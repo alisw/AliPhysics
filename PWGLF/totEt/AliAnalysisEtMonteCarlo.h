@@ -14,6 +14,9 @@ class TH2I;
 class AliPHOSGeoUtils;
 class AliPHOSGeometry;
 class AliStack;
+class AliMCEvent;
+class AliGenEventHeader;
+class AliStack;
 //class AliMCEvent;
 //class AliESDEvent;
 
@@ -45,6 +48,12 @@ public:
     Float_t GetNumberOfChargedHadronsMatched(){return nChargedHadronsMeasured;}
     Float_t GetTotalNumberOfChargedHadrons(){return nChargedHadronsTotal;}
 
+
+    void SetGeneratorMinMaxParticles(AliMCEvent *eventMC);
+    AliGenEventHeader* GetGenEventHeader(AliMCEvent *eventMC) const;
+    Bool_t IsHIJINGLabel(Int_t label,AliMCEvent *eventMC,AliStack *stack);
+    void CheckForHIJINGLabel(){checkLabelForHIJING = kTRUE;}
+
 protected:
 
     virtual bool TrackHitsCalorimeter(TParticle *part, Double_t magField=0.5);
@@ -67,6 +76,7 @@ protected:
     Float_t nChargedHadronsTotal;
 
     Bool_t fIsMC;//if we are running over data, we still need this object to exist but we don't want to do anything.
+    Bool_t checkLabelForHIJING;//Boolean - do we need to check this data set for HIJING labels?  We don't need to do this unless there were signals embedded
 
     Double_t fImpactParameter; // b(fm), for Hijing; 0 otherwise
     Int_t fNcoll; // Ncoll, for Hijing; 1 otherwise
@@ -330,7 +340,9 @@ protected:
     TH2F *fHistGammasFoundOutOfAccAltCent;//!
     TH2F *fHistGammasGeneratedCent;//!
     TH2F *fHistGammasFoundRecoEnergyCent;//!
+    TH2F *fHistAllGammasFoundRecoEnergyCent;//!
     TH2F *fHistGammasFoundOutOfAccRecoEnergyCent;//!
+    TH2F *fHistAllGammasFoundOutOfAccRecoEnergyCent;//!
     TH1F *fHistChargedTracksCut;//!
     TH1F *fHistChargedTracksAccepted;//!
     TH1F *fHistGammasCut;//!
@@ -477,6 +489,8 @@ protected:
     TH2F *fHistFracSecondariesVsNTotalTracks;//!//Fraction of signal vs number of total tracks
     TH3F *fHistRCorrVsPtVsCent;//! // enter comment here
 
+    Int_t            fNMCProducedMin;             // In case of cocktail, select particles in the list with label from this value
+    Int_t            fNMCProducedMax;             // In case of cocktail, select particles in the list with label up to this value
 
 private:
 

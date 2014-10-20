@@ -21,6 +21,7 @@ class TParticle;
 class TDatabasePDG;
 class AliAnalysisEtCuts;
 class AliPIDResponse;
+class AliCentrality;
 
 class AliAnalysisHadEt : public AliAnalysisEtCommon
 {
@@ -73,6 +74,7 @@ public:
     void SetHistoList(const TList *mylist){fhistoList = (TList *) mylist;}
 
     AliPIDResponse *fPIDResponse;
+    Int_t GetCentralityBin(Int_t numberofbins,AliCentrality *centrality);//number of bins is 11 (10%), 21 (5%), or 41 (2.5%).  Number of bins includes a bin for those events with no centrality bin determined
 
 protected:   
     

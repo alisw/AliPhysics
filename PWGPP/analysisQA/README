@@ -3,6 +3,7 @@ Analysis QA
 Authur: Satyajit Jena <sjena@cern.ch>
 Date: 23 Nov 2013
 Last Update: Mon Mar 31 15:47:10 CEST 2014
+Last Update: 27/06/2014 - LF
 --------------------------------------------
 
 
@@ -89,6 +90,84 @@ processMakeQA2pc.C
 
 %+++++++++++++++++++++++++++++++++++++++++++
 processMultistrangeQA.C
+
+Processes the results of the wagons based on AddTaskQAMultistrange.C.
+A copy is present in the folder: /PWGLF/QATasks/post/PostProcessQAMultistrange.C .
+Creates a "summary pdf" file with several pages. 
+Arguments:
+Int_t   icasType        = 0,                             // 0) Xi-   1) Xi+  2) Omega-  3) Omega+
+Int_t   collidingsystem = 0,                             // 0) PbPb  1) pp   2) pPb
+Bool_t  isMC            = kFALSE,                        // kTRUE-->MC and kFALSE-->Exp.
+Char_t *fileDir         = ".",                           // Input file directory
+Char_t *filein          = "AnalysisResults.root"         // Input file name
+Further details in the macro.
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processResonance.C
+
+Processes the results of the wagons based on AddTaskQAPhi.C.
+A copy is present in the folder: /PWGLF/QATasks/post/PostProcessQAPhi.C .
+Creates a "summary pdf" file with several pages.
+Arguments:
+char* system          = "pp276",                                 // string giving the collision system ("pp276","pp7", or "PbPb276")
+char* name_fin        = "AnalysisResults.root",                  // name of input file
+char* name_fout       = "QAphi",                                 // base name of output files (without suffix)
+char* name_list       = "RsnHistMini_Phi_PhiNsigma_KTPCnsig30",  // name of the list in fin that contains histograms (may be different)
+char* name_hist_base  = "RsnMini_phi.PhiNsigma_KTPCnsig30"       // base name of the THnSparse histograms (may be different)
+Further details in the macro.
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processV0.C
+
+Processes the results of the wagons based on AddTaskQAV0.C or AddTaskQAV0AOD.C.
+A copy is present in the folder: /PWGLF/QATasks/post/PostProcessQAV0.C .
+Creates a "summary pdf" file with several pages. 
+Arguments:
+Bool_t lAttemptInvMassFit = kTRUE           // if kTRUE attempt rough signal extraction 
+The Macro run on the file: ./AnalysisResults.root .
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processHighPtDeDx.C
+
+Processes the results of the wagons based on AddTaskQAHighPtDeDx.C.
+A copy is present in the folder: /PWGLF/QATasks/post/PostProcessQAHighPtDeDx.C .
+How to run (use AliRoot because of AliXRDPROOFtoolkit):
+
+gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/Base")
+gSystem->AddIncludePath("-I$ALICE_ROOT/PWGLF/SPECTRA/IdentifiedHighPt/macros")
+gSystem->AddIncludePath("-I$ALICE_ROOT/PWGLF/SPECTRA/IdentifiedHighPt/grid")
+gSystem->AddIncludePath("-I$ALICE_ROOT/PWGLF/SPECTRA/IdentifiedHighPt/lib")
+gROOT->SetMacroPath(".:$ALICE_ROOT/PWGLF/SPECTRA/IdentifiedHighPt/macros:$ALICE_ROOT/PWGLF/SPECTRA/IdentifiedHighPt/grid:$ALICE_ROOT/PWGLF/SPECTRA/IdentifiedHighPt/lib/")
+.L my_functions.C+
+.L my_tools.C+
+.L PostProcessQAHighPtDeDx.C+
+
+PlotQA("FileRoot/AnalysisResults.root")
+
+MakeFitsExternalData("FileRoot/AnalysisResults.root", "HistosForBB")
+MakeFitsV0s("FileRoot/AnalysisResults.root", "HistosForBB/PrimaryElectrons.root", "HistosForBB",0)
+MakeFitsV0s("FileRoot/AnalysisResults.root", "HistosForBB/PrimaryElectrons.root", "HistosForBB",1)
+MakeFitsV0s("FileRoot/AnalysisResults.root", "HistosForBB/PrimaryElectrons.root", "HistosForBB",2)
+MakeFitsV0s("FileRoot/AnalysisResults.root", "HistosForBB/PrimaryElectrons.root", "HistosForBB",3)
+PlotParametrizations("HistosForBB")
+
+FitDeDxVsP("FileRoot/AnalysisResults.root", 3.0, 10.0, 0, 6, 13, kTRUE,  0,  2, 0,1, 0, "HistosForBB/hres_0_5_02.root",27);
+FitDeDxVsP("FileRoot/AnalysisResults.root", 3.0, 10.0, 0, 6, 13, kTRUE,  2,  4, 0,1, 0, "HistosForBB/hres_0_5_24.root",27);
+FitDeDxVsP("FileRoot/AnalysisResults.root", 3.0, 10.0, 0, 6, 13, kTRUE,  4,  6, 0,1, 0, "HistosForBB/hres_0_5_46.root",27);
+FitDeDxVsP("FileRoot/AnalysisResults.root", 3.0, 10.0, 0, 6, 13, kTRUE,  6,  8, 0,1, 0, "HistosForBB/hres_0_5_68.root",27);
+MakeNSigmaPlot("FileRoot/AnalysisResults.root","fitparameters/MB/02_dataPbPb.root",2,50, 0,  "02_dataPbPb.root");
+MakeNSigmaPlot("FileRoot/AnalysisResults.root","fitparameters/MB/24_dataPbPb.root",2,50, 1,  "24_dataPbPb.root");
+MakeNSigmaPlot("FileRoot/AnalysisResults.root","fitparameters/MB/46_dataPbPb.root",2,50, 2,  "46_dataPbPb.root");
+MakeNSigmaPlot("FileRoot/AnalysisResults.root","fitparameters/MB/68_dataPbPb.root",2,50, 3,  "68_dataPbPb.root");
+PlotNSigma("nsigma_results")
+
+ExtractUncPartFractvsP("FileRoot/AnalysisResults.root", 2, 50,0,0, "results/eta02","fractions");
+ExtractUncPartFractvsP("FileRoot/AnalysisResults.root", 2, 50,0,1, "results/eta24","fractions");
+ExtractUncPartFractvsP("FileRoot/AnalysisResults.root", 2, 50,0,2, "results/eta46","fractions");
+ExtractUncPartFractvsP("FileRoot/AnalysisResults.root", 2, 50,0,3, "results/eta68","fractions");
+
+Further details in the macro.
+
 
 %+++++++++++++++++++++++++++++++++++++++++++
 processProduceFastQA.C

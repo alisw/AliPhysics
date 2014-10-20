@@ -122,6 +122,7 @@ class AliHFEspectrum : public TNamed{
 
     void SetStepGuessedUnfolding(Int_t stepGuessedUnfolding) { fStepGuessedUnfolding = stepGuessedUnfolding; };
     void SetNumberOfIteration(Int_t numberOfIteration) { fNumberOfIterations = numberOfIteration; };
+    void SetUnfoldingRandomIterations(Int_t niter) { fNRandomIter = niter; }
     
     void SetDumpToFile(Bool_t dumpToFile) { fDumpToFile=dumpToFile; }; 
   
@@ -207,6 +208,7 @@ class AliHFEspectrum : public TNamed{
     Int_t fStepAfterCutsV0;       // After cuts V0
     Int_t fStepGuessedUnfolding;  // Step for first guessed unfolding
     Int_t fNumberOfIterations;    // Number of iterations
+    Int_t fNRandomIter;           // Number of random iterations
     Chargetype_t fChargeChoosen;         // Select positive or negative electrons
 
     Double_t fEtaRange[2];        // Eta range 

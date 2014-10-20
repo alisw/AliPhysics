@@ -41,6 +41,7 @@
 #include "AliMCEventHandler.h"
 #include "AliVParticle.h"
 #include "AliCFContainer.h"
+#include "AliEventplane.h"
 
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
@@ -125,10 +126,13 @@ fListOfHistos(0x0),
 // event QA
 fnTracksVertex(1),  // QA tracks pointing to principal vertex (= 3 default) 
 fZVertex(7.),
+fAcceptOnlyMuEvents(kFALSE),
 fCentralityMethod("V0M"),
 // track cuts
 fTrackEtaCut(0.8),
 fTrackEtaCutMin(-1.),
+fTrackPhiCutEvPlMin(0.),
+fTrackPhiCutEvPlMax(0.),
 fOnlyOneEtaSide(0),
 fPtMin(0.5),
 fDCAXYCut(0),
@@ -246,6 +250,8 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fAnalyseUE->DefineESDCuts(fFilterBit);
   fAnalyseUE->SetEventSelection(fSelectBit);
   fAnalyseUE->SetHelperPID(fHelperPID);
+  if(fTrackPhiCutEvPlMax > 0.0001)
+    fAnalyseUE->SetParticlePhiCutEventPlane(fTrackPhiCutEvPlMin,fTrackPhiCutEvPlMax);
   if ((fParticleSpeciesTrigger != -1 || fParticleSpeciesAssociated != -1) && !fHelperPID)
     AliFatal("HelperPID object should be set in the steering macro");
 
@@ -416,9 +422,12 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   TTree *settingsTree   = new TTree("UEAnalysisSettings","Analysis Settings in UE estimation");
   settingsTree->Branch("fnTracksVertex", &fnTracksVertex,"nTracksVertex/I");
   settingsTree->Branch("fZVertex", &fZVertex,"ZVertex/D");
+  settingsTree->Branch("fAcceptOnlyMuEvents", &fAcceptOnlyMuEvents,"AcceptOnlyMuEvents/O");
   //settingsTree->Branch("fCentralityMethod", fCentralityMethod.Data(),"CentralityMethod/C");
   settingsTree->Branch("fTrackEtaCut", &fTrackEtaCut, "TrackEtaCut/D");
   settingsTree->Branch("fTrackEtaCutMin", &fTrackEtaCutMin, "TrackEtaCutMin/D");
+  settingsTree->Branch("fTrackPhiCutEvPlMin", &fTrackPhiCutEvPlMin, "TrackPhiCutEvPlMin/D");
+  settingsTree->Branch("fTrackPhiCutEvPlMax", &fTrackPhiCutEvPlMax, "TrackPhiCutEvPlMax/D");
   settingsTree->Branch("fOnlyOneEtaSide", &fOnlyOneEtaSide,"OnlyOneEtaSide/I");
   settingsTree->Branch("fPtMin", &fPtMin, "PtMin/D");
   settingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
@@ -500,6 +509,11 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     {
       centrality = (Float_t) gROOT->ProcessLine(Form("100.0 + 100.0 * ((AliNanoAODHeader*) %p)->GetCentrality(\"%s\")", fAOD->GetHeader(), fCentralityMethod.Data())) / 100 - 1.0;
     }
+    else if (fCentralityMethod == "PPVsMultUtils")
+      {
+	if(fAnalysisUtils)centrality=fAnalysisUtils->GetMultiplicityPercentile((fAOD)?(AliVEvent*)fAOD:(AliVEvent*)fESD);
+	else centrality = -1;
+    }
     else
     {
       AliCentrality *centralityObj = 0;
@@ -555,8 +569,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     
   if (!fAnalyseUE->VertexSelection(vertexSupplier, 0, fZVertex)) 
     return;
-  
-  Float_t zVtx = 0;
+    
+    Float_t zVtx = 0;
   if (fAOD)
     zVtx = ((AliAODMCHeader*) vertexSupplier)->GetVtxZ();
   else
@@ -1084,7 +1098,12 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
       if (error != TInterpreter::kNoError)
 	centrality = -1;
     }
-    else
+   else if (fCentralityMethod == "PPVsMultUtils")
+     {
+       if(fAnalysisUtils)centrality=fAnalysisUtils->GetMultiplicityPercentile((fAOD)?(AliVEvent*)fAOD:(AliVEvent*)fESD);
+       else centrality = -1;
+    }
+   else
     {
       if (fAOD)
 	centralityObj = fAOD->GetHeader()->GetCentralityP();
@@ -1142,6 +1161,9 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     return;
   }
   
+  // Reject events without a muon in the muon arm ************************************************
+  if(fAcceptOnlyMuEvents && !IsMuEvent())return;
+  
   // Vertex selection *************************************************
   if(!fAnalyseUE->VertexSelection(inputEvent, fnTracksVertex, fZVertex)) return;
   
@@ -1161,9 +1183,18 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     return;
 
   TObjArray* tracks = 0;
-  
+ 
+  Double_t evtPlanePhi = -999.; //A value outside [-pi/2,pi/2] will be ignored
+  if(fTrackPhiCutEvPlMax > 0.0001) {
+    AliEventplane* evtPlane = inputEvent->GetEventplane();
+    Double_t qx = 0; Double_t qy = 0;
+    if(evtPlane) evtPlanePhi = evtPlane->CalculateVZEROEventPlane(inputEvent, 10, 2, qx, qy);
+    //Reject event if the plane is not available
+    else return; 
+  }
+ 
   if (fTriggersFromDetector == 0)
-    tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
+    tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi);
   else if (fTriggersFromDetector <= 4)
     tracks=GetParticlesFromDetector(inputEvent,fTriggersFromDetector);
   else
@@ -1216,7 +1247,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   // correlate particles with...
   TObjArray* tracksCorrelate = 0;
   if(fAssociatedFromDetector==0){
-    if (fParticleSpeciesAssociated != fParticleSpeciesTrigger || fTriggersFromDetector > 0 )
+    if (fParticleSpeciesAssociated != fParticleSpeciesTrigger || fTriggersFromDetector > 0 || fTrackPhiCutEvPlMax > 0.0001)
       tracksCorrelate = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesAssociated, kTRUE);
   }
   else if (fAssociatedFromDetector <= 4){
@@ -1552,3 +1583,24 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
   return obj;  
 }
 
+//____________________________________________________________________
+Bool_t AliAnalysisTaskPhiCorrelations::IsMuEvent(){
+  
+  if(!fAOD)
+    AliFatal("Muon selection only implemented on AOD");//FIXME to be implemented also for ESDs as in AliAnalyseLeadingTrackUE::GetAcceptedPArticles
+  for (Int_t iTrack = 0; iTrack < fAOD->GetNTracks(); iTrack++) {
+    AliAODTrack* track = fAOD->GetTrack(iTrack);
+    if (!track->IsMuonTrack()) continue;
+    //Float_t dca    = track->DCA();
+    //Float_t chi2   = track->Chi2perNDF();
+    Float_t rabs   = track->GetRAtAbsorberEnd();
+    Float_t eta    = track->Eta();
+    Int_t   matching   = track->GetMatchTrigger();
+    if (rabs < 17.6 || rabs > 89.5) continue;
+    if (eta < -4 || eta > -2.5) continue;
+    if (matching < 2) continue;
+    return kTRUE;
+  }
+  return kFALSE;
+  
+}

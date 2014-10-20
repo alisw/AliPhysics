@@ -138,7 +138,10 @@ class AliAnalysisTaskAntiHe4 : public AliAnalysisTaskSE {
   Double_t fTrackPt[1000];
   Double_t fDeDx[1000];
   Double_t fSign[1000];
-  Float_t fMass[1000];
+  Float_t  fMass[1000];
+  Float_t  fTime[1000];
+  Float_t  fLength[1000];
+  Double_t fSigmaQP[1000];
   //
   Bool_t  fAssociated[1000];
  

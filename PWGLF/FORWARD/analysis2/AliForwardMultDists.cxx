@@ -51,6 +51,7 @@ namespace {
     }
     return 1;
   }
+#if 0
   /** 
    * Get the marker option bits from a ROOT style 
    * 
@@ -76,6 +77,7 @@ namespace {
     }
     return bits;
   }
+#endif 
   static Int_t GetIndexMarker(Int_t idx)
   {
     const UShort_t nMarkers = 7;
@@ -91,6 +93,7 @@ namespace {
 
     return markers[idx % nMarkers];
   }
+#if 0
   /** 
    * Flip the 'hollow-ness' of a marker 
    * 
@@ -104,6 +107,7 @@ namespace {
     Int_t    ret  = GetMarkerStyle(bits ^ kHollow);
     return ret;
   }
+#endif
 }
 
 //====================================================================
@@ -172,7 +176,7 @@ AliForwardMultDists::AliForwardMultDists()
 
 //____________________________________________________________________
 AliForwardMultDists::AliForwardMultDists(const char* name)
-  : AliBaseAODTask(name),
+  : AliBaseAODTask(name,"AliForwardMultDists"),
     fBins(), 
     fSymmetric(0),
     fNegative(0), 
@@ -219,7 +223,7 @@ AliForwardMultDists::PreData()
   fSums->Add(AliForwardUtil::MakeParameter("minIpZ", fMinIpZ));
   fSums->Add(AliForwardUtil::MakeParameter("maxIpZ", fMaxIpZ));
 
-  TAxis* xaxis = hist.GetXaxis();
+  const TAxis* xaxis = hist.GetXaxis();
   if (!xaxis->GetXbins() || xaxis->GetXbins()->GetSize() <= 0) {
     fForwardCache = new TH1D("forwardCache", "Projection of Forward data", 
 			     xaxis->GetNbins(), xaxis->GetXmin(), 
@@ -859,9 +863,10 @@ AliForwardMultDists::EtaBin::SetupForData(TList* list, const TH2& hist,
     le->Add(lp);
     he->Add(hp);
   }
-  
-  fMinBin = hist.GetXaxis()->FindBin(fMinEta);
-  fMaxBin = hist.GetXaxis()->FindBin(fMaxEta-.00001);
+
+  const TAxis * xax = hist.GetXaxis();
+  fMinBin = xax->FindFixBin(fMinEta);
+  fMaxBin = xax->FindFixBin(fMaxEta-.00001);
 
   TString t(Form("%+5.2f<#eta<%+5.2f", fMinEta, fMaxEta));
   fSum = CreateH1("rawDist",Form("Raw P(#it{N}_{ch}) in %s",t.Data()),fMAxis);

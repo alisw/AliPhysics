@@ -465,9 +465,9 @@ void AliDielectronCF::Fill(UInt_t mask, const AliDielectronPair *particle)
 
   if (fNVarsLeg>0){
     Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues]={0};
-    AliDielectronVarManager::Fill(particle->GetFirstDaughter(),valuesLeg1);
+    AliDielectronVarManager::Fill(particle->GetFirstDaughterP(),valuesLeg1);
     Double_t valuesLeg2[AliDielectronVarManager::kNMaxValues]={0};
-    AliDielectronVarManager::Fill(particle->GetSecondDaughter(),valuesLeg2);
+    AliDielectronVarManager::Fill(particle->GetSecondDaughterP(),valuesLeg2);
 
     for (Int_t iVar=0; iVar<fNVarsLeg; ++iVar){
       Int_t var=fVariablesLeg[iVar];

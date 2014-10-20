@@ -1,16 +1,16 @@
-#ifndef ALIANALYSISTASKHEAVYMESONTHREEBODY_H
-#define ALIANALYSISTASKHEAVYMESONTHREEBODY_H
+#ifndef ALIANALYSISTASKETATOPIPLPIMIGAMMA_H
+#define ALIANALYSISTASKETATOPIPLPIMIGAMMA_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// Analysis task for pi0->e+e-gamma (Dalitz decay)
 
 #include "AliAnalysisTaskSE.h"
 #include "AliV0ReaderV1.h"
 #include "AliKFConversionPhoton.h"
 #include "AliPrimaryPionSelector.h"
 #include "AliConversionMesonCuts.h"
+#include "AliConvEventCuts.h"
 #include "AliGammaConversionAODBGHandler.h"
 #include "TProfile2D.h"
 
@@ -52,6 +52,11 @@ class AliAnalysisTaskEtaToPiPlPiMiGamma: public AliAnalysisTaskSE
 			fnCuts= nCuts;
 			fGammaCutArray = CutArray;
 		}
+		void SetEventCutList(Int_t nCuts, TList *CutArray){
+			fnCuts= nCuts;
+			fEventCutArray = CutArray;
+		}
+
 		void SetPionCutList(TList *CutArray){
 			fPionCutArray = CutArray;
 		}
@@ -79,97 +84,99 @@ class AliAnalysisTaskEtaToPiPlPiMiGamma: public AliAnalysisTaskSE
 		
 		
 
-		AliV0ReaderV1 *fV0Reader;
-		AliPrimaryPionSelector* fPionSelector;
-		AliGammaConversionAODBGHandler **fBGHandler;
-		AliESDEvent *fESDEvent;
-		AliMCEvent *fMCEvent;
-		AliStack *fMCStack;
-		TList **fCutFolder;
-		TList **fESDList;
-		TList **fBackList;
-		TList **fMotherList;
-		TList **fTrueList;
-		TList **fMCList;
-		TList *fOutputContainer;
-		TClonesArray *fReaderGammas;
-		vector<Int_t> fSelectorNegPionIndex;
-		vector<Int_t> fSelectorPosPionIndex;
-		TList *fGoodGammas;
-		TList *fGoodVirtualParticles;
-		TList *fGammaCutArray;
-		TList *fPionCutArray;
-		TList *fMesonCutArray;
-		AliConversionCuts *fConversionCuts;
+		AliV0ReaderV1 					*fV0Reader;									//
+		AliPrimaryPionSelector			*fPionSelector;								//
+		AliGammaConversionAODBGHandler 	**fBGHandler;								//
+		AliESDEvent 					*fESDEvent;									//
+		AliMCEvent 						*fMCEvent;									//
+		AliStack 						*fMCStack;									//
+		TList 							**fCutFolder;								//
+		TList 							**fESDList;									//
+		TList 							**fBackList;								//
+		TList 							**fMotherList;								//
+		TList 							**fTrueList;								//
+		TList 							**fMCList;									//
+		TList 							*fOutputContainer;							//
+		TClonesArray 					*fReaderGammas;								//
+		vector<Int_t> 					fSelectorNegPionIndex;						//
+		vector<Int_t> 					fSelectorPosPionIndex;						//
+		TList 							*fGoodGammas;								//
+		TList 							*fGoodVirtualParticles;						//
+		TList 							*fEventCutArray;							//
+		TList 							*fGammaCutArray;							//
+		TList 							*fPionCutArray;								//
+		TList 							*fMesonCutArray;							//
+		AliConvEventCuts 				*fEventCuts;								//
+		AliConversionPhotonCuts 		*fConversionCuts;							//
 		
 		// reconstructed particles
-		TH1F **fHistoConvGammaPt;
-		TH1F **fHistoConvGammaEta;
-		TH1F **fHistoNegPionPt;
-		TH1F **fHistoPosPionPt;
-		TH1F **fHistoNegPionPhi;
-		TH1F **fHistoPosPionPhi;
-		TH1F **fHistoNegPionEta;
-		TH1F **fHistoPosPionEta;
-		TH2F **fHistoNegPionClsTPC;
-		TH2F **fHistoPosPionClsTPC;
-		TH2F **fHistoPionDCAxy;
-		TH2F **fHistoPionDCAz;
-		TH2F **fHistoPionTPCdEdxNSigma;
-		TH2F **fHistoPionTPCdEdx;
-		TH2F **fHistoPionPionInvMassPt;
-		TH2F **fHistoMotherInvMassPt;
-		THnSparseF **fTHnSparseMotherInvMassPtZM;
-		TH2F **fHistoMotherBackInvMassPt;
-		THnSparseF **fTHnSparseMotherBackInvMassPtZM;
+		TH1F 							**fHistoConvGammaPt;						//
+		TH1F 							**fHistoConvGammaEta;						//
+		TH1F 							**fHistoNegPionPt;							//
+		TH1F 							**fHistoPosPionPt;							//
+		TH1F 							**fHistoNegPionPhi;							//
+		TH1F 							**fHistoPosPionPhi;							//
+		TH1F 							**fHistoNegPionEta;							//
+		TH1F 							**fHistoPosPionEta;							//
+		TH2F 							**fHistoNegPionClsTPC;						//
+		TH2F 							**fHistoPosPionClsTPC;						//
+		TH2F 							**fHistoPionDCAxy;							//
+		TH2F 							**fHistoPionDCAz;							//
+		TH2F 							**fHistoPionTPCdEdxNSigma;					//
+		TH2F 							**fHistoPionTPCdEdx;						//
+		TH2F 							**fHistoPionPionInvMassPt;					//
+		TH2F	 						**fHistoMotherInvMassPt;					//
+		THnSparseF 						**fTHnSparseMotherInvMassPtZM;				//
+		TH2F 							**fHistoMotherBackInvMassPt;				//
+		THnSparseF				 		**fTHnSparseMotherBackInvMassPtZM;			//
 		
 		// pure MC properties
-		TH1F **fHistoMCAllGammaPt;
-		TH1F **fHistoMCConvGammaPt;
-		TH1F **fHistoMCAllPosPionsPt;
-		TH1F **fHistoMCAllNegPionsPt;
-		TH1F **fHistoMCGammaFromEtaPt;
-		TH1F **fHistoMCPosPionsFromEtaPt;
-		TH1F **fHistoMCNegPionsFromEtaPt;
-		TH1F **fHistoMCEtaPiPlPiMiGammaPt;
-		TH1F **fHistoMCEtaGGPt;
-		TH1F **fHistoMCEtaDalitzPt;
-		TH1F **fHistoMCEtaPiPlPiMiGammaInAccPt;
-		
+		TH1F 							**fHistoMCAllGammaPt;						//
+		TH1F 							**fHistoMCConvGammaPt;						//
+		TH1F 							**fHistoMCAllPosPionsPt;					//
+		TH1F 							**fHistoMCAllNegPionsPt;					//
+		TH1F 							**fHistoMCGammaFromEtaPt;					//
+		TH1F 							**fHistoMCPosPionsFromEtaPt;				//
+		TH1F 							**fHistoMCNegPionsFromEtaPt;				//
+		TH1F 							**fHistoMCEtaPiPlPiMiGammaPt;				//
+		TH1F 							**fHistoMCEtaGGPt;							//
+		TH1F 							**fHistoMCEtaDalitzPt;						//
+		TH1F 							**fHistoMCEtaPiPlPiMiGammaInAccPt;			//
+
 		// reconstructed particles MC validated
-		TH2F **fHistoTrueMotherPiPlPiMiGammaInvMassPt;
-		TH2F **fHistoTrueMotherGammaGammaInvMassPt;
-		TH2F **fHistoTrueMotherDalitzInvMassPt;
-		TH1F **fHistoTrueConvGammaPt;
-		TH1F **fHistoTrueConvGammaFromEtaPt;
-		TH1F **fHistoTruePosPionPt;
-		TH1F **fHistoTruePosPionFromEtaPt;
-		TH1F **fHistoTrueNegPionPt;
-		TH1F **fHistoTrueNegPionFromEtaPt;
-		TH2F **fHistoTruePionPionInvMassPt;
-		TH2F **fHistoTruePionPionFromEtaInvMassPt;
+		TH2F 							**fHistoTrueMotherPiPlPiMiGammaInvMassPt;	//
+		TH2F 							**fHistoTrueMotherGammaGammaInvMassPt;		//
+		TH2F 							**fHistoTrueMotherDalitzInvMassPt;			//
+		TH1F 							**fHistoTrueConvGammaPt;					//
+		TH1F 							**fHistoTrueConvGammaFromEtaPt;				//
+		TH1F				 			**fHistoTruePosPionPt;						//
+		TH1F 							**fHistoTruePosPionFromEtaPt;				//
+		TH1F 							**fHistoTrueNegPionPt;						//
+		TH1F 							**fHistoTrueNegPionFromEtaPt;				//
+		TH2F 							**fHistoTruePionPionInvMassPt;				//
+		TH2F 							**fHistoTruePionPionFromEtaInvMassPt;		//
 		// Event properties
-		TH1I **fHistoNEvents;
-		TH1I **fHistoNGoodESDTracks;
-		TProfile **fProfileEtaShift;
+		TH1I 							**fHistoNEvents;							//
+		TH1I 							**fHistoNGoodESDTracks;						//
+		TProfile 						**fProfileEtaShift;							//
 			
-		TRandom3 fRandom;
-		Int_t fnCuts;
-		Int_t fiCut;
-		Int_t fNumberOfESDTracks;
-		Bool_t fMoveParticleAccordingToVertex;
-		Bool_t fIsHeavyIon;
-		Bool_t fDoMesonAnalysis;
-		Bool_t fDoMesonQA;
-		Bool_t fIsFromMBHeader;
-		Bool_t fIsMC;
-		Bool_t fIsGammaEtaCand;
+		TRandom3 						fRandom;
+		Int_t 							fnCuts;
+		Int_t 							fiCut;
+		Int_t 							fNumberOfESDTracks;
+		Bool_t 							fMoveParticleAccordingToVertex;
+		Bool_t 							fIsHeavyIon;
+		Bool_t 							fDoMesonAnalysis;
+		Bool_t 							fDoMesonQA;
+		Bool_t 							fIsFromMBHeader;
+		Bool_t 							fIsMC;
+		Bool_t 							fIsGammaEtaCand;
 	private:
 		AliAnalysisTaskEtaToPiPlPiMiGamma( const AliAnalysisTaskEtaToPiPlPiMiGamma& ); // Not implemented
 		AliAnalysisTaskEtaToPiPlPiMiGamma& operator=( const AliAnalysisTaskEtaToPiPlPiMiGamma& ); // Not implemented
 
-		ClassDef( AliAnalysisTaskEtaToPiPlPiMiGamma, 1 );
+		ClassDef( AliAnalysisTaskEtaToPiPlPiMiGamma, 2 );
 };
 
-#endif // ALIANALYSISTASKHEAVYMESONTHREEBODY_H
+#endif // ALIANALYSISTASKETATOPIPLPIMIGAMMA_H
 

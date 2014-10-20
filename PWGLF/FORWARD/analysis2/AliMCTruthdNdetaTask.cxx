@@ -103,12 +103,9 @@ AliMCTruthdNdetaTask::Finalize()
   }
   AliBasedNdetaTask::Finalize();
 
-  THStack* truth      = new THStack("dndetaTruth", "dN/d#eta MC Truth");
-  THStack* truthRebin = new THStack(Form("dndetaTruth_rebin%02d", fRebin), 
-				    "dN/d#eta MC Truth");
-
-  TIter next(fListOfCentralities);
-  CentralityBin* bin = 0;
+  THStack*       truth = new THStack("dndetaTruth", "dN/d#eta MC Truth");
+  CentralityBin* bin   = 0;
+  TIter          next(fListOfCentralities);
   while ((bin = static_cast<CentralityBin*>(next()))) {
     if (HasCentrality() && bin->IsAllBin()) continue;
 
@@ -116,11 +113,7 @@ AliMCTruthdNdetaTask::Finalize()
     if (!results) continue; 
 
     TH1* dndeta      = static_cast<TH1*>(results->FindObject("dndetaTruth"));
-    TH1* dndetaRebin = 
-      static_cast<TH1*>(results->FindObject(Form("dndetaTruth_rebin%02d",
-						fRebin)));
     if (dndeta)      truth->Add(dndeta);
-    if (dndetaRebin) truthRebin->Add(dndetaRebin);
   }
   // If available output rebinned stack 
   if (!truth->GetHists() || 
@@ -131,14 +124,6 @@ AliMCTruthdNdetaTask::Finalize()
   }
   if (truth) fResults->Add(truth);
 
-  // If available output rebinned stack 
-  if (!truthRebin->GetHists() || 
-      truthRebin->GetHists()->GetEntries() <= 0) {
-    AliWarning("No rebinned MC truth histograms found");
-    delete truthRebin;
-    truthRebin = 0;
-  }
-  if (truthRebin) fResults->Add(truthRebin);  
   return true;
 }
 
@@ -151,7 +136,8 @@ AliMCTruthdNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult*
 						  Double_t vzMin, 
 						  Double_t vzMax, 
 						  const TH2D* primary,
-						  const TH2D*)
+						  const TH2D*,
+						  Bool_t checkPileup)
 { 
   // Check the centrality class unless this is the 'all' bin 
   if (!primary) return false;
@@ -177,7 +163,7 @@ AliMCTruthdNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult*
   }
 
   // Now use our normal check, but with the new mask, except ignore vertex
-  if (forward->CheckEvent(mask, -10000, -10000, 0, 0, 0)) {
+  if (forward->CheckEvent(mask, -10000, -10000, 0, 0, 0, 0, checkPileup)) {
     fSumTruth->Add(primary);
 
     // Store event count in left-most under- underflow bin 
@@ -186,7 +172,7 @@ AliMCTruthdNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult*
   }
 
   // Now use our normal check with the full trigger mask and vertex
-  if (CheckEvent(forward, triggerMask, vzMin, vzMax)) 
+  if (CheckEvent(forward, triggerMask, vzMin, vzMax, checkPileup)) 
     fSum->Add(primary, isZero);
   return true;
 }
@@ -196,14 +182,10 @@ void
 AliMCTruthdNdetaTask::CentralityBin::End(TList*      sums, 
 					 TList*      results,
 					 UShort_t    scheme,
-					 const TH2F* shapeCorr, 
 					 Double_t    trigEff,
 					 Double_t    trigEff0,
-					 Bool_t      symmetrice,
-					 Int_t       rebin, 
 					 Bool_t      rootProj,
 					 Bool_t      corrEmpty, 
-					 Bool_t      cutEdges,
 					 Int_t       triggerMask,
 					 Int_t       marker,
 					 Int_t       color,
@@ -220,10 +202,8 @@ AliMCTruthdNdetaTask::CentralityBin::End(TList*      sums,
 	       GetMarkerStyle(kStar)));
 #endif
 
-  AliBasedNdetaTask::CentralityBin::End(sums, results, scheme, 
-					shapeCorr, trigEff, trigEff0,
-					symmetrice, rebin, 
-					rootProj, corrEmpty, cutEdges,
+  AliBasedNdetaTask::CentralityBin::End(sums, results, scheme, trigEff, 
+					trigEff0, rootProj, corrEmpty,
 					triggerMask, marker, color, mclist, 
 					truthlist);
 
@@ -247,21 +227,10 @@ AliMCTruthdNdetaTask::CentralityBin::End(TList*      sums,
 			   "Monte-Carlo truth");
 
     fOutput->Add(dndetaTruth);
-    fOutput->Add(Rebin(dndetaTruth, rebin, cutEdges));
   }
-  TH1* dndeta          =                       GetResult(0,     false, "");
-  TH1* dndetaSym       = symmetrice          ? GetResult(0,     true,  "") : 0;
-  TH1* dndeta_rebin    = rebin               ? GetResult(rebin, false, "") : 0;
-  TH1* dndetaSym_rebin = symmetrice && rebin ? GetResult(rebin, true,  "") : 0;
+  TH1* dndeta          =                       GetResult("");
   if (dndeta)    
     dndeta->SetTitle("Monte-Carlo truth (selected)");
-  if (dndetaSym) 
-    dndetaSym->SetTitle("Monte-Carlo truth (selected,mirrored)");
-  if (dndeta_rebin)    
-    dndeta_rebin->SetTitle("Monte-Carlo truth (selected)");
-  if (dndetaSym_rebin) 
-    dndetaSym_rebin->SetTitle("Monte-Carlo truth (selected,mirrored)");
-
 }
 
 //________________________________________________________________________

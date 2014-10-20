@@ -12,17 +12,18 @@
 class TList;
 class TClonesArray;
 class TArrayI;
+class TVirtualMCDecayer;
+class AliPicoTrack;
 
 class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE 
 {
     public:
         // enumerators
-        enum detectorType       {kVZEROA, kVZEROC, kVZEROComb};  // detector that was used
+        enum detectorType       {kVZEROA, kVZEROC, kVZEROComb, kFixedEP};  // detector that was used
         // constructors, destructor
         AliAnalysisTaskJetFlowMC();
-        AliAnalysisTaskJetFlowMC(const char *name);
+        AliAnalysisTaskJetFlowMC(const char *name, Bool_t qa = kFALSE, Int_t seed = 0);
         virtual ~AliAnalysisTaskJetFlowMC();
-        // mirror image of PickTrackMaker
         void    UserCreateOutputObjects();
         TH1F*   BookTH1F(const char* name, const char* x, Int_t bins, Double_t min, Double_t max, Int_t c = -1, Bool_t append = kTRUE);
         TH2F*   BookTH2F(const char* name, const char* x, const char* y, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Int_t c = -1, Bool_t append = kTRUE);
@@ -46,6 +47,7 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
         void    SetReuseTracks(Bool_t r)                        { fReuseTracks = r; }
         void    SetSingleFragmentationJetSpectrum(TF1* js)      { fJetSpectrumSF = js; }
         void    SetNoOfSFJets(Int_t n)                          { fNoOfSFJets = n; }
+        void    SetDecayer(TVirtualMCDecayer* d, Int_t c = 1)   { fDecayer = d; fDecayerIterations = c;}
         // additional methods
         void    V2AfterBurner(Double_t& phi, Double_t& eta, Double_t& pt) const;
         void    V3AfterBurner(Double_t& phi, Double_t& eta, Double_t& pt) const;
@@ -87,13 +89,16 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
             fHistToySpectrum[fCenBin]->Fill(pt);         fHistToyEtaPhi[fCenBin]->Fill(eta, phi);
             fHistToyDeltaPhi[fCenBin]->Fill(PhaseShift(phi-fPsi2, 2));  fHistToyVn[fCenBin]->Fill(pt, vn);
         }
-        void            Terminate(Option_t* option);
-        void            PrintInfo() const;
+        void    ReturnDecayDaughters(AliPicoTrack* mother, TClonesArray* daughters);
+        void    ReturnDecayDaughters(Double_t pt, Double_t phi, Double_t eta, Double_t mass, Short_t charge, TClonesArray* daughters);
+        void    Terminate(Option_t* option);
+        void    PrintInfo() const;
     protected:
+        Bool_t          fQA;                    //! save QA plots
         TString         fTracksOutName;         // name of output track array
         TString         fTracksInName;          // name of input track array
-        TClonesArray   *fTracksIn;              //!track array in
-        TClonesArray   *fTracksOut;             //!track array out
+        TClonesArray   *fTracksIn;              //! track array in
+        TClonesArray   *fTracksOut;             //! track array out
         Bool_t          fReuseTracks;           // use original event as template
         Int_t           fMult;                  // multiplicity of new event
         Int_t           fCenBin;                //! centrality bin
@@ -126,10 +131,14 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
         TH2F*           fHistToyVn[10];                 //! generated differential vn values (should equal the differential spectrum)
         TH1F*           fHistSFJetSpectrum;             //! spectrum of generated sf jets
         TH2F*           fHistSFJetEtaPhi;               //! eta phi of generated sf jets
+        // decayer
+        TVirtualMCDecayer*      fDecayer;               // decayer, needs to be set in macro (avoid dependencies)
+        Int_t                   fDecayerIterations;     // max no of possible decay vertices from one track
+        TClonesArray*           fDecayerCache;          //! cached tparticle's
     private:
         AliAnalysisTaskJetFlowMC(const AliAnalysisTaskJetFlowMC&);            // not implemented
         AliAnalysisTaskJetFlowMC &operator=(const AliAnalysisTaskJetFlowMC&); // not implemented
 
-        ClassDef(AliAnalysisTaskJetFlowMC, 2); // Task to generate toy mc PicoTracks based on real events
+        ClassDef(AliAnalysisTaskJetFlowMC, 4); // Task to generate toy mc PicoTracks based on real events
 };
 #endif

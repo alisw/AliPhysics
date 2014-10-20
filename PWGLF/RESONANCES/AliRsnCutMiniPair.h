@@ -18,6 +18,8 @@ public:
    enum EType {
       kRapidityRange,
       kRapidityRangeMC,
+      kRapidityFiducialRegion,
+      kRapidityFiducialRegionMC,
       kMomentumComparison,
       kDCAproduct,
       kTypes

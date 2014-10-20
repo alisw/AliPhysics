@@ -33,8 +33,8 @@ public:
 
    void      AddStatusFlag(ULong_t f, Bool_t on)       {if (on) fFlagsOn = fFlagsOn | f; else fFlagsOff = fFlagsOff | f;}
    void      SetStatusFlags(ULong_t f, Bool_t on)      {if (on) fFlagsOn = f; else fFlagsOff = f;}
-   void      SetPtRange(Double_t a, Double_t b)        {fPt[0] = TMath::Min(a, b); fPt[1] = TMath::Max(a, b);}
-   void      SetEtaRange(Double_t a, Double_t b)       {fEta[0] = TMath::Min(a, b); fEta[1] = TMath::Max(a, b);}
+   void      SetPtRange(Double_t a, Double_t b);
+   void      SetEtaRange(Double_t a, Double_t b);
 
    void      SetDCARPtFormula(const char *formula)     {fDCARptFormula = formula; fDCARmaxfixed = kFALSE;}
    void      SetDCARPtFormulaMin(const char *formula)  {fDCARptFormulaMin = formula; fDCARminfixed = kFALSE;}
@@ -50,6 +50,7 @@ public:
    void      SetTPCminNClusters(Int_t value)           {fTPCminNClusters = value;}
    void      SetTPCmaxChi2(Double_t value)             {fTPCmaxChi2 = value;}
    void      SetMaxChi2TPCConstrainedGlobal(Float_t max) {fCutMaxChi2TPCConstrainedVsGlobal = max; }
+   void      SetTrackMaxChi2(Double_t value)           {fTrackMaxChi2 = value;}
    void      SetMinNCrossedRowsTPC(Double_t min, Bool_t useTPCCrossedRows) {fTPCminNCrossedRows=min; fIsUseCrossedRowsCut=useTPCCrossedRows;}
    void      SetMinNCrossedRowsOverFindableClsTPC(Double_t min, Bool_t useTPCCrossedRows) {fTPCminCrossedRowsOverFindableCls=min; fIsUseCrossedRowsCut=useTPCCrossedRows;}
    void      SetMinLengthActiveVolumeTPC(Double_t min, Bool_t on = kFALSE) {fCutMinLengthActiveVolumeTPC=min; fIsUseLengthActiveVolumeTPCCut=on;}
@@ -58,9 +59,9 @@ public:
    void      SetAODTestFilterBit(Int_t value)          {fAODTestFilterBit = value;}
    void      SetCheckOnlyFilterBit(Bool_t on=kTRUE)    {fCheckOnlyFilterBit=on;}
  
-   void      SetDefaults2010();
-   void      SetDefaults2011(Bool_t useTPCCrossedRows = kTRUE);
-   void      SetDefaultsHighPt2011(Bool_t useTPCCrossedRows = kTRUE);
+   void      SetDefaults2010(Bool_t useTPCCrossedRows = kTRUE, Bool_t useDefaultKinematicCuts=kTRUE);
+   void      SetDefaults2011(Bool_t useTPCCrossedRows = kTRUE, Bool_t useDefaultKinematicCuts=kTRUE);
+   void      SetDefaultsHighPt2011(Bool_t useTPCCrossedRows = kTRUE, Bool_t useDefaultKinematicCuts=kTRUE);
    void      SetESDtrackCuts(AliESDtrackCuts *esdTrackCuts) {fESDtrackCuts = esdTrackCuts;}
    AliESDtrackCuts  *GetESDtrackCuts() {return fESDtrackCuts;}
    Double_t   GetPtRange(Bool_t max) {return fPt[max];}
@@ -100,6 +101,8 @@ protected:
    Double_t   fTPCmaxChi2;             // maximum chi2 / number of clusters in TPC
    Float_t    fCutMaxChi2TPCConstrainedVsGlobal;  // max chi2 TPC track constrained with vtx vs. global track
    
+   Double_t   fTrackMaxChi2;           // maximum track chi2/NDF
+   
    Bool_t     fIsUseCrossedRowsCut;     //enable cut on minimum number of TPC crossed rows
    Float_t    fTPCminNCrossedRows;     // minimum number of TPC crossed rows
    Float_t    fTPCminCrossedRowsOverFindableCls;     // minimum number of crossed rows/findable clusters
@@ -110,6 +113,6 @@ protected:
    Bool_t     fCheckOnlyFilterBit;     // check only the filter bit
    AliESDtrackCuts *fESDtrackCuts;     // pointer to AliESDtrackCuts object
 
-   ClassDef(AliRsnCutTrackQuality, 4)
+   ClassDef(AliRsnCutTrackQuality, 5)
 };
 #endif

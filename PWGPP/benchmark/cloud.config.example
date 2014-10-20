@@ -1,0 +1,57 @@
+#
+# cloud.config -- by Dario Berzano <dario.berzano@cern.ch>
+#
+# Information for running the ALICE Release Validation on the cloud. This
+# includes the EC2 credentials, image ID, virtual machine profile, and
+# contextualization.
+#
+# NOTE: don't commit this file as it contains sensitive information!
+#
+
+# EC2 access key and secret key
+export EC2_ACCESS_KEY='<your_ec2_access_key>'
+export EC2_SECRET_KEY='<your_ec2_secret_key>'
+
+# EC2 API endpoint (example: CERN Agile Infrastructure)
+export EC2_URL='http://openstack.cern.ch:8773/services/Cloud'
+
+# ID of the base image to use (find it out with euca-describe-images)
+cloudImageId='ami-12345678'
+
+# Name of the SSH keypair to authorize. If omitted, it generates one
+# automatically
+#cloudKeyName='my_keypair'
+
+# Local file for the corresponding private key. Omit it if you want a
+# disposable private key to be created automatically
+#cloudKeyFile="$HOME/.ssh/my_keypair.pem"
+
+# user-data to pass to the virtual machine: note that it must have an
+# appropriate contextualization mechanism in place in order to interpret it.
+# The example is for a CernVM 3 image (amiconfig).
+cloudUserData=$(cat <<_EoF_
+[amiconfig]
+plugins=cernvm
+[cernvm]
+contextualization_key=0123456789abcdef0123456789abcdef:<password>
+[ucernvm-begin]
+resize_rootfs=true
+cvmfs_branch=cernvm-prod.cern.ch
+cvmfs_tag=cernvm-system-3.3.0.5
+[ucernvm-end]
+_EoF_
+)
+
+# Instance type of the node.
+# m1.large at CERN is: 4 CPUs / 8 GB RAM / 80 GB disk
+cloudProfile='m1.large'
+
+# Unprivileged user name on the virtual machines effectively running the
+# validation.
+#
+# Note: it must be possible to run:
+#   ssh $cloudUserName@$vmAddress -i $cloudKeyFile
+#
+# i.e. to do passwordless authentication using the above key with this user:
+# the virtual machine must therefore be configured properly
+cloudUserName='alicerelval'

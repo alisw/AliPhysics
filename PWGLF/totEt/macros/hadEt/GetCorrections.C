@@ -249,8 +249,8 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
      TH1D *efficiencyHadronITSCB10 = GetHistoEfficiency(etacut,"hEfficiencyHadronITSCB10",0,1,20,false,true,10,15);
      for(int i=10;i<=20;i++) hadCorrectionEMCAL->SetEfficiencyHadronITS((TH1D*)efficiencyHadronITSCB10->Clone(Form("Test%i",i)),i);//Hadron
    }//EMCAL
-   hadCorrectionEMCAL->SetEfficiencyErrorLowBound(0.99);
-   hadCorrectionEMCAL->SetEfficiencyErrorHighBound(1.01);
+   hadCorrectionEMCAL->SetEfficiencyErrorLowBound(0.95);
+   hadCorrectionEMCAL->SetEfficiencyErrorHighBound(1.05);
 
    //CorrEfficiencyPlots(true,prodname,shortprodname);
    //CorrEfficiencyPlots(false,prodname,shortprodname,infilename);
@@ -259,7 +259,7 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    //hadCorrectionEMCAL->GetEfficiencyHadronTPC()->Draw();
    TH1D *backgroundTPC;
    TH1D *backgroundITS;
-   if((dataset==20111 || dataset==20100) && !forSim){//2.76 TeV p+p or Pb+Pb
+   if((dataset==20111 || dataset==20100|| dataset==2011) && !forSim){//2.76 TeV p+p or Pb+Pb
      if(dataset==20111){
        cout<<"Fixing 2.76 TeV p+p background to be average of 900 GeV and 7 TeV scaling"<<endl;
        backgroundTPC = pp276TPCBkgd();
@@ -293,6 +293,7 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
      bkgdpcterror = 0.13;
      break;
    case 20100:
+   case 2011:
      bkgdpcterror = 0.76;
      break;
    }
@@ -478,11 +479,13 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
      TH1D *efficiencyHadronITSCB10 = GetHistoEfficiency(etacut,"hEfficiencyHadronITSCB10",0,1,20,false,true,10,15);
      for(int i=10;i<=20;i++) hadCorrectionPHOS->SetEfficiencyHadronITS((TH1D*)efficiencyHadronITSCB10->Clone(Form("Test%i",i)),i);//Hadron
    }//EMCAL
+   hadCorrectionPHOS->SetEfficiencyErrorLowBound(0.95);
+   hadCorrectionPHOS->SetEfficiencyErrorHighBound(1.05);
 
 
    TH1D *backgroundTPC;
    TH1D *backgroundITS;
-   if((dataset==20111 || dataset==20100) && !forSim){//2.76 TeV p+p or Pb+Pb
+   if((dataset==20111 || dataset==20100|| dataset==2011) && !forSim){//2.76 TeV p+p or Pb+Pb
      if(dataset==20111){
        cout<<"Fixing 2.76 TeV p+p background to be average of 900 GeV and 7 TeV scaling"<<endl;
        backgroundTPC = pp276TPCBkgd();

@@ -7,30 +7,21 @@
  * See cxx source for full Copyright notice                               */
  
 /**
- * Class for for NetParticle Distributions
+ * Class for NetParticle Distributions
  * -- Efficiency and contaminations for netParticle distributions
  * Authors: Jochen Thaeder <jochen@thaeder.de>
  *          Michael Weber <m.weber@cern.ch>
  */
 
+class AliVTrack;
+
 #include "THnSparse.h"
 
-#include "AliAnalysisNetParticleHelper.h"
+#include "AliAnalysisNetParticleBase.h"
 
-class AliESDEvent;
-class AliESDInputHandler;
-class AliAODInputHandler;
-class AliMCEvent;
-
-class AliAnalysisNetParticleEffCont : public TNamed {
+class AliAnalysisNetParticleEffCont: public AliAnalysisNetParticleBase {
 
  public:
-
-  /*
-   * ---------------------------------------------------------------------------------
-   *                            Constructor / Destructor
-   * ---------------------------------------------------------------------------------
-   */
 
   AliAnalysisNetParticleEffCont();
   virtual ~AliAnalysisNetParticleEffCont();
@@ -41,21 +32,12 @@ class AliAnalysisNetParticleEffCont : public TNamed {
    * ---------------------------------------------------------------------------------
    */
 
-  /** Initialize */
-  void Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts *cuts, Int_t trackCutBit);
-
-  /** Setup Event */
-  Int_t SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler, AliMCEvent *mcEvent); 
-
-  /** Reset Event */
-  void ResetEvent();
-
-  /** Process Event */
-  void Process();
+  /** Process Event - implements purely virtual method */
+  virtual void Process();
 
   /*
    * ---------------------------------------------------------------------------------
-   *                                    Getter
+   *                                 Setter/Getter
    * ---------------------------------------------------------------------------------
    */
 
@@ -78,8 +60,19 @@ class AliAnalysisNetParticleEffCont : public TNamed {
    * ---------------------------------------------------------------------------------
    */
 
-  /** Create the efficiency / contamination THnSparseF */
-  void CreateHistograms();
+  /** Event-wise Initialization - Can be implemented by every class */
+  virtual void Init();
+
+  /** Create the efficiency / contamination THnSparse */
+  virtual void CreateHistograms();
+
+  /** Event-wise Reset - Can be implemented by every class */
+  virtual void Reset();
+
+  /** Event-wise Setup - Can be implemented by every class */
+  virtual Int_t Setup();
+
+  // -----------------------------------------------------------------------
 
   /** Fill MC labels */
   void FillMCLabels(); 
@@ -88,7 +81,7 @@ class AliAnalysisNetParticleEffCont : public TNamed {
   void FillMCEffHist();
 
   /** Check if particle is contamination */
-  void CheckContTrack(Int_t label, Float_t sign, Int_t idxTrack);
+  void CheckContTrack(AliVTrack* track);
       
   /*
    * ---------------------------------------------------------------------------------
@@ -96,41 +89,11 @@ class AliAnalysisNetParticleEffCont : public TNamed {
    * ---------------------------------------------------------------------------------
    */
 
-  AliAnalysisNetParticleHelper *fHelper;      //! Ptr to helper class
-
-  // -----------------------------------------------------------------------
-
-  Int_t               fPdgCode;               // PDG code of particle to be found 
-
-  // --- ESD only ----------------------------------------------------------
-
-  AliESDEvent        *fESD;                   //! ESD object
-  AliESDtrackCuts    *fESDTrackCuts;          //! ESD cuts  
-
-  // --- AOD only ----------------------------------------------------------
-
-  AliAODEvent        *fAOD;                   //! AOD object
-  TClonesArray       *fArrayMC;               //! array of MC particles
-
-  // -----------------------------------------------------------------------
-
-  Float_t             fCentralityBin;         //  Centrality of current event  
-  Int_t               fNTracks;               //  N Tracks in the current event
-  
-  Int_t               fAODtrackCutBit;        //  Track filter bit for AOD tracks
-
-  // --- MC only -----------------------------------------------------------
-
-  AliStack           *fStack;                 //! Ptr to stack
-  AliMCEvent         *fMCEvent;               //! Ptr to MC event
-
+  // =======================================================================
   Int_t             **fLabelsRec;             //! 2x nTracks large array with labels for MC particles
-
-  // -----------------------------------------------------------------------
-
+  // =======================================================================
   THnSparseF         *fHnEff;                 //  THnSparseF efficiency 
   THnSparseF         *fHnCont;                //  THnSparseF contamination
-
   // -----------------------------------------------------------------------
 
   ClassDef(AliAnalysisNetParticleEffCont, 1);

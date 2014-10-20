@@ -94,8 +94,8 @@ void runGridPbPb()
 
    //===== ADD TASK::
 
-   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEtpctofv2.C");
-   AddTaskHFEtpctofv2();
+   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEFlowTPCTOFEPSP.C");
+   AddTaskHFEFlowTPCTOFEPSP();
 
 
 

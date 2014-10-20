@@ -32,7 +32,7 @@ void Smooth(TH1F *, TF1 *,bool);
 //variables I had included in arguments but which are now not used
 bool zerolowetbins = false;
 int minbin = 4;
-bool its = true;
+bool its = false;
 int difftype = 0;
 int niter = 3;
 bool rescaleguess = false;
@@ -50,11 +50,14 @@ bool rescaleguess = false;
 //0 = tot et
 //1 = had et
 //2 = pikp et
+//3 = raw et
 //testmean is
 //the mean for an exponential
 //A for a Levy function and for a power function
 //testn is the input n for the Levy and Power functions
-void Unfoldpp(int simdataset = 20111,int recodataset = 20111, char *outputfilename = "junk", int had = 0, int trainingcase= 7,int neveUsed = 1e6,float minEt = 0.00, float maxEt = 50.0, int varymean=0, bool unfoldData = true, float testmean = 5,float testn = -4,bool smooth = true){
+//Bool_t testFunction = kTRUE;//for checking that the input function is not crazy so I can feel out the sanity of input parameters
+Bool_t testFunction = kFALSE;//for checking that the input function is not crazy so I can feel out the sanity of input parameters
+void Unfoldpp(int simdataset = 2009,int recodataset = 2009, char *outputfilename = "junk", int had = 3, int trainingcase= 0,int neveUsed = 1e7,float minEt = 0.0, float maxEt = 20.0, int varymean=0, bool unfoldData = true, float testmean = 3.0,float testn = -8,bool smooth = true){
 
 int unfoldcase = trainingcase;
 myGaussian->SetParameter(0,1.0);
@@ -68,25 +71,38 @@ myGaussian->SetParameter(0,1.0);
   char *infilename = NULL;
   char *datainfilename = NULL;
   switch(simdataset){
-  case 20111:
-    infilename="rootFiles/LHC11b10a/Et.ESD.new.sim.LHC11b10a.root";
+  case 2009://900 GeV pp
+    infilename="rootFiles/LHC11b1a/Et.ESD.sim.LHC11b1a.Run118506.root";
     break;
-  case 2009:
-    infilename="rootFiles/LHC11b1a/Et.ESD.new.sim.LHC11b1a.root";
+  case 20111://2.76 TeV pp
+    infilename="rootFiles/LHC11b10a/Et.ESD.sim.LHC11b10a.Run146805.root";
     break;
-  case 2010:
-    infilename="rootFiles/LHC10e20/Et.ESD.new.sim.LHC10e20.root";
+  case 2010://7 TeV pp
+    infilename="rootFiles/LHC10e20/Et.ESD.sim.LHC10e20.Run130795.root";
+    break;
+  case 2012://8 TeV pp
+    infilename="rootFiles/LHC12c1b/Et.ESD.sim.LHC12c1b.Run178030.root";
+    break;
+  case 2013://5.5 TeV pPb
+    difftype = -1;
+    infilename="rootFiles/LHC13b3/Et.ESD.sim.LHC13b3.Run195483.root";
     break;
   }
   switch(recodataset){
-  case 20111:
-    datainfilename="rootFiles/LHC11a/Et.ESD.new.sim.LHC11a.root";
+  case 2009://900 GeV pp
+    datainfilename="rootFiles/LHC10c/Et.ESD.sim.LHC10c.Run118506.root";
     break;
-  case 2009:
-    datainfilename="rootFiles/LHC10c/Et.ESD.new.sim.LHC10c.root";
+  case 20111://2.76 TeV pp
+    datainfilename="rootFiles/LHC11a/Et.ESD.sim.LHC11a.Run146805.root";
     break;
-  case 2010:
-    datainfilename="rootFiles/LHC10e/Et.ESD.new.sim.LHC10e.root";
+  case 2010://7 TeV pp
+    datainfilename="rootFiles/LHC10e/Et.ESD.sim.LHC10e.Run130795.root";
+    break;
+  case 2012://8 TeV pp
+    datainfilename="rootFiles/LHC12b/Et.ESD.sim.LHC12b.Run178030.root";
+    break;
+  case 2013://5.5 TeV pPb
+    datainfilename="rootFiles/LHC13b/Et.ESD.sim.LHC13b.Run195483.root";
     break;
   }
 
@@ -113,6 +129,10 @@ myGaussian->SetParameter(0,1.0);
     hadStr = new TString("PiKP");
     longHadStr = new TString("E_{T}^{#pi,K,p}");
   }
+  if(had==3){
+    hadStr = new TString("Raw");
+    longHadStr = new TString("E_{T}^{#pi,K,p,raw}");
+  }
   switch(difftype){
   case 0:
     tail = new TString("ND");//Non-diffractive
@@ -128,8 +148,11 @@ myGaussian->SetParameter(0,1.0);
   }
   if(its) detector = new TString("ITS");
   else{ detector = new TString("TPC");}
-  sprintf(histoname,"Sim%sEt%s",hadStr->Data(),tail->Data());
+  TString *simtail = new TString("");
+  if(had==3) simtail = detector;
+  sprintf(histoname,"Sim%sEt%s%s",hadStr->Data(),tail->Data(),simtail->Data());
   //sprintf(histoname,"Sim%sEt",hadStr->Data());
+  cout<<"Looking for "<<histoname<<endl;
   file->cd();
   hTemp = (TH1F*) out2->FindObject(histoname);
   outfile->cd();
@@ -137,31 +160,36 @@ myGaussian->SetParameter(0,1.0);
 
   file->cd();
   sprintf(histoname,"Reco%sEtFullAcceptanceITS%s",hadStr->Data(),tail->Data());
+  cout<<"Looking for "<<histoname<<endl;
   hTemp = (TH1F*) out2->FindObject(histoname);
   outfile->cd();
   hITS = (TH1F*) hTemp->Clone(Form("%sSim",histoname));
 
   datafile->cd();
   sprintf(histoname,"Reco%sEtFullAcceptanceITS",hadStr->Data());
+  cout<<"Looking for "<<histoname<<endl;
   hTemp = (TH1F*) out2->FindObject(histoname);
   if(unfoldData && !hTemp){ cerr<<"no histogram "<<histoname<<endl; return;}
-  //   outfile->cd();
+  outfile->cd();
   hITSData = (TH1F*) hTemp->Clone(Form("%sData",histoname));
 
   file->cd();
   sprintf(histoname,"Reco%sEtFullAcceptanceTPC%s",hadStr->Data(),tail->Data());
+  cout<<"Looking for "<<histoname<<endl;
   //sprintf(histoname,"Reco%sEtFullAcceptanceTPC",hadStr->Data());
   //cout<<"Numerator "<<histoname<<endl;
   hTemp = (TH1F*)  out2->FindObject(histoname);
   outfile->cd();
+  cout<<"This histogram has "<<hTemp->GetEntries()<<" entries "<<" and a maximum of "<<hTemp->GetMaximum()<<endl;
   hTPC = (TH1F*) hTemp->Clone(Form("%sSim",histoname));
 
 
   datafile->cd();
   sprintf(histoname,"Reco%sEtFullAcceptanceTPC",hadStr->Data());
+  cout<<"Looking for "<<histoname<<endl;
   hTemp = (TH1F*) out2->FindObject(histoname);
   if(unfoldData && !hTemp){ cerr<<"no histogram "<<histoname<<endl; return;}
-  //   outfile->cd();
+  outfile->cd();
   hTPCData = (TH1F*) hTemp->Clone(Form("%sData",histoname));
   file->cd();
 
@@ -185,17 +213,18 @@ myGaussian->SetParameter(0,1.0);
   //Ex SimTotEtMinusRecoEtFullAcceptanceITS
   //sprintf(histoname,"Sim%sEtMinusReco%sEtFullAcceptance%s",hadStr->Data(),hadStr->Data(),detector->Data());
   sprintf(histoname,"Sim%sEtVsReco%sEtFullAcceptance%s",hadStr->Data(),hadStr->Data(),detector->Data());
+  cout<<"Looking for "<<histoname<<endl;
   hTemp2 = (TH2F*)out2->FindObject(histoname);
   outfile->cd();
   resolutionFull = (TH2F*) hTemp2->Clone(Form("%sFull",histoname));
  
-  resolutionFull->Rebin2D(rebin,rebin);
-  hSim->Rebin(rebin);
-  hITS->Rebin(rebin);
-  if(hITSData) hITSData->Rebin(rebin);
-  hTPC->Rebin(rebin);
-  if(hTPCData) hTPCData->Rebin(rebin);
-  cout<<"Rebinning "<<rebin<<"x"<<endl;
+   resolutionFull->Rebin2D(rebin,rebin);
+   hSim->Rebin(rebin);
+   hITS->Rebin(rebin);
+   if(hITSData) hITSData->Rebin(rebin);
+   hTPC->Rebin(rebin);
+   if(hTPCData) hTPCData->Rebin(rebin);
+  //cout<<"Rebinning "<<rebin<<"x"<<endl;
   //float minEt = 0.000;
   //float maxEt = 100.00;
   //   hSim->GetXaxis()->SetRange(minbin,maxbin);
@@ -210,7 +239,7 @@ myGaussian->SetParameter(0,1.0);
 
 
   //cout<<"Histo "<<histoname<<endl;
-  TCanvas *canvas0 = new TCanvas("canvas0","canvas0",600,600);
+  TCanvas *canvas0 = new TCanvas("canvas0","Resolution",600,600);
   canvas0->SetTopMargin(0.020979);
   canvas0->SetRightMargin(0.0184564);
   canvas0->SetLeftMargin(0.0989933);
@@ -224,7 +253,9 @@ myGaussian->SetParameter(0,1.0);
 //   myGaussian->Draw();
 //   return;
   canvas0->SetLogz();
+  //cerr<<"239"<<endl;
   if(smooth)resolutionFull->Smooth(5,"R");
+  //cerr<<"241"<<endl;
   resolutionFull->Draw("colz");
   //return;
   //if(had==2)  resolution->Rebin2D(rebin,rebin);
@@ -244,7 +275,7 @@ myGaussian->SetParameter(0,1.0);
   file->cd();
   file->Close();
   outfile->cd();
-
+  //  cerr<<"261"<<endl;
   //================FILLING TRAINING HISTOGRAMS===========================
   int neveUnused = 1e3;
   //int neveUsed = 1e7;
@@ -254,10 +285,16 @@ myGaussian->SetParameter(0,1.0);
   //TF1 *func = new TF1("func","([0])/[1]*exp(-x/[1])",0,100);
   func->SetParameter(0,1.0);
   func->SetParameter(0,1);
+  // cerr<<"271"<<endl;
+  //cerr<<" can I get the mean? "<<endl;
+  //cerr<<" does histo exist?" <<hSim<<endl;
+  // cerr<< hSim->GetMean()<<endl;
   //func->SetParameter(1,1.0/2.23876e-01);
-  float mymean = hSim->GetMean();
+  float mymean = testmean;//hSim->GetMean();
+  //cerr<<"273"<<endl;
   if(unfoldData) mymean = testmean;
-  func->SetParameter(1,(1.0+varymean*0.3)* mymean);
+  // cerr<<"275"<<endl;
+  func->SetParameter(1,TMath::Abs((1.0+varymean*0.3)* mymean));
   func->SetParameter(2,1);
   func->SetLineColor(4);
   //   TF1 *funcLong = new TF1("funcLong","([0]+[1]*x+[2]*x*x+[3]*x*x*x+x^[4])/[5]*exp(-(x**[6])/[5])",lowrange,highrange);
@@ -269,13 +306,16 @@ myGaussian->SetParameter(0,1.0);
   //   funcLong->SetParameter(5,6.77688e-01);
   //   funcLong->SetParameter(6,6.30298e-01);
   int nevents = neveUnused;//1e7;
+  //cerr<<"287"<<endl;
   if(trainingcase==2 || unfoldcase==2) nevents = neveUsed;
-  float lowbound = hSim->GetXaxis()->GetBinLowEdge(1);
-  float highbound = hSim->GetXaxis()->GetBinLowEdge(nbins+1);
-  //cout<<"Maxing histograms with ranges "<<lowbound<<" - "<<highbound<<endl;
+  float lowbound = hITS->GetXaxis()->GetBinLowEdge(1);
+  float highbound = hITS->GetXaxis()->GetBinLowEdge(nbins+1);
+  // cerr<<"289"<<endl;
+  cout<<"Maxing histograms with ranges "<<lowbound<<" - "<<highbound<<endl;
   TH1F *hSimExponential = GetTrueEt(func,nevents,Form("testtrue%i",i),lowbound,highbound,hITS->GetNbinsX());
   TH1F *hMeasuredExponential = GetReconstructedEt(func,nevents,Form("testsmeared%i",i),lowbound,highbound,hITS->GetNbinsX(),smooth);
 
+  // cerr<<"293"<<endl;
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~FLAT~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   TF1 *funcFlat = new TF1("funcFlat","[0]",0,100);
   funcFlat->FixParameter(0,0.01);
@@ -284,6 +324,7 @@ myGaussian->SetParameter(0,1.0);
   TH1F *hSimFlat = GetTrueEt(funcFlat,nevents,Form("testtrueflat%i",i),lowbound,highbound,hITS->GetNbinsX());
   TH1F *hMeasuredFlat = GetReconstructedEt(funcFlat,nevents,Form("testsmearedflat%i",i),lowbound,highbound,hITS->GetNbinsX(),smooth);
 
+  //cerr<<"302"<<endl;
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~STRAIGHT LINE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   TF1 *funcStraight = new TF1("funcStraight","[0]-[1]*x",0.0,maxEt*2);
   funcStraight->FixParameter(0,1.0);
@@ -294,6 +335,7 @@ myGaussian->SetParameter(0,1.0);
   TH1F *hMeasuredStraight = GetReconstructedEt(funcStraight,nevents,Form("testsmearedstraight%i",i),lowbound,highbound,hITS->GetNbinsX(),smooth);
 
 
+  //cerr<<"313"<<endl;
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~GAUS LINE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   TF1 *funcGaus = new TF1("funcGaus","[0]*exp(-x*x/[1]/[1]/TMath::Pi())",0.0,maxEt*2);//[1] is the mean x
   funcGaus->FixParameter(0,1.0);
@@ -303,6 +345,7 @@ myGaussian->SetParameter(0,1.0);
   TH1F *hSimGaus = GetTrueEt(funcGaus,nevents,Form("testtruegaus%i",i),lowbound,highbound,hITS->GetNbinsX());
   TH1F *hMeasuredGaus = GetReconstructedEt(funcGaus,nevents,Form("testsmearedgaus%i",i),lowbound,highbound,hITS->GetNbinsX(),smooth);
 
+  //cerr<<"323"<<endl;
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~DOUBLE EXPONENT LINE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   TF1 *funcDoubleExponential = new TF1("funcDoubleExponential","[0]/[1]*exp(-x/[1])+[2]/[3]*exp(-x/[3])",0.0,maxEt*2);
   //TF1 *funcDoubleExponential = new TF1("funcDoubleExponential","[0]/[1]*exp(-x/[1])",0,100);
@@ -317,17 +360,18 @@ myGaussian->SetParameter(0,1.0);
   TH1F *hMeasuredDoubleExponential = GetReconstructedEt(funcDoubleExponential,nevents,Form("testsmeareddoubleexponent%i",i),lowbound,highbound,hITS->GetNbinsX(),smooth);
 
 
+  // cerr<<"388"<<endl;
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~TRUE SIMULATED~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   //trying to make something which is not identical to hTPC/hITS
   //if(trainingcase==0 || unfoldcase==0) nevents = neveUsed;
   //TH1F *hMeasuredSimMCSmeared =  GetReconstructedEt(hSim,nevents,Form("testtruemcsmeared%i",i),lowbound,highbound,hITS->GetNbinsX());
-  if(trainingcase==0 || unfoldcase==0) TH1F *hMeasuredSimMCSmeared =  hITS;
+  if(trainingcase==0 || unfoldcase==0) TH1F *hMeasuredSimMCSmeared =  hTPC;
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~REWEIGHTED SIMULATED~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   TH1F *hSimReweighted = (TH1F*) hSim->Clone("hSimReweighted");
   TF1 *fWeight = new TF1("fWeight","1-[0]*([1]-x)+[2]*([3]-x)**2",0.0,2.0*maxEt);
-  fWeight->SetParameter(0,-0.0005);
+  fWeight->SetParameter(0,0);
   fWeight->SetParameter(1,3);
-  fWeight->SetParameter(2,-0.0005);
+  fWeight->SetParameter(2,0);
   fWeight->SetParameter(3,3);
   hSimReweighted->Divide(fWeight);
   nevents = neveUnused;//1e7;
@@ -335,6 +379,7 @@ myGaussian->SetParameter(0,1.0);
   TH1F *hMeasReweighted =  GetReconstructedEt(hSimReweighted,nevents,Form("testreweighted%i",i),lowbound,highbound,hITS->GetNbinsX());
   //float chi2 = GetChi2(hITS,test);
 
+  //cerr<<"357"<<endl;
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~LEVY~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   TF1 *funcLevy = new TF1("funcLevy","[0]*x*(1+x/[1])**[2]",0,100);
@@ -343,7 +388,8 @@ myGaussian->SetParameter(0,1.0);
   float n = testn;//-4;
   float A = 2;//- (1.0+varymean*0.3)* mymean *(n+3)/(n*n-4*n+5)*50;
   //cout<<"Mean "<<mymean<<" A "<<A<<" n "<<n<<endl;
-  funcLevy->SetParameter(1,(1.0+varymean*0.3)* mymean);
+  //funcLevy->SetParameter(1,(1.0+varymean*0.3)* mymean);
+  funcLevy->SetParameter(1,-mymean*(testn+3)/2);
   //funcLevy->SetParameter(1,A);
   //funcLevy->SetParameter(1,1.0);
   //funcLevy->SetParameter(2,-5.96110e+00);
@@ -355,11 +401,14 @@ myGaussian->SetParameter(0,1.0);
   //return;
   TH1F *hSimLevy = GetTrueEt(funcLevy,nevents,Form("testtruelevy%i",i),lowbound,highbound,hITS->GetNbinsX());
   TH1F *hMeasuredLevy = GetReconstructedEt(funcLevy,nevents,Form("testsmearedlevy%i",i),lowbound,highbound,hITS->GetNbinsX(),smooth);
+
+  // cerr<<"379"<<endl;
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~POWER~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   TF1 *funcPower = new TF1("funcPower","[0]*(1+x/[1])**[2]",0,100);
   funcPower->SetParameter(0,1.0);
   float n = testn;//-100;
-  funcPower->SetParameter(1,(1.0+varymean*0.3)* mymean*(-n+2));
+  funcPower->SetParameter(1,-mymean*(testn+2));
+  //funcPower->SetParameter(1,(1.0+varymean*0.3)* mymean*(-n+2));
   funcPower->SetParameter(2,n);
   nevents = neveUnused;//1e7;
   //cout<<"effective scale for power function "<<funcPower->GetParameter(1)<<endl;
@@ -367,7 +416,10 @@ myGaussian->SetParameter(0,1.0);
   //   hSim->Fit(funcLevy,"","",1,100);
   //   return;
   TH1F *hSimPower = GetTrueEt(funcPower,nevents,Form("testtruepower%i",i),lowbound,highbound,hITS->GetNbinsX());
+  //cerr<<__FILE__<<" "<<__LINE__<<endl;
   TH1F *hMeasuredPower = GetReconstructedEt(funcPower,nevents,Form("testsmearedpower%i",i),lowbound,highbound,hITS->GetNbinsX(),smooth);
+  // cerr<<__FILE__<<" "<<__LINE__<<endl;
+
   //================TRAINING===========================
   //  RooUnfoldResponse (const TH1* measured, const TH1* truth, const TH2* response, const char* name= 0, const char* title= 0);  // create from already-filled histograms
   TH1F *hTrainingTruth;
@@ -377,6 +429,7 @@ myGaussian->SetParameter(0,1.0);
     cout<<"Training with pure MC"<<endl;
     hTrainingTruth = hSim;
     hTrainingReconstructed = hMeasuredSimMCSmeared;
+    cout<<"Training reconstructed is "<<hMeasuredSimMCSmeared->GetName()<<" entries "<<hMeasuredSimMCSmeared->GetEntries()<<" max "<<hMeasuredSimMCSmeared->GetMaximum()<<endl;
     //     if(its) hTrainingReconstructed = hITS;
     //     else{hTrainingReconstructed = hTPC;}
     break;
@@ -421,6 +474,10 @@ myGaussian->SetParameter(0,1.0);
     hTrainingReconstructed = hMeasuredPower       ;
     break;
   }
+  cout<<"nbins sim "<<hSim->GetNbinsX()<<" data "<<hITS->GetNbinsX()<<" training truth "<<hTrainingTruth->GetNbinsX()<<" training reconstructed "<<hTrainingReconstructed->GetNbinsX()<<endl;
+  cout<<"max sim "<<hSim->GetBinLowEdge(401)<<" data "<<hITS->GetBinLowEdge(401)<<" training truth "<<hTrainingTruth->GetBinLowEdge(401)<<" training reconstructed "<<hTrainingReconstructed->GetBinLowEdge(401)<<endl;
+  cout<<"min sim "<<hSim->GetBinLowEdge(1)<<" data "<<hITS->GetBinLowEdge(1)<<" training truth "<<hTrainingTruth->GetBinLowEdge(1)<<" training reconstructed "<<hTrainingReconstructed->GetBinLowEdge(1)<<endl;
+  //return;
   hSim = RestrictAxes(hSim,minEt,maxEt);
   hITS = RestrictAxes(hITS,minEt,maxEt);
   hTPC = RestrictAxes(hTPC,minEt,maxEt);
@@ -587,7 +644,7 @@ myGaussian->SetParameter(0,1.0);
     if(its) hMeasured = hITSData;
     else{hMeasured = hTPCData;}
   }
-  //cout<<"MC truth: "<<hTruth->GetMean()<<" Mean observed "<<hMeasured->GetMean()<<endl;
+  cout<<"MC truth: "<<hTruth->GetMean()<<" Mean observed "<<hMeasured->GetMean()<<endl;
   hTruth->GetXaxis()->SetTitle(hSim->GetTitle());
   hMeasured->GetXaxis()->SetTitle(hSim->GetTitle());
 
@@ -595,7 +652,7 @@ myGaussian->SetParameter(0,1.0);
 
 
   //cout<<"Histo "<<histoname<<endl;
-  TCanvas *canvasn1 = new TCanvas("canvasn1","canvas -1",600,600);
+  TCanvas *canvasn1 = new TCanvas("canvasn1","Training reconstructed vs data reconstructed",600,600);
   canvasn1->SetTopMargin(0.020979);
   canvasn1->SetRightMargin(0.0184564);
   canvasn1->SetLeftMargin(0.0989933);
@@ -612,7 +669,9 @@ myGaussian->SetParameter(0,1.0);
   hTrainingReconstructed->SetMarkerStyle(26);
   hTrainingReconstructed->SetMarkerColor(2);
   hTrainingReconstructed->SetLineColor(2);
+  cout<<"Measured histo is "<<hMeasured->GetName()<<" has entries "<<hMeasured->GetEntries()<<" max "<<hMeasured->GetMaximum()<<endl;
   hMeasured->Draw();
+  cout<<"Reconstructed histo is "<<hTrainingReconstructed->GetName()<<" has entries "<<hTrainingReconstructed->GetEntries()<<" max "<<hTrainingReconstructed->GetMaximum()<<endl;
   hTrainingReconstructed->Draw("same");
   TLegend *legendn1 = new TLegend(0.437919,0.800699,0.966443,0.958042);
   legendn1->AddEntry(hMeasured,"Measured");
@@ -620,8 +679,8 @@ myGaussian->SetParameter(0,1.0);
   legendn1->Draw();
   //cout<<"Reconstructed mean "<<hMeasured->GetMean()<<" Simulated reconstructed mean "<<hTrainingReconstructed->GetMean()<<endl;
   //return;
+  float matchval = 1.0;
   if(unfoldData){
-    float matchval = 10.0;
     int binsim = hTrainingReconstructed->FindBin(matchval+.01);
     float simval = hTrainingReconstructed->GetBinContent(binsim);
     //cerr<<__FILE__<<" "<<__LINE__<<endl;
@@ -629,8 +688,9 @@ myGaussian->SetParameter(0,1.0);
     float recoval = hMeasured->GetBinContent(binreco);
     cout<<"matching at "<<matchval<<" simval "<<simval<<" recoval "<<recoval<<" bins "<<binsim<<" "<<binreco<<endl;
     if(recoval>0.0) hMeasured->Scale(simval/recoval);
-    //else{cerr<<"Uh-oh!  Can't rescale.  :("<<endl;}
+    else{cerr<<"Uh-oh!  Can't rescale.  :("<<endl;}
   }
+  //return;
   //   for(int i=1;i<=hMeasured->GetNbinsX();i++){
   //     cout<<hMeasured->GetBinContent(i);
   //     if(i!=hMeasured->GetNbinsX())cout<<", ";
@@ -641,13 +701,15 @@ myGaussian->SetParameter(0,1.0);
   //hMeasured->Fit(funcLevy,"","",1,100);
   //return;
   //return;
-  if(simdataset==2009){
-    cout<<"NOT doing full unfolding because this is 2009.  Exiting."<<endl;
-    cout<<"Mean is "<<hTruth->GetMean()<<" ";
-    GetChi2(hMeasured,hTrainingReconstructed);
-    //return;
-  }
-
+//   if(simdataset==2009){
+//     cout<<"NOT doing full unfolding because this is 2009.  Exiting."<<endl;
+//     cout<<"Mean is "<<hTruth->GetMean()<<" ";
+//     GetChi2(hMeasured,hTrainingReconstructed);
+//     canvasn1->SaveAs(Form("%s%s.C",outputfilename,"RecoVSSimReco"));
+//     cout<<"Saving "<<Form("%s%s.C",outputfilename,"RecoVSSimReco")<<endl;
+//     return;
+//   }
+  if(testFunction) return;
   //================UNFOLDING===========================
   if(zerolowetbins){
     for(int i=0;i<minbin;i++){
@@ -674,9 +736,10 @@ myGaussian->SetParameter(0,1.0);
   canvas7->SetBorderMode(0);
   canvas7->SetFrameFillColor(0);
   canvas7->SetFrameBorderMode(0);
+  canvas7->SetLogy();
   hReco1->Draw();
 
-  TCanvas *canvas1 = new TCanvas("canvas1","Results",600,600);
+  TCanvas *canvas1 = new TCanvas("canvas1","Results with fits",600,600);
   canvas1->SetTopMargin(0.020979);
   canvas1->SetRightMargin(0.0184564);
   canvas1->SetLeftMargin(0.0989933);
@@ -754,10 +817,9 @@ myGaussian->SetParameter(0,1.0);
   hSim->GetYaxis()->SetTitle("1/N_{eve} dN/dE_{T}");
   leg->SetTextSize(0.0437063);
   leg->Draw();
-  canvas1->SaveAs(Form("%s%s.png",outputfilename,"Extrap"));
-  canvas1->SaveAs(Form("%s%s.eps",outputfilename,"Extrap"));
-  canvas1->SaveAs(Form("%s%s.C",outputfilename,"Extrap"));
-
+  // canvas1->SaveAs(Form("%s%s.png",outputfilename,"Extrap"));
+  //canvas1->SaveAs(Form("%s%s.eps",outputfilename,"Extrap"));
+  //canvas1->SaveAs(Form("%s%s.C",outputfilename,"Extrap"));
   //canvas1->cd(2);
   TCanvas *canvas6 = new TCanvas("canvas6","Unfolded data/simulated MC truth",600,600);
   canvas6->SetTopMargin(0.020979);
@@ -773,13 +835,12 @@ myGaussian->SetParameter(0,1.0);
 
   TH1D *hReco1Clone = (TH1D*) hReco1->Clone("hReco1Clone");
   if(unfoldData){
-    float matchval = 1.0;
     int binsim = hTruth->FindBin(matchval+.01);
     float simval = hTruth->GetBinContent(binsim);
     //cerr<<__FILE__<<" "<<__LINE__<<endl;
     int binreco = hReco1Clone->FindBin(matchval+0.01);
     float recoval = hReco1Clone->GetBinContent(binreco);
-    //cout<<"matching at "<<matchval<<" simval "<<simval<<" recoval "<<recoval<<" bins "<<binsim<<" "<<binreco<<endl;
+    cout<<"matching at "<<matchval<<" simval "<<simval<<" recoval "<<recoval<<" bins "<<binsim<<" "<<binreco<<endl;
     if(recoval>0.0) hReco1Clone->Scale(simval/recoval);
   }
   hReco1Clone->Divide(hTruth);
@@ -788,7 +849,7 @@ myGaussian->SetParameter(0,1.0);
   hReco1Clone->GetXaxis()->SetTitle("E_{T}");
   hReco1Clone->SetMinimum(0.0);
   hReco1Clone->SetMaximum(2.0);
-  hReco1Clone->GetXaxis()->SetRange(1,hReco1Clone->FindBin(15.0));
+  hReco1Clone->GetXaxis()->SetRange(1,hReco1Clone->FindBin(maxEt));
   //   canvas1->cd(3);
 
   //   hReco1->Draw("");
@@ -930,27 +991,27 @@ myGaussian->SetParameter(0,1.0);
   if(meanvar>0) cout<<TMath::Sqrt(meanvar);
   cout<<endl;
   hReco1->GetXaxis()->SetRange(1,hReco1->GetNbinsX());
-  cout<<"Extrapolations:  exponential "<<expoExtrap<<" double exponential "<<dblExpoExtrap<<endl;
-  cout<<"Total: high ";
-  if((totaltrunc+dblExpoExtrapTotal)>0) cout<<(dblExpoExtrap+meantrunc)/(totaltrunc+dblExpoExtrapTotal);
-  cout<<" best ";
-  if((totaltrunc+expoExtrapTotal)>0) cout<<(expoExtrap+meantrunc)/(totaltrunc+expoExtrapTotal);
-  cout<<" low "<<mean<<endl;
-  cout<<"Raw mean "<<hReco1->GetMean();
-  cout<<" Total scaled: low ";
-  if((totaltrunc+dblExpoExtrapTotal)>0) cout<<(dblExpoExtrap+meantrunc)/(totaltrunc+dblExpoExtrapTotal);
-  cout<<" best ";
-  if(totaltrunc+expoExtrapTotal>0) cout<<(expoExtrap+meantrunc)/(totaltrunc+expoExtrapTotal);
-  cout<<" high ";
-  if(total>0) cout<<mean/total;
-  cout<<endl;
+//   cout<<"Extrapolations:  exponential "<<expoExtrap<<" double exponential "<<dblExpoExtrap<<endl;
+//   cout<<"Total: high ";
+//   if((totaltrunc+dblExpoExtrapTotal)>0) cout<<(dblExpoExtrap+meantrunc)/(totaltrunc+dblExpoExtrapTotal);
+//   cout<<" best ";
+//   if((totaltrunc+expoExtrapTotal)>0) cout<<(expoExtrap+meantrunc)/(totaltrunc+expoExtrapTotal);
+//   cout<<" low "<<mean<<endl;
+//   cout<<"Raw mean "<<hReco1->GetMean();
+//   cout<<" Total scaled: low ";
+//   if((totaltrunc+dblExpoExtrapTotal)>0) cout<<(dblExpoExtrap+meantrunc)/(totaltrunc+dblExpoExtrapTotal);
+//   cout<<" best ";
+//   if(totaltrunc+expoExtrapTotal>0) cout<<(expoExtrap+meantrunc)/(totaltrunc+expoExtrapTotal);
+//   cout<<" high ";
+//   if(total>0) cout<<mean/total;
+//   cout<<endl;
   canvas1->cd();
   funcDoubleExponential->SetLineStyle(2);
   func->Draw("same");
   funcDoubleExponential->Draw("same");
-  canvas1->SaveAs(Form("%s.C",outputfilename));
-  canvas1->SaveAs(Form("%s.eps",outputfilename));
-  canvas1->SaveAs(Form("%s.png",outputfilename));
+  // canvas1->SaveAs(Form("%s.C",outputfilename));
+  //canvas1->SaveAs(Form("%s.eps",outputfilename));
+  //canvas1->SaveAs(Form("%s.png",outputfilename));
 
 
 
@@ -968,11 +1029,13 @@ myGaussian->SetParameter(0,1.0);
   canvas5->SetLogy();
   hMeasured->Draw();
   nevents = neveUsed;
+
   TH1F *hMeasuredSim = GetReconstructedEt((TH1*)hReco1,(int) nevents,(char *)"SmearedTruth",(float) hReco1->GetBinLowEdge(1),(float) hReco1->GetBinLowEdge(hReco1->GetNbinsX()),(int) hReco1->GetNbinsX());//(TH1D*) unfold.Hmeasured();
-  float myscale2 = hMeasured->GetBinContent(hMeasured->FindBin(10.0)) / hMeasuredSim->GetBinContent(hMeasuredSim->FindBin(10.0));
-  cout<<"Scaling by "<<hMeasured->GetBinContent(hMeasured->FindBin(10.0))<<" / "<<hMeasuredSim->GetBinContent(hMeasuredSim->FindBin(10.0))<<" = "<<myscale2<<endl;
+  float myscale2 = hMeasured->GetBinContent(hMeasured->FindBin(matchval)) / hMeasuredSim->GetBinContent(hMeasuredSim->FindBin(matchval));
+  //cout<<"p1 "<<hMeasured->GetBinContent(hMeasured->FindBin(matchval))<<" "<<hMeasured->GetBinContent(hMeasured->FindBin(matchval))<<" p2 "<<
+  //  cout<<"Scaling by "<<hMeasured->GetBinContent(hMeasured->FindBin(matchval))<<" / "<<hMeasuredSim->GetBinContent(hMeasuredSim->FindBin(matchval))<<" = "<<myscale2<<endl;
   GetChi2(hMeasured,hMeasuredSim);
-  //cout<<"Chi^2 of Smeared compared to measured "<<GetChi2(hMeasured,hMeasuredSim)<<endl;
+  cout<<"Chi^2 of Smeared compared to measured "<<GetChi2(hMeasured,hMeasuredSim)<<endl;
   hMeasuredSim->Scale(myscale2);
   hMeasuredSim->Draw("same");
   hMeasuredSim->SetMarkerStyle(21);
@@ -982,9 +1045,79 @@ myGaussian->SetParameter(0,1.0);
   legend5->AddEntry(hMeasured,"Measured");
   legend5->AddEntry(hMeasuredSim,"Simulated Measured");
   legend5->Draw();
-  canvas5->SaveAs(Form("%s%s.png",outputfilename,"Reco"));
-  canvas5->SaveAs(Form("%s%s.eps",outputfilename,"Reco"));
+  //canvas5->SaveAs(Form("%s%s.png",outputfilename,"Reco"));
+  //canvas5->SaveAs(Form("%s%s.eps",outputfilename,"Reco"));
   canvas5->SaveAs(Form("%s%s.C",outputfilename,"Reco"));
+
+
+  TCanvas *canvas6 = new TCanvas("RecoOverSimReco","RecoOverSimReco",600,600);
+  canvas6->SetTopMargin(0.020979);
+  canvas6->SetRightMargin(0.0184564);
+  canvas6->SetLeftMargin(0.0989933);
+  canvas6->SetBottomMargin(0.101399);
+  canvas6->SetBorderSize(0);
+  canvas6->SetFillColor(0);
+  canvas6->SetFillColor(0);
+  canvas6->SetBorderMode(0);
+  canvas6->SetFrameFillColor(0);
+  canvas6->SetFrameBorderMode(0);
+  canvas6->SetLogy();
+
+  //TH1F *hMeasuredClone = hMeasured->Clone("hMeasuredClone");
+  //hMeasuredClone->Divide(hMeasuredSim);
+  Float_t avgratio = 0;
+  Int_t lowbin = hMeasured->FindBin(0.0);
+  Int_t highbin = hMeasured->FindBin(maxEt);
+  TH1F *hMeasuredClone = new TH1F("hMeasuredClone","Measured/simulated measured",highbin-lowbin+1,0,maxEt);
+  Int_t mylowbin = hMeasured->FindBin(1.0);
+  Int_t myhighbin = hMeasured->FindBin(maxEt-2.0);
+  Float_t maxratio = 0;
+  Float_t minratio = 1e6;
+  for(Int_t i = lowbin;i<=highbin;i++){
+    Float_t ratio = hMeasured->GetBinContent(i) / hMeasuredSim->GetBinContent(i);
+    Float_t ratioerror = 0;
+    if(hMeasured->GetBinContent(i)>0 && hMeasuredSim->GetBinContent(i)>0) ratio * TMath::Sqrt(TMath::Power(hMeasured->GetBinError(i)/hMeasured->GetBinContent(i),2)+TMath::Power(hMeasuredSim->GetBinError(i)/hMeasuredSim->GetBinContent(i),2));
+    hMeasuredClone->SetBinContent(i,ratio);
+    hMeasuredClone->SetBinError(i,ratioerror);
+    if(i>=mylowbin && i<=myhighbin){
+      avgratio += ratio;
+      if(maxratio<ratio) maxratio = ratio;
+      if(minratio>ratio) minratio = ratio;
+    }
+  }
+  avgratio = avgratio/((Float_t)(myhighbin-mylowbin+1));
+  cout<<"average ratio : "<<avgratio<<" max ratio "<<maxratio<<" min ratio "<<minratio;
+  Bool_t goodFit = kFALSE;
+  if(avgratio<5 && avgratio>0.1 && maxratio<2 && minratio>0.1){
+    goodFit = kTRUE;
+    cout<<" GOOD"<<endl;
+  }
+  else{
+    cout<<" BAD"<<endl;
+  }
+  hMeasuredClone->Draw();
+  canvas6->SaveAs(Form("%s%s.C",outputfilename,"RecoOverSim"));
+  canvas6->SaveAs(Form("%s%s.png",outputfilename,"RecoOverSim"));
+
+
+  TString temp = outputfilename;
+  TString filename = temp+".root";
+  TFile *outfile2 = new TFile(filename.Data(), "RECREATE");
+  cout<<"Creating "<<filename.Data()<<endl;
+  hReco1->Write();
+  hMeasured->Write();
+  hMeasuredSim->Write();
+  outfile2->Close();
+
+  TString temp = outputfilename;
+  TString filename = temp+".root";
+  TFile *outfile2 = new TFile(filename.Data(), "RECREATE");
+  hReco1->Write();
+  hMeasured->Write();
+  hMeasuredSim->Write();
+  outfile2->Close();
+  return;
+
 
 //   func->Draw();
   //funcDoubleExponential->Draw();
@@ -993,7 +1126,7 @@ myGaussian->SetParameter(0,1.0);
 TH1F *GetReconstructedEt(TF1 *inputfunc, int nevents, char *name, float lowbound, float highbound, int nbins,bool smooth){
   TH1F *hResult = new TH1F(name,ytitle->Data(),nbins,lowbound,highbound);
   hResult->Sumw2();
-  //cerr<<__FILE__<<" "<<__LINE__<<" Creating "<<hResult->GetName()<<" with "<<nevents<<" events"<<endl;
+  // cerr<<__FILE__<<" "<<__LINE__<<" Creating "<<hResult->GetName()<<" with "<<nevents<<" events"<<endl;
   for(int i=0;i<nevents;i++){
     float et = inputfunc->GetRandom(lowbound,highbound);
     int mybin = resolutionFull->GetXaxis()->FindBin(et);
@@ -1007,13 +1140,14 @@ TH1F *GetReconstructedEt(TF1 *inputfunc, int nevents, char *name, float lowbound
     //if(i%100000==0) Smooth(hResult,inputfunc);
   }
   //if(smooth) 
-Smooth(hResult,inputfunc);
+  //cerr<<__FILE__<<" "<<__LINE__<<" "<<name<<endl;
+   //Smooth(hResult,inputfunc);
   //float binwidth = hResult->GetBinWidth(1);
   //hResult->Scale(1.0/nevents/binwidth);
   return hResult;
 }
 TH1F *GetReconstructedEt(TH1 *input, int nevents, char *name, float lowbound, float highbound, int nbins){
-
+  // cerr<<__FILE__<<" "<<__LINE__<<" "<<name<<endl;
   TH1F *hResult = new TH1F(name,ytitle->Data(),nbins,lowbound,highbound);
   hResult->Sumw2();
   for(int i=0;i<nevents;i++){
@@ -1046,6 +1180,7 @@ TH1F *GetTrueEt(TF1 *inputfunc, int nevents, char *name, float lowbound, float h
     hResult->Fill(et);
   }
   //cerr<<endl;
+  //hResult->SetBinContent(1,hResult->GetBinContent(1)*10);
   float binwidth = hResult->GetBinWidth(1);
   //hResult->Scale(1.0/nevents/binwidth);
   hResult->GetYaxis()->SetTitle("1/N_{eve} dN/dE_{T}");
@@ -1056,8 +1191,8 @@ TH1F *GetTrueEt(TF1 *inputfunc, int nevents, char *name, float lowbound, float h
 
 Float_t GetChi2(TH1F *reconstructed, TH1F *simulated){
   Float_t chi2 = 0;
-  int nbins = reconstructed->FindBin(15.0);
-  int lowbin =  reconstructed->FindBin(1.01);
+  int nbins = reconstructed->FindBin(10.0);
+  int lowbin =  reconstructed->FindBin(5.01);
   float ndf=0;
   for(int i=4;i<=nbins;i++){
     float y = reconstructed->GetBinContent(i);
@@ -1139,7 +1274,9 @@ TH2F *RestrictAxes(TH2F *old,float minEt,float maxEt){
 void Smooth(TH1F *histo,TF1 *func){
   cout<<"Smoothing..."<<endl;
   //histo->Smooth(1,"R");
-  histo->Fit(func,"N","",15,35);
+  //cerr<<__FILE__<<" "<<__LINE__<<endl;
+  histo->Fit(func,"N","",10,35);
+  //cerr<<__FILE__<<" "<<__LINE__<<endl;
   for(int i=histo->FindBin(15.0);i<histo->GetNbinsX();i++){
     float thisval = histo->GetBinContent(i);
     float thiscenter = histo->GetBinCenter(i);
@@ -1147,8 +1284,10 @@ void Smooth(TH1F *histo,TF1 *func){
     float expectation = func->Eval(thiscenter);
     //if the number is more than 10 sigma away from the expectation and we would have expected at least 1 entry in that bin, recalculate it assuming Gaussian smoothing
     if(thisval<1.0) break;
-    if(expectation>1.0 && TMath::Abs(thisval-expectation)/thiserr>5){
+    //cerr<<__FILE__<<" "<<__LINE__<<endl;
+    if(expectation>1.0 && TMath::Abs(thiserr)>1e-5 && TMath::Abs(thisval-expectation)/thiserr>5){
       float nSigma = myGaussian->GetRandom();
+      //cerr<<__FILE__<<" "<<__LINE__<<endl;
       histo->SetBinContent(i,expectation+nSigma*TMath::Sqrt(expectation));
       //cout<<"Resetting bin "<<i<<" at "<<histo->GetBinCenter(i)<<" from "<<thisval<<" which was "<<TMath::Abs(thisval-expectation)/thiserr<<" sigma away to "<<expectation+nSigma*TMath::Sqrt(expectation)<<" nSigma "<<nSigma<<" away from "<<expectation<<endl;
     }

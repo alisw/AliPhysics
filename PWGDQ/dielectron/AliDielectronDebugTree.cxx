@@ -129,8 +129,8 @@ void AliDielectronDebugTree::Fill(AliDielectronPair *pair)
   }
   
   if (!fStreamer) fStreamer=new TTreeSRedirector(fFileName.Data());
-  Int_t id1=static_cast<AliVTrack*>(pair->GetFirstDaughter())->GetID();
-  Int_t id2=static_cast<AliVTrack*>(pair->GetSecondDaughter())->GetID();
+  Int_t id1=static_cast<AliVTrack*>(pair->GetFirstDaughterP())->GetID();
+  Int_t id2=static_cast<AliVTrack*>(pair->GetSecondDaughterP())->GetID();
   //Fill Event information
   (*fStreamer) << "Pair"
     << "File.="       << &fileName
@@ -168,9 +168,9 @@ void AliDielectronDebugTree::Fill(AliDielectronPair *pair)
 
   if (fNVarsLeg>0){
     //leg1
-    AliDielectronVarManager::Fill(pair->GetFirstDaughter(),valuesLeg1);
+    AliDielectronVarManager::Fill(pair->GetFirstDaughterP(),valuesLeg1);
     //leg2
-    AliDielectronVarManager::Fill(pair->GetSecondDaughter(),valuesLeg2);
+    AliDielectronVarManager::Fill(pair->GetSecondDaughterP(),valuesLeg2);
     
     for (Int_t i=0; i<fNVarsLeg; ++i){
       var=fVariablesLeg[i];

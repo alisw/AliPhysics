@@ -98,6 +98,7 @@ set (SRCS
     hfe/AliHFEreducedTrack.cxx
     hfe/AliHFEreducedMCParticle.cxx
     hfe/AliAnalysisTaskHFEQA.cxx
+    hfe/AliAnalysisTaskHFEemcQA.cxx
     hfe/AliAnalysisTaskFlowITSTPCTOFQCSP.cxx
     )
 
@@ -105,4 +106,4 @@ string (REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 set ( DHDR  PWGHFhfeLinkDef.h)
 
-set ( EINCLUDE EMCAL PWG/muon PWGHF/hfe TPC CORRFW STEER/STEERBase PWG/FLOW/Base PWG/FLOW/Tasks ANALYSIS)
+set ( EINCLUDE EMCAL PWG/muon PWG/TRD PWGHF/hfe PWG/CaloTrackCorrBase TPC PHOS CORRFW STEER/STEER STEER/STEERBase PWG/FLOW/Base PWG/FLOW/Tasks ANALYSIS)

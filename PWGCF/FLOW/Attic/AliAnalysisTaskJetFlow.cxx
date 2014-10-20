@@ -21,7 +21,7 @@
  * Interface task between EMCal jet framework and flow package
  *
  * This task expects POI's in a TClonesArray  (e.g. from running it after 
- * $ALICE_ROOT/PWGJE/EMCALJetTasks/UserTasks/AliAnalysisTaskRhoVnModulation() )
+ * $ALICE_ROOT/PWGJE/EMCALJetTasks/UserTasks/AliAnalysisTaskJetV2() )
  * and connects them into an AliFlowEvent which is filled with either VZERO tracks or 
  * TPC trakcs. 
  * 
@@ -57,7 +57,7 @@
 #include <AliRhoParameter.h>
 #include <AliLocalRhoParameter.h>
 #include <AliPicoTrack.h>
-#include <AliAnalysisTaskRhoVnModulation.h>
+#include <AliAnalysisTaskJetV2.h>
 
 class AliAnalysisTaskJetFlow;
 
@@ -71,7 +71,7 @@ AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow() : AliAnalysisTaskSE(),
 //_____________________________________________________________________________
 AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow(
         const char* name,
-        AliAnalysisTaskRhoVnModulation* rhoTask, 
+        AliAnalysisTaskJetV2* rhoTask, 
         Bool_t VPart,
         Bool_t VZEROEP,
         Bool_t GQC2, 
@@ -366,7 +366,7 @@ void AliAnalysisTaskJetFlow::DoQC2FlowAnalysis()
     // flow analysis with the qc2 method
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     // reference flow is taken from the pico track selection and evaluated in 
-    // the AliAnalysisTaskiRhoVnModulation class
+    // the AliAnalysisTaskiJetV2 class
     for(Int_t harm(2); harm < 4; harm++) {        // loop over harmonics
         Double_t reQn(0), imQn(0), mQ(0);         // total q-vector
         // get the total q-vectors and reference cumulants
@@ -496,7 +496,7 @@ Bool_t AliAnalysisTaskJetFlow::DoFlowPackageFlowAnalysis()
 void AliAnalysisTaskJetFlow::QCnDifferentialFlowVectors(Double_t* repn, Double_t* impn, Double_t *mp, Double_t *reqn, Double_t *imqn, Double_t* mq, Int_t n) 
 {
     // get (for now) unweighted differential flow vectors
-    // FIXME move (part of) this code to AliAnalysisTaskRhoVnModulation
+    // FIXME move (part of) this code to AliAnalysisTaskJetV2
     Int_t iPois(fPois->GetEntriesFast());
     if(fVParticleAnalysis) {
         for(Int_t i(0); i < iPois; i++) {

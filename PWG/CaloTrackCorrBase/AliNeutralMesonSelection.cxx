@@ -39,8 +39,9 @@ ClassImp(AliNeutralMesonSelection)
     fLeftBandMinCut(0.),   fLeftBandMaxCut(0.),            
     fRightBandMinCut(0.),  fRightBandMaxCut(0.),              
     fAngleMaxParam(),      fUseAngleCut(0),       
-    fKeepNeutralMesonHistos(0), fParticle(""),
-    // histograms 
+    fKeepNeutralMesonHistos(0),
+    fParticle(""),         fDecayBit(0),
+    // histograms
     fhAnglePairNoCut(0),          fhAnglePairOpeningAngleCut(0),   
     fhAnglePairAsymmetryCut(0),   fhAnglePairAllCut(0), 
     fhInvMassPairNoCut(0),        fhInvMassPairOpeningAngleCut(0), 
@@ -336,7 +337,8 @@ void  AliNeutralMesonSelection::SetParticle(TString particleName)
   // Set some default parameters for selection of pi0 or eta
 
   fParticle = particleName ;
-  
+  fDecayBit = kPi0;
+
   if(particleName.Contains("Pi0"))
   {
     fHistoNIMBins          = 150 ;
@@ -363,6 +365,9 @@ void  AliNeutralMesonSelection::SetParticle(TString particleName)
     fAngleMaxParam.AddAt(-1,    1) ;
     fAngleMaxParam.AddAt( 0.09, 2) ; //for pi0 shift, for eta maybe 0.09 
     fAngleMaxParam.AddAt(-2.e-3,3) ;
+    
+    fDecayBit = kPi0;
+    if(particleName.Contains("Side")) fDecayBit = kPi0Side;
   
   }  
   else if(particleName.Contains("Eta"))
@@ -389,13 +394,14 @@ void  AliNeutralMesonSelection::SetParticle(TString particleName)
     
     fAngleMaxParam.AddAt( 0.80,  0) ; // Same as pi0
     fAngleMaxParam.AddAt(-0.25,  1) ; // Same as pi0
-    fAngleMaxParam.AddAt( 0.12,  2) ;   // Shifted with respect to pi0
+    fAngleMaxParam.AddAt( 0.12,  2) ; // Shifted with respect to pi0
     fAngleMaxParam.AddAt(-5.e-4, 3) ; // Same as pi0
     
+    fDecayBit = kEta;
+    if(particleName.Contains("Side")) fDecayBit = kEtaSide;
   }
   else 
     printf("AliAnaNeutralMesonSelection::SetParticle(%s) *** Particle NOT defined (Pi0 or Eta), Pi0 settings by default *** \n",particleName.Data());
-  
   
 }
 
@@ -409,7 +415,7 @@ void AliNeutralMesonSelection::Print(const Option_t * opt) const
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
 
-  printf("Particle %s, mass : %f  \n", fParticle.Data(), fM );
+  printf("Particle %s, bit %d, mass : %f  \n", fParticle.Data(), fDecayBit, fM );
   printf("Invariant mass limits : %f < m < %f \n", fInvMassMinCut , fInvMassMinCut );
   
   printf("Use asymmetry cut? : %d ; A < %f \n", fUseAngleCut, fAsymmetryCut );

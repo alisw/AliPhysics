@@ -102,16 +102,20 @@ void RerunELossFits(Bool_t forceSet=false,
 
     // --- InFiled input collections --------------------------------------
     TCollection* inFwdSum = GetCollection(inFile, "ForwardELossSums");
-    if (!inFwdSum) throw TString("Cannot proceed without sums");
+    if (!inFwdSum) throw new TString("Cannot proceed without sums");
 
     TCollection* inFwdRes = GetCollection(inFile, "ForwardELossResults");
-    if (!inFwdRes) throw TString("Cannot proceed with merged list");
+    if (!inFwdRes) {
+      inFwdRes = 
+	static_cast<TCollection*>(inFwdSum->Clone("ForwardELossResults"));
+      // throw new TString("Cannot proceed with merged list");
+    }
 
     TCollection* inEFSum = GetCollection(inFwdRes, "fmdEnergyFitter");
-    if (!inEFSum) throw TString("Cannot proceed without accumulated data");
+    if (!inEFSum) throw new TString("Cannot proceed without accumulated data");
     
     TCollection* inEFRes = GetCollection(inFwdRes, "fmdEnergyFitter");
-    if (!inEFRes) throw TString("Cannot proceed without previous results");
+    if (!inEFRes) throw new TString("Cannot proceed without previous results");
 
     // --- Open output file --------------------------------------------
     outFile = TFile::Open(outName, "RECREATE");
@@ -132,7 +136,7 @@ void RerunELossFits(Bool_t forceSet=false,
       Printf("Forced settings");
 
       const TAxis* etaAxis = static_cast<TAxis*>(GetObject(inEFSum,"etaAxis"));
-      if (!etaAxis) throw TString("Cannot proceed without eta axis");
+      if (!etaAxis) throw new TString("Cannot proceed without eta axis");
       fitter->SetEtaAxis(*etaAxis);
       
       // Set maximum energy loss to consider 
@@ -160,7 +164,7 @@ void RerunELossFits(Bool_t forceSet=false,
     }
     fitter->SetDebug(3);
     fitter->SetStoreResiduals(AliFMDEnergyFitter::kResidualSquareDifference);
-    fitter->SetRegularizationCut(1e6); // Lower by factor 3
+    fitter->SetRegularizationCut(1e8); // Lower by factor 3
     // Set the number of bins to subtract from maximum of distributions
     // to get the lower bound of the fit range
     // fitter->SetFitRangeBinWidth(2);
@@ -189,8 +193,11 @@ void RerunELossFits(Bool_t forceSet=false,
     Printf("Wrote results to \"%s\" (%s)", outName.Data(), outFile->GetName());
     allOk = true;
   }
+  catch (const TString* e) {
+    Error("RerunELossFits", e->Data());
+  }
   catch (const TString& e) {
-    Error("RerunELossFits", e);
+    Error("RerunELossFits", e.Data());
   }
   if (inFile)  inFile->Close();
   if (outFile) {

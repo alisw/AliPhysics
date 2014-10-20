@@ -5,15 +5,15 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
-class AliAnalysisTaskRhoVnModulation;
+class AliAnalysisTaskJetV2;
 
 // AddTask macro for the jet flow analysis task
-// this task uses an instance AliAnalysisTaskRhoVnModulation
+// this task uses an instance AliAnalysisTaskJetV2
 // as a 'master' object for analysis flags and track and event cuts
 
-AliAnalysisTaskRhoVnModulation* AddTaskJetFlow( 
+AliAnalysisTaskJetV2* AddTaskJetFlow( 
         TString name                       = "name",
-        AliAnalysisTaskRhoVnModulation* t  = 0x0,
+        AliAnalysisTaskJetV2* t  = 0x0,
         Float_t CCMinPt                    = 1,
         Float_t CCMaxPt                    = 150,
         Float_t CCBinsInPt                 = 100,
@@ -44,7 +44,7 @@ AliAnalysisTaskRhoVnModulation* AddTaskJetFlow(
         if(debug) cout << " Fatal error: no imput event handler found!" << endl;
         return 0x0;
     }
-    AliAnalysisTaskRhoVnModulation* rhoTask = t; 
+    AliAnalysisTaskJetV2* rhoTask = t; 
     // check the centrality setup
     TArrayI* cent(rhoTask->GetCentralityClasses());
     // add the tasks in a loop, one task for each centrality bin
@@ -97,7 +97,7 @@ AliAnalysisTaskRhoVnModulation* AddTaskJetFlow(
 }
 //_____________________________________________________________________________
 namespace TaskJetFlow{ // use unique namespace to avoid problems in TRAIN analysis
-    void AddSPmethod(char *name, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, AliAnalysisTaskRhoVnModulation* t)
+    void AddSPmethod(char *name, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, AliAnalysisTaskJetV2* t)
     {
         TString fileName = AliAnalysisManager::GetCommonFileName();
         fileName+=":";
@@ -116,7 +116,7 @@ namespace TaskJetFlow{ // use unique namespace to avoid problems in TRAIN analys
         mgr->ConnectOutput(tskSP, 1, outSP);
     }
 //_____________________________________________________________________________
-    void AddQCmethod(char *name, int harmonic, AliAnalysisDataContainer *flowEvent, AliAnalysisTaskRhoVnModulation* t)
+    void AddQCmethod(char *name, int harmonic, AliAnalysisDataContainer *flowEvent, AliAnalysisTaskJetV2* t)
     {
        TString fileName = AliAnalysisManager::GetCommonFileName();
        fileName+=":";

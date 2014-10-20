@@ -48,7 +48,36 @@ class AliHFEmcQA: public TObject {
   public: 
     enum heavyType {kCharm=4, kBeauty=5, kOthers=6, kElectronPDG=11};
     enum qType {kQuark, kantiQuark, kHadron, keHadron, kDeHadron, kElectron, kElectron2nd};
-    enum SourceType {kDirectCharm=1, kDirectBeauty=2, kBeautyCharm=3, kGamma=4, kPi0=5, kElse=6, kMisID=7, kEta=8, kOmega=9, kPhi=10, kEtaPrime=11, kRho0=12, kGammaPi0=13, kGammaEta=14, kGammaOmega=15, kGammaPhi=16, kGammaEtaPrime=17, kGammaRho0=18, kJpsi=19, kB2Jpsi=20, kKe3=21, kGammaB2M=22, kGammaD2M=23, kGammaEta2Pi0=24, kB2M=25, kD2M=26, kEta2Pi0=27, kScdryM=28};
+    enum SourceType {
+        kDirectCharm=1,  	// electrons from primary charmed hadrons and primary resonance charmed hadrons(primary charmed hadrons, charmed hadrons decaying from the charmed hadron resonances(ex. D*): D->e ) 
+        kDirectBeauty=2,  	// electrons from primary beauty hadrons and primary resonance beauty hadrons (primary beauty hadrons, beauty hadrons decaying from the beauty hadron resonances: B->e)
+        kBeautyCharm=3, 	// electrons from charmed hadrons decaying from the beauty hadrons (B->D->e)
+        kGamma=4,        	// should be obsolete -> please let me know if you see something! 
+        kPi0=5, 	        // electrons from p0 Dalitz
+        kElse=6, 	        // all the other sources which was not in this enumeration
+        kMisID=7, 	        // not the electrons (hadrons)
+        kEta=8, 	        // electrons from eta Dalitz
+        kOmega=9, 	        // electrons from omega decay (Dalitz and di-electrons)
+        kPhi=10, 	        // electrons from phi decay (di-electron)
+        kEtaPrime=11, 	        // electrons from eta prime decay (Dalitz and 2charged-pions&di-electrons) 
+        kRho0=12,  	        // electrons from rho decay (di-electron)
+        kGammaPi0=13, 	        // electrons from photon conversion where the photon originated from pi0
+        kGammaEta=14, 	        // electrons from photon conversion where the photon originated from eta
+        kGammaOmega=15, 	// electrons from photon conversion where the photon originated from omega
+        kGammaPhi=16, 	        // electrons from photon conversion where the photon originated from phi
+        kGammaEtaPrime=17, 	// electrons from photon conversion where the photon originated from eta prime
+        kGammaRho0=18, 	        // electrons from photon conversion where the photon originated from rho
+        kJpsi=19, 	        // electrons from primary J/psi decay
+        kB2Jpsi=20, 	        // electrons from J/psi decay where the J/psi originated from the beauty hadrons
+        kKe3=21, 	        // Ke3 electrons
+        kGammaB2M=22, 	        // electrons from photon conversion from meson where the meson originated from the beauty hadrons
+        kGammaD2M=23, 	        // electrons from photon conversion from meson where the meson originated from the charm hadrons
+        kGammaM2M=24, 	        // electrons from photon conversion from the light meson decay where the light meson originated from other light meson 
+        kB2M=25, 	        // electrons from the meson where the meson originated from the beauty hadrons 
+        kD2M=26, 	        // electrons from the meson where the meson originated from the charm hadrons
+        kM2M=27, 	        // electrons from the light meson decay where the light meson originated from other light meson 
+        kScdryM=28 	        // secondary mesons (mainly pions but I didn't differentiate the mesons)
+    };
     enum ProcessType {
       kPairCreationFromq,  kPairCreationFromg,  kFlavourExitation,  kGluonSplitting, kInitialPartonShower, kLightQuarkShower
     };
@@ -69,27 +98,29 @@ class AliHFEmcQA: public TObject {
     TList *GetList() const { return fQAhistos; };
     void PostAnalyze() const;
     void CreatDefaultHistograms(TList * const qaList); // create default histograms  
-    void CreateHistograms(Int_t kquark); // create histograms for mc qa analysis
+    void CreateHistograms(const Int_t kquark); // create histograms for mc qa analysis
     void SetMCEvent(AliMCEvent* const mcEvent){fMCEvent = mcEvent;} 
     void SetGenEventHeader(AliGenEventHeader* const mcHeader){fMCHeader=mcHeader;} // set stack pointer
     void SetMCArray(TClonesArray* const mcarry){fMCArray=mcarry;} // set mcarray pointer
     void Init();
 
-    void GetQuarkKine(TParticle *part, Int_t iTrack, Int_t kquark); // get heavy quark kinematics distribution
-    void GetHadronKine(TParticle *part, Int_t kquark); // get heavy hadron kinematics distribution
-    void GetDecayedKine(TParticle *part, Int_t kquark, Int_t kdecayed); // get decay electron kinematics distribution
-    void GetDecayedKine(AliAODMCParticle *mcpart, Int_t kquark, Int_t kdecayed); // get decay electron kinematics for AOD 
+    void GetQuarkKine(TParticle *part, Int_t iTrack, const Int_t kquark); // get heavy quark kinematics distribution
+    void GetHadronKine(TParticle *part, const Int_t kquark); // get heavy hadron kinematics distribution
+    void GetDecayedKine(TParticle *part, const Int_t kquark, const Int_t kdecayed); // get decay electron kinematics distribution
+    void GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, Int_t kdecayed); // get decay electron kinematics for AOD 
     void GetMesonKine(); // get meson and its decay electron pt spectra
-    void EndOfEventAna(Int_t kquark); // run analysis which should be done at the end of the event loop
+    void EndOfEventAna(const Int_t kquark); // run analysis which should be done at the end of the event loop
     Int_t GetSource(const TParticle * const mcpart) const; // return source id 
-    Int_t GetElecSource(const AliVParticle * const mctrack) const;
-    Int_t GetElecSource(TParticle * const mcpart) const; // return electron source id 
-    Int_t GetElecSource(const AliAODMCParticle * const mcpart) const;
+    Int_t GetElecSource(const AliVParticle * const mctrack, Bool_t isElec) const;
+    Int_t GetElecSource(TParticle * const mcpart, Bool_t isElec) const; // return electron source id 
+    Int_t GetElecSource(const AliAODMCParticle * const mcpart, Bool_t isElec) const;
     Int_t GetSource(const AliVParticle * const mcpart) const; // return electron source id for AOD
-    Double_t GetWeightFactor(AliMCParticle *mctrack, Int_t iBgLevel); // return best/lower/upper weighting factor for electron's mother meson
-    Double_t GetWeightFactor(const AliAODMCParticle * const mcpart, Int_t iBgLevel);
-    Int_t GetWeightCentralityBin(Float_t percentile) const; //translate the centrality percentile into the centrality bin of the reference weighting histograms for electron background
+    Double_t GetWeightFactor(AliMCParticle *mctrack, const Int_t iBgLevel); // return best/lower/upper weighting factor for electron's mother meson
+    Double_t GetWeightFactor(const AliAODMCParticle * const mcpart, const Int_t iBgLevel);
+    Double_t GetWeightFactorForPrimaries(const AliAODMCParticle * const mcpart, const Int_t iBgLevel);
+    Int_t GetWeightCentralityBin(const Float_t percentile) const; //translate the centrality percentile into the centrality bin of the reference weighting histograms for electron background
     void EnableDebugStreamer() { fIsDebugStreamerON = kTRUE;};
+    void EnableGetWeightHist() { fGetWeightHist = kTRUE;};
 
     void SetBackgroundWeightFactor(Double_t *elecBackgroundFactor, Double_t *binLimit);
     void SetContainerStep(Int_t containerStep) { fContainerStep = containerStep;};
@@ -109,7 +140,7 @@ class AliHFEmcQA: public TObject {
   protected:
     Int_t GetMother(const AliVParticle * const track) const;
     void IdentifyMother(Int_t motherlabel, Int_t &motherpdg, Int_t &grandmotherlabel); // 
-    void HardScattering(Int_t kquark, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from hard scattering
+    void HardScattering(const Int_t kquark, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from hard scattering
     void ReportStrangeness(Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // report if the quark production process is unknown
     Bool_t IsFromInitialShower(Int_t inputmotherlabel, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from initial parton shower 
     Bool_t IsFromFinalParton(Int_t inputmotherlabel, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from final parton shower
@@ -310,6 +341,27 @@ class AliHFEmcQA: public TObject {
     Int_t fIsHeavy[2]; // count of heavy flavour
     Int_t fNparents; // number of heavy hadrons to be considered
     Int_t fParentSelect[2][7]; // heavy hadron species
+    
+    /*
+     -------------------------------------------------------------------------------------
+    fParentSelect[0][0] =  411; //D+  
+    fParentSelect[0][1] =  421; //D0
+    fParentSelect[0][2] =  431; //Ds+
+    fParentSelect[0][3] = 4122; //Lambdac+
+    fParentSelect[0][4] = 4132; //Ksic0
+    fParentSelect[0][5] = 4232; //Ksic+
+    fParentSelect[0][6] = 4332; //OmegaC0
+
+        -------------------------------------------------------------------------------------
+    fParentSelect[1][0] =  511; //B0
+    fParentSelect[1][1] =  521; //B+
+    fParentSelect[1][2] =  531; //Bs0
+    fParentSelect[1][3] = 5122; //Lambdab0
+    fParentSelect[1][4] = 5132; //Ksib-
+    fParentSelect[1][5] = 5232; //Ksib0
+    fParentSelect[1][6] = 5332; //Omegab-
+    */
+
 
     Double_t fElecBackgroundFactor[kBgLevels][kCentBins][kElecBgSpecies][kBgPtBins];     // Electron background factors
     Double_t fBinLimit[kBgPtBins+1];       // Electron background bins
@@ -332,6 +384,7 @@ private:
     Double_t fHfeImpactnsigmaR;            //absolute impact parameter sigma R 
  
     TTreeSRedirector *fTreeStream;         //! TreeStream
+    Bool_t             fGetWeightHist;     // Write histogram to calculate weights
 
   ClassDef(AliHFEmcQA,1);
 };
