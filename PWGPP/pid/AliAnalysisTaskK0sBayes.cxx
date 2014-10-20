@@ -554,6 +554,8 @@ void AliAnalysisTaskK0sBayes::Analyze(AliAODEvent* aodEvent)
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   AliPIDResponse *PIDResponse=inputHandler->GetPIDResponse();
 
+  PIDResponse->SetTOFResponse(aodEvent,AliPIDResponse::kTOF_T0);
+
   fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
 
   Double_t probP[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
