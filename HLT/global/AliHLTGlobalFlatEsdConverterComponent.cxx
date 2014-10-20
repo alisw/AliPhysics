@@ -71,10 +71,9 @@ ClassImp(AliHLTGlobalFlatEsdConverterComponent)
 
 AliHLTGlobalFlatEsdConverterComponent::AliHLTGlobalFlatEsdConverterComponent()
   : AliHLTProcessor()
-  , fWriteClusters(0)
-  , fVerbosity(0)  
-  , fSolenoidBz(-5.00668)
+  , fVerbosity(0)    
   , fBenchmark("FlatEsdConverter")
+  , fProduceFriend(1)
 {
   // see header file for class documentation
   // or
@@ -185,27 +184,6 @@ int AliHLTGlobalFlatEsdConverterComponent::DoInit(int argc, const char** argv)
   TString argument="";
   int bMissingParam=0;
 
-  // default list of skiped ESD objects
-  TString skipObjects=
-    // "AliESDRun,"
-    // "AliESDHeader,"
-    // "AliESDZDC,"
-    "AliESDFMD,"
-    // "AliESDVZERO,"
-    // "AliESDTZERO,"
-    // "TPCVertex,"
-    // "SPDVertex,"
-    // "PrimaryVertex,"
-    // "AliMultiplicity,"
-    // "PHOSTrigger,"
-    // "EMCALTrigger,"
-    // "SPDPileupVertices,"
-    // "TrkPileupVertices,"
-    "Cascades,"
-    "Kinks,"
-    "AliRawDataErrorLogs,"
-    "AliESDACORDE";
-
   iResult=Reconfigure(NULL, NULL);
   TString allArgs = "";
   for ( int i = 0; i < argc; i++ ) {
@@ -220,14 +198,11 @@ int AliHLTGlobalFlatEsdConverterComponent::DoInit(int argc, const char** argv)
       if (argument.IsNull()) continue;
 
       // -noclusters
-      if (argument.CompareTo("-noclusters")==0) {
-	fWriteClusters=0;	
+      if (argument.CompareTo("-nofriend")==0) {
+	fProduceFriend=0;	
 	// -clusters
-      } else if (argument.CompareTo("-clusters")==0) {
-	fWriteClusters=1;
-      } else if (argument.Contains("-skipobject=")) {
-	argument.ReplaceAll("-skipobject=", "");
-	skipObjects=argument;
+      } else if (argument.CompareTo("-friend")==0) {
+	fProduceFriend=1;
       } else {
 	HLTError("unknown argument %s", argument.Data());
 	iResult=-EINVAL;
@@ -239,8 +214,6 @@ int AliHLTGlobalFlatEsdConverterComponent::DoInit(int argc, const char** argv)
     HLTError("missing parameter for argument %s", argument.Data());
     iResult=-EINVAL;
   }
-
-  fSolenoidBz=GetBz();
 
   if (iResult>=0) {
     SetupCTPData();
@@ -282,7 +255,6 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
   // 1) first, read MC information if present
 
   std::map<int,int> mcLabelsTPC;
-  std::map<int,int> mcLabelsITS;
 
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrackMC|kAliHLTDataOriginTPC);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
@@ -300,22 +272,6 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     }
   }
  
-  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrackMC|kAliHLTDataOriginITS);
-       pBlock!=NULL; pBlock=GetNextInputBlock()) {
-    fBenchmark.AddInput(pBlock->fSize);
-    AliHLTTrackMCData* dataPtr = reinterpret_cast<AliHLTTrackMCData*>( pBlock->fPtr );
-    if (sizeof(AliHLTTrackMCData)+dataPtr->fCount*sizeof(AliHLTTrackMCLabel)==pBlock->fSize) {
-      for( unsigned int il=0; il<dataPtr->fCount; il++ ){
-	AliHLTTrackMCLabel &lab = dataPtr->fLabels[il];
-	mcLabelsITS[lab.fTrackID] = lab.fMCLabel;
-      }
-    } else {
-      HLTWarning("data mismatch in block %s (0x%08x): count %d, size %d -> ignoring track MC information", 
-		 DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, 
-		 dataPtr->fCount, pBlock->fSize);
-    }
-  }
-
   // 2) read dEdx information (if present)
 
   AliHLTFloat32_t *dEdxTPC = 0; 
@@ -330,17 +286,17 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
   // 3) read  TPC tracks, ITS refitted tracks, ITS OUT tracks
 
   vector<AliHLTGlobalBarrelTrack> tracksTPC;
+  vector<AliHLTGlobalBarrelTrack> tracksTPCOut;
   vector<AliHLTGlobalBarrelTrack> tracksITS;
   vector<AliHLTGlobalBarrelTrack> tracksITSOut;
 
   if( iResult>=0 ){
-
     const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
     if( pBlock ){
       fBenchmark.AddInput(pBlock->fSize);
       iResult = AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracksTPC);
     }  
- 
+  
     if( iResult>=0 ) { 
       pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginITS);
       if( pBlock ){
@@ -348,22 +304,41 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracksITS);
       }
     }
-
     if( iResult>=0 ) { 
       pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginITSOut);
       if( pBlock ){
 	fBenchmark.AddInput(pBlock->fSize);
 	iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracksITSOut);
-      }
-    }
-  
+      } 
+    }   
     if( iResult<0 ){
       HLTError("can not extract tracks from data block of type %s (specification %08x) of size %d: error %d", 
-	       DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize, iResult);  
+	       DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize, iResult);     
     }
   }
 
   HLTWarning("converted %d TPC %d ITS %d ITSout track(s) to GlobalBarrelTrack", tracksTPC.size(), tracksITS.size(), tracksITSOut.size() );
+  
+  // Set TPC MC labels to tracks
+  for( UInt_t itr=0; itr < tracksTPC.size(); itr++) {
+    AliHLTGlobalBarrelTrack &track = tracksTPC[itr];
+    std::map<int,int>::const_iterator lab = mcLabelsTPC.find( track.TrackID() );
+    if( lab!=mcLabelsTPC.end() ) track.SetLabel( lab->second );
+    else track.SetLabel( -1 );
+  }
+
+  // Create TPC Out tracks - just propagate to the outermost TPC cluster
+  for( UInt_t itr=0; itr < tracksTPC.size(); itr++) {
+    tracksTPCOut.push_back( tracksTPC[itr] );
+    AliHLTGlobalBarrelTrack &track = tracksTPCOut.back();
+    const Int_t N=10; // number of steps.
+    const Float_t xRange = track.GetLastPointX() - track.GetX();
+    const Float_t xStep = xRange / N ;
+    for(int i = 1; i <= N; ++i) {
+      if(!track.AliExternalTrackParam::PropagateTo(track.GetX() + xStep, GetBz() )) break;
+    }
+  }
+
 
   // ---------------------------------------------
   //
@@ -375,16 +350,18 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 
   do{ // single loop for easy break in case of output buffer overflow
 
-    err = ( maxOutputSize < sizeof( AliFlatESDEvent ) );    
+    size_t freeSpace = maxOutputSize;
+
+    err = ( freeSpace < sizeof( AliFlatESDEvent ) );    
     if( err ) break;
 
     new (flatEsd) AliFlatESDEvent;    
  
-    size_t freeSpace = maxOutputSize - flatEsd->GetSize();
+    freeSpace -= flatEsd->GetSize();
   
     // fill run info
     {
-      flatEsd->SetMagneticField( fSolenoidBz );
+      flatEsd->SetMagneticField( GetBz() );
       flatEsd->SetPeriodNumber( GetPeriodNumber() );
       flatEsd->SetRunNumber( GetRunNo() );
       flatEsd->SetOrbitNumber( GetOrbitNumber() );
@@ -448,7 +425,6 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     
     if( err ) break;
 
-
     { // Fill track information to the flat ESD structure
      
       size_t trackSize = 0;
@@ -460,110 +436,72 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     
       if( err ) break;
 
-      for( UInt_t tpcIter=0, itsIter = 0, itsOutIter = 0; tpcIter < tracksTPC.size(); tpcIter++) {       
-	
+      for( UInt_t tpcIter=0, itsIter = 0, itsOutIter = 0; tpcIter < tracksTPC.size(); tpcIter++) {
+
+	// ----------------------------
+	// -- read track information
+
 	// TPC track parameters
 	
 	AliHLTGlobalBarrelTrack *tpcTrack = &(tracksTPC[tpcIter]);
-	Float_t tpcPoints[4];
-	Float_t tpcDeDx[3]={0,0,0};
-	Int_t tpcLabel = -1;
-	AliHLTGlobalBarrelTrack tpcOutTrack(*tpcTrack);
-	
-	if (fVerbosity>0) tpcTrack->Print();  
-	
-	{ 	
-	  tpcPoints[0] = static_cast<Float_t>(tpcTrack->GetX());
-	  tpcPoints[1] = static_cast<Float_t>(tpcTrack->GetY());
-	  tpcPoints[2] = static_cast<Float_t>(tpcTrack->GetLastPointX());
-	  tpcPoints[3] = static_cast<Float_t>(tpcTrack->GetLastPointY());
-	
-	  if( mcLabelsTPC.find(tpcTrack->TrackID())!=mcLabelsTPC.end() ) tpcLabel = mcLabelsTPC[tpcTrack->TrackID()];
-	  
-	  tpcTrack->SetLabel( tpcLabel );
-	
-	  { // TPC out - just propagate to the outermost TPC cluster
-	    //tpcOutTrack.AliExternalTrackParam::PropagateTo( tpcTrack->GetLastPointX(), fSolenoidBz );
-	    const Int_t N=10; // number of steps.
-	    const Float_t xRange = tpcTrack->GetLastPointX() - tpcTrack->GetX();
-	    const Float_t xStep = xRange / N ;
-	    for(int i = 1; i <= N; ++i) {
-	      if(!tpcOutTrack.AliExternalTrackParam::PropagateTo(tpcTrack->GetX() + xStep * i, fSolenoidBz)) break;
-	    }
-	    tpcOutTrack.SetLabel(tpcTrack->GetLabel());
-	  }
-	  
-	  if( tpcTrack->TrackID()<ndEdxTPC ){
-	    AliHLTFloat32_t *val = &(dEdxTPC[3*tpcTrack->TrackID()]);
-	    tpcDeDx[0] = val[0];
-	    tpcDeDx[1] = val[1];
-	    tpcDeDx[2] = val[2];
-	    //AliTPCseed s;
-	    //s.Set( tpcTrack->GetX(), tpcTrack->GetAlpha(),
-	    //tpcTrack->GetParameter(), tpcTrack->GetCovariance() );
-	    //s.SetdEdx( val[0] );
-	    //s.CookPID();
-	    //iotrack.SetTPCpid(s.TPCrPIDs() );
-	  } else {
-	    if( dEdxTPC ) HLTWarning("Wrong number of dEdx TPC labels");
-	  }
-	}
+	AliHLTGlobalBarrelTrack *tpcOutTrack = &(tracksTPCOut[tpcIter]);
 
 	// ITS track parameters
 	
 	AliHLTGlobalBarrelTrack *itsRefit=0;
 	AliHLTGlobalBarrelTrack *itsOut=0;
-	Int_t itsLabel = tpcLabel;
 	
-	{
-	  // ITS Refit & mc label
+	// ITS Refit track
 	  
-	  for(; itsIter< tracksITS.size() && tracksITS[itsIter].TrackID()<(int) tpcIter; itsIter++ );
-	  
-	  if( itsIter< tracksITS.size() && tracksITS[itsIter].TrackID() == (int) tpcIter ){
-	    itsRefit = &(tracksITS[itsIter]);
-	    if( mcLabelsITS.find(tpcIter)!=mcLabelsITS.end() ) itsLabel = mcLabelsITS[tpcIter];
-	    itsIter++;
-	  }
-	  
-	  // ITS Out track
-	  
-	  for(; itsOutIter< tracksITSOut.size() && tracksITSOut[itsOutIter].TrackID()<(int) tpcIter; itsOutIter++ );
-	  
-	  if( itsOutIter< tracksITSOut.size() && tracksITSOut[itsOutIter].TrackID() == (int) tpcIter ){
-	    itsOut = &(tracksITSOut[itsOutIter]);
-	    itsOutIter++;
-	  }	
+	for(; itsIter< tracksITS.size() && tracksITS[itsIter].TrackID()<(int) tpcIter; itsIter++ );
 	
-	  if( itsRefit ) itsRefit->SetLabel( itsLabel );
-	  if( itsOut ) itsOut->SetLabel( itsLabel );
+	if( itsIter< tracksITS.size() && tracksITS[itsIter].TrackID() == (int) tpcIter ){
+	  itsRefit = &(tracksITS[itsIter]);
+	  itsIter++;
 	}
-      
+	
+	// ITS Out track
+	  
+	for(; itsOutIter< tracksITSOut.size() && tracksITSOut[itsOutIter].TrackID()<(int) tpcIter; itsOutIter++ );
+	
+	if( itsOutIter< tracksITSOut.size() && tracksITSOut[itsOutIter].TrackID() == (int) tpcIter ){
+	  itsOut = &(tracksITSOut[itsOutIter]);
+	  itsOutIter++;
+	}	
+	
+	// 
+
+	if (fVerbosity>0) tpcTrack->Print();  
+
+	Float_t tpcDeDx[3]={0,0,0};
+	
+	if( ndEdxTPC>0 ){ 	
+	  if( tpcTrack->TrackID() < ndEdxTPC ){
+	    AliHLTFloat32_t *val = &(dEdxTPC[3*tpcTrack->TrackID()]);
+	    tpcDeDx[0] = val[0];
+	    tpcDeDx[1] = val[1];
+	    tpcDeDx[2] = val[2];
+	  } else {
+	    HLTWarning("Wrong number of dEdx TPC labels");
+	  }
+	}
+    
 	// vertex-constrained parameters for TPC tracks	
 
-	const AliExternalTrackParam *tpcConstrained=0;
-       
+	const AliExternalTrackParam *tpcConstrained=0;       
 	AliESDtrack esdTrack;
-	esdTrack.SetID( tpcTrack->TrackID() );
-	esdTrack.UpdateTrackParams(&tpcOutTrack,AliESDtrack::kTPCout);
-	esdTrack.UpdateTrackParams(&(*tpcTrack),AliESDtrack::kTPCin);
-	esdTrack.UpdateTrackParams(&(*tpcTrack),AliESDtrack::kTPCrefit);
-	esdTrack.SetTPCPoints(tpcPoints);
-	esdTrack.SetTPCsignal( tpcDeDx[0], tpcDeDx[1], (UChar_t) tpcDeDx[2] );
-	if( itsOut ) esdTrack.UpdateTrackParams( itsOut, AliESDtrack::kITSout );
-	if( itsRefit ) esdTrack.UpdateTrackParams( itsRefit, AliESDtrack::kITSin );
-	esdTrack.SetLabel(tpcLabel);
-      
 	if( primaryVertex ){
-	  //iotrack.UpdateTrackParams( (itsRefit ?itsRefit :tpcTrack), AliESDtrack::kTPCin );
-	  esdTrack.RelateToVertex( primaryVertex, fSolenoidBz, 1000 );    	
-	  tpcConstrained = esdTrack.GetConstrainedParam();
-	}	
+	  esdTrack.UpdateTrackParams(&(*tpcTrack),AliESDtrack::kTPCrefit);	  
+	  esdTrack.RelateToVertex( primaryVertex, GetBz(), 1000 );	
+	  tpcConstrained = esdTrack.GetConstrainedParam();	
+	}
 
 	UInt_t nClustersTPC = tpcTrack->GetNumberOfPoints();
 	UInt_t nClustersITS = itsRefit ?itsRefit->GetNumberOfPoints() :0;
 
-	// fill flat track
+	
+	// ----------------------------
+	// -- fill flat track structure
 
 	table[tpcIter] = trackSize;
 	err = ( freeSpace < flatTrack->EstimateSize() );
@@ -571,7 +509,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	
 	new (flatTrack) AliFlatESDTrack;       
 	
-	flatTrack->SetExternalTrackParam( itsRefit, itsRefit, tpcTrack, &tpcOutTrack, tpcConstrained, itsOut );
+	flatTrack->SetExternalTrackParam( itsRefit, itsRefit, tpcTrack, tpcOutTrack, tpcConstrained, itsOut );
 	flatTrack->SetNumberOfTPCClusters( nClustersTPC );
 	flatTrack->SetNumberOfITSClusters( nClustersITS );
 	trackSize += flatTrack->GetSize();
@@ -617,30 +555,260 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     if( err ) break;
 
   }while(0);
-  
+
+
   if( err ){
     HLTWarning( "Output buffer size %d exceeded, flat ESD event is not stored", maxOutputSize );
-    return -ENOSPC;
-  } 
+  } else {
 
-  { // set up the output block description
+    // set up the output block description
     
     AliHLTComponentBlockData outBlock;
     FillBlockData( outBlock );
     outBlock.fOffset = size;
     outBlock.fSize = flatEsd->GetSize();
     outBlock.fDataType = kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut;
-    outBlock.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification( 0, 35, 0, 5 );
-
     outputBlocks.push_back( outBlock );
-
-    fBenchmark.AddOutput(outBlock.fSize);      
-
+    fBenchmark.AddOutput(outBlock.fSize);
     size += outBlock.fSize;
   }
+
+  
+  // ---------------------------------------------
+  //
+  // Fill the flat ESD friend structure
+  //
+  
+  while( !err && fProduceFriend ){ // single loop for easy break in case of output buffer overflow
+
+    // ---------- Access to clusters --------------------
+
+    const AliHLTTPCClusterData  *partitionClusters[fkNPartition];  //! arrays of cluster data for each TPC partition
+    Int_t                        partitionNClusters[fkNPartition]; //! number of clusters for each TPC partition
+
+    {
+      for(Int_t i=0; i<fkNPartition; i++){
+	partitionClusters[i]  = 0;
+	partitionNClusters[i] = 0;    
+      }
+      for(const AliHLTComponentBlockData *iter = GetFirstInputBlock(AliHLTTPCDefinitions::fgkClustersDataType); iter != NULL; iter = GetNextInputBlock()){      
+	if(iter->fDataType != AliHLTTPCDefinitions::fgkClustersDataType) continue;
+	Int_t slice     = AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
+	Int_t partition = AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);    
+	Int_t slicepartition = slice*6+partition;      
+	if(slicepartition<0 || slicepartition > fkNPartition){
+	  HLTWarning("Wrong header of TPC cluster data, slice %d, partition %d", slice, partition );
+	  continue;
+	}
+	const AliHLTTPCClusterData * clusterData = ( AliHLTTPCClusterData* )( iter->fPtr );
+	if( clusterData ) {
+	  partitionClusters[slicepartition] = clusterData;
+	  partitionNClusters[slicepartition] = clusterData->fSpacePointCnt;
+	}
+      } // end of loop over blocks of clusters    
+    }
+
+
+    AliFlatESDFriend *flatFriend = reinterpret_cast<AliFlatESDFriend*>(outputPtr + size);     
+
+    size_t freeSpaceTotal = maxOutputSize - size;
+    size_t freeSpace = freeSpaceTotal;
+
+    err = ( freeSpace < sizeof( AliFlatESDEvent ) );    
+    if( err ) break;
+
+    new (flatFriend) AliFlatESDFriend;
+      
+    freeSpace = freeSpaceTotal - flatFriend->GetSize();
+  
+    // fill event info
+    {
+      //flatFriend->SetSkipBit( 0 ); // SG!!
+      for( Int_t iSlice=0; iSlice<36; iSlice++ ){
+	int iSector = iSlice;
+	int nclu = 0;
+	for( Int_t iPartition=0; iPartition<3; iPartition++){	    
+	  int slicepartition = iSlice*6+iPartition;
+	  nclu+= partitionNClusters[slicepartition];
+	}
+	flatFriend->SetNclustersTPC( iSector, nclu );
+	iSector = 36+iSlice;
+	nclu = 0;
+	for( Int_t iPartition=3; iPartition<6; iPartition++){	    
+	  int slicepartition = iSlice*6+iPartition;
+	  nclu+= partitionNClusters[slicepartition];
+	}
+	flatFriend->SetNclustersTPC( iSector, nclu );
+	//SG!!!flatFriend->SetNclustersTPCused( iSector, esdFriend->GetNclustersTPCused(iSector) );
+      }
+    }
+      
+    { // Fill track friends information to the flat ESD friend structure
+     
+      size_t trackSize = 0;
+      int nTracks = 0;
+      int nTrackEntries = 0;
+      Long64_t *table = NULL;
+      AliFlatESDFriendTrack *flatTrack = NULL;
+      err = flatFriend->SetTracksStart( flatTrack, table, tracksTPC.size(), freeSpace );
+      if( err ) break;
+      freeSpace = freeSpaceTotal - flatFriend->GetSize();
+
+      for( UInt_t tpcIter=0, itsIter = 0, itsOutIter = 0; tpcIter < tracksTPC.size(); tpcIter++) {       
+	
+	// TPC track parameters
+	
+	AliHLTGlobalBarrelTrack *tpcTrack = &(tracksTPC[tpcIter]);
+	AliHLTGlobalBarrelTrack *tpcOutTrack = &(tracksTPCOut[tpcIter]);
+
+	// ITS track parameters
+	
+	AliHLTGlobalBarrelTrack *itsRefit=0;
+	AliHLTGlobalBarrelTrack *itsOut=0;
+	
+	// ITS Refit track
+	  
+	for(; itsIter< tracksITS.size() && tracksITS[itsIter].TrackID()<(int) tpcIter; itsIter++ );
+	
+	if( itsIter< tracksITS.size() && tracksITS[itsIter].TrackID() == (int) tpcIter ){
+	  itsRefit = &(tracksITS[itsIter]);
+	  itsIter++;
+	}
+	
+	// ITS Out track
+	  
+	for(; itsOutIter< tracksITSOut.size() && tracksITSOut[itsOutIter].TrackID()<(int) tpcIter; itsOutIter++ );
+	  
+	if( itsOutIter< tracksITSOut.size() && tracksITSOut[itsOutIter].TrackID() == (int) tpcIter ){
+	  itsOut = &(tracksITSOut[itsOutIter]);
+	  itsOutIter++;
+	}
+	
+	// fill track parameters
+		  
+	table[tpcIter] = trackSize;
+	err = ( freeSpace < flatTrack->EstimateSize() );	  
+	if( err ) break;
+	new (flatTrack) AliFlatESDFriendTrack;
+	  	  
+	freeSpace = freeSpaceTotal - flatFriend->GetSize();
+
+	flatTrack->SetSkipBit( 0 );
+	flatTrack->SetTrackParamTPCOut( tpcOutTrack );
+	flatTrack->SetTrackParamITSOut( itsOut );
+	// flatTrack->SetTrackParamTRDIn( track->GetTRDIn() );
+
+	// fill TPC seed
+
+	AliFlatTPCseed* seed = flatTrack->SetTPCseedStart();
+	new( seed ) AliFlatTPCseed;
+
+	seed->SetLabel( tpcTrack->GetLabel() );
+	seed->SetExternalTrackParam( tpcTrack );
+	
+	// clusters 
+
+	UInt_t nClusters = tpcTrack->GetNumberOfPoints();	
+	const UInt_t*clusterIDs = tpcTrack->GetPoints();
+	for(UInt_t ic=0; ic<nClusters; ic++){	 
+	  UInt_t id      = clusterIDs[ic];	     
+	  int iSlice = AliHLTTPCSpacePointData::GetSlice(id);
+	  int iPartition = AliHLTTPCSpacePointData::GetPatch(id);
+	  int iCluster = AliHLTTPCSpacePointData::GetNumber(id);
+	  
+	  if(iSlice<0 || iSlice>36 || iPartition<0 || iPartition>5){
+	    HLTError("Corrupted TPC cluster Id: slice %d, partition %d, cluster %d", iSlice, iPartition, iCluster);
+	    continue;
+	  }
+	  
+	  const AliHLTTPCClusterData * clusterData = partitionClusters[iSlice*6 + iPartition];
+	  if(!clusterData ){
+	    HLTError("Clusters are missed for slice %d, partition %d", iSlice, iPartition );
+	    continue;
+	  }
+	    
+	  if(iCluster >= partitionNClusters[iSlice*6 + iPartition]){
+	    HLTError("TPC slice %d, partition %d: ClusterID==%d >= N Cluaters==%d ", iSlice, iPartition,iCluster, partitionNClusters[iSlice*6 + iPartition] );
+	    continue;
+	  }
+
+	    
+	  const AliHLTTPCSpacePointData *chlt = &( clusterData->fSpacePoints[iCluster] );
+	  AliTPCclusterMI cl;
+	  cl.SetX(chlt->fX);
+	  cl.SetY(chlt->fY);
+	  cl.SetZ(chlt->fZ);
+	  cl.SetSigmaY2(chlt->fSigmaY2);
+	  cl.SetSigmaYZ( 0 );
+	  cl.SetSigmaZ2(chlt->fSigmaZ2);
+	  cl.SetQ( chlt->fCharge );
+	  cl.SetMax( chlt->fQMax );
+	  Int_t sector, row;
+	  AliHLTTPCTransform::Slice2Sector(iSlice,chlt->fPadRow, sector, row);
+	  cl.SetDetector( sector );
+	  cl.SetRow( row );
+	  //Float_t padtime[3] = {0,chlt->fY,chlt->fZ};
+	  //AliHLTTPCTransform::Local2Raw( padtime, sector, row);
+	  //cl.SetPad( (Int_t) padtime[1] );
+	  //cl.SetTimeBin( (Int_t) padtime[2] );
+	  
+	  	  
+	  tpcTrack->Propagate( TMath::DegToRad()*(sector%18*20.+10.), cl.GetX(), GetBz() );
+	  Double_t angle2 = tpcTrack->GetSnp()*tpcTrack->GetSnp();
+	  angle2 = (angle2<1) ?TMath::Sqrt(angle2/(1-angle2)) :10.; 
+	  AliTPCTrackerPoint point;
+	  point.SetAngleY( angle2 );
+	  point.SetAngleZ( tpcTrack->GetTgl() );
+
+	  seed->AddCluster(&cl, &point ); 
+	} // end of associated cluster loop
+	        
+	
+	flatTrack->SetTPCseedEnd( seed->GetSize() );	
+	  
+	trackSize += flatTrack->GetSize();
+	freeSpace -= flatTrack->GetSize();
+	nTrackEntries++;
+	nTracks++;
+ 	flatTrack = flatTrack->GetNextTrackNonConst();	
+	
+      } // fill tracks
+      
+
+      flatFriend->SetTracksEnd( nTracks, nTrackEntries, trackSize );
+      
+    }      
+
+    if( err ) break;
+
+    { // set up the output block description
+    
+      AliHLTComponentBlockData outBlock;
+      FillBlockData( outBlock );
+      outBlock.fOffset = size;
+      outBlock.fSize = flatFriend->GetSize();
+      outBlock.fDataType = kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut;
+      outputBlocks.push_back( outBlock );
+      fBenchmark.AddOutput(outBlock.fSize);      
+      size += outBlock.fSize;
+    }
+    
+    break;
+  }
+
+  if( err ){
+    HLTWarning( "Output buffer size %d exceeded, flat ESD friend event is not stored", maxOutputSize );
+    return -ENOSPC;
+  } 
+  
+
   fBenchmark.Stop(0);
   HLTWarning( fBenchmark.GetStatistics() );
-
+  if( err ){
+    HLTWarning( "Output buffer size %d exceeded, flat ESD event is not stored", maxOutputSize );
+    return -ENOSPC;
+  } 
+  
   return 0;
 }
 

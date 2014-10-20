@@ -86,16 +86,16 @@ class AliHLTGlobalFlatEsdConverterComponent : public AliHLTProcessor
    */
   int Configure(const char* arguments);
 
-  int fWriteClusters; //!transient
-
   /// verbosity level
   int fVerbosity; //!transient
 
 protected:
 
-  /// solenoid b field
-  Double_t fSolenoidBz; //! transient
+  static const Int_t fkNPartition = 36*6;           // number of patches in TPC
+
   AliHLTComponentBenchmark fBenchmark; // benchmark
+  
+  Bool_t fProduceFriend; // should it produce the flat ESD friend
 
   ClassDef(AliHLTGlobalFlatEsdConverterComponent, 0)
 };

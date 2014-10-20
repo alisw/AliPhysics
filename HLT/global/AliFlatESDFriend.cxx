@@ -95,7 +95,8 @@ Int_t AliFlatESDFriend::SetFromESDfriend( const size_t allocatedMemorySize, cons
        table[idxTrack] = trackSize;
        if( freeSpace<flatTrack->EstimateSize() ) return -1;
        new (flatTrack) AliFlatESDFriendTrack;       
-       //flatTrack->SetFromESDTrack( esdTrack );
+       if( flatTrack->SetFromESDfriendTrack( esdTrack, freeSpace ) ) return -1;
+
        trackSize += flatTrack->GetSize();
        freeSpace -= flatTrack->GetSize();
        nTrackEntries++;

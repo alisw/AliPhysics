@@ -16,12 +16,11 @@
 #include "AliVfriendTrack.h"
 #include "AliVMisc.h"
 #include "AliFlatExternalTrackParam.h"
+#include "AliTPCseed.h"
 
 class AliESDtrack;
 class AliESDfriendTrack;
 class AliExternalTrackParam;
-class AliTrackPointArray;
-class AliTPCseed;
 
 class AliFlatTPCseed  
 {
@@ -36,15 +35,28 @@ class AliFlatTPCseed
   AliFlatTPCseed( AliVConstructorReinitialisationFlag );
   void Reinitialize() { new (this) AliFlatTPCseed( AliVReinitialize ); }
 
+  // -- Getters 
+
+  void GetTPCseed( AliTPCseed *p ) const;
+
+  Int_t GetLabel() const { return fLabel; }
+  Int_t GetNClusters() const { return fNTPCClusters; }
+
+  const AliFlatTPCCluster *GetClusters() const { return reinterpret_cast< const AliFlatTPCCluster* >( fContent ); }
+  AliFlatTPCCluster *GetClustersNonConst(){ return reinterpret_cast< AliFlatTPCCluster* >( fContent ); }
+
   // -- Set methods
  
   void Reset();
 
   void SetFromTPCseed( const AliTPCseed *p );
-  void GetTPCseed( AliTPCseed *p ) const;
 
-  Int_t GetLabel() const { return fLabel; }
-  Int_t GetNClusters() const { return fNTPCClusters; }
+  void SetExternalTrackParam( const AliExternalTrackParam* p ){ fParam.SetExternalTrackParam(  p ); }
+
+  void SetLabel( Int_t lab ){ fLabel=lab; }
+
+  void AddCluster( const AliTPCclusterMI *cl, const AliTPCTrackerPoint *p ){ if(cl) GetClustersNonConst()[fNTPCClusters++].SetTPCCluster( cl, p );  }
+
 
   // --------------------------------------------------------------------------------
   // -- Size methods

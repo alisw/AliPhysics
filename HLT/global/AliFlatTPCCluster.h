@@ -12,12 +12,13 @@
 #include "Rtypes.h"
 #include "AliVMisc.h"
 #include "AliTPCclusterMI.h"
+#include "AliComplexCluster.h"
 
 class AliFlatTPCCluster
 {
   public:
 
-  AliFlatTPCCluster() : fX(0.), fY(0.), fZ(0.), fSector(0), fPadRow(0), fSigmaY2(0.), fSigmaZ2(0.), fCharge(0), fQMax(0) {}
+ AliFlatTPCCluster() : fX(0.), fY(0.), fZ(0.), fSector(0), fPadRow(0), fSigmaY2(0.), fSigmaZ2(0.), fCharge(0), fQMax(0), fTrackAngleY(0), fTrackAngleZ(0) {}
 
   AliFlatTPCCluster(AliVConstructorReinitialisationFlag ); // do nothing
  
@@ -34,7 +35,8 @@ class AliFlatTPCCluster
   void SetSigmaZ2(Float_t sigmaZ2) {fSigmaZ2 = sigmaZ2;}
   void SetCharge(UShort_t charge)  {fCharge = charge;}
   void SetQMax(UShort_t qmax)      {fQMax = qmax;}
-  
+  void SetTrackAngleY( Float_t angY ) {fTrackAngleY = angY;}  
+  void SetTrackAngleZ( Float_t angZ ) {fTrackAngleZ = angZ;}
  
   Float_t  GetX()       const      {return fX;}
   Float_t  GetY()       const      {return fY;}
@@ -45,9 +47,12 @@ class AliFlatTPCCluster
   Float_t  GetSigmaZ2() const      {return fSigmaZ2;}
   UShort_t GetCharge()  const      {return fCharge;}
   UShort_t GetQMax()    const      {return fQMax;}
+  
+  Float_t GetTrackAngleY() const {return fTrackAngleY;}
+  Float_t GetTrackAngleZ() const {return fTrackAngleZ;}
 
-  void SetTPCCluster( const AliTPCclusterMI *c );
-  void GetTPCCluster( AliTPCclusterMI *c ) const;
+  void SetTPCCluster( const AliTPCclusterMI *c, const AliTPCTrackerPoint *p );
+  void GetTPCCluster( AliTPCclusterMI *c, AliTPCTrackerPoint *p  ) const;
 
   private:
 
@@ -60,15 +65,17 @@ class AliFlatTPCCluster
   Float_t fSigmaZ2; // error (former width) of the clusters
   UInt_t  fCharge;  // total charge of cluster
   UInt_t  fQMax;    // QMax of cluster
-  
+  Float_t fTrackAngleY; // tracker point angle Y
+  Float_t fTrackAngleZ; // tracker point angle Z
 };
 
 #pragma GCC diagnostic ignored "-Weffc++" 
 inline AliFlatTPCCluster::AliFlatTPCCluster(AliVConstructorReinitialisationFlag ){}
 #pragma GCC diagnostic warning "-Weffc++" 
 
-inline void AliFlatTPCCluster::SetTPCCluster( const AliTPCclusterMI *c )
+inline void AliFlatTPCCluster::SetTPCCluster( const AliTPCclusterMI *c, const AliTPCTrackerPoint *p  )
 {
+  if( !c ) return;
   SetX( c->GetX() );
   SetY( c->GetY() );
   SetZ( c->GetZ() );
@@ -78,20 +85,32 @@ inline void AliFlatTPCCluster::SetTPCCluster( const AliTPCclusterMI *c )
   SetSigmaZ2( c->GetSigmaZ2() );
   SetCharge( c->GetQ() );
   SetQMax( c->GetMax() );
+  if( p ){
+    SetTrackAngleY( p->GetAngleY() );  
+    SetTrackAngleZ( p->GetAngleZ() );  
+  } else {
+    SetTrackAngleY( 0. );  
+    SetTrackAngleZ( 0. );  
+  }
 }
- 
-inline void AliFlatTPCCluster::GetTPCCluster( AliTPCclusterMI *c ) const
+
+inline void AliFlatTPCCluster::GetTPCCluster( AliTPCclusterMI *c, AliTPCTrackerPoint *p ) const
 {
-  if( !c ) return;
-  c->SetX( GetX() );
-  c->SetY( GetY() );
-  c->SetZ( GetZ() );
-  c->SetDetector( GetSector() );
-  c->SetRow( GetPadRow() );
-  c->SetSigmaY2( GetSigmaY2() );
-  c->SetSigmaZ2( GetSigmaZ2() );
-  c->SetQ( GetCharge() );
-  c->SetMax( GetQMax() );
+  if( c ){
+    c->SetX( GetX() );
+    c->SetY( GetY() );
+    c->SetZ( GetZ() );
+    c->SetDetector( GetSector() );
+    c->SetRow( GetPadRow() );
+    c->SetSigmaY2( GetSigmaY2() );
+    c->SetSigmaZ2( GetSigmaZ2() );
+    c->SetQ( GetCharge() );
+    c->SetMax( GetQMax() );
+  }
+  if( p ){
+    p->SetAngleY( GetTrackAngleY() );
+    p->SetAngleZ( GetTrackAngleZ() );
+  }
 }
 
 #endif

@@ -69,6 +69,10 @@ class AliFlatESDFriendTrack :public AliVfriendTrack
   void SetTPCseed         ( const AliTPCseed *p );
 
   // -- 
+
+  AliFlatTPCseed* SetTPCseedStart();
+  void SetTPCseedEnd( size_t tpcSeedSize );
+
   
   const AliFlatESDFriendTrack *GetNextTrack() const { return reinterpret_cast<const AliFlatESDFriendTrack*>(fContent+fContentSize); }
   AliFlatESDFriendTrack *GetNextTrackNonConst() { return reinterpret_cast<AliFlatESDFriendTrack*>(fContent+fContentSize); }
@@ -141,6 +145,16 @@ inline Int_t AliFlatESDFriendTrack::GetTPCseed( AliTPCseed &s ) const
   const AliFlatTPCseed *fp = reinterpret_cast< const AliFlatTPCseed* >( fContent + fTPCseedPointer );
   fp->GetTPCseed( &s );
   return 0;
+}
+
+inline AliFlatTPCseed* AliFlatESDFriendTrack::SetTPCseedStart()
+{
+  fTPCseedPointer = fContentSize;
+  return  reinterpret_cast< AliFlatTPCseed* >( fContent + fTPCseedPointer );
+}
+
+inline void AliFlatESDFriendTrack::SetTPCseedEnd( size_t tpcSeedSize ){
+  fContentSize += tpcSeedSize;
 }
 
 #endif

@@ -51,6 +51,7 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
      virtual Double_t GetPredictedChi2(const AliCluster *cluster2) const;
      virtual Bool_t Update(const AliCluster* c2, Double_t chi2, Int_t i);
      AliTPCTrackerPoint * GetTrackPoint(Int_t i);
+     const AliTPCTrackerPoint * GetTrackPointConst(Int_t i) const { return &fTrackPoints[i]; }
      AliTPCclusterMI * GetClusterFast(Int_t irow){ return fClusterPointer[irow];}
      AliTPCclusterMI * GetClusterFast(Int_t irow) const { return fClusterPointer[irow];}
      void SetClusterPointer(Int_t irow, AliTPCclusterMI* cl) {fClusterPointer[irow]=cl;}
