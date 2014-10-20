@@ -58,8 +58,16 @@ fIntegrator(integrator)
   if (labels)
     for(Int_t iTrack = 0; iTrack < 3; ++iTrack) fTracks[iTrack] = labels[iTrack];
 }
-
-
+//__________________________________________________________________________
+Bool_t AliADdigit::GetIntegratorFlag(Int_t clock)
+{
+if (clock >= 0 && clock < kNClocks){
+	if(clock%2 == 0) return fIntegrator;
+	else return !fIntegrator;
+	}
+	
+else return kFALSE;
+}
 //__________________________________________________________________________
 void AliADdigit::Print(const Option_t*) const
 {
