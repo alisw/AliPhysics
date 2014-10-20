@@ -21,15 +21,6 @@ cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
 
 project(AliRoot CXX C)
 
-# If no Fortran, i.e on Windows
-include(CheckLanguage)
-check_language(Fortran)
-if(CMAKE_Fortran_COMPILER)
-    enable_language(Fortran OPTIONAL)
-else()
-    message("No Fortran support. Disabling LHAPDF, PHYTIA6, MICROCERN")
-endif()
-
 # Path to additonal modules
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
@@ -51,6 +42,26 @@ if(ROOTSYS)
 else()
     message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
 endif(ROOTSYS)
+
+# If no Fortran, i.e on Windows
+# We need to specify ROOT fortran
+# (f95 comes before gfortran in default module)
+include(CheckLanguage)
+
+if(ROOT_FORTRAN)
+    message(STATUS "Using the Fortran compiler defined by ROOT configuration: ${ROOT_FORTRAN}")
+    set(CMAKE_Fortran_COMPILER ${ROOT_FORTRAN})
+else()
+    message(STATUS "Using default system Fortran compiler")
+endif(ROOT_FORTRAN)
+
+check_language(Fortran)
+if(CMAKE_Fortran_COMPILER)
+    enable_language(Fortran OPTIONAL)
+else()
+    message("No Fortran support. Disabling LHAPDF, PHYTIA6, MICROCERN")
+endif()
+
 
 # DATE
 find_package(DATE)
@@ -94,11 +105,11 @@ add_subdirectory(TRIGGER)
 add_subdirectory(BCM)
 add_subdirectory(CORRFW)
 add_subdirectory(FASTSIM)
-#if(CMAKE_Fortran_COMPILER_WORKS)
-#  add_subdirectory (LHAPDF)
+if(CMAKE_Fortran_COMPILER)
+  add_subdirectory (LHAPDF)
 #  add_subdirectory (PYTHIA6)
 #  add_subdirectory (MICROCERN)
-#endif(CMAKE_Fortran_COMPILER_WORKS)
+endif(CMAKE_Fortran_COMPILER)
 #add_subdirectory (EVGEN)
 #add_subdirectory (TUHKMgen)
 #add_subdirectory (TTherminator)

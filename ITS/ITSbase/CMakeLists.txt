@@ -20,7 +20,7 @@ set(MODULE ITSbase)
 include_directories(${CMAKE_SOURCE_DIR}/ITS/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS} 
+include_directories(${ROOT_INCLUDE_DIRS}
                     ${CMAKE_SOURCE_DIR}/ITS/ITSrec
                     ${CMAKE_SOURCE_DIR}/ITS/ITSsim
                     ${CMAKE_SOURCE_DIR}/RAW/RAWDatabase
