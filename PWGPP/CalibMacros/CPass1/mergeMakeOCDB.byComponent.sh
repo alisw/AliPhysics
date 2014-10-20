@@ -64,6 +64,9 @@ main()
   components="TOF MeanVertex T0 SDD TRD TPCCalib TPCCluster TPCAlign"
   #components="TOF MeanVertex T0 SDD TRD TPCCalib"
 
+  # take Data Quality Flags from JDL
+  detectorBitsQualityFlag=${ALIEN_JDL_RUNQUALITY--1}
+
   #################################################################
   echo "" | tee -a merge.log
   echo $0" $*" | tee -a merge.log
@@ -73,12 +76,13 @@ main()
   echo path = $path | tee -a merge.log
   echo run  = $run | tee -a merge.log
   echo ocdb = $ocdb | tee -a merge.log
-  echo defaultOCDB=$defaultOCDB | tee -a merge.log
+  echo defaultOCDB = $defaultOCDB | tee -a merge.log
   echo filesAreLocal = $filesAreLocal | tee -a merge.log
   echo cleanup = $cleanup | tee -a merge.log
-  echo fileAccessMethod=$fileAccessMethod | tee -a merge.log
+  echo fileAccessMethod = $fileAccessMethod | tee -a merge.log
   echo numberOfFilesInAbunch = $numberOfFilesInAbunch | tee -a merge.log
-  echo runParallel=$runParallel
+  echo runParallel = $runParallel
+  echo detectorBitsQualityFlag = $detectorBitsQualityFlag
   echo "***********************" | tee -a merge.log
 
   alienFileList="alien.list"
@@ -203,8 +207,8 @@ main()
   echo "***********************" 2>&1 | tee -a ocdb.log
   echo making ${det} OCDB 2>&1 | tee -a ocdb.log
   echo "***********************" 2>&1 | tee -a ocdb.log
-  echo aliroot -b -q "makeOCDB.C($run, \"$ocdb\", \"$defaultOCDB\")" 2>&1 | tee -a ocdb.log
-  aliroot -b -q "makeOCDB.C($run, \"$ocdb\", \"$defaultOCDB\")" 2>&1 | tee -a ocdb.log
+  echo aliroot -b -q "makeOCDB.C($run, \"$ocdb\", \"$defaultOCDB\", $detectorBitsQualityFlag)" 2>&1 | tee -a ocdb.log
+  aliroot -b -q "makeOCDB.C($run, \"$ocdb\", \"$defaultOCDB\", $detectorBitsQualityFlag)" 2>&1 | tee -a ocdb.log
   mv syswatch.log syswatch_makeOCDB.log
 
   # summary
