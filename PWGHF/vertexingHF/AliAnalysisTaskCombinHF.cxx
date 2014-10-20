@@ -1001,7 +1001,7 @@ void AliAnalysisTaskCombinHF::DoMixing(Int_t poolIndex){
   if(poolIndex<0 || poolIndex>fNzVertPools*fNMultPools) return;
 
   Int_t nEvents=fEventBuffer[poolIndex]->GetEntries();
-  printf("Start Event Mixing of %d events\n",nEvents);
+  if(fDebug > 1) printf("Start Event Mixing of %d events\n",nEvents);
   TObjArray* karray=0x0;
   TObjArray* parray=0x0;
   fEventBuffer[poolIndex]->SetBranchAddress("karray", &karray);
