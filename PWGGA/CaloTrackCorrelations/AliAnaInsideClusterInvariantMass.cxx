@@ -65,7 +65,8 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   fNLMSettingN(0),                           fWSimu(),
   fClusterMomentum(),                        fSubClusterMom1(),                         fSubClusterMom2(),
   fSubClusterMomSum(),                       fSubClusterMomBoost(),
-  fPrimaryMom(),                             fMCDaughMom1(),                            fMCDaughMom2(),
+  fPrimaryMom(),                             fGrandMotherMom(),
+  fMCDaughMom1(),                            fMCDaughMom2(),
   fProdVertex(),
 // Histograms
   fhMassAsyCutNLocMax1(0),                   fhMassAsyCutNLocMax2(0),                   fhMassAsyCutNLocMaxN(0),
