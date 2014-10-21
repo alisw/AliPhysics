@@ -1,19 +1,30 @@
+// $Id$
+
 AliAnalysisTaskDijetHadron* AddTaskDijetHadron(
   const char *ntracks            = "Tracks",
   const char *nclusters          = "CaloClusters",
   const char *njets              = "Jets",
-  const char *nMCtracks            = "TracksMC",
-  const char *nMCclusters          = "CaloClustersMC",
-  const char *nMCjets              = "JetsMC",
+  const char *nMCtracks          = "TracksMC",
+  const char *nMCclusters        = "CaloClustersMC",
+  const char *nMCjets            = "JetsMC",
   const char *nembtracks         = "TracksEmbedded",
   const char *nembclusters       = "CaloClustersEmbedded",
   const char *nembjets           = "EmbJets",
   const char *nrandtracks        = "TracksRandomized",
   const char *nrandclusters      = "CaloClustersRandomized",
-  const char *nPbPbrho               = "Rho",
-  const char *nMCrho               = "RhoMC",
-  const char *nEMBrho               = "RhoEMB",
+  const char *nPbPbrho           = "Rho",
+  const char *nMCrho             = "RhoMC",
+  const char *nEMBrho            = "RhoEMB",
   Double_t    jetradius          = 0.2,
+  Double_t    leadinghadron1     = 0.0,
+  Double_t    leadinghadron2     = 3.0,
+  Double_t    leadinghadron3     = 5.0,
+  Double_t    jet1pt1            = 10.0,
+  Double_t    jet1pt2            = 20.0,
+  Double_t    jet1pt3            = 30.0,
+  Double_t    jet2pt1            = 10.0,
+  Double_t    jet2pt2            = 20.0,
+  Double_t    jet2pt3            = 30.0,
   Double_t    jetareacut         = 0.557,
   Double_t    trackptcut         = 0.15,
   Double_t    clusptcut          = 0.30,
@@ -26,7 +37,7 @@ AliAnalysisTaskDijetHadron* AddTaskDijetHadron(
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
   {
-    ::Error("AddTaskHJetCorr", "No analysis manager to connect to.");
+    ::Error("AddTaskDijetHadron", "No analysis manager to connect to.");
     return NULL;
   }  
   
@@ -34,7 +45,7 @@ AliAnalysisTaskDijetHadron* AddTaskDijetHadron(
   //==============================================================================
   if (!mgr->GetInputEventHandler())
   {
-    ::Error("AddTaskHJetCorr", "This task requires an input event handler");
+    ::Error("AddTaskDijetHadron", "This task requires an input event handler");
     return NULL;
   }
   
@@ -53,6 +64,15 @@ AliAnalysisTaskDijetHadron* AddTaskDijetHadron(
 
   AliAnalysisTaskDijetHadron* jetTask = new AliAnalysisTaskDijetHadron(name);
   jetTask->SetConeRadius(jetradius);
+  jetTask->SetLeadingHadronPtThreshold1(leadinghadron1);
+  jetTask->SetLeadingHadronPtThreshold2(leadinghadron2);
+  jetTask->SetLeadingHadronPtThreshold3(leadinghadron3);
+  jetTask->SetJet1PtThreshold1(jet1pt1);
+  jetTask->SetJet1PtThreshold2(jet1pt2);
+  jetTask->SetJet1PtThreshold3(jet1pt3);
+  jetTask->SetJet2PtThreshold1(jet2pt1);
+  jetTask->SetJet2PtThreshold2(jet2pt2);
+  jetTask->SetJet2PtThreshold3(jet2pt3);
   jetTask->SetRhoName(nPbPbrho,-1);
   if (strcmp(type,"TPC")==0) 
     jetTask->SetConeEtaPhiTPC();
@@ -122,18 +142,6 @@ AliAnalysisTaskDijetHadron* AddTaskDijetHadron(
     embJetCont->ConnectClusterContainer(embClusCont);
   }
 
-  /*AliParticleContainer *randPartCont = jetTask->AddParticleContainer(nrandtracks);
-  if (randPartCont) {
-    randPartCont->SetName("RandTracks");
-    randPartCont->SetParticlePtCut(trackptcut);
-  }
-
-  AliClusterContainer *randClusCont = jetTask->AddClusterContainer(nrandclusters);    
-  if (randClusCont) {
-    randClusCont->SetName("RandClusters");
-    randClusCont->SetClusPtCut(clusptcut);
-  }*/
-  
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------

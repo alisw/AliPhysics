@@ -14,7 +14,8 @@
 
 // --- ROOT system ---
 #include <TObject.h>
-#include <TString.h> 
+#include <TString.h>
+#include <TLorentzVector.h>
 class TList ;
 class TVector3;
 
@@ -54,10 +55,10 @@ class AliMCAnalysisUtils : public TObject {
   Int_t   CheckCommonAncestor(Int_t index1, Int_t index2, const AliCaloTrackReader* reader, 
 			      Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum, TVector3 & v) ;
   
-  Int_t   CheckOrigin(Int_t label, const AliCaloTrackReader * reader, TString calorimeter) ;
+  Int_t   CheckOrigin(Int_t label, const AliCaloTrackReader * reader, Int_t calorimeter) ;
   
   //Check the label of the most significant particle but do checks on the rest of the contributing labels
-  Int_t   CheckOrigin       (const Int_t *label,  Int_t nlabels, const AliCaloTrackReader * reader, TString calorimeter) ;
+  Int_t   CheckOrigin       (const Int_t *label,  Int_t nlabels, const AliCaloTrackReader * reader, Int_t calorimeter) ;
   Int_t   CheckOriginInStack(const Int_t *labels, Int_t nlabels, AliStack * stack               , const TObjArray *arrayCluster) ; // ESD
   Int_t   CheckOriginInAOD  (const Int_t *labels, Int_t nlabels, const TClonesArray* mcparticles, const TObjArray *arrayCluster) ; // AOD
   
@@ -108,8 +109,11 @@ class AliMCAnalysisUtils : public TObject {
   void    SetDebug(Int_t deb)           { fDebug=deb           ; }
   Int_t   GetDebug()              const { return fDebug        ; }	
   
-  void    SetMCGenerator(TString mcgen) { fMCGenerator = mcgen ; }
-  TString GetMCGenerator()        const { return fMCGenerator  ; }	
+  enum generator {kPythia = 0, kHerwig = 1, kHijing = 2, kBoxLike = 3 } ;
+  void    SetMCGenerator(Int_t   mcgen) ;
+  void    SetMCGenerator(TString mcgen) ;
+  Int_t   GetMCGenerator()        const { return fMCGenerator  ; }
+  TString GetMCGeneratorString()  const { return fMCGeneratorString ; }
   
   void    Print(const Option_t * opt) const;
   void    PrintMCTag(Int_t tag) const;
@@ -118,12 +122,18 @@ class AliMCAnalysisUtils : public TObject {
   Int_t   fCurrentEvent;        // Current Event
   Int_t   fDebug;               // Debug level
   TList * fJetsList;            // List of jets
-  TString fMCGenerator;         // MC geneator used to generate data in simulation
+  Int_t   fMCGenerator;         // MC generator used to generate data in simulation
+  TString fMCGeneratorString;   // MC generator used to generate data in simulation
+  
+  TLorentzVector fDaughMom;     //! particle momentum
+  TLorentzVector fDaughMom2;    //! particle momentum
+  TLorentzVector fMotherMom;    //! particle momentum
+  TLorentzVector fGMotherMom;   //! particle momentum
   
   AliMCAnalysisUtils & operator = (const AliMCAnalysisUtils & mcu) ; // cpy assignment
   AliMCAnalysisUtils(              const AliMCAnalysisUtils & mcu) ; // cpy ctor
   
-  ClassDef(AliMCAnalysisUtils,5)
+  ClassDef(AliMCAnalysisUtils,6)
 
 } ;
 

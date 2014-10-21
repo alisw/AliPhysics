@@ -1635,6 +1635,8 @@ Bool_t AliJetResponseMaker::FillHistograms()
 
     AliDebug(2,Form("Processing jet (2) %d", jets2->GetCurrentID()));
 
+    if (jet2->Pt() < jets2->GetJetPtCut()) continue;
+
     Double_t ptLeading2 = jets2->GetLeadingHadronPt(jet2);
     Double_t corrpt2 = jet2->Pt() - jets2->GetRhoVal() * jet2->Area();
 

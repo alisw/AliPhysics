@@ -45,7 +45,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t       FindLeadingOppositeHadronInWindow(AliAODPWG4ParticleCorrelation * particle);
   
-  Bool_t       GetDecayPhotonMomentum   (AliAODPWG4Particle* trigger, TLorentzVector & mom1, TLorentzVector & mom2);
+  Bool_t       GetDecayPhotonMomentum   (Int_t indexPhoton1, Int_t indexPhoton2, Int_t idetector);
   
   void         MakeChargedCorrelation   (AliAODPWG4ParticleCorrelation * particle) ;
   
@@ -80,9 +80,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void         FillChargedUnderlyingEventSidesHistograms(Float_t ptTrig,   Float_t ptAssoc, 
                                                          Float_t deltaPhi);
   
-  void         FillDecayPhotonCorrelationHistograms     (Float_t ptAssoc,     Float_t phiAssoc, 
-                                                         TLorentzVector mom1, TLorentzVector mom2, 
-                                                         Bool_t bChargedOrNeutral); 
+  void         FillDecayPhotonCorrelationHistograms     (Float_t ptAssoc,  Float_t phiAssoc, Bool_t bChargedOrNeutral);
   
   void         FillNeutralEventMixPool();
   
@@ -261,6 +259,11 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   Int_t        fMCGenTypeMin;                  // Of the fgkNmcTypes possible types, select those between fMCGenTypeMin and fMCGenTypeMax
   Int_t        fMCGenTypeMax;                  // Of the fgkNmcTypes possible types, select those between fMCGenTypeMin and fMCGenTypeMax
+  
+  TVector3       fTrackVector;                 //! track momentum vector
+  TLorentzVector fMomentum;                    //! trigger momentum
+  TLorentzVector fDecayMom1;                   //! decay particle momentum
+  TLorentzVector fDecayMom2;                   //! decay particle momentum
   
   //Histograms
 

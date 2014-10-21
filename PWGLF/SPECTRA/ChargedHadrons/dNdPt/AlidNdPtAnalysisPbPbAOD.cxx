@@ -1155,16 +1155,21 @@ Double_t AlidNdPtAnalysisPbPbAOD::RotatePhi(Double_t phiTrack, Double_t phiEP)
   {
 	return dPhi;
   }
-  if( (dPhi > TMath::Pi()) && (dPhi <= 3./2.*TMath::Pi()) )
+  if( dPhi > TMath::Pi() )
   {
-	dPhi = dPhi - TMath::Pi()/2.;
+	dPhi = TMath::Pi()/2. - dPhi;
 	return dPhi;
   }
-  if( (dPhi > 3./2.*TMath::Pi()) )
-  {
-	dPhi = dPhi - 3./2.*TMath::Pi();
-	return dPhi;
-  }
+//   if( (dPhi > TMath::Pi()) && (dPhi <= 3./2.*TMath::Pi()) )
+//   {
+// 	dPhi = dPhi - TMath::Pi()/2.;
+// 	return dPhi;
+//   }
+//   if( (dPhi > 3./2.*TMath::Pi()) )
+//   {
+// 	dPhi = dPhi - 3./2.*TMath::Pi();
+// 	return dPhi;
+//   }
 //   if( dPhi < 0 )
 //   
 //   if ((dPhi >= -1./2. * TMath::Pi() ) && 

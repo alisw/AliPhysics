@@ -50,7 +50,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   void           FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * c) ;
   
-  void           FillRejectedClusterHistograms(TLorentzVector mom, Int_t mctag, Int_t nMaxima);
+  void           FillRejectedClusterHistograms(Int_t mctag, Int_t nMaxima);
   
   void           FillSelectedClusterHistograms(AliVCluster* cluster, Float_t pt,
                                                Int_t nLocMax,        Int_t tag,
@@ -58,8 +58,8 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
     
   void           FillWeightHistograms(AliVCluster *clus);
     
-  void           HasPairSameMCMother(AliAODPWG4Particle * photon1, 
-                                     AliAODPWG4Particle * photon2, 
+  void           HasPairSameMCMother(Int_t label1 , Int_t label2,
+                                     Int_t tag1   , Int_t tag2,
                                      Int_t & label, Int_t & tag);
   
   void           MakeInvMassInCalorimeter() ;
@@ -159,6 +159,13 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
 
   Bool_t         fCheckSplitDistToBad;     // Check the distance to bad channel and to EMCal borders of split clusters
   
+  TLorentzVector fMomentum;                //! cluster/pi0 momentum
+  TLorentzVector fMomentum1;               //! cluster/photon momentum
+  TLorentzVector fMomentum2;               //! cluster/photon momentum
+  TLorentzVector fMomentum12;              //! cluster/pi0 momentum, sum 1+2
+  TLorentzVector fPrimaryMom;              //! primary momentum
+  TLorentzVector fGrandMotherMom;          //! primary momentum
+
   //Histograms
   
   TH1F         * fhPt  ;                   //! Number of identified  pi0/eta vs pT

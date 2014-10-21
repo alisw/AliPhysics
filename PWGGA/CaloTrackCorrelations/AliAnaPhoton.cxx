@@ -61,6 +61,7 @@ fNCellsCut(0),
 fNLMCutMin(-1),               fNLMCutMax(10),
 fFillSSHistograms(kFALSE),    fFillOnlySimpleSSHisto(1),
 fNOriginHistograms(8),        fNPrimaryHistograms(4),
+fMomentum(),                  fPrimaryMom(),
 // Histograms
 
 // Control histograms
@@ -204,14 +205,14 @@ fhPtClusterSM(0),                     fhPtPhotonSM(0)
 }
 
 //_________________________________________________________________________________________
-Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int_t nMaxima)
+Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t nMaxima)
 {
   //Select clusters if they pass different cuts
   
-  Float_t ptcluster  = mom.Pt();
-  Float_t ecluster   = mom.E();
-  Float_t etacluster = mom.Eta();
-  Float_t phicluster = mom.Phi();
+  Float_t ptcluster  = fMomentum.Pt();
+  Float_t ecluster   = fMomentum.E();
+  Float_t etacluster = fMomentum.Eta();
+  Float_t phicluster = fMomentum.Phi();
 
   if(phicluster < 0) phicluster+=TMath::TwoPi();
   
@@ -271,7 +272,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
   //Check acceptance selection
   if(IsFiducialCutOn())
   {
-    Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,GetCalorimeter()) ;
+    Bool_t in = GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),GetCalorimeter()) ;
     if(! in ) return kFALSE ;
   }
   
@@ -316,7 +317,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
   if(GetDebug() > 0)
     printf("AliAnaPhoton::ClusterSelected() Current Event %d; After  selection : E %2.2f, pT %2.2f, phi %2.2f, eta %2.2f\n",
            GetReader()->GetEventNumber(),
-           ecluster, ptcluster,mom.Phi()*TMath::RadToDeg(),mom.Eta());
+           ecluster, ptcluster,fMomentum.Phi()*TMath::RadToDeg(),fMomentum.Eta());
   
   //All checks passed, cluster selected
   return kTRUE;
@@ -343,7 +344,6 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   
   TParticle        * primStack = 0;
   AliAODMCParticle * primAOD   = 0;
-  TLorentzVector lv;
   
   // Get the ESD MC particles container
   AliStack * stack = 0;
@@ -385,7 +385,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       //       prim->GetName(), prim->GetPdgCode());
       
       //Photon kinematics
-      primStack->Momentum(lv);
+      primStack->Momentum(fMomentum);
       
       photonY = 0.5*TMath::Log((primStack->Energy()+primStack->Pz())/(primStack->Energy()-primStack->Pz())) ;
     }
@@ -404,7 +404,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       if(primAOD->E() == TMath::Abs(primAOD->Pz()))  continue ; //Protection against floating point exception
       
       //Photon kinematics
-      lv.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
+      fMomentum.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
 
       photonY = 0.5*TMath::Log((primAOD->E()+primAOD->Pz())/(primAOD->E()-primAOD->Pz())) ;
     }
@@ -413,13 +413,13 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     if(pdg != 22 ) continue ;
     
     // If too small or too large pt, skip, same cut as for data analysis
-    photonPt  = lv.Pt () ;
+    photonPt  = fMomentum.Pt () ;
     
     if(photonPt < GetMinPt() || photonPt > GetMaxPt() ) continue ;
     
-    photonE   = lv.E  () ;
-    photonEta = lv.Eta() ;
-    photonPhi = lv.Phi() ;
+    photonE   = fMomentum.E  () ;
+    photonEta = fMomentum.Eta() ;
+    photonPhi = fMomentum.Phi() ;
     
     if(photonPhi < 0) photonPhi+=TMath::TwoPi();
     
@@ -427,7 +427,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     inacceptance = kTRUE;
     
     // Check same fidutial borders as in data analysis on top of real acceptance if real was requested.
-    if( IsFiducialCutOn() && !GetFiducialCut()->IsInFiducialCut(lv,GetCalorimeter())) inacceptance = kFALSE ;
+    if( IsFiducialCutOn() && !GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),GetCalorimeter())) inacceptance = kFALSE ;
     
     // Check if photons hit the Calorimeter acceptance
     if(IsRealCaloAcceptanceOn()) // defined on base class
@@ -457,7 +457,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     if(status > 1) continue ; // Avoid "partonic" photons
     
     Bool_t takeIt  = kFALSE ;
-    if(status == 1 && GetMCAnalysisUtils()->GetMCGenerator()!="" ) takeIt = kTRUE ;
+    if(status == 1 && GetMCAnalysisUtils()->GetMCGenerator() != AliMCAnalysisUtils::kBoxLike ) takeIt = kTRUE ;
 
     if      (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) continue;
     
@@ -543,9 +543,7 @@ void AliAnaPhoton::FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cel
 {
   // Fill some histograms to understand pile-up
   
-  TLorentzVector mom;
-  cluster->GetMomentum(mom,GetVertex(0));
-  Float_t pt   = mom.Pt();
+  Float_t pt   = fMomentum.Pt();
   Float_t time = cluster->GetTOF()*1.e9;
   
   AliVEvent * event = GetReader()->GetInputEvent();
@@ -650,26 +648,15 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
   Float_t lambda1 = cluster->GetM20();
   Float_t disp    = cluster->GetDispersion()*cluster->GetDispersion();
   
-  TLorentzVector mom;
-  if(GetReader()->GetDataType() != AliCaloTrackReader::kMC)
-  {
-    cluster->GetMomentum(mom,GetVertex(0)) ;
-  }//Assume that come from vertex in straight line
-  else
-  {
-    Double_t vertex[]={0,0,0};
-    cluster->GetMomentum(mom,vertex) ;
-  }
-  
-  Float_t eta = mom.Eta();
-  Float_t phi = mom.Phi();
+  Float_t eta = fMomentum.Eta();
+  Float_t phi = fMomentum.Phi();
   if(phi < 0) phi+=TMath::TwoPi();
   
   fhLam0E ->Fill(energy,lambda0);
   fhLam1E ->Fill(energy,lambda1);
   fhDispE ->Fill(energy,disp);
   
-  if(GetCalorimeter() == "EMCAL" &&  GetFirstSMCoveredByTRD() >= 0 &&
+  if(GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD() >= 0 &&
      GetModuleNumber(cluster) >= GetFirstSMCoveredByTRD()  )
   {
     fhLam0ETRD->Fill(energy,lambda0);
@@ -680,7 +667,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
   Float_t l0   = 0., l1   = 0.;
   Float_t dispp= 0., dEta = 0., dPhi    = 0.;
   Float_t sEta = 0., sPhi = 0., sEtaPhi = 0.;
-  if(GetCalorimeter() == "EMCAL" && !fFillOnlySimpleSSHisto)
+  if(GetCalorimeter() == kEMCAL && !fFillOnlySimpleSSHisto)
   {
     GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), GetReader()->GetInputEvent()->GetEMCALCells(), cluster,
                                                                                  l0, l1, dispp, dEta, dPhi, sEta, sPhi, sEtaPhi);
@@ -731,7 +718,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
       fhLam1ETM ->Fill(energy,lambda1);
       fhDispETM ->Fill(energy,disp);
       
-      if(GetCalorimeter() == "EMCAL" &&  GetFirstSMCoveredByTRD()   >= 0 &&
+      if(GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD()   >= 0 &&
          GetModuleNumber(cluster) >= GetFirstSMCoveredByTRD()  )
       {
         fhLam0ETMTRD->Fill(energy,lambda0);
@@ -773,7 +760,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
   if(IsDataMC())
   {
     AliVCaloCells* cells = 0;
-    if(GetCalorimeter() == "EMCAL") cells = GetEMCALCells();
+    if(GetCalorimeter() == kEMCAL) cells = GetEMCALCells();
     else                        cells = GetPHOSCells();
     
     //Fill histograms to check shape of embedded clusters
@@ -936,7 +923,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
         fhMCNCellsvsClusterMaxCellDiffE6 [mcIndex]->Fill(ncells,  maxCellFraction);
       }
       
-      if(GetCalorimeter() == "EMCAL")
+      if(GetCalorimeter() == kEMCAL)
       {
         fhMCEDispEta        [mcIndex]-> Fill(energy,dEta);
         fhMCEDispPhi        [mcIndex]-> Fill(energy,dPhi);
@@ -1007,7 +994,7 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
     
     Int_t nSMod = GetModuleNumber(cluster);
     
-    if(GetCalorimeter()=="EMCAL" &&   GetFirstSMCoveredByTRD() >= 0 &&
+    if(GetCalorimeter()==kEMCAL &&   GetFirstSMCoveredByTRD() >= 0 &&
        nSMod >= GetFirstSMCoveredByTRD()   )
     {
       fhTrackMatchedDEtaTRD[cut]->Fill(cluster->E(),dZ);
@@ -1026,7 +1013,7 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
         fhdEdx[cut]  ->Fill(cluster->E(), dEdx);
         fhEOverP[cut]->Fill(cluster->E(), eOverp);
         
-        if(GetCalorimeter()=="EMCAL" &&  GetFirstSMCoveredByTRD() >= 0 &&
+        if(GetCalorimeter()==kEMCAL &&  GetFirstSMCoveredByTRD() >= 0 &&
            nSMod >= GetFirstSMCoveredByTRD()  )
           fhEOverPTRD[cut]->Fill(cluster->E(), eOverp);
         
@@ -1105,7 +1092,7 @@ TObjString *  AliAnaPhoton::GetAnalysisCuts()
   
   snprintf(onePar,buffersize,"--- AliAnaPhoton ---\n") ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Calorimeter: %s\n",GetCalorimeter().Data()) ;
+  snprintf(onePar,buffersize,"Calorimeter: %s\n",GetCalorimeterString().Data()) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"fMinDist =%2.2f (Minimal distance to bad channel to accept cluster) \n",fMinDist) ;
   parList+=onePar ;
@@ -1323,7 +1310,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       outputContainer->Add(fhDispETM);
     }
     
-    if(GetCalorimeter() == "EMCAL" &&  GetFirstSMCoveredByTRD() >= 0)
+    if(GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD() >= 0)
     {
       fhLam0ETRD  = new TH2F ("hLam0ETRD","#lambda_{0}^{2} vs E, EMCAL SM covered by TRD", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
       fhLam0ETRD->SetYTitle("#lambda_{0}^{2}");
@@ -1441,7 +1428,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhDispLam1HighE->SetYTitle("#lambda_{1}^{2}");
       outputContainer->Add(fhDispLam1HighE);
       
-      if(GetCalorimeter() == "EMCAL")
+      if(GetCalorimeter() == kEMCAL)
       {
         fhDispEtaE  = new TH2F ("hDispEtaE","#sigma^{2}_{#eta #eta} = #Sigma w_{i}(#eta_{i} - <#eta>)^{2}/ #Sigma w_{i} vs E",  nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
         fhDispEtaE->SetXTitle("#it{E} (GeV)");
@@ -1609,7 +1596,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       outputContainer->Add(fhdEdx[i]);
       outputContainer->Add(fhEOverP[i]);
       
-      if(GetCalorimeter()=="EMCAL" &&  GetFirstSMCoveredByTRD() >=0 )
+      if(GetCalorimeter()==kEMCAL &&  GetFirstSMCoveredByTRD() >=0 )
       {
         fhTrackMatchedDEtaTRD[i]  = new TH2F
         (Form("hTrackMatchedDEtaTRD%s",cutTM[i].Data()),
@@ -2023,7 +2010,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhMCNCellsvsClusterMaxCellDiffE6[i]->SetYTitle("#it{E} (GeV)");
           outputContainer->Add(fhMCNCellsvsClusterMaxCellDiffE6[i]) ;
           
-          if(GetCalorimeter()=="EMCAL")
+          if(GetCalorimeter()==kEMCAL)
           {
             fhMCEDispEta[i]  = new TH2F (Form("hEDispEtaE_MC%s",pnamess[i].Data()),
                                          Form("cluster from %s : #sigma^{2}_{#eta #eta} = #Sigma w_{i}(#eta_{i} - <#eta>)^{2}/ #Sigma w_{i} vs E",ptypess[i].Data()),
@@ -2195,12 +2182,12 @@ void AliAnaPhoton::Init()
   
   //Init
   //Do some checks
-  if(GetCalorimeter() == "PHOS" && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD())
+  if(GetCalorimeter() == kPHOS && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD())
   {
     printf("AliAnaPhoton::Init() - !!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
     abort();
   }
-  else  if(GetCalorimeter() == "EMCAL" && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD())
+  else  if(GetCalorimeter() == kEMCAL && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD())
   {
     printf("AliAnaPhoton::Init() - !!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
     abort();
@@ -2241,12 +2228,12 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   //Select the Calorimeter of the photon
   TObjArray * pl = 0x0;
   AliVCaloCells* cells    = 0;
-  if      (GetCalorimeter() == "PHOS" )
+  if      (GetCalorimeter() == kPHOS )
   {
     pl    = GetPHOSClusters();
     cells = GetPHOSCells();
   }
-  else if (GetCalorimeter() == "EMCAL")
+  else if (GetCalorimeter() == kEMCAL)
   {
     pl    = GetEMCALClusters();
     cells = GetEMCALCells();
@@ -2254,31 +2241,29 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   
   if(!pl)
   {
-    Info("MakeAnalysisFillAOD","TObjArray with %s clusters is NULL!\n",GetCalorimeter().Data());
+    Info("MakeAnalysisFillAOD","TObjArray with %s clusters is NULL!\n",GetCalorimeterString().Data());
     return;
   }
   
-  TLorentzVector mom;
-
   // Loop on raw clusters before filtering in the reader and fill control histogram
-  if((GetReader()->GetEMCALClusterListName()=="" && GetCalorimeter()=="EMCAL") || GetCalorimeter()=="PHOS")
+  if((GetReader()->GetEMCALClusterListName()=="" && GetCalorimeter()==kEMCAL) || GetCalorimeter()==kPHOS)
   {
     for(Int_t iclus = 0; iclus < GetReader()->GetInputEvent()->GetNumberOfCaloClusters(); iclus++ )
     {
       AliVCluster * clus = GetReader()->GetInputEvent()->GetCaloCluster(iclus);
-      if     (GetCalorimeter() == "PHOS"  && clus->IsPHOS()  && clus->E() > GetReader()->GetPHOSPtMin() )
+      if     (GetCalorimeter() == kPHOS  && clus->IsPHOS()  && clus->E() > GetReader()->GetPHOSPtMin() )
       {
         fhClusterCutsE [0]->Fill(clus->E());
         
-        clus->GetMomentum(mom,GetVertex(0)) ;
-        fhClusterCutsPt[0]->Fill(mom.Pt());
+        clus->GetMomentum(fMomentum,GetVertex(0)) ;
+        fhClusterCutsPt[0]->Fill(fMomentum.Pt());
       }
-      else if(GetCalorimeter() == "EMCAL" && clus->IsEMCAL() && clus->E() > GetReader()->GetEMCALPtMin())
+      else if(GetCalorimeter() == kEMCAL && clus->IsEMCAL() && clus->E() > GetReader()->GetEMCALPtMin())
       {
         fhClusterCutsE [0]->Fill(clus->E());
         
-        clus->GetMomentum(mom,GetVertex(0)) ;
-        fhClusterCutsPt[0]->Fill(mom.Pt());
+        clus->GetMomentum(fMomentum,GetVertex(0)) ;
+        fhClusterCutsPt[0]->Fill(fMomentum.Pt());
       }
     }
   }
@@ -2301,18 +2286,17 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
         {
           fhClusterCutsE [0]->Fill(clus->E());
           
-          clus->GetMomentum(mom,GetVertex(0)) ;
-          fhClusterCutsPt[0]->Fill(mom.Pt());
+          clus->GetMomentum(fMomentum,GetVertex(0)) ;
+          fhClusterCutsPt[0]->Fill(fMomentum.Pt());
         }
       }
     }
   }
   
-  //Init arrays, variables, get number of clusters
-  TLorentzVector mom2 ;
+  // Init arrays, variables, get number of clusters
   Int_t nCaloClusters = pl->GetEntriesFast();
   
-  if(GetDebug() > 0) printf("AliAnaPhoton::MakeAnalysisFillAOD() - input %s cluster entries %d\n", GetCalorimeter().Data(), nCaloClusters);
+  if(GetDebug() > 0) printf("AliAnaPhoton::MakeAnalysisFillAOD() - input %s cluster entries %d\n", GetCalorimeterString().Data(), nCaloClusters);
   
   //----------------------------------------------------
   // Fill AOD with PHOS/EMCAL AliAODPWG4Particle objects
@@ -2335,31 +2319,31 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     //Cluster selection, not charged, with photon id and in fiducial cut
     if(GetReader()->GetDataType() != AliCaloTrackReader::kMC)
     {
-      calo->GetMomentum(mom,GetVertex(evtIndex)) ;
+      calo->GetMomentum(fMomentum,GetVertex(evtIndex)) ;
     }//Assume that come from vertex in straight line
     else
     {
       Double_t vertex[]={0,0,0};
-      calo->GetMomentum(mom,vertex) ;
+      calo->GetMomentum(fMomentum,vertex) ;
     }
     
     //-----------------------------
     // Cluster selection
     //-----------------------------
     Int_t nMaxima = GetCaloUtils()->GetNumberOfLocalMaxima(calo, cells); // NLM
-    if(!ClusterSelected(calo,mom,nMaxima)) continue;
+    if(!ClusterSelected(calo,nMaxima)) continue;
     
     //----------------------------
     // Create AOD for analysis
     //----------------------------
-    AliAODPWG4Particle aodph = AliAODPWG4Particle(mom);
+    AliAODPWG4Particle aodph = AliAODPWG4Particle(fMomentum);
     
     //...............................................
     //Set the indeces of the original caloclusters (MC, ID), and calorimeter
     Int_t label = calo->GetLabel();
     aodph.SetLabel(label);
     aodph.SetCaloLabel(calo->GetID(),-1);
-    aodph.SetDetector(GetCalorimeter());
+    aodph.SetDetectorTag(GetCalorimeter());
     //printf("Index %d, Id %d, iaod %d\n",icalo, calo->GetID(),GetOutputAODBranch()->GetEntriesFast());
     
     //...............................................
@@ -2435,13 +2419,13 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
                               aodph.Pt(), aodph.GetIdentifiedParticleType());
     
     fhClusterCutsE [9]->Fill(calo->E());
-    fhClusterCutsPt[9]->Fill(mom.Pt());
+    fhClusterCutsPt[9]->Fill(fMomentum.Pt());
     
     Int_t   nSM  = GetModuleNumber(calo);
     if(nSM < GetCaloUtils()->GetNumberOfSuperModulesUsed() && nSM >=0)
     {
-      fhEPhotonSM ->Fill(mom.E (),nSM);
-      fhPtPhotonSM->Fill(mom.Pt(),nSM);
+      fhEPhotonSM ->Fill(fMomentum.E (),nSM);
+      fhPtPhotonSM->Fill(fMomentum.Pt(),nSM);
     }
     
     fhNLocMax->Fill(calo->E(),nMaxima);
@@ -2449,7 +2433,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     // Few more control histograms for selected clusters
     fhMaxCellDiffClusterE->Fill(calo->E() ,maxCellFraction);
     fhNCellsE            ->Fill(calo->E() ,calo->GetNCells());
-    fhTimePt             ->Fill(mom.Pt()  ,calo->GetTOF()*1.e9);
+    fhTimePt             ->Fill(fMomentum.Pt()  ,calo->GetTOF()*1.e9);
     
     if(cells)
     {
@@ -2503,13 +2487,13 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     Int_t pdg = ph->GetIdentifiedParticleType();
     
     if(GetDebug() > 3)
-      printf("AliAnaPhoton::MakeAnalysisFillHistograms() - PDG %d, MC TAG %d, Calorimeter %s\n",
-             ph->GetIdentifiedParticleType(),ph->GetTag(), (ph->GetDetector()).Data()) ;
+      printf("AliAnaPhoton::MakeAnalysisFillHistograms() - PDG %d, MC TAG %d, Calorimeter <%d>\n",
+             ph->GetIdentifiedParticleType(),ph->GetTag(), ph->GetDetectorTag()) ;
     
     //If PID used, fill histos with photons in Calorimeter GetCalorimeter()
     if(IsCaloPIDOn() && pdg != AliCaloPID::kPhoton) continue;
     
-    if(ph->GetDetector() != GetCalorimeter()) continue;
+    if(((Int_t) ph->GetDetectorTag()) != GetCalorimeter()) continue;
     
     if(GetDebug() > 2)
       printf("AliAnaPhoton::MakeAnalysisFillHistograms() - ID Photon: pt %f, phi %f, eta %f\n", ph->Pt(),ph->Phi(),ph->Eta()) ;
@@ -2538,7 +2522,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 //    //Get original cluster, to recover some information
 //    AliVCaloCells* cells    = 0;
 //    TObjArray * clusters    = 0;
-//    if(GetCalorimeter() == "EMCAL")
+//    if(GetCalorimeter() == kEMCAL)
 //    {
 //      cells    = GetEMCALCells();
 //      clusters = GetEMCALClusters();
@@ -2582,11 +2566,11 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       Float_t eprim   = 0;
       Float_t ptprim  = 0;
       Bool_t ok = kFALSE;
-      TLorentzVector primary = GetMCAnalysisUtils()->GetMother(label,GetReader(),ok);
+      fPrimaryMom = GetMCAnalysisUtils()->GetMother(label,GetReader(),ok);
       if(ok)
       {
-        eprim   = primary.Energy();
-        ptprim  = primary.Pt();
+        eprim   = fPrimaryMom.Energy();
+        ptprim  = fPrimaryMom.Pt();
       }
       
       Int_t tag =ph->GetTag();
@@ -2703,7 +2687,7 @@ void AliAnaPhoton::Print(const Option_t * opt) const
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
   AliAnaCaloTrackCorrBaseClass::Print(" ");
   
-  printf("Calorimeter            =     %s\n", GetCalorimeter().Data()) ;
+  printf("Calorimeter            =     %s\n", GetCalorimeterString().Data()) ;
   printf("Min Distance to Bad Channel   = %2.1f\n",fMinDist);
   printf("Min Distance to Bad Channel 2 = %2.1f\n",fMinDist2);
   printf("Min Distance to Bad Channel 3 = %2.1f\n",fMinDist3);

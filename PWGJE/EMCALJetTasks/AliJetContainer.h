@@ -108,6 +108,7 @@ class AliJetContainer : public AliEmcalContainer {
   Float_t                     GetJetEtaMax()                        const    {return fJetMaxEta;}
   Float_t                     GetJetPhiMin()                        const    {return fJetMinPhi;}
   Float_t                     GetJetPhiMax()                        const    {return fJetMaxPhi;}
+  Float_t                     GetJetPtCut()                         const    {return fJetPtCut;}
   void                        SetClassName(const char *clname);
   void                        SetArray(AliVEvent *event);
   AliParticleContainer       *GetParticleContainer()                         {return fParticleContainer;}
@@ -156,7 +157,7 @@ class AliJetContainer : public AliEmcalContainer {
   AliJetContainer(const AliJetContainer& obj); // copy constructor
   AliJetContainer& operator=(const AliJetContainer& other); // assignment
 
-  ClassDef(AliJetContainer,9);
+  ClassDef(AliJetContainer,10);
 
 };
 

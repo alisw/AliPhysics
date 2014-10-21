@@ -29,7 +29,6 @@
   
   
 // --- ROOT system --- 
-#include <TLorentzVector.h>
 #include <TObjArray.h>
 
 // --- AliRoot system --- 
@@ -58,7 +57,9 @@ fPtFraction(0.),
 fICMethod(0),
 fPartInCone(0),
 fDebug(-1),
-fFracIsThresh(1)
+fFracIsThresh(1),
+fMomentum(),
+fTrackVector()
 {
   //default ctor
   
@@ -187,7 +188,7 @@ Float_t AliIsolationCut::GetCellDensity(AliAODPWG4ParticleCorrelation * pCandida
   if(phiC<0) phiC+=TMath::TwoPi();
   Float_t etaC  = pCandidate->Eta() ;
   
-  if(pCandidate->GetDetector()=="EMCAL")
+  if(pCandidate->GetDetectorTag() == AliCaloTrackReader::kEMCAL)
   {
     AliEMCALGeometry* eGeom = AliEMCALGeometry::GetInstance();
     AliCalorimeterUtils *cu = reader->GetCaloUtils();
@@ -197,7 +198,7 @@ Float_t AliIsolationCut::GetCellDensity(AliAODPWG4ParticleCorrelation * pCandida
     {
       //Get absolute (col,row) of candidate
       Int_t iEta=-1, iPhi=-1, iRCU = -1;      
-      Int_t nSupMod = cu->GetModuleNumberCellIndexes(absId, pCandidate->GetDetector(), iEta, iPhi, iRCU);
+      Int_t nSupMod = cu->GetModuleNumberCellIndexes(absId, pCandidate->GetDetectorTag(), iEta, iPhi, iRCU);
       
       Int_t colC = iEta;
       if (nSupMod % 2) colC =  AliEMCALGeoParams::fgkEMCALCols + iEta ;
@@ -275,7 +276,7 @@ void AliIsolationCut::GetCoeffNormBadCell(AliAODPWG4ParticleCorrelation * pCandi
   if(phiC<0) phiC+=TMath::TwoPi();
   Float_t etaC  = pCandidate->Eta() ;
   
-  if(pCandidate->GetDetector()=="EMCAL")
+  if(pCandidate->GetDetectorTag() == AliCaloTrackReader::kEMCAL)
   {
     AliEMCALGeometry* eGeom = AliEMCALGeometry::GetInstance();
     AliCalorimeterUtils *cu = reader->GetCaloUtils();
@@ -285,7 +286,7 @@ void AliIsolationCut::GetCoeffNormBadCell(AliAODPWG4ParticleCorrelation * pCandi
     {
       //Get absolute (col,row) of candidate
       Int_t iEta=-1, iPhi=-1, iRCU = -1;
-      Int_t nSupMod = cu->GetModuleNumberCellIndexes(absId, pCandidate->GetDetector(),
+      Int_t nSupMod = cu->GetModuleNumberCellIndexes(absId, pCandidate->GetDetectorTag(),
                                                      iEta, iPhi, iRCU);
       
       Int_t colC = iEta;
@@ -411,7 +412,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
                                         Int_t   & n, 
                                         Int_t   & nfrac, 
                                         Float_t & coneptsum, Float_t & ptLead,
-                                        Bool_t  & isolated) const
+                                        Bool_t  & isolated) 
 {
   //Search in cone around a candidate particle if it is isolated 
   Float_t ptC   = pCandidate->Pt() ;
@@ -456,7 +457,6 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
   if(plCTS && 
      (fPartInCone==kOnlyCharged || fPartInCone==kNeutralAndCharged))
   {
-    TVector3 p3;
     for(Int_t ipr = 0;ipr < plCTS->GetEntries() ; ipr ++ )
     {
       AliVTrack* track = dynamic_cast<AliVTrack*>(plCTS->At(ipr)) ; 
@@ -467,10 +467,10 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
         if(track->GetID() == pCandidate->GetTrackLabel(0) || track->GetID() == pCandidate->GetTrackLabel(1) || 
            track->GetID() == pCandidate->GetTrackLabel(2) || track->GetID() == pCandidate->GetTrackLabel(3)   ) continue ;
         
-        p3.SetXYZ(track->Px(),track->Py(),track->Pz());
-        pt  = p3.Pt();
-        eta = p3.Eta();
-        phi = p3.Phi() ;
+        fTrackVector.SetXYZ(track->Px(),track->Py(),track->Pz());
+        pt  = fTrackVector.Pt();
+        eta = fTrackVector.Eta();
+        phi = fTrackVector.Phi() ;
       }
       else
       {// Mixed event stored in AliAODPWG4Particles
@@ -585,7 +585,6 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
   if(plNe &&
      (fPartInCone==kOnlyNeutral || fPartInCone==kNeutralAndCharged))
   {
-    TLorentzVector mom ;
     
     for(Int_t ipr = 0;ipr < plNe->GetEntries() ; ipr ++ )
     {
@@ -608,11 +607,11 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
            pid->IsTrackMatched(calo,reader->GetCaloUtils(),reader->GetInputEvent()) ) continue ;
         
         //Assume that come from vertex in straight line
-        calo->GetMomentum(mom,reader->GetVertex(evtIndex)) ;
+        calo->GetMomentum(fMomentum,reader->GetVertex(evtIndex)) ;
         
-        pt  = mom.Pt()  ;
-        eta = mom.Eta() ;
-        phi = mom.Phi() ;
+        pt  = fMomentum.Pt()  ;
+        eta = fMomentum.Eta() ;
+        phi = fMomentum.Phi() ;
       }
       else 
       {// Mixed event stored in AliAODPWG4Particles

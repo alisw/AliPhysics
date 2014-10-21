@@ -46,6 +46,7 @@ ClassImp(AliAnaChargedParticles)
   AliAnaChargedParticles::AliAnaChargedParticles() :
     AliAnaCaloTrackCorrBaseClass(),
     fFillTrackBCHistograms(0), fFillVertexBC0Histograms(0),
+    fMomentum(),
     //Histograms
     fhNtracks(0),      fhPt(0),            fhPtNoCut(0),
     fhPtCutDCA(0),     fhPtCutDCABCOK(0),
@@ -134,7 +135,6 @@ void AliAnaChargedParticles::FillPrimaryHistograms()
   
   TParticle        * primStack = 0;
   AliAODMCParticle * primAOD   = 0;
-  TLorentzVector lv;
   
   // Get the ESD MC particles container
   AliStack * stack = 0;
@@ -180,7 +180,7 @@ void AliAnaChargedParticles::FillPrimaryHistograms()
       //       prim->GetName(), prim->GetPdgCode());
       
       //Charged kinematics
-      primStack->Momentum(lv);
+      primStack->Momentum(fMomentum);
     }
     else
     {
@@ -200,7 +200,7 @@ void AliAnaChargedParticles::FillPrimaryHistograms()
       if(primAOD->E() == TMath::Abs(primAOD->Pz()))  continue ; //Protection against floating point exception
       
       //Charged kinematics
-      lv.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
+      fMomentum.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
     }
     
     Int_t mcType = kmcUnknown;
@@ -212,12 +212,12 @@ void AliAnaChargedParticles::FillPrimaryHistograms()
     
     //printf("pdg %d, charge %f, mctype %d\n",pdg, charge, mcType);
     
-    Bool_t in = GetFiducialCut()->IsInFiducialCut(lv,"CTS") ;
-    
-    Float_t  ptPrim = lv.Pt();
-    Float_t etaPrim = lv.Eta();
-    Float_t phiPrim = lv.Phi();
+    Float_t  ptPrim = fMomentum.Pt();
+    Float_t etaPrim = fMomentum.Eta();
+    Float_t phiPrim = fMomentum.Phi();
     if(phiPrim < 0) phiPrim+=TMath::TwoPi();
+    
+    Bool_t in = GetFiducialCut()->IsInFiducialCut(etaPrim,phiPrim,kCTS) ;
     
     if(in)
       fhPtMCPrimPart[mcType]->Fill(ptPrim);
@@ -1153,9 +1153,8 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     }
     
     //Fill AODParticle after some selection
-    Double_t mom[3] = {track->Px(),track->Py(),track->Pz()};
-    
-    Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
+    fMomentum.SetPxPyPzE(track->Px(),track->Py(),track->Pz(),0);
+    Bool_t in = GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kCTS) ;
     
     if(GetDebug() > 1) 
       printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - Track pt %2.2f, eta %2.2f, phi %2.2f in fiducial cut %d\n",pt,eta,phi,in);
@@ -1235,8 +1234,8 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     GetVertex(vert,evtIndex); 
     if(TMath::Abs(vert[2])> GetZvertexCut()) return; 
         
-    AliAODPWG4Particle tr = AliAODPWG4Particle(mom[0],mom[1],mom[2],0);
-    tr.SetDetector("CTS");
+    AliAODPWG4Particle tr = AliAODPWG4Particle(track->Px(),track->Py(),track->Pz(),0);
+    tr.SetDetectorTag(kCTS);
     tr.SetLabel(track->GetLabel());
     tr.SetTrackLabel(track->GetID(),-1);
     tr.SetChargedBit(track->Charge()>0);

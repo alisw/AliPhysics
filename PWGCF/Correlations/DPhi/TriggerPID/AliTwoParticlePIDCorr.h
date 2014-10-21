@@ -41,7 +41,7 @@ class TProfile;
 #include "TParticle.h"
 #include "AliLog.h"
 #include "AliTHn.h"
-
+#include "TBits.h"
 
 
 #ifndef ALIANALYSISTASKSE_H
@@ -103,18 +103,22 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
     virtual void     Terminate(Option_t *);
   void	   SetSharedClusterCut(Double_t value) { fSharedClusterCut = value; }
   void	   SetSharedTPCmapCut(Double_t value1) { fSharedTPCmapCut = value1; }
+  void	   SetSharedfraction_Pair_cut(Double_t value2) { fSharedfraction_Pair_cut = value2; }
 
 
-  void SettwoTrackEfficiencyCutDataReco(Bool_t twoTrackEfficiencyCutDataReco,Float_t twoTrackEfficiencyCutValue1)
+  void SettwoTrackEfficiencyCutDataReco(Bool_t twoTrackEfficiencyCutDataReco,Float_t twoTrackEfficiencyCutValue1,Float_t TwoTrackCutMinRadius,Float_t TwoTrackCutMaxRadius)
   {
     ftwoTrackEfficiencyCutDataReco=twoTrackEfficiencyCutDataReco;
     twoTrackEfficiencyCutValue=twoTrackEfficiencyCutValue1;
+    fTwoTrackCutMinRadius=TwoTrackCutMinRadius;
+    fTwoTrackCutMaxRadius=TwoTrackCutMaxRadius;
   }
   void SetVertextype(Int_t Vertextype){fVertextype=Vertextype;}                                                 //Check it every time
     void SetZvtxcut(Double_t zvtxcut) {fzvtxcut=zvtxcut;}
     void SetCustomBinning(TString receivedCustomBinning) { fCustomBinning = receivedCustomBinning; }
     void SetMaxNofMixingTracks(Int_t MaxNofMixingTracks) {fMaxNofMixingTracks=MaxNofMixingTracks;}               //Check it every time
   void SetCentralityEstimator(TString CentralityMethod) { fCentralityMethod = CentralityMethod;}
+  void SetPPVsMultUtils(Bool_t val)  {fPPVsMultUtils = val;}
   void SetSampleType(TString SampleType) {fSampleType=SampleType;}
   void SetRequestEventPlane(Bool_t RequestEventPlane,Bool_t V2,Bool_t V3,TString EPdetector,Bool_t IsAfter2011){
 fRequestEventPlane=RequestEventPlane;
@@ -256,6 +260,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
 
 
     TString    fCentralityMethod;     // Method to determine centrality
+    Bool_t fPPVsMultUtils;//switch to ON quantile information for pp 7 TeV case
     TString    fSampleType;     // pp,p-Pb,Pb-Pb
     Bool_t fRequestEventPlane; //only for PbPb
     Int_t    fnTracksVertex;        // QA tracks pointing to principal vertex
@@ -264,7 +269,8 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Int_t    fFilterBit;         // track selection cuts
      UInt_t         fTrackStatus;       // if non-0, the bits set in this variable are required for each track
     Double_t       fSharedClusterCut;  // cut on shared clusters (only for AOD, give the actual cut value)
-    Double_t fSharedTPCmapCut;//cut on TPC shared map(set any non negative value to implement this cut automatically, no meaning of te value itself)
+    Double_t fSharedTPCmapCut;//cut on TPC shared map(set any non negative value to implement this cut automatically, no meaning of the value itself)
+    Double_t fSharedfraction_Pair_cut;//cut on pairs at the correlation level to check whether the correlating pair has large shared clusters(set fraction percentage to be set as cut off)
     Int_t fVertextype;
     Int_t skipParticlesAbove;
     Double_t fzvtxcut;
@@ -455,6 +461,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
 
 
   void Fillcorrelation(Float_t ReactionPlane,TObjArray *trackstrig,TObjArray *tracksasso,Double_t cent,Float_t vtx,Float_t weight,Bool_t firstTime,Float_t bSign,Bool_t fPtOrder,Bool_t twoTrackEfficiencyCut,Bool_t mixcase,TString fillup);//mixcase=kTRUE in case of mixing; 
+ Bool_t CalculateSharedFraction(const TBits *triggerPadMap,const TBits *assocPadMap,const TBits *triggerShareMap,const TBits *assocShareMap);
  Float_t GetTrackbyTrackeffvalue(AliAODTrack* track,Double_t cent,Float_t evzvtx, Int_t parpid);
 
  //Fill PID and Event planes
@@ -479,7 +486,9 @@ fPtTOFPIDmax=PtTOFPIDmax;
  
      TH2F* GetHistogram2D(const char * name);//return histogram "name" from fOutputList
 
-     Bool_t ftwoTrackEfficiencyCutDataReco; 	   
+     Bool_t ftwoTrackEfficiencyCutDataReco; 
+    Float_t fTwoTrackCutMinRadius;
+    Float_t fTwoTrackCutMaxRadius;	   
    Float_t twoTrackEfficiencyCutValue;
   //Pid objects
   AliPIDResponse *fPID; //! PID
@@ -575,8 +584,8 @@ Float_t GetInvMassSquaredCheap(Float_t pt1, Float_t eta1, Float_t phi1, Float_t 
 };
 class LRCParticlePID : public TObject {
 public:
- LRCParticlePID(Int_t par,Short_t icharge,Float_t pt,Float_t eta, Float_t phi,Float_t effcorrectionval)
-   :fparticle(par),fcharge(icharge),fPt(pt), fEta(eta), fPhi(phi),feffcorrectionval(effcorrectionval)  {}
+ LRCParticlePID(Int_t par,Short_t icharge,Float_t pt,Float_t eta, Float_t phi,Float_t effcorrectionval,const TBits *clustermap,const TBits *sharemap)
+   :fparticle(par),fcharge(icharge),fPt(pt), fEta(eta), fPhi(phi),feffcorrectionval(effcorrectionval),fTPCClusterMap(clustermap),fTPCHitShareMap(sharemap) {}
   virtual ~LRCParticlePID() {}
 
   
@@ -588,7 +597,8 @@ public:
     Float_t geteffcorrectionval() const {return feffcorrectionval;}
     virtual Bool_t IsEqual(const TObject* obj) const { return (obj->GetUniqueID() == GetUniqueID()); }
     virtual void SetPhi(Double_t phiv) { fPhi = phiv; }
-
+    virtual const TBits * GetTPCPadMap() {return fTPCClusterMap; }
+    virtual const TBits * GetTPCSharedMap() {return fTPCHitShareMap; }
 
 private:
   LRCParticlePID(const LRCParticlePID&);  // not implemented
@@ -600,8 +610,13 @@ private:
   Float_t fEta;
   Float_t fPhi;
   Float_t feffcorrectionval;
+   const TBits   *fTPCClusterMap;
+   const TBits   *fTPCHitShareMap;
   ClassDef(LRCParticlePID, 1);
 } ;
 
 #endif
 
+//(fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL"))
+//(fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMultUtils==kFALSE))
+//(fCentralityMethod.EndsWith("_MANUAL"))

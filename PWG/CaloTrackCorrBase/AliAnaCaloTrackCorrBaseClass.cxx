@@ -47,7 +47,7 @@ ClassImp(AliAnaCaloTrackCorrBaseClass)
 AliAnaCaloTrackCorrBaseClass::AliAnaCaloTrackCorrBaseClass() : 
 TObject(), 
 fDataMC(0),                   fDebug(0),
-fCalorimeter(""),
+fCalorimeter(-1),             fCalorimeterString(""),
 fCheckFidCut(0),              fCheckRealCaloAcc(0),
 fCheckCaloPID(0),             fRecalculateCaloPID(0), 
 fMinPt(0),                    fMaxPt(0),
@@ -93,26 +93,28 @@ void AliAnaCaloTrackCorrBaseClass::AddAODParticle(AliAODPWG4Particle pc)
 {
   //Put AOD calo cluster in the AODParticleCorrelation array
   
-  if(fOutputAODBranch){
-    
-    Int_t i = fOutputAODBranch->GetEntriesFast();
-    //new((*fOutputAODBranch)[i])  AliAODPWG4Particle(pc);
-    if(strcmp(fOutputAODBranch->GetClass()->GetName(),"AliAODPWG4Particle")==0)
-      new((*fOutputAODBranch)[i])  AliAODPWG4Particle(pc);
-    else   if(strcmp(fOutputAODBranch->GetClass()->GetName(),"AliAODPWG4ParticleCorrelation")==0)
-      new((*fOutputAODBranch)[i])  AliAODPWG4ParticleCorrelation(pc);
-    else {
-      printf("AliAnaCaloTrackCorrBaseClass::AddAODParticle() - Cannot add an object of type < %s >, to the AOD TClonesArray \n",  
-             fOutputAODBranch->GetClass()->GetName());
-      abort();    
-    }
-  }
-  else {
-    printf(" AliAnaCaloTrackCorrBaseClass::AddAODParticle() - No AOD branch available!!!\n");
-    abort();
+  if(!fOutputAODBranch)
+  {
+    AliFatal("No AOD branch available!!!\n");
+    return; // coverity
   }
   
-}	
+  Int_t i = fOutputAODBranch->GetEntriesFast();
+  //new((*fOutputAODBranch)[i])  AliAODPWG4Particle(pc);
+  if     (strcmp(fOutputAODBranch->GetClass()->GetName(),"AliAODPWG4Particle")==0)
+  {
+    new((*fOutputAODBranch)[i])  AliAODPWG4Particle(pc);
+  }
+  else if(strcmp(fOutputAODBranch->GetClass()->GetName(),"AliAODPWG4ParticleCorrelation")==0)
+  {
+    new((*fOutputAODBranch)[i])  AliAODPWG4ParticleCorrelation(pc);
+  }
+  else
+  {
+    AliFatal(Form("Cannot add an object of type < %s >, to the AOD TClonesArray \n", fOutputAODBranch->GetClass()->GetName()));
+  }
+  
+}
 
 //__________________________________________________________________________________________
 Int_t AliAnaCaloTrackCorrBaseClass::CheckMixedEventVertex(Int_t caloLabel, Int_t trackLabel)
@@ -568,7 +570,8 @@ void AliAnaCaloTrackCorrBaseClass::InitParameters()
   fNZvertBin           = 1;
   fNrpBin              = 1;
   
-  fCalorimeter         = "EMCAL";
+  fCalorimeterString   = "EMCAL";
+  fCalorimeter         = kEMCAL ;
   
   fTrackMultBins[0] =  0;  fTrackMultBins[1] =  5;  fTrackMultBins[2] = 10;
   fTrackMultBins[3] = 15;  fTrackMultBins[4] = 20;  fTrackMultBins[5] = 30;
@@ -616,5 +619,36 @@ void AliAnaCaloTrackCorrBaseClass::Print(const Option_t * opt) const
   
 } 
 
+//_______________________________________________________________
+void AliAnaCaloTrackCorrBaseClass::SetCalorimeter(TString & calo)
+{
+  // Set the calorimeter for the analysis
+  
+  fCalorimeterString = calo;
+  
+  if     (calo=="EMCAL") fCalorimeter = kEMCAL;
+  else if(calo=="PHOS" ) fCalorimeter = kPHOS;
+  else if(calo=="CTS")   fCalorimeter = kCTS;
+  else if(calo=="DCAL")  fCalorimeter = kDCAL;
+  else if(calo.Contains("DCAL") && calo.Contains("PHOS")) fCalorimeter = kDCALPHOS;
+  else AliFatal(Form("Detector < %s > not known!", calo.Data()));
+
+}
+
+//___________________________________________________________
+void AliAnaCaloTrackCorrBaseClass::SetCalorimeter(Int_t calo)
+{
+  // Set the calorimeter for the analysis
+  
+  fCalorimeter = calo;
+  
+  if     (calo==kEMCAL)    fCalorimeterString = "EMCAL";
+  else if(calo==kPHOS )    fCalorimeterString = "PHOS";
+  else if(calo==kCTS)      fCalorimeterString = "CTS";
+  else if(calo==kDCAL)     fCalorimeterString = "DCAL";
+  else if(calo==kDCALPHOS) fCalorimeterString = "DCAL_PHOS";
+  else AliFatal(Form("Detector < %d > not known!", calo));
+
+}
 
 

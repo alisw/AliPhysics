@@ -30,6 +30,7 @@
 
 class TList;
 class TF1;
+class TH2D;
 class AliAODTrack;
 class AliAODMCParticle;
 class AliESDtrack;
@@ -63,8 +64,9 @@ class AliHFEpidTPC : public AliHFEpidBase{
     void SetLowerSigmaCutCentrality(const TF1 * const model, Int_t centralityBin) { if(centralityBin < 11) fkLowerSigmaCut[centralityBin+1] = model; fHasCutModel = kTRUE; }
     void SetEtaCorrection(const TF1 *const param) { fkEtaCorrection = param; }
     void SetCentralityCorrection(const TF1 *const param){ fkCentralityCorrection = param; }
-  void SetEtaCorrections(const TF1 *const mean, const TF1 *const wdth) { fkEtaMeanCorrection = mean; fkEtaWidthCorrection = wdth; }
-  void SetCentralityCorrections(const TF1 *const mean, const TF1 *const wdth) { fkCentralityMeanCorrection = mean; fkCentralityWidthCorrection = wdth; }
+    void SetEtaCorrections(const TF1 *const mean, const TF1 *const wdth) { fkEtaMeanCorrection = mean; fkEtaWidthCorrection = wdth; }
+    void SetCentralityCorrections(const TF1 *const mean, const TF1 *const wdth) { fkCentralityMeanCorrection = mean; fkCentralityWidthCorrection = wdth; }
+    void SetJpsiCorrections(const TH2D *const mean, const TH2D *const wdth) { fkCentralityEtaCorrectionMeanJpsi = mean; fkCentralityEtaCorrectionWidthJpsi = wdth; }
     void UsedEdx() { fUsedEdx = kTRUE; }
     void UseNSigma() { fUsedEdx = kFALSE; }
     Bool_t HasEtaCorrection() const { return fkEtaCorrection != NULL; }
@@ -75,6 +77,7 @@ class AliHFEpidTPC : public AliHFEpidBase{
     void ApplyEtaCorrection(AliVTrack *track, AliHFEpidObject::AnalysisType_t anatype) const;
     void ApplyCentralityCorrection(AliVTrack *track, Double_t centralityEstimator, AliHFEpidObject::AnalysisType_t anatype) const;
     Double_t GetCorrectedTPCnSigma(Double_t eta, Double_t centralityEstimator, Double_t tpcNsigma) const;
+    Double_t GetCorrectedTPCnSigmaJpsi(Double_t eta, Double_t centralityEstimator, Double_t tpcNsigma) const;
     void UseOROC(AliVTrack *track, AliHFEpidObject::AnalysisType_t anatype) const;
 
   protected:
@@ -98,6 +101,8 @@ class AliHFEpidTPC : public AliHFEpidBase{
     const TF1 *fkEtaWidthCorrection;                        // Correct eta dependence of the width of the TPC n sigma
     const TF1 *fkCentralityMeanCorrection;                  // Correct centrality dependence of the mean of the TPC n sigma
     const TF1 *fkCentralityWidthCorrection;                 // Correct centrality dependence of the width of the TPC n sigma
+    const TH2D *fkCentralityEtaCorrectionMeanJpsi;          // Correction from J/psi group for the mean
+    const TH2D *fkCentralityEtaCorrectionWidthJpsi;         // Correction from J/psi group for the width
     Bool_t fHasCutModel;                                    // Has cut model functions
     Bool_t fUseOnlyOROC;                                    // Use only OROC
     Float_t fPAsigCut[2];                                   // Momentum region where to perform asymmetric sigma cut
@@ -107,7 +112,7 @@ class AliHFEpidTPC : public AliHFEpidBase{
     UChar_t fRejectionEnabled;                              // Bitmap for enabled particle rejection
     Bool_t  fUsedEdx;                                       // Apply cut on dE/dx instead of number of sigmas
 
-  ClassDef(AliHFEpidTPC, 2)   // TPC Electron ID class
+  ClassDef(AliHFEpidTPC, 3)   // TPC Electron ID class
 };
 
 inline void AliHFEpidTPC::SetAsymmetricTPCsigmaCut(Float_t pmin, Float_t pmax, Float_t sigmaMin, Float_t sigmaMax) { 

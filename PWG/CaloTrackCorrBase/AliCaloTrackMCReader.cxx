@@ -51,7 +51,9 @@ AliCaloTrackReader(),        fDecayPi0(0),
 fNeutralParticlesArray(0x0), fChargedParticlesArray(0x0), 
 fStatusArray(0x0),           fKeepAllStatus(0), 
 fCheckOverlap(0),            fEMCALOverlapAngle(0),fPHOSOverlapAngle(0), 
-fIndex2ndPhoton(0),          fOnlyGeneratorParticles(kTRUE)
+fIndex2ndPhoton(0),          fOnlyGeneratorParticles(kTRUE),
+fMomentum(),                 fPi0Momentum(),
+fGamDecayMom1(),             fGamDecayMom2()
 {
   //Ctor
   
@@ -118,10 +120,9 @@ void AliCaloTrackMCReader::InitParameters()
   
 }
 
-//__________________________________________________________________________
+//____________________________________________________________________________________
 void  AliCaloTrackMCReader::CheckOverlap(Float_t anglethres, Int_t imom,
-                                         Int_t & iPrimary, Int_t & index,
-                                         TLorentzVector & mom, Int_t & pdg)
+                                         Int_t & iPrimary, Int_t & index, Int_t & pdg)
 {
   //Check overlap of decay photons
   if( fIndex2ndPhoton==iPrimary )
@@ -134,26 +135,25 @@ void  AliCaloTrackMCReader::CheckOverlap(Float_t anglethres, Int_t imom,
   
   if(pdg!=22) return;
   
-  TLorentzVector ph1, ph2;
   TParticle *meson = GetStack()->Particle(imom);
-  Int_t mepdg = meson->GetPdgCode();
+  Int_t mepdg  = meson->GetPdgCode();
   Int_t idaug1 = meson->GetFirstDaughter();
   if((mepdg == 111 || mepdg == 221 ) && meson->GetNDaughters() == 2)
   { //Check only decay in 2 photons
     TParticle * d1 = GetStack()->Particle(idaug1);
-    TParticle  *d2 = GetStack()->Particle(idaug1+1);
+    TParticle * d2 = GetStack()->Particle(idaug1+1);
     if(d1->GetPdgCode() == 22 && d2->GetPdgCode() == 22 )
     {
-      d1->Momentum(ph1);
-      d2->Momentum(ph2);
+      d1->Momentum(fGamDecayMom1);
+      d2->Momentum(fGamDecayMom2);
       //printf("angle %2.2f\n",ph1.Angle(ph2.Vect()));
       
-      if(anglethres >  ph1.Angle(ph2.Vect()))
+      if(anglethres >  fGamDecayMom1.Angle(fGamDecayMom2.Vect()))
       { 	  
         //Keep the meson
         pdg=mepdg;
         index=imom;
-        meson->Momentum(mom);
+        meson->Momentum(fMomentum);
         //printf("Overlap:: pt %2.2f, phi %2.2f, eta %2.2f\n",mom.Pt(),mom.Phi(),mom.Eta());
         if(iPrimary == idaug1) iPrimary++; //skip next photon in list
       }
@@ -170,60 +170,50 @@ void  AliCaloTrackMCReader::CheckOverlap(Float_t anglethres, Int_t imom,
   }//Meson Decay with 2 photon daughters
 }
 
-//____________________________________________________________________
-void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, 
-                                             TParticle* particle, 
-                                             TLorentzVector &momentum)
+//__________________________________________________________________________________
+void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* particle)
 {
   //Fill AODCaloClusters or TParticles lists of PHOS or EMCAL
-  //In PHOS
+  Char_t  ttype          = 0;
+  Float_t overAngleLimit = 100;
   
-  if(fFillPHOS && momentum.Pt() > fPHOSPtMin)
+  if     (fFillPHOS)
   {
-    if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"PHOS")) return;
-	  
-    Int_t index = iParticle ;
-    Int_t pdg = TMath::Abs(particle->GetPdgCode());
-    if(fCheckOverlap) 
-      CheckOverlap(fPHOSOverlapAngle,particle->GetFirstMother(),index, iParticle, momentum, pdg);
-    
-    Char_t ttype= AliVCluster::kPHOSNeutral;	
-    Int_t labels[] = {index};
-    Double_t x[] = {momentum.X(), momentum.Y(), momentum.Z()};
-    //Create object and write it to file
-    AliAODCaloCluster *calo = new AliAODCaloCluster(index,1,labels,momentum.E(), x, NULL, ttype, 0);
-    
-    SetCaloClusterPID(pdg,calo) ;
-    if(fDebug > 3 && momentum.Pt() > 0.2)
-      printf("AliCaloTrackMCReader::FillCalorimeters() - PHOS : Selected cluster %s E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
-             particle->GetName(),momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());			
-    fPHOSClusters->Add(calo);//reference the selected object to the list
+    if( particle->Pt() < fPHOSPtMin ) return;
+    if( fCheckFidCut && !fFiducialCut->IsInFiducialCut(particle->Eta(),particle->Phi(),kPHOS )) return;
+    ttype = AliVCluster::kPHOSNeutral;
+    overAngleLimit = fPHOSOverlapAngle;
+  }
+  else if(fFillEMCAL)
+  {
+    if( particle->Pt() < fEMCALPtMin ) return;
+    if( fCheckFidCut && !fFiducialCut->IsInFiducialCut(particle->Eta(),particle->Phi(),kEMCAL)) return;
+    ttype= AliVCluster::kEMCALClusterv1;
+    overAngleLimit = fEMCALOverlapAngle;
   }
   
-  //In EMCAL
-  if(fFillEMCAL  && momentum.Pt() > fEMCALPtMin)
-  {
-	  
-    if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"EMCAL")) return;
-	  
-    Int_t index = iParticle ;
-    Int_t pdg = TMath::Abs(particle->GetPdgCode());
-    //Int_t pdgorg=pdg;
-    if(fCheckOverlap) 
-      CheckOverlap(fEMCALOverlapAngle,particle->GetFirstMother(),iParticle, index, momentum, pdg);
-    
-    Char_t ttype= AliVCluster::kEMCALClusterv1;
-    Int_t labels[] = {index};
-    Double_t x[] = {momentum.X(), momentum.Y(), momentum.Z()};
-    //Create object and write it to file
-    AliAODCaloCluster *calo = new AliAODCaloCluster(iParticle,1,labels,momentum.E(), x, NULL, ttype, 0);
-    
-    SetCaloClusterPID(pdg,calo) ;
-    if(fDebug > 3 && momentum.Pt() > 0.2)
-      printf("AliCaloTrackMCReader::FillCalorimeters() - EMCAL : Selected cluster %s E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
-             particle->GetName(),momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());	
-    fEMCALClusters->Add(calo);//reference the selected object to the list
-  }
+  particle->Momentum(fMomentum);
+  
+  Int_t index = iParticle ;
+  Int_t pdg = TMath::Abs(particle->GetPdgCode());
+  if(fCheckOverlap)
+    CheckOverlap(overAngleLimit,particle->GetFirstMother(),index, iParticle, pdg);
+  
+  Int_t labels[] = {index};
+  Double_t x[] = {fMomentum.X(), fMomentum.Y(), fMomentum.Z()};
+  
+  //Create object and write it to file
+  AliAODCaloCluster *calo = new AliAODCaloCluster(index,1,labels,fMomentum.E(), x, NULL, ttype, 0);
+  
+  SetCaloClusterPID(pdg,calo) ;
+  if(fDebug > 3 && fMomentum.Pt() > 0.2)
+    printf("AliCaloTrackMCReader::FillCalorimeters() - PHOS %d?, EMCAL %d? : Selected cluster pdg %d, E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+           fFillPHOS, fFillEMCAL, pdg,fMomentum.E(), fMomentum.Pt(), fMomentum.Phi()*TMath::RadToDeg(),fMomentum.Eta());
+  
+  //reference the selected object to the list
+  if(fFillPHOS)fPHOSClusters ->Add(calo);
+  else         fEMCALClusters->Add(calo);
+  
 }
 
 //___________________________________________________________________________
@@ -254,7 +244,6 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
   for (iParticle = 0 ; iParticle <  nparticles ; iParticle++) 
   {
     TParticle * particle = GetStack()->Particle(iParticle);
-    TLorentzVector momentum;
     Float_t p[3];
     Float_t x[3];
     Int_t pdg = particle->GetPdgCode();						
@@ -266,22 +255,27 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
       //	if(TMath::Abs(pdg) == 3124 || TMath::Abs(pdg) > 10000000) continue ;
       
       charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
-      particle->Momentum(momentum);
+      
+      Float_t en  = particle->Energy();
+      Float_t pt  = particle->Pt();
+      Float_t eta = particle->Eta();
+      Float_t phi = particle->Phi();
       //---------- Charged particles ----------------------
       if(charge != 0)
       {
-        if(TMath::Abs(momentum.Eta())< fTrackMultEtaCut) fTrackMult++;
+        if(TMath::Abs(eta)< fTrackMultEtaCut) fTrackMult++;
         
-        if(fFillCTS && (momentum.Pt() > fCTSPtMin)){
+        if(fFillCTS && (pt > fCTSPtMin))
+        {
           //Particles in CTS acceptance
           
-          if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) continue;
+          if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(eta,phi,kCTS)) continue;
           
           if(TMath::Abs(pdg) == 11 && GetStack()->Particle(particle->GetFirstMother())->GetPdgCode()==22) continue ;
           
-          if(fDebug > 3 && momentum.Pt() > 0.2)
+          if(fDebug > 3 && pt > 0.2)
             printf("AliCaloTrackMCReader::FillInputEvent() - CTS : Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
-                   momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
+                   en,pt,phi*TMath::RadToDeg(),eta);
           
           x[0] = particle->Vx(); x[1] = particle->Vy(); x[2] = particle->Vz();
           p[0] = particle->Px(); p[1] = particle->Py(); p[2] = particle->Pz();
@@ -297,7 +291,7 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
           fCTSTracks->Add(aodTrack);//reference the selected object to the list
         }
         //Keep some charged particles in calorimeters lists
-        if((fFillPHOS || fFillEMCAL) && KeepChargedParticles(pdg)) FillCalorimeters(iParticle, particle, momentum);
+        if((fFillPHOS || fFillEMCAL) && KeepChargedParticles(pdg)) FillCalorimeters(iParticle, particle);
         
       }//Charged
       
@@ -310,32 +304,32 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
         //Fill particle/calocluster arrays
         if(!fDecayPi0) 
         {
-          FillCalorimeters(iParticle, particle, momentum);
+          FillCalorimeters(iParticle, particle);
         }
         else 
         {
           //Sometimes pi0 are stable for the generator, if needed decay it by hand
           if(pdg == 111 )
           {
-            if(momentum.Pt() >  fPHOSPtMin || momentum.Pt() >  fEMCALPtMin)
+            if(pt >  fPHOSPtMin || pt >  fEMCALPtMin)
             {
-              TLorentzVector lvGamma1, lvGamma2 ;
-              //Double_t angle = 0;
-              
               //Decay
-              MakePi0Decay(momentum,lvGamma1,lvGamma2);//,angle);
+              //Double_t angle = 0;
+              particle->Momentum(fPi0Momentum);
+
+              MakePi0Decay();//,angle);
               
               //Check if Pi0 is in the acceptance of the calorimeters, if aperture angle is small, keep it
-              TParticle * pPhoton1 = new TParticle(22,1,iParticle,0,0,0,lvGamma1.Px(),lvGamma1.Py(),
-                                                   lvGamma1.Pz(),lvGamma1.E(),0,0,0,0);   
-              TParticle * pPhoton2 = new TParticle(22,1,iParticle,0,0,0,lvGamma2.Px(),lvGamma2.Py(),
-                                                   lvGamma2.Pz(),lvGamma2.E(),0,0,0,0);
+              TParticle * pPhoton1 = new TParticle(22,1,iParticle,0,0,0,fGamDecayMom1.Px(),fGamDecayMom1.Py(),
+                                                   fGamDecayMom1.Pz(),fGamDecayMom1.E(),0,0,0,0);
+              TParticle * pPhoton2 = new TParticle(22,1,iParticle,0,0,0,fGamDecayMom2.Px(),fGamDecayMom2.Py(),
+                                                   fGamDecayMom2.Pz(),fGamDecayMom2.E(),0,0,0,0);
               //Fill particle/calocluster arrays
-              FillCalorimeters(iParticle,pPhoton1,lvGamma1);
-              FillCalorimeters(iParticle,pPhoton2,lvGamma2);
+              FillCalorimeters(iParticle,pPhoton1);
+              FillCalorimeters(iParticle,pPhoton2);
             }//pt cut
           }//pi0
-          else FillCalorimeters(iParticle,particle, momentum); //Add the rest
+          else FillCalorimeters(iParticle,particle); //Add the rest
         }
       }//neutral particles
     } //particle with correct status
@@ -408,21 +402,19 @@ void AliCaloTrackMCReader::Print(const Option_t * opt) const
   
 }
 
-//________________________________________________________________
-void AliCaloTrackMCReader::MakePi0Decay(TLorentzVector p0,
-                                        TLorentzVector &p1, 
-                                        TLorentzVector &p2) const 
+//_______________________________________
+void AliCaloTrackMCReader::MakePi0Decay()
 //, Double_t &angle)
 { 
   // Perform isotropic decay pi0 -> 2 photons
-  // p0 is pi0 4-momentum (inut)
-  // p1 and p2 are photon 4-momenta (output)
+  // fPi0Momentum is pi0 4-momentum (ipnut)
+  // fGamDecayMom1 and fGamDecayMom2 are photon 4-momenta (output)
   
   //  cout<<"Boost vector"<<endl;
   Double_t mPi0 = TDatabasePDG::Instance()->GetParticle(111)->Mass();
-  TVector3 b = p0.BoostVector();
+  TVector3 b = fPi0Momentum.BoostVector();
   //cout<<"Parameters"<<endl;
-  //Double_t mPi0   = p0.M();
+  //Double_t mPi0   = fPi0Momentum.M();
   Double_t phi    = TMath::TwoPi() * gRandom->Rndm();
   Double_t cosThe = 2 * gRandom->Rndm() - 1;
   Double_t cosPhi = TMath::Cos(phi);
@@ -431,25 +423,25 @@ void AliCaloTrackMCReader::MakePi0Decay(TLorentzVector p0,
   Double_t ePi0   = mPi0/2.;
   //cout<<"ePi0 "<<ePi0<<endl;
   //cout<<"Components"<<endl;
-  p1.SetPx(+ePi0*cosPhi*sinThe);
-  p1.SetPy(+ePi0*sinPhi*sinThe);
-  p1.SetPz(+ePi0*cosThe);
-  p1.SetE(ePi0);
-  //cout<<"p1: "<<p1.Px()<<" "<<p1.Py()<<" "<<p1.Pz()<<" "<<p1.E()<<endl;
-  //cout<<"p1 Mass: "<<p1.Px()*p1.Px()+p1.Py()*p1.Py()+p1.Pz()*p1.Pz()-p1.E()*p1.E()<<endl;
-  p2.SetPx(-ePi0*cosPhi*sinThe);
-  p2.SetPy(-ePi0*sinPhi*sinThe);
-  p2.SetPz(-ePi0*cosThe);
-  p2.SetE(ePi0);
-  //cout<<"p2: "<<p2.Px()<<" "<<p2.Py()<<" "<<p2.Pz()<<" "<<p2.E()<<endl;
-  //cout<<"p2 Mass: "<<p2.Px()*p2.Px()+p2.Py()*p2.Py()+p2.Pz()*p2.Pz()-p2.E()*p2.E()<<endl;
+  fGamDecayMom1.SetPx(+ePi0*cosPhi*sinThe);
+  fGamDecayMom1.SetPy(+ePi0*sinPhi*sinThe);
+  fGamDecayMom1.SetPz(+ePi0*cosThe);
+  fGamDecayMom1.SetE(ePi0);
+  //cout<<"fGamDecayMom1: "<<fGamDecayMom1.Px()<<" "<<fGamDecayMom1.Py()<<" "<<fGamDecayMom1.Pz()<<" "<<fGamDecayMom1.E()<<endl;
+  //cout<<"fGamDecayMom1 Mass: "<<fGamDecayMom1.Px()*fGamDecayMom1.Px()+fGamDecayMom1.Py()*fGamDecayMom1.Py()+fGamDecayMom1.Pz()*fGamDecayMom1.Pz()-fGamDecayMom1.E()*fGamDecayMom1.E()<<endl;
+  fGamDecayMom2.SetPx(-ePi0*cosPhi*sinThe);
+  fGamDecayMom2.SetPy(-ePi0*sinPhi*sinThe);
+  fGamDecayMom2.SetPz(-ePi0*cosThe);
+  fGamDecayMom2.SetE(ePi0);
+  //cout<<"fGamDecayMom2: "<<fGamDecayMom2.Px()<<" "<<fGamDecayMom2.Py()<<" "<<fGamDecayMom2.Pz()<<" "<<fGamDecayMom2.E()<<endl;
+  //cout<<"fGamDecayMom2 Mass: "<<fGamDecayMom2.Px()*fGamDecayMom2.Px()+fGamDecayMom2.Py()*fGamDecayMom2.Py()+fGamDecayMom2.Pz()*fGamDecayMom2.Pz()-fGamDecayMom2.E()*fGamDecayMom2.E()<<endl;
   //cout<<"Boost "<<b.X()<<" "<<b.Y()<<" "<<b.Z()<<endl;
-  p1.Boost(b);
-  //cout<<"p1: "<<p1.Px()<<" "<<p1.Py()<<" "<<p1.Pz()<<" "<<p1.E()<<endl;
-  p2.Boost(b);
-  //cout<<"p2: "<<p2.Px()<<" "<<p2.Py()<<" "<<p2.Pz()<<" "<<p2.E()<<endl;
+  fGamDecayMom1.Boost(b);
+  //cout<<"fGamDecayMom1: "<<fGamDecayMom1.Px()<<" "<<fGamDecayMom1.Py()<<" "<<fGamDecayMom1.Pz()<<" "<<fGamDecayMom1.E()<<endl;
+  fGamDecayMom2.Boost(b);
+  //cout<<"fGamDecayMom2: "<<fGamDecayMom2.Px()<<" "<<fGamDecayMom2.Py()<<" "<<fGamDecayMom2.Pz()<<" "<<fGamDecayMom2.E()<<endl;
   //cout<<"angle"<<endl;
-  //angle = p1.Angle(p2.Vect());
+  //angle = fGamDecayMom1.Angle(fGamDecayMom2.Vect());
   //cout<<angle<<endl;
 }
 
