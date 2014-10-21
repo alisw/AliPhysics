@@ -3,7 +3,8 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  //change different set o
 								Int_t enableQAMesonTask = 1, //enable QA in AliAnalysisTaskGammaConvV1
 								Int_t enableQAPhotonTask = 1, // enable additional QA task
 								TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
-								TString cutnumberAODBranch = "0000000060084001001500000" 
+                                TString cutnumberAODBranch = "0000000060084001001500000",
+                                Bool_t enableExtendedMatching = kFALSE //enable or disable extended matching histograms for conversion electrons <-> cluster
 							) {
 
 	// ================= Load Librariers =================================
@@ -244,6 +245,7 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  //change different set o
 		analysisClusterCuts[i] = new AliCaloPhotonCuts();
 		analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
 		ClusterCutList->Add(analysisClusterCuts[i]);
+        analysisClusterCuts[i]->SetExtendedMatching(enableExtendedMatching);
 		analysisClusterCuts[i]->SetFillCutHistograms("");
 		
 		analysisMesonCuts[i] = new AliConversionMesonCuts();

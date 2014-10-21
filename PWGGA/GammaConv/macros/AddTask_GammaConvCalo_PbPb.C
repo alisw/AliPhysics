@@ -6,7 +6,8 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t trainConfig = 1,  //change different s
 									Int_t headerSelectionInt = 0,  // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
 									TString cutnumberAODBranch = "1000000060084000001500000",
 									TString periodName = "LHC13d2",  //name of the period for added signals and weighting
-									Bool_t doWeighting = kFALSE  //enable Weighting
+                                    Bool_t doWeighting = kFALSE,  //enable Weighting
+                                    Bool_t enableExtendedMatching = kFALSE //enable or disable extended matching histograms for conversion electrons <-> cluster
 								) {
 
 	// ================= Load Librariers =================================
@@ -208,6 +209,7 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t trainConfig = 1,  //change different s
 		analysisClusterCuts[i] = new AliCaloPhotonCuts();
 		analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
 		ClusterCutList->Add(analysisClusterCuts[i]);
+        analysisClusterCuts[i]->SetExtendedMatching(enableExtendedMatching);
 		analysisClusterCuts[i]->SetFillCutHistograms("");
 
 		analysisMesonCuts[i] = new AliConversionMesonCuts();
