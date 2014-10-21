@@ -26,7 +26,7 @@
 #include "TList.h"
 #include "TFile.h"
 #include "TGrid.h"
-
+#include "TExMap.h"
 #include "AliCentrality.h"
 #include "Riostream.h"
 
@@ -34,7 +34,7 @@
 #include "AliCFContainer.h"
 #include "THn.h"
 #include "THnSparse.h"
-
+#include "TBits.h"
 #include <TSpline.h>
 #include <AliPID.h>
 #include "AliESDpid.h"
@@ -91,6 +91,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr() // All data members should be ini
    fOutputList(0),
   fList(0),
   fCentralityMethod("V0A"),
+  fPPVsMultUtils(kFALSE),
   fSampleType("pPb"),
  fRequestEventPlane(kFALSE),
   fnTracksVertex(1),  // QA tracks pointing to principal vertex (= 3 default)
@@ -100,6 +101,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr() // All data members should be ini
   fTrackStatus(0),
   fSharedClusterCut(-1),
  fSharedTPCmapCut(-1),
+ fSharedfraction_Pair_cut(-1),
   fVertextype(1),
  skipParticlesAbove(0),
   fzvtxcut(10.0),
@@ -259,6 +261,8 @@ fPhiRPv0Cv3(NULL),
   fAnalysisType("AOD"), 
   fefffilename(""),
  ftwoTrackEfficiencyCutDataReco(kTRUE),
+fTwoTrackCutMinRadius(0.8),
+fTwoTrackCutMaxRadius(2.5),
   twoTrackEfficiencyCutValue(0.02),
   fPID(NULL),
  fPIDCombined(NULL),
@@ -337,6 +341,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data membe
    fOutputList(0),
    fList(0),
  fCentralityMethod("V0A"),
+  fPPVsMultUtils(kFALSE),
   fSampleType("pPb"),
  fRequestEventPlane(kFALSE),
   fnTracksVertex(1),  // QA tracks pointing to principal vertex (= 3 default)
@@ -346,6 +351,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data membe
   fTrackStatus(0),
   fSharedClusterCut(-1),
   fSharedTPCmapCut(-1),
+ fSharedfraction_Pair_cut(-1),
   fVertextype(1),
    skipParticlesAbove(0),
   fzvtxcut(10.0),
@@ -505,6 +511,8 @@ fPhiRPv0Cv3(NULL),
   fAnalysisType("AOD"),
   fefffilename(""),
   ftwoTrackEfficiencyCutDataReco(kTRUE),
+fTwoTrackCutMinRadius(0.8),
+fTwoTrackCutMaxRadius(2.5),
   twoTrackEfficiencyCutValue(0.02),
   fPID(NULL),
   fPIDCombined(NULL),
@@ -682,7 +690,7 @@ fOutput->Add(fEtaSpectrasso);
 fphiSpectraasso=new TH2F("fphiSpectraasso","fphiSpectraasso",72,0,2*TMath::Pi(),100,0.,20.);
 fOutput->Add(fphiSpectraasso);
 
- if(fSampleType=="pPb" || fSampleType=="PbPb"){ fCentralityCorrelation = new TH2D("fCentralityCorrelation", ";centrality;multiplicity", 101, 0, 101, 20000, 0,40000);
+ if(fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE){ fCentralityCorrelation = new TH2D("fCentralityCorrelation", ";centrality;multiplicity", 101, 0, 101, 20000, 0,40000);
       fOutput->Add(fCentralityCorrelation);
  }
 
@@ -699,7 +707,7 @@ if(fCentralityMethod=="V0M" || fCentralityMethod=="V0A" || fCentralityMethod=="V
   fOutput->Add(fHistCentStats);
   }
 
-if(fCentralityMethod.EndsWith("_MANUAL"))
+if(fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMultUtils==kFALSE))
   {
 fhistcentrality=new TH1F("fhistcentrality","referencemultiplicity",30001,-0.5,30000.5);
 fOutput->Add(fhistcentrality);
@@ -709,7 +717,7 @@ fhistcentrality=new TH1F("fhistcentrality","centrality",220,-5,105);
 fOutput->Add(fhistcentrality);
  }
 
-if(fCentralityMethod.EndsWith("_MANUAL"))
+if(fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMultUtils==kFALSE))
   {
 TString gmultName[4] = {"V0A_MANUAL","V0C_MANUAL","V0M_MANUAL","TRACKS_MANUAL"};
   fHistRefmult = new TH2F("fHistRefmult",
@@ -1019,7 +1027,7 @@ Double_t ZvrtxBins[NofVrtxBins+1]={ -10,   -8,  -6,  -4,  -2,   0,   2,   4,   6
 				       90,  92,  94,  96,  98, 100, 102, 104, 106, 108, 110, 
 				    190, 192, 194, 196, 198, 200, 202, 204, 206, 208, 210}; 
 
-if(fCentralityMethod.EndsWith("_MANUAL"))
+if(fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMultUtils==kFALSE))
    {
  const Int_t NofCentBins=10;
  Double_t CentralityBins[NofCentBins+1]={0.,9.,14.,19.,26.,34.,44.,58.,80.,500.,1000.};//Is This binning is fine for pp, or we don't require them....
@@ -1707,7 +1715,7 @@ skipParticlesAbove = eventHeader->NProduced();
     AliInfo(Form("Injected signals in this event (%d headers). Keeping events of %s. Will skip particles/tracks above %d.", headers, eventHeader->ClassName(), skipParticlesAbove));
   }
 
- if (fSampleType=="pp" && fCentralityMethod.EndsWith("_MANUAL"))
+ if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMultUtils==kFALSE))
    {
  //make the event selection with reco vertex cut and centrality cut and return the value of the centrality
      Double_t refmultTruth = GetAcceptedEventMultiplicity(aod,kTRUE);  //incase of ref multiplicity it will return the truth MC ref mullt value; need to determine the ref mult value separately for reco Mc case; in case of centrality this is final and fine
@@ -1716,10 +1724,10 @@ skipParticlesAbove = eventHeader->NProduced();
      cent_v0=refmultTruth;
    }
  else {
- cent_v0=GetAcceptedEventMultiplicity(aod,kTRUE); //centrality value; 2nd argument has no meaning
- if(cent_v0<0.) return;
+ cent_v0=GetAcceptedEventMultiplicity(aod,kFALSE); //centrality value; 2nd argument has no meaning
  }
 
+ if(cent_v0<0.) return;
  effcent=cent_v0;// This will be required for efficiency THn filling(specially in case of pp)
 
   //get the event plane in case of PbPb
@@ -1840,7 +1848,7 @@ if(ffillhistQATruth)
     }
 
  // -- Fill THnSparse for efficiency and contamination calculation
- if (fSampleType=="pp" && fCentralityMethod.EndsWith("_MANUAL")) effcent=15.0;//integrated over multiplicity(so put any fixed value for each track so that practically means there is only one bin in multiplicity i.e. multiplicity intregated out )**************Important
+    if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMultUtils==kFALSE)) effcent=15.0;//integrated over multiplicity(so put any fixed value for each track so that practically means there is only one bin in multiplicity i.e. multiplicity intregated out )**************Important
 
  Double_t primmctruth[4] = {effcent, zVtxmc,partMC->Pt(), partMC->Eta()};
  if(ffillefficiency)
@@ -1860,7 +1868,9 @@ if((partMC->Pt()>=fminPtAsso && partMC->Pt()<=fmaxPtAsso) || (partMC->Pt()>=fmin
     if(partMC->Charge()>0)   chargeval=1;
     if(partMC->Charge()<0)   chargeval=-1;
     if(chargeval==0) continue;
-LRCParticlePID* copy6 = new LRCParticlePID(particletypeTruth,chargeval,partMC->Pt(),partMC->Eta(), partMC->Phi(),effmatrixtruth);
+    const TBits *clustermap=0;
+    const TBits *sharemap=0;
+    LRCParticlePID* copy6 = new LRCParticlePID(particletypeTruth,chargeval,partMC->Pt(),partMC->Eta(), partMC->Phi(),effmatrixtruth,clustermap,sharemap);
 //copy6->SetUniqueID(eventno * 100000 + TMath::Abs(partMC->GetLabel()));
  copy6->SetUniqueID(eventno * 100000 + (Int_t)nooftrackstruth);
  tracksMCtruth->Add(copy6);//************** TObjArray used for truth correlation function calculation
@@ -1869,7 +1879,6 @@ LRCParticlePID* copy6 = new LRCParticlePID(particletypeTruth,chargeval,partMC->P
 
 //*********************still in event loop
 
- if (fSampleType=="PbPb"){
    if (fRandomizeReactionPlane)//only for TRuth MC??
   {
     Double_t centralityDigits = cent_v0*1000. - (Int_t)(cent_v0*1000.);
@@ -1877,7 +1886,7 @@ LRCParticlePID* copy6 = new LRCParticlePID(particletypeTruth,chargeval,partMC->P
     AliInfo(Form("Shifting phi of all tracks by %f (digits %f)", angle, centralityDigits));
     ShiftTracks(tracksMCtruth, angle);  
   }
- }
+ 
 
  Float_t weghtval=1.0;
 
@@ -1917,14 +1926,39 @@ if(tracksMCtruth) delete tracksMCtruth;
 
 //now deal with reco tracks
 
+
+   Float_t bSign1=aod->GetHeader()->GetMagneticField() ;//used for reconstructed track dca cut
+
 //detrmine the ref mult in case of Reco(not required if we get centrality info from AliCentrality)
- if (fSampleType=="pp" && fCentralityMethod.EndsWith("_MANUAL")) cent_v0=refmultReco;
+ if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMultUtils==kFALSE)) cent_v0=refmultReco;
  effcent=cent_v0;// This will be required for efficiency THn filling(specially in case of pp)
 
  if(fRequestEventPlane){
    gReactionPlane = GetEventPlane(aod,kFALSE,cent_v0);//get the reconstructed event plane
     if(gReactionPlane==999.) return;
  }
+
+
+  TExMap *trackMap = new TExMap();
+
+// --- track loop for mapping matrix
+ if(fFilterBit==128)
+   {
+ for (Int_t itrk = 0; itrk < aod->GetNumberOfTracks(); itrk++) 
+{ //track loop starts for TObjArray(containing track and event information) filling; used for correlation function calculation 
+  AliAODTrack* track = dynamic_cast<AliAODTrack*>(event->GetTrack(itrk));
+  if (!track) continue;
+  Int_t tracktype=ClassifyTrack(track,trkVtx,bSign1,kFALSE);//don't fill the histos here
+  if(tracktype!=1) continue; 
+
+  if(!track) continue;//for safety
+
+   Int_t gid = track->GetID();
+   trackMap->Add(gid,itrk);
+ }//track looop ends
+   }
+
+
   
    //TObjArray* tracksUNID=0;
    TObjArray* tracksUNID = new TObjArray;
@@ -1935,7 +1969,6 @@ if(tracksMCtruth) delete tracksMCtruth;
    tracksID->SetOwner(kTRUE);
 
 
-   Float_t bSign1=aod->GetHeader()->GetMagneticField() ;//used for reconstructed track dca cut
 
 
    Double_t trackscount=0.0;
@@ -2002,6 +2035,16 @@ isduplicate2=kTRUE;
 {
   if(!track) continue;//for safety
  //accepted all(primaries+secondary) reconstructed tracks(pt 0.2 to 10.0,,eta -0.8 to 0.8)
+
+  AliAODTrack *PIDtrack=track;//for PID purpose, mainly important for TPC only tracks
+
+  if(fFilterBit==128){
+Int_t gid1 = track->GetID();
+//if(gid1>=0) PIDtrack = track;
+ PIDtrack = aod->GetTrack(trackMap->GetValue(-1-gid1));
+if(!PIDtrack) continue;//for safety; so that each of the TPC only tracks have corresponding global track along with it
+  }
+
   trackscount++;
 
 //check for eta , phi holes
@@ -2016,7 +2059,7 @@ isduplicate2=kTRUE;
  Float_t effmatrix=1.;
 
 // -- Fill THnSparse for efficiency calculation
- if (fSampleType=="pp" && fCentralityMethod.EndsWith("_MANUAL")) effcent=15.0;//integrated over multiplicity(so put any fixed value for each track so that practically means there is only one bin in multiplicity i.e. multiplicity intregated out )**************Important
+ if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMultUtils==kFALSE)) effcent=15.0;//integrated over multiplicity(so put any fixed value for each track so that practically means there is only one bin in multiplicity i.e. multiplicity intregated out )**************Important
  //NOTE:: this will be used for fillinfg THnSparse of efficiency & also to get the the track by track eff. factor on the fly(only in case of pp)
 
  //Clone & Reduce track list(TObjArray) for unidentified particles
@@ -2028,7 +2071,7 @@ if((track->Pt()>=fminPtAsso && track->Pt()<=fmaxPtAsso) || (track->Pt()>=fminPtT
     if(chargeval==0) continue;
  if (fapplyTrigefficiency || fapplyAssoefficiency)//get the trackingefficiency x contamination factor for unidentified particles
    effmatrix=GetTrackbyTrackeffvalue(track,effcent,zvtx,particletypeMC);
-   LRCParticlePID* copy = new LRCParticlePID(particletypeMC,chargeval,track->Pt(),track->Eta(), track->Phi(),effmatrix);
+ LRCParticlePID* copy = new LRCParticlePID(particletypeMC,chargeval,track->Pt(),track->Eta(), track->Phi(),effmatrix,track->GetTPCClusterMapPtr(),track->GetTPCSharedMapPtr());
    copy->SetUniqueID(eventno * 100000 +(Int_t)trackscount);
    tracksUNID->Add(copy);//track information Storage for UNID correlation function(tracks that pass the filterbit & kinematic cuts only)
   }
@@ -2057,23 +2100,22 @@ fTrackHistEfficiency[5]->Fill(allrecomatchedpid,2);//for allreco matched
 
  //now start the particle identification process:)
 
-Float_t dEdx = track->GetTPCsignal();
+Float_t dEdx = PIDtrack->GetTPCsignal();
  fHistoTPCdEdx->Fill(track->Pt(), dEdx);
 
- if(HasTOFPID(track))
+ if(HasTOFPID(PIDtrack))
 {
-Double_t beta = GetBeta(track);
+Double_t beta = GetBeta(PIDtrack);
 fHistoTOFbeta->Fill(track->Pt(), beta);
  }
 
 //do track identification(nsigma method)
-  particletypeMC=GetParticle(track,fFIllPIDQAHistos);//******************************problem is here
-  cout<<particletypeMC<<endl;
+  particletypeMC=GetParticle(PIDtrack,fFIllPIDQAHistos);//******************************problem is here
 switch(TMath::Abs(pdgCode)){
   case 2212:
     if(fFIllPIDQAHistos){
       for(Int_t ipid=0;ipid<=NSigmaPIDType;ipid++){
-	if((ipid!=NSigmaTPC) && (!HasTOFPID(track)))continue;//not filling TOF and combined if no TOF PID
+	if((ipid!=NSigmaTPC) && (!HasTOFPID(PIDtrack)))continue;//not filling TOF and combined if no TOF PID
 	TH2F *h=GetHistogram2D(Form("NSigmaMC_%d_%d",SpProton,ipid));
 	h->Fill(track->Pt(),fnsigmas[SpProton][ipid]);
       }
@@ -2082,7 +2124,7 @@ switch(TMath::Abs(pdgCode)){
   case 321:
     if(fFIllPIDQAHistos){
       for(Int_t ipid=0;ipid<=NSigmaPIDType;ipid++){
-	if((ipid!=NSigmaTPC) && (!HasTOFPID(track)))continue;//not filling TOF and combined if no TOF PID
+	if((ipid!=NSigmaTPC) && (!HasTOFPID(PIDtrack)))continue;//not filling TOF and combined if no TOF PID
 	TH2F *h=GetHistogram2D(Form("NSigmaMC_%d_%d",SpKaon,ipid));
 	h->Fill(track->Pt(),fnsigmas[SpKaon][ipid]);
       }
@@ -2091,7 +2133,7 @@ switch(TMath::Abs(pdgCode)){
   case 211:
     if(fFIllPIDQAHistos){
       for(Int_t ipid=0;ipid<=NSigmaPIDType;ipid++){
-	if((ipid!=NSigmaTPC) && (!HasTOFPID(track)))continue;//not filling TOF and combined if no TOF PID
+	if((ipid!=NSigmaTPC) && (!HasTOFPID(PIDtrack)))continue;//not filling TOF and combined if no TOF PID
 	TH2F *h=GetHistogram2D(Form("NSigmaMC_%d_%d",SpPion,ipid));
 	h->Fill(track->Pt(),fnsigmas[SpPion][ipid]);
       }
@@ -2101,7 +2143,7 @@ switch(TMath::Abs(pdgCode)){
 
 
 //2-d TPCTOF map(for each Pt interval)
-  if(HasTOFPID(track)){
+  if(HasTOFPID(PIDtrack)){
  fTPCTOFPion3d->Fill(track->Pt(),fnsigmas[SpPion][NSigmaTOF],fnsigmas[SpPion][NSigmaTPC]);
  fTPCTOFKaon3d->Fill(track->Pt(),fnsigmas[SpKaon][NSigmaTOF],fnsigmas[SpKaon][NSigmaTPC]);
  fTPCTOFProton3d->Fill(track->Pt(),fnsigmas[SpProton][NSigmaTOF],fnsigmas[SpProton][NSigmaTPC]); 
@@ -2205,7 +2247,7 @@ if((track->Pt()>=fminPtAsso && track->Pt()<=fmaxPtAsso) || (track->Pt()>=fminPtT
     if(chargeval==0) continue;
 if (fapplyTrigefficiency || fapplyAssoefficiency)
     effmatrix=GetTrackbyTrackeffvalue(track,effcent,zvtx,particletypeMC);//get the tracking eff x TOF matching eff x PID eff x contamination factor for identified particles 
-    LRCParticlePID* copy1 = new LRCParticlePID(particletypeMC,chargeval,track->Pt(),track->Eta(), track->Phi(),effmatrix);
+ LRCParticlePID* copy1 = new LRCParticlePID(particletypeMC,chargeval,track->Pt(),track->Eta(), track->Phi(),effmatrix,track->GetTPCClusterMapPtr(),track->GetTPCSharedMapPtr());
     copy1->SetUniqueID(eventno * 100000 + (Int_t)trackscount);
     tracksID->Add(copy1);
   }
@@ -2221,7 +2263,7 @@ if(trackscount>0.0)
 //fill the centrality/multiplicity distribution of the selected events
  fhistcentrality->Fill(cent_v0);//*********************************WARNING::binning of cent_v0 is different for pp and pPb/PbPb case
 
- if (fSampleType=="pPb" || fSampleType=="PbPb") fCentralityCorrelation->Fill(cent_v0, trackscount);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
+ if (fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE) fCentralityCorrelation->Fill(cent_v0, trackscount);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
 
 //count selected events having centrality betn 0-100%
  fEventCounter->Fill(13);
@@ -2358,13 +2400,32 @@ if (!fPID) return;//this should be available with each event even if we don't do
  if((cent_v0 = GetAcceptedEventMultiplicity(aod,kFALSE)) < 0){ 
     return;
   }
-  
+ effcent=cent_v0;//required for efficiency correction case********Extremely Important
   //get the event plane in case of PbPb
     if(fRequestEventPlane){
       gReactionPlane = GetEventPlane(aod,kFALSE,cent_v0);
     if(gReactionPlane==999.) return;
     }    
-  
+    
+
+TExMap *trackMap = new TExMap();
+// --- track loop for mapping matrix
+ if(fFilterBit==128)
+   {
+ for (Int_t itrk = 0; itrk < aod->GetNumberOfTracks(); itrk++) 
+{ //track loop starts for TObjArray(containing track and event information) filling; used for correlation function calculation 
+  AliAODTrack* track = dynamic_cast<AliAODTrack*>(event->GetTrack(itrk));
+  if (!track) continue;
+  Int_t tracktype=ClassifyTrack(track,trkVtx,bSign1,kFALSE);//don't fill the histos here
+  if(tracktype!=1) continue; 
+
+  if(!track) continue;//for safety
+
+   Int_t gid = track->GetID();
+   trackMap->Add(gid,itrk);
+ }//track looop ends
+   }
+
    TObjArray*  tracksUNID= new TObjArray;//track info before doing PID
    tracksUNID->SetOwner(kTRUE);  // IMPORTANT!
 
@@ -2389,6 +2450,15 @@ if (!fPID) return;//this should be available with each event even if we don't do
 
   if(!track) continue;//for safety
 
+AliAODTrack *PIDtrack=track;//for PID purpose, mainly important for TPC only tracks
+
+  if(fFilterBit==128){
+Int_t gid1 = track->GetID();
+//if(gid1>=0) PIDtrack = track;
+ PIDtrack = aod->GetTrack(trackMap->GetValue(-1-gid1));
+if(!PIDtrack) continue;//for safety; so that each of the TPC only tracks have corresponding global track along with it
+  }
+
 //check for eta , phi holes
  fEtaSpectrasso->Fill(track->Eta(),track->Pt());
  fphiSpectraasso->Fill(track->Phi(),track->Pt());
@@ -2407,7 +2477,7 @@ if (!fPID) return;//this should be available with each event even if we don't do
  if(track->Pt()>=fmaxPtTrig) fTrigPtJet=kTRUE;
 
 
- if (fSampleType=="pp") effcent=15.0;//integrated over multiplicity [i.e each track has multiplicity 15.0](so put any fixed value for each track so that practically means there is only one bin in multiplicityi.e multiplicity intregated out )**************Important for efficiency related issues
+if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMultUtils==kFALSE)) effcent=15.0;//integrated over multiplicity [i.e each track has multiplicity 15.0](so put any fixed value for each track so that practically means there is only one bin in multiplicityi.e multiplicity intregated out )**************Important for efficiency related issues
 
 
  //to reduce memory consumption in pool
@@ -2420,7 +2490,7 @@ if (!fPID) return;//this should be available with each event even if we don't do
     if(chargeval==0) continue;
  if (fapplyTrigefficiency || fapplyAssoefficiency)//get the trackingefficiency x contamination factor for unidentified particles
    effmatrix=GetTrackbyTrackeffvalue(track,effcent,zvtx,particletype);
- LRCParticlePID* copy = new LRCParticlePID(particletype,chargeval,track->Pt(),track->Eta(), track->Phi(),effmatrix);
+ LRCParticlePID* copy = new LRCParticlePID(particletype,chargeval,track->Pt(),track->Eta(), track->Phi(),effmatrix,track->GetTPCClusterMapPtr(),track->GetTPCSharedMapPtr());
   copy->SetUniqueID(eventno * 100000 + (Int_t)trackscount);
   tracksUNID->Add(copy);//track information Storage for UNID correlation function(tracks that pass the filterbit & kinematic cuts only)
   }
@@ -2429,23 +2499,22 @@ if (!fPID) return;//this should be available with each event even if we don't do
 
 //track passing filterbit 768 have proper TPC response,or need to be checked explicitly before doing PID????
 
-  Float_t dEdx = track->GetTPCsignal();
+  Float_t dEdx = PIDtrack->GetTPCsignal();
   fHistoTPCdEdx->Fill(track->Pt(), dEdx);
 
   //fill beta vs Pt plots only for tracks having proper TOF response(much less tracks compared to the no. that pass the filterbit & kinematic cuts)
- if(HasTOFPID(track))
+ if(HasTOFPID(PIDtrack))
 {
-  Double_t beta = GetBeta(track);
+  Double_t beta = GetBeta(PIDtrack);
   fHistoTOFbeta->Fill(track->Pt(), beta);
  }
   
 
 //track identification(using nsigma method)
-     particletype=GetParticle(track,fFIllPIDQAHistos);//*******************************change may be required(It should return only pion,kaon, proton and Spundefined; NOT unidentifed***************be careful)
-
+     particletype=GetParticle(PIDtrack,fFIllPIDQAHistos);//*******************************change may be required(It should return only pion,kaon, proton and Spundefined; NOT unidentifed***************be careful)
 
 //2-d TPCTOF map(for each Pt interval)
-  if(HasTOFPID(track)){
+  if(HasTOFPID(PIDtrack)){
  fTPCTOFPion3d->Fill(track->Pt(),fnsigmas[SpPion][NSigmaTOF],fnsigmas[SpPion][NSigmaTPC]);
  fTPCTOFKaon3d->Fill(track->Pt(),fnsigmas[SpKaon][NSigmaTOF],fnsigmas[SpKaon][NSigmaTPC]);
  fTPCTOFProton3d->Fill(track->Pt(),fnsigmas[SpProton][NSigmaTOF],fnsigmas[SpProton][NSigmaTPC]); 
@@ -2490,7 +2559,7 @@ if (particletype==SpProton)
     if(chargeval==0) continue;
 if (fapplyTrigefficiency || fapplyAssoefficiency)
   effmatrix=GetTrackbyTrackeffvalue(track,effcent,zvtx,particletype);//get the tracking eff x TOF matching eff x PID eff x contamination factor for identified particles; Bool_t mesoneffrequired=kFALSE
- LRCParticlePID* copy1 = new LRCParticlePID(particletype,chargeval,track->Pt(),track->Eta(), track->Phi(),effmatrix);
+ LRCParticlePID* copy1 = new LRCParticlePID(particletype,chargeval,track->Pt(),track->Eta(), track->Phi(),effmatrix,track->GetTPCClusterMapPtr(),track->GetTPCSharedMapPtr());
     copy1->SetUniqueID(eventno * 100000 + (Int_t)trackscount);
     tracksID->Add(copy1);
   }
@@ -2513,7 +2582,7 @@ if(trackscount<1.0){
 //fill the centrality/multiplicity distribution of the selected events
  fhistcentrality->Fill(cent_v0);//*********************************WARNING::binning of cent_v0 is different for pp and pPb/PbPb case
 
-if(fSampleType=="pPb" || fSampleType=="PbPb") fCentralityCorrelation->Fill(cent_v0, trackscount);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
+if(fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE) fCentralityCorrelation->Fill(cent_v0, trackscount);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
 
 //count selected events having centrality betn 0-100%
  fEventCounter->Fill(13);
@@ -2627,7 +2696,7 @@ TObjArray* AliTwoParticlePIDCorr::CloneAndReduceTrackList(TObjArray* tracks)
   for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
   {
     LRCParticlePID* particle = (LRCParticlePID*) tracks->UncheckedAt(i);
-    LRCParticlePID* copy100 = new LRCParticlePID(particle->getparticle(),particle->Charge(), particle->Pt(),particle->Eta(), particle->Phi(), particle->geteffcorrectionval());
+    LRCParticlePID* copy100 = new LRCParticlePID(particle->getparticle(),particle->Charge(), particle->Pt(),particle->Eta(), particle->Phi(), particle->geteffcorrectionval(),particle->GetTPCPadMap(),particle->GetTPCSharedMap());
     copy100->SetUniqueID(particle->GetUniqueID());
     tracksClone->Add(copy100);
   }
@@ -3063,8 +3132,8 @@ if (fRejectResonanceDaughters > 0)
 	  {
 
   // check first boundaries to see if is worth to loop and find the minimum
-	    Float_t dphistar1 = GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, 0.8, bSign);
-	    Float_t dphistar2 = GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, 2.5, bSign);
+	    Float_t dphistar1 = GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, fTwoTrackCutMinRadius, bSign);
+	    Float_t dphistar2 = GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, fTwoTrackCutMaxRadius, bSign);
 
  const Float_t kLimit = twoTrackEfficiencyCutValue * 3;
 
@@ -3100,6 +3169,14 @@ if (dphistarminabs < twoTrackEfficiencyCutValue && TMath::Abs(deta) < twoTrackEf
 	  }
 	}
 
+	//pair sharedfraction cut(only between the trig and asso track)
+   if(fillup!="trigIDassoIDMCTRUTH")//******************************************NOT for TRUTH MC particles
+  {
+    if(fSharedfraction_Pair_cut>=0){
+	Bool_t passsharedfractionpaircut=CalculateSharedFraction(trig->GetTPCPadMap(),asso->GetTPCPadMap(),trig->GetTPCSharedMap(),asso->GetTPCSharedMap());
+	if(!passsharedfractionpaircut) continue;
+    }
+  }
 	Float_t weightperevent=weight;
         Float_t trackeffasso=1.0;
         if(fapplyAssoefficiency) trackeffasso=asso->geteffcorrectionval();
@@ -3201,7 +3278,67 @@ delete[] trigval;
     }
 }
 
-//--------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------
+Bool_t AliTwoParticlePIDCorr:: CalculateSharedFraction(const TBits *triggerPadMap,const TBits *assocPadMap,const TBits *triggerShareMap,const TBits *assocShareMap)
+{//source code-AliFemtoShareQualityPairCut.cxx
+Double_t nofhits=0;
+Double_t nofsharedhits=0;
+
+for(UInt_t imap=0;imap< (triggerPadMap->GetNbits() );imap++)
+{
+//if they are in same pad
+//cout<<triggerPadMap->TestBitNumber(imap)<<"    "<< assocPadMap->TestBitNumber(imap)<<endl;
+if (triggerPadMap->TestBitNumber(imap) &&
+      assocPadMap->TestBitNumber(imap))
+{
+//if they share
+//cout<<triggerShareMap->TestBitNumber(imap)<<"   "<<assocShareMap->TestBitNumber(imap)<<endl;
+if (triggerShareMap->TestBitNumber(imap) &&
+      assocShareMap->TestBitNumber(imap))
+{
+  //cout<<triggerShareMap->TestBitNumber(imap)<<"   "<<assocShareMap->TestBitNumber(imap)<<endl;
+nofhits+=2;
+nofsharedhits+=2;
+}
+
+
+
+//not shared
+    else {
+     
+      nofhits+=2;
+    }
+
+
+}
+//different pad
+
+//cout<< (triggerPadMap->TestBitNumber(imap) || assocPadMap->TestBitNumber(imap))<<endl;
+else if (triggerPadMap->TestBitNumber(imap) ||
+      assocPadMap->TestBitNumber(imap)) {
+    // One track has a hit, the other does not
+   
+    nofhits++;
+    //cout<<"No hits :"<<nofhits<<endl;
+   
+      }
+
+
+
+}
+
+Double_t SharedFraction=0.0;
+if(nofhits>0) SharedFraction=(nofsharedhits/nofhits);
+
+//cout<<"Fraction shared hits :"<<SharedFraction<<endl;
+
+if(SharedFraction>fSharedfraction_Pair_cut) return kFALSE;
+
+return kTRUE;
+
+}
+
+//________________________________________________________________________________________________
 Float_t AliTwoParticlePIDCorr::GetTrackbyTrackeffvalue(AliAODTrack* track,Double_t cent,Float_t evzvtx, Int_t parpid)
 {
   //This function is called only when applyefficiency=kTRUE; also ensure that "track" is present before calling that function
@@ -4228,8 +4365,9 @@ Double_t AliTwoParticlePIDCorr::GetReferenceMultiplicityVZEROFromAOD(AliAODEvent
     gRefMultiplicity = gRefMultiplicityVZEROC;
     fHistRefmult->Fill(1.,gRefMultiplicityVZEROC);
  }
-
-  
+ else {
+gRefMultiplicity = gRefMultiplicityTPC;
+ } 
   return gRefMultiplicity;
 }
 
@@ -4240,39 +4378,56 @@ Double_t AliTwoParticlePIDCorr::GetRefMultiOrCentrality(AliAODEvent *event, Bool
   // get centrality object and check quality
   Double_t cent_v0=-1;
   Double_t nooftrackstruth=0;
+  Bool_t shift_to_TRACKS_MANUAL=kFALSE;//in case of wrong setting automatic shift to Tracks_Manual method
 
 if(fCentralityMethod=="V0M" || fCentralityMethod=="V0A" || fCentralityMethod=="V0C" || fCentralityMethod=="CL1" || fCentralityMethod=="ZNA" || fCentralityMethod=="V0AEq" || fCentralityMethod=="V0CEq" || fCentralityMethod=="V0MEq")//for PbPb, pPb, pp7TeV(still to be introduced)//data or RecoMC and also for TRUTH
     {
+      /*
+if(fSampleType=="pp_7" && fPPVsMultUtils)
+{//for pp 7 TeV case only using Alianalysisutils class
+	if(fAnalysisUtils) cent_v0 = fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,fCentralityMethod);
+	else cent_v0 = -1;
+  fHistCentStats->Fill(0.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0A"));
+  fHistCentStats->Fill(1.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0C"));
+  fHistCentStats->Fill(2.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0M"));   
+  fHistCentStats->Fill(3.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0AEq"));//only available for LHC10d at present (Quantile info)
+  fHistCentStats->Fill(4.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0CEq"));//only available for LHC10d at present (Quantile info)
+  fHistCentStats->Fill(5.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0MEq"));//only available for LHC10d at present (Quantile info)
+      }
+      */
+  if(fSampleType=="pPb" || fSampleType=="PbPb")
+  {
   AliCentrality *centralityObj=0;
   AliAODHeader *header = (AliAODHeader*) event->GetHeader();
   if(!header) return -1;
   centralityObj = header->GetCentralityP();
   // if (centrality->GetQuality() != 0) return ;
-
-  if(centralityObj)
-  {
+  if(centralityObj){
   fHistCentStats->Fill(0.,centralityObj->GetCentralityPercentile("V0A"));
   fHistCentStats->Fill(1.,centralityObj->GetCentralityPercentile("V0C"));
   fHistCentStats->Fill(2.,centralityObj->GetCentralityPercentile("V0M"));
-if(fSampleType=="pp")   fHistCentStats->Fill(3.,centralityObj->GetCentralityPercentile("V0AEq"));//only available for LHC10d at present (Quantile info)
-if(fSampleType=="pp")   fHistCentStats->Fill(4.,centralityObj->GetCentralityPercentile("V0CEq"));//only available for LHC10d at present (Quantile info)
-if(fSampleType=="pp")   fHistCentStats->Fill(5.,centralityObj->GetCentralityPercentile("V0MEq"));//only available for LHC10d at present (Quantile info)
+  fHistCentStats->Fill(3.,centralityObj->GetCentralityPercentile("V0AEq"));//only available for LHC10d at present (Quantile info)
+  fHistCentStats->Fill(4.,centralityObj->GetCentralityPercentile("V0CEq"));//only available for LHC10d at present (Quantile info)
+  fHistCentStats->Fill(5.,centralityObj->GetCentralityPercentile("V0MEq"));//only available for LHC10d at present (Quantile info)
 
-if(fSampleType=="pPb" || fSampleType=="PbPb")      fHistCentStats->Fill(6.,centralityObj->GetCentralityPercentile("CL1"));
-if(fSampleType=="pPb" || fSampleType=="PbPb")      fHistCentStats->Fill(7.,centralityObj->GetCentralityPercentile("ZNA")); 
+  fHistCentStats->Fill(6.,centralityObj->GetCentralityPercentile("CL1"));
+  fHistCentStats->Fill(7.,centralityObj->GetCentralityPercentile("ZNA")); 
 
-      cent_v0 = centralityObj->GetCentralityPercentile(fCentralityMethod);
-  }
+   cent_v0 = centralityObj->GetCentralityPercentile(fCentralityMethod);
+    }
   else cent_v0= -1;    
+  }
+ else shift_to_TRACKS_MANUAL=kTRUE;    
+
     }//centralitymethod condition
 
- else if(fCentralityMethod=="V0M_MANUAL" || fCentralityMethod=="V0A_MANUAL" || fCentralityMethod=="V0C_MANUAL" || fCentralityMethod=="TRACKS_MANUAL")//data or RecoMc and also for TRUTH
+ else if(fCentralityMethod=="V0M_MANUAL" || fCentralityMethod=="V0A_MANUAL" || fCentralityMethod=="V0C_MANUAL" || fCentralityMethod=="TRACKS_MANUAL" || shift_to_TRACKS_MANUAL)//data or RecoMc and also for TRUTH
    {
      if(!truth){//for data or RecoMC
     cent_v0 = GetReferenceMultiplicityVZEROFromAOD(event);
    }//for data or RecoMC
 
-    if(truth){//condition for TRUTH case
+    if(truth && (fAnalysisType == "MCAOD")){//condition for TRUTH case
 //check for TClonesArray(truth track MC information)
 fArrayMC = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
   if (!fArrayMC) {
