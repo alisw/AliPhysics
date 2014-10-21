@@ -1904,10 +1904,10 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
 				AliAODConversionPhoton *Vgamma=dynamic_cast<AliAODConversionPhoton*>(fGoodVirtualGammas->At(virtualGammaIndex));
 				if (Vgamma==NULL) continue;
 				//Check for same Electron ID
-				if(gamma->GetTrackLabelPositive() == Vgamma->GetTrackLabelPositive() ||
-				gamma->GetTrackLabelNegative() == Vgamma->GetTrackLabelNegative() ||
-				gamma->GetTrackLabelNegative() == Vgamma->GetTrackLabelPositive() ||
-				gamma->GetTrackLabelPositive() == Vgamma->GetTrackLabelNegative() ) continue;
+			     if(gamma->GetTrackLabelPositive()    == Vgamma->GetTrackLabelPositive() ||
+				gamma->GetTrackLabelNegative()    == Vgamma->GetTrackLabelNegative() ||
+				gamma->GetTrackLabelNegative()    == Vgamma->GetTrackLabelPositive() ||
+				gamma->GetTrackLabelPositive()    == Vgamma->GetTrackLabelNegative() ) continue;
 
 				AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma,Vgamma);
 				pi0cand->SetLabels(GammaIndex,virtualGammaIndex);
@@ -1938,6 +1938,10 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
 							hESDMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());	
 							Double_t sparesFill[4] = {pi0cand->M(),pi0cand->Pt(),(Double_t)zbin,(Double_t)mbin};
 							sESDMotherInvMassPtZM[fiCut]->Fill(sparesFill,1);
+							
+							if(fMCEvent){
+							  ProcessTrueMesonCandidates(pi0cand,gamma,Vgamma);
+							}
 						
 							if ( fDoMesonQA ) {
 								hESDMotherPhi[fiCut]->Fill(pi0cand->Phi());
@@ -1954,6 +1958,10 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
 						hESDMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
 						Double_t sparesFill[4] = {pi0cand->M(),pi0cand->Pt(),(Double_t)zbin,(Double_t)mbin};
 						sESDMotherInvMassPtZM[fiCut]->Fill(sparesFill,1);
+						
+						if(fMCEvent){
+							  ProcessTrueMesonCandidates(pi0cand,gamma,Vgamma);
+						}
 						
 						if ( fDoMesonQA ) {
 							hESDMotherPhi[fiCut]->Fill(pi0cand->Phi());
@@ -1974,11 +1982,15 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
 						if( Vgamma->M() > 2.5 && Vgamma->M() < 3.4){
 							hESDPi0MotherDiffLimInvMassPt[fiCut]->Fill( diffMass , pi0cand->Pt() );
 						}
+						
+						if(fMCEvent){
+						  ProcessTrueChicCandidates(pi0cand,gamma,Vgamma);
+						}
+						
+						
 					}
 					
-					if(fMCEvent){
-						ProcessTrueMesonCandidates(pi0cand,gamma,Vgamma);
-					}
+					
 				}
 				delete pi0cand;
 				pi0cand=0x0;
@@ -2151,23 +2163,23 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
 
 	// Process True Mesons
 	AliStack *MCStack = fMCEvent->Stack();
-	if(	TrueGammaCandidate->GetV0Index()<fESDEvent->GetNumberOfV0s()	){
-		//cout<<"Entro True Meson"<<endl;
+	
+	if( TrueGammaCandidate->GetV0Index() < fESDEvent->GetNumberOfV0s() ){
+		
+	  
 
 		Bool_t isTruePi0 = kFALSE;
 		Bool_t isTrueEta = kFALSE;
-		Bool_t massCutAccept = kFALSE;
-		//Bool_t isTrueChiC = kFALSE;
-		Int_t gammaMCLabel = TrueGammaCandidate->GetMCParticleLabel(MCStack);
+		
+	        Int_t gammaMCLabel = TrueGammaCandidate->GetMCParticleLabel(MCStack);
 		Int_t gammaMotherLabel = -1;
+		
+		
 
-		if(  ((AliDalitzElectronCuts*) fCutElectronArray->At(fiCut))->DoMassCut() == kTRUE ) {		
-			if( ((AliDalitzElectronCuts*) fCutElectronArray->At(fiCut))->MassCut( Pi0Candidate->Pt() , TrueVirtualGammaCandidate->M() ) == kTRUE ){
-				massCutAccept = kTRUE;
-			}
-		} else {
-			massCutAccept  = kTRUE;
-		}
+		
+		
+		//Checking if the gamma candidate is a real gamma
+		
 		
 		if(gammaMCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
 			// Daughters Gamma 0
@@ -2185,13 +2197,16 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
 		}
 
 
+		
+		//Checking if the virtual gamma is a real virtual gamma
+		
 		Int_t virtualGammaMCLabel = TrueVirtualGammaCandidate->GetMCParticleLabel(MCStack);
 		Int_t virtualGammaMotherLabel = -1;
-		Int_t virtualGamma = 1;
-		Int_t virtualGammaGrandMotherLabel =-1;
+		Int_t virtualGamma = -1;
+		
 
 
-		if(virtualGammaMCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
+		if( virtualGammaMCLabel != -1 ){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
 			// Daughters Gamma 1
 			TParticle * negativeMC = (TParticle*)TrueVirtualGammaCandidate->GetNegativeMCDaughter(MCStack);
 			TParticle * positiveMC = (TParticle*)TrueVirtualGammaCandidate->GetPositiveMCDaughter(MCStack);
@@ -2201,9 +2216,8 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
 
 				if( virtualGammaMotherMC->GetPdgCode() != 22 ){
 					virtualGammaMotherLabel=virtualGammaMCLabel;
-					if(virtualGammaMotherMC->GetPdgCode() == 443){
-						virtualGammaGrandMotherLabel=virtualGammaMotherMC->GetFirstMother();
-					}
+					virtualGamma = 1;
+					
 				} else if (negativeMC->GetUniqueID() == 5 && positiveMC->GetUniqueID() ==5){ // ... From Conversion ...
 					virtualGammaMotherLabel=virtualGammaMotherMC->GetFirstMother();
 					virtualGamma = 0; //no virtual gamma
@@ -2211,8 +2225,11 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
 			}
 		}
 
+		
+		//Checking if both gamma and virtual gamma comming from Pi0 or Eta
+		
 
-		if(gammaMotherLabel >= 0 && ( gammaMotherLabel == virtualGammaMotherLabel) ){
+		if( gammaMotherLabel >= 0 && ( gammaMotherLabel == virtualGammaMotherLabel) ){
 			if(((TParticle*)MCStack->Particle(virtualGammaMotherLabel))->GetPdgCode() == 111){
 				isTruePi0=kTRUE;
 			}
@@ -2221,19 +2238,9 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
 			}
 		}
 
-		if( fDoChicAnalysis) {
-			if(gammaMotherLabel>=0 && ( gammaMotherLabel == virtualGammaGrandMotherLabel) ){
-				if(((TParticle*)MCStack->Particle(virtualGammaGrandMotherLabel))->GetPdgCode() == 445 ||
-					((TParticle*)MCStack->Particle(virtualGammaGrandMotherLabel))->GetPdgCode() == 10443 ||
-					((TParticle*)MCStack->Particle(virtualGammaGrandMotherLabel))->GetPdgCode() == 20443 ){
-				
-					hESDTrueMotherChiCInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
-					hESDTrueMotherChiCDiffInvMassPt[fiCut]->Fill(Pi0Candidate->M()-TrueVirtualGammaCandidate->M(),Pi0Candidate->Pt());
-				}
-			}  
-		}
+		
 
-		if( ( isTruePi0 || isTrueEta) && massCutAccept ){ // True Pion or Eta
+		if(  isTruePi0 || isTrueEta ){ // True Pion or Eta
 			if ( virtualGamma == 1 ) { //True Dalitz	
 				Float_t weighted= 1;
 				
@@ -2291,8 +2298,8 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
 			}
 		}
 
-		if(!isTruePi0 && !isTrueEta && massCutAccept ){ // Background
-			if(gammaMotherLabel>-1 && virtualGammaMotherLabel>-1 && virtualGamma == 0){ // Both Tracks are Photons and have a mother but not Pi0 or Eta
+		if( !isTruePi0 && !isTrueEta ){ // Background
+			if( gammaMotherLabel > -1 && virtualGammaMotherLabel > -1 && virtualGamma == 0 ){ // Both Tracks are Photons and have a mother but not Pi0 or Eta
 				hESDTrueBckGGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 			} else { // No photon or without mother
 				hESDTrueBckContInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
@@ -2300,6 +2307,86 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
 		}
 	}
 }
+
+//______________________________________________________________________
+void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueChicCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate, AliAODConversionPhoton *TruejpsiCandidate)
+{
+
+	
+	AliStack *MCStack = fMCEvent->Stack();
+	
+	
+	if(	TrueGammaCandidate->GetV0Index() < fESDEvent->GetNumberOfV0s()	){
+		
+	  
+	  
+		//Checking gamma
+		
+		Int_t gammaMCLabel = TrueGammaCandidate->GetMCParticleLabel(MCStack);
+		Int_t gammaMotherLabel = -1;
+
+		
+		
+		if( gammaMCLabel != -1){// Gamma is Combinatorial; MC Particles don't belong to the same Mother
+			// Daughters Gamma 0
+			
+			TParticle * negativeMC = (TParticle*)TrueGammaCandidate->GetNegativeMCDaughter(MCStack);
+			TParticle * positiveMC = (TParticle*)TrueGammaCandidate->GetPositiveMCDaughter(MCStack);
+			TParticle * gammaMC = (TParticle*)MCStack->Particle(gammaMCLabel);
+
+			if( TMath::Abs(negativeMC->GetPdgCode())==11 && TMath::Abs(positiveMC->GetPdgCode())==11 ){  // Electrons ...
+				if( negativeMC->GetUniqueID() == 5 && positiveMC->GetUniqueID() == 5 ){ // ... From Conversion ...
+					if(gammaMC->GetPdgCode() == 22){ // ... with Gamma Mother
+						gammaMotherLabel=gammaMC->GetFirstMother();
+					}
+				}
+			}
+		}
+
+
+		
+		//Checking jpsi
+		
+		Int_t jpsiMCLabel 		= TruejpsiCandidate->GetMCParticleLabel(MCStack);
+		Int_t jpsiMotherLabel 		= -1;
+
+		
+
+		if( jpsiMCLabel != -1 ){ 
+			
+			TParticle * negativeMC = (TParticle*)TruejpsiCandidate->GetNegativeMCDaughter(MCStack);
+			TParticle * positiveMC = (TParticle*)TruejpsiCandidate->GetPositiveMCDaughter(MCStack);
+			TParticle * jpsiMC = (TParticle*)MCStack->Particle(jpsiMCLabel);
+
+			if(TMath::Abs(negativeMC->GetPdgCode())==11 && TMath::Abs(positiveMC->GetPdgCode())==11){  // Electrons ...
+
+									
+				if(jpsiMC->GetPdgCode() == 443){
+				  
+						jpsiMotherLabel=jpsiMC->GetFirstMother();
+						
+				}
+				 
+								
+			}
+		}
+
+
+		if( gammaMotherLabel>=0 && ( gammaMotherLabel == jpsiMotherLabel) ){
+		  if(			((TParticle*)MCStack->Particle(jpsiMotherLabel))->GetPdgCode() == 445   ||
+					((TParticle*)MCStack->Particle(jpsiMotherLabel))->GetPdgCode() == 10443 ||
+					((TParticle*)MCStack->Particle(jpsiMotherLabel))->GetPdgCode() == 20443 ){
+				
+					hESDTrueMotherChiCInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+					hESDTrueMotherChiCDiffInvMassPt[fiCut]->Fill(Pi0Candidate->M()-TruejpsiCandidate->M(),Pi0Candidate->Pt());
+		  }
+		}  
+		
+	}
+}
+
+
+
 
 
 //________________________________________________________________________
