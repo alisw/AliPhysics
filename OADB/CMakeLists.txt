@@ -64,4 +64,14 @@ install(TARGETS ${MODULE}
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
 
+install(DIRECTORY COMMON
+                  EMCAL
+                  PHOS
+                  PWG
+                  PWGPP
+                  PWGLF
+                  PWGJE
+                  PWGLF
+        DESTINATION OADB)
+
 message(STATUS "${MODULE} enabled")
