@@ -134,7 +134,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fIsPPbData(kFALSE),
   fUseAdditionalCuts(kFALSE),
   fUseCutsForTMVA(kFALSE),
-  fUseCascadeTaskForLctoV0bachelor(kFALSE)
+  fUseCascadeTaskForLctoV0bachelor(kFALSE),
+  fCutOnMomConservation(0.00001)
 {
   //
   //Default ctor
@@ -196,7 +197,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fIsPPbData(kFALSE),
   fUseAdditionalCuts(kFALSE),
   fUseCutsForTMVA(kFALSE),
-  fUseCascadeTaskForLctoV0bachelor(kFALSE)
+  fUseCascadeTaskForLctoV0bachelor(kFALSE),
+  fCutOnMomConservation(0.00001)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -289,7 +291,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fIsPPbData(c.fIsPPbData),
   fUseAdditionalCuts(c.fUseAdditionalCuts),
   fUseCutsForTMVA(c.fUseCutsForTMVA),
-  fUseCascadeTaskForLctoV0bachelor(c.fUseCascadeTaskForLctoV0bachelor)
+  fUseCascadeTaskForLctoV0bachelor(c.fUseCascadeTaskForLctoV0bachelor),
+  fCutOnMomConservation(c.fCutOnMomConservation)
 {
   //
   // Copy Constructor
@@ -651,6 +654,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGneutrDaughPositive(211);
       ((AliCFVertexingHFCascade*)cfVtxHF)->SetPDGneutrDaughNegative(211);
       ((AliCFVertexingHFCascade*)cfVtxHF)->SetPrimaryVertex(aodVtx);
+      ((AliCFVertexingHFCascade*)cfVtxHF)->SetCutOnMomConservation(fCutOnMomConservation);
       if (fUseAdditionalCuts) ((AliCFVertexingHFCascade*)cfVtxHF)->SetUseCutsForTMVA(fUseCutsForTMVA);
     }
     else {
