@@ -180,7 +180,7 @@ main()
       #echo grep -n ${destination} $candidateLocalFileDatabase | sed "s/:/ /"  | sort -rk4
       #grep -n ${destination} $candidateLocalFileDatabase| sed "s/:/ /"  | sort -rk4
       #this guy contains: index of the original entry, local file name, md5, ctime
-      candidateDBrecord=($(grep -n ${destination} $tmp/${candidateLocalFileDatabase##*/}| sed "s/:/ /"  | sort -Vrk4|head -n1 ))
+      candidateDBrecord=($(grep -n ${destination} $tmp/${candidateLocalFileDatabase##*/}| sed "s/:/ /"  | sort -rk4|head -n1 ))
       originalEntryIndex=${candidateDBrecord[0]}
       [[ $lineNumber -ne $originalEntryIndex ]] && continue
     fi
