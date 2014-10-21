@@ -120,8 +120,8 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  //change different set o
 	// 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinM20", 14 "MaxM20", 15 "MaximumDispersion", 16 "NLM"
 	
 	if (trainConfig == 1){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0,1), kEMC1 (2,3)
-		eventCutArray[ 0] = "0002011"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "10000040022030000"; mesonCutArray[0] = "01631031009000"; // 100 MeV cluster min energy
-		eventCutArray[ 1] = "0002011"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "10000040052030000"; mesonCutArray[1] = "01631031009000"; // 300 MeV cluster min energy
+		eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "10000040022030000"; mesonCutArray[0] = "01631031009000"; // 100 MeV cluster min energy
+		eventCutArray[ 1] = "0000311"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "10000040052030000"; mesonCutArray[1] = "01631031009000"; // 300 MeV cluster min energy
 		eventCutArray[ 2] = "0005111"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "10000040022030000"; mesonCutArray[2] = "01631031009000"; // 100 MeV cluster min energy
 		eventCutArray[ 3] = "0005111"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "10000040052030000"; mesonCutArray[3] = "01631031009000"; // 300 MeV cluster min energy
 	} else if (trainConfig == 2){  // EMCAL clusters, EMCEGA triggers
@@ -135,8 +135,8 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  //change different set o
 		eventCutArray[ 2] = "0009511"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "10000040022030000"; mesonCutArray[2] = "01631031009000"; // EMCEJ2, 100 MeV cluster min energy
 		eventCutArray[ 3] = "0009511"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "10000040052030000"; mesonCutArray[3] = "01631031009000"; // EMCEJ2, 300 MeV cluster min energy
 	} else if (trainConfig == 4){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0,1), kEMC1 (2,3), track matching 0.035
-		eventCutArray[ 0] = "0002011"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "10000042022030000"; mesonCutArray[0] = "01631031009000"; // 100 MeV cluster min energy
-		eventCutArray[ 1] = "0002011"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "10000042052030000"; mesonCutArray[1] = "01631031009000"; // 300 MeV cluster min energy
+		eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "10000042022030000"; mesonCutArray[0] = "01631031009000"; // 100 MeV cluster min energy
+		eventCutArray[ 1] = "0000311"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "10000042052030000"; mesonCutArray[1] = "01631031009000"; // 300 MeV cluster min energy
 		eventCutArray[ 2] = "0005111"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "10000042022030000"; mesonCutArray[2] = "01631031009000"; // 100 MeV cluster min energy
 		eventCutArray[ 3] = "0005111"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "10000042052030000"; mesonCutArray[3] = "01631031009000"; // 300 MeV cluster min energy
 	} else if (trainConfig == 5){  // EMCAL clusters, EMCEGA triggers, track matching 0.035
@@ -150,8 +150,8 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  //change different set o
 		eventCutArray[ 2] = "0009511"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "10000042022030000"; mesonCutArray[2] = "01631031009000"; // EMCEJ2, 100 MeV cluster min energy
 		eventCutArray[ 3] = "0009511"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "10000042052030000"; mesonCutArray[3] = "01631031009000"; // EMCEJ2, 300 MeV cluster min energy
 	} else if (trainConfig == 7){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0,1), kEMC1 (2,3), track matching 0.04
-		eventCutArray[ 0] = "0002011"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "10000043022030000"; mesonCutArray[0] = "01631031009000"; // 100 MeV cluster min energy
-		eventCutArray[ 1] = "0002011"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "10000043052030000"; mesonCutArray[1] = "01631031009000"; // 300 MeV cluster min energy
+		eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "10000043022030000"; mesonCutArray[0] = "01631031009000"; // 100 MeV cluster min energy
+		eventCutArray[ 1] = "0000311"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "10000043052030000"; mesonCutArray[1] = "01631031009000"; // 300 MeV cluster min energy
 		eventCutArray[ 2] = "0005111"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "10000043022030000"; mesonCutArray[2] = "01631031009000"; // 100 MeV cluster min energy
 		eventCutArray[ 3] = "0005111"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "10000043052030000"; mesonCutArray[3] = "01631031009000"; // 300 MeV cluster min energy
 	} else if (trainConfig == 8){  // EMCAL clusters, EMCEGA triggers, track matching 0.04
@@ -180,17 +180,17 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  //change different set o
 		eventCutArray[ 2] = "0005211"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "10000043022030000"; mesonCutArray[2] = "01631031009000"; // 100 MeV cluster min energy
 		eventCutArray[ 3] = "0005211"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "10000043052030000"; mesonCutArray[3] = "01631031009000"; // 300 MeV cluster min energy
 	} else if (trainConfig == 31) { //PHOS clusters
-		eventCutArray[ 0] = "0002011"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "20000030022000000"; mesonCutArray[0] = "01631031009000"; //pp LHC11a with SDD, PHOS
+		eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "20000030022000000"; mesonCutArray[0] = "01631031009000"; //pp LHC11a with SDD, PHOS
 		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "20000030022000000"; mesonCutArray[1] = "01631031009000"; //pp LHC13g default MB
 		eventCutArray[ 2] = "0006111"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "20000030022000000"; mesonCutArray[2] = "01631031009000"; //pp LHC11a PHI1
 		eventCutArray[ 3] = "0006211"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "20000030022000000"; mesonCutArray[3] = "01631031009000"; //pp LHC11a PHI7
 	} else if (trainConfig == 32) { //PHOS clusters, track matching 0.035
-		eventCutArray[ 0] = "0002011"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "20000032022000000"; mesonCutArray[0] = "01631031009000"; //pp LHC11a with SDD, PHOS
+		eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "20000032022000000"; mesonCutArray[0] = "01631031009000"; //pp LHC11a with SDD, PHOS
 		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "20000032022000000"; mesonCutArray[1] = "01631031009000"; //pp LHC13g default MB
 		eventCutArray[ 2] = "0006111"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "20000032022000000"; mesonCutArray[2] = "01631031009000"; //pp LHC11a PHI1
 		eventCutArray[ 3] = "0006211"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "20000032022000000"; mesonCutArray[3] = "01631031009000"; //pp LHC11a PHI7
 	} else if (trainConfig == 32) { //PHOS clusters, track matching 0.04
-		eventCutArray[ 0] = "0002011"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "20000033022000000"; mesonCutArray[0] = "01631031009000"; //pp LHC11a with SDD, PHOS
+		eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "20000033022000000"; mesonCutArray[0] = "01631031009000"; //pp LHC11a with SDD, PHOS
 		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "20000033022000000"; mesonCutArray[1] = "01631031009000"; //pp LHC13g default MB
 		eventCutArray[ 2] = "0006111"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "20000033022000000"; mesonCutArray[2] = "01631031009000"; //pp LHC11a PHI1
 		eventCutArray[ 3] = "0006211"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "20000033022000000"; mesonCutArray[3] = "01631031009000"; //pp LHC11a PHI7
