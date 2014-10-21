@@ -368,9 +368,18 @@ void AliTPCcalibTimeGain::ProcessCosmicEvent(AliVEvent *event) {
     if (!track) continue;
     const AliVfriendTrack *friendTrack = friendEvent->GetTrack(i);
     if (!friendTrack) continue;
-    const AliExternalTrackParam * trackIn = track->GetInnerParam();
-    const AliExternalTrackParam * trackOut = friendTrack->GetTPCOut();
+    //const AliExternalTrackParam * trackIn = track->GetInnerParam();
+    AliExternalTrackParam trckIn;
+    track->GetTrackParamIp(trckIn);
+    if ( (track->GetTrackParamIp(trckIn)) < 0) continue;
+    AliExternalTrackParam * trackIn = &trckIn;
     if (!trackIn) continue;
+
+    //const AliExternalTrackParam * trackOut = friendTrack->GetTPCOut();
+    AliExternalTrackParam trckOut;
+    friendTrack->GetTrackParamTPCOut(trckOut);
+    if ( (friendTrack->GetTrackParamTPCOut(trckOut)) < 0) continue;
+    AliExternalTrackParam * trackOut = &trckOut;
     if (!trackOut) continue;
 
     // calculate necessary track parameters
@@ -440,9 +449,18 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
         continue;
     }
         
-    const AliExternalTrackParam * trackIn = track->GetInnerParam();
-    const AliExternalTrackParam * trackOut = friendTrack->GetTPCOut();
+    //const AliExternalTrackParam * trackIn = track->GetInnerParam();
+    AliExternalTrackParam trckIn;
+    track->GetTrackParamIp(trckIn);
+    if ( (track->GetTrackParamIp(trckIn)) < 0) continue;
+    AliExternalTrackParam * trackIn = &trckIn;
     if (!trackIn) continue;
+
+    //const AliExternalTrackParam * trackOut = friendTrack->GetTPCOut();
+    AliExternalTrackParam trckOut;
+    friendTrack->GetTrackParamTPCOut(trckOut);
+    if ( (friendTrack->GetTrackParamTPCOut(trckOut)) < 0) continue;
+    AliExternalTrackParam * trackOut = &trckOut;
     if (!trackOut) continue;
 
     // calculate necessary track parameters
@@ -531,10 +549,20 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
       if (!trackP) continue; //Printf("***ERROR*** trackP not available!");
       const AliVfriendTrack *friendTrackP = friendEvent->GetTrack(index);
       if (!friendTrackP) continue;
-      const AliExternalTrackParam * trackPIn = trackP->GetInnerParam();
-      const AliExternalTrackParam * trackPOut = friendTrackP->GetTPCOut();
+      //const AliExternalTrackParam * trackPIn = trackP->GetInnerParam();
+      AliExternalTrackParam trckPIn;
+      trackP->GetTrackParamIp(trckPIn);
+      if ( (trackP->GetTrackParamIp(trckPIn)) < 0) continue;
+      AliExternalTrackParam * trackPIn = &trckPIn;
       if (!trackPIn) continue;
+
+      //const AliExternalTrackParam * trackPOut = friendTrackP->GetTPCOut();
+      AliExternalTrackParam trckPOut;
+      friendTrackP->GetTrackParamTPCOut(trckPOut);
+      if ( (friendTrackP->GetTrackParamTPCOut(trckPOut)) < 0) continue;
+      AliExternalTrackParam * trackPOut = &trckPOut;
       if (!trackPOut) continue;
+
       // calculate necessary track parameters
       Double_t meanP = trackPIn->GetP();
       Double_t meanDrift = 250 - 0.5*TMath::Abs(trackPIn->GetZ() + trackPOut->GetZ());

@@ -162,12 +162,23 @@ void     AliTPCcalibCalib::Process(AliVEvent *event){
     if (!friendTrack) continue;
     //track->SetFriendTrack(friendTrack);
     fCurrentFriendTrack=const_cast<AliVfriendTrack*>(friendTrack);
-    const AliExternalTrackParam * trackIn  = track->GetInnerParam();
-    const AliExternalTrackParam * trackOut = track->GetOuterParam();
-    AliExternalTrackParam * tpcOut   = (AliExternalTrackParam *)(friendTrack->GetTPCOut());
+    AliExternalTrackParam trckIn;
+    track->GetTrackParamIp(trckIn);
+    if((track->GetTrackParamIp(trckIn)) < 0) continue;
+    const AliExternalTrackParam * trackIn  = &trckIn;
     if (!trackIn) continue;
+
+    AliExternalTrackParam trckOut;
+    track->GetTrackParamOp(trckOut);
+    if((track->GetTrackParamOp(trckOut)) < 0) continue;
+    const AliExternalTrackParam * trackOut = &trckOut;
     if (!trackOut) continue;
-    if (!tpcOut) continue;   
+
+    AliExternalTrackParam prmtpcOut;
+    friendTrack->GetTrackParamTPCOut(prmtpcOut);
+    if((friendTrack->GetTrackParamTPCOut(prmtpcOut)) < 0) continue;
+    AliExternalTrackParam * tpcOut   = &prmtpcOut;
+    if (!tpcOut) continue;
     TObject *calibObject;
     AliTPCseed *seed = 0;
     for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
@@ -175,7 +186,11 @@ void     AliTPCcalibCalib::Process(AliVEvent *event){
     }
     if (!seed) continue;
     RefitTrack(track, seed, event->GetMagneticField());
-    (*tpcOut)=*(track->GetOuterParam());  
+
+    AliExternalTrackParam prmOut;
+    track->GetTrackParamOp(prmOut);
+    AliExternalTrackParam * paramOut = &prmOut;
+    (*tpcOut)=*paramOut;
   }
   return;
 }
@@ -304,12 +319,18 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliVTrack *track, AliTPCseed *seed, Float_t
   // 
   // And now do refit
   //
-  AliExternalTrackParam * trackInOld  = (AliExternalTrackParam*)track->GetInnerParam();
-  AliExternalTrackParam * trackOuter = (AliExternalTrackParam*)track->GetOuterParam();
-  AliExternalTrackParam * trackOutOld   = (AliExternalTrackParam *)friendTrack->GetTPCOut();
-  Double_t mass =    TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+  AliExternalTrackParam trckOld;
+  track->GetTrackParamIp(trckOld);
+  AliExternalTrackParam * trackInOld  = &trckOld;
 
-    
+  AliExternalTrackParam trckOuter;
+  track->GetTrackParamOp(trckOuter);
+  AliExternalTrackParam * trackOuter = &trckOuter;
+
+  AliExternalTrackParam trckOutOld;
+  friendTrack->GetTrackParamTPCOut(trckOutOld);
+  AliExternalTrackParam * trackOutOld = &trckOutOld;
+  Double_t mass =    TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
 
   AliExternalTrackParam trackIn  = *trackOutOld;
   trackIn.ResetCovariance(kResetCov);

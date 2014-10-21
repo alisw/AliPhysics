@@ -1367,8 +1367,12 @@ Int_t  AliTPCcalibLaser::FindMirror(AliVTrack *track, AliTPCseed *seed){
   //
   // Find corresponding mirror
   // add the corresponding tracks
- 
-  if (!track->GetOuterParam()) return -1;
+
+  AliExternalTrackParam trckOut;
+  track->GetTrackParamOp(trckOut);
+  if ((track->GetTrackParamOp(trckOut)) < 0) return -1;
+  AliExternalTrackParam * trackOut = &trckOut;
+  if (!trackOut) return -1;
 
   Float_t kRadius0  = 252;
   Float_t kRadius   = 254.2;
@@ -1398,7 +1402,7 @@ Int_t  AliTPCcalibLaser::FindMirror(AliVTrack *track, AliTPCseed *seed){
   if (csideC>0.5*seed->GetNumberOfClusters()) side=1;
 
 
-  AliExternalTrackParam param(*(track->GetOuterParam()));
+  AliExternalTrackParam param(*trackOut);
   AliTracker::PropagateTrackTo(&param,kRadius0,TDatabasePDG::Instance()->GetParticle("mu+")->Mass(),3,kTRUE);
   AliTracker::PropagateTrackTo(&param,kRadius,TDatabasePDG::Instance()->GetParticle("mu+")->Mass(),0.1,kTRUE);
   AliTPCLaserTrack ltr;
