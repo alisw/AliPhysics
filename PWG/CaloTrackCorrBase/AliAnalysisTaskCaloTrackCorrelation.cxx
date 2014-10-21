@@ -39,6 +39,7 @@
 #include "AliPDG.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
+#include "AliLog.h"
 
 ClassImp(AliAnalysisTaskCaloTrackCorrelation)
 
@@ -88,12 +89,12 @@ AliAnalysisTaskCaloTrackCorrelation::~AliAnalysisTaskCaloTrackCorrelation()
 void AliAnalysisTaskCaloTrackCorrelation::UserCreateOutputObjects()
 {
   // Create the output container
-  if (DebugLevel() > 1) printf("AliAnalysisTaskCaloTrackCorrelation::UserCreateOutputObjects() - Begin\n");
+  AliDebug(1,"Begin");
   
   //Get list of aod arrays, add each aod array to analysis frame
   TList * list = fAna->FillAndGetAODBranchList(); //Loop the analysis and create the list of branches
   
-  if (DebugLevel() >= 1) printf("AliAnalysisTaskCaloTrackCorrelation::UserCreateOutputObjects() - n AOD branches %d\n",list->GetEntries());
+  AliDebug(1,Form("n AOD branches %d",list->GetEntries()));
   
   //Put the delta AODs in output file, std or delta
   if((fAna->GetReader())->WriteDeltaAODToFile())
@@ -111,11 +112,11 @@ void AliAnalysisTaskCaloTrackCorrelation::UserCreateOutputObjects()
   OpenFile(1);
   fOutputContainer = fAna->GetOutputContainer();
   
-  if (DebugLevel() >= 1) printf("AliAnalysisTaskCaloTrackCorrelation::UserCreateOutputObjects() - n histograms %d\n",fOutputContainer->GetEntries());
+  AliDebug(1,Form("n histograms %d",fOutputContainer->GetEntries()));
   
   fOutputContainer->SetOwner(kTRUE);
   
-  if (DebugLevel() > 1) printf("AliAnalysisTaskCaloTrackCorrelation::UserCreateOutputObjects() - End\n");
+  AliDebug(1,"End");
   
   PostData(1,fOutputContainer);
   
@@ -136,21 +137,24 @@ void AliAnalysisTaskCaloTrackCorrelation::Init()
 {
   // Initialization
   
-  if (DebugLevel() > 1) printf("AliAnalysisTaskCaloTrackCorrelation::Init() - Begin\n");
+  AliDebug(1,"Begin");
+  
+  if( fDebug >= 0 )
+    (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(this->ClassName(),fDebug);
   
   // Call configuration file if specified
   
   if (fConfigName.Length())
   {
-    printf("AliAnalysisTaskCaloTrackCorrelation::Init() - ### Configuration file is %s.C ###\n", fConfigName.Data());
+    AliInfo(Form("### Configuration file is %s.C ###", fConfigName.Data()));
     gROOT->LoadMacro(fConfigName+".C");
     fAna = (AliAnaCaloTrackCorrMaker*) gInterpreter->ProcessLine("ConfigAnalysis()");
   }
   
   if(!fAna)
   {
-    printf("AliAnalysisTaskCaloTrackCorrelation::Init() - Analysis maker pointer not initialized, no analysis specified, STOP !\n");
-    abort();
+    AliFatal("Analysis maker pointer not initialized, no analysis specified, STOP!");
+    return; // coverity
   }
   
   // Add different generator particles to PDG Data Base
@@ -170,7 +174,7 @@ void AliAnalysisTaskCaloTrackCorrelation::Init()
   // Selected Trigger
   if(fAna->GetReader()->IsEventTriggerAtSEOn()) fAna->GetReader()->SetEventTriggerMask(GetCollisionCandidates());
   
-  if (DebugLevel() > 1) printf("AliAnalysisTaskCaloTrackCorrelation::Init() - End\n");
+  AliDebug(1,"End");
   
 }
 
@@ -180,14 +184,14 @@ void AliAnalysisTaskCaloTrackCorrelation::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event
   
-  if (DebugLevel() > 1) printf("AliAnalysisTaskCaloTrackCorrelation::UserExec() - Begin\n");
+  AliDebug(1,"Begin");
   
   //Get the type of data, check if type is correct
   Int_t  datatype = fAna->GetReader()->GetDataType();
   if(datatype != AliCaloTrackReader::kESD && datatype != AliCaloTrackReader::kAOD &&
      datatype != AliCaloTrackReader::kMC)
   {
-    printf("AliAnalysisTaskCaloTrackCorrelation::UserExec() - Wrong type of data\n");
+    AliError("Wrong type of data");
     return ;
   }
   
@@ -197,9 +201,11 @@ void AliAnalysisTaskCaloTrackCorrelation::UserExec(Option_t */*option*/)
   fAna->ProcessEvent((Int_t) Entry(), CurrentFileName());
   
   //printf("AliAnalysisTaskCaloTrackCorrelation::Current Event %d; Current File Name : %s\n",(Int_t) Entry(), CurrentFileName());
-  if (DebugLevel() > 1) printf("AliAnalysisTaskCaloTrackCorrelation::UserExec() - End\n");
+  AliDebug(1,"End");
   
   PostData(1, fOutputContainer);
+  
+  AliDebug(1,"End");
   
   //gObjectTable->Print();
   
@@ -237,8 +243,7 @@ void AliAnalysisTaskCaloTrackCorrelation::FinishTaskOutput()
   TH2F *histBin0 = dynamic_cast<TH2F*>(inputH->GetStatistics("BIN0"));
   
   if(histStat)fOutputContainer->Add(histStat);
-  else if(DebugLevel()>0)
-    printf("AliAnalysisTaskCaloTrackCorrelation::FinishTaskOutput() - Stat histogram not available check, \n if ESDs, that AliPhysicsSelection was on, \n if AODs, if EventStat_temp.root exists \n");
+  else AliDebug(0,"Stat histogram not available check, \n if ESDs, that AliPhysicsSelection was on, \n if AODs, if EventStat_temp.root exists");
   
   if(histBin0)fOutputContainer->Add(histBin0);
   

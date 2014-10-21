@@ -53,6 +53,7 @@
 #include "AliAODPWG4Particle.h"
 #include "AliCalorimeterUtils.h"
 #include "AliVEvent.h"
+#include "AliLog.h"
 
 // ---- Detector ----
 #include "AliEMCALPIDUtils.h"
@@ -202,13 +203,16 @@ void AliCaloPID::InitParameters()
   fPHOSPhotonWeightFormulaExpression = "0.98*(x<40)+ 0.68*(x>=100)+(x>=40 && x<100)*(0.98+x*(6e-3)-x*x*(2e-04)+x*x*x*(1.1e-06))";
   fPHOSPi0WeightFormulaExpression    = "0.98*(x<65)+ 0.915*(x>=100)+(x>=65 && x-x*(1.95e-3)-x*x*(4.31e-05)+x*x*x*(3.61e-07))"   ;
   
-  if(fRecalculateBayesian){
-    if(fParticleFlux == kLow){
-      printf("AliCaloPID::Init() - SetLOWFluxParam\n");
+  if(fRecalculateBayesian)
+  {
+    if(fParticleFlux == kLow)
+    {
+      AliInfo("SetLOWFluxParam");
       fEMCALPIDUtils->SetLowFluxParam() ;
     }
-    else if (fParticleFlux == kHigh){
-      printf("AliCaloPID::Init() - SetHIGHFluxParam\n");
+    else if (fParticleFlux == kHigh)
+    {
+      AliInfo("SetHighFluxParam");
       fEMCALPIDUtils->SetHighFluxParam() ;
     }
   }
@@ -586,13 +590,13 @@ Int_t AliCaloPID::GetIdentifiedParticleType(AliVCluster * cluster)
   // Calculate PID SS from data, do not use bayesian weights
   // -------------------------------------------------------
   
-  if(fDebug > 0) printf("AliCaloPID::GetIdentifiedParticleType: EMCAL %d?, E %3.2f, l0 %3.2f, l1 %3.2f, disp %3.2f, tof %1.11f, distCPV %3.2f, distToBC %1.1f, NMax %d\n",
-                        cluster->IsEMCAL(),energy,lambda0,cluster->GetM20(),cluster->GetDispersion(),cluster->GetTOF(), 
-                        cluster->GetEmcCpvDistance(), cluster->GetDistanceToBadChannel(),cluster->GetNExMax());
+  AliDebug(1,Form("EMCAL %d?, E %3.2f, l0 %3.2f, l1 %3.2f, disp %3.2f, tof %1.11f, distCPV %3.2f, distToBC %1.1f, NMax %d",
+                  cluster->IsEMCAL(),energy,lambda0,cluster->GetM20(),cluster->GetDispersion(),cluster->GetTOF(),
+                  cluster->GetEmcCpvDistance(), cluster->GetDistanceToBadChannel(),cluster->GetNExMax()));
   
   if(cluster->IsEMCAL())
   {
-    if(fDebug > 0) printf("AliCaloPID::GetIdentifiedParticleType() - EMCAL SS %f <%f < %f?\n",fEMCALL0CutMin, lambda0, fEMCALL0CutMax);
+    AliDebug(1,Form("EMCAL SS %f <%f < %f?",fEMCALL0CutMin, lambda0, fEMCALL0CutMax));
     
     if(lambda0 < fEMCALL0CutMax && lambda0 > fEMCALL0CutMin) return kPhoton ;
     else                                                     return kNeutralUnknown ; 
@@ -669,7 +673,7 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromBayesWeights(Bool_t isEMCAL, Doub
     else                                                     pdg = kNeutralUnknown ;
   }
   
-  if(fDebug > 0)printf("AliCaloPID::GetIdentifiedParticleType:Final Pdg: %d, cluster energy %2.2f \n", pdg,energy);
+  AliDebug(1,Form("Final Pdg: %d, cluster energy %2.2f", pdg,energy));
 
   return pdg ;
   
@@ -702,13 +706,12 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   //If too low number of cells, skip it
   if ( nc < fSplitMinNCells)  return kNeutralUnknown ; 
   
-  if(fDebug > 0) printf("\t pass nCells cut\n");
+  AliDebug(2,"\t pass nCells cut");
   
   // Get Number of local maxima
   nMax  = caloutils->GetNumberOfLocalMaxima(cluster, cells, absIdList, maxEList) ; 
   
-  if(fDebug > 0) printf("AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting() - Cluster : E %1.1f, M02 %1.2f, NLM %d, N Cells %d\n",
-                        eClus,m02,nMax,nc);
+  AliDebug(1,Form("Cluster : E %1.1f, M02 %1.2f, NLM %d, N Cells %d",eClus,m02,nMax,nc));
 
   //---------------------------------------------------------------------
   // Get the 2 max indeces and do inv mass
@@ -787,9 +790,9 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   
   if(absId2<0 || absId1<0) 
   {
-    if(fDebug > 0) printf("AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting() - Bad index for local maxima : N max %d, i1 %d, i2 %d, cluster E %2.2f, ncells %d, m02 %2.2f\n",
-                          nMax,absId1,absId2,eClus,nc,m02);
-    return kNeutralUnknown ; 
+    AliDebug(1,Form("Bad index for local maxima : N max %d, i1 %d, i2 %d, cluster E %2.2f, ncells %d, m02 %2.2f",
+                    nMax,absId1,absId2,eClus,nc,m02));
+    return kNeutralUnknown ;
   }
   
   //---------------------------------------------------------------------
@@ -828,7 +831,7 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   else          splitFracCut = fSplitEFracMin[2];
   if((e1+e2)/eClus < splitFracCut) return kNeutralUnknown ;
 
-  if(fDebug > 0) printf("\t pass Split E frac cut\n");
+  AliDebug(2,"\t pass Split E frac cut");
   
   // Consider sub-clusters with minimum energy
   Float_t minECut = fSubClusterEMin[2];
@@ -840,7 +843,7 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
     return kNeutralUnknown ;
   }
 
-  if(fDebug > 0) printf("\t pass min sub-cluster E cut\n");
+  AliDebug(2,"\t pass min sub-cluster E cut");
   
   // Asymmetry of cluster
   Float_t asy =-10;
@@ -849,7 +852,7 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   if( !IsInPi0SplitAsymmetryRange(eClus,asy,nMax) ) return kNeutralUnknown ;
   
   
-  if (fDebug>0) printf("\t pass asymmetry cut\n");
+  AliDebug(2,"\t pass asymmetry cut");
   
   Bool_t pi0OK = kFALSE;
   Bool_t etaOK = kFALSE;
@@ -864,10 +867,10 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   if(nMax > 2) energy = e1+e2; // In case of NLM>2 use mass cut for NLM=2 but for the split sum not the cluster energy that is not the pi0 E.
   
   // Check the mass, and set an ID to the splitted cluster
-  if     ( conOK && mass < fMassPhoMax && mass > fMassPhoMin ) { if(fDebug > 0) printf("\t Split Conv \n"); return kPhoton ; }
-  else if( etaOK && mass < fMassEtaMax && mass > fMassEtaMin ) { if(fDebug > 0) printf("\t Split Eta \n");  return kEta    ; }
-  else if( pi0OK && IsInPi0SplitMassRange(energy,mass,nMax)  ) { if(fDebug > 0) printf("\t Split Pi0 \n");  return kPi0    ; }
-  else                                                                                                      return kNeutralUnknown ;
+  if     ( conOK && mass < fMassPhoMax && mass > fMassPhoMin ) { AliDebug(2,"\t Split Conv"); return kPhoton ; }
+  else if( etaOK && mass < fMassEtaMax && mass > fMassEtaMin ) { AliDebug(2,"\t Split Eta" ); return kEta    ; }
+  else if( pi0OK && IsInPi0SplitMassRange(energy,mass,nMax)  ) { AliDebug(2,"\t Split Pi0" ); return kPi0    ; }
+  else                                                                                        return kNeutralUnknown ;
   
 }
 
@@ -879,67 +882,67 @@ TString  AliCaloPID::GetPIDParametersList()
   TString parList ; //this will be list of parameters used for this analysis.
   const Int_t buffersize = 255;
   char onePar[buffersize] ;
-  snprintf(onePar,buffersize,"--- AliCaloPID ---\n") ;
+  snprintf(onePar,buffersize,"--- AliCaloPID ---") ;
   parList+=onePar ;	
   if(fUseBayesianWeights)
   {
-    snprintf(onePar,buffersize,"fEMCALPhotonWeight =%2.2f (EMCAL bayesian weight for photons)\n",fEMCALPhotonWeight) ;
+    snprintf(onePar,buffersize,"fEMCALPhotonWeight =%2.2f (EMCAL bayesian weight for photons)",fEMCALPhotonWeight) ;
     parList+=onePar ;
-    snprintf(onePar,buffersize,"fEMCALPi0Weight =%2.2f (EMCAL bayesian weight for pi0)\n",fEMCALPi0Weight) ;
+    snprintf(onePar,buffersize,"fEMCALPi0Weight =%2.2f (EMCAL bayesian weight for pi0)",fEMCALPi0Weight) ;
     parList+=onePar ;
-    snprintf(onePar,buffersize,"fEMCALElectronWeight =%2.2f(EMCAL bayesian weight for electrons)\n",fEMCALElectronWeight) ;
+    snprintf(onePar,buffersize,"fEMCALElectronWeight =%2.2f(EMCAL bayesian weight for electrons)",fEMCALElectronWeight) ;
     parList+=onePar ;
-    snprintf(onePar,buffersize,"fEMCALChargeWeight =%2.2f (EMCAL bayesian weight for charged hadrons)\n",fEMCALChargeWeight) ;
+    snprintf(onePar,buffersize,"fEMCALChargeWeight =%2.2f (EMCAL bayesian weight for charged hadrons)",fEMCALChargeWeight) ;
     parList+=onePar ;
-    snprintf(onePar,buffersize,"fEMCALNeutralWeight =%2.2f (EMCAL bayesian weight for neutral hadrons)\n",fEMCALNeutralWeight) ;
+    snprintf(onePar,buffersize,"fEMCALNeutralWeight =%2.2f (EMCAL bayesian weight for neutral hadrons)",fEMCALNeutralWeight) ;
     parList+=onePar ;
-    snprintf(onePar,buffersize,"fPHOSPhotonWeight =%2.2f (PHOS bayesian weight for photons)\n",fPHOSPhotonWeight) ;
+    snprintf(onePar,buffersize,"fPHOSPhotonWeight =%2.2f (PHOS bayesian weight for photons)",fPHOSPhotonWeight) ;
     parList+=onePar ;
-    snprintf(onePar,buffersize,"fPHOSPi0Weight =%2.2f (PHOS bayesian weight for pi0)\n",fPHOSPi0Weight) ;
+    snprintf(onePar,buffersize,"fPHOSPi0Weight =%2.2f (PHOS bayesian weight for pi0)",fPHOSPi0Weight) ;
     parList+=onePar ;
-    snprintf(onePar,buffersize,"fPHOSElectronWeight =%2.2f(PHOS bayesian weight for electrons)\n",fPHOSElectronWeight) ;
+    snprintf(onePar,buffersize,"fPHOSElectronWeight =%2.2f(PHOS bayesian weight for electrons)",fPHOSElectronWeight) ;
     parList+=onePar ;
-    snprintf(onePar,buffersize,"fPHOSChargeWeight =%2.2f (PHOS bayesian weight for charged hadrons)\n",fPHOSChargeWeight) ;
+    snprintf(onePar,buffersize,"fPHOSChargeWeight =%2.2f (PHOS bayesian weight for charged hadrons)",fPHOSChargeWeight) ;
     parList+=onePar ;
-    snprintf(onePar,buffersize,"fPHOSNeutralWeight =%2.2f (PHOS bayesian weight for neutral hadrons)\n",fPHOSNeutralWeight) ;
+    snprintf(onePar,buffersize,"fPHOSNeutralWeight =%2.2f (PHOS bayesian weight for neutral hadrons)",fPHOSNeutralWeight) ;
     parList+=onePar ;
     
     if(fPHOSWeightFormula)
     {
-      snprintf(onePar,buffersize,"PHOS Photon Weight Formula: %s\n",fPHOSPhotonWeightFormulaExpression.Data() ) ;
+      snprintf(onePar,buffersize,"PHOS Photon Weight Formula: %s",fPHOSPhotonWeightFormulaExpression.Data() ) ;
       parList+=onePar;
-      snprintf(onePar,buffersize,"PHOS Pi0    Weight Formula: %s\n",fPHOSPi0WeightFormulaExpression.Data()    ) ;
+      snprintf(onePar,buffersize,"PHOS Pi0    Weight Formula: %s",fPHOSPi0WeightFormulaExpression.Data()    ) ;
       parList+=onePar;	  
     }
   }
   else
   {
-    snprintf(onePar,buffersize,"EMCAL: fEMCALL0CutMin =%2.2f, fEMCALL0CutMax =%2.2f  (Cut on Shower Shape) \n",fEMCALL0CutMin, fEMCALL0CutMax) ;
+    snprintf(onePar,buffersize,"EMCAL: fEMCALL0CutMin =%2.2f, fEMCALL0CutMax =%2.2f  (Cut on Shower Shape)",fEMCALL0CutMin, fEMCALL0CutMax) ;
     parList+=onePar ;
-    snprintf(onePar,buffersize,"EMCAL: fEMCALDEtaCut =%2.2f, fEMCALDPhiCut =%2.2f  (Cut on track matching) \n",fEMCALDEtaCut, fEMCALDPhiCut) ;
+    snprintf(onePar,buffersize,"EMCAL: fEMCALDEtaCut =%2.2f, fEMCALDPhiCut =%2.2f  (Cut on track matching)",fEMCALDEtaCut, fEMCALDPhiCut) ;
     parList+=onePar ;
-    snprintf(onePar,buffersize,"fTOFCut  =%e (Cut on TOF, used in PID evaluation) \n",fTOFCut) ;
+    snprintf(onePar,buffersize,"fTOFCut  =%e (Cut on TOF, used in PID evaluation)",fTOFCut) ;
     parList+=onePar ;	
-    snprintf(onePar,buffersize,"fPHOSRCut =%2.2f, fPHOSDispersionCut =%2.2f  (Cut on Shower Shape and CPV) \n",fPHOSRCut,fPHOSDispersionCut) ;
+    snprintf(onePar,buffersize,"fPHOSRCut =%2.2f, fPHOSDispersionCut =%2.2f  (Cut on Shower Shape and CPV)",fPHOSRCut,fPHOSDispersionCut) ;
     parList+=onePar ;
     
   }
   
   if(fUseSimpleM02Cut)
   {
-    snprintf(onePar,buffersize,"%2.2f< M02 < %2.2f \n",    fSplitM02MinCut, fSplitM02MaxCut) ;
+    snprintf(onePar,buffersize,"%2.2f< M02 < %2.2f",    fSplitM02MinCut, fSplitM02MaxCut) ;
     parList+=onePar ;
   }
-  snprintf(onePar,buffersize,"fMinNCells =%d \n",        fSplitMinNCells) ;
+  snprintf(onePar,buffersize,"fMinNCells =%d",        fSplitMinNCells) ;
   parList+=onePar ;
   if(fUseSimpleMassCut)
   {
-    snprintf(onePar,buffersize,"pi0 : %2.1f < m <%2.1f\n", fMassPi0Min,fMassPi0Max);
+    snprintf(onePar,buffersize,"pi0 : %2.1f < m <%2.1f", fMassPi0Min,fMassPi0Max);
     parList+=onePar ;
   }
-  snprintf(onePar,buffersize,"eta : %2.1f < m <%2.1f\n", fMassEtaMin,fMassEtaMax);
+  snprintf(onePar,buffersize,"eta : %2.1f < m <%2.1f", fMassEtaMin,fMassEtaMax);
   parList+=onePar ;
-  snprintf(onePar,buffersize,"conv: %2.1f < m <%2.1f\n", fMassPhoMin,fMassPhoMax);
+  snprintf(onePar,buffersize,"conv: %2.1f < m <%2.1f", fMassPhoMin,fMassPhoMax);
   parList+=onePar ;
   
   
@@ -1043,45 +1046,43 @@ void AliCaloPID::SetPIDBits(AliVCluster * cluster,
   
   //Set PID pdg
   ph->SetIdentifiedParticleType(GetIdentifiedParticleType(cluster));
-  
-  if(fDebug > 0)
-  { 
-    printf("AliCaloPID::SetPIDBits: TOF %e, Lambda0 %2.2f, Lambda1 %2.2f\n",tof , l0, l1); 	
-    printf("AliCaloPID::SetPIDBits: pdg %d, bits: TOF %d, Dispersion %d, Charge %d\n",
-           ph->GetIdentifiedParticleType(), ph->GetTOFBit() , ph->GetDispBit() , ph->GetChargedBit()); 
-  }
+ 
+  AliDebug(1,Form("TOF %e, Lambda0 %2.2f, Lambda1 %2.2f",tof , l0, l1));
+  AliDebug(1,Form("pdg %d, bits: TOF %d, Dispersion %d, Charge %d",
+           ph->GetIdentifiedParticleType(), ph->GetTOFBit() , ph->GetDispBit() , ph->GetChargedBit()));
 }
 
 //_________________________________________________________
 Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
-                                  AliCalorimeterUtils * cu, 
-                                  AliVEvent* event) const 
+                                  AliCalorimeterUtils * cu,
+                                  AliVEvent* event) const
 {
   //Check if there is any track attached to this cluster
   
   Int_t nMatches = cluster->GetNTracksMatched();
   AliVTrack * track = 0;
-
+  
   if(nMatches > 0)
   {
     //In case of ESDs, by default without match one entry with negative index, no match, reject.
     if(!strcmp("AliESDCaloCluster",Form("%s",cluster->ClassName())))
-    {    
+    {
       Int_t iESDtrack = cluster->GetTrackMatchedIndex();
       if(iESDtrack >= 0) track = dynamic_cast<AliVTrack*> (event->GetTrack(iESDtrack));
       else return kFALSE;
       
       if (!track)
       {
-        if(fDebug > 0) printf("AliCaloPID::IsTrackMatched() - Null matched track in ESD when index is OK!\n");
+        AliWarning("Null matched track in ESD when index is OK!");
         return kFALSE;
       }
-    }      
-    else { // AOD
+    }
+    else
+    { // AOD
       track = dynamic_cast<AliVTrack*> (cluster->GetTrackMatched(0));
       if (!track)
       {
-        if(fDebug > 0) printf("AliCaloPID::IsTrackMatched() - Null matched track in AOD!\n");
+        AliWarning("Null matched track in AOD!");
         return kFALSE;
       }
     }
@@ -1095,8 +1096,8 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
       dR = 2000., dZ = 2000.;
       cu->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
     }
-        
-    if(cluster->IsPHOS()) 
+    
+    if(cluster->IsPHOS())
     {
       Int_t charge = track->Charge();
       Double_t mf  = event->GetMagneticField();
@@ -1106,25 +1107,25 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
     }//PHOS
     else //EMCAL
     {
-    if(fDebug > 1) 
-        printf("AliCaloPID::IsTrackMatched - EMCAL dR %f < %f, dZ %f < %f \n",dR, fEMCALDPhiCut, dZ, fEMCALDEtaCut);
       
-      if(TMath::Abs(dR) < fEMCALDPhiCut && 
+      AliDebug(1,Form("EMCAL dR %f < %f, dZ %f < %f ",dR, fEMCALDPhiCut, dZ, fEMCALDEtaCut));
+      
+      if(TMath::Abs(dR) < fEMCALDPhiCut &&
          TMath::Abs(dZ) < fEMCALDEtaCut)   return kTRUE;
       else                                 return kFALSE;
       
-    }//EMCAL cluster 
+    }//EMCAL cluster
     
     
   } // more than 1 match, at least one track in array
   else return kFALSE;
-    
+  
 }
 
 //___________________________________________________________________________________________________
-Float_t AliCaloPID::TestPHOSDispersion(const Double_t pt, const Double_t l1, const Double_t l2) const 
+Float_t AliCaloPID::TestPHOSDispersion(const Double_t pt, const Double_t l1, const Double_t l2) const
 {
-  //Check if cluster photon-like. Uses photon cluster parameterization in real pp data 
+  //Check if cluster photon-like. Uses photon cluster parameterization in real pp data
   //Returns distance in sigmas. Recommended cut 2.5
   
   Double_t l2Mean  = 1.53126+9.50835e+06/(1.+1.08728e+07*pt+1.73420e+06*pt*pt) ;
@@ -1132,13 +1133,13 @@ Float_t AliCaloPID::TestPHOSDispersion(const Double_t pt, const Double_t l1, con
   Double_t l2Sigma = 6.48260e-02+7.60261e+10/(1.+1.53012e+11*pt+5.01265e+05*pt*pt)+9.00000e-03*pt;
   Double_t l1Sigma = 4.44719e-04+6.99839e-01/(1.+1.22497e+00*pt+6.78604e-07*pt*pt)+9.00000e-03*pt;
   Double_t c       =-0.35-0.550*TMath::Exp(-0.390730*pt) ;
-  Double_t r2      = 0.5*  (l1-l1Mean)*(l1-l1Mean)/l1Sigma/l1Sigma + 
-                     0.5*  (l2-l2Mean)*(l2-l2Mean)/l2Sigma/l2Sigma +
-                     0.5*c*(l1-l1Mean)*(l2-l2Mean)/l1Sigma/l2Sigma ;
+  Double_t r2      = 0.5*  (l1-l1Mean)*(l1-l1Mean)/l1Sigma/l1Sigma +
+  0.5*  (l2-l2Mean)*(l2-l2Mean)/l2Sigma/l2Sigma +
+  0.5*c*(l1-l1Mean)*(l2-l2Mean)/l1Sigma/l2Sigma ;
   
-  if(fDebug > 0) printf("AliCaloPID::TestPHOSDispersion() - PHOS SS R %f < %f?\n", TMath::Sqrt(r2), fPHOSDispersionCut);
+  AliDebug(1,Form("PHOS SS R %f < %f?", TMath::Sqrt(r2), fPHOSDispersionCut));
   
-  return TMath::Sqrt(r2) ; 
+  return TMath::Sqrt(r2) ;
   
 }
 
@@ -1186,9 +1187,9 @@ Float_t AliCaloPID::TestPHOSChargedVeto(const Double_t dx,  const Double_t dz, c
   Double_t rz = (dz-meanZ)/sz ;
   Double_t rx = (dx-meanX)/sx ;
   
-  if(fDebug > 0) 
-    printf("AliCaloPID::TestPHOSDispersion() - PHOS Matching R %f < %f\n",TMath::Sqrt(rx*rx+rz*rz), fPHOSRCut);
+  AliDebug(1,Form("PHOS Matching R %f < %f",TMath::Sqrt(rx*rx+rz*rz), fPHOSRCut));
   
   return TMath::Sqrt(rx*rx+rz*rz) ;
   
 }
+
