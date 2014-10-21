@@ -296,9 +296,11 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     //fHistograms->Add(fHistDistanceToBadChannelAfterAcc);
 	
 	// Cluster quality related histograms
-	fHistClusterTimevsEBeforeQA=new TH2F(Form("ClusterTimeVsE_beforeClusterQA %s",GetCutNumber().Data()),"ClusterTimeVsE_beforeClusterQA",400,-10e-6,10e-6,100,0.,40);
+	Double_t timeMin = -10e-6;
+	Double_t timeMax = 10e-6;
+	fHistClusterTimevsEBeforeQA=new TH2F(Form("ClusterTimeVsE_beforeClusterQA %s",GetCutNumber().Data()),"ClusterTimeVsE_beforeClusterQA",400,timeMin,timeMax,100,0.,40);
 	fHistograms->Add(fHistClusterTimevsEBeforeQA);
-	fHistClusterTimevsEAfterQA=new TH2F(Form("ClusterTimeVsE_afterClusterQA %s",GetCutNumber().Data()),"ClusterTimeVsE_afterClusterQA",400,-10e-6,10e-6,100,0.,40);
+	fHistClusterTimevsEAfterQA=new TH2F(Form("ClusterTimeVsE_afterClusterQA %s",GetCutNumber().Data()),"ClusterTimeVsE_afterClusterQA",400,timeMin,timeMax,100,0.,40);
 	fHistograms->Add(fHistClusterTimevsEAfterQA);
     //fHistExoticCellBeforeQA=new TH2F(Form("ExoticCell_beforeClusterQA %s",GetCutNumber().Data()),"ExoticCell_beforeClusterQA",400,0,40,50,0.75,1);
     //fHistograms->Add(fHistExoticCellBeforeQA);
@@ -789,10 +791,11 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
 			if (fHistClusterdEtadPhiNegTracksBeforeQA && inTrack->Charge()> 0) fHistClusterdEtadPhiNegTracksBeforeQA->Fill(dEta, dPhi);
 			if(dR2 < fMinDistTrackToCluster*fMinDistTrackToCluster){
 				matched = kTRUE;
+			} else {
 				if (fHistDistanceTrackToClusterAfterQA)fHistDistanceTrackToClusterAfterQA->Fill(TMath::Sqrt(dR2));
 				if (fHistClusterdEtadPhiAfterQA) fHistClusterdEtadPhiAfterQA->Fill(dEta, dPhi);
-				if (fHistClusterRAfterQA) fHistClusterRAfterQA->Fill(clusterR);
-			}
+				if (fHistClusterRAfterQA) fHistClusterRAfterQA->Fill(clusterR);				
+			}	
 		}
 		delete trackParam;
 	}
