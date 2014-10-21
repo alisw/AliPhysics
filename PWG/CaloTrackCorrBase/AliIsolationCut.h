@@ -86,6 +86,7 @@ class AliIsolationCut : public TObject {
   Float_t    GetPtFraction()          const { return fPtFraction     ; }
   Int_t      GetICMethod()            const { return fICMethod       ; }
   Int_t      GetParticleTypeInCone()  const { return fPartInCone     ; }
+  Int_t      GetDebug()               const { return fDebug          ; }
   Bool_t     GetFracIsThresh()        const { return fFracIsThresh   ; }
 	
   void       SetConeSize(Float_t r)         { fConeSize       = r    ; }
