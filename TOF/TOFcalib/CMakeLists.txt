@@ -23,16 +23,19 @@ include_directories(${CMAKE_SOURCE_DIR}/TOF/${MODULE})
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${CMAKE_SOURCE_DIR}/STEER/AOD
                     ${CMAKE_SOURCE_DIR}/STEER/CDB
                     ${CMAKE_SOURCE_DIR}/STEER/ESD
                     ${CMAKE_SOURCE_DIR}/STEER/STEER
                     ${CMAKE_SOURCE_DIR}/STEER/STEERBase
                     ${CMAKE_SOURCE_DIR}/TOF/TOFbase
+                    ${CMAKE_SOURCE_DIR}/TOF/TOFrec
                    )
 
 # Sources in alphabetical order
 set(SRCS
     AliTOFAnalysisTaskCalibPass0.cxx
+    AliTOFAnalysisTaskCalibTree.cxx
    )
 
 # Headers from sources
@@ -45,7 +48,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER CDB ESD ANALYSIS ANALYSISalice TOFbase)
+set(LIBDEPS STEERBase STEER CDB ESD AOD ANALYSIS ANALYSISalice TOFbase TOFrec)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 
