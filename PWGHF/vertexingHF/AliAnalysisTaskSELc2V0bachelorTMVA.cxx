@@ -959,6 +959,10 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
       AliDebug(2, Form("Step 1 ok: The MC particle has correct daughters!!"));
       AliAODMCParticle* daugh0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labeldaugh0));
       AliAODMCParticle* daugh1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labeldaugh1));
+      if(!daugh0 || !daugh1){
+	AliDebug(2,"Particle daughters not properly retrieved!");
+	return;
+      }
       Int_t pdgCodeDaugh0 = TMath::Abs(daugh0->GetPdgCode());
       Int_t pdgCodeDaugh1 = TMath::Abs(daugh1->GetPdgCode());
       AliAODMCParticle* bachelorMC = daugh0;
