@@ -53,7 +53,7 @@ fAddConvertedPairsToAOD(kFALSE),
 fMassCut(0),                  
 fConvAsymCut(1.),                  fConvDEtaCut(2.),
 fConvDPhiMinCut(-1.),              fConvDPhiMaxCut(7.), 
-
+fMomentum(),                       fProdVertex(),
 // Histograms
 fhPtPhotonConv(0),                 fhEtaPhiPhotonConv(0),          fhEtaPhi05PhotonConv(0),
 fhConvDeltaEta(0),                 fhConvDeltaPhi(0),              fhConvDeltaEtaPhi(0), 
@@ -472,7 +472,8 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillAOD()
     
     // Second cluster loop
     AliAODPWG4Particle* calo2 = 0;
-    for(Int_t jaod = iaod + 1 ; jaod < naod ; jaod++) {
+    for(Int_t jaod = iaod + 1 ; jaod < naod ; jaod++)
+    {
       //Check if set previously as converted couple, if so skip its use.
       if (indexConverted[jaod]) continue;
       //printf("Check Conversion indeces %d and %d\n",iaod,jaod);
@@ -511,12 +512,9 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillAOD()
         //the clusters.
         
         TObjArray * clusters    = 0; 
-        if(calo->GetDetector() == "EMCAL"){
-          clusters = GetEMCALClusters();
-        }
-        else{
-          clusters = GetPHOSClusters();
-        }
+        if(calo->GetDetectorTag() == kEMCAL) clusters = GetEMCALClusters();
+        else                                 clusters = GetPHOSClusters();
+        
         
         Int_t iclus = -1;
         AliVCluster *cluster1 = FindCluster(clusters,calo ->GetCaloLabel(0),iclus); 
@@ -586,10 +584,8 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillAOD()
           //Check the origin of the pair, look for conversion, antinucleons or jet correlations (strings)
           Int_t ancPDG    = 0;
           Int_t ancStatus = 0;
-          TLorentzVector momentum;
-          TVector3 prodVertex;
           Int_t ancLabel  = GetMCAnalysisUtils()->CheckCommonAncestor(cluster1->GetLabel(), cluster2->GetLabel(), 
-                                                                      GetReader(), ancPDG, ancStatus, momentum, prodVertex);
+                                                                      GetReader(), ancPDG, ancStatus, fMomentum, fProdVertex);
           
           // printf("AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms() - Common ancestor label %d, pdg %d, name %s, status %d; \n",
           //                          ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus);
@@ -605,12 +601,12 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillAOD()
               fhConvPtMCConversion         ->Fill( pairM, calo->Pt()+calo2->Pt());
               fhConvDispersionMCConversion ->Fill( cluster1->GetDispersion(), cluster2->GetDispersion());
               fhConvM02MCConversion        ->Fill( cluster1->GetM02(), cluster2->GetM02());
-              fhConvDistMCConversion       ->Fill( convDist , prodVertex.Mag() );
-              fhConvDistMCConversion       ->Fill( convDist2, prodVertex.Mag() );
+              fhConvDistMCConversion       ->Fill( convDist , fProdVertex.Mag() );
+              fhConvDistMCConversion       ->Fill( convDist2, fProdVertex.Mag() );
               
               if(dEta<0.05 && pairM<0.01 && asymmetry<0.1){
-                fhConvDistMCConversionCuts->Fill( convDist , prodVertex.Mag() );
-                fhConvDistMCConversionCuts->Fill( convDist2, prodVertex.Mag() );
+                fhConvDistMCConversionCuts->Fill( convDist , fProdVertex.Mag() );
+                fhConvDistMCConversionCuts->Fill( convDist2, fProdVertex.Mag() );
               }
               
             }              
@@ -658,18 +654,19 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillAOD()
     
     //..........................................................................................................
     //Pair selected as converted, remove both clusters or recombine them into a photon and put them in the AOD
-    if(bConverted){ 
+    if(bConverted)
+    {
       //Add to AOD
       if(fAddConvertedPairsToAOD){
         //Create AOD of pair analysis
-        TLorentzVector mpair = *(calo->Momentum())+*(calo2->Momentum());
-        AliAODPWG4Particle aodpair = AliAODPWG4Particle(mpair);
+        fMomentum = *(calo->Momentum())+*(calo2->Momentum());
+        AliAODPWG4Particle aodpair = AliAODPWG4Particle(fMomentum);
         aodpair.SetLabel(calo->GetLabel());
         
         //printf("Index %d, Id %d\n",iaod, calo->GetID());
         //Set the indeces of the original caloclusters  
         aodpair.SetCaloLabel(calo->GetCaloLabel(0),id2);
-        aodpair.SetDetector(calo->GetDetector());
+        aodpair.SetDetectorTag(calo->GetDetectorTag());
         aodpair.SetIdentifiedParticleType(calo->GetIdentifiedParticleType());
         aodpair.SetTag(calo ->GetTag());
         aodpair.SetTagged(kTRUE);

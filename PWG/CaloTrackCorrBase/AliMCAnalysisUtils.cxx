@@ -46,7 +46,10 @@ TObject(),
 fCurrentEvent(-1), 
 fDebug(-1), 
 fJetsList(new TList), 
-fMCGenerator("PYTHIA")
+fMCGenerator(kPythia),
+fMCGeneratorString("PYTHIA"),
+fDaughMom(),  fDaughMom2(),
+fMotherMom(), fGMotherMom()
 {
   //Ctor
 }
@@ -56,7 +59,8 @@ AliMCAnalysisUtils::~AliMCAnalysisUtils()
 {
   // Remove all pointers.
   
-  if (fJetsList) {
+  if (fJetsList)
+  {
     fJetsList->Clear();
     delete fJetsList ;
   }     
@@ -68,7 +72,8 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2,
                                               Int_t & ancPDG, Int_t & ancStatus, 
                                               TLorentzVector & momentum, TVector3 & prodVertex) 
 {
-  //Check the first common ancestor of 2 clusters, given the most likely labels of the primaries generating such clusters.
+  // Check the first common ancestor of 2 clusters, given the most likely labels of the primaries generating such clusters.
+  
   Int_t label1[100];
   Int_t label2[100];
   label1[0]= index1;
@@ -214,9 +219,10 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2,
 
 //________________________________________________________________________________________
 Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label, Int_t nlabels,
-                                      const AliCaloTrackReader* reader, TString calorimeter)
+                                      const AliCaloTrackReader* reader, Int_t calorimeter)
 {
-  //Play with the montecarlo particles if available
+  // Play with the montecarlo particles if available.
+  
   Int_t tag = 0;
   
   if(nlabels<=0) {
@@ -225,8 +231,8 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label, Int_t nlabels,
   }
   
   TObjArray* arrayCluster = 0;
-  if      ( calorimeter == "EMCAL" ) arrayCluster = reader->GetEMCALClusters();
-  else if ( calorimeter ==  "PHOS" ) arrayCluster= reader->GetPHOSClusters();
+  if      ( calorimeter == AliCaloTrackReader::kEMCAL ) arrayCluster = reader->GetEMCALClusters();
+  else if ( calorimeter == AliCaloTrackReader::kPHOS  ) arrayCluster = reader->GetPHOSClusters ();
   
   //Select where the information is, ESD-galice stack or AOD mcparticles branch
   if(reader->ReadStack()){
@@ -240,9 +246,10 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label, Int_t nlabels,
 }
 
 //____________________________________________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckOrigin(Int_t label, const AliCaloTrackReader* reader, TString calorimeter)
+Int_t AliMCAnalysisUtils::CheckOrigin(Int_t label, const AliCaloTrackReader* reader, Int_t calorimeter)
 {
-  //Play with the montecarlo particles if available
+  // Play with the montecarlo particles if available.
+  
   Int_t tag = 0;
   
   if(label<0) {
@@ -251,8 +258,8 @@ Int_t AliMCAnalysisUtils::CheckOrigin(Int_t label, const AliCaloTrackReader* rea
   }
   
   TObjArray* arrayCluster = 0;
-  if      ( calorimeter == "EMCAL" ) arrayCluster = reader->GetEMCALClusters();
-  else if ( calorimeter ==  "PHOS" ) arrayCluster= reader->GetPHOSClusters();
+  if      ( calorimeter == AliCaloTrackReader::kEMCAL ) arrayCluster = reader->GetEMCALClusters();
+  else if ( calorimeter == AliCaloTrackReader::kPHOS  ) arrayCluster = reader->GetPHOSClusters();
   
   Int_t labels[]={label};
   
@@ -299,7 +306,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, Int_t nlabels,
     Int_t mStatus  = mom->GetStatusCode() ;
     Int_t iParent  = mom->GetFirstMother() ;
     
-    if(fDebug > 0 && label < 8 && fMCGenerator!="") printf("AliMCAnalysisUtils::CheckOriginInStack() - Mother is parton %d\n",iParent);
+    if(fDebug > 0 && label < 8 && fMCGenerator != kBoxLike) printf("AliMCAnalysisUtils::CheckOriginInStack() - Mother is parton %d\n",iParent);
     
     //GrandParent of the entity
     TParticle * parent = NULL;
@@ -459,7 +466,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, Int_t nlabels,
       }
       else if(mStatus == 1)
       { //undecayed particle
-        if(fMCGenerator == "PYTHIA")
+        if(fMCGenerator == kPythia)
         {
           if(iParent < 8 && iParent > 5)
           {//outgoing partons
@@ -473,7 +480,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, Int_t nlabels,
           else  SetTagBit(tag,kMCUnknown);
          }//PYTHIA
       
-        else if(fMCGenerator == "HERWIG")
+        else if(fMCGenerator == kHerwig)
         {
           if(pStatus < 197)
           {//Not decay
@@ -581,6 +588,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, Int_t nlabels,
 {
   // Play with the MCParticles in AOD if available. Tag particles depending on their origin.
   // Do same things as in CheckOriginInStack but different input.
+  
   if(!mcparticles)
   {
     if(fDebug >= 0)
@@ -601,7 +609,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, Int_t nlabels,
     Int_t mPdg     = TMath::Abs(mPdgSign);
     Int_t iParent  = mom->GetMother() ;
     
-    if(fDebug > 0 && label < 8 && fMCGenerator!="") printf("AliMCAnalysisUtils::CheckOriginInAOD() - Mother is parton %d\n",iParent);
+    if(fDebug > 0 && label < 8 && fMCGenerator != kBoxLike) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Mother is parton %d\n",iParent);
     
     //GrandParent
     AliAODMCParticle * parent = NULL ;
@@ -739,8 +747,10 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, Int_t nlabels,
         CheckOverlapped2GammaDecay(labels,nlabels, iParent, mcparticles, tag); //set to kMCPi0 if 2 gammas in same cluster
         // In case it did not merge, check if the decay companion is lost
         if(!CheckTagBit(tag, kMCPi0) && !CheckTagBit(tag,kMCDecayPairInCalo) && !CheckTagBit(tag,kMCDecayPairLost))
+        {
           CheckLostDecayPair(arrayCluster,iMom, iParent, mcparticles, tag);
-
+        }
+        
         //printf("Bit set is Merged %d, Pair in calo %d, Lost %d\n",CheckTagBit(tag, kMCPi0),CheckTagBit(tag,kMCDecayPairInCalo),CheckTagBit(tag,kMCDecayPairLost));
       }
       else if (pPdg == 221)
@@ -754,14 +764,14 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, Int_t nlabels,
         if(!CheckTagBit(tag, kMCEta) && !CheckTagBit(tag,kMCDecayPairInCalo))
           CheckLostDecayPair(arrayCluster,iMom, iParent, mcparticles, tag);
       }
-      else if(mom->IsPhysicalPrimary() && (fMCGenerator=="PYTHIA" || fMCGenerator=="HERWIG")) //undecayed particle
+      else if( mom->IsPhysicalPrimary() && ( fMCGenerator == kPythia || fMCGenerator == kHerwig ) ) //undecayed particle
       {
         if(iParent < 8 && iParent > 5 )
         {//outgoing partons
           if(pPdg == 22) SetTagBit(tag,kMCPrompt);
           else SetTagBit(tag,kMCFragmentation);
         }//Outgoing partons
-        else if(iParent <= 5 && (fMCGenerator=="PYTHIA" || fMCGenerator=="HERWIG"))
+        else if( iParent <= 5 && ( fMCGenerator == kPythia || fMCGenerator == kHerwig ) )
         {
           SetTagBit(tag, kMCISR); //Initial state radiation
         }
@@ -849,7 +859,7 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels,    Int_
                                                     Int_t mesonIndex, AliStack *stack,
                                                     Int_t &tag)
 {
-  //Check if cluster is formed from the contribution of 2 decay photons from pi0 or eta. Input in stack
+  // Check if cluster is formed from the contribution of 2 decay photons from pi0 or eta. Input in stack.
   
   if(labels[0] < 0 || labels[0] > stack->GetNtrack() || nlabels <= 1) {
     if(fDebug > 2) printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(ESD) - Exit : label[0] %d, n primaries %d, nlabels %d \n",
@@ -976,7 +986,7 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels,    Int_
 void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t nlabels, Int_t mesonIndex,
                                                     const TClonesArray *mcparticles, Int_t & tag   )
 {
-  //Check if cluster is formed from the contribution of 2 decay photons from pi0 or eta. Input in AODMCParticles
+  // Check if cluster is formed from the contribution of 2 decay photons from pi0 or eta. Input in AODMCParticles.
   
   if(labels[0] < 0 || labels[0] > mcparticles->GetEntriesFast() || nlabels <= 1)
   {
@@ -1122,7 +1132,7 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t n
 void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray* arrayCluster,   Int_t iMom, Int_t iParent,
                                                AliStack * stack,                Int_t & tag)
 {
-  // Check on ESDs if the current decay photon has the second photon companion lost
+  // Check on ESDs if the current decay photon has the second photon companion lost.
   
   if(!arrayCluster || iMom < 0 || iParent < 0|| !stack) return;
   
@@ -1216,8 +1226,8 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray* arrayCluster,   
 void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray   * arrayCluster,Int_t iMom, Int_t iParent,
                                                const TClonesArray* mcparticles, Int_t & tag)
 {
-  // Check on AODs if the current decay photon has the second photon companion lost
-  
+  // Check on AODs if the current decay photon has the second photon companion lost.
+
   if(!arrayCluster || iMom < 0 || iParent < 0|| !mcparticles) return;
 
   AliAODMCParticle * parent = (AliAODMCParticle*) mcparticles->At(iParent);
@@ -1335,7 +1345,8 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray   * arrayCluster,
 //_____________________________________________________________________
 TList * AliMCAnalysisUtils::GetJets(const AliCaloTrackReader * reader)
 {
-  //Return list of jets (TParticles) and index of most likely parton that originated it.
+  // Return list of jets (TParticles) and index of most likely parton that originated it.
+  
   AliStack * stack = reader->GetStack();
   Int_t iEvent = reader->GetEventNumber();	
   AliGenEventHeader * geh = reader->GetGenEventHeader();
@@ -1395,7 +1406,7 @@ TList * AliMCAnalysisUtils::GetJets(const AliCaloTrackReader * reader)
 		
 		//Get the jet, different way for different generator
 		//PYTHIA
-    if(fMCGenerator == "PYTHIA")
+    if(fMCGenerator == kPythia)
     {
       TParticle * jet =  0x0;
       AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) geh;
@@ -1420,7 +1431,7 @@ TList * AliMCAnalysisUtils::GetJets(const AliCaloTrackReader * reader)
       }
     }//Pythia triggered jets
     //HERWIG
-    else if (fMCGenerator=="HERWIG")
+    else if (fMCGenerator == kHerwig)
     {
       Int_t pdg = -1;		
       //Check parton 1
@@ -1489,9 +1500,8 @@ TLorentzVector AliMCAnalysisUtils::GetDaughter(Int_t idaugh, Int_t label,
                                                const AliCaloTrackReader* reader,
                                                Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & daughlabel)
 {
-  //Return the kinematics of the particle that generated the signal, its pdg and its status and its label mother
-  
-  TLorentzVector daughter(0,0,0,0);
+  // Return the kinematics of the particle that generated the signal, its pdg and its status and its label mother.
+  fDaughMom.SetPxPyPzE(0,0,0,0);
   
   if(reader->ReadStack())
   {
@@ -1501,7 +1511,7 @@ TLorentzVector AliMCAnalysisUtils::GetDaughter(Int_t idaugh, Int_t label,
         printf("AliMCAnalysisUtils::GetDaughter() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
       
       ok=kFALSE;
-      return daughter;
+      return fDaughMom;
     }
     
     Int_t nprimaries = reader->GetStack()->GetNtrack();
@@ -1513,18 +1523,18 @@ TLorentzVector AliMCAnalysisUtils::GetDaughter(Int_t idaugh, Int_t label,
       if(daughlabel < 0 || daughlabel >= nprimaries)
       {
         ok = kFALSE;
-        return daughter;
+        return fDaughMom;
       }
       
       TParticle * daughP = reader->GetStack()->Particle(daughlabel);
-      daughP->Momentum(daughter);
+      daughP->Momentum(fDaughMom);
       pdg    = daughP->GetPdgCode();
       status = daughP->GetStatusCode();
     }
     else
     {
       ok = kFALSE;
-      return daughter;
+      return fDaughMom;
     }
   }
   else if(reader->ReadAODMCParticles())
@@ -1536,7 +1546,7 @@ TLorentzVector AliMCAnalysisUtils::GetDaughter(Int_t idaugh, Int_t label,
         printf("AliMCAnalysisUtils::GetDaughter() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
       
       ok=kFALSE;
-      return daughter;
+      return fDaughMom;
     }
     
     Int_t nprimaries = mcparticles->GetEntriesFast();
@@ -1548,30 +1558,30 @@ TLorentzVector AliMCAnalysisUtils::GetDaughter(Int_t idaugh, Int_t label,
       if(daughlabel < 0 || daughlabel >= nprimaries)
       {
         ok = kFALSE;
-        return daughter;
+        return fDaughMom;
       }
       
       AliAODMCParticle * daughP = (AliAODMCParticle *) mcparticles->At(daughlabel);
-      daughter.SetPxPyPzE(daughP->Px(),daughP->Py(),daughP->Pz(),daughP->E());
+      fDaughMom.SetPxPyPzE(daughP->Px(),daughP->Py(),daughP->Pz(),daughP->E());
       pdg    = daughP->GetPdgCode();
       status = daughP->GetStatus();
     }
     else
     {
       ok = kFALSE;
-      return daughter;
+      return fDaughMom;
     }
   }
   
   ok = kTRUE;
   
-  return daughter;
+  return fDaughMom;
 }
 
 //______________________________________________________________________________________________________
 TLorentzVector AliMCAnalysisUtils::GetMother(Int_t label, const AliCaloTrackReader* reader, Bool_t & ok)
 {
-  //Return the kinematics of the particle that generated the signal
+  // Return the kinematics of the particle that generated the signal.
   
   Int_t pdg = -1; Int_t status = -1; Int_t momlabel = -1;
   return GetMother(label,reader,pdg,status, ok,momlabel);
@@ -1581,7 +1591,7 @@ TLorentzVector AliMCAnalysisUtils::GetMother(Int_t label, const AliCaloTrackRead
 TLorentzVector AliMCAnalysisUtils::GetMother(Int_t label, const AliCaloTrackReader* reader,
                                              Int_t & pdg, Int_t & status, Bool_t & ok)
 {
-  //Return the kinematics of the particle that generated the signal
+  // Return the kinematics of the particle that generated the signal.
   
   Int_t momlabel = -1;
   return GetMother(label,reader,pdg,status, ok,momlabel);
@@ -1591,9 +1601,9 @@ TLorentzVector AliMCAnalysisUtils::GetMother(Int_t label, const AliCaloTrackRead
 TLorentzVector AliMCAnalysisUtils::GetMother(Int_t label, const AliCaloTrackReader* reader, 
                                              Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & momlabel)
 {
-  //Return the kinematics of the particle that generated the signal, its pdg and its status and its label mother
+  // Return the kinematics of the particle that generated the signal, its pdg and its status and its label mother.
   
-  TLorentzVector mom(0,0,0,0);
+  fMotherMom.SetPxPyPzE(0,0,0,0);
   
   if(reader->ReadStack())
   {
@@ -1603,20 +1613,20 @@ TLorentzVector AliMCAnalysisUtils::GetMother(Int_t label, const AliCaloTrackRead
         printf("AliMCAnalysisUtils::GetMother() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
      
       ok=kFALSE;
-      return mom;
+      return fMotherMom;
     }
     if(label >= 0 && label < reader->GetStack()->GetNtrack())
     {
       TParticle * momP = reader->GetStack()->Particle(label);
-      momP->Momentum(mom);
-      pdg    = momP->GetPdgCode();
-      status = momP->GetStatusCode();
+      momP->Momentum(fMotherMom);
+      pdg      = momP->GetPdgCode();
+      status   = momP->GetStatusCode();
       momlabel = momP->GetFirstMother();
     } 
     else 
     {
       ok = kFALSE;
-      return mom;
+      return fMotherMom;
     }
   }
   else if(reader->ReadAODMCParticles())
@@ -1628,28 +1638,28 @@ TLorentzVector AliMCAnalysisUtils::GetMother(Int_t label, const AliCaloTrackRead
         printf("AliMCAnalysisUtils::GetMother() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
       
       ok=kFALSE;
-      return mom;
+      return fMotherMom;
     }
     
     Int_t nprimaries = mcparticles->GetEntriesFast();
     if(label >= 0 && label < nprimaries)
     {
       AliAODMCParticle * momP = (AliAODMCParticle *) mcparticles->At(label);
-      mom.SetPxPyPzE(momP->Px(),momP->Py(),momP->Pz(),momP->E());
-      pdg    = momP->GetPdgCode();
-      status = momP->GetStatus();
+      fMotherMom.SetPxPyPzE(momP->Px(),momP->Py(),momP->Pz(),momP->E());
+      pdg      = momP->GetPdgCode();
+      status   = momP->GetStatus();
       momlabel = momP->GetMother();
     }
     else 
     {
       ok = kFALSE;
-      return mom;
+      return fMotherMom;
     }
   }
   
   ok = kTRUE;
   
-  return mom;
+  return fMotherMom;
 }
 
 //___________________________________________________________________________________
@@ -1657,10 +1667,9 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(Int_t label, Int_t pdg,
                                                     const AliCaloTrackReader* reader,
                                                     Bool_t & ok, Int_t & momlabel)
 {
-  //Return the kinematics of the particle that generated the signal
+  // Return the kinematics of the particle that generated the signal.
   
-  TLorentzVector grandmom(0,0,0,0);
-  
+  fGMotherMom.SetPxPyPzE(0,0,0,0);
   
   if(reader->ReadStack())
   {
@@ -1670,7 +1679,7 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(Int_t label, Int_t pdg,
         printf("AliMCAnalysisUtils::GetMotherWithPDG() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
       
       ok = kFALSE;
-      return grandmom;
+      return fGMotherMom;
     }
     
     if(label >= 0 && label < reader->GetStack()->GetNtrack())
@@ -1687,7 +1696,7 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(Int_t label, Int_t pdg,
         if(grandmomPDG==pdg)
         {
           momlabel = grandmomLabel;
-          grandmom.SetPxPyPzE(grandmomP->Px(),grandmomP->Py(),grandmomP->Pz(),grandmomP->Energy());
+          fGMotherMom.SetPxPyPzE(grandmomP->Px(),grandmomP->Py(),grandmomP->Pz(),grandmomP->Energy());
           break;
         }
         
@@ -1707,7 +1716,7 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(Int_t label, Int_t pdg,
         printf("AliMCAnalysisUtils::GetMotherWithPDG() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
       
       ok=kFALSE;
-      return grandmom;
+      return fGMotherMom;
     }
     
     Int_t nprimaries = mcparticles->GetEntriesFast();
@@ -1726,7 +1735,7 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(Int_t label, Int_t pdg,
         {
           //printf("AliMCAnalysisUtils::GetMotherWithPDG(AOD) - mother with PDG %d FOUND! \n",pdg);
           momlabel = grandmomLabel;
-          grandmom.SetPxPyPzE(grandmomP->Px(),grandmomP->Py(),grandmomP->Pz(),grandmomP->E());
+          fGMotherMom.SetPxPyPzE(grandmomP->Px(),grandmomP->Py(),grandmomP->Pz(),grandmomP->E());
           break;
         }
         
@@ -1741,7 +1750,7 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(Int_t label, Int_t pdg,
   
   ok = kTRUE;
   
-  return grandmom;
+  return fGMotherMom;
 }
 
 //______________________________________________________________________________________________
@@ -1749,9 +1758,9 @@ TLorentzVector AliMCAnalysisUtils::GetGrandMother(Int_t label, const AliCaloTrac
                                                   Int_t & pdg, Int_t & status, Bool_t & ok,
                                                   Int_t & grandMomLabel, Int_t & greatMomLabel)
 {
-  //Return the kinematics of the particle that generated the signal
+  // Return the kinematics of the particle that generated the signal.
   
-  TLorentzVector grandmom(0,0,0,0);
+  fGMotherMom.SetPxPyPzE(0,0,0,0);
   
   if(reader->ReadStack())
   {
@@ -1761,7 +1770,7 @@ TLorentzVector AliMCAnalysisUtils::GetGrandMother(Int_t label, const AliCaloTrac
         printf("AliMCAnalysisUtils::GetGrandMother() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
       
       ok = kFALSE;
-      return grandmom;
+      return fGMotherMom;
     }
     
     if(label >= 0 && label < reader->GetStack()->GetNtrack())
@@ -1778,7 +1787,7 @@ TLorentzVector AliMCAnalysisUtils::GetGrandMother(Int_t label, const AliCaloTrac
         pdg    = grandmomP->GetPdgCode();
         status = grandmomP->GetStatusCode();
        
-        grandmom.SetPxPyPzE(grandmomP->Px(),grandmomP->Py(),grandmomP->Pz(),grandmomP->Energy());
+        fGMotherMom.SetPxPyPzE(grandmomP->Px(),grandmomP->Py(),grandmomP->Pz(),grandmomP->Energy());
         greatMomLabel =  grandmomP->GetFirstMother();
 
       }
@@ -1793,7 +1802,7 @@ TLorentzVector AliMCAnalysisUtils::GetGrandMother(Int_t label, const AliCaloTrac
         printf("AliMCAnalysisUtils::GetGrandMother() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
       
       ok=kFALSE;
-      return grandmom;
+      return fGMotherMom;
     }
     
     Int_t nprimaries = mcparticles->GetEntriesFast();
@@ -1811,7 +1820,7 @@ TLorentzVector AliMCAnalysisUtils::GetGrandMother(Int_t label, const AliCaloTrac
         pdg    = grandmomP->GetPdgCode();
         status = grandmomP->GetStatus();
       
-        grandmom.SetPxPyPzE(grandmomP->Px(),grandmomP->Py(),grandmomP->Pz(),grandmomP->E());
+        fGMotherMom.SetPxPyPzE(grandmomP->Px(),grandmomP->Py(),grandmomP->Pz(),grandmomP->E());
         greatMomLabel =  grandmomP->GetMother();
         
       }
@@ -1820,15 +1829,14 @@ TLorentzVector AliMCAnalysisUtils::GetGrandMother(Int_t label, const AliCaloTrac
   
   ok = kTRUE;
   
-  return grandmom;
+  return fGMotherMom;
 }
 
 //_______________________________________________________________________________________________________________
 void AliMCAnalysisUtils::GetMCDecayAsymmetryAngleForPDG(Int_t label, Int_t pdg, const AliCaloTrackReader* reader,
                                                         Float_t & asym, Float_t & angle, Bool_t & ok)
 {
-  //In case of an eta or pi0 decay into 2 photons, get the asymmetry  in the energy of the photons
-  
+  // In case of an eta or pi0 decay into 2 photons, get the asymmetry  in the energy of the photons.
   
   if(reader->ReadStack())
   {
@@ -1864,10 +1872,9 @@ void AliMCAnalysisUtils::GetMCDecayAsymmetryAngleForPDG(Int_t label, Int_t pdg, 
         if(d1->GetPdgCode() == 22 && d1->GetPdgCode() == 22)
         {
           asym = (d1->Energy()-d2->Energy())/grandmomP->Energy();
-          TLorentzVector lvd1, lvd2;
-          d1->Momentum(lvd1);
-          d2->Momentum(lvd2);
-          angle = lvd1.Angle(lvd2.Vect());
+          d1->Momentum(fDaughMom );
+          d2->Momentum(fDaughMom2);
+          angle = fDaughMom.Angle(fDaughMom2.Vect());
         }
       }
       else 
@@ -1916,10 +1923,9 @@ void AliMCAnalysisUtils::GetMCDecayAsymmetryAngleForPDG(Int_t label, Int_t pdg, 
         if(d1->GetPdgCode() == 22 && d1->GetPdgCode() == 22)
         {
           asym = (d1->E()-d2->E())/grandmomP->E();
-          TLorentzVector lvd1, lvd2;
-          lvd1.SetPxPyPzE(d1->Px(),d1->Py(),d1->Pz(),d1->E());
-          lvd2.SetPxPyPzE(d2->Px(),d2->Py(),d2->Pz(),d2->E());
-          angle = lvd1.Angle(lvd2.Vect());
+          fDaughMom .SetPxPyPzE(d1->Px(),d1->Py(),d1->Pz(),d1->E());
+          fDaughMom2.SetPxPyPzE(d2->Px(),d2->Py(),d2->Pz(),d2->E());
+          angle = fDaughMom.Angle(fDaughMom2.Vect());
         }
       }
       else 
@@ -1935,12 +1941,10 @@ void AliMCAnalysisUtils::GetMCDecayAsymmetryAngleForPDG(Int_t label, Int_t pdg, 
   
 }
 
-
 //_________________________________________________________________________________________________
 Int_t AliMCAnalysisUtils::GetNDaughters(Int_t label, const AliCaloTrackReader* reader, Bool_t & ok)
 {
-  // Return the the number of daughters of a given MC particle
-  
+  // Return the the number of daughters of a given MC particle.
   
   if(reader->ReadStack())
   {
@@ -2001,19 +2005,19 @@ Int_t AliMCAnalysisUtils::GetNOverlaps(const Int_t * label, UInt_t nlabels,
                                        AliCaloTrackReader * reader, Int_t *overpdg)
 {
   // Compare the primary depositing more energy with the rest,
-  // if no photon/electron (conversion) or neutral meson as comon ancestor, consider it as other particle contributing
-  // Give as input the meson label in case it was a pi0 or eta merged cluster
-  // Init overpdg with nlabels
+  // if no photon/electron (conversion) or neutral meson as comon ancestor, consider it as other particle contributing.
+  // Give as input the meson label in case it was a pi0 or eta merged cluster.
+  // Init overpdg with nlabels.
   
   Int_t ancPDG = 0, ancStatus = -1;
-  TLorentzVector momentum; TVector3 prodVertex;
+  TVector3 prodVertex;
   Int_t ancLabel = 0;
   Int_t noverlaps = 0;
   Bool_t ok = kFALSE;
   
   for (UInt_t ilab = 1; ilab < nlabels; ilab++ )
   {
-    ancLabel = CheckCommonAncestor(label[0],label[ilab],reader,ancPDG,ancStatus,momentum,prodVertex);
+    ancLabel = CheckCommonAncestor(label[0],label[ilab],reader,ancPDG,ancStatus,fMotherMom,prodVertex);
     
     //printf("Overlaps, i %d: Main Label %d, second label %d, ancestor: Label %d, pdg %d - tag %d \n",
     //       ilab,label[0],label[ilab],ancLabel,ancPDG, mctag);
@@ -2049,8 +2053,10 @@ Int_t AliMCAnalysisUtils::GetNOverlaps(const Int_t * label, UInt_t nlabels,
     Int_t   mpdg = -999999,  gpdg = -1;
     Int_t   mstatus = -1, gstatus = -1;
     Int_t   gLabel = -1, ggLabel = -1;
-    TLorentzVector mother      = GetMother     (label[ilab],reader,mpdg,mstatus,mOK);
-    TLorentzVector grandmother = GetGrandMother(label[ilab],reader,gpdg,gstatus,gOK, gLabel,ggLabel);
+    
+    GetMother     (label[ilab],reader,mpdg,mstatus,mOK);
+    fGMotherMom =
+    GetGrandMother(label[ilab],reader,gpdg,gstatus,gOK, gLabel,ggLabel);
     
     //printf("\t Overlap!, mother pdg %d; grand mother pdg %d",mpdg,gpdg);
     
@@ -2062,7 +2068,7 @@ Int_t AliMCAnalysisUtils::GetNOverlaps(const Int_t * label, UInt_t nlabels,
       while( ( gpdg == 22 || TMath::Abs(gpdg==11) ) && gLabel >=0 )
       {
         mpdg=gpdg;
-        grandmother = GetGrandMother(labeltmp,reader,gpdg,gstatus,ok, gLabel,ggLabel);
+        fGMotherMom = GetGrandMother(labeltmp,reader,gpdg,gstatus,ok, gLabel,ggLabel);
         labeltmp=gLabel;
       }
     }
@@ -2076,7 +2082,7 @@ Int_t AliMCAnalysisUtils::GetNOverlaps(const Int_t * label, UInt_t nlabels,
 //________________________________________________________
 void AliMCAnalysisUtils::Print(const Option_t * opt) const
 {
-  //Print some relevant parameters set for the analysis
+  // Print some relevant parameters set for the analysis.
   
   if(! opt)
     return;
@@ -2084,7 +2090,7 @@ void AliMCAnalysisUtils::Print(const Option_t * opt) const
   printf("***** Print: %s %s ******\n", GetName(), GetTitle() ) ;
   
   printf("Debug level    = %d\n",fDebug);
-  printf("MC Generator   = %s\n",fMCGenerator.Data());
+  printf("MC Generator   = %s\n",fMCGeneratorString.Data());
   printf(" \n");
   
 } 
@@ -2092,7 +2098,7 @@ void AliMCAnalysisUtils::Print(const Option_t * opt) const
 //__________________________________________________
 void AliMCAnalysisUtils::PrintMCTag(Int_t tag) const
 {
-  // print the assigned origins to this particle
+  // Print the assigned origins to this particle.
   
   printf("AliMCAnalysisUtils::PrintMCTag() - tag %d \n    photon %d, conv %d, prompt %d, frag %d, isr %d, \n    pi0 decay %d, eta decay %d, other decay %d  pi0 %d,  eta %d \n    electron %d, muon %d,pion %d, proton %d, neutron %d, \n    kaon %d, a-proton %d, a-neutron %d, unk %d, bad %d\n",
          tag,
@@ -2118,5 +2124,40 @@ void AliMCAnalysisUtils::PrintMCTag(Int_t tag) const
          CheckTagBit(tag,kMCBadLabel)
          );
 } 
+
+//__________________________________________________
+void AliMCAnalysisUtils::SetMCGenerator(Int_t mcgen)
+{
+  // Set the generator type.
+  
+  fMCGenerator = mcgen ;
+  if     (mcgen == kPythia) fMCGeneratorString = "PYTHIA";
+  else if(mcgen == kHerwig) fMCGeneratorString = "HERWIG";
+  else if(mcgen == kHijing) fMCGeneratorString = "HIJING";
+  else
+  {
+    fMCGeneratorString = "";
+    fMCGenerator       = kBoxLike ;
+  }
+  
+}
+
+//__________________________________________________
+void AliMCAnalysisUtils::SetMCGenerator(TString mcgen)
+{
+  // Set the generator type.
+  
+  fMCGeneratorString = mcgen ;
+  
+  if     (mcgen == "PYTHIA") fMCGenerator = kPythia;
+  else if(mcgen == "HERWIG") fMCGenerator = kHerwig;
+  else if(mcgen == "HIJING") fMCGenerator = kHijing;
+  else
+  {
+    fMCGenerator       = kBoxLike;
+    fMCGeneratorString = "" ;
+  }
+}
+
 
 

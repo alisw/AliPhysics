@@ -498,7 +498,7 @@ void AliCalorimeterUtils::AccessGeometry(AliVEvent* inputEvent)
 }
 
 //________________________________________________________________________________________
-Bool_t AliCalorimeterUtils::AreNeighbours(TString calo, Int_t absId1, Int_t absId2 ) const
+Bool_t AliCalorimeterUtils::AreNeighbours(Int_t calo, Int_t absId1, Int_t absId2 ) const
 {
   // Tells if (true) or not (false) two cells are neighbours
   // A neighbour is defined as being two cells which share a side or corner
@@ -513,7 +513,7 @@ Bool_t AliCalorimeterUtils::AreNeighbours(TString calo, Int_t absId1, Int_t absI
   Int_t nSupMod1 = GetModuleNumberCellIndexes(absId1, calo, icol1, irow1, iRCU1); 
   Int_t nSupMod2 = GetModuleNumberCellIndexes(absId2, calo, icol2, irow2, iRCU2); 
   
-  if(calo=="EMCAL" && nSupMod1!=nSupMod2)
+  if(calo==kEMCAL && nSupMod1!=nSupMod2)
   {
     // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2-1
     // C Side impair SM, nSupMod%2=1; A side pair SM nSupMod%2=0
@@ -673,15 +673,15 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster,
 }	
 
 //__________________________________________________________________________________________________________
-Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(TString calorimeter, UShort_t* cellList, Int_t nCells)
+Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(Int_t calorimeter, UShort_t* cellList, Int_t nCells)
 {
 	// Check that in the cluster cells, there is no bad channel of those stored 
 	// in fEMCALBadChannelMap or fPHOSBadChannelMap
 	
 	if (!fRemoveBadChannels) return kFALSE;
 	//printf("fEMCALBadChannelMap %p, fPHOSBadChannelMap %p \n",fEMCALBadChannelMap,fPHOSBadChannelMap);
-	if(calorimeter == "EMCAL" && !fEMCALRecoUtils->GetEMCALChannelStatusMap(0)) return kFALSE;
-	if(calorimeter == "PHOS"  && !fPHOSBadChannelMap)  return kFALSE;
+	if(calorimeter == kEMCAL && !fEMCALRecoUtils->GetEMCALChannelStatusMap(0)) return kFALSE;
+	if(calorimeter == kPHOS  && !fPHOSBadChannelMap)  return kFALSE;
   
 	Int_t icol = -1;
 	Int_t irow = -1;
@@ -689,10 +689,10 @@ Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(TString calorimeter, UShor
 	for(Int_t iCell = 0; iCell<nCells; iCell++){
     
 		//Get the column and row
-		if(calorimeter == "EMCAL"){
+		if(calorimeter == kEMCAL){
       return fEMCALRecoUtils->ClusterContainsBadChannel((AliEMCALGeometry*)fEMCALGeo,cellList,nCells);
 		}
-		else if(calorimeter=="PHOS"){
+		else if(calorimeter==kPHOS){
 			Int_t    relId[4];
 			fPHOSGeo->AbsToRelNumbering(cellList[iCell],relId);
 			irow = relId[2];
@@ -740,8 +740,8 @@ Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells* cells, const AliVClu
   Int_t    cellAbsId   =-1 , absId =-1 ;
   Int_t    iSupMod     =-1 , ieta  =-1 , iphi = -1, iRCU = -1;
   
-  TString           calo = "EMCAL";
-  if(clu->IsPHOS()) calo = "PHOS";
+  Int_t             calo = kEMCAL;
+  if(clu->IsPHOS()) calo = kPHOS ;
   
   for (Int_t iDig=0; iDig< clu->GetNCells(); iDig++) {
     
@@ -753,8 +753,8 @@ Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells* cells, const AliVClu
     iSupMod = GetModuleNumberCellIndexes(cellAbsId, calo, ieta, iphi, iRCU);
     
     if(IsRecalibrationOn()) {
-      if(calo=="EMCAL") recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
-      else              recalFactor = GetPHOSChannelRecalibrationFactor (iSupMod,iphi,ieta);
+      if(calo==kEMCAL) recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
+      else             recalFactor = GetPHOSChannelRecalibrationFactor (iSupMod,iphi,ieta);
     }
     
     eCell  = cells->GetCellAmplitude(cellAbsId)*fraction*recalFactor;
@@ -858,7 +858,7 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEv
 	//Get the EMCAL/PHOS module number that corresponds to this particle
 	
 	Int_t absId = -1;
-	if(particle->GetDetector()=="EMCAL")
+	if(particle->GetDetectorTag()==kEMCAL)
   {
 		fEMCALGeo->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(), absId);
     
@@ -868,7 +868,7 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEv
     
 		return fEMCALGeo->GetSuperModuleNumber(absId) ;
 	}//EMCAL
-	else if(particle->GetDetector()=="PHOS")
+	else if(particle->GetDetectorTag()==kPHOS)
   {
     // In case we use the MC reader, the input are TParticles,
     // in this case use the corresponing method in PHOS Geometry to get the particle.
@@ -949,7 +949,7 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliVCluster * cluster) const
 }
 
 //___________________________________________________________________________________________________
-Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(Int_t absId, TString calo,
+Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(Int_t absId, Int_t calo,
                                                       Int_t & icol, Int_t & irow, Int_t & iRCU) const
 {
 	//Get the EMCAL/PHOS module, columns, row and RCU number that corresponds to this absId
@@ -958,7 +958,7 @@ Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(Int_t absId, TString calo,
   
 	if ( absId < 0) return -1 ;
   
-  if ( calo == "EMCAL" )
+  if ( calo == kEMCAL )
   {
     Int_t iTower = -1, iIphi = -1, iIeta = -1;
     fEMCALGeo->GetCellIndex(absId,imod,iTower,iIphi,iIeta);
@@ -1051,8 +1051,8 @@ Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCalo
     simuTotWeight/= eCluster;
   }
   
-  TString calorimeter = "EMCAL";
-  if(!cluster->IsEMCAL()) calorimeter = "PHOS";
+  Int_t calorimeter = kEMCAL;
+  if(!cluster->IsEMCAL()) calorimeter = kPHOS;
   
   //printf("cluster : ncells %d \n",nCells);
   
@@ -1378,26 +1378,26 @@ void AliCalorimeterUtils::InitPHOSGeometry(Int_t runnumber)
 }
 
 //_______________________________________________________________________________________________
-Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(TString calo, TParticle* particle)
+Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, TParticle* particle)
 {
   // Check that a MC ESD is in the calorimeter acceptance
   
-  if(!particle || (calo!="EMCAL" && calo!="PHOS")) return kFALSE ;
+  if(!particle || (calo!=kEMCAL && calo!=kPHOS)) return kFALSE ;
     
-  if( (!IsPHOSGeoMatrixSet () && calo == "PHOS" ) ||
-      (!IsEMCALGeoMatrixSet() && calo == "EMCAL")   )
+  if( (!IsPHOSGeoMatrixSet () && calo == kPHOS ) ||
+      (!IsEMCALGeoMatrixSet() && calo == kEMCAL)   )
   {
-    AliFatal(Form("Careful Geo Matrix for %s is not set, use AliFidutialCut instead \n",calo.Data()));
+    AliFatal(Form("Careful Geo Matrix for calo <%d> is not set, use AliFidutialCut instead \n",calo));
     return kFALSE ;
   }
 
-  if(calo == "PHOS" )
+  if(calo == kPHOS )
   {
     Int_t mod = 0 ;
     Double_t x = 0, z = 0 ;
     return GetPHOSGeometry()->ImpactOnEmc( particle, mod, z, x);
   }
-  else if(calo == "EMCAL")
+  else if(calo == kEMCAL)
   {
     Int_t absID = 0 ;
     Bool_t ok = GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(),absID);
@@ -1415,30 +1415,30 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(TString calo, TP
 }
 
 //______________________________________________________________________________________________________
-Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(TString calo, AliAODMCParticle* particle)
+Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, AliAODMCParticle* particle)
 {
   // Check that a MC AOD is in the calorimeter acceptance
   
-  if(!particle || (calo!="EMCAL" && calo!="PHOS")) return kFALSE ;
+  if(!particle || (calo!=kEMCAL && calo!=kPHOS)) return kFALSE ;
   
-  if( (!IsPHOSGeoMatrixSet () && calo == "PHOS" ) ||
-      (!IsEMCALGeoMatrixSet() && calo == "EMCAL")   )
+  if( (!IsPHOSGeoMatrixSet () && calo == kPHOS ) ||
+      (!IsEMCALGeoMatrixSet() && calo == kEMCAL)   )
   {
-    AliFatal(Form("Careful Geo Matrix for %s is not set, use AliFidutialCut instead \n",calo.Data()));
+    AliFatal(Form("Careful Geo Matrix for calo <%d> is not set, use AliFidutialCut instead \n",calo));
     return kFALSE ;
   }
 
   Float_t phi = particle->Phi();
   if(phi < 0) phi+=TMath::TwoPi();
   
-  if(calo == "PHOS" )
+  if(calo == kPHOS )
   {
     Int_t mod = 0 ;
     Double_t x = 0, z = 0 ;
     Double_t vtx[]={ particle->Xv(), particle->Yv(), particle->Zv() } ;
     return GetPHOSGeometry()->ImpactOnEmc(vtx, particle->Theta(), phi, mod, z, x) ;
   }
-  else if(calo == "EMCAL")
+  else if(calo == kEMCAL)
   {
     Int_t absID = 0 ;
     Bool_t ok = GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle->Eta(),phi,absID);
@@ -1455,33 +1455,34 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(TString calo, Al
   return kFALSE ;
 }
 
-//_____________________________________________________________________________________________________________________
-Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(TString calo, TLorentzVector particle, Int_t & absID)
+//_____________________________________________________________________________________________________
+Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, Float_t eta, Float_t theta,
+                                                                Float_t phiOrg, Int_t & absID)
 {
   // Check that a TLorentzVector is in the calorimeter acceptance, give the cell number where it hit
   
-  if(calo!="EMCAL" && calo!="PHOS") return kFALSE ;
+  if(calo!=kEMCAL && calo!=kPHOS) return kFALSE ;
   
-  if( (!IsPHOSGeoMatrixSet () && calo == "PHOS" ) ||
-      (!IsEMCALGeoMatrixSet() && calo == "EMCAL")   )
+  if( (!IsPHOSGeoMatrixSet () && calo == kPHOS ) ||
+      (!IsEMCALGeoMatrixSet() && calo == kEMCAL)   )
   {
-    AliFatal(Form("Careful Geo Matrix for %s is not set, use AliFidutialCut instead \n",calo.Data()));
+    AliFatal(Form("Careful Geo Matrix for calo <%d> is not set, use AliFidutialCut instead \n",calo));
     return kFALSE ;
   }
 
-  Float_t phi = particle.Phi();
+  Float_t phi = phiOrg;
   if(phi < 0) phi+=TMath::TwoPi();
 
-  if(calo == "PHOS" )
+  if(calo == kPHOS )
   {
     Int_t mod = 0 ;
     Double_t x = 0, z = 0 ;
     Double_t vtx[]={0,0,0} ;
-    return GetPHOSGeometry()->ImpactOnEmc(vtx, particle.Theta(), phi, mod, z, x) ;
+    return GetPHOSGeometry()->ImpactOnEmc(vtx, theta, phi, mod, z, x) ;
   }
-  else if(calo == "EMCAL")
+  else if(calo == kEMCAL)
   {
-    Bool_t ok = GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle.Eta(),phi,absID);
+    Bool_t ok = GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(eta,phi,absID);
     if(ok)
     {
       Int_t icol = -1, irow = -1, iRCU = -1;
@@ -1541,7 +1542,7 @@ void AliCalorimeterUtils::Print(const Option_t * opt) const
 } 
 
 //_____________________________________________________________________________________________
-void AliCalorimeterUtils::RecalibrateCellAmplitude(Float_t & amp, TString calo, Int_t id) const
+void AliCalorimeterUtils::RecalibrateCellAmplitude(Float_t & amp, Int_t calo, Int_t id) const
 {
   //Recaculate cell energy if recalibration factor
   
@@ -1550,7 +1551,7 @@ void AliCalorimeterUtils::RecalibrateCellAmplitude(Float_t & amp, TString calo, 
   
   if (IsRecalibrationOn()) 
   {
-    if(calo == "PHOS") 
+    if(calo == kPHOS)
     {
       amp *= GetPHOSChannelRecalibrationFactor(nModule,icol,irow);
     }
@@ -1562,12 +1563,12 @@ void AliCalorimeterUtils::RecalibrateCellAmplitude(Float_t & amp, TString calo, 
 }
 
 //____________________________________________________________________________________________________
-void AliCalorimeterUtils::RecalibrateCellTime(Double_t & time, TString calo, Int_t id, Int_t bc) const
+void AliCalorimeterUtils::RecalibrateCellTime(Double_t & time, Int_t calo, Int_t id, Int_t bc) const
 {
   // Recalculate time if time recalibration available for EMCAL
   // not ready for PHOS
   
-  if(calo == "EMCAL" && GetEMCALRecoUtils()->IsTimeRecalibrationOn()) 
+  if(calo == kEMCAL && GetEMCALRecoUtils()->IsTimeRecalibrationOn()) 
   {
     GetEMCALRecoUtils()->RecalibrateCellTime(id,bc,time);
   }
@@ -1592,9 +1593,8 @@ Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster,
     
     Int_t ncells     = cluster->GetNCells();	
     
-    TString calo     = "EMCAL";
-    if(cluster->IsPHOS()) 
-      calo = "PHOS";
+    Int_t calo = kEMCAL;
+    if(cluster->IsPHOS()) calo = kPHOS ;
     
     //Loop on the cells, get the cell amplitude and recalibration factor, multiply and and to the new energy
     for(Int_t icell = 0; icell < ncells; icell++){
@@ -1608,8 +1608,8 @@ Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster,
       RecalibrateCellAmplitude(amp,calo, absId);
       
       if(fDebug>2)
-        printf("AliCalorimeterUtils::RecalibrateClusterEnergy() - recalibrate cell: %s, cell fraction %f, cell energy %f\n", 
-               calo.Data(),frac,cells->GetCellAmplitude(absId));
+        printf("AliCalorimeterUtils::RecalibrateClusterEnergy() - recalibrate cell: calo <%d>, cell fraction %f, cell energy %f\n",
+               calo,frac,cells->GetCellAmplitude(absId));
       
       energy += amp*frac;
     }
@@ -1645,9 +1645,8 @@ Float_t AliCalorimeterUtils::RecalibrateClusterEnergyWeightCell(AliVCluster * cl
     
     Int_t ncells     = cluster->GetNCells();
     
-    TString calo     = "EMCAL";
-    if(cluster->IsPHOS())
-      calo = "PHOS";
+    Int_t calo = kEMCAL;
+    if(cluster->IsPHOS()) calo = kPHOS ;
     
     //Loop on the cells, get the cell amplitude and recalibration factor, multiply and and to the new energy
     for(Int_t icell = 0; icell < ncells; icell++){
@@ -1663,8 +1662,8 @@ Float_t AliCalorimeterUtils::RecalibrateClusterEnergyWeightCell(AliVCluster * cl
       amp*=GetMCECellClusFracCorrection(amp,energyOrg);
       
       if(fDebug>2)
-        printf("AliCalorimeterUtils::RecalibrateClusterEnergy() - recalibrate cell: %s, cell fraction %f, cell energy %f\n",
-               calo.Data(),frac,cells->GetCellAmplitude(absId));
+        printf("AliCalorimeterUtils::RecalibrateClusterEnergy() - recalibrate cell: calo <%d>, cell fraction %f, cell energy %f\n",
+               calo,frac,cells->GetCellAmplitude(absId));
       
       energy += amp*frac;
     }
@@ -1743,10 +1742,10 @@ void AliCalorimeterUtils::SplitEnergy(Int_t absId1, Int_t absId2,
     hCluster2      ->SetYTitle("row");
   }
   
-  TString calorimeter = "EMCAL";
+  Int_t calorimeter = kEMCAL;
   if(cluster->IsPHOS())
   {
-    calorimeter="PHOS";
+    calorimeter=kPHOS;
     printf("AliCalorimeterUtils::SplitEnerg() Not supported for PHOS yet \n");
     return;
   }
@@ -1885,7 +1884,7 @@ void AliCalorimeterUtils::SplitEnergy(Int_t absId1, Int_t absId2,
   CorrectClusterEnergy(cluster1) ;
   CorrectClusterEnergy(cluster2) ;
   
-  if(calorimeter=="EMCAL")
+  if(calorimeter==kEMCAL)
   {
     GetEMCALRecoUtils()->RecalculateClusterPosition(GetEMCALGeometry(), cells, cluster1);
     GetEMCALRecoUtils()->RecalculateClusterPosition(GetEMCALGeometry(), cells, cluster2);

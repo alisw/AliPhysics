@@ -69,6 +69,9 @@ fFillSMCombinations(kFALSE), fCheckConversion(kFALSE),
 fFillBadDistHisto(kFALSE),   fFillSSCombinations(kFALSE),  
 fFillAngleHisto(kFALSE),     fFillAsymmetryHisto(kFALSE),  fFillOriginHisto(0),          fFillArmenterosThetaStar(0),
 fCheckAccInSector(kFALSE),
+fPhotonMom1(),               fPhotonMom1Boost(),           fPhotonMom2(),                fPi0Mom(),
+fProdVertex(),
+
 //Histograms
 fhAverTotECluster(0),        fhAverTotECell(0),            fhAverTotECellvsCluster(0),
 fhEDensityCluster(0),        fhEDensityCell(0),            fhEDensityCellvsCluster(0),
@@ -211,7 +214,7 @@ TObjString * AliAnaPi0::GetAnalysisCuts()
   parList+=onePar ;
   snprintf(onePar,buffersize,"Z vertex position: -%f < z < %f \n",GetZvertexCut(),GetZvertexCut()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Calorimeter: %s \n",GetCalorimeter().Data()) ;
+  snprintf(onePar,buffersize,"Calorimeter: %s \n",GetCalorimeterString().Data()) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"Number of modules: %d \n",fNModules) ;
   parList+=onePar ;
@@ -235,7 +238,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   
   // Init the number of modules, set in the class AliCalorimeterUtils
   fNModules = GetCaloUtils()->GetNumberOfSuperModulesUsed();
-  if(GetCalorimeter()=="PHOS" && fNModules > 4) fNModules = 4;
+  if(GetCalorimeter()==kPHOS && fNModules > 4) fNModules = 4;
   
   //create event containers
   fEventsList = new TList*[GetNCentrBin()*GetNZvertBin()*GetNRPBin()] ;
@@ -259,7 +262,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   fhReMod                = new TH2F*[fNModules]   ;
   fhMiMod                = new TH2F*[fNModules]   ;
   
-  if(GetCalorimeter() == "PHOS")
+  if(GetCalorimeter() == kPHOS)
   {
     fhReDiffPHOSMod        = new TH2F*[fNModules]   ;  
     fhMiDiffPHOSMod        = new TH2F*[fNModules]   ;
@@ -1079,7 +1082,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhReMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhReMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
       outputContainer->Add(fhReMod[imod]) ;
-      if(GetCalorimeter()=="PHOS")
+      if(GetCalorimeter()==kPHOS)
       {
         snprintf(key, buffersize,"hReDiffPHOSMod_%d",imod) ;
         snprintf(title, buffersize,"Real pairs PHOS, clusters in different Modules: %s",(pairnamePHOS[imod]).Data()) ;
@@ -1118,7 +1121,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         fhMiMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
         outputContainer->Add(fhMiMod[imod]) ;
         
-        if(GetCalorimeter()=="PHOS"){
+        if(GetCalorimeter()==kPHOS){
           snprintf(key, buffersize,"hMiDiffPHOSMod_%d",imod) ;
           snprintf(title, buffersize,"Mixed pairs PHOS, clusters in different Modules: %s",(pairnamePHOS[imod]).Data()) ;
           fhMiDiffPHOSMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
@@ -1262,7 +1265,6 @@ void AliAnaPi0::FillAcceptanceHistograms()
   
   TParticle        * primStack = 0;
   AliAODMCParticle * primAOD   = 0;
-  TLorentzVector lvmeson;
   
   // Get the ESD MC particles container
   AliStack * stack = 0;
@@ -1308,7 +1310,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
       //       prim->GetName(), prim->GetPdgCode());
       
       //Photon kinematics
-      primStack->Momentum(lvmeson);
+      primStack->Momentum(fPi0Mom);
       
       mesonY = 0.5*TMath::Log((primStack->Energy()+primStack->Pz())/(primStack->Energy()-primStack->Pz())) ;
     }
@@ -1332,7 +1334,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
       if(primAOD->E() == TMath::Abs(primAOD->Pz()))  continue ; //Protection against floating point exception
       
       //Photon kinematics
-      lvmeson.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
+      fPi0Mom.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
       
       mesonY = 0.5*TMath::Log((primAOD->E()+primAOD->Pz())/(primAOD->E()-primAOD->Pz())) ;
     }
@@ -1340,10 +1342,10 @@ void AliAnaPi0::FillAcceptanceHistograms()
     // Select only pi0 or eta
     if( pdg != 111 && pdg != 221) continue ;
     
-    mesonPt  = lvmeson.Pt () ;
-    mesonE   = lvmeson.E  () ;
-    mesonYeta= lvmeson.Eta() ;
-    mesonPhi = lvmeson.Phi() ;
+    mesonPt  = fPi0Mom.Pt () ;
+    mesonE   = fPi0Mom.E  () ;
+    mesonYeta= fPi0Mom.Eta() ;
+    mesonPhi = fPi0Mom.Phi() ;
     if( mesonPhi < 0 ) mesonPhi+=TMath::TwoPi();
     mesonPhi *= TMath::RadToDeg();
     
@@ -1449,7 +1451,6 @@ void AliAnaPi0::FillAcceptanceHistograms()
     
     if(iphot1 < 0 || iphot1 >= nprim || iphot2 < 0 || iphot2 >= nprim) continue ;
     
-    TLorentzVector lv1, lv2;
     Int_t pdg1 = 0;
     Int_t pdg2 = 0;
     Bool_t inacceptance1 = kTRUE;
@@ -1465,8 +1466,8 @@ void AliAnaPi0::FillAcceptanceHistograms()
       pdg1 = phot1->GetPdgCode();
       pdg2 = phot2->GetPdgCode();
       
-      phot1->Momentum(lv1);
-      phot2->Momentum(lv2);
+      phot1->Momentum(fPhotonMom1);
+      phot2->Momentum(fPhotonMom2);
       
       // Check if photons hit the Calorimeter acceptance
       if(IsRealCaloAcceptanceOn())
@@ -1486,8 +1487,8 @@ void AliAnaPi0::FillAcceptanceHistograms()
       pdg1 = phot1->GetPdgCode();
       pdg2 = phot2->GetPdgCode();
       
-      lv1.SetPxPyPzE(phot1->Px(),phot1->Py(),phot1->Pz(),phot1->E());
-      lv2.SetPxPyPzE(phot2->Px(),phot2->Py(),phot2->Pz(),phot2->E());
+      fPhotonMom1.SetPxPyPzE(phot1->Px(),phot1->Py(),phot1->Pz(),phot1->E());
+      fPhotonMom2.SetPxPyPzE(phot2->Px(),phot2->Py(),phot2->Pz(),phot2->E());
       
       // Check if photons hit the Calorimeter acceptance
       if(IsRealCaloAcceptanceOn())
@@ -1502,25 +1503,25 @@ void AliAnaPi0::FillAcceptanceHistograms()
     // Check if photons hit desired acceptance in the fidutial borders fixed in the analysis
     if(IsFiducialCutOn())
     {
-      if( inacceptance1 && !GetFiducialCut()->IsInFiducialCut(lv1,GetCalorimeter()) ) inacceptance1 = kFALSE ;
-      if( inacceptance2 && !GetFiducialCut()->IsInFiducialCut(lv2,GetCalorimeter()) ) inacceptance2 = kFALSE ;
+      if( inacceptance1 && !GetFiducialCut()->IsInFiducialCut(fPhotonMom1.Eta(), fPhotonMom1.Phi(), GetCalorimeter()) ) inacceptance1 = kFALSE ;
+      if( inacceptance2 && !GetFiducialCut()->IsInFiducialCut(fPhotonMom2.Eta(), fPhotonMom2.Phi(), GetCalorimeter()) ) inacceptance2 = kFALSE ;
     }
     
-    if(fFillArmenterosThetaStar) FillArmenterosThetaStar(pdg,lvmeson,lv1,lv2);
+    if(fFillArmenterosThetaStar) FillArmenterosThetaStar(pdg);
 
-    if(GetCalorimeter()=="EMCAL" && inacceptance1 && inacceptance2 && fCheckAccInSector)
+    if(GetCalorimeter()==kEMCAL && inacceptance1 && inacceptance2 && fCheckAccInSector)
     {
       Int_t absID1=0;
       Int_t absID2=0;
       
-      Float_t photonPhi1 = lv1.Phi();
-      Float_t photonPhi2 = lv2.Phi();
+      Float_t photonPhi1 = fPhotonMom1.Phi();
+      Float_t photonPhi2 = fPhotonMom2.Phi();
       
       if(photonPhi1 < 0) photonPhi1+=TMath::TwoPi();
       if(photonPhi2 < 0) photonPhi2+=TMath::TwoPi();
       
-      GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(lv1.Eta(),photonPhi1,absID1);
-      GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(lv2.Eta(),photonPhi2,absID2);
+      GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(fPhotonMom1.Eta(),photonPhi1,absID1);
+      GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(fPhotonMom2.Eta(),photonPhi2,absID2);
       
       Int_t sm1 = GetEMCALGeometry()->GetSuperModuleNumber(absID1);
       Int_t sm2 = GetEMCALGeometry()->GetSuperModuleNumber(absID2);
@@ -1545,17 +1546,17 @@ void AliAnaPi0::FillAcceptanceHistograms()
     
     if(GetDebug() > 2)
       printf("Accepted in %s?: m (%2.2f,%2.2f,%2.2f), p1 (%2.2f,%2.2f,%2.2f), p2 (%2.2f,%2.2f,%2.2f) : in1 %d, in2 %d\n",
-             GetCalorimeter().Data(),
+             GetCalorimeterString().Data(),
              mesonPt,mesonYeta,mesonPhi,
-             lv1.Pt(),lv1.Eta(),lv1.Phi()*TMath::RadToDeg(),
-             lv2.Pt(),lv2.Eta(),lv2.Phi()*TMath::RadToDeg(),
+             fPhotonMom1.Pt(),fPhotonMom1.Eta(),fPhotonMom1.Phi()*TMath::RadToDeg(),
+             fPhotonMom2.Pt(),fPhotonMom2.Eta(),fPhotonMom2.Phi()*TMath::RadToDeg(),
              inacceptance1, inacceptance2);
 
     
     if(inacceptance1 && inacceptance2)
     {
-      Float_t  asym  = TMath::Abs((lv1.E()-lv2.E()) / (lv1.E()+lv2.E()));
-      Double_t angle = lv1.Angle(lv2.Vect());
+      Float_t  asym  = TMath::Abs((fPhotonMom1.E()-fPhotonMom2.E()) / (fPhotonMom1.E()+fPhotonMom2.E()));
+      Double_t angle = fPhotonMom1.Angle(fPhotonMom2.Vect());
       
       if(GetDebug() > 2)
         printf("\t ACCEPTED pdg %d: pt %2.2f, phi %2.2f, eta %2.2f\n",pdg,mesonPt,mesonPhi,mesonYeta);
@@ -1600,24 +1601,23 @@ void AliAnaPi0::FillAcceptanceHistograms()
   
 }
 
-//__________________________________________________________________________________
-void AliAnaPi0::FillArmenterosThetaStar(Int_t pdg,             TLorentzVector meson,
-                                        TLorentzVector daugh1, TLorentzVector daugh2)
+//________________________________________________
+void AliAnaPi0::FillArmenterosThetaStar(Int_t pdg)
 {
   // Fill armenteros plots
   
   // Get pTArm and AlphaArm
-  Float_t momentumSquaredMother = meson.P()*meson.P();
+  Float_t momentumSquaredMother = fPi0Mom.P()*fPi0Mom.P();
   Float_t momentumDaughter1AlongMother = 0.;
   Float_t momentumDaughter2AlongMother = 0.;
   
   if (momentumSquaredMother > 0.)
   {
-    momentumDaughter1AlongMother = (daugh1.Px()*meson.Px() + daugh1.Py()*meson.Py()+ daugh1.Pz()*meson.Pz()) / sqrt(momentumSquaredMother);
-    momentumDaughter2AlongMother = (daugh2.Px()*meson.Px() + daugh2.Py()*meson.Py()+ daugh2.Pz()*meson.Pz()) / sqrt(momentumSquaredMother);
+    momentumDaughter1AlongMother = (fPhotonMom1.Px()*fPi0Mom.Px() + fPhotonMom1.Py()*fPi0Mom.Py()+ fPhotonMom1.Pz()*fPi0Mom.Pz()) / sqrt(momentumSquaredMother);
+    momentumDaughter2AlongMother = (fPhotonMom2.Px()*fPi0Mom.Px() + fPhotonMom2.Py()*fPi0Mom.Py()+ fPhotonMom2.Pz()*fPi0Mom.Pz()) / sqrt(momentumSquaredMother);
   }
   
-  Float_t momentumSquaredDaughter1 = daugh1.P()*daugh1.P();
+  Float_t momentumSquaredDaughter1 = fPhotonMom1.P()*fPhotonMom1.P();
   Float_t ptArmSquared = momentumSquaredDaughter1 - momentumDaughter1AlongMother*momentumDaughter1AlongMother;
   
   Float_t pTArm = 0.;
@@ -1625,14 +1625,14 @@ void AliAnaPi0::FillArmenterosThetaStar(Int_t pdg,             TLorentzVector me
     pTArm = sqrt(ptArmSquared);
   
   Float_t alphaArm = 0.;
-  if(momentumDaughter1AlongMother +momentumDaughter2AlongMother > 0)
+  if(momentumDaughter1AlongMother + momentumDaughter2AlongMother > 0)
     alphaArm = (momentumDaughter1AlongMother -momentumDaughter2AlongMother) / (momentumDaughter1AlongMother + momentumDaughter2AlongMother);
   
-  TLorentzVector daugh1Boost = daugh1;
-  daugh1Boost.Boost(-meson.BoostVector());
-  Float_t  cosThStar=TMath::Cos(daugh1Boost.Vect().Angle(meson.Vect()));
+  fPhotonMom1Boost = fPhotonMom1;
+  fPhotonMom1Boost.Boost(-fPi0Mom.BoostVector());
+  Float_t  cosThStar=TMath::Cos(fPhotonMom1Boost.Vect().Angle(fPi0Mom.Vect()));
   
-  Float_t en   = meson.Energy();
+  Float_t en   = fPi0Mom.Energy();
   Int_t   ebin = -1;
   if(en > 8  && en <= 12) ebin = 0;
   if(en > 12 && en <= 16) ebin = 1;
@@ -1655,7 +1655,7 @@ void AliAnaPi0::FillArmenterosThetaStar(Int_t pdg,             TLorentzVector me
   if(GetDebug() > 2 )
   {
     Float_t asym = 0;
-    if(daugh1.E()+daugh2.E() > 0) asym = TMath::Abs(daugh1.E()-daugh2.E())/(daugh1.E()+daugh2.E());
+    if(fPhotonMom1.E()+fPhotonMom2.E() > 0) asym = TMath::Abs(fPhotonMom1.E()-fPhotonMom2.E())/(fPhotonMom1.E()+fPhotonMom2.E());
 
     printf("AliAnaPi0::FillArmenterosThetaStar() - E %f, alphaArm %f, pTArm %f, cos(theta*) %f, asymmetry %1.3f\n",
          en,alphaArm,pTArm,cosThStar,asym);
@@ -1676,10 +1676,8 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
   
   Int_t ancPDG    = 0;
   Int_t ancStatus = 0;
-  TLorentzVector ancMomentum;
-  TVector3 prodVertex;
   Int_t ancLabel  = GetMCAnalysisUtils()->CheckCommonAncestor(index1, index2,
-                                                              GetReader(), ancPDG, ancStatus,ancMomentum, prodVertex);
+                                                              GetReader(), ancPDG, ancStatus,fPi0Mom, fProdVertex);
   
   Int_t momindex  = -1;
   Int_t mompdg    = -1;
@@ -1721,8 +1719,8 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
                  ncell1 >= fCellNCuts[icell] && ncell2 >= fCellNCuts[icell])
               {
                 fhMCPi0MassPtRec [index]->Fill(pt,mass);
-                fhMCPi0MassPtTrue[index]->Fill(ancMomentum.Pt(),mass);
-                if(mass < 0.17 && mass > 0.1) fhMCPi0PtTruePtRec[index]->Fill(ancMomentum.Pt(),pt);
+                fhMCPi0MassPtTrue[index]->Fill(fPi0Mom.Pt(),mass);
+                if(mass < 0.17 && mass > 0.1) fhMCPi0PtTruePtRec[index]->Fill(fPi0Mom.Pt(),pt);
               }//pass the different cuts
             }// pid bit cut loop
           }// icell loop
@@ -1730,11 +1728,11 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
       }//Multi cut ana sim
       else
       {
-        fhMCPi0MassPtTrue[0]->Fill(ancMomentum.Pt(),mass);
+        fhMCPi0MassPtTrue[0]->Fill(fPi0Mom.Pt(),mass);
         
         if(mass < 0.17 && mass > 0.1)
         {
-          fhMCPi0PtTruePtRec[0]->Fill(ancMomentum.Pt(),pt);
+          fhMCPi0PtTruePtRec[0]->Fill(fPi0Mom.Pt(),pt);
           
           //Int_t uniqueId = -1;
           if(GetReader()->ReadStack())
@@ -1799,8 +1797,8 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
                  ncell1 >= fCellNCuts[icell] && ncell2 >= fCellNCuts[icell])
               {
                 fhMCEtaMassPtRec [index]->Fill(pt,mass);
-                fhMCEtaMassPtTrue[index]->Fill(ancMomentum.Pt(),mass);
-                if(mass < 0.65 && mass > 0.45) fhMCEtaPtTruePtRec[index]->Fill(ancMomentum.Pt(),pt);
+                fhMCEtaMassPtTrue[index]->Fill(fPi0Mom.Pt(),mass);
+                if(mass < 0.65 && mass > 0.45) fhMCEtaPtTruePtRec[index]->Fill(fPi0Mom.Pt(),pt);
               }//pass the different cuts
             }// pid bit cut loop
           }// icell loop
@@ -1808,8 +1806,8 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
       } //Multi cut ana sim
       else
       {
-        fhMCEtaMassPtTrue[0]->Fill(ancMomentum.Pt(),mass);
-        if(mass < 0.65 && mass > 0.45) fhMCEtaPtTruePtRec[0]->Fill(ancMomentum.Pt(),pt);
+        fhMCEtaMassPtTrue[0]->Fill(fPi0Mom.Pt(),mass);
+        if(mass < 0.65 && mass > 0.45) fhMCEtaPtTruePtRec[0]->Fill(fPi0Mom.Pt(),pt);
         
         if(GetReader()->ReadStack())
         {
@@ -1967,8 +1965,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     
   //Get shower shape information of clusters
   TObjArray *clusters = 0;
-  if     (GetCalorimeter()=="EMCAL") clusters = GetEMCALClusters();
-  else if(GetCalorimeter()=="PHOS" ) clusters = GetPHOSClusters() ;
+  if     (GetCalorimeter()==kEMCAL) clusters = GetEMCALClusters();
+  else if(GetCalorimeter()==kPHOS ) clusters = GetPHOSClusters() ;
   
   //---------------------------------
   //First loop on photons/clusters
@@ -2004,7 +2002,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     //printf("AliAnaPi0::MakeAnalysisFillHistograms(): Photon 1 Evt %d  Vertex : %f,%f,%f\n",evtIndex1, GetVertex(evtIndex1)[0] ,GetVertex(evtIndex1)[1],GetVertex(evtIndex1)[2]);
     
     //Get the momentum of this cluster
-    TLorentzVector photon1(p1->Px(),p1->Py(),p1->Pz(),p1->E());
+    fPhotonMom1.SetPxPyPzE(p1->Px(),p1->Py(),p1->Pz(),p1->E());
     
     //Get (Super)Module number of this cluster
     module1 = GetModuleNumber(p1);
@@ -2076,31 +2074,32 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       //printf("AliAnaPi0::MakeAnalysisFillHistograms(): Photon 2 Evt %d  Vertex : %f,%f,%f\n",evtIndex2, GetVertex(evtIndex2)[0] ,GetVertex(evtIndex2)[1],GetVertex(evtIndex2)[2]);
       
       //Get the momentum of this cluster
-      TLorentzVector photon2(p2->Px(),p2->Py(),p2->Pz(),p2->E());
+      fPhotonMom2.SetPxPyPzE(p2->Px(),p2->Py(),p2->Pz(),p2->E());
+      
       //Get module number
       module2       = GetModuleNumber(p2);
       
       //---------------------------------
       // Get pair kinematics
       //---------------------------------
-      Double_t m    = (photon1 + photon2).M() ;
-      Double_t pt   = (photon1 + photon2).Pt();
-      Double_t deta = photon1.Eta() - photon2.Eta();
-      Double_t dphi = photon1.Phi() - photon2.Phi();
+      Double_t m    = (fPhotonMom1 + fPhotonMom2).M() ;
+      Double_t pt   = (fPhotonMom1 + fPhotonMom2).Pt();
+      Double_t deta = fPhotonMom1.Eta() - fPhotonMom2.Eta();
+      Double_t dphi = fPhotonMom1.Phi() - fPhotonMom2.Phi();
       Double_t a    = TMath::Abs(p1->E()-p2->E())/(p1->E()+p2->E()) ;
       
       if(GetDebug() > 2)
-        printf(" E: photon1 %f, photon2 %f; Pair: pT %f, mass %f, a %f\n", p1->E(), p2->E(), (photon1 + photon2).E(),m,a);
+        printf(" E: fPhotonMom1 %f, fPhotonMom2 %f; Pair: pT %f, mass %f, a %f\n", p1->E(), p2->E(), (fPhotonMom1 + fPhotonMom2).E(),m,a);
       
       //--------------------------------
       // Opening angle selection
       //--------------------------------
       //Check if opening angle is too large or too small compared to what is expected	
-      Double_t angle   = photon1.Angle(photon2.Vect());
-      if(fUseAngleEDepCut && !GetNeutralMesonSelection()->IsAngleInWindow((photon1+photon2).E(),angle+0.05))
+      Double_t angle   = fPhotonMom1.Angle(fPhotonMom2.Vect());
+      if(fUseAngleEDepCut && !GetNeutralMesonSelection()->IsAngleInWindow((fPhotonMom1+fPhotonMom2).E(),angle+0.05))
       {
         if(GetDebug() > 2)
-          printf("AliAnaPi0::MakeAnalysisFillHistograms() -Real pair angle %f not in E %f window\n",angle, (photon1+photon2).E());
+          printf("AliAnaPi0::MakeAnalysisFillHistograms() -Real pair angle %f not in E %f window\n",angle, (fPhotonMom1+fPhotonMom2).E());
         continue;
       }
       
@@ -2119,7 +2118,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         if(module1==module2 && module1 >=0 && module1<fNModules)
           fhReMod[module1]->Fill(pt,m) ;
         
-        if(GetCalorimeter()=="EMCAL")
+        if(GetCalorimeter()==kEMCAL)
         {
           // Same sector
           Int_t j=0;
@@ -2328,7 +2327,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         if(fSameSM && GetModuleNumber(p1)!=module1) continue;
         
         //Get kinematics of cluster and (super) module of this cluster
-        TLorentzVector photon1(p1->Px(),p1->Py(),p1->Pz(),p1->E());
+        fPhotonMom1.SetPxPyPzE(p1->Px(),p1->Py(),p1->Pz(),p1->E());
         module1 = GetModuleNumber(p1);
         
         //---------------------------------
@@ -2339,17 +2338,17 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (ev2->At(i2)) ;
           
           //Get kinematics of second cluster and calculate those of the pair
-          TLorentzVector photon2(p2->Px(),p2->Py(),p2->Pz(),p2->E());
-          m           = (photon1+photon2).M() ; 
-          Double_t pt = (photon1 + photon2).Pt();
+          fPhotonMom2.SetPxPyPzE(p2->Px(),p2->Py(),p2->Pz(),p2->E());
+          m           = (fPhotonMom1+fPhotonMom2).M() ; 
+          Double_t pt = (fPhotonMom1 + fPhotonMom2).Pt();
           Double_t a  = TMath::Abs(p1->E()-p2->E())/(p1->E()+p2->E()) ;
           
           //Check if opening angle is too large or too small compared to what is expected
-          Double_t angle   = photon1.Angle(photon2.Vect());
-          if(fUseAngleEDepCut && !GetNeutralMesonSelection()->IsAngleInWindow((photon1+photon2).E(),angle+0.05))
+          Double_t angle   = fPhotonMom1.Angle(fPhotonMom2.Vect());
+          if(fUseAngleEDepCut && !GetNeutralMesonSelection()->IsAngleInWindow((fPhotonMom1+fPhotonMom2).E(),angle+0.05))
           {
             if(GetDebug() > 2)
-              printf("AliAnaPi0::MakeAnalysisFillHistograms() -Mix pair angle %f not in E %f window\n",angle, (photon1+photon2).E());
+              printf("AliAnaPi0::MakeAnalysisFillHistograms() -Mix pair angle %f not in E %f window\n",angle, (fPhotonMom1+fPhotonMom2).E());
             continue;
           }
           
@@ -2361,7 +2360,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           } 
           
           if(GetDebug() > 2)
-            printf("AliAnaPi0::MakeAnalysisFillHistograms() - Mixed Event: pT: photon1 %2.2f, photon2 %2.2f; Pair: pT %2.2f, mass %2.3f, a %f2.3\n",
+            printf("AliAnaPi0::MakeAnalysisFillHistograms() - Mixed Event: pT: fPhotonMom1 %2.2f, fPhotonMom2 %2.2f; Pair: pT %2.2f, mass %2.3f, a %f2.3\n",
                    p1->Pt(), p2->Pt(), pt,m,a);	
           
           //In case we want only pairs in same (super) module, check their origin.
@@ -2374,7 +2373,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             if(module1==module2 && module1 >=0 && module1<fNModules)
               fhMiMod[module1]->Fill(pt,m) ;
             
-            if(GetCalorimeter()=="EMCAL")
+            if(GetCalorimeter()==kEMCAL)
             {
               // Same sector
               Int_t j=0;

@@ -370,7 +370,106 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 	eventCutArray[3]="8000011"; photonCutArray[3] = "002093603007200000000"; ElecCutarray[3] = "90475400233102653710"; MesonCutarray[3] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + Pt{e} > 0.175
 	
   
+} else if ( trainConfig == 24 ) {
+  
+	eventCutArray[0] = "8000011"; photonCutArray[0] = "002093603007200000000"; ElecCutarray[0] = "90475400833202623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth  + new psiPair cut   0.60, 0.0 0.12
+	eventCutArray[1] = "8000011"; photonCutArray[1] = "002093603007200000000"; ElecCutarray[1] = "90475400133202623710"; MesonCutarray[1] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kFirst + new psiPair cut + 0.60  0.0 0.12
+	eventCutArray[2] = "8000011"; photonCutArray[2] = "002093603007200000000"; ElecCutarray[2] = "90475400233202623710"; MesonCutarray[2] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut   0.60, 0.0 0.12
+	eventCutArray[3] = "8000011"; photonCutArray[3] = "005093603007200000000"; ElecCutarray[3] = "90475400233202623710"; MesonCutarray[3] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + gammaR >  10cm  0.60, 0.0 0.12
+  
+} else if ( trainConfig == 25 ) {
+  
+	eventCutArray[0] = "8000011"; photonCutArray[0] = "008093603007200000000"; ElecCutarray[0] = "90475400233202623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + gammaR >  12.5cm  0.60, 0.0 0.12
+	eventCutArray[1] = "8000011"; photonCutArray[1] = "006093603007200000000"; ElecCutarray[1] = "90475400233202623710"; MesonCutarray[1] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + gammaR >  20 cm  0.60, 0.0 0.12
+ 	eventCutArray[2] = "8000011"; photonCutArray[2] = "007093603007200000000"; ElecCutarray[2] = "90475400233202623710"; MesonCutarray[2] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + gammaR >  35 cm  0.60, 0.0 0.12
+	eventCutArray[3] = "8000011"; photonCutArray[3] = "009093603007200000000"; ElecCutarray[3] = "90475400233202623710"; MesonCutarray[3] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + gammaR >  7.5 cm  0.60, 0.0 0.12
+	
+} else if ( trainConfig == 26 ) {
+  
+	eventCutArray[0] = "8000011"; photonCutArray[0] = "008093603007200000000"; ElecCutarray[0] = "90475400233202623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + gammaR >  12.5cm  0.60, 0.0 0.12
+	eventCutArray[1] = "8000011"; photonCutArray[1] = "006093603007200000000"; ElecCutarray[1] = "90475400233202623710"; MesonCutarray[1] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + gammaR >  20 cm  0.60, 0.0 0.12
+ 	eventCutArray[2] = "8000011"; photonCutArray[2] = "007093603007200000000"; ElecCutarray[2] = "90475400233202623710"; MesonCutarray[2] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + gammaR >  35 cm  0.60, 0.0 0.12
+	eventCutArray[3] = "8000011"; photonCutArray[3] = "009093603007200000000"; ElecCutarray[3] = "90475400233202623710"; MesonCutarray[3] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + gammaR >  7.5 cm  0.60, 0.0 0.12
+	
+} else if ( trainConfig == 27 ) {
+  
+	eventCutArray[0]= "8000011"; photonCutArray[0] = "002093603007200000000"; ElecCutarray[0] = "90475400233202613710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair Cut    0.60, 0.0 0.12 + Ptprim > 100 MeV
+	eventCutArray[1]= "8000011"; photonCutArray[1] = "002093603007200000000"; ElecCutarray[1] = "90475400233202633710"; MesonCutarray[1] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair Cut    0.60, 0.0 0.12 + Ptprim > 150 MeV
+	eventCutArray[2]= "8000011"; photonCutArray[2] = "002093603007200000000"; ElecCutarray[2] = "90475400233202603710"; MesonCutarray[2] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair Cut    0.60, 0.0 0.12 + Ptprim > 75 MeV
+	eventCutArray[3]= "8000011"; photonCutArray[3] = "002493603007200000000"; ElecCutarray[3] = "90475400233202623710"; MesonCutarray[3] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair Cut    0.60, 0.0 0.12 + Ptsec  > 75 MeV
+	
+} else if ( trainConfig == 28 ) {
+  
+	eventCutArray[0] = "8000011"; photonCutArray[0] = "002193603007200000000"; ElecCutarray[0] = "90475400233202623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair Cut    0.60, 0.0 0.12 + Pt sec  > 100 MeV
+	eventCutArray[1] = "8000011"; photonCutArray[1] = "002093603007200000000"; ElecCutarray[1] = "90475400233202653710"; MesonCutarray[1] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair Cut    0.60, 0.0 0.12 + Pt prim > 175 GeV
+	eventCutArray[2] = "8000011"; photonCutArray[2] = "002093603001200000000"; ElecCutarray[2] = "90475400233202623710"; MesonCutarray[2] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair Cut    0.60, 0.0 0.12 + Qt > 0.1
+	eventCutArray[3] = "8000011"; photonCutArray[3] = "002093603002200000000"; ElecCutarray[3] = "90475400233202623710"; MesonCutarray[3] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair Cut    0.60, 0.0 0.12 + Qt > 0.07
+	
+} else if ( trainConfig == 29 ) {
+  
+	eventCutArray[0]= "8000011"; photonCutArray[0] = "002093603007200000000"; ElecCutarray[0] = "90375400233202623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + dEdx primary electron -5,5                            
+	eventCutArray[1]= "8000011"; photonCutArray[1] = "002093603007200000000"; ElecCutarray[1] = "90575400233202623710"; MesonCutarray[1] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + dEdx primary electron -3,5
+	eventCutArray[2]= "8000011"; photonCutArray[2] = "002091603007200000000"; ElecCutarray[2] = "90475400233202623710"; MesonCutarray[2] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + dEdx secondary electron -5,5
+	eventCutArray[3]= "8000011"; photonCutArray[3] = "002092603007200000000"; ElecCutarray[3] = "90475400233202623710"; MesonCutarray[3] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + dEdx secondary electron -3,5
+	
+} else if ( trainConfig == 30 ) {
+  
+	eventCutArray[0]= "8000011"; photonCutArray[0] = "002093603007200000000"; ElecCutarray[0] = "90435400233202623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + dEdx pion rejec primary 2.0 sigmas Low and 0 High momentum
+	eventCutArray[1]= "8000011"; photonCutArray[1] = "002093603007200000000"; ElecCutarray[1] = "90425400233202623710"; MesonCutarray[1] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + dEdx pion rejec primary 2.0 sigmas Low and -1 High momentum 
+	eventCutArray[2]= "8000011"; photonCutArray[2] = "002093603007200000000"; ElecCutarray[2] = "90477400233202623710"; MesonCutarray[2] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + dEdx pion rejec primary 0.3 GeV Low and 3.5 High momentum 
+	eventCutArray[3]= "8000011"; photonCutArray[3] = "002093603007200000000"; ElecCutarray[3] = "90475200233202623710"; MesonCutarray[3] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + dEdx pion rejec primary 0.5 GeV Low and 5.0 High momentum*/
+	
+} else if ( trainConfig == 31 ) {
+  
+	eventCutArray[0] = "8000011"; photonCutArray[0] = "002093653007200000000"; ElecCutarray[0] = "90475400233202623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair cut + dEdx pion rejec sec 0.3 GeV Low and 3.5 High momentum
+	eventCutArray[1] = "8000011"; photonCutArray[1] = "002093601007200000000"; ElecCutarray[1] = "90475400233202623710"; MesonCutarray[1] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair cut + dEdx pion rejec sec 0.5 GeV Low and 5.0 High momentum
+	eventCutArray[2] = "8000011"; photonCutArray[2] = "002093803007200000000"; ElecCutarray[2] = "90475400233202623710"; MesonCutarray[2] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair cut + dEdx pion rejec sec  2.0 sigmas Low and  1 High momentum
+	eventCutArray[3] = "8000011"; photonCutArray[3] = "002093603007900000000"; ElecCutarray[3] = "90475400233202623710"; MesonCutarray[3] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair cut + Chi2  < 15
+	
+} else if ( trainConfig == 32 ) {
+  
+	eventCutArray[0] = "8000011"; photonCutArray[0] = "002093603007800000000"; ElecCutarray[0] = "90475400233202623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair cut + Chi2  < 20
+	eventCutArray[1] = "8000011"; photonCutArray[1] = "002093603007100000000"; ElecCutarray[1] = "90475400233202623710"; MesonCutarray[1] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair cut + Chi2  < 50
+	eventCutArray[2] = "8000011"; photonCutArray[2] = "002093603007200000000"; ElecCutarray[2] = "90475400233202623710"; MesonCutarray[2] = "01031005009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair cut + Alpha < 0.7
+	eventCutArray[3] = "8000011"; photonCutArray[3] = "002093603007200000000"; ElecCutarray[3] = "90475400233002623710"; MesonCutarray[3] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + no psi pair +  weights
+	
+} else if ( trainConfig == 33 ) {
+  
+	eventCutArray[0] = "8000011"; photonCutArray[0] = "002093603007200000000"; ElecCutarray[0] = "90475400233202622710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + DCAxy < 1 cm
+	eventCutArray[1] = "8000011"; photonCutArray[1] = "002093603007200000000"; ElecCutarray[1] = "90475400233202623810"; MesonCutarray[1] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + 0.015 < InvMass(e+,e-) < 0.050
+	eventCutArray[2] = "8000011"; photonCutArray[2] = "002093603007200000000"; ElecCutarray[2] = "90475400233202623910"; MesonCutarray[2] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + 0.025 < InvMass(e+,e-) < 0.035
+	eventCutArray[3] = "8000011"; photonCutArray[3] = "002093603007200000000"; ElecCutarray[3] = "90475400233202723710"; MesonCutarray[3] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + 100 events background
+	
+} else if ( trainConfig == 34 ) {
+  
+	eventCutArray[0] = "8000011"; photonCutArray[0] = "002093603007200000000"; ElecCutarray[0] = "90475400233201623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + Background method V0 multiplicity
+	eventCutArray[1] = "8000011"; photonCutArray[1] = "032093603007200000000"; ElecCutarray[1] = "90475400239202623710"; MesonCutarray[1] = "01033035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + |Y| < 0.6 and |Gamma_eta| < 0.65 and |e+_eta| < 0.65 and |e-_eta| < 0.65 
+	eventCutArray[2] = "8000011"; photonCutArray[2] = "042093603007200000000"; ElecCutarray[2] = "90475400235202623710"; MesonCutarray[2] = "01032035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + |Y| < 0.7 and |Gamma_eta| < 0.75 and |e+_eta| < 0.75 and |e-_eta| < 0.75
+	eventCutArray[3] = "8000011"; photonCutArray[3] = "012093603007200000000"; ElecCutarray[3] = "90475400236202623710"; MesonCutarray[3] = "01034035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + |Y| < 0.5 and |Gamma_eta| < 0.60 and |e+_eta| < 0.60 and |e-_eta| < 0.60
+	
+} else if ( trainConfig == 35 ) {
+	
+	eventCutArray[0] = "8000011"; photonCutArray[0] = "002093603007200000000"; ElecCutarray[0] = "90475400233202623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair Cut    0.60, 0.0 0.12
+	eventCutArray[1] = "8000011"; photonCutArray[1] = "002093603003200000000"; ElecCutarray[1] = "90475400233202623710"; MesonCutarray[1] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  +  Qt < 0.05
+	eventCutArray[2] = "8000011"; photonCutArray[2] = "002083603007200000000"; ElecCutarray[2] = "90475400233202623710"; MesonCutarray[2] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + Findable Cls > 0.35 Secondary
+	eventCutArray[3] = "8000011"; photonCutArray[3] = "002093603007200000000"; ElecCutarray[3] = "90475400273202623710"; MesonCutarray[3] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + Findable Cls > 0.60 primary
+	
+} else if ( trainConfig == 36 ) {
+  
+	eventCutArray[0] = "8000011"; photonCutArray[0] = "002093603007200000000"; ElecCutarray[0] = "90475400433202623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + ITScls >= 3
+	eventCutArray[1] = "8000011"; photonCutArray[1] = "002093603007200000000"; ElecCutarray[1] = "90475400533202623710"; MesonCutarray[1] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + ITScls >= 4
+	eventCutArray[2] = "8000011"; photonCutArray[2] = "002093603007200000000"; ElecCutarray[2] = "90475400633202623710"; MesonCutarray[2] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + ITScls >= 5
+	eventCutArray[3] = "8000011"; photonCutArray[3] = "002093603007200000000"; ElecCutarray[3] = "90475400233202623710"; MesonCutarray[3] = "01031035000000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + No extra smearing
+	
+} else if ( trainConfig == 37 ) {
+  
+	eventCutArray[0] = "8000011"; photonCutArray[0] = "002093603007200000000"; ElecCutarray[0] = "90475400233202623700"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny    + new psiPair Cut    0.60, 0.0 0.12
+	eventCutArray[1] = "8000011"; photonCutArray[1] = "002093603007200000000"; ElecCutarray[1] = "90475400833202623700"; MesonCutarray[1] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth   + new psiPair cut    0.60, 0.0 0.12
+	eventCutArray[2] = "8000011"; photonCutArray[2] = "002093603007200000000"; ElecCutarray[2] = "90475400133202623700"; MesonCutarray[2] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kFirst  + new psiPair Cut    0.60, 0.0 0.12
+	eventCutArray[3] = "8000011"; photonCutArray[3] = "002093603007200000000"; ElecCutarray[3] = "90475400233002623700"; MesonCutarray[3] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny    + no psi pair + no weights
+	
 }
+	
 
 
 
@@ -403,7 +502,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 
       analysisEventCuts[i] = new AliConvEventCuts();
 
-	  if (  ( trainConfig >= 1 && trainConfig <= 9 ) || trainConfig == 19  || trainConfig == 21 || trainConfig == 23 ){
+	  if (  ( trainConfig >= 1 && trainConfig <= 9 ) || trainConfig == 19  || trainConfig == 21 || trainConfig == 23 || ( trainConfig >= 24 && trainConfig <=36 )  ){
 	    
 	    if (doWeighting){
 	      if (generatorName.CompareTo("DPMJET")==0){
