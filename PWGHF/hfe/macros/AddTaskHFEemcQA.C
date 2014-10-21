@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHFEemcQA(Bool_t FillElecSparse=kFALSE){
+AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -18,12 +18,14 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t FillElecSparse=kFALSE){
   }else{
     MCthere=kTRUE;
   }
+  
 
   // +++ EMCal MB
   AliAnalysisTaskHFEemcQA *hfecalqa = new AliAnalysisTaskHFEemcQA("emcqa");
   mgr->AddTask(hfecalqa);
   hfecalqa->SelectCollisionCandidates(AliVEvent::kINT8);
   hfecalqa->SetElecIDsparse(FillElecSparse);
+  hfecalqa->SetTenderSwitch(UseTender);
 
   TString containerName = mgr->GetCommonFileName();
   containerName += ":PWGHF_hfeHFEemcQAINT8";
@@ -36,6 +38,7 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t FillElecSparse=kFALSE){
   mgr->AddTask(hfecalqa7);
   hfecalqa7->SelectCollisionCandidates(AliVEvent::kINT7);
   hfecalqa7->SetElecIDsparse(FillElecSparse);
+  hfecalqa7->SetTenderSwitch(UseTender);
 
   TString containerName7 = mgr->GetCommonFileName();
   containerName7 += ":PWGHF_hfeHFEemcQAINT7";
@@ -49,6 +52,7 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t FillElecSparse=kFALSE){
   mgr->AddTask(hfecalqaTrig0);
   hfecalqaTrig0->SelectCollisionCandidates(AliVEvent::kEMCEGA);
   hfecalqaTrig0->SetElecIDsparse(FillElecSparse);
+  hfecalqaTrig0->SetTenderSwitch(UseTender);
 
   TString containerName1 = mgr->GetCommonFileName();
   containerName1 += ":PWGHF_hfeHFEemcQATrigGA";
@@ -63,6 +67,7 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t FillElecSparse=kFALSE){
   mgr->AddTask(hfecalqaTrig1);
   hfecalqaTrig1->SelectCollisionCandidates(AliVEvent::kEMCEJE);
   hfecalqaTrig1->SetElecIDsparse(FillElecSparse);
+  hfecalqaTrig1->SetTenderSwitch(UseTender);
 
   TString containerName2 = mgr->GetCommonFileName();
   containerName2 += ":PWGHF_hfeHFEemcQATrigJE";
