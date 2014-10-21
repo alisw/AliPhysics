@@ -28,7 +28,7 @@ class AliITSURecoLayer : public TNamed
   enum {kPassive=BIT(14)                 // layer is passive
 	,kOwnsClusterArray=BIT(15)       // owner of cluster array, delete in destructor
   };
-  AliITSURecoLayer(const char* name);
+  AliITSURecoLayer(const char* name=0);
   AliITSURecoLayer(const char* name, Int_t activeID,AliITSUGeomTGeo* gm);
   virtual ~AliITSURecoLayer();
   //
