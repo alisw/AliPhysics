@@ -227,7 +227,7 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   task->SetVariableMultiplicity(variableM);
   task->GetPIDQAManager()->SetHighResolutionEtaHistos();
   task->GetPIDQAManager()->SetMidResolutionHistos();
-  task->GetPIDQAManager()->SetFillMultiplicity();
+  //task->GetPIDQAManager()->SetFillMultiplicity();
   task->SetHFECuts(hfecuts);
   task->SetHFEBackgroundCuts(hfeBackgroundCuts);
   if(aodfilter > 0) {
@@ -278,11 +278,12 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
     }
     if(variableMr==10) {
       TH2D *meanc = GetCorrectionsJpsiMean("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/jpsietacentcorr3_2011.root");
-      TH2D *widthc = GetCorrectionsJpsiMean("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/jpsietacentcorr3_2011.root");
+      TH2D *widthc = GetCorrectionsJpsiWidth("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/jpsietacentcorr3_2011.root");
       if(meanc && widthc) tpcpid->SetJpsiCorrections(meanc,widthc);
     }
     // Theo
     if(variableMr==1) {
+      task->GetPIDQAManager()->SetFillMultiplicity();
       TF1 *etaCorrMean = GetEtaCorrection("LHC11h_etaCorrMean");
       TF1 *etaCorrWdth = GetEtaCorrection("LHC11h_etaCorrWidth");
       if(etaCorrMean && etaCorrWdth && withetacorrection){
