@@ -43,6 +43,7 @@
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
 #include "AliAnalysisDataSlot.h"
+#include "AliLog.h"
 
 ClassImp(AliAnalysisTaskCaloTrackCorrelationM)
 
@@ -93,12 +94,13 @@ AliAnalysisTaskCaloTrackCorrelationM::~AliAnalysisTaskCaloTrackCorrelationM()
 void AliAnalysisTaskCaloTrackCorrelationM::UserCreateOutputObjects()
 {
   // Create the output container
-  if (DebugLevel() > 1) printf("AliAnalysisTaskCaloTrackCorrelationM::UserCreateOutputObjects() - Begin\n");
+  AliDebug(1,"Begin");
   
   //Get list of aod arrays, add each aod array to analysis frame 
   TClonesArray *array = 0;
   TList * list = fAna->FillAndGetAODBranchList();
-  if (DebugLevel() >= 1) printf("AliAnalysisTaskCaloTrackCorrelationM::UserCreateOutputObjects() - n AOD branches %d\n",list->GetEntries());
+
+  AliDebug(1,Form("n AOD branches %d",list->GetEntries()));
   
   //Put the delta AODs in output file, std or delta
   if((fAna->GetReader())->WriteDeltaAODToFile())
@@ -116,11 +118,11 @@ void AliAnalysisTaskCaloTrackCorrelationM::UserCreateOutputObjects()
   OpenFile(1);
   fOutputContainer = fAna->GetOutputContainer();
   
-  if (DebugLevel() >= 1) printf("AliAnalysisTaskCaloTrackCorrelationM::UserCreateOutputObjects() - n histograms %d\n",fOutputContainer->GetEntries());
+  AliDebug(1,Form("n histograms %d",fOutputContainer->GetEntries()));
   
   fOutputContainer->SetOwner(kTRUE);
   
-  if (DebugLevel() > 1) printf("AliAnalysisTaskCaloTrackCorrelationM::UserCreateOutputObjects() - End\n");
+  AliDebug(1,"End");
   
   PostData(1,fOutputContainer);
 	
@@ -141,7 +143,7 @@ void AliAnalysisTaskCaloTrackCorrelationM::Init()
 {
   // Initialization
   
-  if (DebugLevel() > 1) printf("AliAnalysisTaskCaloTrackCorrelationM::Init() - Begin\n");
+  AliDebug(1,"Begin");
   
   fInputEvent = new AliMixedEvent() ; 
   
@@ -149,15 +151,15 @@ void AliAnalysisTaskCaloTrackCorrelationM::Init()
   
   if (fConfigName.Length())
   {
-    printf("AliAnalysisTaskCaloTrackCorrelationM::Init() - ### Configuration file is %s.C ###\n", fConfigName.Data());
+    AliInfo(Form("### Configuration file is %s.C ###", fConfigName.Data()));
     gROOT->LoadMacro(fConfigName+".C");
     fAna = (AliAnaCaloTrackCorrMaker*) gInterpreter->ProcessLine("ConfigAnalysis()");
   }
   
   if(!fAna)
   {
-    printf("AliAnalysisTaskCaloTrackCorrelationM::Init() - Analysis maker pointer not initialized, no analysis specified, STOP !\n");
-    abort();
+    AliFatal("Analysis maker pointer not initialized, no analysis specified, STOP!");
+    return; // coverity
   }
   
   // Add different generator particles to PDG Data Base 
@@ -174,7 +176,7 @@ void AliAnalysisTaskCaloTrackCorrelationM::Init()
   if((fAna->GetReader())->GetDeltaAODFileName()!="")
 	  AliAnalysisManager::GetAnalysisManager()->RegisterExtraFile((fAna->GetReader())->GetDeltaAODFileName());
   
-  if (DebugLevel() > 1) printf("AliAnalysisTaskCaloTrackCorrelationM::Init() - End\n");
+  AliDebug(1,"End");
   
 }
 
@@ -184,13 +186,13 @@ void AliAnalysisTaskCaloTrackCorrelationM::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event
   
-  if (DebugLevel() > 1) printf("AliAnalysisTaskCaloTrackCorrelationM::UserExec() - Begin\n");
+  AliDebug(1,"Begin");
   
   //Get the type of data, check if type is correct
   Int_t  datatype = fAna->GetReader()->GetDataType();
   if(datatype != AliCaloTrackReader::kESD && datatype != AliCaloTrackReader::kAOD &&
      datatype != AliCaloTrackReader::kMC){
-    printf("AliAnalysisTaskCaloTrackCorrelationM::UserExec() - Wrong type of data\n");
+    AliError("Wrong type of data");
     return ;
   }
   
@@ -221,13 +223,14 @@ void AliAnalysisTaskCaloTrackCorrelationM::UserExec(Option_t */*option*/)
   fAna->ProcessEvent((Int_t) Entry(), CurrentFileName());
   
   //printf("AliAnalysisTaskCaloTrackCorrelationM::Current Event %d; Current File Name : %s\n",(Int_t) Entry(), CurrentFileName());
-  if (DebugLevel() > 1) printf("AliAnalysisTaskCaloTrackCorrelationM::UserExec() - End\n");
   
   PostData(1, fOutputContainer);
 	
   AliAnalysisDataSlot *out0 = GetOutputSlot(0);
   if (out0 && out0->IsConnected()) PostData(0, fTreeA);  
   
+  AliDebug(1,"End");
+
   //gObjectTable->Print();
   
 }

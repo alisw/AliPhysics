@@ -42,6 +42,7 @@
 #include "AliAODEvent.h"
 #include "AliFiducialCut.h"
 #include "AliMCAnalysisUtils.h"
+#include "AliLog.h"
 
 ClassImp(AliCaloTrackMCReader)
 
@@ -206,9 +207,9 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* parti
   AliAODCaloCluster *calo = new AliAODCaloCluster(index,1,labels,fMomentum.E(), x, NULL, ttype, 0);
   
   SetCaloClusterPID(pdg,calo) ;
-  if(fDebug > 3 && fMomentum.Pt() > 0.2)
-    printf("AliCaloTrackMCReader::FillCalorimeters() - PHOS %d?, EMCAL %d? : Selected cluster pdg %d, E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
-           fFillPHOS, fFillEMCAL, pdg,fMomentum.E(), fMomentum.Pt(), fMomentum.Phi()*TMath::RadToDeg(),fMomentum.Eta());
+ 
+  AliDebug(3,Form("PHOS %d?, EMCAL %d? : Selected cluster pdg %d, E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f",
+                  fFillPHOS, fFillEMCAL, pdg,fMomentum.E(), fMomentum.Pt(), fMomentum.Phi()*TMath::RadToDeg(),fMomentum.Eta()));
   
   //reference the selected object to the list
   if(fFillPHOS)fPHOSClusters ->Add(calo);
@@ -273,9 +274,8 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
           
           if(TMath::Abs(pdg) == 11 && GetStack()->Particle(particle->GetFirstMother())->GetPdgCode()==22) continue ;
           
-          if(fDebug > 3 && pt > 0.2)
-            printf("AliCaloTrackMCReader::FillInputEvent() - CTS : Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
-                   en,pt,phi*TMath::RadToDeg(),eta);
+          AliDebug(2,Form("CTS : Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f",
+                          en,pt,phi*TMath::RadToDeg(),eta));
           
           x[0] = particle->Vx(); x[1] = particle->Vy(); x[2] = particle->Vz();
           p[0] = particle->Px(); p[1] = particle->Py(); p[2] = particle->Pz();
@@ -304,6 +304,8 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
         //Fill particle/calocluster arrays
         if(!fDecayPi0) 
         {
+          AliDebug(2,Form("Calo : Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f",
+                          en,pt,phi*TMath::RadToDeg(),eta));
           FillCalorimeters(iParticle, particle);
         }
         else 
@@ -329,7 +331,12 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
               FillCalorimeters(iParticle,pPhoton2);
             }//pt cut
           }//pi0
-          else FillCalorimeters(iParticle,particle); //Add the rest
+          else
+          {
+            AliDebug(2,Form("Calo : Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f",
+                            en,pt,phi*TMath::RadToDeg(),eta));
+            FillCalorimeters(iParticle,particle); //Add the rest
+          }
         }
       }//neutral particles
     } //particle with correct status

@@ -3691,11 +3691,13 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchForCommonMother(TClonesArray *mcArra
     lab = TMath::Abs(dgLabels[i]);
     if(lab<0) {
       AliDebug(2,Form("daughter with negative label %d",lab));
+      delete [] labelMother;
       return 0;
     }
     part = (AliAODMCParticle*)mcArray->At(lab);
     if(!part) { 
       AliDebug(2,"no MC particle");
+      delete [] labelMother;
       return 0;
     }
 
@@ -3761,6 +3763,7 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchForCommonMother(TClonesArray *mcArra
   printf("%s \n",stringaCheck2.Data());
 
   delete [] labelMother;
+  delete pdgDg;
 
   return pdgToBeReturned;
 

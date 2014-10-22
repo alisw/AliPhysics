@@ -93,9 +93,11 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Bool_t ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
 			
 		void InitCutHistograms(TString name="");
-		void SetFillCutHistograms(TString name=""){if(!fHistograms){InitCutHistograms(name);};}
+        void SetFillCutHistograms(TString name=""){if(!fHistograms){InitCutHistograms(name);}}
 		TList *GetCutHistograms(){return fHistograms;}
 		void FillClusterCutIndex(Int_t photoncut){if(fHistCutIndex)fHistCutIndex->Fill(photoncut);}
+
+        void SetExtendedMatching(Bool_t extendedMatching){fExtendedMatching = extendedMatching;}
 			
 		///Cut functions
 		Bool_t AcceptanceCuts(AliVCluster* cluster, AliVEvent *event);
@@ -139,6 +141,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Bool_t fUseTimeDiff;						// flag for switching on time difference cut
 		Double_t fMinDistTrackToCluster; 			// minimum distance between track and cluster
 		Bool_t fUseDistTrackToCluster;				// flag for switching on distance between track and cluster cut
+        Bool_t fExtendedMatching;                   // flag for switching on extended matching histograms
 		Double_t fExoticCell;						// exotic cell cut
 		Bool_t fUseExoticCell;						// flag for switching on exotic cell cut
 		Double_t fMinEnergy;						// minium energy per cluster
@@ -191,11 +194,20 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
         //Track matching histograms
 		TH1F* fHistClusterRBeforeQA;				// cluster position in R=SQRT(x^2+y^2) (before QA)
 		TH1F* fHistClusterRAfterQA;					// cluster position in R=SQRT(x^2+y^2) for matched tracks (After QA)
-		TH2F* fHistClusterdEtadPhiPosTracksBeforeQA;			// 2-dim plot dEta vs. dPhi
-		TH2F* fHistClusterdEtadPhiNegTracksBeforeQA;			// 2-dim plot dEta vs. dPhi
+        TH2F* fHistClusterdEtadPhiBeforeQA;			// 2-dim plot dEta vs. dPhi
 		TH2F* fHistClusterdEtadPhiAfterQA;			// 2-dim plot dEta vs. dPhi for matched tracks (after QA)
 		TH1F* fHistDistanceTrackToClusterBeforeQA;	// distance cluster to track before acceptance cuts
         TH1F* fHistDistanceTrackToClusterAfterQA;	// distance cluster to track after cluster quality cuts
+
+        //Extended track matching histograms
+        TH2F* fHistClusterdEtadPhiPosTracksBeforeQA;// 2-dim plot dEta vs. dPhi
+        TH2F* fHistClusterdEtadPhiNegTracksBeforeQA;// 2-dim plot dEta vs. dPhi
+        TH2F* fHistClusterdEtadPtBeforeQA;          // 2-dim plot dEta vs. Pt
+        TH2F* fHistClusterdPhidPtBeforeQA;          // 2-dim plot dEta vs. Pt
+        TH2F* fHistClusterM20Pt_dPhiBeforeQA;       // 2-dim plot M20 vs. Pt for given dPhi>0.05
+        TH2F* fHistClusterM02Pt_dPhiBeforeQA;       // 2-dim plot M02 vs. Pt for given dPhi>0.05
+        TH2F* fHistClusterM20M02BeforeQA;           // 2-dim plot M20 vs. M02
+        TH2F* fHistClusterM20M02AfterQA;            // 2-dim plot M20 vs. M20
 
 	private:
 

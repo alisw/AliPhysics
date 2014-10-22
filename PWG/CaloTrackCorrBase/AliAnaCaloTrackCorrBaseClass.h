@@ -39,6 +39,8 @@ class AliEMCALGeometry;
 class AliPHOSGeoUtils;
 class AliCentrality;
 class AliEventplane;
+#include "AliAnalysisManager.h"
+#include "AliLog.h"
 
 //jets
 class AliAODJetEventBackground;
@@ -53,7 +55,8 @@ public:
   
   virtual TList *        GetCreateOutputObjects()               { return (new TList)          ; }
   
-  virtual void           Init() {;}
+  virtual void           Init()                                 { ; }
+  virtual void           InitDebug()      ;
   virtual void           InitParameters() ;
   
   virtual void           FillEventMixPool()                     { ; }
