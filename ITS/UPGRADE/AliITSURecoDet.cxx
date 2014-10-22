@@ -16,6 +16,19 @@ ClassImp(AliITSURecoDet)
 
 const Char_t* AliITSURecoDet::fgkBeamPipeVolName = "IP_PIPE";
 
+//______________________________________________________
+AliITSURecoDet::AliITSURecoDet()
+:  fNLayers(0)
+  ,fNLayersActive(0)
+  ,fRMax(-1)
+  ,fRMin(-1)
+  ,fRITSTPCRef(-1)
+  ,fLayers(0)
+  ,fLayersActive(0)
+  ,fGeom(0)
+{
+  // def. c-tor
+}
 
 //______________________________________________________
 AliITSURecoDet::AliITSURecoDet(AliITSUGeomTGeo* geom, const char* name)

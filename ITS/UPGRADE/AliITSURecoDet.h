@@ -19,6 +19,7 @@ class AliITSURecoDet : public TNamed
 {
  public:
   //
+  AliITSURecoDet();
   AliITSURecoDet(AliITSUGeomTGeo* geom, const char* name="");
   virtual ~AliITSURecoDet();
   //

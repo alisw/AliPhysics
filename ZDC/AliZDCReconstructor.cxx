@@ -220,11 +220,8 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
 
   // loop over digits
   Float_t tZN1Corr[10], tZP1Corr[10], tZN2Corr[10], tZP2Corr[10]; 
-  Float_t dZEM1Corr[2], dZEM2Corr[2], sPMRef1[2], sPMRef2[2]; 
-  for(Int_t i=0; i<10; i++){
-     tZN1Corr[i] = tZP1Corr[i] = tZN2Corr[i] = tZP2Corr[i] = 0.;
-     if(i<2) dZEM1Corr[i] = dZEM2Corr[i] = sPMRef1[i] = sPMRef2[i] = 0.;
-  }  
+  for(Int_t i=0; i<10; i++) tZN1Corr[i] = tZP1Corr[i] = tZN2Corr[i] = tZP2Corr[i] = 0.;  
+  Float_t dZEM1Corr[2]={0,0}, dZEM2Corr[2]={0,0}, sPMRef1[2]={0,0}, sPMRef2[2]={0,0}; 
   
   Int_t digNentries = digitsTree->GetEntries();
   Float_t ootDigi[kNch]; Int_t i=0;
@@ -375,11 +372,8 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   }
   
   Float_t tZN1Corr[10], tZP1Corr[10], tZN2Corr[10], tZP2Corr[10]; 
-  Float_t dZEM1Corr[2], dZEM2Corr[2], sPMRef1[2], sPMRef2[2]; 
-  for(Int_t i=0; i<10; i++){
-     tZN1Corr[i] = tZP1Corr[i] = tZN2Corr[i] = tZP2Corr[i] = 0.;
-     if(i<2) dZEM1Corr[i] = dZEM2Corr[i] = sPMRef1[i] = sPMRef2[i] = 0.;
-  }  
+  for(Int_t i=0; i<10; i++) tZN1Corr[i] = tZP1Corr[i] = tZN2Corr[i] = tZP2Corr[i] = 0.;
+  Float_t dZEM1Corr[2]={0,0}, dZEM2Corr[2]={0,0}, sPMRef1[2]={0,0}, sPMRef2[2]={0,0}; 
 
   Bool_t isScalerOn=kFALSE;
   Int_t jsc=0, itdc=0, iprevtdc=-1, ihittdc=0;
@@ -479,7 +473,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
          pedindex = (det-1)/3 + 22;
          if(det == 1){
            if(gain==0) sPMRef1[0] += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]);
-	 else sPMRef1[1] += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+kNch]);
+	   else sPMRef1[1] += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+kNch]);
          }
          else if(det == 4){
            if(gain==0) sPMRef2[0] += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]);
@@ -636,7 +630,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
     dZEM2Corr[1] = adcZEMlg[1] - (corrCoeff1[11+kNch]*adcZEMootlg[1]+corrCoeff0[11+kNch]);
     // *************************************************************************
   }
-  else if(fPedSubMode==0 && fRecoMode==1){
+  /*else if(fPedSubMode==0 && fRecoMode==1){
     //  **** p-p data taking 2011 -> temporary patch to overcome DA problem ****
     //
     dZEM1Corr[0] = adcZEM[0]   - meanPed[10];
@@ -644,7 +638,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
     dZEM2Corr[0] = adcZEM[1]   - meanPed[11];
     dZEM2Corr[1] = adcZEMlg[1] - meanPed[11+kNch];
         // *************************************************************************
-  }
+  }*/
     
   if(fRecoMode==1) // p-p data
     ReconstructEventpp(clustersTree, tZN1Corr, tZP1Corr, tZN2Corr, tZP2Corr, 
