@@ -92,7 +92,7 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
 {
   //Correlate trigger with partons or jets, get z
   
-  if(GetDebug() > 1) printf("AliAnaGeneratorKine::CorrelateWithPartonOrJet() - Start \n");
+  AliDebug(1,"Start");
   
   //Get the index of the mother
   iparton =  (fStack->Particle(indexTrig))->GetFirstMother();
@@ -100,7 +100,11 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
   while (iparton > 7) 
   {
     iparton   = mother->GetFirstMother();
-    if(iparton < 0) { printf("AliAnaGeneratorKine::CorrelateWithPartonOrJet() - Negative index, skip event\n"); return kFALSE; }
+    if(iparton < 0)
+    {
+      AliWarning("Negative index, skip event");
+      return kFALSE;
+    }
     mother = fStack->Particle(iparton);
   }
   
@@ -220,7 +224,7 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
     } // photon
   } // conditions loop
   
-  if(GetDebug() > 1) printf("AliAnaGeneratorKine::CorrelateWithPartonOrJet() - End TRUE \n");
+  AliDebug(1,"End TRUE");
   
   return kTRUE;
 }
@@ -578,15 +582,12 @@ void  AliAnaGeneratorKine::GetPartonsAndJets()
 {
   // Fill data members with partons,jets and generated pt hard 
   
-  if(GetDebug() > 1) printf("AliAnaGeneratorKine::GetPartonsAndJets() - Start \n");
+  AliDebug(1,"Start");
 
   fStack =  GetMCStack() ;
   
   if(!fStack) 
-  {
-    printf("AliAnaGeneratorKine::MakeAnalysisFillHistograms() - No Stack available, STOP\n");
-    abort();
-  }
+    AliFatal("No Stack available, STOP");
   
   fParton2 = fStack->Particle(2) ;
   fParton3 = fStack->Particle(3) ;
@@ -663,7 +664,7 @@ void  AliAnaGeneratorKine::GetPartonsAndJets()
   fhPtJetPtParton ->Fill(fPtHard, fJet6.Pt()/fParton6->Pt());
   fhPtJetPtParton ->Fill(fPtHard, fJet7.Pt()/fParton7->Pt());
   
-  if(GetDebug() > 1) printf("AliAnaGeneratorKine::GetPartonsAndJets() - End \n");
+  AliDebug(1,"End");
 
 }
 
@@ -677,7 +678,7 @@ void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
 
   // Calculate the real XE and the UE XE
 
-  if(GetDebug() > 1) printf("AliAnaGeneratorKine::GetXE() - Start \n");
+  AliDebug(1,"Start");
   
   Float_t ptTrig  = fTrigger.Pt();
   Float_t phiTrig = fTrigger.Phi();
@@ -787,7 +788,7 @@ void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
     
   } // primary loop
 
-  if(GetDebug() > 1) printf("AliAnaGeneratorKine::GetPartonsAndJets() - End \n");
+  AliDebug(1,"End");
 
 }
 
@@ -814,7 +815,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
   // Check if the trigger is the leading particle and if it is isolated
   // In case of neutral particles check all neutral or neutral in EMCAL acceptance
   
-  if(GetDebug() > 1) printf("AliAnaGeneratorKine::GetIsLeadingAndIsolated() - Start \n");
+  AliDebug(1,"Start");
 
   Float_t ptMaxCharged       = 0; // all charged
   Float_t ptMaxNeutral       = 0; // all neutral
@@ -1024,7 +1025,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
     } // photon
   } // conditions loop
  
-  if(GetDebug() > 1) printf("AliAnaGeneratorKine::IsLeadingAndIsolated() - End \n");
+  AliDebug(1,"End");
   
 }
   
@@ -1033,7 +1034,7 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
 {
   //Particle-Parton Correlation Analysis, fill histograms
   
-  if(GetDebug() > 1) printf("AliAnaGeneratorKine::MakeAnalysisFillHistograms() - Start \n");
+  AliDebug(1,"Start");
   
   GetPartonsAndJets();
   
@@ -1065,8 +1066,8 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     Bool_t in = GetFiducialCutForTrigger()->IsInFiducialCut(fTrigger.Eta(),fTrigger.Phi(),fTriggerDetector) ;
     if(! in ) continue ;
 
-    if( GetDebug() > 2) printf("Select trigger particle %d: pdg %d status %d, mother index %d, pT %2.2f, eta %2.2f, phi %2.2f \n",
-                               ipr, pdgTrig, statusTrig, imother, ptTrig, particle->Eta(), particle->Phi()*TMath::RadToDeg());
+    AliDebug(1,Form("Select trigger particle %d: pdg %d status %d, mother index %d, pT %2.2f, eta %2.2f, phi %2.2f",
+                    ipr, pdgTrig, statusTrig, imother, ptTrig, particle->Eta(), particle->Phi()*TMath::RadToDeg()));
     
 //    if(pdgTrig==111)
 //    {
@@ -1090,7 +1091,7 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     
   }
   
-  if(GetDebug() > 1) printf("AliAnaGeneratorKine::MakeAnalysisFillHistograms() - End fill histograms \n");
+  AliDebug(1,"End fill histograms");
   
 }
 

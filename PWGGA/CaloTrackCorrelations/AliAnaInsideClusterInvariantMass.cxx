@@ -835,14 +835,14 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   
   Int_t label = cluster->GetLabel();
   
-  while( pdg!=111 && label>=0 )
+  while( pdg!=111 && label >=0 )
   {
     fPrimaryMom = GetMCAnalysisUtils()->GetGrandMother(label,GetReader(),pdg,status,ok, label,gLabel);
   }
   
   if(pdg!=111 || label < 0)
   {
-    Info("CheckLocalMaximaMCOrigin","Mother Pi0 not found!\n");
+    AliWarning("Mother Pi0 not found!");
     return;
   }
   
@@ -850,7 +850,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   
   if(nDaugthers != 2)
   {
-    Info("CheckLocalMaximaMCOrigin","N daughters %d !=2!\n",nDaugthers);
+    AliWarning(Form("N daughters %d !=2!",nDaugthers));
     return;
   }
   
@@ -862,7 +862,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
 
   if(pdg1!=22 || pdg0 != 22)
   {
-    Info("CheckLocalMaximaMCOrigin","Wrong daughters PDG: photon0 %d - photon1 %d\n",pdg0,pdg1);
+    AliWarning(Form("Wrong daughters PDG: photon0 %d - photon1 %d",pdg0,pdg1));
     return;
   }
   
@@ -1529,7 +1529,7 @@ void AliAnaInsideClusterInvariantMass::FillArmenterosHistograms(Int_t nMax, Int_
   
   Float_t asym = TMath::Abs( fSubClusterMom1.Energy()-fSubClusterMom2.Energy() )/( fSubClusterMom1.Energy()+fSubClusterMom2.Energy() ) ;
   
-   if(GetDebug() > 2 ) Info("FillArmenterosHistograms()","E %f, alphaArm %f, pTArm %f\n",en,alphaArm,pTArm);
+  AliDebug(2,Form("E %f, alphaArm %f, pTArm %f",en,alphaArm,pTArm));
   
   Bool_t m02OK = GetCaloPID()->IsInPi0M02Range(en,m02,nMax);
   Bool_t asyOK = GetCaloPID()->IsInPi0SplitAsymmetryRange(en,asym,nMax);
@@ -2492,7 +2492,7 @@ void AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms(Float_t en,      
       if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02OverlapN[inlm][ebin]->Fill(l0,mass);
     }
     else
-      Info("FillMCOverlapHistograms","n overlaps = %d!!", noverlaps);
+      AliWarning(Form("n overlaps = %d!!", noverlaps));
   }
   else if(fFillTMHisto)
   {
@@ -2529,7 +2529,7 @@ void AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms(Float_t en,      
       if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02OverlapNMatch[inlm][ebin]->Fill(l0,mass);
     }
     else
-        Info("FillMCOverlapHistograms()","n overlaps in matched = %d!!", noverlaps);
+        AliWarning(Form("n overlaps in matched = %d!!", noverlaps));
   }
 }
 
@@ -2638,9 +2638,7 @@ void AliAnaInsideClusterInvariantMass::FillNLMDiffCutHistograms(AliVCluster *clu
                                                                                  distbad1,distbad2,fidcut1,fidcut2);
       if (nlm <= 0)
       {
-        if(GetDebug() > 0 )
-        Info("MakeAnalysisFillHistograms","No local maximum found! It did not pass CaloPID selection criteria \n");
-        
+        AliWarning("No local maximum found! It did not pass CaloPID selection criteria");
         continue;
       }
 
@@ -2783,7 +2781,7 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
   
   if(energy <=0 )
   {
-    Info("WeightHistograms()","Wrong calculated energy %f\n",energy);
+    AliWarning(Form("Wrong calculated energy %f",energy));
     return;
   }
   
@@ -2793,8 +2791,8 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
   Float_t amp2 = cells->GetCellAmplitude(absId2);
   GetCaloUtils()->RecalibrateCellAmplitude(amp2,GetCalorimeter(), absId2);
 
-  if(amp1 < amp2)        Info("FillSSWeightHistograms","Bad local maxima E ordering : id1 E %f, id2 E %f\n ",amp1,amp2);
-  if(amp1==0 || amp2==0) Info("FillSSWeightHistograms","Null E local maxima : id1 E %f, id2 E %f\n "        ,amp1,amp2);
+  if(amp1 < amp2)        AliWarning(Form("Bad local maxima E ordering : id1 E %f, id2 E %f",amp1,amp2));
+  if(amp1==0 || amp2==0) AliWarning(Form("Null E local maxima : id1 E %f, id2 E %f "       ,amp1,amp2));
   
   if(GetCaloUtils()->IsMCECellClusFracCorrectionOn())
   {
@@ -2966,22 +2964,22 @@ TObjString *  AliAnaInsideClusterInvariantMass::GetAnalysisCuts()
   Int_t buffersize = 255;
   char onePar[buffersize] ;
   
-  snprintf(onePar,buffersize,"--- AliAnaInsideClusterInvariantMass ---\n") ;
+  snprintf(onePar,buffersize,"--- AliAnaInsideClusterInvariantMass ---:") ;
   parList+=onePar ;	
   
-  snprintf(onePar,buffersize,"Calorimeter: %s\n",         GetCalorimeterString().Data()) ;
+  snprintf(onePar,buffersize,"Calorimeter: %s;",        GetCalorimeterString().Data()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fNLocMaxCutE =%2.2f \n",    GetCaloUtils()->GetLocalMaximaCutE()) ;
+  snprintf(onePar,buffersize,"fNLocMaxCutE =%2.2f;",    GetCaloUtils()->GetLocalMaximaCutE()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fNLocMaxCutEDiff =%2.2f \n",GetCaloUtils()->GetLocalMaximaCutEDiff()) ;
+  snprintf(onePar,buffersize,"fNLocMaxCutEDiff =%2.2f;",GetCaloUtils()->GetLocalMaximaCutEDiff()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fMinNCells =%d \n",        fMinNCells) ;
+  snprintf(onePar,buffersize,"fMinNCells =%d;",         fMinNCells) ;
   parList+=onePar ;    
-  snprintf(onePar,buffersize,"fMinBadDist =%1.1f \n",    fMinBadDist) ;
+  snprintf(onePar,buffersize,"fMinBadDist =%1.1f;",     fMinBadDist) ;
   parList+=onePar ;  
   if(fFillSSWeightHisto)
   {
-    snprintf(onePar,buffersize," N w %d - N e cut %d \n",fSSWeightN,fSSECellCutN);
+    snprintf(onePar,buffersize," N w %d - N e cut %d;",fSSWeightN,fSSECellCutN);
     parList+=onePar ;
   }
   
@@ -6306,18 +6304,12 @@ void AliAnaInsideClusterInvariantMass::Init()
   //Do some checks
   
   if(GetCalorimeter() == kPHOS && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD())
-  {
-    AliFatal("!!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
-  }
+    AliFatal("!!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!");
   else  if(GetCalorimeter() == kEMCAL && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD())
-  {
-    AliFatal("!!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
-  }
+    AliFatal("!!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!");
   
   if( GetReader()->GetDataType() == AliCaloTrackReader::kMC )
-  {
-    AliFatal("!!STOP: You want to use pure MC data!!\n");
-  }
+    AliFatal("!!STOP: You want to use pure MC data!!");
   
 }
 
@@ -6376,7 +6368,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
   
   if(!pl || !cells) 
   {
-    Info("MakeAnalysisFillHistograms","TObjArray with %s clusters is NULL!\n",GetCalorimeterString().Data());
+    AliWarning(Form("TObjArray with %s clusters is NULL!",GetCalorimeterString().Data()));
     return;
   }  
   
@@ -6438,9 +6430,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
                                                                                fidcut1,fidcut2);
     if (nMax <= 0) 
     {
-      if(GetDebug() > 0 )
-        Info("MakeAnalysisFillHistograms","No local maximum found! It did not pass CaloPID selection criteria \n");
-      
+      AliWarning("No local maximum found! It did not pass CaloPID selection criteria");
       continue;
     }
     
@@ -6450,15 +6440,14 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     if     (nMax == 1) inlm = 0;
     else if(nMax == 2) inlm = 1;
     else if(nMax >  2) inlm = 2;
-    else Info("MakeAnalysisFillHistograms","Wrong N local maximum -> %d, n cells in cluster %d \n",nMax,nc);
+    else AliDebug(2,Form("Wrong N local maximum -> %d, n cells in cluster %d",nMax,nc));
 
     // Skip events where one of the new clusters (lowest energy) is close to an EMCal border or a bad channel
     if( (fCheckSplitDistToBad) &&
         (!fidcut2 || !fidcut1 || distbad1 < fMinBadDist || distbad2 < fMinBadDist))
     {
-      if(GetDebug() > 1)
-        Info("MakeAnalysisFillHistograms","Dist to bad channel cl1 %f, cl2 %f; fid cl1 %d, cl2 %d \n",
-                                 distbad1,distbad2, fidcut1,fidcut2);
+      AliDebug(1,Form("Dist to bad channel cl1 %f, cl2 %f; fid cl1 %d, cl2 %d",
+                      distbad1,distbad2, fidcut1,fidcut2));
       
       if(distbad1 < fMinBadDist || distbad2 < fMinBadDist)
       {
@@ -6615,7 +6604,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     
   }//loop
   
-  if(GetDebug() > 1) Info("MakeAnalysisFillHistograms","END \n");
+  AliDebug(1,"End");
 
 }
 
@@ -6634,7 +6623,6 @@ void AliAnaInsideClusterInvariantMass::Print(const Option_t * opt) const
   printf("Min. N Cells =%d \n",         fMinNCells) ;
   printf("Min. Dist. to Bad =%1.1f \n", fMinBadDist) ;
   if(fFillSSWeightHisto) printf(" N w %d - N e cut %d \n",fSSWeightN,fSSECellCutN);
-
   printf("    \n") ;
   
 } 
@@ -6654,7 +6642,7 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
   
   if(!cluster)
   {
-    AliInfo("Cluster pointer null!");
+    AliWarning("Cluster pointer null!");
     return;
   }
   
@@ -6735,7 +6723,7 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
         sEtaPhi  += w * etai * phii ;
       }
     }
-    else if(energy == 0 || (eCellMin <0.01 && eCell == 0)) AliError(Form("Wrong energy %f and/or amplitude %f\n", eCell, energy));
+    else if(energy == 0 || (eCellMin <0.01 && eCell == 0)) AliError(Form("Wrong energy %f and/or amplitude %f", eCell, energy));
     
   }//cell loop
   
@@ -6746,7 +6734,7 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
     phiMean /= wtot ;
   }
   else
-    AliError(Form("Wrong weight %f\n", wtot));
+    AliError(Form("Wrong weight %f", wtot));
   
   //Calculate dispersion
   for(Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++)
@@ -6788,7 +6776,7 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
         dPhi +=  w * (phii-phiMean)*(phii-phiMean) ;
       }
     }
-    else if(energy == 0 || (eCellMin <0.01 && eCell == 0)) AliError(Form("Wrong energy %f and/or amplitude %f\n", eCell, energy));
+    else if(energy == 0 || (eCellMin <0.01 && eCell == 0)) AliError(Form("Wrong energy %f and/or amplitude %f", eCell, energy));
   }// cell loop
   
   //Normalize to the weigth and set shower shape parameters

@@ -28,9 +28,10 @@ class AliNeutralMesonSelection;
 
 class AliAnaParticleJetLeadingConeCorrelation : public AliAnaCaloTrackCorrBaseClass {
 
-public: 
-  AliAnaParticleJetLeadingConeCorrelation() ; // default ctor
-  virtual ~AliAnaParticleJetLeadingConeCorrelation() ; //virtual dtor
+public:
+  
+  AliAnaParticleJetLeadingConeCorrelation() ;              // default ctor
+  virtual ~AliAnaParticleJetLeadingConeCorrelation() { ; } // virtual dtor
 
   TList * GetCreateOutputObjects();
 
@@ -102,14 +103,14 @@ public:
     
  private:
   
-  Double_t  CalculateJetRatioLimit(const Double_t ptTrig, const Double_t *param, const Double_t *x) const ;
+  Double_t  CalculateJetRatioLimit(Double_t ptTrig, const Double_t *param, const Double_t *x) const ;
   
   void      FillJetHistos(AliAODPWG4ParticleCorrelation * particle, const TLorentzVector jet, const TString & type, const TString & lastname);
   
-  TList *   GetOutputContainer() const {return fOutCont; }
+  TList *   GetOutputContainer() const { return fOutCont; }
   
-  Bool_t    IsJetSelected(const Double_t ptTrig, const Double_t ptjet) const ;
-  Bool_t    IsParticleInJetCone(const Double_t eta, Double_t phi, const Double_t etal, Double_t phil) const ;
+  Bool_t    IsJetSelected(Double_t ptTrig, Double_t ptjet) const ;
+  Bool_t    IsParticleInJetCone(Double_t eta, Double_t phi, Double_t etal, Double_t phil) const ;
   
   void      GetLeadingCharge  (AliAODPWG4ParticleCorrelation * particle) ;
   void      GetLeadingPi0     (AliAODPWG4ParticleCorrelation * particle) ;

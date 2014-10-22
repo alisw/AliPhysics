@@ -161,47 +161,48 @@ AliAnaElectron::AliAnaElectron() :
 //____________________________________________________________________________
 Bool_t  AliAnaElectron::ClusterSelected(AliVCluster* calo, Int_t nMaxima)
 {
-  //Select clusters if they pass different cuts
-  if(GetDebug() > 2) 
-    printf("AliAnaElectron::ClusterSelected() Current Event %d; Before selection : E %2.2f, pT %2.2f, Ecl %2.2f, phi %2.2f, eta %2.2f\n",
-           GetReader()->GetEventNumber(),
-           fMomentum.E(), fMomentum.Pt(),calo->E(),fMomentum.Phi()*TMath::RadToDeg(),fMomentum.Eta());
+  // Select clusters if they pass different cuts
+  
+  AliDebug(1,Form("Current Event %d; Before selection : E %2.2f, pT %2.2f, Ecl %2.2f, phi %2.2f, eta %2.2f",
+           GetReader()->GetEventNumber(),fMomentum.E(),fMomentum.Pt(),calo->E(),fMomentum.Phi()*TMath::RadToDeg(),fMomentum.Eta()));
   
   //.......................................
   //If too small or big energy, skip it
   if(fMomentum.E() < GetMinEnergy() || fMomentum.E() > GetMaxEnergy() ) return kFALSE ; 
-  if(GetDebug() > 2) printf("\t Cluster %d Pass E Cut \n",calo->GetID());
+  AliDebug(2,Form("\t Cluster %d Pass E Cut",calo->GetID()));
   
   //.......................................
   // TOF cut, BE CAREFUL WITH THIS CUT
   Double_t tof = calo->GetTOF()*1e9;
   if(tof < fTimeCutMin || tof > fTimeCutMax) return kFALSE;
-  if(GetDebug() > 2)  printf("\t Cluster %d Pass Time Cut \n",calo->GetID());
+  AliDebug(2,Form("\t Cluster %d Pass Time Cut",calo->GetID()));
   
   //.......................................
   if(calo->GetNCells() <= fNCellsCut && GetReader()->GetDataType() != AliCaloTrackReader::kMC) return kFALSE;
-  if(GetDebug() > 2) printf("\t Cluster %d Pass NCell Cut \n",calo->GetID());
+  AliDebug(2,Form("\t Cluster %d Pass NCell Cut",calo->GetID()));
   
   //.......................................
   //Check acceptance selection
-  if(IsFiducialCutOn()){
+  if(IsFiducialCutOn())
+  {
     Bool_t in = GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),GetCalorimeter()) ;
     if(! in ) return kFALSE ;
   }
-  if(GetDebug() > 2) printf("Fiducial cut passed \n");
+  AliDebug(2,"\t Fiducial cut passed");
   
   //.......................................
   //Skip not matched clusters with tracks
-  if(!IsTrackMatched(calo, GetReader()->GetInputEvent())) {
-      if(GetDebug() > 2) printf("\t Reject non track-matched clusters\n");
+  if(!IsTrackMatched(calo, GetReader()->GetInputEvent()))
+  {
+      AliDebug(1,"\t Reject non track-matched clusters");
       return kFALSE ;
   }
-  else if(GetDebug() > 2)  printf(" Track-matching cut passed \n");
+  else AliDebug(2,"\t Track-matching cut passed");
   
   //...........................................
   // skip clusters with too many maxima
   if(nMaxima < fNLMCutMin || nMaxima > fNLMCutMax) return kFALSE ;
-  if(GetDebug() > 2) printf(" \t Cluster %d pass NLM %d of out of range \n",calo->GetID(), nMaxima);
+  AliDebug(2,Form("\t Cluster %d pass NLM %d of out of range",calo->GetID(), nMaxima));
   
   //.......................................
   //Check Distance to Bad channel, set bit.
@@ -210,13 +211,12 @@ Bool_t  AliAnaElectron::ClusterSelected(AliVCluster* calo, Int_t nMaxima)
   if(distBad < fMinDist) {//In bad channel (PHOS cristal size 2.2x2.2 cm), EMCAL ( cell units )
     return kFALSE ;
   }
-  else if(GetDebug() > 2) printf("\t Bad channel cut passed %4.2f > %2.2f \n",distBad, fMinDist);
+  else AliDebug(2,Form("\t Bad channel cut passed %4.2f > %2.2f",distBad, fMinDist));
   //printf("Cluster %d Pass Bad Dist Cut \n",icalo);
 
-  if(GetDebug() > 0) 
-    printf("AliAnaElectron::ClusterSelected() Current Event %d; After  selection : E %2.2f, pT %2.2f, Ecl %2.2f, phi %2.2f, eta %2.2f\n",
+ AliDebug(1,Form("Current Event %d; After  selection : E %2.2f, pT %2.2f, Ecl %2.2f, phi %2.2f, eta %2.2f",
            GetReader()->GetEventNumber(), 
-           fMomentum.E(), fMomentum.Pt(),calo->E(),fMomentum.Phi()*TMath::RadToDeg(),fMomentum.Eta());
+           fMomentum.E(), fMomentum.Pt(),calo->E(),fMomentum.Phi()*TMath::RadToDeg(),fMomentum.Eta()));
   
   //All checks passed, cluster selected
   return kTRUE;
@@ -226,8 +226,7 @@ Bool_t  AliAnaElectron::ClusterSelected(AliVCluster* calo, Int_t nMaxima)
 //______________________________________________________________________________________________
 void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag, Int_t pidTag)
 {
-  
-  //Fill cluster Shower Shape histograms
+  // Fill cluster Shower Shape histograms
   
   if(!fFillSSHistograms || GetMixedEvent()) return;
   
@@ -319,7 +318,7 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTa
       //Fraction of total energy due to the embedded signal
       fraction/=clusterE;
       
-      if(GetDebug() > 1 ) printf("AliAnaElectron::FillShowerShapeHistogram() - Energy fraction of embedded signal %2.3f, Energy %2.3f\n",fraction, clusterE);
+      AliDebug(1,Form("Energy fraction of embedded signal %2.3f, Energy %2.3f",fraction, clusterE));
       
       fhEmbeddedSignalFractionEnergy->Fill(clusterE,fraction);
       
@@ -365,8 +364,9 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTa
         else if(noverlaps > 2){          
           fhMCElectronELambda0NOverlap   ->Fill(energy, lambda0);
         }
-        else {
-          printf("AliAnaElectron::FillShowerShapeHistogram() - n overlaps = %d for ancestor %d!!", noverlaps, ancLabel);
+        else
+        {
+          AliWarning(Form("N overlaps = %d for ancestor %d!!", noverlaps, ancLabel));
         }
       }//No embedding
       
@@ -432,19 +432,19 @@ TObjString *  AliAnaElectron::GetAnalysisCuts()
   const Int_t buffersize = 255;
   char onePar[buffersize] ;
   
-  snprintf(onePar,buffersize,"--- AliAnaElectron ---\n") ;
+  snprintf(onePar,buffersize,"--- AliAnaElectron ---: ") ;
   parList+=onePar ;	
-  snprintf(onePar,buffersize,"Calorimeter: %s\n",GetCalorimeterString().Data()) ;
+  snprintf(onePar,buffersize,"Calorimeter: %s;",GetCalorimeterString().Data()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize," %2.2f < dEdx < %2.2f  \n",fdEdxMin,fdEdxMax) ;
+  snprintf(onePar,buffersize," %2.2f < dEdx < %2.2f;",fdEdxMin,fdEdxMax) ;
   parList+=onePar ;  
-  snprintf(onePar,buffersize," %2.2f <  E/P < %2.2f  \n",fEOverPMin, fEOverPMax) ;
+  snprintf(onePar,buffersize," %2.2f <  E/P < %2.2f;",fEOverPMin, fEOverPMax) ;
   parList+=onePar ;  
-  snprintf(onePar,buffersize,"fMinDist =%2.2f (Minimal distance to bad channel to accept cluster) \n",fMinDist) ;
+  snprintf(onePar,buffersize,"fMinDist =%2.2f (Minimal distance to bad channel to accept cluster);",fMinDist) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fMinDist2=%2.2f (Cuts on Minimal distance to study acceptance evaluation) \n",fMinDist2) ;
+  snprintf(onePar,buffersize,"fMinDist2=%2.2f (Cuts on Minimal distance to study acceptance evaluation);",fMinDist2) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fMinDist3=%2.2f (One more cut on distance used for acceptance-efficiency study) \n",fMinDist3) ;
+  snprintf(onePar,buffersize,"fMinDist3=%2.2f (One more cut on distance used for acceptance-efficiency study);",fMinDist3) ;
   parList+=onePar ;  
   
   //Get parameters set in base class.
@@ -1054,17 +1054,14 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
 //_________________________
 void AliAnaElectron::Init()
 {
+  // Init
   
-  //Init
-  //Do some checks
-  if(GetCalorimeter() == kPHOS && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD()){
-    printf("AliAnaElectron::Init() - !!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
-    abort();
-  }
-  else  if(GetCalorimeter() == kEMCAL && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD()){
-    printf("AliAnaElectron::Init() - !!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
-    abort();
-  }
+  // Do some checks
+ 
+  if       ( GetCalorimeter() == kPHOS  && !GetReader()->IsPHOSSwitchedOn()  && NewOutputAOD() )
+    AliFatal("STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!");
+  else  if ( GetCalorimeter() == kEMCAL && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD() )
+    AliFatal("STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!");
   
 }
 
@@ -1102,12 +1099,12 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
   
   //Select the Calorimeter of the photon
   TObjArray * pl = 0x0; 
-  if      (GetCalorimeter() == kPHOS)  pl = GetPHOSClusters();
+  if      (GetCalorimeter() == kPHOS ) pl = GetPHOSClusters ();
   else if (GetCalorimeter() == kEMCAL) pl = GetEMCALClusters();
   
   if(!pl)
   {
-    Info("MakeAnalysisFillAOD","TObjArray with %s clusters is NULL!\n",GetCalorimeterString().Data());
+    AliWarning(Form("TObjArray with %s clusters is NULL!",GetCalorimeterString().Data()));
     return;
   }
   
@@ -1115,7 +1112,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
   Int_t nCaloClusters = pl->GetEntriesFast();
   //List to be used in conversion analysis, to tag the cluster as candidate for conversion
   
-  if(GetDebug() > 0) printf("AliAnaElectron::MakeAnalysisFillAOD() - input %s cluster entries %d\n", GetCalorimeterString().Data(), nCaloClusters);
+  AliDebug(1,Form("Input %s cluster entries %d", GetCalorimeterString().Data(), nCaloClusters));
   
   //----------------------------------------------------
   // Fill AOD with PHOS/EMCAL AliAODPWG4Particle objects
@@ -1138,8 +1135,10 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     //Cluster selection, not charged, with photon id and in fiducial cut	  
     if(GetReader()->GetDataType() != AliCaloTrackReader::kMC)
     {
-      calo->GetMomentum(fMomentum,GetVertex(evtIndex)) ;}//Assume that come from vertex in straight line
-    else{
+      calo->GetMomentum(fMomentum,GetVertex(evtIndex)) ;
+    }//Assume that come from vertex in straight line
+    else
+    {
       Double_t vertex[]={0,0,0};
       calo->GetMomentum(fMomentum,vertex) ;
     }
@@ -1162,7 +1161,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 
     if(!track)
     {
-      printf("AliAnaElectron::MakeAnalysisFillAOD() - Null track");
+      AliWarning("Null track");
       continue;
     }
     
@@ -1222,8 +1221,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     {
       tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(),GetCalorimeter());
       
-      if(GetDebug() > 0)
-        printf("AliAnaElectron::MakeAnalysisFillAOD() - Origin of candidate, bit map %d\n",tag);
+      AliDebug(1,Form("Origin of candidate, bit map %d",tag));
          
       if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) && fhMCE[pidIndex][kmcPhoton])
       {
@@ -1327,11 +1325,11 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
         if(fAODParticle == 0 )
           pid = AliCaloPID::kChargedHadron ;
       }
-      if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - PDG of identified particle %d\n",pid);
+      
+      AliDebug(1,Form("PDG of identified particle %d",pid));
     }
         
-    if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - Photon selection cuts passed: pT %3.2f, pdg %d\n",
-                              fMomentum.Pt(), pid);
+    AliDebug(1,Form("Photon selection cuts passed: pT %3.2f, pdg %d",fMomentum.Pt(),pid));
     
     Float_t maxCellFraction = 0;
     Int_t absID = GetCaloUtils()->GetMaxEnergyCell(cells, calo,maxCellFraction);
@@ -1340,10 +1338,9 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     fhNCellsE[pidIndex] ->Fill(fMomentum.E(),calo->GetNCells());
     fhNLME   [pidIndex] ->Fill(fMomentum.E(),nMaxima);
     fhTimeE  [pidIndex] ->Fill(fMomentum.E(),calo->GetTOF()*1.e9);
-
     
     //----------------------------
-    //Create AOD for analysis
+    // Create AOD for analysis
     //----------------------------
 
     //Add AOD with electron/hadron object to aod branch
@@ -1383,7 +1380,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 
   }//loop
   
-  if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD()  End fill AODs, with %d entries \n",GetOutputAODBranch()->GetEntriesFast());  
+  AliDebug(1,Form("End fill AODs, with %d entries",GetOutputAODBranch()->GetEntriesFast()));
   
 }
 
@@ -1404,21 +1401,13 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
     if(GetReader()->ReadStack())
     {
       stack =  GetMCStack() ;
-      if(!stack)
-      {
-        printf("AliAnaElectron::MakeAnalysisFillHistograms() - Stack not available, is the MC handler called? STOP\n");
-        abort();
-      }
+      if ( !stack )       AliFatal("Stack not available, is the MC handler called? STOP");
     }
     else if(GetReader()->ReadAODMCParticles())
     {
       //Get the list of MC particles
       mcparticles = GetReader()->GetAODMCParticles();
-      if(!mcparticles)
-      {
-        printf("AliAnaElectron::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
-        abort();
-      }
+      if ( !mcparticles ) AliFatal("Standard MCParticles not available! STOP");
     }
   }// is data and MC
   
@@ -1432,7 +1421,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
   //----------------------------------
   //Loop on stored AOD photons
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
-  if(GetDebug() > 0) printf("AliAnaElectron::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
+  AliDebug(1,Form("AOD branch entries %d", naod));
   
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {
@@ -1446,8 +1435,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
           
     if(((Int_t) ph->GetDetectorTag()) != GetCalorimeter()) continue;
     
-    if(GetDebug() > 2) 
-      printf("AliAnaElectron::MakeAnalysisFillHistograms() - ID Electron: pt %f, phi %f, eta %f\n", ph->Pt(),ph->Phi(),ph->Eta()) ;
+    AliDebug(1,Form("ID Electron: pt %f, phi %f, eta %f", ph->Pt(),ph->Phi(),ph->Eta())) ;
     
     //................................
     //Fill photon histograms 
@@ -1460,18 +1448,19 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
     fhPt[pidIndex]  ->Fill(ptcluster);
     fhPhi[pidIndex] ->Fill(ptcluster,phicluster);
     fhEta[pidIndex] ->Fill(ptcluster,etacluster);    
-    if     (ecluster > 0.5)   fhEtaPhi[pidIndex]  ->Fill(etacluster, phicluster);
+    if     (ecluster   > 0.5) fhEtaPhi[pidIndex]  ->Fill(etacluster, phicluster);
     else if(GetMinPt() < 0.5) fhEtaPhi05[pidIndex]->Fill(etacluster, phicluster);
   
     //.......................................
     //Play with the MC data if available
-    if(IsDataMC()){
-      
+    if(IsDataMC())
+    {
       //....................................................................
       // Access MC information in stack if requested, check that it exists.
       Int_t label =ph->GetLabel();
-      if(label < 0) {
-        if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillHistograms() *** bad label ***:  label %d \n", label);
+      if(label < 0)
+      {
+        AliDebug(1,Form("*** bad label ***:  label %d", label));
         continue;
       }
       
@@ -1481,15 +1470,15 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       {
         if(label >=  stack->GetNtrack())
         {
-          if(GetDebug() > 2)  printf("AliAnaElectron::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", label, stack->GetNtrack());
+          AliDebug(1,Form("*** large label ***:  label %d, n tracks %d", label, stack->GetNtrack()));
           continue ;
         }
         
         primary = stack->Particle(label);
         if(!primary)
         {
-          printf("AliAnaElectron::MakeAnalysisFillHistograms() *** no primary ***:  label %d \n", label);
-          continue;
+          AliWarning(Form("*** no primary ***:  label %d", label));
+          continue ;
         }
         
         eprim   = primary->Energy();
@@ -1505,8 +1494,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
           
           if(label >=  mcparticles->GetEntriesFast())
           {
-            if(GetDebug() > 2)  printf("AliAnaElectron::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", 
-                                       label, mcparticles->GetEntriesFast());
+            AliDebug(1,Form("*** large label ***:  label %d, n tracks %d",label, mcparticles->GetEntriesFast()));
             continue ;
           }
           //Get the particle
@@ -1516,7 +1504,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
         
         if(!aodprimary)
         {
-          printf("AliAnaElectron::MakeAnalysisFillHistograms() *** no primary ***:  label %d \n", label);
+          AliWarning(Form("*** no primary ***:  label %d", label));
           continue;
         }
         
@@ -1695,8 +1683,9 @@ void AliAnaElectron::WeightHistograms(AliVCluster *clus)
     
   } // energy loop       
   
-  if(energy <=0 ) {
-    printf("AliAnaCalorimeterQA::WeightHistograms()- Wrong calculated energy %f\n",energy);
+  if ( energy <= 0 )
+  {
+    AliWarning(Form("Wrong calculated energy %f",energy));
     return;
   }
   

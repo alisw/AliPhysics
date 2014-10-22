@@ -977,8 +977,7 @@ Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * partic
     
     fhDeltaPhi0PiCorrectBefore->Fill(particlePt, deltaPhi0pi);//good
     
-    if(GetDebug() > 5)
-      printf("AliAnaParticleJetFinderCorrelation::SelectJet() - Jet %d, Ratio pT %2.3f, Delta phi %2.3f\n",ijet,ratio,deltaPhi);
+    AliDebug(5,Form("Jet %d, Ratio pT %2.3f, Delta phi %2.3f",ijet,ratio,deltaPhi));
     
     if((deltaPhi > fDeltaPhiMinCut) && (deltaPhi < fDeltaPhiMaxCut) &&
        (ratio > fRatioMinCut) && (ratio < fRatioMaxCut)  &&
@@ -1015,7 +1014,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
   }
   else
   {
-    if(GetDebug() > 3) AliInfo("There are no jets available for this analysis");
+    AliDebug(1,"There are no jets available for this analysis");
     return;
   }
   
@@ -1039,9 +1038,9 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
   Int_t nJets=-1;
   TClonesArray *aodRecJets = 0;
   //if(IsNonStandardJetFromReader()){//jet branch from reader
-  if(GetDebug() > 3) AliInfo(Form("GetNonStandardJets function (from reader) is called"));
+  AliDebug(3,Form("GetNonStandardJets function (from reader) is called"));
   aodRecJets = GetNonStandardJets();
-  if(GetDebug() > 3) AliInfo(Form("aodRecJets %p",aodRecJets));
+  AliDebug(3,Form("aodRecJets %p",aodRecJets));
   if(aodRecJets==0x0)
     {
       if(GetDebug() > 3) event->Print();
@@ -1049,7 +1048,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
       return;
     }
   nJets=aodRecJets->GetEntries();
-  if(GetDebug() > 3) printf("nJets %d\n",nJets);
+  AliDebug(3,Form("nJets %d",nJets));
   //}
   //end of new part
   
@@ -1063,9 +1062,9 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
   //
   AliAODJetEventBackground* aodBkgJets = 0;
   if(IsBackgroundJetFromReader()){//jet branch from reader
-    if(GetDebug() > 3) printf("GetBackgroundJets function is called\n");
+   AliDebug(3,"GetBackgroundJets function is called");
     aodBkgJets = GetBackgroundJets();
-    if(GetDebug() > 3) printf("aodBkgJets %p\n",aodBkgJets);
+    AliDebug(3,Form("aodBkgJets %p",aodBkgJets));
     if(aodBkgJets==0x0){
       if(GetDebug() > 3) event->Print();
       AliFatal("No jet background found\n");
@@ -1082,12 +1081,11 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
   
   
   Int_t ntrig =  GetInputAODBranch()->GetEntriesFast() ;
-  if(GetDebug() > 3){
-    printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - Begin jet finder  correlation analysis, fill AODs \n");
-    printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - In particle branch aod entries %d\n", ntrig);
-    printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - In standard jet branch aod entries %d\n", event->GetNJets());
-    printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - In non standard jet branch aod entries %d\n", nJets);
-  }
+  
+  AliDebug(3,"Begin jet finder  correlation analysis, fill AODs");
+  AliDebug(3,Form("In particle branch aod entries %d\n", ntrig));
+  AliDebug(3,Form("In standard jet branch aod entries %d\n", event->GetNJets()));
+  AliDebug(3,Form("In non standard jet branch aod entries %d\n", nJets));
   
   //if(nJets==0)   return;//to speed up
   //  cout<<"ntrig po return "<<ntrig<<endl;
@@ -1207,7 +1205,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
       Int_t ijet = SelectJet(particle,aodRecJets);//input for jets is TClonesArray
       if(ijet > -1){
         //isJetFound=kTRUE;
-        if(GetDebug() > 2) printf ("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - Jet with index %d selected \n",ijet);
+        AliDebug(2,Form("Jet with index %d selected",ijet));
         AliAODJet *jet = dynamic_cast<AliAODJet*>(aodRecJets-> At(ijet));
         if(jet)particle->SetRefJet(jet);
         //printf("Most opposite found\n");
@@ -1216,18 +1214,17 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
     //  if(GetReader()->WriteDeltaAODToFile() && isJetFound) WriteJetsToOutputBranch(aodRecJets);
   }//end of take most opposite photon and jet after bkg subtraction
   
-  
-  if(GetDebug() > 1 ) printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - End fill AODs \n");
+  AliDebug(1," End fill AODs \n");
 } 
 
 //__________________________________________________________________
 void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
 {
   //Particle-Jet Correlation Analysis, fill histograms
-  if(GetDebug() > 3 ) {
-    printf("I use MakeAnalysisFillHistograms\n");
-    printf("ntracks before iso %d\n",GetCTSTracks()->GetEntriesFast() );
-  }
+  
+  AliDebug(3,"I use MakeAnalysisFillHistograms");
+  AliDebug(3,Form("ntracks before iso %d\n",GetCTSTracks()->GetEntriesFast()));
+
 
   //Get the event, check if there are AODs available, if not, skip this analysis
   AliAODEvent * event = NULL;
@@ -1245,14 +1242,15 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   {
     event = dynamic_cast<AliAODEvent*>(GetReader()->GetInputEvent());
   }
-  else {
-    if(GetDebug() > 3) printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms() - There are no jets available for this analysis\n");
+  else
+  {
+    AliDebug(3,"There are no jets available for this analysis");
     return;
   }
   
-  if(!GetInputAODBranch() || !event){
-
-    AliFatal(Form("No input particles in AOD with name branch < %s > \n",
+  if(!GetInputAODBranch() || !event)
+  {
+    AliFatal(Form("No input particles in AOD with name branch < %s >",
                   GetInputAODName().Data()));
     return; // Trick coverity        
   }
@@ -1260,16 +1258,18 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   Int_t nJets=-1;
   TClonesArray *aodRecJets = 0;
   //if(IsNonStandardJetFromReader()){//branch read in reader from reader
-  if (GetDebug() > 3) printf("GetNonStandardJets function (from reader) is called\n");
+  AliDebug(3,"GetNonStandardJets function (from reader) is called");
   aodRecJets = GetNonStandardJets();
-  if(aodRecJets==0x0){
+  if(aodRecJets==0x0)
+  {
     if(GetDebug() > 3) event->Print();
     AliFatal("Jets container not found\n");
     return; // trick coverity
   }
   nJets=aodRecJets->GetEntries();
   //}
-  if(nJets==0) {
+  if(nJets==0)
+  {
     //    printf("Why number of jets = 0? Check what type of collision it is. If PbPb -problem.\n");
     GetReader()->FillInputNonStandardJets();
     aodRecJets = GetNonStandardJets();
@@ -1283,17 +1283,17 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   //
   AliAODJetEventBackground* aodBkgJets = 0;
   if(IsBackgroundJetFromReader()){//jet branch from reader
-    if(GetDebug() > 3) printf("GetBackgroundJets function is called\n");
+    AliDebug(3,"GetBackgroundJets function is called");
     aodBkgJets = GetBackgroundJets();
-    if(GetDebug() > 3) printf("aodBkgJets %p\n",aodBkgJets);
-    if(aodBkgJets==0x0){
+    AliDebug(3,Form("aodBkgJets %p",aodBkgJets));
+    if(aodBkgJets==0x0)
+    {
       if(GetDebug() > 3) event->Print();
       AliFatal("No jet background container found");
       return; // trick coverity  
     }
     if(GetDebug() > 3) aodBkgJets->Print("c");
   }
-  
   
   //
   // only background jets informations
@@ -1418,8 +1418,9 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     fhJetPt->Fill(jetPttmp);
     fhJetChBkgEnergyVsPt->Fill(jetPttmp,effectiveChargedBgEnergy);
     fhJetChAreaVsPt->Fill(jetPttmp,jettmp->EffectiveAreaCharged());
-    if(GetDebug()>5) printf("ChargedBgEnergy %f EffectiveAreaCharged %f\n", jettmp->ChargedBgEnergy(),jettmp->EffectiveAreaCharged());
-    for(iCounter=1;iCounter<10;iCounter++){
+    AliDebug(5,Form("ChargedBgEnergy %f EffectiveAreaCharged %f\n", jettmp->ChargedBgEnergy(),jettmp->EffectiveAreaCharged()));
+    for(iCounter=1;iCounter<10;iCounter++)
+    {
       if(jetPttmp>iCounter) nJetsOverThreshold[iCounter]++;
     }
     
@@ -1454,11 +1455,11 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   // Photons
   //
   Int_t ntrig   =  GetInputAODBranch()->GetEntriesFast() ;
-  if(GetDebug() > 1){
-    printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms() - Begin jet finder  correlation analysis, fill histograms \n");
-    printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms() - In particle branch aod entries %d\n", ntrig);
-    printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms() - In jet output branch aod entries %d\n", event->GetNJets());
-  }
+  
+  AliDebug(1,"Begin jet finder  correlation analysis, fill histograms");
+  AliDebug(1,Form("In particle branch aod entries %d\n", ntrig));
+  AliDebug(1,Form("In jet output branch aod entries %d\n", event->GetNJets()));
+  
   fhNjetsNgammas->Fill(nJets,ntrig);
   
   //if(nJets==0)   return;//to speed up
@@ -1622,7 +1623,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     AliAODPWG4ParticleCorrelation* particlecorr =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     fhCuts->Fill(0);
     fhCuts2->Fill(0.,(Double_t)nJets);
-    if(GetDebug() > 5) printf("OnlyIsolated %d  !particlecorr->IsIsolated() %d \n",OnlyIsolated(), !particlecorr->IsIsolated());
+    AliDebug(1,Form("OnlyIsolated %d  !particlecorr->IsIsolated() %d \n",OnlyIsolated(), !particlecorr->IsIsolated()));
     
     if(OnlyIsolated() && !particlecorr->IsIsolated()) continue;
     fhCuts->Fill(1);
@@ -1638,8 +1639,9 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     if(fMakeCorrelationInHistoMaker){
       //Correlate with jets
       Int_t ijet = SelectJet(particlecorr,aodRecJets);//input for jets is TClonesArray
-      if(ijet > -1){
-        if(GetDebug() > 2) printf ("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms() - Jet with index %d selected \n",ijet);
+      if(ijet > -1)
+      {
+        AliDebug(1,Form("Jet with index %d selected \n",ijet));
         //jet = event->GetJet(ijet);
         jet = dynamic_cast<AliAODJet*>(aodRecJets-> At(ijet));
         
@@ -1785,18 +1787,17 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     TVector3 p3;
     
     Int_t ntracks =  0;
-    if(GetDebug()>3){
-      printf ("fUseJetRefTracks %d\n",fUseJetRefTracks );
-      printf ("jet->GetRefTracks() %p\n",jet->GetRefTracks());
-      printf ("GetCTSTracks() %p\n",GetCTSTracks() );
-    }
+
+    AliDebug(1,Form("fUseJetRefTracks %d"   ,fUseJetRefTracks   ));
+    AliDebug(1,Form("jet->GetRefTracks() %p",jet->GetRefTracks()));
+    AliDebug(1,Form("GetCTSTracks() %p"     ,GetCTSTracks()     ));
     
     if(!fUseJetRefTracks)
       ntracks =GetCTSTracks()->GetEntriesFast();
     else //If you want to use jet tracks from JETAN
       ntracks =  (jet->GetRefTracks())->GetEntriesFast();
     
-    if(GetDebug()>3)    printf ("ntracks %d\n",ntracks);
+    AliDebug(3,Form("ntracks %d\n",ntracks));
     AliVTrack* track = 0x0 ;
     for(Int_t ipr = 0;ipr < ntracks ; ipr ++ ){
       if(!fUseJetRefTracks)
@@ -1870,7 +1871,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     
     if(fSaveGJTree) fTreeGJ->Fill();
   }//AOD trigger particle loop
-  if(GetDebug() > 1) printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms() - End fill histograms \n");
+  AliDebug(1,"End fill histograms");
 }
 
 
@@ -1962,7 +1963,7 @@ void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 j
     Double_t Yz=jx*Xy-jy*Xx;
     //Determinant
     Double_t det = Xx*Yy*jz + Xy*Yz*jx + Xz*Yx*jy - Xx*Yz*jy - Xy*Yx*jz - Xz*Yy*jx;
-    if(det==0)printf("problem det==0\n");
+    if(det==0)AliWarning("problem det==0\n");
     Double_t detX = 0.;
     Double_t detY = 0.;
     Double_t detZ = 0.;
@@ -2036,7 +2037,7 @@ void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 j
     Double_t Yz=jx*Xy-jy*Xx;
     //Determinant
     Double_t det = Xx*Yy*jz + Xy*Yz*jx + Xz*Yx*jy - Xx*Yz*jy - Xy*Yx*jz - Xz*Yy*jx;
-    if(det==0)printf("problem det==0\n");
+    if(det==0)AliWarning("problem det==0");
     Double_t detX = 0.;
     Double_t detY = 0.;
     Double_t detZ = 0.;
@@ -2326,7 +2327,7 @@ void AliAnaParticleJetFinderCorrelation::FindMCgenInfo(){
   std::vector<Int_t> jetParticleIndex;
 
   if(GetReader()->ReadStack()) {//ESD
-     if(GetDebug()>3) printf("I use stack\n");
+     AliDebug(3,"I use stack");
   }//end Stack 
   else if(GetReader()->ReadAODMCParticles()) {//AOD
     TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
@@ -2335,14 +2336,14 @@ void AliAnaParticleJetFinderCorrelation::FindMCgenInfo(){
       //index =6 and 7 is hard scattering (jet-quark or photon)
       primTmp = (AliAODMCParticle *) mcparticles->At(6);
       pdg=primTmp->GetPdgCode();
-       if(GetDebug()>3) printf("id 6 pdg %d, pt %f ",pdg,primTmp->Pt() );
+       AliDebug(3,Form("id 6 pdg %d, pt %f ",pdg,primTmp->Pt() ));
       if(TMath::Abs(pdg)<=6 ||pdg==21) {
 	fhMCJetOrigin->Fill(pdg);
 	fMCPartonType=pdg;
       }
       primTmp = (AliAODMCParticle *) mcparticles->At(7);
       pdg=primTmp->GetPdgCode();
-       if(GetDebug()>3) printf("id 7 pdg %d, pt %f\n",pdg,primTmp->Pt() );
+       AliDebug(3,Form("id 7 pdg %d, pt %f",pdg,primTmp->Pt() ));
       if(TMath::Abs(pdg)<=6 ||pdg==21) {
 	fhMCJetOrigin->Fill(pdg);
 	fMCPartonType=pdg;
@@ -2360,7 +2361,7 @@ void AliAnaParticleJetFinderCorrelation::FindMCgenInfo(){
 	  fhMCPhotonCuts->Fill(0);
 	  if(prim->GetStatus()!=1) continue;
 	  fhMCPhotonCuts->Fill(1);
-	   if(GetDebug()>5) printf("id %d, prim %d, physPrim %d, status %d\n",i,prim->IsPrimary(),prim->IsPhysicalPrimary(),prim->GetStatus());
+	   AliDebug(5,Form("id %d, prim %d, physPrim %d, status %d\n",i,prim->IsPrimary(),prim->IsPhysicalPrimary(),prim->GetStatus()));
 	  while(mother>7){
 	    primTmp = (AliAODMCParticle *) mcparticles->At(mother);
 	    mother=primTmp->GetMother();
@@ -2388,33 +2389,35 @@ void AliAnaParticleJetFinderCorrelation::FindMCgenInfo(){
 	    if(GetEMCALGeometry()) {
 	      GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(prim->Eta(),prim->Phi(),absID);
 	      if(absID >= 0) inacceptance = kTRUE;
-	      if(GetDebug() > 3) printf("In EMCAL Real acceptance? %d\n",inacceptance);
+	      AliDebug(3,Form("In EMCAL Real acceptance? %d",inacceptance));
 	    }
 	    else{
 	      if(GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kEMCAL)) inacceptance = kTRUE ;
-	      if(GetDebug() > 3) printf("In EMCAL fiducial cut acceptance? %d\n",inacceptance);
+	      AliDebug(1,Form("In EMCAL fiducial cut acceptance? %d",inacceptance));
 	    }
 	  }else{//no EMCAL nor EMCALGeoMatrixSet
-	    printf("not EMCALGeoMatrix set\n");
+	    AliWarning("not EMCALGeoMatrix set");
 	  }//end of check if EMCAL
 	  if(inacceptance)fhMCPhotonCuts->Fill(5);
-	  if(GetDebug() > 5)
-	    printf("Photon Energy %f, Pt %f\n",prim->E(),prim->Pt());
+	  AliDebug(5,Form("Photon Energy %f, Pt %f",prim->E(),prim->Pt()));
 	  fMCGamPt=photonPt;
 	  fMCGamEta=photonEta;
 	  fMCGamPhi=photonPhi;
 	}//end of check if photon
-	else{//not photon
+	else
+  {//not photon
 	  if(prim->GetStatus()!=1) continue;
-	  if(GetDebug() > 5)
-	    printf("id %d, prim %d, physPrim %d, status %d, pdg %d, E %f ",i,prim->IsPrimary(),prim->IsPhysicalPrimary(),prim->GetStatus(),prim->GetPdgCode(),prim->E());
-	  while(mother>7){
+	  AliDebug(5,Form("id %d, prim %d, physPrim %d, status %d, pdg %d, E %f",
+                    i,prim->IsPrimary(),prim->IsPhysicalPrimary(),prim->GetStatus(),prim->GetPdgCode(),prim->E()));
+    
+	  while(mother>7)
+    {
 	    primTmp = (AliAODMCParticle *) mcparticles->At(mother);
 	    mother=primTmp->GetMother();
-	    if(GetDebug() > 5) printf("next mother %d ",mother);
+	    AliDebug(5,Form("next mother %d",mother));
 	  }
-	  if(GetDebug() > 5) printf("\n");
 	  if(mother<6)continue;//soft part
+    
 	  primTmp = (AliAODMCParticle *) mcparticles->At(mother);
 	  pdg=primTmp->GetPdgCode();
 	  if( !(TMath::Abs(pdg)<=6 || pdg==21) ) continue;//origin not hard q or g
@@ -2545,13 +2548,13 @@ void AliAnaParticleJetFinderCorrelation::FindMCgenInfo(){
 
 
   //printouts
-  if(GetDebug() > 3) {
-    printf("cone full %f, charged %f, full150 %f, charged150 %f\n",coneJet,coneChargedJet,coneJet150,coneChargedJet150);
-    printf("Npart %d, NchPart %d, Npart(pt>150M) %d, NchPart(pt>150M) %d, NchPart(pt>150M)Cone %d\n",nParticlesInJet,nChargedParticlesInJet,nParticlesInJet150,nChargedParticlesInJet150,nChargedParticlesInJet150Cone);
-    printf("Etot %f, Ech %f, E(pt>150M) %f, Ech(pt>150M) %f\n",eneParticlesInJet,eneChargedParticlesInJet,eneParticlesInJet150,eneChargedParticlesInJet150);
-    printf("pt %f, ptch %f, pt(pt>150M) %f,ptch(pt>150M) %f,ptch(pt>150M)Cone %f\n",ptParticlesInJet,ptChargedParticlesInJet,ptParticlesInJet150,ptChargedParticlesInJet150,ptChargedParticlesInJet150Cone);
-    printf("eta/phi tot %f/%f, ch %f/%f, tot150 %f/%f,  ch150 %f/%f, ch150cone %f/%f\n",etaParticlesInJet,phiParticlesInJet,etaChargedParticlesInJet,phiChargedParticlesInJet,etaParticlesInJet150,phiParticlesInJet150,etaChargedParticlesInJet150,phiChargedParticlesInJet150,etaChargedParticlesInJet150Cone,phiChargedParticlesInJet150Cone);
-  }
+  
+  AliDebug(3,Form("cone full %f, charged %f, full150 %f, charged150 %f",coneJet,coneChargedJet,coneJet150,coneChargedJet150));
+  AliDebug(3,Form("Npart %d, NchPart %d, Npart(pt>150M) %d, NchPart(pt>150M) %d, NchPart(pt>150M)Cone %d\n",nParticlesInJet,nChargedParticlesInJet,nParticlesInJet150,nChargedParticlesInJet150,nChargedParticlesInJet150Cone));
+  AliDebug(3,Form("Etot %f, Ech %f, E(pt>150M) %f, Ech(pt>150M) %f\n",eneParticlesInJet,eneChargedParticlesInJet,eneParticlesInJet150,eneChargedParticlesInJet150));
+  AliDebug(3,Form("pt %f, ptch %f, pt(pt>150M) %f,ptch(pt>150M) %f,ptch(pt>150M)Cone %f\n",ptParticlesInJet,ptChargedParticlesInJet,ptParticlesInJet150,ptChargedParticlesInJet150,ptChargedParticlesInJet150Cone));
+  AliDebug(3,Form("eta/phi tot %f/%f, ch %f/%f, tot150 %f/%f,  ch150 %f/%f, ch150cone %f/%f\n",etaParticlesInJet,phiParticlesInJet,etaChargedParticlesInJet,phiChargedParticlesInJet,etaParticlesInJet150,phiParticlesInJet150,etaChargedParticlesInJet150,phiChargedParticlesInJet150,etaChargedParticlesInJet150Cone,phiChargedParticlesInJet150Cone));
+  
   //fill histograms
   if(ptParticlesInJet) fhMCJetRatioChFull->Fill(ptChargedParticlesInJet/ptParticlesInJet);
   if(ptChargedParticlesInJet) fhMCJetRatioCh150Ch->Fill(ptChargedParticlesInJet150/ptChargedParticlesInJet);
