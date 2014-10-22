@@ -30,6 +30,9 @@
 
 //QA task for EMCAL electron analysis 
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskHFEemcQA)
   //________________________________________________________________________
   AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA(const char *name) 
