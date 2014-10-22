@@ -31,6 +31,7 @@ if(ALIHLT_MLUCDIR)
 endif (ALIHLT_MLUCDIR) 
 
 add_subdirectory(CALO)
+add_subdirectory(comp)
 
 #file(GLOB PACKAGES CMake*.pkg)
 
