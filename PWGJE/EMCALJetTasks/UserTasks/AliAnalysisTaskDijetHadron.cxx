@@ -1079,7 +1079,7 @@ Bool_t AliAnalysisTaskDijetHadron::FillHistograms()
 	  Double_t Delta_phi2[4]  ={-999.,-999.,-999.,-999.}; Double_t Delta_eta2[4]  ={-999.,-999.,-999.,-999.}; Double_t Aj2[4]  ={-999.,-999.,-999.,-999.};
 
 
-	  //threshold
+	  //threshold(User setting)
 	  double Jet1_threshold[4]; double Jet2_threshold[4];
 	  Jet1_threshold[0]=0.0; Jet2_threshold[0]=0.0;
 	  Jet1_threshold[1]=fJet1Ptcut1; Jet2_threshold[1]=fJet2Ptcut1;
