@@ -1274,7 +1274,8 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetClusSource(const AliVCluster *c)
       fClusMcDetaDphi->Fill(clsVec.Eta() - mcd->Eta(), clsVec.Phi() - mcd->Phi());
     }
     else{
-      printf("Warning: daughter of photon parton is not a photon\n");
+      if(fDebug)
+	printf("Warning: daughter of photon parton is not a photon\n");
       return -0.1;
     }
   }
