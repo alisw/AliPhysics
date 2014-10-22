@@ -14,19 +14,45 @@
 # **************************************************************************
 
 # Module
-set(MODULE AliHLTComp)
+set(MODULE AliHLTEMCAL)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/HLT/comp)
+include_directories(${CMAKE_SOURCE_DIR}/HLT/EMCAL
+                   )
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${CMAKE_SOURCE_DIR}/EMCAL/EMCALbase
+                    ${CMAKE_SOURCE_DIR}/EMCAL/EMCALraw
+                    ${CMAKE_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${CMAKE_SOURCE_DIR}/HLT/CALO
                     ${CMAKE_SOURCE_DIR}/HLT/BASE
+                    ${CMAKE_SOURCE_DIR}/HLT/BASE/util
+                    ${CMAKE_SOURCE_DIR}/STEER/CDB
+                    ${CMAKE_SOURCE_DIR}/STEER/STEER
+                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order
 set(SRCS
-    AliHLTCompAgent.cxx
+    AliHLTEMCALAgent.cxx
+    AliHLTEMCALClusterizerComponent.cxx
+    AliHLTEMCALClusterizerComponentNbyN.cxx
+    AliHLTEMCALClusterMonitorComponent.cxx
+    AliHLTEMCALClusterMonitor.cxx
+    AliHLTEMCALConstants.cxx
+    AliHLTEMCALDefinitions.cxx
+    AliHLTEMCALDigitMakerComponent.cxx
+    AliHLTEMCALGeometry.cxx
+    AliHLTEMCALMapper.cxx
+    AliHLTEMCALRawAnalyzerComponent.cxx
+    AliHLTEMCALRawAnalyzerCrudeComponent.cxx
+    AliHLTEMCALRawAnalyzerFastFitComponent.cxx
+    AliHLTEMCALRawAnalyzerLMSComponent.cxx
+    AliHLTEMCALRawAnalyzerNNComponent.cxx
+    AliHLTEMCALRawAnalyzerPeakFinderComponent.cxx
+    AliHLTEMCALRecoParamHandler.cxx
+    offline/AliHLTEMCALDigitHandler.cxx
    )
 
 # Headers from sources
@@ -39,7 +65,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS HLTbase)
+set(LIBDEPS STEERBase STEER CDB HLTbase AliHLTCalo EMCALbase EMCALUtils EMCALraw)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files

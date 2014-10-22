@@ -14,19 +14,54 @@
 # **************************************************************************
 
 # Module
-set(MODULE AliHLTComp)
+set(MODULE AliHLTEve)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/HLT/comp)
+include_directories(${CMAKE_SOURCE_DIR}/HLT/EVE)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${CMAKE_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${CMAKE_SOURCE_DIR}/EVE/EveBase
+                    ${CMAKE_SOURCE_DIR}/EVE/EveDet
+                    ${CMAKE_SOURCE_DIR}/EVE/EveHLT
                     ${CMAKE_SOURCE_DIR}/HLT/BASE
+                    ${CMAKE_SOURCE_DIR}/HLT/BASE/util
+                    ${CMAKE_SOURCE_DIR}/HLT/ITS
+                    ${CMAKE_SOURCE_DIR}/HLT/MUON
+                    ${CMAKE_SOURCE_DIR}/HLT/TPCLib
+                    ${CMAKE_SOURCE_DIR}/HLT/TRD
+                    ${CMAKE_SOURCE_DIR}/ITS/ITSbase
+                    ${CMAKE_SOURCE_DIR}/MUON/MUONbase
+                    ${CMAKE_SOURCE_DIR}/MUON/MUONcore
+                    ${CMAKE_SOURCE_DIR}/MUON/MUONraw
+                    ${CMAKE_SOURCE_DIR}/MUON/MUONrec
+                    ${CMAKE_SOURCE_DIR}/PHOS/PHOSbase
+                    ${CMAKE_SOURCE_DIR}/PHOS/PHOSUtils
+                    ${CMAKE_SOURCE_DIR}/STEER/CDB
+                    ${CMAKE_SOURCE_DIR}/STEER/ESD
+                    ${CMAKE_SOURCE_DIR}/STEER/STEER
+                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${CMAKE_SOURCE_DIR}/TRD/TRDrec
                    )
 
 # Sources in alphabetical order
 set(SRCS
-    AliHLTCompAgent.cxx
+    AliHLTEveAny.cxx
+    AliHLTEveBase.cxx
+    AliHLTEveCalo.cxx
+    AliHLTEveEmcal.cxx
+    AliHLTEveHistoMerger.cxx
+    AliHLTEveHLT.cxx
+    AliHLTEveISDD.cxx
+    AliHLTEveISPD.cxx
+    AliHLTEveISSD.cxx
+    AliHLTEveITS.cxx
+    AliHLTEveMultCorr.cxx
+    AliHLTEveMuon.cxx
+    AliHLTEvePhos.cxx
+    AliHLTEveTPC.cxx
+    AliHLTEveTRD.cxx
    )
 
 # Headers from sources
@@ -39,7 +74,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS HLTbase)
+set(LIBDEPS CDB ESD STEERBase HLTbase EveHLT PHOSbase PHOSUtils EMCALUtils EveBase EveDet AliHLTTPC AliHLTMUON AliHLTITS AliHLTTRD ITSbase MUONcore MUONbase MUONraw MUONrec)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files

@@ -29,6 +29,7 @@
 # - ROOT_GLIBRARIES - regular + GUI ROOT libraries + path to be used during linking
 # - ROOT_INCLUDE_DIRS - full path to ROOT include folder
 # - ROOT_HASALIEN - ROOT was built with AliEn support
+# - ROOT_HASOPENGL - ROOT was built with OpenGL support
 # - ROOT_HASXML - ROOT was built with XML support
 # - ROOT_FORTRAN - fortran compiler
 
@@ -146,8 +147,14 @@ if(ROOTSYS)
     endif(error)
     string(STRIP ${ROOT_HASXML} ROOT_HASXML)
 
+    # Checking for OpenGL support
+    execute_process(COMMAND ${ROOT_CONFIG} --has-opengl OUTPUT_VARIABLE ROOT_HASOPENGL ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
+    if(error)
+        message(FATAL_ERROR "Error checking if ROOT was build with OpenGL support: ${error}")
+    endif(error)
+    string(STRIP ${ROOT_HASOPENGL} ROOT_HASOPENGL)
 
-    # Checking for xml support
+    # Checking for fortran compiler
     execute_process(COMMAND ${ROOT_CONFIG} --f77 OUTPUT_VARIABLE ROOT_FORTRAN ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error checking ROOT fortran compiler: ${error}")
