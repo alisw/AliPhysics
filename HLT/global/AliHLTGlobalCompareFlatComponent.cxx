@@ -308,6 +308,69 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
     }
 	}
 	
+ // Compare tracks
+	
+	if(flatEsd[0]->GetNumberOfTracks()  && flatEsd[1]->GetNumberOfTracks() ){
+		outFile<<"------------------\ntracks\n------------------\n";
+		
+    AliFlatESDTrack * track[2] = { const_cast<AliFlatESDTrack*>(flatEsd[0]->GetTracks() ) , const_cast<AliFlatESDTrack*>(flatEsd[1]->GetTracks() ) };
+    for( Int_t t = 0; t < flatEsd[0]->GetNumberOfTracks()  && t < flatEsd[1]->GetNumberOfTracks()  ; t++ ){
+      outFile<<"\nnew AliFlatESDTrack\n";
+			printDiff( "AliFlatESDTrack::GetSize",track[0]->GetSize(),track[1]->GetSize() ); 
+			printDiff( "AliFlatESDTrack::GetNumberOfTPCClusters",track[0]->GetNumberOfTPCClusters(),track[1]->GetNumberOfTPCClusters() ); 
+			printDiff( "AliFlatESDTrack::GetNumberOfITSClusters",track[0]->GetNumberOfITSClusters(),track[1]->GetNumberOfITSClusters() ); 
+			
+			const char* pNames[7] = {"", "Refitted", "Ip", "TPCInner", "Op", "Cp", "ITSOUT"};
+			
+			const AliFlatExternalTrackParam * p[7][2] = {
+				{track[0]->GetFlatTrackParam(), track[1]->GetFlatTrackParam()},
+				{track[0]->GetFlatTrackParamRefitted(), track[1]->GetFlatTrackParamRefitted()},
+				{track[0]->GetFlatTrackParamIp(), track[1]->GetFlatTrackParamIp()},
+				{track[0]->GetFlatTrackParamTPCInner(), track[1]->GetFlatTrackParamTPCInner()},
+				{track[0]->GetFlatTrackParamOp(), track[1]->GetFlatTrackParamOp()},
+				{track[0]->GetFlatTrackParamCp(), track[1]->GetFlatTrackParamCp()},
+				{track[0]->GetFlatTrackParamITSOut(), track[1]->GetFlatTrackParamITSOut()}
+			};
+			
+			for(int i = 0 ; i<7; i++){
+				printDiff( Form("AliFlatESDTrack::GetFlatTrackParam%s",pNames[i]), (p[i][0] ? 1:0), (p[i][1] ? 1:0) );
+			}
+
+			for(int i = 0 ; i<7; i++){
+				if(p[i][0] && p[i][1] ){
+					outFile<<"\nnew AliFlatExternalTrackParam" << pNames[i] << "\n";
+					printDiff( Form("AliFlatExternalTrackParam%s::GetAlpha",pNames[i]),p[i][0]->GetAlpha(),p[i][1]->GetAlpha() ); 
+					printDiff( Form("AliFlatExternalTrackParam%s::GetX",pNames[i]),p[i][0]->GetX(),p[i][1]->GetX() ); 
+					printDiff( Form("AliFlatExternalTrackParam%s::GetY",pNames[i]),p[i][0]->GetY(),p[i][1]->GetY() ); 
+					printDiff( Form("AliFlatExternalTrackParam%s::GetZ",pNames[i]),p[i][0]->GetZ(),p[i][1]->GetZ() ); 
+					printDiff( Form("AliFlatExternalTrackParam%s::GetSnp",pNames[i]),p[i][0]->GetSnp(),p[i][1]->GetSnp() ); 
+					printDiff( Form("AliFlatExternalTrackParam%s::GetTgl",pNames[i]),p[i][0]->GetTgl(),p[i][1]->GetTgl() ); 
+					printDiff( Form("AliFlatExternalTrackParam%s::GetSigned1Pt",pNames[i]),p[i][0]->GetSigned1Pt(),p[i][1]->GetSigned1Pt() ); 
+					
+					for(int j=0; j<15; j++){
+						printDiff( Form("AliFlatExternalTrackParam%s::GetCovEntry(%d)",pNames[i],j),p[i][0]->GetCovEntry(j),p[i][1]->GetCovEntry(j) ); 
+					}
+				
+				}
+			}
+			
+			
+			
+			
+      track[0] = track[0]->GetNextTrackNonConst();
+			track[1] = track[1]->GetNextTrackNonConst();
+			
+			
+			
+			
+			
+			
+			
+			
+			
+    }
+	}
+	
 	
  outFile.close();
  

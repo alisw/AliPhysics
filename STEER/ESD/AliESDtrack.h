@@ -185,6 +185,7 @@ public:
   UChar_t GetITSClusterMap() const {return fITSClusterMap;}
   void     SetITSClusterMap(UChar_t amap) {fITSClusterMap = amap;}
 
+  Char_t   GetITSNcls() const { return fITSncls;}
   UChar_t GetITSSharedMap() const {return fITSSharedMap;}
   void    SetITSSharedFlag(int lr) {fITSSharedMap |= 0x1<<lr;}
   Bool_t  GetITSFakeFlag()   const {return (fITSSharedMap&BIT(7))!=0;}

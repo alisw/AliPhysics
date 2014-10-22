@@ -59,7 +59,8 @@ Int_t AliFlatESDTrack::SetFromESDTrack(const AliESDtrack* track)
 					 track->GetTPCInnerParam(),
 					 track->GetOuterParam(),
 					 track->GetConstrainedParam(), NULL );
-  fNITSClusters = track->GetTPCNcls();
+  fNTPCClusters = track->GetTPCNcls();
+  fNITSClusters = track->GetITSNcls();
 
   return iResult;
 }
