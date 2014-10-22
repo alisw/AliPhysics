@@ -459,11 +459,28 @@ public:
   //-----------
   virtual Int_t GetTrackParam         ( AliExternalTrackParam &p ) const {p=*this; return 0;}
   virtual Int_t GetTrackParamRefitted ( AliExternalTrackParam & ) const {return 0;}
-  virtual Int_t GetTrackParamIp       ( AliExternalTrackParam & ) const {return 0;}
-  virtual Int_t GetTrackParamTPCInner ( AliExternalTrackParam & ) const {return 0;}
-  virtual Int_t GetTrackParamOp       ( AliExternalTrackParam & ) const {return 0;}
-  virtual Int_t GetTrackParamCp       ( AliExternalTrackParam & ) const {return 0;}
   virtual Int_t GetTrackParamITSOut   ( AliExternalTrackParam & ) const {return 0;}
+
+  Int_t GetTrackParamIp       ( AliExternalTrackParam &p ) const {
+      if(!GetInnerParam()) return -1;
+      p=*GetInnerParam();
+      return 0;}
+
+  Int_t GetTrackParamOp       ( AliExternalTrackParam &p ) const {
+      if(!GetOuterParam()) return -1;
+      p=*GetOuterParam();
+      return 0;}
+
+  Int_t GetTrackParamTPCInner ( AliExternalTrackParam &p ) const {
+      if(!GetTPCInnerParam()) return -1;
+      p=*GetTPCInnerParam();
+      return 0;}
+
+  Int_t GetTrackParamCp       ( AliExternalTrackParam &p ) const {
+      if(!GetConstrainedParam()) return -1;
+      p=*GetConstrainedParam();
+      return 0;}
+
 
 protected:
   

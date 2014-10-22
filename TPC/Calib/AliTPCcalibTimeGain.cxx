@@ -320,14 +320,14 @@ void AliTPCcalibTimeGain::Process(AliVEvent *event) {
     //Printf("AliTPCcalibTimeGain::Process(event)...");
 
   if (!event) {
-    Printf("ERROR AliTPCcalibTimeGain::Process(): event not available");
+    //Printf("ERROR AliTPCcalibTimeGain::Process(): event not available");
     return;
   }
 
   AliVfriendEvent *friendEvent=event->FindFriend();
 
   if (!friendEvent) {
-      Printf("ERROR AliTPCcalibTimeGain::Process(): friendEvent not available");
+      //Printf("ERROR AliTPCcalibTimeGain::Process(): friendEvent not available");
    return;
   }
   //Printf("friendEvent->TestSkipBit() = %d",friendEvent->TestSkipBit() );
@@ -352,7 +352,7 @@ void AliTPCcalibTimeGain::ProcessCosmicEvent(AliVEvent *event) {
 
   AliVfriendEvent *friendEvent=event->FindFriend();
   if (!friendEvent) {
-   Printf("ERROR AliTPCcalibTimeGain::ProcessCosmicEvent(): ESDfriend not available");
+   //Printf("ERROR AliTPCcalibTimeGain::ProcessCosmicEvent(): ESDfriend not available");
    return;
   }
   //
@@ -368,9 +368,18 @@ void AliTPCcalibTimeGain::ProcessCosmicEvent(AliVEvent *event) {
     if (!track) continue;
     const AliVfriendTrack *friendTrack = friendEvent->GetTrack(i);
     if (!friendTrack) continue;
-    const AliExternalTrackParam * trackIn = track->GetInnerParam();
-    const AliExternalTrackParam * trackOut = friendTrack->GetTPCOut();
+    //const AliExternalTrackParam * trackIn = track->GetInnerParam();
+    AliExternalTrackParam trckIn;
+    track->GetTrackParamIp(trckIn);
+    if ( (track->GetTrackParamIp(trckIn)) < 0) continue;
+    AliExternalTrackParam * trackIn = &trckIn;
     if (!trackIn) continue;
+
+    //const AliExternalTrackParam * trackOut = friendTrack->GetTPCOut();
+    AliExternalTrackParam trckOut;
+    friendTrack->GetTrackParamTPCOut(trckOut);
+    if ( (friendTrack->GetTrackParamTPCOut(trckOut)) < 0) continue;
+    AliExternalTrackParam * trackOut = &trckOut;
     if (!trackOut) continue;
 
     // calculate necessary track parameters
@@ -417,7 +426,7 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
 
   AliVfriendEvent *friendEvent=event->FindFriend();
   if (!friendEvent) {
-   Printf("ERROR AliTPCcalibTimeGain::ProcessBeamEvent(): ESDfriend not available");
+   //Printf("ERROR AliTPCcalibTimeGain::ProcessBeamEvent(): ESDfriend not available");
    return;
   }
   //
@@ -431,16 +440,27 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
   for (Int_t i=0;i<nFriendTracks;++i) { // begin track loop
 
     AliVTrack *track = event->GetVTrack(i);
-    if (!track) {Printf("***ERROR*** : track not available");  continue;}
+    if (!track) {
+        //Printf("***ERROR*** : track not available");
+        continue;}
     const AliVfriendTrack *friendTrack = friendEvent->GetTrack(i);
     if (!friendTrack) {
-        Printf("ERROR ProcessBeamEvent(): friendTrack is not available!");
+        //Printf("ERROR ProcessBeamEvent(): friendTrack is not available!");
         continue;
     }
         
-    const AliExternalTrackParam * trackIn = track->GetInnerParam();
-    const AliExternalTrackParam * trackOut = friendTrack->GetTPCOut();
+    //const AliExternalTrackParam * trackIn = track->GetInnerParam();
+    AliExternalTrackParam trckIn;
+    track->GetTrackParamIp(trckIn);
+    if ( (track->GetTrackParamIp(trckIn)) < 0) continue;
+    AliExternalTrackParam * trackIn = &trckIn;
     if (!trackIn) continue;
+
+    //const AliExternalTrackParam * trackOut = friendTrack->GetTPCOut();
+    AliExternalTrackParam trckOut;
+    friendTrack->GetTrackParamTPCOut(trckOut);
+    if ( (friendTrack->GetTrackParamTPCOut(trckOut)) < 0) continue;
+    AliExternalTrackParam * trackOut = &trckOut;
     if (!trackOut) continue;
 
     // calculate necessary track parameters
@@ -513,7 +533,7 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
      event->GetV0(v0dummy, iv0);
      AliESDv0 *v0 = &v0dummy;
 
-     if (!v0) Printf("ERROR AliTPCcalibTimeGain::ProcessBeamEvent(): ESDv0 not available! ");
+     //if (!v0) Printf("ERROR AliTPCcalibTimeGain::ProcessBeamEvent(): ESDv0 not available! ");
 
     if (!v0->GetOnFlyStatus()) continue;
     if (v0->GetEffMass(0,0) > 0.02) continue; // select low inv. mass
@@ -526,13 +546,23 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
     for(Int_t idaughter = 0; idaughter < 2; idaughter++) { // daughter loop
       Int_t index = idaughter == 0 ? v0->GetPindex() : v0->GetNindex();
       AliVTrack * trackP = event->GetVTrack(index);
-      if (!trackP) Printf("***ERROR*** trackP not available!");
+      if (!trackP) continue; //Printf("***ERROR*** trackP not available!");
       const AliVfriendTrack *friendTrackP = friendEvent->GetTrack(index);
       if (!friendTrackP) continue;
-      const AliExternalTrackParam * trackPIn = trackP->GetInnerParam();
-      const AliExternalTrackParam * trackPOut = friendTrackP->GetTPCOut();
+      //const AliExternalTrackParam * trackPIn = trackP->GetInnerParam();
+      AliExternalTrackParam trckPIn;
+      trackP->GetTrackParamIp(trckPIn);
+      if ( (trackP->GetTrackParamIp(trckPIn)) < 0) continue;
+      AliExternalTrackParam * trackPIn = &trckPIn;
       if (!trackPIn) continue;
+
+      //const AliExternalTrackParam * trackPOut = friendTrackP->GetTPCOut();
+      AliExternalTrackParam trckPOut;
+      friendTrackP->GetTrackParamTPCOut(trckPOut);
+      if ( (friendTrackP->GetTrackParamTPCOut(trckPOut)) < 0) continue;
+      AliExternalTrackParam * trackPOut = &trckPOut;
       if (!trackPOut) continue;
+
       // calculate necessary track parameters
       Double_t meanP = trackPIn->GetP();
       Double_t meanDrift = 250 - 0.5*TMath::Abs(trackPIn->GetZ() + trackPOut->GetZ());

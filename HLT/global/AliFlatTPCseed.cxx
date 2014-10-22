@@ -37,16 +37,10 @@ void AliFlatTPCseed::SetFromTPCseed( const AliTPCseed *p )
 
   Reset();
   if( !p ) return;
-
   fParam.SetExternalTrackParam(  p );
-  fLabel = p->GetLabel();
-  AliFlatTPCCluster *clusters = reinterpret_cast< AliFlatTPCCluster* >( fContent );  
+  fLabel = p->GetLabel();  
   for( Int_t irow=0; irow<160; irow++ ){
-    const AliTPCclusterMI *cl = p->GetClusterPointer(irow);
-    if( !cl ) continue;
-    AliFlatTPCCluster &flatCluster = clusters[fNTPCClusters];
-    flatCluster.SetTPCCluster( cl );
-    fNTPCClusters++;
+    AddCluster( p->GetClusterPointer(irow), p->GetTrackPointConst(irow) );
   }
 }
 
@@ -67,12 +61,14 @@ void AliFlatTPCseed::GetTPCseed( AliTPCseed *p ) const
   const AliFlatTPCCluster *flatClusters = reinterpret_cast< const AliFlatTPCCluster* >( fContent );
 
   for( Int_t ic=0; ic<fNTPCClusters; ic++){
-    const AliFlatTPCCluster &flatCluster = flatClusters[ic];    
-    flatCluster.GetTPCCluster( &(clusters[ic]) );
+    const AliFlatTPCCluster &flatCluster = flatClusters[ic];
     int sec = flatCluster.GetSector();
     int row = flatCluster.GetPadRow();
     if(sec >= 36) row = row + AliHLTTPCTransform::GetNRowLow();
-    if( row<160 ) seed.SetClusterPointer( row , &(clusters[ic]) );
+    if( row<160 ){
+      flatCluster.GetTPCCluster( &(clusters[ic]), seed.GetTrackPoint(row) );
+      seed.SetClusterPointer( row , &(clusters[ic]) );
+    }
   }
   new (p) AliTPCseed( seed, kTRUE ); // true means that p creates its own cluster objects
 }

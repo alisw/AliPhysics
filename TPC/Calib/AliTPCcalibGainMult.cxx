@@ -362,7 +362,11 @@ void AliTPCcalibGainMult::Process(AliVEvent *event) {
     AliVTrack *track = event->GetVTrack(i);
     if (!track) continue;
     //   
-    AliExternalTrackParam * trackIn  = (AliExternalTrackParam *)track->GetInnerParam();
+
+    AliExternalTrackParam trckIn;
+    track->GetTrackParamIp(trckIn);
+    if ( (track->GetTrackParamIp(trckIn)) < 0) continue;
+    AliExternalTrackParam * trackIn = &trckIn;
     if (!trackIn) continue;
   
     // calculate necessary track parameters
@@ -416,8 +420,10 @@ void AliTPCcalibGainMult::Process(AliVEvent *event) {
     //
     if (seed) { // seed the container with track parameters and the clusters
       // 
-      const AliExternalTrackParam * trackOut = friendTrack->GetTPCOut();  // tack at the outer radius of TPC
-      if (!trackIn) continue;
+      AliExternalTrackParam trckOut;
+      friendTrack->GetTrackParamTPCOut(trckOut);
+      if ( (friendTrack->GetTrackParamTPCOut(trckOut)) <0) continue;
+      AliExternalTrackParam * trackOut = &trckOut;  // tack at the outer radius of TPC
       if (!trackOut) continue;
       Double_t meanDrift = 250 - 0.5*TMath::Abs(trackIn->GetZ() + trackOut->GetZ());
       Double_t dipAngleTgl  = trackIn->GetTgl();
@@ -850,13 +856,25 @@ void AliTPCcalibGainMult::DumpTrack(AliVTrack * track, AliVfriendTrack *ftrack, 
   if ( (isMuon==0 && isElectron==0)  && (TMath::Sqrt(dca[0]*dca[0]+dca[1]*dca[1])>kDCAcut) ) return;
   Double_t normdEdx= track->GetTPCsignal()/(medianMIP0); // TPC signal normalized to the MIP
   //
-  AliExternalTrackParam * trackIn  = (AliExternalTrackParam *)track->GetInnerParam();
-  AliExternalTrackParam * trackOut = (AliExternalTrackParam *)track->GetOuterParam();
-  AliExternalTrackParam * tpcOut   = (AliExternalTrackParam *)ftrack->GetTPCOut();
+  AliExternalTrackParam trckIn;
+  track->GetTrackParamIp(trckIn);
+  if ( (track->GetTrackParamIp(trckIn)) <0) return;
+  AliExternalTrackParam * trackIn  = &trckIn;
   if (!trackIn) return;
+
+  AliExternalTrackParam trckOut;
+  track->GetTrackParamOp(trckOut);
+  if ( (track->GetTrackParamOp(trckOut)) <0) return;
+  AliExternalTrackParam * trackOut  = &trckOut;
   if (!trackOut) return;
+
+  AliExternalTrackParam trckTPCOut;
+  ftrack->GetTrackParamTPCOut(trckTPCOut);
+  if ( (ftrack->GetTrackParamTPCOut(trckTPCOut)) <0) return;
+  AliExternalTrackParam * tpcOut  = &trckTPCOut;
   if (!tpcOut) return;
-  if (trackIn->GetZ()*trackOut->GetZ()<0) return;  // remove crossing tracks
+
+  if (trckIn.GetZ()*trckOut.GetZ()<0) return;  // remove crossing tracks
   //
   // calculate local and global angle
   Int_t side = (trackIn->GetZ()>0)? 1:-1;
@@ -888,8 +906,11 @@ void AliTPCcalibGainMult::DumpTrack(AliVTrack * track, AliVfriendTrack *ftrack, 
   // Select the kaons and Protons which are "isolated" in TPC dedx curve
   // 
   //
-  Double_t dedxP = AliExternalTrackParam::BetheBlochAleph(track->GetInnerParam()->GetP()/massP,kp1,kp2,kp3,kp4,kp5);
-  Double_t dedxK = AliExternalTrackParam::BetheBlochAleph(track->GetInnerParam()->GetP()/massK,kp1,kp2,kp3,kp4,kp5);
+  AliExternalTrackParam trkIn;
+  track->GetTrackParamIp(trkIn);
+  AliExternalTrackParam * trackIP = &trkIn;
+  Double_t dedxP = AliExternalTrackParam::BetheBlochAleph(trackIP->GetP()/massP,kp1,kp2,kp3,kp4,kp5);
+  Double_t dedxK = AliExternalTrackParam::BetheBlochAleph(trackIP->GetP()/massK,kp1,kp2,kp3,kp4,kp5);
   if (dedxP>2 || dedxK>2){
     if (track->GetP()<1.2 && normdEdx>1.8&&counterMIP0>10){ // not enough from TOF and V0s triggered by high dedx
       // signing the Proton  and kaon - using the "bitmask" bit 1 and 2 is dedicated for V0s and TOF selected       
@@ -905,7 +926,7 @@ void AliTPCcalibGainMult::DumpTrack(AliVTrack * track, AliVfriendTrack *ftrack, 
   Double_t mass = 0;  
   Bool_t isHighPt = ((TMath::Power(1/track->Pt(),4)*gRandom->Rndm())<0.005);  // rnadomly selected HPT tracks
   // there are selected for the QA of the obtained calibration
-  Bool_t isMIP    =  TMath::Abs(track->GetInnerParam()->P()-0.4)<0.005&&(counter<kMax); //
+  Bool_t isMIP    =  TMath::Abs(trackIP->P()-0.4)<0.005&&(counter<kMax); //
   // REMINDER - it is not exactly MIP - we select the regtion where the Kaon and Electrons are well separated
 
   if (isElectron>0) mass = massE;
@@ -1311,6 +1332,7 @@ void AliTPCcalibGainMult::ProcessV0s(AliVEvent *event){
     //AliESDv0 *v0 = event->GetV0(iv0);
     AliESDv0 v0dummy;
     event->GetV0(v0dummy, iv0);
+    if( (event->GetV0(v0dummy, iv0)) < 0) continue;
     AliESDv0 *v0 = &v0dummy;
 
     if (!v0) continue;
@@ -1761,15 +1783,25 @@ void AliTPCcalibGainMult::DumpHPT(const AliVEvent *event){
     if (track->Pt()<4) continue; 
     UInt_t status = track->GetStatus();
     //   
-    AliExternalTrackParam * trackIn  = (AliExternalTrackParam *)track->GetInnerParam();
+
+    AliExternalTrackParam trckIn;
+    track->GetTrackParamIp(trckIn);
+    if ((track->GetTrackParamIp(trckIn)) <0) continue;
+    AliExternalTrackParam * trackIn = &trckIn;
     if (!trackIn) continue;
     if ((status&AliVTrack::kTPCrefit)==0) continue;
     if ((status&AliVTrack::kITSrefit)==0) continue;
     const AliVfriendTrack *friendTrack = friendEvent->GetTrack(i);
     if (!friendTrack) continue;
-    AliExternalTrackParam * itsOut = (AliExternalTrackParam *)(friendTrack->GetITSOut());
+    AliExternalTrackParam prmitsOut;
+    friendTrack->GetTrackParamITSOut(prmitsOut);
+    if ((friendTrack->GetTrackParamITSOut(prmitsOut)) < 0) continue;
+    AliExternalTrackParam * itsOut = &prmitsOut;
     if (!itsOut) continue;
-    AliExternalTrackParam * itsOut2 = (AliExternalTrackParam *)(friendTrack->GetITSOut()->Clone());
+
+    //AliExternalTrackParam * itsOut2 = (AliExternalTrackParam *)(friendTrack->GetITSOut()->Clone());
+    AliExternalTrackParam * itsOut2 = (AliExternalTrackParam *)(itsOut->Clone());
+
     AliExternalTrackParam * tpcIn2 = (AliExternalTrackParam *)(trackIn->Clone());
     if (!itsOut2->Rotate(trackIn->GetAlpha())) continue;
     //Double_t xmiddle=0.5*(itsOut2->GetX()+tpcIn2->GetX());
@@ -1777,14 +1809,21 @@ void AliTPCcalibGainMult::DumpHPT(const AliVEvent *event){
     if (!itsOut2->PropagateTo(xmiddle,event->GetMagneticField())) continue;
     if (!tpcIn2->PropagateTo(xmiddle,event->GetMagneticField())) continue;
     //
-    AliExternalTrackParam * tpcInner = (AliExternalTrackParam *)(track->GetTPCInnerParam());
+    AliExternalTrackParam prmtpcInner;
+    track->GetTrackParamTPCInner(prmtpcInner);
+    if ((track->GetTrackParamTPCInner(prmtpcInner)) < 0) continue;
+    AliExternalTrackParam * tpcInner = &prmtpcInner;
     if (!tpcInner) continue;
     tpcInner->Rotate(track->GetAlpha());
     tpcInner->PropagateTo(track->GetX(),event->GetMagneticField());
     //
     // tpc constrained
     //
-    AliExternalTrackParam * tpcInnerC = (AliExternalTrackParam *)(track->GetTPCInnerParam()->Clone());
+    AliExternalTrackParam prmtpcInnerC;
+    track->GetTrackParamTPCInner(prmtpcInnerC);
+    if ((track->GetTrackParamTPCInner(prmtpcInnerC)) < 0) continue;
+    AliExternalTrackParam * tpcInnerC = &prmtpcInnerC;
+    //AliExternalTrackParam * tpcInnerC = (AliExternalTrackParam *)(track->GetTPCInnerParam()->Clone());
     if (!tpcInnerC) continue;
     tpcInnerC->Rotate(track->GetAlpha());
     tpcInnerC->PropagateTo(track->GetX(),event->GetMagneticField());

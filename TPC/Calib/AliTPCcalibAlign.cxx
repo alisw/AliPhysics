@@ -480,6 +480,7 @@ void AliTPCcalibAlign::Process(AliVEvent *event) {
   //
   for (Int_t i0=0;i0<ntracks;++i0) {
     AliVTrack *track0 = event->GetVTrack(i0);
+    if(!track0) continue;
     //AliESDfriendTrack *friendTrack = 0;
     TObject *calibObject=0;
     AliTPCseed *seed0 = 0;
@@ -507,6 +508,7 @@ void AliTPCcalibAlign::Process(AliVEvent *event) {
   //select pairs - for alignment  
   for (Int_t i0=0;i0<ntracks;++i0) {
       AliVTrack *track0 = event->GetVTrack(i0);
+      if(!track0) continue;
     //    if (track0->GetTPCNcls()<kminCl) continue;
     track0->GetImpactParameters(dca0[0],dca0[1]);
     //    if (TMath::Abs(dca0[0])>30) continue;
@@ -514,6 +516,7 @@ void AliTPCcalibAlign::Process(AliVEvent *event) {
     for (Int_t i1=0;i1<ntracks;++i1) {
       if (i0==i1) continue;
       AliVTrack *track1 = event->GetVTrack(i1);
+      if(!track1) continue;
       //      if (track1->GetTPCNcls()<kminCl) continue;
       track1->GetImpactParameters(dca1[0],dca1[1]);
       // fast cuts on dca and theta
@@ -657,11 +660,22 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliVEvent *event){
     AliVTrack *track0 = event->GetVTrack(i0);
     if (!track0) continue;
     if ((track0->GetStatus() & AliVTrack::kTPCrefit)==0) continue;
-    if (track0->GetOuterParam()==0) continue;
-    if (track0->GetInnerParam()==0) continue;
-    if (TMath::Abs(track0->GetInnerParam()->GetSigned1Pt()-track0->GetOuterParam()->GetSigned1Pt())>kDist1Pt) continue;
-    if (TMath::Abs(track0->GetInnerParam()->GetSigned1Pt())>kDist1Pt) continue;
-    if (TMath::Abs(track0->GetInnerParam()->GetTgl()-track0->GetOuterParam()->GetTgl())>kDistThS) continue;
+
+    AliExternalTrackParam trck0Out;
+    track0->GetTrackParamOp(trck0Out);
+    if ( (track0->GetTrackParamOp(trck0Out)) < 0) continue;
+    AliExternalTrackParam * track0Out = &trck0Out;
+    if (!track0Out) continue;
+
+    AliExternalTrackParam trck0In;
+    track0->GetTrackParamIp(trck0In);
+    if((track0->GetTrackParamIp(trck0In)) < 0) continue;
+    AliExternalTrackParam * track0In = &trck0In;
+    if (!track0In) continue;
+
+    if (TMath::Abs(track0In->GetSigned1Pt()-track0Out->GetSigned1Pt())>kDist1Pt) continue;
+    if (TMath::Abs(track0In->GetSigned1Pt())>kDist1Pt) continue;
+    if (TMath::Abs(track0In->GetTgl()-track0Out->GetTgl())>kDistThS) continue;
     AliVTrack *track1P = 0;
     if (track0->GetTPCNcls()<kminCl) continue;
     track0->GetImpactParameters(dca0[0],dca0[1]);
@@ -673,12 +687,23 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliVEvent *event){
       AliVTrack *track1 = event->GetVTrack(i1);
       if (!track1) continue;
       if ((track1->GetStatus() & AliVTrack::kTPCrefit)==0) continue;
-      if (track1->GetOuterParam()==0) continue;
-      if (track1->GetInnerParam()==0) continue;
+
+      AliExternalTrackParam trck1Out;
+      track1->GetTrackParamOp(trck1Out);
+      if((track1->GetTrackParamOp(trck1Out)) < 0) continue;
+      AliExternalTrackParam * track1Out = &trck1Out;
+      if (!track1Out) continue;
+
+      AliExternalTrackParam trck1In;
+      track1->GetTrackParamIp(trck1In);
+      if((track1->GetTrackParamIp(trck1In)) < 0) continue;
+      AliExternalTrackParam * track1In = &trck1In;
+      if (!track1In) continue;
+
       if (track1->GetTPCNcls()<kminCl) continue;
-      if (TMath::Abs(track1->GetInnerParam()->GetSigned1Pt()-track1->GetOuterParam()->GetSigned1Pt())>kDist1Pt) continue;
-      if (TMath::Abs(track1->GetInnerParam()->GetTgl()-track1->GetOuterParam()->GetTgl())>kDistThS) continue;
-      if (TMath::Abs(track1->GetInnerParam()->GetSigned1Pt())>kDist1Pt) continue;
+      if (TMath::Abs(track1In->GetSigned1Pt()-track1Out->GetSigned1Pt())>kDist1Pt) continue;
+      if (TMath::Abs(track1In->GetTgl()-track1Out->GetTgl())>kDistThS) continue;
+      if (TMath::Abs(track1In->GetSigned1Pt())>kDist1Pt) continue;
       //track1->GetImpactParameters(dca1[0],dca1[1]);
       //if (TMath::Abs(dca1[0]-dca0[0])>kDistY) continue;
       //if (TMath::Abs(dca1[1]-dca0[1])>kDistZ) continue;
@@ -769,13 +794,20 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliVEvent *event){
       if (track0) {
     //p0In= new AliExternalTrackParam(*track0);
     p0In->CopyFromVTrack(track0);
-	p0Out=new AliExternalTrackParam(*(track0->GetOuterParam()));
+
+    AliExternalTrackParam trckOut;
+    track0->GetTrackParamOp(trckOut);
+    AliExternalTrackParam * trackout = &trckOut;
+    p0Out=new AliExternalTrackParam(*trackout);
       }
       if (track1P) {
     //p1In= new AliExternalTrackParam(*track1P);
     p1In->CopyFromVTrack(track1P);
 
-	p1Out=new AliExternalTrackParam(*(track1P->GetOuterParam()));
+    AliExternalTrackParam trck1POut;
+    track1P->GetTrackParamOp(trck1POut);
+    AliExternalTrackParam * track1POut = &trck1POut;
+    p1Out=new AliExternalTrackParam(*track1POut);
       }
 
       (*cstream)<<"trackPoints"<<
@@ -2626,7 +2658,12 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
   // 4. Combine In and Out track - - fil cluster residuals
   //
   if (!fCurrentFriendTrack) return;
-  if (!fCurrentFriendTrack->GetTPCOut()) return;
+
+  AliExternalTrackParam trckTPCOut;
+  fCurrentFriendTrack->GetTrackParamTPCOut(trckTPCOut);
+  if((fCurrentFriendTrack->GetTrackParamTPCOut(trckTPCOut)) < 0) return;
+  AliExternalTrackParam * trackTPCOut = &trckTPCOut;
+  if (!trackTPCOut) return;
   const Double_t kPtCut=1.0;    // pt
   const Double_t kSnpCut=0.2; // snp cut
   const Double_t kNclCut=120; //
@@ -2659,8 +2696,13 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
   Int_t detector=-1;
   //
   //
-  AliExternalTrackParam trackIn  = *(fCurrentTrack->GetInnerParam());
-  AliExternalTrackParam trackOut = *(fCurrentFriendTrack->GetTPCOut());
+  //AliExternalTrackParam trackIn  = *(fCurrentTrack->GetInnerParam());
+  AliExternalTrackParam trackIn;
+  fCurrentTrack->GetTrackParamIp(trackIn);
+  //AliExternalTrackParam trackOut = *(fCurrentFriendTrack->GetTPCOut());
+  AliExternalTrackParam trackOut;
+  fCurrentFriendTrack->GetTrackParamTPCOut(trackOut);
+
   trackIn.ResetCovariance(10);
   trackOut.ResetCovariance(10);
   Double_t *covarIn = (Double_t*)trackIn.GetCovariance();

@@ -127,6 +127,7 @@ void  AliTPCcalibV0::DumpToTreeHPT(AliVEvent *event){
   for (Int_t i=0;i<ntracks;++i) {
     Bool_t isOK=kFALSE;
     AliVTrack *track = event->GetVTrack(i);
+    if(!track) continue;
     if (track->GetTPCncls()<kMinCluster) continue;
     if (TMath::Abs(AliTracker::GetBz())>1){ // cut on momenta if measured
       if (track->Pt()>kMinPt) isOK=kTRUE;
@@ -227,8 +228,10 @@ void  AliTPCcalibV0::DumpToTree(AliVEvent *event){
 
     AliVTrack * track0 = fEvent->GetVTrack(v0->GetIndex(0)); // negative track
     AliVTrack * track1 = fEvent->GetVTrack(v0->GetIndex(1)); // positive track
+    if(!track0) continue;
     if (track0->GetTPCNcls()<kMinCluster) continue;
-    if (track0->GetKinkIndex(0)>0) continue;    
+    if (track0->GetKinkIndex(0)>0) continue;
+    if(!track1) continue;
     if (track1->GetTPCNcls()<kMinCluster) continue;
     if (track1->GetKinkIndex(0)>0) continue;
     if (v0->GetOnFlyStatus()==kFALSE) continue;

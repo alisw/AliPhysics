@@ -49,6 +49,8 @@
 #include "AliESDTOFMatch.h"
 #include "AliESDfriend.h"
 
+#include "AliESDv0.h"
+
 class AliESDv0;
 class AliESDkink;
 class AliESDHLTtrack;
@@ -372,6 +374,8 @@ public:
   AliESDtrack *GetTrack(Int_t i) const {return (fTracks)?(AliESDtrack*)fTracks->At(i) : 0;}
   Int_t  AddTrack(const AliESDtrack *t);
 
+  AliESDtrack *GetVTrack(Int_t i) const {return GetTrack(i);}
+
   /// add new track at the end of tracks array and return instance
   AliESDtrack* NewTrack();
   
@@ -443,6 +447,12 @@ public:
   AliESDv0 *GetV0(Int_t i) const {
     return (AliESDv0*)(fV0s?fV0s->At(i):0x0);
   }
+
+  Int_t GetV0(AliESDv0 &v0dum, Int_t i) const {
+      if(!GetV0(i)) return -1;
+      v0dum=*GetV0(i);
+      return 0;}
+
   Int_t AddV0(const AliESDv0 *v);
 
   AliESDcascade *GetCascade(Int_t i) const {

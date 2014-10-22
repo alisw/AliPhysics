@@ -486,6 +486,7 @@ void AliTPCcalibCosmic::FindPairs(const AliVEvent *event){
   //
   for (Int_t i=0;i<ntracks;++i) {
    AliVTrack *track = event->GetVTrack(i);
+   if(!track) continue;
    fClusters->Fill(track->GetTPCNcls()); 
   
    const AliExternalTrackParam * trackIn = track->GetInnerParam();
