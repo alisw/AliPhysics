@@ -54,12 +54,13 @@ fMinDist(0.),fMinDist2(0.),         fMinDist3(0.),
 fNLMCutMin(-1),                     fNLMCutMax(10),
 fTimeCutMin(-10000),                fTimeCutMax(10000),
 fRejectTrackMatch(kTRUE),           fSelectIsolatedDecay(kFALSE),
+fCheckSplitDistToBad(0),            fSelectPairInIsoCone(0),
+fR(0),                              fIsoCandMinPt(0),
 fFillWeightHistograms(kFALSE),      fFillTMHisto(0),
 fFillSelectClHisto(0),              fFillOnlySimpleSSHisto(1),
 fFillEMCALBCHistograms(0),
 fFillAllNLMHistograms(0),
 fInputAODGammaConvName(""),
-fCheckSplitDistToBad(0),
 fMomentum(),  fMomentum1(),  fMomentum2(),
 fMomentum12(),fPrimaryMom(), fGrandMotherMom(),
 // Histograms
@@ -73,7 +74,8 @@ fhPtCentrality(),                   fhPtEventPlane(0),                  fhMCPtCe
 fhPtReject(0),                      fhEReject(0),
 fhPtEtaReject(0),                   fhPtPhiReject(0),                   fhEtaPhiReject(0),
 fhMass(0),                          fhMassPt(0),                        fhMassSplitPt(0),
-fhSelectedMass(),                   fhSelectedMassPt(0),                fhSelectedMassSplitPt(0),
+fhSelectedMass(0),                  fhSelectedMassPt(0),                fhSelectedMassSplitPt(0),
+fhMassPtIsoRCut(0),
 fhMassNoOverlap(0),                 fhMassPtNoOverlap(0),               fhMassSplitPtNoOverlap(0),
 fhSelectedMassNoOverlap(0),         fhSelectedMassPtNoOverlap(0),       fhSelectedMassSplitPtNoOverlap(0),
 fhMCPi0PtRecoPtPrim(0),                       fhMCEtaPtRecoPtPrim(0),
@@ -272,8 +274,7 @@ void AliAnaPi0EbE::FillEMCALBCHistograms(Float_t energy, Float_t eta, Float_t ph
   if( id < 0 ) return;
 
   Int_t bc = GetReader()->GetTriggerClusterBC();
-  if(TMath::Abs(bc) >= 6)
-    Info("FillEMCALBCHistograms","Trigger BC not expected = %d\n",bc);
+  if(TMath::Abs(bc) >= 6) AliInfo(Form("Trigger BC not expected = %d",bc));
   
   if(phi < 0) phi+=TMath::TwoPi();
   
@@ -784,7 +785,7 @@ void AliAnaPi0EbE::FillWeightHistograms(AliVCluster *clus)
   
   if(energy <=0 )
   {
-    printf("AliAnaPi0EbE::WeightHistograms()- Wrong calculated energy %f\n",energy);
+    AliInfo(Form("Wrong calculated energy %f",energy));
     return;
   }
   
@@ -1124,6 +1125,16 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   fhSelectedMassPt->SetYTitle("#it{M} (GeV/#it{c}^{2})");
   fhSelectedMassPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhSelectedMassPt) ;
+  
+  if(fAnaType != kSSCalo && fSelectPairInIsoCone)
+  {
+    fhMassPtIsoRCut  = new TH2F
+    ("hMassPtIsoRCut",Form("#it{M}: #it{p}_{T} vs #it{M}, for R = %1.1f, #it{p}_{T,1} < %2.2f",fR,fIsoCandMinPt),
+     nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+    fhMassPtIsoRCut->SetYTitle("#it{M} (GeV/#it{c}^{2})");
+    fhMassPtIsoRCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhMassPtIsoRCut) ;
+  }
   
   if(fAnaType == kSSCalo)
   {
@@ -2629,8 +2640,8 @@ void AliAnaPi0EbE::HasPairSameMCMother(Int_t label1 , Int_t label2,
   
   if(label1 < 0 || label2 < 0 || label1 == label2) return ;
   
+  AliDebug(0,Form("Origin of: photon1 %d; photon2 %d",tag1, tag2));
   
-  if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - Origin of: photon1 %d; photon2 %d \n",tag1, tag2);
   if( (GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPi0Decay) &&
        GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPi0Decay)    ) ||
       (GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCEtaDecay) &&
@@ -2719,14 +2730,11 @@ void AliAnaPi0EbE::Init()
 {
   //Init
   //Do some checks
-  if(GetCalorimeter() == kPHOS && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD()){
-    printf("AliAnaPi0EbE::Init() - !!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
-    abort();
-  }
-  else  if(GetCalorimeter() == kEMCAL && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD()){
-    printf("AliAnaPi0EbE::Init() - !!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
-    abort();
-  }
+  
+  if       ( GetCalorimeter() == kPHOS  && !GetReader()->IsPHOSSwitchedOn()  && NewOutputAOD() )
+    AliFatal("STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!");
+  else  if ( GetCalorimeter() == kEMCAL && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD() )
+    AliFatal("STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!");
   
 }
 
@@ -2745,6 +2753,10 @@ void AliAnaPi0EbE::InitParameters()
   fNLMECutMin[0] = 10.;
   fNLMECutMin[1] = 6. ;
   fNLMECutMin[2] = 6. ;
+  
+  fIsoCandMinPt = 8;
+  fR            = 0.4;
+  
 }
 
 //__________________________________________________________________
@@ -2752,7 +2764,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillAOD()
 {
   //Do analysis and fill aods
   
-  if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeAnalysisFillAOD() - Start analysis type %d\n",fAnaType);
+  AliDebug(1,Form("Start analysis type %d",fAnaType));
   
   switch(fAnaType)
   {
@@ -2770,7 +2782,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillAOD()
       
   }
   
-  if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeAnalysisFillAOD() - End\n");
+  AliDebug(1,"End");
 
 }
 
@@ -2784,7 +2796,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
   
   if(!GetInputAODBranch())
   {
-    AliFatal(Form("No input calo photons in AOD with name branch < %s >, STOP \n",GetInputAODName().Data()));
+    AliFatal(Form("No input calo photons in AOD with name branch < %s >, STOP",GetInputAODName().Data()));
     return; // coverity
   }
   
@@ -2814,7 +2826,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
     
     if(!cluster1)
     {
-      printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - First cluster not found\n");
+      AliWarning("First cluster not found");
       return;
     }
     
@@ -2852,7 +2864,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       
       if(!cluster2)
       {
-        printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - Second cluster not found\n");
+        AliWarning("Second cluster not found");
         return;
       }
       
@@ -2914,23 +2926,34 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       //
       // Skip events with too few or too many  NLM
       //
-      if((nMaxima1 < fNLMCutMin || nMaxima1 > fNLMCutMax) || (nMaxima2 < fNLMCutMin || nMaxima2 > fNLMCutMax)) continue ;
-      
-      if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - NLM of out of range: cluster1 %d, cluster2 %d \n",nMaxima1, nMaxima2);
+      if((nMaxima1 < fNLMCutMin || nMaxima1 > fNLMCutMax) || (nMaxima2 < fNLMCutMin || nMaxima2 > fNLMCutMax))
+      {
+        AliDebug(1,Form("NLM out of range: cluster1 %d, cluster2 %d",nMaxima1, nMaxima2));
+        continue ;
+      }
       
       //Mass of all pairs
       fhMass  ->Fill( epair,mass);
       fhMassPt->Fill(ptpair,mass);
       if(IsDataMC() && mcIndex < 2) fhMCMassPt[mcIndex]->Fill(ptpair,mass);
       
+      if(fSelectPairInIsoCone && fMomentum1.Pt() > fIsoCandMinPt)
+      {
+        //Double_t angleOp  = fMomentum1.Angle(fMomentum2.Vect());
+        Double_t radius   = GetIsolationCut()->Radius(fMomentum1.Eta(),fMomentum1.Phi(),fMomentum2.Eta(),fMomentum2.Phi());
+        
+        //printf("pT pair (%f, %f), opening angle %f, radius %f; fR %1.1f, MinPt1 %2.2f\n",fMomentum1.Pt(),fMomentum2.Pt(),angleOp,radius,fR,fIsoCandMinPt);
+        
+        if(radius < fR) fhMassPtIsoRCut->Fill(ptpair,mass);
+      }
+      
       //
       // Select good pair (good phi, pt cuts, aperture and invariant mass)
       //
       if(!GetNeutralMesonSelection()->SelectPair(fMomentum1, fMomentum2,GetCalorimeter())) continue;
       
-      if(GetDebug()>1)
-        printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - Selected gamma pair: pt %f, phi %f, eta%f \n",
-               fMomentum.Pt(), fMomentum.Phi()*TMath::RadToDeg(), fMomentum.Eta());
+      AliDebug(1,Form("Selected gamma pair: pt %f, phi %f, eta%f",
+                      fMomentum.Pt(), fMomentum.Phi()*TMath::RadToDeg(), fMomentum.Eta()));
       
       //
       // Tag both photons as decay if not done before
@@ -2940,15 +2963,12 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       if( bit1 < 0 ) bit1 = 0 ;
       if( !GetNeutralMesonSelection()->CheckDecayBit(bit1) )
       {
-        if( GetDebug() > 1 )
-          printf("AliAnaPi0EbE::MakeInvMassInCalorimeter - pT1 %2.2f; bit requested %d; decay bit1: In %d, ",
-                 fMomentum1.Pt(), GetNeutralMesonSelection()->GetDecayBit(), bit1);
+        AliDebug(1,Form("pT1 %2.2f; bit requested %d; decay bit1: In %d",fMomentum1.Pt(), GetNeutralMesonSelection()->GetDecayBit(), bit1));
         
         GetNeutralMesonSelection()->SetDecayBit(bit1);
         photon1->SetDecayTag(bit1);
         
-        if( GetDebug() > 1 )
-          printf("Out %d \n", bit1);
+        AliDebug(1,Form("\t Out %d", bit1));
         
         fhPtDecay->Fill(photon1->Pt());
 
@@ -2972,15 +2992,12 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       if( bit2 < 0 ) bit2 = 0 ;
       if( !GetNeutralMesonSelection()->CheckDecayBit(bit2) )
       {
-        if( GetDebug() > 1 )
-          printf("AliAnaPi0EbE::MakeInvMassInCalorimeter - pT2 %2.2f; bit requested %d; decay bit2: In %d, ",
-                 fMomentum2.Pt(), GetNeutralMesonSelection()->GetDecayBit(), bit2);
+        AliDebug(1,Form("pT2 %2.2f; bit requested %d; decay bit2: In %d",fMomentum2.Pt(), GetNeutralMesonSelection()->GetDecayBit(), bit2));
         
         GetNeutralMesonSelection()->SetDecayBit(bit2);
         photon2->SetDecayTag(bit2);
         
-        if( GetDebug() > 1 )
-          printf("Out %d \n", bit2);
+        AliDebug(1,Form("\t Out %d", bit2));
         
         fhPtDecay->Fill(photon2->Pt());
         
@@ -3016,7 +3033,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       else if( (GetNeutralMesonSelection()->GetParticle()).Contains("Eta") ) pi0.SetIdentifiedParticleType(AliCaloPID::kEta);
       else
       {
-        printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - Particle type declared in AliNeutralMeson not correct, do not add \n");
+        AliWarning("Particle type declared in AliNeutralMeson not correct, do not add");
         return ;
       }
       pi0.SetDetectorTag(photon1->GetDetectorTag());
@@ -3035,7 +3052,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
     
   }//1st photon loop
   
-  if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - End fill AODs \n");
+  AliDebug(1,"End fill AODs");
   
 }
 
@@ -3050,8 +3067,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
   // Check calorimeter input
   if(!GetInputAODBranch())
   {
-    printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - No input calo photons in AOD branch with name < %s > , STOP\n",GetInputAODName().Data());
-    abort();
+    AliFatal(Form("No input calo photons in AOD branch with name < %s > , STOP",GetInputAODName().Data()));
   }
   
   // Get the array with conversion photons
@@ -3062,9 +3078,8 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
     
     if(!inputAODGammaConv)
     {
-      printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - No input gamma conversions in AOD branch with name < %s >\n",fInputAODGammaConvName.Data());
-      
-      return;
+      AliFatal(Form("No input gamma conversions in AOD branch with name < %s >",fInputAODGammaConvName.Data()));
+      return; // coverity
     }
   }
   
@@ -3077,12 +3092,11 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
   Int_t nCalo = GetInputAODBranch()->GetEntriesFast();
   if(nCTS<=0 || nCalo <=0)
   {
-    if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - nCalo %d, nCTS %d, cannot loop\n",nCalo,nCTS);
+    AliDebug(1,Form("nCalo %d, nCTS %d, cannot loop",nCalo,nCTS));
     return;
   }
   
-  if(GetDebug() > 1)
-    printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - Number of conversion photons %d\n",nCTS);
+  AliDebug(1,Form("Number of conversion photons %d and number of clusters %d",nCTS,nCalo));
   
   // Do the loop, first calo, second CTS
   for(Int_t iphoton = 0; iphoton < GetInputAODBranch()->GetEntriesFast(); iphoton++)
@@ -3129,8 +3143,11 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         else                fhMassPairLocMax[2]->Fill(epair,mass);
       }
       
-      if(nMaxima < fNLMCutMin || nMaxima > fNLMCutMax) continue ;
-      if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - NLM %d of out of range \n",nMaxima);
+      if(nMaxima < fNLMCutMin || nMaxima > fNLMCutMax)
+      {
+        AliDebug(1,Form("NLM %d out of range",nMaxima));
+        continue ;
+      }
       
       //Play with the MC stack if available
       Int_t mcIndex = kmcHadron;
@@ -3157,8 +3174,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       //
       if(!GetNeutralMesonSelection()->SelectPair(fMomentum1, fMomentum2,GetCalorimeter())) continue ;
       
-      if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - Selected gamma pair: pt %f, phi %f, eta%f\n",
-                                fMomentum.Pt(), fMomentum.Phi()*TMath::RadToDeg(), fMomentum.Eta());
+      AliDebug(1,Form("Selected gamma pair: pt %f, phi %f, eta%f",fMomentum.Pt(), fMomentum.Phi()*TMath::RadToDeg(), fMomentum.Eta()));
       
       //
       // Tag both photons as decay if not done before
@@ -3214,7 +3230,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       else if( (GetNeutralMesonSelection()->GetParticle()).Contains("Eta") ) pi0.SetIdentifiedParticleType(AliCaloPID::kEta);
       else
       {
-        printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - Particle type declared in AliNeutralMeson not correct, do not add \n");
+        AliWarning("Particle type declared in AliNeutralMeson not correct, do not add");
         return ;
       }
       pi0.SetDetectorTag(photon1->GetDetectorTag());
@@ -3234,7 +3250,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
     
   }//1st photon loop
   
-  if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - End fill AODs \n");
+  AliDebug(1,"End fill AODs");
   
 }
 
@@ -3262,7 +3278,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
   
   if(!pl)
   {
-    Info("MakeShowerShapeIdentification","TObjArray with %s clusters is NULL!\n",GetCalorimeterString().Data());
+    AliInfo(Form("TObjArray with %s clusters is NULL!",GetCalorimeterString().Data()));
     return;
   }
 
@@ -3298,8 +3314,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       if(! in ) continue ;
     }
     
-    if(GetDebug() > 1)
-      printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - FillAOD: Min pt cut and fiducial cut passed: pt %3.2f, phi %2.2f, eta %1.2f\n",fMomentum.Pt(),fMomentum.Phi(),fMomentum.Eta());
+    AliDebug(1,Form("Min pt cut and fiducial cut passed: pt %3.2f, phi %2.2f, eta %1.2f",fMomentum.Pt(),fMomentum.Phi(),fMomentum.Eta()));
     
     //Play with the MC stack if available
     //Check origin of the candidates
@@ -3308,7 +3323,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     {
       tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(),GetCalorimeter());
       //GetMCAnalysisUtils()->CheckMultipleOrigin(calo->GetLabels(),calo->GetNLabels(), GetReader(), aodpi0.GetInputFileIndex(), tag);
-      if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Origin of candidate %d\n",tag);
+      AliDebug(1,Form("Origin of candidate %d",tag));
     }
 
     //Int_t nMaxima = GetCaloUtils()->GetNumberOfLocalMaxima(calo, cells); // NLM
@@ -3321,7 +3336,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       continue ;
     }
  
-    if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - FillAOD: Bad channel cut passed %4.2f\n",distBad);
+    AliDebug(1,Form("Bad channel cut passed %4.2f",distBad));
     
     //If too low number of cells, skip it
     if ( calo->GetNCells() < GetCaloPID()->GetClusterSplittingMinNCells())
@@ -3330,9 +3345,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       continue ;
     }
     
-    if(GetDebug() > 1)
-      printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - FillAOD: N cells cut passed %d > %d\n",
-             calo->GetNCells(), GetCaloPID()->GetClusterSplittingMinNCells());
+    AliDebug(1,Form("N cells cut passed %d > %d",calo->GetNCells(), GetCaloPID()->GetClusterSplittingMinNCells()));
     
     //.......................................
     // TOF cut, BE CAREFUL WITH THIS CUT
@@ -3360,15 +3373,14 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
                                                                                    fidcut1,fidcut2) ;
     
     
-    if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - PDG of identified particle %d\n",idPartType);
+    AliDebug(1,Form("PDG of identified particle %d",idPartType));
     
     // Skip events where one of the new clusters (lowest energy) is close to an EMCal border or a bad channel
     if( (fCheckSplitDistToBad) &&
        (!fidcut2 || !fidcut1 || distbad1 < fMinDist || distbad2 < fMinDist))
     {
-      if(GetDebug() > 1)
-        Info("MakeShowerShapeIdentification", "Dist to bad channel cl %f, cl1 %f, cl2 %f; fid cl1 %d, cl2 %d \n",
-               calo->GetDistanceToBadChannel(),distbad1,distbad2, fidcut1,fidcut2);
+      AliDebug(1,Form("Dist to bad channel cl %f, cl1 %f, cl2 %f; fid cl1 %d, cl2 %d",
+                      calo->GetDistanceToBadChannel(),distbad1,distbad2, fidcut1,fidcut2));
       
       //FillRejectedClusterHistograms(tag,nMaxima);
       continue ;
@@ -3381,8 +3393,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       continue ;
     }
     
-    if(GetDebug() > 1)
-      printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - NLM %d accepted \n",nMaxima);
+    AliDebug(1,Form("NLM %d accepted",nMaxima));
     
     //Skip matched clusters with tracks
     if(fRejectTrackMatch && IsTrackMatched(calo, GetReader()->GetInputEvent()))
@@ -3494,21 +3505,19 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     // If cluster does not pass pid, not pi0/eta, skip it.
     if     (GetOutputAODName().Contains("Pi0") && idPartType != AliCaloPID::kPi0)
     {
-      if(GetDebug() > 1) Info("MakeShowerShapeIdentification","Cluster is not Pi0\n");
+      AliDebug(1,"Cluster is not Pi0");
       FillRejectedClusterHistograms(tag,nMaxima);
       continue ;
     }
     
     else if(GetOutputAODName().Contains("Eta") && idPartType != AliCaloPID::kEta)
     {
-      if(GetDebug() > 1) Info("MakeShowerShapeIdentification","Cluster is not Eta\n");
+      AliDebug(1,"Cluster is not Eta");
       FillRejectedClusterHistograms(tag,nMaxima);
       continue ;
     }
     
-    if(GetDebug() > 1)
-      Info("MakeShowerShapeIdentification","Pi0/Eta selection cuts passed: pT %3.2f, pdg %d\n",
-             fMomentum.Pt(), idPartType);
+    AliDebug(1,Form("Pi0/Eta selection cuts passed: pT %3.2f, pdg %d",fMomentum.Pt(), idPartType));
         
     //Mass and asymmetry of selected pairs
     fhSelectedAsymmetry  ->Fill(fMomentum.E() ,asy );
@@ -3647,7 +3656,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
         
   }//loop
   
-  if(GetDebug() > 1) Info("MakeShowerShapeIdentification","End fill AODs \n");
+  AliDebug(1,"End fill AODs");
   
 }
 
@@ -3658,13 +3667,14 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
   
   if(!GetOutputAODBranch())
   {
-    AliFatal(Form("No output pi0 in AOD branch with name < %s >,STOP \n",GetOutputAODName().Data()));
+    AliFatal(Form("No output pi0 in AOD branch with name < %s >,STOP",GetOutputAODName().Data()));
     return;
   }
   
   //Loop on stored AOD pi0
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
-  if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
+  
+  AliDebug(1,Form("AOD branch entries %d", naod));
   
   Float_t cen = GetEventCentrality();
   Float_t ep  = GetEventPlaneAngle();
@@ -3834,7 +3844,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
     
   }// aod loop
   
-  if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeAnalysisFillHistograms() - end\n");
+  AliDebug(1,"End");
 
 }
 

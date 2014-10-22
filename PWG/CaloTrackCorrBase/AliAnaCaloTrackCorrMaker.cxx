@@ -38,6 +38,7 @@
 #include "AliAODEvent.h"
 #include "AliAnaCaloTrackCorrBaseClass.h"
 #include "AliAnaCaloTrackCorrMaker.h"
+#include "AliLog.h"
 
 ClassImp(AliAnaCaloTrackCorrMaker)
 
@@ -76,7 +77,7 @@ fhClusterTriggerBCEventBC(0),           fhClusterTriggerBCEventBCUnMatch(0),
 fhClusterTriggerBCExoticEventBC(0),     fhClusterTriggerBCExoticEventBCUnMatch(0)
 {
   //Default Ctor
-  if(fAnaDebug > 1 ) printf("*** Analysis Maker Constructor *** \n");
+  AliDebug(1,"*** Analysis Maker Constructor ***");
   
   for(Int_t i = 0; i < 3; i++)
   {
@@ -190,8 +191,7 @@ void    AliAnaCaloTrackCorrMaker::AddAnalysis(TObject* ana, Int_t n)
   }
   else
   {
-    printf("AliAnaCaloTrackCorrMaker::AddAnalysis() - AnalysisContainer not initialized\n");
-    abort();
+    AliFatal("AnalysisContainer not initialized");
   }
 }
 
@@ -369,7 +369,7 @@ void AliAnaCaloTrackCorrMaker::FillTriggerControlHistograms()
   
   Int_t eventBC = fReader->GetInputEvent()->GetBunchCrossNumber();
   if(eventBC%4 < 0 || eventBC%4 > 3 )
-    printf("AliAnaCaloTrackCorrMaker::ProcessEvent() - STRANGE: Trigger BC %d - Event BC %d, modulo4 %d \n",triggerBC,eventBC,eventBC%4);
+    AliWarning(Form("STRANGE: Trigger BC %d - Event BC %d, modulo4 %d",triggerBC,eventBC,eventBC%4));
   
   if(triggerMatch)
   {
@@ -778,7 +778,7 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   
   if(!fAnalysisContainer || fAnalysisContainer->GetEntries()==0)
   {
-    printf("AliAnaCaloTrackCorrMaker::GetOutputContainer() - Analysis job list not initialized!!!\n");
+    AliWarning("Analysis job list not initialized!!!");
     return fOutputContainer;
   }
   
@@ -828,27 +828,42 @@ void AliAnaCaloTrackCorrMaker::Init()
   //Init container histograms and other common variables
   // Fill the output list of histograms during the CreateOutputObjects stage.
   
+  // Activate debug level in maker
+  if( fAnaDebug >= 0 )
+    (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(this->ClassName(),fAnaDebug);
+  
   //Initialize reader
   GetReader()->Init();
   GetReader()->SetCaloUtils(GetCaloUtils()); // pass the calo utils pointer to the reader
-	
+
+  // Activate debug level in reader
+  if( fReader->GetDebug() >= 0 )
+    (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(fReader->ClassName(), fReader->GetDebug());
+  
+  // Activate debug level in calo utils
+  if( fCaloUtils->GetDebug() >= 0 )
+    (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(fCaloUtils->ClassName(), fCaloUtils->GetDebug());
   
   if(!fAnalysisContainer || fAnalysisContainer->GetEntries()==0)
   {
-    printf("AliAnaCaloTrackCorrMaker::GetOutputInit() - Analysis job list not initialized!!!\n");
+    AliWarning("Analysis job list not initialized");
     return;
   }
   
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++)
   {
-    
     AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
     
     ana->SetReader(fReader);       // Set Reader for each analysis
     ana->SetCaloUtils(fCaloUtils); // Set CaloUtils for each analysis
     
     ana->Init();
+    ana->InitDebug();
     
+//    // Activate debug level in analysis
+//    if( ana->GetDebug() >= 0 )
+//      (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(ana->ClassName(),ana->GetDebug());
+
   }//Loop on analysis defined
   
 }
@@ -901,20 +916,11 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
   //Process analysis for this event
   
   if(fMakeHisto && !fOutputContainer)
-  {
-    printf("AliAnaCaloTrackCorrMaker::ProcessEvent() - Histograms not initialized\n");
-    abort();
-  }
+    AliFatal("Histograms not initialized");
   
-  if(fAnaDebug >= 0 )
-  {
-    printf("***  AliAnaCaloTrackCorrMaker::ProcessEvent() Event %d   ***  \n",iEntry);
-    if(fAnaDebug > 1 )
-    {
-      printf("AliAnaCaloTrackCorrMaker::ProcessEvent() - Current File Name : %s\n", currentFileName);
-      //printf("fAODBranchList %p, entries %d\n",fAODBranchList,fAODBranchList->GetEntries());
-    }
-  }
+  AliDebug(1,Form("***  AliAnaCaloTrackCorrMaker::ProcessEvent() Event %d   ***",iEntry));
+  AliDebug(2,Form("Current File Name : %s", currentFileName));
+  //printf("fAODBranchList %p, entries %d\n",fAODBranchList,fAODBranchList->GetEntries());
   
   //Each event needs an empty branch
   TList * aodList = fReader->GetAODBranchList();
@@ -956,7 +962,7 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
   
   if(!ok)
   {
-    if(fAnaDebug >= 1 )printf("*** Skip event *** %d \n",iEntry);
+    AliDebug(1,Form("*** Skip event *** %d",iEntry));
     fReader->ResetLists();
     return ;
   }
@@ -973,7 +979,7 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
   
   //Loop on analysis algorithms
   
-  if(fAnaDebug > 0 ) printf("*** Begin analysis *** \n");
+  AliDebug(1,"*** Begin analysis ***");
   
   Int_t nana = fAnalysisContainer->GetEntries() ;
   for(Int_t iana = 0; iana <  nana; iana++)
@@ -1003,7 +1009,7 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
   // do not fill control histograms for a non requested triggered event
   if(!fReader->IsEventTriggerAtSEOn() && !isTrigger)
   {
-    if(fAnaDebug > 0 ) printf("AliAnaCaloTrackMaker::ProcessEvent() - *** End analysis, MB for mixing *** \n");
+    AliDebug(1,"*** End analysis, MB for mixing ***");
     return;
   }
   
@@ -1012,7 +1018,7 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
   //printf(">>>>>>>>>> AFTER >>>>>>>>>>>\n");
   //gObjectTable->Print();
 	
-  if(fAnaDebug > 0 ) printf("AliAnaCaloTrackMaker::ProcessEvent() - *** End analysis *** \n");
+  AliDebug(1,"*** End analysis ***");
   
 }
 
@@ -1024,7 +1030,7 @@ void AliAnaCaloTrackCorrMaker::Terminate(TList * outputList)
   
   if (!outputList)
   {
-    Error("Terminate", "No output list");
+    AliError("No output list");
     return;
   }
   

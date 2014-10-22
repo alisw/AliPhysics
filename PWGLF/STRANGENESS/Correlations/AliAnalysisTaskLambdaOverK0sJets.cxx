@@ -3594,7 +3594,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
     // *******************
     //   K0s selection
     // *******************
-    if (ctK && (TMath::Abs(rapK0s)<fYMax) && ( lPtArmV0 > TMath::Abs(0.2*lAlphaV0) ) && ( massK0s > 0.3979 && massK0s < 0.5981 ) ) {
+    if (ctK && (TMath::Abs(rapK0s)<fYMax) && ( lPtArmV0 > TMath::Abs(0.2*lAlphaV0) ) && ( massK0s > 0.3979 && massK0s < 0.5981 ) && lCheckMcK0Short ) {
       
       switch(step) {
       case kTriggerCheck: 
@@ -3759,7 +3759,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
     // *******************
     // Lambda selection
     // *******************
-    if ( ctL && (TMath::Abs(rapLambda)<fYMax) && (massLambda > 1.0649 && massLambda < 1.1651 ) && (TMath::Abs(nsigPosProton)<fNSigma) ){
+    if ( ctL && (TMath::Abs(rapLambda)<fYMax) && (massLambda > 1.0649 && massLambda < 1.1651 ) && (TMath::Abs(nsigPosProton)<fNSigma) && lCheckMcLambda ){
 
       switch(step) {
       case kTriggerCheck: 
@@ -3928,7 +3928,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
     // *******************
     // AntiLambda selection
     // *******************
-    if ( ctAL && (TMath::Abs(rapLambda)<fYMax)  && (massAntiLambda > 1.0649 && massAntiLambda < 1.1651 ) && (TMath::Abs(nsigNegProton)<fNSigma) ) {
+    if ( ctAL && (TMath::Abs(rapLambda)<fYMax)  && (massAntiLambda > 1.0649 && massAntiLambda < 1.1651 ) && (TMath::Abs(nsigNegProton)<fNSigma) && lCheckMcAntiLambda ) {
       
       switch(step) {
       case kTriggerCheck: 
