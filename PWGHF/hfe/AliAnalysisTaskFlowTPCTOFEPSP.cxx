@@ -2145,16 +2145,20 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
 	AliHFEpidObject hfetrack;
 	if(!fAODAnalysis){
 	  hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
-	  if(fVariableMultiplicity==0) hfetrack.SetMulitplicity(cntr);
-	  //if(((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()) hfetrack.SetMulitplicity(((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetNContributors());
+	  if(fVariableMultiplicity==0) 
+	    hfetrack.SetMulitplicity(cntr);
 	  if(fVariableMultiplicity==1)
 	    hfetrack.SetMulitplicity(((AliESDEvent*)fInputEvent)->GetNumberOfESDTracks()/8.);
+	  if(fVariableMultiplicity==2)
+	    hfetrack.SetMulitplicity(((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetNContributors());
 	}else{
 	  hfetrack.SetAnalysisType(AliHFEpidObject::kAODanalysis);
-	  if(fVariableMultiplicity==0) hfetrack.SetMulitplicity(cntr);
-	    //if(((AliAODEvent*)fInputEvent)->GetPrimaryVertexSPD()) hfetrack.SetMulitplicity(((AliAODEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetNContributors());
+	  if(fVariableMultiplicity==0) 
+	    hfetrack.SetMulitplicity(cntr);
 	  if(fVariableMultiplicity==1)
 	    hfetrack.SetMulitplicity(((AliAODEvent*)fInputEvent)->GetNumberOfESDTracks()/8.);
+	  if(fVariableMultiplicity==2)
+	    hfetrack.SetMulitplicity(((AliAODEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetNContributors());
 	}
 	hfetrack.SetRecTrack(track);
 	hfetrack.SetCentrality((Int_t)binct);

@@ -225,7 +225,7 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   task->SetTriggerUsed(trigger);
   task->SetDebugLevel(1);
   task->SetVariableMultiplicity(variableM);
-  task->GetPIDQAManager()->SetHighResolutionEtaHistos();
+  //task->GetPIDQAManager()->SetHighResolutionEtaHistos();
   task->GetPIDQAManager()->SetMidResolutionHistos();
   //task->GetPIDQAManager()->SetFillMultiplicity();
   task->SetHFECuts(hfecuts);
