@@ -537,7 +537,7 @@ Int_t AliEbyEPidRatioTask::SetupAODEvent() {
 
   // -- Check Centrality
   // ------------------------------------------------------------------
-  if (!fAOD->GetHeader()->GetCentralityP()) {
+  if (!((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP()) {
     AliError("Could not get centrality");
     return -1;
   }

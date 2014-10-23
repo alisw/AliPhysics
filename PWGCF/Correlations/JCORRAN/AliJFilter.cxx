@@ -666,7 +666,8 @@ Bool_t AliJFilter::ReadAODTracks(const AliAODEvent * aod)
 	//==== loop over tracks ====//
 	for(Int_t it = 0; it < nt; it++) { 
 
-		AliAODTrack *track = aod->GetTrack(it);
+                AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+                if(!track) AliFatal("Not a standard AOD track");
 		//if(track->GetFilterMap() & (1 << 7) ) continue;
 		//if(!AcceptAODTrack(track)) continue; 
 		//if(! fEsdTrackCuts->IsSelected(track)) continue; //apply loose selection criteria
@@ -843,7 +844,8 @@ void AliJFilter::ReadAODHeader(AliAODEvent *aod)
 		hdr->SetZVertexMC( aodMCheader->GetVtxZ() );
 	}
 
-	AliAODHeader * ah = aod->GetHeader();
+	AliAODHeader * ah = dynamic_cast<AliAODHeader*>(aod->GetHeader());
+        if(!ah) AliFatal("Not a standard AOD");
 	hdr->SetESDFileName( ah->GetESDFileName() );
 	hdr->SetEventNumberESDFile( ah->GetEventNumberESDFile() );
 }
