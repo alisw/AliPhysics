@@ -665,7 +665,7 @@ Double_t AliSpectraAODEventCuts::GetQvecPercentile(Int_t v0side){
   
   if(fQvecCalibType==1){
     if(fNch<0.) return -999.;
-    ic = GetNchBin();
+    ic = GetNchBin(fQvecIntegral);
   } else ic = (Int_t)fCent; //fQvecIntegral: 1% centrality bin
   
   TH1D *h1D = (TH1D*)fQvecIntegral->ProjectionY("h1D",ic+1,ic+1);
@@ -879,7 +879,7 @@ Double_t AliSpectraAODEventCuts::GetQvecPercentileMC(Int_t v0side, Int_t type=1)
   
   if(fQvecCalibType==1){
     if(fNch<0.) return -999.;
-    ic = GetNchBin();
+    ic = GetNchBin(fQgenIntegral);
   } else ic = (Int_t)fCent; //fQvecIntegral: 1% centrality bin
   
   TH1D *h1D = (TH1D*)fQgenIntegral->ProjectionY("h1Dgen",ic+1,ic+1);
@@ -927,13 +927,13 @@ Bool_t AliSpectraAODEventCuts::CheckSplineArray(TObjArray * splarr, Int_t n){
 }
 
 //______________________________________________________
-Int_t AliSpectraAODEventCuts::GetNchBin(){
+Int_t AliSpectraAODEventCuts::GetNchBin(TH2D * h){
   
-  Double_t xmax = fQvecIntegral->GetXaxis()->GetXmax();
+  Double_t xmax = h->GetXaxis()->GetXmax();
   
-  if(fNch>xmax) return fQvecIntegral->GetNbinsX();
+  if(fNch>xmax) return (Int_t)h->GetNbinsX();
   
-  return (fNch*fQvecIntegral->GetNbinsX())/fQvecIntegral->GetXaxis()->GetXmax();
+  return (fNch*h->GetNbinsX())/h->GetXaxis()->GetXmax();
   
 }
 
