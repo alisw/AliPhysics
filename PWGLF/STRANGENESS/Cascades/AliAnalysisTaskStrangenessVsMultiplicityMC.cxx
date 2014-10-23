@@ -1063,7 +1063,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
     
   if(! fHistVZEROResponseStudyTotal ) {
     fHistVZEROResponseStudyTotal    = new TH2D( 
-    "fHistVZEROResponseStudyTotal",       "Generated;p_{T} (GeV/c); Mult",200,0,20,lAmplitudeBins,0,lMaxAmplitude);   
+    "fHistVZEROResponseStudyTotal",       "Generated;p_{T} (GeV/c); Mult",5000,0,500,lAmplitudeBins,0,lMaxAmplitude);   
     fListHist->Add(fHistVZEROResponseStudyTotal); } 
 
    //List of Histograms: Normal
