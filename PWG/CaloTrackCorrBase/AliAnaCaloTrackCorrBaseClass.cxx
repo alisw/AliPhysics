@@ -567,8 +567,6 @@ void AliAnaCaloTrackCorrBaseClass::InitDebug()
   
   // Activate debug level in analysis
 
-  printf("Debug levels: Ana %d, MC %d, Iso %d\n",fDebug,GetMCAnalysisUtils()->GetDebug(),GetIsolationCut()->GetDebug());
-
   if( fDebug >= 0 )
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(this->ClassName(),fDebug);
   
@@ -577,6 +575,9 @@ void AliAnaCaloTrackCorrBaseClass::InitDebug()
   
   if( GetIsolationCut()->GetDebug() >= 0 )
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(GetIsolationCut()   ->ClassName(),GetIsolationCut()->GetDebug());
+  
+  //printf("Debug levels: Ana %d, MC %d, Iso %d\n",fDebug,GetMCAnalysisUtils()->GetDebug(),GetIsolationCut()->GetDebug());
+
 }
 
 //_________________________________________________
