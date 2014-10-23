@@ -68,7 +68,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	const char *chrgs[numOfChTypes] = { "pip", "pim", "pippim" };
 
 	int runktdep[numOfkTbins] = {1,0,0,1};
-	double ktrng[numOfkTbins+1] = {0.2, 0.4, 0.6, 0.8, 1.2};
+	double ktrng[numOfkTbins+1] = {0.2, 0.3, 0.4, 0.6, 0.7};
 
 	int gammacut = 0;	// cut na ee for gamma
 
@@ -267,7 +267,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 							cqinvkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 							anetaphitpc[aniter]->AddCorrFctn(cqinvkttpc[ktm]);
 
-							PhiStarEtaetaphitpc[aniter] = new AliFemtoTPCInnerCorrFctn(Form("PhistarEta%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,2.0);
+							PhiStarEtaetaphitpc[aniter] = new AliFemtoTPCInnerCorrFctn(Form("PhistarEta%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,shqmax);
 							anetaphitpc[aniter]->AddCorrFctn(PhiStarEtaetaphitpc[aniter]);
 
 						}
