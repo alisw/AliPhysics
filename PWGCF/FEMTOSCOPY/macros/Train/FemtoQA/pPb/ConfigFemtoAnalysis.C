@@ -57,15 +57,16 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   double KaonMass = 0.493677;
 
   //multiplicity bins
-  int runmults[10] = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  int multbins[11] = {0.01, 20000, 400, 600, 900, 950, 500, 600, 700, 800, 900};
+	const int numOfMultBins = 10;
+  int runmults[numOfMultBins] = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  int multbins[numOfMultBins+1] = {0.01, 200, 400, 600, 900, 950, 500, 600, 700, 800, 900};
 
   int runch[2] = {0, 1};
   const char *chrgs[2] = { "pip", "pim" };
 
-	const int numOfkTbins = 7;
+	const int numOfkTbins = 4;
 	int runktdep[numOfkTbins] = {1,0,0,1};
-  double ktrng[numOfkTbins+1] = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
+  double ktrng[numOfkTbins+1] = {0.2, 0.3, 0.4, 0.6, 0.7};
 
   int run3d = 0; // Do 3D cartesian analysis?
   int runshlcms = 1;
@@ -134,11 +135,11 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   // *** Begin pion-pion analysis ***
   int aniter = 0;
 
-  for (int imult=0; imult<10; imult++) {
+  for (int imult=0; imult<numOfMultBins; imult++) {
     if (runmults[imult]) {
       for (int ichg=0; ichg<2; ichg++) {
         if (runch[ichg]) {
-          aniter = ichg*10+imult;
+          aniter = ichg*numOfMultBins+imult;
 
           anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, 4, multbins[imult], multbins[imult+1]);
           anetaphitpc[aniter]->SetNumEventsToMix(5);
@@ -258,10 +259,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
           // anetaphitpc[aniter]->AddCorrFctn(cqinvchi2tpc[aniter]);
 
           int ktm;
-          for (int ikt=0; ikt<7; ikt++) {
+          for (int ikt=0; ikt<numOfkTbins; ikt++) {
             if (runktdep[ikt]) {
 
-              ktm = aniter*7 + ikt;
+              ktm = aniter*numOfkTbins + ikt;
               ktpcuts[ktm] = new AliFemtoKTPairCut(ktrng[ikt], ktrng[ikt+1]);
 
               // cylmkttpc[ktm] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%ikT%i", chrgs[ichg], imult, ikt),3,
@@ -277,7 +278,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
               // cqinvsqtpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
               // anetaphitpc[aniter]->AddCorrFctn(cqinvsqtpc[ktm]);
 
-              cqinvinnertpc[ktm] = new AliFemtoTPCInnerCorrFctn(Form("cqinvinner%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,shqmax);
+              cqinvinnertpc[ktm] = new AliFemtoTPCInnerCorrFctn(Form("PhistarEta%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,shqmax);
+
+(Form("cqinvinner%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,shqmax);
               cqinvinnertpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
               cqinvinnertpc[ktm]->SetRadius(1.2);
               anetaphitpc[aniter]->AddCorrFctn(cqinvinnertpc[ktm]);
