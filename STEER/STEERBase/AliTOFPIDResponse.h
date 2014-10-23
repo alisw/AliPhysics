@@ -69,6 +69,7 @@ public:
 
   Float_t GetTOFtail() {if(fTOFtailResponse) return fTOFtailResponse->GetParameter(3);else return -1;};
   void    SetTOFtail(Float_t tail);
+  void    SetTOFtailAllPara(Float_t mean,Float_t tail);
 
  private:
   Double_t fSigma;        // intrinsic TOF resolution
