@@ -347,7 +347,8 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
     if (aod){
 
       // get centrality of the event
-      AliAODHeader *header=aod->GetHeader();
+      AliAODHeader *header=dynamic_cast<AliAODHeader*>(aod->GetHeader());
+      if(!header) AliFatal("Not a standard AOD");
       AliCentrality *centrality=header->GetCentralityP();
       if(!centrality)  AliError(Form("No AliCentrality attached to AOD header"));
       fCentrality = centrality->GetCentralityPercentile("V0M");
@@ -365,8 +366,6 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
 	if (headerH) fRP = headerH->GetReactionPlaneAngle();
       }
   
-      AliAODHeader * header = dynamic_cast<AliAODHeader*>(aod->GetHeader());
-      if(!header) AliFatal("Not a standard AOD");
       esdEP = header->GetEventplaneP();
       if(!esdEP) return; // protection against missing EP branch (nanoAODs)
       esdEP->Reset(); 

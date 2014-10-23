@@ -326,7 +326,7 @@ Int_t AliITSUTrackerCooked::Clusters2Tracks(AliESDEvent *event) {
   const AliESDVertex *vtx=0;
   vtx=event->GetPrimaryVertexSPD();
   if (vtx->GetStatus()) {
-     xyz[0]=vtx->GetXv(); xyz[1]=vtx->GetYv(); xyz[2]=vtx->GetZv();
+     xyz[0]=vtx->GetX(); xyz[1]=vtx->GetY(); xyz[2]=vtx->GetZ();
      SetVertex(xyz);
      MakeSeeds();
   }
@@ -336,7 +336,7 @@ Int_t AliITSUTrackerCooked::Clusters2Tracks(AliESDEvent *event) {
   for (Int_t v=0; v<nfoundSPD; v++) {
       vtx=(AliESDVertex *)verticesSPD->UncheckedAt(v);
       if (!vtx->GetStatus()) continue;
-      xyz[0]=vtx->GetXv(); xyz[1]=vtx->GetYv(); xyz[2]=vtx->GetZv();
+      xyz[0]=vtx->GetX(); xyz[1]=vtx->GetY(); xyz[2]=vtx->GetZ();
       SetVertex(xyz);
       MakeSeeds();
   }
