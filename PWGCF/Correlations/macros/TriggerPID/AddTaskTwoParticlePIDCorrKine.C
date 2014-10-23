@@ -23,7 +23,7 @@ TString type = mgr->GetInputEventHandler()->GetDataType();
     
     
 AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-AliAnalysisDataContainer *coutput = mgr->CreateContainer("coutput", TList::Class(), AliAnalysisManager::kOutputContainer, "AliKineResult.root");
+AliAnalysisDataContainer *coutput = mgr->CreateContainer("coutput", TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
 
     // connect input/output                                                                                                                                             
 mgr->ConnectInput(kine, 0, cinput);
