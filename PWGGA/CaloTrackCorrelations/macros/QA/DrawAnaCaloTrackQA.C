@@ -96,10 +96,10 @@ void CaloQA()
   ccalo->cd(2);
   //gPad->SetLogy();
   
-  TH1F* hRaw  = (TH1F*) GetHisto("AnaPhoton_hCut_0_Open");
-  TH1F* hCorr = (TH1F*) GetHisto("AnaPhoton_hCut_4_NCells");
-  TH1F* hTM   = (TH1F*) GetHisto("AnaPhoton_hCut_7_Matching");
-  TH1F* hShSh = (TH1F*) GetHisto("AnaPhoton_hCut_9_PID");
+  TH1F* hRaw  = (TH1F*) GetHisto("AnaPhoton_hPt_Cut_0_Open");
+  TH1F* hCorr = (TH1F*) GetHisto("AnaPhoton_hPt_Cut_4_NCells");
+  TH1F* hTM   = (TH1F*) GetHisto("AnaPhoton_hPt_Cut_7_Matching");
+  TH1F* hShSh = (TH1F*) GetHisto("AnaPhoton_hPt_Cut_9_PID");
   
   hRaw->Sumw2();
   
