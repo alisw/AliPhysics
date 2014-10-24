@@ -33,6 +33,7 @@ set ( HDRS  AliStructFuncType.h)
 
 set ( DHDR lhapdfLinkDef.h)
 
+set_property(DIRECTORY PROPERTY INCLUDE_DIRECTORIES "")
 set ( EINCLUDE  LHAPDF/lhapdf-5.9.1 LHAPDF/lhapdf-5.9.1/include  LHAPDF/lhapdf-5.9.1/src)
 
 set ( CSRCS  lhapdf-5.9.1/src/binreloc.c )
