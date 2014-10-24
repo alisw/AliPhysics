@@ -66,8 +66,8 @@ class AliRawReaderDate: public AliRawReader {
     Bool_t           fOwner;        // is raw-reader owner of the raw event or not
 
   private:
-    AliRawReaderDate(const AliRawReaderDate& rawReader);
-    AliRawReaderDate& operator = (const AliRawReaderDate& rawReader);
+    AliRawReaderDate(const AliRawReaderDate& rawReader); // Not implemented
+    AliRawReaderDate& operator = (const AliRawReaderDate& rawReader); // Not implemented
 
     ClassDef(AliRawReaderDate, 0) // class for reading raw digits from a root file
 };
