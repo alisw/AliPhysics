@@ -558,6 +558,7 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   AliPIDResponse *PIDResponse=inputHandler->GetPIDResponse();
   PIDResponse->SetTOFResponse(aodEvent,AliPIDResponse::kTOF_T0);
+  PIDResponse->GetTOFResponse().SetTOFtailAllPara(-3,1.1);
 
 //   PIDResponse->GetTOFResponse().SetTrackParameter(0,0.);
 //   PIDResponse->GetTOFResponse().SetTrackParameter(1,0.);
