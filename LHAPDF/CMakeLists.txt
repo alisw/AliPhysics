@@ -105,7 +105,7 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx ${CSRCS} ${FSRCS})
 
 # Additional compilation flags
-set(CMAKE_C_FLAGS  ${CMAKE_C_FLAGS} "-ansi")
+set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -ansi")
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g" Fortran_FORMAT FREE )
 add_definitions(-DDEFAULTPREFIXPATH="NONE"  -DDEFAULTLHAPATH="${CMAKE_SOURCE_DIR}/LHAPDF/PDFsets")
 
