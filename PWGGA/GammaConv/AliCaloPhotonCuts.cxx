@@ -818,14 +818,13 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
 		if (propagated){
 			Float_t dR2 = dPhi*dPhi + dEta*dEta;
             if(fHistDistanceTrackToClusterBeforeQA)fHistDistanceTrackToClusterBeforeQA->Fill(TMath::Sqrt(dR2));
-            if(fHistDistanceTrackToClusterBeforeQA)fHistDistanceTrackToClusterBeforeQA->Fill(TMath::Sqrt(dR2));
             if(fHistClusterdEtadPhiBeforeQA) fHistClusterdEtadPhiBeforeQA->Fill(dEta, dPhi);
 
             Float_t clusM02 = (Float_t)cluster->GetM02();
             Float_t clusM20 = (Float_t)cluster->GetM20();
             if(fExtendedMatching){
-                if(fHistClusterdEtadPhiPosTracksBeforeQA && inTrack->Charge() > 0) fHistClusterdEtadPhiPosTracksBeforeQA->Fill(dEta, dPhi);
-                if(fHistClusterdEtadPhiNegTracksBeforeQA && inTrack->Charge() < 0) fHistClusterdEtadPhiNegTracksBeforeQA->Fill(dEta, dPhi);
+                if(inTrack->Charge() > 0) fHistClusterdEtadPhiPosTracksBeforeQA->Fill(dEta, dPhi);
+                if(inTrack->Charge() < 0) fHistClusterdEtadPhiNegTracksBeforeQA->Fill(dEta, dPhi);
                 fHistClusterdEtadPtBeforeQA->Fill(dEta, inTrack->Pt());
                 fHistClusterdPhidPtBeforeQA->Fill(dPhi, inTrack->Pt());
                 if(abs(dPhi) > 0.05) fHistClusterM20Pt_dPhiBeforeQA->Fill(clusM20, inTrack->Pt());
