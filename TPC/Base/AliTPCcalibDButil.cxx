@@ -57,6 +57,7 @@
 #include "AliRelAlignerKalman.h"
 #include "TTree.h"
 #include "TROOT.h"
+#include "TKey.h"
 
 const Float_t kAlmost0=1.e-30;
 
@@ -3313,11 +3314,85 @@ TTree* AliTPCcalibDButil::ConnectPulserTrees(TString baseDir, TTree *tMain)
                     TString::Format("(%s.CETmean.fElements-%s.CETmean_LTM)",
                                     friendName.Data(),friendName.Data()).Data());    
     tMain->SetAlias((friendName+".CETmean_MedianDelta").Data(),
-                    TString::Format("(%s.CETmean.fElements-s.CETmean_Median)",
+                    TString::Format("(%s.CETmean.fElements-%s.CETmean_Median)",
                                     friendName.Data(),friendName.Data()).Data());
     tMain->SetAlias((friendName+".CETmean_MeanDelta").Data(),
                     TString::Format("(%s.CETmean.fElements-%s.CETmean_Mean)",
                                     friendName.Data(),friendName.Data()).Data());        
   }
+  return tMain;
 }  
   
+
+TTree* AliTPCcalibDButil::ConnectDistortionTrees(TString baseDir, TTree *tMain){
+  //
+  // baseDir:   Base directory with Distortion information
+  // TTrees are added to the base tree as a friend tree
+  // If base tree not provide - first tree from list is used as base
+  //  
+  // === add the calibDistortion trees ======================================
+  //TString inputTreesDistortionCalib       = gSystem->GetFromPipe(Form("ls %s/calibDistortion/20*/*.tree.root",baseDir.Data()));
+  // TString baseDir="$NOTES/reconstruction/distortionFit/"; TTree *tMain=0;
+
+
+  TString inputTreesDistortionCalib       = gSystem->GetFromPipe(Form("find  %s -iname \"calibTimeResHisto.root\"",baseDir.Data()));
+  TObjArray *arrInputTreesDistortionCalib = inputTreesDistortionCalib.Tokenize("\n");  
+  //
+  for (Int_t itree=0; itree<arrInputTreesDistortionCalib->GetEntriesFast(); ++itree) {
+    TFile *finput= TFile::Open(arrInputTreesDistortionCalib->At(itree)->GetName());
+    TString strFile=arrInputTreesDistortionCalib->At(itree)->GetName();
+    TObjArray *path=strFile.Tokenize("/");
+    Int_t plength=path->GetEntries();
+    if (!finput) continue;
+    TList* list = finput->GetListOfKeys();
+    Int_t nkeys=list->GetEntries();
+    for (Int_t ikey=0; ikey<nkeys; ikey++){
+      TKey * key = (TKey*)list->At(ikey);
+      if (strstr(key->GetClassName(),"TTree")==0) continue;
+      TTree * tree  = dynamic_cast<TTree*>(finput->Get(list->At(ikey)->GetName()));
+      if (!tree) continue;
+      TString friendName=TString::Format("%s.%s.%s",path->At(plength-3)->GetName(),path->At(plength-2)->GetName(), tree->GetName()); 
+      ::Info("AliTPCcalibDButil::ConnectDistortionTrees","%s",friendName.Data());  
+      if (tMain==0) tMain=tree;
+      tMain->AddFriend(tree,friendName.Data());  
+    }
+  }
+  //  tMain->SetAlias("");
+  return tMain;
+}  
+  
+
+//_____________________________________________________________________________________
+TTree* AliTPCcalibDButil::ConnectCalPadTrees(TString baseDir, TString pattern, TTree *tMain)
+{
+  //
+  // baseDir:   Base directory with per Pad information
+  // TTrees are added to the base tree as a friend tree
+  /* Example
+     TString baseDir="/hera/alice/fsozzi/summarymaps/calib/";  // prefix directory with calibration
+     TString pattern="QA root"; 
+  */
+  //  
+  // === add the calibPulser trees ======================================
+  TString inputTreesCalPad       = gSystem->GetFromPipe(Form("ls %s/%s",baseDir.Data(), pattern.Data()));
+  TObjArray *arrInputTreesCalPad = inputTreesCalPad.Tokenize("\n");
+  //
+  for (Int_t itree=0; itree<arrInputTreesCalPad->GetEntriesFast(); ++itree) {
+    TFile *fin2 = TFile::Open(arrInputTreesCalPad->At(itree)->GetName());
+    TTree *tin = (TTree*)fin2->Get("calPads");
+    gROOT->cd();
+    TString friendName=arrInputTreesCalPad->At(itree)->GetName();
+    friendName.ReplaceAll(baseDir.Data(),"");
+    friendName.ReplaceAll("/",".");
+    friendName.ReplaceAll(".root","");
+    friendName.ReplaceAll("^/","");
+    printf("%s\n", friendName.Data());
+    ::Info("AliTPCcalibDButil::ConnectCalPadTrees","%s",friendName.Data());  
+    if (tMain==0) tMain=tin;
+    tMain->AddFriend(tin,friendName.Data());  
+  }
+  return tMain;
+} 
+  
+
+
