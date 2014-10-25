@@ -33,6 +33,7 @@
 #include "AliMixedEvent.h"
 #include "AliESDEvent.h"
 #include "AliESDtrackCuts.h"
+#include "AliLog.h"
 
 ClassImp(AliCaloTrackESDReader)
 
@@ -192,8 +193,8 @@ void AliCaloTrackESDReader::SetInputOutputMCEvent(AliVEvent* esd,
     }
     else
     {
-      printf("AliCaloTrackESDReader::SetInputOutputMCEvent() - MultiEventHandler is NULL");
-      abort();
+      AliFatal("MultiEventHandler is NULL");
+      return;
     }
   }
   if (strcmp(esd->GetName(),"AliESDEvent") == 0)
@@ -203,7 +204,7 @@ void AliCaloTrackESDReader::SetInputOutputMCEvent(AliVEvent* esd,
   
   if(!tesd)
   {
-    AliFatal(Form("AliCaloTrackESDReader::SetInputOutputMCEvent() - STOP ::Wrong reader, here only ESDs. Input name: %s != AliESDEvent \n",esd->GetName()));
+    AliFatal(Form("STOP ::Wrong reader, here only ESDs. Input name: %s != AliESDEvent",esd->GetName()));
   }
   
   SetInputEvent(esd);

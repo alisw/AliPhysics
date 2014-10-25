@@ -482,8 +482,7 @@ void AliAnalysisTaskCounter::FinishTaskOutput()
   
   if(histStat)
     fOutputContainer->Add(histStat);
-  else if(DebugLevel() > 1)
-    printf("AliAnalysisTaskCounter::FinishTaskOutput() - Stat histogram not available check, \n if ESDs, that AliPhysicsSelection was on, \n if AODs, if EventStat_temp.root exists \n");
+  else AliInfo("Stat histogram not available check, \n if ESDs, that AliPhysicsSelection was on, \n if AODs, if EventStat_temp.root exists");
 
   if(histBin0)
     fOutputContainer->Add(histBin0); 
@@ -521,7 +520,7 @@ Bool_t AliAnalysisTaskCounter::Notify()
   
   if(!fh1Xsec||!fh1Trials)
   {
-    Printf("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
+    AliInfo(Form("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__));
     return kFALSE;
   }
   
@@ -538,9 +537,9 @@ Bool_t AliAnalysisTaskCounter::Notify()
   
   fh1Trials->Fill("#sum{ntrials}",trials);
   
-  printf("AliAnalysisTaskCounter::Notify() - xs %f, trial %f, avg trials %f\n",xsection,trials, fAvgTrials);
+  AliInfo(Form("xs %f, trial %f, avg trials %f\n",xsection,trials, fAvgTrials));
   
-  if(fDebug) Printf("Reading File %s",fInputHandler->GetTree()->GetCurrentFile()->GetName());
+  AliDebug(1,Form("Reading File %s",fInputHandler->GetTree()->GetCurrentFile()->GetName()));
   
   return kTRUE;
 }

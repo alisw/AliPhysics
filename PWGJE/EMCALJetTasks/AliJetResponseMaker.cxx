@@ -39,6 +39,8 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fZAxis(0),
   fIsJet1Rho(kFALSE),
   fIsJet2Rho(kFALSE),
+  fHistRejectionReason1(0),
+  fHistRejectionReason2(0),
   fHistJets1(0),
   fHistJets2(0),
   fHistMatching(0),
@@ -118,6 +120,8 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fZAxis(0),
   fIsJet1Rho(kFALSE),
   fIsJet2Rho(kFALSE),
+  fHistRejectionReason1(0),
+  fHistRejectionReason2(0),
   fHistJets1(0),
   fHistJets2(0),
   fHistMatching(0),
@@ -853,6 +857,20 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   else fIsJet1Rho = kTRUE;
   if (jets2->GetRhoName().IsNull()) fIsJet2Rho = kFALSE;
   else fIsJet2Rho = kTRUE;
+
+  fHistRejectionReason1 = new TH2F("fHistRejectionReason1", "fHistRejectionReason1", 32, 0, 32, 100, 0, 250);
+  fHistRejectionReason1->GetXaxis()->SetTitle("Rejection reason");
+  fHistRejectionReason1->GetYaxis()->SetTitle("p_{T,jet} (GeV/c)");
+  fHistRejectionReason1->GetZaxis()->SetTitle("counts");
+  SetRejectionReasonLabels(fHistRejectionReason1->GetXaxis());
+  fOutput->Add(fHistRejectionReason1);
+
+  fHistRejectionReason2 = new TH2F("fHistRejectionReason2", "fHistRejectionReason2", 32, 0, 32, 100, 0, 250);
+  fHistRejectionReason2->GetXaxis()->SetTitle("Rejection reason");
+  fHistRejectionReason2->GetYaxis()->SetTitle("p_{T,jet} (GeV/c)");
+  fHistRejectionReason2->GetZaxis()->SetTitle("counts");
+  SetRejectionReasonLabels(fHistRejectionReason2->GetXaxis());
+  fOutput->Add(fHistRejectionReason2);
 
   if (fHistoType==0)
     AllocateTH2();
@@ -1617,12 +1635,16 @@ Bool_t AliJetResponseMaker::FillHistograms()
 
     AliDebug(2,Form("Processing jet (2) %d", jets2->GetCurrentID()));
 
+    if (jet2->Pt() < jets2->GetJetPtCut()) continue;
+
     Double_t ptLeading2 = jets2->GetLeadingHadronPt(jet2);
     Double_t corrpt2 = jet2->Pt() - jets2->GetRhoVal() * jet2->Area();
 
     if (jets2->AcceptJet(jet2))
       FillJetHisto(jet2->Phi(), jet2->Eta(), jet2->Pt(), jet2->Area(), jet2->NEF(), ptLeading2, 
 		   corrpt2, jet2->MCPt(), 2);
+    else
+      fHistRejectionReason2->Fill(jets2->GetRejectionReasonBitPosition(), jet2->Pt());
 
     jet1 = jet2->MatchedJet();
 
@@ -1655,7 +1677,11 @@ Bool_t AliJetResponseMaker::FillHistograms()
   }
 
   jets1->ResetCurrentID();
-  while ((jet1 = jets1->GetNextAcceptJet())) {
+  while ((jet1 = jets1->GetNextJet())) {
+    if (!jets1->AcceptJet(jet1)) {
+      fHistRejectionReason1->Fill(jets1->GetRejectionReasonBitPosition(), jet1->Pt());
+      continue;
+    }
     if (jet1->MCPt() < fMinJetMCPt) continue;
     AliDebug(2,Form("Processing jet (1) %d", jets1->GetCurrentID()));
 

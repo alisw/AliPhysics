@@ -37,13 +37,14 @@ ClassImp(AliAnaGeneratorKine)
 //__________________________________________
 AliAnaGeneratorKine::AliAnaGeneratorKine() : 
 AliAnaCaloTrackCorrBaseClass(), 
-fTriggerDetector(""),
+fTriggerDetector(),  fTriggerDetectorString(),
 fFidCutTrigger(0),
 fMinChargedPt(0),    fMinNeutralPt(0),
 fStack(0),
 fParton2(0),         fParton3(0), 
-fParton6(0),         fParton7(0),   
+fParton6(0),         fParton7(0),
 fJet6(),             fJet7(),
+fTrigger(),          fLVTmp(),
 fPtHard(0),
 fhPtHard(0),         fhPtParton(0),    fhPtJet(0),
 fhPtPartonPtHard(0), fhPtJetPtHard(0), fhPtJetPtParton(0),
@@ -83,8 +84,7 @@ fhPtPhoton(0),       fhPtPi0(0)
 }
 
 //___________________________________________________________________________
-Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(TLorentzVector trigger,
-                                                      Int_t   indexTrig,
+Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
                                                       Int_t   pdgTrig,
                                                       Bool_t  leading[4],
                                                       Bool_t  isolated[4],
@@ -92,7 +92,7 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(TLorentzVector trigger,
 {
   //Correlate trigger with partons or jets, get z
   
-  if(GetDebug() > 1) printf("AliAnaGeneratorKine::CorrelateWithPartonOrJet() - Start \n");
+  AliDebug(1,"Start");
   
   //Get the index of the mother
   iparton =  (fStack->Particle(indexTrig))->GetFirstMother();
@@ -100,7 +100,11 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(TLorentzVector trigger,
   while (iparton > 7) 
   {
     iparton   = mother->GetFirstMother();
-    if(iparton < 0) { printf("AliAnaGeneratorKine::CorrelateWithPartonOrJet() - Negative index, skip event\n"); return kFALSE; }
+    if(iparton < 0)
+    {
+      AliWarning("Negative index, skip event");
+      return kFALSE;
+    }
     mother = fStack->Particle(iparton);
   }
   
@@ -112,7 +116,7 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(TLorentzVector trigger,
     return kFALSE; 
   }
   
-  Float_t ptTrig   = trigger.Pt(); 
+  Float_t ptTrig   = fTrigger.Pt(); 
   Float_t partonPt = fParton6->Pt();
   Float_t jetPt    = fJet6.Pt();
   if(iparton==7)
@@ -220,7 +224,7 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(TLorentzVector trigger,
     } // photon
   } // conditions loop
   
-  if(GetDebug() > 1) printf("AliAnaGeneratorKine::CorrelateWithPartonOrJet() - End TRUE \n");
+  AliDebug(1,"End TRUE");
   
   return kTRUE;
 }
@@ -578,15 +582,12 @@ void  AliAnaGeneratorKine::GetPartonsAndJets()
 {
   // Fill data members with partons,jets and generated pt hard 
   
-  if(GetDebug() > 1) printf("AliAnaGeneratorKine::GetPartonsAndJets() - Start \n");
+  AliDebug(1,"Start");
 
   fStack =  GetMCStack() ;
   
   if(!fStack) 
-  {
-    printf("AliAnaGeneratorKine::MakeAnalysisFillHistograms() - No Stack available, STOP\n");
-    abort();
-  }
+    AliFatal("No Stack available, STOP");
   
   fParton2 = fStack->Particle(2) ;
   fParton3 = fStack->Particle(3) ;
@@ -622,25 +623,25 @@ void  AliAnaGeneratorKine::GetPartonsAndJets()
     {
       pygeh->TriggerJet(ijet, tmpjet);
       
-      TLorentzVector jet(tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3]);
-      Float_t jphi = jet.Phi();
+      fLVTmp.SetPxPyPzE(tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3]);
+      Float_t jphi = fLVTmp.Phi();
       if(jphi < 0) jphi +=TMath::TwoPi();
       
-      Double_t radius6 = GetIsolationCut()->Radius(fParton6->Eta(), p6phi, jet.Eta() , jphi) ;
-      Double_t radius7 = GetIsolationCut()->Radius(fParton7->Eta(), p7phi, jet.Eta() , jphi) ;
+      Double_t radius6 = GetIsolationCut()->Radius(fParton6->Eta(), p6phi, fLVTmp.Eta() , jphi) ;
+      Double_t radius7 = GetIsolationCut()->Radius(fParton7->Eta(), p7phi, fLVTmp.Eta() , jphi) ;
       
       //printf("jet %d: pt %2.2f, eta %2.2f, phi %2.2f, r6 %2.2f, r7 %2.2f\n",ijet,jet.Pt(),jet.Eta(),jphi,radius6, radius7);
       
       if (radius6 < jet6R)
       {
         jet6R = radius6;
-        fJet6 = jet;
+        fJet6 = fLVTmp;
         
       }
       if (radius7 < jet7R) 
       {
         jet7R = radius7;
-        fJet7 = jet;
+        fJet7 = fLVTmp;
       }
             
     } // jet loop
@@ -663,13 +664,12 @@ void  AliAnaGeneratorKine::GetPartonsAndJets()
   fhPtJetPtParton ->Fill(fPtHard, fJet6.Pt()/fParton6->Pt());
   fhPtJetPtParton ->Fill(fPtHard, fJet7.Pt()/fParton7->Pt());
   
-  if(GetDebug() > 1) printf("AliAnaGeneratorKine::GetPartonsAndJets() - End \n");
+  AliDebug(1,"End");
 
 }
 
 //_____________________________________________________
-void AliAnaGeneratorKine::GetXE(TLorentzVector trigger,
-                                Int_t   indexTrig,
+void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
                                 Int_t   pdgTrig,
                                 Bool_t  leading[4],
                                 Bool_t  isolated[4],
@@ -678,13 +678,11 @@ void AliAnaGeneratorKine::GetXE(TLorentzVector trigger,
 
   // Calculate the real XE and the UE XE
 
-  if(GetDebug() > 1) printf("AliAnaGeneratorKine::GetXE() - Start \n");
+  AliDebug(1,"Start");
   
-  Float_t ptTrig  = trigger.Pt();
-  Float_t phiTrig = trigger.Phi();
+  Float_t ptTrig  = fTrigger.Pt();
+  Float_t phiTrig = fTrigger.Phi();
   if(phiTrig < 0 ) phiTrig += TMath::TwoPi();
-  
-  TLorentzVector chPartLV;
   
   //Loop on primaries, start from position 8, no partons
   for(Int_t ipr = 8; ipr < fStack->GetNprimary(); ipr ++ )
@@ -709,8 +707,8 @@ void AliAnaGeneratorKine::GetXE(TLorentzVector trigger,
     
     if( pt < fMinChargedPt)    continue ;
     
-    particle->Momentum(chPartLV);
-    Bool_t inTPC = GetFiducialCut()->IsInFiducialCut(chPartLV,"CTS") ;
+    particle->Momentum(fLVTmp);
+    Bool_t inTPC = GetFiducialCut()->IsInFiducialCut(fLVTmp.Eta(),fLVTmp.Phi(),kCTS) ;
     
     if(!inTPC) continue;
     
@@ -790,7 +788,7 @@ void AliAnaGeneratorKine::GetXE(TLorentzVector trigger,
     
   } // primary loop
 
-  if(GetDebug() > 1) printf("AliAnaGeneratorKine::GetPartonsAndJets() - End \n");
+  AliDebug(1,"End");
 
 }
 
@@ -801,7 +799,7 @@ void AliAnaGeneratorKine::InitParameters()
   //Initialize the parameters of the analysis.
   AddToHistogramsName("AnaGenKine_");
   
-  fTriggerDetector = "EMCAL";
+  fTriggerDetector = kEMCAL;
   
   fMinChargedPt    = 0.2;
   fMinNeutralPt    = 0.3;
@@ -809,8 +807,7 @@ void AliAnaGeneratorKine::InitParameters()
 }
 
 //_____________________________________________________________________
-void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
-                                                Int_t indexTrig,
+void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
                                                 Int_t pdgTrig,
                                                 Bool_t leading[4],
                                                 Bool_t isolated[4]) 
@@ -818,7 +815,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
   // Check if the trigger is the leading particle and if it is isolated
   // In case of neutral particles check all neutral or neutral in EMCAL acceptance
   
-  if(GetDebug() > 1) printf("AliAnaGeneratorKine::GetIsLeadingAndIsolated() - Start \n");
+  AliDebug(1,"Start");
 
   Float_t ptMaxCharged       = 0; // all charged
   Float_t ptMaxNeutral       = 0; // all neutral
@@ -836,9 +833,9 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
   isolated[2] = 0;
   isolated[3] = 0;
   
-  Float_t ptTrig  = trigger.Pt();
-  Float_t etaTrig = trigger.Eta();
-  Float_t phiTrig = trigger.Phi();
+  Float_t ptTrig  = fTrigger.Pt();
+  Float_t etaTrig = fTrigger.Eta();
+  Float_t phiTrig = fTrigger.Phi();
   if(phiTrig < 0 ) phiTrig += TMath::TwoPi();
 
   // Minimum track or cluster energy
@@ -881,7 +878,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
     if( status != 1) continue ;
 
     // Select all particles in at least the TPC acceptance
-    Bool_t inTPC = GetFiducialCut()->IsInFiducialCut(trigger,"CTS") ;
+    Bool_t inTPC = GetFiducialCut()->IsInFiducialCut(fTrigger.Eta(),fTrigger.Phi(),kCTS) ;
     if(!inTPC) continue;
     
     Float_t pt     = particle->Pt();
@@ -922,7 +919,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
       }
       
       //Calorimeter acceptance
-      Bool_t inCalo = GetFiducialCut()->IsInFiducialCut(trigger,GetCalorimeter()) ;
+      Bool_t inCalo = GetFiducialCut()->IsInFiducialCut(fTrigger.Eta(),fTrigger.Phi(),GetCalorimeter()) ;
       if(!inCalo) continue;
       
       if( ptMaxNeutEMCAL < pt ) ptMaxNeutEMCAL = pt;
@@ -1028,7 +1025,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
     } // photon
   } // conditions loop
  
-  if(GetDebug() > 1) printf("AliAnaGeneratorKine::IsLeadingAndIsolated() - End \n");
+  AliDebug(1,"End");
   
 }
   
@@ -1037,9 +1034,7 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
 {
   //Particle-Parton Correlation Analysis, fill histograms
   
-  if(GetDebug() > 1) printf("AliAnaGeneratorKine::MakeAnalysisFillHistograms() - Start \n");
-
-  TLorentzVector trigger;
+  AliDebug(1,"Start");
   
   GetPartonsAndJets();
   
@@ -1062,18 +1057,17 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     // If not photon, trigger on pi0
     else if(pdgTrig != 111) continue;
     
-    
     // Acceptance and kinematical cuts
-    if( ptTrig < GetMinPt() )    continue ;
+    if( ptTrig < GetMinPt() ) continue ;
     
     // Recover the kinematics:
-    particle->Momentum(trigger);
+    particle->Momentum(fTrigger);
     
-    Bool_t in = GetFiducialCutForTrigger()->IsInFiducialCut(trigger,fTriggerDetector) ;
+    Bool_t in = GetFiducialCutForTrigger()->IsInFiducialCut(fTrigger.Eta(),fTrigger.Phi(),fTriggerDetector) ;
     if(! in ) continue ;
 
-    if( GetDebug() > 2) printf("Select trigger particle %d: pdg %d status %d, mother index %d, pT %2.2f, eta %2.2f, phi %2.2f \n",
-                               ipr, pdgTrig, statusTrig, imother, ptTrig, particle->Eta(), particle->Phi()*TMath::RadToDeg());
+    AliDebug(1,Form("Select trigger particle %d: pdg %d status %d, mother index %d, pT %2.2f, eta %2.2f, phi %2.2f",
+                    ipr, pdgTrig, statusTrig, imother, ptTrig, particle->Eta(), particle->Phi()*TMath::RadToDeg()));
     
 //    if(pdgTrig==111)
 //    {
@@ -1087,16 +1081,49 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     Bool_t leading[4] ;
     Bool_t isolated[4] ;
 
-    IsLeadingAndIsolated(trigger, ipr, pdgTrig, leading, isolated);
+    IsLeadingAndIsolated(ipr, pdgTrig, leading, isolated);
     
     Int_t iparton = -1;
-    Int_t ok = CorrelateWithPartonOrJet(trigger, ipr, pdgTrig, leading, isolated, iparton); 
+    Int_t ok = CorrelateWithPartonOrJet(ipr, pdgTrig, leading, isolated, iparton);
     if(!ok) continue;
     
-    GetXE(trigger,ipr,pdgTrig,leading,isolated,iparton) ;    
+    GetXE(ipr,pdgTrig,leading,isolated,iparton) ;    
     
   }
   
-  if(GetDebug() > 1) printf("AliAnaGeneratorKine::MakeAnalysisFillHistograms() - End fill histograms \n");
+  AliDebug(1,"End fill histograms");
   
-} 
+}
+
+//_________________________________________________________
+void AliAnaGeneratorKine::SetTriggerDetector(TString & det)
+{
+  // Set the detrimeter for the analysis
+  
+  fTriggerDetectorString = det;
+  
+  if     (det=="EMCAL") fTriggerDetector = kEMCAL;
+  else if(det=="PHOS" ) fTriggerDetector = kPHOS;
+  else if(det=="CTS")   fTriggerDetector = kCTS;
+  else if(det=="DCAL")  fTriggerDetector = kDCAL;
+  else if(det.Contains("DCAL") && det.Contains("PHOS")) fTriggerDetector = kDCALPHOS;
+  else AliFatal(Form("Detector < %s > not known!", det.Data()));
+  
+}
+
+//_____________________________________________________
+void AliAnaGeneratorKine::SetTriggerDetector(Int_t det)
+{
+  // Set the detrimeter for the analysis
+  
+  fTriggerDetector = det;
+  
+  if     (det==kEMCAL)    fTriggerDetectorString = "EMCAL";
+  else if(det==kPHOS )    fTriggerDetectorString = "PHOS";
+  else if(det==kCTS)      fTriggerDetectorString = "CTS";
+  else if(det==kDCAL)     fTriggerDetectorString = "DCAL";
+  else if(det==kDCALPHOS) fTriggerDetectorString = "DCAL_PHOS";
+  else AliFatal(Form("Detector < %d > not known!", det));
+  
+}
+

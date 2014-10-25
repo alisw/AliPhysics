@@ -37,7 +37,6 @@
 #include "AliVCaloCells.h" 
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
-#include "AliAnalysisManager.h"
 #include "AliAODPWG4Particle.h"
 
 ClassImp(AliAnaCaloTrackCorrBaseClass)
@@ -47,7 +46,7 @@ ClassImp(AliAnaCaloTrackCorrBaseClass)
 AliAnaCaloTrackCorrBaseClass::AliAnaCaloTrackCorrBaseClass() : 
 TObject(), 
 fDataMC(0),                   fDebug(0),
-fCalorimeter(""),
+fCalorimeter(-1),             fCalorimeterString(""),
 fCheckFidCut(0),              fCheckRealCaloAcc(0),
 fCheckCaloPID(0),             fRecalculateCaloPID(0), 
 fMinPt(0),                    fMaxPt(0),
@@ -93,26 +92,28 @@ void AliAnaCaloTrackCorrBaseClass::AddAODParticle(AliAODPWG4Particle pc)
 {
   //Put AOD calo cluster in the AODParticleCorrelation array
   
-  if(fOutputAODBranch){
-    
-    Int_t i = fOutputAODBranch->GetEntriesFast();
-    //new((*fOutputAODBranch)[i])  AliAODPWG4Particle(pc);
-    if(strcmp(fOutputAODBranch->GetClass()->GetName(),"AliAODPWG4Particle")==0)
-      new((*fOutputAODBranch)[i])  AliAODPWG4Particle(pc);
-    else   if(strcmp(fOutputAODBranch->GetClass()->GetName(),"AliAODPWG4ParticleCorrelation")==0)
-      new((*fOutputAODBranch)[i])  AliAODPWG4ParticleCorrelation(pc);
-    else {
-      printf("AliAnaCaloTrackCorrBaseClass::AddAODParticle() - Cannot add an object of type < %s >, to the AOD TClonesArray \n",  
-             fOutputAODBranch->GetClass()->GetName());
-      abort();    
-    }
-  }
-  else {
-    printf(" AliAnaCaloTrackCorrBaseClass::AddAODParticle() - No AOD branch available!!!\n");
-    abort();
+  if(!fOutputAODBranch)
+  {
+    AliFatal("No AOD branch available!!!\n");
+    return; // coverity
   }
   
-}	
+  Int_t i = fOutputAODBranch->GetEntriesFast();
+  //new((*fOutputAODBranch)[i])  AliAODPWG4Particle(pc);
+  if     (strcmp(fOutputAODBranch->GetClass()->GetName(),"AliAODPWG4Particle")==0)
+  {
+    new((*fOutputAODBranch)[i])  AliAODPWG4Particle(pc);
+  }
+  else if(strcmp(fOutputAODBranch->GetClass()->GetName(),"AliAODPWG4ParticleCorrelation")==0)
+  {
+    new((*fOutputAODBranch)[i])  AliAODPWG4ParticleCorrelation(pc);
+  }
+  else
+  {
+    AliFatal(Form("Cannot add an object of type < %s >, to the AOD TClonesArray \n", fOutputAODBranch->GetClass()->GetName()));
+  }
+  
+}
 
 //__________________________________________________________________________________________
 Int_t AliAnaCaloTrackCorrBaseClass::CheckMixedEventVertex(Int_t caloLabel, Int_t trackLabel)
@@ -149,7 +150,7 @@ void AliAnaCaloTrackCorrBaseClass::ConnectInputOutputAODBranches()
   //Recover ouput and input AOD pointers for each event in the maker
 	
   //Delta AODs
-  if(fDebug > 3) printf("AliAnaCaloTrackCorrBaseClass::ConnectInputOutputAODBranches() - Connect Input with name: <%s>; Connect output with name <%s>\n",fInputAODName.Data(),fOutputAODName.Data());
+  AliDebug(3,Form("AliAnaCaloTrackCorrBaseClass::ConnectInputOutputAODBranches() - Connect Input with name: <%s>; Connect output with name <%s>\n",fInputAODName.Data(),fOutputAODName.Data()));
   
   //Get the AOD handler, if output AOD is created use it, if not get the branches from the input which should be deltaAODs
   AliAODHandler* aodHandler = 0x0;
@@ -163,46 +164,54 @@ void AliAnaCaloTrackCorrBaseClass::ConnectInputOutputAODBranches()
     fOutputAODBranch =  (TClonesArray *) (fReader->GetAODBranchList())->FindObject(fOutputAODName);
     fInputAODBranch  =  (TClonesArray *) (fReader->GetAODBranchList())->FindObject(fInputAODName);	
   }
-  else if (aodHandler->GetExtensions()) { 
-    
+  else if (aodHandler->GetExtensions())
+  {
     AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject(GetReader()->GetDeltaAODFileName()); 
-    if(ext){
+    if(ext)
+    {
       AliAODEvent *aodEvent = ext->GetAOD(); 
       if(fNewAOD)fOutputAODBranch = (TClonesArray*) aodEvent->FindListObject(fOutputAODName);
       fInputAODBranch = (TClonesArray*) aodEvent->FindListObject(fInputAODName); 	  
       if(!fOutputAODBranch && fNewAOD) fOutputAODBranch =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fOutputAODName);
       if(!fInputAODBranch)  fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);
     }
-    else{//If no Delta AODs, kept in standard branch, to revise. 
-      if(fNewAOD && fReader->GetOutputEvent()) {
+    else
+    { // If no Delta AODs, kept in standard branch, to revise.
+      if(fNewAOD && fReader->GetOutputEvent())
+      {
         fOutputAODBranch =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fOutputAODName);
         fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);	
       }
-      else {
+      else
+      {
         fInputAODBranch  =  (TClonesArray *) fReader->GetInputEvent()->FindListObject(fInputAODName);	
         if(!fInputAODBranch && fReader->GetOutputEvent() ) 
           fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);//Try the output event.
       }
     }
   }
-  else{ //If no Delta AODs, kept in standard branch
-    if(fNewAOD && fReader->GetOutputEvent()) {
+  else
+  { // If no Delta AODs, kept in standard branch
+    if(fNewAOD && fReader->GetOutputEvent())
+    {
       fOutputAODBranch =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fOutputAODName);
       fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);	
     }
-    else{ 
+    else
+    {
       fInputAODBranch  =  (TClonesArray *) fReader->GetInputEvent()->FindListObject(fInputAODName);
       if(!fInputAODBranch && fReader->GetOutputEvent())  
         fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);//Try the output event.
     }
   }
   
-  if(GetDebug() > 1){
-    if(fNewAOD && !fOutputAODBranch) 
-      printf(" AliAnaCaloTrackCorrBaseClass::ConnectInputOutputAODBranches() - Output Branch <%s>, not found!\n",fOutputAODName.Data());
-    if(!fNewAOD && !fInputAODBranch) 
-      printf(" AliAnaCaloTrackCorrBaseClass::ConnectInputOutputAODBranches() - Input Branch  <%s>, not found!\n",fInputAODName.Data());
-  }
+//  if(GetDebug() > 1)
+//  {
+//    if(fNewAOD && !fOutputAODBranch) 
+//      AliInfo(Form("Output Branch <%s>, not found!\n",fOutputAODName.Data()));
+//    if(!fNewAOD && !fInputAODBranch) 
+//      AliInfo(Form("Input Branch  <%s>, not found!\n",fInputAODName.Data()));
+//  }
 }
 
 //_____________________________________________________________________________________
@@ -235,7 +244,8 @@ TClonesArray * AliAnaCaloTrackCorrBaseClass::GetAODBranch(const TString & aodNam
 	//Recover ouput and input AOD pointers for each event in the maker
 	
 	//Delta AODs
-	if(fDebug > 3) printf("AliAnaCaloTrackCorrBaseClass::GetAODBranch() - Get Input Branch with name: <%s>; \n",aodName.Data());
+  
+	AliDebug(3,Form("AliAnaCaloTrackCorrBaseClass::GetAODBranch() - Get Input Branch with name: <%s>; \n",aodName.Data()));
 	
   //Get the AOD handler, if output AOD is created use it, if not get the branches from the input which should be deltaAODs
   AliAODHandler* aodHandler = 0x0;
@@ -345,7 +355,8 @@ TString  AliAnaCaloTrackCorrBaseClass::GetBaseParametersList()
   parList+=onePar ;
   snprintf(onePar,buffersize,"fInputAODName  =%s Input AOD name \n",fInputAODName.Data()) ;
   parList+=onePar ;	
-  if(fNewAOD){
+  if(fNewAOD)
+  {
     snprintf(onePar,buffersize,"fOutputAODName  =%s Output AOD name \n",fOutputAODName.Data()) ;
     parList+=onePar ;	
     snprintf(onePar,buffersize,"fOutputAODClassName  =%s Output AOD class name \n",fOutputAODClassName.Data()) ;
@@ -365,8 +376,8 @@ TClonesArray * AliAnaCaloTrackCorrBaseClass::GetCreateOutputAODBranch()
 {
   //Create AOD branch filled in the analysis
   
-  printf("Create AOD branch of %s objects and with name < %s >\n",
-         fOutputAODClassName.Data(),fOutputAODName.Data()) ;
+  AliInfo(Form("Create AOD branch of %s objects and with name < %s >\n",
+          fOutputAODClassName.Data(),fOutputAODName.Data())) ;
   
   TClonesArray * aodBranch = new TClonesArray(fOutputAODClassName, 0);
   aodBranch->SetName(fOutputAODName);
@@ -425,7 +436,7 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetTrackMultiplicityBin() const
     if(trackMult >= fTrackMultBins[ibin] && trackMult < fTrackMultBins[ibin+1]) return ibin;
   }
   
-  printf("AliAnaCaloTrackCorrBaseClass::GetTrackMultiplicityBin() - Bin not found for track multiplicity %d\n",trackMult);
+  AliWarning(Form("Bin not found for track multiplicity %d",trackMult));
   
   return -1;
 }
@@ -453,7 +464,7 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin() const
       if(curCentrBin==GetNCentrBin())
       {
         curCentrBin = GetNCentrBin()-1;
-        printf("AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin() - Centrality = %d, put it in last bin \n",GetEventCentrality());
+        AliDebug(1,Form("Centrality = %d, put it in last bin \n",GetEventCentrality()));
       }
     }
     else
@@ -462,9 +473,8 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin() const
       if(curCentrBin==GetNCentrBin()) curCentrBin = GetNCentrBin()-1;
     }
     
-    if(GetDebug() > 0 )
-      printf("AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin() - %d, centrality %d, n bins %d, max bin from centrality %d\n",
-             curCentrBin, GetEventCentrality(), GetNCentrBin(), GetReader()->GetCentralityOpt());
+    AliDebug(1,Form("Current CentrBin %d, centrality %d, n bins %d, max bin from centrality %d",
+                    curCentrBin, GetEventCentrality(), GetNCentrBin(), GetReader()->GetCentralityOpt()));
   }
   
   return curCentrBin;
@@ -484,16 +494,15 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventRPBin() const
     
     if(epAngle < 0 || epAngle >TMath::Pi())
     { 
-      printf("AliAnaCaloTrackCorrBaseClass::GetEventRPBin() - Wrong event plane angle : %f \n",epAngle);
+      AliWarning(Form("Wrong event plane angle : %f \n",epAngle));
       return -1;
     }
     
     curRPBin = TMath::Nint(epAngle*(GetNRPBin()-1)/TMath::Pi());
-    if(curRPBin >= GetNRPBin()) printf("RP Bin %d out of range %d\n",curRPBin,GetNRPBin());
+    if(curRPBin >= GetNRPBin()) printf("RP Bin %d out of range %d",curRPBin,GetNRPBin());
     
-    if(GetDebug() > 0 )
-      printf("AliAnaCaloTrackCorrBaseClass::GetEventRPBin() - %d, bin float %f, angle %f, n bins %d\n", 
-             curRPBin,epAngle*(GetNRPBin()-1)/TMath::Pi(),epAngle,GetNRPBin());
+    AliDebug(1,Form("Current RP bin %d, bin float %f, angle %f, n bins %d",
+                    curRPBin,epAngle*(GetNRPBin()-1)/TMath::Pi(),epAngle,GetNRPBin()));
   }  
   
   return curRPBin ;
@@ -511,9 +520,8 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventVzBin() const
   
   Int_t curZvertBin = (Int_t)(0.5*GetNZvertBin()*(v[2]+GetZvertexCut())/GetZvertexCut());
   
-  if(GetDebug() > 0 )
-    printf("AliAnaCaloTrackCorrBaseClass::GetEventVzBin() - %d, vz %2.2f, n bins %d \n",
-           curZvertBin, v[2], GetNZvertBin()); 
+  AliDebug(1,Form("AliAnaCaloTrackCorrBaseClass::GetEventVzBin() - %d, vz %2.2f, n bins %d",
+                  curZvertBin, v[2], GetNZvertBin()));
   
   return curZvertBin;
 }
@@ -545,12 +553,31 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin() const
   
   Int_t eventBin = GetEventMixBin(iCen, iVz, iRP);
   
-  if(GetDebug() > 0)
-    printf("AliAnaCaloTrackCorrBaseClass::GetEventMixBin() - Bins : cent %d, vz %d, RP %d, event %d/%d\n",
-           iCen,iVz, iRP, eventBin, GetNZvertBin()*GetNRPBin()*GetNCentrBin());
+  AliDebug(1,Form("Bins : cent %d, vz %d, RP %d, event %d/%d",
+                  iCen,iVz, iRP, eventBin, GetNZvertBin()*GetNRPBin()*GetNCentrBin()));
   
   return eventBin;
   
+}
+
+//____________________________________________
+void AliAnaCaloTrackCorrBaseClass::InitDebug()
+{
+  // Init once the debugging level, if requested
+  
+  // Activate debug level in analysis
+
+  if( fDebug >= 0 )
+    (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(this->ClassName(),fDebug);
+  
+  if( GetMCAnalysisUtils()->GetDebug() >= 0 )
+    (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(GetMCAnalysisUtils()->ClassName(),GetMCAnalysisUtils()->GetDebug());
+  
+  if( GetIsolationCut()->GetDebug() >= 0 )
+    (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(GetIsolationCut()   ->ClassName(),GetIsolationCut()->GetDebug());
+  
+  //printf("Debug levels: Ana %d, MC %d, Iso %d\n",fDebug,GetMCAnalysisUtils()->GetDebug(),GetIsolationCut()->GetDebug());
+
 }
 
 //_________________________________________________
@@ -558,7 +585,7 @@ void AliAnaCaloTrackCorrBaseClass::InitParameters()
 { 
   //Initialize the parameters of the analysis.
   fDataMC              = kFALSE;
-  fDebug               = -1;
+  fDebug               = 0;
   fCheckCaloPID        = kTRUE ;
   fCheckFidCut         = kFALSE ;
   fCheckRealCaloAcc    = kFALSE ;
@@ -568,7 +595,8 @@ void AliAnaCaloTrackCorrBaseClass::InitParameters()
   fNZvertBin           = 1;
   fNrpBin              = 1;
   
-  fCalorimeter         = "EMCAL";
+  fCalorimeterString   = "EMCAL";
+  fCalorimeter         = kEMCAL ;
   
   fTrackMultBins[0] =  0;  fTrackMultBins[1] =  5;  fTrackMultBins[2] = 10;
   fTrackMultBins[3] = 15;  fTrackMultBins[4] = 20;  fTrackMultBins[5] = 30;
@@ -616,5 +644,36 @@ void AliAnaCaloTrackCorrBaseClass::Print(const Option_t * opt) const
   
 } 
 
+//_______________________________________________________________
+void AliAnaCaloTrackCorrBaseClass::SetCalorimeter(TString & calo)
+{
+  // Set the calorimeter for the analysis
+  
+  fCalorimeterString = calo;
+  
+  if     (calo=="EMCAL") fCalorimeter = kEMCAL;
+  else if(calo=="PHOS" ) fCalorimeter = kPHOS;
+  else if(calo=="CTS")   fCalorimeter = kCTS;
+  else if(calo=="DCAL")  fCalorimeter = kDCAL;
+  else if(calo.Contains("DCAL") && calo.Contains("PHOS")) fCalorimeter = kDCALPHOS;
+  else AliFatal(Form("Detector < %s > not known!", calo.Data()));
+
+}
+
+//___________________________________________________________
+void AliAnaCaloTrackCorrBaseClass::SetCalorimeter(Int_t calo)
+{
+  // Set the calorimeter for the analysis
+  
+  fCalorimeter = calo;
+  
+  if     (calo==kEMCAL)    fCalorimeterString = "EMCAL";
+  else if(calo==kPHOS )    fCalorimeterString = "PHOS";
+  else if(calo==kCTS)      fCalorimeterString = "CTS";
+  else if(calo==kDCAL)     fCalorimeterString = "DCAL";
+  else if(calo==kDCALPHOS) fCalorimeterString = "DCAL_PHOS";
+  else AliFatal(Form("Detector < %d > not known!", calo));
+
+}
 
 

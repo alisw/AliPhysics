@@ -23,7 +23,6 @@
 #include <TLorentzVector.h>
 #include <TH2.h>
 #include <TList.h>
-#include <TString.h>
 
 //---- AliRoot system ----
 #include "AliNeutralMesonSelection.h" 
@@ -216,7 +215,7 @@ Bool_t AliNeutralMesonSelection::IsAngleInWindow(Float_t angle, Float_t e) const
 //_________________________________________________________________
 Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai, 
                                              TLorentzVector gammaj, 
-                                             TString calo)  
+                                             Int_t calo)
 {  
   
   //Search for the neutral pion within selection cuts
@@ -274,7 +273,8 @@ Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai,
   Float_t invmassRightBandMinCut = fRightBandMinCut;
   Float_t invmassRightBandMixCut = fRightBandMaxCut;
 
-  if(calo=="EMCAL" && e > 6.)
+  // kEMCAL=0, kPHOS=1
+  if(calo==0 && e > 6.)
   { // for EMCAL, pi0s, mass depends strongly with energy for e > 6, loose max cut
   
     invmassmaxcut = (fInvMassMaxCutParam[0]+fInvMassMaxCut)+fInvMassMaxCutParam[1]*e+fInvMassMaxCutParam[2]*e*e;

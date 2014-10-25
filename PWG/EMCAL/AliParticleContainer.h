@@ -16,7 +16,7 @@ class AliParticleContainer : public AliEmcalContainer {
   AliParticleContainer(const char *name); 
   virtual ~AliParticleContainer(){;}
 
-  Bool_t                      AcceptParticle(AliVParticle         *vp)  const;
+  Bool_t                      AcceptParticle(AliVParticle         *vp)       ;
   Double_t                    GetParticlePtCut()                        const   { return fParticlePtCut; }
   Double_t                    GetParticleEtaMin()                       const   { return fParticleMinEta; }
   Double_t                    GetParticleEtaMax()                       const   { return fParticleMaxEta; }
@@ -24,9 +24,9 @@ class AliParticleContainer : public AliEmcalContainer {
   Double_t                    GetParticlePhiMax()                       const   { return fParticleMaxPhi; }
   AliVParticle               *GetLeadingParticle(const char* opt="")         ;
   AliVParticle               *GetParticle(Int_t i)                      const;
-  AliVParticle               *GetAcceptParticle(Int_t i)                const;
+  AliVParticle               *GetAcceptParticle(Int_t i)                     ;
   AliVParticle               *GetParticleWithLabel(Int_t lab)           const;
-  AliVParticle               *GetAcceptParticleWithLabel(Int_t lab)     const;
+  AliVParticle               *GetAcceptParticleWithLabel(Int_t lab)          ;
   AliVParticle               *GetNextAcceptParticle(Int_t i=-1)              ;
   AliVParticle               *GetNextParticle(Int_t i=-1)                    ;
   void                        GetMomentum(TLorentzVector &mom, Int_t i) const;

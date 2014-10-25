@@ -14,7 +14,6 @@
 // --- ROOT system ---
 class TH2F ;
 class TH1F;
-class TString ;
 class TObjString;
 class TList ;
 
@@ -52,6 +51,8 @@ private:
  
   Int_t   fNCellsCut ;                              // Accept for the analysis clusters with more than fNCellsCut cells
 
+  TLorentzVector fMomentum;                         //! Cluster momentum
+  
   //Histograms
   
   TH1F * fhPtPileUp[7];                             //! pT distribution of clusters before any selection
@@ -88,7 +89,7 @@ private:
   AliAnaClusterPileUp(              const AliAnaClusterPileUp & pu) ; // cpy ctor
   AliAnaClusterPileUp & operator = (const AliAnaClusterPileUp & pu) ; // cpy assignment
   
-  ClassDef(AliAnaClusterPileUp,1)
+  ClassDef(AliAnaClusterPileUp,2)
 
 } ;
  

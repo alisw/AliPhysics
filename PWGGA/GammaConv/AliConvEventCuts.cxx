@@ -665,14 +665,18 @@ void AliConvEventCuts::PrintCutsWithValues() {
 	if (fIsHeavyIon == 0) {
 		printf("Running in pp mode \n");
 		if (fSpecialTrigger == 0){
-			printf("\t only events triggered by V0OR will be analysed \n");
+			if (fSpecialSubTrigger == 0){
+				printf("\t only events triggered by V0OR will be analysed \n");
+			} else if (fSpecialSubTrigger == 1){
+				printf("\t only events where SDD was present will be analysed \n");
+			}
 		} else if (fSpecialTrigger == 1){
-			printf("\t only events triggered by V0AND will be analysed \n");
-		} else if (fSpecialTrigger == 2){
-			printf("\t only events where SDD was present will be analysed \n");
-		} else if (fSpecialTrigger == 3){
-			printf("\t only events where SDD was present will be analysed and triggered by VOAND\n");
-		} else if (fSpecialTrigger > 3){ 
+			if (fSpecialSubTrigger == 0){
+				printf("\t only events triggered by V0AND will be analysed \n");
+			} else if(fSpecialSubTrigger == 1){
+				printf("\t only events where SDD was present will be analysed and triggered by VOAND\n");
+			}    
+		} else if (fSpecialTrigger > 1){ 
 			printf("\t only events triggered by %s %s\n", fSpecialTriggerName.Data(), fSpecialSubTriggerName.Data());
 		}
 	} else if (fIsHeavyIon == 1){ 
@@ -697,8 +701,10 @@ void AliConvEventCuts::PrintCutsWithValues() {
 		}
 		if (fSpecialTrigger == 0){
 			printf("\t only events triggered by kMB, kCentral, kSemiCentral will be analysed \n");
-		} else if (fSpecialTrigger > 4){   
+		} else if (fSpecialTrigger > 1){
 			printf("\t only events triggered by %s %s\n", fSpecialTriggerName.Data(), fSpecialSubTriggerName.Data());
+			printf("\n\t        SpecialTrigger is:  %s\n", fSpecialTriggerName.Data());
+			printf("\t        SpecialSubTrigger is: %s\n\n", fSpecialSubTriggerName.Data());
 		}
 	} else if (fIsHeavyIon == 2){
 		printf("Running in pPb mode \n");
@@ -712,7 +718,7 @@ void AliConvEventCuts::PrintCutsWithValues() {
 		}
 		if (fSpecialTrigger == 0){
 			printf("\t only events triggered by kINT7 will be analysed \n");
-		} else if (fSpecialTrigger > 4){   
+		} else if (fSpecialTrigger > 1){ 
 			printf("\t only events triggered by %s %s\n", fSpecialTriggerName.Data(), fSpecialSubTriggerName.Data());
 		}
 	}
@@ -810,18 +816,18 @@ Bool_t AliConvEventCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
 
 	switch(selectSpecialTrigger){
 	case 0:
-		fSpecialTrigger=0; // dont care
+		fSpecialTrigger=0; // V0OR
 		break;
 	case 1:
 		fSpecialTrigger=1; // V0AND
 		break;
-	case 2:
-		fSpecialTrigger=2; // with SDD requested
+// 	case 2:
+// 		fSpecialTrigger=2; // 
+// 		break;
+	case 3:       
+		fSpecialTrigger=3; //specific centrality trigger selection
+		fSpecialTriggerName="AliVEvent::kCentral/kSemiCentral/kMB";
 		break;
-	case 3:
-		fSpecialTrigger=3; // V0AND plus with SDD requested
-		break;
-	// allows to run MB & 6 other different trigger classes in parallel with the same photon cut
 	case 4:
 		fSpecialTrigger=4; // trigger alias kTRD 
 		fOfflineTriggerMask=AliVEvent::kTRD;
@@ -875,13 +881,30 @@ Bool_t AliConvEventCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
 Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerClass)
 {// Set Cut
 
-	if (fSpecialTrigger == 1){ //V0AND with different detectors
+	if (fSpecialTrigger == 0){ //OR 
 		switch(selectSpecialSubTriggerClass){
-		case 0: //with VZERO
-			fSpecialTrigger=1;
+		case 0://with VZERO
+			fSpecialTrigger=0;
 			fSpecialSubTrigger=0; 
 // 			AliInfo("Info: Nothing to be done");
+			break;	
+		case 3: //V0OR with SDD requested (will only work with LHC11a dataset)
+			fSpecialSubTrigger=1; 
+			cout << "V0OR with SDD requested" << endl;	    
 			break;
+		default:
+			AliError("Warning: Special Subtrigger Class Not known");
+			return 0;
+		}	
+	} else if (fSpecialTrigger == 1){ //AND with different detectors
+		switch(selectSpecialSubTriggerClass){
+		case 0:	//with VZERO general implementation of V0AND (periods LHC11c onwards)
+			fSpecialTrigger=0;
+			fSpecialSubTrigger=0; 
+			fOfflineTriggerMask=AliVEvent::kINT7;
+			fTriggerSelectedManually = kTRUE;
+			fSpecialTriggerName="AliVEvent::kINT7";
+		break;
 		case 1: //with TZERO
 			fSpecialTrigger=0;
 			fSpecialSubTrigger=0; 
@@ -889,11 +912,78 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
 			fTriggerSelectedManually = kTRUE;
 			fSpecialTriggerName="AliVEvent::kINT8";
 			break;
+		case 2: //with VZERO (will only work with LHC11a dataset)
+			fSpecialTrigger=1;
+			fSpecialSubTrigger=0; 
+// 			AliInfo("Info: Nothing to be done");
+			break;	
+		case 3: //V0AND with SDD requested (will only work with LHC11a dataset)
+			fSpecialTrigger=1;
+			fSpecialSubTrigger=1; 
+			break;
 		default:
 			AliError("Warning: Special Subtrigger Class Not known");
 			return 0;
-		}	
-			
+		}		
+	} else if (fSpecialTrigger == 3){ // Selecting kCentral and kSemiCentral from trigger classes, not aliases
+		switch(selectSpecialSubTriggerClass){
+		case 0: // all together
+			fSpecialSubTrigger=0; 
+			fSpecialSubTriggerName="";
+// 			AliInfo("Info: Nothing to be done");
+			break;
+		case 1: // kCentral - no vertex restriction
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="CVHN";
+			cout << "kCentralOpen" << endl;
+			break;
+		case 2: // kCentral - T00 +- 10 cm
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="CCENT";
+			cout << "kCentralVertex" << endl;
+			break;
+		case 3: // kCentral - both
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="CVHN|CCENT";
+			cout << "kCentral both" << endl;
+			break;
+		case 4: // kSemiCentral - no vertex restriction
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="CVLN";
+			cout << "kSemiCentralOpen" << endl;
+			break;
+		case 5: // kSemiCentral - T00 +- 10 cm
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="CSEMI";
+			cout << "kSemiCentralVertex" << endl;
+			break;
+		case 6: // kSemiCentral - both
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="CSEMI%CVLN";
+			cout << "kSemiCentral both" << endl;
+			break;
+		case 7: // kMB
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="CPBI1_|CPBI1-";
+			cout << "kMB 1" << endl;
+			break;			
+		case 8: // kMB
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="CPBI2_|CPBI2-";
+			cout << "kMB 2" << endl;
+			break;			
+		default:
+			AliError("Warning: Special Subtrigger Class Not known");
+			return 0;
+		}		
 	} else if (fSpecialTrigger == 4){ // Subdivision of TRD trigger classes
 		switch(selectSpecialSubTriggerClass){
 		case 0: // all together
@@ -1474,7 +1564,36 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
 							isSelected = 1;
 						}	
 					}	
-				}	
+				}
+				//if for specif centrality trigger selection 
+				if(fSpecialSubTrigger == 1){
+					if(fSpecialSubTriggerName.Contains("|")){
+						TObjArray *ClassesList = fSpecialSubTriggerName.Tokenize("|");
+						for (Int_t i=0; i<ClassesList->GetEntriesFast();++i){
+							TObjString *NameClass = (TObjString*)ClassesList->At(i);
+							if (firedTrigClass.Contains(NameClass->GetString())) isSelected = 1;
+// 							cout << "|||||||| \t" << NameClass->GetString() << "\t ||||||||" << endl;
+						}
+					} else if(fSpecialSubTriggerName.Contains("%")){
+						TObjArray *ClassesList = fSpecialSubTriggerName.Tokenize("%");
+						for (Int_t i=0; i<ClassesList->GetEntriesFast();++i){
+							TObjString *NameClass = (TObjString*)ClassesList->At(i);
+							if (firedTrigClass.Contains(NameClass->GetString())) isSelected = 1;
+// 							cout << "|||||||| \t" << NameClass->GetString() << "\t ||||||||" << endl;
+						}	
+					} else if(fSpecialSubTriggerName.Contains("&")){
+						TObjArray *ClassesList = fSpecialSubTriggerName.Tokenize("&");
+						TString CheckClass = "";
+						for (Int_t i=0; i<ClassesList->GetEntriesFast(); i++){
+							TObjString *NameClass = (TObjString*)ClassesList->At(i);
+							if (firedTrigClass.Contains(NameClass->GetString())) CheckClass+="1";
+							else CheckClass+="0";
+						}
+						if(CheckClass.Contains("0")) isSelected = 0;
+// 						cout << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" << endl;
+					}	
+					else if(firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 1;
+				}
 			}				
 		} 	 
 	}
@@ -1877,6 +1996,17 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 
 	Bool_t hasV0And = ReaderCuts->HasV0AND();
 	Bool_t isSDDFired = ReaderCuts->IsSDDFired();
+	
+	if( ( (IsSpecialTrigger() == 0 && IsSpecialSubTrigger() == 1) || (IsSpecialTrigger() == 1 && IsSpecialSubTrigger() == 1) ) && !isSDDFired && !MCEvent) 
+	//if V0OR with SDD requested or V0AND with SDD request but the SDD has not fired
+	return 7; // V0 with SDD requested but no fired
+
+	if( ( (IsSpecialTrigger() == 1 && IsSpecialSubTrigger() == 0) || (IsSpecialTrigger() == 1 && IsSpecialSubTrigger() == 1) ) && !hasV0And) 
+	//if V0AND (only) or V0AND with SDD requested but V0AND requested but no fired
+	return 8; // V0AND requested but no fired
+
+
+	
 	if( (IsSpecialTrigger() == 2 || IsSpecialTrigger() == 3) && !isSDDFired && !MCEvent)
 		return 7; // With SDD requested but no fired
 

@@ -67,6 +67,9 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   void SetLowPtCut(Float_t lowPtCut) {fLowPtCut=lowPtCut;};
   Float_t GetLowPtCut() const {return fLowPtCut;};
 
+  void SetExcludedCut(Int_t excludedCut) {fExcludedCut=excludedCut;}
+  Int_t GetExcludedCut(){return fExcludedCut;}
+
   virtual void SetStandardCutsPP2010();
   virtual void SetStandardCutsPbPb2010();
   virtual void SetStandardCutsPbPb2011();
@@ -90,10 +93,11 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   Float_t     fV0Type; // V0 type -- should be defined as in AliRDHFCuts.h
   Float_t fHighPtCut;  // high pT cut separation for proton identification
   Float_t fLowPtCut;   // low pT cut separation for proton identification
+  Int_t   fExcludedCut; // cut to be excluded (-1=none)
 
   //UShort_t fV0channel;
 
-  ClassDef(AliRDHFCutsLctoV0,5);  // class for cuts on AOD reconstructed Lc->V0+bachelor
+  ClassDef(AliRDHFCutsLctoV0,6);  // class for cuts on AOD reconstructed Lc->V0+bachelor
 };
 
 #endif

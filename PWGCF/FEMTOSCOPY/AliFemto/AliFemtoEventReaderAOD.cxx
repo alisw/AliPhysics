@@ -284,8 +284,6 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   // and transfers the neccessary information into
   // the internal AliFemtoEvent
 
-  Int_t numberOfLastHijingLabel=0;
-
   AliFemtoEvent *tEvent = new AliFemtoEvent();
 
   // setting global event characteristics
@@ -307,17 +305,6 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     mcH = (AliAODMCHeader *) fEvent->FindListObject(AliAODMCHeader::StdBranchName());
     if (!mcH) {
       cout << "AOD MC information requested, but no header found!" << endl;
-    }
-    else {
-      TIter next(mcH->GetCocktailHeaders());
-      // Loop over the cocktail headers
-      while (const TObject *obj=next()){
-	// Check whether it's a Hijing header
-	// const AliGenHijingEventHeader* hijingHeader = dynamic_cast<const AliGenHijingEventHeader*>(obj);
-	// if(hijingHeader) {
-	//   numberOfLastHijingLabel=hijingHeader->NProduced()-1;
-	// } // End of found the hijing header
-      }
     }
 
     mcP = (TClonesArray *) fEvent->FindListObject(AliAODMCParticle::StdBranchName());
@@ -351,7 +338,7 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       if(fMinVtxContr)
 	anaUtil->SetMinVtxContr(fMinVtxContr);
       if(fpA2013)
-	if(anaUtil->IsVertexSelected2013pA(fEvent)==kFALSE) 
+	if(anaUtil->IsVertexSelected2013pA(fEvent)==kFALSE)
 	  {
 	    delete tEvent;
 	    return NULL; //Vertex rejection for pA analysis.
@@ -856,7 +843,7 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
       AliAODTrack* daughterTrackPos = (AliAODTrack*)aodv0->GetDaughter(0); //getting positive daughter track
       AliAODTrack* daughterTrackNeg = (AliAODTrack*)aodv0->GetDaughter(1); //getting negative daughter track
-      if(!daughterTrackPos) continue; //Daughter tracks must exist
+      if(!daughterTrackPos) continue; //daughter tracks must exist
       if(!daughterTrackNeg) continue;
       if(daughterTrackNeg->Charge() == daughterTrackPos->Charge() ) continue; //and have different charge
 
@@ -868,18 +855,16 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 	  AliAODMCParticle* mcParticlePos = (AliAODMCParticle*)mcP->At(daughterTrackPos->GetLabel());
 	  AliAODMCParticle* mcParticleNeg = (AliAODMCParticle*)mcP->At(daughterTrackNeg->GetLabel() );
 	  if((mcParticlePos!=NULL) && (mcParticleNeg!=NULL)){
-	    //mcparticle->GetMother() will return a "-1" if the particle doesn't have a true mother (i.e. it's a fake track or primary)
 	    int motherOfPosID = mcParticlePos->GetMother();
 	    int motherOfNegID = mcParticleNeg->GetMother();
 	    if ((motherOfPosID > -1) && (motherOfPosID == motherOfNegID)){
 	      AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
-	      // Both daughter tracks refer to the same mother.  Return the MCParticle index of that mother.
+	      // Both daughter tracks refer to the same mother, we can continue
 	      AliAODMCParticle *v0 = (AliAODMCParticle*)mcP->At(motherOfPosID); //our V0 particle
-	      // if(v0->GetLabel() > numberOfLastHijingLabel )  //if true - the particle is injected
-		   //continue;
+
 	      tInfo->SetPDGPid(v0->GetPdgCode());
 	      int v0MotherId = v0->GetMother();
-	      if(v0MotherId>-1) { //particle has a mother
+	      if(v0MotherId>-1) { //V0 particle has a mother
 		AliAODMCParticle* motherOfV0 = (AliAODMCParticle*)mcP->At(v0MotherId);
 		tInfo->SetMotherPdgCode(motherOfV0->GetPdgCode());
 	      }

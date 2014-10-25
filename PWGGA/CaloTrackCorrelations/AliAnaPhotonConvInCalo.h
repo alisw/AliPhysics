@@ -80,6 +80,9 @@ class AliAnaPhotonConvInCalo : public AliAnaCaloTrackCorrBaseClass {
   Float_t  fConvDPhiMinCut;               // Select conversion pairs when dphi of pair lager than cut
   Float_t  fConvDPhiMaxCut;               // Select conversion pairs when dphi of pair smaller than cut
 
+  TLorentzVector fMomentum ;              //! Cluster momentum
+  TVector3       fProdVertex;             //! Production vertex
+  
   // Histograms
   TH1F * fhPtPhotonConv   ;               //! Number of identified photon vs transerse momentum 
   TH2F * fhEtaPhiPhotonConv  ;            //! Pseudorapidity vs Phi of identified  photon for transerse momentum > 0.5, for converted

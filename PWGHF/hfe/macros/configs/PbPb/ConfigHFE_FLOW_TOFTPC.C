@@ -1,3 +1,27 @@
+TH2D *GetCorrectionsJpsiMean(TString map){
+  if (gSystem->AccessPathName(gSystem->ExpandPathName(map.Data()))){
+    Warning("ConfigHFE","Centrality map not found: %s",map.Data());
+    printf("ConfigHFE: Centrality map not found: %s\n",map.Data());
+    return kFALSE;
+  }
+  printf("File %s\n",map.Data());
+  TFile *f = TFile::Open(map.Data());
+  if(!f->IsOpen()) return kFALSE;
+  f->ls();
+  return (TH2D*)f->Get("centroidCentEta");
+}
+TH2D *GetCorrectionsJpsiWidth(TString map){
+  if (gSystem->AccessPathName(gSystem->ExpandPathName(map.Data()))){
+    Warning("ConfigHFE","Centrality map not found: %s",map.Data());
+    printf("ConfigHFE: Centrality map not found: %s\n",map.Data());
+    return kFALSE;
+  }
+  printf("File %s\n",map.Data());
+  TFile *f = TFile::Open(map.Data());
+  if(!f->IsOpen()) return kFALSE;
+  f->ls();
+  return (TH2D*)f->Get("widthCentEta");
+}
 TF1* GetCentralityCorrection(TString listname="LHC11h"){
   
   TString etaMap="$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/CentCorrMapsTPC.root";
@@ -113,13 +137,17 @@ Double_t Contamination_40_50(const Double_t *x, const Double_t *par)
 
   
 }
-AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix,Int_t trigger,Int_t aodfilter=-1,Bool_t scalarProduct=kFALSE,Bool_t cutPileup=kTRUE,Int_t variableM = 1,Int_t tpcCls=110, Double_t tpcClsr=60.,Int_t tpcClspid=80, Int_t itsCls=4, Int_t pixellayer=2, Double_t dcaxy=100., Double_t dcaz=200.,  Double_t tofsig=30., Double_t *tpcdedx=NULL, Int_t vzero=1, Int_t debuglevel=0, Double_t etarange=80, Bool_t withetacorrection=kFALSE, Bool_t withmultcorrection=kFALSE, Double_t ITSclustersback=0,Double_t minTPCback=-2.0,Double_t maxTPCback=5.0)
+AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix,Int_t trigger,Int_t aodfilter=-1,Bool_t scalarProduct=kFALSE,Bool_t cutPileup=kTRUE,Int_t variableMr = 1,Int_t tpcCls=110, Double_t tpcClsr=60.,Int_t tpcClspid=80, Int_t itsCls=4, Int_t pixellayer=2, Double_t dcaxy=100., Double_t dcaz=200.,  Double_t tofsig=30., Double_t *tpcdedx=NULL, Int_t vzero=1, Int_t debuglevel=0, Double_t etarange=80, Bool_t withetacorrection=kFALSE, Bool_t withmultcorrection=kFALSE, Double_t ITSclustersback=0,Double_t minTPCback=-2.0,Double_t maxTPCback=5.0)
 {
   //
   // HFE flow task 
   //
   Double_t tpcsharedfraction=11;
   Double_t chi2peritscl=36.;
+
+  // multEst = 0 or 10 (VZERO centrality, good, bad runs for Jpsi), = 1 (GetNumberOfESDtracks, Theo)
+  Int_t variableM = variableMr;
+  if(variableMr==10) variableM = 0;
 
   printf("Summary settings flow task\n");
   printf("filter %d\n",aodfilter);
@@ -151,6 +179,7 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   printf("Max TPC back %f\n",maxTPCback);
   printf("PileUp cut %d\n",cutPileup);
   printf("Scalar Product %d\n",scalarProduct);
+  printf("Multiplicity Esimator %d\n",variableM);
 
   // Cut HFE
   AliHFEcuts *hfecuts = new AliHFEcuts("hfeCuts","HFE Standard Cuts");
@@ -196,9 +225,9 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   task->SetTriggerUsed(trigger);
   task->SetDebugLevel(1);
   task->SetVariableMultiplicity(variableM);
-  task->GetPIDQAManager()->SetHighResolutionEtaHistos();
+  //task->GetPIDQAManager()->SetHighResolutionEtaHistos();
   task->GetPIDQAManager()->SetMidResolutionHistos();
-  task->GetPIDQAManager()->SetFillMultiplicity();
+  //task->GetPIDQAManager()->SetFillMultiplicity();
   task->SetHFECuts(hfecuts);
   task->SetHFEBackgroundCuts(hfeBackgroundCuts);
   if(aodfilter > 0) {
@@ -237,17 +266,36 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   
   if(withetacorrection || withmultcorrection) {
     AliHFEpidTPC *tpcpid = pid->GetDetPID(AliHFEpid::kTPCpid);
-    TF1 *etaCorrMean = GetEtaCorrection("LHC11h_etaCorrMean");
-    TF1 *etaCorrWdth = GetEtaCorrection("LHC11h_etaCorrWidth");
-    if(etaCorrMean && etaCorrWdth && withetacorrection){
-      tpcpid->SetEtaCorrections(etaCorrMean, etaCorrWdth);
-      printf("TPC dE/dx Eta correction %p %p\n",etaCorrMean,etaCorrWdth);
+    // Jpsi
+    if(variableMr==0) {
+      TH2D *meanc = GetCorrectionsJpsiMean("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/jpsietacentcorr2_2011.root");
+      TH2D *widthc = GetCorrectionsJpsiWidth("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/jpsietacentcorr2_2011.root");
+      //printf("Set\n");
+      if(meanc && widthc) {
+	tpcpid->SetJpsiCorrections(meanc,widthc);
+	//printf("Set the histos\n");
+      }
     }
-    TF1 *centCorrMean = GetCentralityCorrection("LHC11h_multCorrMean");
-    TF1 *centCorrWdth = GetCentralityCorrection("LHC11h_multCorrWidth");
-    if(centCorrMean && centCorrWdth && withmultcorrection){
-      tpcpid->SetCentralityCorrections(centCorrMean, centCorrWdth);
-      printf("TPC dE/dx multiplicity correction %p %p\n",centCorrMean,centCorrWdth);
+    if(variableMr==10) {
+      TH2D *meanc = GetCorrectionsJpsiMean("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/jpsietacentcorr3_2011.root");
+      TH2D *widthc = GetCorrectionsJpsiWidth("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/jpsietacentcorr3_2011.root");
+      if(meanc && widthc) tpcpid->SetJpsiCorrections(meanc,widthc);
+    }
+    // Theo
+    if(variableMr==1) {
+      task->GetPIDQAManager()->SetFillMultiplicity();
+      TF1 *etaCorrMean = GetEtaCorrection("LHC11h_etaCorrMean");
+      TF1 *etaCorrWdth = GetEtaCorrection("LHC11h_etaCorrWidth");
+      if(etaCorrMean && etaCorrWdth && withetacorrection){
+	tpcpid->SetEtaCorrections(etaCorrMean, etaCorrWdth);
+	printf("TPC dE/dx Eta correction %p %p\n",etaCorrMean,etaCorrWdth);
+      }
+      TF1 *centCorrMean = GetCentralityCorrection("LHC11h_multCorrMean");
+      TF1 *centCorrWdth = GetCentralityCorrection("LHC11h_multCorrWidth");
+      if(centCorrMean && centCorrWdth && withmultcorrection){
+	tpcpid->SetCentralityCorrections(centCorrMean, centCorrWdth);
+	printf("TPC dE/dx multiplicity correction %p %p\n",centCorrMean,centCorrWdth);
+      }
     }
   }
  

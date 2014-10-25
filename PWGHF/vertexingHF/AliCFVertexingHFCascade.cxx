@@ -47,7 +47,8 @@ AliCFVertexingHF(mcArray, originDselection),
   fPDGneutrDaughPositive(0),
   fPDGneutrDaughNegative(0),
   fPrimVtx(0x0),
-  fUseCutsForTMVA(kFALSE)
+  fUseCutsForTMVA(kFALSE),
+  fCutOnMomConservation(0.00001)
 {
   // standard constructor
 
@@ -502,9 +503,9 @@ Bool_t AliCFVertexingHFCascade::EvaluateIfCorrectNeutrDaugh(AliAODMCParticle* ne
   Double_t pzMother = neutralDaugh->Pz();
   AliDebug(3, Form("pxMother = %f, pyMother = %f, pzMother = %f", pxMother, pyMother, pzMother));
   AliDebug(3, Form("sumPxDau = %f, sumPyDau = %f, sumPzDau = %f", sumPxDau, sumPyDau, sumPzDau));
-  if(TMath::Abs(pxMother-sumPxDau)/(TMath::Abs(pxMother)+1.e-13)>0.00001 ||
-     TMath::Abs(pyMother-sumPyDau)/(TMath::Abs(pyMother)+1.e-13)>0.00001 ||
-     TMath::Abs(pzMother-sumPzDau)/(TMath::Abs(pzMother)+1.e-13)>0.00001){
+  if(TMath::Abs(pxMother-sumPxDau)/(TMath::Abs(pxMother)+1.e-13)>fCutOnMomConservation ||
+     TMath::Abs(pyMother-sumPyDau)/(TMath::Abs(pyMother)+1.e-13)>fCutOnMomConservation ||
+     TMath::Abs(pzMother-sumPzDau)/(TMath::Abs(pzMother)+1.e-13)>fCutOnMomConservation){
     AliDebug(2, "Momentum conservation violated, skipping!!");
     return isHadronic;  
   }
@@ -607,8 +608,11 @@ void AliCFVertexingHFCascade::SetAccCut()
       fPtAccCut[iP]=0.1;
       fEtaAccCut[iP]=0.9;
     }
-    fPtAccCut[2]=0.06;  // soft pion
-    fEtaAccCut[2]=0.9;  // soft pion
+
+    if (fPDGcascade != 4122){
+      fPtAccCut[2]=0.06;  // soft pion
+      fEtaAccCut[2]=0.9;  // soft pion
+    }
   }
   return;
 }

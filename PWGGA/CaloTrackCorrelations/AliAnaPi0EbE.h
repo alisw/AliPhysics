@@ -50,7 +50,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   void           FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * c) ;
   
-  void           FillRejectedClusterHistograms(TLorentzVector mom, Int_t mctag, Int_t nMaxima);
+  void           FillRejectedClusterHistograms(Int_t mctag, Int_t nMaxima);
   
   void           FillSelectedClusterHistograms(AliVCluster* cluster, Float_t pt,
                                                Int_t nLocMax,        Int_t tag,
@@ -58,8 +58,8 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
     
   void           FillWeightHistograms(AliVCluster *clus);
     
-  void           HasPairSameMCMother(AliAODPWG4Particle * photon1, 
-                                     AliAODPWG4Particle * photon2, 
+  void           HasPairSameMCMother(Int_t label1 , Int_t label2,
+                                     Int_t tag1   , Int_t tag2,
                                      Int_t & label, Int_t & tag);
   
   void           MakeInvMassInCalorimeter() ;
@@ -123,6 +123,13 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
 
   void           SwitchOnSelectIsolatedDecay()               { fSelectIsolatedDecay    = kTRUE ; }
   void           SwitchOffSelectIsolatedDecay()              { fSelectIsolatedDecay    = kFALSE; }
+
+  void           SwitchOnSelectPairInIsolationCone()         { fSelectPairInIsoCone    = kTRUE ; }
+  void           SwitchOffSelectPairInIsolationCone()        { fSelectPairInIsoCone    = kFALSE; }
+
+  void           SetR(Float_t r)                             { fR = r                          ; }
+  void           SetIsolationCandidateMinPt(Float_t min)     { fIsoCandMinPt = min             ; }
+
   
   //For histograms
   enum mcTypes   { kmcPi0      = 0, kmcEta      = 1, kmcPhoton           = 2,
@@ -146,6 +153,11 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Double_t       fTimeCutMax  ;            // Remove clusters/cells with time larger than this value, in ns
   Bool_t         fRejectTrackMatch ;       // Remove clusters which have an associated TPC track
   Bool_t         fSelectIsolatedDecay;     // Select pairs where at least one is declared isolated (run first AliAnaParticleIsolation)
+  Bool_t         fCheckSplitDistToBad;     // Check the distance to bad channel and to EMCal borders of split clusters
+
+  Bool_t         fSelectPairInIsoCone;     // Select pair in IsoCone
+  Float_t        fR;                       // isolation cone
+  Float_t        fIsoCandMinPt;            // isolation candidate min pT
   
   Bool_t         fFillWeightHistograms ;   // Fill weigth histograms
   Bool_t         fFillTMHisto;             // Fill track matching plots
@@ -156,9 +168,14 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
 
   //Only for combination of calorimeter and conversion photons, kIMCaloTracks
   TString        fInputAODGammaConvName;   //  Name of AOD branch with conversion photons
-
-  Bool_t         fCheckSplitDistToBad;     // Check the distance to bad channel and to EMCal borders of split clusters
   
+  TLorentzVector fMomentum;                //! cluster/pi0 momentum
+  TLorentzVector fMomentum1;               //! cluster/photon momentum
+  TLorentzVector fMomentum2;               //! cluster/photon momentum
+  TLorentzVector fMomentum12;              //! cluster/pi0 momentum, sum 1+2
+  TLorentzVector fPrimaryMom;              //! primary momentum
+  TLorentzVector fGrandMotherMom;          //! primary momentum
+
   //Histograms
   
   TH1F         * fhPt  ;                   //! Number of identified  pi0/eta vs pT
@@ -196,7 +213,9 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhSelectedMass  ;         //! pair mass vs E, for selected pairs
   TH2F         * fhSelectedMassPt  ;       //! pair mass vs pT, for selected pairs
   TH2F         * fhSelectedMassSplitPt  ;  //! pair mass vs pT (split), for selected pairs
-    
+  
+  TH2F         * fhMassPtIsoRCut  ;        //! pair mass vs pT, for all pairs when opening angle not larger than iso cone radius
+
   TH2F         * fhMassPtLocMax[3] ;             //! pair mass vs pT, for all pairs, for each NLM case
   TH2F         * fhSelectedMassPtLocMax[3] ;     //! pair mass vs pT, for selected pairs, for each NLM case
   TH2F         * fhSelectedMassPtLocMaxSM[3][22];//! pair mass vs pT, for selected pairs, for each NLM case, for each SM
@@ -412,7 +431,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,41)
+  ClassDef(AliAnaPi0EbE,42)
 } ;
 
 

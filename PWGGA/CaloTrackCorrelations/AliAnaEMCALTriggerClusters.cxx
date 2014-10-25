@@ -15,7 +15,7 @@
 
 //_________________________________________________________________________
 //
-// Class for study of EMCAL trigger behaviour
+// Class for study of EMCAL trigger behavior
 //
 // -- Author: Gustavo Conesa (CNRS-LPSC-Grenoble)
 //////////////////////////////////////////////////////////////////////////////
@@ -40,11 +40,12 @@
 
 ClassImp(AliAnaEMCALTriggerClusters)
 
-//____________________________
+//______________________________________________________
 AliAnaEMCALTriggerClusters::AliAnaEMCALTriggerClusters() :
 AliAnaCaloTrackCorrBaseClass(),
 fRejectTrackMatch(0),         fNCellsCut(0),
 fMinM02(0),                   fMaxM02(0),
+fMomentum(),
 // Histograms
 fhE(0),                       fhESelected(0),
 fhEtaPhi(0),                  fhEtaPhiSelected(0),
@@ -142,16 +143,14 @@ void AliAnaEMCALTriggerClusters::FillBadTriggerEventHistogram()
   
   if(!badClusTrig)
   {
-    printf("AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms() - No cluster (bad-exotic trigger) found with requested index %d \n",idTrig);
+    AliWarning(Form("No cluster (bad-exotic trigger) found with requested index %d \n",idTrig));
     return;
   }
   
-  TLorentzVector momBadClus;
+  badClusTrig->GetMomentum(fMomentum,GetVertex(0));
   
-  badClusTrig->GetMomentum(momBadClus,GetVertex(0));
-  
-  Float_t etaclusterBad = momBadClus.Eta();
-  Float_t phiclusterBad = momBadClus.Phi();
+  Float_t etaclusterBad = fMomentum.Eta();
+  Float_t phiclusterBad = fMomentum.Phi();
   if( phiclusterBad < 0 ) phiclusterBad+=TMath::TwoPi();
   Float_t tofclusterBad = badClusTrig->GetTOF()*1.e9;
   Float_t eclusterBad   = badClusTrig->E();
@@ -349,8 +348,7 @@ void  AliAnaEMCALTriggerClusters::FillRawClusterTriggerBCHistograms(Int_t idcalo
       }
     }
   }
-  else if(TMath::Abs(bc) >= 6)
-    printf("AliAnaEMCALTriggerClusters::ClusterSelected() - Trigger BC not expected = %d\n",bc);
+  else if(TMath::Abs(bc) >= 6) AliWarning(Form("Trigger BC not expected = %d\n",bc));
   
 }
 
@@ -363,13 +361,13 @@ TObjString *  AliAnaEMCALTriggerClusters::GetAnalysisCuts()
   const Int_t buffersize = 255;
   char onePar[buffersize] ;
   
-  snprintf(onePar,buffersize,"--- AliAnaEMCALTriggerClusters ---\n") ;
+  snprintf(onePar,buffersize,"--- AliAnaEMCALTriggerClusters ---:") ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fRejectTrackMatch: %d\n",fRejectTrackMatch) ;
+  snprintf(onePar,buffersize,"fRejectTrackMatch: %d;",fRejectTrackMatch) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fMinM02: %2.2f, fMaxM02: %2.2f\n",fMinM02,fMaxM02) ;
+  snprintf(onePar,buffersize,"fMinM02: %2.2f, fMaxM02: %2.2f;",fMinM02,fMaxM02) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fNCellsCut: %d\n",fNCellsCut) ;
+  snprintf(onePar,buffersize,"fNCellsCut: %d;",fNCellsCut) ;
   parList+=onePar ;
   
   //Get parameters set in base class.
@@ -378,7 +376,7 @@ TObjString *  AliAnaEMCALTriggerClusters::GetAnalysisCuts()
   return new TObjString(parList) ;
 }
 
-//________________________________________________________________________
+//___________________________________________________________
 TList *  AliAnaEMCALTriggerClusters::GetCreateOutputObjects()
 {
   // Create histograms to be saved in output file and
@@ -957,7 +955,7 @@ TList *  AliAnaEMCALTriggerClusters::GetCreateOutputObjects()
   
 }
 
-//_______________________
+//_____________________________________
 void AliAnaEMCALTriggerClusters::Init()
 {
   
@@ -970,7 +968,7 @@ void AliAnaEMCALTriggerClusters::Init()
   
 }
 
-//____________________________________________________________________________
+//_______________________________________________
 void AliAnaEMCALTriggerClusters::InitParameters()
 {
   
@@ -984,7 +982,7 @@ void AliAnaEMCALTriggerClusters::InitParameters()
   
 }
 
-//__________________________________________________________________
+//____________________________________________________________
 void  AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()
 {
   //Do photon analysis and fill aods
@@ -993,7 +991,7 @@ void  AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()
   
   if(!pl)
   {
-    Info("MakeAnalysisFillHistograms","TObjArray with clusters is NULL!\n");
+    AliWarning("TObjArray with clusters is NULL!");
     return;
   }
   
@@ -1003,9 +1001,8 @@ void  AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()
   
   Int_t nCaloClusters = pl->GetEntriesFast();
   Int_t idTrig        = GetReader()->GetTriggerClusterIndex();
-  TLorentzVector mom;
 
-  if(GetDebug() > 0) printf("AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms() - Input cluster entries %d\n", nCaloClusters);
+  AliDebug(1,Form("Input cluster entries %d", nCaloClusters));
   
   // Loop on clusters
   for(Int_t icalo = 0; icalo < nCaloClusters; icalo++)
@@ -1013,12 +1010,12 @@ void  AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()
 	  AliVCluster * calo =  (AliVCluster*) (pl->At(icalo));
     //printf("calo %d, %f\n",icalo,calo->E());
     
-    calo->GetMomentum(mom,GetVertex(0)) ;
+    calo->GetMomentum(fMomentum,GetVertex(0)) ;
     
     Float_t tofcluster = calo->GetTOF()*1.e9;
-    Float_t ecluster   = mom.E();
-    Float_t etacluster = mom.Eta();
-    Float_t phicluster = mom.Phi();
+    Float_t ecluster   = fMomentum.E();
+    Float_t etacluster = fMomentum.Eta();
+    Float_t phicluster = fMomentum.Phi();
     if(phicluster < 0) phicluster+=TMath::TwoPi();
     
     FillRawClusterTriggerBCHistograms(calo->GetID(),ecluster,tofcluster,etacluster,phicluster);
@@ -1041,7 +1038,7 @@ void  AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()
     //Check acceptance selection
     if(IsFiducialCutOn())
     {
-      Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,"EMCAL") ;
+      Bool_t in = GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kEMCAL) ;
       if(! in ) continue ;
     }
     
@@ -1091,11 +1088,11 @@ void  AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()
       }
     }
     else if(TMath::Abs(bc) >= 6)
-      printf("AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms() - Trigger BC not expected = %d\n",bc);
+      AliWarning(Form("Trigger BC not expected = %d",bc));
     
   }// cluster loop
   
-  if(GetDebug() > 1) printf("AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()  End fill histograms\n");
+  AliDebug(1,"End fill histograms");
   
 }
 

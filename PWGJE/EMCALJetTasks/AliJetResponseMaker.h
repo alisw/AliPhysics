@@ -67,6 +67,9 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Bool_t                      fIsJet1Rho;                              //!whether the jet1 collection has to be average subtracted
   Bool_t                      fIsJet2Rho;                              //!whether the jet2 collection has to be average subtracted
 
+  TH2                        *fHistRejectionReason1;                   //!Rejection reason vs. jet pt
+  TH2                        *fHistRejectionReason2;                   //!Rejection reason vs. jet pt
+
   // THnSparse
   THnSparse                  *fHistJets1;                              //!jet1 THnSparse
   THnSparse                  *fHistJets2;                              //!jet2 THnSparse
