@@ -627,9 +627,9 @@ Bool_t AliTRDclusterizer::MakeClusters()
     digitsIn->Expand();
     digitsIn->DeleteNegatives();  // Restore digits array to >=0 values
     AliTRDSignalIndex* indexes = fDigitsManager->GetIndexes(i);
-    if (indexes->IsAllocated() == kFALSE){
-      fDigitsManager->BuildIndexes(i);
-    }
+    //    if (indexes->IsAllocated() == kFALSE){ // A.B.
+    fDigitsManager->BuildIndexes(i);
+    //    }
   
     Bool_t fR(kFALSE);
     if (indexes->HasEntry()){

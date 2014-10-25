@@ -16,6 +16,8 @@ public:
     AliESDEvent* GetSelectedEvent(){return fCurrentEvent;}
 	void onExit();
     void SelectedEvent(); //*SIGNAL*
+    void SetOfflineMode(Bool_t);
+
 private:
 	AliStorageAdministratorPanelListEvents();
 	virtual ~AliStorageAdministratorPanelListEvents();
@@ -38,6 +40,11 @@ private:
 	TGCheckButton *fTempCheckButton;
 	TGCheckButton *fPermCheckButton;
 	
+	TGTextButton *fCloseButton;
+	TGTextButton *fGetListButton;
+	TGTextButton *fMarkButton;
+	TGTextButton *fLoadButton;
+
 	TGListBox *fEventsList;
 	
 	void InitWindow();

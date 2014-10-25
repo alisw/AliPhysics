@@ -11,8 +11,9 @@
    V01.01 25/10/2005  RD  Support added for timestamp
    V01.02  4/04/2006  RD  Support for CDH
    V01.03 24/05/2006  RD  Added "Direct disk access" option
+   V01.04 15/10/2010  RD  Added possibility to set the run number
 */
-#define VID "1.03"
+#define VID "1.04"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1492,12 +1493,13 @@ Either work in Collider mode or set the trigger unavailable status bit in the CD
 	  }
 	  if ( softwareTriggerIndicator ) {
 	    switch ((cdh->cdhL1TriggerMessage >> 2) & 0xF) {
-	    case 0xD:
 	    case 0xC:
 	    case 0xB:
 	    case 0xA:
 	    case 0x9:
 	      break;
+	    case 0xD:
+	      /* L1SwC bit = on, Clt bit = off, RoC[4..1] = 0xD --> SYNC */ 
 	    case 0xF:
 	      /* L1SwC bit = on, Clt bit = off, RoC[4..1] = 0xF --> END_OF_DATA */ 
 	    case 0xE:
@@ -1509,7 +1511,7 @@ Either work in Collider mode or set the trigger unavailable status bit in the CD
 	      /*  L1SwC bit = on, Clt bit = off, RoC[4] = 0
 		  --> DETECTOR_SOFTWARE_TRIGGER_EVENT */
 	      fprintf( stderr,
-		       "%s: CDH trigger SOD/EOD/SST/DST (unsupported) \
+		       "%s: CDH trigger SOD/EOD/SST/DST/SYNC (unsupported) \
 L1TriggerMessage:0x%x ALICETrigger:%s\n",
 		       myName,
 		       cdh->cdhL1TriggerMessage,
@@ -1583,11 +1585,11 @@ RoiHigh/Low reference:0x%x-%x current:0x%x-%x\n",
 	if ( cdh->cdhMBZ0 != 0
 	     || cdh->cdhMBZ1 != 0
 	     || cdh->cdhMBZ2 != 0
-	     ) {
+	     || cdh->cdhMBZ4 != 0 ) {
 	  fprintf( stderr,
-		   "%s: CDH check failed. MBZ0:0x%x MBZ1:0x%x MBZ2:0x%x\n",
+		   "%s: CDH check failed. MBZ0:0x%x MBZ1:0x%x MBZ2:0x%x MBZ4:0x%x\n",
 		   myName,
-		   cdh->cdhMBZ0, cdh->cdhMBZ1, cdh->cdhMBZ2 );
+		   cdh->cdhMBZ0, cdh->cdhMBZ1, cdh->cdhMBZ2, cdh->cdhMBZ4 );
 	  exit( 1 );
 	}
       }
@@ -1603,9 +1605,21 @@ RoiHigh/Low reference:0x%x-%x current:0x%x-%x\n",
 	}
       }
       for ( trig = 0; trig != 18; trig++ ) {
-	if ( (cdh->cdhTriggerClassesHigh & (1<<trig)) != 0 ) {
+	if ( (cdh->cdhTriggerClassesMiddleLow & (1<<trig)) != 0 ) {
 	  SET_TRIGGER_IN_PATTERN( ldc->header.eventTriggerPattern,
 				  32+trig );
+	}
+      }
+      for ( trig = 0; trig != 32; trig++ ) {
+	if ( (cdh->cdhTriggerClassesMiddleHigh & (1<<trig)) != 0 ) {
+	  SET_TRIGGER_IN_PATTERN( ldc->header.eventTriggerPattern,
+				  18+32+trig );
+	}
+      }
+      for ( trig = 0; trig != 18; trig++ ) {
+	if ( (cdh->cdhTriggerClassesHigh & (1<<trig)) != 0 ) {
+	  SET_TRIGGER_IN_PATTERN( ldc->header.eventTriggerPattern,
+				  32+18+32+trig );
 	}
       }
       if ( gotAliceTrigger )

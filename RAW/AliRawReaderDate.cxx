@@ -25,20 +25,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliRawReaderDate.h"
-#ifdef ALI_DATE
 #include "event.h"
-#endif
 
 ClassImp(AliRawReaderDate)
 
 
-AliRawReaderDate::AliRawReaderDate(
-#ifdef ALI_DATE
-				   void* event, Bool_t owner
-#else
-				   void* /* event */, Bool_t owner
-#endif
-				   ) :
+AliRawReaderDate::AliRawReaderDate(void* event, Bool_t owner) :
   fFile(NULL),
   fEvent(NULL),
   fSubEvent(NULL),
@@ -49,21 +41,10 @@ AliRawReaderDate::AliRawReaderDate(
 {
 // create an object to read digits from the given date event
 
-#ifdef ALI_DATE
   fEvent = (eventHeaderStruct*) event;
-#else
-  Fatal("AliRawReaderDate", "this class was compiled without DATE");
-#endif
 }
 
-AliRawReaderDate::AliRawReaderDate(
-#ifdef ALI_DATE
-				   const char* fileName, Int_t eventNumber
-#else
-				   const char* /*fileName*/, 
-				   Int_t /*eventNumber*/
-#endif
-				   ) :
+AliRawReaderDate::AliRawReaderDate(const char* fileName, Int_t eventNumber) :
   fFile(NULL),
   fEvent(NULL),
   fSubEvent(NULL),
@@ -74,7 +55,6 @@ AliRawReaderDate::AliRawReaderDate(
 {
 // create an object to read digits from the given date event
 
-#ifdef ALI_DATE
   fFile = fopen(fileName, "rb");
   if (!fFile) {
     Error("AliRawReaderDate", "could not open file %s", fileName);
@@ -97,46 +77,16 @@ AliRawReaderDate::AliRawReaderDate(
     eventNumber--;
   }
 
-#else
-  Fatal("AliRawReaderDate", "this class was compiled without DATE");
-#endif
-}
-
-AliRawReaderDate::AliRawReaderDate(const AliRawReaderDate& rawReader) :
-  AliRawReader(rawReader),
-  fFile(rawReader.fFile),
-  fEvent(rawReader.fEvent),
-  fSubEvent(rawReader.fSubEvent),
-  fEquipment(rawReader.fEquipment),
-  fPosition(rawReader.fPosition),
-  fEnd(rawReader.fEnd),
-  fOwner(rawReader.fOwner)
-
-{
-// copy constructor
-
-  Fatal("AliRawReaderDate", "copy constructor not implemented");
-}
-
-AliRawReaderDate& AliRawReaderDate::operator = (const AliRawReaderDate& 
-						/*rawReader*/)
-{
-// assignment operator
-
-  Fatal("operator =", "assignment operator not implemented");
-  return *this;
 }
 
 AliRawReaderDate::~AliRawReaderDate()
 {
 // destructor
 
-#ifdef ALI_DATE
   if (fEvent && fOwner) delete[] fEvent;
   if (fFile) {
     fclose(fFile);
   }
-#endif
 }
 
 
@@ -144,195 +94,131 @@ UInt_t AliRawReaderDate::GetType() const
 {
 // get the type from the event header
 
-#ifdef ALI_DATE
   if (!fEvent) return 0;
   return fEvent->eventType;
-#else
-  return 0;
-#endif
 }
 
 UInt_t AliRawReaderDate::GetRunNumber() const
 {
 // get the run number from the event header
 
-#ifdef ALI_DATE
   if (!fEvent) return 0;
   return fEvent->eventRunNb;
-#else
-  return 0;
-#endif
 }
 
 const UInt_t* AliRawReaderDate::GetEventId() const
 {
 // get the event id from the event header
 
-#ifdef ALI_DATE
   if (!fEvent) return NULL;
   return fEvent->eventId;
-#else
-  return NULL;
-#endif
 }
 
 const UInt_t* AliRawReaderDate::GetTriggerPattern() const
 {
 // get the trigger pattern from the event header
 
-#ifdef ALI_DATE
   if (!fEvent) return NULL;
   return fEvent->eventTriggerPattern;
-#else
-  return NULL;
-#endif
 }
 
 const UInt_t* AliRawReaderDate::GetDetectorPattern() const
 {
 // get the detector pattern from the event header
 
-#ifdef ALI_DATE
   if (!fEvent) return NULL;
   return fEvent->eventDetectorPattern;
-#else
-  return NULL;
-#endif
 }
 
 const UInt_t* AliRawReaderDate::GetAttributes() const
 {
 // get the type attributes from the event header
 
-#ifdef ALI_DATE
   if (!fEvent) return NULL;
   return fEvent->eventTypeAttribute;
-#else
-  return NULL;
-#endif
 }
 
 const UInt_t* AliRawReaderDate::GetSubEventAttributes() const
 {
 // get the type attributes from the sub event header
 
-#ifdef ALI_DATE
   if (!fSubEvent) return NULL;
   return fSubEvent->eventTypeAttribute;
-#else
-  return NULL;
-#endif
 }
 
 UInt_t AliRawReaderDate::GetLDCId() const
 {
 // get the LDC Id from the event header
 
-#ifdef ALI_DATE
   if (!fSubEvent) return 0;
   return fSubEvent->eventLdcId;
-#else
-  return 0;
-#endif
 }
 
 UInt_t AliRawReaderDate::GetGDCId() const
 {
 // get the GDC Id from the event header
 
-#ifdef ALI_DATE
   if (!fEvent) return 0;
   return fEvent->eventGdcId;
-#else
-  return 0;
-#endif
 }
 
 UInt_t AliRawReaderDate::GetTimestamp() const
 {
 // get the timestamp from the event header
 
-#ifdef ALI_DATE
   if (!fEvent) return 0;
   return fEvent->eventTimestamp;
-#else
-  return 0;
-#endif
 }
 
 Int_t AliRawReaderDate::GetEquipmentSize() const
 {
 // get the size of the equipment (including the header)
 
-#ifdef ALI_DATE
   if (!fEquipment) return 0;
   if (fSubEvent->eventVersion <= 0x00030001) {
     return fEquipment->equipmentSize + sizeof(equipmentHeaderStruct);
   } else {
     return fEquipment->equipmentSize;
   }
-#else
-  return 0;
-#endif
 }
 
 Int_t AliRawReaderDate::GetEquipmentType() const
 {
 // get the type from the equipment header
 
-#ifdef ALI_DATE
   if (!fEquipment) return -1;
   return fEquipment->equipmentType;
-#else
-  return 0;
-#endif
 }
 
 Int_t AliRawReaderDate::GetEquipmentId() const
 {
 // get the ID from the equipment header
 
-#ifdef ALI_DATE
   if (!fEquipment) return -1;
   return fEquipment->equipmentId;
-#else
-  return 0;
-#endif
 }
 
 const UInt_t* AliRawReaderDate::GetEquipmentAttributes() const
 {
 // get the attributes from the equipment header
 
-#ifdef ALI_DATE
   if (!fEquipment) return NULL;
   return fEquipment->equipmentTypeAttribute;
-#else
-  return 0;
-#endif
 }
 
 Int_t AliRawReaderDate::GetEquipmentElementSize() const
 {
 // get the basic element size from the equipment header
 
-#ifdef ALI_DATE
   if (!fEquipment) return 0;
   return fEquipment->equipmentBasicElementSize;
-#else
-  return 0;
-#endif
 }
 
 Int_t AliRawReaderDate::GetEquipmentHeaderSize() const
 {
   // Get the equipment header size
   // 28 bytes by default
-#ifdef ALI_DATE
   return sizeof(equipmentHeaderStruct);
-#else
-  return 0;
-#endif
 }
 
 Bool_t AliRawReaderDate::ReadHeader()
@@ -342,7 +228,6 @@ Bool_t AliRawReaderDate::ReadHeader()
 
   fErrorCode = 0;
 
-#ifdef ALI_DATE
   fHeader = NULL;
   if (!fEvent) return kFALSE;
   // check whether there are sub events
@@ -414,7 +299,7 @@ Bool_t AliRawReaderDate::ReadHeader()
       // check that there are enough bytes left for the data header
       if (fPosition + sizeof(AliRawDataHeader) > fEnd) {
 	Error("ReadHeader", "could not read data header data!");
-	Warning("ReadHeader", "skipping %d bytes\n"
+	Warning("ReadHeader", "skipping %ld bytes\n"
 		" run: %d  event: %d %d  LDC: %d  GDC: %d\n", 
 		fEnd - fPosition, fSubEvent->eventRunNb, 
 		fSubEvent->eventId[0], fSubEvent->eventId[1],
@@ -436,7 +321,7 @@ Bool_t AliRawReaderDate::ReadHeader()
 	  if ((fHeader->fSize != 0xFFFFFFFF) &&
 	      (fEquipment->equipmentId != 4352))
 	    Warning("ReadHeader",
-		    "raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
+		    "raw data size found in the header is wrong (%d != %ld)! Using the equipment size instead !",
 		    fHeader->fSize, fEnd - fPosition);
 	  fHeader->fSize = fEnd - fPosition;
 	}
@@ -448,7 +333,7 @@ Bool_t AliRawReaderDate::ReadHeader()
 	  if ((fHeaderV3->fSize != 0xFFFFFFFF) &&
 	      (fEquipment->equipmentId != 4352))
 	    Warning("ReadHeader",
-		    "raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
+		    "raw data size found in the header is wrong (%d != %ld)! Using the equipment size instead !",
 		    fHeaderV3->fSize, fEnd - fPosition);
 	  fHeaderV3->fSize = fEnd - fPosition;
 	}
@@ -463,7 +348,7 @@ Bool_t AliRawReaderDate::ReadHeader()
       // check consistency of data size in the header and in the sub event
       if (fPosition + fCount > fEnd) {
 	Error("ReadHeader", "size in data header exceeds event size!");
-	Warning("ReadHeader", "skipping %d bytes\n"
+	Warning("ReadHeader", "skipping %ld bytes\n"
 		" run: %d  event: %d %d  LDC: %d  GDC: %d\n", 
 		fEnd - fPosition, fSubEvent->eventRunNb, 
 		fSubEvent->eventId[0], fSubEvent->eventId[1],
@@ -480,7 +365,7 @@ Bool_t AliRawReaderDate::ReadHeader()
       // check consistency of data size in the header and in the sub event
       if (fPosition + fCount > fEnd) {
 	Error("ReadHeader", "size in data header exceeds event size!");
-	Warning("ReadHeader", "skipping %d bytes\n"
+	Warning("ReadHeader", "skipping %ld bytes\n"
 		" run: %d  event: %d %d  LDC: %d  GDC: %d\n", 
 		fEnd - fPosition, fSubEvent->eventRunNb, 
 		fSubEvent->eventId[0], fSubEvent->eventId[1],
@@ -498,9 +383,6 @@ Bool_t AliRawReaderDate::ReadHeader()
   } while (!fEquipment || !IsSelected());
 
   return kTRUE;
-#else
-  return kFALSE;
-#endif
 }
 
 Bool_t AliRawReaderDate::ReadNextData(UChar_t*& data)
@@ -540,10 +422,8 @@ Bool_t AliRawReaderDate::Reset()
 {
 // reset the current position to the beginning of the event
 
-#ifdef ALI_DATE
   fSubEvent = NULL;
   fEquipment = NULL;
-#endif
   fCount = 0;
   fPosition = fEnd = NULL;
   fHeader=NULL;
@@ -556,7 +436,6 @@ Bool_t AliRawReaderDate::NextEvent()
 {
 // go to the next event in the date file
 
-#ifdef ALI_DATE
   if (!fFile) {
     if (fEventNumber < 0 && fEvent) {
       fEventNumber++;
@@ -590,7 +469,6 @@ Bool_t AliRawReaderDate::NextEvent()
   };
 
   fEvent = NULL;
-#endif
 
   return kFALSE;
 }
@@ -611,7 +489,6 @@ Int_t AliRawReaderDate::CheckData() const
 {
 // check the consistency of the data
 
-#ifdef ALI_DATE
   if (!fEvent) return 0;
   // check whether there are sub events
   if (fEvent->eventSize <= fEvent->eventHeadSize) return 0;
@@ -665,7 +542,7 @@ Int_t AliRawReaderDate::CheckData() const
       if ((position + header->fSize) != end) {
 	if (header->fSize != 0xFFFFFFFF)
 	  Warning("ReadHeader",
-		  "raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
+		  "raw data size found in the header is wrong (%d != %ld)! Using the equipment size instead !",
 		  header->fSize, end - position);
 	header->fSize = end - position;
 	result |= kErrSize;
@@ -674,7 +551,6 @@ Int_t AliRawReaderDate::CheckData() const
     position = end;
   };
 
-#endif
   return 0;
 }
 
@@ -686,7 +562,6 @@ AliRawReader* AliRawReaderDate::CloneSingleEvent() const
   // access to the current raw data within
   // several threads (online event display/reco)
 
-#ifdef ALI_DATE
   if (fEvent) {
     UInt_t evSize = fEvent->eventSize;
     if (evSize) {
@@ -695,8 +570,5 @@ AliRawReader* AliRawReaderDate::CloneSingleEvent() const
       return new AliRawReaderDate((void *)newEvent,kTRUE);
     }
   }
-#else
-  Fatal("AliRawReaderDate", "this class was compiled without DATE");
-#endif
   return NULL;
 }

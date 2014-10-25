@@ -104,7 +104,6 @@ public:
   
 protected:
   TClonesArray* fClusters;    // externally supplied clusters
-  AliITSURecoLayer* fLayer;   // layer id
   int   fVIDOffset;           // offset of VID for detectors of this layer
   int   fNClusters;           // N clusters
   //

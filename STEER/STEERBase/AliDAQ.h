@@ -81,6 +81,13 @@ class AliDAQ: public TObject {
 		     kZDC = 0x8000, kACORDE = 0x10000, kTRG = 0x20000, kEMCAL = 0x40000,
 		     kDAQTEST = 0x80000, kMFT = 0x100000, kFIT = 0x200000, kHLT = 0x40000000};
 
+  enum DetectorBitsQualityFlag {kACORDE_QF   = 0x000001, kAD_QF       = 0x000002, kCPV_QF  = 0x000004, kDAQ_TEST_QF = 0x000008, 
+				kEMCAL_QF    = 0x000010, kFMD_QF      = 0x000020, kHLT_QF  = 0x000040, kHMPID_QF    = 0x000080, 
+				kMUON_TRG_QF = 0x000100, kMUON_TRK_QF = 0x000200, kPHOS_QF = 0x000400, kPMD_QF      = 0x000800, 
+				kSDD_QF      = 0x001000, kSPD_QF      = 0x002000, kSSD_QF  = 0x004000, kT0_QF       = 0x008000, 
+				kTOF_QF      = 0x010000, kTPC_QF      = 0x020000, kTRD_QF  = 0x040000, kTRIGGER_QF  = 0x080000, 
+				kV0_QF       = 0x100000, kZDC_QF      = 0x200000};
+
  private:
 
   static const char *fgkDetectorName[kNDetectors]; // Detector names

@@ -284,7 +284,8 @@ void AliTPCPreprocessorOffline::UpdateOCDBDrift( Int_t ustartRun, Int_t uendRun,
   metaData->SetComment("Calibration of the time dependence of the drift velocity");
   AliCDBId* id1=NULL;
   id1=new AliCDBId("TPC/Calib/TimeDrift", ustartRun, uendRun);
-  storage->Put(fVdriftArray, (*id1), metaData);
+  Bool_t status= storage->Put(fVdriftArray, (*id1), metaData); 
+  if (status==kFALSE) fCalibrationStatus|=kCalibFailedExport ;
 }
 
 Bool_t AliTPCPreprocessorOffline::ValidateTimeGain()
@@ -400,8 +401,8 @@ void AliTPCPreprocessorOffline::UpdateDriftParam(AliTPCParam *param, TObjArray *
   metaData->SetComment("Updated calibration of nominal time 0");
   AliCDBId* id1=NULL;
   id1=new AliCDBId("TPC/Calib/Parameters", lstartRun, AliCDBRunRange::Infinity());
-  fOCDBstorage->Put(param, (*id1), metaData);
-
+  Bool_t status = fOCDBstorage->Put(param, (*id1), metaData);
+  if (status==kFALSE) fCalibrationStatus|=kCalibFailedExport ;
 }
 
 

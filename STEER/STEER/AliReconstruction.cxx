@@ -4212,6 +4212,7 @@ Bool_t AliReconstruction::GetEventInfo()
   UChar_t clustmask = 0;
   TString trclasses;
   ULong64_t trmask = fEventInfo.GetTriggerMask();
+  ULong64_t trmaskNext50 = fEventInfo.GetTriggerMaskNext50();
   const TObjArray& classesArray = config->GetClasses();
   Int_t nclasses = classesArray.GetEntriesFast();
   for( Int_t iclass=0; iclass < nclasses; iclass++ ) {
@@ -4226,6 +4227,13 @@ Bool_t AliReconstruction::GetEventInfo()
 	trclasses += " ";
 	clustmask |= trclass->GetCluster()->GetClusterMask();
       }
+      if (trmaskNext50 & (1ull << trindex)) {
+	trclasses += " ";
+	trclasses += trclass->GetName();
+	trclasses += " ";
+	clustmask |= trclass->GetCluster()->GetClusterMask();
+      }
+
     }
   }
   fEventInfo.SetTriggerClasses(trclasses);
@@ -4261,6 +4269,7 @@ Bool_t AliReconstruction::GetEventInfo()
   // Set the information in ESD
   if (fesd) {
     fesd->SetTriggerMask(trmask);
+    fesd->SetTriggerMaskNext50(trmaskNext50);
     fesd->SetTriggerCluster(clustmask);
   }
 

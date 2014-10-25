@@ -25,6 +25,8 @@
 #include "AliEventServer.h"
 #include "AliEventServerReconstruction.h"
 
+#include <dic.hxx>
+
 ClassImp(AliEventServer)
 
 using namespace std;
@@ -40,6 +42,23 @@ AliEventServer::AliEventServer() :
 	}
 	FillRunsFromDatabase();
 	InitDIMListeners();
+
+	DimCurrentInfo SORrunNumber("/LOGBOOK/SUBSCRIBE/DAQ_SOR_PHYSICS_1",-1); 
+	DimCurrentInfo EORrunNumber("/LOGBOOK/SUBSCRIBE/DAQ_EOR_PHYSICS_1",-1);
+
+	int currentSOR=-1,currentEOR=-1;
+
+	if(SORrunNumber.getData() && EORrunNumber.getData())
+	  {
+	    currentSOR = SORrunNumber.getInt();
+	    currentEOR = EORrunNumber.getInt();
+
+	    cout<<"RECO Server -- current SOR signal:"<<currentSOR<<endl;
+	    cout<<"RECO Server -- current EOR signal:"<<currentEOR<<endl;
+	  }
+	else{cout<<"RECO Server -- no data received from dim server"<<endl;}
+
+	if(currentSOR != currentEOR){StartOfRun(currentSOR);}
 }
 
 AliEventServer::~AliEventServer()
@@ -81,8 +100,14 @@ void AliEventServer::StartOfRun(Int_t run)
 {
   cout<<"SOR signal received for run:"<<run<<endl;
   if(run<=0) return;
+  /*
+  while(!fRecoServer->StopReconstruction())
+    {
+      cout<<"Waiting for previous reco to be fully initialized"<<endl;
+      sleep(10);
+      }*/
   fRecoServer->StopReconstruction();
-	
+
   TEnv settings;
   settings.ReadFile(AliEventServerUtil::GetPathToServerConf(), kEnvUser);
     
@@ -128,7 +153,7 @@ void AliEventServer::FillRunsFromDatabase()
 	TSQLServer* server = TSQLServer::Connect(connStr.Data(), user.Data(), password.Data());
 	if (!server)
 	{
-	  cout<<"ERROR: Could not connect to DAQ Logbook"<<endl;
+	  cout<<"AliEventServer -- ERROR: Could not connect to DAQ Logbook"<<endl;
 		return;
 	}
 	TString sqlQuery;

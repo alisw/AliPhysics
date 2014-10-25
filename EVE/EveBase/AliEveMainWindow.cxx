@@ -43,7 +43,7 @@ AliEveMainWindow::AliEveMainWindow(const char* title, UInt_t width, UInt_t heigh
       fMenuHelp(0),
       fToolBar(0),
       fPicturePool(0),
-      fEve(0),
+//      fEve(0),
       fFileDialog(0)
 {
 	static const TEveException kEH("AliEveMainWindow");
@@ -52,7 +52,7 @@ AliEveMainWindow::AliEveMainWindow(const char* title, UInt_t width, UInt_t heigh
     AliEveUtil::Init();
     fPicturePool = AliEveUtil::GetPicturePool();
    
-    fEve = TEveManager::Create(kFALSE, "VVV");
+//    fEve = TEveManager::Create(kFALSE, "VVV");
     gEve->GetDefaultViewer()->SetElementName("3D View");
     gEve->GetSelection()->SetPickToSelect(TEveSelection::kPS_PableCompound);
     gEve->GetHighlight()->SetPickToSelect(TEveSelection::kPS_PableCompound);
@@ -86,7 +86,7 @@ AliEveMainWindow::AliEveMainWindow(const char* title, UInt_t width, UInt_t heigh
 
 AliEveMainWindow::~AliEveMainWindow()
 {
-    if(fEve) delete fEve;
+//    if(fEve) delete fEve;
 }
 
 void AliEveMainWindow::onMenuFileItem(UInt_t id)
