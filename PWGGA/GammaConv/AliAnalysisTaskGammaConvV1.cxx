@@ -421,7 +421,8 @@ void AliAnalysisTaskGammaConvV1::InitBack(){
 				fBGHandler[iCut] = new AliGammaConversionAODBGHandler(
 																	collisionSystem,centMin,centMax,
 																	((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetNumberOfBGEvents(),
-																	((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity());
+																	((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity(),
+																	0,8,5);
 				fBGHandlerRP[iCut] = NULL;
 			} else {
 				fBGHandlerRP[iCut] = new AliConversionAODBGHandlerRP(
@@ -508,7 +509,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
-		if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 3 ){
+		if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 1 ){ 
 			TString TriggerNames = "Not Trigger: ";
 			TriggerNames = TriggerNames+ ( (AliConvEventCuts*)fEventCutArray->At(iCut))->GetSpecialTriggerName();
 			hNEvents[iCut]->GetXaxis()->SetBinLabel(4,TriggerNames.Data());
@@ -609,10 +610,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 				hESDMotherEtaPtAlpha[iCut] = new TH2F("ESD_MotherEta_Pt_Alpha","ESD_MotherEta_Pt_Alpha",150,0.03,15.,100,0,1);
 				SetLogBinningXTH2(hESDMotherEtaPtAlpha[iCut]);
 				fESDList[iCut]->Add(hESDMotherEtaPtAlpha[iCut]);
-				hESDMotherPi0PtOpenAngle[iCut] = new TH2F("ESD_MotherPi0_Pt_OpenAngle","ESD_MotherPi0_Pt_OpenAngle",150,0.03,15.,200,0,2*TMath::Pi());            
+				hESDMotherPi0PtOpenAngle[iCut] = new TH2F("ESD_MotherPi0_Pt_OpenAngle","ESD_MotherPi0_Pt_OpenAngle",150,0.03,15.,100,0,TMath::Pi());            
 				SetLogBinningXTH2(hESDMotherPi0PtOpenAngle[iCut]);
 				fESDList[iCut]->Add(hESDMotherPi0PtOpenAngle[iCut]);
-				hESDMotherEtaPtOpenAngle[iCut] = new TH2F("ESD_MotherEta_Pt_OpenAngle","ESD_MotherEta_Pt_OpenAngle",150,0.03,15.,200,0,2*TMath::Pi());            
+				hESDMotherEtaPtOpenAngle[iCut] = new TH2F("ESD_MotherEta_Pt_OpenAngle","ESD_MotherEta_Pt_OpenAngle",150,0.03,15.,100,0,TMath::Pi());            
 				SetLogBinningXTH2(hESDMotherEtaPtOpenAngle[iCut]);
 				fESDList[iCut]->Add(hESDMotherEtaPtOpenAngle[iCut]);
 			}

@@ -37,7 +37,10 @@ ClassImp(AliAnaRandomTrigger)
 //__________________________________________
 AliAnaRandomTrigger::AliAnaRandomTrigger() : 
     AliAnaCaloTrackCorrBaseClass(),
-    fDetector("EMCAL"), fRandom(0), fNRandom(0),
+    fTriggerDetector(kEMCAL),
+    fTriggerDetectorString("EMCAL"),
+    fRandom(0),         fNRandom(0),
+    fMomentum(),
     fhE(0),             fhPt(0),
     fhPhi(0),           fhEta(0), 
     fhEtaPhi(0) 
@@ -54,8 +57,8 @@ Bool_t AliAnaRandomTrigger::ExcludeDeadBadRegions(Float_t eta, Float_t phi)
 {
   // Check if there is a dead or bad region in a detector
   // Now only EMCAL
-  
-  if(fDetector!="EMCAL") return kFALSE;
+
+  if(fTriggerDetector!=kEMCAL) return kFALSE;
   
   //-------------------------------------
   // Get the corresponding cell in EMCAL, check if it exists in acceptance (phi gaps, borders)
@@ -65,7 +68,7 @@ Bool_t AliAnaRandomTrigger::ExcludeDeadBadRegions(Float_t eta, Float_t phi)
   if(!GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(eta,phi, absId)) return kTRUE; // remove if out of EMCAL acceptance, phi gaps
   
   Int_t icol = -1, irow = -1, iRCU = -1;
-  Int_t sm = GetCaloUtils()->GetModuleNumberCellIndexes(absId,"EMCAL", icol, irow, iRCU);
+  Int_t sm = GetCaloUtils()->GetModuleNumberCellIndexes(absId,kEMCAL, icol, irow, iRCU);
   
   //printf("eta %f, phi %f, ieta %d, iphi %d, sm %d\n",eta,phi,icol,irow,sm);
   
@@ -140,17 +143,17 @@ TObjString *  AliAnaRandomTrigger::GetAnalysisCuts()
   const Int_t buffersize = 255;
   char onePar[buffersize] ;
   
-  snprintf(onePar,buffersize,"--- AliAnaRandomTrigger ---\n") ;
+  snprintf(onePar,buffersize,"--- AliAnaRandomTrigger ---:") ;
   parList+=onePar ;	
-  snprintf(onePar,buffersize,"Detector: %s\n"    , fDetector.Data()) ;
+  snprintf(onePar,buffersize,"Detector: %s;"    , fTriggerDetectorString.Data()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"N per event = %d\n", fNRandom       ) ;
+  snprintf(onePar,buffersize,"N per event = %d;", fNRandom       ) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Min E   = %3.2f - Max E   = %3.2f\n", GetMinPt(), GetMaxPt()) ;
+  snprintf(onePar,buffersize,"Min E   = %3.2f - Max E   = %3.2f;", GetMinPt(), GetMaxPt()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Min Eta = %3.2f - Max Eta = %3.2f\n", fEtaCut[0], fEtaCut[1]) ;
+  snprintf(onePar,buffersize,"Min Eta = %3.2f - Max Eta = %3.2f;", fEtaCut[0], fEtaCut[1]) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Min Phi = %3.2f - Max Phi = %3.2f\n", fPhiCut[0], fPhiCut[1]) ;
+  snprintf(onePar,buffersize,"Min Phi = %3.2f - Max Phi = %3.2f;", fPhiCut[0], fPhiCut[1]) ;
   parList+=onePar ;
    
   return new TObjString(parList) ;
@@ -225,7 +228,7 @@ void AliAnaRandomTrigger::Print(const Option_t * opt) const
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
   AliAnaCaloTrackCorrBaseClass::Print(" ");	
 
-  printf("Detector = %s\n",  fDetector.Data());
+  printf("Detector = %s\n",  fTriggerDetectorString.Data());
   printf("Min E   = %3.2f - Max E   = %3.2f\n", GetMinPt(), GetMaxPt());
   printf("Min Eta = %3.2f - Max Eta = %3.2f\n", fEtaCut[0], fEtaCut[1]);
   printf("Min Phi = %3.2f - Max Phi = %3.2f\n", fPhiCut[0], fPhiCut[1]);
@@ -260,21 +263,18 @@ void  AliAnaRandomTrigger::MakeAnalysisFillAOD()
     }
     
     // Create the AOD trigger object
-    TLorentzVector mom;
-    mom.SetPtEtaPhiM(pt,eta,phi,0);
+    fMomentum.SetPtEtaPhiM(pt,eta,phi,0);
     
-    AliAODPWG4Particle trigger = AliAODPWG4Particle(mom);
-    trigger.SetDetector(fDetector);
+    AliAODPWG4Particle trigger = AliAODPWG4Particle(fMomentum);
+    trigger.SetDetectorTag(fTriggerDetector);
     
-    if(GetDebug() > 1) 
-      printf("AliAnaRandomTrigger::MakeAnalysisFillAOD() -  iRandom %d, Trigger e %2.2f pt %2.2f, phi %2.2f, eta %2.2f \n",
-             irandom, trigger.E(), trigger.Pt(), trigger.Phi(), trigger.Eta());
+    AliDebug(1,Form("iRandom %d, Trigger e %2.2f pt %2.2f, phi %2.2f, eta %2.2f",
+                    irandom, trigger.E(), trigger.Pt(), trigger.Phi(), trigger.Eta()));
     
     AddAODParticle(trigger);
   }
   
-  if(GetDebug() > 0) 	
-    printf("AliAnaRandomTrigger::MakeAnalysisFillAOD() - Final aod branch entries %d\n", GetOutputAODBranch()->GetEntriesFast());   
+  AliDebug(1,Form("Final aod branch entries %d", GetOutputAODBranch()->GetEntriesFast()));
 } 
 
 //_____________________________________________________
@@ -285,8 +285,7 @@ void  AliAnaRandomTrigger::MakeAnalysisFillHistograms()
   //Loop on stored AODParticles
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
   
-  if(GetDebug() > 0) 
-    printf("AliAnaRandomTrigger::MakeAnalysisFillHistograms() - aod branch entries %d, fNRandom %d\n", naod, fNRandom);
+  AliDebug(1,Form("AOD branch entries %d, fNRandom %d", naod, fNRandom));
   
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {
@@ -301,3 +300,38 @@ void  AliAnaRandomTrigger::MakeAnalysisFillHistograms()
   }// aod branch loop
   
 }
+
+
+//_________________________________________________________
+void AliAnaRandomTrigger::SetTriggerDetector(TString & det)
+{
+  // Set the detrimeter for the analysis
+  
+  fTriggerDetectorString = det;
+  
+  if     (det=="EMCAL") fTriggerDetector = kEMCAL;
+  else if(det=="PHOS" ) fTriggerDetector = kPHOS;
+  else if(det=="CTS")   fTriggerDetector = kCTS;
+  else if(det=="DCAL")  fTriggerDetector = kDCAL;
+  else if(det.Contains("DCAL") && det.Contains("PHOS")) fTriggerDetector = kDCALPHOS;
+  else AliFatal(Form("Detector < %s > not known!", det.Data()));
+  
+}
+
+//______________________________________________________
+void AliAnaRandomTrigger::SetTriggerDetector(Int_t det)
+{
+  // Set the detrimeter for the analysis
+  
+  fTriggerDetector = det;
+  
+  if     (det==kEMCAL)    fTriggerDetectorString = "EMCAL";
+  else if(det==kPHOS )    fTriggerDetectorString = "PHOS";
+  else if(det==kCTS)      fTriggerDetectorString = "CTS";
+  else if(det==kDCAL)     fTriggerDetectorString = "DCAL";
+  else if(det==kDCALPHOS) fTriggerDetectorString = "DCAL_PHOS";
+  else AliFatal(Form("Detector < %d > not known!", det));
+  
+}
+
+

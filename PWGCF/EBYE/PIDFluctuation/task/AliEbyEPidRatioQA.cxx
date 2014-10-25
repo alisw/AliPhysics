@@ -236,14 +236,30 @@ void AliEbyEPidRatioQA::Process() {
 
     if (iPid != 0) { 
 
-      Double_t aTracka[10] = {fCentralityBin,0,track->Charge(),track->Pt(),track->GetTPCmomentum(),track->GetTPCsignal(),pid[0],pid[1],pid[2],isProbeParticle};   
-      Double_t aTrackb[9] = {fCentralityBin,0,track->Charge(),track->Pt(),track->Eta(),yP, track->Phi(),dca[0],dca[1]};
+      Double_t aTracka[10] = {fCentralityBin,0,
+			      static_cast<Double_t>(track->Charge()),
+			      track->Pt(),
+			      track->GetTPCmomentum(),track->GetTPCsignal(),pid[0],pid[1],pid[2],
+			      static_cast<Double_t>(isProbeParticle)};   
+      Double_t aTrackb[9] = {fCentralityBin,0,
+			     static_cast<Double_t>(track->Charge()),
+			     track->Pt(),track->Eta(),yP, 
+			     track->Phi(),dca[0],dca[1]};
       fHnQAa->Fill(aTracka);
       fHnQAb->Fill(aTrackb);
     }
    
-    Double_t aTracka[10] = {fCentralityBin,iPid,track->Charge(),track->Pt(),track->GetTPCmomentum(),track->GetTPCsignal(),pid[0],pid[1],pid[2],isProbeParticle};   
-    Double_t aTrackb[9] = {fCentralityBin,iPid,track->Charge(),track->Pt(),track->Eta(),yP, track->Phi(),dca[0],dca[1]};
+    Double_t aTracka[10] = {fCentralityBin,
+			    static_cast<Double_t>(iPid),
+			    static_cast<Double_t>(track->Charge()),
+			    track->Pt(),
+			    track->GetTPCmomentum(),
+			    track->GetTPCsignal(),pid[0],pid[1],pid[2],
+			    static_cast<Double_t>(isProbeParticle)};   
+    Double_t aTrackb[9] = {fCentralityBin,
+			   static_cast<Double_t>(iPid),
+			   static_cast<Double_t>(track->Charge()),
+			   track->Pt(),track->Eta(),yP, track->Phi(),dca[0],dca[1]};
       fHnQAa->Fill(aTracka);
       fHnQAb->Fill(aTrackb);
 

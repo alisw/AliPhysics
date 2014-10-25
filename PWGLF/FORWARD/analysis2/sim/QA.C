@@ -8,14 +8,20 @@
  * @note Do not modify this script. 
  *
  *
- * This script reads in two other scripts 
+ * This script reads in 4 other scripts 
  *
  * - GRP.C to load the global run parameters for the selected run,
  *   such as collision system, energy, etc.
  * 
  * - AODConfig.C which defines a number of functions that return
  *   either true or false.  The tasks added depends on these functions
+ *
+ * - BaseConfig.C which defines some base classes 
  * 
+ * - DetConfig.C which defines which detectors are active and on. 
+ * 
+ * Users can customize QAConfig.C and DetConfig.C according to their
+ * needs
  */
 // Trigger mask.
 UInt_t kTriggerInt        = AliVEvent::kAnyINT;
@@ -109,6 +115,47 @@ struct VirtualQACfg
   virtual Bool_t DoV0()          const = 0;
   /** @return Get Debug level */
   virtual Int_t DebugLevel() const = 0;
+
+  virtual void PrintOne(const char* title, Bool_t use) const 
+  {
+    Printf("%-30s : %3s", title, use ? "yes" : "no");
+  }
+  virtual void Print() const 
+  {
+    PrintOne("CDBconnect ",  		DoCDBconnect());
+    PrintOne("EventStat ",   		DoEventStat());
+    PrintOne("Centrality ",  		DoCentrality());
+    PrintOne("QAsym ",       		DoQAsym());
+    PrintOne("VZERO",       		DoVZERO());
+    PrintOne("VZEROPbPb ",   		DoVZEROPbPb());
+    PrintOne("Vertex ",      		DoVertex());
+    PrintOne("SPD  needs RP   ",        DoSPD());
+    PrintOne("TPC ",         		DoTPC());
+    PrintOne("HLT ",         		DoHLT());
+    PrintOne("SDD  needs RP",         	DoSDD());
+    PrintOne("SSDdEdx ",     		DoSSDdEdx());
+    PrintOne("TRD ",         		DoTRD());
+    PrintOne("ITS ",         		DoITS());
+    PrintOne("ITSsaTracks ", 		DoITSsaTracks());
+    PrintOne("ITSalign ",    		DoITSalign());
+    PrintOne("CALO ",        		DoCALO());
+    PrintOne("MUONTrig ",    		DoMUONTrig());
+    PrintOne("ImpParRes ",   		DoImpParRes());
+    PrintOne("MUON ",        		DoMUON());
+    PrintOne("TOF ",         		DoTOF());
+    PrintOne("HMPID ",       		DoHMPID());
+    PrintOne("T0 ",          		DoT0());
+    PrintOne("ZDC ",         		DoZDC());
+    PrintOne("PIDResponse ", 		DoPIDResponse());
+    PrintOne("PIDqa ",       		DoPIDqa());
+    PrintOne("FWD ",         		DoFWD());
+    PrintOne("PHOS ",        		DoPHOS());
+    PrintOne("PHOSTrig ",    		DoPHOSTrig());
+    PrintOne("EMCAL ",       		DoEMCAL());
+    PrintOne("FBFqa ",       		DoFBFqa());
+    PrintOne("MUONEff NEEDS geometry",	DoMUONEff());
+    PrintOne("V0  NEEDS MCtruth ",      DoV0());
+  }
 };
 VirtualQACfg* qaCfg = 0;
 
@@ -137,7 +184,8 @@ void LoadLibraries()
   gSystem->Load("libPWGPP.so");
   gSystem->Load("libAliHLTTrigger.so");
 
-  if (qaCfg->DoEMCAL() || qaCfg->DoPHOS() || 
+  if ((qaCfg->DoEMCAL() && detCfg->UseEMCAL()) || 
+      ((qaCfg->DoPHOS() || qaCfg->DoPHOSTrig())  && detCfg->UsePHOS()) || 
       (qaCfg->DoCALO() && !is10h)) {
     gSystem->Load("libEMCALUtils");
     gSystem->Load("libPHOSUtils");
@@ -149,12 +197,12 @@ void LoadLibraries()
     gSystem->Load("libPWGEMCAL");
     gSystem->Load("libPWGGAEMCALTasks");
   }  
-  if(qaCfg->DoMUON() || qaCfg->DoMUONTrig()) {
+  if((qaCfg->DoMUON() || qaCfg->DoMUONTrig()) && detCfg->UseMUON()) {
     gSystem->Load("libPWGmuon");
     gSystem->Load("libPWGPPMUONlite");
     gSystem->Load("libPWGmuondep");
   }
-  if (qaCfg->DoFWD()) {
+  if (qaCfg->DoFWD() && detCfg->UseFMD()) {
     gSystem->Load("libPWGLFforward2");
   }      
 }
@@ -234,11 +282,11 @@ void AddAnalysisTasks(const char *cdb_location)
 						 kTriggerMuonBarell);
   }  
   // --- VZERO QA  (C. Cheshkov) -------------------------------------
-  if (qaCfg->DoVZERO()) {
+  if (qaCfg->DoVZERO() && detCfg->UseVZERO()) {
     gROOT->LoadMacro(pwgpp+"/PilotTrain/AddTaskVZEROQA.C");
     AliAnalysisTaskSE * taskv0qa = AddTaskVZEROQA(0);
   }
-  if (qaCfg->DoVZEROPbPb() && grp->IsAA()) {
+  if (qaCfg->DoVZEROPbPb() && detCfg->UseVZERO() && grp->IsAA()) {
     gROOT->LoadMacro(pwgpp+"/VZERO/AddTaskVZEROPbPb.C");
     AliAnaVZEROPbPb* taskV0PbPb = 
       (AliAnaVZEROPbPb*)AddTaskVZEROPbPb(Int_t(grp->run));
@@ -252,7 +300,7 @@ void AddAnalysisTasks(const char *cdb_location)
   //   the 2st argument to false
   // - Optionally highMult axis can be used by setting the 3st
   //   argument to true (for PbPb)
-  if (qaCfg->DoTPC()) {
+  if (qaCfg->DoTPC() && detCfg->UseTPC()) {
     gROOT->LoadMacro(pwgpp+"/TPC/macros/AddTaskPerformanceTPCdEdxQA.C");
     AliPerformanceTask *tpcQA = 0;
     if (grp->IsAA()) {
@@ -267,13 +315,14 @@ void AddAnalysisTasks(const char *cdb_location)
   }  
 
   // --- HLT (Alberica Toia) -----------------------------------------
-  if (qaCfg->DoHLT()) {
+  if (qaCfg->DoHLT() && detCfg->UseTPC()) {
     gROOT->LoadMacro(pwgpp+"/TPC/macros/AddTaskPerformanceTPCdEdxQA.C");
-    AliPerformanceTask *hltQA = AddTaskPerformanceTPCdEdxQA(kTRUE, kTRUE, kFALSE,0,kTRUE);
+    AliPerformanceTask *hltQA = AddTaskPerformanceTPCdEdxQA(kTRUE, kTRUE, 
+							    kFALSE,0,kTRUE);
     hltQA->SelectCollisionCandidates(kTriggerMask);
   }  
   // --- SPD (A. Mastroserio) ----------------------------------------
-  if (qaCfg->DoSPD()) {
+  if (qaCfg->DoSPD() && detCfg->UseITS()) {
     gROOT->LoadMacro(pwgpp+"/PilotTrain/AddTaskSPDQA.C");
     AliAnalysisTaskSPD* taskspdqa = (AliAnalysisTaskSPD*)AddTaskSPDQA();
     // Request from Annalisa
@@ -282,20 +331,20 @@ void AddAnalysisTasks(const char *cdb_location)
     taskspdqa->SetOCDBInfo(grp->run, "raw://");
   }  
   // --- SDD (F. Prino) ----------------------------------------------
-  if (qaCfg->DoSDD()) {
+  if (qaCfg->DoSDD() && detCfg->UseITS()) {
     gROOT->LoadMacro(pwgpp+"/PilotTrain/AddSDDPoints.C");
     AliAnalysisTaskSE* tasksdd = AddSDDPoints();
     tasksdd->SelectCollisionCandidates(kTriggerMask);
   }
   // --- SSD dEdx (Marek Chojnacki) ----------------------------------
-  if (qaCfg->DoSSDdEdx()) {
+  if (qaCfg->DoSSDdEdx() && detCfg->UseITS()) {
     gROOT->LoadMacro(pwgpp+"/PilotTrain/AddTaskdEdxSSDQA.C");
     AliAnalysisTaskSE* taskssddedx = AddTaskdEdxSSDQA();
     taskssddedx->SelectCollisionCandidates(kTriggerMask);
   }
 
   // --- ITS ---------------------------------------------------------
-  if (qaCfg->DoITS()) {
+  if (qaCfg->DoITS() && detCfg->UseITS()) {
     // hardcoded non-zero trigger mask
     gROOT->LoadMacro(pwgpp+"/macros/AddTaskPerformanceITS.C");
     AliAnalysisTaskITSTrackingCheck *itsQA = 0;
@@ -312,20 +361,20 @@ void AddAnalysisTasks(const char *cdb_location)
     }
   }
   // --- ITS saTracks, align (F.Prino) -------------------------------
-  if (qaCfg->DoITSsaTracks()) {
+  if (qaCfg->DoITSsaTracks() && detCfg->UseITS()) {
     // offline trigger in AddTask
     gROOT->LoadMacro(pwgpp+"/macros/AddTaskITSsaTracks.C");
     AliAnalysisTaskITSsaTracks *itssaTracks = AddTaskITSsaTracks(kTRUE,kFALSE);
     itssaTracks->SelectCollisionCandidates(kTriggerMask);
   }   
-  if (qaCfg->DoITSalign()) {
+  if (qaCfg->DoITSalign() && detCfg->UseITS()) {
     // no offline trigger selection
      gROOT->LoadMacro(pwgpp+"/macros/AddTaskITSAlign.C");
      AliAnalysisTaskITSAlignQA *itsAlign = AddTaskITSAlign(0,2011);
   }   
 
   // --- TRD (Alex Bercuci, M. Fasel) --------------------------------
-  if(qaCfg->DoTRD()) {
+  if(qaCfg->DoTRD() && detCfg->UseTRD()) {
     // no offline trigger selection
     gROOT->LoadMacro(pwgpp+"/macros/AddTrainPerformanceTRD.C");
     // steer individual TRD tasks
@@ -341,7 +390,7 @@ void AddAnalysisTasks(const char *cdb_location)
   }
 
   // --- ZDC (Chiara Oppedisano) -------------------------------------
-  if(qaCfg->DoZDC()) {
+  if(qaCfg->DoZDC() && detCfg->UseZDC()) {
     // hardcoded kMB trigger mask
      gROOT->LoadMacro(pwgpp+"/ZDC/AddTaskZDCQA.C");
      AliAnalysisTaskSE *taskZDC = AddTaskZDCQA();
@@ -366,14 +415,14 @@ void AddAnalysisTasks(const char *cdb_location)
   }
 
   // --- Muon Trigger ------------------------------------------------
-  if(qaCfg->DoMUONTrig()) {
+  if(qaCfg->DoMUONTrig() && detCfg->UseMUON()) {
     // no offline trigger selection
     gROOT->LoadMacro(pwgpp+"/macros/AddTaskMTRchamberEfficiency.C");
     AliAnalysisTaskTrigChEff *taskMuonTrig = AddTaskMTRchamberEfficiency();
   }
 
   // --- Muon Efficiency (not used) ----------------------------------
-  if(qaCfg->DoMUONEff()) {
+  if(qaCfg->DoMUONEff() && detCfg->UseMUON()) {
       gROOT->LoadMacro(ali+"/PWG3/muondep/AddTaskMUONTrackingEfficiency.C");
       AliAnalysisTaskMuonTrackingEff *taskMuonTrackEff = 
 	AddTaskMUONTrackingEfficiency();
@@ -400,14 +449,14 @@ void AddAnalysisTasks(const char *cdb_location)
   }  
 
   // --- MUON QA (Philippe Pillot) -----------------------------------
-  if (qaCfg->DoMUON()) {
+  if (qaCfg->DoMUON() && detCfg->UseMUON()) {
     // trigger analysis internal
     gROOT->LoadMacro(pwgpp+"/PilotTrain/AddTaskMuonQA.C");
     AliAnalysisTaskSE* taskmuonqa= AddTaskMuonQA();
   }  
 
   // --- TOF (Francesca Bellini) -------------------------------------
-  if (qaCfg->DoTOF()) {
+  if (qaCfg->DoTOF() && detCfg->UseTOF()) {
     gROOT->LoadMacro(pwgpp+"/TOF/AddTaskTOFQA.C");
     AliAnalysisTaskTOFqa *tofQA = AddTaskTOFQA(kFALSE);
     tofQA->SelectCollisionCandidates(kTriggerMask);
@@ -422,7 +471,7 @@ void AddAnalysisTasks(const char *cdb_location)
  
   // --- HMPID QA (Giacomo Volpe) ------------------------------------
   //
-  if (qaCfg->DoHMPID()) {
+  if (qaCfg->DoHMPID() && detCfg->UseHMPID()) {
     gROOT->LoadMacro(pwgpp+"/HMPID/AddTaskHmpidQA.C");
     AliAnalysisTaskSE* taskhmpidqa= AddTaskHmpidQA(kTRUE);
     // offline mask set in AddTask to kMB
@@ -430,7 +479,7 @@ void AddAnalysisTasks(const char *cdb_location)
   }      
 
   // --- T0 QA (Alla Mayevskaya) -------------------------------------
-  if (qaCfg->DoT0()) {
+  if (qaCfg->DoT0() && detCfg->UseT0()) {
     // no offline trigger selection
     gROOT->LoadMacro(pwgpp+"/T0/AddTaskT0QA.C");
     AliT0AnalysisTaskQA* taskt0qa= AddTaskT0QA();
@@ -438,7 +487,7 @@ void AddAnalysisTasks(const char *cdb_location)
   }      
 
   // ---- FMD QA (Christian Holm Christiansen) -----------------------
-  if (qaCfg->DoFWD()) {
+  if (qaCfg->DoFWD() && detCfg->UseFMD()) {
     gROOT->LoadMacro(pwglf+"/FORWARD/analysis2/AddTaskForwardQA.C");
     // Parameters: usemc, usecentrality
     // AliAnalysisTaskSE *forwardQA = (AliAnalysisTaskSE *)
@@ -452,7 +501,7 @@ void AddAnalysisTasks(const char *cdb_location)
   }
   
   // --- PHOS QA (Boris Polishchuk) ----------------------------------
-  if (qaCfg->DoPHOS()) {
+  if (qaCfg->DoPHOS()&& detCfg->UsePHOS()) {
     gROOT->LoadMacro(pwgga+"/PHOSTasks/CaloCellQA/macros/AddTaskCaloCellsQA.C");
     AliAnalysisTaskCaloCellsQA *taskPHOSCellQA1 = 
       AddTaskCaloCellsQA(4, 1, NULL,"PHOSCellsQA_AnyInt"); 
@@ -470,14 +519,14 @@ void AddAnalysisTasks(const char *cdb_location)
       AliAnalysisTaskPHOSPbPbQA* phosPbPb = AddTaskPHOSPbPbQA(0);
     }
   }
-  if (qaCfg->DoPHOSTrig()) {
+  if (qaCfg->DoPHOSTrig() && detCfg->UsePHOS()) {
     gROOT->LoadMacro(pwgga+
 		     "/PHOSTasks/PHOS_TriggerQA/macros/AddTaskPHOSTriggerQA.C");
     AliAnalysisTaskPHOSTriggerQA *taskPHOSTrig = AddTaskPHOSTriggerQA(0,0);
   }   
 
   // --- EMCAL QA (Gustavo Conesa) -----------------------------------
-  if (qaCfg->DoEMCAL()) {
+  if (qaCfg->DoEMCAL() && detCfg->UseEMCAL()) {
      gROOT->LoadMacro(pwgga+"/EMCALTasks/macros/AddTaskEMCALTriggerQA.C");
      AliAnalysisTaskEMCALTriggerQA *emctrig = AddTaskEMCALTriggerQA();
   }   
@@ -579,7 +628,10 @@ void QA(UInt_t      run,
   // Get GRP parameters.  Defines global "grp" as a pointer to GRPData
   //
   gROOT->Macro(Form("GRP.C(%d)", run));
+  gROOT->Macro("BaseConfig.C");
   gROOT->Macro("QAConfig.C");
+  gROOT->Macro("DetConfig.C");
+  qaCfg->Print();
   Int_t   debug_level = qaCfg->DebugLevel();   // Debugging
   TString cdbString(cdb);
   if (cdbString.Contains("raw://")) {

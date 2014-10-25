@@ -13,6 +13,7 @@
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
 #include "AliLocalRhoParameter.h"
+#include "AliStackPartonInfo.h"
 
 #include "AliJetContainer.h"
 
@@ -26,6 +27,7 @@ AliJetContainer::AliJetContainer():
   fRhoName(),
   fLocalRhoName(),
   fRhoMassName(),
+  fPartonInfoName(),
   fFlavourSelection(0),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
@@ -52,6 +54,7 @@ AliJetContainer::AliJetContainer():
   fRho(0),
   fLocalRho(0),
   fRhoMass(0),
+  fPartonsInfo(0),
   fGeom(0),
   fRunNumber(0)
 {
@@ -68,6 +71,7 @@ AliJetContainer::AliJetContainer(const char *name):
   fRhoName(),
   fLocalRhoName(),
   fRhoMassName(),
+  fPartonInfoName(),
   fFlavourSelection(0),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
@@ -94,6 +98,7 @@ AliJetContainer::AliJetContainer(const char *name):
   fRho(0),
   fLocalRho(0),
   fRhoMass(0),
+  fPartonsInfo(0),
   fGeom(0),
   fRunNumber(0)
 {
@@ -170,6 +175,19 @@ void AliJetContainer::LoadRhoMass(AliVEvent *event)
     }
   }
 }
+//________________________________________________________________________
+void AliJetContainer::LoadPartonsInfo(AliVEvent *event)
+{
+    // Load parton info
+    
+    if (!fPartonInfoName.IsNull() && !fPartonsInfo) {
+        fPartonsInfo = dynamic_cast<AliStackPartonInfo*>(event->FindListObject(fPartonInfoName));
+        if (!fPartonsInfo) {
+           AliError(Form("%s: Could not retrieve parton infos! %s!", GetName(), fPartonInfoName.Data()));            return;
+        }
+    }
+}
+
 
 
 //________________________________________________________________________
@@ -214,7 +232,7 @@ AliEmcalJet* AliJetContainer::GetJet(Int_t i) const {
 }
 
 //________________________________________________________________________
-AliEmcalJet* AliJetContainer::GetAcceptJet(Int_t i) const {
+AliEmcalJet* AliJetContainer::GetAcceptJet(Int_t i) {
 
   //Only return jet if is accepted
 
@@ -234,7 +252,7 @@ AliEmcalJet* AliJetContainer::GetJetWithLabel(Int_t lab) const {
 }
 
 //________________________________________________________________________
-AliEmcalJet* AliJetContainer::GetAcceptJetWithLabel(Int_t lab) const {
+AliEmcalJet* AliJetContainer::GetAcceptJetWithLabel(Int_t lab) {
 
   //Get particle with label lab in array
   
@@ -315,83 +333,107 @@ Bool_t AliJetContainer::AcceptBiasJet(AliEmcalJet *jet) const
   }
 
   return kTRUE;
-
-
 }
 
 //________________________________________________________________________
-Bool_t AliJetContainer::AcceptJet(AliEmcalJet *jet) const
+Bool_t AliJetContainer::AcceptJet(AliEmcalJet *jet)
 {   
-
    // Return true if jet is accepted.
+
+  fRejectionReason = 0;
 
   if (!jet) {
     AliDebug(11,"No jet found");
+    fRejectionReason |= kNullObject;
+    return kFALSE;
+  }
+
+  if (jet->Pt() <= fJetPtCut) {
+    AliDebug(11,Form("Cut rejecting jet: JetPtCut %.1f",fJetPtCut));
+    fRejectionReason |= kPtCut;
+    return kFALSE;
+  }
+
+  Double_t jetPhi = jet->Phi();
+  Double_t jetEta = jet->Eta();
+   
+  // if limits are given in (-pi, pi) range
+  if (fJetMinPhi < 0) jetPhi -= TMath::Pi() * 2;
+   
+  if (jetEta < fJetMinEta || jetEta > fJetMaxEta || jetPhi < fJetMinPhi || jetPhi > fJetMaxPhi) {
+    AliDebug(11,"Cut rejecting jet: Acceptance");
+    fRejectionReason |= kAcceptanceCut;
     return kFALSE;
   }
 
   if (jet->TestBits(fJetBitMap) != (Int_t)fJetBitMap) {
     AliDebug(11,"Cut rejecting jet: Bit map");
-    return kFALSE;
-  }
-
-  if (jet->Pt() <= fJetPtCut) {
-    AliDebug(11,"Cut rejecting jet: JetPtCut");
+    fRejectionReason |= kBitMapCut;
     return kFALSE;
   }
 
   if (jet->Area() <= fJetAreaCut)  {
     AliDebug(11,"Cut rejecting jet: Area");
+    fRejectionReason |= kAreaCut;
     return kFALSE;
   }
 
   if (jet->AreaEmc() < fAreaEmcCut) {
     AliDebug(11,"Cut rejecting jet: AreaEmc");
+    fRejectionReason |= kAreaEmcCut;
     return kFALSE;
   }
    
   if (fZLeadingChCut < 1 && GetZLeadingCharged(jet) > fZLeadingChCut) {
     AliDebug(11,"Cut rejecting jet: ZLeading");
+    fRejectionReason |= kZLeadingChCut;
     return kFALSE;
   }
    
   if (fZLeadingEmcCut < 1 && GetZLeadingEmc(jet) > fZLeadingEmcCut) {
     AliDebug(11,"Cut rejecting jet: ZLeadEmc");
+    fRejectionReason |= kZLeadingEmcCut;
     return kFALSE;
   }
 
   if (jet->NEF() < fNEFMinCut || jet->NEF() > fNEFMaxCut) {
     AliDebug(11,"Cut rejecting jet: NEF");
+    fRejectionReason |= kNEFCut;
     return kFALSE;
   }
    
   if (!AcceptBiasJet(jet)) {
     AliDebug(11,"Cut rejecting jet: Bias");
+    fRejectionReason |= kMinLeadPtCut;
     return kFALSE;
   }
 
-  if (jet->MaxTrackPt() > fMaxTrackPt || jet->MaxClusterPt() > fMaxClusterPt) {
-    AliDebug(11,"Cut rejecting jet: MaxTrClPt");
+  if (jet->MaxTrackPt() > fMaxTrackPt) {
+    AliDebug(11,"Cut rejecting jet: MaxTrackPt");
+    fRejectionReason |= kMaxTrackPtCut;
+    return kFALSE;
+
+  }
+
+  if (jet->MaxClusterPt() > fMaxClusterPt) {
+    AliDebug(11,"Cut rejecting jet: MaxClusPt");
+    fRejectionReason |= kMaxClusterPtCut;
     return kFALSE;
   }
    
   if (fFlavourSelection != 0 && !jet->TestFlavourTag(fFlavourSelection)) {
     AliDebug(11,"Cut rejecting jet: Flavour");
+    fRejectionReason |= kFlavourCut;
     return kFALSE;
   }
    
   if(fTagStatus>-1 && jet->GetTagStatus()!=fTagStatus) {
     AliDebug(11,"Cut rejecting jet: tag status");
+    fRejectionReason |= kTagStatus;
     return kFALSE;
   }
-   
-   Double_t jetPhi = jet->Phi();
-   Double_t jetEta = jet->Eta();
-   
-   if (fJetMinPhi < 0) // if limits are given in (-pi, pi) range
-      jetPhi -= TMath::Pi() * 2;
-   
-   return (Bool_t)(jetEta > fJetMinEta && jetEta < fJetMaxEta && jetPhi > fJetMinPhi && jetPhi < fJetMaxPhi);
+
+  return kTRUE;
 }
 
 //________________________________________________________________________
@@ -511,7 +553,6 @@ void AliJetContainer::SetJetEtaPhiEMCAL()
       SetJetPhiLimits(1.405+fJetRadius,3.135-fJetRadius);
     else
       SetJetPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad() + fJetRadius, fGeom->GetArm1PhiMax() * TMath::DegToRad() - fJetRadius);
-
   }
   else {
     AliWarning("Could not get instance of AliEMCALGeometry. Using manual settings for EMCAL year 2011!!");

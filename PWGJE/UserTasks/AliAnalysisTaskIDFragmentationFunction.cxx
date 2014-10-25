@@ -2669,18 +2669,58 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
     return; 
   }
   
-  // Count events with trigger selection and vtx cut, note: Set centrality percentile fix to -1 for pp for PID framework
+  // Count events with trigger selection, vtx cut and z vtx cut, note: Set centrality percentile fix to -1 for pp for PID framework
   if (fUseJetPIDtask) {
     for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
-      fJetPIDtask[i]->IncrementEventCounter(fIsPP ? -1. : centPercent, AliAnalysisTaskPID::kTriggerSelAndVtxCutAndZvtxCut);
+      fJetPIDtask[i]->IncrementEventCounter(fIsPP ? -1. : centPercent, AliAnalysisTaskPID::kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection);
     }
   }
   
   if (fUseInclusivePIDtask) {
     for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
-      fInclusivePIDtask[i]->IncrementEventCounter(fIsPP ? -1. : centPercent, AliAnalysisTaskPID::kTriggerSelAndVtxCutAndZvtxCut);
+      fInclusivePIDtask[i]->IncrementEventCounter(fIsPP ? -1. : centPercent, AliAnalysisTaskPID::kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection);
     }
   }
+  
+  
+  // Store for each task, whether this task would tag this event as pile-up or not
+  const Int_t arrSizeJet = TMath::Max(1, fNumJetPIDtasks);
+  const Int_t arrSizeInclusive = TMath::Max(1, fNumInclusivePIDtasks);
+  Bool_t isPileUpJetPIDtask[arrSizeJet];
+  Bool_t isPileUpInclusivePIDtask[arrSizeInclusive];
+  
+  for (Int_t i = 0; i < arrSizeJet; i++) 
+    isPileUpJetPIDtask[i] = kFALSE;
+  
+  for (Int_t i = 0; i < arrSizeInclusive; i++) 
+    isPileUpInclusivePIDtask[i] = kFALSE;
+  
+  // Check whether there is at least one task that does not reject the event (saves processing time in the following code)
+  Bool_t isPileUpForAllJetPIDTasks = kTRUE;
+  Bool_t isPileUpForAllInclusivePIDTasks = kTRUE;
+  
+  // Count events with trigger selection, vtx cut, z vtx cut and after pile-up rejection (if enabled in that task)
+  // Note: Set centrality percentile fix to -1 for pp for PID framework
+  if (fUseJetPIDtask) {
+    for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
+      isPileUpJetPIDtask[i] = fJetPIDtask[i]->GetIsPileUp(fAOD, fJetPIDtask[i]->GetPileUpRejectionType());
+      if (!isPileUpJetPIDtask[i])
+        fJetPIDtask[i]->IncrementEventCounter(fIsPP ? -1. : centPercent, AliAnalysisTaskPID::kTriggerSelAndVtxCutAndZvtxCut);
+      
+      isPileUpForAllJetPIDTasks = isPileUpForAllJetPIDTasks && isPileUpJetPIDtask[i];
+    }
+  }
+  
+  if (fUseInclusivePIDtask) {
+    for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
+      isPileUpInclusivePIDtask[i] = fInclusivePIDtask[i]->GetIsPileUp(fAOD, fInclusivePIDtask[i]->GetPileUpRejectionType());
+      if (!isPileUpInclusivePIDtask[i])
+        fInclusivePIDtask[i]->IncrementEventCounter(fIsPP ? -1. : centPercent, AliAnalysisTaskPID::kTriggerSelAndVtxCutAndZvtxCut);
+      
+      isPileUpForAllInclusivePIDTasks = isPileUpForAllInclusivePIDTasks && isPileUpInclusivePIDtask[i];
+    }
+  }
+  
   
   if (fDebug > 1) Printf("%s:%d event ACCEPTED ...",(char*)__FILE__,__LINE__); 
   fh1EvtSelection->Fill(0.);
@@ -2697,12 +2737,14 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
   // (e.g. run/period dependence of max eta variation map)
   if (fUseInclusivePIDtask) {
     for (Int_t i = 0; i < fNumInclusivePIDtasks; i++)
-      fInclusivePIDtask[i]->ConfigureTaskForCurrentEvent(fAOD);
+      if (!isPileUpInclusivePIDtask[i])
+        fInclusivePIDtask[i]->ConfigureTaskForCurrentEvent(fAOD);
   }
   
   if (fUseJetPIDtask) {
     for (Int_t i = 0; i < fNumJetPIDtasks; i++)
-      fJetPIDtask[i]->ConfigureTaskForCurrentEvent(fAOD);
+      if (!isPileUpJetPIDtask[i])
+        fJetPIDtask[i]->ConfigureTaskForCurrentEvent(fAOD);
   }
   
   
@@ -2712,13 +2754,17 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
   fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
   
   if (fUseInclusivePIDtask) {
-    for (Int_t i = 0; i < fNumInclusivePIDtasks; i++)
-      fInclusivePIDtask[i]->FillPythiaTrials(fAvgTrials);
+    for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
+      if (!isPileUpInclusivePIDtask[i])
+        fInclusivePIDtask[i]->FillPythiaTrials(fAvgTrials);
+    }
   }
   
   if (fUseJetPIDtask) {
-    for (Int_t i = 0; i < fNumJetPIDtasks; i++)
-      fJetPIDtask[i]->FillPythiaTrials(fAvgTrials);
+    for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
+      if (!isPileUpJetPIDtask[i])
+        fJetPIDtask[i]->FillPythiaTrials(fAvgTrials);
+    }
   }
 
   Double_t ptHard = 0.;
@@ -2911,7 +2957,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
       
       // Fill efficiency for generated primaries and also fill histos for generated yields (primaries + all)
       // Efficiency, inclusive - particle level
-      if (fUseInclusivePIDtask && tca) {
+      if (fUseInclusivePIDtask && tca && !isPileUpForAllInclusivePIDTasks) {
         for (Int_t it = 0; it < tca->GetEntriesFast(); it++) {
           AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(tca->At(it));
           if (!part)
@@ -2951,7 +2997,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
           Double_t valuesGenYield[AliAnalysisTaskPID::kGenYieldNumAxes] = { static_cast<Double_t>(mcID), pT, centPercent, -1, -1, -1, -1 };
 
           for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
-            if (fInclusivePIDtask[i]->IsInAcceptedEtaRange(TMath::Abs(part->Eta()))) {
+            if (!isPileUpInclusivePIDtask[i] && fInclusivePIDtask[i]->IsInAcceptedEtaRange(TMath::Abs(part->Eta()))) {
               valuesGenYield[fInclusivePIDtask[i]->GetIndexOfChargeAxisGenYield()] = chargeMC;
               fInclusivePIDtask[i]->FillGeneratedYield(valuesGenYield);
             }
@@ -2959,12 +3005,14 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
           
           Double_t valuesEff[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), pT, part->Eta(), chargeMC,
                                                                   centPercent, -1, -1, -1 };// no jet pT etc since inclusive spectrum 
-          for (Int_t i = 0; i < fNumInclusivePIDtasks; i++)
-            fInclusivePIDtask[i]->FillEfficiencyContainer(valuesEff, AliAnalysisTaskPID::kStepGenWithGenCuts);
+          for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
+            if (!isPileUpInclusivePIDtask[i])
+              fInclusivePIDtask[i]->FillEfficiencyContainer(valuesEff, AliAnalysisTaskPID::kStepGenWithGenCuts);
+          }
         }
       }
       
-      if(fUseInclusivePIDtask){
+      if (fUseInclusivePIDtask && !isPileUpForAllInclusivePIDTasks) {
         //Efficiency, inclusive - detector level
         for(Int_t it=0; it<nRecPartCutsEfficiency; ++it){
           // fill inclusive tracks XXX, they have the same track cuts!
@@ -3017,9 +3065,10 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
                                                                   centPercent,
                                                                   -1, -1, -1 };// no jet pT etc since inclusive spectrum 
               for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
-                if ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
+                if (!isPileUpInclusivePIDtask[i] &&
+                    ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
                     (survivedTPCCutMIGeo && fInclusivePIDtask[i]->GetUseTPCCutMIGeo()) ||
-                    (survivedTPCnclCut && fInclusivePIDtask[i]->GetUseTPCnclCut()))
+                    (survivedTPCnclCut && fInclusivePIDtask[i]->GetUseTPCnclCut())))
                   fInclusivePIDtask[i]->FillEfficiencyContainer(value, AliAnalysisTaskPID::kStepRecWithGenCuts);
               }
                   
@@ -3027,9 +3076,10 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
                                                                       static_cast<Double_t>(inclusiveaod->Charge()), centPercent,
                                                                       -1, -1, -1 };// no jet pT etc since inclusive spectrum 
               for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
-                if ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
+                if (!isPileUpInclusivePIDtask[i] &&
+                    ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
                     (survivedTPCCutMIGeo && fInclusivePIDtask[i]->GetUseTPCCutMIGeo()) ||
-                    (survivedTPCnclCut && fInclusivePIDtask[i]->GetUseTPCnclCut()))
+                    (survivedTPCnclCut && fInclusivePIDtask[i]->GetUseTPCnclCut())))
                   fInclusivePIDtask[i]->FillEfficiencyContainer(valueMeas, AliAnalysisTaskPID::kStepRecWithGenCutsMeasuredObs);
               }
             }
@@ -3045,7 +3095,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
         // fill inclusive tracks XXX, they have the same track cuts!
         AliAODTrack * inclusiveaod  = dynamic_cast<AliAODTrack*>(fTracksRecCuts->At(it));
         if(inclusiveaod){
-          if(fUseInclusivePIDtask){
+          if (fUseInclusivePIDtask && !isPileUpForAllInclusivePIDTasks) {
             Double_t dEdxTPC = tuneOnDataTPC ? pidResponse->GetTPCsignalTunedOnData(inclusiveaod)
                                              : inclusiveaod->GetTPCsignal();
             
@@ -3065,9 +3115,10 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
               pdg = gentrack->GetPdgCode();
             
             for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
-              if ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
+              if (!isPileUpInclusivePIDtask[i] &&
+                  ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
                   (survivedTPCCutMIGeo && fInclusivePIDtask[i]->GetUseTPCCutMIGeo()) ||
-                  (survivedTPCnclCut && fInclusivePIDtask[i]->GetUseTPCnclCut())) {
+                  (survivedTPCnclCut && fInclusivePIDtask[i]->GetUseTPCnclCut()))) {
                     if (fInclusivePIDtask[i]->IsInAcceptedEtaRange(TMath::Abs(inclusiveaod->Eta())))
                       fInclusivePIDtask[i]->ProcessTrack(inclusiveaod, pdg, centPercent, -1); // no jet pT since inclusive spectrum 
               }
@@ -3079,17 +3130,19 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
                                                                             static_cast<Double_t>(inclusiveaod->Charge()), centPercent,
                                                                             -1, -1, -1 };
               for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
-                if ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
+                if (!isPileUpInclusivePIDtask[i] &&
+                    ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
                     (survivedTPCCutMIGeo && fInclusivePIDtask[i]->GetUseTPCCutMIGeo()) ||
-                    (survivedTPCnclCut && fInclusivePIDtask[i]->GetUseTPCnclCut()))
+                    (survivedTPCnclCut && fInclusivePIDtask[i]->GetUseTPCnclCut())))
                   fInclusivePIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObs);
               }
               
               Double_t weight = IsSecondaryWithStrangeMotherMC(gentrack) ? GetMCStrangenessFactorCMS(gentrack) : 1.0;
               for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
-                if ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
+                if (!isPileUpInclusivePIDtask[i] &&
+                    ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
                     (survivedTPCCutMIGeo && fInclusivePIDtask[i]->GetUseTPCCutMIGeo()) ||
-                    (survivedTPCnclCut && fInclusivePIDtask[i]->GetUseTPCnclCut()))
+                    (survivedTPCnclCut && fInclusivePIDtask[i]->GetUseTPCnclCut())))
                   fInclusivePIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, 
                                                                 AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsStrangenessScaled,
                                                                 weight);
@@ -3105,9 +3158,10 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
                                                                                   gentrack->Charge() / 3., centPercent };
               
                 for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
-                  if ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
+                  if (!isPileUpInclusivePIDtask[i] &&
+                      ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
                       (survivedTPCCutMIGeo && fInclusivePIDtask[i]->GetUseTPCCutMIGeo()) ||
-                      (survivedTPCnclCut && fInclusivePIDtask[i]->GetUseTPCnclCut())) {
+                      (survivedTPCnclCut && fInclusivePIDtask[i]->GetUseTPCnclCut()))) {
                     fInclusivePIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, 
                                                                   AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsPrimaries);
                     fInclusivePIDtask[i]->FillEfficiencyContainer(valueGenAllCuts, 
@@ -3179,8 +3233,10 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
           }
           
           if (fUseJetPIDtask && incrementJetPt) {
-            for (Int_t i = 0; i < fNumJetPIDtasks; i++)
-              fJetPIDtask[i]->FillGenJets(fJetPIDtask[i]->GetCentralityPercentile(evtForCentDetermination), jetPt);
+            for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
+              if (!isPileUpJetPIDtask[i])
+                fJetPIDtask[i]->FillGenJets(fJetPIDtask[i]->GetCentralityPercentile(evtForCentDetermination), jetPt);
+            }
           }
             
           if (fIDFFMode) {
@@ -3209,7 +3265,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
           delete trackV;
           
           // Efficiency, jets - particle level
-          if (fUseJetPIDtask) {
+          if (fUseJetPIDtask && !isPileUpForAllJetPIDTasks) {
             AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(jettracklist->At(it));
             if (!part) {
               AliError("expected ref track not found ");
@@ -3246,7 +3302,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
             Double_t valuesGenYield[AliAnalysisTaskPID::kGenYieldNumAxes] = { static_cast<Double_t>(mcID), trackPt, centPercent, jetPt, z, xi, chargeMC };
             
             for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
-              if (fJetPIDtask[i]->IsInAcceptedEtaRange(TMath::Abs(part->Eta()))) {
+              if (!isPileUpJetPIDtask[i] && fJetPIDtask[i]->IsInAcceptedEtaRange(TMath::Abs(part->Eta()))) {
                 valuesGenYield[fJetPIDtask[i]->GetIndexOfChargeAxisGenYield()] = chargeMC;
                 fJetPIDtask[i]->FillGeneratedYield(valuesGenYield);
               }
@@ -3255,8 +3311,10 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
             
             Double_t valuesEff[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), trackPt, part->Eta(), chargeMC,
                                                                     centPercent, jetPt, z, xi };
-            for (Int_t i = 0; i < fNumJetPIDtasks; i++)
-              fJetPIDtask[i]->FillEfficiencyContainer(valuesEff, AliAnalysisTaskPID::kStepGenWithGenCuts);
+            for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
+              if (!isPileUpJetPIDtask[i])
+                fJetPIDtask[i]->FillEfficiencyContainer(valuesEff, AliAnalysisTaskPID::kStepGenWithGenCuts);
+            }
           }
         }
 
@@ -3370,11 +3428,13 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
       }
       
       if (fUseJetPIDtask && incrementJetPt) {
-        for (Int_t i = 0; i < fNumJetPIDtasks; i++)
-          fJetPIDtask[i]->FillRecJets(fJetPIDtask[i]->GetCentralityPercentile(evtForCentDetermination), jetPt);
+        for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
+          if (!isPileUpJetPIDtask[i])
+            fJetPIDtask[i]->FillRecJets(fJetPIDtask[i]->GetCentralityPercentile(evtForCentDetermination), jetPt);
+        }
       }
 	  
-      if (fUseJetPIDtask) {
+      if (fUseJetPIDtask && (!isPileUpForAllJetPIDTasks || fIDFFMode)) {
         Double_t dEdxTPC = tuneOnDataTPC ? pidResponse->GetTPCsignalTunedOnData(aodtrack)
                                          : aodtrack->GetTPCsignal();
         
@@ -3403,17 +3463,19 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
           Double_t valueRecAllCuts[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), pT, aodtrack->Eta(), static_cast<Double_t>(aodtrack->Charge()),
                                                                         centPercent, jetPt, z, xi };
           for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
-            if ((!fJetPIDtask[i]->GetUseTPCCutMIGeo() && !fJetPIDtask[i]->GetUseTPCnclCut()) ||
+            if (!isPileUpJetPIDtask[i] &&
+                ((!fJetPIDtask[i]->GetUseTPCCutMIGeo() && !fJetPIDtask[i]->GetUseTPCnclCut()) ||
                 (survivedTPCCutMIGeo && fJetPIDtask[i]->GetUseTPCCutMIGeo()) ||
-                (survivedTPCnclCut && fJetPIDtask[i]->GetUseTPCnclCut()))
+                (survivedTPCnclCut && fJetPIDtask[i]->GetUseTPCnclCut())))
               fJetPIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObs);
           }
           
           Double_t weight = IsSecondaryWithStrangeMotherMC(gentrack) ? GetMCStrangenessFactorCMS(gentrack) : 1.0;
           for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
-            if ((!fJetPIDtask[i]->GetUseTPCCutMIGeo() && !fJetPIDtask[i]->GetUseTPCnclCut()) ||
+            if (!isPileUpJetPIDtask[i] &&
+                ((!fJetPIDtask[i]->GetUseTPCCutMIGeo() && !fJetPIDtask[i]->GetUseTPCnclCut()) ||
                 (survivedTPCCutMIGeo && fJetPIDtask[i]->GetUseTPCCutMIGeo()) ||
-                (survivedTPCnclCut && fJetPIDtask[i]->GetUseTPCnclCut()))
+                (survivedTPCnclCut && fJetPIDtask[i]->GetUseTPCnclCut())))
               fJetPIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, 
                                                       AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsStrangenessScaled,
                                                       weight);
@@ -3431,9 +3493,10 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
             Double_t valuePtResolution[AliAnalysisTaskPID::kPtResNumAxes] = { jetPt, genPt, pT, gentrack->Charge() / 3., centPercent };
             
             for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
-              if ((!fJetPIDtask[i]->GetUseTPCCutMIGeo() && !fJetPIDtask[i]->GetUseTPCnclCut()) ||
+              if (!isPileUpJetPIDtask[i] &&
+                  ((!fJetPIDtask[i]->GetUseTPCCutMIGeo() && !fJetPIDtask[i]->GetUseTPCnclCut()) ||
                   (survivedTPCCutMIGeo && fJetPIDtask[i]->GetUseTPCCutMIGeo()) ||
-                  (survivedTPCnclCut && fJetPIDtask[i]->GetUseTPCnclCut())) {
+                  (survivedTPCnclCut && fJetPIDtask[i]->GetUseTPCnclCut()))) {
                 fJetPIDtask[i]->FillEfficiencyContainer(valueRecAllCuts,
                                                         AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsPrimaries);
                 fJetPIDtask[i]->FillEfficiencyContainer(valueGenAllCuts,
@@ -3448,9 +3511,10 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
         Bool_t filledDCA = kFALSE;
         
         for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
-          if ((!fJetPIDtask[i]->GetUseTPCCutMIGeo() && !fJetPIDtask[i]->GetUseTPCnclCut()) ||
+          if (!isPileUpJetPIDtask[i] &&
+              ((!fJetPIDtask[i]->GetUseTPCCutMIGeo() && !fJetPIDtask[i]->GetUseTPCnclCut()) ||
               (survivedTPCCutMIGeo && fJetPIDtask[i]->GetUseTPCCutMIGeo()) ||
-              (survivedTPCnclCut && fJetPIDtask[i]->GetUseTPCnclCut())) {
+              (survivedTPCnclCut && fJetPIDtask[i]->GetUseTPCnclCut()))) {
             if (fJetPIDtask[i]->IsInAcceptedEtaRange(TMath::Abs(aodtrack->Eta()))) {
                 fJetPIDtask[i]->ProcessTrack(aodtrack, pdg, centPercent, jetPt);
                   
@@ -3543,18 +3607,20 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
           Double_t value[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), genPt, gentrack->Eta(), gentrack->Charge() / 3.,
                                                               centPercent, jetPt, genZ, genXi };
           for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
-            if ((!fJetPIDtask[i]->GetUseTPCCutMIGeo() && !fJetPIDtask[i]->GetUseTPCnclCut()) ||
+            if (!isPileUpJetPIDtask[i] &&
+                ((!fJetPIDtask[i]->GetUseTPCCutMIGeo() && !fJetPIDtask[i]->GetUseTPCnclCut()) ||
                 (survivedTPCCutMIGeo && fJetPIDtask[i]->GetUseTPCCutMIGeo()) ||
-                (survivedTPCnclCut && fJetPIDtask[i]->GetUseTPCnclCut()))
+                (survivedTPCnclCut && fJetPIDtask[i]->GetUseTPCnclCut())))
               fJetPIDtask[i]->FillEfficiencyContainer(value, AliAnalysisTaskPID::kStepRecWithGenCuts);
           }
           
           Double_t valueMeas[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), measPt, aodtrack->Eta(), static_cast<Double_t>(aodtrack->Charge()),
                                                                   centPercent, jetPt, measZ, measXi };
           for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
-            if ((!fJetPIDtask[i]->GetUseTPCCutMIGeo() && !fJetPIDtask[i]->GetUseTPCnclCut()) ||
+            if (!isPileUpJetPIDtask[i] &&
+                ((!fJetPIDtask[i]->GetUseTPCCutMIGeo() && !fJetPIDtask[i]->GetUseTPCnclCut()) ||
                 (survivedTPCCutMIGeo && fJetPIDtask[i]->GetUseTPCCutMIGeo()) ||
-                (survivedTPCnclCut && fJetPIDtask[i]->GetUseTPCnclCut()))
+                (survivedTPCnclCut && fJetPIDtask[i]->GetUseTPCnclCut())))
               fJetPIDtask[i]->FillEfficiencyContainer(valueMeas, AliAnalysisTaskPID::kStepRecWithGenCutsMeasuredObs);
           }
         }

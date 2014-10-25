@@ -37,6 +37,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Bool_t   GetAnalysisMC() { return fAnalysisMC; }   
   Double_t GetVtxCut() { return fVtxCut; }   
   Double_t GetEtaCut() { return fEtaCut; }     
+  Double_t GetEtaCutStack() { return fEtaCutStack; }   
   Double_t GetMinPt() { return fMinPt; }   
   Double_t GetMinPtV0() { return fMinPtV0; }
   Int_t    GetTreeOption() { return fTreeOption; }
@@ -52,6 +53,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
   virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
   virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
+  virtual void  SetEtaCutStack(Double_t etaCutStack){fEtaCutStack = etaCutStack;}
   virtual void  SetMinPt(Double_t value) {fMinPt = value;}   
   virtual void  SetMinPtV0(Double_t value) {fMinPtV0 = value;}
   virtual void  SetMinCent(Float_t minvalc) {fMinCent = minvalc;}
@@ -128,8 +130,9 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   UInt_t       ftrigBit2;
   Double_t     fVtxCut;             // Vtx cut on z position in cm
   Double_t     fEtaCut;             // Eta cut used to select particles
+  Double_t     fEtaCutStack;        // Eta cut used to select particles - reduce saved stack size
   Double_t     fMinPt;              // Min pt - for histogram limits
-  Double_t     fMinPtV0;              // Min pt - for histogram limits
+  Double_t     fMinPtV0;            // Min pt - for histogram limits - V0s / strangeness part
   Double_t     fLowPtFraction;      // Fraction of tracks below min pt to keep
   Double_t     fMassCut;            // Reject all v0 with all dmass > masscut!
   Int_t        fTreeOption;         // 0: no tree, >0: enable debug tree

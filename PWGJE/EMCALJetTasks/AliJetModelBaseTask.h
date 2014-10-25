@@ -11,6 +11,7 @@ class AliVCaloCells;
 class AliAODMCParticle;
 class AliNamedArrayI;
 class TF2;
+class AliStackPartonInfo;
 
 #include <TH1F.h>
 #include <TF1.h>
@@ -42,6 +43,7 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   void                   SetClusName(const char *n)            { fCaloName     = n;    }
   void                   SetCellsName(const char *n)           { fCellsName    = n;    }
   void                   SetMCParticlesName(const char *n)     { fMCParticlesName = n; }
+    void                 SetPartonInfoName(const char *n)      { fPartonInfoName = n; }
   void                   SetSuffix(const char *s)              { fSuffix       = s;    }
   void                   SetGeometryName(const char *n)        { fGeomName     = n;    }
   void                   SetMarkMC(Int_t m)                    { fMarkMC       = m;    }
@@ -84,6 +86,7 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   TString                fOutCellsName;           // name of output cells collection
   TString                fMCParticlesName;        // name of MC particle collection
   TString                fOutMCParticlesName;     // name of output MC particle collection
+  TString                fPartonInfoName;         // name of partons info
   Bool_t                 fIsMC;                   // whether the current event is MC or not
   TString                fSuffix;                 // suffix to add in the name of new collections
   Float_t                fEtaMin;                 // eta minimum value
@@ -122,6 +125,7 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   Int_t                  fMCLabelShift;           //!MC label shift
   Bool_t                 fEsdMode;                //!ESD/AOD mode
   TList                 *fOutput;                 //!output list for QA histograms
+  AliStackPartonInfo    *fStackPartonInfo;     //!Info on original partons:PDG,pt, eta, phi 
 
  private:
   AliJetModelBaseTask(const AliJetModelBaseTask&);            // not implemented

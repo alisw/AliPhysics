@@ -74,8 +74,10 @@ class AliSpectraAODEventCuts : public TNamed
     fQgenIntegral(0), 
     fSplineArrayV0Agen(0),
     fSplineArrayV0Cgen(0),
+    fQvecMC(0),
     fNch(0),
-    fQvecCalibType(0)
+    fQvecCalibType(0),
+    fV0Aeff(0)
       {
 	for (Int_t i = 0; i<10; i++){
 	  fMeanQxa2[i] = -1;
@@ -135,7 +137,7 @@ class AliSpectraAODEventCuts : public TNamed
     TIter next(f->GetListOfKeys());
     TKey *key;
     while ((key = (TKey*)next())) {
-      TH2F * h=(TH2F*)key->ReadObj();
+      TObject * h=(TObject*)key->ReadObj();
       fQvecIntList->Add(h);
     }
   };
@@ -164,13 +166,18 @@ class AliSpectraAODEventCuts : public TNamed
   TObjArray *GetSplineArrayV0A() { return fSplineArrayV0A; }
   TObjArray *GetSplineArrayV0C() { return fSplineArrayV0C; }
   
+  Double_t GetQvecMC() {return fQvecMC;}
+  
   Int_t GetNch() { return fNch; }
   
   void SetQVecCalibType(Int_t val) { fQvecCalibType=val; }  //0. centrality - 1. Nch
-  Int_t GetNchBin();
+  Int_t GetNchBin(TH2D * h);
   
-  Double_t CalculateQVectorMC(Int_t v0side);
-  Double_t GetQvecPercentileMC(Int_t v0side);
+  Double_t CalculateQVectorMC(Int_t v0side, Int_t type);
+  Double_t GetQvecPercentileMC(Int_t v0side, Int_t type);
+  
+  Int_t CheckVZEROchannel(Int_t vzeroside, Double_t eta, Double_t phi);
+  Int_t CheckVZEROacceptance(Double_t eta);
 
  private:
   
@@ -223,14 +230,16 @@ class AliSpectraAODEventCuts : public TNamed
   TH2D * fQgenIntegral;           // ! Integrated Qvec distribution for generated tracks
   TObjArray * fSplineArrayV0Agen;    // TSpline array for VZERO-A for generated tracks
   TObjArray * fSplineArrayV0Cgen;    // TSpline array for VZERO-C for generated tracks
+  Double_t fQvecMC; //q-vector value from MC
   
   Int_t fNch;
   Int_t fQvecCalibType; //0. centrality - 1. Nch
+  TH1F * fV0Aeff; // VZEROA efficiency prim+sec / gen.
 
   AliSpectraAODEventCuts(const AliSpectraAODEventCuts&);
   AliSpectraAODEventCuts& operator=(const AliSpectraAODEventCuts&);
   
-  ClassDef(AliSpectraAODEventCuts, 8);
+  ClassDef(AliSpectraAODEventCuts, 9);
   
 };
 #endif

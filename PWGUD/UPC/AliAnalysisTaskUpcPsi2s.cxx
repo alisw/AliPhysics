@@ -142,6 +142,7 @@ void AliAnalysisTaskUpcPsi2s::Init()
   	fVtxPos[i] = -666; 
 	fVtxErr[i] = -666;
 	fKfVtxPos[i] = -666;
+	fSpdVtxPos[i] = -666;
 	}
 
 }//Init
@@ -225,6 +226,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fJPsiTree ->Branch("fVtxNDF", &fVtxNDF, "fVtxNDF/D");
   
   fJPsiTree ->Branch("fKfVtxPos", &fKfVtxPos[0], "fKfVtxPos[3]/D");
+  fJPsiTree ->Branch("fSpdVtxPos", &fSpdVtxPos[0], "fSpdVtxPos[3]/D");
   
   fJPsiTree ->Branch("fZDCAenergy", &fZDCAenergy, "fZDCAenergy/D");
   fJPsiTree ->Branch("fZDCCenergy", &fZDCCenergy, "fZDCCenergy/D");
@@ -281,6 +283,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fPsi2sTree ->Branch("fVtxNDF", &fVtxNDF, "fVtxNDF/D");
   
   fPsi2sTree ->Branch("fKfVtxPos", &fKfVtxPos[0], "fKfVtxPos[3]/D");
+  fPsi2sTree ->Branch("fSpdVtxPos", &fSpdVtxPos[0], "fSpdVtxPos[3]/D");
   
   fPsi2sTree ->Branch("fZDCAenergy", &fZDCAenergy, "fZDCAenergy/D");
   fPsi2sTree ->Branch("fZDCCenergy", &fZDCCenergy, "fZDCCenergy/D");
@@ -832,6 +835,14 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   fVtxErr[2] = CovMatx[2];
   fVtxChi2 = fAODVertex->GetChi2();
   fVtxNDF = fAODVertex->GetNDF();
+  
+  //SPD primary vertex
+  AliAODVertex *fSPDVertex = aod->GetPrimaryVertexSPD();
+  if(fSPDVertex){
+  	fSpdVtxPos[0] = fSPDVertex->GetX();
+	fSpdVtxPos[1] = fSPDVertex->GetY();
+	fSpdVtxPos[2] = fSPDVertex->GetZ();
+	}
 
   //Tracklets
   fNtracklets = aod->GetTracklets()->GetNumberOfTracklets();
@@ -1404,6 +1415,14 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
   fVtxErr[2] = CovMatx[2];
   fVtxChi2 = fESDVertex->GetChi2();
   fVtxNDF = fESDVertex->GetNDF();
+    
+  //SPD primary vertex
+  AliESDVertex *fSPDVertex = (AliESDVertex*) esd->GetPrimaryVertexSPD();
+  if(fSPDVertex){
+  	fSpdVtxPos[0] = fSPDVertex->GetX();
+	fSpdVtxPos[1] = fSPDVertex->GetY();
+	fSpdVtxPos[2] = fSPDVertex->GetZ();
+	}
 
   //Tracklets
   fNtracklets = esd->GetMultiplicity()->GetNumberOfTracklets();

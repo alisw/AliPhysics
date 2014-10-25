@@ -1,5 +1,5 @@
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJDiHadronCorr(TString cardName, TString jtrigg, TString jassoc, TString cardSetting, TString inclusFileName=""){
+AliAnalysisTask *AddTaskJDiHadronCorr(TString taskName, TString cardName, TString jtrigg, TString jassoc, TString cardSetting, TString inclusFileName=""){
 	// Load Custom Configuration and parameters
 	// override values with parameters
 
@@ -7,9 +7,10 @@ AliAnalysisTask *AddTaskJDiHadronCorr(TString cardName, TString jtrigg, TString 
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
 	//==== JCORRAN Efficiency TASK
-	AliJDiHadronCorrTask *jdihadtask = new AliJDiHadronCorrTask("JDiHadronCorrTask","JOD");
+	AliJDiHadronCorrTask *jdihadtask = new AliJDiHadronCorrTask(taskName.Data(),"JOD");
 	jdihadtask->SetDebugLevel(5);
 	jdihadtask->SetFilterTaskName("PWGCFJCORRANTask");
+	cout << jdihadtask->GetName() << endl;
 
 
 	// === Create AliJCORRAN ====
@@ -37,7 +38,7 @@ AliAnalysisTask *AddTaskJDiHadronCorr(TString cardName, TString jtrigg, TString 
 
 	// Connect input/output
 	mgr->ConnectInput(jdihadtask, 0, cinput);
-	AliAnalysisDataContainer *jHist = mgr->CreateContainer("JDiHadronCorr",  TDirectory::Class(), AliAnalysisManager::kOutputContainer, Form("%s:JDiHadronCorr",AliAnalysisManager::GetCommonFileName()));
+	AliAnalysisDataContainer *jHist = mgr->CreateContainer(Form("%scontainer",jdihadtask->GetName()),  TDirectory::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s",AliAnalysisManager::GetCommonFileName(), jdihadtask->GetName()));
 	mgr->ConnectOutput(jdihadtask, 1, jHist );
 
 	return jdihadtask;

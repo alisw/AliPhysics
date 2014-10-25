@@ -222,6 +222,8 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
 	vars[1] = centrality;
 	vars[2] = zVtx;
 	vars[3] = found_particle[ind_max_found_pt]->Pt();
+	if(is1plus1)
+	  vars[3] = (fTriggerPt2Max+fTriggerPt2Min)/2;
 
 	event_hist->Fill(vars, stepUEHist, weight);//near side
 

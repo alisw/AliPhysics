@@ -49,6 +49,7 @@
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliRDHFCutsDStartoKpipi.h"
 #include "AliRhoParameter.h"
+#include "AliParticleContainer.h"
 
 ClassImp(AliAnalysisTaskFlavourJetCorrelations)
 
@@ -68,6 +69,7 @@ fCuts(0),
 fMinMass(),
 fMaxMass(),  
 fJetArrName(0),
+fTrackArrName(0),
 fCandArrName(0),
 fLeadingJetOnly(kFALSE),
 fJetRadius(0),
@@ -84,6 +86,9 @@ fSwitchOnPhiAxis(0),
 fSwitchOnOutOfConeAxis(0),
 fSwitchOnSparses(1),
 fNAxesBigSparse(9),
+fJetCont(0),
+fTrackCont(0),
+fClusterCont(0),
 fhstat(),
 fhPtJetTrks(),
 fhPhiJetTrks(),
@@ -151,6 +156,7 @@ fCuts(0),
 fMinMass(),
 fMaxMass(),  
 fJetArrName(0),
+fTrackArrName(0),
 fCandArrName(0),
 fLeadingJetOnly(kFALSE),
 fJetRadius(0),
@@ -167,6 +173,9 @@ fSwitchOnPhiAxis(0),
 fSwitchOnOutOfConeAxis(0),
 fSwitchOnSparses(1),
 fNAxesBigSparse(9),
+fJetCont(0),
+fTrackCont(0),
+fClusterCont(0),
 fhstat(),
 fhPtJetTrks(),
 fhPhiJetTrks(),
@@ -322,6 +331,14 @@ void AliAnalysisTaskFlavourJetCorrelations::UserCreateOutputObjects() {
    // output 
    Info("UserCreateOutputObjects","CreateOutputObjects of task %s\n", GetName());
    AliAnalysisTaskEmcal::UserCreateOutputObjects();
+   
+   fJetCont = GetJetContainer(0);
+   if(fJetCont){
+      fTrackCont =   fJetCont->GetParticleContainer();
+      fClusterCont = fJetCont->GetClusterContainer();
+   }
+
+   
    // define histograms
    // the TList fOutput is already defined in  AliAnalysisTaskEmcal::UserCreateOutputObjects()
    DefineHistoForAnalysis();
@@ -375,10 +392,16 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
    }
    
    //retrieve jets
-   fTrackArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("PicoTracks"));
+   //this is a duplication of fTrackCont, but is is used in the loop of line 598 and changing it needs a thorough test 
+   fTrackArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTrackArrName));
    //clusArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("CaloClustersCorr"));
-   //jetArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetArrName));
-   fJetRadius=GetJetContainer(0)->GetJetRadius();
+   //fJetArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetArrName));
+   //fJetContainer=GetJetContainer(0);
+   //if(!fJetContainer) {
+   //   AliError("Jet Container 0 not found");
+   //   return kFALSE;
+   //}
+   fJetRadius=fJetCont->GetJetRadius();
    
    if(!fTrackArr){
       AliInfo(Form("Could not find the track array\n"));
@@ -409,8 +432,8 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
 
    //retrieve charm candidates selected
    Int_t candidates = 0;
-   Int_t njets=GetJetContainer()->GetNJets();
-   
+   Int_t njets=fJetCont->GetNJets();
+   //Printf("N jets in this event %d",njets);
    if(!fJetOnlyMode) {
       candidates = fCandidateArray->GetEntriesFast();
   
@@ -504,12 +527,13 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
    Double_t leadingJet =0;
    Double_t pointJ[6];
    
-   Int_t ntrarr=fTrackArr->GetEntriesFast();
+   Int_t ntrarr=fTrackCont->GetNParticles();
    fhNtrArr->Fill(ntrarr);
    
    for(Int_t i=0;i<ntrarr;i++){
-      AliVTrack *jtrack=static_cast<AliVTrack*>(fTrackArr->At(i));
+      AliVTrack *jtrack=static_cast<AliVTrack*>(fTrackCont->GetParticle(i));
       //reusing histograms
+      if(!jtrack) continue;
       fhPtJetTrks->Fill(jtrack->Pt());
       fhPhiJetTrks->Fill(jtrack->Phi());
       fhEtaJetTrks->Fill(jtrack->Eta());
@@ -520,7 +544,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
    //option to use only the leading jet
    if(fLeadingJetOnly){
       for (Int_t iJetsL = 0; iJetsL<njets; iJetsL++) {    
-      	 AliEmcalJet* jetL = (AliEmcalJet*)GetJetFromArray(iJetsL);
+      	 AliEmcalJet* jetL = (AliEmcalJet*)fJetCont->GetJet(iJetsL);
       	 ptjet   = jetL->Pt() - jetL->Area()*rhoval; //It takes into account the background subtraction
       	 if(ptjet>leadingJet ) leadingJet = ptjet;
       	 
@@ -535,7 +559,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
       fPmissing[2]=0;
       
       //Printf("Jet N %d",iJets);
-      AliEmcalJet* jet = (AliEmcalJet*)GetJetFromArray(iJets);
+      AliEmcalJet* jet = (AliEmcalJet*)fJetCont->GetJet(iJets);
       //Printf("Corr task Accept Jet");
       if(!AcceptJet(jet)) {
       	 fhstat->Fill(5);
@@ -1080,7 +1104,15 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
       }
       
       //background (side bands for the Dstar and like sign for D0)
-      fJetRadius=GetJetContainer(0)->GetJetRadius();
+      AliJetContainer *jetCont=GetJetContainer(0);
+      if(!jetCont){
+      	 Printf("Container 0 not found, try with name %s", fJetArrName.Data());
+      	 jetCont=GetJetContainer(fJetArrName);
+      	 if(!jetCont) Printf("NOT FOUND AGAIN");
+      	 return kFALSE;
+      }
+      Printf("CONTAINER NAME IS %s", jetCont->GetArrayName().Data());
+      //fJetRadius=jetCont->GetJetRadius();
       fhInvMassptD = new TH2F("hInvMassptD",Form("D (Delta R < %.1f) invariant mass distribution p_{T}^{j} > threshold",fJetRadius),nbinsmass,fMinMass,fMaxMass,nbinsptD,ptDlims[0],ptDlims[1]);
       fhInvMassptD->SetStats(kTRUE);
       fhInvMassptD->GetXaxis()->SetTitle("mass (GeV)");

@@ -200,7 +200,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 	taskBF->SetUseBayesianPID(gMinAcceptedProbability);
       else if(kUseNSigmaPID)
 	taskBF->SetUseNSigmaPID(nSigmaMax);
-      taskBF->SetParticleOfInterest(AliAnalysisTaskBFPsi::kPion);
+      taskBF->SetParticleOfInterest(AliAnalysisTaskBFPsi::kKaon);
       taskBF->SetDetectorUsedForPID(AliAnalysisTaskBFPsi::kTPCTOF); //TOFpid,TPCpid
     }
     //++++++++++++++++//

@@ -50,7 +50,7 @@ class AliGammaConversionAODBGHandler : public TObject {
 	
 	AliGammaConversionAODBGHandler();																							//constructor
 	AliGammaConversionAODBGHandler(UInt_t binsZ,UInt_t binsMultiplicity,UInt_t nEvents);										// constructor
-	AliGammaConversionAODBGHandler(UInt_t collisionSystem,UInt_t centMin,UInt_t centMax,UInt_t nEvents, Bool_t useTrackMult);
+	AliGammaConversionAODBGHandler(UInt_t collisionSystem,UInt_t centMin,UInt_t centMax,UInt_t nEvents, Bool_t useTrackMult, UInt_t mode,UInt_t binsZ, UInt_t binsMultiplicity);
 	AliGammaConversionAODBGHandler(const AliGammaConversionAODBGHandler & g);													//copy constructor
 	AliGammaConversionAODBGHandler & operator = (const AliGammaConversionAODBGHandler & g);										//assignment operator
 	virtual ~AliGammaConversionAODBGHandler();																					//virtual destructor
@@ -96,6 +96,6 @@ class AliGammaConversionAODBGHandler : public TObject {
 		AliGammaConversionBGVector 			fBGEventsENeg; 					// electron background electron events
 		AliGammaConversionMotherBGVector 	fBGEventsMeson; 				// neutral meson background events
 		
-	ClassDef(AliGammaConversionAODBGHandler,4)
+	ClassDef(AliGammaConversionAODBGHandler,5)
 };
 #endif

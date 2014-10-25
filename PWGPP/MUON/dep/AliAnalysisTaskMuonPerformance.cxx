@@ -94,6 +94,8 @@ ClassImp(AliAnalysisTaskMuonPerformance) // Class implementation in ROOT context
 AliAnalysisTaskMuonPerformance::AliAnalysisTaskMuonPerformance() :
 AliAnalysisTaskSE(),
 fDefaultStorage(""),
+fAlignOCDBpath(""),
+fRecoParamOCDBpath(""),
 fNPBins(30),
 fCorrectForSystematics(kFALSE),
 fFitResiduals(kFALSE),
@@ -133,6 +135,8 @@ fClusterList(0x0)
 AliAnalysisTaskMuonPerformance::AliAnalysisTaskMuonPerformance(const char *name) :
 AliAnalysisTaskSE(name),
 fDefaultStorage("raw://"),
+fAlignOCDBpath(""),
+fRecoParamOCDBpath(""),
 fNPBins(30),
 fCorrectForSystematics(kFALSE),
 fFitResiduals(kFALSE),
@@ -218,7 +222,11 @@ void AliAnalysisTaskMuonPerformance::NotifyRun()
   // set OCDB location
   AliCDBManager* cdbm = AliCDBManager::Instance();
   if (cdbm->IsDefaultStorageSet()) printf("PerformanceTask: CDB default storage already set!\n");
-  else cdbm->SetDefaultStorage(fDefaultStorage.Data());
+  else {
+    cdbm->SetDefaultStorage(fDefaultStorage.Data());
+    if (!fAlignOCDBpath.IsNull()) cdbm->SetSpecificStorage("MUON/Align/Data",fAlignOCDBpath.Data());
+    if (!fRecoParamOCDBpath.IsNull()) cdbm->SetSpecificStorage("MUON/Calib/RecoParam",fRecoParamOCDBpath.Data());
+  }
   if (cdbm->GetRun() > -1) printf("PerformanceTask: run number already set!\n");
   else cdbm->SetRun(fCurrentRunNumber);
   
@@ -484,7 +492,7 @@ void AliAnalysisTaskMuonPerformance::UserCreateOutputObjects()
   h2 = new TH2F("hResPAt1stClVsP","#Delta_{p} at first cluster versus p;p (GeV/c);#Delta_{p} (GeV/c)",2*fNPBins,fPRange[0],fPRange[1],deltaPAtFirstClNBins,deltaPAtFirstClEdges[0],deltaPAtFirstClEdges[1]);
   fTrackerList->AddAt(h2, kResPAt1stClVsP);
   
-  // transverse momentum resolution at vertex
+  // transverse momentum resolution at first cluster
   h2 = new TH2F("hResPtAt1stClVsPt","#Delta_{p_{t}} at first cluster versus p_{t};p_{t} (GeV/c);#Delta_{p_{t}} (GeV/c)",2*fNPBins,fPRange[0]/10.,fPRange[1]/10.,deltaPAtFirstClNBins,deltaPAtFirstClEdges[0]/10.,deltaPAtFirstClEdges[1]/10.);
   fTrackerList->AddAt(h2, kResPtAt1stClVsPt);
   
@@ -830,7 +838,7 @@ void AliAnalysisTaskMuonPerformance::UserExec(Option_t * /*option*/)
 	  
 	}
 	
-	// simulated track parameters at vertex
+	// simulated track parameters at first cluster
         trackParam = (AliMUONTrackParam*) matchedTrackRef->GetTrackParamAtCluster()->First();
         x1 = trackParam->GetNonBendingCoor();
         y1 = trackParam->GetBendingCoor();
@@ -843,7 +851,7 @@ void AliAnalysisTaskMuonPerformance::UserExec(Option_t * /*option*/)
         p1  = trackParam->P();
         pT1 = TMath::Sqrt(pX1*pX1 + pY1*pY1);
 	
-	// reconstructed track parameters at vertex
+	// reconstructed track parameters at first cluster
         trackParam = (AliMUONTrackParam*) muonTrack.GetTrackParamAtCluster()->First();
         x2 = trackParam->GetNonBendingCoor();
         y2 = trackParam->GetBendingCoor();
@@ -2134,8 +2142,8 @@ void AliAnalysisTaskMuonPerformance::FillContainerInfoMC(Double_t* containerInpu
 }
 
 //________________________________________________________________________
-Double_t langaufun(Double_t *x, Double_t *par) {
-  
+Double_t langaufun(Double_t *x, Double_t *par)
+{
   //Fit parameters:
   //par[0]=Width (scale) parameter of Landau density
   //par[1]=Most Probable (MP, location) parameter of Landau density
@@ -2151,43 +2159,24 @@ Double_t langaufun(Double_t *x, Double_t *par) {
   Double_t invsq2pi = 0.3989422804014;   // (2 pi)^(-1/2)
   Double_t mpshift  = -0.22278298;       // Landau maximum location
   
-  // Control constants
-  Double_t np = 100.0; // number of convolution steps
-  Double_t sc = 5.0;   // convolution extends to +-sc Gaussian sigmas
-  
-  // Variables
-  Double_t xx;
-  Double_t mpc;
-  Double_t fland;
-  Double_t sum = 0.0;
-  Double_t xlow,xupp;
-  Double_t step;
-  Double_t i;
-  
-  
   // MP shift correction
-  mpc = par[1] - mpshift * par[0]; 
+  Double_t mpc = par[1] - mpshift * par[0];
   
   // Range of convolution integral
-  xlow = x[0] - sc * par[3];
-  xupp = x[0] + sc * par[3];
-  
-  step = (xupp-xlow) / np;
+  Double_t xlow = x[0] - 5. * par[3];
+  Double_t xupp = x[0] + 5. * par[3];
+  Double_t step = TMath::Min(0.2*par[0],0.1*par[3]);
   
   // Convolution integral of Landau and Gaussian by sum
-  for(i=1.0; i<=np/2; i++) {
-    xx = xlow + (i-.5) * step;
-    //change x -> -x because the tail of the Landau is at the left here...
-    fland = TMath::Landau(-xx,mpc,par[0]) / par[0];
-    sum += fland * TMath::Gaus(x[0],xx,par[3]);
-    
-    //change x -> -x because the tail of the Landau is at the left here...
-    xx = xupp - (i-.5) * step;
-    fland = TMath::Landau(-xx,mpc,par[0]) / par[0];
-    sum += fland * TMath::Gaus(x[0],xx,par[3]);
+  Double_t xx = xlow + 0.5 * step;
+  Double_t sum = 0.0;
+  while (xx < xupp) {
+    sum += TMath::Landau(-xx,mpc,par[0]) * TMath::Gaus(x[0],xx,par[3]);
+    xx += step;
   }
   
-  return (par[2] * step * sum * invsq2pi / par[3]);
+  return (par[2] * step * sum * invsq2pi / par[3] / par[0]);
+  
 }
 
 //________________________________________________________________________
@@ -2196,8 +2185,13 @@ void AliAnalysisTaskMuonPerformance::FitLandauGausResVsP(TH2* h, const char* fit
 {
   /// generic function to fit residuals versus momentum with a landau convoluted with a gaussian
   
+  static TF1 *fGaus2 = 0x0;
+  if (!fGaus2) fGaus2 = new TF1("fGaus2","gaus");
   static TF1* fLandauGaus = 0x0;
-  if (!fLandauGaus) fLandauGaus = new TF1("fLandauGaus",langaufun,h->GetYaxis()->GetBinLowEdge(1),h->GetYaxis()->GetBinLowEdge(h->GetNbinsY()+1),4);
+  if (!fLandauGaus) {
+    fLandauGaus = new TF1("fLandauGaus",langaufun,h->GetYaxis()->GetBinLowEdge(1),h->GetYaxis()->GetBinLowEdge(h->GetNbinsY()+1),4);
+    fLandauGaus->SetNpx(10000);
+  }
   
   Int_t rebinFactorX = TMath::Max(h->GetNbinsX()/fNPBins, 1);
   for (Int_t i = rebinFactorX; i <= h->GetNbinsX(); i+=rebinFactorX) {
@@ -2207,31 +2201,36 @@ void AliAnalysisTaskMuonPerformance::FitLandauGausResVsP(TH2* h, const char* fit
     TH1D *tmp = h->ProjectionY("tmp",i-rebinFactorX+1,i,"e");
     
     // first fit
-    fLandauGaus->SetParameters(0.2,0.,(Double_t)tmp->GetEntries(),1.);
-    tmp->Fit("fLandauGaus","WWNQ");
+    fGaus2->SetParameters((Double_t)tmp->GetEntries(), 0., 1.);
+    tmp->Fit("fGaus2", "WWNQ");
     
     // rebin histo
-    Double_t fwhm = fLandauGaus->GetParameter(0);
-    Double_t sigma = fLandauGaus->GetParameter(3);
-    Double_t sigmaP = TMath::Sqrt(sigma*sigma + fwhm*fwhm/(8.*log(2.)));
-    Int_t rebin = TMath::Max(static_cast<Int_t>(0.5*sigmaP/tmp->GetBinWidth(1)),1);
+    Double_t sigma = fGaus2->GetParameter(2);
+    Int_t rebin = static_cast<Int_t>(TMath::Min(0.1*tmp->GetNbinsX(),TMath::Max(0.5*sigma/tmp->GetBinWidth(1),1.)));
     while (tmp->GetNbinsX()%rebin!=0) rebin--;
     tmp->Rebin(rebin);
     
     // second fit
-    tmp->Fit("fLandauGaus","NQ");
+    Double_t mean = fGaus2->GetParameter(1);
+    fLandauGaus->SetParameters(0.25*sigma*TMath::Sqrt(8.*log(2.)), mean, tmp->GetEntries()*tmp->GetXaxis()->GetBinWidth(1), 0.5*sigma);
+    fLandauGaus->SetParLimits(0, 0.0025*sigma*TMath::Sqrt(8.*log(2.)), 1000.);
+    fLandauGaus->SetParLimits(3, 0., 2.*sigma);
+    Double_t xMin = TMath::Max(mean-50.*sigma, tmp->GetXaxis()->GetXmin());
+    Double_t xMax = TMath::Min(mean+10.*sigma, tmp->GetXaxis()->GetXmax());
+    if (xMin < tmp->GetXaxis()->GetXmax() && xMax > tmp->GetXaxis()->GetXmin()) fLandauGaus->SetRange(xMin, xMax);
+    tmp->Fit("fLandauGaus","RNQ");
     
-    // get fit results and fill histograms
-    fwhm = fLandauGaus->GetParameter(0);
+    // get fit results and fill graph
+    Double_t fwhm = 4.*fLandauGaus->GetParameter(0);
     sigma = fLandauGaus->GetParameter(3);
-    sigmaP = TMath::Sqrt(sigma*sigma + fwhm*fwhm/(8.*log(2.)));
+    Double_t sigmaP = TMath::Sqrt(sigma*sigma + fwhm*fwhm/(8.*log(2.)));
     Double_t fwhmErr = fLandauGaus->GetParError(0);
     Double_t sigmaErr = fLandauGaus->GetParError(3);
     Double_t sigmaPErr = TMath::Sqrt(sigma*sigma*sigmaErr*sigmaErr + fwhm*fwhm*fwhmErr*fwhmErr/(64.*log(2.)*log(2.))) / sigmaP;
     h->GetXaxis()->SetRange(i-rebinFactorX+1,i);
-    Double_t p = (tmp->GetEntries() > 0) ? h->GetMean() : 0.5 * (h->GetBinLowEdge(i-rebinFactorX+1) + h->GetBinLowEdge(i+1));
+    Double_t p = (tmp->GetEntries() > 0) ? h->GetMean() : 0.5 * (h->GetXaxis()->GetBinLowEdge(i-rebinFactorX+1) + h->GetXaxis()->GetBinLowEdge(i+1));
     h->GetXaxis()->SetRange();
-    Double_t pErr[2] = {p-h->GetBinLowEdge(i-rebinFactorX+1), h->GetBinLowEdge(i+1)-p};
+    Double_t pErr[2] = {p-h->GetXaxis()->GetBinLowEdge(i-rebinFactorX+1), h->GetXaxis()->GetBinLowEdge(i+1)-p};
     gMean->SetPoint(i/rebinFactorX-1, p, tmp->GetMean());
     gMean->SetPointError(i/rebinFactorX-1, pErr[0], pErr[1], tmp->GetMeanError(), tmp->GetMeanError());
     gMostProb->SetPoint(i/rebinFactorX-1, p, -fLandauGaus->GetParameter(1));
@@ -2269,7 +2268,7 @@ void AliAnalysisTaskMuonPerformance::FitGausResVsMom(TH2* h, const Double_t mean
     tmp->Fit("fGaus","WWNQ");
     
     // rebin histo
-    Int_t rebin = TMath::Max(static_cast<Int_t>(0.5*fGaus->GetParameter(2)/tmp->GetBinWidth(1)),1);
+    Int_t rebin = static_cast<Int_t>(TMath::Min(0.1*tmp->GetNbinsX(),TMath::Max(0.5*fGaus->GetParameter(2)/tmp->GetBinWidth(1),1.)));
     while (tmp->GetNbinsX()%rebin!=0) rebin--;
     tmp->Rebin(rebin);
     
@@ -2278,9 +2277,9 @@ void AliAnalysisTaskMuonPerformance::FitGausResVsMom(TH2* h, const Double_t mean
     
     // get fit results and fill histograms
     h->GetXaxis()->SetRange(i-rebinFactorX+1,i);
-    Double_t p = (tmp->GetEntries() > 0) ? h->GetMean() : 0.5 * (h->GetBinLowEdge(i-rebinFactorX+1) + h->GetBinLowEdge(i+1));
+    Double_t p = (tmp->GetEntries() > 0) ? h->GetMean() : 0.5 * (h->GetXaxis()->GetBinLowEdge(i-rebinFactorX+1) + h->GetXaxis()->GetBinLowEdge(i+1));
     h->GetXaxis()->SetRange();
-    Double_t pErr[2] = {p-h->GetBinLowEdge(i-rebinFactorX+1), h->GetBinLowEdge(i+1)-p};
+    Double_t pErr[2] = {p-h->GetXaxis()->GetBinLowEdge(i-rebinFactorX+1), h->GetXaxis()->GetBinLowEdge(i+1)-p};
     gMean->SetPoint(i/rebinFactorX-1, p, fGaus->GetParameter(1));
     gMean->SetPointError(i/rebinFactorX-1, pErr[0], pErr[1], fGaus->GetParError(1), fGaus->GetParError(1));
     gSigma->SetPoint(i/rebinFactorX-1, p, fGaus->GetParameter(2));
@@ -2321,9 +2320,9 @@ void AliAnalysisTaskMuonPerformance::FitPDCAVsMom(TH2* h, const char* fitting,
     
     // get fit results and fill histograms
     h->GetXaxis()->SetRange(i-rebinFactorX+1,i);
-    Double_t p = (tmp->GetEntries() > 0) ? h->GetMean() : 0.5 * (h->GetBinLowEdge(i-rebinFactorX+1) + h->GetBinLowEdge(i+1));
+    Double_t p = (tmp->GetEntries() > 0) ? h->GetMean() : 0.5 * (h->GetXaxis()->GetBinLowEdge(i-rebinFactorX+1) + h->GetXaxis()->GetBinLowEdge(i+1));
     h->GetXaxis()->SetRange();
-    Double_t pErr[2] = {p-h->GetBinLowEdge(i-rebinFactorX+1), h->GetBinLowEdge(i+1)-p};
+    Double_t pErr[2] = {p-h->GetXaxis()->GetBinLowEdge(i-rebinFactorX+1), h->GetXaxis()->GetBinLowEdge(i+1)-p};
     gMean->SetPoint(i/rebinFactorX-1, p, fPGaus->GetParameter(1));
     gMean->SetPointError(i/rebinFactorX-1, pErr[0], pErr[1], fPGaus->GetParError(1), fPGaus->GetParError(1));
     gSigma->SetPoint(i/rebinFactorX-1, p, fPGaus->GetParameter(2));
@@ -2359,7 +2358,7 @@ void AliAnalysisTaskMuonPerformance::FitClusterResidual(TH1* h, Int_t i, Double_
     h->Fit("fRGaus", "WWNQ");
     
     // rebin histo
-    Int_t rebin = TMath::Max(static_cast<Int_t>(0.3*fRGaus->GetParameter(2)/h->GetBinWidth(1)),1);
+    Int_t rebin = static_cast<Int_t>(TMath::Min(0.1*h->GetNbinsX(),TMath::Max(0.3*fRGaus->GetParameter(2)/h->GetBinWidth(1),1.)));
     while (h->GetNbinsX()%rebin!=0) rebin--;
     h->Rebin(rebin);
     
@@ -2440,8 +2439,13 @@ TCanvas* AliAnalysisTaskMuonPerformance::DrawFitLandauGausResPVsP(const char* na
 {
   /// generic function to draw and fit momentum residuals versus momentum
   
-  static TF1* fLandauGaus = 0x0;
-  if (!fLandauGaus) fLandauGaus = new TF1("fLandauGaus",langaufun,h->GetYaxis()->GetBinLowEdge(1),h->GetYaxis()->GetBinLowEdge(h->GetNbinsY()+1),4);
+  static TF1 *fGaus3 = 0x0;
+  if (!fGaus3) fGaus3 = new TF1("fGaus3","gaus");
+  static TF1* fLandauGaus2 = 0x0;
+  if (!fLandauGaus2) {
+    fLandauGaus2 = new TF1("fLandauGaus2",langaufun,h->GetYaxis()->GetBinLowEdge(1),h->GetYaxis()->GetBinLowEdge(h->GetNbinsY()+1),4);
+    fLandauGaus2->SetNpx(10000);
+  }
   
   TLegend* l = new TLegend(0.15,0.25,0.3,0.85);
   TCanvas* c = new TCanvas(name, title);
@@ -2460,25 +2464,34 @@ TCanvas* AliAnalysisTaskMuonPerformance::DrawFitLandauGausResPVsP(const char* na
     proj->Draw((i==rebinFactorX)?"hist":"histsames");
     proj->SetLineColor(i/rebinFactorX);
     
-    // first fit
-    fLandauGaus->SetParameters(0.2,0.,1.,1.);
-    fLandauGaus->SetLineColor(i/rebinFactorX);
-    proj->Fit("fLandauGaus","WWNQ","sames");
-    
-    // rebin histo
-    Double_t fwhm = fLandauGaus->GetParameter(0);
-    Double_t sigma = fLandauGaus->GetParameter(3);
-    Double_t sigmaP = TMath::Sqrt(sigma*sigma + fwhm*fwhm/(8.*log(2.)));
-    Int_t rebin = TMath::Max(static_cast<Int_t>(0.5*sigmaP/proj->GetBinWidth(1)),1);
-    while (proj->GetNbinsX()%rebin!=0) rebin--;
-    proj->Rebin(rebin);
-    proj->Scale(1./rebin);
-    
-    // second fit
-    proj->Fit("fLandauGaus","Q","sames");
+    if (proj->GetEntries() > 10) {
+      
+      // first fit
+      fGaus3->SetParameters(1., 0., 1.);
+      proj->Fit("fGaus3", "WWNQ");
+      
+      // rebin histo
+      Double_t sigma = fGaus3->GetParameter(2);
+      Int_t rebin = static_cast<Int_t>(TMath::Min(0.1*proj->GetNbinsX(),TMath::Max(0.5*sigma/proj->GetBinWidth(1),1.)));
+      while (proj->GetNbinsX()%rebin!=0) rebin--;
+      proj->Rebin(rebin);
+      proj->Scale(1./rebin);
+      
+      // second fit
+      Double_t mean = fGaus3->GetParameter(1);
+      fLandauGaus2->SetParameters(0.25*sigma*TMath::Sqrt(8.*log(2.)), mean, proj->GetXaxis()->GetBinWidth(1), 0.5*sigma);
+      fLandauGaus2->SetParLimits(0, 0.0025*sigma*TMath::Sqrt(8.*log(2.)), 1000.);
+      fLandauGaus2->SetParLimits(3, 0., 2.*sigma);
+      Double_t xMin = TMath::Max(mean-50.*sigma, proj->GetXaxis()->GetXmin());
+      Double_t xMax = TMath::Min(mean+10.*sigma, proj->GetXaxis()->GetXmax());
+      if (xMin < proj->GetXaxis()->GetXmax() && xMax > proj->GetXaxis()->GetXmin()) fLandauGaus2->SetRange(xMin, xMax);
+      fLandauGaus2->SetLineColor(i/rebinFactorX);
+      proj->Fit("fLandauGaus2","RQ","sames");
+      
+    }
     
     // set label
-    Double_t p = 0.5 * (h->GetBinLowEdge(i-rebinFactorX+1) + h->GetBinLowEdge(i+1));
+    Double_t p = 0.5 * (h->GetXaxis()->GetBinLowEdge(i-rebinFactorX+1) + h->GetXaxis()->GetBinLowEdge(i+1));
     l->AddEntry(proj,Form("%5.1f GeV",p));
     
   }
@@ -2488,6 +2501,7 @@ TCanvas* AliAnalysisTaskMuonPerformance::DrawFitLandauGausResPVsP(const char* na
   l->Draw("same");
   
   return c;
+  
 }
 
 //________________________________________________________________________
@@ -2512,7 +2526,7 @@ TCanvas* AliAnalysisTaskMuonPerformance::DrawResPVsP(const char* name, const cha
     proj->SetLineWidth(2);
     
     // set label
-    Double_t p = 0.5 * (h->GetBinLowEdge(i-rebinFactorX+1) + h->GetBinLowEdge(i+1));
+    Double_t p = 0.5 * (h->GetXaxis()->GetBinLowEdge(i-rebinFactorX+1) + h->GetXaxis()->GetBinLowEdge(i+1));
     l->AddEntry(proj,Form("%5.1f GeV",p));
     
   }

@@ -653,8 +653,8 @@ AliJHistManager::AliJHistManager(TString name):
     fHistConfigs(0)
 {
     // constructor
-    //CurrentManager(this);
     fDirectory = gDirectory;
+    this->cd();
 }
 
 //_____________________________________________________
@@ -690,7 +690,7 @@ AliJHistManager* AliJHistManager::GlobalManager(){
 }
 
 AliJHistManager* AliJHistManager::CurrentManager( AliJHistManager * hmg){
-    static AliJHistManager* currentManager = AliJHistManager::GlobalManager();
+    static AliJHistManager* currentManager = NULL;//;AliJHistManager::GlobalManager();
     if( hmg ) currentManager = hmg; 
     return currentManager;
 }
@@ -759,7 +759,7 @@ void AliJHistManager::Write(){
 
 void AliJHistManager::WriteConfig(){
     TDirectory *owd = gDirectory;
-    TDirectory * fHistConfigDir = gDirectory->mkdir("HistManager");
+    TDirectory * fHistConfigDir = fDirectory->mkdir("HistManager");
     fHistConfigDir->cd();
     TObjString * config = new TObjString(GetString().Data());
     config->Write("Config");
