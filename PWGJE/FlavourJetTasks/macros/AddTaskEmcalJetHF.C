@@ -1,23 +1,27 @@
-
 AliAnalysisTaskEmcalJetHF* AddTaskEmcalJetHF(
-   const char *outfilename    = "AnalysisOutput.root",
-   const char *nJets          = "Jets",
-   const char *nClusters      = "CaloClustersCorr",
-   UInt_t type                = 0, //AliAnalysisTaskEmcal::kTPC,
-   const char *nRhosChEm      = "rhoChEm",
-   const Double_t minPhi      = 1.8,
-   const Double_t maxPhi      = 2.74,
-   const Double_t minEta      = -0.3,
-   const Double_t maxEta      = 0.3,
-   const Double_t minArea     = 0.4,
-   const char *nTracks        = "PicoTracks",
-   const Double_t hiPTjet     = 50.0,
-   const Double_t trptcut     = 2.0,
-   const Double_t trketa      = 0.9,
-   const Int_t    trkQAcut     = 10041006,
-   Bool_t   isESD              = 1,
-   Bool_t   GlobalPID          = 1,
-   const char *tag	           = ""
+   const char *outfilename        = "AnalysisOutput.root",
+   const char *nJets              = "Jets",
+   const char *nClusters          = "CaloClustersCorr",
+   UInt_t type                    = 0, //AliAnalysisTaskEmcal::kTPC,
+   const char *nrho               = "rhoChEm",
+   const Double_t minPhi          = 1.8,
+   const Double_t maxPhi          = 2.74,
+   const Double_t minEta          = -0.3,
+   const Double_t maxEta          = 0.3,
+   const Double_t minArea         = 0.4,
+   const char *nPicoTracks        = "PicoTracks",
+   const Double_t hiPTjet         = 50.0,
+   const Double_t trptcut         = 2.0,
+   const Double_t trketa          = 0.9,
+   const Int_t    trkQAcut        = 10041006,
+   Bool_t   isESD                 = 0,
+   Bool_t     GlobalQA            = 1,
+   const char *typeDET            = "EMCAL",
+   Double_t    jetradius          = 0.2,
+   Double_t    jetptcut           = 1,
+   Double_t    jetareacut         = 0.08,
+   Int_t       leadhadtype        = 0,
+   const char *tag	              = ""
 )
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -31,29 +35,39 @@ AliAnalysisTaskEmcalJetHF* AddTaskEmcalJetHF(
 
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
-  if (!mgr->GetInputEventHandler())
-  {
-    ::Error("AddTaskEmcalJetHF", "This task requires an input event handler");
+  AliVEventHandler *evhand = mgr->GetInputEventHandler();
+  //if (!mgr->GetInputEventHandler())
+  if (!evhand) {
+    Error("AddTaskEmcalJetHadEPpid", "This task requires an input event handler");
     return NULL;
   }
+  
+  // check on type of event
+  TString dType("ESD");
+  if (!evhand->InheritsFrom("AliESDInputHandler"))
+    dType = "AOD";
+  if (dType == "AOD") nTracks = "AODFilterTracks";
+  if (dType == "ESD") nTracks = "ESDFilterTracks";
   //ESD Trk Cuts
-  if(isESD > 0){
+  //if(isESD > 0){
   AliESDtrackCuts *esdTrackCuts = 0x0;
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
   esdTrackCuts = CreateTrackCutsPWGJE(trkQAcut);
-  }
+  //}
+  
+  
   
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
 
 //  TString name(Form("Spectra_%s", nJets));
-  TString name(Form("Spectra_%s_%s%s", nJets, nRhosChEm, tag));
+  TString name(Form("Spectra_%s_%s%s", nJets, nrho, tag));
   AliAnalysisTaskEmcalJetHF *spectratask = new AliAnalysisTaskEmcalJetHF(name);
   spectratask->SetJetsName(nJets);
   spectratask->SetClusName(nClusters);
   spectratask->SetAnaType(type);
-  spectratask->SetRhoName(nRhosChEm);
+  spectratask->SetRhoName(nrho);
   spectratask->SetJetPhi(minPhi,maxPhi);
   spectratask->SetJetEta(minEta,maxEta);
   spectratask->SetJetAreaCut(minArea);
@@ -62,8 +76,45 @@ AliAnalysisTaskEmcalJetHF* AddTaskEmcalJetHF(
   spectratask->SetTrackPtCut(trptcut);
   spectratask->SetTrackEta(trketa);
   spectratask->SetTrackQACut(trkQAcut);
-  spectratask->SetdoGlobalPID(GlobalPID);
+  spectratask->SetGlobalQA(GlobalQA);
+  spectratask->SetTrackCuts(esdTrackCuts);
   //spectratask->SetDataType(isESD);
+
+  // =================== set up containers ================================================
+
+  
+  AliParticleContainer *trackCont  = spectratask->AddParticleContainer(nTracks);
+  if(trackCont){
+    trackCont->SetClassName("AliVTrack");
+    trackCont->SetParticleEtaLimits(-0.9,0.9);
+    trackCont->SetParticlePhiLimits(1.4,3.2);
+  }
+  
+  AliClusterContainer *clusterCont = spectratask->AddClusterContainer(nClusters);
+  
+  AliParticleContainer *trackJetCont  = spectratask->AddParticleContainer(nTracks);
+  if(trackJetCont){
+    trackJetCont->SetClassName("AliVTrack");
+    trackJetCont->SetParticleEtaLimits(-0.9,0.9);
+    //trackJetCont->SetParticlePhiLimits(1.4,3.2);
+  }
+  
+  AliClusterContainer *clusterJetCont = spectratask->AddClusterContainer(nClusters);
+  
+
+  TString strType(typeDET);
+  AliJetContainer *jetCont = spectratask->AddJetContainer(nJets,strType,jetradius);
+  /*if(jetCont) {
+    jetCont->SetRhoName(nrho);
+    jetCont->ConnectParticleContainer(trackJetCont);
+    jetCont->ConnectClusterContainer(clusterJetCont);
+    //jetCont->ConnectParticleContainer(trackCont);
+    //jetCont->ConnectClusterContainer(clusterCont);
+    //jetCont->SetZLeadingCut(0.98,0.98);
+    jetCont->SetPercAreaCut(jetareacut); // 0.6
+    jetCont->SetJetPtCut(jetptcut);
+    //jetCont->SetLeadingHadronType(leadhadtype);
+  }*/
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

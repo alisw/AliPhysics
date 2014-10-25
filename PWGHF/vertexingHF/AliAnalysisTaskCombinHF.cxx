@@ -364,7 +364,7 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   }
   
   
-  Int_t nMassBins=fMaxMass*1000.-fMinMass*1000.;
+  Int_t nMassBins=static_cast<Int_t>(fMaxMass*1000.-fMinMass*1000.);
   Double_t maxm=fMinMass+nMassBins*0.001;
   fMassVsPtVsY=new TH3F("hMassVsPtVsY","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
   fMassVsPtVsY->Sumw2();
@@ -1001,7 +1001,7 @@ void AliAnalysisTaskCombinHF::DoMixing(Int_t poolIndex){
   if(poolIndex<0 || poolIndex>fNzVertPools*fNMultPools) return;
 
   Int_t nEvents=fEventBuffer[poolIndex]->GetEntries();
-  printf("Start Event Mixing of %d events\n",nEvents);
+  if(fDebug > 1) printf("Start Event Mixing of %d events\n",nEvents);
   TObjArray* karray=0x0;
   TObjArray* parray=0x0;
   fEventBuffer[poolIndex]->SetBranchAddress("karray", &karray);

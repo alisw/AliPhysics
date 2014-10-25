@@ -1,4 +1,6 @@
-AliAnalysisTaskMuonFakes* AddTaskMuonFakes(Bool_t useMCLabels = kFALSE, Bool_t matchTrig = kFALSE, Bool_t applyAccCut = kFALSE)
+AliAnalysisTaskMuonFakes* AddTaskMuonFakes(Bool_t useMCLabels = kFALSE, Bool_t combineMCId = kFALSE,
+					   Bool_t matchTrig = kFALSE, Bool_t applyAccCut = kFALSE,
+					   TString extension = "")
 {
   /// Add AliAnalysisTaskMuonFakes to the train (Philippe Pillot)
   
@@ -17,12 +19,14 @@ AliAnalysisTaskMuonFakes* AddTaskMuonFakes(Bool_t useMCLabels = kFALSE, Bool_t m
   }
   
   // Create and configure task
-  AliAnalysisTaskMuonFakes *task = new AliAnalysisTaskMuonFakes("MUONFakes");
+  TString name = Form("MUONFakes%s",extension.Data());
+  AliAnalysisTaskMuonFakes *task = new AliAnalysisTaskMuonFakes(name.Data());
   if (!task) {
     Error("AddTaskMuonFakes", "Muon fakes task cannot be created!");
     return NULL;
   }
   task->UseMCLabels(useMCLabels);
+  task->CombineMCId(combineMCId);
   task->MatchTrigger(matchTrig);
   task->ApplyAccCut(applyAccCut);
   
@@ -39,15 +43,17 @@ AliAnalysisTaskMuonFakes* AddTaskMuonFakes(Bool_t useMCLabels = kFALSE, Bool_t m
     return NULL;
   }
   outputfile += ":MUON_Fakes";
+  TString suffix = (!extension.IsNull()) ? Form("_%s",extension.Data()) : "";
+  outputfile += suffix;
   
   // Create and connect output containers
-  AliAnalysisDataContainer *cout_histo = mgr->CreateContainer("histos", TObjArray::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
-  AliAnalysisDataContainer *cout_track = mgr->CreateContainer("trackCounters", AliCounterCollection::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
-  AliAnalysisDataContainer *cout_fakeTrack = mgr->CreateContainer("fakeTrackCounters", AliCounterCollection::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
-  AliAnalysisDataContainer *cout_matchTrack = mgr->CreateContainer("matchedTrackCounters", AliCounterCollection::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
-  AliAnalysisDataContainer *cout_event = mgr->CreateContainer("eventCounters", AliCounterCollection::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
-  AliAnalysisDataContainer *cout_histo2 = mgr->CreateContainer("histos2", TObjArray::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
-  AliAnalysisDataContainer *cout_pair = mgr->CreateContainer("pairCounters", AliCounterCollection::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *cout_histo = mgr->CreateContainer(Form("histos%s",suffix.Data()), TObjArray::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *cout_track = mgr->CreateContainer(Form("trackCounters%s",suffix.Data()), AliCounterCollection::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *cout_fakeTrack = mgr->CreateContainer(Form("fakeTrackCounters%s",suffix.Data()), AliCounterCollection::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *cout_matchTrack = mgr->CreateContainer(Form("matchedTrackCounters%s",suffix.Data()), AliCounterCollection::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *cout_event = mgr->CreateContainer(Form("eventCounters%s",suffix.Data()), AliCounterCollection::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *cout_histo2 = mgr->CreateContainer(Form("histos2%s",suffix.Data()), TObjArray::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *cout_pair = mgr->CreateContainer(Form("pairCounters%s",suffix.Data()), AliCounterCollection::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
   mgr->ConnectOutput(task, 1, cout_histo);
   mgr->ConnectOutput(task, 2, cout_track);
   mgr->ConnectOutput(task, 3, cout_fakeTrack);

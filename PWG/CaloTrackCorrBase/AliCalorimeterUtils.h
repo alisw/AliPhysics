@@ -48,7 +48,7 @@ class AliCalorimeterUtils : public TObject {
 	
   // Cluster contents
   
-  Bool_t        AreNeighbours(TString calo, Int_t absId1, Int_t absId2) const ;
+  Bool_t        AreNeighbours(Int_t calo, Int_t absId1, Int_t absId2) const ;
 
   Bool_t        IsClusterSharedByTwoSuperModules(const AliEMCALGeometry * geom,
                                                  AliVCluster* cluster);
@@ -102,9 +102,9 @@ class AliCalorimeterUtils : public TObject {
                                                              fImportGeometryFromFile = import    ;
                                                              fImportGeometryFilePath = path      ; } // EMCAL
   
-  Bool_t        IsMCParticleInCalorimeterAcceptance(TString calo, TParticle* particle);
-  Bool_t        IsMCParticleInCalorimeterAcceptance(TString calo, AliAODMCParticle* particle);
-  Bool_t        IsMCParticleInCalorimeterAcceptance(TString calo, TLorentzVector particle, Int_t & absID);
+  Bool_t        IsMCParticleInCalorimeterAcceptance(Int_t calo, TParticle* particle);
+  Bool_t        IsMCParticleInCalorimeterAcceptance(Int_t calo, AliAODMCParticle* particle);
+  Bool_t        IsMCParticleInCalorimeterAcceptance(Int_t calo, Float_t eta, Float_t theta, Float_t phi, Int_t & absID);
   
   void          SwitchOnLoadOwnEMCALGeometryMatrices()     { fLoadEMCALMatrices = kTRUE   ; }
   void          SwitchOffLoadOwnEMCALGeometryMatrices()    { fLoadEMCALMatrices = kFALSE  ; }
@@ -151,7 +151,8 @@ class AliCalorimeterUtils : public TObject {
   void          SetEMCALChannelStatusMap(TObjArray *map)   { fEMCALRecoUtils->SetEMCALChannelStatusMap(map)           ; }
   void          SetPHOSChannelStatusMap (TObjArray *map)   { fPHOSBadChannelMap  = map                                ; }
 	
-  Bool_t        ClusterContainsBadChannel(TString calorimeter,UShort_t* cellList, Int_t nCells);
+  Bool_t        ClusterContainsBadChannel(Int_t calo,UShort_t* cellList, Int_t nCells);
+  Bool_t        ClusterContainsBadChannel(TString /*calo*/,UShort_t* /*cellList*/, Int_t /*nCells*/); // Stupid thing to do but just to avoid compilation break in AliTrackComparisonESD while I find the authors
 	
   // Mask clusters in front of frame, EMCAL only
   Int_t         GetNMaskCellColumns()                const { return fNMaskCellColumns;}
@@ -167,7 +168,7 @@ class AliCalorimeterUtils : public TObject {
   //Calorimeter indexes information
   Int_t         GetModuleNumber(AliAODPWG4Particle * particle, AliVEvent* inputEvent) const;
   Int_t         GetModuleNumber(AliVCluster * cluster) const;
-  Int_t         GetModuleNumberCellIndexes(Int_t absId, TString calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const ;
+  Int_t         GetModuleNumberCellIndexes(Int_t absId, Int_t calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const ;
 	
   //Modules fiducial region
   Bool_t        CheckCellFiducialRegion(AliVCluster* cluster, AliVCaloCells* cells) const ;
@@ -214,8 +215,8 @@ class AliCalorimeterUtils : public TObject {
   void          SetEMCALChannelRecalibrationFactors(TObjArray *map)      { fEMCALRecoUtils->SetEMCALChannelRecalibrationFactors(map)        ; }
   void          SetPHOSChannelRecalibrationFactors (TObjArray *map)      { fPHOSRecalibrationFactors  = map;}
 
-  void          RecalibrateCellTime     (Double_t & time, TString calo, Int_t absId, Int_t bunchCrossNumber) const ;
-  void          RecalibrateCellAmplitude(Float_t  & amp,  TString calo, Int_t absId) const ;
+  void          RecalibrateCellTime     (Double_t & time, Int_t calo, Int_t absId, Int_t bunchCrossNumber) const ;
+  void          RecalibrateCellAmplitude(Float_t  & amp,  Int_t calo, Int_t absId) const ;
   Float_t       RecalibrateClusterEnergy(AliVCluster* cluster, AliVCaloCells * cells);
   Float_t       RecalibrateClusterEnergyWeightCell(AliVCluster* cluster, AliVCaloCells * cells, Float_t energyOrg);
 
@@ -308,6 +309,8 @@ class AliCalorimeterUtils : public TObject {
 
   void          SetNumberOfSuperModulesUsed(Int_t nSM)          { fNSuperModulesUsed  = nSM     ; }
   Int_t         GetNumberOfSuperModulesUsed()             const { return fNSuperModulesUsed     ; }
+  
+  enum detector { kEMCAL = 0, kPHOS = 1, kCTS = 2, kDCAL = 3, kDCALPHOS = 4 };
   
  private:
 

@@ -26,8 +26,7 @@ public:
   AliAnaGeneratorKine() ; // default ctor
   virtual ~AliAnaGeneratorKine() { delete fFidCutTrigger ; } //virtual dtor
   
-  Bool_t CorrelateWithPartonOrJet(TLorentzVector trigger,
-                                  Int_t   indexTrig,
+  Bool_t CorrelateWithPartonOrJet(Int_t   indexTrig,
                                   Int_t   pdgTrig,
                                   Bool_t  leading[4],
                                   Bool_t  isolated[4],
@@ -37,8 +36,7 @@ public:
   
   void    GetPartonsAndJets() ;
     
-  void    GetXE(TLorentzVector trigger,
-                Int_t   indexTrig,
+  void    GetXE(Int_t   indexTrig,
                 Int_t   pdgTrig,
                 Bool_t  leading[4],
                 Bool_t  isolated[4],
@@ -46,16 +44,15 @@ public:
   
   void    InitParameters() ;
   
-  void    IsLeadingAndIsolated(TLorentzVector trigger,
-                               Int_t  indexTrig,
+  void    IsLeadingAndIsolated(Int_t  indexTrig,
                                Int_t  pdgTrig,
                                Bool_t leading[4],     
                                Bool_t isolated[4]) ;
     
   void    MakeAnalysisFillHistograms() ;
   
-  void    SetTriggerDetector( TString name ) { fTriggerDetector = name ; }
-  void    SetCalorimeter    ( TString name ) { fCalorimeter     = name ; }
+  void    SetTriggerDetector( TString & det ) ;
+  void    SetTriggerDetector( Int_t  det )    ;
   
   void    SetMinChargedPt   ( Float_t pt )   { fMinChargedPt    = pt   ; }
   void    SetMinNeutralPt   ( Float_t pt )   { fMinNeutralPt    = pt   ; }
@@ -65,13 +62,12 @@ public:
   { if(!fFidCutTrigger)  fFidCutTrigger  = new AliFiducialCut(); return  fFidCutTrigger  ; }
   virtual void     SetFiducialCut(AliFiducialCut * fc)
   { delete fFidCutTrigger;  fFidCutTrigger  = fc      ; }
-
   
 private:
-  
-  TString     fTriggerDetector;             //! trigger detector, for fiducial region
-  TString     fCalorimeter;                 //! detector neutral particles, for fiducial region
-  
+
+  Int_t       fTriggerDetector ;            // Detector : EMCAL, PHOS, CTS
+  TString     fTriggerDetectorString ;      // Detector : EMCAL, PHOS, CTS
+
   AliFiducialCut* fFidCutTrigger;           //! fiducial cut for the trigger detector
   
   Float_t     fMinChargedPt;                //! Minimum energy for charged particles in correlation
@@ -88,8 +84,11 @@ private:
   TLorentzVector fJet6;                     //! Pythia jet close to parton in position 6
   TLorentzVector fJet7;                     //! Pythia jet close to parton in position 7
 
-  Float_t     fPtHard;                      //! Generated pT hard
+  TLorentzVector fTrigger;                  //! Trigger momentum, avoid generating TLorentzVectors per event
+  TLorentzVector fLVTmp;                    //! momentum, avoid generating TLorentzVectors per event
   
+  Float_t     fPtHard;                      //! Generated pT hard
+
   TH1F      * fhPtHard;                     //! pt of parton 
   TH1F      * fhPtParton;                   //! pt of parton  
   TH1F      * fhPtJet;                      //! pt of jet 
@@ -150,7 +149,7 @@ private:
   AliAnaGeneratorKine              (const AliAnaGeneratorKine & gk) ; // cpy ctor
   AliAnaGeneratorKine & operator = (const AliAnaGeneratorKine & gk) ; // cpy assignment
   
-  ClassDef(AliAnaGeneratorKine,3)
+  ClassDef(AliAnaGeneratorKine,4)
   
 } ;
 

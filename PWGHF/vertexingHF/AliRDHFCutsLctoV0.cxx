@@ -52,7 +52,8 @@ AliRDHFCuts(name),
   fV0daughtersCuts(0),
   fV0Type(0),
   fHighPtCut(2.5),
-  fLowPtCut(1.0)
+  fLowPtCut(1.0),
+  fExcludedCut(-1)
 {
   //
   // Default Constructor
@@ -143,7 +144,8 @@ AliRDHFCutsLctoV0::AliRDHFCutsLctoV0(const AliRDHFCutsLctoV0 &source) :
   fV0daughtersCuts(0),
   fV0Type(source.fV0Type),
   fHighPtCut(source.fHighPtCut),
-  fLowPtCut(source.fLowPtCut)
+  fLowPtCut(source.fLowPtCut),
+  fExcludedCut(source.fExcludedCut)
   /*fV0channel(source.fV0channel)*/
 {
   //
@@ -360,6 +362,10 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
   }
 
   AliAODv0 * v0 = dynamic_cast<AliAODv0*>(d->Getv0());
+
+  if ( v0 && ((v0->GetOnFlyStatus() == kTRUE  && GetV0Type() == AliRDHFCuts::kOnlyOfflineV0s) ||
+	      (v0->GetOnFlyStatus() == kFALSE && GetV0Type() == AliRDHFCuts::kOnlyOnTheFlyV0s)) ) return 0;
+
   AliAODTrack * bachelorTrack = dynamic_cast<AliAODTrack*>(d->GetBachelor());
   if (!v0 || !bachelorTrack) {
     AliDebug(2,"No V0 or no bachelor for current cascade");
@@ -437,19 +443,19 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
     Bool_t isNotK0S = kTRUE, isNotLambda = kTRUE, isNotLambdaBar = kTRUE, isNotGamma = kTRUE;
 
     // cut on Lc mass with K0S+p hypothesis
-    if (TMath::Abs(mLck0sp-mLcPDG) > fCutsRD[GetGlobalIndex(0,ptbin)]) {
+    if (TMath::Abs(mLck0sp-mLcPDG) > fCutsRD[GetGlobalIndex(0,ptbin)] && fExcludedCut!=0) {
       okLck0sp = kFALSE;
       AliDebug(4,Form(" cascade mass is %2.2e and does not correspond to Lambda_c into K0S+p cut",mLck0sp));
     }
 
     // cuts on the V0 mass: K0S case
-    if (TMath::Abs(mk0s-mk0sPDG) > fCutsRD[GetGlobalIndex(2,ptbin)]) {
+    if (TMath::Abs(mk0s-mk0sPDG) > fCutsRD[GetGlobalIndex(2,ptbin)] && fExcludedCut!=2) {
       okK0spipi = kFALSE;
       AliDebug(4,Form(" V0 mass is %2.2e and does not correspond to K0S cut",mk0s));
     }
 
     // cut on Lc mass with Lambda+pi hypothesis
-    if (TMath::Abs(mLcLpi-mLcPDG) > fCutsRD[GetGlobalIndex(1,ptbin)]) {
+    if (TMath::Abs(mLcLpi-mLcPDG) > fCutsRD[GetGlobalIndex(1,ptbin)] && fExcludedCut!=1) {
       okLcLpi = kFALSE;
       okLcLBarpi = kFALSE;
       AliDebug(4,Form(" cascade mass is %2.2e and does not correspond to Lambda_c into Lambda+pi cut",mLcLpi));
@@ -457,38 +463,38 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
 
     // cuts on the V0 mass: Lambda/LambdaBar case
     //if ( !(bachelorTrack->Charge()==+1 && TMath::Abs(mlambda-mLPDG) <= fCutsRD[GetGlobalIndex(3,ptbin)] ) ) {
-    if ( TMath::Abs(mlambda-mLPDG) > fCutsRD[GetGlobalIndex(3,ptbin)] ) {
+    if ( TMath::Abs(mlambda-mLPDG) > fCutsRD[GetGlobalIndex(3,ptbin)]  && fExcludedCut!=3) {
       okLppi = kFALSE;
       AliDebug(4,Form(" V0 mass is %2.2e and does not correspond to LambdaBar cut",mlambda));
     }
 
     //if ( !(bachelorTrack->Charge()==-1 && TMath::Abs(malambda-mLPDG) <= fCutsRD[GetGlobalIndex(3,ptbin)] ) ) {
-    if ( TMath::Abs(malambda-mLPDG) > fCutsRD[GetGlobalIndex(3,ptbin)] ) {
+    if ( TMath::Abs(malambda-mLPDG) > fCutsRD[GetGlobalIndex(3,ptbin)]  && fExcludedCut!=3) {
       okLBarpip = kFALSE;
       AliDebug(4,Form(" V0 mass is %2.2e and does not correspond to LambdaBar cut",malambda));
     }
 
     // cut on K0S invariant mass veto
-    if (TMath::Abs(v0->MassK0Short()-mk0sPDG) < fCutsRD[GetGlobalIndex(12,ptbin)]) { // K0S invariant mass veto
+    if (TMath::Abs(v0->MassK0Short()-mk0sPDG) < fCutsRD[GetGlobalIndex(12,ptbin)] && fExcludedCut!=12) { // K0S invariant mass veto
       AliDebug(4,Form(" veto on K0S invariant mass doesn't pass the cut"));
       //return 0;
       isNotK0S=kFALSE;
     }
 
     // cut on Lambda/LambdaBar invariant mass veto
-    if (TMath::Abs(v0->MassLambda()-mLPDG) < fCutsRD[GetGlobalIndex(13,ptbin)]) { // Lambda invariant mass veto
+    if (TMath::Abs(v0->MassLambda()-mLPDG) < fCutsRD[GetGlobalIndex(13,ptbin)] && fExcludedCut!=13) { // Lambda invariant mass veto
       AliDebug(4,Form(" veto on Lambda invariant mass doesn't pass the cut"));
       isNotLambda=kFALSE;
       //return 0;
     }
-    if (TMath::Abs(v0->MassAntiLambda()-mLPDG) < fCutsRD[GetGlobalIndex(13,ptbin)] ) { // LambdaBar invariant mass veto
+    if (TMath::Abs(v0->MassAntiLambda()-mLPDG) < fCutsRD[GetGlobalIndex(13,ptbin)] && fExcludedCut!=13) { // LambdaBar invariant mass veto
       AliDebug(4,Form(" veto on LambdaBar invariant mass doesn't pass the cut"));
       isNotLambdaBar=kFALSE;
       //return 0;
     }
 
     // cut on gamma invariant mass veto
-    if (v0->InvMass2Prongs(0,1,11,11) < fCutsRD[GetGlobalIndex(14,ptbin)]) { // K0S invariant mass veto
+    if (v0->InvMass2Prongs(0,1,11,11) < fCutsRD[GetGlobalIndex(14,ptbin)] && fExcludedCut!=14) { // K0S invariant mass veto
       AliDebug(4,Form(" veto on gamma invariant mass doesn't pass the cut"));
       isNotGamma=kFALSE;
       //return 0;
@@ -501,51 +507,51 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
     if (!okLck0sp && !okLcLpi && !okLcLBarpi) return 0;
 
     // cuts on the minimum pt of the tracks
-    if (TMath::Abs(bachelorTrack->Pt()) < fCutsRD[GetGlobalIndex(4,ptbin)]) {
+    if (TMath::Abs(bachelorTrack->Pt()) < fCutsRD[GetGlobalIndex(4,ptbin)] && fExcludedCut!=4) {
       AliDebug(4,Form(" bachelor track Pt=%2.2e > %2.2e",bachelorTrack->Pt(),fCutsRD[GetGlobalIndex(4,ptbin)]));
       return 0;
     }
-    if (TMath::Abs(v0positiveTrack->Pt()) < fCutsRD[GetGlobalIndex(5,ptbin)]) {
+    if (TMath::Abs(v0positiveTrack->Pt()) < fCutsRD[GetGlobalIndex(5,ptbin)] && fExcludedCut!=5) {
       AliDebug(4,Form(" V0-positive track Pt=%2.2e > %2.2e",v0positiveTrack->Pt(),fCutsRD[GetGlobalIndex(5,ptbin)]));
       return 0;
     }
-    if (TMath::Abs(v0negativeTrack->Pt()) < fCutsRD[GetGlobalIndex(6,ptbin)]) {
+    if (TMath::Abs(v0negativeTrack->Pt()) < fCutsRD[GetGlobalIndex(6,ptbin)] && fExcludedCut!=6) {
       AliDebug(4,Form(" V0-negative track Pt=%2.2e > %2.2e",v0negativeTrack->Pt(),fCutsRD[GetGlobalIndex(6,ptbin)]));
       return 0;
     }
 
     // cut on cascade dca (prong-to-prong)
-    if ( TMath::Abs(d->GetDCA()) > fCutsRD[GetGlobalIndex(7,ptbin)] ) { // prong-to-prong cascade DCA
+    if ( TMath::Abs(d->GetDCA()) > fCutsRD[GetGlobalIndex(7,ptbin)] && fExcludedCut!=7) { // prong-to-prong cascade DCA
       AliDebug(4,Form(" cascade tracks DCA don't pass the cut"));
       return 0;
     }
 
     // cut on V0 dca (prong-to-prong)
-    if ( TMath::Abs(v0->GetDCA()) > fCutsRD[GetGlobalIndex(8,ptbin)] ) { // prong-to-prong V0 DCA
+    if ( TMath::Abs(v0->GetDCA()) > fCutsRD[GetGlobalIndex(8,ptbin)] && fExcludedCut!=8) { // prong-to-prong V0 DCA
       AliDebug(4,Form(" V0 DCA don't pass the cut"));
       return 0;
     }
 
     // cut on V0 cosine of pointing angle wrt PV
-    if (d->CosV0PointingAngle() < fCutsRD[GetGlobalIndex(9,ptbin)]) { // cosine of V0 pointing angle wrt primary vertex
+    if (d->CosV0PointingAngle() < fCutsRD[GetGlobalIndex(9,ptbin)] && fExcludedCut!=9) { // cosine of V0 pointing angle wrt primary vertex
       AliDebug(4,Form(" V0 cosine of pointing angle doesn't pass the cut"));
       return 0;
     }
 
     // cut on bachelor transverse impact parameter wrt PV
-    if (TMath::Abs(d->Getd0Prong(0)) > fCutsRD[GetGlobalIndex(10,ptbin)]) { // bachelor transverse impact parameter wrt PV
+    if (TMath::Abs(d->Getd0Prong(0)) > fCutsRD[GetGlobalIndex(10,ptbin)] && fExcludedCut!=10) { // bachelor transverse impact parameter wrt PV
       AliDebug(4,Form(" bachelor transverse impact parameter doesn't pass the cut"));
       return 0;
     }
 
     // cut on V0 transverse impact parameter wrt PV
-    if (TMath::Abs(d->Getd0Prong(1)) > fCutsRD[GetGlobalIndex(11,ptbin)]) { // V0 transverse impact parameter wrt PV
+    if (TMath::Abs(d->Getd0Prong(1)) > fCutsRD[GetGlobalIndex(11,ptbin)] && fExcludedCut!=11) { // V0 transverse impact parameter wrt PV
       AliDebug(4,Form(" V0 transverse impact parameter doesn't pass the cut"));
       return 0;
     }
 
     // cut on V0 pT min
-    if (v0->Pt() < fCutsRD[GetGlobalIndex(15,ptbin)]) { // V0 pT min
+    if (v0->Pt() < fCutsRD[GetGlobalIndex(15,ptbin)] && fExcludedCut!=15) { // V0 pT min
       AliDebug(4,Form(" V0 track Pt=%2.2e > %2.2e",v0->Pt(),fCutsRD[GetGlobalIndex(15,ptbin)]));
       return 0;
     }
@@ -594,6 +600,10 @@ Int_t AliRDHFCutsLctoV0::IsSelectedPID(AliAODRecoDecayHF* obj) {
   }
 
   AliAODRecoCascadeHF *objD = (AliAODRecoCascadeHF*)obj;
+
+  AliAODv0 * v0 = dynamic_cast<AliAODv0*>(objD->Getv0());
+  if ( v0 && ((v0->GetOnFlyStatus() == kTRUE  && GetV0Type() == AliRDHFCuts::kOnlyOfflineV0s) ||
+	      (v0->GetOnFlyStatus() == kFALSE && GetV0Type() == AliRDHFCuts::kOnlyOnTheFlyV0s)) ) return 0;
 
   AliAODTrack *bachelor = (AliAODTrack*)objD->GetBachelor();
   AliAODTrack *v0Pos = (AliAODTrack*)objD->Getv0PositiveTrack();
@@ -814,6 +824,9 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
   }
 
   AliAODv0 * v0 = dynamic_cast<AliAODv0*>(d->Getv0());
+  if ( v0 && ((v0->GetOnFlyStatus() == kTRUE  && GetV0Type() == AliRDHFCuts::kOnlyOfflineV0s) ||
+	      (v0->GetOnFlyStatus() == kFALSE && GetV0Type() == AliRDHFCuts::kOnlyOnTheFlyV0s)) ) return 0;
+
   AliAODTrack * bachelorTrack = dynamic_cast<AliAODTrack*>(d->GetBachelor());
   if (!v0 || !bachelorTrack) {
     AliDebug(2,"No V0 or no bachelor for current cascade");
@@ -1377,3 +1390,4 @@ Bool_t AliRDHFCutsLctoV0::AreLctoV0DaughtersSelected(AliAODRecoDecayHF *dd) cons
   return kTRUE;
 
 }
+

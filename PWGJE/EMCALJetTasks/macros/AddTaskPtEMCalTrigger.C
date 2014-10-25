@@ -26,6 +26,7 @@ AliAnalysisTask* AddTaskPtEMCalTrigger(bool usePythiaHard, const char *period ="
         if(!TString(period).CompareTo("LHC13f")) pttriggertask->SetSwapEta();
         mgr->AddTask(pttriggertask);
         pttriggertask->SetPtRange(2., 100.);
+        pttriggertask->SetClusterEnergyRange(2.,100.);
         if(usePythiaHard){
         	pttriggertask->SetIsPythia(kTRUE);
         }

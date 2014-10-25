@@ -65,6 +65,7 @@ class AliJEfficiencyScanner : public TNamed  {
   void SetJMCTrackList( TClonesArray * l ) { fMCTrackList  = l ; } 
   void SetJEventHeader( AliJEventHeader * h ){ fEventHeader = h ; }
   void SetJRunHeader( AliJRunHeader *h ){ fRunHeader = h; }
+  void SetMBTriggMask(int mask ){ fMBTriggMask = mask; }
 
   bool IsSelected( AliJTrack * track, int itrigger )const { return AliJTrackCut::GetInstance().IsSelected(track, itrigger); }
 
@@ -93,6 +94,8 @@ class AliJEfficiencyScanner : public TNamed  {
   }
 
   void PrintOut() const;
+
+  int fMBTriggMask;
   
   TClonesArray *    fTrackList;   //! list of charged track objects
   TClonesArray *    fMCTrackList; //! list of charged track objects

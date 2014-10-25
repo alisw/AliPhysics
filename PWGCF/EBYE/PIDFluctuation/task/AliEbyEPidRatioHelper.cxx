@@ -92,7 +92,10 @@ AliEbyEPidRatioHelper::AliEbyEPidRatioHelper() :
   fHCentralityPerAll(NULL),
   fNCentralityBins(11),
   
+  fSubSamples(25),
   fRandom(NULL),
+  fSubSampleIdx(1), 
+
   fIsRatio(kFALSE), 
   fIsPtBin(kFALSE), fIsDetectorWise(kFALSE) {
   // Constructor   
@@ -114,7 +117,7 @@ const Int_t   AliEbyEPidRatioHelper::fgkfHistNBinsEta     = Int_t((AliEbyEPidRat
 const Float_t AliEbyEPidRatioHelper::fgkfHistRangeRap[]   = {-0.8, 0.8};
 const Int_t   AliEbyEPidRatioHelper::fgkfHistNBinsRap     = Int_t((AliEbyEPidRatioHelper::fgkfHistRangeRap[1] - AliEbyEPidRatioHelper::fgkfHistRangeRap[0]) / AliEbyEPidRatioHelper::fgkfHistBinWitdthRap) +1;
 
-const Float_t AliEbyEPidRatioHelper::fgkfHistRangePhi[]   = {0.0, TMath::TwoPi()};
+const Float_t AliEbyEPidRatioHelper::fgkfHistRangePhi[]   = {0.0, static_cast<Float_t>(TMath::TwoPi())};
 const Int_t   AliEbyEPidRatioHelper::fgkfHistNBinsPhi     = 21 ;
 
 const Float_t AliEbyEPidRatioHelper::fgkfHistRangePt[]    = {0.2, 2.9}; // {0.2, 5.}; // was {0.3, 2.22}
@@ -300,6 +303,7 @@ Int_t AliEbyEPidRatioHelper::SetupEvent(AliESDInputHandler *esdHandler, AliAODIn
 
   fCentralityPercentile = centrality->GetCentralityPercentile("V0M");
   
+  fSubSampleIdx = fRandom->Integer(fSubSamples);
 
   return 0;
 }

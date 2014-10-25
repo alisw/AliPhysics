@@ -75,7 +75,7 @@ AliSpectraBothHistoManager::AliSpectraBothHistoManager(const char *name,Int_t nr
       if(ihist==kHistGenMulvsRawMul) BookGenMulvsRawMulHistogram(kHistNameBoth[ihist]); 
       if(ihist==kHistDoubleCounts)BookDoubleCountsHistogram(kHistNameBoth[ihist]); 
     }
-   
+   BookEventStatHist();
   TH1::AddDirectory(oldStatus);
 }
 //_______________________________________________________________________________________
@@ -416,4 +416,14 @@ TH2* AliSpectraBothHistoManager::GetHistogram2D(UInt_t histoType, UInt_t particl
 
 
 }
-
+//_____________________________________________________________________________________________________
+TH1F* AliSpectraBothHistoManager::BookEventStatHist()
+{
+	// We only need 3 bins all, passing phys selection, and selected
+	TH1F* hist = new TH1F("EventStatHisto","EventStatHisto",3,-0.5,2.5);
+	hist->GetXaxis()->SetBinLabel(1,"all");
+	hist->GetXaxis()->SetBinLabel(2,"passing phys. sel.");
+	hist->GetXaxis()->SetBinLabel(3,"analyzed");
+	fOutputList->Add(hist);
+	return hist; 
+}

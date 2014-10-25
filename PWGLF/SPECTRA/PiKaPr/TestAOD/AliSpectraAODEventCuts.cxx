@@ -91,8 +91,10 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) :
   fQgenIntegral(0), 
   fSplineArrayV0Agen(0),
   fSplineArrayV0Cgen(0),
+  fQvecMC(0),
   fNch(0),
-  fQvecCalibType(0)
+  fQvecCalibType(0),
+  fV0Aeff(0)
 {
   // Constructor
   fOutput=new TList();
@@ -121,6 +123,7 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) :
   TH2F *fQVecCCor = new TH2F("fQVecCCor", "QVec VZERO C;centrality;Qvector VZERO-C",20,0,100,100,0,10);
   TH2F *fV0M = new TH2F("fV0M", "V0 Multiplicity, before correction;V0 sector",64,-.5,63.5,500,0,1000);
   TH2F *fV0MCor = new TH2F("fV0MCor", "V0 Multiplicity, after correction;V0 sector",64,-.5,63.5,500,0,1000);
+  TH2F *fV0Mmc = new TH2F("fV0Mmc", "V0 Multiplicity, before correction;V0 sector",64,-.5,63.5,500,0,1000);
   
   fSplineArrayV0A = new TObjArray();
   fSplineArrayV0A->SetOwner();
@@ -145,6 +148,7 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) :
   fOutput->Add(fQVecCCor);
   fOutput->Add(fV0M);
   fOutput->Add(fV0MCor);
+  fOutput->Add(fV0Mmc);
   
   for (Int_t i = 0; i<10; i++){
     fMeanQxa2[i] = -1;
@@ -661,7 +665,7 @@ Double_t AliSpectraAODEventCuts::GetQvecPercentile(Int_t v0side){
   
   if(fQvecCalibType==1){
     if(fNch<0.) return -999.;
-    ic = GetNchBin();
+    ic = GetNchBin(fQvecIntegral);
   } else ic = (Int_t)fCent; //fQvecIntegral: 1% centrality bin
   
   TH1D *h1D = (TH1D*)fQvecIntegral->ProjectionY("h1D",ic+1,ic+1);
@@ -697,64 +701,185 @@ Double_t AliSpectraAODEventCuts::GetQvecPercentile(Int_t v0side){
 }
 
 //______________________________________________________
-Double_t AliSpectraAODEventCuts::CalculateQVectorMC(Int_t v0side){
+Double_t AliSpectraAODEventCuts::CalculateQVectorMC(Int_t v0side, Int_t type=1){
   
   if(!fIsMC) return -999.;
   
-  // 1. get MC array
+  // V0A efficiecy
+  if(type==1){
+    fV0Aeff = 0x0;
+    fV0Aeff = (TH1F*)fQvecIntList->FindObject("vzeroa_efficiency_prim_plus_sec_over_gen");
+    if(!fV0Aeff) return -999.;
+  }
+  
+  // get MC array
   TClonesArray *arrayMC = (TClonesArray*) fAOD->GetList()->FindObject(AliAODMCParticle::StdBranchName());
   
   if (!arrayMC) AliFatal("Error: MC particles branch not found!\n");
   
   Double_t Qx2mc = 0., Qy2mc = 0.;
-  Int_t mult2mc = 0;
+  Double_t mult2mc = 0;
   
   Int_t nMC = arrayMC->GetEntries();
       
-  // 2. loop on generated
-  for (Int_t iMC = 0; iMC < nMC; iMC++){
-    AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
+  if(type==0){ // type==0: q-vec from tracks in vzero acceptance
+   
+    // loop on generated
+    for (Int_t iMC = 0; iMC < nMC; iMC++){
+      AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
+      if(!partMC->Charge()) continue;//Skip neutrals
+
+      // check vzero side
+      if( CheckVZEROacceptance(partMC->Eta()) != v0side ) continue;
+    
+      // Calculate Qvec components
+      Qx2mc += TMath::Cos(2.*partMC->Phi());
+      Qy2mc += TMath::Sin(2.*partMC->Phi());
+      mult2mc++;
   
-    // 3. set VZERO side - FIXME Add TPC!
-    Double_t EtaVZERO[2] = {-999.,-999.};
-    if(v0side==0/*V0A*/){ EtaVZERO[0] = 2.8; EtaVZERO[1] = 5.1; } 
-    if(v0side==1/*V0C*/){ EtaVZERO[0] = -3.7; EtaVZERO[1] = -1.7; } 
-    
-    if(partMC->Eta()<EtaVZERO[0] || partMC->Eta()>EtaVZERO[1]) continue;
-    
-    // 4. Calculate Qvec components
-    
-    Qx2mc += TMath::Cos(2.*partMC->Phi());
-    Qy2mc += TMath::Sin(2.*partMC->Phi());
-    mult2mc++;
-    
-  }
+    }// end loop on generated.
+
+  }//end if on type==0
   
-  // 5. return q vector
-  return TMath::Sqrt((Qx2mc*Qx2mc + Qy2mc*Qy2mc)/mult2mc);
+  else if(type==1){ // type==1 (default): q-vec from vzero 
+      
+    // only used in qgen_vzero
+    Double_t multv0mc[64];
+    for(Int_t iCh=0;iCh<64;iCh++) multv0mc[iCh]=0; // initialize multv0mc to zero
+    
+    // loop on generated
+    for (Int_t iMC = 0; iMC < nMC; iMC++){
+        
+      AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
+      if(!partMC->Charge()) continue;//Skip neutrals
+      
+      // check vzero side
+      if( CheckVZEROacceptance(partMC->Eta()) != v0side ) continue;
+      
+      //get v0 channel of gen track
+      Int_t iv0 = CheckVZEROchannel(v0side, partMC->Eta(), partMC->Phi());
+    
+      //use the efficiecy as a weigth
+      multv0mc[iv0] += fV0Aeff->GetFunction("f")->Eval(partMC->Pt());
+
+      //calculate multiplicity for each vzero channell
+      //multv0mc[iv0]++;
+
+    }// end loop on generated.
+      
+    Int_t firstCh=-1,lastCh=-1;
+    if (v0side == 0) {
+      firstCh = 32;
+      lastCh = 64;
+    }
+    else if (v0side == 1) {
+      firstCh = 0;
+      lastCh = 32;
+    }
+    for(Int_t iCh = firstCh; iCh < lastCh; ++iCh) {
+      Double_t phi = TMath::Pi()/8. + TMath::Pi()/4.*(iCh%8);
+      Double_t mult = multv0mc[iCh];
+      Qx2mc += mult*TMath::Cos(2*phi);
+      Qy2mc += mult*TMath::Sin(2*phi);
+      mult2mc += mult;
+         
+      ((TH2F*)fOutput->FindObject("fV0Mmc"))->Fill(iCh,multv0mc[iCh]);
+    }      
+    
+  }//end if on type==1
+  
+  // return q vector
+  fQvecMC = TMath::Sqrt((Qx2mc*Qx2mc + Qy2mc*Qy2mc)/mult2mc);
+  
+  return fQvecMC;
   
 }
 
 //______________________________________________________
-Double_t AliSpectraAODEventCuts::GetQvecPercentileMC(Int_t v0side){
+Int_t AliSpectraAODEventCuts::CheckVZEROchannel(Int_t vzeroside, Double_t eta, Double_t phi){
+  
+  //VZEROA eta acceptance
+  Int_t ring = -1.;
+  
+  if ( vzeroside == 0){
+    if (eta > 4.5 && eta <= 5.1 ) ring = 0;
+    if (eta > 3.9 && eta <= 4.5 ) ring = 1;
+    if (eta > 3.4 && eta <= 3.9 ) ring = 2;
+    if (eta > 2.8 && eta <= 3.4 ) ring = 3;
+  } else if (vzeroside == 1){
+    if (eta > -3.7 && eta <= -3.2 ) ring = 0;
+    if (eta > -3.2 && eta <= -2.7 ) ring = 1;
+    if (eta > -2.7 && eta <= -2.2 ) ring = 2;
+    if (eta > -2.2 && eta <= -1.7 ) ring = 3;
+  }
+
+  
+  //VZEROAC phi acceptance
+  Int_t phisector= -1;
+  
+  
+  if ( phi > 0. && phi <= TMath::Pi()/4. ) phisector = 0;
+  
+  else if (phi > TMath::Pi()/4. && phi <= TMath::Pi()/2.) phisector = 1;
+  
+  else if (phi > TMath::Pi()/2 && phi <= (3./4.)*TMath::Pi() ) phisector =2;
+  
+  else if (phi > (3./4.)*TMath::Pi() && phi <= TMath::Pi() ) phisector = 3;
+  
+  else if (phi > TMath::Pi() && phi <= (5./4.)*TMath::Pi() ) phisector = 4;
+  
+  else if (phi > (5./4.)*TMath::Pi() && phi <= (3./2.)*TMath::Pi() ) phisector = 5;
+  
+  else if (phi > (3./2.)*TMath::Pi() && phi <= (7./4.)*TMath::Pi() ) phisector = 6;
+  
+  else if (phi > (7./4.)*TMath::Pi() && phi <= TMath::TwoPi() ) phisector = 7;
+  
+  if (vzeroside ==0) return Int_t(32+(phisector+(ring*8.))); // iv0 >= 32 -> V0A
+  if (vzeroside ==1) return Int_t(phisector+(ring*8.));  // iv0 < 32 -> V0C
+  
+  else return -999.;
+}
+
+//______________________________________________________
+Int_t AliSpectraAODEventCuts::CheckVZEROacceptance(Double_t eta){
+  
+  // eval VZERO side - FIXME Add TPC!
+    
+  if(eta > 2.8  && eta < 5.1) return 0; //VZEROA
+
+  else if (eta > -3.7  && eta < -1.7) return 1; //VZEROC
+    
+  return -999.;
+  
+}
+
+//______________________________________________________
+Double_t AliSpectraAODEventCuts::GetQvecPercentileMC(Int_t v0side, Int_t type=1){
  
   //check Qvec and Centrality consistency
   if(fCent>90.) return -999.;
   
-  Double_t qvec = CalculateQVectorMC(v0side);
+  Double_t qvec = CalculateQVectorMC(v0side, type);
   if(qvec==-999.) return -999.;
   
   fQgenIntegral = 0x0;
 
-  if(v0side==0/*V0A*/){ fQgenIntegral = (TH2D*)fQvecIntList->FindObject("VZEROAgen"); }
-  if(v0side==1/*V0C*/){ fQgenIntegral = (TH2D*)fQvecIntList->FindObject("VZEROCgen"); }
+  if(type==0){
+    if(v0side==0/*V0A*/){ fQgenIntegral = (TH2D*)fQvecIntList->FindObject("VZEROAgen"); }
+    if(v0side==1/*V0C*/){ fQgenIntegral = (TH2D*)fQvecIntList->FindObject("VZEROCgen"); }
+  } else if (type==1){
+    if(v0side==0/*V0A*/){ fQgenIntegral = (TH2D*)fQvecIntList->FindObject("VZEROAgen_vzero"); }
+    if(v0side==1/*V0C*/){ fQgenIntegral = (TH2D*)fQvecIntList->FindObject("VZEROCgen_vzero"); }
+  }
+  
+  
   //FIXME you need a check on the TH2D, add AliFatal or a return.
 
   Int_t ic = -999;
   
   if(fQvecCalibType==1){
     if(fNch<0.) return -999.;
-    ic = GetNchBin();
+    ic = GetNchBin(fQgenIntegral);
   } else ic = (Int_t)fCent; //fQvecIntegral: 1% centrality bin
   
   TH1D *h1D = (TH1D*)fQgenIntegral->ProjectionY("h1Dgen",ic+1,ic+1);
@@ -802,13 +927,13 @@ Bool_t AliSpectraAODEventCuts::CheckSplineArray(TObjArray * splarr, Int_t n){
 }
 
 //______________________________________________________
-Int_t AliSpectraAODEventCuts::GetNchBin(){
+Int_t AliSpectraAODEventCuts::GetNchBin(TH2D * h){
   
-  Double_t xmax = fQvecIntegral->GetXaxis()->GetXmax();
+  Double_t xmax = h->GetXaxis()->GetXmax();
   
-  if(fNch>xmax) return fQvecIntegral->GetNbinsX();
+  if(fNch>xmax) return (Int_t)h->GetNbinsX();
   
-  return (fNch*fQvecIntegral->GetNbinsX())/fQvecIntegral->GetXaxis()->GetXmax();
+  return (fNch*h->GetNbinsX())/h->GetXaxis()->GetXmax();
   
 }
 

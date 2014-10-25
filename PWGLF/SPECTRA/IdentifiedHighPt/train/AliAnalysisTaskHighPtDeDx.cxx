@@ -124,6 +124,7 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fVZEROArray(0x0),
   fVtxCut(10.0),  
   fEtaCut(0.9),  
+  fEtaCutStack(1.2),  
   fMinPt(0.1),
   fMinPtV0(0.1),
   fMinCent(0.0),
@@ -181,7 +182,8 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   fTrackArrayMC(0x0),
   fVZEROArray(0x0),
   fVtxCut(10.0),  
-  fEtaCut(0.9),  
+  fEtaCut(0.9),
+  fEtaCutStack(1.2),    
   fMinPt(0.1),
   fMinPtV0(0.1),
   fMinCent(0.0),
@@ -836,7 +838,7 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthESD()
     Double_t chargeMC = pdgPart->Charge();
 
     
-    if (TMath::Abs(trackMC->Eta()) > 2.4 )
+    if (TMath::Abs(trackMC->Eta()) > fEtaCutStack )
       continue;
     
     trackmult++;
@@ -854,12 +856,21 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthESD()
     
     // Here we want to add some of the MC histograms!
     
+    Bool_t lIsStrangeness = kFALSE; 
+    if ( TMath::Abs(pdgCode)==310 || TMath::Abs(pdgCode)==3122 || TMath::Abs(pdgCode)==3312 || TMath::Abs(pdgCode)==3334 ) lIsStrangeness = kTRUE; 
+    
     // And therefore we first cut here!
-    if (trackMC->Pt() < fMinPt) {
-      
+    if (trackMC->Pt() < fMinPt && !lIsStrangeness) {
       // Keep small fraction of low pT tracks
-      if(fRandom->Rndm() > fLowPtFraction)
-	continue;
+      if(fRandom->Rndm() > fLowPtFraction)	continue; 
+    } // else {
+    // Here we want to add the high pt part of the MC histograms!
+    //    }
+    
+    // And therefore we first cut here!
+    if (trackMC->Pt() < fMinPtV0 && lIsStrangeness) {
+      // Keep small fraction of low pT tracks
+      if(fRandom->Rndm() > fLowPtFraction)	continue; 
     } // else {
     // Here we want to add the high pt part of the MC histograms!
     //    }
@@ -916,7 +927,7 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthAOD()
     Double_t chargeMC = trackMC->Charge();
 
     
-    if (TMath::Abs(trackMC->Eta()) > 2.4 )
+    if (TMath::Abs(trackMC->Eta()) > fEtaCutStack )
       continue;
     //cout << " debug 34 " << endl;
     trackmult++;
@@ -936,16 +947,26 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthAOD()
  
  
     // Here we want to add some of the MC histograms!
-    
+        
+    Bool_t lIsStrangeness = kFALSE; 
+    if ( TMath::Abs(pdgCode)==310 || TMath::Abs(pdgCode)==3122 || TMath::Abs(pdgCode)==3312 || TMath::Abs(pdgCode)==3334 ) lIsStrangeness = kTRUE; 
+
     // And therefore we first cut here!
-    if (trackMC->Pt() < fMinPt) {
-      
+    if (trackMC->Pt() < fMinPt && !lIsStrangeness) {
       // Keep small fraction of low pT tracks
-      if(fRandom->Rndm() > fLowPtFraction)
-	continue;
+      if(fRandom->Rndm() > fLowPtFraction)	continue; 
     } // else {
     // Here we want to add the high pt part of the MC histograms!
     //    }
+    
+    // And therefore we first cut here!
+    if (trackMC->Pt() < fMinPtV0 && lIsStrangeness) {
+      // Keep small fraction of low pT tracks
+      if(fRandom->Rndm() > fLowPtFraction)	continue; 
+    } // else {
+    // Here we want to add the high pt part of the MC histograms!
+    //    }
+    
     //cout << " debug 36 " << endl;
  
     //cout << "fTreeOption " << fTreeOption << endl;
@@ -2234,10 +2255,14 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
       if(TMath::Abs(pTrack->Eta()) > fEtaCut || TMath::Abs(nTrack->Eta()) > fEtaCut)
 	continue;
       
-      // Pt cut on decay products
-      if (esdV0->Pt() < fMinPtV0)
-	//	if (pTrack->Pt() < fMinPt && nTrack->Pt() < fMinPt)
-	continue;
+        //Pre-selection to reduce output size
+        // Pt cut on decay products
+        if (esdV0->Pt() < fMinPtV0) continue;
+        // No point in keeping low cospa values...
+        if (esdV0->GetV0CosineOfPointingAngle() < 0.996 ) continue;
+        //Reject on-the-fly tracks too
+        if (esdV0->GetOnFlyStatus() != 0 ) continue;
+        
 
       //filter for positive track
       UShort_t filterFlag_p = 0;
@@ -2785,10 +2810,13 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
       if(TMath::Abs(pTrackTPC->Eta()) > fEtaCut || TMath::Abs(nTrackTPC->Eta()) > fEtaCut)
 	continue;
       
-      // Pt cut on decay products
-      if (esdV0->Pt() < fMinPtV0)
-	//	if (pTrack->Pt() < fMinPt && nTrack->Pt() < fMinPt)
-	continue;
+        //Pre-selection to reduce output size
+        // Pt cut on decay products
+        if (esdV0->Pt() < fMinPtV0) continue;
+        // No point in keeping low cospa values...
+        if (esdV0->GetV0CosineOfPointingAngle() < 0.996 ) continue;
+        //Reject on-the-fly tracks too
+        if (esdV0->GetOnFlyStatus() != 0 ) continue;
  
       
       // Check if switch does anything!
@@ -3220,10 +3248,13 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       if(TMath::Abs(pTrack->Eta()) > fEtaCut || TMath::Abs(nTrack->Eta()) > fEtaCut)
 	continue;
       
-      // Pt cut on decay products
-      if (aodV0->Pt() < fMinPtV0)
-	//	if (pTrack->Pt() < fMinPt && nTrack->Pt() < fMinPt)
-	continue;
+        //Pre-selection to reduce output size
+        // Pt cut on decay products
+        if (aodV0->Pt() < fMinPtV0) continue;
+        // No point in keeping low cospa values...
+        if (aodV0->CosPointingAngle(myBestPrimaryVertex) < 0.996 ) continue;
+        //Reject on-the-fly tracks too
+        if (aodV0->GetOnFlyStatus() != 0 ) continue;
       
 
 
@@ -3707,10 +3738,14 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
        Int_t nsharedtpcclusters=nsharedTPC.CountBits(0)-nsharedTPC.CountBits(159);
        
 
-       // Pt cut on decay products
-       if (aodV0->Pt() < fMinPt)
-	 //	if (pTrack->Pt() < fMinPt && nTrack->Pt() < fMinPt)
-	 continue;
+         //Pre-selection to reduce output size
+         // Pt cut on decay products
+         if (aodV0->Pt() < fMinPtV0) continue;
+         // No point in keeping low cospa values...
+         if (aodV0->CosPointingAngle(myBestPrimaryVertex) < 0.996 ) continue;
+         //Reject on-the-fly tracks too
+         if (aodV0->GetOnFlyStatus() != 0 ) continue;
+         
        
        //check positive tracks
        UShort_t filterFlag_p = 0;

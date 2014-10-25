@@ -26,6 +26,7 @@ public:
   AliFemtoThreeVector   *GetTrueMomentum() const;
   AliFemtoLorentzVector *GetEmissionPoint() const;
   Int_t                  GetPDGPid() const;
+  Int_t                  GetMotherPdgCode() const;
   Double_t               GetMass() const;
 
   AliFemtoThreeVector   *GetTrueMomentumPos() const;
@@ -45,6 +46,7 @@ public:
   void                   SetEmissionPoint(const AliFemtoLorentzVector& aPos);
   void                   SetEmissionPoint(Double_t aRx, Double_t aRy, Double_t aRz, Double_t aT);
   void                   SetPDGPid(Int_t aPid);
+  void                   SetMotherPdgCode(Int_t motherPdg);
   void                   SetMass(Double_t aMass);
 
   void                   SetTrueMomentumPos(AliFemtoThreeVector *aMom);
@@ -68,13 +70,14 @@ public:
 // !!! MANDATORY !!!
 // --- Copy the hidden info from AliFemtoTrack to AliFemtoParticle
   virtual AliFemtoHiddenInfo* Clone() const;
-  
+
  protected:
   virtual AliFemtoHiddenInfo* GetParticleHiddenInfo() const;
 
   AliFemtoThreeVector   *fTrueMomentum;  // True (simulated) momentum
   AliFemtoLorentzVector *fEmissionPoint; // Emission point coordinates
   Int_t                  fPDGPid;        // True PID of the particle
+  Int_t                  fMotherPdg;     // PDG code of particle's mother
   Double_t               fMass;          // True particle mass
 
   //daughter particles

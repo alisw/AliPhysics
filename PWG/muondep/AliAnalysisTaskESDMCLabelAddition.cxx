@@ -53,12 +53,15 @@ ClassImp(AliAnalysisTaskESDMCLabelAddition)
 AliAnalysisTaskESDMCLabelAddition::AliAnalysisTaskESDMCLabelAddition():
 AliAnalysisTaskSE(),
 fDefaultStorage(""),
+fAlignOCDBpath(""),
+fRecoParamOCDBpath(""),
 fRequestedStationMask(0),
 fRequest2ChInSameSt45(kFALSE),
 fExternalTrkSigmaCut(-1.),
 fSigmaCut(-1.),
 fExternalTrgSigmaCut(-1.),
-fSigmaCutTrig(-1.)
+fSigmaCutTrig(-1.),
+fDecayAsFake(kFALSE)
 {
   /// Default constructor
 }
@@ -68,12 +71,15 @@ fSigmaCutTrig(-1.)
 AliAnalysisTaskESDMCLabelAddition::AliAnalysisTaskESDMCLabelAddition(const char* name):
 AliAnalysisTaskSE(name),
 fDefaultStorage("raw://"),
+fAlignOCDBpath(""),
+fRecoParamOCDBpath(""),
 fRequestedStationMask(0),
 fRequest2ChInSameSt45(kFALSE),
 fExternalTrkSigmaCut(-1.),
 fSigmaCut(-1.),
 fExternalTrgSigmaCut(-1.),
-fSigmaCutTrig(-1.)
+fSigmaCutTrig(-1.),
+fDecayAsFake(kFALSE)
 {
   /// Constructor
 }
@@ -97,7 +103,11 @@ void AliAnalysisTaskESDMCLabelAddition::NotifyRun()
   // set OCDB location
   AliCDBManager* cdbm = AliCDBManager::Instance();
   if (cdbm->IsDefaultStorageSet()) printf("MCLabelAddition: CDB default storage already set!\n");
-  else cdbm->SetDefaultStorage(fDefaultStorage.Data());
+  else {
+    cdbm->SetDefaultStorage(fDefaultStorage.Data());
+    if (!fAlignOCDBpath.IsNull()) cdbm->SetSpecificStorage("MUON/Align/Data",fAlignOCDBpath.Data());
+    if (!fRecoParamOCDBpath.IsNull()) cdbm->SetSpecificStorage("MUON/Calib/RecoParam",fRecoParamOCDBpath.Data());
+  }
   if (cdbm->GetRun() > -1) printf("MCLabelAddition: run number already set!\n");
   else cdbm->SetRun(fCurrentRunNumber);
   
@@ -250,7 +260,7 @@ void AliAnalysisTaskESDMCLabelAddition::UserExec(Option_t */*option*/)
 	esdTrack->SetBit(BIT(22), kFALSE);
 	esdTrack->SetBit(BIT(23), isMatchedYet);
 	
-      } else if (decayLabel >= 0) {
+      } else if (decayLabel >= 0 && !fDecayAsFake) {
 	
 	esdTrack->SetLabel(decayLabel);
 	esdTrack->SetBit(BIT(22), kTRUE);

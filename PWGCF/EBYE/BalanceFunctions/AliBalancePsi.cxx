@@ -508,7 +508,7 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
       if(!particlesMixed && j == i) continue; // no auto correlations (only for non mixing)
 
       // pT,Assoc < pT,Trig
-      //if(firstPt < secondPt[j]) continue;
+      if(firstPt < secondPt[j]) continue;
 
       Short_t charge2 = secondCharge[j];
       
@@ -569,8 +569,8 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
       }//resonance cut
 
       // HBT like cut
-      if(fHBTCut){ // VERSION 3 (all pairs)
-        //if(fHBTCut && charge1 * charge2 > 0){  // VERSION 2 (only for LS)
+      //if(fHBTCut){ // VERSION 3 (all pairs)
+      if(fHBTCut && charge1 * charge2 > 0){  // VERSION 2 (only for LS)
 	//if( dphi < 3 || deta < 0.01 ){   // VERSION 1
 	//  continue;
 	

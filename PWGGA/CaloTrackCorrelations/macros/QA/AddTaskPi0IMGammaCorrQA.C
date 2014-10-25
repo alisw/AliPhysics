@@ -13,11 +13,10 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   // Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
   
   
-  if(simulation)
+  if(simulation && !suffix.Contains("default"))
   {
     printf("AddTaskPi0IMGammaCorrQA - CAREFUL : Triggered events not checked in simulation!! \n");
-    TString ssuffix = suffix;
-    if(!ssuffix.Contains("default")) return 0x0;
+    return 0x0;
   }
 
   // Get the pointer to the existing analysis manager via the static access method.
@@ -55,7 +54,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
 
   // General frame setting and configuration
-  maker->SetReader   ( ConfigureReader   (inputDataType,minCen,maxCen,simulation,debugLevel) );
+  maker->SetReader   ( ConfigureReader   (inputDataType,collision,minCen,maxCen,simulation,debugLevel) );
   maker->SetCaloUtils( ConfigureCaloUtils(calorimeter,simulation,debugLevel) );
   
   // Analysis tasks setting and configuration
@@ -77,9 +76,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   maker->SetAnaDebug(debugLevel)  ;
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOnAODsMaker() ;
-  if(simulation || !suffix.Contains("EMC"))
-    maker->SwitchOffDataControlHistograms();
-  else
+  maker->SwitchOffDataControlHistograms();
+  if(suffix.Contains("EMC"))
     maker->SwitchOnDataControlHistograms();
 
   if(debugLevel > 0) maker->Print("");
@@ -119,8 +117,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
 }
 
 //___________________________________________________________________________
-AliCaloTrackReader * ConfigureReader(TString inputDataType,
-                                     Int_t minCen,          Int_t maxCen,
+AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision,
+                                     Int_t   minCen,        Int_t maxCen,
                                      Bool_t  simulation,    Int_t debugLevel)
 {
   
@@ -229,9 +227,12 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType,
   reader->SwitchOffPileUpEventRejection();  // remove pileup
   reader->SwitchOffV0ANDSelection() ;       // and besides v0 AND
   
-  reader->SetCentralityBin(minCen,maxCen); // Accept all events, if not select range
-  reader->SetCentralityOpt(100);  // 10 (c= 0-10, 10-20 ...), 20  (c= 0-5, 5-10 ...) or 100 (c= 1, 2, 3 ..)
-
+  if(collision=="PbPb")
+  {
+    reader->SetCentralityBin(minCen,maxCen); // Accept all events, if not select range
+    reader->SetCentralityOpt(100);  // 10 (c= 0-10, 10-20 ...), 20  (c= 0-5, 5-10 ...) or 100 (c= 1, 2, 3 ..)
+  }
+  
   if(debugLevel > 0) reader->Print("");
   
   return reader;
@@ -421,6 +422,8 @@ AliAnaPi0* ConfigurePi0Analysis(TString calorimeter, TString collision,
   ana->SwitchOffFillAngleHisto();
   ana->SwitchOffFillOriginHisto();
 
+  ana->SetNPIDBits(1);
+  
   //Set Histograms name tag, bins and ranges
   
   ana->AddToHistogramsName("AnaPi0_");

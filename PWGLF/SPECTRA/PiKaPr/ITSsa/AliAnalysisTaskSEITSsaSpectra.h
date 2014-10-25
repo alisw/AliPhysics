@@ -123,13 +123,19 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   TH1F *fHistSecMatMCpos[3]; //! histo with spectra of sec. from material from the MC truth (positive)
   TH1F *fHistSecMatMCneg[3]; //! histo with spectra of sec. from material from the MC truth (negative)
   TH1F *fHistPrimMCposBefEvSel[3]; //! histo with spectra of primaries from the MC truth (positive)
+  TH1F *fHistPrimMCposBefEvSelEtaY[3]; //! histo with spectra of primaries from the MC truth with both cut on y and eta(positive)
+  TH1F *fHistPrimMCposBefEvSelEta[3]; //! histo with spectra of primaries from the MC truth with cut on eta only(positive)
   TH1F *fHistPrimMCnegBefEvSel[3]; //! histo with spectra of primaries from the MC truth (negative)
+  TH1F *fHistPrimMCnegBefEvSelEtaY[3]; //! histo with spectra of primaries from the MC truth with both cut on y and eta(negative)
+  TH1F *fHistPrimMCnegBefEvSelEta[3]; //! histo with spectra of primaries from the MC truth with cut on eta only(negative)
   TH1F *fHistSecStrMCposBefEvSel[3]; //! histo with spectra of strange decays from the MC truth (positive)
   TH1F *fHistSecStrMCnegBefEvSel[3]; //! histo with spectra of strange decays from the MC truth (negative)
   TH1F *fHistSecMatMCposBefEvSel[3]; //! histo with spectra of sec. from material from the MC truth (positive)
   TH1F *fHistSecMatMCnegBefEvSel[3]; //! histo with spectra of sec. from material from the MC truth (negative)
   TH1F *fHistPrimMCposReco[3]; //! histo with spectra of primaries from the MC truth (positive)
+  TH1F *fHistPrimMCposRecoEtaY[3]; //! histo with spectra of primaries from the MC truth with both cut on y and eta(positive)
   TH1F *fHistPrimMCnegReco[3]; //! histo with spectra of primaries from the MC truth (negative)
+  TH1F *fHistPrimMCnegRecoEtaY[3]; //! histo with spectra of primaries from the MC truth with both cut on y and eta(negative)
   TH1F *fHistSecStrMCposReco[3]; //! histo with spectra of strange decays from the MC truth (positive)
   TH1F *fHistSecStrMCnegReco[3]; //! histo with spectra of strange decays from the MC truth (negative)
   TH1F *fHistSecMatMCposReco[3]; //! histo with spectra of sec. from material from the MC truth (positive)
@@ -253,7 +259,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   TNtuple     *fNtupleNSigma;//! output ntuple
   TNtuple     *fNtupleMC;//! output MC ntuple
   
-  ClassDef(AliAnalysisTaskSEITSsaSpectra, 7);
+  ClassDef(AliAnalysisTaskSEITSsaSpectra, 8);
 };
 
 #endif

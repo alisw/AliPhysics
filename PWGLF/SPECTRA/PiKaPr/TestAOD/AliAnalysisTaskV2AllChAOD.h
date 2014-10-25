@@ -80,7 +80,10 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
     fv2SPGap1Bmc_inclusive_sq(0),
     fIsRecoEff(0),
     fRecoEffList(0),
-    fQvecGen(0)
+    fQvecGen(0),
+    fQgenType(0),
+    fnNchBins(400),
+	fDoCentrSystCentrality(0)
       {}
   AliAnalysisTaskV2AllChAOD(const char *name);
   virtual ~AliAnalysisTaskV2AllChAOD() {
@@ -135,8 +138,13 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   void     SetQvecCut(Float_t qmin,Float_t qmax)      { fCutSmallQperc = qmin; fCutLargeQperc = qmax; }
   void     SetFillTHn (Bool_t val) { fFillTHn = val; }
   
-  void GetQvecGen(Bool_t val) { fQvecGen = val; } //enable Qvec from generated
+  void SetQvecGen(Bool_t val) { fQvecGen = val; } //enable Qvec from generated
+  void SetQgenType(Int_t val) { fQgenType = val ; } // type==0 qgen from tracks - type==1 qgen from vzero
+
+  void SetnNchBins(Int_t val) { fnNchBins = val; }
   
+  void SetDoCentrSystCentrality(Bool_t val) { fDoCentrSystCentrality = val; } //enable systematic for centrality
+
  private:
   
   AliAODEvent                   * fAOD;                         //! AOD object
@@ -244,11 +252,15 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   TList * fRecoEffList; // reconstruction efficiency file
   
   Bool_t fQvecGen; //enable Qvec from generated
+  Int_t fQgenType; // type==0 qgen from tracks - type==1 qgen from vzero
+  Int_t  fnNchBins; //Ncharged
+  Bool_t fDoCentrSystCentrality; //systematic check on centrality estimation
+
   
   AliAnalysisTaskV2AllChAOD(const AliAnalysisTaskV2AllChAOD&);
   AliAnalysisTaskV2AllChAOD& operator=(const AliAnalysisTaskV2AllChAOD&);
   
-  ClassDef(AliAnalysisTaskV2AllChAOD, 10);
+  ClassDef(AliAnalysisTaskV2AllChAOD, 12);
 };
 
 #endif
