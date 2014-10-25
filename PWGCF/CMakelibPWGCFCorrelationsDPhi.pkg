@@ -56,6 +56,7 @@ set ( SRCS
     Correlations/DPhi/AliAnalysisTaskContMC.cxx
     Correlations/DPhi/TriggerPID/AliAnalysisTaskPIDCORR.cxx
     Correlations/DPhi/TriggerPID/AliTwoParticlePIDCorr.cxx
+    Correlations/DPhi/TriggerPID/AliTwoParticlePIDCorrKine.cxx
     Correlations/DPhi/PidPid/AliAnalysisTaskPidPidCorrelations.cxx
     Correlations/DPhi/PhiEffMC/AliAnalysisTaskPhiEffMc.cxx
     )

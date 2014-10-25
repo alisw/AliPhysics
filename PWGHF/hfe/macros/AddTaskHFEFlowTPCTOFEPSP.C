@@ -12,6 +12,8 @@ AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(Int_t trigger=0,Int_t aodfilter=16,Boo
   // 0.19 40-50%, sigma=1.2
   // 0.2 50-60%
   // 0.2 60-80% list_t65536f16TPC110r60p80s11km0ITS4C36Pi2DCAr100z200TOF30TPCe50V1D0er8i0t-20t50
+
+  /*
   tpcdedx[0]=-0.2;
   tpcdedx[1]=-0.15;
   tpcdedx[2]=-0.1;
@@ -60,6 +62,7 @@ AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(Int_t trigger=0,Int_t aodfilter=16,Boo
     tpcdedx[6]=0.473;
     tpcdedx[7]=0.473;
   }
+  */
 
   // Name
   TString appendixx(TString::Format("t%df%ds%dp%dM%dTPC%dr%dp%dITS%dPi%dDCAr%dz%dTOF%dTPCe%dV%dD%der%dbin%di%dt%dt%d",(Int_t)trigger,aodfilter,(Int_t)scalarProduct,(Int_t)cutPileup,(Int_t)variableM,tpcCls,(Int_t)tpcClsr,tpcClspid,itsCls,(Int_t) pixellayer,(Int_t) dcaxy,(Int_t)dcaz,(Int_t) tofsig,(Int_t)tpceff,vzero,debuglevel,(Int_t)(etarange*0.1),(Int_t)withetacorrection,(Int_t)withmultcorrection,(Int_t)ITSclustersback,(Int_t)(minTPCback*10.0),(Int_t)(maxTPCback*10.0)));

@@ -65,7 +65,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   void SetAdditionalChecks(Bool_t additionalChecks) {fAdditionalChecks = additionalChecks;}
   Bool_t GetAdditionalChecks() const {return fAdditionalChecks;}
 
-  void FillArmPodDistribution(AliAODv0 *vZero, TString histoTitle, TList *histoList);
+  void FillArmPodDistribution(AliAODRecoDecay *vZero,TString histoTitle, Bool_t isCandidateSelectedCuts, Bool_t isBachelorID);
 
   void SetK0SAnalysis(Bool_t a) {fIsK0SAnalysis=a;}
   Bool_t GetK0SAnalysis() const {return fIsK0SAnalysis;}
@@ -74,6 +74,20 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   Bool_t GetUseOnTheFlyV0() { return fUseOnTheFlyV0; }
 
   Int_t MatchToMClabelC(AliAODRecoCascadeHF *candidate,TClonesArray *mcArray);
+
+
+  void SetNRotations(Int_t nRot=9) { fNRotations=nRot; }
+  Int_t GetNRotations() { return fNRotations; }
+
+  void SetPtMinToFillTheTree(Double_t pTmin=  0.) { fPtMinToFillTheTree=pTmin; }
+  void SetPtMaxToFillTheTree(Double_t pTmax=999.) { fPtMaxToFillTheTree=pTmax; }
+  Double_t GetPtMinToFillTheTree() { return fPtMinToFillTheTree; }
+  Double_t GetPtMaxToFillTheTree() { return fPtMaxToFillTheTree; }
+
+  void SetMinAngleForRot(Double_t min=5.*TMath::Pi()/6.) { fMinAngleForRot=min; }
+  void SetMaxAngleForRot(Double_t max=7.*TMath::Pi()/6.) { fMaxAngleForRot=max; }
+  Double_t GetMinAngleForRot() { return fMinAngleForRot; }
+  Double_t GetMaxAngleForRot() { return fMaxAngleForRot; }
 
  private:
   
@@ -92,7 +106,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   void DefineGeneralHistograms();
   void DefineAnalysisHistograms();
   void DefineK0SHistos();
-  void FillAnalysisHistograms(AliAODRecoCascadeHF *part, Bool_t isBachelorID, TString appendthis);
+  void FillAnalysisHistograms(AliAODRecoCascadeHF *part, AliRDHFCutsLctoV0 *cutsAnal, TString appendthis);
   void TrackRotation(AliRDHFCutsLctoV0 *cutsAnal, AliAODRecoCascadeHF *part, TString appendthis);
 
   AliAnalysisTaskSELc2V0bachelor(const AliAnalysisTaskSELc2V0bachelor &source);
@@ -141,8 +155,10 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   Double_t fMinMass;//=mLcPDG-0.250;
   Double_t fMaxMass;//=mLcPDG+0.250;
   Int_t fNRotations;//=9;
+  Double_t fPtMinToFillTheTree;//0.
+  Double_t fPtMaxToFillTheTree;//999.
 
-  ClassDef(AliAnalysisTaskSELc2V0bachelor,6); // class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelor,7); // class for Lc->p K0
 };
 
 #endif

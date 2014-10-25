@@ -94,6 +94,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fPileUpRejSPD(kFALSE),
   fDistToBadChan(0),
   fInConeInvMass(""),
+  fInConePairClEt(""),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -127,7 +128,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fAllIsoEtMcGamma(0),
   fAllIsoNoUeEtMcGamma(0),
   fMCDirPhotonPtEtaPhiNoClus(0),
-  fInvMassWithConeVsEtAndIso(0),
+  fEtCandIsoAndIsoWoPairEt(0),
   fInConePairedClusEtVsCandEt(0),
   fHnOutput(0),
   fQAList(0),
@@ -209,6 +210,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fPileUpRejSPD(kFALSE),
   fDistToBadChan(0),
   fInConeInvMass(""),
+  fInConePairClEt(""),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -242,7 +244,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fAllIsoEtMcGamma(0),
   fAllIsoNoUeEtMcGamma(0),
   fMCDirPhotonPtEtaPhiNoClus(0),
-  fInvMassWithConeVsEtAndIso(0),
+  fEtCandIsoAndIsoWoPairEt(0),
   fInConePairedClusEtVsCandEt(0),
   fHnOutput(0),
   fQAList(0),
@@ -385,22 +387,23 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fMCDirPhotonPtEtaPhiNoClus = new TH3F("hMCDirPhotonPhiEtaNoClus","p_{T}, #eta and  #phi of prompt photons with no reco clusters;p_{T};#eta;#phi",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,154,-0.77,0.77,130,1.38,3.20);
   fOutputList->Add(fMCDirPhotonPtEtaPhiNoClus);
 
-  fInvMassWithConeVsEtAndIso = new TH3F("hInvMassWithConeVsEtAndIso","M_{cand+in_cone_clus} vs E_{T}^{cand} vs. E_{T}^{ISO} (EMC+Trk) (0.1<M02<0.3 only)",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,400,0,1,1000,0,200);
-  fOutputList->Add(fInvMassWithConeVsEtAndIso);
+  fEtCandIsoAndIsoWoPairEt = new TH3F("hEtCandIsoAndIsoWoPairEt","E_{T}^{cand} vs. E_{T}^{ISO} (EMC+Trk) (0.1<M02<0.3, 0.110<m_{#gamma#gamma}<0.165 only);E_{T}^{cand}; E_{T}^{ISO}; E_{T}^{ISO} (w/o #pi^{0} pair E_{T})",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,1000,0,200,1000,0,200);
+  fOutputList->Add(fEtCandIsoAndIsoWoPairEt);
 
   fInConePairedClusEtVsCandEt = new TH2F("hInConePairedClusEtVsCandEt","E_{T}^{partner} vs. E_{T}^{cand} (R<0.4, 0.110<m_{#gamma#gamma}<0.165);E_{T}^{cand};E_{T}^{partner}",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,200,0,40);
   fOutputList->Add(fInConePairedClusEtVsCandEt);
 
-  Int_t nEt=fNBinsPt*5, nM02=400, nCeIso=1000, nTrIso=1000,  nAllIso=1000,  nCeIsoNoUE=1000,  nAllIsoNoUE=1000, nTrClDphi=200, nTrClDeta=100, nClEta=140, nClPhi=128, nTime=60, nMult=100, nPhoMcPt=fNBinsPt;
-  Int_t bins[] = {nEt, nM02, nCeIso, nTrIso, nAllIso, nCeIsoNoUE, nAllIsoNoUE, nTrClDphi, nTrClDeta,nClEta,nClPhi,nTime,nMult,nPhoMcPt};
+  Int_t nEt=fNBinsPt*5, nM02=400, nCeIso=1000, nTrIso=1000,  nAllIso=1000,  nCeIsoNoUE=1000,  nAllIsoNoUE=1000, nTrClDphi=200, nTrClDeta=100, nClEta=140, nClPhi=128, nTime=60, nMult=100, nPhoMcPt=fNBinsPt, nInConeMass=100;
+  Int_t bins[] = {nEt, nM02, nCeIso, nTrIso, nAllIso, nCeIsoNoUE, nAllIsoNoUE, nTrClDphi, nTrClDeta,nClEta,nClPhi,nTime,nMult,nPhoMcPt,nInConeMass};
   fNDimensions = sizeof(bins)/sizeof(Int_t);
   const Int_t ndims =   fNDimensions;
-  Double_t xmin[] = { fPtBinLowEdge,   0.,  -10.,   -10., -10., -10., -10., -0.1,-0.05, -0.7, 1.4,-0.15e-06,-0.5,fPtBinLowEdge};
-  Double_t xmax[] = { fPtBinHighEdge, 4., 190., 190., 190.,  190., 190., 0.1, 0.05, 0.7, 3.192, 0.15e-06,99.5,fPtBinHighEdge};
+  Double_t xmin[] = { fPtBinLowEdge,   0.,  -10.,   -10., -10., -10., -10., -0.1,-0.05, -0.7, 1.4,-0.15e-06,-0.5,fPtBinLowEdge,0.0};
+  Double_t xmax[] = { fPtBinHighEdge, 4., 190., 190., 190.,  190., 190., 0.1, 0.05, 0.7, 3.192, 0.15e-06,99.5,fPtBinHighEdge, 1.0};
   if(fPeriod.Contains("11h")){
     xmax[12]=3999.5;
   }
   fHnOutput =  new THnSparseF("fHnOutput","Output matrix: E_{T},M02,CeIso,TrIso,AllIso, CeIsoNoUESub, AllIsoNoUESub, d#phi_{trk},d#eta_{trk},#eta_{clus},#phi_{clus},T_{max},mult,mc-p_{T}^{#gamma}", ndims, bins, xmin, xmax);
+  fHnOutput->Sumw2();
   fOutputList->Add(fHnOutput);
 
   //QA outputs
@@ -789,19 +792,28 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
       isCPV = kTRUE;
     GetCeIso(clsVec, id, ceiso, cephiband, cecore, Et);
     GetTrIso(clsVec, triso, trphiband, trcore);
+    Int_t nInConePairs = 0;
+    Double_t onePairMass = 0;
     if(c->GetM02()>0.1 && c->GetM02()<0.3 && isCPV){
       TObjArray *inConeInvMassArr = (TObjArray*)fInConeInvMass.Tokenize(";");
-      Int_t nInConePairs = inConeInvMassArr->GetEntriesFast();
-      Double_t *inConeInvMass = new Double_t[nInConePairs];
+      TObjArray *inConePairClEt =  (TObjArray*)fInConePairClEt.Tokenize(";");
+      nInConePairs = inConeInvMassArr->GetEntriesFast();
+      Int_t nInConePi0 = inConePairClEt->GetEntriesFast();
+      if(nInConePairs != nInConePi0)
+	printf("Inconsistent number of in cone pairs!!!\n");
       for(int ipair=0;ipair<nInConePairs;ipair++){
 	TObjString *obs = (TObjString*)inConeInvMassArr->At(ipair);
+	TObjString *obet = (TObjString*)inConePairClEt->At(ipair);
 	TString smass = obs->GetString();
+	TString spairEt = obet->GetString();
 	Double_t pairmass = smass.Atof();
+	Double_t pairEt = spairEt.Atof();//this must be zero when inv mass outside pi0 range
+	if(0==ipair && nInConePairs==1)
+	  onePairMass = pairmass;
 	if(fDebug)
 	  printf("=================+++++++++++++++Inv mass inside the cone for photon range: %1.1f,%1.1f,%1.1f+-++++-+-+-+-++-+-+-\n",Et,pairmass,ceiso+triso);
-	fInvMassWithConeVsEtAndIso->Fill(Et,pairmass,ceiso+triso);
+	fEtCandIsoAndIsoWoPairEt->Fill(Et,ceiso+triso,ceiso+triso-pairEt);
       }
-      delete [] inConeInvMass;
     }
     Double_t dr = TMath::Sqrt(c->GetTrackDx()*c->GetTrackDx() + c->GetTrackDz()*c->GetTrackDz());
     if(Et>10 && Et<15 && dr>0.025){
@@ -867,6 +879,10 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
       outputValues[11] = fAODCells->GetCellTime(id);
     outputValues[12] = fTrackMult;
     outputValues[13] = ptmc;
+    if(nInConePairs == 1)
+      outputValues[14] = onePairMass;
+    else
+      outputValues[14] = -1;
     fHnOutput->Fill(outputValues);
     if(c->E()>maxE)
       maxE = c->E();
@@ -902,6 +918,7 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
     return;
   
   fInConeInvMass = "";
+  fInConePairClEt="";
   const Int_t nclus = clusters->GetEntries();
   //const Int_t ncells = cells->GetNumberOfCells();
   Float_t totiso=0;
@@ -975,9 +992,13 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
 	lv.SetPtEtaPhiM(Et,cv.Eta(),cv.Phi(),0);
 	lvec.SetPtEtaPhiM(EtCl,vec.Eta(),vec.Phi(),0);
 	TLorentzVector lpair = lv + lvec;
-	fInConeInvMass += Form(";%f",lpair.M());
-	if(lpair.M()>0.11 && lpair.M()<0.165)
+	fInConeInvMass += Form("%f;",lpair.M());
+	if(lpair.M()>0.11 && lpair.M()<0.165){
 	  fInConePairedClusEtVsCandEt->Fill(EtCl,Et);
+	  fInConePairClEt += Form("%f;",Et);
+	}
+	else 
+	  fInConePairClEt += Form("%f;",0.0);
       }
       if(R<0.04)
 	totcore += nEt;

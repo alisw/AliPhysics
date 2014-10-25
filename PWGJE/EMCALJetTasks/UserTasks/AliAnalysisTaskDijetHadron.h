@@ -43,10 +43,17 @@ class AliAnalysisTaskDijetHadron : public AliAnalysisTaskEmcalJet {
 
   void                        UserCreateOutputObjects();
 
-  void                        SetJetMinRC2LJ(Float_t d)                            { fMinRC2LJ                = d          ; }
-  void                        SetRCperEvent(Int_t n)                               { fRCperEvent              = n          ; }
   void                        SetMCJetPtThreshold(Double_t t)                      { fMCJetPtThreshold        = t          ; }
-  void                        SetConeRadius(Double_t r)                            { fConeRadius              = r          ; }
+  void                        SetLeadingHadronPtThreshold1(Double_t u1)            { fleadingHadronPtcut1     = u1         ; }
+  void                        SetLeadingHadronPtThreshold2(Double_t u2)            { fleadingHadronPtcut2     = u2         ; }
+  void                        SetLeadingHadronPtThreshold3(Double_t u3)            { fleadingHadronPtcut3     = u3         ; }
+  void                        SetJet1PtThreshold1(Double_t v1)                     { fJet1Ptcut1     = v1                  ; }
+  void                        SetJet1PtThreshold2(Double_t v2)                     { fJet1Ptcut2     = v2                  ; }
+  void                        SetJet1PtThreshold3(Double_t v3)                     { fJet1Ptcut3     = v3                  ; }
+  void                        SetJet2PtThreshold1(Double_t w1)                     { fJet2Ptcut1     = w1                  ; }
+  void                        SetJet2PtThreshold2(Double_t w2)                     { fJet2Ptcut2     = w2                  ; }
+  void                        SetJet2PtThreshold3(Double_t w3)                     { fJet2Ptcut3     = w3                  ; }
+  void                        SetConeRadius(Double_t r)                            { fConeRadius     = r                   ; }
   void                        SetConeEtaPhiEMCAL() ;
   void                        SetConeEtaPhiTPC()   ;
   void                        SetConeEtaLimits(Float_t min, Float_t max)           { fConeMinEta = min, fConeMaxEta = max  ; }
@@ -60,20 +67,23 @@ class AliAnalysisTaskDijetHadron : public AliAnalysisTaskEmcalJet {
   AliEmcalJet*                NextEmbeddedJet(Bool_t reset=kFALSE)                                                          ;
   void                        DoEmbTrackLoop()                                                                              ;
   void                        DoEmbClusterLoop()                                                                            ;
-  void                        GetRandomCone(Float_t &pt, Float_t &eta, Float_t &phi, AliParticleContainer* tracks, AliClusterContainer* clusters,
-					    AliEmcalJet *jet = 0, Bool_t bPartialExclusion = 0) const;
   Double_t                    GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz, const Double_t jetPx, const Double_t jetPy, const Double_t jetPz);
-  Double_t                    GetNColl() const;
-
 
   Double_t                    fMCJetPtThreshold;                               // threshold for MC jets
-  Float_t                     fMinRC2LJ;                                       // Minimum distance random cone to leading jet
-  Int_t                       fRCperEvent;                                     // No. of random cones per event
-  Double_t                    fConeRadius;                                     // Radius of the random cones
-  Float_t                     fConeMinEta;                                     // Minimum eta of the random cones
-  Float_t                     fConeMaxEta;                                     // Maximum eta of the random cones
-  Float_t                     fConeMinPhi;                                     // Minimum phi of the random cones
-  Float_t                     fConeMaxPhi;                                     // Maximum phi of the random cones
+  Double_t                    fleadingHadronPtcut1;                            // threshold for leading hadron pT NO1
+  Double_t                    fleadingHadronPtcut2;                            // threshold for leading hadron pT NO2
+  Double_t                    fleadingHadronPtcut3;                            // threshold for leading hadron pT NO3
+  Double_t                    fJet1Ptcut1;                                     // threshold for leading Jet pT NO1
+  Double_t                    fJet1Ptcut2;                                     // threshold for leading Jet pT NO2
+  Double_t                    fJet1Ptcut3;                                     // threshold for leading Jet pT NO3
+  Double_t                    fJet2Ptcut1;                                     // threshold for subleading Jet pT NO1
+  Double_t                    fJet2Ptcut2;                                     // threshold for subleading Jet pT NO2
+  Double_t                    fJet2Ptcut3;                                     // threshold for subleading Jet pT NO3
+  Double_t                    fConeRadius;                                     // Radius of the jet cones
+  Float_t                     fConeMinEta;                                     // Minimum eta of the jet cones
+  Float_t                     fConeMaxEta;                                     // Maximum eta of the jet cones
+  Float_t                     fConeMinPhi;                                     // Minimum phi of the jet cones
+  Float_t                     fConeMaxPhi;                                     // Maximum phi of the jet cones
 
   AliJetContainer            *fJetsCont;                                       //!PbPb Jets
   AliParticleContainer       *fTracksCont;                                     //!PbPb Tracks
@@ -84,36 +94,6 @@ class AliAnalysisTaskDijetHadron : public AliAnalysisTaskEmcalJet {
   AliJetContainer            *fEmbJetsCont;                                    //!EMB jets
   AliParticleContainer       *fEmbTracksCont;                                  //!EMB tracks
   AliClusterContainer        *fEmbCaloClustersCont;                            //!EMB clusters  
-  //AliParticleContainer       *fRandTracksCont;                               //!Randomized tracks
-  //AliClusterContainer        *fRandCaloClustersCont;                         //!Randomized clusters
-
-  // Random cones
-  TH2                        *fHistRCPhiEta;                                   //!Phi-Eta distribution of random cones
-  TH1                       **fHistRCPt;                                       //!Random cone pt
-  TH1                       **fHistRCPtExLJ;                                   //!Random cone pt, imposing min distance from leading jet
-  TH1                       **fHistRCPtExPartialLJ;                            //!Random cone pt, imposing min distance from leading jet with 1/ncoll probability
-  //TH1                       **fHistRCPtRand;                                 //!Random cone pt, randomized particles
-  TH2                       **fHistRhoVSRCPt;                                  //!Area(RC) * rho vs. Pt(RC)
-  TH2                       **fHistDeltaPtRCvsEP;                              //!deltaPt = Pt(RC) - A * rho vs. event plane
-  TH1                       **fHistDeltaPtRCExLJ;                              //!deltaPt = Pt(RC) - A * rho, imposing min distance from leading jet
-  TH1                       **fHistDeltaPtRCExPartialLJ;                       //!deltaPt = Pt(RC) - A * rho, imposing min distance from leading jet with 1/ncoll probability
-  //TH1                       **fHistDeltaPtRCRand;                            //!deltaPt = Pt(RC) - A * rho, randomzied particles
-
-  // Jet embedding
-  TH3                       **fHistEmbJetsPtArea;                              //!Pt vs. area of EMB jets
-  TH3                       **fHistEmbJetsCorrPtArea;                          //!Pt-rho*A vs. area of EMB jets
-  TH2                       **fHistEmbPartPtvsJetPt;                           //!MC jet pt total jet pt
-  TH2                       **fHistEmbPartPtvsJetCorrPt;                       //!MC jet pt total jet pt - rho*A
-  TH2                       **fHistJetPtvsJetCorrPt;                           //!Pt vs jet pt - rho*A
-  TH1                       **fHistDistLeadPart2JetAxis;                       //!Distance between leading particle and jet axis
-  TH2                       **fHistEmbBkgArea;                                 //!Pt(embjet) - Pt(embtrack) vs. area of EMB jets
-  TH2                       **fHistRhoVSEmbBkg;                                //!Area(embjet) * rho vs. Pt(embjet) - Pt(embtrack)
-  TH2                       **fHistDeltaPtEmbArea;                             //!deltaPt = Pt(embjet) - Area(embjet) * rho - Pt(embtrack) vs. Area(embjet)
-  TH2                       **fHistDeltaPtEmbvsEP;                             //!deltaPt = Pt(embjet) - Area(embjet) * rho - Pt(embtrack) vs. event plane
-  TH2                        *fHistRCPtExLJVSDPhiLJ;                           //!Random cone pt, imposing min distance from leading jet, vs. deltaPhi leading jet
-  TH2                        *fHistRCPtExPartialLJVSDPhiLJ;                    //!Random cone pt, imposing min distance from leading jet, vs. deltaPhi leading jet with 1/ncoll probability
-  TH2                        *fHistEmbJetsPhiEta;                              //!Phi-Eta distribution of EMB jets
-  TH2                        *fHistLeadPartPhiEta;                             //!Phi-Eta distribution of the leading particle of EMB jets
 
   //User Task
   TH1                        *fCent_V0;                                        //!Centrality
@@ -211,44 +191,9 @@ class AliAnalysisTaskDijetHadron : public AliAnalysisTaskEmcalJet {
   TH1                        *fHJetPt_Aj3_EMB[4][3][4][4][4];                  //!EMB, HjetPt, Aj3
   TH1                        *fHJetPt_Aj4_EMB[4][3][4][4][4];                  //!EMB, HjetPt, Aj4
 
-  TH1                        *fHJetDeltaPhiasEP_Aj0_PbPb[4][4][4][4][4];       //!PbPb, HjetDeltaPhi, asEP, no Aj cut
-  TH1                        *fHJetDeltaPhiasEP_Aj1_PbPb[4][4][4][4][4];       //!PbPb, HjetDeltaPhi, asEP, Aj1
-  TH1                        *fHJetDeltaPhiasEP_Aj2_PbPb[4][4][4][4][4];       //!PbPb, HjetDeltaPhi, asEP, Aj2
-  TH1                        *fHJetDeltaPhiasEP_Aj3_PbPb[4][4][4][4][4];       //!PbPb, HjetDeltaPhi, asEP, Aj3
-  TH1                        *fHJetDeltaPhiasEP_Aj4_PbPb[4][4][4][4][4];       //!PbPb, HjetDeltaPhi, asEP, Aj4
-  TH1                        *fHJetPtasEP_Aj0_PbPb[4][4][4][4][4];             //!PbPb, HjetPt, asEP, no Aj cut
-  TH1                        *fHJetPtasEP_Aj1_PbPb[4][4][4][4][4];             //!PbPb, HjetPt, asEP, Aj1
-  TH1                        *fHJetPtasEP_Aj2_PbPb[4][4][4][4][4];             //!PbPb, HjetPt, asEP, Aj2
-  TH1                        *fHJetPtasEP_Aj3_PbPb[4][4][4][4][4];             //!PbPb, HjetPt, asEP, Aj3
-  TH1                        *fHJetPtasEP_Aj4_PbPb[4][4][4][4][4];             //!PbPb, HjetPt, asEP, Aj4
-  TH1                        *fHJetDeltaPhiasEP_Aj0_MC[4][4][4][4][4];         //!MC, HjetDeltaPhi, asEP, no Aj cut
-  TH1                        *fHJetDeltaPhiasEP_Aj1_MC[4][4][4][4][4];         //!MC, HjetDeltaPhi, asEP, Aj1
-  TH1                        *fHJetDeltaPhiasEP_Aj2_MC[4][4][4][4][4];         //!MC, HjetDeltaPhi, asEP, Aj2
-  TH1                        *fHJetDeltaPhiasEP_Aj3_MC[4][4][4][4][4];         //!MC, HjetDeltaPhi, asEP, Aj3
-  TH1                        *fHJetDeltaPhiasEP_Aj4_MC[4][4][4][4][4];         //!MC, HjetDeltaPhi, asEP, Aj4
-  TH1                        *fHJetPtasEP_Aj0_MC[4][4][4][4][4];               //!MC, HjetPt, asEP, no Aj cut
-  TH1                        *fHJetPtasEP_Aj1_MC[4][4][4][4][4];               //!MC, HjetPt, asEP, Aj1
-  TH1                        *fHJetPtasEP_Aj2_MC[4][4][4][4][4];               //!MC, HjetPt, asEP, Aj2
-  TH1                        *fHJetPtasEP_Aj3_MC[4][4][4][4][4];               //!MC, HjetPt, asEP, Aj3
-  TH1                        *fHJetPtasEP_Aj4_MC[4][4][4][4][4];               //!MC, HjetPt, asEP, Aj4
-  TH1                        *fHJetDeltaPhiasEP_Aj0_EMB[4][4][4][4][4];        //!EMB, HjetDeltaPhi, asEP, no Aj cut
-  TH1                        *fHJetDeltaPhiasEP_Aj1_EMB[4][4][4][4][4];        //!EMB, HjetDeltaPhi, asEP, Aj1
-  TH1                        *fHJetDeltaPhiasEP_Aj2_EMB[4][4][4][4][4];        //!EMB, HjetDeltaPhi, asEP, Aj2
-  TH1                        *fHJetDeltaPhiasEP_Aj3_EMB[4][4][4][4][4];        //!EMB, HjetDeltaPhi, asEP, Aj3
-  TH1                        *fHJetDeltaPhiasEP_Aj4_EMB[4][4][4][4][4];        //!EMB, HjetDeltaPhi, asEP, Aj4
-  TH1                        *fHJetPtasEP_Aj0_EMB[4][4][4][4][4];              //!EMB, HjetPt, asEP, no Aj cut
-  TH1                        *fHJetPtasEP_Aj1_EMB[4][4][4][4][4];              //!EMB, HjetPt, asEP, Aj1
-  TH1                        *fHJetPtasEP_Aj2_EMB[4][4][4][4][4];              //!EMB, HjetPt, asEP, Aj2
-  TH1                        *fHJetPtasEP_Aj3_EMB[4][4][4][4][4];              //!EMB, HjetPt, asEP, Aj3
-  TH1                        *fHJetPtasEP_Aj4_EMB[4][4][4][4][4];              //!EMB, HjetPt, asEP, Aj4
-
-
  private:
   AliVEvent                  *fEvent;
   Double_t                    fCentrality;                                     //! V0M for current event
-  //AliNamedString             *fPtHardBinName;                                //!Pt hard bin param
-  //Int_t                       fPtHardBin;                                    //!        
-  //TH1F                        *fhPtHardBins;                                 //!
 
   AliAnalysisTaskDijetHadron(const AliAnalysisTaskDijetHadron&);                     // not implemented
   AliAnalysisTaskDijetHadron &operator=(const AliAnalysisTaskDijetHadron&);          // not implemented

@@ -697,14 +697,6 @@ Bool_t AliEmcalJetTask::DoInit()
     return 0;
   }
 
-  // add jets to event if not yet there
-  if (!(fEvent->FindListObject(fJetsName)))
-    fEvent->AddObject(fJets);
-  else {
-    AliError(Form("%s: Object with name %s already in event! Returning", GetName(), fJetsName.Data()));
-    return 0;
-  }
-
   if (!(fEvent->FindListObject(fJetsSubName)) && fJetsSub)
     fEvent->AddObject(fJetsSub);
 
@@ -751,6 +743,14 @@ Bool_t AliEmcalJetTask::DoInit()
       AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhomName.Data()));
       return 0;
     }
+  }
+
+  // add jets to event if not yet there
+  if (!(fEvent->FindListObject(fJetsName)))
+    fEvent->AddObject(fJets);
+  else {
+    AliError(Form("%s: Object with name %s already in event! Returning", GetName(), fJetsName.Data()));
+    return 0;
   }
   
   return 1;

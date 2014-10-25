@@ -198,16 +198,16 @@ void AliHFEtpcPIDqa::Initialize(){
   Int_t kDedxbins = fQAmanager->HasHighResolutionHistos() ? 400 : 200;
   Int_t kSigmaBins = fQAmanager->HasHighResolutionHistos() ? 1400 : 240;
   kSigmaBins = fQAmanager->HasMidResolutionHistos() ? 400 : kSigmaBins;
-  Int_t kEtabins = fQAmanager->HasHighResolutionEtaHistos() ? 27 : 18;
+  Int_t kEtabins = fQAmanager->HasHighResolutionEtaHistos() ? 33 : 18;
 
   // 1st histogram: TPC dEdx: (species, p, dEdx, step)
-  Int_t nBinsdEdx[kNdim] = {kPIDbins, kPbins, kDedxbins, kSteps, kCentralityBins, kEtabins, 50};
+  Int_t nBinsdEdx[kNdim] = {kPIDbins, kPbins, kDedxbins, kSteps, kCentralityBins, kEtabins, 33};
   Double_t mindEdx[kNdim] =  {kMinPID, kMinP, 20., 0., 0., kMinEta, 0};
   Double_t maxdEdx[kNdim] =  {kMaxPID, kMaxP, 130, 2., 11., kMaxEta, 2000};
   fHistos->CreateTHnSparse("tpcDedx", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Selection Step; Centrality; Eta; pVx contrib", kNdim, nBinsdEdx, mindEdx, maxdEdx);
   
   // 2nd histogram: TPC sigmas: (species, p nsigma, step)
-  Int_t nBinsSigma[kNdim] = {kPIDbins, kPbins, kSigmaBins, kSteps, kCentralityBins, kEtabins, 50};
+  Int_t nBinsSigma[kNdim] = {kPIDbins, kPbins, kSigmaBins, kSteps, kCentralityBins, kEtabins, 33};
   Double_t minSigma[kNdim] = {kMinPID, kMinP, -12., 0., 0., kMinEta, 0};
   Double_t maxSigma[kNdim] = {kMaxPID, kMaxP, 12., 2., 11., kMaxEta, 2000};
   fHistos->CreateTHnSparse("tpcnSigma", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Selection Step; Centrality; Eta; pVx contrib", kNdim, nBinsSigma, minSigma, maxSigma);

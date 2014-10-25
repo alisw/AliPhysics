@@ -171,7 +171,7 @@ class AliSpectraAODEventCuts : public TNamed
   Int_t GetNch() { return fNch; }
   
   void SetQVecCalibType(Int_t val) { fQvecCalibType=val; }  //0. centrality - 1. Nch
-  Int_t GetNchBin();
+  Int_t GetNchBin(TH2D * h);
   
   Double_t CalculateQVectorMC(Int_t v0side, Int_t type);
   Double_t GetQvecPercentileMC(Int_t v0side, Int_t type);

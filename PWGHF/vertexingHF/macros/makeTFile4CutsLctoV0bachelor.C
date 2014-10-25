@@ -274,7 +274,7 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
                                       // 2 -> if (p>1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s AND TPC@3s}
                                       // 3 -> if (p>1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else if (2.5<=p<3) {if (TOF) -2s<TOF<3s AND TPC@3s} else (p>=3) {if (TOF) -2s<TOF<3s AND -3s<TPC<2s}
 
-  const Int_t nvars=14;
+  const Int_t nvars=14;//17-3
 
   const Int_t nptbins=9;
   Float_t* ptbins;
@@ -319,7 +319,7 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
     cutsMatrixLctoV0Stand[ic]=new Float_t[nptbins];
   for(Int_t ipt2=0;ipt2<nptbins;ipt2++){
     cutsMatrixLctoV0Stand[0][ipt2] =0.0075;
-    cutsMatrixLctoV0Stand[1][ipt2] =0.0030;
+    cutsMatrixLctoV0Stand[1][ipt2] =0.0500;
     cutsMatrixLctoV0Stand[2][ipt2] =0.4;
     cutsMatrixLctoV0Stand[3][ipt2] =0.2;
     cutsMatrixLctoV0Stand[4][ipt2] =0.2;
@@ -332,16 +332,15 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
     cutsMatrixLctoV0Stand[11][ipt2] =0.005;
     cutsMatrixLctoV0Stand[12][ipt2] =0.100;
   }
-  cutsMatrixLctoV0Stand[0][13]=0.0; // pT min V0 track [GeV/c]
-  cutsMatrixLctoV0Stand[1][13]=0.6; // pT min V0 track [GeV/c]
-  cutsMatrixLctoV0Stand[2][13]=0.8; // pT min V0 track [GeV/c]
-  cutsMatrixLctoV0Stand[3][13]=0.8; // pT min V0 track [GeV/c]
-  cutsMatrixLctoV0Stand[4][13]=0.8; // pT min V0 track [GeV/c]
-  cutsMatrixLctoV0Stand[5][13]=1.0; // pT min V0 track [GeV/c]
-  cutsMatrixLctoV0Stand[6][13]=1.0; // pT min V0 track [GeV/c]
-  cutsMatrixLctoV0Stand[7][13]=1.0; // pT min V0 track [GeV/c]
-  cutsMatrixLctoV0Stand[8][13]=0.0; // pT min V0 track [GeV/c]
-  cutsMatrixLctoV0Stand[9][13]=0.0; // pT min V0 track [GeV/c]
+  cutsMatrixLctoV0Stand[13][0]=0.0; // pT min V0 track [GeV/c]
+  cutsMatrixLctoV0Stand[13][1]=0.6; // pT min V0 track [GeV/c]
+  cutsMatrixLctoV0Stand[13][2]=0.8; // pT min V0 track [GeV/c]
+  cutsMatrixLctoV0Stand[13][3]=0.8; // pT min V0 track [GeV/c]
+  cutsMatrixLctoV0Stand[13][4]=0.8; // pT min V0 track [GeV/c]
+  cutsMatrixLctoV0Stand[13][5]=1.0; // pT min V0 track [GeV/c]
+  cutsMatrixLctoV0Stand[13][6]=1.0; // pT min V0 track [GeV/c]
+  cutsMatrixLctoV0Stand[13][7]=1.0; // pT min V0 track [GeV/c]
+  cutsMatrixLctoV0Stand[13][8]=0.0; // pT min V0 track [GeV/c]
 
 
   //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
@@ -431,7 +430,6 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   tighterval[6][13]=1.0; // pT min V0 track [GeV/c]
   tighterval[7][13]=1.0; // pT min V0 track [GeV/c]
   tighterval[8][13]=0.0; // pT min V0 track [GeV/c]
-  tighterval[9][13]=0.0; // pT min V0 track [GeV/c]
 
   TString name=""; 
   Int_t arrdim=dim*nptbins;

@@ -37,9 +37,21 @@ Bool_t ConfigTPCanalysisKStarMC
   AliRsnCutSetDaughterParticle * cutSetPi;
   AliRsnCutSetDaughterParticle * cutSetK;
 
-  cutSetQ  = new AliRsnCutSetDaughterParticle("cutQuality", AliRsnCutSetDaughterParticle::kQualityStd2010, AliPID::kPion, -1.0, aodFilterBit);
-  cutSetPi = new AliRsnCutSetDaughterParticle(Form("cutPionTPCpp2011_%2.1fsigma",nsigmaPi), cutPiCandidate, AliPID::kPion, nsigmaPi, aodFilterBit);
-  cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutKaonTPCpp2011_%2.1f2sigma",nsigmaKa), cutKaCandidate, AliPID::kKaon, nsigmaKa, aodFilterBit);
+  //2010 cuts 
+  //cutSetQ  = new AliRsnCutSetDaughterParticle("cutQuality", AliRsnCutSetDaughterParticle::kQualityStd2010, AliPID::kPion, -1.0, aodFilterBit);
+  //cutSetPi = new AliRsnCutSetDaughterParticle(Form("cutPionTPCpp2011_%2.1fsigma",nsigmaPi), cutPiCandidate, AliPID::kPion, nsigmaPi, aodFilterBit);
+  //cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutKaonTPCpp2011_%2.1f2sigma",nsigmaKa), cutKaCandidate, AliPID::kKaon, nsigmaKa, aodFilterBit);
+
+
+  //2011 High-pT cuts                      
+  cutSetQ  = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, -1.0, aodFilterBit, kTRUE);
+  cutSetQ->SetUse2011StdQualityCutsHighPt(kTRUE);
+  cutSetPi = new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",cutPiCandidate, nsigmaPi), cutPiCandidate, AliPID::kPion, nsigmaPi, aodFilterBit,kTRUE);
+  cutSetPi->SetUse2011StdQualityCutsHighPt(kTRUE);
+  cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutPiCandidate, nsigmaKa), cutKaCandidate, AliPID::kKaon, nsigmaKa, aodFilterBit,kTRUE);
+  cutSetK->SetUse2011StdQualityCutsHighPt(kTRUE);
+
+
 
   Int_t iCutQ = task->AddTrackCuts(cutSetQ);
   Int_t iCutPi = task->AddTrackCuts(cutSetPi);
@@ -99,7 +111,7 @@ Bool_t ConfigTPCanalysisKStarMC
     //out->AddAxis(resID, 200, -0.02, 0.02);
     
     // axis Y: transverse momentum
-    out->AddAxis(ptID, 200, 0.0, 20.0);
+    out->AddAxis(ptID, 300, 0.0, 30.0);
     
     // axis Z: centrality-multiplicity
     if (!isPP)
@@ -127,7 +139,7 @@ Bool_t ConfigTPCanalysisKStarMC
     outm->SetPairCuts(cutsPair);
     // binnings
     outm->AddAxis(imID, 90, 0.6, 1.5);
-    outm->AddAxis(ptID, 200, 0.0, 20.0);
+    outm->AddAxis(ptID, 300, 0.0, 30.0);
     if (!isPP){
     outm->AddAxis(centID, 100, 0.0, 100.0);
     }   else { 
