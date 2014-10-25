@@ -2417,7 +2417,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
     mismPropagationFactor[4] = 1 + 1./(4.71114 - 5.72372*pt + 2.94715*pt*pt);// it has to be alligned with the one in AliPIDCombined
     
   Int_t nTOFcluster = 0;
-  if(track->GetTOFHeader() && track->GetTOFHeader()->GetTriggerMask()){ // N TOF clusters available
+  if(track->GetTOFHeader() && track->GetTOFHeader()->GetTriggerMask() && track->GetTOFHeader()->GetNumberOfTOFclusters() > -1){ // N TOF clusters available
     nTOFcluster = track->GetTOFHeader()->GetNumberOfTOFclusters();
     if(fIsMC) nTOFcluster = Int_t(nTOFcluster * 1.5); // +50% in MC
   }
@@ -2447,6 +2447,8 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
       break;
     }
     
+    if(nTOFcluster < 0) nTOFcluster = 10;
+
     
     fgTOFmismatchProb=fTOFResponse.GetMismatchProbability(track->GetTOFsignal(),track->Eta()) * nTOFcluster *6E-6 * (1 + 2.90505e-01/pt/pt); // mism weight * tof occupancy (including matching window factor) * pt dependence
     

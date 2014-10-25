@@ -77,18 +77,18 @@ public:
   Float_t GetZDCTDCCorrected(Int_t i, Int_t j) const 
   {
     if(AliESDZDC::kCorrectedTDCFilled && (fZDCTDCData[i][j]!=0)) return fZDCTDCCorrected[i][j];
-	   else return 0.;
+	   else return 999.;
   }
   
   Float_t GetZNTDCSum(Int_t ihit) const 
   {
     if(ihit<4 && AliESDZDC::kCorrectedTDCFilled && (fZDCTDCData[10][ihit]!=0) && (fZDCTDCData[12][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[10][ihit]+fZDCTDCCorrected[12][ihit]);
-    else return 0.;
+    else return 999.;
   }
   Float_t GetZNTDCDiff(Int_t ihit) const 
   {
     if(ihit<4 && AliESDZDC::kCorrectedTDCFilled &&  (fZDCTDCData[10][ihit]!=0) && (fZDCTDCData[12][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[12][ihit]-fZDCTDCCorrected[10][ihit]);
-    else return 0.;
+    else return 999.;
   }
   
   virtual Float_t GetZDCTimeSum() const 

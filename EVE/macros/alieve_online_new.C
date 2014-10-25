@@ -215,7 +215,7 @@ void alieve_online_on_new_event()
 	 gSystem->HostName(), delta);
 
   AliSysInfo::AddStamp("on_new_event_pic");
-  // if (pichost == gSystem->HostName() && delta >= 30)
+  if (pichost == gSystem->HostName() && delta >= 30)
   {
     TString id;      id.Form("online-viz-%03d", g_pic_id);
     TString pic(id); pic += ".png";
@@ -244,7 +244,7 @@ void alieve_online_on_new_event()
       g_pic_id = 0;
     g_pic_prev.Set();
   }
-	AliSysInfo::AddStamp("on_new_event_end");
+  AliSysInfo::AddStamp("on_new_event_end");
 }
 
 void alieve_init_import_macros()

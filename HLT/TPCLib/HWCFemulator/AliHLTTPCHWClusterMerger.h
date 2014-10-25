@@ -183,7 +183,7 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
     }
     ~iterator() {}
 
-    AliClusterRecord operator*() {return *fIter;}
+    AliClusterRecord& operator*() {return *fIter;}
 
     // prefix operators
     iterator& operator++() {

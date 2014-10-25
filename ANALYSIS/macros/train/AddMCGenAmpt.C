@@ -2,7 +2,7 @@ AliGenerator *AddMCGenAmpt()
 {
 // User defined generator
 
-  gSystem->Load("libampt.so ");       
+  gSystem->Load("libampt.so");       
   gSystem->Load("libTAmpt.so");
 
   AliGenAmpt *genAMPT = new AliGenAmpt(-1);

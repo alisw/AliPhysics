@@ -29,13 +29,23 @@ AliTOFAnalysisTaskCalibTree *AddTOFAnalysisTaskCalibTree()
   }
   
   // setup output event handler
-  AliAODHandler *outputh = (AliAODHandler *)mgr->GetOutputEventHandler();
-  outputh->SetCreateNonStandardAOD();
-  outputh->SetOutputFileName("TOFcalibTree.root");
+
+  // old way: expecting to use AOD tree
+  // AliAODHandler *outputh = (AliAODHandler *)mgr->GetOutputEventHandler();
+  // outputh->SetCreateNonStandardAOD();
+  // outputh->SetOutputFileName("TOFcalibTree.root");
+
+  // new way:
+  AliAnalysisDataContainer *coutput   = mgr->CreateContainer(Form("aodTree"), TTree::Class(), AliAnalysisManager::kOutputContainer, "TOFcalibTree.root"); // tree
+  if (!coutput) {
+    Error("AddTOFAnalysisTaskCalibTree", "cannot create output container");
+    return NULL;
+  }
 
   //  create task and connect input/output 
   AliTOFAnalysisTaskCalibTree *task = new AliTOFAnalysisTaskCalibTree();
   mgr->ConnectInput(task, 0, inputc);
+  mgr->ConnectOutput(task, 1, coutput);
 
   // setup task 
   task->SetEventSelectionFlag(kFALSE);

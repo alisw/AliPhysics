@@ -197,11 +197,16 @@ void AliAnalysisTaskMFTExample::UserExec(Option_t *) {
       recMuon2 = aodEv->GetTrack(jTrack);
       
       AliAODDimuon *dimuon = new AliAODDimuon(recMuon1, recMuon2);
-      if (dimuon->Charge()) continue;
+      if (dimuon->Charge()) {
+	delete dimuon;
+	continue;
+      }
 
       // pt and mass all OS dimuons
       fHistPtDimuonsOS   -> Fill(dimuon->Pt());
       fHistMassDimuonsOS -> Fill(dimuon->Mass());
+
+      delete dimuon;
 
       // pt and mass J/psi dimuons
       if (!isMuon1FromJpsi) continue;
@@ -209,18 +214,21 @@ void AliAnalysisTaskMFTExample::UserExec(Option_t *) {
 	mcMuon2 = (AliAODMCParticle*) stackMC->At(recMuon2->GetLabel());
 	if (mcMuon2) {
 	  if (mcMuon2->GetMother() == mcMuon1->GetMother()) {
-	    AliAODDimuon *dimuon = new AliAODDimuon;
-	    dimuon->SetMuons(recMuon1,recMuon2);
+	    AliAODDimuon *dimuonJpsi = new AliAODDimuon;
+	    dimuonJpsi->SetMuons(recMuon1,recMuon2);
 	    Double_t pca[3]={0};
 	    Double_t pcaQuality=0;
 	    TLorentzVector kinem(0,0,0,0);
-	    if (!AliMFTAnalysisTools::CalculatePCA(dimuon, pca, pcaQuality, kinem)) continue;
+	    if (!AliMFTAnalysisTools::CalculatePCA(dimuonJpsi, pca, pcaQuality, kinem)) {
+	      delete dimuonJpsi;
+	      continue;
+	    }
 	    fHistPtDimuonsJpsi    -> Fill(kinem.Pt());
 	    fHistMassDimuonsJpsi  -> Fill(kinem.M());
 	    fHistResidualXVtxJpsi -> Fill(1.e4*(pca[0] - fPrimaryVertex[0]));
 	    fHistResidualYVtxJpsi -> Fill(1.e4*(pca[1] - fPrimaryVertex[1]));
 	    fHistResidualZVtxJpsi -> Fill(1.e4*(pca[2] - fPrimaryVertex[2]));
-	    delete dimuon;
+	    delete dimuonJpsi;
 	  }
 	}
       }

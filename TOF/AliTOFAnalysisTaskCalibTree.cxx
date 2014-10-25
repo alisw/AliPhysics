@@ -48,12 +48,15 @@ AliAnalysisTaskSE(name),
   fTimeResolution(80.),
   fTOFcalib(new AliTOFcalib()),             
   fTOFT0maker(new AliTOFT0maker(fESDpid, fTOFcalib)),         
-  fTOFT0v1(new AliTOFT0v1(fESDpid))             
+  fTOFT0v1(new AliTOFT0v1(fESDpid)),
+  fOutputTree(0x0)             
 
 {
   /* 
    * default constructor 
    */
+
+  DefineOutput(1, TTree::Class());  
 
 }
 
@@ -70,6 +73,10 @@ AliTOFAnalysisTaskCalibTree::~AliTOFAnalysisTaskCalibTree()
   delete fTOFcalib;
   delete fTOFT0maker;
   delete fTOFT0v1;
+  if (fOutputTree) {
+    delete fOutputTree;
+    fOutputTree = 0x0;
+  }
 
 }
 
@@ -82,18 +89,22 @@ AliTOFAnalysisTaskCalibTree::UserCreateOutputObjects()
    * user create output objects
    */
 
+  fOutputTree = new TTree("aodTree", "Tree with TOF calib output"); 
+
   /* setup output tree */
-  OutputTree()->Branch("run", &fRunNumber, "run/I");
-  OutputTree()->Branch("timestamp", &ftimestamp, "timestamp/i");
-  OutputTree()->Branch("timezero", &ftimezero, "timezero/F");
-  OutputTree()->Branch("vertex", &fVertexZ, "vertex/F");
-  OutputTree()->Branch("nhits", &fnhits, "nhits/I");
-  OutputTree()->Branch("momentum", &fmomentum, "momentum[nhits]/F");
-  OutputTree()->Branch("length", &flength, "length[nhits]/F");
-  OutputTree()->Branch("index", &findex, "index[nhits]/I");
-  OutputTree()->Branch("time", &ftime, "time[nhits]/F");
-  OutputTree()->Branch("tot", &ftot, "tot[nhits]/F");
-  OutputTree()->Branch("texp", &ftexp, "texp[nhits]/F");
+  fOutputTree->Branch("run", &fRunNumber, "run/I");
+  fOutputTree->Branch("timestamp", &ftimestamp, "timestamp/i");
+  fOutputTree->Branch("timezero", &ftimezero, "timezero/F");
+  fOutputTree->Branch("vertex", &fVertexZ, "vertex/F");
+  fOutputTree->Branch("nhits", &fnhits, "nhits/I");
+  fOutputTree->Branch("momentum", &fmomentum, "momentum[nhits]/F");
+  fOutputTree->Branch("length", &flength, "length[nhits]/F");
+  fOutputTree->Branch("index", &findex, "index[nhits]/I");
+  fOutputTree->Branch("time", &ftime, "time[nhits]/F");
+  fOutputTree->Branch("tot", &ftot, "tot[nhits]/F");
+  fOutputTree->Branch("texp", &ftexp, "texp[nhits]/F");
+
+  PostData(1, fOutputTree);
 
 }
 
@@ -171,7 +182,9 @@ void AliTOFAnalysisTaskCalibTree::UserExec(Option_t *option) {
 
   // check number of hits and set fill output tree
   if (fnhits > 0)
-    ((AliAODHandler*)(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()))->SetFillAOD(kTRUE);
+    fOutputTree->Fill();
+
+  PostData(1, fOutputTree);
 
 }
 
@@ -179,7 +192,7 @@ void AliTOFAnalysisTaskCalibTree::UserExec(Option_t *option) {
 
 Bool_t AliTOFAnalysisTaskCalibTree::InitRun() {
 
-  //
+  //¯
   // init run
   //
   
@@ -249,8 +262,10 @@ Bool_t AliTOFAnalysisTaskCalibTree::InitEvent() {
   fElapsedTime = fESDEvent->GetTimeStamp() - fStartTime;
 
   // event selection
-  fIsCollisionCandidate = fEventCuts->IsCollisionCandidate(fESDEvent);
-  if (fEventSelectionFlag && !fIsCollisionCandidate) return kFALSE;
+  if (fEventSelectionFlag){
+    fIsCollisionCandidate = fEventCuts->IsCollisionCandidate(fESDEvent);
+    if (!fIsCollisionCandidate) return kFALSE;
+  }
 
   // vertex selection
   fVertex = fESDEvent->GetPrimaryVertexTracks();

@@ -87,12 +87,13 @@ AliZDCPedestals* AliZDCQADataMakerRec::GetPedCalibData() const
 {
 
   // Retrieving pedestal calibration object from OCDB
+  AliZDCPedestals *calibdata = 0x0;
   AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/Pedestals");
   if(!entry) AliWarning("No calibration data loaded!");  
-
-  AliZDCPedestals *calibdata = (AliZDCPedestals*)  (entry->GetObject());
-  if(!calibdata) AliFatal("Wrong calibration object in calibration  file!");
-
+  else{
+    calibdata = (AliZDCPedestals*)  (entry->GetObject());
+    if(!calibdata) AliFatal("Wrong calibration object in calibration  file!");
+  }
   return calibdata;
 
 }
@@ -408,7 +409,13 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
     // Parameters for mean value pedestal subtraction
     int const kNch = 24;
     Float_t meanPed[2*kNch];    
-    for(Int_t jj=0; jj<2*kNch; jj++) meanPed[jj] = fPedCalibData->GetMeanPed(jj);
+    for(Int_t jj=0; jj<2*kNch; jj++){
+      if(fPedCalibData) meanPed[jj] = fPedCalibData->GetMeanPed(jj);
+      else{
+        meanPed[jj] = 0.;
+	printf("  AliZDCQADataMakerRec::MakeRaws -> No valid pedestal object loaded!\n\n");
+      }
+    }
     
     Float_t zncSignal=0., znaSignal=0., zpcSignal=0., zpaSignal=0.;
     Float_t zncSumQ=0., znaSumQ=0., zpcSumQ=0., zpaSumQ=0.;

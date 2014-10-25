@@ -124,7 +124,9 @@ public AliAnalysisTaskSE
   Float_t ftot[MAXHITS];
   Float_t ftexp[MAXHITS];
 
-  ClassDef(AliTOFAnalysisTaskCalibTree, 1);
+  TTree* fOutputTree;                 // output tree
+
+  ClassDef(AliTOFAnalysisTaskCalibTree, 2);
 };
 
 #endif /* ALIANALYSISTASKTOFCOMPACTCALIB_H */

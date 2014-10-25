@@ -32,6 +32,7 @@
 #include <TDataMember.h>
 #include <TList.h>
 #include <TMethodCall.h>
+#include <TDataType.h>
 
 #include "AliLog.h"
 #include "AliRawEventHeaderBase.h"
@@ -384,7 +385,8 @@ UInt_t AliRawEventHeaderBase::Get(const char *datamember) const
     return 0;
   }
 
-  if (strcmp(member->GetTypeName(),"UInt_t") != 0) {
+  TDataType * dataType = member->GetDataType();
+  if (!dataType || dataType->GetType() != kUInt_t) {
     AliFatal(Form("Member %s is not of type UInt_t!",buf));
     return 0;
   }
@@ -417,7 +419,8 @@ const UInt_t* AliRawEventHeaderBase::GetP(const char *datamember) const
   //    return 0;
   //  }
 
-  if (strcmp(member->GetTypeName(),"UInt_t") != 0) {
+  TDataType * dataType = member->GetDataType();
+  if (!dataType || dataType->GetType() != kUInt_t) {
     AliFatal(Form("Member %s is not of type UInt_t*!",buf));
     return 0;
   }
