@@ -2,13 +2,16 @@
 #define ALIVFRIENDEVENT_H
 
 #include "Rtypes.h"
+#include "TObject.h"
 #include "AliVMisc.h"
 class AliVfriendTrack;
 
 //_____________________________________________________________________________
-class AliVfriendEvent {
+class AliVfriendEvent: public TObject {
 public:
   AliVfriendEvent() {}
+  AliVfriendEvent(const AliVfriendEvent &f) :TObject(f){}
+
   virtual ~AliVfriendEvent() {}
 
   // constructor and method for reinitialisation of virtual table
@@ -35,7 +38,6 @@ public:
 
 private: 
 
-  AliVfriendEvent(const AliVfriendEvent &);
   AliVfriendEvent& operator=(const AliVfriendEvent& esd);
 };
 

@@ -26,7 +26,7 @@
 
 ClassImp(AliESDfriend)
 
-AliESDfriend::AliESDfriend(): TObject(), fTracks("AliESDfriendTrack",1),
+AliESDfriend::AliESDfriend(): AliVfriendEvent(), fTracks("AliESDfriendTrack",1),
   fESDVZEROfriend(NULL),
   fESDTZEROfriend(NULL),
   fNclustersTPC(),
@@ -43,8 +43,7 @@ AliESDfriend::AliESDfriend(): TObject(), fTracks("AliESDfriendTrack",1),
 }
 
 AliESDfriend::AliESDfriend(const AliESDfriend &f) :
-  TObject(f),
-  AliVfriendEvent(),
+  AliVfriendEvent(f),
   fTracks(f.fTracks),
   fESDVZEROfriend(f.fESDVZEROfriend ? new AliESDVZEROfriend(*f.fESDVZEROfriend) : NULL),
   fESDTZEROfriend(f.fESDTZEROfriend ? new AliESDTZEROfriend(*f.fESDTZEROfriend) : NULL),
