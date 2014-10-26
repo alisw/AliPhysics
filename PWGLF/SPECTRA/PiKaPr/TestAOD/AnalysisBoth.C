@@ -58,7 +58,7 @@ enum {
 Bool_t OpenFile(TString dirname, TString outputname, Bool_t mcflag,Bool_t mcasdata=false);
 void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TString outnamemc="",TString configfile="" )
 {
-	gStyle->SetOptStat(0);	
+gStyle->SetOptStat(0);	
 	TH1::AddDirectory(kFALSE);
 	gSystem->Load("libCore.so");  
 	gSystem->Load("libPhysics.so");
@@ -179,6 +179,12 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	}
 	GetMCTruth(MCTruth);
 	cout<<neventsdata<<" Events"<<endl;
+        cout<< neventsmc<<" Events "<<endl;
+       if(neventsdata<1||neventsmc<1)
+       {
+               cout<<"No events"<<endl;
+               return;
+       }
 	
 	
 	TH1F* allgen=((TH1F*)managermc->GetPtHistogram1D("hHistPtGen",1,1))->Clone();
@@ -666,9 +672,11 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 					TH1F *hmc1=(TH1F*) ((TH1F*)hman_mc->GetDCAHistogram1D(Form("hHistPtRecSigmaPrimary%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge))->Clone();
 					TH1F *hmc2=(TH1F*) ((TH1F*)hman_mc->GetDCAHistogram1D(Form("hHistPtRecSigmaSecondaryWeakDecay%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge))->Clone();
 					TH1F *hmc3=(TH1F*) ((TH1F*)hman_mc->GetDCAHistogram1D(Form("hHistPtRecSigmaSecondaryMaterial%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge))->Clone();
-					Double_t minentries=1;
+					Double_t minentries=100;
 					debug<<hToFit->GetEntries()<<" "<<hmc1->GetEntries()<<" "<<hmc2->GetEntries()<<" "<<hmc3->GetEntries()<<endl;
 					debug<<((fitsettings&0x1)&&hmc2->GetEntries()<=minentries)<<" "<<((fitsettings&0x2)&&hmc3->GetEntries()<=minentries)<<endl;
+					cout<<hToFit->GetEntries()<<" "<<hmc1->GetEntries()<<" "<<hmc2->GetEntries()<<" "<<hmc3->GetEntries()<<endl;
+                                        cout<<((fitsettings&0x1)&&hmc2->GetEntries()<=minentries)<<" "<<((fitsettings&0x2)&&hmc3->GetEntries()<=minentries)<<endl;
 					if(hToFit->GetEntries()<=minentries || hmc1->GetEntries()<=minentries || ((fitsettings&0x1)&&hmc2->GetEntries()<=minentries) || ((fitsettings&0x2)&&hmc3->GetEntries()<=minentries))
 						continue;
 					hToFit->Sumw2();
@@ -1010,11 +1018,11 @@ void GFCorrection(TH1F **Spectra,Float_t tofpt,UInt_t options)
 	  	gGFCorrectionKaonMinus->SetName("gGFCorrectionKaonMinus");
 	  	gGFCorrectionKaonMinus->SetTitle("gGFCorrectionKaonMinus");
 	 	 TString fnameGeanFlukaK="GFCorrection/correctionForCrossSection.321.root";
-  	  	TFile *fGeanFlukaK= new TFile(fnameGeanFlukaK.Data());
+  	  	TFile *fGeanFlukaK= TFile::Open(fnameGeanFlukaK.Data());
 	  	if (!fGeanFlukaK)
 		{
 			fnameGeanFlukaK="$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/correctionForCrossSection.321.root";
-			fGeanFlukaK= new TFile(fnameGeanFlukaK.Data());
+			fGeanFlukaK= TFile::Open(fnameGeanFlukaK.Data());
 			if (!fGeanFlukaK)
 				return;
 		}
@@ -1075,11 +1083,11 @@ void GFCorrection(TH1F **Spectra,Float_t tofpt,UInt_t options)
 	  Int_t kPos=0;
 	  Int_t kNeg=1;
           TString fnameGFProtons= "GFCorrection/correctionForCrossSection.root";
-	  TFile* fGFProtons = new TFile (fnameGFProtons.Data());
+	  TFile* fGFProtons = TFile::Open(fnameGFProtons.Data());
 	  if (!fGFProtons)
 	  { 
-		fnameGFProtons=="$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/correctionForCrossSection.root";
-		TFile* fGFProtons = new TFile (fnameGFProtons.Data());
+		fnameGFProtons="$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/correctionForCrossSection.root";
+		fGFProtons = TFile::Open(fnameGFProtons.Data());
 		if (!fGFProtons)
 			return;
 	  }
