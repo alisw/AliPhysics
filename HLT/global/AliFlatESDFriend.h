@@ -79,6 +79,7 @@ public:
 
   ULong64_t  GetSize()  const { return fContent - reinterpret_cast<const Byte_t*>(this) + fContentSize; }
 
+  static ULong64_t EstimateSize(AliESDfriend* esdFriend );
 
 private: 
 

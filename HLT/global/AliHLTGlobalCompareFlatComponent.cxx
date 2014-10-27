@@ -28,6 +28,7 @@
 #include "THnSparse.h"
 #include "AliESDEvent.h"
 #include "AliFlatESDEvent.h"
+#include "AliFlatESDFriend.h"
 #include "AliFlatESDTrigger.h"
 #include "AliFlatESDV0.h"
 #include "AliFlatESDVertex.h"
@@ -36,6 +37,8 @@
 #include "AliHLTGlobalCompareFlatComponent.h"
 #include "AliHLTITSClusterDataFormat.h"
 #include "AliHLTTPCDefinitions.h"
+#include "AliTPCseed.h"
+#include "AliExternalTrackParam.h"
 #include "TTree.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
@@ -52,6 +55,33 @@ void AliHLTGlobalCompareFlatComponent::printDiff( string name, double val1, doub
 	else if(relDiff < -1e-6) diff = -1;
 	outFile<<name<<"\t" << val1 << "\t" << val2 <<"\t" << diff << "\n";
 }
+
+
+
+void AliHLTGlobalCompareFlatComponent::printDiff( string name, int n , double* vals1, double* vals2 ){
+	double relDiff = 0;
+	int diff = 0;
+	
+	for(int i=0; i<n && diff == 0; i++){
+		relDiff = ( vals1[i] != 0 || vals2[i] !=0 ) ? (vals1[i]-vals2[i])/(fabs(vals1[i]) + fabs(vals2[i])): 0;
+		if (relDiff > 1e-6) diff = 1;
+		else if(relDiff < -1e-6) diff = -1;
+	}
+		
+	outFile<<name<<"\t";
+	for(int i=0; i<n;i++){
+			outFile<<vals1[i]<<" ";
+	}
+	outFile<<"\t";
+	for(int i=0; i<n;i++){
+			outFile<<vals2[i]<<" ";
+	}
+	outFile<<"\t" << diff << "\n";
+}
+
+
+
+
 void AliHLTGlobalCompareFlatComponent::printDiff( string name, TString val1, TString val2){
 	outFile << name << "\t" << "\t\"" << val1 <<"\"\t\"" << val2 <<"\"\t" << (val1.EqualTo(val2) ?0:1)<<"\n";
 }
@@ -214,6 +244,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
    return 0;
 
  AliFlatESDEvent *flatEsd[2] ;
+ AliFlatESDFriend *flatFriend[2] ;
 	
   printf("search for input onbjects\n");
 	{
@@ -222,13 +253,18 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
     pBlock!=NULL && i<2; pBlock = GetNextInputBlock(),i++ ) {
 			flatEsd[i] = reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
   }
+  i=0;
+	for ( const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
+    pBlock!=NULL && i<2; pBlock = GetNextInputBlock(),i++ ) {
+			flatFriend[i] = reinterpret_cast<AliFlatESDFriend*>( pBlock->fPtr );
+  }
+  
 	}
- cout<<"size event 1: "<<flatEsd[0]->GetSize()<<endl;
- cout<<"size event 2: "<<flatEsd[1]->GetSize()<<endl;
-
-
- cout<<"nTracks event 1: "<<flatEsd[0]->GetNumberOfTracks()<<endl;
- cout<<"nTracks event 2: "<<flatEsd[1]->GetNumberOfTracks()<<endl;
+ cout<<"size event : "<<flatEsd[0]->GetSize() << " "<<flatEsd[1]->GetSize()<<endl;
+ cout<<"nTracks : "<<flatEsd[0]->GetNumberOfTracks()<<" "<<flatEsd[1]->GetNumberOfTracks()<<endl;
+ 
+ cout<<"size friend : "<<flatFriend[0]->GetSize() << " "<<flatFriend[1]->GetSize()<<endl;
+ cout<<"nFriendTracks : "<<flatFriend[0]->GetNumberOfTracks()<<" "<<flatFriend[1]->GetNumberOfTracks()<<endl;
  
  outFile.open("comparison.txt",ios::app);
  
@@ -268,6 +304,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
  
 	if(vertexSPD[0] && vertexSPD[1]){
       outFile<<"\nnew AliFlatESDVertexSPD\n";
+			outFile<<"AliFlatESDVertexSPD::memcmp "<<memcmp(vertexSPD[0], vertexSPD[1], max(vertexSPD[0]->GetSize(), vertexSPD[1]->GetSize()))<<"\n";
 			printDiff( "AliFlatESDVertexSPD::GetSize",vertexSPD[0]->GetSize(),vertexSPD[1]->GetSize() ); 
 			printDiff( "AliFlatESDVertexSPD::GetX",vertexSPD[0]->GetX(),vertexSPD[1]->GetX() ); 
 			printDiff( "AliFlatESDVertexSPD::GetY",vertexSPD[0]->GetY(),vertexSPD[1]->GetY() ); 
@@ -347,10 +384,9 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 					printDiff( Form("AliFlatExternalTrackParam%s::GetTgl",pNames[i]),p[i][0]->GetTgl(),p[i][1]->GetTgl() ); 
 					printDiff( Form("AliFlatExternalTrackParam%s::GetSigned1Pt",pNames[i]),p[i][0]->GetSigned1Pt(),p[i][1]->GetSigned1Pt() ); 
 					
-					for(int j=0; j<15; j++){
-						printDiff( Form("AliFlatExternalTrackParam%s::GetCovEntry(%d)",pNames[i],j),p[i][0]->GetCovEntry(j),p[i][1]->GetCovEntry(j) ); 
-					}
-				
+					
+					Double_t* cov[2] = {(Double_t* ) p[i][0]->GetCov() , (Double_t*) p[i][1]->GetCov() };
+					printDiff( Form("AliFlatExternalTrackParam%s::GetCov",pNames[i]) , 15, cov[0], cov[1]); 
 				}
 			}
 			
@@ -358,24 +394,101 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			
 			
       track[0] = track[0]->GetNextTrackNonConst();
-			track[1] = track[1]->GetNextTrackNonConst();
-			
-			
-			
-			
-			
-			
-			
-			
+			track[1] = track[1]->GetNextTrackNonConst();			
 			
     }
 	}
 	
 	
- outFile.close();
+ // Compare Friend variables
+ 
+	outFile<<"\n\n------------------\nnew AliFlatESDFriend\n------------------\n";
+	printDiff( "AliFlatESDFriend::GetSize" ,flatFriend[0]->GetSize(), flatFriend[1]->GetSize() ) ;
+	printDiff( "AliFlatESDFriend::GetNumberOfTracks" ,flatFriend[0]->GetNumberOfTracks(), flatFriend[1]->GetNumberOfTracks());
+	printDiff( "AliFlatESDFriend::GetEntriesInTracks" ,flatFriend[0]->GetEntriesInTracks(), flatFriend[1]->GetEntriesInTracks());
+	printDiff( "AliFlatESDFriend::TestSkipBit" ,flatFriend[0]->TestSkipBit(), flatFriend[1]->TestSkipBit() ) ;
+ 
+	Double_t clTpc[2][72];
+	Double_t clTpcU[2][72];
+	for(int i = 0 ; i<72; i++){
+		clTpc[0][i] = flatFriend[0]->GetNclustersTPC(i);
+		clTpc[1][i] = flatFriend[1]->GetNclustersTPC(i);
+		
+		clTpcU[0][i] = flatFriend[0]->GetNclustersTPCused(i);
+		clTpcU[1][i] = flatFriend[1]->GetNclustersTPCused(i);
+	}
+	
+	
+	printDiff( "AliFlatESDFriend::GetNclustersTPC" ,72, clTpc[0], clTpc[1] ) ;
+	printDiff( "AliFlatESDFriend::GetNclustersTPCused" ,72, clTpcU[0], clTpcU[1] ) ;
+	
+	
+	// compare friend tracks
+	
+	if(flatFriend[0]->GetEntriesInTracks()  && flatFriend[1]->GetEntriesInTracks() ){
+		outFile<<"------------------\nfriend tracks\n------------------\n";
+		
+    AliFlatESDFriendTrack * track[2] = { const_cast<AliFlatESDFriendTrack*>(flatFriend[0]->GetFlatTrackEntry(0) ) , const_cast<AliFlatESDFriendTrack*>(flatFriend[1]->GetFlatTrackEntry(0) ) };
+    for( Int_t t = 0; t < flatFriend[0]->GetEntriesInTracks()  && t < flatFriend[1]->GetEntriesInTracks()  ; t++ ){
+			if(!track[0] || !track[1]) continue;
+      outFile<<"\nnew AliFlatESDFriendTrack\n";
+			printDiff( "AliFlatESDFriendTrack::GetSize",track[0]->GetSize(),track[1]->GetSize() ); 
+			
+			AliExternalTrackParam p[3][2]; 
+			AliExternalTrackParam q =AliExternalTrackParam() ;
+			
+			const char* pNames[3] = {"TPCOut", "ITSOut", "TRDIn"};
+			
+		//	track[0]->GetTrackParamTPCOut(q );
+		//	track[1]->GetTrackParamTPCOut(p[0][1] );
+			
+		//	track[0]->GetTrackParamITSOut(p[1][0] );
+			//track[1]->GetTrackParamITSOut(p[1][1] );
+			
+			
+			track[0]->GetTrackParamTRDIn(p[2][0] );
+			track[1]->GetTrackParamTRDIn(p[2][1] );
+			
+			
+					for(int i = 0 ; i<7; i++){
+					outFile<<"\nnew AliExternalTrackParam" << pNames[i] << "\n";
+					printDiff( Form("AliExternalTrackParam%s::GetAlpha",pNames[i]),p[i][0].GetAlpha(),p[i][1].GetAlpha() ); 
+					printDiff( Form("AliExternalTrackParam%s::GetX",pNames[i]),p[i][0].GetX(),p[i][1].GetX() ); 
+					printDiff( Form("AliExternalTrackParam%s::GetY",pNames[i]),p[i][0].GetY(),p[i][1].GetY() ); 
+					printDiff( Form("AliExternalTrackParam%s::GetZ",pNames[i]),p[i][0].GetZ(),p[i][1].GetZ() ); 
+					printDiff( Form("AliExternalTrackParam%s::GetSnp",pNames[i]),p[i][0].GetSnp(),p[i][1].GetSnp() ); 
+					printDiff( Form("AliExternalTrackParam%s::GetTgl",pNames[i]),p[i][0].GetTgl(),p[i][1].GetTgl() ); 
+					printDiff( Form("AliExternalTrackParam%s::GetSigned1Pt",pNames[i]),p[i][0].GetSigned1Pt(),p[i][1].GetSigned1Pt() ); 
+					
+					
+					Double_t* cov[2] = { const_cast<Double_t*>( p[i][0].GetCovariance()) , const_cast<Double_t*>( p[i][1].GetCovariance() ) };
+					printDiff( Form("AliExternalTrackParam%s::GetCovariance",pNames[i]) , 15, cov[0], cov[1]); 
+			
+			}
+			
+			
+			
+			
+			
+			AliTPCseed s[2];
+			
+			
+			track[0]->GetTPCseed(s[0] );
+			track[1]->GetTPCseed(s[1] );
+			
+			
+      track[0] = track[0]->GetNextTrackNonConst();
+			track[1] = track[1]->GetNextTrackNonConst();	
+			
+			
+		}
+	
+	}
+	
+	outFile.close();
  
  
-  return iResult;
+	return iResult;
 }
 
 

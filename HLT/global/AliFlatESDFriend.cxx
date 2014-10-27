@@ -53,6 +53,20 @@ void AliFlatESDFriend::Ls() const
 }
 
 
+
+// _______________________________________________________________________________________________________
+  ULong64_t AliFlatESDFriend::EstimateSize(AliESDfriend* esdFriend) 
+{
+  // Estimate upper limit of the object size
+  // -> Added objects have to be added here as well
+  
+  ULong64_t size = sizeof(AliFlatESDFriend);
+  size += esdFriend->GetNumberOfTracks() *  AliFlatESDFriendTrack::EstimateSize();
+  return size;
+}
+
+
+
 // _______________________________________________________________________________________________________
 
 Int_t AliFlatESDFriend::SetFromESDfriend( const size_t allocatedMemorySize, const AliESDfriend *esdFriend )

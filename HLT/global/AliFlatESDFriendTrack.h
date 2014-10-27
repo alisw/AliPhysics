@@ -107,7 +107,7 @@ class AliFlatESDFriendTrack :public AliVfriendTrack
   
   Byte_t fContent[1];                  // Variale size object, which contains all data
 
-  //ClassDef(AliFlatESDFriendTrack, 0)
+ // ClassDef(AliFlatESDFriendTrack, 0)
 
 };
 
@@ -116,6 +116,7 @@ inline Int_t AliFlatESDFriendTrack::GetTrackParam( Long64_t ptr, AliExternalTrac
   if( ptr<0 ) return -1;
   const AliFlatExternalTrackParam *fp = reinterpret_cast< const AliFlatExternalTrackParam* >( fContent + ptr );
   fp->GetExternalTrackParam( param );
+	return 0;
 }
 
 inline void AliFlatESDFriendTrack::SetTrackParam( Long64_t &ptr, const AliExternalTrackParam *p )
