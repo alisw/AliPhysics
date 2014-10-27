@@ -1317,10 +1317,13 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   
   UInt_t evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   Double_t centrality=fCuts->GetCentrality(aod);
-  Double_t multiplicity=aod->GetHeader()->GetRefMultiplicity();
+  AliAODHeader * header = dynamic_cast<AliAODHeader*>(aod->GetHeader());
+  if(!header) AliFatal("Not a standard AOD");
+
+  Double_t multiplicity=header->GetRefMultiplicity();
   Int_t runNumber = aod->GetRunNumber();
   TString trigClass=aod->GetFiredTriggerClasses();
-  Int_t nAODtracks=aod->GetNTracks();
+  Int_t nAODtracks=aod->GetNumberOfTracks();
   Int_t nSelTracksTPCOnly=0;
   Int_t nSelTracksTPCITS=0;
   Int_t nSelTracksTPCITS1SPD=0;
@@ -1339,7 +1342,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   }
 
   for (Int_t k=0;k<nAODtracks;k++){
-    AliAODTrack* track=aod->GetTrack(k);
+    AliAODTrack* track=dynamic_cast<AliAODTrack*>(aod->GetTrack(k));
+    if(!track) AliFatal("Not a standard AOD");
     if(track->GetID()<0) continue;
     Int_t nclsTot=0,nclsSPD=0;
     for(Int_t l=0;l<6;l++) {
@@ -1742,14 +1746,18 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       if(mincent==100)mincent--;
       ((AliCounterCollection*)fOutputCounters->FindObject("secondEstimator"))->Count(Form("centralityclass:%d_%d/Run:%d",mincent,mincent+10,runNumber));
 
+      AliAODHeader * header = dynamic_cast<AliAODHeader*>(aod->GetHeader());
+      if(!header) AliFatal("Not a standard AOD");
+
+
       if(stdCent<fCuts->GetMinCentrality() || stdCent>fCuts->GetMaxCentrality()){
 	((TH1F*)fOutputCheckCentrality->FindObject("hNtrackletsOut"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
-	((TH1F*)fOutputCheckCentrality->FindObject("hMultOut"))->Fill(aod->GetHeader()->GetRefMultiplicity());
+	((TH1F*)fOutputCheckCentrality->FindObject("hMultOut"))->Fill(header->GetRefMultiplicity());
       }else{
 	((TH1F*)fOutputCheckCentrality->FindObject("hNtrackletsIn"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
-	((TH1F*)fOutputCheckCentrality->FindObject("hMultIn"))->Fill(aod->GetHeader()->GetRefMultiplicity());
+	((TH1F*)fOutputCheckCentrality->FindObject("hMultIn"))->Fill(header->GetRefMultiplicity());
       }
-      ((TH2F*)fOutputCheckCentrality->FindObject("hMultvsPercentile"))->Fill(aod->GetHeader()->GetRefMultiplicity(),stdCentf);
+      ((TH2F*)fOutputCheckCentrality->FindObject("hMultvsPercentile"))->Fill(header->GetRefMultiplicity(),stdCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hntrklvsPercentile"))->Fill(aod->GetTracklets()->GetNumberOfTracklets(),stdCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hntrklvsPercentile01"))->Fill(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.),stdCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hnTPCTracksvsPercentile"))->Fill(nSelTracksTPCOnly,stdCentf);
@@ -1767,10 +1775,10 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       if(fOnOff[0]){
 	((TH1F*)fOutputTrack->FindObject("hNtracklets"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
 	((TH1F*)fOutputTrack->FindObject("hNtracklets01"))->Fill(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
-	((TH1F*)fOutputTrack->FindObject("hMult"))->Fill(aod->GetHeader()->GetRefMultiplicity());
+	((TH1F*)fOutputTrack->FindObject("hMult"))->Fill(header->GetRefMultiplicity());
 	((TH1F*)fOutputTrack->FindObject("hMultFBit4"))->Fill(ntracksFBit4);
-	((TH1F*)fOutputTrack->FindObject("hMultComb05"))->Fill(aod->GetHeader()->GetRefMultiplicityComb05());
-	((TH1F*)fOutputTrack->FindObject("hMultComb08"))->Fill(aod->GetHeader()->GetRefMultiplicityComb08());
+	((TH1F*)fOutputTrack->FindObject("hMultComb05"))->Fill(header->GetRefMultiplicityComb05());
+	((TH1F*)fOutputTrack->FindObject("hMultComb08"))->Fill(header->GetRefMultiplicityComb08());
       }
     }
   }
@@ -1835,12 +1843,13 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   Int_t ntracks=0;
   Int_t isGoodTrack=0, isFakeTrack=0, isSelTrack=0;
 
-  if(aod) ntracks=aod->GetNTracks();
+  if(aod) ntracks=aod->GetNumberOfTracks();
 
   if(fOnOff[0] || fOnOff[1]){
     //loop on tracks in the event
     for (Int_t k=0;k<ntracks;k++){
-      AliAODTrack* track=aod->GetTrack(k);
+      AliAODTrack* track=dynamic_cast<AliAODTrack*>(aod->GetTrack(k));
+      if(!track) AliFatal("Not a standard AOD");
 
       // Track selection cuts
       if(track->GetID()<0) continue;

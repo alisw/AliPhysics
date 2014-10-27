@@ -513,7 +513,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   
 
   Bool_t isEvSel=fAnalysisCuts->IsEventSelected(aod);
-  Float_t ntracks=aod->GetNTracks();
+  Float_t ntracks=aod->GetNumberOfTracks();
   Float_t evCentr=fAnalysisCuts->GetCentrality(aod);
   
   fHistCentrality[0]->Fill(evCentr);

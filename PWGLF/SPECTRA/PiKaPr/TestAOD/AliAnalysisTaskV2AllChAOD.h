@@ -49,6 +49,9 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
     fMinTPCNcls(70),
     fFillTHn(kTRUE),
     fCentrality(0),
+    fQvector(0),
+    fQvector_lq(0),
+    fQvector_sq(0),
     fResSP(0),
     fResSP_vs_Cent(0),
     f2partCumQA_vs_Cent(0),
@@ -175,7 +178,10 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   Bool_t fFillTHn;
   
   TH1D * fCentrality;
-  
+  TH1D * fQvector;
+  TH1D * fQvector_lq;
+  TH1D * fQvector_sq;
+
   //output object
   TProfile*     fResSP;             //! resolution
   TProfile*     fResSP_vs_Cent;
@@ -260,7 +266,7 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   AliAnalysisTaskV2AllChAOD(const AliAnalysisTaskV2AllChAOD&);
   AliAnalysisTaskV2AllChAOD& operator=(const AliAnalysisTaskV2AllChAOD&);
   
-  ClassDef(AliAnalysisTaskV2AllChAOD, 12);
+  ClassDef(AliAnalysisTaskV2AllChAOD, 13);
 };
 
 #endif

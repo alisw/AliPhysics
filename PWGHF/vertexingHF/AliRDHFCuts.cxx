@@ -488,7 +488,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   }
 
   // TEMPORARY FIX FOR GetEvent
-  Int_t nTracks=((AliAODEvent*)event)->GetNTracks();
+  Int_t nTracks=((AliAODEvent*)event)->GetNumberOfTracks();
   for(Int_t itr=0; itr<nTracks; itr++){
     AliAODTrack* tr=(AliAODTrack*)((AliAODEvent*)event)->GetTrack(itr);
     tr->SetAODEvent((AliAODEvent*)event);
@@ -1178,7 +1178,8 @@ Float_t AliRDHFCuts::GetCentrality(AliAODEvent* aodEvent,AliRDHFCuts::ECentralit
   TClonesArray *mcArray = (TClonesArray*)((AliAODEvent*)aodEvent)->GetList()->FindObject(AliAODMCParticle::StdBranchName());
   if(mcArray) {fUseAOD049=kFALSE;}
 
-  AliAODHeader *header=aodEvent->GetHeader();
+  AliAODHeader *header=dynamic_cast<AliAODHeader*>(aodEvent->GetHeader());
+  if(!header) AliFatal("Not a standard AOD");
   AliCentrality *centrality=header->GetCentralityP();
   Float_t cent=-999.;
   Bool_t isSelRun=kFALSE;

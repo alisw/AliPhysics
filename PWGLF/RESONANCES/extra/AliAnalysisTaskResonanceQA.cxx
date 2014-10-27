@@ -247,14 +247,14 @@ void AliAnalysisTaskResonanceQA::UserExec(Option_t *)
       const AliESDVertex *v0 = fESD->GetPrimaryVertexTracks();
       if (v0) {
          if (v0->GetNContributors() > 0) {
-            vzsign = v0->GetZv();
+            vzsign = v0->GetZ();
             vz = TMath::Abs(vzsign);
             hasVertex = kTRUE;
          } else {
             v0 = fESD->GetPrimaryVertexSPD();
             if (v0) {
                if (v0->GetNContributors() > 0) {
-                  vzsign = v0->GetZv();
+                  vzsign = v0->GetZ();
                   vz = TMath::Abs(vzsign);
                   hasVertex = kTRUE;
                }

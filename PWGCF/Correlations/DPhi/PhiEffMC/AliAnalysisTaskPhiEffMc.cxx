@@ -327,7 +327,8 @@ void AliAnalysisTaskPhiEffMc::UserExec(Option_t *)
 
   //track loop
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
-    AliAODTrack* track = fAOD->GetTrack(iTracks);
+    AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
+    if(!track) AliFatal("Not a standard AOD");
     if (!fTrackCuts->IsSelected(track,kTRUE)) continue;
     if(track->Charge()==0) continue;
     if(track->Pt()<fPtCut) continue;

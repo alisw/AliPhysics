@@ -735,9 +735,9 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
   
   fHistEventMultiplicity->Fill(2); // analyzed events with PV
   
-  xPrimaryVertex=vtx->GetXv();
-  yPrimaryVertex=vtx->GetYv();
-  zPrimaryVertex=vtx->GetZv();  
+  xPrimaryVertex=vtx->GetX();
+  yPrimaryVertex=vtx->GetY();
+  zPrimaryVertex=vtx->GetZ();  
 
   if(TMath::Abs(zPrimaryVertex)>10) return;
   fHistEventMultiplicity->Fill(3);

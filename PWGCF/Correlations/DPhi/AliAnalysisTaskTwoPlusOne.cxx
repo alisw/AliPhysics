@@ -123,7 +123,7 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
   Double_t centrality = 0;
   AliCentrality *centralityObj = 0;
 
-  centralityObj = fAOD->GetHeader()->GetCentralityP();
+  centralityObj = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
 
 
  if (centralityObj)

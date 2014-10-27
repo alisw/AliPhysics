@@ -324,7 +324,7 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
     //runnumber
     Int_t nTracks(aodevent->GetNumberOfTracks());
     for(Int_t iTracks = 0; iTracks < nTracks; iTracks++) { 
-      AliAODTrack* track = aodevent->GetTrack(iTracks);
+      AliAODTrack* track = dynamic_cast<AliAODTrack*>(aodevent->GetTrack(iTracks));
       if(!track) continue;
       if (!track || track->Pt() < .2 || track->Pt() > 5.0 || TMath::Abs(track->Eta()) > .8 || track->GetTPCNcls() < 70 || !track->GetDetPid() || track->GetDetPid()->GetTPCsignal() < 10.0)  continue;  // general quality cut
       if (track->TestFilterBit(1) && track->Chi2perNDF() > 0.2) multTPC++;
@@ -426,7 +426,7 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
       Double_t tSPDVtxZ = aodevent->GetPrimaryVertexSPD()->GetZ();
       if( TMath::Abs(tVtxZ-tSPDVtxZ) > 0.5 ) pass = kFALSE;
     }
-    AliCentrality* centr = aodevent->GetHeader()->GetCentralityP();
+    AliCentrality* centr = ((AliVAODHeader*)aodevent->GetHeader())->GetCentralityP();
     if(fCutTPCmultiplicityOutliers || fCutTPCmultiplicityOutliersAOD){
       Double_t v0Centr  = centr->GetCentralityPercentile("V0M");
       Double_t trkCentr = centr->GetCentralityPercentile("TRK"); 
@@ -503,7 +503,7 @@ Float_t AliFlowEventCuts::GetCentrality(AliVEvent* event, AliMCEvent* /*mcEvent*
   if (esdEvent)
     centr = esdEvent->GetCentrality();
   if (aodEvent) 
-    centr = aodEvent->GetHeader()->GetCentralityP();
+    centr = ((AliVAODHeader*)aodEvent->GetHeader())->GetCentralityP();
   
   if (!centr) return -1.;
 

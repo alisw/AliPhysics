@@ -12,6 +12,6 @@
 #pragma link C++ class AliCDMesonTracks+;
 #pragma link C++ class AliCDMesonUtilsStripped+;
 #pragma link C++ class AliCDMesonUtils+;
-
+#pragma link C++ class AliAnalysisTaskCPQA++;
 
 #endif

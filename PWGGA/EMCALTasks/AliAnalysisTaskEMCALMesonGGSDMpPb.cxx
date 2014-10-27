@@ -1183,7 +1183,8 @@ void AliAnalysisTaskEMCALMesonGGSDMpPb::UserExec(Option_t *)
 
 	// _______________Track loop for reconstructed event_____________
 	for(Int_t itrk = 0; itrk < fAodEv->GetNumberOfTracks(); itrk++) {
-	  AliAODTrack* aodTrack = fAodEv->GetTrack(itrk); // pointer to reconstructed to track
+	  AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(fAodEv->GetTrack(itrk));
+	  if(!aodTrack) AliFatal("Not a standard AOD"); // pointer to reconstructed to track
 	  if(!aodTrack) { 
 	    AliError(Form("ERROR: Could not retrieve any (AOD) track %d",itrk)); 
 	    continue; 

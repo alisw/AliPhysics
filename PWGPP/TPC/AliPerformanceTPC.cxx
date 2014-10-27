@@ -603,7 +603,7 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
     }
   }
 
-  Double_t vTPCEvent[7] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv(),static_cast<Double_t>(mult),static_cast<Double_t>(multP),static_cast<Double_t>(multN),static_cast<Double_t>(vtxESD->GetStatus())};
+  Double_t vTPCEvent[7] = {vtxESD->GetX(),vtxESD->GetY(),vtxESD->GetZ(),static_cast<Double_t>(mult),static_cast<Double_t>(multP),static_cast<Double_t>(multN),static_cast<Double_t>(vtxESD->GetStatus())};
   fTPCEventHisto->Fill(vTPCEvent);
 }
 

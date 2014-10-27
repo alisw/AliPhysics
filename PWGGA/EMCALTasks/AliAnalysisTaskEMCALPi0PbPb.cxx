@@ -603,7 +603,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
       return;
     }
     am->LoadBranch("header");
-    offtrigger =  fAodEv->GetHeader()->GetOfflineTrigger();
+    offtrigger =  ((AliVAODHeader*)fAodEv->GetHeader())->GetOfflineTrigger();
   }
   if (!fMcMode && (offtrigger & AliVEvent::kFastOnly)) {
     AliWarning(Form("EMCAL not in fast only partition"));
@@ -626,8 +626,11 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
       const TGeoHMatrix *geom = 0;
       if (fEsdEv)
         geom = fEsdEv->GetESDRun()->GetEMCALMatrix(i);
-      else 
-        geom = fAodEv->GetHeader()->GetEMCALMatrix(i);
+      else {
+        AliAODHeader * aodheader = dynamic_cast<AliAODHeader*>(fAodEv->GetHeader());
+        if(!aodheader) AliFatal("Not a standard AOD");
+        geom = aodheader->GetEMCALMatrix(i);
+      }
       if (!geom)
         continue;
       geom->Print();
@@ -1614,17 +1617,20 @@ void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
 
   AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
   if (fAodEv) {
+    AliAODHeader * aodheader = dynamic_cast<AliAODHeader*>(fAodEv->GetHeader());
+    if(!aodheader) AliFatal("Not a standard AOD");
+
     fHeader->fRun            = fAodEv->GetRunNumber();
-    fHeader->fOrbit          = fAodEv->GetHeader()->GetOrbitNumber(); 
-    fHeader->fPeriod         = fAodEv->GetHeader()->GetPeriodNumber();
-    fHeader->fBx             = fAodEv->GetHeader()->GetBunchCrossNumber();
-    fHeader->fL0             = fAodEv->GetHeader()->GetL0TriggerInputs();
-    fHeader->fL1             = fAodEv->GetHeader()->GetL1TriggerInputs();
-    fHeader->fL2             = fAodEv->GetHeader()->GetL2TriggerInputs();
-    fHeader->fTrClassMask    = fAodEv->GetHeader()->GetTriggerMask();
-    fHeader->fTrCluster      = fAodEv->GetHeader()->GetTriggerCluster();
-    fHeader->fOffTriggers    = fAodEv->GetHeader()->GetOfflineTrigger();
-    fHeader->fFiredTriggers  = fAodEv->GetHeader()->GetFiredTriggerClasses();
+    fHeader->fOrbit          = aodheader->GetOrbitNumber(); 
+    fHeader->fPeriod         = aodheader->GetPeriodNumber();
+    fHeader->fBx             = aodheader->GetBunchCrossNumber();
+    fHeader->fL0             = aodheader->GetL0TriggerInputs();
+    fHeader->fL1             = aodheader->GetL1TriggerInputs();
+    fHeader->fL2             = aodheader->GetL2TriggerInputs();
+    fHeader->fTrClassMask    = aodheader->GetTriggerMask();
+    fHeader->fTrCluster      = aodheader->GetTriggerCluster();
+    fHeader->fOffTriggers    = aodheader->GetOfflineTrigger();
+    fHeader->fFiredTriggers  = aodheader->GetFiredTriggerClasses();
   } else {
     fHeader->fRun            = fEsdEv->GetRunNumber();
     fHeader->fOrbit          = fEsdEv->GetHeader()->GetOrbitNumber(); 
