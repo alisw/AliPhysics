@@ -28,7 +28,7 @@
 ClassImp(AliESDfriendTrack)
 
 AliESDfriendTrack::AliESDfriendTrack(): 
-TObject(), 
+AliVfriendTrack(), 
 f1P(0), 
 fnMaxITScluster(0),
 fnMaxTPCcluster(0),
@@ -60,8 +60,7 @@ fTRDIn(0)
 }
 
 AliESDfriendTrack::AliESDfriendTrack(const AliESDfriendTrack &t): 
-TObject(t),
-AliVfriendTrack(),
+AliVfriendTrack(t),
 f1P(t.f1P),
 fnMaxITScluster(t.fnMaxITScluster),
 fnMaxTPCcluster(t.fnMaxTPCcluster),

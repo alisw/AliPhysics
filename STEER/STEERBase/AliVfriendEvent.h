@@ -39,6 +39,10 @@ public:
 private: 
 
   AliVfriendEvent& operator=(const AliVfriendEvent& esd);
+	
+	
+	
+  ClassDef(AliVfriendEvent, 0)  // base class for AliEvent data
 };
 
 #pragma GCC diagnostic ignored "-Weffc++" 

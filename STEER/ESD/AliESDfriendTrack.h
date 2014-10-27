@@ -7,7 +7,6 @@
 //       Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 
-#include <TObject.h>
 #include <TClonesArray.h>
 #include <AliExternalTrackParam.h>
 #include "AliVfriendTrack.h"
@@ -19,7 +18,7 @@ class AliTPCseed;
 
 
 //_____________________________________________________________________________
-class AliESDfriendTrack : public TObject, public AliVfriendTrack {
+class AliESDfriendTrack : public AliVfriendTrack {
 public:
   enum {
     kMaxITScluster=12,

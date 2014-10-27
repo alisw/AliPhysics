@@ -59,7 +59,7 @@ void AliFlatESDFriend::Ls() const
 {
   // Estimate upper limit of the object size
   // -> Added objects have to be added here as well
-  
+  if(esdFriend == NULL) return 0;
   ULong64_t size = sizeof(AliFlatESDFriend);
   size += esdFriend->GetNumberOfTracks() *  AliFlatESDFriendTrack::EstimateSize();
   return size;

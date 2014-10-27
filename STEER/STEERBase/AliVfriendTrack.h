@@ -4,6 +4,7 @@
 //_____________________________________________________________________________
 #include "AliVMisc.h"
 
+#include "TObject.h"
 #include "Rtypes.h"
 class AliTPCseed;
 class AliVVtrackPointArray;
@@ -11,10 +12,11 @@ class AliExternalTrackParam;
 class AliTrackPointArray;
 
 //_____________________________________________________________________________
-class AliVfriendTrack {
+class AliVfriendTrack :public TObject {
 public:
 
   AliVfriendTrack(){}
+  AliVfriendTrack(const AliVfriendTrack &f) :TObject(f){}
   // constructor for reinitialisation of vtable
   AliVfriendTrack( AliVConstructorReinitialisationFlag ){}
   virtual ~AliVfriendTrack(){}
@@ -40,9 +42,9 @@ public:
   virtual Bool_t TestSkipBit() const = 0;
 
 private: 
-  AliVfriendTrack(const AliVfriendTrack &);
   AliVfriendTrack& operator=(const AliVfriendTrack& esd);  
 
+  ClassDef(AliVfriendTrack, 0)  // 
 };
 
 #endif

@@ -243,8 +243,8 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
  if (!IsDataEvent()) 
    return 0;
 
- AliFlatESDEvent *flatEsd[2] ;
- AliFlatESDFriend *flatFriend[2] ;
+ AliFlatESDEvent *flatEsd[2] ={0,0};
+ AliFlatESDFriend *flatFriend[2] ={0,0};
 	
   printf("search for input onbjects\n");
 	{
@@ -260,6 +260,26 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
   }
   
 	}
+	
+	if( flatEsd[0] == NULL ){
+			cout<<"flatEsd[0] not set!"<<endl;
+			return 0;
+	}
+	if( flatEsd[1] == NULL ){
+			cout<<"flatEsd[1] not set!"<<endl;
+			return 0;
+	}
+	
+	if( flatFriend[0] == NULL  ){
+			cout<<"flatFriend[0] not set!"<<endl;
+			return 0;
+	}
+	
+	if( flatFriend[1] == NULL  ){
+			cout<<"flatFriend[1] not set!"<<endl;
+			return 0;
+	}
+	
  cout<<"size event : "<<flatEsd[0]->GetSize() << " "<<flatEsd[1]->GetSize()<<endl;
  cout<<"nTracks : "<<flatEsd[0]->GetNumberOfTracks()<<" "<<flatEsd[1]->GetNumberOfTracks()<<endl;
  
@@ -424,7 +444,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 	
 	
 	// compare friend tracks
-	
+	/*
 	if(flatFriend[0]->GetEntriesInTracks()  && flatFriend[1]->GetEntriesInTracks() ){
 		outFile<<"------------------\nfriend tracks\n------------------\n";
 		
@@ -446,9 +466,8 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			//track[1]->GetTrackParamITSOut(p[1][1] );
 			
 			
-			track[0]->GetTrackParamTRDIn(p[2][0] );
-			track[1]->GetTrackParamTRDIn(p[2][1] );
-			
+			//track[0]->GetTrackParamTRDIn(p[2][0] );
+			//track[1]->GetTrackParamTRDIn(p[2][1] );
 			
 					for(int i = 0 ; i<7; i++){
 					outFile<<"\nnew AliExternalTrackParam" << pNames[i] << "\n";
@@ -476,7 +495,6 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			track[0]->GetTPCseed(s[0] );
 			track[1]->GetTPCseed(s[1] );
 			
-			
       track[0] = track[0]->GetNextTrackNonConst();
 			track[1] = track[1]->GetNextTrackNonConst();	
 			
@@ -484,7 +502,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 		}
 	
 	}
-	
+	*/
 	outFile.close();
  
  
