@@ -302,8 +302,7 @@ void AliPHOSTenderSupply::ProcessEvent()
 
       Float_t  position[3];
       cluPHOS.GetPosition(position);
-      clu->SetPosition(position);                       //rec.point position in MARS
-      
+      clu->SetPosition(position);                       //rec.point position in MARS      
       TVector3 global(position) ;
       Int_t relId[4] ;
       fPHOSGeo->GlobalPos2RelId(global,relId) ;
@@ -318,25 +317,19 @@ void AliPHOSTenderSupply::ProcessEvent()
       Double_t ecore=CoreEnergy(&cluPHOS) ; 
       ecore=CorrectNonlinearity(ecore) ;
       
-      //Correct Misalignment
-//      CorrectPHOSMisalignment(global,mod) ;
-//      position[0]=global.X() ;
-//      position[1]=global.Y() ;
-//      position[2]=global.Z() ;
-//      cluPHOS.GetPosition(position) ; 
-
+      clu->SetE(cluPHOS.E());                      //total particle energy
+      clu->SetCoreEnergy(ecore);                            //core particle energy
+           
+      //Eval FullDispersion
+      clu->SetDispersion(TestFullLambda(clu->E(),cluPHOS.GetM20(),cluPHOS.GetM02())) ;
       //Eval CoreDispersion
       Double_t m02=0.,m20=0.;
       EvalLambdas(&cluPHOS,m02, m20);   
-      clu->SetDispersion(TestLambda(clu->E(),m20,m02)) ;
+      clu->SetChi2(TestCoreLambda(clu->E(),m20,m02));                     //not yet implemented     
+      clu->SetM02(m02) ;               //second moment M2x
+      clu->SetM20(m20) ;               //second moment M2z
       
-      clu->SetE(cluPHOS.E());                      //total particle energy
-      clu->SetMCEnergyFraction(ecore);                            //core particle energy
-      
-      //    clu->SetDispersion(cluPHOS.GetDispersion());  //cluster dispersion
-      //    ec->SetPID(rp->GetPID()) ;            //array of particle identification
-      clu->SetM02(cluPHOS.GetM02()) ;               //second moment M2x
-      clu->SetM20(cluPHOS.GetM20()) ;               //second moment M2z
+      //correct distance to track      
       Double_t dx=0.,dz=0. ;
       fPHOSGeo->GlobalPos2RelId(global,relId) ;
       TVector3 locPos;
@@ -349,7 +342,7 @@ void AliPHOSTenderSupply::ProcessEvent()
       clu->SetTrackDistance(dx,dz); 
      
       clu->SetEmcCpvDistance(r);    
-      clu->SetChi2(TestLambda(clu->E(),clu->GetM20(),clu->GetM02()));                     //not yet implemented
+      
       Double_t tof=EvalTOF(&cluPHOS,cells); 
 //      if(TMath::Abs(tof-clu->GetTOF())>100.e-9) //something wrong in cell TOF!
 //	tof=clu->GetTOF() ;
@@ -393,22 +386,19 @@ void AliPHOSTenderSupply::ProcessEvent()
       
       Double_t ecore=CoreEnergy(&cluPHOS) ; 
       ecore=CorrectNonlinearity(ecore) ;
-
-      
-      //Correct Misalignment
-//      cluPHOS.GetPosition(position);
-//      global.SetXYZ(position[0],position[1],position[2]);
-//      CorrectPHOSMisalignment(global,mod) ;
-//      position[0]=global.X() ;
-//      position[1]=global.Y() ;
-//      position[2]=global.Z() ;
-
+     
       clu->SetE(cluPHOS.E());                           //total particle energy
       clu->SetCoreEnergy(ecore);                  //core particle energy
-      clu->SetDispersion(cluPHOS.GetDispersion());  //cluster dispersion
-      //    ec->SetPID(rp->GetPID()) ;            //array of particle identification
-      clu->SetM02(cluPHOS.GetM02()) ;               //second moment M2x
-      clu->SetM20(cluPHOS.GetM20()) ;               //second moment M2z
+
+      //Eval FullDispersion
+      clu->SetDispersion(TestFullLambda(clu->E(),cluPHOS.GetM20(),cluPHOS.GetM02())) ;
+      //Eval CoreDispersion
+      Double_t m02=0.,m20=0.;
+      EvalLambdas(&cluPHOS,m02, m20);   
+      clu->SetChi2(TestCoreLambda(clu->E(),m20,m02));                     //not yet implemented
+      clu->SetM02(m02) ;               //second moment M2x
+      clu->SetM20(m20) ;               //second moment M2z
+      
       //correct distance to track
       Double_t dx=clu->GetTrackDx() ;
       Double_t dz=clu->GetTrackDz() ;
@@ -430,8 +420,8 @@ void AliPHOSTenderSupply::ProcessEvent()
 	}
       }
       clu->SetEmcCpvDistance(r); //Distance in sigmas
-     
-      clu->SetChi2(TestLambda(clu->E(),clu->GetM20(),clu->GetM02()));                     //not yet implemented
+
+
       Double_t tof=EvalTOF(&cluPHOS,cells); 
 //      if(TMath::Abs(tof-clu->GetTOF())>100.e-9) //something wrong in cell TOF!
 //	tof=clu->GetTOF() ;
@@ -439,8 +429,6 @@ void AliPHOSTenderSupply::ProcessEvent()
       Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
       DistanceToBadChannel(mod,&locPos,minDist);
       clu->SetDistanceToBadChannel(minDist) ;
-      Double_t eCross=EvalEcross(&cluPHOS);
-      clu->SetMCEnergyFraction(eCross) ;
     }
   }
 
@@ -564,7 +552,7 @@ Float_t AliPHOSTenderSupply::CorrectNonlinearity(Float_t en){
   return en ;
 }
 //_____________________________________________________________________________
-Double_t AliPHOSTenderSupply::TestLambda(Double_t pt,Double_t l1,Double_t l2){
+Double_t AliPHOSTenderSupply::TestCoreLambda(Double_t pt,Double_t l1,Double_t l2){
 //Parameterization for core dispersion   
 //For R=4.5
   Double_t   l1Mean  = 1.150200 + 0.097886/(1.+1.486645*pt+0.000038*pt*pt) ;
@@ -581,6 +569,22 @@ Double_t AliPHOSTenderSupply::TestLambda(Double_t pt,Double_t l1,Double_t l2){
   Double_t l1Sigma = 4.44719e-04+6.99839e-01/(1.+1.22497e+00*pt+6.78604e-07*pt*pt)+9.00000e-03*pt;
   Double_t c=-0.35-0.550*TMath::Exp(-0.390730*pt) ;
 */
+  Double_t R2=0.5*(l1-l1Mean)*(l1-l1Mean)/l1Sigma/l1Sigma + 
+              0.5*(l2-l2Mean)*(l2-l2Mean)/l2Sigma/l2Sigma +
+              0.5*c*(l1-l1Mean)*(l2-l2Mean)/l1Sigma/l2Sigma ;
+  return R2 ;
+  
+}
+//_____________________________________________________________________________
+Double_t AliPHOSTenderSupply::TestFullLambda(Double_t pt,Double_t l1,Double_t l2){
+//Parameterization for full dispersion   
+  //Parameterizatino for full dispersion
+  Double_t l2Mean  = 1.53126+9.50835e+06/(1.+1.08728e+07*pt+1.73420e+06*pt*pt) ;
+  Double_t l1Mean  = 1.12365+0.123770*TMath::Exp(-pt*0.246551)+5.30000e-03*pt ;
+  Double_t l2Sigma = 6.48260e-02+7.60261e+10/(1.+1.53012e+11*pt+5.01265e+05*pt*pt)+9.00000e-03*pt;
+  Double_t l1Sigma = 4.44719e-04+6.99839e-01/(1.+1.22497e+00*pt+6.78604e-07*pt*pt)+9.00000e-03*pt;
+  Double_t c=-0.35-0.550*TMath::Exp(-0.390730*pt) ;
+
   Double_t R2=0.5*(l1-l1Mean)*(l1-l1Mean)/l1Sigma/l1Sigma + 
               0.5*(l2-l2Mean)*(l2-l2Mean)/l2Sigma/l2Sigma +
               0.5*c*(l1-l1Mean)*(l2-l2Mean)/l1Sigma/l2Sigma ;
