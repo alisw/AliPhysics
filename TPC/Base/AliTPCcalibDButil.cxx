@@ -3363,15 +3363,16 @@ TTree* AliTPCcalibDButil::ConnectDistortionTrees(TString baseDir, TTree *tMain){
   
 
 //_____________________________________________________________________________________
-TTree* AliTPCcalibDButil::ConnectCalPadTrees(TString baseDir, TString pattern, TTree *tMain)
+TTree* AliTPCcalibDButil::ConnectCalPadTrees(TString baseDir, TString pattern, TTree *tMain, Bool_t checkAliases)
 {
   //
   // baseDir:   Base directory with per Pad information
   // TTrees are added to the base tree as a friend tree
-  /* Example
-     TString baseDir="/hera/alice/fsozzi/summarymaps/calib/";  // prefix directory with calibration
-     TString pattern="QA root"; 
-  */
+  // Example usage
+  //   TString baseDir="/hera/alice/fsozzi/summarymaps/calib2/";  // prefix directory with calibration with slash at the end
+  //   TString pattern="QA/*/*root";  
+  //   TTree * tree =  AliTPCcalibDButil::ConnectCalPadTrees(baseDir,pattern,0);   //create tree and attach calibration as friends
+
   //  
   // === add the calibPulser trees ======================================
   TString inputTreesCalPad       = gSystem->GetFromPipe(Form("ls %s/%s",baseDir.Data(), pattern.Data()));
@@ -3382,14 +3383,51 @@ TTree* AliTPCcalibDButil::ConnectCalPadTrees(TString baseDir, TString pattern, T
     TTree *tin = (TTree*)fin2->Get("calPads");
     gROOT->cd();
     TString friendName=arrInputTreesCalPad->At(itree)->GetName();
+    friendName.ReplaceAll("//","/");
     friendName.ReplaceAll(baseDir.Data(),"");
+    friendName.ReplaceAll("^/","");
     friendName.ReplaceAll("/",".");
     friendName.ReplaceAll(".root","");
-    friendName.ReplaceAll("^/","");
     printf("%s\n", friendName.Data());
     ::Info("AliTPCcalibDButil::ConnectCalPadTrees","%s",friendName.Data());  
     if (tMain==0) tMain=tin;
     tMain->AddFriend(tin,friendName.Data());  
+    TObjArray * branches=tin->GetListOfBranches();
+    Int_t nBranches=branches->GetEntries();
+    for (Int_t ibranch=0; ibranch<nBranches; ibranch++){
+      TString bname=branches->At(ibranch)->GetName();
+      if (bname.Contains(".")>0){
+	bname.ReplaceAll(".","");
+	// replace elements
+	tin->SetAlias((bname).Data(), (bname+".fElements").Data());       
+	tMain->SetAlias((friendName+"."+bname).Data(), (friendName+"."+bname+".fElements").Data());       
+	//
+	// make normalized values  per chamber
+	//
+	if (branches->FindObject(bname+"_LTM")!=0){	  
+	  tMain->SetAlias((friendName+"."+bname+"_MeanRatio").Data(), (friendName+"."+bname+".fElements/"+friendName+"."+bname+"_Mean").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_MedianRatio").Data(), (friendName+"."+bname+".fElements/"+friendName+"."+bname+"_Median").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_LTMRatio").Data(), (friendName+"."+bname+".fElements/"+friendName+"."+bname+"_LTM").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_MeanDelta").Data(), (friendName+"."+bname+".fElements-"+friendName+"."+bname+"_Mean").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_MedianDelta").Data(), (friendName+"."+bname+".fElements-"+friendName+"."+bname+"_Median").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_LTMDelta").Data(), (friendName+"."+bname+".fElements-"+friendName+"."+bname+"_LTM").Data());       
+	}	
+	if (branches->FindObject(bname+"_Med3")!=0){	  
+	  tMain->SetAlias((friendName+"."+bname+"_Med3Ratio").Data(), (friendName+"."+bname+".fElements/"+friendName+"."+bname+"_Med3").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_Med5Ratio").Data(), (friendName+"."+bname+".fElements/"+friendName+"."+bname+"_Med5").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_Par6GRatio").Data(), (friendName+"."+bname+".fElements/"+friendName+"."+bname+"_Par6G").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_Med3Delta").Data(), (friendName+"."+bname+".fElements-"+friendName+"."+bname+"_Med3").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_Med5Delta").Data(), (friendName+"."+bname+".fElements-"+friendName+"."+bname+"_Med5").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_Par6GDelta").Data(), (friendName+"."+bname+".fElements-"+friendName+"."+bname+"_Par6G").Data());       
+	}	
+      }
+    }
+  }
+  //
+  //
+  //
+  if (checkAliases){
+    // to be implemented
   }
   return tMain;
 } 
