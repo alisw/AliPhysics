@@ -182,9 +182,9 @@ Bool_t MUONmassPlot(const char* esdFileName = "AliESDs.root", const char* geoFil
     // get the SPD reconstructed vertex (vertexer) and fill the histogram
     AliESDVertex* Vertex = (AliESDVertex*) esd->GetVertex();
     if (Vertex->GetNContributors()) {
-      fZVertex = Vertex->GetZv();
-      fYVertex = Vertex->GetYv();
-      fXVertex = Vertex->GetXv();
+      fZVertex = Vertex->GetZ();
+      fYVertex = Vertex->GetY();
+      fXVertex = Vertex->GetX();
       errXVtx = Vertex->GetXRes();
       errYVtx = Vertex->GetYRes();
     }

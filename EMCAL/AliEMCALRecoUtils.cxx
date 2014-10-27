@@ -1808,7 +1808,8 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
     //If the input event is AOD, the starting point for extrapolation is at vertex
     //AOD tracks are selected according to its filterbit.
     else if (aodevent) {
-      aodTrack = aodevent->GetTrack(itr);
+      aodTrack = dynamic_cast<AliAODTrack*>(aodevent->GetTrack(itr));
+      if(!aodTrack) AliFatal("Not a standard AOD");
       if (!aodTrack) continue;
             
       if (fAODTPCOnlyTracks) { // Match with TPC only tracks, default from May 2013, before filter bit 32

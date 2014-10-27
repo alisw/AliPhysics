@@ -186,7 +186,7 @@ Bool_t DoVerticesSPD(Bool_t isMC=kFALSE, Int_t pileupalgo=1, Int_t optdebug=0){
  
       ntrkz = vtxz->GetNContributors();
       if(ntrkz>0)goodz++;
-      zz=vtxz->GetZv();
+      zz=vtxz->GetZ();
       zresz =vtxz->GetZRes(); // microns
       zdiffz = 10000.*(zz-mcVertex[2]); // microns
     }
@@ -210,15 +210,15 @@ Bool_t DoVerticesSPD(Bool_t isMC=kFALSE, Int_t pileupalgo=1, Int_t optdebug=0){
       if(vtx3d->IsFromVertexer3D()) is3d=kTRUE;
       ntrk3d = vtx3d->GetNContributors();
       if(is3d && ntrk3d>0)good3d++;
-      x3d = vtx3d->GetXv();
+      x3d = vtx3d->GetX();
       xerr3d=vtx3d->GetXRes();
       xdiff3d = 10000.*(x3d-mcVertex[0]);  // microns
 
-      y3d = vtx3d->GetYv();
+      y3d = vtx3d->GetY();
       yerr3d=vtx3d->GetYRes();
       ydiff3d = 10000.*(y3d-mcVertex[1]);  // microns
 
-      z3d = vtx3d->GetZv();
+      z3d = vtx3d->GetZ();
       zerr3d=vtx3d->GetZRes();
       zdiff3d = 10000.*(z3d-mcVertex[2]);  // microns
 

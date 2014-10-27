@@ -34,9 +34,7 @@ class AliVertex : public AliVVertex {
   virtual void   SetNContributors(Int_t nContr) {fNContributors=nContr; }
 
   virtual void     GetXYZ(Double_t position[3]) const;
-  virtual Double_t GetXv() const { return fPosition[0]; }
-  virtual Double_t GetYv() const { return fPosition[1]; }
-  virtual Double_t GetZv() const { return fPosition[2]; }
+
   virtual Double_t GetX()  const { return fPosition[0]; }
   virtual Double_t GetY()  const { return fPosition[1]; }
   virtual Double_t GetZ()  const { return fPosition[2]; }

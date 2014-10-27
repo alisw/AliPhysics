@@ -663,22 +663,22 @@ void AliITSQADataMakerRec::MakeESDs(AliESDEvent *esd)
     FillESDsData(11,(Float_t)(vtxTrk->GetNIndices())/(Float_t)nITSrefit5);
 
   if(vtxSPD->GetNContributors()>0) {
-    FillESDsData(4,vtxSPD->GetXv());
-    FillESDsData(5,vtxSPD->GetYv());
-    FillESDsData(6,vtxSPD->GetZv());
+    FillESDsData(4,vtxSPD->GetX());
+    FillESDsData(5,vtxSPD->GetY());
+    FillESDsData(6,vtxSPD->GetZ());
   }
 
   if(vtxTrk->GetNContributors()>0) {
-    FillESDsData(8,vtxTrk->GetXv());
-    FillESDsData(9,vtxTrk->GetYv());
-    FillESDsData(10,vtxTrk->GetZv());
+    FillESDsData(8,vtxTrk->GetX());
+    FillESDsData(9,vtxTrk->GetY());
+    FillESDsData(10,vtxTrk->GetZ());
   }
 
   if(vtxSPD->GetNContributors()>0 && 
      vtxTrk->GetNContributors()>0) {
-    FillESDsData(12,vtxSPD->GetXv()-vtxTrk->GetXv());
-    FillESDsData(13,vtxSPD->GetYv()-vtxTrk->GetYv());
-    FillESDsData(14,vtxSPD->GetZv()-vtxTrk->GetZv());
+    FillESDsData(12,vtxSPD->GetX()-vtxTrk->GetX());
+    FillESDsData(13,vtxSPD->GetY()-vtxTrk->GetY());
+    FillESDsData(14,vtxSPD->GetZ()-vtxTrk->GetZ());
   }
 
   // SPD Tracklets

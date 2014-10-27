@@ -229,8 +229,8 @@ AliFMDReconstructor::GetVertex(AliESDEvent* esd) const
 
   if (vertex) {
     AliFMDDebug(2, ("Got %s (%s) from ESD: %f", 
-		    vertex->GetName(), vertex->GetTitle(), vertex->GetZv()));
-    fCurrentVertex = vertex->GetZv();
+		    vertex->GetName(), vertex->GetTitle(), vertex->GetZ()));
+    fCurrentVertex = vertex->GetZ();
     fVertexType    = kESDVertex;
     return;
   }

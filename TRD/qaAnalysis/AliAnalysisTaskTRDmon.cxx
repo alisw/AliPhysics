@@ -445,7 +445,7 @@ void AliAnalysisTaskTRDmon::Exec(Option_t *){
 
   //const AliESDVertex *EvVertex = fESD->GetPrimaryVertexTPC();
   const AliESDVertex *evVertex = fESD->GetPrimaryVertex();
-  Float_t zvert1 = evVertex->GetZv();
+  Float_t zvert1 = evVertex->GetZ();
   Float_t nvtxContr = evVertex->GetNContributors();
 
   // if the required trigger is a collision trigger then apply event vertex cut
@@ -454,7 +454,7 @@ void AliAnalysisTaskTRDmon::Exec(Option_t *){
     return;
   }
   
-  Float_t zvert2 = fESD->GetPrimaryVertex()->GetZv();
+  Float_t zvert2 = fESD->GetPrimaryVertex()->GetZ();
   
   fHzvert1->Fill(zvert1);
   fHzvert2->Fill(zvert2);

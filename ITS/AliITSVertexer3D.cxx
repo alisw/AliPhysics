@@ -201,7 +201,7 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(TTree *itsClusterTree)
     vertz.SetHighLimit(fZCutDiamond);
     AliESDVertex* vtxz = vertz.FindVertexForCurrentEvent(itsClusterTree);
     if(vtxz){
-      Double_t position[3]={GetNominalPos()[0],GetNominalPos()[1],vtxz->GetZv()};
+      Double_t position[3]={GetNominalPos()[0],GetNominalPos()[1],vtxz->GetZ()};
       Double_t covmatrix[6];
       vtxz->GetCovMatrix(covmatrix);
       Double_t chi2=99999.;
@@ -221,9 +221,9 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(TTree *itsClusterTree)
 //______________________________________________________________________
 void AliITSVertexer3D::FindVertex3D(TTree *itsClusterTree){
   // Instantiates the fCurrentVertex object. calle by FindVertexForCurrenEvent
-  Double_t vRadius=TMath::Sqrt(fVert3D.GetXv()*fVert3D.GetXv()+fVert3D.GetYv()*fVert3D.GetYv());
+  Double_t vRadius=TMath::Sqrt(fVert3D.GetX()*fVert3D.GetX()+fVert3D.GetY()*fVert3D.GetY());
   if(vRadius<GetPipeRadius() && fVert3D.GetNContributors()>0){
-    Double_t position[3]={fVert3D.GetXv(),fVert3D.GetYv(),fVert3D.GetZv()};
+    Double_t position[3]={fVert3D.GetX(),fVert3D.GetY(),fVert3D.GetZ()};
     Double_t covmatrix[6];
     fVert3D.GetCovMatrix(covmatrix);
     Double_t chi2=99999.;
@@ -259,8 +259,8 @@ void AliITSVertexer3D::FindVertex3DIterative(){
   Double_t* zP=new Double_t[maxPoints];
   Int_t* index1=new Int_t[maxPoints];
   Int_t* index2=new Int_t[maxPoints];
-  Double_t xbeam=fVert3D.GetXv();
-  Double_t ybeam=fVert3D.GetYv();
+  Double_t xbeam=fVert3D.GetX();
+  Double_t ybeam=fVert3D.GetY();
 
   Int_t iPoint=0;
   for(Int_t ilin1=0; ilin1<nLines; ilin1++){
@@ -430,12 +430,12 @@ void AliITSVertexer3D::FindVertex3DIterative(){
     if(nGoodVert > 1){
       fIsPileup = kTRUE;
       fNTrpuv = fVertArray[1].GetNContributors();
-      fZpuv = fVertArray[1].GetZv();
+      fZpuv = fVertArray[1].GetZ();
     }
     
-    Double_t vRadius=TMath::Sqrt(fVertArray[0].GetXv()*fVertArray[0].GetXv()+fVertArray[0].GetYv()*fVertArray[0].GetYv());
+    Double_t vRadius=TMath::Sqrt(fVertArray[0].GetX()*fVertArray[0].GetX()+fVertArray[0].GetY()*fVertArray[0].GetY());
     if(vRadius<GetPipeRadius() && fVertArray[0].GetNContributors()>0){
-      Double_t position[3]={fVertArray[0].GetXv(),fVertArray[0].GetYv(),fVertArray[0].GetZv()};
+      Double_t position[3]={fVertArray[0].GetX(),fVertArray[0].GetY(),fVertArray[0].GetZ()};
       Double_t covmatrix[6];
       fVertArray[0].GetCovMatrix(covmatrix);
       Double_t chi2=99999.;
@@ -500,12 +500,12 @@ void AliITSVertexer3D::FindVertex3DIterativeMM(){
 	// at least one second vertex is present
 	fIsPileup = kTRUE;
 	fNTrpuv = fVertArray[kk].GetNContributors();
-	fZpuv = fVertArray[kk].GetZv();
+	fZpuv = fVertArray[kk].GetZ();
       }
     }
-    Double_t vRadius=TMath::Sqrt(fVertArray[0].GetXv()*fVertArray[0].GetXv()+fVertArray[0].GetYv()*fVertArray[0].GetYv());
+    Double_t vRadius=TMath::Sqrt(fVertArray[0].GetX()*fVertArray[0].GetX()+fVertArray[0].GetY()*fVertArray[0].GetY());
     if(vRadius<GetPipeRadius() && fVertArray[0].GetNContributors()>0){
-      Double_t position[3]={fVertArray[0].GetXv(),fVertArray[0].GetYv(),fVertArray[0].GetZv()};
+      Double_t position[3]={fVertArray[0].GetX(),fVertArray[0].GetY(),fVertArray[0].GetZ()};
       Double_t covmatrix[6];
       fVertArray[0].GetCovMatrix(covmatrix);
       Double_t chi2=99999.;
@@ -561,9 +561,9 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   Double_t deltaR=fCoarseMaxRCut;
   Double_t dZmax=fZCutDiamond;
   if(optCuts==1){
-    xbeam=fVert3D.GetXv();
-    ybeam=fVert3D.GetYv();
-    zvert=fVert3D.GetZv();
+    xbeam=fVert3D.GetX();
+    ybeam=fVert3D.GetY();
+    zvert=fVert3D.GetZ();
     deltaPhi = fDiffPhiMax; 
     deltaR=fMaxRCut;
     dZmax=fMaxZCut;
@@ -572,8 +572,8 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
       deltaR=fMaxRCut2;
     }
   } else if(optCuts==2){
-    xbeam=fVert3D.GetXv();
-    ybeam=fVert3D.GetYv();
+    xbeam=fVert3D.GetX();
+    ybeam=fVert3D.GetY();
     deltaPhi = fDiffPhiforPileup;
     deltaR=fMaxRCut;
   }
@@ -759,9 +759,9 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   Double_t deltaR=fCoarseMaxRCut;
   Double_t dZmax=fZCutDiamond;
   if(optCuts==1){
-    xbeam=fVert3D.GetXv();
-    ybeam=fVert3D.GetYv();
-    zvert=fVert3D.GetZv();
+    xbeam=fVert3D.GetX();
+    ybeam=fVert3D.GetY();
+    zvert=fVert3D.GetZ();
     deltaR=fMaxRCut;
     dZmax=fMaxZCut;
     if(fPileupAlgo == 2){ 
@@ -769,8 +769,8 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
       deltaR=fMaxRCut2;
     }
   }else if(optCuts==2){
-    xbeam=fVert3D.GetXv();
-    ybeam=fVert3D.GetYv();
+    xbeam=fVert3D.GetX();
+    ybeam=fVert3D.GetY();
     deltaR=fMaxRCut;
   }
 
@@ -1180,7 +1180,7 @@ void AliITSVertexer3D::MarkUsedClusters(){
 //________________________________________________________
 Int_t AliITSVertexer3D::RemoveTracklets(){
   // Remove trackelts close to first found vertex
-  Double_t vert[3]={fVert3D.GetXv(),fVert3D.GetYv(),fVert3D.GetZv()};
+  Double_t vert[3]={fVert3D.GetX(),fVert3D.GetY(),fVert3D.GetZ()};
   Int_t nRemoved=0;
   for(Int_t i=0; i<fLines.GetEntriesFast();i++){
     AliStrLine *lin = (AliStrLine*)fLines.At(i);
@@ -1219,7 +1219,7 @@ void AliITSVertexer3D::FindOther3DVertices(TTree *itsClusterTree){
 	    fVertArray[nFoundVert]=fVert3D;
 	    nFoundVert++;
 	    if(nFoundVert==2){
-	      fZpuv=fVert3D.GetZv();
+	      fZpuv=fVert3D.GetZ();
 	      fNTrpuv=fVert3D.GetNContributors();
 	    }
 	  }
