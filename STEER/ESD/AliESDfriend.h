@@ -17,7 +17,7 @@ class AliESDVZEROfriend;
 class AliESDTZEROfriend;
 
 //_____________________________________________________________________________
-class AliESDfriend : public TObject, public AliVfriendEvent {
+class AliESDfriend : public AliVfriendEvent {
 public:
   AliESDfriend();
   AliESDfriend(const AliESDfriend &);
