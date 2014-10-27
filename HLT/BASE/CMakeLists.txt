@@ -13,6 +13,8 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
+# HLTbase + subfolders (end of the cmake file)
+
 # Module
 set(MODULE HLTbase)
 
@@ -141,3 +143,6 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+
+# BASE subfolders
+add_subdirectory(HOMER)
