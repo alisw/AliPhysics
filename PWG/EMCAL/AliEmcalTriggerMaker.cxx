@@ -5,7 +5,7 @@
 // Author: J.Kral
 #include <TClonesArray.h>
 #include <TArrayI.h>
-#include <THashlist.h>
+#include <THashList.h>
 #include "AliAODCaloTrigger.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerTypes.h"
