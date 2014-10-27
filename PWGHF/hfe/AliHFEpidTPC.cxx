@@ -400,10 +400,10 @@ Double_t AliHFEpidTPC::GetCorrectedTPCnSigmaJpsi(Double_t eta, Double_t centrali
   //
   Double_t corrtpcNsigma = tpcNsigma;
   if(fkCentralityEtaCorrectionMeanJpsi&&fkCentralityEtaCorrectionWidthJpsi){
-    TAxis *caxis = fkCentralityEtaCorrectionMeanJpsi->GetXaxis();
-    TAxis *eaxis = fkCentralityEtaCorrectionMeanJpsi->GetYaxis();
-    Int_t cbin = caxis->FindBin(centralityEstimator);
-    Int_t ebin = eaxis->FindBin(eta);
+    const TAxis *caxis = fkCentralityEtaCorrectionMeanJpsi->GetXaxis();
+    const TAxis *eaxis = fkCentralityEtaCorrectionMeanJpsi->GetYaxis();
+    Int_t cbin = caxis->FindFixBin(centralityEstimator);
+    Int_t ebin = eaxis->FindFixBin(eta);
     //Double_t cbinlowedge = caxis->GetBinLowEdge(cbin);
     //Double_t cbinupedge = caxis->GetBinUpEdge(cbin);
     //Double_t ebinlowedge = eaxis->GetBinLowEdge(ebin);
