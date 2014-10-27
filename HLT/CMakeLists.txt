@@ -32,6 +32,7 @@ if(ALIHLT_MLUCDIR)
     link_directories(${ALIHLT_MLUCDIR}/lib/tgt_${ALICE_TARGET})
 endif (ALIHLT_MLUCDIR) 
 
+add_subdirectory(BASE)
 add_subdirectory(CALO)
 add_subdirectory(comp)
 add_subdirectory(global)
