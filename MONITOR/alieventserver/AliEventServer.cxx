@@ -25,7 +25,9 @@
 #include "AliEventServer.h"
 #include "AliEventServerReconstruction.h"
 
+#ifdef ALI_DATE
 #include <dic.hxx>
+#endif
 
 ClassImp(AliEventServer)
 
@@ -43,11 +45,12 @@ AliEventServer::AliEventServer() :
 	FillRunsFromDatabase();
 	InitDIMListeners();
 
+#ifdef ALI_DATE
 	DimCurrentInfo SORrunNumber("/LOGBOOK/SUBSCRIBE/DAQ_SOR_PHYSICS_1",-1); 
 	DimCurrentInfo EORrunNumber("/LOGBOOK/SUBSCRIBE/DAQ_EOR_PHYSICS_1",-1);
-
+#endif
 	int currentSOR=-1,currentEOR=-1;
-
+#ifdef ALI_DATE
 	if(SORrunNumber.getData() && EORrunNumber.getData())
 	  {
 	    currentSOR = SORrunNumber.getInt();
@@ -57,7 +60,7 @@ AliEventServer::AliEventServer() :
 	    cout<<"RECO Server -- current EOR signal:"<<currentEOR<<endl;
 	  }
 	else{cout<<"RECO Server -- no data received from dim server"<<endl;}
-
+#endif
 	if(currentSOR != currentEOR){StartOfRun(currentSOR);}
 }
 
@@ -79,6 +82,7 @@ void AliEventServer::InitDIMListeners()
 	// DIM interface.  
 	for (Int_t i = 0; i < 5; ++i)
 	{
+#ifdef ALI_DATE
 		if (i == 0)
 		{
 			fDimSORListener[i] = new AliDimIntNotifier("/LOGBOOK/SUBSCRIBE/DAQ_SOR_PHYSICS");
@@ -92,6 +96,10 @@ void AliEventServer::InitDIMListeners()
     
 		fDimSORListener[i]->Connect("DimMessage(Int_t)", "AliEventServer", this, "StartOfRun(Int_t)");
 		fDimEORListener[i]->Connect("DimMessage(Int_t)", "AliEventServer", this, "EndOfRun(Int_t)");
+#else
+		fDimSORListener[i]=0x0;
+		fDimEORListener[i]=0x0;
+#endif
 	}
 
 }
