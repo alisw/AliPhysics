@@ -35,10 +35,12 @@ endif (ALIHLT_MLUCDIR)
 add_subdirectory(CALO)
 add_subdirectory(comp)
 add_subdirectory(EMCAL)
+add_subdirectory(FMD)
 # Enable EVE if ROOT has OpenGL support
 if(ROOT_HASOPENGL STREQUAL "yes")
     add_subdirectory(EVE)
 endif()
+
 
 #file(GLOB PACKAGES CMake*.pkg)
 
