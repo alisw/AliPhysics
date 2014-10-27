@@ -37,6 +37,7 @@ set ( SRCS
  EMCALJetTasks/AliAnalysisTaskLocalRho.cxx
  EMCALJetTasks/AliAnalysisTaskScale.cxx
  EMCALJetTasks/AliEmcalJet.cxx
+ EMCALJetTasks/AliEmcalPicoTrackInGridMaker.cxx
  EMCALJetTasks/AliJetConstituentTagCopier.cxx
  EMCALJetTasks/AliJetContainer.cxx
  EMCALJetTasks/AliJetEmbeddingFromGenTask.cxx
@@ -61,6 +62,7 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalDiJetBase.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalDiJetAna.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalDiJetResponse.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalHighMultTrigger.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHMEC.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
