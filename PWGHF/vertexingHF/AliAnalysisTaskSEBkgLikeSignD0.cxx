@@ -267,7 +267,8 @@ void AliAnalysisTaskSEBkgLikeSignD0::UserExec(Option_t */*option*/)
   // make trkIDtoEntry register (temporary)
   Int_t trkIDtoEntry[100000];
   for(Int_t it=0;it<aod->GetNumberOfTracks();it++) {
-    AliAODTrack *track = aod->GetTrack(it);
+    AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+    if(!track) AliFatal("Not a standard AOD");
     trkIDtoEntry[track->GetID()]=it;
   }
 

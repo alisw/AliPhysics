@@ -623,12 +623,13 @@ void AliAnalysisTaskCaloFilter::FillAODHeader()
 {
   // AOD header copy
   
-  AliAODHeader* header = AODEvent()->GetHeader();
+  AliAODHeader* header = dynamic_cast<AliAODHeader*>(AODEvent()->GetHeader());
+  if(!header) AliFatal("Not a standard AOD");
   
   // Copy from AODs
   if(fAODEvent)
   {
-    *header = *(fAODEvent->GetHeader());
+    *header = *((AliAODHeader*)fAODEvent->GetHeader());
     return;
   }
   
@@ -726,7 +727,8 @@ void AliAnalysisTaskCaloFilter::FillAODTracks()
     Int_t nCopyTrack = 0;
     for (Int_t nTrack = 0; nTrack < fAODEvent->GetNumberOfTracks(); ++nTrack) 
     {
-      AliAODTrack *track = fAODEvent->GetTrack(nTrack);
+      AliAODTrack *track = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(nTrack));
+      if(!track) AliFatal("Not a standard AOD");
       
       // Select only hybrid tracks?
       if(fFillHybridTracks && !track->IsHybridGlobalConstrainedGlobal()) continue;

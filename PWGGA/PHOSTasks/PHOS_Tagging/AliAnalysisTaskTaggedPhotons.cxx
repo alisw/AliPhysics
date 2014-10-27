@@ -817,10 +817,10 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
       p->SetWeight(1.) ;
     }
     //PID criteria
-//  Cut on full Lambdas    
-//    p->SetDispBit(clu->Chi2()<2.5*2.5) ;
-//  Cut on CoreLamdas
-    p->SetDispBit(clu->GetDispersion()<2.5*2.5) ;
+//  Cut on Core Lambdas    
+    p->SetDispBit(clu->Chi2()<2.5*2.5) ;
+//  Cut on FullLamdas
+//    p->SetDispBit(clu->GetDispersion()<2.5*2.5) ;
     p->SetTOFBit(TestTOF(clu->GetTOF(),clu->E())) ;
     p->SetCPVBit(clu->GetEmcCpvDistance()>2.5) ;   
     

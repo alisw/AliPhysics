@@ -576,7 +576,7 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
     vertexESD->GetXYZ(vertex);
 
     //2. vertex position within 10 cm
-    if (TMath::Abs(vertexESD->GetZv()) > 10) return;*/
+    if (TMath::Abs(vertexESD->GetZ()) > 10) return;*/
 
     const AliESDVertex *vertexTracks = fESDevent->GetPrimaryVertexTracks();
     if (vertexTracks->GetNContributors()<1) vertexTracks = 0x0;
@@ -590,8 +590,8 @@ void AliAnalysisTaskLambdaNAOD::UserExec(Option_t *){
        //cout << "after" <<endl;
 
       //if (vertexTracks && vertexSPD){
-      //cout << "Vertex: " << TMath::Abs(vertexTracks->GetZv()) << endl;
-      if (TMath::Abs(vertexTracks->GetZv()) > 10 || TMath::Abs(vertexSPD->GetZv()) > 10) return;
+      //cout << "Vertex: " << TMath::Abs(vertexTracks->GetZ()) << endl;
+      if (TMath::Abs(vertexTracks->GetZ()) > 10 || TMath::Abs(vertexSPD->GetZ()) > 10) return;
       //}
     }
 

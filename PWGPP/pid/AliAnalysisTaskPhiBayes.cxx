@@ -497,7 +497,8 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
   Double_t Qx2 = 0, Qy2 = 0;
   Double_t Qx3 = 0, Qy3 = 0;
   for(Int_t iT = 0; iT < ntrack; iT++) {
-    AliAODTrack* aodTrack = aodEvent->GetTrack(iT);
+    AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iT));
+    if(!aodTrack) AliFatal("Not a standard AOD");
     
     if (!aodTrack){
       continue;
@@ -529,7 +530,7 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   AliPIDResponse *PIDResponse=inputHandler->GetPIDResponse();
   PIDResponse->SetTOFResponse(aodEvent,AliPIDResponse::kTOF_T0);
-  PIDResponse->GetTOFResponse().SetTOFtailAllPara(-3,1.1);
+  PIDResponse->GetTOFResponse().SetTOFtailAllPara(-23,1.1);
 
 //   PIDResponse->GetTOFResponse().SetTrackParameter(0,0.);
 //   PIDResponse->GetTOFResponse().SetTrackParameter(1,0.);
@@ -553,7 +554,8 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
     nmc = mcArray->GetEntries();
 
   for(Int_t i=0;i < ntrack;i++){ // loop on tracks
-    AliAODTrack* track = aodEvent->GetTrack(i);
+    AliAODTrack* track = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(i));
+    if(!track) AliFatal("Not a standard AOD");
     
     AliAODMCParticle *mcp = NULL;
     Int_t pdg = 0;
@@ -618,7 +620,8 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
 
   // start analysis phi
   for(Int_t i=0;i < ntrack;i++){ // loop on positive tracks
-    AliAODTrack* KpTrack = aodEvent->GetTrack(i);
+    AliAODTrack* KpTrack = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(i));
+    if(!KpTrack) AliFatal("Not a standard AOD");
         
     if (!KpTrack){
       continue;
@@ -741,7 +744,8 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
     if(fPtKp > 4.299) fPtKp = 4.299;
 
     for(Int_t j=0;j < ntrack;j++){ // loop on negative tracks
-      AliAODTrack* KnTrack = aodEvent->GetTrack(j);
+      AliAODTrack* KnTrack = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(j));
+      if(!KnTrack) AliFatal("Not a standard AOD");
       
       if (!KnTrack){
 	continue;

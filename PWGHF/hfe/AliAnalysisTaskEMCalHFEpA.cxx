@@ -1835,7 +1835,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		
 		if(fIsAOD) 
 		{
-			fCentrality = fAOD->GetHeader()->GetCentralityP();
+			fCentrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
 		}
 		else
 		{
@@ -2159,7 +2159,8 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 	
 	if(fIsAOD){
 		
-			//AliAODHeader * aodh = fAOD->GetHeader();
+			//AliAODHeader * aodh = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+          //  if(!aodh) AliFatal("Not a standard AOD");
 			//Int_t bc= aodh->GetBunchCrossNumber();
 
 		
@@ -2479,15 +2480,16 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		if(fIsAOD){	
 				//AOD test -- Francesco suggestion
 				//aod test -- Francesco suggestion
-			AliAODTrack *aod_track=fAOD->GetTrack(iTracks);
+			AliAODTrack *aod_track=dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
+			if(!aod_track) AliFatal("Not a standard AOD");
 
 			Int_t type=aod_track->GetType();
 			if(type==AliAODTrack::kPrimary) fPtPrim->Fill(aod_track->Pt());
-			if(type==AliAODTrack::kSecondary) fPtSec->Fill(aod_track->Pt());
+			if(type==AliAODTrack::kFromDecayVtx) fPtSec->Fill(aod_track->Pt());
 		
 				//Int_t type2=track->GetType();
 			if(type==AliAODTrack::kPrimary) fPtPrim2->Fill(track->Pt());
-			if(type==AliAODTrack::kSecondary) fPtSec2->Fill(track->Pt());
+			if(type==AliAODTrack::kFromDecayVtx) fPtSec2->Fill(track->Pt());
 		}
 			
 		

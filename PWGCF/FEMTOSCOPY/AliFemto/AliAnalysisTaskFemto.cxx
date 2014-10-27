@@ -265,7 +265,8 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
       cout<<"AliAnalysisTaskFemto::AodpidUtil:"<<fAODpidUtil<<endl;
       femtoReaderAOD->SetAODpidUtil(fAODpidUtil);
 
-      fAODheader = fAOD->GetHeader();
+      fAODheader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+      if(!fAODheader) AliFatal("Not a standard AOD");
       femtoReaderAOD->SetAODheader(fAODheader);
    
     }

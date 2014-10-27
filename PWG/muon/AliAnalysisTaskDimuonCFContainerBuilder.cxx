@@ -642,7 +642,8 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
       ((TH1D*)(fOutput->FindObject("zvSPDcut")))->Fill(aod->GetPrimaryVertex()->GetZ());
       if (!fCutOnNContributors || (fCutOnNContributors && (aod->GetPrimaryVertex()->GetNContributors()>fNContributors[0] && aod->GetPrimaryVertex()->GetNContributors()<fNContributors[1]))){
       for (Int_t j = 0; j<ntracks; j++) {
-	AliAODTrack *mu1 = aod->GetTrack(j);
+	AliAODTrack *mu1 = dynamic_cast<AliAODTrack*>(aod->GetTrack(j));
+	if(!mu1) AliFatal("Not a standard AOD");
 	if(!mu1->IsMuonTrack()) continue;
 	if (mu1->Chi2perNDF()<fChi2Track[0] || mu1->Chi2perNDF()>fChi2Track[1]) continue;
 	if (mu1->GetChi2MatchTrigger()<fChi2MatchTrig[0] || mu1->GetChi2MatchTrigger()>fChi2MatchTrig[1]) continue;
@@ -661,7 +662,8 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 	((TH1D*)(fOutput->FindObject("ymuonREC")))->Fill(rapiditymu1);
 	if(chargemu1<0){
 	  for (Int_t jj = 0; jj<ntracks; jj++) { 
-	    AliAODTrack *mu2 = aod->GetTrack(jj);
+	    AliAODTrack *mu2 = dynamic_cast<AliAODTrack*>(aod->GetTrack(jj));
+	    if(!mu2) AliFatal("Not a standard AOD");
 	    if(!mu2->IsMuonTrack()) continue;
 	    if (mu2->Chi2perNDF()<fChi2Track[0] || mu2->Chi2perNDF()>fChi2Track[1]) continue;
 	    if (mu2->GetChi2MatchTrigger()<fChi2MatchTrig[0] || mu2->GetChi2MatchTrigger()>fChi2MatchTrig[1]) continue;
