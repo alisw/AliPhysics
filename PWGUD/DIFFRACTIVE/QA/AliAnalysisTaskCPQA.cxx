@@ -32,7 +32,6 @@ ClassImp(AliAnalysisTaskCPQA)
   fOutputList(0),
   fhEvent(0),
   fTriggerAnalysis(0)
-
 {
   for(Int_t i = 0; i<4; i++)
     {
@@ -46,9 +45,9 @@ ClassImp(AliAnalysisTaskCPQA)
       fhVtxTrack[i]=0;
     }
 
-  fEtaMaxM = 2;
-  fEtaMaxD = 0.9;
-  fVtxZmax = 10;
+//  fEtaMaxM = 2;
+//  fEtaMaxD = 0.9;
+//fVtxZmax = 10;
 
   DefineOutput(1, TList::Class());
 }

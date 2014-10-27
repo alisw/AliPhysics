@@ -27,16 +27,16 @@ class AliAnalysisTaskCPQA : public AliAnalysisTaskSE {
   void UseMC(Bool_t useMC=kTRUE) { fUseMC = useMC;}
   
  private:
-  Bool_t       fUseMC;
+  Bool_t       fUseMC; //MC flag
   AliESDEvent *fESD; // esd event
-  TList	      *fOutputList; // output list
+  TList	      *fOutputList; //! output list
 
   TH1F *fhEvent;//!
 
 
-  Double_t fEtaMaxM;
-  Double_t fEtaMaxD;
-  Double_t fVtxZmax;
+//  Double_t fEtaMaxM;
+//  Double_t fEtaMaxD;
+//  Double_t fVtxZmax;
 
   TH2F *fhV0A[4];//!
   TH2F *fhV0C[4];//!
@@ -54,10 +54,10 @@ class AliAnalysisTaskCPQA : public AliAnalysisTaskSE {
   TH3F *Hist3D(const char* name, Int_t nBinsx, Double_t xMin, Double_t xMax, Int_t nBinsy, Double_t yMin, Double_t yMax,  Int_t nBinsz, Double_t zMin, Double_t zMax, const char* xLabel="", const char* yLabel="", const char *zLabel="");
 
   // public:
-  //  AliAnalysisTaskCPQA(const AliAnalysisTaskCPQA&); // not implemented
-  //  AliAnalysisTaskCPQA& operator=(const AliAnalysisTaskCPQA&); // not implemented
+    AliAnalysisTaskCPQA(const AliAnalysisTaskCPQA&); // not implemented
+    AliAnalysisTaskCPQA& operator=(const AliAnalysisTaskCPQA&); // not implemented
   
-  ClassDef(AliAnalysisTaskCPQA, 1);// example of analysis
+  ClassDef(AliAnalysisTaskCPQA, 1);
 };
 
 #endif
