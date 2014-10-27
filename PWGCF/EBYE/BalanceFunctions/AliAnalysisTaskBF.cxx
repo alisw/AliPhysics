@@ -463,13 +463,13 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	if(vertex->GetNContributors() > 0) {
 	  if(vertex->GetZRes() != 0) {
 	    fHistEventStats->Fill(3,fCentrality); //events with a proper vertex
-	    if(TMath::Abs(vertex->GetXv()) < fVxMax) {
-	      if(TMath::Abs(vertex->GetYv()) < fVyMax) {
-		if(TMath::Abs(vertex->GetZv()) < fVzMax) {
+	    if(TMath::Abs(vertex->GetX()) < fVxMax) {
+	      if(TMath::Abs(vertex->GetY()) < fVyMax) {
+		if(TMath::Abs(vertex->GetZ()) < fVzMax) {
 		  fHistEventStats->Fill(4,fCentrality); //analayzed events
-		  fHistVx->Fill(vertex->GetXv());
-		  fHistVy->Fill(vertex->GetYv());
-		  fHistVz->Fill(vertex->GetZv());
+		  fHistVx->Fill(vertex->GetX());
+		  fHistVy->Fill(vertex->GetY());
+		  fHistVz->Fill(vertex->GetZ());
 		  
 		  //Printf("There are %d tracks in this event", gESD->GetNumberOfTracks());
 		  for (Int_t iTracks = 0; iTracks < gESD->GetNumberOfTracks(); iTracks++) {
@@ -670,7 +670,8 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
     // for HBT like cuts need magnetic field sign
     bSign = (gAOD->GetMagneticField() > 0) ? 1 : -1;
 
-    AliAODHeader *aodHeader = gAOD->GetHeader();
+    AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(gAOD->GetHeader());
+    if(!aodHeader) AliFatal("Not a standard AOD");
 
     // store offline trigger bits
     fHistTriggerStats->Fill(aodHeader->GetOfflineTrigger());
@@ -772,7 +773,8 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		    if(!aodTrack->TestFilterBit(fAODtrackCutBit)) continue;
 
 		    Int_t gID = aodTrack->GetID();
-		    newAodTrack = gID >= 0 ? aodTrack : gAOD->GetTrack(trackMap->GetValue(-1-gID));
+		    newAodTrack = gID >= 0 ? aodTrack : dynamic_cast<AliAODTrack*>(gAOD->GetTrack(trackMap->GetValue(-1-gID)));
+                    if(!newAodTrack) AliFatal("Not a standard AOD");
 		    //Printf("Label: %d - Pt: %lf (old) - %d - Pt: %lf(new)",gID,aodTrack->Pt(), newAodTrack->GetID(), newAodTrack->Pt());
                     //===========================================//
 
@@ -1016,13 +1018,13 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	if(vertex->GetNContributors() > 0) {
 	  if(vertex->GetZRes() != 0) {
 	    fHistEventStats->Fill(3,fCentrality); //events with a proper vertex
-	    if(TMath::Abs(vertex->GetXv()) < fVxMax) {
-	      if(TMath::Abs(vertex->GetYv()) < fVyMax) {
-		if(TMath::Abs(vertex->GetZv()) < fVzMax) {
+	    if(TMath::Abs(vertex->GetX()) < fVxMax) {
+	      if(TMath::Abs(vertex->GetY()) < fVyMax) {
+		if(TMath::Abs(vertex->GetZ()) < fVzMax) {
 		  fHistEventStats->Fill(4,fCentrality); //analayzed events
-		  fHistVx->Fill(vertex->GetXv());
-		  fHistVy->Fill(vertex->GetYv());
-		  fHistVz->Fill(vertex->GetZv());
+		  fHistVx->Fill(vertex->GetX());
+		  fHistVy->Fill(vertex->GetY());
+		  fHistVz->Fill(vertex->GetZ());
 		  
 		  //Printf("There are %d tracks in this event", gESD->GetNumberOfTracks());
 		  for (Int_t iTracks = 0; iTracks < gESD->GetNumberOfTracks(); iTracks++) {

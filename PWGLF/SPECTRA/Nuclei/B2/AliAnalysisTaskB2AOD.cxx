@@ -212,8 +212,10 @@ void AliAnalysisTaskB2AOD::UserExec(Option_t* )
 	if(fLnID == 0) AliFatal("PID not set");
 	
 	// multiplicity and centrality
-	
-	fNtrk = (fMaxEta > 0.5) ? fAODevent->GetHeader()->GetRefMultiplicityComb08() : fAODevent->GetHeader()->GetRefMultiplicityComb05();
+	AliAODHeader * header = dynamic_cast<AliAODHeader*>(fAODevent->GetHeader());
+        if(!header) AliFatal("Not a standard AOD");
+
+	fNtrk = (fMaxEta > 0.5) ? header->GetRefMultiplicityComb08() : header->GetRefMultiplicityComb05();
 	
 	if(fSimulation) fNch = this->GetChargedMultiplicity(fMaxEta);
 	
@@ -226,7 +228,7 @@ void AliAnalysisTaskB2AOD::UserExec(Option_t* )
 	
 	if(fHeavyIons)
 	{
-		Double_t centrality = fAODevent->GetHeader()->GetCentrality();
+		Double_t centrality = ((AliVAODHeader*)fAODevent->GetHeader())->GetCentrality();
 
 		fCentTriggerFired = (centrality >= fMinCentrality) && (centrality < fMaxCentrality);
 	}
@@ -454,7 +456,8 @@ Int_t AliAnalysisTaskB2AOD::GetTracks()
 	// track loop
 	for(Int_t i = 0; i < fAODevent->GetNumberOfTracks(); ++i)
 	{
-		AliAODTrack* iTrack = fAODevent->GetTrack(i);
+		AliAODTrack* iTrack = dynamic_cast<AliAODTrack*>(fAODevent->GetTrack(i));
+		if(!iTrack) AliFatal("Not a standard AOD");
 		
 		if(!iTrack) continue;
 		

@@ -439,9 +439,10 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
       TLorentzVector lorentzTrack1(0,0,0,0); // lorentz 4 vector
       TLorentzVector lorentzTrack2(0,0,0,0); // lorentz 4 vector
       
-      for (Int_t i=0; i<aodEvent->GetNTracks(); i++){ 
+      for (Int_t i=0; i<aodEvent->GetNumberOfTracks(); i++){ 
 	
-	AliAODTrack* aodTrack = aodEvent->GetTrack(i);
+	AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(i));
+	if(!aodTrack) AliFatal("Not a standard AOD");
 	
 	if(dstarD0pi->Charge() == aodTrack->Charge()) continue;
 	if((!(aodTrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(aodTrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;

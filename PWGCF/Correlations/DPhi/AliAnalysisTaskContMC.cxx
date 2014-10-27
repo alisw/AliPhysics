@@ -113,7 +113,7 @@ void AliAnalysisTaskContMC::UserExec(Option_t *)
     }
   Double_t centrality = 0;
 
-  AliCentrality *centralityObj = fAOD->GetHeader()->GetCentralityP();
+  AliCentrality *centralityObj = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
   if (centralityObj)
     {
       centrality = centralityObj->GetCentralityPercentileUnchecked("V0M");
@@ -145,7 +145,8 @@ void AliAnalysisTaskContMC::UserExec(Option_t *)
   //Int_t count=0;  
   //track loop
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
-    AliAODTrack* track = fAOD->GetTrack(iTracks);
+    AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
+    if(!track) AliFatal("Not a standard AOD");
     if(!(track->TestFilterBit(32)))continue;
     if (TMath::Abs(track->Eta()) > .8 || track->Pt() < .2) continue;
     

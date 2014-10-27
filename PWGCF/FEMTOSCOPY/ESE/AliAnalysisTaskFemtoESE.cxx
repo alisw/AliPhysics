@@ -686,14 +686,14 @@ void AliAnalysisTaskFemtoESE::UserExec(Option_t *)
 
   // Track loop -- select pions
   for (Int_t i = 0; i < fAOD->GetNumberOfTracks(); i++) {
-    AliAODTrack* aodtrack = fAOD->GetTrack(i);
+    AliAODTrack* aodtrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(i));
     if (!aodtrack) continue;
     if(!TrackCut(aodtrack)) continue;
 
     // filter bit 7 PID method...
     Int_t trackPID=999;
     for(Int_t m = 0; m < fAOD->GetNumberOfTracks(); m++) {
-      AliAODTrack* aodtrack2 = fAOD->GetTrack(m);
+      AliAODTrack* aodtrack2 = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(m));
       if (!aodtrack2) continue;
       if(aodtrack->GetID() != (-aodtrack2->GetID() - 1)) continue;// (-aodTrack2->GetID() - 1)
       trackPID=fHelperPID->GetParticleSpecies((AliVTrack*)aodtrack2,kTRUE);

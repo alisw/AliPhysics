@@ -1079,10 +1079,11 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   if (fIsRejectSDDClusters) { 
     Bool_t skipEvent = kFALSE;
     Int_t ntracks = 0;
-    if (aod) ntracks = aod->GetNTracks();
+    if (aod) ntracks = aod->GetNumberOfTracks();
     for(Int_t itrack=0; itrack<ntracks; itrack++) { // loop on tacks
       //    ... get the track
-      AliAODTrack * track = aod->GetTrack(itrack);
+      AliAODTrack * track = dynamic_cast<AliAODTrack*>(aod->GetTrack(itrack));
+      if(!track) AliFatal("Not a standard AOD");
       if(TESTBIT(track->GetITSClusterMap(),2) || TESTBIT(track->GetITSClusterMap(),3) ){
 	skipEvent=kTRUE;
 	fNentries->Fill(16);

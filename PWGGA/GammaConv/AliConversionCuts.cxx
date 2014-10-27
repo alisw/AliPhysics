@@ -3542,7 +3542,7 @@ Double_t AliConversionCuts::GetCentrality(AliVEvent *event)
 
    AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
    if(aodEvent){
-      if(aodEvent->GetHeader()){return aodEvent->GetHeader()->GetCentrality();}
+     if(aodEvent->GetHeader()){return ((AliVAODHeader*)aodEvent->GetHeader())->GetCentrality();}
    }
 
    return -1;

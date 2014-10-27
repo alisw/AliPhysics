@@ -231,35 +231,35 @@ void AliMeanVertexCalibTask::UserExec(Option_t *)
     if(spdv->GetNContributors()>0) {
       TString title=spdv->GetTitle();
       if(title.Contains("3D")) {
-	((TH1F*)fOutput->FindObject("hSPDVertexX"))->Fill(spdv->GetXv());
-	((TH1F*)fOutput->FindObject("hSPDVertexY"))->Fill(spdv->GetYv());
+	((TH1F*)fOutput->FindObject("hSPDVertexX"))->Fill(spdv->GetX());
+	((TH1F*)fOutput->FindObject("hSPDVertexY"))->Fill(spdv->GetY());
       }
-      ((TH1F*)fOutput->FindObject("hSPDVertexZ"))->Fill(spdv->GetZv());
+      ((TH1F*)fOutput->FindObject("hSPDVertexZ"))->Fill(spdv->GetZ());
     }
   }
   
   
   if(trkv) {
     if(trkv->GetNContributors()>0) {
-      ((TH1F*)fOutput->FindObject("hTRKVertexX"))->Fill(trkv->GetXv());
-      ((TH1F*)fOutput->FindObject("hTRKVertexY"))->Fill(trkv->GetYv());
-      ((TH1F*)fOutput->FindObject("hTRKVertexZ"))->Fill(trkv->GetZv());
+      ((TH1F*)fOutput->FindObject("hTRKVertexX"))->Fill(trkv->GetX());
+      ((TH1F*)fOutput->FindObject("hTRKVertexY"))->Fill(trkv->GetY());
+      ((TH1F*)fOutput->FindObject("hTRKVertexZ"))->Fill(trkv->GetZ());
 
-      ((TH2F*)fOutput->FindObject("hTRKVertexXvsMult"))->Fill(trkv->GetXv(), ntrklets);
-      ((TH2F*)fOutput->FindObject("hTRKVertexYvsMult"))->Fill(trkv->GetYv(), ntrklets);
+      ((TH2F*)fOutput->FindObject("hTRKVertexXvsMult"))->Fill(trkv->GetX(), ntrklets);
+      ((TH2F*)fOutput->FindObject("hTRKVertexYvsMult"))->Fill(trkv->GetY(), ntrklets);
       
       if (ntrklets>30 && ntrklets<45){
-	((TH1F*)fOutput->FindObject("hTRKVertexXdefMult"))->Fill(trkv->GetXv());
-	((TH1F*)fOutput->FindObject("hTRKVertexYdefMult"))->Fill(trkv->GetYv());
+	((TH1F*)fOutput->FindObject("hTRKVertexXdefMult"))->Fill(trkv->GetX());
+	((TH1F*)fOutput->FindObject("hTRKVertexYdefMult"))->Fill(trkv->GetY());
       }
       
       if (ntrklets>1500){
-	((TH1F*)fOutput->FindObject("hTRKVertexXHighMult"))->Fill(trkv->GetXv());
-	((TH1F*)fOutput->FindObject("hTRKVertexYHighMult"))->Fill(trkv->GetYv());
+	((TH1F*)fOutput->FindObject("hTRKVertexXHighMult"))->Fill(trkv->GetX());
+	((TH1F*)fOutput->FindObject("hTRKVertexYHighMult"))->Fill(trkv->GetY());
       }
       
-      ((TH2F*)fOutput->FindObject("hTRKVertexXZ"))->Fill(trkv->GetXv(),trkv->GetZv());
-      ((TH2F*)fOutput->FindObject("hTRKVertexYZ"))->Fill(trkv->GetYv(),trkv->GetZv());
+      ((TH2F*)fOutput->FindObject("hTRKVertexXZ"))->Fill(trkv->GetX(),trkv->GetZ());
+      ((TH2F*)fOutput->FindObject("hTRKVertexYZ"))->Fill(trkv->GetY(),trkv->GetZ());
       
     }
   }
@@ -267,25 +267,25 @@ void AliMeanVertexCalibTask::UserExec(Option_t *)
   if (itsSAv){
     if (itsSAv->GetNContributors()>0){
       
-      ((TH1F*)fOutput->FindObject("hITSSAVertexX"))->Fill(itsSAv->GetXv());
-      ((TH1F*)fOutput->FindObject("hITSSAVertexY"))->Fill(itsSAv->GetYv());
-      ((TH1F*)fOutput->FindObject("hITSSAVertexZ"))->Fill(itsSAv->GetZv());
+      ((TH1F*)fOutput->FindObject("hITSSAVertexX"))->Fill(itsSAv->GetX());
+      ((TH1F*)fOutput->FindObject("hITSSAVertexY"))->Fill(itsSAv->GetY());
+      ((TH1F*)fOutput->FindObject("hITSSAVertexZ"))->Fill(itsSAv->GetZ());
 
-      ((TH2F*)fOutput->FindObject("hITSSAVertexXvsMult"))->Fill(itsSAv->GetXv(), ntrklets);
-      ((TH2F*)fOutput->FindObject("hITSSAVertexYvsMult"))->Fill(itsSAv->GetYv(), ntrklets);
+      ((TH2F*)fOutput->FindObject("hITSSAVertexXvsMult"))->Fill(itsSAv->GetX(), ntrklets);
+      ((TH2F*)fOutput->FindObject("hITSSAVertexYvsMult"))->Fill(itsSAv->GetY(), ntrklets);
       
       if (ntrklets>30 && ntrklets<45){
-	((TH1F*)fOutput->FindObject("hITSSAVertexXdefMult"))->Fill(itsSAv->GetXv());
-	((TH1F*)fOutput->FindObject("hITSSAVertexYdefMult"))->Fill(itsSAv->GetYv());
+	((TH1F*)fOutput->FindObject("hITSSAVertexXdefMult"))->Fill(itsSAv->GetX());
+	((TH1F*)fOutput->FindObject("hITSSAVertexYdefMult"))->Fill(itsSAv->GetY());
       }
       
       if (ntrklets>1500){
-	((TH1F*)fOutput->FindObject("hITSSAVertexXHighMult"))->Fill(itsSAv->GetXv());
-	((TH1F*)fOutput->FindObject("hITSSAVertexYHighMult"))->Fill(itsSAv->GetYv());
+	((TH1F*)fOutput->FindObject("hITSSAVertexXHighMult"))->Fill(itsSAv->GetX());
+	((TH1F*)fOutput->FindObject("hITSSAVertexYHighMult"))->Fill(itsSAv->GetY());
       }
       
-      ((TH2F*)fOutput->FindObject("hITSSAVertexXZ"))->Fill(itsSAv->GetXv(),itsSAv->GetZv());
-      ((TH2F*)fOutput->FindObject("hITSSAVertexYZ"))->Fill(itsSAv->GetYv(),itsSAv->GetZv());
+      ((TH2F*)fOutput->FindObject("hITSSAVertexXZ"))->Fill(itsSAv->GetX(),itsSAv->GetZ());
+      ((TH2F*)fOutput->FindObject("hITSSAVertexYZ"))->Fill(itsSAv->GetY(),itsSAv->GetZ());
       
     }
   }

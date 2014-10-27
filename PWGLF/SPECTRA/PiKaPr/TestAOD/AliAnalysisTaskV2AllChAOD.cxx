@@ -76,6 +76,9 @@ AliAnalysisTaskV2AllChAOD::AliAnalysisTaskV2AllChAOD(const char *name) : AliAnal
   fMinTPCNcls(70),
   fFillTHn(kFALSE),
   fCentrality(0),
+  fQvector(0),
+  fQvector_lq(0),
+  fQvector_sq(0),
   fResSP(0),
   fResSP_vs_Cent(0),
   f2partCumQA_vs_Cent(0),
@@ -223,6 +226,15 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
   
   fCentrality = new TH1D("fCentrality", "centrality distribution; centrality", 200, 0., 100);
   fOutput->Add(fCentrality);
+  
+  fQvector = new TH1D("fQvector", "q-vector distribution; q-vector", fnQvecBins, 0., fQvecUpperLim);
+  fOutput->Add(fQvector);
+  
+  fQvector_lq = new TH1D("fQvector_lq", "q-vector distribution; q-vector", fnQvecBins, 0., fQvecUpperLim);
+  fOutput_lq->Add(fQvector_lq);
+  
+  fQvector_sq = new TH1D("fQvector_sq", "q-vector distribution; q-vector", fnQvecBins, 0., fQvecUpperLim);
+  fOutput_sq->Add(fQvector_sq);
   
   // binning common to all the THn
   //change it according to your needs + move it to global variables -> setter/getter
@@ -458,7 +470,10 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
   if(fIsMC && fQvecGen) Qvec = fEventCuts->GetQvecPercentileMC(fVZEROside, fQgenType);
   else Qvec = fEventCuts->GetQvecPercentile(fVZEROside);
 
-  
+  fQvector->Fill(Qvec);
+  if (Qvec > fCutLargeQperc && Qvec < 100.) fQvector_lq->Fill(Qvec);
+  if (Qvec > 0. && Qvec < fCutSmallQperc) fQvector_sq->Fill(Qvec);
+
   Double_t Cent=(fDoCentrSystCentrality)?1.01*fEventCuts->GetCent():fEventCuts->GetCent();
   fCentrality->Fill(Cent);
   
@@ -492,7 +507,8 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
 
     //main loop on tracks
     for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
-      AliAODTrack* track = fAOD->GetTrack(iTracks);
+      AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
+      if(!track) AliFatal("Not a standard AOD");
       if(fCharge != 0 && track->Charge() != fCharge) continue;//if fCharge != 0 only select fCharge 
       if (!fTrackCuts->IsSelected(track,kTRUE)) continue; //track selection (rapidity selection NOT in the standard cuts)
     

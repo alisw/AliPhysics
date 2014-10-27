@@ -228,7 +228,8 @@ void AliAnalysisTaskMuonDistributions::UserExec(Option_t *)
       ptmu1 = mu1->Pt();
       rapiditymu1 = Rapidity(emu1,pzmu1);
     } else if(strcmp(fkAnalysisType,"AOD")==0){
-      AliAODTrack *mu1 = aod->GetTrack(j);
+      AliAODTrack *mu1 = dynamic_cast<AliAODTrack*>(aod->GetTrack(j));
+      if(!mu1) AliFatal("Not a standard AOD");
       if(!mu1->IsMuonTrack()) continue;
       chargemu1 = mu1->Charge();
       pxmu1 = mu1->Px();
@@ -256,7 +257,8 @@ void AliAnalysisTaskMuonDistributions::UserExec(Option_t *)
           pzmu2 = mu2->Pz();
 	  emu2 = mu2->E();
         } else if(strcmp(fkAnalysisType,"AOD")==0){
-          AliAODTrack *mu2 = aod->GetTrack(jj);
+          AliAODTrack *mu2 = dynamic_cast<AliAODTrack*>(aod->GetTrack(jj));
+          if(!mu2) AliFatal("Not a standard AOD");
           if(!mu2->IsMuonTrack()) continue; 
 	  chargemu2 = mu2->Charge();
           pxmu2 = mu2->Px();

@@ -156,7 +156,8 @@ void AliAnalysisTaskLongRangeCorrelations::UserExec(Option_t* ) {
   AliAODEvent* pAOD(dynamic_cast<AliAODEvent*>(InputEvent()));
   if (NULL == pAOD) return;
 
-  AliAODHeader *pAODHeader = pAOD->GetHeader();
+  AliAODHeader *pAODHeader = dynamic_cast<AliAODHeader*>(pAOD->GetHeader());
+  if(!pAODHeader) AliFatal("Not a standard AOD");
   if (NULL == pAODHeader) return;
 
   AliAODMCHeader *pAODMCHeader(dynamic_cast<AliAODMCHeader*>(pAOD->FindListObject(AliAODMCHeader::StdBranchName())));

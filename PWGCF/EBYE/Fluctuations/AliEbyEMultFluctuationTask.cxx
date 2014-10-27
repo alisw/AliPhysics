@@ -317,7 +317,8 @@ if(!isSelected) return;
 
 
 	
-		AliAODHeader *fHeader = fAOD->GetHeader();
+		AliAODHeader *fHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+		if(!fHeader) AliFatal("Not a standard AOD");
 		Int_t spdmult0 = fHeader->GetNumberOfITSClusters(0);
 		Int_t spdmult1 = fHeader->GetNumberOfITSClusters(1);
 		Int_t run = fHeader->GetRunNumber();
@@ -359,7 +360,8 @@ Double_t Mult=0.0;
 
  
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
-  AliAODTrack*  track = fAOD->GetTrack(iTracks);
+  AliAODTrack*  track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
+  if(!track) AliFatal("Not a standard AOD");
     if (!track) {
       printf("ERROR: Could not receive track %d\n", iTracks);
       continue;

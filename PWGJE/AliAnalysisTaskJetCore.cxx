@@ -665,7 +665,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    if(fIsPbPb){
    if(fESD) {cent = fESD->GetCentrality();
      if(cent) centValue = cent->GetCentralityPercentile("V0M");}
-   else     centValue=aod->GetHeader()->GetCentrality();
+   else     centValue=((AliVAODHeader*)aod->GetHeader())->GetCentrality();
    
    if(fDebug) printf("centrality: %f\n", centValue);
       if (centValue < fCentMin || centValue > fCentMax){
@@ -765,8 +765,8 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    Int_t iCount=0; 
    Int_t trigJet=-1;
    Int_t trigBBTrack=-1;
-   //   Int_t trigInTrack=-1;
-   fRPAngle = aod->GetHeader()->GetEventplane();     
+          // Int_t trigInTrack=-1;
+   fRPAngle = ((AliVAODHeader*)aod->GetHeader())->GetEventplane();     
 
    if(fHardest==0 || fHardest==1){
    AliVParticle *partback = (AliVParticle*)ParticleList.At(nT);     
@@ -1166,7 +1166,8 @@ Int_t  AliAnalysisTaskJetCore::GetListOfTracks(TList *list){
 
     
      for(int it = 0;it < aod->GetNumberOfTracks();++it){
-      AliAODTrack *tr = aod->GetTrack(it);
+      AliAODTrack *tr = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+      if(!tr) AliFatal("Not a standard AOD");
       Bool_t bGood = false;
       if(fFilterType == 0)bGood = true;
       else if(fFilterType == 1)bGood = tr->IsHybridTPCConstrainedGlobal();
@@ -1230,7 +1231,8 @@ Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t 
      for(Int_t cr=0;cr<100;cr++){triggers[cr]=-1;}
      Int_t im=0;
      for(int it = 0;it < aod->GetNumberOfTracks();++it){
-      AliAODTrack *tr = aod->GetTrack(it);
+      AliAODTrack *tr = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+      if(!tr) AliFatal("Not a standard AOD");
       Bool_t bGood = false;
       if(fFilterType == 0)bGood = true;
       else if(fFilterType == 1)bGood = tr->IsHybridTPCConstrainedGlobal();
@@ -1292,7 +1294,8 @@ Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t 
     // Double_t dif=0;
     Int_t iCount=0;
     for(int it = 0;it < aod->GetNumberOfTracks();++it){
-      AliAODTrack *tr = aod->GetTrack(it);
+      AliAODTrack *tr = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+      if(!tr) AliFatal("Not a standard AOD");
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
       if(TMath::Abs(tr->Eta())>0.9)continue;
       if(tr->Pt()<0.15)continue;
@@ -1324,7 +1327,8 @@ Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t 
      else aod = fAODOut;   
   
       for(int it = 0;it < aod->GetNumberOfTracks();++it){
-      AliAODTrack *tr = aod->GetTrack(it);
+      AliAODTrack *tr = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+      if(!tr) AliFatal("Not a standard AOD");
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
       if(TMath::Abs(tr->Eta())>0.9)continue;
       if(tr->Pt()<0.15)continue;

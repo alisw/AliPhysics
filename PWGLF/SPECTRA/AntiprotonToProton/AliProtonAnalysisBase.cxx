@@ -647,29 +647,29 @@ const AliESDVertex* AliProtonAnalysisBase::GetVertex(AliESDEvent* esd,
       Printf("GetVertex: Event rejected because the value of the vertex resolution in z is 0");
     return 0;
   }
-  ((TH1F *)(fListVertexQA->At(0)))->Fill(vertex->GetXv());
-  ((TH1F *)(fListVertexQA->At(2)))->Fill(vertex->GetYv());
-  ((TH1F *)(fListVertexQA->At(4)))->Fill(vertex->GetZv());
+  ((TH1F *)(fListVertexQA->At(0)))->Fill(vertex->GetX());
+  ((TH1F *)(fListVertexQA->At(2)))->Fill(vertex->GetY());
+  ((TH1F *)(fListVertexQA->At(4)))->Fill(vertex->GetZ());
 
   //check position
-  if(TMath::Abs(vertex->GetXv()) > gVxMax) {
+  if(TMath::Abs(vertex->GetX()) > gVxMax) {
     if(fDebugMode)
-      Printf("GetVertex: Event rejected because it has a Vx value of %lf cm (accepted interval: -%lf - %lf)",TMath::Abs(vertex->GetXv()),gVxMax,gVxMax);
+      Printf("GetVertex: Event rejected because it has a Vx value of %lf cm (accepted interval: -%lf - %lf)",TMath::Abs(vertex->GetX()),gVxMax,gVxMax);
     return 0;
   }
-  if(TMath::Abs(vertex->GetYv()) > gVyMax)  {
+  if(TMath::Abs(vertex->GetY()) > gVyMax)  {
     if(fDebugMode)
-      Printf("GetVertex: Event rejected because it has a Vy value of %lf cm (accepted interval: -%lf - %lf)",TMath::Abs(vertex->GetYv()),gVyMax,gVyMax);
+      Printf("GetVertex: Event rejected because it has a Vy value of %lf cm (accepted interval: -%lf - %lf)",TMath::Abs(vertex->GetY()),gVyMax,gVyMax);
     return 0;
   }
-  if(TMath::Abs(vertex->GetZv()) > gVzMax)  {
+  if(TMath::Abs(vertex->GetZ()) > gVzMax)  {
     if(fDebugMode)
-      Printf("GetVertex: Event rejected because it has a Vz value of %lf cm (accepted interval: -%lf - %lf)",TMath::Abs(vertex->GetZv()),gVzMax,gVzMax);
+      Printf("GetVertex: Event rejected because it has a Vz value of %lf cm (accepted interval: -%lf - %lf)",TMath::Abs(vertex->GetZ()),gVzMax,gVzMax);
     return 0;
   }
-  ((TH1F *)(fListVertexQA->At(1)))->Fill(vertex->GetXv());
-  ((TH1F *)(fListVertexQA->At(3)))->Fill(vertex->GetYv());
-  ((TH1F *)(fListVertexQA->At(5)))->Fill(vertex->GetZv());
+  ((TH1F *)(fListVertexQA->At(1)))->Fill(vertex->GetX());
+  ((TH1F *)(fListVertexQA->At(3)))->Fill(vertex->GetY());
+  ((TH1F *)(fListVertexQA->At(5)))->Fill(vertex->GetZ());
   ((TH1F *)(fListVertexQA->At(6)))->Fill(vertex->GetNContributors());
 
   //check number of contributors

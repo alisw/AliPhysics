@@ -519,9 +519,8 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     }
     FillGenHistos(arrayMC);
   }
-  
-  
-  Int_t ntracks=aod->GetNTracks();
+
+  Int_t ntracks=aod->GetNumberOfTracks();
   fVtxZ = aod->GetPrimaryVertex()->GetZ();
   fMultiplicity = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.); 
 
@@ -529,7 +528,8 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   UChar_t* status = new UChar_t[ntracks];
   for(Int_t iTr=0; iTr<ntracks; iTr++){
     status[iTr]=0;
-    AliAODTrack* track=aod->GetTrack(iTr);
+    AliAODTrack* track=dynamic_cast<AliAODTrack*>(aod->GetTrack(iTr));
+    if(!track) AliFatal("Not a standard AOD");
     if(IsTrackSelected(track)) status[iTr]+=1;
     
     // PID
@@ -577,7 +577,8 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   fPionTracks->Delete();
  
   for(Int_t iTr1=0; iTr1<ntracks; iTr1++){
-    AliAODTrack* trK=aod->GetTrack(iTr1);
+    AliAODTrack* trK=dynamic_cast<AliAODTrack*>(aod->GetTrack(iTr1));
+    if(!trK) AliFatal("Not a standard AOD");
     if((status[iTr1] & 1)==0) continue;
     if(fDoEventMixing){
       if(status[iTr1] & 2) fKaonTracks->AddLast(new TLorentzVector(trK->Px(),trK->Py(),trK->Pz(),trK->Charge()));
@@ -594,7 +595,8 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
       if((status[iTr2] & 1)==0) continue;
       if((status[iTr2] & 4)==0) continue;
       if(iTr1==iTr2) continue;
-      AliAODTrack* trPi1=aod->GetTrack(iTr2);
+      AliAODTrack* trPi1=dynamic_cast<AliAODTrack*>(aod->GetTrack(iTr2));
+      if(!trPi1) AliFatal("Not a standard AOD");
       Int_t chargePi1=trPi1->Charge();
       trPi1->GetPxPyPz(tmpp);
       px[1] = tmpp[0];
@@ -618,7 +620,8 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
           if((status[iTr3] & 1)==0) continue;
           if((status[iTr3] & 4)==0) continue;
           if(iTr1==iTr3) continue;
-          AliAODTrack* trPi2=aod->GetTrack(iTr3);
+          AliAODTrack* trPi2=dynamic_cast<AliAODTrack*>(aod->GetTrack(iTr3));
+          if(!trPi2) AliFatal("Not a standard AOD");
           Int_t chargePi2=trPi2->Charge();
           if(chargePi2==chargeK) continue;
           nFiltered++;
