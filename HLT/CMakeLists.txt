@@ -34,6 +34,7 @@ endif (ALIHLT_MLUCDIR)
 
 add_subdirectory(CALO)
 add_subdirectory(comp)
+add_subdirectory(global)
 add_subdirectory(EMCAL)
 add_subdirectory(FMD)
 # Enable EVE if ROOT has OpenGL support
