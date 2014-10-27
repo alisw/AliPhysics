@@ -357,16 +357,16 @@ void AliEveMUONTrack::PrintESDTrackInfo()
 
   AliESDVertex* spdVertex = (AliESDVertex*) esd->GetVertex();
   if (spdVertex->GetNContributors()) {
-    spdVertexZ = spdVertex->GetZv();
-    spdVertexY = spdVertex->GetYv();
-    spdVertexX = spdVertex->GetXv();
+    spdVertexZ = spdVertex->GetZ();
+    spdVertexY = spdVertex->GetY();
+    spdVertexX = spdVertex->GetX();
   }
 
   AliESDVertex* esdVertex = (AliESDVertex*) esd->GetPrimaryVertex();
   if (esdVertex->GetNContributors()) {
-    esdVertexZ = esdVertex->GetZv();
-    esdVertexY = esdVertex->GetYv();
-    esdVertexX = esdVertex->GetXv();
+    esdVertexZ = esdVertex->GetZ();
+    esdVertexY = esdVertex->GetY();
+    esdVertexX = esdVertex->GetX();
   }
 
   Float_t t0v = esd->GetT0zVertex();

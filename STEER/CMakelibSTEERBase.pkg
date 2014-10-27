@@ -10,6 +10,7 @@ set ( SRCS
     STEERBase/AliVEvent.cxx 
     STEERBase/AliMixedEvent.cxx 
     STEERBase/AliVHeader.cxx 
+    STEERBase/AliVAODHeader.cxx 
     STEERBase/AliVEventHandler.cxx 
     STEERBase/AliVEventPool.cxx 
     STEERBase/AliVCuts.cxx 

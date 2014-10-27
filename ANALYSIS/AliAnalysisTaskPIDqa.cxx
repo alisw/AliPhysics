@@ -834,7 +834,9 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
 
   // Get reference multiplicity for AODs
   if ( analysisType == "AOD" && fAODevent ) {
-    mult=fAODevent->GetHeader()->GetTPConlyRefMultiplicity();
+    AliAODHeader * header=dynamic_cast<AliAODHeader*>(fAODevent->GetHeader());
+    if(!header) AliFatal("Not a standard AOD");
+    mult=header->GetTPConlyRefMultiplicity();
   }
 
   /*if (mult < 0) {

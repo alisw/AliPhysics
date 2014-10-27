@@ -403,7 +403,7 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigge
     const AliESDVertex* vertex = aEsd->GetPrimaryVertexSPD();
     const AliMultiplicity* mult = aEsd->GetMultiplicity();
     
-    if (mult && vertex && vertex->GetNContributors() > 0 && (!vertex->IsFromVertexerZ() || vertex->GetDispersion() < 0.02) && TMath::Abs(vertex->GetZv()) < 5.5)    {
+    if (mult && vertex && vertex->GetNContributors() > 0 && (!vertex->IsFromVertexerZ() || vertex->GetDispersion() < 0.02) && TMath::Abs(vertex->GetZ()) < 5.5)    {
       for (Int_t i=0; i<mult->GetNumberOfTracklets(); ++i) {
         if (TMath::Abs(mult->GetEta(i)) < 1) {
           decision = kTRUE;
@@ -423,7 +423,7 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigge
     fEsdTrackCuts->GetPtRange(ptmin,ptmax);
     AliDebug(3, Form("ptmin = %f, ptmax = %f\n",ptmin, ptmax));
     
-    if (vertex && vertex->GetNContributors() > 0 && (!vertex->IsFromVertexerZ() || vertex->GetDispersion() < 0.02) && TMath::Abs(vertex->GetZv()) < 10.) {
+    if (vertex && vertex->GetNContributors() > 0 && (!vertex->IsFromVertexerZ() || vertex->GetDispersion() < 0.02) && TMath::Abs(vertex->GetZ()) < 10.) {
       AliDebug(3,Form("Check on the vertex passed\n"));
       for (Int_t i=0; i<aEsd->GetNumberOfTracks(); ++i){
         if (fTPCOnly == kFALSE){

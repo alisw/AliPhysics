@@ -44,9 +44,9 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
 
    const AliESDVertex *vtxT3D=event->GetPrimaryVertex();
 
-   Double_t xPrimaryVertex=vtxT3D->GetXv();
-   Double_t yPrimaryVertex=vtxT3D->GetYv();
-   Double_t zPrimaryVertex=vtxT3D->GetZv();
+   Double_t xPrimaryVertex=vtxT3D->GetX();
+   Double_t yPrimaryVertex=vtxT3D->GetY();
+   Double_t zPrimaryVertex=vtxT3D->GetZ();
 
    Int_t nentr=event->GetNumberOfTracks();
    Double_t b=event->GetMagneticField();

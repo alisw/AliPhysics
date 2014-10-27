@@ -1189,9 +1189,9 @@ void AliESDTagCreator::FillEventTag(TTree *chain, AliEventTag *evTag, Int_t iEve
 //   }
 //   else evTag->SetPath(fturl);
   
-  evTag->SetVertexX(vertexIn->GetXv());
-  evTag->SetVertexY(vertexIn->GetYv());
-  evTag->SetVertexZ(vertexIn->GetZv());
+  evTag->SetVertexX(vertexIn->GetX());
+  evTag->SetVertexY(vertexIn->GetY());
+  evTag->SetVertexZ(vertexIn->GetZ());
   evTag->SetVertexZError(vertexIn->GetZRes());
   evTag->SetVertexFlag(fVertexflag);
   

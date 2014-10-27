@@ -174,7 +174,7 @@ void AliT0AnalysisTaskQA::UserExec(Option_t *)
       nofcontrib=esdvertex->GetNContributors();
       if(nofcontrib>1)
 	{
-	  esdzvertex=esdvertex->GetZv();
+	  esdzvertex=esdvertex->GetZ();
 	  //	  cout << "esd vertex "<<esdzvertex<<endl;
 	  fSPDVertexVST0Vertex->Fill(t0vertex,esdzvertex);
 	}

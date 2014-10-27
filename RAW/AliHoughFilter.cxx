@@ -148,7 +148,7 @@ void AliHoughFilter::RunTPCtracking(AliRawVEvent* event, AliESDEvent* esd)
   timer.Start();
 
   const AliESDVertex *vertex = esd->GetVertex();
-  Float_t zvertex = vertex->GetZv();
+  Float_t zvertex = vertex->GetZ();
 
   AliHLTHough *hough1 = new AliHLTHough();
     

@@ -48,7 +48,7 @@ AliEveCascade* esd_make_cascade(TEveTrackPropagator* rnrStyle, AliESDVertex* pri
   cascade->GetParamN()->GetXYZ(v);  rcV0.fVNeg.Set(v);
   cascade->GetParamP()->GetXYZ(v);  rcV0.fVPos.Set(v);
 
-  rcV0.fV0Birth.Set(primVtx->GetXv(), primVtx->GetYv(), primVtx->GetZv());
+  rcV0.fV0Birth.Set(primVtx->GetX(), primVtx->GetY(), primVtx->GetZ());
 
   Double_t pCascade[3]={0.}, pBac[3]={0.}, pNeg[3]={0.}, pPos[3]={0.}, cv[21]={0.};
   //cascade->GetPxPyPz(pCascade[0], pCascade[1], pCascade[2]);
@@ -79,7 +79,7 @@ AliEveCascade* esd_make_cascade(TEveTrackPropagator* rnrStyle, AliESDVertex* pri
   cascade->GetXYZcascade(v[0], v[1], v[2]);
   rcCascade.fCascadeVCa.Set(v);
 
-  rcCascade.fCascadeBirth.Set(primVtx->GetXv(), primVtx->GetYv(), primVtx->GetZv());
+  rcCascade.fCascadeBirth.Set(primVtx->GetX(), primVtx->GetY(), primVtx->GetZ());
 
   // Simulation data not directly available in AliESDcascade
   // rcCascade.fDLabel = cascade->GetBindex();
@@ -124,9 +124,9 @@ AliEveCascade* esd_make_cascade(TEveTrackPropagator* rnrStyle, AliESDVertex* pri
 					cascade->Phi()   * 180/TMath::Pi(),
 					cascade->Theta() * 180/TMath::Pi(),
 					cascade->GetDcaXiDaughters(),
-  					cascade->GetCascadeCosineOfPointingAngle(primVtx->GetXv(),
-			     							 primVtx->GetYv(),
-			     							 primVtx->GetZv()),
+  					cascade->GetCascadeCosineOfPointingAngle(primVtx->GetX(),
+			     							 primVtx->GetY(),
+			     							 primVtx->GetZ()),
 					cascade->GetEffMassXi()
 				 )
 			    );

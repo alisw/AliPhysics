@@ -87,13 +87,13 @@ void CheckSDDInESD(TString filename="AliESDs.root", Int_t optTracks=kAll){
     cout<<"-------- Event "<<iEvent<<endl;
     printf(" Tracks # = %d\n",esd->GetNumberOfTracks());
     const AliESDVertex *spdv=esd->GetVertex();
-    printf(" SPD Primary Vertex in %f %f %f with %d contributors\n",spdv->GetXv(),spdv->GetYv(),spdv->GetZv(),spdv->GetNContributors());
+    printf(" SPD Primary Vertex in %f %f %f with %d contributors\n",spdv->GetX(),spdv->GetY(),spdv->GetZ(),spdv->GetNContributors());
     const AliESDVertex *trkv=esd->GetPrimaryVertex();
     printf(" Track Primary Vertex with %d contributors\n",trkv->GetNContributors());
     if(spdv->IsFromVertexer3D()){
-      hvx->Fill(spdv->GetXv());
-      hvy->Fill(spdv->GetYv());
-      hvz->Fill(spdv->GetZv());
+      hvx->Fill(spdv->GetX());
+      hvy->Fill(spdv->GetY());
+      hvz->Fill(spdv->GetZ());
     }
     Double_t itss[4];
     for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {

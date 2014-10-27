@@ -195,9 +195,9 @@ AliESDRun::~AliESDRun() {
 void AliESDRun::SetDiamond(const AliESDVertex *vertex) {
   // set the interaction diamond
   if (vertex) {
-    fDiamondXY[0]=vertex->GetXv();
-    fDiamondXY[1]=vertex->GetYv();
-    fDiamondZ=vertex->GetZv();
+    fDiamondXY[0]=vertex->GetX();
+    fDiamondXY[1]=vertex->GetY();
+    fDiamondZ=vertex->GetZ();
     Double32_t cov[6];
     vertex->GetCovMatrix(cov);
     fDiamondCovXY[0]=cov[0];

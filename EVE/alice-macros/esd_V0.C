@@ -57,7 +57,7 @@ AliEveV0* esd_make_v0(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
   v0->GetParamN()->GetXYZ(v);  rcV0.fVNeg.Set(v);
   v0->GetParamP()->GetXYZ(v);  rcV0.fVPos.Set(v);
 
-  rcV0.fV0Birth.Set(primVtx->GetXv(), primVtx->GetYv(), primVtx->GetZv());
+  rcV0.fV0Birth.Set(primVtx->GetX(), primVtx->GetY(), primVtx->GetZ());
 
   // Simulation data not directly available in AliESDv0
   //rcV0.fDLabel[0] = v0->GetNindex();

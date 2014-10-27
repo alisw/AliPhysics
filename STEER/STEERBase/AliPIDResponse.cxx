@@ -1902,7 +1902,7 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
     AliTOFHeader *tofHeader = (AliTOFHeader*)vevent->GetTOFHeader();
 
     if (tofHeader) { // read global info and T0-TOF
-      fTOFResponse.SetTimeResolution(tofHeader->GetTOFResolution());
+      //      fTOFResponse.SetTimeResolution(tofHeader->GetTOFResolution()); // read from OADB in the initialization
       t0spread = tofHeader->GetT0spread(); // read t0 sprad
       if(t0spread < 10) t0spread = 80;
 
@@ -1968,8 +1968,8 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	    t0C= vevent->GetT0TOF()[2] - starttimeoffset;
         //      t0AC= vevent->GetT0TOF()[0];
 	    t0AC= t0A/resT0A/resT0A + t0C/resT0C/resT0C;
-	    resT0AC= TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
-	    t0AC /= resT0AC*resT0AC;
+	    resT0AC= 1./TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
+	    t0AC *= resT0AC*resT0AC;
 	}
 
 	Float_t t0t0Best = 0;
@@ -2043,8 +2043,8 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	    t0C= vevent->GetT0TOF()[2] - starttimeoffset;
         //      t0AC= vevent->GetT0TOF()[0];
 	    t0AC= t0A/resT0A/resT0A + t0C/resT0C/resT0C;
-	    resT0AC= TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
-	    t0AC /= resT0AC*resT0AC;
+	    resT0AC= 1./TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
+	    t0AC *= resT0AC*resT0AC;
 	}
 
 	if(TMath::Abs(t0A) < t0cut && TMath::Abs(t0C) < t0cut && TMath::Abs(t0C-t0A) < 500){
