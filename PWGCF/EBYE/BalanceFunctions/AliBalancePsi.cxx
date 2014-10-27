@@ -1918,6 +1918,10 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
   Double_t binVertexLowEdge = 0.;
   Double_t binVertexUpEdge  = 1000.;
 
+  // if event mixing is empty, we can not add that sub bin
+  // need to record the number of triggers for correct normalization
+  Double_t nTrigSubBinEmpty = 0.;
+
   // loop over all bins
   for(Int_t iBinPsi = binPsiMin; iBinPsi <= binPsiMax; iBinPsi++){
     for(Int_t iBinVertex = binVertexMin; iBinVertex <= binVertexMax; iBinVertex++){
@@ -1981,8 +1985,10 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 
       if(fSame && fMixed){
 	// then get the correlation function (divide fSame/fmixed)
-	fSame->Divide(fMixed);
-	
+
+	if(fMixed->Integral()>0)
+	  fSame->Divide(fMixed);
+
 	// averaging with number of triggers:
 	// average over number of triggers in each sub-bin
 	Double_t NTrigSubBin = 0;
@@ -1994,13 +2000,23 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 	  NTrigSubBin = (Double_t)(fHistN->Project(0,1)->Integral() + fHistP->Project(0,1)->Integral());
 	fSame->Scale(NTrigSubBin);
 	
-	// for the first: clone
-	if( (iBinPsi == binPsiMin && iBinVertex == binVertexMin) || !gHist ){
-	  gHist = (TH2D*)fSame->Clone();
+	// only if event mixing has enough statistics
+	if(fMixed->Integral()>0){
+	  
+	  // for the first: clone
+	  if( (iBinPsi == binPsiMin && iBinVertex == binVertexMin) || !gHist ){
+	    gHist = (TH2D*)fSame->Clone();
+	  }
+	  else{  // otherwise: add for averaging
+	    gHist->Add(fSame);
+	  }
 	}
-	else{  // otherwise: add for averaging
-	  gHist->Add(fSame);
+
+	// otherwise record the number of triggers for correct normalization
+	else{
+	  nTrigSubBinEmpty += NTrigSubBin;
 	}
+
       }
     }
   }
@@ -2031,8 +2047,11 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
       fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
       NTrigAll = (Double_t)(fHistN->Project(0,1)->Integral() + fHistP->Project(0,1)->Integral());
     }
+
+    // subtract number of triggers with empty sub bins for correct normalization
+    NTrigAll -= nTrigSubBinEmpty;
+
     gHist->Scale(1./NTrigAll);
-   
   }
   
   return gHist;
