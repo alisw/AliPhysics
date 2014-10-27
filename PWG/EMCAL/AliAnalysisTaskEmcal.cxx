@@ -57,6 +57,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fTrackPtCut(0),
   fMinNTrack(0),
   fUseAliAnaUtils(kFALSE),
+  fRejectPileup(kFALSE),
   fAliAnalysisUtils(0x0),
   fOffTrigger(AliVEvent::kAny),
   fTrigClass(),
@@ -140,6 +141,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fTrackPtCut(0),
   fMinNTrack(0),
   fUseAliAnaUtils(kFALSE),
+  fRejectPileup(kFALSE),
   fAliAnalysisUtils(0x0),
   fOffTrigger(AliVEvent::kAny),
   fTrigClass(),
@@ -855,7 +857,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       return kFALSE;
     }
 
-    if (fAliAnalysisUtils->IsPileUpEvent(InputEvent())) {
+    if (fRejectPileup &&fAliAnalysisUtils->IsPileUpEvent(InputEvent())) {
       if (fGeneralHistograms) fHistEventRejection->Fill("PileUp",1);
       return kFALSE;
     }

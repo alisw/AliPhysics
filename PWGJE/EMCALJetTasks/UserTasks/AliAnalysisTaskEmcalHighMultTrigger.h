@@ -37,29 +37,30 @@ class AliAnalysisTaskEmcalHighMultTrigger : public AliAnalysisTaskEmcalJet {
 
 
   //Histograms
-  TH2F                       *fHistPatchEtaPhi;         //!
-  TH1F                       *fHistEnergyMedian;        //!
-  TH1F                       *fHistEnergyMedianExLP;    //!
-  TH1F                       *fHistEnergySum;           //!
-  TH1F                       *fHistEnergySumExLP;       //!
+  TH2F                       *fHistPatchEtaPhi;               //! patch eta vs phi (center of patch)
+  TH1F                       *fHistEnergyMedian;              //! median energy in EMCal
+  TH1F                       *fHistEnergyMedianExLP;          //! median energy in EMCal exclucing N leading patches
+  TH1F                       *fHistEnergySum;                 //! total energy in EMCal
+  TH1F                       *fHistEnergySumExLP;             //! total energy in EMCal exclucing N leading patches
 
-  TH1F                       *fHistTracks;              //!
-  TH1F                       *fHistTracklets;           //!
-  TH1F                       *fHistV0MultSum;           //!
+  TH1F                       *fHistTracks;                    //! N hybrid tracks
+  TH1F                       *fHistTracklets;                 //! Ntracklets
+  TH1F                       *fHistV0MultSum;                 //! V0A+V0C multiplicity
 
-  TH2F                       *fHistEnergyMedianEst[3];        //!
-  TH2F                       *fHistEnergyMedianExLPEst[3];    //!
-  TH2F                       *fHistEnergySumEst[3];           //!
-  TH2F                       *fHistEnergySumExLPEst[3];       //!
-  TH2F                       *fHistEnergySumAvgEst[3];        //!
-  TH2F                       *fHistEnergySumAvgExLPEst[3];    //!
+  TH2F                       *fHistEnergyMedianEst[3];        //! median energy in EMCal vs mult estimator
+  TH2F                       *fHistEnergyMedianExLPEst[3];    //! median energy in EMCal excluding N leading patches vs mult estimator
+  TH2F                       *fHistEnergySumEst[3];           //! total energy in EMCal vs mult estimator
+  TH2F                       *fHistEnergySumExLPEst[3];       //! total energy in EMCal excluding N leading patches vs mult estimator
+  TH2F                       *fHistEnergySumAvgEst[3];        //! avg energy in EMCal vs mult estimator
+  TH2F                       *fHistEnergySumAvgExLPEst[3];    //! avg energy in EMCal excluding N leading patches vs mult estimator
 
-  TH2F                       *fHistTracksTracklets;           //!
-  TH2F                       *fHistTracksV0MultSum;           //!
+  TH2F                       *fHistTracksTracklets;           //! Ntracks vs Ntracklets
+  TH2F                       *fHistTracksV0MultSum;           //! Ntracks vs V0A+V0C
+  TH2F                       *fHistSPDTrackletsClusters;      //! correlation between SPD clusters and tracklets
 
   AliAnalysisTaskEmcalHighMultTrigger(const AliAnalysisTaskEmcalHighMultTrigger&);            // not implemented
   AliAnalysisTaskEmcalHighMultTrigger &operator=(const AliAnalysisTaskEmcalHighMultTrigger&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalHighMultTrigger, 1) // high multiplicity pp trigger analysis task
+  ClassDef(AliAnalysisTaskEmcalHighMultTrigger, 2) // high multiplicity pp trigger analysis task
 };
 #endif
