@@ -35,7 +35,7 @@ ClassImp(AliAODPWG4ParticleCorrelation)
 //______________________________________________________________________________
  AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation() :
    AliAODPWG4Particle(),
-   fLeadingDetector(""), fLeading(), fCorrJet(),  fCorrBkg(), fRefJet(0),
+   fLeadingDetector(-1), fLeading(), fCorrJet(),  fCorrBkg(), fRefJet(0),
    fListOfObjArrays(0)
 {
   // constructor
@@ -44,7 +44,7 @@ ClassImp(AliAODPWG4ParticleCorrelation)
 //______________________________________________________________________________
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(Double_t px, Double_t py, Double_t pz, Double_t e):
   AliAODPWG4Particle(),
-  fLeadingDetector(""),  fLeading(), fCorrJet(),
+  fLeadingDetector(-1),  fLeading(), fCorrJet(),
   fCorrBkg(), fRefJet(0),  fListOfObjArrays(new TList)
 {
   // constructor
@@ -56,7 +56,7 @@ AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(Double_t px, Double
 //______________________________________________________________________________
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(TLorentzVector & p):
   AliAODPWG4Particle(p),
-  fLeadingDetector(""),  fLeading(), fCorrJet(), fCorrBkg(), fRefJet(0), fListOfObjArrays(new TList)
+  fLeadingDetector(-1),  fLeading(), fCorrJet(), fCorrBkg(), fRefJet(0), fListOfObjArrays(new TList)
 {
   // constructor
   fListOfObjArrays->SetOwner(kTRUE);
@@ -66,7 +66,7 @@ AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(TLorentzVector & p)
 //______________________________________________________________________________
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(AliAODPWG4Particle & p):
   AliAODPWG4Particle(p),
-  fLeadingDetector(""),  fLeading(), fCorrJet(), fCorrBkg(),fRefJet(0), fListOfObjArrays(new TList)
+  fLeadingDetector(-1),  fLeading(), fCorrJet(), fCorrBkg(),fRefJet(0), fListOfObjArrays(new TList)
 {
   // constructor
   fListOfObjArrays->SetOwner(kTRUE);
@@ -132,7 +132,7 @@ void AliAODPWG4ParticleCorrelation::Print(Option_t* /*option*/) const
 
   if(GetJet()) GetJet()->Print("");
 
-  printf("Leading Detector : %s\n",fLeadingDetector.Data());
+  printf("Leading Detector : %d\n",fLeadingDetector);
   printf("Leading Particle 4-vector:\n");
   printf("     E  = %13.3f",   fLeading.E() );
   printf("     Px = %13.3f",   fLeading.Px());
