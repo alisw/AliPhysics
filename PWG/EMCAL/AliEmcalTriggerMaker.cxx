@@ -355,7 +355,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   Int_t nBitsFound = 0;
   Int_t bitsFound[64];
   if(fDoQA){
-    for(int ibit = 0; ibit < 64; ibit++) {
+    for(int ibit = 0; ibit < sizeof(tBits)*8; ibit++) {
       if(tBits & (1 << ibit)){
         bitsFound[nBitsFound++] = ibit;
         fQAHistos->FillTH1("triggerBitsAll", ibit);
