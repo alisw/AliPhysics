@@ -351,6 +351,8 @@ void AliPHOSTenderSupply::ProcessEvent()
       DistanceToBadChannel(mod,&locPos,minDist);
       clu->SetDistanceToBadChannel(minDist) ;
 
+      Double_t ecross = EvalEcross(&cluPHOS);  
+      clu->SetMCEnergyFraction(ecross) ;
     }
   }
   else{//AOD
@@ -429,6 +431,9 @@ void AliPHOSTenderSupply::ProcessEvent()
       Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
       DistanceToBadChannel(mod,&locPos,minDist);
       clu->SetDistanceToBadChannel(minDist) ;
+
+      Double_t ecross = EvalEcross(&cluPHOS);  
+      clu->SetMCEnergyFraction(ecross) ;      
     }
   }
 
