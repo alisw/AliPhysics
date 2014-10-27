@@ -556,7 +556,7 @@ void AliAnalysisTaskK0sBayes::Analyze(AliAODEvent* aodEvent)
 
   PIDResponse->SetTOFResponse(aodEvent,AliPIDResponse::kTOF_T0);
 
-  PIDResponse->GetTOFResponse().SetTOFtailAllPara(-3,1.1);
+  PIDResponse->GetTOFResponse().SetTOFtailAllPara(-23,1.1);
 
   fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
 
