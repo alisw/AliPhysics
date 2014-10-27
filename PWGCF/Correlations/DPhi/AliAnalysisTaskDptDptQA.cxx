@@ -42,9 +42,6 @@
 #include "AliCentrality.h"
 #include "AliAnalysisTaskDptDptQA.h"
 
-using std::cout;
-using std::endl;
-
 ClassImp(AliAnalysisTaskDptDptQA)
 
 AliAnalysisTaskDptDptQA::AliAnalysisTaskDptDptQA()
@@ -995,7 +992,7 @@ void  AliAnalysisTaskDptDptQA::UserExec(Option_t */*option*/)
   
   int    k1,k2;
   int    iPhi, iEta, iEtaPhi, iPt, charge;
-  float  q,  p,phi, pt, eta, corr, corrPt, dedx, px, py, pz;
+  float  q, p, phi, pt, eta, corr, corrPt, dedx, px, py, pz;
   int    ij;
   int    id_1, q_1, iEtaPhi_1, iPt_1;
   float  pt_1, px_1, py_1, pz_1, corr_1, dedx_1;
@@ -1056,7 +1053,7 @@ void  AliAnalysisTaskDptDptQA::UserExec(Option_t */*option*/)
     //cout << "AliAnalysisTaskDptDptQA::UserExec(Option_t *option) - 5" << endl;
     
     //Centrality
-    AliCentrality* centralityObject =  fAODEvent->GetHeader()->GetCentralityP();
+    AliCentrality* centralityObject =  ((AliVAODHeader*)fAODEvent->GetHeader())->GetCentralityP();
     if (centralityObject)
       {
       //cout << "AliAnalysisTaskDptDptQA::UserExec(Option_t *option) - 6" << endl;
@@ -1069,7 +1066,7 @@ void  AliAnalysisTaskDptDptQA::UserExec(Option_t */*option*/)
       }
     //cout << "AliAnalysisTaskDptDptQA::UserExec(Option_t *option) - 8" << endl;
     
-    _nTracks  = fAODEvent->GetNTracks();
+    _nTracks  = fAODEvent->GetNumberOfTracks();
     //_mult0    = 0;
     //_mult1    = 0;
     //_mult2    = 0;

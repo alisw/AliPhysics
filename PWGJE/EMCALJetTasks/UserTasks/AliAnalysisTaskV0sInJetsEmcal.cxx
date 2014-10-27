@@ -1279,7 +1279,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   }
 
 //  fdCentrality = fAODIn->GetHeader()->GetCentrality(); // event centrality
-  fdCentrality = fAODIn->GetHeader()->GetCentralityP()->GetCentralityPercentile("V0M"); // event centrality
+  fdCentrality = ((AliVAODHeader*)fAODIn->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M"); // event centrality
   if(!fbIsPbPb)
     fdCentrality = 0.;
   Int_t iCentIndex = GetCentralityBinIndex(fdCentrality); // get index of centrality bin
@@ -2967,7 +2967,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
     return kFALSE;
   Double_t centrality;
 //  centrality = fAOD->GetHeader()->GetCentrality();
-  centrality = fAOD->GetHeader()->GetCentralityP()->GetCentralityPercentile("V0M");
+  centrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
   if(fbIsPbPb)
   {
     if(centrality < 0)

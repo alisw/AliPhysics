@@ -159,7 +159,8 @@ Bool_t AliAnalysisTaskCLQA::FillHistograms()
     AliAODEvent *aod = dynamic_cast<AliAODEvent*>(InputEvent());
     if (aod) {
       for (Int_t iMu = 0; iMu<aod->GetNumberOfTracks(); ++iMu) {
-        AliAODTrack* muonTrack = aod->GetTrack(iMu);
+        AliAODTrack* muonTrack = dynamic_cast<AliAODTrack*>(aod->GetTrack(iMu));
+        if(!muonTrack) AliFatal("Not a standard AOD");
         if (!muonTrack)
           continue;
         if (!muonTrack->IsMuonTrack()) 

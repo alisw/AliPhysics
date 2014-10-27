@@ -876,7 +876,7 @@ Bool_t AliAnalysisTaskFlowStrange::AcceptAAEvent(AliESDEvent*) {
 //=======================================================================
 Bool_t AliAnalysisTaskFlowStrange::MinimumRequirementsAA(AliAODEvent *tAOD) {
   fRunNumber = tAOD->GetRunNumber();
-  AliCentrality *cent = tAOD->GetHeader()->GetCentralityP();
+  AliCentrality *cent = ((AliVAODHeader*)tAOD->GetHeader())->GetCentralityP();
   fV0M = cent->GetCentralityPercentile("V0M");
   fTRK = cent->GetCentralityPercentile("TRK");
   TString mycent = fCentMethod;
@@ -978,7 +978,8 @@ Int_t AliAnalysisTaskFlowStrange::GetReferenceMultiplicity() { //toberefined
   Int_t rawN = tAOD->GetNumberOfTracks();
   Int_t ref=0;
   for(Int_t id=0; id!=rawN; ++id) {
-    track = tAOD->GetTrack(id);
+    track = dynamic_cast<AliAODTrack*>(tAOD->GetTrack(id));
+    if(!track) AliFatal("Not a standard AOD");
     if(!track->TestFilterBit(fRFPFilterBit)) continue;
     ++ref;
   }
@@ -989,9 +990,9 @@ Bool_t AliAnalysisTaskFlowStrange::AcceptPAEvent(AliAODEvent*) {
   // PA reading discontinued: TO BE UPDATED
   /*
   //if(aod->GetHeader()->GetEventNumberESDFile() == 0) return; //rejecting first chunk NOT NEEDED ANYMORE
-  Int_t bc2 = tAOD->GetHeader()->GetIRInt2ClosestInteractionMap();
+  Int_t bc2 = ((AliVAODHeader*)tAOD->GetHeader())->GetIRInt2ClosestInteractionMap();
   if(bc2!=0) return kFALSE;
-  Int_t bc1 = tAOD->GetHeader()->GetIRInt1ClosestInteractionMap();
+  Int_t bc1 = ((AliVAODHeader*)tAOD->GetHeader())->GetIRInt1ClosestInteractionMap();
   if(bc1!=0) return kFALSE;
   Short_t isPileup = tAOD->IsPileupFromSPD(5);
   if(isPileup!=0) return kFALSE;
@@ -1724,7 +1725,7 @@ void AliAnalysisTaskFlowStrange::ChargeParticles(AliAODEvent *tAOD) {
     ReadStack(mcArray);
   }
   for(int i=0; i!=tAOD->GetNumberOfTracks(); ++i) {
-    AliAODTrack *t = tAOD->GetTrack( i );
+    AliAODTrack *t = dynamic_cast<AliAODTrack*>(tAOD->GetTrack( i ));
     if(!t) continue;
     if( !t->TestFilterBit(1) ) continue;
     fDecayMass=0.0; // using mass as nsigmas control plot
@@ -2271,7 +2272,8 @@ void AliAnalysisTaskFlowStrange::MakeQTPC(AliAODEvent *tAOD) {
   //=>looping
   Int_t rawN = tAOD->GetNumberOfTracks();
   for(Int_t id=0; id!=rawN; ++id) {
-    track = tAOD->GetTrack(id);
+    track = dynamic_cast<AliAODTrack*>(tAOD->GetTrack(id));
+    if(!track) AliFatal("Not a standard AOD");
     //=>cuts
     if(!track->TestFilterBit(fRFPFilterBit)) continue;
     if( fExcludeTPCEdges )
@@ -2818,7 +2820,7 @@ void AliAnalysisTaskFlowStrange::SaveVZEROResponse() {
 Int_t AliAnalysisTaskFlowStrange::RefMult(AliAODEvent *tAOD, Int_t fb) {
   Int_t found = 0;
   for(int i=0; i!=tAOD->GetNumberOfTracks(); ++i) {
-    AliAODTrack *t = tAOD->GetTrack( i );
+    AliAODTrack *t = dynamic_cast<AliAODTrack*>(tAOD->GetTrack( i ));
     if(!t) continue;
     if( !t->TestFilterBit(fb) ) continue;
     if( t->Eta()<-0.8 || t->Eta()>+0.8 ) continue;
@@ -2836,7 +2838,7 @@ Int_t AliAnalysisTaskFlowStrange::RefMultTPC() {
   if(!ev) return -1;
   Int_t found = 0;
   for(int i=0; i!=ev->GetNumberOfTracks(); ++i) {
-    AliAODTrack *t = ev->GetTrack( i );
+    AliAODTrack *t = dynamic_cast<AliAODTrack*>(ev->GetTrack( i ));
     if(!t) continue;
     if( !t->TestFilterBit(1) ) continue;
     if( t->Eta()<-0.8 || t->Eta()>+0.8 ) continue;
@@ -2854,7 +2856,7 @@ Int_t AliAnalysisTaskFlowStrange::RefMultGlobal() {
   if(!ev) return -1;
   Int_t found = 0;
   for(int i=0; i!=ev->GetNumberOfTracks(); ++i) {
-    AliAODTrack *t = ev->GetTrack( i );
+    AliAODTrack *t = dynamic_cast<AliAODTrack*>(ev->GetTrack( i ));
     if(!t) continue;
     if( !t->TestFilterBit(16) ) continue;
     if( t->Eta()<-0.8 || t->Eta()>+0.8 ) continue;

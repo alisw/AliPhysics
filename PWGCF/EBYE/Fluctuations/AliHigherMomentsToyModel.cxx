@@ -356,7 +356,8 @@ void AliHigherMomentsToyModel::doAODEvent(){
   }  
   
   
-  AliAODHeader *aodHeader = fAOD->GetHeader();
+  AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+  if(!aodHeader) AliFatal("Not a standard AOD");
   
   fCentrality = (Int_t)aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
   /* Int_t cent = -1;
@@ -414,7 +415,8 @@ void AliHigherMomentsToyModel::doAODEvent(){
       Int_t gID = aodTrack1->GetID();
       
       //if( aodTrack->GetID() != (-aodTrack1->GetID() -1) ) continue;
-      newAodTrack = gID >= 0 ? aodTrack1 : fAOD->GetTrack(trackMap->GetValue(-1-gID)); //Take those global track who corresponds to TPC only track
+      newAodTrack = gID >= 0 ? aodTrack1 : dynamic_cast<AliAODTrack*>(fAOD->GetTrack(trackMap->GetValue(-1-gID))); //Take those global track who corresponds to TPC only track
+      if(!newAodTrack) AliFatal("Not a standard AOD");
       
       Float_t dxy = 0., dz = 0.;
       
@@ -573,7 +575,8 @@ void AliHigherMomentsToyModel::doMCAODEvent(){
     return;
   }
   
-  AliAODHeader *aodHeader = fAOD->GetHeader();
+  AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+  if(!aodHeader) AliFatal("Not a standard AOD");
   
   fCentrality = (Int_t)aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
   
@@ -638,7 +641,8 @@ void AliHigherMomentsToyModel::doMCAODEvent(){
     
     //if( aodTrack->GetID() != (-aodTrack1->GetID() -1) ) continue;
     
-    newAodTrack = gID >= 0 ? aodTrack1 : fAOD->GetTrack(trackMap->GetValue(-1-gID)); //Take those global track who corresponds to TPC only track
+    newAodTrack = gID >= 0 ? aodTrack1 : dynamic_cast<AliAODTrack*>(fAOD->GetTrack(trackMap->GetValue(-1-gID))); //Take those global track who corresponds to TPC only track
+    if(!newAodTrack) AliFatal("Not a standard AOD");
     
   
     //cout << dxy << endl;

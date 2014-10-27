@@ -782,7 +782,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     } else {
       const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
       if (aev) {
-        res = aev->GetHeader()->GetOfflineTrigger();
+        res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
       }
     }
     if ((res & fOffTrigger) == 0) {

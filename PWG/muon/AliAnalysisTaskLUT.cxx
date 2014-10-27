@@ -81,7 +81,7 @@ void AliAnalysisTaskLUT::Exec(Option_t *)
   AliESDVertex* vertex = (AliESDVertex*) fESDEvent->GetVertex();
   zVertex = 0.0;
   if (vertex) {
-    zVertex = vertex->GetZv();
+    zVertex = vertex->GetZ();
   }
   ULong64_t mask = fESDEvent->GetTriggerMask();
 

@@ -30,6 +30,7 @@
 
 #include "AliAODpidUtil.h"
 #include "AliAnalysisUtils.h"
+#include "assert.h"
 #include "AliGenHijingEventHeader.h"
 
 ClassImp(AliFemtoEventReaderAOD)
@@ -313,7 +314,10 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     }
   }
 
-  tEvent->SetReactionPlaneAngle(fEvent->GetHeader()->GetQTheta(0)/2.0);
+  AliAODHeader * header = dynamic_cast<AliAODHeader*>(fEvent->GetHeader());
+  assert(header&&"Not a standard AOD");
+
+  tEvent->SetReactionPlaneAngle(header->GetQTheta(0)/2.0);
   // Int_t *motherids=0;
   // if (mcP) {
   //   const int motherTabSize = ((AliAODMCParticle *) mcP->At(mcP->GetEntries()-1))->GetLabel();
@@ -402,7 +406,8 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
   // looking for global tracks and saving their numbers to copy from them PID information to TPC-only tracks in the main loop over tracks
   for (int i=0;i<nofTracks;i++) {
-    const AliAODTrack *aodtrack=fEvent->GetTrack(i);
+    const AliAODTrack *aodtrack=dynamic_cast<const AliAODTrack*>(fEvent->GetTrack(i));
+    assert(aodtrack&&"Not a standard AOD");
     if (!aodtrack->TestFilterBit(fFilterBit)) {
       if(aodtrack->GetID() < 0) continue;
       labels[aodtrack->GetID()] = i;
@@ -539,8 +544,9 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     // No additional information exists
     // Read in the normal AliAODTracks
 
-    //	const AliAODTrack *aodtrack=fEvent->GetTrack(i); // getting the AODtrack directly
-    AliAODTrack *aodtrack=fEvent->GetTrack(i); // getting the AODtrack directly
+    //	const AliAODTrack *aodtrack=dynamic_cast<AliAODTrack*>(fEvent->GetTrack(i));
+    AliAODTrack *aodtrack=dynamic_cast<AliAODTrack*>(fEvent->GetTrack(i));
+    assert(aodtrack&&"Not a standard AOD"); // getting the AODtrack directly
 
 
 
@@ -585,11 +591,12 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
     AliAODTrack *aodtrackpid;
     if((fFilterBit ==  (1 << (7))) || fFilterMask == 128) {//for TPC Only tracks we have to copy PID information from corresponding global tracks
-      aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
+      aodtrackpid = dynamic_cast<AliAODTrack*>(fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]));
     }
     else {
-      aodtrackpid = fEvent->GetTrack(i);
+      aodtrackpid = dynamic_cast<AliAODTrack*>(fEvent->GetTrack(i));
     }
+    assert(aodtrackpid&&"Not a standard AOD");
 
     CopyPIDtoFemtoTrack(aodtrackpid, trackCopy);
 

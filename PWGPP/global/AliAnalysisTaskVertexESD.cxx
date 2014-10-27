@@ -416,14 +416,14 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
     if(spdv->GetNContributors()>0) {
       TString title=spdv->GetTitle();
       if(title.Contains("3D")) {
-		  fhSPDVertexX->Fill(spdv->GetXv());
-		  fhSPDVertexY->Fill(spdv->GetYv());
-		  fhSPDVertexZ->Fill(spdv->GetZv()); 
+		  fhSPDVertexX->Fill(spdv->GetX());
+		  fhSPDVertexY->Fill(spdv->GetY());
+		  fhSPDVertexZ->Fill(spdv->GetZ()); 
 		  
 		  fhntrksSPDvsSPDcls->Fill(spdv->GetNContributors(), spd0cls);
       }
 	 if(title.Contains("Z")){
-		 fhSPDVertexZonly->Fill(spdv->GetZv());
+		 fhSPDVertexZonly->Fill(spdv->GetZ());
 		 fhntrksZvsSPDcls->Fill(spdv->GetNContributors(), spd1cls);
 	 }
 	}
@@ -431,17 +431,17 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
 	
   if(trkv) {
     if(trkv->GetNContributors()>0) {
-      fhTRKVertexX->Fill(trkv->GetXv());
-      fhTRKVertexY->Fill(trkv->GetYv());
-      fhTRKVertexZ->Fill(trkv->GetZv());
+      fhTRKVertexX->Fill(trkv->GetX());
+      fhTRKVertexY->Fill(trkv->GetY());
+      fhTRKVertexZ->Fill(trkv->GetZ());
     }
   }
   
   if(tpcv) {
     if(tpcv->GetNContributors()>0) {
-      fhTPCVertexX->Fill(tpcv->GetXv());
-      fhTPCVertexY->Fill(tpcv->GetYv());
-      fhTPCVertexZ->Fill(tpcv->GetZv());
+      fhTPCVertexX->Fill(tpcv->GetX());
+      fhTPCVertexY->Fill(tpcv->GetY());
+      fhTPCVertexZ->Fill(tpcv->GetZ());
     }
   } 
 
@@ -458,11 +458,11 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
 	TString spdtitle = spdv->GetTitle();
 	if(spdtitle.Contains("vertexer: 3D") ? 1. : 0.){
 	  fhSPD3DTrklets->Fill(ntrklets);
-	  fhSPD3DZreco->Fill(spdv->GetZv());
+	  fhSPD3DZreco->Fill(spdv->GetZ());
 	}
 	else{
 	  fhSPDZTrklets->Fill(ntrklets);
-	  fhSPDZZreco->Fill(spdv->GetZv());
+	  fhSPDZZreco->Fill(spdv->GetZ());
 	}
       }
     }
@@ -506,31 +506,31 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   
     if(spdvp->GetNContributors()>=2) {
    
-      xpile=spdvp->GetXv();
+      xpile=spdvp->GetX();
       expile=spdvp->GetXRes();
-      ypile=spdvp->GetYv();
+      ypile=spdvp->GetY();
       eypile=spdvp->GetYRes();
-      zpile=spdvp->GetZv();
+      zpile=spdvp->GetZ();
       ezpile=spdvp->GetZRes();
       ntrkspile=spdvp->GetNContributors();  
     
       if (esdE->IsPileupFromSPD(2,0.,3.,2.,5.)){
         
-        fhSPDVertexDiffZPileContr2->Fill(spdv->GetZv()-spdvp->GetZv());
-        if(spdvp->GetNContributors()>=3) {fhSPDVertexDiffZPileContr3->Fill(spdv->GetZv()-spdvp->GetZv());}
-        if(spdvp->GetNContributors()>=4) {fhSPDVertexDiffZPileContr4->Fill(spdv->GetZv()-spdvp->GetZv());}
-        if(spdvp->GetNContributors()>=5) {fhSPDVertexDiffZPileContr5->Fill(spdv->GetZv()-spdvp->GetZv());}
+        fhSPDVertexDiffZPileContr2->Fill(spdv->GetZ()-spdvp->GetZ());
+        if(spdvp->GetNContributors()>=3) {fhSPDVertexDiffZPileContr3->Fill(spdv->GetZ()-spdvp->GetZ());}
+        if(spdvp->GetNContributors()>=4) {fhSPDVertexDiffZPileContr4->Fill(spdv->GetZ()-spdvp->GetZ());}
+        if(spdvp->GetNContributors()>=5) {fhSPDVertexDiffZPileContr5->Fill(spdv->GetZ()-spdvp->GetZ());}
         
       }//end IsPileUpFromSPD
       
       if (isPileUpfromSPD){
         
-        fhSPDVertexXPile->Fill(spdvp->GetXv());
-	    fhSPDVertexYPile->Fill(spdvp->GetYv());
-	    fhSPDVertexZPile->Fill(spdvp->GetZv());
+        fhSPDVertexXPile->Fill(spdvp->GetX());
+	    fhSPDVertexYPile->Fill(spdvp->GetY());
+	    fhSPDVertexZPile->Fill(spdvp->GetZ());
         fhSPDContributorsPile->Fill(spdvp->GetNContributors());
         fhSPDDispContributors->Fill(spdv->GetNContributors(),spdvp->GetNContributors());
-        fhSPDVertexDiffZPileDefault->Fill(spdv->GetZv()-spdvp->GetZv());
+        fhSPDVertexDiffZPileDefault->Fill(spdv->GetZ()-spdvp->GetZ());
    
       }
     }
@@ -577,32 +577,32 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   xnt[index++]=mcVertex[1];
   xnt[index++]=mcVertex[2];
   
-  xnt[index++]=spdv->GetXv();
+  xnt[index++]=spdv->GetX();
   xnt[index++]=spdv->GetXRes();
-  xnt[index++]=spdv->GetYv();
+  xnt[index++]=spdv->GetY();
   xnt[index++]=spdv->GetYRes();
-  xnt[index++]=spdv->GetZv();
+  xnt[index++]=spdv->GetZ();
   xnt[index++]=spdv->GetZRes();
   xnt[index++]=spdv->GetNContributors();
   TString spdtitle = spdv->GetTitle();
   xnt[index++]=(spdtitle.Contains("vertexer: 3D") ? 1. : 0.);
   xnt[index++]=spdv->GetDispersion();
   
-  xnt[index++]=tpcv->GetXv();
+  xnt[index++]=tpcv->GetX();
   xnt[index++]=tpcv->GetXRes();
-  xnt[index++]=tpcv->GetYv();
+  xnt[index++]=tpcv->GetY();
   xnt[index++]=tpcv->GetYRes();
-  xnt[index++]=tpcv->GetZv();
+  xnt[index++]=tpcv->GetZ();
   xnt[index++]=tpcv->GetZRes();
   xnt[index++]=tpcv->GetNContributors();
   TString tpctitle = tpcv->GetTitle();
   xnt[index++]=(tpctitle.Contains("WithConstraint") ? 1. : 0.);
   
-  xnt[index++]=trkv->GetXv();
+  xnt[index++]=trkv->GetX();
   xnt[index++]=trkv->GetXRes();
-  xnt[index++]=trkv->GetYv();
+  xnt[index++]=trkv->GetY();
   xnt[index++]=trkv->GetYRes();
-  xnt[index++]=trkv->GetZv();
+  xnt[index++]=trkv->GetZ();
   xnt[index++]=trkv->GetZRes();
   xnt[index++]=trkv->GetNContributors();// tpccontrorig;
   TString trktitle = trkv->GetTitle();
@@ -635,21 +635,21 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
 
   if(fRecoVtxTPC) {
     AliESDVertex *tpcvnc = ReconstructPrimaryVertexTPC(kFALSE);
-    xnt[index++]=tpcvnc->GetXv();
+    xnt[index++]=tpcvnc->GetX();
     xnt[index++]=tpcvnc->GetXRes();
-    xnt[index++]=tpcvnc->GetYv();
+    xnt[index++]=tpcvnc->GetY();
     xnt[index++]=tpcvnc->GetYRes();
-    xnt[index++]=tpcvnc->GetZv();
+    xnt[index++]=tpcvnc->GetZ();
     xnt[index++]=tpcvnc->GetZRes();
     xnt[index++]=tpcvnc->GetNContributors();
     delete tpcvnc; tpcvnc=0;
     
     AliESDVertex *tpcvc = ReconstructPrimaryVertexTPC(kTRUE);
-    xnt[index++]=tpcvc->GetXv();
+    xnt[index++]=tpcvc->GetX();
     xnt[index++]=tpcvc->GetXRes();
-    xnt[index++]=tpcvc->GetYv();
+    xnt[index++]=tpcvc->GetY();
     xnt[index++]=tpcvc->GetYRes();
-    xnt[index++]=tpcvc->GetZv();
+    xnt[index++]=tpcvc->GetZ();
     xnt[index++]=tpcvc->GetZRes();
     xnt[index++]=tpcvc->GetNContributors();
     delete tpcvc; tpcvc=0;
@@ -657,33 +657,33 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
 
   if(fRecoVtxITSTPC) {
     AliESDVertex *trkvnc = ReconstructPrimaryVertexITSTPC(kFALSE);
-    xnt[index++]=trkvnc->GetXv();
+    xnt[index++]=trkvnc->GetX();
     xnt[index++]=trkvnc->GetXRes();
-    xnt[index++]=trkvnc->GetYv();
+    xnt[index++]=trkvnc->GetY();
     xnt[index++]=trkvnc->GetYRes();
-    xnt[index++]=trkvnc->GetZv();
+    xnt[index++]=trkvnc->GetZ();
     xnt[index++]=trkvnc->GetZRes();
     xnt[index++]=trkvnc->GetNContributors();
   
-    secnt[indexSecNt++]=trkvnc->GetXv();
-    secnt[indexSecNt++]=trkvnc->GetYv();
-    secnt[indexSecNt++]=trkvnc->GetZv();
+    secnt[indexSecNt++]=trkvnc->GetX();
+    secnt[indexSecNt++]=trkvnc->GetY();
+    secnt[indexSecNt++]=trkvnc->GetZ();
     secnt[indexSecNt++]=trkvnc->GetNContributors();
 
-    xTRKnc = (Float_t)trkvnc->GetXv();
-    yTRKnc = (Float_t)trkvnc->GetYv();
-    zTRKnc = (Float_t)trkvnc->GetZv();
+    xTRKnc = (Float_t)trkvnc->GetX();
+    yTRKnc = (Float_t)trkvnc->GetY();
+    zTRKnc = (Float_t)trkvnc->GetZ();
     ntrksTRKnc = (trkvnc->GetNContributors()<0 ? 0 : (UShort_t)trkvnc->GetNContributors());
 
     delete trkvnc; trkvnc=0;
 
 
     AliESDVertex *trkvc = ReconstructPrimaryVertexITSTPC(kTRUE);
-    xnt[index++]=trkvc->GetXv();
+    xnt[index++]=trkvc->GetX();
     xnt[index++]=trkvc->GetXRes();
-    xnt[index++]=trkvc->GetYv();
+    xnt[index++]=trkvc->GetY();
     xnt[index++]=trkvc->GetYRes();
-    xnt[index++]=trkvc->GetZv();
+    xnt[index++]=trkvc->GetZ();
     xnt[index++]=trkvc->GetZRes();
     xnt[index++]=trkvc->GetNContributors();
     delete trkvc; trkvc=0;
@@ -694,9 +694,9 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
     AliESDVertex *trkvnceven = ReconstructPrimaryVertexITSTPC(kFALSE,2);
     if(trkvncodd->GetNContributors()>0 && 
        trkvnceven->GetNContributors()>0) {
-      xnt[index++]=trkvncodd->GetXv()-trkvnceven->GetXv();
-      xnt[index++]=trkvncodd->GetYv()-trkvnceven->GetYv();
-      xnt[index++]=trkvncodd->GetZv()-trkvnceven->GetZv();
+      xnt[index++]=trkvncodd->GetX()-trkvnceven->GetX();
+      xnt[index++]=trkvncodd->GetY()-trkvnceven->GetY();
+      xnt[index++]=trkvncodd->GetZ()-trkvnceven->GetZ();
       xnt[index++]=TMath::Sqrt(trkvncodd->GetXRes()*trkvncodd->GetXRes()+trkvnceven->GetXRes()*trkvnceven->GetXRes());
       xnt[index++]=TMath::Sqrt(trkvncodd->GetYRes()*trkvncodd->GetYRes()+trkvnceven->GetYRes()*trkvnceven->GetYRes());
       xnt[index++]=TMath::Sqrt(trkvncodd->GetZRes()*trkvncodd->GetZRes()+trkvnceven->GetZRes()*trkvnceven->GetZRes());

@@ -249,9 +249,9 @@ void AliCFEventRecCuts::SelectionBitMap(TObject* obj) {
     // Pick up the position and uncertainties
     
     Double_t vtxPos[3];
-    vtxPos[0] = vtxESD->GetXv();
-    vtxPos[1] = vtxESD->GetYv();
-    vtxPos[2] = vtxESD->GetZv();
+    vtxPos[0] = vtxESD->GetX();
+    vtxPos[1] = vtxESD->GetY();
+    vtxPos[2] = vtxESD->GetZ();
     
     Double_t vtxRes[3];
     vtxRes[0] = vtxESD->GetXRes();
@@ -312,9 +312,9 @@ void AliCFEventRecCuts::FillHistograms(TObject* obj, Bool_t b)
   // Require the vertex to have been reconstructed successfully
   if (strcmp(vtxESD->GetName(), "default")==0)return;
   // vertex position and uncertainties
-  fhQA[kVtxPosX] [index]->Fill(vtxESD->GetXv());
-  fhQA[kVtxPosY] [index]->Fill(vtxESD->GetYv());
-  fhQA[kVtxPosZ] [index]->Fill(vtxESD->GetZv());
+  fhQA[kVtxPosX] [index]->Fill(vtxESD->GetX());
+  fhQA[kVtxPosY] [index]->Fill(vtxESD->GetY());
+  fhQA[kVtxPosZ] [index]->Fill(vtxESD->GetZ());
   fhQA[kVtxResX] [index]->Fill(vtxESD->GetXRes());
   fhQA[kVtxResY] [index]->Fill(vtxESD->GetYRes());
   fhQA[kVtxResZ] [index]->Fill(vtxESD->GetZRes());

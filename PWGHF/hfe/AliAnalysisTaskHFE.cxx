@@ -1608,7 +1608,8 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     kinkmother=kFALSE;
     kinkdaughter=kFALSE;
     kinkstatus = 0.;
-    track = fAOD->GetTrack(itrack); mctrack = NULL;
+    track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(itrack));
+    if(!track) AliFatal("Not a standard AOD"); mctrack = NULL;
     if(!track) continue;
 
     for(int ivx = 0; ivx < numberofmotherkink; ivx++){

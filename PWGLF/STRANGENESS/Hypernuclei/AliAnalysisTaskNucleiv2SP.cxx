@@ -479,7 +479,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   
   fHistEventMultiplicity->Fill(2); // analyzed events with PV
   
-  if(TMath::Abs(vtx->GetZv())>10) return;
+  if(TMath::Abs(vtx->GetZ())>10) return;
   fHistEventMultiplicity->Fill(3);
 
   Bool_t isSelectedCentral     = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral);

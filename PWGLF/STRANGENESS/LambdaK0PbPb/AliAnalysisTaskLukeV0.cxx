@@ -484,9 +484,9 @@ void AliAnalysisTaskLukeV0::UserExec(Option_t *)
 	const AliESDVertex *kPv = ((AliESDEvent *)fESD)->GetPrimaryVertex();
 	if ( kPv != 0 ) 
     {
-		tPVPosition[0] = kPv->GetXv();
-		tPVPosition[1] = kPv->GetYv();
-		tPVPosition[2] = kPv->GetZv();
+		tPVPosition[0] = kPv->GetX();
+		tPVPosition[1] = kPv->GetY();
+		tPVPosition[2] = kPv->GetZ();
 		if( tPVPosition[2] == 0. ) 
 		{
 			//printf("WARNING: Primary vertex a Z = 0, aborting\n");

@@ -441,7 +441,9 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 	// Before Physics Selection
 	//------------------------------------------------ 
 	ltrackMultiplicity   = (InputEvent())->GetNumberOfTracks();
-	lrefMultiplicity     =fAODEvent->GetHeader()->GetRefMultiplicity();
+        AliAODHeader * header = dynamic_cast<AliAODHeader*>(fAODEvent->GetHeader());
+        if(!header) AliFatal("Not a standard AOD");
+	lrefMultiplicity     = header->GetRefMultiplicity();
 	
 	fHist_Mult_B4_Trg_Sel->Fill(ltrackMultiplicity,lrefMultiplicity);
 	

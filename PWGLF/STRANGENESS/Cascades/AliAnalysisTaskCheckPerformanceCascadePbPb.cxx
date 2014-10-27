@@ -1966,7 +1966,8 @@ void AliAnalysisTaskCheckPerformanceCascadePbPb::UserExec(Option_t *) {
 
           lPrimaryTrackMultiplicity = 0.;
           for (Int_t itrack = 0; itrack<nTrackMultiplicity; itrack++) {
-            AliAODTrack* track = lAODevent->GetTrack(itrack);
+            AliAODTrack* track = dynamic_cast<AliAODTrack*>(lAODevent->GetTrack(itrack));
+            if(!track) AliFatal("Not a standard AOD");
             if (track->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA)) lPrimaryTrackMultiplicity++;
           }
 

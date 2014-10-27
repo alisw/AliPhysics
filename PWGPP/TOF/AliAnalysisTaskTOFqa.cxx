@@ -1344,7 +1344,7 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
     if(fVertex->GetNContributors()<1) fVertex = 0x0;
   }
   if (!fVertex) return; 
-  if (! (TMath::Abs(fVertex->GetZv())<10.0) ) return;
+  if (! (TMath::Abs(fVertex->GetZ())<10.0) ) return;
 
   // info from V0 detector QA 
   AliESDVZERO * vzero = fESD->GetVZEROData();
