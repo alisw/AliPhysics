@@ -37,7 +37,7 @@ AliAnalysisTaskEmcalHighMultTrigger* AddTaskEmcalHighMultTrigger(
   task->SetNCentBins(nCentBins);
   task->SetCaloTriggerPatchInfoName(nPatches);
   task->SetVzRange(-10.,10.);
-  task->SetUseAliAnaUtils(kTRUE);
+  task->SetUseAliAnaUtils(kTRUE,kFALSE);
 
   AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
   trackCont->SetClassName("AliVTrack");

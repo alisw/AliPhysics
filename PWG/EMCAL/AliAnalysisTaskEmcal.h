@@ -83,7 +83,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetTracksName(const char *n)                          { AddParticleContainer(n)                             ; }
   void                        SetTrigClass(const char *n)                           { fTrigClass         = n                              ; } 
   void                        SetTriggerTypeSel(TriggerType t)                      { fTriggerTypeSel    = t                              ; } 
-  void                        SetUseAliAnaUtils(Bool_t b)                           { fUseAliAnaUtils    = b                              ; }
+  void                        SetUseAliAnaUtils(Bool_t b, Bool_t bRejPilup = kTRUE) { fUseAliAnaUtils    = b ; fRejectPileup = bRejPilup  ; }
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
 
  protected:
@@ -131,7 +131,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fMaxVz;                      // max vertex for event selection
   Double_t                    fTrackPtCut;                 // cut on track pt in event selection
   Int_t                       fMinNTrack;                  // minimum nr of tracks in event with pT>fTrackPtCut
-  Bool_t                      fUseAliAnaUtils;             //  used for LHC13* data
+  Bool_t                      fUseAliAnaUtils;             // used for LHC13* data: z-vtx, Ncontributors, z-vtx resolution cuts
+  Bool_t                      fRejectPileup;               // Reject pilup using function AliAnalysisUtils::IsPileUpEvent()
   AliAnalysisUtils           *fAliAnalysisUtils;           //! vertex selection (optional)
   UInt_t                      fOffTrigger;                 // offline trigger for event selection
   TString                     fTrigClass;                  // trigger class name for event selection
@@ -150,7 +151,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Int_t                       fMinMCLabel;                 // minimum MC label value for the tracks/clusters being considered MC particles
   Int_t                       fMCLabelShift;               // if MC label > fMCLabelShift, MC label -= fMCLabelShift
   Int_t                       fNcentBins;                  // how many centrality bins
-  Bool_t                      fNeedEmcalGeom;              // whether or not the task need the emcal geometry
+  Bool_t                      fNeedEmcalGeom;              // whether or not the task needs the emcal geometry
   Bool_t                      fIsEsd;                      //!whether it's an ESD analysis
   AliEMCALGeometry           *fGeom;                       //!emcal geometry
   TClonesArray               *fTracks;                     //!tracks
@@ -194,6 +195,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 10) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 11) // EMCAL base analysis task
 };
 #endif

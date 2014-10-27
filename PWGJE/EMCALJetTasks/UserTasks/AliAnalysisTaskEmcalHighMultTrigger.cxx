@@ -38,7 +38,8 @@ AliAnalysisTaskEmcalHighMultTrigger::AliAnalysisTaskEmcalHighMultTrigger() :
   fHistTracklets(0),
   fHistV0MultSum(0),
   fHistTracksTracklets(0),
-  fHistTracksV0MultSum(0)
+  fHistTracksV0MultSum(0),
+  fHistSPDTrackletsClusters(0)
 {
   // Default constructor.
 
@@ -73,7 +74,8 @@ AliAnalysisTaskEmcalHighMultTrigger::AliAnalysisTaskEmcalHighMultTrigger(const c
   fHistTracklets(0),
   fHistV0MultSum(0),
   fHistTracksTracklets(0),
-  fHistTracksV0MultSum(0)
+  fHistTracksV0MultSum(0),
+  fHistSPDTrackletsClusters(0)
 {
   // Standard constructor.
 
@@ -151,8 +153,8 @@ void AliAnalysisTaskEmcalHighMultTrigger::UserCreateOutputObjects()
   fOutput->Add(fHistV0MultSum);
 
   const Int_t nMultEst = 3;
-  Int_t nBinsMultEst[nMultEst] = {300,300,500};
-  Double_t multEstMax[nMultEst] = {300.,300.,500.};
+  Int_t nBinsMultEst[nMultEst] = {300,200,500};
+  Double_t multEstMax[nMultEst] = {300.,200.,500.};
   TString strMultEst[nMultEst] = {"Tracks","Tracklets","V0MultSum"};
   for(Int_t i = 0; i<nMultEst; i++) {
     histName = Form("fHistEnergyMedianEst%s",strMultEst[i].Data());
@@ -196,6 +198,11 @@ void AliAnalysisTaskEmcalHighMultTrigger::UserCreateOutputObjects()
   fHistTracksV0MultSum = new TH2F(histName.Data(),histTitle.Data(),nBinsMultEst[0],0.,multEstMax[0],nBinsMultEst[2],0.,multEstMax[2]);
   fOutput->Add(fHistTracksV0MultSum);
 
+  histName = Form("fHistSPDTrackletsClusters");
+  histTitle = Form("%s;#it{N}_{tracklets,SPD};#it{N}_{clusters,SPD}",histName.Data());
+  fHistSPDTrackletsClusters = new TH2F(histName.Data(),histTitle.Data(),nBinsMultEst[1],0.,multEstMax[1],200,0.,1000.);
+  fOutput->Add(fHistSPDTrackletsClusters);
+
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
 
@@ -238,6 +245,10 @@ Bool_t AliAnalysisTaskEmcalHighMultTrigger::FillHistograms()
 
   fHistTracksTracklets->Fill(multEst[0],multEst[1]);
   fHistTracksV0MultSum->Fill(multEst[0],multEst[2]);
+
+  Int_t nClustersLayer0 = InputEvent()->GetNumberOfITSClusters(0);
+  Int_t nClustersLayer1 = InputEvent()->GetNumberOfITSClusters(1);
+  fHistSPDTrackletsClusters->Fill(multEst[1],(Float_t)(nClustersLayer0+nClustersLayer1));
 
   return kTRUE;
 }
