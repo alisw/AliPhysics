@@ -113,7 +113,8 @@ fhMCPi0PtOrigin(0x0),        fhMCEtaPtOrigin(0x0),
 fhMCPi0ProdVertex(0),        fhMCEtaProdVertex(0),
 fhPrimPi0ProdVertex(0),      fhPrimEtaProdVertex(0),
 fhReMCFromConversion(0),     fhReMCFromNotConversion(0),   fhReMCFromMixConversion(0),
-fhCosThStarPrimPi0(0),       fhCosThStarPrimEta(0)//,
+fhCosThStarPrimPi0(0),       fhCosThStarPrimEta(0),
+ fhEPairDiffTime(0)
 {
   //Default Ctor
   
@@ -321,7 +322,10 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   Int_t ntrmbins  = GetHistogramRanges()->GetHistoTrackMultiplicityBins();
   Int_t ntrmmax   = GetHistogramRanges()->GetHistoTrackMultiplicityMax();
   Int_t ntrmmin   = GetHistogramRanges()->GetHistoTrackMultiplicityMin();
-  
+  Int_t tdbins    = GetHistogramRanges()->GetHistoDiffTimeBins() ;
+  Float_t tdmax   = GetHistogramRanges()->GetHistoDiffTimeMax();
+  Float_t tdmin   = GetHistogramRanges()->GetHistoDiffTimeMin();
+
   if(fCheckConversion)
   {
     fhReConv = new TH2F("hReConv","Real Pair with one recombined conversion ",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
@@ -485,6 +489,11 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       }
     }
   }
+  
+  fhEPairDiffTime = new TH2F("hEPairDiffTime","cluster pair time difference vs #it{p}_{T}",nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
+  fhEPairDiffTime->SetXTitle("#it{p}_{T,pair} (GeV/#it{c})");
+  fhEPairDiffTime->SetYTitle("#Delta t (ns)");
+  outputContainer->Add(fhEPairDiffTime);
   
   if(fFillAsymmetryHisto)
   {
@@ -1963,9 +1972,9 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   }
   
   //Get shower shape information of clusters
-  TObjArray *clusters = 0;
-  if     (GetCalorimeter()==kEMCAL) clusters = GetEMCALClusters();
-  else if(GetCalorimeter()==kPHOS ) clusters = GetPHOSClusters() ;
+//  TObjArray *clusters = 0;
+//  if     (GetCalorimeter()==kEMCAL) clusters = GetEMCALClusters();
+//  else if(GetCalorimeter()==kPHOS ) clusters = GetPHOSClusters() ;
   
   //---------------------------------
   //First loop on photons/clusters
@@ -2004,13 +2013,13 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     fPhotonMom1.SetPxPyPzE(p1->Px(),p1->Py(),p1->Pz(),p1->E());
     
     //Get (Super)Module number of this cluster
-    module1 = GetModuleNumber(p1);
+    module1 =  p1->GetSModNumber();// GetModuleNumber(p1);
     
     //------------------------------------------
     // Recover original cluster
-    Int_t iclus1 = -1 ;
-    AliVCluster * cluster1 = FindCluster(clusters,p1->GetCaloLabel(0),iclus1);
-    if(!cluster1) AliWarning("Cluster1 not found!");
+//    Int_t iclus1 = -1 ;
+//    AliVCluster * cluster1 = FindCluster(clusters,p1->GetCaloLabel(0),iclus1);
+//    if(!cluster1) AliWarning("Cluster1 not found!");
     
     //---------------------------------
     //Second loop on photons/clusters
@@ -2029,45 +2038,60 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       if (GetMixedEvent() && (evtIndex1 == evtIndex2))
         continue ;
       
-      //------------------------------------------
-      // Recover original cluster
-      Int_t iclus2 = -1;
-      AliVCluster * cluster2 = FindCluster(clusters,p2->GetCaloLabel(0),iclus2,iclus1+1);
-      // start new loop from iclus1+1 to gain some time
-      if(!cluster2) AliWarning("Cluster2 not found!");
+//      //------------------------------------------
+//      // Recover original cluster
+//      Int_t iclus2 = -1;
+//      AliVCluster * cluster2 = FindCluster(clusters,p2->GetCaloLabel(0),iclus2,iclus1+1);
+//      // start new loop from iclus1+1 to gain some time
+//      if(!cluster2) AliWarning("Cluster2 not found!");
+//      
+//      // Get the TOF,l0 and ncells from the clusters
+//      Float_t tof1  = -1;
+//      Float_t l01   = -1;
+//      Int_t ncell1  = 0;
+//      if(cluster1)
+//      {
+//        tof1   = cluster1->GetTOF()*1e9;
+//        l01    = cluster1->GetM02();
+//        ncell1 = cluster1->GetNCells();
+//        //printf("cluster1: E %2.2f (%2.2f), l0 %2.2f, tof %2.2f\n",cluster1->E(),p1->E(),l01,tof1);
+//      }
+//      //else printf("cluster1 not available: calo label %d / %d, cluster ID %d\n",
+//      //            p1->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster1->GetID());
+//      
+//      Float_t tof2  = -1;
+//      Float_t l02   = -1;
+//      Int_t ncell2  = 0;
+//      if(cluster2)
+//      {
+//        tof2   = cluster2->GetTOF()*1e9;
+//        l02    = cluster2->GetM02();
+//        ncell2 = cluster2->GetNCells();
+//        //printf("cluster2: E %2.2f (%2.2f), l0 %2.2f, tof %2.2f\n",cluster2->E(),p2->E(),l02,tof2);
+//      }
+//      //else printf("cluster2 not available: calo label %d / %d, cluster ID %d\n",
+//      //            p2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster2->GetID());
+//      
+//      if(cluster1 && cluster2)
+//      {
+//        Double_t t12diff = tof1-tof2;
+//        if(TMath::Abs(t12diff) > GetPairTimeCut()) continue;
+//      }
       
-      // Get the TOF,l0 and ncells from the clusters
-      Float_t tof1  = -1;
-      Float_t l01   = -1;
-      Int_t ncell1  = 0;
-      if(cluster1)
-      {
-        tof1   = cluster1->GetTOF()*1e9;
-        l01    = cluster1->GetM02();
-        ncell1 = cluster1->GetNCells();
-        //printf("cluster1: E %2.2f (%2.2f), l0 %2.2f, tof %2.2f\n",cluster1->E(),p1->E(),l01,tof1);
-      }
-      //else printf("cluster1 not available: calo label %d / %d, cluster ID %d\n",
-      //            p1->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster1->GetID());
+      Float_t tof1   = p1->GetTime();
+      Float_t l01    = p1->GetM02();
+      Int_t   ncell1 = p1->GetNCells();
+      //printf("cluster1: E %2.2f, l0 %2.2f, tof %2.2f\n",p1->E(),l01,tof1);
       
-      Float_t tof2  = -1;
-      Float_t l02   = -1;
-      Int_t ncell2  = 0;
-      if(cluster2)
-      {
-        tof2   = cluster2->GetTOF()*1e9;
-        l02    = cluster2->GetM02();
-        ncell2 = cluster2->GetNCells();
-        //printf("cluster2: E %2.2f (%2.2f), l0 %2.2f, tof %2.2f\n",cluster2->E(),p2->E(),l02,tof2);
-      }
-      //else printf("cluster2 not available: calo label %d / %d, cluster ID %d\n",
-      //            p2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster2->GetID());
-      
-      if(cluster1 && cluster2)
-      {
-        Double_t t12diff = tof1-tof2;
-        if(TMath::Abs(t12diff) > GetPairTimeCut()) continue;
-      }
+      Float_t tof2   = p2->GetTime();
+      Float_t l02    = p2->GetM02();
+      Int_t   ncell2 = p2->GetNCells();
+      //printf("cluster2: E %2.2f, l0 %2.2f, tof %2.2f\n",p2->E(),l02,tof2);
+
+      Double_t t12diff = tof1-tof2;
+      fhEPairDiffTime->Fill((fPhotonMom1 + fPhotonMom2).Pt(),t12diff);
+      if(TMath::Abs(t12diff) > GetPairTimeCut()) continue;
+
       //------------------------------------------
       
       //printf("AliAnaPi0::MakeAnalysisFillHistograms(): Photon 2 Evt %d  Vertex : %f,%f,%f\n",evtIndex2, GetVertex(evtIndex2)[0] ,GetVertex(evtIndex2)[1],GetVertex(evtIndex2)[2]);
@@ -2076,7 +2100,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       fPhotonMom2.SetPxPyPzE(p2->Px(),p2->Py(),p2->Pz(),p2->E());
       
       //Get module number
-      module2       = GetModuleNumber(p2);
+      module2 = p2->GetSModNumber(); //GetModuleNumber(p2);
       
       //---------------------------------
       // Get pair kinematics
@@ -2152,7 +2176,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         if(fFillSSCombinations)
         {
           if     ( l01 > 0.01 && l01 < 0.4  &&
-                  l02 > 0.01 && l02 < 0.4 )               fhReSS[0]->Fill(pt,m); // Tight
+                   l02 > 0.01 && l02 < 0.4 )               fhReSS[0]->Fill(pt,m); // Tight
           else if( l01 > 0.4  && l02 > 0.4 )               fhReSS[1]->Fill(pt,m); // Loose
           else if( l01 > 0.01 && l01 < 0.4  && l02 > 0.4 ) fhReSS[2]->Fill(pt,m); // Both
           else if( l02 > 0.01 && l02 < 0.4  && l01 > 0.4 ) fhReSS[2]->Fill(pt,m); // Both
