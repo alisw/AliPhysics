@@ -66,6 +66,9 @@ endif()
 # DATE
 find_package(DATE)
 
+# FastJet
+find_package(FASTJET)
+
 # AliRoot version extracted from Git repository
 # Sets 4 git variables
 #  - GIT_REFSPEC - complete name of the current reference
