@@ -4,7 +4,7 @@
 #
 # Simple first version; checks env variables and fastjet-config; verifies that fastjet/PseudoJet.hh exists
 
-cmake_minimum_required(VERSION 2.8.4 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
 
 # FASTJET_ROOT is a legacy env variable; could be removed
 if (NOT FASTJET)
