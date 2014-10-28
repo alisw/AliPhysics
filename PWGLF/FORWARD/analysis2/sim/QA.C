@@ -545,6 +545,16 @@ void AddAnalysisTasks(const char *cdb_location)
     qaFBFCE->SelectCollisionCandidates(AliVEvent::kCentral);
   }
 }
+/** 
+ * Helper function to make @c outputs_valid file 
+ * 
+ */
+void ValidateOutput()
+{
+  std::ofstream out;
+  out.open("outputs_valid", ios::out);
+  out.close();    
+}  
 
 //====================================================================
 /** 
@@ -558,19 +568,20 @@ void QAMerge(const char *dir, Int_t stage)
 // Merging method
   TStopwatch  timer;     timer.Start();
   TString     outputDir     = dir;
-  TString     outputFiles   = "QAresults.root,EventStat_temp.root";
+  TObjArray   outputFiles;
+  outputFiles.Add(new TObjString("QAresults.root"));
+  outputFiles.Add(new TObjString("EventStat_temp.root"));
+
   TString     mergeExcludes = "";
-  TObjArray*  tokens        = outputFiles.Tokenize(",");
-  TIter       iter(tokens);
+  TIter       iter(&outputFiles);
   TObjString* str           = 0;
-  TString     outputFile;
   Bool_t      merged        = kTRUE;
   while((str = static_cast<TObjString*>(iter()))) {
-    outputFile = str->GetString();
+    TString& outputFile = str->GetString();
     // Skip already merged outputs
     if (!gSystem->AccessPathName(outputFile)) {
-      printf("Output file <%s> found. Not merging again.",
-	     outputFile.Data());
+      ::Warning("Merge","Output file <%s> found. Not merging again.",
+		outputFile.Data());
       continue;
     }
     if (mergeExcludes.Contains(outputFile.Data())) continue;
@@ -579,32 +590,26 @@ void QAMerge(const char *dir, Int_t stage)
 					   10, 
 					   stage);
     if (!merged) {
-       printf("ERROR: Cannot merge %s\n", outputFile.Data());
-       continue;
+      ::Error("Merge", "Cannot merge %s\n", outputFile.Data());
+      continue;
     }
   }
   TString infolog = "fileinfo.log";
   AliAnalysisAlien::MergeInfo(infolog, dir); 
 
   if (!outputDir.Contains("Stage")) {
-    ofstream out;
-    out.open("outputs_valid", ios::out);
-    out.close();    
+    ValidateOutput();
+    timer.Print();
     return;
   }
   // --- Set up to run terminate -------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  mgr->SetRunFromPath(mgr->GetRunFromAlienPath(dir));
   mgr->SetSkipTerminate(kFALSE);
   if (!mgr->InitAnalysis()) return;
+
   mgr->PrintStatus();
-  AliLog::SetGlobalLogLevel(AliLog::kError);
-  TTree *tree = NULL;
-  gROOT->cd();
-  mgr->StartAnalysis("gridterminate", tree);
-  ofstream out;
-  out.open("outputs_valid", ios::out);
-  out.close();
+  mgr->StartAnalysis("gridterminate", (TTree*)0);
+  ValidateOutput();
   timer.Print();
 }
 
@@ -694,12 +699,12 @@ void QA(UInt_t      run,
   // --- Run the thing -----------------------------------------------
   TStopwatch timer;
   timer.Start();
-  if (mgr->InitAnalysis()) {
-    mgr->PrintStatus(); 
-    mgr->SetSkipTerminate(kTRUE);
-    mgr->SetNSysInfo(1);
-    mgr->StartAnalysis("local", chain);
-  }
+  if (!mgr->InitAnalysis()) return;
+
+  mgr->PrintStatus(); 
+  mgr->SetSkipTerminate(kTRUE);
+  mgr->SetNSysInfo(1);
+  mgr->StartAnalysis("local", chain);
   timer.Print();
 }
 

@@ -100,10 +100,13 @@ public:
    * 
    * @param sumFile Output file for sums
    * @param resFile Output file for sums
+   * @param old     Use old names
    * 
    * @return true on success 
    */
-  virtual Bool_t Connect(const char* sumFile=0, const char* resFile=0);
+  virtual Bool_t Connect(const char* sumFile=0, 
+			 const char* resFile=0,
+			 Bool_t      old=false);
   /** 
    * Called when initializing the train 
    */

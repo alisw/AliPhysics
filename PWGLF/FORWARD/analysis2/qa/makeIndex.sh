@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# --- Make a message -------------------------------------------------
+msg() { 
+    local lvl=$1 ; shift 
+    if test $lvl -le $verb ; then 
+	echo -e "$@" >/dev/stderr
+    fi 
+}
+
 # --- Extract title --------------------------------------------------
 extractTitle()
 {
@@ -35,13 +43,16 @@ loopDir()
     # --- Check that we want to process this dir ----------------------
     if test $level -ge $maxCol ; then return ; fi
     if test "X`basename $here`" = "Xqa" ; then return ; fi
-    echo "Processing @ level $level: $here" > /dev/stderr 
+    msg 0 "Processing @ level $level: $here" 
 
     # --- Loop 1st pass ----------------------------------------------
     local subid=1
     for sub in ${here}/* ; do 
+	msg 1 "Processing $sub @ level $level" 
+
 	# --- If this is not a sub-directory, go on ------------------
 	if test ! -d $sub ; then continue ; fi 
+	
 
 	# --- Get some stuff for sub-dir -----------------------------
 	subshort=`extractDescription $sub` 
@@ -139,6 +150,7 @@ link=0
 unit=m
 frame=0
 base=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa
+verb=0
 
 while test $# -gt 0 ; do
     case $1 in 
@@ -152,6 +164,7 @@ while test $# -gt 0 ; do
 	-u|--unit)        unit=`echo $2 | tr '[a-z]' '[A-Z]'` ; shift ;;
 	-l|--link)        link=1 ;;
 	-f|--frame)       frame=1 ;;
+	-v|--verbose)     let verb=$verb+1 ;; 
 	*) echo "$0: Unknown option '$1'" > /dev/stderr ; exit 1;; 
     esac
     shift

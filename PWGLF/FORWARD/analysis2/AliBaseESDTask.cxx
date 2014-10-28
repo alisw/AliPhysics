@@ -55,7 +55,8 @@ AliBaseESDTask::AliBaseESDTask(const char* name, const char* title,
 //____________________________________________________________________
 Bool_t
 AliBaseESDTask::Connect(const char* sumFile, 
-			const char* resFile)
+			const char* resFile,
+			Bool_t      old)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -84,15 +85,17 @@ AliBaseESDTask::Connect(const char* sumFile,
 
   // Connect sum list unless the output 'none' is specified
   if (!sumOut.EqualTo("none", TString::kIgnoreCase)) {
+    TString sumName(Form("%s%s", old ? "Forward" : GetName(), old ? "" : "Sums"));
     AliAnalysisDataContainer* sumCon = 
-      mgr->CreateContainer(Form("%sSums", GetName()), TList::Class(), 
+      mgr->CreateContainer(sumName, TList::Class(), 
 			   AliAnalysisManager::kOutputContainer, sumOut);
     mgr->ConnectOutput(this, 1, sumCon);
   }
   // Connect the result list unless the output 'none' is specified
   if (!resOut.EqualTo("none", TString::kIgnoreCase)) {
+    TString resName(Form("%sResults", GetName()));
     AliAnalysisDataContainer* resCon = 
-      mgr->CreateContainer(Form("%sResults", GetName()), TList::Class(), 
+      mgr->CreateContainer(resName, TList::Class(), 
 			   AliAnalysisManager::kParamContainer, resOut);
     mgr->ConnectOutput(this, 2, resCon);
   }
@@ -163,6 +166,7 @@ void
 AliBaseESDTask::LocalInit() 
 { 
   fFirstEvent = true; 
+  DGUARD(fDebug,1,"Doing local initialization");
   Setup(); 
 }
 
