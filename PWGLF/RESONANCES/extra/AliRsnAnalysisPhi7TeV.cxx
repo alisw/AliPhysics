@@ -377,13 +377,13 @@ AliRsnAnalysisPhi7TeV::EVertexType AliRsnAnalysisPhi7TeV::EventEval(AliESDEvent 
    Int_t               ncSPD = -1;
    if (vTrk) ncTrk = (Int_t)vTrk->GetNContributors();
    if (vSPD) ncSPD = (Int_t)vSPD->GetNContributors();
-   if (vTrk) vzTrk = TMath::Abs(vTrk->GetZv());
-   if (vSPD) vzSPD = TMath::Abs(vSPD->GetZv());
+   if (vTrk) vzTrk = TMath::Abs(vTrk->GetZ());
+   if (vSPD) vzSPD = TMath::Abs(vSPD->GetZ());
    if (vTrk && ncTrk > 0) {
       // fill the histograms
-      fVertexX[0]->Fill(vTrk->GetXv());
-      fVertexY[0]->Fill(vTrk->GetYv());
-      fVertexZ[0]->Fill(vTrk->GetZv());
+      fVertexX[0]->Fill(vTrk->GetX());
+      fVertexY[0]->Fill(vTrk->GetY());
+      fVertexZ[0]->Fill(vTrk->GetZ());
 
       // check VZ position
       if (vzTrk <= fMaxVz)
@@ -392,9 +392,9 @@ AliRsnAnalysisPhi7TeV::EVertexType AliRsnAnalysisPhi7TeV::EventEval(AliESDEvent 
          return kFarTracksPrimaryVertex;
    } else if (vSPD && ncSPD > 0) {
       // fill the histograms
-      fVertexX[1]->Fill(vSPD->GetXv());
-      fVertexY[1]->Fill(vSPD->GetYv());
-      fVertexZ[1]->Fill(vSPD->GetZv());
+      fVertexX[1]->Fill(vSPD->GetX());
+      fVertexY[1]->Fill(vSPD->GetY());
+      fVertexZ[1]->Fill(vSPD->GetZ());
 
       // check VZ position
       if (vzSPD <= fMaxVz)

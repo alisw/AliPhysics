@@ -82,6 +82,7 @@ public:
    TH2F*   BookNSigHistogram(const char * name);
    TH2F*   BookGenMulvsRawMulHistogram(const char * name);
    TH2F*   BookDoubleCountsHistogram(const char * name);
+   TH1F*   BookEventStatHist(); // due to zip bug in merging it is good to store in one list everything 
 
    TH1F*   GetPtHistogram1D(const char * name,Double_t minDCA,Double_t maxDCA);
    TH1F*   GetDCAHistogram1D(const char * name,Double_t minPt,Double_t maxPt);
@@ -103,6 +104,7 @@ public:
    TH2*     GetqVecHistogramByName(UInt_t id)    {      return (TH2*) fOutputList->FindObject(kHistNameBoth[id]);  }// Use this if you want to read a file saved with a different histo list
    TH2*     GetGenMulvsRawMulHistogram(const char * name)  {      return (TH2*) fOutputList->FindObject(name);   }
    TH2*     GetGenMulvsRawMulHistogramByName(UInt_t id)    {      return (TH2*) fOutputList->FindObject(kHistNameBoth[id]);  }// Use this if you want to read a file saved with a different histo list
+   TH1F*    GetEventStatHist()  {      return (TH1F*) fOutputList->FindObject("EventStatHisto");  }	
    //TH1F*   GetTH1F(UInt_t id)            {      return (TH1F*) GetPtHistogram(id);   }
    //TH2F*   GetTH2F(UInt_t id)            {      return (TH2F*) GetPIDHistogram(id);   }
 

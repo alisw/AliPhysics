@@ -36,6 +36,7 @@
 
 // header of the class itsself
 #include "AliCDMesonTracks.h"
+#include "assert.h"
 
 
 //------------------------------------------------------------------------------
@@ -400,7 +401,8 @@ void AliCDMesonTracks::CutTrack(AliAODEvent *AODEvent, Int_t mode /* = 0 */)
 	}
 
 	for (Int_t iTrk = 0; iTrk < AODEvent->GetNumberOfTracks(); iTrk++) {
-		const AliAODTrack* trk = AODEvent->GetTrack(iTrk);
+		const AliAODTrack* trk = dynamic_cast<const AliAODTrack*>(AODEvent->GetTrack(iTrk));
+                assert(trk&&"Not a standard AOD");
 
 		if (trk->TestFilterBit(bit)) {
 			// test whether track was selected by that filter

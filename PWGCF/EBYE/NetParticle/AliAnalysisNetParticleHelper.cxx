@@ -139,7 +139,7 @@ const Int_t   AliAnalysisNetParticleHelper::fgkfHistNBinsRap     = Int_t((AliAna
 									  AliAnalysisNetParticleHelper::fgkfHistRangeRap[0]) / 
 									 AliAnalysisNetParticleHelper::fgkfHistBinWitdthRap) +1;
 
-const Float_t AliAnalysisNetParticleHelper::fgkfHistRangePhi[]   = {0.0, TMath::TwoPi()};
+const Float_t AliAnalysisNetParticleHelper::fgkfHistRangePhi[]   = {0.0, static_cast<Float_t>(TMath::TwoPi())};
 const Int_t   AliAnalysisNetParticleHelper::fgkfHistNBinsPhi     = 42 ;
 
 const Float_t AliAnalysisNetParticleHelper::fgkfHistRangePt[]    = {0.2, 2.9}; // {0.2, 5.}; // was {0.3, 2.22}
@@ -377,7 +377,7 @@ Int_t AliAnalysisNetParticleHelper::SetupEvent(AliESDInputHandler *esdHandler, A
   if(esdHandler)
     centrality = fESD->GetCentrality();
   else if(aodHandler)
-    centrality = fAOD->GetHeader()->GetCentralityP();
+    centrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
 
   if (!centrality) {
     AliError("Centrality not available");
@@ -478,7 +478,7 @@ Bool_t AliAnalysisNetParticleHelper::IsEventRejected() {
   // -- 3 - Vertex z outside cut window
   ++iCut;
   if (vtxESD){
-    if(TMath::Abs(vtxESD->GetZv()) > fVertexZMax) 
+    if(TMath::Abs(vtxESD->GetZ()) > fVertexZMax) 
       aEventCuts[iCut] = 1;
   }
   else if(vtxAOD){

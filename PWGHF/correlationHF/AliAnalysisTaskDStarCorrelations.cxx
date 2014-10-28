@@ -1449,12 +1449,12 @@ void AliAnalysisTaskDStarCorrelations::EventMixingChecks(AliAODEvent* AOD){
 	
 	// get the pool for event mixing
 	if(fSystem != AA){ // pp
-		multiplicity = AOD->GetNTracks();
+		multiplicity = AOD->GetNumberOfTracks();
 		MultipOrCent = multiplicity; // convert from Int_t to Double_t
 	}
 	if(fSystem == AA){ // PbPb
 		
-		centralityObj = AOD->GetHeader()->GetCentralityP();
+               centralityObj = ((AliVAODHeader*)AOD->GetHeader())->GetCentralityP();
 		MultipOrCent = centralityObj->GetCentralityPercentileUnchecked("V0M");
 		AliInfo(Form("Centrality is %f", MultipOrCent));
 	}

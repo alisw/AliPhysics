@@ -31,7 +31,9 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0():
   fnsigmaPosL(0),
   fnsigmaNegL(0),
   fnsigmaPosAL(0),
-  fnsigmaNegAL(0)
+  fnsigmaNegAL(0),
+  fParticleOrigin(0),
+  fParticleId(0)
 {
   // Default constructor
   fLambdaMass = new TH1F("LambdaMass", "Mass Assuming Lambda Hypothesis", 10000, 0, 5);
@@ -57,6 +59,9 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0():
   fnsigmaNegL = new TH1D("fnsigmaNegL","Number of sigmas of negative Lambda daughters",200,-8,8);
   fnsigmaPosAL = new TH1D("fnsigmaPosAL","Number of sigmas of positive AntiLambda daughters",200,-8,8);
   fnsigmaNegAL = new TH1D("fnsigmaNegAL","Number of sigmas of negative AntiLambda daughters",200,-8,8);
+
+  fParticleOrigin =  new TH1D("POrigin", "Mothers PDG Codes", 6000, 0.0, 6000.0);
+  fParticleId =  new TH1D("PId", "Particle PDG Codes", 6000, 0.0, 6000.0);
 
   fLambdaMass->Sumw2();
   fAntiLambdaMass->Sumw2();
@@ -102,7 +107,9 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const char *aName):
   fnsigmaPosL(0),
   fnsigmaNegL(0),
   fnsigmaPosAL(0),
-  fnsigmaNegAL(0)
+  fnsigmaNegAL(0),
+  fParticleOrigin(0),
+  fParticleId(0)
 {
   // Normal constructor
   char name[200];
@@ -149,6 +156,12 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const char *aName):
   snprintf(name, 200, " fnsigmaNegAL%s", aName);
   fnsigmaNegAL = new TH1D(name,"Number of sigmas of negative AntiLambda daughters",200,-10,10);
 
+  snprintf(name, 200, "POrigin%s", aName);
+  fParticleOrigin =  new TH1D(name, "Mothers PDG Codes", 6000, 0.0, 6000.0);
+
+  snprintf(name, 200, "PId%s", aName);
+  fParticleId =  new TH1D(name, "Particle PDG Codes", 6000, 0.0, 6000.0);
+
   fLambdaMass->Sumw2();
   fAntiLambdaMass->Sumw2();
   fK0ShortMass->Sumw2();
@@ -193,7 +206,9 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const AliFemtoCutMonitorV0 &aCut):
   fnsigmaPosL(0),
   fnsigmaNegL(0),
   fnsigmaPosAL(0),
-  fnsigmaNegAL(0)
+  fnsigmaNegAL(0),
+  fParticleOrigin(0),
+  fParticleId(0)
 {
   // copy constructor
   if (fLambdaMass) delete fLambdaMass;
@@ -238,6 +253,11 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const AliFemtoCutMonitorV0 &aCut):
   fnsigmaPosAL = new TH1D(*aCut.fnsigmaPosAL);
   if(fnsigmaNegAL) delete fnsigmaNegAL;
   fnsigmaNegAL = new TH1D(*aCut.fnsigmaNegAL);
+
+  if (fParticleOrigin) delete fParticleOrigin;
+  fParticleOrigin= new TH1D(*aCut.fParticleOrigin);
+  if (fParticleId) delete fParticleId;
+  fParticleId= new TH1D(*aCut.fParticleId);
 
   fLambdaMass->Sumw2();
   fAntiLambdaMass->Sumw2();
@@ -285,6 +305,9 @@ AliFemtoCutMonitorV0::~AliFemtoCutMonitorV0()
   delete fnsigmaNegL;
   delete fnsigmaPosAL;
   delete fnsigmaNegAL;
+
+  delete fParticleOrigin;
+  delete fParticleId;
 }
 
 AliFemtoCutMonitorV0& AliFemtoCutMonitorV0::operator=(const AliFemtoCutMonitorV0& aCut)
@@ -335,6 +358,11 @@ AliFemtoCutMonitorV0& AliFemtoCutMonitorV0::operator=(const AliFemtoCutMonitorV0
   fnsigmaPosAL = new TH1D(*aCut.fnsigmaPosAL);
   if(fnsigmaNegAL) delete fnsigmaNegAL;
   fnsigmaNegAL = new TH1D(*aCut.fnsigmaNegAL);
+
+  if (fParticleOrigin) delete fParticleOrigin;
+  fParticleOrigin= new TH1D(*aCut.fParticleOrigin);
+  if (fParticleId) delete fParticleId;
+  fParticleId= new TH1D(*aCut.fParticleId);
 
   fLambdaMass->Sumw2();
   fAntiLambdaMass->Sumw2();
@@ -393,6 +421,15 @@ void AliFemtoCutMonitorV0::Fill(const AliFemtoV0* aV0)
   fnsigmaNegL->Fill(aV0->NegNSigmaTPCPi());
   fnsigmaNegAL->Fill(aV0->NegNSigmaTPCP());
   fnsigmaPosAL->Fill(aV0->PosNSigmaTPCPi());
+
+  AliFemtoModelHiddenInfo *tInfo = (AliFemtoModelHiddenInfo*)aV0->GetHiddenInfo();
+  if(tInfo!=NULL) {
+    Int_t partID = TMath::Abs(tInfo->GetPDGPid());
+    Int_t motherID = TMath::Abs(tInfo->GetMotherPdgCode());
+
+    fParticleId->Fill(partID);
+    fParticleOrigin->Fill(motherID);
+  }
 }
 
 void AliFemtoCutMonitorV0::Write()
@@ -419,6 +456,9 @@ void AliFemtoCutMonitorV0::Write()
   fnsigmaNegL->Write();
   fnsigmaPosAL->Write();
   fnsigmaNegAL->Write();
+
+  fParticleId->Write();
+  fParticleOrigin->Write();
 }
 
 TList *AliFemtoCutMonitorV0::GetOutputList()
@@ -446,6 +486,9 @@ TList *AliFemtoCutMonitorV0::GetOutputList()
   tOutputList->Add(fnsigmaNegL);
   tOutputList->Add(fnsigmaPosAL);
   tOutputList->Add(fnsigmaNegAL);
+
+  tOutputList->Add(fParticleId);
+  tOutputList->Add(fParticleOrigin);
 
   return tOutputList;
 }

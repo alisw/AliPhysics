@@ -57,6 +57,7 @@ set ( SRCS
     FLOW/Tasks/AliAnalysisTaskFlowEPCascade.cxx
     FLOW/Tasks/AliAnalysisTaskJetFlowMC.cxx
     FLOW/Tasks/AliAnalysisTaskMultiparticleCorrelations.cxx
+    FLOW/Tasks/AliAnalysisTaskPIDconfig.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

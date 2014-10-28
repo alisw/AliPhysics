@@ -81,6 +81,7 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fh3PatchADCEnergyEtaPhiCenterJ1J2(0),
   fh3PatchADCEnergyEtaPhiCenterAll(0),
   fh3EEtaPhiCell(0),
+  fh2ECellVsCent(0),
   fh2CellEnergyVsTime(0),
   fh3EClusELeadingCellVsTime(0),
   fh3JetReacCent(0)
@@ -139,6 +140,7 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fh3PatchADCEnergyEtaPhiCenterJ1J2(0),
   fh3PatchADCEnergyEtaPhiCenterAll(0),
   fh3EEtaPhiCell(0),
+  fh2ECellVsCent(0),
   fh2CellEnergyVsTime(0),
   fh3EClusELeadingCellVsTime(0),
   fh3JetReacCent(0)
@@ -441,8 +443,11 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   fh3PatchADCEnergyEtaPhiCenterAll = new TH3F("fh3PatchADCEnergyEtaPhiCenterAll","fh3PatchADCEnergyEtaPhiCenterAll;E_{ADC,patch};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PatchADCEnergyEtaPhiCenterAll);
 
-  fh3EEtaPhiCell = new TH3F("fh3EEtaPhiCell","fh3EEtaPhiCell;E_{clus};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fh3EEtaPhiCell = new TH3F("fh3EEtaPhiCell","fh3EEtaPhiCell;E_{cell};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3EEtaPhiCell);
+
+  fh2ECellVsCent = new TH2F("fh2ECellVsCent","fh2ECellVsCent;centrality;E_{cell}",101,-1,100,500,0.,5.);
+  fOutput->Add(fh2ECellVsCent);
 
   fh2CellEnergyVsTime = new TH2F("fh2CellEnergyVsTime","fh2CellEnergyVsTime;E_{cell};time",fgkNEnBins,binsEn,fgkNTimeBins,binsTime);
   fOutput->Add(fh2CellEnergyVsTime);
@@ -566,6 +571,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
       AliDebug(2,Form("cell energy = %f  time = %f",cellE,cellT*1e9));
       fh2CellEnergyVsTime->Fill(cellE,cellT*1e9);
       fh3EEtaPhiCell->Fill(cellE,cellEta,cellPhi);
+      fh2ECellVsCent->Fill(fCent,cellE);
     }
   }
 

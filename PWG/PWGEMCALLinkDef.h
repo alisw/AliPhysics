@@ -19,6 +19,7 @@
 #pragma link C++ class AliEmcalMCTrackSelector+;
 #pragma link C++ class AliEmcalParticle+;
 #pragma link C++ class AliEmcalParticleMaker+;
+#pragma link C++ class AliEmcalPatchFromCellMaker+;
 #pragma link C++ class AliEmcalPhysicsSelection+;
 #pragma link C++ class AliEmcalPhysicsSelectionTask+;
 #pragma link C++ class AliEmcalPicoTrackMaker+;

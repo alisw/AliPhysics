@@ -145,10 +145,10 @@ void CaloQA()
   ccalo->cd(2);
   //gPad->SetLogy();
   
-  TH1F* hRaw  = (TH1F*) GetHisto("AnaPhoton_hCut_0_Open");
-  TH1F* hCorr = (TH1F*) GetHisto("AnaPhoton_hCut_4_NCells");
-  TH1F* hTM   = (TH1F*) GetHisto("AnaPhoton_hCut_7_Matching");
-  TH1F* hShSh = (TH1F*) GetHisto("AnaPhoton_hCut_9_PID");
+  TH1F* hRaw  = (TH1F*) GetHisto("AnaPhoton_hPt_Cut_0_Open");
+  TH1F* hCorr = (TH1F*) GetHisto("AnaPhoton_hPt_Cut_4_NCells");
+  TH1F* hTM   = (TH1F*) GetHisto("AnaPhoton_hPt_Cut_7_Matching");
+  TH1F* hShSh = (TH1F*) GetHisto("AnaPhoton_hPt_Cut_9_PID");
   
   hRaw->Sumw2();
   
@@ -637,9 +637,9 @@ void CorrelationQA()
   Float_t assocBins[] = {0.5,2.,5.,10.,20.};
   Int_t nAssocBins = 4;
   
-  TH1F * hLeading = (TH1F*) GetHisto("AnaPhotonHadronCorr_hPtLeading");
-  Int_t minClusterEBin = hLeading->FindBin(minClusterE);
-  Float_t nTrig = hLeading->Integral(minClusterE,100000);
+  TH1F * hTrigger = (TH1F*) GetHisto("AnaPhotonHadronCorr_hPtTrigger");
+  Int_t minClusterEBin = hTrigger->FindBin(minClusterE);
+  Float_t nTrig = hTrigger->Integral(minClusterE,100000);
   
   //Azimuthal correlation
   cCorrelation->cd(1);
@@ -754,9 +754,13 @@ void MCQA()
   if(!h2ClusterPho) return;
   
   
-  TH1F* hPrimPho = (TH1F*) GetHisto("QA_hGenMCAccE_Photon");
-  TH1F* hPrimPi0 = (TH1F*) GetHisto("QA_hGenMCAccE_Pi0");
-  TH1F* hPrimEta = (TH1F*) GetHisto("QA_hGenMCAccE_Eta");
+//  TH1F* hPrimPho = (TH1F*) GetHisto("QA_hGenMCAccE_Photon");
+//  TH1F* hPrimPi0 = (TH1F*) GetHisto("QA_hGenMCAccE_Pi0");
+//  TH1F* hPrimEta = (TH1F*) GetHisto("QA_hGenMCAccE_Eta");
+  
+  TH1F* hPrimPho = (TH1F*) GetHisto("AnaPhoton_hPtPrim_MCPhoton");
+  TH1F* hPrimPi0 = (TH1F*) GetHisto("AnaPi0_hPrimPi0Pt");
+  TH1F* hPrimEta = (TH1F*) GetHisto("AnaPi0_hPrimEtaPt");
   
   TCanvas * cmc = new TCanvas(Form("MCHisto_%s",histoTag.Data()),"",1000,1000);
   cmc->Divide(2,2);
@@ -773,7 +777,8 @@ void MCQA()
   hClusterPho->SetMarkerColor(1);
   hClusterPho->SetMarkerStyle(20);
   hClusterPho->SetAxisRange(0.,50.,"X");
-  hClusterPho->SetXTitle("E_{rec,gen} (GeV)");
+  //hClusterPho->SetXTitle("E_{rec,gen} (GeV)");
+  hClusterPho->SetXTitle("E_{rec}, p_{T,gen} (GeV)");
   hClusterPho->Draw("");
 
   hClusterPi0->Sumw2();
@@ -855,6 +860,10 @@ void MCQA()
   TH1F* hPrimPi0Phi = (TH1F*) h2PrimPi0Phi->ProjectionY("PrimPi0Phi",binMin,1000);
   TH1F* hPrimEtaPhi = (TH1F*) h2PrimEtaPhi->ProjectionY("PrimEtaPhi",binMin,1000);
 
+  hPrimPhoPhi->Sumw2();
+  hPrimPi0Phi->Sumw2();
+  hPrimEtaPhi->Sumw2();
+  
   hPrimPhoPhi->Scale(1./hPrimPhoPhi->Integral(0,1000));
   hPrimPi0Phi->Scale(1./hPrimPi0Phi->Integral(0,1000));
   hPrimEtaPhi->Scale(1./hPrimEtaPhi->Integral(0,1000));
@@ -874,12 +883,10 @@ void MCQA()
   hPrimPi0Phi->SetYTitle("1/total entries dN/d#phi");
   hPrimPi0Phi->SetTitle("Generated particles #phi for E > 3 GeV");
   hPrimPi0Phi->SetTitleOffset(1.6,"Y");
-  hPrimPi0Phi->Sumw2();
   hPrimPi0Phi->SetMarkerColor(4);
   hPrimPi0Phi->SetMarkerStyle(21);
   hPrimPi0Phi->Draw("");
   
-  hPrimPhoPhi->Sumw2();
   hPrimPhoPhi->SetMarkerColor(1);
   hPrimPhoPhi->SetMarkerStyle(20);
   Float_t scale = TMath::RadToDeg();
@@ -887,7 +894,6 @@ void MCQA()
   hPrimPhoPhi->Draw("same");
 
 
-  hPrimEtaPhi->Sumw2();
   hPrimEtaPhi->SetMarkerColor(2);
   hPrimEtaPhi->SetMarkerStyle(22);
   hPrimEtaPhi->Draw("same");
@@ -899,6 +905,10 @@ void MCQA()
   TH2F* h2PrimPi0Eta = (TH2F*) GetHisto("AnaPi0_hPrimPi0Rapidity");
   TH2F* h2PrimEtaEta = (TH2F*) GetHisto("AnaPi0_hPrimEtaRapidity");
   
+  h2PrimPhoEta->Sumw2();
+  h2PrimEtaEta->Sumw2();
+  h2PrimPi0Eta->Sumw2();
+
   Int_t binMin = hPrimPho->FindBin(3);
   
   TH1F* hPrimPhoEta = (TH1F*) h2PrimPhoEta->ProjectionY("PrimPhoEta",binMin,1000);
@@ -924,18 +934,15 @@ void MCQA()
   hPrimPi0Eta->SetYTitle("1/total entries dN/d#eta");
   hPrimPi0Eta->SetTitle("Generated particles #eta for E > 3 GeV");
   hPrimPi0Eta->SetTitleOffset(1.6,"Y");
-  hPrimPi0Eta->Sumw2();
   hPrimPi0Eta->SetMarkerColor(4);
   hPrimPi0Eta->SetMarkerStyle(21);
   hPrimPi0Eta->Draw("");
   
-  hPrimPhoEta->Sumw2();
   hPrimPhoEta->SetMarkerColor(1);
   hPrimPhoEta->SetMarkerStyle(20);
   Float_t scale = TMath::RadToDeg();
   hPrimPhoEta->Draw("same");
   
-  hPrimEtaEta->Sumw2();
   hPrimEtaEta->SetMarkerColor(2);
   hPrimEtaEta->SetMarkerStyle(22);
   hPrimEtaEta->Draw("same");

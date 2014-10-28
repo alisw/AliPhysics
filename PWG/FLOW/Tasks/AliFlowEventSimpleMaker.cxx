@@ -35,6 +35,7 @@
 #include "AliAODTrack.h"
 #include "AliCFManager.h"
 #include "AliFlowTrackSimpleCuts.h"
+#include "assert.h"
 
 using std::endl;
 using std::cout;
@@ -270,7 +271,8 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput,  c
 
     //loop over tracks
     while (iGoodTracks < iN && itrkN < iNumberOfInputTracks) {
-      AliAODTrack* pParticle = anInput->GetTrack(itrkN);   //get input particle
+      AliAODTrack* pParticle = dynamic_cast<AliAODTrack*>(anInput->GetTrack(itrkN));
+      assert((pParticle)&&"Not a standard AOD");   //get input particle
       //make new AliFlowTrackSimple
       AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
       pTrack->SetPt(pParticle->Pt() );
@@ -718,7 +720,8 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput)
   
   //normal loop
   while (iGoodTracks < iN && itrkN < iNumberOfInputTracks) {
-    AliAODTrack* pParticle = anInput->GetTrack(itrkN);   //get input particle
+    AliAODTrack* pParticle = dynamic_cast<AliAODTrack*>(anInput->GetTrack(itrkN));
+    assert((pParticle)&&"Not a standard AOD");   //get input particle
     //cut on tracks
     if (TMath::Abs(pParticle->Eta()) < 0.9)
       {

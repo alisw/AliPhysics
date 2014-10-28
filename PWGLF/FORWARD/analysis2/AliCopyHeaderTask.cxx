@@ -46,7 +46,8 @@ AliCopyHeaderTask::UserExec(Option_t*)
 
   LoadBranches();
 
-  AliAODHeader* aodHeader = aod->GetHeader();
+  AliAODHeader* aodHeader = dynamic_cast<AliAODHeader*>(aod->GetHeader());
+  if(!aodHeader) AliFatal("Not a standard AOD");
   if (!aodHeader) { 
     AliWarning("Missing AOD header");
     aodHeader = new AliAODHeader(esd->GetRunNumber(),

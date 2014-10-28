@@ -28,6 +28,7 @@
 #include "AliAnalysisTaskSE.h"
 #endif
 
+#include "AliAnalysisDataContainer.h"
 #include <THn.h>
 #include "TFormula.h"
 #include "AliESDtrackCuts.h"
@@ -190,36 +191,39 @@ void AliAnalysisTaskChargedJetsPA::Init()
 
     // ######## Jet constituent analysis
 
+    if(fAnalyzeJetConstituents)
     {
-      //                        jet pt,  const pT,  const count,  RC const count,  PC const count
-      Int_t    bins [5]     = { 30,         50,           30,              30,              30};
-      Double_t minEdges[5]  = { 0,              0.1,            0,               0,             0};
-      Double_t maxEdges[5]  = { 150,          150,           30,              30,              30};
-      TString axisName[5]  = {"jet p_{T}","Constituent p_{T}", "Constituent count","RC constituent count","PC constituent count"};
-      TString axisTitle[5]  = {"jet p_{T}","Constituent p_{T}", "Constituent count","RC constituent count","PC constituent count"};
-      THnF * histJetConstituents = new THnF("hJetConstituents", "Jet constituent count/p_{T} in jet, RC, and PC", 5, bins, minEdges, maxEdges);
-      BinLogAxis(histJetConstituents,1);
-      for (Int_t iaxis=0; iaxis<5;iaxis++){
-        histJetConstituents->GetAxis(iaxis)->SetName(axisName[iaxis]);
-        histJetConstituents->GetAxis(iaxis)->SetTitle(axisTitle[iaxis]);
+      {
+        //                        jet pt,  const pT,  const count,  RC const count,  PC const count
+        Int_t    bins [5]     = { 30,         50,           30,              30,              30};
+        Double_t minEdges[5]  = { 0,              0.1,            0,               0,             0};
+        Double_t maxEdges[5]  = { 150,          150,           30,              30,              30};
+        TString axisName[5]  = {"jet p_{T}","Constituent p_{T}", "Constituent count","RC constituent count","PC constituent count"};
+        TString axisTitle[5]  = {"jet p_{T}","Constituent p_{T}", "Constituent count","RC constituent count","PC constituent count"};
+        THnF * histJetConstituents = new THnF("hJetConstituents", "Jet constituent count/p_{T} in jet, RC, and PC", 5, bins, minEdges, maxEdges);
+        BinLogAxis(histJetConstituents,1);
+        for (Int_t iaxis=0; iaxis<5;iaxis++){
+          histJetConstituents->GetAxis(iaxis)->SetName(axisName[iaxis]);
+          histJetConstituents->GetAxis(iaxis)->SetTitle(axisTitle[iaxis]);
+        }
+        fCurrentOutputList->Add(histJetConstituents);
       }
-      fCurrentOutputList->Add(histJetConstituents);
-    }
 
-    {
-      //                        jet pt,  const pt,   const count      distance
-      Int_t    bins [4]     = { 30,         50,        30,     50};
-      Double_t minEdges[4]  = { 0,           0.1,       0,       0};
-      Double_t maxEdges[4]  = { 150,          150,     30,      0.5};
-      TString axisName[4]  = {"jet p_{T}","Constituent p_{T}","Constituent count","Distance from jet axis"};
-      TString axisTitle[4]  = {"jet p_{T}","Constituent p_{T}","Constituent count","Distance from jet axis"};
-      THnF * histJetConstituentDistance = new THnF("hJetConstituentDistance", "Jet constituent distance vs. jet and constituent p_{T}", 4, bins, minEdges, maxEdges);
-      BinLogAxis(histJetConstituentDistance,1);
-      for (Int_t iaxis=0; iaxis<4;iaxis++){
-        histJetConstituentDistance->GetAxis(iaxis)->SetName(axisName[iaxis]);
-        histJetConstituentDistance->GetAxis(iaxis)->SetTitle(axisTitle[iaxis]);
+      {
+        //                        jet pt,  const pt,   const count      distance
+        Int_t    bins [4]     = { 30,         50,        30,     50};
+        Double_t minEdges[4]  = { 0,           0.1,       0,       0};
+        Double_t maxEdges[4]  = { 150,          150,     30,      0.5};
+        TString axisName[4]  = {"jet p_{T}","Constituent p_{T}","Constituent count","Distance from jet axis"};
+        TString axisTitle[4]  = {"jet p_{T}","Constituent p_{T}","Constituent count","Distance from jet axis"};
+        THnF * histJetConstituentDistance = new THnF("hJetConstituentDistance", "Jet constituent distance vs. jet and constituent p_{T}", 4, bins, minEdges, maxEdges);
+        BinLogAxis(histJetConstituentDistance,1);
+        for (Int_t iaxis=0; iaxis<4;iaxis++){
+          histJetConstituentDistance->GetAxis(iaxis)->SetName(axisName[iaxis]);
+          histJetConstituentDistance->GetAxis(iaxis)->SetTitle(axisTitle[iaxis]);
+        }
+        fCurrentOutputList->Add(histJetConstituentDistance);
       }
-      fCurrentOutputList->Add(histJetConstituentDistance);
     }
 
     // ######## Jet profiles
@@ -252,6 +256,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
     AddCutHistogram("hCutsNumberCrossedRowsOverFindableClusters", "Trackcut histogram: Number of crossed rows over findable clusters", "Number of crossed rows over findable clusters", 26, 0.4, 1.8);
     AddCutHistogram("hCutsSharedTPC", "Trackcut histogram: Shared TPC clusters", "Shared fraction", 40, 0, 1);
     AddCutHistogram("hCutsTPCRefit", "Trackcut histogram: TPC refit", "Has TPC refit", 2, -0.5, 1.5);
+    AddCutHistogram("hCutsAcceptKinks", "Trackcut histogram: Kink in track", "Kink in track", 2, -0.5, 1.5);
     AddCutHistogram("hCutsTPCLength", "Trackcut histogram: TPC length", "TPC length", 40, 0, 170);
     AddCutHistogram("hCutsTrackConstrained", "Trackcut histogram: Tracks constrained to vertex", "Track is constrained", 2, -0.5, 1.5);
     AddCutHistogram("hCutsTPCITSMatching", "Trackcut histogram: TPC-ITS matching", "Track is matched", 2, -0.5, 1.5);
@@ -294,7 +299,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
 }
 
 //________________________________________________________________________
-AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* jetArrayName, const char* backgroundJetArrayName, Bool_t analyzeJetProfile, Bool_t analyzeTrackcuts) : AliAnalysisTaskSE(name), fOutputLists(), fCurrentOutputList(0), fDoJetAnalysis(1), fAnalyzeJetProfile(0), fAnalyzeTrackcuts(0), fParticleLevel(0), fUseDefaultVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fNoExternalBackground(0), fBackgroundForJetProfile(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(), fTrackArrayName(), fBackgroundJetArrayName(), fRhoTaskName(), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fNumberExcludedJets(-1), fMinEta(-0.9), fMaxEta(0.9), fMinJetEta(-0.5), fMaxJetEta(0.5), fMinTrackPt(0.150), fMinJetPt(5.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinNCrossedRows(70), fUsePtDepCrossedRowsCut(0), fNumberOfCentralityBins(20), fCentralityType("V0A"), fMatchTr(), fMatchChi(), fPrimaryVertex(0), fFirstLeadingJet(0), fSecondLeadingJet(0), fFirstLeadingKTJet(0), fSecondLeadingKTJet(0), fNumberSignalJets(0), fNumberSignalJetsAbove5GeV(0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fIsDEBUG(0), fIsPA(1), fNoTerminate(1), fEventCounter(0), fHybridESDtrackCuts(0), fHybridESDtrackCuts_variedPtDep(0), fHybridESDtrackCuts_variedPtDep2(0)
+AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* jetArrayName, const char* backgroundJetArrayName, Bool_t analyzeJetProfile, Bool_t analyzeTrackcuts) : AliAnalysisTaskSE(name), fOutputLists(), fCurrentOutputList(0), fDoJetAnalysis(1), fAnalyzeJetProfile(0), fAnalyzeTrackcuts(0), fAnalyzeJetConstituents(1), fParticleLevel(0), fUseDefaultVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fNoExternalBackground(0), fBackgroundForJetProfile(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(), fTrackArrayName(), fBackgroundJetArrayName(), fRhoTaskName(), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fNumberExcludedJets(-1), fMinEta(-0.9), fMaxEta(0.9), fMinJetEta(-0.5), fMaxJetEta(0.5), fMinTrackPt(0.150), fMinJetPt(5.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinNCrossedRows(70), fUsePtDepCrossedRowsCut(0), fNumberOfCentralityBins(20), fCentralityType("V0A"), fMatchTr(), fMatchChi(), fPrimaryVertex(0), fFirstLeadingJet(0), fSecondLeadingJet(0), fFirstLeadingKTJet(0), fSecondLeadingKTJet(0), fNumberSignalJets(0), fNumberSignalJetsAbove5GeV(0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fIsDEBUG(0), fIsPA(1), fNoTerminate(1), fEventCounter(0), fHybridESDtrackCuts(0), fHybridESDtrackCuts_variedPtDep(0), fHybridESDtrackCuts_variedPtDep2(0)
 {
   #ifdef DEBUGMODE
     AliInfo("Calling constructor.");
@@ -694,6 +699,27 @@ void AliAnalysisTaskChargedJetsPA::CreateCutHistograms()
     }
     fHybridESDtrackCuts->GetMainCuts()->SetRequireTPCRefit(reqTPCRefit);
     fHybridESDtrackCuts->GetAdditionalCuts()->SetRequireTPCRefit(reqTPCRefit_Additional);
+
+    // ################################################################
+    // ################################################################
+    Bool_t accKinks = fHybridESDtrackCuts->GetMainCuts()->GetAcceptKinkDaughters();
+    Bool_t accKinks_Additional = fHybridESDtrackCuts->GetAdditionalCuts()->GetAcceptKinkDaughters();
+
+    fHybridESDtrackCuts->GetMainCuts()->SetAcceptKinkDaughters(0);
+    fHybridESDtrackCuts->GetAdditionalCuts()->SetAcceptKinkDaughters(0);
+    trackType = fHybridESDtrackCuts->AcceptTrack(track);
+    if (trackType) // A passing track has no kinks
+      FillCutHistogram("hCutsAcceptKinks", 0, pT, eta, phi, trackType-1);
+    else
+    {
+      fHybridESDtrackCuts->GetMainCuts()->SetAcceptKinkDaughters(1);
+      fHybridESDtrackCuts->GetAdditionalCuts()->SetAcceptKinkDaughters(1);
+      trackType = fHybridESDtrackCuts->AcceptTrack(track);
+      if (trackType) // A passing track has kinks
+        FillCutHistogram("hCutsAcceptKinks", 1, pT, eta, phi, trackType-1);
+    }
+    fHybridESDtrackCuts->GetMainCuts()->SetAcceptKinkDaughters(accKinks);
+    fHybridESDtrackCuts->GetAdditionalCuts()->SetAcceptKinkDaughters(accKinks_Additional);
 
     // ################################################################
     // ################################################################
@@ -1576,7 +1602,7 @@ void AliAnalysisTaskChargedJetsPA::GetTRBackgroundDensity(Int_t numberExcludeLea
     numberExcludeLeadingJets = fNumberSignalJetsAbove5GeV;
   if(numberExcludeLeadingJets>2)
   {
-    AliWarning("Warning: GetTRBackgroundDensity() can only exclude up to 2 leading jets!");
+    AliWarning(Form("Warning: GetTRBackgroundDensity() can only exclude up to 2 leading jets! Demanded %i", numberExcludeLeadingJets) );
     numberExcludeLeadingJets = 2;
   }
 
@@ -1810,6 +1836,18 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
 
   GetLeadingJets();
 
+
+/*
+  //DEBUG
+  if(fFirstLeadingJet->Pt()>=80.)
+  {
+    const char* fname = CurrentFileName();
+    TObjString* tmpStr = new TObjString(Form("jet pT=%3.3f, fname=%s, entry=%i", fFirstLeadingJet->Pt(), fname, AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry()));
+    fCurrentOutputList->Add(tmpStr);
+  }
+  //DEBUG
+*/
+
   // ##################### Calculate background densities
   Double_t              backgroundKTImprovedCMS = -1.0;
   Double_t              backgroundExternal = -1.0;
@@ -1966,38 +2004,42 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
       FillHistogram("hDeltaPtExternalBgrdVsPt", GetDeltaPt(backgroundExternal), GetCorrectedJetPt(tmpJet, backgroundExternal));
 
       // ###### CONSTITUENT ANALYSIS
- 
-      THnF* tmpConstituentHist = static_cast<THnF*>(fCurrentOutputList->FindObject("hJetConstituents"));
-      THnF* tmpConstituentDistanceHist = static_cast<THnF*>(fCurrentOutputList->FindObject("hJetConstituentDistance"));
 
-      for(Int_t j=0; j<tmpJet->GetNumberOfTracks(); j++)
+      if(fAnalyzeJetConstituents)
       {
-        AliVParticle* tmpTrack = tmpJet->TrackAt(j, fTrackArray);
-        // Define random cone  
-        Double_t tmpRandConeEta = fMinJetEta + fRandom->Rndm()*TMath::Abs(fMaxJetEta-fMinJetEta);
-        Double_t tmpRandConePhi = fRandom->Rndm()*TMath::TwoPi();
+        THnF* tmpConstituentHist = static_cast<THnF*>(fCurrentOutputList->FindObject("hJetConstituents"));
+        THnF* tmpConstituentDistanceHist = static_cast<THnF*>(fCurrentOutputList->FindObject("hJetConstituentDistance"));
 
-        Double_t tmpPConeEta = tmpJet->Eta();
-        Double_t tmpPConePhi = tmpJet->Phi() + TMath::Pi();
+        for(Int_t j=0; j<tmpJet->GetNumberOfTracks(); j++)
+        {
+          AliVParticle* tmpTrack = tmpJet->TrackAt(j, fTrackArray);
+          // Define random cone  
+          Double_t tmpRandConeEta = fMinJetEta + fRandom->Rndm()*TMath::Abs(fMaxJetEta-fMinJetEta);
+          Double_t tmpRandConePhi = fRandom->Rndm()*TMath::TwoPi();
 
-        if(tmpPConePhi>=TMath::TwoPi())
-          tmpPConePhi = tmpPConePhi - TMath::TwoPi();
+          Double_t tmpPConeEta = tmpJet->Eta();
+          Double_t tmpPConePhi = tmpJet->Phi() + TMath::Pi();
 
-        Double_t tmpRCcount  = GetConeConstituentCount(tmpRandConeEta, tmpRandConePhi, fSignalJetRadius);
-        Double_t tmpPCcount  = GetConeConstituentCount(tmpPConeEta, tmpPConePhi, fSignalJetRadius);
+          if(tmpPConePhi>=TMath::TwoPi())
+            tmpPConePhi = tmpPConePhi - TMath::TwoPi();
 
-        Double_t tmpDistance = TMath::Sqrt( (tmpJet->Eta()-tmpTrack->Eta())*(tmpJet->Eta()-tmpTrack->Eta()) 
-                                          + (tmpJet->Phi()-tmpTrack->Phi())*(tmpJet->Phi()-tmpTrack->Phi()) ); // distance between jet axis and track
+          Double_t tmpRCcount  = GetConeConstituentCount(tmpRandConeEta, tmpRandConePhi, fSignalJetRadius);
+          Double_t tmpPCcount  = GetConeConstituentCount(tmpPConeEta, tmpPConePhi, fSignalJetRadius);
 
-        Double_t tmpVec1[5] = {tmpJet->Pt(), tmpTrack->Pt(), static_cast<Double_t>(tmpJet->GetNumberOfTracks()), tmpRCcount, tmpPCcount};
-        Double_t tmpVec2[4] = {tmpJet->Pt(), tmpTrack->Pt(), static_cast<Double_t>(tmpJet->GetNumberOfTracks()), tmpDistance};
+          Double_t tmpDistance = TMath::Sqrt( (tmpJet->Eta()-tmpTrack->Eta())*(tmpJet->Eta()-tmpTrack->Eta()) 
+                                            + (tmpJet->Phi()-tmpTrack->Phi())*(tmpJet->Phi()-tmpTrack->Phi()) ); // distance between jet axis and track
+
+          Double_t tmpVec1[5] = {tmpJet->Pt(), tmpTrack->Pt(), static_cast<Double_t>(tmpJet->GetNumberOfTracks()), tmpRCcount, tmpPCcount};
+          Double_t tmpVec2[4] = {tmpJet->Pt(), tmpTrack->Pt(), static_cast<Double_t>(tmpJet->GetNumberOfTracks()), tmpDistance};
 
 
-        tmpConstituentHist->Fill(tmpVec1);
-        tmpConstituentDistanceHist->Fill(tmpVec2);
-        FillHistogram("hJetConstituentPtVsJetPt", tmpTrack->Pt(), tmpJet->Pt());
+          tmpConstituentHist->Fill(tmpVec1);
+          tmpConstituentDistanceHist->Fill(tmpVec2);
+
+          FillHistogram("hJetConstituentPtVsJetPt", tmpTrack->Pt(), tmpJet->Pt());
+        }
       }
-
+      
       FillHistogram("hJetPtVsConstituentCount", tmpJet->Pt(),tmpJet->GetNumberOfTracks());
 
       // Leading track biased jets

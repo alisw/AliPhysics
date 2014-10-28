@@ -63,6 +63,9 @@ class AliAnalysisTaskDeltaPt : public AliAnalysisTaskEmcalJet {
   AliParticleContainer       *fRandTracksCont;             //!Randomized tracks
   AliClusterContainer        *fRandCaloClustersCont;       //!Randomized clusters
 
+  // General
+  TH2                        *fHistRhovsCent;              //!Rho vs. centrality
+
   // Random cones
   TH2                        *fHistRCPhiEta;               //!Phi-Eta distribution of random cones
   TH1                       **fHistRCPt;                   //!Random cone pt

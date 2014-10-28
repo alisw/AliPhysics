@@ -42,6 +42,9 @@
 
 #include "AliAnalysisTaskEmcalQGTagging.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskEmcalQGTagging)
 
 //________________________________________________________________________
@@ -54,6 +57,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fIsMC(kFALSE),
   fIsEmbedding(kFALSE),
   fIsConstSub(kFALSE),
+  fPtThreshold(-9999.),
   fRMatching(0.3),
   fPhiJetCorr6(0x0), 
   fPhiJetCorr7(0x0),
@@ -62,6 +66,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fPtJetCorr(0x0),
   fPtJet(0x0),
   fTreeObservableTagging(0)
+
 {
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -76,6 +81,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fIsMC(kFALSE),
   fIsEmbedding(kFALSE),
   fIsConstSub(kFALSE),
+  fPtThreshold(-9999.),
   fRMatching(0.3),
   fPhiJetCorr6(0x0), 
   fPhiJetCorr7(0x0),
@@ -84,6 +90,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fPtJetCorr(0x0),
   fPtJet(0x0),
   fTreeObservableTagging(0)
+  
 {
   // Standard constructor.
   
@@ -189,11 +196,12 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
 	  Double_t fraction = jetCont->GetFractionSharedPt(jet1);
 	  if(fraction<fMinFractionShared) continue;
 	  partonsInfo = (AliStackPartonInfo*) jetContTrue->GetStackPartonInfo();     
-	  
+	  if(!partonsInfo) return 0;
 	}
 	else {
 	  partonsInfo = (AliStackPartonInfo*) jetCont->GetStackPartonInfo(); 
 	  jet2=jet1;
+          if(!partonsInfo) return 0;
 	}
 	
 	Double_t jp1=(jet2->Phi())-(partonsInfo->GetPartonPhi6()); 
@@ -226,10 +234,15 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       else
 	fShapesVar[0] = 0.;
      
+      Double_t ptSubtracted = 0; 
 
-      if ((fJetShapeType==AliAnalysisTaskEmcalQGTagging::kRaw && fIsConstSub==kFALSE) || (fJetShapeType==AliAnalysisTaskEmcalQGTagging::kDeriv)) fShapesVar[1] = jet1->Pt() - GetRhoVal(0)*jet1->Area();
-      else fShapesVar[1] = jet1->Pt(); 
-     
+      if ((fJetShapeType==AliAnalysisTaskEmcalQGTagging::kRaw && fIsConstSub==kFALSE) || (fJetShapeType==AliAnalysisTaskEmcalQGTagging::kDeriv)) ptSubtracted  = jet1->Pt() - GetRhoVal(0)*jet1->Area();
+      else ptSubtracted = jet1->Pt(); 
+
+      if ((fJetShapeType==AliAnalysisTaskEmcalQGTagging::kRaw || fJetShapeType==AliAnalysisTaskEmcalQGTagging::kDeriv)) 
+	if ( ptSubtracted < fPtThreshold) continue;
+
+      fShapesVar[1] = ptSubtracted;
       fShapesVar[2] = GetJetpTD(jet1);
       fShapesVar[3] = GetJetMass(jet1);
       fShapesVar[4] = 1.*GetJetNumberOfConstituents(jet1);

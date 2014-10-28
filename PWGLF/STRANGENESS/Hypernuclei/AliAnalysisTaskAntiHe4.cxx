@@ -493,7 +493,7 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
   //
   Bool_t isSelected = kFALSE;
   isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  if (!isSelected || TMath::Abs(vertex->GetZv()) > 10) {
+  if (!isSelected || TMath::Abs(vertex->GetZ()) > 10) {
     PostData(1, fOutputContainer);
     return;
   }

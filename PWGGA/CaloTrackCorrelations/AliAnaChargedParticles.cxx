@@ -45,8 +45,8 @@ ClassImp(AliAnaChargedParticles)
 //__________________________________________________
   AliAnaChargedParticles::AliAnaChargedParticles() :
     AliAnaCaloTrackCorrBaseClass(),
-    fFillPileUpHistograms(0),   fFillTrackBCHistograms(0),
-    fFillVertexBC0Histograms(0),
+    fFillTrackBCHistograms(0), fFillVertexBC0Histograms(0),
+    fMomentum(),
     //Histograms
     fhNtracks(0),      fhPt(0),            fhPtNoCut(0),
     fhPtCutDCA(0),     fhPtCutDCABCOK(0),
@@ -135,7 +135,6 @@ void AliAnaChargedParticles::FillPrimaryHistograms()
   
   TParticle        * primStack = 0;
   AliAODMCParticle * primAOD   = 0;
-  TLorentzVector lv;
   
   // Get the ESD MC particles container
   AliStack * stack = 0;
@@ -164,7 +163,7 @@ void AliAnaChargedParticles::FillPrimaryHistograms()
       primStack = stack->Particle(i) ;
       if(!primStack)
       {
-        printf("AliAnaChargedParticles::FillPrimaryMCHistograms() - ESD primaries pointer not available!!\n");
+        AliWarning("ESD primaries pointer not available!!");
         continue;
       }
       
@@ -181,14 +180,14 @@ void AliAnaChargedParticles::FillPrimaryHistograms()
       //       prim->GetName(), prim->GetPdgCode());
       
       //Charged kinematics
-      primStack->Momentum(lv);
+      primStack->Momentum(fMomentum);
     }
     else
     {
       primAOD = (AliAODMCParticle *) mcparticles->At(i);
       if(!primAOD)
       {
-        printf("AliAnaChargedParticles::FillPrimaryHistograms() - AOD primaries pointer not available!!\n");
+        AliWarning("AOD primaries pointer not available!!");
         continue;
       }
 
@@ -201,7 +200,7 @@ void AliAnaChargedParticles::FillPrimaryHistograms()
       if(primAOD->E() == TMath::Abs(primAOD->Pz()))  continue ; //Protection against floating point exception
       
       //Charged kinematics
-      lv.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
+      fMomentum.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
     }
     
     Int_t mcType = kmcUnknown;
@@ -213,12 +212,12 @@ void AliAnaChargedParticles::FillPrimaryHistograms()
     
     //printf("pdg %d, charge %f, mctype %d\n",pdg, charge, mcType);
     
-    Bool_t in = GetFiducialCut()->IsInFiducialCut(lv,"CTS") ;
-    
-    Float_t  ptPrim = lv.Pt();
-    Float_t etaPrim = lv.Eta();
-    Float_t phiPrim = lv.Phi();
+    Float_t  ptPrim = fMomentum.Pt();
+    Float_t etaPrim = fMomentum.Eta();
+    Float_t phiPrim = fMomentum.Phi();
     if(phiPrim < 0) phiPrim+=TMath::TwoPi();
+    
+    Bool_t in = GetFiducialCut()->IsInFiducialCut(etaPrim,phiPrim,kCTS) ;
     
     if(in)
       fhPtMCPrimPart[mcType]->Fill(ptPrim);
@@ -427,7 +426,7 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     outputContainer->Add(fhPtTOFSignalVtxInBC0);
   }
   
-  if(fFillPileUpHistograms)
+  if(IsPileUpAnalysisOn())
   {    
     TString pileUpName[] = {"SPD","EMCAL","SPDOrEMCAL","SPDAndEMCAL","SPDAndNotEMCAL","EMCALAndNotSPD","NotSPDAndNotEMCAL"} ;
     
@@ -492,7 +491,7 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
       fhEtaPhiTOFBCMinus->SetYTitle("#phi (rad)");
       outputContainer->Add(fhEtaPhiTOFBCMinus);
       
-      if(fFillPileUpHistograms)
+      if(IsPileUpAnalysisOn())
       {
         fhEtaPhiTOFBC0PileUpSPD  = new TH2F ("hEtaPhiTOFBC0PileUpSPD","eta-phi for tracks with hit on TOF, and tof corresponding to BC=0, SPD pile-up",netabins,etamin,etamax, nphibins,phimin,phimax);
         fhEtaPhiTOFBC0PileUpSPD->SetXTitle("#eta ");
@@ -614,7 +613,7 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
       outputContainer->Add(fhPtDCAVtxInBC0NoTOFHit[i]);
     }
     
-    if(fFillPileUpHistograms)
+    if(IsPileUpAnalysisOn())
     {
       fhPtDCAPileUp[i]  = new TH2F(Form("hPtDCA%sPileUp",dcaName[i].Data()),
                              Form("Track DCA%s vs #it{p}_{T}distribution, SPD Pile-Up",dcaName[i].Data()),
@@ -791,8 +790,7 @@ void AliAnaChargedParticles::Init()
   //Do some checks
   
   if(!GetReader()->IsCTSSwitchedOn())
-    AliFatal("STOP!: You want to use CTS tracks in analysis but not read!! \n!!Check the configuration file!!\n");
-  
+    AliFatal("STOP!: You want to use CTS tracks in analysis but not read!! \n!!Check the configuration file!!");
   
 }
 
@@ -806,8 +804,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
   Double_t vert[3] = {0,0,0}; //vertex ;
   
   //Some prints
-  if(GetDebug() > 0)
-    printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - In CTS aod entries %d\n", ntracks);
+  AliDebug(1,Form("In CTS aod entries %d", ntracks));
   
   AliVEvent  * event = GetReader()->GetInputEvent();
   AliESDEvent* esdEv = dynamic_cast<AliESDEvent*> (event);
@@ -819,7 +816,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
   if(fFillVertexBC0Histograms)
   {
     fhProductionVertexBC->Fill(vtxBC);
-    if(fFillPileUpHistograms)
+    if(IsPileUpAnalysisOn())
     {
       if(GetReader()->IsPileUpFromSPD())               fhProductionVertexBCPileUp[0]->Fill(vtxBC);
       if(GetReader()->IsPileUpFromEMCal())             fhProductionVertexBCPileUp[1]->Fill(vtxBC);
@@ -941,7 +938,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
       }
     }
     
-    if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD())
+    if(IsPileUpAnalysisOn() && GetReader()->IsPileUpFromSPD())
     {
       if(dcaCons == -999)
       {
@@ -1009,7 +1006,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
         }
       }
       
-      if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD())
+      if(IsPileUpAnalysisOn() && GetReader()->IsPileUpFromSPD())
       {
         if(dcaCons == -999)
         {
@@ -1086,7 +1083,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
           else
             fhPtDCATOFBC0[2]->Fill(pt, dcaCons);
           
-          if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD())
+          if(IsPileUpAnalysisOn() && GetReader()->IsPileUpFromSPD())
           {
             if(dcaCons == -999)
             {
@@ -1110,7 +1107,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
         }
       }
       
-      if(fFillPileUpHistograms)
+      if(IsPileUpAnalysisOn())
       {
         if(GetReader()->IsPileUpFromSPD())               fhPtTOFSignalPileUp[0]->Fill(pt, tof);
         if(GetReader()->IsPileUpFromEMCal())             fhPtTOFSignalPileUp[1]->Fill(pt, tof);
@@ -1122,9 +1119,9 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
         
         if(fFillTrackBCHistograms)
         {
-          if      (trackBC ==0)  { fhEtaPhiTOFBC0    ->Fill(eta,phi); if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBC0PileUpSPD    ->Fill(eta,phi); }
-          else if (trackBC < 0)  { fhEtaPhiTOFBCPlus ->Fill(eta,phi); if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBCPlusPileUpSPD ->Fill(eta,phi); }
-          else if (trackBC > 0)  { fhEtaPhiTOFBCMinus->Fill(eta,phi); if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBCMinusPileUpSPD->Fill(eta,phi); }
+          if      (trackBC ==0)  { fhEtaPhiTOFBC0    ->Fill(eta,phi); if(IsPileUpAnalysisOn() && GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBC0PileUpSPD    ->Fill(eta,phi); }
+          else if (trackBC < 0)  { fhEtaPhiTOFBCPlus ->Fill(eta,phi); if(IsPileUpAnalysisOn() && GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBCPlusPileUpSPD ->Fill(eta,phi); }
+          else if (trackBC > 0)  { fhEtaPhiTOFBCMinus->Fill(eta,phi); if(IsPileUpAnalysisOn() && GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBCMinusPileUpSPD->Fill(eta,phi); }
         }
         
         if(fFillVertexBC0Histograms)
@@ -1154,12 +1151,10 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     }
     
     //Fill AODParticle after some selection
-    Double_t mom[3] = {track->Px(),track->Py(),track->Pz()};
+    fMomentum.SetPxPyPzE(track->Px(),track->Py(),track->Pz(),0);
+    Bool_t in = GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kCTS) ;
     
-    Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
-    
-    if(GetDebug() > 1) 
-      printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - Track pt %2.2f, eta %2.2f, phi %2.2f in fiducial cut %d\n",pt,eta,phi,in);
+    AliDebug(1,Form("Track pt %2.2f, eta %2.2f, phi %2.2f in fiducial cut %d",pt,eta,phi,in));
     
     //Acceptance selection
     if(IsFiducialCutOn() && ! in ) continue ;
@@ -1236,8 +1231,8 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     GetVertex(vert,evtIndex); 
     if(TMath::Abs(vert[2])> GetZvertexCut()) return; 
         
-    AliAODPWG4Particle tr = AliAODPWG4Particle(mom[0],mom[1],mom[2],0);
-    tr.SetDetector("CTS");
+    AliAODPWG4Particle tr = AliAODPWG4Particle(track->Px(),track->Py(),track->Pz(),0);
+    tr.SetDetectorTag(kCTS);
     tr.SetLabel(track->GetLabel());
     tr.SetTrackLabel(track->GetID(),-1);
     tr.SetChargedBit(track->Charge()>0);
@@ -1246,8 +1241,8 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     
   }//loop
   
-  if(GetDebug() > 0) 	
-    printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - Final aod branch entries %d\n", GetOutputAODBranch()->GetEntriesFast());   
+  AliDebug(1,Form("Final aod branch entries %d", GetOutputAODBranch()->GetEntriesFast()));
+  
 } 
 
 //__________________________________________________________________
@@ -1262,8 +1257,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
   
   fhNtracks->Fill(GetReader()->GetTrackMultiplicity()) ;
   
-  if(GetDebug() > 0)
-    printf("AliAnaChargedParticles::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
+  AliDebug(1,Form("AOD branch entries %d", naod));
   
   Float_t pt  = 0;
   Float_t phi = 0;
@@ -1292,7 +1286,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
       fhEtaPhiNeg->Fill(eta,phi);
     }
     
-    if(fFillPileUpHistograms)
+    if(IsPileUpAnalysisOn())
     {
       if(GetReader()->IsPileUpFromSPD())               {fhPtPileUp[0]->Fill(pt);}
       if(GetReader()->IsPileUpFromEMCal())             {fhPtPileUp[1]->Fill(pt);}

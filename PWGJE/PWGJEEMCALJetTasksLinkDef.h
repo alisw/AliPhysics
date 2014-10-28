@@ -16,6 +16,7 @@
 #pragma link C++ class AliAnalysisTaskDeltaPt+;
 #pragma link C++ class AliAnalysisTaskScale+;
 #pragma link C++ class AliEmcalJet+;
+#pragma link C++ class AliEmcalPicoTrackInGridMaker+;
 #pragma link C++ class AliJetContainer+;
 #pragma link C++ class AliJetEmbeddingTask+;
 #pragma link C++ class AliJetEmbeddingFromGenTask+;
@@ -42,6 +43,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalDiJetBase+;
 #pragma link C++ class AliAnalysisTaskEmcalDiJetAna+;
 #pragma link C++ class AliAnalysisTaskEmcalDiJetResponse+;
+#pragma link C++ class AliAnalysisTaskEmcalHighMultTrigger+;
 #pragma link C++ class AliAnalysisTaskEmcalJetHMEC+;
 #pragma link C++ class AliAnalysisTaskEmcalJetHadCorQA+;
 #pragma link C++ class AliAnalysisTaskEmcalJetHadEPpid+;
@@ -71,6 +73,7 @@
 #pragma link C++ class AliAnalysisTaskSAJF+;
 #pragma link C++ class AliAnalysisTaskSAQA+;
 #pragma link C++ class AliAnalysisTaskSOH+;
+#pragma link C++ class AliAnalysisTaskV0sInJetsEmcal+;
 #pragma link C++ class AliEmcalPicoTrackFromJetMaker+;
 #pragma link C++ class AliNtupCumInfo+;
 #pragma link C++ class AliNtupZdcInfo+;

@@ -30,6 +30,8 @@
 
 #include "AliAODpidUtil.h"
 #include "AliAnalysisUtils.h"
+#include "assert.h"
+#include "AliGenHijingEventHeader.h"
 
 ClassImp(AliFemtoEventReaderAOD)
 
@@ -312,24 +314,26 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     }
   }
 
-  tEvent->SetReactionPlaneAngle(fEvent->GetHeader()->GetQTheta(0)/2.0);
+  AliAODHeader * header = dynamic_cast<AliAODHeader*>(fEvent->GetHeader());
+  assert(header&&"Not a standard AOD");
 
-  Int_t *motherids=0;
-  if (mcP) {
-    const int motherTabSize = ((AliAODMCParticle *) mcP->At(mcP->GetEntries()-1))->GetLabel();
-    motherids = new int[motherTabSize+1];
-    for (int ip=0; ip<motherTabSize+1; ip++) motherids[ip] = 0;
+  tEvent->SetReactionPlaneAngle(header->GetQTheta(0)/2.0);
+  // Int_t *motherids=0;
+  // if (mcP) {
+  //   const int motherTabSize = ((AliAODMCParticle *) mcP->At(mcP->GetEntries()-1))->GetLabel();
+  //   motherids = new int[motherTabSize+1];
+  //   for (int ip=0; ip<motherTabSize+1; ip++) motherids[ip] = 0;
 
-    // Read in mother ids
-    AliAODMCParticle *motherpart;
-    for (int ip=0; ip<mcP->GetEntries(); ip++) {
-      motherpart = (AliAODMCParticle *) mcP->At(ip);
-      if (motherpart->GetDaughter(0) > 0)
-        motherids[motherpart->GetDaughter(0)] = ip;
-      if (motherpart->GetDaughter(1) > 0)
-        motherids[motherpart->GetDaughter(1)] = ip;
-    }
-  }
+  //   // Read in mother ids
+  //   AliAODMCParticle *motherpart;
+  //   for (int ip=0; ip<mcP->GetEntries(); ip++) {
+  //     motherpart = (AliAODMCParticle *) mcP->At(ip);
+  //     if (motherpart->GetDaughter(0) > 0)
+  //       motherids[motherpart->GetDaughter(0)] = ip;
+  //     if (motherpart->GetDaughter(1) > 0)
+  //       motherids[motherpart->GetDaughter(1)] = ip;
+  //   }
+  // }
 
   //AliAnalysisUtils
   if(fisPileUp||fpA2013)
@@ -338,7 +342,7 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       if(fMinVtxContr)
 	anaUtil->SetMinVtxContr(fMinVtxContr);
       if(fpA2013)
-	if(anaUtil->IsVertexSelected2013pA(fEvent)==kFALSE) 
+	if(anaUtil->IsVertexSelected2013pA(fEvent)==kFALSE)
 	  {
 	    delete tEvent;
 	    return NULL; //Vertex rejection for pA analysis.
@@ -402,7 +406,8 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
   // looking for global tracks and saving their numbers to copy from them PID information to TPC-only tracks in the main loop over tracks
   for (int i=0;i<nofTracks;i++) {
-    const AliAODTrack *aodtrack=fEvent->GetTrack(i);
+    const AliAODTrack *aodtrack=dynamic_cast<const AliAODTrack*>(fEvent->GetTrack(i));
+    assert(aodtrack&&"Not a standard AOD");
     if (!aodtrack->TestFilterBit(fFilterBit)) {
       if(aodtrack->GetID() < 0) continue;
       labels[aodtrack->GetID()] = i;
@@ -539,8 +544,9 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     // No additional information exists
     // Read in the normal AliAODTracks
 
-    //	const AliAODTrack *aodtrack=fEvent->GetTrack(i); // getting the AODtrack directly
-    AliAODTrack *aodtrack=fEvent->GetTrack(i); // getting the AODtrack directly
+    //	const AliAODTrack *aodtrack=dynamic_cast<AliAODTrack*>(fEvent->GetTrack(i));
+    AliAODTrack *aodtrack=dynamic_cast<AliAODTrack*>(fEvent->GetTrack(i));
+    assert(aodtrack&&"Not a standard AOD"); // getting the AODtrack directly
 
 
 
@@ -585,19 +591,26 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
     AliAODTrack *aodtrackpid;
     if((fFilterBit ==  (1 << (7))) || fFilterMask == 128) {//for TPC Only tracks we have to copy PID information from corresponding global tracks
-      aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
+      aodtrackpid = dynamic_cast<AliAODTrack*>(fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]));
     }
     else {
-      aodtrackpid = fEvent->GetTrack(i);
+      aodtrackpid = dynamic_cast<AliAODTrack*>(fEvent->GetTrack(i));
     }
+    assert(aodtrackpid&&"Not a standard AOD");
 
     CopyPIDtoFemtoTrack(aodtrackpid, trackCopy);
 
     if (mcP) {
       // Fill the hidden information with the simulated data
       //	  Int_t pLabel = aodtrack->GetLabel();
-      AliAODMCParticle *tPart = GetParticleWithLabel(mcP, (TMath::Abs(aodtrack->GetLabel())));
-
+      //      AliAODMCParticle *tPart = GetParticleWithLabel(mcP, (TMath::Abs(aodtrack->GetLabel())));
+      AliAODMCParticle *tPart;
+      if(aodtrack->GetLabel() > -1 ) {
+	tPart = (AliAODMCParticle*)mcP->At(aodtrack->GetLabel());
+      }
+      else {
+	tPart = NULL;
+      }
       AliFemtoModelGlobalHiddenInfo *tInfo = new AliFemtoModelGlobalHiddenInfo();
       double fpx=0.0, fpy=0.0, fpz=0.0, fpt=0.0;
       if (!tPart) {
@@ -635,10 +648,13 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         //	  fpt *= 1e13;
 
         //      cout << "Looking for mother ids " << endl;
-        if (motherids[TMath::Abs(aodtrack->GetLabel())]>0) {
-          //	cout << "Got mother id" << endl;
-          AliAODMCParticle *mother = GetParticleWithLabel(mcP, motherids[TMath::Abs(aodtrack->GetLabel())]);
-          // Check if this is the same particle stored twice on the stack
+
+        //if (motherids[TMath::Abs(aodtrack->GetLabel())]>0) {
+        if(tPart->GetMother() > -1) { //MC particle has a mother
+	//	cout << "Got mother id" << endl;
+	  //          AliAODMCParticle *mother = GetParticleWithLabel(mcP, motherids[TMath::Abs(aodtrack->GetLabel())]);
+          AliAODMCParticle *mother = (AliAODMCParticle*)mcP->At(tPart->GetMother());
+	  // Check if this is the same particle stored twice on the stack
           if (mother) {
             if ((mother->GetPdgCode() == tPart->GetPdgCode() || (mother->Px() == tPart->Px()))) {
               // It is the same particle
@@ -659,6 +675,9 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
               //	      fpt = mother->T() *1e13*3e10;
 
             }
+	    else { //particle's mother exists and the information about it can be added to hiddeninfo:
+	      tInfo->SetMotherPdgCode(mother->GetPdgCode());
+	    }
           }
         }
 
@@ -813,7 +832,7 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     tEvent->SetNormalizedMult(multV0);
   }
 
-  if (mcP) delete [] motherids;
+  // if (mcP) delete [] motherids;
 
   // cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;
 
@@ -828,7 +847,39 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       if(aodv0->GetCharge()!=0) continue;
       if(aodv0->ChargeProng(0)==aodv0->ChargeProng(1)) continue;
       if(aodv0->CosPointingAngle(fV1)<0.998) continue;
+
+      AliAODTrack* daughterTrackPos = (AliAODTrack*)aodv0->GetDaughter(0); //getting positive daughter track
+      AliAODTrack* daughterTrackNeg = (AliAODTrack*)aodv0->GetDaughter(1); //getting negative daughter track
+      if(!daughterTrackPos) continue; //daughter tracks must exist
+      if(!daughterTrackNeg) continue;
+      if(daughterTrackNeg->Charge() == daughterTrackPos->Charge() ) continue; //and have different charge
+
       AliFemtoV0* trackCopyV0 = CopyAODtoFemtoV0(aodv0);
+      if(mcP) {
+      	daughterTrackPos->SetAODEvent(fEvent);
+      	daughterTrackNeg->SetAODEvent(fEvent);
+	if(daughterTrackPos->GetLabel() > 0 && daughterTrackNeg->GetLabel() > 0 ) {
+	  AliAODMCParticle* mcParticlePos = (AliAODMCParticle*)mcP->At(daughterTrackPos->GetLabel());
+	  AliAODMCParticle* mcParticleNeg = (AliAODMCParticle*)mcP->At(daughterTrackNeg->GetLabel() );
+	  if((mcParticlePos!=NULL) && (mcParticleNeg!=NULL)){
+	    int motherOfPosID = mcParticlePos->GetMother();
+	    int motherOfNegID = mcParticleNeg->GetMother();
+	    if ((motherOfPosID > -1) && (motherOfPosID == motherOfNegID)){
+	      AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
+	      // Both daughter tracks refer to the same mother, we can continue
+	      AliAODMCParticle *v0 = (AliAODMCParticle*)mcP->At(motherOfPosID); //our V0 particle
+
+	      tInfo->SetPDGPid(v0->GetPdgCode());
+	      int v0MotherId = v0->GetMother();
+	      if(v0MotherId>-1) { //V0 particle has a mother
+		AliAODMCParticle* motherOfV0 = (AliAODMCParticle*)mcP->At(v0MotherId);
+		tInfo->SetMotherPdgCode(motherOfV0->GetPdgCode());
+	      }
+	      trackCopyV0->SetHiddenInfo(tInfo);
+	    }
+	  }
+	}
+      }
       tEvent->V0Collection()->push_back(trackCopyV0);
       count_pass++;
       //cout<<"Pushback v0 to v0collection"<<endl;

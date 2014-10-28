@@ -146,33 +146,33 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()
   //Add partons to the reference list of the trigger particle
   //Partons are considered those in the first eight possitions in the stack
   //being 0, and 1 the 2 protons, and 6 and 7 the outgoing final partons.
-  if(!GetInputAODBranch()){
-    printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD() - No input particles in AOD with name branch < %s > \n",GetInputAODName().Data());
-    abort();	
-  }
+  if(!GetInputAODBranch())
+    AliFatal(Form("No input particles in AOD with name branch < %s > ",GetInputAODName().Data()));
+  
 	
-  if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliAODPWG4ParticleCorrelation")){
-    printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD() - Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s> \n",GetInputAODBranch()->GetClass()->GetName());
-    abort();
-  }	
-	
-  if(GetDebug() > 1){
-    printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD() - Begin fill AODs \n");
-    printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD() - In particle branch aod entries %d\n", GetInputAODBranch()->GetEntriesFast());
-  }
+  if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliAODPWG4ParticleCorrelation"))
+    AliFatal(Form("Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s>",
+             GetInputAODBranch()->GetClass()->GetName()));
+  
+  AliDebug(1,"Begin fill AODs");
+  AliDebug(1,Form("In particle branch aod entries %d", GetInputAODBranch()->GetEntriesFast()));
   
   //Loop on stored AOD particles
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
-  for(Int_t iaod = 0; iaod < naod ; iaod++){
+  for(Int_t iaod = 0; iaod < naod ; iaod++)
+  {
     AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     
     AliStack * stack =  GetMCStack() ;
-    if(!stack){ 
-      printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD() - No Stack available, STOP\n");
-      abort();
+    if(!stack)
+    {
+      AliFatal("No Stack available, STOP");
+      return; // coverity
     }
-    if(stack->GetNtrack() < 8) {
-      printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD() *** small number of particles, not a PYTHIA simulation? ***:  n tracks %d \n", stack->GetNprimary());
+    
+    if(stack->GetNtrack() < 8)
+    {
+      AliWarning(Form("*** small number of particles, not a PYTHIA simulation? ***:  n tracks %d", stack->GetNprimary()));
       continue ;
     }
     
@@ -198,26 +198,27 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()
     
   }//Aod branch loop
   
-  if(GetDebug() > 1) printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD() - End fill AODs \n");
+  AliDebug(1,"End fill AODs");
 }
 
 //_________________________________________________________________
 void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() 
 {
   //Particle-Parton Correlation Analysis, fill histograms
-  if(!GetInputAODBranch()){
-    printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() - No input particles in AOD with name branch < %s > \n",GetInputAODName().Data());
-    abort();	
-  }
-  if(GetDebug() > 1){
-    printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() - Begin parton correlation analysis, fill histograms \n");
-    printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() - In particle branch aod entries %d\n", GetInputAODBranch()->GetEntriesFast());
+  
+  if(!GetInputAODBranch())
+  {
+    AliFatal(Form("No input particles in AOD with name branch < %s >",GetInputAODName().Data()));
+    return; //coverity
   }
   
+  AliDebug(1,"Begin parton correlation analysis, fill histograms");
+  AliDebug(1,Form("In particle branch aod entries %d", GetInputAODBranch()->GetEntriesFast()));
+  
   AliStack * stack =  GetMCStack() ;
-  if(!stack) {
-    printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() - No Stack available, STOP\n");
-    abort();
+  if(!stack)
+  {
+    AliFatal("No Stack available, STOP");
   }
   
   //Loop on stored AOD particles
@@ -235,9 +236,10 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
     Int_t iawayparent = -1;
     
     TObjArray * objarray = particle->GetObjArray(GetAODObjArrayName());
-    if(!(objarray) || (objarray->GetEntriesFast() < 7) ) {
-      printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() - Reference list with partons not filled, STOP analysis\n");
-      abort();
+    if(!(objarray) || (objarray->GetEntriesFast() < 7) )
+    {
+      AliFatal("Reference list with partons not filled, STOP analysis");
+      return; // coverity
     }
     
     //Check and get indeces of mother and parton    
@@ -259,11 +261,11 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
       }
     }
     
-    if(GetDebug() > 1) printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() - N reference partons %d; labels:  mother %d, parent %d \n", objarray->GetEntriesFast(), imom, iparent);
+    AliDebug(1,Form("N reference partons %d; labels:  mother %d, parent %d", objarray->GetEntriesFast(), imom, iparent));
     
-    
-    if(iparent < 0 || iparent > 8) { 
-      if(GetDebug() > 0 ) printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() - Failed to find appropriate parton, index %d", iparent);
+    if(iparent < 0 || iparent > 8)
+    {
+      AliWarning(Form("Failed to find appropriate parton, index %d", iparent));
       continue ;
     }
     
@@ -278,10 +280,11 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
     fhDeltaPtNearParton->Fill(ptTrigg,ptTrigg-ptNearParton);
     fhPtRatNearParton->Fill(ptTrigg,ptNearParton/ptTrigg);
     
-    if(iparent == 7) iawayparent =6;
-    else if(iparent == 6) iawayparent =7;
-    else{
-      printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() - Parent parton is not final state, skip \n");
+    if     (iparent == 7) iawayparent = 6;
+    else if(iparent == 6) iawayparent = 7;
+    else
+    {
+      AliWarning("Parent parton is not final state, skip");
       continue;
     }
     
@@ -297,6 +300,6 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
     
   }
   
-  if(GetDebug() > 1) printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() - End fill histograms \n");
+  AliDebug(1,"End fill histograms");
   
 } 

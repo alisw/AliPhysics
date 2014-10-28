@@ -401,8 +401,8 @@ void AliEbyEPidRatioEffCont::CheckContTrack(AliVTrack *track, Int_t iPid, Int_t 
       deltaPhi -= TMath::TwoPi();
   }
 
-  Double_t hnContMc[8]  = {fCentralityBin,iPid,signMC,contPart,particle->Eta(),particle->Y(),particle->Phi(),particle->Pt()};
-  Double_t hnContRec[8] = {fCentralityBin,iPid,signRec,contPart, track->Eta(),yRec,track->Phi(),track->Pt()};
+  Double_t hnContMc[8]  = {fCentralityBin,static_cast<Double_t>(iPid),signMC,static_cast<Double_t>(contPart),particle->Eta(),particle->Y(),particle->Phi(),particle->Pt()};
+  Double_t hnContRec[8] = {fCentralityBin,static_cast<Double_t>(iPid),signRec,static_cast<Double_t>(contPart), track->Eta(),yRec,track->Phi(),track->Pt()};
   fHnContMc->Fill(hnContMc);
   fHnContRec->Fill(hnContRec);
    
@@ -510,13 +510,32 @@ void AliEbyEPidRatioEffCont::FillMCEffHist() {
     // if (signRec == 0) continue;
 
     if(iPid != 0) {
-      Double_t hnEffMc[10]  = {fCentralityBin,0,signMC,findable, recStatus,recPid,particle->Eta(), particle->Y(), particle->Phi(),particle->Pt()};
-      Double_t hnEffRec[10] = {fCentralityBin,0,signRec,findable, recStatus,recPid,etaRec, yRec, phiRec, ptRec};
+      Double_t hnEffMc[10]  = {fCentralityBin,0,
+			       static_cast<Double_t>(signMC),
+			       static_cast<Double_t>(findable), 
+			       static_cast<Double_t>(recStatus),
+			       static_cast<Double_t>(recPid),
+			       particle->Eta(), particle->Y(), particle->Phi(),particle->Pt()};
+      Double_t hnEffRec[10] = {fCentralityBin,0,
+			       static_cast<Double_t>(signRec),
+			       static_cast<Double_t>(findable), 
+			       static_cast<Double_t>(recStatus),
+			       static_cast<Double_t>(recPid),etaRec, yRec, phiRec, ptRec};
       fHnEffMc->Fill(hnEffMc);
       fHnEffRec->Fill(hnEffRec);
     }
-    Double_t hnEffMc[10]  = {fCentralityBin,iPid,signMC,findable, recStatus,recPid,particle->Eta(), particle->Y(), particle->Phi(),particle->Pt()};
-    Double_t hnEffRec[10] = {fCentralityBin,iPid,signRec,findable, recStatus,recPid,etaRec, yRec, phiRec, ptRec};
+    Double_t hnEffMc[10]  = {fCentralityBin,static_cast<Double_t>(iPid),
+			     static_cast<Double_t>(signMC),
+			     static_cast<Double_t>(findable), 
+			     static_cast<Double_t>(recStatus),
+			     static_cast<Double_t>(recPid),
+			     particle->Eta(), particle->Y(), particle->Phi(),particle->Pt()};
+    Double_t hnEffRec[10] = {fCentralityBin,
+			     static_cast<Double_t>(iPid),
+			     static_cast<Double_t>(signRec),
+			     static_cast<Double_t>(findable), 
+			     static_cast<Double_t>(recStatus),
+			     static_cast<Double_t>(recPid),etaRec, yRec, phiRec, ptRec};
     fHnEffMc->Fill(hnEffMc);
     fHnEffRec->Fill(hnEffRec);
     
