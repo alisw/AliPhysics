@@ -438,6 +438,11 @@ struct QAPlotter : public QABase
     occ->Write();
     beta->Write();
 
+    std::ofstream doc(".doc");
+    doc << fPeriod << " " << fPass << " ("
+	<< fDataType << ")" << std::endl;
+    doc.close();
+
     Close(false); // Do not delete PNGs
   }
   /** 
