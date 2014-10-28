@@ -112,8 +112,10 @@ if( ALICE_TARGET STREQUAL "solarisCC5")
 elseif( ALICE_TARGET STREQUAL "linuxx8664icc")
 	 	set ( PACKFFLAGS "${FFLAGS}  -nofixed" )
 else()
-		set ( PACKFFLAGS "${FFLAGS} -ffree-form -DCTEQ")
+		set ( PACKFFLAGS "${FFLAGS} -ffree-form")
 endif( ALICE_TARGET STREQUAL "solarisCC5")
+
+set ( PACKFFLAGS "${PACKFFLAGS} -DCTEQ")
 
 set( PACKCXXFLAGS "${CXXFLAGS} -DDEFAULTPREFIXPATH=\\\"NONE\\\" -DDEFAULTLHAPATH=\\\"${ALICE_ROOT}/LHAPDF/PDFsets\\\"" )
 
