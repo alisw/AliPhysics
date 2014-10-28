@@ -34,9 +34,9 @@
 #include "AliMUONConstants.h"
 #include "AliMUONVClusterStore.h"
 #include "AliMUONVHitStore.h"
-#include "mapping/AliMpCDB.h"
-#include "mapping/AliMpDEManager.h"
-#include "mapping/AliMpDetElement.h"
+#include "AliMpCDB.h"
+#include "AliMpDEManager.h"
+#include "AliMpDetElement.h"
 #include <cstdlib>
 #include <cstdio>
 #include <cerrno>

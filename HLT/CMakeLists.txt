@@ -40,6 +40,7 @@ add_subdirectory(EMCAL)
 add_subdirectory(FMD)
 add_subdirectory(ITS)
 add_subdirectory(JET)
+add_subdirectory(MUON)
 # Enable EVE if ROOT has OpenGL support
 if(ROOT_HASOPENGL STREQUAL "yes")
     add_subdirectory(EVE)
