@@ -3,7 +3,7 @@
 # Author: Johny Jose m(johny.jose@cern.ch)
 #         Port of previous Makefile build to cmake
 
-cmake_minimum_required(VERSION 2.8.4 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
 
 get_filename_component(__cmake_path ${CMAKE_COMMAND} PATH)
 find_program(CPACK_COMMAND cpack ${__cmake_path})

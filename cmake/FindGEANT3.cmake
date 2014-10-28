@@ -3,7 +3,7 @@
 # Author: Johny Jose (johny.jose@cern.ch)
 #         Port of previous Makefile build to cmake
 
-cmake_minimum_required(VERSION 2.8.4 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
 
 set(GEANT3DIR $ENV{GEANT3DIR})
 ALICE_RootConfig(GEANT3_PLATFORM --arch)
