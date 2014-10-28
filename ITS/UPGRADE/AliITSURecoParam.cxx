@@ -64,6 +64,7 @@ AliITSURecoParam::AliITSURecoParam()
   ,fTrackingConditions(0)
   ,fTracker(0)
   ,fSAonly(kFALSE)
+  ,fMaxROCycle(126) // like in AliITSUSimulation::kMaxROCycleAccept
 {
   // def c-tor
   SetName("ITS");
@@ -91,6 +92,7 @@ AliITSURecoParam::AliITSURecoParam(Int_t nLr)
   ,fTrackingConditions(0)
   ,fTracker(0)
   ,fSAonly(kFALSE)
+  ,fMaxROCycle(126) // like in AliITSUSimulation::kMaxROCycleAccept
 {
   // def c-tor
   SetName("ITS");
