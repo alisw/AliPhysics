@@ -733,6 +733,7 @@ Double_t AliSpectraAODEventCuts::GetQvecPercentile(Int_t v0side){
 	Double_t percentile =  -999.;
 	if(v0side==0/*V0A*/){ percentile = 100*spline->Eval(fqV0A); }
 	if(v0side==1/*V0C*/){ percentile = 100*spline->Eval(fqV0C); }
+	if(v0side==2/*TPC*/){ percentile = 100*spline->Eval(fqTPC); }
 
 	if(percentile>100. || percentile<0.) return -999.;
 
