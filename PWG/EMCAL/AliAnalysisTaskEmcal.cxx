@@ -1,8 +1,8 @@
-// $Id$
 //
 // Emcal base analysis task.
 //
 // Author: S.Aiola, M. Verweij
+
 #include "AliAnalysisTaskEmcal.h"
 
 #include <TClonesArray.h>
@@ -57,6 +57,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fTrackPtCut(0),
   fMinNTrack(0),
   fUseAliAnaUtils(kFALSE),
+  fRejectPileup(kFALSE),
   fAliAnalysisUtils(0x0),
   fOffTrigger(AliVEvent::kAny),
   fTrigClass(),
@@ -100,6 +101,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMainTriggerPatch(0x0),
   fTriggers(0),
   fOutput(0),
+  fHistEventCount(0),
   fHistTrialsAfterSel(0),
   fHistEventsAfterSel(0),
   fHistXsectionAfterSel(0),
@@ -139,6 +141,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fTrackPtCut(0),
   fMinNTrack(0),
   fUseAliAnaUtils(kFALSE),
+  fRejectPileup(kFALSE),
   fAliAnalysisUtils(0x0),
   fOffTrigger(AliVEvent::kAny),
   fTrigClass(),
@@ -182,6 +185,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMainTriggerPatch(0x0),
   fTriggers(0),
   fOutput(0),
+  fHistEventCount(0),
   fHistTrialsAfterSel(0),
   fHistEventsAfterSel(0),
   fHistXsectionAfterSel(0),
@@ -357,21 +361,27 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   fHistEventPlane->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistEventPlane);
 
-  fHistEventRejection = new TH1I("fHistEventRejection","Reasons to reject event",20,0,20);
-  fHistEventRejection->Fill("PhysSel",0);
-  fHistEventRejection->Fill("trigger",0);
-  fHistEventRejection->Fill("trigTypeSel",0);
-  fHistEventRejection->Fill("Cent",0);
-  fHistEventRejection->Fill("vertex contr.",0);
-  fHistEventRejection->Fill("Vz",0);
-  fHistEventRejection->Fill("trackInEmcal",0);
-  fHistEventRejection->Fill("minNTrack",0);
-  fHistEventRejection->Fill("VtxSel2013pA",0);
-  fHistEventRejection->Fill("PileUp",0);
-  fHistEventRejection->Fill("EvtPlane",0);
-  fHistEventRejection->Fill("SelPtHardBin",0);
+  fHistEventRejection = new TH1F("fHistEventRejection","Reasons to reject event",20,0,20);
+  fHistEventRejection->GetXaxis()->SetBinLabel(1,"PhysSel");
+  fHistEventRejection->GetXaxis()->SetBinLabel(2,"trigger");
+  fHistEventRejection->GetXaxis()->SetBinLabel(3,"trigTypeSel");
+  fHistEventRejection->GetXaxis()->SetBinLabel(4,"Cent");
+  fHistEventRejection->GetXaxis()->SetBinLabel(5,"vertex contr.");
+  fHistEventRejection->GetXaxis()->SetBinLabel(6,"Vz");
+  fHistEventRejection->GetXaxis()->SetBinLabel(7,"trackInEmcal");
+  fHistEventRejection->GetXaxis()->SetBinLabel(8,"minNTrack");
+  fHistEventRejection->GetXaxis()->SetBinLabel(9,"VtxSel2013pA");
+  fHistEventRejection->GetXaxis()->SetBinLabel(10,"PileUp");
+  fHistEventRejection->GetXaxis()->SetBinLabel(11,"EvtPlane");
+  fHistEventRejection->GetXaxis()->SetBinLabel(12,"SelPtHardBin");
   fHistEventRejection->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistEventRejection);
+
+  fHistEventCount = new TH1F("fHistEventCount","fHistEventCount",2,0,2);
+  fHistEventCount->GetXaxis()->SetBinLabel(1,"Accepted");
+  fHistEventCount->GetXaxis()->SetBinLabel(2,"Rejected");
+  fHistEventCount->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistEventCount);
 
   PostData(1, fOutput);
 }
@@ -409,8 +419,13 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *)
   if (!RetrieveEventObjects())
     return;
 
-  if (!IsEventSelected()) 
+  if (IsEventSelected()) {
+    if (fGeneralHistograms) fHistEventCount->Fill("Accepted",1);
+  }
+  else {
+    if (fGeneralHistograms) fHistEventCount->Fill("Rejected",1);
     return;
+  }
 
   if (fGeneralHistograms && fCreateHisto) {
     if (!FillGeneralHistograms())
@@ -707,51 +722,53 @@ AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
 }
 
 //________________________________________________________________________
-ULong_t AliAnalysisTaskEmcal::GetTriggerList(){
-	  if (!fTriggerPatchInfo)
-	    return 0;
+ULong_t AliAnalysisTaskEmcal::GetTriggerList()
+{
+  if (!fTriggerPatchInfo)
+    return 0;
 
-	  //number of patches in event
-	  Int_t nPatch = fTriggerPatchInfo->GetEntries();
+  //number of patches in event
+  Int_t nPatch = fTriggerPatchInfo->GetEntries();
 
-	  //loop over patches to define trigger type of event
-	  Int_t nG1 = 0;
-	  Int_t nG2 = 0;
-	  Int_t nJ1 = 0;
-	  Int_t nJ2 = 0;
-	  AliEmcalTriggerPatchInfo *patch;
-	  for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
-	    patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
-	    if (patch->IsGammaHigh()) nG1++;
-	    if (patch->IsGammaLow())  nG2++;
-	    if (patch->IsJetHigh()) nJ1++;
-	    if (patch->IsJetLow())  nJ2++;
-	  }
+  //loop over patches to define trigger type of event
+  Int_t nG1 = 0;
+  Int_t nG2 = 0;
+  Int_t nJ1 = 0;
+  Int_t nJ2 = 0;
+  AliEmcalTriggerPatchInfo *patch;
+  for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
+    patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
+    if (patch->IsGammaHigh()) nG1++;
+    if (patch->IsGammaLow())  nG2++;
+    if (patch->IsJetHigh()) nJ1++;
+    if (patch->IsJetLow())  nJ2++;
+  }
 
-	  AliDebug(2, "Patch summary: ");
-	  AliDebug(2, Form("Number of patches: %d", nPatch));
-	  AliDebug(2, Form("Jet:   low[%d], high[%d]" ,nJ2, nJ1));
-	  AliDebug(2, Form("Gamma: low[%d], high[%d]" ,nG2, nG1));
+  AliDebug(2, "Patch summary: ");
+  AliDebug(2, Form("Number of patches: %d", nPatch));
+  AliDebug(2, Form("Jet:   low[%d], high[%d]" ,nJ2, nJ1));
+  AliDebug(2, Form("Gamma: low[%d], high[%d]" ,nG2, nG1));
 
-	  ULong_t triggers(0);
-	  if (nG1>0)
-		SETBIT(triggers, kG1);
-	  if (nG2>0)
-		SETBIT(triggers, kG2);
-	  if (nJ1>0)
-		SETBIT(triggers, kJ1);
-	  if (nJ2>0)
-		SETBIT(triggers, kJ2);
-	  return triggers;
+  ULong_t triggers(0);
+  if (nG1>0)
+    SETBIT(triggers, kG1);
+  if (nG2>0)
+    SETBIT(triggers, kG2);
+  if (nJ1>0)
+    SETBIT(triggers, kJ1);
+  if (nJ2>0)
+    SETBIT(triggers, kJ2);
+  return triggers;
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcal::HasTriggerType(TriggerType t){
-	// Check if event has a given trigger type
-	if(t == kND){
-		return fTriggers == 0;
-	}
-	return TESTBIT(fTriggers, int(t));
+Bool_t AliAnalysisTaskEmcal::HasTriggerType(TriggerType t)
+{
+  // Check if event has a given trigger type
+  if(t == kND){
+    return fTriggers == 0;
+  }
+  return TESTBIT(fTriggers, int(t));
 }
 
 //________________________________________________________________________
@@ -767,12 +784,11 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     } else {
       const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
       if (aev) {
-        res = aev->GetHeader()->GetOfflineTrigger();
+        res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
       }
     }
     if ((res & fOffTrigger) == 0) {
-      if (fGeneralHistograms) 
-	fHistEventRejection->Fill("PhysSel",1);
+      if (fGeneralHistograms) fHistEventRejection->Fill("PhysSel",1);
       return kFALSE;
     }
   }
@@ -789,14 +805,12 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       }
     }
     if (!fired.Contains("-B-")) {
-      if (fGeneralHistograms) 
-	fHistEventRejection->Fill("trigger",1);
+      if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
       return kFALSE;
     }
     TObjArray *arr = fTrigClass.Tokenize("|");
     if (!arr) {
-      if (fGeneralHistograms) 
-	fHistEventRejection->Fill("trigger",1);
+      if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
       return kFALSE;
     }
     Bool_t match = 0;
@@ -811,24 +825,21 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     }
     delete arr;
     if (!match) {
-      if (fGeneralHistograms) 
-	fHistEventRejection->Fill("trigger",1);
+      if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
       return kFALSE;
     }
   }
 
   if (fTriggerTypeSel != kND) {
     if (!HasTriggerType(fTriggerTypeSel)) {
-      if (fGeneralHistograms) 
-	fHistEventRejection->Fill("trigTypeSel",1);
+      if (fGeneralHistograms) fHistEventRejection->Fill("trigTypeSel",1);
       return kFALSE;
     }
   }
 
   if ((fMinCent != -999) && (fMaxCent != -999)) {
     if (fCent<fMinCent || fCent>fMaxCent) {
-      if (fGeneralHistograms) 
-	fHistEventRejection->Fill("Cent",1);
+      if (fGeneralHistograms) fHistEventRejection->Fill("Cent",1);
       return kFALSE;
     }
   }
@@ -842,27 +853,24 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     if(fMinVz>10.)  fMaxVz = 10.;
 
     if (!fAliAnalysisUtils->IsVertexSelected2013pA(InputEvent())) {
-      if (fGeneralHistograms) 
-	fHistEventRejection->Fill("VtxSel2013pA",1);
+      if (fGeneralHistograms) fHistEventRejection->Fill("VtxSel2013pA",1);
       return kFALSE;
     }
 
-    if (fAliAnalysisUtils->IsPileUpEvent(InputEvent())) {
-      fHistEventRejection->Fill("PileUp",1);
+    if (fRejectPileup && fAliAnalysisUtils->IsPileUpEvent(InputEvent())) {
+      if (fGeneralHistograms) fHistEventRejection->Fill("PileUp",1);
       return kFALSE;
     }
   }
 
   if ((fMinVz != -999) && (fMaxVz != -999)) {
     if (fNVertCont == 0 ) {
-      if (fGeneralHistograms) 
-	fHistEventRejection->Fill("vertex contr.",1);
+      if (fGeneralHistograms) fHistEventRejection->Fill("vertex contr.",1);
       return kFALSE;
     }
     Double_t vz = fVertex[2];
     if (vz<fMinVz || vz>fMaxVz) {
-      if (fGeneralHistograms) 
-	fHistEventRejection->Fill("Vz",1);
+      if (fGeneralHistograms) fHistEventRejection->Fill("Vz",1);
       return kFALSE;
     }
   }
@@ -891,8 +899,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       }
     }
     if (!trackInEmcalOk) {
-      if (fGeneralHistograms) 
-	fHistEventRejection->Fill("trackInEmcal",1);
+      if (fGeneralHistograms) fHistEventRejection->Fill("trackInEmcal",1);
       return kFALSE;
     }
   }
@@ -911,8 +918,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       }
     }
     if (nTracksAcc<fMinNTrack) {
-      if (fGeneralHistograms) 
-	fHistEventRejection->Fill("minNTrack",1);
+      if (fGeneralHistograms) fHistEventRejection->Fill("minNTrack",1);
       return kFALSE;
     }
   }
@@ -921,17 +927,15 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       !(fEPV0 + TMath::Pi() > fMinEventPlane && fEPV0 + TMath::Pi() <= fMaxEventPlane) &&
       !(fEPV0 - TMath::Pi() > fMinEventPlane && fEPV0 - TMath::Pi() <= fMaxEventPlane)) 
     {
-      if (fGeneralHistograms) 
-	fHistEventRejection->Fill("EvtPlane",1);
+      if (fGeneralHistograms) fHistEventRejection->Fill("EvtPlane",1);
       return kFALSE;
     }
 
   if (fSelectPtHardBin != -999 && fSelectPtHardBin != fPtHardBin)  {
-      if (fGeneralHistograms) 
-	fHistEventRejection->Fill("SelPtHardBin",1);
+      if (fGeneralHistograms) fHistEventRejection->Fill("SelPtHardBin",1);
       return kFALSE;
     }
-
+  
   return kTRUE;
 }
 
@@ -1281,4 +1285,41 @@ Double_t* AliAnalysisTaskEmcal::GenerateFixedBinArray(Int_t n, Double_t min, Dou
   GenerateFixedBinArray(n, min, max, array);
 
   return array;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcal::SetRejectionReasonLabels(TAxis* axis)
+{
+  axis->SetBinLabel(1,  "NullObject");
+  axis->SetBinLabel(2,  "Pt");
+  axis->SetBinLabel(3,  "Acceptance");
+  axis->SetBinLabel(4,  "BitMap");
+  axis->SetBinLabel(5,  "Bit4");
+  axis->SetBinLabel(6,  "Bit5");
+  axis->SetBinLabel(7,  "Bit6");
+  axis->SetBinLabel(8,  "Bit7");
+  axis->SetBinLabel(9,  "MCFlag");
+  axis->SetBinLabel(10, "MCGenerator");
+  axis->SetBinLabel(11, "ChargeCut");
+  axis->SetBinLabel(12, "Bit11");
+  axis->SetBinLabel(13, "Bit12");
+  axis->SetBinLabel(14, "IsEMCal");
+  axis->SetBinLabel(15, "Time");
+  axis->SetBinLabel(16, "Energy");
+  axis->SetBinLabel(17, "Bit16");
+  axis->SetBinLabel(18, "Bit17");
+  axis->SetBinLabel(19, "Area");
+  axis->SetBinLabel(20, "AreaEmc");
+  axis->SetBinLabel(21, "ZLeadingCh");
+  axis->SetBinLabel(22, "ZLeadingEmc");
+  axis->SetBinLabel(23, "NEF");
+  axis->SetBinLabel(24, "MinLeadPt");
+  axis->SetBinLabel(25, "MaxTrackPt");
+  axis->SetBinLabel(26, "MaxClusterPt");
+  axis->SetBinLabel(27, "Flavour");
+  axis->SetBinLabel(28, "TagStatus");
+  axis->SetBinLabel(29, "Bit28");
+  axis->SetBinLabel(30, "Bit29");
+  axis->SetBinLabel(31, "Bit30");
+  axis->SetBinLabel(32, "Bit31");
 }

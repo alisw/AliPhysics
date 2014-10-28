@@ -1741,7 +1741,8 @@ Int_t AliAnalysisTaskJetProperties::GetListOfTracks(TList *list, Int_t type)
   if(type==kTrackAOD){
     // all rec. tracks, esd filter mask, within acceptance
     for(Int_t it=0; it<fAOD->GetNumberOfTracks(); ++it){
-      AliAODTrack *tr = fAOD->GetTrack(it);
+      AliAODTrack *tr = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(it));
+      if(!tr) AliFatal("Not a standard AOD");
       if(!tr)continue;
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;//selecting filtermask
       if(tr->Eta() < fTrackEtaMin || tr->Eta() > fTrackEtaMax) continue;

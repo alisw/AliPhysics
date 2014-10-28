@@ -842,7 +842,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeAngle()
       plane = fInputEvent->GetEventplane();
    else if (fInputEvent->InheritsFrom(AliAODEvent::Class())) {
       AliAODEvent *aodEvent = (AliAODEvent *)fInputEvent;
-      plane = aodEvent->GetHeader()->GetEventplaneP();
+      plane = ((AliVAODHeader*)aodEvent->GetHeader())->GetEventplaneP();
    }
 
    if (plane)

@@ -123,7 +123,7 @@ void AliAnalysisTaskPMD::UserExec(Option_t *)
   //printf("There are %d tracks in this event\n", fESD->GetNumberOfPmdTracks());
   //vertex selection
   const AliESDVertex *vertex = fESD->GetPrimaryVertex();
-  Float_t Vz = vertex->GetZv();    
+  Float_t Vz = vertex->GetZ();    
   Bool_t zVerStatus = vertex->GetStatus();
   if(zVerStatus){
     fHistVtxZ->Fill(Vz);

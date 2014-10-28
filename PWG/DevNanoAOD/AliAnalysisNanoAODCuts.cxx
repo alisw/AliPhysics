@@ -51,9 +51,12 @@ Bool_t AliAnalysisNanoAODEventCuts::IsSelected(TObject* obj)
 
 
 void AliNanoAODSimpleSetter::SetNanoAODHeader(const AliAODEvent * event   , AliNanoAODHeader * head  ) {
+
+  AliAODHeader * header = dynamic_cast<AliAODHeader*>(event->GetHeader());
+  if (!header) AliFatal("Not a standard AOD");
   // Set custom nano aod vars
-  Double_t centr    = event->GetHeader()->GetCentralityP()->GetCentralityPercentile("V0M");
-  Double_t magfield = event->GetHeader()->GetMagneticField();
+  Double_t centr    = header->GetCentralityP()->GetCentralityPercentile("V0M");
+  Double_t magfield = header->GetMagneticField();
   head->SetVar(0, centr);
   head->SetVar(1, magfield);
 

@@ -4207,15 +4207,15 @@ void AliProtonQAAnalysis::RunVertexQA(AliGenEventHeader *header,
   }
   if(vertexTPC->GetNContributors() > 0) {
     ((TH1F *)(fQAVertexList->At(1)))->Fill(primaryVertex[2]);
-    ((TH2F *)(fQAVertexList->At(2)))->Fill(vertexTPC->GetXv(),
+    ((TH2F *)(fQAVertexList->At(2)))->Fill(vertexTPC->GetX(),
 					   vertexTPC->GetNContributors());
-    ((TH2F *)(fQAVertexList->At(3)))->Fill(vertexTPC->GetYv(),
+    ((TH2F *)(fQAVertexList->At(3)))->Fill(vertexTPC->GetY(),
 					   vertexTPC->GetNContributors());
-    ((TH2F *)(fQAVertexList->At(4)))->Fill(vertexTPC->GetZv(),
+    ((TH2F *)(fQAVertexList->At(4)))->Fill(vertexTPC->GetZ(),
 					   vertexTPC->GetNContributors());
-    ((TH1F *)(fQAVertexList->At(5)))->Fill((vertexTPC->GetXv()-primaryVertex[0])*10000.);
-    ((TH1F *)(fQAVertexList->At(6)))->Fill((vertexTPC->GetYv()-primaryVertex[1])*10000.);
-    ((TH1F *)(fQAVertexList->At(7)))->Fill((vertexTPC->GetZv()-primaryVertex[2])*10000.);
+    ((TH1F *)(fQAVertexList->At(5)))->Fill((vertexTPC->GetX()-primaryVertex[0])*10000.);
+    ((TH1F *)(fQAVertexList->At(6)))->Fill((vertexTPC->GetY()-primaryVertex[1])*10000.);
+    ((TH1F *)(fQAVertexList->At(7)))->Fill((vertexTPC->GetZ()-primaryVertex[2])*10000.);
     ((TH1F *)(fQAVertexList->At(8)))->Fill(vertexTPC->GetXRes()*10000.);
     ((TH1F *)(fQAVertexList->At(9)))->Fill(vertexTPC->GetYRes()*10000.);
     ((TH1F *)(fQAVertexList->At(10)))->Fill(vertexTPC->GetZRes()*10000.);
@@ -4229,15 +4229,15 @@ void AliProtonQAAnalysis::RunVertexQA(AliGenEventHeader *header,
   }
   if(vertexSPD->GetNContributors() > 0) {
     ((TH1F *)(fQAVertexList->At(11)))->Fill(primaryVertex[2]);
-    ((TH2F *)(fQAVertexList->At(12)))->Fill(vertexSPD->GetXv(),
+    ((TH2F *)(fQAVertexList->At(12)))->Fill(vertexSPD->GetX(),
 					    vertexSPD->GetNContributors());
-    ((TH2F *)(fQAVertexList->At(13)))->Fill(vertexSPD->GetYv(),
+    ((TH2F *)(fQAVertexList->At(13)))->Fill(vertexSPD->GetY(),
 					    vertexSPD->GetNContributors());
-    ((TH2F *)(fQAVertexList->At(14)))->Fill(vertexSPD->GetZv(),
+    ((TH2F *)(fQAVertexList->At(14)))->Fill(vertexSPD->GetZ(),
 					    vertexSPD->GetNContributors());
-    ((TH1F *)(fQAVertexList->At(15)))->Fill((vertexSPD->GetXv()-primaryVertex[0])*10000.);
-    ((TH1F *)(fQAVertexList->At(16)))->Fill((vertexSPD->GetYv()-primaryVertex[1])*10000.);
-    ((TH1F *)(fQAVertexList->At(17)))->Fill((vertexSPD->GetZv()-primaryVertex[2])*10000.);
+    ((TH1F *)(fQAVertexList->At(15)))->Fill((vertexSPD->GetX()-primaryVertex[0])*10000.);
+    ((TH1F *)(fQAVertexList->At(16)))->Fill((vertexSPD->GetY()-primaryVertex[1])*10000.);
+    ((TH1F *)(fQAVertexList->At(17)))->Fill((vertexSPD->GetZ()-primaryVertex[2])*10000.);
     ((TH1F *)(fQAVertexList->At(18)))->Fill(vertexSPD->GetXRes()*10000.);
     ((TH1F *)(fQAVertexList->At(19)))->Fill(vertexSPD->GetYRes()*10000.);
     ((TH1F *)(fQAVertexList->At(20)))->Fill(vertexSPD->GetZRes()*10000.);
@@ -4251,15 +4251,15 @@ void AliProtonQAAnalysis::RunVertexQA(AliGenEventHeader *header,
   }
   if(vertexTracks->GetNContributors() > 0) {
     ((TH1F *)(fQAVertexList->At(21)))->Fill(primaryVertex[2]);
-    ((TH2F *)(fQAVertexList->At(22)))->Fill(vertexTracks->GetXv(),
+    ((TH2F *)(fQAVertexList->At(22)))->Fill(vertexTracks->GetX(),
 					    vertexTracks->GetNContributors());
-    ((TH2F *)(fQAVertexList->At(23)))->Fill(vertexTracks->GetYv(),
+    ((TH2F *)(fQAVertexList->At(23)))->Fill(vertexTracks->GetY(),
 					    vertexTracks->GetNContributors());
-    ((TH2F *)(fQAVertexList->At(24)))->Fill(vertexTracks->GetZv(),
+    ((TH2F *)(fQAVertexList->At(24)))->Fill(vertexTracks->GetZ(),
 					    vertexTracks->GetNContributors());
-    ((TH1F *)(fQAVertexList->At(25)))->Fill((vertexTracks->GetXv()-primaryVertex[0])*10000.);
-    ((TH1F *)(fQAVertexList->At(26)))->Fill((vertexTracks->GetYv()-primaryVertex[1])*10000.);
-    ((TH1F *)(fQAVertexList->At(27)))->Fill((vertexTracks->GetZv()-primaryVertex[2])*10000.);
+    ((TH1F *)(fQAVertexList->At(25)))->Fill((vertexTracks->GetX()-primaryVertex[0])*10000.);
+    ((TH1F *)(fQAVertexList->At(26)))->Fill((vertexTracks->GetY()-primaryVertex[1])*10000.);
+    ((TH1F *)(fQAVertexList->At(27)))->Fill((vertexTracks->GetZ()-primaryVertex[2])*10000.);
     ((TH1F *)(fQAVertexList->At(28)))->Fill(vertexTracks->GetXRes()*10000.);
     ((TH1F *)(fQAVertexList->At(29)))->Fill(vertexTracks->GetYRes()*10000.);
     ((TH1F *)(fQAVertexList->At(30)))->Fill(vertexTracks->GetZRes()*10000.);

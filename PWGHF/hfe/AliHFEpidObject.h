@@ -36,8 +36,10 @@ class AliHFEpidObject{
       fAbInitioPID(-1),
       fCentrality(99),
       fMultiplicity(0),
+      fCorrTPCnSigma(0),
       fIsPbPb(kFALSE),         // Default: pp
-      fIspPb(kFALSE)         // Default: pp
+      fIspPb(kFALSE),         // Default: pp
+      fHasCorrTPCnSigma(kFALSE)
       {
       }
     AliHFEpidObject(const AliHFEpidObject &ref):
@@ -46,8 +48,10 @@ class AliHFEpidObject{
       fAbInitioPID(ref.fAbInitioPID),
       fCentrality(ref.fCentrality),
       fMultiplicity(ref.fMultiplicity),
+      fCorrTPCnSigma(ref.fCorrTPCnSigma),
       fIsPbPb(ref.fIsPbPb),
-      fIspPb(ref.fIspPb)
+      fIspPb(ref.fIspPb),
+      fHasCorrTPCnSigma(ref.fHasCorrTPCnSigma)
       {
       }
     AliHFEpidObject &operator=(const AliHFEpidObject &ref);
@@ -59,6 +63,7 @@ class AliHFEpidObject{
     void SetAbInitioPID(Int_t abInitioPID) { fAbInitioPID = abInitioPID; }
     void SetCentrality(Int_t centrality) { fCentrality = centrality; }
     void SetMulitplicity(Double_t mult) { fMultiplicity = mult; }
+    void SetCorrectedTPCnSigma(Double_t sigm) { fCorrTPCnSigma=sigm; fHasCorrTPCnSigma=true; }
     void SetPbPb() { fIsPbPb = kTRUE; }
     void SetpPb() { fIsPbPb = kFALSE; fIspPb=kTRUE; }
     void SetPP() { fIsPbPb = kFALSE; }
@@ -67,6 +72,8 @@ class AliHFEpidObject{
     Int_t GetAbInitioPID() const { return fAbInitioPID; }
     Int_t GetCentrality() const { return fCentrality; }
     Double_t GetMultiplicity() const { return fMultiplicity; }
+    Double_t GetCorrectedTPCnSigma()  const { return fCorrTPCnSigma; }
+    Bool_t HasCorrectedTPCnSigma()  const { return fHasCorrTPCnSigma; }
     Bool_t IsAODanalysis() const { return fAnalysisType == static_cast<UChar_t>(kAODanalysis); }
     Bool_t IsESDanalysis() const { return fAnalysisType == static_cast<UChar_t>(kESDanalysis); }
     Bool_t IsPbPb() const { return fIsPbPb; }
@@ -78,8 +85,10 @@ class AliHFEpidObject{
     Int_t fAbInitioPID;                 // AbInitio PID
     Int_t fCentrality;                  // Centrality Information
     Double_t fMultiplicity;             // Multiplicity information
+    Double_t fCorrTPCnSigma;            // Corrected TPC n sigma
     Bool_t fIsPbPb;                     // Collision type PbPb
     Bool_t fIspPb;                      // Collision type pPb
+    Bool_t fHasCorrTPCnSigma;           // whether corrected TPC n sigma is set
 };
 #endif
 

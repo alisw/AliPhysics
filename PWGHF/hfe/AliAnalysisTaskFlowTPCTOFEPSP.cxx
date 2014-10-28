@@ -1390,31 +1390,37 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
   /////////////////////
   // Trigger selection
   ////////////////////
+
+  UInt_t isEventSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   if(fTriggerUsed==0){
     
-    // central, semi-central and central
+    // MB, semi-central and central
     
-    if ( !((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral) || (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral) || (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB)) ) return;
+    if ( !((isEventSelected & AliVEvent::kCentral) |
+	   (isEventSelected & AliVEvent::kSemiCentral) |
+	   (isEventSelected & AliVEvent::kMB)) ) return;
     
   }
-  if(fTriggerUsed==1){
+  else if(fTriggerUsed==1){
     
     // semi-central Ionut
 
-    if ( !((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral) || (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral) || (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB)) ) return;
+    if ( !((isEventSelected & AliVEvent::kCentral) |
+	   (isEventSelected & AliVEvent::kSemiCentral) |
+	   (isEventSelected & AliVEvent::kMB)) ) return;
     
-    //Bool_t isMB = (InputEvent()->GetTriggerMask() & (ULong64_t(1)<<1));
+    Bool_t isMB = (InputEvent()->GetTriggerMask() & (ULong64_t(1)<<1));
     //Bool_t isCentral = (InputEvent()->GetTriggerMask() & (ULong64_t(1)<<4));
     Bool_t isSemiCentral = (InputEvent()->GetTriggerMask() & (ULong64_t(1)<<7));
     
-    if(!isSemiCentral) return;
+    if(!(isSemiCentral | isMB)) return;
     
   }
-  if(fTriggerUsed==2){
+  else if(fTriggerUsed==2){
 
     // semi-central Andrea and Muons
     
-    if ( !(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAny) ) return;
+    if ( !(isEventSelected & AliVEvent::kAny) ) return;
     
     //TString firedTriggerClasses = static_cast<const AliAODEvent*>(InputEvent())->GetFiredTriggerClasses();
     TString firedTriggerClasses = InputEvent()->GetFiredTriggerClasses();
@@ -2139,23 +2145,20 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
 	AliHFEpidObject hfetrack;
 	if(!fAODAnalysis){
 	  hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
-	  if(fVariableMultiplicity==0){
-	    if(((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()) {
-	      hfetrack.SetMulitplicity(((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetNContributors());
-	      //printf("SPD vertex contributors %d and number of ESD tracks %d\n",((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetNContributors(),((AliESDEvent*)fInputEvent)->GetNumberOfESDTracks());
-	    }
-	  }
-	  if(fVariableMultiplicity==1){
+	  if(fVariableMultiplicity==0) 
+	    hfetrack.SetMulitplicity(cntr);
+	  if(fVariableMultiplicity==1)
 	    hfetrack.SetMulitplicity(((AliESDEvent*)fInputEvent)->GetNumberOfESDTracks()/8.);
-	  }
+	  if(fVariableMultiplicity==2)
+	    hfetrack.SetMulitplicity(((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetNContributors());
 	}else{
 	  hfetrack.SetAnalysisType(AliHFEpidObject::kAODanalysis);
-	  if(fVariableMultiplicity==0){
-	    if(((AliAODEvent*)fInputEvent)->GetPrimaryVertexSPD())  hfetrack.SetMulitplicity(((AliAODEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetNContributors());
-	  }
-	  if(fVariableMultiplicity==1){
+	  if(fVariableMultiplicity==0) 
+	    hfetrack.SetMulitplicity(cntr);
+	  if(fVariableMultiplicity==1)
 	    hfetrack.SetMulitplicity(((AliAODEvent*)fInputEvent)->GetNumberOfESDTracks()/8.);
-	  }
+	  if(fVariableMultiplicity==2)
+	    hfetrack.SetMulitplicity(((AliAODEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetNContributors());
 	}
 	hfetrack.SetRecTrack(track);
 	hfetrack.SetCentrality((Int_t)binct);

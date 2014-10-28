@@ -1,5 +1,4 @@
-//AliAnalysisTaskV0sInJetsEmcal* AddTaskV0sInJetsEmcal(TString jetBranchName = "", TString outputFile = "output.root", Bool_t bIsMC, TString label = "", Bool_t bTreeOutput = 0, TString outputFileTree = "TreeV0.root")
-AliAnalysisTaskV0sInJetsEmcal* AddTaskV0sInJetsEmcal(TString jetBranchName = "", Double_t dRadius = 0.4, TString jetBranchBgName = "", Double_t dRadiusBg = 0.2, TString outputFile = "output.root", Bool_t bIsMC, TString label = "", TString tracksName, TString clustersCorrName, TString rhoName, TString sType)
+AliAnalysisTaskV0sInJetsEmcal* AddTaskV0sInJetsEmcal(TString jetBranchName = "", Double_t dRadius = 0.2, TString jetBranchBgName = "", Double_t dRadiusBg = 0.2, TString outputFile = "output.root", Bool_t bIsMC = kFALSE, TString label = "", TString tracksName = "PicoTracks", TString clustersCorrName = "CaloClustersCorr", TString rhoName = "Rho", TString sType = "TPC")
 {
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr)
@@ -23,21 +22,20 @@ AliAnalysisTaskV0sInJetsEmcal* AddTaskV0sInJetsEmcal(TString jetBranchName = "",
   AliAnalysisTaskV0sInJetsEmcal* mytask = new AliAnalysisTaskV0sInJetsEmcal(taskName.Data());
   // Configure task
   mytask->SetMCAnalysis(bIsMC);
-//  mytask->SetTreeOutput(bTreeOutput);
 
-  AliParticleContainer* trackCont  = mytask->AddParticleContainer(tracksName);
-  trackCont->SetClassName("AliVTrack");
+  AliParticleContainer* trackCont = mytask->AddParticleContainer(tracksName);
   AliClusterContainer* clusterCont = mytask->AddClusterContainer(clustersCorrName);
 
   AliJetContainer* jetCont = mytask->AddJetContainer(jetBranchName, sType, dRadius);
   if(jetCont)
   {
     jetCont->SetRhoName(rhoName);
+    jetCont->SetLeadingHadronType(0);
     jetCont->ConnectParticleContainer(trackCont);
     jetCont->ConnectClusterContainer(clusterCont);
   }
   AliJetContainer* jetContBg = mytask->AddJetContainer(jetBranchBgName, sType, dRadiusBg);
-  if (jetContBg)
+  if(jetContBg)
   {
     jetContBg->SetJetAreaCut(0.01);
     jetContBg->SetAreaEmcCut(0);
@@ -56,8 +54,6 @@ AliAnalysisTaskV0sInJetsEmcal* AddTaskV0sInJetsEmcal(TString jetBranchName = "",
   AliAnalysisDataContainer* coutput2 = mgr->CreateContainer(Form("%s_%s", containerName.Data(), "QA"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", outputFile.Data(), taskName.Data()));
   AliAnalysisDataContainer* coutput3 = mgr->CreateContainer(Form("%s_%s", containerName.Data(), "Cuts"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", outputFile.Data(), taskName.Data()));
   AliAnalysisDataContainer* coutput4 = mgr->CreateContainer(Form("%s_%s", containerName.Data(), "MC"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", outputFile.Data(), taskName.Data()));
-//  if (bTreeOutput)
-//    AliAnalysisDataContainer* coutput5 = mgr->CreateContainer(Form("%s_%s",containerName.Data(),"Tree"), TTree::Class(),AliAnalysisManager::kOutputContainer, Form("%s:%s",outputFileTree.Data(),taskName.Data()));
 
   // Connect input/output
   mgr->ConnectInput(mytask, 0, cinput0);
@@ -65,8 +61,6 @@ AliAnalysisTaskV0sInJetsEmcal* AddTaskV0sInJetsEmcal(TString jetBranchName = "",
   mgr->ConnectOutput(mytask, 2, coutput2);
   mgr->ConnectOutput(mytask, 3, coutput3);
   mgr->ConnectOutput(mytask, 4, coutput4);
-//  if (bTreeOutput)
-//    mgr->ConnectOutput(mytask, 5, coutput5);
 
   return mytask;
 }

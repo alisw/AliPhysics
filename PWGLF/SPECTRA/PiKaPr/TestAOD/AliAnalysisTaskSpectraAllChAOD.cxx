@@ -73,6 +73,7 @@ AliAnalysisTaskSpectraAllChAOD::AliAnalysisTaskSpectraAllChAOD(const char *name)
   fDCAmax(3),
   fDCAzCut(999999.),
   fQvecGen(0),
+  fQgenType(0),
   fDoCentrSystCentrality(0)
 {
   // Default constructor
@@ -200,15 +201,16 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
   if(fIsQvecCalibMode){
     if(fVZEROside==0)Qvec=fEventCuts->GetqV0A();
     else if (fVZEROside==1)Qvec=fEventCuts->GetqV0C();
+    else if (fVZEROside==2)Qvec=fEventCuts->GetqTPC();
   }
   else Qvec=fEventCuts->GetQvecPercentile(fVZEROside);
   
   Double_t QvecMC = 0.;
   if(fIsMC){
     if(fIsQvecCalibMode){
-      QvecMC = fEventCuts->CalculateQVectorMC(fVZEROside);
+      QvecMC = fEventCuts->CalculateQVectorMC(fVZEROside, fQgenType);
     }
-    else QvecMC = fEventCuts->GetQvecPercentileMC(fVZEROside);
+    else QvecMC = fEventCuts->GetQvecPercentileMC(fVZEROside, fQgenType);
   }
   
   Double_t Cent=(fDoCentrSystCentrality)?1.01*fEventCuts->GetCent():fEventCuts->GetCent();
@@ -253,7 +255,8 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
   Int_t Nch = 0.;
   
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
-    AliAODTrack* track = fAOD->GetTrack(iTracks);
+    AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
+    if(!track) AliFatal("Not a standard AOD");
     if(fCharge != 0 && track->Charge() != fCharge) continue;//if fCharge != 0 only select fCharge 
     if (!fTrackCuts->IsSelected(track,kTRUE)) continue; //track selection (rapidity selection NOT in the standard cuts)
     if(!fFillOnlyEvents){

@@ -552,7 +552,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
     {
         AliCentrality *centralityObj = 0;
         if (fAODEvent)
-            centralityObj = fAODEvent->GetHeader()->GetCentralityP();
+            centralityObj = ((AliVAODHeader*)fAODEvent->GetHeader())->GetCentralityP();
         else if (fESDEvent)
             centralityObj = fESDEvent->GetCentrality();
         if (centralityObj)
@@ -588,9 +588,10 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
         if(fAODEvent){
             if(fSelOption==0){
                 Bool_t useEvent = false;
-                Int_t nTracks = fAODEvent->GetNTracks();
+                Int_t nTracks = fAODEvent->GetNumberOfTracks();
                 for(Int_t itrack=0; itrack<nTracks; itrack++) {
-                    AliAODTrack * track = fAODEvent->GetTrack(itrack);
+                    AliAODTrack * track = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(itrack));
+                    if(!track) AliFatal("Not a standard AOD");
                     if(TESTBIT(track->GetITSClusterMap(),2) || TESTBIT(track->GetITSClusterMap(),3) ){
                         useEvent=true;
                         break;
@@ -1220,7 +1221,8 @@ Double_t AliAnalysisTaskMinijet::ReadEventAOD( vector<Float_t> &ptArray,  vector
     Double_t nAcceptedTracks=0;
     Float_t nAcceptedTracksStrange=0;
     for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
-        AliAODTrack *track = (AliAODTrack *)fAODEvent->GetTrack(iTracks);
+        AliAODTrack *track = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(iTracks));
+        if(!track) AliFatal("Not a standard AOD");
         if (!track) {
             Error("ReadEventAOD", "Could not receive track %d", iTracks);
             continue;
@@ -1356,7 +1358,8 @@ Double_t AliAnalysisTaskMinijet::ReadEventAODRecMcProp( vector<Float_t> &ptArray
     
     Double_t nAcceptedTracks=0;
     for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
-        AliAODTrack *track = (AliAODTrack *)fAODEvent->GetTrack(iTracks);
+        AliAODTrack *track = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(iTracks));
+        if(!track) AliFatal("Not a standard AOD");
         
         AliVParticle *vtrack = fAODEvent->GetTrack(iTracks);
         
@@ -2035,7 +2038,8 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
             Int_t nAcceptedTracksTPC=0;
             Int_t nAcceptedTracksITSTPC=0;
             for (Int_t iTracks = 0; iTracks < fAODEvent->GetNumberOfTracks(); iTracks++) {
-                AliAODTrack *track = (AliAODTrack *)fAODEvent->GetTrack(iTracks);
+                AliAODTrack *track = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(iTracks));
+                if(!track) AliFatal("Not a standard AOD");
                 if (!track) continue;
                 if(track->TestFilterBit(128) && TMath::Abs(track->Eta())<fEtaCut &&
                    track->Pt()>fPtMin && track->Pt()<fPtMax)
@@ -2061,7 +2065,8 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
             }
             Int_t nAcceptedTracks=0;
             for (Int_t iTracks = 0; iTracks < fAODEvent->GetNumberOfTracks(); iTracks++) {
-                AliAODTrack *track = (AliAODTrack *)fAODEvent->GetTrack(iTracks);
+                AliAODTrack *track = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(iTracks));
+                if(!track) AliFatal("Not a standard AOD");
                 if (!track) continue;
                 if(track->TestFilterBit(fFilterBit) && TMath::Abs(track->Eta())<fEtaCut
                    && track->Pt()>fPtMin && track->Pt()<fPtMax) nAcceptedTracks++;

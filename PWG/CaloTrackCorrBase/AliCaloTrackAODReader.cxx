@@ -31,6 +31,7 @@
 #include "AliAnalysisManager.h"
 #include "AliMixedEvent.h"
 #include "AliAODEvent.h"
+#include "AliLog.h"
 
 ClassImp(AliCaloTrackAODReader)
 
@@ -127,10 +128,9 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
   
   if(!aodtrack) return kFALSE;
   
-  
-  if(fDebug > 2 ) printf("AliCaloTrackAODReader::FillInputCTS():AOD track type: %d (primary %d), hybrid? %d \n",
-                         aodtrack->GetType(),AliAODTrack::kPrimary,
-                         aodtrack->IsHybridGlobalConstrainedGlobal());
+  AliDebug(2,Form("AOD track type: %d (primary %d), hybrid? %d",
+                  aodtrack->GetType(),AliAODTrack::kPrimary,
+                  aodtrack->IsHybridGlobalConstrainedGlobal()));
   
   // Hybrid?
   if (fSelectHybridTracks && fTrackFilterMaskComplementary == 0)
@@ -162,7 +162,7 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
     Double_t frac = Double_t(aodtrack->GetTPCnclsS()) / Double_t(aodtrack->GetTPCncls());
     if (frac > fCutTPCSharedClustersFraction)
     {
-      if (fDebug > 2 )printf("\t Reject track, shared cluster fraction %f > %f\n",frac, fCutTPCSharedClustersFraction);
+      AliDebug(2,Form("\t Reject track, shared cluster fraction %f > %f",frac, fCutTPCSharedClustersFraction));
       return kFALSE ;
     }
   }
@@ -172,12 +172,12 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
   {
     if ( aodtrack->GetType()!= AliAODTrack::kPrimary )
     {
-      if (fDebug > 2 ) printf("\t Remove not primary track\n");
+      AliDebug(2,"\t Remove not primary track");
       return kFALSE ;
     }
   }
   
-  if (fDebug > 2 ) printf("\t accepted track! \n");
+  AliDebug(2,"\t accepted track!");
   
   track->GetPxPyPz(pTrack) ;
   
@@ -212,8 +212,8 @@ void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input,
     }
     else
     {
-      printf("AliCaloTrackAODReader::SetInputOutputMCEvent() - MultiEventHandler is NULL");
-      abort();
+      AliFatal("MultiEventHandler is NULL");
+      return;
     }
   }
   if        (strcmp(input->GetName(),"AliESDEvent") == 0) 
@@ -250,7 +250,7 @@ void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input,
   }
   else
   { 
-    AliFatal(Form("AliCaloTrackAODReader::SetInputOutputMCEvent() - STOP : Wrong data format: %s\n",input->GetName()));
+    AliFatal(Form("STOP : Wrong data format: %s",input->GetName()));
   }
   
   SetMC(mc);

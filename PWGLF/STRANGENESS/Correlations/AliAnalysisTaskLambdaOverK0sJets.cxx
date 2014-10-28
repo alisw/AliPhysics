@@ -125,24 +125,32 @@ fAntiLambdaMass(0), fAntiLambdaMassEmbeded(0), fAntiLambdaMass2(0), fAntiLambdaM
     // K0s
     fK0sMCPtRapVtx[i] = 0;
     fK0sMCPtRapVtxEmbeded[i] = 0;
+    fK0sMCPtRapPtDaugPt[i] = 0x0;
+    fK0sMCPtRapPtDaugPtEmbeded[i] = 0x0;
     fK0sMCPtPhiEta[i] = 0;
     fK0sAssocPtPhiEta[i] = 0;
     // -- Natural particles
-    fK0sAssocPtMassArm[i] = 0;
-    fK0sAssocMassPtVtx[i] = 0;
-    fK0sAssocMassPtDCADaug[i] = 0;
-    fK0sAssocMassPtCPA[i] = 0;
-    fK0sAssocMassPtDCAPV[i] = 0;
-    fK0sAssocMassPtDaugNClsTPC[i] = 0;
-    fK0sAssocMassPtShTPCcls[i] = 0;
+    fK0sAssocPtMassArm[i] = 0x0;
+    fK0sAssocMassPtVtx[i] = 0x0;
+    fK0sAssocMassPtDCADaug[i] = 0x0;
+    fK0sAssocMassPtCPA[i] = 0x0;
+    fK0sAssocMassPtDCAPV[i] = 0x0;
+    fK0sAssocMassPtDaugNClsTPC[i] = 0x0;
+    fK0sAssocMassPtShTPCcls[i] = 0x0;
+    fK0sAssocMassPtDaugPt[i] = 0x0;
+    fK0sAssocMassPtCtau[i] = 0x0;
+    fK0sAssocMassPtFidVolume[i] = 0x0;
     // -- Embeded particles
-    fK0sAssocPtMassArmEmbeded[i] = 0;
-    fK0sAssocMassPtVtxEmbeded[i] = 0;
-    fK0sAssocMassPtDCADaug[i] = 0;
-    fK0sAssocMassPtCPAEmbeded[i] = 0;
-    fK0sAssocMassPtDCAPVEmbeded[i] = 0;
-    fK0sAssocMassPtDaugNClsTPCEmbeded[i] = 0;
-    fK0sAssocMassPtShTPCclsEmbeded[i] = 0;
+    fK0sAssocPtMassArmEmbeded[i] = 0x0;
+    fK0sAssocMassPtVtxEmbeded[i] = 0x0;
+    fK0sAssocMassPtDCADaug[i] = 0x0;
+    fK0sAssocMassPtCPAEmbeded[i] = 0x0;
+    fK0sAssocMassPtDCAPVEmbeded[i] = 0x0;
+    fK0sAssocMassPtDaugNClsTPCEmbeded[i] = 0x0;
+    fK0sAssocMassPtShTPCclsEmbeded[i] = 0x0;
+    fK0sAssocMassPtDaugPtEmbeded[i] = 0x0;
+    fK0sAssocMassPtCtauEmbeded[i] = 0x0;
+    fK0sAssocMassPtFidVolumeEmbeded[i] = 0x0;
     // -- Mass vs rapidity vs pt vs centrlaity
     fK0sMassPtRap[i] = 0;
     // -- Splitting checks
@@ -156,26 +164,34 @@ fAntiLambdaMass(0), fAntiLambdaMassEmbeded(0), fAntiLambdaMass2(0), fAntiLambdaM
     // Lambda
     fLambdaMCPtRapVtx[i] = 0;
     fLambdaMCPtRapVtxEmbeded[i] = 0;
+    fLambdaMCPtRapPtDaugPt[i] = 0x0;
+    fLambdaMCPtRapPtDaugPtEmbeded[i] = 0x0;
     fLambdaMCPtPhiEta[i] = 0;
     fLambdaAssocPtPhiEta[i] = 0;
     // -- Natural particles
-    fLambdaAssocMassPtRap[i] = 0;
-    fLambdaAssocMassPtRap2[i] = 0;
-    fLambdaAssocMassPtVtx[i] = 0;
-    fLambdaAssocMassPtDCADaug[i] = 0;
-    fLambdaAssocMassPtCPA[i] = 0;
-    fLambdaAssocMassPtDCAPV[i] = 0;
-    fLambdaAssocMassPtDaugNClsTPC[i] = 0;
-    fLambdaAssocMassPtShTPCcls[i] = 0;
+    fLambdaAssocMassPtRap[i] = 0x0;
+    fLambdaAssocMassPtRap2[i] = 0x0;
+    fLambdaAssocMassPtVtx[i] = 0x0;
+    fLambdaAssocMassPtDCADaug[i] = 0x0;
+    fLambdaAssocMassPtCPA[i] = 0x0;
+    fLambdaAssocMassPtDCAPV[i] = 0x0;
+    fLambdaAssocMassPtDaugNClsTPC[i] = 0x0;
+    fLambdaAssocMassPtShTPCcls[i] = 0x0;
+    fLambdaAssocMassPtDaugPt[i] = 0x0;
+    fLambdaAssocMassPtCtau[i] = 0x0;
+    fLambdaAssocMassPtFidVolume[i] = 0x0;
     // -- Embeded particles
-    fLambdaAssocMassPtRapEmbeded[i] = 0;
-    fLambdaAssocMassPtRapEmbeded2[i] = 0;
-    fLambdaAssocMassPtVtxEmbeded[i] = 0;
-    fLambdaAssocMassPtDCADaug[i] = 0;
-    fLambdaAssocMassPtCPAEmbeded[i] = 0;
-    fLambdaAssocMassPtDCAPVEmbeded[i] = 0;
-    fLambdaAssocMassPtDaugNClsTPCEmbeded[i] = 0;
-    fLambdaAssocMassPtShTPCclsEmbeded[i] = 0;
+    fLambdaAssocMassPtRapEmbeded[i] = 0x0;
+    fLambdaAssocMassPtRapEmbeded2[i] = 0x0;
+    fLambdaAssocMassPtVtxEmbeded[i] = 0x0;
+    fLambdaAssocMassPtDCADaug[i] = 0x0;
+    fLambdaAssocMassPtCPAEmbeded[i] = 0x0;
+    fLambdaAssocMassPtDCAPVEmbeded[i] = 0x0;
+    fLambdaAssocMassPtDaugNClsTPCEmbeded[i] = 0x0;
+    fLambdaAssocMassPtShTPCclsEmbeded[i] = 0x0;
+    fLambdaAssocMassPtDaugPtEmbeded[i] = 0x0;
+    fLambdaAssocMassPtCtauEmbeded[i] = 0x0;
+    fLambdaAssocMassPtFidVolumeEmbeded[i] = 0x0;
     // -- Mass vs rapidity vs pt vs centrlaity
     fLambdaMassPtRap[i] = 0;
     // -- Splitting checks
@@ -189,26 +205,34 @@ fAntiLambdaMass(0), fAntiLambdaMassEmbeded(0), fAntiLambdaMass2(0), fAntiLambdaM
     // AntiLambda
     fAntiLambdaMCPtRapVtx[i] = 0;
     fAntiLambdaMCPtRapVtxEmbeded[i] = 0;
+    fAntiLambdaMCPtRapPtDaugPt[i] = 0x0;
+    fAntiLambdaMCPtRapPtDaugPtEmbeded[i] = 0x0;
     fAntiLambdaMCPtPhiEta[i] = 0;
     fAntiLambdaAssocPtPhiEta[i] = 0;
     // -- Natural particles
-    fAntiLambdaAssocMassPtRap[i] = 0;
-    fAntiLambdaAssocMassPtRap2[i] = 0;
-    fAntiLambdaAssocMassPtVtx[i] = 0;
-    fAntiLambdaAssocMassPtDCADaug[i] = 0;
-    fAntiLambdaAssocMassPtCPA[i] = 0;
-    fAntiLambdaAssocMassPtDCAPV[i] = 0;
-    fAntiLambdaAssocMassPtDaugNClsTPC[i] = 0;
-    fAntiLambdaAssocMassPtShTPCcls[i] = 0;
+    fAntiLambdaAssocMassPtRap[i] = 0x0;
+    fAntiLambdaAssocMassPtRap2[i] = 0x0;
+    fAntiLambdaAssocMassPtVtx[i] = 0x0;
+    fAntiLambdaAssocMassPtDCADaug[i] = 0x0;
+    fAntiLambdaAssocMassPtCPA[i] = 0x0;
+    fAntiLambdaAssocMassPtDCAPV[i] = 0x0;
+    fAntiLambdaAssocMassPtDaugNClsTPC[i] = 0x0;
+    fAntiLambdaAssocMassPtShTPCcls[i] = 0x0;
+    fAntiLambdaAssocMassPtDaugPt[i] = 0x0;
+    fAntiLambdaAssocMassPtCtau[i] = 0x0;
+    fAntiLambdaAssocMassPtFidVolume[i] = 0x0;
     // -- Embeded particles
-    fAntiLambdaAssocMassPtRapEmbeded[i] = 0;
-    fAntiLambdaAssocMassPtRapEmbeded2[i] = 0;
-    fAntiLambdaAssocMassPtVtxEmbeded[i] = 0;
-    fAntiLambdaAssocMassPtDCADaug[i] = 0;
-    fAntiLambdaAssocMassPtCPAEmbeded[i] = 0;
-    fAntiLambdaAssocMassPtDCAPVEmbeded[i] = 0;
-    fAntiLambdaAssocMassPtDaugNClsTPCEmbeded[i] = 0;
-    fAntiLambdaAssocMassPtShTPCclsEmbeded[i] = 0;
+    fAntiLambdaAssocMassPtRapEmbeded[i] = 0x0;
+    fAntiLambdaAssocMassPtRapEmbeded2[i] = 0x0;
+    fAntiLambdaAssocMassPtVtxEmbeded[i] = 0x0;
+    fAntiLambdaAssocMassPtDCADaug[i] = 0x0;
+    fAntiLambdaAssocMassPtCPAEmbeded[i] = 0x0;
+    fAntiLambdaAssocMassPtDCAPVEmbeded[i] = 0x0;
+    fAntiLambdaAssocMassPtDaugNClsTPCEmbeded[i] = 0x0;
+    fAntiLambdaAssocMassPtShTPCclsEmbeded[i] = 0x0;
+    fAntiLambdaAssocMassPtDaugPtEmbeded[i] = 0x0;
+    fAntiLambdaAssocMassPtCtauEmbeded[i] = 0x0;
+    fAntiLambdaAssocMassPtFidVolumeEmbeded[i] = 0x0;
     // -- Mass vs rapidity vs pt vs centrlaity
     fAntiLambdaMassPtRap[i] = 0;
     // -- Splitting checks
@@ -545,6 +569,22 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       fOutput->Add(fK0sMCPtRapVtxEmbeded[jj]);
     }
   
+
+    Int_t binsK0sMC[4] = {nbins,20,100.,100.};   Double_t xminK0sMC[4] = {pMin,-1.0,0.,0.};   Double_t xmaxK0sMC[4] = {pMax,1.0,10.,10.}; // gral efficiency
+    for(Int_t jj=0;jj<kNCent;jj++){
+       snprintf(hNameHist,100, "fK0sMCPtRapPtDaugPt_Cent_%d",jj);
+       fK0sMCPtRapPtDaugPt[jj] = new THnSparseD(hNameHist, "K^{0}_{S} MC;#it{p}_{T} (GeV/#it{c});y;#it{p}_{T,Pos Daug} (GeV/#it{c});#it{p}_{T,Neg Daug} (GeV/#it{c});",
+						4,binsK0sMC,xminK0sMC,xmaxK0sMC);
+       fOutput->Add(fK0sMCPtRapPtDaugPt[jj]);
+
+
+       snprintf(hNameHist,100, "fK0sMCPtRapPtDaugPtEmbeded_Cent_%d",jj);
+       fK0sMCPtRapPtDaugPtEmbeded[jj] = new THnSparseD(hNameHist, "K^{0}_{S} MC Embeded;#it{p}_{T} (GeV/#it{c});y;#it{p}_{T,Pos Daug} (GeV/#it{c});#it{p}_{T,Neg Daug} (GeV/#it{c});",
+						       4,binsK0sMC,xminK0sMC,xmaxK0sMC);
+       fOutput->Add(fK0sMCPtRapPtDaugPtEmbeded[jj]);
+    }
+
+
     for(Int_t jj=0;jj<kNCent;jj++){
       snprintf(hNameHist,100, "fK0sMCPtPhiEta_Cent_%d",jj);
       fK0sMCPtPhiEta[jj]    = new TH3F(hNameHist, "K^{0}_{S} MC;#varphi (rad);#eta;#it{p}_{T} (GeV/#it{c})",nbinsPhi,0.,2.*TMath::Pi(),20,-1.,1.,nbins,pMin,pMax);
@@ -565,7 +605,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
 
     fK0sAssocPtRapEmbeded    = new TH3F("fK0sAssocPtRapEmbeded","K^{0}_{S} Assoc  - Embeded MC;#it{p}_{T} (GeV/#it{c});y;centrality",nbins,pMin,pMax,20,-1.0,1.0,100,0.,100.);
     fOutput->Add(fK0sAssocPtRapEmbeded);
-  
+
     for(Int_t jj=0;jj<kNCent;jj++){
       snprintf(hNameHist,100, "fK0sAssocPtPhiEta_Cent_%d",jj);
       fK0sAssocPtPhiEta[jj]    = new TH3F(hNameHist,"K^{0}_{S} Assoc;#varphi;#eta;#it{p}_{T} (GeV/#it{c})",nbinsPhi,0.,2.*TMath::Pi(),20,-1.0,1.0,nbins,pMin,pMax);
@@ -574,13 +614,16 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
 
 
     // Histogramas para estudios sistematicos de la eficiencia
-    Int_t binsEff1[3] = {nbins,nbins,20};          Double_t xminEff1[3] = {0.398,pMin,-1.0};          Double_t xmaxEff1[3] = {0.598,pMax,1.0};             // gral efficiency
-    Int_t binsEff2[4] = {nbins,nbins,20,20};       Double_t xminEff2[4] = {0.398,pMin,-1.0,-10.};     Double_t xmaxEff2[4] = {0.598,pMax,1.0,10.};         // vtx cut
-    Int_t binsEff3[4] = {nbins,nbins,20,60};       Double_t xminEff3[4] = {0.398,pMin,-1.0,0.};       Double_t xmaxEff3[4] = {0.598,pMax,1.0,1.2};         // dca between daughters
-    Int_t binsEff4[4] = {nbins,nbins,20,50};       Double_t xminEff4[4] = {0.398,pMin,-1.0,0.9975};   Double_t xmaxEff4[4] = {0.598,pMax,1.0,1.};          // cpa
-    Int_t binsEff5[5] = {nbins,nbins,20,99,99};    Double_t xminEff5[5] = {0.398,pMin,-1.0,0.,0.};    Double_t xmaxEff5[5] = {0.598,pMax,1.0,3.3,3.3};     // dca to prim. vtx
-    Int_t binsEff6[5] = {nbins,nbins,20,170,170};  Double_t xminEff6[5] = {0.398,pMin,-1.0,0.5,0.5};  Double_t xmaxEff6[5] = {0.598,pMax,1.0,170.5,170};   // No. TPC Cls
-    Int_t binsEffKsh[5] = {nbins,nbins,20,50,50};  Double_t xminEffKsh[5] = {0.398,pMin,-1.0,0.,0.};  Double_t xmaxEffKsh[5] = {0.598,pMax,1.0,1.0,1.0};   //shared TPC cls
+    Int_t binsEff1[3] = {nbins,nbins,20};              Double_t xminEff1[3] = {0.398,pMin,-1.0};             Double_t xmaxEff1[3] = {0.598,pMax,1.0};             // gral efficiency
+    Int_t binsEff2[4] = {nbins,nbins,20,20};           Double_t xminEff2[4] = {0.398,pMin,-1.0,-10.};         Double_t xmaxEff2[4] = {0.598,pMax,1.0,10.};         // vtx cut
+    Int_t binsEff3[4] = {nbins,nbins,20,60};           Double_t xminEff3[4] = {0.398,pMin,-1.0,0.};           Double_t xmaxEff3[4] = {0.598,pMax,1.0,1.2};         // dca between daughters
+    Int_t binsEff4[4] = {nbins,nbins,20,50};           Double_t xminEff4[4] = {0.398,pMin,-1.0,0.9975};       Double_t xmaxEff4[4] = {0.598,pMax,1.0,1.};          // cpa
+    Int_t binsEff5[5] = {nbins,nbins,20,99,99};        Double_t xminEff5[5] = {0.398,pMin,-1.0,0.,0.};        Double_t xmaxEff5[5] = {0.598,pMax,1.0,3.3,3.3};     // dca to prim. vtx
+    Int_t binsEff6[5] = {nbins,nbins,20,170,170};        Double_t xminEff6[5] = {0.398,pMin,-1.0,0.5,0.5};      Double_t xmaxEff6[5] = {0.598,pMax,1.0,170.5,170};   // No. TPC Cls
+    Int_t binsEffKsh[5] = {nbins,nbins,20,50,50};        Double_t xminEffKsh[5] = {0.398,pMin,-1.0,0.,0.};      Double_t xmaxEffKsh[5] = {0.598,pMax,1.0,1.0,1.0};   //shared TPC cls
+    Int_t binsEffKPtDaug[5] = {nbins,nbins,20,100,100};  Double_t xminEffKPtDaug[5] = {0.398,pMin,-1.0,0.,0.};  Double_t xmaxEffKPtDaug[5] = {0.598,pMax,1.0,10.,10.};     //PtDaug
+    Int_t binsEffKCtau[4] = {nbins,nbins,20,60};         Double_t xminEffKCtau[4] = {0.398,pMin,-1.0,0.};       Double_t xmaxEffKCtau[4] = {0.598,pMax,1.0,30.0};          //CTau
+    Int_t binsEffKFidVol[4] = {nbins,nbins,20,100};      Double_t xminEffKFidVol[4] = {0.398,pMin,-1.0,0.};     Double_t xmaxEffKFidVol[4] = {0.598,pMax,1.0,100.};        //Fiducial volume
 
     for(Int_t i=0; i<kNCent; i++){
      
@@ -613,6 +656,19 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       fK0sAssocMassPtShTPCcls[i]  = new THnSparseD(hNameHist, "K^{0}_{S}; Mass (GeV/c^{2}); #it{p}_{T}; rap; Pos fraction shared TPC Cls; Neg fraction shared TPC Cls;",5,binsEffKsh,xminEffKsh,xmaxEffKsh);
       fOutput->Add(fK0sAssocMassPtShTPCcls[i]); 
 
+      snprintf(hNameHist,100, "fK0sAssocMassPtDaugPt_Cent_%d",i);
+      fK0sAssocMassPtDaugPt[i]  = new THnSparseD(hNameHist, "K^{0}_{S}; Mass (GeV/c^{2}); #it{p}_{T}; rap; #it{p}_{T,Pos Daug} (GeV/#it{c}); #it{p}_{T,Neg Daug} (GeV/#it{c});",5,binsEffKPtDaug,xminEffKPtDaug,xmaxEffKPtDaug);
+      fOutput->Add(fK0sAssocMassPtDaugPt[i]); 
+
+      snprintf(hNameHist,100, "fK0sAssocMassPtCtau_Cent_%d",i);
+      fK0sAssocMassPtCtau[i]  = new THnSparseD(hNameHist, "K^{0}_{S}; Mass (GeV/c^{2}); #it{p}_{T}; rap; c#tau;",4,binsEffKCtau,xminEffKCtau,xmaxEffKCtau);
+      fOutput->Add(fK0sAssocMassPtCtau[i]); 
+
+      snprintf(hNameHist,100, "fK0sAssocMassPtFidVolume_Cent_%d",i);
+      fK0sAssocMassPtFidVolume[i]  = new THnSparseD(hNameHist, "K^{0}_{S}; Mass (GeV/c^{2}); #it{p}_{T}; rap; l_{T} (cm);",4,binsEffKFidVol,xminEffKFidVol,xmaxEffKFidVol);
+      fOutput->Add(fK0sAssocMassPtFidVolume[i]); 
+
+
       /// ----- Embeded particles 
       snprintf(hNameHist,100, "fK0sAssocPtMassArmEmbeded_Cent_%d",i);
       fK0sAssocPtMassArmEmbeded[i]    = new THnSparseD(hNameHist,"K^{0}_{S} Assoc Embeded;Mass (GeV/c^{2});#it{p}_{T} (GeV/#it{c});rap;",3,binsEff1,xminEff1,xmaxEff1);
@@ -638,9 +694,21 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       fK0sAssocMassPtDaugNClsTPCEmbeded[i]  = new THnSparseD(hNameHist, "K^{0}_{S}; Mass (GeV/c^{2}); #it{p}_{T}; rap; Pos # TPC Cls; Neg # TPC Cls;",5,binsEff6,xminEff6,xmaxEff6);
       fOutput->Add(fK0sAssocMassPtDaugNClsTPCEmbeded[i]); 
 
-     snprintf(hNameHist,100, "fK0sAssocMassPtShTPCclsEmbeded_Cent_%d",i);
-     fK0sAssocMassPtShTPCclsEmbeded[i]  = new THnSparseD(hNameHist, "K^{0}_{S}; Mass (GeV/c^{2}); #it{p}_{T}; rap; Pos fraction shared TPC Cls; Neg fraction shared TPC Cls;",5,binsEffKsh,xminEffKsh,xmaxEffKsh);
-     fOutput->Add(fK0sAssocMassPtShTPCclsEmbeded[i]); 
+      snprintf(hNameHist,100, "fK0sAssocMassPtShTPCclsEmbeded_Cent_%d",i);
+      fK0sAssocMassPtShTPCclsEmbeded[i]  = new THnSparseD(hNameHist, "K^{0}_{S}; Mass (GeV/c^{2}); #it{p}_{T}; rap; Pos fraction shared TPC Cls; Neg fraction shared TPC Cls;",5,binsEffKsh,xminEffKsh,xmaxEffKsh);
+      fOutput->Add(fK0sAssocMassPtShTPCclsEmbeded[i]); 
+
+      snprintf(hNameHist,100, "fK0sAssocMassPtDaugPtEmbeded_Cent_%d",i);
+      fK0sAssocMassPtDaugPtEmbeded[i]  = new THnSparseD(hNameHist, "K^{0}_{S}; Mass (GeV/c^{2}); #it{p}_{T}; rap; #it{p}_{T,Pos Daug} (GeV/#it{c}); #it{p}_{T,Neg Daug} (GeV/#it{c});",5,binsEffKPtDaug,xminEffKPtDaug,xmaxEffKPtDaug);
+      fOutput->Add(fK0sAssocMassPtDaugPtEmbeded[i]); 
+
+      snprintf(hNameHist,100, "fK0sAssocMassPtCtauEmbeded_Cent_%d",i);
+      fK0sAssocMassPtCtauEmbeded[i]  = new THnSparseD(hNameHist, "K^{0}_{S}; Mass (GeV/c^{2}); #it{p}_{T}; rap; c#tau;",4,binsEffKCtau,xminEffKCtau,xmaxEffKCtau);
+      fOutput->Add(fK0sAssocMassPtCtauEmbeded[i]); 
+
+      snprintf(hNameHist,100, "fK0sAssocMassPtFidVolumeEmbeded_Cent_%d",i);
+      fK0sAssocMassPtFidVolumeEmbeded[i]  = new THnSparseD(hNameHist, "K^{0}_{S}; Mass (GeV/c^{2}); #it{p}_{T}; rap; l_{T} (cm);",4,binsEffKFidVol,xminEffKFidVol,xmaxEffKFidVol);
+      fOutput->Add(fK0sAssocMassPtFidVolumeEmbeded[i]); 
 
     }
     
@@ -696,6 +764,20 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       fOutput->Add(fLambdaMCPtRapVtxEmbeded[jj]);
     }
 
+    Int_t binsLambdaMC[4] = {nbins,20,100.,100.};   Double_t xminLambdaMC[4] = {pMin,-1.0,0.,0.};   Double_t xmaxLambdaMC[4] = {pMax,1.0,10.,10.}; // gral efficiency
+    for(Int_t jj=0;jj<kNCent;jj++){
+       snprintf(hNameHist,100, "fLambdaMCPtRapPtDaugPt_Cent_%d",jj);
+       fLambdaMCPtRapPtDaugPt[jj] = new THnSparseD(hNameHist, "#Lambda MC;#it{p}_{T} (GeV/#it{c});y;#it{p}_{T,Pos Daug} (GeV/#it{c});#it{p}_{T,Neg Daug} (GeV/#it{c});",
+						   4,binsLambdaMC,xminLambdaMC,xmaxLambdaMC);
+       fOutput->Add(fLambdaMCPtRapPtDaugPt[jj]);
+
+
+       snprintf(hNameHist,100, "fLambdaMCPtRapPtDaugPtEmbeded_Cent_%d",jj);
+       fLambdaMCPtRapPtDaugPtEmbeded[jj] = new THnSparseD(hNameHist, "#Lambda MC Embeded;#it{p}_{T} (GeV/#it{c});y;#it{p}_{T,Pos Daug} (GeV/#it{c});#it{p}_{T,Neg Daug} (GeV/#it{c});",
+							  4,binsLambdaMC,xminLambdaMC,xmaxLambdaMC);
+       fOutput->Add(fLambdaMCPtRapPtDaugPtEmbeded[jj]);
+    }
+
     fLambdaMCFromXi  = new TH2F("fLambdaMCFromXi", "#Lambda from Xi MC;#it{p}_{T} (GeV/#it{c});centrality",nbins,pMin,pMax,100,0.,100.);
     fOutput->Add(fLambdaMCFromXi);
 
@@ -730,6 +812,10 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     Int_t binsEff11[5] = {nbins,nbins,20,99,99};   Double_t xminEff11[5] = {1.065,pMin,-1.0,0.,0.};    Double_t xmaxEff11[5] = {1.165,pMax,1.0,3.3,3.3};       // dca to prim. vtx
     Int_t binsEff12[5] = {nbins,nbins,20,170,170}; Double_t xminEff12[5] = {1.065,pMin,-1.0,0.5,0.5};  Double_t xmaxEff12[5] = {1.165,pMax,1.0,170.5,170.5};   // No. TPC Cls
     Int_t binsEffLsh[5] = {nbins,nbins,20,50,50};  Double_t xminEffLsh[5] = {1.065,pMin,-1.0,0.,0.};   Double_t xmaxEffLsh[5] = {1.165,pMax,1.0,1.0,1.0};      // shared TPC cls
+    Int_t binsEffLPtDaug[5] = {nbins,nbins,20,100,100};  Double_t xminEffLPtDaug[5] = {1.065,pMin,-1.0,0.,0.};  Double_t xmaxEffLPtDaug[5] = {1.165,pMax,1.0,10.,10.};     //PtDaug
+    Int_t binsEffLCtau[4]   = {nbins,nbins,20,60};       Double_t xminEffLCtau[4]   = {1.065,pMin,-1.0,0.};     Double_t xmaxEffLCtau[4]   = {1.165,pMax,1.0,30.0};         //CTau
+    Int_t binsEffLFidVol[4] = {nbins,nbins,20,100};      Double_t xminEffLFidVol[4] = {1.065,pMin,-1.0,0.};     Double_t xmaxEffLFidVol[4] = {1.165,pMax,1.0,100.};        //Fiducial volume
+
 
     for(Int_t i=0; i<kNCent; i++){
 
@@ -766,6 +852,17 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       fLambdaAssocMassPtShTPCcls[i]  = new THnSparseD(hNameHist, "#Lambda; Mass (GeV/c^{2}); #it{p}_{T}; rap; Pos fraction shared TPC Cls; Neg fraction shared TPC Cls;",5,binsEffLsh,xminEffLsh,xmaxEffLsh);
       fOutput->Add(fLambdaAssocMassPtShTPCcls[i]); 
 
+      snprintf(hNameHist,100, "fLambdaAssocMassPtDaugPt_Cent_%d",i);
+      fLambdaAssocMassPtDaugPt[i]  = new THnSparseD(hNameHist, "#Lambda; Mass (GeV/c^{2}); #it{p}_{T}; rap; #it{p}_{T,Pos Daug} (GeV/#it{c}); #it{p}_{T,Neg Daug} (GeV/#it{c});",5,binsEffLPtDaug,xminEffLPtDaug,xmaxEffLPtDaug);
+      fOutput->Add(fLambdaAssocMassPtDaugPt[i]); 
+
+      snprintf(hNameHist,100, "fLambdaAssocMassPtCtau_Cent_%d",i);
+      fLambdaAssocMassPtCtau[i]  = new THnSparseD(hNameHist, "#Lambda; Mass (GeV/c^{2}); #it{p}_{T}; rap; c#tau;",4,binsEffLCtau,xminEffLCtau,xmaxEffLCtau);
+      fOutput->Add(fLambdaAssocMassPtCtau[i]); 
+
+      snprintf(hNameHist,100, "fLambdaAssocMassPtFidVolume_Cent_%d",i);
+      fLambdaAssocMassPtFidVolume[i]  = new THnSparseD(hNameHist, "#Lambda; Mass (GeV/c^{2}); #it{p}_{T}; rap; l_{T} (cm);",4,binsEffLFidVol,xminEffLFidVol,xmaxEffLFidVol);
+      fOutput->Add(fLambdaAssocMassPtFidVolume[i]);  
 
       // ------------ Embeded particles
       snprintf(hNameHist,100, "fLambdaAssocMassPtRapEmbeded_Cent_%d",i);
@@ -799,6 +896,18 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       snprintf(hNameHist,100, "fLambdaAssocMassPtShTPCclsEmbeded_Cent_%d",i);
       fLambdaAssocMassPtShTPCclsEmbeded[i]  = new THnSparseD(hNameHist, "#Lambda; Mass (GeV/c^{2}); #it{p}_{T}; rap; Pos fraction shared TPC Cls; Neg fraction shared TPC Cls;",5,binsEffLsh,xminEffLsh,xmaxEffLsh);
       fOutput->Add(fLambdaAssocMassPtShTPCclsEmbeded[i]); 
+
+      snprintf(hNameHist,100, "fLambdaAssocMassPtDaugPtEmbeded_Cent_%d",i);
+      fLambdaAssocMassPtDaugPtEmbeded[i]  = new THnSparseD(hNameHist, "#Lambda; Mass (GeV/c^{2}); #it{p}_{T}; rap; #it{p}_{T,Pos Daug} (GeV/#it{c}); #it{p}_{T,Neg Daug} (GeV/#it{c});",5,binsEffLPtDaug,xminEffLPtDaug,xmaxEffLPtDaug);
+      fOutput->Add(fLambdaAssocMassPtDaugPtEmbeded[i]); 
+
+      snprintf(hNameHist,100, "fLambdaAssocMassPtCtauEmbeded_Cent_%d",i);
+      fLambdaAssocMassPtCtauEmbeded[i]  = new THnSparseD(hNameHist, "#Lambda; Mass (GeV/c^{2}); #it{p}_{T}; rap;  c#tau ;",4,binsEffLCtau,xminEffLCtau,xmaxEffLCtau);
+      fOutput->Add(fLambdaAssocMassPtCtauEmbeded[i]); 
+
+      snprintf(hNameHist,100, "fLambdaAssocMassPtFidVolumeEmbeded_Cent_%d",i);
+      fLambdaAssocMassPtFidVolumeEmbeded[i]  = new THnSparseD(hNameHist, "#Lambda; Mass (GeV/c^{2}); #it{p}_{T}; rap; l_{T} (cm);",4,binsEffLFidVol,xminEffLFidVol,xmaxEffLFidVol);
+      fOutput->Add(fLambdaAssocMassPtFidVolumeEmbeded[i]);  
 
     } 
 
@@ -854,6 +963,20 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       fOutput->Add(fAntiLambdaMCPtRapVtxEmbeded[jj]); 
     }
 
+    Int_t binsAntiLambdaMC[4] = {nbins,20,100.,100.};   Double_t xminAntiLambdaMC[4] = {pMin,-1.0,0.,0.};   Double_t xmaxAntiLambdaMC[4] = {pMax,1.0,10.,10.}; // gral efficiency
+    for(Int_t jj=0;jj<kNCent;jj++){
+       snprintf(hNameHist,100, "fAntiLambdaMCPtRapPtDaugPt_Cent_%d",jj);
+       fAntiLambdaMCPtRapPtDaugPt[jj] = new THnSparseD(hNameHist, "#bar{#Lambda} MC;#it{p}_{T} (GeV/#it{c});y;#it{p}_{T,Pos Daug} (GeV/#it{c});#it{p}_{T,Neg Daug} (GeV/#it{c});",
+						       4,binsAntiLambdaMC,xminAntiLambdaMC,xmaxAntiLambdaMC);
+       fOutput->Add(fAntiLambdaMCPtRapPtDaugPt[jj]);
+
+
+       snprintf(hNameHist,100, "fLambdaMCPtRapPtDaugPtEmbeded_Cent_%d",jj);
+       fAntiLambdaMCPtRapPtDaugPtEmbeded[jj] = new THnSparseD(hNameHist, "#bar{#Lambda} MC Embeded;#it{p}_{T} (GeV/#it{c});y;#it{p}_{T,Pos Daug} (GeV/#it{c});#it{p}_{T,Neg Daug} (GeV/#it{c});",
+							      4,binsAntiLambdaMC,xminAntiLambdaMC,xmaxAntiLambdaMC);
+       fOutput->Add(fAntiLambdaMCPtRapPtDaugPtEmbeded[jj]);
+    }
+
     fAntiLambdaMCFromXi  = new TH2F("fAntiLambdaMCFromXi", "#bar{#Lambda} from Xi MC;#it{p}_{T} (GeV/#it{c});centrality",nbins,pMin,pMax,100,0.,100.);
     fOutput->Add(fAntiLambdaMCFromXi);
 
@@ -888,7 +1011,10 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     Int_t binsEff17[5] = {nbins,nbins,20,99,99};    Double_t xminEff17[5] = {1.065,pMin,-1.0,0.,0.};    Double_t xmaxEff17[5] = {1.165,pMax,1.0,3.3,3.3};      // dca to prim. vtx
     Int_t binsEff18[5] = {nbins,nbins,20,170,170};  Double_t xminEff18[5] = {1.065,pMin,-1.0,0.5,0.5};  Double_t xmaxEff18[5] = {1.165,pMax,1.0,170.5,170.5};  // No. TPC Cls
     Int_t binsEffALsh[5] = {nbins,nbins,20,50,50};  Double_t xminEffALsh[5] = {1.065,pMin,-1.0,0.,0.};  Double_t xmaxEffALsh[5] = {1.165,pMax,1.0,1.0,1.0};    // shared TPC cls
-  
+    Int_t binsEffALPtDaug[5] = {nbins,nbins,20,100,100};  Double_t xminEffALPtDaug[5] = {1.065,pMin,-1.0,0.,0.};  Double_t xmaxEffALPtDaug[5] = {1.065,pMax,1.0,10.,10.};     //PtDaug
+    Int_t binsEffALCtau[4]   = {nbins,nbins,20,60};       Double_t xminEffALCtau[4]   = {1.065,pMin,-1.0,0.};     Double_t xmaxEffALCtau[4]   = {1.065,pMax,1.0,30.0};         //CTau 
+    Int_t binsEffALFidVol[4] = {nbins,nbins,20,100};      Double_t xminEffALFidVol[4] = {1.065,pMin,-1.0,0.};     Double_t xmaxEffALFidVol[4] = {1.065,pMax,1.0,100.};        //Fiducial volume
+
     for(Int_t i=0; i<kNCent; i++){
       // --------- Natural particles
       snprintf(hNameHist,100, "fAntiLambdaAssocMassPtRap_Cent_%d",i);
@@ -923,6 +1049,18 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       fAntiLambdaAssocMassPtShTPCcls[i]  = new THnSparseD(hNameHist, "#bar{#Lambda}; Mass (GeV/c^{2}); #it{p}_{T}; rap; Pos fraction shared TPC Cls; Neg fraction shared TPC Cls;",5,binsEffALsh,xminEffALsh,xmaxEffALsh);
       fOutput->Add(fAntiLambdaAssocMassPtShTPCcls[i]); 
 
+      snprintf(hNameHist,100, "fAntiLambdaAssocMassPtDaugPt_Cent_%d",i);
+      fAntiLambdaAssocMassPtDaugPt[i]  = new THnSparseD(hNameHist, "#bar{#Lambda}; Mass (GeV/c^{2}); #it{p}_{T}; rap; #it{p}_{T,Pos Daug} (GeV/#it{c}); #it{p}_{T,Neg Daug} (GeV/#it{c});",5,binsEffALPtDaug,xminEffALPtDaug,xmaxEffALPtDaug);
+      fOutput->Add(fAntiLambdaAssocMassPtDaugPt[i]); 
+
+      snprintf(hNameHist,100, "fAntiLambdaAssocMassPtCtau_Cent_%d",i);
+      fAntiLambdaAssocMassPtCtau[i]  = new THnSparseD(hNameHist, "#bar{#Lambda}; Mass (GeV/c^{2}); #it{p}_{T}; rap; c#tau;",4,binsEffALCtau,xminEffALCtau,xmaxEffALCtau);
+      fOutput->Add(fAntiLambdaAssocMassPtCtau[i]); 
+
+      snprintf(hNameHist,100, "fAntiLambdaAssocMassPtFidVolume_Cent_%d",i);
+      fAntiLambdaAssocMassPtFidVolume[i]  = new THnSparseD(hNameHist, "#bar{#Lambda}; Mass (GeV/c^{2}); #it{p}_{T}; rap; l_{T} (cm);",4,binsEffALFidVol,xminEffALFidVol,xmaxEffALFidVol);
+      fOutput->Add(fAntiLambdaAssocMassPtFidVolume[i]);  
+
       // ------------ Embeded particles
       snprintf(hNameHist,100, "fAntiLambdaAssocMassPtRapEmbeded_Cent_%d",i);
       fAntiLambdaAssocMassPtRapEmbeded[i]  = new THnSparseD(hNameHist, "#bar{#Lambda} Embeded; Mass (GeV/c^{2}); #it{p}_{T}; rap;",3,binsEff13,xminEff13,xmaxEff13);
@@ -952,9 +1090,22 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       fAntiLambdaAssocMassPtDaugNClsTPCEmbeded[i]  = new THnSparseD(hNameHist, "#bar{#Lambda}; Mass (GeV/c^{2}); #it{p}_{T}; rap;  Pos # TPC Cls; Neg # TPC Cls;",5,binsEff18,xminEff18,xmaxEff18);
       fOutput->Add(fAntiLambdaAssocMassPtDaugNClsTPCEmbeded[i]);
   
-       snprintf(hNameHist,100, "fAntiLambdaAssocMassPtShTPCclsEmbeded_Cent_%d",i);
+      snprintf(hNameHist,100, "fAntiLambdaAssocMassPtShTPCclsEmbeded_Cent_%d",i);
       fAntiLambdaAssocMassPtShTPCclsEmbeded[i]  = new THnSparseD(hNameHist, "#bar{#Lambda}; Mass (GeV/c^{2}); #it{p}_{T}; rap; Pos fraction shared TPC Cls; Neg fraction shared TPC Cls;",5,binsEffALsh,xminEffALsh,xmaxEffALsh);
       fOutput->Add(fAntiLambdaAssocMassPtShTPCclsEmbeded[i]); 
+
+      snprintf(hNameHist,100, "fAntiLambdaAssocMassPtDaugPtEmbeded_Cent_%d",i);
+      fAntiLambdaAssocMassPtDaugPtEmbeded[i]  = new THnSparseD(hNameHist, "#bar{#Lambda}; Mass (GeV/c^{2}); #it{p}_{T}; rap; #it{p}_{T,Pos Daug} (GeV/#it{c}); #it{p}_{T,Neg Daug} (GeV/#it{c});",5,binsEffALPtDaug,xminEffALPtDaug,xmaxEffALPtDaug);
+      fOutput->Add(fAntiLambdaAssocMassPtDaugPtEmbeded[i]); 
+
+      snprintf(hNameHist,100, "fAntiLambdaAssocMassPtCtauEmbeded_Cent_%d",i);
+      fAntiLambdaAssocMassPtCtauEmbeded[i]  = new THnSparseD(hNameHist, "#bar{#Lambda}; Mass (GeV/c^{2}); #it{p}_{T}; rap; c#tau;",4,binsEffALCtau,xminEffALCtau,xmaxEffALCtau);
+      fOutput->Add(fAntiLambdaAssocMassPtCtauEmbeded[i]); 
+
+      snprintf(hNameHist,100, "fAntiLambdaAssocMassPtFidVolumeEmbeded_Cent_%d",i);
+      fAntiLambdaAssocMassPtFidVolumeEmbeded[i]  = new THnSparseD(hNameHist, "#bar{#Lambda}; Mass (GeV/c^{2}); #it{p}_{T}; rap; l_{T} (cm);",4,binsEffALFidVol,xminEffALFidVol,xmaxEffALFidVol);
+      fOutput->Add(fAntiLambdaAssocMassPtFidVolumeEmbeded[i]);  
+
 
   } 
 
@@ -1014,6 +1165,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
   // ****** K0s ******
   fK0sMass =
     new TH3F("fK0sMass", "K^{0}_{s}: mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",nbins,0.398,0.598,nbins,pMin,pMax,100,0.,100.);
+
   fOutput->Add(fK0sMass);
  
   fK0sMassEmbeded =
@@ -2811,7 +2963,8 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
   Double_t pTrig[3]; 
 
   if( (step==kTriggerCheck || isTriggered) && idTrig>=0 ){
-    trkTrig = (AliAODTrack*)fAOD->GetTrack(idTrig); 
+    trkTrig = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(idTrig));
+    if(!trkTrig) AliFatal("Not a standard AOD"); 
     ptTrig  = trkTrig->Pt();
     phiTrig = trkTrig->Phi();
     etaTrig = trkTrig->Eta();
@@ -3122,7 +3275,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	}
 	
 	/*
-	// Daughter momentum cut: ! FIX it in case of AOD ! //MC or REc
+3	// Daughter momentum cut: ! FIX it in case of AOD ! //MC or REc
 	if ( (nPart->Pt()  < fMinPtDaughter ) ||
 	(pPart->Pt()  < fMinPtDaughter ) )
 	goto noas;
@@ -3226,7 +3379,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	    // Natural particles
 	    if(isNaturalPart){
 
-	      if( (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+	      if( (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 
 		fK0sAssocPt->Fill(ptAs);
 		fK0sAssocPtRap->Fill(ptAs,rapAs,centrality);
@@ -3240,6 +3393,9 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		  Double_t effK0sDCA[4] = {v0->MassK0Short(),ptAs,rapAs,dca};
 		  Double_t effK0sCPA[4] = {v0->MassK0Short(),ptAs,rapAs,cpa};
 		  Double_t effK0sShTPCcls[5] = {v0->MassK0Short(),ptAs,rapAs,fracPosDaugTPCSharedMap,fracNegDaugTPCSharedMap};
+		  Double_t effK0sDaugPt[5] = {v0->MassK0Short(),ptAs,rapAs,lPtPos,lPtNeg};
+		  Double_t effK0sCtau[4]   = {v0->MassK0Short(),ptAs,rapAs,dlK};
+		  Double_t effK0sFidVol[4] = {v0->MassK0Short(),ptAs,rapAs,lt};
 
 		  // Distributions for the efficiency (systematics chechks)
 		  fK0sAssocPtMassArm[curCentBin]->Fill(effK0sArm);
@@ -3247,6 +3403,9 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		  fK0sAssocMassPtDCADaug[curCentBin]->Fill(effK0sDCA);
 		  fK0sAssocMassPtCPA[curCentBin]->Fill(effK0sCPA);
 		  fK0sAssocMassPtShTPCcls[curCentBin]->Fill(effK0sShTPCcls);
+		  fK0sAssocMassPtDaugPt[curCentBin]->Fill(effK0sDaugPt);
+		  fK0sAssocMassPtCtau[curCentBin]->Fill(effK0sCtau);
+		  fK0sAssocMassPtFidVolume[curCentBin]->Fill(effK0sFidVol);
 		}
 	      
 		fK0sMCResEta->Fill(resEta,pt,centrality);
@@ -3267,7 +3426,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	      if( (lPtArmV0 > TMath::Abs(0.2*lAlphaV0) ) && TMath::Abs(rapAs)<fYMax ){ 
 	      
 		//  Cut in the DCA ToPrim Vtx
-		if( (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+		if( (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 
 		  Double_t effK0sdcaPV[5] = {v0->MassK0Short(),ptAs,rapAs,dcaPos,dcaNeg};
 		  fK0sAssocMassPtDCAPV[curCentBin]->Fill(effK0sdcaPV);
@@ -3287,7 +3446,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	    // Embeded particles
 	    if(!isNaturalPart){ 
 
-	      if( (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+	      if( (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 
 		fK0sAssocPtRapEmbeded->Fill(ptAs,rapAs,centrality);
 
@@ -3298,6 +3457,9 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		  Double_t effK0sDCA[4] = {v0->MassK0Short(),ptAs,rapAs,dca};
 		  Double_t effK0sCPA[4] = {v0->MassK0Short(),ptAs,rapAs,cpa};
 		  Double_t effK0sShTPCcls[5] = {v0->MassK0Short(),ptAs,rapAs,fracPosDaugTPCSharedMap,fracNegDaugTPCSharedMap};
+		  Double_t effK0sDaugPt[5] = {v0->MassK0Short(),ptAs,rapAs,lPtPos,lPtPos};
+		  Double_t effK0sCtau[4]   = {v0->MassK0Short(),ptAs,rapAs,dlK};
+		  Double_t effK0sFidVol[4] = {v0->MassK0Short(),ptAs,rapAs,lt};
 
 		  // Distributions for the efficiency (systematics chechks)
 		  fK0sAssocPtMassArmEmbeded[curCentBin]->Fill(effK0sArm);	
@@ -3305,6 +3467,9 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		  fK0sAssocMassPtDCADaugEmbeded[curCentBin]->Fill(effK0sDCA);
 		  fK0sAssocMassPtCPAEmbeded[curCentBin]->Fill(effK0sCPA);
 		  fK0sAssocMassPtShTPCclsEmbeded[curCentBin]->Fill(effK0sShTPCcls);
+		  fK0sAssocMassPtDaugPtEmbeded[curCentBin]->Fill(effK0sDaugPt);
+		  fK0sAssocMassPtCtauEmbeded[curCentBin]->Fill(effK0sCtau);
+		  fK0sAssocMassPtFidVolumeEmbeded[curCentBin]->Fill(effK0sFidVol);
 		}
 
 	      } // End selection in the dca to prim. vtx and the number of clusters
@@ -3313,7 +3478,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	      if( (lPtArmV0 > TMath::Abs(0.2*lAlphaV0) ) && TMath::Abs(rapAs)<fYMax ){ 
 
 		//  Cut in the DCA ToPrim Vtx
-		if( (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+		if( (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 
 		  Double_t effK0sdcaPV[5] = {v0->MassK0Short(),ptAs,rapAs,dcaPos,dcaNeg};
     		  fK0sAssocMassPtDCAPVEmbeded[curCentBin]->Fill(effK0sdcaPV);
@@ -3338,7 +3503,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	    // Natural particles
 	    if(isNaturalPart){
 
-	      if( (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+	      if( (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 
 		fLambdaAssocPt->Fill(ptAs);
 		fLambdaAssocPtRap->Fill(ptAs,rapAs,centrality);
@@ -3352,6 +3517,9 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		  Double_t effLambdaDCA[4] = {v0->MassLambda(),ptAs,rapAs,dca};
 		  Double_t effLambdaCPA[4] = {v0->MassLambda(),ptAs,rapAs,cpa};
 		  Double_t effLambdaShTPCcls[5] = {v0->MassLambda(),ptAs,rapAs,fracPosDaugTPCSharedMap,fracNegDaugTPCSharedMap};
+		  Double_t effLambdaDaugPt[5] = {v0->MassLambda(),ptAs,rapAs,lPtPos,lPtNeg};
+		  Double_t effLambdaCtau[4]   = {v0->MassLambda(),ptAs,rapAs,dlL};
+		  Double_t effLambdaFidVol[4] = {v0->MassLambda(),ptAs,rapAs,lt};
 
 		  // Distributions for the efficiency (systematics chechks)
 		  fLambdaAssocMassPtRap[curCentBin]->Fill(effLambda);
@@ -3359,6 +3527,9 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		  fLambdaAssocMassPtDCADaug[curCentBin]->Fill(effLambdaDCA);
 		  fLambdaAssocMassPtCPA[curCentBin]->Fill(effLambdaCPA);
 		  fLambdaAssocMassPtShTPCcls[curCentBin]->Fill(effLambdaShTPCcls);
+		  fLambdaAssocMassPtDaugPt[curCentBin]->Fill(effLambdaDaugPt);
+		  fLambdaAssocMassPtCtau[curCentBin]->Fill(effLambdaCtau);
+		  fLambdaAssocMassPtFidVolume[curCentBin]->Fill(effLambdaFidVol);
 
 		  if( !isCandidate2K0s && !isCandidate2LambdaBar)
 		    fLambdaAssocMassPtRap2[curCentBin]->Fill(effLambda);
@@ -3383,7 +3554,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	      if( TMath::Abs(rapAs)<fYMax ){ 
 		
 		//  Cut in the DCA ToPrim Vtx
-		if( (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+		if( (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 
 		  Double_t effLambdadcaPV[5] = {v0->MassLambda(),ptAs,rapAs,dcaPos,dcaNeg};
 		  fLambdaAssocMassPtDCAPV[curCentBin]->Fill(effLambdadcaPV);
@@ -3402,7 +3573,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	    // Embeded particles
 	    if(!isNaturalPart){
 
-	      if( (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+	      if( (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 	      
 		if( TMath::Abs(rapAs)<fYMax ){
 
@@ -3411,6 +3582,9 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		  Double_t effLambdaDCA[4] = {v0->MassLambda(),ptAs,rapAs,dca};
 		  Double_t effLambdaCPA[4] = {v0->MassLambda(),ptAs,rapAs,cpa};
 		  Double_t effLambdaShTPCcls[5] = {v0->MassLambda(),ptAs,rapAs,fracPosDaugTPCSharedMap,fracNegDaugTPCSharedMap};
+		  Double_t effLambdaDaugPt[5] = {v0->MassLambda(),ptAs,rapAs,lPtPos,lPtNeg};
+		  Double_t effLambdaCtau[4]   = {v0->MassLambda(),ptAs,rapAs,dlL};
+		  Double_t effLambdaFidVol[4] = {v0->MassLambda(),ptAs,rapAs,lt};
 
 		  // Distributions for the efficiency (systematics chechks)
 		  fLambdaAssocMassPtRapEmbeded[curCentBin]->Fill(effLambda);
@@ -3418,6 +3592,10 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		  fLambdaAssocMassPtDCADaugEmbeded[curCentBin]->Fill(effLambdaDCA);
 		  fLambdaAssocMassPtCPAEmbeded[curCentBin]->Fill(effLambdaCPA);
 		  fLambdaAssocMassPtShTPCclsEmbeded[curCentBin]->Fill(effLambdaShTPCcls);
+		  fLambdaAssocMassPtDaugPtEmbeded[curCentBin]->Fill(effLambdaDaugPt);
+		  fLambdaAssocMassPtCtauEmbeded[curCentBin]->Fill(effLambdaCtau);
+		  fLambdaAssocMassPtFidVolumeEmbeded[curCentBin]->Fill(effLambdaFidVol);
+
 
 		  if( !isCandidate2K0s && !isCandidate2LambdaBar)
 		    fLambdaAssocMassPtRapEmbeded2[curCentBin]->Fill(effLambda);
@@ -3429,7 +3607,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	      if( TMath::Abs(rapAs)<fYMax ){ 
 
 		//  Cut in the DCA ToPrim Vtx
-		if( (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+		if( (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 		  Double_t effLambdadcaPV[5] = {v0->MassLambda(),ptAs,rapAs,dcaPos,dcaNeg};
 		  fLambdaAssocMassPtDCAPVEmbeded[curCentBin]->Fill(effLambdadcaPV);
 		}		  
@@ -3451,7 +3629,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	    
 	    if(isNaturalPart){
 
-	      if( (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+	      if( (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 
 		fAntiLambdaAssocPt->Fill(ptAs);
 		fAntiLambdaAssocPtRap->Fill(ptAs,rapAs,centrality);
@@ -3465,6 +3643,9 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		  Double_t effAntiLambdaDCA[4] = {v0->MassAntiLambda(),ptAs,rapAs,dca};
 		  Double_t effAntiLambdaCPA[4] = {v0->MassAntiLambda(),ptAs,rapAs,cpa};
 		  Double_t effAntiLambdaShTPCcls[5] = {v0->MassAntiLambda(),ptAs,rapAs,fracPosDaugTPCSharedMap,fracNegDaugTPCSharedMap};
+		  Double_t effAntiLambdaDaugPt[5] = {v0->MassAntiLambda(),ptAs,rapAs,lPtPos,lPtNeg};
+		  Double_t effAntiLambdaCtau[4]   = {v0->MassAntiLambda(),ptAs,rapAs,dlL};
+		  Double_t effAntiLambdaFidVol[4] = {v0->MassAntiLambda(),ptAs,rapAs,lt};
 
 		  // Distributions for the efficiency (systematics chechks)
 		  fAntiLambdaAssocMassPtRap[curCentBin]->Fill(effAntiLambda);
@@ -3472,7 +3653,11 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		  fAntiLambdaAssocMassPtDCADaug[curCentBin]->Fill(effAntiLambdaDCA);
 		  fAntiLambdaAssocMassPtCPA[curCentBin]->Fill(effAntiLambdaCPA);
 		  fAntiLambdaAssocMassPtShTPCcls[curCentBin]->Fill(effAntiLambdaShTPCcls);
- 
+		  fAntiLambdaAssocMassPtDaugPt[curCentBin]->Fill(effAntiLambdaDaugPt);
+		  fAntiLambdaAssocMassPtCtau[curCentBin]->Fill(effAntiLambdaCtau);
+		  fAntiLambdaAssocMassPtFidVolume[curCentBin]->Fill(effAntiLambdaFidVol);
+
+
 		  if( !isCandidate2K0s && !isCandidate2Lambda )
 		    fAntiLambdaAssocMassPtRap2[curCentBin]->Fill(effAntiLambda);
 		}
@@ -3495,7 +3680,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	      if( TMath::Abs(rapAs)<fYMax ){ 
 		
 		//  Cut in the DCA ToPrim Vtx
-		if( (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+		if( (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 		  
 		  Double_t effAntiLambdadcaPV[5] = {v0->MassAntiLambda(),ptAs,rapAs,dcaPos,dcaNeg};
 		  fAntiLambdaAssocMassPtDCAPV[curCentBin]->Fill(effAntiLambdadcaPV);
@@ -3513,7 +3698,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	    // Embeded particles
 	    if(!isNaturalPart){
 
-	      if( (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+	      if( (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 
 		if( TMath::Abs(rapAs)<fYMax ){
 
@@ -3522,6 +3707,9 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		  Double_t effAntiLambdaDCA[4] = {v0->MassAntiLambda(),ptAs,rapAs,dca};
 		  Double_t effAntiLambdaCPA[4] = {v0->MassAntiLambda(),ptAs,rapAs,cpa};
 		  Double_t effAntiLambdaShTPCcls[5] = {v0->MassAntiLambda(),ptAs,rapAs,fracPosDaugTPCSharedMap,fracNegDaugTPCSharedMap};
+		  Double_t effAntiLambdaDaugPt[5] = {v0->MassAntiLambda(),ptAs,rapAs,lPtPos,lPtNeg};
+		  Double_t effAntiLambdaCtau[4]   = {v0->MassAntiLambda(),ptAs,rapAs,dlL};
+		  Double_t effAntiLambdaFidVol[4] = {v0->MassAntiLambda(),ptAs,rapAs,lt};
 
 		  // Distributions for the efficiency (systematics chechks)
 		  fAntiLambdaAssocMassPtRapEmbeded[curCentBin]->Fill(effAntiLambda);
@@ -3529,6 +3717,9 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		  fAntiLambdaAssocMassPtDCADaugEmbeded[curCentBin]->Fill(effAntiLambdaDCA);
 		  fAntiLambdaAssocMassPtCPAEmbeded[curCentBin]->Fill(effAntiLambdaCPA);
 		  fAntiLambdaAssocMassPtShTPCclsEmbeded[curCentBin]->Fill(effAntiLambdaShTPCcls);
+		  fAntiLambdaAssocMassPtDaugPtEmbeded[curCentBin]->Fill(effAntiLambdaDaugPt);
+		  fAntiLambdaAssocMassPtCtauEmbeded[curCentBin]->Fill(effAntiLambdaCtau);
+		  fAntiLambdaAssocMassPtFidVolumeEmbeded[curCentBin]->Fill(effAntiLambdaFidVol);
 
 		  if( !isCandidate2K0s && !isCandidate2Lambda )
 		    fAntiLambdaAssocMassPtRapEmbeded2[curCentBin]->Fill(effAntiLambda);
@@ -3541,7 +3732,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	      if( TMath::Abs(rapAs)<fYMax ){ 
 
 		//  Cut in the DCA ToPrim Vtx
-		if( (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+		if( (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 
 		  Double_t effAntiLambdadcaPV[5] = {v0->MassAntiLambda(),ptAs,rapAs,dcaPos,dcaNeg};
 		  fAntiLambdaAssocMassPtDCAPVEmbeded[curCentBin]->Fill(effAntiLambdadcaPV);
@@ -3594,12 +3785,12 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
     // *******************
     //   K0s selection
     // *******************
-    if (ctK && (TMath::Abs(rapK0s)<fYMax) && ( lPtArmV0 > TMath::Abs(0.2*lAlphaV0) ) && ( massK0s > 0.3979 && massK0s < 0.5981 ) ) {
+    if (ctK && (TMath::Abs(rapK0s)<fYMax) && ( lPtArmV0 > TMath::Abs(0.2*lAlphaV0) ) && ( massK0s > 0.3979 && massK0s < 0.5981 ) && lCheckMcK0Short ) {
       
       switch(step) {
       case kTriggerCheck: 
 
-	if (isCandidate2K0s && (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+	if (isCandidate2K0s && (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 
 	  if(pt>ptTrig){
 	    fIsV0LP = 1; 
@@ -3658,7 +3849,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	break; // End K0s selection for TriggerCheck
       case kReconstruction:
 	
-	if( (dcaPos > 0.1) && (dcaNeg > 0.1) && (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) && (pt<10.) ){
+	if( (dcaPos > 0.1) && (dcaNeg > 0.1) && (nClsTPCPos>70) && (nClsTPCNeg>70) && (pt<10.) ){
 	  
 	  if(isNaturalPart) fK0sMass->Fill(massK0s,pt,centrality);
 	  else fK0sMassEmbeded->Fill(massK0s,pt,centrality);
@@ -3681,14 +3872,14 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	  // Invariant Mass cut
 	  if (TMath::Abs(mK0s-massK0s) < 3*sK0s) {
 
-	    if( (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+	    if( (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 	      fK0sDCAPosDaug->Fill(dcaPos,pt);
 	      fK0sDCANegDaug->Fill(dcaNeg,pt);
 	    }
 
 	    if( (dcaPos > 0.1) && (dcaNeg > 0.1) ){
 
-	      if( (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC ) ){
+	      if( (nClsTPCPos>70) && (nClsTPCNeg>70 ) ){
 		fK0sPtPosDaug->Fill(pt,lPtPos);
 		fK0sPtNegDaug->Fill(pt,lPtNeg);
 
@@ -3714,14 +3905,14 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	  if( TMath::Abs(mK0s-massK0s + 6.5*sK0s) < 1.5*sK0s ||
 	      TMath::Abs(mK0s-massK0s - 6.5*sK0s) < 1.5*sK0s  ) {
 
-	    if( (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+	    if( (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 	      fK0sBckgDCAPosDaug->Fill(dcaPos,pt);
 	      fK0sBckgDCANegDaug->Fill(dcaNeg,pt);
 	    }
 	    
 	    if( (dcaPos > 0.1) && (dcaNeg > 0.1) ){
 
-	      if( (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+	      if( (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 		fK0sBckgPtPosDaug->Fill(pt,lPtPos);
 		fK0sBckgPtNegDaug->Fill(pt,lPtNeg);
 	      
@@ -3759,12 +3950,12 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
     // *******************
     // Lambda selection
     // *******************
-    if ( ctL && (TMath::Abs(rapLambda)<fYMax) && (massLambda > 1.0649 && massLambda < 1.1651 ) && (TMath::Abs(nsigPosProton)<fNSigma) ){
+    if ( ctL && (TMath::Abs(rapLambda)<fYMax) && (massLambda > 1.0649 && massLambda < 1.1651 ) && (TMath::Abs(nsigPosProton)<fNSigma) && lCheckMcLambda ){
 
       switch(step) {
       case kTriggerCheck: 
 	
-	if (isCandidate2Lambda && (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) && !isCandidate2K0s && !isCandidate2LambdaBar ){
+	if (isCandidate2Lambda && (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>70) && (nClsTPCNeg>70) && !isCandidate2K0s && !isCandidate2LambdaBar ){
 
 	  if(pt>ptTrig) {
 	    fIsV0LP = 1;
@@ -3820,7 +4011,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	break; // End Lambda selection for TriggerCheck
       case kReconstruction:
 	
-	if( (dcaPos > 0.1) && (dcaNeg > 0.1) && (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) && (pt<10.) ){
+	if( (dcaPos > 0.1) && (dcaNeg > 0.1) && (nClsTPCPos>70) && (nClsTPCNeg>70) && (pt<10.) ){
 
 	  if(isNaturalPart) fLambdaMass->Fill(massLambda,pt,centrality);
 	  else  fLambdaMassEmbeded->Fill(massLambda,pt,centrality);
@@ -3850,14 +4041,14 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	  // Invariant Mass cut
 	  if (TMath::Abs(mLambda-massLambda) < 3*sL) {
 
-	    if( (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+	    if( (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 	      fLambdaDCAPosDaug->Fill(dcaPos,pt);
 	      fLambdaDCANegDaug->Fill(dcaNeg,pt);
 	    }
 
 	    if( (dcaPos > 0.1) && (dcaNeg > 0.1) ){
 
-	      if( (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+	      if( (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 		fLambdaPtPosDaug->Fill(pt,lPtPos);
 		fLambdaPtNegDaug->Fill(pt,lPtNeg);
 
@@ -3884,14 +4075,14 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	  if( (TMath::Abs(mLambda-massLambda + 6.5*sL) < 1.5*sL) ||
 	      (TMath::Abs(mLambda-massLambda - 6.5*sL) < 1.5*sL) ){
 
-	    if( (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+	    if( (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 	      fLambdaBckgDCAPosDaug->Fill(dcaPos,pt);
 	      fLambdaBckgDCANegDaug->Fill(dcaNeg,pt);
 	    }	    
 
 	    if( (dcaPos > 0.1) && (dcaNeg > 0.1) ){
 
-	      if( (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+	      if( (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 		fLambdaBckgPtPosDaug->Fill(pt,lPtPos);
 		fLambdaBckgPtNegDaug->Fill(pt,lPtNeg);
 
@@ -3928,12 +4119,12 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
     // *******************
     // AntiLambda selection
     // *******************
-    if ( ctAL && (TMath::Abs(rapLambda)<fYMax)  && (massAntiLambda > 1.0649 && massAntiLambda < 1.1651 ) && (TMath::Abs(nsigNegProton)<fNSigma) ) {
+    if ( ctAL && (TMath::Abs(rapLambda)<fYMax)  && (massAntiLambda > 1.0649 && massAntiLambda < 1.1651 ) && (TMath::Abs(nsigNegProton)<fNSigma) && lCheckMcAntiLambda ) {
       
       switch(step) {
       case kTriggerCheck: 
 	
-	if (isCandidate2LambdaBar && (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) &&  !isCandidate2K0s && !isCandidate2Lambda ){
+	if (isCandidate2LambdaBar && (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>70) && (nClsTPCNeg>70) &&  !isCandidate2K0s && !isCandidate2Lambda ){
 
 	  if(pt>ptTrig) {
 	    fIsV0LP = 1;
@@ -3990,7 +4181,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	break; // End AntiLambda selection for CheckTrigger
       case kReconstruction: 
 	
-	if( (dcaPos > 0.1) && (dcaNeg > 0.1) && (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) && (pt<10.) ) {
+	if( (dcaPos > 0.1) && (dcaNeg > 0.1) && (nClsTPCPos>70) && (nClsTPCNeg>70) && (pt<10.) ) {
 
 	  if(isNaturalPart)  fAntiLambdaMass->Fill(massAntiLambda,pt,centrality);
 	  else fAntiLambdaMassEmbeded->Fill(massAntiLambda,pt,centrality);
@@ -4018,14 +4209,14 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	  // Invariant Mass cut
 	  if (TMath::Abs(mLambda-massAntiLambda) < 3*sAL) {
 
-	    if( (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+	    if( (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 	      fAntiLambdaDCAPosDaug->Fill(dcaPos,pt);
 	      fAntiLambdaDCANegDaug->Fill(dcaNeg,pt);
 	    }
 
 	    if( (dcaPos>0.1) && (dcaNeg>0.1) ){
 	      
-	      if( (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+	      if( (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 		fAntiLambdaPtPosDaug->Fill(pt,lPtPos);
 		fAntiLambdaPtNegDaug->Fill(pt,lPtNeg);
 		  
@@ -4051,14 +4242,14 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	  if( (TMath::Abs(mLambda-massAntiLambda + 6.5*sAL) < 1.5*sAL) ||
 	      (TMath::Abs(mLambda-massAntiLambda - 6.5*sAL) < 1.5*sAL) ){
 
-	    if( (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
+	    if( (nClsTPCPos>70) && (nClsTPCNeg>70) ){
 	      fAntiLambdaBckgDCAPosDaug->Fill(dcaPos,pt);
 	      fAntiLambdaBckgDCANegDaug->Fill(dcaNeg,pt);
 	    }
 
 	    if( (dcaPos>0.1) && (dcaNeg>0.1) ){
 
-	      if( (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){	      
+	      if( (nClsTPCPos>70) && (nClsTPCNeg>70) ){	      
 		fAntiLambdaBckgPtPosDaug->Fill(pt,lPtPos);
 		fAntiLambdaBckgPtNegDaug->Fill(pt,lPtNeg);
 	      
@@ -4127,7 +4318,8 @@ void AliAnalysisTaskLambdaOverK0sJets::TriggerParticle()
   Float_t resPhi = -1000.;
 
   for (Int_t i=0; i<nTrk; i++) {
-    const AliAODTrack *t = fAOD->GetTrack(i);
+    const AliAODTrack *t = dynamic_cast<const AliAODTrack*>(fAOD->GetTrack(i));
+    if(!t) AliFatal("Not a standard AOD");
     if(!AcceptTrack(t)) continue;
     pt=t->Pt();
     eta=t->Eta();

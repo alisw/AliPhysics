@@ -168,7 +168,7 @@ void AliTRDcheckESD::FillEventInfo(Double_t* values) {
   //
   // Fill event information
   //
-  values[kEventVtxZ] = fESD->GetPrimaryVertex()->GetZv();
+  values[kEventVtxZ] = fESD->GetPrimaryVertex()->GetZ();
   values[kEventBC] = fESD->GetBunchCrossNumber();
   
   const AliMultiplicity* mult=fESD->GetMultiplicity();

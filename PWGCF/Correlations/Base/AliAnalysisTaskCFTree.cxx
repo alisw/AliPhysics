@@ -243,8 +243,9 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
   AliAODEvent* aod = dynamic_cast<AliAODEvent*> (fInputEvent);
   if (fMuons && aod){ // aod only
     fMuons->Clear();
-    for (Int_t iTrack = 0; iTrack < aod->GetNTracks(); iTrack++) {
-      AliAODTrack* track = aod->GetTrack(iTrack);
+    for (Int_t iTrack = 0; iTrack < aod->GetNumberOfTracks(); iTrack++) {
+      AliAODTrack* track = dynamic_cast<AliAODTrack*>(aod->GetTrack(iTrack));
+      if(!track) AliFatal("Not a standard AOD");
       if (!track->IsMuonTrack()) continue;
       Float_t pt     = track->Pt();
       Float_t eta    = track->Eta();

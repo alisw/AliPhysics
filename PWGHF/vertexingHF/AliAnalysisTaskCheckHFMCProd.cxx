@@ -395,20 +395,20 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
   
   const AliESDVertex *spdv=esd->GetVertex();
   if(spdv && spdv->IsFromVertexer3D()){
-    fHistoSPD3DVtxX->Fill(spdv->GetXv());
-    fHistoSPD3DVtxY->Fill(spdv->GetYv());
-    fHistoSPD3DVtxZ->Fill(spdv->GetZv());
+    fHistoSPD3DVtxX->Fill(spdv->GetX());
+    fHistoSPD3DVtxY->Fill(spdv->GetY());
+    fHistoSPD3DVtxZ->Fill(spdv->GetZ());
   }
   if(spdv && spdv->IsFromVertexerZ()){
-    fHistoSPDZVtxX->Fill(spdv->GetXv());
-    fHistoSPDZVtxY->Fill(spdv->GetYv());
-    fHistoSPDZVtxZ->Fill(spdv->GetZv());
+    fHistoSPDZVtxX->Fill(spdv->GetX());
+    fHistoSPDZVtxY->Fill(spdv->GetY());
+    fHistoSPDZVtxZ->Fill(spdv->GetZ());
   }
   const AliESDVertex *trkv=esd->GetPrimaryVertex();
   if(trkv && trkv->GetNContributors()>1){
-    fHistoTRKVtxX->Fill(trkv->GetXv());
-    fHistoTRKVtxY->Fill(trkv->GetYv());
-    fHistoTRKVtxZ->Fill(trkv->GetZv());
+    fHistoTRKVtxX->Fill(trkv->GetX());
+    fHistoTRKVtxY->Fill(trkv->GetY());
+    fHistoTRKVtxZ->Fill(trkv->GetZ());
   }
 
   AliStack* stack=0;

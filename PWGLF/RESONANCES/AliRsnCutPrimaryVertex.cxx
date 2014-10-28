@@ -69,9 +69,9 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *object)
       Double_t            vzTrk = 1000000.0;
       Double_t            vzSPD = 1000000.0;
       Double_t            vzTPC = 1000000.0;
-      if (vTrk) vzTrk = TMath::Abs(vTrk->GetZv());
-      if (vSPD) vzSPD = TMath::Abs(vSPD->GetZv());
-      if (vTPC) vzTPC = TMath::Abs(vTPC->GetZv());
+      if (vTrk) vzTrk = TMath::Abs(vTrk->GetZ());
+      if (vSPD) vzSPD = TMath::Abs(vSPD->GetZ());
+      if (vTPC) vzTPC = TMath::Abs(vTPC->GetZ());
       if (vTrk) ncTrk = (Int_t)vTrk->GetNContributors();
       if (vSPD) ncSPD = (Int_t)vSPD->GetNContributors();
       if (vTPC) ncTPC = (Int_t)vTPC->GetNContributors();

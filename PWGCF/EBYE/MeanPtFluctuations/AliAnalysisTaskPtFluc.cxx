@@ -243,17 +243,17 @@ void AliAnalysisTaskPtFluc::UserExec(Option_t *)
 
   // Global vertex
   const AliESDVertex* vtxESD = fESD->GetPrimaryVertexTracks();
-  vtxZGlobal = vtxESD->GetZv();
+  vtxZGlobal = vtxESD->GetZ();
   vtxNContGlobal = vtxESD->GetNContributors();
 
   // SPD vertex
   const AliESDVertex* vtxESDSPD = fESD->GetPrimaryVertexSPD();
-  vtxZSPD = vtxESDSPD->GetZv();
+  vtxZSPD = vtxESDSPD->GetZ();
 //   vtxNContSPD = vtxESDSPD->GetNContributors();
 
   // TPC vertex
   const AliESDVertex* vtxESDTPC = fESD->GetPrimaryVertexTPC();
-  vtxZTPC = vtxESDTPC->GetZv();
+  vtxZTPC = vtxESDTPC->GetZ();
 //   vtxNContTPC = vtxESDTPC->GetNContributors();
 
   vtxZ = vtxZGlobal;

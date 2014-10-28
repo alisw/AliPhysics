@@ -539,7 +539,6 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelorTMVA(const char* cutFile
   task->SetCFManager(man); //here is set the CF manager
   task->SetDecayChannel(22);
   task->SetUseCascadeTaskForLctoV0bachelor(kTRUE);
-  task->SetUseAdditionalCuts(kFALSE);
   task->SetUseAdditionalCuts(kTRUE);
   task->SetUseCutsForTMVA(kFALSE);
   task->SetUseFlatPtWeight(useFlatPtWeight); 
@@ -552,6 +551,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelorTMVA(const char* cutFile
   task->SetRejectCandidateIfNotFromQuark(kFALSE); // put to false if you want to keep HIJING D0!!
   task->SetUseMCVertex(kFALSE); // put to true if you want to do studies on pp
   //task->SetPtWeightsFromDataPbPb276overLHC12a17a();
+  task->SetCutOnMomConservation(0.0000005);
 
   if (isKeepDfromB && !isKeepDfromBOnly) task->SetDselection(2);
   if (isKeepDfromB && isKeepDfromBOnly) task->SetDselection(1);	

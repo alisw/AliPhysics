@@ -49,6 +49,9 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
     fMinTPCNcls(70),
     fFillTHn(kTRUE),
     fCentrality(0),
+    fQvector(0),
+    fQvector_lq(0),
+    fQvector_sq(0),
     fResSP(0),
     fResSP_vs_Cent(0),
     f2partCumQA_vs_Cent(0),
@@ -81,6 +84,7 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
     fIsRecoEff(0),
     fRecoEffList(0),
     fQvecGen(0),
+    fQgenType(0),
     fnNchBins(400),
 	fDoCentrSystCentrality(0)
       {}
@@ -138,6 +142,7 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   void     SetFillTHn (Bool_t val) { fFillTHn = val; }
   
   void SetQvecGen(Bool_t val) { fQvecGen = val; } //enable Qvec from generated
+  void SetQgenType(Int_t val) { fQgenType = val ; } // type==0 qgen from tracks - type==1 qgen from vzero
 
   void SetnNchBins(Int_t val) { fnNchBins = val; }
   
@@ -173,7 +178,10 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   Bool_t fFillTHn;
   
   TH1D * fCentrality;
-  
+  TH1D * fQvector;
+  TH1D * fQvector_lq;
+  TH1D * fQvector_sq;
+
   //output object
   TProfile*     fResSP;             //! resolution
   TProfile*     fResSP_vs_Cent;
@@ -250,6 +258,7 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   TList * fRecoEffList; // reconstruction efficiency file
   
   Bool_t fQvecGen; //enable Qvec from generated
+  Int_t fQgenType; // type==0 qgen from tracks - type==1 qgen from vzero
   Int_t  fnNchBins; //Ncharged
   Bool_t fDoCentrSystCentrality; //systematic check on centrality estimation
 
@@ -257,7 +266,7 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   AliAnalysisTaskV2AllChAOD(const AliAnalysisTaskV2AllChAOD&);
   AliAnalysisTaskV2AllChAOD& operator=(const AliAnalysisTaskV2AllChAOD&);
   
-  ClassDef(AliAnalysisTaskV2AllChAOD, 11);
+  ClassDef(AliAnalysisTaskV2AllChAOD, 13);
 };
 
 #endif

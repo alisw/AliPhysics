@@ -823,13 +823,13 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
     //if we use hidden info we want to have match between sim data and ESD
 
     bool trackAccept = true;
-    if (isKaonAnalysis == true && trackCopy->GetPDGPid() != 321) {
+    if (isKaonAnalysis == true && TMath::Abs(trackCopy->GetPDGPid()) != 321) {
       trackAccept = false;
     }
     if (isProtonAnalysis == true && TMath::Abs(trackCopy->GetPDGPid()) != 2212) {
       trackAccept = false;
     }
-    if (isPionAnalysis == true && trackCopy->GetPDGPid() != 211) {
+    if (isPionAnalysis == true && TMath::Abs(trackCopy->GetPDGPid()) != 211) {
       trackAccept = false;
     }
 

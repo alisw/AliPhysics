@@ -130,8 +130,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
                                              Double_t mass,    Double_t pt,     Double_t asym,
                                              Double_t deta,    Double_t dphi);
   
-  void         FillArmenterosThetaStar(Int_t pdg,             TLorentzVector meson,
-                                       TLorentzVector daugh1, TLorentzVector daugh2);
+  void         FillArmenterosThetaStar(Int_t pdg);
 
   
   private:
@@ -170,6 +169,12 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillArmenterosThetaStar;   // Fill armenteros histograms
   
   Bool_t   fCheckAccInSector;          // Check that the decay pi0 falls in the same SM or sector
+  
+  TLorentzVector fPhotonMom1;          //! photon cluster momentum
+  TLorentzVector fPhotonMom1Boost;     //! photon cluster momentum
+  TLorentzVector fPhotonMom2;          //! photon cluster momentum
+  TLorentzVector fPi0Mom;              //! pi0 cluster momentum
+  TVector3       fProdVertex;          //! production vertex
   
   //Histograms
   
@@ -317,10 +322,12 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhCosThStarPrimPi0;         //! cos(theta*) plots vs E for primary pi0, same as asymmetry ...
   TH2F *   fhCosThStarPrimEta;         //! cos(theta*) plots vs E for primary eta, same as asymmetry ...
   
+  TH2F *   fhEPairDiffTime;            //! E pair vs Pair of clusters time difference vs E
+  
   AliAnaPi0(              const AliAnaPi0 & api0) ; // cpy ctor
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ; // cpy assignment
   
-  ClassDef(AliAnaPi0,28)
+  ClassDef(AliAnaPi0,29)
 } ;
 
 

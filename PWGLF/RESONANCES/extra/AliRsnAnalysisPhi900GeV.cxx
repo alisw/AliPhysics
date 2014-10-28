@@ -204,7 +204,7 @@ void AliRsnAnalysisPhi900GeV::UserExec(Option_t *)
    }
 
    // if the Z position is larger than 10, skip this event
-   if (TMath::Abs(v->GetZv()) > 10.0) {
+   if (TMath::Abs(v->GetZ()) > 10.0) {
       fHEvents->Fill(2);
       PostData(3, fOutList);
       return;

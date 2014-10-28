@@ -63,6 +63,12 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   fFillArmenterosHisto(0),                   fFillThetaStarHisto(0),
   fSSWeightN(0),                             fSSECellCutN(0),
   fNLMSettingN(0),                           fWSimu(),
+  fClusterMomentum(),                        fSubClusterMom1(),                         fSubClusterMom2(),
+  fSubClusterMomSum(),                       fSubClusterMomBoost(),
+  fPrimaryMom(),                             fGrandMotherMom(),
+  fMCDaughMom1(),                            fMCDaughMom2(),
+  fProdVertex(),
+// Histograms
   fhMassAsyCutNLocMax1(0),                   fhMassAsyCutNLocMax2(0),                   fhMassAsyCutNLocMaxN(0),
   fhM02AsyCutNLocMax1(0),                    fhM02AsyCutNLocMax2(0),                    fhM02AsyCutNLocMaxN(0),
   fhMassM02CutNLocMax1(0),                   fhMassM02CutNLocMax2(0),                   fhMassM02CutNLocMaxN(0),
@@ -582,10 +588,10 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
 //      Int_t   mpdg = -999999;
 //      Int_t   mstatus = -1;
 //      Int_t   grandLabel = -1;
-//      TLorentzVector mother = GetMCAnalysisUtils()->GetMother(mclabel,GetReader(),mpdg,mstatus,mOK,grandLabel);
+//      fPrimaryMom = GetMCAnalysisUtils()->GetMother(mclabel,GetReader(),mpdg,mstatus,mOK,grandLabel);
 //      
 //      printf("******** mother %d : Label %d, pdg %d; status %d, E %2.2f, Eta %2.2f, Phi %2.2f, ok %d, mother label %d\n",
-//             ilab, mclabel, mpdg, mstatus,mother.E(), mother.Eta(),mother.Phi()*TMath::RadToDeg(),mOK,grandLabel);
+//             ilab, mclabel, mpdg, mstatus,fPrimaryMom.E(), fPrimaryMom.Eta(),fPrimaryMom.Phi()*TMath::RadToDeg(),mOK,grandLabel);
 //      
 //      if( ( mpdg == 22 || TMath::Abs(mpdg)==11 ) && grandLabel >=0 )
 //      {
@@ -709,7 +715,6 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   
   // Compare the common ancestors of the 2 highest energy local maxima
   Int_t ancPDG = 0, ancStatus = -1;
-  TLorentzVector momentum; TVector3 prodVertex;
   Int_t ancLabel = 0;
   Bool_t high = kFALSE;
   Bool_t low  = kFALSE;
@@ -749,7 +754,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
       }
       
       ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(mcLabel1,mcLabel2,
-                                                           GetReader(),ancPDG,ancStatus,momentum,prodVertex);
+                                                           GetReader(),ancPDG,ancStatus,fPrimaryMom,fProdVertex);
       if(ancPDG==111)
       {
         if((i==imax && j==imax2) ||  (j==imax && i==imax2))
@@ -770,7 +775,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
      
       Bool_t ok  =kFALSE;
       Int_t pdg = -22222, status = -1;
-      TLorentzVector primary  =GetMCAnalysisUtils()->GetMother(ancLabel,GetReader(), pdg, status, ok);
+      fPrimaryMom = GetMCAnalysisUtils()->GetMother(ancLabel,GetReader(), pdg, status, ok);
       //printf("\t i %d label %d - j %d label %d; ancestor label %d, PDG %d-%d; E %2.2f; high %d, any %d \n",i,mcLabel1,j,mcLabel2, ancLabel, ancPDG,pdg, primary.E(), high, low);
 
     }
@@ -829,16 +834,15 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   Int_t gLabel = -1;
   
   Int_t label = cluster->GetLabel();
-  TLorentzVector pi0Kine;
-    
-  while( pdg!=111 && label>=0 )
+  
+  while( pdg!=111 && label >=0 )
   {
-    pi0Kine = GetMCAnalysisUtils()->GetGrandMother(label,GetReader(),pdg,status,ok, label,gLabel);
+    fPrimaryMom = GetMCAnalysisUtils()->GetGrandMother(label,GetReader(),pdg,status,ok, label,gLabel);
   }
   
   if(pdg!=111 || label < 0)
   {
-    Info("CheckLocalMaximaMCOrigin","Mother Pi0 not found!\n");
+    AliWarning("Mother Pi0 not found!");
     return;
   }
   
@@ -846,35 +850,35 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   
   if(nDaugthers != 2)
   {
-    Info("CheckLocalMaximaMCOrigin","N daughters %d !=2!\n",nDaugthers);
+    AliWarning(Form("N daughters %d !=2!",nDaugthers));
     return;
   }
   
   // Get daughter photon kinematics
   Int_t pdg0 = -22222, status0   = -1; Int_t label0 = -1;
-  TLorentzVector photon0Kine = GetMCAnalysisUtils()->GetDaughter(0,label,GetReader(),pdg0,status0,ok,label0);
+  fMCDaughMom1 = GetMCAnalysisUtils()->GetDaughter(0,label,GetReader(),pdg0,status0,ok,label0);
   Int_t pdg1 = -22222, status1   = -1; Int_t label1 = -1;
-  TLorentzVector photon1Kine = GetMCAnalysisUtils()->GetDaughter(1,label,GetReader(),pdg1,status1,ok,label1);
+  fMCDaughMom2 = GetMCAnalysisUtils()->GetDaughter(1,label,GetReader(),pdg1,status1,ok,label1);
 
   if(pdg1!=22 || pdg0 != 22)
   {
-    Info("CheckLocalMaximaMCOrigin","Wrong daughters PDG: photon0 %d - photon1 %d\n",pdg0,pdg1);
+    AliWarning(Form("Wrong daughters PDG: photon0 %d - photon1 %d",pdg0,pdg1));
     return;
   }
   
   // In what cells did the photons hit
-  Float_t eta0 = photon0Kine.Eta();
-  Float_t eta1 = photon1Kine.Eta();
+  Float_t eta0 = fMCDaughMom1.Eta();
+  Float_t eta1 = fMCDaughMom2.Eta();
   
-  Float_t phi0 = photon0Kine.Phi();
-  Float_t phi1 = photon1Kine.Phi();
+  Float_t phi0 = fMCDaughMom1.Phi();
+  Float_t phi1 = fMCDaughMom2.Phi();
 
 // if((mass < 0.06 || mass > 1.8) && mcindex==kmcPi0 && noverlaps == 0)
 //  {
 //    printf("MC pi0 label %d E  %2.2f, eta %2.2f, phi %2.2f, mass (ph1, ph2) %2.2f: \n \t photon0 label %d E %2.2f, eta %2.2f, phi %2.2f \n \t photon1 label %d E %2.2f eta %2.2f, phi %2.2f\n",
-//           label , pi0Kine.E()    , pi0Kine.Eta(),pi0Kine.Phi()*TMath::RadToDeg(), (photon0Kine+photon1Kine).M(),
-//           label0, photon0Kine.E(),          eta0,         phi0*TMath::RadToDeg(),
-//           label1, photon1Kine.E(),          eta1,         phi1*TMath::RadToDeg());
+//           label , fPrimaryMom.E()    , fPrimaryMom.Eta(),fPrimaryMom.Phi()*TMath::RadToDeg(), (fMCDaughMom1+fMCDaughMom2).M(),
+//           label0, fMCDaughMom1.E(),          eta0,         phi0*TMath::RadToDeg(),
+//           label1, fMCDaughMom2.E(),          eta1,         phi1*TMath::RadToDeg());
 //    
 //    TLorentzVector momclus;
 //    cluster->GetMomentum(momclus,GetVertex(0));
@@ -978,7 +982,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
       Int_t tmplabel   = mclabel;
       while((secLabel0 < 0 || secLabel1 < 0) && tmplabel > 0 )
       {
-        TLorentzVector mother = GetMCAnalysisUtils()->GetMother(tmplabel,GetReader(),secpdg,secstatus,secOK,secgrandLabel);
+        fPrimaryMom = GetMCAnalysisUtils()->GetMother(tmplabel,GetReader(),secpdg,secstatus,secOK,secgrandLabel);
         
         //printf("\t \t while secLabel %d, mom %d, granmom %d\n",mclabel,tmplabel,secgrandLabel);
         
@@ -998,14 +1002,14 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
     // Get the position of the found secondaries mother
     if(!match0 && secLabel0 > 0)
     {
-      TLorentzVector mother = GetMCAnalysisUtils()->GetMother(secLabel0,GetReader(),secpdg,secstatus,secOK,secgrandLabel);
+      fPrimaryMom = GetMCAnalysisUtils()->GetMother(secLabel0,GetReader(),secpdg,secstatus,secOK,secgrandLabel);
       
-      //Float_t eta = mother.Eta();
-      //Float_t phi = mother.Phi();
+      //Float_t eta = fPrimaryMom.Eta();
+      //Float_t phi = fPrimaryMom.Phi();
       //if(phi < 0 ) phi+=TMath::TwoPi();
       //GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(eta, phi, absId0second);
       
-      //printf("Secondary MC0 label %d, absId %d E %2.2F eta %2.2f, phi %f\n", secLabel0,absId0second, mother.E(),mother.Eta(),mother.Phi()*TMath::RadToDeg());
+      //printf("Secondary MC0 label %d, absId %d E %2.2F eta %2.2f, phi %f\n", secLabel0,absId0second, fPrimaryMom.E(),fPrimaryMom.Eta(),fPrimaryMom.Phi()*TMath::RadToDeg());
       
       if(absId0second == list[imax] ) { match0 = kTRUE ; imatch0 = imax  ; }
       if(absId0second == list[imax2]) { match0 = kTRUE ; imatch0 = imax2 ; }
@@ -1013,14 +1017,14 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
 
     if(!match1 && secLabel1 > 0)
     {
-      TLorentzVector mother = GetMCAnalysisUtils()->GetMother(secLabel1,GetReader(),secpdg,secstatus,secOK,secgrandLabel);
+      fPrimaryMom = GetMCAnalysisUtils()->GetMother(secLabel1,GetReader(),secpdg,secstatus,secOK,secgrandLabel);
       
-      //Float_t eta = mother.Eta();
-      //Float_t phi = mother.Phi();
+      //Float_t eta = fPrimaryMom.Eta();
+      //Float_t phi = fPrimaryMom.Phi();
       //if(phi < 0 ) phi+=TMath::TwoPi();
       //GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(eta, phi, absId1second);
       
-      //printf("Secondary MC1 label %d absId %d E %2.2F eta %2.2f, phi %f\n",secLabel1, absId1second, mother.E(),mother.Eta(),mother.Phi()*TMath::RadToDeg());
+      //printf("Secondary MC1 label %d absId %d E %2.2F eta %2.2f, phi %f\n",secLabel1, absId1second, fPrimaryMom.E(),fPrimaryMom.Eta(),fPrimaryMom.Phi()*TMath::RadToDeg());
       
       if(absId1second == list[imax] ) { match1 = kTRUE ; imatch1 = imax  ; }
       if(absId1second == list[imax2]) { match1 = kTRUE ; imatch1 = imax2 ; }
@@ -1042,17 +1046,17 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
       fhMCPi0DecayPhotonHitHighLMMass[inlm]->Fill(en,mass);
       if(match0 && imatch0 == imax)
       {
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonHitHighLMDiffELM1[inlm]->Fill(en,(e1-photon0Kine.E())/photon0Kine.E());
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonHitHighLMDiffELM2[inlm]->Fill(en,(e2-photon1Kine.E())/photon1Kine.E());
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonHitHighLMDiffELM1vsELM1[inlm]->Fill(e1,(e1-photon0Kine.E())/photon0Kine.E());
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonHitHighLMDiffELM2vsELM2[inlm]->Fill(e2,(e2-photon1Kine.E())/photon1Kine.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonHitHighLMDiffELM1[inlm]->Fill(en,(e1-fMCDaughMom1.E())/fMCDaughMom1.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonHitHighLMDiffELM2[inlm]->Fill(en,(e2-fMCDaughMom2.E())/fMCDaughMom2.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonHitHighLMDiffELM1vsELM1[inlm]->Fill(e1,(e1-fMCDaughMom1.E())/fMCDaughMom1.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonHitHighLMDiffELM2vsELM2[inlm]->Fill(e2,(e2-fMCDaughMom2.E())/fMCDaughMom2.E());
       }
       else
       {
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonHitHighLMDiffELM1[inlm]->Fill(en,(e1-photon1Kine.E())/photon1Kine.E());
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonHitHighLMDiffELM2[inlm]->Fill(en,(e2-photon0Kine.E())/photon0Kine.E());
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonHitHighLMDiffELM1vsELM1[inlm]->Fill(e1,(e1-photon1Kine.E())/photon1Kine.E());
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonHitHighLMDiffELM2vsELM2[inlm]->Fill(e2,(e2-photon0Kine.E())/photon0Kine.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonHitHighLMDiffELM1[inlm]->Fill(en,(e1-fMCDaughMom2.E())/fMCDaughMom2.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonHitHighLMDiffELM2[inlm]->Fill(en,(e2-fMCDaughMom1.E())/fMCDaughMom1.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonHitHighLMDiffELM1vsELM1[inlm]->Fill(e1,(e1-fMCDaughMom2.E())/fMCDaughMom2.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonHitHighLMDiffELM2vsELM2[inlm]->Fill(e2,(e2-fMCDaughMom1.E())/fMCDaughMom1.E());
       }
     }
     else
@@ -1061,17 +1065,17 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
       fhMCPi0DecayPhotonHitHighLMOverlapMass[inlm]->Fill(en,mass);
       if(match0 && imatch0 == imax )
       {
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonHitHighLMOverlapDiffELM1[inlm]->Fill(en,(e1-photon0Kine.E())/photon0Kine.E());
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonHitHighLMOverlapDiffELM2[inlm]->Fill(en,(e2-photon1Kine.E())/photon1Kine.E());
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonHitHighLMOverlapDiffELM1vsELM1[inlm]->Fill(e1,(e1-photon0Kine.E())/photon0Kine.E());
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonHitHighLMOverlapDiffELM2vsELM2[inlm]->Fill(e2,(e2-photon1Kine.E())/photon1Kine.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonHitHighLMOverlapDiffELM1[inlm]->Fill(en,(e1-fMCDaughMom1.E())/fMCDaughMom1.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonHitHighLMOverlapDiffELM2[inlm]->Fill(en,(e2-fMCDaughMom2.E())/fMCDaughMom2.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonHitHighLMOverlapDiffELM1vsELM1[inlm]->Fill(e1,(e1-fMCDaughMom1.E())/fMCDaughMom1.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonHitHighLMOverlapDiffELM2vsELM2[inlm]->Fill(e2,(e2-fMCDaughMom2.E())/fMCDaughMom2.E());
       }
       else
       {
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonHitHighLMOverlapDiffELM1[inlm]->Fill(en,(e1-photon1Kine.E())/photon1Kine.E());
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonHitHighLMOverlapDiffELM2[inlm]->Fill(en,(e2-photon0Kine.E())/photon0Kine.E());
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonHitHighLMOverlapDiffELM1vsELM1[inlm]->Fill(e1,(e1-photon1Kine.E())/photon1Kine.E());
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonHitHighLMOverlapDiffELM2vsELM2[inlm]->Fill(e2,(e2-photon0Kine.E())/photon0Kine.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonHitHighLMOverlapDiffELM1[inlm]->Fill(en,(e1-fMCDaughMom2.E())/fMCDaughMom2.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonHitHighLMOverlapDiffELM2[inlm]->Fill(en,(e2-fMCDaughMom1.E())/fMCDaughMom1.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonHitHighLMOverlapDiffELM1vsELM1[inlm]->Fill(e1,(e1-fMCDaughMom2.E())/fMCDaughMom2.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonHitHighLMOverlapDiffELM2vsELM2[inlm]->Fill(e2,(e2-fMCDaughMom1.E())/fMCDaughMom1.E());
       }
 
     }
@@ -1117,17 +1121,17 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
 
       if(match0 && imatch0 == imax)
       {
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMDiffELM1[inlm]->Fill(en,(e1-photon0Kine.E())/photon0Kine.E());
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMDiffELM2[inlm]->Fill(en,(e2-photon1Kine.E())/photon1Kine.E());
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMDiffELM1vsELM1[inlm]->Fill(e1,(e1-photon0Kine.E())/photon0Kine.E());
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMDiffELM2vsELM2[inlm]->Fill(e2,(e2-photon1Kine.E())/photon1Kine.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonAdjHighLMDiffELM1[inlm]->Fill(en,(e1-fMCDaughMom1.E())/fMCDaughMom1.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonAdjHighLMDiffELM2[inlm]->Fill(en,(e2-fMCDaughMom2.E())/fMCDaughMom2.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonAdjHighLMDiffELM1vsELM1[inlm]->Fill(e1,(e1-fMCDaughMom1.E())/fMCDaughMom1.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonAdjHighLMDiffELM2vsELM2[inlm]->Fill(e2,(e2-fMCDaughMom2.E())/fMCDaughMom2.E());
       }
       else
       {
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMDiffELM1[inlm]->Fill(en,(e1-photon1Kine.E())/photon1Kine.E());
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMDiffELM2[inlm]->Fill(en,(e2-photon0Kine.E())/photon0Kine.E());
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMDiffELM1vsELM1[inlm]->Fill(e1,(e1-photon1Kine.E())/photon1Kine.E());
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMDiffELM2vsELM2[inlm]->Fill(e2,(e2-photon0Kine.E())/photon0Kine.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonAdjHighLMDiffELM1[inlm]->Fill(en,(e1-fMCDaughMom2.E())/fMCDaughMom2.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonAdjHighLMDiffELM2[inlm]->Fill(en,(e2-fMCDaughMom1.E())/fMCDaughMom1.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonAdjHighLMDiffELM1vsELM1[inlm]->Fill(e1,(e1-fMCDaughMom2.E())/fMCDaughMom2.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonAdjHighLMDiffELM2vsELM2[inlm]->Fill(e2,(e2-fMCDaughMom1.E())/fMCDaughMom1.E());
       }
     }
     else
@@ -1136,17 +1140,17 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
       fhMCPi0DecayPhotonAdjHighLMOverlapMass[inlm]->Fill(en,mass);
       if(match0 && imatch0 == imax)
       {
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM1[inlm]->Fill(en,(e1-photon0Kine.E())/photon0Kine.E());
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2[inlm]->Fill(en,(e2-photon1Kine.E())/photon1Kine.E());
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM1vsELM1[inlm]->Fill(e1,(e1-photon0Kine.E())/photon0Kine.E());
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2vsELM2[inlm]->Fill(e2,(e2-photon1Kine.E())/photon1Kine.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM1[inlm]->Fill(en,(e1-fMCDaughMom1.E())/fMCDaughMom1.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2[inlm]->Fill(en,(e2-fMCDaughMom2.E())/fMCDaughMom2.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM1vsELM1[inlm]->Fill(e1,(e1-fMCDaughMom1.E())/fMCDaughMom1.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2vsELM2[inlm]->Fill(e2,(e2-fMCDaughMom2.E())/fMCDaughMom2.E());
       }
       else
       {
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM1[inlm]->Fill(en,(e1-photon1Kine.E())/photon1Kine.E());
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2[inlm]->Fill(en,(e2-photon0Kine.E())/photon0Kine.E());
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM1vsELM1[inlm]->Fill(e1,(e1-photon1Kine.E())/photon1Kine.E());
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2vsELM2[inlm]->Fill(e2,(e2-photon0Kine.E())/photon0Kine.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM1[inlm]->Fill(en,(e1-fMCDaughMom2.E())/fMCDaughMom2.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2[inlm]->Fill(en,(e2-fMCDaughMom1.E())/fMCDaughMom1.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM1vsELM1[inlm]->Fill(e1,(e1-fMCDaughMom2.E())/fMCDaughMom2.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonAdjHighLMOverlapDiffELM2vsELM2[inlm]->Fill(e2,(e2-fMCDaughMom1.E())/fMCDaughMom1.E());
       }
     }
     
@@ -1205,13 +1209,13 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
       fhMCPi0DecayPhotonHitOtherLMMass[inlm]->Fill(en,mass);
       if(match0 && imatch0 == imax)
       {
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonHitOtherLMDiffELM1[inlm]->Fill(en,(e1-photon0Kine.E())/photon0Kine.E());
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonHitOtherLMDiffELM2[inlm]->Fill(en,(e2-photon1Kine.E())/photon1Kine.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonHitOtherLMDiffELM1[inlm]->Fill(en,(e1-fMCDaughMom1.E())/fMCDaughMom1.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonHitOtherLMDiffELM2[inlm]->Fill(en,(e2-fMCDaughMom2.E())/fMCDaughMom2.E());
       }
       else
       {
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonHitOtherLMDiffELM1[inlm]->Fill(en,(e1-photon1Kine.E())/photon1Kine.E());
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonHitOtherLMDiffELM2[inlm]->Fill(en,(e2-photon0Kine.E())/photon0Kine.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonHitOtherLMDiffELM1[inlm]->Fill(en,(e1-fMCDaughMom2.E())/fMCDaughMom2.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonHitOtherLMDiffELM2[inlm]->Fill(en,(e2-fMCDaughMom1.E())/fMCDaughMom1.E());
       }
     }
     else
@@ -1220,13 +1224,13 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
       fhMCPi0DecayPhotonHitOtherLMMass[inlm]->Fill(en,mass);
       if(match0 && imatch0 == imax)
       {
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM1[inlm]->Fill(en,(e1-photon0Kine.E())/photon0Kine.E());
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM2[inlm]->Fill(en,(e2-photon1Kine.E())/photon1Kine.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM1[inlm]->Fill(en,(e1-fMCDaughMom1.E())/fMCDaughMom1.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM2[inlm]->Fill(en,(e2-fMCDaughMom2.E())/fMCDaughMom2.E());
       }
       else
       {
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM1[inlm]->Fill(en,(e1-photon1Kine.E())/photon1Kine.E());
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM2[inlm]->Fill(en,(e2-photon0Kine.E())/photon0Kine.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM1[inlm]->Fill(en,(e1-fMCDaughMom2.E())/fMCDaughMom2.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonHitOtherLMOverlapDiffELM2[inlm]->Fill(en,(e2-fMCDaughMom1.E())/fMCDaughMom1.E());
       }
     }
     
@@ -1279,13 +1283,13 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
       fhMCPi0DecayPhotonAdjOtherLMMass[inlm]->Fill(en,mass);
       if(match0 && imatch0 == imax)
       {
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonAdjOtherLMDiffELM1[inlm]->Fill(en,(e1-photon0Kine.E())/photon0Kine.E());
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonAdjOtherLMDiffELM2[inlm]->Fill(en,(e2-photon1Kine.E())/photon1Kine.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonAdjOtherLMDiffELM1[inlm]->Fill(en,(e1-fMCDaughMom1.E())/fMCDaughMom1.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonAdjOtherLMDiffELM2[inlm]->Fill(en,(e2-fMCDaughMom2.E())/fMCDaughMom2.E());
       }
       else
       {
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonAdjOtherLMDiffELM1[inlm]->Fill(en,(e1-photon1Kine.E())/photon1Kine.E());
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonAdjOtherLMDiffELM2[inlm]->Fill(en,(e2-photon0Kine.E())/photon0Kine.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonAdjOtherLMDiffELM1[inlm]->Fill(en,(e1-fMCDaughMom2.E())/fMCDaughMom2.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonAdjOtherLMDiffELM2[inlm]->Fill(en,(e2-fMCDaughMom1.E())/fMCDaughMom1.E());
       }
     }
     else
@@ -1294,13 +1298,13 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
       fhMCPi0DecayPhotonAdjOtherLMOverlapMass[inlm]->Fill(en,mass);
       if(match0 && imatch0 == imax)
       {
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM1[inlm]->Fill(en,(e1-photon0Kine.E())/photon0Kine.E());
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM2[inlm]->Fill(en,(e2-photon1Kine.E())/photon1Kine.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM1[inlm]->Fill(en,(e1-fMCDaughMom1.E())/fMCDaughMom1.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM2[inlm]->Fill(en,(e2-fMCDaughMom2.E())/fMCDaughMom2.E());
       }
       else
       {
-        if(photon1Kine.E()>0)fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM1[inlm]->Fill(en,(e1-photon1Kine.E())/photon1Kine.E());
-        if(photon0Kine.E()>0)fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM2[inlm]->Fill(en,(e2-photon0Kine.E())/photon0Kine.E());
+        if(fMCDaughMom2.E()>0)fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM1[inlm]->Fill(en,(e1-fMCDaughMom2.E())/fMCDaughMom2.E());
+        if(fMCDaughMom1.E()>0)fhMCPi0DecayPhotonAdjOtherLMOverlapDiffELM2[inlm]->Fill(en,(e2-fMCDaughMom1.E())/fMCDaughMom1.E());
       }
     }
     
@@ -1496,24 +1500,23 @@ void AliAnaInsideClusterInvariantMass::FillAngleHistograms(Int_t   nMax,      Bo
 
 //______________________________________________________________________________________________________________________
 void AliAnaInsideClusterInvariantMass::FillArmenterosHistograms(Int_t nMax, Int_t ebin, Int_t mcIndex,
-                                                                Float_t en, TLorentzVector g1, TLorentzVector g2,
-                                                                Float_t m02, Int_t pid)
+                                                                Float_t en, Float_t m02, Int_t pid)
 {
   // Fill Armeteros type histograms
   
   // Get pTArm and AlphaArm
-  TLorentzVector pi0 = g1+g2;
-  Float_t momentumSquaredMother = pi0.P()*pi0.P();
+  fSubClusterMomSum = fSubClusterMom1+fSubClusterMom2;
+  Float_t momentumSquaredMother = fSubClusterMomSum.P()*fSubClusterMomSum.P();
   Float_t momentumDaughter1AlongMother = 0.;
   Float_t momentumDaughter2AlongMother = 0.;
 
   if (momentumSquaredMother > 0.)
   {
-    momentumDaughter1AlongMother = (g1.Px()*pi0.Px() + g1.Py()*pi0.Py()+ g1.Pz()*pi0.Pz()) / sqrt(momentumSquaredMother);
-    momentumDaughter2AlongMother = (g2.Px()*pi0.Px() + g2.Py()*pi0.Py()+ g2.Pz()*pi0.Pz()) / sqrt(momentumSquaredMother);
+    momentumDaughter1AlongMother = (fSubClusterMom1.Px()*fSubClusterMomSum.Px() + fSubClusterMom1.Py()*fSubClusterMomSum.Py()+ fSubClusterMom1.Pz()*fSubClusterMomSum.Pz()) / sqrt(momentumSquaredMother);
+    momentumDaughter2AlongMother = (fSubClusterMom2.Px()*fSubClusterMomSum.Px() + fSubClusterMom2.Py()*fSubClusterMomSum.Py()+ fSubClusterMom2.Pz()*fSubClusterMomSum.Pz()) / sqrt(momentumSquaredMother);
   }
 
-  Float_t momentumSquaredDaughter1 = g1.P()*g1.P();
+  Float_t momentumSquaredDaughter1 = fSubClusterMom1.P()*fSubClusterMom1.P();
   Float_t ptArmSquared = momentumSquaredDaughter1 - momentumDaughter1AlongMother*momentumDaughter1AlongMother;
   
   Float_t pTArm = 0.;
@@ -1524,9 +1527,9 @@ void AliAnaInsideClusterInvariantMass::FillArmenterosHistograms(Int_t nMax, Int_
   if(momentumDaughter1AlongMother +momentumDaughter2AlongMother > 0)
     alphaArm = (momentumDaughter1AlongMother -momentumDaughter2AlongMother) / (momentumDaughter1AlongMother + momentumDaughter2AlongMother);
   
-  Float_t asym = TMath::Abs( g1.Energy()-g2.Energy() )/( g1.Energy()+g2.Energy() ) ;
+  Float_t asym = TMath::Abs( fSubClusterMom1.Energy()-fSubClusterMom2.Energy() )/( fSubClusterMom1.Energy()+fSubClusterMom2.Energy() ) ;
   
-   if(GetDebug() > 2 ) Info("FillArmenterosHistograms()","E %f, alphaArm %f, pTArm %f\n",en,alphaArm,pTArm);
+  AliDebug(2,Form("E %f, alphaArm %f, pTArm %f",en,alphaArm,pTArm));
   
   Bool_t m02OK = GetCaloPID()->IsInPi0M02Range(en,m02,nMax);
   Bool_t asyOK = GetCaloPID()->IsInPi0SplitAsymmetryRange(en,asym,nMax);
@@ -1537,7 +1540,7 @@ void AliAnaInsideClusterInvariantMass::FillArmenterosHistograms(Int_t nMax, Int_
   Int_t inlm = nMax-1;
   if(inlm > 2 ) inlm = 2;
   Float_t ensubcut = GetCaloPID()->GetSubClusterEnergyMinimum(inlm);
-  if     (ensubcut > 0.1 && ensubcut < g1.E() && ensubcut < g2.E() ) eCutOK = kTRUE;
+  if     (ensubcut > 0.1 && ensubcut < fSubClusterMom1.E() && ensubcut < fSubClusterMom2.E() ) eCutOK = kTRUE;
   else if(ensubcut < 0.1)                                            eCutOK = kTRUE;
 
   
@@ -1599,19 +1602,18 @@ void AliAnaInsideClusterInvariantMass::FillArmenterosHistograms(Int_t nMax, Int_
 
 //______________________________________________________________________________________________________________
 void AliAnaInsideClusterInvariantMass::FillThetaStarHistograms(Int_t nMax, Bool_t matched, Int_t mcIndex,
-                                                               Float_t en, TLorentzVector g1, TLorentzVector g2,
-                                                               Float_t m02, Int_t pid)
+                                                               Float_t en, Float_t m02, Int_t pid)
 {
   // Fill cos Theta^star histograms
 
   
   // Get cos Theta^star
-  TLorentzVector pi0 = g1+g2;
-  TLorentzVector g1Boost = g1;
-  g1Boost.Boost(-pi0.BoostVector());
-  Float_t  cosThStar=TMath::Cos(g1Boost.Vect().Angle(pi0.Vect()));
+  fSubClusterMomSum = fSubClusterMom1+fSubClusterMom2;
+  fSubClusterMomBoost = fSubClusterMom1;
+  fSubClusterMomBoost.Boost(-fSubClusterMomSum.BoostVector());
+  Float_t  cosThStar=TMath::Cos(fSubClusterMomBoost.Vect().Angle(fSubClusterMomSum.Vect()));
   
-  Float_t asym = TMath::Abs( g1.Energy()-g2.Energy() )/( g1.Energy()+g2.Energy() ) ;
+  Float_t asym = TMath::Abs( fSubClusterMom1.Energy()-fSubClusterMom2.Energy() )/( fSubClusterMom1.Energy()+fSubClusterMom2.Energy() ) ;
 
   Bool_t m02OK = GetCaloPID()->IsInPi0M02Range(en,m02,nMax);
   Bool_t asyOK = GetCaloPID()->IsInPi0SplitAsymmetryRange(en,asym,nMax);
@@ -1622,7 +1624,7 @@ void AliAnaInsideClusterInvariantMass::FillThetaStarHistograms(Int_t nMax, Bool_
   Int_t inlm = nMax-1;
   if(inlm > 2 ) inlm = 2;
   Float_t ensubcut = GetCaloPID()->GetSubClusterEnergyMinimum(inlm);
-  if     (ensubcut > 0.1 && ensubcut < g1.E() && ensubcut < g2.E() ) eCutOK = kTRUE;
+  if     (ensubcut > 0.1 && ensubcut < fSubClusterMom1.E() && ensubcut < fSubClusterMom2.E() ) eCutOK = kTRUE;
   else if(ensubcut < 0.1)                                            eCutOK = kTRUE;
 
   //printf("Reco cos %f, asy %f\n",cosThStar,asym);
@@ -2490,7 +2492,7 @@ void AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms(Float_t en,      
       if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02OverlapN[inlm][ebin]->Fill(l0,mass);
     }
     else
-      Info("FillMCOverlapHistograms","n overlaps = %d!!", noverlaps);
+      AliWarning(Form("n overlaps = %d!!", noverlaps));
   }
   else if(fFillTMHisto)
   {
@@ -2527,7 +2529,7 @@ void AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms(Float_t en,      
       if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02OverlapNMatch[inlm][ebin]->Fill(l0,mass);
     }
     else
-        Info("FillMCOverlapHistograms()","n overlaps in matched = %d!!", noverlaps);
+        AliWarning(Form("n overlaps in matched = %d!!", noverlaps));
   }
 }
 
@@ -2613,7 +2615,6 @@ void AliAnaInsideClusterInvariantMass::FillNLMDiffCutHistograms(AliVCluster *clu
   
   Int_t    nlm  = 0;
   Double_t mass = 0., angle = 0.;
-  TLorentzVector    lv1, lv2;
   Int_t    absId1   =-1; Int_t   absId2   =-1;
   Float_t  distbad1 =-1; Float_t distbad2 =-1;
   Bool_t   fidcut1  = 0; Bool_t  fidcut2  = 0;
@@ -2633,13 +2634,11 @@ void AliAnaInsideClusterInvariantMass::FillNLMDiffCutHistograms(AliVCluster *clu
 
       pidTag = GetCaloPID()->GetIdentifiedParticleTypeFromClusterSplitting(clus,cells,GetCaloUtils(),
                                                                                  GetVertex(0), nlm, mass, angle,
-                                                                                 lv1,lv2,absId1,absId2,
+                                                                                 fSubClusterMom1,fSubClusterMom2,absId1,absId2,
                                                                                  distbad1,distbad2,fidcut1,fidcut2);
       if (nlm <= 0)
       {
-        if(GetDebug() > 0 )
-        Info("MakeAnalysisFillHistograms","No local maximum found! It did not pass CaloPID selection criteria \n");
-        
+        AliWarning("No local maximum found! It did not pass CaloPID selection criteria");
         continue;
       }
 
@@ -2767,7 +2766,7 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
   // Calculate weights and fill histograms
     
   AliVCaloCells* cells = 0;
-  if(GetCalorimeter() == "EMCAL") cells = GetEMCALCells();
+  if(GetCalorimeter() == kEMCAL) cells = GetEMCALCells();
   else                        cells = GetPHOSCells();
   
   // First recalculate energy in case non linearity was applied
@@ -2782,7 +2781,7 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
   
   if(energy <=0 )
   {
-    Info("WeightHistograms()","Wrong calculated energy %f\n",energy);
+    AliWarning(Form("Wrong calculated energy %f",energy));
     return;
   }
   
@@ -2792,8 +2791,8 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
   Float_t amp2 = cells->GetCellAmplitude(absId2);
   GetCaloUtils()->RecalibrateCellAmplitude(amp2,GetCalorimeter(), absId2);
 
-  if(amp1 < amp2)        Info("FillSSWeightHistograms","Bad local maxima E ordering : id1 E %f, id2 E %f\n ",amp1,amp2);
-  if(amp1==0 || amp2==0) Info("FillSSWeightHistograms","Null E local maxima : id1 E %f, id2 E %f\n "        ,amp1,amp2);
+  if(amp1 < amp2)        AliWarning(Form("Bad local maxima E ordering : id1 E %f, id2 E %f",amp1,amp2));
+  if(amp1==0 || amp2==0) AliWarning(Form("Null E local maxima : id1 E %f, id2 E %f "       ,amp1,amp2));
   
   if(GetCaloUtils()->IsMCECellClusFracCorrectionOn())
   {
@@ -2833,7 +2832,7 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
   }
 
   //Recalculate shower shape for different W0
-  if(GetCalorimeter()=="EMCAL")
+  if(GetCalorimeter()==kEMCAL)
   {
     Float_t l0org = clus->GetM02();
     Float_t l1org = clus->GetM20();
@@ -2965,22 +2964,22 @@ TObjString *  AliAnaInsideClusterInvariantMass::GetAnalysisCuts()
   Int_t buffersize = 255;
   char onePar[buffersize] ;
   
-  snprintf(onePar,buffersize,"--- AliAnaInsideClusterInvariantMass ---\n") ;
+  snprintf(onePar,buffersize,"--- AliAnaInsideClusterInvariantMass ---:") ;
   parList+=onePar ;	
   
-  snprintf(onePar,buffersize,"Calorimeter: %s\n",        GetCalorimeter().Data()) ;
+  snprintf(onePar,buffersize,"Calorimeter: %s;",        GetCalorimeterString().Data()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fNLocMaxCutE =%2.2f \n",    GetCaloUtils()->GetLocalMaximaCutE()) ;
+  snprintf(onePar,buffersize,"fNLocMaxCutE =%2.2f;",    GetCaloUtils()->GetLocalMaximaCutE()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fNLocMaxCutEDiff =%2.2f \n",GetCaloUtils()->GetLocalMaximaCutEDiff()) ;
+  snprintf(onePar,buffersize,"fNLocMaxCutEDiff =%2.2f;",GetCaloUtils()->GetLocalMaximaCutEDiff()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fMinNCells =%d \n",        fMinNCells) ;
+  snprintf(onePar,buffersize,"fMinNCells =%d;",         fMinNCells) ;
   parList+=onePar ;    
-  snprintf(onePar,buffersize,"fMinBadDist =%1.1f \n",    fMinBadDist) ;
+  snprintf(onePar,buffersize,"fMinBadDist =%1.1f;",     fMinBadDist) ;
   parList+=onePar ;  
   if(fFillSSWeightHisto)
   {
-    snprintf(onePar,buffersize," N w %d - N e cut %d \n",fSSWeightN,fSSECellCutN);
+    snprintf(onePar,buffersize," N w %d - N e cut %d;",fSSWeightN,fSSECellCutN);
     parList+=onePar ;
   }
   
@@ -6244,8 +6243,8 @@ void AliAnaInsideClusterInvariantMass::GetMCPrimaryKine(AliVCluster* cluster, In
   Bool_t ok      = kFALSE;
   Int_t  mcLabel = cluster->GetLabel();
   
-  TLorentzVector primary = GetMCAnalysisUtils()->GetMother(mcLabel,GetReader(),ok);
-  eprim = primary.E();
+  fPrimaryMom = GetMCAnalysisUtils()->GetMother(mcLabel,GetReader(),ok);
+  eprim = fPrimaryMom.E();
   
   Int_t mesonLabel = -1;
   
@@ -6255,15 +6254,15 @@ void AliAnaInsideClusterInvariantMass::GetMCPrimaryKine(AliVCluster* cluster, In
     {
       GetMCAnalysisUtils()->GetMCDecayAsymmetryAngleForPDG(mcLabel,111,GetReader(),asymGen,angleGen,ok);
       asymGen = TMath::Abs(asymGen);
-      TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,111,GetReader(),ok,mesonLabel);
-      if(grandmom.E() > 0 && ok) eprim =  grandmom.E();
+      fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,111,GetReader(),ok,mesonLabel);
+      if(fGrandMotherMom.E() > 0 && ok) eprim =  fGrandMotherMom.E();
     }
     else
     {
       GetMCAnalysisUtils()->GetMCDecayAsymmetryAngleForPDG(mcLabel,221,GetReader(),asymGen,angleGen,ok);
       asymGen = TMath::Abs(asymGen);
-      TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,221,GetReader(),ok,mesonLabel);
-      if(grandmom.E() > 0 && ok) eprim =  grandmom.E();
+      fGrandMotherMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel,221,GetReader(),ok,mesonLabel);
+      if(fGrandMotherMom.E() > 0 && ok) eprim =  fGrandMotherMom.E();
     }
   }
   
@@ -6304,19 +6303,13 @@ void AliAnaInsideClusterInvariantMass::Init()
   //Init
   //Do some checks
   
-  if(GetCalorimeter() == "PHOS" && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD())
-  {
-    AliFatal("!!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
-  }
-  else  if(GetCalorimeter() == "EMCAL" && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD())
-  {
-    AliFatal("!!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
-  }
+  if(GetCalorimeter() == kPHOS && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD())
+    AliFatal("!!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!");
+  else  if(GetCalorimeter() == kEMCAL && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD())
+    AliFatal("!!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!");
   
   if( GetReader()->GetDataType() == AliCaloTrackReader::kMC )
-  {
-    AliFatal("!!STOP: You want to use pure MC data!!\n");
-  }
+    AliFatal("!!STOP: You want to use pure MC data!!");
   
 }
 
@@ -6362,12 +6355,12 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
   AliVCaloCells* cells = 0x0;
 
   //Select the Calorimeter of the photon
-  if(GetCalorimeter() == "PHOS")
+  if(GetCalorimeter() == kPHOS)
   {
     pl    = GetPHOSClusters();
     cells = GetPHOSCells();
   }
-  else if (GetCalorimeter() == "EMCAL")
+  else if (GetCalorimeter() == kEMCAL)
   {
     pl    = GetEMCALClusters();
     cells = GetEMCALCells();
@@ -6375,11 +6368,11 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
   
   if(!pl || !cells) 
   {
-    Info("MakeAnalysisFillHistograms","TObjArray with %s clusters is NULL!\n",GetCalorimeter().Data());
+    AliWarning(Form("TObjArray with %s clusters is NULL!",GetCalorimeterString().Data()));
     return;
   }  
   
-	if(GetCalorimeter() == "PHOS") return; // Not implemented for PHOS yet
+	if(GetCalorimeter() == kPHOS) return; // Not implemented for PHOS yet
 
   for(Int_t icluster = 0; icluster < pl->GetEntriesFast(); icluster++)
   {
@@ -6407,10 +6400,9 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
 
     // Get cluster angles
     
-    TLorentzVector lv;
-    cluster->GetMomentum(lv, GetVertex(0));
-    Float_t eta = lv.Eta();
-    Float_t phi = lv.Phi();
+    cluster->GetMomentum(fClusterMomentum, GetVertex(0));
+    Float_t eta = fClusterMomentum.Eta();
+    Float_t phi = fClusterMomentum.Phi();
     if(phi<0) phi=+TMath::TwoPi();
     
     //printf("en %2.2f, GetMinEnergy() %2.2f, GetMaxEnergy() %2.2f, nc %d, fMinNCells %d,  bd %2.2f, fMinBadDist %2.2f\n",
@@ -6426,20 +6418,19 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     
     Int_t    nMax = 0;
     Double_t mass = 0., angle = 0.;
-    TLorentzVector    lv1, lv2;
     Int_t    absId1   =-1; Int_t   absId2   =-1;
     Float_t  distbad1 =-1; Float_t distbad2 =-1;
     Bool_t   fidcut1  = 0; Bool_t  fidcut2  = 0;
     
     Int_t pidTag = GetCaloPID()->GetIdentifiedParticleTypeFromClusterSplitting(cluster,cells,GetCaloUtils(),
                                                                                GetVertex(0), nMax, mass, angle,
-                                                                               lv1,lv2,absId1,absId2,
-                                                                               distbad1,distbad2,fidcut1,fidcut2);
+                                                                               fSubClusterMom1,fSubClusterMom2,
+                                                                               absId1,absId2,
+                                                                               distbad1,distbad2,
+                                                                               fidcut1,fidcut2);
     if (nMax <= 0) 
     {
-      if(GetDebug() > 0 )
-        Info("MakeAnalysisFillHistograms","No local maximum found! It did not pass CaloPID selection criteria \n");
-      
+      AliWarning("No local maximum found! It did not pass CaloPID selection criteria");
       continue;
     }
     
@@ -6449,15 +6440,14 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     if     (nMax == 1) inlm = 0;
     else if(nMax == 2) inlm = 1;
     else if(nMax >  2) inlm = 2;
-    else Info("MakeAnalysisFillHistograms","Wrong N local maximum -> %d, n cells in cluster %d \n",nMax,nc);
+    else AliDebug(2,Form("Wrong N local maximum -> %d, n cells in cluster %d",nMax,nc));
 
     // Skip events where one of the new clusters (lowest energy) is close to an EMCal border or a bad channel
     if( (fCheckSplitDistToBad) &&
         (!fidcut2 || !fidcut1 || distbad1 < fMinBadDist || distbad2 < fMinBadDist))
     {
-      if(GetDebug() > 1)
-        Info("MakeAnalysisFillHistograms","Dist to bad channel cl1 %f, cl2 %f; fid cl1 %d, cl2 %d \n",
-                                 distbad1,distbad2, fidcut1,fidcut2);
+      AliDebug(1,Form("Dist to bad channel cl1 %f, cl2 %f; fid cl1 %d, cl2 %d",
+                      distbad1,distbad2, fidcut1,fidcut2));
       
       if(distbad1 < fMinBadDist || distbad2 < fMinBadDist)
       {
@@ -6476,8 +6466,8 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
 
     // Get sub-cluster parameters
     
-    Float_t e1 = lv1.Energy();
-    Float_t e2 = lv2.Energy();
+    Float_t e1 = fSubClusterMom1.Energy();
+    Float_t e2 = fSubClusterMom2.Energy();
     
     Double_t tof1  = cells->GetCellTime(absId1);
     GetCaloUtils()->RecalibrateCellTime(tof1, GetCalorimeter(), absId1,GetReader()->GetInputEvent()->GetBunchCrossNumber());
@@ -6551,10 +6541,10 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       FillAngleHistograms(nMax,matched,mcindex,en,e1,e2,angle,mass,angleGen,l0, asym,pidTag,noverlaps);
 
     if(fFillArmenterosHisto && ebin >= 0)
-      FillArmenterosHistograms(nMax, ebin, mcindex, en, lv1, lv2, l0, pidTag);
+      FillArmenterosHistograms(nMax, ebin, mcindex, en, l0, pidTag);
 
     if(fFillThetaStarHisto)
-      FillThetaStarHistograms(nMax,matched,mcindex, en, lv1, lv2, l0, pidTag);
+      FillThetaStarHistograms(nMax,matched,mcindex, en, l0, pidTag);
 
     
     //---------------------------------------------------------------------
@@ -6614,7 +6604,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     
   }//loop
   
-  if(GetDebug() > 1) Info("MakeAnalysisFillHistograms","END \n");
+  AliDebug(1,"End");
 
 }
 
@@ -6627,13 +6617,12 @@ void AliAnaInsideClusterInvariantMass::Print(const Option_t * opt) const
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
   AliAnaCaloTrackCorrBaseClass::Print("");
-  printf("Calorimeter     =     %s\n",  GetCalorimeter().Data()) ;
+  printf("Calorimeter     =     %s\n",  GetCalorimeterString().Data()) ;
   if(GetCaloUtils()) printf("Loc. Max. E > %2.2f\n",       GetCaloUtils()->GetLocalMaximaCutE());
   if(GetCaloUtils()) printf("Loc. Max. E Diff > %2.2f\n",  GetCaloUtils()->GetLocalMaximaCutEDiff());
   printf("Min. N Cells =%d \n",         fMinNCells) ;
   printf("Min. Dist. to Bad =%1.1f \n", fMinBadDist) ;
   if(fFillSSWeightHisto) printf(" N w %d - N e cut %d \n",fSSWeightN,fSSECellCutN);
-
   printf("    \n") ;
   
 } 
@@ -6653,7 +6642,7 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
   
   if(!cluster)
   {
-    AliInfo("Cluster pointer null!");
+    AliWarning("Cluster pointer null!");
     return;
   }
   
@@ -6734,7 +6723,7 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
         sEtaPhi  += w * etai * phii ;
       }
     }
-    else if(energy == 0 || (eCellMin <0.01 && eCell == 0)) AliError(Form("Wrong energy %f and/or amplitude %f\n", eCell, energy));
+    else if(energy == 0 || (eCellMin <0.01 && eCell == 0)) AliError(Form("Wrong energy %f and/or amplitude %f", eCell, energy));
     
   }//cell loop
   
@@ -6745,7 +6734,7 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
     phiMean /= wtot ;
   }
   else
-    AliError(Form("Wrong weight %f\n", wtot));
+    AliError(Form("Wrong weight %f", wtot));
   
   //Calculate dispersion
   for(Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++)
@@ -6787,7 +6776,7 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
         dPhi +=  w * (phii-phiMean)*(phii-phiMean) ;
       }
     }
-    else if(energy == 0 || (eCellMin <0.01 && eCell == 0)) AliError(Form("Wrong energy %f and/or amplitude %f\n", eCell, energy));
+    else if(energy == 0 || (eCellMin <0.01 && eCell == 0)) AliError(Form("Wrong energy %f and/or amplitude %f", eCell, energy));
   }// cell loop
   
   //Normalize to the weigth and set shower shape parameters

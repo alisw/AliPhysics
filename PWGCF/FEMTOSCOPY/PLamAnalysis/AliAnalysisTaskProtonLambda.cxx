@@ -1332,7 +1332,8 @@ void AliAnalysisTaskProtonLambda::UserExec(Option_t *)
   // ..and set it
   AliAODTrack *track=NULL;
   for (Int_t iTrack=0;iTrack<fAOD->GetNumberOfTracks();iTrack++){
-    track = fAOD->GetTrack(iTrack);
+    track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
+    if(!track) AliFatal("Not a standard AOD");
     if (!track) continue;
     
     // Store the reference of the global tracks
@@ -1388,7 +1389,8 @@ void AliAnalysisTaskProtonLambda::UserExec(Option_t *)
 
   // Loop over primary tracks
   for (Int_t iTrack=0;iTrack<fAOD->GetNumberOfTracks();iTrack++){
-    track = fAOD->GetTrack(iTrack);
+    track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
+    if(!track) AliFatal("Not a standard AOD");
     if (!track) continue;
     
     if(!track->TestFilterBit(128))

@@ -41,6 +41,7 @@ ClassImp(AliAnaClusterPileUp)
 AliAnaClusterPileUp::AliAnaClusterPileUp() :
 AliAnaCaloTrackCorrBaseClass(),
 fNCellsCut(0),
+fMomentum(),
 // Histograms
 fhTimePtNoCut(0),                     fhTimePtSPD(0),
 fhTimeNPileUpVertSPD(0),              fhTimeNPileUpVertTrack(0),
@@ -83,7 +84,7 @@ fhPtNPileUpSPDVtxTimeCut2(0),         fhPtNPileUpTrkVtxTimeCut2(0)
   
 }
 
-//___________________________________________
+//__________________________________________________
 TObjString *  AliAnaClusterPileUp::GetAnalysisCuts()
 {
   //Save parameters used for analysis
@@ -91,9 +92,9 @@ TObjString *  AliAnaClusterPileUp::GetAnalysisCuts()
   const Int_t buffersize = 255;
   char onePar[buffersize] ;
   
-  snprintf(onePar,buffersize,"--- AliAnaClusterPileUp ---\n") ;
+  snprintf(onePar,buffersize,"--- AliAnaClusterPileUp---:") ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Calorimeter: %s\n",GetCalorimeter().Data()) ;
+  snprintf(onePar,buffersize,"Calorimeter: %s",GetCalorimeterString().Data()) ;
   parList+=onePar ;
   
   //Get parameters set in base class.
@@ -238,7 +239,7 @@ TList *  AliAnaClusterPileUp::GetCreateOutputObjects()
   outputContainer->Add(fhPtNPileUpTrkVtxTimeCut2);
   
   
-  TString pileUpName[] = {"SPD","EMCAL","SPDOrEMCAL","SPDAndEMCAL","SPDAndNotEMCAL","EMCALAndNotSPD","NotSPDAndNotEMCAL"} ;
+  TString pileUpName[] = {"SPD",kEMCAL,"SPDOrEMCAL","SPDAndEMCAL","SPDAndNotEMCAL","EMCALAndNotSPD","NotSPDAndNotEMCAL"} ;
   
   for(Int_t i = 0 ; i < 7 ; i++)
   {
@@ -305,10 +306,10 @@ void AliAnaClusterPileUp::Init()
   //Init
   
   //Do some checks
-  if(GetCalorimeter() == "PHOS" && !GetReader()->IsPHOSSwitchedOn())
+  if(GetCalorimeter() == kPHOS && !GetReader()->IsPHOSSwitchedOn())
     AliFatal("You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!");
   
-  if(GetCalorimeter() == "EMCAL" && !GetReader()->IsEMCALSwitchedOn())
+  if(GetCalorimeter() == kEMCAL && !GetReader()->IsEMCALSwitchedOn())
     AliFatal("You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!");
   
   if(GetReader()->GetDataType() == AliCaloTrackReader::kMC)
@@ -335,12 +336,12 @@ void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
   //Select the calorimeter
   TObjArray * pl = 0x0;
   AliVCaloCells* cells    = 0;
-  if      (GetCalorimeter() == "PHOS" )
+  if      (GetCalorimeter() == kPHOS )
   {
     pl    = GetPHOSClusters();
     cells = GetPHOSCells();
   }
-  else if (GetCalorimeter() == "EMCAL")
+  else if (GetCalorimeter() == kEMCAL)
   {
     pl    = GetEMCALClusters();
     cells = GetEMCALCells();
@@ -348,7 +349,7 @@ void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
   
   if(!pl)
   {
-    Info("MakeAnalysisFillAOD","TObjArray with %s clusters is NULL!\n",GetCalorimeter().Data());
+    AliInfo(Form("TObjArray with %s clusters is NULL!",GetCalorimeterString().Data()));
     return;
   }
   
@@ -376,9 +377,9 @@ void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
   // Loop on clusters
   Int_t nCaloClusters = pl->GetEntriesFast();
 
-  if(GetDebug() > 0) printf("AliAnaClusterPileUp::MakeAnalysisFillAOD() - input %s cluster entries %d\n", GetCalorimeter().Data(), nCaloClusters);
+  AliDebug(1,Form("Input %s cluster entries %d", GetCalorimeterString().Data(), nCaloClusters));
+  
   //Init variables
-  TLorentzVector mom;
   Int_t   idMax = 0;
   Float_t ptMax = 0;
   Float_t  tMax = 0;
@@ -390,13 +391,13 @@ void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
     
     if(!calo)  continue; // it should not happen, but just in case
     
-    calo->GetMomentum(mom,GetVertex(0)) ;
+    calo->GetMomentum(fMomentum,GetVertex(0)) ;
   
-    Float_t  ecluster  = mom.E();
-    Float_t ptcluster  = mom.Pt();
+    Float_t  ecluster  = fMomentum.E();
+    Float_t ptcluster  = fMomentum.Pt();
     Float_t l0cluster  = calo->GetM02();
-    Float_t etacluster = mom.Eta();
-    Float_t phicluster = mom.Phi();
+    Float_t etacluster = fMomentum.Eta();
+    Float_t phicluster = fMomentum.Phi();
     if(phicluster < 0) phicluster+=TMath::TwoPi();
     Float_t tofcluster   = calo->GetTOF()*1.e9;
     
@@ -413,7 +414,7 @@ void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
     //Check acceptance selection
     if(IsFiducialCutOn())
     {
-      Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,GetCalorimeter()) ;
+      Bool_t in = GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),GetCalorimeter()) ;
       if(! in ) continue;
     }
 
@@ -664,8 +665,7 @@ void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
     fhClusterMultNoPileUp[3]->Fill(ptMax,n40);
   }
 
-  
-  if(GetDebug() > 1) printf("AliAnaClusterPileUp::MakeAnalysisFillHistograms()  End fill histograms\n");
+  AliDebug(1,"End fill histograms");
   
 }
 
@@ -682,7 +682,7 @@ void AliAnaClusterPileUp::Print(const Option_t * opt) const
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
   AliAnaCaloTrackCorrBaseClass::Print(" ");
   
-  printf("Calorimeter            =     %s\n", GetCalorimeter().Data()) ;
+  printf("Calorimeter            =     %s\n", GetCalorimeterString().Data()) ;
   printf("    \n") ;
 	
 }

@@ -852,6 +852,18 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
 		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "007092970028250440000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
 		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "007092970028250440000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
 		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "007092970028250440000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%   		
+	} else if ( trainConfig == 124){ // cleaner cuts, specific centrality trigger selection 
+		eventCutArray[ 0] = "5080001"; photonCutArray[ 0] = "007092970028250440000"; mesonCutArray[ 0] = "01525065000000"; // normal centrality
+		eventCutArray[ 1] = "5083101"; photonCutArray[ 1] = "007092970028250440000"; mesonCutArray[ 1] = "01525065000000"; // kCentral open
+		eventCutArray[ 2] = "5083201"; photonCutArray[ 2] = "007092970028250440000"; mesonCutArray[ 2] = "01525065000000"; // kCentral vertex
+		eventCutArray[ 3] = "5083301"; photonCutArray[ 3] = "007092970028250440000"; mesonCutArray[ 3] = "01525065000000"; // kCentral both
+		eventCutArray[ 4] = "5083401"; photonCutArray[ 4] = "007092970028250440000"; mesonCutArray[ 4] = "01525065000000"; // kSemiCentral open
+	} else if ( trainConfig == 125){ // cleaner cuts, specific centrality trigger selection 
+		eventCutArray[ 0] = "5080001"; photonCutArray[ 0] = "007092970028250440000"; mesonCutArray[ 0] = "01525065000000"; // normal centrality
+		eventCutArray[ 1] = "5083501"; photonCutArray[ 1] = "007092970028250440000"; mesonCutArray[ 1] = "01525065000000"; // kSemiCentral vertex
+		eventCutArray[ 2] = "5083601"; photonCutArray[ 2] = "007092970028250440000"; mesonCutArray[ 2] = "01525065000000"; // kSemiCentral both
+		eventCutArray[ 3] = "5083701"; photonCutArray[ 3] = "007092970028250440000"; mesonCutArray[ 3] = "01525065000000"; // kMB 1 only
+		eventCutArray[ 4] = "5083801"; photonCutArray[ 4] = "007092970028250440000"; mesonCutArray[ 4] = "01525065000000"; // kMB 2 only	  	
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;

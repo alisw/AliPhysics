@@ -115,6 +115,7 @@ Bool_t AliJetEmbeddingFromGenTask::ExecOnce()
 
   TFolder *folder = new TFolder(GetName(),GetName());
   AliRunLoader *rl = new AliRunLoader(folder);
+  gAlice->SetRunLoader(rl);
   rl->MakeHeader();
   rl->MakeStack();
   AliStack *stack = rl->Stack();

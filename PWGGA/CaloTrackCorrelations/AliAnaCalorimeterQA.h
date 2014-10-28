@@ -61,11 +61,9 @@ public:
   
   void         ClusterLoopHistograms(const TObjArray * clusters, AliVCaloCells * cells);
   
-  Bool_t       ClusterMCHistograms(TLorentzVector mom, Bool_t matched,
-                                   const Int_t * labels, Int_t nLabels, Int_t & pdg );
+  Bool_t       ClusterMCHistograms(Bool_t matched, const Int_t * labels, Int_t nLabels, Int_t & pdg );
 
-  void         ClusterMatchedWithTrackHistograms(AliVCluster* clus, TLorentzVector mom, 
-                                                 Bool_t mcOK, Int_t pdg);
+  void         ClusterMatchedWithTrackHistograms(AliVCluster* clus, Bool_t mcOK, Int_t pdg);
 
   void         Correlate();
   
@@ -74,8 +72,7 @@ public:
   
   Float_t      GetECross(Int_t absId, AliVCaloCells* cells,Float_t dtcut = 10000);
   
-  void         InvariantMassHistograms(Int_t iclus, TLorentzVector mom, Int_t nModule,
-                                       const TObjArray* caloClusters, AliVCaloCells * cells);
+  void         InvariantMassHistograms(Int_t iclus, Int_t nModule, const TObjArray* caloClusters, AliVCaloCells * cells);
 
   Bool_t       IsGoodCluster(Int_t absIdMax, AliVCaloCells *cells);
   
@@ -176,6 +173,10 @@ public:
   Float_t  fExoECrossCuts[10];                // List of ecross cuts
   Float_t  fExoNDTimeCuts    ;                // Number of time cuts
   Float_t  fExoDTimeCuts[5]  ;                // List of time cuts
+  
+  TLorentzVector fClusterMomentum;            //! Cluster momentum
+  TLorentzVector fClusterMomentum2;           //! Cluster momentum
+  TLorentzVector fPrimaryMomentum;            //! Primary MC momentum
   
   //CaloClusters 
   TH1F *   fhE  ;                             //! E distribution, Reco

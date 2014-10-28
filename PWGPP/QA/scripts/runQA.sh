@@ -1,4 +1,8 @@
 #!/bin/bash
+# process QA output into plots and trending
+# run without arguments for examples
+# origin: Mikolaj Krzewicki, mkrzewic@cern.ch
+#
 if [ ${BASH_VERSINFO} -lt 4 ]; then
   echo "bash version >= 4 needed, you have ${BASH_VERSION}, exiting..."
   exit 1
@@ -87,6 +91,9 @@ updateQA()
     [[ ! ${detectorScript} =~ .*\.sh$ ]] && continue
     detector=${detectorScript%.sh}
     detector=${detector##*/}
+    #by default we expect the container in the QA root file to de named like
+    #the detector
+    detectorQAcontainerName=${detector}
     
     #skip if excluded
     if [[ "${excludeDetectors}" =~ ${detector} ]]; then
@@ -187,7 +194,7 @@ updateQA()
         #perform some default actions:
         #if trending.root not created, create a default one
         if [[ ! -f trending.root ]]; then
-          aliroot -b -q -l "$ALICE_ROOT/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detector}\",\"trending.root\",\"trending\",\"recreate\")" 2>&1 | tee -a runLevelQA.log
+          aliroot -b -q -l "$ALICE_ROOT/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detectorQAcontainerName}\",\"trending.root\",\"trending\",\"recreate\")" 2>&1 | tee -a runLevelQA.log
         fi
         if [[ -f trending.root ]]; then
           #cache the touched production + an example file to guarantee consistent run data parsing
@@ -255,7 +262,7 @@ updateQA()
       #go to a temp dir to do the period level stuff in a completely clean dir
       tmpPeriodLevelQAdir="${tmpProductionDir}/periodLevelQA"
       echo
-      echo tmpPeriodLevelQAdir="${tmpProductionDir}/periodLevelQA"
+      echo tmpPeriodLevelQAdir="${tmpPeriodLevelQAdir}"
       if ! mkdir -p ${tmpPeriodLevelQAdir}; then continue; fi
       cd ${tmpPeriodLevelQAdir}
 

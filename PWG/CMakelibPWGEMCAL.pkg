@@ -42,6 +42,7 @@ set ( SRCS
  EMCAL/AliEmcalMCTrackSelector.cxx
  EMCAL/AliEmcalParticle.cxx
  EMCAL/AliEmcalParticleMaker.cxx
+ EMCAL/AliEmcalPatchFromCellMaker.cxx
  EMCAL/AliEmcalPhysicsSelection.cxx
  EMCAL/AliEmcalPhysicsSelectionTask.cxx
  EMCAL/AliEmcalPicoTrackMaker.cxx

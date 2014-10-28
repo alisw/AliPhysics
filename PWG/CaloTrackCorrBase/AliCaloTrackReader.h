@@ -98,6 +98,11 @@ public:
   // Clusters/Tracks arrays filtering/filling methods and switchs 
   //------------------------------------------------------------
   
+  // detector identificator enum, used here and in AliAnaCaloTrackBaseClass and derived classes
+  enum detector { kEMCAL = AliFiducialCut::kEMCAL, kPHOS = AliFiducialCut::kPHOS,
+                  kCTS   = AliFiducialCut::kCTS  , kDCAL = AliFiducialCut::kDCAL,
+                  kDCALPHOS = AliFiducialCut::kDCALPHOS } ;
+
   // Minimum pt setters and getters
   
   Float_t          GetEMCALPtMin()                   const { return fEMCALPtMin            ; }
@@ -192,6 +197,10 @@ public:
   void             SwitchOnEMCAL()                         { fFillEMCAL = kTRUE            ; }
   void             SwitchOffEMCAL()                        { fFillEMCAL = kFALSE           ; }
 
+  Bool_t           IsDCALSwitchedOn()                const { return fFillDCAL              ; }
+  void             SwitchOnDCAL()                          { fFillDCAL = kTRUE             ; }
+  void             SwitchOffDCAL()                         { fFillDCAL = kFALSE            ; }
+  
   Bool_t           IsPHOSSwitchedOn()                const { return fFillPHOS              ; }
   void             SwitchOnPHOS()                          { fFillPHOS = kTRUE             ; }
   void             SwitchOffPHOS()                         { fFillPHOS = kFALSE            ; }
@@ -236,6 +245,7 @@ public:
   
   virtual TObjArray*     GetCTSTracks()              const { return fCTSTracks              ; }
   virtual TObjArray*     GetEMCALClusters()          const { return fEMCALClusters          ; }
+  virtual TObjArray*     GetDCALClusters()           const { return fDCALClusters           ; }
   virtual TObjArray*     GetPHOSClusters()           const { return fPHOSClusters           ; }
   virtual AliVCaloCells* GetEMCALCells()             const { return fEMCALCells             ; }
   virtual AliVCaloCells* GetPHOSCells()              const { return fPHOSCells              ; }
@@ -658,6 +668,7 @@ public:
   TList          * fAODBranchList ;            //-> List with AOD branches created and needed in analysis
   TObjArray      * fCTSTracks ;                //-> temporal array with tracks
   TObjArray      * fEMCALClusters ;            //-> temporal array with EMCAL CaloClusters
+  TObjArray      * fDCALClusters ;             //-> temporal array with DCAL CaloClusters, not needed in the normal case, use just EMCal array with DCal limits
   TObjArray      * fPHOSClusters ;             //-> temporal array with PHOS  CaloClusters
   AliVCaloCells  * fEMCALCells ;               //! temporal array with EMCAL CaloCells
   AliVCaloCells  * fPHOSCells ;                //! temporal array with PHOS  CaloCells
@@ -668,6 +679,7 @@ public:
 
   Bool_t           fFillCTS;                   // use data from CTS
   Bool_t           fFillEMCAL;                 // use data from EMCAL
+  Bool_t           fFillDCAL;                  // use data from DCAL, not needed in the normal case, use just EMCal array with DCal limits
   Bool_t           fFillPHOS;                  // use data from PHOS
   Bool_t           fFillEMCALCells;            // use data from EMCAL
   Bool_t           fFillPHOSCells;             // use data from PHOS
@@ -802,6 +814,8 @@ public:
   TArrayI          fRejectEventsWithBit;           // Reject events if trigger bit is on
 
   Bool_t           fRejectEMCalTriggerEventsWith2Tresholds; // Reject events EG2 also triggered by EG1 or EJ2 also triggered by EJ1
+  
+  TLorentzVector   fMomentum;                    //! Temporal TLorentzVector container, avoid declaration of  TLorentzVectors per event
   
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment

@@ -257,7 +257,7 @@ void AliMultiplicityTask::Exec(Option_t*)
     vtxESD = 0;
     
   // remove vertices outside +- 15 cm
-  if (vtxESD && TMath::Abs(vtxESD->GetZv()) > 15)
+  if (vtxESD && TMath::Abs(vtxESD->GetZ()) > 15)
     vtxESD = 0;
   
   Bool_t eventVertex = (vtxESD != 0);
@@ -266,7 +266,7 @@ void AliMultiplicityTask::Exec(Option_t*)
   if (vtxESD)
   {
     vtxESD->GetXYZ(vtx);
-    fVertex->Fill(vtxESD->GetXv(), vtxESD->GetYv(), vtxESD->GetZv());
+    fVertex->Fill(vtxESD->GetX(), vtxESD->GetY(), vtxESD->GetZ());
   }
   
   // post the data already here

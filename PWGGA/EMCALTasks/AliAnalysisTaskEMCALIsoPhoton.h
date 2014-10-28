@@ -128,6 +128,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Bool_t                 fPileUpRejSPD;          // flag to set pile-up rejection via SPD (multiple vertices)
   Double_t               fDistToBadChan;         // distance to bad channel
   TString                fInConeInvMass;         // string to hold the array of inv. mass values of the candidate with isolation clusters
+  TString                fInConePairClEt;        // string to hold the array of Et of paired clusters in the pi0 mass (isolation clusters pairs only)
   
  private:
   AliESDEvent *fESD;      //! ESD object
@@ -165,7 +166,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fAllIsoEtMcGamma;           //!all iso distribution vs. Et clus for clusters comming from a MC prompt photon
   TH2F        *fAllIsoNoUeEtMcGamma;       //!all iso distribution (without UE subtraction) vs. Et clus for clusters comming from a MC prompt photon
   TH3F        *fMCDirPhotonPtEtaPhiNoClus; //!pt x eta x phi for prompt photons that didn't produce clusters
-  TH3F        *fInvMassWithConeVsEtAndIso; //!Candidate Et vs. Inv Mass with in cone cluster vs. Iso(EMC+trk), only for 0.1<M02<0.3 clusters
+  TH3F        *fEtCandIsoAndIsoWoPairEt;   //!Candidate Et vs. isolation with and w/o the Et of the paired cluster in the pi0 mass, only for 0.1<M02<0.3 clusters
+  TH2F        *fInConePairedClusEtVsCandEt;//!Et of the paired cluster (0.11<m<0.165 GeV) vs. candidate Et
   THnSparse   *fHnOutput;                  //!Output matrix with 7 dimensions
 
   //QA histos

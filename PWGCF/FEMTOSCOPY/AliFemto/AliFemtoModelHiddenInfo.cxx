@@ -12,6 +12,7 @@ AliFemtoModelHiddenInfo::AliFemtoModelHiddenInfo() :
   fTrueMomentum(0),
   fEmissionPoint(0),
   fPDGPid(0),
+  fMotherPdg(0),
   fMass(0),
   fTrueMomentumPos(0),
   fEmissionPointPos(0),
@@ -30,6 +31,7 @@ AliFemtoModelHiddenInfo::AliFemtoModelHiddenInfo(const AliFemtoModelHiddenInfo &
   fTrueMomentum(0),
   fEmissionPoint(0),
   fPDGPid(0),
+  fMotherPdg(0),
   fMass(0),
   fTrueMomentumPos(0),
   fEmissionPointPos(0),
@@ -46,6 +48,7 @@ AliFemtoModelHiddenInfo::AliFemtoModelHiddenInfo(const AliFemtoModelHiddenInfo &
   if (aInfo.GetEmissionPoint())
     SetEmissionPointPos(aInfo.GetEmissionPoint());
   fPDGPid = aInfo.GetPDGPid();
+  fMotherPdg = aInfo.GetMotherPdgCode();
   fMass = aInfo.GetMass();
 
   if (aInfo.GetTrueMomentumPos())
@@ -89,6 +92,7 @@ AliFemtoModelHiddenInfo& AliFemtoModelHiddenInfo::operator=(const AliFemtoModelH
     SetEmissionPoint(aInfo.GetEmissionPoint());
   else SetEmissionPoint(0);
   fPDGPid = aInfo.GetPDGPid();
+  fMotherPdg = aInfo.GetMotherPdgCode();
   fMass = aInfo.GetMass();
 
   if (fTrueMomentumPos) delete fTrueMomentumPos;
@@ -129,6 +133,10 @@ AliFemtoLorentzVector *AliFemtoModelHiddenInfo::GetEmissionPoint() const
 Int_t                  AliFemtoModelHiddenInfo::GetPDGPid() const
 {
   return fPDGPid;
+}
+Int_t                  AliFemtoModelHiddenInfo::GetMotherPdgCode() const
+{
+  return fMotherPdg;
 }
 //_____________________________________________
 Double_t                  AliFemtoModelHiddenInfo::GetMass() const
@@ -205,6 +213,10 @@ void                   AliFemtoModelHiddenInfo::SetPDGPid(Int_t aPid)
 {
   fPDGPid = aPid;
 }
+void                   AliFemtoModelHiddenInfo::SetMotherPdgCode(Int_t aMotherPdg)
+{
+  fMotherPdg = aMotherPdg;
+}
 //_____________________________________________
 void                   AliFemtoModelHiddenInfo::SetMass(Double_t aMass)
 {
@@ -221,7 +233,7 @@ void                   AliFemtoModelHiddenInfo::SetEmissionPoint(Double_t aRx, D
     fEmissionPoint->SetT(aT);
   }
   else {
-    fEmissionPoint = new AliFemtoLorentzVector(aRx, aRy, aRz, aT); 
+    fEmissionPoint = new AliFemtoLorentzVector(aRx, aRy, aRz, aT);
   }
 }
 
@@ -331,7 +343,7 @@ void                   AliFemtoModelHiddenInfo::SetEmissionPointPos(Double_t aRx
     fEmissionPointPos->SetT(aT);
   }
   else {
-    fEmissionPointPos = new AliFemtoLorentzVector(aRx, aRy, aRz, aT); 
+    fEmissionPointPos = new AliFemtoLorentzVector(aRx, aRy, aRz, aT);
   }
 }
 
@@ -441,7 +453,7 @@ void                   AliFemtoModelHiddenInfo::SetEmissionPointNeg(Double_t aRx
     fEmissionPointNeg->SetT(aT);
   }
   else {
-    fEmissionPointNeg = new AliFemtoLorentzVector(aRx, aRy, aRz, aT); 
+    fEmissionPointNeg = new AliFemtoLorentzVector(aRx, aRy, aRz, aT);
   }
 }
 
