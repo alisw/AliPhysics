@@ -107,11 +107,17 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
 
     dMultTask->SetReferenceMultiplcity(refMult);
 
+    const Char_t* profilebasename="SPDmult10";
+    if(recoEstimator==AliAnalysisTaskSEDvsMultiplicity::kVZEROA || recoEstimator==AliAnalysisTaskSEDvsMultiplicity::kVZEROAEq) profilebasename="VZEROAmult";
+    else if(recoEstimator==AliAnalysisTaskSEDvsMultiplicity::kVZERO || recoEstimator==AliAnalysisTaskSEDvsMultiplicity::kVZEROEq) profilebasename="VZEROMmult";
+    cout<<endl<<endl<<" profilebasename="<<profilebasename<<endl<<endl;
+
     if (isPPbData) {    //Only use two profiles if pPb
       const Char_t* periodNames[2] = {"LHC13b", "LHC13c"};
       TProfile* multEstimatorAvg[2];
       for(Int_t ip=0; ip<2; ip++) {
-	multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
+	cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
+	multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
 	if (!multEstimatorAvg[ip]) {
 	  AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
 	  return;
@@ -124,7 +130,7 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
       const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
       TProfile* multEstimatorAvg[4];                       
       for(Int_t ip=0; ip<4; ip++) {
-	multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
+	multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
 	if (!multEstimatorAvg[ip]) {
 	  AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
 	  return;
