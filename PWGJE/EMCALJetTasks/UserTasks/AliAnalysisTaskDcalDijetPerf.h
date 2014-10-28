@@ -44,9 +44,11 @@ class AliAnalysisTaskDcalDijetPerf : public AliAnalysisTaskEmcalJet {
   THnSparse                  *fHistJet1nm;              //!jet collection 1 unmatched
   THnSparse                  *fHistJet2;                //!jet collection 2
   THnSparse                  *fHistJet1to2;             //!jet collection 1 and 2
+  THnSparse                  *fHistDiJet1;              //!Dijet collection 1 and 3
   
-  AliJetContainer            *fJetsCont;                   //!Jets
-  AliJetContainer            *fJetsCont2;                   //!Jets
+  AliJetContainer            *fJetsCont;                   //!Jets Jet 1
+  AliJetContainer            *fJetsCont2;                  //!Jets Trigger Jer
+  AliJetContainer            *fJetsCont3;                  //!Jets DiJet
   AliParticleContainer       *fTracksCont;                 //!Tracks
   AliClusterContainer        *fCaloClustersCont;           //!Clusters  
 
@@ -54,6 +56,6 @@ class AliAnalysisTaskDcalDijetPerf : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskDcalDijetPerf(const AliAnalysisTaskDcalDijetPerf&);            // not implemented
   AliAnalysisTaskDcalDijetPerf &operator=(const AliAnalysisTaskDcalDijetPerf&); // not implemented
 
-  ClassDef(AliAnalysisTaskDcalDijetPerf, 1)
+  ClassDef(AliAnalysisTaskDcalDijetPerf, 2)
 };
 #endif
