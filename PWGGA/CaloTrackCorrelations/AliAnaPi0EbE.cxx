@@ -3646,9 +3646,12 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     // Check if cluster is pi0 via cluster splitting
     aodpi0.SetIdentifiedParticleType(idPartType);
     
-    // Add number of local maxima to AOD, method name in AOD to be FIXED
+    aodpi0.SetM02(l0);
     aodpi0.SetNLM(nMaxima);
-    
+    aodpi0.SetTime(tofcluster);
+    aodpi0.SetNCells(calo->GetNCells());
+    aodpi0.SetSModNumber(nSM);
+
     aodpi0.SetTag(tag);
 
     //Add AOD with pi0 object to aod branch

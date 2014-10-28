@@ -2371,7 +2371,11 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     aodph.SetM02(calo->GetM02());
     aodph.SetNLM(nMaxima);
-    
+    aodph.SetTime(calo->GetTOF()*1e9);
+    aodph.SetNCells(calo->GetNCells());
+    Int_t nSM = GetModuleNumber(calo);
+    aodph.SetSModNumber(nSM);
+
     //-------------------------------------
     // PID selection or bit setting
     //-------------------------------------
@@ -2409,7 +2413,6 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     fhClusterCutsE [9]->Fill(calo->E());
     fhClusterCutsPt[9]->Fill(fMomentum.Pt());
     
-    Int_t   nSM  = GetModuleNumber(calo);
     if(nSM < GetCaloUtils()->GetNumberOfSuperModulesUsed() && nSM >=0)
     {
       fhEPhotonSM ->Fill(fMomentum.E (),nSM);

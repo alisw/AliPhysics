@@ -1360,6 +1360,10 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       
       aodpart.SetM02(calo->GetM02());
       aodpart.SetNLM(nMaxima);
+      aodpart.SetTime(calo->GetTOF()*1e9);
+      aodpart.SetNCells(calo->GetNCells());
+      Int_t nSM = GetModuleNumber(calo);
+      aodpart.SetSModNumber(nSM);
       
       //...............................................
       //Set bad channel distance bit
