@@ -75,7 +75,7 @@ AliForwardQATask::AliForwardQATask(const char* name)
   fCloneList = true;
 
   // For the QA we always enable fall-back 
-  if (fCorrManager) fCorrManager->SetEnableFallBack(true);
+  AliForwardCorrectionManager::Instance().SetEnableFallBack(true);
 }
 //____________________________________________________________________
 void
