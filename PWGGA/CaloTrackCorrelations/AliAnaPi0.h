@@ -322,6 +322,8 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhCosThStarPrimPi0;         //! cos(theta*) plots vs E for primary pi0, same as asymmetry ...
   TH2F *   fhCosThStarPrimEta;         //! cos(theta*) plots vs E for primary eta, same as asymmetry ...
   
+  TH2F *   fhEPairDiffTime;            //! E pair vs Pair of clusters time difference vs E
+  
   AliAnaPi0(              const AliAnaPi0 & api0) ; // cpy ctor
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ; // cpy assignment
   

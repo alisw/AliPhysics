@@ -916,16 +916,18 @@ Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * partic
   
   Double_t particlePt=particle->Pt();
   if(fUseBackgroundSubtractionGamma) {
-    Int_t clusterIDtmp = particle->GetCaloLabel(0) ;
-    Int_t nCells=0;
-    AliVCluster *cluster=0;
-    if(!(clusterIDtmp<0) ){
-      Int_t iclustmp = -1;
-      TObjArray* clusters = GetEMCALClusters();
-      cluster = FindCluster(clusters,clusterIDtmp,iclustmp);
-      nCells = cluster->GetNCells();
-    }
-    particlePt-=(fGamRho*nCells);
+      particlePt-=(fGamRho*particle->GetNCells());
+
+//    Int_t clusterIDtmp = particle->GetCaloLabel(0) ;
+//    Int_t nCells=0;
+//    AliVCluster *cluster=0;
+//    if(!(clusterIDtmp<0) ){
+//      Int_t iclustmp = -1;
+//      TObjArray* clusters = GetEMCALClusters();
+//      cluster = FindCluster(clusters,clusterIDtmp,iclustmp);
+//      nCells = cluster->GetNCells();
+//    }
+//    particlePt-=(fGamRho*nCells);
   }
   if(particlePt<=0) {
     //printf("Particle with negative  or 0 pt\n");
@@ -1094,10 +1096,10 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
   //calculate average cell energy without most energetic photon
   //
   Double_t medianPhotonRho=0.;
-  TObjArray* clusters = GetEMCALClusters();
-  Int_t clusterIDtmp;
-  Int_t iclustmp = -1;
-  AliVCluster *cluster=0;
+  //TObjArray* clusters = GetEMCALClusters();
+  //Int_t clusterIDtmp;
+  //Int_t iclustmp = -1;
+  //AliVCluster *cluster=0;
   
   if(IsBackgroundSubtractionGamma()){
     //
@@ -1124,11 +1126,14 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
       for(Int_t iaod = 0; iaod < ntrig ; iaod++){
         particlecorr =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
         if(iaod==maxIndex) continue;
-        clusterIDtmp = particlecorr->GetCaloLabel(0) ;
-        if(clusterIDtmp < 0) continue;
-        cluster = FindCluster(clusters,clusterIDtmp,iclustmp);
-        photonRhoArr[photonRhoArrayIndex]=particlecorr->Pt()/ cluster->GetNCells();
-        numberOfcells+=cluster->GetNCells();
+//        clusterIDtmp = particlecorr->GetCaloLabel(0) ;
+//        if(clusterIDtmp < 0) continue;
+//        cluster = FindCluster(clusters,clusterIDtmp,iclustmp);
+//        photonRhoArr[photonRhoArrayIndex]=particlecorr->Pt()/ cluster->GetNCells();
+//        numberOfcells+=cluster->GetNCells();
+        photonRhoArr[photonRhoArrayIndex]=particlecorr->Pt()/ particlecorr->GetNCells();
+        numberOfcells+=particlecorr->GetNCells();
+
         photonRhoArrayIndex++;
       }
       if(photonRhoArrayIndex>0) medianPhotonRho=TMath::Median(photonRhoArrayIndex,photonRhoArr);
@@ -1149,15 +1154,17 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
     Int_t indexMostEnePhoton=-1;
     AliAODPWG4ParticleCorrelation* particle =0;
     Double_t ptCorrect=0.;
-    Int_t nCells=0;
+//    Int_t nCells=0;
     for(Int_t iaod = 0; iaod < ntrig ; iaod++){
       particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
-      clusterIDtmp = particle->GetCaloLabel(0) ;
-      if(!(clusterIDtmp<0)){
-        cluster = FindCluster(clusters,clusterIDtmp,iclustmp);
-        nCells = cluster->GetNCells();
-      }
-      ptCorrect = particle->Pt() - medianPhotonRho * nCells;
+//      clusterIDtmp = particle->GetCaloLabel(0) ;
+//      if(!(clusterIDtmp<0)){
+//        cluster = FindCluster(clusters,clusterIDtmp,iclustmp);
+//        nCells = cluster->GetNCells();
+//      }
+//      ptCorrect = particle->Pt() - medianPhotonRho * nCells;
+      ptCorrect = particle->Pt() - medianPhotonRho * particle->GetNCells();
+      
       if( ptCorrect > mostEnePhotonPt ){
         mostEnePhotonPt = ptCorrect;
         indexMostEnePhoton = iaod ;
@@ -1491,13 +1498,13 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   }
   
   fGamAvEne=0;
-  TObjArray* clusters = GetEMCALClusters();
+  //TObjArray* clusters = GetEMCALClusters();
   //printf("calculate median bkg energy for photons ");
   Double_t medianPhotonRho=0.;
-  Int_t clusterID;
-  Int_t iclustmp = -1;
+  //Int_t clusterID;
+  //Int_t iclustmp = -1;
   Int_t numberOfcells=0;
-  AliVCluster *cluster = 0;
+  //AliVCluster *cluster = 0;
   if(ntrig>1){
     Double_t *photonRhoArr=new Double_t[ntrig-1];
     fhPhotonPtMostEne->Fill(maxPt);
@@ -1519,11 +1526,13 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
       if( particlecorr->Pt() > (sumPt-maxPt)/(ntrig-1) ) counterGammaMinus1++;
       
       if(iaod==maxIndex) continue;
-      clusterID = particlecorr->GetCaloLabel(0) ;
-      if(clusterID < 0) continue;
-      cluster = FindCluster(clusters,clusterID,iclustmp);
-      photonRhoArr[photonRhoArrayIndex]=particlecorr->Pt()/ cluster->GetNCells();
-      numberOfcells+=cluster->GetNCells();
+//      clusterID = particlecorr->GetCaloLabel(0) ;
+//      if(clusterID < 0) continue;
+//      cluster = FindCluster(clusters,clusterID,iclustmp);
+//      photonRhoArr[photonRhoArrayIndex]=particlecorr->Pt()/ cluster->GetNCells();
+//      numberOfcells+=cluster->GetNCells();
+      photonRhoArr[photonRhoArrayIndex]=particlecorr->Pt()/ particlecorr->GetNCells();
+      numberOfcells+=particlecorr->GetNCells();
       photonRhoArrayIndex++;
     }
     if(photonRhoArrayIndex>0) medianPhotonRho=TMath::Median(photonRhoArrayIndex,photonRhoArr);
@@ -1538,7 +1547,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   fhPhotonBkgRhoVsNcells->Fill(numberOfcells,medianPhotonRho);
   
   
-  AliVCluster *cluster2 = 0;
+  //AliVCluster *cluster2 = 0;
   Double_t photon2Corrected=0;
   Double_t sumPtTmp=0.;
   Double_t sumPtCorrectTmp=0.;
@@ -1547,18 +1556,19 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   
   for(Int_t iaod = 0; iaod < ntrig ; iaod++){
     AliAODPWG4ParticleCorrelation* particlecorr =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
-    clusterID = particlecorr->GetCaloLabel(0) ;
-    if(clusterID < 0) continue;
-    cluster = FindCluster(clusters,clusterID,iclustmp);
+//    clusterID = particlecorr->GetCaloLabel(0) ;
+//    if(clusterID < 0) continue;
+//    cluster = FindCluster(clusters,clusterID,iclustmp);
+//  Int_t ncells = cluster->GetNCells();
+    Int_t ncells = particlecorr->GetNCells();
     fhPhotonPt->Fill(particlecorr->Pt());
-    fhPhotonPtCorrected->Fill(particlecorr->Pt() - cluster->GetNCells() * medianPhotonRho);
-    fhPhotonPtDiff->Fill(cluster->GetNCells() * medianPhotonRho);
-    fhPhotonPtDiffVsCentrality->Fill(GetEventCentrality(),cluster->GetNCells() * medianPhotonRho);
-    fhPhotonPtDiffVsNcells->Fill(numberOfcells,cluster->GetNCells() * medianPhotonRho);
-    fhPhotonPtDiffVsNtracks->Fill(GetCTSTracks()->GetEntriesFast(),cluster->GetNCells() * medianPhotonRho);
-    fhPhotonPtDiffVsNclusters->Fill(ntrig,cluster->GetNCells() * medianPhotonRho);
-    
-    fhPhotonPtCorrectedZoom->Fill(particlecorr->Pt() - cluster->GetNCells() * medianPhotonRho);
+    fhPhotonPtCorrected->Fill(particlecorr->Pt() - ncells * medianPhotonRho);
+    fhPhotonPtDiff->Fill(ncells * medianPhotonRho);
+    fhPhotonPtDiffVsCentrality->Fill(GetEventCentrality(),ncells * medianPhotonRho);
+    fhPhotonPtDiffVsNcells->Fill(numberOfcells,ncells * medianPhotonRho);
+    fhPhotonPtDiffVsNtracks->Fill(GetCTSTracks()->GetEntriesFast(),ncells * medianPhotonRho);
+    fhPhotonPtDiffVsNclusters->Fill(ntrig,ncells * medianPhotonRho);
+    fhPhotonPtCorrectedZoom->Fill(particlecorr->Pt() - ncells * medianPhotonRho);
     
     //test: sum_pt in the cone 0.3 for each photon
     //should be: random fake gamma from MB
@@ -1569,11 +1579,12 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     for(Int_t iaod2 = 0; iaod2 < ntrig ; iaod2++){
       if(iaod==iaod2) continue;
       AliAODPWG4ParticleCorrelation* particlecorr2 =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod2));
-      clusterID = particlecorr2->GetCaloLabel(0) ;
-      if(clusterID < 0) continue;
-      cluster2 = FindCluster(clusters,clusterID,iclustmp);
-      photon2Corrected = particlecorr2->Pt() - cluster2->GetNCells() * medianPhotonRho;
-      
+//      clusterID = particlecorr2->GetCaloLabel(0) ;
+//      if(clusterID < 0) continue;
+//      cluster2 = FindCluster(clusters,clusterID,iclustmp);
+//      photon2Corrected = particlecorr2->Pt() - cluster2->GetNCells() * medianPhotonRho;
+      photon2Corrected = particlecorr2->Pt() - particlecorr2->GetNCells() * medianPhotonRho;
+
       //if(Pt()<0.5) continue; //<<hardcoded here //FIXME
       if( TMath::Sqrt((particlecorr->Eta()-particlecorr2->Eta())*(particlecorr->Eta()-particlecorr2->Eta()) +
                       (particlecorr->Phi()-particlecorr2->Phi())*(particlecorr->Phi()-particlecorr2->Phi()) )<fGammaConeSize ){//if(/*cone is correct*/){
@@ -1660,12 +1671,15 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     //
     //Fill Correlation Histograms
     //
-    clusterID = particlecorr->GetCaloLabel(0) ;
-    if(!(clusterID<0)){
-      cluster = FindCluster(clusters,clusterID,iclustmp);
-      //fill tree variables
-      fGamNcells = cluster->GetNCells();
-    }
+//    clusterID = particlecorr->GetCaloLabel(0) ;
+//    if(!(clusterID<0)){
+//      cluster = FindCluster(clusters,clusterID,iclustmp);
+//      //fill tree variables
+//      fGamNcells = cluster->GetNCells();
+//    }
+    
+    fGamNcells = particlecorr->GetNCells();
+    
     Double_t ptTrig = particlecorr->Pt() - medianPhotonRho * fGamNcells;//<<---changed here
     Double_t ptJet = jet->Pt() - rhoEvent * jet->EffectiveAreaCharged();//<<---changed here
     Double_t phiTrig = particlecorr->Phi();
@@ -1696,24 +1710,24 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     fhSelectedNtracks->Fill(GetCTSTracks()->GetEntriesFast());//to be checked
     fhSelectedPhotonNLMVsPt->Fill(ptTrig,particlecorr->GetNLM());
     
-    
-    if(clusterID < 0 ){
-      fhSelectedPhotonLambda0VsPt->Fill(ptTrig,-1);
-      //fill tree variables
-      fGamLambda0  = -1;
-      fGamTime = -1;
-      fGamNcells = 0;
-      fGamSumPtNeu=0;
-    }
-    else{
+//    if(clusterID < 0 ){
+//      fhSelectedPhotonLambda0VsPt->Fill(ptTrig,-1);
+//      //fill tree variables
+//      fGamLambda0  = -1;
+//      fGamTime = -1;
+//      fGamNcells = 0;
+//      fGamSumPtNeu=0;
+//    }
+//    else
+//    {
       //Int_t iclus = -1;
-      //      TObjArray* clusters = GetEMCALClusters();
+      TObjArray* clusters = GetEMCALClusters();
       //cluster = FindCluster(clusters,clusterID,iclustmp);
-      Double_t lambda0=cluster->GetM02();
+      Double_t lambda0=particlecorr->GetM02();
       fhSelectedPhotonLambda0VsPt->Fill(ptTrig,lambda0);
       //fill tree variables
       fGamLambda0  = lambda0;
-      fGamTime = cluster->GetTOF();
+      fGamTime = particlecorr->GetTime();
       //fGamNcells = cluster->GetNCells();
       
       fGamSumPtNeu=0;
@@ -1723,7 +1737,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
       //Double_t vectorLength=particlecorr->P();
       for(Int_t icalo=0; icalo <clusters->GetEntriesFast(); icalo++){
         AliVCluster* calo = (AliVCluster *) clusters->At(icalo);
-        if(clusterID==calo->GetID()) continue;//the same cluster as trigger
+        //if(clusterID==calo->GetID()) continue;//the same cluster as trigger
         calo->GetMomentum(fMomentum,vertex) ;//Assume that come from vertex in straight line
         //printf("min pt %f\n",GetMinPt());
         if(fMomentum.Pt()<GetMinPt()) continue; //<<hardcoded here //FIXME 0.5 check if correct
@@ -1739,7 +1753,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
           fGamNclusters++;
         }
       }
-    }
+//    }
     
     //sum pt of charged tracks in the gamma isolation cone
     //starts here
