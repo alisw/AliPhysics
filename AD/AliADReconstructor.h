@@ -12,9 +12,11 @@
 
 #include "AliReconstructor.h"
 #include "AliLog.h"
+#include "AliADConst.h"
 
 class AliESDAD;
 class AliESDEvent;
+class AliADCalibData;
 
 class AliADReconstructor: public AliReconstructor {
 public:
@@ -37,16 +39,17 @@ public:
   virtual Bool_t HasDigitConversion() const { return kTRUE; }
   virtual void ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const;
 
+  AliADCalibData *GetCalibData() const; 
 
 protected:
 
   AliESDAD*        fESDAD;      // AD ESD object  
 
 private:
-  AliADReconstructor(const AliADReconstructor&); //Not implemented
-  AliADReconstructor& operator = (const AliADReconstructor&); //Not implemented
+  AliADReconstructor(const AliADReconstructor &reconstructor); //Not implemented
+  AliADReconstructor& operator = (const AliADReconstructor &reconstructor); //Not implemented
   
-
+  AliADCalibData* fCalibData;      //! calibration data
   mutable TClonesArray *fDigitsArray;  // clones-array for ConvertDigits() and FillESD()
 
   ClassDef(AliADReconstructor, 1)  // class for the AD reconstruction

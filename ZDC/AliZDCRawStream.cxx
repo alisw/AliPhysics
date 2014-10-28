@@ -253,14 +253,17 @@ void AliZDCRawStream::ReadChMap()
   AliDebug(2,"\t Reading ZDC ADC mapping from OCDB\n");
   AliZDCChMap * chMap = GetChMap();
   //chMap->Print("");
-  for(Int_t i=0; i<kNch; i++){
-    fMapADC[i][0] = chMap->GetADCModule(i);
-    fMapADC[i][1] = chMap->GetADCChannel(i);
-    fMapADC[i][2] = chMap->GetADCSignalCode(i);
-    fMapADC[i][3] = chMap->GetDetector(i);
-    fMapADC[i][4] = chMap->GetSector(i);
+  if(chMap){
+    for(Int_t i=0; i<kNch; i++){
+      fMapADC[i][0] = chMap->GetADCModule(i);
+      fMapADC[i][1] = chMap->GetADCChannel(i);
+      fMapADC[i][2] = chMap->GetADCSignalCode(i);
+      fMapADC[i][3] = chMap->GetDetector(i);
+      fMapADC[i][4] = chMap->GetSector(i);
+    }
+    fIsMapRead = kTRUE;
   }
-  fIsMapRead = kTRUE;
+  else printf("  AliZDCRawStream::ReadChMap -> No valid object fr mapping loaded!!!\n\n");
 }
 
 //_____________________________________________________________________________
@@ -994,12 +997,13 @@ AliZDCChMap* AliZDCRawStream::GetChMap() const
 {
 
   // Getting calibration object for ZDC
-
+  AliZDCChMap *calibdata = 0x0;
   AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/ChMap");
   if(!entry) AliFatal("No calibration data loaded!");  
-
-  AliZDCChMap *calibdata = dynamic_cast<AliZDCChMap*> (entry->GetObject());
-  if(!calibdata) AliFatal("Wrong calibration object in calibration  file!");
+  else{
+    calibdata = dynamic_cast<AliZDCChMap*> (entry->GetObject());
+    if(!calibdata) AliFatal("Wrong calibration object in calibration  file!");
+  }
 
   return calibdata;
 }

@@ -40,8 +40,8 @@ AliAODZDC::AliAODZDC() :
   fImpactParamSideC(0),
   fZDCTDCSum(0),	 
   fZDCTDCDifference(0),
-  fZNCTDC(0),
-  fZNATDC(0)
+  fZNCTDC(-999.),
+  fZNATDC(-999.)
 {
 // Default constructor
   for(Int_t i=0; i<5; i++){

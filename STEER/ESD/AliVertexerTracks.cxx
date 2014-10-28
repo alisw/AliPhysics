@@ -336,9 +336,9 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const TObjArray *trkArrayOrig
     fDCAcut = cutsave;
     if(fVert.GetNContributors()>0) {
       fVert.GetXYZ(fNominalPos);
-      fNominalPos[0] = fVert.GetXv();
-      fNominalPos[1] = fVert.GetYv();
-      fNominalPos[2] = fVert.GetZv();
+      fNominalPos[0] = fVert.GetX();
+      fNominalPos[1] = fVert.GetY();
+      fNominalPos[2] = fVert.GetZ();
       AliDebug(1,Form("No mean vertex: VertexFinder gives (%f, %f, %f)",fNominalPos[0],fNominalPos[1],fNominalPos[2]));
     } else {
       fNominalPos[0] = 0.;
@@ -415,7 +415,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const TObjArray *trkArrayOrig
     }
     fCurrentVertex->SetTitle(title.Data());
     //
-    AliDebug(1,Form("xyz: %f %f %f; nc %d",fCurrentVertex->GetXv(),fCurrentVertex->GetYv(),fCurrentVertex->GetZv(),fCurrentVertex->GetNContributors()));
+    AliDebug(1,Form("xyz: %f %f %f; nc %d",fCurrentVertex->GetX(),fCurrentVertex->GetY(),fCurrentVertex->GetZ(),fCurrentVertex->GetNContributors()));
   }
   // clean up
   delete [] fIdSel; fIdSel=NULL;
@@ -667,10 +667,10 @@ Int_t AliVertexerTracks::PrepareTracks(const TObjArray &trkArrayOrig,
       propagateOK = track->PropagateToDCA(initVertex,GetFieldkG(),100.,d0z0,covd0z0);
     } else {              // optImpParCut==2
       fCurrentVertex->GetSigmaXYZ(sigmaCurr);
-      normdistx = TMath::Abs(fCurrentVertex->GetXv()-fNominalPos[0])/TMath::Sqrt(sigmaCurr[0]*sigmaCurr[0]+fNominalCov[0]);
-      normdisty = TMath::Abs(fCurrentVertex->GetYv()-fNominalPos[1])/TMath::Sqrt(sigmaCurr[1]*sigmaCurr[1]+fNominalCov[2]);
-      AliDebug(1,Form("normdistx %f  %f    %f",fCurrentVertex->GetXv(),fNominalPos[0],TMath::Sqrt(sigmaCurr[0]*sigmaCurr[0]+fNominalCov[0])));
-      AliDebug(1,Form("normdisty %f  %f    %f",fCurrentVertex->GetYv(),fNominalPos[1],TMath::Sqrt(sigmaCurr[1]*sigmaCurr[1]+fNominalCov[2])));
+      normdistx = TMath::Abs(fCurrentVertex->GetX()-fNominalPos[0])/TMath::Sqrt(sigmaCurr[0]*sigmaCurr[0]+fNominalCov[0]);
+      normdisty = TMath::Abs(fCurrentVertex->GetY()-fNominalPos[1])/TMath::Sqrt(sigmaCurr[1]*sigmaCurr[1]+fNominalCov[2]);
+      AliDebug(1,Form("normdistx %f  %f    %f",fCurrentVertex->GetX(),fNominalPos[0],TMath::Sqrt(sigmaCurr[0]*sigmaCurr[0]+fNominalCov[0])));
+      AliDebug(1,Form("normdisty %f  %f    %f",fCurrentVertex->GetY(),fNominalPos[1],TMath::Sqrt(sigmaCurr[1]*sigmaCurr[1]+fNominalCov[2])));
       AliDebug(1,Form("sigmaCurr %f %f    %f",sigmaCurr[0],sigmaCurr[1],TMath::Sqrt(fNominalCov[0])+TMath::Sqrt(fNominalCov[2])));
       if(normdistx < 3. && normdisty < 3. &&
 	 (sigmaCurr[0]+sigmaCurr[1])<(TMath::Sqrt(fNominalCov[0])+TMath::Sqrt(fNominalCov[2]))) {
@@ -793,9 +793,9 @@ AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
     printf("WARNING: result of tracks' removal will be only approximately correct");
 
   TMatrixD rv(3,1);
-  rv(0,0) = inVtx->GetXv();
-  rv(1,0) = inVtx->GetYv();
-  rv(2,0) = inVtx->GetZv();
+  rv(0,0) = inVtx->GetX();
+  rv(1,0) = inVtx->GetY();
+  rv(2,0) = inVtx->GetZ();
   TMatrixD vV(3,3);
   Double_t cov[6];
   inVtx->GetCovMatrix(cov);
@@ -940,9 +940,9 @@ AliESDVertex* AliVertexerTracks::RemoveConstraintFromVertex(AliESDVertex *inVtx,
 
   // input vertex
   TMatrixD rv(3,1);
-  rv(0,0) = inVtx->GetXv();
-  rv(1,0) = inVtx->GetYv();
-  rv(2,0) = inVtx->GetZv();
+  rv(0,0) = inVtx->GetX();
+  rv(1,0) = inVtx->GetY();
+  rv(2,0) = inVtx->GetZ();
   TMatrixD vV(3,3);
   Double_t cov[6];
   inVtx->GetCovMatrix(cov);
@@ -1749,7 +1749,7 @@ void AliVertexerTracks::VertexFitter(Bool_t vfit, Bool_t chiCalc,Int_t useWeight
   fCurrentVertex->SetBC(currBC);
   fVert = *fCurrentVertex;  // RS
   AliDebug(1," Vertex after fit:");
-  AliDebug(1,Form("xyz: %f %f %f; nc %d",fCurrentVertex->GetXv(),fCurrentVertex->GetYv(),fCurrentVertex->GetZv(),fCurrentVertex->GetNContributors()));
+  AliDebug(1,Form("xyz: %f %f %f; nc %d",fCurrentVertex->GetX(),fCurrentVertex->GetY(),fCurrentVertex->GetZ(),fCurrentVertex->GetNContributors()));
   AliDebug(1,"--- VertexFitter(): finish\n");
  
 
@@ -1804,7 +1804,7 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedTracks(const TObjArray *trkArr
   if(optUseFitter) {
     VertexFitter();
   } else {
-    Double_t position[3]={fVert.GetXv(),fVert.GetYv(),fVert.GetZv()};
+    Double_t position[3]={fVert.GetX(),fVert.GetY(),fVert.GetZ()};
     Double_t covmatrix[6];
     fVert.GetCovMatrix(covmatrix);
     Double_t chi2=99999.;
@@ -1824,7 +1824,7 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedTracks(const TObjArray *trkArr
       indices[jj] = fIdSel[jj];
       t = (AliExternalTrackParam*)fTrkArraySel.At(jj);
       if(optPropagate && optUseFitter) {
-	if(TMath::Sqrt(fCurrentVertex->GetXv()*fCurrentVertex->GetXv()+fCurrentVertex->GetYv()*fCurrentVertex->GetYv())<3.) {
+	if(TMath::Sqrt(fCurrentVertex->GetX()*fCurrentVertex->GetX()+fCurrentVertex->GetY()*fCurrentVertex->GetY())<3.) {
 	  t->PropagateToDCA(fCurrentVertex,GetFieldkG(),100.,d0z0,covd0z0);
 	  AliDebug(1,Form("Track %d propagated to found vertex",jj));
 	} else {
@@ -2181,7 +2181,7 @@ void AliVertexerTracks::FindAllVertices(Int_t nTrksOrig,
       nSelTr++;
     }
     AliESDVertex* vert=FindPrimaryVertex(&cluTrackArr,idTrkClu);
-    AliDebug(1,Form("Found vertex in z=%f with %d contributors",vert->GetZv(),
+    AliDebug(1,Form("Found vertex in z=%f with %d contributors",vert->GetZ(),
 		 vert->GetNContributors()));
 
     fCurrentVertex=0;

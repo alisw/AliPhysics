@@ -137,8 +137,9 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
 	for (Int_t i=0;i<fSelectedSpecies;i++){
 	  p[i] *= detProb[i];
 	  if(detBit == AliPIDResponse::kDetTOF){
-	    Float_t pt = track->Pt();
-	    Float_t mismPropagationFactor[] = {1.,1.,1.,1 + TMath::Exp(1 - 1.12*pt),1 + 1./(4.71114 - 5.72372*pt + 2.94715*pt*pt),1.,1.,1.,1.,1.}; // correction for kaons and protons which has to be alligned with the one in AliPIDResponse
+	    Double_t pt = track->Pt();
+	    Double_t mismPropagationFactor[] = {1.,1.,1.,1. + TMath::Exp(1. - 1.12*pt),
+						1. + 1./(4.71114 - 5.72372*pt + 2.94715*pt*pt),1.,1.,1.,1.,1.}; // correction for kaons and protons which has to be alligned with the one in AliPIDResponse
 	    pMismTOF[i] *= fTOFmismProb*mismPropagationFactor[i];
 	  }
 	  else pMismTOF[i] *= detProb[i];
@@ -233,7 +234,6 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
 	Float_t kaonTOFfactor = 0.1;
 	if(pt > 0.29){
 	  kaonTOFfactor = 1 - TMath::Exp(-TMath::Power(pt,4.19618E-07)/4.96502e-01)*TMath::Power(pt,-1.50705);
-	  if(pt < 0.4) kaonTOFfactor *= 1-1.29854e-04/TMath::Power(pt,7.5);
 	}
 
 	Float_t protonTOFfactor = 0.1;
@@ -350,7 +350,6 @@ void AliPIDCombined::GetPriors(const AliVTrack *track,Double_t* p,const AliPIDRe
 	    Float_t kaonTOFfactor = 0.1;
 	    if(pt > 0.29){
 	      kaonTOFfactor = 1 - TMath::Exp(-TMath::Power(pt,4.19618E-07)/4.96502e-01)*TMath::Power(pt,-1.50705);
-	      if(pt < 0.4) kaonTOFfactor *= 1-1.29854e-04/TMath::Power(pt,7.5);
 	    }
 	    Float_t protonTOFfactor = 0.1;
 	    if(pt > 0.4) protonTOFfactor = 1 - TMath::Exp(-TMath::Power(pt,3.30978)/8.57396E-02)*TMath::Power(pt,-4.42661E-01);
@@ -400,7 +399,7 @@ void AliPIDCombined::ComputeBayesProbabilities(Double_t* probabilities, const Do
   if (sum <= 0) {
 
     AliError("Invalid probability densities or priors");
-    for (Int_t i = 0; i < fSelectedSpecies; i++) probabilities[i] = -1;
+    for (Int_t i = 0; i < fSelectedSpecies; i++) probabilities[i] = 1./fSelectedSpecies;
     return;
   }
   for (Int_t i = 0; i < fSelectedSpecies; i++) {

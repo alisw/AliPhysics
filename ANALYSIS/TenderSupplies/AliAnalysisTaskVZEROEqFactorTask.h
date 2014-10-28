@@ -58,6 +58,9 @@ class AliAnalysisTaskVZEROEqFactorTask : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   AliVZEROCalibData* GetCalibData() const;
+
+  void SetIsAODAnalysis(Bool_t flag) {fisAOD=flag;}
+  Bool_t GetIsAODAnalysis() const {return fisAOD;}
   
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -75,11 +78,12 @@ class AliAnalysisTaskVZEROEqFactorTask : public AliAnalysisTaskSE {
 //===========================================================================================
 
   TH1D *fHistEventCounter; //! 
+  Bool_t fisAOD; // flag for analysis on AODs
 
    AliAnalysisTaskVZEROEqFactorTask(const AliAnalysisTaskVZEROEqFactorTask&);            // not implemented
    AliAnalysisTaskVZEROEqFactorTask& operator=(const AliAnalysisTaskVZEROEqFactorTask&); // not implemented
    
-   ClassDef(AliAnalysisTaskVZEROEqFactorTask, 11);
+   ClassDef(AliAnalysisTaskVZEROEqFactorTask, 12);
 };
 
 #endif

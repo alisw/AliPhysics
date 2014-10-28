@@ -1902,7 +1902,7 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
     AliTOFHeader *tofHeader = (AliTOFHeader*)vevent->GetTOFHeader();
 
     if (tofHeader) { // read global info and T0-TOF
-      fTOFResponse.SetTimeResolution(tofHeader->GetTOFResolution());
+      //      fTOFResponse.SetTimeResolution(tofHeader->GetTOFResolution()); // read from OADB in the initialization
       t0spread = tofHeader->GetT0spread(); // read t0 sprad
       if(t0spread < 10) t0spread = 80;
 
@@ -1968,8 +1968,8 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	    t0C= vevent->GetT0TOF()[2] - starttimeoffset;
         //      t0AC= vevent->GetT0TOF()[0];
 	    t0AC= t0A/resT0A/resT0A + t0C/resT0C/resT0C;
-	    resT0AC= TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
-	    t0AC /= resT0AC*resT0AC;
+	    resT0AC= 1./TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
+	    t0AC *= resT0AC*resT0AC;
 	}
 
 	Float_t t0t0Best = 0;
@@ -2043,8 +2043,8 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	    t0C= vevent->GetT0TOF()[2] - starttimeoffset;
         //      t0AC= vevent->GetT0TOF()[0];
 	    t0AC= t0A/resT0A/resT0A + t0C/resT0C/resT0C;
-	    resT0AC= TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
-	    t0AC /= resT0AC*resT0AC;
+	    resT0AC= 1./TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
+	    t0AC *= resT0AC*resT0AC;
 	}
 
 	if(TMath::Abs(t0A) < t0cut && TMath::Abs(t0C) < t0cut && TMath::Abs(t0C-t0A) < 500){
@@ -2417,7 +2417,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
     mismPropagationFactor[4] = 1 + 1./(4.71114 - 5.72372*pt + 2.94715*pt*pt);// it has to be alligned with the one in AliPIDCombined
     
   Int_t nTOFcluster = 0;
-  if(track->GetTOFHeader() && track->GetTOFHeader()->GetTriggerMask()){ // N TOF clusters available
+  if(track->GetTOFHeader() && track->GetTOFHeader()->GetTriggerMask() && track->GetTOFHeader()->GetNumberOfTOFclusters() > -1){ // N TOF clusters available
     nTOFcluster = track->GetTOFHeader()->GetNumberOfTOFclusters();
     if(fIsMC) nTOFcluster = Int_t(nTOFcluster * 1.5); // +50% in MC
   }
@@ -2447,6 +2447,8 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
       break;
     }
     
+    if(nTOFcluster < 0) nTOFcluster = 10;
+
     
     fgTOFmismatchProb=fTOFResponse.GetMismatchProbability(track->GetTOFsignal(),track->Eta()) * nTOFcluster *6E-6 * (1 + 2.90505e-01/pt/pt); // mism weight * tof occupancy (including matching window factor) * pt dependence
     

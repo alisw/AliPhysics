@@ -464,9 +464,10 @@ void AliAODTagCreator::FillEventTag(AliAODEvent* aod, AliEventTag* evTag)
 	if(vertex->GetType() == 2) nV0s      += 1;
 	if(vertex->GetType() == 3) nCascades += 1;
     }
-    Int_t nTracks = fAODEvent->GetNTracks();
+    Int_t nTracks = fAODEvent->GetNumberOfTracks();
     for (Int_t nTr = 0; nTr < nTracks; nTr++) {
-	AliAODTrack *track = fAODEvent->GetTrack(nTr);
+	AliAODTrack *track = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(nTr));
+	if(!track) AliFatal("Not a standard AOD");
 	
 	Double_t fPt = track->Pt();
 	if(fPt > maxPt) {

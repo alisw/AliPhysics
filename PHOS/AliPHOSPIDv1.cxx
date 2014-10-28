@@ -1627,7 +1627,7 @@ void AliPHOSPIDv1::GetVertex(void)
   if(fESD){
     const AliESDVertex *esdVtx = fESD->GetVertex() ;
     if(esdVtx && esdVtx->GetChi2()!=0.){
-      fVtx.SetXYZ(esdVtx->GetXv(),esdVtx->GetYv(),esdVtx->GetZv()) ;
+      fVtx.SetXYZ(esdVtx->GetX(),esdVtx->GetY(),esdVtx->GetZ()) ;
       return ;
     }
   }

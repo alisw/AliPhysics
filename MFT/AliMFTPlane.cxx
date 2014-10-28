@@ -683,7 +683,7 @@ void AliMFTPlane::DrawPlane(Option_t *opt) {
     cnv->Draw();
 
     TH2D *h = new TH2D("tmp", GetName(), 
-		       1, fZCenter-0.5, fZCenter+0.5, 
+		       1, fZCenter-1.1*(0.5*fThicknessSupport+fThicknessActive), fZCenter+1.1*(0.5*fThicknessSupport+fThicknessActive),
 		       1, 1.1*GetSupportElement(0)->GetAxis(1)->GetXmin(), 1.1*GetSupportElement(0)->GetAxis(1)->GetXmax());
     h->SetXTitle("z [cm]");
     h->SetYTitle("y [cm]");

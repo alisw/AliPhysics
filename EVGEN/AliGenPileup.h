@@ -57,8 +57,8 @@ class AliGenPileup : public AliGenCocktail
 
  protected:
     virtual void AddGenerator
-      (AliGenerator *Generator, const char* Name, Float_t RateExp, TFormula* formula = 0 );
-
+      (AliGenerator *Generator, const char* Name, Float_t RateExp, TFormula* formula = 0,
+       Int_t ntimes = 1);
     AliTriggerBCMask fBCMask;    // Mask used to tag the active bunch-crossings within an orbit
     Bool_t           fGenTrig;   // Generate or not the trigger interaction
     Bool_t           fFlag;      // fixed interaction rate (integer)

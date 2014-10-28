@@ -42,6 +42,9 @@ class AliVHeader : public TNamed {
   virtual TBits  GetIRInt2InteractionMap() const { static TBits dummy; return dummy; }
   virtual TBits  GetIRInt1InteractionMap() const { static TBits dummy; return dummy; }
 
+  virtual Int_t  GetIRInt2ClosestInteractionMap()                    const {return 0;}
+  virtual Int_t  GetIRInt1ClosestInteractionMap(Int_t =3/*gap = 3*/) const {return 0;}
+
 
   virtual void Print(Option_t* option = "") const  = 0;
     

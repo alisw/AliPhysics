@@ -63,7 +63,7 @@ void AliStructFuncType::StructA(Double_t xx, Double_t qq, Double_t a,
 Int_t AliStructFuncType::PDFsetIndex(StrucFunc_t pdf)
 {
 // PDF set index
-    Int_t pdfSetNumber[10] = {
+    Int_t pdfSetNumber[12] = {
 	19170,
 	19150,
 	19070,
@@ -73,7 +73,9 @@ Int_t AliStructFuncType::PDFsetIndex(StrucFunc_t pdf)
 	10100,
 	10050,
 	10041,
-	10042
+	10042,
+        10800,
+	11000
     };
     return pdfSetNumber[pdf];
 }
@@ -81,7 +83,7 @@ Int_t AliStructFuncType::PDFsetIndex(StrucFunc_t pdf)
 TString AliStructFuncType::PDFsetName(StrucFunc_t pdf)
 {
 // PDF Set Name
-    TString pdfsetName[10]   = {
+    TString pdfsetName[12]   = {
 	"cteq4l.LHgrid",
 	"cteq4m.LHgrid",   
 	"cteq5l.LHgrid",
@@ -91,7 +93,9 @@ TString AliStructFuncType::PDFsetName(StrucFunc_t pdf)
 	"cteq61.LHpdf",
 	"cteq6m.LHpdf",
 	"cteq6l.LHpdf", 
-	"cteq6ll.LHpdf"
+	"cteq6ll.LHpdf",
+	"CT10.LHgrid", 
+	"CT10nlo.LHgrid"
     };
     return pdfsetName[pdf];
 }
