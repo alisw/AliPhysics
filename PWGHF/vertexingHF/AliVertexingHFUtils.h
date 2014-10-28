@@ -89,6 +89,10 @@ class AliVertexingHFUtils : public TObject{
   static Int_t GetGeneratedPrimariesInEtaRange(TClonesArray* arrayMC, Double_t mineta, Double_t maxeta);
   static Int_t GetGeneratedPhysicalPrimariesInEtaRange(TClonesArray* arrayMC, Double_t mineta, Double_t maxeta);
 
+  // Utilities for V0 multiplicity checks
+  static Double_t GetVZEROAEqualizedMultiplicity(AliAODEvent* ev);
+  static Double_t GetVZEROCEqualizedMultiplicity(AliAODEvent* ev);
+
   // Functions for computing average pt 
   static void AveragePt(Float_t& averagePt, Float_t& errorPt, Float_t ptmin, Float_t ptmax, TH2F* hMassD, Float_t massFromFit, Float_t sigmaFromFit, TF1* funcB2, Float_t sigmaRangeForSig=2.5, Float_t sigmaRangeForBkg=4.5, Float_t minMass=0., Float_t maxMass=3., Int_t rebin=1);
 

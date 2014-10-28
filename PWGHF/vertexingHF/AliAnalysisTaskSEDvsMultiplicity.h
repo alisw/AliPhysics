@@ -101,7 +101,11 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   void SetSubtractTrackletsFromDaughters(Bool_t opt){fSubtractTrackletsFromDau=opt;}
   Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
 
-  enum { kNtrk10=0, kNtrk10to16=1, kVZERO=2, kNtrk03=3, kNtrk05=4, kVZEROA=5 };
+  // Flag to use the zvtx correction from ( 0= none, 1= usual d2h, 2=AliESDUtils for VZERO multiplicity)
+  void SetUseVZEROParameterizedVertexCorr(Int_t flag) { fDoVZER0ParamVertexCorr=flag; }
+  Int_t GetUseVZEROParameterizedVertexCorr() { return fDoVZER0ParamVertexCorr; }
+
+  enum { kNtrk10=0, kNtrk10to16=1, kVZERO=2, kNtrk03=3, kNtrk05=4, kVZEROA=5, kVZEROEq=6, kVZEROAEq=7 };
   void SetMultiplicityEstimator(Int_t value){ fMultiplicityEstimator=value; }
   Int_t GetMultiplicityEstimator(){ return fMultiplicityEstimator; }
   enum { kEta10=0, kEta10to16=1, kEtaVZERO=2, kEta03=3, kEta05=5, kEtaVZEROA=5 };
@@ -137,19 +141,28 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   TH2F* fHistNtrEta03vsNtrEta1EvSel; //!hist. for Ntracklets in eta<0.3 vs. eta<1.
   TH2F* fHistNtrEtaV0AvsNtrEta1EvSel; //!hist. for Ntracklets in eta-V0A vs. eta<1.
   TH2F* fHistNtrEtaV0MvsNtrEta1EvSel; //!hist. for Ntracklets in eta-V0M vs. eta<1.
+  TH2F* fHistNtrEtaV0AvsV0AEqEvSel;   //!hist. for V0A raw mult vs V0A equalized multiplicity
+  TH2F* fHistNtrEtaV0MvsV0MEqEvSel;   //!hist. for V0M raw mult vs V0M equalized multiplicity
   TH2F* fHistNtrCorrEta1vsNtrRawEta1EvSel; //!hist. for Ntracklets in eta<1 with and w/o corrections
+  TH2F* fHistMultCorrvsMultRawEvSel;       //!hist. for multiplicity with and w/o corrections
   TH2F* fHistNtrEta16vsNtrEta1EvWithCand; //!hist. for Ntracklets in eta<1.6 vs. eta<1. for events with a candidate
   TH2F* fHistNtrEta05vsNtrEta1EvWithCand; //!hist. for Ntracklets in eta<0.5 vs. eta<1. for events with a candidate
   TH2F* fHistNtrEta03vsNtrEta1EvWithCand; //!hist. for Ntracklets in eta<0.3 vs. eta<1. for events with a candidate
   TH2F* fHistNtrEtaV0AvsNtrEta1EvWithCand; //!hist. for Ntracklets in eta-V0A vs. eta<1. for events with a candidate
   TH2F* fHistNtrEtaV0MvsNtrEta1EvWithCand; //!hist. for Ntracklets in eta-V0M vs. eta<1. for events with a candidate
+  TH2F* fHistNtrEtaV0AvsV0AEqEvWithCand;     //!hist. for V0A raw mult vs V0A equalized multiplicity for events with a candidate
+  TH2F* fHistNtrEtaV0MvsV0MEqEvWithCand;     //!hist. for V0M raw mult vs V0M equalized multiplicity for events with a candidate
   TH2F* fHistNtrCorrEta1vsNtrRawEta1EvWithCand; //!hist. for Ntracklets in eta<1 with and w/o corrections for events with a candidate
+  TH2F* fHistMultCorrvsMultRawEvWithCand;       //!hist. for multiplicity with and w/o corrections for events with a candidate
   TH2F* fHistNtrEta16vsNtrEta1EvWithD; //!hist. for Ntracklets in eta<1.6 vs. eta<1. for events with a candidate in D mass peak
   TH2F* fHistNtrEta05vsNtrEta1EvWithD; //!hist. for Ntracklets in eta<0.5 vs. eta<1. for events with a candidate in D mass peak
   TH2F* fHistNtrEta03vsNtrEta1EvWithD; //!hist. for Ntracklets in eta<0.3 vs. eta<1. for events with a candidate in D mass peak
   TH2F* fHistNtrEtaV0AvsNtrEta1EvWithD; //!hist. for Ntracklets in eta-V0A vs. eta<1. for events with a candidate in D mass peak
   TH2F* fHistNtrEtaV0MvsNtrEta1EvWithD; //!hist. for Ntracklets in eta-V0M vs. eta<1. for events with a candidate in D mass peak
+  TH2F* fHistNtrEtaV0AvsV0AEqEvWithD;   //!hist. for V0A raw mult vs V0A equalized multiplicity with a candidate in D mass peak
+  TH2F* fHistNtrEtaV0MvsV0MEqEvWithD;   //!hist. for V0M raw mult vs V0M equalized multiplicity with a candidate in D mass peak
   TH2F* fHistNtrCorrEta1vsNtrRawEta1EvWithD; //!hist. for Ntracklets in eta<1 with and w/o corrections for events with a candidate in D mass peak
+  TH2F* fHistMultCorrvsMultRawEvWithD;       //!hist. for multiplicity with and w/o corrections for events with a candidate in D mass peak
 
   TH2F* fHistNtrVsZvtx; //!  hist of ntracklets vs Zvertex
   TH2F* fHistNtrCorrVsZvtx; //!  hist of ntracklets vs Zvertex
@@ -217,9 +230,11 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Int_t fPdgMeson;   // pdg code of analyzed meson
 
   Int_t fMultiplicityEstimator; // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
-  Int_t fMCPrimariesEstimator;  // Definition of the primaries estimator eta range: |eta|<1.0=0, -1.6<|eta|<1.0=1, VZEROrange=2 
+  Int_t fMCPrimariesEstimator;  // Definition of the primaries estimator eta range: |eta|<1.0=0, -1.6<|eta|<1.0=1, VZEROrange=2
+
+  Int_t fDoVZER0ParamVertexCorr; // Flag to use the zvtx correction from (0=none, 1=usual d2h, 2=AliESDUtils for VZERO multiplicity)
   
-  ClassDef(AliAnalysisTaskSEDvsMultiplicity,13); // D vs. mult task
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity,14); // D vs. mult task
 };
 
 #endif
