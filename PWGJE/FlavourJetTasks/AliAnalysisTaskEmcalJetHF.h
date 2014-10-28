@@ -2,6 +2,9 @@
 #define AliAnalysisTaskEmcalJetHF_h
 
 class TClonesArray;
+class TH1;
+class TH2;
+class TH3;
 class TH1F;
 class TH2F;
 class TH3F;
@@ -18,6 +21,12 @@ class AliEMCALRecoUtils;
 class AliESDtrack;
 class AliESDtrackCuts;
 class AliAnalysisEtCuts;
+class AliDetectorPID;
+class AliESDCaloCluster;
+
+class AliJetContainer;
+class AliParticleContainer;
+class AliClusterContainer;
 
 
 // this whole section of includes added 
@@ -31,12 +40,23 @@ class AliAnalysisEtCuts;
 #include <AliLog.h>
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliEMCALPIDResponse.h"
+#include <AliESDCaloCluster.h>
+#include <AliESDtrackCuts.h>
+#include "AliAODTrack.h"
+#include "AliESDtrack.h"
+#include "AliPID.h"
+#include "AliTPCdEdxInfo.h"
+//#include "AliCaloTrackESDReader.h"
+//#include "AliCaloTrackAODReader.h"
+//#include "AliCaloTrackReader.h"
 
 // PID stuff                                                                                                                                
 #include "AliPIDResponse.h"
 #include "AliTPCPIDResponse.h"
 #include "AliESDpid.h"
 #include "AliAnalysisFilter.h"
+
+
 
 class AliAnalysisTaskEmcalJetHF : public AliAnalysisTaskEmcalJet {
  public:
@@ -66,11 +86,12 @@ class AliAnalysisTaskEmcalJetHF : public AliAnalysisTaskEmcalJet {
 
 
   // setters
-  virtual void SetdoGlobalPID(Bool_t PID)  { doGlobalPID = PID; }  //Global PID fpr all tracks and clusters in event
-  void SetJetPt(Double_t jpt)           { fJetHIpt = jpt; }  // jet threshold pt cut
-  void SetTrackPtCut(Double_t trpt)     { fTrackPtCut = trpt; } // track pt threshold to do PID on  
-  virtual void            SetTrackEta(Double_t e)                 { fTrackEta   = e; }  //eta range of the associated tracks   
-  virtual void            SetTrackQACut(Double_t trkQAcut)            { fTrkQAcut = trkQAcut;}
+  virtual void                  SetGlobalQA(Bool_t PID)                     { fGlobalQA = PID; }  //Global PID fpr all tracks and clusters in event
+  void                          SetJetPt(Double_t jpt)                      { fJetHIpt = jpt; }  // jet threshold pt cut
+  void                          SetTrackPtCut(Double_t trpt)                { fTrackPtCut = trpt; } // track pt threshold to do PID on
+  virtual void                  SetTrackEta(Double_t e)                     { fTrackEta   = e; }  //eta range of the associated tracks
+  virtual void                  SetTrackQACut(Double_t trkQAcut)            { fTrkQAcut = trkQAcut; }
+  void                          SetTrackCuts(AliESDtrackCuts *cuts)         { fesdTrackCuts = cuts; }
   
   // eta and phi limits of jets - setters
   virtual void            SetJetEta(Double_t emin, Double_t emax)  { fEtamin = emin; fEtamax = emax; }
@@ -79,16 +100,26 @@ class AliAnalysisTaskEmcalJetHF : public AliAnalysisTaskEmcalJet {
   // event no.
   Int_t event;          // event number (processed)
   Int_t fillHist;
-
  protected:
-  Bool_t                 Run();
-  virtual void           Terminate(Option_t *);
-  virtual Int_t          AcceptMyJet(AliEmcalJet *jet);   // applies basic jet tests/cuts before accepting
-  virtual Int_t          GetCentBin(Double_t cent) const;  // Get Centrality bin
-  void 			ExecOnce();
+  Bool_t                      Run();
+  virtual void                Terminate(Option_t *);
+  virtual Int_t               AcceptMyJet(AliEmcalJet *jet);   // applies basic jet tests/cuts before accepting
+  virtual Int_t               GetCentBin(Double_t cent) const;  // Get Centrality bin
+  void 			                  ExecOnce();
+  void                        CheckClusTrackMatchingQA();
+  
+  // Trigger bit
+  Bool_t           IsEventEMCALL1Gamma1()            const { return fEventTrigEMCALL1Gamma1  ; }
+	Bool_t           IsEventEMCALL1Gamma2()            const { return fEventTrigEMCALL1Gamma2  ; }
+  Bool_t           IsEventEMCALL1Gamma()             const { return (fEventTrigEMCALL1Gamma1 || fEventTrigEMCALL1Gamma2) ; }
+  
+  Bool_t           fEventTrigEMCALL1Gamma1 ;   // Event is L1-Gamma, threshold 1 on its name,  it should correspond kEMCEGA
+	Bool_t           fEventTrigEMCALL1Gamma2 ;   // Event is L1-Gamma, threshold 2 on its name,  it should correspond kEMCEGA
+  
   
   // data type switch
-  Bool_t       doGlobalPID;
+  Bool_t           fGlobalQA;
+  AliVEvent      * fInputEvent;                //! pointer to esd or aod input
   
   AliAnalysisEtCuts *fCuts;                            // keeper of basic cuts
 
@@ -102,6 +133,7 @@ class AliAnalysisTaskEmcalJetHF : public AliAnalysisTaskEmcalJet {
   Double_t              fTrackPtCut;                 // track pt cut to do PID on
   Double_t              fTrackEta;  
   Double_t              fTrkQAcut;                    //trkQA cut
+  AliESDtrackCuts       *fesdTrackCuts;           //esd track cuts!!
   
   // PID                                                                                                                                    
   AliPIDResponse        *fPIDResponse;   // PID response object                                                                             
@@ -110,7 +142,13 @@ class AliAnalysisTaskEmcalJetHF : public AliAnalysisTaskEmcalJet {
   AliESDtrackCuts* fEsdtrackCutsITSTPC;//esd track cuts for ITS+TPC tracks
   AliESDtrackCuts* fEsdtrackCutsTPC;//esd track cuts for TPC tracks (which may also contain ITS hits)
   AliESDtrackCuts* fEsdtrackCutsITS;//esd track cuts for ITS stand alone tracks
-   
+  
+  AliJetContainer            *fJetsCont;                   //!Jets
+  AliParticleContainer       *fTracksCont;                 //!Tracks
+  AliClusterContainer        *fCaloClustersCont;           //!Clusters
+  AliParticleContainer       *fTracksJetCont;                 //! JetTracks
+  AliClusterContainer        *fCaloClustersJetCont;           //!JetClusters
+  
 
  private:
   AliESDEvent           *fESD;//!  // ESD object
@@ -120,12 +158,8 @@ class AliAnalysisTaskEmcalJetHF : public AliAnalysisTaskEmcalJet {
   TH2F                  *fHistRhovsCent; //!
   TH1F			            *fHistJetPhi;//!              // Njets vs Phi
   TH1F			            *fHistCorJetPt;//!            // (Njets) vs Corrected Jet Pt (local rho)
-  TH1F			            *fHistJetPt;//!		   // raw jet pt (uncorrected)
-  TH1F			            *fHistdEdx;//!
-  TH2F                  *fHistdEdxvPt;//!
-  TH1F                  *fHistClusE;//!
-  TH1F                  *fHistEovPTracks;//!
-  TH2F                  *fHistEovPvsPtTracks;//!
+  TH1F			            *fHistJetPt;//!		            // raw jet pt (uncorrected)
+  TH1F                  *fHistHighJetPt;//!
 
   TH2F                  *fHistJetPtvsTrackPt[6];//!
   TH1F                  *fHistTrackPt[6];//!
@@ -135,25 +169,17 @@ class AliAnalysisTaskEmcalJetHF : public AliAnalysisTaskEmcalJet {
   TH2F                  *fHistEPAvsC[6];//!
 
   // PID status histo's                                                                                                                     
-  TH1                   *fHistPID;//!
-  TH1                   *fHistPIDtpc;//!
-  TH1                   *fHistPIDits;//!
-  TH1                   *fHistPIDtof;//!
-  TH1F                  *fHistnsigelectron;//!
-  TH2F                  *fHistnSigElecPt;//!
-  TH2F                  *fHistTrackPhivEta;//!
-  TH2F                  *fHistClusterPhivEta;//!
-  TH2F                  *fHistnJetTrackvnJetClusters;//!
-
-  //HF_PID Sparse
-  THnSparse             *fhnPIDHF;//!          // PID sparse
-  //QA Sparse
-  //QA Sparse
-  THnSparse             *fhnQA;             //  QA sparse
-  THnSparse             *fhnJetQA;          //Jet QA Sparse
-  THnSparse             *fhnClusQA;         // cluster QA sparse
-  THnSparse             *fhnTrackQA;        // track QA sparse
-  THnSparse             *fhnGlobalPID;     //Global Track PID
+  TH2F                  *fHistnSigElecPt;//!  check
+  TH2F                  *fHistnJetTrackvnJetClusters;//!  check
+  TH3F                  *fHistPtDEtaDPhiTrackClus; //!track pt, delta eta, delta phi to matched cluster
+  TH3F                  *fHistPtDEtaDPhiClusTrack; //! cluster pt, delta eta, delta phi to matched track
+  
+  //Sparse
+  THnSparse             *fhnPIDHF;//!                  // PID sparse
+  THnSparse             *fhnJetQA;//!                  //Jet QA Sparse
+  THnSparse             *fhnClusterTrackQA;//!         // cluster QA sparse
+  THnSparse             *fhnTrackClusterQA;//!         // track QA sparse
+  THnSparse             *fhnPIDHFTtoC;//!              //Jet PID using track to Cluster matching
   //Declare it private to avoid compilation warning
   
   AliAnalysisTaskEmcalJetHF(const AliAnalysisTaskEmcalJetHF & g) ; // cpy ctor

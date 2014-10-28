@@ -23,7 +23,6 @@ class TObjString;
 class AliAODPWG4Particle;
 class AliAODPWG4ParticleCorrelation ;
 
-
 class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
  public:   
@@ -78,7 +77,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   // Analysis Setters and Getters
   
-  TString      GetCalorimeter()                const { return fCalorimeter       ; }
+  TString      GetTriggerDetectorString()      const { return fIsoDetectorString ; }
   TString      GetTriggerDetector()            const { return fIsoDetector       ; }
   Int_t        GetNCones()                     const { return fNCones            ; }
   Int_t        GetNPtThresFrac()               const { return fNPtThresFrac      ; }
@@ -89,8 +88,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   Int_t        GetMCIndex(Int_t mcTag);
   
-  void         SetCalorimeter(TString & det)         { fCalorimeter     = det    ; }
-  void         SetTriggerDetector(TString & det)     { fIsoDetector     = det    ; }
+  void         SetTriggerDetector(TString & det)     ;
+  void         SetTriggerDetector(Int_t  det)        ;
   void         SetNCones(Int_t ncs)                  { fNCones          = ncs    ; }
   void         SetNPtThresFrac(Int_t npt)            { fNPtThresFrac    = npt    ; }
   void         SetConeSizes(Int_t i, Float_t r)      { fConeSizes[i]    = r      ; }
@@ -99,7 +98,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void 	       SetSumPtThresholds(Int_t i, Float_t pt){ fSumPtThresholds[i] = pt ; }
 
   void         SetMinCellsAngleOverlap(Float_t n)    { fMinCellsAngleOverlap = n ; }
-
   
   Bool_t       IsReIsolationOn()               const { return fReMakeIC          ; }
   void         SwitchOnReIsolation()                 { fReMakeIC      = kTRUE    ; }
@@ -108,9 +106,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       IsSeveralIsolationOn()          const { return fMakeSeveralIC     ; }
   void         SwitchOnSeveralIsolation()            { fMakeSeveralIC = kTRUE    ; }
   void         SwitchOffSeveralIsolation()           { fMakeSeveralIC = kFALSE   ; }
-
-  void         SwitchOnFillPileUpHistograms()        { fFillPileUpHistograms = kTRUE  ; }
-  void         SwitchOffFillPileUpHistograms()       { fFillPileUpHistograms = kFALSE ; }    
   
   void         SwitchOnTMHistoFill()                 { fFillTMHisto   = kTRUE    ; }
   void         SwitchOffTMHistoFill()                { fFillTMHisto   = kFALSE   ; }
@@ -131,9 +126,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnCellHistoFill()               { fFillCellHistograms = kTRUE ; }
   void         SwitchOffCellHistoFill()              { fFillCellHistograms = kFALSE; }
 
-  void         SwitchOnHighMultiplicityHistoFill()   { fFillHighMultHistograms = kTRUE ; }
-  void         SwitchOffHighMultiplicityHistoFill()  { fFillHighMultHistograms = kFALSE; }
-
   void         SwitchOnNLMHistoFill()                { fFillNLMHistograms = kTRUE ; }
   void         SwitchOffNLMHistoFill()               { fFillNLMHistograms = kFALSE; }
   
@@ -147,8 +139,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SetNBackgroundBins(Int_t n)           { if(n < 19) fNBkgBin = n ; }
   void         SetBackgroundLimits(Int_t i,Float_t l){ if(i <= fNBkgBin) fBkgBinLimit[i] = l; }
 
-  void         SwitchOnPtTrigBinShowerShapeHistoFill()  { fFillPtTrigBinSSHistograms = kTRUE ; }
-  void         SwitchOffPtTrigBinShowerShapeHistoFill() { fFillPtTrigBinSSHistograms = kFALSE; }
+  void         SwitchOnPtTrigBinHistoFill()          { fFillPtTrigBinHistograms = kTRUE ; }
+  void         SwitchOffPtTrigBinHistoFill()         { fFillPtTrigBinHistograms = kFALSE; }
   void         SetNPtTrigBins(Int_t n)               { if(n < 19) fNPtTrigBin = n ; }
   void         SetPtTrigLimits(Int_t i,Float_t l)    { if(i <= fNPtTrigBin) fPtTrigBinLimit[i] = l; }
 
@@ -172,16 +164,14 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
  private:
   
-  TString  fCalorimeter ;                         // Calorimeter where neutral particles in cone for isolation are;
-  TString  fIsoDetector ;                         // Candidate particle for isolation detector ;
+  Int_t    fIsoDetector ;                         // Candidate particle for isolation detector ;
+  TString  fIsoDetectorString ;                   // Candidate particle for isolation detector ;
   Bool_t   fReMakeIC ;                            // Do isolation analysis
   Bool_t   fMakeSeveralIC ;                       // Do analysis for different IC
-  Bool_t   fFillPileUpHistograms;                 // Fill pile-up related histograms
   Bool_t   fFillTMHisto;                          // Fill track matching plots
   Bool_t   fFillSSHisto;                          // Fill Shower shape plots
   Bool_t   fFillUEBandSubtractHistograms;         // Fill histograms working on the UE subtraction
   Bool_t   fFillCellHistograms;                   // Fill cell histograms
-  Bool_t   fFillHighMultHistograms;               // Fill high multiplicity histograms
   Bool_t   fFillTaggedDecayHistograms;            // Fill histograms for clusters tagged as decay
   Int_t    fNDecayBits ;                          // in case of study of decay triggers, select the decay bit
   UInt_t   fDecayBits[4] ;                        // in case of study of decay triggers, select the decay bit
@@ -195,7 +185,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNBkgBin;                              // Number of bins on pt content in cone
   Float_t  fBkgBinLimit[20];                      // Pt bin limits on pt content in the cone
 
-  Bool_t   fFillPtTrigBinSSHistograms;            // Fill histograms for different bins in pt trigger
+  Bool_t   fFillPtTrigBinHistograms;              // Fill histograms for different bins in pt trigger
   Int_t    fNPtTrigBin;                           // Number of bins on pt trigger
   Float_t  fPtTrigBinLimit[20];                   // Pt bin limits on pt trigger
   
@@ -209,6 +199,12 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Float_t  fPtThresholds[5] ;                     //! Array with pt thresholds to test
   Float_t  fPtFractions[5] ;                      //! Array with pt thresholds to test frac
   Float_t  fSumPtThresholds[5] ;                  //! Array with pt thresholds to test frac
+  
+  TLorentzVector fMomentum;                       //! Temporary vector, avoid creation per event
+  TLorentzVector fMomIso;                         //! Temporary vector, avoid creation per event
+  TLorentzVector fMomDaugh1;                      //! Temporary vector, avoid creation per event
+  TLorentzVector fMomDaugh2;                      //! Temporary vector, avoid creation per event
+  TVector3       fTrackVector;                    //! Temporary vector, avoid creation per event
   
   //Histograms  
   
@@ -438,23 +434,31 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   // Shower Shape histograms
   TH2F *   fhELambda0[2];                         //! Shower shape of (non) isolated photons (do not apply SS cut previously)  
   TH2F *   fhPtLambda0[2];                        //! Shower shape of (non) isolated photons (do not apply SS cut previously)
-  TH2F *   fhELambda1[2];                         //! Shower shape of (non) isolated photons (do not apply SS cut previously)
+  //TH2F *   fhELambda1[2];                         //! Shower shape of (non) isolated photons (do not apply SS cut previously)
   TH2F *   fhELambda0TRD[2];                      //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
   TH2F *   fhPtLambda0TRD[2];                     //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
-  TH2F *   fhELambda1TRD[2];                      //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
+  //TH2F *   fhELambda1TRD[2];                      //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
 
-  TH1F **  fhPtLeadConeBin ;                      //![fNBkgBin] Candidate shower shape distribution depending on bin of cone leading particle
-  TH1F **  fhSumPtConeBin  ;                      //![fNBkgBin] Candidate shower shape distribution depending on bin of cone sum pt
-  TH1F **  fhPtLeadConeBinMC ;                    //![fNBkgBin*fgkNmcTypes] Candidate shower shape distribution depending on bin of cone leading particle, per MC particle
-  TH1F **  fhSumPtConeBinMC  ;                    //![fNBkgBin*fgkNmcTypes] Candidate shower shape distribution depending on bin of cone sum pt, per MC particle
+  TH1F **  fhPtLeadConeBin ;                      //![fNBkgBin] Candidate Pt distribution depending on bin of cone leading particle
+  TH1F **  fhSumPtConeBin  ;                      //![fNBkgBin] Candidate Pt distribution depending on bin of cone sum pt
+  TH1F **  fhPtLeadConeBinMC ;                    //![fNBkgBin*fgkNmcTypes] Candidate Pt distribution depending on bin of cone leading particle, per MC particle
+  TH1F **  fhSumPtConeBinMC  ;                    //![fNBkgBin*fgkNmcTypes] Candidate Pt distribution depending on bin of cone sum pt, per MC particle
 
-  TH1F **  fhPtLeadConeBinDecay ;                 //![fNBkgBin*fNDecayBits] Candidate shower shape distribution depending on bin of cone leading particle, tagged as decay
-  TH1F **  fhSumPtConeBinDecay  ;                 //![fNBkgBin*fNDecayBits] Candidate shower shape distribution depending on bin of cone sum pt, tagged as decay
+  TH1F **  fhPtLeadConeBinDecay ;                 //![fNBkgBin*fNDecayBits] Candidate Pt distribution depending on bin of cone leading particle, tagged as decay
+  TH1F **  fhSumPtConeBinDecay  ;                 //![fNBkgBin*fNDecayBits] Candidate Pte distribution depending on bin of cone sum pt, tagged as decay
   
   TH2F **  fhPtLeadConeBinLambda0 ;               //![fNBkgBin] Candidate shower shape distribution depending on bin of cone leading particle
   TH2F **  fhSumPtConeBinLambda0  ;               //![fNBkgBin] Candidate shower shape distribution depending on bin of cone sum pt
   TH2F **  fhPtLeadConeBinLambda0MC ;             //![fNBkgBin*fgkNmcTypes] Candidate shower shape distribution depending on bin of cone leading particle, per MC particle
   TH2F **  fhSumPtConeBinLambda0MC  ;             //![fNBkgBin*fgkNmcTypes] Candidate shower shape distribution depending on bin of cone sum pt, per MC particle
+
+  TH1F **  fhPtTrigBinPtLeadCone ;                //![fNPtTrigBin] Candidate pt bin, distribution of cone leading particle pt
+  TH1F **  fhPtTrigBinSumPtCone  ;                //![fNPtTrigBin] Candidate pt bin, distribution of cone sum particle pt
+  TH1F **  fhPtTrigBinPtLeadConeMC ;              //![fNPtTrigBin*fgkNmcTypes] Candidate pt bin, distribution of cone leading particle pt, per MC particle
+  TH1F **  fhPtTrigBinSumPtConeMC  ;              //![fNPtTrigBin*fgkNmcTypes] Candidate pt bin, distribution of cone sum particle pt, per MC particle
+  
+  TH1F **  fhPtTrigBinPtLeadConeDecay ;           //![fNBkgBin*fNDecayBits] Candidate pt bin, distribution of cone leading particle pt, tagged as decay
+  TH1F **  fhPtTrigBinSumPtConeDecay  ;           //![fNBkgBin*fNDecayBits] Candidate pt bin, distribution of cone sum particle pt, tagged as decay
 
   TH2F **  fhPtTrigBinLambda0vsPtLeadCone ;       //![fNPtTrigBin] Candidate shower shape distribution depending vs cone leading particle in pT trigger bins
   TH2F **  fhPtTrigBinLambda0vsSumPtCone  ;       //![fNPtTrigBin] Candidate shower shape distribution depending vs of cone sum pt in pT trigger bins
@@ -487,7 +491,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,30)
+  ClassDef(AliAnaParticleIsolation,32)
 } ;
 
 

@@ -825,7 +825,10 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 
          for(Int_t it=0; it<nTracks; ++it){
             AliAODTrack *tmpTr = 0x0;
-            if(fEmbedMode==kAODFull)      tmpTr = fAODevent->GetTrack(it);
+            if(fEmbedMode==kAODFull)  {
+              tmpTr = dynamic_cast<AliAODTrack*>(fAODevent->GetTrack(it));
+              if(!tmpTr) AliFatal("Not a standard AOD");
+            }
             if(fEmbedMode==kAODJetTracks) tmpTr = dynamic_cast<AliAODTrack*>(leadJet->GetRefTracks()->At(it));
             if(!tmpTr) continue;
             Double_t rd=rndm->Uniform(0.,1.);

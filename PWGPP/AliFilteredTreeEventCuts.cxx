@@ -117,8 +117,8 @@ Bool_t AliFilteredTreeEventCuts::AcceptEvent(AliESDEvent *esdEvent,AliMCEvent *m
       retValue=kFALSE;
   }
 
-  if(vtx->GetZv() < fMinZv) return kFALSE; 
-  if(vtx->GetZv() > fMaxZv) return kFALSE; 
+  if(vtx->GetZ() < fMinZv) return kFALSE; 
+  if(vtx->GetZ() > fMaxZv) return kFALSE; 
 
 return retValue;  
 }

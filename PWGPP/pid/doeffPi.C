@@ -284,9 +284,11 @@ void doeffPi(Int_t pos,Float_t prob,Float_t etaminkp,Float_t etamaxkp){
     expt[i] = (-ptmin+ptmax)/2;
     eff[i] = b2[i][0]/(b[i][0]-b2[i][0]*weightS);
 
-    b[i][0] = b[i][0]-b2[i][0]*weightS;
+    //    b[i][0] = b[i][0]-b2[i][0]*weightS;
 
-    efferr[i] = TMath::Sqrt(b[i][1]*b[i][1]/b[i][0]/b[i][0] + b2[i][1]*b2[i][1]/b2[i][0]/b2[i][0])*(b2[i][0]+b2[i][1])*(1+weightS*(b2[i][0]-b2[i][1])/b[i][0])/b[i][0];//*(1-eff[i]);//der2*der2*(b[i][1]*b[i][1] - b2[i][1]*b2[i][1]));
+    //    efferr[i] = TMath::Sqrt(b[i][1]*b[i][1]/b[i][0]/b[i][0] + b2[i][1]*b2[i][1]/b2[i][0]/b2[i][0])*(b2[i][0]+b2[i][1])*(1+weightS*(b2[i][0]-b2[i][1])/b[i][0])/b[i][0];//*(1-eff[i]);//der2*der2*(b[i][1]*b[i][1] - b2[i][1]*b2[i][1]));
+
+    efferr[i] = 1./(b[i][0]-b2[i][0]*weightS)/(b[i][0]-b2[i][0]*weightS)*TMath::Sqrt(b[i][0]*b[i][0]*b2[i][1]*b2[i][1] + b2[i][0]*b2[i][0]*b[i][1]*b[i][1]);
 
     if(TMath::Abs(efferr[i]) > 1)efferr[i]=1;
   }
@@ -529,7 +531,7 @@ void fit(TH1D *h,Float_t *a,char *opt,char *opt2,Float_t pt){
  if(pt > 2.5){
    if(pt < 2.8) h2->RebinX(2);
    else if(pt < 3) h2->RebinX(4);
-   else h2->RebinX(10);
+   else h2->RebinX(4);
  }
 
  h=h2;

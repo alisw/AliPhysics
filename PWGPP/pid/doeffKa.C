@@ -214,6 +214,8 @@ void doeffKa(Int_t pos,Float_t prob,Float_t etaminkp,Float_t etamaxkp){
     else hh2=GetHistoKan(ptmin,ptmax,pp,0.0);
     AddHisto(hh,hh2,weightS);
 
+    if(xx[i] > 2.5) rebinsize = 2;
+
     h = hh->ProjectionX(name,cmin,cmax);
     h->RebinX(rebinsize);
     h->Draw("ERR");
@@ -294,14 +296,15 @@ void doeffKa(Int_t pos,Float_t prob,Float_t etaminkp,Float_t etamaxkp){
     expt[i] = (-ptmin+ptmax)/2;
     eff[i] = b2[i][0]/(b[i][0]-b2[i][0]*weightS);
 
-    b[i][0] = b[i][0]-b2[i][0]*weightS;
+    //    b[i][0] = b[i][0]-b2[i][0]*weightS;
 
-    if(b[i][0] < 0.5) b[i][0] = 0.5;
-    if(b2[i][0] < 0.5) b2[i][0] = 0.5;
+    //    if(b[i][0] < 0.5) b[i][0] = 0.5;
+    //    if(b2[i][0] < 0.5) b2[i][0] = 0.5;
 
 
-    efferr[i] = TMath::Abs(b[i][1]*b[i][1]/b[i][0]/b[i][0] + b2[i][1]*b2[i][1]/b2[i][0]/b2[i][0])*(b2[i][0]+b2[i][1])*(1+weightS*(b2[i][0]-b2[i][1])/b[i][0])/b[i][0];//*(1-eff[i]);//der2*der2*(b[i][1]*b[i][1] - b2[i][1]*b2[i][1]));
-    efferr[i] = TMath::Sqrt(efferr[i]);
+    //    efferr[i] = TMath::Abs(b[i][1]*b[i][1]/b[i][0]/b[i][0] + b2[i][1]*b2[i][1]/b2[i][0]/b2[i][0])*(b2[i][0]+b2[i][1])*(1+weightS*(b2[i][0]-b2[i][1])/b[i][0])/b[i][0];//*(1-eff[i]);//der2*der2*(b[i][1]*b[i][1] - b2[i][1]*b2[i][1]));
+    //    efferr[i] = TMath::Sqrt(efferr[i]);
+    efferr[i] = 1./(b[i][0]-b2[i][0]*weightS)/(b[i][0]-b2[i][0]*weightS)*TMath::Sqrt(b[i][0]*b[i][0]*b2[i][1]*b2[i][1] + b2[i][0]*b2[i][0]*b[i][1]*b[i][1]);
 
     if(TMath::Abs(efferr[i]) > 1)efferr[i]=1;
   }

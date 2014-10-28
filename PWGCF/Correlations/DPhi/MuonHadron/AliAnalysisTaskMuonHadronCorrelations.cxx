@@ -456,12 +456,13 @@ TObjArray* AliAnalysisTaskMuonHadronCorrelations::GetAcceptedTracksCentralBarrel
   TObjArray *tracks = new TObjArray;
   tracks->SetOwner(kTRUE);
 
-  Int_t nTracks = aodEvent->GetNTracks();
+  Int_t nTracks = aodEvent->GetNumberOfTracks();
 
   AliAODTrack *track = 0;
 
   for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
-    track = aodEvent->GetTrack(iTrack);
+    track = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iTrack));
+    if(!track) AliFatal("Not a standard AOD");
     if (track->TestFilterBit(fFilterBitCentralBarrel) && track->Eta()>fMinEtaCentralBarrel && track->Eta()<fMaxEtaCentralBarrel) {
       tracks->Add(new AliAODTrack(*track));
     }
@@ -480,12 +481,13 @@ TObjArray* AliAnalysisTaskMuonHadronCorrelations::GetAcceptedTracksMuonArm(AliAO
   TObjArray *tracks = new TObjArray;
   tracks->SetOwner(kFALSE);
 
-  Int_t nTracks = aodEvent->GetNTracks();
+  Int_t nTracks = aodEvent->GetNumberOfTracks();
 
   AliAODTrack *track = 0;
   
   for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
-    track = aodEvent->GetTrack(iTrack);
+    track = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iTrack));
+    if(!track) AliFatal("Not a standard AOD");
     if (track->IsMuonTrack()) fHistSingleMuonsTrigMatch[centBin]->Fill(track->GetMatchTrigger());
     if (track->IsMuonTrack() && track->GetMatchTrigger()>=fTriggerMatchLevelMuon) {
       fHistSingleMuonsChi2[centBin]->Fill(track->Chi2perNDF());
@@ -576,7 +578,7 @@ Int_t AliAnalysisTaskMuonHadronCorrelations::GetCentBin() {
 
 Double_t AliAnalysisTaskMuonHadronCorrelations::GetITSMultiplicity() {
 
-  Double_t multiplicity = fAOD->GetHeader()->GetNumberOfITSClusters(1);
+  Double_t multiplicity = ((AliVAODHeader*)fAOD->GetHeader())->GetNumberOfITSClusters(1);
 
   return multiplicity;
 

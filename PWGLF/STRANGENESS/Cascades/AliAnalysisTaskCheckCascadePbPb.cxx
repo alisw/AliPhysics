@@ -1310,7 +1310,8 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
     nTrackWithTPCrefitMultiplicity = 0;
     lPrimaryTrackMultiplicity = 0;
     for (Int_t itrack = 0; itrack<nTrackMultiplicity; itrack++) {
-      AliAODTrack* track = lAODevent->GetTrack(itrack);
+      AliAODTrack* track = dynamic_cast<AliAODTrack*>(lAODevent->GetTrack(itrack));
+      if(!track) AliFatal("Not a standard AOD");
       if (track->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA)) lPrimaryTrackMultiplicity++; // kTrkGlobal tight DCA cut --> mult is much lower than the one selectied with standard cuts in ESDs
       if (track->IsOn(AliAODTrack::kTPCrefit)) nTrackWithTPCrefitMultiplicity++;
     }

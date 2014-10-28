@@ -1211,7 +1211,7 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
   float vertexX  = -999;
   float vertexY  = -999;
   float vertexZ  = -999;
-  float vertexXY = -999;
+  //float vertexXY = -999;
 
   float centrality = -999;
   //Double_t nSigma =-999;  
@@ -1219,8 +1219,8 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
     {
 
       //Centrality                                                                                                                          
-      //AliAODHeader* centralityObject = fAODEvent->GetHeader()->GetCentralityP();                                                          
-      AliCentrality* centralityObject =  fAODEvent->GetHeader()->GetCentralityP();
+      //AliAODHeader* centralityObject = ((AliVAODHeader*)fAODEvent->GetHeader())->GetCentralityP();                                                          
+      AliCentrality* centralityObject =  ((AliVAODHeader*)fAODEvent->GetHeader())->GetCentralityP();
       if (centralityObject)
         {
           v0Centr  = centralityObject->GetCentralityPercentile("V0M");
@@ -1259,7 +1259,7 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
           vertexX = vertex->GetX();
           vertexY = vertex->GetY();
           vertexZ = vertex->GetZ();
-          vertexXY = sqrt(vertexX*vertexX+vertexY*vertexY);
+          //vertexXY = sqrt(vertexX*vertexX+vertexY*vertexY);
         }
       if (vertexZ  < _vertexZMin  || vertexZ  > _vertexZMax ) return;
 
@@ -1536,7 +1536,10 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	      bitOK  = t->TestFilterBit(_trackFilterBit);
 	      if (!bitOK) continue;
 	      Int_t gID = t->GetID();
-	      newAodTrack = gID >= 0 ?t : fAODEvent->GetTrack(trackMap->GetValue(-1-gID));
+	      newAodTrack = gID >= 0 ?t : dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(trackMap->GetValue(-1-gID)));
+              if(!newAodTrack) {
+                AliFatal("Not a standard AOD?");
+              }
 	      
 	      q      = t->Charge();
 	      charge = int(q);

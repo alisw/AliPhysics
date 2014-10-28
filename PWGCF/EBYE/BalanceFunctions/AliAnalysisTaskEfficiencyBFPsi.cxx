@@ -351,9 +351,9 @@ void AliAnalysisTaskEfficiencyBFPsi::UserExec(Option_t *) {
 	if(vertex->GetNContributors() > 0) {
 	  if(vertex->GetZRes() != 0) {
 	    fHistEventStats->Fill(3); //events with a proper vertex
-	    if(TMath::Abs(vertex->GetXv()) < fVxMax) {
-	      if(TMath::Abs(vertex->GetYv()) < fVyMax) {
-		if(TMath::Abs(vertex->GetZv()) < fVzMax) {
+	    if(TMath::Abs(vertex->GetX()) < fVxMax) {
+	      if(TMath::Abs(vertex->GetY()) < fVyMax) {
+		if(TMath::Abs(vertex->GetZ()) < fVzMax) {
 		  fHistEventStats->Fill(4); //analyzed events
 		  
 		  Int_t nMCParticles = mcEvent->GetNumberOfTracks();
@@ -459,13 +459,11 @@ void AliAnalysisTaskEfficiencyBFPsi::UserExec(Option_t *) {
 		    if(IsLabelUsed(labelArray,label)) continue;
 		    labelArray.AddAt(label,labelCounter);
 		    labelCounter += 1;
-
-		    Bool_t iFound = kFALSE;
+		  
 		    Int_t mcGoods = nMCLabelCounter;
 		    for (Int_t k = 0; k < mcGoods; k++) {
 		      Int_t mcLabel = labelMCArray.At(k);
-		      iFound = kFALSE;
-		    			      
+		      		    			      
 		      if (mcLabel != TMath::Abs(label)) continue;
 		      if(mcLabel != label) continue;
 		      if(label > stack->GetNtrack()) continue;

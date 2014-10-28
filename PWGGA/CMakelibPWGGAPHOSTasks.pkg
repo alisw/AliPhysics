@@ -63,3 +63,9 @@ set ( EINCLUDE  PWGGA/PWGGAUtils PWGGA/PHOSTasks/PHOS_pp_pi0 PWGGA/PHOSTasks/Cal
 install (FILES PHOSTasks/CaloCellQA/macros/AddTaskCaloCellsQA.C 
 	       PHOSTasks/CaloCellQA/macros/AddTaskPHOSQA.C 
 	 DESTINATION PWGGA/PHOSTasks/CaloCellQA/macros)
+
+install (FILES PHOSTasks/PHOS_TriggerQA/macros/AddTaskPHOSTriggerQA.C
+	 DESTINATION PWGGA/PHOSTasks/PHOS_TriggerQA/macros/ )
+
+install (FILES PHOSTasks/PHOS_PbPbQA/macros/AddTaskPHOSPbPb.C
+	 DESTINATION PWGGA/PHOSTasks/PHOS_PbPbQA/macros/ )

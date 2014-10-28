@@ -53,7 +53,8 @@ private:
   TH2D *fTPCNSigma;   // TPC NSigma values vs mom
   TH2D *fTPCTOFNSigma;   // TPC^2+ TOF^2 NSigma values vs mom
   TH2D *fTPCvsTOFNSigma; // TPC vs TOF
-  
+  TH1D *fParticleOrigin; //particle origin from MC
+  TH1D *fParticleId;     //true particle identification from MC
 
 };
 

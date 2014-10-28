@@ -1766,7 +1766,8 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
      const AliAODVertex* vertex = AODevent->GetPrimaryVertex();
     for(Int_t iT = 0; iT < nAODTracks; iT++) {
       
-      AliAODTrack* aodTrack = AODevent->GetTrack(iT);
+      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(AODevent->GetTrack(iT));
+      if(!aodTrack) AliFatal("Not a standard AOD");
       
       //FOR AOD068, filterCut_Set2=KTRUE WHEN THE TRACK SATISFIES THE CUTS FROM JET ANALYSIS
       
@@ -2016,8 +2017,8 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
     //const AliAODVertex* vertex = AODevent->GetPrimaryVertex();
     for(Int_t iT = 0; iT < nAODTracks; iT++) {
       
-      AliAODTrack* aodTrack = AODevent->GetTrack(iT);
-      
+      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(AODevent->GetTrack(iT));
+      if(!aodTrack) AliFatal("Not a standard AOD");
       
       UShort_t filterFlag = 0;
   

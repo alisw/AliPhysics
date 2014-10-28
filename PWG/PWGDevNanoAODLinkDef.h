@@ -4,11 +4,8 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliNanoAODReplicator+;
-#pragma link C++ class AliNanoAODTrackMapping+;
-#pragma link C++ class AliNanoAODTrack+;
 #pragma link C++ class AliAnalysisTaskNanoAODFilter+;
-#pragma link C++ class AliNanoAODStorage+;
-#pragma link C++ class AliNanoAODHeader+;
+#pragma link C++ class AliNanoAODTrack+;
 #pragma link C++ class AliNanoAODCustomSetter+;
 #pragma link C++ class AliAnalysisNanoAODTrackCuts+;
 #pragma link C++ class AliAnalysisNanoAODEventCuts+;

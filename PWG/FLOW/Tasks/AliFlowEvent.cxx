@@ -334,7 +334,8 @@ AliFlowEvent::AliFlowEvent( const AliAODEvent* anInput,
   //loop over tracks
   for (Int_t itrkN=0; itrkN<iNumberOfInputTracks; itrkN++)
   {
-    AliAODTrack* pParticle = anInput->GetTrack(itrkN);   //get input particle
+    AliAODTrack* pParticle = dynamic_cast<AliAODTrack*>(anInput->GetTrack(itrkN));
+    if(!pParticle) AliFatal("Not a standard AOD");   //get input particle
 
     //check if pParticle passes the cuts
     Bool_t rpOK = kTRUE;
