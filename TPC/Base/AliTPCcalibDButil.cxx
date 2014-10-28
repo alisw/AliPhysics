@@ -3412,14 +3412,14 @@ TTree* AliTPCcalibDButil::ConnectCalPadTrees(TString baseDir, TString pattern, T
 	  tMain->SetAlias((friendName+"."+bname+"_MedianDelta").Data(), (friendName+"."+bname+".fElements-"+friendName+"."+bname+"_Median").Data());       
 	  tMain->SetAlias((friendName+"."+bname+"_LTMDelta").Data(), (friendName+"."+bname+".fElements-"+friendName+"."+bname+"_LTM").Data());       
 	}	
-	if (branches->FindObject(bname+"_Med3")!=0){	  
-	  tMain->SetAlias((friendName+"."+bname+"_Med3Ratio").Data(), (friendName+"."+bname+".fElements/"+friendName+"."+bname+"_Med3").Data());       
-	  tMain->SetAlias((friendName+"."+bname+"_Med5Ratio").Data(), (friendName+"."+bname+".fElements/"+friendName+"."+bname+"_Med5").Data());       
-	  tMain->SetAlias((friendName+"."+bname+"_Par6GRatio").Data(), (friendName+"."+bname+".fElements/"+friendName+"."+bname+"_Par6G").Data());       
-	  tMain->SetAlias((friendName+"."+bname+"_Med3Delta").Data(), (friendName+"."+bname+".fElements-"+friendName+"."+bname+"_Med3").Data());       
-	  tMain->SetAlias((friendName+"."+bname+"_Med5Delta").Data(), (friendName+"."+bname+".fElements-"+friendName+"."+bname+"_Med5").Data());       
-	  tMain->SetAlias((friendName+"."+bname+"_Par6GDelta").Data(), (friendName+"."+bname+".fElements-"+friendName+"."+bname+"_Par6G").Data());       
-	}	
+	//	if (branches->FindObject(bname+"_Med3.")!=0){	  
+	  tMain->SetAlias((friendName+"."+bname+"_Med3Ratio").Data(), (friendName+"."+bname+".fElements/"+friendName+"."+bname+"Med3.fElements").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_Med5Ratio").Data(), (friendName+"."+bname+".fElements/"+friendName+"."+bname+"Med5.fElements").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_Par6GRatio").Data(), (friendName+"."+bname+".fElements/"+friendName+"."+bname+"Par6G.fElements").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_Med3Delta").Data(), (friendName+"."+bname+".fElements-"+friendName+"."+bname+"Med3.fElements").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_Med5Delta").Data(), (friendName+"."+bname+".fElements-"+friendName+"."+bname+"Med5.fElements").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_Par6GDelta").Data(), (friendName+"."+bname+".fElements-"+friendName+"."+bname+"Par6G.fElements").Data());       
+	  //	}	
       }
     }
   }
