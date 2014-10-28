@@ -69,6 +69,8 @@ fCrossCheckRowsLength(0),
 fCrossCheckClusterLength(0),
 fCrossCheckRowsLengthAcc(0),
 fCrossCheckClusterLengthAcc(0),
+fCrossCheckPtresLength(0),
+fCrossCheckPtresRows(0),
 fCutSettings(0),
 fEventplaneDist(0),
 fEventplaneRunDist(0),
@@ -538,6 +540,12 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fCrossCheckClusterLengthAcc = new TH2F("fCrossCheckClusterLengthAcc","fCrossCheckClusterLengthAcc;Length in TPC;NClusters",170,0,170,170,0,170);
   fCrossCheckClusterLengthAcc->Sumw2();
   
+  fCrossCheckPtresLength = new TH2F("fCrossCheckPtresLength","fCrossCheckPtresLength;Length in TPC;#sigma(1/pT)*pT",170,0,170,100,0,1);
+  fCrossCheckPtresLength->Sumw2();
+  
+  fCrossCheckPtresRows = new TH2F("fCrossCheckPtresRows","fCrossCheckPtresRows;NcrossedRows;#sigma(1/pT)*pT",170,0,170,100,0,1);
+  fCrossCheckPtresRows->Sumw2();
+  
   fCutSettings = new TH1F("fCutSettings","fCutSettings",100,0,10);
   fCutSettings->GetYaxis()->SetTitle("cut value");
   fCutSettings->SetBit(TH1::kCanRebin);
@@ -648,6 +656,8 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fCrossCheckClusterLength);
   fOutputList->Add(fCrossCheckRowsLengthAcc);
   fOutputList->Add(fCrossCheckClusterLengthAcc);
+  fOutputList->Add(fCrossCheckPtresLength);
+  fOutputList->Add(fCrossCheckPtresRows);
   fOutputList->Add(fCutSettings);
   fOutputList->Add(fEventplaneDist);
   fOutputList->Add(fEventplaneRunDist);
@@ -772,7 +782,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	
 	dMCEventZv = mcHdr->GetVtxZ();
 	dMCTrackZvPtEtaCent[0] = dMCEventZv;
-	dMCEventplaneAngle = MoveEventplane(genHijingHeader->ReactionPlaneAngle());
+	dMCEventplaneAngle = genHijingHeader->ReactionPlaneAngle();//MoveEventplane(genHijingHeader->ReactionPlaneAngle());
 	fEventStatistics->Fill("MC all events",1);
 	fMCEventplaneDist->Fill(dMCEventplaneAngle);
   }
@@ -815,11 +825,11 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   // get event plane Angle from AODHeader, default is Q
   ep = const_cast<AliAODEvent*>(eventAOD)->GetEventplane();
   if(ep) {
-	dEventplaneAngle = MoveEventplane(ep->GetEventplane(GetEventplaneSelector().Data(),eventAOD));
+	dEventplaneAngle = ep->GetEventplane(GetEventplaneSelector().Data(),eventAOD);//MoveEventplane(ep->GetEventplane(GetEventplaneSelector().Data(),eventAOD));
 	if(GetEventplaneSelector().CompareTo("Q") == 0) 
 	{
 	  epQvector = ep->GetQVector(); 
-	  if(epQvector) dEventplaneAngle = epQvector->Phi();//MoveEventplane(epQvector->Phi());
+	  if(epQvector) dEventplaneAngle = epQvector->Phi()/2.;//MoveEventplane(epQvector->Phi());
 	}
   }
   
@@ -979,7 +989,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 		iSubtractedTracks++;
 	  }
 	  TVector2 epCorrected(dX, dY);
-	  dEventplaneAngleCorrected = epCorrected.Phi(); // see AlEPSelectionTask.cxx:354 - without dividing by 2!
+	  dEventplaneAngleCorrected = epCorrected.Phi()/2.; // see AlEPSelectionTask.cxx:354
 	}
 	else
 	{
@@ -1123,30 +1133,30 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 //   delete [] iIndexAcceptedTracks;
 }
 
-Double_t AlidNdPtAnalysisPbPbAOD::MoveEventplane(Double_t dMCEP)
-{
-  Double_t retval = 0;
-  retval = dMCEP;
-  
-  if( (dMCEP > 0) && (dMCEP < 1./2.*TMath::Pi()) ) 
-  {
-	return retval;
-  }
-  
-  if( (dMCEP >= 1./2.*TMath::Pi()) && (dMCEP <= 3./2.*TMath::Pi()) )
-  {
-	retval -= TMath::Pi();
-	return retval;
-  }
-  
-  if(dMCEP > 3./2.*TMath::Pi())
-  {
-	retval -= 2.*TMath::Pi();
-	return retval;
-  }
-  
-  return -9999.;
-}
+// Double_t AlidNdPtAnalysisPbPbAOD::MoveEventplane(Double_t dMCEP)
+// {
+//   Double_t retval = 0;
+//   retval = dMCEP;
+//   
+//   if( (dMCEP > 0) && (dMCEP < 1./2.*TMath::Pi()) ) 
+//   {
+// 	return retval;
+//   }
+//   
+//   if( (dMCEP >= 1./2.*TMath::Pi()) && (dMCEP <= 3./2.*TMath::Pi()) )
+//   {
+// 	retval -= TMath::Pi();
+// 	return retval;
+//   }
+//   
+//   if(dMCEP > 3./2.*TMath::Pi())
+//   {
+// 	retval -= 2.*TMath::Pi();
+// 	return retval;
+//   }
+//   
+//   return -9999.;
+// }
 
 Double_t AlidNdPtAnalysisPbPbAOD::RotatePhi(Double_t phiTrack, Double_t phiEP)
 {
@@ -1159,7 +1169,7 @@ Double_t AlidNdPtAnalysisPbPbAOD::RotatePhi(Double_t phiTrack, Double_t phiEP)
   }
   if( dPhi > TMath::Pi() )
   {
-	dPhi = TMath::Pi()/2. - dPhi;
+	dPhi = 2.*TMath::Pi() - dPhi;
 	return dPhi;
   }
 //   if( (dPhi > TMath::Pi()) && (dPhi <= 3./2.*TMath::Pi()) )
@@ -1350,6 +1360,10 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr, Double_t dCentr
   
   
   FillDebugHisto(dCheck, dKine, dCentrality, kFALSE);
+  
+  fCrossCheckPtresLength->Fill(dLengthInTPC, dSigmaOneOverPt*tr->Pt());
+  fCrossCheckPtresRows->Fill(dCrossedRowsTPC, dSigmaOneOverPt*tr->Pt());
+  
   
   // first cut on length
   
