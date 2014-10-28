@@ -388,6 +388,9 @@ AliFMDEnergyFitter::Fit(const TList* dir)
   for (Int_t i = 0; i < nStack; i++) 
     d->Add(stack[i]);
 
+  // If we have no ring histograms, re-init. 
+  if (fRingHistos.GetEntries() <= 0) Init();
+
   AliInfoF("Will do fits for %d rings", fRingHistos.GetEntries());
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
@@ -962,21 +965,30 @@ AliFMDEnergyFitter::RingHistos::FitSlices(TList*           dir,
   TList* l = GetOutputList(dir);
   if (!l) return 0; 
 
-  // Get the energy distributions from the output container 
-  // TList* dists = static_cast<TList*>(l->FindObject("EDists"));
-  // if (!dists) { 
-  //   AliWarning(Form("Didn't find EtaEDists (%s) in %s", 
-  // 		    fName.Data(), l->GetName()));
-  //   l->ls();
-  //   return 0;
-  // }
+  TList* dists = 0;
+  // Get the 2D histogram 
   TH2* h = static_cast<TH2*>(l->FindObject(name));
   if (!h) { 
     AliWarningF("Didn't find 2D histogram '%s' in %s", name, l->GetName());
-    l->ls();
+    // Get the energy distributions from the output container 
+    dists = static_cast<TList*>(l->FindObject("EDists"));
+    if (!dists) { 
+      AliWarningF("Didn't find EtaEDists (%s) in %s", 
+		  fName.Data(), l->GetName());
+      l->ls();
+      return 0;
+    }
+  }
+  if (!h && !dists) return 0;
+
+  const TAxis* pEta = (h ? h->GetXaxis() : 
+			    static_cast<TAxis*>(dir->FindObject("etaAxis")));
+  if (!pEta) { 
+    AliWarningF("Didn't find the eta axis - either from histogram %p or "
+		"list %p (%s)", h, dir, (dir ? dir->GetName() : "-"));
     return 0;
   }
-  const TAxis& eta = *(h->GetXaxis());
+  const TAxis& eta = *pEta;
 
   // Create an output list for the fitted distributions 
   TList* out = new TList;
@@ -1018,7 +1030,7 @@ AliFMDEnergyFitter::RingHistos::FitSlices(TList*           dir,
     pars->Add(hA[i-1] = MakePar(Form("a%d",i+1), Form("a_{%d}",i+1), eta));
 
   
-  Int_t nDists = h->GetNbinsX(); // dists->GetEntries();
+  Int_t nDists = h ? h->GetNbinsX() : dists->GetEntries();
   Int_t low    = nDists;
   Int_t high   = 0;
   Int_t nEmpty = 0;
@@ -1030,10 +1042,10 @@ AliFMDEnergyFitter::RingHistos::FitSlices(TList*           dir,
     best->SetOwner(false);
   }
   for (Int_t i = 0; i < nDists; i++) { 
-    // TH1D* dist = static_cast<TH1D*>(dists->At(i));
     // Ignore empty histograms altoghether 
     Int_t b    = i+1;
-    TH1D* dist = h->ProjectionY(Form(fgkEDistFormat,GetName(),b),b,b,"e");
+    TH1D* dist = (h ? h->ProjectionY(Form(fgkEDistFormat,GetName(),b),b,b,"e") 
+		  : static_cast<TH1D*>(dists->At(i)));
     if (!dist) { 
       // If we got the null pointer, return 0
       nEmpty++;
@@ -1064,7 +1076,8 @@ AliFMDEnergyFitter::RingHistos::FitSlices(TList*           dir,
       case 1: nEmpty++; break;
       case 2: nLow++;   break;
       }
-      delete dist;
+      // Only clean up if we have no input list 
+      if (h) delete dist;
       continue;
     }
       
