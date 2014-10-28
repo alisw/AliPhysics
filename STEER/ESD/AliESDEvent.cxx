@@ -613,9 +613,9 @@ void AliESDEvent::Print(Option_t *) const
 	 GetMagneticField() );
   if (fPrimaryVertex)
     printf("Vertex: (%.4f +- %.4f, %.4f +- %.4f, %.4f +- %.4f) cm\n",
-	   fPrimaryVertex->GetXv(), fPrimaryVertex->GetXRes(),
-	   fPrimaryVertex->GetYv(), fPrimaryVertex->GetYRes(),
-	   fPrimaryVertex->GetZv(), fPrimaryVertex->GetZRes());
+	   fPrimaryVertex->GetX(), fPrimaryVertex->GetXRes(),
+	   fPrimaryVertex->GetY(), fPrimaryVertex->GetYRes(),
+	   fPrimaryVertex->GetZ(), fPrimaryVertex->GetZRes());
   printf("Mean vertex in RUN: X=%.4f Y=%.4f Z=%.4f cm\n",
 	 GetDiamondX(),GetDiamondY(),GetDiamondZ());
   if(fSPDMult)

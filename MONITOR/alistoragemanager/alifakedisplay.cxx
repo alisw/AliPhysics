@@ -47,9 +47,12 @@ int main(int argc, char **argv)
 	{
 		socket = EVENTS_SERVER_SUB;
 		manager->CreateSocket(socket);
+		cout<<"Socket created"<<endl;
 		while(1)
 		{
+		  cout<<"waiting for event..."<<flush;
 			event = manager->GetEvent(socket);
+			
 			if(event)
 			{
 				cout<<"Received event. Run:"<<event->GetRunNumber()<<"\t event:"<<event->GetEventNumberInFile()<<endl;

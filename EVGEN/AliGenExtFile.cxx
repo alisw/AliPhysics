@@ -98,7 +98,7 @@ void AliGenExtFile::Generate()
   Double_t time = 0.;
   Double_t p[4];
   Float_t random[6];
-  Int_t i = 0, j, nt;
+  Int_t i=0, j, nt;
   //
   //
   if (fVertexSmear == kPerEvent) Vertex();
@@ -111,7 +111,7 @@ void AliGenExtFile::Generate()
       Warning("AliGenExtFile::Generate","\nNo more events in external file!!!\nLast event may be empty or incomplete.\n");
       return;
     }
-    for (Int_t i=0; i<nTracks; ++i) {
+    for (i = 0; i < nTracks; ++i) {
       if (NULL == fReader->NextParticle())
 	AliFatal("Error while skipping tracks");
     }
@@ -213,7 +213,7 @@ void AliGenExtFile::Generate()
     };
     SelectorLogic selector;
     selector.init();
-    for (Int_t i = 0; i < nTracks; i++) {
+    for (i = 0; i < nTracks; i++) {
        TParticle* jparticle = fReader->NextParticle();
        selector.setData(i,
              jparticle->GetFirstMother(),

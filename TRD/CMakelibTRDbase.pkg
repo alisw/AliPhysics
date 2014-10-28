@@ -144,3 +144,5 @@ set ( EXPORT
   AliTRDtrackGTU.h
   AliTRDtrackletGTU.h
    )
+install (FILES AliTRDgeometry.h
+  DESTINATION TRD)

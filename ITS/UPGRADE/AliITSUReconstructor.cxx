@@ -30,6 +30,7 @@
 
 #include "AliTracker.h"
 #include "AliITSUTrackerCooked.h"
+#include "AliITSUCATracker.h"
 
 #include "AliITSUGeomTGeo.h"
 #include "AliITSUSegmentationPix.h"
@@ -195,10 +196,10 @@ AliTracker* AliITSUReconstructor::CreateTracker() const
      tracker = new AliITSUTrackerCooked((AliITSUReconstructor*)this);
      ((AliITSUTrackerCooked*)tracker)->SetSAonly(sa);
      break;
-  // case 2:
-  //    tracker = new AliITSUTrackerSA((AliITSUReconstructor*)this);
-  //    ((AliITSUTrackerSA*)tracker)->SetSAonly(sa);
-  //    break;
+  case 2:
+     tracker = new AliITSUCATracker((AliITSUReconstructor*)this);
+     ((AliITSUCATracker*)tracker)->SetSAonly(sa);
+     break;
   default:
      AliFatal("Undefined ITSU tracker type !");
   }
@@ -213,8 +214,12 @@ AliVertexer* AliITSUReconstructor::CreateVertexer() const
   // create a ITS vertexer
   // 
   AliInfo("Creating vertexer using tracklets with the first 3 ITS layers");
-  //  AliDebug(1,"ITSU vertexer should be initiated here\n");
-  return new AliITSUVertexer();
+
+  if (GetRecoParam()->GetEventSpecie() & AliRecoParam::kHighMult) {
+    return new AliITSUVertexer();
+  } else {
+    return new AliITSUVertexer(0.05,0.003,0.04,0.8,3);
+  }
 }
 
 //_____________________________________________________________________________

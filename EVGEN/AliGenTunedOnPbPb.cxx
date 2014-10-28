@@ -178,7 +178,7 @@ void AliGenTunedOnPbPb::Generate()
       Double_t pz = ytanh*TMath::Sqrt(mt2)/TMath::Sqrt(1-ytanh*ytanh);
       Double_t etot = TMath::Sqrt(mt2 + pz*pz);
       TLorentzVector tempVect(pt,0,pz,etot);
-      Double_t eta = tempVect.PseudoRapidity(); 
+      //      Double_t eta = tempVect.PseudoRapidity(); 
       Double_t scaleEtaV2 = 1; // set the eta dependence
       if(TMath::Abs(y)> fYlimitForFlatness) scaleEtaV2 = 1 - fYdecreaseV2*(TMath::Abs(y) - fYlimitForFlatness);
 

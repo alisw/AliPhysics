@@ -22,6 +22,9 @@
 #include "AliLog.h"
 #include "TMatrixD.h"
 #include "TClonesArray.h"
+#include "AliAODMCHeader.h"
+#include "AliGenEventHeader.h"
+#include "AliAODMCParticle.h"
 
 //====================================================================================================================================================
 
@@ -57,6 +60,12 @@ public:
     if (!PlaneExists(muon, iPlane)) return kFALSE;
     else return !(muon->GetMFTClusterPattern() & (1<<(iPlane+AliMFTConstants::fNMaxPlanes)));
   }
+
+  static Bool_t IsCorrectMatch(AliAODTrack *muon);
+
+  static TString GetGenerator(Int_t label, AliAODMCHeader* header);
+  static void GetTrackPrimaryGenerator(AliAODTrack *track, AliAODMCHeader *header, TClonesArray *arrayMC, TString &nameGen);
+  static Bool_t IsTrackInjected(AliAODTrack *track, AliAODMCHeader *header, TClonesArray *arrayMC);
 
   static void ConvertCovMatrixMUON2AOD(const TMatrixD& covMUON, Double_t covAOD[21]);
   static const TMatrixD ConvertCovMatrixAOD2MUON(AliAODTrack *muon);

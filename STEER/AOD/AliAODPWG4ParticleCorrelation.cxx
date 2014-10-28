@@ -16,9 +16,11 @@
 /* $Id:   AliAODPWG4ParticleCorrelation.h $ */
 
 //-------------------------------------------------------------------------
-//     AOD class for photon and other particles storage and 
-//     correlation studies
-//     Author: Yves Schutz, CERN, Gustavo Conesa, INFN
+//     AOD objects class in use in the CaloTrackCorrelations
+//     analysis pacackge ($ALICE_ROOT/PWGGA/CaloTrackCorrelations)
+//     Includes correlation objects
+//
+//     Author: Gustavo Conesa Balbastre - CNRS-LPSC-Grenoble
 //-------------------------------------------------------------------------
 
 //-- ROOT system --
@@ -32,9 +34,8 @@ ClassImp(AliAODPWG4ParticleCorrelation)
 
 //______________________________________________________________________________
  AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation() :
-   AliAODPWG4Particle(), fIsolated(kFALSE),
-   fLeadingParticle(kTRUE),
-   fLeadingDetector(""), fLeading(), fCorrJet(),  fCorrBkg(), fRefJet(0),
+   AliAODPWG4Particle(),
+   fLeadingDetector(-1), fLeading(), fCorrJet(),  fCorrBkg(), fRefJet(0),
    fListOfObjArrays(0)
 {
   // constructor
@@ -42,9 +43,8 @@ ClassImp(AliAODPWG4ParticleCorrelation)
 
 //______________________________________________________________________________
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(Double_t px, Double_t py, Double_t pz, Double_t e):
-  AliAODPWG4Particle(), fIsolated(kFALSE),
-  fLeadingParticle(kTRUE),
-  fLeadingDetector(""),  fLeading(), fCorrJet(),
+  AliAODPWG4Particle(),
+  fLeadingDetector(-1),  fLeading(), fCorrJet(),
   fCorrBkg(), fRefJet(0),  fListOfObjArrays(new TList)
 {
   // constructor
@@ -55,9 +55,8 @@ AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(Double_t px, Double
 
 //______________________________________________________________________________
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(TLorentzVector & p):
-  AliAODPWG4Particle(p), fIsolated(kFALSE),
-  fLeadingParticle(kTRUE),
-  fLeadingDetector(""),  fLeading(), fCorrJet(), fCorrBkg(), fRefJet(0),  fListOfObjArrays(new TList)
+  AliAODPWG4Particle(p),
+  fLeadingDetector(-1),  fLeading(), fCorrJet(), fCorrBkg(), fRefJet(0), fListOfObjArrays(new TList)
 {
   // constructor
   fListOfObjArrays->SetOwner(kTRUE);
@@ -66,9 +65,8 @@ AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(TLorentzVector & p)
 
 //______________________________________________________________________________
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(AliAODPWG4Particle & p):
-  AliAODPWG4Particle(p), fIsolated(kFALSE),
-  fLeadingParticle(kTRUE),
-  fLeadingDetector(""),  fLeading(), fCorrJet(), fCorrBkg(),fRefJet(0),   fListOfObjArrays(new TList)
+  AliAODPWG4Particle(p),
+  fLeadingDetector(-1),  fLeading(), fCorrJet(), fCorrBkg(),fRefJet(0), fListOfObjArrays(new TList)
 {
   // constructor
   fListOfObjArrays->SetOwner(kTRUE);
@@ -101,9 +99,7 @@ void AliAODPWG4ParticleCorrelation::Clear(const Option_t* /*opt*/)
 
 //______________________________________________________________________________
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(const AliAODPWG4ParticleCorrelation& part) :
-  AliAODPWG4Particle(part), fIsolated(part.fIsolated),
-  fLeadingParticle(part.fLeadingParticle),
-  fLeadingDetector(part.fLeadingDetector), fLeading(part.fLeading),  
+  AliAODPWG4Particle(part), fLeadingDetector(part.fLeadingDetector), fLeading(part.fLeading),  
   fCorrJet(part.fCorrJet), fCorrBkg(part.fCorrBkg), fRefJet(part.fRefJet),   
   fListOfObjArrays(new TList)
 {
@@ -116,10 +112,8 @@ AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(const AliAODPWG4Par
 //{
 //  // Assignment operator
 //  if(this!=&part) {
-//  
-//    fIsolated = part.fIsolated;
+//
 //    fRefJet   = part.fRefJet ;
-//    fLeadingDetector =part.fLeadingDetector;
 //    fLeading  = part.fLeading;
 //    fCorrJet  = part.fCorrJet ;
 //    fCorrBkg  = part.fCorrBkg; 
@@ -136,11 +130,9 @@ void AliAODPWG4ParticleCorrelation::Print(Option_t* /*option*/) const
   // Print information of all data members
   AliAODPWG4Particle::Print("");
 
-  if(fIsolated) printf("Isolated! \n");
-
   if(GetJet()) GetJet()->Print("");
 
-  printf("Leading Detector : %s\n",fLeadingDetector.Data());
+  printf("Leading Detector : %d\n",fLeadingDetector);
   printf("Leading Particle 4-vector:\n");
   printf("     E  = %13.3f",   fLeading.E() );
   printf("     Px = %13.3f",   fLeading.Px());
