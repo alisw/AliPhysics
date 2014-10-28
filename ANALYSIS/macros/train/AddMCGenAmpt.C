@@ -42,7 +42,7 @@ AliGenerator *AddMCGenAmpt(
   genAMPT->SetProjectile("A", 208, 82);
   genAMPT->SetTarget    ("A", 208, 82);
   genAMPT->SetPtHardMin (2);
-  genAMPT->SetImpactParameterRange(0.00,20.00);
+  genAMPT->SetImpactParameterRange(bmin,bmax);
   //=========================================================================
 
   // options
