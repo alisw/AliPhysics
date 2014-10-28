@@ -18,7 +18,6 @@
 class TLorentzVector ;
 class TList   ;
 class TH2F    ;
-class TString ;
 
 class AliNeutralMesonSelection : public TObject {
   
@@ -37,7 +36,7 @@ class AliNeutralMesonSelection : public TObject {
   Bool_t   AreNeutralMesonSelectionHistosKept()   const { return fKeepNeutralMesonHistos ; }
   void     KeepNeutralMesonSelectionHistos(Bool_t keep) { fKeepNeutralMesonHistos = keep ; }
   
-  Bool_t   SelectPair(TLorentzVector particlei,  TLorentzVector particlej, TString calo)  ;
+  Bool_t   SelectPair(TLorentzVector particlei,  TLorentzVector particlej, Int_t calo)  ;
   
   void     SetParticle(TString particleName) ;  // Do some default settings for "Pi0" or "Eta"
   TString  GetParticle()                          const { return fParticle               ; }

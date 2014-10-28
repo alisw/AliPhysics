@@ -423,7 +423,8 @@ void AliEbyEHigherMomentsEffContTask::doAODEvent(){
   }  
   
   
-  AliAODHeader *aodHeader = fAOD->GetHeader();
+  AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+  if(!aodHeader) AliFatal("Not a standard AOD");
   
   Int_t cent = -1;
   cent =  aodHeader->GetCentralityP()->GetCentralityClass10(fCentralityEstimator.Data());
@@ -480,7 +481,8 @@ void AliEbyEHigherMomentsEffContTask::doAODEvent(){
       Int_t gID = aodTrack1->GetID();
       
       //if( aodTrack->GetID() != (-aodTrack1->GetID() -1) ) continue;
-      newAodTrack = gID >= 0 ? aodTrack1 : fAOD->GetTrack(trackMap->GetValue(-1-gID)); //Take those global track who corresponds to TPC only track
+      newAodTrack = gID >= 0 ? aodTrack1 : dynamic_cast<AliAODTrack*>(fAOD->GetTrack(trackMap->GetValue(-1-gID))); //Take those global track who corresponds to TPC only track
+      if(!newAodTrack) AliFatal("Not a standard AOD");
       
       Float_t dxy = 0., dz = 0.;
       
@@ -630,7 +632,8 @@ void AliEbyEHigherMomentsEffContTask::doMCAODEvent(){
     return;
   }
   
-  AliAODHeader *aodHeader = fAOD->GetHeader();
+  AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+  if(!aodHeader) AliFatal("Not a standard AOD");
   
   Int_t cent = -1;
   cent =  aodHeader->GetCentralityP()->GetCentralityClass10(fCentralityEstimator.Data());
@@ -713,7 +716,8 @@ void AliEbyEHigherMomentsEffContTask::doMCAODEvent(){
     
     //if( aodTrack->GetID() != (-aodTrack1->GetID() -1) ) continue;
     
-    newAodTrack = gID >= 0 ? aodTrack1 : fAOD->GetTrack(trackMap->GetValue(-1-gID)); //Take those global track who corresponds to TPC only track
+    newAodTrack = gID >= 0 ? aodTrack1 : dynamic_cast<AliAODTrack*>(fAOD->GetTrack(trackMap->GetValue(-1-gID))); //Take those global track who corresponds to TPC only track
+    if(!newAodTrack) AliFatal("Not a standard AOD");
     
     Float_t dxy = 0., dz = 0.;
     
@@ -937,7 +941,8 @@ void AliEbyEHigherMomentsEffContTask::FillEffSparse(){
 	  
 	  if(fAOD)
 	    
-	    aodTrack = fAOD->GetTrack(iRec);
+	    aodTrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iRec));
+	    if(!aodTrack) AliFatal("Not a standard AOD");
 	  
 	  if(aodTrack){
 	    

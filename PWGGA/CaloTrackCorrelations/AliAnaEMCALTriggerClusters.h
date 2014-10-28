@@ -67,6 +67,8 @@ class AliAnaEMCALTriggerClusters : public AliAnaCaloTrackCorrBaseClass {
   Float_t fMinM02  ;                                  // Remove clusters with large M02
   Float_t fMaxM02  ;                                  // Remove clusters with small M02
   
+  TLorentzVector fMomentum ;                          //! Cluster momentum
+  
   // Histograms
   
   TH1F * fhE               ;                          //! Raw clusters E
@@ -161,7 +163,7 @@ class AliAnaEMCALTriggerClusters : public AliAnaCaloTrackCorrBaseClass {
   AliAnaEMCALTriggerClusters(              const AliAnaEMCALTriggerClusters & g) ; // cpy ctor
   AliAnaEMCALTriggerClusters & operator = (const AliAnaEMCALTriggerClusters & g) ; // cpy assignment
   
-  ClassDef(AliAnaEMCALTriggerClusters,1)
+  ClassDef(AliAnaEMCALTriggerClusters,2)
 
 } ;
  

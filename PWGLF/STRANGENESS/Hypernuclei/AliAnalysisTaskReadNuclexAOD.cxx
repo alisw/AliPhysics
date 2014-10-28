@@ -638,7 +638,7 @@ void AliAnalysisTaskReadNuclexAOD::UserExec(Option_t *)
   centrality = lAODevent->GetCentrality();
     
   Float_t percentile=centrality->GetCentralityPercentile("V0M");
-  Float_t refMult = lAODevent->GetHeader()->GetRefMultiplicity();
+  Float_t refMult = ((AliVAODHeader*)lAODevent->GetHeader())->GetRefMultiplicity();
   
   fHistTrackMultiplicity->Fill(refMult,percentile); //tracce per evento
 

@@ -31,11 +31,8 @@ set ( SRCS
     DevNanoAOD/AliAnalysisTaskNanoAODFilter.cxx
     DevNanoAOD/AliESEHelpers.cxx
     DevNanoAOD/AliNanoAODCustomSetter.cxx
-    DevNanoAOD/AliNanoAODHeader.cxx
     DevNanoAOD/AliNanoAODReplicator.cxx
-    DevNanoAOD/AliNanoAODStorage.cxx
     DevNanoAOD/AliNanoAODTrack.cxx
-    DevNanoAOD/AliNanoAODTrackMapping.cxx
     DevNanoAOD/AliAnalysisTaskSpectraAllChNanoAOD.cxx
     )
 

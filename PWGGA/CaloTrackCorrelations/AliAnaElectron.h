@@ -17,7 +17,6 @@
 class TH2F ;
 class TH1F;
 class TH3D;
-class TString ;
 class TObjString;
 
 // --- ANALYSIS system ---
@@ -56,7 +55,7 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   
   // Analysis methods
   
-  Bool_t       ClusterSelected(AliVCluster* cl, TLorentzVector mom, Int_t nMaxima) ;
+  Bool_t       ClusterSelected(AliVCluster* cl, Int_t nMaxima) ;
   
   void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag , Int_t pidTag) ;
   
@@ -139,6 +138,10 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
 
   Int_t    fAODParticle;                       // Select the type of particle to put in AODs for other analysis
   
+  TLorentzVector fMomentum;                    //! cluster momentum
+  TLorentzVector fMomentumMC;                  //! mc particle momentum
+  TVector3       fProdVertex;                  //! mc particle production vertex
+
   //Histograms
   TH2F * fhdEdxvsE;                            //! matched track dEdx vs cluster E 
   TH2F * fhdEdxvsP;                            //! matched track dEdx vs track P

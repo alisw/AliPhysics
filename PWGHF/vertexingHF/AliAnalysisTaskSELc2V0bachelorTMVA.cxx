@@ -188,7 +188,9 @@ AliAnalysisTaskSE(),
   fCurrentEvent(-1),
   fBField(0),
   fKeepingOnlyPYTHIABkg(kFALSE),
-  fHistoMCLcK0Sp(0x0)
+  fHistoMCLcK0SpGen(0x0),
+  fHistoMCLcK0SpGenAcc(0x0),
+  fHistoMCLcK0SpGenLimAcc(0x0)
 {
   //
   // Default ctor
@@ -309,7 +311,9 @@ AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA(const Cha
   fCurrentEvent(-1),
   fBField(0),
   fKeepingOnlyPYTHIABkg(kFALSE),
-  fHistoMCLcK0Sp(0x0)
+  fHistoMCLcK0SpGen(0x0),
+  fHistoMCLcK0SpGenAcc(0x0),
+  fHistoMCLcK0SpGenLimAcc(0x0)
 
 {
   //
@@ -419,7 +423,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::Terminate(Option_t*)
   }
 
   
-  AliDebug(2, Form("At MC level, %f Lc --> K0S + p were found", fHistoMCLcK0Sp->GetEntries()));
+  AliDebug(2, Form("At MC level, %f Lc --> K0S + p were found", fHistoMCLcK0SpGen->GetEntries()));
+  AliDebug(2, Form("At MC level, %f Lc --> K0S + p were found in the acceptance", fHistoMCLcK0SpGenAcc->GetEntries()));
 
   fOutputKF = dynamic_cast<TList*> (GetOutputData(6));
   if (!fOutputKF) {     
@@ -613,7 +618,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
 
   const Float_t ptbins[15] = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 12., 17., 25., 35.};
 
-  fHistoMCLcK0Sp = new TH1F("fHistoMCLcK0Sp", "fHistoMCLcK0Sp", 14, ptbins);
+  fHistoMCLcK0SpGen = new TH1F("fHistoMCLcK0SpGen", "fHistoMCLcK0SpGen", 14, ptbins);
+  fHistoMCLcK0SpGenAcc = new TH1F("fHistoMCLcK0SpGenAcc", "fHistoMCLcK0SpGenAcc", 14, ptbins);
+  fHistoMCLcK0SpGenLimAcc = new TH1F("fHistoMCLcK0SpGenLimAcc", "fHistoMCLcK0SpGenLimAcc", 14, ptbins);
 
   fOutput->Add(fHistoEvents);
   fOutput->Add(fHistoLc);
@@ -624,7 +631,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
   fOutput->Add(fHistoCodesBkg);
   fOutput->Add(fHistoLcpKpiBeforeCuts);
   fOutput->Add(fHistoBackground);
-  fOutput->Add(fHistoMCLcK0Sp);
+  fOutput->Add(fHistoMCLcK0SpGen);
+  fOutput->Add(fHistoMCLcK0SpGenAcc);
+  fOutput->Add(fHistoMCLcK0SpGenLimAcc);
 
   PostData(1, fOutput);
   PostData(4, fVariablesTreeSgn);
@@ -875,7 +884,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
   AliAODMCHeader *mcHeader=0;
 
   if (fUseMCInfo) {
-    // MC array need for maching
+    // MC array need for matching
     mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
     if (!mcArray) {
       AliError("Could not find Monte-Carlo in AOD");
@@ -950,16 +959,20 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
       AliDebug(2, Form("Step 1 ok: The MC particle has correct daughters!!"));
       AliAODMCParticle* daugh0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labeldaugh0));
       AliAODMCParticle* daugh1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labeldaugh1));
+      if(!daugh0 || !daugh1){
+	AliDebug(2,"Particle daughters not properly retrieved!");
+	return;
+      }
       Int_t pdgCodeDaugh0 = TMath::Abs(daugh0->GetPdgCode());
       Int_t pdgCodeDaugh1 = TMath::Abs(daugh1->GetPdgCode());
-      //      AliAODMCParticle* bachelorMC = daugh0;
+      AliAODMCParticle* bachelorMC = daugh0;
       AliAODMCParticle* v0MC = daugh1;
       AliDebug(2, Form("pdgCodeDaugh0 = %d, pdgCodeDaugh1 = %d", pdgCodeDaugh0, pdgCodeDaugh1));
       if ((pdgCodeDaugh0 == 311 && pdgCodeDaugh1 == 2212) || (pdgCodeDaugh0 == 2212 && pdgCodeDaugh1 == 311)){ 
 	// we are in the case of Lc --> K0 + p; now we have to check if the K0 decays in K0S, and if this goes in pi+pi-
 	/// first, we set the bachelor and the v0: above we assumed first proton and second V0, but we could have to change it:
 	if (pdgCodeDaugh0 == 311 && pdgCodeDaugh1 == 2212) {
-	  // bachelorMC = daugh1;
+	  bachelorMC = daugh1;
 	  v0MC = daugh0;
 	}
 	AliDebug(2, Form("Number of Daughters of v0 = %d", v0MC->GetNDaughters()));
@@ -1002,7 +1015,13 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
 		else { // Full chain: Lc --> K0 + p, K0 --> K0S, K0S --> pi+pi-
 		  if (fAnalCuts->IsInFiducialAcceptance(mcPart->Pt(), mcPart->Y())) {
 		    AliDebug(2, Form("----> Filling histo with pt = %f", mcPart->Pt()));
-		    fHistoMCLcK0Sp->Fill(mcPart->Pt());
+		    if(TMath::Abs(mcPart->Y()) < 0.5) fHistoMCLcK0SpGenLimAcc->Fill(mcPart->Pt());
+		    fHistoMCLcK0SpGen->Fill(mcPart->Pt());
+		    if(!(TMath::Abs(bachelorMC->Eta()) > 0.9 || bachelorMC->Pt() < 0.1 ||
+			 TMath::Abs(daughK0S0->Eta()) > 0.9 || daughK0S0->Pt() < 0.1 ||
+			 TMath::Abs(daughK0S1->Eta()) > 0.9 || daughK0S1->Pt() < 0.1)) {
+		      fHistoMCLcK0SpGenAcc->Fill(mcPart->Pt());
+		    }
 		  }
 		  else {
 		    AliDebug(2, "not in fiducial acceptance! Skipping");

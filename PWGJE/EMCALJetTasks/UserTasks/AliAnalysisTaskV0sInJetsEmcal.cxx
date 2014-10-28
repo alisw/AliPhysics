@@ -105,8 +105,8 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
 
   fJetsCont(0),
   fJetsBgCont(0),
-  fTracksCont(0),
-  fCaloClustersCont(0),
+//  fTracksCont(0),
+//  fCaloClustersCont(0),
 
   fdCutVertexZ(10),
   fdCutVertexR2(1),
@@ -353,8 +353,8 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
 
   fJetsCont(0),
   fJetsBgCont(0),
-  fTracksCont(0),
-  fCaloClustersCont(0),
+//  fTracksCont(0),
+//  fCaloClustersCont(0),
 
   fdCutVertexZ(10),
   fdCutVertexR2(1),
@@ -600,10 +600,10 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
     fJetsCont = 0;
   if(fJetsBgCont && fJetsBgCont->GetArray() == 0)
     fJetsBgCont = 0;
-  if(fTracksCont && fTracksCont->GetArray() == 0)
-    fTracksCont = 0;
-  if(fCaloClustersCont && fCaloClustersCont->GetArray() == 0)
-    fCaloClustersCont = 0;
+//  if(fTracksCont && fTracksCont->GetArray() == 0)
+//    fTracksCont = 0;
+//  if(fCaloClustersCont && fCaloClustersCont->GetArray() == 0)
+//    fCaloClustersCont = 0;
 }
 
 Bool_t AliAnalysisTaskV0sInJetsEmcal::Run()
@@ -622,18 +622,20 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
 
   fJetsCont = GetJetContainer(0);
   fJetsBgCont = GetJetContainer(1);
-  if(fJetsCont) //get particles and clusters connected to jets
-  {
-    fTracksCont = fJetsCont->GetParticleContainer();
-    fCaloClustersCont = fJetsCont->GetClusterContainer();
-  }
-  else //no jets, just analysis tracks and clusters
-  {
-    fTracksCont = GetParticleContainer(0);
-    fCaloClustersCont = GetClusterContainer(0);
-  }
-  fTracksCont->SetClassName("AliVTrack");
-  fCaloClustersCont->SetClassName("AliAODCaloCluster");
+//  if(fJetsCont) //get particles and clusters connected to jets
+//  {
+//    fTracksCont = fJetsCont->GetParticleContainer();
+//    fCaloClustersCont = fJetsCont->GetClusterContainer();
+//  }
+//  else //no jets, just analysis tracks and clusters
+//  {
+//    fTracksCont = GetParticleContainer(0);
+//    fCaloClustersCont = GetClusterContainer(0);
+//  }
+//  if(fTracksCont)
+//    fTracksCont->SetClassName("AliVTrack");
+//  if(fCaloClustersCont)
+//    fCaloClustersCont->SetClassName("AliVCluster");
 
   // Initialise random-number generator
   fRandom = new TRandom3(0);
@@ -1277,7 +1279,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   }
 
 //  fdCentrality = fAODIn->GetHeader()->GetCentrality(); // event centrality
-  fdCentrality = fAODIn->GetHeader()->GetCentralityP()->GetCentralityPercentile("V0M"); // event centrality
+  fdCentrality = ((AliVAODHeader*)fAODIn->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M"); // event centrality
   if(!fbIsPbPb)
     fdCentrality = 0.;
   Int_t iCentIndex = GetCentralityBinIndex(fdCentrality); // get index of centrality bin
@@ -1460,7 +1462,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   // select good jets and copy them to another array
   if(bJetEventGood)
   {
-    dRho = fJetsCont->GetRhoVal();
+    if(fbIsPbPb)
+      dRho = fJetsCont->GetRhoVal();
 //    printf("TaskV0sInJetsEmcal: Loaded rho value: %g\n",dRho);
     if(bLeadingJetOnly)
       iNJet = 1; // only leading jets
@@ -1475,7 +1478,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         if(fDebug > 5) printf("TaskV0sInJetsEmcal: Jet %d not accepted in container\n", iJet);
         continue;
       }
-      Double_t dPtJetCorr = jetSel->Pt() - dRho * jetSel->Area();
+      Double_t dPtJetCorr = jetSel->PtSub(dRho);
       if(bPrintJetSelection)
         if(fDebug > 7) printf("jet: i = %d, pT = %g, eta = %g, phi = %g, pt lead tr = %g, pt corr = %g ", iJet, jetSel->Pt(), jetSel->Eta(), jetSel->Phi(), fJetsCont->GetLeadingHadronPt(jetSel), dPtJetCorr);
 //          printf("TaskV0sInJetsEmcal: Checking pt > %.2f for jet %d with pt %.2f\n",fdCutPtJetMin,iJet,jetSel->Pt());
@@ -2964,7 +2967,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
     return kFALSE;
   Double_t centrality;
 //  centrality = fAOD->GetHeader()->GetCentrality();
-  centrality = fAOD->GetHeader()->GetCentralityP()->GetCentralityPercentile("V0M");
+  centrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
   if(fbIsPbPb)
   {
     if(centrality < 0)

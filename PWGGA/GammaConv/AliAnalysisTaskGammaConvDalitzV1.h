@@ -68,6 +68,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		void ProcessPhotonCandidates();
 		void ProcessTruePhotonCandidates(AliAODConversionPhoton*);
 		void ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate, AliAODConversionPhoton *TrueVirtualGammaCandidate);
+		void ProcessTrueChicCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate, AliAODConversionPhoton *TruejpsiCandidate);
 		void MoveParticleAccordingToVertex(AliAODConversionPhoton* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
 		void ProcessElectronCandidates();
 		void ProcessVirtualGammasCandidates();
@@ -161,6 +162,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH1F 									**hMCAllPositronsPt;
 		TH1F 									**hMCAllElectronsPt;
 		TH1F 									**hMCConvGammaEta;
+		TH1F									**hMCConvGammaR;
 		TH1F 									**hMCAllPositronsEta;
 		TH1F 									**hMCAllElectronsEta;
 		TH1F 									**hMCPi0DalitzGammaPt;
@@ -204,6 +206,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH2F 									**hESDTrueBckContInvMassPt;
 		TH2F 									**hESDTrueMotherGGInvMassPt;
 		TH1F 									**hESDTrueConvGammaPt;
+		TH1F 									**hESDTrueConvGammaR;
 		TH1F 									**hESDTruePositronPt;
 		TH1F 									**hESDTrueElectronPt;
 		TH1F 									**hESDTrueSecConvGammaPt;

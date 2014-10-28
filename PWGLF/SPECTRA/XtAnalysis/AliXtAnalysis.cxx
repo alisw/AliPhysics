@@ -249,7 +249,7 @@ void AliXtAnalysis::UserExec(Option_t *) {
     
     // Get good tracks to the list
     for(Int_t it = 0; it < nt; it++) {
-        AliAODTrack *track = aodEvent->GetTrack(it);
+        AliAODTrack *track = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(it));
         if( !track ) continue;
         if( !track->TestFilterBit(filterBit) ) continue;
         double eta = track->Eta();

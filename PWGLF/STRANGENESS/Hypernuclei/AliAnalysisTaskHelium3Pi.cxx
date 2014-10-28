@@ -765,9 +765,9 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
     
     fHistEventMultiplicity->Fill(1); // analyzed events with PV
  
-    xPrimaryVertex=vtx->GetXv();
-    yPrimaryVertex=vtx->GetYv();
-    zPrimaryVertex=vtx->GetZv();  
+    xPrimaryVertex=vtx->GetX();
+    yPrimaryVertex=vtx->GetY();
+    zPrimaryVertex=vtx->GetZ();  
     
     if(TMath::Abs(zPrimaryVertex)>10) return;
     

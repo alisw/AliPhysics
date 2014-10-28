@@ -1325,8 +1325,8 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
     return;
   }
 
-//  fdCentrality = fAODIn->GetHeader()->GetCentrality(); // event centrality
-  fdCentrality = fAODIn->GetHeader()->GetCentralityP()->GetCentralityPercentile("V0M"); // event centrality
+//  fdCentrality = ((AliVAODHeader*)fAODIn->GetHeader())->GetCentrality(); // event centrality
+  fdCentrality = ((AliVAODHeader*)fAODIn->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M"); // event centrality
   if(!fbIsPbPb)
     fdCentrality = 0.;
   Int_t iCentIndex = GetCentralityBinIndex(fdCentrality); // get index of centrality bin
@@ -3049,7 +3049,7 @@ AliAODJet* AliAnalysisTaskV0sInJets::GetMedianCluster(const TClonesArray* array,
     iIndex = ((fRandom->Rndm() > 0.5) ? iIndex1 : iIndex2);
 //    printf("AliAnalysisTaskV0sInJets::GetMedianCluster: Even, median index = %d or %d -> %d/%d\n", iIndex1, iIndex2, iIndex, iNCl);
   }
-  iIndexMed = (vecListClusters[iIndex])[0];
+  iIndexMed = Int_t((vecListClusters[iIndex])[0]);
 
 //  printf("AliAnalysisTaskV0sInJets::GetMedianCluster: getting median cluster %d/%d ok, rho = %g\n", iIndexMed, iNClTot, (vecListClusters[iIndex])[1]);
   clusterMed = (AliAODJet*)(array->At(iIndexMed));
@@ -3118,7 +3118,7 @@ Bool_t AliAnalysisTaskV0sInJets::IsSelectedForJets(AliAODEvent* fAOD, Double_t d
     return kFALSE;
   Double_t centrality;
 //  centrality = fAOD->GetHeader()->GetCentrality();
-  centrality = fAOD->GetHeader()->GetCentralityP()->GetCentralityPercentile("V0M");
+  centrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
   if(fbIsPbPb)
   {
     if(centrality < 0)

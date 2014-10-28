@@ -67,6 +67,9 @@
 #include "TGeoGlobalMagField.h"
 #include "AliMagF.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskEmcalJetHF)
 
 //________________________________________________________________________
@@ -495,7 +498,7 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
         Double_t dphi = 999;
         Int_t NumbCluster = -999;
         NumbCluster = fCaloClustersCont->GetNClusters();
-        Double_t JetQA[5] = {Njets, jet->GetNumberOfTracks(), jet->GetNumberOfClusters(),jet->Eta(), jet->Phi()};
+        Double_t JetQA[5] = {static_cast<Double_t>(Njets), static_cast<Double_t>(jet->GetNumberOfTracks()), static_cast<Double_t>(jet->GetNumberOfClusters()),jet->Eta(), jet->Phi()};
         fhnJetQA->Fill(JetQA);
         
       //***********************************************

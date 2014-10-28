@@ -283,7 +283,7 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     Double_t MultipOrCent = -1;
     AliAODEvent* aodEvent=dynamic_cast<AliAODEvent*>(pEvent);
     if (aodEvent) {
-      centralityObj = aodEvent->GetHeader()->GetCentralityP();
+      centralityObj = ((AliVAODHeader*)aodEvent->GetHeader())->GetCentralityP();
       if (centralityObj) {
 	MultipOrCent = centralityObj->GetCentralityPercentileUnchecked("V0M");
       }

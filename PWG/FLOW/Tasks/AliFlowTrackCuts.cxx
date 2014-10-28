@@ -1409,6 +1409,10 @@ Int_t AliFlowTrackCuts::Count(AliVEvent* event)
 AliFlowTrackCuts* AliFlowTrackCuts::GetAODTrackCutsForFilterBit(UInt_t bit, TString suffix)
 {
   // object which in its default form only cuts on filterbit (for AOD analysis)
+  // NOTE : the cut object is defined in such a way that ONLY filterbit is tested, 
+  // all other paramters are NOT checked 
+  // the exception is TPCdecx which is always cut for reasons of backward compatibility
+  // but by setting the threshold to larger than -99999999 effectively there is no check
   AliFlowTrackCuts* cuts = new AliFlowTrackCuts(Form("AOD fitlerbit %i, %s", (int)bit, suffix.Data()));
   cuts->SetMinimalTPCdedx(-999999999);
   cuts->SetAODfilterBit(bit);

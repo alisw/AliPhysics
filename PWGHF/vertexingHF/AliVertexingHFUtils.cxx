@@ -239,6 +239,37 @@ Int_t AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(TClonesArray*
   }
   return nChargedMC;
 }
+
+
+//______________________________________________________________________
+Double_t AliVertexingHFUtils::GetVZEROAEqualizedMultiplicity(AliAODEvent* ev){
+  //
+  // Method to get VZERO-A equalized multiplicty as done in AliCentralitySelectionTask
+  //  getting the equalized VZERO factors from the tender or AOD
+  // http://git.cern.ch/pubweb/AliRoot.git/blob/HEAD:/ANALYSIS/AliCentralitySelectionTask.cxx#l1345
+
+  Double_t multV0AEq=0;
+  for(Int_t iCh = 32; iCh < 64; ++iCh) {
+    Double_t mult = ev->GetVZEROEqMultiplicity(iCh);
+    multV0AEq += mult;
+  }
+  return multV0AEq;
+}
+
+//______________________________________________________________________
+Double_t AliVertexingHFUtils::GetVZEROCEqualizedMultiplicity(AliAODEvent* ev){
+  // Method to get VZERO-C equalized multiplicty as done in AliCentralitySelectionTask
+  //  getting the equalized VZERO factors from the tender or AOD
+  // http://git.cern.ch/pubweb/AliRoot.git/blob/HEAD:/ANALYSIS/AliCentralitySelectionTask.cxx#l1345
+
+  Double_t multV0CEq=0;
+  for(Int_t iCh = 0; iCh < 32; ++iCh) {
+    Double_t mult = ev->GetVZEROEqMultiplicity(iCh);
+    multV0CEq += mult;
+  }
+  return multV0CEq;
+}
+
 //______________________________________________________________________
 void AliVertexingHFUtils::AveragePt(Float_t& averagePt, Float_t& errorPt,Float_t ptmin,Float_t ptmax, TH2F* hMassD, Float_t massFromFit, Float_t sigmaFromFit, TF1* funcB2, Float_t sigmaRangeForSig,Float_t sigmaRangeForBkg, Float_t minMass, Float_t maxMass, Int_t rebin){
 

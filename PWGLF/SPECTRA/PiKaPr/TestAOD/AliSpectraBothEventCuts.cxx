@@ -386,10 +386,13 @@ Bool_t AliSpectraBothEventCuts::CheckMultiplicityCut()
 	{
 		AliAODEvent* aodevent=0x0;
 		aodevent=dynamic_cast<AliAODEvent*>(fAOD);
+                AliAODHeader * header = dynamic_cast<AliAODHeader*>(aodevent->GetHeader());
+                if(!header) AliFatal("Not a standard AOD");
+
 		if(TMath::Abs(0.8-fetarangeofmultiplicitycut)<0.1)
-			Ncharged=aodevent->GetHeader()->GetRefMultiplicityComb08();
+			Ncharged=header->GetRefMultiplicityComb08();
 		else if (TMath::Abs(0.5-fetarangeofmultiplicitycut)<0.1)
-			Ncharged=aodevent->GetHeader()->GetRefMultiplicityComb05();
+			Ncharged=header->GetRefMultiplicityComb05();
 		else 
 			Ncharged=-1;
 	}

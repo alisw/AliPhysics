@@ -323,17 +323,17 @@ void AliAnaVZEROQA::UserExec(Option_t */*option*/)
   const AliESDVertex *vtx = esd->GetPrimaryVertexSPD();
 
   if (flaga <= 1 && flagc <=1) {
-    fhVtxXYBB->Fill(vtx->GetXv(),vtx->GetYv());
-    fhVtxZBB->Fill(vtx->GetZv());
+    fhVtxXYBB->Fill(vtx->GetX(),vtx->GetY());
+    fhVtxZBB->Fill(vtx->GetZ());
   }
   else {
     if (flaga == 2) {
-      fhVtxXYBGA->Fill(vtx->GetXv(),vtx->GetYv());
-      fhVtxZBGA->Fill(vtx->GetZv());
+      fhVtxXYBGA->Fill(vtx->GetX(),vtx->GetY());
+      fhVtxZBGA->Fill(vtx->GetZ());
     }
     if (flagc == 2) {
-      fhVtxXYBGC->Fill(vtx->GetXv(),vtx->GetYv());
-      fhVtxZBGC->Fill(vtx->GetZv());
+      fhVtxXYBGC->Fill(vtx->GetX(),vtx->GetY());
+      fhVtxZBGC->Fill(vtx->GetZ());
     }
   }
 

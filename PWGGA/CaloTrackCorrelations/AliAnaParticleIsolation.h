@@ -64,7 +64,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
  
   //Analysis specific methods 
   
-  void         FillPileUpHistograms(Int_t clusterID) ;
+  void         FillPileUpHistograms(Float_t energy, Float_t time) ; //Int_t clusterID) ;
   
   void         FillAcceptanceHistograms();
  
@@ -77,6 +77,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   // Analysis Setters and Getters
   
+  TString      GetTriggerDetectorString()      const { return fIsoDetectorString ; }
   TString      GetTriggerDetector()            const { return fIsoDetector       ; }
   Int_t        GetNCones()                     const { return fNCones            ; }
   Int_t        GetNPtThresFrac()               const { return fNPtThresFrac      ; }
@@ -87,7 +88,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   Int_t        GetMCIndex(Int_t mcTag);
   
-  void         SetTriggerDetector(TString & det)     { fIsoDetector     = det    ; }
+  void         SetTriggerDetector(TString & det)     ;
+  void         SetTriggerDetector(Int_t  det)        ;
   void         SetNCones(Int_t ncs)                  { fNCones          = ncs    ; }
   void         SetNPtThresFrac(Int_t npt)            { fNPtThresFrac    = npt    ; }
   void         SetConeSizes(Int_t i, Float_t r)      { fConeSizes[i]    = r      ; }
@@ -162,7 +164,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
  private:
   
-  TString  fIsoDetector ;                         // Candidate particle for isolation detector ;
+  Int_t    fIsoDetector ;                         // Candidate particle for isolation detector ;
+  TString  fIsoDetectorString ;                   // Candidate particle for isolation detector ;
   Bool_t   fReMakeIC ;                            // Do isolation analysis
   Bool_t   fMakeSeveralIC ;                       // Do analysis for different IC
   Bool_t   fFillTMHisto;                          // Fill track matching plots
@@ -196,6 +199,12 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Float_t  fPtThresholds[5] ;                     //! Array with pt thresholds to test
   Float_t  fPtFractions[5] ;                      //! Array with pt thresholds to test frac
   Float_t  fSumPtThresholds[5] ;                  //! Array with pt thresholds to test frac
+  
+  TLorentzVector fMomentum;                       //! Temporary vector, avoid creation per event
+  TLorentzVector fMomIso;                         //! Temporary vector, avoid creation per event
+  TLorentzVector fMomDaugh1;                      //! Temporary vector, avoid creation per event
+  TLorentzVector fMomDaugh2;                      //! Temporary vector, avoid creation per event
+  TVector3       fTrackVector;                    //! Temporary vector, avoid creation per event
   
   //Histograms  
   
@@ -425,10 +434,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   // Shower Shape histograms
   TH2F *   fhELambda0[2];                         //! Shower shape of (non) isolated photons (do not apply SS cut previously)  
   TH2F *   fhPtLambda0[2];                        //! Shower shape of (non) isolated photons (do not apply SS cut previously)
-  TH2F *   fhELambda1[2];                         //! Shower shape of (non) isolated photons (do not apply SS cut previously)
+  //TH2F *   fhELambda1[2];                         //! Shower shape of (non) isolated photons (do not apply SS cut previously)
   TH2F *   fhELambda0TRD[2];                      //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
   TH2F *   fhPtLambda0TRD[2];                     //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
-  TH2F *   fhELambda1TRD[2];                      //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
+  //TH2F *   fhELambda1TRD[2];                      //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
 
   TH1F **  fhPtLeadConeBin ;                      //![fNBkgBin] Candidate Pt distribution depending on bin of cone leading particle
   TH1F **  fhSumPtConeBin  ;                      //![fNBkgBin] Candidate Pt distribution depending on bin of cone sum pt
@@ -482,7 +491,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,31)
+  ClassDef(AliAnaParticleIsolation,32)
 } ;
 
 

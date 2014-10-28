@@ -84,9 +84,10 @@ void processCFv2vsPt(const char *filePath = "AnalysisResults.root",
 
  // Finally, make some nice plots...:
  // Access "v2 vs. pT" histogram from the specified output file: 
-  TFile *f = TFile::Open(filePath,"READ");
-
+ TFile *f = TFile::Open(filePath,"READ");
  TDirectoryFile *df = (TDirectoryFile*)f->FindObjectAny("outputQCanalysisTPCstandalone");
+ if(!df){df = (TDirectoryFile*)f->FindObjectAny("outputQCanalysis");} // for toy MC
+ if(!df){cout<<"df is NULL pointer!!!!"<<endl; exit(0);}
  TList *l = NULL;
  TList *listTemp = df->GetListOfKeys();
  if(listTemp && listTemp->GetEntries() == 1)
@@ -95,17 +96,19 @@ void processCFv2vsPt(const char *filePath = "AnalysisResults.root",
   df->GetObject(listName.Data(),l);
  } 
  TList *diffFlowList = dynamic_cast<TList*> l->FindObject("Differential Flow");
- diffFlowList = dynamic_cast<TList*> diffFlowList->FindObject("Results");
- diffFlowList = dynamic_cast<TList*> diffFlowList->FindObject("Differential flow (POI, p_{T})");
+ TList *diffFlowResultsList = dynamic_cast<TList*> diffFlowList->FindObject("Results");
+ TList *diffFlowDifFlowList = dynamic_cast<TList*> diffFlowResultsList->FindObject("Differential flow (POI, p_{T})");
 
  // v2{2} vs. pT:
- TH1D *v22 = dynamic_cast<TH1D*> diffFlowList->FindObject("fDiffFlow, POI, p_{T}, v'{2}");
+ TH1D *v22 = dynamic_cast<TH1D*> diffFlowDifFlowList->FindObject("fDiffFlow, POI, p_{T}, v'{2}");
+ if(!v22){cout<<"v22 is NULL"<<endl; exit(0);}
  v22->SetMarkerStyle(kFullCircle);
  v22->SetMarkerColor(kBlue);
  v22->SetLineColor(kBlue);
 
  // v2{4} vs. pT:
- TH1D *v24 = dynamic_cast<TH1D*> diffFlowList->FindObject("fDiffFlow, POI, p_{T}, v'{4}");
+ TH1D *v24 = dynamic_cast<TH1D*> diffFlowDifFlowList->FindObject("fDiffFlow, POI, p_{T}, v'{4}");
+ if(!v24){cout<<"v24 is NULL"<<endl; exit(0);}
  v24->SetMarkerStyle(kFullSquare);
  v24->SetMarkerColor(kRed);
  v24->SetLineColor(kRed);
@@ -126,7 +129,9 @@ void processCFv2vsPt(const char *filePath = "AnalysisResults.root",
  hist->SetStats(kFALSE);
  hist->SetTitle("");
  hist->GetXaxis()->SetTitle("p_{T}");
- hist->GetYaxis()->SetRangeUser(0.0,0.3044);
+ Double_t maxFlow_y = v22->GetMaximum(0.75); // Hardwiring that max_value is <= 0.75 for aesthetic reasons
+ if(v24->GetMaximum(0.75)>maxFlow_y){maxFlow_y = v24->GetMaximum(0.75);}
+ hist->GetYaxis()->SetRangeUser(0.0,maxFlow_y);
 
  // Final drawing:
  // v2 vs. pT:
@@ -136,7 +141,9 @@ void processCFv2vsPt(const char *filePath = "AnalysisResults.root",
  v22->Draw("psame");
  v24->Draw("psame");
 
-  c1->SaveAs(Form("fig_cf_flow_fDiffFlow.%s",suffix.Data()));
+ c1->SaveAs(Form("fig_cf_flow_fDiffFlow.%s",suffix.Data()));
+
+ //===========================================================================================  
 
  // Bias from non-uniform azimuthal acceptance (NUA):
  TList *intFlowList = dynamic_cast<TList*> l->FindObject("Integrated Flow");
@@ -156,7 +163,61 @@ void processCFv2vsPt(const char *filePath = "AnalysisResults.root",
 
  c2->SaveAs(Form("fig_cf_flow_IntFlowDetectorBias.%s",suffix.Data()));
 
- f->Close();
+ //===========================================================================================  
+
+ // Differential (vs. pT) cumulants:
+ if(!diffFlowResultsList){cout<<"diffFlowResultsList is NULL"<<endl; exit(0);}
+ TList *diffFlowDifCumulantsList = dynamic_cast<TList*> diffFlowResultsList->FindObject("Differential Q-cumulants (POI, p_{T})");
+ if(!diffFlowDifCumulantsList){cout<<"diffFlowDifCumulantsList is NULL"<<endl; exit(0);}
+
+ // d2{2} vs. pT:
+ TH1D *d22 = dynamic_cast<TH1D*> diffFlowDifCumulantsList->FindObject("fDiffFlowCumulants, POI, p_{T}, QC{2'}");
+ if(!d22){cout<<"d22 is NULL"<<endl; exit(0);}
+ d22->SetMarkerStyle(kFullCircle);
+ d22->SetMarkerColor(kBlue);
+ d22->SetLineColor(kBlue);
+ d22->Scale(10); // Rescale this histogram by 10^2
+
+ // d2{4} vs. pT:
+ TH1D *d24 = dynamic_cast<TH1D*> diffFlowDifCumulantsList->FindObject("fDiffFlowCumulants, POI, p_{T}, QC{4'}");
+ if(!d24){cout<<"d24 is NULL"<<endl; exit(0);}
+ d24->SetMarkerStyle(kFullSquare);
+ d24->SetMarkerColor(kRed);
+ d24->SetLineColor(kRed);
+ d24->Scale(1000); // Rescale this histogram by 10^4
+
+ // Legend:
+ TLegend *legend_c = new TLegend(0.15,0.67,0.37,0.87);
+ legend_c->SetFillStyle(0); // white legend background
+ legend_c->SetTextSize(0.04);
+ legend_c->SetBorderSize(0.0);
+ //legend_c->SetTextFont(22);
+ legend_c->SetMargin(0.1);  
+ legend_c->AddEntry(d22,"d_{2}{2} #times 10","p");
+ legend_c->AddEntry(d24,"d_{2}{4} #times 10^{3}","p");
+ 
+ // Style histogram:
+ TH1D *hist_c = new TH1D("","",10,0.,10.);
+ hist_c->SetStats(kFALSE);
+ hist_c->SetTitle("");
+ hist_c->GetXaxis()->SetTitle("p_{T}");
+ Double_t maxCumulant_y = d22->GetMaximum(0.75); // Hardwiring that max_value is <= 0.75 for aesthetic reasons
+ if(d24->GetMaximum(0.75)>maxCumulant_y){maxCumulant_y = d24->GetMaximum(0.75);}
+ Double_t minCumulant_y = d22->GetMinimum(-0.75); // Hardwiring that max_value is <= 0.75 for aesthetic reasons
+ if(d24->GetMinimum(-0.75)<minCumulant_y){minCumulant_y = d24->GetMinimum(-0.75);}
+ hist_c->GetYaxis()->SetRangeUser(minCumulant_y,maxCumulant_y);
+
+ // Final drawing:
+ // d2 vs. pT:
+ TCanvas *c3 = new TCanvas("c3","differential Q-cumulants vs. pT"); 
+ hist_c->Draw();
+ legend_c->Draw("same");
+ d22->Draw("psame");
+ d24->Draw("psame");
+
+ c3->SaveAs(Form("fig_cf_flow_fDiffFlowCumulants.%s",suffix.Data()));
+
+ //f->Close();
 
  cout<<endl;
   
