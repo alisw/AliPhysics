@@ -33,6 +33,7 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     itsRecoParam->SetTitle("Cosmic");
     itsRecoParam->SetTracker(0);
     itsRecoParam->SetSAonly(kFALSE);
+    itsRecoParam->SetMaxROCycle(126); // AliITSUSimulation::kMaxROCycleAccept
     recoParamArray->AddLast(itsRecoParam);
   }
   //
@@ -117,6 +118,7 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     itsRecoParam->SetTitle("LowMult");
     itsRecoParam->SetTracker(0);
     itsRecoParam->SetSAonly(kFALSE);
+    itsRecoParam->SetMaxROCycle(126); // AliITSUSimulation::kMaxROCycleAccept
     recoParamArray->AddLast(itsRecoParam);
     //******************************************************************
     for (int i=0;i<nLr;i++) itsRecoParam->SetAllowDiagonalClusterization(i,kAllowDiagCl);
@@ -217,6 +219,7 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     itsRecoParam->SetTitle("HighMult");
     itsRecoParam->SetTracker(0);
     itsRecoParam->SetSAonly(kFALSE);
+    itsRecoParam->SetMaxROCycle(126); // AliITSUSimulation::kMaxROCycleAccept
     recoParamArray->AddLast(itsRecoParam);
     //******************************************************************
     for (int i=0;i<nLr;i++) itsRecoParam->SetAllowDiagonalClusterization(i,kAllowDiagCl);
