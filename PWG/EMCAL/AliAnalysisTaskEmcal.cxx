@@ -857,7 +857,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       return kFALSE;
     }
 
-    if (fRejectPileup &&fAliAnalysisUtils->IsPileUpEvent(InputEvent())) {
+    if (fRejectPileup && fAliAnalysisUtils->IsPileUpEvent(InputEvent())) {
       if (fGeneralHistograms) fHistEventRejection->Fill("PileUp",1);
       return kFALSE;
     }
