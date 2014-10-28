@@ -1072,7 +1072,8 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 
     for(Int_t iT = 0; iT < nAODTracks; iT++) {
       
-      AliAODTrack* aodTrack = aodEvent->GetTrack(iT);
+      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iT));
+      if(!aodTrack) AliFatal("Not a standard AOD");
       
       if (!aodTrack){
 	continue;
@@ -1206,7 +1207,8 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
     fHKsPhiEP->Fill(fZvtx,fgPsi2v0c);				 
     //loop track and get pid
     for(Int_t iT = 0; iT < nAODTracks; iT++) { // loop on the tracks
-      AliAODTrack* aodTrack = aodEvent->GetTrack(iT);
+      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iT));
+      if(!aodTrack) AliFatal("Not a standard AOD");
 	
       if (!aodTrack){
 	continue;
@@ -2141,7 +2143,8 @@ void AliAnalysisTaskVnV0::SelectK0s(){
   // fill pion stacks
   Int_t nAODTracks = fOutputAOD->GetNumberOfTracks();
   for(Int_t iT = 0; iT < nAODTracks; iT++) { // loop on the tracks
-    AliAODTrack* aodTrack = fOutputAOD->GetTrack(iT);
+    AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(fOutputAOD->GetTrack(iT));
+    if(!aodTrack) AliFatal("Not a standard AOD");
     
     if (!aodTrack){
       continue;
@@ -2183,11 +2186,13 @@ void AliAnalysisTaskVnV0::SelectK0s(){
   }
 
   for(Int_t i=0;i < fNpiPos;i++){
-    AliAODTrack *pip = fOutputAOD->GetTrack(fIPiPos[i]);
+    AliAODTrack *pip = dynamic_cast<AliAODTrack*>(fOutputAOD->GetTrack(fIPiPos[i]));
+    if(!pip) AliFatal("Not a standard AOD");
     AliESDtrack pipE(pip);
 
     for(Int_t j=0;j < fNpiNeg;j++){
-      AliAODTrack *pin = fOutputAOD->GetTrack(fIPiNeg[j]);
+      AliAODTrack *pin = dynamic_cast<AliAODTrack*>(fOutputAOD->GetTrack(fIPiNeg[j]));
+      if(!pin) AliFatal("Not a standard AOD");
       AliESDtrack pinE(pin);
 
       Double_t xn, xp, mindist=pinE.GetDCA(&pipE,fOutputAOD->GetMagneticField(),xn,xp);

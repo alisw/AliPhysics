@@ -345,9 +345,9 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
 
    }
 
-   Double_t xPrimaryVertex = vtxT3D->GetXv();
-   Double_t yPrimaryVertex = vtxT3D->GetYv();
-   Double_t zPrimaryVertex = vtxT3D->GetZv();
+   Double_t xPrimaryVertex = vtxT3D->GetX();
+   Double_t yPrimaryVertex = vtxT3D->GetY();
+   Double_t zPrimaryVertex = vtxT3D->GetZ();
 
    if (zPrimaryVertex > 10 || zPrimaryVertex < -10)  return;
 

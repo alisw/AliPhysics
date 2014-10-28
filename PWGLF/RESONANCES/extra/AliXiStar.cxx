@@ -781,7 +781,8 @@ void AliXiStar::Exec(Option_t *)
     
     // Track loop
     for (Int_t i = 0; i < fAOD->GetNumberOfTracks(); i++) {
-      AliAODTrack* aodtrack = fAOD->GetTrack(i);
+      AliAODTrack* aodtrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(i));
+      if(!aodtrack) AliFatal("Not a standard AOD");
       if (!aodtrack) continue;
       
       status=aodtrack->GetStatus();

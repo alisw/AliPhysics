@@ -445,7 +445,7 @@ void AliAnalysisTaskJetHBOM::UserExec(Option_t */*option*/)
     TString vtxTitle(vtxAOD->GetTitle());
     zVtx = vtxAOD->GetZ();
 
-    cent = fAOD->GetHeader()->GetCentrality();
+    cent = ((AliVAODHeader*)fAOD->GetHeader())->GetCentrality();
     if(physicsSelection){
       fh1CentralityPhySel->Fill(cent);
       fh1ZPhySel->Fill(zVtx);
@@ -722,7 +722,8 @@ Int_t  AliAnalysisTaskJetHBOM::GetListOfTracks(TList *list,Int_t type){
       }
 
       for(int it = 0;it < aod->GetNumberOfTracks();++it){
-	AliAODTrack *tr = aod->GetTrack(it);
+	AliAODTrack *tr = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+        if(!tr) AliFatal("Not a standard AOD");
 	Bool_t bGood = false;
 	if(fFilterType == 0)bGood = true;
 	else if(fFilterType == 1)bGood = tr->IsHybridTPCConstrainedGlobal();

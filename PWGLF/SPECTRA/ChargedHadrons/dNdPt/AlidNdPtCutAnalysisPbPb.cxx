@@ -356,11 +356,11 @@ void AlidNdPtCutAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent * 
 
     }
 
-    Double_t vRecEventHist[5] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv(),vtxESD->GetZRes(),static_cast<Double_t>(multAll)};
+    Double_t vRecEventHist[5] = {vtxESD->GetX(),vtxESD->GetY(),vtxESD->GetZ(),vtxESD->GetZRes(),static_cast<Double_t>(multAll)};
     fRecEventHist->Fill(vRecEventHist);
 
     if(IsUseMCInfo()) {
-      Double_t vRecMCEventHist[5] = {vtxESD->GetXv()-vtxMC[0],vtxESD->GetYv()-vtxMC[1],vtxESD->GetZv()-vtxMC[2],static_cast<Double_t>(multAll)};
+      Double_t vRecMCEventHist[5] = {vtxESD->GetX()-vtxMC[0],vtxESD->GetY()-vtxMC[1],vtxESD->GetZ()-vtxMC[2],static_cast<Double_t>(multAll)};
       fRecMCEventHist->Fill(vRecMCEventHist);
     }
   }

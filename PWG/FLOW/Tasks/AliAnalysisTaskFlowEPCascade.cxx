@@ -768,7 +768,8 @@ void AliAnalysisTaskFlowEPCascade::UserExec(Option_t *)
 
     //At the momment the cutting class does not handle AOD event properly
     //so we are doing the cuts explicitly here
-    AliAODHeader *aodHeader = fAOD->GetHeader();
+    AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+    if(!aodHeader) AliFatal("Not a standard AOD");
     if(!aodHeader) return;
     AliCentrality *centrality = aodHeader->GetCentralityP();
     if(!centrality) return;
@@ -1433,7 +1434,7 @@ void AliAnalysisTaskFlowEPCascade::ReadFromESDv0(AliESDEvent *fESD){
 
 void AliAnalysisTaskFlowEPCascade::ReadFromAODv0(AliAODEvent *fAOD){
 
-  AliEventplane * ep = (fAOD->GetHeader())->GetEventplaneP();
+  AliEventplane * ep = ((AliVAODHeader*)fAOD->GetHeader())->GetEventplaneP();
   Double_t psiTPC = ep->GetEventplane("Q", fAOD, 2); // in range of [0, pi]
   //  if(psiTPC > TMath::PiOver2()) 
   //  psiTPC -= TMath::Pi();

@@ -12,7 +12,7 @@
 
 void printCalibStat(Int_t run, const char * fname,  TTreeSRedirector * pcstream);
 
-void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDBstorage="raw://")
+void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDBstorage="raw://", Int_t detectorBitsQualityFlag = -1)
 {
   //
   // extract OCDB entries for detectors participating in the calibration for the current run
@@ -80,9 +80,28 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
     printf("Mag field is %f --> OFF\n", bz);
   }
 
+  // Quality flags
+  Bool_t TPC_qf = kTRUE;
+  Bool_t TOF_qf = kTRUE;
+  Bool_t TRD_qf = kTRUE;
+  Bool_t T0_qf  = kTRUE;
+  Bool_t SDD_qf = kTRUE;
+  Bool_t SPD_qf = kTRUE;
+
+  if (detectorBitsQualityFlag != -1){
+    TPC_qf = ((detectorBitsQualityFlag & AliDAQ::kTPC_QF) == AliDAQ::kTPC_QF)? kTRUE : kFALSE;
+    TOF_qf = ((detectorBitsQualityFlag & AliDAQ::kTOF_QF) == AliDAQ::kTOF_QF)? kTRUE : kFALSE;
+    TRD_qf = ((detectorBitsQualityFlag & AliDAQ::kTRD_QF) == AliDAQ::kTRD_QF)? kTRUE : kFALSE;
+    T0_qf  = ((detectorBitsQualityFlag & AliDAQ::kT0_QF)  == AliDAQ::kT0_QF)?  kTRUE : kFALSE;
+    SDD_qf = ((detectorBitsQualityFlag & AliDAQ::kSDD_QF) == AliDAQ::kSDD_QF)? kTRUE : kFALSE;
+    SPD_qf = ((detectorBitsQualityFlag & AliDAQ::kSPD_QF) == AliDAQ::kSPD_QF)? kTRUE : kFALSE;
+  }    
+
+  Printf("Quality flags: detectorBitsQualityFlag = %d, TPC = %d, TOF = %d, TRD = %d, T0 = %d, SDD = %d, SPD = %d", detectorBitsQualityFlag, (Int_t)TPC_qf, (Int_t)TOF_qf, (Int_t)TRD_qf, (Int_t)T0_qf, (Int_t)SDD_qf, (Int_t)SPD_qf);
+
   // TPC part
   AliTPCPreprocessorOffline *procesTPC = 0;
-  if (detStr.Contains("TPC")){
+  if (detStr.Contains("TPC") && TPC_qf){
     Printf("\n******* Calibrating TPC *******");
     Printf("TPC won't be calibrated at CPass1 for the time being... Doing nothing here");
     //procesTPC = new AliTPCPreprocessorOffline;
@@ -95,10 +114,13 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
     // Make vdrift calibration
     //proces.CalibTimeVdrift("CalibObjects.root",runNumber,AliCDBRunRange::Infinity(),targetStorage);
   }
+  else {
+    Printf("\n******* NOT Calibrating TPC: detStr = %s, TPC_qf = %d *******", detStr.Data(), (Int_t)TPC_qf);
+  }
 
   // TOF part
   AliTOFAnalysisTaskCalibPass0 *procesTOF=0;
-  if (detStr.Contains("TOF") && detStr.Contains("TPC")){
+  if (detStr.Contains("TOF") && detStr.Contains("TPC") && TOF_qf){
     procesTOF = new AliTOFAnalysisTaskCalibPass0;
     Printf("\n******* Calibrating TOF *******");
     if (isMagFieldON) procesTOF->ProcessOutput("CalibObjects.root", targetStorage);
@@ -106,20 +128,26 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
       printf("Not calibrating TOF in case of mag field OFF\n");
     }
   }
+  else {
+    Printf("\n******* NOT Calibrating TOF: detStr = %s, TOF_qf = %d *******", detStr.Data(), (Int_t)TOF_qf);
+  }
 
   // T0 part
   AliT0PreprocessorOffline *procesT0= 0;
-  if (detStr.Contains("T0")) {
+  if (detStr.Contains("T0") && T0_qf) {
     Printf("\n******* Calibrating T0 *******");
     procesT0 = new AliT0PreprocessorOffline;
     // Make  calibration of channels offset
     procesT0->setDArun(100000);
     procesT0->Process("CalibObjects.root",runNumber, runNumber, targetStorage);
   }
+  else {
+    Printf("\n******* NOT Calibrating T0: detStr = %s, T0_qf = %d *******", detStr.Data(), (Int_t)T0_qf);
+  }
 
   //TRD part
   AliTRDPreprocessorOffline *procesTRD = 0;
-  if (detStr.Contains("TRD") && detStr.Contains("TPC")){
+  if (detStr.Contains("TRD") && detStr.Contains("TPC") && TRD_qf){
     Printf("\n******* Calibrating TRD *******");
     procesTRD = new  AliTRDPreprocessorOffline;
     if(isLHC10) procesTRD->SetSwitchOnChamberStatus(kFALSE);
@@ -142,15 +170,21 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
     printf("version and subversion exb %d and %d\n",versionExBUsed,subversionExBUsed);
     procesTRD->Process("CalibObjects.root",runNumber,runNumber,targetStorage);
   }
+  else {
+    Printf("\n******* NOT Calibrating TRD: detStr = %s, TRD_qf = %d *******", detStr.Data(), (Int_t)TRD_qf);
+  }
   
   // switched OFF at CPass1 in any case
   /*
   //Mean Vertex
   AliMeanVertexPreprocessorOffline * procesMeanVtx=0;
-  if (detStr.Contains("ITSSPD")) {
+  if (detStr.Contains("ITSSPD") && SPD_qf) {
     Printf("\n******* Calibrating MeanVertex *******");
     procesMeanVtx = new AliMeanVertexPreprocessorOffline;
     procesMeanVtx->ProcessOutput("CalibObjects.root", targetStorage, runNumber);
+  }
+  else {
+    Printf("\n******* NOT Calibrating MeanVertex: detStr = %s, SPD_qf = %d *******", detStr.Data(), (Int_t)SPD_qf);
   }
   */
 

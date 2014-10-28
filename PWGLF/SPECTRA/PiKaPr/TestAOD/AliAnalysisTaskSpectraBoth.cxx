@@ -114,7 +114,7 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 	else
 		AliFatal("Not processing AODs or ESDS") ;
 	if(fdotheMCLoopAfterEventCuts)
-  		if(!fEventCuts->IsSelected(fAOD,fTrackCuts))
+  		if(!fEventCuts->IsSelected(fAOD,fTrackCuts,fIsMC,-100,fHistMan->GetEventStatHist()))
 			return;//event selection
   	TClonesArray *arrayMC = 0;
   	Int_t npar=0;
@@ -206,7 +206,7 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 		  }
 	}
 	if(!fdotheMCLoopAfterEventCuts)
-  		if(!fEventCuts->IsSelected(fAOD,fTrackCuts,fIsMC,mcZ))
+  		if(!fEventCuts->IsSelected(fAOD,fTrackCuts,fIsMC,mcZ,fHistMan->GetEventStatHist()))
 			return;//event selection
   	//main loop on tracks
 	Int_t ntracks=0;
@@ -293,9 +293,12 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 			if(idRec != kSpUndefined && fTrackCuts->CheckYCut ((BothParticleSpecies_t)idRec))
 			{
 				fHistMan->GetHistogram2D(kHistPtRecSigma,idRec,charge)->Fill(track->Pt(),dca);
-				fTrackCuts->GetHistoDCAzQA()->Fill(idRec,track->Pt(),dcaz);
-				fTrackCuts->GetHistoNclustersQA()->Fill(idRec,track->Pt(),ncls);
-				fTrackCuts->GetHistochi2perNDFQA()->Fill(idRec,track->Pt(),chi2perndf);
+				if(fTrackCuts->GetMakeQAhisto())
+				{ 
+					fTrackCuts->GetHistoDCAzQA()->Fill(idRec,track->Pt(),dcaz);
+					fTrackCuts->GetHistoNclustersQA()->Fill(idRec,track->Pt(),ncls);
+					fTrackCuts->GetHistochi2perNDFQA()->Fill(idRec,track->Pt(),chi2perndf);
+				}
 				sel[idRec]=true;
 			}
 			//can't put a continue because we still have to fill allcharged primaries, done later

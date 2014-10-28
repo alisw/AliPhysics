@@ -7,7 +7,6 @@ stage=0
 upload=0 
 jobs=2
 events=1
-gen=default
 aliroot="v5-04-Rev-20"
 root=""
 geant=""
@@ -25,7 +24,6 @@ Options:
 	-t|--tag       TAG	Job tag [****] ($tag)
 	-i|--id        NAME	Name of production ($id)
 	-R|--run       RUN_NO	Run number ($run)
-	-e|--generator NAME	Event generator ($gen)
 	-c|--copy		Copy files to AliEn
 	-n|--jobs      JOBS	Set number of jobs[**] ($jobs)
 	-m|--events    EVENTS	Set events/job[**] ($events)
@@ -116,11 +114,15 @@ merge()
     local tag=$5 
     local run=$6
     local tmpdir=`mktemp -d` 
-    
+    local pre=$what
+    if test "x$what" = "xAOD" ; then 
+	pre="aod";
+    fi 
+
     local top=${out}/${tag}/${run}
     local bse=${what}_Stage_${stage}.xml 
     local xml=${tmpdir}/${bse}
-    local arc=${what}_archive.zip
+    local arc=${pre}_archive.zip
     local jdl=Merge.jdl
     local ret=0
 
@@ -243,6 +245,10 @@ push()
 	GRP.C			\
 	Simulate.C		\
 	Config.C		\
+	BaseConfig.C		\
+	EGConfig.C		\
+	DetConfig.C		\
+	OCDBConfig.C		\
 	Reconstruct.C		\
 	Check.C			\
 	Tag.C			\
@@ -336,6 +342,7 @@ ahome=/alice/cern.ch/user/`echo $auid | sed 's/^\(.\).*/\1/'`/$auid
 adir=${ahome}/mc
 abin=${ahome}/mc
 aout=${ahome}/test
+stages="AOD QA"
 
 # --- Proces command line options ------------------------------------
 while test $# -gt 0 ; do 
@@ -344,11 +351,11 @@ while test $# -gt 0 ; do
 	-t|--tag)       tag=$2    	; shift ;; 
 	-i|--id)        id=$2     	; shift ;; 
 	-R|--run)    	run=$2    	; shift ;; 
-	-e|--generator) gen=$2		; shift ;;
 	-c|--copy)      upload=1        ;; 
 	-n|--jobs)      jobs=$2   	; shift ;;
 	-m|--events)    events=$2 	; shift ;;
 	-s|--stage)     stage=$2  	; shift ;; 
+	-S|--stages)    stages=$2       ; shift ;; 
 	-b|--bin)       abin=$2   	; shift ;; 
 	-o|--output)    aout=$2   	; shift ;; 
 	-d|--data)      adir=$2   	; shift ;; 
@@ -358,6 +365,7 @@ while test $# -gt 0 ; do
 	-f|--final)     minmerge=$2 	; shift ;;
 	-A|--archive)   archive   	; exit 0 ;;
 	-x|--dry-run)   noact=1		;;
+	--) shift ; break ;;
 	*) log_err "Unknown option" "$1" ;  exit 1  ;;
     esac
     shift 
@@ -415,14 +423,17 @@ if test $stage -le 0 ; then
 
     log_msg "" "Submitting \e[33mRun.jdl\e[0m for \e[34m$id run\e[0m (\e[34m$jobs\e[0m jobs w/\e[34m$events)"
     if test $noact -lt 1 ; then 
-	alien_submit alien:${adir}/Run.jdl ${run} ${jobs} ${events} ${id} ${gen}
+	echo "alien_submit alien:${adir}/Run.jdl ${run} ${jobs} ${events} ${id} $@"
+	alien_submit alien:${adir}/Run.jdl ${run} ${jobs} ${events} ${id} "$@"
 	ret=$?
     fi 
     log_end "" $ret
     exit $ret
 fi
 
-merge QA ${stage} ${adir} ${aout} ${id} ${run}
+for s in $stages ; do 
+    merge ${s} ${stage} ${adir} ${aout} ${id} ${run}
+done
 
 #
 # EOF

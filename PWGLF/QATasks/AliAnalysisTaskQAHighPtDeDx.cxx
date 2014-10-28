@@ -1323,7 +1323,8 @@ void AliAnalysisTaskQAHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent ){
   //get multiplicity tpc only track cuts
   for(Int_t iT = 0; iT < nAODTracks; iT++) {
     
-    AliAODTrack* aodTrack = AODevent->GetTrack(iT);
+    AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(AODevent->GetTrack(iT));
+    if(!aodTrack) AliFatal("Not a standard AOD");
     
     if(TMath::Abs(aodTrack->Eta()) > fEtaCut)
       continue;
@@ -1342,7 +1343,8 @@ void AliAnalysisTaskQAHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent ){
 
   for(Int_t iT = 0; iT < nAODTracks; iT++) {
     
-    AliAODTrack* aodTrack = AODevent->GetTrack(iT);
+    AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(AODevent->GetTrack(iT));
+    if(!aodTrack) AliFatal("Not a standard AOD");
     
     if (fTrackFilterGolden) {     
       // "Global track RAA analysis QM2011 + Chi2ITS<36"; bit 1024

@@ -19,7 +19,9 @@ class AliAnalysisTaskPi0FlowMCAOD : public AliAnalysisTaskPi0Flow
 public:
   AliAnalysisTaskPi0FlowMCAOD(const char* name = "AliAnalysisTaskPi0Flow", Period period = kUndefinedPeriod);
   virtual ~AliAnalysisTaskPi0FlowMCAOD();
-
+    
+  void SetOffVertexPhotonCut(Bool_t setCut=kTRUE) { kOffVertexCutSet=setCut; }
+    
 protected: // Override:
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
@@ -38,8 +40,9 @@ protected: // member functions:
   AliAODMCParticle* GetParticle(Int_t); //Returns particle at given position for AOD
 
 protected: // member variables:
-  TClonesArray* fMcArray; //mcArray for AOD MC particles 
-  
+  TClonesArray* fMcArray; //mcArray for AOD MC particles
+  Bool_t kOffVertexCutSet;
+    
   void FillMCHist();
   Double32_t R(AliAODMCParticle* p);
   

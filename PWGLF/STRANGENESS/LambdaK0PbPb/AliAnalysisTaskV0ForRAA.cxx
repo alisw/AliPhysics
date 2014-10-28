@@ -2101,8 +2101,8 @@ void AliAnalysisTaskV0ForRAA::UserExec(Option_t *) {
     //--vertex selection--//
     if (vtxESD->GetStatus()){
       fHistNEvents->Fill(2);
-      fHistESDVertexZ->Fill(vtxESD->GetZv());
-      if(fabs(vtxESD->GetZv()) < fVertexZCut){
+      fHistESDVertexZ->Fill(vtxESD->GetZ());
+      if(fabs(vtxESD->GetZ()) < fVertexZCut){
 	fHistMuliplicityRaw->Fill(multV0);
 	fHistNEvents->Fill(3);
 	fHistNPrim->Fill(nContr);
@@ -2113,13 +2113,13 @@ void AliAnalysisTaskV0ForRAA::UserExec(Option_t *) {
 	
 	nContr = vtxESD->GetNContributors();
 	//  if(nContr<501){
-	fHistPrimVtxZESDVSNContributors->Fill(vtxESD->GetZv(),nContr);
-	fHistPrimVtxZESDTPCVSNContributors->Fill(vtxESDTPC->GetZv(),nContr);
-	//fHistPrimVtxZESDSPDVSNContributorsTPC->Fill(vtxESDSPD->GetZv(),nContr);
+	fHistPrimVtxZESDVSNContributors->Fill(vtxESD->GetZ(),nContr);
+	fHistPrimVtxZESDTPCVSNContributors->Fill(vtxESDTPC->GetZ(),nContr);
+	//fHistPrimVtxZESDSPDVSNContributorsTPC->Fill(vtxESDSPD->GetZ(),nContr);
 	//   }
-	fHistPrimVtxZESD->Fill(vtxESD->GetZv());
-	fHistPrimVtxZESDTPC->Fill(vtxESDTPC->GetZv());
-	// fHistPrimVtxZESDSPD->Fill(vtxESDSPD->GetZv());
+	fHistPrimVtxZESD->Fill(vtxESD->GetZ());
+	fHistPrimVtxZESDTPC->Fill(vtxESDTPC->GetZ());
+	// fHistPrimVtxZESDSPD->Fill(vtxESDSPD->GetZ());
 	// -- count events after processing
 	fHistNEvents->Fill(4);
       }
@@ -2128,8 +2128,8 @@ void AliAnalysisTaskV0ForRAA::UserExec(Option_t *) {
       if(vtxESDSPD->GetStatus()){
 	fHistNEvents->Fill(2);
 	
-	fHistESDVertexZ->Fill(vtxESDSPD->GetZv());
-	if(fabs(vtxESDSPD->GetZv()) < fVertexZCut){
+	fHistESDVertexZ->Fill(vtxESDSPD->GetZ());
+	if(fabs(vtxESDSPD->GetZ()) < fVertexZCut){
 	  
 	  fHistMuliplicityRaw->Fill(multV0);
 	  fHistNEvents->Fill(3);
@@ -2141,13 +2141,13 @@ void AliAnalysisTaskV0ForRAA::UserExec(Option_t *) {
 	  
 	  nContr = vtxESDSPD->GetNContributors();
 	  //  if(nContr<501){
-	  //fHistPrimVtxZESDVSNContributors->Fill(vtxESD->GetZv(),nContr);
-	  fHistPrimVtxZESDTPCVSNContributors->Fill(vtxESDTPC->GetZv(),nContr);
-	  fHistPrimVtxZESDSPDVSNContributors->Fill(vtxESDSPD->GetZv(),nContr);
+	  //fHistPrimVtxZESDVSNContributors->Fill(vtxESD->GetZ(),nContr);
+	  fHistPrimVtxZESDTPCVSNContributors->Fill(vtxESDTPC->GetZ(),nContr);
+	  fHistPrimVtxZESDSPDVSNContributors->Fill(vtxESDSPD->GetZ(),nContr);
 	  // }
-	  // fHistPrimVtxZESD->Fill(vtxESD->GetZv());
-	  fHistPrimVtxZESDTPC->Fill(vtxESDTPC->GetZv());
-	  fHistPrimVtxZESDSPD->Fill(vtxESDSPD->GetZv());
+	  // fHistPrimVtxZESD->Fill(vtxESD->GetZ());
+	  fHistPrimVtxZESDTPC->Fill(vtxESDTPC->GetZ());
+	  fHistPrimVtxZESDSPD->Fill(vtxESDSPD->GetZ());
 	  // -- count events after processing
 	  fHistNEvents->Fill(4);
 	}
@@ -2160,7 +2160,7 @@ void AliAnalysisTaskV0ForRAA::UserExec(Option_t *) {
     fHistNEvents->Fill(1);
 
     if(vtxESD->GetStatus()){
-      Double_t vtxZ = vtxESD->GetZv();
+      Double_t vtxZ = vtxESD->GetZ();
       fHistESDVertexZ->Fill(vtxZ);
       if(process){
 	fHistNEvents->Fill(2);
@@ -2812,9 +2812,9 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
   AliESDtrack* trackNegTest =NULL;
 
   Double_t primaryVtxPosition[3];
-  primaryVtxPosition[0] = fESD->GetPrimaryVertex()->GetXv();
-  primaryVtxPosition[1] = fESD->GetPrimaryVertex()->GetYv();
-  primaryVtxPosition[2] = fESD->GetPrimaryVertex()->GetZv();
+  primaryVtxPosition[0] = fESD->GetPrimaryVertex()->GetX();
+  primaryVtxPosition[1] = fESD->GetPrimaryVertex()->GetY();
+  primaryVtxPosition[2] = fESD->GetPrimaryVertex()->GetZ();
    
   Int_t nV0 = fESD->GetNumberOfV0s();
   const Int_t sizenV0 = nV0;

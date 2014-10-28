@@ -107,7 +107,7 @@ void AliAnalysisTaskPWG2AODUpdate::UserExec(Option_t */*option*/)
   vtx->GetXYZ(pos); // position
     
   // Tracks (primary and orphan)
-  Int_t nTracks = fAOD->GetNTracks();
+  Int_t nTracks = fAOD->GetNumberOfTracks();
 
   printf("NUMBER OF AOD TRACKS %5d\n", nTracks);
   
@@ -118,7 +118,8 @@ void AliAnalysisTaskPWG2AODUpdate::UserExec(Option_t */*option*/)
     
   // Loop over AOD tracks
   for (Int_t nTrack = 0; nTrack < nTracks; ++nTrack) {
-    AliAODTrack *aodTrack = fAOD->GetTrack(nTrack);
+    AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(nTrack));
+    if(!aodTrack) AliFatal("Not a standard AOD");
     Short_t trackId = aodTrack->GetID();
 
     // Get the corresponding ESD track

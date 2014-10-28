@@ -796,7 +796,8 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 //   for(Int_t i = 0; i < eventAOD->GetNumberOfTracks(); i++) { iIndexAcceptedTracks[i] = 0; }
 //   for(Int_t itrack = 0; itrack < eventAOD->GetNumberOfTracks(); itrack++) 
 //   { 
-// 	track = eventAOD->GetTrack(itrack);
+// 	track = dynamic_cast<AliAODTrack*>(eventAOD->GetTrack(itrack));
+ 	if(!track) AliFatal("Not a standard AOD");
 // 	if(!track) continue;
 // 	
 // 	GetDCA(track, eventAOD, dDCA);
@@ -934,7 +935,8 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   for(Int_t itrack = 0; itrack < eventAOD->GetNumberOfTracks(); itrack++)
 //   for(Int_t itrack = 0; itrack < nTotalNumberAcceptedTracks; itrack++)
   {
-	track = eventAOD->GetTrack(itrack);
+	track = dynamic_cast<AliAODTrack*>(eventAOD->GetTrack(itrack));
+	if(!track) AliFatal("Not a standard AOD");
 // 	track = eventAOD->GetTrack(iIndexAcceptedTracks[itrack]);
 	if(!track) continue;
 	
@@ -1155,16 +1157,21 @@ Double_t AlidNdPtAnalysisPbPbAOD::RotatePhi(Double_t phiTrack, Double_t phiEP)
   {
 	return dPhi;
   }
-  if( (dPhi > TMath::Pi()) && (dPhi <= 3./2.*TMath::Pi()) )
+  if( dPhi > TMath::Pi() )
   {
-	dPhi = dPhi - TMath::Pi()/2.;
+	dPhi = TMath::Pi()/2. - dPhi;
 	return dPhi;
   }
-  if( (dPhi > 3./2.*TMath::Pi()) )
-  {
-	dPhi = dPhi - 3./2.*TMath::Pi();
-	return dPhi;
-  }
+//   if( (dPhi > TMath::Pi()) && (dPhi <= 3./2.*TMath::Pi()) )
+//   {
+// 	dPhi = dPhi - TMath::Pi()/2.;
+// 	return dPhi;
+//   }
+//   if( (dPhi > 3./2.*TMath::Pi()) )
+//   {
+// 	dPhi = dPhi - 3./2.*TMath::Pi();
+// 	return dPhi;
+//   }
 //   if( dPhi < 0 )
 //   
 //   if ((dPhi >= -1./2. * TMath::Pi() ) && 
@@ -1214,7 +1221,8 @@ Bool_t AlidNdPtAnalysisPbPbAOD::SetRelativeCuts(AliAODEvent *event)
   
   for(Int_t itrack = 0; itrack < event->GetNumberOfTracks(); itrack++)
   {
-	tr = event->GetTrack(itrack);
+	tr = dynamic_cast<AliAODTrack*>(event->GetTrack(itrack));
+	if(!tr) AliFatal("Not a standard AOD");
 	if(!tr) continue;
 	
 	// do some selection already

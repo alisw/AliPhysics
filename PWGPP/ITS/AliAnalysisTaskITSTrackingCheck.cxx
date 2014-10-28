@@ -2149,8 +2149,8 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
   //if(!spdvtitle.Contains("3D")) return;
   if(fRequireSPDvtx) {
     if(spdv->GetNContributors()<mincontrSPDvtx ||
-       TMath::Abs(spdv->GetZv())>maxzSPDvtx ||  
-       spdv->GetXv()*spdv->GetXv()+spdv->GetYv()*spdv->GetYv()>maxrSPDvtx) {
+       TMath::Abs(spdv->GetZ())>maxzSPDvtx ||  
+       spdv->GetX()*spdv->GetX()+spdv->GetY()*spdv->GetY()>maxrSPDvtx) {
       delete esdtrackCutsTPC; esdtrackCutsTPC=0;
       delete esdtrackCutsITSTPC; esdtrackCutsITSTPC=0;
       return;
@@ -2881,8 +2881,8 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
       Float_t dz[2];
       // distance to primary SPD (only if 3D and high multiplicity)
       if(spdv->GetNContributors()>10) { 
-	tracklet.GetDZ(spdv->GetXv(),spdv->GetYv(),spdv->GetZv(),0,dz);
-	//tracklet.GetDZ(-0.07,0.25,spdv->GetZv(),0,dz);
+	tracklet.GetDZ(spdv->GetX(),spdv->GetY(),spdv->GetZ(),0,dz);
+	//tracklet.GetDZ(-0.07,0.25,spdv->GetZ(),0,dz);
 	fNtupleITSAlignSPDTracklets->Fill(phi,theta,0.5*(pointSPD1.GetZ()+pointSPD2.GetZ()),dz[0],dz[1],track->Pt());
       }
     }
@@ -2892,13 +2892,13 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
       AliTrackPoint pointExtra,pointAssociated;
       array->GetPoint(pointAssociated,indexAssociated[layerExtra]);
       array->GetPoint(pointExtra,indexExtra);
-      Float_t phiExtra = TMath::ATan2(pointExtra.GetY()-spdv->GetYv(),pointExtra.GetX()-spdv->GetXv());
-      Float_t phiAssociated = TMath::ATan2(pointAssociated.GetY()-spdv->GetYv(),pointAssociated.GetX()-spdv->GetXv());
-      Float_t rExtra = TMath::Sqrt((pointExtra.GetX()-spdv->GetXv())*(pointExtra.GetX()-spdv->GetXv())+(pointExtra.GetY()-spdv->GetYv())*(pointExtra.GetY()-spdv->GetYv()));
-      Float_t rAssociated = TMath::Sqrt((pointAssociated.GetX()-spdv->GetXv())*(pointAssociated.GetX()-spdv->GetXv())+(pointAssociated.GetY()-spdv->GetYv())*(pointAssociated.GetY()-spdv->GetYv()));
+      Float_t phiExtra = TMath::ATan2(pointExtra.GetY()-spdv->GetY(),pointExtra.GetX()-spdv->GetX());
+      Float_t phiAssociated = TMath::ATan2(pointAssociated.GetY()-spdv->GetY(),pointAssociated.GetX()-spdv->GetX());
+      Float_t rExtra = TMath::Sqrt((pointExtra.GetX()-spdv->GetX())*(pointExtra.GetX()-spdv->GetX())+(pointExtra.GetY()-spdv->GetY())*(pointExtra.GetY()-spdv->GetY()));
+      Float_t rAssociated = TMath::Sqrt((pointAssociated.GetX()-spdv->GetX())*(pointAssociated.GetX()-spdv->GetX())+(pointAssociated.GetY()-spdv->GetY())*(pointAssociated.GetY()-spdv->GetY()));
       Float_t dzExtra[2];
       dzExtra[0] = (phiExtra-phiAssociated)*0.5*(rExtra+rAssociated);
-      dzExtra[1] = pointExtra.GetZ()-pointAssociated.GetZ()-(rExtra-rAssociated)*(pointAssociated.GetZ()-spdv->GetZv())/rAssociated;
+      dzExtra[1] = pointExtra.GetZ()-pointAssociated.GetZ()-(rExtra-rAssociated)*(pointAssociated.GetZ()-spdv->GetZ())/rAssociated;
       Float_t xlocExtra=-100.,zlocExtra=-100.;
       fNtupleITSAlignExtra->Fill(layerExtra,pointExtra.GetX(),pointExtra.GetY(),pointExtra.GetZ(),dzExtra[0],dzExtra[1],xlocExtra,zlocExtra,nclsITS,track->Pt());  
     }

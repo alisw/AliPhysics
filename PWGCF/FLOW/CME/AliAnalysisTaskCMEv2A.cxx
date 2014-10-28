@@ -2058,7 +2058,8 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
   TExMap *trackMap = new TExMap();
   for(int itrk=0; itrk<d_ntrk; itrk++)
     {
-      AliAODTrack *track = fAOD->GetTrack(itrk);
+      AliAODTrack *track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(itrk));
+      if(!track) AliFatal("Not a standard AOD");
       if(!track)
   	{
   	  if(debug>0) cout<<"ERROR: Could not retrieve AODtrack "<<itrk<<endl;
@@ -2089,7 +2090,8 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
   // --- main track loop
   for(int itrk = 0; itrk<d_ntrk; itrk++)
     {
-      AliAODTrack *track = fAOD->GetTrack(itrk);
+      AliAODTrack *track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(itrk));
+      if(!track) AliFatal("Not a standard AOD");
       if(!track)
 	{
 	  if(debug>0) cout<<"ERROR: Could not retrieve AODtrack "<<itrk<<endl;
@@ -2106,7 +2108,10 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
       int gid = track->GetID();
       AliAODTrack *PIDtrack;
       if(gid>=0) PIDtrack = track;
-      else PIDtrack = fAOD->GetTrack(trackMap->GetValue(-1-gid));
+      else {
+        PIDtrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(trackMap->GetValue(-1-gid)));
+        if(!PIDtrack) AliFatal("Not a standard AOD");
+      }
 
 
       // if(debug>15)
@@ -2834,7 +2839,8 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
 
   for(int itrk = 0; itrk<d_ntrk; itrk++)
     {
-      AliAODTrack *track = fAOD->GetTrack(itrk);
+      AliAODTrack *track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(itrk));
+      if(!track) AliFatal("Not a standard AOD");
       if(!track)
 	{
 	  if(debug>0) cout<<"ERROR: Could not retrieve AODtrack "<<itrk<<endl;

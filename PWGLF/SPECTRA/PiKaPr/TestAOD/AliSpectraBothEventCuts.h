@@ -64,7 +64,7 @@ fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZvertexCu
 
 
   // Methods
-  Bool_t IsSelected(AliVEvent * aod,AliSpectraBothTrackCuts     *trackcuts, Bool_t isMC=kFALSE, Double_t mcZ=-100.0);
+  Bool_t IsSelected(AliVEvent * aod,AliSpectraBothTrackCuts     *trackcuts, Bool_t isMC=kFALSE, Double_t mcZ=-100.0, TH1F* managerhisteventcuts=0x0);
   Bool_t CheckVtx();
   Bool_t CheckCentralityCut();
   Bool_t CheckMultiplicityCut();
@@ -180,7 +180,7 @@ Bool_t GetUseAliPPVsMultUtils() const {return fUseAliPPVsMultUtils;}
   AliSpectraBothEventCuts(const AliSpectraBothEventCuts&);
   AliSpectraBothEventCuts& operator=(const AliSpectraBothEventCuts&);
   
-  ClassDef(AliSpectraBothEventCuts, 11);
+  ClassDef(AliSpectraBothEventCuts, 12);
   
 };
 #endif

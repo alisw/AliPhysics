@@ -243,17 +243,17 @@ void AliAnalysisTaskPtFluc::UserExec(Option_t *)
 
   // Global vertex
   const AliESDVertex* vtxESD = fESD->GetPrimaryVertexTracks();
-  vtxZGlobal = vtxESD->GetZv();
+  vtxZGlobal = vtxESD->GetZ();
   vtxNContGlobal = vtxESD->GetNContributors();
 
   // SPD vertex
   const AliESDVertex* vtxESDSPD = fESD->GetPrimaryVertexSPD();
-  vtxZSPD = vtxESDSPD->GetZv();
+  vtxZSPD = vtxESDSPD->GetZ();
 //   vtxNContSPD = vtxESDSPD->GetNContributors();
 
   // TPC vertex
   const AliESDVertex* vtxESDTPC = fESD->GetPrimaryVertexTPC();
-  vtxZTPC = vtxESDTPC->GetZv();
+  vtxZTPC = vtxESDTPC->GetZ();
 //   vtxNContTPC = vtxESDTPC->GetNContributors();
 
   vtxZ = vtxZGlobal;
@@ -326,7 +326,7 @@ void AliAnalysisTaskPtFluc::UserExec(Option_t *)
   Double_t eventMeanPt=0., eventMeanPtSq=0., evMptMult=0.;
   Double_t twoPartCorrPair=0., twoPartCorrEvSq=0.;
   Double_t twoPartCorrPairSample=0., twoPartCorrEvSampleSq=0.;
-  Double_t nrPairs=0.;
+//   Double_t nrPairs=0.;
 
   Double_t *nbins = 0x0; // Mean pT values for multiplicity bin analysis
   Double_t evMptSample=0.;  // Mean pT value for whole sample analysis
@@ -686,8 +686,8 @@ else { // - Data -
     // Multiplicity distribution
     fMult->Fill(nrTracks);
 
-    // Number of pairs in event
-    nrPairs = 0.5 * nrTracks * (nrTracks-1);
+//     // Number of pairs in event
+//     nrPairs = 0.5 * nrTracks * (nrTracks-1);
 
     // Calculation of mean Pt and mean Pt Squared
     eventMeanPt = sumPt / nrTracks;

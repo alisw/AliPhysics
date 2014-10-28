@@ -2811,7 +2811,8 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
   Double_t pTrig[3]; 
 
   if( (step==kTriggerCheck || isTriggered) && idTrig>=0 ){
-    trkTrig = (AliAODTrack*)fAOD->GetTrack(idTrig); 
+    trkTrig = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(idTrig));
+    if(!trkTrig) AliFatal("Not a standard AOD"); 
     ptTrig  = trkTrig->Pt();
     phiTrig = trkTrig->Phi();
     etaTrig = trkTrig->Eta();
@@ -3594,7 +3595,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
     // *******************
     //   K0s selection
     // *******************
-    if (ctK && (TMath::Abs(rapK0s)<fYMax) && ( lPtArmV0 > TMath::Abs(0.2*lAlphaV0) ) && ( massK0s > 0.3979 && massK0s < 0.5981 ) ) {
+    if (ctK && (TMath::Abs(rapK0s)<fYMax) && ( lPtArmV0 > TMath::Abs(0.2*lAlphaV0) ) && ( massK0s > 0.3979 && massK0s < 0.5981 ) && lCheckMcK0Short ) {
       
       switch(step) {
       case kTriggerCheck: 
@@ -3759,7 +3760,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
     // *******************
     // Lambda selection
     // *******************
-    if ( ctL && (TMath::Abs(rapLambda)<fYMax) && (massLambda > 1.0649 && massLambda < 1.1651 ) && (TMath::Abs(nsigPosProton)<fNSigma) ){
+    if ( ctL && (TMath::Abs(rapLambda)<fYMax) && (massLambda > 1.0649 && massLambda < 1.1651 ) && (TMath::Abs(nsigPosProton)<fNSigma) && lCheckMcLambda ){
 
       switch(step) {
       case kTriggerCheck: 
@@ -3928,7 +3929,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
     // *******************
     // AntiLambda selection
     // *******************
-    if ( ctAL && (TMath::Abs(rapLambda)<fYMax)  && (massAntiLambda > 1.0649 && massAntiLambda < 1.1651 ) && (TMath::Abs(nsigNegProton)<fNSigma) ) {
+    if ( ctAL && (TMath::Abs(rapLambda)<fYMax)  && (massAntiLambda > 1.0649 && massAntiLambda < 1.1651 ) && (TMath::Abs(nsigNegProton)<fNSigma) && lCheckMcAntiLambda ) {
       
       switch(step) {
       case kTriggerCheck: 
@@ -4127,7 +4128,8 @@ void AliAnalysisTaskLambdaOverK0sJets::TriggerParticle()
   Float_t resPhi = -1000.;
 
   for (Int_t i=0; i<nTrk; i++) {
-    const AliAODTrack *t = fAOD->GetTrack(i);
+    const AliAODTrack *t = dynamic_cast<const AliAODTrack*>(fAOD->GetTrack(i));
+    if(!t) AliFatal("Not a standard AOD");
     if(!AcceptTrack(t)) continue;
     pt=t->Pt();
     eta=t->Eta();

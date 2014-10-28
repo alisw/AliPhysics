@@ -226,7 +226,7 @@ void AliAnalysisNetParticleQA::Process() {
       track->Phi(),                           //  3 phi
       track->Pt(),                            //  4 pt
       track->GetTPCmomentum(),                //  5 pInner
-      track->Charge(),                        //  6 sign
+      static_cast<Double_t>(track->Charge()),                        //  6 sign
       track->GetTPCsignal(),                  //  7 TPC dE/dx
       pid[0],                                 //  8 n Sigma ITS
       pid[1],                                 //  9 n Sigma TPC
@@ -235,7 +235,7 @@ void AliAnalysisNetParticleQA::Process() {
       dca[1],                                 // 12 dca z
       dcaRoverCdd,                            // 13 sqrt(cov[dd])
       dcaZoverCzz,                            // 14 sqrt(cov[zz])
-      isProbeParticle                         // 15 isProbe
+      static_cast<Double_t>(isProbeParticle)                         // 15 isProbe
     };
 
    fHnQA->Fill(aTrack);

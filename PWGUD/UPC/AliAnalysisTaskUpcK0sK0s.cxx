@@ -273,7 +273,8 @@ void AliAnalysisTaskUpcK0sK0s::RunAODhist()
   
   //Track loop
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = aod->GetTrack(itr);
+    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
+    if(!trk) AliFatal("Not a standard AOD");
     if( !trk ) continue;
     if(!(trk->TestFilterBit(1<<0))) continue;
 
@@ -314,8 +315,11 @@ void AliAnalysisTaskUpcK0sK0s::RunAODtree()
   if(!aod) return;
 
   //input data
-  fDataFilnam = aod->GetHeader()->GetESDFileName();
-  fEvtNum = aod->GetHeader()->GetEventNumberESDFile();
+  AliAODHeader * header = dynamic_cast<AliAODHeader*>(aod->GetHeader());
+if(!header) AliFatal("Not a standard AOD");
+
+  fDataFilnam = header->GetESDFileName();
+  fEvtNum = header->GetEventNumberESDFile();
   fRunNum = aod->GetRunNumber();
   
 
@@ -334,8 +338,8 @@ void AliAnalysisTaskUpcK0sK0s::RunAODtree()
   if(!isTriggered ) return;
 
   //trigger inputs
-  fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
-  fL1inputs = aod->GetHeader()->GetL1TriggerInputs();
+  fL0inputs = ((AliVAODHeader*)aod->GetHeader())->GetL0TriggerInputs();
+  fL1inputs = ((AliVAODHeader*)aod->GetHeader())->GetL1TriggerInputs();
 
   //Event identification
   fPerNum = aod ->GetPeriodNumber();
@@ -404,7 +408,8 @@ void AliAnalysisTaskUpcK0sK0s::RunAODtree()
   
   //Track loop
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = aod->GetTrack(itr);
+    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
+    if(!trk) AliFatal("Not a standard AOD");
     if( !trk ) continue;
     if(!(trk->TestFilterBit(1<<0))) continue;
 

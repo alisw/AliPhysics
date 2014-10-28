@@ -156,7 +156,7 @@ private:
   virtual void   RecPoints2Clusters();
   
   virtual void   ResetArrays();
-  
+    
   AliVEvent             *fEvent;                   // Event 
   
   //Geometry  

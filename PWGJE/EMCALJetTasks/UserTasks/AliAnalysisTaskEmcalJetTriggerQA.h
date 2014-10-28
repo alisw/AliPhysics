@@ -99,13 +99,16 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   TH3F     *fh3PatchADCEnergyEtaPhiCenterJ1J2; //! patch ADC energy vs eta, phi at center of patch, low + high threshold
   TH3F     *fh3PatchADCEnergyEtaPhiCenterAll;  //! patch ADC energy vs eta, phi at center of patch, all trigger patches
   TH3F     *fh3EEtaPhiCell;                    //! cell E, eta, phi
+  TH2F     *fh2ECellVsCent;                    //! cell E vs centrality
   TH2F     *fh2CellEnergyVsTime;               //! emcal cell energy vs time
   TH3F     *fh3EClusELeadingCellVsTime;        //! cluster energy vs energy of leading cell in cluster vs time of the leading cell
   TH3F     *fh3JetReacCent;                    //! jet energy vs cent vs dphi(jet,event plane)
-    
+
   AliAnalysisTaskEmcalJetTriggerQA(const AliAnalysisTaskEmcalJetTriggerQA&);            // not implemented
   AliAnalysisTaskEmcalJetTriggerQA &operator=(const AliAnalysisTaskEmcalJetTriggerQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetTriggerQA, 14)
+  ClassDef(AliAnalysisTaskEmcalJetTriggerQA, 15)
 };
 #endif
+
+

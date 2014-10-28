@@ -127,8 +127,8 @@ void AliAnalysisTaskEmcalJetSample::UserCreateOutputObjects()
     fTracksCont       = GetParticleContainer(0);
     fCaloClustersCont = GetClusterContainer(0);
   }
-  fTracksCont->SetClassName("AliVTrack");
-  fCaloClustersCont->SetClassName("AliVCluster");
+  if(fTracksCont) fTracksCont->SetClassName("AliVTrack");
+  if(fCaloClustersCont) fCaloClustersCont->SetClassName("AliVCluster");
 
   TString histname;
 

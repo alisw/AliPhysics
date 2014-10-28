@@ -314,7 +314,7 @@ void TOFSpectrappAnalysis::UserExec(Option_t *)
   
   hNumEv->Fill(3);
 
-  if (vertex) {ZPrimVertex=vertex->GetZv();}
+  if (vertex) {ZPrimVertex=vertex->GetZ();}
   if(TMath::Abs(ZPrimVertex)>10){return;}
   
   hNumEv->Fill(4);

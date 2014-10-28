@@ -81,7 +81,7 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t openingAngle = 0.1,
   mgr->ConnectOutput(taskMB, 1, coutput1);
   
   //L1 gamma and jet trigger
-  taskTR->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+  taskTR->SelectCollisionCandidates(AliVEvent::kEMCEGA | AliVEvent::kEMCEJE);
 
   TString containerName2 = mgr->GetCommonFileName();
   containerName2 += ":PWGHF_hfeCalL1GammaV2";
