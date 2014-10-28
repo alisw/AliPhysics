@@ -1872,6 +1872,19 @@ Double_t AliExternalTrackParam::Phi() const {
   return phi;
 }
 
+Double_t AliExternalTrackParam::PhiPos() const {
+  //---------------------------------------------------------------------
+  // Returns the azimuthal angle of position
+  // 0 <= phi < 2*pi
+  //---------------------------------------------------------------------
+  Double_t r[3]={0.,0.,0.};
+  GetXYZ(r);
+  Double_t phi=TMath::ATan2(r[1],r[0]);
+  if (phi<0.) phi+=2.*TMath::Pi();
+
+  return phi;
+}
+
 Double_t AliExternalTrackParam::M() const {
   // return particle mass
 
