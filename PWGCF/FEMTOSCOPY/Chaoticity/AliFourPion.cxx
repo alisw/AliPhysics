@@ -1759,7 +1759,8 @@ void AliFourPion::UserExec(Option_t *)
    
     // Track loop
     for (Int_t i = 0; i < fAOD->GetNumberOfTracks(); i++) {
-      AliAODTrack* aodtrack = fAOD->GetTrack(randomIndex[i]);
+      AliAODTrack* aodtrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(randomIndex[i]));
+      if(!aodtrack) AliFatal("Not a standard AOD");
       if (!aodtrack) continue;
       if(myTracks >= fMultLimit) {cout<<"More tracks than Track Limit"<<endl; return;}
     
@@ -1774,7 +1775,8 @@ void AliFourPion::UserExec(Option_t *)
       if(fFilterBit != 7){
 	Bool_t goodTrackOtherFB = kFALSE;
 	for (Int_t j = 0; j < fAOD->GetNumberOfTracks(); j++) {
-	  AliAODTrack* aodtrack2 = fAOD->GetTrack(randomIndex[j]);
+	  AliAODTrack* aodtrack2 = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(randomIndex[j]));
+	  if(!aodtrack2) AliFatal("Not a standard AOD");
 	  if(!aodtrack2) continue;
 	  if(!aodtrack2->TestFilterBit(BIT(fFilterBit))) continue;
 	  
@@ -1862,7 +1864,8 @@ void AliFourPion::UserExec(Option_t *)
       }else {// FilterBit 7 PID workaround
 	
 	for(Int_t j = 0; j < fAOD->GetNumberOfTracks(); j++) {
-	  AliAODTrack* aodTrack2 = fAOD->GetTrack(j);
+	  AliAODTrack* aodTrack2 = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(j));
+	  if(!aodTrack2) AliFatal("Not a standard AOD");
 	  if (!aodTrack2) continue;
 	  if(aodtrack->GetID() != (-aodTrack2->GetID() - 1)) continue;// (-aodTrack2->GetID() - 1)
 	  

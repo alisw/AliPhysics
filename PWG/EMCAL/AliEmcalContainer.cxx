@@ -21,7 +21,8 @@ AliEmcalContainer::AliEmcalContainer():
   fIsParticleLevel(kFALSE),
   fClArray(0),
   fCurrentID(0),
-  fLabelMap(0)
+  fLabelMap(0),
+  fRejectionReason(0)
 {
   // Default constructor.
 
@@ -38,7 +39,8 @@ AliEmcalContainer::AliEmcalContainer(const char *name):
   fIsParticleLevel(kFALSE),
   fClArray(0),
   fCurrentID(0),
-  fLabelMap(0)
+  fLabelMap(0),
+  fRejectionReason(0)
 {
   // Standard constructor.
 
@@ -94,4 +96,15 @@ Int_t AliEmcalContainer::GetIndexFromLabel(Int_t lab) const
     AliDebug(3,Form("%s_AliEmcalContainer::GetIndexFromLabel - No index-label map found, returning label...",fClArrayName.Data()));
     return lab; 
   }
+}
+
+//________________________________________________________________________
+UShort_t AliEmcalContainer::GetRejectionReasonBitPosition() const
+{ 
+  // Returns the highest bit in the rejection map.
+
+  UInt_t rs = fRejectionReason;
+  UShort_t p = 0;
+  while (rs >>= 1) { p++; }
+  return p;
 }

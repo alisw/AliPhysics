@@ -29,7 +29,6 @@
   
   
 // --- ROOT system --- 
-#include <TLorentzVector.h>
 #include <TObjArray.h>
 
 // --- AliRoot system --- 
@@ -43,6 +42,7 @@
 #include "AliCaloTrackReader.h"
 #include "AliMixedEvent.h"
 #include "AliCaloPID.h"
+#include "AliLog.h"
 
 ClassImp(AliIsolationCut)
   
@@ -57,8 +57,10 @@ fSumPtThresholdMax(10000.),
 fPtFraction(0.),
 fICMethod(0),
 fPartInCone(0),
-fDebug(-1),
-fFracIsThresh(1)
+fDebug(0),
+fFracIsThresh(1),
+fMomentum(),
+fTrackVector()
 {
   //default ctor
   
@@ -167,8 +169,8 @@ Float_t AliIsolationCut::CalculateExcessAreaFraction(Float_t excess) const
   if(coneA > excessA) return coneA / (coneA-excessA);
   else
   {
-    printf("AliIsolationCut::CalculateExcessAreaFraction() - Please Check : Excess Track %2.3f, coneA %2.2f,  excessA %2.2f, angle %2.2f,factor %2.2f\n",
-           excess,coneA, excessA, angle*TMath::RadToDeg(), coneA / (coneA-excessA));
+    AliWarning(Form("Please Check : Excess Track %2.3f, coneA %2.2f,  excessA %2.2f, angle %2.2f,factor %2.2f",
+                    excess,coneA, excessA, angle*TMath::RadToDeg(), coneA / (coneA-excessA)));
     return  1;
   }
 }
@@ -187,7 +189,7 @@ Float_t AliIsolationCut::GetCellDensity(AliAODPWG4ParticleCorrelation * pCandida
   if(phiC<0) phiC+=TMath::TwoPi();
   Float_t etaC  = pCandidate->Eta() ;
   
-  if(pCandidate->GetDetector()=="EMCAL")
+  if(pCandidate->GetDetectorTag() == AliCaloTrackReader::kEMCAL)
   {
     AliEMCALGeometry* eGeom = AliEMCALGeometry::GetInstance();
     AliCalorimeterUtils *cu = reader->GetCaloUtils();
@@ -197,7 +199,7 @@ Float_t AliIsolationCut::GetCellDensity(AliAODPWG4ParticleCorrelation * pCandida
     {
       //Get absolute (col,row) of candidate
       Int_t iEta=-1, iPhi=-1, iRCU = -1;      
-      Int_t nSupMod = cu->GetModuleNumberCellIndexes(absId, pCandidate->GetDetector(), iEta, iPhi, iRCU);
+      Int_t nSupMod = cu->GetModuleNumberCellIndexes(absId, pCandidate->GetDetectorTag(), iEta, iPhi, iRCU);
       
       Int_t colC = iEta;
       if (nSupMod % 2) colC =  AliEMCALGeoParams::fgkEMCALCols + iEta ;
@@ -244,8 +246,7 @@ Float_t AliIsolationCut::GetCellDensity(AliAODPWG4ParticleCorrelation * pCandida
         }
       }//end of cells loop
     }
-    
-    else if(fDebug>0) printf("cluster with bad (eta,phi) in EMCal for energy density calculation\n");
+    else AliWarning("Cluster with bad (eta,phi) in EMCal for energy density calculation");
     
     if (coneCells > 0.) 
     {
@@ -275,7 +276,7 @@ void AliIsolationCut::GetCoeffNormBadCell(AliAODPWG4ParticleCorrelation * pCandi
   if(phiC<0) phiC+=TMath::TwoPi();
   Float_t etaC  = pCandidate->Eta() ;
   
-  if(pCandidate->GetDetector()=="EMCAL")
+  if(pCandidate->GetDetectorTag() == AliCaloTrackReader::kEMCAL)
   {
     AliEMCALGeometry* eGeom = AliEMCALGeometry::GetInstance();
     AliCalorimeterUtils *cu = reader->GetCaloUtils();
@@ -285,7 +286,7 @@ void AliIsolationCut::GetCoeffNormBadCell(AliAODPWG4ParticleCorrelation * pCandi
     {
       //Get absolute (col,row) of candidate
       Int_t iEta=-1, iPhi=-1, iRCU = -1;
-      Int_t nSupMod = cu->GetModuleNumberCellIndexes(absId, pCandidate->GetDetector(),
+      Int_t nSupMod = cu->GetModuleNumberCellIndexes(absId, pCandidate->GetDetectorTag(),
                                                      iEta, iPhi, iRCU);
       
       Int_t colC = iEta;
@@ -329,8 +330,7 @@ void AliIsolationCut::GetCoeffNormBadCell(AliAODPWG4ParticleCorrelation * pCandi
         }
       }//end of cells loop
     }
-    
-    else if(fDebug > 0) printf("cluster with bad (eta,phi) in EMCal for energy density coeff calculation\n");
+    else AliWarning("Cluster with bad (eta,phi) in EMCal for energy density coeff calculation");
     
     if (coneCells > 0.)
     {
@@ -411,7 +411,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
                                         Int_t   & n, 
                                         Int_t   & nfrac, 
                                         Float_t & coneptsum, Float_t & ptLead,
-                                        Bool_t  & isolated) const
+                                        Bool_t  & isolated) 
 {
   //Search in cone around a candidate particle if it is isolated 
   Float_t ptC   = pCandidate->Pt() ;
@@ -436,16 +436,9 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
   nfrac     = 0 ;
   isolated  = kFALSE;
   
-  if(fDebug>0) 
-  {
-    printf("AliIsolationCut::MakeIsolationCut() - Cadidate pT %2.2f, eta %2.2f, phi %2.2f, cone %1.2f, thres %2.2f, Fill AOD? %d",
-           pCandidate->Pt(), pCandidate->Eta(), pCandidate->Phi()*TMath::RadToDeg(), fConeSize,fPtThreshold,bFillAOD);
-    if(plCTS) printf(", nTracks %d"  ,plCTS->GetEntriesFast());
-    if(plNe)  printf(", nClusters %d",plNe ->GetEntriesFast());
-    
-    printf("\n");
-  }
-  
+  AliDebug(1,Form("Candidate pT %2.2f, eta %2.2f, phi %2.2f, cone %1.2f, thres %2.2f, Fill AOD? %d",
+                  pCandidate->Pt(), pCandidate->Eta(), pCandidate->Phi()*TMath::RadToDeg(), fConeSize,fPtThreshold,bFillAOD));
+
   //Initialize the array with refrences
   TObjArray * refclusters  = 0x0;
   TObjArray * reftracks    = 0x0;
@@ -456,7 +449,6 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
   if(plCTS && 
      (fPartInCone==kOnlyCharged || fPartInCone==kNeutralAndCharged))
   {
-    TVector3 p3;
     for(Int_t ipr = 0;ipr < plCTS->GetEntries() ; ipr ++ )
     {
       AliVTrack* track = dynamic_cast<AliVTrack*>(plCTS->At(ipr)) ; 
@@ -467,17 +459,17 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
         if(track->GetID() == pCandidate->GetTrackLabel(0) || track->GetID() == pCandidate->GetTrackLabel(1) || 
            track->GetID() == pCandidate->GetTrackLabel(2) || track->GetID() == pCandidate->GetTrackLabel(3)   ) continue ;
         
-        p3.SetXYZ(track->Px(),track->Py(),track->Pz());
-        pt  = p3.Pt();
-        eta = p3.Eta();
-        phi = p3.Phi() ;
+        fTrackVector.SetXYZ(track->Px(),track->Py(),track->Pz());
+        pt  = fTrackVector.Pt();
+        eta = fTrackVector.Eta();
+        phi = fTrackVector.Phi() ;
       }
       else
       {// Mixed event stored in AliAODPWG4Particles
         AliAODPWG4Particle * trackmix = dynamic_cast<AliAODPWG4Particle*>(plCTS->At(ipr)) ; 
         if(!trackmix)
         {
-          printf("AliIsolationCut::MakeIsolationCut() - Wrong track data type, continue\n");
+          AliWarning("Wrong track data type, continue");
           continue;
         }
         
@@ -526,12 +518,11 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
       // // Check if there is any particle inside cone with pt larger than  fPtThreshold
       // Check if the leading particule inside the cone has a ptLead larger than fPtThreshold
       
-      if( fDebug > 0 )
-        printf("\t track %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", ipr,pt,eta,phi,rad);
+      AliDebug(2,Form("\t Track %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", ipr,pt,eta,phi,rad));
       
       if(rad < fConeSize)
       {
-        if(fDebug > 0)  printf(" -  inside candidate cone");
+        AliDebug(2,"Inside candidate cone");
         
         if(bFillAOD)
         {
@@ -574,8 +565,6 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
 
       } // Inside cone
       
-      if( fDebug > 0 )  printf("\n");
-      
     }// charged particle loop
     
   }//Tracks
@@ -585,7 +574,6 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
   if(plNe &&
      (fPartInCone==kOnlyNeutral || fPartInCone==kNeutralAndCharged))
   {
-    TLorentzVector mom ;
     
     for(Int_t ipr = 0;ipr < plNe->GetEntries() ; ipr ++ )
     {
@@ -608,18 +596,18 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
            pid->IsTrackMatched(calo,reader->GetCaloUtils(),reader->GetInputEvent()) ) continue ;
         
         //Assume that come from vertex in straight line
-        calo->GetMomentum(mom,reader->GetVertex(evtIndex)) ;
+        calo->GetMomentum(fMomentum,reader->GetVertex(evtIndex)) ;
         
-        pt  = mom.Pt()  ;
-        eta = mom.Eta() ;
-        phi = mom.Phi() ;
+        pt  = fMomentum.Pt()  ;
+        eta = fMomentum.Eta() ;
+        phi = fMomentum.Phi() ;
       }
       else 
       {// Mixed event stored in AliAODPWG4Particles
         AliAODPWG4Particle * calomix = dynamic_cast<AliAODPWG4Particle*>(plNe->At(ipr)) ; 
         if(!calomix)
         {
-          printf("AliIsolationCut::MakeIsolationCut() - Wrong calo data type, continue\n");
+          AliWarning("Wrong calo data type, continue");
           continue;
         }
         
@@ -675,12 +663,11 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
       
       //Check if there is any particle inside cone with pt larger than  fPtThreshold
       
-      if(fDebug > 0 ) 
-        printf("\t cluster %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", ipr,pt,eta,phi,rad);
+      AliDebug(2,Form("\t Cluster %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", ipr,pt,eta,phi,rad));
       
       if(rad < fConeSize)
       {
-        if(fDebug > 0 )  printf(" - inside candidate cone");
+        AliDebug(2,"Inside candidate cone");
         
         if(bFillAOD) 
         {
@@ -723,8 +710,6 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
         
       }//in cone
       
-      if(fDebug > 0 )  printf("\n");
-    
     }// neutral particle loop
     
   }//neutrals
@@ -765,9 +750,8 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
   {
     if( n == 0 ) isolated = kTRUE ;
     
-    if(fDebug > 0 )
-      printf("pT Cand %2.2f, pT Lead %2.2f, %2.2f<pT Lead< %2.2f, isolated %d\n",
-             ptC,ptLead,fPtThreshold,fPtThresholdMax,isolated);
+    AliDebug(1,Form("pT Cand %2.2f, pT Lead %2.2f, %2.2f<pT Lead< %2.2f, isolated %d",
+                    ptC,ptLead,fPtThreshold,fPtThresholdMax,isolated));
   }
   else if( fICMethod == kSumPtIC )
   {
@@ -777,9 +761,8 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
     else
       isolated  =  kTRUE  ;
     
-    if(fDebug > 0 )
-      printf("pT Cand %2.2f, SumPt %2.2f, %2.2f<Sum pT< %2.2f, isolated %d\n",
-             ptC,ptLead,fSumPtThreshold,fSumPtThresholdMax,isolated);
+     AliDebug(1,Form("pT Cand %2.2f, SumPt %2.2f, %2.2f<Sum pT< %2.2f, isolated %d",
+                     ptC,ptLead,fSumPtThreshold,fSumPtThresholdMax,isolated));
   }
   else if( fICMethod == kPtFracIC )
   {

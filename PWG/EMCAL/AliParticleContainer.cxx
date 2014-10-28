@@ -94,7 +94,7 @@ AliVParticle* AliParticleContainer::GetParticle(Int_t i) const
 }
 
 //________________________________________________________________________
-AliVParticle* AliParticleContainer::GetAcceptParticle(Int_t i) const {
+AliVParticle* AliParticleContainer::GetAcceptParticle(Int_t i) {
   //return pointer to particle if particle is accepted
 
   AliVParticle *vp = GetParticle(i);
@@ -118,7 +118,7 @@ AliVParticle* AliParticleContainer::GetParticleWithLabel(Int_t lab) const
 }
 
 //________________________________________________________________________
-AliVParticle* AliParticleContainer::GetAcceptParticleWithLabel(Int_t lab) const 
+AliVParticle* AliParticleContainer::GetAcceptParticleWithLabel(Int_t lab)  
 {
   //Get particle with label lab in array
   
@@ -171,41 +171,57 @@ void AliParticleContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
 }
 
 //________________________________________________________________________
-Bool_t AliParticleContainer::AcceptParticle(AliVParticle *vp) const
+Bool_t AliParticleContainer::AcceptParticle(AliVParticle *vp)
 {
   // Return true if vp is accepted.
 
-  if (!vp)
+  fRejectionReason = 0;
+
+  if (!vp) {
+    fRejectionReason |= kNullObject;
     return kFALSE;
+  }
+
+  if (vp->Pt() < fParticlePtCut) {
+    fRejectionReason |= kPtCut;
+    return kFALSE;
+  }
+
+  if (vp->Eta() < fParticleMinEta || vp->Eta() > fParticleMaxEta || 
+      vp->Phi() < fParticleMinPhi || vp->Phi() > fParticleMaxPhi) {
+    fRejectionReason |= kAcceptanceCut;
+    return kFALSE;
+  }
 
   if (TMath::Abs(vp->GetLabel()) > fMinMCLabel) {
     if(vp->TestBits(fMCTrackBitMap) != (Int_t)fMCTrackBitMap) {
       AliDebug(2,"MC particle not accepted because of MC bit map.");
+      fRejectionReason |= kBitMapCut;
       return kFALSE;
     }
   }
   else {
     if(vp->TestBits(fTrackBitMap) != (Int_t)fTrackBitMap) {
       AliDebug(2,"Track not accepted because of bit map.");
+      fRejectionReason |= kBitMapCut;
       return kFALSE;
     }
   }
 
-  if (vp->Pt() < fParticlePtCut)
+  if ((vp->GetFlag() & fMCFlag) != fMCFlag) {
+    fRejectionReason |= kMCFlag;
     return kFALSE;
+  }
 
-  if (vp->Eta() < fParticleMinEta || vp->Eta() > fParticleMaxEta || 
-      vp->Phi() < fParticleMinPhi || vp->Phi() > fParticleMaxPhi)
+  if (fGeneratorIndex >= 0 && fGeneratorIndex != vp->GetGeneratorIndex()) {
+    fRejectionReason |= kMCGeneratorCut;
     return kFALSE;
+  }
 
-  if ((vp->GetFlag() & fMCFlag) != fMCFlag) 
+  if (fCharge>=0 && fCharge != vp->Charge()) {
+    fRejectionReason |= kChargeCut;
     return kFALSE;
-
-  if (fGeneratorIndex >= 0 && fGeneratorIndex != vp->GetGeneratorIndex())
-    return kFALSE;
-
-  if (fCharge>=0 && fCharge != vp->Charge() )
-    return kFALSE;
+  }
   
   return kTRUE;
 }

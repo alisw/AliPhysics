@@ -1384,10 +1384,10 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
 
   if (fMultiplicityHists && fReadMC) {
     fillthis="hPrimariesvsAOD";
-    ((TH1I*)fMultiplicity->FindObject(fillthis))->Fill(aod->GetNTracks(),numberOfPrimaries);
+    ((TH1I*)fMultiplicity->FindObject(fillthis))->Fill(aod->GetNumberOfTracks(),numberOfPrimaries);
 
     fillthis="hAll2MultiplicityInEvent";
-    ((TH1I*)fMultiplicity->FindObject(fillthis))->Fill(aod->GetNTracks());
+    ((TH1I*)fMultiplicity->FindObject(fillthis))->Fill(aod->GetNumberOfTracks());
 
     fillthis="hAll2MultiplicityPrimaryInEvent";
     ((TH1I*)fMultiplicity->FindObject(fillthis))->Fill(numberOfPrimaries);
@@ -1493,7 +1493,7 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
 
   if (fMultiplicityHists && fReadMC) {
     fillthis="hAllMultiplicityInEvent";
-    ((TH1I*)fMultiplicity->FindObject(fillthis))->Fill(aod->GetNTracks());
+    ((TH1I*)fMultiplicity->FindObject(fillthis))->Fill(aod->GetNumberOfTracks());
 
     fillthis="hAllMultiplicityPrimaryInEvent";
     ((TH1I*)fMultiplicity->FindObject(fillthis))->Fill(numberOfPrimaries);
@@ -3303,7 +3303,7 @@ Int_t AliAnalysisTaskSELambdac::NumberPrimaries(const AliAODEvent *aods)
   
   TClonesArray *aodtracks=(TClonesArray *)aods->GetTracks();
  
-  // for(Int_t ji=0;ji<aods->GetNTracks();ji++)
+  // for(Int_t ji=0;ji<aods->GetNumberOfTracks();ji++)
   for(Int_t ji=0;ji<aodtracks->GetEntriesFast();ji++)
     {
       AliAODTrack*aodTrack=(AliAODTrack*)aodtracks->UncheckedAt(ji);

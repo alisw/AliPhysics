@@ -65,6 +65,8 @@ namespace EMCalTriggerPtAnalysis {
                 		    fListTrackCuts(NULL),
                 		    fEtaRange(),
                 		    fPtRange(),
+                		    fEnergyRange(),
+                		    fVertexRange(),
                 		    fSwapEta(kFALSE),
                 		    fUseTriggersFromTriggerMaker(kFALSE)
   {
@@ -80,6 +82,8 @@ namespace EMCalTriggerPtAnalysis {
                 		    fListTrackCuts(NULL),
                 		    fEtaRange(),
                 		    fPtRange(),
+                        fEnergyRange(),
+                        fVertexRange(),
                 		    fSwapEta(kFALSE),
                 		    fUseTriggersFromTriggerMaker(kFALSE)
   {
@@ -93,6 +97,8 @@ namespace EMCalTriggerPtAnalysis {
     // Set default cuts
     fEtaRange.SetLimits(-0.8, 0.8);
     fPtRange.SetLimits(0.15, 100.);
+    fEnergyRange.SetLimits(0., 1000.);
+    fVertexRange.SetLimits(-10., 10.);
     SetMakeGeneralHistograms(kTRUE);
   }
 
@@ -185,14 +191,14 @@ namespace EMCalTriggerPtAnalysis {
     const TAxis *clusteraxes[4];
     for(int iaxis = 0; iaxis < 4; ++iaxis) clusteraxes[iaxis] = hclusteraxes + iaxis;
     TAxis hpatchenergyaxes[4];
-    DefineAxis(hpatchenergyaxes[0], "energy", "Patch energy (GeV)", 100, 0., 100.);
+    DefineAxis(hpatchenergyaxes[0], "energy", "Patch energy (GeV)", 100, 0., 100);
     DefineAxis(hpatchenergyaxes[1], "eta", "#eta", etabinning);
     DefineAxis(hpatchenergyaxes[2], "phi", "#phi",  20, 0, 2 * TMath::Pi());
     DefineAxis(hpatchenergyaxes[3], "isMain", "Main trigger", 2, -0.5, 1.5);
     const TAxis *patchenergyaxes[4];
     for(int iaxis = 0; iaxis < 4; ++iaxis) patchenergyaxes[iaxis] = hpatchenergyaxes + iaxis;
     TAxis hpatchampaxes[4];
-    DefineAxis(hpatchampaxes[0], "amplitude", "Patch energy (GeV)", 2000, 0., 2000.);
+    DefineAxis(hpatchampaxes[0], "amplitude", "Patch energy (GeV)", 10000, 0., 10000.);
     DefineAxis(hpatchampaxes[1], "eta", "#eta", etabinning);
     DefineAxis(hpatchampaxes[2], "phi", "#phi",  20, 0, 2 * TMath::Pi());
     DefineAxis(hpatchampaxes[3], "isMain", "Main trigger", 2, -0.5, 1.5);
@@ -201,25 +207,25 @@ namespace EMCalTriggerPtAnalysis {
     try{
       std::string patchnames[] = {"Level0", "JetHigh", "JetLow", "GammaHigh", "GammaLow"};
       for(std::string * triggerpatch = patchnames; triggerpatch < patchnames + sizeof(patchnames)/sizeof(std::string); ++triggerpatch){
-        fHistos->CreateTHnSparse(Form("Energy%s", triggerpatch->c_str()), Form("Patch energy for %s trigger patches", triggerpatch->c_str()), 4, patchenergyaxes);
-        fHistos->CreateTHnSparse(Form("EnergyRough%s", triggerpatch->c_str()), Form("Rough patch energy for %s trigger patches", triggerpatch->c_str()), 4, patchenergyaxes);
-        fHistos->CreateTHnSparse(Form("Amplitude%s", triggerpatch->c_str()), Form("Patch amplitude for %s trigger patches", triggerpatch->c_str()), 4, patchampaxes);
+        fHistos->CreateTHnSparse(Form("Energy%s", triggerpatch->c_str()), Form("Patch energy for %s trigger patches", triggerpatch->c_str()), 4, patchenergyaxes, "s");
+        fHistos->CreateTHnSparse(Form("EnergyRough%s", triggerpatch->c_str()), Form("Rough patch energy for %s trigger patches", triggerpatch->c_str()), 4, patchenergyaxes, "s");
+        fHistos->CreateTHnSparse(Form("Amplitude%s", triggerpatch->c_str()), Form("Patch amplitude for %s trigger patches", triggerpatch->c_str()), 4, patchampaxes, "s");
       }
 
       // Create histogram for MC-truth
-      fHistos->CreateTHnSparse("hMCtrueParticles", "Particle-based histogram for MC-true particles", 5, trackaxes);
+      fHistos->CreateTHnSparse("hMCtrueParticles", "Particle-based histogram for MC-true particles", 5, trackaxes, "s");
       for(std::map<std::string,std::string>::iterator it = triggerCombinations.begin(); it != triggerCombinations.end(); ++it){
         const std::string name = it->first, &title = it->second;
         // Create event-based histogram
         fHistos->CreateTH2(Form("hEventHist%s", name.c_str()), Form("Event-based data for %s events; pileup rejection; z_{V} (cm)", title.c_str()), pileupaxis, zvertexBinning);
         // Create track-based histogram
-        fHistos->CreateTHnSparse(Form("hTrackHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 7, trackaxes);
-        fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 7, trackaxes);
-        fHistos->CreateTHnSparse(Form("hMCTrackHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics", title.c_str()), 7, trackaxes);
-        fHistos->CreateTHnSparse(Form("hMCTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics", title.c_str()), 7, trackaxes);
+        fHistos->CreateTHnSparse(Form("hTrackHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 7, trackaxes, "s");
+        fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 7, trackaxes, "s");
+        fHistos->CreateTHnSparse(Form("hMCTrackHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics", title.c_str()), 7, trackaxes, "s");
+        fHistos->CreateTHnSparse(Form("hMCTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics", title.c_str()), 7, trackaxes, "s");
         // Create cluster-based histogram (Uncalibrated and calibrated clusters)
-        fHistos->CreateTHnSparse(Form("hClusterCalibHist%s", name.c_str()), Form("Calib. cluster-based histogram for %s events", title.c_str()), 4, clusteraxes);
-        fHistos->CreateTHnSparse(Form("hClusterUncalibHist%s", name.c_str()), Form("Uncalib. cluster-based histogram for %s events", title.c_str()), 4, clusteraxes);
+        fHistos->CreateTHnSparse(Form("hClusterCalibHist%s", name.c_str()), Form("Calib. cluster-based histogram for %s events", title.c_str()), 4, clusteraxes, "s");
+        fHistos->CreateTHnSparse(Form("hClusterUncalibHist%s", name.c_str()), Form("Uncalib. cluster-based histogram for %s events", title.c_str()), 4, clusteraxes, "s");
       }
       fHistos->CreateTHnSparse("hEventTriggers", "Trigger type per event", 5, triggeraxis);
       fHistos->CreateTHnSparse("hEventsTriggerbit", "Trigger bits for the different events", 4, bitaxes);
@@ -262,9 +268,9 @@ namespace EMCalTriggerPtAnalysis {
     AliEmcalTriggerPatchInfo *triggerpatch(NULL);
     TIter patchIter(this->fTriggerPatchInfo);
     while((triggerpatch = dynamic_cast<AliEmcalTriggerPatchInfo *>(patchIter()))){
-      double triggerpatchinfo[4] = {triggerpatch->GetPatchE(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1 : 0};
-      double triggerpatchinfoamp[4] = {triggerpatch->GetADCAmp(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1 : 0};
-      double triggerpatchinfoer[4] = {triggerpatch->GetADCAmpGeVRough(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1 : 0};
+      double triggerpatchinfo[4] = {triggerpatch->GetPatchE(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
+      double triggerpatchinfoamp[4] = {static_cast<double>(triggerpatch->GetADCAmp()), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
+      double triggerpatchinfoer[4] = {triggerpatch->GetADCAmpGeVRough(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
       if(triggerpatch->IsJetHigh()){
         fHistos->FillTHnSparse("EnergyJetHigh", triggerpatchinfo);
         fHistos->FillTHnSparse("AmplitudeJetHigh", triggerpatchinfoamp);
@@ -295,6 +301,7 @@ namespace EMCalTriggerPtAnalysis {
     const AliVVertex *vtxTracks = fInputEvent->GetPrimaryVertex(),
         *vtxSPD = GetSPDVertex();
     if(!(vtxTracks && vtxSPD)) return false;
+    if(!fVertexRange.IsInRange(vtxTracks->GetZ())) return false;
     if(vtxTracks->GetNContributors() < 1 || vtxSPD->GetNContributors() < 1) return false;
 
     double triggers[5]; memset(triggers, 0, sizeof(double) * 5);
@@ -438,6 +445,7 @@ namespace EMCalTriggerPtAnalysis {
     for(int icl = 0; icl < fInputEvent->GetNumberOfCaloClusters(); icl++){
       clust = fInputEvent->GetCaloCluster(icl);
       if(!clust->IsEMCAL()) continue;
+      if(!fEnergyRange.IsInRange(clust->E())) continue;
       if(triggers[0]) FillClusterHist("MinBias", clust, false, zv, isPileupEvent, triggers[0]);
       if(!triggerstrings.size())	// Non-EMCal-triggered
         FillClusterHist("NoEMCal", clust, false, zv, isPileupEvent, triggers[0]);
@@ -452,6 +460,7 @@ namespace EMCalTriggerPtAnalysis {
       TIter clustIter(fCaloClusters);
       while((clust = dynamic_cast<const AliVCluster *>(clustIter()))){
         if(!clust->IsEMCAL()) continue;
+        if(!fEnergyRange.IsInRange(clust->E())) continue;
         if(triggers[0]) FillClusterHist("MinBias", clust, true, zv, isPileupEvent, triggers[0]);
         if(!triggerstrings.size())	// Non-EMCal-triggered
           FillClusterHist("NoEMCal", clust, true, zv, isPileupEvent, triggers[0]);
@@ -481,12 +490,12 @@ namespace EMCalTriggerPtAnalysis {
     definitions.insert(std::pair<double,double>(15., 0.5));
     definitions.insert(std::pair<double,double>(25., 1.));
     definitions.insert(std::pair<double,double>(40., 2.5));
-    definitions.insert(std::pair<double,double>(60., 5.));
-    definitions.insert(std::pair<double,double>(100., 5.));
+    definitions.insert(std::pair<double,double>(50., 5.));
+    definitions.insert(std::pair<double,double>(100., 10.));
     double currentval = 0;
     for(std::map<double,double>::iterator id = definitions.begin(); id != definitions.end(); ++id){
       double limit = id->first, binwidth = id->second;
-      while(currentval <= limit){
+      while(currentval < limit){
         currentval += binwidth;
         mybinning.push_back(currentval);
       }
@@ -505,10 +514,10 @@ namespace EMCalTriggerPtAnalysis {
      * @param binning: Array where to store the results.
      */
     std::vector<double> mybinning;
-    double currentval = -40;
+    double currentval = -10;
     mybinning.push_back(currentval);
-    while(currentval <= 40.){
-      currentval += 1.;
+    while(currentval <= 10.){
+      currentval += 5.;
       mybinning.push_back(currentval);
     }
     binning.Set(mybinning.size());

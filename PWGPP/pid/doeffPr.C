@@ -30,7 +30,7 @@ TF1 *fback;
 
 Int_t ifunc=0;
 
-Float_t fitmin = 1.08;
+Float_t fitmin = 1.1;
 Float_t fitmax = 1.15;
 
 Int_t cmin = 1; // min 1
@@ -104,7 +104,7 @@ Int_t LoadLib(){
   Float_t x[] = {xmin[0]+0.001,xmin[1]+0.001,xmin[2]+0.001,xmin[3]+0.001,xmin[4]+0.001,xmin[5]+0.001,xmin[6]+0.001,xmin[7]+0.001,1/*trueMC*/,xmin[9],xmin[10],xmin[11],xmin[12],xmin[13]};
   Float_t x2[] = {xmax[0],xmax[1],xmax[2],xmax[3],xmax[4],xmax[5],xmax[6],xmax[7],xmax[8],xmax[9],xmax[10],xmax[11],xmax[12],xmax[13]};
 
-  AliPIDperfContainer *tmp = (AliPIDperfContainer *) fContPid1;
+  AliPIDperfContainer *tmp = (AliPIDperfContainer *) fContPid2;
   TH1D *h = tmp->GetQA(0, x, x2)->ProjectionX("checkMC");
 
   if(h->GetEntries()) isMC = kTRUE;
@@ -118,9 +118,9 @@ Int_t LoadLib(){
     printf("MC truth found!!!!!!\nIt is MC!!!!!!");
   }
 
-  fsign = new TF1("fsign","gaus(0) +0.5*[0]*TMath::Exp(-[3]*TMath::Abs(x-[1]))",fitmin,fitmax);
-  fback = new TF1("fback","pol2",fitmin,fitmax);
-  fall = new TF1("fall","gaus(0) +0.5*[0]*TMath::Exp(-[3]*TMath::Abs(x-[1])) + pol2(4)",fitmin,fitmax);
+  fsign = new TF1("fsign","gaus(0) +0*0.5*[0]*TMath::Exp(-[3]*TMath::Abs(x-[1]))",fitmin,fitmax);
+  fback = new TF1("fback","pol2*(x-0.938-0.139)*(x > 0.938+0.139)",fitmin,fitmax);
+  fall = new TF1("fall","gaus(0) +0*0.5*[0]*TMath::Exp(-[3]*TMath::Abs(x-[1])) + pol2(4)*(x-0.938-0.139)*(x > 0.938+0.139)",fitmin,fitmax);
 
   fsign->SetLineColor(2);
   fback->SetLineColor(4);
@@ -283,9 +283,11 @@ void doeffPr(Int_t pos,Float_t prob,Float_t etaminkp,Float_t etamaxkp){
     expt[i] = (-ptmin+ptmax)/2;
     eff[i] = b2[i][0]/(b[i][0]-b2[i][0]*weightS);
 
-    b[i][0] = b[i][0]-b2[i][0]*weightS;
+    //    b[i][0] = b[i][0]-b2[i][0]*weightS;
 
-    efferr[i] = TMath::Sqrt(b[i][1]*b[i][1]/b[i][0]/b[i][0] + b2[i][1]*b2[i][1]/b2[i][0]/b2[i][0])*(b2[i][0]+b2[i][1])*(1+weightS*(b2[i][0]-b2[i][1])/b[i][0])/b[i][0];//*(1-eff[i]);//der2*der2*(b[i][1]*b[i][1] - b2[i][1]*b2[i][1]));
+    //    efferr[i] = TMath::Sqrt(b[i][1]*b[i][1]/b[i][0]/b[i][0] + b2[i][1]*b2[i][1]/b2[i][0]/b2[i][0])*(b2[i][0]+b2[i][1])*(1+weightS*(b2[i][0]-b2[i][1])/b[i][0])/b[i][0];//*(1-eff[i]);//der2*der2*(b[i][1]*b[i][1] - b2[i][1]*b2[i][1]));
+
+    efferr[i] = 1./(b[i][0]-b2[i][0]*weightS)/(b[i][0]-b2[i][0]*weightS)*TMath::Sqrt(b[i][0]*b[i][0]*b2[i][1]*b2[i][1] + b2[i][0]*b2[i][0]*b[i][1]*b[i][1]);
 
     if(TMath::Abs(efferr[i]) > 1)efferr[i]=1;
   }
@@ -492,7 +494,7 @@ void fit(TH1D *h,Float_t *a,char *opt,char *opt2,Float_t pt){
  fall->SetParameter(0,100);
  fall->SetParameter(1,1.115);
  fall->SetParameter(2,2.89748e-03);
- fall->FixParameter(3,350+600/pt);
+ fall->FixParameter(3,1000+350+600/pt);
 
  fall->SetParLimits(0,0.00001,10000000);
  fall->SetParLimits(1,1.105,1.125);//1.01898 + 2.4e-04*pt-1e-03,1.01898 + 2.4e-04*pt+1e-03);
@@ -525,9 +527,9 @@ void fit(TH1D *h,Float_t *a,char *opt,char *opt2,Float_t pt){
 //  getchar();
 
  if(pt > 2.5){
-   if(pt < 2.8) h2->RebinX(2);
-   else if(pt < 3) h2->RebinX(4);
-   else h2->RebinX(10);
+   if(pt < 2.4) h2->RebinX(1);
+   else if(pt < 3) h2->RebinX(2);
+   else h2->RebinX(2);
  }
 
  h=h2;

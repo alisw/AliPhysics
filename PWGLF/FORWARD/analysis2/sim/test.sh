@@ -22,6 +22,9 @@ files="AOD.C	\
 	AODConfig.C	\
 	Check.C		\
 	Config.C	\
+	BaseConfig.C	\
+        DetConfig.C	\
+	OCDBConfig.C	\
 	GRP.C		\
 	QA.C		\
 	QAConfig.C	\
@@ -36,5 +39,9 @@ mkdir -p test
 for i in $files ; do 
     cp -v $i test/`basename $i` 
 done 
+opts=
+if test "x$run" = "x138190" ; then 
+    opts="--bmin 0 --bmax 1"
+fi
 
-(cd test && ../run.sh --run $run  --event $nev --qa --aod $@)
+(cd test && ../run.sh --run $run  --event $nev --qa --aod ${opts} $@)

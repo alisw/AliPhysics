@@ -5675,7 +5675,8 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     fptMax[1]=0.;
     fptMax[2]=0.;
     for(Int_t it=0;it<aod->GetNumberOfTracks();it++) {
-      AliAODTrack *track = aod->GetTrack(it);
+      AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+      if(!track) AliFatal("Not a standard AOD");
       fptAll+=track->Pt();
       fptAllSq+=track->Pt()*track->Pt();
       if(track->Pt()>fptMax[0]){
@@ -7247,7 +7248,8 @@ AliAODVertex* AliAnalysisTaskSECharmFraction::GetPrimaryVtxSkipped(AliAODEvent *
    }
    nprim=0;
    for(Int_t it=0;it<ntracks;it++) {
-     AliAODTrack *track = aod->GetTrack(it);
+     AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+     if(!track) AliFatal("Not a standard AOD");
      
      if(track->IsPrimaryCandidate()){
        if(track->Pt()>ptmin){

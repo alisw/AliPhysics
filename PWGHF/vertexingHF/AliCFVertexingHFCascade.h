@@ -82,6 +82,9 @@ class AliCFVertexingHFCascade : public AliCFVertexingHF{
   void SetUseCutsForTMVA(Bool_t useCutsForTMVA) {fUseCutsForTMVA = useCutsForTMVA;}
   Bool_t GetUseCutsForTMVA() const {return fUseCutsForTMVA;}
 
+  void SetCutOnMomConservation(Float_t cut) {fCutOnMomConservation = cut;}
+  Bool_t GetCutOnMomConservation() const {return fCutOnMomConservation;}
+
  protected:
   
   
@@ -98,8 +101,9 @@ class AliCFVertexingHFCascade : public AliCFVertexingHF{
   AliAODVertex* fPrimVtx;        // primaryVertex
   Bool_t fUseCutsForTMVA;        // flag to decide whether to use or not the preselection
                                  // cuts of the TMVA when filling the CF
+  Float_t fCutOnMomConservation; // cut on momentum conservation
 
-  ClassDef(AliCFVertexingHFCascade, 3); // CF class for D* and other cascades
+  ClassDef(AliCFVertexingHFCascade,4); // CF class for D* and other cascades
   
 };
 

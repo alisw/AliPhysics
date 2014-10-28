@@ -1,3 +1,7 @@
+/**
+ * Configuration of AOD pass.  The base class VirtualAODCfg is
+ * declared in AOD.C
+ */
 struct AODCfg : public VirtualAODCfg
 {
   /** 
@@ -41,26 +45,30 @@ struct AODCfg : public VirtualAODCfg
   /** @return ESD to AOD filter (barrel + muon tracks) */
   virtual Bool_t UseESDfilter() const { return true; }
   /** @return Use Muon train  */
-  virtual Bool_t UsePWGMuonTrain() const { return true; }
+  virtual Bool_t UsePWGMuonTrain() const { return false; }
   /** @return Task that copies only muon events */
-  virtual Bool_t UseMUONcopyAOD() const { return true; }
+  virtual Bool_t UseMUONcopyAOD() const { return false; }
   /** @return Jet analysis (PWG4) */
   virtual Bool_t UseJETAN() const { return false; }
   /** @return Jet delta AODs */
   virtual Bool_t UseJETANdelta() const { return false; }
   /** @return Vertexing HF task (PWG3) */
-  virtual Bool_t UsePWGHFvertexing() const { return true; }
+  virtual Bool_t UsePWGHFvertexing() const { return false; }
   /** @return JPSI filtering (PWG3) */
   virtual Bool_t UsePWGDQJPSIfilter() const { return false; }
   /** @return D0->2 hadrons (PWG3) */
-  virtual Bool_t UsePWGHFd2h() const { return true; }
+  virtual Bool_t UsePWGHFd2h() const { return false; }
   /** @return PID response */
-  virtual Bool_t UsePIDResponse() const { return true; }
+  virtual Bool_t UsePIDResponse() const { return false; }
   /** @return Forward mult task (PWGLF) */
   virtual Bool_t UsePWGLFForward() const { return true; }
   /* @} */
 };
 
+/** 
+ * Creating our configuration 
+ * 
+ */
 void AODConfig()
 {
   Info("AODConfig", "Creating configuration object");

@@ -447,7 +447,8 @@ AliBasedNdetaTask::Event(AliAODEvent& aod)
   if (HasCentrality()) {
     Double_t       cent    = forward->GetCentrality();
     if (!fCentMethod.IsNull()) { 
-      AliAODHeader* hdr = aod.GetHeader();
+      AliAODHeader* hdr = dynamic_cast<AliAODHeader*>(aod.GetHeader());
+      if(!hdr) AliFatal("Not a standard AOD");
       if (hdr) { 
 	AliCentrality* cP = hdr->GetCentralityP();
 	if (cP) { 

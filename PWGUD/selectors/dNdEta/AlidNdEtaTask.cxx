@@ -649,7 +649,7 @@ isManager()->GetInputEventHandler());
       
       //if (strcmp(vtxESD->GetTitle(), "vertexer: 3D") == 0)
       {
-        fVertex->Fill(vtxESD->GetXv(), vtxESD->GetYv(), vtxESD->GetZv());
+        fVertex->Fill(vtxESD->GetX(), vtxESD->GetY(), vtxESD->GetZ());
       }
       
       if (AliPWG0Helper::TestVertex(vtxESD, fAnalysisMode))
@@ -970,7 +970,7 @@ isManager()->GetInputEventHandler());
         // control hist
         
         if (strcmp(vtxESD->GetTitle(), "vertexer: 3D") == 0)
-          fVertexVsMult->Fill(vtxESD->GetXv(), vtxESD->GetYv(), inputCount);
+          fVertexVsMult->Fill(vtxESD->GetX(), vtxESD->GetY(), inputCount);
       
         Int_t part05 = 0;
         Int_t part10 = 0;

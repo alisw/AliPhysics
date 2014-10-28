@@ -171,6 +171,9 @@ private:
    TH1D *fhDphiTriggerJetAccept;  //Deltaphi between trigger and jet after cut
    TH1D *fhCentrality;  //Deltaphi between trigger and jet 
    TH1D *fhCentralityAccept;  //Deltaphi between trigger and jet after cut
+   TH1D *fhNofMultipleTriggers; // The number of additional triggers in events with at least one trigger 
+   TH1D *fhDeltaRMultTriggers; // Angular distributions of mult. triggers. 
+
 
    //THnSparse *fHJetPtRaw;      //bg unsubtr. vs bg subtr. pT spectrum of jets vs jet area
    //THnSparse *fHLeadingJetPtRaw; //bg unsubtr. vs bg. subtr. leading jet pT vs area 
@@ -204,6 +207,8 @@ private:
    TH1D  *fhCellAreaToMedian; //how many entries were used to calculate
    TH1D  *fhCellAreaToMedianGen; //how many entries were used to calculate in MC
  
+   TH1D *fhNofMultipleTriggersGen; // The number of additional triggers in events with at least one trigger 
+   TH1D *fhDeltaRMultTriggersGen; // Angular distributions of mult. triggers. 
 
    Bool_t fIsChargedMC;   //flag analysis on MC data with true and on the real+kine data false
    Bool_t fIsKine;       //flag analysis on kine data with true and on the real+MC data false

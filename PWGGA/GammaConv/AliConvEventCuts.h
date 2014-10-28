@@ -179,6 +179,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Bool_t 		HasV0AND()												{ return fHasV0AND										; }
 		Bool_t		IsSDDFired()											{ return fIsSDDFired									; }
 		Int_t 		IsSpecialTrigger()										{ return fSpecialTrigger								; }
+		Int_t 		IsSpecialSubTrigger()									{ return fSpecialSubTrigger								; }	
 		void 		InitializeEMCALTrigger( AliVEvent *fInputEvent);
 		Bool_t 		HasTriggerType(TriggerTypeEMCAL t);
 		

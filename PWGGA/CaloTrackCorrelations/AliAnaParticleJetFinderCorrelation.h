@@ -156,6 +156,8 @@ private:
 
   TRandom2 * fGenerator;//! pointer to random generator object
 
+  TLorentzVector fMomentum; //! momentum
+  
   // Histograms
   TH2F *     fhDeltaEta;           //! Difference of jet eta and trigger particle eta as function of trigger particle pT
   //TH2F *     fhDeltaPhi;         //! Difference of jet phi and trigger particle phi as function of trigger particle pT

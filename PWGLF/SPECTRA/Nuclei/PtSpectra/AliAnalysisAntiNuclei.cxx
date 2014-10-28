@@ -304,7 +304,7 @@ void AliAnalysisAntiNuclei::UserExec(Option_t *)
       PostData(1, fListHist);
       return;
     } else {
-      if (TMath::Abs(vertex->GetZv()) > 10) {
+      if (TMath::Abs(vertex->GetZ()) > 10) {
 	fHistMult->Fill(-1, processCode);
 	PostData(1, fListHist);
 	return;
@@ -362,7 +362,7 @@ void AliAnalysisAntiNuclei::UserExec(Option_t *)
     PostData(1, fListHist);
     return;
   } else {
-    if (TMath::Abs(vertex->GetZv()) > 10) {
+    if (TMath::Abs(vertex->GetZ()) > 10) {
       fHistMult->Fill(-1, processCode);
       PostData(1, fListHist);
       return;

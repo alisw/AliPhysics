@@ -710,7 +710,8 @@ Double_t AliCFSingleTrackEfficiencyTask::GetCentrality()
   if(isAOD) {
     AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
     if(!aodEvent) return cent;
-    AliAODHeader* header = aodEvent->GetHeader();
+    AliAODHeader* header = dynamic_cast<AliAODHeader*>(aodEvent->GetHeader());
+    if(!header) AliFatal("Not a standard AOD");
     if(!header) return cent;
     AliCentrality *centrality = header->GetCentralityP();
     if(!centrality) return cent;

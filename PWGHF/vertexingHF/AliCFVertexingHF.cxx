@@ -692,7 +692,7 @@ Bool_t AliCFVertexingHF::RecoAcceptStep(AliESDtrackCuts **trackCuts) const
 	
 	Bool_t bRecoAccStep = kFALSE;
 	
-	Float_t etaCutMin, ptCutMin, etaCutMax, ptCutMax;
+	Float_t etaCutMin=0, ptCutMin=0, etaCutMax=0, ptCutMax=0;
 	
 	Float_t etaProng=0., ptProng=0.; 
 	
@@ -788,7 +788,7 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 	AliAODMCParticle *mcPartDaughter;
 	Int_t label0 = fmcPartCandidate->GetDaughter(0);
 	Int_t label1 = fmcPartCandidate->GetDaughter(1);
-	//AliDebug(2,Form("label0 = %d, label1 = %d",label0,label1));
+ 	AliDebug(2, Form("label0 = %d, label1 = %d", label0, label1));
 	AliAODMCParticle* tmp0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(label0));
 	AliAODMCParticle* tmp1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(label1));
 
@@ -835,6 +835,7 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 				if (part) {
 					fLabelArray[foundDaughters] = part->GetLabel();
 					AliDebug(3, Form("part found at %d has label = %d", iLabelDau, part->GetLabel()));
+					AliDebug(3, Form("fLabelArray[%d] = %d", foundDaughters, fLabelArray[foundDaughters]));
 					foundDaughters++;
 				}
 				else{
@@ -846,7 +847,7 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 			}
 			// added K0S case - Start
 			else if (pdgCode==311) {
-			  AliDebug(3, "K0S case");
+			  AliDebug(3, Form("K0S case, foundDaughters = %d", foundDaughters));
 			  if (part->GetNDaughters()!=1) {
 			    delete [] fLabelArray; 
 			    fLabelArray = 0x0;  
@@ -869,11 +870,11 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 			    return bLabelArray;
 			  }
 			  Int_t labelFirstDauRes = partK0S->GetDaughter(0);
-			  AliDebug(2, Form(" Found K0S (%d)", labelK0Dau));
+			  AliDebug(2, Form("Found K0S (%d)", labelK0Dau));
 			  for(Int_t iDauRes=0; iDauRes<nDauRes; iDauRes++){
 			    Int_t iLabelDauRes = labelFirstDauRes+iDauRes;
 			    AliAODMCParticle* dauRes = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iLabelDauRes));
-			    AliDebug(3, Form("daughter = %d, pointer = %p", iLabelDauRes, dauRes));
+			    AliDebug(3, Form("daughter = %d, pointer = %p, with label = %d", iLabelDauRes, dauRes, dauRes->GetLabel()));
 			    if (dauRes){
 			      AliDebug(3, Form("PDG code = %d", dauRes->GetPdgCode()));
 			      if (TMath::Abs(dauRes->GetPdgCode())!=211) {
@@ -883,8 +884,8 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 				return bLabelArray;
 			      }
 			      else {
-				fLabelArray[foundDaughters] = dauRes->GetLabel();
-
+				fLabelArray[foundDaughters] = iLabelDauRes;  // N.B.: do not use dauRes->GetLabel()!!!! it is wrong!!!
+				AliDebug(3, Form("Setting fLabelArray[%d] = %d (before it was %d)", foundDaughters, iLabelDauRes, dauRes->GetLabel()));
 				foundDaughters++;
 			      }
 			    }

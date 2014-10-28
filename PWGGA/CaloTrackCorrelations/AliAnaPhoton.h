@@ -17,7 +17,6 @@
 // --- ROOT system ---
 class TH2F ;
 class TH1F;
-class TString ;
 class TObjString;
 class TList ;
 
@@ -51,11 +50,11 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   // Analysis methods
   
-  Bool_t       ClusterSelected(AliVCluster* cl, TLorentzVector mom, Int_t nlm) ;
+  Bool_t       ClusterSelected(AliVCluster* cl, Int_t nlm) ;
   
   void         FillAcceptanceHistograms();
   
-  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag) ;
+  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag, Int_t maxCellEFraction) ;
   
   void         SwitchOnFillShowerShapeHistograms()    { fFillSSHistograms      = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistograms()   { fFillSSHistograms      = kFALSE ; }  
@@ -68,15 +67,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnTMHistoFill()                  { fFillTMHisto           = kTRUE  ; }
   void         SwitchOffTMHistoFill()                 { fFillTMHisto           = kFALSE ; }
 
-  void         FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cells) ;
-  
-  void         SwitchOnFillPileUpHistograms()         { fFillPileUpHistograms  = kTRUE  ; }
-  void         SwitchOffFillPileUpHistograms()        { fFillPileUpHistograms  = kFALSE ; }
-  
+  void         FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cells, Int_t absIdMax) ;
+ 
   // Analysis parameters setters getters
-  
-  TString      GetCalorimeter()                 const { return fCalorimeter        ; }
-  void         SetCalorimeter(TString  & det)         { fCalorimeter = det         ; }
     
   // ** Cluster selection methods **
   
@@ -95,7 +88,6 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
     fNLMCutMax = max                ; }
   Int_t        GetNLMCutMin()                   const { return fNLMCutMin          ; }
   Int_t        GetNLMCutMax()                   const { return fNLMCutMax          ; }	
-  
   
   Bool_t       IsTrackMatchRejectionOn()        const { return fRejectTrackMatch   ; }
   void         SwitchOnTrackMatchRejection()          { fRejectTrackMatch = kTRUE  ; }
@@ -121,7 +113,6 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   private:
  
-  TString  fCalorimeter ;                           // Calorimeter where the gamma is searched;
   Float_t  fMinDist ;                               // Minimal distance to bad channel to accept cluster
   Float_t  fMinDist2;                               // Cuts on Minimal distance to study acceptance evaluation
   Float_t  fMinDist3;                               // One more cut on distance used for acceptance-efficiency study
@@ -134,9 +125,11 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNLMCutMax  ;                            // Remove clusters/cells with number of local maxima larger than this value
   Bool_t   fFillSSHistograms ;                      // Fill shower shape histograms
   Bool_t   fFillOnlySimpleSSHisto;                  // Fill selected cluster histograms, selected SS histograms
-  Bool_t   fFillPileUpHistograms;                   // Fill pile-up related histograms
   Int_t    fNOriginHistograms;                      // Fill only NOriginHistograms of the 14 defined types
   Int_t    fNPrimaryHistograms;                     // Fill only NPrimaryHistograms of the 7 defined types
+  
+  TLorentzVector fMomentum;                         //! Cluster momentum
+  TLorentzVector fPrimaryMom;                       //! Primary MC momentum
   
   //Histograms 
   TH1F * fhClusterCutsE [10];                       //! control histogram on the different photon selection cuts, E
@@ -322,7 +315,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,37)
+  ClassDef(AliAnaPhoton,38)
 
 } ;
  

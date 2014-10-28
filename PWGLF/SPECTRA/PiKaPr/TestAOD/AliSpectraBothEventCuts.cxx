@@ -170,12 +170,14 @@ void AliSpectraBothEventCuts::InitHisto()
 	TH1::AddDirectory(oldStatus);		
 }
 //______________________________________________________
-Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCuts* trackcuts,Bool_t isMC,Double_t mcZ)
+Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCuts* trackcuts,Bool_t isMC,Double_t mcZ,TH1F* managerhisteventcuts)
 {
   // Returns true if Event Cuts are selected and applied
   fAOD = aod;
   fTrackCuts = trackcuts;
   fHistoCuts->Fill(kProcessedEvents);
+  if(managerhisteventcuts)
+	managerhisteventcuts->Fill(0);
   fHistoRunNumbers->Fill(aod->GetRunNumber());
   Bool_t IsPhysSel = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerSettings);//FIXME we can add the trigger mask here
   if(!IsPhysSel)
@@ -225,6 +227,8 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
 		return false;
 
     fHistoCuts->Fill(kPhysSelEvents);
+   if(managerhisteventcuts)
+	managerhisteventcuts->Fill(1);
 
 
 
@@ -287,6 +291,9 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
   {	
   	fHistoNChAftSel->Fill(Nch);
 	fHistoCuts->Fill(kAcceptedEvents);
+	if(managerhisteventcuts)
+		managerhisteventcuts->Fill(2);
+
   }	
   return fIsSelected;
 }
@@ -379,10 +386,13 @@ Bool_t AliSpectraBothEventCuts::CheckMultiplicityCut()
 	{
 		AliAODEvent* aodevent=0x0;
 		aodevent=dynamic_cast<AliAODEvent*>(fAOD);
+                AliAODHeader * header = dynamic_cast<AliAODHeader*>(aodevent->GetHeader());
+                if(!header) AliFatal("Not a standard AOD");
+
 		if(TMath::Abs(0.8-fetarangeofmultiplicitycut)<0.1)
-			Ncharged=aodevent->GetHeader()->GetRefMultiplicityComb08();
+			Ncharged=header->GetRefMultiplicityComb08();
 		else if (TMath::Abs(0.5-fetarangeofmultiplicitycut)<0.1)
-			Ncharged=aodevent->GetHeader()->GetRefMultiplicityComb05();
+			Ncharged=header->GetRefMultiplicityComb05();
 		else 
 			Ncharged=-1;
 	}

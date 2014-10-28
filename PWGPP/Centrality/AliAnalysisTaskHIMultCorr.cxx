@@ -394,7 +394,7 @@ Bool_t AliAnalysisTaskHIMultCorr::SetupEvent() {
   //  if (!vtxESD->GetStatus())
   //    aCuts[4] = kTRUE;
   
-  if(vtxESDTPC->GetZv() > fMaxVertexZ || vtxESDTPC->GetZv() < (-1.*fMaxVertexZ)) 
+  if(vtxESDTPC->GetZ() > fMaxVertexZ || vtxESDTPC->GetZ() < (-1.*fMaxVertexZ)) 
     aCuts[5] = kTRUE;
 
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --   
@@ -412,9 +412,9 @@ Bool_t AliAnalysisTaskHIMultCorr::SetupEvent() {
   //  TString fileName(inFile->GetName()); 
   static Int_t runNo = fESD->GetRunNumber();
   static  UInt_t tt = fESD->GetTimeStamp();
-  static Float_t zvTPC = vtxESDTPC->GetZv();
-  static Float_t zvSPD = vtxESDSPD->GetZv();
-  static Float_t zvTra = vtxESD->GetZv();
+  static Float_t zvTPC = vtxESDTPC->GetZ();
+  static Float_t zvSPD = vtxESDSPD->GetZ();
+  static Float_t zvTra = vtxESD->GetZ();
   static Int_t ncontTPCV = vtxESDTPC->GetNContributors();
   static Int_t ncontSPDV = vtxESDSPD->GetNContributors();
   static Int_t ncontTraV = vtxESD->GetNContributors();
@@ -488,13 +488,13 @@ Bool_t AliAnalysisTaskHIMultCorr::SetupEvent() {
   (static_cast<TH2F*>(fOutList->FindObject("fCrossCorrVertexTPC")))->Fill(vtxESD->GetStatus(),vtxESDTPC->GetNContributors());
   (static_cast<TH2F*>(fOutList->FindObject("fCorrVertexNCont")))->Fill(vtxESD->GetNContributors(),vtxESDTPC->GetNContributors());
 
-  (static_cast<TH1F*>(fOutList->FindObject("fDeltaVx")))->Fill(vtxESD->GetXv() - vtxESDTPC->GetXv());
-  (static_cast<TH1F*>(fOutList->FindObject("fDeltaVy")))->Fill(vtxESD->GetYv() - vtxESDTPC->GetYv());
-  (static_cast<TH1F*>(fOutList->FindObject("fDeltaVz")))->Fill(vtxESD->GetZv() - vtxESDTPC->GetZv());
+  (static_cast<TH1F*>(fOutList->FindObject("fDeltaVx")))->Fill(vtxESD->GetX() - vtxESDTPC->GetX());
+  (static_cast<TH1F*>(fOutList->FindObject("fDeltaVy")))->Fill(vtxESD->GetY() - vtxESDTPC->GetY());
+  (static_cast<TH1F*>(fOutList->FindObject("fDeltaVz")))->Fill(vtxESD->GetZ() - vtxESDTPC->GetZ());
 
-  (static_cast<TH2F*>(fOutList->FindObject("fVzTPCvsSPD")))->Fill(vtxESDTPC->GetZv(),vtxESDSPD->GetZv());
-  (static_cast<TH2F*>(fOutList->FindObject("fVzTPCvsTracks")))->Fill(vtxESDTPC->GetZv(),vtxESD->GetZv());
-  (static_cast<TH2F*>(fOutList->FindObject("fVzSPDvsTracks")))->Fill(vtxESDSPD->GetZv(),vtxESD->GetZv());
+  (static_cast<TH2F*>(fOutList->FindObject("fVzTPCvsSPD")))->Fill(vtxESDTPC->GetZ(),vtxESDSPD->GetZ());
+  (static_cast<TH2F*>(fOutList->FindObject("fVzTPCvsTracks")))->Fill(vtxESDTPC->GetZ(),vtxESD->GetZ());
+  (static_cast<TH2F*>(fOutList->FindObject("fVzSPDvsTracks")))->Fill(vtxESDSPD->GetZ(),vtxESD->GetZ());
 
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --   
 

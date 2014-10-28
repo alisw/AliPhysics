@@ -54,6 +54,10 @@
 
 #include "AliAnalysisTaskMuonFakes.h"
 
+using std::cout;
+using std::endl;
+using std::flush;
+
 ClassImp(AliAnalysisTaskMuonFakes)
 
 //________________________________________________________________________
