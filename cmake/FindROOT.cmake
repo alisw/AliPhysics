@@ -33,6 +33,8 @@
 # - ROOT_HASXML - ROOT was built with XML support
 # - ROOT_FORTRAN - fortran compiler
 
+set(ROOT_FOUND FALSE)
+
 if(ROOTSYS)
     message(STATUS "Checking for a proper ROOT installation in ${ROOTSYS}.")
 
@@ -43,12 +45,10 @@ if(ROOTSYS)
     # Check for root-config scripts
     find_program(ROOT_CONFIG NAMES root-config PATHS ${ROOTSYS}/bin NO_DEFAULT_PATH)
 
-    if(ROOT_CONFIG)
-        message(STATUS "Found root-config: ${ROOT_CONFIG}")
-    else()
+    if(NOT ROOT_CONFIG)
         message(FATAL_ERROR "Could not find root-config script.")
-    endif(ROOT_CONFIG)
-
+    endif(NOT ROOT_CONFIG)
+        
     # Check for rlibmap
     find_program(ROOT_LIBMAP NAMES rlibmap PATHS ${ROOTSYS}/bin NO_DEFAULT_PATH)
     if(ROOT_LIBMAP)
