@@ -7,6 +7,7 @@
  * 
  * 
  */
+//====================================================================
 /** 
  * Base class for detector configuration. By default, everything is on
  * except ACORDE.
@@ -126,6 +127,7 @@ struct VirtualDetCfg
 /** Global variable */
 VirtualDetCfg* detCfg = 0;
 
+//====================================================================
 /**
  * Base class for the OCDG configration 
  */
@@ -167,6 +169,11 @@ struct VirtualOCDBCfg
 /** Global variable */
 VirtualOCDBCfg* ocdbCfg = 0;
 
+//====================================================================
+/** 
+ * Event generator configuration 
+ * 
+ */
 struct VirtualEGCfg 
 {
   TString runType;
@@ -314,8 +321,355 @@ protected:
 /** Global variable */
 VirtualEGCfg* egCfg = 0;
 
+//====================================================================
+/**
+ * Base class for trains 
+ * 
+ */
+struct VirtualTrain 
+{
 
 
+  /** 
+   * Run this train 
+   * 
+   * @param run 
+   * @param xmlFile 
+   * @param stage 
+   * @param cdb 
+   * 
+   * @return 
+   */
+  Bool_t Run(UInt_t      run, 
+	     const char* xmlFile = "wn.xml", 
+	     Int_t       stage   = 0, 
+	     const char* cdb     = "raw://")
+  {
+    // --- Load configuration script ---------------------------------
+    LoadConfig();
+    
+    // --- Set-up for CDB access through Grid ------------------------
+    TString cdbString(cdb);
+    if (cdbString.Contains("raw://")) {
+      TGrid::Connect("alien://");
+      if (!gGrid || !gGrid->IsConnected()) {
+	::Error("Run", "No grid connection");
+	return false;
+      }  
+    }
+    
+    // --- Some environment variables --------------------------------
+    // Temp dir is here, and compilation is here too 
+    gSystem->Setenv("TMPDIR", gSystem->pwd());
+    gSystem->SetBuildDir(gSystem->pwd(), kTRUE);
+
+    // --- Now load common libraries ---------------------------------
+    LoadBaseLibraries();
+    
+    // --- Now create and configure manager --------------------------
+    AliAnalysisManager *mgr  = new AliAnalysisManager(GetName(), 
+						      "Production train");
+    mgr->SetRunFromPath(grp->run);
+    
+    // --- Create ESD input handler ------------------------------------
+    AliESDInputHandlerRP *esdHandler = new AliESDInputHandlerRP();
+    mgr->SetInputEventHandler(esdHandler);
+    if (UseFriends()) {
+      esdHandler->SetReadFriends(kTRUE);
+      esdHandler->SetActiveBranches("ESDfriend");
+    }
+
+    // --- Monte Carlo handler -----------------------------------------
+    if (UseMC()) {
+      AliMCEventHandler* mcHandler = new AliMCEventHandler();
+      mgr->SetMCtruthEventHandler(mcHandler);
+      mcHandler->SetPreReadMode(1);
+      mcHandler->SetReadTR(true);
+    }
+    // --- AOD output handler ----------------------------------------
+    if (MakeAOD()) {
+      AliAODHandler* aodHandler   = new AliAODHandler();
+      aodHandler->SetOutputFileName("AliAOD.root");
+      mgr->SetOutputEventHandler(aodHandler);
+    }
+    
+    // --- Call user routine for adding tasks ------------------------
+    if (!AddTasks()) return false;
+    
+    // --- Check if we are to merge ----------------------------------
+    if (stage > 0) 
+      return Merge(xmlfile, stage);
+
+    // --- Otherwise run the train -----------------------------------
+    TChain* chain = CreateChain();
+    if (!chain) return false;
+
+    TStopwatch timer;
+    timer.Start();
+    if (!mgr->InitAnalysis()) {
+      ::Error("Run", "Failed to initialize the train");
+      return false;
+    }
+
+    mgr->PrintStatus();
+    mgr->SetSkipTerminate(kTRUE);
+    mgr->StartAnalysis("local", chain);
+    timer.Print();
+    
+  }
+  /** 
+   * Merge requested files 
+   * 
+   * @param dir    Output directory 
+   * @param stage  Stage 
+   * 
+   * @return true on success 
+   */
+  Bool_t Merge(const char* dir, Int_t stage)
+  {
+
+    TStopwatch    timer;     
+    timer.Start();
+    TString       outputDir     = dir;
+    Bool_t        final         = outputDir.Contains("Stage");
+    TCollection*  outputFiles   = GetFilesToMerge(stage, final);
+    if (!outputFiles) { 
+      ::Warning("Merge", "Nothing to merge");
+      return true;
+    }
+    TIter       iter(outputFiles);
+    TObjString* str           = 0;
+    Bool_t      merged        = kTRUE;
+    while((str = static_cast<TObjString*>(iter()))) {
+      TString& outputFile = str->GetString();
+      // Skip already merged outputs
+      if (!gSystem->AccessPathName(outputFile)) {
+	::Warning("Merge","Output file <%s> found. Not merging again.",
+		  outputFile.Data());
+	continue;
+      }
+      merged = AliAnalysisAlien::MergeOutput(outputFile, 
+					     outputDir, 
+					     10, 
+					     stage);
+      if (merged) continue; 
+      
+      ::Error("Merge", "Cannot merge %s\n", outputFile.Data());
+    }
+    // --- possible merge file information files ---------------------
+    if (MergeFileInfo()) { 
+      TString infolog = "fileinfo.log";
+      AliAnalysisAlien::MergeInfo(infolog, dir); 
+    }
+
+    // --- If not final stage, get out here --------------------------
+    if (!final) { 
+      ValidateOutput();
+      timer.Print();
+      return true;
+    }
+    
+    // --- set up and run termiante ----------------------------------
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    mgr->SetSkipTerminate(kFALSE);
+    if (!mgr->InitAnalysis()) {
+      ::Error("Merge", "Failed to initialize the train");
+      return false;
+    }
+    
+    mgr->PrintStatus();
+    mgr->StartAnalysis("gridterminate", (TTree*)0);
+    ValidateOutput();
+    timer.Print();
+
+    return true;
+  }
+	       
+  /** 
+   * Load a library/module 
+   * 
+   * @param module Library/module name 
+   * 
+   * @return true on success
+   */
+  Bool_t LoadLibrary(const char *module)
+  {
+    // Load a module library in a given mode. Reports success.
+    Int_t result = 0;
+    TString mod(module);
+    ::Info("LoadLibrary", "Loading %s", module);
+    gROOT->IncreaseDirLevel();
+
+    if (mod.IsNull()) {
+      ::Error("AnalysisTrainNew.C::LoadLibrary", "Empty module name");
+      gROOT->DecreaseDirLevel();
+      return kFALSE;
+    }
+
+    // If a library is specified, just load it
+    if (mod.EndsWith(".so")) {
+      mod.Remove(mod.Index(".so"));
+      ::Info("LoadLibrary", "Loading .so: %s", mod.Data()); 
+      result = gSystem->Load(mod);
+      if (result < 0) {
+	::Error("AnalysisTrainNew.C::LoadLibrary", 
+		"Could not load library %s", module);
+      }
+      gROOT->DecreaseDirLevel();      
+      return (result >= 0);
+    }
+    // Check if the library is already loaded
+    if (strlen(gSystem->GetLibraries(Form("%s.so", module), "", kFALSE)) > 0) {
+      ::Info("LoadLibrary", "Module %s.so already loaded", module);
+      gROOT->DecreaseDirLevel();      
+      return kTRUE;
+    }
+
+    ::Info("LoadLibrary", "Trying to load lib%s.so", module);
+    result = gSystem->Load(Form("lib%s.so", module));
+    if (result < 0)
+      ::Error("AnalysisTrainNew.C::LoadLibrary", 
+	      "Could not load module %s", module);
+    ::Info("LoadLibrary", "Module %s, successfully loaded", module);
+    gROOT->DecreaseDirLevel();      
+    return (result >= 0);
+  }
+  /** 
+   * Load common libraries 
+   * 
+   * @return true on sucess 
+   */
+  virtual Bool_t LoadBaseLibraries()
+  {
+    // Load common analysis libraries.
+    if (!gSystem->Getenv("ALICE_ROOT")) {
+      ::Error("LoadBaseLibraries", 
+	      "Analysis trains requires that analysis libraries are "
+	      "compiled with a local AliRoot");
+      return false;
+    }
+
+    Bool_t success = true;
+    // Load framework classes. Par option ignored here.
+    success &= LoadLibrary("libSTEERBase.so");
+    success &= LoadLibrary("libESD.so");
+    success &= LoadLibrary("libAOD.so");
+    success &= LoadLibrary("libANALYSIS.so");
+    success &= LoadLibrary("libOADB.so");
+    success &= LoadLibrary("libANALYSISalice.so");
+    success &= LoadLibrary("libESDfilter.so");
+    success &= LoadLibrary("libCORRFW.so");
+    success &= LoadLibrary("libPWGPP.so");
+    gROOT->ProcessLine(".include $ALICE_ROOT/include");
+    if (success) {
+      ::Info("LoadBaseLibraries", 
+	     "Load common libraries:    SUCCESS");
+      ::Info("LoadBaseLibraries", 
+	     "Include path for Aclic compilation:\n%s",
+	     gSystem->GetIncludePath());
+    } else {
+      ::Info("LoadBaseLibraries", 
+	     "Load common libraries:    FAILED");
+    }
+    return success;
+  }
+  /** 
+   * Create the input chain
+   * 
+   * @return Pointer to newly allocated train 
+   */
+  TChain* CreateChain()
+  {
+    if (gSystem->AccessPathName("AliESDs.root")) {
+      ::Error("CreateChain", 
+	      "File: AliESDs.root not in ./data dir");
+      return 0;
+    }
+    
+    // Create the input chain
+    TChain* chain = new TChain("esdTree");
+    chain->Add("AliESDs.root");
+    if (!chain->GetNtrees()) {
+      delete chain;
+      chain = 0;
+    }
+
+    return chain;
+  }
+  /** 
+   * Helper function to make @c outputs_valid file 
+   * 
+   */
+  void ValidateOutput()
+  {
+    std::ofstream out;
+    out.open("outputs_valid", ios::out);
+    out.close();    
+  }  
+
+  /** 
+   * @{ 
+   * @name Functions to overload 
+   */
+  /** 
+   * Load the configuration script. Override to load specific script.
+   */
+  virtual void LoadConfig() {};
+  /** 
+   * Override to set a name of the analysis manager 
+   * 
+   * @return Name of analysis manager 
+   */
+  virtual const char* GetName() const { return "dummy"; }
+  /** 
+   * Override to return true if friends are needed. 
+   * 
+   * @return false
+   */
+  virtual Bool_t UseFriends() const { return false; }
+  /** 
+   * Override to return true if MC info is needed
+   * 
+   * @return false
+   */
+  virtual Bool_t UseMC() const { return false; }
+  /** 
+   * Override to return true if AODs should be made 
+   * 
+   * @return false
+   */
+  virtual Bool_t MakeAOD() const { return false; }
+  /**
+   * User rountine for adding tasks. Override to add tasks to the
+   * train.
+   *
+   * @return true
+   */
+  virtual Bool_t AddTasks() const { return true; }
+  /** 
+   * Override to return true to merge file information files. 
+   * 
+   * @return false
+   */
+  virtual Bool_t MergFileInfo() const { return false; }
+  /** 
+   * Return the list of ouput files (TObjString objects)
+   *
+   * @param stage Merge stage 
+   * @param final Final merging (also terminate)
+   *
+   * @return Pointer to TCollection. 
+   */
+  virtual TCollection* GetFilesToMerge(Int_t stage, Bool_t final) const 
+  { 
+    return 0; 
+  }
+};
+
+
+
+
+//====================================================================
 /**
  * A function so that we can do TROOT::Macro.  Does nothing but print a message.
  *

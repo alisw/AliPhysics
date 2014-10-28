@@ -11,6 +11,8 @@ ALICE_ROOT=$ALICE_ROOT
 `which aliroot`
 `ulimit -a`
 `free -m`
+Content of directory
+`ls -al`
 =========================================
 EOF
 
@@ -32,6 +34,7 @@ if test ! -f ${which}.C ; then
     exit 1
 fi 
 ARG="${which}.C($run,\"$dir\",$stage)"
+echo "Running aliroot -b -q -x $ARG"
 time aliroot -b -q -x $ARG
 exitcode=$?
 
