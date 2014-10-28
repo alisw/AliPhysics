@@ -214,8 +214,8 @@ AliVertexer* AliITSUReconstructor::CreateVertexer() const
   // create a ITS vertexer
   // 
   AliInfo("Creating vertexer using tracklets with the first 3 ITS layers");
-  //  AliDebug(1,"ITSU vertexer should be initiated here\n");
-  if (GetRecoParam()->GetEventSpecie() == AliRecoParam::kHighMult) {
+
+  if (GetRecoParam()->GetEventSpecie() & AliRecoParam::kHighMult) {
     return new AliITSUVertexer();
   } else {
     return new AliITSUVertexer(0.05,0.003,0.04,0.8,3);

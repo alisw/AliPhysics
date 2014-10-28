@@ -132,36 +132,36 @@ using std::endl;
 ClassImp(AliPhysicsSelection)
 
 AliPhysicsSelection::AliPhysicsSelection() :
-  AliAnalysisCuts("AliPhysicsSelection", "AliPhysicsSelection"),
-  fPassName(""),
-  fCurrentRun(-1),
-  fMC(kFALSE),
-  fCollTrigClasses(),
-  fBGTrigClasses(),
-  fTriggerAnalysis(),
+AliAnalysisCuts("AliPhysicsSelection", "AliPhysicsSelection"),
+fPassName(""),
+fCurrentRun(-1),
+fMC(kFALSE),
+fCollTrigClasses(),
+fBGTrigClasses(),
+fTriggerAnalysis(),
 //  fHistStatisticsTokens(0),
-  fHistBunchCrossing(0),
-  fHistTriggerPattern(0),
-  fSkipTriggerClassSelection(0),
-  fUsingCustomClasses(0),
-  fSkipV0(0),
-  fBIFactorA(-1),
-  fBIFactorC(-1),
-  fBIFactorAC(-1), 
-  fComputeBG(0),
-  fBGStatOffset(-1),
-  fUseBXNumbers(1),
-  fUseMuonTriggers(0),
-  fFillingScheme(""),
-  fBin0CallBack(""),
-  fBin0CallBackPointer(0),
-  fIsPP(kFALSE),
-  fPSOADB(0),
-  fFillOADB(0),
-  fTriggerOADB(0),
-  fRegexp(0),
-  fCashedTokens(0)
-  
+fHistBunchCrossing(0),
+fHistTriggerPattern(0),
+fSkipTriggerClassSelection(0),
+fUsingCustomClasses(0),
+fSkipV0(0),
+fBIFactorA(-1),
+fBIFactorC(-1),
+fBIFactorAC(-1), 
+fComputeBG(0),
+fBGStatOffset(-1),
+fUseBXNumbers(1),
+fUseMuonTriggers(0),
+fFillingScheme(""),
+fBin0CallBack(""),
+fBin0CallBackPointer(0),
+fIsPP(kFALSE),
+fPSOADB(0),
+fFillOADB(0),
+fTriggerOADB(0),
+fRegexp(0),
+fCashedTokens(0)
+
 {
   // constructor
   
@@ -177,15 +177,15 @@ AliPhysicsSelection::AliPhysicsSelection() :
   
   AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kWarning);
 }
-    
+
 AliPhysicsSelection::~AliPhysicsSelection()
 {
   // destructor
-
+  
   fCollTrigClasses.Delete();
   fBGTrigClasses.Delete();
   fTriggerAnalysis.Delete();
-
+  
   if (fHistStatistics[0])
   {
     delete fHistStatistics[0];
@@ -210,7 +210,7 @@ AliPhysicsSelection::~AliPhysicsSelection()
     delete fHistTriggerPattern;
     fHistTriggerPattern = 0;
   }
-
+  
   if (fPSOADB)
   { 
     delete fPSOADB;
@@ -232,14 +232,14 @@ AliPhysicsSelection::~AliPhysicsSelection()
     delete fRegexp;
     fRegexp = 0;
   }
-    
+  
   if (fCashedTokens)
   {
     delete fCashedTokens;
     fCashedTokens = 0;
   }
-
-
+  
+  
 }
 
 UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger, Int_t& triggerLogic) const
@@ -302,7 +302,7 @@ UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const cha
     else if (str2[0] == '#')
     {
       foundBCRequirement = kTRUE;
-    
+      
       str2.Remove(0, 1);
       
       Int_t bcNumber = str2.Atoi();
@@ -341,14 +341,14 @@ UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const cha
 //______________________________________________________________________________
 TObject *AliPhysicsSelection::GetStatistics(const Option_t *option) const
 {
-// Get the statistics histograms ("ALL" and "BIN0" and "TOK")
-   TString opt(option);
-   opt.ToUpper();
-   Int_t ihist = 0;
-   if (opt == "ALL") ihist = kStatIdxAll;
-   if (opt == "BIN0") ihist = kStatIdxBin0;
-   //   if (opt == "TOK") return fHistStatisticsTokens;
-   return fHistStatistics[ihist];
+  // Get the statistics histograms ("ALL" and "BIN0" and "TOK")
+  TString opt(option);
+  opt.ToUpper();
+  Int_t ihist = 0;
+  if (opt == "ALL") ihist = kStatIdxAll;
+  if (opt == "BIN0") ihist = kStatIdxBin0;
+  //   if (opt == "TOK") return fHistStatisticsTokens;
+  return fHistStatistics[ihist];
 }   
 
 //______________________________________________________________________________
@@ -367,10 +367,10 @@ Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliESDEvent* aEsd, AliTri
     
     TArrayI pos;
     Int_t nMatches = fRegexp->Match(trigger, "", 0, 2, &pos);
-
+    
     if (nMatches <= 0)
       break;
-      
+    
     TString token(trigger(pos[0], pos[1]-pos[0]+1));
     
     TParameter<Int_t>* param = (TParameter<Int_t>*) fCashedTokens->FindObject(token);
@@ -399,7 +399,7 @@ Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliESDEvent* aEsd, AliTri
       //      if(fHistStatisticsTokens) 	      
     }
   }
-
+  
   TFormula formula("formula", trigger);
   if (formula.Compile() > 0)
     AliFatal(Form("Could not evaluate trigger logic %s (evaluated to %s)", triggerLogic, trigger.Data()));
@@ -423,7 +423,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
   } 
   mgr->LoadBranch("AliESDHeader.");
   mgr->LoadBranch("AliESDRun.");
-
+  
   if (fCurrentRun != aEsd->GetRunNumber()) {
     if (!Initialize(aEsd))
       AliFatal(Form("Could not initialize for run %d", aEsd->GetRunNumber()));
@@ -449,7 +449,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
   }
   
   mgr->LoadBranch("AliMultiplicity.");
-//mgr->LoadBranch("AliESDFMD.");
+  //mgr->LoadBranch("AliESDFMD.");
   mgr->LoadBranch("AliESDVZERO.");
   mgr->LoadBranch("AliESDZDC.");
   mgr->LoadBranch("SPDVertex.");
@@ -457,9 +457,9 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
   mgr->LoadBranch("TPCVertex.");
   mgr->LoadBranch("Tracks");
   mgr->LoadBranch("SPDPileupVertices");
-
+  
   UInt_t accept = 0;
-    
+  
   Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
   for (Int_t i=0; i < count; i++)
   {
@@ -468,11 +468,11 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       triggerClass = ((TObjString*) fCollTrigClasses.At(i))->String();
     else
       triggerClass = ((TObjString*) fBGTrigClasses.At(i - fCollTrigClasses.GetEntries()))->String();
-  
+    
     AliDebug(AliLog::kDebug+1, Form("Processing trigger class %s", triggerClass));
-  
+    
     AliTriggerAnalysis* triggerAnalysis = static_cast<AliTriggerAnalysis*> (fTriggerAnalysis.At(i));
-  
+    
     triggerAnalysis->FillTriggerClasses(aEsd);
     
     Int_t triggerLogic = 0; 
@@ -481,12 +481,12 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
     if (singleTriggerResult)
     {
       triggerAnalysis->FillHistograms(aEsd);
-  
+      
       Bool_t isBin0 = kFALSE;
       if (fBin0CallBack != "") {
-	  isBin0 = ((AliAnalysisTaskSE*)mgr->GetTask(fBin0CallBack.Data()))->IsEventInBinZero();
+        isBin0 = ((AliAnalysisTaskSE*)mgr->GetTask(fBin0CallBack.Data()))->IsEventInBinZero();
       } else if (fBin0CallBackPointer) {
-	  isBin0 = (*fBin0CallBackPointer)(aEsd);
+        isBin0 = (*fBin0CallBackPointer)(aEsd);
       }
       
       // ---->
@@ -494,10 +494,10 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       // tables. Decide wethere we are switching to a new stat table
       // (with all AliTriggerAnalysis tokens? Only we the tokens
       // actually used in the selection?) and clean up
-
+      
       AliESDVZERO *esdV0 = aEsd->GetVZEROData();
       if(!esdV0) fSkipV0 = kTRUE;
-
+      
       // hardware trigger
       Int_t fastORHW   = triggerAnalysis->EvaluateTrigger(aEsd, AliTriggerAnalysis::kSPDGFO); // SPD number of chips from trigger bits (!)
       //      Int_t fastORHWL1 = triggerAnalysis->EvaluateTrigger(aEsd, AliTriggerAnalysis::kSPDGFOL1); // SPD number of chips from trigger bits in second layer (!)
@@ -515,12 +515,12 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       Bool_t t0       = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0    ));
       Bool_t t0BG     = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0BG    ));
       Bool_t t0PileUp = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0Pileup));
-
+      
       // fmd
       // Bool_t fmdA = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kFMDA));
       // Bool_t fmdC = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kFMDC));
       // Bool_t fmd  = fmdA || fmdC;
-    
+      
       // SSD
       //Int_t ssdClusters = triggerAnalysis->SSDClusters(aEsd);
       
@@ -532,14 +532,14 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       Bool_t zdcTime = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTime));
       Bool_t znABG   = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZNABG));
       Bool_t znCBG   = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZNCBG));
-
+      
       Bool_t laserCut = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kTPCLaserWarmUp));
       Bool_t hvDipCut = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kTPCHVdip));
-
+      
       // Some "macros"
       Bool_t mb1 = (fastOROffline > 0 || v0A || v0C) && (!v0BG);
       Bool_t mb1prime = (fastOROffline > 1 || (fastOROffline > 0 && (v0A || v0C)) || (v0A && v0C) ) && (!v0BG);
-
+      
       // Background rejection
       Bool_t bgID = kFALSE;
       bgID = triggerAnalysis->EvaluateTrigger(aEsd,  (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kSPDClsVsTrkBG | AliTriggerAnalysis::kOfflineFlag)); // FIXME: temporarily, we keep both ways to validate the new one. if the external BG id is not set, it will use the new one
@@ -549,17 +549,17 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       if(v0C)              ntrig += 1; //v0C alone is enough
       if(fmd)              ntrig += 1;
       if(ssdClusters>1)    ntrig += 1;*/
-
+      
       // // EMCAL offline trigger validation
       // Bool_t emcCut = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kEMCAL));
       
       // <---
-
+      
       TString triggerLogicOnline  = fPSOADB->GetHardwareTrigger(triggerLogic);
       TString triggerLogicOffline = fPSOADB->GetOfflineTrigger(triggerLogic);
-
+      
       AliDebug(AliLog::kDebug, Form("Triggers from OADB [0x%x][%d][%s][%s]",singleTriggerResult,AliOADBPhysicsSelection::GetActiveBit(singleTriggerResult),triggerLogicOffline.Data(),triggerLogicOnline.Data()));
-
+      
       // replay hardware trigger (should only remove events for MC)
       Bool_t onlineTrigger  = EvaluateTriggerLogic(aEsd, triggerAnalysis, triggerLogicOnline, kFALSE);
       // offline selection
@@ -567,124 +567,79 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       
       // Printf("%s %s", triggerLogicOnline.Data(), triggerLogicOffline.Data());
       // Printf("%d %d", onlineTrigger, offlineTrigger);
-	   
-
+      
+      
       // Fill trigger pattern histo
       Int_t tpatt = 0;
       if (fastORHW>0) tpatt+=1;
       if (v0AHW)      tpatt+=2;
       if (v0CHW)      tpatt+=4;
       fHistTriggerPattern->Fill( tpatt );
-
+      
       // fill statistics and return decision
       const Int_t nHistStat = 2;
       for(Int_t iHistStat = 0; iHistStat < nHistStat; iHistStat++){
-	if (iHistStat == kStatIdxBin0 && !isBin0) continue; // skip the filling of bin0 stats if the event is not in the bin0
-      
-	fHistStatistics[iHistStat]->Fill(kStatTriggerClass, i);
-	if(iHistStat == kStatIdxAll) fHistBunchCrossing->Fill(aEsd->GetBunchCrossNumber(), i); // Fill only for all (avoid double counting)
-
-	// We fill the rest only if hw trigger is ok
-	if (!onlineTrigger)
-	  {
-	    AliDebug(AliLog::kDebug, "Rejecting event because hardware trigger is not fired");
-	    continue;
-	  } else {       
-	  fHistStatistics[iHistStat]->Fill(kStatHWTrig, i);
-	}
-      
-
-	// v0 BG stats
-	if (v0ABG)
-	  fHistStatistics[iHistStat]->Fill(kStatV0ABG, i);
-	if (v0CBG)
-	  fHistStatistics[iHistStat]->Fill(kStatV0CBG, i);
-
-	// T0 stats
-	if(t0)
-	  fHistStatistics[iHistStat]->Fill(kStatT0BB,     i);
-	if(t0BG)
-	  fHistStatistics[iHistStat]->Fill(kStatT0BG,     i);
-	if(t0PileUp)
-	  fHistStatistics[iHistStat]->Fill(kStatT0PileUp, i);
-
-	// mb 1
-	if (mb1)
-	  fHistStatistics[iHistStat]->Fill(kStatMB1, i);
-
-	if (mb1prime)
-	  fHistStatistics[iHistStat]->Fill(kStatMB1Prime, i);
-
-	if (laserCut)
-	  fHistStatistics[iHistStat]->Fill(kStatLaserCut, i);
-
-	if (hvDipCut)
-	  fHistStatistics[iHistStat]->Fill(kHVdipCut, i);
-
-	//if(ntrig >= 2 && !v0BG) 
-	//  fHistStatistics[iHistStat]->Fill(kStatAny2Hits, i);
-
-	if (fastOROffline > 0)
-	  fHistStatistics[iHistStat]->Fill(kStatFO1, i);
-	if (fastOROffline > 1)
-	  fHistStatistics[iHistStat]->Fill(kStatFO2, i);
-	if (fastOROfflineL1 > 1)
-	  fHistStatistics[iHistStat]->Fill(kStatFO2L1, i);
+        if (iHistStat == kStatIdxBin0 && !isBin0) continue; // skip the filling of bin0 stats if the event is not in the bin0
         
-	if (v0A)
-	  fHistStatistics[iHistStat]->Fill(kStatV0A, i);
-	if (v0C)
-	  fHistStatistics[iHistStat]->Fill(kStatV0C, i);
-	  
-	if (zdcA)
-	  fHistStatistics[iHistStat]->Fill(kStatZDCA, i);
-	if (zdcC)
-	  fHistStatistics[iHistStat]->Fill(kStatZDCC, i);
-	if (zdcA && zdcC)
-	  fHistStatistics[iHistStat]->Fill(kStatZDCAC, i);
-
-	if (zdcTime)
-	  fHistStatistics[iHistStat]->Fill(kStatZDCTime, i);
-	if (znABG)
-	  fHistStatistics[iHistStat]->Fill(kStatZNABG, i);
-	if (znCBG)
-	  fHistStatistics[iHistStat]->Fill(kStatZNCBG, i);
-  
-	if (v0A && v0C && !v0BG && (!bgID && fIsPP))
-	  fHistStatistics[iHistStat]->Fill(kStatV0, i);
-
-	if (v0A && v0C && !v0BG && (!bgID && fIsPP) && !znABG && !znCBG)
-	  fHistStatistics[iHistStat]->Fill(kStatV0ZN, i);
-
-	if (bgID && !v0BG) 
-	  fHistStatistics[iHistStat]->Fill(kStatBG, i);
-
-	// FIXME: check lines below
-	if ( offlineTrigger )
-	  {
-	    if (!v0BG || fSkipV0)
-	      {
-		if (!v0BG) fHistStatistics[iHistStat]->Fill(kStatOffline, i);
-		AliDebug(AliLog::kDebug, Form("Accepted event for histograms with trigger logic %d", triggerLogic));
+        fHistStatistics[iHistStat]->Fill(kStatTriggerClass, i);
+        if(iHistStat == kStatIdxAll) fHistBunchCrossing->Fill(aEsd->GetBunchCrossNumber(), i); // Fill only for all (avoid double counting)
+        
+        // We fill the rest only if hw trigger is ok
+        if (!onlineTrigger) {
+          AliDebug(AliLog::kDebug, "Rejecting event because hardware trigger is not fired");
+          continue;
+        } else {
+          fHistStatistics[iHistStat]->Fill(kStatHWTrig, i);
+        }
+        
+        if (v0ABG)               fHistStatistics[iHistStat]->Fill(kStatV0ABG, i);
+        if (v0CBG)               fHistStatistics[iHistStat]->Fill(kStatV0CBG, i);
+        if (t0)                  fHistStatistics[iHistStat]->Fill(kStatT0BB,     i);
+        if (t0BG)                fHistStatistics[iHistStat]->Fill(kStatT0BG,     i);
+        if (t0PileUp)            fHistStatistics[iHistStat]->Fill(kStatT0PileUp, i);
+        if (mb1)                 fHistStatistics[iHistStat]->Fill(kStatMB1, i);
+        if (mb1prime)            fHistStatistics[iHistStat]->Fill(kStatMB1Prime, i);
+        if (laserCut)            fHistStatistics[iHistStat]->Fill(kStatLaserCut, i);
+        if (hvDipCut)            fHistStatistics[iHistStat]->Fill(kHVdipCut, i);
+        if (fastOROffline > 0)   fHistStatistics[iHistStat]->Fill(kStatFO1, i);
+        if (fastOROffline > 1)   fHistStatistics[iHistStat]->Fill(kStatFO2, i);
+        if (fastOROfflineL1 > 1) fHistStatistics[iHistStat]->Fill(kStatFO2L1, i);
+        if (v0A)                 fHistStatistics[iHistStat]->Fill(kStatV0A, i);
+        if (v0C)                 fHistStatistics[iHistStat]->Fill(kStatV0C, i);
+        if (zdcA)                fHistStatistics[iHistStat]->Fill(kStatZDCA, i);
+        if (zdcC)                fHistStatistics[iHistStat]->Fill(kStatZDCC, i);
+        if (zdcA && zdcC)        fHistStatistics[iHistStat]->Fill(kStatZDCAC, i);
+        if (zdcTime)             fHistStatistics[iHistStat]->Fill(kStatZDCTime, i);
+        if (znABG)               fHistStatistics[iHistStat]->Fill(kStatZNABG, i);
+        if (znCBG)               fHistStatistics[iHistStat]->Fill(kStatZNCBG, i);
+        if (bgID && !v0BG)       fHistStatistics[iHistStat]->Fill(kStatBG, i);
+        if (v0A && v0C && !v0BG && (!bgID && fIsPP)) fHistStatistics[iHistStat]->Fill(kStatV0, i);
+        if (v0A && v0C && !v0BG && (!bgID && fIsPP) && !znABG && !znCBG) fHistStatistics[iHistStat]->Fill(kStatV0ZN, i);
+        
+        // FIXME: check lines below
+        if ( offlineTrigger ) {
+          if (!v0BG || fSkipV0) {
+            if (!v0BG) fHistStatistics[iHistStat]->Fill(kStatOffline, i);
+            AliDebug(AliLog::kDebug, Form("Accepted event for histograms with trigger logic %d", triggerLogic));
             
-		fHistStatistics[iHistStat]->Fill(kStatAccepted, i);
-		
-		if (aEsd->IsPileupFromSPD())
-		  fHistStatistics[iHistStat]->Fill(kStatAcceptedPileUp, i);
-		
-		    // if(iHistStat == kStatIdxAll) fHistBunchCrossing->Fill(aEsd->GetBunchCrossNumber(), i); // Fill only for all (avoid double counting)
-		if((i < fCollTrigClasses.GetEntries() || fSkipTriggerClassSelection) && (iHistStat==kStatIdxAll))
-		  accept |= singleTriggerResult; // only set for "all" (should not really matter)
-	      }
-	    else
-	      AliDebug(AliLog::kDebug, "Rejecting event because of V0 BG flag");
-	  }
-	else
-	  AliDebug(AliLog::kDebug, Form("Rejecting event because trigger logic %d is not fulfilled", triggerLogic));
+            fHistStatistics[iHistStat]->Fill(kStatAccepted, i);
+            
+            if (aEsd->IsPileupFromSPD())
+              fHistStatistics[iHistStat]->Fill(kStatAcceptedPileUp, i);
+            
+            // if(iHistStat == kStatIdxAll) fHistBunchCrossing->Fill(aEsd->GetBunchCrossNumber(), i); // Fill only for all (avoid double counting)
+            if((i < fCollTrigClasses.GetEntries() || fSkipTriggerClassSelection) && (iHistStat==kStatIdxAll))
+              accept |= singleTriggerResult; // only set for "all" (should not really matter)
+          }
+          else
+            AliDebug(AliLog::kDebug, "Rejecting event because of V0 BG flag");
+        }
+        else
+          AliDebug(AliLog::kDebug, Form("Rejecting event because trigger logic %d is not fulfilled", triggerLogic));
       }
     }
   }
- 
+  
   if (accept)
     AliDebug(AliLog::kDebug, Form("Accepted event as collision candidate with bit mask %d", accept));
   
@@ -848,7 +803,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 //     else if (!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "   #3019  #3119  #3219  #3319  #3519 ";
 //     else if (!strcmp("CINT1-E-NOPF-ALL",trigger)) return " #1835 #2726";
 //     //    else AliError(Form("Unknown trigger: %s", trigger));
-    
+
 //   } 
 //   else if (runNumber >= 130148 && runNumber <= 130375) {
 //     TString triggerString = trigger;
@@ -887,25 +842,25 @@ Bool_t AliPhysicsSelection::Initialize(const AliESDEvent* aEsd)
   fIsPP = kTRUE;
   if (strcmp(aEsd->GetESDRun()->GetBeamType(), "A-A") == 0)
     fIsPP = kFALSE;
-
+  
   return Initialize(aEsd->GetRunNumber());
 }
 
 Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
 {
   // initializes the object for the given run  
-
-
+  
+  
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-
+  
   /// Open OADB file and fetch OADB objects
   TString oadbfilename = AliPhysicsSelection::GetOADBFileName();
-
+  
   TFile * foadb = TFile::Open(oadbfilename);
   if(!foadb->IsOpen()) AliFatal(Form("Cannot open OADB file %s", oadbfilename.Data()));
-
-
+  
+  
   if(!fPSOADB || !fUsingCustomClasses) { // if it's already set and custom class is required, we use the one provided by the user
     AliInfo("Using Standard OADB");
     AliOADBContainer * psContainer = (AliOADBContainer*) foadb->Get("physSel");
@@ -928,17 +883,17 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
     fTriggerOADB->Print();
     if (!fTriggerOADB) AliFatal(Form("Cannot find  trigger analysis object for run %d", runNumber));
   }
-
+  
   
   if(!fBin0CallBack) 
     AliError("Bin0 Callback not set: will not fill the statistics for the bin 0");
-
+  
   if (fMC) {
     // override BX and bg options in case of MC
     fComputeBG    = kFALSE;
     fUseBXNumbers = kFALSE;
   }
-
+  
   // FIXME: think how to implement this check with the OADB, trigger scheme is not a int number here 
   // Int_t triggerScheme = GetTriggerScheme(runNumber);
   // if (!fUsingCustomClasses && fCurrentRun != -1 && triggerScheme != GetTriggerScheme(fCurrentRun))
@@ -946,15 +901,15 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
   
   if(fComputeBG && fCurrentRun != -1 && fCurrentRun != runNumber) 
     AliFatal("Cannot process several runs because BG computation is requested");
-
+  
   if(fComputeBG && !fUseBXNumbers) 
     AliFatal("Cannot compute BG if BX numbers are not used");
   
   if(fUseBXNumbers && fFillingScheme != "" && fFillingScheme != fFillOADB->GetFillingSchemeName())
     AliFatal("Cannot process runs with different filling scheme if usage of BX numbers is requested");
-
+  
   fFillingScheme      = fFillOADB->GetFillingSchemeName();
-
+  
   AliInfo(Form("Initializing for run %d", runNumber));
   
   // initialize first time?
@@ -967,20 +922,20 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
       TIterator * bgIter   = fPSOADB->GetBGTrigClass(ibit)->MakeIterator();
       TObjString * obj = 0;
       while((obj = (TObjString*) collIter->Next())){
-	if (obj->String() != "") {
-	  fCollTrigClasses.Add(new TObjString(GetTriggerString(obj)));
-	}
+        if (obj->String() != "") {
+          fCollTrigClasses.Add(new TObjString(GetTriggerString(obj)));
+        }
       }
       // BG classes only make sense for real data
       if(!fMC) {
-	obj = 0 ;
-	while((obj = (TObjString*) bgIter->Next())){
-	  if (obj->String() != "") {
-	    fBGTrigClasses.Add(new TObjString(GetTriggerString(obj)));
-	  }
-	}
+        obj = 0 ;
+        while((obj = (TObjString*) bgIter->Next())){
+          if (obj->String() != "") {
+            fBGTrigClasses.Add(new TObjString(GetTriggerString(obj)));
+          }
+        }
       }
-
+      
     }
     // not sure how to handle this in the case of > x cuts
     // // Book the token histo with the tokens actually used here!
@@ -994,23 +949,23 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
     // 	Int_t ntokens = fCashedTokens->GetEntries();
     // 	Int_t count = fCollTrigClasses->GetEntries() + fBGTrigClasses->GetEntries();
     // 	fHistStatisticsTokens = new TH2F("fHistStatisticsTokens", "fHistStatisticsTokens", ntokens + 2, 0.5, ntokens+2+0.5, count, -0.5, -0.5 + count);
-	
+    
     // 	Int_t nrow = 0;
     // 	fHistStatisticsTokens->GetXaxis()->SetBinLabel(nrow++,  "Trigger class");
     // 	for(Int_t itoken = 0; itoken < ntoken; itoken++){
     // 	  TParameter<Int_t> * param = fCashedTokens->At(itoken);
     // 	  fHistStatisticsTokens->GetXaxis()->SetBinLabel(nrow++,  param->GetName());	  
     // 	}
-	
+    
     // 	fHistStatisticsTokens->GetXaxis()->SetBinLabel(nrow++,      "Accepted");
-
+    
     // }
-
+    
     
     
     // TODO: 
     // Add a new statistics histo containing only the tokens actually used in the selection
-
+    
     Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
     
     for (Int_t i=0; i<count; i++)
@@ -1022,30 +977,30 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
       triggerAnalysis->SetSPDGFOThreshhold(1);
       triggerAnalysis->SetDoFMD(kFALSE);
       triggerAnalysis->SetCorrZDCCutParams(fTriggerOADB->GetZDCCutRefSumCorr(),
-					   fTriggerOADB->GetZDCCutRefDeltaCorr(), 
-					   fTriggerOADB->GetZDCCutSigmaSumCorr(),
-					   fTriggerOADB->GetZDCCutSigmaDeltaCorr());
+          fTriggerOADB->GetZDCCutRefDeltaCorr(), 
+          fTriggerOADB->GetZDCCutSigmaSumCorr(),
+          fTriggerOADB->GetZDCCutSigmaDeltaCorr());
       triggerAnalysis->SetZNCorrCutParams(fTriggerOADB->GetZDCCutZNATimeCorrMin(),fTriggerOADB->GetZDCCutZNATimeCorrMax(),
-					  fTriggerOADB->GetZDCCutZNCTimeCorrMin(),fTriggerOADB->GetZDCCutZNCTimeCorrMax());
+          fTriggerOADB->GetZDCCutZNCTimeCorrMin(),fTriggerOADB->GetZDCCutZNCTimeCorrMax());
       fTriggerAnalysis.Add(triggerAnalysis);
     }
-
+    
     
     // TODO: shall I really delete this?
     if (fHistStatistics[0])
       delete fHistStatistics[0];
     if (fHistStatistics[1])
       delete fHistStatistics[1];
-  
+    
     fHistStatistics[kStatIdxBin0] = BookHistStatistics("_Bin0");
     fHistStatistics[kStatIdxAll]  = BookHistStatistics("");
     
-
+    
     if (fHistBunchCrossing)
       delete fHistBunchCrossing;
-  
+    
     fHistBunchCrossing = new TH2F("fHistBunchCrossing", "fHistBunchCrossing;bunch crossing number;", 4000, -0.5, 3999.5,  count, -0.5, -0.5 + count);
-
+    
     // TODO: remove fHistTriggerPattern
     if (fHistTriggerPattern)
       delete fHistTriggerPattern;
@@ -1053,9 +1008,9 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
     const int ntrig=3;
     Int_t n = 1;
     const Int_t nbinTrig = TMath::Nint(TMath::Power(2,ntrig));
-
+    
     fHistTriggerPattern = new TH1F("fHistTriggerPattern", "Trigger pattern: FO + 2*v0A + 4*v0C", 
-				   nbinTrig, -0.5, nbinTrig-0.5);    
+        nbinTrig, -0.5, nbinTrig-0.5);    
     fHistTriggerPattern->GetXaxis()->SetBinLabel(1,"NO TRIG");
     fHistTriggerPattern->GetXaxis()->SetBinLabel(2,"FO");
     fHistTriggerPattern->GetXaxis()->SetBinLabel(3,"v0A");
@@ -1064,8 +1019,8 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
     fHistTriggerPattern->GetXaxis()->SetBinLabel(6,"FO & v0C");
     fHistTriggerPattern->GetXaxis()->SetBinLabel(7,"v0A & v0C");
     fHistTriggerPattern->GetXaxis()->SetBinLabel(8,"FO & v0A & v0C");
-
-  
+    
+    
     n = 1;
     for (Int_t i=0; i < fCollTrigClasses.GetEntries(); i++)
     {
@@ -1079,31 +1034,31 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
       fHistBunchCrossing->GetYaxis()->SetBinLabel(n, ((TObjString*) fBGTrigClasses.At(i))->String());
       n++;
     }
-
     
-
+    
+    
   }
-    
+  
   Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
   for (Int_t i=0; i<count; i++)
   {
     
     AliTriggerAnalysis* triggerAnalysis = static_cast<AliTriggerAnalysis*> (fTriggerAnalysis.At(i));
-  
+    
     switch (runNumber)
     {
-      case 104315:
-      case 104316:
-      case 104320:
-      case 104321:
-      case 104439:
-        triggerAnalysis->SetV0TimeOffset(7.5);
-        break;
-      default:
-        triggerAnalysis->SetV0TimeOffset(0);
+    case 104315:
+    case 104316:
+    case 104320:
+    case 104321:
+    case 104439:
+      triggerAnalysis->SetV0TimeOffset(7.5);
+      break;
+    default:
+      triggerAnalysis->SetV0TimeOffset(0);
     }
   }
-    
+  
   fCurrentRun = runNumber;
   
   TH1::AddDirectory(oldStatus);
@@ -1117,7 +1072,7 @@ TH2F * AliPhysicsSelection::BookHistStatistics(const char * tag) {
   // BG and the ratio of BG and accidentals to total +ratio goot to
   // first col + 2 for error on good.
   // TODO: Remember the the indexes of rows for the BG selection. Add new member fBGRows[] and use kStat as indexes
-
+  
   Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
 #ifdef VERBOSE_STAT
   Int_t extrarows = fComputeBG != 0 ? 11 : 0;
@@ -1125,7 +1080,7 @@ TH2F * AliPhysicsSelection::BookHistStatistics(const char * tag) {
   Int_t extrarows = fComputeBG != 0 ? 6 : 0;
 #endif
   TH2F * h = new TH2F(Form("fHistStatistics%s",tag), Form("fHistStatistics - %s ;;",tag), kStatAccepted, 0.5, kStatAccepted+0.5, count+extrarows, -0.5, -0.5 + count+extrarows);
-
+  
   h->GetXaxis()->SetBinLabel(kStatTriggerClass,  "Trigger class");
   h->GetXaxis()->SetBinLabel(kStatHWTrig,	 "Hardware trigger");
   h->GetXaxis()->SetBinLabel(kStatFO1,	         "FO >= 1");
@@ -1156,20 +1111,20 @@ TH2F * AliPhysicsSelection::BookHistStatistics(const char * tag) {
   h->GetXaxis()->SetBinLabel(kStatBG,	         "Background identification");
   h->GetXaxis()->SetBinLabel(kStatAcceptedPileUp, "Pile up (in accepted)");
   h->GetXaxis()->SetBinLabel(kStatAccepted,      "Accepted");
-
-
+  
+  
   Int_t n = 1;
   for (Int_t i=0; i < fCollTrigClasses.GetEntries(); i++)
-    {
-      h->GetYaxis()->SetBinLabel(n, ((TObjString*) fCollTrigClasses.At(i))->String());
-      n++;
-    }
+  {
+    h->GetYaxis()->SetBinLabel(n, ((TObjString*) fCollTrigClasses.At(i))->String());
+    n++;
+  }
   for (Int_t i=0; i < fBGTrigClasses.GetEntries(); i++)
-    {
-      h->GetYaxis()->SetBinLabel(n, ((TObjString*) fBGTrigClasses.At(i))->String());
-      n++;
-    }
-
+  {
+    h->GetYaxis()->SetBinLabel(n, ((TObjString*) fBGTrigClasses.At(i))->String());
+    n++;
+  }
+  
   if(fComputeBG) {
     fBGStatOffset = n;
     h->GetYaxis()->SetBinLabel(n++, "All B");
@@ -1186,7 +1141,7 @@ TH2F * AliPhysicsSelection::BookHistStatistics(const char * tag) {
 #endif
     h->GetYaxis()->SetBinLabel(n++, "GOOD");
   }
-
+  
   return h;
 }
 
@@ -1204,7 +1159,7 @@ void AliPhysicsSelection::Print(const Option_t *option) const
   Printf("Background trigger classes:");
   for (Int_t i=0; i < fBGTrigClasses.GetEntries(); i++)
     Printf("%s", ((TObjString*) fBGTrigClasses.At(i))->String().Data());
-
+  
   AliTriggerAnalysis* triggerAnalysis = dynamic_cast<AliTriggerAnalysis*> (fTriggerAnalysis.At(0));
   
   if (triggerAnalysis)
@@ -1222,46 +1177,46 @@ void AliPhysicsSelection::Print(const Option_t *option) const
       TObjString* obj = 0;
       static TString alreadyFoundTriggers;
       while ((obj = dynamic_cast<TObjString*> (iter->Next())))
-	{
-	  TString strTrigger = obj->GetString();    
-	  TParameter<Long64_t>* param = static_cast<TParameter<Long64_t>*> (triggers->GetValue(obj));
-	  Long_t counts =  (Long_t)param->GetVal();
-	  TObjArray* tokens = obj->String().Tokenize(" ");
-	  for (Int_t i=0; i<tokens->GetEntries(); i++)
-	    {
-	      TString singleTrigStr = ((TObjString*) tokens->At(i))->String();
-	      singleTrigStr.Strip(TString::kBoth, ' ' );
-	      const char * singleTrig = singleTrigStr.Data();
-	      //	    Printf("%s", singleTrig);
-	      TString singleTrigStrFull;
-	      Bool_t found = kFALSE;
-	      Int_t nCollTriggers = fCollTrigClasses.GetEntries();
-	      for(Int_t iCollTriggers = 0; iCollTriggers < nCollTriggers; iCollTriggers++){
-		singleTrigStrFull = ((TObjString*)fCollTrigClasses.At(iCollTriggers))->String();
-		if(singleTrigStrFull.Contains(singleTrigStr)) {
-		  found = kTRUE;
-		  break;
-		}
-		singleTrigStrFull = singleTrigStr;
-	      }
-	      Int_t nBGTriggers = fBGTrigClasses.GetEntries();
-	      for(Int_t iBGTriggers = 0; iBGTriggers < nBGTriggers; iBGTriggers++){
-		singleTrigStrFull = ((TObjString*)fBGTrigClasses.At(iBGTriggers))->String();
-		if(singleTrigStrFull.Contains(singleTrigStr)) {
-		  found = kTRUE;
-		  break;
-		}
-		singleTrigStrFull = singleTrigStr;
-	      }
-	      
-	      TString blacklist = "CEMC7WU-B-NOPF-ALL, CEMC7WU-AC-NOPF-ALL CEMC7WU-E-NOPF-ALL C0LSR-ABCE-NOPF-TPC CBEAMB-B-NOPF-ALLNOTRD"; // We know we dont support those, so we print no warning	      
-	      if(counts>0 && !found && !blacklist.Contains(singleTrig) && !singleTrigStr.Contains("WU") && !alreadyFoundTriggers.Contains(singleTrig)) {
-		Printf("WARNING: Found unknown trigger [%s] with %ld counts in the ESD!", singleTrig, counts);
-		alreadyFoundTriggers += singleTrig; // Avoid printing warning twice for the same trigger
-	      }	      
-	    }    
-	  delete tokens;	
-	}
+      {
+        TString strTrigger = obj->GetString();    
+        TParameter<Long64_t>* param = static_cast<TParameter<Long64_t>*> (triggers->GetValue(obj));
+        Long_t counts =  (Long_t)param->GetVal();
+        TObjArray* tokens = obj->String().Tokenize(" ");
+        for (Int_t i=0; i<tokens->GetEntries(); i++)
+        {
+          TString singleTrigStr = ((TObjString*) tokens->At(i))->String();
+          singleTrigStr.Strip(TString::kBoth, ' ' );
+          const char * singleTrig = singleTrigStr.Data();
+          //	    Printf("%s", singleTrig);
+          TString singleTrigStrFull;
+          Bool_t found = kFALSE;
+          Int_t nCollTriggers = fCollTrigClasses.GetEntries();
+          for(Int_t iCollTriggers = 0; iCollTriggers < nCollTriggers; iCollTriggers++){
+            singleTrigStrFull = ((TObjString*)fCollTrigClasses.At(iCollTriggers))->String();
+            if(singleTrigStrFull.Contains(singleTrigStr)) {
+              found = kTRUE;
+              break;
+            }
+            singleTrigStrFull = singleTrigStr;
+          }
+          Int_t nBGTriggers = fBGTrigClasses.GetEntries();
+          for(Int_t iBGTriggers = 0; iBGTriggers < nBGTriggers; iBGTriggers++){
+            singleTrigStrFull = ((TObjString*)fBGTrigClasses.At(iBGTriggers))->String();
+            if(singleTrigStrFull.Contains(singleTrigStr)) {
+              found = kTRUE;
+              break;
+            }
+            singleTrigStrFull = singleTrigStr;
+          }
+          
+          TString blacklist = "CEMC7WU-B-NOPF-ALL, CEMC7WU-AC-NOPF-ALL CEMC7WU-E-NOPF-ALL C0LSR-ABCE-NOPF-TPC CBEAMB-B-NOPF-ALLNOTRD"; // We know we dont support those, so we print no warning	      
+          if(counts>0 && !found && !blacklist.Contains(singleTrig) && !singleTrigStr.Contains("WU") && !alreadyFoundTriggers.Contains(singleTrig)) {
+            Printf("WARNING: Found unknown trigger [%s] with %ld counts in the ESD!", singleTrig, counts);
+            alreadyFoundTriggers += singleTrig; // Avoid printing warning twice for the same trigger
+          }	      
+        }    
+        delete tokens;	
+      }
       delete iter;
     }
   }
@@ -1269,7 +1224,7 @@ void AliPhysicsSelection::Print(const Option_t *option) const
   if (fHistStatistics[kStatIdxAll])
   {
     static TString alreadyFoundTriggers; // avoids printing twice the same warning
-	
+    
     for (Int_t i=0; i<fCollTrigClasses.GetEntries(); i++)
     {
       Printf("\nSelection statistics for collision trigger %s:", ((TObjString*) fCollTrigClasses.At(i))->String().Data());
@@ -1277,7 +1232,7 @@ void AliPhysicsSelection::Print(const Option_t *option) const
       
       Float_t allEvents       = fHistStatistics[kStatIdxAll]->GetBinContent(1, i+1); 
       Float_t triggeredEvents = fHistStatistics[kStatIdxAll]->GetBinContent(fHistStatistics[kStatIdxAll]->GetXaxis()->FindBin("Accepted"), i+1); 
-
+      
       Printf("Total events with correct trigger class: %d", (Int_t) fHistStatistics[kStatIdxAll]->GetBinContent(1, i+1));
       msg += Form("Total events with correct trigger class: %d\n", (Int_t) fHistStatistics[kStatIdxAll]->GetBinContent(1, i+1));
       Printf("Selected collision candidates: %d", (Int_t) fHistStatistics[kStatIdxAll]->GetBinContent(fHistStatistics[kStatIdxAll]->GetXaxis()->FindBin("Accepted"), i+1));
@@ -1286,12 +1241,12 @@ void AliPhysicsSelection::Print(const Option_t *option) const
       // If the fraction of accepted events is too low, print a warning.
       Float_t eff = allEvents > 0 ? triggeredEvents/allEvents : 0;
       if(allEvents > 0 && (eff < 0.5) &&  // FIXME: make threshold programmable in OADB
-	 !alreadyFoundTriggers.Contains(((TObjString*) fCollTrigClasses.At(i))->String().Data())) {
-	Printf("WARNING: Trigger class %s has a very low efficiency (%d/%d=%.2f)",((TObjString*) fCollTrigClasses.At(i))->String().Data(), (Int_t) triggeredEvents, (Int_t) allEvents, eff);
-	alreadyFoundTriggers += ((TObjString*) fCollTrigClasses.At(i))->String().Data();
-	Printf("%s", alreadyFoundTriggers.Data());
+          !alreadyFoundTriggers.Contains(((TObjString*) fCollTrigClasses.At(i))->String().Data())) {
+        Printf("WARNING: Trigger class %s has a very low efficiency (%d/%d=%.2f)",((TObjString*) fCollTrigClasses.At(i))->String().Data(), (Int_t) triggeredEvents, (Int_t) allEvents, eff);
+        alreadyFoundTriggers += ((TObjString*) fCollTrigClasses.At(i))->String().Data();
+        Printf("%s", alreadyFoundTriggers.Data());
       }
-
+      
     }
   }
   
@@ -1308,7 +1263,7 @@ void AliPhysicsSelection::Print(const Option_t *option) const
       for (Int_t j=1; j<=fHistBunchCrossing->GetNbinsX(); j++)
         if (fHistBunchCrossing->GetBinContent(j, i) > 0)
           str += Form("%d, ", (Int_t) fHistBunchCrossing->GetXaxis()->GetBinCenter(j));
-             
+      
       Printf("%s", str.Data());
       msg += str;
       msg += "\n";
@@ -1332,7 +1287,7 @@ void AliPhysicsSelection::Print(const Option_t *option) const
         Printf("WARNING: Bunch crossing %d has collision and BG trigger classes active. Check BPTX functioning for this run!", (Int_t) fHistBunchCrossing->GetXaxis()->GetBinCenter(j));
     }
   }
-
+  
   if (fUsingCustomClasses)        
     Printf("WARNING: Using custom trigger classes!");
   if (fSkipTriggerClassSelection) 
@@ -1344,8 +1299,8 @@ void AliPhysicsSelection::Print(const Option_t *option) const
   TString opt(option);
   opt.ToUpper();
   if (opt == "STAT") {
-     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-     if (mgr) mgr->AddStatisticsMsg(msg);
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    if (mgr) mgr->AddStatisticsMsg(msg);
   }
 }
 
@@ -1354,23 +1309,23 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
   // Merge a list of AliMultiplicityCorrection objects with this (needed for
   // PROOF).
   // Returns the number of merged objects (including this).
-
+  
   if (!list)
     return 0;
-
+  
   if (list->IsEmpty())
     return 1;
-
+  
   TIterator* iter = list->MakeIterator();
   TObject* obj;
   
   // collections of all histograms
   const Int_t nHists = 8;
   TList collections[nHists];
-
+  
   Int_t count = 0;
   while ((obj = iter->Next())) {
-
+    
     AliPhysicsSelection* entry = dynamic_cast<AliPhysicsSelection*> (obj);
     if (entry == 0) 
       continue;
@@ -1391,22 +1346,22 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
         fBGTrigClasses.Add(entry->fBGTrigClasses.At(i)->Clone());
     }
     if (fCurrentRun != currentRun)
-       AliWarning(Form("Current run %d not matching the one to be merged with %d", fCurrentRun, currentRun));
-
+      AliWarning(Form("Current run %d not matching the one to be merged with %d", fCurrentRun, currentRun));
+    
     // With the same strategy update fBGStatOffset
     Int_t bgstatoffset = entry->GetBGStatOffset();
     
     // Nothing to merge with since BG was not initialized.
     if (!(bgstatoffset < 0)){
       if (fBGStatOffset < 0) 
-	{
-	  fBGStatOffset = bgstatoffset;
-	}
+      {
+        fBGStatOffset = bgstatoffset;
+      }
     }
     if (fBGStatOffset != bgstatoffset)
       AliWarning(Form("Current run %d not matching the one to be merged with %d", fBGStatOffset, bgstatoffset));
     
-
+    
     
     // Merge the OADBs (Take just the first instance you find
     if (!fPSOADB && entry->GetOADBPhysicsSelection()) {
@@ -1415,7 +1370,7 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
     if (!fFillOADB && entry->GetOADBFillingScheme()){
       fFillOADB = (AliOADBFillingScheme*) entry->GetOADBFillingScheme()->Clone();
     }
-
+    
     if (entry->fTriggerAnalysis.GetEntries() > 0)
       collections[0].Add(&(entry->fTriggerAnalysis));
     if (entry->fHistStatistics[0])
@@ -1428,10 +1383,10 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
       collections[3].Add(entry->fHistBunchCrossing);
     if (entry->fHistTriggerPattern)
       collections[4].Add(entry->fHistTriggerPattern);
-
+    
     count++;
   }
-
+  
   if (fTriggerAnalysis.GetEntries() == 0 && collections[0].GetEntries() > 0)
   {
     TList* firstList = (TList*) collections[0].First();
@@ -1450,7 +1405,7 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
   }
   if (fHistStatistics[0])
     fHistStatistics[0]->Merge(&collections[1]);
-    
+  
   if (!fHistStatistics[1] && collections[2].GetEntries() > 0)
   {
     fHistStatistics[1] = (TH2F*) collections[2].First()->Clone();
@@ -1458,7 +1413,7 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
   }
   if (fHistStatistics[1])
     fHistStatistics[1]->Merge(&collections[2]);
-    
+  
   if (!fHistBunchCrossing && collections[3].GetEntries() > 0)
   {
     fHistBunchCrossing = (TH2F*) collections[3].First()->Clone();
@@ -1474,9 +1429,9 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
   }
   if (fHistTriggerPattern)
     fHistTriggerPattern->Merge(&collections[4]);
-    
+  
   delete iter;
-
+  
   return count+1;
 }
 
@@ -1486,18 +1441,18 @@ void AliPhysicsSelection::SaveHistograms(const char* folder)
   
   if (!fHistStatistics[0] || !fHistStatistics[1])
     return;
-    
+  
   if (folder)
   {
     gDirectory->mkdir(folder);
     gDirectory->cd(folder);
   }
   
-
+  
   // Fill the last rows of fHistStatistics before saving
   if (fComputeBG) {      
     AliInfo("BG estimate assumes that for a given run you only have A and C triggers separately or"
-	    " toghether as a AC class! Make sure this assumption holds in your case"); 
+        " toghether as a AC class! Make sure this assumption holds in your case"); 
     
     // use an anum for the different trigger classes, to make loops easier to read
     enum {kClassB =0 , kClassA, kClassC, kClassAC, kClassE, kNClasses};
@@ -1514,24 +1469,24 @@ void AliPhysicsSelection::SaveHistograms(const char* folder)
     // Those are used to rescale the different classes to the same number of bx ids
     // TODO: pass names of the rows for B, CA and E and look names of the rows. How do I handle the case in which both AC are in the same row?         
     Int_t nBXIds[kNClasses] = {0};
-      //      cout <<"Computing BG:" << endl;
+    //      cout <<"Computing BG:" << endl;
     
     for(Int_t iTrigClass = 0; iTrigClass < kNClasses; iTrigClass++){
       for(Int_t irow = 0; irow < nrows[iTrigClass]; irow++) {
-	if(irow==0) cout << "- Class " << classFlags[iTrigClass] << endl;   
-	for (Int_t j=1; j<=fHistBunchCrossing->GetNbinsX(); j++) {
-	  if (fHistBunchCrossing->GetBinContent(j, rows[iTrigClass][irow]) > 0) {
-	    nBXIds[iTrigClass]++;	 
-	  }
-	}
-	if(nBXIds[iTrigClass]>0) cout << "   Using row " << rows[iTrigClass][irow] <<  ": " 
-				      << fHistBunchCrossing->GetYaxis()->GetBinLabel(rows[iTrigClass][irow]) 
-				      << " (nBXID "<< nBXIds[iTrigClass] << ")"<< endl;
-
+        if(irow==0) cout << "- Class " << classFlags[iTrigClass] << endl;   
+        for (Int_t j=1; j<=fHistBunchCrossing->GetNbinsX(); j++) {
+          if (fHistBunchCrossing->GetBinContent(j, rows[iTrigClass][irow]) > 0) {
+            nBXIds[iTrigClass]++;	 
+          }
+        }
+        if(nBXIds[iTrigClass]>0) cout << "   Using row " << rows[iTrigClass][irow] <<  ": " 
+            << fHistBunchCrossing->GetYaxis()->GetBinLabel(rows[iTrigClass][irow]) 
+            << " (nBXID "<< nBXIds[iTrigClass] << ")"<< endl;
+        
       }
-
+      
     }
-
+    
     Float_t ratioToB[kNClasses];
     ratioToB[kClassE]  = nBXIds[kClassE]  >0 ? Float_t(nBXIds[kClassB])/nBXIds[kClassE]   : 0;
     ratioToB[kClassA]  = nBXIds[kClassA]  >0 ? Float_t(nBXIds[kClassB])/nBXIds[kClassA]   : 0;
@@ -1543,127 +1498,127 @@ void AliPhysicsSelection::SaveHistograms(const char* folder)
     Printf("  B/C  = %d/%d = %f", nBXIds[kClassB],nBXIds[kClassC], ratioToB[kClassC] );
     Printf("  B/AC = %d/%d = %f", nBXIds[kClassB],nBXIds[kClassAC],ratioToB[kClassAC]);
     Int_t nHistStat = 2;
-
+    
     // 1. loop over all cols
     for(Int_t iHistStat = 0; iHistStat < nHistStat; iHistStat++){
       Int_t ncol = fHistStatistics[iHistStat]->GetNbinsX();
       Float_t good1 = 0;      
       for(Int_t icol = 1; icol <= ncol; icol++) {
-	Int_t nEvents[kNClasses] = {0}; // number of events should be reset at every column
-	// For all trigger classes, add up over row matching trigger mask (as selected before)
-	for(Int_t iTrigClass = 0; iTrigClass < kNClasses; iTrigClass++){
-	  for(Int_t irow = 0; irow < nrows[iTrigClass]; irow++) {	  
-	    nEvents[iTrigClass] += (Int_t) fHistStatistics[iHistStat]->GetBinContent(icol,rows[iTrigClass][irow]);	
-	  }
-	  //	    cout << "Events " << classFlags[iTrigClass] << " ("<<icol<<") " << nEvents[iTrigClass] << endl;	    
-	}
-	if (nEvents[kClassB]>0) {
-	  Float_t acc  = ratioToB[kClassE]*nEvents[kClassE]; 
-	  Double_t accErr = TMath::Sqrt(ratioToB[kClassE]*ratioToB[kClassE]*nEvents[kClassE]);
-	  //      Int_t bg   = cint1A + cint1C - 2*acc;
-	    
-	  // If intensity measurements are available, they already
-	  // contain the scaling for BX ratios, so we reset the
-	  // ratioToB entries
-	  if(icol == 1) {
-	    if(fBIFactorAC > 0 || fBIFactorA > 0 || fBIFactorC > 0) {
-	      if (fBIFactorAC <= 0 && (fBIFactorA <= 0 || fBIFactorC <= 0)) {
-		AliError("Not all intensities set!, assuming equal intensities");
-		fBIFactorA  = 1;
-		fBIFactorC  = 1;
-		fBIFactorAC = 1;
-	      } else {
-		AliInfo("Using ratio of number of bunch crossing embedded in the intensity measurements");
-		ratioToB[kClassA]  = ratioToB[kClassA]  >0 ? 1  : 0;
-		ratioToB[kClassC]  = ratioToB[kClassC]  >0 ? 1  : 0;
-		ratioToB[kClassAC] = ratioToB[kClassAC] >0 ? 1  : 0;
-		AliInfo(Form(" - BI Factor A:  %f",  fBIFactorA ));
-		AliInfo(Form(" - BI Factor C:  %f",  fBIFactorC ));
-		AliInfo(Form(" - BI Factor AC: %f",  fBIFactorAC ));
-		
-	      }
-	    } else {
-	      AliWarning("Intensities not set!, assuming equal intensities");
-	      fBIFactorA  = 1;
-	      fBIFactorC  = 1;
-	      fBIFactorAC = 1;
-	    }
-	  }
-	  // Assuming that for a given class the triggers are either recorded as A+C or AC
-	  Float_t bg  = nEvents[kClassAC] > 0 ?
-	    fBIFactorAC*(ratioToB[kClassAC]*nEvents[kClassAC] - 2*acc):
-	    fBIFactorA* (ratioToB[kClassA]*nEvents[kClassA]-acc) + 
-	    fBIFactorC* (ratioToB[kClassC]*nEvents[kClassC]-acc) ;
-
-	  // cout << "-----------------------" << endl;
-	  // cout << "Factors: " << fBIFactorA << " " << fBIFactorC << " " << fBIFactorAC << endl;
-	  // cout << "Ratios: "  << ratioToB[kClassA] << " " << ratioToB[kClassC] << " " << ratioToB[kClassAC] << endl;
-	  // cout << "Evts:   "  << nEvents[kClassA] << " " << nEvents[kClassC] << " " << nEvents[kClassAC] << " " <<  nEvents[kClassB] << endl;
-	  // cout << "Acc: " << acc << endl;
-	  // cout << "BG: " << bg << endl;
-	  // cout  << "  " <<   fBIFactorA* (ratioToB[kClassA]*nEvents[kClassA]-acc) <<endl;
-	  // cout  << "  " <<   fBIFactorC* (ratioToB[kClassC]*nEvents[kClassC]-acc) <<endl;
-	  // cout  << "  " <<   fBIFactorAC*(ratioToB[kClassAC]*nEvents[kClassAC] - 2*acc) << endl;
-	  // cout << "-----------------------" << endl;
-
-	  Float_t good = Float_t(nEvents[kClassB]) - bg - acc;
-	  if (icol ==1) good1 = good;
-	  //      Float_t errGood     = TMath::Sqrt(2*(nEvents[kClassA]+nEvents[kClassC]+nEvents[kClassE]));// Error on the number of goods assuming only bg fluctuates
-	  //      DeltaG^2 = B + FA^2 A + FC^2 C + Ratio^2 (FA+FC-1)^2 E.
-	  Float_t errGood     = nEvents[kClassAC] > 0 ? 
-	    TMath::Sqrt( nEvents[kClassB] +
-			 fBIFactorAC*fBIFactorAC*ratioToB[kClassAC]*ratioToB[kClassAC]*nEvents[kClassAC] +
-			 ratioToB[kClassE] * ratioToB[kClassE] * 
-			 (fBIFactorAC - 1)*(fBIFactorAC - 1)*nEvents[kClassE]) :  
-	    TMath::Sqrt( nEvents[kClassB] + 
-			 fBIFactorA*fBIFactorA*ratioToB[kClassA]*ratioToB[kClassA]*nEvents[kClassA] +
-			 fBIFactorC*fBIFactorC*ratioToB[kClassC]*ratioToB[kClassC]*nEvents[kClassC] +
-			 ratioToB[kClassE] * ratioToB[kClassE] * 
-			 (fBIFactorA + fBIFactorC - 1)*(fBIFactorA + fBIFactorC - 1)*nEvents[kClassE]);
-
-	  Float_t errBG = nEvents[kClassAC] > 0 ? 
-	    TMath::Sqrt(fBIFactorAC*fBIFactorAC*ratioToB[kClassAC]*ratioToB[kClassAC]*nEvents[kClassAC]+
-			4*ratioToB[kClassE]*ratioToB[kClassE]*(fBIFactorAC*fBIFactorAC)*nEvents[kClassE]) :
-	    TMath::Sqrt(fBIFactorA*fBIFactorA*ratioToB[kClassA]*ratioToB[kClassA]*nEvents[kClassA]+
-			fBIFactorC*fBIFactorC*ratioToB[kClassC]*ratioToB[kClassC]*nEvents[kClassC]+
-			ratioToB[kClassE]*ratioToB[kClassE]*(fBIFactorA+fBIFactorC)*(fBIFactorA+fBIFactorC)*nEvents[kClassE]);
-	
-	
-	  fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowAllB, nEvents[kClassB]);	
-	  fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowAllAC,nEvents[kClassA]+nEvents[kClassC]+nEvents[kClassAC]);	
-	  fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowAllE, nEvents[kClassE]);	
-
-	  fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowBG,bg);	
-	  fHistStatistics[iHistStat]->SetBinError  (icol,fBGStatOffset+kStatRowBG,errBG);	
-	  fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowAcc,acc);	
-	  fHistStatistics[iHistStat]->SetBinError  (icol,fBGStatOffset+kStatRowAcc,accErr);	
-	  fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowGood,good);    
-	  fHistStatistics[iHistStat]->SetBinError  (icol,fBGStatOffset+kStatRowGood,errGood);    
-
+        Int_t nEvents[kNClasses] = {0}; // number of events should be reset at every column
+        // For all trigger classes, add up over row matching trigger mask (as selected before)
+        for(Int_t iTrigClass = 0; iTrigClass < kNClasses; iTrigClass++){
+          for(Int_t irow = 0; irow < nrows[iTrigClass]; irow++) {	  
+            nEvents[iTrigClass] += (Int_t) fHistStatistics[iHistStat]->GetBinContent(icol,rows[iTrigClass][irow]);	
+          }
+          //	    cout << "Events " << classFlags[iTrigClass] << " ("<<icol<<") " << nEvents[iTrigClass] << endl;	    
+        }
+        if (nEvents[kClassB]>0) {
+          Float_t acc  = ratioToB[kClassE]*nEvents[kClassE]; 
+          Double_t accErr = TMath::Sqrt(ratioToB[kClassE]*ratioToB[kClassE]*nEvents[kClassE]);
+          //      Int_t bg   = cint1A + cint1C - 2*acc;
+          
+          // If intensity measurements are available, they already
+          // contain the scaling for BX ratios, so we reset the
+          // ratioToB entries
+          if(icol == 1) {
+            if(fBIFactorAC > 0 || fBIFactorA > 0 || fBIFactorC > 0) {
+              if (fBIFactorAC <= 0 && (fBIFactorA <= 0 || fBIFactorC <= 0)) {
+                AliError("Not all intensities set!, assuming equal intensities");
+                fBIFactorA  = 1;
+                fBIFactorC  = 1;
+                fBIFactorAC = 1;
+              } else {
+                AliInfo("Using ratio of number of bunch crossing embedded in the intensity measurements");
+                ratioToB[kClassA]  = ratioToB[kClassA]  >0 ? 1  : 0;
+                ratioToB[kClassC]  = ratioToB[kClassC]  >0 ? 1  : 0;
+                ratioToB[kClassAC] = ratioToB[kClassAC] >0 ? 1  : 0;
+                AliInfo(Form(" - BI Factor A:  %f",  fBIFactorA ));
+                AliInfo(Form(" - BI Factor C:  %f",  fBIFactorC ));
+                AliInfo(Form(" - BI Factor AC: %f",  fBIFactorAC ));
+                
+              }
+            } else {
+              AliWarning("Intensities not set!, assuming equal intensities");
+              fBIFactorA  = 1;
+              fBIFactorC  = 1;
+              fBIFactorAC = 1;
+            }
+          }
+          // Assuming that for a given class the triggers are either recorded as A+C or AC
+          Float_t bg  = nEvents[kClassAC] > 0 ?
+              fBIFactorAC*(ratioToB[kClassAC]*nEvents[kClassAC] - 2*acc):
+              fBIFactorA* (ratioToB[kClassA]*nEvents[kClassA]-acc) + 
+              fBIFactorC* (ratioToB[kClassC]*nEvents[kClassC]-acc) ;
+          
+          // cout << "-----------------------" << endl;
+          // cout << "Factors: " << fBIFactorA << " " << fBIFactorC << " " << fBIFactorAC << endl;
+          // cout << "Ratios: "  << ratioToB[kClassA] << " " << ratioToB[kClassC] << " " << ratioToB[kClassAC] << endl;
+          // cout << "Evts:   "  << nEvents[kClassA] << " " << nEvents[kClassC] << " " << nEvents[kClassAC] << " " <<  nEvents[kClassB] << endl;
+          // cout << "Acc: " << acc << endl;
+          // cout << "BG: " << bg << endl;
+          // cout  << "  " <<   fBIFactorA* (ratioToB[kClassA]*nEvents[kClassA]-acc) <<endl;
+          // cout  << "  " <<   fBIFactorC* (ratioToB[kClassC]*nEvents[kClassC]-acc) <<endl;
+          // cout  << "  " <<   fBIFactorAC*(ratioToB[kClassAC]*nEvents[kClassAC] - 2*acc) << endl;
+          // cout << "-----------------------" << endl;
+          
+          Float_t good = Float_t(nEvents[kClassB]) - bg - acc;
+          if (icol ==1) good1 = good;
+          //      Float_t errGood     = TMath::Sqrt(2*(nEvents[kClassA]+nEvents[kClassC]+nEvents[kClassE]));// Error on the number of goods assuming only bg fluctuates
+          //      DeltaG^2 = B + FA^2 A + FC^2 C + Ratio^2 (FA+FC-1)^2 E.
+          Float_t errGood     = nEvents[kClassAC] > 0 ? 
+              TMath::Sqrt( nEvents[kClassB] +
+                  fBIFactorAC*fBIFactorAC*ratioToB[kClassAC]*ratioToB[kClassAC]*nEvents[kClassAC] +
+                  ratioToB[kClassE] * ratioToB[kClassE] * 
+                  (fBIFactorAC - 1)*(fBIFactorAC - 1)*nEvents[kClassE]) :  
+                  TMath::Sqrt( nEvents[kClassB] + 
+                      fBIFactorA*fBIFactorA*ratioToB[kClassA]*ratioToB[kClassA]*nEvents[kClassA] +
+                      fBIFactorC*fBIFactorC*ratioToB[kClassC]*ratioToB[kClassC]*nEvents[kClassC] +
+                      ratioToB[kClassE] * ratioToB[kClassE] * 
+                      (fBIFactorA + fBIFactorC - 1)*(fBIFactorA + fBIFactorC - 1)*nEvents[kClassE]);
+          
+          Float_t errBG = nEvents[kClassAC] > 0 ? 
+              TMath::Sqrt(fBIFactorAC*fBIFactorAC*ratioToB[kClassAC]*ratioToB[kClassAC]*nEvents[kClassAC]+
+                  4*ratioToB[kClassE]*ratioToB[kClassE]*(fBIFactorAC*fBIFactorAC)*nEvents[kClassE]) :
+                  TMath::Sqrt(fBIFactorA*fBIFactorA*ratioToB[kClassA]*ratioToB[kClassA]*nEvents[kClassA]+
+                      fBIFactorC*fBIFactorC*ratioToB[kClassC]*ratioToB[kClassC]*nEvents[kClassC]+
+                      ratioToB[kClassE]*ratioToB[kClassE]*(fBIFactorA+fBIFactorC)*(fBIFactorA+fBIFactorC)*nEvents[kClassE]);
+          
+          
+          fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowAllB, nEvents[kClassB]);	
+          fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowAllAC,nEvents[kClassA]+nEvents[kClassC]+nEvents[kClassAC]);	
+          fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowAllE, nEvents[kClassE]);	
+          
+          fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowBG,bg);	
+          fHistStatistics[iHistStat]->SetBinError  (icol,fBGStatOffset+kStatRowBG,errBG);	
+          fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowAcc,acc);	
+          fHistStatistics[iHistStat]->SetBinError  (icol,fBGStatOffset+kStatRowAcc,accErr);	
+          fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowGood,good);    
+          fHistStatistics[iHistStat]->SetBinError  (icol,fBGStatOffset+kStatRowGood,errGood);    
+          
 #ifdef VERBOSE_STAT
-	  //kStatRowBG=0,kStatRowAcc,kStatRowBGFrac,kStatRowAccFrac,kStatRowErrGoodFrac,kStatRowGoodFrac,kStatRowGood,kStatRowErrGood
-	  Float_t accFrac   = Float_t(acc) / nEvents[kClassB]  *100;
-	  Float_t errAccFrac= Float_t(accErr) / nEvents[kClassB]  *100;
-	  Float_t bgFrac    = Float_t(bg)  / nEvents[kClassB]  *100;
-	  Float_t goodFrac  = Float_t(good)  / good1 *100;
-	  Float_t errGoodFrac = errGood/good1 * 100;
-	  Float_t errFracBG = bg > 0 ? TMath::Sqrt((errBG/bg)*(errBG/bg) + 1/nEvents[kClassB])*bgFrac : 0;
-	  fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowBGFrac,bgFrac);	
-	  fHistStatistics[iHistStat]->SetBinError  (icol,fBGStatOffset+kStatRowBGFrac,errFracBG);	
-	  fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowAccFrac,accFrac);    
-	  fHistStatistics[iHistStat]->SetBinError  (icol,fBGStatOffset+kStatRowAccFrac,errAccFrac);    
-	  fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowGoodFrac,goodFrac);    
-	  fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowErrGoodFrac,errGoodFrac);    
-	  fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowErrGood,errGood);    
+          //kStatRowBG=0,kStatRowAcc,kStatRowBGFrac,kStatRowAccFrac,kStatRowErrGoodFrac,kStatRowGoodFrac,kStatRowGood,kStatRowErrGood
+          Float_t accFrac   = Float_t(acc) / nEvents[kClassB]  *100;
+          Float_t errAccFrac= Float_t(accErr) / nEvents[kClassB]  *100;
+          Float_t bgFrac    = Float_t(bg)  / nEvents[kClassB]  *100;
+          Float_t goodFrac  = Float_t(good)  / good1 *100;
+          Float_t errGoodFrac = errGood/good1 * 100;
+          Float_t errFracBG = bg > 0 ? TMath::Sqrt((errBG/bg)*(errBG/bg) + 1/nEvents[kClassB])*bgFrac : 0;
+          fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowBGFrac,bgFrac);	
+          fHistStatistics[iHistStat]->SetBinError  (icol,fBGStatOffset+kStatRowBGFrac,errFracBG);	
+          fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowAccFrac,accFrac);    
+          fHistStatistics[iHistStat]->SetBinError  (icol,fBGStatOffset+kStatRowAccFrac,errAccFrac);    
+          fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowGoodFrac,goodFrac);    
+          fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowErrGoodFrac,errGoodFrac);    
+          fHistStatistics[iHistStat]->SetBinContent(icol,fBGStatOffset+kStatRowErrGood,errGood);    
 #endif
-	}
+        }
       }
     }
     for (Int_t iTrigClass = 0; iTrigClass < kNClasses; iTrigClass++){
       delete [] rows[iTrigClass];
     }  
   } // end of ComputeBackground  
-
+  
   fHistStatistics[0]->Write();
   fHistStatistics[1]->Write();
   if(fHistBunchCrossing ) fHistBunchCrossing ->Write();
@@ -1671,21 +1626,21 @@ void AliPhysicsSelection::SaveHistograms(const char* folder)
   
   Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
   for (Int_t i=0; i < count; i++)
-    {
-      TString triggerClass = "trigger_histograms_";
-      if (i < fCollTrigClasses.GetEntries())
-	triggerClass += ((TObjString*) fCollTrigClasses.At(i))->String();
-      else
-	triggerClass += ((TObjString*) fBGTrigClasses.At(i - fCollTrigClasses.GetEntries()))->String();
-      
-      gDirectory->mkdir(triggerClass);
-      gDirectory->cd(triggerClass);
-      
-      static_cast<AliTriggerAnalysis*> (fTriggerAnalysis.At(i))->SaveHistograms();
-      
-      gDirectory->cd("..");
-    }
+  {
+    TString triggerClass = "trigger_histograms_";
+    if (i < fCollTrigClasses.GetEntries())
+      triggerClass += ((TObjString*) fCollTrigClasses.At(i))->String();
+    else
+      triggerClass += ((TObjString*) fBGTrigClasses.At(i - fCollTrigClasses.GetEntries()))->String();
     
+    gDirectory->mkdir(triggerClass);
+    gDirectory->cd(triggerClass);
+    
+    static_cast<AliTriggerAnalysis*> (fTriggerAnalysis.At(i))->SaveHistograms();
+    
+    gDirectory->cd("..");
+  }
+  
   if (folder)
     gDirectory->cd("..");
   
@@ -1698,18 +1653,18 @@ Int_t AliPhysicsSelection::GetStatRow(const char * triggerBXClass, UInt_t offlin
   // triggerBXClass can be either "A", "AC", "B" or "E"
   // offlineTriggerType is one of the types defined in AliVEvent
   // User should delete rowIDs if no longer needed
-
+  
   if(!fHistStatistics[0]) {
     AliWarning("Not initialized, returning 0");
     return 0;
   }
   const Int_t nrows = fHistStatistics[0]->GetNbinsY();
-
+  
   // allocate memory for at maximum nrows
   Int_t nMatches = 0;
   (*rowIDs) = new UInt_t[nrows];
-
-
+  
+  
   // Loop over rows and find matching ones, using the PS OADB
   // FIXME: check BG estimates
   for(Int_t irow = 1; irow <= nrows; irow++){
@@ -1720,13 +1675,13 @@ Int_t AliPhysicsSelection::GetStatRow(const char * triggerBXClass, UInt_t offlin
       UInt_t tType = ((TObjString*)arr->At(1))->GetString().Atoi();
       
       if (tType == offlineTriggerType && fPSOADB->GetBeamSide(triggerClassCurrent.Data()) == triggerBXClass) {
- 	(*rowIDs)[nMatches] = irow;
-	nMatches++;
+        (*rowIDs)[nMatches] = irow;
+        nMatches++;
       }
-
+      
     }
     delete arr;
-
+    
   }
   
   return nMatches;
@@ -1745,12 +1700,12 @@ void AliPhysicsSelection::SetBIFactors(const AliESDEvent * aESD) {
     Double_t intCB = esdRun->GetMeanIntensityIntecting(1);
     Double_t intAA = esdRun->GetMeanIntensityNonIntecting(0);
     Double_t intCC = esdRun->GetMeanIntensityNonIntecting(1);
-
+    
     // cout << "INT " <<intAB <<endl;
     // cout << "INT " <<intCB <<endl;
     // cout << "INT " <<intAA <<endl;
     // cout << "INT " <<intCC <<endl;
-
+    
     if (intAB > 0 && intAA > 0) {
       fBIFactorA = intAB/intAA;
     } else {
@@ -1762,14 +1717,14 @@ void AliPhysicsSelection::SetBIFactors(const AliESDEvent * aESD) {
     } else {
       AliWarning("Cannot set fBIFactorC");
     }
-      
+    
     if (intAB > 0 && intAA > 0 &&
-	intCB > 0 && intCC > 0) {
+        intCB > 0 && intCC > 0) {
       fBIFactorAC = (intAB+intCB)/(intAA+intCC);
     } else {
       AliWarning("Cannot set fBIFactorAC");
     }
-        
+    
   }  
   else {
     // First runs. Intensities hardcoded
@@ -1891,7 +1846,7 @@ void AliPhysicsSelection::SetBIFactors(const AliESDEvent * aESD) {
       fBIFactorC = 1;
     }
   }
-
+  
 }
 
 const char * AliPhysicsSelection::GetTriggerString(TObjString * obj) { 
@@ -1899,17 +1854,17 @@ const char * AliPhysicsSelection::GetTriggerString(TObjString * obj) {
   static TString retString;
   
   retString.Form("%s%s", 
-		 obj->String().Data(), 
-		 fUseBXNumbers ? fFillOADB->GetBXIDs(fPSOADB->GetBeamSide(obj->String().Data())) : ""  
-		 );
-
+      obj->String().Data(), 
+      fUseBXNumbers ? fFillOADB->GetBXIDs(fPSOADB->GetBeamSide(obj->String().Data())) : ""  
+  );
+  
   if (fMC) {
     TPRegexp stripClasses("\\+\\S* ");
     stripClasses.Substitute(retString,"","g");
     stripClasses=TPRegexp("\\-\\S* ");
     stripClasses.Substitute(retString,"","g");
   }
-
+  
   return retString.Data();
 }
 
@@ -1920,7 +1875,7 @@ void AliPhysicsSelection::AddCollisionTriggerClass(const char* className){
     fPSOADB->SetHardwareTrigger         ( 0,"SPDGFO >= 1 || V0A || V0C");
     fPSOADB->SetOfflineTrigger          ( 0,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG");
   }
-
+  
   // Strip all which is not needed, if BX ids are provided, they are still used here
   // offline trigger and logics are appended automagically, so we strip-em out if they are provided
   TString classNameStripped = className;
@@ -1928,24 +1883,24 @@ void AliPhysicsSelection::AddCollisionTriggerClass(const char* className){
     classNameStripped.Remove(classNameStripped.Index("*")); // keep only the class name (no bx, offline trigger...)   
   if(classNameStripped.Index("&")>0)
     classNameStripped.Remove(classNameStripped.Index("&")); // keep only the class name (no bx, offline trigger...)   
-
+  
   fPSOADB->AddCollisionTriggerClass   ( AliVEvent::kUserDefined,classNameStripped.Data(),"B",0);
   
   fUsingCustomClasses = kTRUE;
-
-
+  
+  
 }
 
 void AliPhysicsSelection::AddBGTriggerClass(const char* className){
   // Add custom BG trigger class
- 
+  
   AliError("This method is deprecated! Will be removed soon! Please use SetCustomOADBObjects() instead!");
   if(!fPSOADB) {
     fPSOADB = new AliOADBPhysicsSelection("CustomPS");   
     fPSOADB->SetHardwareTrigger         ( 0,"SPDGFO >= 1 || V0A || V0C");
     fPSOADB->SetOfflineTrigger          ( 0,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG");
   }
-
+  
   // Strip all which is not needed, if BX ids are provided, they are still used here
   // offline trigger and logics are appended automagically, so we strip-em out if they are provided
   TString classNameStripped = className;
@@ -1953,11 +1908,11 @@ void AliPhysicsSelection::AddBGTriggerClass(const char* className){
     classNameStripped.Remove(classNameStripped.Index("*")); // keep only the class name (no bx, offline trigger...)   
   if(classNameStripped.Index("&")>0)
     classNameStripped.Remove(classNameStripped.Index("&")); // keep only the class name (no bx, offline trigger...)   
-
+  
   fPSOADB->AddBGTriggerClass   ( AliVEvent::kUserDefined,classNameStripped.Data(),"AC",0);
-
+  
   fUsingCustomClasses = kTRUE;
-
+  
 }       
 
 
@@ -1981,9 +1936,9 @@ void AliPhysicsSelection::DetectPassName(){
     }
     delete tokens;
   } 
-
+  
   TString passName="";
-
+  
   TObjArray* tokens = filePath.Tokenize("/");
   for (Int_t i=0;i<=tokens->GetLast();i++) {
     TObjString* stObj = (TObjString*) tokens->At(i);
@@ -2003,20 +1958,20 @@ void AliPhysicsSelection::DetectPassName(){
       TObjString* stObj = (TObjString*) tokens2->At(i);
       TString s = stObj->GetString();
       if (s.Contains("pass")) {
-	passName = s;
-	break;
+        passName = s;
+        break;
       }
     }
     delete tokens2;
   }
-
-
+  
+  
   if (!passName.Contains("pass")){
     AliError(" Failed to find reconstruction pass name:");
     AliError(" --> If these are MC data: please set kTRUE first argument of AddTaskPhysicsSelection");
     AliFatal(" --> If these are real data: please insert pass name inside the path of your local file, e.g. /your_path/pass2/AliESDs.root");
   }
-
+  
   AliInfo(Form("pass name: %s\n",passName.Data()));
   fPassName = passName;
 }

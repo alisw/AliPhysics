@@ -3,7 +3,7 @@
 # Author: Johny Jose m(johny.jose@cern.ch)
 #         Port of previous Makefile build to cmake
 
-cmake_minimum_required(VERSION 2.8.4 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
 
 # We don't care if ROOTSYS environment variable is set or not - 
 # all we care about is that we can find root-config in our path

@@ -92,7 +92,8 @@ void AliDecayerExodus::Init()
     // Get the particle masses
     // parent
     nbins = 1000;
- 
+    mass_min = 0.;
+    mass_max = 0.;
     pionmass     = (TDatabasePDG::Instance()->GetParticle(111))->Mass();
     etamass      = (TDatabasePDG::Instance()->GetParticle(221))->Mass();  
     omegamass    = (TDatabasePDG::Instance()->GetParticle(223))->Mass();  

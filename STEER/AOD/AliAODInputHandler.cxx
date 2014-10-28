@@ -149,7 +149,7 @@ Bool_t AliAODInputHandler::BeginEvent(Long64_t entry)
     if (fEventCuts)
       fIsSelectedResult = fEventCuts->GetSelectionMask(fEvent);
     else
-      fIsSelectedResult = fEvent->GetHeader()->GetOfflineTrigger();
+      fIsSelectedResult = static_cast<AliVAODHeader*>(fEvent->GetHeader())->GetOfflineTrigger();
 
     if (fMixingHandler) fMixingHandler->BeginEvent(entry);
 

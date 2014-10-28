@@ -1459,8 +1459,8 @@ void TestRmTracks(Int_t iev=0) {
   vertexer->SetDebug(0); // set to 1 to see what it does
 
   Float_t diamondxy[2];
-  diamondxy[0]=initVertex->GetXv();
-  diamondxy[1]=initVertex->GetYv();
+  diamondxy[0]=initVertex->GetX();
+  diamondxy[1]=initVertex->GetY();
   //----------------------------------------------------------
  
   if(gSystem->AccessPathName("AliESDs.root",kFileExists)) {

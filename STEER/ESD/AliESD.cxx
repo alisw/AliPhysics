@@ -565,9 +565,9 @@ void AliESD::Print(Option_t *) const
 	 GetTriggerMask(),
 	 GetMagneticField() );
     printf("Vertex: (%.4f +- %.4f, %.4f +- %.4f, %.4f +- %.4f) cm\n",
-	   fPrimaryVertex.GetXv(), fPrimaryVertex.GetXRes(),
-	   fPrimaryVertex.GetYv(), fPrimaryVertex.GetYRes(),
-	   fPrimaryVertex.GetZv(), fPrimaryVertex.GetZRes());
+	   fPrimaryVertex.GetX(), fPrimaryVertex.GetXRes(),
+	   fPrimaryVertex.GetY(), fPrimaryVertex.GetYRes(),
+	   fPrimaryVertex.GetZ(), fPrimaryVertex.GetZRes());
     printf("Mean vertex in RUN: X=%.4f Y=%.4f cm\n",
 	   GetDiamondX(),GetDiamondY());
     printf("SPD Multiplicity. Number of tracklets %d \n",
@@ -629,8 +629,8 @@ void AliESD::SetDiamond(const AliESDVertex *vertex)
   //
   // Set the interaction diamond
   //  
-    fDiamondXY[0]=vertex->GetXv();
-    fDiamondXY[1]=vertex->GetYv();
+    fDiamondXY[0]=vertex->GetX();
+    fDiamondXY[1]=vertex->GetY();
     Double_t cov[6];
     vertex->GetCovMatrix(cov);
     fDiamondCovXY[0]=cov[0];

@@ -137,9 +137,9 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
 	for (Int_t i=0;i<fSelectedSpecies;i++){
 	  p[i] *= detProb[i];
 	  if(detBit == AliPIDResponse::kDetTOF){
-	    Float_t pt = track->Pt();
-	    Float_t mismPropagationFactor[] = {1.,1.,1.,float(1 + TMath::Exp(1 - 1.12*pt)),
-					       float(1 + 1./(4.71114 - 5.72372*pt + 2.94715*pt*pt)),1.,1.,1.,1.,1.}; // correction for kaons and protons which has to be alligned with the one in AliPIDResponse
+	    Double_t pt = track->Pt();
+	    Double_t mismPropagationFactor[] = {1.,1.,1.,1. + TMath::Exp(1. - 1.12*pt),
+						1. + 1./(4.71114 - 5.72372*pt + 2.94715*pt*pt),1.,1.,1.,1.,1.}; // correction for kaons and protons which has to be alligned with the one in AliPIDResponse
 	    pMismTOF[i] *= fTOFmismProb*mismPropagationFactor[i];
 	  }
 	  else pMismTOF[i] *= detProb[i];

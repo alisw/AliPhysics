@@ -41,8 +41,8 @@ AliADRawStream::AliADRawStream(AliRawReader* rawReader) :
   // select the raw data corresponding to
   // the AD detector id
   fRawReader->Reset();
-  AliDebug(1,Form("Selecting raw data for detector %d",AliDAQ::DetectorID("AD")));
-  fRawReader->Select("AD");
+  AliDebug(1,Form("Selecting raw data for detector %d",AliDAQ::DetectorID("VZERO")));
+  fRawReader->Select("VZERO");
 
   // Initalize the containers
   for(Int_t i = 0; i < kNChannels; i++) {
@@ -106,9 +106,9 @@ Bool_t AliADRawStream::Next()
   if (!fRawReader->ReadNextData(fData)) return kFALSE;
   if (fRawReader->GetDataSize() == 0) return kFALSE;
      
-  if (fRawReader->GetDataSize() != 1568) {
-     fRawReader->AddFatalErrorLog(kRawDataSizeErr,Form("size %d != 1568",fRawReader->GetDataSize()));
-     AliWarning(Form("Wrong AD raw data size: %d, expected 1568 bytes!",fRawReader->GetDataSize()));
+  if (fRawReader->GetDataSize() != 5936) {
+     fRawReader->AddFatalErrorLog(kRawDataSizeErr,Form("size %d != 5936",fRawReader->GetDataSize()));
+     AliWarning(Form("Wrong AD raw data size: %d, expected 5936 bytes!",fRawReader->GetDataSize()));
      return kFALSE;
   }
 
@@ -122,8 +122,14 @@ Bool_t AliADRawStream::Next()
 
   for(Int_t iBunch = 0; iBunch < kNBunches; iBunch++)
      fBunchNumbers[iBunch] = GetNextWord();
- 
-  for (Int_t  iCIU = 0; iCIU < kNCIUBoards; iCIU++) { 
+  
+  Int_t iCIU=0;
+  for (Int_t  iV0CIU = 0; iV0CIU < 8; iV0CIU++) {
+    
+    if(iV0CIU != 1 || iV0CIU != 5) {
+      for(Int_t iWord = 0; iWord<182; iWord++) GetNextWord();
+      continue;
+      	}
  
   // decoding of one Channel Interface Unit numbered iCIU - there are 8 channels per CIU (and 2 CIUs) :
   
@@ -185,9 +191,9 @@ Bool_t AliADRawStream::Next()
       fTime[iChannel]  = time & 0xfff;
       fWidth[iChannel] = ((time >> 12) & 0x7f); // HPTDC used in pairing mode
     }
-    
+    iCIU++;
     // End of decoding of one CIU card
-    // printf("Number of bytes used at end of reading CIU card number %d %d \n\n", iCIU+1, fPosition); 
+    AliWarning(Form("Number of bytes used at end of reading CIU card number %d %d", iCIU+1, fPosition)); 
     
   } // end of decoding the eight CIUs
     

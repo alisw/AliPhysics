@@ -66,16 +66,16 @@ void AliITSVertexerZTest(Float_t delphi=0.05,Float_t window=3.,Float_t initx=0.,
       cout <<"========================================================\n";
       cout << "Event number: "<<i<<")  Z Vertex:"<<endl;
       if(vert){
-	cout<<"FOUND: "<<vert->GetZv()<<"; ";
+	cout<<"FOUND: "<<vert->GetZ()<<"; ";
 	cout<<vert->GetZRes()<<"; "<<vert->GetNContributors()<<endl;
 	cout <<" True Z position "<<primaryVertex[2]<<", diff= ";
-	cout<<(primaryVertex[2]-vert->GetZv())*10000.<<endl;
+	cout<<(primaryVertex[2]-vert->GetZ())*10000.<<endl;
       } else {
 	cout<<"NOT FOUND"<<endl;
       }
     }
     if(vert){
-      Float_t found = vert->GetZv();
+      Float_t found = vert->GetZ();
       diff2->Fill(primaryVertex[2],found);
       found = 10000.*(found-primaryVertex[2]);
       if(vert->GetZRes()!=0){

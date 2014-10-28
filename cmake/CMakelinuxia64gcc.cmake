@@ -6,7 +6,7 @@
 #--------------------------------------------------------------------------------#
 
 
-cmake_minimum_required(VERSION 2.8.4 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
 
 #Retrieve Compiler Version
 

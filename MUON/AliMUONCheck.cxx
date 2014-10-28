@@ -189,7 +189,7 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
     AliESDVertex* vertex = (AliESDVertex*) fESD->GetVertex();
     
     Double_t zVertex = 0. ;
-    if (vertex) zVertex = vertex->GetZv();
+    if (vertex) zVertex = vertex->GetZ();
     
     Int_t nTracks = (Int_t)fESD->GetNumberOfMuonTracks() ;
     ULong64_t trigword=fESD->GetTriggerMask();

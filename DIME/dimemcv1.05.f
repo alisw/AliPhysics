@@ -17,7 +17,7 @@
       common/mom/q
       common/int/ip
       common/mompt/pt1,pt2,ptx
-      common/vars/s,rts,mmes,yx
+      common/vars/s,rts,mmes,yx,iin
 ccc new
       common/vars0/ mf127, mf1525, m0, mmes0, mmes1, mmes2, mp, 
      &              mwidth, pi, rt2, ebeam, sum, sum1, weightm,
@@ -25,7 +25,7 @@ ccc new
       common /ivars/ ncut, ll, icut, nev, num
 ccc new
       common/cuts/etaelmax,etaelmin,ptelmin,ptphmin,ecut,rmax,rmin,mcut
-      common/flags/iin, pflag, fsi, ppbar, output, cuts, unw
+      common/flags/ pflag, fsi, ppbar, output, cuts, unw
       common/gluons/g1,g2,kt1,kt2
       common/levicivita/epsilon
       common/ang/cost,costa,costb
@@ -123,7 +123,6 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 ccAM      open(35,file='exerec1.dat') ! event record
       
 ccAM      rts=1.96d3         ! centre of mass energy
-      write(6,*) "energy", rts
 cccc  Some basic cuts, imposed in subtroutine 'icut'. Other user defined cuts can readily be implemented in subroutine
 cccc  note: in rhorho case these cuts are imposed on rho's, and not their decay productions. Cuts on the decay products
 cccc  can be imposed by editing 'icut'
@@ -142,7 +141,26 @@ ccAM      ppbar='false'   ! set true if ppbar collisions
 ccAM      cuts='true'     ! Impose cuts or not
 ccAM      unw='true'      ! Set = 'true' for unweighted events
 ccAM      iin=1           ! Model for soft survival factor, as described in arXiv:1306.2149. Default = 1
-
+          write(6,*) "*************************************************"
+          write(6,*) "Initialising DIME with:"
+          if (ppbar.eq.'true') then
+             write(6,*) "ppbar collisions"
+          else 
+             write(6,*) "pp collisions"
+          endif
+          write(6,*) "Centre of Mass Energy           = ", rts
+          write(6,*) "Physics models:"
+          write(6,*) "Process                         = ", pflag
+          write(6,*) "Eclusive suppression in Pom Pom = ", fsi
+          write(6,*) "Meson - Pomeron form factor     = ", formf
+          write(6,*) "Unweighted events               = ", unw
+          write(6,*) "Model for soft survival factor  = ", iin
+          write(6,*) "*************************************************"
+          write(6,*) "Using cuts                      = ", cuts
+          write(6,*) "Maximum meson rapidity =", rmax
+          write(6,*) "Minimum meson rapidity =", rmin
+          write(6,*) "Minimum meson pT       =", ecut          
+          write(6,*) "*************************************************"
 cccccccc
 
 ccAM      ntotal=1000000            ! no. of runs for weighted events
@@ -168,7 +186,6 @@ cccccccccccccccccccccccccccccccccccccc
       call initpars(iin)   ! Initialise soft survival parameters
       call calcop          ! proton opacity 
       call calcscreen      ! screening amplitude
-      
       if(pflag.eq.'pipm')then
          mmes=0.13957018d0      ! pi+/- mass, PDG 2011 value
          sig0=13.63d0
@@ -460,7 +477,6 @@ ccc   HEPEVT
       if(output.eq.'hepevt')then
         
       nhep=nup
-       write(6,*) "hepevt", nhep, nup
       do k=1,5
          phep(k,1)=pup(k,1)
          phep(k,2)=pup(k,2)
@@ -498,7 +514,7 @@ ccc   HEPEVT
       endif
 
 c      do ll=1,lmax
-
+      ll = 2
       if(ll.eq.2)then
 c         ntotal=nev*10
          ntotal=1000000000
@@ -565,7 +581,7 @@ ccccc
 
       integer id(20), ncut, ll, icut, nev, num, iin
 
-      common/vars/s,rts,mmes,yx
+      common/vars/s,rts,mmes,yx, iin
       common/hvars/sh,th,uh
       common/vars0/ mf127, mf1525, m0, mmes0, mmes1, mmes2, mp, 
      &              mwidth, pi, rt2, ebeam, sum, sum1, weightm,
@@ -574,13 +590,16 @@ ccccc
 ccccc
       character prefix*50,fsp*10,order*10,pflag*10,fsi*10,formf*10
      &,ppbar*10,output*10,mregge*10,cuts*10,unw*10
-      common/flags/ iin, pflag, fsi, ppbar, output, cuts, unw
+      common/flags/pflag, fsi, ppbar, output, cuts, unw
       common/ff/formf
-
+ccccc
+      double precision ep, norm, sigo, asp
+      double precision cc0(5),bm(5),bb0(5),pp0(5),bex(5),gaa(5)
+      common/pars/cc0,bm,bb0,pp0,bex,asp,sigo,gaa,ep,norm
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 cccccc local variables ...
       double precision aa1, aa2, al1, al2, almax, almin, c, cc1, cc2, 
-     & msmax, msmin, cont, exn, mmesp, mwidth1, mwidth2, norm,
+     & msmax, msmin, cont, exn, mmesp, mwidth1, mwidth2,
      & p1m, p1p, p2m, p2p, phi1, phi2, phix1, pt1sq, pt1x, pt1y,
      & pt2sq, pt2x, pt2y, ptxsq1, ptxsq2, ptxsqmax, ptxsqmin,
      & ran0, ran1, ran2, ran3, ran4, ran5, ran6, ranhist, ranx1,
@@ -1039,7 +1058,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccc
             
 c            call binit(sumt/nev)
 
-            write(35,302)num,nup
+            write(35,302) num, nup
             
             if(output.eq.'lhe')then
 
@@ -1071,7 +1090,7 @@ c            call binit(sumt/nev)
 
          ntotal=i
 !         goto 888
-         call terminate()
+c         call terminate(ntotal)
 
       endif
       endif
@@ -1084,7 +1103,7 @@ c                                                                    c
 c     End of event loop                                              c
 c                                                                    c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      call terminate()
+c      call terminate(ntotal)
  300  format(i4,1x,i4,1x,i8,1x,i4,1x,i4,1x,i4,1x,i4,1x,E13.6,1x,
      &E13.6,1x,E13.6,1x,E13.6,1x,E13.6,1x,E13.6,1x,E13.6)
  301  format(i4,1x,i8,1x,i4,1x,i4,1x,i4,1x,i4,1x,i4,1x,E13.6,1x,E13.6
@@ -1095,7 +1114,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-      subroutine terminate
+      subroutine terminate(int ntotal)
       character prefix*50,fsp*10,order*10,pflag*10,fsi*10,formf*10
      &,ppbar*10,output*10,mregge*10,cuts*10,unw*10
 
@@ -1192,7 +1211,7 @@ ccccc Pomeron -- (off-shell) meson form factor
       function fpi(x)             
       implicit double precision(a-y)
       character formf*10
-      common/vars/s,rts,mmes,yx
+      common/vars/s,rts,mmes,yx, iin
       common/ff/formf
       common/ffpars/bexp,ao,bo,aoo,boo
 
@@ -1213,17 +1232,17 @@ ccccccc  Pom Pom --> meson pair amplitude
       implicit double precision(a-y)
       implicit complex*16(z)
       double precision q(4,20),svec(4),tvec(4),uvec(4),v1(4),v2(4)
-      integer k
+      integer k, iin
       character*10 mregge,pflag
       complex*16 matt
       common/mom/q
-      common/vars/s,rts,mmes,yx
+      common/vars/s,rts,mmes,yx, iin
       common/wvars/sig0,bb,t1,t2
       common/alphas/alphap,alpha0,alphapr,alpha0r,alphapm,alpha0m
       common/sec/cpom,cf,crho,aff,ar
       common/hvars/sh,th,uh
       common/regge/mregge
-      common/flags/ iin, pflag, fsi, ppbar, output, cuts, unw
+      common/flags/ pflag, fsi, ppbar, output, cuts, unw
 
 
       zi=(0d0,1d0)
@@ -1283,13 +1302,13 @@ ccccccc  Pom Pom --> meson pair amplitude
           zmu=(zi*dexp(-bu1*t11/2d0)*cpom*shu1**alpha0
      &         +((aff+zi)*cf*shu1**alpha0r-(ar-zi)*crho*shu1**alpha0r)
      &         *dexp(-bu1r*t11/2d0))
+          
           zmu=zmu*(zi*dexp(-bu2*t22/2d0)*cpom*shu2**alpha0
      &         +((aff+zi)*cf*shu2**alpha0r+(ar-zi)*crho*shu2**alpha0r)
      &         *dexp(-bu2r*t22/2d0))
           zmu=zmu*fpi(uh)**2/(mmes**2-uh)
           
           matt=zmu+zmt
-      
        return
        end
 
@@ -1300,7 +1319,7 @@ c     binning subroutine
       double precision q(4,20),pt1(2),pt2(2),ptx(2)
       common/mom/q
       common/mompt/pt1,pt2,ptx     
-      common/vars/s,rts,mmes,yx
+      common/vars/s,rts,mmes,yx, iin
       common/vars1/ptgam,etagam,ptel2,ptel1,etael1,etael2
       common/vars2/ptpi1,etapi1,ptpi2,etapi2 
       common/ang/cost,costa,costb
@@ -1329,7 +1348,7 @@ ccccc
       double precision q(4,20)
       integer icut
       common/mom/q
-      common/vars/s,rts,mmes,yx
+      common/vars/s,rts,mmes,yx, iin
       common/vars1/ptgam,etagam,ptel2,ptel1,etael1,etael2
       common/vars2/ptpi1,etapi1,ptpi2,etapi2      
       common/cuts/etaelmax,etaelmin,ptelmin,ptphmin,ecut,rmax,rmin,mcut
@@ -1467,10 +1486,9 @@ cccc  Initializes soft model parameters
       double precision cc0(5),bm(5),bb0(5),pp0(5),bex(5),gaa(5)
       common/pars/cc0,bm,bb0,pp0,bex,asp,sigo,gaa,ep,norm
       common/ipars/nch
-      common/vars/s,rts,mmes,yx
+      common/vars/s,rts,mmes,yx, iin
 
       pi=dacos(-1d0)
-
       if(in.eq.1)then
 
          ep=0.13d0
@@ -1614,7 +1632,6 @@ cccc  Initializes soft model parameters
       enddo
       
       norm=sum
-
       return
       end
 
@@ -1831,13 +1848,11 @@ cccc  Integrates round Pomeron loop (to calculate screened amplitude)
 
            call screeningint(i1,i2,tp2,sc,sc1)     
            call wev(x0,a1,a2)
-
             x0=x0*pp0(i1)*pp0(i2)/dble(nch)**2
             x0=x0*dexp(-((t12+0.08d0+bb0(i1))*bex(i1))**cc0(i1)+
      &     (bex(i1)*(bb0(i1)+0.08d0))**cc0(i1))
             x0=x0*dexp(-((t22+0.08d0+bb0(i2))*bex(i2))**cc0(i2)+
      &     (bex(i2)*(bb0(i2)+0.08d0))**cc0(i2)) 
-
             out=out+x0*wt*sc
             
          enddo
@@ -1903,7 +1918,7 @@ ccccc Pomeron -- diffrative eignstate i form factor
       double precision cc0(5),bm(5),bb0(5),pp0(5),bex(5),gaa(5)
       common/pars/cc0,bm,bb0,pp0,bex,asp,sigo,gaa,ep,norm
       common/ipars/nch
-      common/vars/s,rts,mmes,yx
+      common/vars/s,rts,mmes,yx, iin
 
       pi=dacos(-1d0)
 
@@ -1940,7 +1955,7 @@ ccccc Pomeron -- diffrative eignstate i form factor
       double precision cc0(5),bm(5),bb0(5),pp0(5),bex(5),gaa(5)
       common/pars/cc0,bm,bb0,pp0,bex,asp,sigo,gaa,ep,norm
       common/ipars/nch
-      common/vars/s,rts,mmes,yx
+      common/vars/s,rts,mmes,yx, iin
 
       pi=dacos(-1d0)
 

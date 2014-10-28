@@ -91,8 +91,8 @@ UInt_t AliZDCTriggerProcessor::ProcessEvent()
 Bool_t AliZDCTriggerProcessor::MBTrigger()
 {
   // is the processed event a MB A-A event?
-  
-  Float_t mbTrheshold = fTriggerParam->GetADCMBThreshold();
+  Float_t mbTrheshold = 0.;
+  if(fTriggerParam) mbTrheshold = fTriggerParam->GetADCMBThreshold();
   // check whether ZDC signal > mbTrheshold
   if((fSignal[0]+fSignal[1]+fSignal[3]+fSignal[4]) > mbTrheshold)
        return kTRUE;
@@ -105,8 +105,14 @@ Bool_t AliZDCTriggerProcessor::CentralTrigger()
 {
   // is the processed event a central A-A event?
   
-  Float_t zemThr = fTriggerParam->GetADCZDCCentralityThr();
-  const Float_t* centralWin = fTriggerParam->GetADCCentralWindow();
+  Float_t zemThr = 0;
+  Float_t centralWin[2] = {0,0};
+  if(fTriggerParam){
+    zemThr = fTriggerParam->GetADCZDCCentralityThr();
+    const Float_t* cWin = fTriggerParam->GetADCCentralWindow();
+    centralWin[0] = cWin[0];
+    centralWin[1] = cWin[1];
+  }
   // 
   if((fSignal[0]+fSignal[1]+fSignal[3]+fSignal[4]) > centralWin[0]
      && 
@@ -122,8 +128,14 @@ Bool_t AliZDCTriggerProcessor::SemicentralTrigger()
 {
   // is the processed event a semicentral A-A event?
   
-  Float_t zemThr =  fTriggerParam->GetADCZDCCentralityThr();
-  const Float_t* semicentralWin =   fTriggerParam->GetADCSemicentralWindow();
+  Float_t zemThr = 0;  
+  Float_t semicentralWin[2] = {0,0};
+  if(fTriggerParam){
+    zemThr  =  fTriggerParam->GetADCZDCCentralityThr();
+    const Float_t* cWin =   fTriggerParam->GetADCSemicentralWindow();
+    semicentralWin[0] = cWin[0];
+    semicentralWin[1] = cWin[1];
+  }
   //
   if((fSignal[0]+fSignal[1]+fSignal[3]+fSignal[4]) > semicentralWin[0]
      && 
@@ -139,7 +151,14 @@ Bool_t AliZDCTriggerProcessor::EMDTrigger()
 {
   // is the processed an EMD event?
   
-  const Float_t* emdWin =   fTriggerParam->GetADCEMDWindow();
+  Float_t emdWin[4] = {0,0,0,0};
+  if(fTriggerParam){
+    const Float_t* eWin =   fTriggerParam->GetADCEMDWindow();
+    emdWin[0] = eWin[0];
+    emdWin[1] = eWin[1];
+    emdWin[2] = eWin[2];
+    emdWin[3] = eWin[3];
+  }
   // check whether ZNA AND ZNC signals fall into the 
   // 2 distinct windows defined for EMD trigger
   if(fSignal[0] > emdWin[0] && fSignal[0] < emdWin[1]
@@ -153,12 +172,13 @@ Bool_t AliZDCTriggerProcessor::EMDTrigger()
 AliZDCTriggerParameters* AliZDCTriggerProcessor::GetTriggerParamFromOCDB() const
 {
   // retrieving trigger parameter configuration form OCDB
+  AliZDCTriggerParameters *trigParam = 0x0;
   AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Trigger/");
   if(!entry) AliFatal("No calibration data loaded!");  
   else{
-    AliZDCTriggerParameters *trigParam = dynamic_cast<AliZDCTriggerParameters*>  (entry->GetObject());
+    trigParam = dynamic_cast<AliZDCTriggerParameters*>  (entry->GetObject());
     if(!trigParam)  AliFatal("Wrong calibration object in calibration  file!");
-
-    return trigParam;
   }
+
+  return trigParam;
 }

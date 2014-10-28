@@ -1444,7 +1444,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     //nTracks    = event->GetNumberOfTracks();     
     nTracks    = fTrackCuts ? (Short_t)fTrackCuts->GetReferenceMultiplicity(esd,kTRUE):-1;
   } else {
-    AliAODHeader *h = aod->GetHeader();
+    AliAODHeader *h = dynamic_cast<AliAODHeader*>(aod->GetHeader());
+    if(!h) AliFatal("Not a standard AOD");
     nTracks    = h!=0 ? (Short_t)h->GetTPConlyRefMultiplicity():-1;
   }
 
@@ -1468,7 +1469,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     Short_t nTrTPCcandle = 0;
     for (Int_t iTracks = 0; iTracks < aod->GetNumberOfTracks(); iTracks++) {
 
-      AliAODTrack* track = aod->GetTrack(iTracks);
+      AliAODTrack* track = dynamic_cast<AliAODTrack*>(aod->GetTrack(iTracks));
+      if(!track) AliFatal("Not a standard AOD");
 
       if (!track) continue;
       if (!track->TestFilterBit(1<<5) && 
@@ -1493,7 +1495,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   } else {
     AliAODTracklets *mult = aod->GetTracklets();
     nTracklets = mult->GetNumberOfTracklets();
-    AliAODHeader *h = aod->GetHeader();
+    AliAODHeader *h = dynamic_cast<AliAODHeader*>(aod->GetHeader());
+    if(!h) AliFatal("Not a standard AOD");
     for(Int_t ilay=0; ilay<6; ilay++){
       nClusters[ilay] = h->GetNumberOfITSClusters(ilay);
     }
@@ -1580,7 +1583,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     if (zpcFired) zpcTower = ZPCtower[0];
 
   } else {
-    AliAODHeader *h = aod->GetHeader();
+    AliAODHeader *h = dynamic_cast<AliAODHeader*>(aod->GetHeader());
+    if(!h) AliFatal("Not a standard AOD");
     zncEnergy  = (Float_t) (h->GetZDCN1Energy());
     zpcEnergy  = (Float_t) (h->GetZDCP1Energy());
     znaEnergy  = (Float_t) (h->GetZDCN2Energy());

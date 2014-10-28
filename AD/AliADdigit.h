@@ -27,6 +27,7 @@ public:
     Float_t Width()      const {return fWidth;} 
     Bool_t  Integrator() const {return fIntegrator;}
     Short_t ChargeADC(Int_t clock) const {return (clock >= 0 && clock < kNClocks) ? fChargeADC[clock] : 0;}
+    Bool_t  GetIntegratorFlag(Int_t clock);
     
   protected:
     Int_t   fPMNumber;      // PhotoMultiplier number (0 to 16)
