@@ -271,7 +271,7 @@ updateQA()
         echo 
         oldRunDir=${outputDir}/${dir#${tmpPrefix}}
         if ! guessRunData "${arrOfTouchedProductions[${tmpProductionDir}]}"; then
-          echo "could not guess run data from ${dir}"
+          echo "could not guess run data from ${arrOfTouchedProductions[${tmpProductionDir}]}"
           continue
         fi
 
