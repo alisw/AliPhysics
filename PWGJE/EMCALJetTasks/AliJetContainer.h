@@ -82,15 +82,15 @@ class AliJetContainer : public AliEmcalContainer {
   AliEmcalJet                *GetNextAcceptJet(Int_t i=-1)               ;
   AliEmcalJet                *GetNextJet(Int_t i=-1)                     ;
   void                        GetMomentum(TLorentzVector &mom, Int_t i) const;
-  Bool_t                      AcceptJet(AliEmcalJet* jet)                ;
-  Bool_t                      AcceptBiasJet(AliEmcalJet* jet)       const;
+  Bool_t                      AcceptJet(const AliEmcalJet* jet)          ;
+  Bool_t                      AcceptBiasJet(const AliEmcalJet* jet)      ;
   Int_t                       GetFlavourCut()                       const    {return fFlavourSelection;}
   Int_t                       GetNJets()                            const    {return GetNEntries();}
-  Double_t                    GetLeadingHadronPt(AliEmcalJet* jet)  const;
-  void                        GetLeadingHadronMomentum(TLorentzVector &mom, AliEmcalJet* jet)  const;
-  Double_t                    GetZ(AliEmcalJet *jet, TLorentzVector mom) const;
-  Double_t                    GetZLeadingEmc(AliEmcalJet *jet)      const;
-  Double_t                    GetZLeadingCharged(AliEmcalJet *jet)  const;
+  Double_t                    GetLeadingHadronPt(const AliEmcalJet* jet)  const;
+  void                        GetLeadingHadronMomentum(TLorentzVector &mom, const AliEmcalJet* jet)  const;
+  Double_t                    GetZ(const AliEmcalJet *jet, TLorentzVector mom) const;
+  Double_t                    GetZLeadingEmc(const AliEmcalJet *jet)      const;
+  Double_t                    GetZLeadingCharged(const AliEmcalJet *jet)  const;
   AliRhoParameter            *GetRhoParameter()                              {return fRho;}
   Double_t                    GetRhoVal()                           const    {if (fRho) return fRho->GetVal(); else return 0;}
   const TString&              GetRhoName()                          const    {return fRhoName;}
