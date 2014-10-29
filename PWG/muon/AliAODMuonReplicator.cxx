@@ -390,7 +390,9 @@ void AliAODMuonReplicator::ReplicateAndFilter(const AliAODEvent& source)
   
   if (fReplicateHeader)
   {
-    *fHeader = *(source.GetHeader());
+    AliAODHeader * header = dynamic_cast<AliAODHeader*>(source.GetHeader());
+    if(!header) AliFatal("Not a standard AOD");
+    *fHeader = *(header);
   }
 
   if (fReplicateTracklets)

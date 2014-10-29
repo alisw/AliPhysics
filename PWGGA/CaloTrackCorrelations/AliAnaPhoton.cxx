@@ -218,10 +218,9 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t nMaxima)
   
   Bool_t matched = IsTrackMatched(calo,GetReader()->GetInputEvent());
   
-  if(GetDebug() > 2)
-    printf("AliAnaPhoton::ClusterSelected() - Current Event %d; Before selection : E %2.2f, pT %2.2f, phi %2.2f, eta %2.2f\n",
+  AliDebug(2,Form("Current Event %d; Before selection : E %2.2f, pT %2.2f, phi %2.2f, eta %2.2f",
            GetReader()->GetEventNumber(),
-           ecluster,ptcluster, phicluster*TMath::RadToDeg(),etacluster);
+           ecluster,ptcluster, phicluster*TMath::RadToDeg(),etacluster));
   
   fhClusterCutsE [1]->Fill( ecluster);
   fhClusterCutsPt[1]->Fill(ptcluster);
@@ -239,7 +238,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t nMaxima)
   //If too small or big energy, skip it
   if(ecluster < GetMinEnergy() || ecluster > GetMaxEnergy() ) return kFALSE ;
   
-  if(GetDebug() > 2) printf("\t Cluster %d Pass E Cut \n",calo->GetID());
+  AliDebug(2,Form("\t Cluster %d Pass E Cut",calo->GetID()));
   
   fhClusterCutsE [2]->Fill( ecluster);
   fhClusterCutsPt[2]->Fill(ptcluster);
@@ -249,7 +248,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t nMaxima)
   Double_t tof = calo->GetTOF()*1e9;
   if(tof < fTimeCutMin || tof > fTimeCutMax) return kFALSE;
   
-  if(GetDebug() > 2)  printf("\t Cluster %d Pass Time Cut \n",calo->GetID());
+  AliDebug(2,Form("\t Cluster %d Pass Time Cut",calo->GetID()));
   
   fhClusterCutsE [3]->Fill( ecluster);
   fhClusterCutsPt[3]->Fill(ptcluster);
@@ -257,13 +256,13 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t nMaxima)
   //.......................................
   if(calo->GetNCells() <= fNCellsCut && GetReader()->GetDataType() != AliCaloTrackReader::kMC) return kFALSE;
   
-  if(GetDebug() > 2) printf("\t Cluster %d Pass NCell Cut \n",calo->GetID());
+  AliDebug(2,Form("\t Cluster %d Pass NCell Cut",calo->GetID()));
   
   fhClusterCutsE [4]->Fill( ecluster);
   fhClusterCutsPt[4]->Fill(ptcluster);
   
   if(nMaxima < fNLMCutMin || nMaxima > fNLMCutMax) return kFALSE ;
-  if(GetDebug() > 2) printf(" \t Cluster %d pass NLM %d of out of range \n",calo->GetID(), nMaxima);
+  AliDebug(2,Form("\t Cluster %d pass NLM %d of out of range",calo->GetID(), nMaxima));
   
   fhClusterCutsE [5]->Fill( ecluster);
   fhClusterCutsPt[5]->Fill(ptcluster);
@@ -276,7 +275,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t nMaxima)
     if(! in ) return kFALSE ;
   }
   
-  if(GetDebug() > 2) printf("\t Fiducial cut passed \n");
+  AliDebug(2,Form("\t Fiducial cut passed"));
   
   fhClusterCutsE [6]->Fill( ecluster);
   fhClusterCutsPt[6]->Fill(ptcluster);
@@ -291,11 +290,11 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t nMaxima)
   {
     if(matched)
     {
-      if(GetDebug() > 2) printf("\t Reject track-matched clusters\n");
+      AliDebug(2,"\t Reject track-matched clusters");
       return kFALSE ;
     }
     else
-      if(GetDebug() > 2)  printf(" Track-matching cut passed \n");
+      AliDebug(2,"\t Track-matching cut passed");
   }// reject matched clusters
   
   fhClusterCutsE [7]->Fill( ecluster);
@@ -309,15 +308,14 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t nMaxima)
   {//In bad channel (PHOS cristal size 2.2x2.2 cm), EMCAL ( cell units )
     return kFALSE ;
   }
-  else if(GetDebug() > 2) printf("\t Bad channel cut passed %4.2f > %2.2f \n",distBad, fMinDist);
+  else AliDebug(2,Form("\t Bad channel cut passed %4.2f > %2.2f",distBad, fMinDist));
   
   fhClusterCutsE [8]->Fill( ecluster);
   fhClusterCutsPt[8]->Fill(ptcluster);
   
-  if(GetDebug() > 0)
-    printf("AliAnaPhoton::ClusterSelected() Current Event %d; After  selection : E %2.2f, pT %2.2f, phi %2.2f, eta %2.2f\n",
+  AliDebug(1,Form("Current Event %d; After  selection : E %2.2f, pT %2.2f, phi %2.2f, eta %2.2f",
            GetReader()->GetEventNumber(),
-           ecluster, ptcluster,fMomentum.Phi()*TMath::RadToDeg(),fMomentum.Eta());
+           ecluster, ptcluster,fMomentum.Phi()*TMath::RadToDeg(),fMomentum.Eta()));
   
   //All checks passed, cluster selected
   return kTRUE;
@@ -372,7 +370,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       primStack = stack->Particle(i) ;
       if(!primStack)
       {
-        printf("AliAnaPhoton::FillAcceptanceHistograms() - ESD primaries pointer not available!!\n");
+        AliWarning("ESD primaries pointer not available!!");
         continue;
       }
       
@@ -394,7 +392,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       primAOD = (AliAODMCParticle *) mcparticles->At(i);
       if(!primAOD)
       {
-        printf("AliAnaPhoton::FillAcceptanceHistograms() - AOD primaries pointer not available!!\n");
+        AliWarning("AOD primaries pointer not available!!");
         continue;
       }
       
@@ -782,8 +780,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
       //Fraction of total energy due to the embedded signal
       fraction/=clusterE;
       
-      if(GetDebug() > 1 )
-        printf("AliAnaPhoton::FillShowerShapeHistogram() - Energy fraction of embedded signal %2.3f, Energy %2.3f\n",fraction, clusterE);
+      AliDebug(1,Form("Energy fraction of embedded signal %2.3f, Energy %2.3f",fraction, clusterE));
       
       fhEmbeddedSignalFractionEnergy->Fill(clusterE,fraction);
       
@@ -826,7 +823,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
         }
         else
         {
-          printf("AliAnaPhoton::FillShowerShapeHistogram() - n overlaps = %d!!\n", noverlaps);
+          AliWarning(Form("n overlaps = %d!!", noverlaps));
         }
       }//No embedding
       
@@ -1020,9 +1017,7 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
         
       }
       else
-        printf("AliAnaPhoton::FillTrackMatchingResidualHistograms() - Residual OK but (dR, dZ)= (%2.4f,%2.4f) no track associated WHAT? \n", dR,dZ);
-      
-      
+        AliWarning(Form("Residual OK but (dR, dZ)= (%2.4f,%2.4f) no track associated WHAT?", dR,dZ));
       
       if(IsDataMC())
       {
@@ -1090,17 +1085,17 @@ TObjString *  AliAnaPhoton::GetAnalysisCuts()
   const Int_t buffersize = 255;
   char onePar[buffersize] ;
   
-  snprintf(onePar,buffersize,"--- AliAnaPhoton ---\n") ;
+  snprintf(onePar,buffersize,"--- AliAnaPhoton ---:") ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Calorimeter: %s\n",GetCalorimeterString().Data()) ;
+  snprintf(onePar,buffersize,"Calorimeter: %s;",GetCalorimeterString().Data()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fMinDist =%2.2f (Minimal distance to bad channel to accept cluster) \n",fMinDist) ;
+  snprintf(onePar,buffersize,"fMinDist =%2.2f (Minimal distance to bad channel to accept cluster);",fMinDist) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fMinDist2=%2.2f (Cuts on Minimal distance to study acceptance evaluation) \n",fMinDist2) ;
+  snprintf(onePar,buffersize,"fMinDist2=%2.2f (Cuts on Minimal distance to study acceptance evaluation);",fMinDist2) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fMinDist3=%2.2f (One more cut on distance used for acceptance-efficiency study) \n",fMinDist3) ;
+  snprintf(onePar,buffersize,"fMinDist3=%2.2f (One more cut on distance used for acceptance-efficiency study);",fMinDist3) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fRejectTrackMatch: %d\n",fRejectTrackMatch) ;
+  snprintf(onePar,buffersize,"fRejectTrackMatch: %d",fRejectTrackMatch) ;
   parList+=onePar ;
   
   //Get parameters set in base class.
@@ -2179,19 +2174,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 //_______________________
 void AliAnaPhoton::Init()
 {
-  
   //Init
+ 
   //Do some checks
-  if(GetCalorimeter() == kPHOS && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD())
-  {
-    printf("AliAnaPhoton::Init() - !!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
-    abort();
-  }
-  else  if(GetCalorimeter() == kEMCAL && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD())
-  {
-    printf("AliAnaPhoton::Init() - !!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
-    abort();
-  }
+  
+  if      ( GetCalorimeter() == kPHOS  && !GetReader()->IsPHOSSwitchedOn()  && NewOutputAOD() )
+    AliFatal("!!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!");
+  else  if( GetCalorimeter() == kEMCAL && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD() )
+    AliFatal("!!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!");
   
   if(GetReader()->GetDataType() == AliCaloTrackReader::kMC) GetCaloPID()->SwitchOnBayesian();
   
@@ -2241,7 +2231,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   
   if(!pl)
   {
-    Info("MakeAnalysisFillAOD","TObjArray with %s clusters is NULL!\n",GetCalorimeterString().Data());
+    AliWarning(Form("TObjArray with %s clusters is NULL!",GetCalorimeterString().Data()));
     return;
   }
   
@@ -2296,7 +2286,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   // Init arrays, variables, get number of clusters
   Int_t nCaloClusters = pl->GetEntriesFast();
   
-  if(GetDebug() > 0) printf("AliAnaPhoton::MakeAnalysisFillAOD() - input %s cluster entries %d\n", GetCalorimeterString().Data(), nCaloClusters);
+  AliDebug(1,Form("Input %s cluster entries %d", GetCalorimeterString().Data(), nCaloClusters));
   
   //----------------------------------------------------
   // Fill AOD with PHOS/EMCAL AliAODPWG4Particle objects
@@ -2366,8 +2356,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(),GetCalorimeter());
       aodph.SetTag(tag);
       
-      if(GetDebug() > 0)
-        printf("AliAnaPhoton::MakeAnalysisFillAOD() - Origin of candidate, bit map %d\n",aodph.GetTag());
+      AliDebug(1,Form("Origin of candidate, bit map %d",aodph.GetTag()));
     }//Work with stack also
     
     //--------------------------------------------------------
@@ -2382,7 +2371,11 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     aodph.SetM02(calo->GetM02());
     aodph.SetNLM(nMaxima);
-    
+    aodph.SetTime(calo->GetTOF()*1e9);
+    aodph.SetNCells(calo->GetNCells());
+    Int_t nSM = GetModuleNumber(calo);
+    aodph.SetSModNumber(nSM);
+
     //-------------------------------------
     // PID selection or bit setting
     //-------------------------------------
@@ -2396,7 +2389,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       
       aodph.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(calo));
       
-      if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PDG of identified particle %d\n",aodph.GetIdentifiedParticleType());
+      AliDebug(1,Form("PDG of identified particle %d",aodph.GetIdentifiedParticleType()));
       
       //If cluster does not pass pid, not photon, skip it.
       if(aodph.GetIdentifiedParticleType() != AliCaloPID::kPhoton) continue ;
@@ -2412,16 +2405,14 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       
       GetCaloPID()->SetPIDBits(calo,&aodph, GetCaloUtils(),GetReader()->GetInputEvent());
       
-      if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PID Bits set \n");
+      AliDebug(1,"PID Bits set");
     }
     
-    if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - Photon selection cuts passed: pT %3.2f, pdg %d\n",
-                              aodph.Pt(), aodph.GetIdentifiedParticleType());
+    AliDebug(1,Form("Photon selection cuts passed: pT %3.2f, pdg %d",aodph.Pt(),aodph.GetIdentifiedParticleType()));
     
     fhClusterCutsE [9]->Fill(calo->E());
     fhClusterCutsPt[9]->Fill(fMomentum.Pt());
     
-    Int_t   nSM  = GetModuleNumber(calo);
     if(nSM < GetCaloUtils()->GetNumberOfSuperModulesUsed() && nSM >=0)
     {
       fhEPhotonSM ->Fill(fMomentum.E (),nSM);
@@ -2453,7 +2444,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
   }//loop
   
-  if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD()  End fill AODs, with %d entries \n",GetOutputAODBranch()->GetEntriesFast());
+  AliDebug(1,Form("End fill AODs, with %d entries",GetOutputAODBranch()->GetEntriesFast()));
   
 }
 
@@ -2474,7 +2465,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
   //----------------------------------
   //Loop on stored AOD photons
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
-  if(GetDebug() > 0) printf("AliAnaPhoton::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
+  AliDebug(1,Form("AOD branch entries %d", naod));
   
   Float_t cen = GetEventCentrality();
   // printf("++++++++++ GetEventCentrality() %f\n",cen);
@@ -2486,17 +2477,14 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     AliAODPWG4Particle* ph =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
     Int_t pdg = ph->GetIdentifiedParticleType();
     
-    if(GetDebug() > 3)
-      printf("AliAnaPhoton::MakeAnalysisFillHistograms() - PDG %d, MC TAG %d, Calorimeter <%d>\n",
-             ph->GetIdentifiedParticleType(),ph->GetTag(), ph->GetDetectorTag()) ;
+    AliDebug(2,Form("PDG %d, MC TAG %d, Calorimeter <%d>",ph->GetIdentifiedParticleType(),ph->GetTag(), ph->GetDetectorTag())) ;
     
     //If PID used, fill histos with photons in Calorimeter GetCalorimeter()
     if(IsCaloPIDOn() && pdg != AliCaloPID::kPhoton) continue;
     
     if(((Int_t) ph->GetDetectorTag()) != GetCalorimeter()) continue;
     
-    if(GetDebug() > 2)
-      printf("AliAnaPhoton::MakeAnalysisFillHistograms() - ID Photon: pt %f, phi %f, eta %f\n", ph->Pt(),ph->Phi(),ph->Eta()) ;
+    AliDebug(2,Form("ID Photon: pt %f, phi %f, eta %f", ph->Pt(),ph->Phi(),ph->Eta())) ;
     
     //................................
     //Fill photon histograms
@@ -2541,25 +2529,13 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     //Play with the MC data if available
     if(IsDataMC())
     {
-      if(GetDebug()>0)
-      {
-        if(GetReader()->ReadStack() && !GetMCStack())
-        {
-          printf("AliAnaPhoton::MakeAnalysisFillHistograms() - Stack not available, is the MC handler called?\n");
-        }
-        else if(GetReader()->ReadAODMCParticles() && !GetReader()->GetAODMCParticles())
-        {
-          printf("AliAnaPhoton::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
-        }
-      }
-            
       //....................................................................
       // Access MC information in stack if requested, check that it exists.
-      Int_t label =ph->GetLabel();
+      Int_t label = ph->GetLabel();
       
       if(label < 0)
       {
-        if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** bad label ***:  label %d \n", label);
+        AliDebug(1,Form("*** bad label ***:  label %d", label));
         continue;
       }
       
@@ -2567,6 +2543,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       Float_t ptprim  = 0;
       Bool_t ok = kFALSE;
       fPrimaryMom = GetMCAnalysisUtils()->GetMother(label,GetReader(),ok);
+                 
       if(ok)
       {
         eprim   = fPrimaryMom.Energy();

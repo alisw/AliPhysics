@@ -206,7 +206,7 @@ Bool_t ConfigD0
       out->AddAxis(ptID, 200, 0.0, 20.0);
       
       // axiz Z: pseudorapidity
-      if(sanityhistos==kTRUE) out->AddAxis(etaID, 100, -1, 1);
+      //if(sanityhistos==kTRUE) out->AddAxis(etaID, 100, -1, 1);
          
       
       if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
@@ -237,7 +237,7 @@ Bool_t ConfigD0
    // binnings
    out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
    out->AddAxis(ptID, 200, 0.0, 20.0);
-   out->AddAxis(etaID, 100, -1, 1);
+   //out->AddAxis(etaID, 100, -1, 1);
 
 
    if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
@@ -261,7 +261,7 @@ Bool_t ConfigD0
    // binnings
    out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
    out->AddAxis(ptID, 200, 0.0, 20.0);
-   out->AddAxis(etaID, 100, -1, 1);
+   //out->AddAxis(etaID, 100, -1, 1);
 
    if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
        		else out->AddAxis(trackletsID, 400, 0.0, 400.0);}

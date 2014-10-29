@@ -2178,7 +2178,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     
     if(handler && handler->InheritsFrom("AliAODInputHandler")){ 
       
-      centPercent = fAOD->GetHeader()->GetCentrality();
+      centPercent = ((AliVAODHeader*)fAOD->GetHeader())->GetCentrality();
       cl = 1;
       //std::cout<<"centPercent: "<<centPercent<<std::endl;
       

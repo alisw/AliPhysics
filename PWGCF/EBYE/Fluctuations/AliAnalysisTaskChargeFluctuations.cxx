@@ -105,13 +105,13 @@ void AliAnalysisTaskChargeFluctuations::UserExec(Option_t *) {
 	if(vertex->GetNContributors() > 0) {
 	  if(vertex->GetZRes() != 0) {
 	    fHistEventStats->Fill(3); //events with a proper vertex
-	    if(TMath::Abs(vertex->GetXv()) < fVxMax) {
-	      if(TMath::Abs(vertex->GetYv()) < fVyMax) {
-		if(TMath::Abs(vertex->GetZv()) < fVzMax) {
+	    if(TMath::Abs(vertex->GetX()) < fVxMax) {
+	      if(TMath::Abs(vertex->GetY()) < fVyMax) {
+		if(TMath::Abs(vertex->GetZ()) < fVzMax) {
 		  fHistEventStats->Fill(4); //analayzed events
-		  fHistVx->Fill(vertex->GetXv());
-		  fHistVy->Fill(vertex->GetYv());
-		  fHistVz->Fill(vertex->GetZv());
+		  fHistVx->Fill(vertex->GetX());
+		  fHistVy->Fill(vertex->GetY());
+		  fHistVz->Fill(vertex->GetZ());
 
 		  //Printf("There are %d tracks in this event", gESD->GetNumberOfTracks());
 		  for (Int_t iTracks = 0; iTracks < gESD->GetNumberOfTracks(); iTracks++) {
@@ -143,7 +143,8 @@ void AliAnalysisTaskChargeFluctuations::UserExec(Option_t *) {
 
     Printf("There are %d tracks in this event", gAOD->GetNumberOfTracks());
     for (Int_t iTracks = 0; iTracks < gAOD->GetNumberOfTracks(); iTracks++) {
-      AliAODTrack* track = gAOD->GetTrack(iTracks);
+      AliAODTrack* track = dynamic_cast<AliAODTrack*>(gAOD->GetTrack(iTracks));
+      if(!track) AliFatal("Not a standard AOD");
       if (!track) {
 	Printf("ERROR: Could not receive track %d", iTracks);
 	continue;

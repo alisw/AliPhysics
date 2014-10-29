@@ -3728,7 +3728,7 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchForCommonMother(TClonesArray *mcArra
     for (Int_t jj=0;jj<labelMother[i]->GetSize(); jj++)
       stringaCheck.Append(Form("%d, ",labelMother[i]->At(jj)));
   }
-  printf("%s \n",stringaCheck.Data());
+  AliDebug(2,Form("%s \n",stringaCheck.Data()));
   Int_t pdgToBeReturned=0;
 
   TString stringaCheck2;
@@ -3760,7 +3760,7 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchForCommonMother(TClonesArray *mcArra
     }
   }
   stringaCheck2.Prepend(Form("Ecco quanto trovato: %d(%d) with %d daughters; ",absLabelMother,pdgToBeReturned,nDauCand));
-  printf("%s \n",stringaCheck2.Data());
+  AliDebug(2,Form("%s \n",stringaCheck2.Data()));
 
   delete [] labelMother;
   delete pdgDg;

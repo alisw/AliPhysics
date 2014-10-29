@@ -56,8 +56,8 @@ public:
   TClonesArray * GetAODBranch(const AliAODEvent * aodEvent, TString branchName) const;
 
   //Fill AOD tree with PWG4 particles
-  AliAODPWG4ParticleCorrelation * AddToAOD(AliAODConversionPhoton * aodO, TClonesArray * branch, TString detector);
-  AliAODPWG4ParticleCorrelation * AddPionToAOD(AliAODConversionPhoton * pion, TClonesArray * branch, TString detector);  
+  AliAODPWG4ParticleCorrelation * AddToAOD(AliAODConversionPhoton * aodO, TClonesArray * branch, Int_t detector);
+  AliAODPWG4ParticleCorrelation * AddPionToAOD(AliAODConversionPhoton * pion, TClonesArray * branch, Int_t detector);
   //Process conv gamma
   void ProcessConvGamma( const AliAODEvent * const aodEvent );
 

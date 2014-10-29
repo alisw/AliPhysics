@@ -200,9 +200,6 @@ void AliAnalysisTaskCaloTrackCorrelation::UserExec(Option_t */*option*/)
   //Process event
   fAna->ProcessEvent((Int_t) Entry(), CurrentFileName());
   
-  //printf("AliAnalysisTaskCaloTrackCorrelation::Current Event %d; Current File Name : %s\n",(Int_t) Entry(), CurrentFileName());
-  AliDebug(1,"End");
-  
   PostData(1, fOutputContainer);
   
   AliDebug(1,"End");

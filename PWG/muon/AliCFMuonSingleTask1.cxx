@@ -244,9 +244,9 @@ void AliCFMuonSingleTask1::UserExec(Option_t *)
   Double_t Ncont = 0.; 
   AliESDVertex* vertex = (AliESDVertex*) fESD->GetVertex();
   if (vertex->GetNContributors()) {
-      vz = vertex->GetZv();
-      vy = vertex->GetYv();
-      vx = vertex->GetXv();
+      vz = vertex->GetZ();
+      vy = vertex->GetY();
+      vx = vertex->GetX();
       vt=TMath::Sqrt(vx*vx+vy*vy);
       Ncont=vertex->GetNContributors();
   }

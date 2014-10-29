@@ -143,17 +143,17 @@ TObjString *  AliAnaRandomTrigger::GetAnalysisCuts()
   const Int_t buffersize = 255;
   char onePar[buffersize] ;
   
-  snprintf(onePar,buffersize,"--- AliAnaRandomTrigger ---\n") ;
+  snprintf(onePar,buffersize,"--- AliAnaRandomTrigger ---:") ;
   parList+=onePar ;	
-  snprintf(onePar,buffersize,"Detector: %s\n"    , fTriggerDetectorString.Data()) ;
+  snprintf(onePar,buffersize,"Detector: %s;"    , fTriggerDetectorString.Data()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"N per event = %d\n", fNRandom       ) ;
+  snprintf(onePar,buffersize,"N per event = %d;", fNRandom       ) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Min E   = %3.2f - Max E   = %3.2f\n", GetMinPt(), GetMaxPt()) ;
+  snprintf(onePar,buffersize,"Min E   = %3.2f - Max E   = %3.2f;", GetMinPt(), GetMaxPt()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Min Eta = %3.2f - Max Eta = %3.2f\n", fEtaCut[0], fEtaCut[1]) ;
+  snprintf(onePar,buffersize,"Min Eta = %3.2f - Max Eta = %3.2f;", fEtaCut[0], fEtaCut[1]) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Min Phi = %3.2f - Max Phi = %3.2f\n", fPhiCut[0], fPhiCut[1]) ;
+  snprintf(onePar,buffersize,"Min Phi = %3.2f - Max Phi = %3.2f;", fPhiCut[0], fPhiCut[1]) ;
   parList+=onePar ;
    
   return new TObjString(parList) ;
@@ -267,16 +267,15 @@ void  AliAnaRandomTrigger::MakeAnalysisFillAOD()
     
     AliAODPWG4Particle trigger = AliAODPWG4Particle(fMomentum);
     trigger.SetDetectorTag(fTriggerDetector);
+    trigger.SetSModNumber(GetModuleNumber(&trigger));
     
-    if(GetDebug() > 1) 
-      printf("AliAnaRandomTrigger::MakeAnalysisFillAOD() -  iRandom %d, Trigger e %2.2f pt %2.2f, phi %2.2f, eta %2.2f \n",
-             irandom, trigger.E(), trigger.Pt(), trigger.Phi(), trigger.Eta());
+    AliDebug(1,Form("iRandom %d, Trigger e %2.2f pt %2.2f, phi %2.2f, eta %2.2f, SM %d",
+                    irandom, trigger.E(), trigger.Pt(), trigger.Phi(), trigger.Eta(), trigger.GetSModNumber()));
     
     AddAODParticle(trigger);
   }
   
-  if(GetDebug() > 0) 	
-    printf("AliAnaRandomTrigger::MakeAnalysisFillAOD() - Final aod branch entries %d\n", GetOutputAODBranch()->GetEntriesFast());   
+  AliDebug(1,Form("Final aod branch entries %d", GetOutputAODBranch()->GetEntriesFast()));
 } 
 
 //_____________________________________________________
@@ -287,8 +286,7 @@ void  AliAnaRandomTrigger::MakeAnalysisFillHistograms()
   //Loop on stored AODParticles
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
   
-  if(GetDebug() > 0) 
-    printf("AliAnaRandomTrigger::MakeAnalysisFillHistograms() - aod branch entries %d, fNRandom %d\n", naod, fNRandom);
+  AliDebug(1,Form("AOD branch entries %d, fNRandom %d", naod, fNRandom));
   
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {

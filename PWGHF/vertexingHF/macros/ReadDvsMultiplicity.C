@@ -12,6 +12,7 @@
 #include <TH3.h>
 #include <TH3F.h>
 #include <TH1D.h>
+#include <TProfile.h>
 #include <TF1.h>
 #include <TSystem.h>
 #include <TStyle.h>
@@ -801,10 +802,16 @@ Bool_t CheckNtrVsZvtx(TH2F** hNtrackVsVtxZ, TH2F** hNtrackVsVtxZCorr, Int_t nFil
 
   TCanvas *cNtrVsZvtx = new TCanvas("cNtrVsZvtx","Ntr Vs Zvtx");
   cNtrVsZvtx->Divide(2,2);
+  TProfile **hProf = new TProfile*[nFiles];
+  TProfile **hProfCorr = new TProfile*[nFiles];
   for(Int_t i=0; i<nFiles; i++){
     cNtrVsZvtx->cd(i+1);
+    cNtrVsZvtx->SetLogz();
     //    hNtrackVsVtxZ[i]->Fit("pol4");
     hNtrackVsVtxZ[i]->Draw("colz");
+    hProf[i] = (TProfile*)hNtrackVsVtxZ[i]->ProfileX(Form("%s_%d","hProf",i));
+    hProf[i]->SetLineColor(kBlack);
+    hProf[i]->Draw("same");
     cNtrVsZvtx->Update();
   }
 
@@ -812,29 +819,31 @@ Bool_t CheckNtrVsZvtx(TH2F** hNtrackVsVtxZ, TH2F** hNtrackVsVtxZCorr, Int_t nFil
   cNtrVsZvtxCorr->Divide(2,2);
   for(Int_t i=0; i<nFiles; i++){
     cNtrVsZvtxCorr->cd(i+1);
+    cNtrVsZvtxCorr->SetLogz();
     //    hNtrackVsVtxZCorr[i]->Fit("pol4");
     hNtrackVsVtxZCorr[i]->Draw("colz");
+    hProfCorr[i] = (TProfile*)hNtrackVsVtxZCorr[i]->ProfileX(Form("%s_%d","hProfCorr",i));
+    hProfCorr[i]->SetLineColor(kBlack);
+    hProfCorr[i]->Draw("same");
+    cNtrVsZvtx->Update();
   }
 
   TH1F *hNtrAxis = (TH1F*)hNtrackVsVtxZ[0]->ProjectionY("hNtrAxis");
-  TH1F *hZvtx[nMultbins];
-  Int_t firstbin=0, lastbin=0;
+  TH1F *hZvtx[nFiles];
+  Int_t firstbin = hNtrAxis->FindBin( multlims[0] );
+  Int_t lastbin = hNtrAxis->FindBin( multlims[nMultbins] ) -1;
   TCanvas *cZvtx = new TCanvas("cZvtx","Zvtx projections");
   cZvtx->Divide(2,2);
   for(Int_t i=0; i<nFiles; i++){
     cZvtx->cd(i+1);
-    firstbin = hNtrAxis->FindBin( multlims[i] );
-    lastbin = hNtrAxis->FindBin( multlims[i+1] ) -1;
     hZvtx[i] = (TH1F*)hNtrackVsVtxZ[i]->ProjectionX(Form("hZvtx_%d",i),firstbin,lastbin);
     hZvtx[i]->Draw();
   }
-  TH1F *hZvtxCorr[nMultbins]; 
+  TH1F *hZvtxCorr[nFiles];
   TCanvas *cZvtxCorr = new TCanvas("cZvtxCorr","Zvtx projections Corr");
   cZvtxCorr->Divide(2,2);
   for(Int_t i=0; i<nFiles; i++){
     cZvtxCorr->cd(i+1);
-    firstbin = hNtrAxis->FindBin( multlims[i] );
-    lastbin = hNtrAxis->FindBin( multlims[i+1] ) -1;
     hZvtxCorr[i] = (TH1F*)hNtrackVsVtxZCorr[i]->ProjectionX(Form("hZvtxCorr_%d",i),firstbin,lastbin);
     hZvtxCorr[i]->Draw();
   }

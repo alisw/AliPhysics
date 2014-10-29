@@ -46,6 +46,7 @@ class AliSpectraAODEventCuts : public TNamed
     fVertexCutMax(10.),
     fMultiplicityCutMin(-999.),
     fMultiplicityCutMax(99999.),
+    fqTPC(-999.),
     fqV0C(-999.),
     fqV0A(-999.),
     fqV0Cx(-999.),
@@ -71,6 +72,7 @@ class AliSpectraAODEventCuts : public TNamed
     fQvecIntegral(0), 
     fSplineArrayV0A(0),
     fSplineArrayV0C(0),
+	fSplineArrayTPC(0),
     fQgenIntegral(0), 
     fSplineArrayV0Agen(0),
     fSplineArrayV0Cgen(0),
@@ -113,6 +115,7 @@ class AliSpectraAODEventCuts : public TNamed
   Float_t  GetVertexCutMax()    const {  return fVertexCutMax; }
   Float_t  GetMultiplicityCutMin()  const {  return fMultiplicityCutMin; }
   Float_t  GetMultiplicityCutMax()  const {  return fMultiplicityCutMax; }
+  Double_t  GetqTPC()  const {  return fqTPC; }
   Double_t  GetqV0C()  const {  return fqV0C; }
   Double_t  GetqV0A()  const {  return fqV0A; }
   Double_t  GetqV0Cx()  const {  return fqV0Cx; }
@@ -148,12 +151,13 @@ class AliSpectraAODEventCuts : public TNamed
   Bool_t CheckCentralityCut();
   Bool_t CheckMultiplicityCut();
   Bool_t CheckQVectorCut();
-  Double_t CalculateQVectorLHC10h();
+  Double_t CalculateQVectorLHC10h();  //procedure to calculate the q vector for PbPb 2010
+  Double_t CalculateQVectorTPC(Double_t etaMin=-0.5,Double_t etaMax=0.5);  //procedure to calculate the q vector from TPC
   void   PrintCuts();
   Bool_t OpenInfoCalbration(Int_t run);
   Short_t  GetCentrCode(AliVEvent* ev);
   
-  Double_t CalculateQVector();
+  Double_t CalculateQVector(); //q vector calculation using Event plane task
   
   Float_t  NumberOfEvents()     { return ((TH1I*)fOutput->FindObject("fHistoCuts"))->GetBinContent(kAcceptedEvents+1); }
   Float_t  NumberOfProcessedEvents()     { return ((TH1I*)fOutput->FindObject("fHistoCuts"))->GetBinContent(kProcessedEvents+1); }
@@ -171,7 +175,7 @@ class AliSpectraAODEventCuts : public TNamed
   Int_t GetNch() { return fNch; }
   
   void SetQVecCalibType(Int_t val) { fQvecCalibType=val; }  //0. centrality - 1. Nch
-  Int_t GetNchBin();
+  Int_t GetNchBin(TH2D * h);
   
   Double_t CalculateQVectorMC(Int_t v0side, Int_t type);
   Double_t GetQvecPercentileMC(Int_t v0side, Int_t type);
@@ -197,6 +201,7 @@ class AliSpectraAODEventCuts : public TNamed
   Float_t         fVertexCutMax;     // maximum vertex position
   Float_t         fMultiplicityCutMin;     // minimum multiplicity position
   Float_t         fMultiplicityCutMax;     // maximum multiplicity position
+  Double_t       fqTPC;            //q vector in the TPC
   Double_t       fqV0C;            //q vector in the VZERO-C
   Double_t       fqV0A;            //q vector in the VZERO-A
   Double_t       fqV0Cx;            //q vector in the VZERO-C, x-comp
@@ -227,6 +232,7 @@ class AliSpectraAODEventCuts : public TNamed
   TH2D * fQvecIntegral;           // ! Integrated Qvec distribution
   TObjArray * fSplineArrayV0A;    // TSpline array for VZERO-A
   TObjArray * fSplineArrayV0C;    // TSpline array for VZERO-C
+  TObjArray * fSplineArrayTPC;    // TSpline array for TPC
   TH2D * fQgenIntegral;           // ! Integrated Qvec distribution for generated tracks
   TObjArray * fSplineArrayV0Agen;    // TSpline array for VZERO-A for generated tracks
   TObjArray * fSplineArrayV0Cgen;    // TSpline array for VZERO-C for generated tracks
@@ -239,7 +245,7 @@ class AliSpectraAODEventCuts : public TNamed
   AliSpectraAODEventCuts(const AliSpectraAODEventCuts&);
   AliSpectraAODEventCuts& operator=(const AliSpectraAODEventCuts&);
   
-  ClassDef(AliSpectraAODEventCuts, 9);
+  ClassDef(AliSpectraAODEventCuts, 10);
   
 };
 #endif

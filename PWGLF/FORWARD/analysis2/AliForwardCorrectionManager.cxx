@@ -68,7 +68,8 @@ AliForwardCorrectionManager::AliForwardCorrectionManager(Bool_t d)
 		     PREFIX DB_NAME, AliFMDCorrSecondaryMap::Class(), 
 		     kStandard|kSatellite);
   RegisterCorrection(kIdELossFits, fgkELossFitsSkel, 
-		     PREFIX DB_NAME, AliFMDCorrELossFit::Class(), kFull);
+		     PREFIX DB_NAME, AliFMDCorrELossFit::Class(), 
+		     kRun|kSys|kSNN|kSatellite|kMC /*kFull*/);
   RegisterCorrection(kIdVertexBias, fgkVertexBiasSkel, 
 		     PREFIX DB_NAME, AliFMDCorrVertexBias::Class(), 
 		     kStandard|kSatellite);

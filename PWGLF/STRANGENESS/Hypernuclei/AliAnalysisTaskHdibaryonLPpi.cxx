@@ -795,7 +795,7 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 	 return;
        }  
     }
-  if (TMath::Abs(vertex->GetZv()) > 10) return;
+  if (TMath::Abs(vertex->GetZ()) > 10) return;
   
   Int_t centrality = -5;
   Double_t centrPerc = -5;

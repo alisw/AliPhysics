@@ -235,6 +235,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fK0sMCPtRapVtx[kNCent];        //! K0s MC: pt vs Z vtx position  vs centrality
   TH3F*   fK0sMCPtRapEmbeded;            //! K0s MC: pt vs rapidity  (embeded particles)
   TH3F*   fK0sMCPtRapVtxEmbeded[kNCent]; //! K0s MC: pt vs Z vtx position rapidity  vs centrality (embeded particles)
+  THnSparse* fK0sMCPtRapPtDaugPt[kNCent]; //! K0s MC: pt vs rapidity vs transverse momemtum of daughters
+  THnSparse* fK0sMCPtRapPtDaugPtEmbeded[kNCent]; //! K0s MC: pt vs rapidity vs transverse momemtum of daughters
   TH3F*   fK0sMCPtPhiEta[kNCent];        //! K0s MC: pt vs pseudo-rapidity
 
   TH1F*   fK0sAssocPt;                         //! K0s Assoc: pt
@@ -250,6 +252,9 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   THnSparse*  fK0sAssocMassPtDCAPV[kNCent];        //! K0s Assoc: mass vs pt vs dca to prim. vtx
   THnSparse*  fK0sAssocMassPtDaugNClsTPC[kNCent];  //! K0s Assoc: mass vs pt vs num. of tpc clusters
   THnSparse*  fK0sAssocMassPtShTPCcls[kNCent];     //! K0s Assoc: mass vs pt vs fraction of shared TPC cls
+  THnSparse*  fK0sAssocMassPtDaugPt[kNCent];       //! K0s Assoc: mass vs pt vs transverse momemtum of daughters
+  THnSparse*  fK0sAssocMassPtCtau[kNCent];         //! K0s Assoc: mass vs pt vs proper time of life
+  THnSparse*  fK0sAssocMassPtFidVolume[kNCent];    //! K0s Assoc: mass vs pt vs fiducial volume
 
   THnSparse*  fK0sAssocPtMassArmEmbeded[kNCent];          //! K0s Assoc: mass vs pt vs rapidity  (embeded particles)
   THnSparse*  fK0sAssocMassPtVtxEmbeded[kNCent];          //! K0s Assoc: mass vs pt vs Z vertex position  (embeded particles)
@@ -258,6 +263,10 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   THnSparse*  fK0sAssocMassPtDCAPVEmbeded[kNCent];        //! K0s Assoc: mass vs pt vs dca to prim. vtx  (embeded particles)
   THnSparse*  fK0sAssocMassPtDaugNClsTPCEmbeded[kNCent];  //! K0s Assoc: mass vs pt vs num. o ftpc clusters (embeded particles)
   THnSparse*  fK0sAssocMassPtShTPCclsEmbeded[kNCent];     //! K0s Assoc: mass vs pt vs fraction of shared TPC cls
+  THnSparse*  fK0sAssocMassPtDaugPtEmbeded[kNCent];       //! K0s Assoc: mass vs pt vs transverse momemtum of daughters
+  THnSparse*  fK0sAssocMassPtCtauEmbeded[kNCent];         //! K0s Assoc: mass vs pt vs proper time of life
+  THnSparse*  fK0sAssocMassPtFidVolumeEmbeded[kNCent];    //! K0s Assoc: mass vs pt vs fiducial volume
+
 
   TH3F*   fK0sMCResEta;                 //! K0s Assoc: eta resolution
   TH3F*   fK0sMCResPhi;                 //! K0s Assoc: phi resolution
@@ -276,6 +285,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fLambdaMCPtRapVtx[kNCent];          //! Lambda MC: pt vs Z vtx position rapidity vs centrality
   TH3F*   fLambdaMCPtRapEmbeded;              //! Lambda MC: pt vs rapidity (embeded particles)
   TH3F*   fLambdaMCPtRapVtxEmbeded[kNCent];   //! Lambda MC: pt vs Z vtx position vs centrality  (embeded particles)
+  THnSparse*  fLambdaMCPtRapPtDaugPt[kNCent]; //! Lambda MC: pt vs rapidity vs transverse momemtum of daughters
+  THnSparse*  fLambdaMCPtRapPtDaugPtEmbeded[kNCent]; //! Lambda MC: pt vs rapidity vs transverse momemtum of daughters
   TH2F*   fLambdaMCFromXi;                    //! Lambda MC: coming from Xi
   TH3F*   fLambdaMCPtPhiEta[kNCent];          //! Lambda MC: pt vs pseudo-rapidity
 
@@ -292,6 +303,9 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   THnSparse*  fLambdaAssocMassPtDCAPV[kNCent];        //! Lambda Assoc: mass vs pt vs dca to prim vtx
   THnSparse*  fLambdaAssocMassPtDaugNClsTPC[kNCent];  //! Lambda Assoc: mass vs pt vs num.of tpc clusters
   THnSparse*  fLambdaAssocMassPtShTPCcls[kNCent];     //! Lambda Assoc: mass vs pt vs fraction of shared TPC cls
+  THnSparse*  fLambdaAssocMassPtDaugPt[kNCent];       //! Lambda Assoc: mass vs pt vs transverse momemtum of daughters
+  THnSparse*  fLambdaAssocMassPtCtau[kNCent];         //! Lambda Assoc: mass vs pt vs proper time of life
+  THnSparse*  fLambdaAssocMassPtFidVolume[kNCent];    //! Lambda Assoc: mass vs pt vs fiducial volume
 
   THnSparse*  fLambdaAssocMassPtRapEmbeded[kNCent];          //! Lambda Assoc: pt vs rapidity vs mass (embeded)
   THnSparse*  fLambdaAssocMassPtRapEmbeded2[kNCent];         //! Lambda Assoc: pt vs rapidity vs mass  (wo Cross contamination) (embeded)
@@ -301,6 +315,10 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   THnSparse*  fLambdaAssocMassPtDCAPVEmbeded[kNCent];        //! Lambda Assoc: mass vs pt vs dca to prim vtx  (embeded particles)
   THnSparse*  fLambdaAssocMassPtDaugNClsTPCEmbeded[kNCent];  //! Lambda Assoc: mass vs pt vs num. of tpc clusters  (embeded particles)
   THnSparse*  fLambdaAssocMassPtShTPCclsEmbeded[kNCent];     //! Lambda Assoc: mass vs pt vs fraction of shared TPC cls
+  THnSparse*  fLambdaAssocMassPtDaugPtEmbeded[kNCent];       //! Lambda Assoc: mass vs pt vs transverse momemtum of daughters
+  THnSparse*  fLambdaAssocMassPtCtauEmbeded[kNCent];         //! Lambda Assoc: mass vs pt vs proper time of life
+  THnSparse*  fLambdaAssocMassPtFidVolumeEmbeded[kNCent];    //! Lambda Assoc: mass vs pt vs fiducial volume
+
 
   TH3F*   fLambdaMCResEta;                 //! Lambda Assoc: eta resolution
   TH3F*   fLambdaMCResPhi;                 //! Lambda Assoc: phi resolution
@@ -319,6 +337,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fAntiLambdaMCPtRapVtx[kNCent];          //! AntiLambda MC: pt vs rapidity vs Z vtx position
   TH3F*   fAntiLambdaMCPtRapEmbeded;              //! AntiLambda MC: pt vs rapidity (embeded particles)
   TH3F*   fAntiLambdaMCPtRapVtxEmbeded[kNCent];   //! AntiLambda MC: pt vs rapidity  vs Z vtx position 
+  THnSparse*  fAntiLambdaMCPtRapPtDaugPt[kNCent]; //! AntiLambda MC: pt vs rapidity vs transverse momemtum of daughters
+  THnSparse*  fAntiLambdaMCPtRapPtDaugPtEmbeded[kNCent]; //! AntiLambda MC: pt vs rapidity vs transverse momemtum of daughters
   TH2F*   fAntiLambdaMCFromXi;                    //! AntiLambda MC: coming from Xi
   TH3F*   fAntiLambdaMCPtPhiEta[kNCent];          //! AntiLambda MC: pt vs pseudo-rapidity
 
@@ -335,6 +355,9 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   THnSparse*  fAntiLambdaAssocMassPtDCAPV[kNCent];        //! AntiLambda Assoc: mass vs pt vs dca to prim. vtx
   THnSparse*  fAntiLambdaAssocMassPtDaugNClsTPC[kNCent];  //! AntiLambda Assoc: mass vs pt vs num. of tpc clusters
   THnSparse*  fAntiLambdaAssocMassPtShTPCcls[kNCent];     //! AntiLambda Assoc: mass vs pt vs fraction of shared TPC cls
+  THnSparse*  fAntiLambdaAssocMassPtDaugPt[kNCent];       //! AntiLambda Assoc: mass vs pt vs transverse momemtum of daughters
+  THnSparse*  fAntiLambdaAssocMassPtCtau[kNCent];         //! AntiLambda Assoc: mass vs pt vs proper time of life
+  THnSparse*  fAntiLambdaAssocMassPtFidVolume[kNCent];    //! AntiLambda Assoc: mass vs pt vs fiducial volume
 
   THnSparse*  fAntiLambdaAssocMassPtRapEmbeded[kNCent];          //! AntiLambda Assoc: mass vs pt vs rapidity  (embeded)
   THnSparse*  fAntiLambdaAssocMassPtRapEmbeded2[kNCent];         //! AntiLambda Assoc: mass vs pt vs rapidity  (wo Cross contamination) (embeded)
@@ -344,6 +367,10 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   THnSparse*  fAntiLambdaAssocMassPtDCAPVEmbeded[kNCent];        //! AntiLambda Assoc: mass vs pt vs dca to prim. vtx  (embeded particles)
   THnSparse*  fAntiLambdaAssocMassPtDaugNClsTPCEmbeded[kNCent];  //! AntiLambda Assoc: mass vs pt vs num. of tpc clusters  (embeded particles)
   THnSparse*  fAntiLambdaAssocMassPtShTPCclsEmbeded[kNCent];    //! AntiLambda Assoc: mass vs pt vs fraction of shared TPC cls
+  THnSparse*  fAntiLambdaAssocMassPtDaugPtEmbeded[kNCent];       //! AntiLambda Assoc: mass vs pt vs transverse momemtum of daughters
+  THnSparse*  fAntiLambdaAssocMassPtCtauEmbeded[kNCent];         //! AntiLambda Assoc: mass vs pt vs proper time of life
+  THnSparse*  fAntiLambdaAssocMassPtFidVolumeEmbeded[kNCent];    //! AntiLambda Assoc: mass vs pt vs fiducial volume
+
 
   TH3F*   fAntiLambdaMCResEta;              //! AntiLambda Assoc: eta resolution
   TH3F*   fAntiLambdaMCResPhi;              //! AntiLambda Assoc: phi resolution

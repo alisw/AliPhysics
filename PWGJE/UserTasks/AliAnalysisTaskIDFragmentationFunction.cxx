@@ -2580,7 +2580,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
     Int_t cl = 0;
     if(handler->InheritsFrom("AliAODInputHandler")){ 
       // since it is not supported by the helper task define own classes
-      centPercent = fAOD->GetHeader()->GetCentrality();
+      centPercent = ((AliVAODHeader*)fAOD->GetHeader())->GetCentrality();
       cl = 1;
       if(centPercent>10) cl = 2;
       if(centPercent>30) cl = 3;
@@ -2601,8 +2601,12 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
   }
   
   // Retrieve reference multiplicities in |eta|<0.8 and <0.5
-  const Int_t refMult5 = fAOD->GetHeader()->GetRefMultiplicityComb05();
-  const Int_t refMult8 = fAOD->GetHeader()->GetRefMultiplicityComb08();
+
+  AliAODHeader * header = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+  if(!header) AliFatal("Not a standard AOD");
+
+  const Int_t refMult5 = header->GetRefMultiplicityComb05();
+  const Int_t refMult8 = header->GetRefMultiplicityComb08();
   const Double_t centPercentPP = fAnaUtils->GetMultiplicityPercentile(fAOD, "V0M");
   
   
@@ -4005,7 +4009,8 @@ Int_t AliAnalysisTaskIDFragmentationFunction::GetListOfTracks(TList *list, Int_t
     // all rec. tracks, esd filter mask, eta range
     
     for(Int_t it=0; it<fAOD->GetNumberOfTracks(); ++it){
-      AliAODTrack *tr = fAOD->GetTrack(it);
+      AliAODTrack *tr = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(it));
+      if(!tr) AliFatal("Not a standard AOD");
       
       if(type == kTrackAODCuts || type==kTrackAODQualityCuts || type==kTrackAODExtraCuts){
 

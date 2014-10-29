@@ -1516,7 +1516,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTruePhotonCandidates(AliAODConvers
 	if( labelGamma < MCStack->GetNprimary() ){
 		if( fIsFromMBHeader ){
 			hESDTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-			hESDTrueConvGammaR[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius());
+			if(fDoMesonQA) hESDTrueConvGammaR[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius());
 		}
 	} else {
 		if( fIsFromMBHeader){

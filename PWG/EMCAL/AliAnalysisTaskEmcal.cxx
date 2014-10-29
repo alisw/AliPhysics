@@ -57,6 +57,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fTrackPtCut(0),
   fMinNTrack(0),
   fUseAliAnaUtils(kFALSE),
+  fRejectPileup(kFALSE),
+  fTklVsClusSPDCut(kFALSE),
   fAliAnalysisUtils(0x0),
   fOffTrigger(AliVEvent::kAny),
   fTrigClass(),
@@ -140,6 +142,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fTrackPtCut(0),
   fMinNTrack(0),
   fUseAliAnaUtils(kFALSE),
+  fRejectPileup(kFALSE),
+  fTklVsClusSPDCut(kFALSE),
   fAliAnalysisUtils(0x0),
   fOffTrigger(AliVEvent::kAny),
   fTrigClass(),
@@ -372,6 +376,7 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   fHistEventRejection->GetXaxis()->SetBinLabel(10,"PileUp");
   fHistEventRejection->GetXaxis()->SetBinLabel(11,"EvtPlane");
   fHistEventRejection->GetXaxis()->SetBinLabel(12,"SelPtHardBin");
+  fHistEventRejection->GetXaxis()->SetBinLabel(13,"Bkg evt");
   fHistEventRejection->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistEventRejection);
 
@@ -782,7 +787,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     } else {
       const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
       if (aev) {
-        res = aev->GetHeader()->GetOfflineTrigger();
+        res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
       }
     }
     if ((res & fOffTrigger) == 0) {
@@ -855,8 +860,13 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       return kFALSE;
     }
 
-    if (fAliAnalysisUtils->IsPileUpEvent(InputEvent())) {
+    if (fRejectPileup && fAliAnalysisUtils->IsPileUpEvent(InputEvent())) {
       if (fGeneralHistograms) fHistEventRejection->Fill("PileUp",1);
+      return kFALSE;
+    }
+
+    if(fTklVsClusSPDCut && fAliAnalysisUtils->IsSPDClusterVsTrackletBG(InputEvent())) {
+      if (fGeneralHistograms) fHistEventRejection->Fill("Bkg evt",1);
       return kFALSE;
     }
   }

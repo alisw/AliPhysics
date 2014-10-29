@@ -377,7 +377,7 @@ Int_t AliAnalysisNetParticleHelper::SetupEvent(AliESDInputHandler *esdHandler, A
   if(esdHandler)
     centrality = fESD->GetCentrality();
   else if(aodHandler)
-    centrality = fAOD->GetHeader()->GetCentralityP();
+    centrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
 
   if (!centrality) {
     AliError("Centrality not available");
@@ -478,7 +478,7 @@ Bool_t AliAnalysisNetParticleHelper::IsEventRejected() {
   // -- 3 - Vertex z outside cut window
   ++iCut;
   if (vtxESD){
-    if(TMath::Abs(vtxESD->GetZv()) > fVertexZMax) 
+    if(TMath::Abs(vtxESD->GetZ()) > fVertexZMax) 
       aEventCuts[iCut] = 1;
   }
   else if(vtxAOD){

@@ -51,8 +51,8 @@ InputFile = {
 };
 OutputDir = "@out@/$3/$1";
 OutputArchive = {
-   "$4_merge_log_archive.zip:std*,fileinfo*.log@disk=1",
-   "$4_merge_archive.zip:*$4*.root,*.stat*@disk=2"
+   "$4_merge_log_archive.zip:std*,*.log,fileinfo*.log@disk=1",
+   "$4_merge_archive.zip:Ali$4*.root,$4*.root,trending.root,EventStat_temp.root,pyxsec_hists.root,*.stat*@disk=2"
 };
 TTL = "36000";
 Price = "1";

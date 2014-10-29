@@ -15,7 +15,7 @@
 
 //_________________________________________________________________________
 //
-// Class for study of EMCAL trigger behaviour
+// Class for study of EMCAL trigger behavior
 //
 // -- Author: Gustavo Conesa (CNRS-LPSC-Grenoble)
 //////////////////////////////////////////////////////////////////////////////
@@ -143,7 +143,7 @@ void AliAnaEMCALTriggerClusters::FillBadTriggerEventHistogram()
   
   if(!badClusTrig)
   {
-    printf("AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms() - No cluster (bad-exotic trigger) found with requested index %d \n",idTrig);
+    AliWarning(Form("No cluster (bad-exotic trigger) found with requested index %d \n",idTrig));
     return;
   }
   
@@ -348,8 +348,7 @@ void  AliAnaEMCALTriggerClusters::FillRawClusterTriggerBCHistograms(Int_t idcalo
       }
     }
   }
-  else if(TMath::Abs(bc) >= 6)
-    printf("AliAnaEMCALTriggerClusters::ClusterSelected() - Trigger BC not expected = %d\n",bc);
+  else if(TMath::Abs(bc) >= 6) AliWarning(Form("Trigger BC not expected = %d\n",bc));
   
 }
 
@@ -362,13 +361,13 @@ TObjString *  AliAnaEMCALTriggerClusters::GetAnalysisCuts()
   const Int_t buffersize = 255;
   char onePar[buffersize] ;
   
-  snprintf(onePar,buffersize,"--- AliAnaEMCALTriggerClusters ---\n") ;
+  snprintf(onePar,buffersize,"--- AliAnaEMCALTriggerClusters ---:") ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fRejectTrackMatch: %d\n",fRejectTrackMatch) ;
+  snprintf(onePar,buffersize,"fRejectTrackMatch: %d;",fRejectTrackMatch) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fMinM02: %2.2f, fMaxM02: %2.2f\n",fMinM02,fMaxM02) ;
+  snprintf(onePar,buffersize,"fMinM02: %2.2f, fMaxM02: %2.2f;",fMinM02,fMaxM02) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fNCellsCut: %d\n",fNCellsCut) ;
+  snprintf(onePar,buffersize,"fNCellsCut: %d;",fNCellsCut) ;
   parList+=onePar ;
   
   //Get parameters set in base class.
@@ -992,7 +991,7 @@ void  AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()
   
   if(!pl)
   {
-    Info("MakeAnalysisFillHistograms","TObjArray with clusters is NULL!\n");
+    AliWarning("TObjArray with clusters is NULL!");
     return;
   }
   
@@ -1003,7 +1002,7 @@ void  AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()
   Int_t nCaloClusters = pl->GetEntriesFast();
   Int_t idTrig        = GetReader()->GetTriggerClusterIndex();
 
-  if(GetDebug() > 0) printf("AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms() - Input cluster entries %d\n", nCaloClusters);
+  AliDebug(1,Form("Input cluster entries %d", nCaloClusters));
   
   // Loop on clusters
   for(Int_t icalo = 0; icalo < nCaloClusters; icalo++)
@@ -1089,11 +1088,11 @@ void  AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()
       }
     }
     else if(TMath::Abs(bc) >= 6)
-      printf("AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms() - Trigger BC not expected = %d\n",bc);
+      AliWarning(Form("Trigger BC not expected = %d",bc));
     
   }// cluster loop
   
-  if(GetDebug() > 1) printf("AliAnaEMCALTriggerClusters::MakeAnalysisFillHistograms()  End fill histograms\n");
+  AliDebug(1,"End fill histograms");
   
 }
 

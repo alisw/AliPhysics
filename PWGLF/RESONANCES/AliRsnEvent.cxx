@@ -202,7 +202,8 @@ void AliRsnEvent::SetDaughterAODtrack(AliRsnDaughter &out, Int_t i)
    AliAODEvent *aod = (AliAODEvent *)fRef;
 
    if (i >= 0 && i < aod->GetNumberOfTracks()) {
-      AliAODTrack *track = aod->GetTrack(i);
+      AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(i));
+      if(!track) AliFatal("Not a standard AOD");
       if (track) {
          out.SetRef(track);
          out.SetGood();

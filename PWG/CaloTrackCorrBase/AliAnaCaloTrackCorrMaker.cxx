@@ -974,8 +974,8 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
   //gObjectTable->Print();
   
   // Init mag field for tracks in case of ESDs, not really necessary
-  if (!TGeoGlobalMagField::Instance()->GetField() && ((AliESDEvent*) fReader->GetInputEvent()))
-    ((AliESDEvent*)fReader->GetInputEvent())->InitMagneticField();
+  if ( !TGeoGlobalMagField::Instance()->GetField() && fReader->GetInputEvent() )
+      (fReader->GetInputEvent())->InitMagneticField();
   
   //Loop on analysis algorithms
   
@@ -984,9 +984,9 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
   Int_t nana = fAnalysisContainer->GetEntries() ;
   for(Int_t iana = 0; iana <  nana; iana++)
   {
-    AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
+    AliAnaCaloTrackCorrBaseClass * ana = ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
     
-    ana->ConnectInputOutputAODBranches(); //Sets branches for each analysis
+    ana->ConnectInputOutputAODBranches(); // Sets branches for each analysis
     
     //Fill pool for mixed event for the analysis that need it
     if(!fReader->IsEventTriggerAtSEOn() && isMBTrigger)

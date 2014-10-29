@@ -608,7 +608,7 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
   if(!vtxSPD) return;
 
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
-  //printf("isEventOK %d, isEventTriggered %d, status %d, vz %f \n",isEventOK, isEventTriggered, vtxESD->GetStatus(), vtxESD->GetZv());
+  //printf("isEventOK %d, isEventTriggered %d, status %d, vz %f \n",isEventOK, isEventTriggered, vtxESD->GetStatus(), vtxESD->GetZ());
   //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
   Int_t ntracks = esdEvent->GetNumberOfTracks();
 
@@ -631,9 +631,9 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
 
     //
     //Double_t vert[3] = {0}; 
-    //vert[0] = vtxESD->GetXv();
-    //vert[1] = vtxESD->GetYv();
-    //vert[2] = vtxESD->GetZv();
+    //vert[0] = vtxESD->GetX();
+    //vert[1] = vtxESD->GetY();
+    //vert[2] = vtxESD->GetZ();
     Int_t mult = vtxESD->GetNContributors();
     Int_t multSPD = vtxSPD->GetNContributors();
     Int_t multTPC = vtxTPC->GetNContributors();
@@ -908,9 +908,9 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 
     //
     Double_t vert[3] = {0}; 
-    vert[0] = vtxESD->GetXv();
-    vert[1] = vtxESD->GetYv();
-    vert[2] = vtxESD->GetZv();
+    vert[0] = vtxESD->GetX();
+    vert[1] = vtxESD->GetY();
+    vert[2] = vtxESD->GetZ();
     Int_t mult = vtxESD->GetNContributors();
     Float_t bz = esdEvent->GetMagneticField();
     Int_t runNumber = esdEvent->GetRunNumber();
@@ -1586,9 +1586,9 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
 
     // reco event info
     Double_t vert[3] = {0}; 
-    vert[0] = vtxESD->GetXv();
-    vert[1] = vtxESD->GetYv();
-    vert[2] = vtxESD->GetZv();
+    vert[0] = vtxESD->GetX();
+    vert[1] = vtxESD->GetY();
+    vert[2] = vtxESD->GetZ();
     Int_t mult = vtxESD->GetNContributors();
     Double_t bz = esdEvent->GetMagneticField();
     Double_t runNumber = esdEvent->GetRunNumber();
@@ -1983,9 +1983,9 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
   if(isEventOK && isEventTriggered)
   {
     Double_t vert[3] = {0}; 
-    vert[0] = vtxESD->GetXv();
-    vert[1] = vtxESD->GetYv();
-    vert[2] = vtxESD->GetZv();
+    vert[0] = vtxESD->GetX();
+    vert[1] = vtxESD->GetY();
+    vert[2] = vtxESD->GetZ();
     Int_t mult = vtxESD->GetNContributors();
     Double_t bz = esdEvent->GetMagneticField();
     Double_t runNumber = esdEvent->GetRunNumber();
