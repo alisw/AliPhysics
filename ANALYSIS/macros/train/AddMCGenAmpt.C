@@ -4,13 +4,16 @@ AliGenerator *AddMCGenAmpt(
 			   Double_t bmax        = 20.0,    // maximum impact parameter
 			   Double_t ptHardMin   = 3.0,     // minimum pt hard (was 3.0 in previous AMPT productions)
 			   Bool_t stringMelting = kTRUE,   // string melting option 
-			   Bool_t useART        = kTRUE,   // use hadronic rescattering phase (ART)
+			   Bool_t useART        = kTRUE   // use hadronic rescattering phase (ART)
 			   )
 {
   // User defined generator
 
   gSystem->Load("libampt.so");       
   gSystem->Load("libTAmpt.so");
+  gSystem->Load("libEGPythia6"); 
+  gSystem->Load("libpythia6.so");
+  gSystem->Load("libAliPythia6.so");
 
 
   AliGenAmpt *genAMPT = new AliGenAmpt(-1);
