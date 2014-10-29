@@ -310,39 +310,46 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   TString datatype=gSystem->Getenv("CONFIG_FILE");
   
   if(!useMC) {
-    
-    Double_t params_centr_0_5[1];
-    Double_t params_centr_5_10[1];
-    Double_t params_centr_10_20[1];
-    Double_t params_centr_20_30[1];
-    Double_t params_centr_30_40[1];
-    Double_t params_centr_40_50[1];
-    Double_t params_centr_50_60[1];
-    Double_t params_centr_per[1];
 
-    params_centr_0_5[0]=tpcdedx[0];  // cut tuned for 0-5%
-    params_centr_5_10[0]=tpcdedx[1]; // cut tuned for 5-10%
-    params_centr_10_20[0]=tpcdedx[2];
-    params_centr_20_30[0]=tpcdedx[3];
-    params_centr_30_40[0]=tpcdedx[4];
-    params_centr_40_50[0]=tpcdedx[5];
-    params_centr_50_60[0]=tpcdedx[6];
-    params_centr_per[0]=tpcdedx[7];
-    
-    char *cutmodel;
-    cutmodel="pol0";
-    
-    for(Int_t a=0;a<11;a++)
-      {
-	if(a>6)  pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_per,3.0);      //  60-80%
-	if(a==0) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_0_5,3.0);      //  0-5%
-	if(a==1) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_5_10,3.0);     //  5-10%
-	if(a==2) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_10_20,3.0);    //  10-20%
-	if(a==3) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_20_30,3.0);    //  20-30%
-	if(a==4) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_30_40,3.0);    //  30-40%
-	if(a==5) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_40_50,3.0);    //  40-50%
-	if(a==6) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_50_60,3.0);    //  50-60%
-      }
+    if(withetacorrection || withmultcorrection) {
+      
+      pid->ConfigureTPCasymmetric(0.0,9999.,tpcdedx[0],3.);
+      
+    } else {
+      
+      Double_t params_centr_0_5[1];
+      Double_t params_centr_5_10[1];
+      Double_t params_centr_10_20[1];
+      Double_t params_centr_20_30[1];
+      Double_t params_centr_30_40[1];
+      Double_t params_centr_40_50[1];
+      Double_t params_centr_50_60[1];
+      Double_t params_centr_per[1];
+      
+      params_centr_0_5[0]=tpcdedx[0];  // cut tuned for 0-5%
+      params_centr_5_10[0]=tpcdedx[1]; // cut tuned for 5-10%
+      params_centr_10_20[0]=tpcdedx[2];
+      params_centr_20_30[0]=tpcdedx[3];
+      params_centr_30_40[0]=tpcdedx[4];
+      params_centr_40_50[0]=tpcdedx[5];
+      params_centr_50_60[0]=tpcdedx[6];
+      params_centr_per[0]=tpcdedx[7];
+      
+      char *cutmodel;
+      cutmodel="pol0";
+      
+      for(Int_t a=0;a<11;a++)
+	{
+	  if(a>6)  pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_per,3.0);      //  60-80%
+	  if(a==0) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_0_5,3.0);      //  0-5%
+	  if(a==1) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_5_10,3.0);     //  5-10%
+	  if(a==2) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_10_20,3.0);    //  10-20%
+	  if(a==3) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_20_30,3.0);    //  20-30%
+	  if(a==4) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_30_40,3.0);    //  30-40%
+	  if(a==5) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_40_50,3.0);    //  40-50%
+	  if(a==6) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_50_60,3.0);    //  50-60%
+	}
+    }
     
   }
 
