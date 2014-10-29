@@ -57,6 +57,7 @@
 #include "AliRelAlignerKalman.h"
 #include "TTree.h"
 #include "TROOT.h"
+#include "TKey.h"
 
 const Float_t kAlmost0=1.e-30;
 
@@ -3159,6 +3160,18 @@ TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
   TFile *fin = TFile::Open(Form("%s/map/treeMapping.root",baseDir.Data()));
   gROOT->cd();
   TTree *tMain = (TTree*)fin->Get("calPads");
+  tMain->SetAlias("Pad0","MapPadLength.fElements==7.5");   // pad types
+  tMain->SetAlias("Pad1","MapPadLength.fElements==10.0");
+  tMain->SetAlias("Pad2","MapPadLength.fElements==15.0");
+  //
+  tMain->SetAlias("dRowNorm0","(row.fElements/32-1)");      // normalized distance to the center of the chamber in lx (-1,1)
+  tMain->SetAlias("dRowNorm1","(row.fElements/32-1)");      // 
+  tMain->SetAlias("dRowNorm2","((row.fElements-63)/16-1)"); //
+  tMain->SetAlias("dRowNorm","(row.fElements<63)*(row.fElements/32-1)+(row.fElements>63)*((row.fElements-63)/16-1)");
+  tMain->SetAlias("dPhiNorm","(ly.fElements/lx.fElements)/(pi/18)"); // normalized distance to the center of the chamber in phi (-1,1)
+  //
+  tMain->SetAlias("fsector","(sector%36)+(0.5+9*atan2(ly.fElements,lx.fElements)/pi)"); // float sector number
+  tMain->SetAlias("posEdge","((pi/18.)-abs(atan(ly.fElements/lx.fElements)))*lx.fElements"); //distance to the edge
   
   // === add the krypton calibration trees ==========================
   TString inputTreesKrCalib       = gSystem->GetFromPipe(Form("ls %s/KryptonCalib/20*/calibKr/*.tree.root",baseDir.Data()));
@@ -3171,6 +3184,7 @@ TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
     TString friendName=gSystem->BaseName(arrInputTreesKrCalib->At(itree)->GetName());
     friendName.ReplaceAll("calibKr.","");
     friendName.ReplaceAll(".tree.root","");
+    friendName="Kr."+friendName;
     tMain->AddFriend(tin,friendName.Data());
 
     // set aliases
@@ -3190,19 +3204,34 @@ TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
 //     }
   
     tMain->SetAlias((friendName+".spectrMean_LTMRatio").Data(),
-                    TString::Format("(%s.spectrMean.fElements/%s.spectrMean_LTM)",
+                    TString::Format("(%s.spectrMean.fElements/(%s.spectrMean_LTM+0))",
                                     friendName.Data(),friendName.Data()).Data());
     
     tMain->SetAlias((friendName+".spectrMean_MedianRatio").Data(),
-                    TString::Format("(%s.spectrMean.fElements/%s.spectrMean_Median)",
+                    TString::Format("(%s.spectrMean.fElements/(%s.spectrMean_Median+0))",
+                                    friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".spectrMean_MeanRatio").Data(),
+                    TString::Format("(%s.spectrMean.fElements/(%s.spectrMean_Mean+0))",
                                     friendName.Data(),friendName.Data()).Data());
 
     tMain->SetAlias((friendName+".fitMean_LTMRatio").Data(),
-                    TString::Format("(%s.fitMean.fElements/%s.fitMean_LTM)",
+                    TString::Format("(%s.fitMean.fElements/(%s.fitMean_LTM+0))",
+                                    friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".fitRMS_LTMRatio").Data(),
+                    TString::Format("(%s.fitRMS.fElements/(%s.fitRMS_LTM+0))",
                                     friendName.Data(),friendName.Data()).Data());
     
     tMain->SetAlias((friendName+".fitMean_MedianRatio").Data(),
-                    TString::Format("(%s.fitMean.fElements/%s.fitMean_Median)",
+                    TString::Format("(%s.fitMean.fElements/(%s.fitMean_Median+0))",
+                                    friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".fitRMS_MedianRatio").Data(),
+                    TString::Format("(%s.fitRMS.fElements/(%s.fitRMS_Median+0))",
+                                    friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".fitMean_MeanRatio").Data(),
+                    TString::Format("(%s.fitMean.fElements/(%s.fitMean_Mean+0))",
+                                    friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".fitRMS_MeanRatio").Data(),
+                    TString::Format("(%s.fitRMS.fElements/(%s.fitRMS_Mean+0))",
                                     friendName.Data(),friendName.Data()).Data());
     
   }
@@ -3218,7 +3247,7 @@ TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
     TString friendName=gSystem->BaseName(arrInputTreesQACalib->At(itree)->GetName());
     friendName.ReplaceAll("calibQA.","");
     friendName.ReplaceAll(".tree.root","");
-
+    friendName="QA."+friendName;
     tMain->AddFriend(tin,friendName.Data());
 
     // set aliases
@@ -3229,6 +3258,9 @@ TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
     tMain->SetAlias((friendName+".MaxCharge_MedianRatio").Data(),
                     TString::Format("(%s.MaxCharge.fElements/%s.MaxCharge_Median)",
                                     friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".MaxCharge_MeanRatio").Data(),
+                    TString::Format("(%s.MaxCharge.fElements/%s.MaxCharge_Mean)",
+                                    friendName.Data(),friendName.Data()).Data());
     
     tMain->SetAlias((friendName+".MeanCharge_LTMRatio").Data(),
                     TString::Format("(%s.MeanCharge.fElements/%s.MeanCharge_LTM)",
@@ -3237,9 +3269,168 @@ TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
     tMain->SetAlias((friendName+".MeanCharge_MedianRatio").Data(),
                     TString::Format("(%s.MeanCharge.fElements/%s.MeanCharge_Median)",
                                     friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".MeanCharge_MeanRatio").Data(),
+                    TString::Format("(%s.MeanCharge.fElements/%s.MeanCharge_Mean)",
+                                    friendName.Data(),friendName.Data()).Data());
     
   }
 
   return tMain;
 }
+
+
+//_____________________________________________________________________________________
+TTree* AliTPCcalibDButil::ConnectPulserTrees(TString baseDir, TTree *tMain)
+{
+  //
+  // baseDir:   Base directory with Pulser information
+  // TTrees are added to the base tree as a friend tree
+  //  
+  // === add the calibPulser trees ======================================
+  TString inputTreesPulserCalib       = gSystem->GetFromPipe(Form("ls %s/calibPulser/20*/*.tree.root",baseDir.Data()));
+  TObjArray *arrInputTreesPulserCalib = inputTreesPulserCalib.Tokenize("\n");
+  for (Int_t itree=0; itree<arrInputTreesPulserCalib->GetEntriesFast(); ++itree) {
+    TFile *fin2 = TFile::Open(arrInputTreesPulserCalib->At(itree)->GetName());
+    TTree *tin = (TTree*)fin2->Get("calPads");
+    gROOT->cd();
+    TString friendName=gSystem->BaseName(arrInputTreesPulserCalib->At(itree)->GetName());
+    friendName.ReplaceAll("calibPulser.","");
+    friendName.ReplaceAll(".tree.root","");
+    friendName="Pulser."+friendName;
+    tMain->AddFriend(tin,friendName.Data());    
+    // set aliases
+
+    tMain->SetAlias((friendName+".CEQmean_LTMRatio").Data(),
+                    TString::Format("(%s.CEQmean.fElements/%s.CEQmean_LTM)",
+                                    friendName.Data(),friendName.Data()).Data());    
+    tMain->SetAlias((friendName+".CEQmean_MedianRatio").Data(),
+                    TString::Format("(%s.CEQmean.fElements/%s.CEQmean_Median)",
+                                    friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".CEQmean_MeanRatio").Data(),
+                    TString::Format("(%s.CEQmean.fElements/%s.CEQmean_Mean)",
+                                    friendName.Data(),friendName.Data()).Data());        
+    //
+    tMain->SetAlias((friendName+".CETmean_LTMDelta").Data(),
+                    TString::Format("(%s.CETmean.fElements-%s.CETmean_LTM)",
+                                    friendName.Data(),friendName.Data()).Data());    
+    tMain->SetAlias((friendName+".CETmean_MedianDelta").Data(),
+                    TString::Format("(%s.CETmean.fElements-%s.CETmean_Median)",
+                                    friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".CETmean_MeanDelta").Data(),
+                    TString::Format("(%s.CETmean.fElements-%s.CETmean_Mean)",
+                                    friendName.Data(),friendName.Data()).Data());        
+  }
+  return tMain;
+}  
+  
+
+TTree* AliTPCcalibDButil::ConnectDistortionTrees(TString baseDir, TTree *tMain){
+  //
+  // baseDir:   Base directory with Distortion information
+  // TTrees are added to the base tree as a friend tree
+  // If base tree not provide - first tree from list is used as base
+  //  
+  // === add the calibDistortion trees ======================================
+  //TString inputTreesDistortionCalib       = gSystem->GetFromPipe(Form("ls %s/calibDistortion/20*/*.tree.root",baseDir.Data()));
+  // TString baseDir="$NOTES/reconstruction/distortionFit/"; TTree *tMain=0;
+
+
+  TString inputTreesDistortionCalib       = gSystem->GetFromPipe(Form("find  %s -iname \"calibTimeResHisto.root\"",baseDir.Data()));
+  TObjArray *arrInputTreesDistortionCalib = inputTreesDistortionCalib.Tokenize("\n");  
+  //
+  for (Int_t itree=0; itree<arrInputTreesDistortionCalib->GetEntriesFast(); ++itree) {
+    TFile *finput= TFile::Open(arrInputTreesDistortionCalib->At(itree)->GetName());
+    TString strFile=arrInputTreesDistortionCalib->At(itree)->GetName();
+    TObjArray *path=strFile.Tokenize("/");
+    Int_t plength=path->GetEntries();
+    if (!finput) continue;
+    TList* list = finput->GetListOfKeys();
+    Int_t nkeys=list->GetEntries();
+    for (Int_t ikey=0; ikey<nkeys; ikey++){
+      TKey * key = (TKey*)list->At(ikey);
+      if (strstr(key->GetClassName(),"TTree")==0) continue;
+      TTree * tree  = dynamic_cast<TTree*>(finput->Get(list->At(ikey)->GetName()));
+      if (!tree) continue;
+      TString friendName=TString::Format("%s.%s.%s",path->At(plength-3)->GetName(),path->At(plength-2)->GetName(), tree->GetName()); 
+      ::Info("AliTPCcalibDButil::ConnectDistortionTrees","%s",friendName.Data());  
+      if (tMain==0) tMain=tree;
+      tMain->AddFriend(tree,friendName.Data());  
+    }
+  }
+  //  tMain->SetAlias("");
+  return tMain;
+}  
+  
+
+//_____________________________________________________________________________________
+TTree* AliTPCcalibDButil::ConnectCalPadTrees(TString baseDir, TString pattern, TTree *tMain, Bool_t checkAliases)
+{
+  //
+  // baseDir:   Base directory with per Pad information
+  // TTrees are added to the base tree as a friend tree
+  // Example usage
+  //   TString baseDir="/hera/alice/fsozzi/summarymaps/calib2/";  // prefix directory with calibration with slash at the end
+  //   TString pattern="QA/*/*root";  
+  //   TTree * tree =  AliTPCcalibDButil::ConnectCalPadTrees(baseDir,pattern,0);   //create tree and attach calibration as friends
+
+  //  
+  // === add the calibPulser trees ======================================
+  TString inputTreesCalPad       = gSystem->GetFromPipe(Form("ls %s/%s",baseDir.Data(), pattern.Data()));
+  TObjArray *arrInputTreesCalPad = inputTreesCalPad.Tokenize("\n");
+  //
+  for (Int_t itree=0; itree<arrInputTreesCalPad->GetEntriesFast(); ++itree) {
+    TFile *fin2 = TFile::Open(arrInputTreesCalPad->At(itree)->GetName());
+    TTree *tin = (TTree*)fin2->Get("calPads");
+    gROOT->cd();
+    TString friendName=arrInputTreesCalPad->At(itree)->GetName();
+    friendName.ReplaceAll("//","/");
+    friendName.ReplaceAll(baseDir.Data(),"");
+    friendName.ReplaceAll("^/","");
+    friendName.ReplaceAll("/",".");
+    friendName.ReplaceAll(".root","");
+    printf("%s\n", friendName.Data());
+    ::Info("AliTPCcalibDButil::ConnectCalPadTrees","%s",friendName.Data());  
+    if (tMain==0) tMain=tin;
+    tMain->AddFriend(tin,friendName.Data());  
+    TObjArray * branches=tin->GetListOfBranches();
+    Int_t nBranches=branches->GetEntries();
+    for (Int_t ibranch=0; ibranch<nBranches; ibranch++){
+      TString bname=branches->At(ibranch)->GetName();
+      if (bname.Contains(".")>0){
+	bname.ReplaceAll(".","");
+	// replace elements
+	tin->SetAlias((bname).Data(), (bname+".fElements").Data());       
+	tMain->SetAlias((friendName+"."+bname).Data(), (friendName+"."+bname+".fElements").Data());       
+	//
+	// make normalized values  per chamber
+	//
+	if (branches->FindObject(bname+"_LTM")!=0){	  
+	  tMain->SetAlias((friendName+"."+bname+"_MeanRatio").Data(), (friendName+"."+bname+".fElements/"+friendName+"."+bname+"_Mean").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_MedianRatio").Data(), (friendName+"."+bname+".fElements/"+friendName+"."+bname+"_Median").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_LTMRatio").Data(), (friendName+"."+bname+".fElements/"+friendName+"."+bname+"_LTM").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_MeanDelta").Data(), (friendName+"."+bname+".fElements-"+friendName+"."+bname+"_Mean").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_MedianDelta").Data(), (friendName+"."+bname+".fElements-"+friendName+"."+bname+"_Median").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_LTMDelta").Data(), (friendName+"."+bname+".fElements-"+friendName+"."+bname+"_LTM").Data());       
+	}	
+	//	if (branches->FindObject(bname+"_Med3.")!=0){	  
+	  tMain->SetAlias((friendName+"."+bname+"_Med3Ratio").Data(), (friendName+"."+bname+".fElements/"+friendName+"."+bname+"Med3.fElements").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_Med5Ratio").Data(), (friendName+"."+bname+".fElements/"+friendName+"."+bname+"Med5.fElements").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_Par6GRatio").Data(), (friendName+"."+bname+".fElements/"+friendName+"."+bname+"Par6G.fElements").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_Med3Delta").Data(), (friendName+"."+bname+".fElements-"+friendName+"."+bname+"Med3.fElements").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_Med5Delta").Data(), (friendName+"."+bname+".fElements-"+friendName+"."+bname+"Med5.fElements").Data());       
+	  tMain->SetAlias((friendName+"."+bname+"_Par6GDelta").Data(), (friendName+"."+bname+".fElements-"+friendName+"."+bname+"Par6G.fElements").Data());       
+	  //	}	
+      }
+    }
+  }
+  //
+  //
+  //
+  if (checkAliases){
+    // to be implemented
+  }
+  return tMain;
+} 
+  
+
 

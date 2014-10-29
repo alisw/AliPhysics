@@ -179,7 +179,11 @@ public:
   AliCDBEntry* GetRefEntry(const char* cdbPath);
 
   static TTree* ConnectGainTrees(TString baseDir);
-  
+  static TTree* ConnectPulserTrees(TString baseDir, TTree * tree=0);
+  //static TTree* ConnectNoiseTrees(TString baseDir,  TTree * tree=0); 
+  static TTree* ConnectDistortionTrees(TString baseDir, TTree *tMain);
+  static  TTree* ConnectCalPadTrees(TString baseDir, TString pattern,  TTree *tMain, Bool_t checkAliases);
+
 private:
   AliTPCcalibDB *fCalibDB;            //pointer to calibDB object
   AliTPCCalPad  *fPadNoise;           //noise information
