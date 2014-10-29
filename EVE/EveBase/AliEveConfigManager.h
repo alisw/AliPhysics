@@ -29,7 +29,6 @@ public:
     void AliEvePopupHandler(Int_t id);
     void SetEventInEventManager();
     void StorageManagerChangedState(int state);
-    void DisableStoragePopup();
 
     void ConnectEventManagerSignals();
     

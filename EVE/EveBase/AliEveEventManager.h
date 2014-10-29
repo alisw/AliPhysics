@@ -229,13 +229,13 @@ private:
     static AliEveEventManager* fgMaster;
     static AliEveEventManager* fgCurrent;
 
-    static void* DispatchEventListener(void *arg){static_cast<AliEveEventManager*>(arg)->GetNextEvent();}
-    static void* DispatchStorageManagerWatcher(void *arg){static_cast<AliEveEventManager*>(arg)->CheckStorageStatus();}
+    static void* DispatchEventListener(void *arg){static_cast<AliEveEventManager*>(arg)->GetNextEvent();return nullptr;}
+    static void* DispatchStorageManagerWatcher(void *arg){static_cast<AliEveEventManager*>(arg)->CheckStorageStatus();return nullptr;}
     void GetNextEvent();
     void CheckStorageStatus();
     TThread *fEventListenerThread;
     TThread *fStorageManagerWatcherThread;
-    TMutex fMutex;
+    TMutex *fMutex;
     AliESDEvent *fCurrentEvent[2];
     TTree *fCurrentTree[2];
     int fEventInUse;
@@ -245,6 +245,7 @@ private:
 
     Bool_t fOnlineMode;
     Bool_t fStorageDown;
+    Bool_t fFinished;
 
     AliEveEventManager(const AliEveEventManager&);            // Not implemented
     AliEveEventManager& operator=(const AliEveEventManager&); // Not implemented

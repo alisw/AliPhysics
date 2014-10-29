@@ -74,6 +74,8 @@ public:
   void DoNextEvent();
   void DoLastEvent();
   void DoMarkEvent();
+    void DoRestartReco();
+    void DoRestartManager();
 
   void DoSetEvent();
 
@@ -87,13 +89,15 @@ public:
 
 protected:
   AliEveEventManager   *fM;            // Model object.
-
-  TGTextButton         *fFirstEvent;   // Go to first event
-  TGTextButton         *fPrevEvent;    // Go to prev event
-  TGTextButton         *fNextEvent;    // Go to next event
-  TGTextButton         *fLastEvent;    // Go to last event
-  TGTextButton         *fRefresh;      // Refresh event-file state
-  TGTextButton         *fMarkEvent;    // Mark current event
+    
+    TGTextButton         *fFirstEvent;   // Go to first event
+    TGTextButton         *fPrevEvent;    // Go to prev event
+    TGTextButton         *fNextEvent;    // Go to next event
+    TGTextButton         *fLastEvent;    // Go to last event
+    TGTextButton         *fRefresh;      // Refresh event-file state
+    TGTextButton         *fMarkEvent;    // Mark current event
+    TGTextButton         *fRestartReco;    // Restart reconstruction server
+    TGTextButton         *fRestartManager; // Restart storage manager
 
   TGNumberEntry        *fEventId;      // Display/edit current event id
   TGLabel              *fInfoLabel;    // Display last available event id
