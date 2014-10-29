@@ -515,6 +515,12 @@ parseConfig()
   ocdbStorage="raw://"
   #email to
   #MAILTO="fbellini@cern.ch"
+  runMap="
+  2010 108350 139517
+  2011 140441 170593
+  2012 171590 193766
+  2013 194482 197692
+  "
 
   #first, check if the config file is configured
   #is yes - source it so that other options can override it
