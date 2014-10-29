@@ -62,11 +62,19 @@ AliAnalysisTask* AddTaskPtEMCalTrigger(
   // Handle Jet Containers
   if(strlen(njetcontainerData)){
     AliJetContainer *jetcontainerData = pttriggertask->AddJetContainer(njetcontainerData, "EMCAL", jetradius);
+    pttriggertask->AddJetContainerName("PtTriggerTaskJetsData", false);
     jetcontainerData->SetName("PtTriggerTaskJetsData");
+    jetcontainerData->SetJetAcceptanceType(AliJetContainer::kTPC);
+    jetcontainerData->SetJetEtaLimits(-0.5, 0.5);
+    jetcontainerData->SetJetPtCut(20.);
   }
   if(strlen(jetcontainerMC)){
     AliJetContainer *jetcontainerMC = pttriggertask->AddJetContainer(njetcontainerMC, "", jetradius);
+    pttriggertask->AddJetContainerName("PtTriggerTaskJetMC", true);
     jetcontainerMC->SetName("PtTriggerTaskJetMC");
+    jetcontainerMC->SetJetAcceptanceType(AliJetContainer::kTPC);
+    jetcontainerMC->SetJetEtaLimits(-0.5, 0.5);
+    jetcontainerMC->SetJetPtCut(20.);
   }
 
   TString containerName = mgr->GetCommonFileName();
