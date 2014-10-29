@@ -89,6 +89,7 @@ class AliEmcalJet : public AliVParticle
   Double_t          MaxPartPt()                  const { return fMaxCPt < fMaxNPt ? fMaxNPt : fMaxCPt;     }
   Double_t          PtEmc()                      const { return fPtEmc;                    }
   Double_t          PtSub()                      const { return fPtSub;                    }
+  Double_t          PtSubVect()                  const { return fPtSubVect;                }
   Double_t          PtSub(Double_t rho)          const { return fPt - fArea*rho;           }
   Double_t          PtSubVect(Double_t rho)      const;
   Short_t           TrackAt(Int_t idx)           const { return fTrackIDs.At(idx);         }
@@ -127,7 +128,7 @@ class AliEmcalJet : public AliVParticle
   void              SetNEmc(Int_t n)                   { fNEmc           = n;              }
   void              SetPtEmc(Double_t pt)              { fPtEmc          = pt;             }
   void              SetPtSub(Double_t ps)              { fPtSub          = ps;             }
-  void              SetPtSubVect(Double_t ps)          { fPtVectSub      = ps;             }
+  void              SetPtSubVect(Double_t ps)          { fPtSubVect      = ps;             }
   Bool_t            TestFlavourTag(Int_t tag)    const { return (Bool_t)((tag & fFlavourTagging) !=0); }
 
   // Trigger
@@ -269,7 +270,7 @@ class AliEmcalJet : public AliVParticle
   AliEmcalJet      *fTaggedJet;           //!          jet tagged to this jet
   Int_t             fTagStatus;           //!          status of tagging -1: NA 0: not tagged 1: tagged
   Double_t          fPtSub;               //!          background subtracted pt (not stored set from outside)
-  Double_t          fPtVectSub;           //!          background vector subtracted pt (not stored set from outside)
+  Double_t          fPtSubVect;           //!          background vector subtracted pt (not stored set from outside)
   UInt_t            fTriggers;            //!          triggers that the jet might have fired (AliVEvent::EOfflineTriggerTypes)
 
   Double_t          fJetShapeMassFirstDer;         //!   result from shape derivatives for jet mass: 1st derivative

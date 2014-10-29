@@ -38,7 +38,7 @@ AliEmcalJet::AliEmcalJet() :
   fTaggedJet(0x0),
   fTagStatus(-1),
   fPtSub(0),
-  fPtVectSub(0),
+  fPtSubVect(0),
   fTriggers(0),
   fJetShapeMassFirstDer(0),
   fJetShapeMassSecondDer(0),
@@ -109,7 +109,7 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   fTaggedJet(0x0),
   fTagStatus(-1),
   fPtSub(0),
-  fPtVectSub(0),
+  fPtSubVect(0),
   fTriggers(0),
   fJetShapeMassFirstDer(0),
   fJetShapeMassSecondDer(0),
@@ -185,7 +185,7 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   fTaggedJet(0x0),
   fTagStatus(-1),
   fPtSub(0),
-  fPtVectSub(0),
+  fPtSubVect(0),
   fTriggers(0),
   fJetShapeMassFirstDer(0),
   fJetShapeMassSecondDer(0),
@@ -260,7 +260,7 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet &jet) :
   fTaggedJet(jet.fTaggedJet),
   fTagStatus(jet.fTagStatus),
   fPtSub(jet.fPtSub),
-  fPtVectSub(jet.fPtVectSub),
+  fPtSubVect(jet.fPtSubVect),
   fTriggers(jet.fTriggers),
   fJetShapeMassFirstDer(jet.fJetShapeMassFirstDer),
   fJetShapeMassSecondDer(jet.fJetShapeMassSecondDer),
@@ -338,7 +338,7 @@ AliEmcalJet &AliEmcalJet::operator=(const AliEmcalJet &jet)
     fTaggedJet          = jet.fTaggedJet;
     fTagStatus          = jet.fTagStatus;
     fPtSub              = jet.fPtSub;
-    fPtVectSub          = jet.fPtVectSub;
+    fPtSubVect          = jet.fPtSubVect;
     fTriggers           = jet.fTriggers;
     fJetShapeMassFirstDer  = jet.fJetShapeMassFirstDer;
     fJetShapeMassSecondDer = jet.fJetShapeMassSecondDer;
