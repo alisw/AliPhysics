@@ -84,8 +84,8 @@ AliEmcalJet::AliEmcalJet() :
 //__________________________________________________________________________________________________
 AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   AliVParticle(),
-  fPt(TMath::Sqrt(px*px+py*py)),
-  fEta(TMath::ASinH(pz/fPt)),
+  fPt(TMath::Sqrt(px * px + py* py)),
+  fEta(TMath::ASinH(pz / fPt)),
   fPhi(0),
   fM(0),
   fNEF(0),
@@ -147,7 +147,7 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
 {
   // Constructor.
 
-  if (fPt != 0) {
+  if(fPt != 0) {
     fPhi = TVector2::Phi_0_2pi(TMath::ATan2(py, px));
   }
 
@@ -233,7 +233,7 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
 }
 
 //_________________________________________________________________________________________________
-AliEmcalJet::AliEmcalJet(const AliEmcalJet &jet) :
+AliEmcalJet::AliEmcalJet(const AliEmcalJet& jet) :
   AliVParticle(jet),
   fPt(jet.fPt),
   fEta(jet.fEta),
@@ -304,11 +304,11 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet &jet) :
 }
 
 //_________________________________________________________________________________________________
-AliEmcalJet &AliEmcalJet::operator=(const AliEmcalJet &jet)
+AliEmcalJet& AliEmcalJet::operator=(const AliEmcalJet& jet)
 {
   // Assignment operator.
 
-  if (this!=&jet) {
+  if(this != &jet) {
     AliVParticle::operator=(jet);
     fPt                 = jet.fPt;
     fEta                = jet.fEta;
@@ -383,21 +383,21 @@ Int_t AliEmcalJet::Compare(const TObject* obj) const
 {
   //Return -1 if this is smaller than obj, 0 if objects are equal and 1 if this is larger than obj.
 
-  const AliEmcalJet *jet = static_cast<const AliEmcalJet *>(obj);
-  if (!obj)
+  const AliEmcalJet* jet = static_cast<const AliEmcalJet*>(obj);
+  if(!obj)
     return 0;
-  if (Pt()>jet->Pt())
+  if(Pt() > jet->Pt())
     return -1;
   return 1;
 }
 
 //__________________________________________________________________________________________________
-void AliEmcalJet::GetMom(TLorentzVector &vec) const
+void AliEmcalJet::GetMom(TLorentzVector& vec) const
 {
   // Return momentum as four vector.
 
-  Double_t p = fPt *TMath::CosH(fEta);
-  vec.SetPtEtaPhiE(fPt,fEta,fPhi,TMath::Sqrt(p*p+fM*fM));
+  Double_t p = fPt * TMath::CosH(fEta);
+  vec.SetPtEtaPhiE(fPt, fEta, fPhi, TMath::Sqrt(p * p + fM * fM));
 }
 
 //__________________________________________________________________________________________________
@@ -416,7 +416,7 @@ Double_t AliEmcalJet::PtSubVect(Double_t rho) const
   Double_t dx = Px() - rho * fArea * TMath::Cos(fAreaPhi);
   Double_t dy = Py() - rho * fArea * TMath::Sin(fAreaPhi);
   //Double_t dz = Pz() - rho * fArea * TMath::SinH(fAreaEta);
-  return TMath::Sqrt(dx*dx+dy*dy);
+  return TMath::Sqrt(dx * dx + dy * dy);
 }
 
 //__________________________________________________________________________________________________
@@ -429,81 +429,83 @@ void AliEmcalJet::SortConstituents()
 }
 
 //__________________________________________________________________________________________________
-Double_t AliEmcalJet::DeltaR (const AliVParticle* part) const
-{ // Helper function to calculate the distance between two jets or a jet and a particle
-    Double_t dPhi = this->Phi() - part->Phi();
-    Double_t dEta = this->Eta() - part->Eta();
-    dPhi = TVector2::Phi_mpi_pi ( dPhi );
-
-    return TMath::Sqrt ( dPhi * dPhi + dEta * dEta );
-}
-
-
-//__________________________________________________________________________________________________
-std::vector<int> AliEmcalJet::SortConstituentsPt( TClonesArray *tracks ) const
-{   //___________________________________________
-    // Sorting by p_T (decreasing) jet constituents
-    //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    typedef std::pair<Double_t, Int_t> ptidx_pair;
-
-    // Create vector for Pt sorting
-    std::vector<ptidx_pair> pair_list ;
-
-    for ( Int_t i_entry = 0; i_entry < GetNumberOfTracks(); i_entry++ )
-        {
-        AliVParticle *track = TrackAt(i_entry, tracks);
-        if (!track)
-            {
-            AliError(Form("Unable to find jet track %d in collection %s (pos in collection %d, max %d)", i_entry, tracks->GetName(), TrackAt(i_entry), tracks->GetEntriesFast()));
-            continue;
-            }
-
-        pair_list.push_back( std::make_pair ( track->Pt(), i_entry ) );
-        }
-
-    std::stable_sort( pair_list.begin() , pair_list.end() , sort_descend() );
-
-    // return an vector of indexes of constituents (sorted descending by pt)
-    std::vector <int> index_sorted_list;
-
-    for ( std::vector< std::pair<Double_t,Int_t> >::iterator it = pair_list.begin(); it != pair_list.end(); ++it)
-        { index_sorted_list.push_back( (*it).second ); } // populating the return object with indexes of sorted tracks
-
-    return index_sorted_list;
-}
-
-//________________________________________________________________________
-Double_t AliEmcalJet::GetZ ( const Double_t trkPx, const Double_t trkPy, const Double_t trkPz ) const
-    {
-    // Get the z of a constituent inside of a jet
-    Double_t pJetSq = this->Px() * this->Px() + this->Py() * this->Py() + this->Pz() * this->Pz();
-
-    if(pJetSq>1e-6)
-        { return ( trkPx * this->Px() + trkPy * this->Py() + trkPz * this->Pz() ) / pJetSq ; }
-    else
-        { AliWarning(Form("%s: strange, pjet*pjet seems to be zero pJetSq: %f",GetName(), pJetSq)); return -1; }
-
-    }
-
-//________________________________________________________________________
-Double_t AliEmcalJet::GetZ ( const AliVParticle* trk )          const
-    {
-    // Get Z of constituent trk
-    return GetZ ( trk->Px(), trk->Py(), trk->Pz() );
-    }
-
-//__________________________________________________________________________________________________
-AliVParticle* AliEmcalJet::GetLeadingTrack(TClonesArray *tracks) const
+Double_t AliEmcalJet::DeltaR(const AliVParticle* part) const
 {
-  AliVParticle* maxTrack = 0;
-  for (Int_t i = 0; i < GetNumberOfTracks(); i++) {
-    AliVParticle *track = TrackAt(i, tracks);
-    if (!track) {
-      AliError(Form("Unable to find jet track %d in collection %s (pos in collection %d, max %d)",
-		    i,tracks->GetName(),TrackAt(i),tracks->GetEntriesFast()));
+  // Helper function to calculate the distance between two jets or a jet and a particle
+
+  Double_t dPhi = this->Phi() - part->Phi();
+  Double_t dEta = this->Eta() - part->Eta();
+  dPhi = TVector2::Phi_mpi_pi(dPhi);
+  return TMath::Sqrt(dPhi * dPhi + dEta * dEta);
+}
+
+
+//__________________________________________________________________________________________________
+std::vector<int> AliEmcalJet::SortConstituentsPt(TClonesArray* tracks) const
+{
+  // Sorting by p_T (decreasing) jet constituents
+
+  typedef std::pair<Double_t, Int_t> ptidx_pair;
+
+  // Create vector for Pt sorting
+  std::vector<ptidx_pair> pair_list ;
+
+  for(Int_t i_entry = 0; i_entry < GetNumberOfTracks(); i_entry++)
+  {
+    AliVParticle* track = TrackAt(i_entry, tracks);
+    if(!track)
+    {
+      AliError(Form("Unable to find jet track %d in collection %s (pos in collection %d, max %d)", i_entry, tracks->GetName(), TrackAt(i_entry), tracks->GetEntriesFast()));
       continue;
     }
-    if (!maxTrack || track->Pt() > maxTrack->Pt())
+
+    pair_list.push_back(std::make_pair(track->Pt(), i_entry));
+  }
+
+  std::stable_sort(pair_list.begin() , pair_list.end() , sort_descend());
+
+  // return an vector of indexes of constituents (sorted descending by pt)
+  std::vector <int> index_sorted_list;
+
+  for(std::vector< std::pair<Double_t, Int_t> >::iterator it = pair_list.begin(); it != pair_list.end(); ++it)
+  { index_sorted_list.push_back((*it).second); }   // populating the return object with indexes of sorted tracks
+
+  return index_sorted_list;
+}
+
+//________________________________________________________________________
+Double_t AliEmcalJet::GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz) const
+{
+  // Get the z of a constituent inside of a jet
+
+  Double_t pJetSq = this->Px() * this->Px() + this->Py() * this->Py() + this->Pz() * this->Pz();
+
+  if(pJetSq > 1e-6)
+  { return (trkPx * this->Px() + trkPy * this->Py() + trkPz * this->Pz()) / pJetSq ; }
+  else
+  { AliWarning(Form("%s: strange, pjet*pjet seems to be zero pJetSq: %f", GetName(), pJetSq)); return -1; }
+}
+
+//________________________________________________________________________
+Double_t AliEmcalJet::GetZ(const AliVParticle* trk) const
+{
+  // Get Z of constituent trk
+
+  return GetZ(trk->Px(), trk->Py(), trk->Pz());
+}
+
+//__________________________________________________________________________________________________
+AliVParticle* AliEmcalJet::GetLeadingTrack(TClonesArray* tracks) const
+{
+  AliVParticle* maxTrack = 0;
+  for(Int_t i = 0; i < GetNumberOfTracks(); i++) {
+    AliVParticle* track = TrackAt(i, tracks);
+    if(!track) {
+      AliError(Form("Unable to find jet track %d in collection %s (pos in collection %d, max %d)",
+                    i, tracks->GetName(), TrackAt(i), tracks->GetEntriesFast()));
+      continue;
+    }
+    if(!maxTrack || track->Pt() > maxTrack->Pt())
       maxTrack = track;
   }
 
@@ -511,17 +513,17 @@ AliVParticle* AliEmcalJet::GetLeadingTrack(TClonesArray *tracks) const
 }
 
 //__________________________________________________________________________________________________
-AliVCluster* AliEmcalJet::GetLeadingCluster(TClonesArray *clusters) const
+AliVCluster* AliEmcalJet::GetLeadingCluster(TClonesArray* clusters) const
 {
   AliVCluster* maxCluster = 0;
-  for (Int_t i = 0; i < GetNumberOfClusters(); i++) {
-    AliVCluster *cluster = ClusterAt(i, clusters);
-    if (!cluster) {
+  for(Int_t i = 0; i < GetNumberOfClusters(); i++) {
+    AliVCluster* cluster = ClusterAt(i, clusters);
+    if(!cluster) {
       AliError(Form("Unable to find jet cluster %d in collection %s (pos in collection %d, max %d)",
-		    i,clusters->GetName(),ClusterAt(i),clusters->GetEntriesFast()));
+                    i, clusters->GetName(), ClusterAt(i), clusters->GetEntriesFast()));
       continue;
     }
-    if (!maxCluster || cluster->E() > maxCluster->E())
+    if(!maxCluster || cluster->E() > maxCluster->E())
       maxCluster = cluster;
   }
 
@@ -539,8 +541,9 @@ void AliEmcalJet::ResetMatching()
 }
 
 //__________________________________________________________________________________________________
-void AliEmcalJet::PrintGR() {
-  for(Int_t i = 0; i<fGRNumerator.GetSize(); i++) {
-    Printf("num[%d] = %f",i,fGRNumerator.At(i));
+void AliEmcalJet::PrintGR()
+{
+  for(Int_t i = 0; i < fGRNumerator.GetSize(); i++) {
+    Printf("num[%d] = %f", i, fGRNumerator.At(i));
   }
 }
