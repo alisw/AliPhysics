@@ -1047,7 +1047,7 @@ namespace EMCalTriggerPtAnalysis {
 
 
   //______________________________________________________________________________
-  void EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger::AddJetContainer(const Char_t* contname, Bool_t isMC) {
+  void EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger::AddJetContainerName(const Char_t* contname, Bool_t isMC) {
     /*
      * Add new Jet input container to the analysis task
      *
