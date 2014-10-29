@@ -284,7 +284,7 @@ void AliEveEventManager::GetNextEvent()
                 
                 eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
                 tmpEvent = eventManager->GetEvent(SERVER_COMMUNICATION_REQ);
-                
+                delete requestMessage;
                 iter++;
                 sleep(1);
             }
