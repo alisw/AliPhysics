@@ -1091,6 +1091,8 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
   legend->AddEntry(gHistBalanceFunctionMixed,"Mixed data","lp");
   legend->Draw();
   
+  Double_t sigmaGaus      = 0.;
+  Double_t sigmaGausError = 0.;
 
   TString meanLatex, rmsLatex, skewnessLatex, kurtosisLatex;
 
@@ -1110,8 +1112,17 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
       }
 
       // new define range by fit!
-      gHistBalanceFunctionSubtracted->Fit("gaus","","");
-      Double_t sigmaGaus = gHistBalanceFunctionSubtracted->GetFunction("gaus")->GetParameter(2);
+      TF1 *fGauss = new TF1("fGauss","gaus(0)",-rangeReduced,rangeReduced);
+      fGauss->SetParameters(1,0,rangeReduced/3.);
+      fGauss->SetParLimits(0,0,100);
+      fGauss->SetParLimits(1,-rangeReduced/3.,rangeReduced/3.);
+      fGauss->SetParLimits(2,rangeReduced/10.,rangeReduced);
+
+
+      gHistBalanceFunctionSubtracted->Fit("fGauss","","");
+      sigmaGaus      = fGauss->GetParameter(2);
+      sigmaGausError = fGauss->GetParError(2);
+
 
       // if safety check OK, set rangeReduced to 3 sigma of gauss fit
       if(3*sigmaGaus > rangeReduced){
@@ -1172,6 +1183,7 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
       //rmsFileName.ReplaceAll(".root","_DeltaPhiProjection_Rms.txt");
     ofstream fileRms(rmsFileName.Data(),ios::app);
     fileRms << " " << gHistBalanceFunctionSubtracted->GetRMS() << " " <<gHistBalanceFunctionSubtracted->GetRMSError()<<endl;
+    //fileRms << " " << sigmaGaus << " " <<gHistBalanceFunctionSubtracted->GetRMSError()<<endl;  // just for testing
     fileRms.close();
 
     TString skewnessFileName = filename;
@@ -1684,7 +1696,7 @@ sFileName[iDir] += momDirectory;
 
   // scaling and adding (for average)
   hBF[iDir]->Scale(entries[iDir]);
-  if(iDir==0) hBFOut = (TH2D*)hBF[iDir]->Clone("gHistBalanceFunctionSubtractedOut");
+  if(!hBFOut) hBFOut = (TH2D*)hBF[iDir]->Clone("gHistBalanceFunctionSubtractedOut");
   else hBFOut->Add(hBF[iDir]);
   
  }
