@@ -750,7 +750,7 @@ namespace EMCalTriggerPtAnalysis {
     sprintf(histnameMCAcc, "hMCTrackInAcceptanceHist%s", trigger);
     if(jetradius > 0.){
       char *hnames[] = {histname, histnameAcc, histnameMC, histnameMCAcc};
-      for(unsigned int iname; iname < sizeof(hnames)/sizeof(char *); iname++){
+      for(unsigned int iname = 0; iname < sizeof(hnames)/sizeof(char *); iname++){
         char *myhname = hnames[iname];
         sprintf(myhname, "%sRad%02d", myhname, int(jetradius * 10.));
       }
@@ -921,7 +921,7 @@ namespace EMCalTriggerPtAnalysis {
 
   //______________________________________________________________________________
   const AliEmcalJet * AliAnalysisTaskPtEMCalTrigger::FoundTrackInJet(
-      const AliVParticle * const track, const AliJetContainer *const jets) const
+      const AliVParticle * const track, AliJetContainer *const jets) const
   {
     /*
      * Correlate track to reconstructed jet
@@ -931,13 +931,13 @@ namespace EMCalTriggerPtAnalysis {
      * @return: The matched jet (NULL if not found)
      */
     const AliEmcalJet *result = NULL;
-    for(unsigned int ijet = 0; ijet < static_cast<unsigned int>(jets->GetNJets()); ijet++){
-      const AliEmcalJet *tmp = dynamic_cast<const AliEmcalJet *>(jets->GetJet(ijet));
-      if(!tmp) continue;
+    const AliEmcalJet *tmp = jets->GetNextAcceptJet(0);
+    while(tmp){
       if(TrackInJet(track, tmp, jets->GetParticleContainer())){
         result = tmp;
         break;
       }
+      tmp = jets->GetNextAcceptJet();
     }
     return result;
   }
@@ -1002,7 +1002,7 @@ namespace EMCalTriggerPtAnalysis {
   }
 
   //______________________________________________________________________________
-  const AliEmcalJet* AliAnalysisTaskPtEMCalTrigger::FoundClusterInJet(const AliVCluster* const clust, const AliJetContainer* const jets) const {
+  const AliEmcalJet* AliAnalysisTaskPtEMCalTrigger::FoundClusterInJet(const AliVCluster* const clust, AliJetContainer* const jets) const {
     /*
      * Check whether a cluster is in a radius around a given jet
      *
@@ -1011,13 +1011,13 @@ namespace EMCalTriggerPtAnalysis {
      * @return: the jet containing the cluster (null otherwise)
      */
     const AliEmcalJet *result = NULL;
-    for(unsigned int ijet = 0; ijet < static_cast<unsigned int>(jets->GetNJets()); ijet++){
-      const AliEmcalJet *tmp = dynamic_cast<const AliEmcalJet *>(jets->GetJet(ijet));
-      if(!tmp) continue;
+    const AliEmcalJet *tmp = jets->GetNextAcceptJet(0);
+    while(tmp){
       if(ClusterInJet(clust, tmp, jets->GetClusterContainer())){
         result = tmp;
         break;
       }
+      tmp =jets->GetNextAcceptJet();
     }
     return result;
   }
