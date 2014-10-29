@@ -40,3 +40,9 @@ runLevelHighPtTreeQA()
   #input is the high pt tree (if available)
   highPtTree=$1
 }
+
+runLevelEventStatQA()
+{
+  #input is the event_stat file
+  eventStatFile=$1
+}
