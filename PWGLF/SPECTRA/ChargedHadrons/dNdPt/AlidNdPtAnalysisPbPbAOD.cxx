@@ -807,7 +807,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 //   for(Int_t itrack = 0; itrack < eventAOD->GetNumberOfTracks(); itrack++) 
 //   { 
 // 	track = dynamic_cast<AliAODTrack*>(eventAOD->GetTrack(itrack));
- 	if(!track) AliFatal("Not a standard AOD");
+//  	if(!track) AliFatal("Not a standard AOD");
 // 	if(!track) continue;
 // 	
 // 	GetDCA(track, eventAOD, dDCA);
