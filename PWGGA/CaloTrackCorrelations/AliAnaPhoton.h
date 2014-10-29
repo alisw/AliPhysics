@@ -54,7 +54,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   void         FillAcceptanceHistograms();
   
-  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag, Int_t maxCellEFraction) ;
+  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag, Float_t maxCellEFraction) ;
   
   void         SwitchOnFillShowerShapeHistograms()    { fFillSSHistograms      = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistograms()   { fFillSSHistograms      = kFALSE ; }  

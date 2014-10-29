@@ -636,7 +636,7 @@ void AliAnaPhoton::FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cel
 
 //_______________________________________________________________________________
 void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
-                                              Int_t mcTag, Int_t maxCellFraction)
+                                              Int_t mcTag, Float_t maxCellFraction)
 {
   //Fill cluster Shower Shape histograms
   
