@@ -138,7 +138,6 @@ void AliOmegaDalitz::Decay(Int_t idlepton, TLorentzVector* pparent)
     
   Double_t pmass, lmass, omass, lpmass;
   Double_t e1, p1, e3, p3;
-  Double_t betaSquare, lambda;
   Double_t costheta, sintheta, cosphi, sinphi, phi;
   
   // Get the particle masses
@@ -162,8 +161,8 @@ void AliOmegaDalitz::Decay(Int_t idlepton, TLorentzVector* pparent)
   // lepton pair kinematics in virtual photon rest frame
   e1 = lpmass / 2.;
   p1 = TMath::Sqrt((e1 + lmass) * (e1 - lmass));
-  betaSquare = 1.0 - 4.0 * (lmass * lmass) / (lpmass * lpmass);
-  lambda      = betaSquare / (2.0 - betaSquare);
+  // betaSquare = 1.0 - 4.0 * (lmass * lmass) / (lpmass * lpmass);
+  // lambda      = betaSquare / (2.0 - betaSquare);
   costheta = (2.0 * gRandom->Rndm()) - 1.;
   sintheta = TMath::Sqrt((1. + costheta) * (1. - costheta));
   phi      = 2.0 * TMath::ACos(-1.) * gRandom->Rndm();

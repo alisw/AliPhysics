@@ -675,7 +675,6 @@ void AliGenMUONCocktailpp::Generate()
 // Generate event 
     TIter next(fEntries);
     AliGenCocktailEntry *entry = 0;
-    AliGenCocktailEntry *preventry = 0;
     AliGenerator* gen = 0;
 
     if (fHeader) delete fHeader;
@@ -718,7 +717,6 @@ void AliGenMUONCocktailpp::Generate()
 		gen->SetNumberParticles(npart);		
 		gen->Generate();
 		entry->SetLast(partArray->GetEntriesFast());
-		preventry = entry;
 	    }
 	}  
 	next.Reset();
