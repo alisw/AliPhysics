@@ -83,7 +83,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fCutMinNClusterITS(0),                  fCutMaxChi2PerClusterTPC(0),            fCutMaxChi2PerClusterITS(0),
   fCutRequireTPCRefit(kFALSE),            fCutRequireITSRefit(kFALSE),            fCutAcceptKinkDaughters(kFALSE),
   fCutMaxDCAToVertexXY(0),                fCutMaxDCAToVertexZ(0),                 fCutDCAToVertex2D(kFALSE),
-  fCutRequireITSStandAlone(kFALSE),       fCutRequireITSpureSA(kFALSE) 
+  fCutRequireITSStandAlone(kFALSE),       fCutRequireITSpureSA(kFALSE)
 {
 //
   // Constructor.
@@ -136,7 +136,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fCutRequireTPCRefit(reco.fCutRequireTPCRefit),             fCutRequireITSRefit(reco.fCutRequireITSRefit),
   fCutAcceptKinkDaughters(reco.fCutAcceptKinkDaughters),     fCutMaxDCAToVertexXY(reco.fCutMaxDCAToVertexXY),    
   fCutMaxDCAToVertexZ(reco.fCutMaxDCAToVertexZ),             fCutDCAToVertex2D(reco.fCutDCAToVertex2D),
-  fCutRequireITSStandAlone(reco.fCutRequireITSStandAlone),   fCutRequireITSpureSA(reco.fCutRequireITSpureSA) 
+  fCutRequireITSStandAlone(reco.fCutRequireITSStandAlone),   fCutRequireITSpureSA(reco.fCutRequireITSpureSA)
 {
   //Copy ctor
   
@@ -222,7 +222,8 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fCutMaxDCAToVertexZ        = reco.fCutMaxDCAToVertexZ;
   fCutDCAToVertex2D          = reco.fCutDCAToVertex2D;
   fCutRequireITSStandAlone   = reco.fCutRequireITSStandAlone; 
-  fCutRequireITSpureSA       = reco.fCutRequireITSpureSA; 
+  fCutRequireITSpureSA       = reco.fCutRequireITSpureSA;
+
   if (reco.fResidualEta) {
     // assign or copy construct
     if (fResidualEta) { 
@@ -270,7 +271,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
     if (fMatchedClusterIndex) delete fMatchedClusterIndex;
     fMatchedClusterIndex = 0;
   }
-   
+  
   return *this;
 }
 
@@ -2001,7 +2002,9 @@ Int_t  AliEMCALRecoUtils::FindMatchedClusterInClusterArr(const AliExternalTrackP
 
 //------------------------------------------------------------------------------------
 Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
-							 Double_t emcalR, Double_t mass, Double_t step, Double_t minpt)
+                                                         Double_t emcalR, Double_t mass,
+                                                         Double_t step, Double_t minpt,
+                                                         Bool_t useMassForTracking)
 { 
   // Extrapolate track to EMCAL surface
 
@@ -2026,9 +2029,11 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
     Bool_t onlyTPC = kFALSE;
     if (mass==-99)
       onlyTPC=kTRUE;
-    if (esdt)
-      mass = esdt->GetMass(onlyTPC);
-    else 
+    if (esdt) {
+      if ( useMassForTracking ) mass = esdt->GetMassForTracking();
+      else                      mass = esdt->GetMass(onlyTPC);
+    }
+    else
       mass = aodt->M();
   }
 
