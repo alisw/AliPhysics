@@ -111,8 +111,8 @@ class AliJetContainer : public AliEmcalContainer {
   Float_t                     GetJetPtCut()                         const    {return fJetPtCut;}
   void                        SetClassName(const char *clname);
   void                        SetArray(AliVEvent *event);
-  AliParticleContainer       *GetParticleContainer()                         {return fParticleContainer;}
-  AliClusterContainer        *GetClusterContainer()                          {return fClusterContainer;}
+  AliParticleContainer       *GetParticleContainer() const                   {return fParticleContainer;}
+  AliClusterContainer        *GetClusterContainer() const                    {return fClusterContainer;}
   Double_t                    GetFractionSharedPt(AliEmcalJet *jet) const;
  
 
