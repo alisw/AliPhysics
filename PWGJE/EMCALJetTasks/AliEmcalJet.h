@@ -62,6 +62,7 @@ class AliEmcalJet : public AliVParticle
   Double_t          AreaPt()                     const { return fArea;                     }
   Double_t          AreaEta()                    const { return fAreaEta;                  }
   Double_t          AreaPhi()                    const { return fAreaPhi;                  }
+  Double_t          AreaE()                      const { return fAreaE;                    }
   Double_t          AreaEmc()                    const { return fAreaEmc;                  }
   Bool_t            AxisInEmcal()                const { return fAxisInEmcal;              }
   Int_t             Compare(const TObject* obj)  const;
@@ -92,6 +93,7 @@ class AliEmcalJet : public AliVParticle
   Double_t          PtSubVect()                  const { return fPtSubVect;                }
   Double_t          PtSub(Double_t rho)          const { return fPt - fArea*rho;           }
   Double_t          PtSubVect(Double_t rho)      const;
+  TLorentzVector    SubtractRhoVect(Double_t rho) const;
   Short_t           TrackAt(Int_t idx)           const { return fTrackIDs.At(idx);         }
   AliVParticle     *TrackAt(Int_t idx, TClonesArray *ta)  const { if (!ta) return 0; return dynamic_cast<AliVParticle*>(ta->At(TrackAt(idx))); }
   AliVParticle     *GetLeadingTrack(TClonesArray *tracks) const;
@@ -112,6 +114,7 @@ class AliEmcalJet : public AliVParticle
   void              SetArea(Double_t a)                { fArea    = a;                     }
   void              SetAreaEta(Double_t a)             { fAreaEta = a;                     }
   void              SetAreaPhi(Double_t a)             { fAreaPhi = TVector2::Phi_0_2pi(a); }
+  void              SetAreaE(Double_t a)               { fAreaE = a;                       }
   void              SetAreaEmc(Double_t a)             { fAreaEmc = a;                     }
   void              SetAxisInEmcal(Bool_t b)           { fAxisInEmcal = b;                 }
   void              SetFlavour(Int_t flavour)          { fFlavourTagging = flavour;        }
@@ -248,9 +251,10 @@ class AliEmcalJet : public AliVParticle
   Double32_t        fPhi;                 //[0,6.3,12] phi
   Double32_t        fM;                   //[0,0,8]    mass
   Double32_t        fNEF;                 //[0,1,8]    neutral energy fraction
-  Double32_t        fArea;                //[0,0,12]   area
+  Double32_t        fArea;                //[0,0,12]   area (transverse)
   Double32_t        fAreaEta;             //[0,0,12]   area eta
   Double32_t        fAreaPhi;             //[0,0,12]   area phi
+  Double32_t        fAreaE;               //[0,0,12]   temporal area component
   Double32_t        fAreaEmc;             //[0,0,12]   area on EMCAL surface (determined from ghosts)
   Bool_t            fAxisInEmcal;         //           =true if jet axis inside EMCAL acceptance
   Int_t             fFlavourTagging;      // tag jet with a falvour, bit 0 = no tag; bit 1= Dstar; bit 2 = D0
