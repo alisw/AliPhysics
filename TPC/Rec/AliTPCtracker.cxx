@@ -149,7 +149,7 @@
 #include "AliDAQ.h"
 #include "AliCosmicTracker.h"
 #include "AliTPCROC.h"
-
+#include "AliMathBase.h"
 //
 
 using std::cerr;
@@ -1525,13 +1525,16 @@ void    AliTPCtracker::FilterOutlierClusters(){
   
   //
   // 1.) booking part 
-  //
-  Int_t nSectors=AliTPCROC::Instance()->GetNSectors();  // should be fkparam->Get... | AliTPCROC::Instance()->GetNSectors()
-  Int_t nTimeBins=1024; // should be fParam->Get.... ?
+  // 
+  AliTPCcalibDB *db=AliTPCcalibDB::Instance();
+  Int_t nSectors=AliTPCROC::Instance()->GetNSectors(); 
+  Int_t nTimeBins= db->GetParameters()->GetMaxTBin(); 
   Int_t nPadRows=AliTPCROC::Instance()->GetNRows(0) + AliTPCROC::Instance()->GetNRows(36);
-  Double_t nSigmaCut=6; // should be in recoParam
-  Double_t offsetTime=100;  //should be in RecoParam  
-  Double_t offsetPadRow=100;  //should be in RecoParam
+  // parameters for filtering
+  const Double_t nSigmaCut=9.;           // should be in recoParam ?
+  const Double_t offsetTime=100;         // should be in RecoParam ?  -
+  const Double_t offsetPadRow=300;       // should be in RecoParam ?
+  const Double_t offsetTimeAccept=8;     // should be in RecoParam ?  - obtained as mean +1 rms in high IR pp
   TH2F hisTime("hisSectorTime","hisSectorTime", nSectors,0,nSectors, nTimeBins,0,nTimeBins);
   TH2F hisPadRow("hisSectorRow","hisSectorRow", nSectors,0,nSectors, nPadRows,0,nPadRows);
   //
@@ -1553,17 +1556,6 @@ void    AliTPCtracker::FilterOutlierClusters(){
       } 
     } 
   } 
-  //for (Int_t isector=0; isector<nSectors; isector++){  //set all ellemts of crosstalk matrix to 0
-  //  dummy fill     
-  //  for (Int_t i=0; i<100000; i++) {
-  //  hisTime.Fill(gRandom->Rndm()*nSectors, gRandom->Rndm()*nTimeBins);
-  //  if (gRandom->Rndm()<0.5)  hisTime.Fill(gRandom->Rndm()*nSectors, 500);
-  //  }
-    //for (Int_t row = 0;row<nrows;row++){
-    //hisTime.Fill(cluster->GetDetector(),cluster->GetTimeBin()); 
-    //hisPadRow.Fill(cluster->GetDetector(),cluster->GetTimeBin()); 
-    //}
-  //}
 
   //
   // 3. Filtering part
@@ -1578,8 +1570,11 @@ void    AliTPCtracker::FilterOutlierClusters(){
   TVectorD vecRMSSectorPadRow(nSectors);
   TVectorD vecMedianSectorPadRowOut6(nSectors);
   TVectorD vecMedianSectorPadRowOut9(nSectors);
-
-  // median, rms calculations for hisTime 
+  TVectorD vecSectorOut6(nSectors);
+  TVectorD vecSectorOut9(nSectors);
+  //
+  // 3.a)  median, rms calculations for hisTime 
+  //
   for (Int_t isec=0; isec<nSectors; isec++){
     vecMedianSectorTimeOut6[isec]=0;
     vecMedianSectorTimeOut9[isec]=0;
@@ -1603,8 +1598,9 @@ void    AliTPCtracker::FilterOutlierClusters(){
       }
     }
   }    
-
-  // median, rms calculations for hisPadRow
+  //
+  // 3.b) median, rms calculations for hisPadRow
+  // 
   for (Int_t isec=0; isec<nSectors; isec++){
     vecMedianSectorPadRowOut6[isec]=0;
     vecMedianSectorPadRowOut9[isec]=0;
@@ -1629,14 +1625,45 @@ void    AliTPCtracker::FilterOutlierClusters(){
     }
   }
   //
+  // 3.c) filter outlier sectors
+  //
+  Double_t medianSectorTime = TMath::Median(nSectors, vecTime.GetMatrixArray());
+  Double_t mean69SectorTime, rms69SectorTime=0;
+  AliMathBase::EvaluateUni(nSectors,  vecTime.GetMatrixArray(), mean69SectorTime,rms69SectorTime,69);
+  for (Int_t isec=0; isec<nSectors; isec++){
+    vecSectorOut6[isec]=0;
+    vecSectorOut9[isec]=0;
+    if (TMath::Abs(vecTime[isec])>(mean69SectorTime+6.*(rms69SectorTime+ offsetTimeAccept)))  vecSectorOut6[isec]=1;
+    if (TMath::Abs(vecTime[isec])>(mean69SectorTime+9.*(rms69SectorTime+ offsetTimeAccept)))  vecSectorOut9[isec]=1;
+  }
+  // light version of export variable
+  Int_t filteredSector= vecSectorOut9.Sum();                  // light version of export variable
+  Int_t filteredSectorTime= vecMedianSectorTimeOut9.Sum();
+  Int_t filteredSectorPadRow= vecMedianSectorPadRowOut9.Sum();
+  fEvent->SetTPCNoiseFilterCounter(0,TMath::Min(filteredSector,255));
+  fEvent->SetTPCNoiseFilterCounter(1,TMath::Min(filteredSectorTime,255));
+  fEvent->SetTPCNoiseFilterCounter(2,TMath::Min(filteredSectorPadRow,255));
+  //
   // dump info to streamer - for later tuning of cuts
   //
   if ((AliTPCReconstructor::StreamLevel()%4)>0) {  //bit 4 used
     (*fDebugStreamer)<<"filterClusterInfo"<<
+      // minimal set variables for the ESDevent
+      "filteredSector="<<filteredSector<<                        //  counter filtered sectors                   
+      "filteredSectorTime="<<filteredSectorTime<<                //  counter filtered time bins
+      "filteredSectorPadRow="<<filteredSectorPadRow<<            //  counter filtered pad-rows
+      // per sector outlier information
+      "medianSectorTime="<<medianSectorTime<<                    // median number of clusters per sector/timebin
+      "mean69SectorTime="<<mean69SectorTime<<                    // LTM statistic  mean of clusters per sector/timebin
+      "rms69SectorTime="<<rms69SectorTime<<                      // LTM statistic  RMS of clusters per sector/timebin
+      "vecSectorOut6.="<<&vecSectorOut6<<                        // flag array sector  - 6 sigma +accept margin outlier
+      "vecSectorOut9.="<<&vecSectorOut9<<                        // flag array sector  - 9 sigma + accept margin outlier
+      // per sector/timebin outlier detection
       "vecMedianSectorTime.="<<&vecMedianSectorTime<<
       "vecRMSSectorTime.="<<&vecRMSSectorTime<<
       "vecMedianSectorTimeOut6.="<<&vecMedianSectorTimeOut6<<
       "vecMedianSectorTimeOut9.="<<&vecMedianSectorTimeOut9<<
+      // per sector/pad-row outlier detection
       "vecMedianSectorPadRow.="<<&vecMedianSectorPadRow<<
       "vecRMSSectorPadRow.="<<&vecRMSSectorPadRow<<
       "vecMedianSectorPadRowOut6.="<<&vecMedianSectorPadRowOut6<<
@@ -1663,6 +1690,8 @@ void    AliTPCtracker::FilterOutlierClusters(){
 	  Int_t entriesPadRow=hisPadRow.GetBinContent(cluster->GetDetector()+1, cluster->GetRow()+1);
 	  Int_t entriesTime=hisTime.GetBinContent(cluster->GetDetector()+1, cluster->GetTimeBin()+1);
 	  Bool_t isOut=kFALSE;
+	  if (vecSectorOut9[isector]>0.5) isOut=kTRUE;
+	  
 	  if (entriesTime>medianTime+nSigmaCut*rmsTime+offsetTime) isOut=kTRUE;
 	  if (entriesPadRow>medianPadRow+nSigmaCut*rmsPadRow+offsetPadRow) isOut=kTRUE;
 	  if (isOut){
