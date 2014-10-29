@@ -132,7 +132,7 @@ AliEveEventManager::AliEveEventManager(const TString& name, Int_t ev) :
     fESDfriend (0), fESDfriendExists(kFALSE),
     fAODFile   (0), fAODTree (0), fAOD (0),
     fRawReader (0), fEventInfo(),
-    fAutoLoad  (kFALSE), fAutoLoadTime (5),      fAutoLoadTimer(0),
+    fAutoLoad  (kFALSE),fLoopMarked(kFALSE), fAutoLoadTime (5),      fAutoLoadTimer(0),
     fIsOpen    (kFALSE), fHasEvent     (kFALSE), fExternalCtrl (kFALSE),
     fGlobal    (0), fGlobalReplace (kTRUE), fGlobalUpdate (kTRUE),
     fExecutor    (0), fTransients(0), fTransientLists(0),
@@ -223,19 +223,74 @@ AliEveEventManager::~AliEveEventManager()
 void AliEveEventManager::GetNextEvent()
 {
 #ifdef ZMQ
-    AliStorageEventManager *eventManager =
-    AliStorageEventManager::GetEventManagerInstance();
+    AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
     eventManager->CreateSocket(EVENTS_SERVER_SUB);
+    eventManager->CreateSocket(SERVER_COMMUNICATION_REQ);
     
     fCurrentEvent[0]=0;
     fCurrentEvent[1]=0;
-    fCurrentTree[0]=0;
-    fCurrentTree[1]=0;
+
     AliESDEvent *tmpEvent = NULL;
     
+    // get list of marked events:
+    struct listRequestStruct list;
+
+    list.runNumber[0]=0;
+    list.runNumber[1]=999999;
+    list.eventNumber[0]=0;
+    list.eventNumber[1]=999999;
+    list.marked[0]=1;
+    list.marked[1]=1;
+    list.multiplicity[0]=1;
+    list.multiplicity[1]=999999;
+    strcpy(list.system[0],"p-p");
+    strcpy(list.system[1],"A-A");
+    
+    struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
+    requestMessage->messageType = REQUEST_LIST_EVENTS;
+    requestMessage->list = list;
+    
+    eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
+    vector<serverListStruct> receivedList = eventManager->GetServerListVector(SERVER_COMMUNICATION_REQ);
+    
+    cout<<"EVENT DISPLAY -- received list of marked events"<<endl;
+    
+    for(int i=0;i<receivedList.size();i++)
+    {
+        cout<<"ev:"<<receivedList[i].eventNumber<<endl;
+    }
+    
+    int iter=0;
     while(!fFinished)
     {
-        tmpEvent = eventManager->GetEvent(EVENTS_SERVER_SUB);
+        if(!fLoopMarked)
+        {
+            cout<<"taking event from reco server"<<endl;
+            tmpEvent = eventManager->GetEvent(EVENTS_SERVER_SUB,5);
+            if(!tmpEvent){sleep(1);}
+        }
+        else
+        {
+            cout<<"taking event from storage manager"<<endl;
+            if(iter<receivedList.size())
+            {
+                struct eventStruct mark;
+                mark.runNumber = receivedList[iter].runNumber;
+                mark.eventNumber = receivedList[iter].eventNumber;
+             
+                struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
+                requestMessage->messageType = REQUEST_GET_EVENT;
+                requestMessage->event = mark;
+                
+                eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
+                tmpEvent = eventManager->GetEvent(SERVER_COMMUNICATION_REQ);
+                
+                iter++;
+                sleep(1);
+            }
+            else{iter=0;}
+        }
+        
         if(tmpEvent)
         {
             if(tmpEvent->GetRunNumber()>=0)
@@ -243,7 +298,7 @@ void AliEveEventManager::GetNextEvent()
                 fMutex->Lock();
                 if(fEventInUse == 0){fWritingToEventIndex = 1;}
                 else if(fEventInUse == 1){fWritingToEventIndex = 0;}
-                cout<<"Received new event"<<endl;
+                cout<<"Received new event:"<<tmpEvent->GetEventNumberInFile()<<endl;
                 if(fCurrentEvent[fWritingToEventIndex])
                 {
                     delete fCurrentEvent[fWritingToEventIndex];
@@ -255,7 +310,13 @@ void AliEveEventManager::GetNextEvent()
                 fMutex->UnLock();
             }
         }
+        else
+        {
+            cout<<"didn't receive new event"<<endl;
+        }
     }
+    delete requestMessage;
+    
 #endif
 }
 
@@ -794,7 +855,7 @@ void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawRead
 
     AfterNewEventLoaded();
 
-    if (fAutoLoad) StartAutoLoadTimer();
+    if (fAutoLoad || fLoopMarked) StartAutoLoadTimer();
     
 }
 
@@ -1788,6 +1849,14 @@ void AliEveEventManager::SetAutoLoad(Bool_t autoLoad)
     }
 }
 
+void AliEveEventManager::SetLoopMarked(Bool_t loopMarked)
+{
+    // Set the automatic event loading mode
+    fLoopMarked = loopMarked;
+    if (fLoopMarked){StartAutoLoadTimer();}
+    else{StopAutoLoadTimer();}
+}
+
 void AliEveEventManager::SetTrigSel(Int_t trig)
 {
     static const TEveException kEH("AliEveEventManager::SetTrigSel ");
@@ -1841,7 +1910,7 @@ void AliEveEventManager::AutoLoadNextEvent()
 
 	StopAutoLoadTimer();
 	NextEvent();
-	if (fAutoLoad)
+	if (fAutoLoad || fLoopMarked)
 		StartAutoLoadTimer();
 }
 

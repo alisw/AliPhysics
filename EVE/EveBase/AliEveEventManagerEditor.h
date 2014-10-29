@@ -81,6 +81,7 @@ public:
 
   void DoRefresh();
   void DoSetAutoLoad();
+  void DoSetLoopMarked();
   void DoSetAutoLoadTime();
   void DoSetTrigSel();
 
@@ -103,6 +104,7 @@ protected:
   TGLabel              *fInfoLabel;    // Display last available event id
 
   TGCheckButton        *fAutoLoad;     // Check-box for automatic loading of events
+  TGCheckButton        *fLoopMarked;     // Check-box for automatic loading of events
   TEveGValuator        *fAutoLoadTime; // Time for automatic loading of events
 
   TGComboBox           *fTrigSel;      // Trigger selection combo box

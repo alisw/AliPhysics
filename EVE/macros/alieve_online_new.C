@@ -245,13 +245,8 @@ void alieve_online_on_new_event()
     if (++g_pic_id >= g_pic_max)
       g_pic_id = 0;
     g_pic_prev.Set();
-<<<<<<< HEAD
-  }
-  AliSysInfo::AddStamp("on_new_event_end");
-=======
   }*/
-	AliSysInfo::AddStamp("on_new_event_end");
->>>>>>> Fixing bugs in Event Display
+  AliSysInfo::AddStamp("on_new_event_end");
 }
 
 void alieve_init_import_macros()

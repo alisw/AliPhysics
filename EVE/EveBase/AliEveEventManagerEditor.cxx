@@ -123,6 +123,7 @@ AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr) :
   fEventId      (0),
   fInfoLabel    (0),
   fAutoLoad     (0),
+  fLoopMarked   (0),
   fAutoLoadTime (0),
   fTrigSel      (0),
   fEventInfo    (0)
@@ -173,6 +174,11 @@ AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr) :
     fAutoLoad->SetToolTipText("Automatic event loading.");
     fAutoLoad->Connect("Toggled(Bool_t)", cls, this, "DoSetAutoLoad()");
 
+    fLoopMarked = new TGCheckButton(f, "Loop Marked");
+    f->AddFrame(fLoopMarked, new TGLayoutHints(kLHintsLeft, 0, 4, 3, 0));
+    fLoopMarked->SetToolTipText("Automatic marked events loading.");
+    fLoopMarked->Connect("Toggled(Bool_t)", cls, this, "DoSetLoopMarked()");
+      
     fAutoLoadTime = new TEveGValuator(f, "Time: ", 110, 0);
     f->AddFrame(fAutoLoadTime);
     fAutoLoadTime->SetShowSlider(kFALSE);
@@ -305,6 +311,14 @@ void AliEveEventManagerWindow::DoSetAutoLoad()
 
   fM->SetAutoLoad(fAutoLoad->IsOn());
   Update(fM->NewEventAvailable());
+}
+
+//______________________________________________________________________________
+void AliEveEventManagerWindow::DoSetLoopMarked()
+{
+    // Set the auto-load flag
+    fM->SetLoopMarked(fLoopMarked->IsOn());
+//    Update(fM->NewEventAvailable());
 }
 
 //______________________________________________________________________________

@@ -125,8 +125,10 @@ public:
 
     Double_t      GetAutoLoadTime()        const { return fAutoLoadTime; }
     Bool_t        GetAutoLoad()            const { return fAutoLoad;     }
+    Bool_t        GetLoopMarked()            const { return fLoopMarked;     }
     void          SetAutoLoadTime(Float_t time);
     void          SetAutoLoad(Bool_t autoLoad);
+    void          SetLoopMarked(Bool_t loopMarked);
     void          SetTrigSel(Int_t trig);
     void          AutoLoadNextEvent();
 
@@ -173,6 +175,7 @@ protected:
     AliEventInfo	fEventInfo;		// Current Event Info
 
     Bool_t        fAutoLoad;              // Automatic loading of events (online)
+    Bool_t        fLoopMarked;            // Automatic loading of marked events
     Float_t       fAutoLoadTime;          // Auto-load time in seconds
     TTimer       *fAutoLoadTimer;         // Timer for automatic event loading
 
