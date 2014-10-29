@@ -85,6 +85,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetTriggerTypeSel(TriggerType t)                      { fTriggerTypeSel    = t                              ; } 
   void                        SetUseAliAnaUtils(Bool_t b, Bool_t bRejPilup = kTRUE) { fUseAliAnaUtils    = b ; fRejectPileup = bRejPilup  ; }
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
+  void                        SetUseSPDTrackletVsClusterBG(Bool_t b)                { fTklVsClusSPDCut   = b                              ; }
 
  protected:
   void                        SetRejectionReasonLabels(TAxis* axis);
@@ -133,6 +134,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Int_t                       fMinNTrack;                  // minimum nr of tracks in event with pT>fTrackPtCut
   Bool_t                      fUseAliAnaUtils;             // used for LHC13* data: z-vtx, Ncontributors, z-vtx resolution cuts
   Bool_t                      fRejectPileup;               // Reject pilup using function AliAnalysisUtils::IsPileUpEvent()
+  Bool_t                      fTklVsClusSPDCut;            // Apply tracklet-vs-cluster SPD cut to reject background events in pp
   AliAnalysisUtils           *fAliAnalysisUtils;           //! vertex selection (optional)
   UInt_t                      fOffTrigger;                 // offline trigger for event selection
   TString                     fTrigClass;                  // trigger class name for event selection
