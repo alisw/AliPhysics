@@ -92,7 +92,13 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       IsTrackMatchRejectionOn()        const { return fRejectTrackMatch   ; }
   void         SwitchOnTrackMatchRejection()          { fRejectTrackMatch = kTRUE  ; }
   void         SwitchOffTrackMatchRejection()         { fRejectTrackMatch = kFALSE ; }  
-	  
+
+  Bool_t       IsShowerShapeSmeared()           const { return fSmearShowerShape   ; }
+  void         SwitchOnShowerShapeSmearing()          { fSmearShowerShape = kTRUE  ; }
+  void         SwitchOffShowerShapeSmearing()         { fSmearShowerShape = kFALSE ; }
+  
+  void         SetShowerShapeSmearWidth(Float_t w )   { fSmearShowerShapeWidth = w ; }
+  
   void         FillNOriginHistograms(Int_t n)         { fNOriginHistograms = n ; 
     if(n > 14) fNOriginHistograms = 14; }
   void         FillNPrimaryHistograms(Int_t n)        { fNPrimaryHistograms= n ;
@@ -130,6 +136,11 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   TLorentzVector fMomentum;                         //! Cluster momentum
   TLorentzVector fPrimaryMom;                       //! Primary MC momentum
+  
+  Bool_t   fSmearShowerShape;                       // Smear shower shape (use in MC)
+  Float_t  fSmearShowerShapeWidth;                  // Smear shower shape landau function "width" (use in MC)
+  TRandom3 fRandom ;                                //! Random generator
+
   
   //Histograms 
   TH1F * fhClusterCutsE [10];                       //! control histogram on the different photon selection cuts, E
@@ -312,10 +323,13 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPtClusterSM;                             //! cluster E distribution per SM, before any selection, after reader
   TH2F * fhPtPhotonSM ;                             //! photon-like cluster E distribution per SM
   
+  TH2F * fhLam0ESmeared;                            //! cluster lambda0 vs  E after smearing
+
+  
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,38)
+  ClassDef(AliAnaPhoton,39)
 
 } ;
  
