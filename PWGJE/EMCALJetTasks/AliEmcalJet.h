@@ -128,7 +128,7 @@ class AliEmcalJet : public AliVParticle
   void              SetPtEmc(Double_t pt)              { fPtEmc          = pt;             }
   void              SetPtSub(Double_t ps)              { fPtSub          = ps;             } 
   void              SetPtSubVect(Double_t ps)          { fPtVectSub      = ps;             }
-  Bool_t            TestFlavourTag(Int_t tag)          { return (Bool_t)((tag & fFlavourTagging) !=0); }
+  Bool_t            TestFlavourTag(Int_t tag)    const { return (Bool_t)((tag & fFlavourTagging) !=0); }
 
   // Trigger
   Bool_t            IsTriggerJet(UInt_t trigger=AliVEvent::kEMCEJE) const   { return (Bool_t)((fTriggers & trigger) != 0); }
