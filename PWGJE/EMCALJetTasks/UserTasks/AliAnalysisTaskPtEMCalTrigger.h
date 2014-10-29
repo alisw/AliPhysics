@@ -50,7 +50,7 @@ public:
   void SetClusterEnergyRange(double emin, double emax) { fEnergyRange.SetLimits(emin,emax); }
   void SetSwapEta() { fSwapEta = kTRUE; }
   void UseTriggersFromTriggerMaker() { fUseTriggersFromTriggerMaker = kTRUE; }
-  void AddJetContainer(const Char_t * contname, Bool_t isMC = kFALSE);
+  void AddJetContainerName(const Char_t * contname, Bool_t isMC = kFALSE);
 
 private:
   AliAnalysisTaskPtEMCalTrigger(const AliAnalysisTaskPtEMCalTrigger &);
