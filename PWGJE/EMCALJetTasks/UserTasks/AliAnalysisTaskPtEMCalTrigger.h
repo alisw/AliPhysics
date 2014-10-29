@@ -67,8 +67,8 @@ private:
   bool IsTrueTrack(const AliVTrack *const) const;
   TString BuildTriggerString();
   const AliVVertex *GetSPDVertex() const;
-  const AliEmcalJet *FoundTrackInJet(const AliVParticle * const track, const AliJetContainer *const jets) const;
-  const AliEmcalJet *FoundClusterInJet(const AliVCluster * const clust, const AliJetContainer *const jets) const;
+  const AliEmcalJet *FoundTrackInJet(const AliVParticle * const track, AliJetContainer *const jets) const;
+  const AliEmcalJet *FoundClusterInJet(const AliVCluster * const clust, AliJetContainer *const jets) const;
   bool TrackInJet(const AliVParticle *const track, const AliEmcalJet *reconstructedJet, const AliParticleContainer *const particles) const;
   bool ClusterInJet(const AliVCluster *const clust, const AliEmcalJet *reconstructedJet, const AliClusterContainer *const particles) const;
   bool IsInRadius(const AliVParticle *const track, const AliEmcalJet *reconstructedJet, Double_t radius) const;
