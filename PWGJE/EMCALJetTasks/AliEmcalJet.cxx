@@ -21,6 +21,7 @@ AliEmcalJet::AliEmcalJet() :
   fArea(0),
   fAreaEta(0),
   fAreaPhi(0),
+  fAreaE(0),
   fAreaEmc(-1),
   fAxisInEmcal(0),
   fFlavourTagging(0),
@@ -92,6 +93,7 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   fArea(0),
   fAreaEta(0),
   fAreaPhi(0),
+  fAreaE(0),
   fAreaEmc(-1),
   fAxisInEmcal(0),
   fFlavourTagging(0),
@@ -168,6 +170,7 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   fArea(0),
   fAreaEta(0),
   fAreaPhi(0),
+  fAreaE(0),
   fAreaEmc(-1),
   fAxisInEmcal(0),
   fFlavourTagging(0),
@@ -243,6 +246,7 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet& jet) :
   fArea(jet.fArea),
   fAreaEta(jet.fAreaEta),
   fAreaPhi(jet.fAreaPhi),
+  fAreaE(jet.fAreaE),
   fAreaEmc(jet.fAreaEmc),
   fAxisInEmcal(jet.fAxisInEmcal),
   fFlavourTagging(jet.fFlavourTagging),
@@ -318,6 +322,7 @@ AliEmcalJet& AliEmcalJet::operator=(const AliEmcalJet& jet)
     fArea               = jet.fArea;
     fAreaEta            = jet.fAreaEta;
     fAreaPhi            = jet.fAreaPhi;
+    fAreaE              = jet.fAreaE;
     fAreaEmc            = jet.fAreaEmc;
     fAxisInEmcal        = jet.fAxisInEmcal;
     fFlavourTagging     = jet.fFlavourTagging;
@@ -394,7 +399,7 @@ Int_t AliEmcalJet::Compare(const TObject* obj) const
 //__________________________________________________________________________________________________
 void AliEmcalJet::GetMom(TLorentzVector& vec) const
 {
-  // Return momentum as four vector.
+  // Return momentum as four-vector.
 
   vec.SetPtEtaPhiE(fPt, fEta, fPhi, E());
 }
@@ -419,6 +424,20 @@ Double_t AliEmcalJet::PtSubVect(Double_t rho) const
 }
 
 //__________________________________________________________________________________________________
+TLorentzVector AliEmcalJet::SubtractRhoVect(Double_t rho) const
+{
+  // Return four-momentum after vectorial subtraction
+
+  TLorentzVector vecCorr;
+  GetMom(vecCorr);
+  TLorentzVector vecBg;
+  vecBg.SetPtEtaPhiE(fArea, fAreaEta, fAreaPhi, fAreaE);
+  vecBg *= rho;
+  vecCorr -= vecBg;
+  return vecCorr;
+}
+
+//__________________________________________________________________________________________________
 void AliEmcalJet::SortConstituents()
 {
   // Sort constituent by index (increasing).
@@ -432,8 +451,8 @@ Double_t AliEmcalJet::DeltaR(const AliVParticle* part) const
 {
   // Helper function to calculate the distance between two jets or a jet and a particle
 
-  Double_t dPhi = this->Phi() - part->Phi();
-  Double_t dEta = this->Eta() - part->Eta();
+  Double_t dPhi = Phi() - part->Phi();
+  Double_t dEta = Eta() - part->Eta();
   dPhi = TVector2::Phi_mpi_pi(dPhi);
   return TMath::Sqrt(dPhi * dPhi + dEta * dEta);
 }
