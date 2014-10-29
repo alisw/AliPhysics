@@ -17,6 +17,11 @@ main()
     echo "  ${0##*/} inputList=file.list"
     echo "  options override config file (if any), e.g.:"
     echo "  ${0##*/} configFile=runQA.config inputList=file.list outputDirectory=%det"
+    echo "some expert options"
+    echo "  inputListHighPtTrees=file.list - external list of filtered trees, requires inputList to be set"
+    echo "  includeDetectors=TPC,V0,MU - only process those"
+    echo "  excludeDetectors=EVS,TPC - skip processing of those"
+    echo "  - see example config file for more"
     return 1
   fi
 
