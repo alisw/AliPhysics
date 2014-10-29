@@ -73,6 +73,9 @@ AliForwardQATask::AliForwardQATask(const char* name)
   fEnergyFitter.SetFitRangeBinWidth(4);
   fEnergyFitter.SetMinEntries(1000);
   fCloneList = true;
+
+  // For the QA we always enable fall-back 
+  AliForwardCorrectionManager::Instance().SetEnableFallBack(true);
 }
 //____________________________________________________________________
 void

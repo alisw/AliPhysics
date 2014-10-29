@@ -84,7 +84,7 @@ fhPtNPileUpSPDVtxTimeCut2(0),         fhPtNPileUpTrkVtxTimeCut2(0)
   
 }
 
-//___________________________________________
+//__________________________________________________
 TObjString *  AliAnaClusterPileUp::GetAnalysisCuts()
 {
   //Save parameters used for analysis
@@ -92,9 +92,9 @@ TObjString *  AliAnaClusterPileUp::GetAnalysisCuts()
   const Int_t buffersize = 255;
   char onePar[buffersize] ;
   
-  snprintf(onePar,buffersize,"--- AliAnaClusterPileUp ---\n") ;
+  snprintf(onePar,buffersize,"--- AliAnaClusterPileUp---:") ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Calorimeter: %s\n",GetCalorimeterString().Data()) ;
+  snprintf(onePar,buffersize,"Calorimeter: %s",GetCalorimeterString().Data()) ;
   parList+=onePar ;
   
   //Get parameters set in base class.
@@ -349,7 +349,7 @@ void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
   
   if(!pl)
   {
-    Info("MakeAnalysisFillAOD","TObjArray with %s clusters is NULL!\n",GetCalorimeterString().Data());
+    AliInfo(Form("TObjArray with %s clusters is NULL!",GetCalorimeterString().Data()));
     return;
   }
   
@@ -377,7 +377,8 @@ void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
   // Loop on clusters
   Int_t nCaloClusters = pl->GetEntriesFast();
 
-  if(GetDebug() > 0) printf("AliAnaClusterPileUp::MakeAnalysisFillAOD() - input %s cluster entries %d\n", GetCalorimeterString().Data(), nCaloClusters);
+  AliDebug(1,Form("Input %s cluster entries %d", GetCalorimeterString().Data(), nCaloClusters));
+  
   //Init variables
   Int_t   idMax = 0;
   Float_t ptMax = 0;
@@ -664,8 +665,7 @@ void  AliAnaClusterPileUp::MakeAnalysisFillHistograms()
     fhClusterMultNoPileUp[3]->Fill(ptMax,n40);
   }
 
-  
-  if(GetDebug() > 1) printf("AliAnaClusterPileUp::MakeAnalysisFillHistograms()  End fill histograms\n");
+  AliDebug(1,"End fill histograms");
   
 }
 

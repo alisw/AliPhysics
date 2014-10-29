@@ -480,7 +480,8 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
     
     for (Int_t iT = 0; iT < fAOD->GetNumberOfTracks(); iT++){
         
-        AliAODTrack* aodTrack = fAOD->GetTrack(iT);
+        AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iT));
+        if(!aodTrack) AliFatal("Not a standard AOD");
         
         if (!aodTrack)
             continue;
@@ -547,7 +548,8 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
     // Track loop
     for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++)
     {
-        track = fAOD->GetTrack(iTracks);
+        track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
+        if(!track) AliFatal("Not a standard AOD");
         if (!track)
         {
             printf("ERROR: Could not receive track %d\n", iTracks);
@@ -779,7 +781,8 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const 
     Bool_t flagPhotonicElec = kFALSE;
     
     for(Int_t jTracks = 0; jTracks<fAOD->GetNumberOfTracks(); jTracks++){
-        AliAODTrack *trackAsso = fAOD->GetTrack(jTracks);
+        AliAODTrack *trackAsso = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(jTracks));
+        if(!trackAsso) AliFatal("Not a standard AOD");
         if (!trackAsso) {
             printf("ERROR: Could not receive track %d\n", jTracks);
             continue;
@@ -1253,14 +1256,16 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::CheckCentrality(AliAODEvent* event, Bool_t
     Float_t multTPC(0.); // tpc mult estimate
     Float_t multGlob(0.); // global multiplicity
     for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill tpc mult
-        AliAODTrack* trackAOD = event->GetTrack(iTracks);
+        AliAODTrack* trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(iTracks));
+        if(!trackAOD) AliFatal("Not a standard AOD");
         if (!trackAOD) continue;
         if (!(trackAOD->TestFilterBit(1))) continue;
         if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70)  || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.2)) continue;
         multTPC++;
     }
     for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill global mult
-        AliAODTrack* trackAOD = event->GetTrack(iTracks);
+        AliAODTrack* trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(iTracks));
+        if(!trackAOD) AliFatal("Not a standard AOD");
         if (!trackAOD) continue;
         if (!(trackAOD->TestFilterBit(16))) continue;
         if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.1)) continue;

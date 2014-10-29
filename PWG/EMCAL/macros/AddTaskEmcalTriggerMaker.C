@@ -11,7 +11,8 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMaker(
   int jetLowC                     = 0,
   int jetHighA                    = 0,
   int jetHighB                    = 0,
-  int jetHighC                    = 0
+  int jetHighC                    = 0,
+  bool doQA                       = kFALSE
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -71,7 +72,7 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMaker(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  AliEmcalTriggerMaker *eTask = new AliEmcalTriggerMaker(taskName);
+  AliEmcalTriggerMaker *eTask = new AliEmcalTriggerMaker(taskName, doQA);
   eTask->SetCaloTriggersName(strTriggersName.Data());
   eTask->SetCaloTriggersOutName(triggersOutName);
   eTask->SetCaloTriggerSetupOutName(triggerSetupOutName);
@@ -88,6 +89,11 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMaker(
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
   mgr->ConnectInput  (eTask, 0,  cinput1 );
-  
+
+  if(doQA){
+    TString commonoutput = mgr->GetCommonFileName();
+    commonoutput += ":TriggerQA";
+    mgr->ConnectOutput(eTask, 1, mgr->CreateContainer("TriggerQA", TList::Class(), AliAnalysisManager::kOutputContainer, commonoutput.Data()));
+  }
   return eTask;
 }

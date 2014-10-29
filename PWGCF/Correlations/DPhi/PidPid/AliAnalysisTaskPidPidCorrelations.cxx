@@ -1436,7 +1436,7 @@ void AliAnalysisTaskPidPidCorrelations::CleanUp(TObjArray* tracks, TObject* mcOb
 TObjArray* AliAnalysisTaskPidPidCorrelations::AcceptTracks(Int_t centBin, TObject* arrayMC, /*Bool_t onlyprimaries,*/ Bool_t useCuts)
 {
   //_____ number of RECO AOD tracks
-  Int_t nTracks = fMyAODEvent->GetNTracks();
+  Int_t nTracks = fMyAODEvent->GetNumberOfTracks();
 //   AliDebug(5, Form("#tracks= %d %d", nTracks, centBin));
 //   AliInfo(Form("There are %d tracks in this event",nTracks));
   
@@ -1605,7 +1605,7 @@ TObjArray* AliAnalysisTaskPidPidCorrelations::AcceptMcTracks(Int_t centBin, Bool
 TObjArray* AliAnalysisTaskPidPidCorrelations::AcceptMcRecoMachedTracks(Int_t centBin, Bool_t onlyprimaries, Bool_t useCuts)
 {
   //_____ number of RECO AOD tracks
-  Int_t nTracks = fMyAODEvent->GetNTracks();
+  Int_t nTracks = fMyAODEvent->GetNumberOfTracks();
   //if(fVerbose>0) Printf("AOD tracks: %d", nTracks); //! FIXME
 
   TObjArray* tracksAccepted = new TObjArray;

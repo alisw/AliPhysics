@@ -42,6 +42,9 @@
 
 #include "AliAnalysisTaskEmcalQGTagging.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskEmcalQGTagging)
 
 //________________________________________________________________________

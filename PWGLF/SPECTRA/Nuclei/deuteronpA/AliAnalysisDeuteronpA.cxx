@@ -343,7 +343,7 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
   }  
   //
   // fill histogram to monitor vertex position
-  if (vertex && isVtxOk) fHistVertex->Fill(TMath::Sqrt(vertex->GetXv()*vertex->GetXv() + vertex->GetYv()*vertex->GetYv()),vertex->GetZv());
+  if (vertex && isVtxOk) fHistVertex->Fill(TMath::Sqrt(vertex->GetX()*vertex->GetX() + vertex->GetY()*vertex->GetY()),vertex->GetZ());
 
   Float_t vertexRes = -100;
   Int_t nPrimaries = 0;
@@ -361,8 +361,8 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
       //Double_t yv = trackMC->Vy();
       Double_t zv = trackMC->Vz();
 
-      vertexRes = vertex->GetZv() - zv;
-      fHistVertexRes->Fill(vertex->GetZv() - zv);
+      vertexRes = vertex->GetZ() - zv;
+      fHistVertexRes->Fill(vertex->GetZ() - zv);
 
       break;
     }
@@ -417,7 +417,7 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
       PostData(1, fListHist);
       return;
     } else {
-      if (TMath::Abs(vertex->GetZv()) > 10) {
+      if (TMath::Abs(vertex->GetZ()) > 10) {
 	fHistMult->Fill(-1, processCode);
 	PostData(1, fListHist);
 	return;
@@ -476,7 +476,7 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
     PostData(1, fListHist);
     return;
   } else {
-    if (TMath::Abs(vertex->GetZv()) > 10) {
+    if (TMath::Abs(vertex->GetZ()) > 10) {
       fHistMult->Fill(-1, processCode);
       PostData(1, fListHist);
       return;

@@ -794,16 +794,12 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       }
     
       if ( searchRunNr ) {
-	TString sobjs = objs->GetString();
-	Int_t index = sobjs.Index("terminateRuns");
-	sobjs.Remove(0,index);
-	sobjs.ReplaceAll("terminateRuns/","");
-	sobjs.ReplaceAll(Form("//%s",QAFileName),"");
-	if ( sobjs.IsDigit() ) run = sobjs;
+	Int_t runNr = GetRunNumber(objs->GetString());
+	if (runNr > 0) run = Form("%i",runNr);
       }
   
       if ( run.IsDigit() && ! selectRuns.Contains(Form("%i",run.Atoi())) ) continue;
-
+      
       // open the outfile for this run
       TFile *runFile = TFile::Open(objs->GetString());
       if (!runFile || ! runFile->IsOpen()) {

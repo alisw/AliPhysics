@@ -30,6 +30,9 @@
 
 //QA task for EMCAL electron analysis 
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskHFEemcQA)
   //________________________________________________________________________
   AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA(const char *name) 
@@ -404,7 +407,9 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
 
   Int_t trigger = -1;
   if (fAOD){
-    Double_t multiplicity=fAOD->GetHeader()->GetRefMultiplicity();
+    AliAODHeader * header = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+    if(!header) AliFatal("Not a standard AOD");
+    Double_t multiplicity=header->GetRefMultiplicity();
     fTrigMulti->Fill(-0.5, multiplicity);
     if(evSelMask & AliVEvent::kAny) fTrigMulti->Fill(0.5, multiplicity);
     if(evSelMask & AliVEvent::kMB) fTrigMulti->Fill(1.5, multiplicity);

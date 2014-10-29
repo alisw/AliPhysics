@@ -191,7 +191,8 @@ void AliAnalysisTaskCaloTrackCorrelationM::UserExec(Option_t */*option*/)
   //Get the type of data, check if type is correct
   Int_t  datatype = fAna->GetReader()->GetDataType();
   if(datatype != AliCaloTrackReader::kESD && datatype != AliCaloTrackReader::kAOD &&
-     datatype != AliCaloTrackReader::kMC){
+     datatype != AliCaloTrackReader::kMC)
+  {
     AliError("Wrong type of data");
     return ;
   }
@@ -221,8 +222,6 @@ void AliAnalysisTaskCaloTrackCorrelationM::UserExec(Option_t */*option*/)
   
   //Process event
   fAna->ProcessEvent((Int_t) Entry(), CurrentFileName());
-  
-  //printf("AliAnalysisTaskCaloTrackCorrelationM::Current Event %d; Current File Name : %s\n",(Int_t) Entry(), CurrentFileName());
   
   PostData(1, fOutputContainer);
 	

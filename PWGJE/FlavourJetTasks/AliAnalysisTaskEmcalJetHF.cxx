@@ -67,6 +67,9 @@
 #include "TGeoGlobalMagField.h"
 #include "AliMagF.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskEmcalJetHF)
 
 //________________________________________________________________________

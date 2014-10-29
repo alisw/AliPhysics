@@ -1411,7 +1411,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
 	   track->Set(cParam.GetX(),cParam.GetAlpha(),cParam.GetParameter(),cParam.GetCovariance());
 
            if(accCuts->AcceptTrack(track)) { 
-             FillHistograms(track,stack,AlidNdPtHelper::kRecTracks,vtxESD->GetZv(),multRecTemp,multMCTrueTracks); 
+             FillHistograms(track,stack,AlidNdPtHelper::kRecTracks,vtxESD->GetZ(),multRecTemp,multMCTrueTracks); 
 	     labelsRec[multRec] = TMath::Abs(track->GetLabel());
 	     multRec++;
 	   }
@@ -1432,7 +1432,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
 	   // all the rest tracking scenarios
 	   //
            if(accCuts->AcceptTrack(track)) { 
-             FillHistograms(track,stack,AlidNdPtHelper::kRecTracks,vtxESD->GetZv(),multRecTemp, multMCTrueTracks); 
+             FillHistograms(track,stack,AlidNdPtHelper::kRecTracks,vtxESD->GetZ(),multRecTemp, multMCTrueTracks); 
 	     labelsRec[multRec] = TMath::Abs(track->GetLabel());
 	     multRec++;
 	   }
@@ -1445,7 +1445,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
       FillHistograms(AlidNdPtHelper::kRecEvents,vtxMC[2],multMBTracks);
     }
     else {
-      FillHistograms(AlidNdPtHelper::kRecEvents,vtxESD->GetZv(),multMBTracks);
+      FillHistograms(AlidNdPtHelper::kRecEvents,vtxESD->GetZ(),multMBTracks);
     }
 
     // calculate meanPt from the event
@@ -1469,7 +1469,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
     }
 
     // control event histograms
-    Double_t vRecEventHist1[3] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv()};
+    Double_t vRecEventHist1[3] = {vtxESD->GetX(),vtxESD->GetY(),vtxESD->GetZ()};
     fRecEventHist1->Fill(vRecEventHist1);
 
     // correlation track multiplicity vs MB track multiplicity

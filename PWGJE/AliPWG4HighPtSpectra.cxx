@@ -419,7 +419,8 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       //Get track for analysis
       AliVTrack *track = 0x0;
 
-      AliAODTrack *aodtrack = fAOD->GetTrack(iTrack);
+      AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
+      if(!aodtrack) AliFatal("Not a standard AOD");
       if(!aodtrack)
         continue;
       if((!aodtrack->TestFilterBit(fFilterMask)) || 

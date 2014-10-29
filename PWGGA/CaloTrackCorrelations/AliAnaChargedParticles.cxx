@@ -163,7 +163,7 @@ void AliAnaChargedParticles::FillPrimaryHistograms()
       primStack = stack->Particle(i) ;
       if(!primStack)
       {
-        printf("AliAnaChargedParticles::FillPrimaryMCHistograms() - ESD primaries pointer not available!!\n");
+        AliWarning("ESD primaries pointer not available!!");
         continue;
       }
       
@@ -187,7 +187,7 @@ void AliAnaChargedParticles::FillPrimaryHistograms()
       primAOD = (AliAODMCParticle *) mcparticles->At(i);
       if(!primAOD)
       {
-        printf("AliAnaChargedParticles::FillPrimaryHistograms() - AOD primaries pointer not available!!\n");
+        AliWarning("AOD primaries pointer not available!!");
         continue;
       }
 
@@ -790,8 +790,7 @@ void AliAnaChargedParticles::Init()
   //Do some checks
   
   if(!GetReader()->IsCTSSwitchedOn())
-    AliFatal("STOP!: You want to use CTS tracks in analysis but not read!! \n!!Check the configuration file!!\n");
-  
+    AliFatal("STOP!: You want to use CTS tracks in analysis but not read!! \n!!Check the configuration file!!");
   
 }
 
@@ -805,8 +804,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
   Double_t vert[3] = {0,0,0}; //vertex ;
   
   //Some prints
-  if(GetDebug() > 0)
-    printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - In CTS aod entries %d\n", ntracks);
+  AliDebug(1,Form("In CTS aod entries %d", ntracks));
   
   AliVEvent  * event = GetReader()->GetInputEvent();
   AliESDEvent* esdEv = dynamic_cast<AliESDEvent*> (event);
@@ -1156,8 +1154,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     fMomentum.SetPxPyPzE(track->Px(),track->Py(),track->Pz(),0);
     Bool_t in = GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kCTS) ;
     
-    if(GetDebug() > 1) 
-      printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - Track pt %2.2f, eta %2.2f, phi %2.2f in fiducial cut %d\n",pt,eta,phi,in);
+    AliDebug(1,Form("Track pt %2.2f, eta %2.2f, phi %2.2f in fiducial cut %d",pt,eta,phi,in));
     
     //Acceptance selection
     if(IsFiducialCutOn() && ! in ) continue ;
@@ -1244,8 +1241,8 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     
   }//loop
   
-  if(GetDebug() > 0) 	
-    printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - Final aod branch entries %d\n", GetOutputAODBranch()->GetEntriesFast());   
+  AliDebug(1,Form("Final aod branch entries %d", GetOutputAODBranch()->GetEntriesFast()));
+  
 } 
 
 //__________________________________________________________________
@@ -1260,8 +1257,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
   
   fhNtracks->Fill(GetReader()->GetTrackMultiplicity()) ;
   
-  if(GetDebug() > 0)
-    printf("AliAnaChargedParticles::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
+  AliDebug(1,Form("AOD branch entries %d", naod));
   
   Float_t pt  = 0;
   Float_t phi = 0;
