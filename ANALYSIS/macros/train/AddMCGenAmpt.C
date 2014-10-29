@@ -2,6 +2,7 @@ AliGenerator *AddMCGenAmpt(
 			   Double_t Energy      = 2760.,   // CM energy 
 			   Double_t bmin        = 0.0,     // minimum impact parameter
 			   Double_t bmax        = 20.0,    // maximum impact parameter
+			   Double_t ptHardMin   = 3.0,     // minimum pt hard (was 3.0 in previous AMPT productions)
 			   Bool_t stringMelting = kTRUE,   // string melting option 
 			   Bool_t useART        = kTRUE,   // use hadronic rescattering phase (ART)
 			   )
@@ -41,7 +42,7 @@ AliGenerator *AddMCGenAmpt(
   genAMPT->SetReferenceFrame("CMS");
   genAMPT->SetProjectile("A", 208, 82);
   genAMPT->SetTarget    ("A", 208, 82);
-  genAMPT->SetPtHardMin (2);
+  genAMPT->SetPtHardMin (ptHardMin);
   genAMPT->SetImpactParameterRange(bmin,bmax);
   //=========================================================================
 
