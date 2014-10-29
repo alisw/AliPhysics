@@ -1090,6 +1090,7 @@ void AliEveConfigManager::SetEventInEventManager()
 
 void AliEveConfigManager::StorageManagerChangedState(int state)
 {
+#ifdef ZMQ
     AliEveEventManager *manager = AliEveEventManager::GetMaster();
     AliStorageAdministratorPanelListEvents* listEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
     
@@ -1103,6 +1104,7 @@ void AliEveConfigManager::StorageManagerChangedState(int state)
             listEventsTab->SetOfflineMode(kFALSE);
         }
     }
+#endif
 }
 
 
