@@ -100,13 +100,30 @@ public:
    * 
    * @param sumFile Output file for sums
    * @param resFile Output file for sums
-   * @param old     Use old names
    * 
    * @return true on success 
    */
   virtual Bool_t Connect(const char* sumFile=0, 
-			 const char* resFile=0,
-			 Bool_t      old=false);
+			 const char* resFile=0)
+  {
+    return Connect(sumFile, resFile, false);
+  }
+  /** 
+   * Add this task to the manager and connect the outputs.  If @a
+   * sumFile is null or the empty string, then the sum container is
+   * stored in the default output file of the manager.  If @a resFile
+   * is null or the empty string, then it is set to @a resFile if
+   * defined, otherwise to the default output file of the manager.
+   * 
+   * @param sumFile Output file for sums
+   * @param resFile Output file for sums
+   * @param old     Use old names
+   * 
+   * @return true on success 
+   */
+  virtual Bool_t Connect(const char* sumFile, 
+			 const char* resFile,
+			 Bool_t      old);
   /** 
    * Called when initializing the train 
    */
