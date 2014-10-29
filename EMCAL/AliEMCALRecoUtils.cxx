@@ -2025,16 +2025,22 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
       return kFALSE;
   }
 
-  if (mass<0) {
+  // Select the mass hypothesis
+  if ( mass < 0 )
+  {
     Bool_t onlyTPC = kFALSE;
-    if (mass==-99)
-      onlyTPC=kTRUE;
-    if (esdt) {
+    if ( mass == -99 ) onlyTPC=kTRUE;
+    
+    if (esdt)
+    {
       if ( useMassForTracking ) mass = esdt->GetMassForTracking();
       else                      mass = esdt->GetMass(onlyTPC);
     }
     else
-      mass = aodt->M();
+    {
+      if ( useMassForTracking ) mass = aodt->GetMassForTracking();
+      else                      mass = aodt->M();
+    }
   }
 
   AliExternalTrackParam *trackParam = 0;
