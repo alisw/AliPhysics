@@ -47,10 +47,10 @@ class AliEmcalJet : public AliVParticle
   Double_t          OneOverPt()                  const { return 1./fPt;  }
   Double_t          Phi()                        const { return fPhi;    }
   Double_t          Theta()                      const { return 2*TMath::ATan(TMath::Exp(-fEta));         }
-  Double_t          E()                          const { Double_t p=P(); return TMath::Sqrt(M()*M()+p*p); }
+  Double_t          E()                          const { Double_t p=P(); return TMath::Sqrt(fM*fM+p*p); }
   Double_t          M()                          const { return fM; }
   Double_t          Eta()                        const { return fEta;    }
-  Double_t          Y()                          const { return 0.5*TMath::Log((E()+Pz())/(E()-Pz()));    }
+  Double_t          Y()                          const { Double_t e = E(); Double_t pz = Pz(); return 0.5*TMath::Log((e+pz)/(e-pz));    }
   Short_t           Charge()                     const { return 0;       }
   Int_t             GetLabel()                   const { return fLabel;  }
   Int_t             PdgCode()                    const { return 0;       }

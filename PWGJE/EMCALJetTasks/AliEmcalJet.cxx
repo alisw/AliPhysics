@@ -396,8 +396,7 @@ void AliEmcalJet::GetMom(TLorentzVector& vec) const
 {
   // Return momentum as four vector.
 
-  Double_t p = fPt * TMath::CosH(fEta);
-  vec.SetPtEtaPhiE(fPt, fEta, fPhi, TMath::Sqrt(p * p + fM * fM));
+  vec.SetPtEtaPhiE(fPt, fEta, fPhi, E());
 }
 
 //__________________________________________________________________________________________________
@@ -478,10 +477,11 @@ Double_t AliEmcalJet::GetZ(const Double_t trkPx, const Double_t trkPy, const Dou
 {
   // Get the z of a constituent inside of a jet
 
-  Double_t pJetSq = this->Px() * this->Px() + this->Py() * this->Py() + this->Pz() * this->Pz();
+  Double_t pJetSq = P();
+  pJetSq *= pJetSq;
 
   if(pJetSq > 1e-6)
-  { return (trkPx * this->Px() + trkPy * this->Py() + trkPz * this->Pz()) / pJetSq ; }
+  { return (trkPx * Px() + trkPy * Py() + trkPz * Pz()) / pJetSq ; }
   else
   { AliWarning(Form("%s: strange, pjet*pjet seems to be zero pJetSq: %f", GetName(), pJetSq)); return -1; }
 }
