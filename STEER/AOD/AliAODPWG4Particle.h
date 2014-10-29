@@ -22,6 +22,7 @@ class TString;
 class AliAODPWG4Particle : public AliVParticle {
   
  public:
+  
   AliAODPWG4Particle();
   AliAODPWG4Particle(Double_t px, Double_t py, Double_t pz, Double_t e);
   AliAODPWG4Particle(TLorentzVector & p);
@@ -73,7 +74,6 @@ class AliAODPWG4Particle : public AliVParticle {
   virtual Int_t   GetLabel()             const { return fLabel        ; }
   virtual Int_t   GetCaloLabel (Int_t i) const { return fCaloLabel[i] ; }
   virtual Int_t   GetTrackLabel(Int_t i) const { return fTrackLabel[i]; }
-  virtual TString GetDetector()          const { return fDetector     ; }
   virtual UInt_t  GetDetectorTag()       const { return fDetectorTag  ; }
   virtual Bool_t  GetDispBit()           const { return fDisp         ; }
   virtual Bool_t  GetTOFBit()            const { return fTof          ; }
@@ -92,7 +92,10 @@ class AliAODPWG4Particle : public AliVParticle {
   // Calorimeter specific param
   virtual Int_t   GetNLM()               const { return fNLM          ; }
   virtual Float_t GetM02()               const { return fM02          ; }
-  
+  virtual Float_t GetTime()              const { return fTime         ; }
+  virtual Int_t   GetNCells()            const { return fNCells       ; }
+  virtual Int_t   GetSModNumber()        const { return fSuperModule  ; }
+
   //
   // Specific setters
   virtual void SetIdentifiedParticleType(Int_t pdg) { fPdg = pdg ; }
@@ -103,7 +106,6 @@ class AliAODPWG4Particle : public AliVParticle {
   virtual void SetTrackLabel(Int_t a, Int_t b, Int_t c, Int_t d) 
   { fTrackLabel[0] = a; fTrackLabel[1] = b  ; fTrackLabel[2] = c; fTrackLabel[3] = d; }
   
-  virtual void SetDetector(TString   d)  { fDetector    = d    ; }
   virtual void SetDetectorTag(UInt_t d)  { fDetectorTag = d    ; }
   virtual void SetDispBit(Bool_t disp)   { fDisp        = disp ; }
   virtual void SetTOFBit(Bool_t tof)     { fTof         = tof  ; }
@@ -120,8 +122,11 @@ class AliAODPWG4Particle : public AliVParticle {
   virtual void SetLeadingParticle(Bool_t l) { fLeadingParticle = l ; }
   
   // Calorimeter specific param
-  virtual void SetNLM(UInt_t  nlm)       { fNLM         = nlm  ; }
-  virtual void SetM02(Float_t m02)       { fM02         = m02  ; }
+  virtual void SetNLM   (Int_t   nlm)    { fNLM         = nlm  ; }
+  virtual void SetM02   (Float_t m02)    { fM02         = m02  ; }
+  virtual void SetTime  (Float_t tim)    { fTime        = tim  ; }
+  virtual void SetNCells(Int_t   nce)    { fNCells      = nce  ; }
+  virtual void SetSModNumber(Int_t sm)   { fSuperModule = sm   ; }
   
   //
   // BTagging
@@ -143,23 +148,32 @@ class AliAODPWG4Particle : public AliVParticle {
   }
   
  private:
+  
   TLorentzVector* fMomentum; // Photon 4-momentum vector
   Int_t      fPdg ;          // type of identified particle, same code as PDG, but this is not a MonteCarlo particle 
   Int_t      fTag ;          // tag of particle (decay, fragment, prompt photon), MC
   Int_t      fLabel ;        // MC label
   Int_t      fCaloLabel[2];  // CaloCluster index, 1 for photons, 2 for pi0.
   Int_t      fTrackLabel[4]; // Track lable, 1 for pions, 2 for conversion photons 
-  TString    fDetector ;     // Detector where particle was measured.
   UInt_t     fDetectorTag ;  // Detector where particle was measured, integer
-  Bool_t     fDisp ;         // Dispersion bit
-  Bool_t     fTof ;          // TOF bit
-  Bool_t     fCharged ;      // Charged bit
-  Int_t      fDecayTag;      // Tag the photon as decay from, pi0, eta, pi0 side band, eta side band
+  
+  // Calo specific
   Int_t      fBadDist ;      // Distance to bad module in module units
   UInt_t     fNLM ;          // Store the number of local maxima
   Float_t    fM02 ;          // Store the main axis of the calorimeter shower shape
+  Float_t    fTime;          // Store the time of cluster or track, nano seconds
+  Int_t      fNCells;        // Store the number of cells in cluster
+  Int_t      fSuperModule;   // Store the super-module number of cluster
+  
+  // Tags
+  Int_t      fDecayTag;      // Tag the photon as decay from, pi0, eta, pi0 side band, eta side band
   Bool_t     fIsolated ;     // Particle is isolated or not
   Bool_t     fLeadingParticle ; //Particle is leading or not
+
+  // PID bits
+  Bool_t     fDisp ;         // Dispersion bit
+  Bool_t     fTof ;          // TOF bit
+  Bool_t     fCharged ;      // Charged bit
 
   // Not in use currently ...
   Bool_t     fTagged ;       // If photon tagged (pi0 decay), not used anymore, replace by fDecayTag
@@ -168,7 +182,7 @@ class AliAODPWG4Particle : public AliVParticle {
   Int_t      fBtag;          // tag particle from B.
 
   
-  ClassDef(AliAODPWG4Particle, 5);
+  ClassDef(AliAODPWG4Particle, 6);
 };
 
 inline Double_t AliAODPWG4Particle::Phi() const

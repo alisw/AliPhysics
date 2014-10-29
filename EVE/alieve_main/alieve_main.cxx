@@ -30,6 +30,10 @@
 #include <EveBase/AliEveApplication.h>
 #include <EveBase/AliEveMainWindow.h>
 
+
+#include <iostream>
+using namespace std;
+
 int main(int argc, char **argv)
 {
     static const TEveException kEH("alieve::main");
@@ -108,17 +112,27 @@ int main(int argc, char **argv)
         AliErrorGeneral("alieve_main",exc.Data());
     }
 
-    app->Connect( "TEveBrowser", "CloseWindow()", "TRint", app, "Terminate(=0)");
-
+    app->Connect("TEveBrowser", "CloseWindow()", "TApplication", app, "Kill()");
+    
     app->Run(kTRUE);
 
+    cout<<"Terminate"<<endl;
+    
+    app->Terminate(0);
+    
+    cout<<"unmap"<<endl;
+    
     if (gEve && gEve->GetBrowser())	gEve->GetBrowser()->UnmapWindow();
 
+    cout<<"teve terminate"<<endl;
+    
     TEveManager::Terminate();
-    app->Terminate(0);
 
+    cout<<"delete"<<endl;
+    
     if(gEve) {delete gEve; gEve = 0;}
 
-
+    cout<<"return"<<endl;
+    
     return 0;
 }

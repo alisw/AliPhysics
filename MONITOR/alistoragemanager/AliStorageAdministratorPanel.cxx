@@ -26,7 +26,8 @@ enum TOOLBUTTON{
 enum MENUBAR{
 	MENUBAR_CLIENT_SET_PARAMS=1,
 	MENUBAR_SERVER_LIST_EVENTS,
-      	MENUBAR_SERVER_MARK_EVENT,
+    MENUBAR_SERVER_MARK_EVENT,
+    MENUBAR_SERVER_MARK_ALL_EVENTS,
 	MENUBAR_SERVER_GET_EVENT,
 	MENUBAR_SERVER_GET_NEXT_EVENT,
 	MENUBAR_SERVER_GET_LAST_EVENT
@@ -277,6 +278,7 @@ void AliStorageAdministratorPanel::SetupFixedMenuBar()
 	TGPopupMenu *serverPopup = new TGPopupMenu(fClient->GetRoot());
 	serverPopup->AddEntry("&Get Events List",MENUBAR_SERVER_LIST_EVENTS);
 	serverPopup->AddEntry("&Mark Event",MENUBAR_SERVER_MARK_EVENT);
+    serverPopup->AddEntry("&Mark ALL Events",MENUBAR_SERVER_MARK_ALL_EVENTS);
 	serverPopup->AddEntry("&Get Event (test)",MENUBAR_SERVER_GET_EVENT);
 	serverPopup->AddEntry("&Get Next Event (test)",MENUBAR_SERVER_GET_NEXT_EVENT);
 	serverPopup->AddEntry("&Get Last Event (test)",MENUBAR_SERVER_GET_LAST_EVENT);
@@ -311,6 +313,7 @@ Bool_t AliStorageAdministratorPanel::ProcessMessage(Long_t msg, Long_t parm1, Lo
 			case MENUBAR_CLIENT_SET_PARAMS:onClientSetParams();break;
 			case MENUBAR_SERVER_LIST_EVENTS:onServerListEvents();break;
 			case MENUBAR_SERVER_MARK_EVENT:onServerMarkEvent();break;
+            case MENUBAR_SERVER_MARK_ALL_EVENTS:onServerMarkAllEvents();break;
 			case MENUBAR_SERVER_GET_EVENT:onServerGetEvent();break;
 			case MENUBAR_SERVER_GET_NEXT_EVENT:onServerGetNextEvent();break;
 			case MENUBAR_SERVER_GET_LAST_EVENT:onServerGetLastEvent();break;
@@ -338,6 +341,54 @@ void AliStorageAdministratorPanel::onServerMarkEvent()
 	AliStorageAdministratorPanelMarkEvent *markEventWindow =
 		AliStorageAdministratorPanelMarkEvent::GetInstance();
 	if(markEventWindow){cout<<"Mark event window created"<<endl;}
+}
+
+void AliStorageAdministratorPanel::onServerMarkAllEvents()
+{
+    // get list of all events:
+    struct listRequestStruct list;
+    
+    list.runNumber[0]=0;
+    list.runNumber[1]=999999;
+    list.eventNumber[0]=0;
+    list.eventNumber[1]=999999;
+    list.marked[0]=1;
+    list.marked[1]=0;
+    list.multiplicity[0]=1;
+    list.multiplicity[1]=999999;
+    strcpy(list.system[0],"p-p");
+    strcpy(list.system[1],"A-A");
+    
+    struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
+    requestMessage->messageType = REQUEST_LIST_EVENTS;
+    requestMessage->list = list;
+    
+    fEventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
+    vector<serverListStruct> receivedList = fEventManager->GetServerListVector(SERVER_COMMUNICATION_REQ);
+    
+    cout<<"ADMIN PANEL -- received list of marked events:"<<receivedList.size()<<endl;
+    
+    int failCounter=0;
+    
+    int i;
+    for(i=0;i<receivedList.size();i++)
+    {
+        cout<<"marking:"<<i<<endl;
+        struct eventStruct mark;
+        mark.runNumber   = receivedList[i].runNumber;
+        mark.eventNumber = receivedList[i].eventNumber;
+     
+        struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
+        requestMessage->messageType = REQUEST_MARK_EVENT;
+        requestMessage->event = mark;
+        
+        fEventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
+        bool response = fEventManager->GetBool(SERVER_COMMUNICATION_REQ);
+        delete requestMessage;
+        if(!response){failCounter++;}
+    }
+    cout<<"Tried to mark: "<<i<<"events"<<endl;
+    cout<<"Could not mark: "<<failCounter<<" events"<<endl;
 }
 
 void AliStorageAdministratorPanel::onClientSetParams()

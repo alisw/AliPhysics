@@ -264,7 +264,6 @@ void AliGenEMCocktail::CreateCocktail()
 		genkzeroshort->SetYRange(fYMin, fYMax);
 		AddSource2Generator(nameK0short,genkzeroshort);
 		TF1 *fPtK0short = genkzeroshort->GetPt();
-		fYieldArray[kK0s] = fPtK0short->Integral(fPtMin,fPtMax,(Double_t *) 0x0,1.e-6);
 		#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
 			fYieldArray[kK0s] = fPtK0short->Integral(fPtMin,fPtMax,1.e-6);
 		#else
@@ -281,7 +280,6 @@ void AliGenEMCocktail::CreateCocktail()
 		genkdeltaPlPl->SetYRange(fYMin, fYMax);
 		AddSource2Generator(nameDeltaPlPl,genkdeltaPlPl);
 		TF1 *fPtDeltaPlPl = genkdeltaPlPl->GetPt();
-		fYieldArray[kDeltaPlPl] = fPtDeltaPlPl->Integral(fPtMin,fPtMax,(Double_t *) 0x0,1.e-6);
 		#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
 			fYieldArray[kDeltaPlPl] = fPtDeltaPlPl->Integral(fPtMin,fPtMax,1.e-6);
 		#else
@@ -298,7 +296,6 @@ void AliGenEMCocktail::CreateCocktail()
 		genkdeltaPl->SetYRange(fYMin, fYMax);
 		AddSource2Generator(nameDeltaPl,genkdeltaPl);
 		TF1 *fPtDeltaPl = genkdeltaPl->GetPt();
-		fYieldArray[kDeltaPl] = fPtDeltaPl->Integral(fPtMin,fPtMax,(Double_t *) 0x0,1.e-6);
 		#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
 			fYieldArray[kDeltaPl] = fPtDeltaPl->Integral(fPtMin,fPtMax,1.e-6);
 		#else
@@ -315,7 +312,6 @@ void AliGenEMCocktail::CreateCocktail()
 		genkdeltaMi->SetYRange(fYMin, fYMax);
 		AddSource2Generator(nameDeltaMi,genkdeltaMi);
 		TF1 *fPtDeltaMi = genkdeltaMi->GetPt();
-		fYieldArray[kDeltaMi] = fPtDeltaMi->Integral(fPtMin,fPtMax,(Double_t *) 0x0,1.e-6);
 		#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
 			fYieldArray[kDeltaMi] = fPtDeltaMi->Integral(fPtMin,fPtMax,1.e-6);
 		#else
@@ -332,7 +328,6 @@ void AliGenEMCocktail::CreateCocktail()
 		genkdeltaZero->SetYRange(fYMin, fYMax);
 		AddSource2Generator(nameDeltaZero,genkdeltaZero);
 		TF1 *fPtDeltaZero = genkdeltaZero->GetPt();
-		fYieldArray[kDeltaZero] = fPtDeltaZero->Integral(fPtMin,fPtMax,(Double_t *) 0x0,1.e-6);
 		#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
 			fYieldArray[kDeltaZero] = fPtDeltaZero->Integral(fPtMin,fPtMax,1.e-6);
 		#else
@@ -349,7 +344,6 @@ void AliGenEMCocktail::CreateCocktail()
 		genkrhoPl->SetYRange(fYMin, fYMax);
 		AddSource2Generator(nameRhoPl,genkrhoPl);
 		TF1 *fPtRhoPl = genkrhoPl->GetPt();
-		fYieldArray[kRhoPl] = fPtRhoPl->Integral(fPtMin,fPtMax,(Double_t *) 0x0,1.e-6);
 		#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
 			fYieldArray[kRhoPl] = fPtRhoPl->Integral(fPtMin,fPtMax,1.e-6);
 		#else
@@ -366,7 +360,6 @@ void AliGenEMCocktail::CreateCocktail()
 		genkrhoMi->SetYRange(fYMin, fYMax);
 		AddSource2Generator(nameRhoMi,genkrhoMi);
 		TF1 *fPtRhoMi = genkrhoMi->GetPt();
-		fYieldArray[kRhoMi] = fPtRhoMi->Integral(fPtMin,fPtMax,(Double_t *) 0x0,1.e-6);
 		#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
 			fYieldArray[kRhoMi] = fPtRhoMi->Integral(fPtMin,fPtMax,1.e-6);
 		#else
@@ -383,7 +376,6 @@ void AliGenEMCocktail::CreateCocktail()
 		genkK0star->SetYRange(fYMin, fYMax);
 		AddSource2Generator(nameK0star,genkK0star);
 		TF1 *fPtK0star = genkK0star->GetPt();
-		fYieldArray[kK0star] = fPtK0star->Integral(fPtMin,fPtMax,(Double_t *) 0x0,1.e-6);
 		#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
 			fYieldArray[kK0star] = fPtK0star->Integral(fPtMin,fPtMax,1.e-6);
 		#else

@@ -137,8 +137,6 @@ Bool_t AliMFTAnalysisTools::ExtrapAODMuonToXY(AliAODTrack *muon, Double_t xy[2],
 
   // We look for the above-defined PCA
 
-  Double_t xPCA=0, yPCA=0, zPCA=0;
-
   AliMUONTrackParam *param = new AliMUONTrackParam();
   param -> SetNonBendingCoor(muon->XAtDCA());
   param -> SetBendingCoor(muon->YAtDCA());
@@ -671,6 +669,83 @@ const TMatrixD AliMFTAnalysisTools::ConvertCovMatrixAOD2MUON(AliAODTrack *muon) 
 
   return covMUON;
 
+}
+
+//====================================================================================================================================================
+
+Bool_t AliMFTAnalysisTools::IsCorrectMatch(AliAODTrack *muon) {
+
+  for (Int_t iPlane=0; iPlane<AliMFTConstants::fNMaxPlanes; iPlane++) if (IsWrongCluster(muon, iPlane)) return kFALSE;
+  return kTRUE;
+
+}
+
+//====================================================================================================================================================
+
+TString AliMFTAnalysisTools::GetGenerator(Int_t label, AliAODMCHeader* header) {
+
+  // get the name of the generator that produced a given particle
+
+  Int_t partCounter = 0;
+  TList *genHeaders = header->GetCocktailHeaders();
+  Int_t nGenHeaders = genHeaders->GetEntries();
+
+  for (Int_t i=0; i<nGenHeaders; i++){
+    AliGenEventHeader *gh = (AliGenEventHeader*) genHeaders->At(i);
+    TString genName = gh->GetName();
+    Int_t nPart = gh->NProduced();
+    if (label>=partCounter && label<(partCounter+nPart)) return genName;
+    partCounter += nPart;
+  }
+
+  TString empty="";
+  return empty;
+
+}
+
+//====================================================================================================================================================
+
+void AliMFTAnalysisTools::GetTrackPrimaryGenerator(AliAODTrack *track, AliAODMCHeader *header, TClonesArray *arrayMC, TString &nameGen) {
+
+  // method to check if a track comes from a given generator
+
+  Int_t label = TMath::Abs(track->GetLabel());
+  nameGen = GetGenerator(label,header);
+  
+  // In case the particle is not primary nameGen will contain blank spaces. In this case, we search backward for the primary which originated the chain
+  
+  while (nameGen.IsWhitespace()) {
+    AliAODMCParticle *mcPart = (AliAODMCParticle*) arrayMC->At(label);
+    if (!mcPart) {
+      printf("AliMFTAnalysisTools::GetTrackPrimaryGenerator - BREAK: No valid AliAODMCParticle at label %i\n",label);
+      break;
+    }
+    Int_t motherLabel = mcPart->GetMother();
+    if (motherLabel < 0) {
+      printf("AliMFTAnalysisTools::GetTrackPrimaryGenerator - BREAK: Reached primary particle without valid mother\n");
+      break;
+    }
+    label = motherLabel;
+    nameGen = GetGenerator(label,header);
+  }
+  
+  return;
+
+}
+
+//====================================================================================================================================================
+
+Bool_t AliMFTAnalysisTools::IsTrackInjected(AliAODTrack *track, AliAODMCHeader *header, TClonesArray *arrayMC){
+
+  // method to check if a track comes from the signal event or from the underlying Hijing event
+
+  TString nameGen;
+
+  GetTrackPrimaryGenerator(track,header,arrayMC,nameGen);
+  
+  if (nameGen.IsWhitespace() || nameGen.Contains("ijing")) return kFALSE;
+  
+  return kTRUE;
 }
 
 //====================================================================================================================================================

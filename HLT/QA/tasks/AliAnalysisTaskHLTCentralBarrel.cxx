@@ -304,7 +304,7 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
       }
       else{
 	//Calculating DCA "old" fashion
-	esdTrackHLT->GetDZ(esdHLT->GetPrimaryVertex()->GetXv(), esdHLT->GetPrimaryVertex()->GetYv(), esdHLT->GetPrimaryVertex()->GetZv(), bfield, dca);
+	esdTrackHLT->GetDZ(esdHLT->GetPrimaryVertex()->GetX(), esdHLT->GetPrimaryVertex()->GetY(), esdHLT->GetPrimaryVertex()->GetZ(), bfield, dca);
 	// plotting the DCA calculated by Sergey 
 	//esdTrackHLT->GetImpactParametersTPC(DCAr,DCAz);
       }
@@ -415,7 +415,7 @@ THnSparseF* AliAnalysisTaskHLTCentralBarrel::CreateTrackTHnSparse(const char* na
 //       }
 //       else{
 // 	//Calculating DCA "old" fashion
-// 	esdTrackHLT->GetDZ(esdHLT->GetPrimaryVertex()->GetXv(), esdHLT->GetPrimaryVertex()->GetYv(), esdHLT->GetPrimaryVertex()->GetZv(), bfield, dca);
+// 	esdTrackHLT->GetDZ(esdHLT->GetPrimaryVertex()->GetX(), esdHLT->GetPrimaryVertex()->GetY(), esdHLT->GetPrimaryVertex()->GetZ(), bfield, dca);
 // 	// plotting the DCA calculated by Sergey 
 // 	esdTrackHLT->GetImpactParametersTPC(DCAr,DCAz);
 //       }

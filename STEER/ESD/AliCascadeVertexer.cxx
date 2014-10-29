@@ -56,9 +56,9 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
   //--------------------------------------------------------------------
    const AliESDVertex *vtxT3D=event->GetPrimaryVertex();
 
-   Double_t xPrimaryVertex=vtxT3D->GetXv();
-   Double_t yPrimaryVertex=vtxT3D->GetYv();
-   Double_t zPrimaryVertex=vtxT3D->GetZv();
+   Double_t xPrimaryVertex=vtxT3D->GetX();
+   Double_t yPrimaryVertex=vtxT3D->GetY();
+   Double_t zPrimaryVertex=vtxT3D->GetZ();
 
    Double_t b=event->GetMagneticField();
    Int_t nV0=(Int_t)event->GetNumberOfV0s();

@@ -34,11 +34,12 @@ ClassImp(AliAODPWG4Particle)
 AliAODPWG4Particle::AliAODPWG4Particle() :
 AliVParticle(),
 fMomentum(0),fPdg(-1), fTag(0), fLabel(-1),
-fCaloLabel(), fTrackLabel(),fDetector(""), fDetectorTag(0),
-fDisp(0), fTof(0), fCharged(0), fDecayTag(-1),
+fCaloLabel(), fTrackLabel(), fDetectorTag(-1),
 fBadDist(0), fNLM(0), fM02(0),
-fIsolated(0), fLeadingParticle(0),
-fTagged(0), fFidArea(0), fInputFileIndex(0),fBtag(-1)
+fTime(0),fNCells(0),fSuperModule(0),
+fDecayTag(0),fIsolated(0), fLeadingParticle(0),
+fDisp(0), fTof(0), fCharged(0),
+fTagged(0), fFidArea(0), fInputFileIndex(0),fBtag(0)
 {
   // constructor
   fCaloLabel [0] = -1;
@@ -52,12 +53,13 @@ fTagged(0), fFidArea(0), fInputFileIndex(0),fBtag(-1)
 //______________________________________________________________________________
 AliAODPWG4Particle::AliAODPWG4Particle(Double_t px, Double_t py, Double_t pz, Double_t e):
   AliVParticle(),
-fMomentum(0),fPdg(-1), fTag(0), fLabel(-1),
-fCaloLabel(), fTrackLabel(),fDetector(""), fDetectorTag(0),
-fDisp(0), fTof(0), fCharged(0), fDecayTag(-1),
-fBadDist(0), fNLM(0), fM02(0),
-fIsolated(0), fLeadingParticle(0),
-fTagged(0), fFidArea(0), fInputFileIndex(0),fBtag(-1)
+  fMomentum(0),fPdg(-1), fTag(0), fLabel(-1),
+  fCaloLabel(), fTrackLabel(), fDetectorTag(-1),
+  fBadDist(0), fNLM(0), fM02(0),
+  fTime(0),fNCells(0),fSuperModule(0),
+  fDecayTag(0),fIsolated(0), fLeadingParticle(0),
+  fDisp(0), fTof(0), fCharged(0),
+  fTagged(0), fFidArea(0), fInputFileIndex(0),fBtag(0)
 {
   // constructor
   fMomentum = new TLorentzVector(px, py, pz, e);
@@ -73,12 +75,13 @@ fTagged(0), fFidArea(0), fInputFileIndex(0),fBtag(-1)
 //______________________________________________________________________________
 AliAODPWG4Particle::AliAODPWG4Particle(TLorentzVector & p):
   AliVParticle(),
-fMomentum(0),fPdg(-1), fTag(0), fLabel(-1),
-fCaloLabel(), fTrackLabel(),fDetector(""), fDetectorTag(0),
-fDisp(0), fTof(0), fCharged(0), fDecayTag(-1),
-fBadDist(0), fNLM(0), fM02(0),
-fIsolated(0), fLeadingParticle(0),
-fTagged(0), fFidArea(0), fInputFileIndex(0),fBtag(-1)
+  fMomentum(0),fPdg(-1), fTag(0), fLabel(-1),
+  fCaloLabel(), fTrackLabel(),fDetectorTag(-1),
+  fBadDist(0), fNLM(0), fM02(0),
+  fTime(0),fNCells(0),fSuperModule(0),
+  fDecayTag(0),fIsolated(0), fLeadingParticle(0),
+  fDisp(0), fTof(0), fCharged(0),
+  fTagged(0), fFidArea(0), fInputFileIndex(0),fBtag(0)
 {
   // constructor
   fMomentum = new TLorentzVector(p);
@@ -110,9 +113,11 @@ void AliAODPWG4Particle::Clear(const Option_t* /*opt*/)
 AliAODPWG4Particle::AliAODPWG4Particle(const AliAODPWG4Particle& part) :
   AliVParticle(part),
   fMomentum(0), fPdg(part.fPdg), fTag(part.fTag), fLabel(part.fLabel),
-  fCaloLabel(), fTrackLabel(), fDetector(part.fDetector), fDetectorTag(part.fDetectorTag),
-  fDisp(part.fDisp), fTof(part.fTof), fCharged(part.fCharged), fDecayTag(part.fDecayTag),fBadDist(part.fBadDist),
-  fNLM(part.fNLM), fM02(part.fM02), fIsolated(part.fIsolated), fLeadingParticle(part.fLeadingParticle),
+  fCaloLabel(), fTrackLabel(), fDetectorTag(part.fDetectorTag),
+  fBadDist(part.fBadDist),fNLM(part.fNLM), fM02(part.fM02),
+  fTime(part.fTime),fNCells(part.fNCells),fSuperModule(part.fSuperModule),
+  fDecayTag(part.fDecayTag),fIsolated(part.fIsolated), fLeadingParticle(part.fLeadingParticle),
+  fDisp(part.fDisp), fTof(part.fTof), fCharged(part.fCharged),
   fTagged(part.fTagged), fFidArea(part.fFidArea), fInputFileIndex(part.fInputFileIndex),fBtag(part.fBtag)
 {
   // Copy constructor
@@ -142,7 +147,6 @@ AliAODPWG4Particle& AliAODPWG4Particle::operator=(const AliAODPWG4Particle & par
     fTrackLabel[1] = part.fTrackLabel[1];
     
     fDetectorTag = part.fDetectorTag;
-    fDetector = part.fDetector;
     fDisp     = part.fDisp;
     fTof      = part.fTof;
     fCharged  = part.fCharged;
@@ -191,24 +195,41 @@ Bool_t AliAODPWG4Particle::IsPIDOK(const Int_t ipid, const Int_t pdgwanted) cons
 void AliAODPWG4Particle::Print(Option_t* /*option*/) const 
 {
   // Print information of all data members
+  
   printf("Particle 4-vector:\n");
   printf("     E  = %13.3f", E() );
   printf("     Px = %13.3f", Px());
   printf("     Py = %13.3f", Py());
   printf("     Pz = %13.3f\n", Pz());
+  printf("Id PDG     : %d\n",fPdg);
+  printf("MC Tag     : %d\n",fTag);
+  printf("Dist. to bad channel : %d\n",fBadDist);
+
+  printf("Detector  : %d, Labels:\n",fDetectorTag);
+  printf("      Calo: %d, %d \n",fCaloLabel[0],fCaloLabel[1]);
+  printf("      Track: %d, %d, %d, %d \n",fTrackLabel[0],fTrackLabel[1],fTrackLabel[2],fTrackLabel[3]);
+  
+  if(fDetectorTag!=2) // Avoid tracks, AliFiducialCut::kCTS
+  {
+    printf("Calo param: \n");
+    printf("      M02: %2.3f\n",fM02);
+    printf("      NCell: %d\n",fNCells);
+    printf("      Time: %2.3f\n",fTime);
+    printf("      SModule: %d\n",fSuperModule);
+  }
+  
+  printf("Tags: \n");
+//  printf("Btag      : %d\n",fBtag);
+  printf("     Pi0 Tag   : %d\n",fDecayTag);
+  if(fIsolated)        printf("      Isolated! \n");
+  if(fLeadingParticle) printf("      Leading! \n");
+  
   printf("PID bits :\n");
   printf("     TOF        : %d",fTof);
   printf("     Charged    : %d",fCharged);
   printf("     Dispersion : %d\n",fDisp);
-  printf("PDG       : %d\n",fPdg);
-  printf("Tag       : %d\n",fTag); 
-  printf("Btag      : %d\n",fBtag);  
-  printf("Pi0 Tag   : %d\n",fDecayTag);
-  printf("Dist. to bad channel : %d\n",fBadDist);  
-  printf("Fid Area  : %d\n",fFidArea);  
-  printf("Input File Index : %d\n",fInputFileIndex);  
-  printf("Detector  : %d\n",fDetectorTag);
-  if(fIsolated)        printf("Isolated! \n");
-  if(fLeadingParticle) printf("Leading! \n");
+
+  //  printf("Fid Area  : %d\n",fFidArea);
+  //  printf("Input File Index : %d\n",fInputFileIndex);
 
 }

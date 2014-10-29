@@ -123,6 +123,7 @@ AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr) :
   fEventId      (0),
   fInfoLabel    (0),
   fAutoLoad     (0),
+  fLoopMarked   (0),
   fAutoLoadTime (0),
   fTrigSel      (0),
   fEventInfo    (0)
@@ -155,7 +156,12 @@ AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr) :
     b->Connect("Clicked()", cls, this, "DoLastEvent()");
     fMarkEvent = b = MkTxtButton(f, "Mark", width);
     b->Connect("Clicked()", cls, this, "DoMarkEvent()");
-
+      fRestartReco = b = MkTxtButton(f, "Restart reco", 2*width);
+      b->Connect("Clicked()", cls, this, "DoRestartReco()");
+      fRestartManager = b = MkTxtButton(f, "Restart manager", 2*width);
+      b->Connect("Clicked()", cls, this, "DoRestartManager()");
+      
+      
     MkLabel(f, "||", 0, 8, 8);
 
     fRefresh = b = MkTxtButton(f, "Refresh", width + 8);
@@ -168,6 +174,11 @@ AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr) :
     fAutoLoad->SetToolTipText("Automatic event loading.");
     fAutoLoad->Connect("Toggled(Bool_t)", cls, this, "DoSetAutoLoad()");
 
+    fLoopMarked = new TGCheckButton(f, "Loop Marked");
+    f->AddFrame(fLoopMarked, new TGLayoutHints(kLHintsLeft, 0, 4, 3, 0));
+    fLoopMarked->SetToolTipText("Automatic marked events loading.");
+    fLoopMarked->Connect("Toggled(Bool_t)", cls, this, "DoSetLoopMarked()");
+      
     fAutoLoadTime = new TEveGValuator(f, "Time: ", 110, 0);
     f->AddFrame(fAutoLoadTime);
     fAutoLoadTime->SetShowSlider(kFALSE);
@@ -239,9 +250,11 @@ void AliEveEventManagerWindow::DoNextEvent()
   // Load next event
   // fM->NextEvent();
   if (fM->IsOnlineMode()) {
+      cout<<"next event, online node"<<endl;
     fM->GotoEvent(2);
   }
   else {
+      cout<<"next event, offline mode"<<endl;
     fM->GotoEvent((Int_t) fEventId->GetNumber()+1);
   }
 }
@@ -258,6 +271,19 @@ void AliEveEventManagerWindow::DoMarkEvent()
 {
   // Mark current event
   fM->MarkCurrentEvent();
+}
+
+//______________________________________________________________________________
+void AliEveEventManagerWindow::DoRestartReco()
+{
+    // Kill reconstruction server
+    gSystem->Exec("ssh -n -f edis@pcald39fix \"killall alieventserver\"");
+}
+
+void AliEveEventManagerWindow::DoRestartManager()
+{
+    // Kill storage manager
+    gSystem->Exec("ssh -n -f edis@pcald39fix \"killall alistorage\"");
 }
 
 //______________________________________________________________________________
@@ -285,6 +311,14 @@ void AliEveEventManagerWindow::DoSetAutoLoad()
 
   fM->SetAutoLoad(fAutoLoad->IsOn());
   Update(fM->NewEventAvailable());
+}
+
+//______________________________________________________________________________
+void AliEveEventManagerWindow::DoSetLoopMarked()
+{
+    // Set the auto-load flag
+    fM->SetLoopMarked(fLoopMarked->IsOn());
+//    Update(fM->NewEventAvailable());
 }
 
 //______________________________________________________________________________
@@ -320,7 +354,6 @@ void AliEveEventManagerWindow::Update(int state)
   if (!fM->IsOnlineMode()) {
 
       listEventsTab->SetOfflineMode(kTRUE);
-      configManager->DisableStoragePopup();
 
       fFirstEvent->SetEnabled(!autoLoad);
       fPrevEvent ->SetEnabled(!autoLoad);
@@ -421,7 +454,6 @@ void AliEveEventManagerWindow::StorageManagerChangedState(int state)
         fPrevEvent->SetEnabled(kFALSE);
         fFirstEvent->SetEnabled(kFALSE);
 	listEventsTab->SetOfflineMode(kTRUE);
-	configManager->DisableStoragePopup();
 	fEventId->SetState(kFALSE);
       }
     else if(state == 1)

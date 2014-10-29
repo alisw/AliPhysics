@@ -364,7 +364,8 @@ void AliMUONAlignmentTask::UserExec(Option_t *)
       if( handler )
       {
         AliAODEvent* aod = handler->GetAOD();
-        AliAODHeader* header = aod->GetHeader();
+        AliAODHeader* header = dynamic_cast<AliAODHeader*>(aod->GetHeader());
+        if(!header) AliFatal("Not a standard AOD");
         header->SetRunNumber(lESD->GetRunNumber());
         AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
 

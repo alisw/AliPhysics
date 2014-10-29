@@ -13,6 +13,7 @@
 #include <TVector2.h>
 
 #include "AliVHeader.h"
+#include "AliVAODHeader.h"
 #include "AliAODVertex.h"
 #include <TString.h>
 #include <TBits.h>
@@ -23,7 +24,7 @@ class TGeoHMatrix;
 class TString;
 
 
-class AliAODHeader : public AliVHeader {
+class AliAODHeader : public AliVAODHeader {
 
  public :
   AliAODHeader();
@@ -262,7 +263,7 @@ class AliAODHeader : public AliVHeader {
   Float_t     fT0spread[kT0SpreadSize]; // spread of time distributions: (TOA+T0C/2), T0A, T0C, (T0A-T0C)/2
   TBits   fIRInt2InteractionsMap;  // map of the Int2 events (normally 0TVX) near the event, that's Int2Id-EventId in a -90 to 90 window
   TBits   fIRInt1InteractionsMap;  // map of the Int1 events (normally V0A&V0C) near the event, that's Int1Id-EventId in a -90 to 90 window
-  ClassDef(AliAODHeader, 24);
+  ClassDef(AliAODHeader, 25);
 };
 inline
 void AliAODHeader::SetCentrality(const AliCentrality* cent)      { 

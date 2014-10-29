@@ -114,7 +114,8 @@ Bool_t AliAnalysisUtils::IsFirstEventInChunk(AliVEvent *event)
 
   if(fisAOD){
     AliAODHeader *aodheader = 0x0;
-    aodheader = aod->GetHeader();
+    aodheader = dynamic_cast<AliAODHeader*>(aod->GetHeader());
+    if(!aodheader) AliFatal("Not a standard AOD");
     if(!aodheader){
       AliFatal("AOD header not there ?!");
       return kFALSE;
@@ -216,11 +217,11 @@ Bool_t AliAnalysisUtils::IsOutOfBunchPileUp(AliVEvent *event)
     AliFatal("Event is neither of AOD nor ESD type");
     return kFALSE;
   }
-  Int_t bc2 = (aod)?aod->GetHeader()->GetIRInt2ClosestInteractionMap():esd->GetHeader()->GetIRInt2ClosestInteractionMap();
+  Int_t bc2 = (aod)?((AliVAODHeader*)aod->GetHeader())->GetIRInt2ClosestInteractionMap():esd->GetHeader()->GetIRInt2ClosestInteractionMap();
   if (bc2 != 0)
     return kTRUE;
   
-  Int_t bc1 = (aod)?aod->GetHeader()->GetIRInt1ClosestInteractionMap():esd->GetHeader()->GetIRInt1ClosestInteractionMap();
+  Int_t bc1 = (aod)?((AliVAODHeader*)aod->GetHeader())->GetIRInt1ClosestInteractionMap():esd->GetHeader()->GetIRInt1ClosestInteractionMap();
   if (bc1 != 0)
     return kTRUE;
   

@@ -431,7 +431,7 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
  
 //     Float_t dca[2];
 //     if(vertHLT->GetStatus()==kTRUE){
-//        esdtrackHLT->GetDZ(esdHLT->GetPrimaryVertex()->GetXv(), esdHLT->GetPrimaryVertex()->GetYv(), esdHLT->GetPrimaryVertex()->GetZv(), bfield, dca);
+//        esdtrackHLT->GetDZ(esdHLT->GetPrimaryVertex()->GetX(), esdHLT->GetPrimaryVertex()->GetY(), esdHLT->GetPrimaryVertex()->GetZ(), bfield, dca);
 //        fDCArHLT->Fill(dca[0]);  
 //        fDCAzHLT->Fill(dca[1]);
 //     }
@@ -516,7 +516,7 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
 //     // calculate the offline DCAs the same way like for HLT. The above way is calculating the DCA for the TPC inner barrel surface (Kelly, 17.04.11)
 //     Float_t dca[2];
 //     if(vertOFF->GetStatus()==kTRUE){
-//        esdtrackOFF->GetDZ(esdOFF->GetPrimaryVertex()->GetXv(), esdOFF->GetPrimaryVertex()->GetYv(), esdOFF->GetPrimaryVertex()->GetZv(), bfield, dca);
+//        esdtrackOFF->GetDZ(esdOFF->GetPrimaryVertex()->GetX(), esdOFF->GetPrimaryVertex()->GetY(), esdOFF->GetPrimaryVertex()->GetZ(), bfield, dca);
 //    }
     
     fChargeOff->Fill(esdtrackOFF->Charge());

@@ -205,7 +205,9 @@ void alieve_online_on_new_event()
 	if (gCenterProjectionsAtPrimaryVertex)
 		mv->SetCenterMuon(x[0], x[1], x[2]);
 	mv->ImportEventMuon(top);
- // Register image to amore.
+ 
+    /*
+    // Register image to amore.
   // const TString pichost("aldaqacrs3");
   const TString pichost(gEnv->GetValue("AliEve.imageDumpHost", "localhost"));
   TTimeStamp now;
@@ -215,7 +217,7 @@ void alieve_online_on_new_event()
 	 gSystem->HostName(), delta);
 
   AliSysInfo::AddStamp("on_new_event_pic");
-  // if (pichost == gSystem->HostName() && delta >= 30)
+  if (pichost == gSystem->HostName() && delta >= 30)
   {
     TString id;      id.Form("online-viz-%03d", g_pic_id);
     TString pic(id); pic += ".png";
@@ -243,8 +245,8 @@ void alieve_online_on_new_event()
     if (++g_pic_id >= g_pic_max)
       g_pic_id = 0;
     g_pic_prev.Set();
-  }
-	AliSysInfo::AddStamp("on_new_event_end");
+  }*/
+  AliSysInfo::AddStamp("on_new_event_end");
 }
 
 void alieve_init_import_macros()

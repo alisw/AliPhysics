@@ -201,7 +201,7 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
      }
      Int_t ngood=refs->GetEntriesFast(); 
      cout<<"Found SPD vertices: "<<nfoundSPD<<
-           "  Reconstructable vertics: "<<ngood<<endl;
+           "  Reconstructable vertices: "<<ngood<<endl;
 
      h2spd->Fill(ngood,nfoundSPD);
      h2trk->Fill(ngood,nfoundTRK);
@@ -211,7 +211,7 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
          Int_t Associate(const AliESDVertex *g, const AliESDVertex *f, 
             const AliESDEvent *esd); 
          const AliESDVertex *vtxg=(AliESDVertex*)refs->UncheckedAt(g);
-         Double_t zg=vtxg->GetZv();
+         Double_t zg=vtxg->GetZ();
          Double_t ng=vtxg->GetNIndices();
          hgood->Fill(zg);
          hngood->Fill(ng);
@@ -231,7 +231,7 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
              if (Associate(vtxg,vtxf,event)==0) goto trk; 
 	 }
 
-         zf=vtxf->GetZv();
+         zf=vtxf->GetZ();
          hfoundspd->Fill(zg);
          hzspd->Fill(zf-zg);
 
@@ -253,7 +253,7 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
 
          ncor+=n;
          nwro+=(vtxf->GetNIndices()-n); 
-         zf=vtxf->GetZv();
+         zf=vtxf->GetZ();
 
          if (Float_t(n)/vtxf->GetNIndices() > fracMin) {
 	    hfoundtrk->Fill(zg);
@@ -345,8 +345,8 @@ Associate(const AliESDVertex *g,const AliESDVertex *f,const AliESDEvent *esd) {
 
    if (nf==0) { 
    // SPD vertex
-       Double_t zg=g->GetZv();
-       Double_t zf=f->GetZv();
+       Double_t zg=g->GetZ();
+       Double_t zf=f->GetZ();
        if (TMath::Abs(zf-zg)>2e-2) return 0;
        return 1;
    }
@@ -418,14 +418,14 @@ Int_t GoodPileupVertices(const Char_t *dir) {
          Float_t t=h->InteractionTime();
          UShort_t *idx=new UShort_t[np];
          Int_t ntrk=FindContributors(t,stack,idx);
-         if (ntrk < nMin) continue;
+         if (ntrk < nMin) {delete[] idx; continue;}
          AliESDVertex *vertex=new ((*refs)[nv]) AliESDVertex();
          vertex->SetXv(vtx[0]);
          vertex->SetYv(vtx[1]);
          vertex->SetZv(vtx[2]);
          vertex->SetNContributors(ntrk);
          vertex->SetIndices(ntrk,idx);
-         delete idx;
+         delete[] idx;
          nv++;
      }
      refTree.Fill();

@@ -59,6 +59,7 @@
 #include <TEnv.h>
 #include <TString.h>
 #include <TMap.h>
+#include <TROOT.h>
 
 #ifdef ZMQ
 #include "AliStorageEventManager.h"
@@ -131,19 +132,20 @@ AliEveEventManager::AliEveEventManager(const TString& name, Int_t ev) :
     fESDfriend (0), fESDfriendExists(kFALSE),
     fAODFile   (0), fAODTree (0), fAOD (0),
     fRawReader (0), fEventInfo(),
-    fAutoLoad  (kFALSE), fAutoLoadTime (5),      fAutoLoadTimer(0),
+    fAutoLoad  (kFALSE),fLoopMarked(kFALSE), fAutoLoadTime (5),      fAutoLoadTimer(0),
     fIsOpen    (kFALSE), fHasEvent     (kFALSE), fExternalCtrl (kFALSE),
     fGlobal    (0), fGlobalReplace (kTRUE), fGlobalUpdate (kTRUE),
     fExecutor    (0), fTransients(0), fTransientLists(0),
     fPEventSelector(0),
     fSubManagers (0),
     fAutoLoadTimerRunning(kFALSE),
+    fMutex(new TMutex()),
     fgSubSock(EVENTS_SERVER_SUB),
     fEventInUse(1),
     fWritingToEventIndex(0),
     fIsNewEventAvaliable(false),
-    fStorageDown(false)
-
+    fStorageDown(false),
+    fFinished(false)
 {
     // Constructor with event-id.
 		
@@ -178,15 +180,32 @@ AliEveEventManager::AliEveEventManager(const TString& name, Int_t ev) :
 AliEveEventManager::~AliEveEventManager()
 {
     // Destructor.
+    
+    fFinished = true;
+    
+    if(fEventListenerThread)
+    {
+        fEventListenerThread->Kill();
+        delete fEventListenerThread;
+    }
+    if(fStorageManagerWatcherThread)
+    {
+        fStorageManagerWatcherThread->Kill();
+        delete fStorageManagerWatcherThread;
+    }
+    
+    
     fAutoLoadTimer->Stop();
     fAutoLoadTimer->Disconnect("Timeout");
+    fAutoLoadTimer->Disconnect("AutoLoadNextEvent");
 
     AliEveEventManager *manager = AliEveEventManager::GetCurrent();
     manager->Disconnect("StorageManagerOk");
     manager->Disconnect("StorageManagerDown");
 
     if(fSubManagers){delete fSubManagers;}
-
+    if(fMutex){delete fMutex;}
+    
     if (fIsOpen)
     {
         Close();
@@ -204,40 +223,100 @@ AliEveEventManager::~AliEveEventManager()
 void AliEveEventManager::GetNextEvent()
 {
 #ifdef ZMQ
-    AliStorageEventManager *eventManager =
-    AliStorageEventManager::GetEventManagerInstance();
+    AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
     eventManager->CreateSocket(EVENTS_SERVER_SUB);
+    eventManager->CreateSocket(SERVER_COMMUNICATION_REQ);
     
     fCurrentEvent[0]=0;
     fCurrentEvent[1]=0;
-    fCurrentTree[0]=0;
-    fCurrentTree[1]=0;
+
     AliESDEvent *tmpEvent = NULL;
     
-    while(1)
+    // get list of marked events:
+    struct listRequestStruct list;
+
+    list.runNumber[0]=0;
+    list.runNumber[1]=999999;
+    list.eventNumber[0]=0;
+    list.eventNumber[1]=999999;
+    list.marked[0]=1;
+    list.marked[1]=1;
+    list.multiplicity[0]=1;
+    list.multiplicity[1]=999999;
+    strcpy(list.system[0],"p-p");
+    strcpy(list.system[1],"A-A");
+    
+    struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
+    requestMessage->messageType = REQUEST_LIST_EVENTS;
+    requestMessage->list = list;
+    
+    eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
+    vector<serverListStruct> receivedList = eventManager->GetServerListVector(SERVER_COMMUNICATION_REQ);
+    
+    cout<<"EVENT DISPLAY -- received list of marked events"<<endl;
+    
+    for(int i=0;i<receivedList.size();i++)
     {
-        tmpEvent = eventManager->GetEvent(EVENTS_SERVER_SUB);
+        cout<<"ev:"<<receivedList[i].eventNumber<<endl;
+    }
+    
+    int iter=0;
+    while(!fFinished)
+    {
+        if(!fLoopMarked)
+        {
+            cout<<"taking event from reco server"<<endl;
+            tmpEvent = eventManager->GetEvent(EVENTS_SERVER_SUB,5);
+            if(!tmpEvent){sleep(1);}
+        }
+        else
+        {
+            cout<<"taking event from storage manager"<<endl;
+            if(iter<receivedList.size())
+            {
+                struct eventStruct mark;
+                mark.runNumber = receivedList[iter].runNumber;
+                mark.eventNumber = receivedList[iter].eventNumber;
+             
+                struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
+                requestMessage->messageType = REQUEST_GET_EVENT;
+                requestMessage->event = mark;
+                
+                eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
+                tmpEvent = eventManager->GetEvent(SERVER_COMMUNICATION_REQ);
+                delete requestMessage;
+                iter++;
+                sleep(1);
+            }
+            else{iter=0;}
+        }
+        
         if(tmpEvent)
-	{
+        {
             if(tmpEvent->GetRunNumber()>=0)
-	    {
-                fMutex.Lock();
+            {
+                fMutex->Lock();
                 if(fEventInUse == 0){fWritingToEventIndex = 1;}
                 else if(fEventInUse == 1){fWritingToEventIndex = 0;}
-                cout<<"Received new event"<<endl;
+                cout<<"Received new event:"<<tmpEvent->GetEventNumberInFile()<<endl;
                 if(fCurrentEvent[fWritingToEventIndex])
-		{
+                {
                     delete fCurrentEvent[fWritingToEventIndex];
                     fCurrentEvent[fWritingToEventIndex]=0;
-		}
+                }
                 fCurrentEvent[fWritingToEventIndex] = tmpEvent;
                 fIsNewEventAvaliable = true;
-		NewEventLoaded();
-                fMutex.UnLock();
-	    }
-
-      }
-  }
+                NewEventLoaded();
+                fMutex->UnLock();
+            }
+        }
+        else
+        {
+            cout<<"didn't receive new event"<<endl;
+        }
+    }
+    delete requestMessage;
+    
 #endif
 }
 
@@ -253,7 +332,7 @@ void AliEveEventManager::CheckStorageStatus()
     struct clientRequestStruct *request = new struct clientRequestStruct;
     request->messageType = REQUEST_CONNECTION;
     
-    while (1)
+    while (!fFinished)
     {
         if(eventManager->Send(request,CLIENT_COMMUNICATION_REQ,5000))
         {
@@ -265,8 +344,7 @@ void AliEveEventManager::CheckStorageStatus()
         {
             StorageManagerDown();
             cout<<"WARNING -- Storage Manager is DOWN!!"<<endl;
-	    fStorageDown = kTRUE;
-
+            fStorageDown = kTRUE;
         }
         sleep(1);
     }
@@ -777,7 +855,7 @@ void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawRead
 
     AfterNewEventLoaded();
 
-    if (fAutoLoad) StartAutoLoadTimer();
+    if (fAutoLoad || fLoopMarked) StartAutoLoadTimer();
     
 }
 
@@ -893,7 +971,7 @@ void AliEveEventManager::GotoEvent(Int_t event)
 	  AliESDEvent *resultEvent = NULL;
             
 	  eventManager->CreateSocket(SERVER_COMMUNICATION_REQ);
-	  fMutex.Lock();
+	  fMutex->Lock();
             
 	  // send request and receive event:
 	  eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
@@ -913,7 +991,7 @@ void AliEveEventManager::GotoEvent(Int_t event)
 	      if(event==2){cout<<"\n\nWARNING -- No next event is avaliable.\n\n"<<endl;}
           }
             
-	  fMutex.UnLock();
+	  fMutex->UnLock();
         }
       else
       {
@@ -926,7 +1004,7 @@ void AliEveEventManager::GotoEvent(Int_t event)
 	  eventManager->CreateSocket(SERVER_COMMUNICATION_REQ);
 	  AliESDEvent *resultEvent = NULL;
             
-	  fMutex.Lock();
+	  fMutex->Lock();
 	  eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
 	  resultEvent = eventManager->GetEvent(SERVER_COMMUNICATION_REQ);
             
@@ -938,7 +1016,7 @@ void AliEveEventManager::GotoEvent(Int_t event)
 	      SetEvent(0,0,resultEvent,0);
           }
 	  else{cout<<"\n\nWARNING -- The most recent event is not avaliable.\n\n"<<endl;}
-	  fMutex.UnLock();
+	  fMutex->UnLock();
       }
 #endif	
 
@@ -1128,7 +1206,7 @@ void AliEveEventManager::NextEvent()
 #ifdef ZMQ
         if(fIsNewEventAvaliable)
         {
-            fMutex.Lock();
+            fMutex->Lock();
             if(fWritingToEventIndex == 0) fEventInUse = 0;
             else if(fWritingToEventIndex == 1) fEventInUse = 1;
             
@@ -1141,17 +1219,17 @@ void AliEveEventManager::NextEvent()
                     DestroyElements();
                     InitOCDB(fCurrentEvent[fEventInUse]->GetRunNumber());
                     SetEvent(0,0,fCurrentEvent[fEventInUse],0);
-
+                    
                 }
             }
             fIsNewEventAvaliable = false;
-            fMutex.UnLock();
+            fMutex->UnLock();
         }
         else
-	{
-	  cout<<"No new event is avaliable."<<endl;
-	  NoEventLoaded();
-	}
+        {
+            cout<<"No new event is avaliable."<<endl;
+            NoEventLoaded();
+        }
 #endif
     }
     else if ((fESDTree!=0) || (fHLTESDTree!=0))
@@ -1771,6 +1849,14 @@ void AliEveEventManager::SetAutoLoad(Bool_t autoLoad)
     }
 }
 
+void AliEveEventManager::SetLoopMarked(Bool_t loopMarked)
+{
+    // Set the automatic event loading mode
+    fLoopMarked = loopMarked;
+    if (fLoopMarked){StartAutoLoadTimer();}
+    else{StopAutoLoadTimer();}
+}
+
 void AliEveEventManager::SetTrigSel(Int_t trig)
 {
     static const TEveException kEH("AliEveEventManager::SetTrigSel ");
@@ -1824,7 +1910,7 @@ void AliEveEventManager::AutoLoadNextEvent()
 
 	StopAutoLoadTimer();
 	NextEvent();
-	if (fAutoLoad)
+	if (fAutoLoad || fLoopMarked)
 		StartAutoLoadTimer();
 }
 

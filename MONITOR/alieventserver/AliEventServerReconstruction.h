@@ -13,7 +13,7 @@
 #include <TQObject.h>
 #include <RQ_OBJECT.h>
 #include <TThread.h>
-
+#include <TEnv.h>
 class TEnv;
 class AliCDBManager;
 class AliReconstruction;
@@ -45,7 +45,7 @@ private:
 	AliCDBManager *fCDBmanager;
 	Int_t fCurrentRunId;
 	Bool_t fIsListenning;
-	TEnv *fSettings;
+	TEnv fSettings;
 	TString fHost;
 	TThread *fRecoThread;
 	bool fRecoIsRunning;

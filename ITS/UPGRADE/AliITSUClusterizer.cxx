@@ -10,7 +10,7 @@
 #include "AliITSUClusterizer.h"
 #include "AliITSUGeomTGeo.h"
 #include "AliITSUSegmentationPix.h"
-#include "AliITSdigit.h"
+#include "AliITSUDigitPix.h"
 #include "AliITSURecoParam.h"
 #include "AliITSUAux.h"
 using namespace TMath;
@@ -121,14 +121,14 @@ AliITSUClusterizer::AliITSUClusterizerClusterDigit* AliITSUClusterizer::AllocDig
 AliITSUClusterizer::AliITSUClusterizerClusterDigit* AliITSUClusterizer::NextDigit() 
 {
   // get next digit
-  if (fInputDigitsReadIndex<fInputDigits->GetEntriesFast()) {
-    AliITSdigit *tmp=static_cast<AliITSdigit*>(fInputDigits->UncheckedAt(fInputDigitsReadIndex++));
+  while (fInputDigitsReadIndex<fInputDigits->GetEntriesFast()) {
+    AliITSUDigitPix *tmp=static_cast<AliITSUDigitPix*>(fInputDigits->UncheckedAt(fInputDigitsReadIndex++));
+    if (TMath::Abs(tmp->GetROCycle())>=fRecoParam->GetMaxROCycle()) continue;
     AliITSUClusterizerClusterDigit *digit=AllocDigit();
     digit->fDigit=tmp;
     return digit;
   }
-  else
-    return 0;
+  return 0;
 }
 
 //______________________________________________________________________________

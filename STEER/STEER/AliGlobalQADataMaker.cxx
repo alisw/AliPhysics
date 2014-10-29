@@ -344,9 +344,9 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
   const AliESDVertex *vtx=esd->GetPrimaryVertex();
   if (!vtx->GetStatus()) return;
 
-  Double_t xv=vtx->GetXv();
-  Double_t yv=vtx->GetYv();
-  Double_t zv=vtx->GetZv();
+  Double_t xv=vtx->GetX();
+  Double_t yv=vtx->GetY();
+  Double_t zv=vtx->GetZ();
   FillESDsData(kEvt0,zv);
 
 
