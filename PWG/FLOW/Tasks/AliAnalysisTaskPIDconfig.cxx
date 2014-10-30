@@ -359,7 +359,7 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
         TH2F* HistDCAbefore =(TH2F*)fListQAInfo->At(5);
         HistDCAbefore->Fill(dcaZ,dcaXY);
         
-        Double_t p = -999, pTPC = -999, pT = -999, phi = -999, eta = -999, dEdx =-999;
+        Double_t p = -999, /*pTPC = -999,*/ pT = -999, phi = -999, eta = -999, dEdx =-999;
         Double_t length = -999., beta =-999, tofTime = -999., tof = -999.;
         Double_t c = TMath::C()*1.E-9;// m/ns
 
@@ -368,7 +368,7 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
 
         //Float_t dcaXY = -999, dcaZ = -999;
         p=track->P();
-        pTPC=track->GetTPCmomentum();
+        /*pTPC=track->GetTPCmomentum();*/
         pT=track->Pt();
         phi=track->Phi();
         eta=track->Eta();
@@ -430,19 +430,36 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
             Int_t pRange = -999;
             TCutG *cut[3][10];
             if(fPIDcuts){
+                if(fContourCutList){cout<<"The contour file has been retrieved"<<endl;}
+                
                 TGraph *ContourCut[3][10];
-                Double_t plow[10] = {0.2,0.5,1,1.5,2,2.5,3,3.5,4,4.5};
-                Double_t phigh[10] = {0.5,1,1.5,2,2.5,3,3.5,4,4.5,5};
-               // TString species[3] = {pion,kaon,proton};
+                //Double_t plow[10] = {0.2,0.5,1,1.5,2,2.5,3,3.5,4,4.5};
+                //Double_t phigh[10] = {0.5,1,1.5,2,2.5,3,3.5,4,4.5,5};
+                Double_t phigh=0 ,plow=0;
+                Double_t pBins[11] = {0.2,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5};
+                TString Graph_Name = "contourlines_";
+                TString species[3] = {"pion","kaon","proton"};
                 for(int i=0;i<3;i++){
                     for(int j=0;j<10;j++){
-                        if(p>plow[j] && p<phigh[j]){
+                        
+                        if(p>pBins[j] && p<pBins[j+1]){
+
+                        //if(p>plow[j] && p<phigh[j]){
                             pWithinRange = kTRUE;
                             pRange = j;
-                            TList *Scontours = (TList*)fContourCutList->At(i);
-                            TList *Pcontours = (TList*)Scontours->At(j);
-                            if (!Pcontours || !Scontours) return;
-                            ContourCut[i][j] = (TGraph*)Pcontours->First();
+                            
+                            TList *Species_contours = (TList*)fContourCutList->Get(species[i]);
+                            phigh = pBins[j+1]*10;
+                            plow = pBins[j]*10;
+
+                            Graph_Name += species[i];
+                            Graph_Name += Form("%.f%.f-%i%icent",plow,phigh,fCentralityPercentileMin,fCentralityPercentileMax);
+
+                            //TList *Pcontours = (TList*)Scontours->At(j);
+                            //if (!Scontours) return;
+
+                           // if (!Pcontours || !Scontours) return;
+                            ContourCut[i][j] = (TGraph*)Species_contours->FindObject(Graph_Name);
                             cut[i][j] = new TCutG("cut",ContourCut[i][j]->GetN(),ContourCut[i][j]->GetX(),ContourCut[i][j]->GetY());
                             //ContourCut[i][j] = (TGraph *)fContourCutList->At(10*i+j);
                         }
