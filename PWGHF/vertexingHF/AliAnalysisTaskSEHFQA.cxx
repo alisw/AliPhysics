@@ -1793,10 +1793,6 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       if(mincent==100)mincent--;
       ((AliCounterCollection*)fOutputCounters->FindObject("secondEstimator"))->Count(Form("centralityclass:%d_%d/Run:%d",mincent,mincent+10,runNumber));
 
-      AliAODHeader * header = dynamic_cast<AliAODHeader*>(aod->GetHeader());
-      if(!header) AliFatal("Not a standard AOD");
-
-
       if(stdCent<fCuts->GetMinCentrality() || stdCent>fCuts->GetMaxCentrality()){
 	((TH1F*)fOutputCheckCentrality->FindObject("hNtrackletsOut"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
 	((TH1F*)fOutputCheckCentrality->FindObject("hMultOut"))->Fill(header->GetRefMultiplicity());
