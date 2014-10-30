@@ -117,6 +117,7 @@ protected:
     TH2F *fHistTotAllRawEtEffCorr;//! // all clusters reco eff applied
     Double_t ApplyModifiedCorrections(const AliESDCaloCluster& cluster,Int_t nonLinCorr, Int_t effCorr, Int_t cent);//nonLinCorr 0 = nominal 1 = high -1 = low, effCorr  0 = nominal 1 = high -1 = low
 
+    TH2F *fHistNUsedClusters;//! // Distribution of cluster energies vs centrality bin
     TH3F *fHistNClustersPhosVsEmcal;//! // all clusters no reco eff
     TH2F *fHistClusterSizeVsCent;//! // all clusters no reco eff
     TH2F *fHistMatchedClusterSizeVsCent;//! // all clusters no reco eff
