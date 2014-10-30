@@ -9,9 +9,9 @@
 #endif
 
 AliAnalysisTask* AddTaskPtEMCalTrigger(
+    bool isMC,
     bool usePythiaHard,
     const char *period ="LHC13d",
-    const char *triggerContainer = "",
     const char *njetcontainerData = "",
     const char *njetcontainerMC = "",
     double jetradius = 0.5
@@ -40,7 +40,14 @@ AliAnalysisTask* AddTaskPtEMCalTrigger(
   if(usePythiaHard){
     pttriggertask->SetIsPythia(kTRUE);
   }
-  pttriggertask->SetCaloTriggerPatchInfoName(triggerContainer);
+
+  // Add containers
+  Bool_t isAOD = mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class();
+  AliParticleContainer *trackContainer = pttriggertask->AddParticleContainer(isAOD ? "AODFilterTracks" : "ESDFilterTracks");
+  trackContainer->SetClassName("AliVTrack");
+  AliClusterContainer *clusterContainer = pttriggertask->AddClusterContainer("EmcCaloClusters");
+  AliParticleContainer *mcpartcont = isMC ? pttriggertask->AddParticleContainer("MCParticlesSelected") : NULL;
+
 
   // Create charged hadrons pPb standard track cuts
   AliESDtrackCuts *standardTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
@@ -61,19 +68,17 @@ AliAnalysisTask* AddTaskPtEMCalTrigger(
 
   // Handle Jet Containers
   if(strlen(njetcontainerData)){
-    AliJetContainer *jetcontainerData = pttriggertask->AddJetContainer(njetcontainerData, "EMCAL", jetradius);
+    AliJetContainer *jetcontainerData = pttriggertask->AddJetContainer(njetcontainerData, "TPC", jetradius);
     pttriggertask->AddJetContainerName("PtTriggerTaskJetsData", false);
+    jetcontainerData->ConnectParticleContainer(trackContainer);
     jetcontainerData->SetName("PtTriggerTaskJetsData");
-    jetcontainerData->SetJetAcceptanceType(AliJetContainer::kTPC);
-    jetcontainerData->SetJetEtaLimits(-0.5, 0.5);
     jetcontainerData->SetJetPtCut(20.);
   }
-  if(strlen(jetcontainerMC)){
-    AliJetContainer *jetcontainerMC = pttriggertask->AddJetContainer(njetcontainerMC, "", jetradius);
+  if(isMC && strlen(njetcontainerMC)){
+    AliJetContainer *jetcontainerMC = pttriggertask->AddJetContainer(njetcontainerMC, "TPC", jetradius);
     pttriggertask->AddJetContainerName("PtTriggerTaskJetMC", true);
+    jetcontainerMC->ConnectParticleContainer(mcpartcont);
     jetcontainerMC->SetName("PtTriggerTaskJetMC");
-    jetcontainerMC->SetJetAcceptanceType(AliJetContainer::kTPC);
-    jetcontainerMC->SetJetEtaLimits(-0.5, 0.5);
     jetcontainerMC->SetJetPtCut(20.);
   }
 
