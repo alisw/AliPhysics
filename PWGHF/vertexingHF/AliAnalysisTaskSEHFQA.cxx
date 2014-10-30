@@ -80,7 +80,7 @@ ClassImp(AliAnalysisTaskSEHFQA)
 //____________________________________________________________________________
 
 AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE(),
-  fNEntries(0x0),
+  fOutputEntries(0x0),
   fOutputPID(0x0),
   fOutputTrack(0x0),
   fOutputCounters(0x0),
@@ -109,7 +109,7 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE(),
 //____________________________________________________________________________
 AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSEHFQA::DecChannel ch,AliRDHFCuts* cuts):
   AliAnalysisTaskSE(name),
-  fNEntries(0x0),
+  fOutputEntries(0x0),
   fOutputPID(0x0),
   fOutputTrack(0x0),
   fOutputCounters(0x0),
@@ -138,8 +138,8 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   fOnOff[3]=kTRUE;
   fOnOff[4]=kTRUE;
 
-  // Output slot #1 writes into a TH1F container (number of events)
-  DefineOutput(1,TH1F::Class());  //My private output
+  // Output slot #1 writes into a TList container (number of events)
+  DefineOutput(1,TList::Class());
   // Output slot #2 writes into a TList container (PID)
   if (fOnOff[1]) DefineOutput(2,TList::Class());  //My private output
   // Output slot #3 writes into a TList container (Tracks)
@@ -184,7 +184,8 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
 AliAnalysisTaskSEHFQA::~AliAnalysisTaskSEHFQA()
 {
   //destructor
-  delete fNEntries;
+
+  delete fOutputEntries;
 
   delete fOutputPID;
 
@@ -272,23 +273,39 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
   if(fDebug > 1) printf("AnalysisTaskSEHFQA::UserCreateOutputObjects() \n");
 
   //count events
+  fOutputEntries=new TList();
+  fOutputEntries->SetOwner();
+  fOutputEntries->SetName(GetOutputSlot(1)->GetContainer()->GetName());
 
-  fNEntries=new TH1F(GetOutputSlot(1)->GetContainer()->GetName(), "Counts the number of events", 10,-0.5,9.5);
-  fNEntries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
-  fNEntries->GetXaxis()->SetBinLabel(2,"Pile-up Rej");
-  fNEntries->GetXaxis()->SetBinLabel(3,"No VertexingHF");
-  fNEntries->GetXaxis()->SetBinLabel(4,"nCandidates(AnCuts)");
-  fNEntries->GetXaxis()->SetBinLabel(5,"EventsWithGoodVtx");
-  //fNEntries->GetXaxis()->SetBinLabel(6,"N. of 0SMH");
-  fNEntries->GetXaxis()->SetBinLabel(6,"N candidates");
+
+  TString hnameEntries="hNentries";
+  TH1F* hNentries=new TH1F(hnameEntries.Data(), "Counts the number of events", 10,-0.5,9.5);
+  hNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
+  hNentries->GetXaxis()->SetBinLabel(2,"Pile-up Rej");
+  hNentries->GetXaxis()->SetBinLabel(3,"No VertexingHF");
+  hNentries->GetXaxis()->SetBinLabel(4,"nCandidates(AnCuts)");
+  hNentries->GetXaxis()->SetBinLabel(5,"EventsWithGoodVtx");
+  hNentries->GetXaxis()->SetBinLabel(6,"N candidates");
   if(fReadMC){
-    fNEntries->GetXaxis()->SetBinLabel(7,"MC Cand from c");
-    fNEntries->GetXaxis()->SetBinLabel(8,"MC Cand from b");
-    fNEntries->GetXaxis()->SetBinLabel(9,"N fake Trks");
-    fNEntries->GetXaxis()->SetBinLabel(10,"N true Trks");
+    hNentries->GetXaxis()->SetBinLabel(7,"MC Cand from c");
+    hNentries->GetXaxis()->SetBinLabel(8,"MC Cand from b");
+    hNentries->GetXaxis()->SetBinLabel(9,"N fake Trks");
+    hNentries->GetXaxis()->SetBinLabel(10,"N true Trks");
   }
 
-  fNEntries->GetXaxis()->SetNdivisions(1,kFALSE);
+  hNentries->GetXaxis()->SetNdivisions(1,kFALSE);
+
+  hnameEntries="HasSelBit";
+  TH2F* hNentriesSelBit=new TH2F(hnameEntries.Data(), "Counts the number of events with SelectionBit", 5,0.,5.,100,0.,30.);
+  hNentriesSelBit->GetXaxis()->SetBinLabel(1,"Dplus");
+  hNentriesSelBit->GetXaxis()->SetBinLabel(2,"Ds");
+  hNentriesSelBit->GetXaxis()->SetBinLabel(3,"LcKpi");
+  hNentriesSelBit->GetXaxis()->SetBinLabel(4,"D0toKpi");
+  hNentriesSelBit->GetXaxis()->SetBinLabel(5,"Dstar");
+
+  fOutputEntries->Add(hNentries);
+  fOutputEntries->Add(hNentriesSelBit);
+
 
   //PID
   if(fOnOff[1]){
@@ -504,6 +521,10 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
       TH1F* hptGoodTrFromDaugh=new TH1F(hname.Data(),"Pt distribution of 'good' candidate's daughters;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
       hptGoodTrFromDaugh->SetTitleOffset(1.3,"Y");
       fOutputTrack->Add(hptGoodTrFromDaugh);
+      hname="hptGoodTrFromDaugh_filt";
+      TH1F* hptGoodTrFromDaugh_filt=new TH1F(hname.Data(),"Pt distribution of 'good' candidate's daughters, cuts level;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
+      hptGoodTrFromDaugh_filt->SetTitleOffset(1.3,"Y");
+      fOutputTrack->Add(hptGoodTrFromDaugh_filt);
     }
 
     hname="hdistrGoodTr";
@@ -517,14 +538,27 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hname="hd0dau";
     TH1F* hd0dau=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of D daughter tracks;d_{0rphi}[cm];Entries/10^{3} cm",200,-0.1,0.1);
 
+    hname="hd0dau_filt";
+    TH1F* hd0dau_filt=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of D daughter tracks, cut level;d_{0rphi}[cm];Entries/10^{3} cm",200,-0.1,0.1);
+
     hname="hd0dauphi";
     TH2F* hd0dauphi=new TH2F(hname.Data(), "Impact parameter (rphi) distribution of D daughter tracks versus #phi; #phi [rad]; d_{0rphi} [cm]",400,0,6.3,200,-0.1,0.1);
 
+    hname="hd0dauphi_filt";
+    TH2F* hd0dauphi_filt=new TH2F(hname.Data(), "Impact parameter (rphi) distribution of D daughter tracks versus #phi, cut level; #phi [rad]; d_{0rphi} [cm]",400,0,6.3,200,-0.1,0.1);
+    
     hname="hd0zdau";
     TH1F* hd0zdau=new TH1F(hname.Data(),"Impact parameter (z) distribution of D daughter tracks;d_{0z}[cm];Entries/10^{3} cm",200,-0.1,0.1);
 
+    hname="hd0zdau_filt";
+    TH1F* hd0zdau_filt=new TH1F(hname.Data(),"Impact parameter (z) distribution of D daughter tracks, cut level;d_{0z}[cm];Entries/10^{3} cm",200,-0.1,0.1);
+
+
     hname="hd0zdauphi";
     TH2F* hd0zdauphi=new TH2F(hname.Data(), "Impact parameter (z) distribution of D daughter tracks versus #phi; #phi [rad]; d_{0z} [cm]",400,0,6.3,200,-0.1,0.1);
+
+    hname="hd0zdauphi_filt";
+    TH2F* hd0zdauphi_filt=new TH2F(hname.Data(), "Impact parameter (z) distribution of D daughter tracks versus #phi, filtering level; #phi [rad]; d_{0z} [cm]",400,0,6.3,200,-0.1,0.1);
 
     hname="hd0TracksSPDin";
     TH1F* hd0TracksSPDin=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of AOD tracks kITSrefit, SPDinner; d_{0rphi}[cm];Entries",200,-0.5,0.5);
@@ -705,6 +739,10 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputTrack->Add(hd0dauphi);
     fOutputTrack->Add(hd0zdau);
     fOutputTrack->Add(hd0zdauphi);
+    fOutputTrack->Add(hd0dau_filt);
+    fOutputTrack->Add(hd0dauphi_filt);
+    fOutputTrack->Add(hd0zdau_filt);
+    fOutputTrack->Add(hd0zdauphi_filt);
     
 
     if(fReadMC){
@@ -714,6 +752,10 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
       hname="hd0f";
       TH1F* hd0f=new TH1F(hname.Data(),"Impact parameter distribution of fake tracks;d_{0}[cm];Entries/10^{3} cm",200,-0.1,0.1);
+
+      hname="hd0f_filt";
+      TH1F* hd0f_filt=new TH1F(hname.Data(),"Impact parameter distribution of fake tracks, cut level;d_{0}[cm];Entries/10^{3} cm",200,-0.1,0.1);
+
 
       hname="hptFakeTr";
       TH1F* hptFakeTr=new TH1F(hname.Data(),"Pt distribution of fake tracks;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
@@ -728,7 +770,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
       fOutputTrack->Add(hptFakeTr);
       fOutputTrack->Add(hdistrFakeTr);
       fOutputTrack->Add(hd0f);
-   
+      fOutputTrack->Add(hd0f_filt);
     }
   }
 
@@ -1085,7 +1127,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
   }
 
   // Post the data
-  PostData(1,fNEntries);
+  PostData(1,fOutputEntries);
 
   if(fOnOff[1]) PostData(2,fOutputPID);
   if(fOnOff[0]) PostData(3,fOutputTrack);
@@ -1105,7 +1147,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   if(fDebug>2) printf("Analysing decay %d\n",fDecayChannel);
   // Post the data already here
-  PostData(1,fNEntries);
+  PostData(1,fOutputEntries);
   if(fOnOff[1]) PostData(2,fOutputPID);
   if(fOnOff[0]) PostData(3,fOutputTrack);
   PostData(4,fCuts);
@@ -1115,6 +1157,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   }
 
   TClonesArray *arrayProng =0;
+
+  // Load all the branches of the DeltaAOD - needed for SelectionBit counting
+  TClonesArray *arrayProng1 =0;
+  TClonesArray *arrayProng2 =0;
+  TClonesArray *arrayProng3 =0;
+
   Int_t pdg=0;
   Int_t *pdgdaughters=0x0;
 
@@ -1284,7 +1332,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   if(!arrayProng) {
     AliInfo("Branch not found! The output will contain only track related histograms\n");
     isSimpleMode=kTRUE;
-    fNEntries->Fill(2);
+    ((TH1F*)fOutputEntries->FindObject("hNentries"))->Fill(2);
   }
   
   TClonesArray *mcArray = 0;
@@ -1536,8 +1584,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   }
 
   // count event
-  fNEntries->Fill(0);
-
+  ((TH1F*)fOutputEntries->FindObject("hNentries"))->Fill(0);
   //count events with good vertex
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
@@ -1548,11 +1595,11 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   const AliESDVertex vESD(pos,cov,100.,100);
 
   TString primTitle = vtx1->GetTitle();
-  if(primTitle.Contains("VertexerTracks") && vtx1->GetNContributors()>0) fNEntries->Fill(4);
+  if(primTitle.Contains("VertexerTracks") && vtx1->GetNContributors()>0) ((TH1F*)fOutputEntries->FindObject("hNentries"))->Fill(4);
 
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD, C0SMH-B-NOPF-ALL
   //TString trigclass=aod->GetFiredTriggerClasses();
-  //if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) fNEntries->Fill(5); //tmp
+  //if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) hNentries->Fill(5); //tmp
 
 
 
@@ -1826,6 +1873,46 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     delete [] pdgdaughters;
     return;
   }
+
+  // load all the branches and fill the SelectionBit histo
+  if(fUseSelectionBit){
+    
+    //load branches
+    arrayProng1=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
+    Int_t nCand = arrayProng1->GetEntriesFast();
+    arrayProng2=(TClonesArray*)aod->GetList()->FindObject("D0toKpi");
+    Int_t nCand2 = arrayProng2->GetEntriesFast();
+    arrayProng3=(TClonesArray*)aod->GetList()->FindObject("Dstar");
+    Int_t nCand3 = arrayProng3->GetEntriesFast();
+    
+    // D+, Ds and Lc
+    for (Int_t iCand = 0; iCand < nCand; iCand++) {
+      AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayProng1->UncheckedAt(iCand);
+      Double_t ptCand_selBit = d->Pt();
+      if(fUseSelectionBit && d->GetSelectionMap()) {
+	if(d->HasSelectionBit(AliRDHFCuts::kDplusCuts)) ((TH2F*)fOutputEntries->FindObject("HasSelBit"))->Fill(0.0,ptCand_selBit);
+       	if(d->HasSelectionBit(AliRDHFCuts::kDsCuts)) ((TH2F*)fOutputEntries->FindObject("HasSelBit"))->Fill(1.0,ptCand_selBit);
+	if(d->HasSelectionBit(AliRDHFCuts::kLcCuts)) ((TH2F*)fOutputEntries->FindObject("HasSelBit"))->Fill(2.0,ptCand_selBit);
+      }
+    }
+    // D0kpi
+    for (Int_t iCand = 0; iCand < nCand2; iCand++) {
+      AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayProng2->UncheckedAt(iCand);
+      Double_t ptCand_selBit = d->Pt();
+      if(fUseSelectionBit && d->GetSelectionMap()) {
+	if(d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)) ((TH2F*)fOutputEntries->FindObject("HasSelBit"))->Fill(4.0,ptCand_selBit);
+      }     
+    }
+    // Dstar
+    for (Int_t iCand = 0; iCand < nCand3; iCand++) {
+      AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayProng3->UncheckedAt(iCand);
+      Double_t ptCand_selBit = d->Pt();
+      if(fUseSelectionBit && d->GetSelectionMap()) {
+       	if(d->HasSelectionBit(AliRDHFCuts::kDstarCuts)) ((TH2F*)fOutputEntries->FindObject("HasSelBit"))->Fill(3.0,ptCand_selBit);
+      }
+    }
+  }
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
   AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
@@ -2090,8 +2177,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	Int_t label=0;
 	if(fReadMC){
 	  label=track->GetLabel();
-	  if (label<0)fNEntries->Fill(8);
-	  else fNEntries->Fill(9); 
+	  if (label<0)((TH1F*)fOutputEntries->FindObject("hNentries"))->Fill(8);
+	  else ((TH1F*)fOutputEntries->FindObject("hNentries"))->Fill(9);
 	}
 
 
@@ -2173,12 +2260,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    if(mot){
 	      Int_t pdgMotCode = mot->GetPdgCode();
 	
-	      if(TMath::Abs(pdgMotCode)==4) fNEntries->Fill(6); //from primary charm
-	      if(TMath::Abs(pdgMotCode)==5) fNEntries->Fill(7); //from beauty
+	      if(TMath::Abs(pdgMotCode)==4) ((TH1F*)fOutputEntries->FindObject("hNentries"))->Fill(6); //from primary charm
+	      if(TMath::Abs(pdgMotCode)==5) ((TH1F*)fOutputEntries->FindObject("hNentries"))->Fill(7); //from beauty
 	    }
 	  }
 	}//end MC
-	fNEntries->Fill(5); //count the candidates (data and MC)
+	((TH1F*)fOutputEntries->FindObject("hNentries"))->Fill(5);//count the candidates (data and MC)
 
 	for(Int_t id=0;id<ndaugh;id++){
 	  //other histograms to be filled when the cut object is given
@@ -2194,6 +2281,38 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  }
 	  else 
 	    track=(AliAODTrack*)d->GetDaughter(id);
+
+
+	  // filtering cut level
+	  
+	  if (fCuts->IsInFiducialAcceptance(d->Pt(),d->Y(pdg)) && fCuts->IsSelected(d,AliRDHFCuts::kAll,aod)) {
+	    
+	    Int_t label=0;
+	    if(fReadMC)label=track->GetLabel();
+	    if(fOnOff[0]){
+	      
+	      if(fReadMC && label<0) {
+		isFakeTrack++;
+		((TH1F*)fOutputTrack->FindObject("hptFakeTrFromDaugh_filt"))->Fill(track->Pt());
+	   
+		((TH1F*)fOutputTrack->FindObject("hd0f_filt"))->Fill(d->Getd0Prong(id));
+	      } else {
+		((TH1F*)fOutputTrack->FindObject("hptGoodTrFromDaugh_filt"))->Fill(track->Pt());
+		((TH1F*)fOutputTrack->FindObject("hd0dau_filt"))->Fill(d->Getd0Prong(id));
+                Double_t phidaughter = d->PhiProng(id);
+		if(phidaughter<0) phidaughter=2.0*TMath::Pi()+phidaughter;
+		((TH2F*)fOutputTrack->FindObject("hd0dauphi_filt"))->Fill(phidaughter, d->Getd0Prong(id));
+		Double_t d0rphiz[2],covd0[3];
+		Bool_t isDCA=track->PropagateToDCA(aod->GetPrimaryVertex(),aod->GetMagneticField(),9999.,d0rphiz,covd0);
+		if(isDCA){
+		  ((TH1F*)fOutputTrack->FindObject("hd0zdau_filt"))->Fill(d0rphiz[1]);
+		  ((TH2F*)fOutputTrack->FindObject("hd0zdauphi_filt"))->Fill(phidaughter,d0rphiz[1]);
+		}
+	      }
+	    }
+	  }
+
+
 
 	  //track quality
 
@@ -2285,7 +2404,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
 
 	    if (fCuts->IsSelected(d,AliRDHFCuts::kAll,aod) && fOnOff[1]){
-	      fNEntries->Fill(3); //candidates passing analysis cuts	     
+	       ((TH1F*)fOutputEntries->FindObject("hNentries"))->Fill(3); //candidates passing analysis cuts
 
 	    AliAODPid *pid = track->GetDetPid();
 	      if(pid){
@@ -2316,13 +2435,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
   delete tpcres;
   delete [] pdgdaughters;
-  PostData(1,fNEntries);
+  PostData(1,fOutputEntries);
   if(fOnOff[1]) PostData(2,fOutputPID);
   if(fOnOff[0]) PostData(3,fOutputTrack);
   PostData(4,fCuts);
   if(fOnOff[2]) PostData(5,fOutputCounters);
   //Post data 6 done in case of centrality on   
-
 }
 
 //____________________________________________________________________________
@@ -2416,8 +2534,8 @@ void AliAnalysisTaskSEHFQA::FillFlowObs(AliAODEvent *aod){
 void AliAnalysisTaskSEHFQA::Terminate(Option_t */*option*/){
   //terminate analysis
 
-  fNEntries = dynamic_cast<TH1F*>(GetOutputData(1));
-  if(!fNEntries){
+ fOutputEntries = dynamic_cast<TList*> (GetOutputData(1));
+  if (!fOutputEntries && fOnOff[1]) {
     printf("ERROR: %s not available\n",GetOutputSlot(1)->GetContainer()->GetName());
     return;
   }
@@ -2435,4 +2553,5 @@ void AliAnalysisTaskSEHFQA::Terminate(Option_t */*option*/){
   }
 
 }
+
 

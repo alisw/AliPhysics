@@ -70,7 +70,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
   AliAnalysisTaskSEHFQA operator=(const AliAnalysisTaskSEHFQA &source);
   void FillFlowObs(AliAODEvent *aod);
 
- TH1F*  fNEntries;         //! histogram with number of events on output slot 1
+ TList* fOutputEntries;    //! list sent on output slot 1
  TList* fOutputPID;        //! list sent on output slot 2
  TList* fOutputTrack;      //! list sent on output slot 3
  TList* fOutputCounters;   //! list sent on output slot 5
@@ -88,7 +88,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  Bool_t fOnOff[5];         // on-off the QA on tracks (0), PID (1), centrality (2), event selection -- default is {kTRUE,kTRUE,kTRUE,kTRUE}
  Bool_t fFillDistrTrackEffChecks;
 
- ClassDef(AliAnalysisTaskSEHFQA,9); //AnalysisTaskSE for the quality assurance of HF in hadrons
+ ClassDef(AliAnalysisTaskSEHFQA,10); //AnalysisTaskSE for the quality assurance of HF in hadrons
 
 };
 
