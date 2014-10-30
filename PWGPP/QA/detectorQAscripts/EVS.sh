@@ -3,6 +3,7 @@ runLevelEventStatQA()
   eventStatFile=$1
 
   cp $ALICE_ROOT/PWGPP/EVS/runLevelEventStatQA.C .
+  cp $ALICE_ROOT/PWGPP/EVS/triggerInfo.C .
   aliroot -b -q -l "runLevelEventStatQA.C(\"$eventStatFile\",${runNumber})" 
 }
 
