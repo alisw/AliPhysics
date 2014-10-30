@@ -219,6 +219,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
   if(!stack)
   {
     AliFatal("No Stack available, STOP");
+    return;// coverity
   }
   
   //Loop on stored AOD particles
