@@ -599,16 +599,18 @@ void AliCFVertexingHFCascade::SetAccCut()
   Int_t mother =  mcPartDaughter->GetMother();
   AliAODMCParticle* mcMother = dynamic_cast<AliAODMCParticle*>(fmcArray->At(mother)); 
   if(!mcMother) return;
-
+  
   if (TMath::Abs(mcPartDaughter->GetPdgCode()) != fPDGbachelor || TMath::Abs(mcMother->GetPdgCode()) != fPDGcascade){
-    AliFatal("Apparently the soft pion is not in the third position, causing a crash!!");
+    AliError(Form("Apparently the expected bachelor is not in the third position, causing an error (pdg expected = %d, actual = %d)!!", fPDGbachelor, mcPartDaughter->GetPdgCode()));
+    AliError("This should be fixed when checking the MC part family in the CF task...");
+    return;  
   }	         
   if (fProngs>0){
-    for (Int_t iP=0; iP<fProngs-1; iP++){
+    for (Int_t iP=0; iP<fProngs; iP++){
       fPtAccCut[iP]=0.1;
       fEtaAccCut[iP]=0.9;
     }
-
+    
     if (fPDGcascade != 4122){
       fPtAccCut[2]=0.06;  // soft pion
       fEtaAccCut[2]=0.9;  // soft pion
