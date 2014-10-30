@@ -348,7 +348,11 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   if( GetReader()->ReadStack() )
   {
     stack = GetMCStack();
-    if(!stack ) return;
+    if( !stack )
+    {
+      AliFatal("Stack not available, is the MC handler called? STOP");
+      return;
+    }
     nprim = stack->GetNtrack();
   }
   
@@ -357,7 +361,11 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   if( GetReader()->ReadAODMCParticles() )
   {
     mcparticles = GetReader()->GetAODMCParticles();
-    if( !mcparticles ) return;
+    if( !mcparticles )
+    {
+      AliFatal("Standard MCParticles not available!");
+      return;
+    }
     nprim = mcparticles->GetEntriesFast();
   }
   
