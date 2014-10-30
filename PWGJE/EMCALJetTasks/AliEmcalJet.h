@@ -91,9 +91,9 @@ class AliEmcalJet : public AliVParticle
   Double_t          PtEmc()                      const { return fPtEmc;                    }
   Double_t          PtSub()                      const { return fPtSub;                    }
   Double_t          PtSubVect()                  const { return fPtSubVect;                }
-  Double_t          PtSub(Double_t rho)          const { return fPt - fArea*rho;           }
-  Double_t          PtSubVect(Double_t rho)      const;
-  TLorentzVector    SubtractRhoVect(Double_t rho) const;
+  Double_t          PtSub(Double_t rho, Bool_t save = kFALSE);
+  Double_t          PtSubVect(Double_t rho, Bool_t save = kFALSE);
+  TLorentzVector    SubtractRhoVect(Double_t rho, Bool_t save = kFALSE);
   Short_t           TrackAt(Int_t idx)           const { return fTrackIDs.At(idx);         }
   AliVParticle     *TrackAt(Int_t idx, TClonesArray *ta)  const { if (!ta) return 0; return dynamic_cast<AliVParticle*>(ta->At(TrackAt(idx))); }
   AliVParticle     *GetLeadingTrack(TClonesArray *tracks) const;
