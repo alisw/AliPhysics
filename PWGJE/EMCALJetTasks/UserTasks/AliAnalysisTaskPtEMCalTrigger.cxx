@@ -136,17 +136,31 @@ namespace EMCalTriggerPtAnalysis {
      * Also adding the track cuts to the list of histograms.
      */
     AliAnalysisTaskEmcal::UserCreateOutputObjects();
-    TString trackContainerName = "ESDFilterTracks", clusterContainerName = "EmcCaloClusters";
-    if(!fIsEsd){
-      trackContainerName = "AODFilterTracks";
-      clusterContainerName = "EmcCaloClusters";
-    }
-    AliParticleContainer *trackContainer = this->AddParticleContainer(trackContainerName.Data());
-    trackContainer->SetClassName("AliVTrack");
-    this->AddClusterContainer(clusterContainerName.Data());
-    this->SetCaloTriggerPatchInfoName("EmcalTriggers");
+    SetCaloTriggerPatchInfoName("EmcalTriggers");
     fHistos = new AliEMCalHistoContainer("PtEMCalTriggerHistograms");
     fHistos->ReleaseOwner();
+
+    if(fJetContainersMC.GetEntries()){
+      AliDebug(1,"Jet containers for MC truth:");
+      TObjString *contname(NULL);
+      TIter contMCIter(&fJetContainersMC);
+      while((contname = dynamic_cast<TObjString *>(contMCIter.Next())))
+        AliDebug(1, Form("Next container: %s", contname->String().Data()));
+    }
+    if(fJetContainersData.GetEntries()){
+      AliDebug(1, "Jet containers for Data:");
+      TObjString *contname(NULL);
+      TIter contDataIter(&fJetContainersData);
+      while((contname = dynamic_cast<TObjString *>(contDataIter.Next())))
+        AliDebug(1, Form("Next container: %s", contname->String().Data()));
+    }
+    if(fJetCollArray.GetEntries()){
+      AliDebug(1, "Jet containers attached to this task:");
+      AliJetContainer *cont(NULL);
+      TIter contIter(&fJetCollArray);
+      while((cont = dynamic_cast<AliJetContainer *>(contIter.Next())))
+        AliDebug(1, Form("Container: %s", cont->GetName()));
+    }
 
     std::map<std::string, std::string> triggerCombinations;
     const char *triggernames[12] = {"MinBias", "EMCJHigh", "EMCJLow", "EMCGHigh", "EMCGLow", "NoEMCal", "EMCHighBoth", "EMCHighGammaOnly", "EMCHighJetOnly", "EMCLowBoth", "EMCLowGammaOnly", "EMCLowJetOnly"},
@@ -451,8 +465,8 @@ namespace EMCalTriggerPtAnalysis {
         if(!fMCEvent->IsPhysicalPrimary(ipart)) continue;
         FillMCParticleHist("hMCtrueParticles", part, zv, isPileupEvent);
 
-        if(this->fJetCollArray.GetEntries() &&
-            (jetContMC = dynamic_cast<AliJetContainer *>(this->fJetCollArray.FindObject((static_cast<TObjString *>(this->fJetContainersMC.At(0)))->String().Data())))){
+        if(fJetCollArray.GetEntries() &&
+            (jetContMC = dynamic_cast<AliJetContainer *>(fJetCollArray.FindObject((static_cast<TObjString *>(fJetContainersMC.At(0)))->String().Data())))){
           /*
            * Jet part: Find track in jet container,
            * check according to number of particles in jet, and
