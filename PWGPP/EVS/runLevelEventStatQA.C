@@ -8,33 +8,43 @@
 // TODO read number of bits from AliVEvent?
 #define NBITS 29
 
-void runLevelEventStatQA(TString qafilename="/data/alice/2010/LHC10b/pass4/000119061/event_stat.root", Int_t run=168108){
+Int_t runLevelEventStatQA(TString qafilename="/data/alice/2010/LHC10b/000114783/pass4/QA_merge_archive.zip#event_stat.root", Int_t run=114783, TString ocdbStorage = "raw://"){
   printf("runLevelEventStatQA %s %i\n",qafilename.Data(),run);
   TFile* fin = new TFile(qafilename);
   
   TH2D* h = (TH2D*) fin->Get("fHistStatistics");
+  if (!h) { printf("fHistStatistics not found\n"); return 1; }
+
+  // tree variables
   Int_t all[NBITS]      = {0};
   Int_t accepted[NBITS] = {0};
-  Double_t par[5] = {0};
+  Int_t fill=0;
+  Double_t duration=0;
+  UInt_t l0b=0;
+  Int_t nBCsPerOrbit=0;
+  Double_t mu=0;
+  Double_t lumi_seen=0;
 
   TString refClass="";
-  Int_t refSigma;
-  if      (              run<=126437) { refSigma=  62; refClass = "CINT1B-ABCE-NOPF-ALL"; }
-  else if (run>126437 && run<=127718) { refSigma=  62; refClass = "CINT1-B-NOPF-ALLNOTRD";}
-  else if (run>127718 && run<=127730) { refSigma=  62; refClass = "CINT1B-ABCE-NOPF-ALL"; }
-  else if (run>127813 && run<=166475) { refSigma=  62; refClass = "CINT1-B-NOPF-ALLNOTRD";}
+  Double_t refSigma=-1;
+  if      (              run<=126437) { refSigma=  62; refClass = "CINT1B-ABCE-NOPF-ALL";    }
+  else if (run>126437 && run<=127718) { refSigma=  62; refClass = "CINT1-B-NOPF-ALLNOTRD";   }
+  else if (run>127718 && run<=127730) { refSigma=  62; refClass = "CINT1B-ABCE-NOPF-ALL";    }
+  else if (run>127730 && run<=136848) { refSigma=  62; refClass = "CINT1-B-NOPF-ALLNOTRD";   }
   else if (run>136848 && run<=139517) { refSigma=7640; refClass = "CMBACS2-B-NOPF-ALLNOTRD"; }
-  else if (run>166476 && run<=170593) { refSigma=4100; refClass = "CVLN-B-NOPF-ALLNOTRD"; }
-  else if (run>195144 && run<=197388) { refSigma=1590; refClass = "C0TVX-B-NOPF-ALLNOTRD"; }
+  else if (run>166476 && run<=170593) { refSigma=4100; refClass = "CVLN-B-NOPF-ALLNOTRD";    }
+  else if (run>195144 && run<=197388) { refSigma=1590; refClass = "C0TVX-B-NOPF-ALLNOTRD";   }
 
-  triggerInfo(run,refClass,par);
-  Int_t fill         = TMath::Nint(par[0]);
-  Double_t duration  = par[1];
-  UInt_t l0b         = TMath::Nint(par[2]);
-  Int_t nBCsPerOrbit = TMath::Nint(par[3]);
-  Double_t mu        = par[4];
-  Double_t lumi_seen = l0b/refSigma;
-  return;
+  if (refSigma>0) {
+    Double_t par[5] = {0};
+    triggerInfo(run,refClass,ocdbStorage,par);
+    fill         = TMath::Nint(par[0]);
+    duration     = par[1];
+    l0b          = TMath::Nint(par[2]);
+    nBCsPerOrbit = TMath::Nint(par[3]);
+    mu           = par[4];
+    lumi_seen    = l0b/refSigma;
+  }
 
   for (Int_t j=1;j<=h->GetNbinsY();j++){
     TString label = h->GetYaxis()->GetBinLabel(j);
@@ -78,7 +88,8 @@ void runLevelEventStatQA(TString qafilename="/data/alice/2010/LHC10b/pass4/00011
   t->Branch("accepted",&accepted,Form("accepted[%i]/I",NBITS));
   t->Fill();
   
-  TFile* fout = new TFile(Form("trending_%i.root",run),"recreate");
+  TFile* fout = new TFile("trending.root","recreate");
   t->Write();
   fout->Close();
+  return 0;
 }

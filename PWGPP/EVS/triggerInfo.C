@@ -20,9 +20,9 @@ UInt_t dif(UInt_t stop, UInt_t start){
   return d;
 };
 
-Int_t triggerInfo(Int_t run, TString refClassName, Double_t* par){
+Int_t triggerInfo(Int_t run, TString refClassName, TString ocdbStorage, Double_t* par){
   AliCDBManager* man = AliCDBManager::Instance();
-  //  man->SetDefaultStorage("local:///data/alice/OCDB");
+  man->SetDefaultStorage(ocdbStorage.Data());
   man->SetRun(run);
   AliLHCData* lhc = (AliLHCData*) man->Get("GRP/GRP/LHCData")->GetObject();
   par[0] = lhc->GetFillNumber();
