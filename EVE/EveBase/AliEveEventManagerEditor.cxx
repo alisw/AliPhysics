@@ -34,6 +34,9 @@
 
 using std::ofstream;
 using std::ios;
+using std::cout;
+using std::endl;
+
 ClassImp(AliEveEventManagerEditor)
 
 //______________________________________________________________________________
