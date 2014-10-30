@@ -413,20 +413,37 @@ void AliEmcalJet::Print(Option_t* /*option*/) const
 }
 
 //__________________________________________________________________________________________________
-Double_t AliEmcalJet::PtSubVect(Double_t rho) const
+Double_t AliEmcalJet::PtSub(Double_t rho, Bool_t save)
 {
-  // Return vectorial subtracted transverse momentum.
+  // Return transverse momentum after scalar subtraction. Save the result if required.
+  // Result can be negative.
+
+  Double_t ptcorr = fPt - rho * fArea;
+  if(save)
+    fPtSub = ptcorr;
+  return ptcorr;
+}
+
+//__________________________________________________________________________________________________
+Double_t AliEmcalJet::PtSubVect(Double_t rho, Bool_t save)
+{
+  // Return transverse momentum after vectorial subtraction. Save the result if required.
+  // Result cannot be negative.
 
   Double_t dx = Px() - rho * fArea * TMath::Cos(fAreaPhi);
   Double_t dy = Py() - rho * fArea * TMath::Sin(fAreaPhi);
   //Double_t dz = Pz() - rho * fArea * TMath::SinH(fAreaEta);
-  return TMath::Sqrt(dx * dx + dy * dy);
+  Double_t ptcorr = TMath::Sqrt(dx * dx + dy * dy);
+  if(save)
+    fPtSubVect = ptcorr;
+  return ptcorr;
 }
 
 //__________________________________________________________________________________________________
-TLorentzVector AliEmcalJet::SubtractRhoVect(Double_t rho) const
+TLorentzVector AliEmcalJet::SubtractRhoVect(Double_t rho, Bool_t save)
 {
-  // Return four-momentum after vectorial subtraction
+  // Return four-momentum after vectorial subtraction. Save pt if required.
+  // Saved value of pt is negative if the corrected momentum is pointing to the opposite half-plane in the x-y plane w.r.t. the raw momentum.
 
   TLorentzVector vecCorr;
   GetMom(vecCorr);
@@ -434,6 +451,12 @@ TLorentzVector AliEmcalJet::SubtractRhoVect(Double_t rho) const
   vecBg.SetPtEtaPhiE(fArea, fAreaEta, fAreaPhi, fAreaE);
   vecBg *= rho;
   vecCorr -= vecBg;
+  if(save)
+  {
+    Double_t dPhi = TMath::Abs(TVector2::Phi_mpi_pi(Phi() - vecCorr.Phi()));
+    Int_t signum = dPhi <= TMath::PiOver2() ? 1 : -1;
+    fPtSubVect = signum * vecCorr.Pt();
+  }
   return vecCorr;
 }
 
