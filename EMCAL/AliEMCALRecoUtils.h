@@ -227,8 +227,7 @@ public:
                                           Float_t &dEta, Float_t &dPhi);
   static Bool_t ExtrapolateTrackToEMCalSurface(AliVTrack *track, /*note, on success the call will change the track*/
                                                Double_t emcalR=440, Double_t mass=0.1396,
-                                               Double_t step=20, Double_t minpT=0.35,
-                                               Bool_t useMassForTracking = kFALSE);
+                                               Double_t step=20, Double_t minpT=0.35);
   static Bool_t ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, 
                                                Double_t emcalR, Double_t mass, Double_t step, 
                                                Float_t &eta, Float_t &phi, Float_t &pt);
@@ -271,7 +270,11 @@ public:
   void     SetStep(Double_t step)                     { fStepSurface = step           ; }
   void     SetStepCluster(Double_t step)              { fStepCluster = step           ; }
   void     SetITSTrackSA(Bool_t isITS)                { fITSTrackSA = isITS           ; } //Special Handle of AliExternTrackParam    
-    
+  
+  Bool_t   IsMassForTrackingUsed()                    { return fUseMassForTracking     ; }
+  void     SwitchOnUseMassForTracking()               { fUseMassForTracking = kTRUE    ; }
+  void     SwitchOffUseMassForTracking()              { fUseMassForTracking = kFALSE   ; }
+  
   // Exotic cells / clusters
   Bool_t   IsExoticCell(Int_t absId, AliVCaloCells* cells, Int_t bc =-1) ;
   void     SwitchOnRejectExoticCell()                 { fRejectExoticCells = kTRUE     ; }
@@ -425,7 +428,9 @@ private:
   Bool_t     fCutRequireITSStandAlone;   // Require ITSStandAlone
   Bool_t     fCutRequireITSpureSA;       // ITS pure standalone tracks
   
-  ClassDef(AliEMCALRecoUtils, 22)
+  static Bool_t fUseMassForTracking;     // Change mass hypothesis.
+  
+  ClassDef(AliEMCALRecoUtils, 23)
 };
 #endif // ALIEMCALRECOUTILS_H
 

@@ -141,9 +141,11 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   //Copy ctor
   
   for (Int_t i = 0; i < 15 ; i++) { fMisalRotShift[i]      = reco.fMisalRotShift[i]      ; 
-                                   fMisalTransShift[i]    = reco.fMisalTransShift[i]    ; }
+                                    fMisalTransShift[i]    = reco.fMisalTransShift[i]    ; }
   for (Int_t i = 0; i < 7  ; i++) { fNonLinearityParams[i] = reco.fNonLinearityParams[i] ; }
   for (Int_t i = 0; i < 3  ; i++) { fSmearClusterParam[i]  = reco.fSmearClusterParam[i]  ; }
+
+  fUseMassForTracking = reco.fUseMassForTracking;
 
 }
 
@@ -223,7 +225,8 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fCutDCAToVertex2D          = reco.fCutDCAToVertex2D;
   fCutRequireITSStandAlone   = reco.fCutRequireITSStandAlone; 
   fCutRequireITSpureSA       = reco.fCutRequireITSpureSA;
-
+  fUseMassForTracking        = reco.fUseMassForTracking;
+  
   if (reco.fResidualEta) {
     // assign or copy construct
     if (fResidualEta) { 
@@ -1015,8 +1018,10 @@ void AliEMCALRecoUtils::InitParameters()
   fCutMaxDCAToVertexZ  = 1e10;              
   fCutDCAToVertex2D    = kFALSE;
   
-  fCutRequireITSStandAlone = kFALSE; //MARCEL
+  fCutRequireITSStandAlone = kFALSE; //Marcel
   fCutRequireITSpureSA     = kFALSE; //Marcel
+  
+  fUseMassForTracking      = kFALSE;
   
   //Misalignment matrices
   for (Int_t i = 0; i < 15 ; i++) 
@@ -2003,8 +2008,7 @@ Int_t  AliEMCALRecoUtils::FindMatchedClusterInClusterArr(const AliExternalTrackP
 //------------------------------------------------------------------------------------
 Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
                                                          Double_t emcalR, Double_t mass,
-                                                         Double_t step, Double_t minpt,
-                                                         Bool_t useMassForTracking)
+                                                         Double_t step, Double_t minpt)
 { 
   // Extrapolate track to EMCAL surface
 
@@ -2033,13 +2037,13 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
     
     if (esdt)
     {
-      if ( useMassForTracking ) mass = esdt->GetMassForTracking();
-      else                      mass = esdt->GetMass(onlyTPC);
+      if ( fUseMassForTracking ) mass = esdt->GetMassForTracking();
+      else                       mass = esdt->GetMass(onlyTPC);
     }
     else
     {
-      if ( useMassForTracking ) mass = aodt->GetMassForTracking();
-      else                      mass = aodt->M();
+      if ( fUseMassForTracking ) mass = aodt->GetMassForTracking();
+      else                       mass = aodt->M();
     }
   }
 
