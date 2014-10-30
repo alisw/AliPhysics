@@ -82,8 +82,10 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
 
   Double_t GetQPercLHC11h(Double_t qvec);
 
+  Double_t GetCentralityWeight(Double_t cent);
+
  private:
-  Double_t GetQinv2(Double_t[], Double_t[]);
+  Double_t GetQinv(Double_t[], Double_t[]);
   void GetQosl(Double_t[], Double_t[], Double_t&, Double_t&, Double_t&);
   Bool_t TrackCut(AliAODTrack* ftrack);
   Bool_t EventCut(/*AliAODEvent* fevent*/);
@@ -97,7 +99,7 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
   TList                  *fOutputList; //! Compact Output list
   //AliPIDResponse         *fPIDResponse; //! PID response object; equivalent to AliAODpidUtil
   AliHelperPID*     fHelperPID;      // points to class for PID
-  AliEventPoolManager**     fPoolMgr;         //[2] event pool manager
+  AliEventPoolManager**     fPoolMgr;         //![2] event pool manager
   AliSpectraAODEventCuts* fEventCuts;
   AliSpectraAODTrackCuts* fTrackCuts;
 
@@ -122,9 +124,6 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
   Int_t fQPercDet; // detector used for q-vector (0-V0A, 1-V0C)
   Int_t fEPDet; // detector used for event plane (0-V0A, 1-V0C)
 
-  Double_t fPsiEPmix;
-  Double_t fPsiEPmixtemp;
-
   // binning for histograms
   Int_t nKtBins;
   Int_t nKtBins1;
@@ -132,6 +131,9 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
   Int_t nEPBins;
   Int_t nEPBins1;
   Double_t* epBins; //[nEPBins1]
+  Int_t nEPBinsMix;
+  Int_t nEPBinsMix1;
+  Double_t* epBinsMix; //[nEPBinsMix1]
   Int_t nCentBins;
   Int_t nCentBins1;
   Double_t* centBins; //[nCentBins1]
@@ -161,6 +163,7 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
   TH1D *hpt_pid;
   TH2D *hvzcent;
   TH1D *hcent;
+  TH1D* hcentUnweighted;
   TH2D *hcentn;
   TH3D *hphistaretapair10;
   TH3D *hphistaretapair16;
@@ -171,7 +174,7 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
   TH3D *hphietapair;
   TH3D *hphietapair2;
   TH1D *hpidid;
-  TH1D *hkt;
+  TH2D *hkt;
   TH1D *hktcheck;
   TH3D *hkt3;
   TH2D* hdcaxy;
@@ -180,14 +183,23 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
   TH1D* hsharefrac;
   TH1D* hsharequalmix;
   TH1D* hsharefracmix;
-  TH1D *hPsiTPC;
-  TH1D *hPsiV0A;
-  TH1D *hPsiV0C;
-  TH1D *hCheckEPA;
-  TH1D *hCheckEPC;
+  TH2D *hPsiTPC;
+  TH2D *hPsiV0A;
+  TH2D *hPsiV0C;
+  TH2D* hShiftTPC;
+  TH2D* hShiftV0A;
+  TH2D* hShiftV0C;
+  TH2D *hPsiMix;
+  TH2D *hCheckEPA;
+  TH2D *hCheckEPC;
   TH2D* hCheckEPmix;
+  TH3D* hAvDphi;
+  TH3D* hNpairs;
+  TH1D* hPairDphi;
+  TH1D* hPairDphiMix;
   TH2D *hcentq;
-  TH2D* hMixedDist;
+  TH2D* hMixedDistTracks;
+  TH2D* hMixedDistEvents;
   TH2D *hQvecV0A;
   TH2D *hQvecV0C;
   TH1D *hresV0ATPC;
