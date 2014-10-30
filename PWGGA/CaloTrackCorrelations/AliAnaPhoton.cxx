@@ -62,7 +62,6 @@ fNLMCutMin(-1),               fNLMCutMax(10),
 fFillSSHistograms(kFALSE),    fFillOnlySimpleSSHisto(1),
 fNOriginHistograms(8),        fNPrimaryHistograms(4),
 fMomentum(),                  fPrimaryMom(),
-fSmearShowerShape(0),         fSmearShowerShapeWidth(0),    fRandom(0),
 // Histograms
 
 // Control histograms
@@ -110,8 +109,7 @@ fhPtPhotonNPileUpSPDVtxTimeCut(0),    fhPtPhotonNPileUpTrkVtxTimeCut(0),
 fhPtPhotonNPileUpSPDVtxTimeCut2(0),   fhPtPhotonNPileUpTrkVtxTimeCut2(0),
 
 fhEClusterSM(0),                      fhEPhotonSM(0),
-fhPtClusterSM(0),                     fhPtPhotonSM(0),
-fhLam0ESmeared(0)
+fhPtClusterSM(0),                     fhPtPhotonSM(0)
 {
   //default ctor
   
@@ -1278,14 +1276,6 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhLam0E->SetYTitle("#lambda_{0}^{2}");
     fhLam0E->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhLam0E);
-
-    if(fSmearShowerShape && IsDataMC())
-    {
-      fhLam0ESmeared  = new TH2F ("hLam0ESmeared",Form("#lambda_{0}^{2} vs E, smeared width %2.4f",fSmearShowerShapeWidth), nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-      fhLam0ESmeared->SetYTitle("#lambda_{0}^{2}");
-      fhLam0ESmeared->SetXTitle("#it{E} (GeV)");
-      outputContainer->Add(fhLam0ESmeared);
-    }
     
     fhLam1E  = new TH2F ("hLam1E","#lambda_{1}^{2} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
     fhLam1E->SetYTitle("#lambda_{1}^{2}");
@@ -2213,8 +2203,6 @@ void AliAnaPhoton::InitParameters()
   fNCellsCut   = 0;
 	
   fRejectTrackMatch       = kTRUE ;
-	
-  fSmearShowerShapeWidth = 0.002;
   
 }
 
@@ -2381,25 +2369,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     FillShowerShapeHistograms(calo,tag,maxCellFraction);
     
-    Float_t l0 = calo->GetM02();
-    
-    // Smear the SS to try to match data and simulations,
-    // do it only for simulations.
-    if(fSmearShowerShape && IsDataMC())
-    {
-      // Smear non merged clusters
-//      if( !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) &&
-//          !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta))
-//      {
-        //printf("Width %f, L0: Before l0 %2.2f ",fSmearShowerShapeWidth, l0);
-        l0 = fRandom.Landau(l0, fSmearShowerShapeWidth);
-        //printf("After %2.2f \n",l0);
-//      }
-      
-      if(fFillSSHistograms) fhLam0ESmeared->Fill(fMomentum.E(),l0);
-    }
-    
-    aodph.SetM02(l0);
+    aodph.SetM02(calo->GetM02());
     aodph.SetNLM(nMaxima);
     aodph.SetTime(calo->GetTOF()*1e9);
     aodph.SetNCells(calo->GetNCells());
