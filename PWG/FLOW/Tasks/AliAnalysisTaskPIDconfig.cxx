@@ -71,6 +71,8 @@
 #include "AliVEvent.h"
 #include "AliAODVZERO.h"
 
+using std::cout;
+using std::endl;
 
 ClassImp(AliAnalysisTaskPIDconfig)
 //ClassImp()
