@@ -32,7 +32,7 @@ using std::cerr;
 ClassImp(AliEmcalJetTask)
 
 //________________________________________________________________________
-AliEmcalJetTask::AliEmcalJetTask() : 
+AliEmcalJetTask::AliEmcalJetTask() :
   AliAnalysisTaskSE("AliEmcalJetTask"),
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
@@ -93,7 +93,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
 }
 
 //________________________________________________________________________
-AliEmcalJetTask::AliEmcalJetTask(const char *name) : 
+AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   AliAnalysisTaskSE(name),
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
@@ -176,7 +176,7 @@ void AliEmcalJetTask::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliEmcalJetTask::UserExec(Option_t *) 
+void AliEmcalJetTask::UserExec(Option_t *)
 {
   // Main loop, called for each event.
   if (!fIsInit) {
@@ -193,7 +193,7 @@ void AliEmcalJetTask::UserExec(Option_t *)
 }
 
 //________________________________________________________________________
-void AliEmcalJetTask::Terminate(Option_t *) 
+void AliEmcalJetTask::Terminate(Option_t *)
 {
   // Called once at the end of the analysis.
 }
@@ -226,7 +226,7 @@ void AliEmcalJetTask::FindJets()
   if ((fJetType & kR020Jet) != 0)
     fRadius = 0.2;
   else if ((fJetType & kR030Jet) != 0)
-    fRadius = 0.3; 
+    fRadius = 0.3;
   else if ((fJetType & kR040Jet) != 0)
     fRadius = 0.4;
 
@@ -236,7 +236,7 @@ void AliEmcalJetTask::FindJets()
   fjw.SetGhostArea(fGhostArea);
   fjw.SetR(fRadius);
   fjw.SetAlgorithm(jalgo);
-  fjw.SetRecombScheme(static_cast<fastjet::RecombinationScheme>(fRecombScheme)); 
+  fjw.SetRecombScheme(static_cast<fastjet::RecombinationScheme>(fRecombScheme));
   fjw.SetMaxRap(fEtaMax);
   fjw.Clear();
 
@@ -277,18 +277,18 @@ void AliEmcalJetTask::FindJets()
 	  continue;
 	}
 	else {
-	  AliDebug(2,Form("Track %d matches the bit mask (%d, %d)", iTracks, fConstSel, t->TestBits(TObject::kBitMask)));	    
+	  AliDebug(2,Form("Track %d matches the bit mask (%d, %d)", iTracks, fConstSel, t->TestBits(TObject::kBitMask)));
 	}
       }
-      if ((t->GetFlag() & fMCFlag) != fMCFlag) { 
+      if ((t->GetFlag() & fMCFlag) != fMCFlag) {
 	AliDebug(2,Form("Skipping track %d because it does not match the MC flags", iTracks));
 	continue;
       }
-      if (fGeneratorIndex >= 0 && t->GetGeneratorIndex() != fGeneratorIndex) { 
+      if (fGeneratorIndex >= 0 && t->GetGeneratorIndex() != fGeneratorIndex) {
 	AliDebug(2,Form("Skipping track %d because it does not match the MC generator index", iTracks));
 	continue;
       }
-      if (t->Pt() < fMinJetTrackPt) 
+      if (t->Pt() < fMinJetTrackPt)
         continue;
       Double_t eta = t->Eta();
       Double_t phi = t->Phi();
@@ -341,7 +341,7 @@ void AliEmcalJetTask::FindJets()
 	    continue;
 	  }
 	  else {
-	    AliDebug(2,Form("Cluster %d matches the bit mask (%d, %d)", iClus, fConstSel, ep->TestBits(TObject::kBitMask)));	    
+	    AliDebug(2,Form("Cluster %d matches the bit mask (%d, %d)", iClus, fConstSel, ep->TestBits(TObject::kBitMask)));
 	  }
 	}
 
@@ -371,7 +371,7 @@ void AliEmcalJetTask::FindJets()
 	    continue;
 	  }
 	  else {
-	    AliDebug(2,Form("Cluster %d matches the bit mask (%d, %d)", iClus, fConstSel, c->TestBits(TObject::kBitMask)));	    
+	    AliDebug(2,Form("Cluster %d matches the bit mask (%d, %d)", iClus, fConstSel, c->TestBits(TObject::kBitMask)));
 	  }
 	}
 
@@ -386,7 +386,7 @@ void AliEmcalJetTask::FindJets()
       }
       if (!c->IsEMCAL())
 	continue;
-      if (cPt < fMinJetClusPt) 
+      if (cPt < fMinJetClusPt)
 	continue;
       if ((cEta<fEtaMin) || (cEta>fEtaMax) ||
 	  (cPhi<fPhiMin) || (cPhi>fPhiMax))
@@ -401,7 +401,7 @@ void AliEmcalJetTask::FindJets()
   }
 
   // setting legacy mode
-  if (fLegacyMode) { 
+  if (fLegacyMode) {
     fjw.SetLegacyMode(kTRUE);
   }
 
@@ -419,11 +419,11 @@ void AliEmcalJetTask::FindJets()
     fjw.DoGenericSubtractionJetAngularity();
     fjw.DoGenericSubtractionJetpTD();
     fjw.DoGenericSubtractionJetCircularity();
-    fjw.DoGenericSubtractionJetSigma2(); 
+    fjw.DoGenericSubtractionJetSigma2();
     fjw.DoGenericSubtractionJetConstituent();
     fjw.DoGenericSubtractionJetLeSub();
   }
-  
+
   //run constituent subtractor
   if(fDoConstituentSubtraction) {
     fjw.SetUseExternalBkg(fUseExternalBkg,fRho,fRhom);
@@ -448,7 +448,7 @@ void AliEmcalJetTask::FindJets()
     Int_t ij = indexes[ijet];
     AliDebug(3,Form("Jet pt = %f, area = %f", jets_incl[ij].perp(), fjw.GetJetArea(ij)));
 
-    if (jets_incl[ij].perp()<fMinJetPt) 
+    if (jets_incl[ij].perp()<fMinJetPt)
       continue;
     if (fjw.GetJetArea(ij)<fMinJetArea)
       continue;
@@ -456,7 +456,7 @@ void AliEmcalJetTask::FindJets()
 	(jets_incl[ij].phi()<fJetPhiMin) || (jets_incl[ij].phi()>fJetPhiMax))
       continue;
 
-    AliEmcalJet *jet = new ((*fJets)[jetCount]) 
+    AliEmcalJet *jet = new ((*fJets)[jetCount])
       AliEmcalJet(jets_incl[ij].perp(), jets_incl[ij].eta(), jets_incl[ij].phi(), jets_incl[ij].m());
     jet->SetLabel(ij);
 
@@ -472,7 +472,7 @@ void AliEmcalJetTask::FindJets()
         jet->SetSecondOrderSubtracted(jetMassInfo[ij].second_order_subtracted());
       }
     }
-  
+
     //here do generic subtraction for angular structure function
     Double_t ptcorr = jets_incl[ij].perp()-fjw.GetJetArea(ij)*fRho;
     fRMax = fRadius+0.2;
@@ -519,7 +519,7 @@ void AliEmcalJetTask::FindJets()
 	jet->SetFirstOrderSubtractedpTD(jetpTDInfo[ij].first_order_subtracted());
 	jet->SetSecondOrderSubtractedpTD(jetpTDInfo[ij].second_order_subtracted());
       }
-      
+
       std::vector<fastjet::contrib::GenericSubtractorInfo> jetCircularityInfo = fjw.GetGenSubtractorInfoJetCircularity();
       Int_t nc = (Int_t)jetCircularityInfo.size();
       if(nc>ij && nc>0) {
@@ -536,9 +536,9 @@ void AliEmcalJetTask::FindJets()
 	jet->SetSecondDerivativeSigma2(jetSigma2Info[ij].second_derivative());
 	jet->SetFirstOrderSubtractedSigma2(jetSigma2Info[ij].first_order_subtracted());
 	jet->SetSecondOrderSubtractedSigma2(jetSigma2Info[ij].second_order_subtracted());
-      } 
+      }
 
-      
+
       std::vector<fastjet::contrib::GenericSubtractorInfo> jetConstituentInfo = fjw.GetGenSubtractorInfoJetConstituent();
       Int_t nco= (Int_t)jetConstituentInfo.size();
       if(nco>ij && nco>0) {
@@ -596,11 +596,11 @@ void AliEmcalJetTask::FindJets()
 
     if (gall > 0)
       jet->SetAreaEmc(fjw.GetJetArea(ij) * gemc / gall);
-    else 
+    else
       jet->SetAreaEmc(-1);
-    if ((jet->Phi() > geom->GetArm1PhiMin() * TMath::DegToRad()) && 
+    if ((jet->Phi() > geom->GetArm1PhiMin() * TMath::DegToRad()) &&
 	(jet->Phi() < geom->GetArm1PhiMax() * TMath::DegToRad()) &&
-	(jet->Eta() > geom->GetArm1EtaMin()) && 
+	(jet->Eta() > geom->GetArm1EtaMin()) &&
 	(jet->Eta() < geom->GetArm1EtaMax()))
       jet->SetAxisInEmcal(kTRUE);
 
@@ -618,13 +618,13 @@ void AliEmcalJetTask::FindJets()
       jets_sub = fjw.GetConstituentSubtrJets();
       AliDebug(1,Form("%d constituent subtracted jets found", (Int_t)jets_sub.size()));
       for (UInt_t ijet=0, jetCount=0; ijet<jets_sub.size(); ++ijet) {
-	//Only storing 4-vector and jet area of unsubtracted jet	
-	AliEmcalJet *jet_sub = new ((*fJetsSub)[jetCount]) 
+	//Only storing 4-vector and jet area of unsubtracted jet
+	AliEmcalJet *jet_sub = new ((*fJetsSub)[jetCount])
 	  AliEmcalJet(jets_sub[ijet].perp(), jets_sub[ijet].eta(), jets_sub[ijet].phi(), jets_sub[ijet].m());
 	jet_sub->SetLabel(ijet);
 	 // Fill constituent info
         std::vector<fastjet::PseudoJet> constituents_unsub(fjw.GetJetConstituents(ijet));
-	std::vector<fastjet::PseudoJet> constituents_sub = jets_sub[ijet].constituents(); 
+	std::vector<fastjet::PseudoJet> constituents_sub = jets_sub[ijet].constituents();
         jet_sub->SetNumberOfTracks(constituents_sub.size());
 	jet_sub->SetNumberOfClusters(constituents_sub.size());
 	Int_t nt            = 0;
@@ -639,12 +639,12 @@ void AliEmcalJetTask::FindJets()
 	Int_t nneutral      = 0;
 	Double_t mcpt       = 0;
 	Double_t emcpt      = 0;
-       
+
 	FillJetConstituents(constituents_sub,jet_sub,vertex,jetCount,nt,nc,maxCh,maxNe,ncharged,nneutral,neutralE,mcpt,cemc,emcpt,gall,gemc,constituents_unsub,1);
 	jet_sub->SetNumberOfTracks(nt);
 	jet_sub->SetNumberOfClusters(nc);
 	jet_sub->SortConstituents();
-	
+
 	fastjet::PseudoJet area(fjw.GetJetAreaVector(ijet));
 	jet_sub->SetArea(area.perp());
 	jet_sub->SetAreaEta(area.eta());
@@ -668,8 +668,8 @@ Bool_t AliEmcalJetTask::GetSortedArray(Int_t indexes[], std::vector<fastjet::Pse
 
   if (n < 1)
     return kFALSE;
-  
-  for (Int_t i = 0; i < n; i++) 
+
+  for (Int_t i = 0; i < n; i++)
     pt[i] = array[i].perp();
 
   TMath::Sort(n, pt, indexes);
@@ -714,7 +714,7 @@ Bool_t AliEmcalJetTask::DoInit()
     if (cls.InheritsFrom("AliMCParticle") || cls.InheritsFrom("AliAODMCParticle"))
       fIsMcPart = 1;
   }
-  
+
   if (fCaloName == "CaloClusters")
     am->LoadBranch("CaloClusters");
   if (!fClus && !fCaloName.IsNull()) {
@@ -752,7 +752,7 @@ Bool_t AliEmcalJetTask::DoInit()
     AliError(Form("%s: Object with name %s already in event! Returning", GetName(), fJetsName.Data()));
     return 0;
   }
-  
+
   return 1;
 }
 
@@ -779,13 +779,13 @@ void  AliEmcalJetTask::FillJetConstituents(std::vector<fastjet::PseudoJet>& cons
       if ((uid == -1) /*&& (constituents[ic].kt2() < 1e-25)*/) { //ghost particle
         ++gall;
         Double_t gphi = constituents[ic].phi();
-        if (gphi<0) 
+        if (gphi<0)
           gphi += TMath::TwoPi();
         gphi *= TMath::RadToDeg();
         Double_t geta = constituents[ic].eta();
         if ((gphi > geom->GetArm1PhiMin()) && (gphi < geom->GetArm1PhiMax()) &&
             (geta > geom->GetArm1EtaMin()) && (geta < geom->GetArm1EtaMax()))
-          ++gemc; 
+          ++gemc;
       }	else if ((uid > 0) && fTracks) { // track constituent
 	Int_t tid = uid - 100;
         AliVParticle *t = static_cast<AliVParticle*>(fTracks->At(tid));
@@ -814,7 +814,7 @@ void  AliEmcalJetTask::FillJetConstituents(std::vector<fastjet::PseudoJet>& cons
         if (fIsMcPart || TMath::Abs(t->GetLabel()) > fMinMCLabel) // check if MC particle
           mcpt += cPt;
 
-        if (cPhi<0) 
+        if (cPhi<0)
           cPhi += TMath::TwoPi();
         cPhi *= TMath::RadToDeg();
         if ((cPhi > geom->GetArm1PhiMin()) && (cPhi < geom->GetArm1PhiMax()) &&
@@ -863,7 +863,7 @@ void  AliEmcalJetTask::FillJetConstituents(std::vector<fastjet::PseudoJet>& cons
         if (c->GetLabel() > fMinMCLabel) // MC particle
           mcpt += c->GetMCEnergyFraction() > 1e-6 ? cPt * c->GetMCEnergyFraction() : cPt;
 
-        if (cPhi<0) 
+        if (cPhi<0)
           cPhi += TMath::TwoPi();
         cPhi *= TMath::RadToDeg();
         if ((cPhi > geom->GetArm1PhiMin()) && (cPhi < geom->GetArm1PhiMax()) &&
@@ -886,8 +886,8 @@ Int_t AliEmcalJetTask::GetIndexSub(Double_t ptsub,std::vector<fastjet::PseudoJet
 
     for(UInt_t ii=0;ii<constituentsunsub.size();ii++){
     Double_t ptunsub=constituentsunsub[ii].perp();
-    //cout<<ptunsub<<" "<<ptsub<<endl; 
+    //cout<<ptunsub<<" "<<ptsub<<endl;
     if(ptsub==ptunsub) return constituentsunsub[ii].user_index();
-    
+
     } return -1;}
 //______________________________________________________________________________________
