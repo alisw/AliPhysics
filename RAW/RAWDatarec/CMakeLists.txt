@@ -22,6 +22,7 @@ include_directories(${CMAKE_SOURCE_DIR}/RAW/${MODULE})
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${CMAKE_SOURCE_DIR}/HLT/rec
+                    ${CMAKE_SOURCE_DIR}/RAW/dateStream
                     ${CMAKE_SOURCE_DIR}/RAW/RAWDatabase
                     ${CMAKE_SOURCE_DIR}/STEER/ESD
                     ${CMAKE_SOURCE_DIR}/STEER/STEERBase

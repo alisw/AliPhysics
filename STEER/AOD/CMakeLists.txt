@@ -64,6 +64,7 @@ set(SRCS
     AliAODVertex.cxx
     AliAODVZERO.cxx
     AliAODZDC.cxx
+    AliNanoAODTrackMapping.cxx
    )
 
 # Sources from headers
