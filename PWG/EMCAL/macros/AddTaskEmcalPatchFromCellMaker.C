@@ -2,7 +2,7 @@
 
 AliEmcalPatchFromCellMaker* AddTaskEmcalPatchFromCellMaker(
   Int_t       patchDim            = 32,
-  Double_t    cellMinE            = 0.15,
+  Double_t    cellMinE            = 0.05,
   Bool_t      bSlideL1            = kFALSE,
   const char *patchOutName        = "EmcalPatches",
   const char *cellsName           = 0,
