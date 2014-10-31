@@ -135,8 +135,9 @@ fVzMax_MC=VzMax_MC;
   void SetCentralityEstimator(TString CentralityMethod) { fCentralityMethod = CentralityMethod;}
   void SetPPVsMultUtils(Bool_t val)  {fPPVsMultUtils = val;}
   void SetSampleType(TString SampleType) {fSampleType=SampleType;}
-  void SetRequestEventPlane(Bool_t RequestEventPlane,Bool_t V2,Bool_t V3,TString EPdetector,Bool_t IsAfter2011){
+  void SetRequestEventPlane(Bool_t RequestEventPlane,Bool_t RequestEventPlanemixing,Bool_t V2,Bool_t V3,TString EPdetector,Bool_t IsAfter2011){
 fRequestEventPlane=RequestEventPlane;
+fRequestEventPlanemixing=RequestEventPlanemixing;
 fV2=V2;
 fV3=V3;
 fEPdet=EPdetector;
@@ -296,6 +297,7 @@ fFracTPCcls=FracSharedTPCcls;//0.4
     Bool_t fPPVsMultUtils;//switch to ON quantile information for pp 7 TeV case
     TString    fSampleType;     // pp,p-Pb,Pb-Pb
     Bool_t fRequestEventPlane; //only for PbPb
+    Bool_t fRequestEventPlanemixing; //only for PbPb
     Int_t    fnTracksVertex;        // QA tracks pointing to principal vertex
     AliAODVertex* trkVtx;//!
     Float_t zvtx;
@@ -704,3 +706,4 @@ fCentralityCorrelation
 //ParticlePID_InvMass
 
 //particlepidtrig
+//fRequestEventPlanemixing
