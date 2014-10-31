@@ -99,6 +99,7 @@ struct ProofHelper : public Helper
       fExtraSrcs(""),
       fUsePars(false), 
       fBasePars(false),
+      fTestBuild(true),
       fAuxFiles()
   {
     fOptions.Add("workers",  "N[x]", "Number of workers to use", 0);
@@ -112,6 +113,7 @@ struct ProofHelper : public Helper
     fOptions.Add("feedback", "Enable feedback mechanism");
     fOptions.Add("env",      "SCRIPT", "Script to set-up environment","-none-");
     fOptions.Add("offset",   "EVENTS", "Skip this number of events", 0);
+    fOptions.Add("testpar",  "Test build PARs");
     if (!fUrl.GetUser() || fUrl.GetUser()[0] == '\0') 
       fUrl.SetUser(gSystem->GetUserInfo()->fUser);
     fAuxFiles.SetOwner();
@@ -123,6 +125,7 @@ struct ProofHelper : public Helper
       fExtraSrcs(""),
       fUsePars(false), 
       fBasePars(false),
+      fTestBuild(true),
       fAuxFiles()
   {}
   ProofHelper& operator=(const ProofHelper& o) 
@@ -132,8 +135,9 @@ struct ProofHelper : public Helper
     fExtraLibs = o.fExtraLibs;
     fExtraPars = o.fExtraPars;
     fExtraSrcs = o.fExtraSrcs;
-    fUsePars   = o.fUsePars;
+    fUsePars   = o.fUsePars;    
     fBasePars  = o.fBasePars;
+    fTestBuild = o.fTestBuild;
     // fAuxFiles;
     return *this;
   }
@@ -173,7 +177,7 @@ struct ProofHelper : public Helper
 	      name.Data());
 	return false;
       }
-      if (!ParUtilities::Build(name)) { 
+      if (fTestBuild && !ParUtilities::Build(name)) { 
 	Error("ProofHelper::LoadLibrary", "Failed to build PAR file %s", 
 	      name.Data());
 	return false;
@@ -483,9 +487,10 @@ struct ProofHelper : public Helper
     }
 
     // --- PAR parameters --------------------------------------------
-    fUsePars  = fOptions.Has("par");
-    fBasePars = (fUsePars && 
-		 fOptions.Get("par").EqualTo("all",TString::kIgnoreCase));
+    fUsePars   = fOptions.Has("par");
+    fBasePars  = (fUsePars && 
+		  fOptions.Get("par").EqualTo("all",TString::kIgnoreCase));
+    fTestBuild = fOptions.Has("testpar");
 
     // --- Connect to the cluster ------------------------------------
     TString opts;
@@ -832,6 +837,7 @@ struct ProofHelper : public Helper
   TString fExtraSrcs;
   Bool_t  fUsePars;
   Bool_t  fBasePars;
+  Bool_t  fTestBuild;
   TList   fAuxFiles;
 };
 #endif
