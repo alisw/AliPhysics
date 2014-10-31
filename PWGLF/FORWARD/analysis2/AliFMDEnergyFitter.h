@@ -195,7 +195,7 @@ public:
    * 
    * @param n Max number of particle to try to fit 
    */
-  void SetNParticles(UShort_t n) { fNParticles = (n<1 ? 1 : (n>5 ? 5 : n)); }
+  void SetNParticles(UShort_t n) { fNParticles = (n<1 ? 1 : (n>7 ? 7 : n)); }
   /** 
    * Set the minimum number of entries each histogram must have 
    * before we try to fit our response function to it

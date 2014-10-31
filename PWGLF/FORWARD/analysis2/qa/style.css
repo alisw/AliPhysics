@@ -1,3 +1,4 @@
+
 /*
  * Cascading style sheet for QA pages 
  */
@@ -99,6 +100,16 @@ table:first-child {
 table:last-child { 
     border-bottom: thin solid lightgray; }
 
+td:link { 
+    text-decoration:none;
+    color: blue; }
+td:visited { 
+    text-decoration:none;
+    color: blue;  }
+td:hover { 
+    text-decoration: none; 
+    color: magenta;  }
+
 #frame { 
     position: absolute;
     top: 5%;
@@ -127,6 +138,15 @@ table:last-child {
     cursor: move;
     color: blue;
     border:thin solid gray;
+}
+
+#maxRange {
+    height: 12px;
+    padding: 0;
+}
+.sqrtContent {
+    border-top: 1px solid black;
+   font-size: small;
 }
 
 /*

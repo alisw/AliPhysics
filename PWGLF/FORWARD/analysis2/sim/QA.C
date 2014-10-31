@@ -620,7 +620,6 @@ void QAMerge(const char *dir, Int_t stage)
  * @param run         Run number 
  * @param xmlfile     Collection file 
  * @param stage       Stage 
- * @param train       Train 
  * @param cdb         CDB location 
  */
 void QA(UInt_t      run, 

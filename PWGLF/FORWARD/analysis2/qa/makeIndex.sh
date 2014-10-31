@@ -109,14 +109,13 @@ EOF
             # echo "        $subbase"
 	    echo "        $subtitle"
 	fi
-	subsize=`du ${duopt} -s $sub | cut -f1` 
+	echo "</td>"
+	if test $size -gt 0 ; then
+	    subsize=`du ${duopt} -s $sub | cut -f1` 
+	    echo "<td class='subsize'>$subsize</td>"
+	fi 
+	echo -e "<td id='desc$row' class='desc'>$subshort</td>\n     </tr>"
 
-	cat <<EOF
-        </td>
-        <td style="text-align: right">$subsize</td>
-        <td id='desc$row' class='desc'>$subshort</td>
-     </tr>
-EOF
 	let   row=$row+1
 	let   subid=$subid+1
 	loopDir "$sublvl" "$sub" "${subpar}."
@@ -137,6 +136,7 @@ Options:
 	-o,--output      FILE    Output file ($out)
 	-i,--input       DIR     Starting diretory ($inp)
 	-l,--link                Link to index.html in subdirs ($link)
+	-s,--size                Show size of directories
 EOF
 }
 
@@ -149,7 +149,11 @@ inp=.
 link=0
 unit=m
 frame=0
-base=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa
+size=0
+base=$QA_FWD
+if test "X$base" = "X" ; then 
+    base=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa
+fi 
 verb=0
 
 while test $# -gt 0 ; do
@@ -164,6 +168,8 @@ while test $# -gt 0 ; do
 	-u|--unit)        unit=`echo $2 | tr '[a-z]' '[A-Z]'` ; shift ;;
 	-l|--link)        link=1 ;;
 	-f|--frame)       frame=1 ;;
+	-s|--size)        size=1 ;;
+	--no-size)        size=0 ;;
 	-v|--verbose)     let verb=$verb+1 ;; 
 	*) echo "$0: Unknown option '$1'" > /dev/stderr ; exit 1;; 
     esac
@@ -200,21 +206,44 @@ cat <<EOF > ${out}
       <table>
         <tr>
           <th colspan="$maxCol" style='min-width:300px'>Directory</th>
-         <th>Size $ut</th>
+EOF
+if test $size -gt 0 ; then 
+    echo "          <th>Size $ut</th>" >> ${out}
+fi
+cat <<EOF >> ${out}
           <th>Description</th>
         </tr>
 EOF
 loopDir 0 "${inp}" "" >> ${out}
-totalSize=`du ${duopt} -s ${inp} | cut -f1`
-date=`date`
 cat <<EOF >> ${out}
         <tr style='border-top:thin solid gray'>
-          <td colspan="$maxCol"><td>$totalSize</td><td></td>
+          <td colspan="$maxCol"></td>
+EOF
+if test $size -gt 0 ; then 
+    totalSize=`du ${duopt} -s ${inp} | cut -f1`
+    echo "           <td class='subsize'>$totalSize</td>"
+fi
+date=`date`
+let md=$maxCol-1
+cat <<EOF >> ${out}
+         <td></td>
         </tr>
       </table>
       <p>
         <button onClick='hideAll();'>Collapse all</button>
-        <button onClick='expandAll();'>Expand top-level</button>
+        <button onClick='expandAll();'>Expand levels:</button>
+        <output id="currentMax" for="maxExpand">2</output>  
+        <input type="range" id="maxExpand" min="1" max="$md" value="2" list="maxList"
+               onchange="currentMax.value=this.value">
+        <datalist id="maxList">
+EOF
+for lvl in `seq 1 $md` ; do 
+cat <<EOF >> $out
+          <option>$lvl</option>
+EOF
+done
+cat <<EOF >> ${out}
+        </datalist>
       </p>
       <div class='change'>Last update: ${date}</div>
     </div>

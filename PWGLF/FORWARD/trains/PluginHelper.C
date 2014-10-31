@@ -70,7 +70,7 @@ struct PluginHelper : public Helper
    */
   PluginHelper(const TUrl& url, Int_t verbose)
     : Helper(url, verbose), fHandler(0), fUsePars(false), 
-      fExtraLibs(), fExtraPars(), fExtraSrcs()
+      fTestBuild(true), fExtraLibs(), fExtraPars(), fExtraSrcs()
   {
     fHandler = new AliAnalysisAlien();
 
@@ -80,6 +80,7 @@ struct PluginHelper : public Helper
     fOptions.Add("mode", "default|rec|sim", "AliROOT mode", "default");
     fOptions.Add("storage", "URL", "Location for external storage", "");    
     fOptions.Add("plugin", "Use AliEn handler");
+    fOptions.Add("testpar", "Test build PARs");
 
     fExtraLibs.SetOwner();
     fExtraPars.SetOwner();
@@ -92,7 +93,7 @@ struct PluginHelper : public Helper
    */
   PluginHelper(const PluginHelper& o) 
     : Helper(o), fHandler(o.fHandler), fUsePars(o.fUsePars), 
-      fExtraLibs(), fExtraPars(), fExtraSrcs()
+      fTestBuild(o.fTestBuild), fExtraLibs(), fExtraPars(), fExtraSrcs()
   {}
   /** 
    * Assignment operator 
@@ -105,8 +106,9 @@ struct PluginHelper : public Helper
   {
     if (&o == this) return *this;
     Helper::operator=(o);
-    fHandler = o.fHandler;
-    fUsePars = o.fUsePars;
+    fHandler   = o.fHandler;
+    fUsePars   = o.fUsePars;
+    fTestBuild = o.fTestBuild;
     return *this;
   }
   /** 
@@ -139,7 +141,7 @@ struct PluginHelper : public Helper
 	      name.Data());
 	return false;
       }
-      if (!ParUtilities::Build(name)) { 
+      if (fTestBuild && !ParUtilities::Build(name)) { 
 	Error("PluginHelper::LoadLibrary", "Failed to build PAR file %s", 
 	      name.Data());
 	return false;
@@ -210,7 +212,8 @@ struct PluginHelper : public Helper
     fOptions.Set("aliroot", aliroot);
     fOptions.Set("root", root);
 
-    fUsePars = fOptions.Has("par");
+    fUsePars   = fOptions.Has("par");
+    fTestBuild = fOptions.Has("testpar");
 
     fHandler->SetROOTVersion(root);
     fHandler->SetAliROOTVersion(aliroot);
@@ -275,6 +278,7 @@ struct PluginHelper : public Helper
   }
   AliAnalysisAlien* fHandler;
   Bool_t fUsePars;
+  Bool_t fTestBuild;
   TList  fExtraLibs;
   TList  fExtraPars;
   TList  fExtraSrcs;

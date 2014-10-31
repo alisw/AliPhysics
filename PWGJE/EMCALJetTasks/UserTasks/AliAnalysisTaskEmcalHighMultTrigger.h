@@ -60,11 +60,15 @@ class AliAnalysisTaskEmcalHighMultTrigger : public AliAnalysisTaskEmcalJet {
 
   TH2F                       *fHistTracksTracklets;           //! Ntracks vs Ntracklets
   TH2F                       *fHistTracksV0MultSum;           //! Ntracks vs V0A+V0C
-  TH2F                       *fHistSPDTrackletsClusters;      //! correlation between SPD clusters and tracklets
+  TH3F                       *fHistSPDTrkClsSum;              //! correlation between SPD clusters and tracklets and total energy in EMCal
+  TH3F                       *fHistSPDTrkClsSumExLP;          //! correlation between SPD clusters and tracklets and total energy in EMCal
+  TH3F                       *fHistSPDTrkClsMedian;           //! correlation between SPD clusters and tracklets and median energy in EMCal
+  TH3F                       *fHistSPDTrkClsMedianExLP;       //! correlation between SPD clusters and tracklets and median energy in EMCal
+  TH3F                       *fHistSPDTrkClsTruncMean;        //! correlation between SPD clusters and tracklets and truncated mean in EMCal
 
   AliAnalysisTaskEmcalHighMultTrigger(const AliAnalysisTaskEmcalHighMultTrigger&);            // not implemented
   AliAnalysisTaskEmcalHighMultTrigger &operator=(const AliAnalysisTaskEmcalHighMultTrigger&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalHighMultTrigger, 3) // high multiplicity pp trigger analysis task
+  ClassDef(AliAnalysisTaskEmcalHighMultTrigger, 4) // high multiplicity pp trigger analysis task
 };
 #endif
