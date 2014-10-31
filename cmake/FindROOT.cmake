@@ -48,7 +48,7 @@ if(ROOTSYS)
     if(NOT ROOT_CONFIG)
         message(FATAL_ERROR "Could not find root-config script.")
     endif(NOT ROOT_CONFIG)
-        
+
     # Check for rlibmap
     find_program(ROOT_LIBMAP NAMES rlibmap PATHS ${ROOTSYS}/bin NO_DEFAULT_PATH)
     if(ROOT_LIBMAP)
@@ -71,7 +71,7 @@ if(ROOTSYS)
         message(FATAL_ERROR "Error retrieving ROOT version : ${error}")
     endif(error)
     string(STRIP ${ROOT_VERSION} ROOT_VERSION)
-    
+
     # Extract major, minor, and patch versions from
     string(REGEX REPLACE "^([0-9]+)\\.[0-9][0-9]+\\/[0-9][0-9]+.*" "\\1" ROOT_VERSION_MAJOR "${ROOT_VERSION}")
     string(REGEX REPLACE "^[0-9]+\\.([0-9][0-9])+\\/[0-9][0-9]+.*" "\\1" ROOT_VERSION_MINOR "${ROOT_VERSION}")
@@ -86,7 +86,7 @@ if(ROOTSYS)
         message(STATUS "ROOT was build with the following features: ${ROOT_FEATURES}")
     endif(error)
     string(STRIP ${ROOT_FEATURES} ROOT_FEATURES)
-    
+
     # Checking for ROOT libdir
     execute_process(COMMAND ${ROOT_CONFIG} --libdir OUTPUT_VARIABLE ROOT_LIBDIR ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
@@ -100,7 +100,7 @@ if(ROOTSYS)
         message(FATAL_ERROR "Error retrieving ROOT libdir: ${error}")
     endif(error)
     string(STRIP ${ROOT_LIBS} ROOT_LIBS)
-    
+
     foreach(lib ${ROOT_LIBS})
         string(REPLACE "-rdynamic" "" new_lib ${lib})
         string(REPLACE "-l" "" lib ${new_lib})
@@ -108,14 +108,14 @@ if(ROOTSYS)
     endforeach()
     string(STRIP ${ROOT_LIBRARIES} ROOT_LIBRARIES)
     separate_arguments(ROOT_LIBRARIES)
-    
+
     # Checking for ROOT incdir
     execute_process(COMMAND ${ROOT_CONFIG} --incdir OUTPUT_VARIABLE ROOT_INCDIR ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error retrieving ROOT incdir: ${error}")
     endif(error)
     string(STRIP ${ROOT_INCDIR} ROOT_INCDIR)
-    
+
     # Checking for glibs
     execute_process(COMMAND ${ROOT_CONFIG} --noldflags --glibs OUTPUT_VARIABLE ROOT_GLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
@@ -132,14 +132,14 @@ if(ROOTSYS)
     endforeach()
     string(STRIP ${ROOT_GLIBRARIES} ROOT_GLIBRARIES)
     separate_arguments(ROOT_GLIBRARIES)
-    
+
     # Checking for AliEn support
     execute_process(COMMAND ${ROOT_CONFIG} --has-alien OUTPUT_VARIABLE ROOT_HASALIEN ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error checking if ROOT was build with AliEn support: ${error}")
     endif(error)
     string(STRIP ${ROOT_HASALIEN} ROOT_HASALIEN)
-    
+
     # Checking for xml support
     execute_process(COMMAND ${ROOT_CONFIG} --has-xml OUTPUT_VARIABLE ROOT_HASXML ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
@@ -160,7 +160,7 @@ if(ROOTSYS)
         message(FATAL_ERROR "Error checking ROOT fortran compiler: ${error}")
     endif(error)
     string(STRIP ${ROOT_FORTRAN} ROOT_FORTRAN)
-    
+
     set(ROOT_FOUND TRUE)
 else()
     message(FATAL_ERROR "ROOT installation not found! Please point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR.")
