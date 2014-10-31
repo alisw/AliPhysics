@@ -68,6 +68,7 @@ set ( SRCS
     EBYE/PIDFluctuation/task/AliEbyEPidRatioEffCont.cxx
     EBYE/PIDFluctuation/task/AliEbyEPidRatioHelper.cxx
     EBYE/PIDFluctuation/task/AliEbyEPidRatioQA.cxx	
+    EBYE/PIDFluctuation/task/AliEbyEPidRatioTaskOnFly.cxx
     EBYE/PIDFluctuation/task/AliEbyEPidRatioTask.cxx
     EBYE/NetParticle/AliAnalysisNetParticleBase.cxx
     EBYE/NetParticle/AliAnalysisNetParticleDCA.cxx

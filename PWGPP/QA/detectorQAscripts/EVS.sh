@@ -4,7 +4,7 @@ runLevelEventStatQA()
 
   cp $ALICE_ROOT/PWGPP/EVS/runLevelEventStatQA.C .
   cp $ALICE_ROOT/PWGPP/EVS/triggerInfo.C .
-  aliroot -b -q -l "runLevelEventStatQA.C(\"$eventStatFile\",${runNumber})" 
+  aliroot -b -q -l "runLevelEventStatQA.C(\"$eventStatFile\",${runNumber},\"${ocdbStorage}\")" 
 }
 
 periodLevelQA()

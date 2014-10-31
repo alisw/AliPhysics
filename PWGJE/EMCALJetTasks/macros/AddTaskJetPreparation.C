@@ -51,12 +51,6 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   if ((dType == "ESD") && (clusterColName == "caloClusters"))
     clusterColName = "CaloClusters";
 
-  if (0) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTrackPropagator.C");
-    AliEmcalTrackPropagatorTask *proptask = AddTaskEmcalTrackPropagator();
-    proptask->SelectCollisionCandidates(pSel);
-  }
-
   //----------------------- Trigger Maker -----------------------------------------------------
   if (makeTrigger) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTriggerMaker.C");

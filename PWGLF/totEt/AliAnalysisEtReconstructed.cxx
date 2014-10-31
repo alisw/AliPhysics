@@ -99,6 +99,7 @@ AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
 	,fHistTotRawEtEffCorr500MeV(0)
 	,fHistTotAllRawEt(0)
 	,fHistTotAllRawEtEffCorr(0)
+	,fHistNUsedClusters(0)
 	,fHistNClustersPhosVsEmcal(0)
 	,fHistClusterSizeVsCent(0)
 	,fHistMatchedClusterSizeVsCent(0)
@@ -174,6 +175,7 @@ AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed()
     delete fHistTotAllRawEt;
     delete fHistTotAllRawEtEffCorr;
     delete fHistTotRawEtEffCorr500MeV;
+    delete fHistNUsedClusters;
     delete fHistNClustersPhosVsEmcal;
     delete fHistClusterSizeVsCent;
     delete fHistMatchedClusterSizeVsCent;
@@ -287,6 +289,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     Int_t nPhosClusters = 0;
     Int_t nEmcalClusters = 0;
 
+    Int_t nUsedClusters = 0;
 
     TRefArray *caloClusters = fSelector->GetClusters();
     Int_t nCluster = caloClusters->GetEntries();
@@ -302,16 +305,22 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
             AliError(Form("ERROR: Could not get cluster %d", iCluster));
             continue;
         }
+// 	if(!fSelector->CutGeometricalAcceptance(*cluster)){
+// 	  Float_t pos[3];
+// 	  cluster->GetPosition(pos);
+// 	  TVector3 cp(pos);
+// 	  cout<<"rejected cluster phi "<<cp.Phi()*180.0/TMath::Pi()<<" eta "<<cp.Eta()<<endl;
+// 	}
         int x = 0;
-	fCutFlow->Fill(x++);
+	fCutFlow->Fill(x++);//fills 0
 	if(cluster->IsEMCAL()) nEmcalClusters++;
 	else nPhosClusters++;
 	if(!fSelector->IsDetectorCluster(*cluster)) continue;
-	fCutFlow->Fill(x++);
+	fCutFlow->Fill(x++);//fills 1
 	if(!fSelector->PassMinEnergyCut(*cluster)) continue;
-	fCutFlow->Fill(x++);
+	fCutFlow->Fill(x++);//fills 2
         if (!fSelector->PassDistanceToBadChannelCut(*cluster)) continue;
-	fCutFlow->Fill(x++);
+	fCutFlow->Fill(x++);//fills 3
         if (!fSelector->CutGeometricalAcceptance(*cluster)) continue;
 	//fCutFlow->Fill(x++);
         Float_t pos[3];
@@ -501,6 +510,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
             //continue;
         } // distance
         else{//these are clusters which were not track matched
+	  nUsedClusters++;
 	  fCutFlow->Fill(x++);
 	  //std::cout << x++ << std::endl;
 	  
@@ -553,6 +563,8 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         fMultiplicity++;
     }
     
+    fHistNUsedClusters->Fill(nUsedClusters,cent);
+    // cout<<" cent "<<cent<<" total "<<nCluster<<" used "<<nUsedClusters<<endl;
 
     fHistRawSignalReco->Fill(rawSignal);
     fHistEffCorrSignalReco->Fill(effCorrSignal);
@@ -737,6 +749,7 @@ void AliAnalysisEtReconstructed::FillOutputList(TList* list)
     list->Add(fHistTotAllRawEtEffCorr);
     list->Add(fHistTotRawEt);
     list->Add(fHistTotAllRawEt);
+    list->Add(fHistNUsedClusters);
     list->Add(fHistNClustersPhosVsEmcal);
     list->Add(fHistClusterSizeVsCent);
     list->Add(fHistMatchedClusterSizeVsCent);
@@ -896,17 +909,19 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     fHistFoundHadronsEtvsCent500MeV = new TH2F("fHistFoundHadronsEtvsCent500MeV","fHistFoundHadronsEtvsCent500MeV",100,0,max,20,-0.5,19.5);
     fHistNotFoundHadronsEtvsCent500MeV = new TH2F("fHistNotFoundHadronsEtvsCent500MeV","fHistNotFoundHadronsEtvsCent500MeV",100,0,max,20,-0.5,19.5);
 
-    fHistTotRawEtEffCorr = new TH2F("fHistTotRawEtEffCorr","fHistTotRawEtEffCorr",250,0,250*scale,20,-0.5,19.5);
-    fHistTotRawEt = new TH2F("fHistTotRawEt","fHistTotRawEt",250,0,250*scale,20,-0.5,19.5);
-    fHistTotRawEtEffCorr500MeV = new TH2F("fHistTotRawEtEffCorr500MeV","fHistTotRawEtEffCorr500MeV",250,0,250*scale,20,-0.5,19.5);
-    fHistTotAllRawEt = new TH2F("fHistTotAllRawEt","fHistTotAllRawEt",250,0,250*scale,20,-0.5,19.5);
-    fHistTotAllRawEtEffCorr = new TH2F("fHistTotAllRawEtEffCorr","fHistTotAllRawEtEffCorr",250,0,250*scale,20,-0.5,19.5);
+    Int_t nbinsForDistributions = 384;//2^7*3 - allows for easy rebinning
+    fHistTotRawEtEffCorr = new TH2F("fHistTotRawEtEffCorr","fHistTotRawEtEffCorr",nbinsForDistributions,0,250*scale,20,-0.5,19.5);
+    fHistTotRawEt = new TH2F("fHistTotRawEt","fHistTotRawEt",nbinsForDistributions,0,250*scale,20,-0.5,19.5);
+    fHistTotRawEtEffCorr500MeV = new TH2F("fHistTotRawEtEffCorr500MeV","fHistTotRawEtEffCorr500MeV",nbinsForDistributions,0,250*scale,20,-0.5,19.5);
+    fHistTotAllRawEt = new TH2F("fHistTotAllRawEt","fHistTotAllRawEt",nbinsForDistributions,0,250*scale,20,-0.5,19.5);
+    fHistTotAllRawEtEffCorr = new TH2F("fHistTotAllRawEtEffCorr","fHistTotAllRawEtEffCorr",nbinsForDistributions,0,250*scale,20,-0.5,19.5);
+    fHistNUsedClusters = new TH2F("fHistNUsedClusters","fHistNUsedClusters",50,0,50,20,-0.5,19);
     fHistNClustersPhosVsEmcal = new TH3F("fHistNClustersPhosVsEmcal","fHistNClustersPhosVsEmcal",50,0,50,250*scale,0,250*scale,20,-0.5,19);
     fHistClusterSizeVsCent = new TH2F("fHistClusterSizeVsCent","fHistClusterSizeVsCent",10,0.5,10.5,20,-0.5,19.5);
     fHistMatchedClusterSizeVsCent = new TH2F("fHistMatchedClusterSizeVsCent","fHistMatchedClusterSizeVsCent",10,0.5,10.5,20,-0.5,19.5);
     fHistTotAllRawEtVsTotalPt = new TH2F("fHistTotAllRawEtVsTotalPt","fHistTotAllRawEtVsTotalPt",125,0,250*scale,200,0,2000);
     fHistTotAllRawEtVsTotalPtVsCent = new TH3F("fHistTotAllRawEtVsTotalPtVsCent","fHistTotAllRawEtVsTotalPtVsCent",125,0,250*scale,200,0,2000,20,-0.5,19.5);
-    fHistTotMatchedRawEtVsTotalPtVsCent = new TH3F("fHistTotMatchedRawEtVsTotalPtVsCent","fHistTotMatchedRawEtVsTotalPtVsCent",250,0,250*scale,100,0,200,20,-0.5,19.5);
+    fHistTotMatchedRawEtVsTotalPtVsCent = new TH3F("fHistTotMatchedRawEtVsTotalPtVsCent","fHistTotMatchedRawEtVsTotalPtVsCent",nbinsForDistributions,0,250*scale,100,0,200,20,-0.5,19.5);
     
     maxEt = 500*scale;
     histname = "fHistNominalRawEt" + fHistogramNameSuffix;
