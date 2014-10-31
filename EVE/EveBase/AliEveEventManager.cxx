@@ -275,17 +275,17 @@ void AliEveEventManager::GetNextEvent()
             cout<<"taking event from storage manager"<<endl;
             if(iter<receivedList.size())
             {
+                cout<<"i:"<<iter<<endl;
                 struct eventStruct mark;
                 mark.runNumber = receivedList[iter].runNumber;
                 mark.eventNumber = receivedList[iter].eventNumber;
              
-                struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
                 requestMessage->messageType = REQUEST_GET_EVENT;
                 requestMessage->event = mark;
                 
                 eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
                 tmpEvent = eventManager->GetEvent(SERVER_COMMUNICATION_REQ);
-                delete requestMessage;
+
                 iter++;
                 sleep(1);
             }
@@ -311,10 +311,7 @@ void AliEveEventManager::GetNextEvent()
                 fMutex->UnLock();
             }
         }
-        else
-        {
-            cout<<"didn't receive new event"<<endl;
-        }
+        else{cout<<"didn't receive new event"<<endl;}
     }
     delete requestMessage;
     

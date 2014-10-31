@@ -433,7 +433,7 @@ void AliEveEventManagerWindow::Update(int state)
     }
     fTrigSel->SetEnabled(!evNavOn);
 
-    fEventInfo->LoadBuffer(fM->GetEventInfoHorizontal());
+//    fEventInfo->LoadBuffer(fM->GetEventInfoHorizontal());
 
     Layout();
   }
