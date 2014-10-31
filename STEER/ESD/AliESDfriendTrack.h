@@ -19,7 +19,7 @@ class AliTPCseed;
 
 
 //_____________________________________________________________________________
-class AliESDfriendTrack : public TObject, public AliVfriendTrack {
+class AliESDfriendTrack : public AliVfriendTrack {
 public:
   enum {
     kMaxITScluster=12,
