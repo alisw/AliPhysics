@@ -185,7 +185,11 @@ Double_t AliITSPIDResponse::Bethe(Double_t bg, const Double_t * const par, Bool_
 }
 
 //_________________________________________________________________________
-Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA, Bool_t isNuclei) const {
+Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA) const {
+
+  //OLD - Mantained for backward compatibility
+  //from the mass check --> Set the Particle Type
+  //at the end use the method Bethe(Double_t p, AliPID::EParticleType species, Bool_t isSA) const to set the right parameter
 
   //
   // returns AliExternalTrackParam::BetheBloch normalized to 
@@ -196,36 +200,29 @@ Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA, Bool_t
   // fBBdeu --> parameters for deuteron
   // fBBtri --> parameters for triton
 
-
-  const Double_t bg=p/mass;
-
   //NOTE
   //NOTE: if changes are made here, please also check the alternative function below
   //NOTE
-  const Double_t *par=fBBtpcits;
-  if(isSA){
+
+  AliPID::EParticleType species = AliPID::kPion;
+
     if(TMath::AreEqualAbs(mass,AliPID::ParticleMass(0),0.00001)){
       //if is an electron use a specific BB parameterization
       //To be used only between 100 and 160 MeV/c
-      par=fBBsaElectron;
-    }else{
-      par=fBBsa;
+      species=AliPID::kElectron;
     }
-  }else{
-    if(isNuclei){
-      if(TMath::AreEqualAbs(mass,AliPID::ParticleMass(5),0.002)) par=fBBdeu;
-      if(TMath::AreEqualAbs(mass,AliPID::ParticleMass(6),0.001)) par=fBBtri;
-    }
-  }
 
-  return Bethe(bg, par, isNuclei);
+    if(TMath::AreEqualAbs(mass,AliPID::ParticleMass(5),0.002)) species=AliPID::kDeuteron;
+    if(TMath::AreEqualAbs(mass,AliPID::ParticleMass(6),0.001)) species=AliPID::kTriton;
+  
+    return Bethe(p,species,isSA);
 }
 
 //_________________________________________________________________________
 Double_t AliITSPIDResponse::Bethe(Double_t p, AliPID::EParticleType species, Bool_t isSA) const
 {
-  //
-  // Aliternative bethe function assuming a particle type not a mass
+  // NEW - to be used
+  // Alternative bethe function assuming a particle type not a mass
   // should be slightly faster
   //
 
@@ -396,7 +393,7 @@ Double_t AliITSPIDResponse::GetNumberOfSigmas( const AliVTrack* track, AliPID::E
     if(clumap&(1<<i)) ++nPointsForPid;
   }
   Float_t mom=track->P();
-  
+
   //check for ITS standalone tracks
   Bool_t isSA=kTRUE;
   if( track->GetStatus() & AliVTrack::kTPCin ) isSA=kFALSE;
