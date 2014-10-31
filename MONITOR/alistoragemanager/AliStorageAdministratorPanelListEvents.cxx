@@ -248,7 +248,7 @@ void AliStorageAdministratorPanelListEvents::onGetListButton()
 	}
 	if(fLeadLeadCheckButton->GetState()==1)
 	{
-		strcpy(list.system[1],"Pb-Pb");
+		strcpy(list.system[1],"A-A");
 	}
 	else
 	{
@@ -264,7 +264,7 @@ void AliStorageAdministratorPanelListEvents::onGetListButton()
 	fEventsList->AddEntry(new TGString("Run   Event   System   Mult   Marked"),0);
 	
 	vector<serverListStruct> receivedList = fEventManager->GetServerListVector(fServerSocket);
-	
+    
 	for(unsigned int i=0;i<receivedList.size();i++)
 	{
 		fEventsList->InsertEntry(Form("%d   %d   %s   %d   %d   ",
@@ -273,9 +273,6 @@ void AliStorageAdministratorPanelListEvents::onGetListButton()
 					      receivedList[i].system,
 					      receivedList[i].multiplicity,
 					      receivedList[i].marked),i+1,i);
-
-		cout<<receivedList[i].runNumber<<receivedList[i].eventNumber<<endl;
-	
 	}
 
 	fEventsListVector = receivedList;
