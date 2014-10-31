@@ -42,6 +42,7 @@ add_subdirectory(ITS)
 add_subdirectory(JET)
 add_subdirectory(MUON)
 add_subdirectory(PHOS)
+add_subdirectory(RCU)
 # Enable EVE if ROOT has OpenGL support
 if(ROOT_HASOPENGL STREQUAL "yes")
     add_subdirectory(EVE)
