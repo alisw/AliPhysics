@@ -42,7 +42,11 @@ AliAnalysisTaskEmcalHighMultTrigger::AliAnalysisTaskEmcalHighMultTrigger() :
   fHistV0MultSum(0),
   fHistTracksTracklets(0),
   fHistTracksV0MultSum(0),
-  fHistSPDTrackletsClusters(0)
+  fHistSPDTrkClsSum(0),
+  fHistSPDTrkClsSumExLP(0),
+  fHistSPDTrkClsMedian(0),
+  fHistSPDTrkClsMedianExLP(0),
+  fHistSPDTrkClsTruncMean(0)
 {
   // Default constructor.
 
@@ -82,7 +86,11 @@ AliAnalysisTaskEmcalHighMultTrigger::AliAnalysisTaskEmcalHighMultTrigger(const c
   fHistV0MultSum(0),
   fHistTracksTracklets(0),
   fHistTracksV0MultSum(0),
-  fHistSPDTrackletsClusters(0)
+  fHistSPDTrkClsSum(0),
+  fHistSPDTrkClsSumExLP(0),
+  fHistSPDTrkClsMedian(0),
+  fHistSPDTrkClsMedianExLP(0),
+  fHistSPDTrkClsTruncMean(0)
 {
   // Standard constructor.
 
@@ -201,7 +209,7 @@ void AliAnalysisTaskEmcalHighMultTrigger::UserCreateOutputObjects()
     fOutput->Add(fHistEnergySumAvgExLPEst[i]);
 
     histName = Form("fHistTruncatedMeanEst%s",strMultEst[i].Data());
-    histTitle = Form("%s;#sum[#it{E}];%s",histName.Data(),strMultEst[i].Data());
+    histTitle = Form("%s;#LT#it{E}#GT_{trunc};%s",histName.Data(),strMultEst[i].Data());
     fHistTruncatedMeanEst[i] = new TH2F(histName.Data(),histTitle.Data(),nE,minE,maxE/4.,nBinsMultEst[i],0.,multEstMax[i]);
     fOutput->Add(fHistTruncatedMeanEst[i]);
   }
@@ -216,10 +224,30 @@ void AliAnalysisTaskEmcalHighMultTrigger::UserCreateOutputObjects()
   fHistTracksV0MultSum = new TH2F(histName.Data(),histTitle.Data(),nBinsMultEst[0],0.,multEstMax[0],nBinsMultEst[2],0.,multEstMax[2]);
   fOutput->Add(fHistTracksV0MultSum);
 
-  histName = Form("fHistSPDTrackletsClusters");
-  histTitle = Form("%s;#it{N}_{tracklets,SPD};#it{N}_{clusters,SPD}",histName.Data());
-  fHistSPDTrackletsClusters = new TH2F(histName.Data(),histTitle.Data(),nBinsMultEst[1],0.,multEstMax[1],200,0.,1000.);
-  fOutput->Add(fHistSPDTrackletsClusters);
+  histName = Form("fHistSPDTrkClsSum");
+  histTitle = Form("%s;#it{N}_{tracklets,SPD};#it{N}_{clusters,SPD};#sum[#it{E}]",histName.Data());
+  fHistSPDTrkClsSum = new TH3F(histName.Data(),histTitle.Data(),nBinsMultEst[1],0.,multEstMax[1],200,0.,1000.,nE,minE,maxE);
+  fOutput->Add(fHistSPDTrkClsSum);
+
+  histName = Form("fHistSPDTrkClsSumExLP");
+  histTitle = Form("%s;#it{N}_{tracklets,SPD};#it{N}_{clusters,SPD};#sum[#it{E}]",histName.Data());
+  fHistSPDTrkClsSumExLP = new TH3F(histName.Data(),histTitle.Data(),nBinsMultEst[1],0.,multEstMax[1],200,0.,1000.,nE,minE,maxE);
+  fOutput->Add(fHistSPDTrkClsSumExLP);
+
+  histName = Form("fHistSPDTrkClsMedian");
+  histTitle = Form("%s;#it{N}_{tracklets,SPD};#it{N}_{clusters,SPD};med[#it{E}]",histName.Data());
+  fHistSPDTrkClsMedian = new TH3F(histName.Data(),histTitle.Data(),nBinsMultEst[1],0.,multEstMax[1],200,0.,1000.,nE,minE,maxE/4.);
+  fOutput->Add(fHistSPDTrkClsMedian);
+
+  histName = Form("fHistSPDTrkClsMedianExLP");
+  histTitle = Form("%s;#it{N}_{tracklets,SPD};#it{N}_{clusters,SPD};med[#it{E}]",histName.Data());
+  fHistSPDTrkClsMedianExLP = new TH3F(histName.Data(),histTitle.Data(),nBinsMultEst[1],0.,multEstMax[1],200,0.,1000.,nE,minE,maxE/4.);
+  fOutput->Add(fHistSPDTrkClsMedianExLP);
+
+  histName = Form("fHistSPDTrkClsTruncMean");
+  histTitle = Form("%s;#it{N}_{tracklets,SPD};#it{N}_{clusters,SPD};#LT#it{E}#GT_{trunc}",histName.Data());
+  fHistSPDTrkClsTruncMean = new TH3F(histName.Data(),histTitle.Data(),nBinsMultEst[1],0.,multEstMax[1],200,0.,1000.,nE,minE,maxE/4.);
+  fOutput->Add(fHistSPDTrkClsTruncMean);
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
@@ -267,7 +295,11 @@ Bool_t AliAnalysisTaskEmcalHighMultTrigger::FillHistograms()
 
   Int_t nClustersLayer0 = InputEvent()->GetNumberOfITSClusters(0);
   Int_t nClustersLayer1 = InputEvent()->GetNumberOfITSClusters(1);
-  fHistSPDTrackletsClusters->Fill(multEst[1],(Float_t)(nClustersLayer0+nClustersLayer1));
+  fHistSPDTrkClsSum->Fill(multEst[1],(Float_t)(nClustersLayer0+nClustersLayer1),fSumEnergy);
+  fHistSPDTrkClsSumExLP->Fill(multEst[1],(Float_t)(nClustersLayer0+nClustersLayer1),fSumEnergyExLP);
+  fHistSPDTrkClsMedian->Fill(multEst[1],(Float_t)(nClustersLayer0+nClustersLayer1),fMedianEnergy);
+  fHistSPDTrkClsMedianExLP->Fill(multEst[1],(Float_t)(nClustersLayer0+nClustersLayer1),fMedianEnergyExLP);
+  fHistSPDTrkClsTruncMean->Fill(multEst[1],(Float_t)(nClustersLayer0+nClustersLayer1),fTruncatedMean);
 
   return kTRUE;
 }
