@@ -538,7 +538,7 @@ EOF
 redir=/dev/null
 maxf=-1
 top=.
-index=0
+index=1
 while test $# -gt 0 ; do 
     case $1 in 
 	-b|--barrel)       barrel=$2          ; shift ;;
@@ -546,6 +546,7 @@ while test $# -gt 0 ; do
 	-f|--force)        let force=$force+1 ;; 
 	-h|--help)         usage              ; exit 0 ;; 
 	-i|--index)        index=1            ;; 
+	--no-index)        index=0            ;;
 	-l|--log-file)     redir=             ;; 
 	-L|--local)        from_local=1	      ;;
 	-m|--max-files)    maxf=$2            ; shift ;; 
@@ -686,12 +687,12 @@ make_trend ${top}/$store
 # --- Make index files -----------------------------------------------
 if test $index -gt 0 ; then 
     info -n "Making index ... "
-    desc="For more information see <a href='https://twiki.cern.ch/twiki/"
-    desc="${desc}bin/viewauth/ALICE/FMDQA'>TWiki pages</a>."
+    desc="For more see <a href='http://cern.ch/go/6Bwz'>TWiki</a>"
     $topmk --title "QA for the FMD" \
 	--description "$desc" \
 	--link \
 	--max-depth 4 \
+	--frame \
 	--output index.html 
     # >> ${redir} 2>&1 
     fix_perm index.html
