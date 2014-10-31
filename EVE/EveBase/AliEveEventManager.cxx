@@ -183,34 +183,28 @@ AliEveEventManager::~AliEveEventManager()
     // Destructor.
     
     fFinished = true;
-    
     if(fEventListenerThread)
     {
+//        fEventListenerThread->Join();
         fEventListenerThread->Kill();
         delete fEventListenerThread;
+        cout<<"listener thread killed and deleted"<<endl;
     }
     if(fStorageManagerWatcherThread)
     {
+//        fStorageManagerWatcherThread->Join();
         fStorageManagerWatcherThread->Kill();
         delete fStorageManagerWatcherThread;
+        cout<<"storage watcher thread killed and deleted"<<endl;
     }
-    
     
     fAutoLoadTimer->Stop();
     fAutoLoadTimer->Disconnect("Timeout");
     fAutoLoadTimer->Disconnect("AutoLoadNextEvent");
 
-    AliEveEventManager *manager = AliEveEventManager::GetCurrent();
-    manager->Disconnect("StorageManagerOk");
-    manager->Disconnect("StorageManagerDown");
-
     if(fSubManagers){delete fSubManagers;}
     if(fMutex){delete fMutex;}
-    
-    if (fIsOpen)
-    {
-        Close();
-    }
+    if (fIsOpen){Close();}
 
 //    fTransients->DecDenyDestroy();
 //    fTransients->Destroy();
@@ -264,10 +258,10 @@ void AliEveEventManager::GetNextEvent()
     int iter=0;
     while(!fFinished)
     {
-        if(!fLoopMarked)
+        if(!fLoopMarked || receivedList.size()<=0)
         {
             cout<<"taking event from reco server"<<endl;
-            tmpEvent = eventManager->GetEvent(EVENTS_SERVER_SUB,5);
+            tmpEvent = eventManager->GetEvent(EVENTS_SERVER_SUB,5000);
             if(!tmpEvent){sleep(1);}
         }
         else
@@ -346,6 +340,11 @@ void AliEveEventManager::CheckStorageStatus()
         }
         sleep(1);
     }
+    
+    AliEveEventManager *manager = AliEveEventManager::GetCurrent();
+    manager->Disconnect("StorageManagerOk");
+    manager->Disconnect("StorageManagerDown");
+    
 #endif
 }
 
