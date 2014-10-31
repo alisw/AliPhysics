@@ -588,6 +588,7 @@ void AliEmcalJetTask::FindJets()
     jet->SetArea(area.perp());
     jet->SetAreaEta(area.eta());
     jet->SetAreaPhi(area.phi());
+    jet->SetAreaE(area.E());
     jet->SetNumberOfCharged(ncharged);
     jet->SetNumberOfNeutrals(nneutral);
     jet->SetMCPt(mcpt);
