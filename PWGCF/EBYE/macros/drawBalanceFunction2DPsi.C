@@ -1099,7 +1099,7 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
   if(bRootMoments){
 
     // need to restrict to near side in case of dphi
-    if(!kProjectInEta) gHistBalanceFunctionSubtracted->GetXaxis()->SetRangeUser(-TMath::Pi()/2,TMath::Pi()/2);
+    if(!kProjectInEta && !bReduceRangeForMoments) gHistBalanceFunctionSubtracted->GetXaxis()->SetRangeUser(-TMath::Pi()/2,TMath::Pi()/2);
 
    if(bReduceRangeForMoments){
 
@@ -1112,11 +1112,12 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
       }
 
       // new define range by fit!
-      TF1 *fGauss = new TF1("fGauss","gaus(0)",-rangeReduced,rangeReduced);
-      fGauss->SetParameters(1,0,rangeReduced/3.);
+      TF1 *fGauss = new TF1("fGauss","gaus(0)+pol0(3)",-rangeReduced,rangeReduced);
+      fGauss->SetParameters(1,0,rangeReduced/3.,0.);
       fGauss->SetParLimits(0,0,100);
       fGauss->SetParLimits(1,-rangeReduced/3.,rangeReduced/3.);
       fGauss->SetParLimits(2,rangeReduced/10.,rangeReduced);
+      fGauss->SetParLimits(3,-0.05,0.05);
 
 
       gHistBalanceFunctionSubtracted->Fit("fGauss","","");
@@ -1133,7 +1134,9 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
       }
 
       cout<<"Use reduced range = "<<rangeReduced<<endl;
-      gHistBalanceFunctionSubtracted->GetXaxis()->SetRangeUser(-rangeReduced,rangeReduced);
+      Int_t binLow  = gHistBalanceFunctionSubtracted->GetXaxis()->FindBin(-rangeReduced);
+      Int_t binHigh = gHistBalanceFunctionSubtracted->GetXaxis()->FindBin(rangeReduced);
+      gHistBalanceFunctionSubtracted->GetXaxis()->SetRange(binLow+1,binHigh-1);
     }
 
     meanLatex = "#mu = "; 
