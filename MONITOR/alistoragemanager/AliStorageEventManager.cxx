@@ -63,22 +63,13 @@ AliStorageEventManager::AliStorageEventManager()
                 fXmlServerPort=atoi(line.substr(from,to-from).c_str());
             }
         }
-        if(configFile.eof())
-        {
-            configFile.clear();
-        }
+        if(configFile.eof()){configFile.clear();}
         configFile.close();
     }
-    else
-    {
-        cout<<"EVENT MANAGER -- Unable to open config file"<<endl;
-    }
+    else{cout<<"EVENT MANAGER -- Unable to open config file"<<endl;}
     TThread::UnLock();
     
-    for(int i=0;i<NUMBER_OF_SOCKETS;i++)
-    {
-        fContexts[i] = new context_t();
-    }
+    for(int i=0;i<NUMBER_OF_SOCKETS;i++){fContexts[i] = new context_t();}
 }
 AliStorageEventManager::~AliStorageEventManager()
 {
@@ -226,12 +217,23 @@ void AliStorageEventManager::Send(vector<serverListStruct> list,storageSockets s
     int numberOfRecords = list.size();
     message_t message(20);
     snprintf ((char *)message.data(), 20 ,"%d",numberOfRecords);
-    
-    fSockets[socket]->send(message);
-    if(numberOfRecords==0)return;
+    try{
+        fSockets[socket]->send(message);
+    }
+    catch(const zmq::error_t &e)
+    {
+        cout<<"MANAGER -- send vector -- "<<e.what()<<endl;
+    }
+    //if(numberOfRecords==0)return;
     message_t *tmpMessage = new message_t();
-    fSockets[socket]->recv(tmpMessage);//empty message just to keep req-rep order
     
+    try{
+        fSockets[socket]->recv(tmpMessage);//empty message just to keep req-rep order
+    }
+    catch(const zmq::error_t &e)
+    {
+        cout<<"MANAGER -- send vector -- "<<e.what()<<endl;
+    }
     // //prepare message with event's list
     // char *buffer = reinterpret_cast<char*> (&list[0]);
     // message_t *reply = new message_t((void*)buffer,
@@ -242,7 +244,13 @@ void AliStorageEventManager::Send(vector<serverListStruct> list,storageSockets s
     message_t reply(sizeof(serverListStruct)*numberOfRecords);
     memcpy(reply.data(), reinterpret_cast<const char*> (&list[0]), sizeof(serverListStruct)*numberOfRecords);
     
-    fSockets[socket]->send(reply);
+    try{
+        fSockets[socket]->send(reply);
+    }
+    catch(const zmq::error_t &e)
+    {
+        cout<<"MANAGER -- send vector -- "<<e.what()<<endl;
+    }
     if(tmpMessage){delete tmpMessage;}
 }
 
@@ -253,7 +261,13 @@ void AliStorageEventManager::Send(struct serverRequestStruct *request,storageSoc
                                               sizeof(struct serverRequestStruct)
                                               +sizeof(struct listRequestStruct)
                                               +sizeof(struct eventStruct),freeBuff);
-    fSockets[socket]->send(*requestMessage);
+    try{
+        fSockets[socket]->send(*requestMessage);
+    }
+    catch(const zmq::error_t &e)
+    {
+        cout<<"MANAGER -- send serverRequestStruct -- "<<e.what()<<endl;
+    }
 }
 
 bool AliStorageEventManager::Send(struct clientRequestStruct *request,storageSockets socket,int timeout)
@@ -265,8 +279,7 @@ bool AliStorageEventManager::Send(struct clientRequestStruct *request,storageSoc
     message_t *requestMessage = new message_t((void*)buffer,
                                               sizeof(struct clientRequestStruct),freeBuff);
     
-    try
-    {
+    try{
         fSockets[socket]->send(*requestMessage);
     }
     catch (const zmq::error_t& e)
@@ -300,7 +313,13 @@ void AliStorageEventManager::Send(long message,storageSockets socket)
     char *buffer = (char*)stringBuffer.c_str();
     message_t *replyMessage = new message_t((void*)buffer,sizeof(stringBuffer),freeBuff);
     
-    fSockets[socket]->send(*replyMessage);
+    try{
+        fSockets[socket]->send(*replyMessage);
+    }
+    catch(const zmq::error_t &e)
+    {
+        cout<<"MANAGER -- send long -- "<<e.what()<<endl;
+    }
     delete replyMessage;
     streamBuffer.str(string());
     streamBuffer.clear();
@@ -318,7 +337,13 @@ void AliStorageEventManager::Send(bool message,storageSockets socket)
         buffer = (char*)("false");
     }
     message_t *replyMessage = new message_t((void*)buffer,sizeof(buffer),freeBuff);
-    fSockets[socket]->send(*replyMessage);
+    try{
+        fSockets[socket]->send(*replyMessage);
+    }
+    catch(const zmq::error_t &e)
+    {
+        cout<<"MANAGER -- send bool -- "<<e.what()<<endl;
+    }
     delete replyMessage;
 }
 
@@ -334,7 +359,13 @@ void AliStorageEventManager::Send(AliESDEvent *event, storageSockets socket)
     memcpy(buf, tmess.Buffer(), bufsize);
     
     message_t message((void*)buf, bufsize, freeBuff);
-    fSockets[socket]->send(message);
+    try{
+        fSockets[socket]->send(message);
+    }
+    catch(const zmq::error_t &e)
+    {
+        cout<<"MANAGER -- send AliESDEvent -- "<<e.what()<<endl;
+    }
 }
 
 void AliStorageEventManager::SendAsXml(AliESDEvent *event,storageSockets socket)
@@ -377,7 +408,13 @@ void AliStorageEventManager::SendAsXml(AliESDEvent *event,storageSockets socket)
     message_t message(bufferString.size());
     memcpy (message.data(), bufferString.data(), bufferString.size());
     
-    fSockets[socket]->send(message);
+    try{
+        fSockets[socket]->send(message);
+    }
+    catch(const zmq::error_t &e)
+    {
+        cout<<"MANAGER -- send send xml -- "<<e.what()<<endl;
+    }
     cout<<"xml sent"<<endl;
 }
 
@@ -385,18 +422,36 @@ vector<serverListStruct> AliStorageEventManager::GetServerListVector(storageSock
 {
     //get size of the incomming message
     message_t sizeMessage;
-    fSockets[socket]->recv(&sizeMessage);
+    
+    try{
+        fSockets[socket]->recv(&sizeMessage);
+    }
+    catch(const zmq::error_t &e)
+    {
+        cout<<"MANAGER -- get vector -- "<<e.what()<<endl;
+    }
     int numberOfRecords;
     istringstream iss(static_cast<char*>(sizeMessage.data()));
     iss >> numberOfRecords;
     
     if(numberOfRecords==0){cout<<"MANAGER -- list is empty"<<endl;}
     
-    fSockets[socket]->send(*(new message_t()));//receive empty message just to keep req-rep order
-    
+    try{
+        fSockets[socket]->send(*(new message_t()));//receive empty message just to keep req-rep order
+    }
+    catch(const zmq::error_t &e)
+    {
+        cout<<"MANAGER -- get vector -- "<<e.what()<<endl;
+    }
     //get list of events
     message_t *response = new message_t(sizeof(serverListStruct)*numberOfRecords);
-    fSockets[socket]->recv(response);
+    try{
+        fSockets[socket]->recv(response);
+    }
+    catch(const zmq::error_t &e)
+    {
+        cout<<"MANAGER -- get vector -- "<<e.what()<<endl;
+    }
     
     vector<serverListStruct> receivedList(static_cast<serverListStruct*>(response->data()), static_cast<serverListStruct*>(response->data()) + numberOfRecords);
     
@@ -455,7 +510,13 @@ struct serverRequestStruct* AliStorageEventManager::GetServerStruct(storageSocke
 {
     struct serverRequestStruct *request = new struct serverRequestStruct;
     message_t *requestMessage = new message_t();
-    fSockets[socket]->recv(requestMessage);
+    try{
+        fSockets[socket]->recv(requestMessage);
+    }
+    catch(const zmq::error_t &e)
+    {
+        cout<<"MANAGER -- get serverRequestStruct -- "<<e.what()<<endl;
+    }
     request = static_cast<struct serverRequestStruct*>(requestMessage->data());
     return request;
 }
@@ -464,7 +525,13 @@ struct clientRequestStruct* AliStorageEventManager::GetClientStruct(storageSocke
 {
     struct clientRequestStruct *request = new struct clientRequestStruct;
     message_t *requestMessage = new message_t();
-    fSockets[socket]->recv(requestMessage);
+    try{
+        fSockets[socket]->recv(requestMessage);
+    }
+    catch(const zmq::error_t &e)
+    {
+        cout<<"MANAGER -- get clientRequestStruct -- "<<e.what()<<endl;
+    }
     request = static_cast<struct clientRequestStruct*>(requestMessage->data());
     return request;
 }
@@ -472,7 +539,13 @@ struct clientRequestStruct* AliStorageEventManager::GetClientStruct(storageSocke
 bool AliStorageEventManager::GetBool(storageSockets socket)
 {
     message_t *response = new message_t();
-    fSockets[socket]->recv(response);
+    try{
+        fSockets[socket]->recv(response);
+    }
+    catch(const zmq::error_t &e)
+    {
+        cout<<"MANAGER -- get bool -- "<<e.what()<<endl;
+    }
     char *result = (char*)response->data();
     
     if(!strcmp("true",result)){return true;}
@@ -482,7 +555,13 @@ bool AliStorageEventManager::GetBool(storageSockets socket)
 long AliStorageEventManager::GetLong(storageSockets socket)
 {
     message_t *responseMessage = new message_t();
-    fSockets[socket]->recv(responseMessage);
+    try{
+        fSockets[socket]->recv(responseMessage);
+    }
+    catch(const zmq::error_t &e)
+    {
+        cout<<"MANAGER -- get long -- "<<e.what()<<endl;
+    }
     
     long result = 0;
     

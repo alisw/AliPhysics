@@ -183,34 +183,28 @@ AliEveEventManager::~AliEveEventManager()
     // Destructor.
     
     fFinished = true;
-    
     if(fEventListenerThread)
     {
+//        fEventListenerThread->Join();
         fEventListenerThread->Kill();
         delete fEventListenerThread;
+        cout<<"listener thread killed and deleted"<<endl;
     }
     if(fStorageManagerWatcherThread)
     {
+//        fStorageManagerWatcherThread->Join();
         fStorageManagerWatcherThread->Kill();
         delete fStorageManagerWatcherThread;
+        cout<<"storage watcher thread killed and deleted"<<endl;
     }
-    
     
     fAutoLoadTimer->Stop();
     fAutoLoadTimer->Disconnect("Timeout");
     fAutoLoadTimer->Disconnect("AutoLoadNextEvent");
 
-    AliEveEventManager *manager = AliEveEventManager::GetCurrent();
-    manager->Disconnect("StorageManagerOk");
-    manager->Disconnect("StorageManagerDown");
-
     if(fSubManagers){delete fSubManagers;}
     if(fMutex){delete fMutex;}
-    
-    if (fIsOpen)
-    {
-        Close();
-    }
+    if (fIsOpen){Close();}
 
 //    fTransients->DecDenyDestroy();
 //    fTransients->Destroy();
@@ -264,10 +258,10 @@ void AliEveEventManager::GetNextEvent()
     int iter=0;
     while(!fFinished)
     {
-        if(!fLoopMarked)
+        if(!fLoopMarked || receivedList.size()<=0)
         {
             cout<<"taking event from reco server"<<endl;
-            tmpEvent = eventManager->GetEvent(EVENTS_SERVER_SUB,5);
+            tmpEvent = eventManager->GetEvent(EVENTS_SERVER_SUB,5000);
             if(!tmpEvent){sleep(1);}
         }
         else
@@ -275,17 +269,17 @@ void AliEveEventManager::GetNextEvent()
             cout<<"taking event from storage manager"<<endl;
             if(iter<receivedList.size())
             {
+                cout<<"i:"<<iter<<endl;
                 struct eventStruct mark;
                 mark.runNumber = receivedList[iter].runNumber;
                 mark.eventNumber = receivedList[iter].eventNumber;
              
-                struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
                 requestMessage->messageType = REQUEST_GET_EVENT;
                 requestMessage->event = mark;
                 
                 eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
                 tmpEvent = eventManager->GetEvent(SERVER_COMMUNICATION_REQ);
-                delete requestMessage;
+
                 iter++;
                 sleep(1);
             }
@@ -311,10 +305,7 @@ void AliEveEventManager::GetNextEvent()
                 fMutex->UnLock();
             }
         }
-        else
-        {
-            cout<<"didn't receive new event"<<endl;
-        }
+        else{cout<<"didn't receive new event"<<endl;}
     }
     delete requestMessage;
     
@@ -349,6 +340,11 @@ void AliEveEventManager::CheckStorageStatus()
         }
         sleep(1);
     }
+    
+    AliEveEventManager *manager = AliEveEventManager::GetCurrent();
+    manager->Disconnect("StorageManagerOk");
+    manager->Disconnect("StorageManagerDown");
+    
 #endif
 }
 

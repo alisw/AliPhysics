@@ -85,15 +85,21 @@ AliStorageDatabase::~AliStorageDatabase(){
 }
 
 void AliStorageDatabase::InsertEvent(int runNumber,
-				     int eventNumber,
-				     char *system,
-				     int multiplicity,
-				     char *filePath)
+                                     int eventNumber,
+                                     char *system,
+                                     int multiplicity,
+                                     char *filePath)
 {
-  TSQLResult* res;
-  res = fServer->Query(Form("replace into %s (run_number,event_number,system,multiplicity,permanent,file_path) values (%d,%d,'%s',%d,0,'%s');",fTable.c_str(),runNumber,eventNumber,system,multiplicity,filePath));
-  delete res;
+    TSQLResult *res = fServer->Query(Form("select * FROM %s WHERE run_number = %d AND event_number = %d AND permanent = 1;",fTable.c_str(),runNumber,eventNumber));
+    TSQLRow *row = res->Next();
 
+    if(!row)
+    {
+        res = fServer->Query(Form("REPLACE INTO %s (run_number,event_number,system,multiplicity,permanent,file_path) VALUES (%d,%d,'%s',%d,0,'%s');",fTable.c_str(),runNumber,eventNumber,system,multiplicity,filePath));
+    }
+
+    delete row;
+    delete res;
 }
 
 bool AliStorageDatabase::MarkEvent(struct eventStruct event)
