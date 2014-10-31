@@ -35,7 +35,9 @@
 #include <TKey.h>
 #include <TMath.h>
 #include <TObjArray.h>
+#include <TObjString.h>
 #include <TString.h>
+#include <TVector2.h>
 
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
@@ -47,26 +49,40 @@
 #include "AliVTrack.h"
 #include "AliVVertex.h"
 
+#include "AliClusterContainer.h"
+#include "AliEmcalJet.h"
+#include "AliEmcalPhysicsSelection.h"
 #include "AliEmcalTriggerPatchInfo.h"
 #include "AliEMCalHistoContainer.h"
 #include "AliEMCalPtTaskVTrackSelection.h"
 #include "AliEMCalPtTaskTrackSelectionAOD.h"
 #include "AliEMCalPtTaskTrackSelectionESD.h"
+#include "AliJetContainer.h"
+#include "AliParticleContainer.h"
 #include "AliAnalysisTaskPtEMCalTrigger.h"
 
 ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger)
 
 namespace EMCalTriggerPtAnalysis {
 
+  /*
+   * constants
+   */
+  const Int_t AliAnalysisTaskPtEMCalTrigger::kNJetRadii = 4;
+  const Double_t jetRadVals[AliAnalysisTaskPtEMCalTrigger::kNJetRadii] = {0.2, 0.3, 0.4, 0.5};
+  const Double_t *AliAnalysisTaskPtEMCalTrigger::kJetRadii = jetRadVals;
+
   //______________________________________________________________________________
   AliAnalysisTaskPtEMCalTrigger::AliAnalysisTaskPtEMCalTrigger():
-                		    AliAnalysisTaskEmcal(),
+                		    AliAnalysisTaskEmcalJet(),
                 		    fHistos(NULL),
                 		    fListTrackCuts(NULL),
                 		    fEtaRange(),
                 		    fPtRange(),
                 		    fEnergyRange(),
                 		    fVertexRange(),
+                		    fJetContainersMC(),
+                		    fJetContainersData(),
                 		    fSwapEta(kFALSE),
                 		    fUseTriggersFromTriggerMaker(kFALSE)
   {
@@ -77,13 +93,15 @@ namespace EMCalTriggerPtAnalysis {
 
   //______________________________________________________________________________
   AliAnalysisTaskPtEMCalTrigger::AliAnalysisTaskPtEMCalTrigger(const char *name):
-                		    AliAnalysisTaskEmcal(name, kTRUE),
+                		    AliAnalysisTaskEmcalJet(name, kTRUE),
                 		    fHistos(NULL),
                 		    fListTrackCuts(NULL),
                 		    fEtaRange(),
                 		    fPtRange(),
                         fEnergyRange(),
                         fVertexRange(),
+                        fJetContainersMC(),
+                        fJetContainersData(),
                 		    fSwapEta(kFALSE),
                 		    fUseTriggersFromTriggerMaker(kFALSE)
   {
@@ -119,17 +137,31 @@ namespace EMCalTriggerPtAnalysis {
      * Also adding the track cuts to the list of histograms.
      */
     AliAnalysisTaskEmcal::UserCreateOutputObjects();
-    TString trackContainerName = "ESDFilterTracks", clusterContainerName = "EmcCaloClusters";
-    if(!fIsEsd){
-      trackContainerName = "AODFilterTracks";
-      clusterContainerName = "EmcCaloClusters";
-    }
-    AliParticleContainer *trackContainer = this->AddParticleContainer(trackContainerName.Data());
-    trackContainer->SetClassName("AliVTrack");
-    this->AddClusterContainer(clusterContainerName.Data());
-    this->SetCaloTriggerPatchInfoName("EmcalTriggers");
+    SetCaloTriggerPatchInfoName("EmcalTriggers");
     fHistos = new AliEMCalHistoContainer("PtEMCalTriggerHistograms");
     fHistos->ReleaseOwner();
+
+    if(fJetContainersMC.GetEntries()){
+      AliDebug(1,"Jet containers for MC truth:");
+      TObjString *contname(NULL);
+      TIter contMCIter(&fJetContainersMC);
+      while((contname = dynamic_cast<TObjString *>(contMCIter.Next())))
+        AliDebug(1, Form("Next container: %s", contname->String().Data()));
+    }
+    if(fJetContainersData.GetEntries()){
+      AliDebug(1, "Jet containers for Data:");
+      TObjString *contname(NULL);
+      TIter contDataIter(&fJetContainersData);
+      while((contname = dynamic_cast<TObjString *>(contDataIter.Next())))
+        AliDebug(1, Form("Next container: %s", contname->String().Data()));
+    }
+    if(fJetCollArray.GetEntries()){
+      AliDebug(1, "Jet containers attached to this task:");
+      AliJetContainer *cont(NULL);
+      TIter contIter(&fJetCollArray);
+      while((cont = dynamic_cast<AliJetContainer *>(contIter.Next())))
+        AliDebug(1, Form("Container: %s", cont->GetName()));
+    }
 
     std::map<std::string, std::string> triggerCombinations;
     const char *triggernames[12] = {"MinBias", "EMCJHigh", "EMCJLow", "EMCGHigh", "EMCGLow", "NoEMCal", "EMCHighBoth", "EMCHighGammaOnly", "EMCHighJetOnly", "EMCLowBoth", "EMCLowGammaOnly", "EMCLowJetOnly"},
@@ -190,45 +222,79 @@ namespace EMCalTriggerPtAnalysis {
     DefineAxis(hclusteraxes[3], "mbtrigger", "Has MB trigger", 2, -0.5, 1.5);
     const TAxis *clusteraxes[4];
     for(int iaxis = 0; iaxis < 4; ++iaxis) clusteraxes[iaxis] = hclusteraxes + iaxis;
-    TAxis hpatchenergyaxes[4];
+    TAxis hpatchenergyaxes[5];
     DefineAxis(hpatchenergyaxes[0], "energy", "Patch energy (GeV)", 100, 0., 100);
     DefineAxis(hpatchenergyaxes[1], "eta", "#eta", etabinning);
     DefineAxis(hpatchenergyaxes[2], "phi", "#phi",  20, 0, 2 * TMath::Pi());
     DefineAxis(hpatchenergyaxes[3], "isMain", "Main trigger", 2, -0.5, 1.5);
-    const TAxis *patchenergyaxes[4];
-    for(int iaxis = 0; iaxis < 4; ++iaxis) patchenergyaxes[iaxis] = hpatchenergyaxes + iaxis;
-    TAxis hpatchampaxes[4];
+    DefineAxis(hpatchenergyaxes[4],  "emcalgood", "EMCAL good event", 2, -0.5, 1.5);
+    const TAxis *patchenergyaxes[5];
+    for(int iaxis = 0; iaxis < 5; ++iaxis) patchenergyaxes[iaxis] = hpatchenergyaxes + iaxis;
+    TAxis hpatchampaxes[5];
     DefineAxis(hpatchampaxes[0], "amplitude", "Patch energy (GeV)", 10000, 0., 10000.);
     DefineAxis(hpatchampaxes[1], "eta", "#eta", etabinning);
     DefineAxis(hpatchampaxes[2], "phi", "#phi",  20, 0, 2 * TMath::Pi());
     DefineAxis(hpatchampaxes[3], "isMain", "Main trigger", 2, -0.5, 1.5);
-    const TAxis *patchampaxes[4];
-    for(int iaxis = 0; iaxis < 4; ++iaxis) patchampaxes[iaxis] = hpatchampaxes + iaxis;
+    DefineAxis(hpatchampaxes[4],  "emcalgood", "EMCAL good event", 2, -0.5, 1.5);
+    const TAxis *patchampaxes[5];
+    for(int iaxis = 0; iaxis < 5; ++iaxis) patchampaxes[iaxis] = hpatchampaxes + iaxis;
     try{
       std::string patchnames[] = {"Level0", "JetHigh", "JetLow", "GammaHigh", "GammaLow"};
       for(std::string * triggerpatch = patchnames; triggerpatch < patchnames + sizeof(patchnames)/sizeof(std::string); ++triggerpatch){
-        fHistos->CreateTHnSparse(Form("Energy%s", triggerpatch->c_str()), Form("Patch energy for %s trigger patches", triggerpatch->c_str()), 4, patchenergyaxes, "s");
-        fHistos->CreateTHnSparse(Form("EnergyRough%s", triggerpatch->c_str()), Form("Rough patch energy for %s trigger patches", triggerpatch->c_str()), 4, patchenergyaxes, "s");
-        fHistos->CreateTHnSparse(Form("Amplitude%s", triggerpatch->c_str()), Form("Patch amplitude for %s trigger patches", triggerpatch->c_str()), 4, patchampaxes, "s");
+        fHistos->CreateTHnSparse(Form("Energy%s", triggerpatch->c_str()), Form("Patch energy for %s trigger patches", triggerpatch->c_str()), 5, patchenergyaxes, "s");
+        fHistos->CreateTHnSparse(Form("EnergyRough%s", triggerpatch->c_str()), Form("Rough patch energy for %s trigger patches", triggerpatch->c_str()), 5, patchenergyaxes, "s");
+        fHistos->CreateTHnSparse(Form("Amplitude%s", triggerpatch->c_str()), Form("Patch amplitude for %s trigger patches", triggerpatch->c_str()), 5, patchampaxes, "s");
       }
 
       // Create histogram for MC-truth
       fHistos->CreateTHnSparse("hMCtrueParticles", "Particle-based histogram for MC-true particles", 5, trackaxes, "s");
+      if(fJetCollArray.GetEntries()){
+        for(int irad = 0; irad < kNJetRadii; irad++){
+          fHistos->CreateTHnSparse(Form("hMCtrueParticlesRad%d", int(kJetRadii[irad]*10)),
+              Form("Particle-based histogram for MC-true particles in Jets with radius %.1f", kJetRadii[irad]*10), 5, trackaxes, "s");
+        }
+        // histogram for isolated particles
+        fHistos->CreateTHnSparse("hMCtrueParticlesIsolated", "Particle-based histogram for isolated MC-true particles", 5, trackaxes, "s");
+      }
       for(std::map<std::string,std::string>::iterator it = triggerCombinations.begin(); it != triggerCombinations.end(); ++it){
         const std::string name = it->first, &title = it->second;
         // Create event-based histogram
         fHistos->CreateTH2(Form("hEventHist%s", name.c_str()), Form("Event-based data for %s events; pileup rejection; z_{V} (cm)", title.c_str()), pileupaxis, zvertexBinning);
         // Create track-based histogram
         fHistos->CreateTHnSparse(Form("hTrackHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 7, trackaxes, "s");
-        fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 7, trackaxes, "s");
+        fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events  for tracks matched to EMCal clusters", title.c_str()), 7, trackaxes, "s");
         fHistos->CreateTHnSparse(Form("hMCTrackHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics", title.c_str()), 7, trackaxes, "s");
-        fHistos->CreateTHnSparse(Form("hMCTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics", title.c_str()), 7, trackaxes, "s");
+        fHistos->CreateTHnSparse(Form("hMCTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics for tracks matched to EMCal clusters", title.c_str()), 7, trackaxes, "s");
         // Create cluster-based histogram (Uncalibrated and calibrated clusters)
         fHistos->CreateTHnSparse(Form("hClusterCalibHist%s", name.c_str()), Form("Calib. cluster-based histogram for %s events", title.c_str()), 4, clusteraxes, "s");
         fHistos->CreateTHnSparse(Form("hClusterUncalibHist%s", name.c_str()), Form("Uncalib. cluster-based histogram for %s events", title.c_str()), 4, clusteraxes, "s");
+        if(fJetCollArray.GetEntries()){
+          // Create histograms for particles in different jetfinder radii, only track-based
+          for(int irad = 0; irad < kNJetRadii; irad++){
+            fHistos->CreateTHnSparse(Form("hTrackHist%sRad%02d", name.c_str(), int(kJetRadii[irad]*10)),
+                Form("Track-based data for %s events for tracks in jets with Radius %.1f", title.c_str(), kJetRadii[irad]), 7, trackaxes, "s");
+            fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%sRad%02d", name.c_str(), int(kJetRadii[irad]*10)),
+                Form("Track-based data for %s events for tracks matched to EMCal clusters in jets with Radius %.1f", title.c_str(), kJetRadii[irad]),
+                7, trackaxes, "s");
+            fHistos->CreateTHnSparse(Form("hMCTrackHist%sRad%02d", name.c_str(), int(kJetRadii[irad]*10)),
+                Form("Track-based data for %s events with MC kinematics for tracks in jets with Radius %.1f", title.c_str(), kJetRadii[irad]),
+                7, trackaxes, "s");
+            fHistos->CreateTHnSparse(Form("hMCTrackInAcceptanceHist%sRad%02d", name.c_str(), int(kJetRadii[irad]*10)),
+                Form("Track-based data for %s events with MC kinematics for tracks matched to EMCal clusters in jets with Radius %.1f", title.c_str(), kJetRadii[irad]),
+                7, trackaxes, "s");
+            fHistos->CreateTHnSparse(Form("hClusterCalibHist%sRad%02d", name.c_str(), int(kJetRadii[irad]*10)),
+                Form("Calib. cluster-based histogram for %s events for clusters in Jets with radius %.1f", title.c_str(), kJetRadii[irad]), 4, clusteraxes, "s");
+          }
+        }
+        // Create also histograms for isolated particles
+        fHistos->CreateTHnSparse(Form("hTrackHist%sIsolated", name.c_str()), Form("Track-based data for %s events for isolated tracks", title.c_str()), 7, trackaxes, "s");
+        fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%sIsolated", name.c_str()), Form("Track-based data for %s events for isolated tracks matched to EMCal clusters", title.c_str()), 7, trackaxes, "s");
+        fHistos->CreateTHnSparse(Form("hMCTrackHist%sIsolated", name.c_str()), Form("Track-based data for %s events with MC kinematics for isolated tracks", title.c_str()), 7, trackaxes, "s");
+        fHistos->CreateTHnSparse(Form("hMCTrackInAcceptanceHist%sIsolated", name.c_str()), Form("Track-based data for %s events with MC kinematics for isolated tracks matched to EMCal clusters", title.c_str()), 7, trackaxes, "s");
       }
       fHistos->CreateTHnSparse("hEventTriggers", "Trigger type per event", 5, triggeraxis);
       fHistos->CreateTHnSparse("hEventsTriggerbit", "Trigger bits for the different events", 4, bitaxes);
+      fHistos->CreateTH2("hTRUADC", "ADC value of the TRU", 10001, -0.5, 10000.5, 2, -0.5, 1.5);
     } catch (HistoContainerContentException &e){
       std::stringstream errormessage;
       errormessage << "Creation of histogram failed: " << e.what();
@@ -264,13 +330,28 @@ namespace EMCalTriggerPtAnalysis {
       fUseTriggersFromTriggerMaker = kTRUE;
     }
 
+    Bool_t emcalGood = fInputHandler->IsEventSelected() & AliEmcalPhysicsSelection::kEmcalOk;
+
+    // Fill TRU ADC
+    // for debugging
+    fCaloTriggers = fInputEvent->GetCaloTrigger(fIsEsd ? "EMCALTrigger" : "emcalTrigger");
+    if(fCaloTriggers){
+      fCaloTriggers->Reset();
+      Int_t adcAMP;
+      while(fCaloTriggers->Next()){
+        fCaloTriggers->GetL1TimeSum(adcAMP);
+        if(adcAMP == -1) adcAMP = 0;  // Set ADC amps, which have a negative value, to 0
+        fHistos->FillTH2("hTRUADC", adcAMP, emcalGood ? 1. : 0.);
+      }
+    }
+
     // Loop over trigger patches, fill patch energy
     AliEmcalTriggerPatchInfo *triggerpatch(NULL);
     TIter patchIter(this->fTriggerPatchInfo);
     while((triggerpatch = dynamic_cast<AliEmcalTriggerPatchInfo *>(patchIter()))){
-      double triggerpatchinfo[4] = {triggerpatch->GetPatchE(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
-      double triggerpatchinfoamp[4] = {static_cast<double>(triggerpatch->GetADCAmp()), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
-      double triggerpatchinfoer[4] = {triggerpatch->GetADCAmpGeVRough(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
+      double triggerpatchinfo[5] = {triggerpatch->GetPatchE(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0., emcalGood ? 1. : 0.};
+      double triggerpatchinfoamp[5] = {static_cast<double>(triggerpatch->GetADCAmp()), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0., emcalGood ? 1. : 0.};
+      double triggerpatchinfoer[5] = {triggerpatch->GetADCAmpGeVRough(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0., emcalGood ? 1. : 0.};
       if(triggerpatch->IsJetHigh()){
         fHistos->FillTHnSparse("EnergyJetHigh", triggerpatchinfo);
         fHistos->FillTHnSparse("AmplitudeJetHigh", triggerpatchinfoamp);
@@ -387,15 +468,42 @@ namespace EMCalTriggerPtAnalysis {
         FillEventHist(it->c_str(), zv, isPileupEvent);
     }
 
+    const AliEmcalJet *foundJet(NULL);
+    char histname[1024];
+    std::vector<double> coneradii;
+    AliJetContainer *jetContMC(NULL), *jetContData(NULL);
+
     // Fill MC truth
     if(fMCEvent){
       for(int ipart = 0; ipart < fMCEvent->GetNumberOfTracks(); ipart++){
         // Select only physical primary particles
         AliVParticle *part = fMCEvent->GetTrack(ipart);
+        if(part->Charge() == 0) continue;
         if(!fEtaRange.IsInRange(part->Eta())) continue;
         if(!fPtRange.IsInRange(part->Pt())) continue;
         if(!fMCEvent->IsPhysicalPrimary(ipart)) continue;
-        FillMCParticleHist(part, zv, isPileupEvent);
+        FillMCParticleHist("hMCtrueParticles", part, zv, isPileupEvent);
+
+        if(fJetCollArray.GetEntries() &&
+            (jetContMC = dynamic_cast<AliJetContainer *>(fJetCollArray.FindObject((static_cast<TObjString *>(fJetContainersMC.At(0)))->String().Data())))){
+          /*
+           * Jet part: Find track in jet container,
+           * check according to number of particles in jet, and
+           * check for different cone radii
+           */
+          foundJet = FoundTrackInJet(part, jetContMC);
+          if(foundJet && foundJet->GetNumberOfConstituents() > 1){
+            for(int irad = 0; irad < kNJetRadii; irad++){
+              if(IsInRadius(part, foundJet, kJetRadii[irad])){
+                sprintf(histname, "hMCtrueParticlesRad%02d", int(kJetRadii[irad]*10));
+                FillMCParticleHist(histname,  part, zv, isPileupEvent);
+              }
+            }
+          } else {
+            // isolated track
+            FillMCParticleHist("hMCtrueParticlesIsolated", part, zv, isPileupEvent);
+          }
+        }
       }
     }
 
@@ -420,6 +528,8 @@ namespace EMCalTriggerPtAnalysis {
     // allow for several track selections to be tested at the same time
     // each track selection gets a different cut ID starting from 1
     // cut ID 0 is reserved for the case of no cuts
+    // In case we have a jet container attached we check whether the track is
+    // found in a jet, and check for different cone radii around a jet
     if(fListTrackCuts && fListTrackCuts->GetEntries()){
       for(int icut = 0; icut < fListTrackCuts->GetEntries(); icut++){
         AliEMCalPtTaskVTrackSelection *trackSelection = static_cast<AliEMCalPtTaskVTrackSelection *>(fListTrackCuts->At(icut));
@@ -428,13 +538,34 @@ namespace EMCalTriggerPtAnalysis {
           //if(!IsTrueTrack(track)) continue;
           if(!fEtaRange.IsInRange(track->Eta())) continue;
           if(!fPtRange.IsInRange(track->Pt())) continue;
-          if(triggers[0]) FillTrackHist("MinBias", track, zv, isPileupEvent, icut + 1, triggers[0]);
-          if(!triggerstrings.size()) // Non-EMCal-triggered
+          coneradii.clear();
+          if(this->fJetCollArray.GetEntries() &&
+              (jetContData = dynamic_cast<AliJetContainer *>(this->fJetCollArray.FindObject((static_cast<TObjString *>(this->fJetContainersData.At(0)))->String().Data())))){
+            foundJet = FoundTrackInJet(track, jetContData);
+            if(foundJet){
+              for(int irad = 0; irad < kNJetRadii; irad++){
+                if(IsInRadius(track, foundJet, kJetRadii[irad])) coneradii.push_back(kJetRadii[irad]);
+              }
+            }
+          }
+          if(triggers[0]){
+            FillTrackHist("MinBias", track, zv, isPileupEvent, icut + 1, triggers[0]);
+            if(coneradii.size()){
+              for(std::vector<double>::iterator radIter = coneradii.begin(); radIter != coneradii.end(); radIter++)
+                FillTrackHist("MinBias", track, zv, isPileupEvent, icut + 1, triggers[0], *radIter);
+            }
+          }
+          if(!triggerstrings.size()){ // Non-EMCal-triggered
             FillTrackHist("NoEMCal", track, zv, isPileupEvent, icut + 1, triggers[0]);
-          else {
+            for(std::vector<double>::iterator radIter = coneradii.begin(); radIter != coneradii.end(); radIter++)
+              FillTrackHist("NoEMCal", track, zv, isPileupEvent, icut + 1, triggers[0], *radIter);
+          } else {
             // EMCal-triggered events
-            for(std::vector<std::string>::iterator it = triggerstrings.begin(); it != triggerstrings.end(); ++it)
+            for(std::vector<std::string>::iterator it = triggerstrings.begin(); it != triggerstrings.end(); ++it){
               FillTrackHist(it->c_str(), track, zv, isPileupEvent, icut + 1, triggers[0]);
+              for(std::vector<double>::iterator radIter = coneradii.begin(); radIter != coneradii.end(); radIter++)
+                FillTrackHist(it->c_str(), track, zv, isPileupEvent, icut + 1, triggers[0], *radIter);
+            }
           }
         }
       }
@@ -446,12 +577,13 @@ namespace EMCalTriggerPtAnalysis {
       clust = fInputEvent->GetCaloCluster(icl);
       if(!clust->IsEMCAL()) continue;
       if(!fEnergyRange.IsInRange(clust->E())) continue;
-      if(triggers[0]) FillClusterHist("MinBias", clust, false, zv, isPileupEvent, triggers[0]);
-      if(!triggerstrings.size())	// Non-EMCal-triggered
-        FillClusterHist("NoEMCal", clust, false, zv, isPileupEvent, triggers[0]);
-      else{
+      if(triggers[0]) FillClusterHist("hClusterUncalibHistMinBias", clust, zv, isPileupEvent, triggers[0]);
+      if(!triggerstrings.size()){	// Non-EMCal-triggered
+        FillClusterHist("hClusterUncalibHistNoEMCal", clust, zv, isPileupEvent, triggers[0]);
+      } else{
         for(std::vector<std::string>::iterator it = triggerstrings.begin(); it != triggerstrings.end(); ++it){
-          FillClusterHist(it->c_str(), clust, false, zv, isPileupEvent, triggers[0]);
+          sprintf(histname, "hClusterUncalibHist%s", it->c_str());
+          FillClusterHist(histname, clust, zv, isPileupEvent, triggers[0]);
         }
       }
     }
@@ -461,12 +593,13 @@ namespace EMCalTriggerPtAnalysis {
       while((clust = dynamic_cast<const AliVCluster *>(clustIter()))){
         if(!clust->IsEMCAL()) continue;
         if(!fEnergyRange.IsInRange(clust->E())) continue;
-        if(triggers[0]) FillClusterHist("MinBias", clust, true, zv, isPileupEvent, triggers[0]);
+        if(triggers[0]) FillClusterHist("hClusterCalibHistMinBias", clust, zv, isPileupEvent, triggers[0]);
         if(!triggerstrings.size())	// Non-EMCal-triggered
-          FillClusterHist("NoEMCal", clust, true, zv, isPileupEvent, triggers[0]);
+          FillClusterHist("hClusterCalibHistNoEMCal", clust, zv, isPileupEvent, triggers[0]);
         else{
           for(std::vector<std::string>::iterator it = triggerstrings.begin(); it != triggerstrings.end(); ++it){
-            FillClusterHist(it->c_str(), clust, true, zv, isPileupEvent, triggers[0]);
+            sprintf(histname, "hClusterCalibHist%s", it->c_str());
+            FillClusterHist(histname, clust, zv, isPileupEvent, triggers[0]);
           }
         }
       }
@@ -624,7 +757,7 @@ namespace EMCalTriggerPtAnalysis {
 
   //______________________________________________________________________________
   void AliAnalysisTaskPtEMCalTrigger::FillTrackHist(const char* trigger,
-      const AliVTrack* track, double vz, bool isPileup, int cut, bool isMinBias) {
+      const AliVTrack* track, double vz, bool isPileup, int cut, bool isMinBias, double jetradius) {
     /*
      * Fill track-based histogram with corresponding information
      *
@@ -648,6 +781,13 @@ namespace EMCalTriggerPtAnalysis {
     sprintf(histnameAcc, "hTrackInAcceptanceHist%s", trigger);
     sprintf(histnameMC, "hMCTrackHist%s", trigger);
     sprintf(histnameMCAcc, "hMCTrackInAcceptanceHist%s", trigger);
+    if(jetradius > 0.){
+      char *hnames[] = {histname, histnameAcc, histnameMC, histnameMCAcc};
+      for(unsigned int iname = 0; iname < sizeof(hnames)/sizeof(char *); iname++){
+        char *myhname = hnames[iname];
+        sprintf(myhname, "%sRad%02d", myhname, int(jetradius * 10.));
+      }
+    }
     Bool_t isEMCAL = kFALSE;
     if(track->IsEMCAL()){
       // Check if the cluster is matched to only one track
@@ -696,8 +836,8 @@ namespace EMCalTriggerPtAnalysis {
   }
 
   //______________________________________________________________________________
-  void AliAnalysisTaskPtEMCalTrigger::FillClusterHist(const char* trigger,
-      const AliVCluster* clust, bool isCalibrated, double vz, bool isPileup, bool isMinBias) {
+  void AliAnalysisTaskPtEMCalTrigger::FillClusterHist(const char* histname,
+      const AliVCluster* clust, double vz, bool isPileup, bool isMinBias) {
     /*
      * Fill cluster-based histogram with corresponding information
      *
@@ -707,8 +847,6 @@ namespace EMCalTriggerPtAnalysis {
      * @param isPileup: flag event as pileup event
      */
     double data[4] =  {clust->E(), vz, 0, isMinBias ? 1. : 0.};
-    char histname[1024];
-    sprintf(histname, "hCluster%sHist%s", isCalibrated ? "Calib" : "Uncalib", trigger);
     try{
       fHistos->FillTHnSparse(histname, data);
     } catch (HistoContainerContentException &e){
@@ -729,17 +867,17 @@ namespace EMCalTriggerPtAnalysis {
   }
 
   //______________________________________________________________________________
-  void AliAnalysisTaskPtEMCalTrigger::FillMCParticleHist(const AliVParticle * const track, double vz, bool isPileup){
+  void AliAnalysisTaskPtEMCalTrigger::FillMCParticleHist(const char *histname, const AliVParticle * const track, double vz, bool isPileup){
     /*
      * Fill histogram for MC-true particles with the information pt, eta and phi
      *
      * @param track: the Monte-Carlo track
      */
     double data[5] = {TMath::Abs(track->Pt()), track->Eta(), track->Phi(), vz, 0.};
-    fHistos->FillTHnSparse("hMCtrueParticles", data);
+    fHistos->FillTHnSparse(histname, data);
     if(!isPileup){
       data[4] = 1.;
-      fHistos->FillTHnSparse("hMCtrueParticles", data);
+      fHistos->FillTHnSparse(histname, data);
     }
   }
 
@@ -814,5 +952,143 @@ namespace EMCalTriggerPtAnalysis {
     return NULL;
   }
 
+  //______________________________________________________________________________
+  const AliEmcalJet * AliAnalysisTaskPtEMCalTrigger::FoundTrackInJet(
+      const AliVParticle * const track, AliJetContainer *const jets) const
+  {
+    /*
+     * Correlate track to reconstructed jet
+     *
+     * @param track: particle to be checked
+     * @param jets: container of recontructed jets
+     * @return: The matched jet (NULL if not found)
+     */
+    const AliEmcalJet *result = NULL;
+    const AliEmcalJet *tmp = jets->GetNextAcceptJet(0);
+    while(tmp){
+      if(TrackInJet(track, tmp, jets->GetParticleContainer())){
+        result = tmp;
+        break;
+      }
+      tmp = jets->GetNextAcceptJet();
+    }
+    return result;
+  }
+
+  //______________________________________________________________________________
+  bool AliAnalysisTaskPtEMCalTrigger::IsInRadius(const AliVParticle *const track, const AliEmcalJet *reconstructedJet, Double_t radius) const {
+    /*
+     * Check if track is in radius around a given jet
+     *
+     * @param track: Track to check
+     * @param reconstructed jet: jet to probe
+     * @param radius: cone radius
+     * @return: result of the test (true if track is inside the cone radius, false otherwise)
+     */
+    return reconstructedJet->DeltaR(track) < radius;
+  }
+
+  //______________________________________________________________________________
+  bool AliAnalysisTaskPtEMCalTrigger::IsInRadius(const AliVCluster *const clust, const AliEmcalJet *reconstructedJet, Double_t radius) const {
+    /*
+     * Check if track is in radius around a given jet
+     *
+     * @param track: Track to check
+     * @param reconstructed jet: jet to probe
+     * @param radius: cone radius
+     * @return: result of the test (true if track is inside the cone radius, false otherwise)
+     */
+    double vertexPos[3];
+    fInputEvent->GetPrimaryVertex()->GetXYZ(vertexPos);
+    TLorentzVector clustVect;
+    clust->GetMomentum(clustVect, vertexPos);
+
+    Double_t dPhi = reconstructedJet->Phi() - clustVect.Phi();
+    Double_t dEta = reconstructedJet->Eta() - clustVect.Eta();
+    dPhi = TVector2::Phi_mpi_pi ( dPhi );
+
+    double deltaR = TMath::Sqrt ( dPhi * dPhi + dEta * dEta );
+    return deltaR < radius;
+  }
+
+  //______________________________________________________________________________
+  bool AliAnalysisTaskPtEMCalTrigger::TrackInJet(const AliVParticle* const track,
+      const AliEmcalJet* reconstructedJet, const AliParticleContainer * const particles) const {
+    /*
+     * Check whether track is among the jet constituents
+     *
+     * @param track: track to check
+     * @param reconstructedJet: reconstructed jet to check
+     * @param tracks: container with tracks used for jetfinding
+     * @return: true if found, false otherwise
+     */
+    bool found = false;
+    const AliVParticle *tmp(NULL);
+    for(int ipart = 0; ipart < reconstructedJet->GetNumberOfTracks(); ipart++){
+      tmp = dynamic_cast<const AliVParticle *>(reconstructedJet->TrackAt(ipart, particles->GetArray()));
+      if(!tmp->Compare(track)){
+        found = true;
+        break;
+      }
+    }
+    return found;
+  }
+
+  //______________________________________________________________________________
+  const AliEmcalJet* AliAnalysisTaskPtEMCalTrigger::FoundClusterInJet(const AliVCluster* const clust, AliJetContainer* const jets) const {
+    /*
+     * Check whether a cluster is in a radius around a given jet
+     *
+     * @param clust: The cluster to check
+     * @param reconstructedJet: reconstructed jet to check
+     * @return: the jet containing the cluster (null otherwise)
+     */
+    const AliEmcalJet *result = NULL;
+    const AliEmcalJet *tmp = jets->GetNextAcceptJet(0);
+    while(tmp){
+      if(ClusterInJet(clust, tmp, jets->GetClusterContainer())){
+        result = tmp;
+        break;
+      }
+      tmp =jets->GetNextAcceptJet();
+    }
+    return result;
+  }
+
+  //______________________________________________________________________________
+  bool AliAnalysisTaskPtEMCalTrigger::ClusterInJet(const AliVCluster* const clust,
+      const AliEmcalJet* reconstructedJet, const AliClusterContainer* const clusters) const {
+    /*
+     * Check whether cluster is among the jet constituents
+     *
+     * @param track: track to check
+     * @param reconstructedJet: reconstructed jet to check
+     * @param clusters: the cluster container
+     * @return: true if found, false otherwise
+     */
+    bool found = false;
+    const AliVCluster *tmp(NULL);
+    for(int ipart = 0; ipart < reconstructedJet->GetNumberOfTracks(); ipart++){
+      tmp = dynamic_cast<const AliVCluster *>(reconstructedJet->ClusterAt(ipart, clusters->GetArray()));
+      if(!tmp->Compare(clust)){
+        found = true;
+        break;
+      }
+    }
+    return found;
+  }
+
+
+  //______________________________________________________________________________
+  void EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger::AddJetContainerName(const Char_t* contname, Bool_t isMC) {
+    /*
+     * Add new Jet input container to the analysis task
+     *
+     * @param contname: Name of the container
+     * @param isMC: Defines whether the container is for MC truth or not
+     */
+    TList &mycontainer = isMC ? fJetContainersMC : fJetContainersData;
+    mycontainer.Add(new TObjString(contname));
+  }
 }
 
