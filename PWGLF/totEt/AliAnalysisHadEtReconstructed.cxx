@@ -131,8 +131,8 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
     }
   }
   //for PID
-  AliESDpid *pID = new AliESDpid();
-  pID->MakePID(realEvent);
+//   AliESDpid *pID = new AliESDpid();
+//   pID->MakePID(realEvent);
   TString *strTPC = new TString("TPC");
   TString *strITS = new TString("ITS");
   TString *strTPCITS = new TString("TPCITS");
@@ -172,6 +172,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	else{
 	  if(TMath::Abs(track->Eta())>fCorrections->GetEtaCut()) continue;
 	  Float_t nSigmaPion,nSigmaProton,nSigmaKaon,nSigmaElectron;
+	  Float_t nSigmaPionUnsigned,nSigmaProtonUnsigned,nSigmaKaonUnsigned,nSigmaElectronUnsigned;
 // 	  pID->MakeTPCPID(track);
 // 	  pID->MakeITSPID(track);
 	  //if(!fPIDResponse) cout<<"Uh-oh!  No PID Response!"<<endl;
@@ -179,7 +180,12 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	    nSigmaPion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion)); 
 	    nSigmaProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton)); 
 	    nSigmaKaon =TMath::Abs( fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon)); 
-	    nSigmaElectron =TMath::Abs( fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron)); 
+	    nSigmaElectron =TMath::Abs( fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron));
+
+	    nSigmaPionUnsigned = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion); 
+	    nSigmaProtonUnsigned = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton); 
+	    nSigmaKaonUnsigned = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon); 
+	    nSigmaElectronUnsigned = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron); 
 
 // 	    nSigmaPion = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kPion));
 // 	    nSigmaProton = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kProton));
@@ -191,6 +197,11 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	    nSigmaProton = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track, AliPID::kProton)); 
 	    nSigmaKaon = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track, AliPID::kKaon)); 
 	    nSigmaElectron = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track, AliPID::kElectron)); 
+
+	    nSigmaPionUnsigned = fPIDResponse->NumberOfSigmasITS(track, AliPID::kPion); 
+	    nSigmaProtonUnsigned = fPIDResponse->NumberOfSigmasITS(track, AliPID::kProton); 
+	    nSigmaKaonUnsigned = fPIDResponse->NumberOfSigmasITS(track, AliPID::kKaon); 
+	    nSigmaElectronUnsigned = fPIDResponse->NumberOfSigmasITS(track, AliPID::kElectron); 
 // 	    nSigmaPion = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kPion));
 // 	    nSigmaProton = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kProton));
 // 	    nSigmaKaon = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kKaon));
@@ -206,6 +217,11 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	  bool isKaon = (nSigmaPion>3.0 && nSigmaProton>3.0 && nSigmaKaon<3.0 && track->Pt()<0.45);
 	  bool isProton = (nSigmaPion>3.0 && nSigmaProton<3.0 && nSigmaKaon>3.0 && track->Pt()<0.9);
 
+	  FillHisto2D(Form("dEdxDataNSigmaPionAll%s",cutName->Data()),track->P(),nSigmaPionUnsigned,1.0);
+	  FillHisto2D(Form("dEdxDataNSigmaKaonAll%s",cutName->Data()),track->P(),nSigmaKaonUnsigned,1.0);
+	  FillHisto2D(Form("dEdxDataNSigmaProtonAll%s",cutName->Data()),track->P(),nSigmaProtonUnsigned,1.0);
+	  FillHisto2D(Form("dEdxDataNSigmaElectronAll%s",cutName->Data()),track->P(),nSigmaElectronUnsigned,1.0);
+	  
 	  bool unidentified = (!isProton && !isKaon && !isElectron && !isPion);
 	  if(cutset==1){//ITS dE/dx identification requires tighter cuts on the tracks and we don't gain much from that so we won't do it
 	    unidentified = true;
@@ -256,6 +272,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 
 	  if(isPion){
 	    FillHisto2D(Form("dEdxDataPion%s",cutName->Data()),track->P(),dEdx,1.0);
+	    FillHisto2D(Form("dEdxDataNSigmaPion%s",cutName->Data()),track->P(),nSigmaPionUnsigned,1.0);
 	    et = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
    	    if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionPion(track->Pt(),fCentBin);}
 	    etpartialcorrected = et*corrBkgd*corrEff*corrNotID;
@@ -271,6 +288,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	  }
 	  if(isKaon){
 	    FillHisto2D(Form("dEdxDataKaon%s",cutName->Data()),track->P(),dEdx,1.0);
+	    FillHisto2D(Form("dEdxDataNSigmaKaon%s",cutName->Data()),track->P(),nSigmaKaonUnsigned,1.0);
 	    et = Et(track->P(),track->Theta(),fgKPlusCode,track->Charge());
 	    if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionKaon(track->Pt(),fCentBin);}
 	    etpartialcorrected = et*corrBkgd*corrEff*corrNotID;
@@ -287,6 +305,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	  }
 	  if(isProton){
 	    FillHisto2D(Form("dEdxDataProton%s",cutName->Data()),track->P(),dEdx,1.0);
+	    FillHisto2D(Form("dEdxDataNSigmaProton%s",cutName->Data()),track->P(),nSigmaProtonUnsigned,1.0);
 	    et = Et(track->P(),track->Theta(),fgProtonCode,track->Charge());
 	    if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionProton(track->Pt(),fCentBin);}
 	    etpartialcorrected = et*corrBkgd*corrEff*corrNotID;
@@ -303,6 +322,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	  }
 	  if(isElectron){
 	    FillHisto2D(Form("dEdxDataElectron%s",cutName->Data()),track->P(),dEdx,1.0);
+	    FillHisto2D(Form("dEdxDataNSigmaElectron%s",cutName->Data()),track->P(),nSigmaElectronUnsigned,1.0);
 	  }
 	  if(unidentified){
 	    if(isPion) cerr<<"I should not be here!!  AliAnalysisHadEtReconstructed 273"<<endl; 
@@ -454,7 +474,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
       FillHisto1D(Form("RecoRawEtFullAcceptanceITSCB%i",fCentBin),GetRawEtFullAcceptanceITS(),1.0);
     }
   }
-  delete pID;
+//   delete pID;
   delete strTPC;
   delete strITS;
   delete strTPCITS;
@@ -650,6 +670,10 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
   //TString *strTPC = new TString("TPC");
   TString *strITS = new TString("ITS");
   TString *strTPCITS = new TString("TPCITS");
+  Float_t minNSigma = -4;
+  Float_t maxNSigma = 4;
+  Float_t maxPtdEdxNSigma = 1.0;
+
   for(Int_t i=0;i<2;i++){
     TString *cutName = NULL;
     Float_t maxPtdEdx = 10;
@@ -712,6 +736,19 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
     CreateHisto2D(Form("dEdxDataProton%s",cutName->Data()),"dE/dx for p(#bar{p})","momentum (GeV/c)","dE/dx",400,0.0,maxPtdEdx,200,mindEdx,maxdEdx);
     CreateHisto2D(Form("dEdxDataElectron%s",cutName->Data()),"dE/dx for e^{#pm}","momentum (GeV/c)","dE/dx",400,0.0,maxPtdEdx,200,mindEdx,maxdEdx);
     CreateHisto2D(Form("dEdxDataUnidentified%s",cutName->Data()),"dE/dx for unidentified particles","momentum (GeV/c)","dE/dx",400,0.0,maxPtdEdx,200,mindEdx,maxdEdx);
+
+
+    CreateHisto2D(Form("dEdxDataNSigmaPion%s",cutName->Data()),"N_{#sigma} dE/dx for PID'd #pi^{#pm}","momentum (GeV/c)","N_{#sigma} dE/dx",50,0.0,maxPtdEdxNSigma,100,minNSigma,maxNSigma);
+    CreateHisto2D(Form("dEdxDataNSigmaKaon%s",cutName->Data()),"N_{#sigma} dE/dx for PID'd K^{#pm}","momentum (GeV/c)","N_{#sigma} dE/dx",50,0.0,maxPtdEdxNSigma,100,minNSigma,maxNSigma);
+    CreateHisto2D(Form("dEdxDataNSigmaProton%s",cutName->Data()),"N_{#sigma} dE/dx for PID'd p(#bar{p})","momentum (GeV/c)","N_{#sigma} dE/dx",50,0.0,maxPtdEdxNSigma,100,minNSigma,maxNSigma);
+    CreateHisto2D(Form("dEdxDataNSigmaElectron%s",cutName->Data()),"N_{#sigma} dE/dx for e^{#pm}","momentum (GeV/c)","N_{#sigma} dE/dx",50,0.0,maxPtdEdxNSigma,100,minNSigma,maxNSigma);
+
+    CreateHisto2D(Form("dEdxDataNSigmaPionAll%s",cutName->Data()),"N_{#sigma} dE/dx for #pi^{#pm} for all","momentum (GeV/c)","N_{#sigma} dE/dx",50,0.0,maxPtdEdxNSigma,100,minNSigma,maxNSigma);
+    CreateHisto2D(Form("dEdxDataNSigmaKaonAll%s",cutName->Data()),"N_{#sigma} dE/dx for K^{#pm} for all","momentum (GeV/c)","N_{#sigma} dE/dx",50,0.0,maxPtdEdxNSigma,100,minNSigma,maxNSigma);
+    CreateHisto2D(Form("dEdxDataNSigmaProtonAll%s",cutName->Data()),"N_{#sigma} dE/dx for p(#bar{p}) for all","momentum (GeV/c)","N_{#sigma} dE/dx",50,0.0,maxPtdEdxNSigma,100,minNSigma,maxNSigma);
+    CreateHisto2D(Form("dEdxDataNSigmaElectronAll%s",cutName->Data()),"N_{#sigma} dE/dx for e^{#pm} for all","momentum (GeV/c)","N_{#sigma} dE/dx",50,0.0,maxPtdEdxNSigma,100,minNSigma,maxNSigma);
+
+
   }
 
   Float_t minEt = 0.0;

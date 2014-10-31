@@ -97,7 +97,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     hMu->SetBinContent(r+1,mu);
     hBCs->SetBinContent(r+1,nBCsPerOrbit);
     hDuration->SetBinContent(r+1,duration);
-    hLumiSeen->SetBinContent(r+1,lumi_seen/1000000.);
+    hLumiSeen->SetBinContent(r+1,lumi_seen/1000.);
     fills[run]=fill;
   }
   SetHisto(hMu);
@@ -125,7 +125,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
 
   TCanvas* cLumiSeen = new TCanvas("lumiseen","lumi seen",1800,500);
   cLumiSeen->SetMargin(0.05,0.01,0.18,0.06);
-  hLumiSeen->SetTitle(Form("Luminosity seen [1/nb]: total= %.0f",hLumiSeen->Integral()));
+  hLumiSeen->SetTitle(Form("Luminosity seen [1/ub]: total= %.0f",hLumiSeen->Integral()));
   hLumiSeen->Draw("h");
   AddFillSeparationLines(hLumiSeen,fills);
   gPad->Print("global_properties.pdf");
@@ -198,14 +198,32 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   dummy->Print("accepted_fraction.pdf]");
   dummy->Print("rejected_fraction.pdf]");
 
-  TFile* fout = new TFile("hist.root","recreate");
+  TFile* fglobal = new TFile("global_properties.root","recreate");
+  hMu->Write();
+  hBCs->Write();
+  hDuration->Write();
+  hLumiSeen->Write();
+  fglobal->Close();
+
+  TFile* fstat = new TFile("accepted_event_statistics.root","recreate");
   for (Int_t ibit=0;ibit<NBITS;ibit++) {
     if (hAll[ibit]) hAll[ibit]->Write();
     if (hAccepted[ibit]) hAccepted[ibit]->Write();
-    if (hAcceptedFraction[ibit]) hAcceptedFraction[ibit]->Write();
+  }
+  fstat->Close();
+
+  TFile* faccepted = new TFile("accepted_fraction.root","recreate");
+  for (Int_t ibit=0;ibit<NBITS;ibit++) {
     if (hRejectedFraction[ibit]) hRejectedFraction[ibit]->Write();
   }
-  fout->Close();
+  faccepted->Close();
+
+  TFile* frejected = new TFile("rejected_fraction.root","recreate");
+  for (Int_t ibit=0;ibit<NBITS;ibit++) {
+    if (hRejectedFraction[ibit]) hRejectedFraction[ibit]->Write();
+  }
+  frejected->Close();
+
 }
 
 void SetHisto(TH1D* h){
