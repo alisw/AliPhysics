@@ -148,9 +148,7 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   // Constructor.
 
   if (fPt != 0) {
-    fPhi = TMath::ATan2(py, px);
-    if (fPhi<0.) 
-      fPhi += 2. * TMath::Pi();
+    fPhi = TVector2::Phi_0_2pi(TMath::ATan2(py, px));
   }
 
   fClosestJets[0] = 0;
@@ -226,8 +224,7 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
 {
   // Constructor.
 
-  if (fPhi<0.) 
-    fPhi += TMath::TwoPi();
+  fPhi = TVector2::Phi_0_2pi(fPhi);
 
   fClosestJets[0] = 0;
   fClosestJets[1] = 0;

@@ -110,7 +110,7 @@ class AliEmcalJet : public AliVParticle
   void              SetLabel(Int_t l)                  { fLabel = l;                       }
   void              SetArea(Double_t a)                { fArea    = a;                     }
   void              SetAreaEta(Double_t a)             { fAreaEta = a;                     }
-  void              SetAreaPhi(Double_t a)             { fAreaPhi = a; }
+  void              SetAreaPhi(Double_t a)             { fAreaPhi = TVector2::Phi_0_2pi(a); }
   void              SetAreaEmc(Double_t a)             { fAreaEmc = a;                     }
   void              SetAxisInEmcal(Bool_t b)           { fAxisInEmcal = b;                 }
   void              SetFlavour(Int_t flavour)          { fFlavourTagging = flavour;        }
