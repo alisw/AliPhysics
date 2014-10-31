@@ -51,6 +51,7 @@
 
 #include "AliClusterContainer.h"
 #include "AliEmcalJet.h"
+#include "AliEmcalPhysicsSelection.h"
 #include "AliEmcalTriggerPatchInfo.h"
 #include "AliEMCalHistoContainer.h"
 #include "AliEMCalPtTaskVTrackSelection.h"
@@ -221,26 +222,28 @@ namespace EMCalTriggerPtAnalysis {
     DefineAxis(hclusteraxes[3], "mbtrigger", "Has MB trigger", 2, -0.5, 1.5);
     const TAxis *clusteraxes[4];
     for(int iaxis = 0; iaxis < 4; ++iaxis) clusteraxes[iaxis] = hclusteraxes + iaxis;
-    TAxis hpatchenergyaxes[4];
+    TAxis hpatchenergyaxes[5];
     DefineAxis(hpatchenergyaxes[0], "energy", "Patch energy (GeV)", 100, 0., 100);
     DefineAxis(hpatchenergyaxes[1], "eta", "#eta", etabinning);
     DefineAxis(hpatchenergyaxes[2], "phi", "#phi",  20, 0, 2 * TMath::Pi());
     DefineAxis(hpatchenergyaxes[3], "isMain", "Main trigger", 2, -0.5, 1.5);
-    const TAxis *patchenergyaxes[4];
-    for(int iaxis = 0; iaxis < 4; ++iaxis) patchenergyaxes[iaxis] = hpatchenergyaxes + iaxis;
-    TAxis hpatchampaxes[4];
+    DefineAxis(hpatchenergyaxes[4],  "emcalgood", "EMCAL good event", 2, -0.5, 1.5);
+    const TAxis *patchenergyaxes[5];
+    for(int iaxis = 0; iaxis < 5; ++iaxis) patchenergyaxes[iaxis] = hpatchenergyaxes + iaxis;
+    TAxis hpatchampaxes[5];
     DefineAxis(hpatchampaxes[0], "amplitude", "Patch energy (GeV)", 10000, 0., 10000.);
     DefineAxis(hpatchampaxes[1], "eta", "#eta", etabinning);
     DefineAxis(hpatchampaxes[2], "phi", "#phi",  20, 0, 2 * TMath::Pi());
     DefineAxis(hpatchampaxes[3], "isMain", "Main trigger", 2, -0.5, 1.5);
-    const TAxis *patchampaxes[4];
-    for(int iaxis = 0; iaxis < 4; ++iaxis) patchampaxes[iaxis] = hpatchampaxes + iaxis;
+    DefineAxis(hpatchampaxes[4],  "emcalgood", "EMCAL good event", 2, -0.5, 1.5);
+    const TAxis *patchampaxes[5];
+    for(int iaxis = 0; iaxis < 5; ++iaxis) patchampaxes[iaxis] = hpatchampaxes + iaxis;
     try{
       std::string patchnames[] = {"Level0", "JetHigh", "JetLow", "GammaHigh", "GammaLow"};
       for(std::string * triggerpatch = patchnames; triggerpatch < patchnames + sizeof(patchnames)/sizeof(std::string); ++triggerpatch){
-        fHistos->CreateTHnSparse(Form("Energy%s", triggerpatch->c_str()), Form("Patch energy for %s trigger patches", triggerpatch->c_str()), 4, patchenergyaxes, "s");
-        fHistos->CreateTHnSparse(Form("EnergyRough%s", triggerpatch->c_str()), Form("Rough patch energy for %s trigger patches", triggerpatch->c_str()), 4, patchenergyaxes, "s");
-        fHistos->CreateTHnSparse(Form("Amplitude%s", triggerpatch->c_str()), Form("Patch amplitude for %s trigger patches", triggerpatch->c_str()), 4, patchampaxes, "s");
+        fHistos->CreateTHnSparse(Form("Energy%s", triggerpatch->c_str()), Form("Patch energy for %s trigger patches", triggerpatch->c_str()), 5, patchenergyaxes, "s");
+        fHistos->CreateTHnSparse(Form("EnergyRough%s", triggerpatch->c_str()), Form("Rough patch energy for %s trigger patches", triggerpatch->c_str()), 5, patchenergyaxes, "s");
+        fHistos->CreateTHnSparse(Form("Amplitude%s", triggerpatch->c_str()), Form("Patch amplitude for %s trigger patches", triggerpatch->c_str()), 5, patchampaxes, "s");
       }
 
       // Create histogram for MC-truth
@@ -291,6 +294,7 @@ namespace EMCalTriggerPtAnalysis {
       }
       fHistos->CreateTHnSparse("hEventTriggers", "Trigger type per event", 5, triggeraxis);
       fHistos->CreateTHnSparse("hEventsTriggerbit", "Trigger bits for the different events", 4, bitaxes);
+      fHistos->CreateTH2("hTRUADC", "ADC value of the TRU", 10001, -0.5, 10000.5, 2, -0.5, 1.5);
     } catch (HistoContainerContentException &e){
       std::stringstream errormessage;
       errormessage << "Creation of histogram failed: " << e.what();
@@ -326,13 +330,28 @@ namespace EMCalTriggerPtAnalysis {
       fUseTriggersFromTriggerMaker = kTRUE;
     }
 
+    Bool_t emcalGood = fInputHandler->IsEventSelected() & AliEmcalPhysicsSelection::kEmcalOk;
+
+    // Fill TRU ADC
+    // for debugging
+    fCaloTriggers = fInputEvent->GetCaloTrigger(fIsEsd ? "EMCALTrigger" : "emcalTrigger");
+    if(fCaloTriggers){
+      fCaloTriggers->Reset();
+      Int_t adcAMP;
+      while(fCaloTriggers->Next()){
+        fCaloTriggers->GetL1TimeSum(adcAMP);
+        if(adcAMP == -1) adcAMP = 0;  // Set ADC amps, which have a negative value, to 0
+        fHistos->FillTH2("hTRUADC", adcAMP, emcalGood ? 1. : 0.);
+      }
+    }
+
     // Loop over trigger patches, fill patch energy
     AliEmcalTriggerPatchInfo *triggerpatch(NULL);
     TIter patchIter(this->fTriggerPatchInfo);
     while((triggerpatch = dynamic_cast<AliEmcalTriggerPatchInfo *>(patchIter()))){
-      double triggerpatchinfo[4] = {triggerpatch->GetPatchE(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
-      double triggerpatchinfoamp[4] = {static_cast<double>(triggerpatch->GetADCAmp()), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
-      double triggerpatchinfoer[4] = {triggerpatch->GetADCAmpGeVRough(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
+      double triggerpatchinfo[5] = {triggerpatch->GetPatchE(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0., emcalGood ? 1. : 0.};
+      double triggerpatchinfoamp[5] = {static_cast<double>(triggerpatch->GetADCAmp()), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0., emcalGood ? 1. : 0.};
+      double triggerpatchinfoer[5] = {triggerpatch->GetADCAmpGeVRough(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0., emcalGood ? 1. : 0.};
       if(triggerpatch->IsJetHigh()){
         fHistos->FillTHnSparse("EnergyJetHigh", triggerpatchinfo);
         fHistos->FillTHnSparse("AmplitudeJetHigh", triggerpatchinfoamp);
