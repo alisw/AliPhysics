@@ -29,7 +29,7 @@
 #include "AliVEvent.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliStackPartonInfo.h"
-
+#include "AliPythiaRndm.h"
 ClassImp(AliJetEmbeddingFromGenTask)
 
 //________________________________________________________________________
@@ -144,7 +144,8 @@ void AliJetEmbeddingFromGenTask::Run()
 
   if (fCopyArray) 
     CopyTracks();
-
+  AliPythiaRndm::SetPythiaRandom(new TRandom3());
+  AliPythiaRndm::GetPythiaRandom()->SetSeed(clock()+gSystem->GetPid());
   AliStack *stack = fGen->GetStack();
   stack->Reset();
   fGen->Generate();
