@@ -279,14 +279,67 @@ void AliEveEventManagerWindow::DoMarkEvent()
 //______________________________________________________________________________
 void AliEveEventManagerWindow::DoRestartReco()
 {
+    ifstream configFile (GetConfigFilePath());
+    string username,hostname;
+    
+    if (configFile.is_open())
+    {
+        string line;
+        int from,to;
+        while(configFile.good())
+        {
+            getline(configFile,line);
+            from = line.find("\"")+1;
+            to = line.find_last_of("\"");
+            if(line.find("EVENT_SERVER=")==0)
+            {
+                hostname=line.substr(from,to-from);
+            }
+            else if(line.find("EVENT_SERVER_USER=")==0)
+            {
+                username=line.substr(from,to-from);
+            }
+        }
+        if(configFile.eof()){configFile.clear();}
+        configFile.close();
+    }
+    else{cout<<"Event Manager Editor -- Unable to open config file"<<endl;}
+
     // Kill reconstruction server
-    gSystem->Exec("ssh -n -f edis@pcald39fix \"killall alieventserver\"");
+    gSystem->Exec(Form("ssh -n -f %s@%s \"killall alieventserver\"",username.c_str(),hostname.c_str()));
 }
 
 void AliEveEventManagerWindow::DoRestartManager()
 {
+    ifstream configFile (GetConfigFilePath());
+    string username,hostname;
+    
+    if (configFile.is_open())
+    {
+        string line;
+        int from,to;
+        while(configFile.good())
+        {
+            getline(configFile,line);
+            from = line.find("\"")+1;
+            to = line.find_last_of("\"");
+            if(line.find("STORAGE_SERVER=")==0)
+            {
+                hostname=line.substr(from,to-from);
+            }
+            else if(line.find("STORAGE_SERVER_USER=")==0)
+            {
+                username=line.substr(from,to-from);
+            }
+        }
+        if(configFile.eof()){configFile.clear();}
+        configFile.close();
+    }
+    else{cout<<"Event Manager Editor -- Unable to open config file"<<endl;}
+
+    
     // Kill storage manager
-    gSystem->Exec("ssh -n -f edis@pcald39fix \"killall alistorage\"");
+    gSystem->Exec(Form("ssh -n -f %s@%s \"killall alistorage\"",username.c_str(),hostname.c_str()));
 }
 
 //______________________________________________________________________________
@@ -433,7 +486,7 @@ void AliEveEventManagerWindow::Update(int state)
     }
     fTrigSel->SetEnabled(!evNavOn);
 
-    fEventInfo->LoadBuffer(fM->GetEventInfoHorizontal());
+//    fEventInfo->LoadBuffer(fM->GetEventInfoHorizontal());
 
     Layout();
   }
