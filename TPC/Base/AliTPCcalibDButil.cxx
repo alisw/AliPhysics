@@ -3387,6 +3387,7 @@ TTree* AliTPCcalibDButil::ConnectCalPadTrees(TString baseDir, TString pattern, T
     friendName.ReplaceAll(baseDir.Data(),"");
     friendName.ReplaceAll("^/","");
     friendName.ReplaceAll("/",".");
+    friendName.ReplaceAll(".tree.",".");
     friendName.ReplaceAll(".root","");
     printf("%s\n", friendName.Data());
     ::Info("AliTPCcalibDButil::ConnectCalPadTrees","%s",friendName.Data());  

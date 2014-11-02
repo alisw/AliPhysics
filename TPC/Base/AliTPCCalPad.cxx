@@ -911,7 +911,7 @@ AliTPCCalPad * AliTPCCalPad::MakeCalPadFromHistoRPHI(TH2 * hisA, TH2* hisC){
   return calPad;
 }
 
-AliTPCCalPad *AliTPCCalPad::MakePadFromTree(TTree * treePad, const char *query, const char* name){
+AliTPCCalPad *AliTPCCalPad::MakePadFromTree(TTree * treePad, const char *query, const char* name, Bool_t doFast){
   //
   // make cal pad from the tree 
   //
@@ -922,14 +922,30 @@ AliTPCCalPad *AliTPCCalPad::MakePadFromTree(TTree * treePad, const char *query, 
   if (treePad->GetEntries()!=kNsec) return 0;
   AliTPCCalPad * calPad= new AliTPCCalPad(name,name);
   if (name) calPad->SetName(name);
-  for (Int_t iSec=0; iSec<72; iSec++){
-    AliTPCCalROC* calROC  = calPad->GetCalROC(iSec);
-    UInt_t nchannels = (UInt_t)treePad->Draw(query,"1","goff",1,iSec);
-    if (nchannels!=calROC->GetNchannels()) {
-      ::Error("AliTPCCalPad::MakePad",TString::Format("%s\t:Wrong query sector\t%d\t%d",treePad->GetName(),iSec,nchannels).Data());
-      break;
+  if (!doFast){
+    for (Int_t iSec=0; iSec<72; iSec++){
+      AliTPCCalROC* calROC  = calPad->GetCalROC(iSec);
+      UInt_t nchannels = (UInt_t)treePad->Draw(query,"1","goff",1,iSec);
+      if (nchannels!=calROC->GetNchannels()) {
+	::Error("AliTPCCalPad::MakePad",TString::Format("%s\t:Wrong query sector\t%d\t%d",treePad->GetName(),iSec,nchannels).Data());
+	break;
+      }
+      for (UInt_t index=0; index<nchannels; index++) calROC->SetValue(index,treePad->GetV1()[index]);
     }
-    for (UInt_t index=0; index<nchannels; index++) calROC->SetValue(index,treePad->GetV1()[index]);
+  }else{    
+    UInt_t nchannelsTree = (UInt_t)treePad->Draw(query,"1","goff");
+    UInt_t nchannelsAll=0;
+    for (Int_t iSec=0; iSec<72; iSec++){
+      AliTPCCalROC* calROC  = calPad->GetCalROC(iSec);
+      UInt_t nchannels=calROC->GetNchannels();
+      for (UInt_t index=0; index<nchannels; index++) {
+	if (nchannelsAll<=nchannelsTree)calROC->SetValue(index,treePad->GetV1()[nchannelsAll]);
+	nchannelsAll++;
+      }
+    }
+    if (nchannelsAll>nchannelsTree){
+      ::Error("AliTPCCalPad::MakePad",TString::Format("%s\t:Wrong query: cout mismatch\t%d\t%d",query, nchannelsAll,nchannelsTree).Data());
+    }
   }
   return calPad;
 }
