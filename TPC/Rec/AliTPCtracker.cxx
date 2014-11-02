@@ -343,8 +343,11 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
     Int_t nclSeed=seed->GetNumberOfClusters();
     
     if (AliTPCReconstructor::StreamLevel()&kStreamErrParam) { // flag:stream in debug mode cluster and track extrapolation at given row together with error nad shape estimate
+      Int_t eventNr = fEvent->GetEventNumberInFile();
+	
     (*fDebugStreamer)<<"ErrParam"<<
       "iter="<<fIteration<<
+      "eventNr="<<eventNr<<
       "Cl.="<<cluster<<
       "nclSeed="<<nclSeed<<
       "T.="<<&param<<
@@ -1634,10 +1637,10 @@ void    AliTPCtracker::FilterOutlierClusters(){
   Int_t filteredSector= vecSectorOut9.Sum();                  // light version of export variable
   Int_t filteredSectorTime= vecMedianSectorTimeOut9.Sum();
   Int_t filteredSectorPadRow= vecMedianSectorPadRowOut9.Sum();
-  if (fEvent){
-    fEvent->SetTPCNoiseFilterCounter(0,TMath::Min(filteredSector,255));
-    fEvent->SetTPCNoiseFilterCounter(1,TMath::Min(filteredSectorTime,255));
-    fEvent->SetTPCNoiseFilterCounter(2,TMath::Min(filteredSectorPadRow,255));
+  if (fEvent) if (fEvent->GetHeader()){
+    fEvent->GetHeader()->SetTPCNoiseFilterCounter(0,TMath::Min(filteredSector,255));
+    fEvent->GetHeader()->SetTPCNoiseFilterCounter(1,TMath::Min(filteredSectorTime,255));
+    fEvent->GetHeader()->SetTPCNoiseFilterCounter(2,TMath::Min(filteredSectorPadRow,255));
   }
  
   //
@@ -3118,6 +3121,7 @@ void AliTPCtracker::DumpClusters(Int_t iter, TObjArray *trackArray)
     }
   }
   //
+  Int_t eventNr = fEvent->GetEventNumberInFile();
 
   for (Int_t sec=0;sec<fkNIS;sec++){
     for (Int_t row=0;row<fInnerSec->GetNRows();row++){
@@ -3126,6 +3130,7 @@ void AliTPCtracker::DumpClusters(Int_t iter, TObjArray *trackArray)
 	AliTPCclusterMI* cl = (AliTPCclusterMI*)cla->At(icl);
 	Float_t gx[3];	cl->GetGlobalXYZ(gx);
 	(*fDebugStreamer)<<"clDump"<< 
+	  "eventNr="<<eventNr<<
 	  "iter="<<iter<<
 	  "cl.="<<cl<<      
 	  "gx0="<<gx[0]<<
@@ -3138,6 +3143,7 @@ void AliTPCtracker::DumpClusters(Int_t iter, TObjArray *trackArray)
 	AliTPCclusterMI* cl = (AliTPCclusterMI*)cla->At(icl);
 	Float_t gx[3];	cl->GetGlobalXYZ(gx);
 	(*fDebugStreamer)<<"clDump"<< 
+	  "eventNr="<<eventNr<<
 	  "iter="<<iter<<
 	  "cl.="<<cl<<
 	  "gx0="<<gx[0]<<
@@ -3156,6 +3162,7 @@ void AliTPCtracker::DumpClusters(Int_t iter, TObjArray *trackArray)
 	AliTPCclusterMI* cl = (AliTPCclusterMI*) cla->At(icl);
 	cl->GetGlobalXYZ(gx);
 	(*fDebugStreamer)<<"clDump"<< 
+	  "eventNr="<<eventNr<<
 	  "iter="<<iter<<
 	  "cl.="<<cl<<
 	  "gx0="<<gx[0]<<
@@ -3169,6 +3176,7 @@ void AliTPCtracker::DumpClusters(Int_t iter, TObjArray *trackArray)
 	AliTPCclusterMI* cl = (AliTPCclusterMI*) cla->At(icl);
 	cl->GetGlobalXYZ(gx);
 	(*fDebugStreamer)<<"clDump"<< 
+	  "eventNr="<<eventNr<<
 	  "iter="<<iter<<
 	  "cl.="<<cl<<
 	  "gx0="<<gx[0]<<

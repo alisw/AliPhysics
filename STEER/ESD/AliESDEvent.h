@@ -531,8 +531,6 @@ public:
   void SetDAQAttributes(UInt_t attributes) {fDAQAttributes = attributes;}
   UInt_t GetDAQDetectorPattern() const {return fDAQDetectorPattern;}
   UInt_t GetDAQAttributes() const {return fDAQAttributes;}
-  Char_t GetTPCNoiseFilterCounter(UInt_t index) {return fTPCNoiseFilterCounter[index%3];};
-  void SetTPCNoiseFilterCounter(UInt_t index,UChar_t value) {fTPCNoiseFilterCounter[index%3]=value;};
 protected:
   AliESDEvent(const AliESDEvent&);
   static Bool_t ResetWithPlacementNew(TObject *pObject);
@@ -600,7 +598,6 @@ protected:
   ULong64_t fDetectorStatus; // set detector event status bit for good event selection
   UInt_t fDAQDetectorPattern; // Detector pattern from DAQ: bit 0 is SPD, bit 4 is TPC, etc. See event.h
   UInt_t fDAQAttributes; // Third word of attributes from DAQ: bit 7 corresponds to HLT decision 
-  UChar_t fTPCNoiseFilterCounter[3];  // filter counter [0]=sector, [1]-timebin/sector, [2]-padrowsector 
 
   ClassDef(AliESDEvent,23)  //ESDEvent class 
 };

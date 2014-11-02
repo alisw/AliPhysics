@@ -177,7 +177,6 @@ AliESDEvent::AliESDEvent():
   fDAQDetectorPattern(0xFFFF),
   fDAQAttributes(0xFFFF)
 {
-  for (Int_t itype=0; itype<3; itype++) fTPCNoiseFilterCounter[itype]=0;
 }
 //______________________________________________________________________________
 AliESDEvent::AliESDEvent(const AliESDEvent& esd):
@@ -273,7 +272,6 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AddObject(fMuonPads);
   GetStdContent();
   ConnectTracks();
-  for (Int_t itype=0; itype<3; itype++) fTPCNoiseFilterCounter[itype]=esd. fTPCNoiseFilterCounter[itype];
 
 }
 
