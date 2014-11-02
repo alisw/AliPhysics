@@ -331,6 +331,8 @@ protected:
 
     Double_t fTotNeutralEtAfterMinEnergyCut; // enter comment here
     
+    TH2F *fHistSimEmEtCent;//!
+
     Bool_t fCalcTrackMatchVsMult;
     TH1F *fHistGammasFound;//!
     TH1F *fHistGammasGenerated;//!

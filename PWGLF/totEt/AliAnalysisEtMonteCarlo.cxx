@@ -249,6 +249,7 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
     ,fEnergyGammaRemoved(0)
     ,fNClusters(0)
     ,fTotNeutralEtAfterMinEnergyCut(0)
+						  ,fHistSimEmEtCent(0)
 						  ,fCalcTrackMatchVsMult(kFALSE)
 						  ,fHistGammasFound(0)
 						  ,fHistGammasGenerated(0)
@@ -505,6 +506,7 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistPiPlusMultAcc; // enter comment here
     delete fHistPiMinusMultAcc; // enter comment here
     delete fHistPiZeroMultAcc; // enter comment here
+    delete fHistSimEmEtCent;
     delete fHistGammasFound; // enter comment here
     delete fHistGammasGenerated; // enter comment here
     delete fHistGammasFoundOutOfAccCent; // enter comment here
@@ -1862,6 +1864,8 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     if(fTmCorrections->GetSecondaryCorrection(fCentClass)>0)fHistSecondaryCrossCheck->Fill(fCentClass,(fTmCorrections->GetSecondaryCorrection(fCentClass)-etSecondaryCrossCheckTrue)/fTmCorrections->GetSecondaryCorrection(fCentClass));
     if(fTmCorrections->GetHadronCorrection(fCentClass)>0)fHistHadronCrossCheck->Fill(fCentClass,(fTmCorrections->GetHadronCorrection(fCentClass)-etHadronCrossCheckTrue)/fTmCorrections->GetHadronCorrection(fCentClass));
     if(fTmCorrections->GetKaonCorrection(fCentClass)>0)fHistKaonCrossCheck->Fill(fCentClass,(fTmCorrections->GetKaonCorrection(fCentClass)-etKaonCrossCheckTrue)/fTmCorrections->GetKaonCorrection(fCentClass));
+
+    fHistSimEmEtCent->Fill(fTotNeutralEt,fCentClass);
     fHistNeutronCorrection->Fill(fCentClass,etNeutronCrossCheckTrue);
     fHistSecondaryCorrection->Fill(fCentClass,etSecondaryCrossCheckTrue);
     fHistHadronCorrection->Fill(fCentClass,etHadronCrossCheckTrue);
@@ -2195,6 +2199,7 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     fHistGammasGenerated = new TH1F("fHistGammasGenerated", "fHistGammasGenerated",200, 0, 10);
     fHistGammasFoundOutOfAccCent = new TH2F("fHistGammasFoundOutOfAccCent", "fHistGammasFoundOutOfAccCent",200, 0, 10,20,-0.5,19.5);
     fHistGammasFoundCent = new TH2F("fHistGammasFoundCent", "fHistGammasFoundCent",200, 0, 10,20,-0.5,19.5);
+    fHistSimEmEtCent = new TH2F("fHistSimEmEtCent", "fHistSimEmEtCent",200, 0, 200,20,-0.5,19.5);
     fHistGammasFoundOutOfAccAltCent = new TH2F("fHistGammasFoundOutOfAccAltCent", "fHistGammasFoundOutOfAccCent",200, 0, 10,20,-0.5,19.5);
     fHistGammasFoundRecoEnergyCent = new TH2F("fHistGammasFoundRecoEnergyCent", "fHistGammasFoundRecoEnergyCent",200, 0, 10,20,-0.5,19.5);
     fHistAllGammasFoundRecoEnergyCent = new TH2F("fHistAllGammasFoundRecoEnergyCent", "fHistAllGammasFoundRecoEnergyCent",200, 0, 10,20,-0.5,19.5);
@@ -2519,6 +2524,7 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistPiMinusMultAcc);
     list->Add(fHistPiZeroMultAcc);
     
+    list->Add(fHistSimEmEtCent);
     list->Add(fHistGammasFound);
     list->Add(fHistGammasGenerated);
     list->Add(fHistGammasFoundOutOfAccCent);
