@@ -450,6 +450,10 @@ protected:
     TH2F *fHistSecondaryCrossCheck;//!
     TH2F *fHistHadronCrossCheck;//!
     TH2F *fHistKaonCrossCheck;//!
+    TH2F *fHistNeutronCorrection;//!
+    TH2F *fHistSecondaryCorrection;//!
+    TH2F *fHistHadronCorrection;//!
+    TH2F *fHistKaonCorrection;//!
 
     TH1F *fHistAllEnergy;//!//energy of all clusters passing cuts vs centrality
     TH1F *fHistSignalEnergy;//!//signal of signal clusters passing cuts vs centrality

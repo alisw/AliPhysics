@@ -363,6 +363,10 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
     ,fHistSecondaryCrossCheck(0)
     ,fHistHadronCrossCheck(0)
     ,fHistKaonCrossCheck(0)
+    ,fHistNeutronCorrection(0)
+    ,fHistSecondaryCorrection(0)
+    ,fHistHadronCorrection(0)
+    ,fHistKaonCorrection(0)
     ,fHistAllEnergy(0)
     ,fHistSignalEnergy(0)
     ,fHistNeutronEnergy(0)
@@ -617,6 +621,10 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistSecondaryCrossCheck;
     delete fHistHadronCrossCheck;
     delete fHistKaonCrossCheck;
+    delete fHistNeutronCorrection;
+    delete fHistSecondaryCorrection;
+    delete fHistHadronCorrection;
+    delete fHistKaonCorrection;
 
     delete fHistAllEnergy;
     delete fHistSignalEnergy;
@@ -1854,6 +1862,10 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     if(fTmCorrections->GetSecondaryCorrection(fCentClass)>0)fHistSecondaryCrossCheck->Fill(fCentClass,(fTmCorrections->GetSecondaryCorrection(fCentClass)-etSecondaryCrossCheckTrue)/fTmCorrections->GetSecondaryCorrection(fCentClass));
     if(fTmCorrections->GetHadronCorrection(fCentClass)>0)fHistHadronCrossCheck->Fill(fCentClass,(fTmCorrections->GetHadronCorrection(fCentClass)-etHadronCrossCheckTrue)/fTmCorrections->GetHadronCorrection(fCentClass));
     if(fTmCorrections->GetKaonCorrection(fCentClass)>0)fHistKaonCrossCheck->Fill(fCentClass,(fTmCorrections->GetKaonCorrection(fCentClass)-etKaonCrossCheckTrue)/fTmCorrections->GetKaonCorrection(fCentClass));
+    fHistNeutronCorrection->Fill(fCentClass,etNeutronCrossCheckTrue);
+    fHistSecondaryCorrection->Fill(fCentClass,etSecondaryCrossCheckTrue);
+    fHistHadronCorrection->Fill(fCentClass,etHadronCrossCheckTrue);
+    fHistKaonCorrection->Fill(fCentClass,etKaonCrossCheckTrue);
     //cout<<"Secondaries not removed: "<<fSecondaryNotRemoved<<" neutral secondaries not removed "<<nNeutralSecondariesNotRemoved<<" cluster mult "<<fClusterMult<<endl;
     FillHistograms();
     return 0;
@@ -2347,6 +2359,10 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
    fHistSecondaryCrossCheck =  new TH2F("fHistSecondaryCrossCheck", "(E_{T}^{sec,rec}-E_{T}^{sec,sim})/E_{T}^{sec,rec}",20,-0.5,19.5,100,-14.8,1.2);
    fHistHadronCrossCheck =  new TH2F("fHistHadronCrossCheck", "(E_{T}^{h,rec}-E_{T}^{h,sim})/E_{T}^{h,rec}",20,-0.5,19.5,100,-7.8,1.2);
    fHistKaonCrossCheck =  new TH2F("fHistKaonCrossCheck", "(E_{T}^{K,rec}-E_{T}^{K,sim})/E_{T}^{K,rec}",20,-0.5,19.5,100,-7.8,1.2);
+   fHistNeutronCorrection =  new TH2F("fHistNeutronCorrection", "E_{T}^{n,rec}",20,-0.5,19.5,200,0,50);
+   fHistSecondaryCorrection =  new TH2F("fHistSecondaryCorrection", "E_{T}^{sec,rec}",20,-0.5,19.5,200,0,200);
+   fHistHadronCorrection =  new TH2F("fHistHadronCorrection", "E_{T}^{h,rec}",20,-0.5,19.5,200,0,200);
+   fHistKaonCorrection =  new TH2F("fHistKaonCorrection", "E_{T}^{K,rec}",20,-0.5,19.5,200,0,50);
 
    fHistAllEnergy = new TH1F("fHistAllEnergy","fHistAllEnergy",20,-0.5,19.5);
    fHistSignalEnergy = new TH1F("fHistSignalEnergy","fHistSignalEnergy",20,-0.5,19.5);
@@ -2625,6 +2641,10 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistSecondaryCrossCheck);
     list->Add(fHistHadronCrossCheck);
     list->Add(fHistKaonCrossCheck);
+    list->Add(fHistNeutronCorrection);
+    list->Add(fHistSecondaryCorrection);
+    list->Add(fHistHadronCorrection);
+    list->Add(fHistKaonCorrection);
 
 
     list->Add(fHistAllEnergy);
