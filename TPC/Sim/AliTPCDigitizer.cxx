@@ -1044,7 +1044,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       // fill info for degugging
       if (AliTPCReconstructor::StreamLevel()==1 && qOrig > zerosup ) {
         TTreeSRedirector &cstream = *fDebugStreamer;
-	UInt_t uid = AliTPCROC::GetTPCUniqueID(sector, padRow, padNumber,timeBin);
+	UInt_t uid = AliTPCROC::GetTPCUniqueID(sector, padRow, padNumber);
         cstream <<"ionTailXtalk"<<
 	  "uid="<<uid<<                        // globla unique identifier
 	  "sector="<< sector<<   
