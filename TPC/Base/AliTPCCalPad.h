@@ -44,7 +44,7 @@ class AliTPCCalPad : public TNamed {
   void SetCalROC(AliTPCCalROC* roc, Int_t sector = -1);  
   virtual void	Draw(Option_t* option = "");
   // TTree functions
-  static AliTPCCalPad *MakePadFromTree(TTree * tree, const char *query, const char*name=0);  
+  static AliTPCCalPad *MakePadFromTree(TTree * tree, const char *query, const char*name=0, Bool_t doFast=kFALSE);  
   void AddFriend(TTree * tree, const char *friendName, const char *fname=0);
   //
   // convolution
