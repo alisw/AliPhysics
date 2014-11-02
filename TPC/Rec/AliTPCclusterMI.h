@@ -29,7 +29,7 @@ public:
   virtual Int_t Compare(const TObject* obj) const;
   inline  void Use(Int_t inc=10);
   inline  void Disable(){fUsed=kDisabled;}
-  inline  Bool_t IsDisabled(){return (fUsed==kDisabled);}
+  inline  Bool_t IsDisabled() const {return (fUsed==kDisabled);}
 
   virtual Int_t GetDetector() const {return fDetector;}
   virtual Int_t GetRow() const {return fRow;}

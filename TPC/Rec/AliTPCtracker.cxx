@@ -1510,10 +1510,10 @@ void    AliTPCtracker::FilterOutlierClusters(){
   //
   // 1.) booking part 
   // 
-  AliTPCcalibDB *db=AliTPCcalibDB::Instance();
+  //  AliTPCcalibDB *db=AliTPCcalibDB::Instance();
   Int_t nSectors=AliTPCROC::Instance()->GetNSectors(); 
-  Int_t nTimeBins= db->GetParameters()->GetMaxTBin(); 
-  Int_t nPadRows=AliTPCROC::Instance()->GetNRows(0) + AliTPCROC::Instance()->GetNRows(36);
+  Int_t nTimeBins= 1100; // *Bug here - we should get NTimeBins from ALTRO - Parameters not relyable
+  Int_t nPadRows=(AliTPCROC::Instance()->GetNRows(0) + AliTPCROC::Instance()->GetNRows(36));
   // parameters for filtering
   const Double_t nSigmaCut=9.;           // should be in recoParam ?
   const Double_t offsetTime=100;         // should be in RecoParam ?  -
@@ -1550,12 +1550,15 @@ void    AliTPCtracker::FilterOutlierClusters(){
   TVectorD vecRMSSectorTime(nSectors);
   TVectorD vecMedianSectorTimeOut6(nSectors);
   TVectorD vecMedianSectorTimeOut9(nSectors);//
+  TVectorD vecMedianSectorTimeOut(nSectors);//
   TVectorD vecMedianSectorPadRow(nSectors);
   TVectorD vecRMSSectorPadRow(nSectors);
   TVectorD vecMedianSectorPadRowOut6(nSectors);
   TVectorD vecMedianSectorPadRowOut9(nSectors);
+  TVectorD vecMedianSectorPadRowOut(nSectors);
   TVectorD vecSectorOut6(nSectors);
   TVectorD vecSectorOut9(nSectors);
+  TMatrixD matSectorCluster(nSectors,2);
   //
   // 3.a)  median, rms calculations for hisTime 
   //
@@ -1565,11 +1568,11 @@ void    AliTPCtracker::FilterOutlierClusters(){
     for (Int_t itime=0; itime<nTimeBins; itime++){
       vecTime[itime]=hisTime.GetBinContent(isec+1, itime+1);      
     }
-    Double_t median= TMath::Median(nTimeBins,vecTime.GetMatrixArray());
+    Double_t median= TMath::Mean(nTimeBins,vecTime.GetMatrixArray());
     Double_t rms= TMath::RMS(nTimeBins,vecTime.GetMatrixArray()); 
     vecMedianSectorTime[isec]=median;
     vecRMSSectorTime[isec]=rms;
-    printf("%d\t%f\t%f\n",isec,median,rms);
+    if ((AliTPCReconstructor::StreamLevel()&kStreamFilterClusterInfo)>0) AliInfo(TString::Format("Sector TimeStat: %d\t%8.0f\t%8.0f",isec,median,rms).Data());
     //
     // declare outliers
     for (Int_t itime=0; itime<nTimeBins; itime++){
@@ -1591,11 +1594,12 @@ void    AliTPCtracker::FilterOutlierClusters(){
     for (Int_t ipadrow=0; ipadrow<nPadRows; ipadrow++){
       vecPadRow[ipadrow]=hisPadRow.GetBinContent(isec+1, ipadrow+1);      
     }
-    Double_t median= TMath::Median(nPadRows,vecPadRow.GetMatrixArray());
-    Double_t rms= TMath::RMS(nPadRows,vecPadRow.GetMatrixArray());
+    Int_t nPadRowsSector= AliTPCROC::Instance()->GetNRows(isec);
+    Double_t median= TMath::Mean(nPadRowsSector,vecPadRow.GetMatrixArray());
+    Double_t rms= TMath::RMS(nPadRowsSector,vecPadRow.GetMatrixArray());
     vecMedianSectorPadRow[isec]=median;
     vecRMSSectorPadRow[isec]=rms;
-    printf("%d\t%f\t%f\n",isec,median,rms);
+    if ((AliTPCReconstructor::StreamLevel()&kStreamFilterClusterInfo)>0) AliInfo(TString::Format("Sector PadRowStat: %d\t%8.0f\t%8.0f",isec,median,rms).Data());
     //
     // declare outliers
     for (Int_t ipadrow=0; ipadrow<nPadRows; ipadrow++){
@@ -1617,6 +1621,8 @@ void    AliTPCtracker::FilterOutlierClusters(){
   for (Int_t isec=0; isec<nSectors; isec++){
     vecSectorOut6[isec]=0;
     vecSectorOut9[isec]=0;
+    matSectorCluster(isec,0)=0;
+    matSectorCluster(isec,1)=0;
     if (TMath::Abs(vecMedianSectorTime[isec])>(mean69SectorTime+6.*(rms69SectorTime+ offsetTimeAccept))) {
       vecSectorOut6[isec]=1;
     }
@@ -1660,23 +1666,51 @@ void    AliTPCtracker::FilterOutlierClusters(){
 	    isOut=kTRUE;
 	  }
 	  
-	  if (entriesTime>medianTime+nSigmaCut*rmsTime+offsetTime) isOut=kTRUE;
-	  if (entriesPadRow>medianPadRow+nSigmaCut*rmsPadRow+offsetPadRow) isOut=kTRUE;
+	  if (entriesTime>medianTime+nSigmaCut*rmsTime+offsetTime) {
+	    isOut=kTRUE;
+	    vecMedianSectorTimeOut[cluster->GetDetector()]++;
+	  }
+	  if (entriesPadRow>medianPadRow+nSigmaCut*rmsPadRow+offsetPadRow) {
+	    isOut=kTRUE;
+	    vecMedianSectorPadRowOut[cluster->GetDetector()]++;
+	  }
 	  counterAll++;
+	  matSectorCluster(cluster->GetDetector(),0)+=1;
 	  if (isOut){
 	    cluster->Disable();
 	    counterOut++;
+	    matSectorCluster(cluster->GetDetector(),1)+=1;
 	  }
 	}
       }
     }
   }
+  for (Int_t isec=0; isec<nSectors; isec++){
+    if ((AliTPCReconstructor::StreamLevel()&kStreamFilterClusterInfo)>0) AliInfo(TString::Format("Sector Stat: %d\t%8.0f\t%8.0f",isec,matSectorCluster(isec,1),matSectorCluster(isec,0)).Data());
+  }
   //
   // dump info to streamer - for later tuning of cuts
   //
   if ((AliTPCReconstructor::StreamLevel()&kStreamFilterClusterInfo)>0) {  // stream TPC data ouliers filtering infomation
+    AliLog::Flush();
+    AliInfo(TString::Format("Cluster counter: (%d/%d) (Filtered/All)",counterOut,counterAll).Data());
+    for (Int_t iSec=0; iSec<nSectors; iSec++){
+      if (vecSectorOut9[iSec]>0 ||  matSectorCluster(iSec,1)>0) {
+	AliInfo(TString::Format("Filtered sector\t%d",iSec).Data());
+	Double_t vecMedTime =TMath::Median(72,vecMedianSectorTime.GetMatrixArray());
+	Double_t vecMedPadRow =TMath::Median(72,vecMedianSectorPadRow.GetMatrixArray());
+	Double_t vecMedCluster=(counterAll-counterOut)/72;
+	AliInfo(TString::Format("VecMedianSectorTime\t(%4.4f/%4.4f/%4.4f)",       vecMedianSectorTimeOut[iSec],vecMedianSectorTime[iSec],vecMedTime).Data());
+	AliInfo(TString::Format("VecMedianSectorPadRow\t(%4.4f/%4.4f/%4.4f)",     vecMedianSectorPadRowOut[iSec],vecMedianSectorPadRow[iSec],vecMedPadRow).Data());
+	AliInfo(TString::Format("MatSectorCluster\t(%4.4f/%4.4f/%4.4f)\n",          matSectorCluster(iSec,1), matSectorCluster(iSec,0),  vecMedCluster).Data());
+	AliLog::Flush();
+      }
+    }
+    AliLog::Flush();
+    Int_t eventNr = fEvent->GetEventNumberInFile();
     (*fDebugStreamer)<<"filterClusterInfo"<<
       // minimal set variables for the ESDevent
+      "eventNr="<<eventNr<<
       "counterAll="<<counterAll<<
       "counterOut="<<counterOut<<
       //
@@ -1694,11 +1728,13 @@ void    AliTPCtracker::FilterOutlierClusters(){
       "vecRMSSectorTime.="<<&vecRMSSectorTime<<
       "vecMedianSectorTimeOut6.="<<&vecMedianSectorTimeOut6<<
       "vecMedianSectorTimeOut9.="<<&vecMedianSectorTimeOut9<<
+      "vecMedianSectorTimeOut0.="<<&vecMedianSectorTimeOut<<
       // per sector/pad-row outlier detection
       "vecMedianSectorPadRow.="<<&vecMedianSectorPadRow<<
       "vecRMSSectorPadRow.="<<&vecRMSSectorPadRow<<
       "vecMedianSectorPadRowOut6.="<<&vecMedianSectorPadRowOut6<<
       "vecMedianSectorPadRowOut9.="<<&vecMedianSectorPadRowOut9<<
+      "vecMedianSectorPadRowOut9.="<<&vecMedianSectorPadRowOut<<
       "\n";
     ((*fDebugStreamer)<<"filterClusterInfo").GetTree()->Write();
     fDebugStreamer->GetFile()->Flush();
@@ -3765,7 +3801,9 @@ void AliTPCtracker::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
   for (Int_t is=0; is < kr1; is++) {
     //
     if (kr1[is]->IsUsed(10)) continue;
-    if (kr1[is]->IsDisabled()) continue;
+    if (kr1[is]->IsDisabled()) {
+      continue;
+    }
 
     Double_t y1=kr1[is]->GetY(), z1=kr1[is]->GetZ();    
     //if (TMath::Abs(y1)>ymax) continue;
@@ -3819,7 +3857,9 @@ void AliTPCtracker::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
       for (Int_t js=index1; js < index2; js++) {
 	const AliTPCclusterMI *kcl = kr2[js];
 	if (kcl->IsUsed(10)) continue; 	
-	if (kcl->IsDisabled()) continue;
+	if (kcl->IsDisabled()) {
+	  continue;
+	}
 	//
 	//calcutate parameters
 	//	
@@ -4093,7 +4133,9 @@ void AliTPCtracker::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
   for (Int_t is=0; is < kr1; is++) {
     //
     if (kr1[is]->IsUsed(10)) continue;	
-    if (kr1[is]->IsDisabled()) continue;
+    if (kr1[is]->IsDisabled()) {
+      continue;
+    }
 
     Double_t y1=kr1[is]->GetY(), z1=kr1[is]->GetZ();    
     //
@@ -4108,7 +4150,9 @@ void AliTPCtracker::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
     UInt_t index;
     for (Int_t js=index1; js < index2; js++) {
       const AliTPCclusterMI *kcl = kr3[js];
-      if (kcl->IsDisabled()) continue;
+      if (kcl->IsDisabled()) {
+	continue;
+      }
 
       if (kcl->IsUsed(10)) continue;
       y3 = kcl->GetY(); 
@@ -4130,7 +4174,9 @@ void AliTPCtracker::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
       const AliTPCclusterMI *kcm = krm.FindNearest2(yyym,zzzm,erry,errz,index);
       if (!kcm) continue;
       if (kcm->IsUsed(10)) continue;
-      if (kcm->IsDisabled()) continue;
+      if (kcm->IsDisabled()) {
+	continue;
+      }
 
       erry = TMath::Abs(angley)*(x1-x1m)*0.4+0.5;
       errz = TMath::Abs(anglez)*(x1-x1m)*0.4+0.5;
@@ -4326,7 +4372,9 @@ void AliTPCtracker::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, F
       const AliTPCtrackerRow& krm=fSectors[sec][row0-iter];
       const AliTPCtrackerRow& krp=fSectors[sec][row0+iter];      
       const AliTPCclusterMI * cl= kr0[is];
-      if (cl->IsDisabled()) continue;
+      if (cl->IsDisabled()) {
+	continue;
+      }
 
       if (cl->IsUsed(10)) {
 	cused++;
@@ -7351,7 +7399,7 @@ Int_t AliTPCtracker::Clusters2TracksHLT (AliESDEvent *const esd, const AliESDEve
   fEventHLT = 0;
   if (!fSeeds) return 1;
   FillESD(fSeeds);
-  if (AliTPCReconstructor::StreamLevel()>3)  DumpClusters(0,fSeeds);
+  if ((AliTPCReconstructor::StreamLevel()&kStreamClDump)>0)  DumpClusters(0,fSeeds);
   return 0;
   //
 }
