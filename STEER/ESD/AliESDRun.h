@@ -62,7 +62,9 @@ public:
   const char* GetTriggerClass(Int_t index) const;
   TString     GetActiveTriggerClasses() const;
   TString     GetFiredTriggerClasses(ULong64_t mask) const;
+  TString     GetFiredTriggerClassesNext50(ULong64_t mask) const;
   TString     GetFiredTriggerClasses(ULong64_t mask,ULong64_t mask2) const;
+  void        PrintAllTriggerClasses() const;
   Bool_t      IsTriggerClassFired(ULong64_t mask, const char *name) const;
   Bool_t      IsTriggerClassFired(ULong64_t mask, ULong64_t mask2,const char *name) const;
   Float_t     GetCurrentL3()               const {return fCurrentL3;}

@@ -52,6 +52,7 @@ ClassImp(AliEventTag)
     fPrimaryVertexZ(-100.0),
     fPrimaryVertexZError(-100.0),
     fTriggerMask(0),
+    fTriggerMaskNext50(0),
     fTriggerCluster(0),
     fZDCNeutron1Energy(-10.0),
     fZDCProton1Energy(-10.0),
@@ -142,6 +143,7 @@ AliEventTag::AliEventTag(const AliEventTag & evTag) :
   fPrimaryVertexZ(evTag.fPrimaryVertexZ),
   fPrimaryVertexZError(evTag.fPrimaryVertexZError),
   fTriggerMask(evTag.fTriggerMask),
+  fTriggerMaskNext50(evTag.fTriggerMaskNext50),
   fTriggerCluster(evTag.fTriggerCluster),
   fZDCNeutron1Energy(evTag.fZDCNeutron1Energy),
   fZDCProton1Energy(evTag.fZDCProton1Energy),
@@ -311,11 +313,14 @@ TString AliEventTag::GetFiredTriggerClasses(TString actclass) const
 {
   // Uses the actclass string to decode the trigger mask
   // into the fired trigger classes
+  // Modifed by rl for 100 classes - to be checked.
   TObjArray *actrig = actclass.Tokenize(" ");
   TString tFired("");
 
   for(Int_t i = 0; i < actrig->GetEntries(); i++) {
-    if (fTriggerMask & (1ull << i)) {
+    Bool_t fired=(fTriggerMask & (1ull << i));
+    if(i>=50)fired=(fTriggerMaskNext50 & (1ull << (i-50)));
+    if (fired) {
       TString str = ((TObjString *) actrig->At(i))->GetString();
       if (tFired.Length() > 0)
 	tFired += " ";
