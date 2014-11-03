@@ -26,7 +26,9 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/AddTaskTPCCalib.C");
   gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/AddTaskTRDCalib.C");
   gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/AddTOFAnalysisTaskCalibPass0.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/AddTOFAnalysisTaskCalibTree.C");
   gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/AddTaskT0Calib.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/AddTaskT0Analysis.C");
   //  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/AddTaskMeanVertexCalib.C");
   gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/AddTaskSDDCalib.C"); 
 
@@ -85,10 +87,17 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   if ( detStr.Contains("TRD") && detStr.Contains("TPC"))  AddTaskTRDCalib(runNumber);
 
   AliSysInfo::AddStamp("BeforeTOF");
-  if ( detStr.Contains("TOF") && detStr.Contains("TPC"))  AddTOFAnalysisTaskCalibPass0();
+  if ( detStr.Contains("TOF") && detStr.Contains("TPC"))  {
+    AddTOFAnalysisTaskCalibPass0();
+    AddTOFAnalysisTaskCalibTree();
+  }
 
   AliSysInfo::AddStamp("BeforeT0");
-  if ( detStr.Contains("T0"))   AddTaskT0Calib(runNumber);
+  if ( detStr.Contains("T0"))   {
+    AddTaskT0Calib(runNumber);
+    AddTaskT0Analysis();
+  }
+
   //if ( detStr.Contains("ITSSPD")) tMeanVtx = AddTaskMeanVertexCalib();
   //
   Bool_t okTPC = detStr.Contains("TPC");
