@@ -59,6 +59,7 @@
 #include "AliEMCalPtTaskTrackSelectionESD.h"
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
+#include "AliPicoTrack.h"
 #include "AliAnalysisTaskPtEMCalTrigger.h"
 
 ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger)
@@ -250,7 +251,7 @@ namespace EMCalTriggerPtAnalysis {
       fHistos->CreateTHnSparse("hMCtrueParticles", "Particle-based histogram for MC-true particles", 5, trackaxes, "s");
       if(fJetCollArray.GetEntries()){
         for(int irad = 0; irad < kNJetRadii; irad++){
-          fHistos->CreateTHnSparse(Form("hMCtrueParticlesRad%d", int(kJetRadii[irad]*10)),
+          fHistos->CreateTHnSparse(Form("hMCtrueParticlesRad%02d", int(kJetRadii[irad]*10)),
               Form("Particle-based histogram for MC-true particles in Jets with radius %.1f", kJetRadii[irad]*10), 5, trackaxes, "s");
         }
         // histogram for isolated particles
@@ -474,18 +475,18 @@ namespace EMCalTriggerPtAnalysis {
     AliJetContainer *jetContMC(NULL), *jetContData(NULL);
 
     // Fill MC truth
+    AliVParticle *part(NULL);
     if(fMCEvent){
-      for(int ipart = 0; ipart < fMCEvent->GetNumberOfTracks(); ipart++){
-        // Select only physical primary particles
-        AliVParticle *part = fMCEvent->GetTrack(ipart);
-        if(part->Charge() == 0) continue;
-        if(!fEtaRange.IsInRange(part->Eta())) continue;
-        if(!fPtRange.IsInRange(part->Pt())) continue;
-        if(!fMCEvent->IsPhysicalPrimary(ipart)) continue;
-        FillMCParticleHist("hMCtrueParticles", part, zv, isPileupEvent);
+      if(fJetCollArray.GetEntries() &&
+                  (jetContMC = dynamic_cast<AliJetContainer *>(fJetCollArray.FindObject((static_cast<TObjString *>(fJetContainersMC.At(0)))->String().Data())))){
+        // In case we have a jet array we loop over all MC selected particles in the particle container of the jet array
+        TIter particles(jetContMC->GetParticleContainer()->GetArray());
+        while((part = dynamic_cast<AliVParticle *>(particles()))){
+          if(part->Charge() == 0) continue;
+          if(!fEtaRange.IsInRange(part->Eta())) continue;
+          if(!fPtRange.IsInRange(part->Pt())) continue;
+          FillMCParticleHist("hMCtrueParticles", part, zv, isPileupEvent);
 
-        if(fJetCollArray.GetEntries() &&
-            (jetContMC = dynamic_cast<AliJetContainer *>(fJetCollArray.FindObject((static_cast<TObjString *>(fJetContainersMC.At(0)))->String().Data())))){
           /*
            * Jet part: Find track in jet container,
            * check according to number of particles in jet, and
@@ -504,13 +505,30 @@ namespace EMCalTriggerPtAnalysis {
             FillMCParticleHist("hMCtrueParticlesIsolated", part, zv, isPileupEvent);
           }
         }
+      } else {
+        // Use MC Event
+        for(int ipart = 0; ipart < fMCEvent->GetNumberOfTracks(); ipart++){
+          // Select only physical primary particles
+          part = fMCEvent->GetTrack(ipart);
+          if(part->Charge() == 0) continue;
+          if(!fEtaRange.IsInRange(part->Eta())) continue;
+          if(!fPtRange.IsInRange(part->Pt())) continue;
+          if(!fMCEvent->IsPhysicalPrimary(ipart)) continue;
+          FillMCParticleHist("hMCtrueParticles", part, zv, isPileupEvent);
+        }
       }
     }
 
     AliVTrack *track(NULL);
+    AliPicoTrack *picoTrack(NULL);
+    TObject *containerObject(NULL);
     // Loop over all tracks (No cuts applied)
     TIter allTrackIter(fTracks);
-    while((track = dynamic_cast<AliVTrack *>(allTrackIter()))){
+    while((containerObject = dynamic_cast<TObject *>(allTrackIter()))){
+      if((picoTrack = dynamic_cast<AliPicoTrack *>(containerObject))){
+        track = picoTrack->GetTrack();
+      } else
+        track = dynamic_cast<AliVTrack *>(containerObject);
       if(!IsTrueTrack(track)) continue;
       if(!fEtaRange.IsInRange(track->Eta())) continue;
       if(!fPtRange.IsInRange(track->Pt())) continue;
@@ -1023,9 +1041,12 @@ namespace EMCalTriggerPtAnalysis {
      * @return: true if found, false otherwise
      */
     bool found = false;
+    const AliPicoTrack *picotmp(NULL);
     const AliVParticle *tmp(NULL);
     for(int ipart = 0; ipart < reconstructedJet->GetNumberOfTracks(); ipart++){
       tmp = dynamic_cast<const AliVParticle *>(reconstructedJet->TrackAt(ipart, particles->GetArray()));
+      if((picotmp = dynamic_cast<const AliPicoTrack *>(tmp)))   // handle pico tracks
+        tmp = picotmp->GetTrack();
       if(!tmp->Compare(track)){
         found = true;
         break;
