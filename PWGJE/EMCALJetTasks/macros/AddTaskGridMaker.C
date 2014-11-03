@@ -23,14 +23,13 @@ AliEmcalPicoTrackInGridMaker* AddTaskGridMaker(
   }
 
   TString wagonName = Form("%s",taskName);
-
   
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
 
   AliEmcalPicoTrackInGridMaker *eTask = new AliEmcalPicoTrackInGridMaker(taskName);
-  eTask->SetTracksInName(inname);
+  eTask->AddParticleContainer(inname);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

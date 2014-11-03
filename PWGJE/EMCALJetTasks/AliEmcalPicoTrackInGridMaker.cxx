@@ -17,16 +17,15 @@
 #include "AliPicoTrack.h"
 #include "AliVTrack.h"
 #include "AliEmcalJet.h"
+#include "AliParticleContainer.h"
 #include "AliEmcalPicoTrackInGridMaker.h"
 
 ClassImp(AliEmcalPicoTrackInGridMaker)
 
 //________________________________________________________________________
 AliEmcalPicoTrackInGridMaker::AliEmcalPicoTrackInGridMaker() : 
-AliAnalysisTaskSE("AliEmcalPicoTrackInGridMaker"),
+AliAnalysisTaskEmcalJet("AliEmcalPicoTrackInGridMaker",kTRUE),
   fTracksOutName("PicoTracksInGrid"),
-  fTracksInName("tracks"),
-  fTracksIn(0),
   fTracksOut(0),
   fL1Slide(0),
   fCellSize(0.0145),
@@ -40,8 +39,7 @@ AliAnalysisTaskSE("AliEmcalPicoTrackInGridMaker"),
   fCellGrid(),
   fMiniPatchGrid(),
   fActiveAreaMP(),
-  fMultVsRho(0),
-  fHistList(0)
+  fMultVsRho(0)
 {
   // Constructor.
 
@@ -72,6 +70,8 @@ AliAnalysisTaskSE("AliEmcalPicoTrackInGridMaker"),
       fPatchECorrRhoDijet[j][i] = 0;
       fPatchECorrECorrRho[j][i] = 0;
     }
+    fh2PatchEtaPhiEmcal[i] = 0;
+    fh2PatchEtaPhiDcal[i]  = 0;
   }
 
   for(Int_t i = 0; i<3; i++) {
@@ -80,15 +80,13 @@ AliAnalysisTaskSE("AliEmcalPicoTrackInGridMaker"),
     fpMedianTypeEmcal[i] = 0;
     fpMedianTypeDcal[i] = 0;
   }
-
+  SetMakeGeneralHistograms(kTRUE);
 }
 
 //________________________________________________________________________
 AliEmcalPicoTrackInGridMaker::AliEmcalPicoTrackInGridMaker(const char *name) : 
-  AliAnalysisTaskSE(name),
+  AliAnalysisTaskEmcalJet(name,kTRUE),
   fTracksOutName("PicoTracksInGrid"),
-  fTracksInName("tracks"),
-  fTracksIn(0),
   fTracksOut(0),
   fL1Slide(0),
   fCellSize(0.0145),
@@ -102,8 +100,7 @@ AliEmcalPicoTrackInGridMaker::AliEmcalPicoTrackInGridMaker(const char *name) :
   fCellGrid(),
   fMiniPatchGrid(),
   fActiveAreaMP(),
-  fMultVsRho(0),
-  fHistList(0)
+  fMultVsRho(0)
 {
   // Constructor.
 
@@ -135,6 +132,8 @@ AliEmcalPicoTrackInGridMaker::AliEmcalPicoTrackInGridMaker(const char *name) :
       fPatchECorrRhoDijet[j][i] = 0;
       fPatchECorrECorrRho[j][i] = 0;
     }
+    fh2PatchEtaPhiEmcal[i] = 0;
+    fh2PatchEtaPhiDcal[i]  = 0;
   }
 
   for(Int_t i = 0; i<3; i++) {
@@ -144,8 +143,7 @@ AliEmcalPicoTrackInGridMaker::AliEmcalPicoTrackInGridMaker(const char *name) :
     fpMedianTypeDcal[i] = 0;
   }
 
-  // Output slot #1 write into a TList
-  DefineOutput(1, TList::Class());
+  SetMakeGeneralHistograms(kTRUE);
 }
 
 //________________________________________________________________________
@@ -158,98 +156,90 @@ AliEmcalPicoTrackInGridMaker::~AliEmcalPicoTrackInGridMaker()
 void AliEmcalPicoTrackInGridMaker::UserCreateOutputObjects()
 {
   // Create my user objects.
-
-  OpenFile(1);
-  fHistList = new TList();
-  fHistList->SetOwner(kTRUE);
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   Int_t nBinsMed = 500;
   Double_t minMed = 0.;
   Double_t maxMed = 500.;
 
-  // Int_t nBinsMult = 150;
-  // Double_t minMult = 0.;
-  // Double_t maxMult = 4000.;
+  Int_t nBinsPhiEmcal = 132+64;
+  Double_t phiMinEmcal = 1.436931 - 32.*fCellSize;
+  Double_t phiMaxEmcal = 3.292931 + 32.*fCellSize;
+
+  Int_t nBinsPhiDcal = 80+64;
+  Double_t phiMinDcal = 4.664500 - 32.*fCellSize;
+  Double_t phiMaxDcal = 5.592500 + 32.*fCellSize;
+
+  Int_t nBinsEta = 96+64;
+  Double_t etaMin = -0.696 - 32.*fCellSize;
+  Double_t etaMax =  0.696 + 32.*fCellSize;
 
   for(Int_t i = 0; i<3; i++) {
     fh2MedianTypeEmcal[i] = new TH2F(Form("fh2MedianTypeEmcalAreaType%d",i),Form("fh2MedianTypeEmcalAreaType%d",i),5,0.5,5.5,nBinsMed,minMed,maxMed);
-    fHistList->Add(fh2MedianTypeEmcal[i]);
+    fOutput->Add(fh2MedianTypeEmcal[i]);
 
     fh2MedianTypeDcal[i] = new TH2F(Form("fh2MedianTypeDcalAreaType%d",i),Form("fh2MedianTypeDcalAreaType%d",i),5,0.5,5.5,nBinsMed,minMed,maxMed);
-    fHistList->Add(fh2MedianTypeDcal[i]);
+    fOutput->Add(fh2MedianTypeDcal[i]);
 
     fpMedianTypeEmcal[i] = new TProfile(Form("fpMedianTypeEmcalAreaType%d",i),Form("fpMedianTypeEmcalAreaType%d",i),5,0.5,5.5,"s");
-    fHistList->Add(fpMedianTypeEmcal[i]);
+    fOutput->Add(fpMedianTypeEmcal[i]);
 
     fpMedianTypeDcal[i] = new TProfile(Form("fpMedianTypeDcalAreaType%d",i),Form("fpMedianTypeDcalAreaType%d",i),5,0.5,5.5,"s");
-    fHistList->Add(fpMedianTypeDcal[i]);
+    fOutput->Add(fpMedianTypeDcal[i]);
   }
 
   TString det[2] = {"Emcal","Dcal"};
   for(Int_t i = 0; i<5; i++) { //loop over patch types
     fh1RhoEmcal[i] = new TH1F(Form("fh1RhoEmcal_%d",i),Form("fh1RhoEmcal_%d",i),500,0.,1000.);
-    fHistList->Add(fh1RhoEmcal[i]);
+    fOutput->Add(fh1RhoEmcal[i]);
     fh1RhoDcal[i] = new TH1F(Form("fh1RhoDcal_%d",i),Form("fh1RhoDcal_%d",i),500,0.,1000.);
-    fHistList->Add(fh1RhoDcal[i]);
+    fOutput->Add(fh1RhoDcal[i]);
 
     fPatchEnVsActivityEmcal[i] = new TH2F(Form("fh2PatchEnVsActivityEmcal_%d",i),Form("fh2PatchEnVsActivityEmcal_%d",i),300,0.,300.,150,-0.5,149.5);
-    fHistList->Add(fPatchEnVsActivityEmcal[i]);
+    fOutput->Add(fPatchEnVsActivityEmcal[i]);
 
     fPatchEnVsActivityDcal[i] = new TH2F(Form("fh2PatchEnVsActivityDcal_%d",i),Form("fh2PatchEnVsActivityDcal_%d",i),300,0.,300.,150,-0.5,149.5);
-    fHistList->Add(fPatchEnVsActivityDcal[i]);
+    fOutput->Add(fPatchEnVsActivityDcal[i]);
 
     for(Int_t j = 0; j<2; j++) {
       fPatchECorr[j][i] = new TH1F(Form("fPatchECorr%s_%d",det[j].Data(),i),Form("fPatchECorr%s_%d;#it{E}_{patch}^{corr}",det[j].Data(),i),250,-50.,200.);
-      fHistList->Add(fPatchECorr[j][i]);
+      fOutput->Add(fPatchECorr[j][i]);
 
       fPatchECorrPar[j][i] = new TH1F(Form("fPatchECorrPar%s_%d",det[j].Data(),i),Form("fPatchECorrPar%s_%d;#it{E}_{patch}^{corr}",det[j].Data(),i),250,-50.,200.);
-      fHistList->Add(fPatchECorrPar[j][i]);  
+      fOutput->Add(fPatchECorrPar[j][i]);  
 
       fPatchECorrRho[j][i] = new TH2F(Form("fPatchECorrRho%s_%d",det[j].Data(),i),Form("fPatchECorrRho%s_%d;#it{E}_{patch}^{corr};#rho",det[j].Data(),i),250,-50.,200.,500,0.,500.);
-      fHistList->Add(fPatchECorrRho[j][i]);  
+      fOutput->Add(fPatchECorrRho[j][i]);  
 
       fPatchECorrRhoDijet[j][i] = new TH2F(Form("fPatchECorrRhoDijet%s_%d",det[j].Data(),i),Form("fPatchECorrRhoDijet%s_%d;#it{E}_{patch}^{corr};#rho",det[j].Data(),i),250,-50.,200.,500,0.,500.);
-      fHistList->Add(fPatchECorrRhoDijet[j][i]);
+      fOutput->Add(fPatchECorrRhoDijet[j][i]);
 
       fPatchECorrECorrRho[j][i] = new TH3F(Form("fPatchECorrECorrRho%s_%d",det[j].Data(),i),Form("fPatchECorrECorrRho%s_%d;#it{E}_{patch,det1}^{corr};#it{E}_{patch,det2}^{corr};#rho",det[j].Data(),i),210,-30.,180.,210,-30.,180.,250,0.,250.);
-      fHistList->Add(fPatchECorrECorrRho[j][i]);
+      fOutput->Add(fPatchECorrECorrRho[j][i]);
     }
+
+    fh2PatchEtaPhiEmcal[i] = new TH2F(Form("fh2PatchEtaPhiEmcal_%d",i),Form("fh2PatchEtaPhiEmcal_%d;#eta;#phi",i),nBinsEta,etaMin,etaMax,nBinsPhiEmcal,phiMinEmcal,phiMaxEmcal);
+    fOutput->Add(fh2PatchEtaPhiEmcal[i]);
+
+    fh2PatchEtaPhiDcal[i] = new TH2F(Form("fh2PatchEtaPhiDcal_%d",i),Form("fh2PatchEtaPhiDcal_%d;#eta;#phi",i),nBinsEta,etaMin,etaMax,nBinsPhiDcal,phiMinDcal,phiMaxDcal);
+    fOutput->Add(fh2PatchEtaPhiDcal[i]);
   }
 
   fMultVsRho = new TH2F("fMultVsRho","fMultVsRho",3000,0,3000,400,0,400);
-  fHistList->Add(fMultVsRho);
+  fOutput->Add(fMultVsRho);
 
-  PostData(1, fHistList);
+  PostData(1, fOutput);
 }
 
 //________________________________________________________________________
-void AliEmcalPicoTrackInGridMaker::UserExec(Option_t *) 
+Bool_t AliEmcalPicoTrackInGridMaker::Run()
 {
   // Main loop, called for each event.
 
-  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
-  if (!am) {
-    AliError("Manager zero, returning");
-    return;
-  }
-
-  // retrieve tracks from input.
-  if (!fTracksIn) { 
-    fTracksIn = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksInName));
-    if (!fTracksIn) {
-      AliError(Form("Could not retrieve tracks %s!", fTracksInName.Data())); 
-      return;
-    }
-    if (!fTracksIn->GetClass()->GetBaseClass("AliVParticle")) {
-      AliError(Form("%s: Collection %s does not contain AliVParticle objects!", GetName(), fTracksInName.Data())); 
-      return;
-    }
-  }
-
   Bool_t b = CreateGridCells();
-  if(!b) return;
+  if(!b) return kFALSE;
   b = CreateGridMiniPatches();
-  if(!b) return;
+  if(!b) return kFALSE;
 
   //L0 single shower trigger
   CreateGridPatches(4,0);
@@ -286,7 +276,7 @@ void AliEmcalPicoTrackInGridMaker::UserExec(Option_t *)
 
   // subtract energy density and store energy distributions of corrected patches in histo
   for(Int_t i = 1; i<5; i++) { //patch types
-    //    Int_t EleadID[2] = {-1,-1};
+    Int_t EleadID[2] = {-1,-1};
     Double_t Elead[2] = {0.,0.};
     for(Int_t j = 0; j<fPatchGrid[i].GetSize(); j++) { //patches
       if(fPatchGrid[i].At(j)>0.) { //don't do anything with empty patches
@@ -302,7 +292,7 @@ void AliEmcalPicoTrackInGridMaker::UserExec(Option_t *)
 	
 	//Bookkeep leading patches
 	if((fPatchGrid[i].At(j)-sub)>Elead[type]) {
-	  //	  EleadID[type] = j;
+	  EleadID[type] = j;
 	  Elead[type] = fPatchGrid[i].At(j)-sub;
 	}
       }
@@ -317,14 +307,21 @@ void AliEmcalPicoTrackInGridMaker::UserExec(Option_t *)
     	fPatchECorrRhoDijet[k][i]->Fill(Elead[k],medL1[fPatchSub-1][subType]);
       }
     }
+    Double_t eta = 0.; Double_t phi = 0.;
+    GetEtaPhiFromTriggerPatchID(EleadID[0],GetPatchDim(i),1,eta,phi);
+    fh2PatchEtaPhiEmcal[i]->Fill(eta,phi);
+
+    GetEtaPhiFromTriggerPatchID(EleadID[1],GetPatchDim(i),1,eta,phi);
+    fh2PatchEtaPhiDcal[i]->Fill(eta,phi);
   }
 
-  fMultVsRho->Fill(fTracksIn->GetEntriesFast(),medL1[3][0]);
+  fMultVsRho->Fill(GetParticleContainer(0)->GetNParticles(),medL1[3][0]);
+  return kTRUE;
 }
 
 //________________________________________________________________________
-Double_t AliEmcalPicoTrackInGridMaker::CalculateSum(Int_t patchType) {
-
+Double_t AliEmcalPicoTrackInGridMaker::CalculateSum(const Int_t patchType) const {
+  //calc total energy of all patches
   Int_t n = fPatchGrid[patchType].GetSize();
   if(n<1) return -1.;
 
@@ -334,13 +331,11 @@ Double_t AliEmcalPicoTrackInGridMaker::CalculateSum(Int_t patchType) {
     if(fPatchGrid[patchType].At(i)>0.) count++;
     sum+=fPatchGrid[patchType].At(i);
   }
-  //  Double_t avg = -1.;
-  //  if(count>0) avg = sum/((Double_t)count);
   return sum;
 }
 
 //________________________________________________________________________
-Double_t AliEmcalPicoTrackInGridMaker::CalculateMedian(Int_t patchType, Int_t type, Int_t areaType) {
+Double_t AliEmcalPicoTrackInGridMaker::CalculateMedian(const Int_t patchType, const Int_t type, const Int_t areaType) {
   //areaType:
   //0: passive area
   //1: active area mini patches
@@ -397,103 +392,70 @@ Double_t AliEmcalPicoTrackInGridMaker::CalculateMedian(Int_t patchType, Int_t ty
     }
   }
   Double_t med = TMath::Median(c,arr);
-
   return med;
 }
 
 //________________________________________________________________________
 Bool_t AliEmcalPicoTrackInGridMaker::CreateGridCells() {
-
+  //create cells from track input
   if(!InitCells()) return kFALSE;
 
-  // loop over tracks
-  const Int_t ntr = fTracksIn->GetEntriesFast();
-  for (Int_t itr = 0; itr < ntr; ++itr) {
-
-    AliVParticle *track = static_cast<AliVParticle*>(fTracksIn->At(itr));
-    if (!track)
-      continue;
-
+  AliVParticle *track = NULL;
+  AliParticleContainer *trackCont = GetParticleContainer(0);
+  if(!trackCont) return kFALSE;
+  trackCont->ResetCurrentID();
+  while((track = trackCont->GetNextAcceptParticle())) {
     if(track->Pt()<fMinCellE) continue;
-
     Int_t id = GetGridID(track);
-    if(id>-1) {
-      //      Double_t old = fCellGrid.At(id);
+    if(id>-1)
       fCellGrid.AddAt(fCellGrid.At(id)+track->Pt(),id);
     }
-  }
-
   return kTRUE;
 }
 
 //________________________________________________________________________
 Bool_t AliEmcalPicoTrackInGridMaker::CreateGridMiniPatches() {
-
+  //create mini patches (2x2 cells)
   if(!InitMiniPatches()) return kFALSE;
 
-  //Int_t nMiniPatches = fMiniPatchGrid.GetSize();
-  //Int_t nMiniPatchesE = (Int_t)(0.25*fNCellsEMCal);
-  
-  Int_t type = 0;
-  // Int_t nMiniPatchesRow = TMath::FloorNint(0.5*GetNCellsRow(type));
   //loop over edges of mini patches
   Int_t nm = 0; //mini patch number
-  for(Int_t i = 0; i<(GetNCellsCol(type)-1); i+=2) {
-    for(Int_t j = 0; j<(GetNCellsRow(type)-1); j+=2) {
-      //loop over cells in mini patch
-      for(Int_t k = 0; k<2; k++) {
-	for(Int_t l = 0; l<2; l++) {
-	  Int_t row = i+k;
-	  Int_t col = j+l;
-	  Int_t id = GetGridID(row,col,type);
-	  fMiniPatchGrid.AddAt(fMiniPatchGrid.At(nm)+fCellGrid.At(id),nm);
-	  if(fCellGrid.At(id)>0.)
-	    fActiveAreaMP.AddAt(fActiveAreaMP.At(nm)+1,nm);
+  for(Int_t type = 0; type<2; type++) {
+    for(Int_t i = 0; i<(GetNCellsCol(type)-1); i+=2) {
+      for(Int_t j = 0; j<(GetNCellsRow(type)-1); j+=2) {
+	//loop over cells in mini patch
+	for(Int_t k = 0; k<2; k++) {
+	  for(Int_t l = 0; l<2; l++) {
+	    Int_t id = GetGridID(i+k,j+l,type);
+	    fMiniPatchGrid.AddAt(fMiniPatchGrid.At(nm)+fCellGrid.At(id),nm);
+	    if(fCellGrid.At(id)>0.)
+	      fActiveAreaMP.AddAt(fActiveAreaMP.At(nm)+1,nm);
+	  }
 	}
+	nm++;
       }
-      nm++;
     }
   }
-
-  //DCal mini patches
-  type = 1;
-  for(Int_t i = 0; i<(GetNCellsCol(type)-1); i+=2) {
-    for(Int_t j = 0; j<(GetNCellsRow(type)-1); j+=2) {
-      //loop over cells in mini patch
-      for(Int_t k = 0; k<2; k++) {
-	for(Int_t l = 0; l<2; l++) {
-	  Int_t row = i+k;
-	  Int_t col = j+l;
-	  Int_t id = GetGridID(row,col,type);
-	  fMiniPatchGrid.AddAt(fMiniPatchGrid.At(nm)+fCellGrid.At(id),nm);
-	  if(fCellGrid.At(id)>0.) 
-	    fActiveAreaMP.AddAt(fActiveAreaMP.At(nm)+1,nm);
-	}
-      }
-      nm++;
-    }
-  }
-
   return kTRUE;
 }
 
 //________________________________________________________________________
-Int_t AliEmcalPicoTrackInGridMaker::GetNRowMiniPatches(Int_t type) {
+Int_t AliEmcalPicoTrackInGridMaker::GetNRowMiniPatches(const Int_t type) const {
   //returns number of rows of mini patches in detector of type X (0: EMCal 1: DCal)
   Int_t nRows = TMath::FloorNint(0.5*GetNCellsCol(type));
   return nRows;
 }
 
 //________________________________________________________________________
-Int_t AliEmcalPicoTrackInGridMaker::GetNColMiniPatches(Int_t type) {
+Int_t AliEmcalPicoTrackInGridMaker::GetNColMiniPatches(const Int_t type) const {
   //returns number of rows of mini patches in detector of type X (0: EMCal 1: DCal)
   Int_t nCols = TMath::FloorNint(0.5*GetNCellsRow(type));
   return nCols;
 }
 
 //________________________________________________________________________
-Bool_t AliEmcalPicoTrackInGridMaker::CreateGridPatches(Int_t dim, Int_t level) {
-
+Bool_t AliEmcalPicoTrackInGridMaker::CreateGridPatches(const Int_t dim, const Int_t level) {
+  //create trigger patches
   if(!InitPatches(dim,level)) return kFALSE;
 
   Int_t pt = GetPatchType(dim,level);
@@ -517,6 +479,8 @@ Bool_t AliEmcalPicoTrackInGridMaker::CreateGridPatches(Int_t dim, Int_t level) {
 	    }
 	  }
 	}
+	Double_t eta = 0.; Double_t phi = 0.;
+	GetEtaPhiFromTriggerPatchID(np,dim,level,eta,phi);
 	//Sanity check
 	if(fActiveAreaMPP[pt].At(np)>1 && fActiveAreaCP[pt].At(np)==0) {
 	  Printf("Activity MP: %d Cells: %d",fActiveAreaMPP[pt].At(np),fActiveAreaCP[pt].At(np));
@@ -526,12 +490,11 @@ Bool_t AliEmcalPicoTrackInGridMaker::CreateGridPatches(Int_t dim, Int_t level) {
       }
     }
   }
-
   return kTRUE;
 }
 
 //________________________________________________________________________
-Int_t AliEmcalPicoTrackInGridMaker::GetMiniPatchID(Int_t row, Int_t col, Int_t type) {
+Int_t AliEmcalPicoTrackInGridMaker::GetMiniPatchID(const Int_t row, const Int_t col, const Int_t type) const {
   Int_t id = row*GetNColMiniPatches(type) + col;
   //if in DCal move ID to after all EMCal IDs
   if(type==1) {
@@ -542,8 +505,8 @@ Int_t AliEmcalPicoTrackInGridMaker::GetMiniPatchID(Int_t row, Int_t col, Int_t t
 }
 
 //________________________________________________________________________
-Int_t AliEmcalPicoTrackInGridMaker::GetCellType(Double_t eta, Double_t phi) {
-
+Int_t AliEmcalPicoTrackInGridMaker::GetCellType(const Double_t eta, const Double_t phi) const {
+  //cell in EMCal (0) or DCal (1)
   for(Int_t i = 0; i<2; i++) {
     if(eta>fEtaMin[i] && eta<fEtaMax[i] && phi>fPhiMin[i] && phi<fPhiMax[i]) return i;
   }
@@ -551,16 +514,15 @@ Int_t AliEmcalPicoTrackInGridMaker::GetCellType(Double_t eta, Double_t phi) {
 }
 
 //________________________________________________________________________
-Int_t AliEmcalPicoTrackInGridMaker::GetGridID(Int_t row, Int_t col, Int_t type) {
+Int_t AliEmcalPicoTrackInGridMaker::GetGridID(const Int_t row, const Int_t col, const Int_t type) const {
   Int_t id = row*GetNCellsRow(type) + col;
   //if in DCal move ID to after all EMCal IDs
   if(type==1) id+=fNCellsEMCal;
-
   return id;
 }
 
 //________________________________________________________________________
-Int_t AliEmcalPicoTrackInGridMaker::GetGridID(Double_t eta, Double_t phi) {
+Int_t AliEmcalPicoTrackInGridMaker::GetGridID(const Double_t eta, const Double_t phi) const {
   
   Int_t type = GetCellType(eta,phi);
   if(type<0 || type>1) return -1; //position is not in EMCal or DCal
@@ -584,21 +546,90 @@ Int_t AliEmcalPicoTrackInGridMaker::GetGridID(Double_t eta, Double_t phi) {
     Printf("n cells row: %d",GetNCellsRow(type));
     Printf("\n");
   }
-
   return id;
 }
 
 //________________________________________________________________________
-Int_t AliEmcalPicoTrackInGridMaker::GetNCellsCol(Int_t type) {
+void AliEmcalPicoTrackInGridMaker::GetEtaPhiFromGridID(const Int_t id, Double_t &eta, Double_t &phi) const {
+  //returns eta phi of cell at lower right edge (lowest eta, lowest phi)
+  Int_t type = 0;
+  Int_t useID = id;
+  if(id>=fNCellsEMCal) {
+    type = 1;
+    useID = id-fNCellsEMCal;
+  }
 
+  Int_t row = TMath::FloorNint(useID/GetNCellsRow(type));
+  Int_t col = useID - row * GetNCellsRow(type);
+  eta = fEtaMin[type] + row*fCellSize;
+  phi = fPhiMin[type] + col*fCellSize;
+
+  AliDebug(2,Form("id: %d type: %d useID: %d row: %d col: %d eta: %f phi: %f",id,type,useID,row,col,eta,phi));
+}
+
+//________________________________________________________________________
+void AliEmcalPicoTrackInGridMaker::GetEtaPhiFromMiniPatchID(const Int_t id, Double_t &eta, Double_t &phi) const {
+  //returns eta phi of mini patch at lower right edge (lowest eta, lowest phi)
+  Int_t nMiniPatchesE = (Int_t)(0.25*fNCellsEMCal);
+  Int_t type = 0;
+  Int_t useID = id;
+
+  if(id>=nMiniPatchesE) {
+    type = 1;
+    useID = id-nMiniPatchesE;
+  }
+
+  Int_t row = TMath::FloorNint(useID/GetNColMiniPatches(type));
+  Int_t col = useID - row * GetNColMiniPatches(type);
+  eta = fEtaMin[type] + row*2.*fCellSize;
+  phi = fPhiMin[type] + col*2.*fCellSize;
+}
+
+//________________________________________________________________________
+void AliEmcalPicoTrackInGridMaker::GetEtaPhiFromTriggerPatchID(const Int_t id, const Int_t dim, const Int_t level, Double_t &eta, Double_t &phi) const {
+  //returns eta phi of mini patch at lower right edge (lowest eta, lowest phi)
+  Int_t nPatchesE = GetNTriggerPatches(0,dim,level);
+  Int_t type = 0;
+  Int_t useID = id;
+  if(id>=nPatchesE) {
+    type = 1;
+    useID = id-nPatchesE;
+  }
+  Int_t row = TMath::FloorNint(useID/GetNColTriggerPatches(type,dim));
+  Int_t col = useID - row * GetNColTriggerPatches(type,dim);
+  eta = fEtaMin[type] + row*dim*fCellSize;
+  phi = fPhiMin[type] + col*dim*fCellSize;
+}
+
+//________________________________________________________________________
+Int_t AliEmcalPicoTrackInGridMaker::GetNColTriggerPatches(const Int_t type, const Int_t dim) const {
+  //returns number of trigger patch columns
+  Double_t stepmp = 0.5*(Double_t)GetSlidingStepSizeCells(dim);
+  Int_t nmp = GetNColMiniPatches(type);
+  Int_t ntc = TMath::FloorNint(nmp/stepmp);
+  return ntc;
+}
+
+//________________________________________________________________________
+Int_t AliEmcalPicoTrackInGridMaker::GetNRowTriggerPatches(const Int_t type, const Int_t dim) const {
+  //returns number of trigger patch rows
+  Double_t stepmp = 0.5*(Double_t)GetSlidingStepSizeCells(dim);
+  Int_t nmp = GetNRowMiniPatches(type);
+  Int_t ntr = TMath::FloorNint(nmp/stepmp);
+  return ntr;
+}
+
+//________________________________________________________________________
+Int_t AliEmcalPicoTrackInGridMaker::GetNCellsCol(const Int_t type) const {
+  //returns number of cells in column
   Double_t deta = fEtaMax[type] - fEtaMin[type];
   Int_t nCellsCol = TMath::FloorNint(deta/fCellSize);
   return nCellsCol;
 }
 
 //________________________________________________________________________
-Int_t AliEmcalPicoTrackInGridMaker::GetNCellsRow(Int_t type) {
-
+Int_t AliEmcalPicoTrackInGridMaker::GetNCellsRow(const Int_t type) const {
+  //returns number of cells in row
   Double_t dPhi = fPhiMax[type] - fPhiMin[type];
   Int_t nCellsRow = TMath::FloorNint(dPhi/fCellSize);
   return nCellsRow;
@@ -606,7 +637,7 @@ Int_t AliEmcalPicoTrackInGridMaker::GetNCellsRow(Int_t type) {
 
 //________________________________________________________________________
 Bool_t AliEmcalPicoTrackInGridMaker::InitCells() {
-
+  //initialize cells array
   CheckEdges();
   if(!CheckEdges()) return kFALSE;
 
@@ -622,12 +653,11 @@ Bool_t AliEmcalPicoTrackInGridMaker::InitCells() {
 
   //total number of cells
   fNCells = fNCellsEMCal + fNCellsDCal;
-
-  /*
-    Printf("EMCal: %d x %d",nCellsEtaE,nCellsPhiE);
-    Printf("DCal: row: %d x col: %d",nCellsEtaD,nCellsPhiD);
-    Printf("fNCells: %d fNCellsE: %d fnCellsD: %d",fNCells,fNCellsEMCal,fNCellsDCal);
-  */
+  
+  AliDebug(2,Form("EMCal: %d x %d",nCellsEtaE,nCellsPhiE));
+  AliDebug(2,Form("DCal: row: %d x col: %d",nCellsEtaD,nCellsPhiD));
+  AliDebug(2,Form("fNCells: %d fNCellsE: %d fnCellsD: %d",fNCells,fNCellsEMCal,fNCellsDCal));
+  
   fCellGrid.Set(fNCells);
   fCellGrid.Reset(0);
   return kTRUE;
@@ -635,7 +665,7 @@ Bool_t AliEmcalPicoTrackInGridMaker::InitCells() {
 
 //________________________________________________________________________
 Bool_t AliEmcalPicoTrackInGridMaker::InitMiniPatches() {
-  
+  //initialize mini patch array
   if(fCellGrid.GetSize()<0) return kFALSE;
   Double_t conv = 0.25; //dimension of mini patch is 2x2 cells
   Int_t nMiniPatchesE = (Int_t)(conv*fNCellsEMCal);
@@ -653,7 +683,22 @@ Bool_t AliEmcalPicoTrackInGridMaker::InitMiniPatches() {
 }
 
 //________________________________________________________________________
-Bool_t AliEmcalPicoTrackInGridMaker::InitPatches(Int_t dim, Int_t level) {
+Int_t AliEmcalPicoTrackInGridMaker::GetNTriggerPatches(const Int_t type, const Int_t dim, const Int_t level) const {
+  //get number of trigger patches in EMCal or DCal
+  Double_t dimd = (Double_t)dim;
+  Double_t conv = 1./(dimd*dimd);
+  if(level==1) {
+    Double_t step = (Double_t)GetSlidingStepSizeCells(dim);
+    conv = 1./(step*step);
+  }
+  Int_t nPatches = 0;
+  if(type==0) nPatches = (Int_t)(conv*fNCellsEMCal);
+  else if(type==1) nPatches = (Int_t)(conv*fNCellsDCal);
+  return nPatches;
+}
+
+//________________________________________________________________________
+Bool_t AliEmcalPicoTrackInGridMaker::InitPatches(const Int_t dim, const Int_t level) {
   // dimensions in cell units
   // if level==1: sliding window will be applied
   // L1 4x4: slide by 2 cells: 1 mini patch
@@ -663,14 +708,8 @@ Bool_t AliEmcalPicoTrackInGridMaker::InitPatches(Int_t dim, Int_t level) {
   
   if(fCellGrid.GetSize()<0) return kFALSE;
 
-  Double_t dimd = (Double_t)dim;
-  Double_t conv = 1./(dimd*dimd);
-  if(level==1) {
-    Double_t step = (Double_t)GetSlidingStepSizeCells(dim);
-    conv = 1./(step*step);
-  }
-  Int_t nPatchesE = (Int_t)(conv*fNCellsEMCal);
-  Int_t nPatchesD = (Int_t)(conv*fNCellsDCal);
+  Int_t nPatchesE = GetNTriggerPatches(0,dim,level);
+  Int_t nPatchesD = GetNTriggerPatches(1,dim,level);
 
   //total number of mini patches
   Int_t nPatches = nPatchesE + nPatchesD;
@@ -688,22 +727,30 @@ Bool_t AliEmcalPicoTrackInGridMaker::InitPatches(Int_t dim, Int_t level) {
 
   return kTRUE;
 }
+
+//________________________________________________________________________
+Int_t AliEmcalPicoTrackInGridMaker::GetPatchDim(const Int_t ipatch) const {
+  //returns total area of patch
+  Int_t ncell = 4;
+  if(ipatch==0) ncell = 4;
+  if(ipatch==1) ncell = 4;
+  if(ipatch==2) ncell = 8;
+  if(ipatch==3) ncell = 16;
+  if(ipatch==4) ncell = 32;
+
+  return ncell;
+}
  
 //________________________________________________________________________
-Double_t AliEmcalPicoTrackInGridMaker::GetPatchArea(Int_t ipatch) {
-
-  Double_t ncell = 4.;
-  if(ipatch==0) ncell = 4.;
-  if(ipatch==1) ncell = 4.;
-  if(ipatch==2) ncell = 8.;
-  if(ipatch==3) ncell = 16.;
-  if(ipatch==4) ncell = 32.;
+Double_t AliEmcalPicoTrackInGridMaker::GetPatchArea(const Int_t ipatch) const {
+  //returns total area of patch
+  Double_t ncell = (Double_t)GetPatchDim(ipatch);
   Double_t area = ncell*ncell*fCellSize*fCellSize;
   return area;
 }
 
 //________________________________________________________________________
-Double_t AliEmcalPicoTrackInGridMaker::GetPatchAreaActive(Int_t id, Int_t ipatch, Int_t type) {
+Double_t AliEmcalPicoTrackInGridMaker::GetPatchAreaActive(const Int_t id, const Int_t ipatch, const Int_t type) const {
   //type = 0 : active area from mini patches
   //type = 1 : active area from cells
 
@@ -719,8 +766,8 @@ Double_t AliEmcalPicoTrackInGridMaker::GetPatchAreaActive(Int_t id, Int_t ipatch
 }
 
 //________________________________________________________________________
-Int_t AliEmcalPicoTrackInGridMaker::GetSlidingStepSizeCells(Int_t dim) {
-
+Int_t AliEmcalPicoTrackInGridMaker::GetSlidingStepSizeCells(const Int_t dim) const {
+  //get step size for mock-up L1 trigger
   if(!fL1Slide) return dim;
 
   if(dim==4) return 2;
@@ -731,7 +778,7 @@ Int_t AliEmcalPicoTrackInGridMaker::GetSlidingStepSizeCells(Int_t dim) {
 }
 
 //________________________________________________________________________
-Int_t AliEmcalPicoTrackInGridMaker::GetSlidingStepSizeMiniPatches(Int_t dim) {
+Int_t AliEmcalPicoTrackInGridMaker::GetSlidingStepSizeMiniPatches(const Int_t dim) const {
   //returns step size in mini patches
   Double_t step = (Double_t)GetSlidingStepSizeCells(dim);
   if(step<0) return step;
@@ -740,7 +787,8 @@ Int_t AliEmcalPicoTrackInGridMaker::GetSlidingStepSizeMiniPatches(Int_t dim) {
 }
 
 //________________________________________________________________________
-Int_t AliEmcalPicoTrackInGridMaker::GetPatchType(Int_t dim, Int_t level) {
+Int_t AliEmcalPicoTrackInGridMaker::GetPatchType(const Int_t dim, const Int_t level) const {
+  //type of trigger patch (size)
   Int_t type = -1;
   if(level==0 && dim==4) type = 0;
   if(level==1) {
@@ -754,9 +802,7 @@ Int_t AliEmcalPicoTrackInGridMaker::GetPatchType(Int_t dim, Int_t level) {
 
 //________________________________________________________________________
 Bool_t AliEmcalPicoTrackInGridMaker::CheckEdges() {
-  //
   //Check if defined edges of EMCal and DCal make sense
-  //
   if(fPhiMin[0]<0. || fPhiMax[0]<fPhiMin[0]) {
     AliDebug(11,Form("EMCal phi edges not defined %f-%f",fPhiMin[0],fPhiMax[0]));
     return kFALSE;
@@ -779,29 +825,31 @@ Bool_t AliEmcalPicoTrackInGridMaker::CheckEdges() {
 
   for(Int_t type = 0; type<2; type++) {
     Double_t dphi = fPhiMax[type] - fPhiMin[type];
-    Double_t nCellsColExact = dphi/fCellSize;
+    Double_t nPatchPhi32 = TMath::Floor(dphi/(32.*fCellSize));
+    Double_t nCellsColExact = nPatchPhi32 * 32. ;
     
     Double_t deta = fEtaMax[type] - fEtaMin[type];
-    Double_t nCellsRowExact = deta/fCellSize;
+    Double_t nPatchEta32 = TMath::Floor(deta/(32.*fCellSize));
+    Double_t nCellsRowExact = nPatchEta32 * 32. ;
 
-    Double_t col_extra = nCellsColExact - TMath::Floor(nCellsColExact);
+    Double_t col_extra = dphi/fCellSize - TMath::Floor(nCellsColExact);
     Double_t phi_extra = col_extra*fCellSize;
     fPhiMin[type] += phi_extra*0.5;
     fPhiMax[type] -= phi_extra*0.5;
 
-    Double_t row_extra = nCellsRowExact - TMath::Floor(nCellsRowExact);
+    Double_t row_extra = deta/fCellSize - TMath::Floor(nCellsRowExact);
     Double_t eta_extra = row_extra*fCellSize;
     fEtaMin[type] += eta_extra*0.5;
     fEtaMax[type] -= eta_extra*0.5;
     AliDebug(2,Form("type: %d  exact: col: %f row: %f",type,nCellsColExact,nCellsRowExact));
-    //PrintAcceptance();
+    //    Printf("type: %d  exact: col: %f row: %f",type,nCellsColExact,nCellsRowExact);
+    //  PrintAcceptance();
   }
   return kTRUE;
 }
 
 //________________________________________________________________________
-void AliEmcalPicoTrackInGridMaker::PrintAcceptance() {
-
+void AliEmcalPicoTrackInGridMaker::PrintAcceptance() const {
   Printf("EMCal");
   Printf("phi: %f-%f",fPhiMin[0],fPhiMax[0]);
   Printf("eta: %f-%f",fEtaMin[0],fEtaMax[0]);
@@ -809,5 +857,4 @@ void AliEmcalPicoTrackInGridMaker::PrintAcceptance() {
   Printf("DCal");
   Printf("phi: %f-%f",fPhiMin[1],fPhiMax[1]);
   Printf("eta: %f-%f",fEtaMin[1],fEtaMax[1]);
-
 }
