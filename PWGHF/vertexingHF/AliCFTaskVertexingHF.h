@@ -110,6 +110,7 @@ public:
 	Bool_t   GetUseWeight() const {return fUseWeight;}
 	Double_t GetWeight(Float_t pt);
 	Double_t dNdptFit(Float_t pt, Double_t* par);
+	Double_t GetPtWeightFromHistogram(Float_t pt);
 
 	void SetUseFlatPtWeight(Bool_t useWeight){fUseFlatPtWeight=useWeight; fUseWeight=useWeight;}
 	Bool_t GetUseFlatPtWeight() const {return fUseFlatPtWeight;}
@@ -206,6 +207,12 @@ public:
 	
 	void SetWeightFunction(TF1* func) {fFuncWeight = func;}
 	TF1* GetWeightFunction() const {return fFuncWeight;}
+	void SetWeightHistogram(TH1F* histo) {
+	  if(fHistoPtWeight) delete fHistoPtWeight;
+	  fHistoPtWeight=new TH1F(*histo);
+	}
+	TH1F* GetWeightHistogram() const {return (TH1F*)fHistoPtWeight;}
+
 	void SetPtWeightsFromFONLL276overLHC12a17a();
 	void SetPtWeightsFromDataPbPb276overLHC12a17a();
 	void SetPtWeightsFromFONLL276overLHC12a17b();
@@ -284,6 +291,7 @@ protected:
 	Int_t  fGenDsOption;     // Ds decay option (generation level)
 	Int_t fConfiguration; // configuration (slow / fast) of the CF --> different variables will be allocated (all / reduced number)
 	TF1* fFuncWeight;     // user-defined function to be used to calculate weights
+	TH1F* fHistoPtWeight; // user-defined histogram to calculate the Pt weights
 	TH1F* fHistoMeasNch;  // histogram with measured Nch distribution (pp 7 TeV)
 	TH1F* fHistoMCNch;  // histogram with Nch distribution from MC production
         UInt_t fResonantDecay;  // resonant deacy channel to be used if the CF should be run on resonant channels only
@@ -304,7 +312,7 @@ protected:
 	Bool_t fUseCascadeTaskForLctoV0bachelor;   // flag to define which task to use for Lc --> K0S+p
 	Float_t fCutOnMomConservation; // cut on momentum conservation
 
-	ClassDef(AliCFTaskVertexingHF,23); // class for HF corrections as a function of many variables
+	ClassDef(AliCFTaskVertexingHF,24); // class for HF corrections as a function of many variables
 };
 
 #endif

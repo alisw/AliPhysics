@@ -120,6 +120,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fGenDsOption(3),
   fConfiguration(kCheetah), // by default, setting the fast configuration
   fFuncWeight(0x0),
+  fHistoPtWeight(0x0),
   fHistoMeasNch(0x0),
   fHistoMCNch(0x0),
   fResonantDecay(0),
@@ -183,6 +184,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fGenDsOption(3),
   fConfiguration(kCheetah),  // by default, setting the fast configuration
   fFuncWeight(func),
+  fHistoPtWeight(0x0),
   fHistoMeasNch(0x0),
   fHistoMCNch(0x0),
   fResonantDecay(0),
@@ -229,6 +231,7 @@ AliCFTaskVertexingHF& AliCFTaskVertexingHF::operator=(const AliCFTaskVertexingHF
     fHistEventsProcessed = c.fHistEventsProcessed;
     fCuts = c.fCuts;
     fFuncWeight = c.fFuncWeight;
+    fHistoPtWeight = c.fHistoPtWeight;
     fHistoMeasNch = c.fHistoMeasNch;
     fHistoMCNch = c.fHistoMCNch;
     for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=c.fMultEstimatorAvg[i];
@@ -277,6 +280,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fGenDsOption(c.fGenDsOption),
   fConfiguration(c.fConfiguration),
   fFuncWeight(c.fFuncWeight),
+  fHistoPtWeight(c.fHistoPtWeight),
   fHistoMeasNch(c.fHistoMeasNch),
   fHistoMCNch(c.fHistoMCNch),
   fResonantDecay(c.fResonantDecay),
@@ -312,6 +316,7 @@ AliCFTaskVertexingHF::~AliCFTaskVertexingHF()
   if (fListProfiles)        delete fListProfiles;
   if (fCuts)                delete fCuts;
   if (fFuncWeight)          delete fFuncWeight;
+  if (fHistoPtWeight)       delete fHistoPtWeight;
   if (fHistoMeasNch)        delete fHistoMeasNch;
   if (fHistoMCNch)          delete fHistoMCNch;
   for(Int_t i=0; i<4; i++) { if(fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i]; }
@@ -478,6 +483,13 @@ void AliCFTaskVertexingHF::Init()
       fListProfiles->Add(hprof);
     }
   }
+
+  // Save also the weight functions or histograms
+  if(fFuncWeight) fListProfiles->Add(fFuncWeight);
+  if(fHistoPtWeight) fListProfiles->Add(fHistoPtWeight);
+  if(fHistoMeasNch) fListProfiles->Add(fHistoMeasNch);
+  if(fHistoMCNch) fListProfiles->Add(fHistoMCNch);
+
   PostData(5,fListProfiles);
 	
   return;
@@ -843,7 +855,11 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     AliDebug(2, Form("particle = %d mcContainerFilled = %d",iPart, mcContainerFilled));
     if (mcContainerFilled) {
       if (fUseWeight){
-	if (fFuncWeight){ // using user-defined function
+	if (fHistoPtWeight) { // using an histogram as weight function
+	  AliDebug(2,"Using Histogram as Pt weight function");
+	  fWeight = eventWeight*GetPtWeightFromHistogram(containerInputMC[0]);
+	}
+	else if (fFuncWeight){ // using user-defined function
 	  AliDebug(2,"Using function");
 	  fWeight = eventWeight*fFuncWeight->Eval(containerInputMC[0]);				     
 	}
@@ -982,15 +998,19 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 
       // weight according to pt
       if (fUseWeight){
-	if (fFuncWeight){ // using user-defined function
+	if (fHistoPtWeight) {
+	  AliDebug(2,"Using Histogram as Pt weight function");
+	  fWeight = eventWeight*GetPtWeightFromHistogram(containerInputMC[0]);
+	}
+	else if (fFuncWeight){ // using user-defined function
 	  AliDebug(2, "Using function");
-	  fWeight = eventWeight*fFuncWeight->Eval(containerInput[0]);
+	  fWeight = eventWeight*fFuncWeight->Eval(containerInputMC[0]);
 	}
 	else{ // using FONLL
 	  AliDebug(2, "Using FONLL");
-	  fWeight = eventWeight*GetWeight(containerInput[0]);
+	  fWeight = eventWeight*GetWeight(containerInputMC[0]);
 	}
-	AliDebug(2, Form("pt = %f, weight = %f",containerInput[0], fWeight));
+	AliDebug(2, Form("pt = %f, weight = %f",containerInputMC[0], fWeight));
       }
 
       if (!fCuts->IsInFiducialAcceptance(containerInput[0],containerInput[1])){
@@ -1604,6 +1624,23 @@ Double_t AliCFTaskVertexingHF::dNdptFit(Float_t pt, Double_t* par)
   Double_t dNdpt = par[0]*pt/TMath::Power(1.+denom, par[2]);
 	
   return dNdpt;
+}
+
+//_________________________________________________________________________
+Double_t AliCFTaskVertexingHF::GetPtWeightFromHistogram(Float_t pt)
+{
+  //
+  // Using an histogram as weight function
+  //  weight = 0 in the range outside the function
+  //
+  Double_t weight = 0.0;
+  Int_t histoNbins = fHistoPtWeight->GetNbinsX();
+  Int_t histobin = fHistoPtWeight->FindBin(pt);
+  if( (histobin>0) && (histobin<=histoNbins) ) {
+    weight = fHistoPtWeight->GetBinContent(histobin);
+  }
+
+  return weight;
 }
 
 //__________________________________________________________________________________________________
