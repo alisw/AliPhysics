@@ -41,6 +41,7 @@ public:
     fOptions.Add("tpc-ep", "Use TPC event plane");
     fOptions.Add("satelitte", "Use satelitte interactions");
     fOptions.Add("corr", "DIR", "Corrections dir", "");
+    fOptions.Add("secmap", "Use secondary maps to correct", false);
     fOptions.Set("type", "ESD");
   }
 protected:
@@ -77,6 +78,7 @@ protected:
     UShort_t sys = fOptions.AsInt("sys", 0);
     UShort_t sNN = fOptions.AsInt("snn", 0);
     UShort_t fld = fOptions.AsInt("field", 0);
+    Bool_t   sec = fOptions.Has("secmap");
     TString  cor = "";
     if (fOptions.Has("corr")) cor = fOptions.Get("corr"); 
     
@@ -84,6 +86,11 @@ protected:
     TString fwdConfig = fOptions.Get("forward-config");
     gROOT->Macro(Form("AddTaskForwardMult.C(%d,%ld,%d,%d,%d,\"%s\",\"%s\")", 
 		      mc, run, sys, sNN, fld, fwdConfig.Data(), cor.Data()));
+    gROOT->ProcessLine(Form("((AliForwardMultiplicityBase*)"
+			    " ((AliAnalysisManager*)%p)"
+			    " ->GetTask(\"Forward%s\"))"
+			    "->GetCorrections().SetUseSecondaryMap(%d)",
+			    mgr, mc ? "MC" : "", sec));
     fHelper->LoadAux(gSystem->Which(gROOT->GetMacroPath(), fwdConfig), true);
 
     // --- Add the task ----------------------------------------------
