@@ -71,8 +71,8 @@ void AliHLTGlobalCompareFlatComponent::printDiff( string name, int n , Float_t* 
 	for(int i=0; i<n && diff == 0; i++){
 		sum = fabs(vals1[i]) + fabs(vals2[i]) ; 
 		relDiff = ( vals1[i] != 0 || vals2[i] !=0 ) ? (vals1[i]-vals2[i])/sum : 0;
-		if (relDiff > 1e-3 && sum > 1e-6) diff = 1;
-		else if(relDiff < -1e-3 && sum > 1e-6) diff = -1;
+		if (relDiff > 1e-4 && sum > 1e-6) diff = 1;
+		else if(relDiff < -1e-4 && sum > 1e-6) diff = -1;
 	}
 		
 	outFile<<name<<"\t";
@@ -84,9 +84,6 @@ void AliHLTGlobalCompareFlatComponent::printDiff( string name, int n , Float_t* 
 			outFile<<vals2[i]<<" ";
 	}
 	outFile<<"\t" << diff << "\n";
-	if(diff!=0){
-		conflictsFile<<fCurrentClass<<"\t"<<name<< "\n";
-	}
 }
 
 void AliHLTGlobalCompareFlatComponent::printDiff( string name, int n , Double_t* vals1, Double_t* vals2 ){
@@ -271,6 +268,14 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			return 0;
 	}
 	
+	
+ cout<<"size event : "<<flatEsd[0]->GetSize() << " "<<flatEsd[1]->GetSize()<<endl;
+ cout<<"nTracks : "<<flatEsd[0]->GetNumberOfTracks()<<" "<<flatEsd[1]->GetNumberOfTracks()<<endl;
+ cout<<"nV0s : "<<flatEsd[0]->GetNumberOfV0s()<<" "<<flatEsd[1]->GetNumberOfV0s()<<endl;
+ 
+ cout<<"size friend : "<<flatFriend[0]->GetSize() << " "<<flatFriend[1]->GetSize()<<endl;
+ cout<<"nFriendTracks : "<<flatFriend[0]->GetNumberOfTracks()<<" "<<flatFriend[1]->GetNumberOfTracks()<<endl;
+ 
  outFile.open("comparison.txt",ios::app);
  
  conflictsFile.open("conflicts.txt",ios::app);
@@ -379,20 +384,19 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 				printDiff( Form("GetFlatTrackParam%s",pNames[i]) ,(p[i][0] ? 1:0), (p[i][1] ? 1:0) );
 			}
 
-			for(int i = 0 ; i<6 ; i++){
-				if(p[i][0] && p[i][1]){
-				outFile<<"_FlatExternalTrackParam" << pNames[i] << "\n";
-				fCurrentClass = "FlatExternalTrackParam";
-				printDiff( "GetAlpha",p[i][0]->GetAlpha(),p[i][1]->GetAlpha() ); 
-				printDiff( "GetX",p[i][0]->GetX(),p[i][1]->GetX() ); 
-				printDiff( "GetY",p[i][0]->GetY(),p[i][1]->GetY() ); 
-				printDiff( "GetZ",p[i][0]->GetZ(),p[i][1]->GetZ() ); 
-				printDiff( "GetSnp",p[i][0]->GetSnp(),p[i][1]->GetSnp() ); 
-				printDiff( "GetTgl",p[i][0]->GetTgl(),p[i][1]->GetTgl() ); 
-				printDiff( "GetSigned1Pt",p[i][0]->GetSigned1Pt(),p[i][1]->GetSigned1Pt() ); 
+			for(int i = 0 ; i<7 && p[i][0] && p[i][1]; i++){
+				outFile<<"\nnew AliFlatExternalTrackParam" << pNames[i] << "\n";
+				printDiff( Form("AliFlatExternalTrackParam%s::GetAlpha",pNames[i]),p[i][0]->GetAlpha(),p[i][1]->GetAlpha() ); 
+				printDiff( Form("AliFlatExternalTrackParam%s::GetX",pNames[i]),p[i][0]->GetX(),p[i][1]->GetX() ); 
+				printDiff( Form("AliFlatExternalTrackParam%s::GetY",pNames[i]),p[i][0]->GetY(),p[i][1]->GetY() ); 
+				printDiff( Form("AliFlatExternalTrackParam%s::GetZ",pNames[i]),p[i][0]->GetZ(),p[i][1]->GetZ() ); 
+				printDiff( Form("AliFlatExternalTrackParam%s::GetSnp",pNames[i]),p[i][0]->GetSnp(),p[i][1]->GetSnp() ); 
+				printDiff( Form("AliFlatExternalTrackParam%s::GetTgl",pNames[i]),p[i][0]->GetTgl(),p[i][1]->GetTgl() ); 
+				printDiff( Form("AliFlatExternalTrackParam%s::GetSigned1Pt",pNames[i]),p[i][0]->GetSigned1Pt(),p[i][1]->GetSigned1Pt() ); 
+				
+				
 				Float_t* cov[2] = { p[i][0]->GetCov() , p[i][1]->GetCov() };
-				printDiff( "GetCov", 15, cov[0], cov[1]); 
-				}
+				printDiff( Form("AliFlatExternalTrackParam%s::GetCov",pNames[i]) , 15, cov[0], cov[1]); 
 			}
       track[0] = track[0]->GetNextTrackNonConst();
 			track[1] = track[1]->GetNextTrackNonConst();
@@ -444,30 +448,26 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			
 			pp[0][0] = track[0]->GetTrackParamTPCOut(p[0][0] ) >-1 ? 1: 0;
 			pp[0][1] = track[1]->GetTrackParamTPCOut(p[0][1] ) >-1 ? 1: 0;
-			printDiff( "GetTrackParamTPCOut",pp[0][0], pp[0][1] ); 
+			printDiff( "AliFlatESDFriendTrack::GetTrackParamTPCOut",pp[0][0], pp[0][1] ); 
 			
 			pp[1][0] = track[0]->GetTrackParamITSOut(p[1][0] ) >-1 ? 1: 0;
 			pp[1][1] = track[1]->GetTrackParamITSOut(p[1][1] ) >-1 ? 1: 0;
-			printDiff( "GetTrackParamITSOut",pp[1][0], pp[1][1] ); 
+			printDiff( "AliFlatESDFriendTrack::GetTrackParamITSOut",pp[1][0], pp[1][1] ); 
 			
 			
 			pp[2][0] = track[0]->GetTrackParamTRDIn(p[2][0] ) >-1 ? 1: 0;
 			pp[2][1] = track[1]->GetTrackParamTRDIn(p[2][1] ) >-1 ? 1: 0;
-			printDiff( "GetTrackParamTRDIn",pp[2][0], pp[2][1] ); 
+			printDiff( "AliFlatESDFriendTrack::GetTrackParamTRDIn",pp[2][0], pp[2][1] ); 
 			
- 			for(int i = 0 ; i<3; i++){
-				
-				if(pp[i][0] && pp[i][1]){
-					
-				outFile<<"_ExternalTrackParam" << pNames[i] << "\n";
-				fCurrentClass = "ExternalTrackParam";
-				printDiff( "GetAlpha" ,p[i][0].GetAlpha(),p[i][1].GetAlpha() ); 
-				printDiff( "GetX",p[i][0].GetX(),p[i][1].GetX() ); 
-				printDiff( "GetY",p[i][0].GetY(),p[i][1].GetY() ); 
-				printDiff( "GetZ",p[i][0].GetZ(),p[i][1].GetZ() ); 
-				printDiff( "GetSnp",p[i][0].GetSnp(),p[i][1].GetSnp() ); 
-				printDiff( "GetTgl",p[i][0].GetTgl(),p[i][1].GetTgl() ); 
-				printDiff( "GetSigned1Pt",p[i][0].GetSigned1Pt(),p[i][1].GetSigned1Pt() ); 
+			for(int i = 0 ; pp[0][i] && pp[1][i] && i<3; i++){
+				outFile<<"\nnew AliExternalTrackParam" << pNames[i] << "\n";
+				printDiff( Form("AliExternalTrackParam%s::GetAlpha",pNames[i]),p[i][0].GetAlpha(),p[i][1].GetAlpha() ); 
+				printDiff( Form("AliExternalTrackParam%s::GetX",pNames[i]),p[i][0].GetX(),p[i][1].GetX() ); 
+				printDiff( Form("AliExternalTrackParam%s::GetY",pNames[i]),p[i][0].GetY(),p[i][1].GetY() ); 
+				printDiff( Form("AliExternalTrackParam%s::GetZ",pNames[i]),p[i][0].GetZ(),p[i][1].GetZ() ); 
+				printDiff( Form("AliExternalTrackParam%s::GetSnp",pNames[i]),p[i][0].GetSnp(),p[i][1].GetSnp() ); 
+				printDiff( Form("AliExternalTrackParam%s::GetTgl",pNames[i]),p[i][0].GetTgl(),p[i][1].GetTgl() ); 
+				printDiff( Form("AliExternalTrackParam%s::GetSigned1Pt",pNames[i]),p[i][0].GetSigned1Pt(),p[i][1].GetSigned1Pt() ); 
 					
 					
 				Double_t* cov[2] = { const_cast<Double_t*>( p[i][0].GetCovariance()) , const_cast<Double_t*>( p[i][1].GetCovariance() ) };
