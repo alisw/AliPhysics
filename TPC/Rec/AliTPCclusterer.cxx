@@ -1470,27 +1470,28 @@ Int_t AliTPCclusterer::ReadHLTClusters()
     AliDebug(4,Form("Reading %d clusters from HLT for sector %d", clusterArray->GetEntriesFast(), fSector));
 
     Int_t nClusterSector=0;
+    Int_t nClusterSectorGood=0;
     Int_t nRows=fParam->GetNRow(fSector);
 
     // active channel map and noise map for current sector
     const AliTPCCalROC * gainROC  = gainTPC  -> GetCalROC(fSector);  // pad gains per given sector
     const AliTPCCalROC * noiseROC = noiseTPC -> GetCalROC(fSector); // noise per given sector
-    
+
     for (fRow = 0; fRow < nRows; fRow++) {
       fRowCl->SetID(fParam->GetIndex(fSector, fRow));
       if (fOutput) fOutput->GetBranch("Segment")->SetAddress(&fRowCl);
       fNcluster=0; // reset clusters per row
-      
+
       fRx = fParam->GetPadRowRadii(fSector, fRow);
       fPadLength = fParam->GetPadPitchLength(fSector, fRow);
       fPadWidth  = fParam->GetPadPitchWidth();
       fMaxPad = fParam->GetNPads(fSector,fRow);
       fMaxBin = fMaxTime*(fMaxPad+6);  // add 3 virtual pads  before and 3 after
-      
+
       fBins = fAllBins[fRow];
       fSigBins = fAllSigBins[fRow];
       fNSigBins = fAllNSigBins[fRow];
-      
+
       for (Int_t i=0; i<clusterArray->GetEntriesFast(); i++) {
 	if (!clusterArray->At(i)) 
 	  continue;
@@ -1498,10 +1499,11 @@ Int_t AliTPCclusterer::ReadHLTClusters()
 	AliTPCclusterMI* cluster=dynamic_cast<AliTPCclusterMI*>(clusterArray->At(i));
 	if (!cluster) continue;
 	if (cluster->GetRow()!=fRow) continue;
+        nClusterSector++;
 
         const Int_t   currentPad = TMath::Nint(cluster->GetPad());
         const Float_t maxCharge  = cluster->GetMax();
-        
+
         const Float_t gain       = gainROC  -> GetValue(fRow, currentPad);
         const Float_t noise      = noiseROC -> GetValue(fRow, currentPad);
 
@@ -1518,7 +1520,7 @@ Int_t AliTPCclusterer::ReadHLTClusters()
         if (maxCharge<minMaxCutAbs)         continue;
         if (maxCharge<minMaxCutSigma*noise) continue;
         
-	nClusterSector++;
+	nClusterSectorGood++;
 	AddCluster(*cluster, NULL, 0);
       }
       
@@ -1531,7 +1533,7 @@ Int_t AliTPCclusterer::ReadHLTClusters()
 		    clusterArray->GetEntriesFast()-nClusterSector, 
 		    clusterArray->GetEntriesFast()));
     }
-    fNclusters+=nClusterSector;
+    fNclusters+=nClusterSectorGood;
   } // for(fSector = 0; fSector < kNS; fSector++) {
 
   pClusterAccess->Clear("event");

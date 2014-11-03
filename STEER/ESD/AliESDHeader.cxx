@@ -218,11 +218,12 @@ Bool_t AliESDHeader::AddTriggerIR(const AliTriggerIR* ir)
 void AliESDHeader::Print(const Option_t *) const
 {
   // Print some data members
-  printf("Event # %d in file Bunch crossing # %d Orbit # %d Trigger %lld \n",
+  printf("Event # %d in file Bunch crossing # %d Orbit # %d Trigger %lld %lld\n",
 	 GetEventNumberInFile(),
 	 GetBunchCrossNumber(),
 	 GetOrbitNumber(),
-	 GetTriggerMask());
+	 GetTriggerMask(),
+	 GetTriggerMaskNext50());
          printf("List of the active trigger inputs: ");
   	 for(Int_t i = 0; i < kNTriggerInputs; i++) {
     	   TNamed *str = (TNamed *)((fTriggerInputsNames).At(i));
