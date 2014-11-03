@@ -46,7 +46,7 @@ private:
 };
 
 #pragma GCC diagnostic ignored "-Weffc++" 
-inline AliVfriendEvent::AliVfriendEvent(AliVConstructorReinitialisationFlag ) {} // do nothing
+inline AliVfriendEvent::AliVfriendEvent(AliVConstructorReinitialisationFlag ) :TObject(){} // do nothing
 #pragma GCC diagnostic warning "-Weffc++" 
 
 #endif

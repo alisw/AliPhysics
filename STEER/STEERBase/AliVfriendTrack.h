@@ -6,6 +6,7 @@
 
 #include "TObject.h"
 #include "Rtypes.h"
+#include "TObject.h"
 class AliTPCseed;
 class AliVVtrackPointArray;
 class AliExternalTrackParam;
@@ -16,9 +17,9 @@ class AliVfriendTrack :public TObject {
 public:
 
   AliVfriendTrack(){}
-  AliVfriendTrack(const AliVfriendTrack &f) :TObject(f){}
+  AliVfriendTrack( const AliVfriendTrack &t): TObject(t) {}
   // constructor for reinitialisation of vtable
-  AliVfriendTrack( AliVConstructorReinitialisationFlag ){}
+  AliVfriendTrack( AliVConstructorReinitialisationFlag ): TObject(){}
   virtual ~AliVfriendTrack(){}
 
   //used in calibration

@@ -65,7 +65,7 @@ protected:
   Int_t fNclustersTPC[72]; //cluster occupancy per sector per sector
   Int_t fNclustersTPCused[72]; //number of clusters used in tracking per sector
 
-  ClassDef(AliESDfriend,4) // ESD friend
+  ClassDef(AliESDfriend,5) // ESD friend
 };
 
 #endif
