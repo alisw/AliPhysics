@@ -834,8 +834,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       AliDebug(3, Form("\n\n---> COOL! we found a particle (particle %d)!!! with PDG code = %d \n\n", iPart, mcPart->GetPdgCode()));
     }
     cfVtxHF->SetMCCandidateParam(iPart);
-	 
-	  
+
+
     if (!(cfVtxHF->SetLabelArray())){
       AliDebug(2,Form("Impossible to set the label array for particle %d (decaychannel = %d)", iPart, fDecayChannel));
       continue;

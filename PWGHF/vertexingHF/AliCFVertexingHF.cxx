@@ -789,16 +789,15 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 	Int_t label0 = fmcPartCandidate->GetDaughter(0);
 	Int_t label1 = fmcPartCandidate->GetDaughter(1);
  	AliDebug(2, Form("label0 = %d, label1 = %d", label0, label1));
-	AliAODMCParticle* tmp0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(label0));
-	AliAODMCParticle* tmp1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(label1));
-
-	AliDebug(2, Form("label0 = %d (pdg = %d), label1 = %d (pdg = %d)", label0, tmp0->GetPdgCode(), label1, tmp1->GetPdgCode()));
 	if (label1<=0 || label0 <= 0){
 	        AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
 		delete [] fLabelArray; 
 		fLabelArray = 0x0;  
 		return bLabelArray;
 	}
+	AliAODMCParticle* tmp0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(label0));
+	AliAODMCParticle* tmp1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(label1));
+	AliDebug(2, Form("label0 = %d (pdg = %d), label1 = %d (pdg = %d)", label0, tmp0->GetPdgCode(), label1, tmp1->GetPdgCode()));
 	
 	if (label1 - label0 == fProngs-1){
 		for (Int_t iProng = 0; iProng<fProngs; iProng++){
