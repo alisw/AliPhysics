@@ -36,7 +36,7 @@ public AliAnalysisTaskSE
   virtual ~AliTOFAnalysisTaskCalibTree(); // default destructor
 
   virtual void UserCreateOutputObjects(); // user create output objects
-  virtual void UserExec(Option_t *option); // user exec
+  virtual void UserExec(Option_t *); // user exec
 
   // getters
   AliPhysicsSelection *GetEventCuts() const {return fEventCuts;}; // getter

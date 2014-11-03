@@ -49,12 +49,25 @@ AliAnalysisTaskSE(name),
   fTOFcalib(new AliTOFcalib()),             
   fTOFT0maker(new AliTOFT0maker(fESDpid, fTOFcalib)),         
   fTOFT0v1(new AliTOFT0v1(fESDpid)),
+  ftimestamp(0),
+  fVertexZ(99999),
+  ftimezero(9999999),
+  fnhits(-1),
   fOutputTree(0x0)             
 
 {
   /* 
    * default constructor 
    */
+
+  for (Int_t i = 0; i < MAXHITS; i++){
+      fmomentum[i] = 999999;
+      flength[i] = 999999;
+      findex[i] = -1;
+      ftime[i] = 999999;
+      ftot[i] = 999999;
+      ftexp[i] = 999999;
+  }
 
   DefineOutput(1, TTree::Class());  
 
@@ -110,7 +123,7 @@ AliTOFAnalysisTaskCalibTree::UserCreateOutputObjects()
 
 //_______________________________________________________
 
-void AliTOFAnalysisTaskCalibTree::UserExec(Option_t *option) {
+void AliTOFAnalysisTaskCalibTree::UserExec(Option_t *) {
   //
   // user exec
   //
@@ -133,7 +146,7 @@ void AliTOFAnalysisTaskCalibTree::UserExec(Option_t *option) {
   fTOFT0v1->DefineT0("all", 0.0, 0.5);
   Float_t timeZeroTOF = -1000. * fTOFT0v1->GetResult(0);
   Float_t timeZeroTOF_sigma = 1000. * fTOFT0v1->GetResult(1);
-  Int_t timeZeroTOF_tracks = fTOFT0v1->GetResult(3);
+  //Int_t timeZeroTOF_tracks = fTOFT0v1->GetResult(3);  // not used for the time being
 
   // check T0-TOF sigma 
   if (timeZeroTOF_sigma >= 250.) ftimezero = 999999.; 
