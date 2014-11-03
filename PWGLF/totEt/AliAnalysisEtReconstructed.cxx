@@ -510,7 +510,6 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
             //continue;
         } // distance
         else{//these are clusters which were not track matched
-	  nUsedClusters++;
 	  fCutFlow->Fill(x++);
 	  //std::cout << x++ << std::endl;
 	  
@@ -535,10 +534,11 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	  fClusterEnergy->Fill(GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE);
 	  fClusterEnergyCentNotMatched->Fill(GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE,cent);
 	  fHistClusterSizeVsCent->Fill(cluster->GetNCells(),cent);
-	  fClusterEt->Fill(TMath::Sin(p2.Theta())*GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE);
+	  fClusterEt->Fill(TMath::Sin(p2.Theta())*GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE,cent);
 	  uncorrEt += TMath::Sin(p2.Theta())*GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE;
 	  float myuncorrEt = TMath::Sin(p2.Theta())*GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE;
 	  fTotRawEt += myuncorrEt;
+	  nUsedClusters++;
 	  
 	  Double_t effCorrEt = CorrectForReconstructionEfficiency(*cluster,fReconstructedE,cent)*GetCorrectionModification(*cluster,0,0,cent);
 	  rawSignal += myuncorrEt;
@@ -879,7 +879,7 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     fClusterEnergyCentNotMatched->SetZTitle("Number of clusters");
 
     histname = "fClusterEt" + fHistogramNameSuffix;
-    fClusterEt = new TH1F(histname.Data(), histname.Data(), 100, 0, 5);
+    fClusterEt = new TH2F(histname.Data(), histname.Data(), 100, 0, 5,20,-0.5,19.5);
     fClusterEt->SetXTitle("Number of clusters");
     fClusterEt->SetYTitle("E_{T} of cluster");
 
@@ -915,7 +915,7 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     fHistTotRawEtEffCorr500MeV = new TH2F("fHistTotRawEtEffCorr500MeV","fHistTotRawEtEffCorr500MeV",nbinsForDistributions,0,250*scale,20,-0.5,19.5);
     fHistTotAllRawEt = new TH2F("fHistTotAllRawEt","fHistTotAllRawEt",nbinsForDistributions,0,250*scale,20,-0.5,19.5);
     fHistTotAllRawEtEffCorr = new TH2F("fHistTotAllRawEtEffCorr","fHistTotAllRawEtEffCorr",nbinsForDistributions,0,250*scale,20,-0.5,19.5);
-    fHistNUsedClusters = new TH2F("fHistNUsedClusters","fHistNUsedClusters",50,0,50,20,-0.5,19);
+    fHistNUsedClusters = new TH2F("fHistNUsedClusters","fHistNUsedClusters",500,0,500,20,-0.5,19);
     fHistNClustersPhosVsEmcal = new TH3F("fHistNClustersPhosVsEmcal","fHistNClustersPhosVsEmcal",50,0,50,250*scale,0,250*scale,20,-0.5,19);
     fHistClusterSizeVsCent = new TH2F("fHistClusterSizeVsCent","fHistClusterSizeVsCent",10,0.5,10.5,20,-0.5,19.5);
     fHistMatchedClusterSizeVsCent = new TH2F("fHistMatchedClusterSizeVsCent","fHistMatchedClusterSizeVsCent",10,0.5,10.5,20,-0.5,19.5);

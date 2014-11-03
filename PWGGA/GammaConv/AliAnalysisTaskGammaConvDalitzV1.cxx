@@ -184,6 +184,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1():
 	hESDTrueMotherGGInvMassPt(NULL),
 	hESDTrueConvGammaPt(NULL),
 	hESDTrueConvGammaR(NULL),
+	hESDTrueConvGammaRMC(NULL),
 	hESDTruePositronPt(NULL),
 	hESDTrueElectronPt(NULL),
 	hESDTrueSecConvGammaPt(NULL),
@@ -355,6 +356,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1( const char* 
 	hESDTrueMotherGGInvMassPt(NULL),
 	hESDTrueConvGammaPt(NULL),
 	hESDTrueConvGammaR(NULL),
+	hESDTrueConvGammaRMC(NULL),
 	hESDTruePositronPt(NULL),
 	hESDTrueElectronPt(NULL),
 	hESDTrueSecConvGammaPt(NULL),
@@ -897,6 +899,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 		hESDEposEnegTruePhotonPsiPairDPhiPtCut       = new TH2F*[fnCuts];
 		hESDEposEnegTrueJPsiInvMassPt                = new TH2F*[fnCuts];
 		hESDTrueConvGammaR                           = new TH1F*[fnCuts];
+		hESDTrueConvGammaRMC                         = new TH1F*[fnCuts];
 		}
 		
 		
@@ -1049,6 +1052,10 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 				
 				hESDTrueConvGammaR[iCut] = new TH1F("ESD_TrueConvGamma_R","ESD_TrueConvGamma_R",800,0,200);
 				fTrueList[iCut]->Add(hESDTrueConvGammaR[iCut]);
+				
+				hESDTrueConvGammaRMC[iCut] = new TH1F("ESD_TrueConvGamma_R_MC","ESD_TrueConvGamma_R_MC",800,0,200);
+				fTrueList[iCut]->Add(hESDTrueConvGammaRMC[iCut]);
+				
 			}
 
 			hESDTruePositronPt[iCut] = new TH1F("ESD_TruePositron_Pt","ESD_TruePositron_Pt",1000,0,25);
@@ -1516,7 +1523,10 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTruePhotonCandidates(AliAODConvers
 	if( labelGamma < MCStack->GetNprimary() ){
 		if( fIsFromMBHeader ){
 			hESDTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-			if(fDoMesonQA) hESDTrueConvGammaR[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius());
+			if(fDoMesonQA){
+			  hESDTrueConvGammaR[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius());			 
+			  hESDTrueConvGammaRMC[fiCut]->Fill( posDaughter->R() );
+			}
 		}
 	} else {
 		if( fIsFromMBHeader){

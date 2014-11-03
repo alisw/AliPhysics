@@ -207,6 +207,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH2F 									**hESDTrueMotherGGInvMassPt;
 		TH1F 									**hESDTrueConvGammaPt;
 		TH1F 									**hESDTrueConvGammaR;
+		TH1F									**hESDTrueConvGammaRMC;
 		TH1F 									**hESDTruePositronPt;
 		TH1F 									**hESDTrueElectronPt;
 		TH1F 									**hESDTrueSecConvGammaPt;

@@ -85,7 +85,7 @@ protected:
     TH2F *fClusterEnergyModifiedTrackMatchesCent;//! // Distribution of cluster energies vs centrality bin
     TH2F *fClusterEnergyCentMatched;//! // Distribution of cluster energies vs centrality bin
     TH2F *fClusterEnergyCentNotMatched;//! // Distribution of cluster energies vs centrality bin
-    TH1F *fClusterEt;//! // Distribution of cluster energies
+    TH2F *fClusterEt;//! // Distribution of cluster energies
     
     TH2D *fHistChargedEnergyRemoved;//! // Charged energy removed
     TH2D *fHistNeutralEnergyRemoved;//! // Neutral energy removed
