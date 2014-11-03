@@ -129,10 +129,12 @@ Bool_t AliJetEmbeddingFromGenTask::ExecOnce()
     fNTracks = 0;
   }
 
-  if (!(InputEvent()->FindListObject(fPartonInfoName))) {
-  fStackPartonInfo = new AliStackPartonInfo("PartonsInfo");
-  fStackPartonInfo->SetName(fPartonInfoName);
-  InputEvent()->AddObject(fStackPartonInfo);
+  if(!fPartonInfoName.IsNull()) {
+    if (!(InputEvent()->FindListObject(fPartonInfoName))) {
+      fStackPartonInfo = new AliStackPartonInfo("PartonsInfo");
+      fStackPartonInfo->SetName(fPartonInfoName);
+      InputEvent()->AddObject(fStackPartonInfo);
+    }
   }
   return kTRUE;
 }
@@ -152,19 +154,21 @@ void AliJetEmbeddingFromGenTask::Run()
   const Int_t nprim = stack->GetNprimary();
   // reject if partons are missing from stack for some reason
   if(nprim < 8) return;
-  TParticle *part6 = stack->Particle(6);
-  TParticle *part7 = stack->Particle(7);
+  if(fStackPartonInfo) {
+    TParticle *part6 = stack->Particle(6);
+    TParticle *part7 = stack->Particle(7);
+    
+    fStackPartonInfo->SetPartonFlag6(TMath::Abs(part6->GetPdgCode()));
+    fStackPartonInfo->SetPartonPt6(part6->Pt());
+    fStackPartonInfo->SetPartonEta6(part6->Eta());
+    fStackPartonInfo->SetPartonPhi6(part6->Phi());
+    
+    fStackPartonInfo->SetPartonFlag7(TMath::Abs(part7->GetPdgCode()));
+    fStackPartonInfo->SetPartonPt7(part7->Pt());
+    fStackPartonInfo->SetPartonEta7(part7->Eta());
+    fStackPartonInfo->SetPartonPhi7(part7->Phi());
+  }
 
-  fStackPartonInfo->SetPartonFlag6(TMath::Abs(part6->GetPdgCode()));
-  fStackPartonInfo->SetPartonPt6(part6->Pt());
-  fStackPartonInfo->SetPartonEta6(part6->Eta());
-  fStackPartonInfo->SetPartonPhi6(part6->Phi());
-  
-  fStackPartonInfo->SetPartonFlag7(TMath::Abs(part7->GetPdgCode()));
-  fStackPartonInfo->SetPartonPt7(part7->Pt());
-  fStackPartonInfo->SetPartonEta7(part7->Eta());
-  fStackPartonInfo->SetPartonPhi7(part7->Phi());
-  
   for (Int_t i=0;i<nprim;++i) {
     if (!stack->IsPhysicalPrimary(i))
       continue;
