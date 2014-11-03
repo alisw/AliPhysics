@@ -405,6 +405,7 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& e
       iResult=PushBack(pTree, kAliHLTDataTypeESDTree|kAliHLTDataOriginOut, 0);
     } else {
       cout<<"Write ESD block: n tracks "<<pESD->GetNumberOfTracks()<<endl;
+      cout<<"Write ESD block: n v0s "<<pESD->GetNumberOfV0s()<<endl;
       iResult=PushBack(pESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginOut, 0);
     }
     fBenchmark.AddOutput(GetLastObjectSize());
@@ -436,7 +437,7 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& e
 	fBenchmark.GetStatisticsData(statistics, names);
 	  fBenchmark.Reset();
   
-	AliSysInfo::AddStamp("AliHLTGlobalEsdConverterComponent::DoEvent.Stop", (int)(statistics[1]), (int)(statistics[2]),pESD->GetNumberOfV0s(),pESD->GetNumberOfTracks() );
+	AliSysInfo::AddStamp("AliHLTGlobalEsdConverterComponent::DoEvent.Stop", (int)(statistics[1]), (int)(statistics[2]),pESD->GetNumberOfTracks(),pESD->GetNumberOfV0s() );
   }
   
   for(Int_t i=0; i<fkNPartition; i++){
@@ -561,6 +562,30 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	c->SetTimeBin( (Int_t) padtime[2] );
       }
     } // end of loop over blocks of clusters    
+    
+    
+        // fill event info
+    {
+      for( Int_t iSlice=0; iSlice<36; iSlice++ ){
+	int iSector = iSlice;
+	int nclu = 0;
+	for( Int_t iPartition=0; iPartition<3; iPartition++){	    
+	  int slicepartition = iSlice*6+iPartition;
+	  nclu+= fNPartitionClusters[slicepartition];
+	}
+	pESDfriend->SetNclustersTPC( iSector, nclu );
+	iSector = 36+iSlice;
+	nclu = 0;
+	for( Int_t iPartition=3; iPartition<6; iPartition++){	    
+	  int slicepartition = iSlice*6+iPartition;
+	  nclu+= fNPartitionClusters[slicepartition];
+	}
+	pESDfriend->SetNclustersTPC( iSector, nclu );
+      }
+    }
+    
+    
+    
   }
 
   // 1) first read MC information (if present)
@@ -698,7 +723,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	iotrack.SetLabel(mcLabel);
 	pESD->AddTrack(&iotrack);
 	if (fVerbosity>0) element->Print();
-      
+
 	if( pESDfriend ){ // create friend track
 
 	  AliHLTGlobalBarrelTrack gb(*element);
@@ -827,7 +852,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
       }
     }
   }
-  
+
 
 
   // 3.1. now update ESD tracks with the ITSOut info

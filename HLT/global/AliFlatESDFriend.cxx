@@ -61,7 +61,8 @@ void AliFlatESDFriend::Ls() const
   // -> Added objects have to be added here as well
   if(esdFriend == NULL) return 0;
   ULong64_t size = sizeof(AliFlatESDFriend);
-  size += esdFriend->GetNumberOfTracks() *  AliFlatESDFriendTrack::EstimateSize();
+	// one Long64_t per track for tracks table
+  size += esdFriend->GetNumberOfTracks() *  (AliFlatESDFriendTrack::EstimateSize() + sizeof(Long64_t) );
   return size;
 }
 

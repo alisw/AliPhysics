@@ -71,8 +71,23 @@ public:
   }
  
   const AliFlatESDFriendTrack  *GetFlatTrackEntry( Int_t i ) const { 
-    if( i<0 || i>fNTrackEntries ) return NULL;
-    return reinterpret_cast<const AliFlatESDFriendTrack*>( fContent + i );
+    const Long64_t *table = reinterpret_cast<const Long64_t*> (fContent + fTrackTablePointer);
+    if( i<0 || i>fNTrackEntries || table[i]<0 ) return NULL;
+    return reinterpret_cast<const AliFlatESDFriendTrack*>( fContent + table[i] );
+  }
+  
+  
+
+  AliFlatESDFriendTrack  *GetFlatTrackNonConst( Int_t i ){ 
+    const Long64_t *table = reinterpret_cast<const Long64_t*> (fContent + fTrackTablePointer);
+    if( i<0 || i>fNTracks || table[i]<0 ) return NULL;
+    return reinterpret_cast<AliFlatESDFriendTrack*>( fContent + table[i] );
+  }
+
+  AliFlatESDFriendTrack  *GetFlatTrackEntryNonConst( Int_t i ){ 
+    const Long64_t *table = reinterpret_cast<const Long64_t*> (fContent + fTrackTablePointer);
+    if( i<0 || i>fNTrackEntries || table[i]<0 ) return NULL;
+    return reinterpret_cast<AliFlatESDFriendTrack*>( fContent + table[i] );
   }
 
   // -- Size methods
@@ -85,17 +100,6 @@ private:
 
   AliFlatESDFriend(const AliFlatESDFriend&);
   AliFlatESDFriend& operator=(const AliFlatESDFriend& );  
-
-  AliFlatESDFriendTrack  *GetFlatTrackNonConst( Int_t i ){ 
-    const Long64_t *table = reinterpret_cast<const Long64_t*> (fContent + fTrackTablePointer);
-    if( i<0 || i>fNTracks || table[i]<0 ) return NULL;
-    return reinterpret_cast<AliFlatESDFriendTrack*>( fContent + table[i] );
-  }
-
-  AliFlatESDFriendTrack  *GetFlatTrackEntryNonConst( Int_t i ){ 
-    if( i<0 || i>fNTrackEntries ) return NULL;
-    return reinterpret_cast< AliFlatESDFriendTrack*>( fContent + i );
-  }
 
   size_t fContentSize;     // Size of fContent
   UInt_t fBitFlags; // bit flags

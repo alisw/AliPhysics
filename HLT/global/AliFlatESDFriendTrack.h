@@ -73,6 +73,9 @@ class AliFlatESDFriendTrack :public AliVfriendTrack
   AliFlatTPCseed* SetTPCseedStart();
   void SetTPCseedEnd( size_t tpcSeedSize );
 
+	
+	
+  const AliFlatTPCseed* GetFlatTPCseed( ) const{return reinterpret_cast<const AliFlatTPCseed*>(fContent+fTPCseedPointer); };
   
   const AliFlatESDFriendTrack *GetNextTrack() const { return reinterpret_cast<const AliFlatESDFriendTrack*>(fContent+fContentSize); }
   AliFlatESDFriendTrack *GetNextTrackNonConst() { return reinterpret_cast<AliFlatESDFriendTrack*>(fContent+fContentSize); }
@@ -107,7 +110,7 @@ class AliFlatESDFriendTrack :public AliVfriendTrack
   
   Byte_t fContent[1];                  // Variale size object, which contains all data
 
- // ClassDef(AliFlatESDFriendTrack, 0)
+  ClassDef(AliFlatESDFriendTrack, 0)
 
 };
 

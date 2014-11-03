@@ -577,7 +577,6 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     fBenchmark.AddOutput(outBlock.fSize);
     size += outBlock.fSize;
   }
-
   
   // ---------------------------------------------
   //
@@ -815,9 +814,9 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     TString names[10];
     fBenchmark.GetStatisticsData(statistics, names);
     fBenchmark.Reset();
-    AliSysInfo::AddStamp("AliHLTGlobalFlatEsdConverterComponent::DoEvent.Stop", (int)(statistics[1]), (int)(statistics[2]),flatEsd->GetNumberOfV0s(),flatEsd->GetNumberOfTracks() );
+    AliSysInfo::AddStamp("AliHLTGlobalFlatEsdConverterComponent::DoEvent.Stop", (int)(statistics[1]), (int)(statistics[2]),flatEsd->GetNumberOfTracks(),flatEsd->GetNumberOfV0s() );
   }
-  
+
   return 0;
 }
 

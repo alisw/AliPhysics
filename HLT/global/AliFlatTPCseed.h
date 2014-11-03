@@ -55,7 +55,12 @@ class AliFlatTPCseed
 
   void SetLabel( Int_t lab ){ fLabel=lab; }
 
-  void AddCluster( const AliTPCclusterMI *cl, const AliTPCTrackerPoint *p ){ if(cl) GetClustersNonConst()[fNTPCClusters++].SetTPCCluster( cl, p );  }
+  void AddCluster( const AliTPCclusterMI *cl, const AliTPCTrackerPoint *p ){
+		if(cl){
+			GetClustersNonConst()[fNTPCClusters++].SetTPCCluster( cl, p );
+			fContentSize+=sizeof(AliFlatTPCCluster);
+		}
+	}
 
 
   // --------------------------------------------------------------------------------

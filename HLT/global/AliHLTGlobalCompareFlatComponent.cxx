@@ -37,7 +37,7 @@
 #include "AliHLTGlobalCompareFlatComponent.h"
 #include "AliHLTITSClusterDataFormat.h"
 #include "AliHLTTPCDefinitions.h"
-#include "AliTPCseed.h"
+#include "AliFlatTPCseed.h"
 #include "AliExternalTrackParam.h"
 #include "TTree.h"
 #include "AliCDBEntry.h"
@@ -49,23 +49,27 @@ using namespace std;
 ClassImp(AliHLTGlobalCompareFlatComponent)
 
 void AliHLTGlobalCompareFlatComponent::printDiff( string name, double val1, double val2){
-	double relDiff = ( val1 != 0 || val2!=0 ) ? (val1-val2)/(fabs(val1) + fabs(val2)): 0;
+	double sum = fabs(val1) + fabs(val2);
+	double relDiff = ( val1 != 0 || val2!=0 ) ? (val1-val2)/sum: 0;
+	
 	int diff = 0;
-	if (relDiff > 1e-6) diff = 1;
-	else if(relDiff < -1e-6) diff = -1;
+	if (relDiff > 1e-4 && sum > 1e-6) diff = 1;
+	else if(relDiff < -1e-4 && sum > 1e-6) diff = -1;
 	outFile<<name<<"\t" << val1 << "\t" << val2 <<"\t" << diff << "\n";
 }
 
 
 
 void AliHLTGlobalCompareFlatComponent::printDiff( string name, int n , double* vals1, double* vals2 ){
+	double sum = 0;
 	double relDiff = 0;
 	int diff = 0;
 	
 	for(int i=0; i<n && diff == 0; i++){
-		relDiff = ( vals1[i] != 0 || vals2[i] !=0 ) ? (vals1[i]-vals2[i])/(fabs(vals1[i]) + fabs(vals2[i])): 0;
-		if (relDiff > 1e-6) diff = 1;
-		else if(relDiff < -1e-6) diff = -1;
+		sum = fabs(vals1[i]) + fabs(vals2[i]) ; 
+		relDiff = ( vals1[i] != 0 || vals2[i] !=0 ) ? (vals1[i]-vals2[i])/sum : 0;
+		if (relDiff > 1e-4 && sum > 1e-6) diff = 1;
+		else if(relDiff < -1e-4 && sum > 1e-6) diff = -1;
 	}
 		
 	outFile<<name<<"\t";
@@ -282,6 +286,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 	
  cout<<"size event : "<<flatEsd[0]->GetSize() << " "<<flatEsd[1]->GetSize()<<endl;
  cout<<"nTracks : "<<flatEsd[0]->GetNumberOfTracks()<<" "<<flatEsd[1]->GetNumberOfTracks()<<endl;
+ cout<<"nV0s : "<<flatEsd[0]->GetNumberOfV0s()<<" "<<flatEsd[1]->GetNumberOfV0s()<<endl;
  
  cout<<"size friend : "<<flatFriend[0]->GetSize() << " "<<flatFriend[1]->GetSize()<<endl;
  cout<<"nFriendTracks : "<<flatFriend[0]->GetNumberOfTracks()<<" "<<flatFriend[1]->GetNumberOfTracks()<<endl;
@@ -444,44 +449,51 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 	
 	
 	// compare friend tracks
-	/*
+	
 	if(flatFriend[0]->GetEntriesInTracks()  && flatFriend[1]->GetEntriesInTracks() ){
 		outFile<<"------------------\nfriend tracks\n------------------\n";
 		
-    AliFlatESDFriendTrack * track[2] = { const_cast<AliFlatESDFriendTrack*>(flatFriend[0]->GetFlatTrackEntry(0) ) , const_cast<AliFlatESDFriendTrack*>(flatFriend[1]->GetFlatTrackEntry(0) ) };
+    AliFlatESDFriendTrack * track[2] = { flatFriend[0]->GetFlatTrackEntryNonConst(0), flatFriend[1]->GetFlatTrackEntryNonConst(0)};
+		
+		
     for( Int_t t = 0; t < flatFriend[0]->GetEntriesInTracks()  && t < flatFriend[1]->GetEntriesInTracks()  ; t++ ){
+			
+			
+		//	cout<<"track0.size"<<track[0]->GetSize()<<endl;
+	//		cout<<"track1.size"<<track[1]->GetSize()<<endl;
+			
+			
 			if(!track[0] || !track[1]) continue;
       outFile<<"\nnew AliFlatESDFriendTrack\n";
 			printDiff( "AliFlatESDFriendTrack::GetSize",track[0]->GetSize(),track[1]->GetSize() ); 
 			
 			AliExternalTrackParam p[3][2]; 
-			AliExternalTrackParam q =AliExternalTrackParam() ;
 			
 			const char* pNames[3] = {"TPCOut", "ITSOut", "TRDIn"};
 			
-		//	track[0]->GetTrackParamTPCOut(q );
-		//	track[1]->GetTrackParamTPCOut(p[0][1] );
+			track[0]->GetTrackParamTPCOut(p[0][0] );
+			track[1]->GetTrackParamTPCOut(p[0][1] );
 			
-		//	track[0]->GetTrackParamITSOut(p[1][0] );
-			//track[1]->GetTrackParamITSOut(p[1][1] );
+			track[0]->GetTrackParamITSOut(p[1][0] );
+			track[1]->GetTrackParamITSOut(p[1][1] );
 			
 			
-			//track[0]->GetTrackParamTRDIn(p[2][0] );
-			//track[1]->GetTrackParamTRDIn(p[2][1] );
+			track[0]->GetTrackParamTRDIn(p[2][0] );
+			track[1]->GetTrackParamTRDIn(p[2][1] );
 			
-					for(int i = 0 ; i<7; i++){
-					outFile<<"\nnew AliExternalTrackParam" << pNames[i] << "\n";
-					printDiff( Form("AliExternalTrackParam%s::GetAlpha",pNames[i]),p[i][0].GetAlpha(),p[i][1].GetAlpha() ); 
-					printDiff( Form("AliExternalTrackParam%s::GetX",pNames[i]),p[i][0].GetX(),p[i][1].GetX() ); 
-					printDiff( Form("AliExternalTrackParam%s::GetY",pNames[i]),p[i][0].GetY(),p[i][1].GetY() ); 
-					printDiff( Form("AliExternalTrackParam%s::GetZ",pNames[i]),p[i][0].GetZ(),p[i][1].GetZ() ); 
-					printDiff( Form("AliExternalTrackParam%s::GetSnp",pNames[i]),p[i][0].GetSnp(),p[i][1].GetSnp() ); 
-					printDiff( Form("AliExternalTrackParam%s::GetTgl",pNames[i]),p[i][0].GetTgl(),p[i][1].GetTgl() ); 
-					printDiff( Form("AliExternalTrackParam%s::GetSigned1Pt",pNames[i]),p[i][0].GetSigned1Pt(),p[i][1].GetSigned1Pt() ); 
+			for(int i = 0 ; i<3; i++){
+				outFile<<"\nnew AliExternalTrackParam" << pNames[i] << "\n";
+				printDiff( Form("AliExternalTrackParam%s::GetAlpha",pNames[i]),p[i][0].GetAlpha(),p[i][1].GetAlpha() ); 
+				printDiff( Form("AliExternalTrackParam%s::GetX",pNames[i]),p[i][0].GetX(),p[i][1].GetX() ); 
+				printDiff( Form("AliExternalTrackParam%s::GetY",pNames[i]),p[i][0].GetY(),p[i][1].GetY() ); 
+				printDiff( Form("AliExternalTrackParam%s::GetZ",pNames[i]),p[i][0].GetZ(),p[i][1].GetZ() ); 
+				printDiff( Form("AliExternalTrackParam%s::GetSnp",pNames[i]),p[i][0].GetSnp(),p[i][1].GetSnp() ); 
+				printDiff( Form("AliExternalTrackParam%s::GetTgl",pNames[i]),p[i][0].GetTgl(),p[i][1].GetTgl() ); 
+				printDiff( Form("AliExternalTrackParam%s::GetSigned1Pt",pNames[i]),p[i][0].GetSigned1Pt(),p[i][1].GetSigned1Pt() ); 
 					
 					
-					Double_t* cov[2] = { const_cast<Double_t*>( p[i][0].GetCovariance()) , const_cast<Double_t*>( p[i][1].GetCovariance() ) };
-					printDiff( Form("AliExternalTrackParam%s::GetCovariance",pNames[i]) , 15, cov[0], cov[1]); 
+				Double_t* cov[2] = { const_cast<Double_t*>( p[i][0].GetCovariance()) , const_cast<Double_t*>( p[i][1].GetCovariance() ) };
+				printDiff( Form("AliExternalTrackParam%s::GetCovariance",pNames[i]) , 15, cov[0], cov[1]); 
 			
 			}
 			
@@ -489,11 +501,14 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			
 			
 			
-			AliTPCseed s[2];
+			const AliFlatTPCseed* s[2]={ track[0]->GetFlatTPCseed(), track[1]->GetFlatTPCseed()};
+			printDiff( "AliFlatTPCseed::GetSize",s[0]->GetSize(),s[1]->GetSize() ); 
+			printDiff( "AliFlatTPCseed::GetLabel",s[0]->GetLabel(),s[1]->GetLabel() ); 
+			printDiff( "AliFlatTPCseed::GetNClusters",s[0]->GetNClusters(),s[1]->GetNClusters() ); 
 			
 			
-			track[0]->GetTPCseed(s[0] );
-			track[1]->GetTPCseed(s[1] );
+			//printf("track0: %p next: %p", track[0], track[0]->GetNextTrackNonConst() );
+			//printf("track1: %p next: %p", track[1], track[1]->GetNextTrackNonConst() );
 			
       track[0] = track[0]->GetNextTrackNonConst();
 			track[1] = track[1]->GetNextTrackNonConst();	
@@ -502,7 +517,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 		}
 	
 	}
-	*/
+	
 	outFile.close();
  
  

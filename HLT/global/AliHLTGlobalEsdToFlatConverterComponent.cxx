@@ -236,7 +236,8 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
     if( esd ){
 			cout <<"ESD object found in input"<<endl;
 			esd->GetStdContent();
-			cout <<"nr of track:"<<esd->GetNumberOfTracks()<<endl;
+			cout <<"nr of tracks:"<<esd->GetNumberOfTracks()<<endl;
+			cout <<"nr of v0s:"<<esd->GetNumberOfV0s()<<endl;
 			iResult=1;
     } else {
     }
@@ -246,13 +247,18 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
    esdFriend = dynamic_cast<AliESDfriend*>(const_cast<TObject*>(iter));
     if( esdFriend ){
 			cout <<"ESD friend object found in input"<<endl;
-			cout <<"nr of friend track:"<<esdFriend->GetNumberOfTracks()<<endl;
+			cout <<"nr of friend tracks:"<<esdFriend->GetNumberOfTracks()<<endl;
     } else {
     }
   }
 	AliFlatESDEvent *flatEsd = reinterpret_cast<AliFlatESDEvent*>(outputPtr);
 	new (flatEsd) AliFlatESDEvent;
-	flatEsd->SetFromESD(AliFlatESDEvent::EstimateSize(esd),esd, kTRUE); 
+	
+	Int_t converted1 = flatEsd->SetFromESD(AliFlatESDEvent::EstimateSize(esd),esd, kTRUE); 
+	
+	
+			cout <<"XXX conversion successfull? "<<converted1<<endl;
+			cout <<"nr of flat v0s:"<<flatEsd->GetNumberOfV0s()<<endl;
 	
 	if( maxOutputSize > flatEsd->GetSize() ){
     AliHLTComponentBlockData outBlock;
@@ -279,8 +285,24 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
     new (flatFriend) AliFlatESDFriend;
     freeSpace = freeSpaceTotal - flatFriend->GetSize();
 		
-	flatFriend->SetFromESDfriend(AliFlatESDFriend::EstimateSize(esdFriend),esdFriend); 
+		Int_t converted = flatFriend->SetFromESDfriend(AliFlatESDFriend::EstimateSize(esdFriend),esdFriend); 
 		
+			cout <<"nr of flat friend tracks:"<<flatFriend->GetNumberOfTracks()<<endl;
+			cout <<"YYY friend conversion successfull? "<<converted<<endl;
+	
+ 
+    esd->SaveAs("tmp.root");
+    TFile * fTmp = new TFile ("tmp.root");
+    Int_t sizeIn = fTmp->GetSize();
+		delete fTmp;
+		
+    esdFriend->SaveAs("tmp.root");
+    fTmp = new TFile("tmp.root");
+    sizeIn += fTmp->GetSize();
+		delete fTmp;
+	
+  AliSysInfo::AddStamp("AliHLTGlobalEsdToFlatConverterComponent::DoEvent.Stop",sizeIn, flatEsd->GetSize()+ flatFriend->GetSize(),flatEsd->GetNumberOfTracks(),flatEsd->GetNumberOfV0s());
+	
 		    { // set up the output block description
     
       AliHLTComponentBlockData outBlock;
@@ -294,9 +316,12 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
 		
 		
  }
-		
-  AliSysInfo::AddStamp("AliHLTGlobalEsdToFlatConverterComponent::DoEvent.Stop",0, flatEsd->GetSize(),flatEsd->GetNumberOfV0s(),flatEsd->GetNumberOfTracks());
  
+		
+	
+	
+if(flatEsd->GetNumberOfTracks() > 20 )
+ flatEsd->SaveAs("flatEsdFromEsd.root");
  
   return iResult;
 }
