@@ -6,6 +6,7 @@ class AliVTrack;
 class AliVParticle;
 class TProfile;
 class TH3F;
+class AliEmcalJet;
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -19,6 +20,7 @@ class AliEmcalPicoTrackInGridMaker : public AliAnalysisTaskEmcalJet {
 
   void               SetCellSize(Double_t a)                           { fCellSize          = a;    }
   void               SetMinCellE(Double_t e)                           { fMinCellE          = e;    }
+  void               SetL1Slide(Bool_t b)                              { fL1Slide           = b;    }
 
   void               SetEMCalAcceptance(Double_t phiMin, Double_t phiMax, Double_t etaMin, Double_t etaMax) { fPhiMin[0]=phiMin; fPhiMax[0]=phiMax; fEtaMin[0]=etaMin; fEtaMax[0]=etaMax; }
   void               SetDCalAcceptance(Double_t phiMin, Double_t phiMax, Double_t etaMin, Double_t etaMax)  { fPhiMin[1]=phiMin; fPhiMax[1]=phiMax; fEtaMin[1]=etaMin; fEtaMax[1]=etaMax; }
@@ -44,35 +46,40 @@ class AliEmcalPicoTrackInGridMaker : public AliAnalysisTaskEmcalJet {
 
   Bool_t             InitPatches(const Int_t dim, const Int_t level); //give dimension in cell units
 
+  AliEmcalJet*       GetClosestJet(const Double_t eta, const Double_t phi, const Int_t icont = 0) const;
+
   Double_t           CalculateMedian(const Int_t patchType, const Int_t type, const Int_t areaType = 0);
   Double_t           CalculateSum(const Int_t patchType) const;
 
   //Getters
   Int_t              GetCellType(const Double_t eta, const Double_t phi) const;
+  Int_t              GetCellType(const AliVParticle *vp) const {return GetCellType(vp->Eta(),vp->Phi());}
  
   Int_t              GetGridID(const AliVParticle *vp) const {return GetGridID(vp->Eta(),vp->Phi());}
   Int_t              GetGridID(const Double_t eta, const Double_t phi) const;
   Int_t              GetGridID(const Int_t row, const Int_t col, const Int_t type) const;
-  void               GetEtaPhiFromGridID(const Int_t id, Double_t &eta, Double_t &phi) const;
+  void               GetEtaPhiFromGridID(const Int_t id, const Int_t type, Double_t &eta, Double_t &phi) const;
   Int_t              GetNCellsRow(const Int_t type) const;
   Int_t              GetNCellsCol(const Int_t type) const;
 
   Int_t              GetNRowMiniPatches(const Int_t type) const;
   Int_t              GetNColMiniPatches(const Int_t type) const;
   Int_t              GetMiniPatchID(const Int_t row, const Int_t col, const Int_t type) const;
-  void               GetEtaPhiFromMiniPatchID(const Int_t id, Double_t &eta, Double_t &phi) const;
+  void               GetEtaPhiFromMiniPatchID(const Int_t id, const Int_t type, Double_t &eta, Double_t &phi) const;
 
   Int_t              GetPatchType(const Int_t dim, const Int_t level) const;
   Int_t              GetPatchDim(const Int_t ipatch) const;
-  Int_t              GetSlidingStepSizeCells(const Int_t dim) const;
-  Int_t              GetSlidingStepSizeMiniPatches(const Int_t dim) const;
+  Int_t              GetSlidingStepSizeCells(const Int_t dim, const Int_t level = 1) const;
+  Int_t              GetSlidingStepSizeMiniPatches(const Int_t dim, const Int_t level = 1) const;
+  Int_t              GetTriggerPatchIdStepSizeNoOverlap(const Int_t dim, const Int_t level = 1) const;
   Int_t              GetNTriggerPatches(const Int_t type, const Int_t dim, const Int_t level) const;
-  Int_t              GetNColTriggerPatches(const Int_t type, const Int_t dim) const ;
-  Int_t              GetNRowTriggerPatches(const Int_t type, const Int_t dim) const;
-  void               GetEtaPhiFromTriggerPatchID(const Int_t id, const Int_t dim, const Int_t level, Double_t &eta, Double_t &phi) const;
+  Int_t              GetNColTriggerPatches(const Int_t type, const Int_t dim, const Int_t patchType) const ;
+  Int_t              GetNRowTriggerPatches(const Int_t type, const Int_t dim, const Int_t patchType) const;
+  Int_t              GetTriggerPatchID(const Int_t row, const Int_t col, const Int_t type, const Int_t dim, const Int_t patchType) const;
+  void               GetEtaPhiFromTriggerPatchID(const Int_t id, const Int_t type, const Int_t dim, const Int_t level, Double_t &eta, Double_t &phi) const;
 
   Double_t           GetPatchArea(const Int_t ipatch) const;
-  Double_t           GetPatchAreaActive(const Int_t id, const Int_t ipatch, const Int_t type) const;
+  Double_t           GetPatchAreaActive(const Int_t id, const Int_t type, const Int_t ipatch, const Int_t atype) const;
 
   TString            fTracksOutName;        // name of output track array
   TClonesArray      *fTracksOut;            //!track array out
@@ -92,12 +99,12 @@ class AliEmcalPicoTrackInGridMaker : public AliAnalysisTaskEmcalJet {
   Int_t              fNCells;               // total number of cells
   Int_t              fNCellsEMCal;          // total number of EMCal cells
   Int_t              fNCellsDCal;           // total number of DCal cells
-  TArrayD            fCellGrid;             // grid of cells in EMCal and DCal
-  TArrayD            fMiniPatchGrid;        // grid of mini patches in EMCal and DCal
-  TArrayI            fActiveAreaMP;         // active area for each mini patch
-  TArrayD            fPatchGrid[5];         // grid of trigger patches: 4x4 L0, 4x4 L1, 8x8 L1, 16x16 L1, 32x32 L1
-  TArrayI            fActiveAreaMPP[5];     // active area in mini patches for each trigger patch
-  TArrayI            fActiveAreaCP[5];      // active area in cells for each trigger patch
+  TArrayD            fCellGrid[2];          // grid of cells in EMCal and DCal
+  TArrayD            fMiniPatchGrid[2];     // grid of mini patches in EMCal and DCal
+  TArrayI            fActiveAreaMP[2];      // active area for each mini patch
+  TArrayD            fPatchGrid[2][5];      // grid of trigger patches: 4x4 L0, 4x4 L1, 8x8 L1, 16x16 L1, 32x32 L1
+  TArrayI            fActiveAreaMPP[2][5];  // active area in mini patches for each trigger patch
+  TArrayI            fActiveAreaCP[2][5];   // active area in cells for each trigger patch
   Int_t              fNPatchesEMCal[5];     // number of patches in EMCal
 
  private:
@@ -121,9 +128,11 @@ class AliEmcalPicoTrackInGridMaker : public AliAnalysisTaskEmcalJet {
   TH2F              *fh2PatchEtaPhiEmcal[5];    //! patch positions in EMCal
   TH2F              *fh2PatchEtaPhiDcal[5];     //! patch positions in DCal
   
+  //jet histos
+  TH2F              *fh2JetPtPatchECorr[2][5];  //! jet pt vs leading patch energy
 
   TH2F              *fMultVsRho;            //! track multiplicity vs rho from EMCal
 
-  ClassDef(AliEmcalPicoTrackInGridMaker, 1); // Task to make PicoTracks in a grid corresponding to EMCAL/DCAL acceptance
+  ClassDef(AliEmcalPicoTrackInGridMaker, 2); // Task to make PicoTracks in a grid corresponding to EMCAL/DCAL acceptance
 };
 #endif
