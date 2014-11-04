@@ -20,6 +20,7 @@
 #include "AliPID.h"  
 #include "AliPIDResponse.h"
 #include "AliCentrality.h"
+#include "TCutG.h"
 
 
 
@@ -63,6 +64,7 @@ public:
   //void MultiplicityOutlierCut(AliVEvent *event,Bool_t &centralitypass,Int_t ntracks);
     void SetPIDcontoursList(TDirectory* b){fContourCutList = b;}
   //TGraph* GetPIDcontours(TString specie, Double_t Plow, Double_t Phigh,Int_t centMin, Int_t centMax){}
+    void GetPIDContours();
 
 protected:  
 
@@ -108,7 +110,7 @@ private:
     TH2F                  *fHistdEdxVsPTPCafterPID;
     TH3F                  *fhistNsigmaP;
     TH3F                  *fhistNsigmaPt;
-
+    TCutG                 *fContourCut[3][10];
 
 
   //qa object initialisation
