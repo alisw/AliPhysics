@@ -23,9 +23,10 @@
 # - FASTJET_VERSION_MINOR
 # - FASTJET_VERSION_PATCH
 # - FASTJET_INCLUDE_DIR - fastjet headers location
+# - FASTJET_LIBS_DIR - fastjet libraries location
 # - FASTJET_DEFINITIONS - fastjet definition flags
 # - FASTJET_CXXFLAGS - fastjet compilation flags
-# - FASTJET_LIBS - fastjet libraries + linking flags
+# - FASTJET_LIBS - fastjet libraries - array
 
 set(FASTJET_FOUND FALSE)
 
@@ -61,13 +62,20 @@ if(FASTJET)
     endif(error)
 
     # Extracting libraries and linking options
-    execute_process(COMMAND ${FASTJET_CONFIG} --libs OUTPUT_VARIABLE FASTJET_LIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
+    execute_process(COMMAND ${FASTJET_CONFIG} --libs OUTPUT_VARIABLE FASTJET_CONFIGLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error retrieving FastJet libs : ${error}")
     endif(error)
+    string(REGEX MATCHALL "[-][l]([^ ])+" FASTJET_CONFIGLIBS "${FASTJET_CONFIGLIBS}")
+
+    foreach(flib ${FASTJET_CONFIGLIBS})
+        string(REPLACE "-l" "" flib "${flib}")
+        set(FASTJET_LIBS ${FASTJET_LIBS} ${flib})
+    endforeach()
 
     set(FASTJET_FOUND TRUE)
     set(FASTJET_INCLUDE_DIR ${FASTJET}/include)
+    set(FASTJET_LIBS_DIR ${FASTJET}/lib)
     set(FASTJET_DEFINITIONS "-DHAVE_FASTJET")
     message(STATUS "FastJet ${FASTJET_VERSION_MAJOR}.${FASTJET_VERSION_MINOR}.${FASTJET_VERSION_PATCH} installation found: ${FASTJET}")
 else()

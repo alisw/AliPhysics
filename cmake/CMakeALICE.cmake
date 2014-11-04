@@ -54,7 +54,8 @@ macro(generate_rootmap LIBNAME LIBDEPS LINKDEF)
 #    message(STATUS "LIBDEPS = ${LIBDEPS}")
 #    message(STATUS "LINKDEF = ${LINKDEF}")
 #    message(STATUS "ROOT_LIBMAP=${ROOT_LIBMAP}")
-    
+
+    set(LOCAL_DEPS)
     foreach(file ${LIBDEPS})
         get_filename_component(ext ${file} EXT)
         if(ext)
@@ -63,7 +64,7 @@ macro(generate_rootmap LIBNAME LIBDEPS LINKDEF)
             set(LOCAL_DEPS ${LOCAL_DEPS} lib${file}.so)
         endif()
     endforeach()
-    
+
 #    message(STATUS "Generating ROOT map for ${LIBNAME}")
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lib${LIBNAME}.rootmap
                        COMMAND LD_LIBRARY_PATH=${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOT_LIBMAP}
