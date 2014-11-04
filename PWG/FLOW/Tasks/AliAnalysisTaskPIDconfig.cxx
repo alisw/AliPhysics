@@ -71,8 +71,6 @@
 #include "AliVEvent.h"
 #include "AliAODVZERO.h"
 
-using std::cout;
-using std::endl;
 
 ClassImp(AliAnalysisTaskPIDconfig)
 //ClassImp()
@@ -121,11 +119,11 @@ fhistNsigmaPt(0)
 //fSparseSpecies(0),
 //fvalueSpecies(0)
 {
-    //Dummy Constructor
+    for(int i=0;i<3;i++){for(int j=0;j<10;j++){fContourCut[i][j]= NULL;}}
 }
 
 
-//
+//___________________________________________________________________
 
 AliAnalysisTaskPIDconfig::AliAnalysisTaskPIDconfig(const char *name):
 AliAnalysisTaskSE(name),
@@ -173,6 +171,7 @@ fhistNsigmaPt(0)
 {
     //fvalueSpecies = new Double_t[9];
     //Default Constructor
+    //fContourCut[3][10]=NULL;
     DefineInput(0,TChain::Class());
     DefineOutput(1,TList::Class());
 }
@@ -208,6 +207,7 @@ void AliAnalysisTaskPIDconfig::UserCreateOutputObjects()
     fPIDResponse=inputHandler->GetPIDResponse();
     if (!fPIDResponse) AliError("PIDResponse object was not created");
     
+    if(fPIDcuts){ GetPIDContours();}
     //
     fListQA=new TList;
     fListQA->SetOwner();
@@ -251,7 +251,6 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
     }
     
     Bool_t pass = kFALSE;
-    
     CheckCentrality(fVevent,pass);
     
     if(!pass){ return;}
@@ -347,8 +346,6 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
         HistTPCvsGlobalMultAfterOutliers->Fill(multGlobal,multTPC);
 
     }
- 
-
     
      for(Int_t itrack = 0; itrack < ntracks; itrack++){
 
@@ -370,7 +367,7 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
 
         //Float_t dcaXY = -999, dcaZ = -999;
         p=track->P();
-        /*pTPC=track->GetTPCmomentum();*/
+        //pTPC=track->GetTPCmomentum();
         pT=track->Pt();
         phi=track->Phi();
         eta=track->Eta();
@@ -428,53 +425,29 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
             TH1F *HistEtaDistAfter = (TH1F*)fListQAInfo->At(12);
             HistEtaDistAfter->Fill(eta);
          
+         
             Bool_t pWithinRange = kFALSE;
             Int_t pRange = -999;
-            TCutG *cut[3][10];
-            if(fPIDcuts){
-                if(fContourCutList){cout<<"The contour file has been retrieved"<<endl;}
-                
-                TGraph *ContourCut[3][10];
-                //Double_t plow[10] = {0.2,0.5,1,1.5,2,2.5,3,3.5,4,4.5};
-                //Double_t phigh[10] = {0.5,1,1.5,2,2.5,3,3.5,4,4.5,5};
-                Double_t phigh=0 ,plow=0;
-                Double_t pBins[11] = {0.2,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5};
-                TString Graph_Name = "contourlines_";
-                TString species[3] = {"pion","kaon","proton"};
-                for(int i=0;i<3;i++){
-                    for(int j=0;j<10;j++){
-                        
-                        if(p>pBins[j] && p<pBins[j+1]){
-
-                        //if(p>plow[j] && p<phigh[j]){
-                            pWithinRange = kTRUE;
-                            pRange = j;
-                            
-                            TList *Species_contours = (TList*)fContourCutList->Get(species[i]);
-                            phigh = pBins[j+1]*10;
-                            plow = pBins[j]*10;
-
-                            Graph_Name += species[i];
-                            Graph_Name += Form("%.f%.f-%i%icent",plow,phigh,fCentralityPercentileMin,fCentralityPercentileMax);
-
-                            //TList *Pcontours = (TList*)Scontours->At(j);
-                            //if (!Scontours) return;
-
-                           // if (!Pcontours || !Scontours) return;
-                            ContourCut[i][j] = (TGraph*)Species_contours->FindObject(Graph_Name);
-                            cut[i][j] = new TCutG("cut",ContourCut[i][j]->GetN(),ContourCut[i][j]->GetX(),ContourCut[i][j]->GetY());
-                            //ContourCut[i][j] = (TGraph *)fContourCutList->At(10*i+j);
-                        }
-                    }
+            Double_t pBins[11] = {0.2,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5};
+            for(int i=0;i<10;i++){
+                if(p>pBins[i] && p<pBins[i+1]){
+                    //cout<<"Inside if(p>pBins[i] && p<pBins[i+1])"<<endl;
+                    pWithinRange = kTRUE;
+                    pRange = i;
                 }
             }
-
             for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
+
                 //TOF nSigma
                 Double_t nSigmaTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)ispecie);
                 Double_t nSigmaTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)ispecie);
+                
                 if(fPIDcuts && ispecie>1 && ispecie<5 && pWithinRange){// for pions, kaons and protons only
-                    if(cut[ispecie-2][pRange]->IsInside(nSigmaTOF,nSigmaTPC)){
+
+
+                    if(fContourCut[ispecie-2][pRange]){cout<<"4) fContourCut exists"<<endl;}
+                    
+                    if(fContourCut[ispecie-2][pRange]->IsInside(nSigmaTOF,nSigmaTPC)){
                         pass = kTRUE;
                     }
                     else{
@@ -518,6 +491,35 @@ void AliAnalysisTaskPIDconfig::CheckCentrality(AliVEvent* event, Bool_t &central
         centralitypass = kTRUE;
     }
     
+}
+//______________________________________________________________________________
+void AliAnalysisTaskPIDconfig::GetPIDContours()
+{
+    if(fContourCutList){cout<<"+++++++++++++++++The contour file has been retrieved+++++++++++++++++++"<<endl;}
+    
+    TGraph *CutGraph[3][10];
+    //TCutG *cut[3][10];
+    Double_t phigh=0 ,plow=0;
+    Double_t pBinning[11] = {0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5};
+    TString species[3] = {"pion","kaon","proton"};
+    for(int i=0;i<3;i++){
+        TList *Species_contours = (TList*)fContourCutList->Get(species[i]);
+        if(Species_contours){cout<<"Species_contours exists"<<endl;}
+        for(int j=0;j<10;j++){
+            phigh = pBinning[j+1]*10;
+            plow = pBinning[j]*10;
+            TString Graph_Name = "contourlines_";
+            Graph_Name += species[i];
+            Graph_Name += Form("%.f%.f-%i%icent",plow,phigh,fCentralityPercentileMin,fCentralityPercentileMax);
+            cout<<Graph_Name<<endl;
+            CutGraph[i][j] = (TGraph*)Species_contours->FindObject(Graph_Name);
+            if(!CutGraph[i][j]){cout<<"Contour Graph does not exist"<<endl; continue;}
+            
+            fContourCut[i][j] = new TCutG(Graph_Name.Data(),CutGraph[i][j]->GetN(),CutGraph[i][j]->GetX(),CutGraph[i][j]->GetY());
+            if(!fContourCut[i][j]){cout<<"i,j "<<i<<" "<<j<<endl;}
+
+        }
+    }
 }
 //______________________________________________________________________________
 void AliAnalysisTaskPIDconfig::SetupTPCTOFqa()
