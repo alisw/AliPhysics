@@ -33,7 +33,7 @@ AliFemtoModelBPLCMSCorrFctnKK::AliFemtoModelBPLCMSCorrFctnKK(char* title, const 
 {
   // set up true numerator
   char tTitNumT[101] = "Num3DTrue";
-  strncat(tTitNumT,title, 101);
+  strncat(tTitNumT,title, 100);
   fNumerator3DTrue = new TH3D(tTitNumT,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   // set up fake numerator
   char tTitNumF[101] = "Num3DFake";
