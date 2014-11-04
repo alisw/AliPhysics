@@ -38,6 +38,34 @@ ClassImp(AliCFVertexingHFCascade)
 
 
 //_________________________________________
+AliCFVertexingHFCascade::AliCFVertexingHFCascade():
+AliCFVertexingHF(),
+  fPDGcascade(0),
+  fPDGbachelor(0),
+  fPDGneutrDaugh(0),
+  fPDGneutrDaughForMC(0),
+  fPDGneutrDaughPositive(0),
+  fPDGneutrDaughNegative(0),
+  fPrimVtx(0x0),
+  fUseCutsForTMVA(kFALSE),
+  fCutOnMomConservation(0.00001)
+{
+  // default constructor
+
+  SetNProngs(3);
+  fPtAccCut = new Float_t[fProngs];
+  fEtaAccCut = new Float_t[fProngs];
+  // element 0 in the cut arrays corresponds to the soft pion!!!!!!!! Careful when setting the values...
+  fPtAccCut[0] = 0.;
+  fEtaAccCut[0] = 0.;
+  for(Int_t iP=1; iP<fProngs; iP++){
+    fPtAccCut[iP] = 0.1;
+    fEtaAccCut[iP] = 0.9;
+  }
+
+}
+
+//_________________________________________
 AliCFVertexingHFCascade::AliCFVertexingHFCascade(TClonesArray *mcArray, UShort_t originDselection):
 AliCFVertexingHF(mcArray, originDselection),
   fPDGcascade(0),
