@@ -18,6 +18,7 @@
 #include "AliFemtoPicoEventCollection.h"
 #include "AliFemtoParticleCollection.h"
 #include "AliFemtoPicoEvent.h"
+#include "AliFemtoV0SharedDaughterCut.h"
 
 class AliFemtoPicoEventCollectionVectorHideAway;
 
@@ -51,6 +52,9 @@ class AliFemtoSimpleAnalysis : public AliFemtoAnalysis {
   void SetMinSizePartCollection(unsigned int minSize);
 
   void SetVerboseMode(Bool_t aVerbose);
+  
+  void SetV0SharedDaughterCut(Bool_t aPerform);
+  bool V0SharedDaughterCut();
 
   unsigned int NumEventsToMix() const;
   void SetNumEventsToMix(const unsigned int& NumberOfEventsToMix);
@@ -97,6 +101,7 @@ class AliFemtoSimpleAnalysis : public AliFemtoAnalysis {
   unsigned int fMinSizePartCollection;               //  Don't use event if it has fewer than this many particles passing ParticleCuts default 0
 
   Bool_t fVerbose;
+  Bool_t fPerformSharedDaughterCut;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoSimpleAnalysis, 0)
@@ -116,6 +121,7 @@ inline AliFemtoPicoEvent*            AliFemtoSimpleAnalysis::CurrentPicoEvent() 
 inline AliFemtoPicoEventCollection*  AliFemtoSimpleAnalysis::MixingBuffer() {return fMixingBuffer;}
 
 inline bool AliFemtoSimpleAnalysis::AnalyzeIdenticalParticles() const { return (fFirstParticleCut==fSecondParticleCut); }
+inline bool AliFemtoSimpleAnalysis::V0SharedDaughterCut() { return fPerformSharedDaughterCut; }
 
 // Set's
 inline void AliFemtoSimpleAnalysis::SetPairCut(AliFemtoPairCut* x) { fPairCut = x; x->SetAnalysis((AliFemtoAnalysis*)this);}
@@ -131,5 +137,6 @@ inline int AliFemtoSimpleAnalysis::GetNeventsProcessed() const {return fNeventsP
 inline void AliFemtoSimpleAnalysis::SetMinSizePartCollection(unsigned int minSize){fMinSizePartCollection = minSize;}
 
 inline void AliFemtoSimpleAnalysis::SetVerboseMode(Bool_t aVerbose){fVerbose = aVerbose;}
+inline void AliFemtoSimpleAnalysis::SetV0SharedDaughterCut(Bool_t aPerform) { fPerformSharedDaughterCut = aPerform; }
 
 #endif
