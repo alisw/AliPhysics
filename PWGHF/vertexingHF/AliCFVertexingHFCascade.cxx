@@ -632,11 +632,17 @@ Double_t AliCFVertexingHFCascade::GetEtaProng(Int_t iProng) const
 
     Double_t etaProng =-9999;
     AliAODRecoDecay* neutrDaugh=0; 
-    if (fPDGcascade == 413) neutrDaugh = cascade->Get2Prong();
-    else if (fPDGcascade == 4122) neutrDaugh = cascade->Getv0();
+    Int_t ibachelor = 1;
+    if (fPDGcascade == 413) {
+      neutrDaugh = cascade->Get2Prong();
+    }
+    else if (fPDGcascade == 4122) {
+      neutrDaugh = cascade->Getv0();
+      ibachelor = 0;
+    }
     if (iProng==0) etaProng = neutrDaugh->EtaProng(0);
     if (iProng==1) etaProng = neutrDaugh->EtaProng(1);
-    if (iProng==2) etaProng = cascade->EtaProng(1);
+    if (iProng==2) etaProng = cascade->EtaProng(ibachelor);
     
     return etaProng;
     
