@@ -17,21 +17,21 @@
 set(MODULE AliHLTJET)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/HLT/JET
-                   ${CMAKE_SOURCE_DIR}/HLT/JET/analysis
-                   ${CMAKE_SOURCE_DIR}/HLT/JET/cone
-                   ${CMAKE_SOURCE_DIR}/HLT/JET/fastjet
+include_directories(${AliRoot_SOURCE_DIR}/HLT/JET
+                   ${AliRoot_SOURCE_DIR}/HLT/JET/analysis
+                   ${AliRoot_SOURCE_DIR}/HLT/JET/cone
+                   ${AliRoot_SOURCE_DIR}/HLT/JET/fastjet
                    )
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${CMAKE_SOURCE_DIR}/HLT/BASE
-                    ${CMAKE_SOURCE_DIR}/HLT/BASE/util
-                    ${CMAKE_SOURCE_DIR}/JETAN
-                    ${CMAKE_SOURCE_DIR}/STEER/AOD
-                    ${CMAKE_SOURCE_DIR}/STEER/ESD
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliRoot_SOURCE_DIR}/HLT/BASE
+                    ${AliRoot_SOURCE_DIR}/HLT/BASE/util
+                    ${AliRoot_SOURCE_DIR}/JETAN
+                    ${AliRoot_SOURCE_DIR}/STEER/AOD
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order

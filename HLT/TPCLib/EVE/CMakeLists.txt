@@ -14,28 +14,23 @@
 # **************************************************************************
 
 # Module
-set(MODULE AliHLTFMD)
+set(MODULE AliHLTTPCEVE)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/HLT/FMD)
+include_directories(${AliRoot_SOURCE_DIR}/HLT/TPCLib/EVE)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/FMD/FMDbase
-                    ${AliRoot_SOURCE_DIR}/FMD/FMDrec
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
+                    ${AliRoot_SOURCE_DIR}/HLT/TPCLib
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
-                    ${AliRoot_SOURCE_DIR}/STEER/CDB
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEER
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order
 set(SRCS
-    AliHLTFMDReconstructionComponent.cxx
-    AliHLTAgentFMD.cxx
+    AliHLTTPCEVE.cxx
    )
 
 # Headers from sources
@@ -48,7 +43,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec HLTbase FMDbase FmMDrec)
+set(LIBDEPS ESD RAWDatabase RAWDatarec HLTbase AliHLTTPC Eve)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files

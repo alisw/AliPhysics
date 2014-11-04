@@ -17,20 +17,20 @@
 set(MODULE AliHLTEMCAL)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/HLT/EMCAL
+include_directories(${AliRoot_SOURCE_DIR}/HLT/EMCAL
                    )
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/EMCAL/EMCALbase
-                    ${CMAKE_SOURCE_DIR}/EMCAL/EMCALraw
-                    ${CMAKE_SOURCE_DIR}/EMCAL/EMCALUtils
-                    ${CMAKE_SOURCE_DIR}/HLT/CALO
-                    ${CMAKE_SOURCE_DIR}/HLT/BASE
-                    ${CMAKE_SOURCE_DIR}/HLT/BASE/util
-                    ${CMAKE_SOURCE_DIR}/STEER/CDB
-                    ${CMAKE_SOURCE_DIR}/STEER/STEER
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
+                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALraw
+                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${AliRoot_SOURCE_DIR}/HLT/CALO
+                    ${AliRoot_SOURCE_DIR}/HLT/BASE
+                    ${AliRoot_SOURCE_DIR}/HLT/BASE/util
+                    ${AliRoot_SOURCE_DIR}/STEER/CDB
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order

@@ -17,7 +17,7 @@
 set(MODULE AliHLTHOMER)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/HLT/BASE/HOMER)
+include_directories(${AliRoot_SOURCE_DIR}/HLT/BASE/HOMER)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}

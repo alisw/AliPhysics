@@ -14,18 +14,19 @@
 # **************************************************************************
 
 # Module
-set(MODULE AliHLTFMD)
+set(MODULE AliHLTUtil)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/HLT/FMD)
+include_directories(${AliRoot_SOURCE_DIR}/HLT/BASE/util
+                   )
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/FMD/FMDbase
-                    ${AliRoot_SOURCE_DIR}/FMD/FMDrec
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+                    ${AliRoot_SOURCE_DIR}/STEER/AOD
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
@@ -34,8 +35,32 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order
 set(SRCS
-    AliHLTFMDReconstructionComponent.cxx
-    AliHLTAgentFMD.cxx
+    AliHLTAgentUtil.cxx
+    AliHLTBlockFilterComponent.cxx
+    AliHLTCaloClusterReader.cxx
+    AliHLTCompStatCollector.cxx
+    AliHLTCorruptorComponent.cxx
+    AliHLTDataGenerator.cxx
+    AliHLTESDCaloClusterMaker.cxx
+    AliHLTEsdCollectorComponent.cxx
+    AliHLTESDMCEventPublisherComponent.cxx
+    AliHLTESDTrackCuts.cxx
+    AliHLTFilePublisher.cxx
+    AliHLTFileWriter.cxx
+    AliHLTGlobalBarrelTrack.cxx
+    AliHLTJets.cxx
+    AliHLTLoaderPublisherComponent.cxx
+    AliHLTMCEvent.cxx
+    AliHLTMonitoringRelay.cxx
+    AliHLTObjectCompressionComponent.cxx
+    AliHLTOUTPublisherComponent.cxx
+    AliHLTRawReaderPublisherComponent.cxx
+    AliHLTReadoutListDumpComponent.cxx
+    AliHLTRecoParamComponent.cxx
+    AliHLTRootFilePublisherComponent.cxx
+    AliHLTRootFileStreamerComponent.cxx
+    AliHLTRootFileWriterComponent.cxx
+    AliHLTRootSchemaEvolutionComponent.cxx
    )
 
 # Headers from sources
@@ -48,7 +73,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec HLTbase FMDbase FmMDrec)
+set(LIBDEPS STEERBase STEER AOD CDB ESD RAWDatabase RAWDatarec ANALYSISalice HLTbase Graf)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files

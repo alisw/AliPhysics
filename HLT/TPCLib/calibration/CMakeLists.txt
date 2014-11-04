@@ -14,28 +14,35 @@
 # **************************************************************************
 
 # Module
-set(MODULE AliHLTFMD)
+set(MODULE AliHLTTPCCalibration)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/HLT/FMD)
+include_directories(${AliRoot_SOURCE_DIR}/HLT/TPCLib/calibration)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/FMD/FMDbase
-                    ${AliRoot_SOURCE_DIR}/FMD/FMDrec
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
-                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
-                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+                    ${AliRoot_SOURCE_DIR}/HLT/BASE/util
+                    ${AliRoot_SOURCE_DIR}/HLT/TPCLib
+                    ${AliRoot_SOURCE_DIR}/HLT/TPCLib/offline
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/TPC/TPCbase
+                    ${AliRoot_SOURCE_DIR}/TPC/TPCcalib
+                    ${AliRoot_SOURCE_DIR}/TPC/TPCrec
                    )
 
 # Sources in alphabetical order
 set(SRCS
-    AliHLTFMDReconstructionComponent.cxx
-    AliHLTAgentFMD.cxx
+    AliHLTTPCAnalysisTaskcalib.cxx
+    AliHLTTPCCalibrationAgent.cxx
+    AliHLTTPCCalibrationComponent.cxx
+    AliHLTTPCCalibSeedMakerComponent.cxx
+    AliHLTTPCCalibTimeComponent.cxx
+    AliHLTTPCCalibTimeGainComponent.cxx
    )
 
 # Headers from sources
@@ -48,7 +55,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec HLTbase FMDbase FmMDrec)
+set(LIBDEPS STEERBase STEER CDB ESD ANALYSIS TPCbase TPCcalib TPCrec HLTbase AliHLTUtil AliHLTTPC)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files

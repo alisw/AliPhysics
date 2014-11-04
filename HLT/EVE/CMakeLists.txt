@@ -17,32 +17,32 @@
 set(MODULE AliHLTEve)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/HLT/EVE)
+include_directories(${AliRoot_SOURCE_DIR}/HLT/EVE)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/EMCAL/EMCALUtils
-                    ${CMAKE_SOURCE_DIR}/EVE/EveBase
-                    ${CMAKE_SOURCE_DIR}/EVE/EveDet
-                    ${CMAKE_SOURCE_DIR}/EVE/EveHLT
-                    ${CMAKE_SOURCE_DIR}/HLT/BASE
-                    ${CMAKE_SOURCE_DIR}/HLT/BASE/util
-                    ${CMAKE_SOURCE_DIR}/HLT/ITS
-                    ${CMAKE_SOURCE_DIR}/HLT/MUON
-                    ${CMAKE_SOURCE_DIR}/HLT/TPCLib
-                    ${CMAKE_SOURCE_DIR}/HLT/TRD
-                    ${CMAKE_SOURCE_DIR}/ITS/ITSbase
-                    ${CMAKE_SOURCE_DIR}/MUON/MUONbase
-                    ${CMAKE_SOURCE_DIR}/MUON/MUONcore
-                    ${CMAKE_SOURCE_DIR}/MUON/MUONraw
-                    ${CMAKE_SOURCE_DIR}/MUON/MUONrec
-                    ${CMAKE_SOURCE_DIR}/PHOS/PHOSbase
-                    ${CMAKE_SOURCE_DIR}/PHOS/PHOSUtils
-                    ${CMAKE_SOURCE_DIR}/STEER/CDB
-                    ${CMAKE_SOURCE_DIR}/STEER/ESD
-                    ${CMAKE_SOURCE_DIR}/STEER/STEER
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
-                    ${CMAKE_SOURCE_DIR}/TRD/TRDrec
+                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${AliRoot_SOURCE_DIR}/EVE/EveBase
+                    ${AliRoot_SOURCE_DIR}/EVE/EveDet
+                    ${AliRoot_SOURCE_DIR}/EVE/EveHLT
+                    ${AliRoot_SOURCE_DIR}/HLT/BASE
+                    ${AliRoot_SOURCE_DIR}/HLT/BASE/util
+                    ${AliRoot_SOURCE_DIR}/HLT/ITS
+                    ${AliRoot_SOURCE_DIR}/HLT/MUON
+                    ${AliRoot_SOURCE_DIR}/HLT/TPCLib
+                    ${AliRoot_SOURCE_DIR}/HLT/TRD
+                    ${AliRoot_SOURCE_DIR}/ITS/ITSbase
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONbase
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONcore
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONraw
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONrec
+                    ${AliRoot_SOURCE_DIR}/PHOS/PHOSbase
+                    ${AliRoot_SOURCE_DIR}/PHOS/PHOSUtils
+                    ${AliRoot_SOURCE_DIR}/STEER/CDB
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/TRD/TRDrec
                    )
 
 # Sources in alphabetical order

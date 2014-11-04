@@ -17,20 +17,20 @@
 set(MODULE AliHLTGlobal)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/HLT/global
-                    ${CMAKE_SOURCE_DIR}/HLT/global/physics
+include_directories(${AliRoot_SOURCE_DIR}/HLT/global
+                    ${AliRoot_SOURCE_DIR}/HLT/global/physics
                    )
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${CMAKE_SOURCE_DIR}/HLT/BASE
-                    ${CMAKE_SOURCE_DIR}/HLT/BASE/util
-                    ${CMAKE_SOURCE_DIR}/HLT/ITS
-                    ${CMAKE_SOURCE_DIR}/STEER/CDB
-                    ${CMAKE_SOURCE_DIR}/STEER/ESD
-                    ${CMAKE_SOURCE_DIR}/STEER/STEER
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliRoot_SOURCE_DIR}/HLT/BASE
+                    ${AliRoot_SOURCE_DIR}/HLT/BASE/util
+                    ${AliRoot_SOURCE_DIR}/HLT/ITS
+                    ${AliRoot_SOURCE_DIR}/STEER/CDB
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order

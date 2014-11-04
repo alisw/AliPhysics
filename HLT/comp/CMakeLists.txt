@@ -17,11 +17,11 @@
 set(MODULE AliHLTComp)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/HLT/comp)
+include_directories(${AliRoot_SOURCE_DIR}/HLT/comp)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/HLT/BASE
+                    ${AliRoot_SOURCE_DIR}/HLT/BASE
                    )
 
 # Sources in alphabetical order

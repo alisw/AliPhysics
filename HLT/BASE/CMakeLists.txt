@@ -14,18 +14,22 @@
 # **************************************************************************
 
 # HLTbase + subfolders (end of the cmake file)
+# Subfolders hve to be includes at the begining otherwise
+# they will inherit properties from the parent
+add_subdirectory(HOMER)
+add_subdirectory(util)
 
 # Module
 set(MODULE HLTbase)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/HLT/BASE
-                    ${CMAKE_SOURCE_DIR}/HLT/BASE/HOMER
+include_directories(${AliRoot_SOURCE_DIR}/HLT/BASE
+                    ${AliRoot_SOURCE_DIR}/HLT/BASE/HOMER
                    )
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatabase
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                    )
 
 # Sources in alphabetical order
@@ -143,6 +147,3 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
-
-# BASE subfolders
-add_subdirectory(HOMER)

@@ -14,29 +14,79 @@
 # **************************************************************************
 
 # Module
-set(MODULE AliHLTFMD)
+set(MODULE AliHLTTrigger)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/HLT/FMD)
+include_directories(${AliRoot_SOURCE_DIR}/HLT/trigger)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/FMD/FMDbase
-                    ${AliRoot_SOURCE_DIR}/FMD/FMDrec
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
+                    ${AliRoot_SOURCE_DIR}/HLT/BASE/util
+                    ${AliRoot_SOURCE_DIR}/HLT/ITS
+                    ${AliRoot_SOURCE_DIR}/HLT/MUON
+                    ${AliRoot_SOURCE_DIR}/HLT/TRD
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONraw
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+                    ${AliRoot_SOURCE_DIR}/STEER/AOD
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/TPC/TPCcalib
+                    ${AliRoot_SOURCE_DIR}/TRD/TRDbase
+                    ${AliRoot_SOURCE_DIR}/TRD/TRDrec
                    )
 
 # Sources in alphabetical order
 set(SRCS
-    AliHLTFMDReconstructionComponent.cxx
-    AliHLTAgentFMD.cxx
+    AliHLTD0Candidate.cxx
+    AliHLTD0toKpi.cxx
+    AliHLTD0Trigger.cxx
+    AliHLTEmcalElectronMonitorComponent.cxx
+    AliHLTEmcalElectronMonitor.cxx
+    AliHLTFastJetMonitorComponent.cxx
+    AliHLTFastJetMonitor.cxx
+    AliHLTGlobalTriggerComponent.cxx
+    AliHLTGlobalTriggerConfig.cxx
+    AliHLTGlobalTrigger.cxx
+    AliHLTGlobalTriggerWrapper.cxx
+    AliHLTMuonSpectroScalars.cxx
+    AliHLTMuonSpectroTriggerComponent.cxx
+    AliHLTTRDTriggerComponent.cxx
+    AliHLTTriggerAgent.cxx
+    AliHLTTriggerBarrelGeomMultiplicity.cxx
+    AliHLTTriggerBarrelMultiplicity.cxx
+    AliHLTTriggerCaloClusterEnergy.cxx
+    AliHLTTriggerCaloClusterEnergy.cxx
+    AliHLTTriggerCosmics.cxx
+    AliHLTTriggerCounterComponent.cxx
+    AliHLTTriggerCounters.cxx
+    AliHLTTriggerDecisionParameters.cxx
+    AliHLTTriggerDetectorGeom.cxx
+    AliHLTTriggerDetectorGeomRectangle.cxx
+    AliHLTTriggerEmcalClusterEnergy.cxx
+    AliHLTTriggerEmcalElectron.cxx
+    AliHLTTriggerGammaConversion.cxx
+    AliHLTTrigger.cxx
+    AliHLTTriggerITSMultiplicity.cxx
+    AliHLTTriggerPhosClusterEnergy.cxx
+    AliHLTTriggerPhosMip.cxx
+    AliHLTTriggerTrdClusterMultiplicity.cxx
+    AliHLTUpcTriggerComponent.cxx
    )
+
+if(FASTJET_FOUND)
+    include_directories(${FASTJET_INCLUDE_DIR})
+    link_directories(${FASTJET_LIBS_DIR})
+    add_definitions(${FASTJET_DEFINITIONS})
+
+    set(SRC ${SRCS}
+        AliHLTTriggerFastJet.h
+       )
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -48,11 +98,14 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec HLTbase FMDbase FmMDrec)
+set(LIBDEPS STEERBase STEER ESD CDB AOD RAWDatabase RAWDatarec ANALYSISalice HLTbase AliHLTUtil AliHLTITS AliHLTMUON AliHLTTRD TRDbase TRDrec TPCcalib MUONraw GenVector Gpad Graf Smatrix)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+if(FASTJET_FOUND)
+    target_link_libraries(${MODULE} ${FASTJET_LIBS})
+endif(FASTJET_FOUND)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")

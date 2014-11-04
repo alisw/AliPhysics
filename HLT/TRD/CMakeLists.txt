@@ -14,32 +14,55 @@
 # **************************************************************************
 
 # Module
-set(MODULE AliHLTFMD)
+set(MODULE AliHLTTRD)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/HLT/FMD)
+include_directories(${AliRoot_SOURCE_DIR}/HLT/TRD)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/FMD/FMDbase
-                    ${AliRoot_SOURCE_DIR}/FMD/FMDrec
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
+                    ${AliRoot_SOURCE_DIR}/HLT/BASE/util
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/TRD/TRDbase
+                    ${AliRoot_SOURCE_DIR}/TRD/TRDrec
                    )
 
 # Sources in alphabetical order
 set(SRCS
-    AliHLTFMDReconstructionComponent.cxx
-    AliHLTAgentFMD.cxx
+    AliHLTTRDAgent.cxx
+    AliHLTTRDCalibFitComponent.cxx
+    AliHLTTRDCalibHistoComponent.cxx
+    AliHLTTRDCalibrationComponent.cxx
+    AliHLTTRDCluster.cxx
+    AliHLTTRDClusterHistoComponent.cxx
+    AliHLTTRDClusterizerComponent.cxx
+    AliHLTTRDClusterizer.cxx
+    AliHLTTRDDefinitions.cxx
+    AliHLTTRDEsdWriterComponent.cxx
+    AliHLTTRDHistoMergerComponent.cxx
+    AliHLTTRDMonitorComponent.cxx
+    AliHLTTRDOfflineClusterizerComponent.cxx
+    AliHLTTRDOfflineTrackerV1Component.cxx
+    AliHLTTRDPreprocessorComponent.cxx
+    AliHLTTRDTrackerV1Component.cxx
+    AliHLTTRDTrack.cxx
+    AliHLTTRDTrackHistoComponent.cxx
+    AliHLTTRDTracklet.cxx
+    AliHLTTRDUtils.cxx
+    AliTRDonlineTrackingDataContainer.cxx
    )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+set(HDRS ${HDRS}
+    AliHLTTRDTrackletWordArray.h
+)
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
@@ -48,7 +71,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec HLTbase FMDbase FmMDrec)
+set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec HLTbase AliHLTUtil TRDbase TRDrec Net)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
