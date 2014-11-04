@@ -92,6 +92,7 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    if (!heffspd) 
       heffspd=new TH1F("heffspd","SPD efficiency + fake rate;Z position of a prim. vertex (cm);Efficiency",nb,min,max);
    heffspd->SetLineColor(2);
+   heffspd->Sumw2();
 
    TH1F *hfoundtrk=(TH1F*)gROOT->FindObject("hfoundtrk");
    if (!hfoundtrk) 
@@ -100,6 +101,7 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    if (!hefftrk) 
       hefftrk=new TH1F("hefftrk","TRK efficiency;Z (cm);Efficiency",nb,min,max);
    hefftrk->SetLineColor(4);
+   hefftrk->Sumw2();
 
    TH1F *hfaketrk=(TH1F*)gROOT->FindObject("hfaketrk");
    if (!hfaketrk) 
@@ -109,6 +111,7 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
       heffaketrk=new TH1F("heffaketrk","TRK fake rate;Z (cm);Fake rate",nb,min,max);
    heffaketrk->SetLineColor(4);
    heffaketrk->SetFillColor(590);
+   heffaketrk->Sumw2();
 
 
 
@@ -124,6 +127,7 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    if (!hnefftrk) 
       hnefftrk=new TH1F("hnefftrk","TRK efficiency;Number of tracks;Efficiency",nb,min,max);
    hnefftrk->SetLineColor(4);
+   hnefftrk->Sumw2();
 
    TH1F *hnfaketrk=(TH1F*)gROOT->FindObject("hnfaketrk");
    if (!hnfaketrk) 
@@ -133,6 +137,7 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
       hneffaketrk=new TH1F("hneffaketrk","TRK fake rate;Number of tracks;Efficiency",nb,min,max);
    hneffaketrk->SetLineColor(4);
    hneffaketrk->SetFillColor(590);
+   hneffaketrk->Sumw2();
 
 
    // **** Generate a rerefence file with reconstructable vertices
@@ -313,11 +318,11 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    gPad->SetGridx(); gPad->SetGridy();
    heffspd->Divide(hfoundspd,hgood,1,1,"b");
    heffspd->SetMinimum(0.); heffspd->SetMaximum(1.2);
-   heffspd->Draw("hist");
+   heffspd->Draw("ehist");
    hefftrk->Divide(hfoundtrk,hgood,1,1,"b");
-   hefftrk->Draw("histsame");
+   hefftrk->Draw("ehistsame");
    heffaketrk->Divide(hfaketrk,hgood,1,1,"b");
-   heffaketrk->Draw("histsame");
+   heffaketrk->Draw("ehistsame");
    gPad->BuildLegend(0.13,0.65,0.46,0.86)->SetFillColor(0);
 
    c2->cd(2);
@@ -325,8 +330,8 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    hnefftrk->SetMinimum(0.); hnefftrk->SetMaximum(1.2);
    hneffaketrk->Divide(hnfaketrk,hngood,1,1,"b");
    gPad->SetGridx(); gPad->SetGridy();
-   hnefftrk->Draw();
-   hneffaketrk->Draw("same");
+   hnefftrk->Draw("ehist");
+   hneffaketrk->Draw("ehistsame");
    gPad->BuildLegend(0.13,0.65,0.46,0.86)->SetFillColor(0);
 
 
