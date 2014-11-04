@@ -29,6 +29,7 @@ class TH1F;
 class TCanvas;
 class TTree;
 class TH2;
+class TF1;
 
 class AliTPCCalPad : public TNamed {
  public:
@@ -50,6 +51,7 @@ class AliTPCCalPad : public TNamed {
   // convolution
   Bool_t MedianFilter(Int_t deltaRow, Int_t deltaPad, AliTPCCalPad*outlierPad=0, Bool_t doEdge=kTRUE);
   Bool_t LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction, Int_t type, AliTPCCalPad*outlierPad=0, Bool_t doEdge=kTRUE);
+  Bool_t Convolute(Double_t sigmaPad, Double_t sigmaRow,  AliTPCCalPad*outlierPad=0, TF1 *fpad=0, TF1 *frow=0 );
   //
   // algebra
   void Add(Float_t c1);   // add constant c1 to all channels of all ROCs

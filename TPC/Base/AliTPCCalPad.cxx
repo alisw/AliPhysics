@@ -187,6 +187,21 @@ Bool_t  AliTPCCalPad::LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction
   return isOK;
 }
 
+Bool_t  AliTPCCalPad::Convolute(Double_t sigmaPad, Double_t sigmaRow,  AliTPCCalPad*outlierPad, TF1 *fpad, TF1 *frow){
+  //
+  // replace constent with median in the neigborhood
+  //
+  Bool_t isOK=kTRUE;
+  for (Int_t isec = 0; isec < kNsec; isec++) {
+    AliTPCCalROC *outlierROC=(outlierPad==NULL)?NULL:outlierPad->GetCalROC(isec);
+    if (fROC[isec]){
+      isOK&=fROC[isec]->Convolute(sigmaPad,sigmaRow,outlierROC,fpad,frow);
+    }
+  }
+  return isOK;
+}
+
+
 //_____________________________________________________________________________
 void AliTPCCalPad::Add(Float_t c1)
 {

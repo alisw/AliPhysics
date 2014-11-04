@@ -257,6 +257,43 @@ Bool_t AliTPCCalROC::LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction,
   return kTRUE;
 }
 
+Bool_t  AliTPCCalROC::Convolute(Double_t sigmaPad, Double_t sigmaRow,  AliTPCCalROC*outlierROC, TF1 */*fpad*/, TF1 */*frow*/){
+  //
+  // convolute the calibration with function fpad,frow
+  // in range +-4 sigma
+
+  Float_t *newBuffer=new Float_t[fNChannels] ;
+  //
+  for (Int_t iRow=0; iRow< Int_t(fNRows); iRow++){
+    Int_t nPads=GetNPads(iRow); // number of rows in current row
+    for (Int_t iPad=0; iPad<nPads; iPad++){
+      Int_t jRow0=TMath::Max(TMath::Nint(iRow-sigmaRow*4.),0);
+      Int_t jRow1=TMath::Min(TMath::Nint(iRow+sigmaRow*4.),Int_t(fNRows));
+      Int_t jPad0=TMath::Max(TMath::Nint(iPad-sigmaPad*4.),0);
+      Int_t jPad1=TMath::Min(TMath::Nint(iRow+sigmaPad*4.),Int_t(nPads));
+      //
+      Double_t sumW=0;
+      Double_t sumCal=0;
+      for (Int_t jRow=jRow0; jRow<=jRow1; jRow++){
+	for (Int_t jPad=jPad0; jPad<=jPad1; jPad++){
+	  if (!IsInRange(jRow,jPad)) continue;
+	  Bool_t isOutlier=(outlierROC==NULL)?kFALSE:outlierROC->GetValue(jRow,jPad)>0;
+	  if (!isOutlier){
+	    Double_t weight= TMath::Gaus(jPad,iPad,sigmaPad)*TMath::Gaus(jRow,iRow,sigmaRow);	    
+	    sumCal+=weight*GetValue(jRow,jPad);
+	    sumW+=weight;
+	  }
+	}
+      }
+      if (sumW>0){
+	sumCal/=sumW;
+	newBuffer[fkIndexes[iRow]+iPad]=sumCal;
+      }
+    }
+  }
+  memcpy(fData, newBuffer,GetNchannels()*sizeof(Float_t));
+  delete []newBuffer;
+}
 
 
 //
