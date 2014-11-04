@@ -471,7 +471,7 @@ void AliLRCAnalysis::SetErrors(TH2D* source, const char *name, double ptd, TH2D*
 		fPrAbs->SetBinContent(i, profX->GetBinContent(i));
 		if(fPrf->GetBinContent(i)!=0)
 		{
-			  pt = profX->GetBinContent(i);
+		          //pt = profX->GetBinContent(i);
 			  fPrAbs->SetBinError(i,ptd*sqrt(Integral(nb,i))/fPrf->GetBinContent(i));
 		}
 		fPrRel->SetBinContent(i, fPrAbs->GetBinContent(i)/fPrb->GetMean());
@@ -489,7 +489,7 @@ void AliLRCAnalysis::SetErrors(TH2D* source, const char *name, double ptd, const
 		fPrAbs->SetBinContent(i, profX->GetBinContent(i));
 		if(fPrf->GetBinContent(i)!=0)
 		{
-			  pt = profX->GetBinContent(i);
+		          //pt = profX->GetBinContent(i);
 			  fPrAbs->SetBinError(i,ptd*sqrt(nb->GetBinContent(i)/fPrf->GetBinContent(i)));
 		}
 		fPrRel->SetBinContent(i, fPrAbs->GetBinContent(i)/fPrb->GetMean());
