@@ -466,7 +466,6 @@ void AliLRCAnalysis::SetErrors(TH2D* source, const char *name, double ptd, TH2D*
 //Calculate arrors for ptn and ptpt
 	TProfile* profX = (TProfile*) source->ProfileX(name, 1, source->GetNbinsY());
 	fdptb = ptd;
-	double pt;
 	for(int i = 0; i < profX->GetNbinsX(); i++)		
 	{
 		fPrAbs->SetBinContent(i, profX->GetBinContent(i));
@@ -485,7 +484,6 @@ void AliLRCAnalysis::SetErrors(TH2D* source, const char *name, double ptd, const
 //Calculate arrors for ptn and ptpt
 	TProfile* profX = (TProfile*) source->ProfileX(name, 1, source->GetNbinsY());
 	fdptb = ptd;
-	double pt;
 	for(int i = 0; i < profX->GetNbinsX(); i++)		
 	{
 		fPrAbs->SetBinContent(i, profX->GetBinContent(i));
