@@ -55,6 +55,7 @@ void rec(Bool_t useIonTail, Double_t crossTalkCorrection) {
   //
   // Run reconstruction
   //
+  AliTPCReconstructor::SetStreamLevel(AliTPCtracker::kStreamCrosstalkMatrix | AliTPCtracker::kStreamXtalk  | AliTPCtracker::kStreamIonTail);  // enable steaming of information for ion tail cancelation and crosstalk
   TStopwatch timer;
   timer.Start();
   reco.Run();
