@@ -18,6 +18,7 @@
 class TH1F;
 class TH2F;
 class TArrayI;
+class TF1;
 //_____________________________________________________________________________
 class AliTPCCalROC : public TNamed {
 
@@ -41,6 +42,7 @@ class AliTPCCalROC : public TNamed {
   //
   Bool_t MedianFilter(Int_t deltaRow, Int_t deltaPad, AliTPCCalROC*outlierROC=0, Bool_t doEdge=kTRUE);
   Bool_t LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction, Int_t type,  AliTPCCalROC*outlierROC=0, Bool_t doEdge=kTRUE);
+  Bool_t Convolute(Double_t sigmaPad, Double_t sigmaRow,  AliTPCCalROC*outlierPad=0, TF1 *fpad=0, TF1 *frow=0 );
   //
   // algebra
   void Add(Float_t c1); // add c1 to each channel of the ROC
