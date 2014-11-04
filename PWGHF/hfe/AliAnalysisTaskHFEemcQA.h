@@ -58,7 +58,9 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     TH1F        *fVtxY;//!Vertex y 
     TH2F        *fTrigMulti;//!trigger multiplicity 
     TH1F        *fHistClustE;//!cluster energy
-    TH2F        *fEMCClsEtaPhi;//! EMC cluster eta and phi 
+    TH2F        *fEMCClsEtaPhi;//! EMC cluster eta and phi
+    TH1F        *fHistoNCls;//! No of clusters per event
+    TH1F        *fHistoNCells;//! No of cells per cluster
     TH1F        *fNegTrkIDPt;//!neg track ID
     TH1F        *fTrkPt;//!track pt
     TH1F        *fTrketa;//!track eta
@@ -74,6 +76,7 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     TH2F        *fEMCdEdx;//!EMC trk dedx
     TH2F        *fEMCTPCnsig;//! EMC trk nsig
     TH2F        *fEMCTPCNpts;//!EMC Npoints used for dedx
+    TH1F        *fClsEAftMatch;//!EMC Cluster energy after track matching 
     TH2F        *fHistdEdxEop;//!E/p vs dedx
     TH2F        *fHistNsigEop;//!E/p vs dedx
     TH2F        *fHistEop;//!pt vs E/p
