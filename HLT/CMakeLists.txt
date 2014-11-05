@@ -57,6 +57,7 @@ endif()
 add_subdirectory(QA)
 add_subdirectory(rec)
 add_subdirectory(shuttle)
+add_subdirectory(sim)
 
 
 #file(GLOB PACKAGES CMake*.pkg)
