@@ -106,6 +106,21 @@ void AliTOFPIDResponse::SetTOFtail(Float_t tail){
     fTOFtailResponse->SetParameter(3,tail);
   }
 }
+void AliTOFPIDResponse::SetTOFtailAllPara(Float_t mean,Float_t tail){
+  if(!fTOFtailResponse){
+    fTOFtailResponse = new TF1("fTOFtail","[0]*TMath::Exp(-(x-[1])*(x-[1])/2/[2]/[2])* (x < [1]+[3]*[2]) + (x > [1]+[3]*[2])*[0]*TMath::Exp(-(x-[1]-[3]*[2]*0.5)*[3]/[2] * 0.0111)*0.018",-1000,1000);
+    fTOFtailResponse->SetParameter(0,1);
+    fTOFtailResponse->SetParameter(1,mean);
+    fTOFtailResponse->SetParameter(2,1);
+    fTOFtailResponse->SetParameter(3,tail);
+    fTOFtailResponse->SetNpx(10000);
+  }
+  else{
+    fTOFtailResponse->SetParameter(1,mean);
+    fTOFtailResponse->SetParameter(3,tail);
+  }  
+}
+
 //_________________________________________________________________________
 Double_t 
 AliTOFPIDResponse::GetMismatchProbability(Double_t time,Double_t eta) const {

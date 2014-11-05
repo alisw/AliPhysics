@@ -9,7 +9,6 @@
 #include "AliLog.h"
 #include "AliESDEvent.h"
 #include "AliITSUClusterPix.h"
-#include "AliITSUGeomTGeo.h"
 #include "AliITSUTrackerCooked.h"
 #include "AliITSUTrackCooked.h" 
 #include "AliITSUReconstructor.h" 
@@ -62,9 +61,6 @@ fSAonly(kTRUE)
   //--------------------------------------------------------------------
   const Double_t 
   klRadius[7]={2.34, 3.15, 3.93, 19.61, 24.55, 34.39, 39.34}; //tdr6
-
-  AliITSUGeomTGeo *gm  = new AliITSUGeomTGeo(kTRUE,kTRUE);
-  AliITSUClusterPix::SetGeom(gm);
 
   for (Int_t i=0; i<kNLayers; i++) fgLayers[i].SetR(klRadius[i]);
 
@@ -234,9 +230,6 @@ Int_t AliITSUTrackerCooked::MakeSeeds() {
   // This is the main pattern recongition function.
   // Creates seeds out of two clusters and another point.
   //--------------------------------------------------------------------
-   if (fSeeds) {fSeeds->Delete(); delete fSeeds;}
-   fSeeds=new TObjArray(77777);
-
    const Double_t zv=GetZ();
 
    AliITSUlayer &layer1=fgLayers[kSeedingLayer1];
@@ -314,7 +307,6 @@ Int_t AliITSUTrackerCooked::MakeSeeds() {
      ((AliITSUClusterPix*)c3)->GoToFrameTrk();
    }
 
-   fSeeds->Sort();
    return fSeeds->GetEntriesFast();
 }
 
@@ -326,7 +318,30 @@ Int_t AliITSUTrackerCooked::Clusters2Tracks(AliESDEvent *event) {
 
   if (!fSAonly) AliITSUTrackerGlo::Clusters2Tracks(event);
 
-  Int_t nSeeds=MakeSeeds();
+  if (fSeeds) {fSeeds->Delete(); delete fSeeds;}
+  fSeeds=new TObjArray(77777);
+
+  //Seeding with the triggered primary vertex
+  Double_t xyz[3];
+  const AliESDVertex *vtx=0;
+  vtx=event->GetPrimaryVertexSPD();
+  if (vtx->GetStatus()) {
+     xyz[0]=vtx->GetX(); xyz[1]=vtx->GetY(); xyz[2]=vtx->GetZ();
+     SetVertex(xyz);
+     MakeSeeds();
+  }
+  //Seeding with the pileup primary vertices
+  TClonesArray *verticesSPD=event->GetPileupVerticesSPD();
+  Int_t nfoundSPD=verticesSPD->GetEntries(); 
+  for (Int_t v=0; v<nfoundSPD; v++) {
+      vtx=(AliESDVertex *)verticesSPD->UncheckedAt(v);
+      if (!vtx->GetStatus()) continue;
+      xyz[0]=vtx->GetX(); xyz[1]=vtx->GetY(); xyz[2]=vtx->GetZ();
+      SetVertex(xyz);
+      MakeSeeds();
+  }
+  fSeeds->Sort();
+  Int_t nSeeds=fSeeds->GetEntriesFast();
 
   // Possibly, icrement the seeds with additional clusters (Kalman)
 

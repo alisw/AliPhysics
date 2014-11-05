@@ -393,6 +393,7 @@ void AliITSURecoLayer::ProcessClusters(Int_t mode)
   AliITSURecoSens* curSens = 0;
   for (int icl=0;icl<ncl;icl++) {
     AliITSUClusterPix* cl = (AliITSUClusterPix*) fClusters->UncheckedAt(icl);
+    cl->SetRecoInfo(0);
     cl->GoToFrameTrk();
     int vID = cl->GetVolumeId();
     if (vID<curSensID) {AliFatal("Clusters are not sorted in increasing sensorID");}

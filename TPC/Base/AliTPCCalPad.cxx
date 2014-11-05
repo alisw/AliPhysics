@@ -45,8 +45,8 @@
 #include <TLegend.h>
 #include <TCut.h>
 #include <TVirtualPad.h>
-
-
+#include "AliTPCPreprocessorOnline.h"
+#include "AliTPCCalibViewer.h"
 ClassImp(AliTPCCalPad)
 
 //_____________________________________________________________________________
@@ -159,7 +159,33 @@ void AliTPCCalPad::SetCalROC(AliTPCCalROC* roc, Int_t sector){
       fROC[sector]->SetValue(ichannel, roc->GetValue(ichannel));
 }
 
+Bool_t  AliTPCCalPad::MedianFilter(Int_t deltaRow, Int_t deltaPad, AliTPCCalPad*outlierPad,  Bool_t doEdge){
+  //
+  // replace constent with median in the neigborhood
+  //
+  Bool_t isOK=kTRUE;
+  for (Int_t isec = 0; isec < kNsec; isec++) {
+    AliTPCCalROC *outlierROC=(outlierPad==NULL)?NULL:outlierPad->GetCalROC(isec);
+    if (fROC[isec]){
+      isOK&=fROC[isec]->MedianFilter(deltaRow,deltaPad,outlierROC,doEdge);
+    }
+  }
+  return isOK;
+}
 
+Bool_t  AliTPCCalPad::LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction, Int_t type, AliTPCCalPad*outlierPad,  Bool_t doEdge){
+  //
+  // replace constent with LTM statistic  in  neigborhood
+  //
+  Bool_t isOK=kTRUE;
+  for (Int_t isec = 0; isec < kNsec; isec++) {
+    AliTPCCalROC *outlierROC=(outlierPad==NULL)?NULL:outlierPad->GetCalROC(isec);
+    if (fROC[isec]){
+      isOK&=fROC[isec]->LTMFilter(deltaRow, deltaPad,fraction,type,outlierROC,doEdge);
+    }
+  }
+  return isOK;
+}
 
 //_____________________________________________________________________________
 void AliTPCCalPad::Add(Float_t c1)
@@ -883,4 +909,41 @@ AliTPCCalPad * AliTPCCalPad::MakeCalPadFromHistoRPHI(TH2 * hisA, TH2* hisC){
     }
   }
   return calPad;
+}
+
+AliTPCCalPad *AliTPCCalPad::MakePadFromTree(TTree * treePad, const char *query, const char* name){
+  //
+  // make cal pad from the tree 
+  //
+  if (!treePad){
+    ::Error("AliTPCCalPad::MakePadFromTree(TTree * treePad, const char *query, const char* name)","Input tree is missing");
+    return 0;
+  }
+  if (treePad->GetEntries()!=kNsec) return 0;
+  AliTPCCalPad * calPad= new AliTPCCalPad(name,name);
+  if (name) calPad->SetName(name);
+  for (Int_t iSec=0; iSec<72; iSec++){
+    AliTPCCalROC* calROC  = calPad->GetCalROC(iSec);
+    UInt_t nchannels = (UInt_t)treePad->Draw(query,"1","goff",1,iSec);
+    if (nchannels!=calROC->GetNchannels()) {
+      ::Error("AliTPCCalPad::MakePad",TString::Format("%s\t:Wrong query sector\t%d\t%d",treePad->GetName(),iSec,nchannels).Data());
+      break;
+    }
+    for (UInt_t index=0; index<nchannels; index++) calROC->SetValue(index,treePad->GetV1()[index]);
+  }
+  return calPad;
+}
+
+void AliTPCCalPad::AddFriend(TTree * treePad, const char *friendName, const char *fname){
+  //
+  //
+  //
+  TObjArray *fArray = new TObjArray(1);
+  fArray->AddLast(this);
+  this->SetName(friendName);
+  AliTPCCalibViewer::MakeTree(fname, fArray,0);
+  TFile * f = TFile::Open(fname);
+  TTree * tree = (TTree*)f->Get("calPads");
+  treePad->AddFriend(tree,friendName);
+  //  tree->AddFriend(TString::Format("%s = calPads",friendName).Data(),fname);
 }

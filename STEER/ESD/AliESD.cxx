@@ -37,6 +37,7 @@ AliESD::AliESD():
   fTimeStamp(0),
   fEventType(0),
   fTriggerMask(0),
+  fTriggerMaskNext50(0),
   fTriggerCluster(0),
   fRecoVersion(0),
   fMagneticField(0),
@@ -101,6 +102,7 @@ AliESD::AliESD(const AliESD& esd):
   fTimeStamp(esd.fTimeStamp),
   fEventType(esd.fEventType),
   fTriggerMask(esd.fTriggerMask),
+  fTriggerMaskNext50(esd.fTriggerMaskNext50),
   fTriggerCluster(esd.fTriggerCluster),
   fRecoVersion(esd.fRecoVersion),
   fMagneticField(esd.fMagneticField),
@@ -196,6 +198,7 @@ void AliESD::Reset()
   fTimeStamp = 0;
   fEventType = 0;
   fTriggerMask=0;
+  fTriggerMaskNext50=0;
   fTriggerCluster=0;
   fRecoVersion=0;
   fMagneticField=0;
@@ -556,18 +559,19 @@ void AliESD::Print(Option_t *) const
   // Print header information of the event
   //
   printf("ESD run information\n");
-  printf("Event # in file %d Bunch crossing # %d Orbit # %d Period # %d Run # %d Trigger %lld Magnetic field %f \n",
+  printf("Event # in file %d Bunch crossing # %d Orbit # %d Period # %d Run # %d Trigger %lld %lld Magnetic field %f \n",
 	 GetEventNumberInFile(),
 	 GetBunchCrossNumber(),
 	 GetOrbitNumber(),
 	 GetPeriodNumber(),
 	 GetRunNumber(),
 	 GetTriggerMask(),
+	 GetTriggerMaskNext50(),
 	 GetMagneticField() );
     printf("Vertex: (%.4f +- %.4f, %.4f +- %.4f, %.4f +- %.4f) cm\n",
-	   fPrimaryVertex.GetXv(), fPrimaryVertex.GetXRes(),
-	   fPrimaryVertex.GetYv(), fPrimaryVertex.GetYRes(),
-	   fPrimaryVertex.GetZv(), fPrimaryVertex.GetZRes());
+	   fPrimaryVertex.GetX(), fPrimaryVertex.GetXRes(),
+	   fPrimaryVertex.GetY(), fPrimaryVertex.GetYRes(),
+	   fPrimaryVertex.GetZ(), fPrimaryVertex.GetZRes());
     printf("Mean vertex in RUN: X=%.4f Y=%.4f cm\n",
 	   GetDiamondX(),GetDiamondY());
     printf("SPD Multiplicity. Number of tracklets %d \n",
@@ -629,8 +633,8 @@ void AliESD::SetDiamond(const AliESDVertex *vertex)
   //
   // Set the interaction diamond
   //  
-    fDiamondXY[0]=vertex->GetXv();
-    fDiamondXY[1]=vertex->GetYv();
+    fDiamondXY[0]=vertex->GetX();
+    fDiamondXY[1]=vertex->GetY();
     Double_t cov[6];
     vertex->GetCovMatrix(cov);
     fDiamondCovXY[0]=cov[0];

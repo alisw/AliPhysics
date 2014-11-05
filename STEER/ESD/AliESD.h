@@ -54,6 +54,7 @@ public:
   void SetTimeStamp(UInt_t timeStamp){fTimeStamp = timeStamp;}
   void SetEventType(UInt_t eventType){fEventType = eventType;}
   void SetTriggerMask(ULong64_t n) {fTriggerMask=n;}
+  void SetTriggerMaskNext50(ULong64_t n) {fTriggerMaskNext50=n;}
   void SetTriggerCluster(UChar_t n) {fTriggerCluster = n;}
   void SetMagneticField(Float_t mf){fMagneticField = mf;}
   Float_t GetMagneticField() const {return fMagneticField;}
@@ -168,6 +169,7 @@ public:
   UInt_t    GetTimeStamp()  const { return fTimeStamp;}
   UInt_t    GetEventType()  const { return fEventType;}
   ULong64_t GetTriggerMask() const {return fTriggerMask;}
+  ULong64_t GetTriggerMaskNext50() const {return fTriggerMaskNext50;}
   UChar_t  GetTriggerCluster() const {return fTriggerCluster;}
   
   Int_t GetNumberOfTracks()     const {return fTracks.GetEntriesFast();}
@@ -266,6 +268,7 @@ protected:
   UInt_t       fTimeStamp;       // Time stamp
   UInt_t       fEventType;       // Type of Event
   ULong64_t    fTriggerMask;     // Trigger Type (mask)
+  ULong64_t    fTriggerMaskNext50; // Trigger Type (mask)
   UChar_t      fTriggerCluster;  // Trigger cluster (mask)
   Int_t        fRecoVersion;     // Version of reconstruction 
   Float_t      fMagneticField;   // Solenoid Magnetic Field in kG : for compatibility with AliMagF
@@ -319,7 +322,7 @@ protected:
   AliESDAD *fESDAD; // AD ESD object containing bit pattern
   TClonesArray fErrorLogs;        // Raw-data reading error messages
 
-  ClassDef(AliESD,23)  //ESD class 
+  ClassDef(AliESD,24)  //ESD class 
 };
 #endif 
 

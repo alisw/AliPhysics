@@ -3,11 +3,21 @@
 # Author: Johny Jose m(johny.jose@cern.ch)
 #         Port of previous Makefile build to cmake
 
-cmake_minimum_required(VERSION 2.8.4 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
 
 file(GLOB PACKAGES CMake*.pkg)
 
 ALICE_BuildModule()
 
-install ( FILES "SpectatorSignal.root" "GlauberMCDist.root" 
-	  DESTINATION ZDC )
+install ( FILES 
+  GlauberMCDist.root
+  GlauberMCHistos.root
+  PMTGainsdata.txt
+  SpectatorSignal.root
+  ZNASignal.root
+  ZNCSignal.root
+  ZNsignalntu.root
+  ZPASignal.root
+  ZPCSignal.root
+  ZPsignalntu.root
+  DESTINATION ZDC )

@@ -347,7 +347,8 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
     if (aod){
 
       // get centrality of the event
-      AliAODHeader *header=aod->GetHeader();
+      AliAODHeader *header=dynamic_cast<AliAODHeader*>(aod->GetHeader());
+      if(!header) AliFatal("Not a standard AOD");
       AliCentrality *centrality=header->GetCentralityP();
       if(!centrality)  AliError(Form("No AliCentrality attached to AOD header"));
       fCentrality = centrality->GetCentralityPercentile("V0M");
@@ -365,7 +366,7 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
 	if (headerH) fRP = headerH->GetReactionPlaneAngle();
       }
   
-      esdEP = aod->GetHeader()->GetEventplaneP();
+      esdEP = header->GetEventplaneP();
       if(!esdEP) return; // protection against missing EP branch (nanoAODs)
       esdEP->Reset(); 
      
@@ -417,7 +418,8 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
 	  }
 	}
 	
-	AliAODTrack* trmax = aod->GetTrack(0);
+	AliAODTrack* trmax = dynamic_cast<AliAODTrack*>(aod->GetTrack(0));
+	if(!trmax) AliFatal("Not a standard AOD");
 	for (int iter = 1; iter<NT;iter++){
 	  AliAODTrack* track = dynamic_cast<AliAODTrack*> (tracklist->At(iter));
 	  if (track && (track->Pt() > trmax->Pt())) trmax = track;
@@ -881,7 +883,8 @@ TObjArray* AliEPSelectionTask::GetAODTracksAndMaxID(AliAODEvent* aod, Int_t& max
   Int_t ntpc = fESDtrackCuts->GetMinNClusterTPC(); 
   
   for (Int_t i = 0; i < aod->GetNumberOfTracks() ; i++){
-     tr = aod->GetTrack(i);
+     tr = dynamic_cast<AliAODTrack*>(aod->GetTrack(i));
+     if(!tr) AliFatal("Not a standard AOD");
      maxidtemp = tr->GetID(); 
      if(maxidtemp < 0 && fAODfilterbit != 128) continue;
      if(maxidtemp > -1 && fAODfilterbit == 128) continue;

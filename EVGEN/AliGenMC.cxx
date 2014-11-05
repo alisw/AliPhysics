@@ -129,6 +129,7 @@ void AliGenMC::Init()
 	break;
     case kHardMuons:	
     case kBSemiMuonic:
+    case kDSemiMuonic:
     case kSemiMuonic:
     case kDiMuon:
     case kJpsiDiMuon:
@@ -413,11 +414,10 @@ void AliGenMC::BeamCrossAngle()
   // Applies a boost in the y-direction in order to take into account the 
   // beam crossing angle
 
-  Double_t thetaPr0, phiPr0, pyPr2, pzPr2;
+  Double_t thetaPr0, pyPr2, pzPr2;
   TVector3 beta;
   
   thetaPr0 = fXingAngleY / 2.;
-  phiPr0 = 0;
 
   // Momentum of the CMS system
   pyPr2 = TMath::Sqrt(fEnergyCMS * fEnergyCMS/ 4 - 0.938 * 0.938) * TMath::Sin(thetaPr0); 

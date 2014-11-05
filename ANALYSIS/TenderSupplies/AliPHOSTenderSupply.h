@@ -56,7 +56,8 @@ protected:
   void   FindTrackMatching(Int_t mod,TVector3 *locpos,Double_t &dx, Double_t &dz, Double_t &pttrack, Int_t &charge); 
   Float_t CorrectNonlinearity(Float_t en) ;
   Double_t TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge) ;
-  Double_t TestLambda(Double_t pt,Double_t l1,Double_t l2) ;
+  Double_t TestCoreLambda(Double_t pt,Double_t l1,Double_t l2) ;
+  Double_t TestFullLambda(Double_t pt,Double_t l1,Double_t l2) ;
   Bool_t IsGoodChannel(Int_t mod, Int_t ix, Int_t iz) ;
   void   CorrectPHOSMisalignment(TVector3 & globalPos, Int_t module);
   void   EvalLambdas(AliVCluster * clu, Double_t &m02, Double_t &m20) ;

@@ -2391,8 +2391,8 @@ void AliESDtrack::GetTOFLabel(Int_t *p) const {
     for (Int_t i=0; i<3; i++) p[i]=tofcl->GetLabel(i);
   }
   else{
-    if(fTOFLabel)
-      for (Int_t i=0; i<3; i++) p[i]=fTOFLabel[i];
+    if(fTOFLabel) for (Int_t i=0; i<3; i++) p[i]=fTOFLabel[i];
+    else for (int i=3;i--;) p[i] = -1;
   }
 }
 

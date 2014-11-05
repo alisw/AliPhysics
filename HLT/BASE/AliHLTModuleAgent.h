@@ -388,6 +388,13 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
     return GetReconstructionChains(NULL,runloader);
   }
 
+  /**
+   * Get current component handler
+   */
+  AliHLTComponentHandler* GetComponentHandler() const {
+    return fpComponentHandler;
+  }
+
  protected:
 
  private:

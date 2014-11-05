@@ -30,95 +30,66 @@
 #include <EveBase/AliEveApplication.h>
 #include <EveBase/AliEveMainWindow.h>
 
+
+#include <iostream>
+using namespace std;
+
 int main(int argc, char **argv)
 {
-    static const TEveException kEH("alieve::main");
-	
-    if(argc>1)
-    {
-        if(strcmp(argv[1],"-dev")==0 ){
-
-            AliEveApplication app("AliEve", &argc, argv);
-            AliEveMainWindow alieve("ALICE Event Display");
-
-            app.Connect(&alieve, "CloseWindow()", "TApplication", &app, "Terminate(=0)" );
-            app.Run();
-
-            return 0;
-        }
-    }
-    else
-    {
-	    Info(kEH.Data(),"No parameters");
-    }
-    
-    if (gSystem->Getenv("ALICE_ROOT") == 0)
-    {
-        Error(kEH.Data(), "ALICE_ROOT is not defined, aborting.");
+    if (gSystem->Getenv("ALICE_ROOT") == 0){
+        cout<<"ALICE_ROOT is not defined, aborting."<<endl;
         gSystem->Exit(1);
     }
 
     TString evedir(Form("%s/EVE", gSystem->Getenv("ALICE_ROOT")));
 
-    if (gSystem->AccessPathName(evedir) == kTRUE)
-    {
-        Error(kEH.Data(), "Directory $ALICE_ROOT/EVE does not exist.");
+    if (gSystem->AccessPathName(evedir) == kTRUE){
+        cout<<"Directory $ALICE_ROOT/EVE does not exist."<<endl;
         gSystem->Exit(1);
     }
 
     TString macPath(gROOT->GetMacroPath());
     macPath += Form(":%s/macros", evedir.Data());
     gInterpreter->AddIncludePath(evedir);
-    if (gSystem->Getenv("ALICE_ROOT") != 0)
-    {
-        macPath += Form(":%s/alice-macros", evedir.Data());
-        gInterpreter->AddIncludePath(Form("%s/EVE", gSystem->Getenv("ALICE_ROOT")));
-        gInterpreter->AddIncludePath(Form("%s/PWG0", gSystem->Getenv("ALICE_ROOT")));
-        gInterpreter->AddIncludePath(Form("%s/include", gSystem->Getenv("ALICE_ROOT")));
-        gInterpreter->AddIncludePath(gSystem->Getenv("ALICE_ROOT"));
-    }
-    {
-        // TabCom fails on double-colon in macro-path.
-        // I fixed this in ROOT sometime ago ... could be removed
-        // when we go to 5.26.
-        TPMERegexp doubleColon(":{2,}", "og");
-        doubleColon.Substitute(macPath, ":");
-    }
+    macPath += Form(":%s/alice-macros", evedir.Data());
+    gInterpreter->AddIncludePath(Form("%s/EVE", gSystem->Getenv("ALICE_ROOT")));
+    gInterpreter->AddIncludePath(Form("%s/PWG0", gSystem->Getenv("ALICE_ROOT")));
+    gInterpreter->AddIncludePath(Form("%s/include", gSystem->Getenv("ALICE_ROOT")));
+    gInterpreter->AddIncludePath(gSystem->Getenv("ALICE_ROOT"));
+    
+    // TabCom fails on double-colon in macro-path.
+    // I fixed this in ROOT sometime ago ... could be removed
+    // when we go to 5.26.
+//    TPMERegexp doubleColon(":{2,}", "og");
+//    doubleColon.Substitute(macPath, ":");
+
     gROOT->SetMacroPath(macPath);
 
     // make sure logger is instantiated
     AliLog::GetRootLogger();
-    TApplication  *app = new TRint("App", &argc, argv);
-
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,25,4) || defined XXX_LATEST_ROOT
-    // Waiting for update by Pawel. Now GED in ROOT is better again :)
-    // Uncomment when fixed in AliEveGedXXX.
-    // TEveGListTreeEditorFrame::SetEditorClass("AliEveGedEditor");
-#endif
+    TRint *app = new TRint("App", &argc, argv);
 
     TEveManager::Create();
     gEve->GetDefaultViewer()->SetElementName("3D View");
     gEve->GetSelection()->SetPickToSelect(TEveSelection::kPS_PableCompound);
     gEve->GetHighlight()->SetPickToSelect(TEveSelection::kPS_PableCompound);
-
     gEve->RegisterGeometryAlias("Default", Form("%s/alice-data/default_geo.root", evedir.Data()));
 
-    try {AliEveConfigManager::InitializeMaster();}
+    try {
+        AliEveConfigManager::InitializeMaster();
+    }
     catch (TEveException exc) {
+        cout<<"\n\nException while initializing config manager"<<endl;
         AliErrorGeneral("alieve_main",exc.Data());
     }
 
-    app->Connect( "TEveBrowser", "CloseWindow()", "TRint", app, "Terminate(=0)");
-
+    app->Connect("TEveBrowser", "CloseWindow()", "TRint", app, "Terminate()");
     app->Run(kTRUE);
 
     if (gEve && gEve->GetBrowser())	gEve->GetBrowser()->UnmapWindow();
-
     TEveManager::Terminate();
-    app->Terminate(0);
-
     if(gEve) {delete gEve; gEve = 0;}
-
-
+    
+    app->Terminate(0);
     return 0;
 }

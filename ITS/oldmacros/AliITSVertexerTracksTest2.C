@@ -78,9 +78,9 @@ void AliITSVertexerTracksTest2(Int_t evFirst=0,Int_t evLast=0,
       cout <<"========================================================\n";
       cout << "Event number: "<<i<<")  Z Vertex:"<<endl;
       if(vert){
-	cout<<"FOUND: "<<vert->GetZv()<<"; "<<vert->GetZRes()<<endl;
+	cout<<"FOUND: "<<vert->GetZ()<<"; "<<vert->GetZRes()<<endl;
 	cout <<" True Z position "<<primaryVertex[2]<<endl;
-	cout<<", diff= "<<(primaryVertex[2]-vert->GetZv())*10000.<<endl;
+	cout<<", diff= "<<(primaryVertex[2]-vert->GetZ())*10000.<<endl;
       }
       else {
 	cout<<"NOT FOUND "<<endl;

@@ -17,7 +17,7 @@ class AliITSURecoSens : public TObject
   //
   enum {kLeft=BIT(1),kRight=BIT(2),kUp=BIT(3),kDown=BIT(4)};
   //
-  AliITSURecoSens(Int_t id);
+  AliITSURecoSens(Int_t id=0);
   AliITSURecoSens(const AliITSURecoSens &source); 
   virtual ~AliITSURecoSens() {}
   AliITSURecoSens& operator=(const AliITSURecoSens &source); 

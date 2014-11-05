@@ -10,9 +10,8 @@
 #pragma link C++ class  AliADdigit+;
 #pragma link C++ class  AliADSDigit+;
 #pragma link C++ class  AliADCalibData+;
-//#pragma link C++ class  AliADCalibData+;
-//#pragma link C++ class  AliADPreprocessor+;
-//#pragma link C++ class  AliADDataDCS+;
+#pragma link C++ class  AliADPreprocessor+;
+#pragma link C++ class  AliADDataDCS+;
 //#pragma link C++ class  AliADQAChecker+;
 //#pragma link C++ class  AliADMisAligner+;
 //#pragma link C++ class  AliADLogicalSignal+;

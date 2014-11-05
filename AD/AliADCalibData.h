@@ -6,6 +6,10 @@
 
 #include "TNamed.h"
 #include "AliADConst.h"
+
+class AliADDataDCS;
+
+
 class AliADCalibData: public TNamed {
 
  public:
@@ -16,6 +20,7 @@ class AliADCalibData: public TNamed {
   AliADCalibData& operator= (const AliADCalibData &calibda);
   virtual ~AliADCalibData();
   void Reset();
+  void FillDCSData(AliADDataDCS * data);
 
   Float_t  GetPedestal(Int_t channel)   const {return fPedestal[channel];}
   Float_t* GetPedestal()   const {return (float*)fPedestal;}

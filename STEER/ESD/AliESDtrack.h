@@ -162,11 +162,10 @@ public:
   Bool_t GetOuterExternalParameters
         (Double_t &alpha, Double_t &x, Double_t p[5]) const;
   Bool_t GetOuterExternalCovariance(Double_t cov[15]) const;
-
+  
   Bool_t GetOuterHmpExternalParameters
         (Double_t &alpha, Double_t &x, Double_t p[5]) const;
-  Bool_t GetOuterHmpExternalCovariance(Double_t cov[15]) const;
-
+  Bool_t GetOuterHmpExternalCovariance(Double_t cov[15]) const; 
   
   Int_t GetNcls(Int_t idet) const;
   Int_t GetClusters(Int_t idet, Int_t *idx) const;

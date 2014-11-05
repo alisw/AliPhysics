@@ -19,6 +19,7 @@
 #pragma link C++ class AliVfriendEvent+;
 #pragma link C++ class AliVfriendTrack+;
 #pragma link C++ class AliVHeader+;
+#pragma link C++ class AliVAODHeader+;
 #pragma link C++ class AliVEventHandler+;
 #pragma link C++ class AliVEventPool+;
 #pragma link C++ class AliVCuts+;
@@ -94,6 +95,7 @@
 #pragma link C++ class AliTRDPIDParams::AliTRDPIDThresholds+;
 #pragma link C++ class AliTRDPIDParams::AliTRDPIDCentrality+;
 /* #endif */
+#pragma link C++ class AliTRDdEdxParams+;
 #pragma link C++ class AliTRDPIDResponseObject+;
 #pragma link C++ class AliTRDNDFast+;
 #pragma link C++ class AliTRDTKDInterpolator+;

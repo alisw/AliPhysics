@@ -98,6 +98,7 @@ AliHLTComponentHandler::AliHLTComponentHandler(AliHLTAnalysisEnvironment* pEnv)
 AliHLTComponentHandler::~AliHLTComponentHandler()
 {
   // destructor
+  DeactivateAgents();
   DeleteOwnedComponents();
   UnloadLibraries();
   if (fRunType) delete [] fRunType;
@@ -637,6 +638,18 @@ int AliHLTComponentHandler::ActivateAgents(const char* library, const char* blac
   }
 
   return agents.size();
+}
+
+int AliHLTComponentHandler::DeactivateAgents() const {
+  int ret=0;
+  for (AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent();
+       pAgent!=NULL; pAgent=AliHLTModuleAgent::GetNextAgent()) {
+    if(pAgent->GetComponentHandler()==this){
+      pAgent->ActivateComponentHandler(NULL);
+      ++ret;
+    }
+  }
+  return ret;
 }
 
 int AliHLTComponentHandler::DeleteOwnedComponents()

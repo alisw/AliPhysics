@@ -98,7 +98,7 @@ void AliGenPileup::SetGenerator(AliGenerator *generator, Float_t rate, Bool_t fl
 
 void AliGenPileup::AddGenerator(AliGenerator *Generator,
 				const char* Name,
-				Float_t RateExp , TFormula* /*form*/)
+				Float_t RateExp , TFormula* /*form*/, Int_t /*ntimes*/)
 {
   // The method used to add the pileup generator
   // in the cocktail list.

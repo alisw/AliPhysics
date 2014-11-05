@@ -363,7 +363,6 @@ void AliGenMUONCocktail::Generate()
 // Generate event 
     TIter next(fEntries);
     AliGenCocktailEntry *entry = 0;
-    AliGenCocktailEntry *preventry = 0;
     AliGenerator* gen = 0;
     const TObjArray *partArray = gAlice->GetMCApp()->Particles();
 
@@ -395,7 +394,6 @@ void AliGenMUONCocktail::Generate()
 				gen->SetNumberParticles(npart);
 				gen->Generate();
 				entry->SetLast(partArray->GetEntriesFast());
-				preventry = entry;
 	    		  // }
 			}
 		}  

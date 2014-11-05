@@ -85,30 +85,72 @@ AliStorageDatabase::~AliStorageDatabase(){
 }
 
 void AliStorageDatabase::InsertEvent(int runNumber,
-				     int eventNumber,
-				     char *system,
-				     int multiplicity,
-				     char *filePath)
+                                     int eventNumber,
+                                     char *system,
+                                     int multiplicity,
+                                     char *filePath)
 {
-  TSQLResult* res;
-  res = fServer->Query(Form("replace into %s (run_number,event_number,system,multiplicity,permanent,file_path) values (%d,%d,'%s',%d,0,'%s');",fTable.c_str(),runNumber,eventNumber,system,multiplicity,filePath));
-  delete res;
+    TSQLResult *res = fServer->Query(Form("select * FROM %s WHERE run_number = %d AND event_number = %d AND permanent = 1;",fTable.c_str(),runNumber,eventNumber));
+    TSQLRow *row = res->Next();
 
+    if(!row)
+    {
+        res = fServer->Query(Form("REPLACE INTO %s (run_number,event_number,system,multiplicity,permanent,file_path) VALUES (%d,%d,'%s',%d,0,'%s');",fTable.c_str(),runNumber,eventNumber,system,multiplicity,filePath));
+    }
+
+    delete row;
+    delete res;
 }
 
 bool AliStorageDatabase::MarkEvent(struct eventStruct event)
 {  
   TSQLResult* res;
   res = fServer->Query(Form("UPDATE %s SET permanent = 1 WHERE run_number = %d AND event_number = %d;",fTable.c_str(),event.runNumber,event.eventNumber));
-  if(res) {
-    delete res;
-    return 1;
-  }
-  else {
-    delete res;
-    return 0;
-  }
+  if(!res) 
+    {
+      cout<<"DATABASE -- couldn't update permanent flag"<<endl;
+      delete res;
+      return 0;
+    }
+  else 
+    {  
+      cout<<"DATABASE -- permanent flag updated"<<endl;
+      
+      res = fServer->Query(Form("UPDATE %s SET file_path = '%s' WHERE run_number = %d AND event_number = %d;",fTable.c_str(),Form("%s/permEvents.root",fStoragePath.c_str()), event.runNumber,event.eventNumber));
+      if(!res) 
+	{
+	  cout<<"DATABASE -- couldn't update file's path. Unsetting permanent flag"<<endl;
+	  res = fServer->Query(Form("UPDATE %s SET permanent = 0 WHERE run_number = %d AND event_number = %d;",fTable.c_str(),event.runNumber,event.eventNumber));
+	  delete res;
+	  return 0;
+	}
+      else
+	{
+	  cout<<"DATABASE -- event marked"<<endl;
+	  delete res;
+	  return 1;
+	}
+    }
 }
+
+bool AliStorageDatabase::UpdateEventPath(struct eventStruct event,const char *newPath)
+{  
+  TSQLResult* res;
+  res = fServer->Query(Form("UPDATE %s SET file_path = '%s' WHERE run_number = %d AND event_number = %d;",fTable.c_str(),newPath,event.runNumber,event.eventNumber));
+  if(!res) 
+    {
+      cout<<"DATABASE -- couldn't update file's path"<<endl;
+      delete res;
+      return 0;
+    }
+  else 
+    {
+      cout<<"DATABASE -- path updated for event:"<<event.eventNumber<<endl;
+      delete res;
+      return 1;
+    }
+}
+
 
 vector<serverListStruct> AliStorageDatabase::GetList(struct listRequestStruct list)
 {
@@ -164,7 +206,11 @@ AliESDEvent* AliStorageDatabase::GetEvent(struct eventStruct event)
 		return NULL;
 	}
 	AliESDEvent *data;
-	tmpFile->GetObject(Form("event%d;1",event.eventNumber),data);
+	tmpFile->cd(Form("run%d",event.runNumber));
+	data = (AliESDEvent*)gDirectory->Get(Form("event%d;1",event.eventNumber));
+
+
+	//	tmpFile->GetObject(Form("event%d;1",event.eventNumber),data);
 
 	return data;
 }
@@ -261,7 +307,7 @@ AliESDEvent* AliStorageDatabase::GetPrevEvent(struct eventStruct event)
 
 struct eventStruct AliStorageDatabase::GetOldestEvent()
 {
-    TSQLResult *result = fServer->Query(Form("SELECT * FROM %s ORDER BY run_number,event_number;",fTable.c_str()));
+    TSQLResult *result = fServer->Query(Form("SELECT * FROM %s WHERE permanent = 0 ORDER BY run_number,event_number;",fTable.c_str()));
     
     TSQLRow *row;
     struct eventStruct oldestEvent = {0,0};

@@ -130,7 +130,7 @@ void AliL1Delay(const Char_t *esdfilename = "./AliESDs.root", const Char_t *gali
     {
       esdTree->GetEvent(iEvent);
       const AliESDVertex *esdVtx = event->GetVertex();
-      Double_t zVtx = esdVtx->GetZv();
+      Double_t zVtx = esdVtx->GetZ();
       if(zVtx == 0.) continue; // Vertex is not found. Skip the event.
       Int_t nTrk=event->GetNumberOfTracks();
 

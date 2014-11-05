@@ -185,7 +185,7 @@ typedef struct {
 #define HWPARP COMMON_BLOCK(HWPARP, hwparp)
   COMMON_BLOCK_DEF(HwparpCommon, HWPARP);
 
-int const MODMAX = 5;
+int const MODMAX = 50;
 
 typedef struct {
   double  ALPFAC;
@@ -304,7 +304,7 @@ typedef struct {
   int    IFLMIN;
   int    IHPRO;
   int    IPRO;
-  int    MAPQ[10];
+  int    MAPQ[6];
   int    MAXFL;
   int    BGSHAT;
   int    COLISR;
@@ -370,7 +370,7 @@ typedef struct {
 
 
 typedef struct {
-  double REPWT[5][4][4];
+  double REPWT[5][5][4];
   double SNGWT;
   double DECWT;
   double QWT[3];
@@ -406,7 +406,7 @@ typedef struct {
   double HBAR;
   double PLTCUT;
   double VMIN2;
-  double VTXPIP[4];
+  double VTXPIP[5];
   double XMIX[2];
   double XMRCT[2];
   double YMIX[2];
@@ -487,7 +487,7 @@ typedef struct {
   double GHSQSS[2][2][6][4];
   double XLMNSS;
   double RMMNSS;
-  double IMSSM;
+  double DMSSM;
   double SENHNC[24];
   double SSPARITY;
   int    SUSYIN;

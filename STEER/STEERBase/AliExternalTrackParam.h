@@ -125,6 +125,7 @@ class AliExternalTrackParam: public AliVTrack {
 
   Double_t OneOverPt() const { return 1./Pt(); }
   Double_t Phi() const;
+  Double_t PhiPos() const;
   Double_t Theta() const;
   virtual Double_t E() const;
   virtual Double_t M() const;

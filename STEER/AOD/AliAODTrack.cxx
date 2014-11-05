@@ -1151,6 +1151,43 @@ const AliTOFHeader* AliAODTrack::GetTOFHeader() const {
   return fAODEvent->GetTOFHeader();
 }
   
+//_______________________________________________________
+Int_t AliAODTrack::GetNcls(Int_t idet) const
+{
+  // Get number of clusters by subdetector index
+  //
+  Int_t ncls = 0;
+  switch(idet){
+  case 0:
+    ncls = GetITSNcls();
+    break;
+  case 1:
+    ncls = (Int_t)GetTPCNcls();
+    break;
+  case 2:
+    ncls = (Int_t)GetTRDncls();
+    break;
+  case 3:
+    break;
+    /*if (fTOFindex != -1)
+      ncls = 1;*/
+    break;
+  case 4: //PHOS
+    break;
+  case 5: //HMPID
+    break;
+    if ((GetHMPIDcluIdx() >= 0) && (GetHMPIDcluIdx() < 7000000)) {
+      if ((GetHMPIDcluIdx()%1000000 != 9999) && (GetHMPIDcluIdx()%1000000 != 99999)) {
+	ncls = 1;
+	}
+    }    
+    break;
+  default:
+    break;
+  }
+  return ncls;
+}
+
 Int_t AliAODTrack::GetTrackParam         ( AliExternalTrackParam & ) const {return 0;} 
 Int_t AliAODTrack::GetTrackParamRefitted ( AliExternalTrackParam & ) const {return 0;} 
 Int_t AliAODTrack::GetTrackParamIp       ( AliExternalTrackParam & ) const {return 0;} 
@@ -1158,5 +1195,4 @@ Int_t AliAODTrack::GetTrackParamTPCInner ( AliExternalTrackParam & ) const {retu
 Int_t AliAODTrack::GetTrackParamOp       ( AliExternalTrackParam & ) const {return 0;} 
 Int_t AliAODTrack::GetTrackParamCp       ( AliExternalTrackParam & ) const {return 0;} 
 Int_t AliAODTrack::GetTrackParamITSOut   ( AliExternalTrackParam & ) const {return 0;} 
-
 

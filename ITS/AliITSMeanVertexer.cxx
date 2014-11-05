@@ -391,8 +391,8 @@ void AliITSMeanVertexer::AddToMean(AliESDVertex *vert){
      // second pass
      if(killOutliers && fAccEvents.TestBitNumber(i)){
        vert=(AliESDVertex*)fVertArray[i];
-       Double_t dist=(vert->GetXv()-wpos[0])*(vert->GetXv()-wpos[0]);
-       dist+=(vert->GetYv()-wpos[1])*(vert->GetYv()-wpos[1]);
+       Double_t dist=(vert->GetX()-wpos[0])*(vert->GetX()-wpos[0]);
+       dist+=(vert->GetY()-wpos[1])*(vert->GetY()-wpos[1]);
        dist=sqrt(dist)*10.;    // distance in mm
        fDistH->Fill(dist);
        if(dist>fRCut)fAccEvents.SetBitNumber(i,kFALSE);

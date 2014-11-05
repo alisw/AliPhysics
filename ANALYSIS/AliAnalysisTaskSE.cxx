@@ -55,7 +55,7 @@
 ClassImp(AliAnalysisTaskSE)
 
 ////////////////////////////////////////////////////////////////////////
-AliAODHeader*    AliAnalysisTaskSE::fgAODHeader         = NULL;
+AliVHeader*      AliAnalysisTaskSE::fgAODHeader         = NULL;
 AliTOFHeader*    AliAnalysisTaskSE::fgTOFHeader         = NULL;
 AliAODVZERO*     AliAnalysisTaskSE::fgAODVZERO          = NULL;
 TClonesArray*    AliAnalysisTaskSE::fgAODTracks         = NULL;

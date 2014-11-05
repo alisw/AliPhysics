@@ -30,6 +30,7 @@ class TLinearFitter;
 
 class AliVEvent;
 class AliTRDPIDResponseObject;
+class AliTRDdEdxParams;
 class AliTOFPIDParams;
 class AliHMPIDPIDParams;
 class AliOADBContainer;
@@ -138,6 +139,9 @@ public:
   void SetCustomTPCpidResponse(const char* tpcpid) { fCustomTPCpidResponse = tpcpid; }
   const char* GetCustomTPCpidResponse() const { return fCustomTPCpidResponse.Data(); }
   
+  void SetCustomTPCetaMaps(const char* tpcEtaMaps) { fCustomTPCetaMaps = tpcEtaMaps; }
+  const char* GetCustomTPCetaMaps() const { return fCustomTPCetaMaps.Data(); }
+  
   void InitialiseEvent(AliVEvent *event, Int_t pass, Int_t run=-1);
   void SetCurrentFile(const char* file) { fCurrentFile=file; }
   
@@ -183,6 +187,8 @@ public:
   AliPIDResponse(const AliPIDResponse &other);
   AliPIDResponse& operator=(const AliPIDResponse &other);
 
+  EBeamType GetBeamType() const {return fBeamTypeNum;};
+
 
 protected:
   AliITSPIDResponse   fITSResponse;    //PID response function of the ITS
@@ -215,6 +221,7 @@ private:
 
   TString fOADBPath;                   // OADB path to use
   TString fCustomTPCpidResponse;       // Custom TPC Pid Response file for debugging purposes
+  TString fCustomTPCetaMaps;           // Custom TPC eta map file for debugging purposes
   
   TString fBeamType;                   //! beam type (PP) or (PBPB)
   TString fLHCperiod;                  //! LHC period
@@ -237,6 +244,7 @@ private:
   Bool_t fUseTPCMultiplicityCorrection; // Use TPC multiplicity correction
 
   AliTRDPIDResponseObject *fTRDPIDResponseObject; //! TRD PID Response Object
+  AliTRDdEdxParams * fTRDdEdxParams; //! TRD dEdx Response for truncated mean signal
 
   Float_t fTOFtail;                    //! TOF tail effect used in TOF probability
   AliTOFPIDParams *fTOFPIDParams;      //! TOF PID Params - period depending (OADB loaded)
@@ -275,6 +283,7 @@ private:
   void SetTRDPidResponseMaster();
   void InitializeTRDResponse();
   void SetTRDSlices(UInt_t TRDslicesForPID[2],AliTRDPIDResponse::ETRDPIDMethod method) const;
+  void SetTRDdEdxParams();
 
   //TOF
   void SetTOFPidResponseMaster();
@@ -318,7 +327,7 @@ private:
   EDetPidStatus GetComputePIDProbability  (EDetector detCode,  const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus GetComputeITSProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus GetComputeTPCProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
-  EDetPidStatus GetComputeTOFProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
+  EDetPidStatus GetComputeTOFProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],Bool_t kNoMism=kFALSE) const;
   EDetPidStatus GetComputeEMCALProbability(const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus GetComputePHOSProbability (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus GetComputeHMPIDProbability(const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;

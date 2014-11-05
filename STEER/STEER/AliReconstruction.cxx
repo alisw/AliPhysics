@@ -3345,6 +3345,9 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
       if (esd->GetTriggerMask() != input.GetClassMask())
 	AliError(Form("Invalid trigger pattern found in CTP raw-data: %llx %llx",
 		      input.GetClassMask(),esd->GetTriggerMask()));
+      if (esd->GetTriggerMaskNext50() != input.GetClassMaskNext50())
+	AliError(Form("Invalid trigger pattern found in CTP raw-data Next50: %llx %llx",
+		      input.GetClassMaskNext50(),esd->GetTriggerMaskNext50()));
       if (esd->GetOrbitNumber() != input.GetOrbitID())
 	AliError(Form("Invalid orbit id found in CTP raw-data: %x %x",
 		      input.GetOrbitID(),esd->GetOrbitNumber()));
@@ -3383,6 +3386,12 @@ Bool_t AliReconstruction::FillTriggerScalers(AliESDEvent*& esd)
      for(Int_t i=0;i<50;i++){
           if((1ull<<i) & esd->GetTriggerMask()){
           AliTriggerScalersESD* scalesd = fRunScalers->GetScalersForEventClass( timestamp, i+1);
+          if(scalesd)esdheader->SetTriggerScalersRecord(scalesd);
+        }
+     }
+     for(Int_t i=0;i<50;i++){
+          if((1ull<<i) & esd->GetTriggerMaskNext50()){
+          AliTriggerScalersESD* scalesd = fRunScalers->GetScalersForEventClass( timestamp, i+51);
           if(scalesd)esdheader->SetTriggerScalersRecord(scalesd);
         }
      }
@@ -4212,6 +4221,7 @@ Bool_t AliReconstruction::GetEventInfo()
   UChar_t clustmask = 0;
   TString trclasses;
   ULong64_t trmask = fEventInfo.GetTriggerMask();
+  ULong64_t trmaskNext50 = fEventInfo.GetTriggerMaskNext50();
   const TObjArray& classesArray = config->GetClasses();
   Int_t nclasses = classesArray.GetEntriesFast();
   for( Int_t iclass=0; iclass < nclasses; iclass++ ) {
@@ -4221,6 +4231,17 @@ Bool_t AliReconstruction::GetEventInfo()
       if (fesd) fesd->SetTriggerClass(trclass->GetName(),trindex);
       if (fRawReader) fRawReader->LoadTriggerClass(trclass->GetName(),trindex);
       if (trmask & (1ull << trindex)) {
+	trclasses += " ";
+	trclasses += trclass->GetName();
+	trclasses += " ";
+	clustmask |= trclass->GetCluster()->GetClusterMask();
+      }
+    }
+    if (trclass && trclass->GetMaskNext50()>0) {
+      Int_t trindex = TMath::Nint(TMath::Log2(trclass->GetMaskNext50()))+50;
+      if (fesd) fesd->SetTriggerClass(trclass->GetName(),trindex);
+      if (fRawReader) fRawReader->LoadTriggerClass(trclass->GetName(),trindex);
+      if (trmaskNext50 & (1ull << (trindex-50))) {
 	trclasses += " ";
 	trclasses += trclass->GetName();
 	trclasses += " ";
@@ -4261,6 +4282,7 @@ Bool_t AliReconstruction::GetEventInfo()
   // Set the information in ESD
   if (fesd) {
     fesd->SetTriggerMask(trmask);
+    fesd->SetTriggerMaskNext50(trmaskNext50);
     fesd->SetTriggerCluster(clustmask);
   }
 

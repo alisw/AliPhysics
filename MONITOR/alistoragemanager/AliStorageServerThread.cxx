@@ -67,14 +67,18 @@ void AliStorageServerThread::StartCommunication()
 	
 	while(1)
 	{
+        cout<<"Server waiting for requests"<<endl;
 		request = eventManager->GetServerStruct(socket);
-		
+        cout<<"Server received request"<<endl;
 		switch(request->messageType)
 		  {
 		  case REQUEST_LIST_EVENTS:
 		    {
+                cout<<"SERVER -- received request for list of events"<<endl;
 		      vector<serverListStruct> result = fDatabase->GetList(request->list);
+                cout<<"SERVER -- got list from database"<<endl;
 		      eventManager->Send(result,socket);
+                cout<<"SERVER -- list was sent"<<endl;
 		      break;
 		    }
 		  case REQUEST_GET_EVENT:
@@ -119,7 +123,9 @@ void AliStorageServerThread::StartCommunication()
 		      eventManager->Send(MarkEvent(*markData),socket);
 		      break;
 		    }
-		  default:break;
+		  default:
+                  sleep(1);
+                  break;
 		  }
 
 	}
@@ -134,7 +140,10 @@ bool AliStorageServerThread::MarkEvent(struct eventStruct event)
       cout<<"SERVER -- couldn't open temp file"<<endl;
       return false;
     }
-  AliESDEvent *eventToMark = (AliESDEvent*)tmpFile->Get(Form("event%d",event.eventNumber));
+
+  tmpFile->cd(Form("run%d",event.runNumber));
+
+  AliESDEvent *eventToMark = (AliESDEvent*)gDirectory->Get(Form("event%d",event.eventNumber));
   if(!eventToMark)
     {
       cout<<"SERVER -- couldn't find such event"<<endl;
@@ -143,47 +152,47 @@ bool AliStorageServerThread::MarkEvent(struct eventStruct event)
     }
   cout<<"SERVER -- Marking event:"<<eventToMark->GetEventNumberInFile()<<endl;
 		
-	TFile *permFile = new TFile(Form("%s/permEvents.root",fStoragePath.c_str()),"update");//open/create perm file
+  TFile *permFile = new TFile(Form("%s/permEvents.root",fStoragePath.c_str()),"update");//open/create perm file
 	
-	if(!permFile)
-	{
-		cout<<"SERVER -- Couldn't open perm file"<<endl;
-		if(tmpFile){delete tmpFile;}
-		if(eventToMark){delete eventToMark;}
-		return false;
-	}
+  if(!permFile)
+    {
+      cout<<"SERVER -- Couldn't open perm file"<<endl;
+      if(tmpFile){delete tmpFile;}
+      if(eventToMark){delete eventToMark;}
+      return false;
+    }
 
-	//create new directory for this run
-	TDirectory *currentRun;
-	if((currentRun = permFile->mkdir(Form("run%d",event.runNumber))))
-	{
-		cout<<"SERVER -- creating new directory for this run"<<endl;
-		currentRun->cd();
-	}
-	else
-	{
-		cout<<"SERVER -- opening existing directory for this run"<<endl;
-		permFile->cd(Form("run%d",event.runNumber));
-	}
+  //create new directory for this run
+  TDirectory *currentRun;
+  if((currentRun = permFile->mkdir(Form("run%d",event.runNumber))))
+    {
+      cout<<"SERVER -- creating new directory for this run"<<endl;
+      currentRun->cd();
+    }
+  else
+    {
+      cout<<"SERVER -- opening existing directory for this run"<<endl;
+      permFile->cd(Form("run%d",event.runNumber));
+    }
 
-	//try to add record to the database
-	if(!fDatabase->MarkEvent(event))
-	{
-		cout<<"SERVER -- could not mark event in the database"<<endl;
-		if(tmpFile){delete tmpFile;}
-		if(eventToMark){delete eventToMark;}
-		if(permFile){delete permFile;}
-		return false;
-	}
+  //try to add record to the database
+  if(!fDatabase->MarkEvent(event))
+    {
+      cout<<"SERVER -- could not mark event in the database"<<endl;
+      if(tmpFile){delete tmpFile;}
+      if(eventToMark){delete eventToMark;}
+      if(permFile){delete permFile;}
+      return false;
+    }
 
-	eventToMark->Write(Form("event%d",event.eventNumber));
-	permFile->Close();
-	tmpFile->Close();
+  eventToMark->Write(Form("event%d",event.eventNumber));
+  permFile->Close();
+  tmpFile->Close();
 
-	if(tmpFile){delete tmpFile;}
-	if(eventToMark){delete eventToMark;}
-	if(permFile){delete permFile;}
-//	if(currentRun)delete currentRun;//this line crashes if there is no permanent file yet
-	return true;
+  if(tmpFile){delete tmpFile;}
+  if(eventToMark){delete eventToMark;}
+  if(permFile){delete permFile;}
+  //	if(currentRun)delete currentRun;//this line crashes if there is no permanent file yet
+  return true;
 }
 

@@ -272,7 +272,7 @@ Int_t LoopOverSecondaries(TParticle *mother) {
 								secondary,
 								kFALSE, // no fit performed
 					                        kFALSE, // no fit performed
-								AliAODTrack::kSecondary));
+								AliAODTrack::kFromDecayVtx));
 
       currTrack = (AliAODTrack*)tracks.Last();
       SetChargeAndPID(part->GetPdgCode(), currTrack);

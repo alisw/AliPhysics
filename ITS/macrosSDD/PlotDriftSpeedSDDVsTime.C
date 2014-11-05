@@ -29,7 +29,7 @@
 
 void FillErrors(Float_t errSpeed[260]);
 
-void PlotDriftSpeedSDDVsTime(Int_t year=2012, Int_t firstRun=172600, 
+void PlotDriftSpeedSDDVsTime(Int_t year=2014, Int_t firstRun=172600, 
 			     Int_t lastRun=999999999,
 			     Int_t anode=128){
   TGrid::Connect("alien:",0,0,"t");
@@ -150,7 +150,10 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2012, Int_t firstRun=172600,
   if(year==2009) timeZero=1247762992;
   else if(year==2010) timeZero=1262300400;
   else if(year==2011) timeZero=1293836400; // 1/1/2011 at 0:00 CEST
-  else timeZero=1325372400;
+  else if(year==2012) timeZero=1325372400;
+  else if(year==2013) timeZero=1356994800;
+  else timeZero=1388530800;
+
   while(!feof(listruns)){
     fscanf(listruns,"%s\n",filnam);
     Char_t directory[100];
@@ -333,31 +336,32 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2012, Int_t firstRun=172600,
     gFracAverSpeedVsRunL4->SetPoint(npt,(Float_t)nrun,(Double_t)fracAverSpeedL4);
 
     npt=gGoodInjVsTime->GetN();
+    if(goodTime){
+      gGoodInjVsTime->SetPoint(npt,timeday,iGoodInj);
+      gRescaledSpeedVsTime->SetPoint(npt,timeday,iRescaledSpeed);
+      gAverSpeedVsTime->SetPoint(npt,timeday,iAverSpeed);
 
-    gGoodInjVsTime->SetPoint(npt,timeday,iGoodInj);
-    gRescaledSpeedVsTime->SetPoint(npt,timeday,iRescaledSpeed);
-    gAverSpeedVsTime->SetPoint(npt,timeday,iAverSpeed);
+      gGoodInjVsTimeL3->SetPoint(npt,timeday,iGoodInjL3);
+      gRescaledSpeedVsTimeL3->SetPoint(npt,timeday,iRescaledSpeedL3);
+      gAverSpeedVsTimeL3->SetPoint(npt,timeday,iAverSpeedL3);
 
-    gGoodInjVsTimeL3->SetPoint(npt,timeday,iGoodInjL3);
-    gRescaledSpeedVsTimeL3->SetPoint(npt,timeday,iRescaledSpeedL3);
-    gAverSpeedVsTimeL3->SetPoint(npt,timeday,iAverSpeedL3);
-
-    gGoodInjVsTimeL4->SetPoint(npt,timeday,iGoodInjL4);
-    gRescaledSpeedVsTimeL4->SetPoint(npt,timeday,iRescaledSpeedL4);
-    gAverSpeedVsTimeL4->SetPoint(npt,timeday,iAverSpeedL4);
+      gGoodInjVsTimeL4->SetPoint(npt,timeday,iGoodInjL4);
+      gRescaledSpeedVsTimeL4->SetPoint(npt,timeday,iRescaledSpeedL4);
+      gAverSpeedVsTimeL4->SetPoint(npt,timeday,iAverSpeedL4);
 
 
-    gFracGoodInjVsTime->SetPoint(npt,timeday,(Double_t)fracGoodInj);
-    gFracRescaledSpeedVsTime->SetPoint(npt,timeday,(Double_t)fracRescaledSpeed);
-    gFracAverSpeedVsTime->SetPoint(npt,timeday,(Double_t)fracAverSpeed);
-
-    gFracGoodInjVsTimeL3->SetPoint(npt,timeday,(Double_t)fracGoodInjL3);
-    gFracRescaledSpeedVsTimeL3->SetPoint(npt,timeday,(Double_t)fracRescaledSpeedL3);
-    gFracAverSpeedVsTimeL3->SetPoint(npt,timeday,(Double_t)fracAverSpeedL3);
-
-    gFracGoodInjVsTimeL4->SetPoint(npt,timeday,(Double_t)fracGoodInjL4);
-    gFracRescaledSpeedVsTimeL4->SetPoint(npt,timeday,(Double_t)fracRescaledSpeedL4);
-    gFracAverSpeedVsTimeL4->SetPoint(npt,timeday,(Double_t)fracAverSpeedL4);
+      gFracGoodInjVsTime->SetPoint(npt,timeday,(Double_t)fracGoodInj);
+      gFracRescaledSpeedVsTime->SetPoint(npt,timeday,(Double_t)fracRescaledSpeed);
+      gFracAverSpeedVsTime->SetPoint(npt,timeday,(Double_t)fracAverSpeed);
+      
+      gFracGoodInjVsTimeL3->SetPoint(npt,timeday,(Double_t)fracGoodInjL3);
+      gFracRescaledSpeedVsTimeL3->SetPoint(npt,timeday,(Double_t)fracRescaledSpeedL3);
+      gFracAverSpeedVsTimeL3->SetPoint(npt,timeday,(Double_t)fracAverSpeedL3);
+      
+      gFracGoodInjVsTimeL4->SetPoint(npt,timeday,(Double_t)fracGoodInjL4);
+      gFracRescaledSpeedVsTimeL4->SetPoint(npt,timeday,(Double_t)fracRescaledSpeedL4);
+      gFracAverSpeedVsTimeL4->SetPoint(npt,timeday,(Double_t)fracAverSpeedL4);
+    }
 
     printf("Number of half-modules with drift speed from injectors = %d\n",iGoodInj);
     printf("Number of half-modules with average drift speed        = %d\n",iAverSpeed);
@@ -436,12 +440,8 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2012, Int_t firstRun=172600,
   Char_t title[100];
   if(year==2009){
     sprintf(title,"Time (days since July 16th 2009)");
-  }else if (year==2010){
-    sprintf(title,"Time (days since January 1st 2010)");
-  }else if (year==2011){
-    sprintf(title,"Time (days since January 1st 2011)");
   }else{
-    sprintf(title,"Time (days since January 1st 2012)");
+    sprintf(title,Form("Time (days since January 1st %d)",year));
   }
   gvdrvstime[2*mod1]->GetXaxis()->SetTitle(title);
   gvdrvstime[2*mod1]->GetYaxis()->SetTitle("Drift speed (#mum/ns)");
@@ -577,7 +577,7 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2012, Int_t firstRun=172600,
   c4->SetGridx();
   c4->SetGridy();
   gGoodInjVsRun->SetMarkerStyle(20);
-  gGoodInjVsRun->SetMinimum(50.);
+  gGoodInjVsRun->SetMinimum(0.);
   gGoodInjVsRun->SetMaximum(370.);
   gGoodInjVsRunL3->SetMarkerStyle(22);
   gGoodInjVsRunL3->SetMarkerColor(2);
@@ -647,7 +647,7 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2012, Int_t firstRun=172600,
   c5->SetGridx();
   c5->SetGridy();
   gGoodInjVsTime->SetMarkerStyle(20);
-  gGoodInjVsTime->SetMinimum(50.);
+  gGoodInjVsTime->SetMinimum(0.);
   gGoodInjVsTime->SetMaximum(370.);
   gGoodInjVsTimeL3->SetMarkerStyle(22);
   gGoodInjVsTimeL3->SetMarkerColor(2);

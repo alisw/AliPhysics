@@ -96,7 +96,7 @@ set ( SOFLAGS  "-m64 -dynamiclib -undefined dynamic_lookup -single_module")
 
 set ( ALLIB )
 
-set ( SYSLIBS  "-L/usr/X11R6/lib -lX11")
+#set ( SYSLIBS  "-L/usr/X11R6/lib -lX11")
 
 set ( EXEFLAGS  "-bind_at_load")
 
