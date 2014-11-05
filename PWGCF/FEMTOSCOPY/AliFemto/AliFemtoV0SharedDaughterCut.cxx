@@ -50,8 +50,8 @@ AliFemtoV0Collection AliFemtoV0SharedDaughterCut::AliFemtoV0SharedDaughterCutCol
             //if true there is a need to remove worse particle from the collection
             for(AliFemtoV0Iterator iter=V0CorrectedCollection.begin(); iter!=V0CorrectedCollection.end(); iter++ ) {
               if(positionInCollection==ii) {
+                V0CorrectedCollection.insert(iter, 1, pParticle);  //inserting new better V0
                 V0CorrectedCollection.erase(iter);                 //removing old V0
-                V0CorrectedCollection.insert(iter, pParticle);  //inserting new better V0
                 IdPosArray[ii] = IdPosArray[count_pass];           //update of positive daughter's ID
                 IdNegArray[ii] = IdNegArray[count_pass];           //update of negative daughter's ID
                 dcaToPrimVertex[ii] = dcaToPrimVertex[count_pass]; //update of V0's DCA to primary vertex
