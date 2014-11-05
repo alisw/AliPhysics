@@ -54,6 +54,7 @@ add_subdirectory(ZDC)
 if(ROOT_HASOPENGL STREQUAL "yes")
     add_subdirectory(EVE)
 endif()
+add_subdirectory(QA)
 
 
 #file(GLOB PACKAGES CMake*.pkg)
