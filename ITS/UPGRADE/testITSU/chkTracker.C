@@ -1,17 +1,17 @@
 AliITSUReconstructor* rec = 0;
 AliITSUTrackerGlo* trk=0;
 
-void chkTracker()
+void chkTracker(int run=0)
 {
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   man->SetSpecificStorage("GRP/GRP/Data",
-			  Form("local://%s",gSystem->pwd()));
+  			  Form("local://%s",gSystem->pwd()));
   man->SetSpecificStorage("ITS/Align/Data",
 			  Form("local://%s",gSystem->pwd()));
   man->SetSpecificStorage("ITS/Calib/RecoParam",
 			  Form("local://%s",gSystem->pwd()));
-  man->SetRun(0);
+  man->SetRun(run);
   if ( !TGeoGlobalMagField::Instance()->GetField() ) {
     printf("Loading field map...\n");
     AliGRPManager grpMan;
