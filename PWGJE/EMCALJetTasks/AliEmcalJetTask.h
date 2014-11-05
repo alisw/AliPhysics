@@ -14,6 +14,7 @@ namespace fastjet {
 #include "AliFJWrapper.h"
 #include "AliAODMCParticle.h"
 #include "AliEmcalJet.h"
+
 class AliEmcalJetTask : public AliAnalysisTaskSE {
  public:
 
@@ -32,7 +33,6 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
     kRX3Jet=1<<10
   };
 
-
   AliEmcalJetTask();
   AliEmcalJetTask(const char *name);
   virtual ~AliEmcalJetTask();
@@ -48,6 +48,8 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   SetClusName(const char *n)       { if(IsLocked()) return; fCaloName      = n     ; }
   void                   SetJetsName(const char *n)       { if(IsLocked()) return; fJetsName      = n     ; }
   void                   SetJetsSubName(const char *n)    { fJetsSubName   = n     ; }
+  void                   SetTracksSubName(const char *n)  { fTracksSubName = n     ; }
+  void                   SetClusSubName(const char *n)    { fClusSubName   = n     ; }
   void                   SetJetType(UInt_t t)             { if(IsLocked()) return; fJetType       = t     ; }
   void                   SetMarkConstituents(UInt_t m)    { if(IsLocked()) return; fMarkConst     = m     ; }
   void                   SetMinJetArea(Double_t a)        { if(IsLocked()) return; fMinJetArea    = a     ; }
@@ -139,11 +141,14 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Bool_t                 GetSortedArray(Int_t indexes[], std::vector<fastjet::PseudoJet> array) const;
 
    void                   FillJetConstituents(std::vector<fastjet::PseudoJet>& constituents,AliEmcalJet *jet,Double_t vertex[3],UInt_t jetCount,Int_t& nt,Int_t& nc,Double_t& maxCh,Double_t& maxNe,Int_t& ncharged,Int_t& nneutral,Double_t& neutralE,Double_t& mcpt,Int_t& cemc,Double_t& emcpt,Int_t& gall,Int_t& gemc,std::vector<fastjet::PseudoJet>& constituentsunsub,Int_t flag); 
-  Int_t                    GetIndexSub(Double_t ptsub,std::vector<fastjet::PseudoJet>& constituentsunsub);
+  Int_t                  GetIndexSub(Double_t phisub,std::vector<fastjet::PseudoJet>& constituentsunsub);
+
   TString                fTracksName;             // name of track collection
   TString                fCaloName;               // name of calo cluster collection
   TString                fJetsName;               // name of jet collection
   TString                fJetsSubName;            // name of subtracted jet collection
+  TString                fTracksSubName;          // name of subtracted track collection
+  TString                fClusSubName;            // name of subtracted clusters collection
   UInt_t                 fJetType;                // jet type (algorithm, radius, constituents)
   UInt_t                 fConstSel;               // select constituents from a previous jet finding
   UInt_t                 fMCConstSel;             // select MC constituents (label!=0) from a previous jet finding
@@ -172,13 +177,14 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Bool_t                 fIsPSelSet;              //!=true if physics selection was set
   Bool_t                 fIsMcPart;               //!=true if MC particles are given as input
   Bool_t                 fIsEmcPart;              //!=true if emcal particles are given as input (for clusters)
+  Bool_t                 fIsPicoTrack;            //!=true if pico tracks are given as input
+  Bool_t                 fIsEsdClus;              //!=true if AliESDCaloCluster is given as input
   Bool_t                 fLegacyMode;             //! if true, enable FJ 2.x behavior
   Bool_t                 fCodeDebug;              // use nontested code changes 
   Bool_t                 fPionMassClusters;       // assume pion mass for clusters
-
   Bool_t                 fDoGenericSubtractionJetMass;        // calculate generic subtraction
   Bool_t                 fDoGenericSubtractionGR;             // calculate generic subtraction for angular structure function GR
-  Bool_t                 fDoGenericSubtractionExtraJetShapes; //calculate generic subtraction for other jet shapes like radialmoment,pTD etc
+  Bool_t                 fDoGenericSubtractionExtraJetShapes; // calculate generic subtraction for other jet shapes like radialmoment,pTD etc
   Bool_t                 fDoConstituentSubtraction;           // calculate constituent subtraction
   Bool_t                 fUseExternalBkg;                     // use external background for generic subtractor
   TString                fRhoName;                            // name of rho
@@ -192,6 +198,8 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
 
   TClonesArray          *fJets;                   //!jet collection
   TClonesArray          *fJetsSub;                //!subtracted jet collection
+  TClonesArray          *fTracksSub;              //!subtracted track collection
+  TClonesArray          *fClusSub;                //!subtracted cluster collection
   AliVEvent             *fEvent;                  //!current event
   TClonesArray          *fTracks;                 //!tracks collection
   TClonesArray          *fClus;                   //!cluster collection
@@ -202,6 +210,6 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 16) // Jet producing task
+  ClassDef(AliEmcalJetTask, 17) // Jet producing task
 };
 #endif
