@@ -48,10 +48,8 @@
 #include "AliESDTOFHit.h"
 #include "AliESDTOFMatch.h"
 #include "AliESDfriend.h"
-
 #include "AliESDv0.h"
 
-class AliESDv0;
 class AliESDkink;
 class AliESDHLTtrack;
 class AliESDVertex;
