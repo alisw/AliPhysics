@@ -9,7 +9,7 @@ AliDIMListenerThread::AliDIMListenerThread()
     InitDIMListeners();
     
 #ifdef ALI_DATE
-    DimCurrentInfo SORrunNumber("/LOGBOOK/SUBSCRIBE/DAQ_SOR_PHYSICS_1",-1);
+    /* DimCurrentInfo SORrunNumber("/LOGBOOK/SUBSCRIBE/DAQ_SOR_PHYSICS_1",-1);
     DimCurrentInfo EORrunNumber("/LOGBOOK/SUBSCRIBE/DAQ_EOR_PHYSICS_1",-1);
 
     if(SORrunNumber.getData() && EORrunNumber.getData())
@@ -19,27 +19,27 @@ AliDIMListenerThread::AliDIMListenerThread()
         
         if(SORrunNumber.getInt() != EORrunNumber.getInt()){StartOfRun(SORrunNumber.getInt());}
     }
-    else{cout<<"DIM Listener -- no data received from dim server"<<endl;}
+    else{cout<<"DIM Listener -- no data received from dim server"<<endl;}*/
 #endif
 }
 
 AliDIMListenerThread::~AliDIMListenerThread()
-{
+{/*
     for (int i = 0; i < 5; ++i){
         if(fDimSORListener[i]) delete fDimSORListener[i];
         if(fDimEORListener[i]) delete fDimEORListener[i];
         
         fDimSORListener[i] = 0;
         fDimEORListener[i] = 0;
-    }
+	}*/
 }
 
 void AliDIMListenerThread::InitDIMListeners()
-{
+{/*
     for (int i = 0; i < 5; ++i)
     {
 #ifdef ALI_DATE
-        if (i == 0)
+             if (i == 0)
         {
             fDimSORListener[i] = new AliDimIntNotifier("/LOGBOOK/SUBSCRIBE/DAQ_SOR_PHYSICS");
             fDimEORListener[i] = new AliDimIntNotifier("/LOGBOOK/SUBSCRIBE/DAQ_EOR_PHYSICS");
@@ -57,7 +57,7 @@ void AliDIMListenerThread::InitDIMListeners()
         fDimEORListener[i]=0x0;
 #endif
     }
-    
+    */
 }
 
 void AliDIMListenerThread::StartOfRun(int run)
