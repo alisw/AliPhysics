@@ -42,7 +42,7 @@ void AliCommunicationThread::CommunicationHandle()
     
     cout<<"CLIENT -- Communication stated"<<endl;
     
-    mutex mtx;
+    // mutex mtx;
     
     while(!fFinished)
     {
@@ -51,7 +51,7 @@ void AliCommunicationThread::CommunicationHandle()
         
         if(request)
         {
-            lock_guard<mutex> lock(mtx);
+	  //      lock_guard<mutex> lock(mtx);
             cout<<"COMMUNICATION -- received request"<<endl;
             switch(request->messageType)
             {

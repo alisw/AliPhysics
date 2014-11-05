@@ -1,12 +1,14 @@
 #ifndef __AliDIMListenerThread__
 #define __AliDIMListenerThread__
+/*
+#include "AliDimIntNotifier.h"
 
 #ifdef ALI_DATE
 #include <dic.hxx>
 #endif
 
 class AliDimIntNotifier;
-
+*/
 class AliDIMListenerThread
 {
 public:
@@ -19,8 +21,8 @@ public:
 private:
     void InitDIMListeners();
     
-    AliDimIntNotifier *fDimSORListener[5];
-    AliDimIntNotifier *fDimEORListener[5];
+    // AliDimIntNotifier *fDimSORListener[5];
+    //AliDimIntNotifier *fDimEORListener[5];
 };
 
 #endif /* defined(__AliDIMListenerThread__) */
