@@ -56,6 +56,7 @@ if(ROOT_HASOPENGL STREQUAL "yes")
 endif()
 add_subdirectory(QA)
 add_subdirectory(rec)
+add_subdirectory(shuttle)
 
 
 #file(GLOB PACKAGES CMake*.pkg)
