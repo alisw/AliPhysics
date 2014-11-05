@@ -1410,10 +1410,10 @@ Int_t  AliTPCtracker::LoadClusters()
 
 void  AliTPCtracker::CalculateXtalkCorrection(){
   //
-  //
+  // Calculate crosstalk estimate
   //
   const Int_t nROCs   = 72;
-  const Int_t   nIterations=2;
+  const Int_t   nIterations=4;  // 
   // 0.) reset crosstalk matrix 
   //
   for (Int_t isector=0; isector<nROCs*4; isector++){  //set all ellemts of crosstalk matrix to 0 
@@ -1499,40 +1499,39 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
 	(*crossTalkMatrix)*=0;
       }
     }      
-  } // end of 2 iterations
-
-  //
-  // 2.) dump the crosstalk matrices to tree for further investigation
-  //     a.) to estimate fluctuation of pedestal in indiviula wire segments
-  //     b.) to check correlation between regions
-  //     c.) to check relative conribution of signal below threshold to crosstalk
-  
-  if (AliTPCReconstructor::StreamLevel()&kStreamCrosstalkMatrix) {
-    for (Int_t isector=0; isector<nROCs; isector++){  //set all ellemts of crosstalk matrix to 0
-      TMatrixD * crossTalkMatrix = (TMatrixD*)fCrossTalkSignalArray->At(isector);
-      TMatrixD * crossTalkMatrixBelow = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs);
-      TMatrixD * crossTalkMatrixCache = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs*2);
-      TVectorD vecAll(crossTalkMatrix->GetNrows());
-      TVectorD vecBelow(crossTalkMatrix->GetNrows());
-      TVectorD vecCache(crossTalkMatrixCache->GetNrows());
-      //
-      for (Int_t itime=0; itime<crossTalkMatrix->GetNcols(); itime++){
-	for (Int_t iwire=0; iwire<crossTalkMatrix->GetNrows(); iwire++){
-	  vecAll[iwire]=(*crossTalkMatrix)(iwire,itime);
-	  vecBelow[iwire]=(*crossTalkMatrixBelow)(iwire,itime);
-	  vecCache[iwire]=(*crossTalkMatrixCache)(iwire,itime);
+    //
+    // 2.) dump the crosstalk matrices to tree for further investigation
+    //     a.) to estimate fluctuation of pedestal in indiviula wire segments
+    //     b.) to check correlation between regions
+    //     c.) to check relative conribution of signal below threshold to crosstalk
+    
+    if (AliTPCReconstructor::StreamLevel()&kStreamCrosstalkMatrix) {
+      for (Int_t isector=0; isector<nROCs; isector++){  //set all ellemts of crosstalk matrix to 0
+	TMatrixD * crossTalkMatrix = (TMatrixD*)fCrossTalkSignalArray->At(isector);
+	TMatrixD * crossTalkMatrixBelow = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs);
+	TMatrixD * crossTalkMatrixCache = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs*2);
+	TVectorD vecAll(crossTalkMatrix->GetNrows());
+	TVectorD vecBelow(crossTalkMatrix->GetNrows());
+	TVectorD vecCache(crossTalkMatrixCache->GetNrows());
+	//
+	for (Int_t itime=0; itime<crossTalkMatrix->GetNcols(); itime++){
+	  for (Int_t iwire=0; iwire<crossTalkMatrix->GetNrows(); iwire++){
+	    vecAll[iwire]=(*crossTalkMatrix)(iwire,itime);
+	    vecBelow[iwire]=(*crossTalkMatrixBelow)(iwire,itime);
+	    vecCache[iwire]=(*crossTalkMatrixCache)(iwire,itime);
+	  }
+	  (*fDebugStreamer)<<"crosstalkMatrix"<<
+	    "iter="<<iter<<                      //iteration
+	    "sector="<<isector<<                 // sector
+	    "itime="<<itime<<                    // time bin index
+	    "vecAll.="<<&vecAll<<                // crosstalk charge + charge below threshold
+	    "vecCache.="<<&vecCache<<                // crosstalk charge + charge below threshold	  
+	    "vecBelow.="<<&vecBelow<<            // crosstalk contribution from signal below threshold
+	    "\n";
 	}
-	(*fDebugStreamer)<<"crosstalkMatrix"<<
-	  "sector="<<isector<<
-	  "itime="<<itime<<
-	  "vecAll.="<<&vecAll<<                // crosstalk charge + charge below threshold
-	  "vecCache.="<<&vecCache<<                // crosstalk charge + charge below threshold	  
-	  "vecBelow.="<<&vecBelow<<            // crosstalk contribution from signal below threshold
-	  "\n";
       }
     }
   }
-
 
 
 }
