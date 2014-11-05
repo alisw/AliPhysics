@@ -496,7 +496,7 @@ void AliAnalysisTaskSAJF::FillJetHisto(Double_t cent, Double_t ep, Double_t eta,
 	contents[i] = cent;
       else if (title=="#phi_{jet} - #psi_{RP}")
 	contents[i] = ep;
-      else if (title=="#eta")
+      else if (title=="#eta_{jet}")
 	contents[i] = eta;
       else if (title=="#phi_{jet} (rad)")
 	contents[i] = phi;
