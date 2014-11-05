@@ -31,8 +31,8 @@ set ( SRCS
     AliADdigit.cxx 
     AliADSDigit.cxx 
     AliADCalibData.cxx 
-#    AliADPreprocessor.cxx 
-#    AliADDataDCS.cxx 
+    AliADPreprocessor.cxx 
+    AliADDataDCS.cxx 
 #    AliADQAChecker.cxx 
 #    AliADMisAligner.cxx 
 #    AliADLogicalSignal.cxx 

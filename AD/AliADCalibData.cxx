@@ -21,8 +21,10 @@
 #include <TH1F.h>
 #include <TH2F.h>
 
+#include "AliDCSValue.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
+#include "AliADDataDCS.h"
 #include "AliADCalibData.h"
 #include "AliADConst.h"
 #include "AliLog.h"
@@ -293,7 +295,28 @@ Float_t AliADCalibData::GetCalibDiscriThr(Int_t channel, Bool_t scaled)
 
   return calThr;
 }
+//_____________________________________________________________________________
+void AliADCalibData::FillDCSData(AliADDataDCS * data){
+	// Set all parameters from the data get by the shuttle
+	TMap * params = data->GetFEEParameters();
+	TIter iter(params);	
+	TObjString* aliasName;
+	
+	while ((  aliasName = (TObjString*) iter.Next() ))  {
+		AliDCSValue* aValue = (AliDCSValue*) params->GetValue(aliasName);
+		Int_t val;
+		if(aValue) {
+			val = aValue->GetInt();
+			AliInfo(Form("%s : %d",aliasName->String().Data(), val));
+			SetParameter(aliasName->String(),val);
+		}
+	}	
+	
+	SetMeanHV(data->GetMeanHV());
+	SetWidthHV(data->GetWidthHV());
+  	SetDeadMap(data->GetDeadMap());
 
+}
 //_____________________________________________________________________________
 void AliADCalibData::SetParameter(TString name, Int_t val){
 	// Set given parameter
@@ -317,7 +340,7 @@ void AliADCalibData::SetParameter(TString name, Int_t val){
 	else if(name.Contains("TriggerCountOffset")) SetTriggerCountOffset((UInt_t) val,iBoard);
 	else if(name.Contains("RollOver")) SetRollOver((UInt_t) val,iBoard);
 	else if(name.Contains("DelayHit")) SetTimeOffset(0.01*(Float_t)val,iBoard,(iChannel-1));
-	else if(name.Contains("DiscriThr")) SetDiscriThr(((Float_t)val-2040.)/112.,iBoard,(iChannel-1));
+	else if(name.Contains("DiscriThr")) SetDiscriThr(((Float_t)val-1040.)/112.,iBoard,(iChannel-1));
 	else AliError(Form("No Setter found for FEE parameter : %s",name.Data()));
 	//
 	delete nameSplit;
