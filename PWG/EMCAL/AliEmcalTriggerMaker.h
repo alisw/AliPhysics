@@ -23,6 +23,7 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   AliEmcalTriggerMaker(const char *name, Bool_t doQA = kFALSE);
   virtual ~AliEmcalTriggerMaker();
 
+  void SetRunQA(Bool_t doQA = kTRUE) { fDoQA = doQA; }
   void SetCaloTriggersOutName(const char *name)     { fCaloTriggersOutName      = name; }
   void SetCaloTriggerSetupOutName(const char *name) { fCaloTriggerSetupOutName  = name; }
   void SetTriggerThresholdJetLow   ( Int_t a, Int_t b, Int_t c ) { fThresholdConstants[2][0] = a; fThresholdConstants[2][1] = b; fThresholdConstants[2][2] = c; }
