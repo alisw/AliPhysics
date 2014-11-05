@@ -200,7 +200,8 @@ void AliAnalysisTaskCompareAODTrackCuts::FillGlobalTracksArray() {
 		
 	for (Int_t iTrack = 0; iTrack < fCurrentAODEvent->GetNumberOfTracks(); iTrack++) {	
 
-		track = fCurrentAODEvent->GetTrack(iTrack);
+		track = dynamic_cast<AliAODTrack*>(fCurrentAODEvent->GetTrack(iTrack));
+		if(!track) AliFatal("Not a standard AOD");
         if (track->GetID()>-1) fGlobalTracksArray->AddAtAndExpand(track,track->GetID());
 	}
 
@@ -303,7 +304,8 @@ void AliAnalysisTaskCompareAODTrackCuts::UserExec(Option_t*) {
 	for (Int_t iTrack = 0; iTrack < fCurrentAODEvent->GetNumberOfTracks(); iTrack++) {
 
 		// Get the Current Track.
-		fCurrentAODTrack = (AliAODTrack*)fCurrentAODEvent->GetTrack(iTrack);
+		fCurrentAODTrack = dynamic_cast<AliAODTrack*>(fCurrentAODEvent->GetTrack(iTrack));
+		if(!fCurrentAODTrack) AliFatal("Not a standard AOD");
 		if (!fCurrentAODTrack) {
 			cout<<"AliAnalysisTaskCompareAODTrackCuts::UserExec -> AOD Track not found."<<endl;
 			continue;

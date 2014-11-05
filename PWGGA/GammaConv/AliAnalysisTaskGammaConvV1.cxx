@@ -421,7 +421,8 @@ void AliAnalysisTaskGammaConvV1::InitBack(){
 				fBGHandler[iCut] = new AliGammaConversionAODBGHandler(
 																	collisionSystem,centMin,centMax,
 																	((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetNumberOfBGEvents(),
-																	((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity());
+																	((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity(),
+																	0,8,5);
 				fBGHandlerRP[iCut] = NULL;
 			} else {
 				fBGHandlerRP[iCut] = new AliConversionAODBGHandlerRP(
@@ -504,11 +505,11 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 		fESDList[iCut]->SetOwner(kTRUE);
 		fCutFolder[iCut]->Add(fESDList[iCut]);
 
-		hNEvents[iCut] = new TH1I("NEvents","NEvents",9,-0.5,8.5);
+		hNEvents[iCut] = new TH1I("NEvents","NEvents",10,-0.5,9.5);
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
-		if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 3 ){
+		if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 1 ){ 
 			TString TriggerNames = "Not Trigger: ";
 			TriggerNames = TriggerNames+ ( (AliConvEventCuts*)fEventCutArray->At(iCut))->GetSpecialTriggerName();
 			hNEvents[iCut]->GetXaxis()->SetBinLabel(4,TriggerNames.Data());
@@ -520,6 +521,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
+		hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
 		fESDList[iCut]->Add(hNEvents[iCut]);
 		
 		if(fIsHeavyIon == 1) hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",4000,0,4000);
@@ -609,10 +611,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 				hESDMotherEtaPtAlpha[iCut] = new TH2F("ESD_MotherEta_Pt_Alpha","ESD_MotherEta_Pt_Alpha",150,0.03,15.,100,0,1);
 				SetLogBinningXTH2(hESDMotherEtaPtAlpha[iCut]);
 				fESDList[iCut]->Add(hESDMotherEtaPtAlpha[iCut]);
-				hESDMotherPi0PtOpenAngle[iCut] = new TH2F("ESD_MotherPi0_Pt_OpenAngle","ESD_MotherPi0_Pt_OpenAngle",150,0.03,15.,200,0,2*TMath::Pi());            
+				hESDMotherPi0PtOpenAngle[iCut] = new TH2F("ESD_MotherPi0_Pt_OpenAngle","ESD_MotherPi0_Pt_OpenAngle",150,0.03,15.,100,0,TMath::Pi());            
 				SetLogBinningXTH2(hESDMotherPi0PtOpenAngle[iCut]);
 				fESDList[iCut]->Add(hESDMotherPi0PtOpenAngle[iCut]);
-				hESDMotherEtaPtOpenAngle[iCut] = new TH2F("ESD_MotherEta_Pt_OpenAngle","ESD_MotherEta_Pt_OpenAngle",150,0.03,15.,200,0,2*TMath::Pi());            
+				hESDMotherEtaPtOpenAngle[iCut] = new TH2F("ESD_MotherEta_Pt_OpenAngle","ESD_MotherEta_Pt_OpenAngle",150,0.03,15.,100,0,TMath::Pi());            
 				SetLogBinningXTH2(hESDMotherEtaPtOpenAngle[iCut]);
 				fESDList[iCut]->Add(hESDMotherEtaPtOpenAngle[iCut]);
 			}
@@ -1026,7 +1028,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 		fiCut = iCut;
 		Int_t eventNotAccepted =
 			((AliConvEventCuts*)fEventCutArray->At(iCut))
-			->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon);
+			->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
 		if(eventNotAccepted){
 			// cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
 			hNEvents[iCut]->Fill(eventNotAccepted); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1

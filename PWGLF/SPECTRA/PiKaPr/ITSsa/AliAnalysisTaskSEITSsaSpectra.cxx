@@ -340,9 +340,17 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
     fOutput->Add(fHistSecMatMCpos[j]);
     //
     fHistPrimMCposBefEvSel[j] = new TH1F(Form("fHistPrimMCposBefEvSel%d",j),Form("fHistPrimMCposBefEvSel%d",j),kNbins,fPtBinLimits);
+    fHistPrimMCposBefEvSelEta[j] = new TH1F(Form("fHistPrimMCposBefEvSelEta%d",j),Form("fHistPrimMCposBefEvSelEta%d",j),kNbins,fPtBinLimits);
+    fHistPrimMCposBefEvSelEtaY[j] = new TH1F(Form("fHistPrimMCposBefEvSelEtaY%d",j),Form("fHistPrimMCposBefEvSelEtaY%d",j),kNbins,fPtBinLimits);
     fHistPrimMCnegBefEvSel[j] = new TH1F(Form("fHistPrimMCnegBefEvSel%d",j),Form("fHistPrimMCnegBefEvSel%d",j),kNbins,fPtBinLimits);
-    fOutput->Add(fHistPrimMCnegBefEvSel[j]);
+    fHistPrimMCnegBefEvSelEta[j] = new TH1F(Form("fHistPrimMCnegBefEvSelEta%d",j),Form("fHistPrimMCnegBefEvSelEta%d",j),kNbins,fPtBinLimits);
+    fHistPrimMCnegBefEvSelEtaY[j] = new TH1F(Form("fHistPrimMCnegBefEvSelEtaY%d",j),Form("fHistPrimMCnegBefEvSelEtaY%d",j),kNbins,fPtBinLimits);
     fOutput->Add(fHistPrimMCposBefEvSel[j]);
+    fOutput->Add(fHistPrimMCposBefEvSelEta[j]);
+    fOutput->Add(fHistPrimMCposBefEvSelEtaY[j]);
+    fOutput->Add(fHistPrimMCnegBefEvSel[j]);
+    fOutput->Add(fHistPrimMCnegBefEvSelEta[j]);
+    fOutput->Add(fHistPrimMCnegBefEvSelEtaY[j]);
     fHistSecStrMCposBefEvSel[j] = new TH1F(Form("fHistSecStrMCposBefEvSel%d",j),Form("fHistSecStrMCposBefEvSel%d",j),kNbins,fPtBinLimits);
     fHistSecStrMCnegBefEvSel[j] = new TH1F(Form("fHistSecStrMCnegBefEvSel%d",j),Form("fHistSecStrMCnegBefEvSel%d",j),kNbins,fPtBinLimits);
     fOutput->Add(fHistSecStrMCnegBefEvSel[j]);
@@ -353,9 +361,13 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
     fOutput->Add(fHistSecMatMCposBefEvSel[j]);
     //
     fHistPrimMCposReco[j] = new TH1F(Form("fHistPrimMCposReco%d",j),Form("fHistPrimMCposReco%d",j),kNbins,fPtBinLimits);
+    fHistPrimMCposRecoEtaY[j] = new TH1F(Form("fHistPrimMCposRecoEtaY%d",j),Form("fHistPrimMCposRecoEtaY%d",j),kNbins,fPtBinLimits);
     fHistPrimMCnegReco[j] = new TH1F(Form("fHistPrimMCnegReco%d",j),Form("fHistPrimMCnegReco%d",j),kNbins,fPtBinLimits);
-    fOutput->Add(fHistPrimMCnegReco[j]);
+    fHistPrimMCnegRecoEtaY[j] = new TH1F(Form("fHistPrimMCnegRecoEtaY%d",j),Form("fHistPrimMCnegRecoEtaY%d",j),kNbins,fPtBinLimits);
     fOutput->Add(fHistPrimMCposReco[j]);
+    fOutput->Add(fHistPrimMCposRecoEtaY[j]);
+    fOutput->Add(fHistPrimMCnegReco[j]);
+    fOutput->Add(fHistPrimMCnegRecoEtaY[j]);
     fHistSecStrMCposReco[j] = new TH1F(Form("fHistSecStrMCposReco%d",j),Form("fHistSecStrMCposReco%d",j),kNbins,fPtBinLimits);
     fHistSecStrMCnegReco[j] = new TH1F(Form("fHistSecStrMCnegReco%d",j),Form("fHistSecStrMCnegReco%d",j),kNbins,fPtBinLimits);
     fOutput->Add(fHistSecStrMCnegReco[j]);
@@ -670,7 +682,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     if(vtx->GetNContributors()<0) evSel=0;
     else{
       fHistNEvents->Fill(4);
-      if(TMath::Abs(vtx->GetZv())>10) evSel=0;
+      if(TMath::Abs(vtx->GetZ())>10) evSel=0;
       else{
 	fHistNEvents->Fill(5);
 	if(vtx->GetZRes()>0.5) evSel=0;
@@ -695,7 +707,6 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     if(pdgPart->Charge()==0) continue; //no neutral particles
     Float_t yMC=-999.;
     if(part->Energy() != TMath::Abs(part->Pz())) yMC = 0.5*TMath::Log((part->Energy()+part->Pz())/(part->Energy()-part->Pz()));
-    if(TMath::Abs(yMC) > fMaxY) continue; //rapidity cut
     if(pdgPart->Charge()>0) signMC=1;
     else signMC=-1;
     ptMC=part->Pt();
@@ -707,6 +718,14 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
 	break;
       }
     }
+    
+    if(jpart>=0 && stack->IsPhysicalPrimary(imc) && TMath::Abs(part->Eta())< fEtaRange){
+      if(signMC>0) fHistPrimMCposBefEvSelEta[jpart]->Fill(ptMC);
+      else  fHistPrimMCnegBefEvSelEta[jpart]->Fill(ptMC);	    
+    }
+    
+    if(TMath::Abs(yMC) > fMaxY) continue; //rapidity cut
+    
     Int_t indexMoth=part->GetFirstMother();
     if(indexMoth>=0){
       TParticle* moth = stack->Particle(indexMoth);
@@ -733,8 +752,14 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     
     if(jpart>=0){
       if(stack->IsPhysicalPrimary(imc)){
-	if(signMC>0) fHistPrimMCposBefEvSel[jpart]->Fill(ptMC);
-	else  fHistPrimMCnegBefEvSel[jpart]->Fill(ptMC);
+	if(signMC>0){
+	  fHistPrimMCposBefEvSel[jpart]->Fill(ptMC);
+	  if(TMath::Abs(part->Eta())<fEtaRange) fHistPrimMCposBefEvSelEtaY[jpart]->Fill(ptMC);
+	}
+	else{
+	  fHistPrimMCnegBefEvSel[jpart]->Fill(ptMC);
+	  if(TMath::Abs(part->Eta())<fEtaRange) fHistPrimMCnegBefEvSelEtaY[jpart]->Fill(ptMC);
+	}
 	if(evSel==1){
 	  if(signMC>0) fHistPrimMCpos[jpart]->Fill(ptMC);
 	  else  fHistPrimMCneg[jpart]->Fill(ptMC);
@@ -1043,8 +1068,10 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     }
     
     // y calculation
-    Double_t yPartMean=y[minPosMean];
-    Double_t yPart=y[minPos];
+    Double_t yPartMean=-999;
+    Double_t yPart=-999;
+    if(minPosMean>-1) yPartMean=y[minPosMean];
+    if(minPos>-1) yPart=y[minPos];
     
     if(TMath::Abs(yPartMean)<fMaxY){     
       //DCA distributions, before the DCA cuts, based on asymmetrinc nsigma approach
@@ -1095,8 +1122,14 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
 	  else signMC=-1;
 	  ptMC=part->Pt();
 	  if(stack->IsPhysicalPrimary(track->GetLabel())){
-	    if(signMC>0) fHistPrimMCposReco[jpart]->Fill(ptMC);
-	    else  fHistPrimMCnegReco[jpart]->Fill(ptMC);
+	    if(signMC>0){
+	      fHistPrimMCposReco[jpart]->Fill(ptMC);
+	      if(TMath::Abs(y[jpart])<fMaxY) fHistPrimMCposRecoEtaY[jpart]->Fill(ptMC);
+	    }
+	    else{
+	      fHistPrimMCnegReco[jpart]->Fill(ptMC);
+	      if(TMath::Abs(y[jpart])<fMaxY) fHistPrimMCnegRecoEtaY[jpart]->Fill(ptMC);
+	    }
 	  }else{ 
 	    Int_t indexMoth=part->GetFirstMother();
 	    if(indexMoth>=0){
@@ -1120,7 +1153,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     //Nsigma histos with MC truth
     
     //asymmetric approach
-    if(TMath::Abs(yPartMean)<fMaxY){
+    if(TMath::Abs(yPartMean)<fMaxY && minPosMean>-1){
       //nsigma histos
       if(track->GetSign()>0) fHistPosNSigmaMean[minPosMean]->Fill(pt);
       else fHistNegNSigmaMean[minPosMean]->Fill(pt);

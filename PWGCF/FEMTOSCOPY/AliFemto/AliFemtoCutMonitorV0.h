@@ -67,6 +67,9 @@ private:
   TH1D *fnsigmaNegL;
   TH1D *fnsigmaPosAL;
   TH1D *fnsigmaNegAL;
+
+  TH1D *fParticleOrigin; //particle origin from MC
+  TH1D *fParticleId;     //true particle identification from MC
 };
 
 #endif

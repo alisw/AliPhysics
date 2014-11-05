@@ -56,6 +56,9 @@ class AliEmcalJetFinder : public TNamed
     Double_t                      fJetMinPt;                      // cut for  jet-pT > fJetMinPt
     Double_t                      fJetMinArea;                    // cut for  jet-area > fJetMinArea 
 
+    AliEmcalJetFinder(const AliEmcalJetFinder& obj); // copy constructor
+    AliEmcalJetFinder& operator=(const AliEmcalJetFinder& other); // assignment
+
     ClassDef(AliEmcalJetFinder, 1); // Lightweight fastjet implementation outside analysis tasks
 };
 

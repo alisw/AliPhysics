@@ -18,7 +18,9 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID():
   fTOFNSigma(0),
   fTPCNSigma(0),
   fTPCTOFNSigma(0),
-  fTPCvsTOFNSigma(0)
+  fTPCvsTOFNSigma(0),
+  fParticleOrigin(0),
+  fParticleId(0)
 {
   // Default constructor
   fTPCdEdx =  new TH2D("TPCdEdx", "TPC dEdx vs. momentum", 100, 0.0, 5.0, 250, 0.0, 500.0);
@@ -27,6 +29,8 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID():
   fTPCNSigma = new TH2D("TPCNSigma","TPC NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
   fTPCTOFNSigma = new TH2D("TPCTOFNSigma","TPC & TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, 0.0, 10.0);
   fTPCvsTOFNSigma = new TH2D("TPCvsTOFNSigma","TPC vs TOF Nsigma",100, -5.0, 5.0, 100, -5.0, 5.0);
+  fParticleOrigin =  new TH1D("POrigin", "Mothers PDG Codes", 6000, 0.0, 6000.0);
+  fParticleId =  new TH1D("PId", "Particle PDG Codes", 6000, 0.0, 6000.0);
 
 }
 
@@ -38,7 +42,9 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const char *aName, 
   fTOFNSigma(0),
   fTPCNSigma(0),
   fTPCTOFNSigma(0),
-  fTPCvsTOFNSigma(0)
+  fTPCvsTOFNSigma(0),
+  fParticleOrigin(0),
+  fParticleId(0)
 {
   // Normal constructor
   char name[200];
@@ -60,6 +66,12 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const char *aName, 
 
   snprintf(name, 200, "TPCvsTOFNSigma%s", aName);
   fTPCvsTOFNSigma = new TH2D(name,"TPC vs TOF Nsigma",100, -5.0, 5.0, 100, -5.0, 5.0);
+
+  snprintf(name, 200, "POrigin%s", aName);
+  fParticleOrigin =  new TH1D(name, "Mothers PDG Codes", 6000, 0.0, 6000.0);
+
+  snprintf(name, 200, "PId%s", aName);
+  fParticleId =  new TH1D(name, "Particle PDG Codes", 6000, 0.0, 6000.0);
 }
 
 AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const AliFemtoCutMonitorParticlePID &aCut):
@@ -70,7 +82,9 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const AliFemtoCutMo
   fTOFNSigma(0),
   fTPCNSigma(0),
   fTPCTOFNSigma(0),
-  fTPCvsTOFNSigma(0)
+  fTPCvsTOFNSigma(0),
+  fParticleOrigin(0),
+  fParticleId(0)
 
 {
   // copy constructor
@@ -88,6 +102,12 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const AliFemtoCutMo
 
   if (fTPCTOFNSigma) delete fTPCTOFNSigma;
   fTPCTOFNSigma= new TH2D(*aCut.fTPCTOFNSigma);
+
+  if (fParticleOrigin) delete fParticleOrigin;
+  fParticleOrigin= new TH1D(*aCut.fParticleOrigin);
+
+  if (fParticleId) delete fParticleId;
+  fParticleId= new TH1D(*aCut.fParticleId);
 }
 
 AliFemtoCutMonitorParticlePID::~AliFemtoCutMonitorParticlePID()
@@ -99,6 +119,8 @@ AliFemtoCutMonitorParticlePID::~AliFemtoCutMonitorParticlePID()
   delete fTPCNSigma;
   delete fTPCTOFNSigma;
   delete fTPCvsTOFNSigma;
+  delete fParticleOrigin;
+  delete fParticleId;
 
 }
 
@@ -126,6 +148,12 @@ AliFemtoCutMonitorParticlePID& AliFemtoCutMonitorParticlePID::operator=(const Al
   if(fTPCvsTOFNSigma) delete fTPCvsTOFNSigma;
   fTPCvsTOFNSigma = new TH2D(*aCut.fTPCvsTOFNSigma);
 
+  if (fParticleOrigin) delete fParticleOrigin;
+  fParticleOrigin= new TH1D(*aCut.fParticleOrigin);
+
+  if (fParticleId) delete fParticleId;
+  fParticleId= new TH1D(*aCut.fParticleId);
+
   return *this;
 }
 
@@ -150,6 +178,14 @@ void AliFemtoCutMonitorParticlePID::Fill(const AliFemtoTrack* aTrack)
   fTPCdEdx->Fill(tMom, tdEdx);
   fTOFTime->Fill(tMom, tTOF);
 
+  AliFemtoModelHiddenInfo *tInfo = (AliFemtoModelHiddenInfo*)aTrack->GetHiddenInfo();
+  if(tInfo!=NULL) {
+    Int_t partID = TMath::Abs(tInfo->GetPDGPid());
+    Int_t motherID = TMath::Abs(tInfo->GetMotherPdgCode());
+
+    fParticleId->Fill(partID);
+    fParticleOrigin->Fill(motherID);
+  }
   //  float vp= aTrack->VTOF();
   //     if (vp > 0.) {
   //         fTOFTime->Fill(tMom, tTOF);
@@ -186,6 +222,8 @@ void AliFemtoCutMonitorParticlePID::Write()
   fTPCNSigma->Write();
   fTPCTOFNSigma->Write();
   fTPCvsTOFNSigma->Write();
+  fParticleId->Write();
+  fParticleOrigin->Write();
 }
 
 TList *AliFemtoCutMonitorParticlePID::GetOutputList()
@@ -197,6 +235,8 @@ TList *AliFemtoCutMonitorParticlePID::GetOutputList()
   tOutputList->Add(fTPCNSigma);
   tOutputList->Add(fTPCTOFNSigma);
   tOutputList->Add(fTPCvsTOFNSigma);
+  tOutputList->Add(fParticleId);
+  tOutputList->Add(fParticleOrigin);
 
   return tOutputList;
 }

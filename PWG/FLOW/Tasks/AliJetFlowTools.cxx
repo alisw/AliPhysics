@@ -171,22 +171,22 @@ void AliJetFlowTools::Make() {
     // if bootstrap mode is kTRUE, resample the underlying distributions
     // FIXME think about resampling the rebinned results or raw results, could lead to difference
     // in smoothness of tail of spectrum (which is probably not used in any case, but still ... )
-
+/*
     if(fBootstrap) {
         // resample but leave original spectra intact for the next unfolding round
         fSpectrumIn = reinterpret_cast<TH1D*>(Bootstrap(fSpectrumIn, kFALSE));
         fSpectrumOut = reinterpret_cast<TH1D*>(Bootstrap(fSpectrumOut, kFALSE));
     }
-
+*/
     TH1D* measuredJetSpectrumIn  = RebinTH1D(fSpectrumIn, fBinsRec, TString("resized_in_"), kFALSE);
     TH1D* measuredJetSpectrumOut = RebinTH1D(fSpectrumOut, fBinsRec,  TString("resized_out_"), kFALSE);
-/*
+
     if(fBootstrap) {
         measuredJetSpectrumIn = reinterpret_cast<TH1D*>(Bootstrap(measuredJetSpectrumIn, kFALSE));
         measuredJetSpectrumOut = reinterpret_cast<TH1D*>(Bootstrap(measuredJetSpectrumOut, kFALSE));
     }
     // for now do it BEFORE as after gives an issue in Rebin function (counts are wrong)
-*/
+
 
     
     // 1b) resize the jet spectrum to 'true' bins. can serve as a prior and as a template for unfolding
@@ -1289,10 +1289,34 @@ TH1* AliJetFlowTools::Bootstrap(TH1* hist, Bool_t kill) {
     else printf(" > Bootstrap:: resampling, may take some time \n");
     // clone input histo
     TH1* bootstrapped((TH1*)(hist->Clone(Form("%s_bootstrapped", hist->GetName()))));
+    bootstrapped->Reset();
+
+    /* OLD method - slightly underestimates fluctuations
     // reset the content
     bootstrapped->Reset();
     // resample the input histogram 
-    for(Int_t i(0); i < hist->GetEntries(); i++) bootstrapped->Fill(hist->GetRandom());
+    for(Int_t i(0); i < hist->GetEntries(); i++) bootstrapped->Fill(hist->GetRandom()); */
+    
+    // new method
+    Double_t mean(0), sigma(0);
+    Int_t sampledMean(0), entries(0);
+
+    for(Int_t i(0); i < hist->GetXaxis()->GetNbins(); i++) {
+        // for each bin, get the value
+        mean = hist->GetBinContent(i+1);
+        sigma = hist->GetBinError(i+1);
+        // draw a new mean 
+        sampledMean = TMath::Nint(gRandom->Gaus(mean, sigma));
+        printf(" sampled %i from original number %.2f \n", sampledMean, mean);
+        // set the new bin content
+        bootstrapped->SetBinContent(i+1, sampledMean);
+        if(sampledMean > 0) bootstrapped->SetBinError(i+1, TMath::Sqrt(sampledMean));
+        entries += sampledMean;
+    }
+    printf(" Done bootstrapping, setting number of entries to %i \n", entries);
+    bootstrapped->SetEntries((double)entries);
+
+
     // if requested kill input histo
     if(kill) delete hist;
     // return resampled histogram

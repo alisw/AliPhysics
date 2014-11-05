@@ -206,18 +206,18 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass(const char *name) :
     fh2MassVsNConstJet1Tagged[i]            = 0;
     fh2MassVsNConstJet1TaggedMatch[i]       = 0;
 
-    fh3PtJet1VsRatVsLeadPtAllSel[i]        = 0;
-    fh3PtJet1VsRatVsLeadPtTagged[i]        = 0;
-    fh3PtJet1VsRatVsLeadPtTaggedMatch[i]   = 0;
-    fpPtVsRatJet1All[i]                    = 0;
-    fpPtVsRatJet1Tagged[i]                 = 0;
-    fpPtVsRatJet1TaggedMatch[i]            = 0;
-    fh2RatVsAreaJet1All[i]                 = 0;
-    fh2RatVsAreaJet1Tagged[i]              = 0;
-    fh2RatVsAreaJet1TaggedMatch[i]         = 0;
-    fh2RatVsNConstJet1All[i]               = 0;
-    fh2RatVsNConstJet1Tagged[i]            = 0;
-    fh2RatVsNConstJet1TaggedMatch[i]       = 0;
+    fh3PtJet1VsRatVsLeadPtAllSel[i]         = 0;
+    fh3PtJet1VsRatVsLeadPtTagged[i]         = 0;
+    fh3PtJet1VsRatVsLeadPtTaggedMatch[i]    = 0;
+    fpPtVsRatJet1All[i]                     = 0;
+    fpPtVsRatJet1Tagged[i]                  = 0;
+    fpPtVsRatJet1TaggedMatch[i]             = 0;
+    fh2RatVsAreaJet1All[i]                  = 0;
+    fh2RatVsAreaJet1Tagged[i]               = 0;
+    fh2RatVsAreaJet1TaggedMatch[i]          = 0;
+    fh2RatVsNConstJet1All[i]                = 0;
+    fh2RatVsNConstJet1Tagged[i]             = 0;
+    fh2RatVsNConstJet1TaggedMatch[i]        = 0;
 
     fh2EtMassOverEtRSq[i]                   = 0;
   }

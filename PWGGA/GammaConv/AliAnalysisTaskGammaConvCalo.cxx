@@ -113,6 +113,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
 	fHistoMotherEtaPtAlpha(NULL),
 	fHistoMotherPi0PtOpenAngle(NULL),
 	fHistoMotherEtaPtOpenAngle(NULL),
+    fHistoMotherPi0ConvPhotonEtaPhi(NULL),
+    fHistoMotherEtaConvPhotonEtaPhi(NULL),
 	fHistoMotherInvMassECalib(NULL),
 	fHistoMotherInvMassECalibalpha(NULL),
 	fTreeMesonsInvMassPtDcazMinDcazMaxFlag(NULL),
@@ -312,6 +314,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
 	fHistoMotherEtaPtAlpha(NULL),
 	fHistoMotherPi0PtOpenAngle(NULL),
 	fHistoMotherEtaPtOpenAngle(NULL),
+    fHistoMotherPi0ConvPhotonEtaPhi(NULL),
+    fHistoMotherEtaConvPhotonEtaPhi(NULL),
 	fHistoMotherInvMassECalib(NULL),
 	fHistoMotherInvMassECalibalpha(NULL),
 	fTreeMesonsInvMassPtDcazMinDcazMaxFlag(NULL),
@@ -546,11 +550,13 @@ void AliAnalysisTaskGammaConvCalo::InitBack(){
 				fBGHandler[iCut] = new AliGammaConversionAODBGHandler(
 																	collisionSystem,centMin,centMax,
 																	((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetNumberOfBGEvents(),
-																	((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity());
+																	((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity(),
+																	2,8,7);
 				fBGClusHandler[iCut] = new AliGammaConversionAODBGHandler(
 																	collisionSystem,centMin,centMax,
 																	((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetNumberOfBGEvents(),
-																	((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity());
+																	((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity(),
+																	2,8,7);
 				fBGHandlerRP[iCut] = NULL;
 			} else{
 				fBGHandlerRP[iCut] = new AliConversionAODBGHandlerRP(
@@ -620,6 +626,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 			fHistoMotherEtaPtAlpha =  new TH2F*[fnCuts];
 			fHistoMotherPi0PtOpenAngle =  new TH2F*[fnCuts];
 			fHistoMotherEtaPtOpenAngle =  new TH2F*[fnCuts];
+            fHistoMotherPi0ConvPhotonEtaPhi = new TH2F*[fnCuts];
+            fHistoMotherEtaConvPhotonEtaPhi = new TH2F*[fnCuts];
 		}
 		if(fDoMesonQA == 1){
 			fHistoMotherInvMassECalib = new TH2F*[fnCuts];
@@ -653,11 +661,11 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 		fESDList[iCut]->SetOwner(kTRUE);
 		fCutFolder[iCut]->Add(fESDList[iCut]);
     
-		fHistoNEvents[iCut] = new TH1I("NEvents","NEvents",9,-0.5,8.5);
+		fHistoNEvents[iCut] = new TH1I("NEvents","NEvents",10,-0.5,9.5);
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
-		if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() == 4 ){
+		if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 1 ){ 
 			TString TriggerNames = "Not Trigger: ";
 			TriggerNames = TriggerNames+ ( (AliConvEventCuts*)fEventCutArray->At(iCut))->GetSpecialTriggerName();
 			fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(4,TriggerNames.Data());
@@ -669,6 +677,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
+		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
 		fESDList[iCut]->Add(fHistoNEvents[iCut]);
 		
 		if(fIsHeavyIon == 1) fHistoNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",4000,0,4000);
@@ -795,7 +804,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 				
 			}
 			if(fDoMesonQA == 1){
-				fHistoMotherInvMassECalib[iCut] = new TH2F("ESD_Mother_InvMass_Pt_Calib","ESD_Mother_InvMass_Pt_Calib",800,0,0.8,250,0,25);
+                fHistoMotherInvMassECalib[iCut] = new TH2F("ESD_Mother_InvMass_E_Calib","ESD_Mother_InvMass_E_Calib",800,0,0.8,250,0,25);
 				fESDList[iCut]->Add(fHistoMotherInvMassECalib[iCut]);
 				fHistoMotherInvMassECalibalpha[iCut] = new TH2F("ESD_Mother_InvMass_vs_E_Calib_alpha","ESD_Mother_InvMass_vs_E_Calib_alpha",800,0,0.8,250,0,25);
 				fESDList[iCut]->Add(fHistoMotherInvMassECalibalpha[iCut]);
@@ -814,12 +823,16 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 				fHistoMotherEtaPtAlpha[iCut] = new TH2F("ESD_MotherEta_Pt_Alpha","ESD_MotherEta_Pt_Alpha",150,0.03,15.,100,0,1);
 				SetLogBinningXTH2(fHistoMotherEtaPtAlpha[iCut]);
 				fESDList[iCut]->Add(fHistoMotherEtaPtAlpha[iCut]);
-				fHistoMotherPi0PtOpenAngle[iCut] = new TH2F("ESD_MotherPi0_Pt_OpenAngle","ESD_MotherPi0_Pt_OpenAngle",150,0.03,15.,200,0,2*TMath::Pi());
+				fHistoMotherPi0PtOpenAngle[iCut] = new TH2F("ESD_MotherPi0_Pt_OpenAngle","ESD_MotherPi0_Pt_OpenAngle",150,0.03,15.,100,0,TMath::Pi());
 				SetLogBinningXTH2(fHistoMotherPi0PtOpenAngle[iCut]);
 				fESDList[iCut]->Add(fHistoMotherPi0PtOpenAngle[iCut]);
-				fHistoMotherEtaPtOpenAngle[iCut] = new TH2F("ESD_MotherEta_Pt_OpenAngle","ESD_MotherEta_Pt_OpenAngle",150,0.03,15.,200,0,2*TMath::Pi());
+				fHistoMotherEtaPtOpenAngle[iCut] = new TH2F("ESD_MotherEta_Pt_OpenAngle","ESD_MotherEta_Pt_OpenAngle",150,0.03,15.,100,0,TMath::Pi());
 				SetLogBinningXTH2(fHistoMotherEtaPtOpenAngle[iCut]);
 				fESDList[iCut]->Add(fHistoMotherEtaPtOpenAngle[iCut]);
+                fHistoMotherPi0ConvPhotonEtaPhi[iCut] = new TH2F("ESD_MotherPi0ConvPhoton_Eta_Phi","ESD_MotherPi0ConvPhoton_Eta_Phi",600,0,2*TMath::Pi(),400,-2,2);
+                fESDList[iCut]->Add(fHistoMotherPi0ConvPhotonEtaPhi[iCut]);
+                fHistoMotherEtaConvPhotonEtaPhi[iCut] = new TH2F("ESD_MotherEtaConvPhoton_Eta_Phi","ESD_MotherEtaConvPhoton_Eta_Phi",600,0,2*TMath::Pi(),400,-2,2);
+                fESDList[iCut]->Add(fHistoMotherEtaConvPhotonEtaPhi[iCut]);
 			}
 		}    
 	}
@@ -1056,7 +1069,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 			fHistoTrueConvGammaPt[iCut] = new TH1F("ESD_TrueConvGamma_Pt","ESD_TrueConvGamma_Pt",250,0,25);
 			fTrueList[iCut]->Add(fHistoTrueConvGammaPt[iCut]);
       
-			fHistoTrueConvPi0GammaPt[iCut] = new TH1F("ESD_TrueConvGamma_Pt","ESD_TrueConvGamma_Pt",250,0,25);
+            fHistoTrueConvPi0GammaPt[iCut] = new TH1F("ESD_TrueConvPi0Gamma_Pt","ESD_TrueConvPi0Gamma_Pt",250,0,25);
 			fTrueList[iCut]->Add(fHistoTrueConvPi0GammaPt[iCut]);
       
 			fHistoCombinatorialPt[iCut] = new TH2F("ESD_TrueCombinatorial_Pt","ESD_TrueCombinatorial_Pt",250,0,25,16,-0.5,15.5);
@@ -1355,7 +1368,11 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
 	for(Int_t iCut = 0; iCut<fnCuts; iCut++){
 		
 		fiCut = iCut;
-		Int_t eventNotAccepted = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon);
+		
+		Bool_t isRunningEMCALrelAna = kFALSE;
+		if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 1) isRunningEMCALrelAna = kTRUE;
+
+		Int_t eventNotAccepted = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,isRunningEMCALrelAna);
 		
 		if(eventNotAccepted){
 		// cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
@@ -1924,8 +1941,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidatesAOD(AliAODConversi
 				fCharPhotonMCInfo = 3;
 			}
 		}
-	}
-  
+	}  
+    if( ((AliAODMCParticle*)AODMCTrackArray->At(Photon->GetMother()))->GetPdgCode() == 111 ){
+              fHistoTrueConvPi0GammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+    }
 }
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidates(AliAODConversionPhoton *TruePhotonCandidate)
@@ -2432,12 +2451,14 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
 							if ( pi0cand->M() > 0.05 && pi0cand->M() < 0.17){
 								fHistoMotherPi0PtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift());
 								fHistoMotherPi0PtAlpha[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetAlpha());
-								fHistoMotherPi0PtOpenAngle[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetOpeningAngle());	
+                                fHistoMotherPi0PtOpenAngle[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetOpeningAngle());
+                                fHistoMotherPi0ConvPhotonEtaPhi[fiCut]->Fill(gamma0->GetPhotonPhi(), gamma0->GetPhotonEta());
 							}
 							if ( pi0cand->M() > 0.45 && pi0cand->M() < 0.65){
 								fHistoMotherEtaPtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift());
 								fHistoMotherEtaPtAlpha[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetAlpha());
 								fHistoMotherEtaPtOpenAngle[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetOpeningAngle());
+                                fHistoMotherEtaConvPhotonEtaPhi[fiCut]->Fill(gamma0->GetPhotonPhi(), gamma0->GetPhotonEta());
 							}
 						}
 						if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoBGCalculation()){

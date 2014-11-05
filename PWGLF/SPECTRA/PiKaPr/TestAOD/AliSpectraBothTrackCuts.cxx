@@ -61,7 +61,7 @@ ClassImp(AliSpectraBothTrackCuts)
 
 AliSpectraBothTrackCuts::AliSpectraBothTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fEtaCutMin(0), fEtaCutMax(0), fDCACut(0), fPCut(0), fPtCut(0), fYCutMax(0),fYCutMin(0),
   fPtCutTOFMatching(0),fAODtrack(kotherobject), fHashitinSPD1(0),fusedadditionalcuts(kTRUE),
-fPtCutTOFMatchingPion(-1.0),fPtCutTOFMatchingKaon(-1.0),fPtCutTOFMatchingProton(-1.0),fUseTypeDependedTOFCut(kFALSE),
+fPtCutTOFMatchingPion(-1.0),fPtCutTOFMatchingKaon(-1.0),fPtCutTOFMatchingProton(-1.0),fUseTypeDependedTOFCut(kFALSE),fMakeQAhisto(kFALSE),
 fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fHistoNclustersITS(0),
 fHistoDCAzQA(0),fHistoNclustersQA(0),fHistochi2perNDFQA(0),
 fTrack(0),fCuts(0)
@@ -140,13 +140,15 @@ void AliSpectraBothTrackCuts::InitHisto()
   fHistoEtaPhiHighPt->SetYTitle("phi");
   if(!fHistoNclustersITS)
   	fHistoNclustersITS=new TH1F("fHistoNclustersITS","fHistoNclustersITS;N;ITSLayer",6,-0.5,5.5);
-   if(!fHistoDCAzQA)
-	fHistoDCAzQA=new TH3F("fHistoDCAzQA","QA of DCA z;par type; P_{T} (GeV/C);dcaz",nbinsnpar,parBins,nbinsTempl,templBins,nbinsdcaz,dcazBins);
-   if(!fHistoNclustersQA)
-	fHistoNclustersQA=new TH3F("fHistoNclustersQA","QA of Ncls ;par type ; P_{T} (GeV/C);ncls",nbinsnpar,parBins,nbinsTempl,templBins,nbinsncls,nclsBins);
-   if(!fHistochi2perNDFQA) 
-	fHistochi2perNDFQA=new TH3F("fHistochi2perNDFQA","QA of chi2/ndf ;par type; P_{T} (GeV/C);chi2ndf",nbinsnpar,parBins,nbinsTempl,templBins,nbinchindf,chindfBins);
-
+  if(fMakeQAhisto)
+  {		
+   	if(!fHistoDCAzQA)
+		fHistoDCAzQA=new TH3F("fHistoDCAzQA","QA of DCA z;par type; P_{T} (GeV/C);dcaz",nbinsnpar,parBins,nbinsTempl,templBins,nbinsdcaz,dcazBins);
+   	if(!fHistoNclustersQA)
+		fHistoNclustersQA=new TH3F("fHistoNclustersQA","QA of Ncls ;par type ; P_{T} (GeV/C);ncls",nbinsnpar,parBins,nbinsTempl,templBins,nbinsncls,nclsBins);
+	   if(!fHistochi2perNDFQA) 
+		fHistochi2perNDFQA=new TH3F("fHistochi2perNDFQA","QA of chi2/ndf ;par type; P_{T} (GeV/C);chi2ndf",nbinsnpar,parBins,nbinsTempl,templBins,nbinchindf,chindfBins);
+ }
  TH1::AddDirectory(oldStatus);
 
 if(fUseTypeDependedTOFCut) 

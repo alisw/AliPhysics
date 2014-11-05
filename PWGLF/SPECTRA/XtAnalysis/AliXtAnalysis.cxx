@@ -168,8 +168,6 @@ void AliXtAnalysis::UserCreateOutputObjects(){
     TH1::AddDirectory(kTRUE);
     if( !orignalTH1AdddirectoryStatus ) cout<<"DEBUG : TH1::AddDirectory is turned on"<<endl;
     TFile * file2 = OpenFile(2);
-    file2-> SetCompressionLevel(9);
-    file2->cd();
     
     fHistDir=gDirectory;
     fHistos = new AliJXtHistos(fCard);
@@ -251,7 +249,7 @@ void AliXtAnalysis::UserExec(Option_t *) {
     
     // Get good tracks to the list
     for(Int_t it = 0; it < nt; it++) {
-        AliAODTrack *track = aodEvent->GetTrack(it);
+        AliAODTrack *track = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(it));
         if( !track ) continue;
         if( !track->TestFilterBit(filterBit) ) continue;
         double eta = track->Eta();
@@ -334,9 +332,6 @@ void AliXtAnalysis::UserExec(Option_t *) {
 //________________________________________________________________________
 void AliXtAnalysis::Terminate(Option_t *)
 {
-    OpenFile(2);
-    fHistDir->Write();
-    
     cout<<"Successfully finished"<<endl;
 }
 //________________________________________________________________________

@@ -131,6 +131,16 @@ void AddTask_GammaConvV1_pPb2(  Int_t trainConfig = 1,  //change different set o
 		eventCutArray[ 0] = "8680011"; photonCutArray[ 0] = "002092170008260400000"; mesonCutArray[ 0] = "01621035009000";      
 	} else if (trainConfig == 7) {   
 		eventCutArray[ 0] = "8600011"; photonCutArray[ 0] = "002092170008260400000"; mesonCutArray[ 0] = "01621035009000";         
+	} else if (trainConfig == 8) {   
+	        eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "009092170008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 7.5cm   
+	} else if (trainConfig == 9) {   
+		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "005092170008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 10cm     
+	} else if (trainConfig == 10) {   
+		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "008092170008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 12.5cm    
+	} else if (trainConfig == 11) {   
+		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "006092170008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 20cm    
+	} else if (trainConfig == 12) {   
+		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "007092170008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 35cm    
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;

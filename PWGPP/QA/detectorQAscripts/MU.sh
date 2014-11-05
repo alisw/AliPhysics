@@ -9,7 +9,7 @@
 runLevelQA()
 {
   #full path of QAresults.root is provided
-  qaFile=$1
+  local qaFile=$1
 
   # This is used only to extract the muon information
   ln -s $ALICE_ROOT/PWGPP/MUON/lite/LoadLibsForMuonQA.C
@@ -22,27 +22,38 @@ EOF
   rm LoadLibsForMuonQA.C
   rm MakeTrend.C
   rm *.d *.so
-
-  #should produce a file trending.root
-  #if not, a default one will be provided
 }
 
 periodLevelQA()
 {
   #path of the merged period trending.root is provided
-  trendingFile=$1
+  local trendingFile=$1
 
-  fileList="trendList.txt"
-  find -L . -name "QAresults.root" > $fileList
+  local fileList="trendList.txt"
+  local tmpFileList="tmp${fileList}"
+  local fileNames="QAresults.root QAresults_barrel.root QAresults_outer.root"
+  find -L . -name "QAresults*.root" > $fileList
+
+  # If no result is found, it means we have an archive as input
+  if [ ! -s $fileList ]; then
+    sFileList=$(find -L . -name "QA*archive.zip")
+    for ifile in $sFileList; do
+      for searchFile in $fileNames; do
+        if unzip -l ${ifile} | egrep "$searchFile" &>/dev/null; then
+          echo "${ifile}#${searchFile}" >> $fileList
+        fi
+      done
+    done
+  fi
 
   # Assume that "outputDir" is known from the steering runQA.sh
-  cfgFileDir="${outputDir}/configFiles"
-  cfgFileSuffix="${dataType}_${period}.txt"
+  local cfgFileDir="${outputDir}/configFiles"
+  local cfgFileSuffix="${dataType}_${period}.txt"
 
   #if run list is provided, filter the output limiting to this list
   # FIXME: the code is run in a temporary directory
   # where should we add this file?
-  runList="${cfgFileDir}/runList_${cfgFileSuffix}"
+  local runList="${cfgFileDir}/runList_${cfgFileSuffix}"
   if [ -e ${runList} ]; then
     sRunList=$(cat ${runList} | xargs)
     tmpFileList="tmp${fileList}"
@@ -60,7 +71,7 @@ periodLevelQA()
   #if trigger list is provided, filter the tracking output accordngly
   # FIXME: the code is run in a temporary directory
   # where should we add this file?
-  triggerList="$cfgFileDir/trigList_${cfgFileSuffix}"
+  local triggerList="$cfgFileDir/trigList_${cfgFileSuffix}"
   if [ -e ${triggerList} ]; then
     triggerList="\"${triggerList}\""
   else
@@ -69,9 +80,16 @@ periodLevelQA()
 
   ln -s $ALICE_ROOT/PWGPP/MUON/lite/LoadLibsForMuonQA.C
 
-  # First run tracker (we it merges the QAresults and we need it for
+  # First run tracker (it merges the QAresults and we need it for
   # scaler trending in trigger
-  mergedQAname="QAresults.root"
+  local mergedQAname="QAresults.root"
+  for ifile in $fileNames; do
+    hasFile=`grep -c "$ifile" $fileList`
+    if [ $hasFile -gt 0 ]; then
+      mergedQAname="$ifile"
+      break
+    fi
+  done
 
   ln -s $ALICE_ROOT/PWGPP/MUON/lite/PlotMuonQA.C
 aliroot -b <<EOF
@@ -82,7 +100,7 @@ EOF
   rm PlotMuonQA.C
 
   # Then run trigger
-  runScalers="kFALSE"
+  local runScalers="kFALSE"
   if [ "${dataType}" = "data" ]; then
     runScalers="kTRUE";
   fi

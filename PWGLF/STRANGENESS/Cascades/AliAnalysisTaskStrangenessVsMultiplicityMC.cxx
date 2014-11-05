@@ -309,7 +309,9 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
 	fHistPtVsAmpV0MEq_GenXiMinus(0),
 	fHistPtVsAmpV0MEq_GenXiPlus(0),
 	fHistPtVsAmpV0MEq_GenOmegaMinus(0),
-	fHistPtVsAmpV0MEq_GenOmegaPlus(0)  
+	fHistPtVsAmpV0MEq_GenOmegaPlus(0),
+	fHistVZEROResponseStudy(0),
+  fHistVZEROResponseStudyTotal(0)
 
 //------------------------------------------------
 // Tree Variables 
@@ -530,7 +532,9 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
 	fHistPtVsAmpV0MEq_GenXiMinus(0),
 	fHistPtVsAmpV0MEq_GenXiPlus(0),
 	fHistPtVsAmpV0MEq_GenOmegaMinus(0),
-	fHistPtVsAmpV0MEq_GenOmegaPlus(0)
+	fHistPtVsAmpV0MEq_GenOmegaPlus(0),
+	fHistVZEROResponseStudy(0),
+  fHistVZEROResponseStudyTotal(0)
 {
 
   //Re-vertex: Will only apply for cascade candidates
@@ -1052,6 +1056,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
     "fHistPtVsAmpV0MEq_GenOmegaPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,lAmplitudeBins,0,lMaxAmplitude);   
     fListHist->Add(fHistPtVsAmpV0MEq_GenOmegaPlus); }  
 
+  if(! fHistVZEROResponseStudy ) {
+    fHistVZEROResponseStudy    = new TH2D( 
+    "fHistVZEROResponseStudy",       "Generated;p_{T} (GeV/c); Mult",200,0,20,lAmplitudeBins,0,lMaxAmplitude);   
+    fListHist->Add(fHistVZEROResponseStudy); }  
+    
+  if(! fHistVZEROResponseStudyTotal ) {
+    fHistVZEROResponseStudyTotal    = new TH2D( 
+    "fHistVZEROResponseStudyTotal",       "Generated;p_{T} (GeV/c); Mult",5000,0,500,lAmplitudeBins,0,lMaxAmplitude);   
+    fListHist->Add(fHistVZEROResponseStudyTotal); } 
+
    //List of Histograms: Normal
    PostData(1, fListHist);
 
@@ -1243,6 +1257,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
   Long_t lNchVZEROA = 0; 
   Long_t lNchVZEROC = 0; 
 
+  Float_t lPtOfParticleInsideVZEROA = -1; 
+  Float_t lPOfParticleInsideVZEROA = -1; 
+
   //----- Loop on Stack ----------------------------------------------------------------
   for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCstack->GetNtrack()); iCurrentLabelStack++) 
   {// This is the begining of the loop on tracks
@@ -1259,9 +1276,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
       if( TMath::Abs(geta) < 0.5 ) lNchEta5++; 
       if( TMath::Abs(geta) < 0.8 ) lNchEta8++; 
       if( 2.8 < geta && geta < 5.1 ) lNchVZEROA++; 
+      if( 2.8 < geta && geta < 5.1 ) lPtOfParticleInsideVZEROA = particleOne->Pt(); 
+      if( 2.8 < geta && geta < 5.1 ) lPOfParticleInsideVZEROA = particleOne->P(); 
       if(-3.7 < geta && geta <-1.7 ) lNchVZEROC++; 
   }//End of loop on tracks
-
+  
   //Attribution 
   fTrueMultEta5 = lNchEta5; 
   fTrueMultEta8 = lNchEta8; 
@@ -1296,6 +1315,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
   //Copy to Event Tree for extra information 
   fAmplitude_V0A = multV0ACorr; 
   fAmplitude_V0C = multV0CCorr; 
+
+  if( fTrueMultVZEROA == 1 ) fHistVZEROResponseStudy->Fill( lPtOfParticleInsideVZEROA , fAmplitude_V0A ); 
+  if( fTrueMultVZEROA == 1 ) fHistVZEROResponseStudyTotal->Fill( lPOfParticleInsideVZEROA , fAmplitude_V0A ); 
 
   // Equalized signals // From AliCentralitySelectionTask
   for(Int_t iCh = 4; iCh < 7; ++iCh) {

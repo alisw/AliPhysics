@@ -58,7 +58,7 @@ class AliJEfficiency{
         TString fInputRootName;     // name of input
 
         TFile * fInputRoot;         // input file  
-        TDirectory * fEffDir[3];    // root directory of efficiency. only fEffDir[2] with "Efficiency" is being used.
+        TDirectory * fEffDir[3];    // root directory of efficiency. only second item of fEffDir with "Efficiency" is being used.
         TGraphErrors * fCorrection[20][20][20]; // Storage of Correction factor 
         TAxis * fCentBin;     // Bin of Centrality. replace with AliJBin?
 };

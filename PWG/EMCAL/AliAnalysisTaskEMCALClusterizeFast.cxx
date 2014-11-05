@@ -223,7 +223,7 @@ void AliAnalysisTaskEMCALClusterizeFast::UserExec(Option_t *)
     AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
     offtrigger = ((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected();
   } else {
-    offtrigger =  fAod->GetHeader()->GetOfflineTrigger();
+    offtrigger =  ((AliVAODHeader*)fAod->GetHeader())->GetOfflineTrigger();
   }
 
   if (!MCEvent()) {
@@ -829,7 +829,8 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
         if (fEsd) {
           gm = fEsd->GetEMCALMatrix(mod);
         } else {
-          AliAODHeader *aodheader = fAod->GetHeader();
+          AliAODHeader *aodheader = dynamic_cast<AliAODHeader*>(fAod->GetHeader());
+          if(!aodheader) AliFatal("Not a standard AOD");
           if (aodheader) {
             gm = aodheader->GetEMCALMatrix(mod);
           }

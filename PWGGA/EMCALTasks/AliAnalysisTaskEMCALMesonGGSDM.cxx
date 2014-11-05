@@ -1424,7 +1424,6 @@ void AliAnalysisTaskEMCALMesonGGSDM::UserExec(Option_t *)
   //######################### DONE WITH MC ##################################
   //######################### ~~~~~~~~~~~~ ##################################
   
-
   for(int i=0; i<nclusters; i++) {
     
     AliESDCaloCluster* esdCluster=NULL;
@@ -1507,6 +1506,7 @@ void AliAnalysisTaskEMCALMesonGGSDM::UserExec(Option_t *)
 
 	//uncomment this to do the track matching (2 of 3 lines, esd part)!! 
 	//if(isGoodEsdCluster(esdCluster) && !MatchesToTrack){
+		
 	if(isGoodEsdCluster(esdCluster)){
 	  recalScale = PrivateEnergyRecal(esdCluster->E(), fRecalibrator);
 	  E1 = esdCluster->E()*recalScale;// TOTAL HACK - JJ
@@ -1519,6 +1519,8 @@ void AliAnalysisTaskEMCALMesonGGSDM::UserExec(Option_t *)
 	  h1_E->Fill(E1);
 	  h2_PhiEtaClusterCut->Fill(clusterPosition.Phi(),clusterPosition.Eta());
 	  h2_PhiEtaMaxCellCut->Fill(cellphi,celleta);
+	 
+	  
 	}
 	clusterPosition.Delete();
       }//if(esdCluster->isEMCAL())
@@ -1544,7 +1546,8 @@ void AliAnalysisTaskEMCALMesonGGSDM::UserExec(Option_t *)
 
 	// _______________Track loop for reconstructed event_____________
 	for(Int_t itrk = 0; itrk < fAodEv->GetNumberOfTracks(); itrk++) {
-	  AliAODTrack* aodTrack = fAodEv->GetTrack(itrk); // pointer to reconstructed to track
+	  AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(fAodEv->GetTrack(itrk));
+	  if(!aodTrack) AliFatal("Not a standard AOD"); // pointer to reconstructed to track
 	  if(!aodTrack) { 
 	    AliError(Form("ERROR: Could not retrieve any (AOD) track %d",itrk)); 
 	    continue; 
@@ -1627,7 +1630,7 @@ void AliAnalysisTaskEMCALMesonGGSDM::UserExec(Option_t *)
     }//if(fAodEv)
     
   }//loop over nclusters. 
-  
+ 
   //Make same event pions... 
   for(unsigned int i=0; i<Photons[0][izvtx][imult].size(); i++){
     for(unsigned int j=i+1; j<Photons[0][izvtx][imult].size(); j++){
@@ -1640,7 +1643,7 @@ void AliAnalysisTaskEMCALMesonGGSDM::UserExec(Option_t *)
       if     (pairasym<0.1)  asymCut = 1;
       else if(pairasym<0.7)  asymCut = 2;
       else                   asymCut = 3;
-      
+      	  
       h1_M        ->Fill(Parent.M());
       h3_MptAsymm ->Fill(Parent.M(),Parent.Pt(),asymCut);
       h2_dphi_deta->Fill(deltaphi,deltaeta);
@@ -1659,6 +1662,7 @@ void AliAnalysisTaskEMCALMesonGGSDM::UserExec(Option_t *)
 	Double_t pairasym = fabs(Photons[0][izvtx][imult][i].Pt()-Photons[ipool][izvtx][imult][j].Pt())/
 	                        (Photons[0][izvtx][imult][i].Pt()+Photons[ipool][izvtx][imult][j].Pt());
 	Int_t asymCut = 0;
+	
 	if     (pairasym<0.1)  asymCut = 1;
 	else if(pairasym<0.7)  asymCut = 2;
 	else                   asymCut = 3;
@@ -1691,47 +1695,88 @@ void AliAnalysisTaskEMCALMesonGGSDM::Terminate(Option_t *) //specify what you wa
   
 }
 
+
+// //________________________________________________________________________
+// Int_t AliAnalysisTaskEMCALMesonGGSDM::GetZvtxBin(Double_t vertZ)
+// {
+//   
+//   int izvtx = -1;
+//   
+//   if     (vertZ<-35)
+//     izvtx=0;
+//   else if(vertZ<-30)
+//     izvtx=1;
+//   else if(vertZ<-25)
+//     izvtx=2;
+//   else if(vertZ<-20)
+//     izvtx=3;
+//   else if(vertZ<-15)
+//     izvtx=4;
+//   else if(vertZ<-10)
+//     izvtx=5;
+//   else if(vertZ< -5)
+//     izvtx=6;
+//   else if(vertZ<  0)
+//     izvtx=7;
+//   else if(vertZ<  5)
+//     izvtx=8;
+//   else if(vertZ< 10)
+//     izvtx=9;
+//   else if(vertZ< 15)
+//     izvtx=10;
+//   else if(vertZ< 20)
+//     izvtx=11;
+//   else if(vertZ< 25)
+//     izvtx=12;
+//   else if(vertZ< 30)
+//     izvtx=13;
+//   else if(vertZ< 35)
+//     izvtx=14;
+//   else
+//     izvtx=15;
+//   
+//   return izvtx;  
+// }
+
 //________________________________________________________________________
 Int_t AliAnalysisTaskEMCALMesonGGSDM::GetZvtxBin(Double_t vertZ)
 {
   
   int izvtx = -1;
   
-  if     (vertZ<-35)
+  if     (vertZ<-3.375)
     izvtx=0;
-  else if(vertZ<-30)
+  else if(vertZ<-1.605)
     izvtx=1;
-  else if(vertZ<-25)
+  else if(vertZ<-0.225)
     izvtx=2;
-  else if(vertZ<-20)
+  else if(vertZ<1.065)
     izvtx=3;
-  else if(vertZ<-15)
+  else if(vertZ<-2.445)
     izvtx=4;
-  else if(vertZ<-10)
+  else if(vertZ<-4.245)
     izvtx=5;
-  else if(vertZ< -5)
-    izvtx=6;
-  else if(vertZ<  0)
-    izvtx=7;
-  else if(vertZ<  5)
-    izvtx=8;
-  else if(vertZ< 10)
-    izvtx=9;
-  else if(vertZ< 15)
-    izvtx=10;
-  else if(vertZ< 20)
-    izvtx=11;
-  else if(vertZ< 25)
-    izvtx=12;
-  else if(vertZ< 30)
-    izvtx=13;
-  else if(vertZ< 35)
-    izvtx=14;
   else
-    izvtx=15;
+    izvtx=6;
   
   return izvtx;  
 }
+
+
+// //________________________________________________________________________
+// Int_t AliAnalysisTaskEMCALMesonGGSDM::GetMultBin(Int_t mult){
+// 
+//   int imult = -1;
+//   
+//   if     (mult<2)
+//     imult=0;
+//   else if(mult<25)
+//     imult=mult-2;
+//   else
+//     imult=24;
+//   
+//   return imult;  
+// }
 
 //________________________________________________________________________
 Int_t AliAnalysisTaskEMCALMesonGGSDM::GetMultBin(Int_t mult){
@@ -1740,13 +1785,20 @@ Int_t AliAnalysisTaskEMCALMesonGGSDM::GetMultBin(Int_t mult){
   
   if     (mult<2)
     imult=0;
-  else if(mult<25)
-    imult=mult-2;
+  else if(mult<3)
+    imult=1;
+  else if(mult<4)
+	imult=2;  
+  else if(mult<8)	  
+    imult=3;
+  else if(mult<15)	  
+    imult=4;
   else
-    imult=24;
+    imult=5;
   
   return imult;  
 }
+
 
 //________________________________________________________________________
 Int_t AliAnalysisTaskEMCALMesonGGSDM::isGoodEsdCluster(AliESDCaloCluster* esdclust){

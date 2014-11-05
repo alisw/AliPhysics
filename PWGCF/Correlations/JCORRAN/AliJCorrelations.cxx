@@ -66,6 +66,7 @@ AliJCorrelations::AliJCorrelations( AliJCard *cardIn, AliJHistos *histosIn) :
   fRGapBinAway(0),
   fCentralityBin(0),
   fXlongBin(0),
+  fIsLikeSign(false),
   fGeometricAcceptanceCorrection(1)
 {
   // constructor
@@ -127,6 +128,7 @@ AliJCorrelations::AliJCorrelations() :
   fRGapBinAway(0),
   fCentralityBin(0),
   fXlongBin(0),
+  fIsLikeSign(false),
   fGeometricAcceptanceCorrection(1)
 {
   // default constructor
@@ -164,6 +166,7 @@ AliJCorrelations::AliJCorrelations(const AliJCorrelations& in) :
   fRGapBinAway(in.fRGapBinAway),
   fCentralityBin(in.fCentralityBin),
   fXlongBin(in.fXlongBin),
+  fIsLikeSign(in.fIsLikeSign),
   fGeometricAcceptanceCorrection(in.fGeometricAcceptanceCorrection)
 {
   // The pointers to card and histos are just copied. I think this is safe, since they are not created by
@@ -205,6 +208,7 @@ AliJCorrelations& AliJCorrelations::operator=(const AliJCorrelations& in){
   fRGapBinAway = in.fRGapBinAway;
   fCentralityBin = in.fCentralityBin;
   fXlongBin = in.fXlongBin;
+  fIsLikeSign = in.fIsLikeSign;
   fGeometricAcceptanceCorrection = in.fGeometricAcceptanceCorrection;
   fnReal = in.fnReal;
   fnMix = in.fnMix;
@@ -253,9 +257,10 @@ void AliJCorrelations::FillAzimuthHistos(fillType fTyp, int CentBin, int ZBin, A
   //double-counting check
   if(fTyp == kReal && twoTracks && ftk1->GetID()==ftk2->GetID()) return;
   
-  // Accept only unlike sign pairs
-  //if(ftk1->GetCharge() > 0 && ftk2->GetCharge() > 0) return;
-  //if(ftk1->GetCharge() < 0 && ftk2->GetCharge() < 0) return;
+  // Check the signs of the paired particles
+  fIsLikeSign = false;
+  if(ftk1->GetCharge() > 0 && ftk2->GetCharge() > 0) fIsLikeSign = true;
+  if(ftk1->GetCharge() < 0 && ftk2->GetCharge() < 0) fIsLikeSign = true;
   
   //----------------------------------------------------------------
   fptt = ftk1->Pt();
@@ -420,17 +425,45 @@ void AliJCorrelations::FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, AliJ
     double weight = jt > 1e-3 ? fGeometricAcceptanceCorrection * fTrackPairEfficiency/jt : 0;
     
     int iKlongBin = fcard->GetBin(kLongType, vTrigger.Vect().Dot(vAssoc.Vect())/vTrigger.P());
+    double invariantMass = sqrt(2*(vTrigger.P()*vAssoc.P()-vTrigger.Vect().Dot(vAssoc.Vect())));
     if(iKlongBin>=0){
       fhistos->fhJTKlong[fTyp][fCentralityBin][fpttBin][iKlongBin]->Fill(jt, weight);
-      //cout <<" jt="<< jt <<" geo="<< fGeometricAcceptanceCorrection <<" eff="<< fTrackPairEfficiency <<" w="<< fGeometricAcceptanceCorrection * fTrackPairEfficiency/jt <<endl;
+      fhistos->fhInvariantMassKlong[fTyp][fCentralityBin][fpttBin][iKlongBin]->Fill(invariantMass);
+
+      // Fill also the signed distributions
+      if(fIsLikeSign){
+        fhistos->fhJTKlongLikeSign[fTyp][fCentralityBin][fpttBin][iKlongBin]->Fill(jt, weight);
+        fhistos->fhInvariantMassKlongLikeSign[fTyp][fCentralityBin][fpttBin][iKlongBin]->Fill(invariantMass);
+      } else {
+        fhistos->fhJTKlongUnlikeSign[fTyp][fCentralityBin][fpttBin][iKlongBin]->Fill(jt, weight);
+        fhistos->fhInvariantMassKlongUnlikeSign[fTyp][fCentralityBin][fpttBin][iKlongBin]->Fill(invariantMass);
+      }
     }
     if(fXlongBin>=0){
       fhistos->fhJT[fTyp][fCentralityBin][fpttBin][fXlongBin]->Fill(jt, weight);
-      //cout <<" jt="<< jt <<" geo="<< fGeometricAcceptanceCorrection <<" eff="<< fTrackPairEfficiency <<" w="<< fGeometricAcceptanceCorrection * fTrackPairEfficiency/jt <<endl;
+      fhistos->fhInvariantMassXe[fTyp][fCentralityBin][fpttBin][fXlongBin]->Fill(invariantMass);
+
+      // Fill also the signed distributions
+      if(fIsLikeSign){
+        fhistos->fhJTLikeSign[fTyp][fCentralityBin][fpttBin][fXlongBin]->Fill(jt, weight);
+        fhistos->fhInvariantMassXeLikeSign[fTyp][fCentralityBin][fpttBin][fXlongBin]->Fill(invariantMass);
+      } else {
+        fhistos->fhJTUnlikeSign[fTyp][fCentralityBin][fpttBin][fXlongBin]->Fill(jt, weight);
+        fhistos->fhInvariantMassXeUnlikeSign[fTyp][fCentralityBin][fpttBin][fXlongBin]->Fill(invariantMass);
+      }
     }
     if(fptaBin>=0){
       fhistos->fhJTPta[fTyp][fCentralityBin][fpttBin][fptaBin]->Fill(jt, weight);
-      //cout <<" jt="<< jt <<" geo="<< fGeometricAcceptanceCorrection <<" eff="<< fTrackPairEfficiency <<" w="<< fGeometricAcceptanceCorrection * fTrackPairEfficiency/jt <<endl;
+      fhistos->fhInvariantMassPta[fTyp][fCentralityBin][fpttBin][fptaBin]->Fill(invariantMass);
+
+      // Fill also the signed distributions
+      if(fIsLikeSign){
+        fhistos->fhJTPtaLikeSign[fTyp][fCentralityBin][fpttBin][fptaBin]->Fill(jt, weight);
+        fhistos->fhInvariantMassPtaLikeSign[fTyp][fCentralityBin][fpttBin][fptaBin]->Fill(invariantMass);
+      } else {
+        fhistos->fhJTPtaUnlikeSign[fTyp][fCentralityBin][fpttBin][fptaBin]->Fill(jt, weight);
+        fhistos->fhInvariantMassPtaUnlikeSign[fTyp][fCentralityBin][fpttBin][fptaBin]->Fill(invariantMass);
+      }
     }
     
     TLorentzVector vAssocRndm;
@@ -480,11 +513,25 @@ void AliJCorrelations::FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, AliJ
               fhistos->fhJTKlongBg[fCentralityBin][iEtaGap][fpttBin][jKlongBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
               if(fill2DBackground) fhistos->fhDphiDetaKlong[fCentralityBin][iEtaGap][fpttBin][jKlongBin]->Fill(dEtaRndm, dphiAssocRndm, geoAccCorrRndm * fTrackPairEfficiency);
               fhistos->fhBgAssocKlong[fCentralityBin][iEtaGap][fpttBin][jKlongBin]->Fill(fpta, fTrackPairEfficiency);
+
+              // Fill the background histogram for signed pairs
+              if(fIsLikeSign){
+                fhistos->fhJTKlongBgLikeSign[fCentralityBin][iEtaGap][fpttBin][jKlongBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+              } else {
+                fhistos->fhJTKlongBgUnlikeSign[fCentralityBin][iEtaGap][fpttBin][jKlongBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+              }
             }
             for(int iRGap=0; iRGap<=fRGapBinNear; iRGap++){
               fhistos->fhJTKlongBgR[fCentralityBin][iRGap][fpttBin][jKlongBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
               if(fill2DBackground) fhistos->fhDphiDetaKlongR[fCentralityBin][iRGap][fpttBin][jKlongBin]->Fill(dEtaRndm, dphiAssocRndm, geoAccCorrRndm * fTrackPairEfficiency);
               fhistos->fhBgAssocKlongR[fCentralityBin][iRGap][fpttBin][jKlongBin]->Fill(fpta, fTrackPairEfficiency);
+
+              // Fill the background histogram for signed pairs
+              if(fIsLikeSign){
+                fhistos->fhJTKlongBgRLikeSign[fCentralityBin][iRGap][fpttBin][jKlongBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+              } else {
+                fhistos->fhJTKlongBgRUnlikeSign[fCentralityBin][iRGap][fpttBin][jKlongBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+              }
             }
           }
         }
@@ -495,11 +542,25 @@ void AliJCorrelations::FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, AliJ
               fhistos->fhJTBg[fCentralityBin][iEtaGap][fpttBin][iXeBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
               if(fill2DBackground) fhistos->fhDphiDetaXe[fCentralityBin][iEtaGap][fpttBin][iXeBin]->Fill(dEtaRndm, dphiAssocRndm, geoAccCorrRndm * fTrackPairEfficiency);
               fhistos->fhBgAssocXe[fCentralityBin][iEtaGap][fpttBin][iXeBin]->Fill(fpta, fTrackPairEfficiency);
+
+              // Fill the background histograms for signed pairs
+              if(fIsLikeSign){
+                fhistos->fhJTBgLikeSign[fCentralityBin][iEtaGap][fpttBin][iXeBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+              } else {
+                fhistos->fhJTBgUnlikeSign[fCentralityBin][iEtaGap][fpttBin][iXeBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+              }
             }
             for(int iRGap=0; iRGap<=fRGapBinNear; iRGap++){
               fhistos->fhJTBgR[fCentralityBin][iRGap][fpttBin][iXeBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
               if(fill2DBackground) fhistos->fhDphiDetaXeR[fCentralityBin][iRGap][fpttBin][iXeBin]->Fill(dEtaRndm, dphiAssocRndm, geoAccCorrRndm * fTrackPairEfficiency);
               fhistos->fhBgAssocXeR[fCentralityBin][iRGap][fpttBin][iXeBin]->Fill(fpta, fTrackPairEfficiency);
+
+              // Fill the background histograms for signed pairs
+              if(fIsLikeSign){
+                fhistos->fhJTBgRLikeSign[fCentralityBin][iRGap][fpttBin][iXeBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+              } else {
+                fhistos->fhJTBgRUnlikeSign[fCentralityBin][iRGap][fpttBin][iXeBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+              }
             }
           }
         }
@@ -509,16 +570,30 @@ void AliJCorrelations::FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, AliJ
               fhistos->fhJTPtaBg[fCentralityBin][iEtaGap][fpttBin][fptaBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
               if(fill2DBackground) fhistos->fhDphiDetaPta[fCentralityBin][iEtaGap][fpttBin][fptaBin]->Fill(dEtaRndm, dphiAssocRndm, geoAccCorrRndm * fTrackPairEfficiency);
               fhistos->fhBgAssocPta[fCentralityBin][iEtaGap][fpttBin][fptaBin]->Fill(fpta, fTrackPairEfficiency);
+
+              //Fill the background histograms for signed pairs
+              if(fIsLikeSign){
+                fhistos->fhJTPtaBgLikeSign[fCentralityBin][iEtaGap][fpttBin][fptaBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+              } else {
+                fhistos->fhJTPtaBgUnlikeSign[fCentralityBin][iEtaGap][fpttBin][fptaBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+              }
             }
             for(int iRGap=0; iRGap<=fRGapBinNear; iRGap++){
               fhistos->fhJTPtaBgR[fCentralityBin][iRGap][fpttBin][fptaBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
               if(fill2DBackground) fhistos->fhDphiDetaPtaR[fCentralityBin][iRGap][fpttBin][fptaBin]->Fill(dEtaRndm, dphiAssocRndm, geoAccCorrRndm * fTrackPairEfficiency);
               fhistos->fhBgAssocPtaR[fCentralityBin][iRGap][fpttBin][fptaBin]->Fill(fpta, fTrackPairEfficiency);
-            }
-          }
-        }
-      }  //trials
-    }// Eta Gap Random
+
+              //Fill the background histograms for signed pairs
+              if(fIsLikeSign){
+                fhistos->fhJTPtaBgRLikeSign[fCentralityBin][iRGap][fpttBin][fptaBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+              } else {
+                fhistos->fhJTPtaBgRUnlikeSign[fCentralityBin][iRGap][fpttBin][fptaBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+              }
+            } // RGap
+          } // if jt > 1e-3 
+        } // if fptaBin >= 0
+      } //trials
+    } // Eta Gap Random
     
     
   } else {

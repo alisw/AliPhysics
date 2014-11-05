@@ -64,8 +64,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   const char *chrgs[2] = { "pip", "pim" };
   
   int runktdep = 1;
-  //double ktrng[2] = {0.2, 0.3};
-double ktrng[8] = { 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
+  double ktrng[4] = {0.2, 0.3,0.4,0.5};
+   //double ktrng[8] = { 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
   int run3d = 1; // Do 3D cartesian analysis?
   int runshlcms = 1;
 
@@ -123,6 +123,7 @@ double ktrng[8] = { 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
   AliFemtoCorrFctnDirectYlm     *cylmkttpc[20*7];
   AliFemtoQinvCorrFctn          *cqinvkttpc[20*7];
   AliFemtoCorrFctn3DLCMSSym     *cq3dlcmskttpc[20*7];
+  AliFemtoCorrFctn3DSpherical   *cq3dspherical[20*7];
   AliFemtoCorrFctnTPCNcls       *cqinvnclstpc[20];
   AliFemtoShareQualityCorrFctn  *cqinvsqtpc[20*10];
   AliFemtoChi2CorrFctn          *cqinvchi2tpc[20];
@@ -242,19 +243,24 @@ double ktrng[8] = { 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
 
 	  if (runktdep) {
 	    int ktm;
-	    for (int ikt=0; ikt<7; ikt++) {
-	      ktm = aniter*7 + ikt;
+	    for (int ikt=0; ikt<3; ikt++) {
+	      ktm = aniter*3 + ikt;
 	      ktpcuts[ktm] = new AliFemtoKTPairCut(ktrng[ikt], ktrng[ikt+1]);
 	      
-cqinvkttpc[ktm] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0, shqmax);
+              /*cqinvkttpc[ktm] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0, shqmax);
 	      cqinvkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
-	      anetaphitpc[aniter]->AddCorrFctn(cqinvkttpc[ktm]);
+	      anetaphitpc[aniter]->AddCorrFctn(cqinvkttpc[ktm]);*/
 
 	      if (run3d) {
 
-		cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),100,0.5);
+		/*cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),100,0.5);
 		cq3dlcmskttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
-		anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[ktm]);
+		anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[ktm]);*/
+
+               cq3dspherical[ktm] = new AliFemtoCorrFctn3DSpherical(Form("cq3d%stpcM%ikT%i",chrgs[ichg], imult, ikt), 200,0.0,2.0,200,200);
+               cq3dspherical[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
+               anetaphitpc[aniter]->AddCorrFctn(cq3dspherical[ktm]);
+
 	      }
 	    }
 	  }

@@ -71,7 +71,10 @@ AliAnalysisTaskSpectraAllChAOD::AliAnalysisTaskSpectraAllChAOD(const char *name)
   fnDCABins(60),
   fDCAmin(-3),
   fDCAmax(3),
-  fDCAzCut(999999.)
+  fDCAzCut(999999.),
+  fQvecGen(0),
+  fQgenType(0),
+  fDoCentrSystCentrality(0)
 {
   // Default constructor
   DefineInput(0, TChain::Class());
@@ -192,23 +195,25 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
   if(!fEventCuts->IsSelected(fAOD,fTrackCuts))return;//event selection
 
   //Default TPC priors
-  //if(fHelperPID->GetPIDType()==kBayes)fHelperPID->GetPIDCombined()->SetDefaultTPCPriors();//FIXME maybe this can go in the UserCreateOutputObject?
+  if(fHelperPID->GetPIDType()==kBayes)fHelperPID->GetPIDCombined()->SetDefaultTPCPriors();//FIXME we should modify the task to change priors
   
   Double_t Qvec=0.;
   if(fIsQvecCalibMode){
     if(fVZEROside==0)Qvec=fEventCuts->GetqV0A();
     else if (fVZEROside==1)Qvec=fEventCuts->GetqV0C();
+    else if (fVZEROside==2)Qvec=fEventCuts->GetqTPC();
   }
   else Qvec=fEventCuts->GetQvecPercentile(fVZEROside);
   
   Double_t QvecMC = 0.;
   if(fIsMC){
     if(fIsQvecCalibMode){
-      QvecMC = fEventCuts->CalculateQVectorMC(fVZEROside);
+      QvecMC = fEventCuts->CalculateQVectorMC(fVZEROside, fQgenType);
     }
+    else QvecMC = fEventCuts->GetQvecPercentileMC(fVZEROside, fQgenType);
   }
   
-  Double_t Cent=fEventCuts->GetCent();
+  Double_t Cent=(fDoCentrSystCentrality)?1.01*fEventCuts->GetCent():fEventCuts->GetCent();
   
   // First do MC to fill up the MC particle array
   TClonesArray *arrayMC = 0;
@@ -250,7 +255,8 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
   Int_t Nch = 0.;
   
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
-    AliAODTrack* track = fAOD->GetTrack(iTracks);
+    AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
+    if(!track) AliFatal("Not a standard AOD");
     if(fCharge != 0 && track->Charge() != fCharge) continue;//if fCharge != 0 only select fCharge 
     if (!fTrackCuts->IsSelected(track,kTRUE)) continue; //track selection (rapidity selection NOT in the standard cuts)
     if(!fFillOnlyEvents){
@@ -290,7 +296,8 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
       Double_t varTrk[8];
       varTrk[0]=track->Pt();
       varTrk[1]=Cent;
-      varTrk[2]=Qvec;
+      if(fIsMC && fQvecGen) varTrk[2]=QvecMC;
+        else varTrk[2]=Qvec;
       varTrk[3]=(Double_t)IDrec;
       varTrk[4]=(Double_t)IDgen;
       varTrk[5]=(Double_t)isph;

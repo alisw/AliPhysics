@@ -386,11 +386,16 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
   fHistEventStats->Fill(1); //all events
   
   //Centrality stuff
-  AliAODHeader *header = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
   Double_t nCentrality = 0;
-  
   if(fUseCentrality) {
-    AliCentrality *centrality = header->GetCentralityP();
+    
+    AliAODHeader *headerAOD = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+    if (!headerAOD){
+      AliFatal("AOD header found");
+      return;
+    }
+
+    AliCentrality *centrality = headerAOD->GetCentralityP();
     nCentrality =centrality->GetCentralityPercentile(fCentralityEstimator.Data());
     
 
@@ -428,7 +433,8 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 	      TArrayI labelMCArray(nMCParticles);
 	      
 	      for(Int_t jTracks = 0; jTracks < nGoodAODTracks; jTracks++) {
-		AliAODTrack* track = fAOD->GetTrack(jTracks);
+		AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(jTracks));
+		if(!track) AliFatal("Not a standard AOD");
 		if(!track) continue;
 		
 		if (!track->TestFilterBit(fAODTrackCutBit))
@@ -564,7 +570,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 	      Int_t labelCounter = 0;
 	      
 	      for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) {
-		AliAODTrack *trackAOD = static_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));    
+		AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));    
 		if(!trackAOD) continue;
 		
 		//track cuts
@@ -576,11 +582,9 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		labelArray.AddAt(label,labelCounter);
 		labelCounter += 1;
 		
-		Bool_t iFound = kFALSE;
 		Int_t mcGoods = nMCLabelCounter;
 		for (Int_t k = 0; k < mcGoods; k++) {
 		  Int_t mcLabel = labelMCArray.At(k);
-		  iFound = kFALSE;
 		  
 		  if (mcLabel != TMath::Abs(label)) continue;
 		  if(mcLabel != label) continue;		    

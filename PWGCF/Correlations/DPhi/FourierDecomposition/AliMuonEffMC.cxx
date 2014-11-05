@@ -504,7 +504,7 @@ void AliMuonEffMC::UserExec(Option_t *)
   {
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     if (!fAOD) { AliError("AOD event not found. Nothing done!"); return; }
-    ntrks = fAOD->GetNTracks();
+    ntrks = fAOD->GetNumberOfTracks();
   }
   else
   {

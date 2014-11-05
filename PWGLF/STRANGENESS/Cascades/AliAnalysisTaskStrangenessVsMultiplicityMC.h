@@ -350,6 +350,9 @@ class AliAnalysisTaskStrangenessVsMultiplicityMC : public AliAnalysisTaskSE {
   TH2D *fHistPtVsAmpV0MEq_GenXiPlus;       //! 
   TH2D *fHistPtVsAmpV0MEq_GenOmegaMinus;   //! 
   TH2D *fHistPtVsAmpV0MEq_GenOmegaPlus;    //!  
+  
+  TH2D *fHistVZEROResponseStudy; //! 
+  TH2D *fHistVZEROResponseStudyTotal; //! 
 
 
    AliAnalysisTaskStrangenessVsMultiplicityMC(const AliAnalysisTaskStrangenessVsMultiplicityMC&);            // not implemented

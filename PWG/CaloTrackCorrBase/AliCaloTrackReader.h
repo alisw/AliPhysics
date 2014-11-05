@@ -19,6 +19,7 @@
 class TObjArray ; 
 class TTree ;
 class TArrayI ;
+#include <TRandom3.h>
 
 //--- ANALYSIS system ---
 #include "AliVEvent.h"
@@ -98,6 +99,11 @@ public:
   // Clusters/Tracks arrays filtering/filling methods and switchs 
   //------------------------------------------------------------
   
+  // detector identificator enum, used here and in AliAnaCaloTrackBaseClass and derived classes
+  enum detector { kEMCAL = AliFiducialCut::kEMCAL, kPHOS = AliFiducialCut::kPHOS,
+                  kCTS   = AliFiducialCut::kCTS  , kDCAL = AliFiducialCut::kDCAL,
+                  kDCALPHOS = AliFiducialCut::kDCALPHOS } ;
+
   // Minimum pt setters and getters
   
   Float_t          GetEMCALPtMin()                   const { return fEMCALPtMin            ; }
@@ -192,6 +198,10 @@ public:
   void             SwitchOnEMCAL()                         { fFillEMCAL = kTRUE            ; }
   void             SwitchOffEMCAL()                        { fFillEMCAL = kFALSE           ; }
 
+  Bool_t           IsDCALSwitchedOn()                const { return fFillDCAL              ; }
+  void             SwitchOnDCAL()                          { fFillDCAL = kTRUE             ; }
+  void             SwitchOffDCAL()                         { fFillDCAL = kFALSE            ; }
+  
   Bool_t           IsPHOSSwitchedOn()                const { return fFillPHOS              ; }
   void             SwitchOnPHOS()                          { fFillPHOS = kTRUE             ; }
   void             SwitchOffPHOS()                         { fFillPHOS = kFALSE            ; }
@@ -210,6 +220,12 @@ public:
 
   void             SwitchOnClusterELinearityCorrection()   { fCorrectELinearity = kTRUE    ; }
   void             SwitchOffClusterELinearityCorrection()  { fCorrectELinearity = kFALSE   ; }
+
+  Bool_t           IsShowerShapeSmeared()            const { return fSmearShowerShape      ; }
+  void             SwitchOnShowerShapeSmearing()           { fSmearShowerShape = kTRUE     ; }
+  void             SwitchOffShowerShapeSmearing()          { fSmearShowerShape = kFALSE    ; }
+  
+  void             SetShowerShapeSmearWidth(Float_t w )    { fSmearShowerShapeWidth = w    ; }
 
   Bool_t           IsEmbeddedClusterSelectionOn()    const { return fSelectEmbeddedClusters   ; }
   void             SwitchOnEmbeddedClustersSelection()     { fSelectEmbeddedClusters = kTRUE  ; }
@@ -236,6 +252,7 @@ public:
   
   virtual TObjArray*     GetCTSTracks()              const { return fCTSTracks              ; }
   virtual TObjArray*     GetEMCALClusters()          const { return fEMCALClusters          ; }
+  virtual TObjArray*     GetDCALClusters()           const { return fDCALClusters           ; }
   virtual TObjArray*     GetPHOSClusters()           const { return fPHOSClusters           ; }
   virtual AliVCaloCells* GetEMCALCells()             const { return fEMCALCells             ; }
   virtual AliVCaloCells* GetPHOSCells()              const { return fPHOSCells              ; }
@@ -658,6 +675,7 @@ public:
   TList          * fAODBranchList ;            //-> List with AOD branches created and needed in analysis
   TObjArray      * fCTSTracks ;                //-> temporal array with tracks
   TObjArray      * fEMCALClusters ;            //-> temporal array with EMCAL CaloClusters
+  TObjArray      * fDCALClusters ;             //-> temporal array with DCAL CaloClusters, not needed in the normal case, use just EMCal array with DCal limits
   TObjArray      * fPHOSClusters ;             //-> temporal array with PHOS  CaloClusters
   AliVCaloCells  * fEMCALCells ;               //! temporal array with EMCAL CaloCells
   AliVCaloCells  * fPHOSCells ;                //! temporal array with PHOS  CaloCells
@@ -668,12 +686,17 @@ public:
 
   Bool_t           fFillCTS;                   // use data from CTS
   Bool_t           fFillEMCAL;                 // use data from EMCAL
+  Bool_t           fFillDCAL;                  // use data from DCAL, not needed in the normal case, use just EMCal array with DCal limits
   Bool_t           fFillPHOS;                  // use data from PHOS
   Bool_t           fFillEMCALCells;            // use data from EMCAL
   Bool_t           fFillPHOSCells;             // use data from PHOS
   Bool_t           fRecalculateClusters;       // Correct clusters, recalculate them if recalibration parameters is given
   Bool_t           fCorrectELinearity;         // Correct cluster linearity, always on
   Bool_t           fSelectEmbeddedClusters;    // Use only simulated clusters that come from embedding.
+  
+  Bool_t           fSmearShowerShape;          // Smear shower shape (use in MC)
+  Float_t          fSmearShowerShapeWidth;     // Smear shower shape landau function "width" (use in MC)
+  TRandom3         fRandom ;                   //! Random generator
   
   ULong_t          fTrackStatus        ;       // Track selection bit, select tracks refitted in TPC, ITS ...
   Bool_t           fSelectSPDHitTracks ;       // Ensure that track hits SPD layers
@@ -803,10 +826,12 @@ public:
 
   Bool_t           fRejectEMCalTriggerEventsWith2Tresholds; // Reject events EG2 also triggered by EG1 or EJ2 also triggered by EJ1
   
+  TLorentzVector   fMomentum;                    //! Temporal TLorentzVector container, avoid declaration of  TLorentzVectors per event
+  
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,68)
+  ClassDef(AliCaloTrackReader,69)
   
 } ;
 

@@ -19,8 +19,9 @@
 
 class TFile;
 class TF1;
-class THF1;
-class THF2;
+class TH1F;
+class TH2F;
+class TH3F;
 class TProfile;
 class AliLocalRhoParameter;
 class AliClusterContainer;
@@ -50,6 +51,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         virtual Bool_t          Run();
         TH1F*                   BookTH1F(const char* name, const char* x, Int_t bins, Double_t min, Double_t max, Int_t c = -1, Bool_t append = kTRUE);
         TH2F*                   BookTH2F(const char* name, const char* x, const char* y, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Int_t c = -1, Bool_t append = kTRUE);
+        TH3F*                   BookTH3F(const char* name, const char* x, const char* y, const char* z, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Int_t binsz, Double_t minz, Double_t maxz, Int_t c = -1, Bool_t append = kTRUE);
         /* inline */    static Double_t PhaseShift(Double_t x) {  
             while (x>=TMath::TwoPi())x-=TMath::TwoPi();
             while (x<0.)x+=TMath::TwoPi();
@@ -102,6 +104,8 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
                                                                                  fUserSuppliedV3 = j; }
         void                    SetOnTheFlyResCorrection(TH1F* r2, TH1F* r3)    {fUserSuppliedR2 = r2;
                                                                                  fUserSuppliedR3 = r3; }
+        void                    SetEventPlaneWeights(TH1F* ep)                  {fEventPlaneWeights = ep; }
+        void                    SetAcceptanceWeights(Bool_t w)                  {fAcceptanceWeights = w; }
         void                    SetNameRhoSmall(TString name)                   {fNameSmallRho = name; }
         void                    SetRandomSeed(TRandom3* r)                      {if (fRandom) delete fRandom; fRandom = r; }
         void                    SetModulationFit(TF1* fit);
@@ -150,30 +154,18 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TList*                  GetOutputList() const                           {return fOutputList;}
         AliLocalRhoParameter*   GetLocalRhoParameter() const                    {return fLocalRho;}
         Double_t                GetJetRadius() const                            {return GetJetContainer()->GetJetRadius();}
-        /* inline */    AliEmcalJet* GetLeadingJet() {
-            // return pointer to the highest pt jet (before background subtraction) within acceptance
-            // only rudimentary cuts are applied on this level, hence the implementation outside of
-            // the framework
-            Int_t iJets(fJets->GetEntriesFast());
-            Double_t pt(0);
-            AliEmcalJet* leadingJet(0x0);
-            for(Int_t i(0); i < iJets; i++) {
-                AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(i));
-                if(!PassesSimpleCuts(jet)) continue;
-                if(jet->Pt() > pt) {
-                   leadingJet = jet;
-                   pt = leadingJet->Pt();
-                }
-            }
-            return leadingJet;
-        }
-        void                    ExecMe()                                {ExecOnce();}
-        AliAnalysisTaskJetV2*   ReturnMe()                              {return this;}
+        AliEmcalJet*            GetLeadingJet(AliLocalRhoParameter* localRho = 0x0);
+        void                    ExecMe()                                        {ExecOnce();}
+
+        AliAnalysisTaskJetV2*   ReturnMe()                                      {return this;}
         // local cuts
         void                    SetSoftTrackMinMaxPt(Float_t min, Float_t max)          {fSoftTrackMinPt = min; fSoftTrackMaxPt = max;}
         void                    SetSemiGoodJetMinMaxPhi(Double_t a, Double_t b)         {fSemiGoodJetMinPhi = a; fSemiGoodJetMaxPhi = b;}
         void                    SetSemiGoodTrackMinMaxPhi(Double_t a, Double_t b)       {fSemiGoodTrackMinPhi = a; fSemiGoodTrackMaxPhi = b;}
         // numerical evaluations
+        static void             NumericalOverlap(Double_t x1, Double_t x2, Double_t psi2, Double_t &percIn, Double_t &percOut, Double_t &percLost);
+        static Int_t            OverlapsWithPlane(Double_t x1, Double_t x2, 
+                Double_t a, Double_t b, Double_t c, Double_t d, Double_t e, Double_t phi);
         static Double_t         CalculateEventPlaneChi(Double_t res);
         void                    CalculateEventPlaneVZERO(Double_t vzero[2][2]) const;
         void                    CalculateEventPlaneCombinedVZERO(Double_t* comb) const;
@@ -224,6 +216,14 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         void                    FillJetHistograms(Double_t psi2);
         void                    FillQAHistograms(AliVTrack* vtrack) const;
         void                    FillQAHistograms(AliVEvent* vevent);
+        void                    FillWeightedTrackHistograms() const;
+        void                    FillWeightedClusterHistograms() const;
+        void                    FillWeightedEventPlaneHistograms(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc) const;
+        void                    FillWeightedRhoHistograms();
+        void                    FillWeightedDeltaPtHistograms(Double_t psi2) const; 
+        void                    FillWeightedJetHistograms(Double_t psi2);
+        void                    FillWeightedQAHistograms(AliVTrack* vtrack) const;
+        void                    FillWeightedQAHistograms(AliVEvent* vevent);
         void                    FillAnalysisSummaryHistogram() const;
         virtual void            Terminate(Option_t* option);
         // interface methods for the output file
@@ -252,10 +252,14 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TH1F*                   fUserSuppliedV3;        // histo with integrated v3
         TH1F*                   fUserSuppliedR2;        // correct the extracted v2 with this r
         TH1F*                   fUserSuppliedR3;        // correct the extracted v3 with this r
+        TH1F*                   fEventPlaneWeights;     // weight histo for the event plane
+        Bool_t                  fAcceptanceWeights;     // store centrality dependent acceptance weights
+        Float_t                 fEventPlaneWeight;      //! the actual weight of an event
         AliParticleContainer*   fTracksCont;            //! tracks
         AliClusterContainer*    fClusterCont;           //! cluster container
         AliJetContainer*        fJetsCont;              //! jets
         AliEmcalJet*            fLeadingJet;            //! leading jet
+        AliEmcalJet*            fLeadingJetAfterSub;    //! leading jet after background subtraction
         // members
         Int_t                   fNAcceptedTracks;       //! number of accepted tracks
         Int_t                   fNAcceptedTracksQCn;    //! accepted tracks for QCn
@@ -291,6 +295,9 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         Float_t                 fAbsVertexZ;            // cut on zvertex
         // general qa histograms
         TH1F*                   fHistCentrality;        //! accepted centrality
+        TProfile*               fHistCentralityPercIn;  //! centrality versus perc in
+        TProfile*               fHistCentralityPercOut; //! centrality versus perc out
+        TProfile*               fHistCentralityPercLost;//! centrality versus perc lost
         TH1F*                   fHistVertexz;           //! accepted verte
         TH2F*                   fHistRunnumbersPhi;     //! run numbers averaged phi
         TH2F*                   fHistRunnumbersEta;     //! run numbers averaged eta
@@ -350,10 +357,12 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TH2F*                   fHistPsiVZEROCTRK;      //! psi 2 from vzero c
         TH2F*                   fHistPsiVZEROTRK;       //! psi 2 from combined vzero
         TH2F*                   fHistPsiTPCTRK;         //! psi 2 from tpc
-        TH2F*                   fHistPsiTPCLeadingJet[10];      //! correlation tpc EP, LJ pt
-        TH2F*                   fHistPsiVZEROALeadingJet[10];   //! correlation vzeroa EP, LJ pt
-        TH2F*                   fHistPsiVZEROCLeadingJet[10];   //! correlation vzeroc EP, LJ pt
-        TH2F*                   fHistPsiVZEROCombLeadingJet[10];//! correlation vzerocomb EP, LJ pt
+        TH3F*                   fHistPsiTPCLeadingJet[10];      //! correlation tpc EP, LJ pt
+        TH3F*                   fHistPsiVZEROALeadingJet[10];   //! correlation vzeroa EP, LJ pt
+        TH3F*                   fHistPsiVZEROCLeadingJet[10];   //! correlation vzeroc EP, LJ pt
+        TH3F*                   fHistPsiVZEROCombLeadingJet[10];//! correlation vzerocomb EP, LJ pt
+        TH3F*                   fHistPsi2Correlation[10];       //! correlation of event planes
+        TH2F*                   fHistLeadingJetBackground[10];  //! geometric correlation of leading jet w/wo bkg subtraction
         // background
         TH1F*                   fHistRhoPackage[10];    //! rho as estimated by emcal jet package
         TH1F*                   fHistRho[10];           //! background
@@ -403,7 +412,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         AliAnalysisTaskJetV2(const AliAnalysisTaskJetV2&);                  // not implemented
         AliAnalysisTaskJetV2& operator=(const AliAnalysisTaskJetV2&);       // not implemented
 
-        ClassDef(AliAnalysisTaskJetV2, 3);
+        ClassDef(AliAnalysisTaskJetV2, 4);
 };
 
 #endif

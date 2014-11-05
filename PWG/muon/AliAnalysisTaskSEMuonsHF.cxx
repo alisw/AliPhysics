@@ -180,7 +180,7 @@ void AliAnalysisTaskSEMuonsHF::UserExec(Option_t *)
     aod = dynamic_cast<AliAODEvent*>(InputEvent());
     if (!aod) { AliError("AOD event not found. Nothing done!"); return; }
     if (!fIsMC && (aod->GetHeader()->GetEventType()!=7)) return;
-    ntrks = aod->GetNTracks();
+    ntrks = aod->GetNumberOfTracks();
   } else {
     esd = dynamic_cast<AliESDEvent*>(InputEvent());
     if (!esd) { AliError("ESD event not found. Nothing done!"); return; }

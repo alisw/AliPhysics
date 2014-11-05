@@ -901,7 +901,7 @@ void AliAnalysisCombinedHadronSpectra2MC::UserExec(Option_t *)
   hNumEv->Fill(3);
 
   
-  if (vertex) {ZPrimVertex=vertex->GetZv();}
+  if (vertex) {ZPrimVertex=vertex->GetZ();}
   if(TMath::Abs(ZPrimVertex)>10){return;}
 
   hNumEv->Fill(4);
@@ -910,7 +910,7 @@ void AliAnalysisCombinedHadronSpectra2MC::UserExec(Option_t *)
   fTreeEv->Fill();
 
 
-  if (vertex) {XPrimVertex=vertex->GetXv(); YPrimVertex=vertex->GetYv(); ZPrimVertex=vertex->GetZv(); NContrPrimVertex=vertex->GetNContributors(); 
+  if (vertex) {XPrimVertex=vertex->GetX(); YPrimVertex=vertex->GetY(); ZPrimVertex=vertex->GetZ(); NContrPrimVertex=vertex->GetNContributors(); 
     vert=1;}  
 
   //multiplicity as defined by Marek

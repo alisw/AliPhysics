@@ -96,6 +96,8 @@ protected:
   int fRGapBinAway;  // Bin index for the R gap in the away side
   int fCentralityBin;  // Bin index for the centrality bin
   int fXlongBin;  // Bin index for xlong bin
+
+  bool fIsLikeSign; // True = like sign correlation, false = unlike sign correlation
   
   double fGeometricAcceptanceCorrection;  // Acceptance correction due to the detector geometry
   

@@ -33,7 +33,7 @@ class AliSpectraBothTrackCuts : public TNamed
   enum {kAODobject=0,kESDobject,kotherobject};
   
  AliSpectraBothTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fEtaCutMin(0), fEtaCutMax(0),fDCACut(0) ,fPCut(0), fPtCut(0),fYCutMax(0),fYCutMin(0), fPtCutTOFMatching(0),fAODtrack(0), fHashitinSPD1(0),fusedadditionalcuts(kTRUE),
- fPtCutTOFMatchingPion(-1.0),fPtCutTOFMatchingKaon(-1.0),fPtCutTOFMatchingProton(-1.0),fUseTypeDependedTOFCut(kFALSE),
+ fPtCutTOFMatchingPion(-1.0),fPtCutTOFMatchingKaon(-1.0),fPtCutTOFMatchingProton(-1.0),fUseTypeDependedTOFCut(kFALSE),fMakeQAhisto(kFALSE),
 fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fHistoNclustersITS(0),
 fHistoDCAzQA(0),fHistoNclustersQA(0),fHistochi2perNDFQA(0),
 fTrack(0),fCuts(0) {}
@@ -68,6 +68,8 @@ fTrack(0),fCuts(0) {}
    TH3F * GetHistoNclustersQA() {return fHistoNclustersQA ;}
    TH3F * GetHistochi2perNDFQA() {return fHistochi2perNDFQA; }
    Bool_t GetUseTypeDependedTOFCut () {return fUseTypeDependedTOFCut;}
+   Bool_t GetMakeQAhisto () {return fMakeQAhisto;}
+
    AliESDtrackCuts* GetTrackCuts(){return fCuts;}
 	   		 
 
@@ -82,6 +84,7 @@ fTrack(0),fCuts(0) {}
    void SetHashitinSPD1 (Bool_t value) {fHashitinSPD1=value;}	
    void SetUsedAdditionalCuts (Bool_t value) {fusedadditionalcuts=value;}
    void SetPtTOFMatchingPartDepended(Float_t pion,Float_t kaon,Float_t proton);
+   void  SetMakeQAhisto(Bool_t flag){fMakeQAhisto=flag;}
      Float_t GetEtaMin()       const    { return fEtaCutMin; }
    Float_t GetEtaMax()       const    { return fEtaCutMax; }
    Float_t GetYMax()         const    { return fYCutMax; }
@@ -117,7 +120,8 @@ fTrack(0),fCuts(0) {}
    Float_t          fPtCutTOFMatchingPion; // TOF Matching cut for pions
    Float_t          fPtCutTOFMatchingKaon; // TOF Matching cut for kaons
    Float_t          fPtCutTOFMatchingProton;  	// TOF Matching cut for protons	
-   Bool_t           fUseTypeDependedTOFCut;   // if yes use particle depened tof cut 	
+   Bool_t           fUseTypeDependedTOFCut;   // if yes use particle depened tof cut 
+   Bool_t 	    fMakeQAhisto;    //if true QA histo are made 		
    TH1I             *fHistoCuts;       // Cuts statistics
    TH1F             *fHistoNSelectedPos;       // Selected positive tracks
    TH1F             *fHistoNSelectedNeg;       // Selected negative tracks
@@ -139,6 +143,6 @@ fTrack(0),fCuts(0) {}
    AliSpectraBothTrackCuts& operator=(const AliSpectraBothTrackCuts&);
    void ConfigurePtTOFCut(); 	
   
-   ClassDef(AliSpectraBothTrackCuts, 7);
+   ClassDef(AliSpectraBothTrackCuts, 8);
 };
 #endif

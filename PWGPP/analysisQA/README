@@ -78,7 +78,7 @@ TString suftype      ="eps"                        : the suffix that deternmines
 Float_t jetR         = 0.2                         : the jetR. Default train value is 0.2, but can otherwise be found by opening the AnalysisResults.root file with the browser.
 Float_t minTrkPT     = 0.15                        : the lower Track momentum cut-off. Default train value is 0.15, but can otherwise be found by opening the AnalysisResults.root file with the browser.
 Float_t minClusterET = 0.3                         : the lower Cluster energy cut-off. Default train value is 0.3, but can otherwise be found by opening the AnalysisResults.root file with the browser.
-Int_t run            = 0                           : enables to add a run number to the plots. Not neccessary for general QA, and can be suppresed by giving the number 0.
+nt_t run            = 0                           : enables to add a run number to the plots. Not neccessary for general QA, and can be suppresed by giving the number 0.
 TString trigsuffix   = ""                          : leave empty to open the results of the JE_TriggerQAFullR020 wagon, but or use "EJE" or "EGA" to use the triggered results otherwise.
 const char* outfile  = "JETriggerQA_outfile.root"  : the path to the place to store the plots as root file. This is in addition to the image files made with in the 'suffix' format.
 

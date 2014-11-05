@@ -109,6 +109,8 @@ AliEmcalJetTask* AddTaskEmcalJet(
   else if (!*nTracks)
     name = TString(Form("%s_%s%s%s_%s_%s_%s",
                         tag,algoString,typeString,radiusString,nClusters,ETString,recombSchemeString));
+
+  std::cout << "Jet task name: " << name.Data() << std::endl;
  
   AliEmcalJetTask* mgrTask = mgr->GetTask(name.Data());
   if (mgrTask)

@@ -1,42 +1,54 @@
-Int_t getIntEnv(const char* name)
-{
-  TString env = gSystem->Getenv(name);
-  if (env.IsNull()) return 0;
-  return env.Atoi();
-}
-void SetSpecStore(AliCDBManager& s, 
-		  const char* key, 
-		  const char* sub)
-{
-  s.SetSpecificStorage(key, Form("alien://Folder=/alice/simulation/%s",sub));
-}
-
-
+/**
+ * @file   Reconstruct.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Oct 15 13:27:45 2014
+ * 
+ * @brief  Steering script for the reconstruction 
+ */
+/** 
+ * Run the reconstruction 
+ * 
+ * @param run Run number 
+ */
 void Reconstruct(UInt_t run) 
 {
   // -----------------------------------------------------------------
   // 
-  // Get GRP parameters.  Defines global "grp" as a pointer to GRPData
-  //
+  // - Get GRP parameters.  Defines global "grp" as a pointer to GRPData
+  // - Load base class definitions in BaseConfig.C
+  // - Get which detectors are turned on in "detCfg". 
+  // - Create the OCDB configuration object "ocdbCfg"
+  // 
   gROOT->Macro(Form("GRP.C(%d)", run));
-  
+  gROOT->Macro("BaseConfig.C");
+  gROOT->Macro("DetConfig.C"); 
+  gROOT->Macro("OCDBConfig.C"); 
+
+  // --- Get GRP to deduce collision system --------------------------
+  Bool_t         isAA  = grp->IsAA();
+  Bool_t         is10h = grp->period.EqualTo("LHC10h");
+ 
   // -----------------------------------------------------------------
   // 
   // Basic setup 
   //
   AliReconstruction reco;
-  reco.SetRunReconstruction("ITS TPC TRD TOF PHOS HMPID "
-			    "EMCAL MUON FMD ZDC PMD T0 VZERO");
-
+  TString enable;  
+  detCfg->GetRecoString(enable);
+  // if (is10h) enable.ReplaceAll("MUON", "");
+  reco.SetRunReconstruction(enable);
 
   // -----------------------------------------------------------------
   //
-  // switch off cleanESD, write ESDfriends and Alignment data
+  // switch off cleanESD, write ESDfriends and Alignment data, clean
+  // up rec-points (except for ITS)
   // 
   reco.SetCleanESD(kFALSE);
   reco.SetWriteESDfriend();
   reco.SetFractionFriends(.1);
   reco.SetWriteAlignmentData();
+  TString clean(enable); clean.ReplaceAll("ITS", "");
+  reco.SetDeleteRecPoints(clean);
 
   // -----------------------------------------------------------------
   //
@@ -44,7 +56,6 @@ void Reconstruct(UInt_t run)
   // 
   reco.SetRunPlaneEff(kTRUE);
   reco.SetUseTrackingErrorsForAlignment("ITS");
-
   
   // -----------------------------------------------------------------
   //
@@ -52,44 +63,27 @@ void Reconstruct(UInt_t run)
   //
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorageFromRun(grp->run);
+  ocdbCfg->Init(false);
 
-  // --- Get GRP to deduce collision system --------------------------
-  Bool_t         isAA  = grp->IsAA();
-  Bool_t         is10h = grp->period.EqualTo("LHC10h");
-
-  // --- ITS (2 objects) ---------------------------------------------
-  SetSpecStore(*man,"ITS/Align/Data",		"2008/v4-15-Release/Residual");
-  SetSpecStore(*man,"ITS/Calib/SPDSparseDead",	"2008/v4-15-Release/Residual");
-
-
-  // --- MUON objects (1 object) -------------------------------------
-  SetSpecStore(*man,"MUON/Align/Data",		"2008/v4-15-Release/Residual");
-
-  // --- TPC (7 objects) ---------------------------------------------
-  SetSpecStore(*man,"TPC/Align/Data",		"2008/v4-15-Release/Residual");
-  SetSpecStore(*man,"TPC/Calib/ClusterParam",	"2008/v4-15-Release/Residual");
-  SetSpecStore(*man,"TPC/Calib/RecoParam",	"2008/v4-15-Release/Residual");
-  SetSpecStore(*man,"TPC/Calib/TimeGain",	"2008/v4-15-Release/Residual");
-  SetSpecStore(*man,"TPC/Calib/AltroConfig",	"2008/v4-15-Release/Residual");
-  SetSpecStore(*man,"TPC/Calib/TimeDrift",	"2008/v4-15-Release/Residual");
-  SetSpecStore(*man,"TPC/Calib/Correction",	"2008/v4-15-Release/Residual");
-
-
+  // -----------------------------------------------------------------
+  // 
+  // Specific reconstruction parameters 
+  // 
   // --- ZDC ---------------------------------------------------------
   // ZDC for 2010 the following is needed 
   // (https://savannah.cern.ch/task/?func=detailitem&item_id=33180#comment46)
-  if (is10h) {
+  if (is10h)
     reco.SetRecoParam("ZDC",AliZDCRecoParamPbPb::GetHighFluxParam(2760));
-    SetSpecStore(*man,"ZDC/Align/Data",	"2008/v4-15-Release/Ideal/"); 
-  }
-
-  // --- GRP from local OCDB -----------------------------------------
-  // man->SetSpecificStorage("GRP/GRP/Data",
-  //                         Form("local://%s",gSystem->pwd()));
-  
 
   // --- Override some settings in the ITS reco ----------------------
-  if (is10h) {
+  // 
+  // This was needed for the ITS stand-alone tracks to be produced in
+  // LHC14b8a and LHC14b8b.  However, using the LowMult reco-param
+  // object for all events means using AliITSVertexer3D irrespective
+  // of multiplicity.  AliITSVertexer3D can use more than 4GB of
+  // memory for central Hijing events, which means that the jobs are
+  // likely to hit the 8GB hard limit.
+  if (false && is10h) {
     printf("Overriding ITS/Calib/RecoParam for run %d to do "
 	   "reco even in absence of trigger\n", grp->run);
     man->SetRun(grp->run);

@@ -56,14 +56,14 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
     am->LoadBranch("AliESDRun.");
     TString title(eev->GetHeader()->GetTitle());
     if (1&&(title.Length()>0)) {
-      res = eev->GetHeader()->GetUniqueID();
+      res = ((AliVAODHeader*)eev->GetHeader())->GetUniqueID();
       res &= 0x4FFFFFFF;
     } else {
       res = IsCollisionCandidate(eev); 
     }
   } else {
     aev = dynamic_cast<const AliAODEvent*>(obj);
-    res = aev->GetHeader()->GetOfflineTrigger();
+    res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
   }
 
   // return 0, if 0 found
@@ -260,6 +260,30 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
     }
     if (fIsLedEvent) {
       fIsGoodEvent = kFALSE;
+    }
+  }
+
+  // Check for trigger patches with 1024 bug
+  // event declared bad if at least one found
+  AliVCaloTrigger *emcaltriggers = ev->GetCaloTrigger(eev == NULL ? "EMCALTrigger" : "emcalTrigger");
+  if(emcaltriggers){
+    emcaltriggers->Reset();
+    Int_t adc;
+    Bool_t isBad = false;
+    while(emcaltriggers->Next()){
+      emcaltriggers->GetL1TimeSum(adc);
+      isBad = false;
+      // check for multiples of 1024
+      for(int i = 0; i < 20; i++){
+        if(adc == 1024 * i){
+          isBad = true;
+          break;
+        }
+      }
+      if(isBad){
+        fIsGoodEvent = kFALSE;
+        break;
+      }
     }
   }
 

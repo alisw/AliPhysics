@@ -7,17 +7,24 @@
  * 
  * @note Do not modify this script. 
  *
- * This script reads in two other scripts 
+ * This script reads in 4 other scripts 
  *
  * - GRP.C to load the global run parameters for the selected run,
  *   such as collision system, energy, etc.
  * 
  * - AODConfig.C which defines a number of functions that return
  *   either true or false.  The tasks added depends on these functions
+ *
+ * - BaseConfig.C which defines some base classes 
+ * 
+ * - DetConfig.C which defines which detectors are active and on. 
+ *
+ * Users can customize QAConfig.C and DetConfig.C according to their
+ * needs
  */
 /** Path to CDB */
 const char *cdbPath = "raw://";
-
+Bool_t cholm = false;
 /**
  * Interface (pure virtual) that all configuration classes must
  * implement.
@@ -83,6 +90,45 @@ struct VirtualAODCfg
   /** @return Forward mult task (PWGLF) */
   virtual Bool_t UsePWGLFForward() const = 0;
   /* @} */
+  /** 
+   * Print one flag
+   * 
+   * @param title Title
+   * @param use   Use or not 
+   */
+  virtual void PrintOne(const char* title, Bool_t use) const
+  {
+    Printf("%-30s : %3s", title, use ? "yes" : "no");
+  }
+  /** 
+   * Print settings
+   * 
+   */
+  virtual void Print() const { 
+    PrintOne("Connect to CDB",			UseCDBconnect());
+    PrintOne("Use physics selection",		UsePhysicsSelection());
+    PrintOne("Use tender wagon",		UseTender());
+    PrintOne("Use centrality",			UseCentrality());
+    PrintOne("Use V0 correction in tender",	UseV0tender());
+    PrintOne("Activate debugging",		UseDBG());
+    PrintOne("Use MC info",			UseMC());
+    PrintOne("Use Kinematics filter",		UseKFILTER());
+    PrintOne("Use track references",		UseTR());
+    PrintOne("Use correction framework",	UseCORRFW());
+    PrintOne("Use AOD tags",			UseAODTAGS());
+    PrintOne("Use sys info",			UseSysInfo());
+    PrintOne("Produces an AOD or dAOD's",	UseAODhandler());
+    PrintOne("ESD to AOD filter",		UseESDfilter());
+    PrintOne("Use Muon train ",			UsePWGMuonTrain());
+    PrintOne("Copy muon events",		UseMUONcopyAOD());
+    PrintOne("Jet analysis (PWG4)",		UseJETAN());
+    PrintOne("Jet delta AODs",			UseJETANdelta());
+    PrintOne("Vertexing HF task (PWG3)",	UsePWGHFvertexing());
+    PrintOne("JPSI filtering (PWG3)",		UsePWGDQJPSIfilter());
+    PrintOne("D0->2 hadrons (PWG3)",		UsePWGHFd2h());
+    PrintOne("PID response",			UsePIDResponse());
+    PrintOne("Forward mult task (PWGLF)",	UsePWGLFForward());
+  }
 };
 
 VirtualAODCfg* aodCfg = 0;
@@ -203,11 +249,12 @@ Bool_t LoadAnalysisLibraries()
   // CDBconnect
   if ((aodCfg->UseCDBconnect() && !aodCfg->UseTender()) 
       && !LoadLibrary("PWGPP")) return false;
-  if ((aodCfg->UseESDfilter() || aodCfg->UsePWGMuonTrain()) 
-      && !LoadLibrary("PWGmuon")) return kFALSE;
+  if ((aodCfg->UseESDfilter() || 
+       (aodCfg->UsePWGMuonTrain() && detCfg->UseMUON())))
+    if (!LoadLibrary("PWGmuon")) return kFALSE;
   // JETAN
-  if ((aodCfg->UseJETAN() || aodCfg->UseJETANdelta()) 
-      && !LoadLibrary("JETAN")) return kFALSE;
+  if ((aodCfg->UseJETAN() || aodCfg->UseJETANdelta()))
+    if (!LoadLibrary("JETAN")) return kFALSE;
   if (aodCfg->UseJETANdelta()) { // CINT doesn't like long '||' chains
     if (!LoadLibrary("CGAL"))           return false;
     if (!LoadLibrary("fastjet"))        return false;
@@ -217,11 +264,11 @@ Bool_t LoadAnalysisLibraries()
   }
 
   // PWG3 Vertexing HF
-  if ((aodCfg->UsePWGHFvertexing() || aodCfg->UsePWGHFd2h())) { 
+  if (aodCfg->UsePWGHFvertexing() || aodCfg->UsePWGHFd2h())) { 
     // CINT doesn't like long '||' chains
     if (!LoadLibrary("PWGflowBase"))      return false;
     if (!LoadLibrary("PWGflowTasks"))     return false;
-    // if (!LoadLibrary("PWGTRD"))           return false;
+    if (cholm) if (!LoadLibrary("PWGTRD"))           return false;
     if (!LoadLibrary("PWGHFvertexingHF")) return false;
   }
 
@@ -295,7 +342,9 @@ void AddAnalysisTasks(const char *cdb_location)
   }
 
   // --- PWGLF - Forward (cholm@nbi.dk) -----------------------------
-  if (aodCfg->UsePWGLFForward() && aodCfg->UsePhysicsSelection()) {
+  if (aodCfg->UsePWGLFForward() && 
+      aodCfg->UsePhysicsSelection() &&
+      detCfg->UseFMD()) {
     gROOT->LoadMacro(pwglf+"/FORWARD/analysis2/AddTaskForwardMult.C");
     // Arguments are 
     //   mc         Assume MC input
@@ -306,7 +355,8 @@ void AddAnalysisTasks(const char *cdb_location)
     //   config     Configuration script 
     //   corrdir    Possible directory containing custom OADB corrections
     // HACK load custom corrections 
-    Info("", "Adding forward AOD task with mc=%d",aodCfg->UseMC() && aodCfg->UseTR());
+    Info("", "Adding forward AOD task with mc=%d",
+	 aodCfg->UseMC() && aodCfg->UseTR());
     AddTaskForwardMult(aodCfg->UseMC() && aodCfg->UseTR(),0,0,0,0,
 		       "ForwardAODConfig.C",".");
     gROOT->LoadMacro(pwglf+"/FORWARD/analysis2/AddTaskCentralMult.C");
@@ -321,7 +371,7 @@ void AddAnalysisTasks(const char *cdb_location)
   if (aodCfg->UseESDfilter()) {
     //  ESD filter task configuration.
     gROOT->LoadMacro(ana+"/ESDfilter/macros/AddTaskESDFilter.C");
-    if (aodCfg->UseMUONcopyAOD()) {
+    if (aodCfg->UseMUONcopyAOD() && detCfg->UseMUON()) {
       printf("Registering delta AOD file\n");
       mgr->RegisterExtraFile("AliAOD.Muons.root");
       mgr->RegisterExtraFile("AliAOD.Dimuons.root");
@@ -364,7 +414,7 @@ void AddAnalysisTasks(const char *cdb_location)
   }
 
   // ---- PWG3 JPSI filtering (only pp) ------------------------------
-  if (aodCfg->UsePWGDQJPSIfilter() && (iCollision==0)) {
+  if (aodCfg->UsePWGDQJPSIfilter()) {
     gROOT->LoadMacro(pwgdq+"/dielectron/macros/AddTaskJPSIFilter.C");
     AliAnalysisTaskSE *taskJPSIfilter = AddTaskJPSIFilter();
 
@@ -379,7 +429,7 @@ void AddAnalysisTasks(const char *cdb_location)
   }
 
   // --- PWG3 D2h ----------------------------------------------------
-  if (aodCfg->UsePWGHFd2h()) {
+  if (aodCfg->UsePWGHFd2h() && aodCfg->UsePWGHFvertexing()) {
     gROOT->LoadMacro(pwghf+"/vertexingHF/AddD2HTrain.C");
     TFile::Cp(gSystem->ExpandPathName(configPWGHFd2h.Data()), 
 	      "file:ConfigVertexingHF.C");
@@ -390,7 +440,7 @@ void AddAnalysisTasks(const char *cdb_location)
 
   // Configurations flags, move up?
   if (aodCfg->UseJETAN()) {
-#if 1
+#if 0
     Warning("", "JET analysis disabled - major restructuring ofg JETAN");
 #else
     TString jetAOD             = "AliAOD.Jets.root";
@@ -501,48 +551,89 @@ TChain *CreateChain()
   return NULL;
 }
 
+/** 
+ * Helper function to make @c outputs_valid file 
+ * 
+ */
+void ValidateOutput()
+{
+  std::ofstream out;
+  out.open("outputs_valid", ios::out);
+  out.close();    
+}  
 //====================================================================
 /** 
  * Merge AOD output 
  * 
+ * @param dir   Directory 
+ * @param stage The merging stage 
  */
-void AODMerge()
+void AODMerge(const char* dir, Int_t stage)
 {
   // Merging method. No staging and no terminate phase.
   TStopwatch  timer; timer.Start();
-  TString     outputDir     = "wn.xml";
-  TString     outputFiles   = ("EventStat_temp.root," +
-			       "AODQA.root," +
-			       "AliAOD.root," +
-			       "AliAOD.VertexingHF.root," +
-			       "AliAOD.Muons.root," +
-			       "AliAOD.Jets.root," +
-			       "pyxsec_hists.root");
+  TString     outputDir     = dir;
+  TObjArray   outputFiles;
+  // outputFiles.Add(new TObjString("EventStat_temp.root"));
+  outputFiles.Add(new TObjString("AODQA.root"));
+  outputFiles.Add(new TObjString("pyxsec_hists.root"));
+
+  Bool_t mergeTrees = stage <= 1;
+  if (mergeTrees) {
+    outputFiles.Add(new TObjString("AliAOD.root"));
+    if (aodCfg->UsePWGHFvertexing()) 
+      outputFiles.Add(new TObjString("AliAOD.VertexingHF.root"));
+    if (aodCfg->UseESDfilter() && 
+	aodCfg->UseMUONcopyAOD() && 
+	detCfg->UseMUON())
+      outputFiles.Add(new TObjString("AliAOD.Muons.root"));
+    if (aodCfg->UseJETAN()) 
+      outputFiles.Add(new TObjString("AliAOD.Jets.root"));
+    if (aodCfg->UsePWGDQJPSIfilter()) 
+      outputFiles.Add(new TObjString("AliAOD.Dielectron.root"));
+  }
+
   TString     mergeExcludes = "";
-  TObjArray*  tokens        = outputFiles.Tokenize(",");
-  TIter       iter(tokens);
+  TIter       iter(&outputFiles);
   TObjString* str           = 0;
-  TString     outputFile;
-  Bool_t      merged = kTRUE;
+  Bool_t      merged        = kTRUE;
   while ((str = static_cast<TObjString*>(iter()))) {
-    outputFile = str->GetString();
+    TString& outputFile = str->GetString();
     // Skip already merged outputs
     if (!gSystem->AccessPathName(outputFile)) {
-      printf("Output file <%s> found. Not merging again.",outputFile.Data());
+      ::Warning("Merge","Output file <%s> found. Not merging again.",
+		outputFile.Data());
       continue;
     }
     if (mergeExcludes.Contains(outputFile.Data())) continue;
-    merged = AliAnalysisAlien::MergeOutput(outputFile, outputDir, 10, 0);
+    merged = AliAnalysisAlien::MergeOutput(outputFile, 
+					   outputDir, 
+					   10, 
+					   stage);
     if (!merged) {
-      printf("ERROR: Cannot merge %s\n", outputFile.Data());
+      ::Error("Merge", "Cannot merge %s\n", outputFile.Data());
       continue;
     }
   }
+
   // all outputs merged, validate
-  ofstream out;
-  out.open("outputs_valid", ios::out);
-  out.close();
+  if (!outputDir.Contains("stage")) {
+    ValidateOutput();
+    timer.Print();
+    return;
+  }
+
+  // --- set up to run terminate -------------------------------------
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  mgr->SetSkipTerminate(kFALSE);
+  if (!mgr->InitAnalysis()) return;
+
+  mgr->PrintStatus();
+  mgr->SetGridHandler(new AliAnalysisAlien);
+  mgr->StartAnalysis("gridterminate",0);
+  ValidateOutput();
   timer.Print();
+
 }
 
 //====================================================================
@@ -555,12 +646,18 @@ void AODMerge()
  */
 void AOD(UInt_t run, const char* xmlfile=0, Int_t stage=0)
 {
+  TString host(gSystem->HostName());
+  cholm = host.BeginsWith("hehi");
+  if (cholm) TGrid::Connect("alien:");
+
   // -----------------------------------------------------------------
   // 
   // Get GRP parameters.  Defines global "grp" as a pointer to GRPData
   //
   gROOT->Macro(Form("GRP.C(%d)", run));
   gROOT->Macro("AODConfig.C");
+  gROOT->Macro("BaseConfig.C");
+  gROOT->Macro("DetConfig.C");
 
   // --- Some settings -----------------------------------------------
   // Set temporary merging directory to current one
@@ -573,15 +670,7 @@ void AOD(UInt_t run, const char* xmlfile=0, Int_t stage=0)
   printf("===========    RUNNING FILTERING TRAIN   ==========\n");
   printf("===================================================\n");
   printf("=  Configuring analysis train for:\n");
-  if (aodCfg->UsePhysicsSelection())   printf("=  Physics selection");
-  if (aodCfg->UseTender())             printf("=  TENDER");
-  if (aodCfg->UseESDfilter())            printf("=  ESD filter");
-  if (aodCfg->UseMUONcopyAOD())          printf("=  MUON copy AOD");
-  if (aodCfg->UseJETAN())                printf("=  Jet analysis");
-  if (aodCfg->UseJETANdelta())           printf("=     Jet delta AODs");
-  if (aodCfg->UsePWGHFvertexing())       printf("=  PWGHF vertexing");
-  if (aodCfg->UsePWGDQJPSIfilter())      printf("=  PWGDQ j/psi filter");
-  if (aodCfg->UsePWGHFd2h())             printf("=  PWGHF D0->2 hadrons QA");
+  aodCfg->Print();
 
   // Load common libraries and set include path
   if (!LoadCommonLibraries()) {
@@ -593,6 +682,7 @@ void AOD(UInt_t run, const char* xmlfile=0, Int_t stage=0)
   // 
   // --- Analysis manager and load libraries -------------------------
   AliAnalysisManager *mgr = new AliAnalysisManager("Filter","Production train");
+  mgr->SetRunFromPath(grp->run);
   if (aodCfg->UseSysInfo()) mgr->SetNSysInfo(100);
   if (!LoadAnalysisLibraries()) {
     ::Error("AnalysisTrain", "Could not load analysis libraries");
@@ -618,20 +708,18 @@ void AOD(UInt_t run, const char* xmlfile=0, Int_t stage=0)
     mgr->SetOutputEventHandler(aodHandler);
   }
 
-  // --- Debugging if needed -----------------------------------------
-  if (aodCfg->UseDBG()) mgr->SetDebugLevel(3);
-
   // === Set up tasks ================================================
   //
   // --- Create tasks ------------------------------------------------
   AddAnalysisTasks(cdbPath);
 
+  // --- Debugging if needed -----------------------------------------
+  if (aodCfg->UseDBG()) mgr->SetDebugLevel(3);
+
+
   // --- If merging, do so here and exit -----------------------------
   if (stage > 0) {
-    AODMerge();
-    mgr->InitAnalysis();
-    mgr->SetGridHandler(new AliAnalysisAlien);
-    mgr->StartAnalysis("gridterminate",0);
+    AODMerge(xmlfile, stage);
     return;
   }
   // === Run the analysis ============================================
@@ -643,11 +731,12 @@ void AOD(UInt_t run, const char* xmlfile=0, Int_t stage=0)
   // --- Run the thing -----------------------------------------------
   TStopwatch timer;
   timer.Start();
+  if (!mgr->InitAnalysis()) return;
+
+  
+  mgr->PrintStatus();
   mgr->SetSkipTerminate(kTRUE);
-  if (mgr->InitAnalysis()) {
-    mgr->PrintStatus();
-    mgr->StartAnalysis("local", chain);
-  }
+  mgr->StartAnalysis("local", chain);
   timer.Print();
 }
 

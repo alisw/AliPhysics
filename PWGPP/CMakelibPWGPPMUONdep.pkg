@@ -53,4 +53,5 @@ set ( EINCLUDE
   STEER/ESD
   STEER/STEERBase
   CORRFW
+  PWG/muon
   )

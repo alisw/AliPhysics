@@ -73,6 +73,7 @@
 #include "AliVZEROEPSelectionTask.h"
 
 #include "AliAODMCHeader.h"
+#include "assert.h"
 
 class AliVEvent;
 
@@ -2013,7 +2014,8 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
   FillVarVEvent(event, values);
 
   // Fill AliAODEvent interface specific information
-  AliAODHeader *header = event->GetHeader();
+  AliAODHeader *header = dynamic_cast<AliAODHeader*>(event->GetHeader());
+  assert(header&&"Not a standard AOD");
 
   Double_t centralityF=-1; Double_t centralitySPD=-1;
   AliCentrality *aodCentrality = header->GetCentralityP();
@@ -2587,7 +2589,8 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
   }
   if(event->IsA() == AliAODEvent::Class()) {
     const AliAODEvent* aodEv = static_cast<const AliAODEvent*>(event);
-    AliAODHeader *header = aodEv->GetHeader();
+    AliAODHeader *header = dynamic_cast<AliAODHeader*>(aodEv->GetHeader());
+    assert(header&&"Not a standard AOD");
     AliCentrality *aodCentrality = header->GetCentralityP();
     if(aodCentrality) centralitySPD = aodCentrality->GetCentralityPercentile("CL1");
   }
@@ -2716,7 +2719,7 @@ inline void AliDielectronVarManager::GetZDCRP(const AliVEvent* event, Double_t q
 
   if(fgZDCRecentering[0][0]){
     const AliAODEvent* aodEv = static_cast<const AliAODEvent*>(event);
-    AliAODHeader *header = aodEv->GetHeader();
+    AliAODHeader *header = dynamic_cast<AliAODHeader*>(aodEv->GetHeader());
     if(!header) return;
     TPCRefMulti = header -> GetTPConlyRefMultiplicity();
 

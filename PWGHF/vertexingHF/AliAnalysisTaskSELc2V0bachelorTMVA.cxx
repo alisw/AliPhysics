@@ -187,7 +187,10 @@ AliAnalysisTaskSE(),
   fCutKFDeviationFromVtxV0(0.),
   fCurrentEvent(-1),
   fBField(0),
-  fKeepingOnlyPYTHIABkg(kFALSE)
+  fKeepingOnlyPYTHIABkg(kFALSE),
+  fHistoMCLcK0SpGen(0x0),
+  fHistoMCLcK0SpGenAcc(0x0),
+  fHistoMCLcK0SpGenLimAcc(0x0)
 {
   //
   // Default ctor
@@ -307,7 +310,10 @@ AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA(const Cha
   fCutKFDeviationFromVtxV0(0.),
   fCurrentEvent(-1),
   fBField(0),
-  fKeepingOnlyPYTHIABkg(kFALSE)
+  fKeepingOnlyPYTHIABkg(kFALSE),
+  fHistoMCLcK0SpGen(0x0),
+  fHistoMCLcK0SpGenAcc(0x0),
+  fHistoMCLcK0SpGenLimAcc(0x0)
 
 {
   //
@@ -415,6 +421,11 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::Terminate(Option_t*)
     AliError("fOutput not available");
     return;
   }
+
+  
+  AliDebug(2, Form("At MC level, %f Lc --> K0S + p were found", fHistoMCLcK0SpGen->GetEntries()));
+  AliDebug(2, Form("At MC level, %f Lc --> K0S + p were found in the acceptance", fHistoMCLcK0SpGenAcc->GetEntries()));
+
   fOutputKF = dynamic_cast<TList*> (GetOutputData(6));
   if (!fOutputKF) {     
     AliError("fOutputKF not available");
@@ -605,6 +616,12 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
   //fOutput->Add(fVariablesTreeSgn);
   //fOutput->Add(fVariablesTreeBkg);
 
+  const Float_t ptbins[15] = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 12., 17., 25., 35.};
+
+  fHistoMCLcK0SpGen = new TH1F("fHistoMCLcK0SpGen", "fHistoMCLcK0SpGen", 14, ptbins);
+  fHistoMCLcK0SpGenAcc = new TH1F("fHistoMCLcK0SpGenAcc", "fHistoMCLcK0SpGenAcc", 14, ptbins);
+  fHistoMCLcK0SpGenLimAcc = new TH1F("fHistoMCLcK0SpGenLimAcc", "fHistoMCLcK0SpGenLimAcc", 14, ptbins);
+
   fOutput->Add(fHistoEvents);
   fOutput->Add(fHistoLc);
   fOutput->Add(fHistoLcOnTheFly);
@@ -614,6 +631,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
   fOutput->Add(fHistoCodesBkg);
   fOutput->Add(fHistoLcpKpiBeforeCuts);
   fOutput->Add(fHistoBackground);
+  fOutput->Add(fHistoMCLcK0SpGen);
+  fOutput->Add(fHistoMCLcK0SpGenAcc);
+  fOutput->Add(fHistoMCLcK0SpGenLimAcc);
 
   PostData(1, fOutput);
   PostData(4, fVariablesTreeSgn);
@@ -824,7 +844,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
   }
 
   fCurrentEvent++;
-  Printf("Processing event = %d", fCurrentEvent);
+  AliDebug(2, Form("Processing event = %d", fCurrentEvent));
   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
   TClonesArray *arrayLctopKos=0;
 
@@ -859,6 +879,27 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
 
   fCounter->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo);
 
+  // mc analysis 
+  TClonesArray *mcArray = 0;
+  AliAODMCHeader *mcHeader=0;
+
+  if (fUseMCInfo) {
+    // MC array need for matching
+    mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (!mcArray) {
+      AliError("Could not find Monte-Carlo in AOD");
+      return;
+    }
+    // load MC header
+    mcHeader = (AliAODMCHeader*)aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    if (!mcHeader) {
+      AliError("AliAnalysisTaskSELc2V0bachelorTMVA::UserExec: MC header branch not found!\n");
+      return;
+    }
+    //Printf("Filling MC histo");
+    FillMCHisto(mcArray);
+  }
+
   // AOD primary vertex
   fVtx1 = (AliAODVertex*)aodEvent->GetPrimaryVertex();
   if (!fVtx1) return;
@@ -876,25 +917,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
   fBField = aodEvent->GetMagneticField();
   AliKFParticle::SetField(fBField);
 
-  // mc analysis 
-  TClonesArray *mcArray = 0;
-  AliAODMCHeader *mcHeader=0;
-
-  if (fUseMCInfo) {
-    // MC array need for maching
-    mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (!mcArray) {
-      AliError("Could not find Monte-Carlo in AOD");
-      return;
-    }
-    // load MC header
-    mcHeader = (AliAODMCHeader*)aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-    if (!mcHeader) {
-      AliError("AliAnalysisTaskSELc2V0bachelorTMVA::UserExec: MC header branch not found!\n");
-      return;
-    }
-  }
-
   Int_t nSelectedAnal = 0;
   if (fIsK0sAnalysis) {
     MakeAnalysisForLc2prK0S(arrayLctopKos, mcArray,
@@ -908,6 +930,113 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
   PostData(4, fVariablesTreeSgn);
   PostData(5, fVariablesTreeBkg);
   PostData(6, fOutputKF);
+
+}
+//-------------------------------------------------------------------------------
+void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
+
+  // method to fill MC histo: how many Lc --> K0S + p are there at MC level
+  for (Int_t iPart=0; iPart<mcArray->GetEntriesFast(); iPart++) { 
+    AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(mcArray->At(iPart));
+    if (!mcPart){
+      AliError("Failed casting particle from MC array!, Skipping particle");
+      AliInfo("Failed casting particle from MC array!, Skipping particle");
+      continue;
+    }
+    Int_t pdg = mcPart->GetPdgCode();
+    if (TMath::Abs(pdg) != 4122){
+      AliDebug(2, Form("MC particle %d is not a Lc: its pdg code is %d", iPart, pdg));
+      continue;
+    }
+    AliDebug(2, Form("Step 0 ok: MC particle %d is a Lc: its pdg code is %d", iPart, pdg));
+    Int_t labeldaugh0 = mcPart->GetDaughter(0);
+    Int_t labeldaugh1 = mcPart->GetDaughter(1);
+    if (labeldaugh0 <= 0 || labeldaugh1 <= 0){
+      AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
+      continue;
+    }
+    else if (labeldaugh1 - labeldaugh0 == 1){
+      AliDebug(2, Form("Step 1 ok: The MC particle has correct daughters!!"));
+      AliAODMCParticle* daugh0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labeldaugh0));
+      AliAODMCParticle* daugh1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labeldaugh1));
+      if(!daugh0 || !daugh1){
+	AliDebug(2,"Particle daughters not properly retrieved!");
+	return;
+      }
+      Int_t pdgCodeDaugh0 = TMath::Abs(daugh0->GetPdgCode());
+      Int_t pdgCodeDaugh1 = TMath::Abs(daugh1->GetPdgCode());
+      AliAODMCParticle* bachelorMC = daugh0;
+      AliAODMCParticle* v0MC = daugh1;
+      AliDebug(2, Form("pdgCodeDaugh0 = %d, pdgCodeDaugh1 = %d", pdgCodeDaugh0, pdgCodeDaugh1));
+      if ((pdgCodeDaugh0 == 311 && pdgCodeDaugh1 == 2212) || (pdgCodeDaugh0 == 2212 && pdgCodeDaugh1 == 311)){ 
+	// we are in the case of Lc --> K0 + p; now we have to check if the K0 decays in K0S, and if this goes in pi+pi-
+	/// first, we set the bachelor and the v0: above we assumed first proton and second V0, but we could have to change it:
+	if (pdgCodeDaugh0 == 311 && pdgCodeDaugh1 == 2212) {
+	  bachelorMC = daugh1;
+	  v0MC = daugh0;
+	}
+	AliDebug(2, Form("Number of Daughters of v0 = %d", v0MC->GetNDaughters()));
+	if (v0MC->GetNDaughters() != 1) { 
+	  AliDebug(2, "The K0 does not decay in 1 body only! Impossible... Continuing...");
+	  continue;
+	}
+	else { // So far: Lc --> K0 + p, K0 with 1 daughter 
+	  AliDebug(2, "Step 2 ok: The K0 does decay in 1 body only! ");
+	  Int_t labelK0daugh = v0MC->GetDaughter(0);
+	  AliAODMCParticle* partK0S = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0daugh));
+	  if(!partK0S){
+	    AliError("Error while casting particle! returning a NULL array");
+	    AliInfo("Error while casting particle! returning a NULL array");
+	    continue;
+	  }
+	  else { // So far: Lc --> K0 + p, K0 with 1 daughter that we can access
+	    if (partK0S->GetNDaughters() != 2 || TMath::Abs(partK0S->GetPdgCode() != 310)){
+	      AliDebug(2, "The K0 daughter is not a K0S or does not decay in 2 bodies");
+	      continue;
+	    }
+	    else { // So far: Lc --> K0 + p, K0 --> K0S, K0S in 2 bodies
+	      AliDebug(2, "Step 3 ok: The K0 daughter is a K0S and does decay in 2 bodies");
+	      Int_t labelK0Sdaugh0 = partK0S->GetDaughter(0);
+	      Int_t labelK0Sdaugh1 = partK0S->GetDaughter(1);
+	      AliAODMCParticle* daughK0S0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0Sdaugh0));
+	      AliAODMCParticle* daughK0S1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0Sdaugh1));
+	      if (!daughK0S0 || ! daughK0S1){
+		AliDebug(2, "Could not access K0S daughters, continuing...");
+		continue;
+	      }
+	      else { // So far: Lc --> K0 + p, K0 --> K0S, K0S in 2 bodies that we can access
+		AliDebug(2, "Step 4 ok: Could access K0S daughters, continuing...");
+		Int_t pdgK0Sdaugh0 = daughK0S0->GetPdgCode();
+		Int_t pdgK0Sdaugh1 = daughK0S1->GetPdgCode();
+		if (TMath::Abs(pdgK0Sdaugh0) != 211 || TMath::Abs(pdgK0Sdaugh1) != 211){
+		  AliDebug(2, "The K0S does not decay in pi+pi-, continuing");
+		  //AliInfo("The K0S does not decay in pi+pi-, continuing");
+		}
+		else { // Full chain: Lc --> K0 + p, K0 --> K0S, K0S --> pi+pi-
+		  if (fAnalCuts->IsInFiducialAcceptance(mcPart->Pt(), mcPart->Y())) {
+		    AliDebug(2, Form("----> Filling histo with pt = %f", mcPart->Pt()));
+		    if(TMath::Abs(mcPart->Y()) < 0.5) fHistoMCLcK0SpGenLimAcc->Fill(mcPart->Pt());
+		    fHistoMCLcK0SpGen->Fill(mcPart->Pt());
+		    if(!(TMath::Abs(bachelorMC->Eta()) > 0.9 || bachelorMC->Pt() < 0.1 ||
+			 TMath::Abs(daughK0S0->Eta()) > 0.9 || daughK0S0->Pt() < 0.1 ||
+			 TMath::Abs(daughK0S1->Eta()) > 0.9 || daughK0S1->Pt() < 0.1)) {
+		      fHistoMCLcK0SpGenAcc->Fill(mcPart->Pt());
+		    }
+		  }
+		  else {
+		    AliDebug(2, "not in fiducial acceptance! Skipping");
+		    continue;
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  } // closing loop over mcArray
+
+  return; 
 
 }
 
@@ -976,7 +1105,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
       // find associated MC particle for Lc -> p+K0 and K0S->pi+pi
       fmcLabelLc = lcK0spr->MatchToMC(pdgCand, pdgDgLctoV0bachelor[1], pdgDgLctoV0bachelor, pdgDgV0toDaughters, mcArray, kTRUE);
       if (fmcLabelLc>=0) {
-	AliDebug(2,Form(" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~cascade number %d (total cascade number = %d)", iLctopK0s, nCascades));
+	AliDebug(2, Form("----> cascade number %d (total cascade number = %d) is a Lc!", iLctopK0s, nCascades));
 
 	AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(fmcLabelLc));
 	if(partLc){

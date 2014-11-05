@@ -823,9 +823,9 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
 
   fHistEventMultiplicity->Fill(1); // analyzed events with PV
  
-  xPrimaryVertex=vtx->GetXv();
-  yPrimaryVertex=vtx->GetYv();
-  zPrimaryVertex=vtx->GetZv();  
+  xPrimaryVertex=vtx->GetX();
+  yPrimaryVertex=vtx->GetY();
+  zPrimaryVertex=vtx->GetZ();  
 
   TrackNumber = lESDevent->GetNumberOfTracks();
   fHistTrackMultiplicity->Fill(TrackNumber); //tracce per evento

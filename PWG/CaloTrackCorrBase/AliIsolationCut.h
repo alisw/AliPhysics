@@ -16,6 +16,7 @@
 // --- ROOT system --- 
 #include <TObject.h>
 class TObjArray ;
+#include <TLorentzVector.h>
 
 // --- ANALYSIS system ---
 class AliAODPWG4ParticleCorrelation ;
@@ -49,7 +50,7 @@ class AliIsolationCut : public TObject {
                               AliCaloPID * pid, 
                               Bool_t bFillAOD,
                               AliAODPWG4ParticleCorrelation  * pCandidate, TString aodObjArrayName,
-                              Int_t &n, Int_t & nfrac, Float_t &ptSum, Float_t &ptLead, Bool_t & isolated) const ;
+                              Int_t &n, Int_t & nfrac, Float_t &ptSum, Float_t &ptLead, Bool_t & isolated) ;
   
   void       Print(const Option_t * opt) const ;
   
@@ -85,6 +86,7 @@ class AliIsolationCut : public TObject {
   Float_t    GetPtFraction()          const { return fPtFraction     ; }
   Int_t      GetICMethod()            const { return fICMethod       ; }
   Int_t      GetParticleTypeInCone()  const { return fPartInCone     ; }
+  Int_t      GetDebug()               const { return fDebug          ; }
   Bool_t     GetFracIsThresh()        const { return fFracIsThresh   ; }
 	
   void       SetConeSize(Float_t r)         { fConeSize       = r    ; }
@@ -116,10 +118,13 @@ class AliIsolationCut : public TObject {
   Int_t      fDebug;             // Debug level
   Bool_t     fFracIsThresh;      // Use threshold instead of fraction when pt leading is small
   
+  TLorentzVector fMomentum;      //! momentum of cluster
+  TVector3       fTrackVector;   //! track moment
+  
   AliIsolationCut(              const AliIsolationCut & g) ; // cpy ctor
   AliIsolationCut & operator = (const AliIsolationCut & g) ; // cpy assignment
   
-  ClassDef(AliIsolationCut,7)
+  ClassDef(AliIsolationCut,9)
 } ;
 
 
