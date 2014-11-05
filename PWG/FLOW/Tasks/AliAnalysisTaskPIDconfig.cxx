@@ -372,12 +372,13 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
         phi=track->Phi();
         eta=track->Eta();
         dEdx=track->GetDetPid()->GetTPCsignal();
-            
-        if ( (track->IsOn(AliAODTrack::kTOFin)) &&
-        (track->IsOn(AliAODTrack::kTIME)) &&  (track->IsOn(AliAODTrack::kTOFout))) {
-      //  if ( (track->IsOn(AliAODTrack::kTOFin)) &&
-      //              (track->IsOn(AliAODTrack::kTOFout))  ) {
-                
+         
+        Float_t probMis = fPIDResponse->GetTOFMismatchProbability(track);
+        if (probMis < 0.01) { //if u want to reduce mismatch using also TPC
+
+            //if ( (track->IsOn(AliAODTrack::kTOFin)) && (track->IsOn(AliAODTrack::kTIME)) &&  (track->IsOn(AliAODTrack::kTOFout))) {
+            if ( (track->IsOn(AliAODTrack::kITSin)) && (track->IsOn(AliAODTrack::kTOFpid)) ) {
+
                 tofTime = track->GetTOFsignal();//in ps
                 length = track->GetIntegratedLength();
                 
@@ -395,82 +396,81 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
                 HistBetavsPTOFbeforePID ->Fill(track->P()*track->Charge(),beta);
             }//TOF signal
 
-         TH2F *HistdEdxVsPTPCbeforePID = (TH2F*)fListQAInfo->At(7);
-         HistdEdxVsPTPCbeforePID -> Fill(p*track->Charge(),dEdx); //TPC signal
+            TH2F *HistdEdxVsPTPCbeforePID = (TH2F*)fListQAInfo->At(7);
+            HistdEdxVsPTPCbeforePID -> Fill(p*track->Charge(),dEdx); //TPC signal
+        }//probMis
          
-         
-            //QA plot
-            TH1F *HistPhiDistBefore = (TH1F*)fListQAInfo->At(8);
-            HistPhiDistBefore->Fill(phi);
-            //
-            TH1F *HistEtaDistBefore = (TH1F*)fListQAInfo->At(9);
-            HistEtaDistBefore->Fill(eta);
+        //QA plot
+        TH1F *HistPhiDistBefore = (TH1F*)fListQAInfo->At(8);
+        HistPhiDistBefore->Fill(phi);
+        //
+        TH1F *HistEtaDistBefore = (TH1F*)fListQAInfo->At(9);
+        HistEtaDistBefore->Fill(eta);
          
 
-            if(pT<0.1) continue;
-            if(TMath::Abs(eta)>0.8) continue;
-         
-            Int_t TPCNcls = track->GetTPCNcls();
-            
-            if(TPCNcls<70 || dEdx<10) continue;
-         
-            // fill QA histograms
-
-            TH2F* HistDCAAfter =(TH2F*)fListQAInfo->At(10);
-            HistDCAAfter->Fill(dcaZ,dcaXY);
+        if(pT<0.1) continue;
+        if(TMath::Abs(eta)>0.8) continue;
         
-            TH1F *HistPhiDistAfter = (TH1F*)fListQAInfo->At(11);
-            HistPhiDistAfter->Fill(phi);
+        Int_t TPCNcls = track->GetTPCNcls();
+            
+        if(TPCNcls<70 || dEdx<10) continue;
+        
+        // fill QA histograms
+
+        TH2F* HistDCAAfter =(TH2F*)fListQAInfo->At(10);
+        HistDCAAfter->Fill(dcaZ,dcaXY);
+        
+        TH1F *HistPhiDistAfter = (TH1F*)fListQAInfo->At(11);
+        HistPhiDistAfter->Fill(phi);
                 
-            TH1F *HistEtaDistAfter = (TH1F*)fListQAInfo->At(12);
-            HistEtaDistAfter->Fill(eta);
+        TH1F *HistEtaDistAfter = (TH1F*)fListQAInfo->At(12);
+        HistEtaDistAfter->Fill(eta);
          
          
-            Bool_t pWithinRange = kFALSE;
-            Int_t pRange = -999;
-            Double_t pBins[11] = {0.2,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5};
-            for(int i=0;i<10;i++){
-                if(p>pBins[i] && p<pBins[i+1]){
-                    //cout<<"Inside if(p>pBins[i] && p<pBins[i+1])"<<endl;
-                    pWithinRange = kTRUE;
-                    pRange = i;
-                }
+        Bool_t pWithinRange = kFALSE;
+        Int_t pRange = -999;
+        Double_t pBins[11] = {0.2,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5};
+        for(int i=0;i<10;i++){
+            if(p>pBins[i] && p<pBins[i+1]){
+                //cout<<"Inside if(p>pBins[i] && p<pBins[i+1])"<<endl;
+                pWithinRange = kTRUE;
+                pRange = i;
             }
-            for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
-
-                //TOF nSigma
-                Double_t nSigmaTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)ispecie);
-                Double_t nSigmaTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)ispecie);
+        }
+        for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
+            //TOF nSigma
+            Double_t nSigmaTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)ispecie);
+            Double_t nSigmaTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)ispecie);
                 
-                if(fPIDcuts && ispecie>1 && ispecie<5 && pWithinRange){// for pions, kaons and protons only
+            if(fPIDcuts && ispecie>1 && ispecie<5 && pWithinRange){// for pions, kaons and protons only
 
 
-                    if(fContourCut[ispecie-2][pRange]){cout<<"4) fContourCut exists"<<endl;}
+                if(fContourCut[ispecie-2][pRange]){cout<<"4) fContourCut exists"<<endl;}
                     
-                    if(fContourCut[ispecie-2][pRange]->IsInside(nSigmaTOF,nSigmaTPC)){
-                        pass = kTRUE;
-                    }
-                    else{
-                        pass = kFALSE;
-                        continue;
-                    }
+                if(fContourCut[ispecie-2][pRange]->IsInside(nSigmaTOF,nSigmaTPC)){
+                    pass = kTRUE;
                 }
-                
-                //TPC and TOF cuts, TPC TOF nsigma vs. momentum
-                if(pass){
-                    TH3 *hist1 = (TH3*)fListQAtpctof->At(ispecie);
-                    if (hist1){
-                        hist1->Fill(nSigmaTPC,nSigmaTOF,p);}
-                
-                    TH3 *hist2 = (TH3*)fListQAtpctof->At(ispecie+AliPID::kSPECIESC);
-                    if (hist2){
-                        hist2->Fill(nSigmaTPC,nSigmaTOF,pT);}
+                else{
+                    pass = kFALSE;
+                    continue;
                 }
-                
             }
+                
+            //TPC and TOF cuts, TPC TOF nsigma vs. momentum
+            if(pass){
+                TH3 *hist1 = (TH3*)fListQAtpctof->At(ispecie);
+                if (hist1){
+                    hist1->Fill(nSigmaTPC,nSigmaTOF,p);}
+                
+                TH3 *hist2 = (TH3*)fListQAtpctof->At(ispecie+AliPID::kSPECIESC);
+                if (hist2){
+                    hist2->Fill(nSigmaTPC,nSigmaTOF,pT);}
+            }
+                
+        }
          
 
-     }//track loop
+    }//track loop
     
     TH2F *HistTPCvsGlobalMultAfter = (TH2F*) fListQAInfo->At(13);
     HistTPCvsGlobalMultAfter->Fill(multGlobal,multTPC);
