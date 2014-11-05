@@ -59,15 +59,4 @@ add_subdirectory(rec)
 add_subdirectory(shuttle)
 add_subdirectory(sim)
 
-
-#file(GLOB PACKAGES CMake*.pkg)
-
-#if(HLT_CUDA)
-#  list(APPEND PACKAGES TPCLib/tracking-ca/cagpu/CMakelibAliHLTTPCCAGPU.pkg)
-#endif(HLT_CUDA)
-
-#if(HLT_OPENCL)
-#  list(APPEND PACKAGES TPCLib/tracking-ca/cagpu/CMakelibAliHLTTPCCAGPUOpenCL.pkg)
-#endif()
-
 message(STATUS "HLT enabled")

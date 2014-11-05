@@ -21,6 +21,14 @@ if(ROOT_HASOPENGL STREQUAL "yes")
     add_subdirectory(EVE)
 endif()
 
+if(HLT_CUDA)
+    add_subdirectory(tracking-ca/cagpu/cuda)
+endif(HLT_CUDA)
+
+if(HLT_OPENCL)
+    add_subdirectory(tracking-ca/cagpu/opencl)
+endif()
+
 # Module
 set(MODULE AliHLTTPC)
 
