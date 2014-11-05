@@ -48,6 +48,7 @@ add_subdirectory(TPCLib)
 add_subdirectory(TRD)
 add_subdirectory(trigger)
 add_subdirectory(VZERO)
+add_subdirectory(ZDC)
 # Enable EVE if ROOT has OpenGL support
 if(ROOT_HASOPENGL STREQUAL "yes")
     add_subdirectory(EVE)
