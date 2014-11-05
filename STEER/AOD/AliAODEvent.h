@@ -169,6 +169,7 @@ class AliAODEvent : public AliVEvent {
   // primary vertex
   using AliVEvent::GetPrimaryVertex;
   using AliVEvent::GetPrimaryVertexSPD;
+  using AliVEvent::GetPrimaryVertexTPC;
   virtual AliAODVertex *GetPrimaryVertex() const { return GetVertex(0); }
   virtual AliAODVertex *GetPrimaryVertexSPD() const;
   virtual AliAODVertex *GetVertex() const { return GetPrimaryVertexSPD(); }
