@@ -37,7 +37,7 @@ class AliUnicorEventAliceESD : public AliUnicorEvent {
   Double_t    Centrality() const; 
   void        RP(Double_t &qx, Double_t &qy) const {AliUnicorEvent::RP(qx,qy,2);}
   Double_t    RPphi() const {Double_t qx,qy; RP(qx,qy); return atan2(qy,qx);}
-  Double_t    Zver() const {return fESD->GetPrimaryVertex()->GetZv()/12.0;}
+  Double_t    Zver() const {return fESD->GetPrimaryVertex()->GetZ()/12.0;}
   Int_t       NParticles() const {return fESD->GetNumberOfTracks();}
 
   Bool_t      ParticleGood(Int_t i, Int_t pidi=0) const;

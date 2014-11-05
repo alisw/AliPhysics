@@ -32,6 +32,7 @@ ClassImp(AliJEfficiencyScanner);
 //______________________________________________________________________________
 AliJEfficiencyScanner::AliJEfficiencyScanner() :   
     TNamed(),
+	fMBTriggMask(0),
     fTrackList(0),
     fMCTrackList(0x0),
     fEventHeader(0x0),
@@ -75,6 +76,7 @@ AliJEfficiencyScanner::AliJEfficiencyScanner() :
 //______________________________________________________________________________
 AliJEfficiencyScanner::AliJEfficiencyScanner(const char *name):
     TNamed(name,name), 
+	fMBTriggMask(0),
     fTrackList(0),
     fMCTrackList(0x0),
     fEventHeader(0x0),
@@ -117,6 +119,7 @@ AliJEfficiencyScanner::AliJEfficiencyScanner(const char *name):
 //____________________________________________________________________________
 AliJEfficiencyScanner::AliJEfficiencyScanner(const AliJEfficiencyScanner& ap) :
     TNamed(ap.GetName(), ap.GetTitle()),
+	fMBTriggMask(ap.fMBTriggMask),
     fTrackList(ap.fTrackList),
     fMCTrackList(ap.fMCTrackList),
     fEventHeader( ap.fEventHeader ),
@@ -323,7 +326,7 @@ void AliJEfficiencyScanner::UserExec(Option_t *option)
     AliJEventHeader * eventHeader = GetJEventHeader();
 
     //== TRIGGER( MB ) TODO is this?
-    Bool_t triggeredEventMB  = eventHeader->GetTriggerMaskJCorran() & 8; // 1:kMB 8:kINT7 //TODO
+    Bool_t triggeredEventMB  = eventHeader->GetTriggerMaskJCorran() & fMBTriggMask; // 1:kMB 8:kINT7 //TODO
     UInt_t trigAlice = eventHeader->GetTriggerMaskAlice();
 /*
 cout<<"Trigger"<<endl;
@@ -384,7 +387,7 @@ cout<<"Trigger"<<endl;
     int iCent = int( centrality/(100./nCentBin));
     if( iCent< 0 || iCent>20 ) return;
     //if( centrality < 0 || centrality > 100 ) return;
-    if( fRunHeader->IsPP() ) iCent = 0;
+    if( fRunHeader->IsPP() ) {iCent = 0; centrality=0;}
 
     //== Vertex
     //==== Reco

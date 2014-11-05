@@ -83,10 +83,12 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetTracksName(const char *n)                          { AddParticleContainer(n)                             ; }
   void                        SetTrigClass(const char *n)                           { fTrigClass         = n                              ; } 
   void                        SetTriggerTypeSel(TriggerType t)                      { fTriggerTypeSel    = t                              ; } 
-  void                        SetUseAliAnaUtils(Bool_t b)                           { fUseAliAnaUtils    = b                              ; }
+  void                        SetUseAliAnaUtils(Bool_t b, Bool_t bRejPilup = kTRUE) { fUseAliAnaUtils    = b ; fRejectPileup = bRejPilup  ; }
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
+  void                        SetUseSPDTrackletVsClusterBG(Bool_t b)                { fTklVsClusSPDCut   = b                              ; }
 
  protected:
+  void                        SetRejectionReasonLabels(TAxis* axis);
   Double_t*                   GenerateFixedBinArray(Int_t n, Double_t min, Double_t max) const;
   void                        GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array) const;
   void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
@@ -130,7 +132,9 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fMaxVz;                      // max vertex for event selection
   Double_t                    fTrackPtCut;                 // cut on track pt in event selection
   Int_t                       fMinNTrack;                  // minimum nr of tracks in event with pT>fTrackPtCut
-  Bool_t                      fUseAliAnaUtils;             //  used for LHC13* data
+  Bool_t                      fUseAliAnaUtils;             // used for LHC13* data: z-vtx, Ncontributors, z-vtx resolution cuts
+  Bool_t                      fRejectPileup;               // Reject pilup using function AliAnalysisUtils::IsPileUpEvent()
+  Bool_t                      fTklVsClusSPDCut;            // Apply tracklet-vs-cluster SPD cut to reject background events in pp
   AliAnalysisUtils           *fAliAnalysisUtils;           //! vertex selection (optional)
   UInt_t                      fOffTrigger;                 // offline trigger for event selection
   TString                     fTrigClass;                  // trigger class name for event selection
@@ -149,7 +153,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Int_t                       fMinMCLabel;                 // minimum MC label value for the tracks/clusters being considered MC particles
   Int_t                       fMCLabelShift;               // if MC label > fMCLabelShift, MC label -= fMCLabelShift
   Int_t                       fNcentBins;                  // how many centrality bins
-  Bool_t                      fNeedEmcalGeom;              // whether or not the task need the emcal geometry
+  Bool_t                      fNeedEmcalGeom;              // whether or not the task needs the emcal geometry
   Bool_t                      fIsEsd;                      //!whether it's an ESD analysis
   AliEMCALGeometry           *fGeom;                       //!emcal geometry
   TClonesArray               *fTracks;                     //!tracks
@@ -173,9 +177,10 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TObjArray                   fParticleCollArray;          // particle/track collection array
   TObjArray                   fClusterCollArray;           // cluster collection array
   AliEmcalTriggerPatchInfo   *fMainTriggerPatch;           // main trigger patch, will be cached after calling GetMainTriggerPatch() first time
-  ULong_t                 	  fTriggers;                // list of fired triggers
+  ULong_t                     fTriggers;                   // list of fired triggers
 
   TList                      *fOutput;                     //!output list
+  TH1                        *fHistEventCount;             //!incoming and selected events
   TH1                        *fHistTrialsAfterSel;         //!total number of trials per pt hard bin after selection
   TH1                        *fHistEventsAfterSel;         //!total number of events per pt hard bin after selection
   TProfile                   *fHistXsectionAfterSel;       //!x section from pythia header
@@ -192,6 +197,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 10) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 11) // EMCAL base analysis task
 };
 #endif

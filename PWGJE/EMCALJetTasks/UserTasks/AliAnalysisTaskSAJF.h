@@ -29,6 +29,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
 
   Int_t                       fHistoType;                      // histogram type (0=TH2, 1=THnSparse)
 
+  TH2                       **fHistRejectionReason;         //!Rejection reason vs. jet pt
   TH2                       **fHistTracksJetPt;             //!Track pt vs. jet pt
   TH2                       **fHistClustersJetPt;           //!Cluster pt vs. jet pt
   TH2                       **fHistTracksPtDist;            //!Track pt vs. distance form jet axis

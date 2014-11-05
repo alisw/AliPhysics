@@ -78,6 +78,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   int numOfChTypes = 10;
   int numOfkTBins = 2;
 
+  bool performSharedDaughterCut = true;
+
   int runshlcms = 0;
 
   int runtype = 2; // Types 0 - global, 1 - ITS only, 2 - TPC Inner
@@ -348,6 +350,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
           if(ichg == 0) //V0LL
           {
+            anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
             anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
             anetaphitpc[aniter]->SetFirstParticleCut(dtc1etaphitpc[aniter]);
             anetaphitpc[aniter]->SetSecondParticleCut(dtc1etaphitpc[aniter]);
@@ -356,6 +359,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
           }
           else if(ichg == 1) //V0ALAL
           {
+            anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
             anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
             anetaphitpc[aniter]->SetFirstParticleCut(dtc2etaphitpc[aniter]);
             anetaphitpc[aniter]->SetSecondParticleCut(dtc2etaphitpc[aniter]);
@@ -364,6 +368,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
           }
           else if(ichg == 2) //VOLAL
           {
+            anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
             anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
             anetaphitpc[aniter]->SetFirstParticleCut(dtc1etaphitpc[aniter]);
             anetaphitpc[aniter]->SetSecondParticleCut(dtc2etaphitpc[aniter]);
@@ -372,6 +377,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
           }
           else if(ichg == 3) //V0PL
           {
+            anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
             anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
             anetaphitpc[aniter]->SetFirstParticleCut(dtc1etaphitpc[aniter]);
             anetaphitpc[aniter]->SetSecondParticleCut(dtc3etaphitpc[aniter]);
@@ -380,6 +386,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
           }
           else if(ichg == 4) //V0APL
           {
+            anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
             sqp4cetaphitpc[aniter]->SetMinAvgSeparation(0,0); //0 - track-pos, 1 - track-neg
             sqp4cetaphitpc[aniter]->SetMinAvgSeparation(1,11);
             anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
@@ -390,6 +397,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
           }
           else if(ichg == 5) //V0PAL
           {
+            anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
             sqp4cetaphitpc[aniter]->SetMinAvgSeparation(0,11); //0 - track-pos, 1 - track-neg
             sqp4cetaphitpc[aniter]->SetMinAvgSeparation(1,0);
             anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
@@ -400,6 +408,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
           }
           else if(ichg == 6) //V0APAL
           {
+            anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
             anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
             anetaphitpc[aniter]->SetFirstParticleCut(dtc2etaphitpc[aniter]);
             anetaphitpc[aniter]->SetSecondParticleCut(dtc4etaphitpc[aniter]);

@@ -8,7 +8,7 @@
  ***************************************************************************/
 
 AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name      = "NuDyn", //  0      
-				     Bool_t  isModeDist      = 1,       //  1
+				     Int_t   isModeDist      = 1,       //  1
 				     Bool_t  isModeEff       = 0,       //  2
 				     Bool_t  isModeDCA       = 0,       //  3
 				     Bool_t  isModeQA        = 0,       //  4
@@ -28,7 +28,9 @@ AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name      = "NuDyn", //  0
 				     Float_t gSigmaITS       = 4.0,     // 18
 				     Float_t gSigmaTOF       = 4.0,     // 19
 				     Float_t gSigmaTPC       = 4.0,     // 20
-				     Float_t gSigmaTPClow    = 3.0) {   // 21
+				     Float_t gSigmaTPClow    = 3.0,
+				     Bool_t  isPer           = 0,
+				     Int_t   nSub            = 25) {   // 21
   
   TString sName(name);
 
@@ -54,8 +56,7 @@ AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name      = "NuDyn", //  0
     task->SetModeEffCreation(1);             // => 1 = on    | 0 = off (default)
   if (isModeDCA)
     task->SetModeDCACreation(1);             // => 1 = on    | 0 = off (default)
-  if (isModeDist)
-    task->SetModeDistCreation(1);            // => 1 = on    | 0 = off (default)
+     
   if (isModeAOD) {
     task->SetIsAOD(1);                       // => 1 = AOD   | 0 = ESD (default)
     task->SetTrackFilterBit(aodFilterBit);   
@@ -63,6 +64,7 @@ AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name      = "NuDyn", //  0
   if (isModeQA)
     task->SetModeQACreation(1);              // => 1 = on    | 0 = off (default)
   
+  task->SetModeDistCreation(isModeDist);  // 0 nothing, 1 only dist, 2, with qa            
   task->SetIsRatio(isRatio);
 
   Float_t minPt,     maxPt,     minPtEff,     maxPtEff,  minPtForTOF;
@@ -123,6 +125,7 @@ AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name      = "NuDyn", //  0
   task->SetEtaMaxEff(etaMaxEff);            // eta cut for efficiency
   task->SetPtRange(minPt, maxPt);           // pt cut range for the analysis
   task->SetPtRangeEff(minPtEff, maxPtEff);  // pt cut range for the correction / efficiency / contamination creation
+  if (isPer) task->SetIsPer();  // 
  
   helper->SetVertexZMax(10.);   
   helper->SetCentralityBinMax(11);
@@ -138,7 +141,8 @@ AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name      = "NuDyn", //  0
   helper->SetNSigmaMaxTOF(nSigmaTOF);
   helper->SetMinPtForTOFRequired(minPtForTOF);
   helper->SetMaxPtForTPClow(maxPtForTPClow);
- 
+  helper->SetNSubSamples(nSub);
+  
   task->SetNetParticleHelper(helper);
   mgr->AddTask(task);
   

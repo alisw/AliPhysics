@@ -133,6 +133,8 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
 			Double_t* V0KF, Double_t* errV0KF, Double_t* LcKF, Double_t* errLcKF,
 			Double_t* distances, Double_t* armPolKF);
 
+  void FillMCHisto(TClonesArray *mcArray);
+
   AliAnalysisTaskSELc2V0bachelorTMVA(const AliAnalysisTaskSELc2V0bachelorTMVA &source);
   AliAnalysisTaskSELc2V0bachelorTMVA& operator=(const AliAnalysisTaskSELc2V0bachelorTMVA& source); 
   
@@ -253,8 +255,11 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   Int_t fCurrentEvent;              // current event number - for debug purposes
   Double_t fBField;                   // magnetic field of current event
   Bool_t fKeepingOnlyPYTHIABkg;       // flag to allow to use only PYTHIA tracks for background
+  TH1F* fHistoMCLcK0SpGen;            // histo with MC Lc --> K0S + p
+  TH1F* fHistoMCLcK0SpGenAcc;         // histo with MC Lc --> K0S + p
+  TH1F* fHistoMCLcK0SpGenLimAcc;      // histo with MC Lc --> K0S + p
 
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVA, 4); // class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVA, 6); // class for Lc->p K0
 };
 
 #endif

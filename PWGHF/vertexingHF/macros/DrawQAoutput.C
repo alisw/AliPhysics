@@ -20,7 +20,7 @@
 #include <AliCounterCollection.h>
 #include <AliRDHFCuts.h>
 
-#include "../ANALYSIS/macros/MakePIDqaReport.C"
+#include "MakePIDqaReport.C"
 
 #endif
 
@@ -30,20 +30,20 @@ TString *periodsname;
 
 //read the file and take list and stat
 
-Bool_t ReadFile(TList* &list,TH1F* &hstat, TString listname,TString partname,TString path="./",TString filename=/*"AnalysisResults.root"*/"PWG3histograms.root", TString dirname="PWG3_D2H_QA");
-Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString listname,TString partname,TString path="./",TString filename=/*"AnalysisResults.root"*/"PWG3histograms.root", TString dirname="PWG3_D2H_QA");
+Bool_t ReadFile(TList* &list,TList* &hstat, TString listname,TString partname,TString path="./",TString filename=/*"AnalysisResults.root"*/"PWG3histograms.root", TString dirname="PWG3_D2H_QA");
+Bool_t ReadFileMore(TList* &list,TList* &hstat, AliRDHFCuts* &cutobj, TString listname,TString partname,TString path="./",TString filename=/*"AnalysisResults.root"*/"PWG3histograms.root", TString dirname="PWG3_D2H_QA");
 void SuperimposeBBToTPCSignal(Int_t period /*0=LHC10bc, 1=LHC10d, 2=LHC10h*/,TCanvas* cpid, Int_t set);
 void TPCBetheBloch(Int_t set);
 Bool_t ReadFilesForCompilation(TString inputtextfile, TList**& lists, Int_t&numb, TString*& legend);
 void CompilationEvSelection(Int_t n,TList** lists, TString* legend);
 void CompilationTrackSelection(Int_t n,TList** lists, TString* legend);
 
-Bool_t ReadFile(TList* &list,TH1F* &hstat, TString listname,TString partname,TString path,TString filename, TString dirname){
+Bool_t ReadFile(TList* &list,TList* &lstat, TString listname,TString partname,TString path,TString filename, TString dirname){
 
-  TString hstatname="nEntriesQA", cutobjname="";
+  TString lstatname="nEntriesQA", cutobjname="";
   filename.Prepend(path);
   listname+=partname;
-  hstatname+=partname;
+  lstatname+=partname;
 
   TFile* f=new TFile(filename.Data());
   if(!f->IsOpen()){
@@ -64,21 +64,21 @@ Bool_t ReadFile(TList* &list,TH1F* &hstat, TString listname,TString partname,TSt
     return kFALSE;
   }
 
-  hstat=(TH1F*)dir->Get(hstatname);
-  if(!hstat){
-    cout<<hstatname.Data()<<" not found"<<endl;
+  lstat=(TList*)dir->Get(lstatname);
+  if(!lstat){
+    cout<<lstatname.Data()<<" not found"<<endl;
     return kFALSE;
   }
 
   return kTRUE;
 }
 
-Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString listname,TString partname,TString path,TString filename,TString dirname){
+Bool_t ReadFileMore(TList* &list,TList* &lstat, AliRDHFCuts* &cutobj, TString listname,TString partname,TString path,TString filename,TString dirname){
 
-  TString hstatname="nEntriesQA", cutobjname="";
+  TString lstatname="nEntriesQA", cutobjname="";
   filename.Prepend(path);
   listname+=partname;
-  hstatname+=partname;
+  lstatname+=partname;
 
   if(partname.Contains("Dplus")) cutobjname="AnalysisCuts";//"DplustoKpipiCutsStandard";
   else{
@@ -115,9 +115,9 @@ Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString lis
     return kFALSE;
   }
 
-  hstat=(TH1F*)dir->Get(hstatname);
-  if(!hstat){
-    cout<<hstatname.Data()<<" not found"<<endl;
+  lstat=(TList*)dir->Get(lstatname);
+  if(!lstat){
+    cout<<lstatname.Data()<<" not found"<<endl;
     return kFALSE;
   }
 
@@ -131,7 +131,7 @@ Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString lis
 }
 
 //draw "track related" histograms (list "outputTrack")
-void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./", Bool_t superimpose=kFALSE, TString suffixdir="",TString filename=/*"AnalysisResults.root"*/"PWG3histograms.root", Bool_t normint=kTRUE /*normalize at integral, or at nevents*/){
+void DrawOutputTrack(TString partname="D00100",TString textleg="",TString path="./", Bool_t superimpose=kFALSE, TString suffixdir="",TString filename="AnalysisResults.root", Bool_t normint=kTRUE /*normalize at integral, or at nevents*/){
   gStyle->SetCanvasColor(0);
   gStyle->SetTitleFillColor(0);
   gStyle->SetStatColor(0);
@@ -139,6 +139,7 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
 
   TString listname="outputTrack",name1="",name2="",path2="",filename2="PWG3histograms.root",legtext1="",legtext2="",suffixdir2="";
   TString tmp="y";
+  name1=suffixdir;
 
   if(superimpose){
     cout<<"Enter the names:\n>";
@@ -165,37 +166,49 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
     
   }
 
-  Float_t nevents,nevents2;
-  TList* list;
-  TH1F * hstat;
+  Float_t nevents=0,nevents2=0;
+  TList* list = NULL;
+  TList * lstat = NULL;
+  TH1F * hEntr = NULL;
+  TH1F* hHasFilterBit = NULL;
+
   TString dirname="PWG3_D2H_QA";
-  //dirname+=suffixdir;
-  Bool_t isRead=ReadFile(list,hstat,listname,Form("%s%s",partname.Data(),name1.Data()),path,filename,Form("%s%s",dirname.Data(),suffixdir.Data()));
+  //  dirname+=suffixdir;
+  Bool_t isRead=ReadFile(list,lstat,listname,Form("%s%s",partname.Data(),name1.Data()),path,filename,Form("%s%s",dirname.Data(),suffixdir.Data()));
   if(!isRead) return;
-  if(!list || !hstat){
+  if(!list || !lstat){
     cout<<":-( null pointers..."<<endl;
     return;
   }
-  nevents=hstat->GetBinContent(1);
+  hEntr = (TH1F*) lstat->FindObject("hNentries");
+  hHasFilterBit = (TH1F*) lstat->FindObject("HasSelBit");
+
+  nevents=hEntr->GetBinContent(1);
   TPaveText *pvtxt=new TPaveText(0.6,0.6,0.9,0.9,"NDC");
   pvtxt->SetBorderSize(0);
   pvtxt->SetFillStyle(0);
   pvtxt->AddText(legtext1);
 
-  TList* llist;
-  TH1F* hhstat;
+  TList* llist = NULL;
+  TList* llstat = NULL;
+  TH1F* hEntr1 = NULL;
+  TH1F* hHasFilterBit1 = NULL;
+
   if(superimpose){
-    isRead=ReadFile(llist,hhstat,listname,Form("%s%s",partname.Data(),name2.Data()),path2,filename2,Form("%s%s",dirname.Data(),suffixdir2.Data()));
+    isRead=ReadFile(llist,llstat,listname,Form("%s%s",partname.Data(),name2.Data()),path2,filename2,Form("%s%s",dirname.Data(),suffixdir2.Data()));
     if(!isRead) return;
-    if(!llist || !hhstat){
+    if(!llist || !llstat){
       cout<<":-( null pointers..."<<endl;
       return;
     }
-    nevents2=hhstat->GetBinContent(1);
+    hEntr1 = (TH1F*) llstat->FindObject("hNentries");
+    hHasFilterBit1 = (TH1F*) llstat->FindObject("HasSelBit");
+
+    nevents2=hEntr1->GetBinContent(1);
     TText *redtext=pvtxt->AddText(legtext2);
     redtext->SetTextColor(kRed);
-    hhstat->Scale(hstat->Integral()/hhstat->Integral());
-
+    hEntr1->Scale(hEntr->Integral()/hEntr1->Integral());
+    hHasFilterBit1->Scale(hEntr->Integral()/hEntr1->Integral());
   }
 
   for(Int_t i=0;i<list->GetEntries();i++){
@@ -214,7 +227,7 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
     if(superimpose){
       if(normint) hh->Scale(h->Integral()/hh->Integral());
       else hh->Scale(nevents/nevents2);
-      hhstat->SetLineColor(kRed);
+      hEntr1->SetLineColor(kRed);
       hh->SetLineColor(kRed);
       hr->Divide(h);
     }
@@ -233,7 +246,10 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
 	h->GetXaxis()->SetRangeUser(0,6); //comment to see ntracks!
       }
       //h->SetMinimum(1);
-      h->Draw();
+      if(hname.Contains("vs")||hname.Contains("dauphi")|| hname.Contains("dauphi_filt")){
+	h->Draw("colz");
+      }else h->Draw();
+
       if(superimpose) 
 	{
 	  hh->Draw("sames");
@@ -254,16 +270,32 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
     c->SaveAs(Form("%s%s%s%s.eps",c->GetName(),name1.Data(),name2.Data(),textleg.Data()));
   }
   
+
+  TCanvas* cstFilter=new TCanvas("cstFilter","Stat_HasFilterBit");
+  cstFilter->SetGridy();
+  cstFilter->cd();
+  hHasFilterBit->Draw("htext0");
+
+  if(superimpose) {
+    hHasFilterBit1->Draw("htext0sames");
+    pvtxt->Draw();
+  }
+  cstFilter->SaveAs(Form("%s%s.png",hHasFilterBit->GetName(),textleg.Data()));
+  cstFilter->SaveAs(Form("%s%s.eps",hHasFilterBit->GetName(),textleg.Data()));
+
+
+
   TCanvas* cst=new TCanvas("cst","Stat");
   cst->SetGridy();
   cst->cd();
-  hstat->Draw("htext0");
+  hEntr->Draw("htext0");
+
   if(superimpose) {
-    hhstat->Draw("htext0sames");
+    hEntr1->Draw("htext0sames");
     pvtxt->Draw();
   }
-  cst->SaveAs(Form("%s%s.png",hstat->GetName(),textleg.Data()));
-  cst->SaveAs(Form("%s%s.eps",hstat->GetName(),textleg.Data()));
+  cst->SaveAs(Form("%s%s.png",hEntr->GetName(),textleg.Data()));
+  cst->SaveAs(Form("%s%s.eps",hEntr->GetName(),textleg.Data()));
 
   TH1F* hd0fb4=(TH1F*)list->FindObject("hd0TracksFilterBit4");
   TH1F* hd0SPD1=(TH1F*)list->FindObject("hd0TracksSPDin");
@@ -348,7 +380,7 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
 
 //draw "pid related" histograms (list "outputPID")
 //period=-999 to draw the pull instead of the cut
-void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsigma*/,TString textleg="",TString path="./",TString suffixdir="", TString filename="AnalysisResults.root"){
+void DrawOutputPID(TString partname="D00100", Int_t mode=0/*0=with pull, 1=with nsigma*/,TString textleg="",TString path="./",TString suffixdir="", TString filename="AnalysisResults.root"){
   gStyle->SetCanvasColor(0);
   gStyle->SetTitleFillColor(0);
   gStyle->SetOptStat(0);
@@ -369,8 +401,8 @@ void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsig
   TString dirname="PWG3_D2H_QA";
   dirname+=suffixdir;
 
-  TList* list;
-  TH1F * hstat;
+  TList* list = NULL;
+  TList * lstat = NULL;
   //needed only for mode 1
   AliRDHFCuts* cutobj;
   AliAODPidHF* aodpid;
@@ -378,9 +410,9 @@ void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsig
   Double_t nsigmaTPC[3]={},plimTPC[2]={};
 
   if(mode==1){
-    Bool_t isRead=ReadFileMore(list,hstat,cutobj,listname,partname+suffixdir,path,filename,dirname);
+    Bool_t isRead=ReadFileMore(list,lstat,cutobj,listname,partname+suffixdir,path,filename,dirname);
     if(!isRead) return;
-    if(!list || !hstat){
+    if(!list || !lstat){
       cout<<":-( null pointers..."<<endl;
       return;
     }
@@ -397,9 +429,9 @@ void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsig
     aodpid->GetPLimit(plimTPC);
 
   }else{
-    Bool_t isRead=ReadFile(list,hstat,listname,partname+suffixdir,path,filename,dirname);
+    Bool_t isRead=ReadFile(list,lstat,listname,partname+suffixdir,path,filename,dirname);
     if(!isRead) return;
-    if(!list || !hstat){
+    if(!list || !lstat){
       cout<<":-( null pointers..."<<endl;
       return;
     }
@@ -775,15 +807,16 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
   //   }
   // }
 
-  TList* list;
-  TH1F * hstat;
+  TList* list = NULL;
+  TList * lstat = NULL;
+  TH1F* hEntr = NULL;
 
   TString dirname="PWG3_D2H_QA",dirname2=dirname;
   dirname+=suffixdir;
   dirname2+=suffixdir2;
-  Bool_t isRead=ReadFile(list,hstat,listname,partname.Data(),path,filename,dirname);
+  Bool_t isRead=ReadFile(list,lstat,listname,partname.Data(),path,filename,dirname);
   if(!isRead) return;
-  if(!list || !hstat){
+  if(!list || !lstat){
     cout<<":-( null pointers..."<<endl;
     return;
   }
@@ -793,12 +826,14 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
   pvtxt->SetFillStyle(0);
   pvtxt->AddText(partname);
 
-  TList* llist;
-  TH1F* hhstat;
+  TList* llist = NULL;
+  TList* llstat = NULL;
+  TH1F* hEntr1 = NULL;
+
   if(superimpose){
-    isRead=ReadFile(llist,hhstat,listname,partname2.Data(),path2,filename2,dirname2);
+    isRead=ReadFile(llist,llstat,listname,partname2.Data(),path2,filename2,dirname2);
     if(!isRead) return;
-    if(!llist || !hhstat){
+    if(!llist || !llstat){
       cout<<":-( null pointers..."<<endl;
       return;
     }
@@ -811,10 +846,12 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
   TCanvas* cst=new TCanvas("cst","Stat");
   cst->SetGridy();
   cst->cd();
-  Int_t nevents=hstat->GetBinContent(1);
-  hstat->Draw("htext0");
-  cst->SaveAs(Form("%s%s.png",hstat->GetName(),textleg.Data()));
-  cst->SaveAs(Form("%s%s.eps",hstat->GetName(),textleg.Data()));
+  hEntr=(TH1F*)lstat->FindObject("hNentries");
+  hEntr1=(TH1F*)llstat->FindObject("hNentries");
+  Int_t nevents=hEntr->GetBinContent(1);
+  hEntr->Draw("htext0");
+  cst->SaveAs(Form("%s%s.png",hEntr->GetName(),textleg.Data()));
+  cst->SaveAs(Form("%s%s.eps",hEntr->GetName(),textleg.Data()));
   Int_t nevents080=1,nnevents080=1;
 
   //TCanvas *spare=new TCanvas("sparecv","Spare");
@@ -836,7 +873,7 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
 	continue;
       }
       if(superimpose){
-	hhstat->SetLineColor(kRed);
+	hEntr1->SetLineColor(kRed);
 	hh->SetLineColor(kRed);
       }
 
@@ -885,18 +922,18 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
   
   listname="countersCentrality";
 
-  isRead=ReadFile(list,hstat,listname,partname.Data(),path,filename,dirname);
+  isRead=ReadFile(list,lstat,listname,partname.Data(),path,filename,dirname);
   if(!isRead) return;
-  if(!list || !hstat){
+  if(!list || !lstat){
     cout<<":-( null pointers..."<<endl;
     return;
   }
 
 
   if(superimpose){
-    isRead=ReadFile(llist,hhstat,listname,partname2.Data(),path2,filename2,dirname2);
+    isRead=ReadFile(llist,llstat,listname,partname2.Data(),path2,filename2,dirname2);
     if(!isRead) return;
-    if(!llist || !hhstat){
+    if(!llist || !llstat){
       cout<<":-( null pointers..."<<endl;
       return;
     }
@@ -1088,16 +1125,18 @@ void DrawProjections(TString partname="D0",TString h2dname="hMultvsPercentile",I
   TString dirname="PWG3_D2H_QA";
   dirname+=suffixdir;
 
-  TList* list;
-  TH1F * hstat;
+  TList* list = NULL;
+  TList * lstat = NULL;
+  TH1F* hEntr = NULL;
 
-  Bool_t isRead=ReadFile(list,hstat,listname,partname,path,filename,dirname);
+  Bool_t isRead=ReadFile(list,lstat,listname,partname,path,filename,dirname);
   if(!isRead) return;
-  if(!list || !hstat){
+  if(!list || !lstat){
     cout<<":-( null pointers..."<<endl;
     return;
   }
-  Double_t nevents=hstat->GetBinContent(5); //ev good vertex
+  hEntr = (TH1F*) lstat->FindObject("hNentries");
+  Double_t nevents=hEntr->GetBinContent(5); //ev good vertex
 
   TH2F* h2=(TH2F*)list->FindObject(h2dname);
   if(!h2){
@@ -1215,15 +1254,18 @@ void DrawEventSelection(TString partname="D0", TString path="./",TString suffixd
   TString dirname="PWG3_D2H_QA";
   dirname+=suffixdir;
 
-  TList* list;
-  TH1F * hstat;
+  TList* list= NULL;
+  TList * lstat = NULL;
+  TH1F* hEntr= NULL;
+  
 
-  Bool_t isRead=ReadFile(list,hstat,listname,partname,path,filename,dirname);
+  Bool_t isRead=ReadFile(list,lstat,listname,partname,path,filename,dirname);
   if(!isRead) return;
-  if(!list || !hstat){
+  if(!list || !lstat){
     cout<<":-( null pointers..."<<endl;
     return;
   }
+  hEntr =(TH1F *)lstat->FindObject("hNentries");
   //Double_t neventsgv=hstat->Integral(5,5); //ev good vertex
 
   for(Int_t i=0;i<list->GetEntries();i++){
@@ -1279,11 +1321,25 @@ void DrawEventSelection(TString partname="D0", TString path="./",TString suffixd
   cout<<endl;
 
   TH1D** htrig=new TH1D*[nkeys]; //each trigger type in one histogram of counts vs run
-  TH1D** htrignorm=new TH1D*[nkeys]; //normalized to the counts in kAny
-  TCanvas* ctrigfraction=new TCanvas("cvtrigfrac","Fraction of given trigger type vs run",1400,800);
+  TH1D** htrignormAll=new TH1D*[nkeys]; //normalized to the counts in kAll
+  TH1D** htrignormAny=new TH1D*[nkeys]; //normalized to the counts in kAny
+  TCanvas* ctrigfractionAll=new TCanvas("cvtrigfrac","Fraction of given trigger type vs run (kAll)",1400,800);
+  TCanvas* ctrigfractionAny=new TCanvas("cvtrigfracAll","Fraction of given trigger type vs run (kAny)",1400,800);
   TLegend* legtr=new TLegend(0.15,0.5,0.35,0.8);
   legtr->SetBorderSize(0);
   legtr->SetFillStyle(0);
+
+  TH1D* htrigkAny=new TH1D();
+  htrigkAny = coll->Get("run",Form("triggertype:%s","ANY"));
+  htrigkAny->SetName(Form("h%s","ANY"));
+  htrigkAny->SetTitle("Trigger type;RUN; counts");
+  htrigkAny->Sumw2();
+  TH1D* htrigkAll=new TH1D();
+  htrigkAll = coll->Get("run",Form("triggertype:%s","ALL"));
+  htrigkAll->SetName(Form("h%s","ALL"));
+  htrigkAll->SetTitle("Trigger type;RUN; counts");
+  htrigkAll->Sumw2();
+
   for(Int_t k=0;k<nkeys;k++){
     htrig[k]=coll->Get("run",Form("triggertype:%s",words[k].Data()));
     htrig[k]->SetName(Form("h%s",words[k].Data()));
@@ -1293,23 +1349,39 @@ void DrawEventSelection(TString partname="D0", TString path="./",TString suffixd
     htrig[k]->Sumw2();
     legtr->AddEntry(htrig[k],Form("%s",words[k].Data()),"P");
     //drawings
+    //1) counts of a given trigger over counts in kAll
+    htrignormAll[k]=(TH1D*)htrig[k]->Clone(Form("h%snormAll",words[k].Data()));
+    htrignormAll[k]->SetTitle("Trigger type over ALL trigger;RUN; counts/countsALL");
+    htrignormAll[k]->Divide(htrig[k],htrigkAll,1.,1.,"B");
+    htrignormAll[k]->GetXaxis()->SetRangeUser(0,1.1);
+
+    ctrigfractionAll->cd();
+    if(k>0)htrignormAll[k]->Draw("PEsames");
+    else htrignormAll[k]->Draw("PE");
+
     //1) counts of a given trigger over counts in kAny
-    htrignorm[k]=(TH1D*)htrig[k]->Clone(Form("h%snormAny",words[k].Data()));
-    htrignorm[k]->SetTitle("Trigger type over ANY trigger;RUN; counts/countsANY");
-    htrignorm[k]->Divide(htrig[k],htrig[0],1.,1.,"B");
-    htrignorm[k]->GetXaxis()->SetRangeUser(0,1.1);
+    htrignormAny[k]=(TH1D*)htrig[k]->Clone(Form("h%snormAny",words[k].Data()));
+    htrignormAny[k]->SetTitle("Trigger type over ANY trigger;RUN; counts/countsANY");
+    htrignormAny[k]->Divide(htrig[k],htrigkAny,1.,1.,"B");
+    htrignormAny[k]->GetXaxis()->SetRangeUser(0,1.1);
     
-    ctrigfraction->cd();
-    if(k>0)htrignorm[k]->Draw("PEsames");
-    else htrignorm[k]->Draw("PE");
-  } 
-  
-  ctrigfraction->cd();
+    ctrigfractionAny->cd();
+    if(k>0)htrignormAny[k]->Draw("PEsames");
+    else htrignormAny[k]->Draw("PE");
+  }
+
+  ctrigfractionAll->cd();
   legtr->Draw();
-  ctrigfraction->SaveAs("TrgFractionOverANY.pdf");
-  ctrigfraction->SaveAs("TrgFractionOverANY.eps");
+  ctrigfractionAll->SaveAs("TrgFractionOverALL.pdf");
+  ctrigfractionAll->SaveAs("TrgFractionOverALL.eps");
+  
+  ctrigfractionAny->cd();
+  legtr->Draw();
+  ctrigfractionAny->SaveAs("TrgFractionOverANY.pdf");
+  ctrigfractionAny->SaveAs("TrgFractionOverANY.eps");
 
   delete [] words;
+  delete htrigkAll; delete htrigkAny;
 
   //draw number of events per trigger
   TH2F* hTrigMul=(TH2F*)list->FindObject("hTrigMul");

@@ -15,7 +15,10 @@ class TSeqCollection;
 class AliPIDResponse;
 class AliPIDCombined;  
 class AliAODEvent;
+class AliVEvent;
 class AliAODTrack;
+class AliVTrack;
+class AliAODv0;
 class AliAODVertex;
 class AliEventPoolManager;
 class TFormula;
@@ -41,7 +44,7 @@ class TProfile;
 #include "TParticle.h"
 #include "AliLog.h"
 #include "AliTHn.h"
-
+#include "TBits.h"
 
 
 #ifndef ALIANALYSISTASKSE_H
@@ -74,7 +77,13 @@ namespace AliPIDNameSpace {
     SpKaon,
     SpProton,
     unidentified,
-    NSpecies=unidentified,
+    SpKs0,
+    SpLam,
+    SpALam,
+    SpKsBckg,
+    SpLamBckg,
+    SpALamBckg,
+    NSpecies=unidentified,//for pion, kaon and proton part only not for v0s
     SpUndefined=999
   }; // Particle species used in plotting
   
@@ -102,20 +111,33 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
     virtual void    doMCAODevent();
     virtual void     Terminate(Option_t *);
   void	   SetSharedClusterCut(Double_t value) { fSharedClusterCut = value; }
+  void	   SetSharedTPCmapCut(Double_t value1) { fSharedTPCmapCut = value1; }
+  void	   SetSharedfraction_Pair_cut(Double_t value2) { fSharedfraction_Pair_cut = value2; }
 
-  void SettwoTrackEfficiencyCutDataReco(Bool_t twoTrackEfficiencyCutDataReco,Float_t twoTrackEfficiencyCutValue1)
+
+  void SettwoTrackEfficiencyCutDataReco(Bool_t twoTrackEfficiencyCutDataReco,Float_t twoTrackEfficiencyCutValue1,Float_t TwoTrackCutMinRadius,Float_t TwoTrackCutMaxRadius)
   {
     ftwoTrackEfficiencyCutDataReco=twoTrackEfficiencyCutDataReco;
     twoTrackEfficiencyCutValue=twoTrackEfficiencyCutValue1;
+    fTwoTrackCutMinRadius=TwoTrackCutMinRadius;
+    fTwoTrackCutMaxRadius=TwoTrackCutMaxRadius;
   }
   void SetVertextype(Int_t Vertextype){fVertextype=Vertextype;}                                                 //Check it every time
     void SetZvtxcut(Double_t zvtxcut) {fzvtxcut=zvtxcut;}
+    void SetZvtxcut_MC(Double_t VxMax_MC,Double_t VyMax_MC,Double_t VzMax_MC) {
+fVxMax_MC=VxMax_MC;
+fVyMax_MC=VyMax_MC;
+fVzMax_MC=VzMax_MC;
+}
+
     void SetCustomBinning(TString receivedCustomBinning) { fCustomBinning = receivedCustomBinning; }
     void SetMaxNofMixingTracks(Int_t MaxNofMixingTracks) {fMaxNofMixingTracks=MaxNofMixingTracks;}               //Check it every time
   void SetCentralityEstimator(TString CentralityMethod) { fCentralityMethod = CentralityMethod;}
+  void SetPPVsMultUtils(Bool_t val)  {fPPVsMultUtils = val;}
   void SetSampleType(TString SampleType) {fSampleType=SampleType;}
-  void SetRequestEventPlane(Bool_t RequestEventPlane,Bool_t V2,Bool_t V3,TString EPdetector,Bool_t IsAfter2011){
+  void SetRequestEventPlane(Bool_t RequestEventPlane,Bool_t RequestEventPlanemixing,Bool_t V2,Bool_t V3,TString EPdetector,Bool_t IsAfter2011){
 fRequestEventPlane=RequestEventPlane;
+fRequestEventPlanemixing=RequestEventPlanemixing;
 fV2=V2;
 fV3=V3;
 fEPdet=EPdetector;
@@ -244,6 +266,24 @@ fPtTOFPIDmax=PtTOFPIDmax;
   void OpenInfoCalbration(Int_t run);
   void SetTPCclusterN(Int_t ncl){fNcluster=ncl;};
    //****************************************************************************************EP related part
+//--------------------------------------------------------------------------//
+//v0 daughters
+
+void SetV0TrigCorr(Bool_t V0TrigCorr){fV0TrigCorr=V0TrigCorr;}
+void SetUsev0DaughterPID(Bool_t Usev0DaughterPID){fUsev0DaughterPID=Usev0DaughterPID;}
+
+ void SetCutsForV0AndDaughters(Double_t MinPtDaughter,Double_t MaxPtDaughter ,Double_t DCAtoPrimVtx, Double_t MaxDCADaughter,Double_t MinCPA,Double_t MaxBoundary,Double_t DaughNClsTPC,Float_t FracSharedTPCcls)
+{
+  //fEtaLimitDaughter=EtaLimit;//0.8
+fMinPtDaughter=MinPtDaughter;//1.0 GeV/c for our AliHelper
+fMaxPtDaughter=MaxPtDaughter;//4.0 GeV/c
+fDCAToPrimVtx=DCAtoPrimVtx;//0.1 cm
+fMaxDCADaughter=MaxDCADaughter;//1.0 cm
+fMinCPA=MinCPA;//0.998
+lMax=MaxBoundary;//100 cm
+fDaugNClsTPC=DaughNClsTPC;//70
+fFracTPCcls=FracSharedTPCcls;//0.4
+}
 
 
  private:                                                                                      
@@ -254,17 +294,25 @@ fPtTOFPIDmax=PtTOFPIDmax;
 
 
     TString    fCentralityMethod;     // Method to determine centrality
+    Bool_t fPPVsMultUtils;//switch to ON quantile information for pp 7 TeV case
     TString    fSampleType;     // pp,p-Pb,Pb-Pb
     Bool_t fRequestEventPlane; //only for PbPb
+    Bool_t fRequestEventPlanemixing; //only for PbPb
     Int_t    fnTracksVertex;        // QA tracks pointing to principal vertex
     AliAODVertex* trkVtx;//!
     Float_t zvtx;
     Int_t    fFilterBit;         // track selection cuts
      UInt_t         fTrackStatus;       // if non-0, the bits set in this variable are required for each track
-    Double_t       fSharedClusterCut;  // cut on shared clusters (only for AOD)
+    Double_t       fSharedClusterCut;  // cut on shared clusters (only for AOD, give the actual cut value)
+    Double_t fSharedTPCmapCut;//cut on TPC shared map(set any non negative value to implement this cut automatically, no meaning of the value itself)
+    Double_t fSharedfraction_Pair_cut;//cut on pairs at the correlation level to check whether the correlating pair has large shared clusters(set fraction percentage to be set as cut off)
     Int_t fVertextype;
     Int_t skipParticlesAbove;
     Double_t fzvtxcut;
+    Double_t fVxMax_MC;
+    Double_t fVyMax_MC;
+    Double_t fVzMax_MC;
+
     Bool_t ffilltrigassoUNID;
     Bool_t ffilltrigUNIDassoID;
     Bool_t ffilltrigIDassoUNID;
@@ -306,7 +354,9 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Double_t fmaxPtAsso;
     Double_t fmincentmult;
     Double_t fmaxcentmult;
+    TH1F *fPriHistShare;//!
     TH1F *fhistcentrality;//!
+    TH1F *fhistImpactParm;//!
     TH1F *fEventCounter; //!
     TH2F *fEtaSpectrasso;//!
     TH2F *fphiSpectraasso;//!
@@ -451,16 +501,27 @@ fPtTOFPIDmax=PtTOFPIDmax;
 
 
   void Fillcorrelation(Float_t ReactionPlane,TObjArray *trackstrig,TObjArray *tracksasso,Double_t cent,Float_t vtx,Float_t weight,Bool_t firstTime,Float_t bSign,Bool_t fPtOrder,Bool_t twoTrackEfficiencyCut,Bool_t mixcase,TString fillup);//mixcase=kTRUE in case of mixing; 
+ Bool_t CalculateSharedFraction(const TBits *triggerPadMap,const TBits *assocPadMap,const TBits *triggerShareMap,const TBits *assocShareMap);
  Float_t GetTrackbyTrackeffvalue(AliAODTrack* track,Double_t cent,Float_t evzvtx, Int_t parpid);
 
  //Fill PID and Event planes
  void FillPIDEventPlane(Double_t centrality,Int_t par,Float_t trigphi,Float_t fReactionPlane);
+ //V0-h correlation related functions
+ TObjArray* GetV0Particles(AliVEvent* event,Double_t cent);
+ Bool_t CheckStatusv0Daughter(AliAODTrack *t1 ,AliAODTrack *t2);
+ Float_t  GetFractionTPCSharedCls( AliAODTrack *track);
+ Bool_t  CheckStatusv0(AliAODv0 *v1);
+ Bool_t IsTrackFromV0(AliAODEvent* fAOD,AliAODTrack* track);
+
+
+
+
 
 //Mixing functions
  // void DefineEventPool();
   AliEventPoolManager    *fPoolMgr;//! 
   TClonesArray          *fArrayMC;//!
-  TString          fAnalysisType;          // "MC", "ESD", "AOD"
+  TString          fAnalysisType;          // "MCAOD", "MC", "AOD"
   TString fefffilename;
     //PID part histograms
 
@@ -473,9 +534,11 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Bool_t* GetDoubleCounting(AliAODTrack * trk, Bool_t FIllQAHistos);
     Int_t GetParticle(AliAODTrack * trk, Bool_t FIllQAHistos);  
  
-     TH2F* GetHistogram2D(const char * name);//return histogram "name" from fOutputList
+     TH2F* GetHistogram2D(const char * name);//!return histogram "name" from fOutputList
 
-     Bool_t ftwoTrackEfficiencyCutDataReco; 	   
+     Bool_t ftwoTrackEfficiencyCutDataReco; 
+    Float_t fTwoTrackCutMinRadius;
+    Float_t fTwoTrackCutMaxRadius;	   
    Float_t twoTrackEfficiencyCutValue;
   //Pid objects
   AliPIDResponse *fPID; //! PID
@@ -528,6 +591,30 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Bool_t fkaonprotoneffrequired;
    AliAnalysisUtils*     fAnalysisUtils;      // points to class with common analysis utilities
   TFormula*      fDCAXYCut;          // additional pt dependent cut on DCA XY (only for AOD)
+  //*****************************************************************************V0 related objects are here
+  Bool_t fV0TrigCorr;
+  Bool_t fUsev0DaughterPID;
+ Double_t fMinPtDaughter ;// to be decided to make it compatible with AliHelperPID so far we keep it 1GeV/C
+  Double_t fMaxPtDaughter; //same statement as above
+  Double_t fDCAToPrimVtx ;//put standard cuts
+  Double_t fMaxDCADaughter;//put standard cuts
+  Double_t fMinCPA; //cosine of pointing angle
+  Double_t lMax;
+TH3F*  fHistRawPtCentInvK0s;//!
+TH3F*  fHistRawPtCentInvLambda;//!
+TH3F*  fHistRawPtCentInvAntiLambda;//!
+TH3F*  fHistFinalPtCentInvK0s;//!
+TH3F*  fHistFinalPtCentInvLambda;//!
+TH3F*  fHistFinalPtCentInvAntiLambda;//!
+  Double_t NCtau;
+  Double_t fCutctauK0s; //ctau cut for kShort
+  Double_t fCutctauLambda;
+  Double_t fCutctauAntiLambda;
+  Double_t fRapCutK0s;
+  Double_t fRapCutLambda; 
+Int_t fDaugNClsTPC;
+Float_t fFracTPCcls;
+
 
 
   Float_t fnsigmas[NSpecies][NSigmaPIDType+1]; //nsigma values
@@ -548,8 +635,8 @@ Float_t GetInvMassSquaredCheap(Float_t pt1, Float_t eta1, Float_t phi1, Float_t 
   Bool_t AcceptEventCentralityWeight(Double_t centrality);
 
   //get event plane
-  Float_t GetEventPlane(AliAODEvent *event,Bool_t truth,Double_t v0Centr);
-  Double_t GetAcceptedEventMultiplicity(AliAODEvent *aod,Bool_t truth);//returns centrality after event(mainly vertex) selection IsEventAccepted  GetAcceptedEventMultiplicity
+  Float_t GetEventPlane(AliVEvent *event,Bool_t truth,Double_t v0Centr);
+  Double_t GetAcceptedEventMultiplicity(AliVEvent *aod,Bool_t truth);//returns centrality after event(mainly vertex) selection IsEventAccepted  GetAcceptedEventMultiplicity
   
   //get vzero equalization
   Double_t GetEqualizationFactor(Int_t run, const char* side);
@@ -557,11 +644,8 @@ Float_t GetInvMassSquaredCheap(Float_t pt1, Float_t eta1, Float_t phi1, Float_t 
   void SetVZEROCalibrationFile(const char* filename,const char* lhcPeriod);
   void SetCentralityWeights(TH1* hist) { fCentralityWeights = hist; }
 
-  Double_t GetRefMultiOrCentrality(AliAODEvent *event, Bool_t truth);
-  Double_t GetReferenceMultiplicityVZEROFromAOD(AliAODEvent *event);//mainly important for pp 7 TeV
-
-
-
+  Double_t GetRefMultiOrCentrality(AliVEvent *event, Bool_t truth);
+  Double_t GetReferenceMultiplicityVZEROFromAOD(AliVEvent *event);//mainly important for pp 7 TeV
 
     
     AliTwoParticlePIDCorr(const AliTwoParticlePIDCorr&); // not implemented
@@ -571,33 +655,55 @@ Float_t GetInvMassSquaredCheap(Float_t pt1, Float_t eta1, Float_t phi1, Float_t 
 };
 class LRCParticlePID : public TObject {
 public:
- LRCParticlePID(Int_t par,Short_t icharge,Float_t pt,Float_t eta, Float_t phi,Float_t effcorrectionval)
-   :fparticle(par),fcharge(icharge),fPt(pt), fEta(eta), fPhi(phi),feffcorrectionval(effcorrectionval)  {}
+ LRCParticlePID(Int_t par,Double_t Invmass,Short_t icharge,Float_t pt,Float_t eta, Float_t phi,Float_t effcorrectionval,const TBits *clustermap,const TBits *sharemap)
+   :fparticle(par),fInvmass(Invmass),fcharge(icharge),fPt(pt), fEta(eta), fPhi(phi),feffcorrectionval(effcorrectionval),fTPCClusterMap(clustermap),fTPCHitShareMap(sharemap) {}
   virtual ~LRCParticlePID() {}
-
   
     virtual Float_t Eta()        const { return fEta; }
     virtual Float_t Phi()        const { return fPhi; }
     virtual Float_t Pt() const { return fPt; }
     Int_t getparticle() const {return fparticle;}
+    Double_t GetInvMass() const {return fInvmass;}
     virtual Short_t Charge()      const { return fcharge; }
     Float_t geteffcorrectionval() const {return feffcorrectionval;}
     virtual Bool_t IsEqual(const TObject* obj) const { return (obj->GetUniqueID() == GetUniqueID()); }
     virtual void SetPhi(Double_t phiv) { fPhi = phiv; }
-
+    virtual const TBits * GetTPCPadMap() {return fTPCClusterMap; }
+    virtual const TBits * GetTPCSharedMap() {return fTPCHitShareMap; }
 
 private:
   LRCParticlePID(const LRCParticlePID&);  // not implemented
    LRCParticlePID& operator=(const LRCParticlePID&);  // not implemented
   
   Int_t fparticle;
+  Double_t fInvmass;
   Short_t fcharge;
   Float_t fPt;
   Float_t fEta;
   Float_t fPhi;
   Float_t feffcorrectionval;
+   const TBits   *fTPCClusterMap;
+   const TBits   *fTPCHitShareMap;
   ClassDef(LRCParticlePID, 1);
 } ;
 
 #endif
 
+//(fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL"))
+//(fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMultUtils==kFALSE))
+//(fCentralityMethod.EndsWith("_MANUAL"))
+/*
+fMinPtDaughter
+fMaxPtDaughter
+fDCAToPrimVtx
+fMaxDCADaughter
+fMinCPA
+lMax
+fCentralityMethod == "MC_b"
+fCentralityCorrelation
+*/
+//fV0TrigCorr
+//ParticlePID_InvMass
+
+//particlepidtrig
+//fRequestEventPlanemixing

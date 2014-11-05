@@ -254,17 +254,18 @@ void LoadLibs()
   //gSystem->Load("libPWGCFCorrelationsBase");
   //gSystem->Load("libPWGCFCorrelationsDPhi");
 
-  //load CGAL, Fastjet and SISCone
+  //load CGAL, Fastjet3 
   //gSystem->Load("libCGAL");
   gSystem->Load("libfastjet");
-  gSystem->Load("libSISConePlugin");
+  gSystem->Load("libfastjet");
+  gSystem->Load("libsiscone");
+  gSystem->Load("libsiscone_spherical");
+  gSystem->Load("libfastjetplugins");
+  gSystem->Load("libfastjettools");
+  gSystem->Load("libfastjetcontribfragile");
   gSystem->Load("libJETAN");
   gSystem->Load("libFASTJETAN");
-  gSystem->Load("libCDFConesPlugin");
   gSystem->Load("libPWGGAEMCALTasks");
-  gSystem->Load("libPWGTools");
-  //gSystem->Load("libPWGCFCorrelationsBase");
-  //gSystem->Load("libPWGCFCorrelationsDPhi");
 
   gSystem->Load("libPWGJEEMCALJetTasks");
   gSystem->Load("libPWGJEFlavourJetTasks");
@@ -295,7 +296,7 @@ AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir,
   }else tmpName +="_20130412_122423";
   */
   TString tmpAdditionalLibs("");
-  tmpAdditionalLibs = Form("libTree.so libVMC.so libGeom.so libGui.so libXMLParser.so libMinuit.so libMinuit2.so libProof.so libPhysics.so libSTEERBase.so libESD.so libESDfilter.so libAOD.so libOADB.so libANALYSIS.so libCDB.so libRAWDatabase.so libSTEER.so libANALYSISalice.so libCORRFW.so libPWGTools.so libPWGHFbase.so libPWGflowBase.so libPWGflowTasks.so libPWGHFvertexingHF.so libEMCALUtils.so libEMCALraw.so libEMCALbase.so libTENDER.so libPWGEMCAL.so libPWGGAEMCALTasks.so libPWGTools.so libCGAL.so libfastjet.so libJETAN.so libFASTJETAN.so libSISConePlugin.so libCDFConesPlugin.so libPWGJE.so libPWGmuon.so libPWGJEEMCALJetTasks.so libPWGJEFlavourJetTasks.so %s %s",additionalCode.Data(),additionalHeaders.Data());
+  tmpAdditionalLibs = Form("libTree.so libVMC.so libGeom.so libGui.so libXMLParser.so libMinuit.so libMinuit2.so libProof.so libPhysics.so libSTEERBase.so libESD.so libESDfilter.so libAOD.so libOADB.so libANALYSIS.so libCDB.so libRAWDatabase.so libSTEER.so libANALYSISalice.so libCORRFW.so libPWGTools.so libPWGHFbase.so libPWGflowBase.so libPWGflowTasks.so libPWGHFvertexingHF.so libEMCALUtils.so libEMCALraw.so libEMCALbase.so libTENDER.so libPWGEMCAL.so libPWGGAEMCALTasks.so libPWGTools.so libCGAL.so libfastjet.so libsiscone.so libsiscone_spherical.so libfastjetplugins.so libfastjettools.so libfastjetcontribfragile.so libJETAN.so libFASTJETAN.so  libPWGJE.so libPWGJEEMCALJetTasks.so libPWGJEFlavourJetTasks.so %s %s",additionalCode.Data(),additionalHeaders.Data());
 
 
   TString macroName("");
@@ -311,8 +312,8 @@ AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir,
 
   // Here you can set the (Ali)ROOT version you want to use
   plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-34-08-4");
-  plugin->SetAliROOTVersion("v5-05-63-AN");
+  plugin->SetROOTVersion(":v5-34-08-6");
+  plugin->SetAliROOTVersion("vAN-20141005");
 
   plugin->SetGridDataDir(gridDir); // e.g. "/alice/sim/LHC10a6"
   plugin->SetDataPattern(pattern); //dir structure in run directory
@@ -329,9 +330,9 @@ AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir,
   plugin->SetAnalysisSource(additionalCode.Data());
   plugin->SetAdditionalLibs(tmpAdditionalLibs.Data());
   plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/STEER/ESD -I$ALICE_ROOT/STEER/AOD -I$ALICE_ROOT/ANALYSIS  -I$ALICE_ROOT/OADB -I$ALICE_ROOT/PWGHF -I$ALICE_ROOT/PWGHF/base -I$ALICE_ROOT/PWGHF/vertexingHF -I$ALICE_ROOT/PWG/FLOW/Base -I$ALICE_ROOT/PWG/FLOW/Tasks  -I$ALICE_ROOT/PWGJE  -I$ALICE_ROOT/JETAN -I$ALICE_ROOT/PWGJE/EMCALJetTasks -I$ALICE_ROOT/PWGJE/FlavourJetTasks -g");
-  plugin->AddExternalPackage("boost::v1_43_0");
-  plugin->AddExternalPackage("cgal::v3.6");
-  plugin->AddExternalPackage("fastjet::v2.4.2");
+  plugin->AddExternalPackage("boost::v1_53_0");
+  plugin->AddExternalPackage("cgal::v4.4");
+  plugin->AddExternalPackage("fastjet::v3.0.6_1.012");
 
   plugin->SetDefaultOutputs(kTRUE);
   // merging via jdl

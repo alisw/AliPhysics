@@ -158,7 +158,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AliGenPythiaEventHeader* GetPythiaEventHeader(AliAODMCHeader *header);
     
 	Double_t RotatePhi(Double_t phiTrack, Double_t phiEP);
-	Double_t MoveEventplane(Double_t dMCEP);
+// 	Double_t MoveEventplane(Double_t dMCEP);
     
     Bool_t SetRelativeCuts(AliAODEvent *event);
     
@@ -211,6 +211,8 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH2F	    *fCrossCheckClusterLength; // control histo: number of clusters vs length in TPC
     TH2F	    *fCrossCheckRowsLengthAcc; // control histo: number of crossed rows vs length in TPC for all accepted tracks
     TH2F	    *fCrossCheckClusterLengthAcc; // control histo: number of clusters vs length in TPC for all accepted tracks
+    TH2F		*fCrossCheckPtresLength; // control histo: relative pt resolution in 1/pt vs lenght in TPC
+    TH2F		*fCrossCheckPtresRows; // control histo: relative pt resolution in 1/pt vs number of crossed rows in TPC
     TH1F        *fCutSettings; // control histo: cut settings
     
     TH1F		*fEventplaneDist; // event plane distribution in phi
@@ -295,7 +297,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AlidNdPtAnalysisPbPbAOD(const AlidNdPtAnalysisPbPbAOD&); // not implemented
     AlidNdPtAnalysisPbPbAOD& operator=(const AlidNdPtAnalysisPbPbAOD&); // not implemented  
     
-    ClassDef(AlidNdPtAnalysisPbPbAOD,11); // has to be at least 1, otherwise not streamable...
+    ClassDef(AlidNdPtAnalysisPbPbAOD,12); // has to be at least 1, otherwise not streamable...
 };
 
 #endif

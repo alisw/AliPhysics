@@ -191,7 +191,8 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
     
     // Update the header
 
-    AliAODHeader* header = fAOD->GetHeader();
+    AliAODHeader* header = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+    if(!header) AliFatal("Not a standard AOD");
     header->SetRunNumber(fESD->GetRunNumber());
     if (old) {
 	header->SetBunchCrossNumber(0);
@@ -396,7 +397,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 									   vV0FromCascade,
 									   kTRUE,  // check if this is right
 									   kFALSE, // check if this is right
-									   AliAODTrack::kSecondary)
+									   AliAODTrack::kFromDecayVtx)
 		);
 	    aodTrack->ConvertAliPIDtoAODPID();
 	}
@@ -431,7 +432,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 									   vV0FromCascade,
 									   kTRUE,  // check if this is right
 									   kFALSE, // check if this is right
-									   AliAODTrack::kSecondary)
+									   AliAODTrack::kFromDecayVtx)
 		);
 	    aodTrack->ConvertAliPIDtoAODPID();
 	}
@@ -468,7 +469,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 								     vcascade,
 								     kTRUE,  // check if this is right
 								     kFALSE, // check if this is right
-								     AliAODTrack::kSecondary)
+								     AliAODTrack::kFromDecayVtx)
 		);
 	    aodTrack->ConvertAliPIDtoAODPID();
 	}
@@ -536,7 +537,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 								vV0,
 								kTRUE,  // check if this is right
 								kFALSE, // check if this is right
-								AliAODTrack::kSecondary)
+								AliAODTrack::kFromDecayVtx)
 		);
 	    aodTrack->ConvertAliPIDtoAODPID();
 	}
@@ -571,7 +572,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 								vV0,
 								kTRUE,  // check if this is right
 								kFALSE, // check if this is right
-								AliAODTrack::kSecondary)
+								AliAODTrack::kFromDecayVtx)
 		);
 	    aodTrack->ConvertAliPIDtoAODPID();
 	}

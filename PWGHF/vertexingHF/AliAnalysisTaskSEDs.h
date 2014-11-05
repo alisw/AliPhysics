@@ -66,8 +66,10 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TH1F*   fHistNEvents;               //! hist. for No. of events  
   TH1F*   fChanHist[4];               //! hist. with KKpi and piKK candidates (sig,bkg,tot)
   TH1F*   fMassHist[4*kMaxPtBins];    //! hist. of mass spectra (sig,bkg,tot)
-  TH1F*   fMassHistPhi[3*kMaxPtBins];    //! hist. of mass spectra via phi (sig,bkg,tot)
-  TH1F*   fMassHistK0st[3*kMaxPtBins];    //! hist. of mass spectra via K0* (sig,bkg,tot)
+  TH1F*   fMassHistPhi[4*kMaxPtBins];    //! hist. of mass spectra via phi (sig,bkg,tot)
+  TH1F*   fMassHistK0st[4*kMaxPtBins];    //! hist. of mass spectra via K0* (sig,bkg,tot)
+  TH1F*   fMassHistKK[kMaxPtBins];    //! hist. of mass spectra of KK
+  TH1F*   fMassHistKpi[kMaxPtBins];    //! hist. of mass spectra of Kpi
   TH1F*   fCosPHist[4*kMaxPtBins];    //! hist. of cos pointing angle (sig,bkg,tot)
   TH1F*   fDLenHist[4*kMaxPtBins];    //! hist. of decay length (sig,bkg,tot)
   TH1F*   fSumd02Hist[4*kMaxPtBins];  //! hist. for sum d02 (Prod Cuts)
@@ -108,7 +110,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   AliNormalizationCounter *fCounter;//!Counter for normalization
   AliRDHFCutsDstoKKpi *fAnalysisCuts; // Cuts for Analysis
   
-  ClassDef(AliAnalysisTaskSEDs,13);    //  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,14);    //  AliAnalysisTaskSE for Ds mass spectra
 };
 
 #endif

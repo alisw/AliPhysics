@@ -113,7 +113,7 @@ void AliJEfficiencyTask::UserCreateOutputObjects()
    fEfficiencyScanner->SetJRunHeader( fFilterTask->GetJRunHeader() );//TODO
    fEfficiencyScanner->SetJTrackList( fFilterTask->GetFilter()->GetTrackList()     );
    fEfficiencyScanner->SetJMCTrackList( fFilterTask->GetFilter()->GetMCTrackList()    );
-   fEffHistDir = gDirectory->mkdir("EffHist");
+   fEffHistDir = gDirectory;//->mkdir("EffHist"); // no need
    fEffHistDir->cd();
    fEfficiencyScanner->UserCreateOutputObjects();
    PostData( 1, fEffHistDir );
@@ -152,9 +152,9 @@ void AliJEfficiencyTask::Init()
 void AliJEfficiencyTask::Terminate(Option_t *)
 {
 
-	fEfficiencyScanner->Terminate();
-	OpenFile(1);
-	fEffHistDir->Write();
+	//fEfficiencyScanner->Terminate();
+	//OpenFile(1);
+	//fEffHistDir->Write();
 	cout<<"JEfficiency Analysis DONE !!"<<endl; 
 
 }

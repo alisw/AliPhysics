@@ -39,14 +39,15 @@ void LoadAlirootLocally(TString& extraLibs);
 
 //______________________________________________________________________________
 void RunMuonResolution(TString smode = "local", TString inputFileName = "AliESDs.root",
-		       TString alirootVersion = "VO_ALICE@AliRoot::v4-20-12-AN", Int_t nSteps = 5,
+		       TString rootVersion = "v5-34-01-1", TString alirootVersion = "v5-03-57-AN", Int_t nSteps = 5,
 		       Bool_t selectPhysics = kFALSE, Bool_t selectTrigger = kFALSE, Bool_t matchTrig = kTRUE,
 		       Bool_t applyAccCut = kTRUE, Double_t minMomentum = 0., Bool_t correctForSystematics = kTRUE,
-		       Int_t extrapMode = 1, Int_t nevents = 1234567890)
+		       Int_t extrapMode = 1, Bool_t shiftHalfCh = kFALSE, Bool_t shiftDE = kFALSE, Int_t nevents = 1234567890)
 {
   /// Compute the cluster resolution by studying cluster-track residual, deconvoluting from track resolution
   /// - smode = "local" or "proof"
   /// - inputFileName = an ESD root file or a list of ESDs or a collection of ESDs or a dataset in proof mode
+  /// - rootVersion = version of root package to enable on AAF (only used in proof mode)
   /// - alirootVersion = version of aliroot package to enable on AAF (only used in proof mode)
   /// - nSteps = number of times to task is run (at each step it starts with the chamber resolution obtained in the previous one)
   /// - selectPhysics : apply or not the physics selection
@@ -60,13 +61,13 @@ void RunMuonResolution(TString smode = "local", TString inputFileName = "AliESDs
   /// - nevents = maximum number of processed events
   
   // Load libraries locally
-  TString extraLibs = "RAWDatabase:CDB:STEER:MUONcore:MUONmapping:MUONcalib:MUONgeometry:MUONtrigger:MUONraw:MUONbase:MUONrec:CORRFW:PWGPPMUONdep";
+  TString extraLibs = "RAWDatabase:CDB:STEER:MUONcore:MUONmapping:MUONcalib:MUONgeometry:MUONtrigger:MUONraw:MUONbase:MUONrec:CORRFW:PWGmuon:PWGPPMUONdep";
   LoadAlirootLocally(extraLibs);
   
   // compile analysis macro locally
   gROOT->LoadMacro("$ALICE_ROOT/PWGPP/MUON/dep/MuonResolution.C++g");
-  MuonResolution(smode, inputFileName, alirootVersion, nSteps, selectPhysics, selectTrigger, matchTrig,
-		 applyAccCut, minMomentum, correctForSystematics, extrapMode, nevents, extraLibs);
+  MuonResolution(smode, inputFileName, rootVersion, alirootVersion, nSteps, selectPhysics, selectTrigger, matchTrig,
+		 applyAccCut, minMomentum, correctForSystematics, extrapMode, shiftHalfCh, shiftDE, nevents, extraLibs);
   
 }
 
@@ -102,6 +103,7 @@ void LoadAlirootLocally(TString& extraLibs)
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
   gROOT->ProcessLine(".include $ALICE_ROOT/MUON");
   gROOT->ProcessLine(".include $ALICE_ROOT/MUON/mapping");
+  gROOT->ProcessLine(".include $ALICE_ROOT/PWG/muon");
   gROOT->ProcessLine(".include $ALICE_ROOT/ANALYSIS/macros");
   
 }

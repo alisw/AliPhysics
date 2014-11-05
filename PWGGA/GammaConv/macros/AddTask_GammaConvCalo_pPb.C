@@ -5,7 +5,8 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
                               TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
                               Int_t doWeightingPart = 0,  //enable Weighting
                               TString generatorName = "DPMJET",
-                              TString cutnumberAODBranch = "8000000060084000001500000" // cutnumber for AOD branch
+                              TString cutnumberAODBranch = "8000000060084000001500000", // cutnumber for AOD branch
+                              Bool_t enableExtendedMatching = kFALSE //enable or disable extended matching histograms for conversion electrons <-> cluster
 							) {
 
 	// ================= Load Librariers =================================
@@ -208,6 +209,7 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 		analysisClusterCuts[i] = new AliCaloPhotonCuts();
 		analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
 		ClusterCutList->Add(analysisClusterCuts[i]);
+        analysisClusterCuts[i]->SetExtendedMatching(enableExtendedMatching);
 		analysisClusterCuts[i]->SetFillCutHistograms("");
 		
 		analysisMesonCuts[i] = new AliConversionMesonCuts();

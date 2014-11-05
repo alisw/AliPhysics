@@ -4,6 +4,7 @@
 //blah
 // blah
 
+#include <TPRegexp.h>
 #include "AliJConst.h"
 #include "AliJBaseCard.h"
 
@@ -77,9 +78,11 @@ unsigned int AliJBaseCard::GetTVectorIndex(TString keyword, int tol){
     if( tol == 0 ){
       cout << "ERROR: \""<<keyword.Data()<<"\" must be defined  "<< endl;
       exit(1);
-    }else{
+    }else if ( tol == 1 ){
       cout << "Warning: \""<<keyword.Data()<<"\" is not exist. return default value  "<< endl;
       return -1;
+    }else{
+        return -1;
     }
   }
 
@@ -159,103 +162,160 @@ void AliJBaseCard::ReadInputCard(){
   return;
 }
 
-void AliJBaseCard::ReadInputLine( const char *buffer ){
-  // parse a line
+void AliJBaseCard::ReadLine( const char * buffer ){
+    TString tstr(buffer);
+    TPMERegexp rsp(";");
+    TPMERegexp csp1("=");
+    TPMERegexp csp2(",");
+    int nrow = rsp.Split( tstr );
+    for( int i=0;i<nrow;i++ ){
+        TString row = rsp[i];
+        int nst = csp1.Split(row);
+        if( nst!=2 ) continue; // TODO Error or warning
+        TString key = csp1[0];
+        TString val = csp1[1];
+        int nc = csp2.Split( val );
+
+        vector< float > items;//auxiliary vector
+
+        for(int j=0; j<nc; j++){ //loop over the numbers 
+            TString token = csp2[j];//read a string
+
+            if(token.IsFloat()){
+                items.push_back(token.Atof());//if string is float number store it to vector
+            }else{
+                items.push_back(0);
+                // cout<<"ERROR: char "<<token.Data()<<" among numbers"<<endl;
+                // exit(1);
+            }
+        }//end of the for loop
 
 
+        //Fill TVectors and Map 
+        int index =  GetTVectorIndex( key, 2 );
+        if(  index > -1 ){
+            //fKeyWordVector[index] = key;
+            //fValuesVector[index] = TVector( 1, items.size(), &items[0]);
+            fValuesVector[index].ResizeTo( 1, items.size()) ;
+            //fValuesVector[index] = TVector( 1, items.size(), &items[0]);
+            //fValuesVector[index].SetElements( &items[0] );
+            for( unsigned int ii=0;ii< items.size(); ii ++ ){
+                fValuesVector[index][ii+1] = items[ii];
+            }
 
-  TString tstr(buffer); //convert the line in the buffer to TString
 
-  if( tstr.BeginsWith("#") ) return;//skipp comments
-  tstr.ReplaceAll("\t"," ");//get rid of tabelators
+            fValueString[index] = val;
+        }else{
+            fKeyWordVector.push_back( key.Data() );//put the new keyword at the end of the array
 
-  //remove comment in line
-  Ssiz_t startOFcomment = tstr.First('#');
-  if(startOFcomment>0){
-    tstr.Remove(startOFcomment,tstr.Length() - startOFcomment);
-  }
 
-  //remove white spaces from the begining
-  if(tstr.BeginsWith(" ")){
-    Ssiz_t startOFkeyword = 0;
-    while(1){
-      TString s = tstr[startOFkeyword];
-      if(s.CompareTo(" ")) break;
-      startOFkeyword++;
+            fValuesVector.push_back( TVector( 1, items.size(), &items[0]) );//store TVector to array
+            fValueString.push_back( val );
+            //       MapKeyWordToTVector.insert(pair<TString, unsigned int>(entryname.Data(),fKeyWordVector.size()-1)); 
+            AddToKeyTable( key, fValuesVector.size()-1 ); 
+        }
+
     }
-    tstr.Replace(0,startOFkeyword,"",0);
-  }
 
-  //separate inputs 
-  TObjArray *lineContents = tstr.Tokenize(" ");
+}
 
-  if(lineContents->GetEntriesFast() < 1) return;//skipp empty lines
-
-  //----- Read a keyword -----
-  TString entryname = ((TObjString*)(lineContents->At(0)))->String(); //read a key word
-
-  if(lineContents->GetEntriesFast() == 1){
-    cout<<"WARNING: single keyword "<<entryname.Data()<<" on line"<<endl;
-  }else{
+void AliJBaseCard::ReadInputLine( const char *buffer ){
+    // parse a line
 
 
-    //----- Read parameters -----
-    vector< float > items;//auxiliary vector
 
-    for(int i=1; i<lineContents->GetEntriesFast(); i++){ //loop over the numbers 
-      TString token = ((TObjString*)(lineContents->At(i)))->String();//read a string
+    TString tstr(buffer); //convert the line in the buffer to TString
 
-      if(token.IsFloat()){
-        items.push_back(token.Atof());//if string is float number store it to vector
-      }else{
-        items.push_back(0);
-        // cout<<"ERROR: char "<<token.Data()<<" among numbers"<<endl;
-        // exit(1);
-      }
-    }//end of the for loop
+    if( tstr.BeginsWith("#") ) return;//skipp comments
+    tstr.ReplaceAll("\t"," ");//get rid of tabelators
+
+    //remove comment in line
+    Ssiz_t startOFcomment = tstr.First('#');
+    if(startOFcomment>0){
+        tstr.Remove(startOFcomment,tstr.Length() - startOFcomment);
+    }
+
+    //remove white spaces from the begining
+    if(tstr.BeginsWith(" ")){
+        Ssiz_t startOFkeyword = 0;
+        while(1){
+            TString s = tstr[startOFkeyword];
+            if(s.CompareTo(" ")) break;
+            startOFkeyword++;
+        }
+        tstr.Replace(0,startOFkeyword,"",0);
+    }
+
+    //separate inputs 
+    TObjArray *lineContents = tstr.Tokenize(" ");
+
+    if(lineContents->GetEntriesFast() < 1) return;//skipp empty lines
+
+    //----- Read a keyword -----
+    TString entryname = ((TObjString*)(lineContents->At(0)))->String(); //read a key word
+
+    if(lineContents->GetEntriesFast() == 1){
+        cout<<"WARNING: single keyword "<<entryname.Data()<<" on line"<<endl;
+    }else{
 
 
-    //Fill TVectors and Map 
-    fKeyWordVector.push_back( entryname.Data() );//put the new keyword at the end of the array
+        //----- Read parameters -----
+        vector< float > items;//auxiliary vector
+
+        for(int i=1; i<lineContents->GetEntriesFast(); i++){ //loop over the numbers 
+            TString token = ((TObjString*)(lineContents->At(i)))->String();//read a string
+
+            if(token.IsFloat()){
+                items.push_back(token.Atof());//if string is float number store it to vector
+            }else{
+                items.push_back(0);
+                // cout<<"ERROR: char "<<token.Data()<<" among numbers"<<endl;
+                // exit(1);
+            }
+        }//end of the for loop
 
 
-    fValuesVector.push_back( TVector( 1, items.size(), &items[0]) );//store TVector to array
-    fValueString.push_back( ((TObjString*)(lineContents->At(1)))->String() );
-
-    //       MapKeyWordToTVector.insert(pair<TString, unsigned int>(entryname.Data(),fKeyWordVector.size()-1)); 
-    AddToKeyTable( entryname, fValuesVector.size()-1 ); 
+        //Fill TVectors and Map 
+        fKeyWordVector.push_back( entryname.Data() );//put the new keyword at the end of the array
 
 
-  }//else
+        fValuesVector.push_back( TVector( 1, items.size(), &items[0]) );//store TVector to array
+        fValueString.push_back( ((TObjString*)(lineContents->At(1)))->String() );
 
-  lineContents->~TObjArray();//remove array from heap
+        //       MapKeyWordToTVector.insert(pair<TString, unsigned int>(entryname.Data(),fKeyWordVector.size()-1)); 
+        AddToKeyTable( entryname, fValuesVector.size()-1 ); 
+
+
+    }//else
+
+    lineContents->~TObjArray();//remove array from heap
 }
 
 void AliJBaseCard::PrintOut(){
-  // echo
-  cout<<endl<<"======== "<<fcardname<<" ========="<<endl;
-  for(unsigned int i=0; i<fValuesVector.size();i++){
-    cout<<Form("%15s",fKeyWordVector[i].Data());//print keyword
-    cout<<" (dim ="<<fValuesVector[i].GetNrows()<<") ";//print size of TVector
-    for(int j=1; j<=fValuesVector[i].GetNrows(); j++){
-      cout<<fValuesVector[i][j]<<" ";//TVector components
+    // echo
+    cout<<endl<<"======== "<<fcardname<<" ========="<<endl;
+    for(unsigned int i=0; i<fValuesVector.size();i++){
+        cout<<Form("%15s",fKeyWordVector[i].Data());//print keyword
+        cout<<" (dim ="<<fValuesVector[i].GetNrows()<<") ";//print size of TVector
+        for(int j=1; j<=fValuesVector[i].GetNrows(); j++){
+            cout<<fValuesVector[i][j]<<" ";//TVector components
+        }
+        cout<<endl;
     }
-    cout<<endl;
-  }
 }
 
 
 void AliJBaseCard::WriteCard(TDirectory *file){
-  // write
-  cout<<endl<<"====== Writing into file ========="<<endl;
+    // write
+    cout<<endl<<"====== Writing into file ========="<<endl;
 
-  if(!file->GetDirectory("JCard")) {
-    file->mkdir("JCard");//directory to store input parameters
-  }
-  file->cd("JCard");
-  for(unsigned int i=0;i<fValuesVector.size();i++){ 
-    fValuesVector[i].Write(fKeyWordVector[i]);
-  }
+    if(!file->GetDirectory("JCard")) {
+        file->mkdir("JCard");//directory to store input parameters
+    }
+    file->cd("JCard");
+    for(unsigned int i=0;i<fValuesVector.size();i++){ 
+        fValuesVector[i].Write(fKeyWordVector[i]);
+    }
 }
 
 

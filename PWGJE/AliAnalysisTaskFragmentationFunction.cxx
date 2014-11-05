@@ -2140,7 +2140,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
     Int_t cl = 0;
     if(handler->InheritsFrom("AliAODInputHandler")){ 
       // since it is not supported by the helper task define own classes
-      centPercent = fAOD->GetHeader()->GetCentrality();
+      centPercent = ((AliVAODHeader*)fAOD->GetHeader())->GetCentrality();
       cl = 1;
       if(centPercent>10) cl = 2;
       if(centPercent>30) cl = 3;
@@ -2910,7 +2910,8 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfTracks(TList *list, Int_t t
     // all rec. tracks, esd filter mask, eta range
     
     for(Int_t it=0; it<fAOD->GetNumberOfTracks(); ++it){
-      AliAODTrack *tr = fAOD->GetTrack(it);
+      AliAODTrack *tr = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(it));
+      if(!tr) AliFatal("Not a standard AOD");
       
       if(type == kTrackAODCuts || type==kTrackAODQualityCuts || type==kTrackAODExtraCuts){
 
@@ -4048,15 +4049,15 @@ void AliAnalysisTaskFragmentationFunction::GetClusterTracksMedian(TList* outputl
     AliAODJet* medianCluster1 = (AliAODJet*)(fBckgJetsRec->At(medianIndex1));
     AliAODJet* medianCluster2 = (AliAODJet*)(fBckgJetsRec->At(medianIndex2));
     
-    Double_t density1 = 0;
-    Double_t clusterPt1 = medianCluster1->Pt();
-    Double_t area1      = medianCluster1->EffectiveAreaCharged();
-    if(area1>0) density1 = clusterPt1/area1;
+    //Double_t density1 = 0;
+    //Double_t clusterPt1 = medianCluster1->Pt();
+    //Double_t area1      = medianCluster1->EffectiveAreaCharged();
+    //if(area1>0) density1 = clusterPt1/area1;
     
-    Double_t density2 = 0;
-    Double_t clusterPt2 = medianCluster2->Pt();
-    Double_t area2      = medianCluster2->EffectiveAreaCharged();
-    if(area2>0) density2 = clusterPt2/area2;
+    //Double_t density2 = 0;
+    //Double_t clusterPt2 = medianCluster2->Pt();
+    //Double_t area2      = medianCluster2->EffectiveAreaCharged();
+    //if(area2>0) density2 = clusterPt2/area2;
     
     //medianDensity = 0.5*(density1+density2);
     

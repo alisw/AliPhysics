@@ -36,12 +36,18 @@ public:
   void WriteOutHistos();
   virtual TList* GetOutputList();
 
+  void SetUseLCMS(int);
+  int  GetUseLCMS();
+
 private:
 
   TH3F* fNumerator;         // numerator
   TH3F* fDenominator;       // denominator
   TH3F* fNumeratorW;         // numerator
   TH3F* fDenominatorW;       // denominator
+
+  int    fUseLCMS;             // 0 - Use PRF, 1 - Use LCMS
+
 #ifdef __ROOT__
   ClassDef(AliFemtoCorrFctn3DLCMSSym, 1)
 #endif
@@ -52,4 +58,3 @@ inline  TH3F* AliFemtoCorrFctn3DLCMSSym::Denominator(){return fDenominator;}
 inline  TH3F* AliFemtoCorrFctn3DLCMSSym::NumeratorW(){return fNumeratorW;}
 inline  TH3F* AliFemtoCorrFctn3DLCMSSym::DenominatorW(){return fDenominatorW;}
 #endif
-

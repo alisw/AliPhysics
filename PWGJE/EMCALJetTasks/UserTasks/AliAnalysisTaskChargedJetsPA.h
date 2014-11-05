@@ -62,7 +62,7 @@ class AliESDHybridTrackcuts {
 class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
  public:
   // ######### CONTRUCTORS/DESTRUCTORS AND STD FUNCTIONS
-  AliAnalysisTaskChargedJetsPA() : AliAnalysisTaskSE(), fOutputLists(), fCurrentOutputList(0), fDoJetAnalysis(1), fAnalyzeJetProfile(0), fAnalyzeTrackcuts(0), fParticleLevel(0), fUseDefaultVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fNoExternalBackground(0), fBackgroundForJetProfile(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(), fTrackArrayName(), fBackgroundJetArrayName(), fRhoTaskName(), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fNumberExcludedJets(-1), fMinEta(-0.9), fMaxEta(0.9), fMinJetEta(-0.5), fMaxJetEta(0.5), fMinTrackPt(0.150), fMinJetPt(5.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinNCrossedRows(70), fUsePtDepCrossedRowsCut(0), fNumberOfCentralityBins(20), fCentralityType("V0A"), fMatchTr(), fMatchChi(), fPrimaryVertex(0), fFirstLeadingJet(0), fSecondLeadingJet(0), fFirstLeadingKTJet(0), fSecondLeadingKTJet(0), fNumberSignalJets(0), fNumberSignalJetsAbove5GeV(0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fIsDEBUG(0), fIsPA(1), fNoTerminate(1), fEventCounter(0), fHybridESDtrackCuts(0), fHybridESDtrackCuts_variedPtDep(0), fHybridESDtrackCuts_variedPtDep2(0)
+  AliAnalysisTaskChargedJetsPA() : AliAnalysisTaskSE(), fOutputLists(), fCurrentOutputList(0), fDoJetAnalysis(1), fAnalyzeJetProfile(0), fAnalyzeTrackcuts(0), fAnalyzeJetConstituents(1), fParticleLevel(0), fUseDefaultVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fNoExternalBackground(0), fBackgroundForJetProfile(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(), fTrackArrayName(), fBackgroundJetArrayName(), fRhoTaskName(), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fNumberExcludedJets(-1), fMinEta(-0.9), fMaxEta(0.9), fMinJetEta(-0.5), fMaxJetEta(0.5), fMinTrackPt(0.150), fMinJetPt(5.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinNCrossedRows(70), fUsePtDepCrossedRowsCut(0), fNumberOfCentralityBins(20), fCentralityType("V0A"), fMatchTr(), fMatchChi(), fPrimaryVertex(0), fFirstLeadingJet(0), fSecondLeadingJet(0), fFirstLeadingKTJet(0), fSecondLeadingKTJet(0), fNumberSignalJets(0), fNumberSignalJetsAbove5GeV(0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fIsDEBUG(0), fIsPA(1), fNoTerminate(1), fEventCounter(0), fHybridESDtrackCuts(0), fHybridESDtrackCuts_variedPtDep(0), fHybridESDtrackCuts_variedPtDep2(0)
   {
   // dummy
   }
@@ -78,6 +78,7 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   void        SetDoJetAnalysis(Bool_t val) {fDoJetAnalysis = val;}
   void        SetAnalyzeJetProfile(Bool_t val) {fAnalyzeJetProfile = val;}
   void        SetAnalyzeTrackcuts(Bool_t val) {fAnalyzeTrackcuts = val;}
+  void        SetAnalyzeJetConstituents(Bool_t val) {fAnalyzeJetConstituents = val;}
   void        SetAnalyzePartialEvents(Int_t nParts, Int_t index) {fPartialAnalysisNParts = nParts; fPartialAnalysisIndex = index;}
   void        SetUseDefaultVertexCut (Bool_t val) {fUseDefaultVertexCut = val;}
   void        SetUsePileUpCut (Bool_t val) {fUsePileUpCut = val;}
@@ -140,6 +141,7 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
 
   Double_t    GetConePt(Double_t eta, Double_t phi, Double_t radius);
   Double_t    GetCorrectedConePt(Double_t eta, Double_t phi, Double_t radius, Double_t background);
+  Int_t       GetConeConstituentCount(Double_t eta, Double_t phi, Double_t radius);
   Double_t    GetExternalRho();
   void        CreateJetProfilePlots(Double_t bgrd);
   void        CreateCutHistograms();
@@ -192,6 +194,7 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   Bool_t              fDoJetAnalysis;         // trigger if jets/tracks etc. should be analyzed
   Bool_t              fAnalyzeJetProfile;     // trigger if jet profile should be analyzed
   Bool_t              fAnalyzeTrackcuts;      // trigger if trackcuts should be analyzed
+  Bool_t              fAnalyzeJetConstituents;// trigger if constituents should be analyzed
   Bool_t              fParticleLevel;         // trigger if data is kinematics only (for naming reasons)
   Bool_t              fUseDefaultVertexCut;   // trigger if automatic vertex cut from helper class should be done
   Bool_t              fUsePileUpCut;          // trigger if pileup cut should be done

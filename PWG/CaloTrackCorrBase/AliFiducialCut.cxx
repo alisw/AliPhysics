@@ -26,11 +26,12 @@
 
 // --- ROOT system ---
 #include <TMath.h>
-#include <TLorentzVector.h>
+//#include <TLorentzVector.h>
 #include <TString.h>
 
 //---- ANALYSIS system ----
 #include "AliFiducialCut.h"
+#include <AliLog.h>
 
 ClassImp(AliFiducialCut)
 
@@ -38,11 +39,11 @@ ClassImp(AliFiducialCut)
 //________________________________
 AliFiducialCut::AliFiducialCut() : 
 TObject(),
-fEMCALFiducialCut(0),   fPHOSFiducialCut(0),    fCTSFiducialCut(0),
+fEMCALFiducialCut(0),   fDCALFiducialCut(0),    fPHOSFiducialCut(0),     fCTSFiducialCut(0),
 fCTSFidCutMinEta(0x0),  fCTSFidCutMinPhi(0x0),  fCTSFidCutMaxEta(0x0),   fCTSFidCutMaxPhi(0x0),
 fEMCALFidCutMinEta(0x0),fEMCALFidCutMinPhi(0x0),fEMCALFidCutMaxEta(0x0), fEMCALFidCutMaxPhi(0x0),
-fPHOSFidCutMinEta(0x0), fPHOSFidCutMinPhi(0x0), fPHOSFidCutMaxEta(0x0),  fPHOSFidCutMaxPhi(0x0)
-
+fPHOSFidCutMinEta(0x0), fPHOSFidCutMinPhi(0x0), fPHOSFidCutMaxEta(0x0),  fPHOSFidCutMaxPhi(0x0),
+fDCALFidCutMinEta(0x0), fDCALFidCutMinPhi(0x0), fDCALFidCutMaxEta(0x0),  fDCALFidCutMaxPhi(0x0)
 {
   //Ctor
   
@@ -71,53 +72,83 @@ AliFiducialCut::~AliFiducialCut()
   if(fPHOSFidCutMaxEta)  delete fPHOSFidCutMaxEta ;
   if(fPHOSFidCutMaxPhi)  delete fPHOSFidCutMaxPhi ;
   
+  if(fDCALFidCutMinEta)  delete fDCALFidCutMinEta ;
+  if(fDCALFidCutMinPhi)  delete fDCALFidCutMinPhi ;
+  if(fDCALFidCutMaxEta)  delete fDCALFidCutMaxEta ;
+  if(fDCALFidCutMaxPhi)  delete fDCALFidCutMaxPhi ;
 }
 
 
+////________________________________________________________________________________
+//Bool_t AliFiducialCut::IsInFiducialCut(TLorentzVector momentum, TString det) const
+//{
+//  // Selects EMCAL or PHOS cluster or CTS track if it is inside eta-phi defined regions
+//  Int_t idet = -1;
+//  if     (det=="EMCAL") idet = kEMCAL;
+//  else if(det=="PHOS" ) idet = kPHOS;
+//  else if(det=="CTS")   idet = kCTS;
+//  else if(det=="DCAL")  idet = kDCAL;
+//  else if(det.Contains("DCAL") && det.Contains("PHOS")) idet = kDCALPHOS;
+//  else
+//  {
+//    AliFatal(Form("Detector < %s > not known!", det.Data()));
+//    return kFALSE;
+//  }
+//  
+//  return IsInFiducialCut(momentum.Eta(), momentum.Phi(), idet);
+//}
+
 //________________________________________________________________________________
-Bool_t AliFiducialCut::IsInFiducialCut(TLorentzVector momentum, TString det) const
+Bool_t AliFiducialCut::IsInFiducialCut(Float_t eta, Float_t phi, Int_t det) const
 {
-  //Selects EMCAL or PHOS cluster or CTS track if it is inside eta-phi defined regions
+  // Selects EMCAL or PHOS cluster or CTS track if it is inside eta-phi defined regions
   
-  if(det == "CTS")
+  if(det == kCTS)
   {
 	  if(!fCTSFiducialCut)  
       return kTRUE; //Fiducial cut not requested, accept all tracks  
 	  else 
-      return CheckFiducialRegion(momentum, fCTSFidCutMinPhi  , fCTSFidCutMaxPhi , fCTSFidCutMinEta  , fCTSFidCutMaxEta  );
+      return CheckFiducialRegion(eta,phi, fCTSFidCutMinPhi  , fCTSFidCutMaxPhi , fCTSFidCutMinEta  , fCTSFidCutMaxEta  );
   }
-  else   if(det == "EMCAL") 
+  else   if(det == kEMCAL)
   {
 	  if(!fEMCALFiducialCut) 
       return kTRUE; //Fiducial cut not requested, accept all clusters  
 	  else                   
-      return CheckFiducialRegion(momentum, fEMCALFidCutMinPhi, fEMCALFidCutMaxPhi, fEMCALFidCutMinEta, fEMCALFidCutMaxEta);
+      return CheckFiducialRegion(eta,phi, fEMCALFidCutMinPhi, fEMCALFidCutMaxPhi, fEMCALFidCutMinEta, fEMCALFidCutMaxEta);
   }
-  else   if(det == "PHOS")  
+  else   if(det == kPHOS)
   {
-	  if(!fPHOSFiducialCut) 
-      return kTRUE; //Fiducial cut not requested, accept all clusters 
-	  else 
-      return CheckFiducialRegion(momentum, fPHOSFidCutMinPhi , fPHOSFidCutMaxPhi , fPHOSFidCutMinEta , fPHOSFidCutMaxEta );
+    if(!fPHOSFiducialCut)
+      return kTRUE; //Fiducial cut not requested, accept all clusters
+    else
+      return CheckFiducialRegion(eta,phi, fPHOSFidCutMinPhi , fPHOSFidCutMaxPhi , fPHOSFidCutMinEta , fPHOSFidCutMaxEta );
+  }
+  else   if(det == kDCAL || det == kDCALPHOS)
+  {
+    if(!fDCALFiducialCut)
+      return kTRUE; //Fiducial cut not requested, accept all clusters
+    else
+      return CheckFiducialRegion(eta,phi, fDCALFidCutMinPhi , fDCALFidCutMaxPhi , fDCALFidCutMinEta , fDCALFidCutMaxEta );
   }
   else
   {
-	  printf("AliFiducialCut::IsInFiducialCut() - Wrong detector name = %s\n", det.Data());
-	  return kFALSE;
+    return kFALSE;
+    AliFatal(Form("Detector < %d > not known!", det));
   }
   
 }
 
 //___________________________________________________________________________________________
-Bool_t AliFiducialCut::CheckFiducialRegion(TLorentzVector momentum,
+Bool_t AliFiducialCut::CheckFiducialRegion(Float_t eta, Float_t phiOrg,
                                            const TArrayF* minphi, const TArrayF* maxphi, 
                                            const TArrayF* mineta, const TArrayF* maxeta) const 
 {
   //Given the selection regions in Eta and Phi, check if particle is in this region.
   
-  Double_t phi = momentum.Phi();
+  Float_t phi = phiOrg;
 	if(phi < 0) phi+=TMath::TwoPi() ;
-	Double_t eta =  momentum.Eta();
+  
 	//printf("IsInFiducialCut::Det: %s, phi = %f, eta = %f\n", det.Data(),phi*TMath::RadToDeg(), eta);
   
   Int_t netaregions = maxeta->GetSize();
@@ -159,6 +190,7 @@ void AliFiducialCut::InitParameters()
   fEMCALFiducialCut = kTRUE ;  
   fPHOSFiducialCut  = kTRUE ;
   fCTSFiducialCut   = kTRUE ;
+  fDCALFiducialCut  = kTRUE ;
   
   fCTSFidCutMinEta = new TArrayF(1);
   fCTSFidCutMinEta->SetAt(-0.9,0); 
@@ -190,6 +222,39 @@ void AliFiducialCut::InitParameters()
   fPHOSFidCutMaxPhi = new TArrayF(1);
   fPHOSFidCutMaxPhi->SetAt(320.,0); 
   
+//  fDCALFidCutMinEta = new TArrayF(1);
+//  fDCALFidCutMinEta->SetAt(-0.7,0);
+//  fDCALFidCutMaxEta = new TArrayF(1);
+//  fDCALFidCutMaxEta->SetAt( 0.7,0);
+//  
+//  fDCALFidCutMinPhi = new TArrayF(1);
+//  fDCALFidCutMinPhi->SetAt(260.,0);
+//  fDCALFidCutMaxPhi = new TArrayF(1);
+//  fDCALFidCutMaxPhi->SetAt(327.,0);
+  
+  // Divide DCal in 3 regions:
+  // A (C?) side : -0.70<eta<-0.15, 260<phi<320
+  // C (A?) side :  0.15<eta< 0.70, 260<phi<320
+  // 1/3 SM      : -0.70<eta< 0.70, 320<phi<327
+  
+  fDCALFidCutMinEta = new TArrayF(3);
+  fDCALFidCutMinEta->SetAt(-0.7 ,0);
+  fDCALFidCutMinEta->SetAt( 0.20,1);
+  fDCALFidCutMinEta->SetAt(-0.7 ,2);
+  fDCALFidCutMaxEta = new TArrayF(3);
+  fDCALFidCutMaxEta->SetAt(-0.20,0);
+  fDCALFidCutMaxEta->SetAt( 0.7 ,1);
+  fDCALFidCutMaxEta->SetAt( 0.7 ,2);
+  
+  fDCALFidCutMinPhi = new TArrayF(3);
+  fDCALFidCutMinPhi->SetAt(260.,0);
+  fDCALFidCutMinPhi->SetAt(260.,1);
+  fDCALFidCutMinPhi->SetAt(320.,2);
+  fDCALFidCutMaxPhi = new TArrayF(3);
+  fDCALFidCutMaxPhi->SetAt(320.,0);
+  fDCALFidCutMaxPhi->SetAt(320.,0);
+  fDCALFidCutMaxPhi->SetAt(327.,0);
+
 }
 
 
@@ -238,6 +303,19 @@ void AliFiducialCut::Print(const Option_t * opt) const
       printf(" region %d : %3.1f < phi < %3.1f\n", iphi, fPHOSFidCutMinPhi->GetAt(iphi), fPHOSFidCutMaxPhi->GetAt(iphi)) ; 
   }
   else printf(">>No fiducial cuts in PHOS\n");
+  
+  if(fDCALFiducialCut)
+  {
+    Int_t netaregions =  fDCALFidCutMaxEta->GetSize();
+    Int_t nphiregions =  fDCALFidCutMaxPhi->GetSize();
+    printf(">>DCAL Fiducial regions : phi %d eta %d\n", netaregions, nphiregions) ;
+    for(Int_t ieta = 0; ieta < netaregions; ieta++)
+      printf(" region %d : %3.2f < eta < %3.2f\n", ieta, fDCALFidCutMinEta->GetAt(ieta), fDCALFidCutMaxEta->GetAt(ieta)) ;
+    for(Int_t iphi = 0; iphi < nphiregions; iphi++)
+      printf(" region %d : %3.1f < phi < %3.1f\n", iphi, fDCALFidCutMinPhi->GetAt(iphi), fDCALFidCutMaxPhi->GetAt(iphi)) ;
+  }
+  else printf(">>No fiducial cuts in DCAL\n");
+  
   printf("    \n") ;
   
 } 
@@ -293,3 +371,22 @@ void AliFiducialCut::SetSimplePHOSFiducialCut(Float_t eta, Float_t minphi, Float
   fPHOSFidCutMaxPhi->SetAt(maxphi,0);
   
 }
+
+//_________________________________________________________________________________________
+void AliFiducialCut::SetSimpleDCALFiducialCut(Float_t eta, Float_t minphi, Float_t maxphi)
+{
+  //Method to set simple acceptance cut to DCAL
+  
+  fDCALFidCutMinEta->Set(1);
+  fDCALFidCutMaxEta->Set(1);
+  fDCALFidCutMinPhi->Set(1);
+  fDCALFidCutMaxPhi->Set(1);
+  
+  fDCALFidCutMinEta->SetAt(-eta,0);
+  fDCALFidCutMaxEta->SetAt( eta,0);
+  fDCALFidCutMinPhi->SetAt(minphi,0);
+  fDCALFidCutMaxPhi->SetAt(maxphi,0);
+  
+}
+
+

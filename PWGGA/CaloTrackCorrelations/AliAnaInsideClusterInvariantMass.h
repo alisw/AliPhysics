@@ -49,12 +49,10 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
                                    Float_t m02,   Float_t asym,    Int_t   pid,    Int_t   noverlaps);
   
   void         FillArmenterosHistograms(Int_t nMax, Int_t ebin, Int_t mcindex,
-                                        Float_t pi0E, TLorentzVector g1, TLorentzVector g2,
-                                        Float_t m02, Int_t pid);
+                                        Float_t pi0E, Float_t m02, Int_t pid);
 
   void         FillThetaStarHistograms(Int_t nMax, Bool_t matched, Int_t mcindex,
-                                       Float_t pi0E, TLorentzVector g1, TLorentzVector g2,
-                                       Float_t m02, Int_t pid);
+                                       Float_t pi0E, Float_t m02, Int_t pid);
 
   void         FillEBinHistograms(Int_t ebin, Int_t nMax, Int_t mcindex, Float_t splitFrac,
                                   Float_t mass, Float_t asym, Float_t l0);
@@ -120,8 +118,6 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   void         MakeAnalysisFillHistograms() ;
   
   void         Print(const Option_t * opt) const;
-
-  void         SetCalorimeter(TString & det)             { fCalorimeter = det ; }
   
   void         SetMinNCells(Int_t cut)                   { fMinNCells   = cut ; }
 
@@ -203,7 +199,6 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
 
  private:
   
-  TString      fCalorimeter ;          // Calorimeter where the gamma is searched
   Int_t        fMinNCells   ;          // Study clusters with ncells larger than cut
   Float_t      fMinBadDist  ;          // Minimal distance to bad channel to accept cluster
   Float_t      fHistoECut   ;          // Fixed E cut for some histograms
@@ -238,6 +233,18 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   Float_t      fWSimu[2];              // Constant and slope of the linear correction factor for the shower
                                        // shape weight in simulation, about 1-0.07*w
   
+  TLorentzVector fClusterMomentum;     //! Cluster momentum
+  TLorentzVector fSubClusterMom1;      //! Sub-Cluster momentum
+  TLorentzVector fSubClusterMom2;      //! Sub-Cluster momentum
+  TLorentzVector fSubClusterMomSum;    //! Sub-Cluster momentum sum, armenteros
+  TLorentzVector fSubClusterMomBoost;  //! Sub-Cluster momentum boosted, armenteros
+  
+  TLorentzVector fPrimaryMom;          //! Primary momentum
+  TLorentzVector fGrandMotherMom;      //! Primary momentum
+  TLorentzVector fMCDaughMom1;         //! Primary momentum
+  TLorentzVector fMCDaughMom2;         //! Primary momentum
+  TVector3       fProdVertex;          //! primary production vertex
+
   //Histograms
   
   TH2F       * fhMassNLocMax1[7][2]  ;                  //! Split Inv Mass vs cluster E, NLM=1,  different MC particle types, track matching on/off

@@ -149,22 +149,6 @@ void AliEbyEPidRatioEffCont::CreateHistograms() {
   fHnEffRec->GetAxis(8)->SetTitle("#varphi_{Rec} (rad)");          //  phi  [ 0. , 2Pi]
   fHnEffRec->GetAxis(9)->SetTitle("#it{p}_{T,Rec} (GeV/#it{c})");  //  pt   [ 0.2, 2.3]
  
-
-  // fHnEff->GetAxis(0)->SetTitle("centrality");                   //  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90 --> 10 bins
-  // fHnEff->GetAxis(1)->SetTitle("N_{ch}|N_{#pi}|N_{K}|N_{p}");                //  0 | 1 | 2 | 3
-  // fHnEff->GetAxis(2)->SetTitle("sign");                         //  -1 | 0 | +1 
-  // fHnEff->GetAxis(3)->SetTitle("findable");                     //  0 not findable      |  1 findable
-  // fHnEff->GetAxis(4)->SetTitle("recStatus");                    //  0 not reconstructed |  1 reconstructed
-  // fHnEff->GetAxis(5)->SetTitle("recPid");                       //  0 not accepted      |  1 accepted
-  // fHnEff->GetAxis(6)->SetTitle("#eta_{MC}-#eta_{Rec}");                      //  eta  [-0.9, 0.9]
-  // fHnEff->GetAxis(7)->SetTitle("#it{y}_{MC}-#it{y}_{Rec}");                  //  rapidity  [-0.5, 0.5]
-  // fHnEff->GetAxis(8)->SetTitle("#varphi_{MC}-#varphi_{Rec} (rad)");          //  phi  [ -2Pi , 2Pi]
-  // fHnEff->GetAxis(9)->SetTitle("#it{p}_{T,MC}-#it{p}_{T,Rec} (GeV/#it{c})"); //  pt   [ -2.3, 2.3]
-  //  fHnEff->GetAxis(10)->SetTitle("sign_{MC}-sign_{Rec}");                      //  -2 | 0 | +2 
-  
-  
-
- 
   fHelper->BinLogAxis(fHnEffMc, 9);
   fHelper->BinLogAxis(fHnEffRec, 9);
 
@@ -417,8 +401,8 @@ void AliEbyEPidRatioEffCont::CheckContTrack(AliVTrack *track, Int_t iPid, Int_t 
       deltaPhi -= TMath::TwoPi();
   }
 
-  Double_t hnContMc[8]  = {fCentralityBin,iPid,signMC,contPart,particle->Eta(),particle->Y(),particle->Phi(),particle->Pt()};
-  Double_t hnContRec[8] = {fCentralityBin,iPid,signRec,contPart, track->Eta(),yRec,track->Phi(),track->Pt()};
+  Double_t hnContMc[8]  = {fCentralityBin,static_cast<Double_t>(iPid),signMC,static_cast<Double_t>(contPart),particle->Eta(),particle->Y(),particle->Phi(),particle->Pt()};
+  Double_t hnContRec[8] = {fCentralityBin,static_cast<Double_t>(iPid),signRec,static_cast<Double_t>(contPart), track->Eta(),yRec,track->Phi(),track->Pt()};
   fHnContMc->Fill(hnContMc);
   fHnContRec->Fill(hnContRec);
    
@@ -442,30 +426,38 @@ void AliEbyEPidRatioEffCont::FillMCEffHist() {
 
     Int_t iPid = 0;
     Int_t gPdgCode = 0;
-    if ( particle->PdgCode()      ==  211 ) {  iPid = 1; gPdgCode = 211;}
-    else if ( particle->PdgCode() ==  321 ) {  iPid = 1; gPdgCode = 321;}
-    else if ( particle->PdgCode() == 2212 ) {  iPid = 1; gPdgCode = 2212;}
+    if ( TMath::Abs(particle->PdgCode())      ==  211 ) {  iPid = 1; gPdgCode = 211;}
+    else if ( TMath::Abs(particle->PdgCode()) ==  321 ) {  iPid = 2; gPdgCode = 321;}
+    else if ( TMath::Abs(particle->PdgCode()) == 2212 ) {  iPid = 3; gPdgCode = 2212;}
     else {iPid = 0; gPdgCode = 0;}
 
     // -- Check if accepted in rapidity window -- for identified particles
     Double_t yMC;
-    if (iPid != 0 && !fHelper->IsParticleAcceptedRapidity(particle, yMC, iPid))
-      continue;
-
-    // -- Check if accepted in eta window -- for charged particles
-    if (iPid == 0 && TMath::Abs(particle->Eta()) > etaRange[1])
-      continue;
-
+    if (iPid != 0) {
+      if(!fHelper->IsParticleAcceptedRapidity(particle, yMC, iPid))
+	continue;
+    } else {
+      // -- Check if accepted in eta window -- for charged particles
+      if (TMath::Abs(particle->Eta()) > etaRange[1])
+	continue;
+    }
+  
+    // cout << particle->PdgCode() << "  " <<iPid << endl;
+    
     // -- Check if probeParticle / anti-probeParticle 
     //    > skip check if PID is not required
-    if (iPid == 0 && TMath::Abs(particle->PdgCode()) != gPdgCode)
+    if (iPid != 0) { 
+      if (TMath::Abs(particle->PdgCode()) != gPdgCode)
       continue;
+    }
     
     // -- Get sign of particle
     Float_t signMC    = (particle->PdgCode() < 0) ? -1. : 1.;
 
     // -- Get if particle is findable --- not availible for AODs yet
     Float_t findable  = (fESD) ? Float_t(fHelper->IsParticleFindable(idxMC)) : 1.;
+
+    // cout << findable << "  " << fHelper->IsParticleFindable(idxMC)<< endl;
 
     // -- Get recStatus and pidStatus
     Float_t recStatus = 0.;
@@ -515,18 +507,41 @@ void AliEbyEPidRatioEffCont::FillMCEffHist() {
     	deltaPhi -= TMath::TwoPi();
     }
     
+    // if (signRec == 0) continue;
+
     if(iPid != 0) {
-      Double_t hnEffMc[10]  = {fCentralityBin,0,signMC,findable, recStatus,recPid,particle->Eta(), particle->Y(), particle->Phi(),particle->Pt()};
-      Double_t hnEffRec[10] = {fCentralityBin,0,signRec,findable, recStatus,recPid,etaRec, yRec, phiRec, ptRec};
+      Double_t hnEffMc[10]  = {fCentralityBin,0,
+			       static_cast<Double_t>(signMC),
+			       static_cast<Double_t>(findable), 
+			       static_cast<Double_t>(recStatus),
+			       static_cast<Double_t>(recPid),
+			       particle->Eta(), particle->Y(), particle->Phi(),particle->Pt()};
+      Double_t hnEffRec[10] = {fCentralityBin,0,
+			       static_cast<Double_t>(signRec),
+			       static_cast<Double_t>(findable), 
+			       static_cast<Double_t>(recStatus),
+			       static_cast<Double_t>(recPid),etaRec, yRec, phiRec, ptRec};
       fHnEffMc->Fill(hnEffMc);
       fHnEffRec->Fill(hnEffRec);
     }
-    Double_t hnEffMc[10]  = {fCentralityBin,iPid,signMC,findable, recStatus,recPid,particle->Eta(), particle->Y(), particle->Phi(),particle->Pt()};
-    Double_t hnEffRec[10] = {fCentralityBin,iPid,signRec,findable, recStatus,recPid,etaRec, yRec, phiRec, ptRec};
+    Double_t hnEffMc[10]  = {fCentralityBin,static_cast<Double_t>(iPid),
+			     static_cast<Double_t>(signMC),
+			     static_cast<Double_t>(findable), 
+			     static_cast<Double_t>(recStatus),
+			     static_cast<Double_t>(recPid),
+			     particle->Eta(), particle->Y(), particle->Phi(),particle->Pt()};
+    Double_t hnEffRec[10] = {fCentralityBin,
+			     static_cast<Double_t>(iPid),
+			     static_cast<Double_t>(signRec),
+			     static_cast<Double_t>(findable), 
+			     static_cast<Double_t>(recStatus),
+			     static_cast<Double_t>(recPid),etaRec, yRec, phiRec, ptRec};
     fHnEffMc->Fill(hnEffMc);
     fHnEffRec->Fill(hnEffRec);
     
    
+    //  cout << signMC << "  " << signRec << "  " << iPid << "  " << gPdgCode << endl;
+
 
   } // for (Int_t idxMC = 0; idxMC < nPart; ++idxMC) {
   

@@ -14,7 +14,6 @@
 // --- ROOT system ---
 class TH2F ;
 class TH1F;
-class TString ;
 class TObjString;
 class TList ;
 
@@ -45,17 +44,15 @@ class AliAnaClusterPileUp : public AliAnaCaloTrackCorrBaseClass {
 
   // Analysis parameters setters getters
   
-  TString      GetCalorimeter()                 const { return fCalorimeter        ; }
-  void         SetCalorimeter(TString  & det)         { fCalorimeter = det         ; }
-  
   void         SetNCellCut(Int_t n)                   { fNCellsCut = n             ; }
   Double_t     GetNCellCut()                    const { return fNCellsCut          ; }
   
 private:
  
-  TString fCalorimeter ;                            // Calorimeter of the cluster;
   Int_t   fNCellsCut ;                              // Accept for the analysis clusters with more than fNCellsCut cells
 
+  TLorentzVector fMomentum;                         //! Cluster momentum
+  
   //Histograms
   
   TH1F * fhPtPileUp[7];                             //! pT distribution of clusters before any selection
@@ -92,7 +89,7 @@ private:
   AliAnaClusterPileUp(              const AliAnaClusterPileUp & pu) ; // cpy ctor
   AliAnaClusterPileUp & operator = (const AliAnaClusterPileUp & pu) ; // cpy assignment
   
-  ClassDef(AliAnaClusterPileUp,1)
+  ClassDef(AliAnaClusterPileUp,2)
 
 } ;
  

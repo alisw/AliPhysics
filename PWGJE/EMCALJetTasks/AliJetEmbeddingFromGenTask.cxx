@@ -28,7 +28,8 @@
 #include "AliVCluster.h"
 #include "AliVEvent.h"
 #include "AliGenPythiaEventHeader.h"
-
+#include "AliStackPartonInfo.h"
+#include "AliPythiaRndm.h"
 ClassImp(AliJetEmbeddingFromGenTask)
 
 //________________________________________________________________________
@@ -82,7 +83,7 @@ void AliJetEmbeddingFromGenTask::UserCreateOutputObjects()
   fHistPt = new TH1F("fHistpt","fHistPt;#it{p}_{T};N",100,0.,100.);
   fOutput->Add(fHistPt);
 
-  fHistEtaPhi = new TH2F("fHistEtaPhi","fHistEtaPhi;#eta;#varphi",100,-3.,3.,100.,0.,TMath::TwoPi());
+  fHistEtaPhi = new TH2F("fHistEtapHI","fHistEtaPhi;#eta;#varphi",100,-3.,3.,100.,0.,TMath::TwoPi());
   fOutput->Add(fHistEtaPhi);
 
   fHistTrials = new TH1F("fHistTrials", "fHistTrials", 1, 0, 1);
@@ -114,6 +115,7 @@ Bool_t AliJetEmbeddingFromGenTask::ExecOnce()
 
   TFolder *folder = new TFolder(GetName(),GetName());
   AliRunLoader *rl = new AliRunLoader(folder);
+  gAlice->SetRunLoader(rl);
   rl->MakeHeader();
   rl->MakeStack();
   AliStack *stack = rl->Stack();
@@ -126,7 +128,14 @@ Bool_t AliJetEmbeddingFromGenTask::ExecOnce()
     InputEvent()->AddObject(fOutTracks);
     fNTracks = 0;
   }
-  
+
+  if(!fPartonInfoName.IsNull()) {
+    if (!(InputEvent()->FindListObject(fPartonInfoName))) {
+      fStackPartonInfo = new AliStackPartonInfo("PartonsInfo");
+      fStackPartonInfo->SetName(fPartonInfoName);
+      InputEvent()->AddObject(fStackPartonInfo);
+    }
+  }
   return kTRUE;
 }
 
@@ -137,11 +146,29 @@ void AliJetEmbeddingFromGenTask::Run()
 
   if (fCopyArray) 
     CopyTracks();
-
+  AliPythiaRndm::SetPythiaRandom(new TRandom3());
+  AliPythiaRndm::GetPythiaRandom()->SetSeed(clock()+gSystem->GetPid());
   AliStack *stack = fGen->GetStack();
   stack->Reset();
   fGen->Generate();
   const Int_t nprim = stack->GetNprimary();
+  // reject if partons are missing from stack for some reason
+  if(nprim < 8) return;
+  if(fStackPartonInfo) {
+    TParticle *part6 = stack->Particle(6);
+    TParticle *part7 = stack->Particle(7);
+    
+    fStackPartonInfo->SetPartonFlag6(TMath::Abs(part6->GetPdgCode()));
+    fStackPartonInfo->SetPartonPt6(part6->Pt());
+    fStackPartonInfo->SetPartonEta6(part6->Eta());
+    fStackPartonInfo->SetPartonPhi6(part6->Phi());
+    
+    fStackPartonInfo->SetPartonFlag7(TMath::Abs(part7->GetPdgCode()));
+    fStackPartonInfo->SetPartonPt7(part7->Pt());
+    fStackPartonInfo->SetPartonEta7(part7->Eta());
+    fStackPartonInfo->SetPartonPhi7(part7->Phi());
+  }
+
   for (Int_t i=0;i<nprim;++i) {
     if (!stack->IsPhysicalPrimary(i))
       continue;

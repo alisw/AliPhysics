@@ -272,13 +272,13 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	
 	printf("pT: nbin (from cuts file) = %d\n",nbinpt);
 
-	Double_t *binLimpTFine=new Double_t[300+1];
+	Double_t *binLimpTFine=new Double_t[400+1];
 	if(isFinePtBin) {
-	  iBin[ipT]=300.;
-	  for (Int_t ibin0 = 0 ; ibin0<300+1; ibin0++){
+	  iBin[ipT]=400.;
+	  for (Int_t ibin0 = 0 ; ibin0<400+1; ibin0++){
 	    binLimpTFine[ibin0] = 0.1*ibin0;
 	  }
-	  printf("pT: nbins fine = 300\n");
+	  printf("pT: nbins fine = 400\n");
 	}
 
 	// Fine Ntrk bining setting

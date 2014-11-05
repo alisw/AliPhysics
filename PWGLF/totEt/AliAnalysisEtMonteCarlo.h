@@ -331,6 +331,8 @@ protected:
 
     Double_t fTotNeutralEtAfterMinEnergyCut; // enter comment here
     
+    TH2F *fHistSimEmEtCent;//!
+
     Bool_t fCalcTrackMatchVsMult;
     TH1F *fHistGammasFound;//!
     TH1F *fHistGammasGenerated;//!
@@ -450,6 +452,10 @@ protected:
     TH2F *fHistSecondaryCrossCheck;//!
     TH2F *fHistHadronCrossCheck;//!
     TH2F *fHistKaonCrossCheck;//!
+    TH2F *fHistNeutronCorrection;//!
+    TH2F *fHistSecondaryCorrection;//!
+    TH2F *fHistHadronCorrection;//!
+    TH2F *fHistKaonCorrection;//!
 
     TH1F *fHistAllEnergy;//!//energy of all clusters passing cuts vs centrality
     TH1F *fHistSignalEnergy;//!//signal of signal clusters passing cuts vs centrality

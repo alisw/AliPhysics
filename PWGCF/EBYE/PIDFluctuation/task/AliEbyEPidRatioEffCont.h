@@ -45,11 +45,11 @@ class AliEbyEPidRatioEffCont: public AliEbyEPidRatioBase {
   void FillMCEffHist();
   void CheckContTrack(AliVTrack* track, Int_t iPid, Int_t gPdgCode);
     
-  Int_t            ***fLabelsRec;             //! 2x nTracks large array with labels for MC particles
+  Int_t            ***fLabelsRec;               //! 3x nTracks large array with labels for MC particles
   THnSparseF         *fHnEffMc;                 //  THnSparseF efficiency 
   THnSparseF         *fHnContMc;                //  THnSparseF contamination
-  THnSparseF         *fHnEffRec;                 //  THnSparseF efficiency 
-  THnSparseF         *fHnContRec;                //  THnSparseF contamination
+  THnSparseF         *fHnEffRec;                //  THnSparseF efficiency 
+  THnSparseF         *fHnContRec;               //  THnSparseF contamination
   
   ClassDef(AliEbyEPidRatioEffCont, 1);
 };

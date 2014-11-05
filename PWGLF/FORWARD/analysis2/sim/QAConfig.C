@@ -1,3 +1,13 @@
+/**
+ * @file   QAConfig.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Oct 15 13:27:27 2014
+ * 
+ * @brief  Configuratin of QA pass 
+ */
+/** 
+ * Configuration of which QA tasks to run. Base class is declared in QA.C 
+ */
 struct QACfg : public VirtualQACfg
 {
   /** @return  */
@@ -67,9 +77,13 @@ struct QACfg : public VirtualQACfg
   /** @return  NEEDS MCtruth  */
   virtual Bool_t DoV0()          const { return false; }
   /** @return Get Debug level */
-  virtual Int_t DebugLevel() const { return 1; }
+  virtual Int_t DebugLevel() const { return 3; }
 };
 
+/** 
+ * Create our QA configuration 
+ * 
+ */
 void QAConfig()
 {
   Info("QAConfig", "Creating configuration object");

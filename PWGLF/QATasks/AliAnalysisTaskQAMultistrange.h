@@ -48,14 +48,12 @@ class AliAnalysisTaskQAMultistrange : public AliAnalysisTaskSE {
   void SetIsMC                       (Bool_t isMC                       = kFALSE) { fisMC                        = isMC;                       } 
   void SetAnalysisType               (const char* analysisType          = "ESD" ) { fAnalysisType                = analysisType;               }
   void SetCollidingSystem            (const char* collidingSystem       = "PbPb") { fCollidingSystem             = collidingSystem;            }
-  void SetSDDselection               (Bool_t SDDSelection               = kFALSE) { fkSDDSelectionOn             = SDDSelection;               }
   void SetQualityCutZprimVtxPos      (Bool_t qualityCutZprimVtxPos      = kTRUE ) { fkQualityCutZprimVtxPos      = qualityCutZprimVtxPos;      }
   void SetQualityCutNoTPConlyPrimVtx (Bool_t qualityCutNoTPConlyPrimVtx = kTRUE ) { fkQualityCutNoTPConlyPrimVtx = qualityCutNoTPConlyPrimVtx; }
   void SetQualityCutTPCrefit         (Bool_t qualityCutTPCrefit         = kTRUE ) { fkQualityCutTPCrefit         = qualityCutTPCrefit;         }
   void SetQualityCutnTPCcls          (Bool_t qualityCutnTPCcls          = kTRUE ) { fkQualityCutnTPCcls          = qualityCutnTPCcls;          }
   void SetQualityCutMinnTPCcls       (Int_t  minnTPCcls                 = 70    ) { fMinnTPCcls                  = minnTPCcls;                 }
   void SetQualityCutPileup           (Bool_t qualitycutPileup           = kFALSE) { fkQualityCutPileup           = qualitycutPileup;           }
-  void SetwithSDD                    (Bool_t withSDD                    = kTRUE ) { fwithSDD                     = withSDD;                    } 
   void SetCentralityLowLim           (Float_t centrlowlim               = 0.    ) { fCentrLowLim                 = centrlowlim;                }  
   void SetCentralityUpLim            (Float_t centruplim                = 100.  ) { fCentrUpLim                  = centruplim;                 }
   void SetCentralityEst              (TString   centrest                = "V0M" ) { fCentrEstimator              = centrest;                   }
@@ -73,14 +71,12 @@ class AliAnalysisTaskQAMultistrange : public AliAnalysisTaskSE {
         Bool_t          fisMC;                          // Boolean : kTRUE = is a MC production
         TString         fAnalysisType;                  // "ESD" or "AOD" analysis type	
         TString         fCollidingSystem;               // "PbPb", "pPb" or "pp" colliding system
-        AliPIDResponse *fPIDResponse;                   //! PID response object
-        Bool_t          fkSDDSelectionOn;               // Boolean : kTRUE = apply the selection on SDD status
+        AliPIDResponse *fPIDResponse;                   // PID response object
         Bool_t          fkQualityCutZprimVtxPos;        // Boolean : kTRUE = cut on the prim.vtx  z-position
         Bool_t          fkQualityCutNoTPConlyPrimVtx;   // Boolean : kTRUE = prim vtx should be SPD or Tracking vertex
         Bool_t          fkQualityCutTPCrefit;           // Boolean : kTRUE = ask for TPCrefit for the 3 daughter tracks
         Bool_t          fkQualityCutnTPCcls;            // Boolean : kTRUE = ask for at least n TPC clusters for each daughter track
         Bool_t          fkQualityCutPileup;             // Boolean : kTRUE = ask for no pileup events
-        Bool_t          fwithSDD;                       // Boolean : kTRUE = Select the events that has and use the info from the SDD
         Int_t           fMinnTPCcls;                    // minimum number of TPC cluster for daughter tracks
         Float_t         fCentrLowLim;                   // Lower limit for centrality percentile selection
         Float_t         fCentrUpLim;                    // Upper limit for centrality percentile selection
@@ -90,9 +86,14 @@ class AliAnalysisTaskQAMultistrange : public AliAnalysisTaskSE {
         Float_t         fMinPtCutOnDaughterTracks;      // minimum pt cut on daughter tracks
         Float_t         fEtaCutOnDaughterTracks;        // pseudorapidity cut on daughter tracks
        
-
-	AliCFContainer  *fCFContCascadeCuts;            //! Container meant to store all the relevant distributions corresponding to the cut variables
-        AliCFContainer  *fCFContCascadeMCgen;           //! Container meant to store general variables for MC generated particles 
+        TList      *fListHistMultistrangeQA;            //! List of Cascade histograms
+        TH1F *fHistEventSel;                            // Gives the number of the events after each event selection
+        TH1F *fHistMassXiMinus;                         // Gives the invariant mass distr. for the Xi minus without PID info on daughter tracks
+        TH1F *fHistMassXiPlus;                          // Gives the invariant mass distr. for the Xi plus without PID info on daughter tracks
+        TH1F *fHistMassOmegaMinus;                      // Gives the invariant mass distr. for the Omega minus without PID info on daughter tracks
+        TH1F *fHistMassOmegaPlus;                       // Gives the invariant mass distr. for the Omega plus without PID info on daughter tracks
+	AliCFContainer  *fCFContCascadeCuts;            // Container meant to store all the relevant distributions corresponding to the cut variables
+        AliCFContainer  *fCFContCascadeMCgen;           // Container meant to store general variables for MC generated particles 
 	
 
   AliAnalysisTaskQAMultistrange(const AliAnalysisTaskQAMultistrange&);            // not implemented

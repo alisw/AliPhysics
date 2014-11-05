@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This script runs the Forward QA for the specified production number
+# This script runs the Forwardqq QA for the specified production number
 #
 # The scripts downloads and runs the single run QA in parallel 
 #
@@ -168,6 +168,7 @@ from_local=0
 type=data
 passid=
 mc=0
+search=
 get_filelist()
 {
     mess 3 "Getting file list" 
@@ -211,7 +212,7 @@ get_filelist()
     passid=${paid}
     if test $mc -gt 0 ; then passid="passMC" ; fi 
 
-    local search=
+    search=
     if test "x$path" = "x" ; then 
 	# Assume official productions 
 	path=/alice/${datd}/${year}/${prodfull}/
@@ -329,7 +330,7 @@ analyse_run()
     local o=${store}/${rr}/input.root
     mkdir -p ${store}/${rr}
 
-    mess 2 -n "$source -> $o ... "
+    mess 2 -n "$source ($store) -> $o ... "
     if test -f $o && test $force -lt 2; then 
 	mess 2 "exists" 
 	# sleep 1
@@ -386,8 +387,13 @@ submit_runs()
 
 	local r
 	if test $from_local -lt 1 ; then 
-	    local b=`echo $i | sed -e "s,${path},,"` 
-	    r=`echo $b | sed -e "s,/.*,,"` 
+	    local b=`echo $i | sed -e "s,${path}/*,,"` 
+	    if test "x$search" != "x" ; then 
+		b=`echo $b | sed -s "s,/*${search},,"`
+	    fi
+	    r=`echo $b | sed -e "s,/.*,," | sed 's/^0*//'` 
+	    # local b=`basename $(dirname $i)`
+	    # r=`echo $b | sed 's/^0*//'`
 	else
 	     r=`basename \`dirname $i\` | sed 's/^0*//'`
 	fi
@@ -532,7 +538,7 @@ EOF
 redir=/dev/null
 maxf=-1
 top=.
-index=0
+index=1
 while test $# -gt 0 ; do 
     case $1 in 
 	-b|--barrel)       barrel=$2          ; shift ;;
@@ -540,6 +546,7 @@ while test $# -gt 0 ; do
 	-f|--force)        let force=$force+1 ;; 
 	-h|--help)         usage              ; exit 0 ;; 
 	-i|--index)        index=1            ;; 
+	--no-index)        index=0            ;;
 	-l|--log-file)     redir=             ;; 
 	-L|--local)        from_local=1	      ;;
 	-m|--max-files)    maxf=$2            ; shift ;; 
@@ -552,6 +559,7 @@ while test $# -gt 0 ; do
 	-T|--min-max)      variance=0	      ;; 
 	-v|--verbose)      let verb=$verb+1   ;; 
 	-V|--variance)     variance=1         ;;
+        -C|--no-check)     docheck=0          ;;
 	*) echo "$0: Unknown argument: $1" > /dev/stderr ; exit 1 ;; 
     esac
     shift
@@ -679,12 +687,12 @@ make_trend ${top}/$store
 # --- Make index files -----------------------------------------------
 if test $index -gt 0 ; then 
     info -n "Making index ... "
-    desc="For more information see <a href='https://twiki.cern.ch/twiki/"
-    desc="${desc}bin/viewauth/ALICE/FMDQA'>TWiki pages</a>."
+    desc="For more see <a href='http://cern.ch/go/6Bwz'>TWiki</a>"
     $topmk --title "QA for the FMD" \
 	--description "$desc" \
 	--link \
 	--max-depth 4 \
+	--frame \
 	--output index.html 
     # >> ${redir} 2>&1 
     fix_perm index.html

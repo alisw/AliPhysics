@@ -92,9 +92,12 @@ AliEbyEPidRatioHelper::AliEbyEPidRatioHelper() :
   fHCentralityPerAll(NULL),
   fNCentralityBins(11),
   
+  fSubSamples(25),
   fRandom(NULL),
+  fSubSampleIdx(1), 
+
   fIsRatio(kFALSE), 
-  fIsPtBin(kFALSE) {
+  fIsPtBin(kFALSE), fIsDetectorWise(kFALSE) {
   // Constructor   
   
   AliLog::SetClassDebugLevel("AliEbyEPidRatioHelper",10);
@@ -114,7 +117,7 @@ const Int_t   AliEbyEPidRatioHelper::fgkfHistNBinsEta     = Int_t((AliEbyEPidRat
 const Float_t AliEbyEPidRatioHelper::fgkfHistRangeRap[]   = {-0.8, 0.8};
 const Int_t   AliEbyEPidRatioHelper::fgkfHistNBinsRap     = Int_t((AliEbyEPidRatioHelper::fgkfHistRangeRap[1] - AliEbyEPidRatioHelper::fgkfHistRangeRap[0]) / AliEbyEPidRatioHelper::fgkfHistBinWitdthRap) +1;
 
-const Float_t AliEbyEPidRatioHelper::fgkfHistRangePhi[]   = {0.0, TMath::TwoPi()};
+const Float_t AliEbyEPidRatioHelper::fgkfHistRangePhi[]   = {0.0, static_cast<Float_t>(TMath::TwoPi())};
 const Int_t   AliEbyEPidRatioHelper::fgkfHistNBinsPhi     = 21 ;
 
 const Float_t AliEbyEPidRatioHelper::fgkfHistRangePt[]    = {0.2, 2.9}; // {0.2, 5.}; // was {0.3, 2.22}
@@ -129,9 +132,14 @@ const Char_t* AliEbyEPidRatioHelper::fgkTriggerNames[]       = {"kMB", "kCentral
 const Char_t* AliEbyEPidRatioHelper::fgkCentralityNames[]    = {"0-5%", "5-10%", "10-20%", "20-30%", "30-40%", "40-50%","50-60%", "60-70%", "70-80%", "80-90%", "90-100%"};
 
 const Char_t* AliEbyEPidRatioHelper::fgkPidName[4]      = {"Nch","Npi","Nka","Npr"};
+const Char_t* AliEbyEPidRatioHelper::fgkPidShLatex[4]      = {"N","#pi","K","p"};
 const Char_t* AliEbyEPidRatioHelper::fgkPidLatex[4][2]  = {{"N_{-}","N_{+}"}, {"N_{#pi^{-}}","N_{#pi^{+}}"},{"N_{K^{-}}","N_{K^{+}}"}, {"N_{#bar{p}}","N_{p}"}};
 const Char_t* AliEbyEPidRatioHelper::fgkPidTitles[4][2] = {{"Negative","Positive"},{"Anti-Pions","Pions"},{"Anti-Kaons","Kaons"}, {"Anti-Protons","Protons"}};
 
+
+const Char_t* AliEbyEPidRatioHelper::fgkNetHistName[4]      = {"","Plus","Minus","Net"};
+const Char_t* AliEbyEPidRatioHelper::fgkNetHistLatex[4]      = {"+ + +","+","-","+ - -"};
+const Int_t AliEbyEPidRatioHelper::fgkfNetHistBin[4][4]  = {{3000,2400,1600,1200}, {1500,1200,800,600},{1500,1200,800,600},{600,600,600,600}};
 
 
 //________________________________________________________________________
@@ -179,7 +187,7 @@ void AliEbyEPidRatioHelper::SetPhiRange(Float_t f1, Float_t f2) {
 
 
 //________________________________________________________________________
-Int_t AliEbyEPidRatioHelper::Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Bool_t isRatio, Bool_t isPtBin, Int_t trackCutBit, Int_t modeDistCreation) {
+Int_t AliEbyEPidRatioHelper::Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Bool_t isRatio, Bool_t isPtBin, Bool_t isDetWise, Int_t trackCutBit, Int_t modeDistCreation) {
   // -- Initialize helper
 
   Int_t iResult = 0;
@@ -192,7 +200,7 @@ Int_t AliEbyEPidRatioHelper::Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Bool
   fIsMC             = isMC;
   fIsRatio          = isRatio;
   fIsPtBin          = isPtBin;
-
+  fIsDetectorWise   = isDetWise;
 
   
 
@@ -271,24 +279,37 @@ Int_t AliEbyEPidRatioHelper::SetupEvent(AliESDInputHandler *esdHandler, AliAODIn
   if(esdHandler)
     centrality = fESD->GetCentrality();
   else if(aodHandler)
-    centrality = fAOD->GetHeader()->GetCentralityP();
+    centrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
 
   if (!centrality) {
     AliError("Centrality not available");
     return -1;
   }
 
+  
+  // Int_t a = centrality->GetCentralityClass5("V0M");
+  // if (a < 0 || a >= 20 ) fCentralityBin = -2;
+  // else if (a <= 1) fCentralityBin = a;
+  // else fCentralityBin = 1 + centrality->GetCentralityClass10("V0M");
+  
+  
+  
   Int_t centBin = centrality->GetCentralityClass10("V0M");
   if (centBin == 0) { fCentralityBin = centrality->GetCentralityClass5("V0M"); }
   else if (centBin == 11 || centBin == -1.)           { fCentralityBin = -1; }
   else if (centBin > 0 && centBin < fNCentralityBins) { fCentralityBin = centBin + 1; }
   else {  fCentralityBin = -2; }
   
+  
   if (fCentralityBin >= fCentralityBinMax)
     fCentralityBin = -2;
+    
+  
 
   fCentralityPercentile = centrality->GetCentralityPercentile("V0M");
   
+  fSubSampleIdx = fRandom->Integer(fSubSamples);
+
   return 0;
 }
 //________________________________________________________________________
@@ -357,7 +378,7 @@ Bool_t AliEbyEPidRatioHelper::IsEventRejected() {
   // -- 3 - Vertex z outside cut window
   ++iCut;
   if (vtxESD){
-    if(TMath::Abs(vtxESD->GetZv()) > fVertexZMax) 
+    if(TMath::Abs(vtxESD->GetZ()) > fVertexZMax) 
       aEventCuts[iCut] = 1;
   }
   else if(vtxAOD){
@@ -605,7 +626,6 @@ Bool_t AliEbyEPidRatioHelper::IsTrackAcceptedPID(AliVTrack *track, Double_t* pid
     if (TMath::Abs(pid[2]) < fNSigmaMaxTOF) 
       isAcceptedTOF = kTRUE;
   }
-
   // -- Check TOF missmatch for MC
   
   //if (ESD)
@@ -800,6 +820,7 @@ Bool_t AliEbyEPidRatioHelper::FillEventStats(Int_t *aEventCuts) {
   // -- Fill event / centrality statistics 
 
   Bool_t isRejected = kFALSE;
+
 
   // -- Fill event statistics
   for (Int_t idx = 0; idx < fHEventStatMax ; ++idx) {

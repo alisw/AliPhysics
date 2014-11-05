@@ -1,13 +1,13 @@
 # this is a simple template
 # it defines two functions: runLevelQA and periodLevelQA
 # 
-#available variables:
+# available variables:
 #  $dataType     e.g. data or sim
 #  $year         e.g. 2011
 #  $period       e.g. LHC13g
-#  $runNumber     e.g. 169123
+#  $runNumber    e.g. 169123
 #  $pass         e.g. cpass1,pass1,passMC
-#  #ocdbStorage  e.g. "raw://", "local://./OCDB"
+#  $ocdbStorage  e.g. "raw://", "local://./OCDB"
 
 runLevelQA()
 {
@@ -39,4 +39,10 @@ runLevelHighPtTreeQA()
 {
   #input is the high pt tree (if available)
   highPtTree=$1
+}
+
+runLevelEventStatQA()
+{
+  #input is the event_stat file
+  eventStatFile=$1
 }

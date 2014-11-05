@@ -67,7 +67,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Int_t GetNBinsHistos();
   
   void LSAnalysis(TClonesArray *arrayOppositeSign,TClonesArray *arrayLikeSign,AliAODEvent *aod,AliAODVertex *vtx1, Int_t nDplusOS);
-  Int_t CheckOrigin(TClonesArray* arrayMC, const AliAODMCParticle *mcPartCandidate) const;
+
   void CreateLikeSignHistos();
   void CreateImpactParameterHistos();
 

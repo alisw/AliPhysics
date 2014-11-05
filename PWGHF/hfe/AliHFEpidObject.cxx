@@ -34,6 +34,10 @@ AliHFEpidObject &AliHFEpidObject::operator=(const AliHFEpidObject &ref){
     fAbInitioPID = ref.fAbInitioPID;
     fCentrality = ref.fCentrality;
     fMultiplicity = ref.fMultiplicity;
+    fCorrTPCnSigma = ref.fCorrTPCnSigma;
+    fIsPbPb = ref.fIsPbPb;
+    fIspPb = ref.fIspPb;
+    fHasCorrTPCnSigma = ref.fHasCorrTPCnSigma;
   }
   return *this;
 }

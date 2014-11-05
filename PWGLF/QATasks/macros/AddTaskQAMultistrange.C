@@ -6,8 +6,6 @@ AliAnalysisTaskQAMultistrange *AddTaskQAMultistrange( Bool_t   isMC             
                                                       Bool_t   kusecleaning           = kTRUE, 
                                                       Float_t  vtxlim                 = 10.,
                                                       TString  collidingSystem        = "PbPb",
-                                                      Bool_t   SDDSelection           = kFALSE,
-                                                      Bool_t   withSDD                = kFALSE,
                                                       Float_t  minptondaughtertracks  = 0.,
                                                       Float_t  etacutondaughtertracks = 0.8) {
 
@@ -34,14 +32,12 @@ AliAnalysisTaskQAMultistrange *AddTaskQAMultistrange( Bool_t   isMC             
    taskcheckcascade->SetIsMC                       (isMC);
    taskcheckcascade->SetAnalysisType               (type);
    taskcheckcascade->SetCollidingSystem            (collidingSystem);
-   taskcheckcascade->SetSDDselection               (SDDSelection);
    taskcheckcascade->SetQualityCutZprimVtxPos      (kTRUE);             // selects vertices in +-10cm
    taskcheckcascade->SetQualityCutNoTPConlyPrimVtx (kTRUE);             // retains only events with tracking + SPD vertex
    taskcheckcascade->SetQualityCutTPCrefit         (kTRUE);             // requires TPC refit flag to be true to select a track
    taskcheckcascade->SetQualityCutnTPCcls          (kTRUE);             // rejects tracks that have less than n clusters in the TPC
    taskcheckcascade->SetQualityCutMinnTPCcls       (minnTPCcls);        // minimum number of TPC clusters to accept daughter tracks
    taskcheckcascade->SetQualityCutPileup           (kFALSE);
-   taskcheckcascade->SetwithSDD                    (withSDD);
    taskcheckcascade->SetCentralityLowLim           (centrlowlim);       // setting centrality selection vriables
    taskcheckcascade->SetCentralityUpLim            (centruplim);
    taskcheckcascade->SetCentralityEst              (centrest);
@@ -57,15 +53,18 @@ AliAnalysisTaskQAMultistrange *AddTaskQAMultistrange( Bool_t   isMC             
    //==============================================================================
 
    // User file name (if need be)
-   
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    outputFileName += ":PWGLFStrangeness.outputCheckCascade";
 
-   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("cfcontCuts",
+   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("fListHistMultistrangeQA",
+                                                             TList::Class(),
+                                                             AliAnalysisManager::kOutputContainer,
+                                                             outputFileName );
+   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("cfcontCuts",
                                                              AliCFContainer::Class(),
                                                              AliAnalysisManager::kOutputContainer,
                                                              outputFileName );
-   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("cfcontMCgen",
+   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cfcontMCgen",
                                                              AliCFContainer::Class(),
                                                              AliAnalysisManager::kOutputContainer,
                                                              outputFileName );
@@ -73,6 +72,7 @@ AliAnalysisTaskQAMultistrange *AddTaskQAMultistrange( Bool_t   isMC             
    mgr->ConnectInput( taskcheckcascade, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskcheckcascade, 1, coutput1);
    mgr->ConnectOutput(taskcheckcascade, 2, coutput2);  
+   mgr->ConnectOutput(taskcheckcascade, 3, coutput3);  
  
    return taskcheckcascade;
 }   

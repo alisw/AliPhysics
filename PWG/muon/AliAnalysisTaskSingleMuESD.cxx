@@ -172,9 +172,9 @@ void AliAnalysisTaskSingleMuESD::Exec(Option_t *)
   // get the SPD reconstructed vertex (vertexer) 
   AliESDVertex* vertex = (AliESDVertex*) fESD->GetVertex();
   if (vertex->GetNContributors()) {
-    fZVertex = vertex->GetZv();
-    fYVertex = vertex->GetYv();
-    fXVertex = vertex->GetXv();
+    fZVertex = vertex->GetZ();
+    fYVertex = vertex->GetY();
+    fXVertex = vertex->GetX();
     fErXVertex = vertex->GetXRes();
     fErYVertex = vertex->GetYRes();
   }

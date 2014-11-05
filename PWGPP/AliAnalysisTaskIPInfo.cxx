@@ -244,9 +244,9 @@ Int_t AliAnalysisTaskIPInfo::CreateSPDTracklets(TClonesArray& tracks)
   int nTracklets = 0;
   if (mult && spdVtx && (nTracklets=mult->GetNumberOfTracklets())>2 ) {
     const Double_t kRLay1=3.9, kRLay2=7.6;
-    double xv = spdVtx->GetXv();
-    double yv = spdVtx->GetYv();
-    double zv = spdVtx->GetZv();
+    double xv = spdVtx->GetX();
+    double yv = spdVtx->GetY();
+    double zv = spdVtx->GetZ();
     for (int i=0;i<nTracklets;i++) { // get cluster coordinates from tracklet
       double phi1 = mult->GetPhi(i);
       double tht1 = mult->GetTheta(i);

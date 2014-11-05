@@ -451,8 +451,10 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
 	if(jetL) drToLJ = jet1->DeltaR(jetL);
 	fh3MSubPtRawDRMatch[fCentBin]->Fill(var,ptjet1,drToLJ);
 	if(jet2) {
-	  Double_t var2 = -999.;
-	  if(jet2->Pt()>0. || jet2->Pt()<0.) var2 = jet2->M()/jet2->Pt();
+	  Double_t var2 = jet2->M();
+	  if(fJetMassVarType==kRatMPt) {
+	    if(jet2->Pt()>0. || jet2->Pt()<0.) var2 = jet2->M()/jet2->Pt();
+	  }
 	  fh3MSubPtTrueDR[fCentBin]->Fill(var,jet2->Pt(),drToLJ);
 	  fh3MTruePtTrueDR[fCentBin]->Fill(var2,jet2->Pt(),drToLJ);
 	  fh3PtTrueDeltaMDR[fCentBin]->Fill(jet2->Pt(),var-var2,drToLJ);

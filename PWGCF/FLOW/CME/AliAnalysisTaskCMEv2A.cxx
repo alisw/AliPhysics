@@ -66,7 +66,516 @@ float GetDPhiStar(float phi1, float pt1, float charge1, float phi2, float pt2, f
 
 
 //------------------------------------------------------------------
-AliAnalysisTaskCMEv2A::AliAnalysisTaskCMEv2A() : AliAnalysisTaskSE()
+AliAnalysisTaskCMEv2A::AliAnalysisTaskCMEv2A() : AliAnalysisTaskSE(),
+    debug(0),
+    doMC(false),
+    trigger(AliVEvent::kMB),
+    dopupcut(true),
+    doeffcorr(true),
+    centhandle(1),
+    fbit(128),
+    zvtxcut(10.0),
+    centcut(5.0),
+    nclscut(60),
+    dcacutz(5.0),
+    dcacutxy(5.0),
+    dodcacuts(false),
+    outeta(0.8),
+    ineta(0.5),
+    excleta(0.0),
+    ptmin(0.2),
+    ptmax(5.0),
+    doacuts(false),
+    nspid(2.0),
+    cbinlo(3),
+    cbinhi(4),
+    donested(true),
+    dopaircut(true),
+    centlo(20.0),
+    centhi(60.0),
+    fOutputList(0x0),     
+    fHistDCACOVerrors(0x0),
+    fHistPt(0x0),
+    fHistPhi(0x0),
+    fHistEta(0x0),
+    fHistCharge(0x0),
+    fHistTPCncls(0x0),
+    fHistDedx(0x0),
+    fHistDCAxy(0x0),
+    fHistDCAz(0x0),
+    fHistDCAxyAfter(0x0),
+    fHistDCAzAfter(0x0),
+    fHistPosPt(0x0),
+    fHistPosPhi(0x0),
+    fHistPosEta(0x0),
+    fHistNegPt(0x0),
+    fHistNegPhi(0x0),
+    fHistNegEta(0x0),
+    fHistPtPion(0x0),
+    fHistPtPionH(0x0),
+    fHistPtPionL(0x0),
+    fHistNsigmaPion(0x0),
+    fHistPtProt(0x0),
+    fHistPtProtH(0x0),
+    fHistPtProtL(0x0),
+    fHistNsigmaProt(0x0),
+    fHistPtMC(0x0),
+    fHistPhiMC(0x0),
+    fHistEtaMC(0x0),
+    fHistChargeMC(0x0),
+    fHistTPCnclsMC(0x0),
+    fHistDedxMC(0x0),
+    fHistDCAxyMC(0x0),
+    fHistDCAzMC(0x0),
+    fHistPlaneV0h2(0x0),
+    fHistPlaneV0Ah2(0x0),
+    fHistPlaneV0Ch2(0x0),
+    fHistPlaneV0ACDCh2(0x0),
+    fHistZVtx(0x0),
+    fHistZVtxD(0x0),
+    fHistZVtxMC(0x0),
+    fHistZVtxDiffMC(0x0),
+    fHistCentTRK(0x0),
+    fHistCentV0M(0x0),
+    fHistCentDIFF(0x0),
+    fHistCentDIAG(0x0),
+    fHistCtrkDIAG(0x0),
+    fHistVtxRDIAG(0x0),
+    fHistVtxSDIAG(0x0),
+    fHistVtxRDIBG(0x0),
+    fHistVtxSDIBG(0x0),
+    fHistCentTRKAVEkMB(0x0),
+    fHistCentV0MAVEkMB(0x0),
+    fHistCentTRKAVEkCentral(0x0),
+    fHistCentV0MAVEkCentral(0x0),
+    fHistCentTRKAVEkSemiCentral(0x0),
+    fHistCentV0MAVEkSemiCentral(0x0),
+    fHistCentTRKAVEkA3(0x0),
+    fHistCentV0MAVEkA3(0x0),
+    fHistCentTRKAVEkSel(0x0),
+    fHistCentV0MAVEkSel(0x0),
+    
+    h_MCq22_cent(0x0),
+    h_MCq22_centP(0x0),
+    h_MCq22_centN(0x0),
+    h_MCAq22_cent(0x0),
+    h_MCAq22_centP(0x0),
+    h_MCAq22_centN(0x0),
+    h_MCq22gap0_cent(0x0),
+    h_MCq22gap0_centP(0x0),
+    h_MCq22gap0_centN(0x0),
+    h_MCq22gap1_cent(0x0),
+    h_MCq22gap1_centP(0x0),
+    h_MCq22gap1_centN(0x0),
+    
+    hMC_AT_X_deta(0x0),
+    hMC_AT_X_detaP(0x0),
+    hMC_AT_X_detaN(0x0),
+    hMC_diffq22_X_deta(0x0),
+    hMC_diffq22_X_detaP(0x0),
+    hMC_diffq22_X_detaN(0x0),
+    hMC_ATdiffq22_X_deta(0x0),
+    hMC_ATdiffq22_X_detaP(0x0),
+    hMC_ATdiffq22_X_detaN(0x0),
+    hMC_diffq32_X_deta(0x0),
+    hMC_diffq32_X_detaP(0x0),
+    hMC_diffq32_X_detaN(0x0),
+    hMC_ATdiffq32_X_deta(0x0),
+    hMC_ATdiffq32_X_detaP(0x0),
+    hMC_ATdiffq32_X_detaN(0x0),
+    hMC_diffq42_X_deta(0x0),
+    hMC_diffq42_X_detaP(0x0),
+    hMC_diffq42_X_detaN(0x0),
+    hMC_ATdiffq42_X_deta(0x0),
+    hMC_ATdiffq42_X_detaP(0x0),
+    hMC_ATdiffq42_X_detaN(0x0),
+    
+    fProfMeanChargePt(0x0),
+    fProfMeanChargeEta(0x0),
+    
+    h_X22_cent(0x0),
+    h_X22_centP(0x0),
+    h_X22_centN(0x0),
+    h_Y22_cent(0x0),
+    h_Y22_centP(0x0),
+    h_Y22_centN(0x0),
+    h_X22_lo_cent(0x0),
+    h_X22_lo_centP(0x0),
+    h_X22_lo_centN(0x0),
+    h_Y22_lo_cent(0x0),
+    h_Y22_lo_centP(0x0),
+    h_Y22_lo_centN(0x0),
+    h_X22_li_cent(0x0),
+    h_X22_li_centP(0x0),
+    h_X22_li_centN(0x0),
+    h_Y22_li_cent(0x0),
+    h_Y22_li_centP(0x0),
+    h_Y22_li_centN(0x0),
+    h_X22_ri_cent(0x0),
+    h_X22_ri_centP(0x0),
+    h_X22_ri_centN(0x0),
+    h_Y22_ri_cent(0x0),
+    h_Y22_ri_centP(0x0),
+    h_Y22_ri_centN(0x0),
+    h_X22_ro_cent(0x0),
+    h_X22_ro_centP(0x0),
+    h_X22_ro_centN(0x0),
+    h_Y22_ro_cent(0x0),
+    h_Y22_ro_centP(0x0),
+    h_Y22_ro_centN(0x0),
+    
+    h_q22_cent(0x0),
+    h_q22_centP(0x0),
+    h_q22_centN(0x0),
+    h_q22_centPP(0x0),
+    h_q22_centNN(0x0),
+    h_q23_cent(0x0),
+    h_q23_centP(0x0),
+    h_q23_centN(0x0),
+    h_q24_cent(0x0),
+    h_q24_centP(0x0),
+    h_q24_centN(0x0),
+    h_q22gap0_cent(0x0),
+    h_q22gap0_centP(0x0),
+    h_q22gap0_centN(0x0),
+    h_q22gap1_cent(0x0),
+    h_q22gap1_centP(0x0),
+    h_q22gap1_centN(0x0),
+    
+    h_q32_cent(0x0),
+    h_q32_centP(0x0),
+    h_q32_centN(0x0),
+    h_q32_centPP(0x0),
+    h_q32_centNN(0x0),
+    h_q32gap0_cent(0x0),
+    h_q32gap0_centP(0x0),
+    h_q32gap0_centN(0x0),
+    h_q32gap1_cent(0x0),
+    h_q32gap1_centP(0x0),
+    h_q32gap1_centN(0x0),
+    
+    h_q42_cent(0x0),
+    h_q42_centP(0x0),
+    h_q42_centN(0x0),
+    h_q42_centPP(0x0),
+    h_q42_centNN(0x0),
+    h_q42gap0_cent(0x0),
+    h_q42gap0_centP(0x0),
+    h_q42gap0_centN(0x0),
+    h_q42gap1_cent(0x0),
+    h_q42gap1_centP(0x0),
+    h_q42gap1_centN(0x0),
+    
+    //TProfile *h_q22qasym_cent[10];
+    //TProfile *h_q22qasymP_cent[10];
+    //TProfile *h_q22qasymN_cent[10];
+    //TProfile *h_q22qasym_gap0_cent[10];
+    //TProfile *h_q22qasymP_gap0_cent[10];
+    //TProfile *h_q22qasymN_gap0_cent[10];
+    //TProfile *h_q22qasym_gap1_cent[10];
+    //TProfile *h_q22qasymP_gap1_cent[10];
+    //TProfile *h_q22qasymN_gap1_cent[10];
+    //TProfile *h_q24qasym_cent[10];
+    //TProfile *h_q24qasymP_cent[10];
+    //TProfile *h_q24qasymN_cent[10];
+    //TProfile *h_q32qasym_cent[10];
+    //TProfile *h_q32qasymP_cent[10];
+    //TProfile *h_q32qasymN_cent[10];
+    //TProfile *h_q32qasym_gap0_cent[10];
+    //TProfile *h_q32qasymP_gap0_cent[10];
+    //TProfile *h_q32qasymN_gap0_cent[10];
+    //TProfile *h_q32qasym_gap1_cent[10];
+    //TProfile *h_q32qasymP_gap1_cent[10];
+    //TProfile *h_q32qasymN_gap1_cent[10];
+    //TProfile *h_q34qasym_cent[10];
+    //TProfile *h_q34qasymP_cent[10];
+    //TProfile *h_q34qasymN_cent[10];
+    //TProfile *h_q42qasym_cent[10];
+    //TProfile *h_q42qasymP_cent[10];
+    //TProfile *h_q42qasymN_cent[10];
+    //TProfile *h_q42qasym_gap0_cent[10];
+    //TProfile *h_q42qasymP_gap0_cent[10];
+    //TProfile *h_q42qasymN_gap0_cent[10];
+    //TProfile *h_q42qasym_gap1_cent[10];
+    //TProfile *h_q42qasymP_gap1_cent[10];
+    //TProfile *h_q42qasymN_gap1_cent[10];
+    //TProfile *h_q44qasym_cent[10];
+    //TProfile *h_q44qasymP_cent[10];
+    //TProfile *h_q44qasymN_cent[10];
+    
+    h_eta_pos_F1(0x0),
+    h_eta_pos_F3(0x0),
+    h_eta_neg_F1(0x0),
+    h_eta_neg_F3(0x0),
+    h_cut_eta_pos_F1(0x0),
+    h_cut_eta_pos_F3(0x0),
+    h_cut_eta_neg_F1(0x0),
+    h_cut_eta_neg_F3(0x0),
+    
+    h_AT_eta(0x0),
+    h_AT_etaF1(0x0),
+    h_AT_etaF3(0x0),
+    h_AT_etaMC(0x0),
+    h2_AT_eta(0x0),
+    h2_AT_etaF1(0x0),
+    h2_AT_etaF3(0x0),
+    h2_AT_etaMC(0x0),
+    
+    h_AT_cut_eta(0x0),
+    h_AT_cut_etaF1(0x0),
+    h_AT_cut_etaF3(0x0),
+    h_AT_cut_etaMC(0x0),
+    h2_AT_cut_eta(0x0),
+    h2_AT_cut_etaF1(0x0),
+    h2_AT_cut_etaF3(0x0),
+    h2_AT_cut_etaMC(0x0),
+    
+    h_A_cent(0x0),
+    h_rA_cent(0x0),
+    h_r1A_cent(0x0),
+    h_r2A_cent(0x0),
+    h_A_centF1(0x0),
+    h_A_centF3(0x0),
+    h_A_centMC(0x0),
+    h2_A_cent(0x0),
+    h2_rA_cent(0x0),
+    h2_r1A_cent(0x0),
+    h2_r2A_cent(0x0),
+    h2_A_centF1(0x0),
+    h2_A_centF3(0x0),
+    h2_A_centMC(0x0),
+    
+    h_Aq22_cent(0x0),
+    h_Aq22_centP(0x0),
+    h_Aq22_centN(0x0),
+    h_Aq22_centPP(0x0),
+    h_Aq22_centNN(0x0),
+    h_Aq22_SL_cent(0x0),
+    h_Aq22_SL_centP(0x0),
+    h_Aq22_SL_centN(0x0),
+    h_Aq22_SLL_cent(0x0),
+    h_Aq22_SLL_centP(0x0),
+    h_Aq22_SLL_centN(0x0),
+    h_Aq22_SLR_cent(0x0),
+    h_Aq22_SLR_centP(0x0),
+    h_Aq22_SLR_centN(0x0),
+    h_Aq32_cent(0x0),
+    h_Aq32_centP(0x0),
+    h_Aq32_centN(0x0),
+    h_Aq32_centPP(0x0),
+    h_Aq32_centNN(0x0),
+    h_Aq32_SL_cent(0x0),
+    h_Aq32_SL_centP(0x0),
+    h_Aq32_SL_centN(0x0),
+    h_Aq32_SLL_cent(0x0),
+    h_Aq32_SLL_centP(0x0),
+    h_Aq32_SLL_centN(0x0),
+    h_Aq32_SLR_cent(0x0),
+    h_Aq32_SLR_centP(0x0),
+    h_Aq32_SLR_centN(0x0),
+    h_Aq42_cent(0x0),
+    h_Aq42_centP(0x0),
+    h_Aq42_centN(0x0),
+    h_Aq42_centPP(0x0),
+    h_Aq42_centNN(0x0),
+    h_Aq42_SL_cent(0x0),
+    h_Aq42_SL_centP(0x0),
+    h_Aq42_SL_centN(0x0),
+    h_Aq42_SLL_cent(0x0),
+    h_Aq42_SLL_centP(0x0),
+    h_Aq42_SLL_centN(0x0),
+    h_Aq42_SLR_cent(0x0),
+    h_Aq42_SLR_centP(0x0),
+    h_Aq42_SLR_centN(0x0),
+    
+    h_diffq22_pt(0x0),
+    h_diffq22_ptP(0x0),
+    h_diffq22_ptN(0x0),
+    h_diffAq22_pt(0x0),
+    h_diffAq22_ptP(0x0),
+    h_diffAq22_ptN(0x0),
+    h_diffq22_eta(0x0),
+    h_diffq22_etaP(0x0),
+    h_diffq22_etaN(0x0),
+    h_diffAq22_eta(0x0),
+    h_diffAq22_etaP(0x0),
+    h_diffAq22_etaN(0x0),
+    h_diffq32_pt(0x0),
+    h_diffq32_ptP(0x0),
+    h_diffq32_ptN(0x0),
+    h_diffAq32_pt(0x0),
+    h_diffAq32_ptP(0x0),
+    h_diffAq32_ptN(0x0),
+    h_diffq32_eta(0x0),
+    h_diffq32_etaP(0x0),
+    h_diffq32_etaN(0x0),
+    h_diffAq32_eta(0x0),
+    h_diffAq32_etaP(0x0),
+    h_diffAq32_etaN(0x0),
+    h_diffq42_pt(0x0),
+    h_diffq42_ptP(0x0),
+    h_diffq42_ptN(0x0),
+    h_diffAq42_pt(0x0),
+    h_diffAq42_ptP(0x0),
+    h_diffAq42_ptN(0x0),
+    h_diffq42_eta(0x0),
+    h_diffq42_etaP(0x0),
+    h_diffq42_etaN(0x0),
+    h_diffAq42_eta(0x0),
+    h_diffAq42_etaP(0x0),
+    h_diffAq42_etaN(0x0),
+    
+    h_AT_X_deta(0x0),
+    h_AT_X_detaP(0x0),
+    h_AT_X_detaN(0x0),
+    h_diffq22_X_deta(0x0),
+    h_diffq22_X_detaP(0x0),
+    h_diffq22_X_detaN(0x0),
+    h_ATdiffq22_X_deta(0x0),
+    h_ATdiffq22_X_detaP(0x0),
+    h_ATdiffq22_X_detaN(0x0),
+    h_diffq32_X_deta(0x0),
+    h_diffq32_X_detaP(0x0),
+    h_diffq32_X_detaN(0x0),
+    h_ATdiffq32_X_deta(0x0),
+    h_ATdiffq32_X_detaP(0x0),
+    h_ATdiffq32_X_detaN(0x0),
+    h_diffq42_X_deta(0x0),
+    h_diffq42_X_detaP(0x0),
+    h_diffq42_X_detaN(0x0),
+    h_ATdiffq42_X_deta(0x0),
+    h_ATdiffq42_X_detaP(0x0),
+    h_ATdiffq42_X_detaN(0x0),
+    
+    h_AT_X_deta_F1(0x0),
+    h_AT_X_detaP_F1(0x0),
+    h_AT_X_detaN_F1(0x0),
+    h_diffq22_X_deta_F1(0x0),
+    h_diffq22_X_detaP_F1(0x0),
+    h_diffq22_X_detaN_F1(0x0),
+    h_ATdiffq22_X_deta_F1(0x0),
+    h_ATdiffq22_X_detaP_F1(0x0),
+    h_ATdiffq22_X_detaN_F1(0x0),
+    h_diffq32_X_deta_F1(0x0),
+    h_diffq32_X_detaP_F1(0x0),
+    h_diffq32_X_detaN_F1(0x0),
+    h_ATdiffq32_X_deta_F1(0x0),
+    h_ATdiffq32_X_detaP_F1(0x0),
+    h_ATdiffq32_X_detaN_F1(0x0),
+    h_diffq42_X_deta_F1(0x0),
+    h_diffq42_X_detaP_F1(0x0),
+    h_diffq42_X_detaN_F1(0x0),
+    h_ATdiffq42_X_deta_F1(0x0),
+    h_ATdiffq42_X_detaP_F1(0x0),
+    h_ATdiffq42_X_detaN_F1(0x0),
+    
+    h_AT_X_deta_F3(0x0),
+    h_AT_X_detaP_F3(0x0),
+    h_AT_X_detaN_F3(0x0),
+    h_diffq22_X_deta_F3(0x0),
+    h_diffq22_X_detaP_F3(0x0),
+    h_diffq22_X_detaN_F3(0x0),
+    h_ATdiffq22_X_deta_F3(0x0),
+    h_ATdiffq22_X_detaP_F3(0x0),
+    h_ATdiffq22_X_detaN_F3(0x0),
+    h_diffq32_X_deta_F3(0x0),
+    h_diffq32_X_detaP_F3(0x0),
+    h_diffq32_X_detaN_F3(0x0),
+    h_ATdiffq32_X_deta_F3(0x0),
+    h_ATdiffq32_X_detaP_F3(0x0),
+    h_ATdiffq32_X_detaN_F3(0x0),
+    h_diffq42_X_deta_F3(0x0),
+    h_diffq42_X_detaP_F3(0x0),
+    h_diffq42_X_detaN_F3(0x0),
+    h_ATdiffq42_X_deta_F3(0x0),
+    h_ATdiffq42_X_detaP_F3(0x0),
+    h_ATdiffq42_X_detaN_F3(0x0),
+    
+    h_ATXdiffq22_X_detaP(0x0),
+    h_ATXdiffq22_X_detaN(0x0),
+    h_ATYdiffq22_X_detaP(0x0),
+    h_ATYdiffq22_X_detaN(0x0),
+    h_ATZdiffq22_X_detaP(0x0),
+    h_ATZdiffq22_X_detaN(0x0),
+    
+    h_ATXdiffq32_X_detaP(0x0),
+    h_ATXdiffq32_X_detaN(0x0),
+    h_ATYdiffq32_X_detaP(0x0),
+    h_ATYdiffq32_X_detaN(0x0),
+    h_ATZdiffq32_X_detaP(0x0),
+    h_ATZdiffq32_X_detaN(0x0),
+    
+    h_ATXdiffq42_X_detaP(0x0),
+    h_ATXdiffq42_X_detaN(0x0),
+    h_ATYdiffq42_X_detaP(0x0),
+    h_ATYdiffq42_X_detaN(0x0),
+    h_ATZdiffq42_X_detaP(0x0),
+    h_ATZdiffq42_X_detaN(0x0),
+    
+    h_AT_S_deta(0x0),
+    h_AT_S_detaP(0x0),
+    h_AT_S_detaN(0x0),
+    h_diffq22_S_deta(0x0),
+    h_diffq22_S_detaP(0x0),
+    h_diffq22_S_detaN(0x0),
+    h_ATdiffq22_S_deta(0x0),
+    h_ATdiffq22_S_detaP(0x0),
+    h_ATdiffq22_S_detaN(0x0),
+    h_diffq32_S_deta(0x0),
+    h_diffq32_S_detaP(0x0),
+    h_diffq32_S_detaN(0x0),
+    h_ATdiffq32_S_deta(0x0),
+    h_ATdiffq32_S_detaP(0x0),
+    h_ATdiffq32_S_detaN(0x0),
+    h_diffq42_S_deta(0x0),
+    h_diffq42_S_detaP(0x0),
+    h_diffq42_S_detaN(0x0),
+    h_ATdiffq42_S_deta(0x0),
+    h_ATdiffq42_S_detaP(0x0),
+    h_ATdiffq42_S_detaN(0x0),
+    
+    h_AT_X_dpt(0x0),
+    h_AT_X_dptP(0x0),
+    h_AT_X_dptN(0x0),
+    h_diffq22_X_dpt(0x0),
+    h_diffq22_X_dptP(0x0),
+    h_diffq22_X_dptN(0x0),
+    h_ATdiffq22_X_dpt(0x0),
+    h_ATdiffq22_X_dptP(0x0),
+    h_ATdiffq22_X_dptN(0x0),
+    h_diffq32_X_dpt(0x0),
+    h_diffq32_X_dptP(0x0),
+    h_diffq32_X_dptN(0x0),
+    h_ATdiffq32_X_dpt(0x0),
+    h_ATdiffq32_X_dptP(0x0),
+    h_ATdiffq32_X_dptN(0x0),
+    h_diffq42_X_dpt(0x0),
+    h_diffq42_X_dptP(0x0),
+    h_diffq42_X_dptN(0x0),
+    h_ATdiffq42_X_dpt(0x0),
+    h_ATdiffq42_X_dptP(0x0),
+    h_ATdiffq42_X_dptN(0x0),
+    
+    h_a1q22_cent(0x0),
+    h_a1q22_centP(0x0),
+    h_a1q22_centN(0x0),
+    
+    h_a2q22_cent(0x0),
+    h_a2q22_centP(0x0),
+    h_a2q22_centN(0x0),
+    
+    h_rAq22_X1_cent(0x0),
+    h_rAq22_X1_centP(0x0),
+    h_rAq22_X1_centN(0x0),
+    h_rAq22_X2_cent(0x0),
+    h_rAq22_X2_centP(0x0),
+    h_rAq22_X2_centN(0x0),
+    h_rAq22_X3_cent(0x0),
+    h_rAq22_X3_centP(0x0),
+    h_rAq22_X3_centN(0x0),
+    h_rAq22_X4_cent(0x0),
+    h_rAq22_X4_centP(0x0),
+    h_rAq22_X4_centN(0x0)
 {
   // Default class constructor
 
@@ -78,7 +587,516 @@ AliAnalysisTaskCMEv2A::AliAnalysisTaskCMEv2A() : AliAnalysisTaskSE()
 
 
 //--------------------------------------------------------------------------------------
-AliAnalysisTaskCMEv2A::AliAnalysisTaskCMEv2A(const char *name) : AliAnalysisTaskSE(name)
+AliAnalysisTaskCMEv2A::AliAnalysisTaskCMEv2A(const char *name) : AliAnalysisTaskSE(name),
+    debug(0),
+    doMC(false),
+    trigger(AliVEvent::kMB),
+    dopupcut(true),
+    doeffcorr(true),
+    centhandle(1),
+    fbit(128),
+    zvtxcut(10.0),
+    centcut(5.0),
+    nclscut(60),
+    dcacutz(5.0),
+    dcacutxy(5.0),
+    dodcacuts(false),
+    outeta(0.8),
+    ineta(0.5),
+    excleta(0.0),
+    ptmin(0.2),
+    ptmax(5.0),
+    doacuts(false),
+    nspid(2.0),
+    cbinlo(3),
+    cbinhi(4),
+    donested(true),
+    dopaircut(true),
+    centlo(20.0),
+    centhi(60.0),
+    fOutputList(0x0),     
+    fHistDCACOVerrors(0x0),
+    fHistPt(0x0),
+    fHistPhi(0x0),
+    fHistEta(0x0),
+    fHistCharge(0x0),
+    fHistTPCncls(0x0),
+    fHistDedx(0x0),
+    fHistDCAxy(0x0),
+    fHistDCAz(0x0),
+    fHistDCAxyAfter(0x0),
+    fHistDCAzAfter(0x0),
+    fHistPosPt(0x0),
+    fHistPosPhi(0x0),
+    fHistPosEta(0x0),
+    fHistNegPt(0x0),
+    fHistNegPhi(0x0),
+    fHistNegEta(0x0),
+    fHistPtPion(0x0),
+    fHistPtPionH(0x0),
+    fHistPtPionL(0x0),
+    fHistNsigmaPion(0x0),
+    fHistPtProt(0x0),
+    fHistPtProtH(0x0),
+    fHistPtProtL(0x0),
+    fHistNsigmaProt(0x0),
+    fHistPtMC(0x0),
+    fHistPhiMC(0x0),
+    fHistEtaMC(0x0),
+    fHistChargeMC(0x0),
+    fHistTPCnclsMC(0x0),
+    fHistDedxMC(0x0),
+    fHistDCAxyMC(0x0),
+    fHistDCAzMC(0x0),
+    fHistPlaneV0h2(0x0),
+    fHistPlaneV0Ah2(0x0),
+    fHistPlaneV0Ch2(0x0),
+    fHistPlaneV0ACDCh2(0x0),
+    fHistZVtx(0x0),
+    fHistZVtxD(0x0),
+    fHistZVtxMC(0x0),
+    fHistZVtxDiffMC(0x0),
+    fHistCentTRK(0x0),
+    fHistCentV0M(0x0),
+    fHistCentDIFF(0x0),
+    fHistCentDIAG(0x0),
+    fHistCtrkDIAG(0x0),
+    fHistVtxRDIAG(0x0),
+    fHistVtxSDIAG(0x0),
+    fHistVtxRDIBG(0x0),
+    fHistVtxSDIBG(0x0),
+    fHistCentTRKAVEkMB(0x0),
+    fHistCentV0MAVEkMB(0x0),
+    fHistCentTRKAVEkCentral(0x0),
+    fHistCentV0MAVEkCentral(0x0),
+    fHistCentTRKAVEkSemiCentral(0x0),
+    fHistCentV0MAVEkSemiCentral(0x0),
+    fHistCentTRKAVEkA3(0x0),
+    fHistCentV0MAVEkA3(0x0),
+    fHistCentTRKAVEkSel(0x0),
+    fHistCentV0MAVEkSel(0x0),
+    
+    h_MCq22_cent(0x0),
+    h_MCq22_centP(0x0),
+    h_MCq22_centN(0x0),
+    h_MCAq22_cent(0x0),
+    h_MCAq22_centP(0x0),
+    h_MCAq22_centN(0x0),
+    h_MCq22gap0_cent(0x0),
+    h_MCq22gap0_centP(0x0),
+    h_MCq22gap0_centN(0x0),
+    h_MCq22gap1_cent(0x0),
+    h_MCq22gap1_centP(0x0),
+    h_MCq22gap1_centN(0x0),
+    
+    hMC_AT_X_deta(0x0),
+    hMC_AT_X_detaP(0x0),
+    hMC_AT_X_detaN(0x0),
+    hMC_diffq22_X_deta(0x0),
+    hMC_diffq22_X_detaP(0x0),
+    hMC_diffq22_X_detaN(0x0),
+    hMC_ATdiffq22_X_deta(0x0),
+    hMC_ATdiffq22_X_detaP(0x0),
+    hMC_ATdiffq22_X_detaN(0x0),
+    hMC_diffq32_X_deta(0x0),
+    hMC_diffq32_X_detaP(0x0),
+    hMC_diffq32_X_detaN(0x0),
+    hMC_ATdiffq32_X_deta(0x0),
+    hMC_ATdiffq32_X_detaP(0x0),
+    hMC_ATdiffq32_X_detaN(0x0),
+    hMC_diffq42_X_deta(0x0),
+    hMC_diffq42_X_detaP(0x0),
+    hMC_diffq42_X_detaN(0x0),
+    hMC_ATdiffq42_X_deta(0x0),
+    hMC_ATdiffq42_X_detaP(0x0),
+    hMC_ATdiffq42_X_detaN(0x0),
+    
+    fProfMeanChargePt(0x0),
+    fProfMeanChargeEta(0x0),
+    
+    h_X22_cent(0x0),
+    h_X22_centP(0x0),
+    h_X22_centN(0x0),
+    h_Y22_cent(0x0),
+    h_Y22_centP(0x0),
+    h_Y22_centN(0x0),
+    h_X22_lo_cent(0x0),
+    h_X22_lo_centP(0x0),
+    h_X22_lo_centN(0x0),
+    h_Y22_lo_cent(0x0),
+    h_Y22_lo_centP(0x0),
+    h_Y22_lo_centN(0x0),
+    h_X22_li_cent(0x0),
+    h_X22_li_centP(0x0),
+    h_X22_li_centN(0x0),
+    h_Y22_li_cent(0x0),
+    h_Y22_li_centP(0x0),
+    h_Y22_li_centN(0x0),
+    h_X22_ri_cent(0x0),
+    h_X22_ri_centP(0x0),
+    h_X22_ri_centN(0x0),
+    h_Y22_ri_cent(0x0),
+    h_Y22_ri_centP(0x0),
+    h_Y22_ri_centN(0x0),
+    h_X22_ro_cent(0x0),
+    h_X22_ro_centP(0x0),
+    h_X22_ro_centN(0x0),
+    h_Y22_ro_cent(0x0),
+    h_Y22_ro_centP(0x0),
+    h_Y22_ro_centN(0x0),
+    
+    h_q22_cent(0x0),
+    h_q22_centP(0x0),
+    h_q22_centN(0x0),
+    h_q22_centPP(0x0),
+    h_q22_centNN(0x0),
+    h_q23_cent(0x0),
+    h_q23_centP(0x0),
+    h_q23_centN(0x0),
+    h_q24_cent(0x0),
+    h_q24_centP(0x0),
+    h_q24_centN(0x0),
+    h_q22gap0_cent(0x0),
+    h_q22gap0_centP(0x0),
+    h_q22gap0_centN(0x0),
+    h_q22gap1_cent(0x0),
+    h_q22gap1_centP(0x0),
+    h_q22gap1_centN(0x0),
+    
+    h_q32_cent(0x0),
+    h_q32_centP(0x0),
+    h_q32_centN(0x0),
+    h_q32_centPP(0x0),
+    h_q32_centNN(0x0),
+    h_q32gap0_cent(0x0),
+    h_q32gap0_centP(0x0),
+    h_q32gap0_centN(0x0),
+    h_q32gap1_cent(0x0),
+    h_q32gap1_centP(0x0),
+    h_q32gap1_centN(0x0),
+    
+    h_q42_cent(0x0),
+    h_q42_centP(0x0),
+    h_q42_centN(0x0),
+    h_q42_centPP(0x0),
+    h_q42_centNN(0x0),
+    h_q42gap0_cent(0x0),
+    h_q42gap0_centP(0x0),
+    h_q42gap0_centN(0x0),
+    h_q42gap1_cent(0x0),
+    h_q42gap1_centP(0x0),
+    h_q42gap1_centN(0x0),
+    
+    //TProfile *h_q22qasym_cent[10];
+    //TProfile *h_q22qasymP_cent[10];
+    //TProfile *h_q22qasymN_cent[10];
+    //TProfile *h_q22qasym_gap0_cent[10];
+    //TProfile *h_q22qasymP_gap0_cent[10];
+    //TProfile *h_q22qasymN_gap0_cent[10];
+    //TProfile *h_q22qasym_gap1_cent[10];
+    //TProfile *h_q22qasymP_gap1_cent[10];
+    //TProfile *h_q22qasymN_gap1_cent[10];
+    //TProfile *h_q24qasym_cent[10];
+    //TProfile *h_q24qasymP_cent[10];
+    //TProfile *h_q24qasymN_cent[10];
+    //TProfile *h_q32qasym_cent[10];
+    //TProfile *h_q32qasymP_cent[10];
+    //TProfile *h_q32qasymN_cent[10];
+    //TProfile *h_q32qasym_gap0_cent[10];
+    //TProfile *h_q32qasymP_gap0_cent[10];
+    //TProfile *h_q32qasymN_gap0_cent[10];
+    //TProfile *h_q32qasym_gap1_cent[10];
+    //TProfile *h_q32qasymP_gap1_cent[10];
+    //TProfile *h_q32qasymN_gap1_cent[10];
+    //TProfile *h_q34qasym_cent[10];
+    //TProfile *h_q34qasymP_cent[10];
+    //TProfile *h_q34qasymN_cent[10];
+    //TProfile *h_q42qasym_cent[10];
+    //TProfile *h_q42qasymP_cent[10];
+    //TProfile *h_q42qasymN_cent[10];
+    //TProfile *h_q42qasym_gap0_cent[10];
+    //TProfile *h_q42qasymP_gap0_cent[10];
+    //TProfile *h_q42qasymN_gap0_cent[10];
+    //TProfile *h_q42qasym_gap1_cent[10];
+    //TProfile *h_q42qasymP_gap1_cent[10];
+    //TProfile *h_q42qasymN_gap1_cent[10];
+    //TProfile *h_q44qasym_cent[10];
+    //TProfile *h_q44qasymP_cent[10];
+    //TProfile *h_q44qasymN_cent[10];
+    
+    h_eta_pos_F1(0x0),
+    h_eta_pos_F3(0x0),
+    h_eta_neg_F1(0x0),
+    h_eta_neg_F3(0x0),
+    h_cut_eta_pos_F1(0x0),
+    h_cut_eta_pos_F3(0x0),
+    h_cut_eta_neg_F1(0x0),
+    h_cut_eta_neg_F3(0x0),
+    
+    h_AT_eta(0x0),
+    h_AT_etaF1(0x0),
+    h_AT_etaF3(0x0),
+    h_AT_etaMC(0x0),
+    h2_AT_eta(0x0),
+    h2_AT_etaF1(0x0),
+    h2_AT_etaF3(0x0),
+    h2_AT_etaMC(0x0),
+    
+    h_AT_cut_eta(0x0),
+    h_AT_cut_etaF1(0x0),
+    h_AT_cut_etaF3(0x0),
+    h_AT_cut_etaMC(0x0),
+    h2_AT_cut_eta(0x0),
+    h2_AT_cut_etaF1(0x0),
+    h2_AT_cut_etaF3(0x0),
+    h2_AT_cut_etaMC(0x0),
+    
+    h_A_cent(0x0),
+    h_rA_cent(0x0),
+    h_r1A_cent(0x0),
+    h_r2A_cent(0x0),
+    h_A_centF1(0x0),
+    h_A_centF3(0x0),
+    h_A_centMC(0x0),
+    h2_A_cent(0x0),
+    h2_rA_cent(0x0),
+    h2_r1A_cent(0x0),
+    h2_r2A_cent(0x0),
+    h2_A_centF1(0x0),
+    h2_A_centF3(0x0),
+    h2_A_centMC(0x0),
+    
+    h_Aq22_cent(0x0),
+    h_Aq22_centP(0x0),
+    h_Aq22_centN(0x0),
+    h_Aq22_centPP(0x0),
+    h_Aq22_centNN(0x0),
+    h_Aq22_SL_cent(0x0),
+    h_Aq22_SL_centP(0x0),
+    h_Aq22_SL_centN(0x0),
+    h_Aq22_SLL_cent(0x0),
+    h_Aq22_SLL_centP(0x0),
+    h_Aq22_SLL_centN(0x0),
+    h_Aq22_SLR_cent(0x0),
+    h_Aq22_SLR_centP(0x0),
+    h_Aq22_SLR_centN(0x0),
+    h_Aq32_cent(0x0),
+    h_Aq32_centP(0x0),
+    h_Aq32_centN(0x0),
+    h_Aq32_centPP(0x0),
+    h_Aq32_centNN(0x0),
+    h_Aq32_SL_cent(0x0),
+    h_Aq32_SL_centP(0x0),
+    h_Aq32_SL_centN(0x0),
+    h_Aq32_SLL_cent(0x0),
+    h_Aq32_SLL_centP(0x0),
+    h_Aq32_SLL_centN(0x0),
+    h_Aq32_SLR_cent(0x0),
+    h_Aq32_SLR_centP(0x0),
+    h_Aq32_SLR_centN(0x0),
+    h_Aq42_cent(0x0),
+    h_Aq42_centP(0x0),
+    h_Aq42_centN(0x0),
+    h_Aq42_centPP(0x0),
+    h_Aq42_centNN(0x0),
+    h_Aq42_SL_cent(0x0),
+    h_Aq42_SL_centP(0x0),
+    h_Aq42_SL_centN(0x0),
+    h_Aq42_SLL_cent(0x0),
+    h_Aq42_SLL_centP(0x0),
+    h_Aq42_SLL_centN(0x0),
+    h_Aq42_SLR_cent(0x0),
+    h_Aq42_SLR_centP(0x0),
+    h_Aq42_SLR_centN(0x0),
+    
+    h_diffq22_pt(0x0),
+    h_diffq22_ptP(0x0),
+    h_diffq22_ptN(0x0),
+    h_diffAq22_pt(0x0),
+    h_diffAq22_ptP(0x0),
+    h_diffAq22_ptN(0x0),
+    h_diffq22_eta(0x0),
+    h_diffq22_etaP(0x0),
+    h_diffq22_etaN(0x0),
+    h_diffAq22_eta(0x0),
+    h_diffAq22_etaP(0x0),
+    h_diffAq22_etaN(0x0),
+    h_diffq32_pt(0x0),
+    h_diffq32_ptP(0x0),
+    h_diffq32_ptN(0x0),
+    h_diffAq32_pt(0x0),
+    h_diffAq32_ptP(0x0),
+    h_diffAq32_ptN(0x0),
+    h_diffq32_eta(0x0),
+    h_diffq32_etaP(0x0),
+    h_diffq32_etaN(0x0),
+    h_diffAq32_eta(0x0),
+    h_diffAq32_etaP(0x0),
+    h_diffAq32_etaN(0x0),
+    h_diffq42_pt(0x0),
+    h_diffq42_ptP(0x0),
+    h_diffq42_ptN(0x0),
+    h_diffAq42_pt(0x0),
+    h_diffAq42_ptP(0x0),
+    h_diffAq42_ptN(0x0),
+    h_diffq42_eta(0x0),
+    h_diffq42_etaP(0x0),
+    h_diffq42_etaN(0x0),
+    h_diffAq42_eta(0x0),
+    h_diffAq42_etaP(0x0),
+    h_diffAq42_etaN(0x0),
+    
+    h_AT_X_deta(0x0),
+    h_AT_X_detaP(0x0),
+    h_AT_X_detaN(0x0),
+    h_diffq22_X_deta(0x0),
+    h_diffq22_X_detaP(0x0),
+    h_diffq22_X_detaN(0x0),
+    h_ATdiffq22_X_deta(0x0),
+    h_ATdiffq22_X_detaP(0x0),
+    h_ATdiffq22_X_detaN(0x0),
+    h_diffq32_X_deta(0x0),
+    h_diffq32_X_detaP(0x0),
+    h_diffq32_X_detaN(0x0),
+    h_ATdiffq32_X_deta(0x0),
+    h_ATdiffq32_X_detaP(0x0),
+    h_ATdiffq32_X_detaN(0x0),
+    h_diffq42_X_deta(0x0),
+    h_diffq42_X_detaP(0x0),
+    h_diffq42_X_detaN(0x0),
+    h_ATdiffq42_X_deta(0x0),
+    h_ATdiffq42_X_detaP(0x0),
+    h_ATdiffq42_X_detaN(0x0),
+    
+    h_AT_X_deta_F1(0x0),
+    h_AT_X_detaP_F1(0x0),
+    h_AT_X_detaN_F1(0x0),
+    h_diffq22_X_deta_F1(0x0),
+    h_diffq22_X_detaP_F1(0x0),
+    h_diffq22_X_detaN_F1(0x0),
+    h_ATdiffq22_X_deta_F1(0x0),
+    h_ATdiffq22_X_detaP_F1(0x0),
+    h_ATdiffq22_X_detaN_F1(0x0),
+    h_diffq32_X_deta_F1(0x0),
+    h_diffq32_X_detaP_F1(0x0),
+    h_diffq32_X_detaN_F1(0x0),
+    h_ATdiffq32_X_deta_F1(0x0),
+    h_ATdiffq32_X_detaP_F1(0x0),
+    h_ATdiffq32_X_detaN_F1(0x0),
+    h_diffq42_X_deta_F1(0x0),
+    h_diffq42_X_detaP_F1(0x0),
+    h_diffq42_X_detaN_F1(0x0),
+    h_ATdiffq42_X_deta_F1(0x0),
+    h_ATdiffq42_X_detaP_F1(0x0),
+    h_ATdiffq42_X_detaN_F1(0x0),
+    
+    h_AT_X_deta_F3(0x0),
+    h_AT_X_detaP_F3(0x0),
+    h_AT_X_detaN_F3(0x0),
+    h_diffq22_X_deta_F3(0x0),
+    h_diffq22_X_detaP_F3(0x0),
+    h_diffq22_X_detaN_F3(0x0),
+    h_ATdiffq22_X_deta_F3(0x0),
+    h_ATdiffq22_X_detaP_F3(0x0),
+    h_ATdiffq22_X_detaN_F3(0x0),
+    h_diffq32_X_deta_F3(0x0),
+    h_diffq32_X_detaP_F3(0x0),
+    h_diffq32_X_detaN_F3(0x0),
+    h_ATdiffq32_X_deta_F3(0x0),
+    h_ATdiffq32_X_detaP_F3(0x0),
+    h_ATdiffq32_X_detaN_F3(0x0),
+    h_diffq42_X_deta_F3(0x0),
+    h_diffq42_X_detaP_F3(0x0),
+    h_diffq42_X_detaN_F3(0x0),
+    h_ATdiffq42_X_deta_F3(0x0),
+    h_ATdiffq42_X_detaP_F3(0x0),
+    h_ATdiffq42_X_detaN_F3(0x0),
+    
+    h_ATXdiffq22_X_detaP(0x0),
+    h_ATXdiffq22_X_detaN(0x0),
+    h_ATYdiffq22_X_detaP(0x0),
+    h_ATYdiffq22_X_detaN(0x0),
+    h_ATZdiffq22_X_detaP(0x0),
+    h_ATZdiffq22_X_detaN(0x0),
+    
+    h_ATXdiffq32_X_detaP(0x0),
+    h_ATXdiffq32_X_detaN(0x0),
+    h_ATYdiffq32_X_detaP(0x0),
+    h_ATYdiffq32_X_detaN(0x0),
+    h_ATZdiffq32_X_detaP(0x0),
+    h_ATZdiffq32_X_detaN(0x0),
+    
+    h_ATXdiffq42_X_detaP(0x0),
+    h_ATXdiffq42_X_detaN(0x0),
+    h_ATYdiffq42_X_detaP(0x0),
+    h_ATYdiffq42_X_detaN(0x0),
+    h_ATZdiffq42_X_detaP(0x0),
+    h_ATZdiffq42_X_detaN(0x0),
+    
+    h_AT_S_deta(0x0),
+    h_AT_S_detaP(0x0),
+    h_AT_S_detaN(0x0),
+    h_diffq22_S_deta(0x0),
+    h_diffq22_S_detaP(0x0),
+    h_diffq22_S_detaN(0x0),
+    h_ATdiffq22_S_deta(0x0),
+    h_ATdiffq22_S_detaP(0x0),
+    h_ATdiffq22_S_detaN(0x0),
+    h_diffq32_S_deta(0x0),
+    h_diffq32_S_detaP(0x0),
+    h_diffq32_S_detaN(0x0),
+    h_ATdiffq32_S_deta(0x0),
+    h_ATdiffq32_S_detaP(0x0),
+    h_ATdiffq32_S_detaN(0x0),
+    h_diffq42_S_deta(0x0),
+    h_diffq42_S_detaP(0x0),
+    h_diffq42_S_detaN(0x0),
+    h_ATdiffq42_S_deta(0x0),
+    h_ATdiffq42_S_detaP(0x0),
+    h_ATdiffq42_S_detaN(0x0),
+    
+    h_AT_X_dpt(0x0),
+    h_AT_X_dptP(0x0),
+    h_AT_X_dptN(0x0),
+    h_diffq22_X_dpt(0x0),
+    h_diffq22_X_dptP(0x0),
+    h_diffq22_X_dptN(0x0),
+    h_ATdiffq22_X_dpt(0x0),
+    h_ATdiffq22_X_dptP(0x0),
+    h_ATdiffq22_X_dptN(0x0),
+    h_diffq32_X_dpt(0x0),
+    h_diffq32_X_dptP(0x0),
+    h_diffq32_X_dptN(0x0),
+    h_ATdiffq32_X_dpt(0x0),
+    h_ATdiffq32_X_dptP(0x0),
+    h_ATdiffq32_X_dptN(0x0),
+    h_diffq42_X_dpt(0x0),
+    h_diffq42_X_dptP(0x0),
+    h_diffq42_X_dptN(0x0),
+    h_ATdiffq42_X_dpt(0x0),
+    h_ATdiffq42_X_dptP(0x0),
+    h_ATdiffq42_X_dptN(0x0),
+    
+    h_a1q22_cent(0x0),
+    h_a1q22_centP(0x0),
+    h_a1q22_centN(0x0),
+    
+    h_a2q22_cent(0x0),
+    h_a2q22_centP(0x0),
+    h_a2q22_centN(0x0),
+    
+    h_rAq22_X1_cent(0x0),
+    h_rAq22_X1_centP(0x0),
+    h_rAq22_X1_centN(0x0),
+    h_rAq22_X2_cent(0x0),
+    h_rAq22_X2_centP(0x0),
+    h_rAq22_X2_centN(0x0),
+    h_rAq22_X3_cent(0x0),
+    h_rAq22_X3_centP(0x0),
+    h_rAq22_X3_centN(0x0),
+    h_rAq22_X4_cent(0x0),
+    h_rAq22_X4_centP(0x0),
+    h_rAq22_X4_centN(0x0)
 {
   // Class Constructor with name
 
@@ -95,32 +1113,6 @@ AliAnalysisTaskCMEv2A::AliAnalysisTaskCMEv2A(const char *name) : AliAnalysisTask
   DefineOutput(1,TList::Class());
 
   // user can change as needed
-  debug = 0;
-  doMC = false;
-  trigger = AliVEvent::kMB;
-  dopupcut = true;
-  doeffcorr = true;
-  centhandle = 1;
-  fbit = 128;
-  zvtxcut = 10.0;
-  centcut = 5.0;
-  nclscut = 60;
-  dcacutz = 5.0;
-  dcacutxy = 5.0;
-  dodcacuts = false;
-  outeta = 0.8;
-  ineta = 0.5;
-  excleta = 0.0;
-  ptmin = 0.2;
-  ptmax = 5.0;
-  doacuts = false;
-  nspid = 2.0;
-  cbinlo = 3;
-  cbinhi = 4;
-  donested = true;
-  dopaircut = true;
-  centlo = 20.0;
-  centhi = 60.0;
 
 }
 
@@ -161,6 +1153,7 @@ void AliAnalysisTaskCMEv2A::UserCreateOutputObjects()
   // --- create histograms --- //
   // ------------------------- //
 
+  fHistDCACOVerrors = new TH1F("fHistDCACOVerrors","",100,0.0,1.0);
   fHistPt = new TH1F("fHistPt","",50,0.0,5.0);
   fHistPhi = new TH1F("fHistPhi","",63,0.0,6.3);
   fHistEta = new TH1F("fHistEta","",300,-1.5,1.5);
@@ -171,6 +1164,7 @@ void AliAnalysisTaskCMEv2A::UserCreateOutputObjects()
   fHistDCAz = new TH1F("fHistDCAz","",350,-3.5,3.5);
   fHistDCAxyAfter = new TH1F("fHistDCAxyAfter","",350,-3.5,3.5);
   fHistDCAzAfter = new TH1F("fHistDCAzAfter","",350,-3.5,3.5);
+  fOutputList->Add(fHistDCACOVerrors);
   fOutputList->Add(fHistPt);
   fOutputList->Add(fHistPhi);
   fOutputList->Add(fHistEta);
@@ -531,9 +1525,13 @@ void AliAnalysisTaskCMEv2A::UserCreateOutputObjects()
   h_q22_cent = new TProfile("h_q22_cent","",100,0,100,tpmin,tpmax,"");
   h_q22_centP = new TProfile("h_q22_centP","",100,0,100,tpmin,tpmax,"");
   h_q22_centN = new TProfile("h_q22_centN","",100,0,100,tpmin,tpmax,"");
+  h_q22_centPP = new TProfile("h_q22_centPP","",100,0,100,tpmin,tpmax,"");
+  h_q22_centNN = new TProfile("h_q22_centNN","",100,0,100,tpmin,tpmax,"");
   fOutputList->Add(h_q22_cent);
   fOutputList->Add(h_q22_centP);
   fOutputList->Add(h_q22_centN);
+  fOutputList->Add(h_q22_centPP);
+  fOutputList->Add(h_q22_centNN);
   h_q23_cent = new TProfile("h_q23_cent","",100,0,100,tpmin,tpmax,"");
   h_q23_centP = new TProfile("h_q23_centP","",100,0,100,tpmin,tpmax,"");
   h_q23_centN = new TProfile("h_q23_centN","",100,0,100,tpmin,tpmax,"");
@@ -563,9 +1561,13 @@ void AliAnalysisTaskCMEv2A::UserCreateOutputObjects()
   h_q32_cent = new TProfile("h_q32_cent","",100,0,100,tpmin,tpmax,"");
   h_q32_centP = new TProfile("h_q32_centP","",100,0,100,tpmin,tpmax,"");
   h_q32_centN = new TProfile("h_q32_centN","",100,0,100,tpmin,tpmax,"");
+  h_q32_centPP = new TProfile("h_q32_centPP","",100,0,100,tpmin,tpmax,"");
+  h_q32_centNN = new TProfile("h_q32_centNN","",100,0,100,tpmin,tpmax,"");
   fOutputList->Add(h_q32_cent);
   fOutputList->Add(h_q32_centP);
   fOutputList->Add(h_q32_centN);
+  fOutputList->Add(h_q32_centPP);
+  fOutputList->Add(h_q32_centNN);
   h_q32gap0_cent = new TProfile("h_q32gap0_cent","",100,0,100,tpmin,tpmax,"");
   h_q32gap0_centP = new TProfile("h_q32gap0_centP","",100,0,100,tpmin,tpmax,"");
   h_q32gap0_centN = new TProfile("h_q32gap0_centN","",100,0,100,tpmin,tpmax,"");
@@ -583,9 +1585,13 @@ void AliAnalysisTaskCMEv2A::UserCreateOutputObjects()
   h_q42_cent = new TProfile("h_q42_cent","",100,0,100,tpmin,tpmax,"");
   h_q42_centP = new TProfile("h_q42_centP","",100,0,100,tpmin,tpmax,"");
   h_q42_centN = new TProfile("h_q42_centN","",100,0,100,tpmin,tpmax,"");
+  h_q42_centPP = new TProfile("h_q42_centPP","",100,0,100,tpmin,tpmax,"");
+  h_q42_centNN = new TProfile("h_q42_centNN","",100,0,100,tpmin,tpmax,"");
   fOutputList->Add(h_q42_cent);
   fOutputList->Add(h_q42_centP);
   fOutputList->Add(h_q42_centN);
+  fOutputList->Add(h_q42_centPP);
+  fOutputList->Add(h_q42_centNN);
   h_q42gap0_cent = new TProfile("h_q42gap0_cent","",100,0,100,tpmin,tpmax,"");
   h_q42gap0_centP = new TProfile("h_q42gap0_centP","",100,0,100,tpmin,tpmax,"");
   h_q42gap0_centN = new TProfile("h_q42gap0_centN","",100,0,100,tpmin,tpmax,"");
@@ -703,6 +1709,8 @@ void AliAnalysisTaskCMEv2A::UserCreateOutputObjects()
   h_Aq22_cent = new TProfile("h_Aq22_cent","",100,0,100,tpmin,tpmax,"");
   h_Aq22_centP = new TProfile("h_Aq22_centP","",100,0,100,tpmin,tpmax,"");
   h_Aq22_centN = new TProfile("h_Aq22_centN","",100,0,100,tpmin,tpmax,"");
+  h_Aq22_centPP = new TProfile("h_Aq22_centPP","",100,0,100,tpmin,tpmax,"");
+  h_Aq22_centNN = new TProfile("h_Aq22_centNN","",100,0,100,tpmin,tpmax,"");
   fOutputList->Add(h_Aq22_cent);
   fOutputList->Add(h_Aq22_centP);
   fOutputList->Add(h_Aq22_centN);
@@ -729,9 +1737,13 @@ void AliAnalysisTaskCMEv2A::UserCreateOutputObjects()
   h_Aq32_cent = new TProfile("h_Aq32_cent","",100,0,100,tpmin,tpmax,"");
   h_Aq32_centP = new TProfile("h_Aq32_centP","",100,0,100,tpmin,tpmax,"");
   h_Aq32_centN = new TProfile("h_Aq32_centN","",100,0,100,tpmin,tpmax,"");
+  h_Aq32_centPP = new TProfile("h_Aq32_centPP","",100,0,100,tpmin,tpmax,"");
+  h_Aq32_centNN = new TProfile("h_Aq32_centNN","",100,0,100,tpmin,tpmax,"");
   fOutputList->Add(h_Aq32_cent);
   fOutputList->Add(h_Aq32_centP);
   fOutputList->Add(h_Aq32_centN);
+  fOutputList->Add(h_Aq32_centPP);
+  fOutputList->Add(h_Aq32_centNN);
   h_Aq32_SL_cent = new TProfile("h_Aq32_SL_cent","",100,0,100,tpmin,tpmax,"");
   h_Aq32_SL_centP = new TProfile("h_Aq32_SL_centP","",100,0,100,tpmin,tpmax,"");
   h_Aq32_SL_centN = new TProfile("h_Aq32_SL_centN","",100,0,100,tpmin,tpmax,"");
@@ -755,9 +1767,13 @@ void AliAnalysisTaskCMEv2A::UserCreateOutputObjects()
   h_Aq42_cent = new TProfile("h_Aq42_cent","",100,0,100,tpmin,tpmax,"");
   h_Aq42_centP = new TProfile("h_Aq42_centP","",100,0,100,tpmin,tpmax,"");
   h_Aq42_centN = new TProfile("h_Aq42_centN","",100,0,100,tpmin,tpmax,"");
+  h_Aq42_centPP = new TProfile("h_Aq42_centPP","",100,0,100,tpmin,tpmax,"");
+  h_Aq42_centNN = new TProfile("h_Aq42_centNN","",100,0,100,tpmin,tpmax,"");
   fOutputList->Add(h_Aq42_cent);
   fOutputList->Add(h_Aq42_centP);
   fOutputList->Add(h_Aq42_centN);
+  fOutputList->Add(h_Aq42_centPP);
+  fOutputList->Add(h_Aq42_centNN);
   h_Aq42_SL_cent = new TProfile("h_Aq42_SL_cent","",100,0,100,tpmin,tpmax,"");
   h_Aq42_SL_centP = new TProfile("h_Aq42_SL_centP","",100,0,100,tpmin,tpmax,"");
   h_Aq42_SL_centN = new TProfile("h_Aq42_SL_centN","",100,0,100,tpmin,tpmax,"");
@@ -977,6 +1993,49 @@ void AliAnalysisTaskCMEv2A::UserCreateOutputObjects()
 
 
 
+
+
+  h_ATXdiffq22_X_detaP = new TProfile("h_ATXdiffq22_X_detaP","",32,-1.6,1.6,tpmin,tpmax,"");
+  h_ATXdiffq22_X_detaN = new TProfile("h_ATXdiffq22_X_detaN","",32,-1.6,1.6,tpmin,tpmax,"");
+  fOutputList->Add(h_ATXdiffq22_X_detaP);
+  fOutputList->Add(h_ATXdiffq22_X_detaN);
+  h_ATYdiffq22_X_detaP = new TProfile("h_ATYdiffq22_X_detaP","",32,-1.6,1.6,tpmin,tpmax,"");
+  h_ATYdiffq22_X_detaN = new TProfile("h_ATYdiffq22_X_detaN","",32,-1.6,1.6,tpmin,tpmax,"");
+  fOutputList->Add(h_ATYdiffq22_X_detaP);
+  fOutputList->Add(h_ATYdiffq22_X_detaN);
+  h_ATZdiffq22_X_detaP = new TProfile("h_ATZdiffq22_X_detaP","",32,-1.6,1.6,tpmin,tpmax,"");
+  h_ATZdiffq22_X_detaN = new TProfile("h_ATZdiffq22_X_detaN","",32,-1.6,1.6,tpmin,tpmax,"");
+  fOutputList->Add(h_ATZdiffq22_X_detaP);
+  fOutputList->Add(h_ATZdiffq22_X_detaN);
+
+  h_ATXdiffq32_X_detaP = new TProfile("h_ATXdiffq32_X_detaP","",32,-1.6,1.6,tpmin,tpmax,"");
+  h_ATXdiffq32_X_detaN = new TProfile("h_ATXdiffq32_X_detaN","",32,-1.6,1.6,tpmin,tpmax,"");
+  fOutputList->Add(h_ATXdiffq32_X_detaP);
+  fOutputList->Add(h_ATXdiffq32_X_detaN);
+  h_ATYdiffq32_X_detaP = new TProfile("h_ATYdiffq32_X_detaP","",32,-1.6,1.6,tpmin,tpmax,"");
+  h_ATYdiffq32_X_detaN = new TProfile("h_ATYdiffq32_X_detaN","",32,-1.6,1.6,tpmin,tpmax,"");
+  fOutputList->Add(h_ATYdiffq32_X_detaP);
+  fOutputList->Add(h_ATYdiffq32_X_detaN);
+  h_ATZdiffq32_X_detaP = new TProfile("h_ATZdiffq32_X_detaP","",32,-1.6,1.6,tpmin,tpmax,"");
+  h_ATZdiffq32_X_detaN = new TProfile("h_ATZdiffq32_X_detaN","",32,-1.6,1.6,tpmin,tpmax,"");
+  fOutputList->Add(h_ATZdiffq32_X_detaP);
+  fOutputList->Add(h_ATZdiffq32_X_detaN);
+
+  h_ATXdiffq42_X_detaP = new TProfile("h_ATXdiffq42_X_detaP","",32,-1.6,1.6,tpmin,tpmax,"");
+  h_ATXdiffq42_X_detaN = new TProfile("h_ATXdiffq42_X_detaN","",32,-1.6,1.6,tpmin,tpmax,"");
+  fOutputList->Add(h_ATXdiffq42_X_detaP);
+  fOutputList->Add(h_ATXdiffq42_X_detaN);
+  h_ATYdiffq42_X_detaP = new TProfile("h_ATYdiffq42_X_detaP","",32,-1.6,1.6,tpmin,tpmax,"");
+  h_ATYdiffq42_X_detaN = new TProfile("h_ATYdiffq42_X_detaN","",32,-1.6,1.6,tpmin,tpmax,"");
+  fOutputList->Add(h_ATYdiffq42_X_detaP);
+  fOutputList->Add(h_ATYdiffq42_X_detaN);
+  h_ATZdiffq42_X_detaP = new TProfile("h_ATZdiffq42_X_detaP","",32,-1.6,1.6,tpmin,tpmax,"");
+  h_ATZdiffq42_X_detaN = new TProfile("h_ATZdiffq42_X_detaN","",32,-1.6,1.6,tpmin,tpmax,"");
+  fOutputList->Add(h_ATZdiffq42_X_detaP);
+  fOutputList->Add(h_ATZdiffq42_X_detaN);
+
+
+
   h_AT_X_dpt = new TProfile("h_AT_X_dpt","",32,-1.6,1.6,tpmin,tpmax,"");
   h_AT_X_dptP = new TProfile("h_AT_X_dptP","",32,-1.6,1.6,tpmin,tpmax,"");
   h_AT_X_dptN = new TProfile("h_AT_X_dptN","",32,-1.6,1.6,tpmin,tpmax,"");
@@ -1139,11 +2198,24 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
       return;
     }
 
-  const int hmax = 9; // number of harmonics including 0 for multiplicity counting
 
-  // -----------------------------------------------------------------
-  // --- do everything for MC truth before proceeding to anything else
-  // -----------------------------------------------------------------
+  // AOD Event object from tree
+  AliAODEvent *fAOD = (AliAODEvent *)InputEvent();
+  if(!fAOD)
+    {
+      if(debug>-1) cout<<"ERROR: AOD event object not available. Discarding event..."<<endl;
+      return;
+    }
+
+
+  int runnumber = fAOD->GetRunNumber();
+  float mag = fAOD->GetMagneticField();
+
+  if(debug>0)
+    {
+      cout<<"runnumber is "<<runnumber<<endl;
+      cout<<"magnetic field is "<<mag<<endl;
+    }
 
   // MC Event object from tree
   AliMCEvent *fMC = MCEvent();
@@ -1153,25 +2225,348 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
       return;
     }
 
+  // get pid
+  AliPIDResponse *fPID = handler->GetPIDResponse();
+  if(!fPID && !doMC)    // use PID only if no MC 
+    {
+      if(debug>-1) cout<<"ERROR: PIDResponse object not available. Discarding event..."<<endl;
+      return;
+    }
+
+  // // Eventplane object (from AOD)
+  // AliEventplane *fEventplane = fAOD->GetEventplane();
+  // if(!fEventplane)
+  //   {
+  //     if(debug>-1) cout<<"ERROR: Eventplane object not available. Discarding event..."<<endl;
+  //     return;
+  //   }
+
+  // float psi_V0_h2 = fEventplane->GetEventplane("V0",fAOD,2);
+  // float psi_V0A_h2 = fEventplane->GetEventplane("V0A",fAOD,2);
+  // float psi_V0C_h2 = fEventplane->GetEventplane("V0C",fAOD,2);
+
+  // fHistPlaneV0h2->Fill(psi_V0_h2);
+  // fHistPlaneV0Ah2->Fill(psi_V0A_h2);
+  // fHistPlaneV0Ch2->Fill(psi_V0C_h2);
+  // fHistPlaneV0ACDCh2->Fill(psi_V0A_h2-psi_V0C_h2);
+
+
+
+  // Centrality object (from AOD)
+  AliCentrality *fCentrality = fAOD->GetCentrality();
+  if(!fCentrality)
+    {
+      if(debug>-1) cout<<"ERROR: Centrality object not available. Discarding event..."<<endl;
+      return;
+    }
+
+  float centTRK = fCentrality->GetCentralityPercentile("TRK");
+  float centV0M = fCentrality->GetCentralityPercentile("V0M");
+  float centSPD = fCentrality->GetCentralityPercentile("CL1");//outer SPD?
+  float cent = centTRK;
+  if(centhandle==2) cent = centV0M;
+  if(centhandle==3) cent = centSPD;
+
+  int icent = int(cent)/10;
+
+  int centstatus = 0;
+  if(centTRK<0.0||centV0M<0.0) centstatus = -1;
+  if(centTRK<0.0&&centV0M<0.0) centstatus = -2;
+  if(centTRK>0.0||centV0M>0.0) centstatus = 1;
+  if(centTRK>0.0&&centV0M>0.0) centstatus = 2;
+  if(centTRK==0.0&&centV0M==0.0) centstatus = 0;
+
+  if(debug>0)
+    {
+      cout<<"centTRK "<<centTRK<<endl;
+      cout<<"centV0M "<<centV0M<<endl;
+      cout<<"centSPD "<<centSPD<<endl;
+      cout<<"centrality selection is "<<centhandle<<endl;
+      cout<<"cent is "<<cent<<endl;
+    }
+  fHistCentTRK->Fill(centTRK);
+  fHistCentV0M->Fill(centV0M);
+  fHistCentDIFF->Fill(centTRK-centV0M);
+
+  //ULong64_t mask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  ULong64_t mask = handler->IsEventSelected();
+  ULong64_t amb = AliVEvent::kMB;
+  ULong64_t acn = AliVEvent::kCentral;
+  ULong64_t asc = AliVEvent::kSemiCentral;
+
+  if(debug>0) cout<<"trigger selection is "<<trigger<<endl;
+  if(debug>0) cout<<"trigger mask is "<<mask<<endl;
+
+  if(mask&amb)
+    {
+      fHistCentTRKAVEkMB->Fill(centTRK);
+      fHistCentV0MAVEkMB->Fill(centV0M);
+    }
+  if(mask&(acn&(amb|asc)))
+    {
+      fHistCentTRKAVEkCentral->Fill(centTRK);
+      fHistCentV0MAVEkCentral->Fill(centV0M);
+    }
+  if(mask&(asc|amb))
+    {
+      fHistCentTRKAVEkSemiCentral->Fill(centTRK);
+      fHistCentV0MAVEkSemiCentral->Fill(centV0M);
+    }
+  if(mask&(amb|acn|asc))
+    {
+      fHistCentTRKAVEkA3->Fill(centTRK);
+      fHistCentV0MAVEkA3->Fill(centV0M);
+    }
+
+
+  // Ionut
+  Bool_t isMB = (fAOD->GetTriggerMask() & (ULong64_t(1)<<1));
+  Bool_t isCentral = (fAOD->GetTriggerMask() & (ULong64_t(1)<<4));
+  Bool_t isSemiCentral = (fAOD->GetTriggerMask() & (ULong64_t(1)<<7));
+
+  cout<<"other trigger mask is "<<fAOD->GetTriggerMask()<<endl;
+
+  //if(mask&trigger)
+  //if(isSemiCentral||isMB)
+  if(isCentral||isSemiCentral||isMB)
+    {
+      fHistCentTRKAVEkSel->Fill(centTRK);
+      fHistCentV0MAVEkSel->Fill(centV0M);
+    }
+  else
+    {
+      if(debug>0) cout<<"wrong trigger, rejecting event"<<endl;
+      return;
+    }
+
+  if(fabs(centTRK-centV0M)>centcut)
+    {
+      if(debug>0) cout<<"centrality difference outside cut, rejecting event"<<endl;
+      return;
+    }
+
+
+
+  // AOD vertex objects
+  AliAODVertex *fVtx = fAOD->GetPrimaryVertex();
+  AliAODVertex *fVtxSPD = fAOD->GetPrimaryVertexSPD();
+  if(!fVtx)
+    {
+      if(debug>-1) cout<<"ERROR: Vertex object not available. Discarding event..."<<endl;
+      return;
+    }
+  float zvtxV0 = fVtx->GetZ();
+  float zvtxSPD = fVtxSPD->GetZ();
+  if(debug>0) cout<<"zvtxV0 is "<<zvtxV0<<endl;
+  if(debug>0) cout<<"zvtxSPD is "<<zvtxSPD<<endl;
+  if(centstatus==2)
+    {
+      fHistZVtx->Fill(zvtxV0);
+      fHistZVtxD->Fill(zvtxV0-zvtxSPD);
+    }
+  if(fabs(zvtxV0)>zvtxcut)
+    {
+      if(debug>0) cout<<"vertex outside cut, rejecting event"<<endl;
+      return;
+    }
+  float eventX = fVtx->GetX();
+  float eventY = fVtx->GetY();
+  float eventZ = fVtx->GetZ();
+
+
+
+  // // get V0 object
+  // AliAODVZERO *fV0 = fAOD->GetVZEROData();
+  // for(int i=0; i<64; i++)
+  //   {
+  //     float phiV0 = pi/4.0*(0.5+i%8);
+  //     float multV0 = fV0->GetMultiplicity(i);
+  //   }
+
+
+  int d_ntrk = fAOD->GetNumberOfTracks();
   int d_ntrkMC = 0;
   if(fMC) d_ntrkMC = fMC->GetNumberOfTracks();
 
+  if(centstatus==-2&&d_ntrk>0) centstatus = -3;
+  if(debug>0) cout<<"there are "<<d_ntrk<<" tracks in this event"<<endl;
+  if(debug>0&&fMC) cout<<"there are "<<d_ntrkMC<<" Monte Carlo tracks in this event"<<endl;
+  if(debug>0) cout<<"centrality diagnostic is "<<centstatus<<endl;
+
+  fHistCentDIAG->Fill(centstatus);
+  if(centstatus==-3)
+    {
+      fHistCtrkDIAG->Fill(d_ntrk);
+      fHistVtxRDIAG->Fill(zvtxV0);
+      fHistVtxSDIAG->Fill(zvtxSPD);
+    }
+  if(centstatus==-2)
+    {
+      fHistVtxRDIBG->Fill(zvtxV0);
+      fHistVtxSDIBG->Fill(zvtxSPD);
+    }
+
+  // --- AliAnalysisUtils for pileup cuts
+  if(dopupcut)
+    {
+      AliAnalysisUtils *fUtils = new AliAnalysisUtils();
+      if(!fUtils)
+  	{
+  	  if(debug>-1) cout<<"ERROR: cannot find AliAnalysisUtils..."<<endl;
+  	  return;
+  	}
+      fUtils->SetUseOutOfBunchPileUp(true);
+      bool pileup = fUtils->IsPileUpEvent(fAOD);
+      //bool pileup = fAOD->IsPileUpFromSPD(3,0.8,3.0,2.0,5.0); // default parameters in AliAODEvent.h
+      if(pileup)
+  	{
+  	  if(debug>0) cout<<"Rejecting event for pileup (AliAnalysisUtils)"<<endl;
+  	  return;
+  	}
+      if(fUtils) delete fUtils;
+      //
+      // ---
+      //
+      /*
+      const AliAODVertex* vtxSPD = fAOD->GetPrimaryVertexSPD();
+      if(!vtxSPD||vtxSPD->GetNContributors()<=0)
+	{
+	  if(debug>0) cout<<"rejecting pileup event (no vtxSPD or zero contributors) "<<vtxSPD<<endl;
+	  return;
+	}
+      
+      const AliAODVertex* vtxTPC = 0;
+      int nVertices = fAOD->GetNumberOfVertices();
+      if(debug>0) cout<<"number of vertices is "<<nVertices<<endl;
+      for(int iVertices = 0; iVertices < nVertices; iVertices++)
+	{
+	  const AliAODVertex* vertex = fAOD->GetVertex(iVertices);
+	  if(debug>0) cout<<"vertex type is "<<vertex->GetType()<<endl;
+	  if(vertex->GetType()!=AliAODVertex::kMainTPC) continue;
+	  vtxTPC = vertex;
+	}
+      if(!vtxTPC||vtxTPC->GetNContributors()<=0)
+	{
+	  if(debug>0) cout<<"rejecting pileup event (no vtxTPC or zero contributors)"<<vtxTPC<<endl;
+	  return;
+	}
+      
+      float diffZ = vtxSPD->GetZ() - vtxTPC->GetZ();
+      if(fabs(diffZ)>2.0)
+	{
+	  if(debug>0) cout<<"rejecting pileup event with vtxTPC "<<vtxTPC->GetZ()<<" vtxSPD "<<vtxSPD->GetZ()<<endl;
+	  return;
+	}
+      */
+      // 
+      // ---
+      //
+    }
+
+
+  int ntrk = 0;
+  int ntrkpos = 0;
+  int ntrkneg = 0;
+  int ntrkL = 0;
+  int ntrkposL = 0;
+  int ntrknegL = 0;
+  int ntrkR = 0;
+  int ntrkposR = 0;
+  int ntrknegR = 0;
+  int ntrkA1 = 0;
+  int ntrkposA1 = 0;
+  int ntrknegA1 = 0;
+  int ntrkA2 = 0;
+  int ntrkposA2 = 0;
+  int ntrknegA2 = 0;
   int ntrkMC = 0;
   int ntrkposMC = 0;
   int ntrknegMC = 0;
+
+  int cutntrk = 0;
+  int cutntrkpos = 0;
+  int cutntrkneg = 0;
+  int cutntrkL = 0;
+  int cutntrkposL = 0;
+  int cutntrknegL = 0;
+  int cutntrkR = 0;
+  int cutntrkposR = 0;
+  int cutntrknegR = 0;
   int cutntrkMC = 0;
   int cutntrkposMC = 0;
   int cutntrknegMC = 0;
 
-  float centMC = 99;
-  AliCentrality *fCentralityMC = fMC->GetCentrality();
-  if(!fCentralityMC)
+  const int hmax = 9; // number of harmonics including 0 for multiplicity counting
+  float tpcXplo[hmax], tpcYplo[hmax], tpcXpro[hmax], tpcYpro[hmax];
+  float tpcXnlo[hmax], tpcYnlo[hmax], tpcXnro[hmax], tpcYnro[hmax];
+  float tpcXpli[hmax], tpcYpli[hmax], tpcXpri[hmax], tpcYpri[hmax];
+  float tpcXnli[hmax], tpcYnli[hmax], tpcXnri[hmax], tpcYnri[hmax];
+  float tpcXpl[hmax], tpcYpl[hmax], tpcXpr[hmax], tpcYpr[hmax];
+  float tpcXnl[hmax], tpcYnl[hmax], tpcXnr[hmax], tpcYnr[hmax];
+  for(int i=0; i<hmax;i++)
     {
-      if(debug>0) cout<<"Warning: Centrality object not available. Proceeding..."<<endl;
+      tpcXplo[i] = 0.0;
+      tpcYplo[i] = 0.0;
+      tpcXpro[i] = 0.0;
+      tpcYpro[i] = 0.0;
+      tpcXnlo[i] = 0.0;
+      tpcYnlo[i] = 0.0;
+      tpcXnro[i] = 0.0;
+      tpcYnro[i] = 0.0;
+      //
+      tpcXpli[i] = 0.0;
+      tpcYpli[i] = 0.0;
+      tpcXpri[i] = 0.0;
+      tpcYpri[i] = 0.0;
+      tpcXnli[i] = 0.0;
+      tpcYnli[i] = 0.0;
+      tpcXnri[i] = 0.0;
+      tpcYnri[i] = 0.0;
+      //
+      tpcXpl[i] = 0.0;
+      tpcYpl[i] = 0.0;
+      tpcXpr[i] = 0.0;
+      tpcYpr[i] = 0.0;
+      tpcXnl[i] = 0.0;
+      tpcYnl[i] = 0.0;
+      tpcXnr[i] = 0.0;
+      tpcYnr[i] = 0.0;
     }
-  else
+
+  float MCtpcXplo[hmax], MCtpcYplo[hmax], MCtpcXpro[hmax], MCtpcYpro[hmax];
+  float MCtpcXnlo[hmax], MCtpcYnlo[hmax], MCtpcXnro[hmax], MCtpcYnro[hmax];
+  float MCtpcXpli[hmax], MCtpcYpli[hmax], MCtpcXpri[hmax], MCtpcYpri[hmax];
+  float MCtpcXnli[hmax], MCtpcYnli[hmax], MCtpcXnri[hmax], MCtpcYnri[hmax];
+  float MCtpcXpl[hmax], MCtpcYpl[hmax], MCtpcXpr[hmax], MCtpcYpr[hmax];
+  float MCtpcXnl[hmax], MCtpcYnl[hmax], MCtpcXnr[hmax], MCtpcYnr[hmax];
+  for(int i=0; i<hmax;i++)
     {
-      centMC = fCentralityMC->GetCentralityPercentile("TRKtrue");
+      MCtpcXplo[i] = 0.0;
+      MCtpcYplo[i] = 0.0;
+      MCtpcXpro[i] = 0.0;
+      MCtpcYpro[i] = 0.0;
+      MCtpcXnlo[i] = 0.0;
+      MCtpcYnlo[i] = 0.0;
+      MCtpcXnro[i] = 0.0;
+      MCtpcYnro[i] = 0.0;
+      //
+      MCtpcXpli[i] = 0.0;
+      MCtpcYpli[i] = 0.0;
+      MCtpcXpri[i] = 0.0;
+      MCtpcYpri[i] = 0.0;
+      MCtpcXnli[i] = 0.0;
+      MCtpcYnli[i] = 0.0;
+      MCtpcXnri[i] = 0.0;
+      MCtpcYnri[i] = 0.0;
+      //
+      MCtpcXpl[i] = 0.0;
+      MCtpcYpl[i] = 0.0;
+      MCtpcXpr[i] = 0.0;
+      MCtpcYpr[i] = 0.0;
+      MCtpcXnl[i] = 0.0;
+      MCtpcYnl[i] = 0.0;
+      MCtpcXnr[i] = 0.0;
+      MCtpcYnr[i] = 0.0;
     }
 
   // ---------------------------------- //
@@ -1179,43 +2574,6 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
   // ---------------------------------- //
   if(fMC)
     {
-
-      float MCtpcXplo[hmax], MCtpcYplo[hmax], MCtpcXpro[hmax], MCtpcYpro[hmax];
-      float MCtpcXnlo[hmax], MCtpcYnlo[hmax], MCtpcXnro[hmax], MCtpcYnro[hmax];
-      float MCtpcXpli[hmax], MCtpcYpli[hmax], MCtpcXpri[hmax], MCtpcYpri[hmax];
-      float MCtpcXnli[hmax], MCtpcYnli[hmax], MCtpcXnri[hmax], MCtpcYnri[hmax];
-      float MCtpcXpl[hmax], MCtpcYpl[hmax], MCtpcXpr[hmax], MCtpcYpr[hmax];
-      float MCtpcXnl[hmax], MCtpcYnl[hmax], MCtpcXnr[hmax], MCtpcYnr[hmax];
-      for(int i=0; i<hmax;i++)
-	{
-	  MCtpcXplo[i] = 0.0;
-	  MCtpcYplo[i] = 0.0;
-	  MCtpcXpro[i] = 0.0;
-	  MCtpcYpro[i] = 0.0;
-	  MCtpcXnlo[i] = 0.0;
-	  MCtpcYnlo[i] = 0.0;
-	  MCtpcXnro[i] = 0.0;
-	  MCtpcYnro[i] = 0.0;
-	  //
-	  MCtpcXpli[i] = 0.0;
-	  MCtpcYpli[i] = 0.0;
-	  MCtpcXpri[i] = 0.0;
-	  MCtpcYpri[i] = 0.0;
-	  MCtpcXnli[i] = 0.0;
-	  MCtpcYnli[i] = 0.0;
-	  MCtpcXnri[i] = 0.0;
-	  MCtpcYnri[i] = 0.0;
-	  //
-	  MCtpcXpl[i] = 0.0;
-	  MCtpcYpl[i] = 0.0;
-	  MCtpcXpr[i] = 0.0;
-	  MCtpcYpr[i] = 0.0;
-	  MCtpcXnl[i] = 0.0;
-	  MCtpcYnl[i] = 0.0;
-	  MCtpcXnr[i] = 0.0;
-	  MCtpcYnr[i] = 0.0;
-	}
-      
       // variables for 3rd particle
       float MCpt3[d_ntrkMC];
       float MCeta3[d_ntrkMC];
@@ -1223,7 +2581,7 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
       int MCcharge3[d_ntrkMC];
       // initial variables to out of range values
       // for cases when the track loop skips certain tracks
-      for(int i=0; i<d_ntrkMC; i++)
+      for(int i=0; i<d_ntrk; i++)
 	{
 	  MCpt3[i] = -99;
 	  MCeta3[i] = -99;
@@ -1429,8 +2787,8 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
 		} // end right half of MCTPC
 	    } // end pt selection
 	  
-	  h_AT_etaMC->Fill(centMC,charge);
-	  h2_AT_etaMC->Fill(centMC,charge);
+	  h_AT_etaMC->Fill(cent,charge);
+	  h2_AT_etaMC->Fill(cent,charge);
 
 	  MCpt3[itrkMC] = pt;
 	  MCeta3[itrkMC] = eta;
@@ -1453,8 +2811,8 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
 	{
 	  MCqasymm = float(cutntrkposMC-cutntrknegMC)/float(cutntrkMC);
 	}
-      h_A_centMC->Fill(centMC,MCqasymm);
-      h2_A_centMC->Fill(centMC,MCqasymm);
+      h_A_centMC->Fill(cent,MCqasymm);
+      h2_A_centMC->Fill(cent,MCqasymm);
       
       
       for(int i=0; i<6; i++)
@@ -1505,18 +2863,18 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
       float MCq22gap1ev = (MCtpcXl2o*MCtpcXr2o+MCtpcYl2o*MCtpcYr2o)/(MCtpcXl0o*MCtpcXr0o);
       float MCq22gap1Pev = (MCtpcXplo[2]*MCtpcXpro[2]+MCtpcYplo[2]*MCtpcYpro[2])/(MCtpcXplo[0]*MCtpcXpro[0]);
       float MCq22gap1Nev = (MCtpcXnlo[2]*MCtpcXnro[2]+MCtpcYnlo[2]*MCtpcYnro[2])/(MCtpcXnlo[0]*MCtpcXnro[0]);
-      h_MCq22_cent->Fill(centMC,MCq22ev);
-      h_MCq22_centP->Fill(centMC,MCq22Pev);
-      h_MCq22_centN->Fill(centMC,MCq22Nev);
-      h_MCAq22_cent->Fill(centMC,MCq22ev*MCqasymm);
-      h_MCAq22_centP->Fill(centMC,MCq22Pev*MCqasymm);
-      h_MCAq22_centN->Fill(centMC,MCq22Nev*MCqasymm);
-      h_MCq22gap0_cent->Fill(centMC,MCq22gap0ev);
-      h_MCq22gap0_centP->Fill(centMC,MCq22gap0Pev);
-      h_MCq22gap0_centN->Fill(centMC,MCq22gap0Nev);
-      h_MCq22gap1_cent->Fill(centMC,MCq22gap1ev);
-      h_MCq22gap1_centP->Fill(centMC,MCq22gap1Pev);
-      h_MCq22gap1_centN->Fill(centMC,MCq22gap1Nev);
+      h_MCq22_cent->Fill(cent,MCq22ev);
+      h_MCq22_centP->Fill(cent,MCq22Pev);
+      h_MCq22_centN->Fill(cent,MCq22Nev);
+      h_MCAq22_cent->Fill(cent,MCq22ev*MCqasymm);
+      h_MCAq22_centP->Fill(cent,MCq22Pev*MCqasymm);
+      h_MCAq22_centN->Fill(cent,MCq22Nev*MCqasymm);
+      h_MCq22gap0_cent->Fill(cent,MCq22gap0ev);
+      h_MCq22gap0_centP->Fill(cent,MCq22gap0Pev);
+      h_MCq22gap0_centN->Fill(cent,MCq22gap0Nev);
+      h_MCq22gap1_cent->Fill(cent,MCq22gap1ev);
+      h_MCq22gap1_centP->Fill(cent,MCq22gap1Pev);
+      h_MCq22gap1_centN->Fill(cent,MCq22gap1Nev);
       
       
       
@@ -1630,13 +2988,13 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
 	    } // end pT selection
 	  
 	  // COME BACK HERE
-	  float MCtrkX[9],  MCtrkY[9];
+	  float MCtrkX[9];//,  MCtrkY[9];
 	  float MCtrkXp[9], MCtrkYp[9]; // pos
 	  float MCtrkXn[9], MCtrkYn[9]; // neg
 	  for(int i=0; i<6; i++)
 	    {
 	      MCtrkX[i]=MCtrkXpl[i]+MCtrkXnl[i]+MCtrkXpr[i]+MCtrkXnr[i];
-	      MCtrkY[i]=MCtrkYpl[i]+MCtrkYnl[i]+MCtrkYpr[i]+MCtrkYnr[i];
+	      //MCtrkY[i]=MCtrkYpl[i]+MCtrkYnl[i]+MCtrkYpr[i]+MCtrkYnr[i];
 	      // pos
 	      MCtrkXp[i]=MCtrkXpl[i]+MCtrkXpr[i];
 	      MCtrkYp[i]=MCtrkYpl[i]+MCtrkYpr[i];
@@ -1653,22 +3011,20 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
 	  
 	  // --- calculate differential cumulants from Q-vector components
 	  // --- reference flow is from whole TPC
-	  float MCdiffq22ev = ((MCtrkX[2]*MCtpcX[2])+(MCtrkY[2]*MCtpcY[2])-1)/(MCtpcX[0]-1);
+	  //float MCdiffq22ev = ((MCtrkX[2]*MCtpcX[2])+(MCtrkY[2]*MCtpcY[2])-1)/(MCtpcX[0]-1);
 	  float MCdiffq22Pev = ((MCtrkXp[2]*MCtpcX[2])+(MCtrkYp[2]*MCtpcY[2])-1)/(MCtpcX[0]-1);
 	  float MCdiffq22Nev = ((MCtrkXn[2]*MCtpcX[2])+(MCtrkYn[2]*MCtpcY[2])-1)/(MCtpcX[0]-1);
 	  // --- third harmonic
-	  float MCdiffq32ev = ((MCtrkX[3]*MCtpcX[3])+(MCtrkY[3]*MCtpcY[3])-1)/(MCtpcX[0]-1);
+	  //float MCdiffq32ev = ((MCtrkX[3]*MCtpcX[3])+(MCtrkY[3]*MCtpcY[3])-1)/(MCtpcX[0]-1);
 	  float MCdiffq32Pev = ((MCtrkXp[3]*MCtpcX[3])+(MCtrkYp[3]*MCtpcY[3])-1)/(MCtpcX[0]-1);
 	  float MCdiffq32Nev = ((MCtrkXn[3]*MCtpcX[3])+(MCtrkYn[3]*MCtpcY[3])-1)/(MCtpcX[0]-1);
 	  // --- fourth harmonic
-	  float MCdiffq42ev = ((MCtrkX[4]*MCtpcX[4])+(MCtrkY[4]*MCtpcY[4])-1)/(MCtpcX[0]-1);
+	  //float MCdiffq42ev = ((MCtrkX[4]*MCtpcX[4])+(MCtrkY[4]*MCtpcY[4])-1)/(MCtpcX[0]-1);
 	  float MCdiffq42Pev = ((MCtrkXp[4]*MCtpcX[4])+(MCtrkYp[4]*MCtpcY[4])-1)/(MCtpcX[0]-1);
 	  float MCdiffq42Nev = ((MCtrkXn[4]*MCtpcX[4])+(MCtrkYn[4]*MCtpcY[4])-1)/(MCtpcX[0]-1);
 
-	  bool centMCflag = false;
-	  if(centMC==99) centMCflag = true;
-	  if(centMC>centlo||centMC<centhi) centMCflag = true;
-	  if(donested&&centMCflag)
+
+	  if(donested)
 	    {
 	      for(int i=0; i<d_ntrkMC; i++)
 		{
@@ -1734,321 +3090,10 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
 	    } // check on donested
 
 	} // end of second MC track loop 
-
+      
     } // check on existence of MC
-
-  // -----------------------------  
-  // --- end of MC truth only part
-  // --- now do everything else
-  // -----------------------------
-
-  // AOD Event object from tree
-  AliAODEvent *fAOD = (AliAODEvent *)InputEvent();
-  if(!fAOD)
-    {
-      if(debug>-1) cout<<"ERROR: AOD event object not available. Discarding event..."<<endl;
-      return;
-    }
-
-  int runnumber = fAOD->GetRunNumber();
-  float mag = fAOD->GetMagneticField();
-
-  if(debug>0)
-    {
-      cout<<"runnumber is "<<runnumber<<endl;
-      cout<<"magnetic field is "<<mag<<endl;
-    }
-
-  // get pid
-  AliPIDResponse *fPID = handler->GetPIDResponse();
-  if(!fPID && !doMC)    // use PID only if no MC 
-    {
-      if(debug>-1) cout<<"ERROR: PIDResponse object not available. Discarding event..."<<endl;
-      return;
-    }
-
-  // // Eventplane object (from AOD)
-  // AliEventplane *fEventplane = fAOD->GetEventplane();
-  // if(!fEventplane)
-  //   {
-  //     if(debug>-1) cout<<"ERROR: Eventplane object not available. Discarding event..."<<endl;
-  //     return;
-  //   }
-
-  // float psi_V0_h2 = fEventplane->GetEventplane("V0",fAOD,2);
-  // float psi_V0A_h2 = fEventplane->GetEventplane("V0A",fAOD,2);
-  // float psi_V0C_h2 = fEventplane->GetEventplane("V0C",fAOD,2);
-
-  // fHistPlaneV0h2->Fill(psi_V0_h2);
-  // fHistPlaneV0Ah2->Fill(psi_V0A_h2);
-  // fHistPlaneV0Ch2->Fill(psi_V0C_h2);
-  // fHistPlaneV0ACDCh2->Fill(psi_V0A_h2-psi_V0C_h2);
-
-
-
-  // Centrality object (from AOD)
-  AliCentrality *fCentrality = fAOD->GetCentrality();
-  if(!fCentrality)
-    {
-      if(debug>-1) cout<<"ERROR: Centrality object not available. Discarding event..."<<endl;
-      return;
-    }
-
-  float centTRK = fCentrality->GetCentralityPercentile("TRK");
-  float centV0M = fCentrality->GetCentralityPercentile("V0M");
-  float centSPD = fCentrality->GetCentralityPercentile("CL1");//outer SPD?
-  float cent = centTRK;
-  if(centhandle==2) cent = centV0M;
-  if(centhandle==3) cent = centSPD;
-
-  int icent = int(cent)/10;
-
-  int centstatus = 0;
-  if(centTRK<0.0||centV0M<0.0) centstatus = -1;
-  if(centTRK<0.0&&centV0M<0.0) centstatus = -2;
-  if(centTRK>0.0||centV0M>0.0) centstatus = 1;
-  if(centTRK>0.0&&centV0M>0.0) centstatus = 2;
-  if(centTRK==0.0&&centV0M==0.0) centstatus = 0;
-
-  if(debug>0)
-    {
-      cout<<"centTRK "<<centTRK<<endl;
-      cout<<"centV0M "<<centV0M<<endl;
-      cout<<"centSPD "<<centSPD<<endl;
-      cout<<"centrality selection is "<<centhandle<<endl;
-      cout<<"cent is "<<cent<<endl;
-    }
-  fHistCentTRK->Fill(centTRK);
-  fHistCentV0M->Fill(centV0M);
-  fHistCentDIFF->Fill(centTRK-centV0M);
-
-  //ULong64_t mask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  ULong64_t mask = handler->IsEventSelected();
-  ULong64_t amb = AliVEvent::kMB;
-  ULong64_t acn = AliVEvent::kCentral;
-  ULong64_t asc = AliVEvent::kSemiCentral;
-
-  if(debug>0) cout<<"trigger selection is "<<trigger<<endl;
-  if(debug>0) cout<<"trigger mask is "<<mask<<endl;
-
-  if(mask&amb)
-    {
-      fHistCentTRKAVEkMB->Fill(centTRK);
-      fHistCentV0MAVEkMB->Fill(centV0M);
-    }
-  if(mask&acn)
-    {
-      fHistCentTRKAVEkCentral->Fill(centTRK);
-      fHistCentV0MAVEkCentral->Fill(centV0M);
-    }
-  if(mask&asc)
-    {
-      fHistCentTRKAVEkSemiCentral->Fill(centTRK);
-      fHistCentV0MAVEkSemiCentral->Fill(centV0M);
-    }
-  if(mask&(amb|acn|asc))
-    {
-      fHistCentTRKAVEkA3->Fill(centTRK);
-      fHistCentV0MAVEkA3->Fill(centV0M);
-    }
-
-  if(mask&trigger)
-    {
-      fHistCentTRKAVEkSel->Fill(centTRK);
-      fHistCentV0MAVEkSel->Fill(centV0M);
-    }
-  else
-    {
-      if(debug>0) cout<<"wrong trigger, rejecting event"<<endl;
-      return;
-    }
-
-  if(fabs(centTRK-centV0M)>centcut)
-    {
-      if(debug>0) cout<<"centrality difference outside cut, rejecting event"<<endl;
-      return;
-    }
-
-
-
-  // AOD vertex objects
-  AliAODVertex *fVtx = fAOD->GetPrimaryVertex();
-  AliAODVertex *fVtxSPD = fAOD->GetPrimaryVertexSPD();
-  if(!fVtx)
-    {
-      if(debug>-1) cout<<"ERROR: Vertex object not available. Discarding event..."<<endl;
-      return;
-    }
-  float zvtxV0 = fVtx->GetZ();
-  float zvtxSPD = fVtxSPD->GetZ();
-  if(debug>0) cout<<"zvtxV0 is "<<zvtxV0<<endl;
-  if(debug>0) cout<<"zvtxSPD is "<<zvtxSPD<<endl;
-  if(centstatus==2)
-    {
-      fHistZVtx->Fill(zvtxV0);
-      fHistZVtxD->Fill(zvtxV0-zvtxSPD);
-    }
-  if(fabs(zvtxV0)>zvtxcut)
-    {
-      if(debug>0) cout<<"vertex outside cut, rejecting event"<<endl;
-      return;
-    }
-  float eventX = fVtx->GetX();
-  float eventY = fVtx->GetY();
-  float eventZ = fVtx->GetZ();
-
-
-
-  // // get V0 object
-  // AliAODVZERO *fV0 = fAOD->GetVZEROData();
-  // for(int i=0; i<64; i++)
-  //   {
-  //     float phiV0 = pi/4.0*(0.5+i%8);
-  //     float multV0 = fV0->GetMultiplicity(i);
-  //   }
-
-
-  int d_ntrk = fAOD->GetNumberOfTracks();
-
-  if(centstatus==-2&&d_ntrk>0) centstatus = -3;
-  if(debug>0) cout<<"there are "<<d_ntrk<<" tracks in this event"<<endl;
-  if(debug>0&&fMC) cout<<"there are "<<d_ntrkMC<<" Monte Carlo tracks in this event"<<endl;
-  if(debug>0) cout<<"centrality diagnostic is "<<centstatus<<endl;
-
-  fHistCentDIAG->Fill(centstatus);
-  if(centstatus==-3)
-    {
-      fHistCtrkDIAG->Fill(d_ntrk);
-      fHistVtxRDIAG->Fill(zvtxV0);
-      fHistVtxSDIAG->Fill(zvtxSPD);
-    }
-  if(centstatus==-2)
-    {
-      fHistVtxRDIBG->Fill(zvtxV0);
-      fHistVtxSDIBG->Fill(zvtxSPD);
-    }
-
-  // --- AliAnalysisUtils for pileup cuts
-  if(dopupcut)
-    {
-      AliAnalysisUtils *fUtils = new AliAnalysisUtils();
-      if(!fUtils)
-  	{
-  	  if(debug>-1) cout<<"ERROR: cannot find AliAnalysisUtils..."<<endl;
-  	  return;
-  	}
-      fUtils->SetUseOutOfBunchPileUp(true);
-      bool pileup = fUtils->IsPileUpEvent(fAOD);
-      //bool pileup = fAOD->IsPileUpFromSPD(3,0.8,3.0,2.0,5.0); // default parameters in AliAODEvent.h
-      if(pileup)
-  	{
-  	  if(debug>0) cout<<"Rejecting event for pileup (AliAnalysisUtils)"<<endl;
-  	  return;
-  	}
-      if(fUtils) delete fUtils;
-      //
-      // ---
-      //
-      /*
-      const AliAODVertex* vtxSPD = fAOD->GetPrimaryVertexSPD();
-      if(!vtxSPD||vtxSPD->GetNContributors()<=0)
-	{
-	  if(debug>0) cout<<"rejecting pileup event (no vtxSPD or zero contributors) "<<vtxSPD<<endl;
-	  return;
-	}
-      
-      const AliAODVertex* vtxTPC = 0;
-      int nVertices = fAOD->GetNumberOfVertices();
-      if(debug>0) cout<<"number of vertices is "<<nVertices<<endl;
-      for(int iVertices = 0; iVertices < nVertices; iVertices++)
-	{
-	  const AliAODVertex* vertex = fAOD->GetVertex(iVertices);
-	  if(debug>0) cout<<"vertex type is "<<vertex->GetType()<<endl;
-	  if(vertex->GetType()!=AliAODVertex::kMainTPC) continue;
-	  vtxTPC = vertex;
-	}
-      if(!vtxTPC||vtxTPC->GetNContributors()<=0)
-	{
-	  if(debug>0) cout<<"rejecting pileup event (no vtxTPC or zero contributors)"<<vtxTPC<<endl;
-	  return;
-	}
-      
-      float diffZ = vtxSPD->GetZ() - vtxTPC->GetZ();
-      if(fabs(diffZ)>2.0)
-	{
-	  if(debug>0) cout<<"rejecting pileup event with vtxTPC "<<vtxTPC->GetZ()<<" vtxSPD "<<vtxSPD->GetZ()<<endl;
-	  return;
-	}
-      */
-      // 
-      // ---
-      //
-    }
-
-
-  int ntrk = 0;
-  int ntrkpos = 0;
-  int ntrkneg = 0;
-  int ntrkL = 0;
-  int ntrkposL = 0;
-  int ntrknegL = 0;
-  int ntrkR = 0;
-  int ntrkposR = 0;
-  int ntrknegR = 0;
-  int ntrkA1 = 0;
-  int ntrkposA1 = 0;
-  int ntrknegA1 = 0;
-  int ntrkA2 = 0;
-  int ntrkposA2 = 0;
-  int ntrknegA2 = 0;
-
-  int cutntrk = 0;
-  int cutntrkpos = 0;
-  int cutntrkneg = 0;
-  int cutntrkL = 0;
-  int cutntrkposL = 0;
-  int cutntrknegL = 0;
-  int cutntrkR = 0;
-  int cutntrkposR = 0;
-  int cutntrknegR = 0;
-
-  float tpcXplo[hmax], tpcYplo[hmax], tpcXpro[hmax], tpcYpro[hmax];
-  float tpcXnlo[hmax], tpcYnlo[hmax], tpcXnro[hmax], tpcYnro[hmax];
-  float tpcXpli[hmax], tpcYpli[hmax], tpcXpri[hmax], tpcYpri[hmax];
-  float tpcXnli[hmax], tpcYnli[hmax], tpcXnri[hmax], tpcYnri[hmax];
-  float tpcXpl[hmax], tpcYpl[hmax], tpcXpr[hmax], tpcYpr[hmax];
-  float tpcXnl[hmax], tpcYnl[hmax], tpcXnr[hmax], tpcYnr[hmax];
-  for(int i=0; i<hmax;i++)
-    {
-      tpcXplo[i] = 0.0;
-      tpcYplo[i] = 0.0;
-      tpcXpro[i] = 0.0;
-      tpcYpro[i] = 0.0;
-      tpcXnlo[i] = 0.0;
-      tpcYnlo[i] = 0.0;
-      tpcXnro[i] = 0.0;
-      tpcYnro[i] = 0.0;
-      //
-      tpcXpli[i] = 0.0;
-      tpcYpli[i] = 0.0;
-      tpcXpri[i] = 0.0;
-      tpcYpri[i] = 0.0;
-      tpcXnli[i] = 0.0;
-      tpcYnli[i] = 0.0;
-      tpcXnri[i] = 0.0;
-      tpcYnri[i] = 0.0;
-      //
-      tpcXpl[i] = 0.0;
-      tpcYpl[i] = 0.0;
-      tpcXpr[i] = 0.0;
-      tpcYpr[i] = 0.0;
-      tpcXnl[i] = 0.0;
-      tpcYnl[i] = 0.0;
-      tpcXnr[i] = 0.0;
-      tpcYnr[i] = 0.0;
-    }
-
-
+  
+  
   
   // ------------------------------- //
   // --- Now looping over tracks --- //
@@ -2058,7 +3103,7 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
   TExMap *trackMap = new TExMap();
   for(int itrk=0; itrk<d_ntrk; itrk++)
     {
-      AliAODTrack *track = fAOD->GetTrack(itrk);
+      AliAODTrack *track = (AliAODTrack *)fAOD->GetTrack(itrk);
       if(!track)
   	{
   	  if(debug>0) cout<<"ERROR: Could not retrieve AODtrack "<<itrk<<endl;
@@ -2086,10 +3131,11 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
     }
   
   int badbit = 0; // counter for number of tracks with wrong filter bit
+  int dcacoverrors = 0;
   // --- main track loop
   for(int itrk = 0; itrk<d_ntrk; itrk++)
     {
-      AliAODTrack *track = fAOD->GetTrack(itrk);
+      AliAODTrack *track = (AliAODTrack *)fAOD->GetTrack(itrk);
       if(!track)
 	{
 	  if(debug>0) cout<<"ERROR: Could not retrieve AODtrack "<<itrk<<endl;
@@ -2106,7 +3152,7 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
       int gid = track->GetID();
       AliAODTrack *PIDtrack;
       if(gid>=0) PIDtrack = track;
-      else PIDtrack = fAOD->GetTrack(trackMap->GetValue(-1-gid));
+      else PIDtrack = (AliAODTrack *)fAOD->GetTrack(trackMap->GetValue(-1-gid));
 
 
       // if(debug>15)
@@ -2140,7 +3186,8 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
       double DCA[2]; // dca
       double COV[3]; // covariance
       bool proptodca = track->PropagateToDCA(fVtx,mag,100.0,DCA,COV);
-      if(!proptodca&&debug>0) cout<<"No DCACOV for you!"<<endl;
+      if(!proptodca) {dcacoverrors++;}
+      if(!proptodca&&debug>0) {cout<<"No DCACOV for you!"<<endl;}
 
       if(dcaflag)
       	{
@@ -2518,11 +3565,14 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
       cout<<"filter bit is "<<fbit<<endl;
       cout<<"number of tracks with wrong filter bit "<<badbit<<endl;
       cout<<"difference = ntrk - nbad = "<<d_ntrk-badbit<<endl;
+      cout<<"number of dcacov errors "<<dcacoverrors<<endl;
     }
+  float fuckyou = float(dcacoverrors)/float(d_ntrk);
+  fHistDCACOVerrors->Fill(fuckyou);
 
   float tpcX[9], tpcY[9], tpcQQ[9];//, qq[9];
-  float tpcXp[9], tpcYp[9], tpcQQp[9];//, qqp[9]; // pos
-  float tpcXn[9], tpcYn[9], tpcQQn[9];//, qqn[9]; // neg
+  float tpcXp[9], tpcYp[9], tpcQQp[9], tpcQQpp[9];//, qqp[9]; // pos
+  float tpcXn[9], tpcYn[9], tpcQQn[9], tpcQQnn[9];//, qqn[9]; // neg
   
   for(int i=0; i<6; i++)
     {
@@ -2533,12 +3583,14 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
       // pos
       tpcXp[i]=tpcXpl[i]+tpcXpr[i];
       tpcYp[i]=tpcYpl[i]+tpcYpr[i];
-      tpcQQp[i]=tpcXp[i]*tpcXp[i]+tpcYp[i]*tpcYp[i];
+      tpcQQp[i]=tpcXp[i]*tpcX[i]+tpcYp[i]*tpcY[i];
+      tpcQQpp[i]=tpcXp[i]*tpcXp[i]+tpcYp[i]*tpcYp[i];
       //qqp[i]=sqrt(tpcQQp[i]/tpcXp[0]);
       // neg
       tpcXn[i]=tpcXnl[i]+tpcXnr[i];
       tpcYn[i]=tpcYnl[i]+tpcYnr[i];
-      tpcQQn[i]=tpcXn[i]*tpcXn[i]+tpcYn[i]*tpcYn[i];
+      tpcQQn[i]=tpcXn[i]*tpcX[i]+tpcYn[i]*tpcY[i];
+      tpcQQnn[i]=tpcXn[i]*tpcXn[i]+tpcYn[i]*tpcYn[i];
       //qqn[i]=sqrt(tpcQQn[i]/tpcXn[0]);
     }
   
@@ -2646,8 +3698,10 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
   h_Y22_ro_centN->Fill(cent,(tpcYnro[2]/tpcXnro[0]));
   
   float q22ev = (tpcQQ[2]-M)/W_2;
-  float q22Pev = (tpcQQp[2]-Mp)/Wp_2;
-  float q22Nev = (tpcQQn[2]-Mn)/Wn_2;
+  float q22Pev = (tpcQQp[2]-Mp)/(Mp*M-Mp);
+  float q22Nev = (tpcQQn[2]-Mn)/(Mn*M-Mn);
+  float q22PPev = (tpcQQpp[2]-Mp)/Wp_2;
+  float q22NNev = (tpcQQnn[2]-Mn)/Wn_2;
   float q22gap0ev = (Xl2*Xr2+Yl2*Yr2)/(Xl0*Xr0);
   float q22gap0Pev = (tpcXpl[2]*tpcXpr[2]+tpcYpl[2]*tpcYpr[2])/(tpcXpl[0]*tpcXpr[0]);
   float q22gap0Nev = (tpcXnl[2]*tpcXnr[2]+tpcYnl[2]*tpcYnr[2])/(tpcXnl[0]*tpcXnr[0]);
@@ -2660,6 +3714,8 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
   h_q22_cent->Fill(cent,q22ev);
   h_q22_centP->Fill(cent,q22Pev);
   h_q22_centN->Fill(cent,q22Nev);
+  h_q22_centPP->Fill(cent,q22PPev);
+  h_q22_centNN->Fill(cent,q22NNev);
   h_q22gap0_cent->Fill(cent,q22gap0ev);
   h_q22gap0_centP->Fill(cent,q22gap0Pev);
   h_q22gap0_centN->Fill(cent,q22gap0Nev);
@@ -2668,8 +3724,10 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
   h_q22gap1_centN->Fill(cent,q22gap1Nev);
   
   float q32ev = (tpcQQ[3]-M)/W_2;
-  float q32Pev = (tpcQQp[3]-Mp)/Wp_2;
-  float q32Nev = (tpcQQn[3]-Mn)/Wn_2;
+  float q32Pev = (tpcQQp[3]-Mp)/(Mp*M-Mp);
+  float q32Nev = (tpcQQn[3]-Mn)/(Mn*M-Mn);
+  float q32PPev = (tpcQQpp[3]-Mp)/Wp_2;
+  float q32NNev = (tpcQQnn[3]-Mn)/Wn_2;
   float q32gap0ev = (Xl3*Xr3+Yl3*Yr3)/(Xl0*Xr0);
   float q32gap0Pev = (tpcXpl[3]*tpcXpr[3]+tpcYpl[3]*tpcYpr[3])/(tpcXpl[0]*tpcXpr[0]);
   float q32gap0Nev = (tpcXnl[3]*tpcXnr[3]+tpcYnl[3]*tpcYnr[3])/(tpcXnl[0]*tpcXnr[0]);
@@ -2681,8 +3739,10 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
   float q32SLNev = (tpcXnl[3]*Xr3+tpcYnl[3]*Yr3)/(tpcXnl[0]*Xr0);
 
   float q42ev = (tpcQQ[4]-M)/W_2;
-  float q42Pev = (tpcQQp[4]-Mp)/Wp_2;
-  float q42Nev = (tpcQQn[4]-Mn)/Wn_2;
+  float q42Pev = (tpcQQp[4]-Mp)/(Mp*M-Mp);
+  float q42Nev = (tpcQQn[4]-Mn)/(Mn*M-Mn);
+  float q42PPev = (tpcQQp[4]-Mp)/Wp_2;
+  float q42NNev = (tpcQQn[4]-Mn)/Wn_2;
   float q42gap0ev = (Xl4*Xr4+Yl4*Yr4)/(Xl0*Xr0);
   float q42gap0Pev = (tpcXpl[4]*tpcXpr[4]+tpcYpl[4]*tpcYpr[4])/(tpcXpl[0]*tpcXpr[0]);
   float q42gap0Nev = (tpcXnl[4]*tpcXnr[4]+tpcYnl[4]*tpcYnr[4])/(tpcXnl[0]*tpcXnr[0]);
@@ -2708,6 +3768,8 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
   h_q22_cent->Fill(cent,q22ev);
   h_q22_centP->Fill(cent,q22Pev);
   h_q22_centN->Fill(cent,q22Nev);
+  h_q22_centPP->Fill(cent,q22PPev);
+  h_q22_centNN->Fill(cent,q22NNev);
   h_q23_cent->Fill(cent,q23ev);
   h_q23_centP->Fill(cent,q23Pev);
   h_q23_centN->Fill(cent,q23Nev);
@@ -2777,6 +3839,8 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
   h_Aq22_cent->Fill(cent,q22ev*qasymm);
   h_Aq22_centP->Fill(cent,q22Pev*qasymm);
   h_Aq22_centN->Fill(cent,q22Nev*qasymm);
+  h_Aq22_centPP->Fill(cent,q22PPev*qasymm);
+  h_Aq22_centNN->Fill(cent,q22NNev*qasymm);
   h_Aq22_SL_cent->Fill(cent,q22SLev*qasymm);
   h_Aq22_SL_centP->Fill(cent,q22SLPev*qasymm);
   h_Aq22_SL_centN->Fill(cent,q22SLNev*qasymm);
@@ -2790,6 +3854,8 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
   h_Aq32_cent->Fill(cent,q32ev*qasymm);
   h_Aq32_centP->Fill(cent,q32Pev*qasymm);
   h_Aq32_centN->Fill(cent,q32Nev*qasymm);
+  h_Aq32_centPP->Fill(cent,q32PPev*qasymm);
+  h_Aq32_centNN->Fill(cent,q32NNev*qasymm);
   h_Aq32_SL_cent->Fill(cent,q32SLev*qasymm);
   h_Aq32_SL_centP->Fill(cent,q32SLPev*qasymm);
   h_Aq32_SL_centN->Fill(cent,q32SLNev*qasymm);
@@ -2803,6 +3869,8 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
   h_Aq42_cent->Fill(cent,q42ev*qasymm);
   h_Aq42_centP->Fill(cent,q42Pev*qasymm);
   h_Aq42_centN->Fill(cent,q42Nev*qasymm);
+  h_Aq42_centPP->Fill(cent,q42PPev*qasymm);
+  h_Aq42_centNN->Fill(cent,q42NNev*qasymm);
   h_Aq42_SL_cent->Fill(cent,q42SLev*qasymm);
   h_Aq42_SL_centP->Fill(cent,q42SLPev*qasymm);
   h_Aq42_SL_centN->Fill(cent,q42SLNev*qasymm);
@@ -2834,7 +3902,7 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
 
   for(int itrk = 0; itrk<d_ntrk; itrk++)
     {
-      AliAODTrack *track = fAOD->GetTrack(itrk);
+      AliAODTrack *track = (AliAODTrack *)fAOD->GetTrack(itrk);
       if(!track)
 	{
 	  if(debug>0) cout<<"ERROR: Could not retrieve AODtrack "<<itrk<<endl;
@@ -2875,7 +3943,7 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
       double DCA[2]; // dca
       double COV[3]; // covariance
       bool proptodca = track->PropagateToDCA(fVtx,mag,100.0,DCA,COV);
-      if(!proptodca&&debug>0) cout<<"No DCACOV for you!"<<endl;
+      if(!proptodca&&debug>15) cout<<"Second loop no DCACOV for you!"<<endl;
 
       if(dcaflag)
       	{
@@ -3125,12 +4193,26 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
       float diffq42Nev = ((trkXn[4]*tpcX[4])+(trkYn[4]*tpcY[4])-1)/(tpcX[0]-1);
       
       // --- differential cumulants test with differing RPs
-      // float Xdiffq22Pev = ((trkXp[2]*tpcX[2])+(trkYp[2]*tpcY[2])-1)/(tpcX[0]-1);
-      // float Xdiffq22Nev = ((trkXn[2]*tpcX[2])+(trkYn[2]*tpcY[2])-1)/(tpcX[0]-1);
-      // float Ydiffq22Pev = ((trkXp[2]*tpcXp[2])+(trkYp[2]*tpcYp[2])-1)/(tpcXp[0]-1);
-      // float Ydiffq22Nev = ((trkXn[2]*tpcXn[2])+(trkYn[2]*tpcYn[2])-1)/(tpcXn[0]-1);
-      // float Zdiffq22Pev = ((trkXp[2]*tpcXn[2])+(trkYp[2]*tpcYn[2]))/(tpcXn[0]);
-      // float Zdiffq22Nev = ((trkXn[2]*tpcXp[2])+(trkYn[2]*tpcYp[2]))/(tpcXp[0]);
+      float Xdiffq22Pev = ((trkXp[2]*tpcX[2])+(trkYp[2]*tpcY[2])-1)/(tpcX[0]-1);
+      float Xdiffq22Nev = ((trkXn[2]*tpcX[2])+(trkYn[2]*tpcY[2])-1)/(tpcX[0]-1);
+      float Ydiffq22Pev = ((trkXp[2]*tpcXp[2])+(trkYp[2]*tpcYp[2])-1)/(tpcXp[0]-1);
+      float Ydiffq22Nev = ((trkXn[2]*tpcXn[2])+(trkYn[2]*tpcYn[2])-1)/(tpcXn[0]-1);
+      float Zdiffq22Pev = ((trkXp[2]*tpcXn[2])+(trkYp[2]*tpcYn[2]))/(tpcXn[0]);
+      float Zdiffq22Nev = ((trkXn[2]*tpcXp[2])+(trkYn[2]*tpcYp[2]))/(tpcXp[0]);
+
+      float Xdiffq32Pev = ((trkXp[3]*tpcX[3])+(trkYp[3]*tpcY[3])-1)/(tpcX[0]-1);
+      float Xdiffq32Nev = ((trkXn[3]*tpcX[3])+(trkYn[3]*tpcY[3])-1)/(tpcX[0]-1);
+      float Ydiffq32Pev = ((trkXp[3]*tpcXp[3])+(trkYp[3]*tpcYp[3])-1)/(tpcXp[0]-1);
+      float Ydiffq32Nev = ((trkXn[3]*tpcXn[3])+(trkYn[3]*tpcYn[3])-1)/(tpcXn[0]-1);
+      float Zdiffq32Pev = ((trkXp[3]*tpcXn[3])+(trkYp[3]*tpcYn[3]))/(tpcXn[0]);
+      float Zdiffq32Nev = ((trkXn[3]*tpcXp[3])+(trkYn[3]*tpcYp[3]))/(tpcXp[0]);
+
+      float Xdiffq42Pev = ((trkXp[4]*tpcX[4])+(trkYp[4]*tpcY[4])-1)/(tpcX[0]-1);
+      float Xdiffq42Nev = ((trkXn[4]*tpcX[4])+(trkYn[4]*tpcY[4])-1)/(tpcX[0]-1);
+      float Ydiffq42Pev = ((trkXp[4]*tpcXp[4])+(trkYp[4]*tpcYp[4])-1)/(tpcXp[0]-1);
+      float Ydiffq42Nev = ((trkXn[4]*tpcXn[4])+(trkYn[4]*tpcYn[4])-1)/(tpcXn[0]-1);
+      float Zdiffq42Pev = ((trkXp[4]*tpcXn[4])+(trkYp[4]*tpcYn[4]))/(tpcXn[0]);
+      float Zdiffq42Nev = ((trkXn[4]*tpcXp[4])+(trkYn[4]*tpcYp[4]))/(tpcXp[0]);
 
       // --- histograms to check different reference flow
       // if(pos) h_Xdiffq22_ptP->Fill(pt,Xdiffq22Pev);
@@ -3262,7 +4344,7 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
 		      const float kLimit = fHBTCutValue * 3;
    
 		      float dphistarminabs = 1e5;
-		      float dphistarmin = 1e5;
+		      //float dphistarmin = 1e5;
    
 		      if(fabs(dphistar1) < kLimit || fabs(dphistar2) < kLimit || dphistar1 * dphistar2 < 0 )
 		  	{
@@ -3278,7 +4360,7 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
 		  	      float dphistarabs = fabs(dphistar);
 		  	      if(dphistarabs < dphistarminabs)
 		  		{
-		  		  dphistarmin = dphistar;
+		  		  //dphistarmin = dphistar;
 		  		  dphistarminabs = dphistarabs;
 		  		}
 		  	    }
@@ -3327,6 +4409,28 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
 		  if(neg) h_ATdiffq32_X_dptN->Fill(DPT,diffq32Nev*charge3[i]);
 		  if(pos) h_ATdiffq42_X_dptP->Fill(DPT,diffq42Pev*charge3[i]);
 		  if(neg) h_ATdiffq42_X_dptN->Fill(DPT,diffq42Nev*charge3[i]);
+
+		  if(pos) h_ATXdiffq22_X_detaP->Fill(DETA,Xdiffq22Pev*charge3[i]);
+		  if(neg) h_ATXdiffq22_X_detaN->Fill(DETA,Xdiffq22Nev*charge3[i]);
+		  if(pos) h_ATYdiffq22_X_detaP->Fill(DETA,Ydiffq22Pev*charge3[i]);
+		  if(neg) h_ATYdiffq22_X_detaN->Fill(DETA,Ydiffq22Nev*charge3[i]);
+		  if(pos) h_ATZdiffq22_X_detaP->Fill(DETA,Zdiffq22Pev*charge3[i]);
+		  if(neg) h_ATZdiffq22_X_detaN->Fill(DETA,Zdiffq22Nev*charge3[i]);
+
+		  if(pos) h_ATXdiffq32_X_detaP->Fill(DETA,Xdiffq32Pev*charge3[i]);
+		  if(neg) h_ATXdiffq32_X_detaN->Fill(DETA,Xdiffq32Nev*charge3[i]);
+		  if(pos) h_ATYdiffq32_X_detaP->Fill(DETA,Ydiffq32Pev*charge3[i]);
+		  if(neg) h_ATYdiffq32_X_detaN->Fill(DETA,Ydiffq32Nev*charge3[i]);
+		  if(pos) h_ATZdiffq32_X_detaP->Fill(DETA,Zdiffq32Pev*charge3[i]);
+		  if(neg) h_ATZdiffq32_X_detaN->Fill(DETA,Zdiffq32Nev*charge3[i]);
+
+		  if(pos) h_ATXdiffq42_X_detaP->Fill(DETA,Xdiffq42Pev*charge3[i]);
+		  if(neg) h_ATXdiffq42_X_detaN->Fill(DETA,Xdiffq42Nev*charge3[i]);
+		  if(pos) h_ATYdiffq42_X_detaP->Fill(DETA,Ydiffq42Pev*charge3[i]);
+		  if(neg) h_ATYdiffq42_X_detaN->Fill(DETA,Ydiffq42Nev*charge3[i]);
+		  if(pos) h_ATZdiffq42_X_detaP->Fill(DETA,Zdiffq42Pev*charge3[i]);
+		  if(neg) h_ATZdiffq42_X_detaN->Fill(DETA,Zdiffq42Nev*charge3[i]);
+
 		  
 		  float meanchargeeta = 0;
 		  int index = int((eta3[i]+1.0)*50);
@@ -3513,6 +4617,12 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
   h_rAq22_X4_centN->Fill(cent,a2q22Nev*qasymA1);
 
   
+  
+  // ------------------------------------ //
+  // --- send data to the output list --- //
+  // ------------------------------------ //
+  
+  PostData(1,fOutputList);
   
   // ------------------------- //
   // --- end of event loop --- //

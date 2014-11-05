@@ -81,7 +81,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetMCdecision(Bool_t mc) {fMCcase = mc;}
   void SetTabulatePairs(Bool_t tabulate) {fTabulatePairs = tabulate;}
   void SetInterpolationType(Bool_t linearInterp) {fLinearInterpolation = linearInterp;}
-  void SetCollisionType(Bool_t ct) {fCollisionType = ct;}
+  void SetCollisionType(Short_t ct) {fCollisionType = ct;}
   void SetGenerateSignal(Bool_t gen) {fGenerateSignal = gen;}
   void SetGeneratorOnly(Bool_t genOnly) {fGeneratorOnly = genOnly;}
   void SetCentBinRange(Int_t low, Int_t high) {fCentBinLowLimit = low; fCentBinHighLimit = high;}
@@ -101,8 +101,11 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetKT3transition(Float_t KT3trans) {fKT3transition = KT3trans;}
   void SetKT4transition(Float_t KT4trans) {fKT4transition = KT4trans;}
   void SetTriggerType(Int_t tt) {fTriggerType = tt;}
+  void SetNormLow(Float_t nl) {fNormQcutLow = nl;}
+  void SetNormHigh(Float_t nh) {fNormQcutHigh = nh;}
+  void SetFSIindexSmallSystem(Int_t ind) {fFSIindexSmallSystem = ind;}
   //
- 
+  
 
  private:
 
@@ -265,6 +268,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Double_t fBfield;
   Int_t fMbin;
   Int_t fFSIindex;
+  Int_t fFSIindexSmallSystem;
   Int_t fEDbin;
   Int_t fMbins;
   Int_t fMultLimit;      
@@ -282,15 +286,15 @@ class AliFourPion : public AliAnalysisTaskSE {
   Float_t fNormQcutLow;
   Float_t fNormQcutHigh;
   Float_t fKupperBound;
-  Float_t fQupperBoundQ2;
-  Float_t fQupperBoundQ3;
-  Float_t fQupperBoundQ4;
-  Float_t fQbinsQ2;
-  Float_t fQbinsQ3;
-  Float_t fQbinsQ4;
-  Float_t fQupperBoundWeights;
-  Float_t fQbinsQinv3D;
-  Float_t fQupperBoundQinv3D;
+  Double_t fQupperBoundQ2;
+  Double_t fQupperBoundQ3;
+  Double_t fQupperBoundQ4;
+  Int_t fQbinsQ2;
+  Int_t fQbinsQ3;
+  Int_t fQbinsQ4;
+  Double_t fQupperBoundWeights;
+  Int_t fQbinsQinv3D;
+  Double_t fQupperBoundQinv3D;
   Float_t fKstepT[fKbinsT];
   Float_t fKstepY[fKbinsY];
   Float_t fKmeanT[fKbinsT];
@@ -359,8 +363,8 @@ class AliFourPion : public AliAnalysisTaskSE {
   TH3D *fPbPbc3FitEA;
   TH3D *fpPbc3FitEA;
   TH3D *fppc3FitEA;
-  TH1D *fFSIss[12];
-  TH1D *fFSIos[12];
+  TH1D *fFSIss[13];
+  TH1D *fFSIos[13];
   TH3F *fNormWeight[fKbinsT][fCentBins];
   TF1 *ExchangeAmpPointSource[2][50];
 

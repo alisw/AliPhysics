@@ -46,6 +46,7 @@ class AliSpectraAODEventCuts : public TNamed
     fVertexCutMax(10.),
     fMultiplicityCutMin(-999.),
     fMultiplicityCutMax(99999.),
+    fqTPC(-999.),
     fqV0C(-999.),
     fqV0A(-999.),
     fqV0Cx(-999.),
@@ -70,7 +71,15 @@ class AliSpectraAODEventCuts : public TNamed
     fQvecIntList(0),
     fQvecIntegral(0), 
     fSplineArrayV0A(0),
-    fSplineArrayV0C(0)
+    fSplineArrayV0C(0),
+	fSplineArrayTPC(0),
+    fQgenIntegral(0), 
+    fSplineArrayV0Agen(0),
+    fSplineArrayV0Cgen(0),
+    fQvecMC(0),
+    fNch(0),
+    fQvecCalibType(0),
+    fV0Aeff(0)
       {
 	for (Int_t i = 0; i<10; i++){
 	  fMeanQxa2[i] = -1;
@@ -106,6 +115,7 @@ class AliSpectraAODEventCuts : public TNamed
   Float_t  GetVertexCutMax()    const {  return fVertexCutMax; }
   Float_t  GetMultiplicityCutMin()  const {  return fMultiplicityCutMin; }
   Float_t  GetMultiplicityCutMax()  const {  return fMultiplicityCutMax; }
+  Double_t  GetqTPC()  const {  return fqTPC; }
   Double_t  GetqV0C()  const {  return fqV0C; }
   Double_t  GetqV0A()  const {  return fqV0A; }
   Double_t  GetqV0Cx()  const {  return fqV0Cx; }
@@ -130,7 +140,7 @@ class AliSpectraAODEventCuts : public TNamed
     TIter next(f->GetListOfKeys());
     TKey *key;
     while ((key = (TKey*)next())) {
-      TH2F * h=(TH2F*)key->ReadObj();
+      TObject * h=(TObject*)key->ReadObj();
       fQvecIntList->Add(h);
     }
   };
@@ -141,12 +151,13 @@ class AliSpectraAODEventCuts : public TNamed
   Bool_t CheckCentralityCut();
   Bool_t CheckMultiplicityCut();
   Bool_t CheckQVectorCut();
-  Double_t CalculateQVectorLHC10h();
+  Double_t CalculateQVectorLHC10h();  //procedure to calculate the q vector for PbPb 2010
+  Double_t CalculateQVectorTPC(Double_t etaMin=-0.5,Double_t etaMax=0.5);  //procedure to calculate the q vector from TPC
   void   PrintCuts();
   Bool_t OpenInfoCalbration(Int_t run);
   Short_t  GetCentrCode(AliVEvent* ev);
   
-  Double_t CalculateQVector();
+  Double_t CalculateQVector(); //q vector calculation using Event plane task
   
   Float_t  NumberOfEvents()     { return ((TH1I*)fOutput->FindObject("fHistoCuts"))->GetBinContent(kAcceptedEvents+1); }
   Float_t  NumberOfProcessedEvents()     { return ((TH1I*)fOutput->FindObject("fHistoCuts"))->GetBinContent(kProcessedEvents+1); }
@@ -155,11 +166,22 @@ class AliSpectraAODEventCuts : public TNamed
   Long64_t Merge(TCollection* list);
 
   Double_t GetQvecPercentile(Int_t v0side);  
-  Bool_t CheckSplineArray(TObjArray * splarr);
+  Bool_t CheckSplineArray(TObjArray * splarr, Int_t n);
   TObjArray *GetSplineArrayV0A() { return fSplineArrayV0A; }
   TObjArray *GetSplineArrayV0C() { return fSplineArrayV0C; }
   
-  Double_t CalculateQVectorMC(Int_t v0side);
+  Double_t GetQvecMC() {return fQvecMC;}
+  
+  Int_t GetNch() { return fNch; }
+  
+  void SetQVecCalibType(Int_t val) { fQvecCalibType=val; }  //0. centrality - 1. Nch
+  Int_t GetNchBin(TH2D * h);
+  
+  Double_t CalculateQVectorMC(Int_t v0side, Int_t type);
+  Double_t GetQvecPercentileMC(Int_t v0side, Int_t type);
+  
+  Int_t CheckVZEROchannel(Int_t vzeroside, Double_t eta, Double_t phi);
+  Int_t CheckVZEROacceptance(Double_t eta);
 
  private:
   
@@ -179,6 +201,7 @@ class AliSpectraAODEventCuts : public TNamed
   Float_t         fVertexCutMax;     // maximum vertex position
   Float_t         fMultiplicityCutMin;     // minimum multiplicity position
   Float_t         fMultiplicityCutMax;     // maximum multiplicity position
+  Double_t       fqTPC;            //q vector in the TPC
   Double_t       fqV0C;            //q vector in the VZERO-C
   Double_t       fqV0A;            //q vector in the VZERO-A
   Double_t       fqV0Cx;            //q vector in the VZERO-C, x-comp
@@ -209,11 +232,20 @@ class AliSpectraAODEventCuts : public TNamed
   TH2D * fQvecIntegral;           // ! Integrated Qvec distribution
   TObjArray * fSplineArrayV0A;    // TSpline array for VZERO-A
   TObjArray * fSplineArrayV0C;    // TSpline array for VZERO-C
+  TObjArray * fSplineArrayTPC;    // TSpline array for TPC
+  TH2D * fQgenIntegral;           // ! Integrated Qvec distribution for generated tracks
+  TObjArray * fSplineArrayV0Agen;    // TSpline array for VZERO-A for generated tracks
+  TObjArray * fSplineArrayV0Cgen;    // TSpline array for VZERO-C for generated tracks
+  Double_t fQvecMC; //q-vector value from MC
+  
+  Int_t fNch;
+  Int_t fQvecCalibType; //0. centrality - 1. Nch
+  TH1F * fV0Aeff; // VZEROA efficiency prim+sec / gen.
 
   AliSpectraAODEventCuts(const AliSpectraAODEventCuts&);
   AliSpectraAODEventCuts& operator=(const AliSpectraAODEventCuts&);
   
-  ClassDef(AliSpectraAODEventCuts, 6);
+  ClassDef(AliSpectraAODEventCuts, 10);
   
 };
 #endif

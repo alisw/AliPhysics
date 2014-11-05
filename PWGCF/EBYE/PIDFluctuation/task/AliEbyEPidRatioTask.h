@@ -12,7 +12,6 @@
 //                             (Test Only)                                 //
 //=========================================================================//
 
-
 #include "AliAnalysisTaskSE.h"
 #include "TList.h"
 #include "THnSparse.h"
@@ -47,18 +46,15 @@ class AliEbyEPidRatioTask : public AliAnalysisTaskSE {
   Int_t Initialize();
 
   void SetIsMC()                             {fIsMC         = kTRUE;}
-  void SetIsRatio(Int_t i)                                          {
-    if      (i == 1) { fIsRatio = 1;  fIsPtBin = 0;                 }
-    else if (i == 2) { fIsRatio = 0;  fIsPtBin = 1;                 }
-    else if (i == 3) { fIsRatio = 1;  fIsPtBin = 1;                 }         
-    else             { fIsRatio = 0;  fIsPtBin = 0;                 }   
-  }
+  void SetIsRatio(Int_t i);
+  void SetIsPer()                            {fIsPer        = kTRUE;}
   
   void SetIsAOD(Bool_t b          )          {fIsAOD            = b;}
   void SetESDTrackCutMode(Int_t i )          {fESDTrackCutMode  = i;}
   void SetModeEffCreation(Int_t i )          {fModeEffCreation  = i;}
   void SetModeDCACreation(Int_t i )          {fModeDCACreation  = i;}
   void SetModeDistCreation(Int_t i)          {fModeDistCreation = i;}
+
   void SetModeQACreation(Int_t i  )          {fModeQACreation   = i;}
  
   void SetEtaMax(Float_t f        )          {fEtaMax           = f;}
@@ -120,13 +116,17 @@ class AliEbyEPidRatioTask : public AliAnalysisTaskSE {
   Bool_t              fIsMC;                    //  Is MC event 
   Bool_t              fIsRatio;                 //  Is MC event b
   Bool_t              fIsPtBin;                 //  Is MC Event a 
+  Bool_t              fIsDetectorWise;          // Is detectorwise
   Bool_t              fIsAOD;                   //  analysis mode            : 0 = ESDs  | 1 = AODs
+  Bool_t              fIsSub;                   //  analysis mode      SS  
+  Bool_t              fIsBS;                    //  analysis mode      BS
+  Bool_t              fIsPer;                   //  analysis mode      PER
+    
   Int_t               fESDTrackCutMode;         //  ESD track cut mode       : 0 = clean | 1 = dirty
   Int_t               fModeEffCreation ;        //  Correction creation mode : 1 = on    | 0 = off
   Int_t               fModeDCACreation;         //  DCA creation mode        : 1 = on    | 0 = off
   Int_t               fModeDistCreation;        //  Dist creation mode       : 1 = on    | 0 = off
   Int_t               fModeQACreation;          //  QA creation mode         : 1 = on    | 0 = off
-
   AliMCEvent         *fMCEvent;                 //! Ptr to MC event
   AliStack           *fMCStack;                 //! Ptr to MC stack
   

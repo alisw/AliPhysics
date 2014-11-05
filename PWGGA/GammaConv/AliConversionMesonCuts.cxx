@@ -102,6 +102,9 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
    fDCAGammaGammaCut(1000),
    fDCAZMesonPrimVtxCut(1000),
    fDCARMesonPrimVtxCut(1000),
+   fDCAGammaGammaCutOn(kFALSE),
+   fDCAZMesonPrimVtxCutOn(kFALSE),
+   fDCARMesonPrimVtxCutOn(kFALSE),
    fBackgroundHandler(0),
    fCutString(NULL),
    hMesonCuts(NULL),
@@ -160,6 +163,9 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
    fDCAGammaGammaCut(ref.fDCAGammaGammaCut),
    fDCAZMesonPrimVtxCut(ref.fDCAZMesonPrimVtxCut),
    fDCARMesonPrimVtxCut(ref.fDCARMesonPrimVtxCut),
+   fDCAGammaGammaCutOn(ref.fDCAGammaGammaCutOn),
+   fDCAZMesonPrimVtxCutOn(ref.fDCAZMesonPrimVtxCutOn),
+   fDCARMesonPrimVtxCutOn(ref.fDCARMesonPrimVtxCutOn),
    fBackgroundHandler(ref.fBackgroundHandler),
    fCutString(NULL),
    hMesonCuts(NULL),
@@ -584,102 +590,108 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliSta
 Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal, Double_t fRapidityShift)
 {
 
-   // Selection of reconstructed Meson candidates
-   // Use flag IsSignal in order to fill Fill different
-   // histograms for Signal and Background
-   TH1 *hist=0x0;
+	// Selection of reconstructed Meson candidates
+	// Use flag IsSignal in order to fill Fill different
+	// histograms for Signal and Background
+	TH1 *hist=0x0;
 
-   if(IsSignal){hist=hMesonCuts;}
-   else{hist=hMesonBGCuts;}
+	if(IsSignal){hist=hMesonCuts;}
+	else{hist=hMesonBGCuts;}
 
-   Int_t cutIndex=0;
+	Int_t cutIndex=0;
 
-   if(hist)hist->Fill(cutIndex);
-   cutIndex++;
+	if(hist)hist->Fill(cutIndex);
+	cutIndex++;
 
-   // Undefined Rapidity -> Floating Point exception
-   if((pi0->E()+pi0->Pz())/(pi0->E()-pi0->Pz())<=0){
-      if(hist)hist->Fill(cutIndex);
-      cutIndex++;
-// 	  cout << "undefined rapidity" << endl;
-      return kFALSE;
-   }
-   else{
-      // PseudoRapidity Cut --> But we cut on Rapidity !!!
-      cutIndex++;
-      if(abs(pi0->Rapidity()-fRapidityShift)>fRapidityCutMeson){
-         if(hist)hist->Fill(cutIndex);
-// 		 cout << abs(pi0->Rapidity()-fRapidityShift) << ">" << fRapidityCutMeson << endl;
-         return kFALSE;
-      }
-   }
-   cutIndex++;
+	// Undefined Rapidity -> Floating Point exception
+	if((pi0->E()+pi0->Pz())/(pi0->E()-pi0->Pz())<=0){
+		if(hist)hist->Fill(cutIndex);
+		cutIndex++;
+		if (!IsSignal)cout << "undefined rapidity" << endl;
+		return kFALSE;
+	}
+	else{
+		// PseudoRapidity Cut --> But we cut on Rapidity !!!
+		cutIndex++;
+		if(abs(pi0->Rapidity()-fRapidityShift)>fRapidityCutMeson){
+			if(hist)hist->Fill(cutIndex);
+// 			if (!IsSignal)	 cout << abs(pi0->Rapidity()-fRapidityShift) << ">" << fRapidityCutMeson << endl;
+			return kFALSE;
+		}
+	}
+	cutIndex++;
 
-   // Opening Angle Cut
-   //fOpeningAngle=2*TMath::ATan(0.134/pi0->P());// physical minimum opening angle
-   if( pi0->GetOpeningAngle() < fOpeningAngle){
-// 	  cout << pi0->GetOpeningAngle() << "<" << fOpeningAngle << endl; 
-      if(hist)hist->Fill(cutIndex);
-      return kFALSE;
-   }
-   cutIndex++;
+	// Opening Angle Cut
+	//fOpeningAngle=2*TMath::ATan(0.134/pi0->P());// physical minimum opening angle
+	if( pi0->GetOpeningAngle() < fOpeningAngle){
+// 		if (!IsSignal) cout << pi0->GetOpeningAngle() << "<" << fOpeningAngle << endl; 
+		if(hist)hist->Fill(cutIndex);
+		return kFALSE;
+	}
+	cutIndex++;
 
-   if ( fAlphaPtDepCut == kTRUE ) {
- 
-	fAlphaCutMeson = fFAlphaCut->Eval( pi0->Pt() );
-   }
-   
-   
-   // Alpha Max Cut
-   if(pi0->GetAlpha()>fAlphaCutMeson){
-// 	   cout << pi0->GetAlpha() << ">" << fAlphaCutMeson << endl; 
-      if(hist)hist->Fill(cutIndex);
-      return kFALSE;
-   }
-   cutIndex++;
+	if ( fAlphaPtDepCut == kTRUE ) {
+	
+		fAlphaCutMeson = fFAlphaCut->Eval( pi0->Pt() );
+	}
+	
+	
+	// Alpha Max Cut
+	if(pi0->GetAlpha()>fAlphaCutMeson){
+// 		if (!IsSignal) cout << pi0->GetAlpha() << ">" << fAlphaCutMeson << endl; 
+		if(hist)hist->Fill(cutIndex);
+		return kFALSE;
+	}
+	cutIndex++;
 
-   // Alpha Min Cut
-   if(pi0->GetAlpha()<fAlphaMinCutMeson){
-// 	  cout << pi0->GetAlpha() << "<" << fAlphaMinCutMeson << endl; 
-      if(hist)hist->Fill(cutIndex);
-      return kFALSE;
-   }
-   cutIndex++;
+	// Alpha Min Cut
+	if(pi0->GetAlpha()<fAlphaMinCutMeson){
+// 		if (!IsSignal)cout << pi0->GetAlpha() << "<" << fAlphaMinCutMeson << endl; 
+		if(hist)hist->Fill(cutIndex);
+		return kFALSE;
+	}
+	cutIndex++;
 
-   if (hDCAGammaGammaMesonBefore)hDCAGammaGammaMesonBefore->Fill(pi0->GetDCABetweenPhotons());
-   if (hDCARMesonPrimVtxBefore)hDCARMesonPrimVtxBefore->Fill(pi0->GetDCARMotherPrimVtx());
+	if (hDCAGammaGammaMesonBefore)hDCAGammaGammaMesonBefore->Fill(pi0->GetDCABetweenPhotons());
+	if (hDCARMesonPrimVtxBefore)hDCARMesonPrimVtxBefore->Fill(pi0->GetDCARMotherPrimVtx());
 
-   if (pi0->GetDCABetweenPhotons() > fDCAGammaGammaCut){
-// 	  cout << pi0->GetDCABetweenPhotons() << ">" << fDCAGammaGammaCut << endl; 
-      if(hist)hist->Fill(cutIndex);
-      return kFALSE;
-   }
-   cutIndex++;
+	if (fDCAGammaGammaCutOn){
+		if (pi0->GetDCABetweenPhotons() > fDCAGammaGammaCut){
+// 			if (!IsSignal)cout << pi0->GetDCABetweenPhotons() << ">" << fDCAGammaGammaCut << endl; 
+			if(hist)hist->Fill(cutIndex);
+			return kFALSE;
+		}
+	}	
+	cutIndex++;
 
-   if (pi0->GetDCARMotherPrimVtx() > fDCARMesonPrimVtxCut){
-// 	   cout << pi0->GetDCARMotherPrimVtx() << ">" << fDCARMesonPrimVtxCut << endl; 
-      if(hist)hist->Fill(cutIndex);
-      return kFALSE;
-   }
-   cutIndex++;
-
-
-   if (hDCAZMesonPrimVtxBefore)hDCAZMesonPrimVtxBefore->Fill(pi0->GetDCAZMotherPrimVtx());
-
-   if (abs(pi0->GetDCAZMotherPrimVtx()) > fDCAZMesonPrimVtxCut){
-// 	  cout << pi0->GetDCAZMotherPrimVtx() << ">" << fDCAZMesonPrimVtxCut << endl; 
-      if(hist)hist->Fill(cutIndex);
-      return kFALSE;
-   }
-   cutIndex++;
+	if (fDCARMesonPrimVtxCutOn){
+		if (pi0->GetDCARMotherPrimVtx() > fDCARMesonPrimVtxCut){
+// 			if (!IsSignal) cout << pi0->GetDCARMotherPrimVtx() << ">" << fDCARMesonPrimVtxCut << endl; 
+			if(hist)hist->Fill(cutIndex);
+			return kFALSE;
+		}
+	}	
+	cutIndex++;
 
 
-   if (hDCAGammaGammaMesonAfter)hDCAGammaGammaMesonAfter->Fill(pi0->GetDCABetweenPhotons());
-   if (hDCARMesonPrimVtxAfter)hDCARMesonPrimVtxAfter->Fill(pi0->GetDCARMotherPrimVtx());
-   if (hDCAZMesonPrimVtxAfter)hDCAZMesonPrimVtxAfter->Fill(pi0->M(),pi0->GetDCAZMotherPrimVtx());
+	if (hDCAZMesonPrimVtxBefore)hDCAZMesonPrimVtxBefore->Fill(pi0->GetDCAZMotherPrimVtx());
 
-   if(hist)hist->Fill(cutIndex);
-   return kTRUE;
+	if (fDCAZMesonPrimVtxCutOn){
+		if (abs(pi0->GetDCAZMotherPrimVtx()) > fDCAZMesonPrimVtxCut){
+// 			if (!IsSignal) cout << pi0->GetDCAZMotherPrimVtx() << ">" << fDCAZMesonPrimVtxCut << endl; 
+			if(hist)hist->Fill(cutIndex);
+			return kFALSE;
+		}
+	}
+	cutIndex++;
+
+
+	if (hDCAGammaGammaMesonAfter)hDCAGammaGammaMesonAfter->Fill(pi0->GetDCABetweenPhotons());
+	if (hDCARMesonPrimVtxAfter)hDCARMesonPrimVtxAfter->Fill(pi0->GetDCARMotherPrimVtx());
+	if (hDCAZMesonPrimVtxAfter)hDCAZMesonPrimVtxAfter->Fill(pi0->M(),pi0->GetDCAZMotherPrimVtx());
+
+	if(hist)hist->Fill(cutIndex);
+	return kTRUE;
 }
 
 
@@ -852,9 +864,9 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
 	printf("\t |y| < %3.2f \n", fRapidityCutMeson);
 	printf("\t theta_{open} < %3.2f\n", fOpeningAngle);
 	if (!fAlphaPtDepCut) printf("\t %3.2f < alpha < %3.2f\n", fAlphaMinCutMeson, fAlphaCutMeson);
-	printf("\t dca_{gamma,gamma} > %3.2f\n", fDCAGammaGammaCut);
-	printf("\t dca_{R, prim Vtx} > %3.2f\n", fDCARMesonPrimVtxCut); 
-	printf("\t dca_{Z, prim Vtx} > %3.2f\n\n", fDCAZMesonPrimVtxCut); 
+	if (fDCAGammaGammaCutOn)printf("\t dca_{gamma,gamma} > %3.2f\n", fDCAGammaGammaCut);
+	if (fDCARMesonPrimVtxCutOn)printf("\t dca_{R, prim Vtx} > %3.2f\n", fDCARMesonPrimVtxCut); 
+	if (fDCAZMesonPrimVtxCutOn)printf("\t dca_{Z, prim Vtx} > %3.2f\n\n", fDCAZMesonPrimVtxCut); 
 	printf("\t Meson selection window for further analysis %3.3f > M_{gamma,gamma} > %3.3f\n\n", fSelectionLow, fSelectionHigh); 
 	
 	 printf("Meson BG settings \n");
@@ -1313,125 +1325,155 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
 
 ///________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetDCAGammaGammaCut(Int_t DCAGammaGamma){
-   // Set Cut
-   switch(DCAGammaGamma){
-   case 0:  //
-      fDCAGammaGammaCut   = 1000;
-      break;
-   case 1:  //
-      fDCAGammaGammaCut   = 10;
-      break;
-   case 2:  //
-      fDCAGammaGammaCut   = 5;
-      break;
-   case 3:  //
-      fDCAGammaGammaCut   = 4;
-      break;
-   case 4:  //
-      fDCAGammaGammaCut   = 3;
-      break;
-   case 5:  //
-      fDCAGammaGammaCut   = 2.5;
-      break;
-   case 6:  //
-      fDCAGammaGammaCut   = 2;
-      break;
-   case 7:  //
-      fDCAGammaGammaCut   = 1.5;
-      break;
-   case 8:  //
-      fDCAGammaGammaCut   = 1;
-      break;
-   case 9:  //
-      fDCAGammaGammaCut   = 0.5;
-      break;
-   default:
-      cout<<"Warning: DCAGammaGamma not defined "<<DCAGammaGamma<<endl;
-      return kFALSE;
-   }
-   return kTRUE;
+	// Set Cut
+	switch(DCAGammaGamma){
+	case 0:  //
+		fDCAGammaGammaCutOn = kFALSE;
+		fDCAGammaGammaCut   = 1000;
+		break;
+	case 1:  //
+		fDCAGammaGammaCutOn = kTRUE;
+		fDCAGammaGammaCut   = 10;
+		break;
+	case 2:  //
+		fDCAGammaGammaCutOn = kTRUE;
+		fDCAGammaGammaCut   = 5;
+		break;
+	case 3:  //
+		fDCAGammaGammaCutOn = kTRUE;
+		fDCAGammaGammaCut   = 4;
+		break;
+	case 4:  //
+		fDCAGammaGammaCutOn = kTRUE;
+		fDCAGammaGammaCut   = 3;
+		break;
+	case 5:  //
+		fDCAGammaGammaCutOn = kTRUE;
+		fDCAGammaGammaCut   = 2.5;
+		break;
+	case 6:  //
+		fDCAGammaGammaCutOn = kTRUE;
+		fDCAGammaGammaCut   = 2;
+		break;
+	case 7:  //
+		fDCAGammaGammaCutOn = kTRUE;
+		fDCAGammaGammaCut   = 1.5;
+		break;
+	case 8:  //
+		fDCAGammaGammaCutOn = kTRUE;
+		fDCAGammaGammaCut   = 1;
+		break;
+	case 9:  //
+		fDCAGammaGammaCutOn = kTRUE;
+		fDCAGammaGammaCut   = 0.5;
+		break;
+	default:
+		cout<<"Warning: DCAGammaGamma not defined "<<DCAGammaGamma<<endl;
+		return kFALSE;
+	}
+	return kTRUE;
 }
 
 ///________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetDCAZMesonPrimVtxCut(Int_t DCAZMesonPrimVtx){
-   // Set Cut
-   switch(DCAZMesonPrimVtx){
-   case 0:  //
-      fDCAZMesonPrimVtxCut   = 1000;
-      break;
-   case 1:  //
-      fDCAZMesonPrimVtxCut   = 10;
-      break;
-   case 2:  //
-      fDCAZMesonPrimVtxCut   = 5;
-      break;
-   case 3:  //
-      fDCAZMesonPrimVtxCut   = 4;
-      break;
-   case 4:  //
-      fDCAZMesonPrimVtxCut   = 3;
-      break;
-   case 5:  //
-      fDCAZMesonPrimVtxCut   = 2.5;
-      break;
-   case 6:  //
-      fDCAZMesonPrimVtxCut   = 2;
-      break;
-   case 7:  //
-      fDCAZMesonPrimVtxCut   = 1.5;
-      break;
-   case 8:  //
-      fDCAZMesonPrimVtxCut   = 1;
-      break;
-   case 9:  //
-      fDCAZMesonPrimVtxCut   = 0.5;
-      break;
-   default:
-      cout<<"Warning: DCAZMesonPrimVtx not defined "<<DCAZMesonPrimVtx<<endl;
-      return kFALSE;
-   }
-   return kTRUE;
+	// Set Cut
+	switch(DCAZMesonPrimVtx){
+	case 0:  //
+		fDCAZMesonPrimVtxCutOn = kFALSE;
+		fDCAZMesonPrimVtxCut   = 1000;
+		break;
+	case 1:  //
+		fDCAZMesonPrimVtxCutOn = kTRUE;
+		fDCAZMesonPrimVtxCut   = 10;
+		break;
+	case 2:  //
+		fDCAZMesonPrimVtxCutOn = kTRUE;
+		fDCAZMesonPrimVtxCut   = 5;
+		break;
+	case 3:  //
+		fDCAZMesonPrimVtxCutOn = kTRUE;
+		fDCAZMesonPrimVtxCut   = 4;
+		break;
+	case 4:  //
+		fDCAZMesonPrimVtxCutOn = kTRUE;
+		fDCAZMesonPrimVtxCut   = 3;
+		break;
+	case 5:  //
+		fDCAZMesonPrimVtxCutOn = kTRUE;
+		fDCAZMesonPrimVtxCut   = 2.5;
+		break;
+	case 6:  //
+		fDCAZMesonPrimVtxCutOn = kTRUE;
+		fDCAZMesonPrimVtxCut   = 2;
+		break;
+	case 7:  //
+		fDCAZMesonPrimVtxCutOn = kTRUE;
+		fDCAZMesonPrimVtxCut   = 1.5;
+		break;
+	case 8:  //
+		fDCAZMesonPrimVtxCutOn = kTRUE;
+		fDCAZMesonPrimVtxCut   = 1;
+		break;
+	case 9:  //
+		fDCAZMesonPrimVtxCutOn = kTRUE;
+		fDCAZMesonPrimVtxCut   = 0.5;
+		break;
+	default:
+		cout<<"Warning: DCAZMesonPrimVtx not defined "<<DCAZMesonPrimVtx<<endl;
+		return kFALSE;
+	}
+	return kTRUE;
 }
 
 ///________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetDCARMesonPrimVtxCut(Int_t DCARMesonPrimVtx){
-   // Set Cut
-   switch(DCARMesonPrimVtx){
-   case 0:  //
-      fDCARMesonPrimVtxCut   = 1000;
-      break;
-   case 1:  //
-      fDCARMesonPrimVtxCut   = 10;
-      break;
-   case 2:  //
-      fDCARMesonPrimVtxCut   = 5;
-      break;
-   case 3:  //
-      fDCARMesonPrimVtxCut   = 4;
-      break;
-   case 4:  //
-      fDCARMesonPrimVtxCut   = 3;
-      break;
-   case 5:  //
-      fDCARMesonPrimVtxCut   = 2.5;
-      break;
-   case 6:  //
-      fDCARMesonPrimVtxCut   = 2;
-      break;
-   case 7:  //
-      fDCARMesonPrimVtxCut   = 1.5;
-      break;
-   case 8:  //
-      fDCARMesonPrimVtxCut   = 1;
-      break;
-   case 9:  //
-      fDCARMesonPrimVtxCut   = 0.5;
-      break;
-   default:
-      cout<<"Warning: DCARMesonPrimVtx not defined "<<DCARMesonPrimVtx<<endl;
-      return kFALSE;
-   }
-   return kTRUE;
+	// Set Cut
+	switch(DCARMesonPrimVtx){
+	case 0:  //
+		fDCARMesonPrimVtxCutOn = kFALSE;
+		fDCARMesonPrimVtxCut   = 1000;
+		break;
+	case 1:  //
+		fDCARMesonPrimVtxCutOn = kTRUE;
+		fDCARMesonPrimVtxCut   = 10;
+		break;
+	case 2:  //
+		fDCARMesonPrimVtxCutOn = kTRUE;
+		fDCARMesonPrimVtxCut   = 5;
+		break;
+	case 3:  //
+		fDCARMesonPrimVtxCutOn = kTRUE;
+		fDCARMesonPrimVtxCut   = 4;
+		break;
+	case 4:  //
+		fDCARMesonPrimVtxCutOn = kTRUE;
+		fDCARMesonPrimVtxCut   = 3;
+		break;
+	case 5:  //
+		fDCARMesonPrimVtxCutOn = kTRUE;
+		fDCARMesonPrimVtxCut   = 2.5;
+		break;
+	case 6:  //
+		fDCARMesonPrimVtxCutOn = kTRUE;
+		fDCARMesonPrimVtxCut   = 2;
+		break;
+	case 7:  //
+		fDCARMesonPrimVtxCutOn = kTRUE;
+		fDCARMesonPrimVtxCut   = 1.5;
+		break;
+	case 8:  //
+		fDCARMesonPrimVtxCutOn = kTRUE;
+		fDCARMesonPrimVtxCut   = 1;
+		break;
+	case 9:  //
+		fDCARMesonPrimVtxCutOn = kTRUE;
+		fDCARMesonPrimVtxCut   = 0.5;
+		break;
+	default:
+		cout<<"Warning: DCARMesonPrimVtx not defined "<<DCARMesonPrimVtx<<endl;
+		return kFALSE;
+	}
+	return kTRUE;
 }
 
 

@@ -299,7 +299,7 @@ static Bool_t AcceptCascade(const AliESDcascade *cs, const AliESDEvent *esd) {
      vtx=esd->GetPrimaryVertexTracks();
      if (!vtx->GetStatus()) return kFALSE;
   }
-  Double_t xv=vtx->GetXv(), yv=vtx->GetYv(), zv=vtx->GetZv();
+  Double_t xv=vtx->GetX(), yv=vtx->GetY(), zv=vtx->GetZ();
   if (cs->GetCascadeCosineOfPointingAngle(xv,yv,zv) < 0.999) return kFALSE;
 
   if (cs->GetDcaXiDaughters() > 0.3) return kFALSE;
@@ -389,7 +389,7 @@ void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
   // Vertex selection
   const AliESDVertex *vtx=esd->GetPrimaryVertex();
   if (!vtx->GetStatus()) return;
-  Double_t xv=vtx->GetXv(), yv=vtx->GetYv(), zv=vtx->GetZv();
+  Double_t xv=vtx->GetX(), yv=vtx->GetY(), zv=vtx->GetZ();
 
   if (TMath::Abs(zv) > 10.) return ;   
  

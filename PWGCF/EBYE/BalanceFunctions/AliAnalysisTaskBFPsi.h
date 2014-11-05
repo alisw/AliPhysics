@@ -147,7 +147,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   //pid
   enum kDetectorUsedForPID { kTPCpid, kTOFpid, kTPCTOF }; // default TPC & TOF pid (via GetTPCpid & GetTOFpid)  
-  enum kParticleOfInterest { kMuon, kElectron, kPion, kKaon, kProton };  
+  enum kParticleOfInterest { kMuon, kElectron, kPion, kKaon, kProton };
 
   void SetUseBayesianPID(Double_t gMinProbabilityValue) {
     fUsePID = kTRUE; fUsePIDnSigma = kFALSE; fUsePIDPropabilities = kTRUE;
@@ -225,7 +225,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   TH2F *fHistEventStats; //event stats
   TH2F *fHistCentStats; //centrality stats
-  TH2F *fHistCentStatsUsed; //centrality stats USED +++++++++++++++++++++++
+  TH2F *fHistCentStatsUsed; //centrality stats USED
   TH1F *fHistTriggerStats; //trigger stats
   TH1F *fHistTrackStats; //Track filter bit stats
   TH1F *fHistVx; //x coordinate of the primary vertex
@@ -261,8 +261,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2D *fHistProbTPCTOFvsPtbeforePID;//TOF/TPC probability vs pT before PID cuts (QA histogram)
   TH2D *fHistNSigmaTPCvsPtbeforePID;//TPC nsigma vs pT before PID cuts (QA histogram)
   TH2D *fHistNSigmaTOFvsPtbeforePID;//TOF nsigma vs pT before PID cuts (QA histogram)
-  TH2D *fHistBetaVsdEdXbeforePID;//TPCTOF  before PID cuts (QA histogram)//+++++++++++++++++++++
-  TH2D *fHistNSigmaTPCTOFvsPtbeforePID;//TPCTOF  before PID cuts (QA histogram)//+++++++++++++++++++++
+  TH2D *fHistBetaVsdEdXbeforePID;//TPCTOF  before PID cuts (QA histogram)
+  TH2D *fHistNSigmaTPCTOFvsPtbeforePID;//TPCTOF  before PID cuts (QA histogram)
+  TH3D *fHistNSigmaTPCTOFPbefPID;//+++++++++++++++
+
   TH2D *fHistdEdxVsPTPCafterPID;//TPC dEdx vs momentum after PID cuts (QA histogram)
   TH2D *fHistBetavsPTOFafterPID;//beta vs momentum after PID cuts (QA histogram)
   TH2D *fHistProbTPCvsPtafterPID; //TPC probability vs pT after PID cuts (QA histogram)
@@ -270,13 +272,14 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2D *fHistProbTPCTOFvsPtafterPID;//TOF/TPC probability vs pT after PID cuts (QA histogram)
   TH2D *fHistNSigmaTPCvsPtafterPID;//TPC nsigma vs pT after PID cuts (QA histogram)
   TH2D *fHistNSigmaTOFvsPtafterPID;//TOF nsigma vs pT after PID cuts (QA histogram)
-  TH2D *fHistBetaVsdEdXafterPID;//TPCTOF  before PID cuts (QA histogram)//+++++++++++++++++++++
-  TH2D *fHistNSigmaTPCTOFvsPtafterPID;//TPCTOF  before PID cuts (QA histogram)//+++++++++++++++++++++
+  TH2D *fHistBetaVsdEdXafterPID;//TPCTOF  before PID cuts (QA histogram)
+  TH2D *fHistNSigmaTPCTOFvsPtafterPID;//TPCTOF  before PID cuts (QA histogram)
+  TH3D *fHistNSigmaTPCTOFPafterPID; //++++++++++++++++++
 
-  TH2D *fHistdEdxVsPTPCbeforePIDelectron; //+++++++
-  TH2D *fHistNSigmaTPCvsPtbeforePIDelectron; //+++++++
-  TH2D *fHistdEdxVsPTPCafterPIDelectron; //+++++++
-  TH2D *fHistNSigmaTPCvsPtafterPIDelectron; //+++++++
+  TH2D *fHistdEdxVsPTPCbeforePIDelectron; //!
+  TH2D *fHistNSigmaTPCvsPtbeforePIDelectron; //!
+  TH2D *fHistdEdxVsPTPCafterPIDelectron; //!
+  TH2D *fHistNSigmaTPCvsPtafterPIDelectron; //!
   
   TH3F *fHistCorrectionPlus[kCENTRALITY]; //====correction
   TH3F *fHistCorrectionMinus[kCENTRALITY]; //===correction
@@ -318,7 +321,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fNumberOfAcceptedTracksMin;//min. number of number of accepted tracks (used for the multiplicity dependence study - pp)
   Double_t fNumberOfAcceptedTracksMax;//max. number of number of accepted tracks (used for the multiplicity dependence study - pp)
   TH2F *fHistNumberOfAcceptedTracks;//hisot to store the number of accepted tracks
-  TH1F *fHistMultiplicity;//hisot to store the number of accepted tracks //++++++++++++++++++
+  TH1F *fHistMultiplicity;//hisot to store the number of accepted tracks
 
   Bool_t fUseOfflineTrigger;//Usage of the offline trigger selection
   Bool_t fCheckFirstEventInChunk;//Usage of the "First Event in Chunk" check (not needed for new productions)

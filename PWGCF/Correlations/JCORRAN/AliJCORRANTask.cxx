@@ -150,9 +150,9 @@ void AliJCORRANTask::Init()
 //______________________________________________________________________________
 void AliJCORRANTask::Terminate(Option_t *)
 {
-	fFilter->Terminate();
+	//fFilter->Terminate();
 
 	// Processing when the event loop is ended
-	fAliJRunHeader->PrintOut();
+	//fAliJRunHeader->PrintOut();
 	cout<<"AliJCORRANTask Analysis DONE !!"<<endl; 
 }
