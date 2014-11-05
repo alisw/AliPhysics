@@ -89,7 +89,16 @@ class AliAnalysisTaskNucleiv2SP : public AliAnalysisTaskSE {
   // For SP resolution
 
   TH2F *hQVzAQVzCvsCentrality;
- 
+
+  // For NUA correction
+
+  TH2F *hQxVzAvsCentrality;
+  TH2F *hQyVzAvsCentrality;
+  TH2F *hQxVzCvsCentrality;
+  TH2F *hQyVzCvsCentrality;
+  TH2F *hQxVzMvsCentrality;
+  TH2F *hQyVzMvsCentrality;
+
   // TTree
   TTree *ftree;                //! Some Information on the tracks
   Double_t tCentrality      ;
