@@ -372,7 +372,7 @@ Associate(const AliESDVertex *g,const AliESDVertex *f,const AliESDEvent *esd) {
 }
 
 Int_t GoodPileupVertices(const Char_t *dir) {
-  Int_t FindContributors(Float_t tz, AliStack *stack, UShort_t *idx);
+  Bool_t FindContributors(Float_t tz, AliStack *stack, UShort_t *idx, Int_t &n);
    if (gAlice) { 
        delete AliRunLoader::Instance();
        delete gAlice;//if everything was OK here it is already NULL
@@ -422,8 +422,8 @@ Int_t GoodPileupVertices(const Char_t *dir) {
          TArrayF vtx(3); h->PrimaryVertex(vtx);
          Float_t t=h->InteractionTime();
          UShort_t *idx=new UShort_t[np];
-         Int_t ntrk=FindContributors(t,stack,idx);
-         if (ntrk < nMin) {delete[] idx; continue;}
+         Int_t ntrk=0;
+         if (!FindContributors(t,stack,idx,ntrk)) {delete[] idx; continue;}
          AliESDVertex *vertex=new ((*refs)[nv]) AliESDVertex();
          vertex->SetXv(vtx[0]);
          vertex->SetYv(vtx[1]);
@@ -444,7 +444,7 @@ Int_t GoodPileupVertices(const Char_t *dir) {
    return 0;
 }
 
-Int_t FindContributors(Float_t tz, AliStack *stack, UShort_t *idx) {
+Bool_t FindContributors(Float_t tz, AliStack *stack, UShort_t *idx, Int_t &n) {
   Int_t ntrk=0;
   Int_t np=stack->GetNtrack();
   for (Int_t i=0; i<np; i++) {
@@ -454,11 +454,10 @@ Int_t FindContributors(Float_t tz, AliStack *stack, UShort_t *idx) {
       TParticlePDG *partPDG = part->GetPDG();
       if (!partPDG) continue;
       if (TMath::Abs(partPDG->Charge())<1e-10) continue;
-      if (part->Pt() < pTmin) continue;
       Float_t dt=0.5*(tz-part->T())/(tz+part->T());
       if (TMath::Abs(dt)>1e-5) continue;
-      idx[ntrk]=i;
-      ntrk++;
+      idx[n++]=i;
+      if (part->Pt() > pTmin) ntrk++;
   }
-  return ntrk;
+  return (ntrk<nMin) ? kFALSE : kTRUE;
 }
