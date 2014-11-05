@@ -17,6 +17,7 @@
 # Subfolders hve to be includes at the begining otherwise
 # they will inherit properties from the parent
 add_subdirectory(HOMER)
+add_subdirectory(interface)
 add_subdirectory(util)
 
 # Module
