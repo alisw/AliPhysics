@@ -73,7 +73,7 @@ void *AliRawEventHeaderBase::HeaderBegin() const
   TIter next(datalist);                           
   TDataMember *member = (TDataMember *)next();
 
-  if(!strcmp(member->GetTypeName(),"TClass"))
+  if(strstr(member->GetTypeName(),"TClass"))
     member = (TDataMember *)next();
 
   void *ptr = (void *)((char *)this+member->GetOffset());
@@ -96,7 +96,7 @@ Int_t AliRawEventHeaderBase::HeaderSize() const
   TIter next(datalist);                           
   TDataMember *member;
   while ((member=(TDataMember *)next()) != 0x0) {
-    if (!strcmp(member->GetTypeName(),"TClass")) continue;
+    if (strstr(member->GetTypeName(),"TClass")) continue;
     UInt_t unitsize = member->GetUnitSize();
     UInt_t ndim = member->GetArrayDim();
     if (ndim == 0)
@@ -462,32 +462,4 @@ void AliRawEventHeaderBase::AddEqIndex(Int_t index)
 void AliRawEventHeaderBase::Reset()
 {
   fFirstEqIndex = fLastEqIndex = -1;
-}
-
-//______________________________________________________________________________
-void AliRawEventHeaderBase::Streamer(TBuffer &R__b)
-{
-   // Stream an object of class AliRawEventHeaderBase.
-
-   if (R__b.IsReading()) {
-      UInt_t R__s, R__c;
-      Version_t R__v = R__b.ReadVersion(&R__s, &R__c);
-      if (R__v > 3) {
-	R__b.ReadClassBuffer(AliRawEventHeaderBase::Class(),this,R__v,R__s,R__c);
-	return;
-      }
-      TObject::Streamer(R__b);
-      R__b >> fSize;
-      R__b >> fMagic;
-      R__b >> fHeadSize;
-      R__b >> fVersion;
-      R__b >> fExtendedDataSize;
-      delete [] fExtendedData;
-      fExtendedData = new char[fExtendedDataSize];
-      R__b.ReadFastArray(fExtendedData,fExtendedDataSize);
-      R__b >> fIsSwapped;
-      R__b.CheckByteCount(R__s, R__c, AliRawEventHeaderBase::IsA());
-   } else {
-      R__b.WriteClassBuffer(AliRawEventHeaderBase::Class(),this);
-   }
 }
