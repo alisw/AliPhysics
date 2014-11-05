@@ -54,6 +54,10 @@ G__*.h
 /build
 /DA
 
+#Root files, log files, etc
+*.root
+*.log
+
 # /test/
 /test/*/*.root
 /test/*/*.log
