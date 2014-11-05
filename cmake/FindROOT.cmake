@@ -115,6 +115,7 @@ if(ROOTSYS)
         message(FATAL_ERROR "Error retrieving ROOT incdir: ${error}")
     endif(error)
     string(STRIP ${ROOT_INCDIR} ROOT_INCDIR)
+    set(ROOT_INCLUDE_DIRS ${ROOT_INCDIR})
 
     # Checking for glibs
     execute_process(COMMAND ${ROOT_CONFIG} --noldflags --glibs OUTPUT_VARIABLE ROOT_GLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
