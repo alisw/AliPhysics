@@ -85,6 +85,11 @@ add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
+target_link_libraries(${MODULE} STEERBase AOD ESD ANALYSISalice HLTbase AliHLTUtil JETAN)
+
+if(FASTJET_FOUND)
+    target_link_libraries(${MODULE} ${FASTJET_LIBS})
+endif(FASTJET_FOUND)
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
