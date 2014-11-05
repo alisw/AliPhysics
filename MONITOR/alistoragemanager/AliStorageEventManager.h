@@ -32,7 +32,7 @@ public:
 	std::vector<serverListStruct> GetServerListVector(storageSockets socket);
 	AliESDEvent* GetEvent(storageSockets socket,int timeout=-1);
 	struct serverRequestStruct* GetServerStruct(storageSockets socket);
-	struct clientRequestStruct* GetClientStruct(storageSockets socket);
+	struct clientRequestStruct* GetClientStruct(storageSockets socket,int timeout=-1);
 	long GetLong(storageSockets socket);
 	bool GetBool(storageSockets socket);
 

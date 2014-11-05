@@ -521,8 +521,11 @@ struct serverRequestStruct* AliStorageEventManager::GetServerStruct(storageSocke
     return request;
 }
 
-struct clientRequestStruct* AliStorageEventManager::GetClientStruct(storageSockets socket)
+struct clientRequestStruct* AliStorageEventManager::GetClientStruct(storageSockets socket,int timeout)
 {
+    pollitem_t items[1] =  {{*fSockets[socket],0,ZMQ_POLLIN,0}} ;
+    if(timeout>=0){if(poll (&items[0], 1, timeout)==0){return NULL;}}
+    
     struct clientRequestStruct *request = new struct clientRequestStruct;
     message_t *requestMessage = new message_t();
     try{

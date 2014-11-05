@@ -12,7 +12,7 @@ void *ClientThreadHandle(void*)
 
 	if(client)
 	{
-		client->CollectData();
+//		client->CollectData();
 	}
 	else
 	{
