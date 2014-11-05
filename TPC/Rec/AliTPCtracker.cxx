@@ -1413,7 +1413,7 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
   //
   //
   const Int_t nROCs   = 72;
-
+  const Int_t   nIterations=2;
   // 0.) reset crosstalk matrix 
   //
   for (Int_t isector=0; isector<nROCs*4; isector++){  //set all ellemts of crosstalk matrix to 0 
@@ -1425,14 +1425,14 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
   // 1.) Filling part -- loop over clusters
   //
   Double_t missingChargeFactor= AliTPCReconstructor::GetRecoParam()->GetCrosstalkCorrectionMissingCharge();
-  for (Int_t iter=0; iter<2;iter++){
+  for (Int_t iter=0; iter<nIterations;iter++){
     for (Int_t isector=0; isector<36; isector++){      // loop over sectors
       for (Int_t iside=0; iside<2; iside++){           // loop over sides A/C
 	AliTPCtrackerSector &sector= (isector<18)?fInnerSec[isector%18]:fOuterSec[isector%18];
 	Int_t nrows = sector.GetNRows();
 	Int_t sec=0;
 	if (isector<18) sec=isector+18*iside;
-	if (isector>=18) sec=36+isector+18*iside;
+	if (isector>=18) sec=18+isector+18*iside;
 	for (Int_t row = 0;row<nrows;row++){           // loop over rows       
 	  //
 	  //
@@ -1490,12 +1490,13 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
     //
     // copy crosstalk matrix to cached used for next itteration
     //
-    for (Int_t isector=0; isector<nROCs*4; isector++){  //set all ellemts of crosstalk matrix to 0 
+    if (iter<nIterations-1) for (Int_t isector=0; isector<nROCs*2; isector++){  //set all ellemts of crosstalk matrix to 0 
       TMatrixD * crossTalkMatrix = (TMatrixD*)fCrossTalkSignalArray->At(isector);
       TMatrixD * crossTalkMatrixCache = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs*2);
       if (crossTalkMatrix){
 	(*crossTalkMatrixCache)*=0;
 	(*crossTalkMatrixCache)+=(*crossTalkMatrix);
+	(*crossTalkMatrix)*=0;
       }
     }      
   } // end of 2 iterations
@@ -1510,18 +1511,22 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
     for (Int_t isector=0; isector<nROCs; isector++){  //set all ellemts of crosstalk matrix to 0
       TMatrixD * crossTalkMatrix = (TMatrixD*)fCrossTalkSignalArray->At(isector);
       TMatrixD * crossTalkMatrixBelow = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs);
+      TMatrixD * crossTalkMatrixCache = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs*2);
       TVectorD vecAll(crossTalkMatrix->GetNrows());
       TVectorD vecBelow(crossTalkMatrix->GetNrows());
+      TVectorD vecCache(crossTalkMatrixCache->GetNrows());
       //
       for (Int_t itime=0; itime<crossTalkMatrix->GetNcols(); itime++){
 	for (Int_t iwire=0; iwire<crossTalkMatrix->GetNrows(); iwire++){
 	  vecAll[iwire]=(*crossTalkMatrix)(iwire,itime);
 	  vecBelow[iwire]=(*crossTalkMatrixBelow)(iwire,itime);
+	  vecCache[iwire]=(*crossTalkMatrixCache)(iwire,itime);
 	}
 	(*fDebugStreamer)<<"crosstalkMatrix"<<
 	  "sector="<<isector<<
 	  "itime="<<itime<<
 	  "vecAll.="<<&vecAll<<                // crosstalk charge + charge below threshold
+	  "vecCache.="<<&vecCache<<                // crosstalk charge + charge below threshold	  
 	  "vecBelow.="<<&vecBelow<<            // crosstalk contribution from signal below threshold
 	  "\n";
       }
