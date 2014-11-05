@@ -845,6 +845,11 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
 	fSpdVtxPos[1] = fSPDVertex->GetY();
 	fSpdVtxPos[2] = fSPDVertex->GetZ();
 	}
+  else{
+  	fSpdVtxPos[0] = -666;
+	fSpdVtxPos[1] = -666;
+	fSpdVtxPos[2] = -666;
+  	}
 
   //Tracklets
   fNtracklets = aod->GetTracklets()->GetNumberOfTracklets();
