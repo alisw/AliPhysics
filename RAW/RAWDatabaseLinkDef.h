@@ -7,7 +7,7 @@
 #pragma link C++ class AliRawVEvent+;
 #pragma link C++ class AliRawEvent-;
 #pragma link C++ class AliRawEventV2+;
-#pragma link C++ class AliRawEventHeaderBase-;
+#pragma link C++ class AliRawEventHeaderBase+;
 #pragma link C++ defined_in RAW/AliRawEventHeaderVersions.h;
 #pragma link C++ class AliRawEquipmentHeader;
 #pragma link C++ class AliRawVEquipment+;
