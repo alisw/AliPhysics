@@ -15,6 +15,7 @@
 
 #include <TH1F.h>
 #include <TH3F.h>
+#include <TObjString.h>
 #include <THnSparse.h>
 #include "AliAnalysisTaskSE.h"
 #include "AliAODTrack.h"
@@ -38,9 +39,12 @@ public:
   
   void SetReadMC(Bool_t read){fReadMC=read;}
 
-  void SetEventMixingOn(){fDoEventMixing=kTRUE;}
-  void SetEventMixingOff(){fDoEventMixing=kFALSE;}
-  void SetMinNumberOfEventsForMixing(Int_t minn){fMinNumberOfEventsForMixing=minn;}
+  void SetEventMixingWithCuts(Double_t maxDeltaVz, Double_t maxDeltaMult){
+    fDoEventMixing=2; fMaxzVertDistForMix=maxDeltaVz; fMaxMultDiffForMix=maxDeltaMult;
+  }
+  void SetEventMixingWithPools(){fDoEventMixing=1;}
+  void SetEventMixingOff(){fDoEventMixing=0;}
+  void SetNumberOfEventsForMixing(Int_t minn){fNumberOfEventsForMixing=minn;}
 
   void ConfigureZVertPools(Int_t nPools, Double_t*  zVertLimits);
   void ConfigureMultiplicityPools(Int_t nPools, Double_t*  multLimits);
@@ -98,12 +102,14 @@ public:
   Bool_t FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, TClonesArray *arrayMC, Int_t* dgLabels);
   void FillLSHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, Int_t charge);
   void FillMEHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau);
+  void FillMEHistosLS(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, Int_t charge);
   void FillGenHistos(TClonesArray* arrayMC);
   Bool_t CheckAcceptance(TClonesArray* arrayMC, Int_t nProng, Int_t *labDau); 
   Int_t GetPoolIndex(Double_t zvert, Double_t mult);
   void ResetPool(Int_t poolIndex);
-  void DoMixing(Int_t poolIndex);
-
+  void DoMixingWithPools(Int_t poolIndex);
+  void DoMixingWithCuts();
+  Bool_t CanBeMixed(Double_t zv1, Double_t zv2, Double_t mult1, Double_t mult2);
   enum EMesonSpecies {kDzero, kDplus, kDstar, kDs};
   enum EPrompFd {kNone,kPrompt,kFeeddown,kBoth};
   enum EPIDstrategy {knSigma, kBayesianMaxProb, kBayesianThres};
@@ -137,7 +143,10 @@ private:
   TH1F *fDeltaMass;        //! hist. mass difference after rotations
   THnSparse *fDeltaMassFullAnalysis; //! hist. mass difference after rotations with more details
   TH3F *fMassVsPtVsYME;   //! hist. of Y vs. Pt vs. Mass (mixedevents)
+  TH3F *fMassVsPtVsYMELSpp;   //! hist. of Y vs. Pt vs. Mass (mixedevents)
+  TH3F *fMassVsPtVsYMELSmm;   //! hist. of Y vs. Pt vs. Mass (mixedevents)
   TH2F* fEventsPerPool;   //! hist with number of events per pool  
+  TH2F* fMixingsPerPool;    //! hist with number of mixings per pool  
   UInt_t fFilterMask; // FilterMask
   AliESDtrackCuts* fTrackCutsAll; // track selection
   AliESDtrackCuts* fTrackCutsPion; // pion track selection
@@ -174,21 +183,24 @@ private:
   Double_t fBayesThresKaon;  // threshold for kaon identification via Bayesian PID
   Double_t fBayesThresPion;  // threshold for pion identification via Bayesian PID
 
-  Bool_t fDoEventMixing; // flag for event mixing
-  Int_t  fMinNumberOfEventsForMixing; // maximum number of events to be used in event mixing
+  Int_t fDoEventMixing; // flag for event mixing
+  Int_t  fNumberOfEventsForMixing; // maximum number of events to be used in event mixing
+  Double_t fMaxzVertDistForMix; // cut on zvertex distance for event mixing with cuts
+  Double_t fMaxMultDiffForMix; // cut on multiplicity difference for event mixing with cuts
   Int_t fNzVertPools; // number of pools in z vertex for event mixing
   Int_t fNzVertPoolsLimSize; // number of pools in z vertex for event mixing +1
   Double_t* fzVertPoolLims; //[fNzVertPoolsLimSize] limits of the pools in zVertex
   Int_t fNMultPools; // number of pools in multiplicity for event mixing
   Int_t fNMultPoolsLimSize; // number of pools in multiplicity for event mixing +1
   Double_t* fMultPoolLims; //[fNMultPoolsLimSize] limits of the pools in multiplicity
-
+  Int_t  fNOfPools; // number of pools
   TTree** fEventBuffer;   //! structure for event mixing
+  TObjString* fEventInfo;  // unique event Id for event mixing checks
   Double_t fVtxZ;         // zVertex
   Double_t fMultiplicity; // multiplicity
   TObjArray* fKaonTracks; // array of kaon-compatible tracks (TLorentzVectors)
   TObjArray* fPionTracks; // array of pion-compatible tracks (TLorentzVectors)  
-  ClassDef(AliAnalysisTaskCombinHF,8); // D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,9); // D0D+ task from AOD tracks
 };
 
 #endif
