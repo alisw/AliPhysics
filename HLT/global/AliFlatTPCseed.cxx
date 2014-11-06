@@ -56,7 +56,7 @@ void AliFlatTPCseed::GetTPCseed( AliTPCseed *p ) const
   seed.SetLabel(fLabel);  
   seed.SetNumberOfClusters(fNTPCClusters);
 
-  AliTPCclusterMI clusters[fNTPCClusters];
+  AliTPCclusterMI * clusters = new AliTPCclusterMI[fNTPCClusters];
 
   const AliFlatTPCCluster *flatClusters = reinterpret_cast< const AliFlatTPCCluster* >( fContent );
 
@@ -71,4 +71,5 @@ void AliFlatTPCseed::GetTPCseed( AliTPCseed *p ) const
     }
   }
   new (p) AliTPCseed( seed, kTRUE ); // true means that p creates its own cluster objects
+  delete [] clusters;
 }
