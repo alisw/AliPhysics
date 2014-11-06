@@ -55,6 +55,8 @@ updateQA()
   [[ ! -f ${inputList} ]] && echo "no input list: ${inputList}" && return 1
   inputList=$(get_realpath ${inputList})
   mkdir -p ${workingDirectory}
+  #this is a trick to get the full path of workingDirectory
+  #(on a mac 'readlink -f' does not work...)
   workingDirectory=$(workingDirectory=${workingDirectory%/}; cd ${workingDirectory%/*}; echo "${PWD}/${workingDirectory##*/}")
   if [[ ! -d ${workingDirectory} ]]; then
     echo "working dir $workingDirectory does not exist and cannot be created"
