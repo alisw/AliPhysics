@@ -20,9 +20,8 @@ set(MODULE AliHLTEMCAL)
 include_directories(${AliRoot_SOURCE_DIR}/HLT/EMCAL
                    )
 
-# Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
+# Additional include folders in alphabetical order
+include_directories(${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALraw
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
                     ${AliRoot_SOURCE_DIR}/HLT/CALO
@@ -70,7 +69,7 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} STEERBase STEER CDB HLTbase AliHLTUtil AliHLTCalo EMCALbase EMCALUtils EMCALraw)
+target_link_libraries(${MODULE} STEERBase STEER CDB HLTbase AliHLTUtil EMCALbase EMCALUtils EMCALraw)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")

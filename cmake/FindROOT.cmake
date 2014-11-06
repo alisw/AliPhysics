@@ -27,7 +27,7 @@
 # - ROOT_LIBDIR - full path to ROOT library folder
 # - ROOT_LIBRARIES - libraries needed for the package to be used
 # - ROOT_GLIBRARIES - regular + GUI ROOT libraries + path to be used during linking
-# - ROOT_INCLUDE_DIRS - full path to ROOT include folder
+# - ROOT_INCLUDE_DIR - full path to ROOT include folder
 # - ROOT_HASALIEN - ROOT was built with AliEn support
 # - ROOT_HASOPENGL - ROOT was built with OpenGL support
 # - ROOT_HASXML - ROOT was built with XML support
@@ -38,9 +38,9 @@ set(ROOT_FOUND FALSE)
 if(ROOTSYS)
     message(STATUS "Checking for a proper ROOT installation in ${ROOTSYS}.")
 
-    # Setting the LD_LiBRARY_PATH to point to ROOT lib folder
+    # Setting defaults
     set(ROOT_LIBDIR ${ROOTSYS}/lib)
-    set(ROOT_INCLUDE_DIRS ${ROOTSYS}/include)
+    set(ROOT_INCLUDE_DIR ${ROOTSYS}/include)
 
     # Check for root-config scripts
     find_program(ROOT_CONFIG NAMES root-config PATHS ${ROOTSYS}/bin NO_DEFAULT_PATH)
@@ -115,7 +115,7 @@ if(ROOTSYS)
         message(FATAL_ERROR "Error retrieving ROOT incdir: ${error}")
     endif(error)
     string(STRIP ${ROOT_INCDIR} ROOT_INCDIR)
-    set(ROOT_INCLUDE_DIRS ${ROOT_INCDIR})
+    set(ROOT_INCLUDE_DIR ${ROOT_INCDIR})
 
     # Checking for glibs
     execute_process(COMMAND ${ROOT_CONFIG} --noldflags --glibs OUTPUT_VARIABLE ROOT_GLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
@@ -162,6 +162,9 @@ if(ROOTSYS)
     endif(error)
     string(STRIP ${ROOT_FORTRAN} ROOT_FORTRAN)
 
+    # adding the libraries and the inc dir
+    link_directories(${ROOT_LIBDIR})
+    include_directories(${ROOT_INCLUDE_DIR})
     set(ROOT_FOUND TRUE)
 else()
     message(FATAL_ERROR "ROOT installation not found! Please point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR.")

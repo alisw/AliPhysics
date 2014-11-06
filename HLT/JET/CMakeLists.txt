@@ -28,7 +28,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
                     ${AliRoot_SOURCE_DIR}/HLT/BASE/util
-                    ${AliRoot_SOURCE_DIR}/JETAN
+                    ${AliRoot_SOURCE_DIR}/JETAN/JETAN
                     ${AliRoot_SOURCE_DIR}/STEER/AOD
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
@@ -67,6 +67,7 @@ if(FASTJET_FOUND)
     )
 
     include_directories(${FASTJET_INCLUDE_DIR})
+    link_directories(${FASTJET_LIBS_DIR})
     add_definitions(${FASTJET_DEFINITIONS})
 endif(FASTJET_FOUND)
 

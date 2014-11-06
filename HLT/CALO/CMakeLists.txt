@@ -21,9 +21,8 @@ include_directories(${AliRoot_SOURCE_DIR}/HLT/CALO
                     ${AliRoot_SOURCE_DIR}/HLT/CALO/offline
                    )
 
-# Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALraw
+# Additional include folders in alphabetical order
+include_directories(${AliRoot_SOURCE_DIR}/EMCAL/EMCALraw
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
                     ${AliRoot_SOURCE_DIR}/HLT/BASE/util
@@ -77,12 +76,12 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER CDB RAWDatabase RAWDatarec HLTbase AliHLTTPC AliHLTEMCAL  AliHLTPHOS EMCALUtils EMCALraw)
+set(LIBDEPS STEERBase STEER CDB RAWDatabase RAWDatarec HLTbase AliHLTTPC  AliHLTEMCAL AliHLTPHOS EMCALUtils EMCALraw)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} STEERBase STEER CDB RAWDatabase RAWDatarec HLTbase AliHLTTPC AliHLTEMCAL  AliHLTPHOS EMCALUtils EMCALraw)
+target_link_libraries(${MODULE} STEERBase STEER CDB RAWDatabase RAWDatarec HLTbase AliHLTTPC EMCALUtils EMCALraw)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
