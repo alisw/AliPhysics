@@ -90,6 +90,8 @@
 
 ClassImp(AliTPCCorrectionFit)
 
+Double_t  AliTPCCorrectionFit::fgMaxChi2HelixAt=1;
+
 AliTPCCorrectionFit::AliTPCCorrectionFit():
   TNamed("TPCCorrectionFit","TPCCorrectionFit")
 {
@@ -105,10 +107,14 @@ AliTPCCorrectionFit::~AliTPCCorrectionFit() {
 }
 
 
-Double_t AliTPCCorrectionFit::EvalAt(Double_t phi, Double_t refX, Double_t theta, Int_t corr, Int_t ptype){
+Double_t AliTPCCorrectionFit::EvalAt(Double_t phi, Double_t refX, Double_t theta, Int_t corr, Int_t ptype, Float_t wt, Float_t t1, Float_t t2){
   //
   // Evalution at point using the lienar approximation
   //
+  if (wt<50){
+    AliTPCCorrection* pcorr = AliTPCCorrection::GetVisualCorrection(corr);	
+    pcorr->SetOmegaTauT1T2(wt,t1,t2);
+  }
   Double_t sector = 9*phi/TMath::Pi();
   if (sector<0) sector+=18;
   Double_t y85=AliTPCCorrection::GetCorrSector(sector,85,theta,1,corr);
@@ -121,7 +127,7 @@ Double_t AliTPCCorrectionFit::EvalAt(Double_t phi, Double_t refX, Double_t theta
 
 
 
-Double_t AliTPCCorrectionFit::EvalAtPar(Double_t phi0, Double_t snp, Double_t refX, Double_t theta, Int_t corr, Int_t ptype, Int_t nsteps){
+Double_t AliTPCCorrectionFit::EvalAtPar(Double_t phi0, Double_t snp, Double_t refX, Double_t theta, Int_t corr, Int_t ptype, Int_t nsteps,Float_t wt, Float_t t1, Float_t t2){
   //
   // Fit the distortion along the line with the parabolic model
   // We assume that the track are primaries  - where the vertex is at (0,0,0)
@@ -144,6 +150,11 @@ Double_t AliTPCCorrectionFit::EvalAtPar(Double_t phi0, Double_t snp, Double_t re
   static TLinearFitter fitter(3,"pol2"); 
   fitter.ClearPoints();
   if (nsteps<3) nsteps=3;
+  AliTPCCorrection* pcorr = AliTPCCorrection::GetVisualCorrection(corr);	
+  if pcorr==0) return 0;
+  if (wt<50){
+    pcorr->SetOmegaTauT1T2(wt,t1,t2);
+  }
   Double_t deltaX=(245-85)/(nsteps);
   for (Int_t istep=0; istep<(nsteps+1); istep++){
     //
@@ -162,14 +173,20 @@ Double_t AliTPCCorrectionFit::EvalAtPar(Double_t phi0, Double_t snp, Double_t re
   par[1]=fitter.GetParameter(1);
   par[2]=fitter.GetParameter(2);
 
+  Double_t schi2= TMath::Sqrt(fitter.GetChisquare()/nsteps);
+  if (schi2> fgMaxChi2HelixAt){
+    ::Error("AliTPCCorrectionFit::EvalAtHelix",TString::Format("%s\tbad chi2:\t%2.2f",corr->GetName(),schi2).Data());
+    return 0;
+  }
   if (ptype==0) return par[0]+par[1]*refX+par[2]*refX*refX;
   if (ptype==2) return par[1]+2*par[2]*refX;
   if (ptype==4) return par[2];
+  if (ptype==5) return schi2;
   return 0;
 }
 
 
-Double_t AliTPCCorrectionFit::EvalAtHelix(Double_t phi0, Double_t snp, Double_t refX, Double_t theta, Int_t corr, Int_t ptype, Int_t nsteps){
+Double_t AliTPCCorrectionFit::EvalAtHelix(Double_t phi0, Double_t snp, Double_t refX, Double_t theta, Int_t corr, Int_t ptype, Int_t nsteps, Float_t wt, Float_t t1, Float_t t2){
   //
   // Fit the distortion along the line with the helix model
   // FIXME - original trajectory to be changed - AliHelix to be used
@@ -190,10 +207,16 @@ Double_t AliTPCCorrectionFit::EvalAtHelix(Double_t phi0, Double_t snp, Double_t 
   //
   // return value -  distortion at point refX with type ptype
   //
-  if (nsteps<3) nsteps=3;
+  static TLinearFitter fitter(3,"pol2"); 
+  fitter.ClearPoints();
+
+  if (nsteps<4) nsteps=4;
   Double_t deltaX=(245-85)/(nsteps);
   AliRieman rieman(nsteps);
-
+  if (wt<50){
+    AliTPCCorrection* pcorr = AliTPCCorrection::GetVisualCorrection(corr);	
+    pcorr->SetOmegaTauT1T2(wt,t1,t2);
+  }
   for (Int_t istep=0; istep<(nsteps+1); istep++){
     //
     Double_t localX =85.+deltaX*istep;
@@ -205,10 +228,16 @@ Double_t AliTPCCorrectionFit::EvalAtHelix(Double_t phi0, Double_t snp, Double_t 
     Double_t x[1]={localX-dlocalX};
     Double_t z=theta*x[0];
     rieman.AddPoint(x[0],dy,z,0.1,0.1);
+    fitter.AddPoint(x,dy);
   }
+  fitter.Eval();
   rieman.Update();
   //
- 
+  Double_t schi2= TMath::Sqrt(fitter.GetChisquare()/nsteps);
+  if (schi2>fgMaxChi2HelixAt){
+    ::Error("AliTPCCorrectionFit::EvalAtHelix",TString::Format("Bad chi2\t%2.2f",schi2).Data());
+    return 0;
+  }
   if (ptype==0) return rieman.GetYat(refX);
   if (ptype==2) return rieman.GetDYat(refX);
   if (ptype==4) return rieman.GetC();
