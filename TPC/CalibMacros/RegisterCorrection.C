@@ -26,18 +26,16 @@
   RegisterCorrection();
 
 */
-/*
- ExampleDrawing()
- .x ~/rootlogon.C
- .L $ALICE_ROOT/TPC/CalibMacros/RegisterCorrection.C+
- RegisterCorrection();
 
- //dz shift
- TF1 f705("f705","AliTPCCorrectionFit::EvalAtPar(0,0,x,0.1,705,0,10)",0,500);
- f705->Draw();
- TF1 f705Helix("f705Helix","AliTPCCorrectionFit::EvalAtHelix(0,0,x,0.1,705,0,10)",0,500);
- f705Helix->Draw();
- f705->Draw("same");
+/*
+ Example use: 
+ .x ~/rootlogon.C
+ .L $ALICE_ROOT/PWGPP/CalibMacros/CPass0/ConfigCalibTrain.C
+ ConfigCalibTrain(119037,"local:///cvmfs/alice.gsi.de/alice/data/2010/OCDB/")
+
+ .L $ALICE_ROOT/TPC/CalibMacros/RegisterCorrection.C+
+ RegisterCorrection(0);
+ See example usage of correction primitive/derivatives in file
 
 
 */
@@ -176,12 +174,24 @@ void RegisterCorrection(Int_t type=0){
   //gROOT->Macro("ConfigCalibTrain.C(119037)");
   //
   //
-  if (type==1) return RegisterAliTPCROCVoltError3D();
-  if (type==2) return RegisterAliTPCROCVoltError3DSector();
-  fCorrections = new TFile("TPCCorrectionPrimitives.root");
+  if (type==1) return RegisterAliTPCROCVoltError3D();            // 3D distortion due misalignemnt of FC ....
+  if (type==2) return RegisterAliTPCROCVoltError3DSector();      // 3D distortion due misalingment of Sectors
+  if (type==3) {                                                 // 2D distortions
+    fCorrections = TFile::Open("TPCCorrectionPrimitives.root","recreate");
+    RegisterAliTPCCalibGlobalMisalignment();
+    RegisterAliTPCBoundaryVoltError();
+    RegisterAliTPCFCVoltError3D();
+    RegisterAliTPCExBShape();
+    RegisterAliTPCExBTwist();
+    RegisterAliTPCCorrectionDrift();
+    fCorrections->Close();
+    delete fCorrections;
+    return;
+  }
+  fCorrections = TFile::Open("TPCCorrectionPrimitives.root");
   AliTPCComposedCorrection *corrField3D = (AliTPCComposedCorrection*) fCorrections->Get("TPCFCVoltError3D");
   // if not make new file
-  if (!corrField3D) fCorrections = new TFile("TPCCorrectionPrimitives.root","update");
+  if (!corrField3D) fCorrections = TFile::Open("TPCCorrectionPrimitives.root","update");
   if (type==0) {
     RegisterAliTPCROCVoltError3D();
     RegisterAliTPCROCVoltError3DSector();
@@ -727,11 +737,11 @@ void RegisterAliTPCROCVoltError3D(){
  
   AliTPCComposedCorrection *corrField3D = 0;
   TFile *fCorrectionsROC=0;
-  fCorrectionsROC = new TFile("TPCCorrectionPrimitivesROC.root");
+  fCorrectionsROC = TFile::Open("TPCCorrectionPrimitivesROC.root");
   corrField3D = ( AliTPCComposedCorrection *)fCorrectionsROC->Get("TPCROCVoltError3DRotationgXgY");
   //
   if (!corrField3D){
-    fCorrectionsROC = new TFile("TPCCorrectionPrimitivesROC.root","recreate");
+    fCorrectionsROC = TFile::Open("TPCCorrectionPrimitivesROC.root","recreate");
   }  
   if (corrField3D) { // load from file
     corrField3D->Print();
@@ -1088,11 +1098,11 @@ void RegisterAliTPCROCVoltError3DSector(){
  
   AliTPCComposedCorrection *corrField3DSector = 0;
   TFile *fCorrectionsROC=0;
-  fCorrectionsROC = new TFile("TPCCorrectionPrimitivesSector.root");
+  fCorrectionsROC = TFile::Open("TPCCorrectionPrimitivesSector.root");
   corrField3DSector = ( AliTPCComposedCorrection *)fCorrectionsROC->Get("TPCROCVoltError3DSector");
   //
   if (!corrField3DSector){
-    fCorrectionsROC = new TFile("TPCCorrectionPrimitivesSector.root","recreate");
+    fCorrectionsROC = TFile::Open("TPCCorrectionPrimitivesSector.root","recreate");
   }  
   if (corrField3DSector) { // load from file
     corrField3DSector->Print();
@@ -1423,3 +1433,17 @@ AliTPCComposedCorrection * GetCorrectionFromFile(){
 }
 
 
+void TestDrawExample(){
+  //
+  // dz shift example: AliTPCCorrection::AddVisualCorrection(rocDzIROCA,705); 
+  //
+  AliTPCCorrection* corr = AliTPCCorrection::GetVisualCorrection(705);	
+  corr->SetOmegaTauT1T2(0.33,1,1);
+  TF1 f705Par("f705","AliTPCCorrectionFit::EvalAtPar(0,0,x,0.1,705,0,20)",0,360);
+  f705Par.SetLineColor(2);f705Par.SetNpx(500);
+  TF1 f705Helix("f705Helix","AliTPCCorrectionFit::EvalAtHelix(0,0,x,0.1,705,0,20)",0,360);
+  f705Helix.SetLineColor(4);f705Helix.SetNpx(500);
+  f705Helix.Draw();
+  f705Par.Draw("same");
+
+}
