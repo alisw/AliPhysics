@@ -89,8 +89,10 @@ public:
 
 
   TLinearFitter*  GetFitter(UInt_t segment, UInt_t padType, UInt_t fitType);  
-  void     Process(AliESDEvent *event) {AliTPCcalibBase::Process(event);};
-  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
+  //void     Process(AliESDEvent *event) {AliTPCcalibBase::Process(event);}
+  void     Process(AliVEvent *event) {AliTPCcalibBase::Process(event);}
+  //void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);}
+  void     Process(AliVTrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);}
   
 public:
   //

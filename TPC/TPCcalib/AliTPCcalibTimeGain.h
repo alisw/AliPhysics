@@ -17,8 +17,10 @@ class TH3F;
 class TH2F;
 class TList;
 class TGraphErrors;
-class AliESDEvent;
-class AliESDtrack;
+//class AliESDEvent;
+class AliVEvent;
+//class AliESDtrack;
+class AliVTrack;
 class AliTPCcalibLaser;
 class AliTPCseed;
 
@@ -31,12 +33,16 @@ public:
   AliTPCcalibTimeGain(const Text_t *name, const Text_t *title, UInt_t StartTime, UInt_t EndTime, Int_t deltaIntegrationTimeGain);
   virtual ~AliTPCcalibTimeGain();
   //
-  virtual void           Process(AliESDEvent *event);
+  //virtual void           Process(AliESDEvent *event);
+  virtual void           Process(AliVEvent *event);
   virtual Long64_t       Merge(TCollection *li);
   virtual void           AnalyzeRun(Int_t minEntries);
   //
-  void                   ProcessCosmicEvent(AliESDEvent *event);
-  void                   ProcessBeamEvent(AliESDEvent *event);
+  //void                   ProcessCosmicEvent(AliESDEvent *event);
+  //void                   ProcessBeamEvent(AliESDEvent *event);
+
+  void                   ProcessCosmicEvent(AliVEvent *event);
+  void                   ProcessBeamEvent(AliVEvent *event);
   //
   void                   CalculateBetheAlephParams(TH2F *hist, Double_t * ini);
   static void            BinLogX(THnSparse *h, Int_t axisDim);
@@ -119,7 +125,7 @@ private:
   //
   AliTPCcalibTimeGain(const AliTPCcalibTimeGain&); 
   AliTPCcalibTimeGain& operator=(const AliTPCcalibTimeGain&); 
-  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
+  void     Process(AliVTrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);}
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
 
   ClassDef(AliTPCcalibTimeGain, 3);

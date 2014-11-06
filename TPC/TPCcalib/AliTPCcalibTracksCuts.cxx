@@ -143,7 +143,7 @@ Int_t AliTPCcalibTracksCuts::AcceptTrack(const AliTPCseed * track) const {
   return 0;
 }
 
-Int_t AliTPCcalibTracksCuts::AcceptTrack(const AliESDtrack * track) const {
+Int_t AliTPCcalibTracksCuts::AcceptTrack(const AliVTrack * track) const {
   //
   // Function, that decides wheather a given track is accepted for 
   // the analysis or not. 

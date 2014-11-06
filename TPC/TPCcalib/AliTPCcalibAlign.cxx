@@ -110,9 +110,15 @@
 #include "AliTrackPointArray.h"
 
 #include "AliExternalTrackParam.h"
-#include "AliESDEvent.h"
-#include "AliESDfriend.h"
+//#include "AliESDEvent.h"
+//#include "AliESDfriend.h"
 #include "AliESDtrack.h"
+
+#include "AliVEvent.h"
+#include "AliVfriendEvent.h"
+#include "AliVTrack.h"
+#include "AliVfriendTrack.h"
+#include "AliESDVertex.h"
 
 #include "AliTPCTracklet.h"
 #include "TH1D.h"
@@ -451,7 +457,7 @@ AliTPCcalibAlign::~AliTPCcalibAlign() {
 
 }
 
-void AliTPCcalibAlign::Process(AliESDEvent *event) {
+void AliTPCcalibAlign::Process(AliVEvent *event) {
   //
   // Process pairs of cosmic tracks
   //
@@ -463,9 +469,10 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
   ExportTrackPoints(event);  // export track points for external calibration 
   const Int_t kMaxTracks =6;
   const Int_t kminCl = 40;
-  AliESDfriend *eESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
-  if (!eESDfriend) return;
-  if (eESDfriend->TestSkipBit()) return;
+  //AliESDfriend *eESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
+  AliVfriendEvent *friendEvent=event->FindFriend();
+  if (!friendEvent) return;
+  if (friendEvent->TestSkipBit()) return;
   Int_t ntracks=event->GetNumberOfTracks(); 
   Float_t dca0[2];
   Float_t dca1[2];
@@ -474,21 +481,23 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
   // process seeds
   //
   for (Int_t i0=0;i0<ntracks;++i0) {
-    AliESDtrack *track0 = event->GetTrack(i0);
-    AliESDfriendTrack *friendTrack = 0;
+    AliVTrack *track0 = event->GetVTrack(i0);
+    if(!track0) continue;
+    //AliESDfriendTrack *friendTrack = 0;
     TObject *calibObject=0;
     AliTPCseed *seed0 = 0;
     //
-    friendTrack = (AliESDfriendTrack*) track0->GetFriendTrack(); //(AliESDfriendTrack *)eESDfriend->GetTrack(i0);;
+    //friendTrack = (AliESDfriendTrack *)friendEvent->GetTrack(i0);;
+    const AliVfriendTrack *friendTrack = friendEvent->GetTrack(i0);;
     if (!friendTrack) continue;
     for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
       if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
     }
     if (!seed0) continue;
     fCurrentTrack=track0;
-    fCurrentFriendTrack=friendTrack;
+    fCurrentFriendTrack=const_cast<AliVfriendTrack*>(friendTrack);
     fCurrentSeed=seed0;
-    fCurrentEvent=event;
+    fCurrentEvent= event;
     Double_t scalept= TMath::Min(1./TMath::Abs(track0->GetParameter()[4]),2.);
     Bool_t   isSelected = (TMath::Exp(2*scalept)>kptDownscale*gRandom->Rndm());
     if (isSelected) ProcessSeed(seed0);
@@ -500,14 +509,16 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
   //
   //select pairs - for alignment  
   for (Int_t i0=0;i0<ntracks;++i0) {
-    AliESDtrack *track0 = event->GetTrack(i0);
+      AliVTrack *track0 = event->GetVTrack(i0);
+      if(!track0) continue;
     //    if (track0->GetTPCNcls()<kminCl) continue;
     track0->GetImpactParameters(dca0[0],dca0[1]);
     //    if (TMath::Abs(dca0[0])>30) continue;
     //
     for (Int_t i1=0;i1<ntracks;++i1) {
       if (i0==i1) continue;
-      AliESDtrack *track1 = event->GetTrack(i1);
+      AliVTrack *track1 = event->GetVTrack(i1);
+      if(!track1) continue;
       //      if (track1->GetTPCNcls()<kminCl) continue;
       track1->GetImpactParameters(dca1[0],dca1[1]);
       // fast cuts on dca and theta
@@ -515,18 +526,18 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
       //      if (TMath::Abs(dca1[1]-dca0[1])>15) continue;
       if (TMath::Abs(track0->GetParameter()[3]+track1->GetParameter()[3])>0.1) continue;
       //
-      AliESDfriendTrack *friendTrack = 0;
+      //AliESDfriendTrack *friendTrack = 0; ///!!! then it was used twice, cannot be const pointer
       TObject *calibObject=0;
       AliTPCseed *seed0 = 0,*seed1=0;
       //
-      friendTrack = (AliESDfriendTrack*) track0->GetFriendTrack(); //(AliESDfriendTrack *)eESDfriend->GetTrack(i0);;
-      if (!friendTrack) continue;
-      for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
+      const AliVfriendTrack *friendTrack0 = friendEvent->GetTrack(i0);;
+      if (!friendTrack0) continue;
+      for (Int_t l=0;(calibObject=friendTrack0->GetCalibObject(l));++l) {
 	if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
       }
-      friendTrack = (AliESDfriendTrack*) track1->GetFriendTrack(); //(AliESDfriendTrack *)eESDfriend->GetTrack(i1);;
-      if (!friendTrack) continue;
-      for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
+      const AliVfriendTrack *friendTrack1 = friendEvent->GetTrack(i1);;
+      if (!friendTrack1) continue;
+      for (Int_t l=0;(calibObject=friendTrack1->GetCalibObject(l));++l) {
 	if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;
       }
       if (!seed0) continue;
@@ -610,13 +621,15 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
   }
 }
 
-void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
+void  AliTPCcalibAlign::ExportTrackPoints(AliVEvent *event){
   //
   // Export track points for alignment - calibration
   // export space points for pairs of tracks if possible
   //
-  AliESDfriend *eESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
-  if (!eESDfriend) return;
+  //AliESDfriend *eESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
+  AliVfriendEvent *friendEvent=event->FindFriend();
+
+  if (!friendEvent) return;
   Int_t ntracks=event->GetNumberOfTracks();
   Int_t kMaxTracks=4;   // maximal number of tracks for cosmic pairs
   Int_t kMinVertexTracks=5;   // maximal number of tracks for vertex mesurement
@@ -631,10 +644,13 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
   const Double_t kDist1Pt = 0.1;
   const Double_t kMaxD0 =3;  // max distance to the primary vertex
   const Double_t kMaxD1 =5;  // max distance to the primary vertex
-  const AliESDVertex *tpcVertex = 0;
+  AliESDVertex *tpcVertex;
+  AliESDVertex tpcVtx;
   // get the primary vertex TPC
   if (ntracks>kMinVertexTracks) {
-    tpcVertex = event->GetPrimaryVertexSPD();
+    event->GetPrimaryVertexSPD(tpcVtx);
+    tpcVertex=&tpcVtx;
+    //event->GetPrimaryVertexSPD(tpcVertex);
     if (tpcVertex->GetNContributors()<kMinVertexTracks) tpcVertex=0;
   }
   //
@@ -643,15 +659,26 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
   Int_t index0=0,index1=0;
   //
   for (Int_t i0=0;i0<ntracks;++i0) {
-    AliESDtrack *track0 = event->GetTrack(i0);
+    AliVTrack *track0 = event->GetVTrack(i0);
     if (!track0) continue;
-    if ((track0->GetStatus() & AliESDtrack::kTPCrefit)==0) continue;
-    if (track0->GetOuterParam()==0) continue;
-    if (track0->GetInnerParam()==0) continue;
-    if (TMath::Abs(track0->GetInnerParam()->GetSigned1Pt()-track0->GetOuterParam()->GetSigned1Pt())>kDist1Pt) continue;
-    if (TMath::Abs(track0->GetInnerParam()->GetSigned1Pt())>kDist1Pt) continue;
-    if (TMath::Abs(track0->GetInnerParam()->GetTgl()-track0->GetOuterParam()->GetTgl())>kDistThS) continue;
-    AliESDtrack *track1P = 0;
+    if ((track0->GetStatus() & AliVTrack::kTPCrefit)==0) continue;
+
+    AliExternalTrackParam trck0Out;
+    track0->GetTrackParamOp(trck0Out);
+    if ( (track0->GetTrackParamOp(trck0Out)) < 0) continue;
+    AliExternalTrackParam * track0Out = &trck0Out;
+    if (!track0Out) continue;
+
+    AliExternalTrackParam trck0In;
+    track0->GetTrackParamIp(trck0In);
+    if((track0->GetTrackParamIp(trck0In)) < 0) continue;
+    AliExternalTrackParam * track0In = &trck0In;
+    if (!track0In) continue;
+
+    if (TMath::Abs(track0In->GetSigned1Pt()-track0Out->GetSigned1Pt())>kDist1Pt) continue;
+    if (TMath::Abs(track0In->GetSigned1Pt())>kDist1Pt) continue;
+    if (TMath::Abs(track0In->GetTgl()-track0Out->GetTgl())>kDistThS) continue;
+    AliVTrack *track1P = 0;
     if (track0->GetTPCNcls()<kminCl) continue;
     track0->GetImpactParameters(dca0[0],dca0[1]);
     index0=i0;
@@ -659,15 +686,26 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
     //
     if (ntracks<kMaxTracks) for (Int_t i1=i0+1;i1<ntracks;++i1) {
       if (i0==i1) continue;
-      AliESDtrack *track1 = event->GetTrack(i1);
+      AliVTrack *track1 = event->GetVTrack(i1);
       if (!track1) continue;
-      if ((track1->GetStatus() & AliESDtrack::kTPCrefit)==0) continue;
-      if (track1->GetOuterParam()==0) continue;
-      if (track1->GetInnerParam()==0) continue;
+      if ((track1->GetStatus() & AliVTrack::kTPCrefit)==0) continue;
+
+      AliExternalTrackParam trck1Out;
+      track1->GetTrackParamOp(trck1Out);
+      if((track1->GetTrackParamOp(trck1Out)) < 0) continue;
+      AliExternalTrackParam * track1Out = &trck1Out;
+      if (!track1Out) continue;
+
+      AliExternalTrackParam trck1In;
+      track1->GetTrackParamIp(trck1In);
+      if((track1->GetTrackParamIp(trck1In)) < 0) continue;
+      AliExternalTrackParam * track1In = &trck1In;
+      if (!track1In) continue;
+
       if (track1->GetTPCNcls()<kminCl) continue;
-      if (TMath::Abs(track1->GetInnerParam()->GetSigned1Pt()-track1->GetOuterParam()->GetSigned1Pt())>kDist1Pt) continue;
-      if (TMath::Abs(track1->GetInnerParam()->GetTgl()-track1->GetOuterParam()->GetTgl())>kDistThS) continue;
-      if (TMath::Abs(track1->GetInnerParam()->GetSigned1Pt())>kDist1Pt) continue;
+      if (TMath::Abs(track1In->GetSigned1Pt()-track1Out->GetSigned1Pt())>kDist1Pt) continue;
+      if (TMath::Abs(track1In->GetTgl()-track1Out->GetTgl())>kDistThS) continue;
+      if (TMath::Abs(track1In->GetSigned1Pt())>kDist1Pt) continue;
       //track1->GetImpactParameters(dca1[0],dca1[1]);
       //if (TMath::Abs(dca1[0]-dca0[0])>kDistY) continue;
       //if (TMath::Abs(dca1[1]-dca0[1])>kDistZ) continue;
@@ -676,19 +714,20 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
       track1P = track1;
       index1=i1;
     }
-    AliESDfriendTrack *friendTrack = 0;
+    //AliESDfriendTrack *friendTrack = 0;
     TObject *calibObject=0;
     AliTPCseed *seed0 = 0,*seed1=0;
     //
-    friendTrack = (AliESDfriendTrack*) track0->GetFriendTrack(); //(AliESDfriendTrack *)eESDfriend->GetTrack(index0);;
+    //friendTrack = (AliESDfriendTrack *)friendEvent->GetTrack(index0);;
+    const AliVfriendTrack *friendTrack = friendEvent->GetTrack(index0);;
     if (!friendTrack) continue;
     for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
       if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
     }
     if (index1>0){
-      friendTrack = (AliESDfriendTrack*) event->GetTrack(index1)->GetFriendTrack();  //(AliESDfriendTrack *)eESDfriend->GetTrack(index1);;
-      if (!friendTrack) continue;
-      for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
+      const AliVfriendTrack *friendTrack1 = friendEvent->GetTrack(index1);;
+      if (!friendTrack1) continue;
+      for (Int_t l=0;(calibObject=friendTrack1->GetCalibObject(l));++l) {
 	if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;
       }
     }
@@ -747,20 +786,30 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
       Bool_t isVertex=(tpcVertex)? kTRUE:kFALSE;
       Double_t tof0=track0->GetTOFsignal();
       Double_t tof1=(track1P) ?  track1P->GetTOFsignal(): 0;
-      static AliExternalTrackParam dummy;
-      AliExternalTrackParam *p0In  = &dummy;
-      AliExternalTrackParam *p1In  = &dummy;
-      AliExternalTrackParam *p0Out = &dummy;
-      AliExternalTrackParam *p1Out = &dummy;
+      static AliExternalTrackParam param;
+      AliExternalTrackParam *p0In  = &param;
+      AliExternalTrackParam *p1In  = &param;
+      AliExternalTrackParam *p0Out = &param;
+      AliExternalTrackParam *p1Out = &param;
       AliESDVertex vdummy;
       AliESDVertex *pvertex= (tpcVertex)? (AliESDVertex *)tpcVertex: &vdummy;
       if (track0) {
-	p0In= new AliExternalTrackParam(*track0);
-	p0Out=new AliExternalTrackParam(*(track0->GetOuterParam()));
+    //p0In= new AliExternalTrackParam(*track0);
+    p0In->CopyFromVTrack(track0);
+
+    AliExternalTrackParam trckOut;
+    track0->GetTrackParamOp(trckOut);
+    AliExternalTrackParam * trackout = &trckOut;
+    p0Out=new AliExternalTrackParam(*trackout);
       }
       if (track1P) {
-	p1In= new AliExternalTrackParam(*track1P);
-	p1Out=new AliExternalTrackParam(*(track1P->GetOuterParam()));
+    //p1In= new AliExternalTrackParam(*track1P);
+    p1In->CopyFromVTrack(track1P);
+
+    AliExternalTrackParam trck1POut;
+    track1P->GetTrackParamOp(trck1POut);
+    AliExternalTrackParam * track1POut = &trck1POut;
+    p1Out=new AliExternalTrackParam(*track1POut);
       }
 
       (*cstream)<<"trackPoints"<<
@@ -2615,7 +2664,12 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
   // 4. Combine In and Out track - - fil cluster residuals
   //
   if (!fCurrentFriendTrack) return;
-  if (!fCurrentFriendTrack->GetTPCOut()) return;
+
+  AliExternalTrackParam trckTPCOut;
+  fCurrentFriendTrack->GetTrackParamTPCOut(trckTPCOut);
+  if((fCurrentFriendTrack->GetTrackParamTPCOut(trckTPCOut)) < 0) return;
+  AliExternalTrackParam * trackTPCOut = &trckTPCOut;
+  if (!trackTPCOut) return;
   const Double_t kPtCut=1.0;    // pt
   const Double_t kSnpCut=0.2; // snp cut
   const Double_t kNclCut=120; //
@@ -2648,8 +2702,13 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
   Int_t detector=-1;
   //
   //
-  AliExternalTrackParam trackIn  = *(fCurrentTrack->GetInnerParam());
-  AliExternalTrackParam trackOut = *(fCurrentFriendTrack->GetTPCOut());
+  //AliExternalTrackParam trackIn  = *(fCurrentTrack->GetInnerParam());
+  AliExternalTrackParam trackIn;
+  fCurrentTrack->GetTrackParamIp(trackIn);
+  //AliExternalTrackParam trackOut = *(fCurrentFriendTrack->GetTPCOut());
+  AliExternalTrackParam trackOut;
+  fCurrentFriendTrack->GetTrackParamTPCOut(trackOut);
+
   trackIn.ResetCovariance(10);
   trackOut.ResetCovariance(10);
   Double_t *covarIn = (Double_t*)trackIn.GetCovariance();
@@ -2879,7 +2938,10 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
   Double_t alpha =2.*TMath::Pi()*(isec%18+0.5)/18.;
   Double_t scos=TMath::Cos(alpha);
   Double_t ssin=TMath::Sin(alpha);
-  const AliESDVertex* vertex = fCurrentEvent->GetPrimaryVertexTracks();
+  AliESDVertex vtx;
+  fCurrentEvent->GetPrimaryVertexTracks(vtx);
+  const AliESDVertex* vertex=&vtx;
+
   vertex->GetXYZ(vPosG.GetMatrixArray());
   fCurrentTrack->GetImpactParameters(vImpact[0],vImpact[1]);  // track impact parameters
   //
