@@ -17,16 +17,16 @@
 set(MODULE TPCmon)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/TPC/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/TPC/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/RAW/dateStream
-                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatabase
-                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatarec
-                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatarecOnline
-                    ${CMAKE_SOURCE_DIR}/STEER/ESD
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/RAW/dateStream
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatarecOnline
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order

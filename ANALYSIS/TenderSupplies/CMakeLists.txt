@@ -17,42 +17,42 @@
 set(MODULE TenderSupplies)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/ANALYSIS/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/ANALYSIS/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${CMAKE_SOURCE_DIR}/ANALYSIS/Tender
-                    ${CMAKE_SOURCE_DIR}/EMCAL
-                    ${CMAKE_SOURCE_DIR}/EMCAL/EMCALbase
-                    ${CMAKE_SOURCE_DIR}/EMCAL/EMCALrec
-                    ${CMAKE_SOURCE_DIR}/EMCAL/EMCALUtils
-                    ${CMAKE_SOURCE_DIR}/CORRFW
-                    ${CMAKE_SOURCE_DIR}/OADB
-                    ${CMAKE_SOURCE_DIR}/PHOS
-                    ${CMAKE_SOURCE_DIR}/PHOS/PHOSbase
-                    ${CMAKE_SOURCE_DIR}/PHOS/PHOSrec
-                    ${CMAKE_SOURCE_DIR}/PHOS/PHOSUtils
-                    ${CMAKE_SOURCE_DIR}/STEER/AOD
-                    ${CMAKE_SOURCE_DIR}/STEER/CDB
-                    ${CMAKE_SOURCE_DIR}/STEER/ESD
-                    ${CMAKE_SOURCE_DIR}/STEER/STEER
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
-                    ${CMAKE_SOURCE_DIR}/T0
-                    ${CMAKE_SOURCE_DIR}/T0/T0rec
-                    ${CMAKE_SOURCE_DIR}/TOF/
-                    ${CMAKE_SOURCE_DIR}/TOF/TOFbase
-                    ${CMAKE_SOURCE_DIR}/TOF/TOFrec
-                    ${CMAKE_SOURCE_DIR}/TPC
-                    ${CMAKE_SOURCE_DIR}/TPC/Base
-                    ${CMAKE_SOURCE_DIR}/TPC/TPCbase
-                    ${CMAKE_SOURCE_DIR}/TRD
-                    ${CMAKE_SOURCE_DIR}/TRD/Cal
-                    ${CMAKE_SOURCE_DIR}/TRD/TRDbase
-                    ${CMAKE_SOURCE_DIR}/VZERO
-                    ${CMAKE_SOURCE_DIR}/VZERO/VZERObase
-                    ${CMAKE_SOURCE_DIR}/VZERO/VZEROrec
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/Tender
+                    ${AliRoot_SOURCE_DIR}/EMCAL
+                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
+                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALrec
+                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${AliRoot_SOURCE_DIR}/CORRFW
+                    ${AliRoot_SOURCE_DIR}/OADB
+                    ${AliRoot_SOURCE_DIR}/PHOS
+                    ${AliRoot_SOURCE_DIR}/PHOS/PHOSbase
+                    ${AliRoot_SOURCE_DIR}/PHOS/PHOSrec
+                    ${AliRoot_SOURCE_DIR}/PHOS/PHOSUtils
+                    ${AliRoot_SOURCE_DIR}/STEER/AOD
+                    ${AliRoot_SOURCE_DIR}/STEER/CDB
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/T0
+                    ${AliRoot_SOURCE_DIR}/T0/T0rec
+                    ${AliRoot_SOURCE_DIR}/TOF/
+                    ${AliRoot_SOURCE_DIR}/TOF/TOFbase
+                    ${AliRoot_SOURCE_DIR}/TOF/TOFrec
+                    ${AliRoot_SOURCE_DIR}/TPC
+                    ${AliRoot_SOURCE_DIR}/TPC/Base
+                    ${AliRoot_SOURCE_DIR}/TPC/TPCbase
+                    ${AliRoot_SOURCE_DIR}/TRD
+                    ${AliRoot_SOURCE_DIR}/TRD/Cal
+                    ${AliRoot_SOURCE_DIR}/TRD/TRDbase
+                    ${AliRoot_SOURCE_DIR}/VZERO
+                    ${AliRoot_SOURCE_DIR}/VZERO/VZERObase
+                    ${AliRoot_SOURCE_DIR}/VZERO/VZEROrec
                    )
 
 # Sources

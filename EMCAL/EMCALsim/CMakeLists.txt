@@ -17,18 +17,18 @@
 set(MODULE EMCALsim)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/EMCAL/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/EMCAL/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/EMCAL/EMCALbase
-                    ${CMAKE_SOURCE_DIR}/EMCAL/EMCALUtils
-                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatarec
-                    ${CMAKE_SOURCE_DIR}/STEER/CDB
-                    ${CMAKE_SOURCE_DIR}/STEER/ESD
-                    ${CMAKE_SOURCE_DIR}/STEER/STEER
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
-                    ${CMAKE_SOURCE_DIR}/VZERO/VZERObase
+                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
+                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+                    ${AliRoot_SOURCE_DIR}/STEER/CDB
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/VZERO/VZERObase
                    )
 
 # Sources in alphabetical order

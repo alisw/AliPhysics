@@ -17,11 +17,11 @@
 set(MODULE CDB)
 
 # Module include folders
-include_directories(${CMAKE_SOURCE_DIR}/STEER/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/STEER/${MODULE})
 
 # Additional include directories
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                     ${CMAKE_BINARY_DIR}/version/
                    )
 

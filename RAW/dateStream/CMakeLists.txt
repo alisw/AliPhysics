@@ -16,13 +16,13 @@
 # Module
 set(MODULE dateStream)
 
-include_directories(${CMAKE_SOURCE_DIR}/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/${MODULE})
 
 # Aditional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatabase
-                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatarec
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 

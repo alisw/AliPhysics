@@ -17,16 +17,16 @@
 set(MODULE FMDrec)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/FMD/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/FMD/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/FMD/FMDbase
-                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatabase
-                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatarec
-                    ${CMAKE_SOURCE_DIR}/STEER/ESD
-                    ${CMAKE_SOURCE_DIR}/STEER/STEER
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/FMD/FMDbase
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order

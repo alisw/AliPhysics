@@ -17,17 +17,17 @@
 set(MODULE TRDqaAnalysis)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/TRD/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/TRD/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${CMAKE_SOURCE_DIR}/STEER/ESD
-                    ${CMAKE_SOURCE_DIR}/STEER/STEER
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
-                    ${CMAKE_SOURCE_DIR}/TRD/TRDbase
-                    ${CMAKE_SOURCE_DIR}/TRD/TRDrec
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/TRD/TRDbase
+                    ${AliRoot_SOURCE_DIR}/TRD/TRDrec
                    )
 
 # Sources in alphabetical order

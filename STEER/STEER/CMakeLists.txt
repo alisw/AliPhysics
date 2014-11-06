@@ -17,18 +17,18 @@
 set(MODULE STEER)
 
 # Module include folders
-include_directories(${CMAKE_SOURCE_DIR}/STEER/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/STEER/${MODULE})
 
 # Additional include directories - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${CMAKE_SOURCE_DIR}/HLT/sim
-                    ${CMAKE_SOURCE_DIR}/RAW/
-                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatabase
-                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatarec
-                    ${CMAKE_SOURCE_DIR}/STEER/CDB
-                    ${CMAKE_SOURCE_DIR}/STEER/ESD
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliRoot_SOURCE_DIR}/HLT/sim
+                    ${AliRoot_SOURCE_DIR}/RAW/
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+                    ${AliRoot_SOURCE_DIR}/STEER/CDB
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                     ${CMAKE_BINARY_DIR}/version/
                    )
 

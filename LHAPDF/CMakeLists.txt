@@ -17,13 +17,13 @@
 set(MODULE lhapdf)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/LHAPDF)
+include_directories(${AliRoot_SOURCE_DIR}/LHAPDF)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/LHAPDF/lhapdf5.5.1
-                    ${CMAKE_SOURCE_DIR}/LHAPDF/lhapdf5.5.1/include
-                    ${CMAKE_SOURCE_DIR}/LHAPDF/lhapdf5.5.1/src
+                    ${AliRoot_SOURCE_DIR}/LHAPDF/lhapdf5.5.1
+                    ${AliRoot_SOURCE_DIR}/LHAPDF/lhapdf5.5.1/include
+                    ${AliRoot_SOURCE_DIR}/LHAPDF/lhapdf5.5.1/src
                    )
 
 # Sources in alphabetical order
@@ -107,7 +107,7 @@ add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx ${CSRCS} ${FSRCS})
 # Additional compilation flags
 set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -ansi")
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g" Fortran_FORMAT FREE )
-add_definitions(-DDEFAULTPREFIXPATH="NONE"  -DDEFAULTLHAPATH="${CMAKE_SOURCE_DIR}/LHAPDF/PDFsets")
+add_definitions(-DDEFAULTPREFIXPATH="NONE"  -DDEFAULTLHAPATH="${AliRoot_SOURCE_DIR}/LHAPDF/PDFsets")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)

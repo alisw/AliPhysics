@@ -17,23 +17,23 @@
 set(MODULE MUONbase)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/MUON/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/MUON/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/MUON/MUONcalib
-                    ${CMAKE_SOURCE_DIR}/MUON/MUONcore
-                    ${CMAKE_SOURCE_DIR}/MUON/MUONgeometry
-                    ${CMAKE_SOURCE_DIR}/MUON/MUONmapping
-                    ${CMAKE_SOURCE_DIR}/MUON/MUONraw
-                    ${CMAKE_SOURCE_DIR}/MUON/MUONtrigger
-                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatabase
-                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatarec
-                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatasim
-                    ${CMAKE_SOURCE_DIR}/STEER/CDB
-                    ${CMAKE_SOURCE_DIR}/STEER/ESD
-                    ${CMAKE_SOURCE_DIR}/STEER/STEER
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONcalib
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONcore
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONgeometry
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONmapping
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONraw
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONtrigger
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatasim
+                    ${AliRoot_SOURCE_DIR}/STEER/CDB
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order

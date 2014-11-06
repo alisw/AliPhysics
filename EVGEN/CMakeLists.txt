@@ -17,17 +17,17 @@
 set(MODULE EVGEN)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/FASTSIM
-                    ${CMAKE_SOURCE_DIR}/LHAPDF
-                    ${CMAKE_SOURCE_DIR}/PYTHIA6/AliPythia6
-                    ${CMAKE_SOURCE_DIR}/STEER/ESD
-                    ${CMAKE_SOURCE_DIR}/STEER/STEER
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
-                    ${CMAKE_SOURCE_DIR}/TEvtGen
+                    ${AliRoot_SOURCE_DIR}/FASTSIM
+                    ${AliRoot_SOURCE_DIR}/LHAPDF
+                    ${AliRoot_SOURCE_DIR}/PYTHIA6/AliPythia6
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/TEvtGen
                    )
 
 # Sources

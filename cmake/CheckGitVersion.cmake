@@ -49,7 +49,7 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
   
         # generate the short version of the revision hash
         execute_process(COMMAND git rev-parse --short ${GIT_SHA1} 
-                          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} 
+                          WORKING_DIRECTORY ${AliRoot_SOURCE_DIR} 
                           OUTPUT_STRIP_TRAILING_WHITESPACE 
                           RESULT_VARIABLE res
                           OUTPUT_VARIABLE GIT_SHORT_SHA1)

@@ -17,13 +17,13 @@
 set(MODULE T0shuttle)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/T0/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/T0/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/STEER/CDB
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
-                    ${CMAKE_SOURCE_DIR}/T0/T0base
+                    ${AliRoot_SOURCE_DIR}/STEER/CDB
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/T0/T0base
                    )
 
 # Sources in alphabetical order

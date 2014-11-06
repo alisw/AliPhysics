@@ -17,15 +17,15 @@
 set(MODULE MUONtrigger)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/MUON/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/MUON/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/MUON/MUONcalib
-                    ${CMAKE_SOURCE_DIR}/MUON/MUONcore
-                    ${CMAKE_SOURCE_DIR}/MUON/MUONmapping
-                    ${CMAKE_SOURCE_DIR}/MUON/MUONraw
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONcalib
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONcore
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONmapping
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONraw
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order

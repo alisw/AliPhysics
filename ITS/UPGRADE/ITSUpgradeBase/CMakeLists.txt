@@ -17,14 +17,14 @@
 set(MODULE ITSUpgradeBase)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/ITS/UPGRADE/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/ITS/UPGRADE/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/ITS/ITSbase
-                    ${CMAKE_SOURCE_DIR}/STEER/ESD
-                    ${CMAKE_SOURCE_DIR}/STEER/STEER
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/ITS/ITSbase
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order

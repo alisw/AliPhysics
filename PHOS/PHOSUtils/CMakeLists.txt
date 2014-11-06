@@ -17,11 +17,11 @@
 set(MODULE PHOSUtils)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/PHOS/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/PHOS/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order

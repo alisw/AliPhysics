@@ -17,17 +17,17 @@
 set(MODULE PHOSpi0Calib)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/PHOS/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/PHOS/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${CMAKE_SOURCE_DIR}/PHOS/PHOSbase
-                    ${CMAKE_SOURCE_DIR}/PHOS/PHOSrec
-                    ${CMAKE_SOURCE_DIR}/PHOS/PHOSUtils
-                    ${CMAKE_SOURCE_DIR}/STEER/ESD
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliRoot_SOURCE_DIR}/PHOS/PHOSbase
+                    ${AliRoot_SOURCE_DIR}/PHOS/PHOSrec
+                    ${AliRoot_SOURCE_DIR}/PHOS/PHOSUtils
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order

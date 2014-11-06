@@ -17,15 +17,15 @@
 set(MODULE TUHKMgen)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/${MODULE}
-                    ${CMAKE_SOURCE_DIR}/${MODULE}/UHKM
+include_directories(${AliRoot_SOURCE_DIR}/${MODULE}
+                    ${AliRoot_SOURCE_DIR}/${MODULE}/UHKM
                    )
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/EVGEN
-                    ${CMAKE_SOURCE_DIR}/STEER/STEER
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/EVGEN
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources

@@ -17,7 +17,7 @@
 set (MODULE STEERBase)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/STEER/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/STEER/${MODULE})
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS})
