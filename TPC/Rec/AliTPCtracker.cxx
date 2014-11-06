@@ -1413,7 +1413,7 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
   // Calculate crosstalk estimate
   //
   const Int_t nROCs   = 72;
-  const Int_t   nIterations=4;  // 
+  const Int_t   nIterations=3;  // 
   // 0.) reset crosstalk matrix 
   //
   for (Int_t isector=0; isector<nROCs*4; isector++){  //set all ellemts of crosstalk matrix to 0 
@@ -1490,15 +1490,6 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
     //
     // copy crosstalk matrix to cached used for next itteration
     //
-    if (iter<nIterations-1) for (Int_t isector=0; isector<nROCs*2; isector++){  //set all ellemts of crosstalk matrix to 0 
-      TMatrixD * crossTalkMatrix = (TMatrixD*)fCrossTalkSignalArray->At(isector);
-      TMatrixD * crossTalkMatrixCache = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs*2);
-      if (crossTalkMatrix){
-	(*crossTalkMatrixCache)*=0;
-	(*crossTalkMatrixCache)+=(*crossTalkMatrix);
-	(*crossTalkMatrix)*=0;
-      }
-    }      
     //
     // 2.) dump the crosstalk matrices to tree for further investigation
     //     a.) to estimate fluctuation of pedestal in indiviula wire segments
@@ -1531,6 +1522,15 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
 	}
       }
     }
+    if (iter<nIterations-1) for (Int_t isector=0; isector<nROCs*2; isector++){  //set all ellemts of crosstalk matrix to 0 
+      TMatrixD * crossTalkMatrix = (TMatrixD*)fCrossTalkSignalArray->At(isector);
+      TMatrixD * crossTalkMatrixCache = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs*2);
+      if (crossTalkMatrix){
+	(*crossTalkMatrixCache)*=0;
+	(*crossTalkMatrixCache)+=(*crossTalkMatrix);
+	(*crossTalkMatrix)*=0;
+      }
+    }      
   }
 
 
