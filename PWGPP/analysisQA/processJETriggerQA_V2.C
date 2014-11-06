@@ -69,6 +69,7 @@ void processJETriggerQA_V2(TString strFileIn    = "AnalysisResults.root",
      h3PtEtaPhiJet[itype]->GetXaxis()->SetRange(binMin, h3PtEtaPhiJet[itype]->GetNbinsX());
 
      hPtJet[itype] = (TH1F*) h3PtEtaPhiJet[itype]->Project3D("x");
+     if(nEvents>0)
      hPtJet[itype]->Scale(1./nEvents,"width");
      SetHist((TH1F*) hPtJet[itype],"p_{T,corr}^{jet} (GeV)","1/N_{evt} dN/dp_{T,corr}^{jet} (GeV^{-1})");
      hPtJet[itype]->SetName(Form("hPtJet%s",suffix[itype].Data())); 
