@@ -198,7 +198,7 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
   if( fFillTHn ){ 
     //dimensions of THnSparse for Q vector checks
     const Int_t nvarev=6;
-    //                                             cent         q-rec_perc        qvec-rec      q-gen_tracks   qvec-gen_vzero          Nch
+    //                                             cent         q-rec_perc        qvec_v0a       q-rec_v0c        qvec-gen_tpc          Nch
     Int_t    binsHistRealEv[nvarev] = {     fnCentBins,              100,        fnQvecBins,     fnQvecBins,       fnQvecBins,     fnNchBins};
     Double_t xminHistRealEv[nvarev] = {             0.,               0.,                0.,             0.,               0.,            0.};
     Double_t xmaxHistRealEv[nvarev] = {           100.,             100.,     fQvecUpperLim,  fQvecUpperLim,    fQvecUpperLim,         2000.};
@@ -210,14 +210,14 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
     NSparseHistEv->GetAxis(1)->SetTitle("q-vec rec percentile");
     NSparseHistEv->GetAxis(1)->SetName("Qrec_perc");
     
-    NSparseHistEv->GetAxis(2)->SetTitle("q-vec rec");
-    NSparseHistEv->GetAxis(2)->SetName("Qrec");
+    NSparseHistEv->GetAxis(2)->SetTitle("q-vec V0A");
+    NSparseHistEv->GetAxis(2)->SetName("Qrec_V0A");
     
-    NSparseHistEv->GetAxis(3)->SetTitle("q-vec gen tracks");
-    NSparseHistEv->GetAxis(3)->SetName("Qgen_tracks");
+    NSparseHistEv->GetAxis(3)->SetTitle("q-vec V0C");
+    NSparseHistEv->GetAxis(3)->SetName("Qrec_V0C");
     
-    NSparseHistEv->GetAxis(4)->SetTitle("q-vec gen vzero");
-    NSparseHistEv->GetAxis(4)->SetName("Qgen_vzero");
+    NSparseHistEv->GetAxis(4)->SetTitle("q-vec TPC");
+    NSparseHistEv->GetAxis(4)->SetName("Qgen_TPC");
     
     NSparseHistEv->GetAxis(5)->SetTitle("Ncharged");
     NSparseHistEv->GetAxis(5)->SetName("Nch");
@@ -686,18 +686,14 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
     
     Double_t varEv[6];
     varEv[0]=Cent;
+    
     varEv[1]=(Double_t)Qvec; // qvec_rec_perc
     
-    Double_t qvzero = 0.;
-    if(fVZEROside==0)qvzero=(Double_t)fEventCuts->GetqV0A();
-    else if (fVZEROside==1)qvzero=(Double_t)fEventCuts->GetqV0C(); // qvec_rec
-    varEv[2]=(Double_t)qvzero; // qvec from VZERO
-    
-    Double_t qgen_tracks = (Double_t)fEventCuts->CalculateQVectorMC(fVZEROside, 0);
-    varEv[3]= (Double_t)qgen_tracks;
-    
-    Double_t qgen_vzero = (Double_t)fEventCuts->CalculateQVectorMC(fVZEROside, 1);
-    varEv[4]= (Double_t)qgen_vzero;
+    varEv[2]=(Double_t)fEventCuts->GetqV0A();
+
+    varEv[3]=(Double_t)fEventCuts->GetqV0C();
+
+    varEv[4]=(Double_t)fEventCuts->GetqTPC();
     
     varEv[5]=(Double_t)fEventCuts->GetNch(); // Nch
     
