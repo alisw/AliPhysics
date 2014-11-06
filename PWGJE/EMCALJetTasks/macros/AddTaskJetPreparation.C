@@ -55,7 +55,22 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   //----------------------- Trigger Maker -----------------------------------------------------
   if (makeTrigger) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTriggerMaker.C");
-    AliEmcalTriggerMaker *emcalTriggers = AddTaskEmcalTriggerMaker("EmcalTriggers", doTriggerQA);
+    /*
+     * Parameters (with default values):
+     *   triggersOutName      (const char *)       = "EmcalTriggers",
+     *   triggerSetupOutName  (const char *)       = "EmcalTriggerSetup",
+     *   cellsName            (const char *)       = 0,
+     *   triggersName         (const char *)       = 0,
+     *   taskName             (const char *)       = "AliEmcalTriggerMaker",
+     *   jetLowA              (int)                = 0,
+     *   jetLowB              (int)                = 0,
+     *   jetLowC              (int)                = 0,
+     *   jetHighA             (int)                = 0,
+     *   jetHighB             (int)                = 0,
+     *   jetHighC             (int)                = 0,
+     *   doQA                 (bool)               = kFALSE
+     */
+    AliEmcalTriggerMaker *emcalTriggers = AddTaskEmcalTriggerMaker("EmcalTriggers", "EmcalTriggerSetup", 0, 0, "AliEmcalTriggerMaker", 0, 0, 0, 0, 0, 0, doTriggerQA);
     emcalTriggers->SelectCollisionCandidates(pSel);
   }
 
