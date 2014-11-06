@@ -99,7 +99,7 @@ AliGenCocktailAfterBurner::~AliGenCocktailAfterBurner()
 /*********************************************************************/ 
 
 void AliGenCocktailAfterBurner::
-AddAfterBurner(AliGenerator *AfterBurner, char* Name, Float_t RateExp)
+AddAfterBurner(AliGenerator *AfterBurner, const char* Name, Float_t RateExp)
 {
 //
 //  Forward parameters to the new AfterBurner
