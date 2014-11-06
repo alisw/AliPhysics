@@ -156,15 +156,10 @@ TGaxis *axis = new TGaxis(xmax,ymin,xmax,ymax,ymin,ymax,50510,"+L");
 #include "AliTPCclusterMI.h"
 #include "AliTPCseed.h"
 #include "AliESDVertex.h"
-//#include "AliESDEvent.h"
+#include "AliESDEvent.h"
 #include "AliESDfriend.h"
-//#include "AliESDInputHandler.h"
+#include "AliESDInputHandler.h"
 #include "AliAnalysisManager.h"
-
-#include "AliVEvent.h"
-#include "AliVTrack.h"
-#include "AliVfriendEvent.h"
-#include "AliVfriendTrack.h"
 
 #include "AliTracker.h"
 #include "AliMagF.h"
@@ -313,27 +308,19 @@ AliTPCcalibTimeGain::~AliTPCcalibTimeGain(){
 }
 
 
-void AliTPCcalibTimeGain::Process(AliVEvent *event) {
+void AliTPCcalibTimeGain::Process(AliESDEvent *event) {
   //
   // main track loop
   //
-    //Printf("AliTPCcalibTimeGain::Process(event)...");
-
   if (!event) {
-    //Printf("ERROR AliTPCcalibTimeGain::Process(): event not available");
+    Printf("ERROR: ESD not available");
     return;
   }
-
-  AliVfriendEvent *friendEvent=event->FindFriend();
-
-  if (!friendEvent) {
-      //Printf("ERROR AliTPCcalibTimeGain::Process(): friendEvent not available");
+  AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
+  if (!ESDfriend) {
    return;
   }
-  //Printf("friendEvent->TestSkipBit() = %d",friendEvent->TestSkipBit() );
-  if (friendEvent->TestSkipBit()) {
-      return;
-  }
+  if (ESDfriend->TestSkipBit()) return;
 
   if (fIsCosmic) { // this should be removed at some point based on trigger mask !?
     ProcessCosmicEvent(event);
@@ -341,45 +328,37 @@ void AliTPCcalibTimeGain::Process(AliVEvent *event) {
     ProcessBeamEvent(event);
   }
   
+
+  
+  
 }
 
 
-void AliTPCcalibTimeGain::ProcessCosmicEvent(AliVEvent *event) {
+void AliTPCcalibTimeGain::ProcessCosmicEvent(AliESDEvent *event) {
   //
   // Process in case of cosmic event
   //
-    //Printf("AliTPCcalibTimeGain::ProcessCosmicEvent(event)...");
-
-  AliVfriendEvent *friendEvent=event->FindFriend();
-  if (!friendEvent) {
-   //Printf("ERROR AliTPCcalibTimeGain::ProcessCosmicEvent(): ESDfriend not available");
+  AliESDfriend *esdFriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
+  if (!esdFriend) {
+   Printf("ERROR: ESDfriend not available");
    return;
   }
   //
   UInt_t time = event->GetTimeStamp();
-  Int_t nFriendTracks = friendEvent->GetNumberOfTracks();
+  Int_t nFriendTracks = esdFriend->GetNumberOfTracks();
   Int_t runNumber = event->GetRunNumber();
   //
   // track loop
   //
   for (Int_t i=0;i<nFriendTracks;++i) {
 
-    AliVTrack *track = event->GetVTrack(i);
+    AliESDtrack *track = event->GetTrack(i);
     if (!track) continue;
-    const AliVfriendTrack *friendTrack = friendEvent->GetTrack(i);
-    if (!friendTrack) continue;
-    //const AliExternalTrackParam * trackIn = track->GetInnerParam();
-    AliExternalTrackParam trckIn;
-    track->GetTrackParamIp(trckIn);
-    if ( (track->GetTrackParamIp(trckIn)) < 0) continue;
-    AliExternalTrackParam * trackIn = &trckIn;
+    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
+    if (!friendTrack) continue;        
+    const AliExternalTrackParam * trackIn = track->GetInnerParam();
+    const AliExternalTrackParam * trackOut = friendTrack->GetTPCOut();
     if (!trackIn) continue;
-
-    //const AliExternalTrackParam * trackOut = friendTrack->GetTPCOut();
-    AliExternalTrackParam trckOut;
-    friendTrack->GetTrackParamTPCOut(trckOut);
-    if ( (friendTrack->GetTrackParamTPCOut(trckOut)) < 0) continue;
-    AliExternalTrackParam * trackOut = &trckOut;
     if (!trackOut) continue;
 
     // calculate necessary track parameters
@@ -418,49 +397,32 @@ void AliTPCcalibTimeGain::ProcessCosmicEvent(AliVEvent *event) {
 
 
 
-void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
+void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
   //
   // Process in case of beam event
   //
-    //Printf("AliTPCcalibTimeGain::ProcessBeamEvent(event)...");
-
-  AliVfriendEvent *friendEvent=event->FindFriend();
-  if (!friendEvent) {
-   //Printf("ERROR AliTPCcalibTimeGain::ProcessBeamEvent(): ESDfriend not available");
+  AliESDfriend *esdFriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
+  if (!esdFriend) {
+   Printf("ERROR: ESDfriend not available");
    return;
   }
   //
   UInt_t time = event->GetTimeStamp();
-  if (!time) Printf("ERROR: no time stamp available!");
-  Int_t nFriendTracks = friendEvent->GetNumberOfTracks();
+  Int_t nFriendTracks = esdFriend->GetNumberOfTracks();
   Int_t runNumber = event->GetRunNumber();
   //
   // track loop
   //
   for (Int_t i=0;i<nFriendTracks;++i) { // begin track loop
 
-    AliVTrack *track = event->GetVTrack(i);
-    if (!track) {
-        //Printf("***ERROR*** : track not available");
-        continue;}
-    const AliVfriendTrack *friendTrack = friendEvent->GetTrack(i);
-    if (!friendTrack) {
-        //Printf("ERROR ProcessBeamEvent(): friendTrack is not available!");
-        continue;
-    }
+    AliESDtrack *track = event->GetTrack(i);
+    if (!track) continue;
+    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
+    if (!friendTrack) continue;
         
-    //const AliExternalTrackParam * trackIn = track->GetInnerParam();
-    AliExternalTrackParam trckIn;
-    track->GetTrackParamIp(trckIn);
-    if ( (track->GetTrackParamIp(trckIn)) < 0) continue;
-    AliExternalTrackParam * trackIn = &trckIn;
+    const AliExternalTrackParam * trackIn = track->GetInnerParam();
+    const AliExternalTrackParam * trackOut = friendTrack->GetTPCOut();
     if (!trackIn) continue;
-
-    //const AliExternalTrackParam * trackOut = friendTrack->GetTPCOut();
-    AliExternalTrackParam trckOut;
-    friendTrack->GetTrackParamTPCOut(trckOut);
-    if ( (friendTrack->GetTrackParamTPCOut(trckOut)) < 0) continue;
-    AliExternalTrackParam * trackOut = &trckOut;
     if (!trackOut) continue;
 
     // calculate necessary track parameters
@@ -476,13 +438,13 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
     if (TMath::Abs(trackIn->Eta()) > fCutEtaWindow) continue;
     //
     UInt_t status = track->GetStatus();
-    if ((status&AliVTrack::kTPCrefit)==0) continue;
-    if ((status&AliVTrack::kITSrefit)==0 && fCutRequireITSrefit) continue; // ITS cluster
+    if ((status&AliESDtrack::kTPCrefit)==0) continue;
+    if ((status&AliESDtrack::kITSrefit)==0 && fCutRequireITSrefit) continue; // ITS cluster
     //
     Float_t dca[2], cov[3];
     track->GetImpactParameters(dca,cov);
     if (TMath::Abs(dca[0]) > fCutMaxDcaXY || TMath::Abs(dca[0]) < 0.0000001) continue;  // cut in xy
-    if (((status&AliVTrack::kITSrefit) == 1 && TMath::Abs(dca[1]) > 3.) || TMath::Abs(dca[1]) > fCutMaxDcaZ ) continue;
+    if (((status&AliESDtrack::kITSrefit) == 1 && TMath::Abs(dca[1]) > 3.) || TMath::Abs(dca[1]) > fCutMaxDcaZ ) continue;
     //
     Double_t eta = trackIn->Eta();
     
@@ -514,12 +476,10 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
 								    fAlephParameters[4]);
 	tpcSignal /= corrFactor; 
       }	
-      //Printf("Fill DeDx histo..");
       fHistDeDxTotal->Fill(meanP, tpcSignal);
       //
       //dE/dx, time, type (1-muon cosmic,2-pion beam data, 3&4 protons), momenta, runNumner, eta
       Double_t vec[7] = {tpcSignal,static_cast<Double_t>(time),static_cast<Double_t>(particleCase),meanDrift,meanP,static_cast<Double_t>(runNumber), eta};
-      //Printf("Fill Gain histo in track loop...");
       fHistGainTime->Fill(vec);
     }
     
@@ -528,13 +488,7 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
   // V0 loop -- in beam events the cosmic part of the histogram is filled with GammaConversions
   //
   for(Int_t iv0 = 0; iv0 < event->GetNumberOfV0s(); iv0++) {
-    //AliESDv0 * v0 = event->GetV0(iv0);
-     AliESDv0 v0dummy;
-     event->GetV0(v0dummy, iv0);
-     AliESDv0 *v0 = &v0dummy;
-
-     //if (!v0) Printf("ERROR AliTPCcalibTimeGain::ProcessBeamEvent(): ESDv0 not available! ");
-
+    AliESDv0 * v0 = event->GetV0(iv0);
     if (!v0->GetOnFlyStatus()) continue;
     if (v0->GetEffMass(0,0) > 0.02) continue; // select low inv. mass
     Double_t xyz[3];
@@ -545,24 +499,13 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
     //
     for(Int_t idaughter = 0; idaughter < 2; idaughter++) { // daughter loop
       Int_t index = idaughter == 0 ? v0->GetPindex() : v0->GetNindex();
-      AliVTrack * trackP = event->GetVTrack(index);
-      if (!trackP) continue; //Printf("***ERROR*** trackP not available!");
-      const AliVfriendTrack *friendTrackP = friendEvent->GetTrack(index);
+      AliESDtrack * trackP = event->GetTrack(index);
+      AliESDfriendTrack *friendTrackP = esdFriend->GetTrack(index);
       if (!friendTrackP) continue;
-      //const AliExternalTrackParam * trackPIn = trackP->GetInnerParam();
-      AliExternalTrackParam trckPIn;
-      trackP->GetTrackParamIp(trckPIn);
-      if ( (trackP->GetTrackParamIp(trckPIn)) < 0) continue;
-      AliExternalTrackParam * trackPIn = &trckPIn;
+      const AliExternalTrackParam * trackPIn = trackP->GetInnerParam();
+      const AliExternalTrackParam * trackPOut = friendTrackP->GetTPCOut();
       if (!trackPIn) continue;
-
-      //const AliExternalTrackParam * trackPOut = friendTrackP->GetTPCOut();
-      AliExternalTrackParam trckPOut;
-      friendTrackP->GetTrackParamTPCOut(trckPOut);
-      if ( (friendTrackP->GetTrackParamTPCOut(trckPOut)) < 0) continue;
-      AliExternalTrackParam * trackPOut = &trckPOut;
       if (!trackPOut) continue;
-
       // calculate necessary track parameters
       Double_t meanP = trackPIn->GetP();
       Double_t meanDrift = 250 - 0.5*TMath::Abs(trackPIn->GetZ() + trackPOut->GetZ());
@@ -584,8 +527,7 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
 	Double_t tpcSignal = GetTPCdEdx(seed);
 	//dE/dx, time, type (1-muon cosmic,2-pion beam data), momenta
 	Double_t vec[6] = {tpcSignal,static_cast<Double_t>(time),1,meanDrift,meanP,static_cast<Double_t>(runNumber)};
-    //Printf("Fill Gain histo in v0 loop...");
-    fHistGainTime->Fill(vec);
+	fHistGainTime->Fill(vec);
       }
     }
     

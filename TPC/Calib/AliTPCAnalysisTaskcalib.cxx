@@ -29,13 +29,6 @@
 #include "AliESDfriendTrack.h"
 #include "AliTPCseed.h"
 #include "AliESDInputHandler.h"
-
-#include "AliVEvent.h"
-#include "AliVfriendEvent.h"
-#include "AliVTrack.h"
-#include "AliVfriendTrack.h"
-#include "AliVEventHandler.h"
-
 #include "AliAnalysisManager.h"
 #include "TFile.h"
 #include "TSystem.h"
@@ -47,8 +40,8 @@ ClassImp(AliTPCAnalysisTaskcalib)
 AliTPCAnalysisTaskcalib::AliTPCAnalysisTaskcalib()
   :AliAnalysisTask(),
    fCalibJobs(0),
-   fEvent(0),
-   fEventFriend(0),
+   fESD(0),
+   fESDfriend(0),
    fDebugOutputPath("")
 {
   //
@@ -61,8 +54,8 @@ AliTPCAnalysisTaskcalib::AliTPCAnalysisTaskcalib()
 AliTPCAnalysisTaskcalib::AliTPCAnalysisTaskcalib(const char *name) 
   :AliAnalysisTask(name,""),
    fCalibJobs(0),
-   fEvent(0),
-   fEventFriend(0),
+   fESD(0),
+   fESDfriend(0),
    fDebugOutputPath("")
 {
   //
@@ -91,26 +84,23 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
   //
   // Exec function
   // Loop over tracks and call  Process function
-    //Printf("AliTPCAnalysisTaskcalib::Exec()...");
-
-  if (!fEvent) {
-    Printf("ERROR AliTPCAnalysisTaskcalib::Exec(): fEvent not available");
+  if (!fESD) {
+    //Printf("ERROR: fESD not available");
     return;
   }
-  fEventFriend=fEvent->FindFriend();
-  //fESDfriend=fESD->FindFriend();
-  Int_t n=fEvent->GetNumberOfTracks();
-  Process(fEvent);
-  if (!fEventFriend) {
-    //Printf("ERROR AliTPCAnalysisTaskcalib::Exec(): fEventFriend not available");
+  fESDfriend=static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
+  Int_t n=fESD->GetNumberOfTracks();
+  Process(fESD);
+  if (!fESDfriend) {
+    //Printf("ERROR: fESDfriend not available");
     return;
   }
-  if (fEventFriend->TestSkipBit()) return;
+  if (fESDfriend->TestSkipBit()) return;
   //
-  Int_t run = fEvent->GetRunNumber();
+  Int_t run = fESD->GetRunNumber();
   for (Int_t i=0;i<n;++i) {
-    const AliVfriendTrack *friendTrack=fEventFriend->GetTrack(i);
-    AliVTrack *track=fEvent->GetVTrack(i);
+    AliESDfriendTrack *friendTrack=fESDfriend->GetTrack(i);
+    AliESDtrack *track=fESD->GetTrack(i);
     TObject *calibObject=0;
     AliTPCseed *seed=0;
     if (!friendTrack) continue;
@@ -132,13 +122,12 @@ void AliTPCAnalysisTaskcalib::ConnectInputData(Option_t *) {
     //Printf("ERROR: Could not read chain from input slot 0");
   } 
   else {
-    //AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    AliVEventHandler *esdH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     if (!esdH) {
-      Printf("ERROR: Could not get ESDInputHandler");
+      //Printf("ERROR: Could not get ESDInputHandler");
     } 
     else {
-      fEvent = esdH->GetEvent();
+      fESD = esdH->GetEvent();
       //Printf("*** CONNECTED NEW EVENT ****");
     }
   }
@@ -184,11 +173,10 @@ void AliTPCAnalysisTaskcalib::FinishTaskOutput()
 }
 
 
-void AliTPCAnalysisTaskcalib::Process(AliVEvent *event) {
+void AliTPCAnalysisTaskcalib::Process(AliESDEvent *event) {
   //
   // Process ESD event
   //
-    //Printf("AliTPCAnalysisTaskcalib::Process(event)...");
   AliTPCcalibBase *job=0;
   Int_t njobs = fCalibJobs->GetEntriesFast();
   for (Int_t i=0;i<njobs;i++){
@@ -205,7 +193,6 @@ void AliTPCAnalysisTaskcalib::Process(AliTPCseed *track) {
   //
   // Process TPC track
   //
-    //Printf("AliTPCAnalysisTaskcalib::Process(TPC track)...");
   AliTPCcalibBase *job=0;
   Int_t njobs = fCalibJobs->GetEntriesFast();
   for (Int_t i=0;i<njobs;i++){
@@ -216,11 +203,10 @@ void AliTPCAnalysisTaskcalib::Process(AliTPCseed *track) {
   }
 }
 
-void AliTPCAnalysisTaskcalib::Process(AliVTrack *track, Int_t run) {
+void AliTPCAnalysisTaskcalib::Process(AliESDtrack *track, Int_t run) {
   //
   // Process ESD track
   //
-    //Printf("AliTPCAnalysisTaskcalib::Process(ESD track)...");
   AliTPCcalibBase *job=0;
   Int_t njobs = fCalibJobs->GetEntriesFast();
   for (Int_t i=0;i<njobs;i++){

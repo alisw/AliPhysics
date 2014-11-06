@@ -8,10 +8,8 @@
 class TH2F;
 class TH1F;
 class TList;
-//class AliESDEvent;
-class AliVEvent;
-//class AliESDtrack;
-class AliVTrack;
+class AliESDEvent;
+class AliESDtrack;
 class THnSparse;
 
 class AliTPCcalibCosmic:public AliTPCcalibBase {
@@ -20,14 +18,14 @@ public:
   AliTPCcalibCosmic(const Text_t *name, const Text_t *title);
   virtual ~AliTPCcalibCosmic();
   
-  virtual void      Process(AliVEvent *event);
+  virtual void      Process(AliESDEvent *event);
   virtual Long64_t  Merge(TCollection *const li);
   void              Add(const AliTPCcalibCosmic* cosmic);
   //
   //
   void              Init();
-  void              FindPairs(const AliVEvent *event);
-  void              FindCosmicPairs(const AliVEvent * event);
+  void              FindPairs(const AliESDEvent *event);
+  void              FindCosmicPairs(const AliESDEvent * event);
 
   Bool_t            IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1) const;
   static void       CalculateBetheParams(TH2F *hist, Double_t * initialParam);
@@ -53,8 +51,7 @@ public:
   static void       BinLogX(TH1 *const h);   // method for correct histogram binning
   static void       BinLogX(THnSparse *const h, Int_t axisDim);   // method for correct histogram binning
 
-  //void     Process(AliESDtrack *const track, Int_t runNo=-1) {AliTPCcalibBase::Process(track,runNo);}
-  void     Process(AliVTrack *const track, Int_t runNo=-1) {AliTPCcalibBase::Process(track,runNo);}
+  void     Process(AliESDtrack *const track, Int_t runNo=-1) {AliTPCcalibBase::Process(track,runNo);};
   void     Process(AliTPCseed *const track)  {return AliTPCcalibBase::Process(track);}
   virtual void  Terminate();
   static Double_t GetDeltaTime(Double_t rmin0, Double_t rmax0, Double_t rmin1, Double_t rmax1, Double_t tmin0, Double_t tmax0, Double_t tmin1, Double_t tmax1, Double_t dcaR, TVectorD& vectorDT);
@@ -69,7 +66,7 @@ public:
   static void AddTree(TTree* treeOutput, TTree * treeInput);
 private:
   
-  void              FillAcordeHist(AliVTrack *upperTrack);
+  void              FillAcordeHist(AliESDtrack *upperTrack);
 
   
 

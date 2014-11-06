@@ -49,15 +49,9 @@
 #include "AliTPCseed.h"
 #include "AliESDVertex.h"
 #include "AliESDEvent.h"
-#include "AliESDtrack.h"
 #include "AliESDfriend.h"
 #include "AliESDInputHandler.h"
 #include "AliAnalysisManager.h"
-
-#include "AliVEvent.h"
-#include "AliVTrack.h"
-#include "AliVfriendEvent.h"
-#include "AliVfriendTrack.h"
 
 #include "AliTracker.h"
 #include "AliMagF.h"
@@ -331,12 +325,12 @@ void AliTPCcalibCosmic::Add(const AliTPCcalibCosmic* cosmic){
 
 
 
-void AliTPCcalibCosmic::Process(AliVEvent *event) {
+void AliTPCcalibCosmic::Process(AliESDEvent *event) {
   //
   // Process of the ESD event  - fill calibration components
   //
   if (!event) {
-    Printf("ERROR: event not available");
+    Printf("ERROR: ESD not available");
     return;
   }  
    
@@ -466,7 +460,7 @@ void AliTPCcalibCosmic::FillHistoPerformance(const AliExternalTrackParam *par0, 
   
 }
 
-void AliTPCcalibCosmic::FindPairs(const AliVEvent *event){
+void AliTPCcalibCosmic::FindPairs(const AliESDEvent *event){
   //
   // Find cosmic pairs
   // 
@@ -474,7 +468,7 @@ void AliTPCcalibCosmic::FindPairs(const AliVEvent *event){
   // Track1 is choosen in lower TPC part
   //
   if (GetDebugLevel()>20) printf("Hallo world: Im here\n");
-  AliVfriendEvent *friendEvent=event->FindFriend();
+  AliESDfriend *esdFriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
   Int_t ntracks=event->GetNumberOfTracks(); 
   TObjArray  tpcSeeds(ntracks);
   if (ntracks==0) return;
@@ -485,8 +479,7 @@ void AliTPCcalibCosmic::FindPairs(const AliVEvent *event){
   //track loop
   //
   for (Int_t i=0;i<ntracks;++i) {
-   AliVTrack *track = event->GetVTrack(i);
-   if(!track) continue;
+   AliESDtrack *track = event->GetTrack(i);
    fClusters->Fill(track->GetTPCNcls()); 
   
    const AliExternalTrackParam * trackIn = track->GetInnerParam();
@@ -496,7 +489,7 @@ void AliTPCcalibCosmic::FindPairs(const AliVEvent *event){
    if (ntracks>4 && TMath::Abs(trackIn->GetTgl())<0.0015) continue;  // filter laser 
 
 
-   const AliVfriendTrack *friendTrack = friendEvent->GetTrack(i);
+   AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
    if (!friendTrack) continue;
    TObject *calibObject;
    AliTPCseed *seed = 0;   
@@ -526,7 +519,7 @@ void AliTPCcalibCosmic::FindPairs(const AliVEvent *event){
   // Find pairs
   //
   for (Int_t i=0;i<ntracks;++i) {
-      AliVTrack *track0 = event->GetVTrack(i);
+    AliESDtrack *track0 = event->GetTrack(i);     
     // track0 - choosen upper part
     if (!track0) continue;
     if (!track0->GetOuterParam()) continue;
@@ -535,7 +528,7 @@ void AliTPCcalibCosmic::FindPairs(const AliVEvent *event){
     track0->GetDirection(dir0);    
     for (Int_t j=0;j<ntracks;++j) {
       if (i==j) continue;
-      AliVTrack *track1 = event->GetVTrack(j);
+      AliESDtrack *track1 = event->GetTrack(j);   
       //track 1 lower part
       if (!track1) continue;
       if (!track1->GetOuterParam()) continue;
@@ -576,11 +569,8 @@ void AliTPCcalibCosmic::FindPairs(const AliVEvent *event){
       //
       //
       Float_t dmax = TMath::Max(TMath::Abs(d0),TMath::Abs(d1));
-      AliExternalTrackParam param0;
-      param0.CopyFromVTrack(track0);
-
-      AliExternalTrackParam param1;
-      param1.CopyFromVTrack(track1);
+      AliExternalTrackParam param0(*track0);
+      AliExternalTrackParam param1(*track1);
       //
       // Propagate using Magnetic field and correct fo material budget
       //
@@ -713,7 +703,7 @@ void AliTPCcalibCosmic::FindPairs(const AliVEvent *event){
 
 
 
-void  AliTPCcalibCosmic::FillAcordeHist(AliVTrack *upperTrack) {
+void  AliTPCcalibCosmic::FillAcordeHist(AliESDtrack *upperTrack) {
 
   // Pt cut to select straight tracks which can be easily propagated to ACORDE which is outside the magnetic field
   if (upperTrack->Pt() < 10 || upperTrack->GetTPCNcls() < 80) return;
@@ -994,20 +984,14 @@ void AliTPCcalibCosmic::UpdateTrack(AliExternalTrackParam &track1, const AliExte
 
 
 
-void AliTPCcalibCosmic::FindCosmicPairs(const AliVEvent *event) {
+void AliTPCcalibCosmic::FindCosmicPairs(const AliESDEvent * event) {
   //
   // find cosmic pairs trigger by random trigger
   //
   //
-  AliESDVertex vtxSPD;
-  event->GetPrimaryVertexSPD(vtxSPD);
-  AliESDVertex *vertexSPD=&vtxSPD;
-
-  AliESDVertex vtxTPC;
-  event->GetPrimaryVertexTPC(vtxTPC);
-  AliESDVertex *vertexTPC=&vtxTPC;
-
-  AliVfriendEvent *friendEvent=event->FindFriend();
+  AliESDVertex *vertexSPD =  (AliESDVertex *)event->GetPrimaryVertexSPD();
+  AliESDVertex *vertexTPC =  (AliESDVertex *)event->GetPrimaryVertexTPC(); 
+  AliESDfriend *esdFriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
   const Double_t kMinPt=1;
   const Double_t kMinPtMax=0.8;
   const Double_t kMinNcl=50;
@@ -1022,9 +1006,9 @@ void AliTPCcalibCosmic::FindCosmicPairs(const AliVEvent *event) {
 
 
   for (Int_t itrack0=0;itrack0<ntracks;itrack0++) {
-    AliVTrack *track0 = event->GetVTrack(itrack0);
+    AliESDtrack *track0 = event->GetTrack(itrack0);
     if (!track0) continue;
-    if (!track0->IsOn(AliVTrack::kTPCrefit)) continue;
+    if (!track0->IsOn(AliESDtrack::kTPCrefit)) continue;
 
     if (TMath::Abs(AliTracker::GetBz())>1&&track0->Pt()<kMinPt) continue;
     if (track0->GetTPCncls()<kMinNcl) continue;
@@ -1038,9 +1022,9 @@ void AliTPCcalibCosmic::FindCosmicPairs(const AliVEvent *event) {
     //if (TMath::Abs(dcaTPC[1])<kMaxDelta[0]*2) continue;
     //    const AliExternalTrackParam * trackIn0 = track0->GetInnerParam();
     for (Int_t itrack1=itrack0+1;itrack1<ntracks;itrack1++) {
-      AliVTrack *track1 = event->GetVTrack(itrack1);
+      AliESDtrack *track1 = event->GetTrack(itrack1);
       if (!track1) continue;  
-      if (!track1->IsOn(AliVTrack::kTPCrefit)) continue;
+      if (!track1->IsOn(AliESDtrack::kTPCrefit)) continue;
       if (track1->GetKinkIndex(0)>0) continue;
       if (TMath::Abs(AliTracker::GetBz())>1&&track1->Pt()<kMinPt) continue;
       if (track1->GetTPCncls()<kMinNcl) continue;
@@ -1071,7 +1055,7 @@ void AliTPCcalibCosmic::FindCosmicPairs(const AliVEvent *event) {
       if (!isPair) continue;
       TString filename(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
       Int_t eventNumber = event->GetEventNumberInFile(); 
-      Bool_t hasFriend=(friendEvent) ? (friendEvent->GetTrack(itrack0)!=0):0;
+      Bool_t hasFriend=(esdFriend) ? (esdFriend->GetTrack(itrack0)!=0):0; 
       Bool_t hasITS=(track0->GetNcls(0)+track1->GetNcls(0)>4);
       printf("DUMPHPTCosmic:%s|%f|%d|%d|%d\n",filename.Data(),(TMath::Min(track0->Pt(),track1->Pt())), eventNumber,hasFriend,hasITS);
 
@@ -1083,9 +1067,9 @@ void AliTPCcalibCosmic::FindCosmicPairs(const AliVEvent *event) {
       Int_t ntracksSPD = vertexSPD->GetNContributors();
       Int_t ntracksTPC = vertexTPC->GetNContributors();
       //
-      const AliVfriendTrack *friendTrack0 = friendEvent->GetTrack(itrack0);
+      AliESDfriendTrack *friendTrack0 = esdFriend->GetTrack(itrack0);
       if (!friendTrack0) continue;
-      const AliVfriendTrack *friendTrack1 = friendEvent->GetTrack(itrack1);
+      AliESDfriendTrack *friendTrack1 = esdFriend->GetTrack(itrack1);
       if (!friendTrack1) continue;
       TObject *calibObject;
       AliTPCseed *seed0 = 0;   
@@ -1097,7 +1081,6 @@ void AliTPCcalibCosmic::FindCosmicPairs(const AliVEvent *event) {
       for (Int_t l=0;(calibObject=friendTrack1->GetCalibObject(l));++l) {
 	if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;
       }
-
       //
       if (pcstream){
 	(*pcstream)<<"pairs"<<
@@ -1114,30 +1097,12 @@ void AliTPCcalibCosmic::FindCosmicPairs(const AliVEvent *event) {
 	  "vTPC.="<<vertexTPC<<         //primary vertex -TPC
 	  "t0.="<<track0<<              //track0
 	  "t1.="<<track1<<              //track1
-      //"ft0.="<<dummyfriendTrack0<<       //track0
-      //"ft1.="<<dummyfriendTrack1<<       //track1
+ 	  "ft0.="<<friendTrack0<<       //track0
+ 	  "ft1.="<<friendTrack1<<       //track1
  	  "s0.="<<seed0<<               //track0
  	  "s1.="<<seed1<<               //track1
 	  "\n";      
       }
-
-      //**********************TEMPORARY!!*******************************************
-      // more investigation is needed with Tree ///!!!
-      //all dummy stuff here is just for code to compile and work with ESD
-
-      AliESDfriendTrack *dummyfriendTrack0 = (AliESDfriendTrack*)friendTrack0;
-      AliESDfriendTrack *dummyfriendTrack1 = (AliESDfriendTrack*)friendTrack1;
-
-      AliESDtrack *dummytrack0 = (AliESDtrack*)track0;
-      AliESDtrack *dummytrack1 = (AliESDtrack*)track1;
-
-      if ((pcstream)&&(dummyfriendTrack0)){
-          (*pcstream)<<"ft0.="<<dummyfriendTrack0<<"\n";
-      }
-      if ((pcstream)&&(dummyfriendTrack1)){
-          (*pcstream)<<"ft1.="<<dummyfriendTrack1<<"\n";
-      }
-
       if (!fCosmicTree) {
 	fCosmicTree = new TTree("pairs","pairs");
 	fCosmicTree->SetDirectory(0);
@@ -1145,15 +1110,15 @@ void AliTPCcalibCosmic::FindCosmicPairs(const AliVEvent *event) {
       if (fCosmicTree->GetEntries()==0){
 	//
 	fCosmicTree->SetDirectory(0);
-    fCosmicTree->Branch("t0.",&dummytrack0);
-    fCosmicTree->Branch("t1.",&dummytrack1);
-    fCosmicTree->Branch("ft0.",&dummyfriendTrack0);
-    fCosmicTree->Branch("ft1.",&dummyfriendTrack1);
+	fCosmicTree->Branch("t0.",&track0);
+	fCosmicTree->Branch("t1.",&track1);
+	fCosmicTree->Branch("ft0.",&friendTrack0);
+	fCosmicTree->Branch("ft1.",&friendTrack1);
       }else{
-    fCosmicTree->SetBranchAddress("t0.",&dummytrack0);
-    fCosmicTree->SetBranchAddress("t1.",&dummytrack1);
-    fCosmicTree->SetBranchAddress("ft0.",&dummyfriendTrack0);
-    fCosmicTree->SetBranchAddress("ft1.",&dummyfriendTrack1);
+	fCosmicTree->SetBranchAddress("t0.",&track0);	
+	fCosmicTree->SetBranchAddress("t1.",&track1);
+	fCosmicTree->SetBranchAddress("ft0.",&friendTrack0);	
+	fCosmicTree->SetBranchAddress("ft1.",&friendTrack1);
       }
       fCosmicTree->Fill();
     }
@@ -1179,7 +1144,7 @@ void AliTPCcalibCosmic::AddTree(TTree* treeOutput, TTree * treeInput){
   //  
   return;
   //if (TMath::Abs(fMagF)<0.1) return; // work around - otherwise crashes 
-  AliESDtrack *track0=new AliESDtrack;     ///!!!
+  AliESDtrack *track0=new AliESDtrack;
   AliESDtrack *track1=new AliESDtrack;
   AliESDfriendTrack *ftrack0=new AliESDfriendTrack;
   AliESDfriendTrack *ftrack1=new AliESDfriendTrack;

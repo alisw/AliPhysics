@@ -58,10 +58,6 @@
 #include "AliLog.h"
 #include "AliESDEvent.h"
 
-#include "AliVEvent.h"
-#include "AliVTrack.h"
-#include "AliVfriendTrack.h"
-
 
 ClassImp(AliTPCcalibBase)
 
@@ -189,7 +185,7 @@ TTreeSRedirector *AliTPCcalibBase::GetDebugStreamer(){
 }
 
 
-void    AliTPCcalibBase::UpdateEventInfo(AliVEvent * event){
+void    AliTPCcalibBase::UpdateEventInfo(AliESDEvent * event){
   //
   //
   //
@@ -204,7 +200,7 @@ void    AliTPCcalibBase::UpdateEventInfo(AliVEvent * event){
 }
 
 
-Bool_t AliTPCcalibBase::HasLaser(AliVEvent *event){
+Bool_t AliTPCcalibBase::HasLaser(AliESDEvent *event){
   //
   //
   //
