@@ -25,7 +25,31 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS AliJetHeader.cxx AliJetFinder.cxx  AliJetReaderHeader.cxx AliJetReader.cxx AliUA1JetHeaderV1.cxx AliUA1JetFinder.cxx AliCdfJetFinder.cxx  AliCdfJetHeader.cxx AliAnalysisTaskJetsReader.cxx  AliAnalysisTaskJetsFinder.cxx AliDAJetFinder.cxx AliDAJetHeader.cxx AliJetKineReaderHeader.cxx AliJetHistos.cxx AliAnalysisTaskDiJets.cxx AliEventShape.cxx AliKMeansClustering.cxx AliAnalysisTaskKMeans.cxx AliAnalysisTaskFastEmbedding.cxx AliJetBkg.cxx AliJetCalTrk.cxx AliJetFillCalTrkTrack.cxx AliJetFillCalTrkTrackMC.cxx AliJetFillCalTrkEvent.cxx )
+set ( SRCS 
+AliJetHeader.cxx 
+AliJetFinder.cxx  
+AliJetReaderHeader.cxx 
+AliJetReader.cxx 
+AliUA1JetHeaderV1.cxx 
+AliUA1JetFinder.cxx 
+AliCdfJetFinder.cxx  
+AliCdfJetHeader.cxx 
+AliAnalysisTaskJetsReader.cxx  
+AliAnalysisTaskJetsFinder.cxx 
+AliDAJetFinder.cxx AliDAJetHeader.cxx 
+AliJetKineReaderHeader.cxx 
+AliJetHistos.cxx 
+AliAnalysisTaskDiJets.cxx 
+AliEventShape.cxx 
+AliKMeansClustering.cxx 
+AliAnalysisTaskKMeans.cxx 
+AliAnalysisTaskFastEmbedding.cxx 
+AliJetBkg.cxx 
+AliJetCalTrk.cxx 
+AliJetFillCalTrkTrack.cxx 
+AliJetFillCalTrkTrackMC.cxx 
+AliJetFillCalTrkEvent.cxx 
+)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
