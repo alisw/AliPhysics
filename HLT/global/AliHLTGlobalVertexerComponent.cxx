@@ -172,7 +172,7 @@ int AliHLTGlobalVertexerComponent::DoEvent( const AliHLTComponentEventData& /*ev
 					    AliHLTComponentTriggerData& /*trigData*/ )
 {
   //cout<<"AliHLTGlobalVertexerComponent::DoEvent called"<<endl;
- 
+
   if ( GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR ) )
     return 0;
 
@@ -219,12 +219,12 @@ int AliHLTGlobalVertexerComponent::DoEvent( const AliHLTComponentEventData& /*ev
 
       AliHLTTracksData* dataPtr = reinterpret_cast<AliHLTTracksData*>( pBlock->fPtr );
       int nTracks = dataPtr->fCount;
-
       AliHLTExternalTrackParam* currOutTrack = dataPtr->fTracklets;
       for( int itr=0; itr<nTracks; itr++ ){
 	AliHLTGlobalBarrelTrack t(*currOutTrack);
 	tracks.push_back( t );
-	trackId.push_back( currOutTrack->fTrackID );
+	//!SW trackId.push_back( currOutTrack->fTrackID );
+	trackId.push_back( itr );
 	unsigned int dSize = sizeof( AliHLTExternalTrackParam ) + currOutTrack->fNPoints * sizeof( unsigned int );
 	currOutTrack = ( AliHLTExternalTrackParam* )( (( Byte_t * )currOutTrack) + dSize );
       }
@@ -238,12 +238,13 @@ int AliHLTGlobalVertexerComponent::DoEvent( const AliHLTComponentEventData& /*ev
       fBenchmark.AddInput(pBlock->fSize);
 
       AliHLTTracksData* dataPtr = reinterpret_cast<AliHLTTracksData*>( pBlock->fPtr );
-      int nTracks = dataPtr->fCount;      
+      int nTracks = dataPtr->fCount;
       AliHLTExternalTrackParam* currOutTrack = dataPtr->fTracklets;
       for( int itr=0; itr<nTracks; itr++ ){
 	AliHLTGlobalBarrelTrack t(*currOutTrack);
 	tracks.push_back( t );
-	trackId.push_back( currOutTrack->fTrackID );
+	//!SW trackId.push_back( currOutTrack->fTrackID );
+	trackId.push_back( itr );
 	unsigned int dSize = sizeof( AliHLTExternalTrackParam ) + currOutTrack->fNPoints * sizeof( unsigned int );
 	currOutTrack = ( AliHLTExternalTrackParam* )( (( Byte_t * )currOutTrack) + dSize );
       }

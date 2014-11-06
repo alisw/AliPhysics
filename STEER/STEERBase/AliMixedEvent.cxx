@@ -355,3 +355,8 @@ Double_t AliMixedEvent::GetMagneticField() const
     AliVEvent* evt = (AliVEvent*) (fEventList.At(0));
     return evt->GetMagneticField();
 }
+
+AliVEvent::EDataLayoutType AliMixedEvent::GetDataLayoutType() const
+{
+  return AliVEvent::kMixed;
+}

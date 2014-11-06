@@ -23,11 +23,12 @@
 #include "TObjArray.h"
 #include "TClonesArray.h"
 #include "AliKalmanTrack.h"
+#include "AliVTPCseed.h"
 
 ClassImp(AliESDfriendTrack)
 
 AliESDfriendTrack::AliESDfriendTrack(): 
-TObject(), 
+AliVfriendTrack(), 
 f1P(0), 
 fnMaxITScluster(0),
 fnMaxTPCcluster(0),
@@ -59,7 +60,7 @@ fTRDIn(0)
 }
 
 AliESDfriendTrack::AliESDfriendTrack(const AliESDfriendTrack &t): 
-TObject(t),
+AliVfriendTrack(t),
 f1P(t.f1P),
 fnMaxITScluster(t.fnMaxITScluster),
 fnMaxTPCcluster(t.fnMaxTPCcluster),
@@ -139,7 +140,7 @@ void AliESDfriendTrack::AddCalibObject(TObject * calibObject){
   fCalibContainer->AddLast(calibObject);
 }
 
-TObject * AliESDfriendTrack::GetCalibObject(Int_t index){
+TObject * AliESDfriendTrack::GetCalibObject(Int_t index) const {
   //
   //
   //
@@ -148,6 +149,17 @@ TObject * AliESDfriendTrack::GetCalibObject(Int_t index){
   return fCalibContainer->At(index);
 }
 
+Int_t AliESDfriendTrack::GetTPCseed( AliTPCseed &seed) const {
+  TObject* calibObject = NULL;
+  AliVTPCseed* seedP = NULL;
+  for (Int_t idx = 0; (calibObject = GetCalibObject(idx)); ++idx) {
+    if ((seedP = dynamic_cast<AliVTPCseed*>(calibObject))) {
+      seedP->CopyToTPCseed( seed );
+      return 0;
+    }
+  }
+  return -1;
+}
 
 void AliESDfriendTrack::SetTPCOut(const AliExternalTrackParam &param) {
   // 

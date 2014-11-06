@@ -35,6 +35,18 @@ class AliHLTComponentBenchmark
   void AddInput( Double_t x );
   void AddOutput( Double_t x );
   const char *GetStatistics();
+  /**
+  *
+  * returns satistics:
+  * 0: number of events
+  * 1: input file size per event
+  * 2: output file size per event
+  * 3: ratio output/input
+  * 4+i: real time per event of counter i
+  * 5+i: cpu time per event of counter i
+  *
+  **/
+  void GetStatisticsData(Double_t* statistics, TString* names);
 
   private:
 

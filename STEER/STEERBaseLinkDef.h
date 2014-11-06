@@ -16,6 +16,8 @@
 #pragma link C++ class AliVCaloCells+;
 #pragma link C++ class AliVVertex+;
 #pragma link C++ class AliVEvent+;
+#pragma link C++ class AliVfriendEvent+;
+#pragma link C++ class AliVfriendTrack+;
 #pragma link C++ class AliVHeader+;
 #pragma link C++ class AliVAODHeader+;
 #pragma link C++ class AliVEventHandler+;
