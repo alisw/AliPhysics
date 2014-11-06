@@ -1,5 +1,5 @@
 
-void AddTaskPIDconfig(Int_t CentralityTriggerSelection = AliVEvent::kMB, Double_t centralityMin=0, Double_t centralityMax=5 ,Double_t FilterBit=1, Bool_t PIDcuts=kFALSE,TString useroutputfile="output.root"){
+void AddTaskPIDconfig(Int_t CentralityTriggerSelection = AliVEvent::kMB, Double_t centralityMin=0, Double_t centralityMax=5 ,Double_t FilterBit=1, Bool_t PIDcuts=kFALSE,TString useroutputfile="output"){
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -44,6 +44,7 @@ void AddTaskPIDconfig(Int_t CentralityTriggerSelection = AliVEvent::kMB, Double_
     for(int i=0;i<iMax-iMin+1;i++){
         icentr = i + iMin;
         outputfile[i] = useroutputfile;
+        outputfile[i].Append(".root");
         pidTask[i] = new AliAnalysisTaskPIDconfig(Form("pidTask_%.f-%.f",centrMin[icentr],centrMax[icentr]));
         pidTask[i]->SelectCollisionCandidates(CentralityTriggerSelection);
         pidTask[i]->SetCutTPCmultiplicityOutliersAOD(kTRUE);
