@@ -1299,27 +1299,28 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
 
             fhNofMultipleTriggersGen->Fill(ntriggersMC-1);
 
-            if(ntriggersMC>1){
-               Double_t deltaPhi, deltaEta, deltaR;
-               Int_t k = 0; 
+            Double_t deltaPhi, deltaEta, deltaR;
+            Int_t k = 0; 
 
-               //Correlation with single inclusive  TRIGGER
-               AliVParticle* tGenT1 = (AliVParticle*) particleListGen.At(indexTriggGen);  
-               if(tGenT1){
-                  for(Int_t ia=0; ia<ntriggersMC; ia++){
-                     if(indexTriggGen == triggersMC[ia]) continue;
+            //Correlation with single inclusive  TRIGGER
+            AliVParticle* tGenT1 = (AliVParticle*) particleListGen.At(indexTriggGen);  
+            if(tGenT1){
+               for(Int_t ia=0; ia<ntriggersMC; ia++){
+                  if(indexTriggGen == triggersMC[ia]) continue;
+               
+                  AliVParticle* tGenT2 = (AliVParticle*) particleListGen.At(triggersMC[ia]);  
+                  if(!tGenT2) continue;
+               
+                  deltaPhi = RelativePhi(tGenT1->Phi(),tGenT2->Phi());
+                  deltaEta = tGenT1->Eta()-tGenT2->Eta(); 
+                  deltaR = sqrt(deltaPhi*deltaPhi + deltaEta*deltaEta);
                   
-                     AliVParticle* tGenT2 = (AliVParticle*) particleListGen.At(triggersMC[ia]);  
-                     if(!tGenT2) continue;
-                  
-                     deltaPhi = RelativePhi(tGenT1->Phi(),tGenT2->Phi());
-                     deltaEta = tGenT1->Eta()-tGenT2->Eta(); 
-                     deltaR = sqrt(deltaPhi*deltaPhi + deltaEta*deltaEta);
-                     
-                     if(deltaR<0.4) k++;
-                  }
+                  if(deltaR<0.4) k++;
                }
-               fhNofMultipleTriggersConeGen->Fill(k);
+            }
+            fhNofMultipleTriggersConeGen->Fill(k);
+
+            if(ntriggersMC>1){
                //Correlation of each trigger with any other trigger
                for(Int_t ia=0; ia<ntriggersMC-1; ia++){
                   AliVParticle* tGenI = (AliVParticle*) particleListGen.At(triggersMC[ia]);  
@@ -1860,24 +1861,25 @@ Int_t  AliAnalysisTaskJetCorePP::GetListOfTracks(TList *list){
       index     = triggers[rnd];
 
       fhNofMultipleTriggers->Fill(ntriggers-1);
-      if(ntriggers>1){
-         Double_t deltaPhi, deltaEta, deltaR;
-         Int_t k=0;
-         //Correlation with single inclusive trigger
-         AliVParticle* tGent1 = (AliVParticle*) list->At(index);  
-         if(tGent1){
-            for(Int_t ia=0; ia<ntriggers; ia++){
-               if(triggers[ia]==index) continue;
-               AliVParticle* tGent2 = (AliVParticle*) list->At(triggers[ia]);  
-               if(!tGent2) continue;
-               deltaPhi = RelativePhi(tGent1->Phi(),tGent2->Phi());
-               deltaEta = tGent1->Eta()-tGent2->Eta(); 
-               deltaR   = sqrt(deltaPhi*deltaPhi + deltaEta*deltaEta);
-               if(deltaR<0.4) k++;
-            } 
-         }
-         fhNofMultipleTriggersCone->Fill(k);
+     
+      Double_t deltaPhi, deltaEta, deltaR;
+      Int_t k=0;
+      //Correlation with single inclusive trigger
+      AliVParticle* tGent1 = (AliVParticle*) list->At(index);  
+      if(tGent1){
+         for(Int_t ia=0; ia<ntriggers; ia++){
+            if(triggers[ia]==index) continue;
+            AliVParticle* tGent2 = (AliVParticle*) list->At(triggers[ia]);  
+            if(!tGent2) continue;
+            deltaPhi = RelativePhi(tGent1->Phi(),tGent2->Phi());
+            deltaEta = tGent1->Eta()-tGent2->Eta(); 
+            deltaR   = sqrt(deltaPhi*deltaPhi + deltaEta*deltaEta);
+            if(deltaR<0.4) k++;
+         } 
+      }
+      fhNofMultipleTriggersCone->Fill(k);
 
+      if(ntriggers>1){
          //Correlation with any other trigger
          for(Int_t ia=0; ia<ntriggers-1; ia++){
             AliVParticle* tGeni = (AliVParticle*) list->At(triggers[ia]);  
