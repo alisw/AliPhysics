@@ -14,16 +14,15 @@
 # **************************************************************************
 
 # Module
-set(MODULE JETAN)
+set(MODULE FASTJETAN)
 
 # Module include folder
 include_directories(${AliRoot_SOURCE_DIR}/JETAN/${MODULE})
 
-# Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
+# Additional include folders in alphabetical order
+include_directories(${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${AliRoot_SOURCE_DIR}/JETAN/JETAN
                     ${AliRoot_SOURCE_DIR}/STEER/AOD
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
@@ -31,34 +30,26 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order
 set(SRCS
-    AliAnalysisTaskDiJets.cxx
-    AliAnalysisTaskFastEmbedding.cxx
-    AliAnalysisTaskJetsFinder.cxx
-    AliAnalysisTaskJetsReader.cxx
-    AliAnalysisTaskKMeans.cxx
-    AliCdfJetFinder.cxx
-    AliCdfJetHeader.cxx
-    AliDAJetFinder.cxx
-    AliDAJetHeader.cxx
-    AliEventShape.cxx
-    AliJetBkg.cxx
-    AliJetCalTrk.cxx
-    AliJetFillCalTrkEvent.cxx
-    AliJetFillCalTrkTrack.cxx
-    AliJetFillCalTrkTrackMC.cxx
-    AliJetFinder.cxx
-    AliJetHeader.cxx
-    AliJetHistos.cxx
-    AliJetKineReaderHeader.cxx
-    AliJetReader.cxx
-    AliJetReaderHeader.cxx
-    AliKMeansClustering.cxx
-    AliUA1JetFinder.cxx
-    AliUA1JetHeaderV1.cxx
+    AliAnalysisTaskJetBackgroundSubtract.cxx
+    AliAnalysisTaskJetCluster.cxx
+    AliAnalysisTaskJetClusterKine.cxx
+    AliFastJetBkg.cxx
+    AliFastJetFinder.cxx
+    AliFastJetHeaderV1.cxx
+    AliFastJetInput.cxx
+    AliSISConeJetFinder.cxx
+    AliSISConeJetHeader.cxx
    )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+if(FASTJET_FOUND)
+    include_directories(${FASTJET_INCLUDE_DIR})
+    link_directories(${FASTJET_LIBS_DIR})
+    add_definitions(${FASTJET_DEFINITIONS})
+endif(FASTJET_FOUND)
+
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
@@ -67,11 +58,12 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase ESD AOD ANALYSIS ANALYSISalice EMCALUtils EG Eve MathMore Net Smatrix)
+set(LIBDEPS STEERBase ESD AOD ANALYSIS ANALYSISalice JETAN EG Net)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+target_link_libraries(${MODULE} ${FASTJET_LIBS})
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")

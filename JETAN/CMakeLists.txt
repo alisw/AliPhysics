@@ -16,7 +16,7 @@
 add_subdirectory(JETAN)
 if(FASTJET_FOUND)
     message(STATUS "FastJet found. Enabling FASTJETAN")
-#    add_subdirectory(FASTJETAN)
+    add_subdirectory(FASTJETAN)
 endif(FASTJET_FOUND)
 
 # Installing the macros
