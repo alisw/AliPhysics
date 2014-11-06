@@ -424,8 +424,11 @@ public:
     kNch05,                  // MC true number of charged particles in |eta|<0.5
     kNch10,                  // MC true number of charged particles in |eta|<1.0
 
-    kCentrality,             // event centrality fraction
-    kCentralitySPD,          // centrality using SPD
+    kCentrality,             // event centrality fraction V0M
+    kCentralityV0A,          // event centrality fraction V0A
+    kCentralityV0C,          // event centrality fraction V0C
+    kCentralityZNA,          // event centrality fraction ZNA
+    kCentralitySPD,          // centrality using SPD (from second layer)
     kTriggerInclONL,         // online trigger bits fired (inclusive)
     kTriggerInclOFF,         // offline trigger bits fired (inclusive)
     kTriggerExclOFF,         // offline only this trigger bit fired (exclusive)
@@ -1943,10 +1946,17 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   // Fill common AliVEvent interface information
   FillVarVEvent(event, values);
 
-  Double_t centralityF=-1; Double_t centralitySPD=-1;
+  Double_t centralityF=-1; 
+  Double_t centralitySPD=-1; 
+  Double_t centralityV0A = -1; 
+  Double_t centralityV0C = -1;
+  Double_t centralityZNA = -1;
   AliCentrality *esdCentrality = const_cast<AliESDEvent*>(event)->GetCentrality();
   if (esdCentrality) centralityF = esdCentrality->GetCentralityPercentile("V0M");
   if (esdCentrality) centralitySPD = esdCentrality->GetCentralityPercentile("CL1");
+  if (esdCentrality) centralityV0A = esdCentrality->GetCentralityPercentile("V0A");
+  if (esdCentrality) centralityV0C = esdCentrality->GetCentralityPercentile("V0C");
+  if (esdCentrality) centralityZNA = esdCentrality->GetCentralityPercentile("ZNA");
   
   // Fill AliESDEvent interface specific information
   const AliESDVertex *primVtx = event->GetPrimaryVertex();
@@ -1955,6 +1965,10 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   values[AliDielectronVarManager::kZRes]       = primVtx->GetZRes();
   values[AliDielectronVarManager::kCentrality] = centralityF;
   values[AliDielectronVarManager::kCentralitySPD] = centralitySPD;
+  values[AliDielectronVarManager::kCentralityV0A] = centralityV0A;
+  values[AliDielectronVarManager::kCentralityV0C] = centralityV0C;
+  values[AliDielectronVarManager::kCentralityZNA] = centralityZNA;
+  
 
   const AliESDVertex *vtxTPC = event->GetPrimaryVertexTPC(); 
   values[AliDielectronVarManager::kNVtxContribTPC] = (vtxTPC ? vtxTPC->GetNContributors() : 0);
@@ -2017,12 +2031,22 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
   AliAODHeader *header = dynamic_cast<AliAODHeader*>(event->GetHeader());
   assert(header&&"Not a standard AOD");
 
-  Double_t centralityF=-1; Double_t centralitySPD=-1;
+  Double_t centralityF=-1; 
+  Double_t centralitySPD=-1; 
+  Double_t centralityV0A = -1; 
+  Double_t centralityV0C = -1;
+  Double_t centralityZNA = -1;
   AliCentrality *aodCentrality = header->GetCentralityP();
   if (aodCentrality) centralityF = aodCentrality->GetCentralityPercentile("V0M");
   if (aodCentrality) centralitySPD = aodCentrality->GetCentralityPercentile("CL1");
+  if (aodCentrality) centralityV0A = aodCentrality->GetCentralityPercentile("V0A");
+  if (aodCentrality) centralityV0C = aodCentrality->GetCentralityPercentile("V0C");
+  if (aodCentrality) centralityZNA = aodCentrality->GetCentralityPercentile("ZNA");
   values[AliDielectronVarManager::kCentrality] = centralityF;
   values[AliDielectronVarManager::kCentralitySPD] = centralitySPD;
+  values[AliDielectronVarManager::kCentralityV0A] = centralityV0A;
+  values[AliDielectronVarManager::kCentralityV0C] = centralityV0C;
+  values[AliDielectronVarManager::kCentralityZNA] = centralityZNA;
 
   values[AliDielectronVarManager::kRefMult]        = header->GetRefMultiplicity();        // similar to Ntrk
   values[AliDielectronVarManager::kRefMultTPConly] = header->GetTPConlyRefMultiplicity(); // similar to Nacc
