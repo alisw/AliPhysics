@@ -37,6 +37,9 @@ AliVTrack& AliVTrack::operator=(const AliVTrack& vTrack)
   return *this; 
 }
 
+Bool_t AliVTrack::GetXYZ(Double_t* /*p*/) const {return kFALSE;};
+Bool_t AliVTrack::GetXYZAt(Double_t /*x*/, Double_t /*b*/, Double_t* /*r*/ ) const {return kFALSE;}
+
 Double_t AliVTrack::GetBz() const 
 {
   // returns Bz component of the magnetic field (kG)
