@@ -595,9 +595,9 @@ void AliAnalysisTaskFemtoESE::UserCreateOutputObjects()
   hcentq->GetXaxis()->SetTitle("q_{2} percentile");
   hcentq->GetYaxis()->SetTitle("centrality");
   fOutputList->Add(hcentq);
-  hMixedDistTracks = new TH2D("hMixedDistTracks", ";centrality;tracks", nCentBins, centBins, 200, 0, fMixingTracks * 1.5);
+  hMixedDistTracks = new TH2D("hMixedDistTracks", ";centrality;tracks", nCentBins, centBins, 200, 0, fMixingTracks * 2.);
   fOutputList->Add(hMixedDistTracks);
-  hMixedDistEvents = new TH2D("hMixedDistEvents", ";centrality;events", nCentBins, centBins, 21, -0.5, 20.5);
+  hMixedDistEvents = new TH2D("hMixedDistEvents", ";centrality;events", nCentBins, centBins, 41, -0.5, 40.5);
   fOutputList->Add(hMixedDistEvents);
   hQvecV0A = new TH2D("hQvecV0A","Qvector in V0A",50,0,50,200,0,5);
   hQvecV0A->GetXaxis()->SetTitle("Centrality");
@@ -625,27 +625,36 @@ void AliAnalysisTaskFemtoESE::UserCreateOutputObjects()
   hqinvcheck->GetZaxis()->SetTitle("centrality");
   fOutputList->Add(hqinvcheck);
 
-  hq = new TH3F***[nKtBins];
-  hqmix = new TH3F***[nKtBins];
-  hqinv = new TH3F***[nKtBins];
-  for(Int_t k = 0; k < nKtBins; k++)
+  hq = new TH3F****[2];
+  hqmix = new TH3F****[2];
+  hqinv = new TH3F****[2];
+  for(Int_t z = 0; z < 2; z++) // charge combinations
     {
-      hq[k] = new TH3F**[nEPBins];
-      hqmix[k] = new TH3F**[nEPBins];
-      hqinv[k] = new TH3F**[nEPBins];
-      for(Int_t e = 0; e < nEPBins; e++)
+      hq[z] = new TH3F***[nKtBins];
+      hqmix[z] = new TH3F***[nKtBins];
+      hqinv[z] = new TH3F***[nKtBins];
+      for(Int_t k = 0; k < nKtBins; k++)
 	{
-	  hq[k][e] = new TH3F*[nCentBins];
-	  hqmix[k][e] = new TH3F*[nCentBins];
-	  hqinv[k][e] = new TH3F*[nCentBins];
-	  for(Int_t c = 0; c < nCentBins; c++)
+	  hq[z][k] = new TH3F**[nEPBins];
+	  hqmix[z][k] = new TH3F**[nEPBins];
+	  hqinv[z][k] = new TH3F**[nEPBins];
+	  for(Int_t e = 0; e < nEPBins; e++)
 	    {
-	      hq[k][e][c] = new TH3F(Form("hq_%i_%i_%i",k,e,c),Form("hq_%i_%i_%i",k,e,c),20,-0.2,0.2,20,-0.2,0.2,20,-0.2,0.2);
-	      fOutputList->Add(hq[k][e][c]);
-	      hqmix[k][e][c] = new TH3F(Form("hqmix_%i_%i_%i",k,e,c),Form("hqmix_%i_%i_%i",k,e,c),20,-0.2,0.2,20,-0.2,0.2,20,-0.2,0.2);
-	      fOutputList->Add(hqmix[k][e][c]);
-	      hqinv[k][e][c] = new TH3F(Form("hqinv_%i_%i_%i",k,e,c),Form("hqinv_%i_%i_%i",k,e,c),20,-0.2,0.2,20,-0.2,0.2,20,-0.2,0.2);
-	      fOutputList->Add(hqinv[k][e][c]);
+	      hq[z][k][e] = new TH3F*[nCentBins];
+	      hqmix[z][k][e] = new TH3F*[nCentBins];
+	      hqinv[z][k][e] = new TH3F*[nCentBins];
+	      for(Int_t c = 0; c < nCentBins; c++)
+		{
+		  hq[z][k][e][c] = new TH3F(Form("hq%i_k%i_e%i_c%i",z,k,e,c),Form("hq%i_k%i_e%i_c%i",z,k,e,c),40,-0.2,0.2,40,-0.2,0.2,40,-0.2,0.2);
+		  hq[z][k][e][c]->Sumw2();
+		  fOutputList->Add(hq[z][k][e][c]);
+		  hqmix[z][k][e][c] = new TH3F(Form("hqmix%i_k%i_e%i_c%i",z,k,e,c),Form("hqmix%i_k%i_e%i_c%i",z,k,e,c),40,-0.2,0.2,40,-0.2,0.2,40,-0.2,0.2);
+		  hqmix[z][k][e][c]->Sumw2();
+		  fOutputList->Add(hqmix[z][k][e][c]);
+		  hqinv[z][k][e][c] = new TH3F(Form("hqinv%i_k%i_e%i_c%i",z,k,e,c),Form("hqinv%i_k%i_e%i_c%i",z,k,e,c),40,-0.2,0.2,40,-0.2,0.2,40,-0.2,0.2);
+		  //hqinv[z][k][e][c]->Sumw2();
+		  fOutputList->Add(hqinv[z][k][e][c]);
+		}
 	    }
 	}
     }
@@ -882,8 +891,8 @@ void AliAnalysisTaskFemtoESE::UserExec(Option_t *)
   if (!poolNeg) AliFatal(Form("No pool found for centrality = %f, vz = %f, ep = %f", centralityPercentile, zvtx,psiEP));
   //Printf("Negative pool found for centrality = %f, vz = %f, ep = %f with %i events in it", centralityPercentile, zvtx,psiEP,poolNeg->GetCurrentNEvents());
 
-  TrackLoop(tracksPos,poolPos,psiEP,centralityPercentile);
-  TrackLoop(tracksNeg,poolNeg,psiEP,centralityPercentile);
+  TrackLoop(tracksPos,poolPos,0,psiEP,centralityPercentile);
+  TrackLoop(tracksNeg,poolNeg,1,psiEP,centralityPercentile);
   //TObjArray* clonedtracks = CloneAndReduceTrackList(tracks,psiEP);
   poolPos->UpdatePool(tracksPos);
   poolNeg->UpdatePool(tracksNeg);
@@ -903,8 +912,9 @@ void AliAnalysisTaskFemtoESE::UserExec(Option_t *)
 }
 
 
-void AliAnalysisTaskFemtoESE::TrackLoop(TObjArray *tracks, AliEventPool *pool, Double_t psiEP, Float_t centralityPercentile)
+void AliAnalysisTaskFemtoESE::TrackLoop(TObjArray *tracks, AliEventPool *pool, Int_t z, Double_t psiEP, Float_t centralityPercentile)
 {
+  // z=0 for positive charges, z=1 for negative charges
   Double_t kt = 0;
   Double_t qout=0, qside=0, qlong=0;
   Double_t pVect1[4] = {0,0,0,0};
@@ -960,8 +970,8 @@ void AliAnalysisTaskFemtoESE::TrackLoop(TObjArray *tracks, AliEventPool *pool, D
 	  if(kt < ktBins[0] || kt > ktBins[nKtBins]) continue;
 	  if(!FindBin(kt,deltaphi,centralityPercentile,k,e,c)) continue;
 	  hktcheck->Fill(kt);
-	  hq[k][e][c]->Fill(qout,qside,qlong,centWeight);
-	  hqinv[k][e][c]->Fill(qout,qside,qlong,GetQinv(pVect1, pVect2)*centWeight);
+	  hq[z][k][e][c]->Fill(qout,qside,qlong,centWeight);
+	  hqinv[z][k][e][c]->Fill(qout,qside,qlong,GetQinv(pVect1, pVect2)*centWeight);
 	  hNpairs->Fill(deltaphi,centralityPercentile,kt);
 	  hAvDphi->Fill(deltaphi,centralityPercentile,kt,deltaphi);
 	  hPairDphi->Fill(deltaphi);
@@ -1044,7 +1054,7 @@ void AliAnalysisTaskFemtoESE::TrackLoop(TObjArray *tracks, AliEventPool *pool, D
 		  if(fabs(qout)<0.2 && fabs(qside)<0.2 && fabs(qlong)<0.2) nCountMixedPairs++;
 		  if(kt < ktBins[0] || kt > ktBins[nKtBins]) continue;
 		  if(!FindBin(kt,deltaphi,centralityPercentile,k,e,c)) continue;
-		  hqmix[k][e][c]->Fill(qout,qside,qlong,centWeight);
+		  hqmix[z][k][e][c]->Fill(qout,qside,qlong,centWeight);
 
 		  hPairDphiMix->Fill(deltaphi);
 
@@ -1534,7 +1544,7 @@ Double_t AliAnalysisTaskFemtoESE::GetQPercLHC11h(Double_t qvec)
 
 }
 
-Double_t AliAnalysisTaskFemtoESE::GetCentralityWeight(Double_t cent)
+/*Double_t AliAnalysisTaskFemtoESE::GetCentralityWeight(Double_t cent)
 {
 
   // use makeCentWeighting.C to fit centrality distribution to obtain this parameterization
@@ -1550,4 +1560,25 @@ Double_t AliAnalysisTaskFemtoESE::GetCentralityWeight(Double_t cent)
   Double_t b = par1-slope*limit1;
 
   return 1./(slope*cent+b);
+  }*/
+
+Double_t AliAnalysisTaskFemtoESE::GetCentralityWeight(Double_t cent)
+{
+
+  // use makeCentWeighting.C to fit centrality distribution to obtain this parameterization
+  Double_t par1 = 2.60629;
+  Double_t par2 = 0.579333;
+  Double_t limit1 = 8.71488;
+  Double_t limit2 = 12.0126;
+
+  if(cent < limit1) return 1.;
+  if(cent > limit2) return 1.;
+
+  Double_t slope = (par2-par1)/(limit2-limit1);
+  Double_t b = par1-slope*limit1;
+
+  if(cent < 10.)
+    return par1/(slope*cent+b);
+  else
+    return par2/(slope*cent+b);
 }

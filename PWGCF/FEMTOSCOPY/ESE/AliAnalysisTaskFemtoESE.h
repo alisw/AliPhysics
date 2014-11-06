@@ -49,7 +49,7 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
 
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
-  void TrackLoop(TObjArray *tracks, AliEventPool *pool, Double_t psiEP, Float_t centralityPercentile);
+  void TrackLoop(TObjArray *tracks, AliEventPool *pool, Int_t z, Double_t psiEP, Float_t centralityPercentile);
   virtual void   Terminate(Option_t *);
 
   AliHelperPID* GetHelperPID() { return fHelperPID; }
@@ -143,9 +143,9 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
 
   Double_t vertex[3];
 
-  TH3F**** hq;
-  TH3F**** hqmix;
-  TH3F**** hqinv;
+  TH3F***** hq;
+  TH3F***** hqmix;
+  TH3F***** hqinv;
 
   Int_t nqPercBinsLHC11h;
   Double_t* qPercBinsLHC11h; //[nqPercBinsLHC11h]
