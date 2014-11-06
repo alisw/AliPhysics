@@ -76,7 +76,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		
 		Bool_t 			InitializeCutsFromCutString(const TString analysisCutSelection);
 		TString 		GetCutNumber();
-		Int_t 			GetClusterType()												{return fClusterType; };
+        Int_t 			GetClusterType() {return fClusterType; }
 		
 		//Constructors
 		AliCaloPhotonCuts(const char *name="ClusterCuts", const char * title="Cluster Cuts");
@@ -126,7 +126,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Bool_t 			SetNLM(Int_t);
 		
 	protected:
-		TList *fHistograms;
+        TList       *fHistograms;
 		
 		//cuts
 		Int_t		fClusterType;						// which cluster do we have
@@ -203,6 +203,12 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
         //Extended track matching histograms
         TH2F* 		fHistClusterdEtadPhiPosTracksBeforeQA;	// 2-dim plot dEta vs. dPhi
         TH2F* 		fHistClusterdEtadPhiNegTracksBeforeQA;	// 2-dim plot dEta vs. dPhi
+        TH2F*       fHistClusterdEtadPhiPosTracks_E0_AfterQA;   // 2-dim plot dEta vs. dPhi, positive Tracks, E < 0.5
+        TH2F*       fHistClusterdEtadPhiPosTracks_E08_AfterQA;  // 2-dim plot dEta vs. dPhi, positive Tracks, 0.5 < E < 8
+        TH2F*       fHistClusterdEtadPhiPosTracks_E8_AfterQA;   // 2-dim plot dEta vs. dPhi, positive Tracks, E > 8
+        TH2F*       fHistClusterdEtadPhiNegTracks_E0_AfterQA;   // 2-dim plot dEta vs. dPhi, negative Tracks, E < 0.5
+        TH2F*       fHistClusterdEtadPhiNegTracks_E08_AfterQA;  // 2-dim plot dEta vs. dPhi, negative Tracks, 0.5 < E < 8
+        TH2F*       fHistClusterdEtadPhiNegTracks_E8_AfterQA;   // 2-dim plot dEta vs. dPhi, negative Tracks, E > 8
         TH2F* 		fHistClusterdEtadPtBeforeQA;			// 2-dim plot dEta vs. Pt
         TH2F* 		fHistClusterdPhidPtBeforeQA;			// 2-dim plot dEta vs. Pt
         TH2F* 		fHistClusterM20Pt_dPhiBeforeQA;			// 2-dim plot M20 vs. Pt for given dPhi>0.05
