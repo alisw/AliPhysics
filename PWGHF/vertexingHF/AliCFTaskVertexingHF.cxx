@@ -1000,17 +1000,17 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       if (fUseWeight){
 	if (fHistoPtWeight) {
 	  AliDebug(2,"Using Histogram as Pt weight function");
-	  fWeight = eventWeight*GetPtWeightFromHistogram(containerInputMC[0]);
+	  fWeight = eventWeight*GetPtWeightFromHistogram(containerInput[0]);
 	}
 	else if (fFuncWeight){ // using user-defined function
 	  AliDebug(2, "Using function");
-	  fWeight = eventWeight*fFuncWeight->Eval(containerInputMC[0]);
+	  fWeight = eventWeight*fFuncWeight->Eval(containerInput[0]);
 	}
 	else{ // using FONLL
 	  AliDebug(2, "Using FONLL");
-	  fWeight = eventWeight*GetWeight(containerInputMC[0]);
+	  fWeight = eventWeight*GetWeight(containerInput[0]);
 	}
-	AliDebug(2, Form("pt = %f, weight = %f",containerInputMC[0], fWeight));
+	AliDebug(2, Form("pt = %f, weight = %f",containerInput[0], fWeight));
       }
 
       if (!fCuts->IsInFiducialAcceptance(containerInput[0],containerInput[1])){
