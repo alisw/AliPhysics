@@ -68,11 +68,15 @@ TNamed(),
   fnbinsphi(),  
   fsys(-2),
   fyear(-2),
-  fSystAlreadySet(kFALSE)
+  fSystAlreadySet(kFALSE),
+  fArithmeticAverage(kFALSE),
+  fhUsedWeightsDzero(0x0),
+  fhUsedWeightsDstar(0x0),
+  fhUsedWeightsDplus(0x0)
 {// standard constructor 
-
+  
 }
-			 
+
 
 AliHFDmesonCorrAverage::AliHFDmesonCorrAverage(const char* name) : 
   TNamed(name,name),
@@ -107,7 +111,11 @@ AliHFDmesonCorrAverage::AliHFDmesonCorrAverage(const char* name) :
   fnbinsphi(),
   fsys(-2),
   fyear(-2),
-  fSystAlreadySet(kFALSE)
+  fSystAlreadySet(kFALSE),
+  fArithmeticAverage(kFALSE),
+  fhUsedWeightsDzero(0x0),
+  fhUsedWeightsDstar(0x0),
+  fhUsedWeightsDplus(0x0)
 {// default constructor 
 
 }
@@ -134,6 +142,9 @@ AliHFDmesonCorrAverage::~AliHFDmesonCorrAverage(){
   delete fweightsDzeroSystBkg;
   delete fweightsDstarSystBkg;
   delete fweightsDplusSystBkg;
+  delete  fhUsedWeightsDzero;
+  delete fhUsedWeightsDstar;
+  delete fhUsedWeightsDplus;
 
 }
 
@@ -259,6 +270,24 @@ void AliHFDmesonCorrAverage::InitAverageHisto(TH1D *h){
   fhDaverage->SetMarkerSize(1.2);
   fhDaverage->SetMarkerColor(kBlack);
 
+  // The following histos are created here to use the final binning
+  fhUsedWeightsDzero=(TH1D*)h->Clone("fhUsedWeightsDzero");
+  fhUsedWeightsDzero->SetTitle("Dzero final weights used");
+  fhUsedWeightsDzero->SetXTitle("#Delta#varphi = #varphi_{assoc} - #varphi_{D}");
+  fhUsedWeightsDzero->SetYTitle("weight");
+
+  fhUsedWeightsDplus=(TH1D*)h->Clone("fhUsedWeightsDplus");
+  fhUsedWeightsDplus->SetTitle("Dplus final weights used");
+  fhUsedWeightsDplus->SetXTitle("#Delta#varphi = #varphi_{assoc} - #varphi_{D}");
+  fhUsedWeightsDplus->SetYTitle("weight");
+
+  fhUsedWeightsDstar=(TH1D*)h->Clone("fhUsedWeightsDstar");
+  fhUsedWeightsDstar->SetTitle("Dstar final weights used");
+  fhUsedWeightsDstar->SetXTitle("#Delta#varphi = #varphi_{assoc} - #varphi_{D}");
+  fhUsedWeightsDstar->SetYTitle("weight");
+
+
+
 }
 
 void AliHFDmesonCorrAverage::CalculateAverage(){
@@ -353,7 +382,14 @@ void AliHFDmesonCorrAverage::CalculateAverage(){
 
     if(fincludeDzero){
       // stat error + yield unc + bkg subtr
-      weight=1./(1./fweightsDzeroStat[j-1]+1./fweightsDzeroSystYield[j-1]+1./fweightsDzeroSystBkg[j-1]);// need to do this way since we stored separately the stat and syst weight (=1/variance)
+      if(fArithmeticAverage){
+	weight=1./nmeson;
+      }
+      else {
+	weight=1./(1./fweightsDzeroStat[j-1]+1./fweightsDzeroSystYield[j-1]+1./fweightsDzeroSystBkg[j-1]);// need to do this way since we stored separately the stat and syst weight (=1/variance)
+      }
+      fhUsedWeightsDzero->SetBinContent(j,weight);
+
       value+=fhDzero->GetBinContent(j)*weight;
       errStatValue+=1./fweightsDzeroStat[j-1]*weight*weight;
       errSystYieldValue+=1./fweightsDzeroSystYield[j-1]*weight*weight;
@@ -402,9 +438,14 @@ void AliHFDmesonCorrAverage::CalculateAverage(){
       printf("Dzero the value is: %f, weight: %f \n",value, weight);
     } 
     if(fincludeDstar){
-
-      // stat error + yield unc + bkg subtr
-      weight=1./(1./fweightsDstarStat[j-1]+1./fweightsDstarSystYield[j-1]+1./fweightsDstarSystBkg[j-1]);// need to do this way since we stored separately the stat and syst weight (=1/variance)
+      if(fArithmeticAverage){
+	weight=1./nmeson;
+      }
+      else{
+	// stat error + yield unc + bkg subtr
+	weight=1./(1./fweightsDstarStat[j-1]+1./fweightsDstarSystYield[j-1]+1./fweightsDstarSystBkg[j-1]);// need to do this way since we stored separately the stat and syst weight (=1/variance)
+      }
+      fhUsedWeightsDstar->SetBinContent(j,weight);
       value+=fhDstar->GetBinContent(j)*weight;
       errStatValue+=1./fweightsDstarStat[j-1]*weight*weight;
       errSystYieldValue+=1./fweightsDstarSystYield[j-1]*weight*weight;
@@ -456,8 +497,14 @@ void AliHFDmesonCorrAverage::CalculateAverage(){
       printf("Dstar the value is: %f, weight: %f \n",value, weight);
     }
     if(fincludeDplus){
-      // stat error + yield unc + bkg subtr
-      weight=1./(1./fweightsDplusStat[j-1]+1./fweightsDplusSystYield[j-1]+1./fweightsDplusSystBkg[j-1]);// need to do this way since we stored separately the stat and syst weight (=1/variance)
+      if(fArithmeticAverage){
+	weight=1./nmeson;
+      }
+      else{
+	// stat error + yield unc + bkg subtr
+	weight=1./(1./fweightsDplusStat[j-1]+1./fweightsDplusSystYield[j-1]+1./fweightsDplusSystBkg[j-1]);// need to do this way since we stored separately the stat and syst weight (=1/variance)
+      }
+      fhUsedWeightsDplus->SetBinContent(j,weight);
       value+=fhDplus->GetBinContent(j)*weight;
       errStatValue+=1./fweightsDplusStat[j-1]*weight*weight;
       errSystYieldValue+=1./fweightsDplusSystYield[j-1]*weight*weight;      
@@ -653,7 +700,10 @@ TH1D* AliHFDmesonCorrAverage::ReflectHisto(TH1D *h){
     if(x>0&&x<TMath::Pi())j2=h2->FindBin(x);
     else if(x<0)j2=h2->FindBin(-1.*x);
     else if(x>TMath::Pi())j2=h2->FindBin(2.*TMath::Pi()-x);
-    else printf("Point %d excluded \n",j);
+    else {
+      printf("Point %d excluded \n",j);
+      continue;
+    }
     Double_t y=h2->GetBinContent(j2);
     Double_t ey=h2->GetBinError(j2);
     h2->SetBinContent(j2,y+y0);
@@ -676,6 +726,7 @@ void AliHFDmesonCorrAverage::SetWeights(){
     fweightsDzeroStat=new Double_t[fnbinsphi];    
     fweightsDzeroSystYield=new Double_t[fnbinsphi];    
     fweightsDzeroSystBkg=new Double_t[fnbinsphi];    
+    //    fhGlobalWeightDzero=new TH1F("fhGlobalWeightDzero","fhGlobalWeightDzero",fnbinsphi
     for(Int_t j=0;j<fnbinsphi;j++){
       if(fmethod==10){
 	fweightsDzeroStat[j]=1./(fhDzero->GetBinError(j+1)*fhDzero->GetBinError(j+1));
