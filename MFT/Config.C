@@ -202,7 +202,7 @@ void Config() {
   Int_t iFMD   = 0;
   Int_t iFRAME = 0;
   Int_t iITS   = 0;
-  Int_t iMAG   = 0;
+  Int_t iMAG   = 1;
   Int_t iPHOS  = 0;
   Int_t iPMD   = 0;
   Int_t iHMPID = 0;

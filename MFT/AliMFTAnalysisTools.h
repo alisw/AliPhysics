@@ -69,6 +69,9 @@ public:
 
   static void ConvertCovMatrixMUON2AOD(const TMatrixD& covMUON, Double_t covAOD[21]);
   static const TMatrixD ConvertCovMatrixAOD2MUON(AliAODTrack *muon);
+
+  static Bool_t TranslateMuon(AliAODTrack *muon, Double_t vtxInitial[3], Double_t vtxFinal[3]);
+  static Bool_t TranslateMuonToOrigin(AliAODTrack *muon, Double_t vtx[3]);
   
   ClassDef(AliMFTAnalysisTools,1)
     
