@@ -1074,31 +1074,31 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
 
 }
 
-//_________________________________________________________________
-void AliAnaParticleIsolation::FillPileUpHistograms(Int_t clusterID)
+//_____________________________________________________________________________
+void AliAnaParticleIsolation::FillPileUpHistograms(Float_t energy, Float_t time)//Int_t clusterID)
 {
   // Fill some histograms to understand pile-up
   
-  if ( clusterID < 0 )
-  {
-    AliWarning(Form("ID of cluster = %d, not possible!", clusterID));
-    return;
-  }
+//  if ( clusterID < 0 )
+//  {
+//    AliWarning(Form("ID of cluster = %d, not possible!", clusterID));
+//    return;
+//  }
   
-  Int_t iclus = -1;
-  TObjArray* clusters = 0x0;
-  if     (GetCalorimeter() == kEMCAL) clusters = GetEMCALClusters();
-  else if(GetCalorimeter() == kPHOS ) clusters = GetPHOSClusters();
-  
-  Float_t energy = 0;
-  Float_t time   = -1000;
-  
-  if(clusters)
-  {
-    AliVCluster *cluster = FindCluster(clusters,clusterID,iclus);
-    energy = cluster->E();
-    time   = cluster->GetTOF()*1e9;
-  }
+//  Int_t iclus = -1;
+//  TObjArray* clusters = 0x0;
+//  if     (GetCalorimeter() == kEMCAL) clusters = GetEMCALClusters();
+//  else if(GetCalorimeter() == kPHOS ) clusters = GetPHOSClusters();
+//  
+//  Float_t energy = 0;
+//  Float_t time   = -1000;
+//  
+//  if(clusters)
+//  {
+//    AliVCluster *cluster = FindCluster(clusters,clusterID,iclus);
+//    energy = cluster->E();
+//    time   = cluster->GetTOF()*1e9;
+//  }
   
   //printf("E %f, time %f\n",energy,time);
   AliVEvent * event = GetReader()->GetInputEvent();
@@ -4137,7 +4137,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         
         // Fill histograms to undertand pile-up before other cuts applied
         // Remember to relax time cuts in the reader
-        FillPileUpHistograms(aod->GetCaloLabel(0));
+        FillPileUpHistograms(energy,aod->GetTime());//aod->GetCaloLabel(0));
       }
 
     }//Isolated histograms

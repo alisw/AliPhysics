@@ -56,6 +56,8 @@ AliHFEpidTPC::AliHFEpidTPC() :
   , fkEtaWidthCorrection(NULL)
   , fkCentralityMeanCorrection(NULL)
   , fkCentralityWidthCorrection(NULL)
+  , fkCentralityEtaCorrectionMeanJpsi(NULL)
+  , fkCentralityEtaCorrectionWidthJpsi(NULL)  
   , fHasCutModel(kFALSE)
   , fUseOnlyOROC(kFALSE)
   , fNsigmaTPC(3)
@@ -402,10 +404,10 @@ Double_t AliHFEpidTPC::GetCorrectedTPCnSigmaJpsi(Double_t eta, Double_t centrali
     const TAxis *eaxis = fkCentralityEtaCorrectionMeanJpsi->GetYaxis();
     Int_t cbin = caxis->FindFixBin(centralityEstimator);
     Int_t ebin = eaxis->FindFixBin(eta);
-    Double_t cbinlowedge = caxis->GetBinLowEdge(cbin);
-    Double_t cbinupedge = caxis->GetBinUpEdge(cbin);
-    Double_t ebinlowedge = eaxis->GetBinLowEdge(ebin);
-    Double_t ebinupedge = eaxis->GetBinUpEdge(ebin);
+    //Double_t cbinlowedge = caxis->GetBinLowEdge(cbin);
+    //Double_t cbinupedge = caxis->GetBinUpEdge(cbin);
+    //Double_t ebinlowedge = eaxis->GetBinLowEdge(ebin);
+    //Double_t ebinupedge = eaxis->GetBinUpEdge(ebin);
     Double_t center = fkCentralityEtaCorrectionMeanJpsi->GetBinContent(cbin,ebin);
     Double_t width = fkCentralityEtaCorrectionWidthJpsi->GetBinContent(cbin,ebin);
     //printf("cbin %d, cbinlowe %f, cbinupe %f, centrality %f\n",cbin,cbinlowedge,cbinupedge,centralityEstimator);

@@ -1,5 +1,5 @@
 #!/bin/bash
-version=5
+version=6
 tag=
 id=
 run=
@@ -12,6 +12,7 @@ root=""
 geant=""
 minmerge=30
 noact=0
+inp=
 
 # --- Display help message -------------------------------------------
 usage()
@@ -35,6 +36,7 @@ Options:
 	-r|--root      RELEASE	Set ROOT release [*] ($root)
 	-g|--geant     RELEASE	Set GEANT3 release [*] ($geant)
 	-f|--final     NUMBER 	Run final merging when down to this ($minmerge)
+	-I|--input     DIR      Directory of production
 
 [*] Only make sense with option -c 
 [**] Only make sense for stage 0
@@ -104,43 +106,146 @@ copy()
     log_end cp.log $? 
 }
 
+
+# --- Do a search ----------------------------------------------------
+find()
+{
+    local dir=$1 
+    local pat=$2 
+    local out=$3 
+    local tmp=$4 
+    local max=10000
+    log_msg "" "Searching \e[33m$dir\e[0m for \e[33m$pat"
+
+    local nfiles=`alien_find "$dir" "$pat" | grep "files found"` 
+    local ret=$?
+    if test $ret -ne 0 ||  test "x$nfiles" = "x" ; then 
+	log_end "" $ret "Not found"
+	return 1 
+    fi
+    nfiles=`echo "$nfiles" | sed -e 's/^ *//' -e 's/ *files found//'`
+    log_msg "" "\e[34m$nfiles"
+    if test $nfiles -le $max ; then 
+	alien_find -x "$out" "$dir" "$pat" > $tmp 2> find.log 
+	ret=$?
+	log_end "" $? " Got $nfiles in \e[33m${tmp}"  
+        return 0
+    fi  
+
+    o=0
+    rm -f find.log 
+    rm -f ${tmp}.tmp
+    while test $o -lt $nfiles ; do 
+	let e=$o+$max
+	log_msg "" "${o}"
+	alien_find -l $max -o $o -x "$out" "$dir" "$pat" > ${tmp}.$o 2>>find.log 
+	ret=$? 
+	if test $ret -ne 0 ; then break; fi
+
+	if test "x$o" = "x" ; then o=0 ; fi 
+	
+	let p1=$o/10
+	let p2=$p1/10
+	let p3=$p2/10
+	let p4=$p3/10
+	if test $o -eq 0 ; then 
+	    p1=
+	    p2=
+	    p3=
+	fi
+    
+	# printf "%5d: %-16s '%-4s' '%-4s' '%-4s'\n" $o $i $p1 $p2 $p3
+
+	t=`basename $i .log`.tmp 
+	sed -e '/<?xml version="1.0"?>/d' \
+	    -e '/<\/*alien>/d' \
+	    -e '/<\/*collection.*/d' \
+	    -e '/<info .*/d' \
+	    -e '/^[[:space:]]*$/d' \
+	    -e "s/event name=\"\([0-9][0-9][0-9][0-9]\)\"/event name=\"$p4\1\"/g" \
+	    -e "s/event name=\"\([0-9][0-9][0-9]\)\"/event name=\"$p3\1\"/g" \
+	    -e "s/event name=\"\([0-9][0-9]\)\"/event name=\"$p2\1\"/g" \
+	    -e "s/event name=\"\([0-9]\)\"/event name=\"$p1\1\"/g" \
+	    < ${tmp}.$o >>  ${tmp}.tmp
+	let o=$o+$max
+    done 
+    if test $o -eq 0 ; then 
+	log_end "" 1 "No files found" 
+	return 1
+    fi 
+    sed -n -e '/<?xml.*?>/p' \
+	-e '/<alien>/p' \
+	-e '/<collection .*/p' \
+	< ${tmp}.0  > $tmp
+    cat ${tmp}.tmp >> $tmp
+    sed -n -e '/<info.*>/p' \
+	-e '/<\/alien>/p' \
+	-e '/<\/collection/p' \
+	< ${tmp}.0  >> $tmp
+    
+    log_end "" 0 " Got $nfiles ($o) in \e[33m${tmp}"
+}
+
 # --- Run merging jpb ------------------------------------------------
 merge()
 {
     local what=$1
     local stage=$2 
     local dir=$3
-    local out=$4
+    local aout=$4
     local tag=$5 
     local run=$6
     local tmpdir=`mktemp -d` 
     local pre=$what
-    if test "x$what" = "xAOD" ; then 
-	pre="aod";
+    local subs=
+    if test "x$what" = "xAOD"; then 
+	# echo "AOD run $run pre=$pre sub=$sub"
+	if test $stage -eq 1 ; then
+	    pre="aod"
+	    subs="AOD"
+        else
+	    pre="AOD";
+	fi
     fi 
 
-    local top=${out}/${tag}/${run}
+    local out=${aout}/${tag}/${run}
+    local top=${aout}/${tag}/${run}
     local bse=${what}_Stage_${stage}.xml 
     local xml=${tmpdir}/${bse}
     local arc=${pre}_archive.zip
     local jdl=Merge.jdl
     local ret=0
-
+    if test "x$inp" != "x" ; then 
+	out=${inp}/${tag}/${run}
+    fi 
+    
     rm -f cp.log 
 
-    log_msg cp.log "Creating XML file \e[33m${xml}"
+    if test $noact -gt 0 && test -f ${bse} ; then 
+	log_msg cp.log "Dummy XML from ${bse}"
+	cp ${bse} ${xml} 
+    fi 
+
+    log_msg cp.log "Creating XML file"
     if test $stage -eq 1 ; then 
-	rm -f ${xml}
-	alien_find -x ${top}/${bse} ${top} */${arc} > ${xml} 2>>cp.log
+	if test $noact -lt 1 || test ! -f $xml ; then 
+	    rm -f ${xml}
+	    find ${out} ${sub}*/${arc} ${top}/${bse} ${xml}
+	fi 
 	ret=$? 
     else 
 	let prev=$stage-1
-	rm -f ${xml}
-	alien_find -x ${top}/${bse} ${top}/${what}_Stage_${prev} */${arc} \
-	    > ${xml} 2>>cp.log
+	if test $noact -lt 1 || test ! -f $xml ; then 
+	    rm -f ${xml}	    
+	    for sub in ${subs} "" ; do 
+		find ${top}/${what}_Stage_${prev} ${sub}*/${arc} \
+		    ${top}/${bse} ${xml}
+		if test -f ${xml} ; then break ; fi
+	    done 
+	fi 
 	ret=$? 
     fi
-    log_end cp.log $ret 
+    # log_end cp.log $ret 
     if test $ret -ne 0 ; then 
 	log_err "Make XML", "Failed to make XML collection $bse"
 	exit 1
@@ -157,11 +262,16 @@ merge()
     fi
     echo -e "\e[33m$n\e[0m input files for \e[32m${what} stage ${stage}\e[0m"
 
+    if test $noact -lt 1 ; then 
+	alien_mkdir -p ${top}
+    fi 
     copy ${xml} ${top} del
 
     log_msg "" "Submitting merging job \e[33m${jdl}"
     if test $noact -lt 1 ; then 
 	alien_submit alien:${dir}/${jdl} ${run} ${stage} ${tag} ${what}
+    else 
+	: #log_msg "" "alien_submit alien:${dir}/${jdl} ${run} ${stage} ${tag} ${what}"
     fi 
     log_end "" $?
 }
@@ -169,30 +279,46 @@ merge()
 # --- Determine the next stage ---------------------------------------
 progress()
 {
-    local out=$1 
+    local aout=$1 
+    local id=$2 
+    local run=$3
+    local inp=$4
+    local what=$5
+    local out=${aout}/${id}/${run}
+    local first=$out
+    if test "x$inp" != "x" ; then 
+	first=${inp}/${id}/${run}
+    fi 
+    case $what:$run in 
+	AOD:138190) ;;
+	AOD:*) first=${first}/AOD ;;
+	*) ;;
+    esac
+	    
 
     log_msg "" "Deduce next stage for \e[33m$out"
     # First, check for final merge result 
-    # echo -e "\nCheck of ${out}/QA_merge_archive.zip"
-    alien_ls ${out}/QA_merge_archive.zip > /dev/null 2>&1 
+    log_msg "" "\nCheck of \e[33m${out}/${what}_merge_archive.zip"
+    alien_ls ${out}/${what}_merge_archive.zip > /dev/null 2>&1 
     if test $? -eq 0 ; then 
+	echo "Forcing 6" 
 	stage=6
     else
 	#  Then check for production data 
-	# echo -e "\nCheck of ${out}/001"
-	alien_ls ${out}/001 > /dev/null 2>&1 
+	log_msg "" "\nCheck of \e[33m${first}/001"
+	alien_ls ${first}/001 > /dev/null 2>&1 
 	ret=$?
 	# echo "ret=$ret"
 	if test $ret -ne 0 ; then 
-	    # echo "No output, stage 0 to be done"
+	    echo "No output, stage 0 to be done"
 	    stage=0
 	else
 	    # Finally, check each merge stage 
 	    tmp=0
 	    stage=0
 	    for i in 4 3 2 1; do 
-		# echo -e "\nCheck of ${out}/QA_Stage_${i}"
-		alien_ls ${out}/QA_Stage_${i} > /dev/null 2>&1 
+		log_msg "" "\nCheck of \e[33m${out}/${what}_Stage_${i}"
+		alien_ls ${out}/${what}_Stage_${i} > /dev/null 2>&1 
 		if test $? -ne 0 ; then 
 		    tmp=$i 
 		else 
@@ -313,6 +439,9 @@ archive()
 	AOD.C		\
 	Check.C		\
 	Config.C	\
+	BaseConfig.C	\
+	DetConfig.C	\
+	EGConfig.C	\
 	doit.sh		\
 	Final.jdl.in	\
 	GRP.C		\
@@ -364,7 +493,8 @@ while test $# -gt 0 ; do
 	-g|--geant)     geant=$2  	; shift ;; 
 	-f|--final)     minmerge=$2 	; shift ;;
 	-A|--archive)   archive   	; exit 0 ;;
-	-x|--dry-run)   noact=1		;;
+	-x|--dry-run|--no-act) noact=1  ;; 
+	-I|--input)     inp=$2		; shift ;;
 	--) shift ; break ;;
 	*) log_err "Unknown option" "$1" ;  exit 1  ;;
     esac
@@ -402,7 +532,11 @@ if test "x$run" = "x" ; then
 fi
 case $stage in 
     0|1|2|3|4|5) : ;; 
-    6)  progress $aout/$id/$run ;;
+    6)  
+	for s in $stages ; do 
+	    progress $aout $id $run $inp $s
+	done 
+	;;
     *)  log_err "Invalid stage" "$stage" ; exit 1 ;;
 esac
 if test $stage -ge 6 ; then 
@@ -423,8 +557,13 @@ if test $stage -le 0 ; then
 
     log_msg "" "Submitting \e[33mRun.jdl\e[0m for \e[34m$id run\e[0m (\e[34m$jobs\e[0m jobs w/\e[34m$events)"
     if test $noact -lt 1 ; then 
-	echo "alien_submit alien:${adir}/Run.jdl ${run} ${jobs} ${events} ${id} $@"
-	alien_submit alien:${adir}/Run.jdl ${run} ${jobs} ${events} ${id} "$@"
+	# echo "alien_submit alien:${adir}/Run.jdl ${run} ${jobs} ${events} ${id} $@"
+	if test $# -gt 0 ; then 
+	    opt=$1 
+	else 
+	    opt=0
+	fi
+	alien_submit alien:${adir}/Run.jdl ${run} ${jobs} ${events} ${id} "$opt"
 	ret=$?
     fi 
     log_end "" $ret

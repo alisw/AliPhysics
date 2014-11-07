@@ -66,7 +66,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskJetV2)
 
 AliAnalysisTaskJetV2::AliAnalysisTaskJetV2() : AliAnalysisTaskEmcalJet("AliAnalysisTaskJetV2", kTRUE), 
-    fDebug(0), fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fExpectedRuns(0), fExpectedSemiGoodRuns(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fEventPlaneWeights(0), fEventPlaneWeight(1.), fTracksCont(0), fClusterCont(0), fJetsCont(0), fLeadingJet(0), fLeadingJetAfterSub(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kVZEROComb), fAnalysisType(kCharged), fFitModulationOptions("QWLI"), fRunModeType(kGrid), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameSmallRho(""), fCachedRho(0), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fHistUndeterminedRunQA(0), fMinDisanceRCtoLJ(0), fMaxCones(-1), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0), fVZEROgainEqualization(0x0), fVZEROgainEqualizationPerRing(kFALSE), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0), fOADB(0x0)
+    fDebug(0), fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fExpectedRuns(0), fExpectedSemiGoodRuns(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fEventPlaneWeights(0), fAcceptanceWeights(kFALSE), fEventPlaneWeight(1.), fTracksCont(0), fClusterCont(0), fJetsCont(0), fLeadingJet(0), fLeadingJetAfterSub(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kVZEROComb), fAnalysisType(kCharged), fFitModulationOptions("QWLI"), fRunModeType(kGrid), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameSmallRho(""), fCachedRho(0), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistCentralityPercIn(0), fHistCentralityPercOut(0), fHistCentralityPercLost(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fHistUndeterminedRunQA(0), fMinDisanceRCtoLJ(0), fMaxCones(-1), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0), fVZEROgainEqualization(0x0), fVZEROgainEqualizationPerRing(kFALSE), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0), fOADB(0x0)
 {
     for(Int_t i(0); i < 10; i++) {
         fProfV2Resolution[i] = 0;
@@ -126,7 +126,7 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2() : AliAnalysisTaskEmcalJet("AliAnaly
 }
 //_____________________________________________________________________________
 AliAnalysisTaskJetV2::AliAnalysisTaskJetV2(const char* name, runModeType type) : AliAnalysisTaskEmcalJet(name, kTRUE),
-  fDebug(0), fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fExpectedRuns(0), fExpectedSemiGoodRuns(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fEventPlaneWeights(0), fEventPlaneWeight(1.), fTracksCont(0), fClusterCont(0), fJetsCont(0), fLeadingJet(0), fLeadingJetAfterSub(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kVZEROComb), fAnalysisType(kCharged), fFitModulationOptions("QWLI"), fRunModeType(type), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameSmallRho(""), fCachedRho(0), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fHistUndeterminedRunQA(0), fMinDisanceRCtoLJ(0), fMaxCones(-1), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0), fVZEROgainEqualization(0x0), fVZEROgainEqualizationPerRing(kFALSE), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0), fOADB(0x0)
+  fDebug(0), fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fExpectedRuns(0), fExpectedSemiGoodRuns(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fEventPlaneWeights(0), fAcceptanceWeights(kFALSE), fEventPlaneWeight(1.), fTracksCont(0), fClusterCont(0), fJetsCont(0), fLeadingJet(0), fLeadingJetAfterSub(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kVZEROComb), fAnalysisType(kCharged), fFitModulationOptions("QWLI"), fRunModeType(type), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameSmallRho(""), fCachedRho(0), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistCentralityPercIn(0), fHistCentralityPercOut(0), fHistCentralityPercLost(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fHistUndeterminedRunQA(0), fMinDisanceRCtoLJ(0), fMaxCones(-1), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0), fVZEROgainEqualization(0x0), fVZEROgainEqualizationPerRing(kFALSE), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0), fOADB(0x0)
 {
     for(Int_t i(0); i < 10; i++) {
         fProfV2Resolution[i] = 0;
@@ -455,6 +455,11 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
     // global QA
     fHistCentrality =           BookTH1F("fHistCentrality", "centrality", 102, -2, 100);
     fHistVertexz =              BookTH1F("fHistVertexz", "vertex z (cm)", 100, -12, 12);
+    if(fAcceptanceWeights) {
+        fHistCentralityPercIn =         new TProfile("fHistCentralityPercIn", "fHistCentralityPercIn", 102, -2, 100);
+        fHistCentralityPercOut =        new TProfile("fHistCentralityPercOut", "fHistCentralityPercOut", 102, -2, 100);
+        fHistCentralityPercLost =       new TProfile("fHistCentralityPercLost", "fHistCentralityPercLost", 102, -2, 100);
+    }
 
     // for some histograms adjust the bounds according to analysis acceptance
     Double_t etaMin(-1.), etaMax(1.), phiMin(0.), phiMax(TMath::TwoPi());
@@ -738,6 +743,15 @@ Bool_t AliAnalysisTaskJetV2::Run()
     // if requested extract the event plane weight
     if(fEventPlaneWeights) {
         fEventPlaneWeight = fEventPlaneWeights->GetBinContent(fEventPlaneWeights->FindBin(psi2));
+    } 
+    // if requested store the acceptance weights
+    if(fAcceptanceWeights) {
+        Double_t percIn(0.), percOut(0.), percLost(0.);
+        NumericalOverlap(GetJetContainer()->GetJetEtaMin(), GetJetContainer()->GetJetEtaMax(), 
+                psi2, percIn, percOut, percLost);
+        fHistCentralityPercIn->Fill(fCent, percIn);
+        fHistCentralityPercOut->Fill(fCent, percOut);
+        fHistCentralityPercLost->Fill(fCent, percLost);
     }
     switch (fFitModulationType) { // do the fits
         case kNoFit : { 
@@ -861,6 +875,75 @@ void AliAnalysisTaskJetV2::Exec(Option_t* c)
         } break;
     }
 }  
+//_____________________________________________________________________________
+void AliAnalysisTaskJetV2::NumericalOverlap(Double_t x1, Double_t x2, Double_t psi2, Double_t &percIn, Double_t &percOut, Double_t &percLost)
+{
+   // numerically integrate with finite resolution
+   // idea is the following:
+   // 1) choose a vector phi
+   // 2) see if it is in a region of overlap between detector and in/out of plane spectrum
+   // 3) bookkeep percentages over overlap
+   Double_t a(psi2 - TMath::Pi()/4.);
+   // poor man's appproach: fix the frame
+   if(a < 0) a += TMath::Pi();
+   // set the rest of the event
+   Double_t b(a + TMath::Pi()/2.);
+   Double_t c(b + TMath::Pi()/2.);
+   Double_t d(c + TMath::Pi()/2.);
+   Double_t e(d + TMath::Pi()/2.);      // may seem mysterious but here for good reasons
+   // get percetnages
+   Double_t interval(TMath::TwoPi() / 1000.);
+   percIn = 0.;
+   percOut = 0.;
+   percLost = 0.;
+   Int_t status(-1);
+   // automagically do the integration
+   for(Double_t i = a; i < a+TMath::TwoPi()-interval; i += interval) {
+       status = OverlapsWithPlane(x1, x2, a, b, c, d, e, i);
+       if(status == 0 ) percLost += .001;
+       else if(status == 1 ) percIn += 0.001;
+       else if(status == 2 ) percOut += 0.001;
+   }
+}
+//_____________________________________________________________________________
+Int_t AliAnalysisTaskJetV2::OverlapsWithPlane (
+        Double_t x1, Double_t x2,                                       // detector geometry relative to ep
+        Double_t a, Double_t b, Double_t c, Double_t d, Double_t e,     // in-plane, out-of-plane boundaries (see comments)
+        Double_t phi)                                                   // variable
+{
+    // 'numerical integration' of geometric overlap
+    //
+    // works as follows: for a given vector phi determines whether
+    // or not this vector points towards an overlap region of 
+    // detector geometry and plane (in or out)
+    //
+    // returns
+    // 1) if overlap with in plane
+    // 2) if overlap with out of plane
+    // 0) if no overlap at all
+    Int_t overlap(0);
+    // check for condition in-plane
+    // conditions are always checked as
+    // 1) is the angle within in-plane sector?
+    // 2) is the angle also within detector acceptance?
+    if(phi > a && phi < b && phi > x1 && phi < x2) overlap = 1;
+    if(phi > c && phi < d && phi > x1 && phi < x2) overlap = 1;
+    // likewise for out-of-plane
+    if(phi > b && phi < c && phi > x1 && phi < x2) overlap = 2;
+    if(phi > d && phi < e && phi > x1 && phi < x2) overlap = 2;
+
+    // life would be so much easier if the detector was flat instead of cylindrical ....
+    x1+=TMath::TwoPi();
+    x2+=TMath::TwoPi();
+
+    if(phi > a && phi < b && phi > x1 && phi < x2) overlap = 1;
+    if(phi > c && phi < d && phi > x1 && phi < x2) overlap = 1;
+    // likewise for out-of-plane
+    if(phi > b && phi < c && phi > x1 && phi < x2) overlap = 2;
+    if(phi > d && phi < e && phi > x1 && phi < x2) overlap = 2;
+
+    return overlap;
+}
 //_____________________________________________________________________________
 Double_t AliAnalysisTaskJetV2::CalculateEventPlaneChi(Double_t res)
 {

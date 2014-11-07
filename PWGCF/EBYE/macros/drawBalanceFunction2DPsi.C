@@ -1,6 +1,12 @@
 const Int_t numberOfCentralityBins = 12;
 TString centralityArray[numberOfCentralityBins] = {"0-80","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
 
+// reduced ranges for moments determination
+// (Average over all event classes of 3 sigma of Gauss + Pol0 Fit) 
+Double_t rangePbPbEtaMedMom  = 3. * 0.233;// PbPb, Delta Eta, 2<pT,assoc<3<pT,trig<4
+Double_t rangePbPbEtaHighMom = 3. * 0.096;// PbPb, Delta Eta, 3<pT,assoc<8<pT,trig<15
+Double_t rangePbPbPhiMedMom  = 3. * 0.273;// PbPb, Delta Phi, 2<pT,assoc<3<pT,trig<4
+Double_t rangePbPbPhiHighMom = 3. * 0.097;// PbPb, Delta Eta, 3<pT,assoc<8<pT,trig<15
 
 const Int_t gRebin = 1;
 void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root", 
@@ -1091,38 +1097,43 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
   legend->AddEntry(gHistBalanceFunctionMixed,"Mixed data","lp");
   legend->Draw();
   
+  Double_t sigmaGaus      = 0.;
+  Double_t sigmaGausError = 0.;
 
   TString meanLatex, rmsLatex, skewnessLatex, kurtosisLatex;
 
   if(bRootMoments){
 
     // need to restrict to near side in case of dphi
-    if(!kProjectInEta) gHistBalanceFunctionSubtracted->GetXaxis()->SetRangeUser(-TMath::Pi()/2,TMath::Pi()/2);
+    if(!kProjectInEta && !bReduceRangeForMoments) gHistBalanceFunctionSubtracted->GetXaxis()->SetRangeUser(-TMath::Pi()/2,TMath::Pi()/2);
 
    if(bReduceRangeForMoments){
 
-      // safety check:
-      // default (for 2<pT,assoc<3<pT,trig<4)
-      Double_t rangeReduced = 1.2;
-      //for 3<pT,assoc<8<pT,trig<15
-      if(ptTriggerMax>10){
-	rangeReduced = 0.35;
-      }
+     Double_t rangeReduced = 0.;
 
-      // new define range by fit!
-      gHistBalanceFunctionSubtracted->Fit("gaus","","");
-      Double_t sigmaGaus = gHistBalanceFunctionSubtracted->GetFunction("gaus")->GetParameter(2);
-
-      // if safety check OK, set rangeReduced to 3 sigma of gauss fit
-      if(3*sigmaGaus > rangeReduced){
-	cout<<"RANGE REDUCE ERROR: "<<3*sigmaGaus<<" > "<<rangeReduced<<endl;
-      }
-      else{
-	rangeReduced = 3*sigmaGaus;
-      }
+     if(kProjectInEta){
+       if(ptTriggerMax>10){
+	 //for 3<pT,assoc<8<pT,trig<15
+	 rangeReduced = rangePbPbEtaHighMom;
+       }
+       else{
+	 // default (for 2<pT,assoc<3<pT,trig<4)
+	 rangeReduced = rangePbPbEtaMedMom;
+       }
+     }
+     else{
+       if(ptTriggerMax>10){
+	 rangeReduced = rangePbPbPhiHighMom;
+       }
+       else{
+	 rangeReduced = rangePbPbPhiMedMom;
+       }
+     }
 
       cout<<"Use reduced range = "<<rangeReduced<<endl;
-      gHistBalanceFunctionSubtracted->GetXaxis()->SetRangeUser(-rangeReduced,rangeReduced);
+      Int_t binLow  = gHistBalanceFunctionSubtracted->GetXaxis()->FindBin(-rangeReduced);
+      Int_t binHigh = gHistBalanceFunctionSubtracted->GetXaxis()->FindBin(rangeReduced);
+      gHistBalanceFunctionSubtracted->GetXaxis()->SetRange(binLow,binHigh);
     }
 
     meanLatex = "#mu = "; 
@@ -1172,6 +1183,7 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
       //rmsFileName.ReplaceAll(".root","_DeltaPhiProjection_Rms.txt");
     ofstream fileRms(rmsFileName.Data(),ios::app);
     fileRms << " " << gHistBalanceFunctionSubtracted->GetRMS() << " " <<gHistBalanceFunctionSubtracted->GetRMSError()<<endl;
+    //fileRms << " " << sigmaGaus << " " <<gHistBalanceFunctionSubtracted->GetRMSError()<<endl;  // just for testing
     fileRms.close();
 
     TString skewnessFileName = filename;
@@ -1684,7 +1696,7 @@ sFileName[iDir] += momDirectory;
 
   // scaling and adding (for average)
   hBF[iDir]->Scale(entries[iDir]);
-  if(iDir==0) hBFOut = (TH2D*)hBF[iDir]->Clone("gHistBalanceFunctionSubtractedOut");
+  if(!hBFOut) hBFOut = (TH2D*)hBF[iDir]->Clone("gHistBalanceFunctionSubtractedOut");
   else hBFOut->Add(hBF[iDir]);
   
  }

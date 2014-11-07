@@ -154,12 +154,14 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
   Float_t fractionEventsWHits=-9999.;
   /*number of good (HW ok && efficient && !noisy) TOF channels from OCDB*/
   Double_t goodChannelRatio=0.0;
+  Double_t goodChannelRatioInAcc=0.0;
 
   TTree * ttree=new TTree("trending","tree of trending variables");
   ttree->Branch("run",&runNumber,"run/I");
   ttree->Branch("avMulti",&avMulti,"avMulti/F");
   ttree->Branch("fractionEventsWHits",&fractionEventsWHits,"fractionEventsWHits/F");
   ttree->Branch("goodChannelsRatio",&goodChannelRatio,"goodChannelRatio/D");
+  ttree->Branch("goodChannelsRatioInAcc",&goodChannelRatioInAcc,"goodChannelRatioInAcc/D");
   ttree->Branch("avTime",&avTime,"avTime/D"); //mean time
   ttree->Branch("peakTime",&peakTime,"peakTime/D"); //main peak time after fit
   ttree->Branch("spreadTime",&spreadTime,"spreadTime/D"); //spread of main peak of time after fit
@@ -220,8 +222,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
   ttree->Branch("avT0fillRes",&avT0fillRes,"avT0fillRes/D"); //t0 fill res
 
   //save quantities for trending
-  goodChannelRatio=(Double_t)GetGoodTOFChannelsRatio(runNumber,kFALSE,ocdbStorage);
-
+  goodChannelRatio=(Double_t)GetGoodTOFChannelsRatio(runNumber, kFALSE, ocdbStorage, kFALSE);
+  goodChannelRatioInAcc=(Double_t)GetGoodTOFChannelsRatio(runNumber, kFALSE, ocdbStorage, kTRUE);
 	
   //--------------------------------- Multiplicity ----------------------------------//
 
@@ -692,7 +694,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
 
 
 //----------------------------------------------------------
-Double_t GetGoodTOFChannelsRatio(Int_t run = -1, Bool_t saveMap = kFALSE, TString OCDBstorage = "raw://")
+Double_t GetGoodTOFChannelsRatio(Int_t run = -1, Bool_t saveMap = kFALSE, TString OCDBstorage = "raw://", Bool_t inEta08 = kFALSE)
 {
   /*
     It retrieves from OCDB the number of good (= efficient && not noisy && HW ok) TOF channels.
@@ -715,7 +717,8 @@ Double_t GetGoodTOFChannelsRatio(Int_t run = -1, Bool_t saveMap = kFALSE, TStrin
 
   AliTOFChannelOnlineStatusArray *array = (AliTOFChannelOnlineStatusArray *)cdbe->GetObject();
   TH2F *hOkMap = new TH2F("hOkMap", "Ok map (!noisy & !problematic & efficient);sector;strip", 72, 0., 18., 91, 0., 91.);
-
+  TH2F *hOkMapInAcceptance = new TH2F("hOkMapInAcceptance",Form( "Good channels in |#eta|<0.8 - run %i;sector;strip",run), 72, 0., 18., 91, 0., 91.);
+  
   AliTOFcalibHisto calibHisto;
   calibHisto.LoadCalibHisto();
   AliTOFcalib calib;
@@ -730,14 +733,28 @@ Double_t GetGoodTOFChannelsRatio(Int_t run = -1, Bool_t saveMap = kFALSE, TStrin
     hitmapx = sector + ((Double_t)(3 - fea) + 0.5) / 4.;
     hitmapy = sectorStrip;
     if ( !(array->GetNoiseStatus(i) == AliTOFChannelOnlineStatusArray::kTOFNoiseBad)   &&
-	 (calib.IsChannelEnabled(i,kTRUE,kTRUE)))
+	 (calib.IsChannelEnabled(i,kTRUE,kTRUE))) {
       hOkMap->Fill(hitmapx,hitmapy);
+      /* 3 strips / side excluded from norm. factor to consider |eta|<0.8 */
+      if (sectorStrip>2 && sectorStrip<89) hOkMapInAcceptance->Fill(hitmapx,hitmapy);
+    }
   }
-  Int_t nOk=(Int_t) hOkMap->GetEntries();
-  Double_t ratioOk=nOk/152928.;
-  if (saveMap) hOkMap->SaveAs(Form("run%i_OKChannelsMap.root",run));
+  Int_t nOk = (Int_t) hOkMap->GetEntries();
+  Int_t nOkInAcc = (Int_t) hOkMapInAcceptance->GetEntries();
+  Double_t ratioOk = nOk/152928.;
+  /* 96 channels * 6 strips * 18 modules excluded 
+  from norm. factor to consider |eta|<0.8 */
+  Double_t ratioOkInAcc = nOkInAcc/(152928.-6.*18.*96.); 
+  if (saveMap) {
+    hOkMap->SaveAs(Form("run%i_OKChannelsMap.root",run));
+    hOkMapInAcceptance->SaveAs(Form("run%i_OKChannelsInAccMap.root",run));
+  }
   cout << "###    Run " << run << ": TOF channels ok = " << nOk << "/ total 152928 channels = " << ratioOk*100. << "% of whole TOF" << endl;
-  return ratioOk;
+  cout << "###    Run " << run << ": TOF channels in acc. ok = " << nOkInAcc << "/ total 142560 channels = " << ratioOkInAcc*100. << "% of whole TOF" << endl;
+  if (inEta08) 
+    return ratioOkInAcc;
+  else
+    return ratioOk;
 }
 
 //----------------------------------------------------------

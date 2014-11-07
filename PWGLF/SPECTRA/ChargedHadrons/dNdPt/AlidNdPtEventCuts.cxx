@@ -110,8 +110,8 @@ Bool_t AlidNdPtEventCuts::AcceptEvent(AliESDEvent *esdEvent,AliMCEvent *mcEvent,
       retValue=kFALSE;
   }
 
-  if(vtx->GetZv() < fMinZv) return kFALSE; 
-  if(vtx->GetZv() > fMaxZv) return kFALSE; 
+  if(vtx->GetZ() < fMinZv) return kFALSE; 
+  if(vtx->GetZ() > fMaxZv) return kFALSE; 
 
 return retValue;  
 }

@@ -477,7 +477,7 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
   if(!vtxESD) return;
 
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
-  //printf("isEventOK %d, isEventTriggered %d, status %d, vz %f \n",isEventOK, isEventTriggered, vtxESD->GetStatus(), vtxESD->GetZv());
+  //printf("isEventOK %d, isEventTriggered %d, status %d, vz %f \n",isEventOK, isEventTriggered, vtxESD->GetStatus(), vtxESD->GetZ());
   //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
 
 
@@ -500,9 +500,9 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
 
     //
     Double_t vert[3] = {0}; 
-    vert[0] = vtxESD->GetXv();
-    vert[1] = vtxESD->GetYv();
-    vert[2] = vtxESD->GetZv();
+    vert[0] = vtxESD->GetX();
+    vert[1] = vtxESD->GetY();
+    vert[2] = vtxESD->GetZ();
     Int_t mult = vtxESD->GetNContributors();
     Double_t bz = esdEvent->GetMagneticField();
     Double_t runNumber = esdEvent->GetRunNumber();
@@ -764,9 +764,9 @@ void AlidNdPtTrackDumpTask::ProcessAll(AliESDEvent *const esdEvent, AliMCEvent *
 
     //
     Double_t vert[3] = {0}; 
-    vert[0] = vtxESD->GetXv();
-    vert[1] = vtxESD->GetYv();
-    vert[2] = vtxESD->GetZv();
+    vert[0] = vtxESD->GetX();
+    vert[1] = vtxESD->GetY();
+    vert[2] = vtxESD->GetZ();
     Int_t mult = vtxESD->GetNContributors();
     Double_t bz = esdEvent->GetMagneticField();
     Double_t runNumber = esdEvent->GetRunNumber();
@@ -1277,9 +1277,9 @@ void AlidNdPtTrackDumpTask::ProcessMCEff(AliESDEvent *const esdEvent, AliMCEvent
 
       // reco event info
       Double_t vert[3] = {0}; 
-      vert[0] = vtxESD->GetXv();
-      vert[1] = vtxESD->GetYv();
-      vert[2] = vtxESD->GetZv();
+      vert[0] = vtxESD->GetX();
+      vert[1] = vtxESD->GetY();
+      vert[2] = vtxESD->GetZ();
       Int_t mult = vtxESD->GetNContributors();
       Double_t bz = esdEvent->GetMagneticField();
       Double_t runNumber = esdEvent->GetRunNumber();
@@ -1613,9 +1613,9 @@ void AlidNdPtTrackDumpTask::ProcessdEdx(AliESDEvent *const esdEvent, AliMCEvent 
   if(isEventOK && isEventTriggered)
   {
     Double_t vert[3] = {0}; 
-    vert[0] = vtxESD->GetXv();
-    vert[1] = vtxESD->GetYv();
-    vert[2] = vtxESD->GetZv();
+    vert[0] = vtxESD->GetX();
+    vert[1] = vtxESD->GetY();
+    vert[2] = vtxESD->GetZ();
     Int_t mult = vtxESD->GetNContributors();
     Double_t bz = esdEvent->GetMagneticField();
     Double_t runNumber = esdEvent->GetRunNumber();

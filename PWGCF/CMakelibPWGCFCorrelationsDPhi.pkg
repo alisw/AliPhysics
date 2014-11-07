@@ -59,6 +59,7 @@ set ( SRCS
     Correlations/DPhi/TriggerPID/AliTwoParticlePIDCorrKine.cxx
     Correlations/DPhi/PidPid/AliAnalysisTaskPidPidCorrelations.cxx
     Correlations/DPhi/PhiEffMC/AliAnalysisTaskPhiEffMc.cxx
+    Correlations/DPhi/AliAnalysisTaskPythiaMpi.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -67,4 +68,4 @@ set ( DHDR  PWGCFCorrelationsDPhiLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE ANALYSIS ANALYSIS/ESDfilter CORRFW PWGCF/Correlations/Base PWGCF/Correlations/DPhi PWGCF/Correlations/DPhi/FourierDecomposition PWG/Tools STEER/AOD STEER/ESD STEER/STEERBase)
+set ( EINCLUDE ANALYSIS ANALYSIS/ESDfilter CORRFW PWGCF/Correlations/Base PWGCF/Correlations/DPhi PWGCF/Correlations/DPhi/FourierDecomposition PWG/Tools STEER/AOD STEER/ESD STEER/STEERBase PYTHIA6 PYTHIA8 EVGEN PYTHIA8/pythia8175/include LHAPDF)

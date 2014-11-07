@@ -19,6 +19,7 @@
 class TObjArray ; 
 class TTree ;
 class TArrayI ;
+#include <TRandom3.h>
 
 //--- ANALYSIS system ---
 #include "AliVEvent.h"
@@ -219,6 +220,12 @@ public:
 
   void             SwitchOnClusterELinearityCorrection()   { fCorrectELinearity = kTRUE    ; }
   void             SwitchOffClusterELinearityCorrection()  { fCorrectELinearity = kFALSE   ; }
+
+  Bool_t           IsShowerShapeSmeared()            const { return fSmearShowerShape      ; }
+  void             SwitchOnShowerShapeSmearing()           { fSmearShowerShape = kTRUE     ; }
+  void             SwitchOffShowerShapeSmearing()          { fSmearShowerShape = kFALSE    ; }
+  
+  void             SetShowerShapeSmearWidth(Float_t w )    { fSmearShowerShapeWidth = w    ; }
 
   Bool_t           IsEmbeddedClusterSelectionOn()    const { return fSelectEmbeddedClusters   ; }
   void             SwitchOnEmbeddedClustersSelection()     { fSelectEmbeddedClusters = kTRUE  ; }
@@ -687,6 +694,10 @@ public:
   Bool_t           fCorrectELinearity;         // Correct cluster linearity, always on
   Bool_t           fSelectEmbeddedClusters;    // Use only simulated clusters that come from embedding.
   
+  Bool_t           fSmearShowerShape;          // Smear shower shape (use in MC)
+  Float_t          fSmearShowerShapeWidth;     // Smear shower shape landau function "width" (use in MC)
+  TRandom3         fRandom ;                   //! Random generator
+  
   ULong_t          fTrackStatus        ;       // Track selection bit, select tracks refitted in TPC, ITS ...
   Bool_t           fSelectSPDHitTracks ;       // Ensure that track hits SPD layers
   Int_t            fTrackMult          ;       // Track multiplicity
@@ -820,7 +831,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,68)
+  ClassDef(AliCaloTrackReader,69)
   
 } ;
 

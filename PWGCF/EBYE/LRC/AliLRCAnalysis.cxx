@@ -466,13 +466,12 @@ void AliLRCAnalysis::SetErrors(TH2D* source, const char *name, double ptd, TH2D*
 //Calculate arrors for ptn and ptpt
 	TProfile* profX = (TProfile*) source->ProfileX(name, 1, source->GetNbinsY());
 	fdptb = ptd;
-	double pt;
 	for(int i = 0; i < profX->GetNbinsX(); i++)		
 	{
 		fPrAbs->SetBinContent(i, profX->GetBinContent(i));
 		if(fPrf->GetBinContent(i)!=0)
 		{
-			  pt = profX->GetBinContent(i);
+		          //pt = profX->GetBinContent(i);
 			  fPrAbs->SetBinError(i,ptd*sqrt(Integral(nb,i))/fPrf->GetBinContent(i));
 		}
 		fPrRel->SetBinContent(i, fPrAbs->GetBinContent(i)/fPrb->GetMean());
@@ -485,13 +484,12 @@ void AliLRCAnalysis::SetErrors(TH2D* source, const char *name, double ptd, const
 //Calculate arrors for ptn and ptpt
 	TProfile* profX = (TProfile*) source->ProfileX(name, 1, source->GetNbinsY());
 	fdptb = ptd;
-	double pt;
 	for(int i = 0; i < profX->GetNbinsX(); i++)		
 	{
 		fPrAbs->SetBinContent(i, profX->GetBinContent(i));
 		if(fPrf->GetBinContent(i)!=0)
 		{
-			  pt = profX->GetBinContent(i);
+		          //pt = profX->GetBinContent(i);
 			  fPrAbs->SetBinError(i,ptd*sqrt(nb->GetBinContent(i)/fPrf->GetBinContent(i)));
 		}
 		fPrRel->SetBinContent(i, fPrAbs->GetBinContent(i)/fPrb->GetMean());

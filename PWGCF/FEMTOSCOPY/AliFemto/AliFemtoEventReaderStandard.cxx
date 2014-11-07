@@ -32,6 +32,7 @@
 #include "AliAODMCParticle.h"
 
 #include "AliVertexerTracks.h"
+#include "assert.h"
 
 ClassImp(AliFemtoEventReaderStandard)
 
@@ -288,8 +289,10 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
     if (!mcP) {
       cout << "AOD MC information requested, but no particle array found!" << endl;
     }
+    AliAODHeader * header = dynamic_cast<AliAODHeader*>(fAODEvent->GetHeader());
+    assert(header&&"Not a standard AOD");
 
-    hbtEvent->SetReactionPlaneAngle(fAODEvent->GetHeader()->GetQTheta(0)/2.0);
+    hbtEvent->SetReactionPlaneAngle(header->GetQTheta(0)/2.0);
     
     if (mcP) {
       motherids = new Int_t[((AliAODMCParticle *) mcP->At(mcP->GetEntries()-1))->GetLabel()];
@@ -570,7 +573,8 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 
       if ((fInputType == kAOD) || (fInputType == kAODKine)) {
 	// Read in the normal AliAODTracks 
-	const AliAODTrack *aodtrack=fAODEvent->GetTrack(i); // getting the AODtrack directly
+	const AliAODTrack *aodtrack=dynamic_cast<const AliAODTrack*>(fAODEvent->GetTrack(i));
+        assert(aodtrack&&"Not a standard AOD"); // getting the AODtrack directly
 	
 	// 	if (!aodtrack->TestFilterBit(fFilterBit))
 	// 	  continue;

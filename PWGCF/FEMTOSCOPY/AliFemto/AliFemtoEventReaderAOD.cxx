@@ -30,6 +30,7 @@
 
 #include "AliAODpidUtil.h"
 #include "AliAnalysisUtils.h"
+#include "assert.h"
 #include "AliGenHijingEventHeader.h"
 
 ClassImp(AliFemtoEventReaderAOD)
@@ -313,7 +314,10 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     }
   }
 
-  tEvent->SetReactionPlaneAngle(fEvent->GetHeader()->GetQTheta(0)/2.0);
+  AliAODHeader * header = dynamic_cast<AliAODHeader*>(fEvent->GetHeader());
+  assert(header&&"Not a standard AOD");
+
+  tEvent->SetReactionPlaneAngle(header->GetQTheta(0)/2.0);
   // Int_t *motherids=0;
   // if (mcP) {
   //   const int motherTabSize = ((AliAODMCParticle *) mcP->At(mcP->GetEntries()-1))->GetLabel();
@@ -402,7 +406,8 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
   // looking for global tracks and saving their numbers to copy from them PID information to TPC-only tracks in the main loop over tracks
   for (int i=0;i<nofTracks;i++) {
-    const AliAODTrack *aodtrack=fEvent->GetTrack(i);
+    const AliAODTrack *aodtrack=dynamic_cast<const AliAODTrack*>(fEvent->GetTrack(i));
+    assert(aodtrack&&"Not a standard AOD");
     if (!aodtrack->TestFilterBit(fFilterBit)) {
       if(aodtrack->GetID() < 0) continue;
       labels[aodtrack->GetID()] = i;
@@ -539,8 +544,9 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     // No additional information exists
     // Read in the normal AliAODTracks
 
-    //	const AliAODTrack *aodtrack=fEvent->GetTrack(i); // getting the AODtrack directly
-    AliAODTrack *aodtrack=fEvent->GetTrack(i); // getting the AODtrack directly
+    //	const AliAODTrack *aodtrack=dynamic_cast<AliAODTrack*>(fEvent->GetTrack(i));
+    AliAODTrack *aodtrack=dynamic_cast<AliAODTrack*>(fEvent->GetTrack(i));
+    assert(aodtrack&&"Not a standard AOD"); // getting the AODtrack directly
 
 
 
@@ -585,11 +591,12 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
     AliAODTrack *aodtrackpid;
     if((fFilterBit ==  (1 << (7))) || fFilterMask == 128) {//for TPC Only tracks we have to copy PID information from corresponding global tracks
-      aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
+      aodtrackpid = dynamic_cast<AliAODTrack*>(fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]));
     }
     else {
-      aodtrackpid = fEvent->GetTrack(i);
+      aodtrackpid = dynamic_cast<AliAODTrack*>(fEvent->GetTrack(i));
     }
+    assert(aodtrackpid&&"Not a standard AOD");
 
     CopyPIDtoFemtoTrack(aodtrackpid, trackCopy);
 
@@ -1203,16 +1210,18 @@ AliFemtoV0* AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0 )
     Float_t probMisPos = 1.0;
     Float_t probMisNeg = 1.0;
 
-    if (tFemtoV0->StatusPos() & AliESDtrack::kTOFpid) {  //AliESDtrack::kTOFpid=0x8000
+    if (tFemtoV0->StatusPos() & AliESDtrack::kTOFout & AliESDtrack::kTIME) {  //AliESDtrack::kTOFpid=0x8000
       probMisPos = fAODpidUtil->GetTOFMismatchProbability(trackpos);
     }
-    if (tFemtoV0->StatusNeg() & AliESDtrack::kTOFpid) {  //AliESDtrack::kTOFpid=0x8000
+    if (tFemtoV0->StatusNeg() & AliESDtrack::kTOFout & AliESDtrack::kTIME) {  //AliESDtrack::kTOFpid=0x8000
       probMisNeg = fAODpidUtil->GetTOFMismatchProbability(trackneg);
     }
 
-    if((tFemtoV0->StatusPos()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFout)==0 || probMisPos > 0.01)
+    if(// (tFemtoV0->StatusPos()& AliESDtrack::kTOFpid)==0 ||
+       (tFemtoV0->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFout)==0 || probMisPos > 0.01)
     {
-      if((tFemtoV0->StatusNeg()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFout)==0 || probMisNeg > 0.01)
+      if(// (tFemtoV0->StatusNeg()&AliESDtrack::kTOFpid)==0 ||
+         (tFemtoV0->StatusNeg()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFout)==0 || probMisNeg > 0.01)
 	    {
 	      tFemtoV0->SetPosNSigmaTOFK(-1000);
 	      tFemtoV0->SetNegNSigmaTOFK(-1000);
@@ -1231,12 +1240,12 @@ AliFemtoV0* AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0 )
     }
     else
     {
-      if(trackpos->IsOn(AliESDtrack::kTOFpid)) {
+      if(trackpos->IsOn(AliESDtrack::kTOFout & AliESDtrack::kTIME)) {
         tFemtoV0->SetPosNSigmaTOFK(fAODpidUtil->NumberOfSigmasTOF(trackpos,AliPID::kKaon));
         tFemtoV0->SetPosNSigmaTOFP(fAODpidUtil->NumberOfSigmasTOF(trackpos,AliPID::kProton));
         tFemtoV0->SetPosNSigmaTOFPi(fAODpidUtil->NumberOfSigmasTOF(trackpos,AliPID::kPion));
       }
-      if(trackneg->IsOn(AliESDtrack::kTOFpid)) {
+      if(trackneg->IsOn(AliESDtrack::kTOFout & AliESDtrack::kTIME)) {
         tFemtoV0->SetNegNSigmaTOFK(fAODpidUtil->NumberOfSigmasTOF(trackneg,AliPID::kKaon));
         tFemtoV0->SetNegNSigmaTOFP(fAODpidUtil->NumberOfSigmasTOF(trackneg,AliPID::kProton));
         tFemtoV0->SetNegNSigmaTOFPi(fAODpidUtil->NumberOfSigmasTOF(trackneg,AliPID::kPion));
@@ -1407,7 +1416,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
   Float_t probMis = 1.0;
 
   //what is that code? for what do we need it? nsigma values are not enough?
-  if (tAodTrack->GetStatus() & AliESDtrack::kTOFpid) {  //AliESDtrack::kTOFpid=0x8000
+  if (tAodTrack->GetStatus() & AliESDtrack::kTOFout & AliESDtrack::kTIME) {  //AliESDtrack::kTOFpid=0x8000
     tTOF = tAodTrack->GetTOFsignal();
     tAodTrack->GetIntegratedTimes(aodpid);
 
@@ -1457,12 +1466,13 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
   float nsigmaTOFP=-1000.;
   float nsigmaTOFE=-1000.;
 
-  if ((tAodTrack->GetStatus() & AliESDtrack::kTOFpid) && //AliESDtrack::kTOFpid=0x8000
+  if (// (tAodTrack->GetStatus() & AliESDtrack::kTOFpid) &&
+      //AliESDtrack::kTOFpid=0x8000
       (tAodTrack->GetStatus() & AliESDtrack::kTOFout) && //AliESDtrack::kTOFout=0x2000
       (tAodTrack->GetStatus() & AliESDtrack::kTIME) //AliESDtrack::kTIME=0x80000000
       && probMis < 0.01) // TOF mismatch probaility
   {
-    if(tAodTrack->IsOn(AliESDtrack::kTOFpid)) //AliESDtrack::kTOFpid=0x8000
+    if(tAodTrack->IsOn(AliESDtrack::kTOFout & AliESDtrack::kTIME)) //AliESDtrack::kTOFpid=0x8000
 	  {
 
 	    nsigmaTOFPi = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kPion);

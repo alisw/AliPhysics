@@ -44,8 +44,11 @@ AliAnalysisTaskDcalDijetPerf::AliAnalysisTaskDcalDijetPerf() :
   fHistJet1nm(0),
   fHistJet2(0),
   fHistJet1to2(0),
+  fHistDiJet1(0),
+  fHistDiJet1m(0),
   fJetsCont(0),
   fJetsCont2(0),
+  fJetsCont3(0),
   fTracksCont(0),
   fCaloClustersCont(0)
 
@@ -76,6 +79,8 @@ AliAnalysisTaskDcalDijetPerf::AliAnalysisTaskDcalDijetPerf() :
     fHistJet1nm = 0;
     fHistJet2 = 0;
     fHistJet1to2 = 0;
+    fHistDiJet1 = 0;
+    fHistDiJet1m = 0;
   SetMakeGeneralHistograms(kTRUE);
 }
 
@@ -95,8 +100,11 @@ AliAnalysisTaskDcalDijetPerf::AliAnalysisTaskDcalDijetPerf(const char *name) :
   fHistJet1nm(0),
   fHistJet2(0),
   fHistJet1to2(0),
+  fHistDiJet1(0),
+  fHistDiJet1m(0),
   fJetsCont(0),
   fJetsCont2(0),
+  fJetsCont3(0),
   fTracksCont(0),
   fCaloClustersCont(0)
 {
@@ -126,6 +134,8 @@ AliAnalysisTaskDcalDijetPerf::AliAnalysisTaskDcalDijetPerf(const char *name) :
   fHistJet1nm = 0;
   fHistJet2 = 0;
   fHistJet1to2 = 0;
+  fHistDiJet1 = 0;
+  fHistDiJet1m = 0;
 
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -145,6 +155,8 @@ void AliAnalysisTaskDcalDijetPerf::UserCreateOutputObjects()
 
   fJetsCont           = GetJetContainer(0);
   fJetsCont2           = GetJetContainer(1);
+  fJetsCont3           = GetJetContainer(2);
+
   if(fJetsCont) { //get particles and clusters connected to jets
     fTracksCont       = fJetsCont->GetParticleContainer();
     fCaloClustersCont = fJetsCont->GetClusterContainer();
@@ -238,8 +250,22 @@ void AliAnalysisTaskDcalDijetPerf::UserCreateOutputObjects()
   Double_t xmin2[] = {0,-0.7,0,0,0,-0.7,0,0,0};
   Double_t xmax2[] = {150,0.7,6.28,1,150,0.7,6.28,1,0.2};
   fHistJet1to2 = new THnSparseF("Jets1to2Collection","Jets1to2Collection",9,nbins2,xmin2,xmax2);
-  fOutput->Add(fHistJet1to2);
-  
+    fOutput->Add(fHistJet1to2);
+    
+    Int_t nbins3[] = {150,100,100,100,150,100,100,100,100};
+    Double_t xmin3[] = {0,-0.7,0,0,0,-0.7,0,0,0};
+    Double_t xmax3[] = {150,0.7,6.28,1,150,0.7,6.28,1,1};
+  fHistDiJet1 = new THnSparseF("fHistDiJet1","fHistDiJet1",9,nbins3,xmin3,xmax3);
+    fOutput->Add(fHistDiJet1);
+    
+    Int_t nbins4[] = {150,100,100,100,150,100,100,100,100,150,100,100,100};
+    Double_t xmin4[] = {0,-0.7,0,0,0,-0.7,0,0,0,0,-0.7,0,0}; //pt1 eta1 phi1 NEF1 pt2 eta2 phi2 NEF2 AJ pt3 eta3 phi3 R
+    Double_t xmax4[] = {150,0.7,6.28,1,150,0.7,6.28,1,1,150,0.7,6.28,0.2};
+    fHistDiJet1m = new THnSparseF("fHistDiJet1m","fHistDiJet1m",13,nbins4,xmin4,xmax4);
+    fOutput->Add(fHistDiJet1m);
+    
+    
+    
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
 
@@ -274,18 +300,11 @@ Bool_t AliAnalysisTaskDcalDijetPerf::FillHistograms()
     while(jet) {
         Float_t NEFpT = jet->Pt()*jet->NEF();
         N1++;
-        //cout<<"loop 1 jet 1 has label, pt,eta,phi,NEF = "<<jet->GetLabel()<<" "<<jet->Pt()<<" "<<jet->Eta()<<" "<<jet->Phi()<<" "<<jet->NEF()<<" and NEFpT "<<NEFpT<<endl;
       fHistJetsPtArea[fCentBin]->Fill(jet->Pt(), jet->Area());
       fHistJetsPhiEta[fCentBin]->Fill(jet->Eta(), jet->Phi());
       Float_t ptLeading = fJetsCont->GetLeadingHadronPt(jet);
       fHistJetsPtLeadHad[fCentBin]->Fill(jet->Pt(), ptLeading);
-        
-        //110 degrees in the azimuthal angle |eta|<0.7
-        //EMCal Tower 0.0143 x 0.0143
-        //16x16 =  0.2288 x 0.2288 -> R = 0.1144
-        
-        Double_t jetarray[] = {jet->Pt(),jet->Eta(),jet->Phi(),jet->NEF(),NEFpT};
-        //cout<<"Filling "<<jet->Pt()<<" "<<jet->Eta()<<" "<<jet->Phi()<<" "<<jet->NEF()<<endl;
+         Double_t jetarray[] = {jet->Pt(),jet->Eta(),jet->Phi(),jet->NEF(),NEFpT};
         fHistJet1->Fill(jetarray);
       if (fHistJetsCorrPtArea[fCentBin]) {
 	Float_t corrPt = jet->Pt() - fJetsCont->GetRhoVal() * jet->Area();
@@ -296,62 +315,92 @@ Bool_t AliAnalysisTaskDcalDijetPerf::FillHistograms()
     
     jet = fJetsCont->GetLeadingJet();
     if(jet) fHistLeadingJetPt[fCentBin]->Fill(jet->Pt());
-  }
-   // cout<<"DONE LOOP 1"<<endl;
+  }//Loop over the first collection of jets
+   
     int N2 = 0;
     if(fJetsCont2){
-        //cout<<"We have a 2nd collection!!"<<endl;
         AliEmcalJet *jet = fJetsCont2->GetNextAcceptJet(0);
         while(jet){
             Float_t NEFpT = jet->Pt()*jet->NEF();
-            //cout<<"loop 2 jet 2 has label, pt,eta,phi,NEF = "<<jet->GetLabel()<<" "<<jet->Pt()<<" "<<jet->Eta()<<" "<<jet->Phi()<<" "<<jet->NEF()<<endl;
             N2++;
             Double_t jetarray[] = {jet->Pt(),jet->Eta(),jet->Phi(),jet->NEF(),NEFpT};
-            //cout<<"Filling "<<jet->Pt()<<" "<<jet->Eta()<<" "<<jet->Phi()<<" "<<jet->NEF()<<endl;
             fHistJet2->Fill(jetarray);
-          //  cout<<" we have a jet! wiht pt = "<<jet->Pt()<<endl;
             jet = fJetsCont2->GetNextAcceptJet();
         }
-    }
-    //<<"DONE LOOP 2"<<endl;
-    
-    //cout<<" There are "<<fJetsCont->GetNJets()<<" cont1 jets and "<<fJetsCont2->GetNJets()<<" cont2 jets"<<endl;
-
+    } // loop over the trigger jerts.
     int N1N2 = 0;
     int N1N2m = 0;
-   if (fJetsCont&&fJetsCont2) {
-         AliEmcalJet *jet1 = fJetsCont->GetNextAcceptJet(0);
-         AliEmcalJet *jet2 = fJetsCont2->GetNextAcceptJet(0);
-         while(jet1){
-             bool ismatched = false;
-             Float_t NEFpT1 = jet1->Pt()*jet1->NEF();
-             Double_t jetarray1[] = {jet1->Pt(),jet1->Eta(),jet1->Phi(),jet1->NEF(),NEFpT1};
-             while(jet2){
-                 N1N2++;
-                 //cout<<"jet 1 has label, pt,eta,phi,NEF = "<<jet1->GetLabel()<<" "<<jet1->Pt()<<" "<<jet1->Eta()<<" "<<jet1->Phi()<<" "<<jet1->NEF()<<endl;
-                 //<<"jet 2 has lable pt,eta,phi,NEF = "<<jet1->GetLabel()<<" "<<jet2->Pt()<<" "<<jet2->Eta()<<" "<<jet2->Phi()<<" "<<jet2->NEF()<<endl;
-                 Double_t deta = jet1->Eta()-jet2->Eta();
-                 Double_t dphi = RelativePhi(jet1->Phi(),jet2->Phi());
-                 Double_t deta2 = deta*deta;
-                 Double_t dphi2 = dphi*dphi;
-                 Double_t dR = pow(deta2+dphi2,0.5);
-                 //cout<<"dR is "<<dR<<endl;
-                 Double_t jetarray[] = {jet1->Pt(),jet1->Eta(),jet1->Phi(),jet1->NEF(),jet2->Pt(),jet2->Eta(),jet2->Phi(),jet2->NEF(),dR};
-                 if (dR<0.2){
-                     N1N2m++;
-                     fHistJet1to2->Fill(jetarray);
-                     ismatched = true;
-                 }
-                 jet2 = fJetsCont2->GetNextAcceptJet();
-             }
-             if (ismatched)
-                 fHistJet1m->Fill(jetarray1);
-             else
-                 fHistJet1nm->Fill(jetarray1);
-             jet1 = fJetsCont->GetNextAcceptJet();
-             jet2 = fJetsCont2->GetNextAcceptJet(0);
-         }
-     }
+    if (fJetsCont&&fJetsCont2) {
+        AliEmcalJet *jet1 = fJetsCont->GetNextAcceptJet(0);
+        AliEmcalJet *jet2 = fJetsCont2->GetNextAcceptJet(0);
+        while(jet1){
+            bool ismatched = false;
+            Float_t NEFpT1 = jet1->Pt()*jet1->NEF();
+            Double_t jetarray1[] = {jet1->Pt(),jet1->Eta(),jet1->Phi(),jet1->NEF(),NEFpT1};
+            while(jet2){
+                N1N2++;
+                Double_t deta = jet1->Eta()-jet2->Eta();
+                Double_t dphi = RelativePhi(jet1->Phi(),jet2->Phi());
+                Double_t deta2 = deta*deta;
+                Double_t dphi2 = dphi*dphi;
+                Double_t dR = pow(deta2+dphi2,0.5);
+                Double_t jetarray[] = {jet1->Pt(),jet1->Eta(),jet1->Phi(),jet1->NEF(),jet2->Pt(),jet2->Eta(),jet2->Phi(),jet2->NEF(),dR};
+                if (dR<0.2){
+                    N1N2m++;
+                    fHistJet1to2->Fill(jetarray);
+                    ismatched = true;
+                }
+                jet2 = fJetsCont2->GetNextAcceptJet();
+            }
+            if (ismatched)
+                fHistJet1m->Fill(jetarray1);
+            else
+                fHistJet1nm->Fill(jetarray1);
+            jet1 = fJetsCont->GetNextAcceptJet();
+            jet2 = fJetsCont2->GetNextAcceptJet(0);
+        }
+    }
+
+    
+    if (fJetsCont&&fJetsCont3) {
+        AliEmcalJet *jet1 = fJetsCont->GetNextAcceptJet(0);
+        AliEmcalJet *jet3 = fJetsCont3->GetNextAcceptJet(0);
+        while(jet1){
+            while(jet3){
+                Double_t deta = jet1->Eta()-jet3->Eta();
+                Double_t dphi = RelativePhi(jet1->Phi(),jet3->Phi());
+                Double_t deta2 = deta*deta;
+                Double_t dphi2 = dphi*dphi;
+                Double_t Aj = (jet1->Pt()-jet3->Pt())/(jet1->Pt()+jet3->Pt());
+                Double_t jetarray[] = {jet1->Pt(),jet1->Eta(),jet1->Phi(),jet1->NEF(),jet3->Pt(),jet3->Eta(),jet3->Phi(),jet3->NEF(),Aj};
+                //Marta used |dphi - pi|<pi/3
+                if (fabs(fabs(dphi)-TMath::Pi())< TMath::Pi()/3.0){//dijet
+                    fHistDiJet1->Fill(jetarray);
+                    //we have a dijet, lets see if there is also a matched trigger
+                    if (fJetsCont2) {
+                        AliEmcalJet *jet2 = fJetsCont2->GetNextAcceptJet(0);
+                        while(jet2){
+                            Double_t tdeta = jet1->Eta()-jet2->Eta();
+                            Double_t tdphi = RelativePhi(jet1->Phi(),jet2->Phi());
+                            Double_t tdeta2 = tdeta*tdeta;
+                            Double_t tdphi2 = tdphi*tdphi;
+                            Double_t dR = pow(tdeta2+tdphi2,0.5);
+                            
+                            if (dR<0.2){
+                                Double_t jetarray3[] = {jet1->Pt(),jet1->Eta(),jet1->Phi(),jet1->NEF(),jet3->Pt(),jet3->Eta(),jet3->Phi(),jet3->NEF(),Aj,jet2->Pt(),jet2->Eta(),jet2->Phi(),jet2->NEF(),dR};
+                                //this dijet is triggered on!
+                                fHistDiJet1m->Fill(jetarray3);
+                            }
+                            jet2 = fJetsCont2->GetNextAcceptJet();
+                        } //while jet2
+                    } // if jetscont2
+                }// if dijet
+                jet3 = fJetsCont3->GetNextAcceptJet();
+            }//while jet 3
+            jet1 = fJetsCont->GetNextAcceptJet();
+            jet3 = fJetsCont3->GetNextAcceptJet(0);
+        }//while jet 1
+    } //if jet cont 1 and 3
 
   return kTRUE;
 }

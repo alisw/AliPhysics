@@ -37,6 +37,7 @@ set ( SRCS
  EMCALJetTasks/AliAnalysisTaskLocalRho.cxx
  EMCALJetTasks/AliAnalysisTaskScale.cxx
  EMCALJetTasks/AliEmcalJet.cxx
+ EMCALJetTasks/AliEmcalPicoTrackInGridMaker.cxx
  EMCALJetTasks/AliJetConstituentTagCopier.cxx
  EMCALJetTasks/AliJetContainer.cxx
  EMCALJetTasks/AliJetEmbeddingFromGenTask.cxx
@@ -61,6 +62,7 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalDiJetBase.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalDiJetAna.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalDiJetResponse.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalHighMultTrigger.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHMEC.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
@@ -118,12 +120,11 @@ set ( DHDR  PWGJEEMCALJetTasksLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
+set ( EINCLUDE PWGJE/EMCALJetTasks PWGJE/EMCALJetTasks/UserTasks PWG/EMCAL EMCAL OADB STEER/AOD STEER/ESD STEER/STEERBase ANALYSIS PYTHIA6)
+
 if(FASTJET_FOUND)
   set ( EDEFINE -isystem${FASTJET_INCLUDE_DIR})
-  set ( EINCLUDE PWGJE/EMCALJetTasks PWGJE/EMCALJetTasks/UserTasks PWG/EMCAL EMCAL OADB STEER/AOD STEER/ESD STEER/STEERBase ANALYSIS)
   set ( HDRS ${HDRS}  EMCALJetTasks/FJ_includes.h )
-else()
-  set ( EINCLUDE PWGJE/EMCALJetTasks PWGJE/EMCALJetTasks/UserTasks PWG/EMCAL EMCAL OADB STEER/AOD STEER/ESD STEER/STEERBase ANALYSIS)
 endif(FASTJET_FOUND)
 
 SET ( EXPORT ${HDRS} )

@@ -1174,12 +1174,13 @@ Int_t AliAnalysisTaskDiHadron::TrackCutsAOD(const AliAODEvent *rAOD, Float_t *rP
   rGoodTracks[0]=0;
   Int_t lead=0;
   Float_t leadPt=0;
-  Int_t rTrack=fAOD->GetNTracks();
+  Int_t rTrack=fAOD->GetNumberOfTracks();
   Float_t sPt, sEta, sPhi, sChi, sb[2];
   Int_t sNcls, sNclsF, sITScls;
   Short_t sCharge;
   for(int iTrack=0;iTrack<rTrack;iTrack++){
-    AliAODTrack *aodTrack=rAOD->GetTrack(iTrack);
+    AliAODTrack *aodTrack=dynamic_cast<AliAODTrack*>(rAOD->GetTrack(iTrack));
+    if(!aodTrack) AliFatal("Not a standard AOD");
     sPt=aodTrack->Pt();
     sEta=aodTrack->Eta();
     sPhi=aodTrack->Phi();
@@ -2052,7 +2053,7 @@ void AliAnalysisTaskDiHadron::Exec(Option_t *)
 	}
       }
       else{
-	if(fAOD->GetNTracks()<=0){
+	if(fAOD->GetNumberOfTracks()<=0){
 	  if(fDEBUG)Printf("Error: no tracks");
 	  break;
 	}
@@ -2130,7 +2131,8 @@ void AliAnalysisTaskDiHadron::Exec(Option_t *)
       else tMult=fESD->GetVZEROData()->GetMTotV0A()+fESD->GetVZEROData()->GetMTotV0C();
     }
     else{
-      AliAODHeader *tHeader=fAOD->GetHeader();
+      AliAODHeader *tHeader=dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+      if(!tHeader) AliFatal("Not a standard AOD");
       tMult=tHeader->GetCentrality();
     }
 

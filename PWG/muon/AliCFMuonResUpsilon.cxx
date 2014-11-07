@@ -592,9 +592,11 @@ if(fReadMCInfo && !flag) return;
 
 		for(Int_t j=0; j<ntrk; j++) {
 			for(Int_t jj=j+1; jj<ntrk; jj++) {
-				AliAODTrack *mu1 = fAOD->GetTrack(j);
+				AliAODTrack *mu1 = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(j));
+				if(!mu1) AliFatal("Not a standard AOD");
 				if(!mu1->IsMuonTrack() || !(mu1->Y()>-4 && mu1->Y()<-2.5)) continue;
-				AliAODTrack *mu2 = fAOD->GetTrack(jj);
+				AliAODTrack *mu2 = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(jj));
+				if(!mu2) AliFatal("Not a standard AOD");
 				if(!mu2->IsMuonTrack() || !(mu2->Y()>-4 && mu2->Y()<-2.5)) continue;
 
 	     	Double_t trigCondition=0;

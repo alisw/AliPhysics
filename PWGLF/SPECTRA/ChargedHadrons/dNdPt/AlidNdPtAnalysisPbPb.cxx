@@ -888,7 +888,7 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
         continue;
 
       //
-      Double_t values[4] = {vtxESD->GetZv(),track->Pt(),track->Eta(), centralityF};	  
+      Double_t values[4] = {vtxESD->GetZ(),track->Pt(),track->Eta(), centralityF};	  
 
       fRecTrackHist2[AlidNdPtHelper::kAllTracks]->Fill(values);
       FillHistograms(track,stack,AlidNdPtHelper::kAllTracks,centralityF); 
@@ -910,10 +910,10 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
      // fill track multiplicity histograms
      //FillHistograms(allChargedTracks,labelsAll,multAll,labelsAcc,multAcc,labelsRec,multRec);
 
-     Double_t vRecEventHist1[4] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv(),centralityF};
+     Double_t vRecEventHist1[4] = {vtxESD->GetX(),vtxESD->GetY(),vtxESD->GetZ(),centralityF};
      fRecEventHist1->Fill(vRecEventHist1);
 
-     Double_t vRecEventHist2[3] = {vtxESD->GetZv(),static_cast<Double_t>(multMBTracks),centralityF};
+     Double_t vRecEventHist2[3] = {vtxESD->GetZ(),static_cast<Double_t>(multMBTracks),centralityF};
      fRecEventHist2->Fill(vRecEventHist2);
 
    } // triggered and event vertex
@@ -979,10 +979,10 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
 
        // fill MC and rec event control histograms
        if(fHistogramsOn) {
-         Double_t vRecMCEventHist1[4] = {vtxESD->GetXv()-vtxMC[0],vtxESD->GetYv()-vtxMC[1],vtxESD->GetZv()-vtxMC[2], centralityF};
+         Double_t vRecMCEventHist1[4] = {vtxESD->GetX()-vtxMC[0],vtxESD->GetY()-vtxMC[1],vtxESD->GetZ()-vtxMC[2], centralityF};
          fRecMCEventHist1->Fill(vRecMCEventHist1);//
 
-         Double_t vRecMCEventHist2[4] = {vtxESD->GetXv()-vtxMC[0],vtxESD->GetZv()-vtxMC[2],static_cast<Double_t>(multMBTracks), centralityF};
+         Double_t vRecMCEventHist2[4] = {vtxESD->GetX()-vtxMC[0],vtxESD->GetZ()-vtxMC[2],static_cast<Double_t>(multMBTracks), centralityF};
          fRecMCEventHist2->Fill(vRecMCEventHist2);
 
        }//

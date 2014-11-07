@@ -147,7 +147,8 @@ void AliAnalysisTaskSESelectHF::UserExec(Option_t */*option*/)
   // make trkIDtoEntry register (temporary)
   Int_t trkIDtoEntry[100000];
   for(Int_t it=0;it<aodIn->GetNumberOfTracks();it++) {
-    AliAODTrack *track = aodIn->GetTrack(it);
+    AliAODTrack *track = dynamic_cast<AliAODTrack*>(aodIn->GetTrack(it));
+    if(!track) AliFatal("Not a standard AOD");
     trkIDtoEntry[track->GetID()]=it;
   }
 
@@ -178,8 +179,9 @@ void AliAnalysisTaskSESelectHF::UserExec(Option_t */*option*/)
       AliAODTrack *trk0 = (AliAODTrack*)dIn->GetDaughter(0);
       AliAODTrack *trk1 = (AliAODTrack*)dIn->GetDaughter(1);
       if(!trk0 || !trk1) {
-	trk0=aodIn->GetTrack(trkIDtoEntry[dIn->GetProngID(0)]);
-	trk1=aodIn->GetTrack(trkIDtoEntry[dIn->GetProngID(1)]);
+	trk0=dynamic_cast<AliAODTrack*>(aodIn->GetTrack(trkIDtoEntry[dIn->GetProngID(0)]));
+	trk1=dynamic_cast<AliAODTrack*>(aodIn->GetTrack(trkIDtoEntry[dIn->GetProngID(1)]));
+        if(!trk0 || !trk1) AliFatal("Not a standard AOD");
       }
       printf("pt of positive track: %f\n",trk0->Pt());
       printf("pt of negative track: %f\n",trk1->Pt());

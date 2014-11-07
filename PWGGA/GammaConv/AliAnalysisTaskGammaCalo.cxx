@@ -506,7 +506,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 		fESDList[iCut]->SetOwner(kTRUE);
 		fCutFolder[iCut]->Add(fESDList[iCut]);
     
-		fHistoNEvents[iCut] = new TH1I("NEvents","NEvents",9,-0.5,8.5);
+		fHistoNEvents[iCut] = new TH1I("NEvents","NEvents",10,-0.5,9.5);
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
@@ -522,6 +522,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
+		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problems");
 		fESDList[iCut]->Add(fHistoNEvents[iCut]);
 		
 		if(fIsHeavyIon == 1) fHistoNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",4000,0,4000);
@@ -1098,7 +1099,11 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
 	for(Int_t iCut = 0; iCut<fnCuts; iCut++){
 		
 		fiCut = iCut;
-		Int_t eventNotAccepted = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon);
+		
+		Bool_t isRunningEMCALrelAna = kFALSE;
+		if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 1) isRunningEMCALrelAna = kTRUE;
+		
+		Int_t eventNotAccepted = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon, isRunningEMCALrelAna);
 		
 		if(eventNotAccepted){
 		// cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;

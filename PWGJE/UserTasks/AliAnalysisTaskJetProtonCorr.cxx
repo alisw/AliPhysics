@@ -1245,7 +1245,8 @@ Bool_t AliAnalysisTaskJetProtonCorr::PrepareEvent()
     fPrimTrackArrayAss = new TObjArray();
     const Int_t nTracksAODAss = fAODEvent->GetNumberOfTracks();
     for (Int_t iTrack = 0; iTrack < nTracksAODAss; ++iTrack) {
-      AliAODTrack *trk = fAODEvent->GetTrack(iTrack);
+      AliAODTrack *trk = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(iTrack));
+      if(!trk) AliFatal("Not a standard AOD");
       if (trk->TestFilterBit(fAssFilterMask))
         fPrimTrackArrayAss->Add(trk);
     }
@@ -1254,7 +1255,8 @@ Bool_t AliAnalysisTaskJetProtonCorr::PrepareEvent()
     fPrimTrackArrayTrg = new TObjArray();
     const Int_t nTracksAODTrg = fAODEvent->GetNumberOfTracks();
     for (Int_t iTrack = 0; iTrack < nTracksAODTrg; ++iTrack) {
-      AliAODTrack *trk = fAODEvent->GetTrack(iTrack);
+      AliAODTrack *trk = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(iTrack));
+      if(!trk) AliFatal("Not a standard AOD");
       if (trk->IsHybridGlobalConstrainedGlobal())
         fPrimTrackArrayTrg->Add(trk);
     }

@@ -423,12 +423,13 @@ TObjArray* AliAnalysisTaskDiMuonCorrelations::GetAcceptedTracksMuonArm(AliAODEve
   TObjArray *tracks = new TObjArray;
   tracks->SetOwner(kFALSE);
 
-  Int_t nTracks = aodEvent->GetNTracks();
+  Int_t nTracks = aodEvent->GetNumberOfTracks();
 
   AliAODTrack *track = 0;
   
   for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
-    track = aodEvent->GetTrack(iTrack);
+    track = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iTrack));
+    if(!track) AliFatal("Not a standard AOD");
     if (track->IsMuonTrack() && track->GetMatchTrigger()>=fTriggerMatchLevelMuon) {
       if (track->Chi2perNDF() < fMaxChi2Muon) {
 	if (track->Eta() > fMinEtaMuon && track->Eta() < fMaxEtaMuon) {
@@ -511,7 +512,7 @@ Int_t AliAnalysisTaskDiMuonCorrelations::GetCentBin() {
 
 Double_t AliAnalysisTaskDiMuonCorrelations::GetITSMultiplicity() {
 
-  Double_t multiplicity = fAOD->GetHeader()->GetNumberOfITSClusters(1);
+  Double_t multiplicity = ((AliVAODHeader*)fAOD->GetHeader())->GetNumberOfITSClusters(1);
 
   return multiplicity;
 

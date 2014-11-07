@@ -316,7 +316,8 @@ void AliEbyEHigherMomentsTaskPID::doAODEvent(){
 
   if(!ProperVertex(fAOD)) return;   
   
-  AliAODHeader *aodHeader = fAOD->GetHeader();
+  AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+  if(!aodHeader) AliFatal("Not a standard AOD");
   
   fCentrality = (Int_t)aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
   
@@ -462,7 +463,8 @@ void AliEbyEHigherMomentsTaskPID::doMCAODEvent(){
   
   if(!ProperVertex(fAOD)) return;
 
-  AliAODHeader *aodHeader = fAOD->GetHeader();
+  AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+  if(!aodHeader) AliFatal("Not a standard AOD");
   
   fCentrality = (Int_t)aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
 

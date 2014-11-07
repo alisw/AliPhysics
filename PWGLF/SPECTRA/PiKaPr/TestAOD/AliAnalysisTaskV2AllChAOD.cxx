@@ -76,6 +76,9 @@ AliAnalysisTaskV2AllChAOD::AliAnalysisTaskV2AllChAOD(const char *name) : AliAnal
   fMinTPCNcls(70),
   fFillTHn(kFALSE),
   fCentrality(0),
+  fQvector(0),
+  fQvector_lq(0),
+  fQvector_sq(0),
   fResSP(0),
   fResSP_vs_Cent(0),
   f2partCumQA_vs_Cent(0),
@@ -195,7 +198,7 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
   if( fFillTHn ){ 
     //dimensions of THnSparse for Q vector checks
     const Int_t nvarev=6;
-    //                                             cent         q-rec_perc        qvec-rec      q-gen_tracks   qvec-gen_vzero          Nch
+    //                                             cent         q-rec_perc        qvec_v0a       q-rec_v0c        qvec-gen_tpc          Nch
     Int_t    binsHistRealEv[nvarev] = {     fnCentBins,              100,        fnQvecBins,     fnQvecBins,       fnQvecBins,     fnNchBins};
     Double_t xminHistRealEv[nvarev] = {             0.,               0.,                0.,             0.,               0.,            0.};
     Double_t xmaxHistRealEv[nvarev] = {           100.,             100.,     fQvecUpperLim,  fQvecUpperLim,    fQvecUpperLim,         2000.};
@@ -207,14 +210,14 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
     NSparseHistEv->GetAxis(1)->SetTitle("q-vec rec percentile");
     NSparseHistEv->GetAxis(1)->SetName("Qrec_perc");
     
-    NSparseHistEv->GetAxis(2)->SetTitle("q-vec rec");
-    NSparseHistEv->GetAxis(2)->SetName("Qrec");
+    NSparseHistEv->GetAxis(2)->SetTitle("q-vec V0A");
+    NSparseHistEv->GetAxis(2)->SetName("Qrec_V0A");
     
-    NSparseHistEv->GetAxis(3)->SetTitle("q-vec gen tracks");
-    NSparseHistEv->GetAxis(3)->SetName("Qgen_tracks");
+    NSparseHistEv->GetAxis(3)->SetTitle("q-vec V0C");
+    NSparseHistEv->GetAxis(3)->SetName("Qrec_V0C");
     
-    NSparseHistEv->GetAxis(4)->SetTitle("q-vec gen vzero");
-    NSparseHistEv->GetAxis(4)->SetName("Qgen_vzero");
+    NSparseHistEv->GetAxis(4)->SetTitle("q-vec TPC");
+    NSparseHistEv->GetAxis(4)->SetName("Qgen_TPC");
     
     NSparseHistEv->GetAxis(5)->SetTitle("Ncharged");
     NSparseHistEv->GetAxis(5)->SetName("Nch");
@@ -223,6 +226,15 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
   
   fCentrality = new TH1D("fCentrality", "centrality distribution; centrality", 200, 0., 100);
   fOutput->Add(fCentrality);
+  
+  fQvector = new TH1D("fQvector", "q-vector distribution; q-vector", fnQvecBins, 0., fQvecUpperLim);
+  fOutput->Add(fQvector);
+  
+  fQvector_lq = new TH1D("fQvector_lq", "q-vector distribution; q-vector", fnQvecBins, 0., fQvecUpperLim);
+  fOutput_lq->Add(fQvector_lq);
+  
+  fQvector_sq = new TH1D("fQvector_sq", "q-vector distribution; q-vector", fnQvecBins, 0., fQvecUpperLim);
+  fOutput_sq->Add(fQvector_sq);
   
   // binning common to all the THn
   //change it according to your needs + move it to global variables -> setter/getter
@@ -458,7 +470,10 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
   if(fIsMC && fQvecGen) Qvec = fEventCuts->GetQvecPercentileMC(fVZEROside, fQgenType);
   else Qvec = fEventCuts->GetQvecPercentile(fVZEROside);
 
-  
+  fQvector->Fill(Qvec);
+  if (Qvec > fCutLargeQperc && Qvec < 100.) fQvector_lq->Fill(Qvec);
+  if (Qvec > 0. && Qvec < fCutSmallQperc) fQvector_sq->Fill(Qvec);
+
   Double_t Cent=(fDoCentrSystCentrality)?1.01*fEventCuts->GetCent():fEventCuts->GetCent();
   fCentrality->Fill(Cent);
   
@@ -492,7 +507,8 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
 
     //main loop on tracks
     for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
-      AliAODTrack* track = fAOD->GetTrack(iTracks);
+      AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
+      if(!track) AliFatal("Not a standard AOD");
       if(fCharge != 0 && track->Charge() != fCharge) continue;//if fCharge != 0 only select fCharge 
       if (!fTrackCuts->IsSelected(track,kTRUE)) continue; //track selection (rapidity selection NOT in the standard cuts)
     
@@ -670,18 +686,14 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
     
     Double_t varEv[6];
     varEv[0]=Cent;
+    
     varEv[1]=(Double_t)Qvec; // qvec_rec_perc
     
-    Double_t qvzero = 0.;
-    if(fVZEROside==0)qvzero=(Double_t)fEventCuts->GetqV0A();
-    else if (fVZEROside==1)qvzero=(Double_t)fEventCuts->GetqV0C(); // qvec_rec
-    varEv[2]=(Double_t)qvzero; // qvec from VZERO
-    
-    Double_t qgen_tracks = (Double_t)fEventCuts->CalculateQVectorMC(fVZEROside, 0);
-    varEv[3]= (Double_t)qgen_tracks;
-    
-    Double_t qgen_vzero = (Double_t)fEventCuts->CalculateQVectorMC(fVZEROside, 1);
-    varEv[4]= (Double_t)qgen_vzero;
+    varEv[2]=(Double_t)fEventCuts->GetqV0A();
+
+    varEv[3]=(Double_t)fEventCuts->GetqV0C();
+
+    varEv[4]=(Double_t)fEventCuts->GetqTPC();
     
     varEv[5]=(Double_t)fEventCuts->GetNch(); // Nch
     

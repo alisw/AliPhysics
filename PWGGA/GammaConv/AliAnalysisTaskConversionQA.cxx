@@ -454,7 +454,7 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
 	if(fMCEvent && fInputEvent->IsA()==AliESDEvent::Class()){ fMCStack = fMCEvent->Stack(); }
 
 	Int_t eventNotAccepted =
-		fEventCuts->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon);
+		fEventCuts->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
 	if(eventNotAccepted) return; // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
 
 	fConversionGammas=fV0Reader->GetReconstructedGammas();

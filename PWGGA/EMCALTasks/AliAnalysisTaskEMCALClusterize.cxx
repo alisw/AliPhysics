@@ -849,7 +849,8 @@ void AliAnalysisTaskEMCALClusterize::FillAODHeader()
   Double_t covVtx[6];
   for (Int_t i = 0; i < 6; i++)  covVtx[i] = 0.;
   
-  AliAODHeader* header = AODEvent()->GetHeader();
+  AliAODHeader* header = dynamic_cast<AliAODHeader*>(AODEvent()->GetHeader());
+  if(!header) AliFatal("Not a standard AOD");
   header->SetRunNumber(fEvent->GetRunNumber());
   
   if(esdevent)
@@ -861,7 +862,11 @@ void AliAnalysisTaskEMCALClusterize::FillAODHeader()
       if (file) header->SetESDFileName(file->GetName());
     }
   }
-  else if (aodevent) header->SetESDFileName(aodevent->GetHeader()->GetESDFileName());
+  else if (aodevent) {
+    AliAODHeader * aodheader = dynamic_cast<AliAODHeader*>(aodevent->GetHeader());
+    if(!aodheader) AliFatal("Not a standard AOD");
+    header->SetESDFileName(aodheader->GetESDFileName());
+  }
   
   header->SetBunchCrossNumber(fEvent->GetBunchCrossNumber());
   header->SetOrbitNumber(fEvent->GetOrbitNumber());

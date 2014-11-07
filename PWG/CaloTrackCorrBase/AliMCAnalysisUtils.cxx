@@ -614,7 +614,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, Int_t nlabels,
     
     AliDebug(2,"Cluster most contributing mother and its parent:");
     AliDebug(2,Form("\t Mother label %d, pdg %d, Primary? %d, Physical Primary? %d",iMom, mPdg, mom->IsPrimary(), mom->IsPhysicalPrimary()));
-    AliDebug(2,Form("\t Parent label %d, pdg %d, Primary? %d, Physical Primary? %d",iParent, pPdg, parent->IsPrimary(), parent->IsPhysicalPrimary()));
+    AliDebug(2,Form("\t Parent label %d, pdg %d, Primary? %d, Physical Primary? %d",iParent, pPdg, parent?parent->IsPrimary():-1, parent?parent->IsPhysicalPrimary():-1));
     
     //Check if mother is converted, if not, get the first non converted mother
     if((mPdg == 22 || mPdg == 11) && (pPdg == 22 || pPdg == 11) && !mom->IsPrimary())
@@ -645,7 +645,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, Int_t nlabels,
       
       AliDebug(2,"AliMCAnalysisUtils::CheckOriginInAOD() - Converted photon/electron:");
       AliDebug(2,Form("\t Mother label %d, pdg %d, Primary? %d, Physical Primary? %d",iMom, mPdg, mom->IsPrimary(), mom->IsPhysicalPrimary()));
-      AliDebug(2,Form("\t Parent label %d, pdg %d, Primary? %d, Physical Primary? %d",iParent, pPdg, parent->IsPrimary(), parent->IsPhysicalPrimary()));
+      AliDebug(2,Form("\t Parent label %d, pdg %d, Primary? %d, Physical Primary? %d",iParent, pPdg, parent?parent->IsPrimary():-1, parent?parent->IsPhysicalPrimary():-1));
       
     }//mother and parent are electron or photon and have status 0 and parent is photon or electron
     else if((mPdg == 22 || mPdg == 11) && !mom->IsPrimary())

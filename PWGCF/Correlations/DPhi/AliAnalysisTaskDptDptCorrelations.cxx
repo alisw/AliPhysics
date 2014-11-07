@@ -908,7 +908,7 @@ void  AliAnalysisTaskDptDptCorrelations::createHistograms()
   name = "DCAz";    _dcaz     = createHisto1F(name,name, 500, -5.0, 5.0, "dcaZ","counts");
   name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 500, -5.0, 5.0, "dcaXY","counts");
 
-  name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
+  // name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
   //name = "Nclus2";   _Ncluster2    = createHisto1F(name,name, 200, 0, 200, "Ncluster2","counts");
   
   if (_singlesOnly)
@@ -1087,7 +1087,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   if(fAODEvent)
     {
       //Centrality
-      AliCentrality* centralityObject =  fAODEvent->GetHeader()->GetCentralityP();
+      AliCentrality* centralityObject =  ((AliVAODHeader*)fAODEvent->GetHeader())->GetCentralityP();
       if (centralityObject)
 	{
 	  //cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - 6" << endl;
@@ -1153,7 +1153,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	    }
 	}
       
-      _vertexZ->Fill(vertexZ);
+      //_vertexZ->Fill(vertexZ);
       
       iVertex = int((vertexZ-_min_vertexZ)/_width_vertexZ);
       iVertexP1 = iVertex*_nBins_etaPhiPt_1;
@@ -1196,8 +1196,9 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  if (!bitOK) continue; //128bit or 272bit
 	  
 	  Int_t gID = t->GetID();
-	  newAodTrack = gID >= 0 ?t : fAODEvent->GetTrack(trackMap->GetValue(-1-gID));
-	  
+	  newAodTrack = gID >= 0 ?t : dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(trackMap->GetValue(-1-gID)));
+	  if(!newAodTrack) AliFatal("Not a standard AOD?");
+ 
 	  q      = t->Charge();
 	  charge = int(q);
 	  phi    = t->Phi();
@@ -1209,11 +1210,11 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  dedx   = t->GetTPCsignal();
 	  //dcaXY = t->DCA(); 
 	  //dcaZ  = t->ZAtDCA();  
-	  nClus  = t->GetTPCNcls();	  
+	  //nClus  = t->GetTPCNcls();	  
 	  
-	   if ( nClus<_nClusterMin ) continue;
+	  //if ( nClus<_nClusterMin ) continue;
 	  
-	  _Ncluster1->Fill(nClus);
+	  //_Ncluster1->Fill(nClus);
 	  
 	  /*
 	  //cuts on more than 0 shared cluster (suggested by Michael)
@@ -1265,7 +1266,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  //==== QA ===========================
 	  //_dcaz->Fill(DCAZ);
 	  //_dcaxy->Fill(DCAXY);
-	  _etadis->Fill(eta);
+	  //_etadis->Fill(eta);
 	  //_phidis->Fill(phi);
 	  //===================================
 	  //*************************************************

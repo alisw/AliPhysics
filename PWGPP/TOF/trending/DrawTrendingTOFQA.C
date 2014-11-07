@@ -38,6 +38,8 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   Float_t avMulti=0;
   Float_t fractionEventsWHits=0.0;
   Double_t goodChannelRatio=0.0;
+  Double_t goodChannelRatioInAcc=0.0;
+
   
   TFile * fin = TFile::Open(mergedTrendFile.Data());
   TTree * ttree = (TTree*) fin->Get("trending");
@@ -48,6 +50,7 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   ttree->SetBranchAddress("run",&runNumber);
   ttree->SetBranchAddress("avMulti",&avMulti);
   ttree->SetBranchAddress("goodChannelsRatio",&goodChannelRatio);   
+  ttree->SetBranchAddress("goodChannelsRatioInAcc",&goodChannelRatioInAcc);   
   ttree->SetBranchAddress("avTime",&avTime); //mean time
   ttree->SetBranchAddress("peakTime",&peakTime); //main peak time after fit
   ttree->SetBranchAddress("spreadTime",&spreadTime); //spread of main peak of time after fit
@@ -175,12 +178,15 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   hMeanLVsRun->SetDrawOption("E");
   TH1F * hNegLRatioVsRun=new TH1F("hNegLRatioVsRun","Ratio of tracks with L<350 cm;; ratio of tracks with L<350 cm (%)",nRuns, 0., nRuns);//, 1000, 0. , 100.);
   hNegLRatioVsRun->SetDrawOption("E");
-  TH1F * hMatchEffVsRun=new TH1F("hMatchEffVsRun","Matching efficiency (linear fit for p_{T}>1.0 GeV/c);;matching efficiency (pT>1.0 GeV/c)",nRuns, 0., nRuns);//, 100, 0. , 1.);
+  TH1F * hMatchEffVsRun=new TH1F("hMatchEffVsRun","#epsilon_{match} (linear fit for p_{T}>1.0 GeV/c);;#epsilon_{match} (p_{T}>1.0 GeV/c)",nRuns, 0., nRuns);//, 100, 0. , 1.);
   hMatchEffVsRun->SetDrawOption("E");
-  TH1F * hMatchEffVsRunNormToGoodCh=new TH1F("hMatchEffVsRunNormToGoodCh","Matching efficiency normalized to percentage of TOF good channels;;matching efficiency (pT>1.0 GeV/c)",nRuns, 0., nRuns);//, 100, 0. , 1.);
+  TH1F * hMatchEffVsRunNormToGoodCh=new TH1F("hMatchEffVsRunNormToGoodCh","#epsilon_{match} normalized to percentage of TOF good channels;;#epsilon_{match}(p_{T}>1.0 GeV/c,|#eta|<0.8)/f_{all good}",nRuns, 0., nRuns);//, 100, 0. , 1.);
   hMatchEffVsRunNormToGoodCh->SetDrawOption("E");
 	
-  TH1F * hMatchEffVsRun1=new TH1F("hMatchEffVsRun1","Matching efficiency (value for p_{T}=1.0 GeV/c);;matching efficiency (pT=1.0 GeV/c)",nRuns, 0., nRuns);
+  TH1F * hMatchEffVsRunNormToGoodChInAcc=new TH1F("hMatchEffVsRunNormToGoodChInAcc","#epsilon_{match} normalized to TOF good channels in |#eta|<0.8;;#epsilon_{match}(p_{T}>1.0 GeV/c,|#eta|<0.8/f_{good}(|#eta|<0.8)",nRuns, 0., nRuns);//, 100, 0. , 1.);
+  hMatchEffVsRunNormToGoodChInAcc->SetDrawOption("E");
+
+  TH1F * hMatchEffVsRun1=new TH1F("hMatchEffVsRun1","#epsilon_{match}(p_{T}=1.0 GeV/c);;#epsilon_{match} (p_{T}=1.0 GeV/c)",nRuns, 0., nRuns);
   hMatchEffVsRun1->SetDrawOption("E");
   TH1F * hPeakT0AVsRun=new TH1F("hPeakT0AVsRun","Peak value of T0A (gaussian fit);;t0A (ps)",nRuns,0., nRuns);
   TH1F * hPeakT0CVsRun=new TH1F("hPeakT0CVsRun","Peak value of T0C (gaussian fit);;t0AC (ps)",nRuns,0., nRuns);
@@ -189,6 +195,9 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
 	
   TH1F * hGoodChannelsRatio=new TH1F("hGoodChannelsRatio","Fraction of TOF good channels;;fraction of good channels",nRuns, 0., nRuns);//, 100, 0. , 1.);
   hGoodChannelsRatio->SetDrawOption("E");
+
+  TH1F * hGoodChannelsRatioInAcc=new TH1F("hGoodChannelsRatioInAcc","Fraction of TOF good channels in |#eta|<0.8;;fraction of good channels in |#eta|<0.8",nRuns, 0., nRuns);//, 100, 0. , 1.);
+  hGoodChannelsRatioInAcc->SetDrawOption("E");
 	
   lista.Add(hAvMulti);
   lista.Add(hAvDiffTimeVsRun);
@@ -209,11 +218,13 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   lista.Add(  hNegLRatioVsRun);
   lista.Add(  hMatchEffVsRun);
   lista.Add(hMatchEffVsRunNormToGoodCh);
+  lista.Add(hMatchEffVsRunNormToGoodChInAcc);
   lista.Add(hPeakT0AVsRun);
   lista.Add(hPeakT0CVsRun);
   lista.Add(hPeakT0ACVsRun);
   lista.Add(hT0fillResVsRun);
   lista.Add(hGoodChannelsRatio);
+  lista.Add(hGoodChannelsRatioInAcc);
 
   char runlabel[6];
    
@@ -293,13 +304,27 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
       hMatchEffVsRunNormToGoodCh->SetBinContent(irun+1, 0.0);
     hMatchEffVsRunNormToGoodCh->SetBinError(irun+1,matchEffLinFit1GevErr);
     hMatchEffVsRunNormToGoodCh->GetXaxis()->SetBinLabel(irun+1,runlabel);
-    hMatchEffVsRunNormToGoodCh->SetLineColor(kBlue);
+    hMatchEffVsRunNormToGoodCh->SetLineColor(kCyan+2);
     hMatchEffVsRunNormToGoodCh->SetLineWidth(2);
      
     hGoodChannelsRatio->SetBinContent(irun+1, goodChannelRatio);
-    hGoodChannelsRatio->SetLineColor(kMagenta+2);
+    hGoodChannelsRatio->SetLineColor(kCyan-1);
     hGoodChannelsRatio->SetLineWidth(2);
     hGoodChannelsRatio->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    if (goodChannelRatioInAcc>0)
+      hMatchEffVsRunNormToGoodChInAcc->SetBinContent(irun+1,matchEffLinFit1Gev/goodChannelRatioInAcc);
+    else 
+      hMatchEffVsRunNormToGoodChInAcc->SetBinContent(irun+1, 0.0);
+    hMatchEffVsRunNormToGoodChInAcc->SetBinError(irun+1,matchEffLinFit1GevErr);
+    hMatchEffVsRunNormToGoodChInAcc->GetXaxis()->SetBinLabel(irun+1,runlabel);
+    hMatchEffVsRunNormToGoodChInAcc->SetLineColor(kBlue);
+    hMatchEffVsRunNormToGoodChInAcc->SetLineWidth(2);
+
+    hGoodChannelsRatioInAcc->SetBinContent(irun+1, goodChannelRatioInAcc);
+    hGoodChannelsRatioInAcc->SetLineColor(kBlue+2);
+    hGoodChannelsRatioInAcc->SetLineWidth(2);
+    hGoodChannelsRatioInAcc->GetXaxis()->SetBinLabel(irun+1,runlabel);
 
     hPeakT0AVsRun->SetBinContent(irun+1,peakT0A);
     hPeakT0AVsRun->SetBinError(irun+1,spreadT0A);
@@ -338,7 +363,12 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   hMatchEffVsRun->GetYaxis()->SetRangeUser(0.,1.);
   hMatchEffVsRun->Draw();
   cMatchEffVsRun->Print(Form("%s/cMatchEffVsRun.png",plotDir.Data()));
-  
+  		
+  TCanvas* cMatchEffNormToGoodChInAcc = new TCanvas("cMatchEffNormToGoodChInAcc","cMatchEffNormToGoodChInAcc",50, 50,1050, 550);
+  hMatchEffVsRunNormToGoodChInAcc->GetYaxis()->SetRangeUser(0.,1.);
+  hMatchEffVsRunNormToGoodChInAcc->Draw();
+  cMatchEffNormToGoodChInAcc->Print(Form("%s/cMatchEffNormToGoodChInAcc.png",plotDir.Data()));
+
   TCanvas* cMatchEffNormToGoodCh = new TCanvas("cMatchEffNormToGoodCh","cMatchEffNormToGoodCh",50, 50,1050, 550);
   hMatchEffVsRunNormToGoodCh->GetYaxis()->SetRangeUser(0.,1.);
   hMatchEffVsRunNormToGoodCh->Draw();
@@ -348,6 +378,11 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   hGoodChannelsRatio->GetYaxis()->SetRangeUser(0.75,1.);
   hGoodChannelsRatio->Draw();
   cGoodCh->Print(Form("%s/cGoodCh.png",plotDir.Data()));
+
+  TCanvas* cGoodChInAcc = new TCanvas("cGoodChInAcc","cGoodChInAcc",50, 50,1050, 550);
+  hGoodChannelsRatioInAcc->GetYaxis()->SetRangeUser(0.75,1.);
+  hGoodChannelsRatioInAcc->Draw();
+  cGoodChInAcc->Print(Form("%s/cGoodChInAcc.png",plotDir.Data()));
 
   if (displayAll) {	
     TCanvas* cPeakT0AVsRun = new TCanvas("cPeakT0AVsRun","cPeakT0AVsRun", 50,50,1050, 550);

@@ -1174,7 +1174,8 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 
   if(fIsHIevent)
     {
-      AliAODHeader *aodHeader = fAOD->GetHeader();
+      AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+      if(!aodHeader) AliFatal("Not a standard AOD");
       fEventCent = aodHeader->GetCentrality();
     }
 
@@ -1190,7 +1191,10 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
     fJetAcceptance = 0.5 - fIncExcR; // if the increase is 0.1 -> only jets within |eta|<0.4 
 
   // First test of reference multiplicity
-  Int_t refMultiplicity = fAOD->GetHeader()->GetRefMultiplicity();
+  AliAODHeader * header = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+  if(!header) AliFatal("Not a standard AOD");
+
+  Int_t refMultiplicity = header->GetRefMultiplicity();
   fRefMult->Fill(refMultiplicity);
 
   // Multiplicity from V0 (V0A+V0C)
@@ -2150,7 +2154,8 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
       Int_t myTotalSoftMultRef = 0; 
       for(Int_t aodT = 0; aodT < tracksAOD; aodT++ )
 	{
-	  AliAODTrack *aodtrack = fAOD->GetTrack(aodT);
+	  AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(aodT));
+	  if(!aodtrack) AliFatal("Not a standard AOD");
 	  if(!aodtrack) continue;
 	  aodtracketa = TMath::Abs(aodtrack->Eta());
 	  if(aodtracketa>0.9) continue;
@@ -2365,7 +2370,8 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 	      AliDebug(4,Form("Checking composition in Reco jets without track refs")); 
 	      for(Int_t aodT = 0; aodT < tracksAOD; aodT++ )
 		{
-		  AliAODTrack *aodtrack = fAOD->GetTrack(aodT);
+		  AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(aodT));
+		  if(!aodtrack) AliFatal("Not a standard AOD");
 		  if(!aodtrack) continue;
 		  if(!IsTrackInsideThisJet(aodtrack, rjet, jfr)) continue;
 		  if(!aodtrack->TestFilterBit(fFilterBit)) continue; //track filter selection
@@ -2442,7 +2448,8 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 	      AliDebug(4,Form("Checking SCM of perpendicular cone in Reco jets")); 
 	      for(Int_t aodTperp = 0; aodTperp < tracksAOD; aodTperp++ )
 		{ //fPerpCone
-		  AliAODTrack *aodtrackperprec = fAOD->GetTrack(aodTperp);
+		  AliAODTrack *aodtrackperprec = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(aodTperp));
+		  if(!aodtrackperprec) AliFatal("Not a standard AOD");
 		  if(!aodtrackperprec) continue;
 		  if(!IsTrackInsideThisJet(aodtrackperprec, fPerpCone, jfr)) continue;
 		  if(!aodtrackperprec->TestFilterBit(fFilterBit)) continue; //track filter selection
@@ -3811,7 +3818,8 @@ Int_t AliAnalysisTaskPartonDisc::GetNumberOfChargedTracks(Int_t percentage,AliAO
       AliDebug(4,Form("Empty Track Refs (reco)!"));  
       for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) 
 	{
-	  AliAODTrack *aodtrack = aode->GetTrack(iTracks);
+	  AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(aode->GetTrack(iTracks));
+	  if(!aodtrack) AliFatal("Not a standard AOD");
 	  if(!aodtrack) continue;
 	  tracketa = aodtrack->Eta();
 	  trackphi = aodtrack->Phi();
@@ -5018,7 +5026,8 @@ Int_t AliAnalysisTaskPartonDisc::GetNRecChargedTracksAboveThreshold(AliAODJet *j
 
   for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) 
     {
-      AliAODTrack *aodtrack = aode->GetTrack(iTracks);
+      AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(aode->GetTrack(iTracks));
+      if(!aodtrack) AliFatal("Not a standard AOD");
       if(!aodtrack) continue;
       tracketa = aodtrack->Eta();
       trackphi = aodtrack->Phi();
@@ -5067,7 +5076,8 @@ Int_t AliAnalysisTaskPartonDisc::GetRecalcNTXRec(Int_t percentage,AliAODJet *ori
       AliDebug(4,Form("Empty Track Refs (reco)!"));  
       for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) 
 	{
-	  AliAODTrack *aodtrack = aode->GetTrack(iTracks);
+	  AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(aode->GetTrack(iTracks));
+	  if(!aodtrack) AliFatal("Not a standard AOD");
 	  if(!aodtrack) continue;
 	  tracketa = aodtrack->Eta();
 	  trackphi = aodtrack->Phi();
@@ -5126,7 +5136,8 @@ Int_t AliAnalysisTaskPartonDisc::GetRecalcNRecChTrUpThr(AliAODJet *jet, Int_t nt
 
   for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) 
     {
-      AliAODTrack *aodtrack = aode->GetTrack(iTracks);
+      AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(aode->GetTrack(iTracks));
+      if(!aodtrack) AliFatal("Not a standard AOD");
       if(!aodtrack) continue;
       tracketa = aodtrack->Eta();
       trackphi = aodtrack->Phi();
@@ -5536,7 +5547,8 @@ void AliAnalysisTaskPartonDisc::FillPerpConeHisto(TH3F *currenthisto, Int_t ntra
 
   for(Int_t aodT = 0; aodT < ntracks; aodT++ )
     {
-      AliAODTrack *aodtrackC = aode->GetTrack(aodT);
+      AliAODTrack *aodtrackC = dynamic_cast<AliAODTrack*>(aode->GetTrack(aodT));
+      if(!aodtrackC) AliFatal("Not a standard AOD");
       if(!aodtrackC) continue;
       aodtracketaC = TMath::Abs(aodtrackC->Eta());
       if(aodtracketaC>0.9) continue;

@@ -177,7 +177,7 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
   }
 
   if (fVtxZmin<fVtxZmax){
-    Double_t zvtx=fkVertex->GetZv();
+    Double_t zvtx=fkVertex->GetZ();
     if (zvtx<fVtxZmin||zvtx>fVtxZmax) return kFALSE;
   }
 

@@ -168,17 +168,17 @@ Bool_t AliAnalysisTaskCaloFilter::AcceptEventEMCAL()
     
     if( ( clus->IsEMCAL() ) && ( clus->GetNCells() > fEMCALNcellsCut ) && ( clus->E() > fEMCALEnergyCut ) &&
        fEMCALRecoUtils->IsGoodCluster(clus,fEMCALGeo,caloCell,bc))
-    { 
+    {
       
-      if (fDebug > 0) printf("AliAnalysisTaskCaloFilter::AcceptEventEMCAL() - Accept :  E %2.2f > %2.2f, nCells %d > %d \n",
-                             clus->E(), fEMCALEnergyCut, clus->GetNCells(), fEMCALNcellsCut);
+      AliDebug(1,Form("Accept :  E %2.2f > %2.2f, nCells %d > %d",
+                      clus->E(), fEMCALEnergyCut, clus->GetNCells(), fEMCALNcellsCut));
       
       return kTRUE;
     }
     
   }// loop
   
-  if (fDebug > 0)  printf("AliAnalysisTaskCaloFilter::AcceptEventEMCAL() - Reject \n");
+  AliDebug(1,"Reject");
 
   //printf("Fired %s\n",((AliESDEvent*)InputEvent())->GetFiredTriggerClasses().Data());
 
@@ -204,15 +204,15 @@ Bool_t AliAnalysisTaskCaloFilter::AcceptEventPHOS()
     if( ( clus->IsPHOS() ) && ( clus->GetNCells() > fPHOSNcellsCut ) && ( clus->E() > fPHOSEnergyCut ))
     { 
       
-      if (fDebug > 0) printf("AliAnalysisTaskCaloFilter::AcceptEventPHOS() - Accept :  E %2.2f > %2.2f, nCells %d > %d \n", 
-                             clus->E(), fPHOSEnergyCut, clus->GetNCells(), fPHOSNcellsCut);
+      AliDebug(1,Form("Accept :  E %2.2f > %2.2f, nCells %d > %d",
+                      clus->E(), fPHOSEnergyCut, clus->GetNCells(), fPHOSNcellsCut));
       
       return kTRUE;
     }
     
   }// loop
   
-  if (fDebug > 0)  printf("AliAnalysisTaskCaloFilter::AcceptEventPHOS() - Reject \n");
+  AliDebug(1,"Reject");
   
   return kFALSE;
   
@@ -240,15 +240,14 @@ Bool_t AliAnalysisTaskCaloFilter::AcceptEventTrack()
     
     if(momentum.Pt() > fTrackPtCut) 
     {
-      if (fDebug > 0) printf("AliAnalysisTaskCaloFilter::AcceptEventTrack() - Accept :  pT %2.2f > %2.2f \n", 
-                             momentum.Pt(), fTrackPtCut);
+      AliDebug(1,Form("Accept :  pT %2.2f > %2.2f",momentum.Pt(), fTrackPtCut));
 
       return kTRUE;
     }
     
   } 
   
-  if (fDebug > 0)  printf("AliAnalysisTaskCaloFilter::AcceptEventTrack() - Reject \n");
+  AliDebug(1,"Reject");
   
   return kFALSE;
   
@@ -264,7 +263,7 @@ Bool_t AliAnalysisTaskCaloFilter::AcceptEventVertex()
   
   if(TMath::Abs(v[2]) > fVzCut) 
   {
-    if (fDebug > 0) printf("AliAnalysisTaskCaloFilter::AcceptEventVertex() - Vz Reject : vz %2.2f > %2.2f\n",v[2],fVzCut);
+    AliDebug(1,Form("Vz Reject : vz %2.2f > %2.2f",v[2],fVzCut));
     
     return kFALSE ;
   }
@@ -291,7 +290,7 @@ Bool_t AliAnalysisTaskCaloFilter::CheckForPrimaryVertex()
        TMath::Abs(v[1]) < 1e-6 && 
        TMath::Abs(v[0]) < 1e-6 ) 
     {
-      if (fDebug > 0)  printf("AliAnalysisTaskCaloFilter::CheckForPrimaryVertex() - Reject v(0,0,0) \n");
+      AliDebug(1,"Reject v(0,0,0)");
       
       return kFALSE ;
     }
@@ -317,13 +316,13 @@ Bool_t AliAnalysisTaskCaloFilter::CheckForPrimaryVertex()
     if(fESDEvent->GetPrimaryVertexSPD()->GetNContributors() < 1) 
     {
       //      cout<<"bad vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
-      if (fDebug > 0)  printf("AliAnalysisTaskCaloFilter::CheckForPrimaryVertex() - Reject, GetPrimaryVertexSPD()->GetNContributors() < 1 \n");
+      AliDebug(1,"Reject, GetPrimaryVertexSPD()->GetNContributors() < 1");
       
       return kFALSE;
     }
   }
   
-  if (fDebug > 0)  printf("AliAnalysisTaskCaloFilter::CheckForPrimaryVertex() - Reject, GetPrimaryVertexTracks()->GetNContributors() > 1 \n");
+  AliDebug(1,"Reject, GetPrimaryVertexTracks()->GetNContributors() > 1");
   
   return kFALSE;
   
@@ -342,9 +341,11 @@ void AliAnalysisTaskCaloFilter::CorrectionsInEMCAL()
     {
       if(fLoadEMCALMatrices)
       {
-        printf("AliAnalysisTaskCaloFilter::UserExec() - Load user defined EMCAL geometry matrices\n");
-        for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
-          if(fEMCALMatrix[mod]){
+        AliInfo("Load user defined EMCAL geometry matrices");
+        for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
+        {
+          if(fEMCALMatrix[mod])
+          {
             if(DebugLevel() > 1) 
               fEMCALMatrix[mod]->Print();
             fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod) ;  
@@ -354,26 +355,25 @@ void AliAnalysisTaskCaloFilter::CorrectionsInEMCAL()
       }//Load matrices
       else if(!gGeoManager)
       {
-        printf("AliAnalysisTaskCaloFilter::UserExec() - Get geo matrices from data\n");
+        AliInfo("Get geo matrices from data");
         //Still not implemented in AOD, just a workaround to be able to work at least with ESDs	
         if(!strcmp(InputEvent()->GetName(),"AliAODEvent")) 
         {
-          if(DebugLevel() > 1) 
-            printf("AliAnalysisTaskCaloFilter Use ideal geometry, values geometry matrix not kept in AODs.\n");
+          AliDebug(1,"Use ideal geometry, values geometry matrix not kept in AODs");
         }//AOD
         else 
         {	
-          if(DebugLevel() > 1) printf("AliAnalysisTaskCaloFilter Load Misaligned matrices. \n");
+          AliDebug(1,"Load Misaligned matrices");
           AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent()) ;
           if(!esd) 
           {
-            printf("AliAnalysisTaskCaloFilter::UserExec() - This event does not contain ESDs?");
+            AliInfo("This event does not contain ESDs?");
             return;
           }
           for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
           {
-            //if(DebugLevel() > 1) 
-            esd->GetEMCALMatrix(mod)->Print();
+            if(DebugLevel() > 1)
+              esd->GetEMCALMatrix(mod)->Print();
             if(esd->GetEMCALMatrix(mod)) fEMCALGeo->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
           } 
           fGeoMatrixSet=kTRUE;
@@ -392,17 +392,15 @@ void AliAnalysisTaskCaloFilter::CorrectionsInEMCAL()
       if(cluster->IsPHOS()) continue ;
       
       Float_t position[]={0,0,0};
-      if(DebugLevel() > 2)
-        printf("Check cluster %d for bad channels and close to border\n",cluster->GetID());
+      
+      AliDebug(1,Form("Check cluster %d for bad channels and close to border",cluster->GetID()));
+      
       if(fEMCALRecoUtils->ClusterContainsBadChannel(fEMCALGeo,cluster->GetCellsAbsId(), cluster->GetNCells())) continue;	
       
-      if(DebugLevel() > 2)
-      { 
-        printf("Filter, before  : i %d, E %f, dispersion %f, m02 %f, m20 %f, distToBad %f\n",iClust,cluster->E(),
-               cluster->GetDispersion(),cluster->GetM02(),cluster->GetM20(), cluster->GetDistanceToBadChannel());
-        cluster->GetPosition(position);
-        printf("Filter, before  : i %d, x %f, y %f, z %f\n",cluster->GetID(), position[0], position[1], position[2]);
-      }
+      AliDebug(2,Form("Filter, before  : i %d, E %f, dispersion %f, m02 %f, m20 %f, distToBad %f",iClust,cluster->E(),
+                      cluster->GetDispersion(),cluster->GetM02(),cluster->GetM20(), cluster->GetDistanceToBadChannel()));
+      cluster->GetPosition(position);
+      AliDebug(2,Form("Filter, before  : i %d, x %f, y %f, z %f",cluster->GetID(), position[0], position[1], position[2]));
       
       //Recalculate distance to bad channels, if new list of bad channels provided
       fEMCALRecoUtils->RecalculateClusterDistanceToBadChannel(fEMCALGeo, InputEvent()->GetEMCALCells(), cluster);
@@ -416,13 +414,10 @@ void AliAnalysisTaskCaloFilter::CorrectionsInEMCAL()
       
       fEMCALRecoUtils->RecalculateClusterPosition(fEMCALGeo, InputEvent()->GetEMCALCells(),cluster);
       
-      if(DebugLevel() > 2)
-      { 
-        printf("Filter, after   : i %d, E %f, dispersion %f, m02 %f, m20 %f, distToBad %f\n",cluster->GetID(),cluster->E(),
-               cluster->GetDispersion(),cluster->GetM02(),cluster->GetM20(), cluster->GetDistanceToBadChannel());
-        cluster->GetPosition(position);
-        printf("Filter, after   : i %d, x %f, y %f, z %f\n",cluster->GetID(), position[0], position[1], position[2]);
-      }    
+      AliDebug(2,Form("Filter, after   : i %d, E %f, dispersion %f, m02 %f, m20 %f, distToBad %f",cluster->GetID(),cluster->E(),
+                      cluster->GetDispersion(),cluster->GetM02(),cluster->GetM20(), cluster->GetDistanceToBadChannel()));
+      cluster->GetPosition(position);
+      AliDebug(1,Form("Filter, after   : i %d, x %f, y %f, z %f",cluster->GetID(), position[0], position[1], position[2]));
       
       cluster->SetE(fEMCALRecoUtils->CorrectClusterEnergyLinearity(cluster));
       
@@ -525,15 +520,13 @@ void AliAnalysisTaskCaloFilter::FillAODCaloClusters()
     Float_t dR = cluster->GetTrackDx();
     Float_t dZ = cluster->GetTrackDz();
     
-    if(DebugLevel() > 2)
-      printf("Original residuals : dZ %f, dR %f\n ",dZ, dR);
+    AliDebug(2,Form("Original residuals : dZ %f, dR %f",dZ, dR));
     
     //--------------------------------------------------------------
     //If EMCAL and corrections done, get the new matching parameters, do not copy noisy clusters
     if(cluster->IsEMCAL() && fCorrect)
     {
-      if(DebugLevel() > 2)
-        printf("Check cluster %d for bad channels and close to border\n",cluster->GetID());
+      AliDebug(2,Form("Check cluster %d for bad channels and close to border",cluster->GetID()));
       
       if(fEMCALRecoUtils->ClusterContainsBadChannel(fEMCALGeo,cluster->GetCellsAbsId(), cluster->GetNCells())) continue;	
       
@@ -543,11 +536,7 @@ void AliAnalysisTaskCaloFilter::FillAODCaloClusters()
       cluster->SetTrackDistance(dR,dZ);
     }
     
-    if(DebugLevel() > 2)
-    {
-      if(cluster->IsEMCAL()) printf("EMCAL Track-Cluster Residuals : dZ %f, dR %f\n ",dZ, dR);
-      if(cluster->IsPHOS())  printf("PHOS  Track-Cluster Residuals : dZ %f, dR %f\n ",dZ, dR);
-    }
+    AliDebug(2,Form("EMCAL? %d, PHOS? %d Track-Cluster Residuals : dZ %f, dR %f",cluster->IsEMCAL(), cluster->IsPHOS(),dZ, dR));
     
     //--------------------------------------------------------------
     
@@ -578,13 +567,10 @@ void AliAnalysisTaskCaloFilter::FillAODCaloClusters()
     caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
     caloCluster->SetTrackDistance(dR, dZ);
     
-    if(DebugLevel() > 2)
-    { 
-      printf("Filter, aod     : i %d, E %f, dispersion %f, m02 %f, m20 %f\n",caloCluster->GetID(),caloCluster->E(),
-             caloCluster->GetDispersion(),caloCluster->GetM02(),caloCluster->GetM20());
-      caloCluster->GetPosition(posF);
-      printf("Filter, aod     : i %d, x %f, y %f, z %f\n",caloCluster->GetID(), posF[0], posF[1], posF[2]);
-    }    
+    AliDebug(2,Form("Filter, aod     : i %d, E %f, dispersion %f, m02 %f, m20 %f",caloCluster->GetID(),caloCluster->E(),
+                    caloCluster->GetDispersion(),caloCluster->GetM02(),caloCluster->GetM20()));
+    caloCluster->GetPosition(posF);
+    AliDebug(2,Form("Filter, aod     : i %d, x %f, y %f, z %f",caloCluster->GetID(), posF[0], posF[1], posF[2]));
     
     //Matched tracks, just to know if there was any match, the track pointer is useless if tracks not stored
     if(TMath::Abs(dR) < 990 && TMath::Abs(dZ) < 990) 
@@ -623,12 +609,17 @@ void AliAnalysisTaskCaloFilter::FillAODHeader()
 {
   // AOD header copy
   
-  AliAODHeader* header = AODEvent()->GetHeader();
+  AliAODHeader* header = dynamic_cast<AliAODHeader*>(AODEvent()->GetHeader());
+  if(!header)
+  {
+    AliFatal("Not a standard AOD");
+    return; // not needed but coverity complains
+  }
   
   // Copy from AODs
   if(fAODEvent)
   {
-    *header = *(fAODEvent->GetHeader());
+    *header = *((AliAODHeader*)fAODEvent->GetHeader());
     return;
   }
   
@@ -726,7 +717,8 @@ void AliAnalysisTaskCaloFilter::FillAODTracks()
     Int_t nCopyTrack = 0;
     for (Int_t nTrack = 0; nTrack < fAODEvent->GetNumberOfTracks(); ++nTrack) 
     {
-      AliAODTrack *track = fAODEvent->GetTrack(nTrack);
+      AliAODTrack *track = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(nTrack));
+      if(!track) AliFatal("Not a standard AOD");
       
       // Select only hybrid tracks?
       if(fFillHybridTracks && !track->IsHybridGlobalConstrainedGlobal()) continue;
@@ -907,7 +899,7 @@ void AliAnalysisTaskCaloFilter::Init()
   
   if(gROOT->LoadMacro(fConfigName) >=0)
   {
-    printf("Configure analysis with %s\n",fConfigName.Data());
+    AliInfo(Form("Configure analysis with %s",fConfigName.Data()));
     
     AliAnalysisTaskCaloFilter *filter = (AliAnalysisTaskCaloFilter*)gInterpreter->ProcessLine("ConfigCaloFilter()");
     
@@ -985,8 +977,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   // Execute analysis for current event
   // Copy input ESD or AOD header, vertex, CaloClusters and CaloCells to output AOD
   
-  if (fDebug > 0)  
-    printf("CaloFilter: Analysing event # %d\n", (Int_t)Entry());
+  AliDebug(1,Form("Analysing event # %d", (Int_t)Entry()));
   
   fEvent    = InputEvent();
   fAODEvent = dynamic_cast<AliAODEvent*> (fEvent);  
@@ -994,7 +985,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   
   if(!fEvent) 
   {
-    printf("AliAnalysisTaskCaloFilter::UserExec - This event does not contain Input?");
+    AliInfo("This event does not contain Input?");
     return;
   }
   

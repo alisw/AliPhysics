@@ -10,8 +10,8 @@ runLevelQA()
 {
   qaFile=$1
 
-  cp $ALICE_ROOT/PWGPP/TOF/trending/MakeTrendingTOFQA.C .
-  aliroot -b -q -l "MakeTrendingTOFQA.C(\"$qaFile\",${runNumber},kFALSE,kFALSE,kFALSE,\"${ocdbStorage}\")" 
+  cp $ALICE_ROOT/PWGPP/TOF/trending/MakeTrendingTOFQAv2.C .
+  aliroot -b -q -l "MakeTrendingTOFQAv2.C(\"$qaFile\",${runNumber},kFALSE,kFALSE,kFALSE,\"${ocdbStorage}\", kTRUE)" 
 }
 
 periodLevelQA()

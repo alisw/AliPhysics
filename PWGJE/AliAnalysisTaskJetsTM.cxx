@@ -154,7 +154,8 @@ void AliAnalysisTaskJetsTM::UserExec(Option_t *)
       Float_t ptsum  = 0.;
       
       for (Int_t i = 0; i < nT; i++) {
-	  AliAODTrack* track = aodE->GetTrack(i);
+	  AliAODTrack* track = dynamic_cast<AliAODTrack*>(aodE->GetTrack(i));
+	  if(!track) AliFatal("Not a standard AOD");
 //
 //    Track quality cuts
 	  if (!track->TestFilterBit(1<<4)) continue;
@@ -233,7 +234,8 @@ void AliAnalysisTaskJetsTM::UserExec(Option_t *)
 // 2nd correlation with principal axis
 //   
       for (Int_t i = 0; i < nT; i++) {
-	  AliAODTrack* track = aodE->GetTrack(i);
+	  AliAODTrack* track = dynamic_cast<AliAODTrack*>(aodE->GetTrack(i));
+	  if(!track) AliFatal("Not a standard AOD");
 //
 //    Track quality cuts
 	  if (!track->TestFilterBit(1<<4)) continue;

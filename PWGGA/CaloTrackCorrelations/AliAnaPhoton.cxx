@@ -348,7 +348,11 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   if( GetReader()->ReadStack() )
   {
     stack = GetMCStack();
-    if(!stack ) return;
+    if( !stack )
+    {
+      AliFatal("Stack not available, is the MC handler called? STOP");
+      return;
+    }
     nprim = stack->GetNtrack();
   }
   
@@ -357,7 +361,11 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   if( GetReader()->ReadAODMCParticles() )
   {
     mcparticles = GetReader()->GetAODMCParticles();
-    if( !mcparticles ) return;
+    if( !mcparticles )
+    {
+      AliFatal("Standard MCParticles not available!");
+      return;
+    }
     nprim = mcparticles->GetEntriesFast();
   }
   
@@ -634,7 +642,7 @@ void AliAnaPhoton::FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cel
 
 //_______________________________________________________________________________
 void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
-                                              Int_t mcTag, Int_t maxCellFraction)
+                                              Int_t mcTag, Float_t maxCellFraction)
 {
   //Fill cluster Shower Shape histograms
   
@@ -2203,7 +2211,7 @@ void AliAnaPhoton::InitParameters()
   fNCellsCut   = 0;
 	
   fRejectTrackMatch       = kTRUE ;
-	
+  
 }
 
 //__________________________________________________________________
@@ -2371,7 +2379,11 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     aodph.SetM02(calo->GetM02());
     aodph.SetNLM(nMaxima);
-    
+    aodph.SetTime(calo->GetTOF()*1e9);
+    aodph.SetNCells(calo->GetNCells());
+    Int_t nSM = GetModuleNumber(calo);
+    aodph.SetSModNumber(nSM);
+
     //-------------------------------------
     // PID selection or bit setting
     //-------------------------------------
@@ -2409,7 +2421,6 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     fhClusterCutsE [9]->Fill(calo->E());
     fhClusterCutsPt[9]->Fill(fMomentum.Pt());
     
-    Int_t   nSM  = GetModuleNumber(calo);
     if(nSM < GetCaloUtils()->GetNumberOfSuperModulesUsed() && nSM >=0)
     {
       fhEPhotonSM ->Fill(fMomentum.E (),nSM);

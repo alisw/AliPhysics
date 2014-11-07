@@ -448,7 +448,8 @@ void AliAnalysisTaskPIDCORR::FillGlobalTracksArray() {
 		
 	for (Int_t iTrack = 0; iTrack < fAOD->GetNumberOfTracks(); iTrack++) {
 		
-		track = fAOD->GetTrack(iTrack);
+		track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
+		if(!track) AliFatal("Not a standard AOD");
 		
 		// I.e., if it does NOT pass the filtermask.
 		if (!(track->TestFilterMask(1<<7))) {
@@ -548,7 +549,8 @@ Double_t TriggerPt=TriggerPtMin;
   // Track loop to fill a pT spectrum
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++)
 	 {
-    AliAODTrack* track = fAOD->GetTrack(iTracks);
+    AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
+    if(!track) AliFatal("Not a standard AOD");
     if (!track) {
       //printf("ERROR: Could not receive track %d\n", iTracks);
       continue;
@@ -846,7 +848,8 @@ TObjArray *AliAnalysisTaskPIDCORR::AcceptTracksforMixing(AliAODEvent *inputEvent
 
 	for (Int_t iTrack=0; iTrack<nTracks; ++iTrack)
 {
-	AliAODTrack* track = inputEvent->GetTrack(iTrack);
+	AliAODTrack* track = dynamic_cast<AliAODTrack*>(inputEvent->GetTrack(iTrack));
+	if(!track) AliFatal("Not a standard AOD");
 	
 	Int_t trackclass=ClassifyTrack(track);
 	if (trackclass==1)
