@@ -17,6 +17,7 @@
 #include "AliAODVertex.h"
 #include "AliAODRedCov.h"
 #include "AliAODPid.h"
+#include "AliExternalTrackParam.h"
  
 
 class AliVVertex;
@@ -31,8 +32,11 @@ class AliAODTrack : public AliVTrack {
   
   enum AODTrk_t {kUndef = -1, 
 		 kPrimary, 
-		 kSecondary, 
-		 kOrphan};
+		 kFromDecayVtx, 
+		 kOrphan}; // Please note that this flag does not guarantee that the particle is a Physical Primary, it simply identifies the algorithm which was used to filter the track. In general, the following associations are used (check the filter macro to be sure, as this comment may be outdated): 
+                           //kPrimary: TPC only tracks, global constrained tracks, primary tracks, kink mothers; 
+                           //kFromDecayVtx: bachelor tracks from cascades, tracks from V0, kink daughters; 
+                           //kUndef:TRD matched tracks
 
   enum AODTrkBits_t {
     kIsDCA=BIT(14),   // set if fPosition is the DCA and not the position of the first point
@@ -141,6 +145,8 @@ class AliAODTrack : public AliVTrack {
   
   UShort_t GetTPCNcls()  const { return GetTPCncls(); }
 
+  Int_t GetNcls(Int_t idet) const;
+
   virtual Double_t M() const { return M(GetMostProbablePID()); }
   Double_t M(AODTrkPID_t pid) const;
   virtual Double_t E() const { return E(GetMostProbablePID()); }
@@ -200,6 +206,7 @@ class AliAODTrack : public AliVTrack {
   //
   Int_t   GetTOFBunchCrossing(Double_t b=0, Bool_t tpcPIDonly=kFALSE) const;
   //
+  using AliVTrack::GetP;
   template <typename T> void GetP(T *p) const {
     p[0]=fMomentum[0]; p[1]=fMomentum[1]; p[2]=fMomentum[2];}
 
@@ -220,7 +227,7 @@ class AliAODTrack : public AliVTrack {
     fCovMatrix->GetCovMatrix(covMatrix); return kTRUE;}
 
   Bool_t GetXYZ(Double_t *p) const {
-    return GetPosition(p); }
+    return GetPosition(p); }  
   
   Bool_t GetXYZAt(Double_t x, Double_t b, Double_t *r) const;
   Bool_t GetXYZatR(Double_t xr,Double_t bz, Double_t *xyz=0, Double_t* alpSect=0) const;  
@@ -230,12 +237,12 @@ class AliAODTrack : public AliVTrack {
 
   void RemoveCovMatrix() {delete fCovMatrix; fCovMatrix=NULL;}
 
-  Double_t XAtDCA() const { return fPositionAtDCA[0]; }
-  Double_t YAtDCA() const { return fPositionAtDCA[1]; }
+  Double_t XAtDCA() const { return fPositionAtDCA[0]; } //makes sense only for constrained tracks, returns dummy values for all other tracks
+  Double_t YAtDCA() const { return fPositionAtDCA[1]; } //makes sense only for constrained tracks, returns dummy values for all other tracks
   Double_t ZAtDCA() const {
     if (IsMuonTrack()) return fPosition[2];
     else if (TestBit(kIsDCA)) return fPosition[1];
-    else return -999.; }
+    else return -999.; }                                //makes sense only for constrained tracks, returns dummy values for all other tracks
   Bool_t   XYZAtDCA(Double_t x[3]) const { x[0] = XAtDCA(); x[1] = YAtDCA(); x[2] = ZAtDCA(); return kTRUE; }
   
   Double_t DCA() const {
@@ -243,9 +250,9 @@ class AliAODTrack : public AliVTrack {
     else if (TestBit(kIsDCA)) return fPosition[0];
     else return -999.; }
   
-  Double_t PxAtDCA() const { return fMomentumAtDCA[0]; }
-  Double_t PyAtDCA() const { return fMomentumAtDCA[1]; }
-  Double_t PzAtDCA() const { return fMomentumAtDCA[2]; }
+  Double_t PxAtDCA() const { return fMomentumAtDCA[0]; } //makes sense only for constrained tracks, returns dummy values for all other tracks
+  Double_t PyAtDCA() const { return fMomentumAtDCA[1]; } //makes sense only for constrained tracks, returns dummy values for all other tracks
+  Double_t PzAtDCA() const { return fMomentumAtDCA[2]; } //makes sense only for constrained tracks, returns dummy values for all other tracks
   Double_t PAtDCA() const { return TMath::Sqrt(PxAtDCA()*PxAtDCA() + PyAtDCA()*PyAtDCA() + PzAtDCA()*PzAtDCA()); }
   Bool_t   PxPyPzAtDCA(Double_t p[3]) const { p[0] = PxAtDCA(); p[1] = PyAtDCA(); p[2] = PzAtDCA(); return kTRUE; }
   
@@ -276,6 +283,9 @@ class AliAODTrack : public AliVTrack {
   void    SetTPCFitMap(const TBits amap) {fTPCFitMap = amap;}
   void    SetTPCPointsF(UShort_t  findable){fTPCnclsF = findable;}
   void    SetTPCNCrossedRows(UInt_t n)     {fTPCNCrossedRows = n;}
+  
+  virtual const    AliExternalTrackParam * GetInnerParam() const { return NULL; }
+  virtual const    AliExternalTrackParam * GetOuterParam() const { return NULL; }
 
   UShort_t GetTPCNclsF() const { return fTPCnclsF;}
   UShort_t GetTPCNCrossedRows()  const { return fTPCNCrossedRows;}
@@ -460,7 +470,7 @@ class AliAODTrack : public AliVTrack {
   Short_t       fID;                // unique track ID, points back to the ESD track
 
   Char_t        fCharge;            // particle charge
-  Char_t        fType;              // Track Type
+  Char_t        fType;              // Track Type, explanation close to the enum AODTrk_t
 
   Char_t        fPIDForTracking;    // pid using for tracking of ESD track
 
@@ -484,6 +494,19 @@ class AliAODTrack : public AliVTrack {
   ULong_t fMFTClusterPattern;       // Tells us which MFT clusters are contained in the track, and which one is a good one (if MC)  // AU
 
   const AliAODEvent* fAODEvent;     //! pointer back to the event the track belongs to
+
+  //---------------------------------------------------------------------------
+  //--the calibration interface--
+  //--to be used in online calibration/QA
+  //--should also be implemented in ESD so it works offline as well
+  //-----------
+  virtual Int_t GetTrackParam         ( AliExternalTrackParam &p ) const;
+  virtual Int_t GetTrackParamRefitted ( AliExternalTrackParam &p ) const;
+  virtual Int_t GetTrackParamIp       ( AliExternalTrackParam &p ) const;
+  virtual Int_t GetTrackParamTPCInner ( AliExternalTrackParam &p ) const;
+  virtual Int_t GetTrackParamOp       ( AliExternalTrackParam &p ) const;
+  virtual Int_t GetTrackParamCp       ( AliExternalTrackParam &p ) const;
+  virtual Int_t GetTrackParamITSOut   ( AliExternalTrackParam &p ) const;
 
   ClassDef(AliAODTrack, 24);
 };

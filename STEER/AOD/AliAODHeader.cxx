@@ -32,7 +32,7 @@ ClassImp(AliAODHeader)
 
 //______________________________________________________________________________
 AliAODHeader::AliAODHeader() : 
-  AliVHeader(),
+  AliVAODHeader(),
   fMagneticField(-999.),
   fMuonMagFieldScale(-999.),
   fCentrality(-999.),
@@ -98,7 +98,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
 			   UInt_t nOrbit,
 			   UInt_t nPeriod,
 			   const Char_t *title) :
-  AliVHeader(),
+  AliVAODHeader(),
   fMagneticField(-999.),
   fMuonMagFieldScale(-999.),
   fCentrality(-999.),
@@ -186,7 +186,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
 			   Int_t nDimuons,
 			   Int_t nGlobalMuons,                 // AU
 			   Int_t nGlobalDimuons) :             // AU
-  AliVHeader(),
+  AliVAODHeader(),
   fMagneticField(magField),
   fMuonMagFieldScale(muonMagFieldScale),
   fCentrality(cent),
@@ -258,7 +258,7 @@ AliAODHeader::~AliAODHeader()
 
 //______________________________________________________________________________
 AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
-  AliVHeader(hdr),
+  AliVAODHeader(hdr),
   fMagneticField(hdr.fMagneticField),
   fMuonMagFieldScale(hdr.fMuonMagFieldScale),
   fCentrality(hdr.fCentrality),

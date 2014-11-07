@@ -125,8 +125,10 @@ public:
 
     Double_t      GetAutoLoadTime()        const { return fAutoLoadTime; }
     Bool_t        GetAutoLoad()            const { return fAutoLoad;     }
+    Bool_t        GetLoopMarked()            const { return fLoopMarked;     }
     void          SetAutoLoadTime(Float_t time);
     void          SetAutoLoad(Bool_t autoLoad);
+    void          SetLoopMarked(Bool_t loopMarked);
     void          SetTrigSel(Int_t trig);
     void          AutoLoadNextEvent();
 
@@ -173,6 +175,7 @@ protected:
     AliEventInfo	fEventInfo;		// Current Event Info
 
     Bool_t        fAutoLoad;              // Automatic loading of events (online)
+    Bool_t        fLoopMarked;            // Automatic loading of marked events
     Float_t       fAutoLoadTime;          // Auto-load time in seconds
     TTimer       *fAutoLoadTimer;         // Timer for automatic event loading
 
@@ -229,13 +232,13 @@ private:
     static AliEveEventManager* fgMaster;
     static AliEveEventManager* fgCurrent;
 
-    static void* DispatchEventListener(void *arg){static_cast<AliEveEventManager*>(arg)->GetNextEvent();}
-    static void* DispatchStorageManagerWatcher(void *arg){static_cast<AliEveEventManager*>(arg)->CheckStorageStatus();}
+    static void* DispatchEventListener(void *arg){static_cast<AliEveEventManager*>(arg)->GetNextEvent();return nullptr;}
+    static void* DispatchStorageManagerWatcher(void *arg){static_cast<AliEveEventManager*>(arg)->CheckStorageStatus();return nullptr;}
     void GetNextEvent();
     void CheckStorageStatus();
     TThread *fEventListenerThread;
     TThread *fStorageManagerWatcherThread;
-    TMutex fMutex;
+    TMutex *fMutex;
     AliESDEvent *fCurrentEvent[2];
     TTree *fCurrentTree[2];
     int fEventInUse;
@@ -245,6 +248,7 @@ private:
 
     Bool_t fOnlineMode;
     Bool_t fStorageDown;
+    Bool_t fFinished;
 
     AliEveEventManager(const AliEveEventManager&);            // Not implemented
     AliEveEventManager& operator=(const AliEveEventManager&); // Not implemented

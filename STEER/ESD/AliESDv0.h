@@ -75,7 +75,7 @@ public:
   Double_t  GetChi2V0()  const {return fChi2V0;}
   void     GetPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;
   void     GetNPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;
-  void     GetPPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;
+  void     GetPPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;  
   void     GetXYZ(Double_t &x, Double_t &y, Double_t &z) const;
   Float_t  GetD(Double_t x0,Double_t y0) const;
   Float_t  GetD(Double_t x0,Double_t y0,Double_t z0) const;
@@ -113,7 +113,7 @@ public:
   void SetParamP(const AliExternalTrackParam & paramP) {fParamP = paramP;}
   void SetParamN(const AliExternalTrackParam & paramN) {fParamN = paramN;}
   void SetStatus(Int_t status){fStatus=status;}
-  Int_t GetStatus() const {return fStatus;}
+  ULong_t GetStatus() const {return ULong_t(fStatus);}
   Int_t GetIndex(Int_t i) const {return (i==0) ? fNidx : fPidx;}
   void SetIndex(Int_t i, Int_t ind);
   const Double_t *GetAnglep() const {return fAngle;}

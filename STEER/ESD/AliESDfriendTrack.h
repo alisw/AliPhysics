@@ -7,15 +7,18 @@
 //       Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 
-#include <TObject.h>
 #include <TClonesArray.h>
 #include <AliExternalTrackParam.h>
+#include "AliVfriendTrack.h"
+#include "AliTrackPointArray.h"
 
-class AliTrackPointArray;
 class AliKalmanTrack;
 class TObjArrray;
+class AliTPCseed;
+
+
 //_____________________________________________________________________________
-class AliESDfriendTrack : public TObject {
+class AliESDfriendTrack : public AliVfriendTrack {
 public:
   enum {
     kMaxITScluster=12,
@@ -41,7 +44,8 @@ public:
   AliKalmanTrack *GetTRDtrack() {return fTRDtrack;}
   AliKalmanTrack *GetITStrack() {return fITStrack;}
   void AddCalibObject(TObject * calibObject); 
-  TObject * GetCalibObject(Int_t index);
+  TObject * GetCalibObject(Int_t index) const;
+
   //
   // parameters backup
   void SetTPCOut(const AliExternalTrackParam &param);
@@ -53,6 +57,17 @@ public:
   const AliExternalTrackParam * GetITSOut() const {return fITSOut;} 
   const AliExternalTrackParam * GetTRDIn()  const {return fTRDIn;} 
 
+  //used in calibration
+  Int_t GetTrackParamTPCOut( AliExternalTrackParam &p ) const {
+      if(!GetTPCOut()) return -1;
+      p=*GetTPCOut();
+      return 0;}
+
+  Int_t GetTrackParamITSOut( AliExternalTrackParam &p ) const {
+      if(!GetITSOut()) return -1;
+      p=*GetITSOut();
+      return 0;}
+
   void SetITSIndices(Int_t* indices, Int_t n);
   void SetTPCIndices(Int_t* indices, Int_t n);
   void SetTRDIndices(Int_t* indices, Int_t n);
@@ -63,7 +78,11 @@ public:
   
   // bit manipulation for filtering
   void SetSkipBit(Bool_t skip){SetBit(23,skip);}
-  Bool_t TestSkipBit() {return TestBit(23);}
+  Bool_t TestSkipBit() const {return TestBit(23);}
+
+  // VfriendTrack interface
+
+  Int_t GetTPCseed( AliTPCseed &) const;
 
 protected:
   Float_t f1P;                     // 1/P (1/(GeV/c))
@@ -87,7 +106,7 @@ protected:
 private:
   AliESDfriendTrack &operator=(const AliESDfriendTrack & /* t */) {return *this;}
 
-  ClassDef(AliESDfriendTrack,6) //ESD friend track
+  ClassDef(AliESDfriendTrack,8) //ESD friend track
 };
 
 #endif

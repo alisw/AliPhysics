@@ -274,7 +274,12 @@ AliTPCseed & AliTPCseed::operator=(const AliTPCseed &param)
     if (!fClusterOwner) for(Int_t i = 0;i<160;++i)fClusterPointer[i] = param.fClusterPointer[i];
     else                for(Int_t i = 0;i<160;++i) {
 	delete fClusterPointer[i];
-	fClusterPointer[i] = new AliTPCclusterMI(*(param.fClusterPointer[i]));
+	if (param.fClusterPointer[i]) { 
+	  fClusterPointer[i] = new AliTPCclusterMI(*(param.fClusterPointer[i]));
+	}
+	else {
+	  fClusterPointer[i] = 0x0;
+	}
       }
     // leave out fPoint, they are also not copied in the copy ctor...
     // but deleted in the dtor... strange...

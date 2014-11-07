@@ -907,7 +907,7 @@ void AliCDBLocal::QueryValidFiles() {
                   highestV = aVersion;
                   highestSubV = aSubVersion;
                   hvRunRange = aRunRange;
-                } else {
+                } else if (aVersion == highestV) {
                   if (aSubVersion > highestSubV) {
                     highestSubV = aSubVersion;
                     hvRunRange = aRunRange;

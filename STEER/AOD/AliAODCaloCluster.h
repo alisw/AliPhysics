@@ -109,7 +109,7 @@ class AliAODCaloCluster : public AliAODCluster {
     fTOF = tof ;
   }
   
-  void GetMomentum(TLorentzVector& p, Double_t * vertexPosition );
+  void GetMomentum(TLorentzVector& p, Double_t * vertexPosition ) const;
 
   void AddTrackMatched(TObject *trk) { 
     //Make sure we attach the object to correct process number

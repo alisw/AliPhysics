@@ -48,6 +48,7 @@ class AliITSURecoParam : public AliDetectorRecoParam
   Bool_t      GetUseMatLUT(Int_t step)           const {return (step<0||step>=kNTrackingPhases) ? kFALSE:fUseMatLUT[step];}
   Int_t GetTracker() const {return fTracker;}
   Bool_t GetSAonly() const {return fSAonly;}
+  Int_t GetMaxROCycle() const {return fMaxROCycle;}
   //
   void        SetNLayers(Int_t n);
   void        SetTanLorentzAngle(Int_t lr, Double_t v);
@@ -70,6 +71,7 @@ class AliITSURecoParam : public AliDetectorRecoParam
   virtual void Print(Option_t *opt="")  const;
   void SetTracker(Int_t opt) {fTracker=opt;}
   void SetSAonly(Bool_t sa=kTRUE) {fSAonly=sa;}
+  void SetMaxROCycle(Int_t ro) {fMaxROCycle=ro;}
   //
  protected:
   Int_t          fNLayers;          // number of layers 
@@ -110,7 +112,8 @@ class AliITSURecoParam : public AliDetectorRecoParam
   static const Bool_t   fgkAllowDiagonalClusterization;        // clusters of pixels with common corners
   //
   Int_t fTracker;  // 0 - global, 1 - cooked, 2 - CA
-  Bool_t fSAonly;  // kTRUE, if ITSU standalone tracking only  
+  Bool_t fSAonly;  // kTRUE, if ITSU standalone tracking only
+  Int_t fMaxROCycle; // max RO cycle accepted by the cluster finder  
  private:
   AliITSURecoParam(const AliITSURecoParam & param);
   AliITSURecoParam & operator=(const AliITSURecoParam &param);

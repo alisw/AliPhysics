@@ -2007,7 +2007,7 @@ void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const
     
   } //  if (mapFileName)
   
-  TTreeSRedirector cstream(fileName);
+  TTreeSRedirector cstream(fileName,"recreate");
   Int_t arrayEntries = 0;
   if (array) arrayEntries = array->GetEntries();
   
@@ -2112,38 +2112,40 @@ void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const
       "sector=" << isector;
     
     for  (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++) {
-      cstream << "calPads" <<
-        (Char_t*)((names[ivalue] + "_Median=").Data()) << median[ivalue] <<
-        (Char_t*)((names[ivalue] + "_Mean=").Data()) << mean[ivalue] <<
-        (Char_t*)((names[ivalue] + "_RMS=").Data()) << rms[ivalue] <<
-        (Char_t*)((names[ivalue] + "_LTM=").Data()) << ltm[ivalue] <<
-        (Char_t*)((names[ivalue] + "_RMS_LTM=").Data()) << ltmrms[ivalue];
+      if (outlierPad==0) {
+	cstream << "calPads" <<
+	  (Char_t*)((names[ivalue] + "_Median=").Data()) << median[ivalue] <<
+	  (Char_t*)((names[ivalue] + "_Mean=").Data()) << mean[ivalue] <<
+	  (Char_t*)((names[ivalue] + "_RMS=").Data()) << rms[ivalue] <<
+	  (Char_t*)((names[ivalue] + "_LTM=").Data()) << ltm[ivalue] <<
+	  (Char_t*)((names[ivalue] + "_RMS_LTM=").Data()) << ltmrms[ivalue];
+      }
       if (outlierPad) {
         cstream << "calPads" <<
-          (Char_t*)((names[ivalue] + "_Median_OutlierCutted=").Data()) << medianWithOut[ivalue] <<
-          (Char_t*)((names[ivalue] + "_Mean_OutlierCutted=").Data()) << meanWithOut[ivalue] <<
-          (Char_t*)((names[ivalue] + "_RMS_OutlierCutted=").Data()) << rmsWithOut[ivalue] <<
-          (Char_t*)((names[ivalue] + "_LTM_OutlierCutted=").Data()) << ltmWithOut[ivalue] <<
-          (Char_t*)((names[ivalue] + "_RMS_LTM_OutlierCutted=").Data()) << ltmrmsWithOut[ivalue];
+          (Char_t*)((names[ivalue] + "_Median=").Data()) << medianWithOut[ivalue] <<
+          (Char_t*)((names[ivalue] + "_Mean").Data()) << meanWithOut[ivalue] <<
+          (Char_t*)((names[ivalue] + "_RMS=").Data()) << rmsWithOut[ivalue] <<
+          (Char_t*)((names[ivalue] + "_LTM=").Data()) << ltmWithOut[ivalue] <<
+          (Char_t*)((names[ivalue] + "_RMS_LTM=").Data()) << ltmrmsWithOut[ivalue];
       }
-        //timestamp and run, if given in title
-/*      TString title(((AliTPCCalPad*) array->At(ivalue))->GetTitle());
-      TObjArray *arrtitle=title.Tokenize(",");
-      Int_t run=-1;
-      UInt_t time=0;
-      TIter next(arrtitle);
-      TObject *o=0;
-      while ( (o=next()) ){
-        TString &entry=((TObjString*)o)->GetString();
-        entry.Remove(TString::kBoth,' ');
-        entry.Remove(TString::kBoth,'\t');
-        if (entry.BeginsWith("Run:")) {
-          run=entry(4,entry.Length()).Atoi();
-        } else if (entry.BeginsWith("Time:")) {
-          time=entry(6,entry.Length()).Atoi();
-        }
-      }
-      delete arrtitle;*/
+      //timestamp and run, if given in title
+      /*      TString title(((AliTPCCalPad*) array->At(ivalue))->GetTitle());
+	      TObjArray *arrtitle=title.Tokenize(",");
+	      Int_t run=-1;
+	      UInt_t time=0;
+	      TIter next(arrtitle);
+	      TObject *o=0;
+	      while ( (o=next()) ){
+	      TString &entry=((TObjString*)o)->GetString();
+	      entry.Remove(TString::kBoth,' ');
+	      entry.Remove(TString::kBoth,'\t');
+	      if (entry.BeginsWith("Run:")) {
+	      run=entry(4,entry.Length()).Atoi();
+	      } else if (entry.BeginsWith("Time:")) {
+	      time=entry(6,entry.Length()).Atoi();
+	      }
+	      }
+	      delete arrtitle;*/
       
     }
     
@@ -2179,8 +2181,15 @@ void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const
     delete[] posArray;
     delete[] vectorArray;
   }
-  
-  
+  TTree * tree = (cstream << "calPads").GetTree();
+  MakeCalPadAliases(tree);
+  for  (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++) {
+    //(Char_t*)((names[ivalue] + "_Median=").Data()) << median[ivalue] <<
+    tree->SetAlias(TString::Format("%s_LTMRatio",names[ivalue].Data()).Data(), TString::Format("%s.fElements/%s_LTM",names[ivalue].Data(),names[ivalue].Data()).Data());
+    tree->SetAlias(TString::Format("%s_MeanRatio",names[ivalue].Data()).Data(), TString::Format("%s.fElements/%s_Mean",names[ivalue].Data(),names[ivalue].Data()).Data());
+    tree->SetAlias(TString::Format("%s_MedianRatio",names[ivalue].Data()).Data(), TString::Format("%s.fElements/%s_Median",names[ivalue].Data(),names[ivalue].Data()).Data());
+    tree->SetAlias(names[ivalue].Data(), TString::Format("%s.fElements",names[ivalue].Data()).Data());
+  }
   delete[] names;
   if (mapFileName) {
     delete mapIROCs;
@@ -2190,7 +2199,24 @@ void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const
     delete[] mapNames;
   }
 }
-
+void AliTPCCalibViewer::MakeCalPadAliases(TTree * tree){
+  //
+  // make standard aliases for standard calibration trees
+  //
+  tree->SetAlias("Pad0","MapPadLength.fElements==7.5");   // pad types
+  tree->SetAlias("Pad1","MapPadLength.fElements==10.0");
+  tree->SetAlias("Pad2","MapPadLength.fElements==15.0");
+  tree->SetAlias("ly","(ly.fElements+((sector<36)*(2*((sector%36)<18)-1)*0.2)+((sector>=36)*(2*((sector%36)<18)-1)*0.3))"); // correction for bug in tpcROCinstance->GetPositionLocal(isector, irow, ipad, posL);
+  tree->SetAlias("dRowNorm0","(row.fElements/32-1)");      // normalized distance to the center of the chamber in lx (-1,1)
+  tree->SetAlias("dRowNorm1","(row.fElements/32-1)");      // 
+  tree->SetAlias("dRowNorm2","((row.fElements-63)/16-1)"); //
+  tree->SetAlias("dRowNorm","(row.fElements<63)*(row.fElements/32-1)+(row.fElements>63)*((row.fElements-63)/16-1)");
+  tree->SetAlias("dPhiNorm","(ly/lx.fElements)/(pi/18)"); // normalized distance to the center of the chamber in phi (-1,1)
+  //
+  tree->SetAlias("fsector","(sector%36)+(0.5+9*atan2(ly,lx.fElements)/pi)"); // float sector number
+  tree->SetAlias("posEdge","((pi/18.)-abs(atan(ly/lx.fElements)))*lx.fElements"); //distance to the edge
+  tree->SetAlias("lphi","atan(ly/lx.fElements)"); //local phi angle
+}
 
 void AliTPCCalibViewer::MakeTree(const char *outPutFileName, const Char_t *inputFileName, AliTPCCalPad *outlierPad, Float_t ltmFraction, const char *mapFileName ){
    // 

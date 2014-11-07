@@ -135,6 +135,7 @@ void AliHLTITSVertexerSPDComponent::GetInputDataTypes( vector<AliHLTComponentDat
   // see header file for class documentation
   list.clear();
   list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD );
+  list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITS );
 }
 
 AliHLTComponentDataType AliHLTITSVertexerSPDComponent::GetOutputDataType()
@@ -413,7 +414,8 @@ int AliHLTITSVertexerSPDComponent::DoEvent
  
     // Read ITS SPD clusters
 
-    if ( iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD) ){
+    if ( ( iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD) ) ||
+	 ( iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITS) ) ) {
 
       AliHLTITSClusterData *inPtr=reinterpret_cast<AliHLTITSClusterData*>( iter->fPtr );
       int nClusters = inPtr->fSpacePointCnt;
@@ -664,7 +666,7 @@ int AliHLTITSVertexerSPDComponent::DoEvent
     double s = 400.E-4;
     double cov[6] = {s*s,0,s*s,0,0,s*s};
     AliESDVertex v(pos, cov, 0, fSumN[bestBin]);
-    PushBack( (TObject*) &v, kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS,0 );
+    PushBack( (TObject*) &v, kAliHLTDataTypeESDVertex|kAliHLTDataOriginITSSPD,0 );
 
     //cout<<"ITSVertexerSPD: vtx found "<<vtxX<<" "<<vtxY<<" "<<vtxZ<<endl;
   }

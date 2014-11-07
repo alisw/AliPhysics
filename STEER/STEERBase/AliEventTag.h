@@ -49,6 +49,7 @@ class AliEventTag : public TObject {
   void SetVertexFlag(Int_t i) {fPrimaryVertexFlag = i;}
   void SetVertexZError(Float_t f) { fPrimaryVertexZError = f;}
   void SetTriggerMask(ULong64_t Ptr) {fTriggerMask = Ptr;}
+  void SetTriggerMaskNext50(ULong64_t Ptr) {fTriggerMaskNext50 = Ptr;}
   void SetTriggerCluster(UChar_t n) {fTriggerCluster = n;}
   void SetZDCNeutron1Energy(Float_t Pen) {fZDCNeutron1Energy = Pen;}
   void SetZDCProton1Energy(Float_t Pen) {fZDCProton1Energy = Pen;}
@@ -139,6 +140,7 @@ class AliEventTag : public TObject {
   Int_t       GetVertexFlag() const {return fPrimaryVertexFlag;}
   Float_t     GetVertexZError() const {return fPrimaryVertexZError;}
   ULong64_t   GetTriggerMask() const {return fTriggerMask;}
+  ULong64_t   GetTriggerMaskNext50() const {return fTriggerMaskNext50;}
   UChar_t     GetTriggerCluster() const {return fTriggerCluster;}
   Float_t     GetZDCNeutron1Energy() const {return fZDCNeutron1Energy;}
   Float_t     GetZDCProton1Energy() const {return fZDCProton1Energy;}
@@ -227,6 +229,7 @@ class AliEventTag : public TObject {
   Float_t   fPrimaryVertexZ;		    //Primary vertex - Z coordinate
   Float_t   fPrimaryVertexZError;	    //Primary vertex - Z coordinate - error
   ULong64_t fTriggerMask;		    //Information from trigger (trigger mask)
+  ULong64_t fTriggerMaskNext50;		    //Information from trigger (trigger mask)
   UChar_t   fTriggerCluster;                // Trigger cluster (mask)
   Float_t   fZDCNeutron1Energy;		    //ZDC info - neutron
   Float_t   fZDCProton1Energy;		    //ZDC info - proton
@@ -291,7 +294,7 @@ class AliEventTag : public TObject {
   Short_t   fNbPMV0A;                       //Total number of fired channels in V0 A side
   Short_t   fNbPMV0C;                       //Total number of fired channels in V0 C side
 
-  ClassDef(AliEventTag,17)  //(ClassName, ClassVersion)
+  ClassDef(AliEventTag,18)  //(ClassName, ClassVersion)
       };
 //___________________________________________________________________________
 

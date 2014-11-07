@@ -72,6 +72,7 @@ public:
   Double_t GetD(Double_t x, Double_t y) const {
     return AliExternalTrackParam::GetD(x,y,GetBz());
   }
+  using AliExternalTrackParam::GetDZ;
   void GetDZ(Double_t xv, Double_t yv, Double_t zv, Float_t dz[2]) const {
     return AliExternalTrackParam::GetDZ(xv,yv,zv,GetBz(),dz);
   }

@@ -175,7 +175,7 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
   }
   else { // using external seed
     //  param.Rotate(tpc->GetAlpha()); // not needed
-    if (!AliTracker::PropagateTrackToBxByBz(&param,tpc->GetX(),t.GetMass(),2.,kFALSE) ||
+    if (!AliTracker::PropagateTrackToBxByBz(&param,tpc->GetX(),GetMass(),2.,kFALSE) ||
 	param.GetCovariance()[0]>kmaxC[0]*kmaxC[0] ||
 	param.GetCovariance()[2]>kmaxC[1]*kmaxC[1] ||
 	param.GetCovariance()[5]>kmaxC[2]*kmaxC[2] ||

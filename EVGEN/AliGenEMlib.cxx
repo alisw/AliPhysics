@@ -511,14 +511,12 @@ Double_t AliGenEMlib::PtPizero( const Double_t *px, const Double_t */*dummy*/ )
 	
 	// fit functions and corresponding parameter of Pizero pT for pp @ 2.76 TeV and @ 7 TeV and for PbPb @ 2.76 TeV 
 
-	Double_t km=0.;
 	Double_t kc=0.;
 	Double_t kn=0.;
 	Double_t kcT=0.;
 	Double_t kT=0.;
 	Double_t kp0=0.;
 	Double_t kp1=0.;
-	Double_t kp2=0.;
 	Double_t ka=0.;
 	Double_t kb=0.;
 	Double_t kd=0.;

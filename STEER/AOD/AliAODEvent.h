@@ -18,7 +18,9 @@
 
 #include "AliVEvent.h"
 #include "AliVParticle.h"
+#include "AliVHeader.h"
 #include "AliAODHeader.h"
+#include "AliNanoAODHeader.h"
 #include "AliAODTrack.h"
 #include "AliAODVertex.h"
 #include "AliAODv0.h"
@@ -84,11 +86,19 @@ class AliAODEvent : public AliVEvent {
   Bool_t        AreTracksConnected() const {return fTracksConnected;}
 
   // -- Header
-  AliAODHeader *GetHeader()              const { return fHeader; }
-  void          AddHeader(const AliAODHeader* hdx)
+  AliVHeader    *GetHeader()              const { return fHeader; }
+  void          AddHeader(const AliVHeader* hdx)
     {
-	delete fHeader; fHeader = new AliAODHeader(*hdx);
-	(fAODObjects->FirstLink())->SetObject(fHeader);
+      delete fHeader; 
+      if(dynamic_cast<const AliAODHeader*>(hdx)) {
+	fHeader = new AliAODHeader(*(const AliAODHeader*)hdx);
+      } else if (dynamic_cast<const AliNanoAODHeader*>(hdx)) {
+        fHeader = new AliNanoAODHeader(*(const AliNanoAODHeader*)hdx);
+      }
+      else {
+        AliError(Form("Unknown header type %s", hdx->ClassName()));
+      }
+        (fAODObjects->FirstLink())->SetObject(fHeader);
     }
 
   virtual  Bool_t InitMagneticField() const {return fHeader ? fHeader->InitMagneticField() : kFALSE;}
@@ -141,9 +151,8 @@ class AliAODEvent : public AliVEvent {
   // -- Tracks
   TClonesArray *GetTracks()              const { return fTracks; }
   void          ConnectTracks();
-  Int_t         GetNTracks()             const { return fTracks? fTracks->GetEntriesFast() : 0; }
-  Int_t         GetNumberOfTracks()      const { return GetNTracks(); }
-  AliAODTrack  *GetTrack(Int_t nTrack)   const { return fTracks ? (AliAODTrack*)fTracks->UncheckedAt(nTrack):0; }
+  Int_t         GetNumberOfTracks()      const { return fTracks? fTracks->GetEntriesFast() : 0; }
+  AliVTrack    *GetTrack(Int_t nTrack)   const { return fTracks ? (AliVTrack*)fTracks->UncheckedAt(nTrack):0; }
   Int_t         AddTrack(const AliAODTrack* trk);
   Int_t         GetMuonTracks(TRefArray *muonTracks) const;
   Int_t         GetNumberOfMuonTracks() const;
@@ -158,8 +167,13 @@ class AliAODEvent : public AliVEvent {
   {new((*fVertices)[fVertices->GetEntriesFast()]) AliAODVertex(*vtx); return fVertices->GetEntriesFast()-1;}
   
   // primary vertex
+  using AliVEvent::GetPrimaryVertex;
+  using AliVEvent::GetPrimaryVertexSPD;
+  using AliVEvent::GetPrimaryVertexTPC;
   virtual AliAODVertex *GetPrimaryVertex() const { return GetVertex(0); }
   virtual AliAODVertex *GetPrimaryVertexSPD() const;
+  virtual AliAODVertex *GetVertex() const { return GetPrimaryVertexSPD(); }
+  virtual AliAODVertex *GetPrimaryVertexTPC() const;
 
   // -- Pileup vertices 
   Int_t         GetNumberOfPileupVerticesTracks()   const;
@@ -173,6 +187,7 @@ class AliAODEvent : public AliVEvent {
   // V0
   TClonesArray *GetV0s()                 const { return fV0s; }
   Int_t         GetNumberOfV0s()         const { return fV0s->GetEntriesFast(); }
+  using AliVEvent::GetV0;
   AliAODv0     *GetV0(Int_t nV0)         const { return (AliAODv0*)fV0s->UncheckedAt(nV0); }
   Int_t         AddV0(const AliAODv0* v0)
   {new((*fV0s)[fV0s->GetEntriesFast()]) AliAODv0(*v0); return fV0s->GetEntriesFast()-1;}
@@ -307,6 +322,7 @@ class AliAODEvent : public AliVEvent {
   //ZDC
   AliAODZDC   *GetZDCData() const { return fAODZDC; }
 
+  virtual AliVEvent::EDataLayoutType GetDataLayoutType() const;
 
   private :
 
@@ -315,7 +331,7 @@ class AliAODEvent : public AliVEvent {
   Bool_t   fConnected;  //! flag if leaves are alreday connected 
   Bool_t   fTracksConnected;      //! flag if tracks have already pointer to event set
   // standard content
-  AliAODHeader    *fHeader;       //! event information
+  AliVAODHeader   *fHeader;       //! event information
   TClonesArray    *fTracks;       //! charged tracks
   TClonesArray    *fVertices;     //! vertices
   TClonesArray    *fV0s;          //! V0s

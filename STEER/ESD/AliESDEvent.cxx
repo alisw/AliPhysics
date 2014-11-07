@@ -79,10 +79,7 @@
 #include "AliTriggerCluster.h"
 #include "AliEventplane.h"
 
-
 ClassImp(AliESDEvent)
-
-
 
 // here we define the names, some classes are no TNamed, therefore the classnames 
 // are the Names
@@ -583,11 +580,19 @@ Bool_t AliESDEvent::IsDetectorInTriggerCluster(TString detector, AliTriggerConfi
   // Check if a given detector was read-out in the analyzed event
   const TObjArray& classesArray=trigConf->GetClasses();
   ULong64_t trigMask=GetTriggerMask();
+  ULong64_t trigMaskNext50=GetTriggerMaskNext50();
   Int_t nclasses = classesArray.GetEntriesFast();
   for(Int_t iclass=0; iclass < nclasses; iclass++ ) {
     AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At(iclass);
-    Int_t classMask=trclass->GetMask();
+    ULong64_t classMask=trclass->GetMask();
+    ULong64_t classMaskNext50=trclass->GetMaskNext50();
     if(trigMask & classMask){
+      TString detList=trclass->GetCluster()->GetDetectorsInCluster();
+      if(detList.Contains(detector.Data())){
+	return kTRUE;
+      }
+    }
+    if(trigMaskNext50 & classMaskNext50){
       TString detList=trclass->GetCluster()->GetDetectorsInCluster();
       if(detList.Contains(detector.Data())){
 	return kTRUE;
@@ -603,19 +608,20 @@ void AliESDEvent::Print(Option_t *) const
   // Print header information of the event
   //
   printf("ESD run information\n");
-  printf("Event # in file %d Bunch crossing # %d Orbit # %d Period # %d Run # %d Trigger %lld Magnetic field %f \n",
+  printf("Event # in file %d Bunch crossing # %d Orbit # %d Period # %d Run # %d Trigger %lld %lld Magnetic field %f \n",
 	 GetEventNumberInFile(),
 	 GetBunchCrossNumber(),
 	 GetOrbitNumber(),
 	 GetPeriodNumber(),
 	 GetRunNumber(),
 	 GetTriggerMask(),
+	 GetTriggerMaskNext50(),
 	 GetMagneticField() );
   if (fPrimaryVertex)
     printf("Vertex: (%.4f +- %.4f, %.4f +- %.4f, %.4f +- %.4f) cm\n",
-	   fPrimaryVertex->GetXv(), fPrimaryVertex->GetXRes(),
-	   fPrimaryVertex->GetYv(), fPrimaryVertex->GetYRes(),
-	   fPrimaryVertex->GetZv(), fPrimaryVertex->GetZRes());
+	   fPrimaryVertex->GetX(), fPrimaryVertex->GetXRes(),
+	   fPrimaryVertex->GetY(), fPrimaryVertex->GetYRes(),
+	   fPrimaryVertex->GetZ(), fPrimaryVertex->GetZRes());
   printf("Mean vertex in RUN: X=%.4f Y=%.4f Z=%.4f cm\n",
 	 GetDiamondX(),GetDiamondY(),GetDiamondZ());
   if(fSPDMult)
@@ -1470,7 +1476,7 @@ void AliESDEvent::GetESDfriend(AliESDfriend *ev) const
 
   }
 
-  AliESDfriend *fr = (AliESDfriend*)(const_cast<AliESDEvent*>(this)->FindListObject("AliESDfriend"));
+  AliESDfriend *fr = (AliESDfriend*)(const_cast<AliESDEvent*>(this)->FindFriend());
   if (fr) ev->SetVZEROfriend(fr->GetVZEROfriend());
 }
 
@@ -2033,17 +2039,27 @@ Bool_t AliESDEvent::IsEventSelected(const char *trigExpr) const
   // trigExpr can be any logical expression
   // of the trigger classes defined in AliESDRun
   // In case of wrong syntax return kTRUE.
+  // Modified by rl for 100 classes - to be tested
 
   TString expr(trigExpr);
   if (expr.IsNull()) return kTRUE;
 
   ULong64_t mask = GetTriggerMask();
-  for(Int_t itrig = 0; itrig < AliESDRun::kNTriggerClasses; itrig++) {
+  for(Int_t itrig = 0; itrig < AliESDRun::kNTriggerClasses/2; itrig++) {
     if (mask & (1ull << itrig)) {
       expr.ReplaceAll(GetESDRun()->GetTriggerClass(itrig),"1");
     }
     else {
       expr.ReplaceAll(GetESDRun()->GetTriggerClass(itrig),"0");
+    }
+  }
+  ULong64_t maskNext50 = GetTriggerMaskNext50();
+  for(Int_t itrig = 0; itrig < AliESDRun::kNTriggerClasses/2; itrig++) {
+    if (maskNext50 & (1ull << itrig)) {
+      expr.ReplaceAll(GetESDRun()->GetTriggerClass(itrig+50),"1");
+    }
+    else {
+      expr.ReplaceAll(GetESDRun()->GetTriggerClass(itrig+50),"0");
     }
   }
 
@@ -2431,3 +2447,12 @@ void AliESDEvent::ConnectTracks() {
   fTracksConnected = kTRUE;
   //
 }
+
+//______________________________________________________________________________
+AliESDfriend* AliESDEvent::FindFriend() const 
+{ 
+  return static_cast<AliESDfriend*>(FindListObject("AliESDfriend")); 
+}
+
+AliVEvent::EDataLayoutType AliESDEvent::GetDataLayoutType() const {return AliVEvent::kESD;}
+

@@ -34,6 +34,12 @@ class AliAnalysisTask : public TTask {
     kTaskPostEventLoop = BIT(17)
   };
 
+  //=====================================================================
+  // === OVERLOAD THIS TO CONNECT TREE BRANCHES AT INPUT SLOTS. YOU
+  // SHOULD DEFINE HERE ALSO THE OBJECTS TO BE CONNECTED TO YOUR OUTPUTS
+  virtual void              ConnectInputData(Option_t *option="");
+  //=====================================================================
+  
  protected:
   Bool_t                    fReady;         // Flag if the task is ready
   Bool_t                    fInitialized;   // True if Init() was called
@@ -49,12 +55,6 @@ class AliAnalysisTask : public TTask {
   //=== CALL IN THE CONSTRUCTOR OF DERIVED CLASS TO DEFINE INPUTS/OUTPUTS ===
   void                      DefineInput(Int_t islot, TClass *type);
   void                      DefineOutput(Int_t islot, TClass *type);
-  
-  //=====================================================================
-  // === OVERLOAD THIS TO CONNECT TREE BRANCHES AT INPUT SLOTS. YOU
-  // SHOULD DEFINE HERE ALSO THE OBJECTS TO BE CONNECTED TO YOUR OUTPUTS
-  virtual void              ConnectInputData(Option_t *option="");
-  //=====================================================================
   
   // Post output data (called by Exec() when data is ready)
   //=== CALL IN EXEC() FOR EACH OUTPUT WHEN READY ===

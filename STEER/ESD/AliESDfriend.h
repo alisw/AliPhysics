@@ -11,12 +11,13 @@
 #include <TClonesArray.h>
 
 #include "AliESDfriendTrack.h"
+#include "AliVfriendEvent.h"
 
 class AliESDVZEROfriend;
 class AliESDTZEROfriend;
 
 //_____________________________________________________________________________
-class AliESDfriend : public TObject {
+class AliESDfriend : public AliVfriendEvent {
 public:
   AliESDfriend();
   AliESDfriend(const AliESDfriend &);
@@ -41,14 +42,14 @@ public:
   void SetTZEROfriend(AliESDTZEROfriend * obj);
   AliESDTZEROfriend *GetTZEROfriend(){ return fESDTZEROfriend; }
 
-  void Ls(){
+  void Ls() const {
 	  return fTracks.ls();
   }
 
   void Reset();
   // bit manipulation for filtering
   void SetSkipBit(Bool_t skip){SetBit(23,skip);}
-  Bool_t TestSkipBit() {return TestBit(23);}
+  Bool_t TestSkipBit() const { return TestBit(23); }
 
   //TPC cluster occupancy
   Int_t GetNclustersTPC(UInt_t sector) const {return (sector<72)?fNclustersTPC[sector]:0;}
@@ -64,7 +65,7 @@ protected:
   Int_t fNclustersTPC[72]; //cluster occupancy per sector per sector
   Int_t fNclustersTPCused[72]; //number of clusters used in tracking per sector
 
-  ClassDef(AliESDfriend,4) // ESD friend
+  ClassDef(AliESDfriend,5) // ESD friend
 };
 
 #endif

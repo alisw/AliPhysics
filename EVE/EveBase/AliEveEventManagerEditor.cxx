@@ -32,8 +32,13 @@
 // GUI editor for AliEveEventManager.
 //
 
+using std::ifstream;
 using std::ofstream;
 using std::ios;
+using std::cout;
+using std::endl;
+using std::string;
+
 ClassImp(AliEveEventManagerEditor)
 
 //______________________________________________________________________________
@@ -123,6 +128,7 @@ AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr) :
   fEventId      (0),
   fInfoLabel    (0),
   fAutoLoad     (0),
+  fLoopMarked   (0),
   fAutoLoadTime (0),
   fTrigSel      (0),
   fEventInfo    (0)
@@ -155,7 +161,12 @@ AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr) :
     b->Connect("Clicked()", cls, this, "DoLastEvent()");
     fMarkEvent = b = MkTxtButton(f, "Mark", width);
     b->Connect("Clicked()", cls, this, "DoMarkEvent()");
-
+      fRestartReco = b = MkTxtButton(f, "Restart reco", 2*width);
+      b->Connect("Clicked()", cls, this, "DoRestartReco()");
+      fRestartManager = b = MkTxtButton(f, "Restart manager", 2*width);
+      b->Connect("Clicked()", cls, this, "DoRestartManager()");
+      
+      
     MkLabel(f, "||", 0, 8, 8);
 
     fRefresh = b = MkTxtButton(f, "Refresh", width + 8);
@@ -168,6 +179,11 @@ AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr) :
     fAutoLoad->SetToolTipText("Automatic event loading.");
     fAutoLoad->Connect("Toggled(Bool_t)", cls, this, "DoSetAutoLoad()");
 
+    fLoopMarked = new TGCheckButton(f, "Loop Marked");
+    f->AddFrame(fLoopMarked, new TGLayoutHints(kLHintsLeft, 0, 4, 3, 0));
+    fLoopMarked->SetToolTipText("Automatic marked events loading.");
+    fLoopMarked->Connect("Toggled(Bool_t)", cls, this, "DoSetLoopMarked()");
+      
     fAutoLoadTime = new TEveGValuator(f, "Time: ", 110, 0);
     f->AddFrame(fAutoLoadTime);
     fAutoLoadTime->SetShowSlider(kFALSE);
@@ -239,9 +255,11 @@ void AliEveEventManagerWindow::DoNextEvent()
   // Load next event
   // fM->NextEvent();
   if (fM->IsOnlineMode()) {
+      cout<<"next event, online node"<<endl;
     fM->GotoEvent(2);
   }
   else {
+      cout<<"next event, offline mode"<<endl;
     fM->GotoEvent((Int_t) fEventId->GetNumber()+1);
   }
 }
@@ -258,6 +276,72 @@ void AliEveEventManagerWindow::DoMarkEvent()
 {
   // Mark current event
   fM->MarkCurrentEvent();
+}
+
+//______________________________________________________________________________
+void AliEveEventManagerWindow::DoRestartReco()
+{
+    ifstream configFile (GetConfigFilePath());
+    string username,hostname;
+    
+    if (configFile.is_open())
+    {
+        string line;
+        int from,to;
+        while(configFile.good())
+        {
+            getline(configFile,line);
+            from = line.find("\"")+1;
+            to = line.find_last_of("\"");
+            if(line.find("EVENT_SERVER=")==0)
+            {
+                hostname=line.substr(from,to-from);
+            }
+            else if(line.find("EVENT_SERVER_USER=")==0)
+            {
+                username=line.substr(from,to-from);
+            }
+        }
+        if(configFile.eof()){configFile.clear();}
+        configFile.close();
+    }
+    else{cout<<"Event Manager Editor -- Unable to open config file"<<endl;}
+
+    // Kill reconstruction server
+    gSystem->Exec(Form("ssh -n -f %s@%s \"killall alieventserver\"",username.c_str(),hostname.c_str()));
+}
+
+void AliEveEventManagerWindow::DoRestartManager()
+{
+    ifstream configFile (GetConfigFilePath());
+    string username,hostname;
+    
+    if (configFile.is_open())
+    {
+        string line;
+        int from,to;
+        while(configFile.good())
+        {
+            getline(configFile,line);
+            from = line.find("\"")+1;
+            to = line.find_last_of("\"");
+            if(line.find("STORAGE_SERVER=")==0)
+            {
+                hostname=line.substr(from,to-from);
+            }
+            else if(line.find("STORAGE_SERVER_USER=")==0)
+            {
+                username=line.substr(from,to-from);
+            }
+        }
+        if(configFile.eof()){configFile.clear();}
+        configFile.close();
+    }
+    else{cout<<"Event Manager Editor -- Unable to open config file"<<endl;}
+
+    
+    // Kill storage manager
+    gSystem->Exec(Form("ssh -n -f %s@%s \"killall alistorage\"",username.c_str(),hostname.c_str()));
 }
 
 //______________________________________________________________________________
@@ -285,6 +369,14 @@ void AliEveEventManagerWindow::DoSetAutoLoad()
 
   fM->SetAutoLoad(fAutoLoad->IsOn());
   Update(fM->NewEventAvailable());
+}
+
+//______________________________________________________________________________
+void AliEveEventManagerWindow::DoSetLoopMarked()
+{
+    // Set the auto-load flag
+    fM->SetLoopMarked(fLoopMarked->IsOn());
+//    Update(fM->NewEventAvailable());
 }
 
 //______________________________________________________________________________
@@ -320,7 +412,6 @@ void AliEveEventManagerWindow::Update(int state)
   if (!fM->IsOnlineMode()) {
 
       listEventsTab->SetOfflineMode(kTRUE);
-      configManager->DisableStoragePopup();
 
       fFirstEvent->SetEnabled(!autoLoad);
       fPrevEvent ->SetEnabled(!autoLoad);
@@ -397,7 +488,7 @@ void AliEveEventManagerWindow::Update(int state)
     }
     fTrigSel->SetEnabled(!evNavOn);
 
-    fEventInfo->LoadBuffer(fM->GetEventInfoHorizontal());
+//    fEventInfo->LoadBuffer(fM->GetEventInfoHorizontal());
 
     Layout();
   }
@@ -421,7 +512,6 @@ void AliEveEventManagerWindow::StorageManagerChangedState(int state)
         fPrevEvent->SetEnabled(kFALSE);
         fFirstEvent->SetEnabled(kFALSE);
 	listEventsTab->SetOfflineMode(kTRUE);
-	configManager->DisableStoragePopup();
 	fEventId->SetState(kFALSE);
       }
     else if(state == 1)

@@ -263,7 +263,7 @@ void AliESDCaloCluster::SetPID(const Float_t *p) {
 }
 
 //_______________________________________________________________________
-void AliESDCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) {
+void AliESDCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) const {
   // Returns TLorentzVector with momentum of the cluster. Only valid for clusters 
   // identified as photons or pi0 (overlapped gamma) produced on the vertex
   //Vertex can be recovered with esd pointer doing:  

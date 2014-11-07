@@ -67,14 +67,18 @@ void AliStorageServerThread::StartCommunication()
 	
 	while(1)
 	{
+        cout<<"Server waiting for requests"<<endl;
 		request = eventManager->GetServerStruct(socket);
-		
+        cout<<"Server received request"<<endl;
 		switch(request->messageType)
 		  {
 		  case REQUEST_LIST_EVENTS:
 		    {
+                cout<<"SERVER -- received request for list of events"<<endl;
 		      vector<serverListStruct> result = fDatabase->GetList(request->list);
+                cout<<"SERVER -- got list from database"<<endl;
 		      eventManager->Send(result,socket);
+                cout<<"SERVER -- list was sent"<<endl;
 		      break;
 		    }
 		  case REQUEST_GET_EVENT:
@@ -119,7 +123,9 @@ void AliStorageServerThread::StartCommunication()
 		      eventManager->Send(MarkEvent(*markData),socket);
 		      break;
 		    }
-		  default:break;
+		  default:
+                  sleep(1);
+                  break;
 		  }
 
 	}
