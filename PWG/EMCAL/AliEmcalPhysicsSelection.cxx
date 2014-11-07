@@ -275,7 +275,7 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
         emcaltriggers->GetL1TimeSum(adc);
         isBad = false;
         // check for multiples of 1024
-        for(int i = 0; i < 20; i++){
+        for(int i = 1; i < 20; i++){
           if(adc == 1024 * i){
             isBad = true;
             break;
