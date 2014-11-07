@@ -1,6 +1,9 @@
 #include "AliDIMListenerThread.h"
+#include "AliStorageTypes.h"
 
 #include <iostream>
+#include <sstream>
+#include <fstream>
 
 using namespace std;
 
@@ -31,7 +34,7 @@ AliDIMListenerThread::~AliDIMListenerThread()
         
         fDimSORListener[i] = 0;
         fDimEORListener[i] = 0;
-	}
+    }
 }
 
 void AliDIMListenerThread::InitDIMListeners()
@@ -62,6 +65,30 @@ void AliDIMListenerThread::InitDIMListeners()
 void AliDIMListenerThread::StartOfRun(int run)
 {
     cout<<"DIM Listener -- SOR signal received for run:"<<run<<endl;
+
+    ifstream configFile (GetConfigFilePath());
+    string username,hostname;
+    
+    if (configFile.is_open())
+    {
+        string line;
+        int from,to;
+        while(configFile.good())
+        {
+            getline(configFile,line);
+            from = line.find("\"")+1;
+            to = line.find_last_of("\"");
+            if(line.find("EVENT_SERVER=")==0){hostname=line.substr(from,to-from);}
+            else if(line.find("EVENT_SERVER_USER=")==0){username=line.substr(from,to-from);}
+        }
+        if(configFile.eof()){configFile.clear();}
+        configFile.close();
+    }
+    else{cout<<"Event Manager Editor -- Unable to open config file"<<endl;}
+
+    // Kill reconstruction server
+    gSystem->Exec(Form("ssh -n -f %s@%s \"killall alionlinereco;alionlinereco %d\"",username.c_str(),hostname.c_str(),run));
+
 }
 
 void AliDIMListenerThread::EndOfRun(int run)
