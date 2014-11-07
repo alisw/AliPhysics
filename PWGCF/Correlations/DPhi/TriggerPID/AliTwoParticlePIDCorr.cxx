@@ -2502,42 +2502,6 @@ if (particletypeMC==SpProton)
   }
     }
 
- //for misidentification fraction calculation(do it with tuneonPID)
- if(particletypeMC==SpPion )
-   {
-     if(TMath::Abs(pdgCode)==211) fPioncont->Fill(1.,track->Pt());
-     if(TMath::Abs(pdgCode)==321) fPioncont->Fill(3.,track->Pt());
-     if(TMath::Abs(pdgCode)==2212) fPioncont->Fill(5.,track->Pt());
-     if(TMath::Abs(pdgCode)!=211 && TMath::Abs(pdgCode)!=321 && TMath::Abs(pdgCode)!=2212) fPioncont->Fill(7.,track->Pt());
-   }
-if(particletypeMC==SpKaon )
-   {
-     if(TMath::Abs(pdgCode)==211) fKaoncont->Fill(1.,track->Pt());
-     if(TMath::Abs(pdgCode)==321) fKaoncont->Fill(3.,track->Pt());
-     if(TMath::Abs(pdgCode)==2212) fKaoncont->Fill(5.,track->Pt());
-     if(TMath::Abs(pdgCode)!=211 && TMath::Abs(pdgCode)!=321 && TMath::Abs(pdgCode)!=2212) fKaoncont->Fill(7.,track->Pt());
-   }
- if(particletypeMC==SpProton )
-   {
-     if(TMath::Abs(pdgCode)==211) fProtoncont->Fill(1.,track->Pt());
-     if(TMath::Abs(pdgCode)==321) fProtoncont->Fill(3.,track->Pt());
-     if(TMath::Abs(pdgCode)==2212) fProtoncont->Fill(5.,track->Pt());
-     if(TMath::Abs(pdgCode)!=211 && TMath::Abs(pdgCode)!=321 && TMath::Abs(pdgCode)!=2212) fProtoncont->Fill(7.,track->Pt());
-   }
- if(particletypeMC==SpUndefined )
-   {
-     if(TMath::Abs(pdgCode)==211) fUNIDcont->Fill(1.,track->Pt());
-     if(TMath::Abs(pdgCode)==321) fUNIDcont->Fill(3.,track->Pt());
-     if(TMath::Abs(pdgCode)==2212) fUNIDcont->Fill(5.,track->Pt());
-     if(TMath::Abs(pdgCode)!=211 && TMath::Abs(pdgCode)!=321 && TMath::Abs(pdgCode)!=2212) fUNIDcont->Fill(7.,track->Pt());
-   }
-
- if(particletypeMC==SpUndefined) continue;
-
-    if(fRequestEventPlane){
-      FillPIDEventPlane(cent_v0,particletypeMC,track->Phi(),gReactionPlane);
-    }
-
  //fill tracking efficiency
  if(ffillefficiency)
    {
@@ -2568,6 +2532,45 @@ if (((AliAODMCParticle*)recomatched)->IsPhysicalPrimary())  fTrackHistEfficiency
 if (((AliAODMCParticle*)recomatched)->IsPhysicalPrimary())  fTrackHistEfficiency[2]->Fill(allrecomatchedpid,3);
  }
    }
+
+ //remove the tracks which don't have proper TOF response-otherwise the misIDentification rate values will be wrong(do it after the efficiency filling is complete)
+if(fRequestTOFPID && track->Pt()>fPtTOFPIDmin && (!HasTOFPID(PIDtrack)) ) continue;
+ 
+ //for misidentification fraction calculation(do it with tuneonPID)
+ if(particletypeMC==SpPion )
+   {
+     if(TMath::Abs(pdgCode)==211) fPioncont->Fill(1.,track->Pt());
+     if(TMath::Abs(pdgCode)==321) fPioncont->Fill(3.,track->Pt());
+     if(TMath::Abs(pdgCode)==2212) fPioncont->Fill(5.,track->Pt());
+     if(TMath::Abs(pdgCode)!=211 && TMath::Abs(pdgCode)!=321 && TMath::Abs(pdgCode)!=2212) fPioncont->Fill(7.,track->Pt());
+   }
+if(particletypeMC==SpKaon )
+   {
+     if(TMath::Abs(pdgCode)==211) fKaoncont->Fill(1.,track->Pt());
+     if(TMath::Abs(pdgCode)==321) fKaoncont->Fill(3.,track->Pt());
+     if(TMath::Abs(pdgCode)==2212) fKaoncont->Fill(5.,track->Pt());
+     if(TMath::Abs(pdgCode)!=211 && TMath::Abs(pdgCode)!=321 && TMath::Abs(pdgCode)!=2212) fKaoncont->Fill(7.,track->Pt());
+   }
+ if(particletypeMC==SpProton )
+   {
+     if(TMath::Abs(pdgCode)==211) fProtoncont->Fill(1.,track->Pt());
+     if(TMath::Abs(pdgCode)==321) fProtoncont->Fill(3.,track->Pt());
+     if(TMath::Abs(pdgCode)==2212) fProtoncont->Fill(5.,track->Pt());
+     if(TMath::Abs(pdgCode)!=211 && TMath::Abs(pdgCode)!=321 && TMath::Abs(pdgCode)!=2212) fProtoncont->Fill(7.,track->Pt());
+   }
+ if(particletypeMC==SpUndefined )//these undefined are not due to absence of proper TOF response, rather due to the PID method only
+   {
+     if(TMath::Abs(pdgCode)==211) fUNIDcont->Fill(1.,track->Pt());
+     if(TMath::Abs(pdgCode)==321) fUNIDcont->Fill(3.,track->Pt());
+     if(TMath::Abs(pdgCode)==2212) fUNIDcont->Fill(5.,track->Pt());
+     if(TMath::Abs(pdgCode)!=211 && TMath::Abs(pdgCode)!=321 && TMath::Abs(pdgCode)!=2212) fUNIDcont->Fill(7.,track->Pt());
+   }
+
+ if(particletypeMC==SpUndefined) continue;
+
+    if(fRequestEventPlane){
+      FillPIDEventPlane(cent_v0,particletypeMC,track->Phi(),gReactionPlane);
+    }
 
 if((track->Pt()>=fminPtAsso && track->Pt()<=fmaxPtAsso) || (track->Pt()>=fminPtTrig && track->Pt()<=fmaxPtTrig))//to reduce memory consumption in pool
   {
@@ -4730,7 +4733,7 @@ Double_t AliTwoParticlePIDCorr::GetRefMultiOrCentrality(AliVEvent *mainevent, Bo
 
 if(fCentralityMethod=="V0M" || fCentralityMethod=="V0A" || fCentralityMethod=="V0C" || fCentralityMethod=="CL1" || fCentralityMethod=="ZNA" || fCentralityMethod=="V0AEq" || fCentralityMethod=="V0CEq" || fCentralityMethod=="V0MEq")//for PbPb, pPb, pp7TeV(still to be introduced)//data or RecoMC and also for TRUTH
     {
-      
+          
 if(fSampleType=="pp_7" && fPPVsMultUtils)
    {//for pp 7 TeV case only using Alianalysisutils class
 	if(fAnalysisUtils) cent_v0 = fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,fCentralityMethod);
@@ -4742,7 +4745,7 @@ if(fSampleType=="pp_7" && fPPVsMultUtils)
   fHistCentStats->Fill(4.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0CEq"));//only available for LHC10d at present (Quantile info)
   fHistCentStats->Fill(5.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0MEq"));//only available for LHC10d at present (Quantile info)
       }
-      
+          
 else if(fSampleType=="pPb" || fSampleType=="PbPb")
   {
   AliCentrality *centralityObj=0;
