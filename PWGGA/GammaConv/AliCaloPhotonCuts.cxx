@@ -1442,6 +1442,11 @@ Bool_t AliCaloPhotonCuts::SetMinM02(Int_t minM02)
 		if (!fUseM02) fUseM02=1;
 		fMinM02=0.002; 
 		break;
+	case 2: 
+		if (!fUseM02) fUseM02=1;
+		fMinM02=0.2; 
+		break;
+
 	default:
 		AliError(Form("Min M02 not defined %d",minM02));
 		return kFALSE;
