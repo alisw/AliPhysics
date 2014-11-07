@@ -1088,7 +1088,7 @@ void AliAnalysisTaskCombinHF::DoMixingWithCuts(){
 
   for(Int_t iEv1=0; iEv1<nEvents; iEv1++){
     fEventBuffer[0]->GetEvent(iEv1);
-    TObjArray* karray1=new TObjArray(*karray);
+    TObjArray* karray1=(TObjArray*)karray->Clone();
     Double_t zVertex1=zVertex;
     Double_t mult1=mult;
     Int_t nKaons=karray1->GetEntries();
@@ -1112,7 +1112,7 @@ void AliAnalysisTaskCombinHF::DoMixingWithCuts(){
 	printf("AnalysisTaskCombinHF::DoMixingWithCuts ERROR: same event in mixing??? %d %d   %f %f  %f %f\n",iEv1,iEv2,zVertex1,zVertex2,mult1,mult2);
 	continue;
       }
-      TObjArray* parray2=new TObjArray(*parray);
+      TObjArray* parray2=(TObjArray*)parray->Clone();
       Int_t nPions=parray2->GetEntries();
       Int_t nKaonsForCheck=karray->GetEntries();
       sscanf((eventInfo->String()).Data(),"Ev%d_esd%d_Pi%d_K%d",&evId2,&esdId2,&np2,&nk2);
@@ -1187,7 +1187,7 @@ void AliAnalysisTaskCombinHF::DoMixingWithPools(Int_t poolIndex){
 
   for(Int_t iEv1=0; iEv1<nEvents; iEv1++){
     fEventBuffer[poolIndex]->GetEvent(iEv1);
-    TObjArray* karray1=new TObjArray(*karray);
+    TObjArray* karray1=(TObjArray*)karray->Clone();
     Double_t zVertex1=zVertex;
     Double_t mult1=mult;
     Int_t nKaons=karray1->GetEntries();
@@ -1207,7 +1207,7 @@ void AliAnalysisTaskCombinHF::DoMixingWithPools(Int_t poolIndex){
 	printf("AliAnalysisTaskCombinHF::DoMixingWithPools ERROR: same event in mixing??? %d %d   %f %f  %f %f\n",iEv1,iEv2,zVertex1,zVertex2,mult1,mult2);
 	continue;
       }
-      TObjArray* parray2=new TObjArray(*parray);
+      TObjArray* parray2=(TObjArray*)parray->Clone();
       Int_t nPions=parray2->GetEntries();
       Int_t nKaonsForCheck=karray->GetEntries();
       sscanf((eventInfo->String()).Data(),"Ev%d_esd%d_Pi%d_K%d",&evId2,&esdId2,&np2,&nk2);
@@ -1230,7 +1230,7 @@ void AliAnalysisTaskCombinHF::DoMixingWithPools(Int_t poolIndex){
 	if(nEvents==2) iEv3=iEv1;
 	if(iEv3<0) iEv3=iEv2-1;
 	fEventBuffer[poolIndex]->GetEvent(iEv3);
-	parray3=new TObjArray(*parray);
+	parray3=(TObjArray*)parray->Clone();
 	nPions3=parray3->GetEntries();
       }
       for(Int_t iTr1=0; iTr1<nKaons; iTr1++){
