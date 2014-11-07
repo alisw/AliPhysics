@@ -167,6 +167,7 @@ updateQA()
       qaFileOuter=""
       highPtTree=""
       eventStatFile=""
+      eventStatFileOuter=""
       #it is possible we get the highPt trees from somewhere else
       #search the list of high pt trees for the proper run number
       if [[ -n ${inputListHighPtTrees} ]]; then
@@ -179,11 +180,13 @@ updateQA()
       [[ "${inputFile}" =~ QAresults_outer.root$ ]] && qaFileOuter=${inputFile}
       [[ "${inputFile}" =~ FilterEvents_Trees.root$ ]] && highPtTree=${inputFile}
       [[ "${inputFile}" =~ event_stat.root$ ]] && eventStatFile=${inputFile}
+      [[ "${inputFile}" =~ event_stat_outer.root$ ]] && eventStatFileOuter=${inputFile}
       if [[ "${inputFile}" =~ \.zip$ ]]; then
         [[ -z ${qaFile} ]] && qaFile=${inputFile}
         [[ -z ${qaFileOuter} ]] && qaFileOuter=${inputFile}
         [[ -z ${highPtTree} ]] && highPtTree=${inputFile}
         [[ -z ${eventStatFile} ]] && eventStatFile=${inputFile}
+        [[ -z ${eventStatFileOuter} ]] && eventStatFileOuter=${inputFile}
       fi
 
       #if we have zip archives in the input, extract the proper file name
@@ -220,11 +223,19 @@ updateQA()
           eventStatFile=""
         fi
       fi
+      if [[ "${eventStatFileOuter}" =~ .*.zip$ ]]; then
+        if unzip -l ${eventStatFileOuter} | egrep "event_stat_outer.root" &>/dev/null; then
+          eventStatFileOuter+="#event_stat.root"
+        else
+          eventStatFileOuter=""
+        fi
+      fi
      
       echo qaFile=$qaFile
       echo qaFileOuter=$qaFileOuter
       echo highPtTree=$highPtTree
       echo eventStatFile=$eventStatFile
+      echo eventStatFileOuter=$eventStatFileOuter
       echo ocdbStorage=${ocdbStorage}
       echo
 
@@ -253,6 +264,13 @@ updateQA()
       if [[ -n ${eventStatFile} && $(type -t runLevelEventStatQA) =~ "function" ]]; then
         echo running ${detector} runLevelEventStatQA for run ${runNumber} from ${eventStatFile}
         ( runLevelEventStatQA "${eventStatFile}" ) &>> runLevelQA.log
+        #cache the touched production + an example file to guarantee consistent run data parsing
+        arrOfTouchedProductions[${tmpProductionDir}]="${inputFile%\#*}"
+      fi
+      #event stat QA based on event_stat_outer.root file
+      if [[ -n ${eventStatFileOuter} && $(type -t runLevelEventStatQAouter) =~ "function" ]]; then
+        echo running ${detector} runLevelEventStatQAouter for run ${runNumber} from ${eventStatFileOuter}
+        ( runLevelEventStatQAouter "${eventStatFileOuter}" ) &>> runLevelQA.log
         #cache the touched production + an example file to guarantee consistent run data parsing
         arrOfTouchedProductions[${tmpProductionDir}]="${inputFile%\#*}"
       fi
