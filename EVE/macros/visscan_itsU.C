@@ -94,7 +94,10 @@ void visscan_itsU(const TString& cdburi = "local://$ALICE_ROOT/OCDB",
   //==============================================================================
   // Registration of per-event macros
   //==============================================================================
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters ITS", "itsU_clusters.C+", "itsU_clusters"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks", "esd_tracks.C+", "esd_tracks"));
 
+  /*
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Track",   "kine_tracks.C+", "kine_tracks", "", kFALSE));
 
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits ITS", "its_hits.C+",    "its_hits",    "", kFALSE));
@@ -176,7 +179,7 @@ void visscan_itsU(const TString& cdburi = "local://$ALICE_ROOT/OCDB",
     exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters MUON", "muon_clusters.C+", "muon_clusters", "", kTRUE));
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks MUON", "esd_muon_tracks.C+", "esd_muon_tracks", "kTRUE,kFALSE", kTRUE));
   }
-
+  */
   //==============================================================================
   // Additional GUI components
   //==============================================================================

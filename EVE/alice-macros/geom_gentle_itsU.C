@@ -125,37 +125,24 @@ TEveGeoShape* GetItsUpgradeGeom(Bool_t bPrint) {
   TEveGeoShape *itsU = new TEveGeoShape("ITSU");  
  
   // Loop on all ITSV nodes, count Layer volumes by checking names
-
-  Int_t nNodes = itsV->GetNodes()->GetEntries();
-  for (Int_t j=0; j<nNodes; j++) {
-    if (strstr(itsV->GetNodes()->At(j)->GetName(),gm->GetITSLayerPattern())) {
-
-
+  Int_t nLayers=gm->GetNLayers();
+  for (Int_t l=0; l<nLayers; l++) {
+      Int_t id=gm->GetFirstChipIndex(l);
+      Double_t loc[3]={0.,0.,0.}, glo[3];
+      gm->LocalToGlobal(id,loc,glo);
+      Double_t rMid=TMath::Sqrt(glo[0]*glo[0] + glo[1]*glo[1]);
+      Double_t dz=TMath::Abs(glo[2]); 
       
-      char laddnam[30];
-      snprintf(laddnam, 30, "%s%d", gm->GetITSLayerPattern(),j);
-      TGeoVolume* volLd = gGeoManager->GetVolume(laddnam);
-      TGeoTube *t=(TGeoTube*)volLd->GetShape();
-
-      if (bPrint) {
-	printf("%s   ",itsV->GetNodes()->At(j)->GetName());
-	printf(" r = (%3.2lf %3.2lf) ",t->GetRmin(),t->GetRmax());
-	printf(" z = %3.2lf ",t->GetDz());   
-	printf(" #lad = %d \n",gm->GetNLadders(j));   
-      }
-
       // Add Element to EVE
-      TGeoTube *layer = new TGeoTube(t->GetRmin(),t->GetRmax(),t->GetDz());
-      TEveGeoShape *elLayer = new TEveGeoShape(Form("%s%d",gm->GetITSLayerPattern(),j));    
+      TGeoTube *layer = new TGeoTube(rMid-0.25,rMid+0.25,dz+1.5);
+      TEveGeoShape *elLayer = 
+      new TEveGeoShape(Form("%s%d",gm->GetITSLayerPattern(),l));
       elLayer->SetShape(layer);
       elLayer->SetMainColor(kGreen);
-      elLayer->SetMainTransparency(90);
+      elLayer->SetMainTransparency(70/*90*/);
       itsU->AddElement(elLayer);
-
-    }
-
   }
- 
+
   itsU->SetMainColor(kGreen);
   
   return itsU;
