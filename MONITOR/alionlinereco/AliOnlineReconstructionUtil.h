@@ -1,8 +1,8 @@
-#ifndef __ALIEVENTSERVER_UTIL_H__
-#define __ALIEVENTSERVER_UTIL_H__
+#ifndef __ALIONLINERECONSTRUCTION_UTIL_H__
+#define __ALIONLINERECONSTRUCTION_UTIL_H__
 
 // Default configuration file
-#define ALIEVENTSERVER_CONF "alieventserver.rootrc"
+#define ALIEVENTSERVER_CONF "onlinereco.conf"
 
 //______________DEFAULT SETTINGS________________
 #define DEFAULT_SERVER_HOST "tcp://*"
@@ -33,15 +33,15 @@
 #include <TSystem.h>
 #include <TString.h>
 
-namespace AliEventServerUtil
+namespace AliOnlineReconstructionUtil
 {
 // return full path to the server configuration file
 	inline const char* GetPathToServerConf()
 	{
-		return Form("%s/MONITOR/alieventserver/%s",
+		return Form("%s/MONITOR/alionlinereco/%s",
 			    gSystem->Getenv("ALICE_ROOT"),
 			    ALIEVENTSERVER_CONF);
 	}
 }
 
-#endif /* __ALIEVENTSERVER_UTIL_H__ */
+#endif

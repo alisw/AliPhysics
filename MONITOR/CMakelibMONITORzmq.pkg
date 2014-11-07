@@ -11,9 +11,9 @@ set ( SRCS
     alistoragemanager/AliDIMListenerThread.cxx
     alistoragemanager/AliEventsCollectorThread.cxx
     alistoragemanager/AliCommunicationThread.cxx
-    alieventserver/AliEventServerReconstruction.cxx
-    alieventserver/AliEventServerWindow.cxx
-    alieventserver/AliEventServer.cxx
+    #alionlinereco/AliEventServerReconstruction.cxx
+    #alionlinereco/AliEventServerWindow.cxx
+    alionlinereco/AliOnlineReconstruction.cxx
 )
 
 string ( REPLACE ".cxx" ".h" CINTHDRS "${SRCS}" )

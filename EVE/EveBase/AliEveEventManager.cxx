@@ -185,14 +185,14 @@ AliEveEventManager::~AliEveEventManager()
     fFinished = true;
     if(fEventListenerThread)
     {
-//        fEventListenerThread->Join();
+        fEventListenerThread->Join();
         fEventListenerThread->Kill();
         delete fEventListenerThread;
         cout<<"listener thread killed and deleted"<<endl;
     }
     if(fStorageManagerWatcherThread)
     {
-//        fStorageManagerWatcherThread->Join();
+        fStorageManagerWatcherThread->Join();
         fStorageManagerWatcherThread->Kill();
         delete fStorageManagerWatcherThread;
         cout<<"storage watcher thread killed and deleted"<<endl;
@@ -288,6 +288,7 @@ void AliEveEventManager::GetNextEvent()
         
         if(tmpEvent)
         {
+            cout<<"tmpEvent:"<<tmpEvent->GetRunNumber()<<endl;
             if(tmpEvent->GetRunNumber()>=0)
             {
                 fMutex->Lock();
@@ -1339,6 +1340,8 @@ void AliEveEventManager::Close()
     // Close the event data-files and delete ESD, ESDfriend, run-loader
     // and raw-reader.
 
+    cout<<"\n\n\nClose() called!!\n\n\n"<<endl;
+    
     static const TEveException kEH("AliEveEventManager::Close ");
 
     if (!fIsOpen)
