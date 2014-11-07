@@ -67,10 +67,9 @@ AliAnalysisTaskEmcalJet("AliEmcalPicoTrackInGridMaker",kTRUE),
       fActiveAreaCP[j][i]  = 0;
       fPatchECorr[j][i] = 0;
       fPatchECorrPar[j][i] = 0;
+      fPatchERaw[j][i] = 0;
       fPatchECorrRho[j][i] = 0;
-      fPatchECorrRhoDijet[j][i] = 0;
       fPatchECorrECorrRho[j][i] = 0;
-
       fh2JetPtPatchECorr[j][i] = 0;
     }
     fh2PatchEtaPhiEmcal[i] = 0;
@@ -132,10 +131,9 @@ AliEmcalPicoTrackInGridMaker::AliEmcalPicoTrackInGridMaker(const char *name) :
       fActiveAreaCP[j][i]  = 0;
       fPatchECorr[j][i] = 0;
       fPatchECorrPar[j][i] = 0;
+      fPatchERaw[j][i] = 0;
       fPatchECorrRho[j][i] = 0;
-      fPatchECorrRhoDijet[j][i] = 0;
       fPatchECorrECorrRho[j][i] = 0;
-
       fh2JetPtPatchECorr[j][i] = 0;
     }
     fh2PatchEtaPhiEmcal[i] = 0;
@@ -214,11 +212,11 @@ void AliEmcalPicoTrackInGridMaker::UserCreateOutputObjects()
       fPatchECorrPar[j][i] = new TH1F(Form("fPatchECorrPar%s_%d",det[j].Data(),i),Form("fPatchECorrPar%s_%d;#it{E}_{patch}^{corr}",det[j].Data(),i),250,-50.,200.);
       fOutput->Add(fPatchECorrPar[j][i]);  
 
+      fPatchERaw[j][i] = new TH1F(Form("fPatchERaw%s_%d",det[j].Data(),i),Form("fPatchERaw%s_%d;#it{E}_{patch}^{corr}",det[j].Data(),i),250,-50.,200.);
+      fOutput->Add(fPatchERaw[j][i]);
+
       fPatchECorrRho[j][i] = new TH2F(Form("fPatchECorrRho%s_%d",det[j].Data(),i),Form("fPatchECorrRho%s_%d;#it{E}_{patch}^{corr};#rho",det[j].Data(),i),250,-50.,200.,500,0.,500.);
       fOutput->Add(fPatchECorrRho[j][i]);  
-
-      fPatchECorrRhoDijet[j][i] = new TH2F(Form("fPatchECorrRhoDijet%s_%d",det[j].Data(),i),Form("fPatchECorrRhoDijet%s_%d;#it{E}_{patch}^{corr};#rho",det[j].Data(),i),250,-50.,200.,500,0.,500.);
-      fOutput->Add(fPatchECorrRhoDijet[j][i]);
 
       fPatchECorrECorrRho[j][i] = new TH3F(Form("fPatchECorrECorrRho%s_%d",det[j].Data(),i),Form("fPatchECorrECorrRho%s_%d;#it{E}_{patch,det1}^{corr};#it{E}_{patch,det2}^{corr};#rho",det[j].Data(),i),210,-30.,180.,210,-30.,180.,250,0.,250.);
       fOutput->Add(fPatchECorrECorrRho[j][i]);
@@ -286,11 +284,15 @@ Bool_t AliEmcalPicoTrackInGridMaker::Run()
   }
 
   // subtract energy density and store energy distributions of corrected patches in histo
+  Int_t EleadID[5][2];
+  Double_t Elead[5][2];
+  Double_t EleadRaw[5][2];
   for(Int_t i = 1; i<5; i++) { //patch types
-    Int_t EleadID[2] = {-1,-1};
-    Double_t Elead[2] = {-1e6,-1e6};
     Int_t stepSize = GetTriggerPatchIdStepSizeNoOverlap(GetPatchDim(i));
     for(Int_t type = 0; type<2; type++) {
+      EleadID[i][type] = -1;
+      Elead[i][type] = -1e6;
+      EleadRaw[i][type] = -1e6;
       Int_t subType = 1;
       if(type==1) subType = 0;
       //      for(Int_t j = 0; j<(fPatchGrid[type][i].GetSize()-stepSize+1); j+=stepSize) { //patches
@@ -304,27 +306,26 @@ Bool_t AliEmcalPicoTrackInGridMaker::Run()
 	    fPatchECorrPar[type][i]->Fill(fPatchGrid[type][i].At(id) - fRhoMean*GetPatchArea(i));
 	
 	    //Bookkeep leading patches
-	    if((fPatchGrid[type][i].At(id)-sub)>Elead[type]) {
-	      EleadID[type] = id;
-	      Elead[type] = fPatchGrid[type][i].At(id)-sub;
+	    if((fPatchGrid[type][i].At(id)-sub)>Elead[i][type]) {
+	      EleadID[i][type] = id;
+	      Elead[i][type] = fPatchGrid[type][i].At(id)-sub;
 	    }
+	    if(fPatchGrid[type][i].At(id)>EleadRaw[i][type])
+	      EleadRaw[i][type] = fPatchGrid[type][i].At(id);
 	  }
 	}//cols
       }//rows
-    }
+    }//type
 
     AliJetContainer *cont = GetJetContainer(0);
     for(Int_t k = 0; k<2; k++) {
       Int_t subType = 1;
       if(k==1) subType=0;
-      fPatchECorrRho[k][i]->Fill(Elead[k],medL1[fPatchSub-1][subType]);
-      fPatchECorrECorrRho[k][i]->Fill(Elead[k],Elead[subType],medL1[fPatchSub-1][subType]);
-      if(Elead[subType]>30.) {
-    	fPatchECorrRhoDijet[k][i]->Fill(Elead[k],medL1[fPatchSub-1][subType]);
-      }
-
+      fPatchECorrRho[k][i]->Fill(Elead[i][k],medL1[fPatchSub-1][subType]);
+      fPatchECorrECorrRho[k][i]->Fill(Elead[i][k],Elead[i][subType],medL1[fPatchSub-1][subType]);
+      fPatchERaw[k][i]->Fill(EleadRaw[i][k]);
       //Save jet spectra within EMCal and DCal fiducial acceptance
-      //jet pT vs highest energy patch for prefered trigger patch types
+      //jet pT vs highest energy patch for preferred trigger patch types
       if(cont) {
 	Double_t r = cont->GetJetRadius();
 	cont->SetJetEtaLimits(fEtaMin[k]+r,fEtaMax[k]-r);
@@ -334,15 +335,15 @@ Bool_t AliEmcalPicoTrackInGridMaker::Run()
 	cont->ResetCurrentID();
 	while((jet = cont->GetNextAcceptJet())) {
 	  Double_t jetpt = jet->Pt() - rho*jet->Area();
-	  fh2JetPtPatchECorr[k][i]->Fill(jetpt,Elead[k]);
+	  fh2JetPtPatchECorr[k][i]->Fill(jetpt,Elead[i][k]);
 	}
       }
     }
     Double_t eta = 0.; Double_t phi = 0.;
-    GetEtaPhiFromTriggerPatchID(EleadID[0],0,GetPatchDim(i),1,eta,phi);
+    GetEtaPhiFromTriggerPatchID(EleadID[i][0],0,GetPatchDim(i),1,eta,phi);
     fh2PatchEtaPhiEmcal[i]->Fill(eta,phi);
 
-    GetEtaPhiFromTriggerPatchID(EleadID[1],1,GetPatchDim(i),1,eta,phi);
+    GetEtaPhiFromTriggerPatchID(EleadID[i][1],1,GetPatchDim(i),1,eta,phi);
     fh2PatchEtaPhiDcal[i]->Fill(eta,phi);
   } //patch types
 

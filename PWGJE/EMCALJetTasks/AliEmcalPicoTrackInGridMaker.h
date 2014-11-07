@@ -122,8 +122,9 @@ class AliEmcalPicoTrackInGridMaker : public AliAnalysisTaskEmcalJet {
 
   TH1F              *fPatchECorr[2][5];     //! corrected patch energy for EMCal and DCal
   TH1F              *fPatchECorrPar[2][5];  //! corrected patch energy with inclusive mean rho for EMCal and DCal
+
+  TH1F              *fPatchERaw[2][5];      //! uncorrected patch energy for EMCal and DCal
   TH2F              *fPatchECorrRho[2][5];  //! corrected patch energy vs rho opposite side
-  TH2F              *fPatchECorrRhoDijet[2][5]; //! corrected patch energy vs rho opposite side
   TH3F              *fPatchECorrECorrRho[2][5]; //! Ecorr,det1 vs Ecorr,det2 vs rho,det2 opposite side for dijet in acceptance like events
   TH2F              *fh2PatchEtaPhiEmcal[5];    //! patch positions in EMCal
   TH2F              *fh2PatchEtaPhiDcal[5];     //! patch positions in DCal
@@ -133,6 +134,6 @@ class AliEmcalPicoTrackInGridMaker : public AliAnalysisTaskEmcalJet {
 
   TH2F              *fMultVsRho;            //! track multiplicity vs rho from EMCal
 
-  ClassDef(AliEmcalPicoTrackInGridMaker, 2); // Task to make PicoTracks in a grid corresponding to EMCAL/DCAL acceptance
+  ClassDef(AliEmcalPicoTrackInGridMaker, 3); // Task to make PicoTracks in a grid corresponding to EMCAL/DCAL acceptance
 };
 #endif
