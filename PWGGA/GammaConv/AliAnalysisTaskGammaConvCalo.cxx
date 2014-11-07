@@ -959,8 +959,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 				fHistoTrueEtaPtAlpha 						= new TH2F*[fnCuts];
 				fHistoTruePi0PtOpenAngle 					= new TH2F*[fnCuts];
 				fHistoTrueEtaPtOpenAngle 					= new TH2F*[fnCuts];
-				fHistoMotherPi0ConvPhotonEtaPhi				= new TH2F*[fnCuts];
-				fHistoMotherEtaConvPhotonEtaPhi				= new TH2F*[fnCuts];
+                fHistoTrueMotherPi0ConvPhotonEtaPhi         = new TH2F*[fnCuts];
+                fHistoTrueMotherEtaConvPhotonEtaPhi			= new TH2F*[fnCuts];
 			}
 		}
     
