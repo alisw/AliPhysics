@@ -90,7 +90,7 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
                                                       Bool_t  isolated[4],
                                                       Int_t & iparton )  
 {
-  //Correlate trigger with partons or jets, get z
+  // Correlate trigger with partons or jets, get z
   
   AliDebug(1,"Start");
   
@@ -116,13 +116,13 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
     return kFALSE; 
   }
   
-  Float_t ptTrig   = fTrigger.Pt(); 
+  Float_t ptTrig   = fTrigger.Pt();
   Float_t partonPt = fParton6->Pt();
   Float_t jetPt    = fJet6.Pt();
   if(iparton==7)
   {
-    partonPt = fParton6->Pt();
-    jetPt    = fJet6.Pt();
+    partonPt = fParton7->Pt();
+    jetPt    = fJet7.Pt();
   }
   
   //Get id of parton in near and away side
@@ -153,62 +153,45 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
   else if(awayPDG == 21) away = 1;
   else                   away = 2;
   
-  for( Int_t i = 0; i < 4; i++ )
-  {
-    if(pdgTrig==111)
-    {
-      
-      fhPtPartonTypeNearPi0[leading[i]][i]->Fill(ptTrig,near);
-      fhPtPartonTypeAwayPi0[leading[i]][i]->Fill(ptTrig,away);
-      if(isolated[i])
-      {
-        fhPtPartonTypeNearPi0Isolated[leading[i]][i]->Fill(ptTrig,near);
-        fhPtPartonTypeAwayPi0Isolated[leading[i]][i]->Fill(ptTrig,away);
-      }
-      
-    }// pi0
-    else if(pdgTrig==22)
-    {
-      fhPtPartonTypeNearPhoton[leading[i]][i]->Fill(ptTrig,near);
-      fhPtPartonTypeAwayPhoton[leading[i]][i]->Fill(ptTrig,away);
-      if(isolated[i])
-      {
-        fhPtPartonTypeNearPhotonIsolated[leading[i]][i]->Fill(ptTrig,near);
-        fhPtPartonTypeAwayPhotonIsolated[leading[i]][i]->Fill(ptTrig,away);
-      }
-      
-    } // photon
-  } // conditions loop
-  
-  
   // RATIOS
-
+  
   Float_t zHard = ptTrig / fPtHard;
   Float_t zPart = ptTrig / partonPt;
   Float_t zJet  = ptTrig / jetPt;
-
-  //if(zHard > 1 ) printf("*** Particle energy larger than pT hard z=%f\n",zHard); 
+  
+  //if(zHard > 1 ) printf("*** Particle energy larger than pT hard z=%f\n",zHard);
   
   //printf("Z: hard %2.2f, parton %2.2f, jet %2.2f\n",zHard,zPart,zJet);
-  
+
+  // conditions loop
   for( Int_t i = 0; i < 4; i++ )
   {
+    // pi0
     if(pdgTrig==111)
     {
+      fhPtPartonTypeNearPi0[leading[i]][i]->Fill(ptTrig,near);
+      fhPtPartonTypeAwayPi0[leading[i]][i]->Fill(ptTrig,away);
+      
       fhZHardPi0[leading[i]][i]  ->Fill(ptTrig,zHard);
       fhZPartonPi0[leading[i]][i]->Fill(ptTrig,zPart);
       fhZJetPi0[leading[i]][i]   ->Fill(ptTrig,zJet );
       
       if(isolated[i])
       {
+        fhPtPartonTypeNearPi0Isolated[leading[i]][i]->Fill(ptTrig,near);
+        fhPtPartonTypeAwayPi0Isolated[leading[i]][i]->Fill(ptTrig,away);
+        
         fhZHardPi0Isolated[leading[i]][i]  ->Fill(ptTrig,zHard);
         fhZPartonPi0Isolated[leading[i]][i]->Fill(ptTrig,zPart);
         fhZJetPi0Isolated[leading[i]][i]   ->Fill(ptTrig,zJet);
+
       }
-      
     }// pi0
+    // gamma
     else if(pdgTrig==22)
     {
+      fhPtPartonTypeNearPhoton[leading[i]][i]->Fill(ptTrig,near);
+      fhPtPartonTypeAwayPhoton[leading[i]][i]->Fill(ptTrig,away);
       
       fhZHardPhoton[leading[i]][i]  ->Fill(ptTrig,zHard);
       fhZPartonPhoton[leading[i]][i]->Fill(ptTrig,zPart);
@@ -216,12 +199,14 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
       
       if(isolated[i])
       {
+        fhPtPartonTypeNearPhotonIsolated[leading[i]][i]->Fill(ptTrig,near);
+        fhPtPartonTypeAwayPhotonIsolated[leading[i]][i]->Fill(ptTrig,away);
+        
         fhZHardPhotonIsolated[leading[i]][i]  ->Fill(ptTrig,zHard);
         fhZPartonPhotonIsolated[leading[i]][i]->Fill(ptTrig,zPart);
         fhZJetPhotonIsolated[leading[i]][i]   ->Fill(ptTrig,zJet);
       }
-      
-    } // photon
+    } // gamma
   } // conditions loop
   
   AliDebug(1,"End TRUE");
@@ -1021,7 +1006,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
         else if(i == 3) fhPtPhotonLeadingSumPt[i]->Fill(ptTrig, sumChPt + sumNePtEMCPhot);
         
         if(isolated[i]) fhPtPhotonLeadingIsolated[i]->Fill(ptTrig);
-      }      
+      }
     } // photon
   } // conditions loop
  
