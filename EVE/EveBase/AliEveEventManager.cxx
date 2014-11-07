@@ -218,6 +218,8 @@ AliEveEventManager::~AliEveEventManager()
 void AliEveEventManager::GetNextEvent()
 {
 #ifdef ZMQ
+  cout<<"\n\nGet next event called\n\n"<<endl;
+
     AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
     eventManager->CreateSocket(EVENTS_SERVER_SUB);
     eventManager->CreateSocket(SERVER_COMMUNICATION_REQ);
@@ -246,7 +248,7 @@ void AliEveEventManager::GetNextEvent()
     requestMessage->list = list;
     
     eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
-    vector<serverListStruct> receivedList = eventManager->GetServerListVector(SERVER_COMMUNICATION_REQ);
+    vector<serverListStruct> receivedList = eventManager->GetServerListVector(SERVER_COMMUNICATION_REQ,3000);
     
     cout<<"EVENT DISPLAY -- received list of marked events"<<endl;
     
