@@ -8,7 +8,7 @@
  **************************************************************************/
 
 #include "AliEveITSScaledModuleEditor.h"
-#include <EveDet/AliEveITSScaledModule.h>
+#include <AliEveITSScaledModule.h>
 
 #include <TVirtualPad.h>
 #include <TGedEditor.h>

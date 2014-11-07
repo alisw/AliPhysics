@@ -75,8 +75,8 @@
 
 #include <AliTRDReconstructor.h>
 
-#include <EveDet/AliEveTRDTrackList.h>
-#include <EveDet/AliEveTRDTrackListEditor.h>
+#include <AliEveTRDTrackList.h>
+#include <AliEveTRDTrackListEditor.h>
 
 // #include <../PWGPP/TRD/AliTRDrecoTask.h>
 // #include <../PWGPP/TRD/AliTRDpwgppHelper.h>

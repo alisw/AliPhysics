@@ -10,7 +10,7 @@
 #include "AliEveTPCSector2D.h"
 #include "AliEveTPCSector3D.h"
 
-#include <EveDet/AliEveTPCSectorData.h>
+#include <AliEveTPCSectorData.h>
 
 #include <TEveTrans.h>
 

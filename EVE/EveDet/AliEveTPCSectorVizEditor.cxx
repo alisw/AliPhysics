@@ -8,7 +8,7 @@
  **************************************************************************/
 
 #include "AliEveTPCSectorVizEditor.h"
-#include <EveDet/AliEveTPCSectorViz.h>
+#include <AliEveTPCSectorViz.h>
 
 #include <TEveGValuators.h>
 

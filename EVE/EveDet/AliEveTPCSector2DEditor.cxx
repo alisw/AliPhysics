@@ -8,7 +8,7 @@
  **************************************************************************/
 
 #include "AliEveTPCSector2DEditor.h"
-#include <EveDet/AliEveTPCSector2D.h>
+#include <AliEveTPCSector2D.h>
 
 #include <TGButton.h>
 #include <TGComboBox.h>
