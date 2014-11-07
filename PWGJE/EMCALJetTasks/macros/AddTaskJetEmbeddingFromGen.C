@@ -102,7 +102,7 @@ AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
     AliAnalysisDataContainer *outc = mgr->CreateContainer(contName,
                                                           TList::Class(),
                                                           AliAnalysisManager::kOutputContainer,
-                                                          "AnalysisResults.root");
+                                                          Form("%s",AliAnalysisManager::GetCommonFileName()));
     mgr->ConnectOutput(jetEmb, 1, outc);
   }
 
