@@ -45,6 +45,7 @@ const Float_t pTmin=0.2;   // Minimal pT for a reconstructable track
 const Int_t nMin=3;        // Minimal N of reconstructable tracks per vertex
 const Int_t nAssMin=2;     // Minimal number of correctly associated tracks
 const Float_t fracMin=0.8; // Minimal fraction of correctly associated tracks
+const Float_t tWin=30e-6;  // Time-acceptance window for "good" MC vertices
 
 extern AliRun *gAlice;
 extern TROOT *gROOT;
@@ -421,6 +422,7 @@ Int_t GoodPileupVertices(const Char_t *dir) {
          AliGenEventHeader *h=(AliGenEventHeader *)headers->At(v);
          TArrayF vtx(3); h->PrimaryVertex(vtx);
          Float_t t=h->InteractionTime();
+         if (TMath::Abs(t)>tWin) continue;
          UShort_t *idx=new UShort_t[np];
          Int_t ntrk=0;
          if (!FindContributors(t,stack,idx,ntrk)) {delete[] idx; continue;}
