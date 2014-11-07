@@ -1,9 +1,6 @@
-/*
- * AddTask macro for Jet V2 task 
+/* AddTask macro for Jet V2 task 
  * Redmer Alexander Bertens, rbertens@cern.ch
- * Utrecht University, Utrecht, Netherlands
- *
- */
+ * Utrecht University, Utrecht, Netherlands */
 
 AliAnalysisTaskJetV2* AddTaskJetV2(
   const char *ntracks            = "Tracks",
@@ -19,7 +16,7 @@ AliAnalysisTaskJetV2* AddTaskJetV2(
   UInt_t     runMode            = AliAnalysisTaskJetV2::kGrid,
   Bool_t     fillQA             = kTRUE,
   TString    fitOpts            = "WLQI",
-  UInt_t     fitType            = AliAnalysisTaskJetV2::kFourierSeries,
+  UInt_t     fitType            = AliAnalysisTaskJetV2::kCombined,
   TArrayD    *centralities      = 0x0,
   TRandom3   *randomizer        = 0x0,
   Double_t   trackptcut         = .15,

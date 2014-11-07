@@ -484,16 +484,16 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
       trackCopy->SetPidProbPion(esdpid[2]);
       trackCopy->SetPidProbKaon(esdpid[3]);
       trackCopy->SetPidProbProton(esdpid[4]);
-      
+
       esdpid[0] = -100000.0;
       esdpid[1] = -100000.0;
       esdpid[2] = -100000.0;
       esdpid[3] = -100000.0;
       esdpid[4] = -100000.0;
-      
+
       double tTOF = 0.0;
 
-      if (esdtrack->GetStatus()&AliESDtrack::kTOFpid) {
+      if (esdtrack->GetStatus()&AliESDtrack::kTOFout&AliESDtrack::kTIME) {
 	tTOF = esdtrack->GetTOFsignal();
 	esdtrack->GetIntegratedTimes(esdpid);
       }
@@ -502,29 +502,29 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 
       //////  TPC ////////////////////////////////////////////
 
-      float nsigmaTPCK=-1000.;                                                        
-      float nsigmaTPCPi=-1000.;                                                        
-      float nsigmaTPCP=-1000.;                                                        
-          
-  
+      float nsigmaTPCK=-1000.;
+      float nsigmaTPCPi=-1000.;
+      float nsigmaTPCP=-1000.;
+
+
       if ((fESDpid) && (esdtrack->IsOn(AliESDtrack::kTPCpid))){
         nsigmaTPCK = fESDpid->NumberOfSigmasTPC(esdtrack,AliPID::kKaon);
         nsigmaTPCPi = fESDpid->NumberOfSigmasTPC(esdtrack,AliPID::kPion);
         nsigmaTPCP = fESDpid->NumberOfSigmasTPC(esdtrack,AliPID::kProton);
-	
+
       }
       trackCopy->SetNSigmaTPCPi(nsigmaTPCPi);
       trackCopy->SetNSigmaTPCK(nsigmaTPCK);
       trackCopy->SetNSigmaTPCP(nsigmaTPCP);
-      
+
       ///// TOF ///////////////////////////////////////////////
-	
+
 	float vp=-1000.;
 	float nsigmaTOFPi=-1000.;
 	float nsigmaTOFK=-1000.;
 	float nsigmaTOFP=-1000.;
-	
-	if ((esdtrack->GetStatus()&AliESDtrack::kTOFpid) &&
+
+	if (// (esdtrack->GetStatus()&AliESDtrack::kTOFpid) &&
 	    (esdtrack->GetStatus()&AliESDtrack::kTOFout) &&
 	    (esdtrack->GetStatus()&AliESDtrack::kTIME))
 	  {
@@ -533,32 +533,32 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	    //(esdtrack->GetStatus()&AliESDtrack::kTOFout) &&
 	    //(esdtrack->GetStatus()&AliESDtrack::kTIME)){
 	    // collect info from ESDpid class
-	  
-	    if ((fESDpid) && (esdtrack->IsOn(AliESDtrack::kTOFpid))) {
-	      
-	      
+
+	    if ((fESDpid) && (esdtrack->IsOn(AliESDtrack::kTOFout & AliESDtrack::kTIME))) {
+
+
 	      double tZero = fESDpid->GetTOFResponse().GetStartTime(esdtrack->P());
-	      
+
 	      nsigmaTOFPi = fESDpid->NumberOfSigmasTOF(esdtrack,AliPID::kPion,tZero);
 	      nsigmaTOFK = fESDpid->NumberOfSigmasTOF(esdtrack,AliPID::kKaon,tZero);
 	      nsigmaTOFP = fESDpid->NumberOfSigmasTOF(esdtrack,AliPID::kProton,tZero);
-	      
+
 	      Double_t len=esdtrack->GetIntegratedLength();
 	      Double_t tof=esdtrack->GetTOFsignal();
 	      if(tof > 0.) vp=len/tof/0.03;
 	    }
 	  }
-	
+
 	trackCopy->SetVTOF(vp);
 	trackCopy->SetNSigmaTOFPi(nsigmaTOFPi);
 	trackCopy->SetNSigmaTOFK(nsigmaTOFK);
 	trackCopy->SetNSigmaTOFP(nsigmaTOFP);
-	
+
 	double pxyz[3];
 	double rxyz[3];
 	double impact[2];
 	double covimpact[3];
-      
+
 	if (fUseTPCOnly) {
 	  if (!esdtrack->GetTPCInnerParam()) {
 	    delete trackCopy;
@@ -1166,9 +1166,11 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoV0(AliESDv0 *tESDv0, AliFemtoV0 
 	tFemtoV0->SetNegNSigmaTPCPi(-1000);
       }
 
-      if((tFemtoV0->StatusPos()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFout)==0)
+      if(// (tFemtoV0->StatusPos()&AliESDtrack::kTOFpid)==0 ||
+         (tFemtoV0->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFout)==0)
 	{
-	  if((tFemtoV0->StatusNeg()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFout)==0)
+	  if(// (tFemtoV0->StatusNeg()&AliESDtrack::kTOFpid)==0 ||
+       (tFemtoV0->StatusNeg()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFout)==0)
 	    {
 	      tFemtoV0->SetPosNSigmaTOFK(-1000);
 	      tFemtoV0->SetNegNSigmaTOFK(-1000);

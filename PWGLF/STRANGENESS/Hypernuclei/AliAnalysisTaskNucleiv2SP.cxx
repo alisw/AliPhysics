@@ -98,6 +98,12 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP()
   hCos2DeltaVzMTPCnvsCentrality(0),
   hCos2DeltaTPCpTPCnvsCentrality(0),
   hQVzAQVzCvsCentrality(0),
+  hQxVzAvsCentrality(0),
+  hQyVzAvsCentrality(0),
+  hQxVzCvsCentrality(0),
+  hQyVzCvsCentrality(0),
+  hQxVzMvsCentrality(0),
+  hQyVzMvsCentrality(0),
   ftree(0),           
   tCentrality(0),     
   tType(0),  
@@ -165,6 +171,12 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP(const char *name)
   hCos2DeltaVzMTPCnvsCentrality(0),
   hCos2DeltaTPCpTPCnvsCentrality(0),
   hQVzAQVzCvsCentrality(0),
+  hQxVzAvsCentrality(0),
+  hQyVzAvsCentrality(0),
+  hQxVzCvsCentrality(0),
+  hQyVzCvsCentrality(0),
+  hQxVzMvsCentrality(0),
+  hQyVzMvsCentrality(0),
   ftree(0),           
   tCentrality(0),     
   tType(0),  
@@ -385,6 +397,19 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
   hQVzAQVzCvsCentrality = new TH2F("hQVzAQVzCvsCentrality","hQVzAQVzCvsCentrality",1000,-5,5,105,-0.5,105.5);
   fListHist->Add(hQVzAQVzCvsCentrality);
  
+  hQxVzAvsCentrality = new TH2F("hQxVzAvsCentrality","hQxVzAvsCentrality",100,-5,5,105,-0.5,105.5);
+  hQyVzAvsCentrality = new TH2F("hQyVzAvsCentrality","hQyVzAvsCentrality",100,-5,5,105,-0.5,105.5);
+  hQxVzCvsCentrality = new TH2F("hQxVzCvsCentrality","hQxVzCvsCentrality",100,-5,5,105,-0.5,105.5);
+  hQyVzCvsCentrality = new TH2F("hQyVzCvsCentrality","hQyVzCvsCentrality",100,-5,5,105,-0.5,105.5);
+  hQxVzMvsCentrality = new TH2F("hQxVzCvsCentrality","hQxVzCvsCentrality",100,-5,5,105,-0.5,105.5);
+  hQyVzMvsCentrality = new TH2F("hQyVzCvsCentrality","hQyVzCvsCentrality",100,-5,5,105,-0.5,105.5);
+
+  fListHist->Add(hQxVzAvsCentrality);
+  fListHist->Add(hQyVzAvsCentrality);
+  fListHist->Add(hQxVzCvsCentrality);
+  fListHist->Add(hQyVzCvsCentrality);
+  fListHist->Add(hQxVzMvsCentrality);
+  fListHist->Add(hQyVzMvsCentrality);
 
   if(!ftree){
    
@@ -479,7 +504,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   
   fHistEventMultiplicity->Fill(2); // analyzed events with PV
   
-  if(TMath::Abs(vtx->GetZv())>10) return;
+  if(TMath::Abs(vtx->GetZ())>10) return;
   fHistEventMultiplicity->Fill(3);
 
   Bool_t isSelectedCentral     = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral);
@@ -609,6 +634,15 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   Double_t  QV0AQV0C = qxEPa * qxEPc + qyEPa*qyEPc;
   hQVzAQVzCvsCentrality->Fill(QV0AQV0C,percentile);
   
+  //NUA correction
+
+  hQxVzAvsCentrality->Fill(qxEPa,percentile);
+  hQyVzAvsCentrality->Fill(qyEPa,percentile);
+  hQxVzCvsCentrality->Fill(qxEPc,percentile);
+  hQyVzCvsCentrality->Fill(qyEPc,percentile);
+  hQxVzMvsCentrality->Fill(qxEP ,percentile);
+  hQyVzMvsCentrality->Fill(qyEP ,percentile);
+
   //====================================================================================================================
   
   // To remove auto-correlation

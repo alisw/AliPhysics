@@ -154,11 +154,11 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 		eventCutArray[ 3] = "8000001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "10000044052030000"; mesonCutArray[3] = "01525065000000"; 
 		eventCutArray[ 4] = "8000001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "10000045052030000"; mesonCutArray[4] = "01525065000000"; 
 	} else if (trainConfig == 7) { //PHOS
-		eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "20000031022000000"; mesonCutArray[0] = "01525065000000"; 
-		eventCutArray[ 1] = "8000001"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "20000032022000000"; mesonCutArray[1] = "01525065000000"; 
-		eventCutArray[ 2] = "8000001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "20000033022000000"; mesonCutArray[2] = "01525065000000"; 
-		eventCutArray[ 3] = "8000001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "20000034022000000"; mesonCutArray[3] = "01525065000000"; 
-		eventCutArray[ 4] = "8000001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "20000035022000000"; mesonCutArray[4] = "01525065000000"; 
+		eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "20000041053200000"; mesonCutArray[0] = "01525065000000"; 
+		eventCutArray[ 1] = "8000001"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "20000042053200000"; mesonCutArray[1] = "01525065000000"; 
+		eventCutArray[ 2] = "8000001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "20000043053200000"; mesonCutArray[2] = "01525065000000"; 
+		eventCutArray[ 3] = "8000001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "20000044053200000"; mesonCutArray[3] = "01525065000000"; 
+		eventCutArray[ 4] = "8000001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "20000045053200000"; mesonCutArray[4] = "01525065000000"; 
 	} else {
 		Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;

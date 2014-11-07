@@ -551,31 +551,48 @@ TChain *CreateChain()
   return NULL;
 }
 
+/** 
+ * Helper function to make @c outputs_valid file 
+ * 
+ */
+void ValidateOutput()
+{
+  std::ofstream out;
+  out.open("outputs_valid", ios::out);
+  out.close();    
+}  
 //====================================================================
 /** 
  * Merge AOD output 
  * 
+ * @param dir   Directory 
+ * @param stage The merging stage 
  */
-void AODMerge()
+void AODMerge(const char* dir, Int_t stage)
 {
   // Merging method. No staging and no terminate phase.
   TStopwatch  timer; timer.Start();
-  TString     outputDir     = "wn.xml";
+  TString     outputDir     = dir;
   TObjArray   outputFiles;
-  outputFiles.Add(new TObjString("EventStat_temp.root,"));
-  outputFiles.Add(new TObjString("AODQA.root,"));
-  outputFiles.Add(new TObjString("AliAOD.root,"));
-  if (aodCfg->UsePWGHFvertexing()) 
-    outputFiles.Add(new TObjString("AliAOD.VertexingHF.root,"));
-  if (aodCfg->UseESDfilter() && 
-      aodCfg->UseMUONcopyAOD() && 
-      detCfg->UseMUON())
-    outputFiles.Add(new TObjString("AliAOD.Muons.root,"));
-  if (aodCfg->UseJETAN()) 
-    outputFiles.Add(new TObjString("AliAOD.Jets.root,"));
-  if (aodCfg->UsePWGDQJPSIfilter()) 
-    outputFiles.Add(new TObjString("AliAOD.Dielectron.root,"));
+  // outputFiles.Add(new TObjString("EventStat_temp.root"));
+  outputFiles.Add(new TObjString("AODQA.root"));
   outputFiles.Add(new TObjString("pyxsec_hists.root"));
+
+  Bool_t mergeTrees = stage <= 1;
+  if (mergeTrees) {
+    outputFiles.Add(new TObjString("AliAOD.root"));
+    if (aodCfg->UsePWGHFvertexing()) 
+      outputFiles.Add(new TObjString("AliAOD.VertexingHF.root"));
+    if (aodCfg->UseESDfilter() && 
+	aodCfg->UseMUONcopyAOD() && 
+	detCfg->UseMUON())
+      outputFiles.Add(new TObjString("AliAOD.Muons.root"));
+    if (aodCfg->UseJETAN()) 
+      outputFiles.Add(new TObjString("AliAOD.Jets.root"));
+    if (aodCfg->UsePWGDQJPSIfilter()) 
+      outputFiles.Add(new TObjString("AliAOD.Dielectron.root"));
+  }
+
   TString     mergeExcludes = "";
   TIter       iter(&outputFiles);
   TObjString* str           = 0;
@@ -584,21 +601,39 @@ void AODMerge()
     TString& outputFile = str->GetString();
     // Skip already merged outputs
     if (!gSystem->AccessPathName(outputFile)) {
-      printf("Output file <%s> found. Not merging again.",outputFile.Data());
+      ::Warning("Merge","Output file <%s> found. Not merging again.",
+		outputFile.Data());
       continue;
     }
     if (mergeExcludes.Contains(outputFile.Data())) continue;
-    merged = AliAnalysisAlien::MergeOutput(outputFile, outputDir, 10, 0);
+    merged = AliAnalysisAlien::MergeOutput(outputFile, 
+					   outputDir, 
+					   10, 
+					   stage);
     if (!merged) {
-      printf("ERROR: Cannot merge %s\n", outputFile.Data());
+      ::Error("Merge", "Cannot merge %s\n", outputFile.Data());
       continue;
     }
   }
+
   // all outputs merged, validate
-  ofstream out;
-  out.open("outputs_valid", ios::out);
-  out.close();
+  if (!outputDir.Contains("stage")) {
+    ValidateOutput();
+    timer.Print();
+    return;
+  }
+
+  // --- set up to run terminate -------------------------------------
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  mgr->SetSkipTerminate(kFALSE);
+  if (!mgr->InitAnalysis()) return;
+
+  mgr->PrintStatus();
+  mgr->SetGridHandler(new AliAnalysisAlien);
+  mgr->StartAnalysis("gridterminate",0);
+  ValidateOutput();
   timer.Print();
+
 }
 
 //====================================================================
@@ -647,6 +682,7 @@ void AOD(UInt_t run, const char* xmlfile=0, Int_t stage=0)
   // 
   // --- Analysis manager and load libraries -------------------------
   AliAnalysisManager *mgr = new AliAnalysisManager("Filter","Production train");
+  mgr->SetRunFromPath(grp->run);
   if (aodCfg->UseSysInfo()) mgr->SetNSysInfo(100);
   if (!LoadAnalysisLibraries()) {
     ::Error("AnalysisTrain", "Could not load analysis libraries");
@@ -672,20 +708,18 @@ void AOD(UInt_t run, const char* xmlfile=0, Int_t stage=0)
     mgr->SetOutputEventHandler(aodHandler);
   }
 
-  // --- Debugging if needed -----------------------------------------
-  if (aodCfg->UseDBG()) mgr->SetDebugLevel(3);
-
   // === Set up tasks ================================================
   //
   // --- Create tasks ------------------------------------------------
   AddAnalysisTasks(cdbPath);
 
+  // --- Debugging if needed -----------------------------------------
+  if (aodCfg->UseDBG()) mgr->SetDebugLevel(3);
+
+
   // --- If merging, do so here and exit -----------------------------
   if (stage > 0) {
-    AODMerge();
-    mgr->InitAnalysis();
-    mgr->SetGridHandler(new AliAnalysisAlien);
-    mgr->StartAnalysis("gridterminate",0);
+    AODMerge(xmlfile, stage);
     return;
   }
   // === Run the analysis ============================================
@@ -697,11 +731,12 @@ void AOD(UInt_t run, const char* xmlfile=0, Int_t stage=0)
   // --- Run the thing -----------------------------------------------
   TStopwatch timer;
   timer.Start();
+  if (!mgr->InitAnalysis()) return;
+
+  
+  mgr->PrintStatus();
   mgr->SetSkipTerminate(kTRUE);
-  if (mgr->InitAnalysis()) {
-    mgr->PrintStatus();
-    mgr->StartAnalysis("local", chain);
-  }
+  mgr->StartAnalysis("local", chain);
   timer.Print();
 }
 

@@ -77,14 +77,15 @@ AliAnalysisTaskSE(),
     fMaxQPerc(1000),
     fQPercDet(0),
     fEPDet(0),
-    fPsiEPmix(0),
-    fPsiEPmixtemp(0),
     nKtBins(0),
     nKtBins1(1),
     ktBins(0),
     nEPBins(0),
     nEPBins1(1),
     epBins(0),
+    nEPBinsMix(0),
+    nEPBinsMix1(1),
+    epBinsMix(0),
     nCentBins(0),
     nCentBins1(1),
     centBins(0),
@@ -106,6 +107,7 @@ AliAnalysisTaskSE(),
     hpt_pid(0x0),
     hvzcent(0x0),
     hcent(0x0),
+    hcentUnweighted(0x0),
     hcentn(0x0),
     hphistaretapair10(0x0),
     hphistaretapair16(0x0),
@@ -128,11 +130,20 @@ AliAnalysisTaskSE(),
     hPsiTPC(0x0),
     hPsiV0A(0x0),
     hPsiV0C(0x0),
+    hShiftTPC(0x0),
+    hShiftV0A(0x0),
+    hShiftV0C(0x0),
+    hPsiMix(0x0),
     hCheckEPA(0x0),
     hCheckEPC(0x0),
     hCheckEPmix(0x0),
+    hAvDphi(0x0),
+    hNpairs(0x0),
+    hPairDphi(0x0),
+    hPairDphiMix(0x0),
     hcentq(0x0),
-    hMixedDist(0x0),
+    hMixedDistTracks(0x0),
+    hMixedDistEvents(0x0),
     hQvecV0A(0x0),
     hQvecV0C(0x0),
     hresV0ATPC(0x0),
@@ -172,14 +183,15 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE(const char* name) :
   fMaxQPerc(1000),
   fQPercDet(0),
   fEPDet(0),
-  fPsiEPmix(0),
-  fPsiEPmixtemp(0),
   nKtBins(0),
   nKtBins1(1),
   ktBins(0),
   nEPBins(0),
   nEPBins1(1),
   epBins(0),
+  nEPBinsMix(0),
+  nEPBinsMix1(1),
+  epBinsMix(0),
   nCentBins(0),
   nCentBins1(1),
   centBins(0),
@@ -201,6 +213,7 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE(const char* name) :
   hpt_pid(0x0),
   hvzcent(0x0),
   hcent(0x0),
+  hcentUnweighted(0x0),
   hcentn(0x0),
   hphistaretapair10(0x0),
   hphistaretapair16(0x0),
@@ -223,11 +236,20 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE(const char* name) :
   hPsiTPC(0x0),
   hPsiV0A(0x0),
   hPsiV0C(0x0),
+  hShiftTPC(0x0),
+  hShiftV0A(0x0),
+  hShiftV0C(0x0),
+  hPsiMix(0x0),
   hCheckEPA(0x0),
   hCheckEPC(0x0),
   hCheckEPmix(0x0),
+  hAvDphi(0x0),
+  hNpairs(0x0),
+  hPairDphi(0x0),
+  hPairDphiMix(0x0),
   hcentq(0x0),
-  hMixedDist(0x0),
+  hMixedDistTracks(0x0),
+  hMixedDistEvents(0x0),
   hQvecV0A(0x0),
   hQvecV0C(0x0),
   hresV0ATPC(0x0),
@@ -252,6 +274,12 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE(const char* name) :
   SetCentBins(6,centBinsTemp);
   Double_t vzBinsTemp[9] = {-8,-6,-4,-2,0,2,4,6,8};
   SetVzBins(8,vzBinsTemp);
+
+  nEPBinsMix = 6;
+  nEPBinsMix1 = 7;
+  epBinsMix = new Double_t[nEPBinsMix1];
+  for(Int_t ee = 0; ee < nEPBinsMix1; ee++)
+    {epBinsMix[ee] = (TMath::Pi()/(Double_t)nEPBinsMix)*((Double_t)ee)-TMath::Pi()/2.;}
 
   vertex[0] = vertex[1] = vertex[2] = 0.;
 
@@ -296,14 +324,15 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE(const AliAnalysisTaskFemtoESE &
   fMaxQPerc(1000),
   fQPercDet(0),
   fEPDet(0),
-  fPsiEPmix(0),
-  fPsiEPmixtemp(0),
   nKtBins(0),
   nKtBins1(1),
   ktBins(0),
   nEPBins(0),
   nEPBins1(1),
   epBins(0),
+  nEPBinsMix(0),
+  nEPBinsMix1(1),
+  epBinsMix(0),
   nCentBins(0),
   nCentBins1(1),
   centBins(0),
@@ -325,6 +354,7 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE(const AliAnalysisTaskFemtoESE &
   hpt_pid(0x0),
   hvzcent(0x0),
   hcent(0x0),
+  hcentUnweighted(0x0),
   hcentn(0x0),
   hphistaretapair10(0x0),
   hphistaretapair16(0x0),
@@ -347,11 +377,20 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE(const AliAnalysisTaskFemtoESE &
   hPsiTPC(0x0),
   hPsiV0A(0x0),
   hPsiV0C(0x0),
+  hShiftTPC(0x0),
+  hShiftV0A(0x0),
+  hShiftV0C(0x0),
+  hPsiMix(0x0),
   hCheckEPA(0x0),
   hCheckEPC(0x0),
   hCheckEPmix(0x0),
+  hAvDphi(0x0),
+  hNpairs(0x0),
+  hPairDphi(0x0),
+  hPairDphiMix(0x0),
   hcentq(0x0),
-  hMixedDist(0x0),
+  hMixedDistTracks(0x0),
+  hMixedDistEvents(0x0),
   hQvecV0A(0x0),
   hQvecV0C(0x0),
   hresV0ATPC(0x0),
@@ -418,6 +457,9 @@ void AliAnalysisTaskFemtoESE::UserCreateOutputObjects()
   hcent = new TH1D("hcent","cent",200,0,50);
   hcent->GetXaxis()->SetTitle("centrality");
   fOutputList->Add(hcent);
+  hcentUnweighted = new TH1D("hcentUnweighted","cent - unweighted",200,0,50);
+  hcentUnweighted->GetXaxis()->SetTitle("centrality");
+  fOutputList->Add(hcentUnweighted);
   hcentn = new TH2D("hcentn","cent vs npions",50,0,50,100,0,2000);
   hcentn->GetXaxis()->SetTitle("Centrality");
   hcentn->GetYaxis()->SetTitle("Number of pions");
@@ -465,8 +507,9 @@ void AliAnalysisTaskFemtoESE::UserCreateOutputObjects()
   hpidid = new TH1D("hpidid","pid id",9,-4.5,4.5);
   hpidid->GetXaxis()->SetTitle("track PID ID");
   fOutputList->Add(hpidid);
-  hkt = new TH1D("hkt","k_{T}",100,0,2);
-  hkt->GetXaxis()->SetTitle("k_{T}");
+  hkt = new TH2D("hkt","k_{T}",nCentBins,centBins,100,0,2);
+  hkt->GetXaxis()->SetTitle("centrality");
+  hkt->GetYaxis()->SetTitle("k_{T}");
   fOutputList->Add(hkt);
   hktcheck = new TH1D("hktcheck","k_{T} check",50,0,1);
   hktcheck->GetXaxis()->SetTitle("k_{T}");
@@ -495,31 +538,67 @@ void AliAnalysisTaskFemtoESE::UserCreateOutputObjects()
   hsharefracmix = new TH1D("hsharefracmix","Share Fraction -- mixed events",100,0,1);
   hsharefracmix->GetXaxis()->SetTitle("Share Fraction");
   fOutputList->Add(hsharefracmix);
-  hPsiTPC = new TH1D("hPsiTPC","TPC EP",100,-1*TMath::Pi(),TMath::Pi());
-  hPsiTPC->GetXaxis()->SetTitle("#Psi{TPC}");
+  hPsiTPC = new TH2D("hPsiTPC","TPC EP",nCentBins,centBins,100,-1*TMath::Pi(),TMath::Pi());
+  hPsiTPC->GetXaxis()->SetTitle("Centrality");
+  hPsiTPC->GetYaxis()->SetTitle("#Psi{TPC}");
   fOutputList->Add(hPsiTPC);
-  hPsiV0A = new TH1D("hPsiV0A","V0A EP",100,-1*TMath::Pi(),TMath::Pi());
-  hPsiV0A->GetXaxis()->SetTitle("#Psi{V0A}");
+  hPsiV0A = new TH2D("hPsiV0A","V0A EP",nCentBins,centBins,100,-1*TMath::Pi(),TMath::Pi());
+  hPsiV0A->GetXaxis()->SetTitle("Centrality");
+  hPsiV0A->GetYaxis()->SetTitle("#Psi{V0A}");
   fOutputList->Add(hPsiV0A);
-  hPsiV0C = new TH1D("hPsiV0C","V0C EP",100,-1*TMath::Pi(),TMath::Pi());
-  hPsiV0C->GetXaxis()->SetTitle("#Psi{V0C}");
+  hPsiV0C = new TH2D("hPsiV0C","V0C EP",nCentBins,centBins,100,-1*TMath::Pi(),TMath::Pi());
+  hPsiV0C->GetXaxis()->SetTitle("Centrality");
+  hPsiV0C->GetYaxis()->SetTitle("#Psi{V0C}");
   fOutputList->Add(hPsiV0C);
-  hCheckEPA = new TH1D("hCheckEPA","Check EP V0A",100,-1*TMath::Pi(),TMath::Pi());
-  hCheckEPA->GetXaxis()->SetTitle("PsiV0A - PsiTPC");
+  hShiftTPC = new TH2D("hShiftTPC","TPC shifting values",nCentBins,centBins,6,-0.5,5.5);
+  hShiftTPC->GetXaxis()->SetTitle("Centrality");
+  fOutputList->Add(hShiftTPC);
+  hShiftV0A = new TH2D("hShiftV0A","V0A shifting values",nCentBins,centBins,6,-0.5,5.5);
+  hShiftV0A->GetXaxis()->SetTitle("Centrality");
+  fOutputList->Add(hShiftV0A);
+  hShiftV0C = new TH2D("hShiftV0C","V0C shifting values",nCentBins,centBins,6,-0.5,5.5);
+  hShiftV0C->GetXaxis()->SetTitle("Centrality");
+  fOutputList->Add(hShiftV0C);
+  hPsiMix = new TH2D("hPsiMix","Mix EP",nCentBins,centBins,100,-1*TMath::Pi(),TMath::Pi());
+  hPsiMix->GetXaxis()->SetTitle("Centrality");
+  hPsiMix->GetYaxis()->SetTitle("#Psi{Mix}");
+  fOutputList->Add(hPsiMix);
+  hCheckEPA = new TH2D("hCheckEPA","Check EP V0A",nCentBins,centBins,100,-1*TMath::Pi(),TMath::Pi());
+  hCheckEPA->GetXaxis()->SetTitle("Centrality");
+  hCheckEPA->GetYaxis()->SetTitle("PsiV0A - PsiTPC");
   fOutputList->Add(hCheckEPA);
-  hCheckEPC = new TH1D("hCheckEPC","Check EP V0C",100,-1*TMath::Pi(),TMath::Pi());
-  hCheckEPC->GetXaxis()->SetTitle("PsiV0C - PsiTPC");
+  hCheckEPC = new TH2D("hCheckEPC","Check EP V0C",nCentBins,centBins,100,-1*TMath::Pi(),TMath::Pi());
+  hCheckEPC->GetXaxis()->SetTitle("Centrality");
+  hCheckEPC->GetYaxis()->SetTitle("PsiV0C - PsiTPC");
   fOutputList->Add(hCheckEPC);
   hCheckEPmix = new TH2D("hCheckEPmix","Check EP mixed events",100,-1*TMath::Pi(),TMath::Pi(),100,-1*TMath::Pi(),TMath::Pi());
   hCheckEPmix->GetXaxis()->SetTitle("Psi1 - Psi_mix");
   hCheckEPmix->GetYaxis()->SetTitle("Psi1 - Psi2");
   fOutputList->Add(hCheckEPmix);
+  hAvDphi = new TH3D("hAvDphi","average event plane angle",nEPBins,epBins,nCentBins,centBins,nKtBins,ktBins);
+  hAvDphi->GetXaxis()->SetTitle("EP bins");
+  hAvDphi->GetYaxis()->SetTitle("cent bins");
+  hAvDphi->GetZaxis()->SetTitle("kt bins");
+  fOutputList->Add(hAvDphi);
+  hNpairs = new TH3D("hNpairs","number of pairs",nEPBins,epBins,nCentBins,centBins,nKtBins,ktBins);
+  hNpairs->GetXaxis()->SetTitle("EP bins");
+  hNpairs->GetYaxis()->SetTitle("cent bins");
+  hNpairs->GetZaxis()->SetTitle("kt bins");
+  fOutputList->Add(hNpairs);
+  hPairDphi = new TH1D("hPairDphi","pairs wrt EP",100,0,2*TMath::Pi());
+  hPairDphi->GetXaxis()->SetTitle("#Delta#phi");
+  fOutputList->Add(hPairDphi);
+  hPairDphiMix = new TH1D("hPairDphiMix","mixed pairs wrt EP",100,0,2*TMath::Pi());
+  hPairDphiMix->GetXaxis()->SetTitle("#Delta#phi");
+  fOutputList->Add(hPairDphiMix);
   hcentq = new TH2D("hcentq","qvec vs cent",100,0,100,50,0,50);
   hcentq->GetXaxis()->SetTitle("q_{2} percentile");
   hcentq->GetYaxis()->SetTitle("centrality");
   fOutputList->Add(hcentq);
-  hMixedDist = new TH2D("hMixedDist", ";centrality;tracks;events", 50, 0, 50, 200, 0, fMixingTracks * 1.5);
-  fOutputList->Add(hMixedDist);
+  hMixedDistTracks = new TH2D("hMixedDistTracks", ";centrality;tracks", nCentBins, centBins, 200, 0, fMixingTracks * 2.);
+  fOutputList->Add(hMixedDistTracks);
+  hMixedDistEvents = new TH2D("hMixedDistEvents", ";centrality;events", nCentBins, centBins, 41, -0.5, 40.5);
+  fOutputList->Add(hMixedDistEvents);
   hQvecV0A = new TH2D("hQvecV0A","Qvector in V0A",50,0,50,200,0,5);
   hQvecV0A->GetXaxis()->SetTitle("Centrality");
   hQvecV0A->GetYaxis()->SetTitle("normalized Qvector");
@@ -546,27 +625,36 @@ void AliAnalysisTaskFemtoESE::UserCreateOutputObjects()
   hqinvcheck->GetZaxis()->SetTitle("centrality");
   fOutputList->Add(hqinvcheck);
 
-  hq = new TH3F***[nKtBins];
-  hqmix = new TH3F***[nKtBins];
-  hqinv = new TH3F***[nKtBins];
-  for(Int_t k = 0; k < nKtBins; k++)
+  hq = new TH3F****[2];
+  hqmix = new TH3F****[2];
+  hqinv = new TH3F****[2];
+  for(Int_t z = 0; z < 2; z++) // charge combinations
     {
-      hq[k] = new TH3F**[nEPBins];
-      hqmix[k] = new TH3F**[nEPBins];
-      hqinv[k] = new TH3F**[nEPBins];
-      for(Int_t e = 0; e < nEPBins; e++)
+      hq[z] = new TH3F***[nKtBins];
+      hqmix[z] = new TH3F***[nKtBins];
+      hqinv[z] = new TH3F***[nKtBins];
+      for(Int_t k = 0; k < nKtBins; k++)
 	{
-	  hq[k][e] = new TH3F*[nCentBins];
-	  hqmix[k][e] = new TH3F*[nCentBins];
-	  hqinv[k][e] = new TH3F*[nCentBins];
-	  for(Int_t c = 0; c < nCentBins; c++)
+	  hq[z][k] = new TH3F**[nEPBins];
+	  hqmix[z][k] = new TH3F**[nEPBins];
+	  hqinv[z][k] = new TH3F**[nEPBins];
+	  for(Int_t e = 0; e < nEPBins; e++)
 	    {
-	      hq[k][e][c] = new TH3F(Form("hq_%i_%i_%i",k,e,c),Form("hq_%i_%i_%i",k,e,c),20,-0.2,0.2,20,-0.2,0.2,20,-0.2,0.2);
-	      fOutputList->Add(hq[k][e][c]);
-	      hqmix[k][e][c] = new TH3F(Form("hqmix_%i_%i_%i",k,e,c),Form("hqmix_%i_%i_%i",k,e,c),20,-0.2,0.2,20,-0.2,0.2,20,-0.2,0.2);
-	      fOutputList->Add(hqmix[k][e][c]);
-	      hqinv[k][e][c] = new TH3F(Form("hqinv_%i_%i_%i",k,e,c),Form("hqinv_%i_%i_%i",k,e,c),20,-0.2,0.2,20,-0.2,0.2,20,-0.2,0.2);
-	      fOutputList->Add(hqinv[k][e][c]);
+	      hq[z][k][e] = new TH3F*[nCentBins];
+	      hqmix[z][k][e] = new TH3F*[nCentBins];
+	      hqinv[z][k][e] = new TH3F*[nCentBins];
+	      for(Int_t c = 0; c < nCentBins; c++)
+		{
+		  hq[z][k][e][c] = new TH3F(Form("hq%i_k%i_e%i_c%i",z,k,e,c),Form("hq%i_k%i_e%i_c%i",z,k,e,c),40,-0.2,0.2,40,-0.2,0.2,40,-0.2,0.2);
+		  hq[z][k][e][c]->Sumw2();
+		  fOutputList->Add(hq[z][k][e][c]);
+		  hqmix[z][k][e][c] = new TH3F(Form("hqmix%i_k%i_e%i_c%i",z,k,e,c),Form("hqmix%i_k%i_e%i_c%i",z,k,e,c),40,-0.2,0.2,40,-0.2,0.2,40,-0.2,0.2);
+		  hqmix[z][k][e][c]->Sumw2();
+		  fOutputList->Add(hqmix[z][k][e][c]);
+		  hqinv[z][k][e][c] = new TH3F(Form("hqinv%i_k%i_e%i_c%i",z,k,e,c),Form("hqinv%i_k%i_e%i_c%i",z,k,e,c),40,-0.2,0.2,40,-0.2,0.2,40,-0.2,0.2);
+		  //hqinv[z][k][e][c]->Sumw2();
+		  fOutputList->Add(hqinv[z][k][e][c]);
+		}
 	    }
 	}
     }
@@ -580,8 +668,8 @@ void AliAnalysisTaskFemtoESE::UserCreateOutputObjects()
   fOutputList->Add(hepbins);
 
   Printf("************************");
-  Printf("using the %s detector for event plane determination",fEPDet ? "V0C" : "V0A");
-  Printf("using the %s detector for q-vector determination",fQPercDet ? "V0C" : "V0A");
+  Printf("using the %s detector for event plane determination!",fEPDet ? "V0C" : "V0A");
+  Printf("using the %s detector for q-vector determination!",fQPercDet ? "V0C" : "V0A");
   Printf("************************");
 
   vertex[0] = vertex[1] = vertex[2] = 0.;
@@ -589,10 +677,10 @@ void AliAnalysisTaskFemtoESE::UserCreateOutputObjects()
   // event mixing pool
   fPoolMgr = new AliEventPoolManager*[2];
   Int_t poolsize = 1000;
-  fPoolMgr[0] = new AliEventPoolManager(poolsize, fMixingTracks, nCentBins, centBins, nVzBins, vzBins);
-  fPoolMgr[0]->SetTargetValues(fMixingTracks, 0.1, 5); // check these values
-  fPoolMgr[1] = new AliEventPoolManager(poolsize, fMixingTracks, nCentBins, centBins, nVzBins, vzBins);
-  fPoolMgr[1]->SetTargetValues(fMixingTracks, 0.1, 5); // check these values
+  fPoolMgr[0] = new AliEventPoolManager(poolsize, fMixingTracks, nCentBins, centBins, nVzBins, vzBins,nEPBinsMix,epBinsMix);
+  fPoolMgr[0]->SetTargetValues(fMixingTracks, 0.01, 5); // check these values
+  fPoolMgr[1] = new AliEventPoolManager(poolsize, fMixingTracks, nCentBins, centBins, nVzBins, vzBins,nEPBinsMix,epBinsMix);
+  fPoolMgr[1]->SetTargetValues(fMixingTracks, 0.01, 5); // check these values
 
   nCountSamePairs = 0;
   nCountMixedPairs = 0;
@@ -642,6 +730,7 @@ void AliAnalysisTaskFemtoESE::UserExec(Option_t *)
   centralityPercentile = centrality->GetCentralityPercentile("V0M");
   if(centralityPercentile <= centBins[0]) return;
   if(centralityPercentile > centBins[nCentBins]) return;
+  Double_t centWeight = GetCentralityWeight(centralityPercentile);
   
   primaryVertexAOD = fAOD->GetPrimaryVertex();
   vertex[0]=primaryVertexAOD->GetX(); vertex[1]=primaryVertexAOD->GetY(); vertex[2]=primaryVertexAOD->GetZ();
@@ -649,9 +738,6 @@ void AliAnalysisTaskFemtoESE::UserExec(Option_t *)
   if(zvtx < vzBins[0] || zvtx > vzBins[nVzBins]) return; // Z-Vertex Cut 
   //cout<<"Centrality % = " << centralityPercentile << "  z-vertex = " << zvtx << endl;
 
-  //ProcInfo_t procInfo;
-  //gSystem->GetProcInfo(&procInfo);
-  //Printf("ResMem %ld VMem %ld", procInfo.fMemResident, procInfo.fMemVirtual);
   //stopwatch->Stop();
   //Printf("%lf   %lf",stopwatch->RealTime(),stopwatch->CpuTime());
   //stopwatch->Start();
@@ -661,18 +747,22 @@ void AliAnalysisTaskFemtoESE::UserExec(Option_t *)
   Double_t psiV0A = fEventCuts->GetPsiV0A();
   Double_t psiV0C = fEventCuts->GetPsiV0C();
   Double_t qperc = -999;
-  if(bIsLHC10h) qperc = fEventCuts->GetQvecPercentile(fQPercDet);//0: VZERO-A 1: VZERO-C
-  else
+  qperc = fEventCuts->GetQvecPercentile(fQPercDet);//0: VZERO-A 1: VZERO-C // now works for both LHC10h and LHC11h (for 0-50% centrality only!)
+  if(!bIsLHC10h)
     {
-      if(fQPercDet == 0) qperc = GetQPercLHC11h(fEventCuts->GetqV0A());
-      if(fQPercDet == 1) qperc = GetQPercLHC11h(fEventCuts->GetqV0C());
-      //Printf("q vector = %lf  percentile = %lf",fEventCuts->GetqV0A(),qperc);
-      hQvecV0A->Fill(centralityPercentile,fEventCuts->GetqV0A());
-      hQvecV0C->Fill(centralityPercentile,fEventCuts->GetqV0C());
+      //Printf("%lf   %lf",qperc,GetQPercLHC11h(fEventCuts->GetqV0A()));
+      hQvecV0A->Fill(centralityPercentile,fEventCuts->GetqV0A(),centWeight);
+      hQvecV0C->Fill(centralityPercentile,fEventCuts->GetqV0C(),centWeight);
+      //Printf("q vector = %lf  percentile = %lf",(fQPercDet==0 ? fEventCuts->GetqV0A() : fEventCuts->GetqV0C()),qperc);
     }
+
   if(psiV0A == -999) return;
   if(psiV0C == -999) return;
   if(qperc < fMinQPerc || qperc > fMaxQPerc) return;
+
+  //ProcInfo_t procInfo;
+  //gSystem->GetProcInfo(&procInfo);
+  //Printf("beginning of event: ResMem %ld VMem %ld", procInfo.fMemResident, procInfo.fMemVirtual);
 
   Double_t psiEP = psiV0A;
   if(fEPDet==1) psiEP = psiV0C;
@@ -686,14 +776,14 @@ void AliAnalysisTaskFemtoESE::UserExec(Option_t *)
 
   // Track loop -- select pions
   for (Int_t i = 0; i < fAOD->GetNumberOfTracks(); i++) {
-    AliAODTrack* aodtrack = fAOD->GetTrack(i);
+    AliAODTrack* aodtrack = (AliAODTrack*)fAOD->GetTrack(i);
     if (!aodtrack) continue;
     if(!TrackCut(aodtrack)) continue;
 
     // filter bit 7 PID method...
     Int_t trackPID=999;
     for(Int_t m = 0; m < fAOD->GetNumberOfTracks(); m++) {
-      AliAODTrack* aodtrack2 = fAOD->GetTrack(m);
+      AliAODTrack* aodtrack2 = (AliAODTrack*)fAOD->GetTrack(m);
       if (!aodtrack2) continue;
       if(aodtrack->GetID() != (-aodtrack2->GetID() - 1)) continue;// (-aodTrack2->GetID() - 1)
       trackPID=fHelperPID->GetParticleSpecies((AliVTrack*)aodtrack2,kTRUE);
@@ -744,42 +834,65 @@ void AliAnalysisTaskFemtoESE::UserExec(Option_t *)
     psiTPC = 0.5*atan2(sin2phi,cos2phi);
   else return;
 
-  hPsiTPC->Fill(psiTPC);
-  hPsiV0A->Fill(psiV0A);
-  hPsiV0C->Fill(psiV0C);
+  hPsiTPC->Fill(centralityPercentile,psiTPC,centWeight);
+  hPsiV0A->Fill(centralityPercentile,psiV0A,centWeight);
+  hPsiV0C->Fill(centralityPercentile,psiV0C,centWeight);
   Double_t dphiEP = psiTPC-psiV0A;
   if(dphiEP>TMath::Pi()) dphiEP-=2*TMath::Pi();
   if(dphiEP<-TMath::Pi()) dphiEP+=2*TMath::Pi();
-  hCheckEPA->Fill(dphiEP);
+  hCheckEPA->Fill(centralityPercentile,dphiEP,centWeight);
   dphiEP = psiTPC-psiV0C;
   if(dphiEP>TMath::Pi()) dphiEP-=2*TMath::Pi();
   if(dphiEP<-TMath::Pi()) dphiEP+=2*TMath::Pi();
-  hCheckEPC->Fill(dphiEP);
+  hCheckEPC->Fill(centralityPercentile,dphiEP,centWeight);
+
+  // values for EP shifting method  
+  hShiftTPC->Fill(centralityPercentile,0.,cos(2*psiTPC)*centWeight);
+  hShiftTPC->Fill(centralityPercentile,1.,sin(2*psiTPC)*centWeight);
+  hShiftTPC->Fill(centralityPercentile,2.,cos(4*psiTPC)*centWeight);
+  hShiftTPC->Fill(centralityPercentile,3.,sin(4*psiTPC)*centWeight);
+  hShiftTPC->Fill(centralityPercentile,4.,cos(6*psiTPC)*centWeight);
+  hShiftTPC->Fill(centralityPercentile,5.,sin(6*psiTPC)*centWeight);
+
+  hShiftV0A->Fill(centralityPercentile,0.,cos(2*psiV0A)*centWeight);
+  hShiftV0A->Fill(centralityPercentile,1.,sin(2*psiV0A)*centWeight);
+  hShiftV0A->Fill(centralityPercentile,2.,cos(4*psiV0A)*centWeight);
+  hShiftV0A->Fill(centralityPercentile,3.,sin(4*psiV0A)*centWeight);
+  hShiftV0A->Fill(centralityPercentile,4.,cos(6*psiV0A)*centWeight);
+  hShiftV0A->Fill(centralityPercentile,5.,sin(6*psiV0A)*centWeight);
+
+  hShiftV0C->Fill(centralityPercentile,0.,cos(2*psiV0C)*centWeight);
+  hShiftV0C->Fill(centralityPercentile,1.,sin(2*psiV0C)*centWeight);
+  hShiftV0C->Fill(centralityPercentile,2.,cos(4*psiV0C)*centWeight);
+  hShiftV0C->Fill(centralityPercentile,3.,sin(4*psiV0C)*centWeight);
+  hShiftV0C->Fill(centralityPercentile,4.,cos(6*psiV0C)*centWeight);
+  hShiftV0C->Fill(centralityPercentile,5.,sin(6*psiV0C)*centWeight);
 
 
-  hcentq->Fill(qperc,centralityPercentile);
+  hcentq->Fill(qperc,centralityPercentile,centWeight);
 
   nCountTracks += ntracks;
   //cout << "Found " << ntracks << " pion tracks..." << endl;
 
-  hvzcent->Fill(zvtx,centralityPercentile);
-  hcent->Fill(centralityPercentile);
-  hcentn->Fill(centralityPercentile,ntracks);
+  hvzcent->Fill(zvtx,centralityPercentile,centWeight);
+  hcentUnweighted->Fill(centralityPercentile);
+  hcent->Fill(centralityPercentile,centWeight);
+  hcentn->Fill(centralityPercentile,ntracks,centWeight);
 
   // resolution histograms
-  hresV0ATPC->Fill(centralityPercentile,cos(2*(psiV0A-psiTPC)));
-  hresV0CTPC->Fill(centralityPercentile,cos(2*(psiV0C-psiTPC)));
-  hresV0AV0C->Fill(centralityPercentile,cos(2*(psiV0A-psiV0C)));
+  hresV0ATPC->Fill(centralityPercentile,cos(2*(psiV0A-psiTPC))*centWeight);
+  hresV0CTPC->Fill(centralityPercentile,cos(2*(psiV0C-psiTPC))*centWeight);
+  hresV0AV0C->Fill(centralityPercentile,cos(2*(psiV0A-psiV0C))*centWeight);
 
-  AliEventPool* poolPos = fPoolMgr[0]->GetEventPool(centralityPercentile,zvtx);
-  if (!poolPos) AliFatal(Form("No pool found for centrality = %f, vz = %f", centralityPercentile, zvtx));
-  AliEventPool* poolNeg = fPoolMgr[1]->GetEventPool(centralityPercentile,zvtx);
-  if (!poolNeg) AliFatal(Form("No pool found for centrality = %f, vz = %f", centralityPercentile, zvtx));
-  //if (!pool) AliFatal(Form("No pool found for centrality = %f, zVtx = %f, Psi_EP = %f", centralityPercentile, zvtx, psiEP));
-  //if(pool->IsReady()) hMixedDist->Fill(centralityPercentile, pool->NTracksInPool());
+  AliEventPool* poolPos = fPoolMgr[0]->GetEventPool(centralityPercentile,zvtx,psiEP);
+  if (!poolPos) AliFatal(Form("No pool found for centrality = %f, vz = %f, ep = %f", centralityPercentile, zvtx,psiEP));
+  //Printf("Positive pool found for centrality = %f, vz = %f, ep = %f with %i events in it", centralityPercentile, zvtx,psiEP,poolPos->GetCurrentNEvents());
+  AliEventPool* poolNeg = fPoolMgr[1]->GetEventPool(centralityPercentile,zvtx,psiEP);
+  if (!poolNeg) AliFatal(Form("No pool found for centrality = %f, vz = %f, ep = %f", centralityPercentile, zvtx,psiEP));
+  //Printf("Negative pool found for centrality = %f, vz = %f, ep = %f with %i events in it", centralityPercentile, zvtx,psiEP,poolNeg->GetCurrentNEvents());
 
-  TrackLoop(tracksPos,poolPos,psiEP,centralityPercentile);
-  TrackLoop(tracksNeg,poolNeg,psiEP,centralityPercentile);
+  TrackLoop(tracksPos,poolPos,0,psiEP,centralityPercentile);
+  TrackLoop(tracksNeg,poolNeg,1,psiEP,centralityPercentile);
   //TObjArray* clonedtracks = CloneAndReduceTrackList(tracks,psiEP);
   poolPos->UpdatePool(tracksPos);
   poolNeg->UpdatePool(tracksNeg);
@@ -787,6 +900,9 @@ void AliAnalysisTaskFemtoESE::UserExec(Option_t *)
   //tracks->Clear();
   
   //delete tracks;
+
+  //gSystem->GetProcInfo(&procInfo);
+  //Printf("end of event: ResMem %ld VMem %ld", procInfo.fMemResident, procInfo.fMemVirtual);
 
   // Post output data.
   PostData(1, fOutputList);
@@ -796,16 +912,22 @@ void AliAnalysisTaskFemtoESE::UserExec(Option_t *)
 }
 
 
-void AliAnalysisTaskFemtoESE::TrackLoop(TObjArray *tracks, AliEventPool *pool, Double_t psiEP, Float_t centralityPercentile)
+void AliAnalysisTaskFemtoESE::TrackLoop(TObjArray *tracks, AliEventPool *pool, Int_t z, Double_t psiEP, Float_t centralityPercentile)
 {
+  // z=0 for positive charges, z=1 for negative charges
   Double_t kt = 0;
   Double_t qout=0, qside=0, qlong=0;
   Double_t pVect1[4] = {0,0,0,0};
   Double_t pVect2[4] = {0,0,0,0};
   Int_t k, e, c; //bin indices for histograms
 
+  Double_t centWeight = GetCentralityWeight(centralityPercentile);
+
   Int_t ntracks = tracks->GetEntriesFast();
 
+  Int_t countMixedEvents = 0, countMixedTracks = 0;
+
+  // same event loop
   for(Int_t j = 0; j < ntracks; j++)
     {
       //cout << endl << j << "   ";
@@ -816,7 +938,6 @@ void AliAnalysisTaskFemtoESE::TrackLoop(TObjArray *tracks, AliEventPool *pool, D
       pVect1[3]=track1->Pz();
       //cout << pVect1[0] << "   " << pVect1[1] << "   " <<  pVect1[2] << "   " << pVect1[3] << endl;
 
-      // same event
       for(Int_t i = j+1; i < ntracks; i++)
 	{
 	  AliFemtoESEBasicParticle* track2 = (AliFemtoESEBasicParticle*)tracks->At(i);
@@ -842,16 +963,19 @@ void AliAnalysisTaskFemtoESE::TrackLoop(TObjArray *tracks, AliEventPool *pool, D
 	  //qinv = GetQinv(pVect1, pVect2); // = qinv**2 = (P1x-P2x)**2 + (P1y-P2y)**2 + (P1z-P2z)**2 - (P1t-P2t)**2 
 	  GetQosl(pVect1, pVect2, qout, qside, qlong); // qout, qside, qlong = components of Q=P1-P2 in the P=P1+P2 frame
 	  kt = sqrt(pow(pVect1[1]+pVect2[1],2) + pow(pVect1[2]+pVect2[2],2))/2.; // = Kt = |pT1+pT2|/2
-	  hkt->Fill(kt);
+	  hkt->Fill(centralityPercentile,kt,centWeight);
 	  hkt3->Fill(kt,track1->Pt(),track2->Pt());
 	  Double_t deltaphi = GetDeltaPhiEP(pVect1[1],pVect1[2],pVect2[1],pVect2[2],psiEP); // angle to event plane in correct range
 	  if(fabs(qout)<0.2 && fabs(qside)<0.2 && fabs(qlong)<0.2) nCountSamePairs++;
 	  if(kt < ktBins[0] || kt > ktBins[nKtBins]) continue;
 	  if(!FindBin(kt,deltaphi,centralityPercentile,k,e,c)) continue;
 	  hktcheck->Fill(kt);
-	  hq[k][e][c]->Fill(qout,qside,qlong);
-	  hqinv[k][e][c]->Fill(qout,qside,qlong,sqrt(GetQinv2(pVect1, pVect2)));
-	  hqinvcheck->Fill(sqrt(GetQinv2(pVect1, pVect2)),kt,centralityPercentile);
+	  hq[z][k][e][c]->Fill(qout,qside,qlong,centWeight);
+	  hqinv[z][k][e][c]->Fill(qout,qside,qlong,GetQinv(pVect1, pVect2)*centWeight);
+	  hNpairs->Fill(deltaphi,centralityPercentile,kt);
+	  hAvDphi->Fill(deltaphi,centralityPercentile,kt,deltaphi);
+	  hPairDphi->Fill(deltaphi);
+	  hqinvcheck->Fill(GetQinv(pVect1, pVect2),kt,centralityPercentile,centWeight);
 	  Double_t dphi = track1->Phi()-track2->Phi();
 	  if(dphi<-TMath::Pi()) dphi += 2*TMath::Pi();
 	  if(dphi>TMath::Pi()) dphi -= 2*TMath::Pi();
@@ -859,43 +983,55 @@ void AliAnalysisTaskFemtoESE::TrackLoop(TObjArray *tracks, AliEventPool *pool, D
 	  hphietapair2->Fill(dphi,track1->Eta()-track2->Eta(),kt);
 	  //cout << k << "  ";
 	}
+    }
 
-      // mixed event
-      if (pool->IsReady()) 
+  // mixed event loop
+  countMixedTracks = 0;
+  countMixedEvents = 0;
+  if (pool->IsReady()) 
+    {
+      Int_t nMix = pool->GetCurrentNEvents();
+      
+      for (Int_t jMix=0; jMix<nMix; jMix++) // loop over events in pool
 	{
-	  Int_t nMix = pool->GetCurrentNEvents();
-	  Int_t countmix = 0;
+	  TObjArray* bgTracks = pool->GetEvent(jMix);
+	  Int_t ntracksmix = bgTracks->GetEntriesFast();
+	  if(ntracksmix <= 0) continue;
+	  
+	  // compare event planes of two events
+	  AliFemtoESEBasicParticle* tracktest = (AliFemtoESEBasicParticle*)bgTracks->UncheckedAt(0);
+	  Double_t psiEPmixtemp = tracktest->GetPsiEP();
+	  /*Double_t dphiEPtest = fPsiEPmixtemp-psiEP;
+	  while(dphiEPtest>2*TMath::Pi()) dphiEPtest-=2*TMath::Pi();
+	  while(dphiEPtest<0) dphiEPtest+=2*TMath::Pi();
+	  if(dphiEPtest>TMath::Pi()) dphiEPtest-=TMath::Pi();
+	  if(dphiEPtest>TMath::Pi()/2.) dphiEPtest = TMath::Pi()-dphiEPtest;
+	  if(dphiEPtest > TMath::Pi()/6.) continue; // event planes must be within pi/6
+	  */
+	  
+	  Double_t psiEPmix = 0.5*atan2(sin(2*psiEP)+sin(2*psiEPmixtemp),cos(2*psiEP)+cos(2*psiEPmixtemp));
+	  hPsiMix->Fill(centralityPercentile,psiEPmix,centWeight);
 
-	  for (Int_t jMix=0; jMix<nMix; jMix++) 
+	  Double_t dphimix = psiEP-psiEPmix;
+	  if(dphimix < -TMath::Pi()) dphimix += 2*TMath::Pi();
+	  if(dphimix > TMath::Pi()) dphimix -= 2*TMath::Pi();
+	  Double_t dphi12 = psiEP-psiEPmixtemp;
+	  if(dphi12 < -TMath::Pi()) dphi12 += 2*TMath::Pi();
+	  if(dphi12 > TMath::Pi()) dphi12 -= 2*TMath::Pi();
+	  hCheckEPmix->Fill(dphimix,dphi12);
+	    
+	  countMixedTracks += ntracksmix;
+	  countMixedEvents += 1;
+
+	  for(Int_t j = 0; j < ntracks; j++)
 	    {
-	      TObjArray* bgTracks = pool->GetEvent(jMix);
-	      Int_t ntracksmix = bgTracks->GetEntriesFast();
-
-	      if(ntracksmix > 0)
-		{
-		  AliFemtoESEBasicParticle* tracktest = (AliFemtoESEBasicParticle*)bgTracks->UncheckedAt(0);
-		  if(tracktest->Charge() != track1->Charge()){Printf("Charges don't match, there must be a problem..."); continue;}
-		  fPsiEPmixtemp = tracktest->GetPsiEP();
-		  Double_t dphiEPtest = fPsiEPmixtemp-psiEP;
-		  while(dphiEPtest>2*TMath::Pi()) dphiEPtest-=2*TMath::Pi();
-		  while(dphiEPtest<0) dphiEPtest+=2*TMath::Pi();
-		  if(dphiEPtest>TMath::Pi()) dphiEPtest-=TMath::Pi();
-		  if(dphiEPtest>TMath::Pi()/2.) dphiEPtest = TMath::Pi()-dphiEPtest;
-		  if(dphiEPtest > TMath::Pi()/6.) continue;
-		  countmix += ntracksmix;
-
-		  fPsiEPmix = 0.5*atan2(sin(2*psiEP)+sin(2*fPsiEPmixtemp),cos(2*psiEP)+cos(2*fPsiEPmixtemp));
-		  Double_t dphimix = psiEP-fPsiEPmix;
-		  if(dphimix < -TMath::Pi()) dphimix += 2*TMath::Pi();
-		  if(dphimix > TMath::Pi()) dphimix -= 2*TMath::Pi();
-		  Double_t dphi12 = psiEP-fPsiEPmixtemp;
-		  if(dphi12 < -TMath::Pi()) dphi12 += 2*TMath::Pi();
-		  if(dphi12 > TMath::Pi()) dphi12 -= 2*TMath::Pi();
-		  hCheckEPmix->Fill(dphimix,dphi12);
-		}
-
-
-	      //cout << "mixing with " << ntracksmix << " tracks" << endl;
+	      //cout << endl << j << "   ";
+	      AliFemtoESEBasicParticle* track1 = (AliFemtoESEBasicParticle*)tracks->At(j);
+	      pVect1[0]=track1->E();
+	      pVect1[1]=track1->Px();
+	      pVect1[2]=track1->Py();
+	      pVect1[3]=track1->Pz();
+	      
 	      for(Int_t i = 0; i < ntracksmix; i++)
 		{
 		  AliFemtoESEBasicParticle* track2 = (AliFemtoESEBasicParticle*)bgTracks->UncheckedAt(i);
@@ -907,28 +1043,29 @@ void AliAnalysisTaskFemtoESE::TrackLoop(TObjArray *tracks, AliEventPool *pool, D
 		  pVect2[2]=track2->Py();
 		  pVect2[3]=track2->Pz();
 
-		  if(fPsiEPmixtemp != track2->GetPsiEP()) AliFatal("Error! Event plane angles are wrong in mixing!!");
+		  if(psiEPmixtemp != track2->GetPsiEP()) AliFatal("Error! Event plane angles are wrong in mixing!!");
 
 		  //qinv = GetQinv(pVect1, pVect2); // qinv**2 = (P1x-P2x)**2 + (P1y-P2y)**2 + (P1z-P2z)**2 - (P1t-P2t)**2 
 		  GetQosl(pVect1, pVect2, qout, qside, qlong); // qout, qside, qlong = components of Q=P1-P2 in the P=P1+P2 frame
 		  kt = sqrt(pow(pVect1[1]+pVect2[1],2) + pow(pVect1[2]+pVect2[2],2))/2.; // = Kt = |pT1+pT2|/2
-		  Double_t deltaphi = GetDeltaPhiEP(pVect1[1],pVect1[2],pVect2[1],pVect2[2],fPsiEPmix); // angle to event plane in correct range
+		  Double_t deltaphi = GetDeltaPhiEP(pVect1[1],pVect1[2],pVect2[1],pVect2[2],psiEPmix); // angle to event plane in correct range
 
 		  //Double_t weight = 1./(Double_t)nMix;
 		  if(fabs(qout)<0.2 && fabs(qside)<0.2 && fabs(qlong)<0.2) nCountMixedPairs++;
 		  if(kt < ktBins[0] || kt > ktBins[nKtBins]) continue;
 		  if(!FindBin(kt,deltaphi,centralityPercentile,k,e,c)) continue;
-		  hqmix[k][e][c]->Fill(qout,qside,qlong);
+		  hqmix[z][k][e][c]->Fill(qout,qside,qlong,centWeight);
+
+		  hPairDphiMix->Fill(deltaphi);
 
 		}
 	    }
-
-	  hMixedDist->Fill(centralityPercentile, countmix);
-
 	}
     }
 
-
+  hMixedDistTracks->Fill(centralityPercentile, countMixedTracks);
+  hMixedDistEvents->Fill(centralityPercentile, countMixedEvents);
+  //Printf("mixed tracks: %i   mixed events: %i",countMixedTracks,countMixedEvents);
 }
 
 
@@ -1046,11 +1183,12 @@ iarr[i] = k;
 }
 */
 //________________________________________________________________________
-Double_t AliAnalysisTaskFemtoESE::GetQinv2(Double_t track1[], Double_t track2[]){
+Double_t AliAnalysisTaskFemtoESE::GetQinv(Double_t track1[], Double_t track2[]){
   
   Double_t qinv2=1.0;
-  qinv2 = pow(track1[1]-track2[1],2) + pow(track1[2]-track2[2],2) + pow(track1[3]-track2[3],2) - pow(track1[0]-track2[0],2);
-  return qinv2;
+  qinv2 = pow(track1[1]-track2[1],2.) + pow(track1[2]-track2[2],2.) + pow(track1[3]-track2[3],2.) - pow(track1[0]-track2[0],2.);
+  if(qinv2 >= 0.) return sqrt(qinv2);
+  else return -1.*sqrt(-1.*qinv2);
 }
 
 //________________________________________________________________________
@@ -1187,8 +1325,8 @@ Bool_t AliAnalysisTaskFemtoESE::PairCut(AliFemtoESEBasicParticle* ftrack1, AliFe
   // qinv cut
   Double_t trackvec1[4] = {ftrack1->E(),ftrack1->Px(),ftrack1->Py(),ftrack1->Pz()};
   Double_t trackvec2[4] = {ftrack2->E(),ftrack2->Px(),ftrack2->Py(),ftrack2->Pz()};
-  Double_t qinv2 = GetQinv2(trackvec1,trackvec2);
-  if(qinv2 < 0.000025) return kFALSE; // qinv < 0.005
+  Double_t qinv = GetQinv(trackvec1,trackvec2);
+  if(qinv < 0.005) return kFALSE; // qinv < 0.005
 
   // deltaEta x deltaPhi* cut
   if(fabs(ftrack1->Eta()-ftrack2->Eta()) < fMinSepPairEta)
@@ -1404,4 +1542,43 @@ Double_t AliAnalysisTaskFemtoESE::GetQPercLHC11h(Double_t qvec)
 
   return 0.0;
 
+}
+
+/*Double_t AliAnalysisTaskFemtoESE::GetCentralityWeight(Double_t cent)
+{
+
+  // use makeCentWeighting.C to fit centrality distribution to obtain this parameterization
+  Double_t par1 = 2.60629;
+  Double_t par2 = 0.579333;
+  Double_t limit1 = 8.71488;
+  Double_t limit2 = 12.0126;
+
+  if(cent < limit1) return 1./par1;
+  if(cent > limit2) return 1./par2;
+
+  Double_t slope = (par2-par1)/(limit2-limit1);
+  Double_t b = par1-slope*limit1;
+
+  return 1./(slope*cent+b);
+  }*/
+
+Double_t AliAnalysisTaskFemtoESE::GetCentralityWeight(Double_t cent)
+{
+
+  // use makeCentWeighting.C to fit centrality distribution to obtain this parameterization
+  Double_t par1 = 2.60629;
+  Double_t par2 = 0.579333;
+  Double_t limit1 = 8.71488;
+  Double_t limit2 = 12.0126;
+
+  if(cent < limit1) return 1.;
+  if(cent > limit2) return 1.;
+
+  Double_t slope = (par2-par1)/(limit2-limit1);
+  Double_t b = par1-slope*limit1;
+
+  if(cent < 10.)
+    return par1/(slope*cent+b);
+  else
+    return par2/(slope*cent+b);
 }

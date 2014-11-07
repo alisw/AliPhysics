@@ -964,9 +964,11 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
   //  CalculateReactionPlaneAngle(&recParticles);
   fRPAngle = 0;
   
-  if(fRPMethod==0)fRPAngle = aod->GetHeader()->GetEventplane();
+  if(fRPMethod==0)fRPAngle = ((AliVAODHeader*)aod->GetHeader())->GetEventplane();
   else if(fRPMethod==1||fRPMethod==2){
-    fRPAngle = aod->GetHeader()->GetQTheta(fRPMethod);
+    AliAODHeader * aodheader = dynamic_cast<AliAODHeader*>(aod->GetHeader());
+    if(!aodheader) AliFatal("Not a standard AOD");
+    fRPAngle = aodheader->GetQTheta(fRPMethod);
   }
   fh1RP->Fill(fRPAngle);
   fh2RPCentrality->Fill(fCentrality,fRPAngle);
@@ -1588,7 +1590,8 @@ Int_t  AliAnalysisTaskJetSpectrum2::GetListOfTracks(TList *list,Int_t type){
       return iCount;
     }
     for(int it = 0;it < aod->GetNumberOfTracks();++it){
-      AliAODTrack *tr = aod->GetTrack(it);
+      AliAODTrack *tr = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+      if(!tr) AliFatal("Not a standard AOD");
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
       if(TMath::Abs(tr->Eta())>fTrackRecEtaWindow)continue;
       if(tr->Pt()<fMinTrackPt)continue;
@@ -1671,7 +1674,7 @@ Float_t AliAnalysisTaskJetSpectrum2::GetCentrality(){
   if(!aod){
     return 101;
   }
-  return aod->GetHeader()->GetCentrality();
+  return ((AliVAODHeader*)aod->GetHeader())->GetCentrality();
 }
 
 

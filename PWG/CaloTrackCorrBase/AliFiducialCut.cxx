@@ -388,3 +388,5 @@ void AliFiducialCut::SetSimpleDCALFiducialCut(Float_t eta, Float_t minphi, Float
   fDCALFidCutMaxPhi->SetAt(maxphi,0);
   
 }
+
+

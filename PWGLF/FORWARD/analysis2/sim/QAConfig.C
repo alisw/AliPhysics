@@ -77,7 +77,7 @@ struct QACfg : public VirtualQACfg
   /** @return  NEEDS MCtruth  */
   virtual Bool_t DoV0()          const { return false; }
   /** @return Get Debug level */
-  virtual Int_t DebugLevel() const { return 1; }
+  virtual Int_t DebugLevel() const { return 3; }
 };
 
 /** 

@@ -126,14 +126,36 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t trainConfig = 1,  //change different s
 		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "10000040022030000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
 		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "10000040022030000"; mesonCutArray[ 3] = "01525065000000"; // 20-40%
 		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "10000040022030000"; mesonCutArray[ 4] = "01525065000000"; // 20-50%
-	} else if (trainConfig == 2){ // PHOS clusters
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "20000030022000000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "20000030022000000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "20000030022000000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "20000030022000000"; mesonCutArray[ 3] = "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "20000030022000000"; mesonCutArray[ 4] = "01525065000000"; // 20-50%
-
-		
+	} else if (trainConfig == 2){ // EMCAL clusters
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "10000040022030000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "10000040022030000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "10000040022030000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "10000040022030000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5240001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "10000040022030000"; mesonCutArray[ 4] = "01525065000000"; // 20-40%		
+	} else if (trainConfig == 3){ // EMCAL clusters
+		eventCutArray[ 0] = "5460001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "10000040022030000"; mesonCutArray[ 0] = "01525065000000"; // 40-60%
+		eventCutArray[ 1] = "5680001"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "10000040022030000"; mesonCutArray[ 1] = "01525065000000"; // 60-80%
+		eventCutArray[ 2] = "5260001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "10000040022030000"; mesonCutArray[ 2] = "01525065000000"; // 20-60%
+		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "10000040022030000"; mesonCutArray[ 3] = "01525065000000"; // 40-80%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "10000040022030000"; mesonCutArray[ 4] = "01525065000000"; // 20-50%				
+	} else if (trainConfig == 31){ // PHOS clusters
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "20000042053200000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "20000042053200000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "20000042053200000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "20000042053200000"; mesonCutArray[ 3] = "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "20000042053200000"; mesonCutArray[ 4] = "01525065000000"; // 20-50%
+	} else if (trainConfig == 32){ // PHOS clusters
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "20000042053200000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "20000042053200000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "20000042053200000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "20000042053200000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5240001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "20000042053200000"; mesonCutArray[ 4] = "01525065000000"; // 20-40%		
+	} else if (trainConfig == 33){ // PHOS clusters
+		eventCutArray[ 0] = "5460001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "20000042053200000"; mesonCutArray[ 0] = "01525065000000"; // 40-60%
+		eventCutArray[ 1] = "5680001"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "20000042053200000"; mesonCutArray[ 1] = "01525065000000"; // 60-80%
+		eventCutArray[ 2] = "5260001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "20000042053200000"; mesonCutArray[ 2] = "01525065000000"; // 20-60%
+		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "20000042053200000"; mesonCutArray[ 3] = "01525065000000"; // 40-80%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "20000042053200000"; mesonCutArray[ 4] = "01525065000000"; // 20-50%						
 	} else {
 		Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
@@ -184,15 +206,15 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t trainConfig = 1,  //change different s
 	for(Int_t i = 0; i<numberOfCuts; i++){
 		
 		analysisEventCuts[i] = new AliConvEventCuts();
-		if ( trainConfig == 1){
-			if (periodName.CompareTo("LHC14a1a") ==0 || periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
-				if ( i == 0 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_0005TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_0005TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0005V0M","Eta_Fit_Data_PbPb_2760GeV_0005V0M");
-				if ( i == 1 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_0510TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_0510TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0510V0M","Eta_Fit_Data_PbPb_2760GeV_0510V0M");
-				if ( i == 2 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_0010TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_0010TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0010V0M","Eta_Fit_Data_PbPb_2760GeV_0010V0M");
-				if ( i == 3 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_2040TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_2040TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M","Eta_Fit_Data_PbPb_2760GeV_2040V0M");
-				if ( i == 4 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
-			}	
-		} 
+// 		if ( trainConfig == 1){
+// 			if (periodName.CompareTo("LHC14a1a") ==0 || periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
+// 				if ( i == 0 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_0005TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_0005TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0005V0M","Eta_Fit_Data_PbPb_2760GeV_0005V0M");
+// 				if ( i == 1 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_0510TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_0510TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0510V0M","Eta_Fit_Data_PbPb_2760GeV_0510V0M");
+// 				if ( i == 2 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_0010TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_0010TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0010V0M","Eta_Fit_Data_PbPb_2760GeV_0010V0M");
+// 				if ( i == 3 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_2040TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_2040TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M","Eta_Fit_Data_PbPb_2760GeV_2040V0M");
+// 				if ( i == 4 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
+// 			}	
+// 		} 
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		if (periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
 			if (headerSelectionInt == 1) analysisEventCuts[i]->SetAddedSignalPDGCode(111);

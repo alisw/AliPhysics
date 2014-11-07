@@ -505,7 +505,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 		fESDList[iCut]->SetOwner(kTRUE);
 		fCutFolder[iCut]->Add(fESDList[iCut]);
 
-		hNEvents[iCut] = new TH1I("NEvents","NEvents",9,-0.5,8.5);
+		hNEvents[iCut] = new TH1I("NEvents","NEvents",10,-0.5,9.5);
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
@@ -521,6 +521,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
+		hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
 		fESDList[iCut]->Add(hNEvents[iCut]);
 		
 		if(fIsHeavyIon == 1) hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",4000,0,4000);
@@ -1027,7 +1028,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 		fiCut = iCut;
 		Int_t eventNotAccepted =
 			((AliConvEventCuts*)fEventCutArray->At(iCut))
-			->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon);
+			->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
 		if(eventNotAccepted){
 			// cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
 			hNEvents[iCut]->Fill(eventNotAccepted); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1

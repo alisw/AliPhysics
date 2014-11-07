@@ -165,15 +165,15 @@ Bool_t AliIntSpotEstimator::ProcessTracks()
       double cs = TMath::Cos(phiTrack);
       double sn = TMath::Sin(phiTrack);
       double trDCA = (xyzDCA[0]-fIPCenIni[0])         *sn - (xyzDCA[1]-fIPCenIni[1])         *cs;  // track signed DCA to origin
-      double vtDCA = (recNewVtx->GetXv()-fIPCenIni[0])*sn - (recNewVtx->GetYv()-fIPCenIni[1])*cs;  // vertex signed DCA to origin
+      double vtDCA = (recNewVtx->GetX()-fIPCenIni[0])*sn - (recNewVtx->GetY()-fIPCenIni[1])*cs;  // vertex signed DCA to origin
       UpdateEstimators(vtDCA,trDCA, nTracks1, pTrack, phiTrack);
       selTrack->PropagateTo(told,fieldVal);    // restore the track
       if (fNtuple) {
 	static float ntf[8];
 	ntf[0] = float(nTracks1);
-	ntf[1] = recNewVtx->GetXv();
-	ntf[2] = recNewVtx->GetYv();
-	ntf[3] = recNewVtx->GetZv();
+	ntf[1] = recNewVtx->GetX();
+	ntf[2] = recNewVtx->GetY();
+	ntf[3] = recNewVtx->GetZ();
 	ntf[4] = xyzDCA[0];
 	ntf[5] = xyzDCA[1];
 	ntf[6] = phiTrack;

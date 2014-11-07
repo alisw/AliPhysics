@@ -682,7 +682,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     if(vtx->GetNContributors()<0) evSel=0;
     else{
       fHistNEvents->Fill(4);
-      if(TMath::Abs(vtx->GetZv())>10) evSel=0;
+      if(TMath::Abs(vtx->GetZ())>10) evSel=0;
       else{
 	fHistNEvents->Fill(5);
 	if(vtx->GetZRes()>0.5) evSel=0;

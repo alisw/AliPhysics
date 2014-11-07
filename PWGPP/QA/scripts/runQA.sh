@@ -17,6 +17,11 @@ main()
     echo "  ${0##*/} inputList=file.list"
     echo "  options override config file (if any), e.g.:"
     echo "  ${0##*/} configFile=runQA.config inputList=file.list outputDirectory=%det"
+    echo "some expert options"
+    echo "  inputListHighPtTrees=file.list - external list of filtered trees, requires inputList to be set"
+    echo "  includeDetectors=TPC,V0,MU - only process those"
+    echo "  excludeDetectors=EVS,TPC - skip processing of those"
+    echo "  - see example config file for more"
     return 1
   fi
 
@@ -50,6 +55,8 @@ updateQA()
   [[ ! -f ${inputList} ]] && echo "no input list: ${inputList}" && return 1
   inputList=$(get_realpath ${inputList})
   mkdir -p ${workingDirectory}
+  #this is a trick to get the full path of workingDirectory
+  #(on a mac 'readlink -f' does not work...)
   workingDirectory=$(workingDirectory=${workingDirectory%/}; cd ${workingDirectory%/*}; echo "${PWD}/${workingDirectory##*/}")
   if [[ ! -d ${workingDirectory} ]]; then
     echo "working dir $workingDirectory does not exist and cannot be created"
@@ -122,9 +129,12 @@ updateQA()
     echo "  outputDir=$outputDir"
     echo "  tmpPrefix=$tmpPrefix"
     
+    #source the detector script
     #unset the detector functions from previous iterations (detectors)
     unset -f runLevelQA
+    unset -f runLevelQAouter
     unset -f periodLevelQA
+    unset -f runLevelEventStatQA
     unset -f runLevelHighPtTreeQA
     unset -f periodLevelHighPtTreeQA
     source ${detectorScript}
@@ -133,15 +143,15 @@ updateQA()
     #produce the QA and trending tree for each file (run)
     unset arrOfTouchedProductions
     declare -A arrOfTouchedProductions
-    while read qaFile; do
+    while read inputFile; do
       echo
       echo $(date)
       
       #first check if input file exists
-      [[ ! -f ${qaFile%\#*} ]] && echo "file ${qaFile%\#*} not accessible" && continue
+      [[ ! -f ${inputFile%\#*} ]] && echo "file ${inputFile%\#*} not accessible" && continue
 
-      if ! guessRunData ${qaFile}; then
-        echo "could not guess run data from ${qaFile}"
+      if ! guessRunData ${inputFile}; then
+        echo "could not guess run data from ${inputFile}"
         continue
       fi
       echo "anchorYear for ${originalPeriod} is: ${anchorYear}"
@@ -151,63 +161,127 @@ updateQA()
       mkdir -p ${tmpRunDir}
       cd ${tmpRunDir}
 
-      #by default we expect to have everything in the same archive
-      highPtTree=${qaFile}
-
-      #maybe the input is not an archive, but a file
-      [[ "${qaFile}" =~ QAresults.root$ ]] && highPtTree=""
-      [[ "${qaFile}" =~ FilterEvents_Trees.root$ ]] && qaFile=""
-
+      #check what kind of input file we have, default is a zip archive
+      #set the inputs accordingly
+      qaFile=""
+      qaFileOuter=""
+      highPtTree=""
+      eventStatFile=""
+      eventStatFileOuter=""
       #it is possible we get the highPt trees from somewhere else
       #search the list of high pt trees for the proper run number
       if [[ -n ${inputListHighPtTrees} ]]; then
         highPtTree=$(egrep -m1 ${runNumber} ${inputListHighPtTrees})
         echo "loaded the highPtTree ${highPtTree} from external file ${inputListHighPtTrees}"
       fi
-      
-      echo qaFile=$qaFile
-      echo highPtTree=$highPtTree
-      echo ocdbStorage=${ocdbStorage}
-      echo
+      #if we are explicit about the input file this takes precedence 
+      #over earlier additions
+      [[ "${inputFile}" =~ QAresults.root$ ]] && qaFile=${inputFile}
+      [[ "${inputFile}" =~ QAresults_outer.root$ ]] && qaFileOuter=${inputFile}
+      [[ "${inputFile}" =~ FilterEvents_Trees.root$ ]] && highPtTree=${inputFile}
+      [[ "${inputFile}" =~ event_stat.root$ ]] && eventStatFile=${inputFile}
+      [[ "${inputFile}" =~ event_stat_outer.root$ ]] && eventStatFileOuter=${inputFile}
+      if [[ "${inputFile}" =~ \.zip$ ]]; then
+        [[ -z ${qaFile} ]] && qaFile=${inputFile}
+        [[ -z ${qaFileOuter} ]] && qaFileOuter=${inputFile}
+        [[ -z ${highPtTree} ]] && highPtTree=${inputFile}
+        [[ -z ${eventStatFile} ]] && eventStatFile=${inputFile}
+        [[ -z ${eventStatFileOuter} ]] && eventStatFileOuter=${inputFile}
+      fi
 
-      #what if we have a zip archive?
+      #if we have zip archives in the input, extract the proper file name
+      #from the archive and append in a root-like fashion
       if [[ "$qaFile" =~ .*.zip$ ]]; then
         if unzip -l ${qaFile} | egrep "QAresults.root" &>/dev/null; then
-          qaFile="${qaFile}#QAresults.root"
+          qaFile+="#QAresults.root"
         elif unzip -l ${qaFile} | egrep "QAresults_barrel.root" &>/dev/null; then
-          qaFile="${qaFile}#QAresults_barrel.root"
+          qaFile+="#QAresults_barrel.root"
         else
           qaFile=""
         fi
       fi
+      if [[ "$qaFileOuter" =~ .*.zip$ ]]; then
+        if unzip -l ${qaFileOuter} | egrep "QAresults_outer.root" &>/dev/null; then
+          qaFileOuter+="#QAresults_outer.root"
+        else
+          qaFileOuter=""
+        fi
+      fi
       if [[ "$highPtTree" =~ .*.zip$ ]]; then
         if unzip -l ${highPtTree} | egrep "FilterEvents_Trees.root" &>/dev/null; then
-          highPtTree="${highPtTree}#FilterEvents_Trees.root"
+          highPtTree+="#FilterEvents_Trees.root"
         else
           highPtTree=""
         fi
       fi
+      if [[ "${eventStatFile}" =~ .*.zip$ ]]; then
+        if unzip -l ${eventStatFile} | egrep "event_stat.root" &>/dev/null; then
+          eventStatFile+="#event_stat.root"
+        elif unzip -l ${eventStatFile} | egrep "event_stat_barrel.root" &>/dev/null; then
+          eventStatFile+="#event_stat_barrel.root"
+        else
+          eventStatFile=""
+        fi
+      fi
+      if [[ "${eventStatFileOuter}" =~ .*.zip$ ]]; then
+        if unzip -l ${eventStatFileOuter} | egrep "event_stat_outer.root" &>/dev/null; then
+          eventStatFileOuter+="#event_stat.root"
+        else
+          eventStatFileOuter=""
+        fi
+      fi
      
+      echo qaFile=$qaFile
+      echo qaFileOuter=$qaFileOuter
+      echo highPtTree=$highPtTree
+      echo eventStatFile=$eventStatFile
+      echo eventStatFileOuter=$eventStatFileOuter
+      echo ocdbStorage=${ocdbStorage}
+      echo
+
+      #standard QA based on QAresults.root file (and variants)
       if [[ -n ${qaFile} && $(type -t runLevelQA) =~ "function" ]]; then
         echo running ${detector} runLevelQA for run ${runNumber} from ${qaFile}
-        runLevelQA "${qaFile}" &> runLevelQA.log
-        #perform some default actions:
-        #if trending.root not created, create a default one
-        if [[ ! -f trending.root ]]; then
-          aliroot -b -q -l "$ALICE_ROOT/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detectorQAcontainerName}\",\"trending.root\",\"trending\",\"recreate\")" 2>&1 | tee -a runLevelQA.log
-        fi
-        if [[ -f trending.root ]]; then
-          #cache the touched production + an example file to guarantee consistent run data parsing
-          arrOfTouchedProductions[${tmpProductionDir}]="${qaFile%\#*}"
-        else
-          echo "trending.root not created"
-        fi
+        ( runLevelQA "${qaFile}" ) &>> runLevelQA.log
+        #cache the touched production + an example file to guarantee consistent run data parsing
+        arrOfTouchedProductions[${tmpProductionDir}]="${inputFile%\#*}"
+      fi
+      #standard QA based on QAresults_outer.root file (there in cpass, with different triggers)
+      if [[ -n ${qaFileOuter} && $(type -t runLevelQAouter) =~ "function" ]]; then
+        echo running ${detector} runLevelQAouter for run ${runNumber} from ${qaFileOuter}
+        ( runLevelQAouter "${qaFileOuter}" ) &>> runLevelQA.log
+        #cache the touched production + an example file to guarantee consistent run data parsing
+        arrOfTouchedProductions[${tmpProductionDir}]="${inputFile%\#*}"
       fi
       #expert QA based on high pt trees
       if [[ -n ${highPtTree} && $(type -t runLevelHighPtTreeQA) =~ "function" ]]; then
         echo running ${detector} runLevelHighPtTreeQA for run ${runNumber} from ${highPtTree}
-        runLevelHighPtTreeQA "${highPtTree}" &> runLevelHighPtTreeQA.log
-        arrOfTouchedProductions[${tmpProductionDir}]=1
+        ( runLevelHighPtTreeQA "${highPtTree}" ) &>> runLevelQA.log
+        #cache the touched production + an example file to guarantee consistent run data parsing
+        arrOfTouchedProductions[${tmpProductionDir}]="${inputFile%\#*}"
+      fi
+      #event stat QA based on event_stat.root file
+      if [[ -n ${eventStatFile} && $(type -t runLevelEventStatQA) =~ "function" ]]; then
+        echo running ${detector} runLevelEventStatQA for run ${runNumber} from ${eventStatFile}
+        ( runLevelEventStatQA "${eventStatFile}" ) &>> runLevelQA.log
+        #cache the touched production + an example file to guarantee consistent run data parsing
+        arrOfTouchedProductions[${tmpProductionDir}]="${inputFile%\#*}"
+      fi
+      #event stat QA based on event_stat_outer.root file
+      if [[ -n ${eventStatFileOuter} && $(type -t runLevelEventStatQAouter) =~ "function" ]]; then
+        echo running ${detector} runLevelEventStatQAouter for run ${runNumber} from ${eventStatFileOuter}
+        ( runLevelEventStatQAouter "${eventStatFileOuter}" ) &>> runLevelQA.log
+        #cache the touched production + an example file to guarantee consistent run data parsing
+        arrOfTouchedProductions[${tmpProductionDir}]="${inputFile%\#*}"
+      fi
+
+      #perform some default actions:
+      #if trending.root not created, create a default one
+      if [[ ! -f trending.root ]]; then
+        aliroot -b -q -l "$ALICE_ROOT/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detectorQAcontainerName}\",\"trending.root\",\"trending\",\"recreate\")" 2>&1 | tee -a runLevelQA.log
+      fi
+      if [[ ! -f trending.root ]]; then
+        echo "trending.root not created"
       fi
 
       cd ${tmpDetectorRunDir}
@@ -241,7 +315,7 @@ updateQA()
         echo 
         oldRunDir=${outputDir}/${dir#${tmpPrefix}}
         if ! guessRunData "${arrOfTouchedProductions[${tmpProductionDir}]}"; then
-          echo "could not guess run data from ${dir}"
+          echo "could not guess run data from ${arrOfTouchedProductions[${tmpProductionDir}]}"
           continue
         fi
 
@@ -280,7 +354,7 @@ updateQA()
       #run the period level trending/QA
       if [[ -f "trending.root" && $(type -t periodLevelQA) =~ "function" ]]; then
         echo running ${detector} periodLevelQA for production ${period}/${pass}
-        periodLevelQA trending.root &>> periodLevelQA.log
+        ( periodLevelQA trending.root ) &>> periodLevelQA.log
       else 
         echo "WARNING: not running ${detector} periodLevelQA for production ${period}/${pass}, no trending.root"
       fi
@@ -480,6 +554,12 @@ parseConfig()
   ocdbStorage="raw://"
   #email to
   #MAILTO="fbellini@cern.ch"
+  runMap="
+  2010 108350 139517
+  2011 140441 170593
+  2012 171590 193766
+  2013 194482 197692
+  "
 
   #first, check if the config file is configured
   #is yes - source it so that other options can override it

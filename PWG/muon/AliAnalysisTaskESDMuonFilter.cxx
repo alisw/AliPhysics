@@ -238,7 +238,8 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   //  for (Int_t i = 0; i < 10; pid[i++] = 0.) {}
   //  pid[AliAODTrack::kMuon]=1.;
   
-  AliAODHeader* header = AODEvent()->GetHeader();
+  AliAODHeader* header = dynamic_cast<AliAODHeader*>(AODEvent()->GetHeader());
+  if(!header) AliFatal("Not a standard AOD");
   AliAODTrack *aodTrack = 0x0;
   AliESDMuonTrack *esdMuTrack = 0x0;
   

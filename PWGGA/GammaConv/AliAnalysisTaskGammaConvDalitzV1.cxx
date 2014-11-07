@@ -184,6 +184,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1():
 	hESDTrueMotherGGInvMassPt(NULL),
 	hESDTrueConvGammaPt(NULL),
 	hESDTrueConvGammaR(NULL),
+	hESDTrueConvGammaRMC(NULL),
 	hESDTruePositronPt(NULL),
 	hESDTrueElectronPt(NULL),
 	hESDTrueSecConvGammaPt(NULL),
@@ -355,6 +356,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1( const char* 
 	hESDTrueMotherGGInvMassPt(NULL),
 	hESDTrueConvGammaPt(NULL),
 	hESDTrueConvGammaR(NULL),
+	hESDTrueConvGammaRMC(NULL),
 	hESDTruePositronPt(NULL),
 	hESDTrueElectronPt(NULL),
 	hESDTrueSecConvGammaPt(NULL),
@@ -609,7 +611,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 		fESDList[iCut]->SetName(Form("%s_%s_%s_%s ESD histograms",cutstringEvent.Data(),cutstringGamma.Data(),cutstringElectron.Data(),cutstringMeson.Data()));
 		fESDList[iCut]->SetOwner(kTRUE);
 		
-		hNEvents[iCut] = new TH1I("NEvents","NEvents",9,-0.5,8.5);
+		hNEvents[iCut] = new TH1I("NEvents","NEvents",10,-0.5,9.5);
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
@@ -619,6 +621,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
+		hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
 		fESDList[iCut]->Add(hNEvents[iCut]);
 
 		if(fIsHeavyIon == 1 || fIsHeavyIon == 2) hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",3000,0,3000);
@@ -896,6 +899,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 		hESDEposEnegTruePhotonPsiPairDPhiPtCut       = new TH2F*[fnCuts];
 		hESDEposEnegTrueJPsiInvMassPt                = new TH2F*[fnCuts];
 		hESDTrueConvGammaR                           = new TH1F*[fnCuts];
+		hESDTrueConvGammaRMC                         = new TH1F*[fnCuts];
 		}
 		
 		
@@ -1048,6 +1052,10 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 				
 				hESDTrueConvGammaR[iCut] = new TH1F("ESD_TrueConvGamma_R","ESD_TrueConvGamma_R",800,0,200);
 				fTrueList[iCut]->Add(hESDTrueConvGammaR[iCut]);
+				
+				hESDTrueConvGammaRMC[iCut] = new TH1F("ESD_TrueConvGamma_R_MC","ESD_TrueConvGamma_R_MC",800,0,200);
+				fTrueList[iCut]->Add(hESDTrueConvGammaRMC[iCut]);
+				
 			}
 
 			hESDTruePositronPt[iCut] = new TH1F("ESD_TruePositron_Pt","ESD_TruePositron_Pt",1000,0,25);
@@ -1235,10 +1243,10 @@ void AliAnalysisTaskGammaConvDalitzV1::UserExec(Option_t *)
 
 		Int_t eventNotAccepted =
 			((AliConvEventCuts*)fCutEventArray->At(iCut))
-			->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon);
+			->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
 		
 		
-		//Int_t eventNotAccepted = ((AliConvEventCuts*)fCutGammaArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon);
+		//Int_t eventNotAccepted = ((AliConvEventCuts*)fCutGammaArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
 		
 		if(eventNotAccepted){
 			// 			cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
@@ -1515,7 +1523,10 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTruePhotonCandidates(AliAODConvers
 	if( labelGamma < MCStack->GetNprimary() ){
 		if( fIsFromMBHeader ){
 			hESDTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-			hESDTrueConvGammaR[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius());
+			if(fDoMesonQA){
+			  hESDTrueConvGammaR[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius());			 
+			  hESDTrueConvGammaRMC[fiCut]->Fill( posDaughter->R() );
+			}
 		}
 	} else {
 		if( fIsFromMBHeader){

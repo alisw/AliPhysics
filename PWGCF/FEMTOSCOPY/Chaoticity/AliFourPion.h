@@ -57,7 +57,7 @@ class AliFourPion : public AliAnalysisTaskSE {
     kQbinsWeights = 40,
     kNDampValues = 16,
     kRmin = 5,// EW min radii 5 fm
-    kDENtypes = 104,// was 44
+    kDENtypes = 179,// was 104
   };
 
   static const Int_t fKbinsT   = 4;// Set fKstep as well !!!!
@@ -89,6 +89,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetFilterBit(UInt_t filterbit) {fFilterBit = filterbit;}
   void SetMaxChi2NDF(Float_t MaxChi2NDF) {fMaxChi2NDF = MaxChi2NDF;}
   void SetMinTPCncls(Int_t MinTPCncls) {fMinTPCncls = MinTPCncls;}
+  void SetEAtype(Int_t eat) {fEAtype = eat;}
   void SetPairSeparationCutEta(Float_t pairsep) {fMinSepPairEta = pairsep;}
   void SetPairSeparationCutPhi(Float_t pairsep) {fMinSepPairPhi = pairsep;}
   void SetNsigmaTPC(Float_t nsig) {fSigmaCutTPC = nsig;}
@@ -167,9 +168,9 @@ class AliFourPion : public AliAnalysisTaskSE {
     TH3D *fMuonPionK3; //!
     TH3D *fPionPionK3; //!
     //
-    TH2D *fTwoPartNorm; //!
-    TH2D *fTwoPartNegNorm; //!
-    TH2D *fTwoPartNormErr; //!
+    TH2D *fBuild; //!
+    TH2D *fBuildNeg; //!
+    TH2D *fBuildErr; //!
   };
   struct St7 {
     TH3D *fTerms2OSL; //!
@@ -207,11 +208,21 @@ class AliFourPion : public AliAnalysisTaskSE {
     TH3D *fMuonPionK4; //!
     TH3D *fPionPionK4; //!
     //
-    TH2D *fTwoPartNorm; //!
-    TH2D *fTwoPartNegNorm; //!
-    TH2D *fTwoPartNormErr; //!
-    TH3D *fFullBuildFromFits; //!
-    TH3D *fPartialBuildFromFits; //!
+    TH2D *fBuild; //!
+    TH2D *fPrimeBuild; //!
+    TH2D *fPrimePrimeBuild; //!
+    TH2D *fCumulantBuild; //!
+    TH2D *fBuildNeg; //!
+    TH2D *fPrimeBuildNeg; //!
+    TH2D *fPrimePrimeBuildNeg; //!
+    TH2D *fCumulantBuildNeg; //!
+    //
+    TH2D *fBuildErr; //!
+    //
+    TH2D *fBuildFromFits; //!
+    TH2D *fPrimeBuildFromFits; //!
+    TH2D *fPrimePrimeBuildFromFits; //!
+    TH2D *fCumulantBuildFromFits; //!
   };
   struct St_EDB {
     struct St5 TwoPT[2];
@@ -265,6 +276,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   UInt_t fFilterBit;
   Float_t fMaxChi2NDF;
   Int_t fMinTPCncls;
+  Int_t fEAtype;
   Double_t fBfield;
   Int_t fMbin;
   Int_t fFSIindex;
@@ -366,7 +378,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   TH1D *fFSIss[13];
   TH1D *fFSIos[13];
   TH3F *fNormWeight[fKbinsT][fCentBins];
-  TF1 *ExchangeAmpPointSource[2][50];
+  TF1 *ExchangeAmp[6][50];
 
   ClassDef(AliFourPion, 1); 
 };

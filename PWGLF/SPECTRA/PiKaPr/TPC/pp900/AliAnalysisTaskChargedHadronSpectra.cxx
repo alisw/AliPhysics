@@ -454,8 +454,8 @@ void AliAnalysisTaskChargedHadronSpectra::UserExec(Option_t *)
     PostData(1, fListHist);
     return;
   } else {
-    fVertexZ->Fill(vertex->GetXv(),vertex->GetYv(),vertex->GetZv());
-    if (TMath::Abs(vertex->GetZv()) > 10) {
+    fVertexZ->Fill(vertex->GetX(),vertex->GetY(),vertex->GetZ());
+    if (TMath::Abs(vertex->GetZ()) > 10) {
       fHistTrackPerEventMC->Fill(0., trackCounter, isSelected);
       PostData(1, fListHist);
       return;

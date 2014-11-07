@@ -5,6 +5,7 @@
 // Author: J.Kral
 #include <TClonesArray.h>
 #include <TArrayI.h>
+#include <THashList.h>
 #include "AliAODCaloTrigger.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerTypes.h"
@@ -15,6 +16,9 @@
 #include "AliVCaloTrigger.h"
 #include "AliVVZERO.h"
 #include "AliEmcalTriggerMaker.h"
+
+#include "THistManager.h"
+#include "TString.h"
 
 ClassImp(AliEmcalTriggerMaker)
 
@@ -30,18 +34,19 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker() :
   fCaloTriggerSetupOut(0),
   fSimpleOfflineTriggers(0),
   fV0(0),
-  fITrigger(0)
+  fITrigger(0),
+  fDoQA(kFALSE),
+  fQAHistos(NULL)
 {
   // Constructor.
   memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
   memset(fPatchADCSimple, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
   memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
-  memset(fPatchAmplitude, 0, sizeof(Float_t) * kPatchCols * kPatchRows);
 }
 
 //________________________________________________________________________
-AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name) : 
-  AliAnalysisTaskEmcal(name,kFALSE),
+AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name, Bool_t doQA) :
+  AliAnalysisTaskEmcal(name,doQA),
   fCaloTriggersOutName("EmcalTriggers"),
   fCaloTriggerSetupOutName("EmcalTriggersSetup"),
   fV0InName("AliAODVZERO"),
@@ -49,13 +54,14 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name) :
   fCaloTriggerSetupOut(0),
   fSimpleOfflineTriggers(0),
   fV0(0),
-  fITrigger(0)
+  fITrigger(0),
+  fDoQA(doQA),
+  fQAHistos(NULL)
 {
   // Constructor.
-	  memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
-	  memset(fPatchADCSimple, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
-	  memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
-	  memset(fPatchAmplitude, 0, sizeof(Float_t) * kPatchCols * kPatchRows);
+  memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
+  memset(fPatchADCSimple, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
+  memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
 }
 
 //________________________________________________________________________
@@ -112,6 +118,28 @@ void AliEmcalTriggerMaker::ExecOnce()
 }
 
 //________________________________________________________________________
+void AliEmcalTriggerMaker::UserCreateOutputObjects()
+{
+  // Do basic QA monitoring (if requested)
+  AliAnalysisTaskEmcal::UserCreateOutputObjects();
+
+  if(fDoQA){
+    fQAHistos = new THistManager("TriggerQA");
+
+    TString trtypenames[3] = {"EJE", "EGA", "EL0"};
+    for(int itype = 0; itype < 3; itype++){
+      fQAHistos->CreateTH2(Form("RCPos%s", trtypenames[itype].Data()), Form("Lower edge position of %s patches (col-row)", trtypenames[itype].Data()), 48, -0.5, 47.5, 64, -0.5, 63.5);
+      fQAHistos->CreateTH2(Form("EPCentPos%s", trtypenames[itype].Data()), Form("Center position of the %s trigger patches", trtypenames[itype].Data()), 20, -0.8, 0.8, 100., 1., 4.);
+      fQAHistos->CreateTH2(Form("PatchADCvsE%s", trtypenames[itype].Data()), Form("Patch ADC value for trigger type %s", trtypenames[itype].Data()), 200, 0., 200, 200, 0., 200);
+    }
+    fQAHistos->CreateTH1("triggerBitsAll", "Trigger bits for all incoming patches", 64, -0.5, 63.5);
+    fQAHistos->CreateTH1("triggerBitsSel", "Trigger bits for reconstructed patches", 64, -0.5, 63.5);
+    fOutput->Add(fQAHistos->GetListOfHistograms());
+    PostData(1, fOutput);
+  }
+}
+
+//________________________________________________________________________
 Bool_t AliEmcalTriggerMaker::Run() 
 {
   // Create and fill the patch array.
@@ -156,7 +184,6 @@ Bool_t AliEmcalTriggerMaker::Run()
   if (fCaloTriggers->GetEntries() > 0) {
     // zero the arrays
     memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
-    memset(fPatchAmplitude, 0, sizeof(Float_t) * kPatchCols * kPatchRows);
 
     // go throuth the trigger channels
     while (fCaloTriggers->Next()) {
@@ -164,12 +191,6 @@ Bool_t AliEmcalTriggerMaker::Run()
       // A0 left bottom (0,0)
       Int_t globCol=-1, globRow=-1;
       fCaloTriggers->GetPosition(globCol, globRow);
-      // Look at L0 information
-      Float_t amp = -1;
-      if(CheckForL0(*fCaloTriggers))
-    	  fCaloTriggers->GetAmplitude(amp);
-      if(amp > -1)
-        fPatchAmplitude[globCol][globRow]  = amp;
       // for some strange reason some ADC amps are initialized in reconstruction
       // as -1, neglect those 
       Int_t adcAmp=-1;
@@ -330,12 +351,24 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
     fCaloTriggers->GetTriggerBits(tBits);
   else
     fSimpleOfflineTriggers->GetTriggerBits(tBits);
+
+  Int_t nBitsFound = 0;
+  Int_t bitsFound[64];
+  if(fDoQA){
+    for(unsigned int ibit = 0; ibit < sizeof(tBits)*8; ibit++) {
+      if(tBits & (1 << ibit)){
+        bitsFound[nBitsFound++] = ibit;
+        fQAHistos->FillTH1("triggerBitsAll", ibit);
+      }
+    }
+  }
 	
   if ((type == kTMEMCalJet    && !IsEJE( tBits )) || 
       (type == kTMEMCalGamma  && !IsEGA( tBits )) || 
-      (type == kTMEMCalLevel0 && !(IsLevel0(tBits) || CheckForL0(*fCaloTriggers))))
+      (type == kTMEMCalLevel0 && !(CheckForL0(*fCaloTriggers))))
     return 0;
-	
+  TString trtypenames[3] = {"EJE", "EGA", "EL0"}; // For QA
+
   // save primary vertex in vector
   TVector3 vertex;
   vertex.SetXYZ(fVertex[0], fVertex[1], fVertex[2]);
@@ -383,7 +416,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
 	  // add the STU ADCs in the patch (in case of L1) or the TRU Amplitude (in case of L0)
 	  if (!isOfflineSimple )
 	      if(type == kTMEMCalLevel0){
-	        adcAmp += static_cast<Int_t>(fPatchAmplitude[globCol+i][globRow+j]); // precision loss in case of global integer field
+	        adcAmp += fPatchADC[globCol+i][globRow+j] * 4; // precision loss in case of global integer field
 	      } else
 	        adcAmp += fPatchADC[globCol+i][globRow+j];
 	  else
@@ -517,6 +550,15 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   trigger->SetTriggerBits(tBits);
   trigger->SetOffSet(offSet);
   trigger->SetEdgeCell(globCol*2, globRow*2); // from triggers to cells
+  if(fDoQA){
+    fQAHistos->FillTH2(Form("RCPos%s", trtypenames[type].Data()), globCol, globRow);
+    fQAHistos->FillTH2(Form("EPCentPos%s", trtypenames[type].Data()), centerGeo.Eta(), centerGeo.Phi());
+    fQAHistos->FillTH2(Form("PatchADCvsE%s", trtypenames[type].Data()), adcAmp, trigger->GetPatchE());
+    if(nBitsFound){
+      for(int ibit = 0; ibit < nBitsFound; ibit++)
+        fQAHistos->FillTH1("triggerBitsSel", bitsFound[ibit]);
+    }
+  }
   return trigger;
 }
 
@@ -620,20 +662,28 @@ Bool_t AliEmcalTriggerMaker::NextTrigger(Bool_t &isOfflineSimple)
 
 //________________________________________________________________________
 Bool_t AliEmcalTriggerMaker::CheckForL0(const AliVCaloTrigger& trg) const {
-  // Check from the level0 times if the trigger has fired at level0
-  Int_t nl0times(0);
-  Bool_t l0fired(kFALSE);
-  trg.GetNL0Times(nl0times);
-  if(nl0times){
-    TArrayI l0times(nl0times);
-  	trg.GetL0Times(l0times.GetArray());
-  	// Apply timing cut to see if a L0 has fired
-  	for(Int_t *l0timeIter = l0times.GetArray(); l0timeIter < l0times.GetArray() + l0times.GetSize(); l0timeIter++){
-  	  if(*l0timeIter > 7 && *l0timeIter < 10){
-  	    l0fired = kTRUE;
-  	    break;
-  	  }
+  // Check whether the patch is a level0 patch
+  if(MCEvent()){
+    // For Monte-Carlo select
+    Int_t tbits(-1);
+    trg.GetTriggerBits(tbits);
+    return tbits & (1 << kL0);
+  } else {
+    // For Data check from the level0 times if the trigger has fired at level0
+    Int_t nl0times(0);
+    Bool_t l0fired(kFALSE);
+    trg.GetNL0Times(nl0times);
+    if(nl0times){
+      TArrayI l0times(nl0times);
+      trg.GetL0Times(l0times.GetArray());
+      // Apply timing cut to see if a L0 has fired
+      for(Int_t *l0timeIter = l0times.GetArray(); l0timeIter < l0times.GetArray() + l0times.GetSize(); l0timeIter++){
+        if(*l0timeIter > 7 && *l0timeIter < 10){
+          l0fired = kTRUE;
+          break;
+        }
+      }
     }
+    return l0fired;
   }
-  return l0fired;
 }

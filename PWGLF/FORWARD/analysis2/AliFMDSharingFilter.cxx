@@ -617,12 +617,15 @@ AliFMDSharingFilter::Terminate(const TList* dir, TList* output, Int_t nEvents)
     sum->SetYTitle("#sum_{c} #Delta/#Delta_{mip}");
     sums->Add(sum);
 
-    sum = o->fSumESD->ProjectionX(o->GetName(), 1, o->fSumESD->GetNbinsY(),"e");
-    sum->Scale(1., "width");
-    sum->SetTitle(o->GetName());
-    sum->SetDirectory(0);
-    sum->SetYTitle("#sum_{s} #Delta/#Delta_{mip}");
-    sumsESD->Add(sum);
+
+    if (o->fSumESD) { 
+      sum = o->fSumESD->ProjectionX(o->GetName(), 1, o->fSumESD->GetNbinsY(),"e");
+      sum->Scale(1., "width");
+      sum->SetTitle(o->GetName());
+      sum->SetDirectory(0);
+      sum->SetYTitle("#sum_{s} #Delta/#Delta_{mip}");
+      sumsESD->Add(sum);
+    }
   }
   out->Add(sums);
   out->Add(sumsESD);

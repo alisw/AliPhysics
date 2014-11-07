@@ -677,8 +677,8 @@ void  AliEbyEPidRatioPhy::AddHistSetRatio(const Char_t *name, const Char_t *titl
   list->SetName(Form("f%s", name));
   list->SetOwner(kTRUE);
   
-  Int_t    nRbin  = 10000;
-  Double_t mRat[] = {0,1};
+  Int_t    nRbin  = 15000;
+  Double_t mRat[] = {0,1.5};
 
   Int_t nBinsCent         =  AliEbyEPidRatioHelper::fgkfHistNBinsCent;
   Double_t centBinRange[] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0], AliEbyEPidRatioHelper::fgkfHistRangeCent[1]};
@@ -736,7 +736,31 @@ void  AliEbyEPidRatioPhy::AddHistSetRatio(const Char_t *name, const Char_t *titl
   list->Add(new TH2F(Form("fHistRatioPmPim%s",name), 
 		     Form("(%s %s) : #bar{P}/#pi^{-};Centrality(11);#bar{P}/#pi^{-}", xyz.Data(), sTitle.Data()),
 		     nBinsCent, centBinRange[0], centBinRange[1], nRbin,mRat[0],mRat[1]));
-  return;
+  
+
+  //------- - - -  -  -   -   - - -   - --- - - --- - - - - - -- --------
+  Int_t bin[4] = {4000,3600,1600,800}; 
+  Int_t bd[] = {1,2,2,2};
+  for (Int_t iPid = 0; iPid < 4; ++iPid) {
+    Int_t bb = bin[iPid];
+
+    for (Int_t iNet = 0; iNet < 4; ++iNet) {
+      Int_t bn     = (iNet == 3) ?  500   : bb/bd[iNet]; 
+      Float_t blow = (iNet == 3) ? -250.5 : -0.5;
+      Float_t bup  = (iNet == 3) ?  249.5 : bn-0.5;
+
+
+      list->Add(new TH2F(Form("fHistDist%s%s%s",name, AliEbyEPidRatioHelper::fgkPidName[iPid], AliEbyEPidRatioHelper::fgkNetHistName[iNet]), 
+			 Form("(%s %s) : %s Distribution;Centrality(11);%s_{(%s)}", xyz.Data(), sTitle.Data(), 
+			      AliEbyEPidRatioHelper::fgkPidShLatex[iPid],AliEbyEPidRatioHelper::fgkPidShLatex[iPid],AliEbyEPidRatioHelper::fgkNetHistLatex[iNet]),
+			 nBinsCent, centBinRange[0], centBinRange[1], bn, blow,bup));    
+    }
+  }
+  
+
+
+
+return;
 }
 
 //________________________________________________________________________
@@ -859,36 +883,59 @@ void AliEbyEPidRatioPhy::FillHistSetRatio(const Char_t *name, Int_t idx, Bool_t 
   
   TList *list = static_cast<TList*>(fOutList->FindObject(Form("f%s",name)));
     
-  Double_t KPi   = -1; if(np[idx][1][1]+np[idx][1][0] != 0 ) KPi = (np[idx][2][1]+np[idx][2][0])/(np[idx][1][1]+np[idx][1][0]);
-  Double_t KpPip = -1;
-  Double_t KmPip = -1;if (np[idx][1][1] != 0 ) { KpPip  = (np[idx][2][1])/(np[idx][1][1]); KmPip =  (np[idx][2][0])/(np[idx][1][1]); }
-  Double_t KmPim = -1;if (np[idx][1][0] != 0) KmPim = (np[idx][2][0])/(np[idx][1][0]);
   
-  (static_cast<TProfile*>(list->FindObject(Form("fHistRatioKPi%s",name))))->Fill(centralityBin, KPi);
-  (static_cast<TProfile*>(list->FindObject(Form("fHistRatioKpPip%s",name))))->Fill(centralityBin, KpPip);
-  (static_cast<TProfile*>(list->FindObject(Form("fHistRatioKmPip%s",name))))->Fill(centralityBin, KmPip);
-  (static_cast<TProfile*>(list->FindObject(Form("fHistRatioKmPim%s",name))))->Fill(centralityBin, KmPim);
+  if((Double_t)np[idx][1][1]+(Double_t)np[idx][1][0] != 0 ) {
+    Double_t KPi = ((Double_t)np[idx][2][1]+(Double_t)np[idx][2][0])/((Double_t)np[idx][1][1]+(Double_t)np[idx][1][0]);
+    Double_t PPi = ((Double_t)np[idx][3][1]+(Double_t)np[idx][3][0])/((Double_t)np[idx][1][1]+(Double_t)np[idx][1][0]);
+    
+    (static_cast<TH2F*>(list->FindObject(Form("fHistRatioKPi%s",name))))->Fill(centralityBin, KPi);
+    (static_cast<TH2F*>(list->FindObject(Form("fHistRatioPPi%s",name))))->Fill(centralityBin,   PPi);
+  }
 
-  Double_t PK   = -1; if(np[idx][2][1]+np[idx][2][0] != 0 ) PK = (np[idx][3][1]+np[idx][3][0])/(np[idx][2][1]+np[idx][2][0]);
-  Double_t PpKp = -1;
-  Double_t PmKp = -1;if (np[idx][2][1] != 0 ) { PpKp  = (np[idx][3][1])/(np[idx][2][1]); PmKp =  (np[idx][3][0])/(np[idx][2][1]); }
-  Double_t PmKm = -1;if (np[idx][2][0] != 0) PmKm = (np[idx][3][0])/(np[idx][2][0]);
+  if((Double_t)np[idx][2][1]+(Double_t)np[idx][2][0] != 0 ){
+    Double_t PK = ((Double_t)np[idx][3][1]+(Double_t)np[idx][3][0])/((Double_t)np[idx][2][1]+(Double_t)np[idx][2][0]);
+    (static_cast<TH2F*>(list->FindObject(Form("fHistRatioPK%s",name))))->Fill(centralityBin, PK);
+  }
 
-  (static_cast<TProfile*>(list->FindObject(Form("fHistRatioPK%s",name))))->Fill(centralityBin, PK);
-  (static_cast<TProfile*>(list->FindObject(Form("fHistRatioPpKp%s",name))))->Fill(centralityBin, PpKp);
-  (static_cast<TProfile*>(list->FindObject(Form("fHistRatioPmKp%s",name))))->Fill(centralityBin, PmKp);
-  (static_cast<TProfile*>(list->FindObject(Form("fHistRatioPmKm%s",name))))->Fill(centralityBin, PmKm);
+  if ((Double_t)np[idx][1][1] != 0 ) {
+    Double_t KpPip  = ((Double_t)np[idx][2][1])/((Double_t)np[idx][1][1]); 
+    Double_t KmPip  = ((Double_t)np[idx][2][0])/((Double_t)np[idx][1][1]); 
+    Double_t PpPip  = ((Double_t)np[idx][3][1])/((Double_t)np[idx][1][1]); 
+    Double_t PmPip =  ((Double_t)np[idx][3][0])/((Double_t)np[idx][1][1]);
 
-  Double_t PPi   = -1; if(np[idx][1][1]+np[idx][1][0] != 0 ) PPi = (np[idx][3][1]+np[idx][3][0])/(np[idx][1][1]+np[idx][1][0]);
-  Double_t PpPip = -1;
-  Double_t PmPip = -1;if (np[idx][1][1] != 0 ) { PpPip  = (np[idx][3][1])/(np[idx][1][1]); PmPip =  (np[idx][3][0])/(np[idx][1][1]); }
-  Double_t PmPim = -1;if (np[idx][1][0] != 0) PmPim = (np[idx][3][0])/(np[idx][1][0]);
+    (static_cast<TH2F*>(list->FindObject(Form("fHistRatioKpPip%s",name))))->Fill(centralityBin, KpPip);
+    (static_cast<TH2F*>(list->FindObject(Form("fHistRatioKmPip%s",name))))->Fill(centralityBin, KmPip);
+    (static_cast<TH2F*>(list->FindObject(Form("fHistRatioPpPip%s",name))))->Fill(centralityBin, PpPip);
+    (static_cast<TH2F*>(list->FindObject(Form("fHistRatioPmPip%s",name))))->Fill(centralityBin, PmPip);
+  }  
 
-  (static_cast<TProfile*>(list->FindObject(Form("fHistRatioPPi%s",name))))->Fill(centralityBin,   PPi);
-  (static_cast<TProfile*>(list->FindObject(Form("fHistRatioPpPip%s",name))))->Fill(centralityBin, PpPip);
-  (static_cast<TProfile*>(list->FindObject(Form("fHistRatioPmPip%s",name))))->Fill(centralityBin, PmPip);
-  (static_cast<TProfile*>(list->FindObject(Form("fHistRatioPmPim%s",name))))->Fill(centralityBin, PmPim);
+  if ((Double_t)np[idx][1][0] != 0) {
+    Double_t KmPim = ((Double_t)np[idx][2][0])/((Double_t)np[idx][1][0]);
+    Double_t PmPim = ((Double_t)np[idx][3][0])/((Double_t)np[idx][1][0]);
+    (static_cast<TH2F*>(list->FindObject(Form("fHistRatioKmPim%s",name))))->Fill(centralityBin, KmPim);
+    (static_cast<TH2F*>(list->FindObject(Form("fHistRatioPmPim%s",name))))->Fill(centralityBin, PmPim);
+  }
   
+  if ((Double_t)np[idx][2][1] != 0 ) { 
+    Double_t PpKp  = ((Double_t)np[idx][3][1])/((Double_t)np[idx][2][1]); 
+    Double_t PmKp =  ((Double_t)np[idx][3][0])/((Double_t)np[idx][2][1]); 
+   (static_cast<TH2F*>(list->FindObject(Form("fHistRatioPpKp%s",name))))->Fill(centralityBin, PpKp);
+   (static_cast<TH2F*>(list->FindObject(Form("fHistRatioPmKp%s",name))))->Fill(centralityBin, PmKp);
+  }
+  
+  if ((Double_t)np[idx][2][0] != 0) {
+   Double_t PmKm = ((Double_t)np[idx][3][0])/((Double_t)np[idx][2][0]);
+   (static_cast<TH2F*>(list->FindObject(Form("fHistRatioPmKm%s",name))))->Fill(centralityBin, PmKm);
+  }
+  
+  for (Int_t iPid = 0; iPid < 4; ++iPid) {
+    (static_cast<TH2F*>(list->FindObject(Form("fHistDist%s%s%s",name, AliEbyEPidRatioHelper::fgkPidName[iPid], AliEbyEPidRatioHelper::fgkNetHistName[0]))))->Fill(centralityBin, np[idx][iPid][1]+np[idx][iPid][0]); 
+    (static_cast<TH2F*>(list->FindObject(Form("fHistDist%s%s%s",name, AliEbyEPidRatioHelper::fgkPidName[iPid], AliEbyEPidRatioHelper::fgkNetHistName[1]))))->Fill(centralityBin, np[idx][iPid][1]); 
+    (static_cast<TH2F*>(list->FindObject(Form("fHistDist%s%s%s",name, AliEbyEPidRatioHelper::fgkPidName[iPid], AliEbyEPidRatioHelper::fgkNetHistName[2]))))->Fill(centralityBin,                  np[idx][iPid][0]); 
+    (static_cast<TH2F*>(list->FindObject(Form("fHistDist%s%s%s",name, AliEbyEPidRatioHelper::fgkPidName[iPid], AliEbyEPidRatioHelper::fgkNetHistName[3]))))->Fill(centralityBin, np[idx][iPid][1]-np[idx][iPid][0]); 
+  }
+  
+
   return;
 }
 

@@ -138,7 +138,8 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
   Double_t mass[3]={1.39570000000000000e-01,4.93676999999999977e-01,9.38271999999999995e-01};//FIXME masses to be taken from AliHelperPID
   //main loop on tracks
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
-    AliAODTrack* track = fAOD->GetTrack(iTracks);
+    AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
+    if(!track) AliFatal("Not a standard AOD");
     if (!fTrackCuts->IsSelected(track,kTRUE)) continue;
     
     fPID->FillQAHistos(fHistMan, track, fTrackCuts);

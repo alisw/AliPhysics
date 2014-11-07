@@ -497,6 +497,11 @@ AliOADBForward::Table::GetEntry(ULong_t        run,
   Int_t entry = Query(run, mode, sys, sNN, fld, mc, sat);
   if (entry < 0 && run > 0) 
     entry = Query(0, mode, sys, sNN, fld, mc, sat);
+  if (entry < 0 && fFallBack && fld != kInvalidField) {
+    if (fVerbose) 
+      Printf("Fall-back enabled, trying without field=%d", fld);
+    entry = Query(run, mode, sys, sNN, fld, mc, sat);
+  }
   if (entry < 0 && fFallBack && sNN > 0) {
     if (fVerbose)
       Printf("Fall-back enabled, will try without sNN=%d", sNN);

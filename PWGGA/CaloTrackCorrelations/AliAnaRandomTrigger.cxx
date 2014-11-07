@@ -267,9 +267,10 @@ void  AliAnaRandomTrigger::MakeAnalysisFillAOD()
     
     AliAODPWG4Particle trigger = AliAODPWG4Particle(fMomentum);
     trigger.SetDetectorTag(fTriggerDetector);
+    trigger.SetSModNumber(GetModuleNumber(&trigger));
     
-    AliDebug(1,Form("iRandom %d, Trigger e %2.2f pt %2.2f, phi %2.2f, eta %2.2f",
-                    irandom, trigger.E(), trigger.Pt(), trigger.Phi(), trigger.Eta()));
+    AliDebug(1,Form("iRandom %d, Trigger e %2.2f pt %2.2f, phi %2.2f, eta %2.2f, SM %d",
+                    irandom, trigger.E(), trigger.Pt(), trigger.Phi(), trigger.Eta(), trigger.GetSModNumber()));
     
     AddAODParticle(trigger);
   }

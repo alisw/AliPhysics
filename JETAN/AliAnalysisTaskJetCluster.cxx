@@ -932,7 +932,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     TString vtxTitle(vtxAOD->GetTitle());
     zVtx = vtxAOD->GetZ();
 
-    cent = fAOD->GetHeader()->GetCentrality();
+    cent = ((AliVAODHeader*)fAOD->GetHeader())->GetCentrality();
     if(cent<10)cenClass = 0;
     else if(cent<30)cenClass = 1;
     else if(cent<50)cenClass = 2;
@@ -1882,7 +1882,8 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
       }
 
       for(int it = 0;it < aod->GetNumberOfTracks();++it){
-	AliAODTrack *tr = aod->GetTrack(it);
+	AliAODTrack *tr = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+        if(!tr) AliFatal("Not a standard AOD");
 	Bool_t bGood = false;
 	if(fFilterType == 0)bGood = true;
 	else if(fFilterType == 1)bGood = tr->IsHybridTPCConstrainedGlobal();
@@ -2116,7 +2117,8 @@ Bool_t AliAnalysisTaskJetCluster::AvoidDoubleCountingHF(AliAODEvent *aod, AliAOD
 
   for(int jt = 0;jt < aod->GetNumberOfTracks();++jt){
 
-    const AliAODTrack *tr2 = aod->GetTrack(jt);
+    AliAODTrack *tr2 = dynamic_cast<AliAODTrack*>(aod->GetTrack(jt));
+    if(!tr2) AliFatal("Not a standard AOD");
     Int_t idtr2 = tr2->GetID();
 	
     if (!(tr2->TestFilterBit(BIT(4)))) continue;

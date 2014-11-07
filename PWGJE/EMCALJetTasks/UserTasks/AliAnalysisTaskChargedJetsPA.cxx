@@ -102,6 +102,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
   if(fDoJetAnalysis)
   {
     // Background corrected jet spectra
+    AddHistogram2D<TH2D>("hJetPtNoBgrdSubtracted", "Jets p_{T} distribution, no bgrd. subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");    
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedExternal", "Jets p_{T} distribution, external bgrd. subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");    
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedPP", "Jets p_{T} distribution, pp background subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedExternal_Phi1", "Jets p_{T} distribution, external background (Improved CMS) subtracted (1st part of azimuth)", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");    
@@ -122,7 +123,14 @@ void AliAnalysisTaskChargedJetsPA::Init()
     AddHistogram2D<TProfile2D>("hJetPtSubtractedRhoPP", "Mean subtracted KT (pp from Michal) background from jets", "COLZ", 600, 0, 150, fNumberOfCentralityBins, 0, 100, "Jet p_{T}", "Centrality", "#rho mean");
 
     // Jet QA plots
-    AddHistogram2D<TH2D>("hJetConstituentPt", "Jet constituents p_{T} distribution", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Tracks}/dp_{T}");
+    AddHistogram2D<TH2D>("hJetConstituentPt0GeV", "Jet constituents p_{T} distribution (p_{T,jet} > 0 GeV)", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Tracks}/dp_{T}");
+    AddHistogram2D<TH2D>("hJetConstituentPt1GeV", "Jet constituents p_{T} distribution (p_{T,jet} > 1 GeV)", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Tracks}/dp_{T}");
+    AddHistogram2D<TH2D>("hJetConstituentPt2GeV", "Jet constituents p_{T} distribution (p_{T,jet} > 2 GeV)", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Tracks}/dp_{T}");
+    AddHistogram2D<TH2D>("hJetConstituentPt3GeV", "Jet constituents p_{T} distribution (p_{T,jet} > 3 GeV)", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Tracks}/dp_{T}");
+    AddHistogram2D<TH2D>("hJetConstituentPt4GeV", "Jet constituents p_{T} distribution (p_{T,jet} > 4 GeV)", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Tracks}/dp_{T}");
+    AddHistogram2D<TH2D>("hJetConstituentPt5GeV", "Jet constituents p_{T} distribution (p_{T,jet} > 5 GeV)", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Tracks}/dp_{T}");
+    AddHistogram2D<TH2D>("hJetConstituentPt7GeV", "Jet constituents p_{T} distribution (p_{T,jet} > 7 GeV)", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Tracks}/dp_{T}");
+    AddHistogram2D<TH2D>("hJetConstituentPt10GeV", "Jet constituents p_{T} distribution (p_{T,jet} > 10 GeV)", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Tracks}/dp_{T}");
     AddHistogram2D<TH2D>("hJetConstituentPtVsJetPt", "Jet constituents p_{T} distribution", "", 500, -50., 200., 200, 0, 200, "#it{p}_{T} (GeV/c)","#it{p}_{T}^{jet} (GeV/c)","dN^{Tracks}/dp_{T}");
     AddHistogram1D<TH1D>("hJetCountAll", "Number of Jets", "", 200, 0., 200., "N jets","dN^{Events}/dN^{Jets}");
     AddHistogram1D<TH1D>("hJetCountAccepted", "Number of accepted Jets", "", 200, 0., 200., "N jets","dN^{Events}/dN^{Jets}");
@@ -1984,6 +1992,8 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
     if(IsSignalJetInAcceptance(tmpJet))
     {
       // Background corrected jet spectra
+      FillHistogram("hJetPtNoBgrdSubtracted", GetCorrectedJetPt(tmpJet, 0.0), centralityPercentile);
+
       FillHistogram("hJetPtBgrdSubtractedExternal", GetCorrectedJetPt(tmpJet, backgroundExternal), centralityPercentile);
       FillHistogram("hJetPtBgrdSubtractedKTImprovedCMS", GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS), centralityPercentile);
       FillHistogram("hJetPtBgrdSubtractedPP", GetCorrectedJetPt(tmpJet, backgroundPP), centralityPercentile);
@@ -2056,6 +2066,27 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
         FillHistogram("hJetPtBgrdSubtractedKTImprovedCMS_Biased_5GeV", GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS), centralityPercentile);
       else if(leadingTrackPt >= 2)
         FillHistogram("hJetPtBgrdSubtractedKTImprovedCMS_Biased_2GeV", GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS), centralityPercentile);
+
+
+      // Fill jet constituent histograms
+      for(Int_t j=0; j<tmpJet->GetNumberOfTracks(); j++)
+      {
+        FillHistogram("hJetConstituentPt0GeV", tmpJet->TrackAt(j, fTrackArray)->Pt(), centralityPercentile);
+        if(tmpJet->Pt() >= 1.0)
+          FillHistogram("hJetConstituentPt1GeV", tmpJet->TrackAt(j, fTrackArray)->Pt(), centralityPercentile);
+        if(tmpJet->Pt() >= 2.0)
+          FillHistogram("hJetConstituentPt2GeV", tmpJet->TrackAt(j, fTrackArray)->Pt(), centralityPercentile);
+        if(tmpJet->Pt() >= 3.0)
+          FillHistogram("hJetConstituentPt3GeV", tmpJet->TrackAt(j, fTrackArray)->Pt(), centralityPercentile);
+        if(tmpJet->Pt() >= 4.0)
+          FillHistogram("hJetConstituentPt4GeV", tmpJet->TrackAt(j, fTrackArray)->Pt(), centralityPercentile);
+        if(tmpJet->Pt() >= 5.0)
+          FillHistogram("hJetConstituentPt5GeV", tmpJet->TrackAt(j, fTrackArray)->Pt(), centralityPercentile);
+        if(tmpJet->Pt() >= 7.0)
+          FillHistogram("hJetConstituentPt7GeV", tmpJet->TrackAt(j, fTrackArray)->Pt(), centralityPercentile);
+        if(tmpJet->Pt() >= 10.0)
+          FillHistogram("hJetConstituentPt10GeV", tmpJet->TrackAt(j, fTrackArray)->Pt(), centralityPercentile);
+      }
 
       if(tmpJet->Pt() >= 5.0)
       {

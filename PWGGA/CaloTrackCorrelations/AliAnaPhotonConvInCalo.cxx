@@ -734,14 +734,20 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
     {
       stack =  GetMCStack() ;
       if(!stack)
+      {
         AliFatal("Stack not available, is the MC handler called? STOP");
+        return;
+      }
     }
     else if(GetReader()->ReadAODMCParticles())
     {
       //Get the list of MC particles
       mcparticles = GetReader()->GetAODMCParticles();
       if(!mcparticles)
+      {
         AliFatal("Standard MCParticles not available!");
+        return;
+      }
     }
   }// is data and MC
   
@@ -804,21 +810,14 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
         }
         else if(GetReader()->ReadAODMCParticles())
         {
-          //Check which is the input
-          if(ph->GetInputFileIndex() == 0)
+          if(label >=  mcparticles->GetEntriesFast())
           {
-            if(!mcparticles) continue;
-            
-            if(label >=  mcparticles->GetEntriesFast())
-            {
-              AliDebug(2,Form("*** large label ***:  label %d, n tracks %d",label, mcparticles->GetEntriesFast()));
-              continue ;
-            }
-            
-            //Get the particle
-            aodprimary = (AliAODMCParticle*) mcparticles->At(label);
-            
+            AliDebug(2,Form("*** large label ***:  label %d, n tracks %d",label, mcparticles->GetEntriesFast()));
+            continue ;
           }
+          
+          //Get the particle
+          aodprimary = (AliAODMCParticle*) mcparticles->At(label);
           
           if(!aodprimary)
           {

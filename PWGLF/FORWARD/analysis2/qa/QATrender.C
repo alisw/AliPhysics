@@ -675,6 +675,10 @@ public:
     fOutput->Close();
     fOutput = 0;
     fTree   = 0;
+    std::ofstream doc(".doc");
+    doc << fPeriod << " " << fPass << " ("
+	<< fDataType << ") " << fRunNo << std::endl;
+    doc.close();
     gSystem->Exec(Form("chmod g+rw %s", OutputName()));
   }
   /** 

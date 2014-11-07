@@ -20,7 +20,7 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
   Float_t  nSigmaPID   = 3.0;
   Float_t  dcaDaug     = 1.0;
   Float_t  dca2PrmVtx  = 0.095;  // tighter cut
-  Float_t  nclsDaug    = 70;     
+  Float_t  nclsDaug    = 50;     
   Float_t  minPtDaughter = 0.16;
 
   Float_t  radiusTPC = 125.;
@@ -47,10 +47,10 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
   task->SetEtaCut(useEtaCut);
   task->SetMaxY(rapMaxV0);
   task->SetMaxDCADaughter(dcaDaug); // Added to perform systematics
-  task->SetDCAToPrimVtx(dca2PrmVtx); // Added to perform systematics
-  task->SetNSigmaPID(nSigmaPID);
+  //task->SetDCAToPrimVtx(dca2PrmVtx); // Added to perform systematics
+  //task->SetNSigmaPID(nSigmaPID);
   task->SetNClsTPC(nclsDaug);  // Added to perform systematics
-  task->SetMinPtDaughter(minPtDaughter);  
+  //task->SetMinPtDaughter(minPtDaughter);  
   // PID
   task->SetSeparateInjectedPart(sepInjec);
   // MC

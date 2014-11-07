@@ -662,7 +662,7 @@ Bool_t  AliAnaParticleJetLeadingConeCorrelation::GetLeadingParticle(AliAODPWG4Pa
       
       //Put leading in AOD
       particle->SetLeading(fLeadingChargeMom);
-      particle->SetLeadingDetector("CTS");
+      particle->SetLeadingDetector(kCTS);
       return kTRUE;
     }
     else
@@ -674,7 +674,7 @@ Bool_t  AliAnaParticleJetLeadingConeCorrelation::GetLeadingParticle(AliAODPWG4Pa
       AliDebug(1,Form("Found Leading: pt %2.3f, phi %2.3f, eta %2.3f",fLeadingMom.Pt(),fLeadingMom.Phi()*TMath::RadToDeg(),fLeadingMom.Eta())) ;
       //Put leading in AOD
       particle->SetLeading(fLeadingPi0Mom);
-      particle->SetLeadingDetector("EMCAL");
+      particle->SetLeadingDetector(kEMCAL);
       return kTRUE;
     }
   }
@@ -1135,9 +1135,9 @@ void  AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillHistograms()
     
     //Get leading particle, fill histograms
     fLeadingMom = particle->GetLeading();
-    TString det = particle->GetLeadingDetector();
+    Int_t det   = particle->GetLeadingDetector();
     
-    if(det!="" && fLeadingMom.Pt() > 0)
+    if(det > 0 && fLeadingMom.Pt() > 0)
     {
       Double_t ptL = fLeadingMom.Pt();
       Double_t phiL = fLeadingMom.Phi();
@@ -1146,7 +1146,7 @@ void  AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillHistograms()
       
       AliDebug(1,Form("Trigger with pt %3.2f, phi %2.2f, eta %2.2f", pt, phi, eta));
       
-      if(det == "CTS")
+      if(det == kCTS)
       {
         fhChargedLeadingPt->Fill(pt,ptL);
         fhChargedLeadingPhi->Fill(pt,phiL);
@@ -1159,7 +1159,7 @@ void  AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillHistograms()
         if(pt > 30) fhChargedLeadingDeltaPhiRatioPt30->Fill(TMath::Abs(phi-phiL),ptL/pt);
         if(pt > 50) fhChargedLeadingDeltaPhiRatioPt50->Fill(TMath::Abs(phi-phiL),ptL/pt);
       }
-      else if(det== "EMCAL")
+      else if(det== kEMCAL)
       {
         fhNeutralLeadingPt->Fill(pt,ptL);
         fhNeutralLeadingPhi->Fill(pt,phiL);

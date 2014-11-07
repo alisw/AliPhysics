@@ -70,4 +70,5 @@
 #pragma link C++ class AliFemtoCutMonitorV0+;
 #pragma link C++ class AliFemtoV0TrackPairCut+;
 #pragma link C++ class AliFemtoCutMonitorCollections+;
+#pragma link C++ class AliFemtoV0SharedDaughterCut+;
 #endif

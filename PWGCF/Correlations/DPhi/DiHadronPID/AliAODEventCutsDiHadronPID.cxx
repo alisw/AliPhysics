@@ -329,7 +329,8 @@ Bool_t AliAODEventCutsDiHadronPID::IsSelected(AliAODEvent* event) {
 	}
 	
 	// Get the event header.
-	AliAODHeader* CurrentHeader = event->GetHeader();
+	AliAODHeader* CurrentHeader = dynamic_cast<AliAODHeader*>(event->GetHeader());
+	if(!CurrentHeader) AliFatal("Not a standard AOD");
 	
 	// Test minimum reference multiplicity.
 	Int_t CurrentRefMultiplicity = CurrentHeader->GetRefMultiplicity();

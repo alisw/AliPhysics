@@ -132,9 +132,14 @@ const Char_t* AliEbyEPidRatioHelper::fgkTriggerNames[]       = {"kMB", "kCentral
 const Char_t* AliEbyEPidRatioHelper::fgkCentralityNames[]    = {"0-5%", "5-10%", "10-20%", "20-30%", "30-40%", "40-50%","50-60%", "60-70%", "70-80%", "80-90%", "90-100%"};
 
 const Char_t* AliEbyEPidRatioHelper::fgkPidName[4]      = {"Nch","Npi","Nka","Npr"};
+const Char_t* AliEbyEPidRatioHelper::fgkPidShLatex[4]      = {"N","#pi","K","p"};
 const Char_t* AliEbyEPidRatioHelper::fgkPidLatex[4][2]  = {{"N_{-}","N_{+}"}, {"N_{#pi^{-}}","N_{#pi^{+}}"},{"N_{K^{-}}","N_{K^{+}}"}, {"N_{#bar{p}}","N_{p}"}};
 const Char_t* AliEbyEPidRatioHelper::fgkPidTitles[4][2] = {{"Negative","Positive"},{"Anti-Pions","Pions"},{"Anti-Kaons","Kaons"}, {"Anti-Protons","Protons"}};
 
+
+const Char_t* AliEbyEPidRatioHelper::fgkNetHistName[4]      = {"","Plus","Minus","Net"};
+const Char_t* AliEbyEPidRatioHelper::fgkNetHistLatex[4]      = {"+ + +","+","-","+ - -"};
+const Int_t AliEbyEPidRatioHelper::fgkfNetHistBin[4][4]  = {{3000,2400,1600,1200}, {1500,1200,800,600},{1500,1200,800,600},{600,600,600,600}};
 
 
 //________________________________________________________________________
@@ -274,7 +279,7 @@ Int_t AliEbyEPidRatioHelper::SetupEvent(AliESDInputHandler *esdHandler, AliAODIn
   if(esdHandler)
     centrality = fESD->GetCentrality();
   else if(aodHandler)
-    centrality = fAOD->GetHeader()->GetCentralityP();
+    centrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
 
   if (!centrality) {
     AliError("Centrality not available");
@@ -373,7 +378,7 @@ Bool_t AliEbyEPidRatioHelper::IsEventRejected() {
   // -- 3 - Vertex z outside cut window
   ++iCut;
   if (vtxESD){
-    if(TMath::Abs(vtxESD->GetZv()) > fVertexZMax) 
+    if(TMath::Abs(vtxESD->GetZ()) > fVertexZMax) 
       aEventCuts[iCut] = 1;
   }
   else if(vtxAOD){

@@ -1219,7 +1219,8 @@ void AliThreePionRadii::UserExec(Option_t *)
     ((TH3F*)fOutputList->FindObject("fVertexDist"))->Fill(vertex[0], vertex[1], vertex[2]);
     
     for (Int_t i = 0; i < fAOD->GetNumberOfTracks(); i++) {
-      AliAODTrack* aodtrack = fAOD->GetTrack(i);
+      AliAODTrack* aodtrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(i));
+      if(!aodtrack) AliFatal("Not a standard AOD");
       if (!aodtrack) continue;
       AODTracks++;
       if(!aodtrack->TestFilterBit(BIT(fFilterBit))) continue;// AOD filterBit cut
@@ -1255,7 +1256,8 @@ void AliThreePionRadii::UserExec(Option_t *)
   
     // Track loop
     for (Int_t i = 0; i < fAOD->GetNumberOfTracks(); i++) {
-      AliAODTrack* aodtrack = fAOD->GetTrack(randomIndex[i]);
+      AliAODTrack* aodtrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(randomIndex[i]));
+      if(!aodtrack) AliFatal("Not a standard AOD");
       if (!aodtrack) continue;
       if(myTracks >= fMultLimit) {cout<<"More tracks than Track Limit"<<endl; return;}
       
@@ -1270,7 +1272,8 @@ void AliThreePionRadii::UserExec(Option_t *)
 	if(fMCcase && fAOD->GetRunNumber()<=126437) goodTrackOtherFB=kTRUE;// FB7 to FB5 mapping in 10f6a MC does not work
 	
 	for (Int_t j = 0; j < fAOD->GetNumberOfTracks(); j++) {
-	  AliAODTrack* aodtrack2 = fAOD->GetTrack(randomIndex[j]);
+	  AliAODTrack* aodtrack2 = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(randomIndex[j]));
+	  if(!aodtrack2) AliFatal("Not a standard AOD");
 	  if(!aodtrack2) continue;
 	  if(!aodtrack2->TestFilterBit(BIT(fFilterBit))) continue;
 	  
@@ -1359,7 +1362,8 @@ void AliThreePionRadii::UserExec(Option_t *)
       }else {// FilterBit 7 PID workaround
 	
 	for(Int_t j = 0; j < fAOD->GetNumberOfTracks(); j++) {
-	  AliAODTrack* aodTrack2 = fAOD->GetTrack(j);
+	  AliAODTrack* aodTrack2 = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(j));
+	  if(!aodTrack2) AliFatal("Not a standard AOD");
 	  if (!aodTrack2) continue;
 	  if(aodtrack->GetID() != (-aodTrack2->GetID() - 1)) continue;// (-aodTrack2->GetID() - 1)
 	  

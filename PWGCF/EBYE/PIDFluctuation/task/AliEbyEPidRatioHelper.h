@@ -149,10 +149,19 @@ class AliEbyEPidRatioHelper : public TNamed {
   static const Char_t* fgkCentralityMaxNames[]; // Centrality names 
   static const Char_t* fgkTriggerNames[];       // Trigger names 
   static const Char_t* fgkCentralityNames[];    // Centrality names  
-  static const Char_t* fgkPidName[4];
-  static const Char_t* fgkPidLatex[4][2];
-  static const Char_t* fgkPidTitles[4][2];
+  static const Char_t* fgkPidName[4]; //
+  static const Char_t* fgkPidLatex[4][2];//
+  static const Char_t* fgkPidShLatex[4];//
+  static const Char_t* fgkPidTitles[4][2];//
  
+
+  static const Char_t *fgkNetHistName[4]; //
+  static const Char_t *fgkNetHistLatex[4]; //
+  static const Int_t fgkfNetHistBin[4][4]; //
+
+
+
+
  private:
 
   AliEbyEPidRatioHelper(const AliEbyEPidRatioHelper&); // not implemented

@@ -73,7 +73,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s()
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
-    fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),
+    fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistC0tvxAndCint1TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),fHistDiLeptonMass(0),
     fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),
@@ -96,7 +96,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name)
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
-    fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),
+    fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistC0tvxAndCint1TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),fHistDiLeptonMass(0),
     fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),
@@ -319,6 +319,9 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fHistCint1TriggersPerRun = new TH1D("fHistCint1TriggersPerRun", "fHistCint1TriggersPerRun", 33000, 167000.5, 200000.5);
   fListTrig->Add(fHistCint1TriggersPerRun);
   
+  fHistC0tvxAndCint1TriggersPerRun = new TH1D("fHistC0tvxAndCint1TriggersPerRun", "fHistC0tvxAndCint1TriggersPerRun", 33000, 167000.5, 200000.5);
+  fListTrig->Add(fHistC0tvxAndCint1TriggersPerRun);
+  
   fHistZedTriggersPerRun = new TH1D("fHistZedTriggersPerRun", "fHistZedTriggersPerRun", 33000, 167000.5, 200000.5);
   fListTrig->Add(fHistZedTriggersPerRun);
 
@@ -511,6 +514,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtrig()
   if(trigger.Contains("CCUP2-B")) fHistCcup2TriggersPerRun->Fill(fRunNum); //CCUP2 triggers
   
   if(trigger.Contains("CINT1")) fHistCint1TriggersPerRun->Fill(fRunNum); //CINT1 triggers
+  if(trigger.Contains("CINT1") && trigger.Contains("C0TVX")) fHistC0tvxAndCint1TriggersPerRun->Fill(fRunNum); //C0TVX triggers in CINT1 events
   
   if(trigger.Contains("CVLN_B2-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - synchronously downscaled
   if(trigger.Contains("CVLN_R1-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - randomly downscaled
@@ -612,7 +616,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
    
   //Four track loop
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = aod->GetTrack(itr);
+    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));   
     if( !trk ) continue;
     if(!(trk->TestFilterBit(1<<0))) continue;
 
@@ -643,8 +647,9 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
     	  MeanPt = GetMedian(TrackPt);
   	  fHistNeventsPsi2s->Fill(6);
   	  for(Int_t i=0; i<4; i++){
-	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[i]);
-		
+                AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(TrackIndex[i]));
+                if(!trk) AliFatal("Not a standard AOD");
+
       		if(trk->Pt() > MeanPt){   
       			fRecTPCsignal[nLepton] = trk->GetTPCsignal();      
       			qLepton[nLepton] = trk->Charge();
@@ -701,7 +706,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
   nGoodTracks = 0;
   //Two track loop
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = aod->GetTrack(itr);
+    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
     if( !trk ) continue;
     if(!(trk->TestFilterBit(1<<0))) continue;
 
@@ -730,7 +735,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
   if(nGoodTracks == 2){
   	  fHistNeventsJPsi->Fill(6);
   	  for(Int_t i=0; i<2; i++){
-	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[i]);		
+                AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(TrackIndex[i]));		
+                if(!trk) AliFatal("Not a standard AOD");
       		if(trk->Pt() > 1) nHighPt++;     
       		fRecTPCsignal[nLepton] = trk->GetTPCsignal();     
       		qLepton[nLepton] = trk->Charge();
@@ -843,6 +849,11 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
 	fSpdVtxPos[1] = fSPDVertex->GetY();
 	fSpdVtxPos[2] = fSPDVertex->GetZ();
 	}
+  else{
+  	fSpdVtxPos[0] = -666;
+	fSpdVtxPos[1] = -666;
+	fSpdVtxPos[2] = -666;
+  	}
 
   //Tracklets
   fNtracklets = aod->GetTracklets()->GetNumberOfTracklets();
@@ -860,7 +871,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   
   //Track loop - loose cuts
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = aod->GetTrack(itr);
+    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
     if( !trk ) continue;
     if(!(trk->TestFilterBit(1<<0))) continue;
 
@@ -875,7 +886,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   
   //Two track loop
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = aod->GetTrack(itr);
+    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
     if( !trk ) continue;
     if(!(trk->TestFilterBit(1<<0))) continue;
     
@@ -919,8 +930,9 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   	  KFvtx->SetField(aod->GetMagneticField()); 
   
   	  for(Int_t i=0; i<2; i++){
-	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[i]);
-		
+                AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(TrackIndex[i]));
+                if(!trk) AliFatal("Not a standard AOD");
+
 		Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
 		AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
       		if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
@@ -980,7 +992,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
    nGoodTracks = 0;
    //Four track loop
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = aod->GetTrack(itr);
+    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
     if( !trk ) continue;
     if(!(trk->TestFilterBit(1<<0))) continue;
 
@@ -1022,8 +1034,9 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   	  KFvtx->SetField(aod->GetMagneticField()); 
 	  	  
   	  for(Int_t i=0; i<4; i++){
-	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[i]);
-		
+                AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(TrackIndex[i]));
+                if(!trk) AliFatal("Not a standard AOD");
+
 		Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
 		AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
       		if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
@@ -1137,6 +1150,9 @@ void AliAnalysisTaskUpcPsi2s::RunESDtrig()
   if(trigger.Contains("CCUP4-B")) fHistCcup4TriggersPerRun->Fill(fRunNum); //CCUP4 triggers
   if(trigger.Contains("CCUP7-B")) fHistCcup7TriggersPerRun->Fill(fRunNum); //CCUP7 triggers
   if(trigger.Contains("CCUP2-B")) fHistCcup2TriggersPerRun->Fill(fRunNum); //CCUP2 triggers
+  
+  if(trigger.Contains("CINT1")) fHistCint1TriggersPerRun->Fill(fRunNum); //CINT1 triggers
+  if(trigger.Contains("CINT1") && trigger.Contains("C0TVX")) fHistC0tvxAndCint1TriggersPerRun->Fill(fRunNum); //C0TVX triggers in CINT1 events
   
   if(trigger.Contains("CVLN_B2-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - synchronously downscaled
   if(trigger.Contains("CVLN_R1-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - randomly downscaled
@@ -1700,7 +1716,7 @@ for(Int_t i=0; i<5; i++){
   //Two track loop
   nGoodTracks = 0;
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = aod->GetTrack(itr);
+    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
     if( !trk ) continue;
     if(!(trk->TestFilterBit(1<<0))) continue;
 
@@ -1730,7 +1746,9 @@ for(Int_t i=0; i<5; i++){
   
   if(nGoodTracks == 2){
   	  for(Int_t k=0; k<2; k++){
-	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[k]);		
+                AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(TrackIndex[k]));
+                if(!trk) AliFatal("Not a standard AOD");
+
       		if(trk->Pt() > 1) nHighPt++;     
       		fRecTPCsignal[nLepton] = trk->GetTPCsignal();     
       		qLepton[nLepton] = trk->Charge();
@@ -1769,7 +1787,7 @@ for(Int_t i=0; i<4; i++){
   //Two track loop
   nGoodTracks = 0;
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = aod->GetTrack(itr);
+    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
     if( !trk ) continue;
     if(!(trk->TestFilterBit(1<<0))) continue;
 
@@ -1799,7 +1817,9 @@ for(Int_t i=0; i<4; i++){
   
   if(nGoodTracks == 2){
   	  for(Int_t k=0; k<2; k++){
-	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[k]);		
+                AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(TrackIndex[k]));
+                if(!trk) AliFatal("Not a standard AOD");
+    
       		if(trk->Pt() > 1) nHighPt++;     
       		fRecTPCsignal[nLepton] = trk->GetTPCsignal();     
       		qLepton[nLepton] = trk->Charge();
@@ -1874,7 +1894,7 @@ for(Int_t i=0; i<5; i++){
   //Four track loop
   nGoodTracks = 0; nSpdHits = 0;
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = aod->GetTrack(itr);
+    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
     if( !trk ) continue;
     if(!(trk->TestFilterBit(1<<0))) continue;
 
@@ -1908,7 +1928,9 @@ for(Int_t i=0; i<5; i++){
   	  if(i!=4){ if(nSpdHits<2) continue;} 
     	  MeanPt = GetMedian(TrackPt);
   	  for(Int_t k=0; k<4; k++){
-	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[k]);
+                AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(TrackIndex[k]));
+                if(!trk) AliFatal("Not a standard AOD");
+
       		if(trk->Pt() > MeanPt){   
       			fRecTPCsignal[nLepton] = trk->GetTPCsignal();      
       			qLepton[nLepton] = trk->Charge();
@@ -1953,7 +1975,7 @@ for(Int_t i=0; i<4; i++){
   //Four track loop
   nGoodTracks = 0; nSpdHits = 0;
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = aod->GetTrack(itr);
+    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
     if( !trk ) continue;
     if(!(trk->TestFilterBit(1<<0))) continue;
 
@@ -1987,7 +2009,9 @@ for(Int_t i=0; i<4; i++){
   	  if(nSpdHits<2) continue; 
     	  MeanPt = GetMedian(TrackPt);
   	  for(Int_t k=0; k<4; k++){
-	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[k]);
+                AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(TrackIndex[k]));
+                if(!trk) AliFatal("Not a standard AOD");
+
       		if(trk->Pt() > MeanPt){   
       			fRecTPCsignal[nLepton] = trk->GetTPCsignal();      
       			qLepton[nLepton] = trk->Charge();

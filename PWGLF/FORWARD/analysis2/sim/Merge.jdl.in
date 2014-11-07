@@ -55,8 +55,8 @@ InputDataListFormat="xml-single";
 InputDataList="wn.xml";
 OutputDir="@out@/$3/$1/$4_Stage_$2/#alien_counter_03i#";
 OutputArchive={
-	"$4_log_archive.zip:std*,fileinfo*.log@disk=1",
-	"$4_archive.zip:EventStat_temp.root,*$4*.root,*.stat*@disk=2"
+	"$4_log_archive.zip:std*,*.log@disk=1",
+	"$4_archive.zip:EventStat_temp.root,pyxsec_hists.root,Ali$4*.root,$4*.root,*.stat*@disk=2"
 };
 Split="se";
 SplitMaxInputFileNumber="20";

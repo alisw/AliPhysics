@@ -1404,7 +1404,8 @@ Bool_t AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::AddEvent(AliAODEvent*
       }
     else 
       {
-	AliAODTrack *tr = aodE->GetTrack(it);
+	AliAODTrack *tr = dynamic_cast<AliAODTrack*>(aodE->GetTrack(it));
+	if(!tr) AliFatal("Not a standard AOD");
 	if(!tr) continue;
 	if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
 	label = tr->GetLabel();
@@ -1505,7 +1506,8 @@ Bool_t AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::AddEvent(AliAODEvent*
 	}
       else 
 	{
-	  AliAODTrack *tr = aodE->GetTrack(IndexArray[it]);
+	  AliAODTrack *tr = dynamic_cast<AliAODTrack*>(aodE->GetTrack(IndexArray[it]));
+	  if(!tr) AliFatal("Not a standard AOD");
 	  if(!tr) continue;
           AliAODTrack tmp(*tr);
           tmp.PropagateToDCA(primVtx, bfield, 5., dca, cov);
@@ -1929,7 +1931,7 @@ if(!aodH){
 
    if(fESD) {cent = fESD->GetCentrality();
      if(cent) centrality = cent->GetCentralityPercentile("V0M");}
-   else     centrality=aodE->GetHeader()->GetCentrality();
+   else     centrality=((AliVAODHeader*)aodE->GetHeader())->GetCentrality();
 
 
    if(!fkIsPbPb) {
@@ -2032,7 +2034,8 @@ if(!aodH){
 
       for(int it = 0;it < aodE->GetNumberOfTracks(); it++)
 	{
-	  AliAODTrack *tr = aodE->GetTrack(it);
+	  AliAODTrack *tr = dynamic_cast<AliAODTrack*>(aodE->GetTrack(it));
+	  if(!tr) AliFatal("Not a standard AOD");
 	  if(!tr) continue;
 	  if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask))) continue;
 	  if(TMath::Abs(tr->Eta())>1.) continue;
@@ -2400,9 +2403,9 @@ Bool_t AnalysisJetMain::GetVertex(const AliESDEvent* esd,  Double_t Vxyz[3], Int
   }
 
  
-   Vxyz[0] = vtx->GetXv();
-   Vxyz[1] = vtx->GetYv();
-   Vxyz[2] = vtx->GetZv();
+   Vxyz[0] = vtx->GetX();
+   Vxyz[1] = vtx->GetY();
+   Vxyz[2] = vtx->GetZ();
  
    return kTRUE;
 }

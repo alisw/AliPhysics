@@ -167,9 +167,9 @@ void AliAnalysisTaskPMDSim::UserExec(Option_t *)
   fHistTotEventAfterPhySel->Fill(5);
   //Vertex selection
   const AliESDVertex *vertex = fESD->GetPrimaryVertex();
-  Float_t Vz = vertex->GetZv();    
-  // Float_t Vx = vertex->GetXv();    
-  //Float_t Vy = vertex->GetYv();
+  Float_t Vz = vertex->GetZ();    
+  // Float_t Vx = vertex->GetX();    
+  //Float_t Vy = vertex->GetY();
   Bool_t zVerStatus = vertex->GetStatus();
   if(zVerStatus){
     fVtxZ->Fill(Vz);
