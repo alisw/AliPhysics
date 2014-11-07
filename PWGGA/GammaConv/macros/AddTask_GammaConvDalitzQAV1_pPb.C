@@ -432,7 +432,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 
 } else if( trainConfig == 54 ) {
   
-        eventCutArray[0]="8000011"; photonCutArray[0] = "000700040000500000000"; ElecCutarray[0] = "90475400233202623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny    + new psiPair Cut    0.60, 0.0 0.12   + 0   cm < Rconv  < 180 cm   //open cuts
+        eventCutArray[0]="8000011"; photonCutArray[0] = "000000040000500000000"; ElecCutarray[0] = "90475400233202623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny    + new psiPair Cut    0.60, 0.0 0.12   + 0   cm < Rconv  < 180 cm   //open cuts
 	
 }
 	
