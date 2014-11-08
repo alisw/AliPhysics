@@ -81,6 +81,8 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
     fv2SPGap1Bmc_inclusive_lq(0),
     fv2SPGap1Amc_inclusive_sq(0),
     fv2SPGap1Bmc_inclusive_sq(0),
+    fResGap1w(0),
+    fV2IntGap1w(0),
     fIsRecoEff(0),
     fRecoEffList(0),
     fQvecGen(0),
@@ -185,7 +187,6 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   //output object
   TProfile*     fResSP;             //! resolution
   TProfile*     fResSP_vs_Cent;   //! TBD
-  TProfile*     fResSP_vs_Qvec[9];   //! TBD
   TProfile*     f2partCumQA_vs_Cent;   //! TBD
   TProfile*     f2partCumQB_vs_Cent;   //! TBD
   TH2D*         fEta_vs_Phi_bef;        //! eta vs phi distribution before sub events cut 
@@ -254,19 +255,27 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   TProfile* fv2SPGap1Amc_inclusive_sq;   //! TBD
   TProfile* fv2SPGap1Bmc_inclusive_sq;   //! TBD
   
+  // v2 vs qvec...
+  
+  TProfile*     fResGap1w;           //!
+  TProfile*     fV2IntGap1w;         //! integrated v2 for gap 0.8 w
+  TProfile*     fResSP_vs_Qvec[9];   //! TBD
+  TProfile*     fV2IntGap1wq[9];     //!
+  
   Bool_t fIsRecoEff;   // TBD
   TList * fRecoEffList; //! reconstruction efficiency file
   
-  Bool_t fQvecGen; //enable Qvec from generated
-  Int_t fQgenType; // type==0 qgen from tracks - type==1 qgen from vzero
+  Bool_t fQvecGen;  //enable Qvec from generated
+  Int_t  fQgenType; // type==0 qgen from tracks - type==1 qgen from vzero
   Int_t  fnNchBins; //Ncharged
+  
   Bool_t fDoCentrSystCentrality; //systematic check on centrality estimation
 
   
   AliAnalysisTaskV2AllChAOD(const AliAnalysisTaskV2AllChAOD&);
   AliAnalysisTaskV2AllChAOD& operator=(const AliAnalysisTaskV2AllChAOD&);
   
-  ClassDef(AliAnalysisTaskV2AllChAOD, 14);
+  ClassDef(AliAnalysisTaskV2AllChAOD, 15);
 };
 
 #endif
