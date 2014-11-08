@@ -35,7 +35,8 @@
 
  .L $ALICE_ROOT/TPC/CalibMacros/RegisterCorrection.C+
  RegisterCorrection(0);
- See example usage of correction primitive/derivatives in file
+
+ //See example usage of correction primitive/derivatives in file
 
 
 */
@@ -369,9 +370,9 @@ void RegisterAliTPCFCVoltError3D(){
   AliTPCCorrection::AddVisualCorrection(rodIFCSin,7); 
   AliTPCCorrection::AddVisualCorrection(rodIFCCos,8); 
   //
-  AliTPCCorrection::AddVisualCorrection(rodIFCShift,9); 
-  AliTPCCorrection::AddVisualCorrection(rodIFCSin,10); 
-  AliTPCCorrection::AddVisualCorrection(rodIFCCos,11); 
+  AliTPCCorrection::AddVisualCorrection(rodOFCShift,9); 
+  AliTPCCorrection::AddVisualCorrection(rodOFCSin,10); 
+  AliTPCCorrection::AddVisualCorrection(rodOFCCos,11); 
 }
 
 
@@ -1432,12 +1433,11 @@ AliTPCComposedCorrection * GetCorrectionFromFile(){
   return cc;
 }
 
-
-void TestDrawExample(){
+void TestParExample(){
   //
   // dz shift example: AliTPCCorrection::AddVisualCorrection(rocDzIROCA,705); 
-  //
-  AliTPCCorrection* corr = AliTPCCorrection::GetVisualCorrection(705);	
+  // => parabolic fit not appropriate - helix fit differnt results
+  AliTPCCorrection* corr = AliTPCCorrection::GetVisualCorrection(705);  
   corr->SetOmegaTauT1T2(0.33,1,1);
   TF1 f705Par("f705","AliTPCCorrectionFit::EvalAtPar(0,0,x,0.1,705,0,20)",0,360);
   f705Par.SetLineColor(2);f705Par.SetNpx(500);
@@ -1445,5 +1445,6 @@ void TestDrawExample(){
   f705Helix.SetLineColor(4);f705Helix.SetNpx(500);
   f705Helix.Draw();
   f705Par.Draw("same");
-
 }
+
+
