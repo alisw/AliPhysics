@@ -636,7 +636,7 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
       vertexKF.Y() = tracker->GetY();
       vertexKF.Z() = tracker->GetZ();
       vertexKF.Covariance(0,0) = tracker->GetSigmaX()*tracker->GetSigmaX();
-      vertexKF.Covariance(1,2) = tracker->GetSigmaY()*tracker->GetSigmaY();
+      vertexKF.Covariance(1,1) = tracker->GetSigmaY()*tracker->GetSigmaY();
       vertexKF.Covariance(2,2) = tracker->GetSigmaZ()*tracker->GetSigmaZ();
       
       AliKFParticle elecKF( *(pvertex->GetParamN()) ,11);

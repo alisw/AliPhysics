@@ -81,7 +81,7 @@ void AliGenPairFlat::Generate()
     Int_t i, j, nt;
     Double_t phi, y, mass, mt, e, pt;
     Float_t weight = 1.;
-    Double_t  pt1, pt2, y1, y2;
+    Double_t  pt1, pt2;
 
     TLorentzVector mother, dau1, dau2;
     Float_t random[6];
@@ -140,8 +140,8 @@ void AliGenPairFlat::Generate()
 
 	pt1 = dau1.Pt();
 	pt2 = dau2.Pt();
-	y1 = dau1.Rapidity();
-	y2 = dau2.Rapidity();
+	//	y1 = dau1.Rapidity();
+	//      y2 = dau2.Rapidity();
 
 	//first daughter
 	p[0] = dau1.Px();
@@ -210,7 +210,7 @@ Bool_t AliGenPairFlat::Decay(const TLorentzVector& mother, TLorentzVector &dau1,
 	// decay procedure
 	//
 
-	Double_t mp, md1, md2, ed1, ed2, pd1, pd2;
+	Double_t mp, md1, md2, ed1, ed2, pd1;
 	Double_t costheta, sintheta, phi;
 
 	mp = mother.M();
@@ -225,7 +225,7 @@ Bool_t AliGenPairFlat::Decay(const TLorentzVector& mother, TLorentzVector &dau1,
   ed1 = (mp*mp + md1*md1 - md2*md2)/(2.*mp);
   ed2 = mp-ed1;
   pd1 = TMath::Sqrt((ed1+md1)*(ed1-md1));
-  pd2 = TMath::Sqrt((mp*mp-(md1+md2)*(md1+md2))*(mp*mp -(md1-md2)*(md1-md2)))/(2.*mp);
+  //  pd2 = TMath::Sqrt((mp*mp-(md1+md2)*(md1+md2))*(mp*mp -(md1-md2)*(md1-md2)))/(2.*mp);
 
   costheta = polfactor->GetRandom(); //polarization
   sintheta = TMath::Sqrt((1.+costheta)*(1.-costheta));

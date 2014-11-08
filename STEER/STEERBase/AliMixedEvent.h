@@ -114,11 +114,13 @@ public:
   virtual AliCentrality* GetCentrality() {return 0;}
   virtual AliEventplane* GetEventplane() {return 0;}
   // Primary vertex
+    using AliVEvent::GetPrimaryVertex;
     virtual const AliVVertex   *GetPrimaryVertex() const {return fMeanVertex;}
     virtual Bool_t ComputeVtx(const TObjArray *vertices, Double_t *pos,Double_t *sig,Int_t *nContributors);
   // VZERO
   virtual AliVVZERO *GetVZEROData() const {return 0;}
   virtual AliVZDC     *GetZDCData() const {return 0;}
+  virtual EDataLayoutType GetDataLayoutType() const;
 private:
   TList   fEventList;            //! List of Events
   Int_t   fNEvents;              //! Number of Events 

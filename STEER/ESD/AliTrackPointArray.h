@@ -14,6 +14,7 @@
 
 #include <TObject.h>
 #include <TMatrixDSym.h>
+#include "Rtypes.h"
 
 class TGeoRotation;
 

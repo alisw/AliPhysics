@@ -336,31 +336,32 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2014, Int_t firstRun=172600,
     gFracAverSpeedVsRunL4->SetPoint(npt,(Float_t)nrun,(Double_t)fracAverSpeedL4);
 
     npt=gGoodInjVsTime->GetN();
+    if(goodTime){
+      gGoodInjVsTime->SetPoint(npt,timeday,iGoodInj);
+      gRescaledSpeedVsTime->SetPoint(npt,timeday,iRescaledSpeed);
+      gAverSpeedVsTime->SetPoint(npt,timeday,iAverSpeed);
 
-    gGoodInjVsTime->SetPoint(npt,timeday,iGoodInj);
-    gRescaledSpeedVsTime->SetPoint(npt,timeday,iRescaledSpeed);
-    gAverSpeedVsTime->SetPoint(npt,timeday,iAverSpeed);
+      gGoodInjVsTimeL3->SetPoint(npt,timeday,iGoodInjL3);
+      gRescaledSpeedVsTimeL3->SetPoint(npt,timeday,iRescaledSpeedL3);
+      gAverSpeedVsTimeL3->SetPoint(npt,timeday,iAverSpeedL3);
 
-    gGoodInjVsTimeL3->SetPoint(npt,timeday,iGoodInjL3);
-    gRescaledSpeedVsTimeL3->SetPoint(npt,timeday,iRescaledSpeedL3);
-    gAverSpeedVsTimeL3->SetPoint(npt,timeday,iAverSpeedL3);
-
-    gGoodInjVsTimeL4->SetPoint(npt,timeday,iGoodInjL4);
-    gRescaledSpeedVsTimeL4->SetPoint(npt,timeday,iRescaledSpeedL4);
-    gAverSpeedVsTimeL4->SetPoint(npt,timeday,iAverSpeedL4);
+      gGoodInjVsTimeL4->SetPoint(npt,timeday,iGoodInjL4);
+      gRescaledSpeedVsTimeL4->SetPoint(npt,timeday,iRescaledSpeedL4);
+      gAverSpeedVsTimeL4->SetPoint(npt,timeday,iAverSpeedL4);
 
 
-    gFracGoodInjVsTime->SetPoint(npt,timeday,(Double_t)fracGoodInj);
-    gFracRescaledSpeedVsTime->SetPoint(npt,timeday,(Double_t)fracRescaledSpeed);
-    gFracAverSpeedVsTime->SetPoint(npt,timeday,(Double_t)fracAverSpeed);
-
-    gFracGoodInjVsTimeL3->SetPoint(npt,timeday,(Double_t)fracGoodInjL3);
-    gFracRescaledSpeedVsTimeL3->SetPoint(npt,timeday,(Double_t)fracRescaledSpeedL3);
-    gFracAverSpeedVsTimeL3->SetPoint(npt,timeday,(Double_t)fracAverSpeedL3);
-
-    gFracGoodInjVsTimeL4->SetPoint(npt,timeday,(Double_t)fracGoodInjL4);
-    gFracRescaledSpeedVsTimeL4->SetPoint(npt,timeday,(Double_t)fracRescaledSpeedL4);
-    gFracAverSpeedVsTimeL4->SetPoint(npt,timeday,(Double_t)fracAverSpeedL4);
+      gFracGoodInjVsTime->SetPoint(npt,timeday,(Double_t)fracGoodInj);
+      gFracRescaledSpeedVsTime->SetPoint(npt,timeday,(Double_t)fracRescaledSpeed);
+      gFracAverSpeedVsTime->SetPoint(npt,timeday,(Double_t)fracAverSpeed);
+      
+      gFracGoodInjVsTimeL3->SetPoint(npt,timeday,(Double_t)fracGoodInjL3);
+      gFracRescaledSpeedVsTimeL3->SetPoint(npt,timeday,(Double_t)fracRescaledSpeedL3);
+      gFracAverSpeedVsTimeL3->SetPoint(npt,timeday,(Double_t)fracAverSpeedL3);
+      
+      gFracGoodInjVsTimeL4->SetPoint(npt,timeday,(Double_t)fracGoodInjL4);
+      gFracRescaledSpeedVsTimeL4->SetPoint(npt,timeday,(Double_t)fracRescaledSpeedL4);
+      gFracAverSpeedVsTimeL4->SetPoint(npt,timeday,(Double_t)fracAverSpeedL4);
+    }
 
     printf("Number of half-modules with drift speed from injectors = %d\n",iGoodInj);
     printf("Number of half-modules with average drift speed        = %d\n",iAverSpeed);
@@ -576,7 +577,7 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2014, Int_t firstRun=172600,
   c4->SetGridx();
   c4->SetGridy();
   gGoodInjVsRun->SetMarkerStyle(20);
-  gGoodInjVsRun->SetMinimum(50.);
+  gGoodInjVsRun->SetMinimum(0.);
   gGoodInjVsRun->SetMaximum(370.);
   gGoodInjVsRunL3->SetMarkerStyle(22);
   gGoodInjVsRunL3->SetMarkerColor(2);
@@ -646,7 +647,7 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2014, Int_t firstRun=172600,
   c5->SetGridx();
   c5->SetGridy();
   gGoodInjVsTime->SetMarkerStyle(20);
-  gGoodInjVsTime->SetMinimum(50.);
+  gGoodInjVsTime->SetMinimum(0.);
   gGoodInjVsTime->SetMaximum(370.);
   gGoodInjVsTimeL3->SetMarkerStyle(22);
   gGoodInjVsTimeL3->SetMarkerColor(2);

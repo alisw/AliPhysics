@@ -158,7 +158,9 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
     printf("ERROR: fESD not available\n");
     return;
   }
+  AliESDTZERO* tz= (AliESDTZERO*) fESD->GetESDTZERO();
   Int_t trigT0 = fESD->GetT0Trig();
+  Float_t tvdctr = tz->GetTVDC(0);
   Bool_t eq = kTRUE;
   fRunNumber =  fESD->GetRunNumber() ;
   if( fRunNumber<165747) eq = kFALSE;
@@ -166,10 +168,12 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
   const Double32_t* time = fESD->GetT0time();
   const Double32_t* amp = fESD->GetT0amplitude();
   
-  Double32_t diff;
-  for (Int_t i=0; i<24; i++) {
-    if( time[i] > 0  && amp[i]>0.1 ){
-      if (eq)	{
+  if(tvdctr>-5 && tvdctr<5 && tvdctr!=0) { //event selection
+    //    cout<<" tvdc "<<tvdctr<<endl;
+    Double32_t diff;
+    for (Int_t i=0; i<24; i++) {
+      if( time[i] > 0  && amp[i]>0.1 ){
+	if (eq)	{
 	fCFD[i]->Fill( time[i] );//////!!!!!
 	if(  time[fRefPMTC] > 0 && i<12)   {
 	  diff =  time[i]-time[fRefPMTC];
@@ -179,36 +183,34 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
 	  diff =  time[i]-time[fRefPMTA] ;
 	  fTimeDiff[i]->Fill( diff);
 	}
-      } //eq=1
-      else  {
-	fCFD[i]->Fill( time[i] + fCDBdelays[i] );
-	if(  time[fRefPMTC] > 0 && i<12) {
-	  diff =  time[i]-time[fRefPMTC] + fCDBdelays[i];
-	  fTimeDiff[i]->Fill( diff);
-	} //C
-	if(  time[fRefPMTA] >0  && i>11) {
-	  diff =  time[i]-time[fRefPMTA] + fCDBdelays[i];
-	  fTimeDiff[i]->Fill( diff);
-	} //A
-      } //eq=0
+	} //eq=1
+	else  {
+	  fCFD[i]->Fill( time[i] + fCDBdelays[i] );
+	  if(  time[fRefPMTC] > 0 && i<12) {
+	    diff =  time[i]-time[fRefPMTC] + fCDBdelays[i];
+	    fTimeDiff[i]->Fill( diff);
+	  } //C
+	  if(  time[fRefPMTA] >0  && i>11) {
+	    diff =  time[i]-time[fRefPMTA] + fCDBdelays[i];
+	    fTimeDiff[i]->Fill( diff);
+	  } //A
+	} //eq=0
+      }
+      
     }
-    
-  }
-  if (trigT0>5) {
     const Double32_t* mean = fESD->GetT0TOF();
     Double32_t meanTOF = mean[0]  +  fCDBT0s[0] ;
     Double32_t orA = mean[1]  +  fCDBT0s[1] ;
     Double32_t orC = mean[2] + fCDBT0s[2] ;
-    
+
     if(orA<99999) fTzeroORA->Fill(orA);
     if(orC<99999) fTzeroORC->Fill(orC);
     if(orA<99999 && orC<99999) fResolution->Fill((orA-orC)/2.);
     if(orA<99999 && orC<99999) fTzeroORAplusORC->Fill(meanTOF); 
   } //if TVDC on
-    //  printf("%f   %f  %f\n",orA,orC,meanTOF);
   PostData(1, fTzeroObject);
-  }      
- //________________________________________________________________________
+}      
+//________________________________________________________________________
   void AliT0CalibOffsetChannelsTask::Terminate(Option_t *) 
 {
   

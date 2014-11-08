@@ -24,7 +24,7 @@
 
 
 AliVEvent::AliVEvent(const AliVEvent& vEvnt) :
-  TObject(vEvnt) { } // Copy constructor
+  TObject(vEvnt)  { } // Copy constructor
 
 AliVEvent& AliVEvent::operator=(const AliVEvent& vEvnt)
 { if (this!=&vEvnt) { 
@@ -34,5 +34,23 @@ AliVEvent& AliVEvent::operator=(const AliVEvent& vEvnt)
   return *this; 
 }
 
+const char* AliVEvent::Whoami()
+{
+  switch (GetDataLayoutType())
+  {
+    case AliVEvent::kESD :
+      return "ESD";
+    case AliVEvent::kFlat :
+      return "Flat";
+    case AliVEvent::kAOD :
+      return "AOD";
+    case AliVEvent::kMC :
+      return "MC";
+    case AliVEvent::kMixed :
+      return "Mixed";
+    default:
+      return "unknown";
+  }
+}
 
 ClassImp(AliVEvent)

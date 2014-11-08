@@ -219,7 +219,7 @@ Bool_t AliAODCaloCluster::HasTrackMatched(TObject *trk) const
 }
 
 //_______________________________________________________________________
-void AliAODCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) {
+void AliAODCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) const {
   // Returns TLorentzVector with momentum of the cluster. Only valid for clusters 
   // identified as photons or pi0 (overlapped gamma) produced on the vertex
   //Vertex can be recovered with esd pointer doing:  

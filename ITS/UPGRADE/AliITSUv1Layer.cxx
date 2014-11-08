@@ -1421,14 +1421,14 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelInnerB22(const Double_t xsta,
       TGeoVolume *ibdv2 = new TGeoVolume("LeftVertex",trd2,medM60J3K);
       ibdv2->SetFillColor(12);
       ibdv2->SetLineColor(12);
-      mechStavVol->AddNode(ibdv2,1,new TGeoCombiTrans(x+kStaveWidth/2-0.06,y-0.0355,z,new TGeoRotation("ibdv2",-103.3,90,0))); //x-kStaveWidth/2-0.09 old Config.C y-0.0355,
+      mechStavVol->AddNode(ibdv2,1,new TGeoCombiTrans(x+kStaveWidth/2-0.06,y-0.0348,z,new TGeoRotation("ibdv2",-103.3,90,0))); //x-kStaveWidth/2-0.09 old Config.C y-0.0355,
 
       //right trd3
       TGeoTrd1 *trd3 = new TGeoTrd1(0,kSideVertexMWidth/2,kStaveLength, kSideVertexHeight/2);
       TGeoVolume *ibdv3 = new TGeoVolume("RightVertex",trd3,medM60J3K);
       ibdv3->SetFillColor(12);
       ibdv3->SetLineColor(12);
-      mechStavVol->AddNode(ibdv3,1,new TGeoCombiTrans(x-kStaveWidth/2+0.06,y-0.0355,z,new TGeoRotation("ibdv3",103.3,90,0))); //x-kStaveWidth/2+0.09 old Config.C
+      mechStavVol->AddNode(ibdv3,1,new TGeoCombiTrans(x-kStaveWidth/2+0.06,y-0.0348,z,new TGeoRotation("ibdv3",103.3,90,0))); //x-kStaveWidth/2+0.09 old Config.C
       
      //Carbon Fleece
       TGeoConeSeg *cons2 = new TGeoConeSeg(zsta,kConeOutRadius+klay1,kConeOutRadius+klay1+klay2,kConeOutRadius+klay1,kConeOutRadius+klay1+klay2,0,180); 
@@ -2087,7 +2087,7 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB1(const TGeoManager *mgr){
 				      fgkOBColdPlateThick/2, zlen);
 
   TGeoTube *coolTube   = new TGeoTube("CoolingTube", rCoolMin, rCoolMax, zlen);
-  TGeoTube *coolWater  = new TGeoTube("CoolingWater", 0.,  rCoolMin, zlen);
+  TGeoTube *coolWater  = new TGeoTube("CoolingWater", 0., rCoolMin, zlen);
 
   xlen = xHalfSt - fgkOBCoolTubeXDist/2 - coolTube->GetRmax();
   TGeoBBox *graphlat    = new TGeoBBox("GraphLateral", xlen/2, kLay2/2, zlen);
@@ -2175,8 +2175,8 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB1(const TGeoManager *mgr){
   coolTubeVol->SetFillColor(coolTubeVol->GetLineColor());
   coolTubeVol->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *coolWaterVol = new TGeoVolume("CoolingWaterVol",
-					    coolWater,medWater);
+  TGeoVolume *coolWaterVol;
+  coolWaterVol = new TGeoVolume("CoolingWaterVol", coolWater, medWater);
   coolWaterVol->SetLineColor(kBlue);
   coolWaterVol->SetFillColor(coolWaterVol->GetLineColor());
   coolWaterVol->SetFillStyle(4000); // 0% transparent
@@ -2246,10 +2246,12 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB1(const TGeoManager *mgr){
 
   // Now build up the half stave
   ypos = - busKap->GetDY();
-  halfStaveVol->AddNode(busKapVol, 1, new TGeoTranslation(0, ypos, 0));
+  if (fBuildLevel < 4) // 4 = Kapton
+    halfStaveVol->AddNode(busKapVol, 1, new TGeoTranslation(0, ypos, 0));
 
   ypos -= (busKap->GetDY() + busAl->GetDY());
-  halfStaveVol->AddNode(busAlVol, 1, new TGeoTranslation(0, ypos, 0));
+  if (fBuildLevel < 1) // 1 = Aluminum
+    halfStaveVol->AddNode(busAlVol, 1, new TGeoTranslation(0, ypos, 0));
 
   ypos -= (busAl->GetDY() + ymod);
   for (Int_t j=0; j<fNModules; j++) {
@@ -2259,52 +2261,62 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB1(const TGeoManager *mgr){
   }
 
   ypos -= (ymod + coldPlate->GetDY());
-  halfStaveVol->AddNode(coldPlateVol, 1, new TGeoTranslation(0, ypos, 0));
-
-  coolTubeVol->AddNode(coolWaterVol, 1, 0);
+  if (fBuildLevel < 5) // 5 = Carbon
+    halfStaveVol->AddNode(coldPlateVol, 1, new TGeoTranslation(0, ypos, 0));
 
   xpos = fgkOBCoolTubeXDist/2;
   ypos1 = ypos - (coldPlate->GetDY() + coolTube->GetRmax());
-  halfStaveVol->AddNode(coolTubeVol, 1, new TGeoTranslation(-xpos, ypos1, 0));
-  halfStaveVol->AddNode(coolTubeVol, 2, new TGeoTranslation( xpos, ypos1, 0));
+  if (fBuildLevel < 3) { // 3 = Water
+    halfStaveVol->AddNode(coolWaterVol, 1, new TGeoTranslation(-xpos, ypos1, 0));
+    halfStaveVol->AddNode(coolWaterVol, 2, new TGeoTranslation( xpos, ypos1, 0));
+  }
+  if (fBuildLevel < 4) { // 4 = Kapton
+    halfStaveVol->AddNode(coolTubeVol,1, new TGeoTranslation(-xpos, ypos1, 0));
+    halfStaveVol->AddNode(coolTubeVol,2, new TGeoTranslation( xpos, ypos1, 0));
+  }
 
-  halfStaveVol->AddNode(graphtubVol, 1, new TGeoTranslation(-xpos, ypos1, 0));
-  halfStaveVol->AddNode(graphtubVol, 2, new TGeoTranslation( xpos, ypos1, 0));
+  if (fBuildLevel < 5) { // 5 = Carbon
+    halfStaveVol->AddNode(graphtubVol,1, new TGeoTranslation(-xpos, ypos1, 0));
+    halfStaveVol->AddNode(graphtubVol,2, new TGeoTranslation( xpos, ypos1, 0));
 
-  halfStaveVol->AddNode(fleectubVol, 1, new TGeoTranslation(-xpos, ypos1, 0));
-  halfStaveVol->AddNode(fleectubVol, 2, new TGeoTranslation( xpos, ypos1, 0));
+    halfStaveVol->AddNode(fleectubVol,1, new TGeoTranslation(-xpos, ypos1, 0));
+    halfStaveVol->AddNode(fleectubVol,2, new TGeoTranslation( xpos, ypos1, 0));
+  }
 
   xpos = xHalfSt - graphlat->GetDX();
   ypos1 = ypos - (coldPlate->GetDY() + graphlat->GetDY());
-  halfStaveVol->AddNode(graphlatVol, 1, new TGeoTranslation(-xpos, ypos1, 0));
-  halfStaveVol->AddNode(graphlatVol, 2, new TGeoTranslation( xpos, ypos1, 0));
+  if (fBuildLevel < 5) { // 5 = Carbon
+    halfStaveVol->AddNode(graphlatVol,1, new TGeoTranslation(-xpos, ypos1, 0));
+    halfStaveVol->AddNode(graphlatVol,2, new TGeoTranslation( xpos, ypos1, 0));
 
-  halfStaveVol->AddNode(graphmidVol, 1, new TGeoTranslation(0, ypos1, 0));
+    halfStaveVol->AddNode(graphmidVol,1, new TGeoTranslation(0, ypos1, 0));
 
-  xpos = xHalfSt - 2*graphlat->GetDX() + graphvert->GetDX();
-  ypos1 = ypos - (coldPlate->GetDY() +2*graphlat->GetDY() +graphvert->GetDY());
-  halfStaveVol->AddNode(graphvertVol, 1, new TGeoTranslation(-xpos, ypos1, 0));
-  halfStaveVol->AddNode(graphvertVol, 2, new TGeoTranslation( xpos, ypos1, 0));
-  xpos = graphmid->GetDX() - graphvert->GetDX();
-  halfStaveVol->AddNode(graphvertVol, 3, new TGeoTranslation(-xpos, ypos1, 0));
-  halfStaveVol->AddNode(graphvertVol, 4, new TGeoTranslation( xpos, ypos1, 0));
+    xpos = xHalfSt - 2*graphlat->GetDX() + graphvert->GetDX();
+    ypos1 = ypos - (coldPlate->GetDY()+2*graphlat->GetDY()+graphvert->GetDY());
+    halfStaveVol->AddNode(graphvertVol,1,new TGeoTranslation(-xpos, ypos1, 0));
+    halfStaveVol->AddNode(graphvertVol,2,new TGeoTranslation( xpos, ypos1, 0));
+    xpos = graphmid->GetDX() - graphvert->GetDX();
+    halfStaveVol->AddNode(graphvertVol,3,new TGeoTranslation(-xpos, ypos1, 0));
+    halfStaveVol->AddNode(graphvertVol,4,new TGeoTranslation( xpos, ypos1, 0));
+  }
 
   xpos = xHalfSt - fleeclat->GetDX();
   ypos1 = ypos - (coldPlate->GetDY() +2*graphlat->GetDY() +fleeclat->GetDY());
-  halfStaveVol->AddNode(fleeclatVol, 1, new TGeoTranslation(-xpos, ypos1, 0));
-  halfStaveVol->AddNode(fleeclatVol, 2, new TGeoTranslation( xpos, ypos1, 0));
+  if (fBuildLevel < 5) { // 5 = Carbon
+    halfStaveVol->AddNode(fleeclatVol,1, new TGeoTranslation(-xpos, ypos1, 0));
+    halfStaveVol->AddNode(fleeclatVol,2, new TGeoTranslation( xpos, ypos1, 0));
 
-  halfStaveVol->AddNode(fleecmidVol, 1, new TGeoTranslation(0, ypos1, 0));
+    halfStaveVol->AddNode(fleecmidVol, 1, new TGeoTranslation(0, ypos1, 0));
 
-  xpos = xHalfSt - 2*fleeclat->GetDX() + fleecvert->GetDX();
-  ypos1 = ypos - (coldPlate->GetDY() +2*graphlat->GetDY()
-               + 2*fleeclat->GetDY() + fleecvert->GetDY());
-  halfStaveVol->AddNode(fleecvertVol, 1, new TGeoTranslation(-xpos, ypos1, 0));
-  halfStaveVol->AddNode(fleecvertVol, 2, new TGeoTranslation( xpos, ypos1, 0));
-  xpos = fleecmid->GetDX() - fleecvert->GetDX();
-  halfStaveVol->AddNode(fleecvertVol, 3, new TGeoTranslation(-xpos, ypos1, 0));
-  halfStaveVol->AddNode(fleecvertVol, 4, new TGeoTranslation( xpos, ypos1, 0));
-
+    xpos = xHalfSt - 2*fleeclat->GetDX() + fleecvert->GetDX();
+    ypos1 = ypos - (coldPlate->GetDY() +2*graphlat->GetDY()
+                 + 2*fleeclat->GetDY() + fleecvert->GetDY());
+    halfStaveVol->AddNode(fleecvertVol,1,new TGeoTranslation(-xpos, ypos1, 0));
+    halfStaveVol->AddNode(fleecvertVol,2,new TGeoTranslation( xpos, ypos1, 0));
+    xpos = fleecmid->GetDX() - fleecvert->GetDX();
+    halfStaveVol->AddNode(fleecvertVol,3,new TGeoTranslation(-xpos, ypos1, 0));
+    halfStaveVol->AddNode(fleecvertVol,4,new TGeoTranslation( xpos, ypos1, 0));
+  }
 
 
   //THE FOLLOWING IS ONLY A REMINDER FOR WHAT IS STILL MISSING
@@ -2777,10 +2789,12 @@ TGeoVolume* AliITSUv1Layer::CreateModuleOuterB(const TGeoManager *mgr){
 
   // Now build up the module
   ypos = -module->GetDY() + modPlate->GetDY();
-  modVol->AddNode(modPlateVol, 1, new TGeoTranslation(0, ypos, 0));
+  if (fBuildLevel < 5) // 5 = Carbon
+    modVol->AddNode(modPlateVol, 1, new TGeoTranslation(0, ypos, 0));
 
   ypos += (modPlate->GetDY() + glue->GetDY());
-  modVol->AddNode(glueVol, 1, new TGeoTranslation(0, ypos, 0));
+  if (fBuildLevel < 2) // 2 = Glue
+    modVol->AddNode(glueVol, 1, new TGeoTranslation(0, ypos, 0));
 
   xpos = -module->GetDX() + xchip;
   ypos += (glue->GetDY() + ychip);
@@ -2794,10 +2808,12 @@ TGeoVolume* AliITSUv1Layer::CreateModuleOuterB(const TGeoManager *mgr){
     }
 
   ypos += (ychip + flexAl->GetDY());
-  modVol->AddNode(flexAlVol, 1, new TGeoTranslation(0, ypos, 0));
+  if (fBuildLevel < 1) // 1 = Aluminum
+    modVol->AddNode(flexAlVol, 1, new TGeoTranslation(0, ypos, 0));
 
   ypos += (flexAl->GetDY() + flexKap->GetDY());
-  modVol->AddNode(flexKapVol, 1, new TGeoTranslation(0, ypos, 0));
+  if (fBuildLevel < 4) // 4 = Kapton
+    modVol->AddNode(flexKapVol, 1, new TGeoTranslation(0, ypos, 0));
   
 
   // Done, return the module

@@ -1460,7 +1460,12 @@ int AliHLTGlobalTriggerComponent::LoadTriggerClass(
   HLTDebug("Loading HLT trigger class from file '%s'.", filename);
   
   TString compiler = gSystem->GetBuildCompilerVersion();
-  if (fRuntimeCompile && (compiler.Contains("gcc") || compiler.Contains("icc") || compiler.Contains("clang")))
+  if (fRuntimeCompile 
+      && (compiler.Contains("gcc") 
+	  || compiler.Contains("icc") 
+	  || compiler.Contains("clang")
+	  || compiler.Contains("c++")
+	  ))
   {
     TString includePath;
 #if defined(PKGINCLUDEDIR)

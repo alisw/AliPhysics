@@ -498,10 +498,7 @@ AliVParticle* AliMCEvent::GetTrack(Int_t i) const
     //
 
     if (fExternal) {
-       
-  
 	return ((AliVParticle*) (fMCParticles->At(i)));
-  
     }
     
     //
@@ -965,7 +962,7 @@ void AliMCEvent::AssignGeneratorIndex(Int_t index, Int_t dmin, Int_t dmax) {
    }
    
    return 1;
-   }
+}
 
 void  AliMCEvent::SetParticleArray(TClonesArray* mcParticles) 
   {
@@ -993,5 +990,9 @@ void  AliMCEvent::SetParticleArray(TClonesArray* mcParticles)
     AssignGeneratorIndex();
   }
 
+AliVEvent::EDataLayoutType AliMCEvent::GetDataLayoutType() const
+{
+  return AliVEvent::kMC;
+}
 
 ClassImp(AliMCEvent)

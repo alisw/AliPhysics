@@ -44,6 +44,7 @@ private:
 
 	void onServerListEvents();
 	void onServerMarkEvent();
+    void onServerMarkAllEvents();
 	void onServerGetEvent();
 	void onClientSetParams();
 	void onServerGetNextEvent();

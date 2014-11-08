@@ -113,4 +113,5 @@
 
 #pragma link C++ class  AliTRDrecoParam+;
 #pragma link C++ class  AliTRDSimParam+;
+
 #endif

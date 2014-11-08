@@ -77,6 +77,7 @@
 //      In specical cases a track  snapshots (AliExternalTrackParam) are stored
 //
 // 
+//
 //      For some type of analysis (+visualization) track local parameters at 
 //      different position are neccesary. A snapshots during the track 
 //      propagation are created and stored either in track itself (for analysis purposes) or assiciated friend track (for calibration and debugging purposes)
@@ -131,6 +132,8 @@
 //              b.) Visualization
 //              c.) QA
 //         NOTICE: Should be not used for the physic analysis
+//         Function:
+//            const AliExternalTrackParam *GetOuterParam() const { return fOp;}
 //
 //-----------------------------------------------------------------
 

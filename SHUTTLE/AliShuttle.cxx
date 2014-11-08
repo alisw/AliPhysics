@@ -1969,7 +1969,7 @@ Bool_t AliShuttle::QueryShuttleLogbook(const char* whereClause,
 	}
 
 	// TODO Check field count!
-	const UInt_t nCols = 26;
+	const UInt_t nCols = 27;
 	if (aResult->GetFieldCount() != (Int_t) nCols) {
 		Log("SHUTTLE", "Invalid SQL result field number!");
 		delete aResult;
@@ -2140,19 +2140,25 @@ TMap* AliShuttle::GetValueSet(const char* host, Int_t port, const TSeqCollection
 	AliDCSClient client(host, port, fTimeout, fRetries, multiSplit);
 
 	TMap* result = 0;
+	UInt_t startQuery = GetStartTimeDCSQuery();
+	UInt_t endQuery = GetEndTimeDCSQuery();
+	if (fCurrentDetector == "GRP" && (endQuery - startQuery) <= 120) { // enlarging DCS query for GRP when a run is shorter than 2 minutes (i.e. the time of forced archival of GRP DPs)
+	  Log(fCurrentDetector.Data(), Form("GetValueSet: run lasting less than 120 seconds, enlarging DCS window for DPs retrival to 130 s"));
+	  startQuery = endQuery - 130; // we add 130 s to be sure that there is something (even if the archival is forced after 120 s)
+	}
+
 	if (type == kAlias)
 	{
 		//result = client.GetAliasValues(entries, GetCurrentStartTime()-offset, 
 		//      GetCurrentEndTime()+offset);
-		result = client.GetAliasValues(entries, GetStartTimeDCSQuery(), 
-			GetEndTimeDCSQuery());
+
+		result = client.GetAliasValues(entries, startQuery, endQuery);	       
 	} 
 	else if (type == kDP)
 	{
 		//result = client.GetDPValues(entries, GetCurrentStartTime()-offset, 
 		//	GetCurrentEndTime()+offset);
-       		result = client.GetDPValues(entries, GetStartTimeDCSQuery(), 
-			GetEndTimeDCSQuery());
+       		result = client.GetDPValues(entries, startQuery, endQuery);
 	}
 
 	if (result == 0)

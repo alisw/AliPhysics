@@ -254,7 +254,7 @@ void AliESDRun::Reset()
 }
 
 //______________________________________________________________________________
-void AliESDRun::SetTriggerClass(const char*name, Int_t index)
+void AliESDRun::SetTriggerClass(const char* name, Int_t index)
 {
   // Fill the trigger class name
   // into the corresponding array
@@ -304,9 +304,9 @@ TString AliESDRun::GetFiredTriggerClasses(ULong64_t mask) const
   // list of trigger classes that
   // have been fired. Uses the trigger
   // class mask as an argument.
-  // Works both for first50 and next50 classes
+  // Works for first50
   TString trclasses;
-  for(Int_t i = 0; i < kNTriggerClasses; i++) {
+  for(Int_t i = 0; i < kNTriggerClasses/2; i++) {
     if (mask & (1ull << i)) {
       TNamed *str = (TNamed *)((fTriggerClasses).At(i));
       if (str) {
@@ -319,7 +319,27 @@ TString AliESDRun::GetFiredTriggerClasses(ULong64_t mask) const
 
   return trclasses;
 }
-
+//______________________________________________________________________________
+TString AliESDRun::GetFiredTriggerClassesNext50(ULong64_t mask) const
+{
+  // Constructs and returns the
+  // list of trigger classes that
+  // have been fired. Uses the trigger
+  // class mask as an argument.
+  // Works for next50 classes
+  TString trclasses;
+  for(Int_t i = 0; i < kNTriggerClasses/2; i++) {
+    if (mask & (1ull << i)) {
+      TNamed *str = (TNamed *)((fTriggerClasses).At(i+50));
+      if (str) {
+	trclasses += " ";
+	trclasses += str->GetName();
+      trclasses += " ";
+      }
+    }
+  }
+  return trclasses;
+}
 //______________________________________________________________________________
 TString AliESDRun::GetFiredTriggerClasses(ULong64_t masklow,ULong64_t maskhigh) const
 {
@@ -327,10 +347,25 @@ TString AliESDRun::GetFiredTriggerClasses(ULong64_t masklow,ULong64_t maskhigh) 
  TString trclasseslow;
  trclasseslow  = GetFiredTriggerClasses(masklow);
  TString trclasseshigh;
- trclasseshigh  = GetFiredTriggerClasses(maskhigh);
+ trclasseshigh  = GetFiredTriggerClassesNext50(maskhigh);
  TString trclasses;
  trclasses = trclasseslow+trclasseshigh;
  return trclasses;
+}
+//______________________________________________________________________________
+void AliESDRun::PrintAllTriggerClasses() const
+{
+  TString trclasses;
+  for(Int_t i = 0; i < kNTriggerClasses; i++) {
+      TNamed *str = (TNamed *)((fTriggerClasses).At(i));
+      if (str) {
+        printf("%03i:",i+1);
+	printf("%s ",str->GetName());
+      }else{
+	//printf("NO ");
+      }
+  }
+  printf("\n");
 }
 //______________________________________________________________________________
 Bool_t AliESDRun::IsTriggerClassFired(ULong64_t mask, const char *name) const

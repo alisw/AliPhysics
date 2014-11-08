@@ -2,14 +2,19 @@ AliGenerator *AddMCGenAmpt(
 			   Double_t Energy      = 2760.,   // CM energy 
 			   Double_t bmin        = 0.0,     // minimum impact parameter
 			   Double_t bmax        = 20.0,    // maximum impact parameter
+			   Double_t ptHardMin   = 3.0,     // minimum pt hard (was 3.0 in previous AMPT productions)
 			   Bool_t stringMelting = kTRUE,   // string melting option 
 			   Bool_t useART        = kTRUE,   // use hadronic rescattering phase (ART)
+			   Bool_t pAcollisions  = kFALSE   // pA instead of AA collisions 
 			   )
 {
   // User defined generator
 
   gSystem->Load("libampt.so");       
   gSystem->Load("libTAmpt.so");
+  gSystem->Load("libEGPythia6"); 
+  gSystem->Load("libpythia6.so");
+  gSystem->Load("libAliPythia6.so");
 
 
   AliGenAmpt *genAMPT = new AliGenAmpt(-1);
@@ -27,6 +32,9 @@ AliGenerator *AddMCGenAmpt(
   
   if(!useART)
     NTmax = 3;
+
+  if(pAcollisions)
+    NTmax = 1500; // this was used in earlier productions for p-Pb
   //=========================================================================
 
 
@@ -40,8 +48,11 @@ AliGenerator *AddMCGenAmpt(
   genAMPT->SetEnergyCMS(Energy);
   genAMPT->SetReferenceFrame("CMS");
   genAMPT->SetProjectile("A", 208, 82);
-  genAMPT->SetTarget    ("A", 208, 82);
-  genAMPT->SetPtHardMin (2);
+  if(pAcollisions)
+        genAMPT->SetTarget("P", 1, 1);
+  else
+    genAMPT->SetTarget("A", 208, 82);
+  genAMPT->SetPtHardMin (ptHardMin);
   genAMPT->SetImpactParameterRange(bmin,bmax);
   //=========================================================================
 

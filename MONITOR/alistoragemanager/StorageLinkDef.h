@@ -13,6 +13,9 @@
 
 #pragma link C++ class AliStorageDatabase+;
 #pragma link C++ class AliStorageClientThread+;
+#pragma link C++ class AliDIMListenerThread+;
+#pragma link C++ class AliEventsCollectorThread+;
+#pragma link C++ class AliCommunicationThread+;
 #pragma link C++ class AliStorageServerThread+;
 #pragma link C++ class AliStorageEventManager+;     
 #pragma link C++ class AliStorageAdministratorPanel+;

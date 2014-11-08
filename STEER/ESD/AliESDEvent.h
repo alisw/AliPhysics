@@ -47,10 +47,10 @@
 #include "AliESDTOFCluster.h"
 #include "AliESDTOFHit.h"
 #include "AliESDTOFMatch.h"
+#include "AliESDfriend.h"
+#include "AliESDv0.h"
 
-
-
-class AliESDfriend;
+class AliESDkink;
 class AliESDHLTtrack;
 class AliESDVertex;
 class AliESDPmdTrack;
@@ -280,8 +280,7 @@ public:
 
   void SetESDfriend(const AliESDfriend *f) const;
   void GetESDfriend(AliESDfriend *f) const;
-
-
+  virtual AliESDfriend* FindFriend() const;
 
   void SetPrimaryVertexTPC(const AliESDVertex *vertex); 
   const AliESDVertex *GetPrimaryVertexTPC() const {return fTPCVertex;}
@@ -299,6 +298,30 @@ public:
 
   const AliESDVertex *GetPrimaryVertex() const;
 
+  //getters for calibration
+  Int_t GetPrimaryVertex (AliESDVertex &v) const {
+      if(!GetPrimaryVertex()) return -1;
+      v=*GetPrimaryVertex();
+      return 0;
+  }
+
+  Int_t GetPrimaryVertexTPC (AliESDVertex &v) const {
+      if(!GetPrimaryVertexTPC()) return -1;
+      v=*GetPrimaryVertexTPC();
+      return 0;
+  }
+
+  Int_t GetPrimaryVertexSPD (AliESDVertex &v) const {
+      if(!GetPrimaryVertexSPD()) return -1;
+      v=*GetPrimaryVertexSPD();
+      return 0;
+  }
+
+  Int_t GetPrimaryVertexTracks (AliESDVertex &v) const {
+      if(!GetPrimaryVertexTracks()) return -1;
+      v=*GetPrimaryVertexTracks();
+      return 0;
+  }
 
 
   void SetTOFHeader(const AliTOFHeader * tofEventTime);
@@ -350,6 +373,8 @@ public:
 
   AliESDtrack *GetTrack(Int_t i) const {return (fTracks)?(AliESDtrack*)fTracks->At(i) : 0;}
   Int_t  AddTrack(const AliESDtrack *t);
+
+  AliESDtrack *GetVTrack(Int_t i) const {return GetTrack(i);}
 
   /// add new track at the end of tracks array and return instance
   AliESDtrack* NewTrack();
@@ -418,9 +443,16 @@ public:
   void AddTrdTracklet(const AliESDTrdTracklet *trkl);
   void AddTrdTracklet(UInt_t trackletWord, Short_t hcid, Int_t label = -1);
 
+  using AliVEvent::GetV0;
   AliESDv0 *GetV0(Int_t i) const {
     return (AliESDv0*)(fV0s?fV0s->At(i):0x0);
   }
+
+  Int_t GetV0(AliESDv0 &v0dum, Int_t i) const {
+      if(!GetV0(i)) return -1;
+      v0dum=*GetV0(i);
+      return 0;}
+
   Int_t AddV0(const AliESDv0 *v);
 
   AliESDcascade *GetCascade(Int_t i) const {
@@ -531,6 +563,9 @@ public:
   void SetDAQAttributes(UInt_t attributes) {fDAQAttributes = attributes;}
   UInt_t GetDAQDetectorPattern() const {return fDAQDetectorPattern;}
   UInt_t GetDAQAttributes() const {return fDAQAttributes;}
+
+  virtual AliVEvent::EDataLayoutType GetDataLayoutType() const;
+
 protected:
   AliESDEvent(const AliESDEvent&);
   static Bool_t ResetWithPlacementNew(TObject *pObject);

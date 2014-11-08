@@ -108,6 +108,7 @@
 #include "AliShuttleTrigger.h"
 
 #include <TSystem.h>
+#include <TGrid.h>
 #include <TObjString.h>
 
 #include "AliLog.h"
@@ -247,9 +248,21 @@ void AliShuttleTrigger::Run() {
 		fMutex.Lock();
 
 		while (!(fNotified || fTerminate)) {
-			received=fCondition.TimedWaitRelative(1000*fConfig->GetTriggerWait());
-			CheckTerminate();
-			if (received==1) break; // 1 = timeout
+		  for (Int_t iwait = 0; iwait < 10; iwait++){
+		    received = fCondition.TimedWaitRelative(1000*fConfig->GetTriggerWait()/10); // to keep the connection to the server alive every minute while waiting for new runs
+		    if (received == 1) {
+		      if (gGrid) {
+			AliInfo(Form("Keeping the connection to the server alive while waiting for new runs - %d waited from last one", fConfig->GetTriggerWait()/10*iwait));
+			gGrid->Pwd();
+		      }
+		      else {
+			AliInfo("No gGrid initialized so far, we cannot keep the connection to the server alive while waiting for new runs");
+		      }
+		    }
+		  }
+		  //received=fCondition.TimedWaitRelative(1000*fConfig->GetTriggerWait());
+		  CheckTerminate();
+		  if (received==1) break; // 1 = timeout
 		}
 
 		fNotified = kFALSE;
@@ -372,7 +385,7 @@ Bool_t AliShuttleTrigger::SendMailDiskSpace(Short_t percentage)
 	  to.Remove(to.Length()-1);
 	AliDebug(2, Form("to: %s",to.Data()));
 
-	// mail body 
+ 	// mail body 
   	TString bodyFileName;
   	bodyFileName.Form("%s/mail.body", fShuttle->GetShuttleLogDir());
   	gSystem->ExpandPathName(bodyFileName);

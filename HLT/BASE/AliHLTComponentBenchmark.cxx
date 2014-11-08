@@ -120,3 +120,23 @@ const char *AliHLTComponentBenchmark::GetStatistics()
   fStatistics+=")";
   return fStatistics.Data();
 }
+
+
+void AliHLTComponentBenchmark::GetStatisticsData( Double_t* statistics, TString* names )
+{
+  // !
+  if( fNEvents<=0 ) return ;
+
+  statistics[0] = fNEvents;
+  statistics[1] = fTotalInput/fNEvents;
+  statistics[2] = fTotalOutput/fNEvents;
+  
+  if( fNTimers<=0 ) return ;
+  
+  for( int i=0; i<fNTimers; i++ ){
+	names[i] = fNames[i];
+    statistics[3+i] = fTotalRealTime[i]/fNEvents*1.e3;
+	statistics[4+i] = fTotalCPUTime[i]/fNEvents*1.e3;    
+  }
+  return ;
+}

@@ -167,7 +167,7 @@ void AliGenExtFile::Generate()
        map<Int_t,Bool_t> selectedIdMap;
        map<Int_t,Int_t> newIdMap;
        void selectMothersToo(Int_t particleId) {
-          Int_t mum1 = firstMotherMap[particleId];
+	 Int_t mum1 = firstMotherMap[particleId];
           if (mum1 > -1 && !selectedIdMap[mum1]) {
              selectedIdMap[mum1] = true;
              selectMothersToo(mum1);
@@ -179,7 +179,8 @@ void AliGenExtFile::Generate()
           }
        }
     public:
-       void init() {
+      SelectorLogic():idCount(0), firstMotherMap(), secondMotherMap(), selectedIdMap(), newIdMap() {}
+      void init() {
           idCount = 0;
        }
        void setData(Int_t id, Int_t mum1, Int_t mum2, Bool_t selected) {
@@ -194,10 +195,10 @@ void AliGenExtFile::Generate()
                 selectMothersToo(id);
              }
           }
-          Int_t newId = 0;
+          Int_t newId0 = 0;
           for (Int_t id = 0; id < idCount; id++) {
              if (selectedIdMap[id]) {
-                newIdMap[id] = newId; ++newId;
+                newIdMap[id] = newId0; ++newId0;
              } else {
                 newIdMap[id] = -1;
              }
