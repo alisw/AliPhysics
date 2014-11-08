@@ -137,7 +137,6 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   out6name+= finDirname.Data();
   out7name+= finDirname.Data();
   out8name+= finDirname.Data();
-
  
   AliAnalysisTaskSEHFQA* taskQA=new AliAnalysisTaskSEHFQA(Form("QA%s",suffix.Data()),ch,analysiscuts);
 
@@ -156,7 +155,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   AliAnalysisDataContainer *cinput = mgr->CreateContainer(inname,TChain::Class(), AliAnalysisManager::kInputContainer);
   mgr->ConnectInput(taskQA,0,mgr->GetCommonInputContainer());
 
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(out1name,TH1F::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //events analysed
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(out1name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //events analysed
   mgr->ConnectOutput(taskQA,1,coutput1);
 
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(out2name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //PID

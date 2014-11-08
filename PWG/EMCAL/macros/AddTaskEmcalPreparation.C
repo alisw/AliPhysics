@@ -1,5 +1,5 @@
 AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
-					   const char *pass    = 0 /*should not be needed*/
+					   const char *pass    = 0 /*should not be needed; will be recovered from path of AOD/ESD; no need to specify by user; */
 					   ) {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

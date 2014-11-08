@@ -161,7 +161,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		
 		// Cut Selection
 		Bool_t 		EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent);
-		Int_t 		IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVEvent *InputEvent, AliMCEvent *MCEvent, Int_t isHeavyIon);
+		Int_t 		IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVEvent *InputEvent, AliMCEvent *MCEvent, Int_t isHeavyIon, Bool_t isEMCALAnalysis);
 			
 		void 		PrintCuts();
 		void 		PrintCutsWithValues();

@@ -107,7 +107,7 @@ AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.roo
   hfTask->SetAnalysisLevel(analysLevel);
 
   hfTask->SetCheckBitD0flag(checkBitD0);
-  if(readMC&&useWeight)hfTask->SetPtWeightsFromDataPbPb276overLHC12a17a();
+  if(readmc&&useWeight)hfTask->SetPtWeightsFromDataPbPb276overLHC12a17a();
   // hfTask->SignalInvMassCut(0.27);
 
   /*  ############### HERE THE POSSIBILITY TO SWITCH ON/OFF THE TLISTS AND MC SELECTION WILL BE SET #########à

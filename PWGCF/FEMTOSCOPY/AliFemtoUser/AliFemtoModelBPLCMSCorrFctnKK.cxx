@@ -13,7 +13,7 @@
 #include "AliFemtoAnalysisReactionPlane.h"
 #include <cstdio>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoModelBPLCMSCorrFctnKK)
 #endif
 
@@ -155,13 +155,13 @@ TList* AliFemtoModelBPLCMSCorrFctnKK::GetOutputList()
   // Prepare the list of objects to be written to the output
   TList *tOutputList = AliFemtoModelCorrFctn::GetOutputList();
 
-  tOutputList->Add(fNumerator3DTrue); 
-  tOutputList->Add(fNumerator3DFake);  
-  tOutputList->Add(fDenominator3D);  
-  tOutputList->Add(fNumerator3DTrueIdeal); 
-  tOutputList->Add(fNumerator3DFakeIdeal);  
-  tOutputList->Add(fDenominator3DIdeal);  
-  tOutputList->Add(fQinvHisto);  
+  tOutputList->Add(fNumerator3DTrue);
+  tOutputList->Add(fNumerator3DFake);
+  tOutputList->Add(fDenominator3D);
+  tOutputList->Add(fNumerator3DTrueIdeal);
+  tOutputList->Add(fNumerator3DFakeIdeal);
+  tOutputList->Add(fDenominator3DIdeal);
+  tOutputList->Add(fQinvHisto);
 
   return tOutputList;
 }
@@ -193,7 +193,7 @@ AliFemtoString AliFemtoModelBPLCMSCorrFctnKK::Report(){
       stemp += ctemp;
   */
 
-  //  
+  //
   AliFemtoString returnThis = stemp;
   return returnThis;
 }
@@ -204,7 +204,7 @@ void AliFemtoModelBPLCMSCorrFctnKK::AddRealPair( AliFemtoPair* pair)
   if (fPairCut){
     if (fUseRPSelection) {
       AliFemtoKTPairCut *ktc = dynamic_cast<AliFemtoKTPairCut *>(fPairCut);
-      if (!ktc) { 
+      if (!ktc) {
 	cout << "RP aware cut requested, but not connected to the CF" << endl;
 	if (!(fPairCut->Pass(pair))) return;
       }
@@ -223,13 +223,13 @@ void AliFemtoModelBPLCMSCorrFctnKK::AddRealPair( AliFemtoPair* pair)
 //   if (fPairCut){
 //     if (!(fPairCut->Pass(pair))) return;
 //   }
-  
+
   Double_t weight = fManager->GetWeight(pair);
 
   double qOut = (pair->QOutCMS());
   double qSide = (pair->QSideCMS());
   double qLong = (pair->QLongCMS());
-  
+
   double qOutTrue = GetQoutTrue(pair);
   double qSideTrue = GetQsideTrue(pair);
   double qLongTrue =  GetQlongTrue(pair);
@@ -247,7 +247,7 @@ void AliFemtoModelBPLCMSCorrFctnKK::AddMixedPair( AliFemtoPair* pair){
   if (fPairCut){
     if (fUseRPSelection) {
       AliFemtoKTPairCut *ktc = dynamic_cast<AliFemtoKTPairCut *>(fPairCut);
-      if (!ktc) { 
+      if (!ktc) {
 	cout << "RP aware cut requested, but not connected to the CF" << endl;
 	if (!(fPairCut->Pass(pair))) return;
       }
@@ -291,7 +291,7 @@ AliFemtoModelCorrFctn* AliFemtoModelBPLCMSCorrFctnKK::Clone()
 {
   // Clone the correlation function
   AliFemtoModelBPLCMSCorrFctnKK *tCopy = new AliFemtoModelBPLCMSCorrFctnKK(*this);
-  
+
   return tCopy;
 }
 
@@ -340,7 +340,7 @@ Double_t AliFemtoModelBPLCMSCorrFctnKK::GetQoutTrue(AliFemtoPair* aPair)
 
   // AliFemtoLorentzVector fm1;
   AliFemtoThreeVector* tmp1 = inf1->GetTrueMomentum();
-  /* 
+  /*
  fm1.SetVect(*tmp1);
   double ener = TMath::Sqrt(tmp1->Mag2()+(aPair->Track1()->Track()->GetMass())*(aPair->Track1()->Track()->GetMass()));
   fm1.SetE(ener);
@@ -354,7 +354,7 @@ Double_t AliFemtoModelBPLCMSCorrFctnKK::GetQoutTrue(AliFemtoPair* aPair)
   */
     double dx = tmp1->x() - tmp2->x();
     double xt = tmp1->x() + tmp2->x();
-    
+
     double dy = tmp1->y() - tmp2->y();
     double yt = tmp1->y() + tmp2->y();
 
@@ -381,13 +381,13 @@ Double_t AliFemtoModelBPLCMSCorrFctnKK::GetQsideTrue(AliFemtoPair* aPair)
   AliFemtoThreeVector* tmp2 = inf2->GetTrueMomentum();
 
   // relative momentum side component in lab frame
-   
+
     double x1 = tmp1->x();  double y1 = tmp1->y();
     double x2 = tmp2->x();  double y2 = tmp2->y();
 
     double xt = x1+x2;  double yt = y1+y2;
     double k1 = ::sqrt(xt*xt+yt*yt);
-    
+
     double tmp;
     if(k1!=0) tmp= 2.0*(x2*y1-x1*y2)/k1;
     else tmp=0;

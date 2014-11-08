@@ -1208,8 +1208,8 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
   float v0ACentr  = -999.;
   float trkCentr = -999.;
   float spdCentr = -999.;
-  float vertexX  = -999;
-  float vertexY  = -999;
+  //float vertexX  = -999;
+  //float vertexY  = -999;
   float vertexZ  = -999;
   //float vertexXY = -999;
 
@@ -1256,8 +1256,8 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 
       if(vertex->GetNContributors() > 0)
         {
-          vertexX = vertex->GetX();
-          vertexY = vertex->GetY();
+          //vertexX = vertex->GetX();
+          //vertexY = vertex->GetY();
           vertexZ = vertex->GetZ();
           //vertexXY = sqrt(vertexX*vertexX+vertexY*vertexY);
         }

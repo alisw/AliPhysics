@@ -1259,6 +1259,20 @@ Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t 
       if(im==0) rd=0;
       if(im>0) rd=fRandom->Integer(im);
       index=triggers[rd];
+       AliVParticle *tr1 = (AliVParticle*)list->At(index);     
+      
+    
+
+      for(Int_t kk=0;kk<number;kk++){
+	if(kk==rd) continue;
+	Int_t lab=triggers[kk];
+         AliVParticle *tr2 = (AliVParticle*)list->At(lab);     
+       
+       Double_t detat=tr1->Eta()-tr2->Eta();
+       Double_t dphit=RelativePhi(tr1->Phi(),tr2->Phi());
+	Double_t deltaRt=TMath::Sqrt(detat*detat+dphit*dphit);
+     
+        if(deltaRt>0.4) number=number-1;}      
 
      
   

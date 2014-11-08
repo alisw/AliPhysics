@@ -1405,13 +1405,21 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
     if(GetReader()->ReadStack())
     {
       stack =  GetMCStack() ;
-      if ( !stack )       AliFatal("Stack not available, is the MC handler called? STOP");
+      if ( !stack )
+      {
+        AliFatal("Stack not available, is the MC handler called? STOP");
+        return;
+      }
     }
     else if(GetReader()->ReadAODMCParticles())
     {
       //Get the list of MC particles
       mcparticles = GetReader()->GetAODMCParticles();
-      if ( !mcparticles ) AliFatal("Standard MCParticles not available! STOP");
+      if ( !mcparticles )
+      {
+        AliFatal("Standard MCParticles not available! STOP");
+        return;
+      }
     }
   }// is data and MC
   
@@ -1470,7 +1478,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       
       Float_t eprim   = 0;
       //Float_t ptprim  = 0;
-      if(GetReader()->ReadStack())
+      if( GetReader()->ReadStack() )
       {
         if(label >=  stack->GetNtrack())
         {
@@ -1489,22 +1497,15 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
         //ptprim  = primary->Pt();
         
       }
-      else if(GetReader()->ReadAODMCParticles())
+      else if( GetReader()->ReadAODMCParticles() )
       {
-        //Check which is the input
-        if(ph->GetInputFileIndex() == 0)
+        if(label >=  mcparticles->GetEntriesFast())
         {
-          if(!mcparticles) continue;
-          
-          if(label >=  mcparticles->GetEntriesFast())
-          {
-            AliDebug(1,Form("*** large label ***:  label %d, n tracks %d",label, mcparticles->GetEntriesFast()));
-            continue ;
-          }
-          //Get the particle
-          aodprimary = (AliAODMCParticle*) mcparticles->At(label);
-          
+          AliDebug(1,Form("*** large label ***:  label %d, n tracks %d",label, mcparticles->GetEntriesFast()));
+          continue ;
         }
+        //Get the particle
+        aodprimary = (AliAODMCParticle*) mcparticles->At(label);
         
         if(!aodprimary)
         {

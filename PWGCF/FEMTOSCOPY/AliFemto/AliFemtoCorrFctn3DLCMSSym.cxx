@@ -12,18 +12,19 @@
 
 #include <cstdio>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoCorrFctn3DLCMSSym)
 #endif
 
 //____________________________
 AliFemtoCorrFctn3DLCMSSym::AliFemtoCorrFctn3DLCMSSym(char* title, const int& nbins, const float& QHi)
-  :
-  AliFemtoCorrFctn(),
+:
+AliFemtoCorrFctn(),
   fNumerator(0),
   fDenominator(0),
   fNumeratorW(0),
-  fDenominatorW(0)
+  fDenominatorW(0),
+  fUseLCMS(1)
 {
   // Basic constructor
 
@@ -57,13 +58,15 @@ AliFemtoCorrFctn3DLCMSSym::AliFemtoCorrFctn3DLCMSSym(const AliFemtoCorrFctn3DLCM
   fNumerator(0),
   fDenominator(0),
   fNumeratorW(0),
-  fDenominatorW(0)
+  fDenominatorW(0),
+  fUseLCMS(1)
 {
   // Copy constructor
   fNumerator = new TH3F(*aCorrFctn.fNumerator);
   fDenominator = new TH3F(*aCorrFctn.fDenominator);
   fNumeratorW = new TH3F(*aCorrFctn.fNumeratorW);
   fDenominatorW = new TH3F(*aCorrFctn.fDenominatorW);
+  fUseLCMS = aCorrFctn.fUseLCMS;
 }
 //____________________________
 AliFemtoCorrFctn3DLCMSSym::~AliFemtoCorrFctn3DLCMSSym(){
@@ -88,6 +91,7 @@ AliFemtoCorrFctn3DLCMSSym& AliFemtoCorrFctn3DLCMSSym::operator=(const AliFemtoCo
   fNumeratorW = new TH3F(*aCorrFctn.fNumeratorW);
   if (fDenominatorW) delete fDenominatorW;
   fDenominatorW = new TH3F(*aCorrFctn.fDenominatorW);
+  fUseLCMS = aCorrFctn.fUseLCMS;
   return *this;
 }
 
@@ -105,10 +109,10 @@ TList* AliFemtoCorrFctn3DLCMSSym::GetOutputList()
   // Prepare the list of objects to be written to the output
   TList *tOutputList = new TList();
 
-  tOutputList->Add(fNumerator); 
-  tOutputList->Add(fDenominator);  
-  tOutputList->Add(fNumeratorW); 
-  tOutputList->Add(fDenominatorW);  
+  tOutputList->Add(fNumerator);
+  tOutputList->Add(fDenominator);
+  tOutputList->Add(fNumeratorW);
+  tOutputList->Add(fDenominatorW);
 
   return tOutputList;
 }
@@ -139,7 +143,7 @@ AliFemtoString AliFemtoCorrFctn3DLCMSSym::Report(){
     stemp += ctemp;
   }
 
-  //  
+  //
   AliFemtoString returnThis = stemp;
   return returnThis;
 }
@@ -150,16 +154,14 @@ void AliFemtoCorrFctn3DLCMSSym::AddRealPair( AliFemtoPair* pair){
     if (!(fPairCut->Pass(pair))) return;
   }
 
-  double qOut = (pair->QOutCMS());
-  double qSide = (pair->QSideCMS());
-  double qLong = (pair->QLongCMS());
-  double qqinv = (pair->QInv());
-
-    fNumerator->Fill(qOut,qSide,qLong);
-    fNumeratorW->Fill(qOut,qSide,qLong,qqinv);
-
-
-   
+  if (fUseLCMS) {
+    fNumerator->Fill(pair->QOutCMS(),pair->QSideCMS(),pair->QLongCMS());
+    fNumeratorW->Fill(pair->QOutCMS(),pair->QSideCMS(),pair->QLongCMS(),pair->QInv());
+  }
+  else {
+    fNumerator->Fill(pair->QOutPf(),pair->QSidePf(),pair->QLongPf());
+    fNumeratorW->Fill(pair->QOutPf(),pair->QSidePf(),pair->QLongPf(),pair->QInv());
+  }
 }
 //____________________________
 void AliFemtoCorrFctn3DLCMSSym::AddMixedPair( AliFemtoPair* pair){
@@ -168,16 +170,25 @@ void AliFemtoCorrFctn3DLCMSSym::AddMixedPair( AliFemtoPair* pair){
     if (!(fPairCut->Pass(pair))) return;
   }
 
-  double qOut = (pair->QOutCMS());
-  double qSide = (pair->QSideCMS());
-  double qLong = (pair->QLongCMS());
-  double qqqinv = (pair->QInv());
+  if (fUseLCMS) {
+    fDenominator->Fill(pair->QOutCMS(),pair->QSideCMS(),pair->QLongCMS(),1.0);
+    fDenominatorW->Fill(pair->QOutCMS(),pair->QSideCMS(),pair->QLongCMS(),pair->QInv());
+  }
+  else {
+    fDenominator->Fill(pair->QOutPf(),pair->QSidePf(),pair->QLongPf(),1.0);
+    fDenominatorW->Fill(pair->QOutPf(),pair->QSidePf(),pair->QLongPf(),pair->QInv());
+  }
 
-    fDenominator->Fill(qOut,qSide,qLong,1.0);
-    fDenominatorW->Fill(qOut,qSide,qLong,qqqinv);
 
 
- 
 }
 
+void AliFemtoCorrFctn3DLCMSSym::SetUseLCMS(int aUseLCMS)
+{
+  fUseLCMS = aUseLCMS;
+}
 
+int  AliFemtoCorrFctn3DLCMSSym::GetUseLCMS()
+{
+  return fUseLCMS;
+}

@@ -78,6 +78,7 @@ AliDhcTask *AddTaskDhc(
     }
     
     dhcTask = new AliDhcTask("Task_Dhc_Temp_Name");
+    dhcTask->SetDoFillSame(doFillSame);
     if (iAna==1) { // h-h
       Int_t nDetaBins = 40;
       Int_t nDPhiBins = 72;
@@ -142,7 +143,6 @@ AliDhcTask *AddTaskDhc(
     }
     dhcTask->SetTracksName(chNTracks);
     dhcTask->SetDoWeights(kFALSE);
-    dhcTask->SetDoFillSame(doFillSame);
     dhcTask->SetDoMassCut(doMassCut);
     dhcTask->SetClassName(className);
     dhcTask->SetCentMethod(centSel);

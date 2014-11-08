@@ -1494,7 +1494,7 @@ protected:
     GetParameter(c, "field", field);
     GetParameter(c, "runNo", runNo);
     GetParameter(c, "lowFlux", lowFlux);
-    GetParameter(c, "ipMethod", ipMethod);
+    GetParameter(c, "ipMethod", ipMethod, false);
     GetParameter(c, "v0and", v0and);
     GetParameter(c, "nPileUp", nPileUp);
     GetParameter(c, "dPileup", dPileUp);
@@ -1579,15 +1579,15 @@ protected:
       DrawInPad(fBody, 7, cent, "", kLogy);
     }
 
-#if 0
-    TH2* centQual = GetH2(c, "centVsQuality");
-    if (centQual) { 
-      centQual->Scale(1, "width");
-      DrawInPad(fBody, 8, centQual, "colz", kLogz);
+    TH1* pileupStatus = GetH1(c, "pileupStatus", false);
+    if (pileupStatus) DrawInPad(fBody, 8, pileupStatus, "hist text30");
+    else {
+      TH2* centQual = GetH2(c, "centVsQuality");
+      if (centQual) { 
+	centQual->Scale(1, "width");
+	DrawInPad(fBody, 8, centQual, "colz", kLogz);
+      }
     }
-#else 
-    DrawInPad(fBody, 8, GetH1(c, "pileupStatus"), "hist text30");
-#endif
     
     PrintCanvas("EventInspector - Histograms");  
 

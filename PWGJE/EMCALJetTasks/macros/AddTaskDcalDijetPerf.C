@@ -10,7 +10,7 @@ AliAnalysisTaskDcalDijetPerf* AddTaskDcalDijetPerf(
 						   Int_t       nCentBins          = 1,
 						   Double_t    jetradius          = 0.2,
 						   Double_t    jetradius2         = 0.2,
-                           Double_t    jetradius3         = 0.3,
+                           Double_t    jetradius3         = 0.2,
 						   Double_t    jetptcut           = 1,
 						   Double_t    jetareacut         = 0.6,
 						   const char *type               = "TPC",
@@ -52,6 +52,7 @@ AliAnalysisTaskDcalDijetPerf* AddTaskDcalDijetPerf(
     name += "_";
     name += njets3;
   }
+
   if (strcmp(nrho,"")) {
     name += "_";
     name += nrho;
@@ -93,15 +94,16 @@ AliAnalysisTaskDcalDijetPerf* AddTaskDcalDijetPerf(
     jetCont2->SetJetPtCut(jetptcut);
     jetCont2->SetLeadingHadronType(leadhadtype);
   }
+    
   if(jetCont3) {
-    jetCont3->SetRhoName(nrho);
-    jetCont3->ConnectParticleContainer(trackCont);
-    jetCont3->ConnectClusterContainer(clusterCont);
-    //jetCont->SetZLeadingCut(0.98,0.98);
-    //jetCont->SetPercAreaCut(0.6);
-    jetCont3->SetJetPtCut(jetptcut);
-    jetCont3->SetLeadingHadronType(leadhadtype);
-  }
+        jetCont3->SetRhoName(nrho);
+        jetCont3->ConnectParticleContainer(trackCont);
+        jetCont3->ConnectClusterContainer(clusterCont);
+        //jetCont->SetZLeadingCut(0.98,0.98);
+        //jetCont->SetPercAreaCut(0.6);
+        jetCont3->SetJetPtCut(jetptcut);
+        jetCont3->SetLeadingHadronType(leadhadtype);
+    }
   
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

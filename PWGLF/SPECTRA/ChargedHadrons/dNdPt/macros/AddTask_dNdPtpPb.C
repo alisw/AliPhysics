@@ -1,4 +1,4 @@
-void AddTask_dNdPtpPb(UInt_t uTriggerMask = AliVEvent::kINT7, Int_t iCutMode = 2014, char *contName = "dNdPtpPb" )
+void AddTask_dNdPtpPb(UInt_t uTriggerMask = AliVEvent::kINT7, Int_t iCutMode = 2014, char *contName = "dNdPtpPb", Float_t fEta = -10. )
 {
 /*
 CheckLoadLibrary("libPWG0base");
@@ -34,7 +34,15 @@ CheckLoadLibrary("libPWG0selectors");
   // Create geom. acceptance cuts
   //
   //Float_t etaWindow = 1.0;
-  eta1 = -0.765409; eta2 = -0.165409; 
+  Float_t eta1 = -0.765409; 
+  Float_t eta2 = -0.165409; 
+  
+  if(fEta > -10)
+  {
+	eta1 = -1.0*fEta;
+	eta2 = fEta;
+  }
+  
   Float_t ptMin = 0.1 ;
 
   AlidNdPtAcceptanceCuts *accCuts = new AlidNdPtAcceptanceCuts("AlidNdPtAcceptanceCuts","Geom. acceptance cuts");

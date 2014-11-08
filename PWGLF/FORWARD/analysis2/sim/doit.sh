@@ -114,7 +114,7 @@ find()
     local pat=$2 
     local out=$3 
     local tmp=$4 
-    local max=1000
+    local max=10000
     log_msg "" "Searching \e[33m$dir\e[0m for \e[33m$pat"
 
     local nfiles=`alien_find "$dir" "$pat" | grep "files found"` 
@@ -129,6 +129,7 @@ find()
 	alien_find -x "$out" "$dir" "$pat" > $tmp 2> find.log 
 	ret=$?
 	log_end "" $? " Got $nfiles in \e[33m${tmp}"  
+        return 0
     fi  
 
     o=0
@@ -146,6 +147,7 @@ find()
 	let p1=$o/10
 	let p2=$p1/10
 	let p3=$p2/10
+	let p4=$p3/10
 	if test $o -eq 0 ; then 
 	    p1=
 	    p2=
@@ -160,6 +162,7 @@ find()
 	    -e '/<\/*collection.*/d' \
 	    -e '/<info .*/d' \
 	    -e '/^[[:space:]]*$/d' \
+	    -e "s/event name=\"\([0-9][0-9][0-9][0-9]\)\"/event name=\"$p4\1\"/g" \
 	    -e "s/event name=\"\([0-9][0-9][0-9]\)\"/event name=\"$p3\1\"/g" \
 	    -e "s/event name=\"\([0-9][0-9]\)\"/event name=\"$p2\1\"/g" \
 	    -e "s/event name=\"\([0-9]\)\"/event name=\"$p1\1\"/g" \
@@ -194,15 +197,14 @@ merge()
     local run=$6
     local tmpdir=`mktemp -d` 
     local pre=$what
-    local sub=
+    local subs=
     if test "x$what" = "xAOD"; then 
-	echo "AOD run $run pre=$pre sub=$sub"
-	if test "x$run" = "x138190" ; then 
-	    echo "Special for PbPb simulation"
+	# echo "AOD run $run pre=$pre sub=$sub"
+	if test $stage -eq 1 ; then
 	    pre="aod"
-	else 
+	    subs="AOD"
+        else
 	    pre="AOD";
-	    sub="AOD/";
 	fi
     fi 
 
@@ -235,11 +237,15 @@ merge()
 	let prev=$stage-1
 	if test $noact -lt 1 || test ! -f $xml ; then 
 	    rm -f ${xml}	    
-	    find ${top}/${what}_Stage_${prev} */${arc} ${sub}*/${arc} ${top}/${bse} ${xml}
+	    for sub in ${subs} "" ; do 
+		find ${top}/${what}_Stage_${prev} ${sub}*/${arc} \
+		    ${top}/${bse} ${xml}
+		if test -f ${xml} ; then break ; fi
+	    done 
 	fi 
 	ret=$? 
     fi
-    log_end cp.log $ret 
+    # log_end cp.log $ret 
     if test $ret -ne 0 ; then 
 	log_err "Make XML", "Failed to make XML collection $bse"
 	exit 1
@@ -265,7 +271,7 @@ merge()
     if test $noact -lt 1 ; then 
 	alien_submit alien:${dir}/${jdl} ${run} ${stage} ${tag} ${what}
     else 
-	log_msg "" "alien_submit alien:${dir}/${jdl} ${run} ${stage} ${tag} ${what}"
+	: #log_msg "" "alien_submit alien:${dir}/${jdl} ${run} ${stage} ${tag} ${what}"
     fi 
     log_end "" $?
 }
@@ -551,7 +557,7 @@ if test $stage -le 0 ; then
 
     log_msg "" "Submitting \e[33mRun.jdl\e[0m for \e[34m$id run\e[0m (\e[34m$jobs\e[0m jobs w/\e[34m$events)"
     if test $noact -lt 1 ; then 
-	echo "alien_submit alien:${adir}/Run.jdl ${run} ${jobs} ${events} ${id} $@"
+	# echo "alien_submit alien:${adir}/Run.jdl ${run} ${jobs} ${events} ${id} $@"
 	if test $# -gt 0 ; then 
 	    opt=$1 
 	else 

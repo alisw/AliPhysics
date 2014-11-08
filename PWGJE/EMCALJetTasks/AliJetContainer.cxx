@@ -318,7 +318,7 @@ void AliJetContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
 }
 
 //________________________________________________________________________
-Bool_t AliJetContainer::AcceptBiasJet(AliEmcalJet *jet) const
+Bool_t AliJetContainer::AcceptBiasJet(const AliEmcalJet *jet)
 { 
   // Accept jet with a bias.
 
@@ -336,7 +336,7 @@ Bool_t AliJetContainer::AcceptBiasJet(AliEmcalJet *jet) const
 }
 
 //________________________________________________________________________
-Bool_t AliJetContainer::AcceptJet(AliEmcalJet *jet)
+Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet)
 {   
    // Return true if jet is accepted.
 
@@ -437,7 +437,7 @@ Bool_t AliJetContainer::AcceptJet(AliEmcalJet *jet)
 }
 
 //________________________________________________________________________
-Double_t AliJetContainer::GetLeadingHadronPt(AliEmcalJet *jet) const
+Double_t AliJetContainer::GetLeadingHadronPt(const AliEmcalJet *jet) const
 {
   if (fLeadingHadronType == 0)       // charged leading hadron
     return jet->MaxTrackPt();
@@ -448,7 +448,7 @@ Double_t AliJetContainer::GetLeadingHadronPt(AliEmcalJet *jet) const
 }
 
 //________________________________________________________________________
-void AliJetContainer::GetLeadingHadronMomentum(TLorentzVector &mom, AliEmcalJet *jet) const
+void AliJetContainer::GetLeadingHadronMomentum(TLorentzVector &mom, const AliEmcalJet *jet) const
 {
   Double_t maxClusterPt = 0;
   Double_t maxClusterEta = 0;
@@ -486,7 +486,7 @@ void AliJetContainer::GetLeadingHadronMomentum(TLorentzVector &mom, AliEmcalJet 
 }
 
 //________________________________________________________________________
-Double_t AliJetContainer::GetZLeadingEmc(AliEmcalJet *jet) const
+Double_t AliJetContainer::GetZLeadingEmc(const AliEmcalJet *jet) const
 {
 
   if (fClusterContainer && fClusterContainer->GetArray()) {
@@ -506,7 +506,7 @@ Double_t AliJetContainer::GetZLeadingEmc(AliEmcalJet *jet) const
 }
 
 //________________________________________________________________________
-Double_t AliJetContainer::GetZLeadingCharged(AliEmcalJet *jet) const
+Double_t AliJetContainer::GetZLeadingCharged(const AliEmcalJet *jet) const
 {
 
   if (fParticleContainer && fParticleContainer->GetArray() ) {
@@ -526,7 +526,7 @@ Double_t AliJetContainer::GetZLeadingCharged(AliEmcalJet *jet) const
 }
 
 //________________________________________________________________________
-Double_t AliJetContainer::GetZ(AliEmcalJet *jet, TLorentzVector mom) const
+Double_t AliJetContainer::GetZ(const AliEmcalJet *jet, TLorentzVector mom) const
 {
 
   Double_t pJetSq = jet->Px()*jet->Px() + jet->Py()*jet->Py() + jet->Pz()*jet->Pz();
