@@ -20,9 +20,9 @@ public:
   //
   //
   //
-  static Double_t EvalAt(Double_t phi, Double_t refX, Double_t theta, Int_t corr, Int_t ptype, Float_t wt=100, Float_t t1=1, Float_t t2=1);
-  static Double_t EvalAtPar(Double_t phi, Double_t snp, Double_t refX, Double_t theta, Int_t corr, Int_t ptype, Int_t nstep, Float_t wt=100,  Float_t t1=1, Float_t t2=1);
-  static Double_t EvalAtHelix(Double_t phi, Double_t snp, Double_t refX, Double_t theta, Int_t corr, Int_t ptype, Int_t nstep,  Float_t wt=100, Float_t t1=1, Float_t t2=1);
+  //static Double_t EvalAt(Double_t phi, Double_t refX, Double_t theta,Double_t evalX,  Int_t corr, Int_t ptype, Float_t wt=100, Float_t t1=1, Float_t t2=1);
+  static Double_t EvalAtPar(Double_t phi, Double_t snp, Double_t refX, Double_t evalX, Double_t theta, Int_t corr, Int_t ptype, Int_t nstep, Float_t wt=100,  Float_t t1=1, Float_t t2=1);
+  static Double_t EvalAtHelix(Double_t phi, Double_t snp, Double_t refX, Double_t evalX, Double_t theta, Int_t corr, Int_t ptype, Int_t nstep,  Float_t wt=100, Float_t t1=1, Float_t t2=1);
   //
   // Make distortion maps
   //

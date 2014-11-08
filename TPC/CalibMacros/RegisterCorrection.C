@@ -78,6 +78,8 @@
 #include  "TGeoGlobalMagField.h"
 #include  "TROOT.h"
 #include "TLinearFitter.h"
+#include "TStopwatch.h"
+#include "AliTPCCorrectionFit.h"
 #endif
 
 
@@ -1436,15 +1438,40 @@ AliTPCComposedCorrection * GetCorrectionFromFile(){
 void TestParExample(){
   //
   // dz shift example: AliTPCCorrection::AddVisualCorrection(rocDzIROCA,705); 
-  // => parabolic fit not appropriate - helix fit differnt results
+  // => parabolic fit and helix fit agrees - once significant ammount of points used
+  //    160 point - agreement  ~2%; 
+  //     80 points - agreement ~5%
   AliTPCCorrection* corr = AliTPCCorrection::GetVisualCorrection(705);  
   corr->SetOmegaTauT1T2(0.33,1,1);
-  TF1 f705Par("f705","AliTPCCorrectionFit::EvalAtPar(0,0,x,0.1,705,0,20)",0,360);
+  TF1 f705Par("f705","AliTPCCorrectionFit::EvalAtPar(0,0,85, x,0.1,705,0,80)",0,360);
   f705Par.SetLineColor(2);f705Par.SetNpx(500);
-  TF1 f705Helix("f705Helix","AliTPCCorrectionFit::EvalAtHelix(0,0,x,0.1,705,0,20)",0,360);
+  TF1 f705Helix("f705Helix","AliTPCCorrectionFit::EvalAtHelix(0,0,85,x,0.1,705,0,80)",0,360);
   f705Helix.SetLineColor(4);f705Helix.SetNpx(500);
   f705Helix.Draw();
   f705Par.Draw("same");
+
 }
 
+
+
+void TestFitSpeed(Int_t nEvals){
+  //
+  //  test speed of helix fit/ resp. parabolic fir
+  //
+  TStopwatch timerh; 
+  ::Info("TestFitSpeed","Helix fit");
+  for (Int_t i=0;i<nEvals; i++) AliTPCCorrectionFit::EvalAtPar(0,0,85,gRandom->Rndm(),0.1,705,0,80); 
+  timerh.Print();
+  TStopwatch timerP; 
+  ::Info("TestFitSpeed","Parabolicfit");
+  for (Int_t i=0;i<nEvals; i++) AliTPCCorrectionFit::EvalAtPar(0,0,85,gRandom->Rndm(),0.1,705,0,80); 
+  timerP.Print();
+  /*
+    For the test system CPU comsumption is the same:
+    I-TestFitSpeed: Helix fit
+    Real time 0:00:03, CP time 3.310
+    I-TestFitSpeed: Parabolicfit
+    Real time 0:00:03, CP time 3.280
+  */
+}
 
