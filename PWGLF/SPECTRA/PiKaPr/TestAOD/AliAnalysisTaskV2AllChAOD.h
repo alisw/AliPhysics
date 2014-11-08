@@ -166,28 +166,28 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   Int_t                            fCutLargeQperc; // cut on 10% large Q-vec events
   Int_t                            fCutSmallQperc; // cut on 10% small Q-vec events
   
-  Double_t fEtaGapMin;
-  Double_t fEtaGapMax;
+  Double_t fEtaGapMin;  // TBD
+  Double_t fEtaGapMax;   // TBD
   
-  UInt_t    fTrkBit;
-  Double_t  fEtaCut;
-  Double_t  fMinPt;
-  Double_t  fMaxPt;
-  Double_t  fMinTPCNcls;
+  UInt_t    fTrkBit;   // TBD
+  Double_t  fEtaCut;   // TBD
+  Double_t  fMinPt;   // TBD
+  Double_t  fMaxPt;   // TBD
+  Double_t  fMinTPCNcls;   // TBD
   
-  Bool_t fFillTHn;
+  Bool_t fFillTHn;   // TBD
   
-  TH1D * fCentrality;
-  TH1D * fQvector;
-  TH1D * fQvector_lq;
-  TH1D * fQvector_sq;
+  TH1D * fCentrality;   //! TBD
+  TH1D * fQvector;   //! TBD
+  TH1D * fQvector_lq;   //! TBD
+  TH1D * fQvector_sq;   //! TBD
 
   //output object
   TProfile*     fResSP;             //! resolution
-  TProfile*     fResSP_vs_Cent;
-  TProfile*     fResSP_vs_Qvec[9];
-  TProfile*     f2partCumQA_vs_Cent;
-  TProfile*     f2partCumQB_vs_Cent;
+  TProfile*     fResSP_vs_Cent;   //! TBD
+  TProfile*     fResSP_vs_Qvec[9];   //! TBD
+  TProfile*     f2partCumQA_vs_Cent;   //! TBD
+  TProfile*     f2partCumQB_vs_Cent;   //! TBD
   TH2D*         fEta_vs_Phi_bef;        //! eta vs phi distribution before sub events cut 
   TH2D*         fEta_vs_PhiA;            //! eta vs phi distribution after sub events cut 
   TH2D*         fEta_vs_PhiB;            //! eta vs phi distribution after sub events cut 
@@ -206,9 +206,9 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
 
   //large q
   TProfile*     fResSP_lq;             //! resolution
-  TProfile*     fResSP_vs_Cent_lq;
-  TProfile*     f2partCumQA_vs_Cent_lq;
-  TProfile*     f2partCumQB_vs_Cent_lq;
+  TProfile*     fResSP_vs_Cent_lq;   //! TBD
+  TProfile*     f2partCumQA_vs_Cent_lq;   //! TBD
+  TProfile*     f2partCumQB_vs_Cent_lq;   //! TBD
   TProfile*     fv2SPGap1A_lq[9];         //! v2{2} eta gap 1 for all events
   TProfile*     fv2SPGap1B_lq[9];         //! v2{2} eta gap 1 for all events
   TProfile*     fSinGap1Aq_lq[9];      //! <sin> vs pT gap 1
@@ -222,9 +222,9 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   
   //small q
   TProfile*     fResSP_sq;             //! resolution
-  TProfile*     fResSP_vs_Cent_sq;
-  TProfile*     f2partCumQA_vs_Cent_sq;
-  TProfile*     f2partCumQB_vs_Cent_sq;
+  TProfile*     fResSP_vs_Cent_sq;   //! TBD
+  TProfile*     f2partCumQA_vs_Cent_sq;   //! TBD
+  TProfile*     f2partCumQB_vs_Cent_sq;   //! TBD
   TProfile*     fv2SPGap1A_sq[9];         //! v2{2} eta gap 1 for all events
   TProfile*     fv2SPGap1B_sq[9];         //! v2{2} eta gap 1 for all events
   TProfile*     fSinGap1Aq_sq[9];      //! <sin> vs pT gap 1
@@ -238,24 +238,24 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   
   // MC closure test
   
-  TProfile* fResSP_inclusive;
-  TProfile* fv2SPGap1A_inclusive_mb;
-  TProfile* fv2SPGap1B_inclusive_mb;
-  TProfile* fv2SPGap1A_inclusive_lq;
-  TProfile* fv2SPGap1B_inclusive_lq;
-  TProfile* fv2SPGap1A_inclusive_sq;
-  TProfile* fv2SPGap1B_inclusive_sq;
+  TProfile* fResSP_inclusive;   //! TBD
+  TProfile* fv2SPGap1A_inclusive_mb;   //! TBD
+  TProfile* fv2SPGap1B_inclusive_mb;   //! TBD
+  TProfile* fv2SPGap1A_inclusive_lq;   //! TBD
+  TProfile* fv2SPGap1B_inclusive_lq;   //! TBD
+  TProfile* fv2SPGap1A_inclusive_sq;   //! TBD
+  TProfile* fv2SPGap1B_inclusive_sq;   //! TBD
   
-  TProfile* fResSPmc_inclusive;
-  TProfile* fv2SPGap1Amc_inclusive_mb;
-  TProfile* fv2SPGap1Bmc_inclusive_mb;
-  TProfile* fv2SPGap1Amc_inclusive_lq;
-  TProfile* fv2SPGap1Bmc_inclusive_lq;
-  TProfile* fv2SPGap1Amc_inclusive_sq;
-  TProfile* fv2SPGap1Bmc_inclusive_sq;
+  TProfile* fResSPmc_inclusive;   //! TBD
+  TProfile* fv2SPGap1Amc_inclusive_mb;   //! TBD
+  TProfile* fv2SPGap1Bmc_inclusive_mb;   //! TBD
+  TProfile* fv2SPGap1Amc_inclusive_lq;   //! TBD
+  TProfile* fv2SPGap1Bmc_inclusive_lq;   //! TBD
+  TProfile* fv2SPGap1Amc_inclusive_sq;   //! TBD
+  TProfile* fv2SPGap1Bmc_inclusive_sq;   //! TBD
   
-  Bool_t fIsRecoEff;
-  TList * fRecoEffList; // reconstruction efficiency file
+  Bool_t fIsRecoEff;   // TBD
+  TList * fRecoEffList; //! reconstruction efficiency file
   
   Bool_t fQvecGen; //enable Qvec from generated
   Int_t fQgenType; // type==0 qgen from tracks - type==1 qgen from vzero
@@ -266,7 +266,7 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   AliAnalysisTaskV2AllChAOD(const AliAnalysisTaskV2AllChAOD&);
   AliAnalysisTaskV2AllChAOD& operator=(const AliAnalysisTaskV2AllChAOD&);
   
-  ClassDef(AliAnalysisTaskV2AllChAOD, 13);
+  ClassDef(AliAnalysisTaskV2AllChAOD, 14);
 };
 
 #endif

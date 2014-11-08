@@ -1,7 +1,8 @@
 //////////////////////////////////////////////////
 //
 //  This macro was written by Domenico Colella (domenico.colella@cern.ch).
-//  12 November 2013
+//   -- first version    [12 November 2013]
+//   -- modified version [3 November 2013]: added inv. mass distr. without PID info
 //
 //   ------------------------
 //   ------ Arguments -------
@@ -77,13 +78,15 @@
 //                Rapidity,               Cascade proper length, 
 //                V0 proper length.
 //   -- [Page 4] Check on the invariant mass distribution fit.
-//   -- [Page 5] Only in case of PbPb or pPb collisions, the event centrality
+//   -- [Page 5] Check on the invariant mass distribution, without the PID info, fit. 
+//   -- [Page 6] Only in case of PbPb or pPb collisions, the event centrality
 //               distribution.
-//   -- [Page 6] Only in case of MC production, distributions for the MC generated
+//   -- [Page 7] Only in case of MC production, distributions for the MC generated
 //               particles, of the variables:
 //                Total momentum,         Transverse momentum,
 //                Rapidity,               Pseudo-rapidity,
 //                Theta angle,            Phi angle,
+//
 //
 //////////////////////////////////////////////////////
 
@@ -126,6 +129,7 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
      //SOURCE THE FILE AND THE CONTAINER
      TFile *f1 = new TFile(Form("%s/%s",fileDir,filein));
      AliCFContainer *cf = (AliCFContainer*) (f1->Get("PWGLFStrangeness.outputCheckCascade/fCFContCascadeCuts"));  
+     TList *hlist = (TList*) f1->Get("PWGLFStrangeness.outputCheckCascade/fListHistMultistrangeQA");
  
      //____________
      //DEEFINE TEXT
@@ -141,7 +145,7 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
      else if (icasType == 1) tcasc = new TLatex(0.8,0.7,"#color[1]{#Xi^{+}}");
      else if (icasType == 2) tcasc = new TLatex(0.8,0.7,"#color[1]{#Omega^{-}}");
      else if (icasType == 3) tcasc = new TLatex(0.8,0.7,"#color[1]{#Omega^{+}}");
-     tcasc->SetTextSize(0.2);
+     tcasc->SetTextSize(0.15);
      tcasc->SetNDC();
      tcasc->SetTextColor(2);
      TLatex* tpdgmass;
@@ -153,6 +157,7 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
      tpdgmass->SetNDC();
      tpdgmass->SetTextColor(2);
 
+     
      //________________________________ 
      //DEFINE 1st CANVAS AND DRAW PLOTS
      TCanvas *c1 = new TCanvas("c1","",1200,800);
@@ -285,6 +290,7 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
        Double_t max6 = hvar6->GetBinContent(hvar6->GetMaximumBin());
        hvar6->GetYaxis()->SetRangeUser(0.01,max6*1.5);
        hvar6->Draw("histo");
+       tcasc->Draw();
        //Pad 2: Min V0 Radius Fid. Vol.  
        c2->cd(2);
        gPad->SetLogy();
@@ -369,37 +375,24 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
      //________________________________
      //DEFINE 3rd CANVAS AND DRAW PLOTS
      TCanvas *c3 = new TCanvas("c3","",1200,800);
-     c3->Divide(2,3);
-       //Pad 1: InvMass
+     c3->Divide(2,2);
+       //Pad 1: Transverse momentum
        c3->cd(1);
-       TH1D *hvar12 = cf->ShowProjection(11+icasType/2,icasType);
-       hvar12->Draw("histo");
-       tpdgmass->Draw(); 
-       TLine *linemass;
-       if      (icasType == 0) linemass = new TLine(1.32171,0.,1.32171,0.5*hvar12->GetBinContent(hvar12->GetMaximumBin()));
-       else if (icasType == 1) linemass = new TLine(1.32171,0.,1.32171,0.5*hvar12->GetBinContent(hvar12->GetMaximumBin()));
-       else if (icasType == 2) linemass = new TLine(1.67245,0.,1.67245,0.5*hvar12->GetBinContent(hvar12->GetMaximumBin()));
-       else if (icasType == 3) linemass = new TLine(1.67245,0.,1.67245,0.5*hvar12->GetBinContent(hvar12->GetMaximumBin()));
-       linemass->SetLineColor(kRed);
-       linemass->SetLineStyle(1);
-       linemass->SetLineWidth(2.0);
-       linemass->Draw("same");
-       //Pad 2: Transverse momentum
-       c3->cd(2);
        TH1D *hvar13 = cf->ShowProjection(13,icasType);
        hvar13->Draw("histo");
-       //Pad 3: Y
-       c3->cd(3);
+       tcasc->Draw();
+       //Pad 2: Y
+       c3->cd(2);
        TH1D *hvar14 = cf->ShowProjection(14+icasType/2,icasType);
        hvar14->Draw("histo");
-       //Pad 4: Cascade proper length
-       c3->cd(4);
+       //Pad 3: Cascade proper length
+       c3->cd(3);
        TH1D *hvar18;
        hvar18 = cf->ShowProjection(16,icasType);
        hvar18->GetXaxis()->SetRangeUser(0.,90.);
        hvar18->Draw("histo");
-       //Pad 5: V0 proper length 
-       c3->cd(5);
+       //Pad 4: V0 proper length 
+       c3->cd(4);
        TH1D *hvar19;
        hvar19 = cf->ShowProjection(17,icasType);
        hvar19->GetXaxis()->SetRangeUser(0.,90.);
@@ -410,19 +403,17 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
 
      //________________________________ 
      //DEFINE 4th CANVAS AND DRAW PLOTS
-     TCanvas *c4 = new TCanvas("c4","",600,400);
-     c4->Divide(2,1);
+     TCanvas *c4 = new TCanvas("c4","",1200,800);
+     c4->Divide(2,2);
        //Pad1: invariant mass fit
        c4->cd(1);
-       TH1D *hvar18 = cf->ShowProjection(11+icasType/2,icasType);
-       hvar18->Draw("histo");
+       TH1D *hvar23 = cf->ShowProjection(11+icasType/2,icasType);
+       hvar23->Draw("histo");
+       tcasc->Draw();
         // - SOME PARAMETER VALUE
         Bool_t kfitgauss = kFALSE;
         Bool_t kfitleft  = kFALSE;
         Bool_t kfitright = kFALSE;
-        Int_t  ptbinNarrowY = 0;
-        if (icasType < 2) ptbinNarrowY = 10;   // 6;
-        else              ptbinNarrowY =  3;   // 2;
         // - SOME DEFINITIONS
         Float_t lowlimmass;
         Float_t uplimmass;
@@ -453,7 +444,7 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
             fitinvmass->SetParLimits(1, 1.664,1.68);
             fitinvmass->SetParLimits(2,0.0008,0.006);
         }
-        hvar18->Fit("fitinvmass","rimeN");
+        hvar23->Fit("fitinvmass","rimeN");
         fitinvmass->SetLineColor(kRed);
         fitinvmass->Draw("same");
         Float_t meanGauss   = fitinvmass->GetParameter(1);
@@ -464,30 +455,80 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
        c4->cd(2);
        Float_t refwidth = 0.002;
        if (icasType > 1) refwidth = 0.0025;
-       TPaveText *pave1 = new TPaveText(0.05,0.3,0.95,0.5);
+       TPaveText *pave1 = new TPaveText(0.05,0.3,0.95,0.7);
        pave1->SetFillColor(0);
        pave1->SetTextSize(0.04);
        pave1->SetTextAlign(12);
+       pave1->AddText("Invariant mass distribution #color[4]{WITH} PID on dauther tracks");
        if (icasType < 2) pave1->AddText("PDG mass: 1.32171 GeV/c^{2}");
        else              pave1->AddText("PDG mass: 1.67245 GeV/c^{2}");
-       pave1->AddText(Form("#color[1]{Mass form Fit: %.5f #pm %.5f GeV/c^{2}}",meanGauss,sigmaGauss));
+       pave1->AddText(Form("#color[1]{Mass from Fit: %.5f #pm %.5f GeV/c^{2}}",meanGauss,sigmaGauss));
        if (sigmaGauss > refwidth - 0.0003 && sigmaGauss < refwidth + 0.0003) pave1->AddText("#color[3]{OK!! The width is compatible with standard.}");
        else                                                                  pave1->AddText("#color[2]{NOT OK!! Problem.}");
        pave1->Draw();
        cout<<"   "<<refwidth - 0.0003<<"<"<<sigmaGauss<<"<"<<refwidth + 0.0003<<endl;
-     c4->SaveAs("fig_lf_Multistrange.pdf");   
+       //Pad3: invariant mass fit
+       c4->cd(3);
+       TH1D *hvar24;
+       if      (icasType == 0) hvar24 = (TH1D*) hlist->FindObject(Form("fHistMassXiMinus"));
+       else if (icasType == 1) hvar24 = (TH1D*) hlist->FindObject(Form("fHistMassXiPlus"));
+       else if (icasType == 2) hvar24 = (TH1D*) hlist->FindObject(Form("fHistMassOmegaMinus"));
+       else if (icasType == 3) hvar24 = (TH1D*) hlist->FindObject(Form("fHistMassOmegaPlus"));
+       hvar24->Draw("histo");
+        TF1*  fitinvmassnoPID = new TF1("fitinvmassnoPID","gaus(0)+pol2(3)",lowlimmass,uplimmass);
+        fitinvmassnoPID->SetParName(0, "cnstntG");
+        fitinvmassnoPID->SetParName(1, "meanG");
+        fitinvmassnoPID->SetParName(2, "sigmaG");
+        fitinvmassnoPID->SetParLimits(0,0.,500000.);
+        if (icasType==0||icasType==1) {
+            fitinvmassnoPID->SetParameter(1, 1.32171);
+            fitinvmassnoPID->SetParLimits(1, 1.31,1.33);
+            fitinvmassnoPID->SetParLimits(2,0.001,0.005);
+        } else {
+            fitinvmassnoPID->SetParameter(1, 1.67245);
+            fitinvmassnoPID->SetParLimits(1, 1.664,1.68);
+            fitinvmassnoPID->SetParLimits(2,0.0008,0.006);
+        }
+        hvar24->Fit("fitinvmassnoPID","rimeN");
+        fitinvmassnoPID->SetLineColor(kRed);
+        fitinvmassnoPID->Draw("same");
+        Float_t meanGaussnoPID   = fitinvmassnoPID->GetParameter(1);
+        Float_t sigmaGaussnoPID  = fitinvmassnoPID->GetParameter(2);
+       cout<<"Mean: "<<meanGaussnoPID<<endl;
+       cout<<"Sigma: "<<sigmaGaussnoPID<<endl;
+       //Pad4: Text
+       c4->cd(4);
+       Float_t refwidth = 0.002;
+       if (icasType > 1) refwidth = 0.0025;
+       TPaveText *pave2 = new TPaveText(0.05,0.3,0.95,0.7);
+       pave2->SetFillColor(0);
+       pave2->SetTextSize(0.04);
+       pave2->SetTextAlign(12);
+       pave2->AddText("Invariant mass distribution #color[4]{WITHOUT} PID on dauther tracks");
+       if (icasType < 2) pave2->AddText("PDG mass: 1.32171 GeV/c^{2}");
+       else              pave2->AddText("PDG mass: 1.67245 GeV/c^{2}");
+       pave2->AddText(Form("#color[1]{Mass from Fit: %.5f #pm %.5f GeV/c^{2}}",meanGaussnoPID,sigmaGaussnoPID));
+       if (sigmaGaussnoPID > refwidth - 0.0003 && sigmaGaussnoPID < refwidth + 0.0003) pave2->AddText("#color[3]{OK!! The width is compatible with standard.}");
+       else                                                                            pave2->AddText("#color[2]{NOT OK!! Problem.}");
+       pave2->Draw();
+       cout<<"   "<<refwidth - 0.0003<<"<"<<sigmaGaussnoPID<<"<"<<refwidth + 0.0003<<endl;
+     c4->SaveAs("fig_lf_Multistrange.pdf");
+
 
      //________________________________ 
-     //DEFINE 5th CANVAS AND DRAW PLOTS
-     if (collidingsystem == 0 || collidingsystem == 2) {
-         TCanvas *c5 = new TCanvas("c5","",600,720);//1200,270);
-         c5->cd(1);
-         TH1D *hvar16 = cf->ShowProjection(19,icasType);
-         hvar16->Draw("histo");
-         if      (!isMC) c5->SaveAs("fig_lf_Multistrange.pdf)");
-         else if (isMC) c5->SaveAs("fig_lf_Multistrange.pdf");
-     }
-    
+     //DEFINE 6th CANVAS AND DRAW PLOTS
+     TCanvas *c6 = new TCanvas("c6","",1200,400);//1200,270);
+     c6->Divide(2,1);
+       //Pad 1: Event Selection
+       c6->cd(1);
+       TH1D* hvar26 = hlist->FindObject(Form("fHistEventSel"));
+       hvar26->Draw("histo");
+       //Pad 2: Centrality/Multiplicity distribution
+       c6->cd(2);
+       TH1D *hvar16 = cf->ShowProjection(19,icasType);
+       hvar16->Draw("histo");
+     if      (!isMC) c6->SaveAs("fig_lf_Multistrange.pdf)");
+     else if (isMC) c6->SaveAs("fig_lf_Multistrange.pdf");
 
 
      //_______________________________
@@ -496,34 +537,34 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
            
             AliCFContainer *cfMC = (AliCFContainer*) (f1->Get("PWGLFStrangeness.outputCheckCascade/fCFContCascadeMCgen"));
             //DEFINE 6th CANVAS AND DRAW PLOTS
-            TCanvas *c6 = new TCanvas("c6","",1200,800);
-            c6->Divide(2,3);
+            TCanvas *c7 = new TCanvas("c7","",1200,800);
+            c7->Divide(2,3);
             //Pad 1: Total Momentum
-            c6->cd(1);
+            c7->cd(1);
             TH1D *hvar17 = cfMC->ShowProjection(0,icasType);
             hvar17->Draw("histo");
             tcasc->Draw();
             //Pad 2: Transverse Momentum
-            c6->cd(2);
+            c7->cd(2);
             TH1D *hvar18 = cfMC->ShowProjection(1,icasType);
             hvar18->Draw("histo");
             //Pad 3: Rapidity (y)
-            c6->cd(3);
+            c7->cd(3);
             TH1D *hvar19 = cfMC->ShowProjection(2,icasType);
             hvar19->Draw("histo");
             //Pad 4: Pseudo-rapidity (eta)
-            c6->cd(4);
+            c7->cd(4);
             TH1D *hvar20 = cfMC->ShowProjection(3,icasType);
             hvar20->Draw("histo");
             //Pad 5: Theta
-            c6->cd(5);
+            c7->cd(5);
             TH1D *hvar21 = cfMC->ShowProjection(4,icasType);
             hvar21->Draw("histo");
             //Pad 6: Phi
-            c6->cd(6);
+            c7->cd(6);
             TH1D *hvar22 = cfMC->ShowProjection(5,icasType);
             hvar22->Draw("histo");
-            c6->SaveAs("fig_lf_Multistrange.pdf)");
+            c7->SaveAs("fig_lf_Multistrange.pdf)");
      }
 
 

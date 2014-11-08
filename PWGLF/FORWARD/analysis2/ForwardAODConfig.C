@@ -179,8 +179,10 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
     .SetUsePhiAcceptance(AliFMDDensityCalculator::kPhiCorrectNch);
 
   // --- Corrector ---------------------------------------------------
-  // Whether to use the secondary map correction
-  task->GetCorrections().SetUseSecondaryMap(true);
+  // Whether to use the secondary map correction.  By default we turn
+  // off secondary correction for normal data, and on for simulated
+  // data.
+  task->GetCorrections().SetUseSecondaryMap(mc);
   // Whether to use the vertex bias correction (deprecated)
   task->GetCorrections().SetUseVertexBias(false);
   // Whether to use the acceptance correction from dead-strips (deprecated)

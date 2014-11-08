@@ -46,6 +46,11 @@ class AliDhcTask : public AliAnalysisTaskSE {
   void         SetEtaTRange(Double_t eL, Double_t eH) { fEtaTLo=eL; fEtaTHi=eH;   }
   void         SetEtaARange(Double_t eL, Double_t eH) { fEtaALo=eL; fEtaAHi=eH;   }
   void         SetFillMuons(Bool_t b)                 { fFillMuons = b;           }
+  void         SetRequireMuon(Bool_t b, Double_t l=0.5, Double_t h=4.0) {
+    fRequireMuon = b;
+    fReqPtLo = l;
+    fReqPtHi = h;
+  }
   void         SetHEffA(THnF *h)                      { fHEffA=h;                 }
   void         SetHEffT(THnF *h)                      { fHEffT=h;                 }
   void         SetMixInEtaT(Bool_t b)                 { fMixInEtaT = b;           }
@@ -98,6 +103,9 @@ class AliDhcTask : public AliAnalysisTaskSE {
   TString            fTracksName;      //  name of track collection
   Bool_t             fDoWeights;       //  if true weight with 1/N per event
   Bool_t             fFillMuons;       //  fill the muon tracks into the mini event
+  Bool_t             fRequireMuon;     //  only run on events with a muon track
+  Double_t           fReqPtLo;         //  require a muon above this pt
+  Double_t           fReqPtHi;         //  and below this pt
   Bool_t             fPtTACrit;        //  use the pTT > pTA criterion?
   Bool_t             fAllTAHists;      //  create all pTT,pTA combination hists, even t<a?
   Bool_t             fMixInEtaT;       //  mix in bins of eta_T instead of z_vertex
@@ -113,7 +121,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   TString            fCentMethod;      //  centrality selection method
   Int_t              fNBdeta;          //  no. deta bins
   Int_t              fNBdphi;          //  no. dphi bins
-  Bool_t             fTriggerMatch;    //  muon trigger match 
+  Bool_t             fTriggerMatch;    //  muon trigger match
   TAxis             *fBPtT;            //  ptt binning
   TAxis             *fBPtA;            //  pta binning
   TAxis             *fBCent;           //  centrality binning
@@ -126,6 +134,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   AliAODEvent       *fAOD;             //! AOD object
   TList             *fOutputList;      //! Output list
   TH2               *fHEvt;            //! Cent vs vtx.
+  TH2               *fHEvtWTr;         //! Cent vs vtx. for events with at least one track
   TH2               *fHTrk;            //! Phi vs Eta
   TH2               *fHPoolReady;      //! Check how many Jobs start mixing
   TH1               *fHPtAss;          //! Pt ass

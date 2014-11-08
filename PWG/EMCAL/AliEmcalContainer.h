@@ -51,7 +51,7 @@ class AliEmcalContainer : public TNamed {
   AliEmcalContainer(const char *name); 
   virtual ~AliEmcalContainer(){;}
 
-  TClonesArray               *GetArray()                          { return fClArray                   ; }
+  TClonesArray               *GetArray() const                      { return fClArray                   ; }
   const TString&              GetArrayName()                  const { return fClArrayName               ; }
   Int_t                       GetCurrentID()                  const { return fCurrentID-1               ; }
   Bool_t                      GetIsParticleLevel()            const { return fIsParticleLevel           ; }

@@ -39,7 +39,7 @@ class AliPIDResponse;
 class AliCFVertexingHFCascade : public AliCFVertexingHF{
  public:
 		
-  AliCFVertexingHFCascade(){};
+  AliCFVertexingHFCascade();
   AliCFVertexingHFCascade(TClonesArray *mcArray, UShort_t originDselection);
 	
   //virtual ~AliCFVertexingHFCascade(){};

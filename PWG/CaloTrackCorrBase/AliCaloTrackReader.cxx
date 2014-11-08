@@ -89,6 +89,7 @@ fFillDCAL(0),                fFillPHOS(0),
 fFillEMCALCells(0),          fFillPHOSCells(0),
 fRecalculateClusters(kFALSE),fCorrectELinearity(kTRUE),
 fSelectEmbeddedClusters(kFALSE),
+fSmearShowerShape(0),        fSmearShowerShapeWidth(0),       fRandom(),
 fTrackStatus(0),             fSelectSPDHitTracks(0),
 fTrackMult(0),               fTrackMultEtaCut(0.9),
 fReadStack(kFALSE),          fReadAODMCParticles(kFALSE),
@@ -871,6 +872,8 @@ void AliCaloTrackReader::InitParameters()
   fFillInputBackgroundJetBranch = kFALSE; 
   if(!fBackgroundJets) fBackgroundJets = new AliAODJetEventBackground();
 
+  fSmearShowerShapeWidth = 0.002;
+  
 }
 
 //________________________________________________________________________
@@ -1630,7 +1633,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
       clus->SetE(rdmEnergy);
     }
   }
-    
+  
   Double_t tof = clus->GetTOF()*1e9;
   
   Int_t bc = TMath::Nint(tof/50) + 9;
@@ -1672,6 +1675,15 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
     bEMCAL = kTRUE;
   }
 
+  // Smear the SS to try to match data and simulations,
+  // do it only for simulations.
+  if( fSmearShowerShape  && clus->GetNCells() > 2)
+  {
+    AliDebug(2,Form("Smear shower shape - Original: %2.4f\n", clus->GetM02()));
+    clus->SetM02( clus->GetM02() + fRandom.Landau(0, fSmearShowerShapeWidth) );
+    //clus->SetM02( fRandom.Landau(clus->GetM02(), fSmearShowerShapeWidth) );
+    AliDebug(2,Form("Width %2.4f         Smeared : %2.4f\n", fSmearShowerShapeWidth,clus->GetM02()));
+  }
   
   // Fill the corresponding array. Usually just filling EMCal array with upper or lower clusters is enough, but maybe we want to do EMCal-DCal correlations.
   if     (bEMCAL) fEMCALClusters->Add(clus);

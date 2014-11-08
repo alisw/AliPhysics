@@ -73,7 +73,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s()
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
-    fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),
+    fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistC0tvxAndCint1TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),fHistDiLeptonMass(0),
     fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),
@@ -96,7 +96,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name)
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
-    fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),
+    fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistC0tvxAndCint1TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),fHistDiLeptonMass(0),
     fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),
@@ -319,6 +319,9 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fHistCint1TriggersPerRun = new TH1D("fHistCint1TriggersPerRun", "fHistCint1TriggersPerRun", 33000, 167000.5, 200000.5);
   fListTrig->Add(fHistCint1TriggersPerRun);
   
+  fHistC0tvxAndCint1TriggersPerRun = new TH1D("fHistC0tvxAndCint1TriggersPerRun", "fHistC0tvxAndCint1TriggersPerRun", 33000, 167000.5, 200000.5);
+  fListTrig->Add(fHistC0tvxAndCint1TriggersPerRun);
+  
   fHistZedTriggersPerRun = new TH1D("fHistZedTriggersPerRun", "fHistZedTriggersPerRun", 33000, 167000.5, 200000.5);
   fListTrig->Add(fHistZedTriggersPerRun);
 
@@ -511,6 +514,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtrig()
   if(trigger.Contains("CCUP2-B")) fHistCcup2TriggersPerRun->Fill(fRunNum); //CCUP2 triggers
   
   if(trigger.Contains("CINT1")) fHistCint1TriggersPerRun->Fill(fRunNum); //CINT1 triggers
+  if(trigger.Contains("CINT1") && trigger.Contains("C0TVX")) fHistC0tvxAndCint1TriggersPerRun->Fill(fRunNum); //C0TVX triggers in CINT1 events
   
   if(trigger.Contains("CVLN_B2-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - synchronously downscaled
   if(trigger.Contains("CVLN_R1-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - randomly downscaled
@@ -845,6 +849,11 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
 	fSpdVtxPos[1] = fSPDVertex->GetY();
 	fSpdVtxPos[2] = fSPDVertex->GetZ();
 	}
+  else{
+  	fSpdVtxPos[0] = -666;
+	fSpdVtxPos[1] = -666;
+	fSpdVtxPos[2] = -666;
+  	}
 
   //Tracklets
   fNtracklets = aod->GetTracklets()->GetNumberOfTracklets();
@@ -1141,6 +1150,9 @@ void AliAnalysisTaskUpcPsi2s::RunESDtrig()
   if(trigger.Contains("CCUP4-B")) fHistCcup4TriggersPerRun->Fill(fRunNum); //CCUP4 triggers
   if(trigger.Contains("CCUP7-B")) fHistCcup7TriggersPerRun->Fill(fRunNum); //CCUP7 triggers
   if(trigger.Contains("CCUP2-B")) fHistCcup2TriggersPerRun->Fill(fRunNum); //CCUP2 triggers
+  
+  if(trigger.Contains("CINT1")) fHistCint1TriggersPerRun->Fill(fRunNum); //CINT1 triggers
+  if(trigger.Contains("CINT1") && trigger.Contains("C0TVX")) fHistC0tvxAndCint1TriggersPerRun->Fill(fRunNum); //C0TVX triggers in CINT1 events
   
   if(trigger.Contains("CVLN_B2-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - synchronously downscaled
   if(trigger.Contains("CVLN_R1-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - randomly downscaled

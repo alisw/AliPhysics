@@ -263,6 +263,32 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
     }
   }
 
+  if (fSkip1024Bug) {
+    // Check for trigger patches with 1024 bug
+    // event declared bad if at least one found
+    AliVCaloTrigger *emcaltriggers = ev->GetCaloTrigger(eev == NULL ? "EMCALTrigger" : "emcalTrigger");
+    if(emcaltriggers){
+      emcaltriggers->Reset();
+      Int_t adc;
+      Bool_t isBad = false;
+      while(emcaltriggers->Next()){
+        emcaltriggers->GetL1TimeSum(adc);
+        isBad = false;
+        // check for multiples of 1024
+        for(int i = 1; i < 20; i++){
+          if(adc == 1024 * i){
+            isBad = true;
+            break;
+          }
+        }
+        if(isBad){
+          fIsGoodEvent = kFALSE;
+          break;
+        }
+      }
+    }
+  }
+
   if (fIsGoodEvent) {
     if (fCellMaxE>fCellMinE)
       res |= kEmcalHC;

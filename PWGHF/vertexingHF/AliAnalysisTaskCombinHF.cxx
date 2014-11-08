@@ -70,7 +70,10 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fDeltaMass(0x0),
   fDeltaMassFullAnalysis(0x0),
   fMassVsPtVsYME(0x0),
+  fMassVsPtVsYMELSpp(0x0),
+  fMassVsPtVsYMELSmm(0x0),
   fEventsPerPool(0x0),
+  fMixingsPerPool(0x0),
   fFilterMask(BIT(4)),
   fTrackCutsAll(0x0),
   fTrackCutsPion(0x0),
@@ -101,15 +104,19 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fPIDselCaseZero(0),
   fBayesThresKaon(0.4),
   fBayesThresPion(0.4),
-  fDoEventMixing(kTRUE),
-  fMinNumberOfEventsForMixing(20),
+  fDoEventMixing(1),
+  fNumberOfEventsForMixing(20),
+  fMaxzVertDistForMix(5.),
+  fMaxMultDiffForMix(5.),
   fNzVertPools(1),
   fNzVertPoolsLimSize(2),
   fzVertPoolLims(0x0),
   fNMultPools(1),
   fNMultPoolsLimSize(2),
   fMultPoolLims(0x0),
+  fNOfPools(1),
   fEventBuffer(0x0),
+  fEventInfo(new TObjString("")),
   fVtxZ(0),
   fMultiplicity(0),
   fKaonTracks(0x0),
@@ -145,7 +152,10 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fDeltaMass(0x0),
   fDeltaMassFullAnalysis(0x0),
   fMassVsPtVsYME(0x0),
+  fMassVsPtVsYMELSpp(0x0),
+  fMassVsPtVsYMELSmm(0x0),
   fEventsPerPool(0x0),
+  fMixingsPerPool(0x0),
   fFilterMask(BIT(4)),
   fTrackCutsAll(0x0),
   fTrackCutsPion(0x0),
@@ -176,15 +186,19 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fPIDselCaseZero(0),
   fBayesThresKaon(0.4),
   fBayesThresPion(0.4),
-  fDoEventMixing(kTRUE),
-  fMinNumberOfEventsForMixing(20),
+  fDoEventMixing(1),
+  fNumberOfEventsForMixing(20),
+  fMaxzVertDistForMix(5.),
+  fMaxMultDiffForMix(5.),
   fNzVertPools(1),
   fNzVertPoolsLimSize(2),
   fzVertPoolLims(0x0),
   fNMultPools(1),
   fNMultPoolsLimSize(2),
   fMultPoolLims(0x0),
+  fNOfPools(1),
   fEventBuffer(0x0),
+  fEventInfo(new TObjString("")),
   fVtxZ(0),
   fMultiplicity(0),
   fKaonTracks(0x0),
@@ -226,6 +240,8 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
     delete fDeltaMass;
     delete fDeltaMassFullAnalysis;
     delete fMassVsPtVsYME;
+    delete fMassVsPtVsYMELSpp;
+    delete fMassVsPtVsYMELSmm;
   }
 
   delete fOutput;
@@ -241,11 +257,10 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
   delete fPionTracks;
 
   if(fEventBuffer){
-    Int_t npools=fNzVertPools*fNMultPools;
-    for(Int_t i=0; i<npools; i++) delete fEventBuffer[i];
+    for(Int_t i=0; i<fNOfPools; i++) delete fEventBuffer[i];
     delete fEventBuffer;
   }
-
+  delete fEventInfo;
   delete [] fzVertPoolLims;
   delete [] fMultPoolLims;
 }
@@ -428,14 +443,32 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fMassVsPtVsYME->SetMinimum(0);
   fOutput->Add(fMassVsPtVsYME);
 
-  if(fzVertPoolLims && fMultPoolLims){
+  fMassVsPtVsYMELSpp=new TH3F("hMassVsPtVsYMELSpp","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
+  fMassVsPtVsYMELSpp->Sumw2();
+  fMassVsPtVsYMELSpp->SetMinimum(0);
+  fOutput->Add(fMassVsPtVsYMELSpp);
+
+  fMassVsPtVsYMELSmm=new TH3F("hMassVsPtVsYMELSmm","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
+  fMassVsPtVsYMELSmm->Sumw2();
+  fMassVsPtVsYMELSmm->SetMinimum(0);
+  fOutput->Add(fMassVsPtVsYMELSmm);
+
+  fNOfPools=fNzVertPools*fNMultPools;
+  if(!fzVertPoolLims || !fMultPoolLims) fNOfPools=1;
+  if(fDoEventMixing==2) fNOfPools=1;
+  if(fNOfPools>1 && fzVertPoolLims && fMultPoolLims){
     fEventsPerPool=new TH2F("hEventsPerPool","hEventsPerPool",fNzVertPools,fzVertPoolLims,fNMultPools,fMultPoolLims);
+    fMixingsPerPool=new TH2F("hMixingsPerPool","hMixingsPerPool",fNzVertPools,fzVertPoolLims,fNMultPools,fMultPoolLims);
   }else{
     fEventsPerPool=new TH2F("hEventsPerPool","hEventsPerPool",1,-10.,10.,1,-0.5,2000.5);
+    fMixingsPerPool=new TH2F("hMixingsPerPool","hMixingsPerPool",1,-10.,10.,1,-0.5,2000.5);
   }
   fEventsPerPool->Sumw2();
   fEventsPerPool->SetMinimum(0);
   fOutput->Add(fEventsPerPool);
+  fMixingsPerPool->Sumw2();
+  fMixingsPerPool->SetMinimum(0);
+  fOutput->Add(fMixingsPerPool);
 
   //Counter for Normalization
   fCounter = new AliNormalizationCounter("NormalizationCounter");
@@ -446,12 +479,12 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fKaonTracks->SetOwner();
   fPionTracks->SetOwner();
 
-  Int_t totPools=fNzVertPools*fNMultPools;
-  if(!fzVertPoolLims || !fMultPoolLims) totPools=1;
-
-  fEventBuffer = new TTree*[totPools];
-  for(Int_t i=0; i<totPools; i++){
+  fEventBuffer = new TTree*[fNOfPools];
+  for(Int_t i=0; i<fNOfPools; i++){
     fEventBuffer[i]=new TTree(Form("EventBuffer_%d",i), "Temporary buffer for event mixing");
+    fEventBuffer[i]->Branch("zVertex", &fVtxZ);
+    fEventBuffer[i]->Branch("multiplicity", &fMultiplicity);
+    fEventBuffer[i]->Branch("eventInfo", "TObjString",&fEventInfo);
     fEventBuffer[i]->Branch("karray", "TObjArray", &fKaonTracks);
     fEventBuffer[i]->Branch("parray", "TObjArray", &fPionTracks);
   }
@@ -580,7 +613,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     AliAODTrack* trK=dynamic_cast<AliAODTrack*>(aod->GetTrack(iTr1));
     if(!trK) AliFatal("Not a standard AOD");
     if((status[iTr1] & 1)==0) continue;
-    if(fDoEventMixing){
+    if(fDoEventMixing>0){
       if(status[iTr1] & 2) fKaonTracks->AddLast(new TLorentzVector(trK->Px(),trK->Py(),trK->Pz(),trK->Charge()));
       if(status[iTr1] & 4) fPionTracks->AddLast(new TLorentzVector(trK->Px(),trK->Py(),trK->Pz(),trK->Charge()));
     }
@@ -652,17 +685,20 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   
   fCounter->StoreCandidates(aod,nFiltered,kTRUE);
   fCounter->StoreCandidates(aod,nSelected,kFALSE);
-
-  if(fDoEventMixing){
+  fEventInfo->SetString(Form("Ev%d_esd%d_Pi%d_K%d",mgr->GetNcalls(),((AliAODHeader*)aod->GetHeader())->GetEventNumberESDFile(),fPionTracks->GetEntries(),fKaonTracks->GetEntries()));
+  if(fDoEventMixing==1){
     Int_t ind=GetPoolIndex(fVtxZ,fMultiplicity);
     if(ind>=0){
       fEventsPerPool->Fill(fVtxZ,fMultiplicity);
       fEventBuffer[ind]->Fill();
-      if(fEventBuffer[ind]->GetEntries() > fMinNumberOfEventsForMixing){
-	DoMixing(ind);
-	ResetPool(ind);
+      if(fEventBuffer[ind]->GetEntries() >= fNumberOfEventsForMixing){
+	fMixingsPerPool->Fill(fVtxZ,fMultiplicity);
+	  DoMixingWithPools(ind);
+	  ResetPool(ind);
       }
     }
+  }else if(fDoEventMixing==2){ // mix with cuts, no pools
+      fEventBuffer[0]->Fill();
   }
   PostData(1,fOutput);
   PostData(2,fCounter);
@@ -843,7 +879,7 @@ void AliAnalysisTaskCombinHF::FillMEHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
   Double_t pt = tmpRD->Pt();
   Double_t minv2 = tmpRD->InvMass2(nProngs,pdgdau);
   Double_t mass=TMath::Sqrt(minv2);
-  
+
   if(minv2>fMinMass*fMinMass && minv2<fMaxMass*fMaxMass){
     Double_t rapid = tmpRD->Y(pdgD);
     if(fAnalysisCuts->IsInFiducialAcceptance(pt,rapid)){
@@ -852,7 +888,24 @@ void AliAnalysisTaskCombinHF::FillMEHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
   }
   return;
 }
+//________________________________________________________________________
+void AliAnalysisTaskCombinHF::FillMEHistosLS(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, Int_t charge){
+  // Fill histos for candidates in MixedEvents
+    
+  tmpRD->SetPxPyPzProngs(nProngs,px,py,pz);
+  Double_t pt = tmpRD->Pt();
+  Double_t minv2 = tmpRD->InvMass2(nProngs,pdgdau);
+  Double_t mass=TMath::Sqrt(minv2);
 
+  if(minv2>fMinMass*fMinMass && minv2<fMaxMass*fMaxMass){
+    Double_t rapid = tmpRD->Y(pdgD);
+    if(fAnalysisCuts->IsInFiducialAcceptance(pt,rapid)){
+      if(charge>0) fMassVsPtVsYMELSpp->Fill(mass,pt,rapid);
+      if(charge<0) fMassVsPtVsYMELSmm->Fill(mass,pt,rapid);
+    }
+  }
+  return;
+}
 //________________________________________________________________________
 Bool_t AliAnalysisTaskCombinHF::IsTrackSelected(AliAODTrack* track){
   // track selection cuts
@@ -992,23 +1045,135 @@ void AliAnalysisTaskCombinHF::ResetPool(Int_t poolIndex){
   if(poolIndex<0 || poolIndex>fNzVertPools*fNMultPools) return;
   delete fEventBuffer[poolIndex];
   fEventBuffer[poolIndex]=new TTree(Form("EventBuffer_%d",poolIndex), "Temporary buffer for event mixing");
+  fEventBuffer[poolIndex]->Branch("zVertex", &fVtxZ);
+  fEventBuffer[poolIndex]->Branch("multiplicity", &fMultiplicity);
+  fEventBuffer[poolIndex]->Branch("eventInfo", "TObjString",&fEventInfo);
   fEventBuffer[poolIndex]->Branch("karray", "TObjArray", &fKaonTracks);
   fEventBuffer[poolIndex]->Branch("parray", "TObjArray", &fPionTracks);
   return;
 }
 //_________________________________________________________________
-void AliAnalysisTaskCombinHF::DoMixing(Int_t poolIndex){
+Bool_t AliAnalysisTaskCombinHF::CanBeMixed(Double_t zv1, Double_t zv2, Double_t mult1, Double_t mult2){
+  // check mixing
+  if(TMath::Abs(zv2-zv1)>fMaxzVertDistForMix) return kFALSE;
+  if(TMath::Abs(mult2-mult1)>fMaxMultDiffForMix) return kFALSE;
+  return kTRUE;
+}
+//_________________________________________________________________
+void AliAnalysisTaskCombinHF::DoMixingWithCuts(){
   // perform mixed event analysis
 
-  if(!fDoEventMixing) return;
+  if(fDoEventMixing==0) return;
+  Int_t nEvents=fEventBuffer[0]->GetEntries();
+  if(fDebug > 1) printf("AnalysisTaskCombinHF::DoMixingWithCuts Start Event Mixing of %d events\n",nEvents);
+
+  TObjArray* karray=0x0;
+  TObjArray* parray=0x0;
+  Double_t zVertex,mult;
+  TObjString* eventInfo=0x0;
+  fEventBuffer[0]->SetBranchAddress("karray", &karray);
+  fEventBuffer[0]->SetBranchAddress("parray", &parray);
+  fEventBuffer[0]->SetBranchAddress("eventInfo",&eventInfo);
+  fEventBuffer[0]->SetBranchAddress("zVertex", &zVertex);
+  fEventBuffer[0]->SetBranchAddress("multiplicity", &mult);
+  Double_t d02[2]={0.,0.};
+  Double_t d03[3]={0.,0.,0.};
+  AliAODRecoDecay* tmpRD2 = new AliAODRecoDecay(0x0,2,0,d02);
+  AliAODRecoDecay* tmpRD3 = new AliAODRecoDecay(0x0,3,1,d03);
+  UInt_t pdg0[2]={321,211};
+  //  UInt_t pdgp[3]={321,211,211};
+  Double_t px[3],py[3],pz[3];
+  Int_t evId1,esdId1,nk1,np1;
+  Int_t evId2,esdId2,nk2,np2;
+
+  for(Int_t iEv1=0; iEv1<nEvents; iEv1++){
+    fEventBuffer[0]->GetEvent(iEv1);
+    TObjArray* karray1=(TObjArray*)karray->Clone();
+    Double_t zVertex1=zVertex;
+    Double_t mult1=mult;
+    Int_t nKaons=karray1->GetEntries();
+    Int_t nPionsForCheck=parray->GetEntries();
+    sscanf((eventInfo->String()).Data(),"Ev%d_esd%d_Pi%d_K%d",&evId1,&esdId1,&np1,&nk1);
+    if(nk1!=nKaons || np1!=nPionsForCheck){ 
+      printf("AnalysisTaskCombinHF::DoMixingWithCuts ERROR: read event does not match to the stored one\n");
+      delete karray1;
+      continue;
+    }
+    for(Int_t iEv2=0; iEv2<fNumberOfEventsForMixing; iEv2++){
+      Int_t iToMix=iEv1+iEv2+1;
+      if(iEv1>=(nEvents-fNumberOfEventsForMixing)) iToMix=iEv1-iEv2-1;
+      if(iToMix<0) continue;
+      if(iToMix==iEv1) continue;
+      if(iToMix<iEv1) continue;
+      fEventBuffer[0]->GetEvent(iToMix);
+      Double_t zVertex2=zVertex;
+      Double_t mult2=mult;
+      if(TMath::Abs(zVertex2-zVertex1)<0.0001 && TMath::Abs(mult2-mult1)<0.001){
+	printf("AnalysisTaskCombinHF::DoMixingWithCuts ERROR: same event in mixing??? %d %d   %f %f  %f %f\n",iEv1,iEv2,zVertex1,zVertex2,mult1,mult2);
+	continue;
+      }
+      TObjArray* parray2=(TObjArray*)parray->Clone();
+      Int_t nPions=parray2->GetEntries();
+      Int_t nKaonsForCheck=karray->GetEntries();
+      sscanf((eventInfo->String()).Data(),"Ev%d_esd%d_Pi%d_K%d",&evId2,&esdId2,&np2,&nk2);
+      if(nk2!=nKaonsForCheck || np2!=nPions){ 
+	printf("AnalysisTaskCombinHF::DoMixingWithCuts ERROR: read event does not match to the stored one\n");
+	delete parray2;
+	continue;
+      }
+      if(evId2==evId1 && esdId2==esdId1){
+ 	printf("AnalysisTaskCombinHF::DoMixingWithCuts ERROR: same event in mixing??? %d %d   nK=%d %d  nPi=%d %d\n",evId1,evId2,nKaons,nKaonsForCheck,nPionsForCheck,nPions);
+	delete parray2;
+	continue;
+      }
+      if(CanBeMixed(zVertex1,zVertex2,mult1,mult2)){
+	for(Int_t iTr1=0; iTr1<nKaons; iTr1++){
+	  TLorentzVector* trK=(TLorentzVector*)karray1->At(iTr1);
+	  Double_t chargeK=trK->T();
+	  px[0] = trK->Px();
+	  py[0] = trK->Py();
+	  pz[0] = trK->Pz();
+	  for(Int_t iTr2=0; iTr2<nPions; iTr2++){
+	    TLorentzVector* trPi1=(TLorentzVector*)parray2->At(iTr2);
+	    Double_t chargePi1=trPi1->T();
+	    px[1] = trPi1->Px();
+	    py[1] = trPi1->Py();
+	    pz[1] = trPi1->Pz();
+	    if(fMeson==kDzero && chargePi1*chargeK<0){
+	      FillMEHistos(421,2,tmpRD2,px,py,pz,pdg0);
+	    }	  
+	    if(fMeson==kDzero && chargePi1*chargeK>0){
+	      FillMEHistosLS(421,2,tmpRD2,px,py,pz,pdg0,chargePi1);
+	    }
+	  }
+	}
+      }
+      delete parray2;
+    }
+    delete karray1;
+  }
+  delete tmpRD2;
+  delete tmpRD3;
+}
+//_________________________________________________________________
+void AliAnalysisTaskCombinHF::DoMixingWithPools(Int_t poolIndex){
+  // perform mixed event analysis
+
+  if(fDoEventMixing==0) return;
   if(poolIndex<0 || poolIndex>fNzVertPools*fNMultPools) return;
 
   Int_t nEvents=fEventBuffer[poolIndex]->GetEntries();
-  if(fDebug > 1) printf("Start Event Mixing of %d events\n",nEvents);
+  if(fDebug > 1) printf("AliAnalysisTaskCombinHF::DoMixingWithPools Start Event Mixing of %d events\n",nEvents);
   TObjArray* karray=0x0;
   TObjArray* parray=0x0;
+  Double_t zVertex,mult;
+  TObjString* eventInfo=0x0;
   fEventBuffer[poolIndex]->SetBranchAddress("karray", &karray);
   fEventBuffer[poolIndex]->SetBranchAddress("parray", &parray);
+  fEventBuffer[poolIndex]->SetBranchAddress("eventInfo",&eventInfo);
+  fEventBuffer[poolIndex]->SetBranchAddress("zVertex", &zVertex);
+  fEventBuffer[poolIndex]->SetBranchAddress("multiplicity", &mult);
+
   // dummy values of track impact parameter, needed to build an AliAODRecoDecay object
   Double_t d02[2]={0.,0.};
   Double_t d03[3]={0.,0.,0.};
@@ -1017,15 +1182,45 @@ void AliAnalysisTaskCombinHF::DoMixing(Int_t poolIndex){
   UInt_t pdg0[2]={321,211};
   UInt_t pdgp[3]={321,211,211};
   Double_t px[3],py[3],pz[3];
+  Int_t evId1,esdId1,nk1,np1;
+  Int_t evId2,esdId2,nk2,np2;
+
   for(Int_t iEv1=0; iEv1<nEvents; iEv1++){
     fEventBuffer[poolIndex]->GetEvent(iEv1);
-    TObjArray* karray1=new TObjArray(*karray);
+    TObjArray* karray1=(TObjArray*)karray->Clone();
+    Double_t zVertex1=zVertex;
+    Double_t mult1=mult;
     Int_t nKaons=karray1->GetEntries();
+    Int_t nPionsForCheck=parray->GetEntries();
+    sscanf((eventInfo->String()).Data(),"Ev%d_esd%d_Pi%d_K%d",&evId1,&esdId1,&np1,&nk1);
+    if(nk1!=nKaons || np1!=nPionsForCheck){ 
+      printf("AliAnalysisTaskCombinHF::DoMixingWithPools ERROR: read event does not match to the stored one\n");
+      delete karray1;
+      continue;
+    }
     for(Int_t iEv2=0; iEv2<nEvents; iEv2++){
       if(iEv2==iEv1) continue;
       fEventBuffer[poolIndex]->GetEvent(iEv2);
-      TObjArray* parray2=new TObjArray(*parray);
+      Double_t zVertex2=zVertex;
+      Double_t mult2=mult;
+      if(TMath::Abs(zVertex2-zVertex1)<0.0001 && TMath::Abs(mult2-mult1)<0.001){
+	printf("AliAnalysisTaskCombinHF::DoMixingWithPools ERROR: same event in mixing??? %d %d   %f %f  %f %f\n",iEv1,iEv2,zVertex1,zVertex2,mult1,mult2);
+	continue;
+      }
+      TObjArray* parray2=(TObjArray*)parray->Clone();
       Int_t nPions=parray2->GetEntries();
+      Int_t nKaonsForCheck=karray->GetEntries();
+      sscanf((eventInfo->String()).Data(),"Ev%d_esd%d_Pi%d_K%d",&evId2,&esdId2,&np2,&nk2);
+      if(nk2!=nKaonsForCheck || np2!=nPions){ 
+	printf("AliAnalysisTaskCombinHF::DoMixingWithPools ERROR: read event does not match to the stored one\n");
+	delete parray2;
+	continue;
+      }
+      if(evId2==evId1 && esdId2==esdId1){
+ 	printf("AliAnalysisTaskCombinHF::DoMixingWithPools ERROR: same event in mixing??? %d %d   nK=%d %d  nPi=%d %d\n",evId1,evId2,nKaons,nKaonsForCheck,nPionsForCheck,nPions);
+	delete parray2;
+	continue;
+      }     
       TObjArray* parray3=0x0;
       Int_t nPions3=0;
       if(fMeson!=kDzero){
@@ -1035,7 +1230,7 @@ void AliAnalysisTaskCombinHF::DoMixing(Int_t poolIndex){
 	if(nEvents==2) iEv3=iEv1;
 	if(iEv3<0) iEv3=iEv2-1;
 	fEventBuffer[poolIndex]->GetEvent(iEv3);
-	parray3=new TObjArray(*parray);
+	parray3=(TObjArray*)parray->Clone();
 	nPions3=parray3->GetEntries();
       }
       for(Int_t iTr1=0; iTr1<nKaons; iTr1++){
@@ -1067,6 +1262,8 @@ void AliAnalysisTaskCombinHF::DoMixing(Int_t poolIndex){
 		}
 	      }
 	    }
+	  }else if(chargePi1*chargeK>0){
+	    if(fMeson==kDzero) FillMEHistosLS(421,2,tmpRD2,px,py,pz,pdg0,chargePi1);
 	  }
 	}
       }
@@ -1082,13 +1279,16 @@ void AliAnalysisTaskCombinHF::DoMixing(Int_t poolIndex){
 void AliAnalysisTaskCombinHF::FinishTaskOutput()
 {
   // perform mixed event analysis
-  if(!fDoEventMixing) return;
+  if(fDoEventMixing==0) return;
   printf("AliAnalysisTaskCombinHF: FinishTaskOutput\n");
 
-  Int_t npools=fNzVertPools*fNMultPools;
-  for(Int_t i=0; i<npools; i++){
-    Int_t nEvents=fEventBuffer[i]->GetEntries();
-    if(nEvents>1) DoMixing(i);
+  if(fDoEventMixing==1){
+    for(Int_t i=0; i<fNOfPools; i++){
+      Int_t nEvents=fEventBuffer[i]->GetEntries();
+      if(nEvents>1) DoMixingWithPools(i);	  
+    }
+  }else if(fDoEventMixing==2){
+    DoMixingWithCuts();
   }
 }
 //_________________________________________________________________

@@ -123,8 +123,8 @@ void AddTask_GammaCalo_pPb(  Int_t trainConfig = 1,  //change different set of c
 		eventCutArray[ 0] = "8000001"; clusterCutArray[0] = "10000040022030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // EMCAL clusters
 		eventCutArray[ 1] = "8005201"; clusterCutArray[1] = "10000040022030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters
 	} else if (trainConfig == 2) {	
-		eventCutArray[ 0] = "8000001"; clusterCutArray[0] = "20000030022000000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // PHOS clusters
-		eventCutArray[ 1] = "8006201"; clusterCutArray[1] = "20000030022000000"; mesonCutArray[1] = "01525065000000"; //standard cut, kPHI7	// PHOS clusters	
+		eventCutArray[ 0] = "8000001"; clusterCutArray[0] = "20000040053200000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // PHOS clusters
+		eventCutArray[ 1] = "8006201"; clusterCutArray[1] = "20000040053200000"; mesonCutArray[1] = "01525065000000"; //standard cut, kPHI7	// PHOS clusters	
 	} else if (trainConfig == 3){ 
 		eventCutArray[ 0] = "8008101"; clusterCutArray[0] = "10000040022030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kEMCEGA based on INT7 // EMCAL clusters
 		eventCutArray[ 1] = "8008301"; clusterCutArray[1] = "10000040022030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMCEG1 based on INT7 // EMCAL clusters

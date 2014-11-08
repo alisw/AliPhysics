@@ -54,7 +54,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   void         FillAcceptanceHistograms();
   
-  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag, Int_t maxCellEFraction) ;
+  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag, Float_t maxCellEFraction) ;
   
   void         SwitchOnFillShowerShapeHistograms()    { fFillSSHistograms      = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistograms()   { fFillSSHistograms      = kFALSE ; }  
@@ -92,7 +92,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       IsTrackMatchRejectionOn()        const { return fRejectTrackMatch   ; }
   void         SwitchOnTrackMatchRejection()          { fRejectTrackMatch = kTRUE  ; }
   void         SwitchOffTrackMatchRejection()         { fRejectTrackMatch = kFALSE ; }  
-	  
+  
   void         FillNOriginHistograms(Int_t n)         { fNOriginHistograms = n ; 
     if(n > 14) fNOriginHistograms = 14; }
   void         FillNPrimaryHistograms(Int_t n)        { fNPrimaryHistograms= n ;
@@ -315,7 +315,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,38)
+  ClassDef(AliAnaPhoton,39)
 
 } ;
  

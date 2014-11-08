@@ -20,6 +20,7 @@
 #include "AliPID.h"  
 #include "AliPIDResponse.h"
 #include "AliCentrality.h"
+#include "TCutG.h"
 
 
 
@@ -41,28 +42,29 @@ class AliAnalysisTaskPIDconfig : public AliAnalysisTaskSE {
   
   
 public:
-  AliAnalysisTaskPIDconfig();
-  AliAnalysisTaskPIDconfig(const char *name);
-  virtual ~AliAnalysisTaskPIDconfig();
+    AliAnalysisTaskPIDconfig();
+    AliAnalysisTaskPIDconfig(const char *name);
+    virtual ~AliAnalysisTaskPIDconfig();
 
-  virtual void UserCreateOutputObjects();
-  virtual void UserExec(Option_t * /*option*/);
+    virtual void UserCreateOutputObjects();
+    virtual void UserExec(Option_t * /*option*/);
 
-  void SetFilterBit(Double_t b){fFilterBit = b;}
-  void SetCentralityPercentileMin(Int_t b){fCentralityPercentileMin = b;}
-  void SetCentralityPercentileMax(Int_t b){fCentralityPercentileMax = b;}
-  void SetCentralityEstimator(TString b){fCentralityEstimator = b;}
-  void SetUseCentrality(Bool_t b=kTRUE){fUseCentrality = b;}
-  void SetCentralityTrigger(Int_t b=AliVEvent::kMB){ fTriggerSelection = b;}
-  void SetDCAxyCut(Int_t b){fDCAxyCut = b;}
-  void SetDCAzCut(Int_t b){fDCAzCut = b;}
-  void SetCutTPCmultiplicityOutliersAOD(Bool_t b){fCutTPCmultiplicityOutliersAOD = b;}
-  void SetData2011(Bool_t b){fData2011 = b;}
-  void CheckCentrality(AliVEvent *event,Bool_t &centralitypass); //to use only events with the correct centrality....
-  void SetCuts(Bool_t b){fPIDcuts = b;}
+    void SetFilterBit(Double_t b){fFilterBit = b;}
+    void SetCentralityPercentileMin(Int_t b){fCentralityPercentileMin = b;}
+    void SetCentralityPercentileMax(Int_t b){fCentralityPercentileMax = b;}
+    void SetCentralityEstimator(TString b){fCentralityEstimator = b;}
+    void SetUseCentrality(Bool_t b=kTRUE){fUseCentrality = b;}
+    void SetCentralityTrigger(Int_t b=AliVEvent::kMB){ fTriggerSelection = b;}
+    void SetDCAxyCut(Int_t b){fDCAxyCut = b;}
+    void SetDCAzCut(Int_t b){fDCAzCut = b;}
+    void SetCutTPCmultiplicityOutliersAOD(Bool_t b){fCutTPCmultiplicityOutliersAOD = b;}
+    void SetData2011(Bool_t b){fData2011 = b;}
+    void CheckCentrality(AliVEvent *event,Bool_t &centralitypass); //to use only events with the correct centrality....
+    void SetCuts(Bool_t b){fPIDcuts = b;}
   //void MultiplicityOutlierCut(AliVEvent *event,Bool_t &centralitypass,Int_t ntracks);
-  void SetPIDcontoursList(TList* b){fContourCutList = b;}
+    void SetPIDcontoursList(TDirectory* b){fContourCutList = b;}
   //TGraph* GetPIDcontours(TString specie, Double_t Plow, Double_t Phigh,Int_t centMin, Int_t centMax){}
+    void GetPIDContours();
 
 protected:  
 
@@ -86,7 +88,7 @@ private:
     Bool_t                 fCutTPCmultiplicityOutliersAOD;
     Bool_t                 fPIDcuts;
     TString                fCentralityEstimator;   //"V0M","TRK","TKL","ZDC","FMD"
-    TList                 *fContourCutList;
+    TDirectory            *fContourCutList;
     TList                 *fListQA;           // List of all lists
     TList                 *fListQAtpctof;     //! List with combined PID from TPC + TOF
     TList                 *fListQAInfo;
@@ -108,7 +110,7 @@ private:
     TH2F                  *fHistdEdxVsPTPCafterPID;
     TH3F                  *fhistNsigmaP;
     TH3F                  *fhistNsigmaPt;
-
+    TCutG                 *fContourCut[3][10];
 
 
   //qa object initialisation

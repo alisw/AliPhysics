@@ -35,17 +35,53 @@ function hideAll()
 	i++;
     }
 }
+/*function expandAll()
+  {
+  hideAll();
+  var i = 1;
+  while (true) { 
+  var nam = 'r' + i;
+  var row = document.getElementById(nam);
+  if (row == null) break;
+  // console.log('Closing ' + nam);
+  toggle(nam, false);
+  i++;
+  }
+  }*/
+    
 function expandAll()
 {
     hideAll();
+    var max = document.getElementById("maxExpand").value;
+    console.log("Got maximum level to be " + max);
+    expandRecursive(null, 1, max);
+}
+
+function changeDepth(lvl)
+{
+    document.getElementById("currentMax").value = lvl;
+}
+function expandRecursive(parent,lvl,max)
+{
+    if (lvl > max) return;
+    
+    console.log('Expanding recursively @ lvl=' + lvl + '/' + max + ' ' + parent);
+
     var i = 1;
+    var p = lvl == 1 ? "r" : parent + ".";
+    console.log("Prefix=" + p);
+ 
     while (true) { 
-	var nam = 'r' + i;
+	var nam = p + i;
 	var row = document.getElementById(nam);
 	if (row == null) break;
-	// console.log('Closing ' + nam);
+	console.log("Toggle " + nam);
 	toggle(nam, false);
 	i++;
+	
+	if (lvl+1 > max) continue;
+	console.log("Recursing into " + nam);
+	expandRecursive(nam,lvl+1,max);
     }
 }
     

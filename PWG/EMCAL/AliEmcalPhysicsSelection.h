@@ -1,8 +1,6 @@
 #ifndef ALIEMCALPHYSICSSELECTION_H
 #define ALIEMCALPHYSICSSELECTION_H
 
-// $Id$
-
 #include "AliPhysicsSelection.h"
 
 class AliEmcalPhysicsSelection: public AliPhysicsSelection
@@ -27,6 +25,7 @@ class AliEmcalPhysicsSelection: public AliPhysicsSelection
   void           SetMarkLedEvent(Bool_t b)     { fMarkLedEvent = b; }
   void           SetSkipFastOnly(Bool_t b)     { fSkipFastOnly = b; }
   void           SetSkipLedEvent(Bool_t b)     { fSkipLedEvent = b; }
+  void           SetSkip1024Bug(Bool_t b)      { fSkip1024Bug  = b; }
   void           SetTrackMinPt(Double_t p)     { fTrackMinPt   = p; }
   void           SetTriggers(UInt_t t)         { fTriggers     = t; }
   void           SetZVertex(Double_t z=10)     { fZvertex      = z; }
@@ -44,6 +43,7 @@ class AliEmcalPhysicsSelection: public AliPhysicsSelection
   Bool_t         fMarkLedEvent;      //=true then mark Led events (only for LHC11a)
   Bool_t         fSkipFastOnly;      //=true then skip FastOnly events (only for LHC11a)
   Bool_t         fSkipLedEvent;      //=true then skip Led events (only for LHC11a)
+  Bool_t         fSkip1024Bug;       //=true then skip 1024 EMC trigger bug (only for LHC11h)
   Double_t       fCellMinE;          //minimum cell energy (<0 -> do not compute)
   Double_t       fClusMinE;          //minimum clus energy (<0 -> do not compute)
   Double_t       fTrackMinPt;        //minimum track pt    (<0 -> do not compute)
@@ -61,6 +61,6 @@ class AliEmcalPhysicsSelection: public AliPhysicsSelection
   Double_t       fClusMaxE;          //!maximum clus energy in event
   Double_t       fTrackMaxPt;        //!maximum track pt in event
 
-  ClassDef(AliEmcalPhysicsSelection, 4); // Emcal physics selection
+  ClassDef(AliEmcalPhysicsSelection, 5); // Emcal physics selection
 };
 #endif

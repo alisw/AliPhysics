@@ -615,7 +615,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 		cutIndex++;
 		if(abs(pi0->Rapidity()-fRapidityShift)>fRapidityCutMeson){
 			if(hist)hist->Fill(cutIndex);
-			if (!IsSignal)	 cout << abs(pi0->Rapidity()-fRapidityShift) << ">" << fRapidityCutMeson << endl;
+// 			if (!IsSignal)	 cout << abs(pi0->Rapidity()-fRapidityShift) << ">" << fRapidityCutMeson << endl;
 			return kFALSE;
 		}
 	}
@@ -624,7 +624,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 	// Opening Angle Cut
 	//fOpeningAngle=2*TMath::ATan(0.134/pi0->P());// physical minimum opening angle
 	if( pi0->GetOpeningAngle() < fOpeningAngle){
-		if (!IsSignal) cout << pi0->GetOpeningAngle() << "<" << fOpeningAngle << endl; 
+// 		if (!IsSignal) cout << pi0->GetOpeningAngle() << "<" << fOpeningAngle << endl; 
 		if(hist)hist->Fill(cutIndex);
 		return kFALSE;
 	}
@@ -638,7 +638,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 	
 	// Alpha Max Cut
 	if(pi0->GetAlpha()>fAlphaCutMeson){
-		if (!IsSignal) cout << pi0->GetAlpha() << ">" << fAlphaCutMeson << endl; 
+// 		if (!IsSignal) cout << pi0->GetAlpha() << ">" << fAlphaCutMeson << endl; 
 		if(hist)hist->Fill(cutIndex);
 		return kFALSE;
 	}
@@ -646,7 +646,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 
 	// Alpha Min Cut
 	if(pi0->GetAlpha()<fAlphaMinCutMeson){
-		if (!IsSignal)cout << pi0->GetAlpha() << "<" << fAlphaMinCutMeson << endl; 
+// 		if (!IsSignal)cout << pi0->GetAlpha() << "<" << fAlphaMinCutMeson << endl; 
 		if(hist)hist->Fill(cutIndex);
 		return kFALSE;
 	}
@@ -657,7 +657,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 
 	if (fDCAGammaGammaCutOn){
 		if (pi0->GetDCABetweenPhotons() > fDCAGammaGammaCut){
-			if (!IsSignal)cout << pi0->GetDCABetweenPhotons() << ">" << fDCAGammaGammaCut << endl; 
+// 			if (!IsSignal)cout << pi0->GetDCABetweenPhotons() << ">" << fDCAGammaGammaCut << endl; 
 			if(hist)hist->Fill(cutIndex);
 			return kFALSE;
 		}
@@ -666,7 +666,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 
 	if (fDCARMesonPrimVtxCutOn){
 		if (pi0->GetDCARMotherPrimVtx() > fDCARMesonPrimVtxCut){
-			if (!IsSignal) cout << pi0->GetDCARMotherPrimVtx() << ">" << fDCARMesonPrimVtxCut << endl; 
+// 			if (!IsSignal) cout << pi0->GetDCARMotherPrimVtx() << ">" << fDCARMesonPrimVtxCut << endl; 
 			if(hist)hist->Fill(cutIndex);
 			return kFALSE;
 		}
@@ -678,7 +678,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 
 	if (fDCAZMesonPrimVtxCutOn){
 		if (abs(pi0->GetDCAZMotherPrimVtx()) > fDCAZMesonPrimVtxCut){
-			if (!IsSignal) cout << pi0->GetDCAZMotherPrimVtx() << ">" << fDCAZMesonPrimVtxCut << endl; 
+// 			if (!IsSignal) cout << pi0->GetDCAZMotherPrimVtx() << ">" << fDCAZMesonPrimVtxCut << endl; 
 			if(hist)hist->Fill(cutIndex);
 			return kFALSE;
 		}

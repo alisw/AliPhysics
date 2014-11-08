@@ -45,6 +45,7 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliTriggerAnalysis.h"
 #include "AliV0ReaderV1.h"
+#include "AliVCaloCells.h"
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
 
@@ -1977,7 +1978,7 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, Al
 }
 
 //_________________________________________________________________________
-Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVEvent *InputEvent, AliMCEvent *MCEvent, Int_t isHeavyIon){
+Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVEvent *InputEvent, AliMCEvent *MCEvent, Int_t isHeavyIon, Bool_t isEMCALAnalysis){
 
 	Bool_t isMC = kFALSE;
 	if (MCEvent){isMC = kTRUE;}
@@ -2005,7 +2006,6 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 	//if V0AND (only) or V0AND with SDD requested but V0AND requested but no fired
 	return 8; // V0AND requested but no fired
 
-
 	
 	if( (IsSpecialTrigger() == 2 || IsSpecialTrigger() == 3) && !isSDDFired && !MCEvent)
 		return 7; // With SDD requested but no fired
@@ -2013,6 +2013,45 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 	if( (IsSpecialTrigger() == 1 || IsSpecialTrigger() == 3) && !hasV0And)
 		return 8; // V0AND requested but no fired
 
+	// Special EMCAL checks due to hardware issues in LHC11a	
+	if (isEMCALAnalysis || IsSpecialTrigger() == 5 || IsSpecialTrigger() == 8 || IsSpecialTrigger() == 9 ){
+		Int_t runnumber = InputEvent->GetRunNumber();
+		if ((runnumber>=144871) && (runnumber<=146860)) { 
+
+			AliVCaloCells *cells   = InputEvent->GetEMCALCells();
+			const Short_t nCells   = cells->GetNumberOfCells();
+			
+			if (InputEvent->IsA()==AliESDEvent::Class()) AliAnalysisManager::GetAnalysisManager()->LoadBranch("EMCALCells.");
+
+			AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+			if (!fInputHandler) return 3;
+			
+			// count cells above threshold
+			Int_t nCellCount[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
+			for(Int_t iCell=0; iCell<nCells; ++iCell) {
+				Short_t cellId = cells->GetCellNumber(iCell);
+				Double_t cellE = cells->GetCellAmplitude(cellId);
+				Int_t sm       = cellId / (24*48);
+				if (cellE>0.1) ++nCellCount[sm];
+			}
+
+			Bool_t fIsLedEvent = kFALSE;
+			if (nCellCount[4] > 100) {
+				fIsLedEvent = kTRUE;
+			} else {
+				if ((runnumber>=146858) && (runnumber<=146860)) {
+					if ((fInputHandler->IsEventSelected() & AliVEvent::kMB) && (nCellCount[3]>=21))
+						fIsLedEvent = kTRUE;
+					else if ((fInputHandler->IsEventSelected() & AliVEvent::kEMC1) && (nCellCount[3]>=35))
+						fIsLedEvent = kTRUE;
+				}
+			}
+			if (fIsLedEvent) {
+				return 9;
+			}
+		}
+	}	
+		
 	if(hCentrality)hCentrality->Fill(GetCentrality(InputEvent));
 	if(hCentralityVsNumberOfPrimaryTracks)
 		hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(InputEvent),

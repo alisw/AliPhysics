@@ -26,6 +26,7 @@
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliLog.h"
+#include "AliPicoTrack.h"
 
 #include <AliEMCalPtTaskTrackSelectionESD.h>
 
@@ -108,7 +109,14 @@ TObjArray* AliEMCalPtTaskTrackSelectionESD::GetAcceptedTracks(
 	}
 	TIter trackIter(tracks);
 	AliESDtrack *track(NULL);
-	while((track = dynamic_cast<AliESDtrack *>(trackIter()))){
+	AliPicoTrack *picoTrack(NULL);
+	TObject *containerObject(NULL);
+	while((containerObject = dynamic_cast<TObject *>(trackIter()))){
+	  // Handle pico tracks
+	  if((picoTrack = dynamic_cast<AliPicoTrack *>(containerObject)))
+	    track = dynamic_cast<AliESDtrack *>(picoTrack->GetTrack());
+	  else
+	    track = dynamic_cast<AliESDtrack *>(containerObject);
 		if(fTrackCuts->AcceptTrack(track)) fListOfTracks->AddLast(track);
 	}
 	return fListOfTracks;

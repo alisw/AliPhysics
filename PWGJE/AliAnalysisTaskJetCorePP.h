@@ -172,6 +172,7 @@ private:
    TH1D *fhCentrality;  //Deltaphi between trigger and jet 
    TH1D *fhCentralityAccept;  //Deltaphi between trigger and jet after cut
    TH1D *fhNofMultipleTriggers; // The number of additional triggers in events with at least one trigger 
+   TH1D *fhNofMultipleTriggersCone; // The number of additional triggers in events with at least one trigger 
    TH1D *fhDeltaRMultTriggers; // Angular distributions of mult. triggers. 
 
 
@@ -208,6 +209,7 @@ private:
    TH1D  *fhCellAreaToMedianGen; //how many entries were used to calculate in MC
  
    TH1D *fhNofMultipleTriggersGen; // The number of additional triggers in events with at least one trigger 
+   TH1D *fhNofMultipleTriggersConeGen; // The number of additional triggers in events with at least one trigger in R<0.4 
    TH1D *fhDeltaRMultTriggersGen; // Angular distributions of mult. triggers. 
 
    Bool_t fIsChargedMC;   //flag analysis on MC data with true and on the real+kine data false
@@ -248,7 +250,7 @@ private:
 
    Bool_t fDoubleBinning; //0=use 2 GeV/c bins  ; 1= use 1 GeV/c bins
  
-   ClassDef(AliAnalysisTaskJetCorePP, 12);  //has to end with number larger than 0
+   ClassDef(AliAnalysisTaskJetCorePP, 13);  //has to end with number larger than 0
 };
 
 #endif

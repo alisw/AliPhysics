@@ -6,20 +6,21 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   const char*    usedMCParticles    = "MCParticlesSelected",
   const char*    usedClusters       = "CaloClusters",
   const char*    outClusName        = "CaloClustersCorr",
-  const Double_t hadcorr            = 2.0,
-  const Double_t Eexcl              = 0.00,
-  const Double_t phiMatch           = 0.03,
-  const Double_t etaMatch           = 0.015,
-  const Double_t minPtEt            = 0.15,
-  const UInt_t   pSel               = AliVEvent::kAny,
-  const Bool_t   trackclus          = kTRUE,
-  const Bool_t   doHistos           = kFALSE,
-  const Bool_t   makePicoTracks     = kTRUE,
-  const Bool_t   makeTrigger        = kTRUE,
-  const Bool_t   isEmcalTrain       = kFALSE,
-  const Double_t trackeff           = 1.0,
-  const Bool_t   doAODTrackProp     = kTRUE,
-  const Bool_t   modifyMatchObjs    = kTRUE
+  Double_t hadcorr                  = 2.0,
+  Double_t Eexcl                    = 0.00,
+  Double_t phiMatch                 = 0.03,
+  Double_t etaMatch                 = 0.015,
+  Double_t minPtEt                  = 0.15,
+  UInt_t   pSel                     = AliVEvent::kAny,
+  Bool_t   trackclus                = kTRUE,
+  Bool_t   doHistos                 = kFALSE,
+  Bool_t   makePicoTracks           = kTRUE,
+  Bool_t   makeTrigger              = kTRUE,
+  Bool_t   isEmcalTrain             = kFALSE,
+  Double_t trackeff                 = 1.0,
+  Bool_t   doAODTrackProp           = kTRUE,
+  Bool_t   modifyMatchObjs          = kTRUE,
+  Bool_t   doTriggerQA              = kFALSE
 )
 {
   // Add task macros for all jet related helper tasks.
@@ -51,16 +52,25 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   if ((dType == "ESD") && (clusterColName == "caloClusters"))
     clusterColName = "CaloClusters";
 
-  if (0) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTrackPropagator.C");
-    AliEmcalTrackPropagatorTask *proptask = AddTaskEmcalTrackPropagator();
-    proptask->SelectCollisionCandidates(pSel);
-  }
-
   //----------------------- Trigger Maker -----------------------------------------------------
   if (makeTrigger) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTriggerMaker.C");
-    AliEmcalTriggerMaker *emcalTriggers = AddTaskEmcalTriggerMaker("EmcalTriggers");
+    /*
+     * Parameters (with default values):
+     *   triggersOutName      (const char *)       = "EmcalTriggers",
+     *   triggerSetupOutName  (const char *)       = "EmcalTriggerSetup",
+     *   cellsName            (const char *)       = 0,
+     *   triggersName         (const char *)       = 0,
+     *   taskName             (const char *)       = "AliEmcalTriggerMaker",
+     *   jetLowA              (int)                = 0,
+     *   jetLowB              (int)                = 0,
+     *   jetLowC              (int)                = 0,
+     *   jetHighA             (int)                = 0,
+     *   jetHighB             (int)                = 0,
+     *   jetHighC             (int)                = 0,
+     *   doQA                 (bool)               = kFALSE
+     */
+    AliEmcalTriggerMaker *emcalTriggers = AddTaskEmcalTriggerMaker("EmcalTriggers", "EmcalTriggerSetup", 0, 0, "AliEmcalTriggerMaker", 0, 0, 0, 0, 0, 0, doTriggerQA);
     emcalTriggers->SelectCollisionCandidates(pSel);
   }
 
