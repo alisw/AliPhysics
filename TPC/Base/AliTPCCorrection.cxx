@@ -1502,7 +1502,7 @@ void AliTPCCorrection::PoissonRelaxation3D( TMatrixD**arrayofArrayV, TMatrixD**a
 	    Double_t *arrayVMfastI = &(arrayVMfast[i*columns]);
 	    Double_t *sumChargeDensityFastI=&(sumChargeDensityFast[i*columns]);
 	    for ( Int_t j = jone ; j < columns-1 ; j+=jone ) {
-	      Double_t resSlow,resFast;
+	      Double_t /*resSlow*/resFast;
 // 	      resSlow  = (   coef2[i]          *   arrayV(i-ione,j)
 // 				+ tempratioZ        * ( arrayV(i,j-jone)  +  arrayV(i,j+jone) )
 // 				- overRelaxcoef5[i] *   arrayV(i,j) 
@@ -3070,6 +3070,13 @@ void AliTPCCorrection::AddVisualCorrection(AliTPCCorrection* corr, Int_t positio
   if (position>=fgVisualCorrection->GetEntriesFast())
     fgVisualCorrection->Expand((position+10)*2);
   fgVisualCorrection->AddAt(corr, position);
+}
+
+AliTPCCorrection* AliTPCCorrection::GetVisualCorrection(Int_t position) { 
+  //
+  // Get visula correction registered at index=position
+  //
+  return fgVisualCorrection? (AliTPCCorrection*)fgVisualCorrection->At(position):0;
 }
 
 
