@@ -77,7 +77,9 @@ fhPtPhoton(0),       fhPtPi0(0)
     fhPtPartonTypeNearPhotonIsolated[j][i] = fhPtPartonTypeNearPi0Isolated[j][i] = 0; 
 
     fhPtPartonTypeAwayPhoton[j][i]         = fhPtPartonTypeAwayPi0[j][i]         = 0;            
-    fhPtPartonTypeAwayPhotonIsolated[j][i] = fhPtPartonTypeAwayPi0Isolated[j][i] = 0; 
+    fhPtPartonTypeAwayPhotonIsolated[j][i] = fhPtPartonTypeAwayPi0Isolated[j][i] = 0;
+      
+    fhPtAcceptedGammaJet[j][i] = 0;
     }
   }
   
@@ -116,35 +118,46 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
     return kFALSE; 
   }
   
-  Float_t ptTrig   = fTrigger.Pt();
+  Float_t  ptTrig  = fTrigger.Pt();
+  Float_t phiTrig  = fTrigger.Phi();
+  Float_t etaTrig  = fTrigger.Eta();
+  
   Float_t partonPt = fParton6->Pt();
+  
   Float_t jetPt    = fJet6.Pt();
-  if(iparton==7)
+  Float_t jetPhi   = fJet6.Phi();
+  Float_t jetEta   = fJet6.Eta();
+  
+  Float_t awayJetPt  = fJet7.Pt();
+  Float_t awayJetEta = fJet7.Eta();
+  Float_t awayJetPhi = fJet7.Phi();
+  
+  Int_t nearPDG = fParton6->GetPdgCode();
+  Int_t awayPDG = fParton7->GetPdgCode();
+  
+  if ( iparton == 7 )
   {
     partonPt = fParton7->Pt();
-    jetPt    = fJet7.Pt();
-  }
-  
-  //Get id of parton in near and away side
-  
-  Int_t away = -1;
-  Int_t near = -1;
-  Int_t nearPDG = -1;
-  Int_t awayPDG = -1;
-  
-  //printf("parton 6 pdg = %d, parton 7 pdg = %d\n",fParton6->GetPdgCode(),fParton7->GetPdgCode());
-  
-  if(iparton==6)
-  {
-    nearPDG = fParton6->GetPdgCode();
-    awayPDG = fParton7->GetPdgCode();
-  }
-  else 
-  {
+    
+    jetPt  = fJet7.Pt();
+    jetPhi = fJet7.Phi();
+    jetEta = fJet7.Eta();
+    
+    awayJetPt  = fJet6.Pt();
+    awayJetEta = fJet6.Eta();
+    awayJetPhi = fJet6.Phi();
+
     nearPDG = fParton7->GetPdgCode();
     awayPDG = fParton6->GetPdgCode();
+    
   }
 
+  Float_t deltaPhi = TMath::Abs(phiTrig-awayJetPhi) *TMath::RadToDeg();
+  //printf("Trigger Away jet phi %2.2f\n",deltaPhi);
+  
+  //Get id of parton in near and away side
+  Int_t away = -1;
+  Int_t near = -1;
   if     (nearPDG == 22) near = 0;
   else if(nearPDG == 21) near = 1;
   else                   near = 2;
@@ -152,6 +165,14 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
   if     (awayPDG == 22) away = 0;
   else if(awayPDG == 21) away = 1;
   else                   away = 2;
+  //printf("parton 6 pdg = %d, parton 7 pdg = %d\n",fParton6->GetPdgCode(),fParton7->GetPdgCode());
+
+  AliDebug(1,Form("Trigger pdg %d, (Trigger,JetNear, JetAway): pT (%2.2f,%2.2f,%2.2f), phi (%2.2f,%2.2f,%2.2f), eta (%2.2f,%2.2f,%2.2f); Delta phi trigger-away jet %f; parton type: away side %d; near side %d",
+                  pdgTrig,
+                  ptTrig,jetPt,awayJetPt,
+                  phiTrig*TMath::RadToDeg(),jetPhi*TMath::RadToDeg(),awayJetPhi*TMath::RadToDeg(),
+                  etaTrig,jetEta,awayJetEta,
+                  deltaPhi,away,near));
   
   // RATIOS
   
@@ -172,19 +193,18 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
       fhPtPartonTypeNearPi0[leading[i]][i]->Fill(ptTrig,near);
       fhPtPartonTypeAwayPi0[leading[i]][i]->Fill(ptTrig,away);
       
-      fhZHardPi0[leading[i]][i]  ->Fill(ptTrig,zHard);
+      fhZHardPi0  [leading[i]][i]->Fill(ptTrig,zHard);
       fhZPartonPi0[leading[i]][i]->Fill(ptTrig,zPart);
-      fhZJetPi0[leading[i]][i]   ->Fill(ptTrig,zJet );
+      fhZJetPi0   [leading[i]][i]->Fill(ptTrig,zJet );
       
       if(isolated[i])
       {
         fhPtPartonTypeNearPi0Isolated[leading[i]][i]->Fill(ptTrig,near);
         fhPtPartonTypeAwayPi0Isolated[leading[i]][i]->Fill(ptTrig,away);
         
-        fhZHardPi0Isolated[leading[i]][i]  ->Fill(ptTrig,zHard);
+        fhZHardPi0Isolated  [leading[i]][i]->Fill(ptTrig,zHard);
         fhZPartonPi0Isolated[leading[i]][i]->Fill(ptTrig,zPart);
-        fhZJetPi0Isolated[leading[i]][i]   ->Fill(ptTrig,zJet);
-
+        fhZJetPi0Isolated   [leading[i]][i]->Fill(ptTrig,zJet);
       }
     }// pi0
     // gamma
@@ -193,21 +213,29 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
       fhPtPartonTypeNearPhoton[leading[i]][i]->Fill(ptTrig,near);
       fhPtPartonTypeAwayPhoton[leading[i]][i]->Fill(ptTrig,away);
       
-      fhZHardPhoton[leading[i]][i]  ->Fill(ptTrig,zHard);
+      fhZHardPhoton  [leading[i]][i]->Fill(ptTrig,zHard);
       fhZPartonPhoton[leading[i]][i]->Fill(ptTrig,zPart);
-      fhZJetPhoton[leading[i]][i]   ->Fill(ptTrig,zJet );
+      fhZJetPhoton   [leading[i]][i]->Fill(ptTrig,zJet );
+      
+      if(deltaPhi < 220 && deltaPhi > 140 && TMath::Abs(awayJetEta) < 0.6)
+      {
+        //printf("Accept jet\n");
+        fhPtAcceptedGammaJet[leading[i]][i]->Fill(ptTrig,away);
+      }
+      //else printf("Reject jet!!!\n");
       
       if(isolated[i])
       {
         fhPtPartonTypeNearPhotonIsolated[leading[i]][i]->Fill(ptTrig,near);
         fhPtPartonTypeAwayPhotonIsolated[leading[i]][i]->Fill(ptTrig,away);
         
-        fhZHardPhotonIsolated[leading[i]][i]  ->Fill(ptTrig,zHard);
+        fhZHardPhotonIsolated  [leading[i]][i]->Fill(ptTrig,zHard);
         fhZPartonPhotonIsolated[leading[i]][i]->Fill(ptTrig,zPart);
-        fhZJetPhotonIsolated[leading[i]][i]   ->Fill(ptTrig,zJet);
+        fhZJetPhotonIsolated   [leading[i]][i]->Fill(ptTrig,zJet);
       }
     } // gamma
   } // conditions loop
+  
   
   AliDebug(1,"End TRUE");
   
@@ -318,6 +346,17 @@ TList *  AliAnaGeneratorKine::GetCreateOutputObjects()
     // Leading or not loop
     for(Int_t j = 0; j < 2; j++)
     {
+      
+      fhPtAcceptedGammaJet[j][i]  = new TH2F(Form("hPtAcceptedGammaJet%s%s",leading[j].Data(),name[i].Data()),
+                                            Form("#gamma-jet: %s of all particles%s",leading[j].Data(),title[i].Data()),
+                                            nptbins,ptmin,ptmax,3,0,3);
+      fhPtAcceptedGammaJet[j][i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPtAcceptedGammaJet[j][i]->SetYTitle("Parton type");
+      fhPtAcceptedGammaJet[j][i]->GetYaxis()->SetBinLabel(1,"#gamma");
+      fhPtAcceptedGammaJet[j][i]->GetYaxis()->SetBinLabel(2,"g");
+      fhPtAcceptedGammaJet[j][i]->GetYaxis()->SetBinLabel(3,"q");
+      outputContainer->Add(fhPtAcceptedGammaJet[j][i]);
+
       // Near side parton
       
       fhPtPartonTypeNearPhoton[j][i]  = new TH2F(Form("hPtPartonTypeNearPhoton%s%s",leading[j].Data(),name[i].Data()),
