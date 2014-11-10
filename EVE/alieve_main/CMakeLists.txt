@@ -13,18 +13,33 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-# EVE libraries
-add_subdirectory(EveBase)
-add_subdirectory(EveDet)
-add_subdirectory(EveHLT)
-# EVE executables
-#add_subdirectory(alieve_main)
+# alieve executable
 
-# Installing the macros
-install(DIRECTORY macros DESTINATION EVE)
-install(DIRECTORY alice-macros DESTINATION EVE)
-install(DIRECTORY alice-data DESTINATION EVE)
-install(DIRECTORY hlt-macros DESTINATION EVE)
-install(DIRECTORY icons DESTINATION EVE)
+# Module include folder
+include_directories(${AliRoot_SOURCE_DIR}/EVE/alieve_main)
 
-message(STATUS "EVE enabled")
+# Additional include folders in alphabetical order
+include_directories(
+                    ${AliRoot_SOURCE_DIR}/EVE/EveBase
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                   )
+
+# Sources in alphabetical order
+set(SRCS
+    alieve_main.cxx
+   )
+
+# Headers from sources
+string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+add_executable(alieve ${SRCS})
+target_link_libraries(alieve STEERBase STEER ESD CDB AOD RAWDatabase RAWDatarec ANALYSIS ANALYSISalice ITSbase ITSrec TPCbase TPCrec TPCsim EveBase Core Eve Rint)
+
+if(ZEROMQ_FOUND)
+    target_link_libraries(MONITORzmq)
+    add_definitions(-DZMQ)
+endif(ZEROMQ_FOUND)
+
+
+# Installation
+install(TARGETS ${MODULE} RUNTIME DESTINATION bin)
