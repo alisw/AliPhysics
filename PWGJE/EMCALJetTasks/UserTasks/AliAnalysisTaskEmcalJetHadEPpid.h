@@ -124,6 +124,11 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   // event trigger/mixed selection - setters
   virtual void            SetTriggerEventType(UInt_t te)       { fTriggerEventType = te; }
   virtual void            SetMixedEventType(UInt_t me)         { fMixingEventType = me; }
+  virtual void            SetCentBinSize(Bool_t centbins)      { fCentBinSize = centbins; }
+
+  // set efficiency correction
+  void                    SetDoEffCorr(Int_t effcorr)          { fDoEffCorr = effcorr; }
+  virtual void            SetEffCorrFunc(Double_t efffunc)     { fEffFunctionCorr = efffunc; }
 
   // jet container - setters
   void SetContainerAllJets(Int_t c)         { fContainerAllJets      = c;}
@@ -147,6 +152,7 @@ protected:
   void                   SetfHistEvtSelQALabels(TH1* h) const; // Event Selection Counter
   //virtual Int_t			 AcceptFlavourJet(AliEmcalJet *jet, Int_t NUM, Int_t NUM2, Int_t NUM3); // flavour jet acceptor
   virtual Int_t			 AcceptFlavourJet(AliEmcalJet *jet, Int_t NUM); // flavour jet acceptor
+  Double_t               EffCorrection(Double_t trkETA, Double_t trkPT, Int_t effswitch) const; // efficiency correction function
 
   // parameters of detector to cut on for event
   Double_t               fPhimin;                  // phi min
@@ -169,10 +175,15 @@ protected:
   Int_t			 fMixingTracks;
   Int_t          fNMIXtracks;
   Int_t          fNMIXevents;
+  UInt_t         fCentBinSize; // centrality bin size of mixed event pools
 
   // event selection types
   UInt_t         fTriggerEventType;
   UInt_t         fMixingEventType;
+
+  // efficiency correction
+  Int_t    fDoEffCorr;
+  Double_t       fEffFunctionCorr;
 
   // switches for plots
   Bool_t		 doPlotGlobalRho;
