@@ -77,7 +77,9 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   fJetPtcut(15.0), fJetRad(0.4), fConstituentCut(0.15),
   fesdTrackCuts(0),
   fDoEventMixing(0), fMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
+  fCentBinSize(1),
   fTriggerEventType(AliVEvent::kAny), fMixingEventType(AliVEvent::kAny),
+  fDoEffCorr(0), fEffFunctionCorr(0),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
   allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
@@ -181,7 +183,9 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   fJetPtcut(15.0), fJetRad(0.4), fConstituentCut(0.15),
   fesdTrackCuts(0),
   fDoEventMixing(0), fMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
+  fCentBinSize(1),
   fTriggerEventType(AliVEvent::kAny), fMixingEventType(AliVEvent::kAny),
+  fDoEffCorr(0), fEffFunctionCorr(0),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
   allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
@@ -337,9 +341,12 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   fOutput->Add(fHistJetHaddPhiMID);
   fOutput->Add(fHistLocalRhoJetpt);
 
+  fHistTPCdEdX = new TH2F("TPCdEdX", "TPCdEdX", 400, 0.0, 20.0, 500, 0, 500);
+  fOutput->Add(fHistTPCdEdX);
+
   // create histo's used for general QA
   if (makeQAhistos) {
-    fHistTPCdEdX = new TH2F("TPCdEdX", "TPCdEdX", 2000, 0.0, 100.0, 500, 0, 500); 
+    //fHistTPCdEdX = new TH2F("TPCdEdX", "TPCdEdX", 2000, 0.0, 100.0, 500, 0, 500);
     fHistITSsignal = new TH2F("ITSsignal", "ITSsignal", 2000, 0.0, 100.0, 500, 0, 500);
     //  fHistTOFsignal = new TH2F("TOFsignal", "TOFsignal", 2000, 0.0, 100.0, 500, 0, 500);
     fHistCentrality = new TH1F("fHistCentrality","centrality",100,0,100);
@@ -354,7 +361,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
     fHistMEphieta = new TH2F("fHistMEphieta", "Mixed Event #phi-#eta distribution", 64, -0.5*TMath::Pi(), 1.5*TMath::Pi(), 64,-1.8,1.8);  // was 64 bins
 
     // add to output list
-    fOutput->Add(fHistTPCdEdX);
+    //fOutput->Add(fHistTPCdEdX);
     fOutput->Add(fHistITSsignal);
     //fOutput->Add(fHistTOFsignal);
     fOutput->Add(fHistCentrality);
@@ -620,11 +627,33 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   Double_t centralityBinspp[9] = {0.0, 4., 9, 15, 25, 35, 55, 100.0, 500.0};  
 
   // Setup for Pb-Pb collisions
+  Int_t nCentralityBinsPbPb = 100;
+  Double_t mult = 1.0;
+  if(fCentBinSize==1) { 
+    nCentralityBinsPbPb = 100;
+    mult = 1.0;  
+  } else if(fCentBinSize==2){
+    nCentralityBinsPbPb = 50;
+    mult = 2.0;
+  } else if(fCentBinSize==5){
+    nCentralityBinsPbPb = 20;
+    mult = 5.0;
+  } else if(fCentBinSize==10){
+    nCentralityBinsPbPb = 10;
+    mult = 10.0;
+  }
+  Double_t centralityBinsPbPb[nCentralityBinsPbPb]; // nCentralityBinsPbPb
+  for(Int_t ic=0; ic<nCentralityBinsPbPb; ic++){
+   centralityBinsPbPb[ic]=mult*ic;
+  }
+
+/*
   Int_t nCentralityBinsPbPb = 10; //100;
   Double_t centralityBinsPbPb[nCentralityBinsPbPb+1];
   for(Int_t ic=0; ic<nCentralityBinsPbPb; ic++){
       centralityBinsPbPb[ic]=10.0*ic; //1.0*ic;
   }
+*/
 
   if(fBeam == 0) fHistMult = new TH1F("fHistMult","multiplicity",nCentralityBinspp,centralityBinspp);
   if(fBeam == 1) fHistMult = new TH1F("fHistMult","multiplicity",nCentralityBinsPbPb,centralityBinsPbPb);
@@ -679,12 +708,11 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
 
     if(allpidAXIS) {
       bitcodePID = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7 | 1<<8 | 1<<9 |
-              1<<10 | 1<<11 | 1<<12 | 1<<13 | 1<<14 | 1<<15 | 1<<16 | 1<<17 | 1<<18 | 1<<19 |
-              1<<20;
+              1<<10 | 1<<11 | 1<<12 | 1<<13 | 1<<14 | 1<<15 | 1<<16 | 1<<17 | 1<<18; // | 1<<19 | 1<<20;
       fhnPID = NewTHnSparseFPID("fhnPID", bitcodePID);
     } else {
 	  bitcodePID = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7 | 1<<8 | 1<<9 |
-              1<<10 | 1<<11 | 1<<12 | 1<<13;
+              1<<10 | 1<<11; // | 1<<12 | 1<<13;
       fhnPID = NewTHnSparseFPID("fhnPID", bitcodePID);
 	}
 
@@ -920,7 +948,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
       ptmax=track->Pt();             // max pT track
       iTT=iTracks;                   // trigger tracks
     } // check if Pt>maxpt
-
+    
     if (makeQAhistos) fHistTrackPhi->Fill(track->Phi()); 
     if (makeQAhistos) fHistTrackPt[centbin]->Fill(track->Pt());
     if (makeQAhistos) fHistTrackPtallcent->Fill(track->Pt());
@@ -1099,6 +1127,11 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         Double_t deta=tracketa-jeteta;    // dETA between track and jet
         //Double_t dR=sqrt(deta*deta+dphijh*dphijh);     // difference of R between jet and hadron track		
 
+        // calculate single particle tracking efficiency for correlations
+        //TF2 effCORR = fEffFunctionCorr;
+        Double_t trefficiency = -999;
+        trefficiency = EffCorrection(track->Eta(), track->Pt(), fDoEffCorr);
+
         Int_t ieta = -1;       // initialize deta bin
         Int_t iptjet = -1;     // initialize jet pT bin
         if (makeoldJEThadhistos)  {
@@ -1123,11 +1156,12 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)){
           // set up and fill Jet-Hadron THnSparse
           Double_t triggerEntries[9] = {fCent, jet->Pt(), track->Pt(), deta, dphijh, dEP, zVtx, trCharge, leadjet};
-          if(fDoEventMixing) fhnJH->Fill(triggerEntries);    // fill Sparse Histo with trigger entries
+          //cout<<"itracks#: "<<iTracks<<"   tracking efficiency: "<<trefficiency<<endl;
+          if(fDoEventMixing) fhnJH->Fill(triggerEntries, 1.0/trefficiency);    // fill Sparse Histo with trigger entries
 
           // fill histo's
           if(makeQAhistos) fHistSEphieta->Fill(dphijh, deta); // single event distribution
-          if (makeoldJEThadhistos) fHistJetHBias[centbin][iptjet][ieta]->Fill(dphijh,track->Pt());
+          if(makeoldJEThadhistos) fHistJetHBias[centbin][iptjet][ieta]->Fill(dphijh,track->Pt());
 
           if (makeBIAShistos) {
             fHistJetHaddPhiBias->Fill(dphijh);
@@ -1144,6 +1178,10 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
               fHistJetHaddPhiMIDBias->Fill(dphijh);
             }
 		  } // BIAS histos switch
+
+          if (!fPIDResponse) break; // just return
+          fHistTPCdEdX->Fill(track->Pt(), track->GetTPCsignal());
+
         } // end of check maxtrackpt>ftrackbias or maxclusterpt>fclustbias
 
         // **************************************************************************************************************
@@ -1155,18 +1193,14 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         }
 
         // some variables for PID
-        Double_t pt = -999; 
-        Double_t dEdx = -999;
-        Double_t ITSsig = -999;
-        Double_t TOFsig = -999;
-        Double_t charge = -999;
+        Double_t pt = -999, dEdx = -999, ITSsig = -999, TOFsig = -999, charge = -999;
 
         // nSigma of particles in TPC, TOF, and ITS
         Double_t nSigmaPion_TPC, nSigmaProton_TPC, nSigmaKaon_TPC;
         Double_t nSigmaPion_TOF, nSigmaProton_TOF, nSigmaKaon_TOF;
         Double_t nSigmaPion_ITS, nSigmaProton_ITS, nSigmaKaon_ITS;
 
-        if(doPID){
+        if(doPID && ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)) ){
           // get parameters of track
           charge = track->Charge();    // charge of track
           pt     = track->Pt();        // pT of track
@@ -1198,93 +1232,91 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
           nSigmaProton_ITS = fPIDResponse->NumberOfSigmasITS(track,AliPID::kProton);
 
           // fill detector signal histograms
-          if (makeQAhistos) fHistTPCdEdX->Fill(pt, dEdx);
+          //if (makeQAhistos) fHistTPCdEdX->Fill(pt, dEdx); // temp out
           if (makeQAhistos) fHistITSsignal->Fill(pt, ITSsig);
           //if (makeQAhistos) fHistTOFsignal->Fill(pt, TOFsig);
 
           // Tests to PID pions, kaons, and protons,          (default is undentified tracks)
-          Double_t nPIDtpc = 0;
-          Double_t nPIDits = 0; 
-          Double_t nPIDtof = 0;
+          //Double_t nPIDtpc = 0, nPIDits = 0, nPIDtof = 0;
           Double_t nPID = -99;
 
           // check track has pT < 0.900 GeV  - use TPC pid
           if (pt<0.900 && dEdx>0) {
-	        nPIDtpc = 4;
+	        //nPIDtpc = 4;
             nPID = 1;
 
             // PION check - TPC
             if (TMath::Abs(nSigmaPion_TPC)<2 && TMath::Abs(nSigmaKaon_TPC)>2 && TMath::Abs(nSigmaProton_TPC)>2 ){
               isPItpc = kTRUE;
-              nPIDtpc = 1;
+              //nPIDtpc = 1;
               nPID=2;
             }else isPItpc = kFALSE; 
 
             // KAON check - TPC
             if (TMath::Abs(nSigmaKaon_TPC)<2 && TMath::Abs(nSigmaPion_TPC)>3 && TMath::Abs(nSigmaProton_TPC)>2 ){
               isKtpc = kTRUE;
-              nPIDtpc = 2;
+              //nPIDtpc = 2;
               nPID=3;
             }else isKtpc = kFALSE;
 
             // PROTON check - TPC
             if (TMath::Abs(nSigmaProton_TPC)<2 && TMath::Abs(nSigmaPion_TPC)>3 && TMath::Abs(nSigmaKaon_TPC)>2 ){
               isPtpc = kTRUE;
-              nPIDtpc = 3;
+              //nPIDtpc = 3;
               nPID=4;
             }else isPtpc = kFALSE;
           }  // cut on track pT for TPC
 
           // check track has pT < 0.500 GeV - use ITS pid
           if (pt<0.500 && ITSsig>0) {
-            nPIDits = 4;
+            //nPIDits = 4;
             nPID = 5;
 
             // PION check - ITS
             if (TMath::Abs(nSigmaPion_ITS)<2 && TMath::Abs(nSigmaKaon_ITS)>2 && TMath::Abs(nSigmaProton_ITS)>2 ){
               isPIits = kTRUE;
-              nPIDits = 1; 
+              //nPIDits = 1; 
 	          nPID=6;
             }else isPIits = kFALSE;
 
             // KAON check - ITS
             if (TMath::Abs(nSigmaKaon_ITS)<2 && TMath::Abs(nSigmaPion_ITS)>3 && TMath::Abs(nSigmaProton_ITS)>2 ){
               isKits = kTRUE;
-              nPIDits = 2;
+              //nPIDits = 2;
               nPID=7;
             }else isKits = kFALSE;
 
             // PROTON check - ITS
             if (TMath::Abs(nSigmaProton_ITS)<2 && TMath::Abs(nSigmaPion_ITS)>3 && TMath::Abs(nSigmaKaon_ITS)>2 ){
               isPits = kTRUE;
-              nPIDits = 3;
+              //nPIDits = 3;
 	          nPID=8;
             }else isPits = kFALSE;
           }  // cut on track pT for ITS
 
           // check track has 0.900 GeV < pT < 2.500 GeV - use TOF pid
           if (pt>0.900 && pt<2.500 && TOFsig>0) {
-	        nPIDtof = 4;
+	        //nPIDtof = 4;
             nPID = 9;
 
             // PION check - TOF
             if (TMath::Abs(nSigmaPion_TOF)<2 && TMath::Abs(nSigmaKaon_TOF)>2 && TMath::Abs(nSigmaProton_TOF)>2 ){
               isPItof = kTRUE;
-              nPIDtof = 1;
+              //nPIDtof = 1;
               nPID=10;
             }else isPItof = kFALSE;
 
             // KAON check - TOF
             if (TMath::Abs(nSigmaKaon_TOF)<2 && TMath::Abs(nSigmaPion_TOF)>3 && TMath::Abs(nSigmaProton_TOF)>2 ){
               isKtof = kTRUE;
-              nPIDtof = 2;
+              //nPIDtof = 2;
               nPID=11;
             }else isKtof = kFALSE;
 
             // PROTON check - TOF
             if (TMath::Abs(nSigmaProton_TOF)<2 && TMath::Abs(nSigmaPion_TOF)>3 && TMath::Abs(nSigmaKaon_TOF)>2 ){
               isPtof = kTRUE;
-              nPIDtof = 3;
+              //nPIDtof = 3;
               nPID=12;
             }else isPtof = kFALSE;
           }  // cut on track pT for TOF
@@ -1294,21 +1326,21 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
           // PID sparse getting filled 
           if (allpidAXIS) { // FILL ALL axis
-			Double_t pid_EntriesALL[21] = {fCent,pt,charge,deta,dphijh,leadjet,zVtx,dEP,jetPt,
+			Double_t pid_EntriesALL[19] = {fCent,pt,charge,deta,dphijh,leadjet,zVtx,dEP,jetPt,
                                       nSigmaPion_TPC, nSigmaPion_TOF, // pion nSig values in TPC/TOF
-  				      				  nPIDtpc, nPIDits, nPIDtof,       // PID label for each detector
+  				      				  nPID, //nPIDtpc, nPIDits, nPIDtof,       // PID label for each detector
  									  nSigmaProton_TPC, nSigmaKaon_TPC,  // nSig in TPC
                                       nSigmaPion_ITS, nSigmaProton_ITS, nSigmaKaon_ITS,  // nSig in ITS
                                       nSigmaProton_TOF, nSigmaKaon_TOF,  // nSig in TOF
                                       }; //array for PID sparse     
-		    fhnPID->Fill(pid_EntriesALL);
+		    fhnPID->Fill(pid_EntriesALL, 1.0/trefficiency);
 		  } else {
             // PID sparse getting filled 
-            Double_t pid_Entries[14] = {fCent,pt,charge,deta,dphijh,leadjet,zVtx,dEP,jetPt,
+            Double_t pid_Entries[12] = {fCent,pt,charge,deta,dphijh,leadjet,zVtx,dEP,jetPt,
                                       nSigmaPion_TPC, nSigmaPion_TOF, // pion nSig values in TPC/TOF
-  				      				  nPIDtpc, nPIDits, nPIDtof       // PID label for each detector
+  				      				  nPID //nPIDtpc, nPIDits, nPIDtof       // PID label for each detector
                                       }; //array for PID sparse                           
-            fhnPID->Fill(pid_Entries);   // fill Sparse histo of PID tracks 
+            fhnPID->Fill(pid_Entries, 1.0/trefficiency);   // fill Sparse histo of PID tracks 
 		  } // minimal pid sparse filling
 
        	} // end of doPID check
@@ -1454,13 +1486,17 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
               Double_t dEP = RelativeEPJET(jet->Phi(),fEPV0);	     // difference between jet and EP
 		      Double_t mixcharge = part->Charge();
               //Double_t DR=TMath::Sqrt(DPhi*DPhi+DEta*DEta);      // difference in R
-                           
+
+              // calculate single particle tracking efficiency of mixed events for correlations
+              Double_t mixefficiency = -999;
+              mixefficiency = EffCorrection(part->Eta(), part->Pt(), fDoEffCorr);                           
+
               // create / fill mixed event sparse
               Double_t triggerEntries[9] = {fCent,jet->Pt(),part->Pt(),DEta,DPhi,dEP,zVtx, mixcharge, leadjet}; //array for ME sparse
-              fhnMixedEvents->Fill(triggerEntries,1./nMix);   // fill Sparse histo of mixed events
+              fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));   // fill Sparse histo of mixed events
 
               fHistEventQA->Fill(18); // event mixing - nbgtracks
-              if(makeextraCORRhistos) fHistMEphieta->Fill(DPhi,DEta, 1./nMix);
+              if(makeextraCORRhistos) fHistMEphieta->Fill(DPhi,DEta, 1./(nMix*mixefficiency));
             } // end of background track loop
           } // end of filling mixed-event histo's
         } // end of check for biased jet triggers
@@ -1607,7 +1643,7 @@ Double_t AliAnalysisTaskEmcalJetHadEPpid::RelativePhi(Double_t mphi,Double_t vph
 }
 
 //_________________________________________________________________________
-Double_t AliAnalysisTaskEmcalJetHadEPpid:: RelativeEPJET(Double_t jetAng, Double_t EPAng) const
+Double_t AliAnalysisTaskEmcalJetHadEPpid::RelativeEPJET(Double_t jetAng, Double_t EPAng) const
 { // function to calculate angle between jet and EP in the 1st quadrant (0,Pi/2)
   Double_t dphi = (EPAng - jetAng);
   
@@ -1984,11 +2020,12 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParamsPID(Int_t iEntry, TString &lab
 
    case 11:
       label = "TPC PID determination";
-      nbins = 5;
-      xmin = 0.;
-      xmax = 5.;
+      nbins = 15; //5;
+      xmin = 0.5; //0.;
+      xmax = 15.5; //5.;
       break;
 
+/*
    case 12:
       label = "ITS PID determination";
       nbins = 5;
@@ -2002,50 +2039,51 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParamsPID(Int_t iEntry, TString &lab
       xmin = 0.;
       xmax = 5.;
       break;
+*/
 
-   case 14:
+   case 12:
       label = "N-Sigma of protons in TPC";
       nbins = 200;
       xmin = -10.;
       xmax = 10.;
       break;
 
-   case 15:
+   case 13:
       label = "N-Sigma of kaons in TPC";
       nbins = 200;
       xmin = -10.;
       xmax = 10.;
       break;
 
-   case 16:
+   case 14:
       label = "N-Sigma of pions in ITS";
       nbins = 200;
       xmin = -10.0;
       xmax = 10.0; 
       break;
 
-   case 17:
+   case 15:
       label = "N-Sigma of protons in ITS";
       nbins = 200;
       xmin = -10.;
       xmax = 10.;
       break;
 
-   case 18:
+   case 16:
       label = "N-Sigma of kaons in ITS";
       nbins = 200;
       xmin = -10.;
       xmax = 10.;
       break;
 
-   case 19:
+   case 17:
       label = "N-Sigma of protons in TOF";
       nbins = 200;
       xmin = -10.;
       xmax = 10.;
       break;
 
-   case 20:
+   case 18:
       label = "N-Sigma of kaons in TOF";
       nbins = 200;
       xmin = -10.;
@@ -2285,3 +2323,65 @@ Int_t AliAnalysisTaskEmcalJetHadEPpid::AcceptFlavourJet(AliEmcalJet* fljet, Int_
   // we by default have a flavour tagged jet
   return 1;
 }
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskEmcalJetHadEPpid::EffCorrection(Double_t trackETA, Double_t trackPT, Int_t effSwitch) const {
+  // default (current) parameters
+/*
+  // set min/max range of x & y (track Eta & track pt) 
+  Double_t trETAmin = -0.9; Double_t trETAmax = 0.9;
+  Double_t trPTmin = 0.0; Double_t trPTmax = 20.0;
+  Int_t npar = 10;
+  //TF2 TRefficiency = TRefficiency = new TF2("eff", EffFunctionCorr, trETAmin, trETAmax, trPTmin, trPTmax, npar);
+  TRefficiency = new TF2("eff", "([0]*exp(-pow([1]/x,[2])) + [3]*x) * ( (y>-0.07)*([4] + [5]*y + [6]*y*y) + (y<=-0.07)*([7] + [8]*y + [9]*y*y) ) ", trETAmin, trETAmax, trPTmin, trPTmax, npar);
+*/
+
+  // set parameter values
+  Double_t p[10] = {9.30132e-01, 9.78828e-02, 1.50626e+00, -1.30398e-02, 9.04935e-01, 2.93456e-01, -3.84654e-01, 8.64688e-01, -2.59244e-01, -3.50544e-01};  
+  Double_t m[10] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+  Double_t n[10] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+  Double_t q[10] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+
+  // x-variable = track pt, y-variable = track eta
+  Double_t x = trackPT;
+  Double_t y = trackETA;
+  Double_t TRefficiency = -999;
+
+  // Case 2, 3, 4 - Waiting for Natasha's parametrizations..
+  // set up a switch for different parameter values...
+  switch(effSwitch) {
+    case 1 :
+      // first switch value, initial set of parameters on low statistics data for Semi-Good (LHC11h) Run
+      //Double_t p[] = {9.30132e-01, 9.78828e-02, 1.50626e+00, -1.30398e-02, 9.04935e-01, 2.93456e-01, -3.84654e-01, 8.64688e-01, -2.59244e-01, -3.50544e-01};
+      
+      // calculate tracking efficiency as function of track pt and track eta
+      TRefficiency = (p[0]*exp(-pow(p[1]/x,p[2])) + p[3]*x) * ( (y>-0.07)*(p[4] + p[5]*y + p[6]*y*y) + (y<=-0.07)*(p[7] + p[8]*y + p[9]*y*y) );
+      break;
+
+    case 2 :
+      // Parameter values for Semi-GOOD TPC (LHC11h) runs:
+      TRefficiency = (m[0]*exp(-pow(m[1]/x,m[2])) + m[3]*x) * ( (y>-0.07)*(m[4] + m[5]*y + m[6]*y*y) + (y<=-0.07)*(m[7] + m[8]*y + m[9]*y*y) );
+      TRefficiency = 1.0;
+      break;
+
+    case 3 :
+      // Parameter values for GOOD TPC (LHC11h) runs:
+      TRefficiency = (n[0]*exp(-pow(n[1]/x,n[2])) + n[3]*x) * ( (y>-0.07)*(n[4] + n[5]*y + n[6]*y*y) + (y<=-0.07)*(n[7] + n[8]*y + n[9]*y*y) );
+      TRefficiency = 1.0;
+      break;
+
+    case 4 :
+      // Parameter values for tweaking efficiency function..
+      TRefficiency = (q[0]*exp(-pow(q[1]/x,q[2])) + q[3]*x) * ( (y>-0.07)*(q[4] + q[5]*y + q[6]*y*y) + (y<=-0.07)*(q[7] + q[8]*y + q[9]*y*y) );
+      TRefficiency = 1.0;
+      break;
+
+    default :
+      // no Efficiency Switch option selected.. therefore don't correct, and set eff = 1
+      TRefficiency = 1.0;
+
+  }
+
+  return TRefficiency;
+}
+
