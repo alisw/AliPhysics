@@ -20,8 +20,7 @@ set(MODULE ANALYSIS)
 include_directories(${AliRoot_SOURCE_DIR}/ANALYSIS/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS} 
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+include_directories(${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order
@@ -47,7 +46,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase XMLParser)
+set(LIBDEPS STEERBase Core Gpad Hist Net RIO Tree XMLParser)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files

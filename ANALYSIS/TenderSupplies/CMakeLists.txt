@@ -24,13 +24,11 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/Tender
-                    ${AliRoot_SOURCE_DIR}/EMCAL
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALrec
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
                     ${AliRoot_SOURCE_DIR}/CORRFW
                     ${AliRoot_SOURCE_DIR}/OADB
-                    ${AliRoot_SOURCE_DIR}/PHOS
                     ${AliRoot_SOURCE_DIR}/PHOS/PHOSbase
                     ${AliRoot_SOURCE_DIR}/PHOS/PHOSrec
                     ${AliRoot_SOURCE_DIR}/PHOS/PHOSUtils
@@ -39,18 +37,12 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
-                    ${AliRoot_SOURCE_DIR}/T0
                     ${AliRoot_SOURCE_DIR}/T0/T0rec
-                    ${AliRoot_SOURCE_DIR}/TOF/
                     ${AliRoot_SOURCE_DIR}/TOF/TOFbase
                     ${AliRoot_SOURCE_DIR}/TOF/TOFrec
-                    ${AliRoot_SOURCE_DIR}/TPC
                     ${AliRoot_SOURCE_DIR}/TPC/Base
                     ${AliRoot_SOURCE_DIR}/TPC/TPCbase
-                    ${AliRoot_SOURCE_DIR}/TRD
-                    ${AliRoot_SOURCE_DIR}/TRD/Cal
                     ${AliRoot_SOURCE_DIR}/TRD/TRDbase
-                    ${AliRoot_SOURCE_DIR}/VZERO
                     ${AliRoot_SOURCE_DIR}/VZERO/VZERObase
                     ${AliRoot_SOURCE_DIR}/VZERO/VZEROrec
                    )
@@ -81,11 +73,12 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSIS ANALYSISalice Tender EMCAL EMCALbase EMCALrec EMCALUtils CORRFW OADB PHOS PHOSbase PHOSrec PHOSUtils AOD CDB ESD STEER STEERBase T0 T0rec TOF TOFbase TOFrec TPC TPCBase TRD TRDCal TRDBase VZERO VZEROBase VZEROrec)
+set(LIBDEPS ANALYSIS ANALYSISalice Tender EMCALbase EMCALrec EMCALUtils CORRFW OADB PHOSbase PHOSrec PHOSUtils AOD CDB ESD STEER STEERBase T0rec TOFbase TOFrec TPCbase TRDbase VZERObase VZEROrec Core Geom Gpad Graf Hist MathCore Matrix Physics RIO Tree)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+target_link_libraries(${MODULE} ANALYSIS ANALYSISalice Tender EMCALbase EMCALrec EMCALUtils CORRFW OADB PHOSbase PHOSrec PHOSUtils AOD CDB ESD STEER STEERBase T0rec TOFbase TOFrec TPCbase TRDbase VZERObase VZEROrec Core Geom Gpad Graf Hist MathCore Matrix Physics RIO Tree)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
