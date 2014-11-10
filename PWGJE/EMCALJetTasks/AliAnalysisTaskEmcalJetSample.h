@@ -39,6 +39,9 @@ class AliAnalysisTaskEmcalJetSample : public AliAnalysisTaskEmcalJet {
   TH3                        *fHistPtDEtaDPhiTrackClus; //!track pt, delta eta, delta phi to matched cluster
   TH3                        *fHistPtDEtaDPhiClusTrack; //!cluster pt, delta eta, delta phi to matched track
 
+  TH1                        *fHistClustDx; //!
+  TH1                        *fHistClustDz; //!
+
   AliJetContainer            *fJetsCont;                   //!Jets
   AliParticleContainer       *fTracksCont;                 //!Tracks
   AliClusterContainer        *fCaloClustersCont;           //!Clusters  
@@ -47,6 +50,6 @@ class AliAnalysisTaskEmcalJetSample : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetSample(const AliAnalysisTaskEmcalJetSample&);            // not implemented
   AliAnalysisTaskEmcalJetSample &operator=(const AliAnalysisTaskEmcalJetSample&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetSample, 3) // jet sample analysis task
+  ClassDef(AliAnalysisTaskEmcalJetSample, 4) // jet sample analysis task
 };
 #endif
