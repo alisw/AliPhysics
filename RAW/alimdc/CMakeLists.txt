@@ -33,7 +33,7 @@ set(ROOTEXTRALIBS Geom VMC Minuit)
 
 # Add an executable to the project using the specified source files
 add_executable(${MODULE} alimdc_main.cxx)
-target_link_libraries(${MODULE} STEERBase MDC RAWDatabase RAWDatarec ESD  ${ROOTEXTRALIBS} ${ROOT_LIBRARIES})
+target_link_libraries(${MODULE} STEERBase ESD MDC RAWDatabase RAWDatarec  ${ROOTEXTRALIBS} ${ROOT_LIBRARIES})
 
 # Installation
 install(TARGETS ${MODULE} RUNTIME DESTINATION bin)

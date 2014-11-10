@@ -29,8 +29,9 @@ include_directories(${AliRoot_SOURCE_DIR}/HLT/BASE
                    )
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order
@@ -83,6 +84,7 @@ set(SRCS
     AliHLTOfflineInterface.cxx
     AliHLTOnlineConfiguration.cxx
     AliHLTOUT.cxx
+    AliHLTOUTComponent.cxx
     AliHLTOUTHandlerChain.cxx
     AliHLTOUTHandlerDetectorDDL.cxx
     AliHLTOUTHandlerEquId.cxx
@@ -99,7 +101,6 @@ set(SRCS
     AliHLTScalars.cxx
     AliHLTShuttleInterface.cxx
     AliHLTSpacePointContainer.cxx
-
     AliHLTSystem.cxx
     AliHLTTask.cxx
     AliHLTTrackGeometry.cxx
@@ -128,7 +129,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS RAWDatabase AliHLTHOMER)
+set(LIBDEPS STEERBase RAWDatabase AliHLTHOMER)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files

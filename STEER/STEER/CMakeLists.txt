@@ -22,7 +22,7 @@ include_directories(${AliRoot_SOURCE_DIR}/STEER/${MODULE})
 # Additional include directories - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/HLT/sim
+                    ${AliRoot_SOURCE_DIR}/HLT/BASE
                     ${AliRoot_SOURCE_DIR}/RAW/
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
@@ -74,6 +74,7 @@ set(SRCS
     AliHelix.cxx
     AliHit.cxx
     AliHitMap.cxx
+    AliHLTSimulation.cxx
     AliHLTTestInputHandler.cxx
     AliKink.cxx
     AliLego.cxx
@@ -164,15 +165,18 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSIS HLTsim RAWDatabase RAWDatarec CDB ESD)
+set(LIBDEPS ANALYSIS RAWDatabase RAWDatarec CDB ESD Core EG GenVector GeomPainter Geom Gpad Graf Hist MathCore Matrix Minuit Net Physics Proof RIO Tree VMC)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
+set(LIBHLTSIM_VERSION "1")
+add_definitions("-DLIBHLTSIM_VERSION=${LIBHLTSIM_VERSION}")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
+target_link_libraries(${MODULE} ANALYSIS RAWDatabase RAWDatarec CDB ESD HLTbase Core EG GenVector GeomPainter Geom Gpad Graf Hist MathCore Matrix Minuit Net Physics Proof RIO Tree VMC)
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)

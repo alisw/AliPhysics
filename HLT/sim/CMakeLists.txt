@@ -33,9 +33,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order
 set(SRCS
-    AliHLTSimulation.cxx
     AliHLTAgentSim.cxx
-    AliHLTOUTComponent.cxx
    )
 
 # Headers from sources

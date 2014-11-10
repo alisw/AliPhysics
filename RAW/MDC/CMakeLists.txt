@@ -20,13 +20,10 @@ set(MODULE MDC)
 include_directories(${AliRoot_SOURCE_DIR}/RAW/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ITS
-                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
+include_directories(${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
-                    ${AliRoot_SOURCE_DIR}/TPC
                    )
 
 # Sources in alphabetical order
@@ -52,11 +49,12 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ITS ESD RAWDataBase RAWDatarec STEERBase TPC)
+set(LIBDEPS ESD RAWDataBase RAWDatarec STEERBase)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+target_link_libraries(${MODULE} STEERBase ESD RAWDatabase RAWDatarec Core RIO Tree)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
