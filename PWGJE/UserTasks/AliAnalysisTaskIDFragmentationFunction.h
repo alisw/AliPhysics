@@ -224,6 +224,7 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
   virtual void   SetIDFFMode(Int_t idff = 0)      {fIDFFMode = idff;}
   virtual void   SetEffMode(Int_t eff = 1)    {fEffMode = eff;}
   virtual void   SetJSMode(Int_t js = 1)      {fJSMode = js;}
+  virtual void   SetMCPtHardCut(Float_t ptHardCut)      { fMCPtHardCut = ptHardCut; }
 
   static  void   SetProperties(TH1* h,const char* x, const char* y);
   static  void   SetProperties(TH1* h,const char* x, const char* y,const char* z);
@@ -255,12 +256,12 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
     fQATrackNBinsPhi = nPhi; fQATrackPhiMin = phiMin; fQATrackPhiMax = phiMax; }
   
 
-
   Float_t  GetFFRadius() const { return fFFRadius; }
   Float_t  GetFFMinLTrackPt() const { return fFFMinLTrackPt; }
   Float_t  GetFFMaxTrackPt() const { return fFFMaxTrackPt; }
   Float_t  GetFFMinNTracks() const { return fFFMinnTracks; }
   Float_t  GetFFBckgRadius() const { return fFFBckgRadius; }
+  Float_t  GetMCPtHardCut() const  { return fMCPtHardCut; }
   void	   GetJetTracksTrackrefs(TList* l, const AliAODJet* j, Double_t minPtL, Double_t maxPt, Bool_t& isBadPt);
   void	   GetJetTracksPointing(TList* in, TList* out, const AliAODJet* j, Double_t r, Double_t& sumPt, Double_t minPtL, Double_t maxPt,
                                 Bool_t& isBadPt);  
@@ -480,6 +481,8 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
   TH1F*     fh1Trials;            //! sum of trials
   TH1F*     fh1PtHard;            //! pt hard of the event
   TH1F*     fh1PtHardTrials;      //! pt hard of the event
+  
+  TH1F*     fh1EvtsPtHardCut;     //! Number events before and after the cut on MC pT hard
 
   TH1F  *fh1nRecJetsCuts;         //! number of jets from reconstructed tracks per event 
   TH1F  *fh1nGenJets;             //! number of jets from generated tracks per event
@@ -588,6 +591,7 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
   TRandom3* fRandom;                        //! TRandom3 for background estimation 
   
   Bool_t fOnlyLeadingJets;                  // Flag indicating whether some histos are filled with leading jets only or all jets
+  Float_t fMCPtHardCut;                     // Cut on MC pThard (smaller that threshold), if set to non-negative value
   
   AliAnalysisUtils *fAnaUtils;              //! Object to use analysis utils like pile-up rejection
   
@@ -609,7 +613,7 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
   AliFragFuncHistos* fIDFFHistosRecCuts[AliPID::kSPECIES];    //! Identified FF reconstructed tracks after cuts 
   AliFragFuncHistos* fIDFFHistosGen[AliPID::kSPECIES];    //! Identified FF generated tracks after cuts 
 
-  ClassDef(AliAnalysisTaskIDFragmentationFunction, 20);
+  ClassDef(AliAnalysisTaskIDFragmentationFunction, 21);
 };
 
 

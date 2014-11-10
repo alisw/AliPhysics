@@ -149,6 +149,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fh2FFJetPtGen(0x0)
   , fh1Xsec(0x0)
   , fh1Trials(0x0)
+  , fh1EvtsPtHardCut(0x0)
   , fContainerEff(0x0)
   , fQASharedCls(0x0)
   , fDeDxCheck(0x0)
@@ -290,6 +291,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fh2FFJetPtGen(0x0)
   , fh1Xsec(0x0)
   , fh1Trials(0x0)
+  , fh1EvtsPtHardCut(0x0)
   , fContainerEff(0x0)
   , fQASharedCls(0x0)
   , fDeDxCheck(0x0)
@@ -926,8 +928,14 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   fh1Trials->Sumw2();
   fh1Trials->GetXaxis()->SetBinLabel(1, "#sum{ntrials}");
   
+  fh1EvtsPtHardCut = new TH1F("fh1EvtsPtHardCut", "#events before and after MC #it{p}_{T,hard} cut;;Events",2,0,2);
+  fh1EvtsPtHardCut->Sumw2();
+  fh1EvtsPtHardCut->GetXaxis()->SetBinLabel(1, "All");
+  fh1EvtsPtHardCut->GetXaxis()->SetBinLabel(2, "#it{p}_{T,hard}");
+  
   fOutputContainer->Add(fh1Xsec);
   fOutputContainer->Add(fh1Trials);
+  fOutputContainer->Add(fh1EvtsPtHardCut);
   
   if (fDoDeDxCheck || fDoPtResolution) {
     OpenFile(3);
