@@ -108,8 +108,8 @@ void AddTask_GammaCalo_pPb(  Int_t trainConfig = 1,  //change different set of c
 	task->SetIsMC(isMC);
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 2;
-	if (trainConfig==3 || trainConfig==5  ){ numberOfCuts =6;}
-	if (trainConfig==6   ){ numberOfCuts =5;}
+	if (trainConfig == 3 || trainConfig == 5  ){ numberOfCuts = 6;}
+	if (trainConfig == 6 ){ numberOfCuts = 1;}
 	
 	TString *eventCutArray = new TString[numberOfCuts];
 	TString *clusterCutArray = new TString[numberOfCuts];
@@ -142,12 +142,8 @@ void AddTask_GammaCalo_pPb(  Int_t trainConfig = 1,  //change different set of c
 		eventCutArray[ 3] = "8009101"; clusterCutArray[3] = "10000040052030000"; mesonCutArray[3] = "01525065000000"; //standard cut, kEMCEJE based on INT7 // EMCAL clusters
 		eventCutArray[ 4] = "8009301"; clusterCutArray[4] = "10000040052030000"; mesonCutArray[4] = "01525065000000"; //standard cut, kEMCEJ1 based on INT7 // EMCAL clusters
 		eventCutArray[ 5] = "8009501"; clusterCutArray[5] = "10000040052030000"; mesonCutArray[5] = "01525065000000"; //standard cut, kEMCEG2 based on INT7 // EMCAL clusters		
-	} else if (trainConfig == 6){ 
-		eventCutArray[ 0] = "8000001"; clusterCutArray[0] = "10000043052030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // EMCAL clusters
-		eventCutArray[ 1] = "8000001"; clusterCutArray[1] = "10000044052030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters	
-		eventCutArray[ 2] = "8000001"; clusterCutArray[2] = "10000045052030000"; mesonCutArray[2] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters	
-		eventCutArray[ 3] = "8000001"; clusterCutArray[3] = "10000046052030000"; mesonCutArray[3] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters	
-		eventCutArray[ 4] = "8000001"; clusterCutArray[4] = "10000047052030000"; mesonCutArray[4] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters	
+	} else if (trainConfig == 6){ // Validation
+		eventCutArray[ 0] = "8000001"; clusterCutArray[0] = "10000040062000000"; mesonCutArray[0] = "01630031009000"; 	
 	} else {
 		Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;

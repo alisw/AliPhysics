@@ -137,6 +137,20 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
 	fHistoTrueEtaCaloMergedClusterPartConvInvMassPt(NULL),
 	fHistoTruePi0NonMergedElectronPhotonInvMassPt(NULL),
 	fHistoTruePi0NonMergedElectronMergedPhotonInvMassPt(NULL),
+	fHistoTruePi0Category1(NULL),
+	fHistoTrueEtaCategory1(NULL),
+	fHistoTruePi0Category2(NULL),
+	fHistoTrueEtaCategory2(NULL),
+	fHistoTruePi0Category3(NULL),
+	fHistoTrueEtaCategory3(NULL),
+	fHistoTruePi0Category4_6(NULL),
+	fHistoTrueEtaCategory4_6(NULL),
+	fHistoTruePi0Category5(NULL),
+	fHistoTrueEtaCategory5(NULL),
+	fHistoTruePi0Category7(NULL),
+	fHistoTrueEtaCategory7(NULL),
+	fHistoTruePi0Category8(NULL),
+	fHistoTrueEtaCategory8(NULL),
 	fHistoTruePrimaryPi0InvMassPt(NULL),
 	fHistoTruePrimaryEtaInvMassPt(NULL),
 	fHistoTruePrimaryPi0W0WeightingInvMassPt(NULL),
@@ -292,6 +306,20 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
 	fHistoTrueEtaCaloMergedClusterPartConvInvMassPt(NULL),
 	fHistoTruePi0NonMergedElectronPhotonInvMassPt(NULL),
 	fHistoTruePi0NonMergedElectronMergedPhotonInvMassPt(NULL),
+	fHistoTruePi0Category1(NULL),
+	fHistoTrueEtaCategory1(NULL),
+	fHistoTruePi0Category2(NULL),
+	fHistoTrueEtaCategory2(NULL),
+	fHistoTruePi0Category3(NULL),
+	fHistoTrueEtaCategory3(NULL),
+	fHistoTruePi0Category4_6(NULL),
+	fHistoTrueEtaCategory4_6(NULL),
+	fHistoTruePi0Category5(NULL),
+	fHistoTrueEtaCategory5(NULL),
+	fHistoTruePi0Category7(NULL),
+	fHistoTrueEtaCategory7(NULL),
+	fHistoTruePi0Category8(NULL),
+	fHistoTrueEtaCategory8(NULL),
 	fHistoTruePrimaryPi0InvMassPt(NULL),
 	fHistoTruePrimaryEtaInvMassPt(NULL),
 	fHistoTruePrimaryPi0W0WeightingInvMassPt(NULL),
@@ -706,6 +734,22 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 				fHistoTruePi0PtOpenAngle 					= new TH2F*[fnCuts];
 				fHistoTrueEtaPtOpenAngle 					= new TH2F*[fnCuts];
 			}
+			if (fDoMesonQA==2){
+				fHistoTruePi0Category1						= new TH2F*[fnCuts];
+				fHistoTrueEtaCategory1						= new TH2F*[fnCuts];				
+				fHistoTruePi0Category2						= new TH2F*[fnCuts];
+				fHistoTrueEtaCategory2						= new TH2F*[fnCuts];				
+				fHistoTruePi0Category3						= new TH2F*[fnCuts];
+				fHistoTrueEtaCategory3						= new TH2F*[fnCuts];				
+				fHistoTruePi0Category4_6					= new TH2F*[fnCuts];
+				fHistoTrueEtaCategory4_6					= new TH2F*[fnCuts];				
+				fHistoTruePi0Category5						= new TH2F*[fnCuts];
+				fHistoTrueEtaCategory5						= new TH2F*[fnCuts];				
+				fHistoTruePi0Category7						= new TH2F*[fnCuts];
+				fHistoTrueEtaCategory7						= new TH2F*[fnCuts];				
+				fHistoTruePi0Category8						= new TH2F*[fnCuts];
+				fHistoTrueEtaCategory8						= new TH2F*[fnCuts];				
+			}	
 		}
     
     
@@ -1006,6 +1050,37 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 					fHistoTrueEtaPtOpenAngle[iCut] = new TH2F("ESD_TrueEta_Pt_OpenAngle","ESD_TrueEta_Pt_OpenAngle",150,0.03,15.,200,0,2*TMath::Pi());
 					SetLogBinningXTH2(fHistoTrueEtaPtOpenAngle[iCut]);
 					fTrueList[iCut]->Add(fHistoTrueEtaPtOpenAngle[iCut]);
+				}
+				
+				if (fDoMesonQA == 2){
+					fHistoTruePi0Category1[iCut] = new TH2F("ESD_TruePi0Category1_InvMass_Pt","ESD_TruePi0Category1_InvMass_Pt",800,0,0.8,250,0,25);
+					fTrueList[iCut]->Add(fHistoTruePi0Category1[iCut]);
+					fHistoTrueEtaCategory1[iCut] = new TH2F("ESD_TrueEtaCategory1_InvMass_Pt","ESD_TrueEtaCategory1_InvMass_Pt",800,0,0.8,250,0,25);
+					fTrueList[iCut]->Add(fHistoTrueEtaCategory1[iCut]);					
+					fHistoTruePi0Category2[iCut] = new TH2F("ESD_TruePi0Category2_InvMass_Pt","ESD_TruePi0Category2_InvMass_Pt",800,0,0.8,250,0,25);
+					fTrueList[iCut]->Add(fHistoTruePi0Category2[iCut]);
+					fHistoTrueEtaCategory2[iCut] = new TH2F("ESD_TrueEtaCategory2_InvMass_Pt","ESD_TrueEtaCategory2_InvMass_Pt",800,0,0.8,250,0,25);
+					fTrueList[iCut]->Add(fHistoTrueEtaCategory2[iCut]);					
+					fHistoTruePi0Category3[iCut] = new TH2F("ESD_TruePi0Category3_InvMass_Pt","ESD_TruePi0Category3_InvMass_Pt",800,0,0.8,250,0,25);
+					fTrueList[iCut]->Add(fHistoTruePi0Category3[iCut]);
+					fHistoTrueEtaCategory3[iCut] = new TH2F("ESD_TrueEtaCategory3_InvMass_Pt","ESD_TrueEtaCategory3_InvMass_Pt",800,0,0.8,250,0,25);
+					fTrueList[iCut]->Add(fHistoTrueEtaCategory3[iCut]);					
+					fHistoTruePi0Category4_6[iCut] = new TH2F("ESD_TruePi0Category4_6_InvMass_Pt","ESD_TruePi0Category4_6_InvMass_Pt",800,0,0.8,250,0,25);
+					fTrueList[iCut]->Add(fHistoTruePi0Category4_6[iCut]);
+					fHistoTrueEtaCategory4_6[iCut] = new TH2F("ESD_TrueEtaCategory4_6_InvMass_Pt","ESD_TrueEtaCategory4_6_InvMass_Pt",800,0,0.8,250,0,25);
+					fTrueList[iCut]->Add(fHistoTrueEtaCategory4_6[iCut]);					
+					fHistoTruePi0Category5[iCut] = new TH2F("ESD_TruePi0Category5_InvMass_Pt","ESD_TruePi0Category5_InvMass_Pt",800,0,0.8,250,0,25);
+					fTrueList[iCut]->Add(fHistoTruePi0Category5[iCut]);
+					fHistoTrueEtaCategory5[iCut] = new TH2F("ESD_TrueEtaCategory5_InvMass_Pt","ESD_TrueEtaCategory5_InvMass_Pt",800,0,0.8,250,0,25);
+					fTrueList[iCut]->Add(fHistoTrueEtaCategory5[iCut]);					
+					fHistoTruePi0Category7[iCut] = new TH2F("ESD_TruePi0Category7_InvMass_Pt","ESD_TruePi0Category7_InvMass_Pt",800,0,0.8,250,0,25);
+					fTrueList[iCut]->Add(fHistoTruePi0Category7[iCut]);
+					fHistoTrueEtaCategory7[iCut] = new TH2F("ESD_TrueEtaCategory7_InvMass_Pt","ESD_TrueEtaCategory7_InvMass_Pt",800,0,0.8,250,0,25);
+					fTrueList[iCut]->Add(fHistoTrueEtaCategory7[iCut]);					
+					fHistoTruePi0Category8[iCut] = new TH2F("ESD_TruePi0Category8_InvMass_Pt","ESD_TruePi0Category8_InvMass_Pt",800,0,0.8,250,0,25);
+					fTrueList[iCut]->Add(fHistoTruePi0Category8[iCut]);
+					fHistoTrueEtaCategory8[iCut] = new TH2F("ESD_TrueEtaCategory8_InvMass_Pt","ESD_TrueEtaCategory8_InvMass_Pt",800,0,0.8,250,0,25);
+					fTrueList[iCut]->Add(fHistoTrueEtaCategory8[iCut]);					
 				}
 			}
 		}
@@ -1824,8 +1899,12 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
 	// Process True Mesons
 	AliStack *MCStack = fMCEvent->Stack();
 	
-	Bool_t isTruePi0 = kFALSE;
-	Bool_t isTrueEta = kFALSE;
+	Bool_t isTruePi0 				= kFALSE;
+	Bool_t isTrueEta 				= kFALSE;
+	Bool_t isSameConvertedGamma 	= kFALSE;
+	Int_t convertedPhotonLabel0		= -1;
+	Int_t convertedPhotonLabel1		= -1;
+	
 	Int_t gamma0MCLabel = TrueGammaCandidate0->GetCaloPhotonMCLabel(0); 	// get most probable MC label
 	Int_t gamma0MotherLabel = -1;
 
@@ -1836,6 +1915,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
 			if (TrueGammaCandidate0->IsLargestComponentPhoton()){														// for photons its the direct mother 
 				gamma0MotherLabel=gammaMC0->GetMother(0);
 			} else if (TrueGammaCandidate0->IsLargestComponentElectron()){ 												// for electrons its either the direct mother or for conversions the grandmother
+				convertedPhotonLabel0 = gammaMC0->GetMother(0);
 				if (TrueGammaCandidate0->IsConversion()) gamma0MotherLabel=MCStack->Particle(gammaMC0->GetMother(0))->GetMother(0);
 				else gamma0MotherLabel=gammaMC0->GetMother(0); 
 			}
@@ -1855,6 +1935,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
 			if (TrueGammaCandidate1->IsLargestComponentPhoton()){														// for photons its the direct mother 
 				gamma1MotherLabel=gammaMC1->GetMother(0);
 			} else if (TrueGammaCandidate1->IsLargestComponentElectron()){ 												// for electrons its either the direct mother or for conversions the grandmother
+				convertedPhotonLabel1 = gammaMC1->GetMother(0);
 				if (TrueGammaCandidate1->IsConversion()) gamma1MotherLabel=MCStack->Particle(gammaMC1->GetMother(0))->GetMother(0);
 				else gamma1MotherLabel=gammaMC1->GetMother(0); 
 			}
@@ -1868,6 +1949,10 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
 		if(((TParticle*)MCStack->Particle(gamma1MotherLabel))->GetPdgCode() == 221){
 			isTrueEta=kTRUE;
 		}
+	}
+	
+	if (convertedPhotonLabel0 > -1 && convertedPhotonLabel1 > 1){
+		if (convertedPhotonLabel0==convertedPhotonLabel1) isSameConvertedGamma = kTRUE;
 	}
 	
 	if(isTruePi0 || isTrueEta){// True Pion or Eta
@@ -1919,6 +2004,67 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
 				if (isTruePi0) fHistoTruePi0CaloMergedClusterPartConvInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 				if (isTrueEta) fHistoTrueEtaCaloMergedClusterPartConvInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 			}	
+		}
+	
+		if (fDoMesonQA == 2){
+			// category 1: 2 real photons unmerged
+			if (TrueGammaCandidate0->IsLargestComponentPhoton() && !TrueGammaCandidate0->IsMerged() && TrueGammaCandidate1->IsLargestComponentPhoton() && !TrueGammaCandidate1->IsMerged()) {
+				if (isTruePi0) fHistoTruePi0Category1[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+				if (isTrueEta) fHistoTrueEtaCategory1[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+			}
+			// category 2, 3: 1 real photons unmerged,  1 electron (category 2 merged, category 3 unmerged )
+			// -> photon 0 is unconverted
+			if ( (TrueGammaCandidate0->IsLargestComponentPhoton() && !TrueGammaCandidate0->IsMerged()) && (TrueGammaCandidate1->IsLargestComponentElectron() && TrueGammaCandidate1->IsConversion())) {
+				if (isTruePi0){
+					if (TrueGammaCandidate1->IsMerged())	fHistoTruePi0Category2[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+					if (!TrueGammaCandidate1->IsMerged())	fHistoTruePi0Category3[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+				}
+				if (isTrueEta){
+					if (TrueGammaCandidate1->IsMerged())	fHistoTrueEtaCategory2[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+					if (!TrueGammaCandidate1->IsMerged())	fHistoTrueEtaCategory3[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+				}	
+			}
+			// -> photon 1 is unconverted
+			if ( ( TrueGammaCandidate1->IsLargestComponentPhoton() && !TrueGammaCandidate1->IsMerged()) && (TrueGammaCandidate0->IsLargestComponentElectron() && TrueGammaCandidate0->IsConversion())) {
+				if (isTruePi0){
+					if (TrueGammaCandidate0->IsMerged())	fHistoTruePi0Category2[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+					if (!TrueGammaCandidate0->IsMerged())	fHistoTruePi0Category3[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+				}
+				if (isTrueEta){
+					if (TrueGammaCandidate0->IsMerged())	fHistoTrueEtaCategory2[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+					if (!TrueGammaCandidate0->IsMerged())	fHistoTrueEtaCategory3[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+				}	
+			}
+			
+			// category 4 & 6, 5, 7, 8
+			if ( (TrueGammaCandidate0->IsLargestComponentElectron() && TrueGammaCandidate0->IsConversion()) && (TrueGammaCandidate1->IsLargestComponentElectron() && TrueGammaCandidate1->IsConversion()) ){
+				if (isTruePi0){
+					// category 4: both electrons are from same conversion 
+					if (isSameConvertedGamma && !TrueGammaCandidate0->IsMerged() && !TrueGammaCandidate1->IsMerged() ) fHistoTruePi0Category4_6[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+					if (!isSameConvertedGamma ){
+						if (!TrueGammaCandidate0->IsMerged() && !TrueGammaCandidate1->IsMerged()){ 		// category 5: both electrons from different converted photons, electrons not merged
+							fHistoTruePi0Category5[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+						} else if (TrueGammaCandidate0->IsMerged() && TrueGammaCandidate1->IsMerged()){ // category 8: both electrons from different converted photons, both electrons merged		
+							fHistoTruePi0Category8[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());  
+						} else { 																		// category 7: both electrons from different converted photons, 1 electrons not merged, 1 electron merged		
+							fHistoTruePi0Category7[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+						}	
+					}	
+				}
+				if (isTrueEta){
+					// category 4: both electrons are from same conversion 
+					if (isSameConvertedGamma && !TrueGammaCandidate0->IsMerged() && !TrueGammaCandidate1->IsMerged()) fHistoTrueEtaCategory4_6[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+					if (!isSameConvertedGamma ){
+						if (!TrueGammaCandidate0->IsMerged() && !TrueGammaCandidate1->IsMerged()){ 		// category 5: both electrons from different converted photons, electrons not merged
+							fHistoTrueEtaCategory5[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+						} else if (TrueGammaCandidate0->IsMerged() && TrueGammaCandidate1->IsMerged()){ // category 8: both electrons from different converted photons, both electrons merged		
+							fHistoTrueEtaCategory8[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());  
+						} else { 																		// category 7: both electrons from different converted photons, 1 electrons not merged, 1 electron merged		
+							fHistoTrueEtaCategory7[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+						}	
+					}	
+				}
+			}
 		}
 	
 		if (fDoMesonQA > 0){
@@ -2004,13 +2150,16 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
 	
 	// Process True Mesons
 	TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-	Bool_t isTruePi0 = kFALSE;
-	Bool_t isTrueEta = kFALSE;
+	Bool_t isTruePi0 				= kFALSE;
+	Bool_t isTrueEta 				= kFALSE;
+	Bool_t isSameConvertedGamma 	= kFALSE;
+	Int_t convertedPhotonLabel0		= -1;
+	Int_t convertedPhotonLabel1		= -1;
 		
-	Int_t gamma0MCLabel = TrueGammaCandidate0->GetCaloPhotonMCLabel(0); 	// get most probable MC label
-	Int_t gamma0MotherLabel = -1;
-		// check if 
-
+	Int_t gamma0MCLabel 			= TrueGammaCandidate0->GetCaloPhotonMCLabel(0); 	// get most probable MC label
+	Int_t gamma0MotherLabel 		= -1;
+	
+	// check if 
 	if(gamma0MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
 		// Daughters Gamma 0
 		AliAODMCParticle * gammaMC0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0MCLabel));
@@ -2020,6 +2169,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
 				gamma0MotherLabel=gammaMC0->GetMother();
 			} else if (TrueGammaCandidate0->IsLargestComponentElectron()){ 												// for electrons its either the direct mother or for conversions the grandmother
 				if (TrueGammaCandidate0->IsConversion()){
+					convertedPhotonLabel0 = gammaMC0->GetMother();
 					AliAODMCParticle * gammaGrandMotherMC0 =  static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gammaMC0->GetMother()));
 					gamma0MotherLabel=gammaGrandMotherMC0->GetMother();
 				} else gamma0MotherLabel=gammaMC0->GetMother(); 
@@ -2027,10 +2177,10 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
 		}	
 	}
 
-	Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); 	// get most probable MC label
-	Int_t gamma1MotherLabel = -1;
-		// check if 
-
+	Int_t gamma1MCLabel 			= TrueGammaCandidate1->GetCaloPhotonMCLabel(0); 	// get most probable MC label
+	Int_t gamma1MotherLabel 		= -1;
+	
+	// check if 
 	if(gamma1MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
 		// Daughters Gamma 1
 		AliAODMCParticle * gammaMC1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MCLabel));
@@ -2040,6 +2190,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
 				gamma1MotherLabel=gammaMC1->GetMother();
 			} else if (TrueGammaCandidate1->IsLargestComponentElectron()){ 												// for electrons its either the direct mother or for conversions the grandmother
 				if (TrueGammaCandidate1->IsConversion()){
+					convertedPhotonLabel1 = gammaMC1->GetMother();
 					AliAODMCParticle * gammaGrandMotherMC1 =  static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gammaMC1->GetMother()));
 					gamma1MotherLabel=gammaGrandMotherMC1->GetMother();
 				} else gamma1MotherLabel=gammaMC1->GetMother(); 
@@ -2055,6 +2206,11 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
 			isTrueEta=kTRUE;
 		}
 	}
+
+	if (convertedPhotonLabel0 > -1 && convertedPhotonLabel1 > 1){
+		if (convertedPhotonLabel0==convertedPhotonLabel1) isSameConvertedGamma = kTRUE;
+	}
+
 	
 	if(isTruePi0 || isTrueEta){// True Pion or Eta
 		if (isTruePi0)fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
@@ -2107,6 +2263,67 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
 			}	
 		}
 
+		if (fDoMesonQA == 2){
+			// category 1: 2 real photons unmerged
+			if (TrueGammaCandidate0->IsLargestComponentPhoton() && !TrueGammaCandidate0->IsMerged() && TrueGammaCandidate1->IsLargestComponentPhoton() && !TrueGammaCandidate1->IsMerged()) {
+				if (isTruePi0) fHistoTruePi0Category1[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+				if (isTrueEta) fHistoTrueEtaCategory1[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+			}
+			// category 2, 3: 1 real photons unmerged,  1 electron (category 2 merged, category 3 unmerged )
+			// -> photon 0 is unconverted
+			if ( (TrueGammaCandidate0->IsLargestComponentPhoton() && !TrueGammaCandidate0->IsMerged()) && (TrueGammaCandidate1->IsLargestComponentElectron() && TrueGammaCandidate1->IsConversion())) {
+				if (isTruePi0){
+					if (TrueGammaCandidate1->IsMerged())	fHistoTruePi0Category2[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+					if (!TrueGammaCandidate1->IsMerged())	fHistoTruePi0Category3[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+				}
+				if (isTrueEta){
+					if (TrueGammaCandidate1->IsMerged())	fHistoTrueEtaCategory2[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+					if (!TrueGammaCandidate1->IsMerged())	fHistoTrueEtaCategory3[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+				}	
+			}
+			// -> photon 1 is unconverted
+			if ( ( TrueGammaCandidate1->IsLargestComponentPhoton() && !TrueGammaCandidate1->IsMerged()) && (TrueGammaCandidate0->IsLargestComponentElectron() && TrueGammaCandidate0->IsConversion())) {
+				if (isTruePi0){
+					if (TrueGammaCandidate0->IsMerged())	fHistoTruePi0Category2[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+					if (!TrueGammaCandidate0->IsMerged())	fHistoTruePi0Category3[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+				}
+				if (isTrueEta){
+					if (TrueGammaCandidate0->IsMerged())	fHistoTrueEtaCategory2[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+					if (!TrueGammaCandidate0->IsMerged())	fHistoTrueEtaCategory3[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+				}	
+			}
+			
+			// category 4 & 6, 5, 7, 8
+			if ( (TrueGammaCandidate0->IsLargestComponentElectron() && TrueGammaCandidate0->IsConversion()) && (TrueGammaCandidate1->IsLargestComponentElectron() && TrueGammaCandidate1->IsConversion()) ){
+				if (isTruePi0){
+					// category 4: both electrons are from same conversion 
+					if (isSameConvertedGamma && !TrueGammaCandidate0->IsMerged() && !TrueGammaCandidate1->IsMerged() ) fHistoTruePi0Category4_6[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+					if (!isSameConvertedGamma ){
+						if (!TrueGammaCandidate0->IsMerged() && !TrueGammaCandidate1->IsMerged()){ 		// category 5: both electrons from different converted photons, electrons not merged
+							fHistoTruePi0Category5[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+						} else if (TrueGammaCandidate0->IsMerged() && TrueGammaCandidate1->IsMerged()){ // category 8: both electrons from different converted photons, both electrons merged		
+							fHistoTruePi0Category8[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());  
+						} else { 																		// category 7: both electrons from different converted photons, 1 electrons not merged, 1 electron merged		
+							fHistoTruePi0Category7[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+						}	
+					}	
+				}
+				if (isTrueEta){
+					// category 4: both electrons are from same conversion 
+					if (isSameConvertedGamma && !TrueGammaCandidate0->IsMerged() && !TrueGammaCandidate1->IsMerged()) fHistoTrueEtaCategory4_6[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+					if (!isSameConvertedGamma ){
+						if (!TrueGammaCandidate0->IsMerged() && !TrueGammaCandidate1->IsMerged()){ 		// category 5: both electrons from different converted photons, electrons not merged
+							fHistoTrueEtaCategory5[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+						} else if (TrueGammaCandidate0->IsMerged() && TrueGammaCandidate1->IsMerged()){ // category 8: both electrons from different converted photons, both electrons merged		
+							fHistoTrueEtaCategory8[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());  
+						} else { 																		// category 7: both electrons from different converted photons, 1 electrons not merged, 1 electron merged		
+							fHistoTrueEtaCategory7[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+						}	
+					}	
+				}
+			}
+		}
+		
 		if (fDoMesonQA > 0){
 			if (isTruePi0){
 				if ( Pi0Candidate->M() > 0.05 && Pi0Candidate->M() < 0.17){
