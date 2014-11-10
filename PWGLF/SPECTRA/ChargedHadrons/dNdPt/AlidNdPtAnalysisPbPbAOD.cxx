@@ -87,6 +87,7 @@ fPcosPhiCent(0),
 fPsinPhiCent(0),
 // cross check for event plane determination
 fDeltaPhiCent(0),
+fCrossCheckFilterBitPhiCent(0),
 //global
 fIsMonteCarlo(0),
 fEPselector("Q"),
@@ -620,6 +621,17 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fDeltaPhiCent->GetYaxis()->SetTitle("Centrality");
   fDeltaPhiCent->Sumw2();
   
+  Int_t binsFilterBitPhiCent[3]={3,200,fCentralityNbins-1};
+  Double_t minbinsFilterBitPhiCent[3]={0,-2.*TMath::Pi(),0}; 
+  Double_t maxbinsFilterBitPhiCent[3]={3,2.*TMath::Pi(),100};
+  
+  fCrossCheckFilterBitPhiCent = new THnSparseF("fCrossCheckFilterBitPhiCent","fCrossCheckFilterBitPhiCent",3, binsFilterBitPhiCent, minbinsFilterBitPhiCent, maxbinsFilterBitPhiCent);
+  fCrossCheckFilterBitPhiCent->SetBinEdges(2,fBinsCentrality);
+  fCrossCheckFilterBitPhiCent->GetAxis(0)->SetTitle("FilterBit");
+  fCrossCheckFilterBitPhiCent->GetAxis(1)->SetTitle("#phi");
+  fCrossCheckFilterBitPhiCent->GetAxis(2)->SetTitle("Centrality");
+  fCrossCheckFilterBitPhiCent->Sumw2();
+  
   // Add Histos, Profiles etc to List
   fOutputList->Add(fZvPtEtaCent);
   fOutputList->Add(fDeltaphiPtEtaCent);
@@ -674,7 +686,9 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fPsinPhiCent);
   
   fOutputList->Add(fDeltaPhiCent);
-    
+  
+  fOutputList->Add(fCrossCheckFilterBitPhiCent);
+  
   StoreCutSettingsToHistogram();
   
   PostData(1, fOutputList);
@@ -793,34 +807,10 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   if( dCentrality < 0 ) return;
   
   // protection for bias on pt spectra if all triggers selected
-  //   if( (bIsEventSelectedCentral) /*&& (!bIsEventSelectedSemi) && (!bIsEventSelectedMB)*/ && (dCentrality > 10) ) return;
-  //   if( /*(!bIsEventSelectedCentral) &&*/ (bIsEventSelectedSemi) /*&& (!bIsEventSelectedMB)*/ && (dCentrality < 20) && (dCentrality > 50)) return;
   if( (bIsEventSelectedCentral)  && (dCentrality > 10) ) return;
   if( (bIsEventSelectedSemi) && ((dCentrality < 20) || (dCentrality > 50))) return;
   
   fEventStatistics->Fill("after centrality selection",1);
-  
-  // start with track analysis
-//   Int_t *iIndexAcceptedTracks = new Int_t[eventAOD->GetNumberOfTracks()]; // maximum number of track indices, this array can have
-//   Int_t nTotalNumberAcceptedTracks = 0;
-//   for(Int_t i = 0; i < eventAOD->GetNumberOfTracks(); i++) { iIndexAcceptedTracks[i] = 0; }
-//   for(Int_t itrack = 0; itrack < eventAOD->GetNumberOfTracks(); itrack++) 
-//   { 
-// 	track = dynamic_cast<AliAODTrack*>(eventAOD->GetTrack(itrack));
-//  	if(!track) AliFatal("Not a standard AOD");
-// 	if(!track) continue;
-// 	
-// 	GetDCA(track, eventAOD, dDCA);
-// 	
-// 	Double_t dDCAxyDCAzPt[5] = { dDCA[0], dDCA[1], track->Pt(), track->Eta(), track->Phi() };
-// 	
-// 	fDCAPtAll->Fill(dDCAxyDCAzPt);
-// 	
-// 	if( !(IsTrackAccepted(track, dCentrality, eventAOD->GetMagneticField())) ) continue;
-// 	
-// 	iIndexAcceptedTracks[nTotalNumberAcceptedTracks] = itrack;
-// 	nTotalNumberAcceptedTracks++;
-//   }
   
   // get event plane Angle from AODHeader, default is Q
   ep = const_cast<AliAODEvent*>(eventAOD)->GetEventplane();
@@ -943,11 +933,10 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   Int_t iSubtractedTracks = 0;
   
   for(Int_t itrack = 0; itrack < eventAOD->GetNumberOfTracks(); itrack++)
-//   for(Int_t itrack = 0; itrack < nTotalNumberAcceptedTracks; itrack++)
   {
 	track = dynamic_cast<AliAODTrack*>(eventAOD->GetTrack(itrack));
 	if(!track) AliFatal("Not a standard AOD");
-// 	track = eventAOD->GetTrack(iIndexAcceptedTracks[itrack]);
+	
 	if(!track) continue;
 	
 	mcPart = NULL;
@@ -1002,8 +991,6 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	
 	dTrackPhiPtEtaCent[0] = RotatePhi(track->Phi(), dEventplaneAngleCorrected); 
 	
-	// 	if( dTrackPhiPtEtaCent[0] < -1.0*TMath::Pi()) dTrackPhiPtEtaCent[0] += 2.*TMath::Pi();
-	// 	else if( dTrackPhiPtEtaCent[0] > TMath::Pi()) dTrackPhiPtEtaCent[0] -= 2.*TMath::Pi();
 	dTrackPhiPtEtaCent[1] = track->Pt();
 	dTrackPhiPtEtaCent[2] = track->Eta();
 	dTrackPhiPtEtaCent[3] = dCentrality;
@@ -1028,8 +1015,6 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  
 	  dMCTrackPhiPtEtaCent[0] = RotatePhi(mcPart->Phi(), dEventplaneAngle); // use eventplane and not reactionplan, similar to centrality vs impact paramter
 	  
-	  // 	  if( dMCTrackPhiPtEtaCent[0] < -1.0*TMath::Pi()) dMCTrackPhiPtEtaCent[0] += 2.*TMath::Pi();
-	  // 	  else if( dMCTrackPhiPtEtaCent[0] > TMath::Pi()) dMCTrackPhiPtEtaCent[0] -= 2.*TMath::Pi();
 	  dMCTrackPhiPtEtaCent[1] = mcPart->Pt();
 	  dMCTrackPhiPtEtaCent[2] = mcPart->Eta();
 	  dMCTrackPhiPtEtaCent[3] = dCentrality;
@@ -1098,7 +1083,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  fPsinPhiCent->Fill(dCentrality, TMath::Sin(2.*track->Phi()));
 	  
 	  Double_t deltaphi = track->Phi() - dEventplaneAngleCorrected;
-// 	  if(deltaphi > TMath::Pi()) deltaphi -= 2.*TMath::Pi();
+	  // 	  if(deltaphi > TMath::Pi()) deltaphi -= 2.*TMath::Pi();
 	  
 	  fDeltaPhiCent->Fill(deltaphi, dCentrality);
 	}
@@ -1130,33 +1115,9 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   PostData(1, fOutputList);
   
   // delete pointers:
-//   delete [] iIndexAcceptedTracks;
+  //   delete [] iIndexAcceptedTracks;
 }
 
-// Double_t AlidNdPtAnalysisPbPbAOD::MoveEventplane(Double_t dMCEP)
-// {
-//   Double_t retval = 0;
-//   retval = dMCEP;
-//   
-//   if( (dMCEP > 0) && (dMCEP < 1./2.*TMath::Pi()) ) 
-//   {
-// 	return retval;
-//   }
-//   
-//   if( (dMCEP >= 1./2.*TMath::Pi()) && (dMCEP <= 3./2.*TMath::Pi()) )
-//   {
-// 	retval -= TMath::Pi();
-// 	return retval;
-//   }
-//   
-//   if(dMCEP > 3./2.*TMath::Pi())
-//   {
-// 	retval -= 2.*TMath::Pi();
-// 	return retval;
-//   }
-//   
-//   return -9999.;
-// }
 
 Double_t AlidNdPtAnalysisPbPbAOD::RotatePhi(Double_t phiTrack, Double_t phiEP)
 {
@@ -1172,43 +1133,6 @@ Double_t AlidNdPtAnalysisPbPbAOD::RotatePhi(Double_t phiTrack, Double_t phiEP)
 	dPhi = 2.*TMath::Pi() - dPhi;
 	return dPhi;
   }
-//   if( (dPhi > TMath::Pi()) && (dPhi <= 3./2.*TMath::Pi()) )
-//   {
-// 	dPhi = dPhi - TMath::Pi()/2.;
-// 	return dPhi;
-//   }
-//   if( (dPhi > 3./2.*TMath::Pi()) )
-//   {
-// 	dPhi = dPhi - 3./2.*TMath::Pi();
-// 	return dPhi;
-//   }
-//   if( dPhi < 0 )
-//   
-//   if ((dPhi >= -1./2. * TMath::Pi() ) && 
-// 	(dPhi <= 1./2. * TMath::Pi() ) )
-//   {
-// 	return dPhi;
-//   }
-//   
-//   if( (dPhi < 0) )
-//   {
-// 	dPhi += 2.*TMath::Pi();
-//   }
-//   
-//   if ((dPhi > 0) && 
-// 	(dPhi > 1./2. * TMath::Pi() ) && 
-// 	(dPhi <= 3./2. * TMath::Pi() ) )
-//   {
-// 	dPhi -= TMath::Pi();
-// 	return dPhi;
-//   }	
-//   
-//   if ((dPhi > 0) && 
-// 	(dPhi > 3./2. * TMath::Pi() )) 
-//   {
-// 	dPhi -= 2.*TMath::Pi();
-// 	return dPhi;
-//   }
   
   //   Printf("[E] dphi = %.4f , phiTrack = %.4f, phiEP = %.4f", dPhi, phiTrack, phiEP);
   
@@ -1298,7 +1222,7 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr, Double_t dCentr
   //
   
   if(!tr) return kFALSE;
-   
+  
   if(tr->Charge()==0) { return kFALSE; }
   
   //
@@ -1335,7 +1259,7 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr, Double_t dCentr
   
   Double_t dLengthInTPC = 0;
   if ( DoCutLengthInTPCPtDependent() ) { dLengthInTPC = dummy.GetLengthInActiveZone(&par,3,236, bMagZ ,0,0); }
-   
+  
   Double_t dNClustersTPC = tr->GetTPCNcls();
   Double_t dCrossedRowsTPC = tr->GetTPCNCrossedRows();//GetTPCClusterInfo(2,1);
   Double_t dFindableClustersTPC = tr->GetTPCNclsF();
@@ -1402,6 +1326,14 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr, Double_t dCentr
 		
 		// fill debug histogram for all accepted tracks
 		FillDebugHisto(dCheck, dKine, dCentrality, kTRUE);
+		
+		Double_t dFilterBitPhiCent[3] = {-10, -10, -10};
+		if(tr->TestFilterBit(AliAODTrack::kTrkGlobal)) dFilterBitPhiCent[0] = 0;
+		else if(tr->TestFilterBit(AliAODTrack::kTrkGlobalSDD)) dFilterBitPhiCent[0] = 1;
+		
+		dFilterBitPhiCent[1] = tr->Phi();
+		dFilterBitPhiCent[2] = dCentrality;
+		fCrossCheckFilterBitPhiCent->Fill(dFilterBitPhiCent);
 		
 		// delete pointers
 		
