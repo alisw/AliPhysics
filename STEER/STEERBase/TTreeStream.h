@@ -85,7 +85,7 @@ public:
 
 class TTreeSRedirector: public TObject { 
 public:
-  TTreeSRedirector(const char *fname="", const char * option="new");
+  TTreeSRedirector(const char *fname="", const char * option="update");
   virtual ~TTreeSRedirector();
   void Close();
   static void Test();
