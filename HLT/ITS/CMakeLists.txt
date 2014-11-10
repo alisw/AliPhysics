@@ -47,8 +47,8 @@ set(SRCS
     AliHLTITSDigitPublisherComponent.cxx
     AliHLTITSQAComponent.cxx
     AliHLTITSSSDQARecPointsComponent.cxx
-    AliHLTITStracker.cxx
-    AliHLTITStrack.cxx
+#    AliHLTITStracker.cxx
+#    AliHLTITStrack.cxx
     AliHLTITSVertexerSPDComponent.cxx
     AliHLTITSVertexerZ.cxx
     clusterfinders/AliHLTITSClusterFinderSPD.cxx
