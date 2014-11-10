@@ -245,7 +245,7 @@ void AliAnalysisTaskEMCALClusterizeFast::UserExec(Option_t *)
   if (fDoClusterize)
     Clusterize();
 
-  if (fDoUpdateCells) 
+  if (fDoUpdateCells)
     UpdateCells();
 
   if (!fDoClusterize || (!fAttachClusters && !fOutputAODBranch) || !fCaloClusters)
@@ -256,6 +256,7 @@ void AliAnalysisTaskEMCALClusterizeFast::UserExec(Option_t *)
 
   if (fOutputAODBranch && fCaloClusters != fOutputAODBranch)
     CopyClusters(fCaloClusters, fOutputAODBranch);
+
 }
 
 //________________________________________________________________________
