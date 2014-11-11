@@ -58,6 +58,10 @@ set ( SRCS
  EMCAL/AliHadCorrTask.cxx
  EMCAL/AliParticleContainer.cxx
  EMCAL/AliPicoTrack.cxx
+ EMCAL/AliEMCALJSONReader.cxx
+ EMCAL/AliEMCALConfigurationObject.cxx
+ EMCAL/AliEMCALConfiguration.cxx
+ EMCAL/AliEMCALConfigHandler.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

@@ -35,6 +35,7 @@ private:
 };
 
 class AliEMCALConfigurationValueFloat : public AliEMCALConfigurationValue{
+public:
   AliEMCALConfigurationValueFloat(Float_t val):
     AliEMCALConfigurationValue(),
     fValue(val)
@@ -50,6 +51,7 @@ private:
 };
 
 class AliEMCALConfigurationValueDouble : public AliEMCALConfigurationValue{
+public:
   AliEMCALConfigurationValueDouble(Double_t val):
     AliEMCALConfigurationValue(),
     fValue(val)
@@ -65,6 +67,7 @@ private:
 };
 
 class AliEMCALConfigurationValueBool : public AliEMCALConfigurationValue{
+public:
   AliEMCALConfigurationValueBool(Bool_t val):
     AliEMCALConfigurationValue(),
     fValue(val)
@@ -80,6 +83,7 @@ private:
 };
 
 class AliEMCALConfigurationValueString : public AliEMCALConfigurationValue{
+public:
   AliEMCALConfigurationValueString(const char *val):
     AliEMCALConfigurationValue(),
     fValue(val)
@@ -97,7 +101,7 @@ private:
 class AliEMCALConfigurationObject : public TNamed {
 public:
   AliEMCALConfigurationObject(const char *name, AliEMCALConfigurationValue *value):
-    TNamed(name),
+    TNamed(name, ""),
     fValue(value)
   {}
   AliEMCALConfigurationObject(const char *key, const char *value);
@@ -115,7 +119,10 @@ public:
   const char *ToString() const;
 
 protected:
-  AliEMCALConfigurationObject *fValue;
+  AliEMCALConfigurationObject(const AliEMCALConfigurationObject &ref);
+  AliEMCALConfigurationObject &operator=(const AliEMCALConfigurationObject &ref);
+
+  AliEMCALConfigurationValue *fValue;
 };
 
 #endif /* PWG_EMCAL_ALIEMCALCONFIGURATIONOBJECT_H_ */

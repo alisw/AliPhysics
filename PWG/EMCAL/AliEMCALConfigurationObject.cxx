@@ -10,20 +10,26 @@
 #include <AliEMCALConfigurationObject.h>
 
 
-const char* AliEMCALConfigurationValueInt::ToString() const {
-  return TString(fValue).Data();
+const char* AliEMCALConfigurationValueInt::ToString() const { 
+  std::stringstream stringbuilder;
+  stringbuilder << fValue;
+  return stringbuilder.str().c_str();
 }
 
 const char* AliEMCALConfigurationValueFloat::ToString() const {
-  return TString(fValue).Data();
+  std::stringstream stringbuilder;
+  stringbuilder << fValue;
+  return stringbuilder.str().c_str();
 }
 
 const char* AliEMCALConfigurationValueDouble::ToString() const {
-  return TString(fValue).Data();
+  std::stringstream stringbuilder;
+  stringbuilder << fValue;
+  return stringbuilder.str().c_str();
 }
 
 AliEMCALConfigurationObject::AliEMCALConfigurationObject(const char* key, const char* value):
-  TNamed(key),
+  TNamed(key, ""),
   fValue(NULL)
 {
    TString valstring(value);

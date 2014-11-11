@@ -28,6 +28,10 @@ public:
 protected:
   TList *fParams;
 
+private:
+  AliEMCALConfiguration(const AliEMCALConfiguration &ref);
+  AliEMCALConfiguration &operator=(const AliEMCALConfiguration &ref);
+
   ClassDef(AliEMCALConfiguration, 1);
 };
 

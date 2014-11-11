@@ -13,7 +13,7 @@
 
 
 AliEMCALConfiguration::AliEMCALConfiguration(const char* name) :
-  TNamed(name),
+  TNamed(name, ""),
   fParams(NULL)
 {
   fParams = new TList;
@@ -38,12 +38,12 @@ void AliEMCALConfiguration::Build(const char *jsonstring) {
 
 void AliEMCALConfiguration::Build(TList *entries){
   TIter objects(entries);
-  for(TIter *entry = objects.Begin(); entry != objects.End(); entry++){
-    AliEMCALConfigurationObject *val = dynamic_cast<AliEMCALConfigurationObject *>(entry);
+  for(TIter entry = objects.Begin(); entry != objects.End(); ++entry){
+    AliEMCALConfigurationObject *val = dynamic_cast<AliEMCALConfigurationObject *>(*entry);
     if(val)
       fParams->Add(val);
     else{
-      TList *conf = dynamic_cast<TList *>(entry);
+      TList *conf = dynamic_cast<TList *>(*entry);
       if(conf){
         AliEMCALConfiguration *daughter = new AliEMCALConfiguration(conf->GetName());
         daughter->Build(conf);
@@ -66,7 +66,7 @@ const char* AliEMCALConfiguration::CreateJSONString() const {
   jsonbuilder << "{";
   TIter confentries(fParams);
   bool isFirst = true;
-  for(TIter it = confentries.Begin(); it != confentries.End(); it++){
+  for(TIter it = confentries.Begin(); it != confentries.End(); ++it){
     AliEMCALConfiguration *conf = dynamic_cast<AliEMCALConfiguration *>(*it);
     if(conf){
       if(!isFirst) jsonbuilder << ",";

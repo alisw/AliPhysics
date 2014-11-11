@@ -47,12 +47,12 @@ void AliEMCALConfigHandler::AddParam(const char* configName, const char* key,
   config->AddParam(key, value);
 }
 
-const char *AliEMCALConfigHandler::GetConfigurationString(const char* configname) const {
+const char *AliEMCALConfigHandler::GetConfigurationString() const {
   std::stringstream jsonbuilder;
   jsonbuilder << "{";
   TIter confentries(fConfiguration);
   bool isFirst = true;
-  for(TIter it = confentries.Begin(); it != confentries.End(); it++){
+  for(TIter it = confentries.Begin(); it != confentries.End(); ++it){
     AliEMCALConfiguration *conf = static_cast<AliEMCALConfiguration *>(*it);
     if(!isFirst) jsonbuilder << ",";
     jsonbuilder << "\"" << conf->GetName() << "\":" << conf->CreateJSONString();
@@ -62,6 +62,12 @@ const char *AliEMCALConfigHandler::GetConfigurationString(const char* configname
   return jsonbuilder.str().c_str();
 }
 
-AliEMCALConfiguration* AliEMCALConfigHandler::FindConfiguration(const char* configName) {
-  return fConfiguration->FindObject(configName);
+const char *AliEMCALConfigHandler::GetConfigurationString(const char* configname) const {
+  AliEMCALConfiguration *conf = FindConfiguration(configname);
+  if(!conf) return "";
+  return conf->CreateJSONString();
+}
+
+AliEMCALConfiguration* AliEMCALConfigHandler::FindConfiguration(const char* configName) const {
+  return dynamic_cast<AliEMCALConfiguration *>(fConfiguration->FindObject(configName));
 }
