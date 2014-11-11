@@ -12,6 +12,8 @@
 #pragma link C++ class AliFemtoSimpleAnalysis+;
 #pragma link C++ class AliFemtoAnalysisReactionPlane+;
 #pragma link C++ class AliFemtoEventCut+;
+#pragma link C++ class AliFemtoSphericityEventCut+;
+#pragma link C++ class AliFemtoSpherocityEventCut+;
 #pragma link C++ class AliFemtoEventReader+;
 #pragma link C++ class AliFemtoEventReaderStandard+;
 #pragma link C++ class AliFemtoKinkCut+;

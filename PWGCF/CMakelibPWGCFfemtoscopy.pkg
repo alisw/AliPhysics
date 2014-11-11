@@ -126,6 +126,8 @@ set ( HDRS ${HDRS}
     FEMTOSCOPY/AliFemto/SystemOfUnits.h
     FEMTOSCOPY/AliFemto/AliFemtoPairCut.h
     FEMTOSCOPY/AliFemto/AliFemtoEventCut.h
+    FEMTOSCOPY/AliFemto/AliFemtoSphericityEventCut.cxx
+    FEMTOSCOPY/AliFemto/AliFemtoSpherocityEventCut.cxx
     FEMTOSCOPY/AliFemto/AliFemtoParticleCut.h
     FEMTOSCOPY/AliFemto/AliFemtoTrackCollection.h
     FEMTOSCOPY/AliFemto/AliFemtoV0Collection.h
