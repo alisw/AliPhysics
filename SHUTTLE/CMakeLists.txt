@@ -1,10 +1,78 @@
-# AliRoot Build System CMakeLists for TPC
-#
-# Author: Johny Jose m(johny.jose@cern.ch)
-#         Port of previous Makefile build to cmake
+# **************************************************************************
+# * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+# *                                                                        *
+# * Author: The ALICE Off-line Project.                                    *
+# * Contributors are mentioned in the code where appropriate.              *
+# *                                                                        *
+# * Permission to use, copy, modify and distribute this software and its   *
+# * documentation strictly for non-commercial purposes is hereby granted   *
+# * without fee, provided that the above copyright notice appears in all   *
+# * copies and that both the copyright notice and this permission notice   *
+# * appear in the supporting documentation. The authors make no claims     *
+# * about the suitability of this software for any purpose. It is          *
+# * provided "as is" without express or implied warranty.                  *
+# **************************************************************************
 
-cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
+# Module
+set(MODULE SHUTTLE)
 
-file(GLOB PACKAGES CMake*.pkg)
+# Module include folder
+include_directories(${AliRoot_SOURCE_DIR}/${MODULE})
 
-ALICE_BuildModule()
+# Additional include folders in alphabetical order except ROOT
+include_directories(${AliRoot_SOURCE_DIR}/STEER/CDB
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                   )
+
+# DIM include folder and libraries folder
+include_directories(${DIMDIR}/dim)
+link_directories(${DIMDIR}/${ODIR})
+
+# AliEn ApMon
+include_directories(${ALIEN}/api/include)
+link_directories(${ALIEN}/api/lib)
+
+# Sources in alphabetical order
+set(SRCS
+    AliEmptyPreprocessor.cxx
+    AliShuttle.cxx 
+    AliShuttleConfig.cxx
+    AliShuttleLogbookEntry.cxx
+    AliShuttleStatus.cxx
+    AliShuttleTrigger.cxx
+    DATENotifier.cxx
+    DCSClient/AliDCSClient.cxx
+    DCSClient/AliDCSMessage.cxx
+   )
+
+# Headers from sources
+string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+# Generate the dictionary
+# It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
+get_directory_property(incdirs INCLUDE_DIRECTORIES)
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+
+# Generate the ROOT map
+# Dependecies
+set(LIBDEPS STEERBase CDB Core Eve Gui Hist Minuit2 Minuit Net ProofPlayer RIO Spectrum Thread TMVA)
+generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
+# Add a library to the project using the specified source files
+add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+target_link_libraries(${MODULE} STEERBase CDB dim Core Eve Gui Hist Minuit2 Minuit Net ProofPlayer RIO Spectrum Thread TMVA)
+
+# Additional compilation flags
+set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
+
+# System dependent: Modify the way the library is build
+if(${CMAKE_SYSTEM} MATCHES Darwin)
+    set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+endif(${CMAKE_SYSTEM} MATCHES Darwin)
+
+# Installation
+install(TARGETS ${MODULE}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib)
+
+install(FILES ${HDRS} DESTINATION include)
