@@ -27,10 +27,12 @@ public:
    * @param name     Name of train (free form)
    */
   MakeMCCorrTrain(const  char* name) 
-  : TrainSetup(name)
+    : TrainSetup(name)
   {
     fOptions.Set("type", "ESD");
     fOptions.Add("eff", "Effective SPD correction", false);
+    fOptions.Add("max-strips", "NUMBER", 
+                 "Maximum consequtive strips", 2); 
   }
 protected:
   /** 
@@ -49,6 +51,10 @@ protected:
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
+  
+    // --- Options ---------------------------------------------------
+    Bool_t   spdEffective = fOptions.Has("eff");
+    UShort_t maxStrips    = fOptions.AsInt("max-strips");
 
     // --- Check if this is MC ---------------------------------------
     if (!mgr->GetMCtruthEventHandler()) return;
@@ -57,10 +63,10 @@ protected:
     // gROOT->Macro("AddTaskCopyHeader.C");
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro("AddTaskForwardMCCorr.C"); 
+    gROOT->Macro(Form("AddTaskForwardMCCorr.C(%d)", maxStrips)); 
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskCentralMCCorr.C(%d)", fOptions.Has("eff")));
+    gROOT->Macro(Form("AddTaskCentralMCCorr.C(%d)", spdEffective));
   }
   //__________________________________________________________________
   /** 
