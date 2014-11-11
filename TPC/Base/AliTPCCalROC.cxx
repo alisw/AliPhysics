@@ -74,7 +74,8 @@ AliTPCCalROC::AliTPCCalROC(UInt_t  sector)
   fNRows        =  AliTPCROC::Instance()->GetNRows(fSector);
   fkIndexes      =  AliTPCROC::Instance()->GetRowIndexes(fSector);
   fData = new Float_t[fNChannels];
-  for (UInt_t  idata = 0; idata< fNChannels; idata++) fData[idata] = 0.;
+  Reset();
+//   for (UInt_t  idata = 0; idata< fNChannels; idata++) fData[idata] = 0.;
 }
 
 //_____________________________________________________________________________
@@ -326,6 +327,7 @@ void AliTPCCalROC::Add(const AliTPCCalROC * roc, Double_t c1){
   // multiply AliTPCCalROC roc by c1 and add each channel to the coresponing channel in the ROC
   //  - pad by pad 
   //
+  if (!roc) return;
   for (UInt_t  idata = 0; idata< fNChannels; idata++){
     fData[idata]+=roc->fData[idata]*c1;
   }
@@ -337,6 +339,7 @@ void AliTPCCalROC::Multiply(const AliTPCCalROC*  roc) {
   // multiply each channel of the ROC with the coresponding channel of 'roc'
   //     - pad by pad -
   //
+  if (!roc) return;
   for (UInt_t  idata = 0; idata< fNChannels; idata++){
     fData[idata]*=roc->fData[idata];
   }
@@ -348,11 +351,20 @@ void AliTPCCalROC::Divide(const AliTPCCalROC*  roc) {
   // divide each channel of the ROC by the coresponding channel of 'roc'
   //     - pad by pad -
   //
+  if (!roc) return;
   Float_t kEpsilon=0.00000000000000001;
   for (UInt_t  idata = 0; idata< fNChannels; idata++){
     if (TMath::Abs(roc->fData[idata])>kEpsilon)
       fData[idata]/=roc->fData[idata];
   }
+}
+
+void AliTPCCalROC::Reset()
+{
+  //
+  // reset to ZERO
+  //
+  memset(fData,0,sizeof(Float_t)*fNChannels); // set all values to 0
 }
 
 Double_t AliTPCCalROC::GetMean(AliTPCCalROC *const outlierROC) const {

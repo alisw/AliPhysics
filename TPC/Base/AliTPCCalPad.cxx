@@ -90,7 +90,7 @@ AliTPCCalPad::AliTPCCalPad(const AliTPCCalPad &c):TNamed(c)
 }
 
 //_____________________________________________________________________________
-AliTPCCalPad::AliTPCCalPad(TObjArray * array):TNamed()
+AliTPCCalPad::AliTPCCalPad(TObjArray * array):TNamed(array->GetName(),array->GetName())
 {
   //
   // AliTPCCalPad default constructor
@@ -269,6 +269,19 @@ void AliTPCCalPad::Divide(const AliTPCCalPad * pad)
 	    fROC[isec]->Divide(pad->GetCalROC(isec));
 	}
     }
+}
+
+//_____________________________________________________________________________
+void AliTPCCalPad::Reset()
+{
+  //
+  // Reset all cal Rocs
+  //
+  for (Int_t isec = 0; isec < kNsec; isec++) {
+    if (fROC[isec]){
+      fROC[isec]->Reset();
+    }
+  }
 }
 
 //_____________________________________________________________________________

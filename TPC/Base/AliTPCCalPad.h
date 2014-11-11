@@ -59,6 +59,7 @@ class AliTPCCalPad : public TNamed {
   void Add(const AliTPCCalPad * roc, Double_t c1 = 1);   // multiply AliTPCCalPad 'pad' by c1 and add each channel to the coresponing channel in all ROCs
   void Multiply(const AliTPCCalPad * pad);  // multiply each channel of all ROCs with the coresponding channel of 'pad'
   void Divide(const AliTPCCalPad * pad);    // divide each channel of all ROCs by the coresponding channel of 'pad'
+  void Reset();
   //
   Double_t GetMeanRMS(Double_t &rms);   // Calculates mean and RMS of all ROCs
   Double_t GetMean(AliTPCCalPad* outlierPad = 0);   // return mean of the mean of all ROCs
