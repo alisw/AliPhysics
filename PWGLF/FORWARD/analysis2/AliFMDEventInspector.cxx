@@ -106,7 +106,7 @@ AliFMDEventInspector::AliFMDEventInspector()
     fDisplacedVertex(),
     fCollWords(),
     fBgWords(),
-    fCentMethod("V0M"),
+    fCentMethod("default"),
     fMinCent(-1.0),
     fMaxCent(-1.0),
 // fUsepA2012Vertex(false),
@@ -160,7 +160,7 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
   fDisplacedVertex(),
   fCollWords(),
   fBgWords(),
-  fCentMethod("V0M"),
+  fCentMethod("default"),
   fMinCent(-1.0),
   fMaxCent(-1.0),
 // fUsepA2012Vertex(false),
@@ -218,7 +218,7 @@ AliFMDEventInspector::SetCentralityMethod(ECentMethod m)
   case kV0vsFMD: 	fCentMethod = "V0MvsFMD"; break; // VZERO versus FMD   
   case kV0vsNTracks: 	fCentMethod = "TKLvsVOM"; break; // Tracks versus VZERO
   case kZEMvsZDC:	fCentMethod = "ZEMvsZDC"; break; // ZDC		     
-  default:              fCentMethod = "V0M"; break;
+  default:              fCentMethod = "default"; break;
   }
 }
 
@@ -1450,6 +1450,27 @@ AliFMDEventInspector::ReadRunDetails(const AliESDEvent* esd)
 							     cms);
   fField           = AliForwardUtil::ParseMagneticField(fld);
   fRunNumber       = esd->GetRunNumber();
+  
+  Int_t a0 = esd->GetBeamParticleA(0);
+  Int_t a1 = esd->GetBeamParticleA(1);
+  Int_t z0 = esd->GetBeamParticleZ(0);
+  Int_t z1 = esd->GetBeamParticleZ(1);
+  if (fCentMethod.EqualTo("default", TString::kIgnoreCase)) {
+    if (fCollisionSystem == 1 || fCollisionSystem == 2) 
+      SetCentralityMethod("V0M");
+    if (fCollisionSystem == 3) { 
+      if (a0 != 0 && a1 != 0) 
+	SetCentralityMethod(a0 > a1 ? "ZNC" : "ZNA");
+      else 
+	SetCentralityMethod("V0M");    
+    }
+  }
+  // store the beam species 
+  fList->Add(AliForwardUtil::MakeParameter("beam0a", a0));
+  fList->Add(AliForwardUtil::MakeParameter("beam0z", z0));
+  fList->Add(AliForwardUtil::MakeParameter("beam1a", a1));
+  fList->Add(AliForwardUtil::MakeParameter("beam1z", z1));
+
   StoreProduction();
   StoreInformation();
   if (fCollisionSystem   == AliForwardUtil::kUnknown) { 
