@@ -97,6 +97,7 @@ struct GridHelper : public PluginHelper
     fOptions.Add("ttl",    "N|max",  "Time to live",                   "6h");
     fOptions.Add("pattern","GLOB",   "File/directory name pattern", "");
     fOptions.Add("concat", "Concatenate all runs");
+    fOptions.Add("exclude", "GLOB","Comma separated list of merge excludes","");
   }
   GridHelper(const GridHelper& o)
     : PluginHelper(o), fRuns()
@@ -403,8 +404,14 @@ struct GridHelper : public PluginHelper
 	fHandler->SetMaxMergeFiles(fOptions.AsInt("merge"));
       }
     }
-    fHandler->SetMergeExcludes("AliAOD.root *EventStat*.root "
-			       "*event_stat*.root");
+    TString exclude="AliAOD.root *EventStat*.root *event_stat*.root";
+    if (fOptions.Has("exclude")) { 
+      TString exOpt = fOptions.Get("exclude");
+      exOpt.ReplaceAll(",", " ");
+      exclude.Append(" ");
+      exclude.Append(exOpt);
+    }
+    fHandler->SetMergeExcludes(exclude);
     
     // --- Set number of runs per master - 1 or all ------------------
     fHandler->SetNrunsPerMaster(fOptions.Has("concat") ? nRun+1 : 1);
