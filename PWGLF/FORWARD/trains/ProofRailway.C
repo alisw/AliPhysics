@@ -1,5 +1,5 @@
 /**
- * @file   ProofHelper.C
+ * @file   ProofRailway.C
  * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
  * @date   Tue Oct 16 18:58:37 2012
  * 
@@ -11,7 +11,7 @@
  */
 #ifndef PROOFHELPER_C
 #define PROOFHELPER_C
-#include "Helper.C"
+#include "Railway.C"
 #ifndef __CINT__
 # include "OutputUtilities.C"
 # include "ParUtilities.C"
@@ -84,7 +84,7 @@ class TChain;
  *
  * @ingroup pwglf_forward_trains_helper
  */
-struct ProofHelper : public Helper
+struct ProofRailway : public Railway
 {
   /** 
    * Constructor 
@@ -92,8 +92,8 @@ struct ProofHelper : public Helper
    * @param url  Url 
    * @param verbose Verbosity level
    */
-  ProofHelper(const TUrl& url, Int_t verbose)
-    : Helper(url, verbose), 
+  ProofRailway(const TUrl& url, Int_t verbose)
+    : Railway(url, verbose), 
       fExtraLibs(""),
       fExtraPars(""),
       fExtraSrcs(""),
@@ -118,8 +118,8 @@ struct ProofHelper : public Helper
       fUrl.SetUser(gSystem->GetUserInfo()->fUser);
     fAuxFiles.SetOwner();
   }
-  ProofHelper(const ProofHelper& o) 
-    : Helper(o),
+  ProofRailway(const ProofRailway& o) 
+    : Railway(o),
       fExtraLibs(""),
       fExtraPars(""),
       fExtraSrcs(""),
@@ -128,10 +128,10 @@ struct ProofHelper : public Helper
       fTestBuild(true),
       fAuxFiles()
   {}
-  ProofHelper& operator=(const ProofHelper& o) 
+  ProofRailway& operator=(const ProofRailway& o) 
   {
     if (&o == this) return *this;
-    Helper::operator=(o);
+    Railway::operator=(o);
     fExtraLibs = o.fExtraLibs;
     fExtraPars = o.fExtraPars;
     fExtraSrcs = o.fExtraSrcs;
@@ -144,7 +144,7 @@ struct ProofHelper : public Helper
   /** 
    * Destructor 
    */
-  virtual ~ProofHelper() {}
+  virtual ~ProofRailway() {}
   /** 
    * Load a library/PAR/script 
    * 
@@ -173,17 +173,17 @@ struct ProofHelper : public Helper
     }
     else { 
       if (!ParUtilities::Find(name)) { 
-	Error("ProofHelper::LoadLibrary", "Failed to find PAR file %s", 
+	Error("ProofRailway::LoadLibrary", "Failed to find PAR file %s", 
 	      name.Data());
 	return false;
       }
       if (fTestBuild && !ParUtilities::Build(name)) { 
-	Error("ProofHelper::LoadLibrary", "Failed to build PAR file %s", 
+	Error("ProofRailway::LoadLibrary", "Failed to build PAR file %s", 
 	      name.Data());
 	return false;
       }
       if (gProof->UploadPackage(name.Data(), TProof::kRemoveOld) < 0) {
-	Error("ProofHelper::LoadLibrary", "Failed to upload PAR file %s", 
+	Error("ProofRailway::LoadLibrary", "Failed to upload PAR file %s", 
 	      name.Data());
 	return false;
       }
@@ -201,7 +201,7 @@ struct ProofHelper : public Helper
    */
   virtual Bool_t LoadSource(const TString& name, bool copy=false)
   {
-    if (!Helper::LoadSource(name, copy)) return false;
+    if (!Railway::LoadSource(name, copy)) return false;
     fExtraSrcs.Append(Form(":%s", gSystem->BaseName(name.Data())));
     return true;
   }
@@ -213,7 +213,7 @@ struct ProofHelper : public Helper
   virtual Bool_t LoadAliROOT()
   {
     if (!gSystem->Getenv("ALICE_ROOT")) { 
-      Error("ProofHelper::LoadAliROOT", "Local AliROOT not available");
+      Error("ProofRailway::LoadAliROOT", "Local AliROOT not available");
       return false;
     }
 
@@ -271,14 +271,14 @@ struct ProofHelper : public Helper
     if (gSystem->AccessPathName(parName.Data()) == 0) { 
       // Let's remove it to get a clean slate 
       if (gSystem->Exec(Form("rm -rf %s", parName.Data())) != 0) {
-	Error("ProofHelper", "Failed to remove %s", parName.Data());
+	Error("ProofRailway", "Failed to remove %s", parName.Data());
 	return false;
       }
     }
     // --- Check if the PAR file is there, and remove it if so -------
     if (gSystem->AccessPathName(parFile.Data()) == 0) { 
       if (gSystem->Unlink(parFile.Data()) != 0) { 
-	Error("ProofHelper::CreateAliROOTPar", "Failed to remove %s", 
+	Error("ProofRailway::CreateAliROOTPar", "Failed to remove %s", 
 	      parFile.Data());
 	return false;
       }
@@ -287,13 +287,13 @@ struct ProofHelper : public Helper
 
     // Set-up directories 
     if (gSystem->MakeDirectory(parName) < 0) {
-      Error("ProofHelper::CreateAliROOTPar", "Could not make directory '%s'", 
+      Error("ProofRailway::CreateAliROOTPar", "Could not make directory '%s'", 
 	    parName.Data());
       return false;
     }
     
     if (gSystem->MakeDirectory(Form("%s/PROOF-INF", parName.Data()))) {
-      Error("ProofHelper::CreateAliROOTPar", 
+      Error("ProofRailway::CreateAliROOTPar", 
 	    "Could not make directory %s/PROOF-INF", 
 	    parName.Data());
       return false;
@@ -301,7 +301,7 @@ struct ProofHelper : public Helper
 
     std::ofstream b(Form("%s/PROOF-INF/BUILD.sh",parName.Data()));
     if (!b) { 
-      Error("ProofHelper::CreateAliROOTPar", 
+      Error("ProofRailway::CreateAliROOTPar", 
 	    "Failed to make BUILD.sh shell script");
       return false;
     }
@@ -321,7 +321,7 @@ struct ProofHelper : public Helper
 	// Copy script 
 	if (gSystem->Exec(Form("cp %s %s/PROOF-INF/", envScript.Data(), 
 			       parName.Data())) != 0) {
-	  Error("ProofHelper", "Failed to copy %s", envScript.Data());
+	  Error("ProofRailway", "Failed to copy %s", envScript.Data());
 	  return false;
 	}
       }
@@ -332,7 +332,7 @@ struct ProofHelper : public Helper
     }
     std::ofstream s(Form("%s/PROOF-INF/SETUP.C", parName.Data()));
     if (!s) { 
-      Error("ProofHelper::CreateAliROOTPar", 
+      Error("ProofRailway::CreateAliROOTPar", 
 	    "Failed to make SETUP.C ROOT script");
       return false;
     }
@@ -411,14 +411,14 @@ struct ProofHelper : public Helper
     Int_t ret = gSystem->Exec(Form("tar -czf %s %s",
 				   parFile.Data(), parName.Data()));
     if (ret != 0) { 
-      Error("ProofHelper::CreateAliROOTPar", "Failed to pack up PAR file %s",
+      Error("ProofRailway::CreateAliROOTPar", "Failed to pack up PAR file %s",
 	    parFile.Data());
       return false;
     }
 
     ret = gProof->UploadPackage(parFile.Data(),TProof::kRemoveOld);
     if (ret != 0) { 
-      Error("ProofHelper::CreateAliROOTPar", 
+      Error("ProofRailway::CreateAliROOTPar", 
 	    "Failed to upload the AliROOT PAR file");
       return false;
     }
@@ -447,7 +447,7 @@ struct ProofHelper : public Helper
     gEnv->SetValue("XSec.GSI.DelegProxy", "2");
 
     // --- Add ALICE_ROOT directory to search path for packages ----
-    // Info("ProofHelper::PreSetup", "Set location of packages");
+    // Info("ProofRailway::PreSetup", "Set location of packages");
     gEnv->SetValue("Proof.GlobalPackageDirs", 
 		   Form("%s:%s", 
 			gEnv->GetValue("Proof.GlobalPackageDirs", "."), 
@@ -464,11 +464,11 @@ struct ProofHelper : public Helper
       TString reset = fOptions.Get("reset");
       Bool_t  hard  = (reset.IsNull() || 
 		       reset.EqualTo("hard", TString::kIgnoreCase));
-      Info("ProofHelper::PreSetup", "Doing a %s reset of %s", 
+      Info("ProofRailway::PreSetup", "Doing a %s reset of %s", 
 	   hard ? "hard" : "soft", connect.GetUrl());
       TProof::Reset(connect.GetUrl(), hard);
       Int_t secs = 3;
-      Info("ProofHelper::PreSetup", 
+      Info("ProofRailway::PreSetup", 
 	   "Waiting for %d second%s for things to settle", secs,
 	   secs > 1 ? "s" : "");
       gSystem->Sleep(1000*secs);
@@ -481,7 +481,7 @@ struct ProofHelper : public Helper
 	// In case of no argument, use GDB 
 	// Just run and backtrace 
 	wrapper = "/usr/bin/gdb --batch -ex run -ex bt --args";
-      Info("ProofHelper::PreSetup", "Using wrapper command: %s", 
+      Info("ProofRailway::PreSetup", "Using wrapper command: %s", 
 	   wrapper.Data());
       TProof::AddEnvVar("PROOF_WRAPPERCMD", wrapper);
     }
@@ -497,7 +497,7 @@ struct ProofHelper : public Helper
     if (fOptions.Has("workers")) 
       opts.Append(Form("workers=%s", fOptions.Get("workers").Data()));
       
-    Info("ProofHelper::PreSetup", "Connecting to %s with %soptions %s", 
+    Info("ProofRailway::PreSetup", "Connecting to %s with %soptions %s", 
 	 connect.GetUrl(), 
 	 opts.IsNull() ? "no " : "", 
 	 opts.Data());
@@ -508,7 +508,7 @@ struct ProofHelper : public Helper
       TProof::Open(connect.GetUrl(), opts);
     // TProof::Open(connect.GetHost(), opts);
     if (!gProof) { 
-      Error("ProofHelper::PreSetup", "Failed to open Proof connection %s", 
+      Error("ProofRailway::PreSetup", "Failed to open Proof connection %s", 
 	    connect.GetUrl());
       return false;
     }
@@ -519,7 +519,7 @@ struct ProofHelper : public Helper
       if (pkgs.IsNull() || pkgs.EqualTo("all", TString::kIgnoreCase)) { 
 	// No value given, clear all 
 	if (gProof->ClearPackages() != 0) 
-	  Warning("ProofHelper::PreSetup", "Failed to lear all packages");
+	  Warning("ProofRailway::PreSetup", "Failed to lear all packages");
       }
       else { 
 	// Tokenize on ',' and clear each package 
@@ -528,7 +528,7 @@ struct ProofHelper : public Helper
 	TIter      next(pars); 
 	while ((pkg = next())) { 
 	  if (gProof->ClearPackage(pkg->GetName()) != 0)
-	    Warning("ProofHelper::PreSetup", "Failed to clear package %s", 
+	    Warning("ProofRailway::PreSetup", "Failed to clear package %s", 
 		    pkg->GetName());
 	}
 	pars->Delete();
@@ -545,7 +545,7 @@ struct ProofHelper : public Helper
   {
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) { 
-      Error("ProofHelper::PostSetup", "No analysis manager defined");
+      Error("ProofRailway::PostSetup", "No analysis manager defined");
       return false;
     }
 
@@ -571,7 +571,7 @@ struct ProofHelper : public Helper
 	params->Add(new TNamed("ALIROOT_MODE", "default"));
       Int_t ret = gProof->EnablePackage(AliROOTParName(), params, true);
       if (ret < 0) {
-	Error("ProofHelper::EnableAliROOT", "Failed to enable AliROOT PAR %s", 
+	Error("ProofRailway::EnableAliROOT", "Failed to enable AliROOT PAR %s", 
 	      AliROOTParName());
 	return false;
       }
@@ -583,7 +583,7 @@ struct ProofHelper : public Helper
       ParUtilities::MakeAuxFilePAR(fAuxFiles, name);
 
       if (gProof->UploadPackage(name.Data(), TProof::kRemoveOld) < 0) 
-	Error("ProofHelper::PostSetup", "Failed to upload PAR file %s", 
+	Error("ProofRailway::PostSetup", "Failed to upload PAR file %s", 
 	      name.Data());
       else 
 	fExtraPars.Append(Form(":%s", name.Data()));
@@ -598,7 +598,7 @@ struct ProofHelper : public Helper
       // Enable the package, but do not build on client - already done
       Int_t ret = gProof->EnablePackage(obj->GetName(), true);
       if (ret < 0) { 
-	Error("ProofHelper::PostSetup", "Failed to enable PAR %s",
+	Error("ProofRailway::PostSetup", "Failed to enable PAR %s",
 	      obj->GetName());
 	return false;
       }
@@ -611,7 +611,7 @@ struct ProofHelper : public Helper
     while ((obj = next())) { 
       Int_t ret = gProof->Load(Form("%s++g", obj->GetName()), true);
       if (ret < 0) { 
-	Error("ProofHelper::PostSetup", "Failed to compile %s", obj->GetName());
+	Error("ProofRailway::PostSetup", "Failed to compile %s", obj->GetName());
 	return false;
       }
     }
@@ -715,7 +715,7 @@ struct ProofHelper : public Helper
    */
   virtual void Print(Option_t* option="") const 
   {
-    Helper::Print(option);
+    Railway::Print(option);
     std::cout << std::boolalpha 
 	      << "  --- Other settings -------\n"
 	      << "  Extra libraries  : " << fExtraLibs << "\n"
@@ -735,7 +735,7 @@ struct ProofHelper : public Helper
    */
   virtual Bool_t AuxFile(const TString& name, bool copy=false)
   {
-    Bool_t ret = Helper::AuxFile(name, copy);
+    Bool_t ret = Railway::AuxFile(name, copy);
     if (!name.BeginsWith("/")) {
       fAuxFiles.Add(new TObjString(name));
     }

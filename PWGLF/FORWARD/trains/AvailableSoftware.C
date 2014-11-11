@@ -20,7 +20,7 @@ class TString;
 #endif
 
 /**
- * Helper code to find available packages on Grid
+ * Railway code to find available packages on Grid
  * 
  *
  * @ingroup pwglf_forward_trains_util

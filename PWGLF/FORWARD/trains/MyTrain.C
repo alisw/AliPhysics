@@ -15,12 +15,12 @@ public:
   }
   void CreateTasks(AliAnalysisManager* mgr)
   {
-    if (!ParUtilities::MakeScriptPAR(fHelper->Mode() == Helper::kLocal, 
+    if (!ParUtilities::MakeScriptPAR(fRailway->Mode() == Railway::kLocal, 
 				     "MyAnalysis.C", 
 				     "STEERBase,ESD,AOD,ANALYSIS,"
-				     "OADB,ANALYSISalice", fHelper))
+				     "OADB,ANALYSISalice", fRailway))
       Fatal("CreateTasks", "Failed to create PAR file");
-    fHelper->LoadLibrary("MyAnalysis");
+    fRailway->LoadLibrary("MyAnalysis");
     
     Long_t             r = gROOT->ProcessLine("new MyAnalysis(\"test\")");
     AliAnalysisTaskSE* t = reinterpret_cast<AliAnalysisTaskSE*>(r);
