@@ -27,6 +27,7 @@
 #include <AliAODEvent.h>
 #include <AliAODTrack.h>
 #include <AliESDtrack.h>
+#include <AliPicoTrack.h>
 #include <AliEMCalPtTaskTrackSelectionAOD.h>
 
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD)
@@ -110,8 +111,15 @@ namespace EMCalTriggerPtAnalysis {
 		if(!fListOfTracks) fListOfTracks = new TObjArray;
 		else fListOfTracks->Clear();
 		TIter trackIter(tracks);
+		TObject *containerObject(NULL);
+		AliPicoTrack *picoTrack(NULL);
 		AliAODTrack *track(NULL);
 		while((track = dynamic_cast<AliAODTrack *>(trackIter()))){
+		  // Handle pico tracks
+		  if((picoTrack = dynamic_cast<AliPicoTrack *>(containerObject)))
+		    track = dynamic_cast<AliAODTrack *>(picoTrack->GetTrack());
+		  else
+		    track = dynamic_cast<AliAODTrack *>(containerObject);
 			// First check filter bits
 			if(fFilterBits && !track->TestFilterBit(fFilterBits)) continue;
 			if(fTrackCuts){

@@ -13,16 +13,7 @@ fwd=${ALICE_ROOT}/PWGLF/FORWARD/analysis2
 
 runLevelQA()
 {
-
-  #full path of QAresults.root is provided
-
-  # 1: file
-  # 2: data type 
-  # 3: year
-  # 4: period
-  # 5: pass 
-  # 6: run
-  aliroot -l -b -q ${fwd}/qa/RunQA.C\(\"$1\",\"$2\",$3,\"$4\",\"$5\",$6\)
+  aliroot -l -b -q ${fwd}/qa/RunQA.C\(\"${qaFile}\",\"${dataType}\",${year},\"${period}\",\"${pass}\",${runNumber}\)
 }
 
 periodLevelQA()

@@ -51,6 +51,7 @@
 #pragma link C++ class AliEbyEPidRatioEffCont+;
 #pragma link C++ class AliEbyEPidRatioHelper+;
 #pragma link C++ class AliEbyEPidRatioTaskOnFly+;
+#pragma link C++ class AliEbyEPidQATaskOnFlyKine+;
 #pragma link C++ class AliEbyEPidRatioTask+;
 
 #pragma link C++ class AliAnalysisNetParticleBase+;

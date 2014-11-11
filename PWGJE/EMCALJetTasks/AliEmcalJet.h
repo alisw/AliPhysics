@@ -26,12 +26,12 @@ class AliEmcalJet : public AliVParticle
        kBckgrd2 = 1<<5,
        kBckgrd3 = 1<<6
        //.....
-    }; 
- 
+    };
+
   AliEmcalJet();
   AliEmcalJet(Double_t px, Double_t py, Double_t pz);
   AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m);
-  AliEmcalJet(const AliEmcalJet &jet); 
+  AliEmcalJet(const AliEmcalJet &jet);
   AliEmcalJet& operator=(const AliEmcalJet &jet);
 
   Double_t          Px()                         const { return fPt*TMath::Cos(fPhi);  }
@@ -47,10 +47,10 @@ class AliEmcalJet : public AliVParticle
   Double_t          OneOverPt()                  const { return 1./fPt;  }
   Double_t          Phi()                        const { return fPhi;    }
   Double_t          Theta()                      const { return 2*TMath::ATan(TMath::Exp(-fEta));         }
-  Double_t          E()                          const { Double_t p=P(); return TMath::Sqrt(M()*M()+p*p); }
+  Double_t          E()                          const { Double_t p=P(); return TMath::Sqrt(fM*fM+p*p); }
   Double_t          M()                          const { return fM; }
   Double_t          Eta()                        const { return fEta;    }
-  Double_t          Y()                          const { return 0.5*TMath::Log((E()+Pz())/(E()-Pz()));    }
+  Double_t          Y()                          const { Double_t e = E(); Double_t pz = Pz(); return 0.5*TMath::Log((e+pz)/(e-pz));    }
   Short_t           Charge()                     const { return 0;       }
   Int_t             GetLabel()                   const { return fLabel;  }
   Int_t             PdgCode()                    const { return 0;       }
@@ -62,6 +62,7 @@ class AliEmcalJet : public AliVParticle
   Double_t          AreaPt()                     const { return fArea;                     }
   Double_t          AreaEta()                    const { return fAreaEta;                  }
   Double_t          AreaPhi()                    const { return fAreaPhi;                  }
+  Double_t          AreaE()                      const { return fAreaE;                    }
   Double_t          AreaEmc()                    const { return fAreaEmc;                  }
   Bool_t            AxisInEmcal()                const { return fAxisInEmcal;              }
   Int_t             Compare(const TObject* obj)  const;
@@ -89,17 +90,19 @@ class AliEmcalJet : public AliVParticle
   Double_t          MaxPartPt()                  const { return fMaxCPt < fMaxNPt ? fMaxNPt : fMaxCPt;     }
   Double_t          PtEmc()                      const { return fPtEmc;                    }
   Double_t          PtSub()                      const { return fPtSub;                    }
-  Double_t          PtSub(Double_t rho)          const { return fPt - fArea*rho;           }
-  Double_t          PtSubVect(Double_t rho)      const;
+  Double_t          PtSubVect()                  const { return fPtSubVect;                }
+  Double_t          PtSub(Double_t rho, Bool_t save = kFALSE);
+  Double_t          PtSubVect(Double_t rho, Bool_t save = kFALSE);
+  TLorentzVector    SubtractRhoVect(Double_t rho, Bool_t save = kFALSE);
   Short_t           TrackAt(Int_t idx)           const { return fTrackIDs.At(idx);         }
-  AliVParticle     *TrackAt(Int_t idx, TClonesArray *ta)  const { if (!ta) return 0; return dynamic_cast<AliVParticle*>(ta->At(TrackAt(idx))); } 
+  AliVParticle     *TrackAt(Int_t idx, TClonesArray *ta)  const { if (!ta) return 0; return dynamic_cast<AliVParticle*>(ta->At(TrackAt(idx))); }
   AliVParticle     *GetLeadingTrack(TClonesArray *tracks) const;
-  Int_t             GetFlavour()                 const { return fFlavourTagging;           } 
-  
+  Int_t             GetFlavour()                 const { return fFlavourTagging;           }
+
   void              AddClusterAt(Int_t clus, Int_t idx){ fClusterIDs.AddAt(clus, idx);     }
   void              AddFlavourTag(Int_t tag)           { fFlavourTagging |= tag; }
   void              AddTrackAt(Int_t track, Int_t idx) { fTrackIDs.AddAt(track, idx);      }
-  void              Clear(Option_t */*option*/="")     { fClusterIDs.Set(0); fTrackIDs.Set(0); fClosestJets[0] = 0; fClosestJets[1] = 0; 
+  void              Clear(Option_t */*option*/="")     { fClusterIDs.Set(0); fTrackIDs.Set(0); fClosestJets[0] = 0; fClosestJets[1] = 0;
                                                          fClosestJetsDist[0] = 0; fClosestJetsDist[1] = 0; fMatched = 0; fPtSub = 0; }
   Double_t          DeltaR(const AliVParticle* part) const;
   Double_t          GetZ ( const Double_t trkPx, const Double_t trkPy, const Double_t trkPz ) const; // Get Z of constituent trk
@@ -110,7 +113,8 @@ class AliEmcalJet : public AliVParticle
   void              SetLabel(Int_t l)                  { fLabel = l;                       }
   void              SetArea(Double_t a)                { fArea    = a;                     }
   void              SetAreaEta(Double_t a)             { fAreaEta = a;                     }
-  void              SetAreaPhi(Double_t a)             { fAreaPhi = a;                     }
+  void              SetAreaPhi(Double_t a)             { fAreaPhi = TVector2::Phi_0_2pi(a); }
+  void              SetAreaE(Double_t a)               { fAreaE = a;                       }
   void              SetAreaEmc(Double_t a)             { fAreaEmc = a;                     }
   void              SetAxisInEmcal(Bool_t b)           { fAxisInEmcal = b;                 }
   void              SetFlavour(Int_t flavour)          { fFlavourTagging = flavour;        }
@@ -126,8 +130,8 @@ class AliEmcalJet : public AliVParticle
   std::vector<int>  SortConstituentsPt(TClonesArray *tracks) const;
   void              SetNEmc(Int_t n)                   { fNEmc           = n;              }
   void              SetPtEmc(Double_t pt)              { fPtEmc          = pt;             }
-  void              SetPtSub(Double_t ps)              { fPtSub          = ps;             } 
-  void              SetPtSubVect(Double_t ps)          { fPtVectSub      = ps;             }
+  void              SetPtSub(Double_t ps)              { fPtSub          = ps;             }
+  void              SetPtSubVect(Double_t ps)          { fPtSubVect      = ps;             }
   Bool_t            TestFlavourTag(Int_t tag)    const { return (Bool_t)((tag & fFlavourTagging) !=0); }
 
   // Trigger
@@ -163,7 +167,7 @@ class AliEmcalJet : public AliVParticle
   Double_t          GetSecondDerivative()                     const { return fJetShapeMassSecondDer                   ; }
   Double_t          GetFirstOrderSubtracted()                 const { return fJetShapeMassFirstSub                    ; }
   Double_t          GetSecondOrderSubtracted()                const { return fJetShapeMassSecondSub                   ; }
-  
+
   //jet structure function
   TArrayF           GetGRNumerator()                          const { return fGRNumerator                             ; }
   TArrayF           GetGRDenominator()                        const { return fGRDenominator                           ; }
@@ -199,7 +203,7 @@ class AliEmcalJet : public AliVParticle
   Double_t          GetSecondDerivativepTD()                  const { return fJetShapepTDSecondDer                    ; }
   Double_t          GetFirstOrderSubtractedpTD()              const { return fJetShapepTDFirstSub                     ; }
   Double_t          GetSecondOrderSubtractedpTD()             const { return fJetShapepTDSecondSub                    ; }
- 
+
   //Circularity
   void              SetFirstDerivativeCircularity(Double_t d)       { fJetShapeCircularityFirstDer = d                ; }
   void              SetSecondDerivativeCircularity(Double_t d)      { fJetShapeCircularitySecondDer = d               ; }
@@ -240,16 +244,17 @@ class AliEmcalJet : public AliVParticle
   Double_t          GetSecondDerivativeLeSub()                const { return fJetShapeLeSubSecondDer                  ; }
   Double_t          GetFirstOrderSubtractedLeSub()            const { return fJetShapeLeSubFirstSub                   ; }
   Double_t          GetSecondOrderSubtractedLeSub()           const { return fJetShapeLeSubSecondSub                  ; }
-  
+
  protected:
-  Double32_t        fPt;                  //[0,0,12]   pt 
+  Double32_t        fPt;                  //[0,0,12]   pt
   Double32_t        fEta;                 //[-1,1,12]  eta
   Double32_t        fPhi;                 //[0,6.3,12] phi
   Double32_t        fM;                   //[0,0,8]    mass
   Double32_t        fNEF;                 //[0,1,8]    neutral energy fraction
-  Double32_t        fArea;                //[0,0,12]   area
+  Double32_t        fArea;                //[0,0,12]   area (transverse)
   Double32_t        fAreaEta;             //[0,0,12]   area eta
   Double32_t        fAreaPhi;             //[0,0,12]   area phi
+  Double32_t        fAreaE;               //[0,0,12]   temporal area component
   Double32_t        fAreaEmc;             //[0,0,12]   area on EMCAL surface (determined from ghosts)
   Bool_t            fAxisInEmcal;         //           =true if jet axis inside EMCAL acceptance
   Int_t             fFlavourTagging;      // tag jet with a falvour, bit 0 = no tag; bit 1= Dstar; bit 2 = D0
@@ -260,23 +265,23 @@ class AliEmcalJet : public AliVParticle
   Int_t             fNch;                 //           number of charged constituents
   Double32_t        fPtEmc;               //[0,0,12]   pt in EMCAL acceptance
   Int_t             fNEmc;                //           number of constituents in EMCAL acceptance
-  TArrayI           fClusterIDs;          //           array containing ids of cluster constituents  
-  TArrayI           fTrackIDs;            //           array containing ids of track constituents   
+  TArrayI           fClusterIDs;          //           array containing ids of cluster constituents
+  TArrayI           fTrackIDs;            //           array containing ids of track constituents
   AliEmcalJet      *fClosestJets[2];      //!          if this is MC it contains the two closest detector level jets in order of distance and viceversa
   Double32_t        fClosestJetsDist[2];  //!          distance to closest jets (see above)
   UShort_t          fMatched;             //!          0,1 if it is matched with one of the closest jets; 2 if it is not matched
   UShort_t          fMatchingType;        //!          matching type
   AliEmcalJet      *fTaggedJet;           //!          jet tagged to this jet
   Int_t             fTagStatus;           //!          status of tagging -1: NA 0: not tagged 1: tagged
-  Double_t          fPtSub;               //!          background subtracted pt (not stored set from outside) 
-  Double_t          fPtVectSub;           //!          background vector subtracted pt (not stored set from outside) 
+  Double_t          fPtSub;               //!          background subtracted pt (not stored set from outside)
+  Double_t          fPtSubVect;           //!          background vector subtracted pt (not stored set from outside)
   UInt_t            fTriggers;            //!          triggers that the jet might have fired (AliVEvent::EOfflineTriggerTypes)
 
   Double_t          fJetShapeMassFirstDer;         //!   result from shape derivatives for jet mass: 1st derivative
   Double_t          fJetShapeMassSecondDer;        //!   result from shape derivatives for jet mass: 2nd derivative
   Double_t          fJetShapeMassFirstSub;         //!   result from shape derivatives for jet mass: 1st order subtracted
   Double_t          fJetShapeMassSecondSub;        //!   result from shape derivatives for jet mass: 2nd order subtracted
-  Int_t             fLabel;                        //    label to inclusive jet for constituent subtracted jet    
+  Int_t             fLabel;                        //    label to inclusive jet for constituent subtracted jet
 
   TArrayF           fGRNumerator;                  //!   array with angular structure function numerator
   TArrayF           fGRDenominator;                //!   array with angular structure function denominator
@@ -292,7 +297,7 @@ class AliEmcalJet : public AliVParticle
   Double_t          fJetShapepTDSecondDer;         //!   result from shape derivatives for jet pTD: 2nd derivative
   Double_t          fJetShapepTDFirstSub;          //!   result from shape derivatives for jet pTD: 1st order subtracted
   Double_t          fJetShapepTDSecondSub;         //!   result from shape derivatives for jet pTD: 2nd order subtracted
- 
+
   Double_t          fJetShapeCircularityFirstDer;  //!   result from shape derivatives for jet circularity: 1st derivative
   Double_t          fJetShapeCircularitySecondDer; //!   result from shape derivatives for jet circularity: 2nd derivative
   Double_t          fJetShapeCircularityFirstSub;  //!   result from shape derivatives for jet circularity: 1st order subtracted
@@ -311,7 +316,7 @@ class AliEmcalJet : public AliVParticle
   Double_t          fJetShapeLeSubFirstDer;        //!   result from shape derivatives for jet LeSub: 1st derivative
   Double_t          fJetShapeLeSubSecondDer;       //!   result from shape derivatives for jet LeSub: 2nd derivative
   Double_t          fJetShapeLeSubFirstSub;        //!   result from shape derivatives for jet LeSub: 1st order subtracted
-  Double_t          fJetShapeLeSubSecondSub;       //!   result from shape derivatives for jet LeSub: 2nd order subtracted 
+  Double_t          fJetShapeLeSubSecondSub;       //!   result from shape derivatives for jet LeSub: 2nd order subtracted
 
   private:
     struct sort_descend

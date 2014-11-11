@@ -432,7 +432,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 
     double tTOF = 0.0;
 
-    if (esdtrack->GetStatus()&AliESDtrack::kTOFpid) {
+    if (esdtrack->GetStatus()&AliESDtrack::kTOFout&AliESDtrack::kTIME) {
       tTOF = esdtrack->GetTOFsignal();
       esdtrack->GetIntegratedTimes(esdpid);
     }
@@ -462,7 +462,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
     float nsigmaTOFK=-1000.;
     float nsigmaTOFP=-1000.;
 
-    if ((esdtrack->GetStatus()&AliESDtrack::kTOFpid) &&
+    if (// (esdtrack->GetStatus()&AliESDtrack::kTOFpid) &&
         (esdtrack->GetStatus()&AliESDtrack::kTOFout) &&
         (esdtrack->GetStatus()&AliESDtrack::kTIME))
 	  {
@@ -472,7 +472,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	    //(esdtrack->GetStatus()&AliESDtrack::kTIME)){
 	    // collect info from ESDpid class
 
-      if ((fESDpid) && (esdtrack->IsOn(AliESDtrack::kTOFpid))) {
+      if ((fESDpid) && (esdtrack->IsOn(AliESDtrack::kTOFout&AliESDtrack::kTIME))) {
 
 
 	      double tZero = fESDpid->GetTOFResponse().GetStartTime(esdtrack->P());
@@ -1309,9 +1309,11 @@ void AliFemtoEventReaderESDChainKine::CopyESDtoFemtoV0(AliESDv0 *tESDv0, AliFemt
       tFemtoV0->SetNegNSigmaTPCPi(-1000);
     }
 
-    if((tFemtoV0->StatusPos()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFout)==0)
+    if(// (tFemtoV0->StatusPos()&AliESDtrack::kTOFpid)==0 ||
+       (tFemtoV0->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFout)==0)
     {
-      if((tFemtoV0->StatusNeg()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFout)==0)
+      if(// (tFemtoV0->StatusNeg()&AliESDtrack::kTOFpid)==0 ||
+         (tFemtoV0->StatusNeg()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFout)==0)
 	    {
 	      tFemtoV0->SetPosNSigmaTOFK(-1000);
 	      tFemtoV0->SetNegNSigmaTOFK(-1000);

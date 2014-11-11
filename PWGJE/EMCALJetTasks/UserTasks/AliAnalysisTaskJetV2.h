@@ -105,6 +105,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         void                    SetOnTheFlyResCorrection(TH1F* r2, TH1F* r3)    {fUserSuppliedR2 = r2;
                                                                                  fUserSuppliedR3 = r3; }
         void                    SetEventPlaneWeights(TH1F* ep)                  {fEventPlaneWeights = ep; }
+        void                    SetAcceptanceWeights(Bool_t w)                  {fAcceptanceWeights = w; }
         void                    SetNameRhoSmall(TString name)                   {fNameSmallRho = name; }
         void                    SetRandomSeed(TRandom3* r)                      {if (fRandom) delete fRandom; fRandom = r; }
         void                    SetModulationFit(TF1* fit);
@@ -162,6 +163,9 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         void                    SetSemiGoodJetMinMaxPhi(Double_t a, Double_t b)         {fSemiGoodJetMinPhi = a; fSemiGoodJetMaxPhi = b;}
         void                    SetSemiGoodTrackMinMaxPhi(Double_t a, Double_t b)       {fSemiGoodTrackMinPhi = a; fSemiGoodTrackMaxPhi = b;}
         // numerical evaluations
+        static void             NumericalOverlap(Double_t x1, Double_t x2, Double_t psi2, Double_t &percIn, Double_t &percOut, Double_t &percLost);
+        static Int_t            OverlapsWithPlane(Double_t x1, Double_t x2, 
+                Double_t a, Double_t b, Double_t c, Double_t d, Double_t e, Double_t phi);
         static Double_t         CalculateEventPlaneChi(Double_t res);
         void                    CalculateEventPlaneVZERO(Double_t vzero[2][2]) const;
         void                    CalculateEventPlaneCombinedVZERO(Double_t* comb) const;
@@ -249,6 +253,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TH1F*                   fUserSuppliedR2;        // correct the extracted v2 with this r
         TH1F*                   fUserSuppliedR3;        // correct the extracted v3 with this r
         TH1F*                   fEventPlaneWeights;     // weight histo for the event plane
+        Bool_t                  fAcceptanceWeights;     // store centrality dependent acceptance weights
         Float_t                 fEventPlaneWeight;      //! the actual weight of an event
         AliParticleContainer*   fTracksCont;            //! tracks
         AliClusterContainer*    fClusterCont;           //! cluster container
@@ -290,6 +295,9 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         Float_t                 fAbsVertexZ;            // cut on zvertex
         // general qa histograms
         TH1F*                   fHistCentrality;        //! accepted centrality
+        TProfile*               fHistCentralityPercIn;  //! centrality versus perc in
+        TProfile*               fHistCentralityPercOut; //! centrality versus perc out
+        TProfile*               fHistCentralityPercLost;//! centrality versus perc lost
         TH1F*                   fHistVertexz;           //! accepted verte
         TH2F*                   fHistRunnumbersPhi;     //! run numbers averaged phi
         TH2F*                   fHistRunnumbersEta;     //! run numbers averaged eta
@@ -404,7 +412,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         AliAnalysisTaskJetV2(const AliAnalysisTaskJetV2&);                  // not implemented
         AliAnalysisTaskJetV2& operator=(const AliAnalysisTaskJetV2&);       // not implemented
 
-        ClassDef(AliAnalysisTaskJetV2, 3);
+        ClassDef(AliAnalysisTaskJetV2, 4);
 };
 
 #endif

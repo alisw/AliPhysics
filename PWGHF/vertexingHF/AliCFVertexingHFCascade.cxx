@@ -38,6 +38,34 @@ ClassImp(AliCFVertexingHFCascade)
 
 
 //_________________________________________
+AliCFVertexingHFCascade::AliCFVertexingHFCascade():
+AliCFVertexingHF(),
+  fPDGcascade(0),
+  fPDGbachelor(0),
+  fPDGneutrDaugh(0),
+  fPDGneutrDaughForMC(0),
+  fPDGneutrDaughPositive(0),
+  fPDGneutrDaughNegative(0),
+  fPrimVtx(0x0),
+  fUseCutsForTMVA(kFALSE),
+  fCutOnMomConservation(0.00001)
+{
+  // default constructor
+
+  SetNProngs(3);
+  fPtAccCut = new Float_t[fProngs];
+  fEtaAccCut = new Float_t[fProngs];
+  // element 0 in the cut arrays corresponds to the soft pion!!!!!!!! Careful when setting the values...
+  fPtAccCut[0] = 0.;
+  fEtaAccCut[0] = 0.;
+  for(Int_t iP=1; iP<fProngs; iP++){
+    fPtAccCut[iP] = 0.1;
+    fEtaAccCut[iP] = 0.9;
+  }
+
+}
+
+//_________________________________________
 AliCFVertexingHFCascade::AliCFVertexingHFCascade(TClonesArray *mcArray, UShort_t originDselection):
 AliCFVertexingHF(mcArray, originDselection),
   fPDGcascade(0),
@@ -632,11 +660,17 @@ Double_t AliCFVertexingHFCascade::GetEtaProng(Int_t iProng) const
 
     Double_t etaProng =-9999;
     AliAODRecoDecay* neutrDaugh=0; 
-    if (fPDGcascade == 413) neutrDaugh = cascade->Get2Prong();
-    else if (fPDGcascade == 4122) neutrDaugh = cascade->Getv0();
+    Int_t ibachelor = 1;
+    if (fPDGcascade == 413) {
+      neutrDaugh = cascade->Get2Prong();
+    }
+    else if (fPDGcascade == 4122) {
+      neutrDaugh = cascade->Getv0();
+      ibachelor = 0;
+    }
     if (iProng==0) etaProng = neutrDaugh->EtaProng(0);
     if (iProng==1) etaProng = neutrDaugh->EtaProng(1);
-    if (iProng==2) etaProng = cascade->EtaProng(1);
+    if (iProng==2) etaProng = cascade->EtaProng(ibachelor);
     
     return etaProng;
     

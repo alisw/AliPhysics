@@ -55,6 +55,8 @@ updateQA()
   [[ ! -f ${inputList} ]] && echo "no input list: ${inputList}" && return 1
   inputList=$(get_realpath ${inputList})
   mkdir -p ${workingDirectory}
+  #this is a trick to get the full path of workingDirectory
+  #(on a mac 'readlink -f' does not work...)
   workingDirectory=$(workingDirectory=${workingDirectory%/}; cd ${workingDirectory%/*}; echo "${PWD}/${workingDirectory##*/}")
   if [[ ! -d ${workingDirectory} ]]; then
     echo "working dir $workingDirectory does not exist and cannot be created"
@@ -130,6 +132,7 @@ updateQA()
     #source the detector script
     #unset the detector functions from previous iterations (detectors)
     unset -f runLevelQA
+    unset -f runLevelQAouter
     unset -f periodLevelQA
     unset -f runLevelEventStatQA
     unset -f runLevelHighPtTreeQA
@@ -161,8 +164,10 @@ updateQA()
       #check what kind of input file we have, default is a zip archive
       #set the inputs accordingly
       qaFile=""
+      qaFileOuter=""
       highPtTree=""
       eventStatFile=""
+      eventStatFileOuter=""
       #it is possible we get the highPt trees from somewhere else
       #search the list of high pt trees for the proper run number
       if [[ -n ${inputListHighPtTrees} ]]; then
@@ -172,12 +177,16 @@ updateQA()
       #if we are explicit about the input file this takes precedence 
       #over earlier additions
       [[ "${inputFile}" =~ QAresults.root$ ]] && qaFile=${inputFile}
+      [[ "${inputFile}" =~ QAresults_outer.root$ ]] && qaFileOuter=${inputFile}
       [[ "${inputFile}" =~ FilterEvents_Trees.root$ ]] && highPtTree=${inputFile}
       [[ "${inputFile}" =~ event_stat.root$ ]] && eventStatFile=${inputFile}
+      [[ "${inputFile}" =~ event_stat_outer.root$ ]] && eventStatFileOuter=${inputFile}
       if [[ "${inputFile}" =~ \.zip$ ]]; then
         [[ -z ${qaFile} ]] && qaFile=${inputFile}
+        [[ -z ${qaFileOuter} ]] && qaFileOuter=${inputFile}
         [[ -z ${highPtTree} ]] && highPtTree=${inputFile}
         [[ -z ${eventStatFile} ]] && eventStatFile=${inputFile}
+        [[ -z ${eventStatFileOuter} ]] && eventStatFileOuter=${inputFile}
       fi
 
       #if we have zip archives in the input, extract the proper file name
@@ -189,6 +198,13 @@ updateQA()
           qaFile+="#QAresults_barrel.root"
         else
           qaFile=""
+        fi
+      fi
+      if [[ "$qaFileOuter" =~ .*.zip$ ]]; then
+        if unzip -l ${qaFileOuter} | egrep "QAresults_outer.root" &>/dev/null; then
+          qaFileOuter+="#QAresults_outer.root"
+        else
+          qaFileOuter=""
         fi
       fi
       if [[ "$highPtTree" =~ .*.zip$ ]]; then
@@ -207,10 +223,19 @@ updateQA()
           eventStatFile=""
         fi
       fi
+      if [[ "${eventStatFileOuter}" =~ .*.zip$ ]]; then
+        if unzip -l ${eventStatFileOuter} | egrep "event_stat_outer.root" &>/dev/null; then
+          eventStatFileOuter+="#event_stat.root"
+        else
+          eventStatFileOuter=""
+        fi
+      fi
      
       echo qaFile=$qaFile
+      echo qaFileOuter=$qaFileOuter
       echo highPtTree=$highPtTree
       echo eventStatFile=$eventStatFile
+      echo eventStatFileOuter=$eventStatFileOuter
       echo ocdbStorage=${ocdbStorage}
       echo
 
@@ -218,6 +243,13 @@ updateQA()
       if [[ -n ${qaFile} && $(type -t runLevelQA) =~ "function" ]]; then
         echo running ${detector} runLevelQA for run ${runNumber} from ${qaFile}
         ( runLevelQA "${qaFile}" ) &>> runLevelQA.log
+        #cache the touched production + an example file to guarantee consistent run data parsing
+        arrOfTouchedProductions[${tmpProductionDir}]="${inputFile%\#*}"
+      fi
+      #standard QA based on QAresults_outer.root file (there in cpass, with different triggers)
+      if [[ -n ${qaFileOuter} && $(type -t runLevelQAouter) =~ "function" ]]; then
+        echo running ${detector} runLevelQAouter for run ${runNumber} from ${qaFileOuter}
+        ( runLevelQAouter "${qaFileOuter}" ) &>> runLevelQA.log
         #cache the touched production + an example file to guarantee consistent run data parsing
         arrOfTouchedProductions[${tmpProductionDir}]="${inputFile%\#*}"
       fi
@@ -231,7 +263,14 @@ updateQA()
       #event stat QA based on event_stat.root file
       if [[ -n ${eventStatFile} && $(type -t runLevelEventStatQA) =~ "function" ]]; then
         echo running ${detector} runLevelEventStatQA for run ${runNumber} from ${eventStatFile}
-        ( runLevelEventStatQA "${eventStatFile}" ) &>> runLevel.log
+        ( runLevelEventStatQA "${eventStatFile}" ) &>> runLevelQA.log
+        #cache the touched production + an example file to guarantee consistent run data parsing
+        arrOfTouchedProductions[${tmpProductionDir}]="${inputFile%\#*}"
+      fi
+      #event stat QA based on event_stat_outer.root file
+      if [[ -n ${eventStatFileOuter} && $(type -t runLevelEventStatQAouter) =~ "function" ]]; then
+        echo running ${detector} runLevelEventStatQAouter for run ${runNumber} from ${eventStatFileOuter}
+        ( runLevelEventStatQAouter "${eventStatFileOuter}" ) &>> runLevelQA.log
         #cache the touched production + an example file to guarantee consistent run data parsing
         arrOfTouchedProductions[${tmpProductionDir}]="${inputFile%\#*}"
       fi

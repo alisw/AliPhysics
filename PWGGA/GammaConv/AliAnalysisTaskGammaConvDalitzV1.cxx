@@ -2466,7 +2466,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessMCParticles()
 			
 			if(fDoMesonQA) {
 			  hMCConvGammaEta[fiCut]->Fill( particle->Eta());
-			  hMCConvGammaR[fiCut]->Fill( ((TParticle*)fMCStack->Particle(particle->GetFirstDaughter()))->R() );
+			  if(mcIsFromMB) hMCConvGammaR[fiCut]->Fill( ((TParticle*)fMCStack->Particle(particle->GetFirstDaughter()))->R() );
 			}
 		
 			if(mcIsFromMB){

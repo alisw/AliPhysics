@@ -1210,16 +1210,18 @@ AliFemtoV0* AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0 )
     Float_t probMisPos = 1.0;
     Float_t probMisNeg = 1.0;
 
-    if (tFemtoV0->StatusPos() & AliESDtrack::kTOFpid) {  //AliESDtrack::kTOFpid=0x8000
+    if (tFemtoV0->StatusPos() & AliESDtrack::kTOFout & AliESDtrack::kTIME) {  //AliESDtrack::kTOFpid=0x8000
       probMisPos = fAODpidUtil->GetTOFMismatchProbability(trackpos);
     }
-    if (tFemtoV0->StatusNeg() & AliESDtrack::kTOFpid) {  //AliESDtrack::kTOFpid=0x8000
+    if (tFemtoV0->StatusNeg() & AliESDtrack::kTOFout & AliESDtrack::kTIME) {  //AliESDtrack::kTOFpid=0x8000
       probMisNeg = fAODpidUtil->GetTOFMismatchProbability(trackneg);
     }
 
-    if((tFemtoV0->StatusPos()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFout)==0 || probMisPos > 0.01)
+    if(// (tFemtoV0->StatusPos()& AliESDtrack::kTOFpid)==0 ||
+       (tFemtoV0->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFout)==0 || probMisPos > 0.01)
     {
-      if((tFemtoV0->StatusNeg()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFout)==0 || probMisNeg > 0.01)
+      if(// (tFemtoV0->StatusNeg()&AliESDtrack::kTOFpid)==0 ||
+         (tFemtoV0->StatusNeg()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFout)==0 || probMisNeg > 0.01)
 	    {
 	      tFemtoV0->SetPosNSigmaTOFK(-1000);
 	      tFemtoV0->SetNegNSigmaTOFK(-1000);
@@ -1238,12 +1240,12 @@ AliFemtoV0* AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0 )
     }
     else
     {
-      if(trackpos->IsOn(AliESDtrack::kTOFpid)) {
+      if(trackpos->IsOn(AliESDtrack::kTOFout & AliESDtrack::kTIME)) {
         tFemtoV0->SetPosNSigmaTOFK(fAODpidUtil->NumberOfSigmasTOF(trackpos,AliPID::kKaon));
         tFemtoV0->SetPosNSigmaTOFP(fAODpidUtil->NumberOfSigmasTOF(trackpos,AliPID::kProton));
         tFemtoV0->SetPosNSigmaTOFPi(fAODpidUtil->NumberOfSigmasTOF(trackpos,AliPID::kPion));
       }
-      if(trackneg->IsOn(AliESDtrack::kTOFpid)) {
+      if(trackneg->IsOn(AliESDtrack::kTOFout & AliESDtrack::kTIME)) {
         tFemtoV0->SetNegNSigmaTOFK(fAODpidUtil->NumberOfSigmasTOF(trackneg,AliPID::kKaon));
         tFemtoV0->SetNegNSigmaTOFP(fAODpidUtil->NumberOfSigmasTOF(trackneg,AliPID::kProton));
         tFemtoV0->SetNegNSigmaTOFPi(fAODpidUtil->NumberOfSigmasTOF(trackneg,AliPID::kPion));
@@ -1414,7 +1416,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
   Float_t probMis = 1.0;
 
   //what is that code? for what do we need it? nsigma values are not enough?
-  if (tAodTrack->GetStatus() & AliESDtrack::kTOFpid) {  //AliESDtrack::kTOFpid=0x8000
+  if (tAodTrack->GetStatus() & AliESDtrack::kTOFout & AliESDtrack::kTIME) {  //AliESDtrack::kTOFpid=0x8000
     tTOF = tAodTrack->GetTOFsignal();
     tAodTrack->GetIntegratedTimes(aodpid);
 
@@ -1464,12 +1466,13 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
   float nsigmaTOFP=-1000.;
   float nsigmaTOFE=-1000.;
 
-  if ((tAodTrack->GetStatus() & AliESDtrack::kTOFpid) && //AliESDtrack::kTOFpid=0x8000
+  if (// (tAodTrack->GetStatus() & AliESDtrack::kTOFpid) &&
+      //AliESDtrack::kTOFpid=0x8000
       (tAodTrack->GetStatus() & AliESDtrack::kTOFout) && //AliESDtrack::kTOFout=0x2000
       (tAodTrack->GetStatus() & AliESDtrack::kTIME) //AliESDtrack::kTIME=0x80000000
       && probMis < 0.01) // TOF mismatch probaility
   {
-    if(tAodTrack->IsOn(AliESDtrack::kTOFpid)) //AliESDtrack::kTOFpid=0x8000
+    if(tAodTrack->IsOn(AliESDtrack::kTOFout & AliESDtrack::kTIME)) //AliESDtrack::kTOFpid=0x8000
 	  {
 
 	    nsigmaTOFPi = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kPion);

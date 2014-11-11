@@ -7,6 +7,7 @@ class TString;
 class TF1;
 class TH1F;
 class TH2F;
+class TH3F;
 class AliRhoParameter;
 
 #include "AliAnalysisTaskEmcalJet.h"
@@ -68,8 +69,8 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
   TH2F                  *fHistDeltaRhovsCent;            //!delta rho vs. centrality
   TH2F                  *fHistDeltaRhoScalevsCent;       //!delta rhoscaled vs. centrality
 
-  TH2F                  *fHistRhovsNtrack;               //!rho vs. no. of tracks
-  TH2F                  *fHistRhoScaledvsNtrack;         //!rhoscaled vs. no. of tracks
+  TH3F                  *fHistRhovsNtrackvsV0Mult;       //!rho vs. no. of tracks vs V0mult
+  TH3F                  *fHistRhoScaledvsNtrackvsV0Mult; //!rhoscaled vs. no. of tracks vs V0mult
   TH2F                  *fHistDeltaRhovsNtrack;          //!delta rho vs. no. of tracks
   TH2F                  *fHistDeltaRhoScalevsNtrack;     //!delta rho scaled vs. no. of tracks
  
@@ -79,6 +80,6 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskRhoBase(const AliAnalysisTaskRhoBase&);             // not implemented
   AliAnalysisTaskRhoBase& operator=(const AliAnalysisTaskRhoBase&);  // not implemented
   
-  ClassDef(AliAnalysisTaskRhoBase, 10); // Rho base task
+  ClassDef(AliAnalysisTaskRhoBase, 11); // Rho base task
 };
 #endif

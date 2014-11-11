@@ -64,19 +64,19 @@ protected:
 
   //ml
 
+  AliFemtoPairCut* fPairCut;    //! this is a PairCut specific to THIS CorrFctn, not the Analysis
+  unsigned short fUseRPSelection;  // The pair cut uses RP selection
+
   TH3D *fNumerator3DTrueIdeal; // Numerator made with pairs (true qosl) from the same event
   TH3D *fNumerator3DFakeIdeal; // Numerator made with pairs (true qosl) from different events (mixed pairs)
   TH3D *fDenominator3DIdeal;   // Denominator made with mixed pairs (true qosl)
 
 
 
-  AliFemtoPairCut* fPairCut;    //! this is a PairCut specific to THIS CorrFctn, not the Analysis
 
-  unsigned short fUseRPSelection;  // The pair cut uses RP selection
 #ifdef __ROOT__
   ClassDef(AliFemtoModelBPLCMSCorrFctnKK, 1)
 #endif
 };
 
 #endif
-

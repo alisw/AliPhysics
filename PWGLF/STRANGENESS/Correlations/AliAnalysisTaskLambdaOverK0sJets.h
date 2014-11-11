@@ -116,6 +116,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   virtual Bool_t   AcceptTrack(const AliAODTrack *t); 
   virtual Bool_t   AcceptTrackV0(const AliAODTrack *t);
   virtual Bool_t   AcceptV0(AliAODVertex *vtx, const AliAODv0 *v0);
+  virtual Float_t  GetMultiplicity();
   virtual Double_t ThetaS(TString part);
   virtual Double_t EtaS(TString part);
   virtual Float_t  dEtaS();
@@ -196,6 +197,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH1F*   fPrimaryVertexY;               //! Primary vertex position in Y
   TH1F*   fPrimaryVertexZ;               //! Primary vertex position in Z
 
+  TH2F*   fChargedMultiplicity;          //! Charged multiplicity vs centrality bin  
   TH1F*   fTriggerEventPlane;            //! Distance between the trigger particle direction and the event plane angle
 
   TH2F*   fTriggerMCPtCent;              //! Trigger particle MC: pt vs centrality
@@ -530,6 +532,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fK0sBckgNClustersITSPos;           //! K0s Bckg: Pos. Daug. Numbers of ITS clusters of the daughter tracks 
   TH3F*   fK0sBckgNClustersITSNeg;           //! K0s Bckg: Neg. Daug. Numbers of ITS clusters of the daughter tracks 
 
+  TH2F*   fK0sCTau;                          //! K0s: ctau 
+  TH2F*   fK0sBckgCTau;                      //! K0s Bckg: ctau
 
   //          Lambda          //
   TH2F*   fLambdaPtPosDaug;                     //! Lambda: Pos. pt
@@ -564,6 +568,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fLambdaBckgNClustersITSPos;           //! Lambda Bckg: Pos. Daug. Numbers of ITS clusters of the daughter tracks 
   TH3F*   fLambdaBckgNClustersITSNeg;           //! Lambda Bckg: Neg. Daug. Numbers of ITS clusters of the daughter tracks 
 
+  TH2F*   fLambdaCTau;                          //! Lambda: ctau 
+  TH2F*   fLambdaBckgCTau;                      //! Lambda Bckg: ctau
 
   //        AntiLambda        //
   TH2F*   fAntiLambdaPtPosDaug;                     //! AntiLambda: Pos. pt
@@ -598,6 +604,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fAntiLambdaBckgNClustersITSPos;           //! AntiLambda Bckg: Pos. Daug. Numbers of ITS clusters of the daughter tracks 
   TH3F*   fAntiLambdaBckgNClustersITSNeg;           //! AntiLambda Bckg: Neg. Daug. Numbers of ITS clusters of the daughter tracks 
 
+  TH2F*   fAntiLambdaCTau;                          //! AntiLambda: ctau 
+  TH2F*   fAntiLambdaBckgCTau;                      //! AntiLambda Bckg: ctau
 
   ///  ==== Mixed Events plots === ///
   TH3F*  fK0sdPhidEtaME[kNVtxZ*kNCent*kN1+1];             //! K0s Mixed Events
