@@ -109,6 +109,7 @@ add_subdirectory(TRIGGER)
 add_subdirectory(BCM)
 add_subdirectory(CORRFW)
 add_subdirectory(FASTSIM)
+
 if(CMAKE_Fortran_COMPILER)
   add_subdirectory(LHAPDF)
   add_subdirectory(PYTHIA6)
@@ -120,6 +121,7 @@ if(CMAKE_Fortran_COMPILER)
   add_subdirectory(THbtp)
   add_subdirectory(THijing)
 endif(CMAKE_Fortran_COMPILER)
+
 add_subdirectory(EVGEN)
 add_subdirectory(TTherminator)
 # Include Vc own cmake
@@ -129,3 +131,13 @@ add_subdirectory(HLT)
 add_subdirectory(STARLIGHT)
 add_subdirectory(EVE)
 add_subdirectory(AD)
+
+# Enable SHUTTLE compilation
+# Check if DIMDIR and ODIR are set
+if(SHUTTLE)
+    if(DIMDIR AND ODIR AND ALIEN)
+        add_subdirectory(SHUTTLE)
+    else()
+        message(FATAL_ERROR "SHUTTLE enabled! Please specify DIMDIR, ODIR and ALIEN")
+    endif()
+endif(SHUTTLE)
