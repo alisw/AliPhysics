@@ -72,6 +72,7 @@ fRemoveEventsPercentage(0)
 AliStorageClientThread::~AliStorageClientThread()
 {
     while(!gClientQuit){sleep(1);}
+    if(fDIMListenerThread){delete fDIMListenerThread;}
     fEventsCollectorThread->Kill();
     fCommunicationThread->Kill();
 }
