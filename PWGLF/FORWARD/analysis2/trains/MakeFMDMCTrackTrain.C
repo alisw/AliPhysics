@@ -47,15 +47,15 @@ protected:
 
 
     // --- Load libraries/pars ---------------------------------------
-    fHelper->LoadLibrary("PWGLFforward2");
-    // fHelper->LoadLibrary("Proof");
-    // fHelper->LoadLibrary("Gui"); // Sigh! CDB depends on GUI!
-    // fHelper->LoadLibrary("CDB");
-    // fHelper->LoadLibrary("RAWDatabase");
-    // fHelper->LoadLibrary("STEER");
-    // fHelper->LoadLibrary("FMDbase");
-    // fHelper->LoadLibrary("FMDsim");
-    // fHelper->LoadLibrary("PWGLFforwardhit");
+    fRailway->LoadLibrary("PWGLFforward2");
+    // fRailway->LoadLibrary("Proof");
+    // fRailway->LoadLibrary("Gui"); // Sigh! CDB depends on GUI!
+    // fRailway->LoadLibrary("CDB");
+    // fRailway->LoadLibrary("RAWDatabase");
+    // fRailway->LoadLibrary("STEER");
+    // fRailway->LoadLibrary("FMDbase");
+    // fRailway->LoadLibrary("FMDsim");
+    // fRailway->LoadLibrary("PWGLFforwardhit");
     
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
@@ -73,7 +73,7 @@ protected:
 				   useTuple,
 				   maxStrips, 
 				   verbose);
-    if (!AddTask("AddTaskFMDMCTracks.C", args))
+    if (!CoupleCar("AddTaskFMDMCTracks.C", args))
       Fatal("CreateTasks", "Couldn't add our task");
   }
   //__________________________________________________________________
@@ -112,7 +112,7 @@ protected:
   /** 
    * Do not the centrality selection
    */
-  // void CreateCentralitySelection(Bool_t, AliAnalysisManager*) {}
+  // void CreateCentralitySelection(Bool_t) {}
   //__________________________________________________________________
   const char* ClassName() const { return "MakeFMDMCTrackTrain"; }
 

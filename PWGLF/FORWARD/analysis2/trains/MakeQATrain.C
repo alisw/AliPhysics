@@ -46,7 +46,7 @@ protected:
     AliAnalysisManager::SetCommonFileName("forward_qa.root");
 
     // --- Load libraries/pars ---------------------------------------
-    fHelper->LoadLibrary("PWGLFforward2");
+    fRailway->LoadLibrary("PWGLFforward2");
     
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
@@ -56,20 +56,14 @@ protected:
     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
 
     // --- Add the task ----------------------------------------------
-#if 0
-    if (!gROOT->Macro(Form("AddTaskForwardQA.C(%d,%d)",
-			   mc,fOptions.Has("cent"))))
+    if (!CoupleCar("AddTaskForwardQA.C", 
+		   Form("%d,%d", mc, fOptions.Has("cent"))))
       Fatal("CreateTasks", "Failed to add ForwardQA task");
-#else
-    if (!AddTask("AddTaskForwardQA.C", 
-		 Form("%d,%d", mc, fOptions.Has("cent"))))
-      Fatal("CreateTasks", "Failed to add ForwardQA task");
-#endif
 
     TString  cor = "";
     if (fOptions.Has("corr")) cor = fOptions.Get("corr"); 
     if (!cor.IsNull()) {
-      fHelper->LoadAux(Form("%s/fmd_corrections.root",cor.Data()), true);
+      fRailway->LoadAux(Form("%s/fmd_corrections.root",cor.Data()), true);
     }
   }
   /** 
@@ -78,17 +72,10 @@ protected:
    * @param mc   Whether this is MC or not
    * @param mgr  Analysis manager 
    */
-  virtual void CreateCentralitySelection(Bool_t mc, AliAnalysisManager* mgr)
+  virtual void CreateCentralitySelection(Bool_t mc)
   {
     if (!fOptions.Has("cent")) return;
-
-    gROOT->Macro("AddTaskCentrality.C");
-    const char* cname = "CentralitySelection";
-    AliCentralitySelectionTask* ctask = 
-      dynamic_cast<AliCentralitySelectionTask*>(mgr->GetTask(cname));
-    if (!ctask) return;
-    // ctask->SetPass(fESDPass);
-    if (mc) ctask->SetMCInput();
+    TrainSetup::CreateCentralitySelection(mc);    
   }
   /** 
    * Crete output handler - we don't want one here. 

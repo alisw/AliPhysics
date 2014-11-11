@@ -46,7 +46,7 @@ protected:
     AliAnalysisManager::SetCommonFileName("forward_mccorr.root");
 
     // --- Load libraries/pars ---------------------------------------
-    fHelper->LoadLibrary("PWGLFforward2");
+    fRailway->LoadLibrary("PWGLFforward2");
     
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
@@ -63,10 +63,10 @@ protected:
     // gROOT->Macro("AddTaskCopyHeader.C");
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskForwardMCCorr.C(%d)", maxStrips)); 
+    CoupleCar("AddTaskForwardMCCorr.C",Form("%d", maxStrips)); 
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskCentralMCCorr.C(%d)", spdEffective));
+    CoupleCar("AddTaskCentralMCCorr.C", Form("%d", spdEffective));
   }
   //__________________________________________________________________
   /** 
@@ -104,7 +104,7 @@ protected:
   /** 
    * Do not the centrality selection
    */
-  // void CreateCentralitySelection(Bool_t, AliAnalysisManager*) {}
+  // void CreateCentralitySelection(Bool_t) {}
   //__________________________________________________________________
   const char* ClassName() const { return "MakeMCCorrTrain"; }
   //__________________________________________________________________
