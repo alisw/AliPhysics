@@ -3,8 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-
-
+#include <TBits.h>
 #include <TH1F.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
@@ -20,7 +19,8 @@ class AliTPCRawStreamV3;
 class AliRawReader;
 class AliTPCAltroMapping;
 class AliTPCCalPad;
-class TMap; 
+class TMap;
+class TObjArray;
 struct eventHeaderStruct;
 
 class AliTPCdataQA : public TH1F {
@@ -46,6 +46,9 @@ public:
   void SetPedestal(AliTPCCalPad *const pedestalCal){ fPedestal = pedestalCal;}
   void SetNoise(AliTPCCalPad *const noiseCal){ fNoise = noiseCal;}
 
+  void SetMinQMax               (Float_t minQmax  ) { fMinQMax                = minQmax; }
+  void SetRequireNeighbouringPad(Bool_t  req=kTRUE) { fRequireNeighbouringPad = req;     }
+  
   // DQM methods
   void FillOccupancyProfile();
   void ResetProfiles();
@@ -92,6 +95,9 @@ public:
   Int_t  GetSignalCounter()  const { return fSignalCounter; }
   Int_t  GetClusterCounter() const { return fClusterCounter;}
 
+  Float_t GetMinQMax()                const { return fMinQMax;                }
+  Bool_t  GetRequireNeighbouringPad() const { return fRequireNeighbouringPad; }
+  
   // DQM getter
   Bool_t    GetIsDQM() const { return fIsDQM; }
 
@@ -103,6 +109,10 @@ public:
   // DQM setter
   void  SetIsDQM(Bool_t value) { fIsDQM = value; }
 
+  void ResetData();
+
+  void SetChamberStatus(UInt_t roc, Bool_t status) { fActiveChambers.SetBitNumber(roc,status); }
+  Bool_t GetChamberStatus(UInt_t roc) {return fActiveChambers.TestBitNumber(roc);}
 private:
   Int_t Update(const Int_t iSector, const Int_t iRow, const Int_t iPad,
 	       const Int_t iTimeBin, Float_t signal,
@@ -119,10 +129,17 @@ private:
 	       Int_t& timeMin,Int_t& timeMax,Int_t& padMin,Int_t& padMax) const;
   void UpdateEventHistograms();
 
+  void Init();
+
+  TObjArray *ConfigArrRocs(TObjArray *arr, const Text_t* name);
+
   Int_t fFirstTimeBin;              //  First Time bin needed for analysis
   Int_t fLastTimeBin;               //  Last Time bin needed for analysis
   Int_t fAdcMin;                    //  min adc channel of pedestal value
   Int_t fAdcMax;                    //  max adc channel of pedestal value
+  Float_t fMinQMax;                 //  Minimun charge for Maximum ADC in cluster
+  Bool_t fRequireNeighbouringPad;   //  If clusterer should require a neighbouring pad to accept it
+  
 
   AliTPCAltroMapping **fMapping;    //! Altro Mapping object
   //
@@ -155,6 +172,9 @@ private:
   Int_t fEventsPerBin;              // Events per bin for event histograms
   Int_t fSignalCounter;             // Signal counter
   Int_t fClusterCounter;            // Cluster counter
+
+  TBits fActiveChambers;           // configured ROCs
+
   //
   //  Expand buffer
   //
@@ -177,7 +197,7 @@ private:
   TArrayD* fOccMaxVecFine;         //!  "2D" occupancy help normlization for DQM
   
 
-  ClassDef(AliTPCdataQA, 5)  // Implementation of the TPC Raw QA
+  ClassDef(AliTPCdataQA, 6)  // Implementation of the TPC Raw QA
 };
 
 
