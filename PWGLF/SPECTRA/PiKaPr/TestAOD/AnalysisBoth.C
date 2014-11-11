@@ -30,7 +30,7 @@ Double_t minRanges[3]={0.3,0.3,0.45};
 Double_t maxRanges[3]={1.5,1.2,2.2};
 Double_t TOFPIDsignalmatching[]={-1.0,-1.0,-1.0};
 Double_t fMaxContaminationPIDMC=0.2;
-
+TString filenames[]={"eff.root","pid.root","sec.root"};
 
 enum ECharge_t {
   kPositive,
@@ -51,8 +51,11 @@ enum {
  kuserangeonfigfile=0x400, // use of config file for dca fit settings
  kskipconcutonspectra=0x800, //do not use conPID<02 cut  useful for syst. studies
  kuseTOFmatchingcorrection=0x1000, // if set tof matching correction is applied.
- kuseTOFcorrforPIDsignalmatching=0x2000 // rescale the for spectra by the factor given in config files			
-  							
+ kuseTOFcorrforPIDsignalmatching=0x2000, // rescale the for spectra by the factor given in config files	
+ kuseeffcorrectionfromfile=0x4000, //use the efficiency from the file specfied in config file			
+ kusePIDcontaminatiofromfile=0x8000, //use the PID contamination from the file specfied in config file
+ kuseseccontaminatiofromfile=0x10000 //use the secondary contamination from the file specfied in config file
+ 							
 };	
 
 Bool_t OpenFile(TString dirname, TString outputname, Bool_t mcflag,Bool_t mcasdata=false);
@@ -180,13 +183,24 @@ gStyle->SetOptStat(0);
 	GetMCTruth(MCTruth);
 	cout<<neventsdata<<" Events"<<endl;
         cout<< neventsmc<<" Events "<<endl;
-       if(neventsdata<1||neventsmc<1)
+       if(neventsdata<1)
        {
-               cout<<"No events"<<endl;
+               cout<<"No events DATA"<<endl;
                return;
        }
-	
-	
+	if(neventsmc<1&&(((options&kusePIDcontaminatiofromfile)!=kusePIDcontaminatiofromfile)||((options&kuseseccontaminatiofromfile)!=kuseseccontaminatiofromfile)||((options&kuseseccontaminatiofromfile)!=kuseseccontaminatiofromfile)))
+       {
+               cout<<"No events MC"<<endl;
+               return;
+       }
+	else if(neventsmc<1)
+	{
+		neventsmc=1; //dumpy normalization
+		neventsmcall=1; //dumpy normalization
+
+	}
+
+	cout<<"A "<<neventsmc<<endl;
 	TH1F* allgen=((TH1F*)managermc->GetPtHistogram1D("hHistPtGen",1,1))->Clone();
 	allgen->SetName("AllGen");
 	TH1F* allrecMC=GetOneHistFromPtDCAhisto("hHistPtRec","rawallMC",managermc,dcacutxy);
@@ -272,21 +286,30 @@ gStyle->SetOptStat(0);
 		corrLeonardo[i]->Divide(corrLeonardo[i],rawspectramc[i],1,1,"B");
 		
 		
-		
-		//contallMC[i]->Add(eff[i],-1.0);
-		SubHistWithFullCorr(contallMC[i],eff[i]);
-		//RecomputeErrors(contallMC[i]);
-		contallMC[i]->Sumw2(); 
-		contallMC[i]->Divide(contallMC[i],rawspectramc[i],1,1,"B");
-	
-		// contamintaion from PID but only primaries
-		//contPIDpri[i]->Add(eff[i],-1.0);
-		SubHistWithFullCorr(contPIDpri[i],eff[i]);
+		if((options&kusePIDcontaminatiofromfile)==kusePIDcontaminatiofromfile)
+		{
+			CopyCorrectionFromFile(filenames[1],"conPID",contPID);
+			CopyCorrectionFromFile(filenames[1],"conPIDprimary",contPIDpri);
 
-		//RecomputeErrors(contPIDpri[i]);
-		contPIDpri[i]->Divide(contPIDpri[i],rawspectramc[i],1,1,"B");
-	
-		eff[i]->Divide(eff[i],MCTruth[i],1,1,"B");
+		}
+		else
+		{
+			//contallMC[i]->Add(eff[i],-1.0);
+			SubHistWithFullCorr(contallMC[i],eff[i]);
+			//RecomputeErrors(contallMC[i]);
+			contallMC[i]->Sumw2(); 
+			contallMC[i]->Divide(contallMC[i],rawspectramc[i],1,1,"B");
+			// contamintaion from PID but only primaries
+			//contPIDpri[i]->Add(eff[i],-1.0);
+			SubHistWithFullCorr(contPIDpri[i],eff[i]);
+			//RecomputeErrors(contPIDpri[i]);
+			contPIDpri[i]->Divide(contPIDpri[i],rawspectramc[i],1,1,"B");
+		}
+
+		if((options&kuseeffcorrectionfromfile)==kuseeffcorrectionfromfile)
+			CopyCorrectionFromFile(filenames[0],"eff",eff);
+		else
+			eff[i]->Divide(eff[i],MCTruth[i],1,1,"B");
 		
 		
 		contPID[i]->Sumw2();
@@ -300,7 +323,7 @@ gStyle->SetOptStat(0);
 		contPID[i]->Sumw2();
 		contPID[i]->Divide(contPID[i],rawspectramc[i],1,1,"B");
 	
-		if(options&kuseprimaryPIDcont)
+		if((options&kuseprimaryPIDcont)==kuseprimaryPIDcont)
 			confinal[i]=(TH1F*)contPIDpri[i]->Clone(Form(tmpname.Data(),"confinal"));
 		else	
 			confinal[i]=(TH1F*)contPID[i]->Clone(Form(tmpname.Data(),"confinal"));
@@ -368,11 +391,23 @@ gStyle->SetOptStat(0);
 		fout=new TFile(Form("./results/ResMY_%s_%s_%#X_%s.root",outnamemc.Data(),outdate.Data(),options,configfile.Data()),"RECREATE");
 	else
 		fout=new TFile(Form("./results/ResMY_%s_%s_%#X.root",outnamemc.Data(),outdate.Data(),options),"RECREATE");
-	if (options&kdodca)
+	if (((options&kdodca)==kdodca)&&((options&kuseseccontaminatiofromfile)!=kuseseccontaminatiofromfile))
 		DCACorrectionMarek(managerdata,managermc,dcacutxy,fout,contfit,contWDfit,contMatfit,primaryfit);
+	else if ((options&kuseseccontaminatiofromfile)==kuseseccontaminatiofromfile)
+	{
+		CopyCorrectionFromFile(filenames[2],"contfit",contfit);
+		CopyCorrectionFromFile(filenames[2],"contWDfit",contWDfit);
+		CopyCorrectionFromFile(filenames[2],"contMatfit",contMatfit);
+		CopyCorrectionFromFile(filenames[2],"primaryfit",primaryfit);
+
+	}
+	else 
+		cout<<"Secondary from MC"<<endl;
+		
+
 	for (int i=0;i<6;i++)
 	{
-			if(options&kdodca)
+			if(((options&kdodca)==kdodca)||((options&kuseseccontaminatiofromfile)==kuseseccontaminatiofromfile))
 			{
 				if((options&kuseprimaryPIDcont)||(i!=1&&i!=4)) //if we do not use cont PId only for primary  and this is a kaon that do not use fit
 					confinal[i]->Add(contfit[i]);
@@ -1428,7 +1463,7 @@ Bool_t ReadConfigFile(TString configfile)
 	ifstream infile(configfile.Data());
 	if(infile.is_open()==false)
 		return false;
-	TString namesofSetting[38]={"CutRangeMin","CutRangeMax","FitRangeMin","FitRangeMax","MinMatPionPlus","MaxMatPionPlus","MinMatKaonPlus","MaxMatKaonPlus","MinMatProtonPlus","MaxMatProtonPlus","MinMatPionMinus","MaxMatPionMinus","MinMatKaonMinus","MaxMatKaonMinus","MinMatProtonMinus","MaxMatProtonMinus","MinWDPionPlus","MaxWDPionPlus","MinWDKaonPlus","MaxWDKaonPlus","MinWDProtonPlus","MaxWDProtonPlus","MinWDPionMinus","MaxWDPionMinus","MinWDKaonMinus","MaxWDKaonMinus","MinWDProtonMinus","MaxWDProtonMinus","MaxContaminationPIDMC","MinPions","MaxPions","MinKaons","MaxKaons","MinProtons","MaxProtons","TOFPIDsignalmatchPion","TOFPIDsignalmatchKaon","TOFPIDsignalmatchProton"};	
+	TString namesofSetting[]={"CutRangeMin","CutRangeMax","FitRangeMin","FitRangeMax","MinMatPionPlus","MaxMatPionPlus","MinMatKaonPlus","MaxMatKaonPlus","MinMatProtonPlus","MaxMatProtonPlus","MinMatPionMinus","MaxMatPionMinus","MinMatKaonMinus","MaxMatKaonMinus","MinMatProtonMinus","MaxMatProtonMinus","MinWDPionPlus","MaxWDPionPlus","MinWDKaonPlus","MaxWDKaonPlus","MinWDProtonPlus","MaxWDProtonPlus","MinWDPionMinus","MaxWDPionMinus","MinWDKaonMinus","MaxWDKaonMinus","MinWDProtonMinus","MaxWDProtonMinus","MaxContaminationPIDMC","MinPions","MaxPions","MinKaons","MaxKaons","MinProtons","MaxProtons","TOFPIDsignalmatchPion","TOFPIDsignalmatchKaon","TOFPIDsignalmatchProton","NamefileEff","NameFilePIDcon","NameFileSeccon"};	
 
 	char buffer[256];
 	while (infile.eof()==false)
@@ -1514,7 +1549,13 @@ Bool_t ReadConfigFile(TString configfile)
 			TOFPIDsignalmatching[1]=(tmpstring.Remove(0,namesofSetting[36].Length()+1)).Atof();
 		else if (tmpstring.Contains(namesofSetting[37]))
 			TOFPIDsignalmatching[2]=(tmpstring.Remove(0,namesofSetting[37].Length()+1)).Atof();	
-		else  
+		else if (tmpstring.Contains(namesofSetting[38]))
+			filenames[0]=tmpstring.Remove(0,namesofSetting[38].Length()+1);
+		else if (tmpstring.Contains(namesofSetting[39]))
+			filenames[1]=tmpstring.Remove(0,namesofSetting[39].Length()+1);
+		else if (tmpstring.Contains(namesofSetting[40]))
+			filenames[2]=tmpstring.Remove(0,namesofSetting[40].Length()+1);
+		else 
 			continue;
 
 
@@ -1630,4 +1671,34 @@ void CalculateDoubleCounts(TH1* doubleconunts,TH1** rawspectra,Int_t ipar, Bool_
 	delete tmphist1;
 	
 
+}
+
+void CopyCorrectionFromFile(TString filename,TString correctionname,TH1F** corrtab)
+{
+	TFile* ftmp=TFile::Open(filename.Data());
+	TString tmp("tmp");
+	TList* ltmp=(TList*)ftmp->Get("output");
+
+	for(Int_t icharge=0;icharge<2;icharge++)
+        {
+                for(Int_t ipart=0;ipart<3;ipart++)
+                {
+                        Int_t index=ipart+3*icharge;
+                        tmp.Form("%s%s%s",correctionname.Data(),Particle[ipart].Data(),Sign[icharge].Data());
+			TH1* histtmp=(TH1*)ltmp->FindObject(tmp.Data());
+			if(!histtmp)
+				continue;
+			for(Int_t ibin=1;ibin<=histtmp->GetNbinsX();ibin++)
+			{
+				Float_t content=histtmp->GetBinContent(ibin);
+				Float_t error=histtmp->GetBinError(ibin);
+				Int_t bin=corrtab[index]->FindBin(histtmp->GetBinCenter(ibin));
+				corrtab[index]->SetBinContent(bin,content);
+				corrtab[index]->SetBinError(bin,error);
+				
+			}  
+		}
+	}
+	delete ltmp;
+	ftmp->Close();
 }			
