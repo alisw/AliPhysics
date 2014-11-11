@@ -413,7 +413,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::Terminate(Option_t*)
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
   
-  //AliInfo("Terminate","");
+  AliInfo("Terminate");
   AliAnalysisTaskSE::Terminate();
   
   fOutput = dynamic_cast<TList*> (GetOutputData(1));
@@ -425,6 +425,10 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::Terminate(Option_t*)
   
   AliDebug(2, Form("At MC level, %f Lc --> K0S + p were found", fHistoMCLcK0SpGen->GetEntries()));
   AliDebug(2, Form("At MC level, %f Lc --> K0S + p were found in the acceptance", fHistoMCLcK0SpGenAcc->GetEntries()));
+  AliDebug(2, Form("At Reco level, %lld Lc --> K0S + p were found", fVariablesTreeSgn->GetEntries()));
+  AliInfo(Form("At MC level, %f Lc --> K0S + p were found", fHistoMCLcK0SpGen->GetEntries()));
+  AliInfo(Form("At MC level, %f Lc --> K0S + p were found in the acceptance", fHistoMCLcK0SpGenAcc->GetEntries()));
+  AliInfo(Form("At Reco level, %lld Lc --> K0S + p were found", fVariablesTreeSgn->GetEntries()));
 
   fOutputKF = dynamic_cast<TList*> (GetOutputData(6));
   if (!fOutputKF) {     
@@ -877,6 +881,12 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
     fAnalCuts->SetTriggerMask(AliVEvent::kINT7);
   }
 
+  Int_t runnumber = aodEvent->GetRunNumber();
+  if (aodEvent->GetTriggerMask() == 0 && (runnumber >= 195344 && runnumber <= 195677)){
+    AliDebug(3,"Event rejected because of null trigger mask");
+    return;
+  }
+
   fCounter->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo);
 
   // mc analysis 
@@ -940,7 +950,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
     AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(mcArray->At(iPart));
     if (!mcPart){
       AliError("Failed casting particle from MC array!, Skipping particle");
-      AliInfo("Failed casting particle from MC array!, Skipping particle");
       continue;
     }
     Int_t pdg = mcPart->GetPdgCode();
@@ -986,7 +995,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
 	  AliAODMCParticle* partK0S = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0daugh));
 	  if(!partK0S){
 	    AliError("Error while casting particle! returning a NULL array");
-	    AliInfo("Error while casting particle! returning a NULL array");
 	    continue;
 	  }
 	  else { // So far: Lc --> K0 + p, K0 with 1 daughter that we can access
@@ -1016,6 +1024,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
 		  if (fAnalCuts->IsInFiducialAcceptance(mcPart->Pt(), mcPart->Y())) {
 		    AliDebug(2, Form("----> Filling histo with pt = %f", mcPart->Pt()));
 		    if(TMath::Abs(mcPart->Y()) < 0.5) fHistoMCLcK0SpGenLimAcc->Fill(mcPart->Pt());
+		    //AliInfo(Form("\nparticle = %d, Filling MC Gen histo\n", iPart));
 		    fHistoMCLcK0SpGen->Fill(mcPart->Pt());
 		    if(!(TMath::Abs(bachelorMC->Eta()) > 0.9 || bachelorMC->Pt() < 0.1 ||
 			 TMath::Abs(daughK0S0->Eta()) > 0.9 || daughK0S0->Pt() < 0.1 ||
@@ -1248,7 +1257,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
       }
     }
 
-    FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray);
+    FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, iLctopK0s);
     
   }
   
@@ -1260,7 +1269,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
 							     Int_t isLc,
 							     Int_t &nSelectedAnal,
 							     AliRDHFCutsLctoV0 *cutsAnal,
-							     TClonesArray *mcArray){
+							     TClonesArray *mcArray, Int_t iLctopK0s){
   //
   // Fill histos for Lc -> K0S+proton
   //
@@ -1318,8 +1327,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
   Int_t isInV0window = (((cutsAnal->IsSelectedSingleCut(part, AliRDHFCuts::kCandidate, 2)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // cut on V0 invMass
 
   if (isInV0window == 0) {
-    AliDebug(2, "No: The candidate has NOT passed the mass cuts!");
-    if (isLc) Printf("SIGNAL candidate rejected");
+    AliDebug(2, "No: The candidate has NOT passed the V0 window cuts!");
+    if (isLc) Printf("SIGNAL candidate rejected: V0 window cuts");
     return;	       
   }
   else AliDebug(2, "Yes: The candidate has passed the mass cuts!");
@@ -1328,12 +1337,13 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
 
   if (!isInCascadeWindow) {
     AliDebug(2, "No: The candidate has NOT passed the cascade window cuts!");
-    if (isLc) Printf("SIGNAL candidate rejected");
+    if (isLc) Printf("SIGNAL candidate rejected: cascade window cuts");
     return;
   }
   else AliDebug(2, "Yes: The candidate has passed the cascade window cuts!");
 
   Bool_t isCandidateSelectedCuts = (((cutsAnal->IsSelected(part, AliRDHFCuts::kCandidate)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // kinematic/topological cuts
+  AliDebug(2, Form("recoAnalysisCuts = %d", cutsAnal->IsSelected(part, AliRDHFCuts::kCandidate) & (AliRDHFCutsLctoV0::kLcToK0Spr)));
   if (!isCandidateSelectedCuts){
     AliDebug(2, "No: Analysis cuts kCandidate level NOT passed");
     if (isLc) Printf("SIGNAL candidate rejected");
@@ -1672,7 +1682,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
 
     if (fUseMCInfo) {
       if (isLc){
-	AliDebug(2, "Filling Sgn");
+	AliDebug(2, Form("Reco particle %d --> Filling Sgn", iLctopK0s));
 	fVariablesTreeSgn->Fill();
 	fHistoCodesSgn->Fill(bachCode, k0SCode);	  
       }
