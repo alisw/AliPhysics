@@ -125,9 +125,9 @@ void processJETrackQA(TString strFileIn   = "AnalysisResults.root",
   leg2->SetBorderSize(0);
   leg2->SetFillStyle(0);
   leg2->SetTextSize(0.06);
-  leg2->AddEntry(fPhiGlobSt,"w/ SPD & ITSrefit","l");
-  leg2->AddEntry(fPhiGlobCnoSPD,"w/o SPD & w/ ITSrefit","l");
-  leg2->AddEntry(fPhiGlobSum,"sum","l");
+  leg2->AddEntry(fPhiGlobSt,"Restricted Tracks","l");
+  leg2->AddEntry(fPhiGlobCnoSPD,"Complementary Tracks","l");
+  leg2->AddEntry(fPhiGlobSum,"Sum","l");
   leg2->Draw();
 
   TLatex textNEvents;
@@ -190,9 +190,9 @@ void processJETrackQA(TString strFileIn   = "AnalysisResults.root",
   leg1->SetBorderSize(0);
   leg1->SetFillStyle(0);
   leg1->SetTextSize(0.06);
-  leg1->AddEntry(fPtGlobSt,"w/ SPD & ITSrefit","l");
-  leg1->AddEntry(fPtGlobCnoSPD,"w/o SPD & w/ ITSrefit","l");
-  leg1->AddEntry(fPtGlobSum,"sum","l");
+  leg1->AddEntry(fPtGlobSt,"Restricted Tracks","l");
+  leg1->AddEntry(fPtGlobCnoSPD,"Complementary Tracks","l");
+  leg1->AddEntry(fPtGlobSum,"Sum","l");
   leg1->Draw();
 
   TLatex textNEvents;
@@ -257,8 +257,8 @@ void processJETrackQA(TString strFileIn   = "AnalysisResults.root",
   leg3->SetBorderSize(0);
   leg3->SetFillStyle(0);
   leg3->SetTextSize(0.06);
-  leg3->AddEntry(fProfPtPtSigma1PtGlobSt,"w/ SPD & ITSrefit","lp");
-  leg3->AddEntry(fProfPtPtSigma1PtGlobCnoSPD,"w/o SPD & w/ ITSrefit","lp");
+  leg3->AddEntry(fProfPtPtSigma1PtGlobSt,"Restricted Tracks","lp");
+  leg3->AddEntry(fProfPtPtSigma1PtGlobCnoSPD,"Complementary Tracks","lp");
   leg3->Draw();
 
   c3->SaveAs(Form("%sPtResolutionCent%d%sRun%d.%s",prefix.Data(),cent,strTrigger.Data(),run,suffix.Data()));

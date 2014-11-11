@@ -76,7 +76,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		
 		Bool_t 			InitializeCutsFromCutString(const TString analysisCutSelection);
 		TString 		GetCutNumber();
-		Int_t 			GetClusterType()												{return fClusterType; };
+        Int_t 			GetClusterType() {return fClusterType; }
 		
 		//Constructors
 		AliCaloPhotonCuts(const char *name="ClusterCuts", const char * title="Cluster Cuts");
@@ -126,7 +126,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Bool_t 			SetNLM(Int_t);
 		
 	protected:
-		TList *fHistograms;
+        TList       *fHistograms;
 		
 		//cuts
 		Int_t		fClusterType;						// which cluster do we have
@@ -140,7 +140,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Bool_t 		fUseDistanceToBadChannel;			// flag for switching on distance to bad channel cut
 		Double_t 	fMaxTimeDiff; 						// maximum time difference to triggered collision
 		Bool_t 		fUseTimeDiff;						// flag for switching on time difference cut
-		Double_t 	fMinDistTrackToCluster; 			// minimum distance between track and cluster
+        Double_t 	fMaxDistTrackToClusterEta; 			// minimum distance between track and cluster in eta
+        Double_t 	fMinDistTrackToClusterPhi; 			// minimum distance between track and cluster in phi
+        Double_t    fMaxDistTrackToClusterPhi;          // maximum distance between track and cluster in phi
 		Bool_t 		fUseDistTrackToCluster;				// flag for switching on distance between track and cluster cut
 		Bool_t 		fExtendedMatching;					// flag for switching on extended matching histograms
 		Double_t 	fExoticCell;						// exotic cell cut
@@ -203,6 +205,14 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
         //Extended track matching histograms
         TH2F* 		fHistClusterdEtadPhiPosTracksBeforeQA;	// 2-dim plot dEta vs. dPhi
         TH2F* 		fHistClusterdEtadPhiNegTracksBeforeQA;	// 2-dim plot dEta vs. dPhi
+        TH2F* 		fHistClusterdEtadPhiPosTracksAfterQA;	// 2-dim plot dEta vs. dPhi
+        TH2F* 		fHistClusterdEtadPhiNegTracksAfterQA;	// 2-dim plot dEta vs. dPhi
+        TH2F*       fHistClusterdEtadPhiPosTracks_P1_BeforeQA;   // 2-dim plot dEta vs. dPhi, positive Tracks, P < 1
+        TH2F*       fHistClusterdEtadPhiPosTracks_P14_BeforeQA;  // 2-dim plot dEta vs. dPhi, positive Tracks, 1 < P < 4
+        TH2F*       fHistClusterdEtadPhiPosTracks_P4_BeforeQA;   // 2-dim plot dEta vs. dPhi, positive Tracks, P > 4
+        TH2F*       fHistClusterdEtadPhiNegTracks_P1_BeforeQA;   // 2-dim plot dEta vs. dPhi, negative Tracks, P < 1
+        TH2F*       fHistClusterdEtadPhiNegTracks_P14_BeforeQA;  // 2-dim plot dEta vs. dPhi, negative Tracks, 1 < P < 4
+        TH2F*       fHistClusterdEtadPhiNegTracks_P4_BeforeQA;   // 2-dim plot dEta vs. dPhi, negative Tracks, P > 4
         TH2F* 		fHistClusterdEtadPtBeforeQA;			// 2-dim plot dEta vs. Pt
         TH2F* 		fHistClusterdPhidPtBeforeQA;			// 2-dim plot dEta vs. Pt
         TH2F* 		fHistClusterM20Pt_dPhiBeforeQA;			// 2-dim plot M20 vs. Pt for given dPhi>0.05

@@ -8,7 +8,7 @@ void MakeTrendingPHOSQA(const char* file="QAresults.root", Int_t runNumber, Bool
 
   const char* listNameAnyInt = "PHOSCellsQA_AnyInt";
   TObjArray* listAnyInt = (TObjArray*)fin->Get(listNameAnyInt);
-
+  
   const char* listNamePHI7 = "PHOSCellsQA_PHI7";
   TObjArray* listPHI7 = (TObjArray*)fin->Get(listNamePHI7);
 
@@ -49,24 +49,35 @@ void MakeTrendingPHOSQA(const char* file="QAresults.root", Int_t runNumber, Bool
 
   //-------- Number of processed events --------------------------------------------------------------
   TH1* hNEventsProcessedPerRun = (TH1*)listAnyInt->FindObject("hNEventsProcessedPerRun");
-  nEvents =  hNEventsProcessedPerRun->GetEntries();
+  if(hNEventsProcessedPerRun) nEvents =  hNEventsProcessedPerRun->GetEntries();
 
   //-------- Mean cluster energy, number of cells in the cluster Mean number of clusters per event ---
-  sprintf(hnam,"run%d_hNCellsInClusterSM1",runNumber); h = (TH2*)listAnyInt->FindObject(hnam); 
-  h->GetXaxis()->SetRangeUser(emin,emax);
-  avCluEnergySM1 = h->ProjectionX()->GetMean(); avNcellPerCluSM1 = h->ProjectionY()->GetMean();
-  avCluMultSM1 = h->Integral()/nEvents;
+  sprintf(hnam,"run%d_hNCellsInClusterSM1",runNumber); 
+  h = (TH2*)listAnyInt->FindObject(hnam);
+  
+  if(h && nEvents ) {
+    h->GetXaxis()->SetRangeUser(emin,emax);
+    avCluEnergySM1 = h->ProjectionX()->GetMean(); avNcellPerCluSM1 = h->ProjectionY()->GetMean();
+    avCluMultSM1 = h->Integral()/nEvents;
+  }
 
-  sprintf(hnam,"run%d_hNCellsInClusterSM2",runNumber); h = (TH2*)listAnyInt->FindObject(hnam); 
-  h->GetXaxis()->SetRangeUser(emin,emax);
-  avCluEnergySM2 = h->ProjectionX()->GetMean(); avNcellPerCluSM2 = h->ProjectionY()->GetMean();
-  avCluMultSM2 = h->Integral()/nEvents;
+  sprintf(hnam,"run%d_hNCellsInClusterSM2",runNumber); 
+  h = (TH2*)listAnyInt->FindObject(hnam);
+  
+  if(h && nEvents) {
+    h->GetXaxis()->SetRangeUser(emin,emax);
+    avCluEnergySM2 = h->ProjectionX()->GetMean(); avNcellPerCluSM2 = h->ProjectionY()->GetMean();
+    avCluMultSM2 = h->Integral()/nEvents;
+  }
 
-  sprintf(hnam,"run%d_hNCellsInClusterSM3",runNumber); h = (TH2*)listAnyInt->FindObject(hnam); 
-  h->GetXaxis()->SetRangeUser(emin,emax);
-  avCluEnergySM3 = h->ProjectionX()->GetMean(); avNcellPerCluSM3 = h->ProjectionY()->GetMean();
-  avCluMultSM3 = h->Integral()/nEvents;;
+  sprintf(hnam,"run%d_hNCellsInClusterSM3",runNumber); 
+  h = (TH2*)listAnyInt->FindObject(hnam);
 
+  if(h && nEvents) {
+    h->GetXaxis()->SetRangeUser(emin,emax);
+    avCluEnergySM3 = h->ProjectionX()->GetMean(); avNcellPerCluSM3 = h->ProjectionY()->GetMean();
+    avCluMultSM3 = h->Integral()/nEvents;
+  }
       
   //---------------------------------------------------------------------------------------------------
 

@@ -1,3 +1,24 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+
+//////////////////////////////////////////////
+//    QA task for EMCAL electron analysis   //
+//  Author: Deepa Thomas, Shingo Sakai      //
+//////////////////////////////////////////////
+
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
@@ -28,8 +49,6 @@
 
 #include "AliAnalysisTaskHFEemcQA.h"
 
-//QA task for EMCAL electron analysis 
-
 using std::cout;
 using std::endl;
 
@@ -53,6 +72,9 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fTrigMulti(0),
   fHistClustE(0),
   fEMCClsEtaPhi(0),
+  fHistoNCls(0),
+  fHistoNCells(0),
+  fHistoCalCell(0),
   fNegTrkIDPt(0),
   fTrkPt(0),
   fTrketa(0),
@@ -68,6 +90,7 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fEMCdEdx(0),
   fEMCTPCnsig(0),
   fEMCTPCNpts(0),
+  fClsEAftMatch(0),
   fHistdEdxEop(0),
   fHistNsigEop(0),
   fHistEop(0),
@@ -115,6 +138,9 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fTrigMulti(0),
   fHistClustE(0),
   fEMCClsEtaPhi(0),
+  fHistoNCls(0),
+  fHistoNCells(0),
+  fHistoCalCell(0),
   fNegTrkIDPt(0),
   fTrkPt(0),
   fTrketa(0),
@@ -130,6 +156,7 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fEMCdEdx(0),
   fEMCTPCnsig(0),
   fEMCTPCNpts(0),
+  fClsEAftMatch(0),
   fHistdEdxEop(0),
   fHistNsigEop(0),
   fHistEop(0),
@@ -218,6 +245,16 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
 
   fEMCClsEtaPhi = new TH2F("fEMCClsEtaPhi","EMCAL cluster #eta and #phi distribution;#eta;#phi",100,-0.9,0.9,200,0,6.3);
   fOutputList->Add(fEMCClsEtaPhi);
+   
+  fHistoNCls = new TH1F("fHistoNCls","No of EMCAL cluster in the event;N^{EMC}_{cls};counts",150,0,150);
+  fOutputList->Add(fHistoNCls);
+    
+  //fHistoNCells = new TH1F("fHistoNCells","No of EMCAL cells in a cluster;N^{EMC}_{cells};counts",30,0,30);
+  fHistoNCells = new TH2F("fHistoNCells","No of EMCAL cells in a cluster;Cluster E;N^{EMC}_{cells}",300,0,30,30,0,30);
+  fOutputList->Add(fHistoNCells);
+
+  fHistoCalCell = new TH2F("fHistoCalCell","EMCAL cells in a cluster;cell ID;E (GeV)",20000,-0.5,19999.5,100,0,10);
+  fOutputList->Add(fHistoCalCell);
 
   fNegTrkIDPt = new TH1F("fNegTrkIDPt", "p_{T} distribution of tracks with negative track id;p_{T} (GeV/c);counts", 500, 0.0, 50.0); 
   fOutputList->Add(fNegTrkIDPt);
@@ -263,6 +300,9 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
 
   fEMCTPCNpts = new TH2F("fEMCTPCNpts","TPC Npoints used for dE/dx for tracks matched to EMCAL;p (GeV/c);N points",200,0,20,200,0.,200.);
   fOutputList->Add(fEMCTPCNpts);
+    
+  fClsEAftMatch = new TH1F("fClsEAftMatch", "EMCAL cluster energy distribution after track matching; Cluster E;counts", 500, 0.0, 50.0);
+  fOutputList->Add(fClsEAftMatch);
 
   fHistEop = new TH2F("fHistEop", "E/p distribution;p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
   fOutputList->Add(fHistEop);
@@ -372,10 +412,10 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   ////////////////
   //Event vertex//
   ///////////////
-  Int_t ntracks;
+  Int_t ntracks = -999;
   if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
   if(fUseTender) ntracks = fTracks_tender->GetEntries();
-  printf("There are %d tracks in this event\n",ntracks);
+  if(ntracks < 1) printf("There are %d tracks in this event\n",ntracks);
 
   fNevents->Fill(0); //all events
   Double_t Zvertex = -100, Xvertex = -100, Yvertex = -100;
@@ -407,9 +447,11 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
 
   Int_t trigger = -1;
   if (fAOD){
-    AliAODHeader * header = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+    //Double_t multiplicity=fAOD->GetHeader()->GetRefMultiplicity();
+    AliAODHeader *header = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
     if(!header) AliFatal("Not a standard AOD");
-    Double_t multiplicity=header->GetRefMultiplicity();
+    Double_t multiplicity = header->GetRefMultiplicity();
+      
     fTrigMulti->Fill(-0.5, multiplicity);
     if(evSelMask & AliVEvent::kAny) fTrigMulti->Fill(0.5, multiplicity);
     if(evSelMask & AliVEvent::kMB) fTrigMulti->Fill(1.5, multiplicity);
@@ -444,6 +486,8 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   Int_t Nclust = -999;
   if(!fUseTender) Nclust = fVevent->GetNumberOfCaloClusters();
   if(fUseTender) Nclust = fCaloClusters_tender->GetEntries();
+  fHistoNCls->Fill(Nclust);
+    
   for(Int_t icl=0; icl<Nclust; icl++)
   {
     AliVCluster *clust = 0x0;
@@ -461,8 +505,27 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       Double_t emceta = clustpos.Eta();
       fHistClustE->Fill(clustE);
       fEMCClsEtaPhi->Fill(emceta,emcphi);
+      fHistoNCells->Fill(clustE,clust->GetNCells());
+      //fHistoNCells->Fill(clust->GetNCells());
     }
   }
+
+  // cell information
+  AliVCaloCells *fCaloCells = fVevent->GetEMCALCells();
+
+  //Int_t nSACell, iSACell, mclabel;
+  Short_t cellAddr, nSACell;
+  Int_t  mclabel;
+  Short_t iSACell;
+  Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
+
+  nSACell = fCaloCells->GetNumberOfCells();
+    for(iSACell = 0; iSACell < nSACell; iSACell++ ){ 
+        Bool_t haveCell = fCaloCells->GetCell(iSACell, cellAddr, cellAmp, cellTimeT , mclabel, efrac);
+        //virtual Bool_t   GetCell(Short_t pos, Short_t &cellNumber, Double_t &amplitude, Double_t &time, Int_t &mclabel,    Double_t  &efrac)      
+        if(haveCell)fHistoCalCell->Fill(cellAddr,cellAmp);
+     
+}
 
   /////////////////////////////////
   //Look for kink mother for AOD//
@@ -551,13 +614,18 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     if(EMCalIndex < 0) continue;
     fHistPtMatch->Fill(track->Pt());
 
-    AliVCluster *clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex);
+    AliVCluster *clustMatch=0x0;
+    if(!fUseTender) clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex);
+    if(fUseTender) clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
+      
     if(clustMatch && clustMatch->IsEMCAL())
     {
       /////////////////////////////////////////////
       //Properties of tracks matched to the EMCAL//
       /////////////////////////////////////////////
       fEMCTrkMatch->Fill(clustMatch->GetTrackDx(),clustMatch->GetTrackDz());
+        if(TMath::Abs(clustMatch->GetTrackDx())>0.05 || TMath::Abs(clustMatch->GetTrackDz())>0.05) continue;
+  
       fEMCTrkPt->Fill(track->Pt());
       fEMCTrketa->Fill(track->Eta());
       fEMCTrkphi->Fill(track->Phi());
@@ -565,8 +633,10 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       fEMCTPCnsig->Fill(track->P(),fTPCnSigma);
       fEMCTPCNpts->Fill(track->P(),track->GetTPCsignalN());
 
-      //E/p distribution
       Double_t clustMatchE = clustMatch->E();
+      fClsEAftMatch->Fill(clustMatchE);
+        
+      //EMCAL EID info
       Double_t eop = -1.0;
       Double_t m02 = -99999;
       if(track->P()>0)eop = clustMatchE/track->P();
@@ -592,14 +662,14 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       fvalueElectron[5] = clustMatch->GetM02();
 
       if(fFlagSparse){
-        cout << "filling sparse"<<endl;
+        //cout << "filling sparse"<<endl;
         fSparseElectron->Fill(fvalueElectron);
       }
 
       ////////////////////////////////////////////////
       //Track properties of EMCAL electron cadidates//
       ///////////////////////////////////////////////
-      if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.2 && m02 > 0.006 && m02 < 0.035){
+      if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.2 && m02 > 0.006 && m02 < 0.35){
         fEleCanTPCNpts->Fill(track->Pt(),track->GetTPCsignalN());
         fEleCanTPCNCls->Fill(track->Pt(),track->GetTPCNcls());
 

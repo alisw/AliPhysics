@@ -386,11 +386,16 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
   fHistEventStats->Fill(1); //all events
   
   //Centrality stuff
-  AliAODHeader *header = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
   Double_t nCentrality = 0;
-  
   if(fUseCentrality) {
-    AliCentrality *centrality = header->GetCentralityP();
+    
+    AliAODHeader *headerAOD = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+    if (!headerAOD){
+      AliFatal("AOD header found");
+      return;
+    }
+
+    AliCentrality *centrality = headerAOD->GetCentralityP();
     nCentrality =centrality->GetCentralityPercentile(fCentralityEstimator.Data());
     
 

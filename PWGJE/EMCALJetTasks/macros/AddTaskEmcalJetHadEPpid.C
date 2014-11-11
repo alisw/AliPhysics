@@ -31,11 +31,13 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    TString cutType			  = "EMCAL",
    Bool_t   Comments		  = 0,
    Bool_t   doFlavourJetAnalysis = 0,
-   Int_t flavTag              = 999,
-   Int_t esdcuts			  = 10001006,
+   const Int_t flavTag        = 999,
+   const Int_t esdcuts        = 10001006,
    TString colltype			  = "",
    UInt_t trigevent           = AliVEvent::kAny,
    UInt_t mixevent            = AliVEvent::kAny,
+   UInt_t centbinsize         = 1,
+   const Int_t doEffcorrSW    = 0,
    const char *tag			  = ""
 )
 {  
@@ -71,6 +73,20 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   else if(colltype == "A-A") beam = 1;
   else if(colltype == "p-A") beam = 2;
   else beam = -1;
+
+/*
+  Double_t EffFunc(Double_t *x, Double_t *par) {
+    Double_t pTAxis = par[0]*exp(-pow(par[1]/x[0], par[2])) + par[3]*x[0];  // function for x-axis
+    Double_t etaAxis = (x[1]>-0.07)*(par[4] + par[5]*x[1] + par[6]*x[1]*x[1]) + (x[1]<=-0.07)*(par[7] + par[8]*x[1] + par[9]*x[1]*x[1]);  // function for y-axis
+    return pTAxis*etaAxis;
+  }
+
+  Double_t EffFunctionSet(Double_t *x, Double_t *par) {
+    Double_t *p1 = &par[0];
+    Double_t result = EffFunc(x, p1);
+    return result;
+  }
+*/
 
   //-------------------------------------------------------
   // Init the task and do settings
@@ -112,6 +128,8 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   correlationtask->SetCollType(beam);
   correlationtask->SetTriggerEventType(trigevent);
   correlationtask->SetMixedEventType(mixevent);
+  correlationtask->SetCentBinSize(centbinsize);
+  correlationtask->SetDoEffCorr(doEffcorrSW);
 
   // =================== set up containers ================================================
   // Cluster Container

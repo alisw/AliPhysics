@@ -12,6 +12,8 @@ AliAnalysisTask* AddTaskPtEMCalTrigger(
     bool isMC,
     bool usePythiaHard,
     const char *period ="LHC13d",
+    const char *ntrackContainer = "",
+    const char *nclusterContainer = "",
     const char *njetcontainerData = "",
     const char *njetcontainerMC = "",
     double jetradius = 0.5
@@ -43,9 +45,9 @@ AliAnalysisTask* AddTaskPtEMCalTrigger(
 
   // Add containers
   Bool_t isAOD = mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class();
-  AliParticleContainer *trackContainer = pttriggertask->AddParticleContainer(isAOD ? "AODFilterTracks" : "ESDFilterTracks");
-  trackContainer->SetClassName("AliVTrack");
-  AliClusterContainer *clusterContainer = pttriggertask->AddClusterContainer("EmcCaloClusters");
+  AliParticleContainer *trackContainer = pttriggertask->AddParticleContainer(ntrackContainer);
+  //trackContainer->SetClassName("AliVTrack");
+  AliClusterContainer *clusterContainer = pttriggertask->AddClusterContainer(nclusterContainer);
   AliParticleContainer *mcpartcont = isMC ? pttriggertask->AddParticleContainer("MCParticlesSelected") : NULL;
 
 
@@ -76,9 +78,9 @@ AliAnalysisTask* AddTaskPtEMCalTrigger(
   }
   if(isMC && strlen(njetcontainerMC)){
     AliJetContainer *jetcontainerMC = pttriggertask->AddJetContainer(njetcontainerMC, "TPC", jetradius);
-    pttriggertask->AddJetContainerName("PtTriggerTaskJetMC", true);
+    pttriggertask->AddJetContainerName("PtTriggerTaskJetsMC", true);
     jetcontainerMC->ConnectParticleContainer(mcpartcont);
-    jetcontainerMC->SetName("PtTriggerTaskJetMC");
+    jetcontainerMC->SetName("PtTriggerTaskJetsMC");
     jetcontainerMC->SetJetPtCut(20.);
   }
 

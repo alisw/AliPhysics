@@ -946,7 +946,9 @@ Int_t AliMuonAccEffSubmitter::LocalTest()
   out << "#!/bin/bash" << std::endl;
 //  root.exe -b -q simrun.C  --run <x> --chunk <y> --event <n>
   out << "root.exe -b -q simrun.C --run "<< runs[0] <<" --event " << fFixedNofEvents << std::endl;
- 
+
+  out.close();
+
   gSystem->Exec("chmod +x simrun.sh");
 
   std::cout << "Cleaning up left-over files from previous simulation/reconstructions" << std::endl;

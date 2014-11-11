@@ -167,19 +167,33 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		TH2F 								**fHistoTrueEtaCaloMergedClusterPartConvInvMassPt; //! array of histos with validated mothers, merged cluster part conv, invMass, pt
 		TH2F 								**fHistoTruePi0NonMergedElectronPhotonInvMassPt;	//! array of histos with validated mothers, merged cluster invMass, pt
 		TH2F 								**fHistoTruePi0NonMergedElectronMergedPhotonInvMassPt;	//! array of histos with validated mothers, merged cluster invMass, pt
+		TH2F								**fHistoTruePi0Category1; 						//! array of histos with validated pi0, pure real photons
+		TH2F								**fHistoTrueEtaCategory1; 						//! array of histos with validated eta, pure real photons
+		TH2F								**fHistoTruePi0Category2; 						//! array of histos with validated pi0, 1 real photon, 1 merged converted photon
+		TH2F								**fHistoTrueEtaCategory2; 						//! array of histos with validated eta, 1 real photon, 1 merged converted photon
+		TH2F								**fHistoTruePi0Category3; 						//! array of histos with validated pi0, 1 real photon, 1 electron from conversion unmerged
+		TH2F								**fHistoTrueEtaCategory3; 						//! array of histos with validated eta, 1 real photon, 1 electron from conversion unmerged
+		TH2F								**fHistoTruePi0Category4_6; 					//! array of histos with validated pi0, 2 electrons from same conversion
+		TH2F								**fHistoTrueEtaCategory4_6; 					//! array of histos with validated eta, 2 electrons from same conversion
+		TH2F								**fHistoTruePi0Category5; 						//! array of histos with validated pi0, 2 electrons from different conversions, 2 electrons (unseen)
+		TH2F								**fHistoTrueEtaCategory5; 						//! array of histos with validated eta, 2 electrons from different conversions, 2 electrons (unseen)
+		TH2F								**fHistoTruePi0Category7; 						//! array of histos with validated pi0, 1 electron from conversion, 2 electrons from other conversion merged, 1 electron (unseen)
+		TH2F								**fHistoTrueEtaCategory7; 						//! array of histos with validated eta, 1 electron from conversion, 2 electrons from other conversion merged, 1 electron (unseen)
+		TH2F								**fHistoTruePi0Category8; 						//! array of histos with validated pi0, 2 electron from conversion merged, 2 electrons from other conversion merged
+		TH2F								**fHistoTrueEtaCategory8; 						//! array of histos with validated eta, 2 electron from conversion merged, 2 electrons from other conversion merged
 		TH2F 								**fHistoTruePrimaryPi0InvMassPt;				//! array of histos with validated weighted primary mothers, invMass, pt
 		TH2F 								**fHistoTruePrimaryEtaInvMassPt;				//! array of histos with validated weighted primary mothers, invMass, pt
-		TH2F 								**fHistoTruePrimaryPi0W0WeightingInvMassPt;	//! array of histos with validated unweighted primary mothers, invMass, pt
-		TH2F 								**fHistoTruePrimaryEtaW0WeightingInvMassPt;	//! array of histos with validated unweighted primary mothers, invMass, pt
-		TProfile2D 							**fProfileTruePrimaryPi0WeightsInvMassPt;	//! array of profiles with weights for validated primary mothers, invMass, pt	
-		TProfile2D 							**fProfileTruePrimaryEtaWeightsInvMassPt;	//! array of profiles with weights for validated primary mothers, invMass, pt	
+		TH2F 								**fHistoTruePrimaryPi0W0WeightingInvMassPt;		//! array of histos with validated unweighted primary mothers, invMass, pt
+		TH2F 								**fHistoTruePrimaryEtaW0WeightingInvMassPt;		//! array of histos with validated unweighted primary mothers, invMass, pt
+		TProfile2D 							**fProfileTruePrimaryPi0WeightsInvMassPt;		//! array of profiles with weights for validated primary mothers, invMass, pt	
+		TProfile2D 							**fProfileTruePrimaryEtaWeightsInvMassPt;		//! array of profiles with weights for validated primary mothers, invMass, pt	
 		TH2F 								**fHistoTruePrimaryPi0MCPtResolPt;				//! array of histos with validated weighted primary pi0, MCpt, resol pt
 		TH2F	 							**fHistoTruePrimaryEtaMCPtResolPt;				//! array of histos with validated weighted primary eta, MCpt, resol pt
-		TH2F 								**fHistoTrueSecondaryPi0InvMassPt;			//! array of histos with validated secondary mothers, invMass, pt
-		TH2F 								**fHistoTrueSecondaryEtaInvMassPt;			//! array of histos with validated secondary mothers, invMass, pt
-		TH2F 								**fHistoTrueSecondaryPi0FromK0sInvMassPt;	//! array of histos with validated secondary mothers from K0s, invMass, pt
+		TH2F 								**fHistoTrueSecondaryPi0InvMassPt;				//! array of histos with validated secondary mothers, invMass, pt
+		TH2F 								**fHistoTrueSecondaryEtaInvMassPt;				//! array of histos with validated secondary mothers, invMass, pt
+		TH2F 								**fHistoTrueSecondaryPi0FromK0sInvMassPt;		//! array of histos with validated secondary mothers from K0s, invMass, pt
 		TH1F 								**fHistoTrueK0sWithPi0DaughterMCPt;				//! array of histos with K0s with reconstructed pi0 as daughter, pt
-		TH2F 								**fHistoTrueSecondaryPi0FromEtaInvMassPt;	//! array of histos with validated secondary mothers from eta, invMass, pt
+		TH2F 								**fHistoTrueSecondaryPi0FromEtaInvMassPt;		//! array of histos with validated secondary mothers from eta, invMass, pt
 		TH1F 								**fHistoTrueEtaWithPi0DaughterMCPt;				//! array of histos with eta with reconstructed pi0 as daughter, pt
 		TH2F 								**fHistoTrueSecondaryPi0FromLambdaInvMassPt;	//! array of histos with validated secondary mothers from Lambda, invMass, pt
 		TH1F 								**fHistoTrueLambdaWithPi0DaughterMCPt;			//! array of histos with lambda with reconstructed pi0 as daughter, pt
