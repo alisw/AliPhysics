@@ -11,7 +11,8 @@ void dNdetaConfig(AliBasedNdetaTask* task)
 {
   // - Whether to correct for empty bins when projecting 
   // task->SetCorrEmpty(true);
-  task->SetCorrEmpty(task->IsA()->InheritsFrom(AliCentraldNdetaTask::Class()));
+  task->SetCorrEmpty(false); 
+  // task->IsA()->InheritsFrom(AliCentraldNdetaTask::Class()));
   // - Whether to use TH2::ProjectionX 
   task->SetUseROOTProjectX(false);
 
