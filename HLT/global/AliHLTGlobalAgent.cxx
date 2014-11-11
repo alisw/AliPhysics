@@ -49,6 +49,7 @@
 #include "AliHLTV0FinderComponent.h"
 #include "AliHLTAnaManagerComponent.h"
 #include "AliHLTFlatAnaManagerComponent.h"
+#include "AliHLTTPCCalibManagerComponent.h"
 
 // header file for preprocessor plugin
 #include "AliHLTGlobalPreprocessor.h"
@@ -100,6 +101,7 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   pHandler->AddComponent(new AliHLTGlobalDCSPublisherComponent );
   pHandler->AddComponent(new AliHLTAnaManagerComponent);
   pHandler->AddComponent(new AliHLTFlatAnaManagerComponent);
+  pHandler->AddComponent(new AliHLTTPCCalibManagerComponent);
   return 0;
 }
 
