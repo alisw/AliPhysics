@@ -74,6 +74,7 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fEMCClsEtaPhi(0),
   fHistoNCls(0),
   fHistoNCells(0),
+  fHistoCalCell(0),
   fNegTrkIDPt(0),
   fTrkPt(0),
   fTrketa(0),
@@ -139,6 +140,7 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fEMCClsEtaPhi(0),
   fHistoNCls(0),
   fHistoNCells(0),
+  fHistoCalCell(0),
   fNegTrkIDPt(0),
   fTrkPt(0),
   fTrketa(0),
@@ -247,8 +249,12 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   fHistoNCls = new TH1F("fHistoNCls","No of EMCAL cluster in the event;N^{EMC}_{cls};counts",150,0,150);
   fOutputList->Add(fHistoNCls);
     
-  fHistoNCells = new TH1F("fHistoNCells","No of EMCAL cells in a cluster;N^{EMC}_{cells};counts",30,0,30);
+  //fHistoNCells = new TH1F("fHistoNCells","No of EMCAL cells in a cluster;N^{EMC}_{cells};counts",30,0,30);
+  fHistoNCells = new TH2F("fHistoNCells","No of EMCAL cells in a cluster;Cluster E;N^{EMC}_{cells}",300,0,30,30,0,30);
   fOutputList->Add(fHistoNCells);
+
+  fHistoCalCell = new TH2F("fHistoCalCell","EMCAL cells in a cluster;cell ID;E (GeV)",20000,-0.5,19999.5,100,0,10);
+  fOutputList->Add(fHistoCalCell);
 
   fNegTrkIDPt = new TH1F("fNegTrkIDPt", "p_{T} distribution of tracks with negative track id;p_{T} (GeV/c);counts", 500, 0.0, 50.0); 
   fOutputList->Add(fNegTrkIDPt);
@@ -499,9 +505,27 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       Double_t emceta = clustpos.Eta();
       fHistClustE->Fill(clustE);
       fEMCClsEtaPhi->Fill(emceta,emcphi);
-      fHistoNCells->Fill(clust->GetNCells());
+      fHistoNCells->Fill(clustE,clust->GetNCells());
+      //fHistoNCells->Fill(clust->GetNCells());
     }
   }
+
+  // cell information
+  AliVCaloCells *fCaloCells = fVevent->GetEMCALCells();
+
+  //Int_t nSACell, iSACell, mclabel;
+  Short_t cellAddr, nSACell;
+  Int_t  mclabel;
+  Short_t iSACell;
+  Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
+
+  nSACell = fCaloCells->GetNumberOfCells();
+    for(iSACell = 0; iSACell < nSACell; iSACell++ ){ 
+        Bool_t haveCell = fCaloCells->GetCell(iSACell, cellAddr, cellAmp, cellTimeT , mclabel, efrac);
+        //virtual Bool_t   GetCell(Short_t pos, Short_t &cellNumber, Double_t &amplitude, Double_t &time, Int_t &mclabel,    Double_t  &efrac)      
+        if(haveCell)fHistoCalCell->Fill(cellAddr,cellAmp);
+     
+}
 
   /////////////////////////////////
   //Look for kink mother for AOD//
