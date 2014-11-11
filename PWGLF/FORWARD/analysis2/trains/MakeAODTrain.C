@@ -42,6 +42,9 @@ public:
     fOptions.Add("satelitte", "Use satelitte interactions");
     fOptions.Add("corr", "DIR", "Corrections dir", "");
     fOptions.Add("secmap", "Use secondary maps to correct", false);
+    fOptions.Add("mc-tracks", "Enable MC track filter", false);
+    fOptions.Add("max-strips", "NUMBER", 
+                 "Maximum consequtive strips (MC)", 2); 
     fOptions.Set("type", "ESD");
   }
 protected:
@@ -74,23 +77,33 @@ protected:
     gROOT->Macro("AddTaskCopyHeader.C");
 
     // --- Get options -----------------------------------------------
-    ULong_t  run = fOptions.AsInt("run", 0);
-    UShort_t sys = fOptions.AsInt("sys", 0);
-    UShort_t sNN = fOptions.AsInt("snn", 0);
-    UShort_t fld = fOptions.AsInt("field", 0);
-    Bool_t   sec = fOptions.Has("secmap");
-    TString  cor = "";
+    ULong_t  run  = fOptions.AsInt("run", 0);
+    UShort_t sys  = fOptions.AsInt("sys", 0);
+    UShort_t sNN  = fOptions.AsInt("snn", 0);
+    UShort_t fld  = fOptions.AsInt("field", 0);
+    UShort_t mSt  = fOptions.AsInt("max-strips", 2);
+    Bool_t   sec  = fOptions.Has("secmap");
+    TString  cor  = "";
     if (fOptions.Has("corr")) cor = fOptions.Get("corr"); 
     
     // --- Add the task ----------------------------------------------
     TString fwdConfig = fOptions.Get("forward-config");
-    gROOT->Macro(Form("AddTaskForwardMult.C(%d,%ld,%d,%d,%d,\"%s\",\"%s\")", 
-		      mc, run, sys, sNN, fld, fwdConfig.Data(), cor.Data()));
-    gROOT->ProcessLine(Form("((AliForwardMultiplicityBase*)"
-			    " ((AliAnalysisManager*)%p)"
-			    " ->GetTask(\"Forward%s\"))"
+    AliAnalysisTaskSE* fwd = AddTask("AddTaskForwardMult.C"
+				     Form("%d,%ld,%d,%d,%d,\"%s\",\"%s\"", 
+					  mc, run, sys, sNN, fld, 
+					  fwdConfig.Data(), cor.Data()));
+    if (!fwd)
+      Fatal("AddTasks", "Failed to add forward task");
+
+    gROOT->ProcessLine(Form("((AliForwardMultiplicityBase*)%p)"
 			    "->GetCorrections().SetUseSecondaryMap(%d)",
-			    mgr, mc ? "MC" : "", sec));
+			    fwd, sec));
+    if (mc) { 
+      gROOT->ProcessLine(Form("((AliForwardMCMultiplicityTask*)%p)"
+			      "->GetTrackDensity()"
+			      ".SetMaxConsequtiveStrips(%d)", 
+			      fwd, mSt));
+    }
     fHelper->LoadAux(gSystem->Which(gROOT->GetMacroPath(), fwdConfig), true);
 
     // --- Add the task ----------------------------------------------
@@ -100,7 +113,8 @@ protected:
     fHelper->LoadAux(gSystem->Which(gROOT->GetMacroPath(), cenConfig), true);
 
     // --- Add MC particle task --------------------------------------
-    if (mc) gROOT->Macro("AddTaskMCParticleFilter.C");
+    if (mci && fOptions.Has("mc-tracks")) 
+      gROOT->Macro("AddTaskMCParticleFilter.C");
 
     if (!cor.IsNull()) {
       fHelper->LoadAux(Form("%s/fmd_corrections.root",cor.Data()), true);
