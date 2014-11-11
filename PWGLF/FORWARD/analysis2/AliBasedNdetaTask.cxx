@@ -28,7 +28,7 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fSatelliteVertices(0),
     fEmpiricalCorrection(0),
     fMeanVsC(0),
-    fCentMethod("VOM"),
+    fCentMethod("default"),
     fPileupMask(0),
     fAnaUtil(),
     fCheckSPDOutlier(false)
@@ -52,7 +52,7 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fSatelliteVertices(0),
     fEmpiricalCorrection(0),
     fMeanVsC(0),	
-    fCentMethod("VOM"),
+    fCentMethod("default"),
     fPileupMask(0),
     fAnaUtil(),
     fCheckSPDOutlier(false)
@@ -227,8 +227,11 @@ AliBasedNdetaTask::SetCentralityMethod(const TString& method)
     AliErrorF("Unknown centrality estimator: %s", method.Data());
     return false;
   }
-  if (id < 0) // Do not use any estimator 
+  if (id < 0) { 
+    // Do not use any estimator 
+    AliInfoF("No centrality estimator: \"%s\"", method.Data());
     return false;
+  }
 
   TString meth = GetCentMethod(id);
   if (fName.Contains("Forward", TString::kIgnoreCase) && meth.Contains("FMD")) 
@@ -240,6 +243,7 @@ AliBasedNdetaTask::SetCentralityMethod(const TString& method)
 		meth.Data(), fName.Data());
 
   fCentMethod = meth;
+  AliInfoF("Centrality estimator set to %s", fCentMethod.Data());
   return true;
 }
 
@@ -252,6 +256,7 @@ AliBasedNdetaTask::GetCentMethodID(const TString& meth)
   m.ToUpper();
   if (m.EqualTo("NONE") || m.EqualTo("NO") || m.EqualTo("FALSE")) ret = -1;
   else if (m.IsNull())               ret = kCentDefault;
+  else if (m.BeginsWith("DEFAULT"))  ret = kCentDefault;
   else if (m.BeginsWith("ZEMVSZDC")) ret = kCentZEMvsZDC; 
   else if (m.BeginsWith("TKLVSV0M")) ret = kCentTklvsV0M; 
   else if (m.BeginsWith("V0MVSFMD")) ret = kCentV0MvsFMD; 
@@ -818,7 +823,8 @@ AliBasedNdetaTask::Print(Option_t* option) const
   PFV("Normalization scheme",	 schemeString );
   PFV("Trigger efficiency",	 fTriggerEff);
   PFV("Bin-0 Trigger efficiency", fTriggerEff0);
-  PFV("Centrality estimator",    fCentMethod);
+  PFV("Centrality estimator",    (fCentMethod.IsNull() ? 
+				  "-default-" : fCentMethod.Data()));
   PF("Pile-up mask", "0x%x",     fPileupMask);
   PFB("Check SPD outlier",       fCheckSPDOutlier);
   gROOT->DecreaseDirLevel();  
