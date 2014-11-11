@@ -8,7 +8,7 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/** @file    AliHLTESDAnaManagerComponent.h
+/** @file    AliHLTAnaManagerComponent.h
     @author  Jochen Thaeder <jochen@thaeder.de>
     @brief   Component for Multiplicty Correlations
 */
@@ -20,24 +20,20 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTProcessor.h"
-#include <map>
-#include <string>
 
 class TH1F;
 class TList;
-class AliVEvent;
-class AliVfriendEvent;
 
-//class AliESDVZERO;
-//class AliESDtrackCuts;
+class AliESDVZERO;
+class AliESDtrackCuts;
 class AliHLTCTPData;
 //class AliHLTMultiplicityCorrelations;
 class AliHLTGlobalTriggerDecision;
-class AliHLTAnalysisManager;
-class AliHLTVEventInputHandler;
+class AliAnalysisManager;
+class AliHLTTestInputHandler;
 
 /**
- * @class AliHLTESDAnaManagerComponent
+ * @class AliHLTAnaManagerComponent
  * Create Correlations for Multiplicities
  * 
  * <h2>General properties:</h2>
@@ -130,8 +126,6 @@ public:
    * ---------------------------------------------------------------------------------
    */
 
-  typedef map<std::string,std::string> stringMap;
-
   /** constructor */
   AliHLTTPCCalibManagerComponent();
   
@@ -162,17 +156,6 @@ public:
 
   /** interface function, see @ref AliHLTComponent for description */
   AliHLTComponent* Spawn();
-
-  //new option parser
-  static stringMap* TokenizeOptionString(const TString str);
-  int ProcessOptionString(TString arguments);
-  int ProcessOption(TString option, TString value);
-
-  /**  */
-  Int_t AddCalibTasks();
-  Int_t WriteAnalysisToFile();
-  Int_t ReadInput(AliVEvent*& vEvent, AliVfriendEvent*& vFriend);
-  Int_t PushAndReset(TObject* object);
 
  protected:
 
@@ -238,17 +221,10 @@ private:
   /** UID for merging */
   AliHLTUInt32_t fUID;                        // see above
 
-  AliHLTAnalysisManager *fAnalysisManager;        // Manger
+  AliAnalysisManager *fAnalysisManager;        // Manger
 
-  AliHLTVEventInputHandler *fInputHandler;    // input handler
+  AliHLTTestInputHandler *fInputHandler;    // input handler
 
-  //config stuff
-  TString fTPCcalibConfigString;
-  TString fAddTaskMacro;
-  Bool_t fWriteAnalysisToFile;
-  Bool_t fEnableDebug; //enable debug output - sysinfo,debug streamer, other files
-  Bool_t fResetAfterPush; //reset the calibration after pushing for merging
-
-  ClassDef(AliHLTTPCCalibManagerComponent, 1)
+  ClassDef(AliHLTTPCCalibManagerComponent, 0)
 };
 #endif

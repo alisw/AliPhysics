@@ -23,61 +23,20 @@
 #include "TMap.h"
 #include "TSystem.h"
 #include "TTimeStamp.h"
-#include "TStopwatch.h"
 #include "TObjString.h"
 #include "TH1F.h"
 #include "TList.h"
-
-#include <map>
-#include <string>
-#include "TString.h"
-#include "TArrayI.h"
-
-//#include "AliESDtrackCuts.h"
+#include "AliESDtrackCuts.h"
 #include "AliESDEvent.h"
 #include "AliHLTErrorGuard.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTTPCCalibManagerComponent.h"
 #include "AliHLTITSClusterDataFormat.h"
-#include "AliHLTAnalysisManager.h"
-#include "AliHLTVEventInputHandler.h"
-#include "AliTPCAnalysisTaskcalib.h"
+#include "AliAnalysisManager.h"
+#include "AliHLTTestInputHandler.h"
+#include "AliAnalysisTaskPt.h"
 #include "AliAnalysisDataContainer.h"
 #include "TTree.h"
-#include "TChain.h"
-#include "AliFlatESDEvent.h"
-#include "AliFlatESDFriend.h"
-#include "AliVEvent.h"
-#include "AliVfriendEvent.h"
-#include "AliSysInfo.h"
-
-#include "AliTPCcalibBase.h"
-
-#include "AliTPCcalibAlign.h"
-#include "AliTPCcalibLaser.h"
-#include "AliTPCcalibCosmic.h"
-
-#include "AliTPCcalibCalib.h"
-#include "AliTPCcalibTimeGain.h"
-#include "AliTPCcalibGainMult.h"
-#include "AliTPCcalibTime.h"
-
-#include "AliTPCcalibTracks.h"
-#include "TPRegexp.h"
-
-#include "AliTPCParam.h"
-#include "AliMagF.h"
-#include "TGeoGlobalMagField.h"
-#include "AliTPCTransform.h"
-#include "AliCDBEntry.h"
-#include "AliTPCRecoParam.h"
-#include "AliCDBManager.h"
-#include "AliGRPObject.h"
-#include "AliTPCcalibDB.h"
-#include "AliTPCClusterParam.h"
-#include "AliTPCcalibTracksCuts.h"
-
-#include "TROOT.h"
 
 using namespace std;
 
@@ -95,13 +54,7 @@ AliHLTTPCCalibManagerComponent::AliHLTTPCCalibManagerComponent() :
   AliHLTProcessor(),
   fUID(0),
   fAnalysisManager(NULL),
-  fInputHandler(NULL),
-  fTPCcalibConfigString("TPCCalib:CalibTimeDrift"),
-  fAddTaskMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C"),
-  fWriteAnalysisToFile(kFALSE),
-  fEnableDebug(kFALSE),
-  fResetAfterPush(kTRUE)
-{
+  fInputHandler(NULL){
   // an example component which implements the ALICE HLT processor
   // interface and does some analysis on the input raw data
   //
@@ -139,9 +92,6 @@ void AliHLTTPCCalibManagerComponent::GetInputDataTypes( vector<AliHLTComponentDa
   list.push_back(kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD);
   list.push_back(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO);
   list.push_back(kAliHLTDataTypeESDfriendObject|kAliHLTDataOriginAny);
-  list.push_back(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
-  list.push_back(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
-  list.push_back(kAliHLTDataTypeEOR|kAliHLTDataOriginAny);
 }
 
 // #################################################################################
@@ -153,8 +103,8 @@ AliHLTComponentDataType AliHLTTPCCalibManagerComponent::GetOutputDataType() {
 // #################################################################################
 void AliHLTTPCCalibManagerComponent::GetOutputDataSize( ULong_t& constBase, Double_t& inputMultiplier ) {
   // see header file for class documentation
-  constBase = 150000; //fixed size output objects
-  inputMultiplier = 0; //do not scale with the input size
+  constBase = 100000;
+  inputMultiplier = 0.5;
 }
 
 // #################################################################################
@@ -187,93 +137,110 @@ AliHLTComponent* AliHLTTPCCalibManagerComponent::Spawn() {
 // #################################################################################
 Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ ) {
   // see header file for class documentation
-  HLTInfo("----> AliHLTTPCCalibManagerComponent::DoInit");
+  printf("AliHLTTPCCalibManagerComponent::DoInit\n");
 
-  //process arguments
-  ProcessOptionString(GetComponentArgs());
+  Int_t iResult=0;
 
-  if (!fEnableDebug)
-  {
-    //shut up AliSysInfo globally, prevents syswatch.log files from being created
-    //dont open any debug files
-    AliSysInfo::SetDisabled(kTRUE);
-    TTreeSRedirector::SetDisabled(kTRUE);
-  }
-
-  fAnalysisManager = new AliHLTAnalysisManager();
-  fInputHandler    = new AliHLTVEventInputHandler("HLTinputHandler","HLT input handler");
+  Printf("----> AliHLTTPCCalibManagerComponent::DoInit");
+  fAnalysisManager = new AliAnalysisManager;
+  fInputHandler    = new AliHLTTestInputHandler;
   fAnalysisManager->SetInputEventHandler(fInputHandler);
+  fAnalysisManager->SetExternalLoop(kTRUE); 
 
-  TString addTaskMacroArgs="\""+fTPCcalibConfigString+"\"";
-  TString macro=fAddTaskMacro+"("+addTaskMacroArgs+")";
-  HLTInfo("Executing: %s\n",macro.Data());
-  gROOT->Macro(macro);
+  AliAnalysisTaskPt *task = new AliAnalysisTaskPt("TaskPt");
+  printf("-----> AliHLTTPCCalibManagerComponent: here we set the usage of the friends to %d\n", (Int_t)task->GetUseFriends());
+  task->SetUseFriends(kTRUE);
+  fAnalysisManager->AddTask(task);
+  AliAnalysisDataContainer *cinput  = fAnalysisManager->GetCommonInputContainer();
+  Printf("Defining output file");
+  AliAnalysisDataContainer *coutput1 = fAnalysisManager->CreateContainer("pt", TList::Class(),
+      AliAnalysisManager::kOutputContainer, "Pt.root");
 
+  //           connect containers
+  Printf("---> Connecting input...");
+  fAnalysisManager->ConnectInput  (task,  0, cinput ); 
+  Printf("---> ...connected.");
+  Printf("---> Connecting output...");
+  fAnalysisManager->ConnectOutput (task,  0, coutput1);
+  Printf("---> ...connected.");
+
+  Printf("----> Calling InitAnalysis");
   fAnalysisManager->InitAnalysis();
+  Printf("----> Done.");
+  Printf("----> Calling StartAnalysis");
+  fAnalysisManager->StartAnalysis("local", (TTree*)new TTree);
+  //fAnalysisManager->StartAnalysis("local", (TTree*)NULL);
+  Printf("----> Done.");
 
-  return 0;
+  return iResult;
 }
+
+
 
 // #################################################################################
 Int_t AliHLTTPCCalibManagerComponent::DoDeinit() {
   // see header file for class documentation
 
-  if (fWriteAnalysisToFile && fAnalysisManager) 
-    fAnalysisManager->WriteAnalysisToFile();
+  fUID = 0;
+  fAnalysisManager->SetSkipTerminate(kTRUE);
+  fAnalysisManager->Terminate();
+
   delete fAnalysisManager;
+
   return 0;
 }
 
 // #################################################################################
 Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& evtData,
-    AliHLTComponentTriggerData& /*trigData*/) {
+					AliHLTComponentTriggerData& /*trigData*/) {
   // see header file for class documentation
 
-  TStopwatch stopwatch;
-  stopwatch.Start();
-  
-  HLTInfo("AliHLTTPCCalibManagerComponent::DoEvent\n");
+  printf("AliHLTTPCCalibManagerComponent::DoEvent\n");
   Int_t iResult=0;
 
+  // -- Only use data event
+  if (!IsDataEvent()) 
+    return 0;
+  
   if( fUID == 0 ){
     TTimeStamp t;
     fUID = ( gSystem->GetPid() + t.GetNanoSec())*10 + evtData.fEventID;
   }
-
-  if (!IsDataEvent())
-  {
-    //on EOR push unconditionally
-    const AliHLTComponentBlockData* pBlock = 
-      GetFirstInputBlock(kAliHLTDataTypeEOR|kAliHLTDataOriginAny);
-    if (pBlock) 
-    {
-      PushAndReset(fAnalysisManager->GetOutputs()); 
-    }
-    return 0;
-  }
-
+  
   // -- Get ESD object
   // -------------------
-  AliVEvent* vEvent=NULL;
-  AliVfriendEvent* vFriend=NULL;
-  iResult = ReadInput(vEvent,vFriend);
+  AliESDEvent *esdEvent = NULL;
+  AliESDfriend *esdFriend = NULL;
+  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
+    esdEvent = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
+    if( !esdEvent ){ 
+      HLTWarning("Wrong ESDEvent object received");
+      iResult = -1;
+      continue;
+    }
+    esdEvent->GetStdContent();
+  }
+  printf("----> ESDEvent %p has %d tracks: \n", esdEvent, esdEvent->GetNumberOfTracks());
+  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject); iter != NULL; iter = GetNextInputObject() ) {
+    esdFriend = dynamic_cast<AliESDfriend*>(const_cast<TObject*>( iter ) );
+    if( !esdFriend ){ 
+      HLTWarning("Wrong ESDFriend object received");
+      iResult = -1;
+      continue;
+    }
+  }
+  printf("----> ESDFriend %p has %d tracks: \n", esdFriend, esdFriend->GetNumberOfTracks());
 
-  if (!vEvent) return -1;
-
-  if (vEvent) {HLTInfo("----> event %p has %d tracks: \n", vEvent, vEvent->GetNumberOfTracks());}
-  if(vFriend) {HLTInfo("----> friend %p has %d tracks: \n", vFriend, vFriend->GetNumberOfTracks());}
-
-  fInputHandler->InitTaskInputData(vEvent, vFriend, fAnalysisManager->GetTasks());
+  fAnalysisManager->InitInputData(esdEvent, esdFriend);
+  //  fInputHandler->BeginEvent(0);
   fAnalysisManager->ExecAnalysis();
   fInputHandler->FinishEvent();
 
-  //pushes once every n seconds if
-  //configured with -pushback-period=n
-  //fAnalysisManager->GetOutputs() is an TObjArray of AliAnalysisDataContainer objects
-  PushAndReset(fAnalysisManager->GetOutputs()); 
 
-  stopwatch.Stop();
-  AliSysInfo::AddStamp("analysisTiming",vEvent->GetNumberOfTracks(),stopwatch.RealTime()*1000,stopwatch.CpuTime()*1000);
+  // -- Send histlist
+//  PushBack(dynamic_cast<TObject*>(fCorrObj->GetHistList()),
+//	   kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
+ 
   return iResult;
 }
 
@@ -303,189 +270,3 @@ Int_t AliHLTTPCCalibManagerComponent::ReadPreprocessorValues(const Char_t* /*mod
   return 0;
 }
 
-// #################################################################################
-Int_t AliHLTTPCCalibManagerComponent::PushAndReset(TObject* object)
-{
-  //push the data - the data might not get pushed, depending on the 
-  //"-pushback-period=" argument which might delay the actual push. 
-  //pushResult==0 if pushing delayed.
-  //
-  int pushResult = PushBack(object, kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
-  if (pushResult > 0 && fResetAfterPush) {fAnalysisManager->ResetOutputData();}
-  return 0;
-}
-
-// #################################################################################
-Int_t AliHLTTPCCalibManagerComponent::ReadInput(AliVEvent*& vEvent, AliVfriendEvent*& vFriend)
-{
-  //read input, return code 0 for normal events, 1 for EOR
-
-  Int_t iResult=0;
-  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
-    vEvent = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
-    if( !vEvent ){ 
-      HLTWarning("Wrong ESDEvent object received");
-      iResult = -1;
-      continue;
-    }
-    vEvent->GetStdContent();
-  }
-  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject); iter != NULL; iter = GetNextInputObject() ) {
-    vFriend = dynamic_cast<AliESDfriend*>(const_cast<TObject*>( iter ) );
-    if( !vFriend ){ 
-      HLTWarning("Wrong ESDFriend object received");
-      iResult = -1;
-      continue;
-    }
-  }
-
-  if (!vEvent){ 
-    {
-      const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
-      AliFlatESDEvent* tmpFlatEvent=reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
-      if (tmpFlatEvent->GetSize()==pBlock->fSize ){
-        tmpFlatEvent->Reinitialize();
-      } else {
-        tmpFlatEvent = NULL;
-        iResult=-1;
-        HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESD information",
-            DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
-      }
-      vEvent = tmpFlatEvent;
-    }
-
-    if( vEvent ){
-      const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
-      AliFlatESDFriend* tmpFlatFriend = reinterpret_cast<AliFlatESDFriend*>( pBlock->fPtr );
-      if (tmpFlatFriend->GetSize()==pBlock->fSize ){
-        tmpFlatFriend->Reinitialize();
-      } else {
-        tmpFlatFriend = NULL;
-        iResult=-1;
-        HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESDfriend information", 
-            DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
-      }
-      vFriend = tmpFlatFriend;
-    }
-  }
-  return iResult;
-}
-
-// #################################################################################
-int AliHLTTPCCalibManagerComponent::ProcessOption(TString option, TString value)
-{
-  //process option
-  //to be implemented by the user
-  if (option.Contains("TPCcalibConfigString")) 
-  {
-    fTPCcalibConfigString=value;
-    HLTInfo("fTPCcalibConfigString=%s\n",fTPCcalibConfigString.Data());
-  }
-  else if (option.Contains("WriteAnalysisToFile")) 
-  {
-    fWriteAnalysisToFile=(value.Contains("0"))?kFALSE:kTRUE;
-    HLTInfo("fWriteAnalysisToFile=%i\n",fWriteAnalysisToFile?1:0);
-  }
-  else if (option.Contains("AddTaskMacro"))
-  {
-    fAddTaskMacro=value;
-    HLTInfo("fAddTaskMacro=%s\n",fAddTaskMacro.Data());
-  }
-  else if (option.Contains("ResetAfterPush"))
-  {
-    fResetAfterPush=(value.Contains("0")?kFALSE:kTRUE);
-    HLTInfo("fResetAfterPush=%i\n",fResetAfterPush?1:0);
-  }
-  else if (option.Contains("EnableDebug"))
-  {
-    fEnableDebug=value.Contains("1");
-    HLTInfo("fEnableDebug=%s",fEnableDebug?"1":"0");
-  }
-  return 1; 
-}
-
-// #################################################################################
-int AliHLTTPCCalibManagerComponent::ProcessOptionString(TString arguments)
-{
-  //process passed options
-  HLTInfo("Argument string: %s\n", arguments.Data());
-  stringMap* options = TokenizeOptionString(arguments);
-  for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
-  {
-    HLTInfo("  %s : %s\n", i->first.data(), i->second.data());
-    ProcessOption(i->first,i->second);
-  }
-  delete options; //tidy up
-
-  return 1; 
-}
-
-// #################################################################################
-AliHLTTPCCalibManagerComponent::stringMap* AliHLTTPCCalibManagerComponent::TokenizeOptionString(const TString str)
-{
-  //options have the form:
-  // -option value
-  // -option=value
-  // -option
-  // --option value
-  // --option=value
-  // --option
-  // option=value
-  // option value
-  // (value can also be a string like 'some string')
-  //
-  // options can be separated by ' ' or ',' arbitrarily combined, e.g:
-  //"-option option1=value1 --option2 value2, -option4=\'some string\'"
-  
-  //optionRE by construction contains a pure option name as 3rd submatch (without --,-, =)
-  //valueRE does NOT match options
-  TPRegexp optionRE("(?:(-{1,2})|((?='?[^,=]+=?)))"
-                    "((?(2)(?:(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^, =]+))(?==?))"
-                    "(?(1)[^, =]+(?=[= ,$])))");
-  TPRegexp valueRE("(?(?!(-{1,2}|[^, =]+=))"
-                   "(?(?=')'(?:[^'\\\\]++|\\.)*+'"
-                   "|[^, =]+))");
-
-  stringMap* options = new stringMap;
-
-  TArrayI pos;
-  const TString mods="";
-  Int_t start = 0;
-  while (1) {
-    Int_t prevStart=start;
-    TString optionStr="";
-    TString valueStr="";
-    
-    //check if we have a new option in this field
-    Int_t nOption=optionRE.Match(str,mods,start,10,&pos);
-    if (nOption>0)
-    {
-      optionStr = str(pos[6],pos[7]-pos[6]);
-      optionStr=optionStr.Strip(TString::kBoth,'\'');
-      start=pos[1]; //update the current character to the end of match
-    }
-
-    //check if the next field is a value
-    Int_t nValue=valueRE.Match(str,mods,start,10,&pos);
-    if (nValue>0)
-    {
-      valueStr = str(pos[0],pos[1]-pos[0]);
-      valueStr=valueStr.Strip(TString::kBoth,'\'');
-      start=pos[1]; //update the current character to the end of match
-    }
-    
-    //skip empty entries
-    if (nOption>0 || nValue>0)
-    {
-      (*options)[optionStr.Data()] = valueStr.Data();
-    }
-    
-    if (start>=str.Length()-1 || start==prevStart ) break;
-  }
-
-  for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
-  {
-    Printf("%s : %s", i->first.data(), i->second.data());
-  }
-  return options;
-}
