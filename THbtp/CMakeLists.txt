@@ -32,6 +32,10 @@ set(SRCS
   AliGenHBTprocessor.cxx
   )
 
+set (FSRCS
+  hbt_event_processor.f
+  )
+
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
@@ -46,7 +50,7 @@ set(LIBDEPS STEERBase STEER EVGEN)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
-add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx ${FSRCS})
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
