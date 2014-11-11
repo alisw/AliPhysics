@@ -45,7 +45,7 @@ protected:
     AliAnalysisManager::SetCommonFileName("forward_response.root");
 
     // --- Load libraries/pars ---------------------------------------
-    fHelper->LoadLibrary("PWGLFforward2");
+    fRailway->LoadLibrary("PWGLFforward2");
     
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
@@ -58,16 +58,15 @@ protected:
 
     // --- Form arguments --------------------------------------------
     TString args;
-    args.Form("\"%s\",%f,%f",
-	      trig.Data(), vzMin, vzMax);
+    args.Form("\"%s\",%f,%f", trig.Data(), vzMin, vzMax);
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskCreateRespMatr.C(%s);", args.Data()));
+    CoupleCar("AddTaskCreateRespMatr.C", args);
   }
   //__________________________________________________________________
   /** 
    * Do not the centrality selection
    */
-  void CreateCentralitySelection(Bool_t, AliAnalysisManager*) {}
+  void CreateCentralitySelection(Bool_t) {}
   //__________________________________________________________________
   /** 
    * Crete output handler - we don't want one here. 
