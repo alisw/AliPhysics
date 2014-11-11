@@ -190,7 +190,7 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  //change different set o
 		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "20000042053200000"; mesonCutArray[1] = "01631031009000"; //pp LHC13g default MB
 		eventCutArray[ 2] = "0006111"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "20000042053200000"; mesonCutArray[2] = "01631031009000"; //pp LHC11a PHI1
 		eventCutArray[ 3] = "0006211"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "20000042053200000"; mesonCutArray[3] = "01631031009000"; //pp LHC11a PHI7
-	} else if (trainConfig == 32) { //PHOS clusters, track matching 0.04
+	} else if (trainConfig == 33) { //PHOS clusters, track matching 0.04
 		eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "20000043053200000"; mesonCutArray[0] = "01631031009000"; //pp LHC11a with SDD, PHOS
 		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "20000043053200000"; mesonCutArray[1] = "01631031009000"; //pp LHC13g default MB
 		eventCutArray[ 2] = "0006111"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "20000043053200000"; mesonCutArray[2] = "01631031009000"; //pp LHC11a PHI1

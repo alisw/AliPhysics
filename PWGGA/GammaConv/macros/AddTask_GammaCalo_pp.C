@@ -163,13 +163,15 @@ void AddTask_GammaCalo_pp(  Int_t trainConfig = 1,  //change different set of cu
 		eventCutArray[ 3] = "0009311"; clusterCutArray[3] = "10000040022030000"; mesonCutArray[3] = "01631031009000"; 
 		eventCutArray[ 4] = "0008511"; clusterCutArray[4] = "10000040022030000"; mesonCutArray[4] = "01631031009000"; 
 		eventCutArray[ 5] = "0009511"; clusterCutArray[5] = "10000040022030000"; mesonCutArray[5] = "01631031009000"; 
-	} else if (trainConfig == 10){ // Validation
+	} else if (trainConfig == 10){ // Validation EMCAL
 		eventCutArray[ 0] = "0000311"; clusterCutArray[0] = "10000040062000000"; mesonCutArray[0] = "01630031009000"; 
 	} else if (trainConfig == 31) { //PHOS clusters
 		eventCutArray[ 0] = "0000311"; clusterCutArray[0] = "20000040053200000"; mesonCutArray[0] = "01631031009000"; //pp LHC11a with SDD, PHOS
 		eventCutArray[ 1] = "0000011"; clusterCutArray[1] = "20000040053200000"; mesonCutArray[1] = "01631031009000"; //pp LHC13g default MB
 		eventCutArray[ 2] = "0006111"; clusterCutArray[2] = "20000040053200000"; mesonCutArray[2] = "01631031009000"; //pp LHC11a PHI1
 		eventCutArray[ 3] = "0006211"; clusterCutArray[3] = "20000040053200000"; mesonCutArray[3] = "01631031009000"; //pp LHC11a PHI7
+	} else if (trainConfig == 32){ // Validation PHOS
+		eventCutArray[ 0] = "0000311"; clusterCutArray[0] = "20000040053200000"; mesonCutArray[0] = "01630031009000"; 		
 	} else {
 		Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
