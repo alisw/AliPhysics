@@ -23,7 +23,7 @@ set(PACKAGES "${PACKAGES}"
   alistoragemanager/CMakebinalifakedisplay.pkg
   alistoragemanager/CMakebinalistorageminimalexample.pkg
   alistoragemanager/CMakebinalistoragegetpoints.pkg
-  alieventserver/CMakebinalieventserver.pkg
+  alionlinereco/CMakebinalionlinereco.pkg
 )
 ENDIF(ZEROMQ_FOUND)
 

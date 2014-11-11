@@ -61,7 +61,6 @@ void itsU_clusters(TEveElement* cont=0, Float_t maxR=50)
   //  layClusters->SetOwnIds(kTRUE);
 
   Int_t layOld =-1;
-  Int_t nentr = (Int_t) cTree->GetEntries();
   cTree->GetEntry(0);
   for (int ilr=0;ilr<nlr;ilr++) {
     TClonesArray* clr = (TClonesArray*)layerClus.At(ilr);
@@ -70,9 +69,9 @@ void itsU_clusters(TEveElement* cont=0, Float_t maxR=50)
     Float_t maxRsqr = maxR*maxR;
     for (Int_t icl = 0; icl < ncl; ++icl) {
       AliITSUClusterPix *c = (AliITSUClusterPix*) clr->UncheckedAt(icl);
-      Int_t mod = c->GetVolumeId();
-      int lay,lad,det;
-      gm->GetModuleId(mod, lay,lad,det);
+      Int_t id = c->GetVolumeId();
+      int lay,sta,ssta,mod,chip;
+      gm->GetChipId(id, lay,sta,ssta,mod,chip);
       
       if (lay!=layOld) { // assumes order in the digits !
 	layOld=lay;
@@ -93,8 +92,8 @@ void itsU_clusters(TEveElement* cont=0, Float_t maxR=50)
 	layClusters->SetNextPoint(g[0], g[1], g[2]);
 	AliITSUClusterPix *atp = new AliITSUClusterPix(*c);
 	layClusters->SetPointId(atp);
-		printf("%d: mod %d: loc(%.4lf,%.4lf,%.4lf); glob(%.4lf,%.4lf,%.4lf); \n",
-		       icl,atp->GetVolumeId(), l[0],l[1],l[2], g[0],g[1],g[2]);
+//	printf("%d: mod %d: loc(%.4lf,%.4lf,%.4lf); glob(%.4lf,%.4lf,%.4lf); \n",
+//		       icl,atp->GetVolumeId(), l[0],l[1],l[2], g[0],g[1],g[2]);
       }
     }
   }

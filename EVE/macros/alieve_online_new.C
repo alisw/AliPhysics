@@ -124,7 +124,7 @@ void alieve_online_new()
  
 //    browser->MoveResize(0, 0, gClient->GetDisplayWidth(),gClient->GetDisplayHeight() - 32);
     
-    browser->MoveResize(0, 0, gClient->GetDisplayHeight()*1.6,gClient->GetDisplayHeight()-32);
+//    browser->MoveResize(0, 0, gClient->GetDisplayHeight()*1.6,gClient->GetDisplayHeight()-32);
     
     gEve->FullRedraw3D(kTRUE);
     gSystem->ProcessEvents();

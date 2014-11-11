@@ -1150,6 +1150,7 @@ Double_t AliAODTrack::GetMassForTracking() const
 const AliTOFHeader* AliAODTrack::GetTOFHeader() const {
   return fAODEvent->GetTOFHeader();
 }
+  
 //_______________________________________________________
 Int_t AliAODTrack::GetNcls(Int_t idet) const
 {
@@ -1186,3 +1187,12 @@ Int_t AliAODTrack::GetNcls(Int_t idet) const
   }
   return ncls;
 }
+
+Int_t AliAODTrack::GetTrackParam         ( AliExternalTrackParam & ) const {return 0;} 
+Int_t AliAODTrack::GetTrackParamRefitted ( AliExternalTrackParam & ) const {return 0;} 
+Int_t AliAODTrack::GetTrackParamIp       ( AliExternalTrackParam & ) const {return 0;} 
+Int_t AliAODTrack::GetTrackParamTPCInner ( AliExternalTrackParam & ) const {return 0;} 
+Int_t AliAODTrack::GetTrackParamOp       ( AliExternalTrackParam & ) const {return 0;} 
+Int_t AliAODTrack::GetTrackParamCp       ( AliExternalTrackParam & ) const {return 0;} 
+Int_t AliAODTrack::GetTrackParamITSOut   ( AliExternalTrackParam & ) const {return 0;} 
+

@@ -31,6 +31,7 @@ set ( SRCS
     AliTRDsimTR.cxx
     AliTRD.cxx
     AliTRDv1.cxx AliTRDdigitizer.cxx
+    AliTRDtestG4.cxx
     AliTRDTrigger.cxx
     AliTRDTriggerL0.cxx AliTRDTriggerL1.cxx AliTRDptrgFEB.cxx
     AliTRDptrgLUT.cxx

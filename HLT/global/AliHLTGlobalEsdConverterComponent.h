@@ -1,5 +1,6 @@
 //-*- Mode: C++ -*-
 // $Id$
+
 #ifndef ALIHLTGLOBALESDCONVERTERCOMPONENT_H
 #define ALIHLTGLOBALESDCONVERTERCOMPONENT_H
 //* This file is property of and copyright by the ALICE HLT Project        * 
@@ -18,8 +19,10 @@
 
 // forward declarations
 class AliESDEvent;
+class AliESDfriend;
 class TTree;
 struct AliHLTTracksData;
+class AliTPCclusterMI;
 
 /**
  * @class AliHLTGlobalEsdConverterComponent
@@ -53,6 +56,7 @@ class AliHLTGlobalEsdConverterComponent : public AliHLTProcessor
   const char* GetComponentID() {return "GlobalEsdConverter";};
   void GetInputDataTypes(AliHLTComponentDataTypeList& list);
   AliHLTComponentDataType GetOutputDataType();
+  int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
   void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   AliHLTComponent* Spawn() {return new AliHLTGlobalEsdConverterComponent;}
 
@@ -71,8 +75,9 @@ class AliHLTGlobalEsdConverterComponent : public AliHLTProcessor
    * @param pESD     ESD to be filled
    * @return neg. error code if failed
    */
-  int ProcessBlocks(TTree* pTree, AliESDEvent* pESD);
+  int ProcessBlocks(TTree* pTree, AliESDEvent* pESD, AliESDfriend *pESDfriend);
 
+ // void FillBenchmarkHistos(Double_t *statistics, TString *names);
  private:
   /** copy constructor prohibited */
   AliHLTGlobalEsdConverterComponent(const AliHLTGlobalEsdConverterComponent&);
@@ -101,11 +106,21 @@ class AliHLTGlobalEsdConverterComponent : public AliHLTProcessor
 
 protected:
 
+  static const Int_t fkNPartition = 36*6;           // number of patches in TPC
+
   /// the ESD
   AliESDEvent* fESD; //! transient value
 
+  /// the ESD friend
+  AliESDfriend* fESDfriend; //! transient value
+
   /// solenoid b field
   Double_t fSolenoidBz; //! transient
+
+  Bool_t fMakeFriends; // flag to create friends
+  AliTPCclusterMI   *fPartitionClusters[fkNPartition];  //! arrays of cluster data for each TPC partition
+  Int_t              fNPartitionClusters[fkNPartition]; //! number of clusters for each TPC partition
+ 
   AliHLTComponentBenchmark fBenchmark; // benchmark
 
   ClassDef(AliHLTGlobalEsdConverterComponent, 0)

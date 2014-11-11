@@ -23,4 +23,10 @@
 #pragma link C++ class AliITStrackerHLT+;
 #pragma link C++ class AliHLTITSTrack+;
 #pragma link C++ class AliHLTITSQAComponent;
+//
+#pragma ling C++ class AliITSSAPAux;
+#pragma ling C++ class AliITSSAPLayer;
+#pragma ling C++ class AliITSSAPTracker;
+#pragma ling C++ class AliHLTITSSAPTrackerComponent;
+
 #endif

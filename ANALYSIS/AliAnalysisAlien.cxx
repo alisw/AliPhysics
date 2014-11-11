@@ -5030,7 +5030,7 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
       out << "parArch=`grep -Ei \"Cannot Build the PAR Archive\" stderr`" << endl;
       out << "segViol=`grep -Ei \"Segmentation violation\" stderr`" << endl;
       out << "segFault=`grep -Ei \"Segmentation fault\" stderr`" << endl;
-      out << "glibcErr=`grep -Ei \"*** glibc detected ***\" stderr`" << endl;
+      out << "glibcErr=`grep -Ei '\\*\\*\\* glibc detected \\*\\*\\*' stderr`" << endl;
       out << "" << endl;
 
       out << "if [ \"$parArch\" != \"\" ] ; then" << endl;

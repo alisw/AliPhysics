@@ -32,10 +32,12 @@
 // GUI editor for AliEveEventManager.
 //
 
+using std::ifstream;
 using std::ofstream;
 using std::ios;
 using std::cout;
 using std::endl;
+using std::string;
 
 ClassImp(AliEveEventManagerEditor)
 

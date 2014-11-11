@@ -45,6 +45,7 @@ const Float_t pTmin=0.2;   // Minimal pT for a reconstructable track
 const Int_t nMin=3;        // Minimal N of reconstructable tracks per vertex
 const Int_t nAssMin=2;     // Minimal number of correctly associated tracks
 const Float_t fracMin=0.8; // Minimal fraction of correctly associated tracks
+const Float_t tWin=30e-6;  // Time-acceptance window for "good" MC vertices
 
 extern AliRun *gAlice;
 extern TROOT *gROOT;
@@ -92,6 +93,7 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    if (!heffspd) 
       heffspd=new TH1F("heffspd","SPD efficiency + fake rate;Z position of a prim. vertex (cm);Efficiency",nb,min,max);
    heffspd->SetLineColor(2);
+   heffspd->Sumw2();
 
    TH1F *hfoundtrk=(TH1F*)gROOT->FindObject("hfoundtrk");
    if (!hfoundtrk) 
@@ -100,6 +102,7 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    if (!hefftrk) 
       hefftrk=new TH1F("hefftrk","TRK efficiency;Z (cm);Efficiency",nb,min,max);
    hefftrk->SetLineColor(4);
+   hefftrk->Sumw2();
 
    TH1F *hfaketrk=(TH1F*)gROOT->FindObject("hfaketrk");
    if (!hfaketrk) 
@@ -109,6 +112,7 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
       heffaketrk=new TH1F("heffaketrk","TRK fake rate;Z (cm);Fake rate",nb,min,max);
    heffaketrk->SetLineColor(4);
    heffaketrk->SetFillColor(590);
+   heffaketrk->Sumw2();
 
 
 
@@ -124,6 +128,7 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    if (!hnefftrk) 
       hnefftrk=new TH1F("hnefftrk","TRK efficiency;Number of tracks;Efficiency",nb,min,max);
    hnefftrk->SetLineColor(4);
+   hnefftrk->Sumw2();
 
    TH1F *hnfaketrk=(TH1F*)gROOT->FindObject("hnfaketrk");
    if (!hnfaketrk) 
@@ -133,6 +138,7 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
       hneffaketrk=new TH1F("hneffaketrk","TRK fake rate;Number of tracks;Efficiency",nb,min,max);
    hneffaketrk->SetLineColor(4);
    hneffaketrk->SetFillColor(590);
+   hneffaketrk->Sumw2();
 
 
    // **** Generate a rerefence file with reconstructable vertices
@@ -313,11 +319,11 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    gPad->SetGridx(); gPad->SetGridy();
    heffspd->Divide(hfoundspd,hgood,1,1,"b");
    heffspd->SetMinimum(0.); heffspd->SetMaximum(1.2);
-   heffspd->Draw("hist");
+   heffspd->Draw("ehist");
    hefftrk->Divide(hfoundtrk,hgood,1,1,"b");
-   hefftrk->Draw("histsame");
+   hefftrk->Draw("ehistsame");
    heffaketrk->Divide(hfaketrk,hgood,1,1,"b");
-   heffaketrk->Draw("histsame");
+   heffaketrk->Draw("ehistsame");
    gPad->BuildLegend(0.13,0.65,0.46,0.86)->SetFillColor(0);
 
    c2->cd(2);
@@ -325,8 +331,8 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    hnefftrk->SetMinimum(0.); hnefftrk->SetMaximum(1.2);
    hneffaketrk->Divide(hnfaketrk,hngood,1,1,"b");
    gPad->SetGridx(); gPad->SetGridy();
-   hnefftrk->Draw();
-   hneffaketrk->Draw("same");
+   hnefftrk->Draw("ehist");
+   hneffaketrk->Draw("ehistsame");
    gPad->BuildLegend(0.13,0.65,0.46,0.86)->SetFillColor(0);
 
 
@@ -367,7 +373,7 @@ Associate(const AliESDVertex *g,const AliESDVertex *f,const AliESDEvent *esd) {
 }
 
 Int_t GoodPileupVertices(const Char_t *dir) {
-  Int_t FindContributors(Float_t tz, AliStack *stack, UShort_t *idx);
+  Bool_t FindContributors(Float_t tz, AliStack *stack, UShort_t *idx, Int_t &n);
    if (gAlice) { 
        delete AliRunLoader::Instance();
        delete gAlice;//if everything was OK here it is already NULL
@@ -416,9 +422,10 @@ Int_t GoodPileupVertices(const Char_t *dir) {
          AliGenEventHeader *h=(AliGenEventHeader *)headers->At(v);
          TArrayF vtx(3); h->PrimaryVertex(vtx);
          Float_t t=h->InteractionTime();
+         if (TMath::Abs(t)>tWin) continue;
          UShort_t *idx=new UShort_t[np];
-         Int_t ntrk=FindContributors(t,stack,idx);
-         if (ntrk < nMin) {delete[] idx; continue;}
+         Int_t ntrk=0;
+         if (!FindContributors(t,stack,idx,ntrk)) {delete[] idx; continue;}
          AliESDVertex *vertex=new ((*refs)[nv]) AliESDVertex();
          vertex->SetXv(vtx[0]);
          vertex->SetYv(vtx[1]);
@@ -439,7 +446,7 @@ Int_t GoodPileupVertices(const Char_t *dir) {
    return 0;
 }
 
-Int_t FindContributors(Float_t tz, AliStack *stack, UShort_t *idx) {
+Bool_t FindContributors(Float_t tz, AliStack *stack, UShort_t *idx, Int_t &n) {
   Int_t ntrk=0;
   Int_t np=stack->GetNtrack();
   for (Int_t i=0; i<np; i++) {
@@ -449,11 +456,10 @@ Int_t FindContributors(Float_t tz, AliStack *stack, UShort_t *idx) {
       TParticlePDG *partPDG = part->GetPDG();
       if (!partPDG) continue;
       if (TMath::Abs(partPDG->Charge())<1e-10) continue;
-      if (part->Pt() < pTmin) continue;
       Float_t dt=0.5*(tz-part->T())/(tz+part->T());
       if (TMath::Abs(dt)>1e-5) continue;
-      idx[ntrk]=i;
-      ntrk++;
+      idx[n++]=i;
+      if (part->Pt() > pTmin) ntrk++;
   }
-  return ntrk;
+  return (ntrk<nMin) ? kFALSE : kTRUE;
 }

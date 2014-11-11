@@ -185,14 +185,14 @@ AliEveEventManager::~AliEveEventManager()
     fFinished = true;
     if(fEventListenerThread)
     {
-//        fEventListenerThread->Join();
+        fEventListenerThread->Join();
         fEventListenerThread->Kill();
         delete fEventListenerThread;
         cout<<"listener thread killed and deleted"<<endl;
     }
     if(fStorageManagerWatcherThread)
     {
-//        fStorageManagerWatcherThread->Join();
+        fStorageManagerWatcherThread->Join();
         fStorageManagerWatcherThread->Kill();
         delete fStorageManagerWatcherThread;
         cout<<"storage watcher thread killed and deleted"<<endl;
@@ -218,6 +218,8 @@ AliEveEventManager::~AliEveEventManager()
 void AliEveEventManager::GetNextEvent()
 {
 #ifdef ZMQ
+  cout<<"\n\nGet next event called\n\n"<<endl;
+
     AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
     eventManager->CreateSocket(EVENTS_SERVER_SUB);
     eventManager->CreateSocket(SERVER_COMMUNICATION_REQ);
@@ -246,7 +248,7 @@ void AliEveEventManager::GetNextEvent()
     requestMessage->list = list;
     
     eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
-    vector<serverListStruct> receivedList = eventManager->GetServerListVector(SERVER_COMMUNICATION_REQ);
+    vector<serverListStruct> receivedList = eventManager->GetServerListVector(SERVER_COMMUNICATION_REQ,3000);
     
     cout<<"EVENT DISPLAY -- received list of marked events"<<endl;
     
@@ -288,6 +290,7 @@ void AliEveEventManager::GetNextEvent()
         
         if(tmpEvent)
         {
+            cout<<"tmpEvent:"<<tmpEvent->GetRunNumber()<<endl;
             if(tmpEvent->GetRunNumber()>=0)
             {
                 fMutex->Lock();
@@ -1339,6 +1342,8 @@ void AliEveEventManager::Close()
     // Close the event data-files and delete ESD, ESDfriend, run-loader
     // and raw-reader.
 
+    cout<<"\n\n\nClose() called!!\n\n\n"<<endl;
+    
     static const TEveException kEH("AliEveEventManager::Close ");
 
     if (!fIsOpen)

@@ -79,8 +79,8 @@ Int_t loadlibssim ()
   if ( gSystem->Load("libEMCALsim") < 0 ) return ret; ret--;
 
   if ( gSystem->Load("libTPCbase") < 0 ) return ret; ret--;
-  if ( gSystem->Load("libTPCsim") < 0 ) return ret; ret--;
   if ( gSystem->Load("libTPCrec") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libTPCsim") < 0 ) return ret; ret--;
   if ( gSystem->Load("libITSbase") < 0 ) return ret; ret--;
   if ( gSystem->Load("libITSsim") < 0 ) return ret; ret--;
   if ( gSystem->Load("libITSrec") < 0 ) return ret; ret--; // Needed by libAliHLTITS

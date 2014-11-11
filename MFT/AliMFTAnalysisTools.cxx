@@ -41,16 +41,16 @@ ClassImp(AliMFTAnalysisTools)
 
 Bool_t AliMFTAnalysisTools::ExtrapAODMuonToZ(AliAODTrack *muon, Double_t z, Double_t xy[2]) {
 
-  if (!(muon->Pz()!=0)) return kFALSE;
+  if (!(muon->PzAtDCA()!=0)) return kFALSE;
 
   AliMUONTrackParam *param = new AliMUONTrackParam();
 
   param -> SetNonBendingCoor(muon->XAtDCA());
   param -> SetBendingCoor(muon->YAtDCA());
   param -> SetZ(AliMFTConstants::fZEvalKinem);
-  param -> SetNonBendingSlope(muon->Px()/muon->Pz());
-  param -> SetBendingSlope(muon->Py()/muon->Pz());
-  param -> SetInverseBendingMomentum( muon->Charge() * (1./muon->Pz()) / (TMath::Sqrt(1+TMath::Power(muon->Py()/muon->Pz(),2))) );
+  param -> SetNonBendingSlope(muon->PxAtDCA()/muon->PzAtDCA());
+  param -> SetBendingSlope(muon->PyAtDCA()/muon->PzAtDCA());
+  param -> SetInverseBendingMomentum( muon->Charge() * (1./muon->PzAtDCA()) / (TMath::Sqrt(1+TMath::Power(muon->PyAtDCA()/muon->PzAtDCA(),2))) );
 
   AliMUONTrackExtrap::ExtrapToZ(param, z);
   xy[0] = param->GetNonBendingCoor();
@@ -66,16 +66,16 @@ Bool_t AliMFTAnalysisTools::ExtrapAODMuonToZ(AliAODTrack *muon, Double_t z, Doub
 
 Bool_t AliMFTAnalysisTools::ExtrapAODMuonToZ(AliAODTrack *muon, Double_t z, Double_t xy[2], TLorentzVector &kinem) {
 
-  if (!(muon->Pz()!=0)) return kFALSE;
+  if (!(muon->PzAtDCA()!=0)) return kFALSE;
 
   AliMUONTrackParam *param = new AliMUONTrackParam();
 
   param -> SetNonBendingCoor(muon->XAtDCA());
   param -> SetBendingCoor(muon->YAtDCA());
   param -> SetZ(AliMFTConstants::fZEvalKinem);
-  param -> SetNonBendingSlope(muon->Px()/muon->Pz());
-  param -> SetBendingSlope(muon->Py()/muon->Pz());
-  param -> SetInverseBendingMomentum( muon->Charge() * (1./muon->Pz()) / (TMath::Sqrt(1+TMath::Power(muon->Py()/muon->Pz(),2))) );
+  param -> SetNonBendingSlope(muon->PxAtDCA()/muon->PzAtDCA());
+  param -> SetBendingSlope(muon->PyAtDCA()/muon->PzAtDCA());
+  param -> SetInverseBendingMomentum( muon->Charge() * (1./muon->PzAtDCA()) / (TMath::Sqrt(1+TMath::Power(muon->PyAtDCA()/muon->PzAtDCA(),2))) );
 
   AliMUONTrackExtrap::ExtrapToZ(param, z);
   xy[0] = param->GetNonBendingCoor();
@@ -98,16 +98,16 @@ Bool_t AliMFTAnalysisTools::ExtrapAODMuonToZ(AliAODTrack *muon, Double_t z, Doub
 
   // Extrapolate muon to a given z providing the corresponding (x,y) position and updating kinematics and covariance matrix
 
-  if (!(muon->Pz()!=0)) return kFALSE;
+  if (!(muon->PzAtDCA()!=0)) return kFALSE;
 
   AliMUONTrackParam *param = new AliMUONTrackParam();
 
   param -> SetNonBendingCoor(muon->XAtDCA());
   param -> SetBendingCoor(muon->YAtDCA());
   param -> SetZ(AliMFTConstants::fZEvalKinem);
-  param -> SetNonBendingSlope(muon->Px()/muon->Pz());
-  param -> SetBendingSlope(muon->Py()/muon->Pz());
-  param -> SetInverseBendingMomentum( muon->Charge() * (1./muon->Pz()) / (TMath::Sqrt(1+TMath::Power(muon->Py()/muon->Pz(),2))) );
+  param -> SetNonBendingSlope(muon->PxAtDCA()/muon->PzAtDCA());
+  param -> SetBendingSlope(muon->PyAtDCA()/muon->PzAtDCA());
+  param -> SetInverseBendingMomentum( muon->Charge() * (1./muon->PzAtDCA()) / (TMath::Sqrt(1+TMath::Power(muon->PyAtDCA()/muon->PzAtDCA(),2))) );
 
   param -> SetCovariances(ConvertCovMatrixAOD2MUON(muon));
 
@@ -141,16 +141,16 @@ Bool_t AliMFTAnalysisTools::ExtrapAODMuonToXY(AliAODTrack *muon, Double_t xy[2],
   param -> SetNonBendingCoor(muon->XAtDCA());
   param -> SetBendingCoor(muon->YAtDCA());
   param -> SetZ(AliMFTConstants::fZEvalKinem);
-  param -> SetNonBendingSlope(muon->Px()/muon->Pz());
-  param -> SetBendingSlope(muon->Py()/muon->Pz());
-  param -> SetInverseBendingMomentum( muon->Charge() * (1./muon->Pz()) / (TMath::Sqrt(1+TMath::Power(muon->Py()/muon->Pz(),2))) );
+  param -> SetNonBendingSlope(muon->PxAtDCA()/muon->PzAtDCA());
+  param -> SetBendingSlope(muon->PyAtDCA()/muon->PzAtDCA());
+  param -> SetInverseBendingMomentum( muon->Charge() * (1./muon->PzAtDCA()) / (TMath::Sqrt(1+TMath::Power(muon->PyAtDCA()/muon->PzAtDCA(),2))) );
   
   // here we want to understand in which direction we have to search the minimum...
   
   Double_t step = 1.;  // initial step, in cm
   Double_t startPoint = 0.;
   
-  Double_t r[3]={0}, z[3]={startPoint, startPoint+step, startPoint+2*step};
+  Double_t r[3]={0}, z[3]={startPoint-step, startPoint, startPoint+step};
   
   TVector3 **points = new TVector3*[2];     // points[0] for the muon, points[1] for the direction parallel to the z-axis defined by the given (x,y)
   
@@ -279,6 +279,8 @@ Bool_t AliMFTAnalysisTools::GetAODMuonWeightedOffset(AliAODTrack *muon, Double_t
   covCoordinates(1,0) = cov(2,0);
   covCoordinates(1,1) = cov(2,2);
   
+  if (covCoordinates.Determinant() < covCoordinates.GetTol()) return kFALSE;
+
   if (TDecompLU::InvertLU(covCoordinates,covCoordinates.GetTol(),0)) {
 
     TMatrixD covCoordinatesInverse = covCoordinates;
@@ -356,7 +358,7 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
     printf("W-AliMFTAnalysisTools::CalculatePCA: number of muons not valid\n");
     return kFALSE;
   }
-  
+
   Double_t fXPointOfClosestApproach=0, fYPointOfClosestApproach=0, fZPointOfClosestApproach=0;
 
   AliAODTrack *muon[AliMFTConstants::fNMaxMuonsForPCA]        = {0};
@@ -366,7 +368,7 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
   
   for (Int_t iMu=0; iMu<nMuons; iMu++) {
     muon[iMu] = (AliAODTrack*) muons->At(iMu);
-    if (TMath::Abs(muon[iMu]->Pz())<1.e-6) {
+    if (TMath::Abs(muon[iMu]->PzAtDCA())<1.e-6) {
       for(Int_t i=0;i<iMu;i++) delete param[i];
       return kFALSE;
     }
@@ -374,9 +376,9 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
     param[iMu] -> SetNonBendingCoor(muon[iMu]->XAtDCA());
     param[iMu] -> SetBendingCoor(muon[iMu]->YAtDCA());
     param[iMu] -> SetZ(AliMFTConstants::fZEvalKinem);
-    param[iMu] -> SetNonBendingSlope(muon[iMu]->Px()/muon[iMu]->Pz());
-    param[iMu] -> SetBendingSlope(muon[iMu]->Py()/muon[iMu]->Pz());
-    param[iMu] -> SetInverseBendingMomentum( muon[iMu]->Charge() * (1./muon[iMu]->Pz()) / (TMath::Sqrt(1+TMath::Power(muon[iMu]->Py()/muon[iMu]->Pz(),2))) );
+    param[iMu] -> SetNonBendingSlope(muon[iMu]->PxAtDCA()/muon[iMu]->PzAtDCA());
+    param[iMu] -> SetBendingSlope(muon[iMu]->PyAtDCA()/muon[iMu]->PzAtDCA());
+    param[iMu] -> SetInverseBendingMomentum( muon[iMu]->Charge() * (1./muon[iMu]->PzAtDCA()) / (TMath::Sqrt(1+TMath::Power(muon[iMu]->PyAtDCA()/muon[iMu]->PzAtDCA(),2))) );
   }
   
   // here we want to understand in which direction we have to search the minimum...
@@ -384,15 +386,19 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
   Double_t step = 1.;  // initial step, in cm
   Double_t startPoint = 0.;
   
-  Double_t r[3]={0}, z[3]={startPoint, startPoint+step, startPoint+2*step};
+  Double_t r[3]={0}, z[3]={startPoint-step, startPoint, startPoint+step};
   
   TVector3 **points = new TVector3*[AliMFTConstants::fNMaxMuonsForPCA];
   
   for (Int_t i=0; i<3; i++) {
     for (Int_t iMu=0; iMu<nMuons; iMu++) {
+      // if (TMath::Abs(param[iMu]->GetInverseBendingMomentum())<1.) {
+      // 	printf("W-AliMFTAnalysisTools::CalculatePCA: Evoiding floating point exception in PCA finding\n");
+      // 	return kFALSE;
+      // }
       AliMUONTrackExtrap::ExtrapToZ(param[iMu], z[i]);
       points[iMu] = new TVector3(param[iMu]->GetNonBendingCoor(),param[iMu]->GetBendingCoor(),z[i]);
-  	  	}
+    }
     r[i] = GetDistanceBetweenPoints(points,nMuons);
     for (Int_t iMu=0; iMu<nMuons; iMu++) delete points[iMu]; 
   }
@@ -443,6 +449,8 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
   
   // now we now that the minimum is between z[0] and z[2] and we search for it
   
+  Int_t nSteps = 0;
+
   step *= 0.5;
   while (step>AliMFTConstants::fPrecisionPointOfClosestApproach) {
     z[0] = z[1]-step;
@@ -453,13 +461,22 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
 	points[iMu] = new TVector3(param[iMu]->GetNonBendingCoor(),param[iMu]->GetBendingCoor(),z[i]);
       }      
       r[i] = GetDistanceBetweenPoints(points,nMuons);
-      for (Int_t iMu=0;iMu<nMuons;iMu++)	delete points[iMu];
+      for (Int_t iMu=0;iMu<nMuons;iMu++) delete points[iMu];
     }
+    //    printf("Step #%d : %f  %f  %f\n",nSteps,r[0],r[1],r[2]);
     if      (r[0]<r[1]) z[1] = z[0];
     else if (r[2]<r[1]) z[1] = z[2];
     else step *= 0.5;
+    nSteps++;
   }
-  
+
+  // if (TMath::Abs(z[1]-1.)<0.1) {
+  //   printf("Minimum found in %f in %d steps. Step = %f. p1->X() = %f, p2->X() = %f, p1->Y() = %f, p2->Y() = %f\n",
+  // 	   z[1], nSteps, step, points[0]->X(), points[1]->X(), points[0]->Y(), points[1]->Y());
+  //   printf("m1->X() = %f, m2->X() = %f, m1->Y() = %f, m2->Y() = %f\n",
+  // 	   muon[0]->XAtDCA(),muon[1]->XAtDCA(), muon[0]->YAtDCA(),muon[1]->YAtDCA());
+  // }
+
   // Once z of minimum is found, we evaluate the x and y coordinates by averaging over the contributing tracks
   
   fZPointOfClosestApproach = z[1];
@@ -525,8 +542,8 @@ Double_t AliMFTAnalysisTools::GetDistanceBetweenPoints(TVector3 **points, Int_t 
   
   if (nPoints<2) return 0.;
   if (nPoints<3) return TMath::Sqrt( (points[0]->X()-points[1]->X()) * (points[0]->X()-points[1]->X()) +
-				     (points[0]->Y()-points[1]->Y()) * (points[0]->Y()-points[1]->Y()) +
-				     (points[0]->Z()-points[1]->Z()) * (points[0]->Z()-points[1]->Z()) );
+				     (points[0]->Y()-points[1]->Y()) * (points[0]->Y()-points[1]->Y()) );
+  //				     (points[0]->Z()-points[1]->Z()) * (points[0]->Z()-points[1]->Z()) );
 
   const Int_t nEdgesMax = ((AliMFTConstants::fNMaxMuonsForPCA) * (AliMFTConstants::fNMaxMuonsForPCA - 1)) / 2;
   
@@ -735,7 +752,7 @@ void AliMFTAnalysisTools::GetTrackPrimaryGenerator(AliAODTrack *track, AliAODMCH
 
 //====================================================================================================================================================
 
-Bool_t AliMFTAnalysisTools::IsTrackInjected(AliAODTrack *track, AliAODMCHeader *header, TClonesArray *arrayMC){
+Bool_t AliMFTAnalysisTools::IsTrackInjected(AliAODTrack *track, AliAODMCHeader *header, TClonesArray *arrayMC) {
 
   // method to check if a track comes from the signal event or from the underlying Hijing event
 
@@ -746,7 +763,48 @@ Bool_t AliMFTAnalysisTools::IsTrackInjected(AliAODTrack *track, AliAODMCHeader *
   if (nameGen.IsWhitespace() || nameGen.Contains("ijing")) return kFALSE;
   
   return kTRUE;
+
 }
 
 //====================================================================================================================================================
 
+Bool_t AliMFTAnalysisTools::TranslateMuon(AliAODTrack *muon, Double_t vtxInitial[3], Double_t vtxFinal[3]) {
+
+  if (!(muon->PzAtDCA()!=0)) return kFALSE;
+
+  AliMUONTrackParam *param = new AliMUONTrackParam();
+
+  Double_t deltaVtx[3] = {0};
+  for (Int_t i=0; i<3; i++) deltaVtx[i] = vtxInitial[i] - vtxFinal[i];
+
+  param -> SetNonBendingCoor(muon->XAtDCA());
+  param -> SetBendingCoor(muon->YAtDCA());
+  param -> SetZ(AliMFTConstants::fZEvalKinem);
+  param -> SetNonBendingSlope(muon->PxAtDCA()/muon->PzAtDCA());
+  param -> SetBendingSlope(muon->PyAtDCA()/muon->PzAtDCA());
+  param -> SetInverseBendingMomentum( muon->Charge() * (1./muon->PzAtDCA()) / (TMath::Sqrt(1+TMath::Power(muon->PyAtDCA()/muon->PzAtDCA(),2))) );
+
+  // This will be interpreted as if the track (produced in an event having the primary vertex in vtxInitial) 
+  // were produced in an event having the primary vertex in vtxFinal
+
+  AliMUONTrackExtrap::ExtrapToZ(param, deltaVtx[2]);
+  muon->SetXYAtDCA(param->GetNonBendingCoor() - deltaVtx[0], param->GetBendingCoor() - deltaVtx[1]);
+  muon->SetPxPyPzAtDCA(param->Px(), param->Py(), param->Pz());
+
+  delete param;
+
+  return kTRUE;
+
+}
+
+//====================================================================================================================================================
+
+Bool_t AliMFTAnalysisTools::TranslateMuonToOrigin(AliAODTrack *muon, Double_t vtx[3]) {
+
+  Double_t origin[3] = {0,0,0};
+
+  return TranslateMuon(muon, vtx, origin);
+
+}
+
+//====================================================================================================================================================

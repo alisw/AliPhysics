@@ -47,6 +47,10 @@ set ( CLASS_HDRS
     clusterfinders/AliHLTITSClusterFinderSPD.h
     clusterfinders/AliHLTITSClusterFinderSSD.h
     AliHLTITSVertexerSPDComponent.h
+    trackingSAP/AliITSSAPLayer.h
+    trackingSAP/AliITSSAPAux.h
+    trackingSAP/AliITSSAPTracker.h
+    trackingSAP/AliHLTITSSAPTrackerComponent.h
     )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
@@ -55,7 +59,7 @@ set ( MODULE_HDRS  	${CLASS_HDRS} AliHLTITSSpacePointData.h AliHLTITSClusterData
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE  HLT/BASE HLT/BASE/util HLT/ITS HLT/TPCLib HLT/ITS/tracking HLT/ITS/clusterfinders ITS RAW STEER/STEER STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  HLT/BASE HLT/BASE/util HLT/ITS HLT/TPCLib HLT/ITS/tracking HLT/ITS/trackingSAP HLT/ITS/clusterfinders ITS RAW STEER/STEER STEER/ESD STEER/STEERBase)
 
 set ( ELIBS  "HLTbase AliHLTUtil RAWDatarec RAWDatabase ITSrec ITSbase ESD STEER STEERBase -lEG")
 

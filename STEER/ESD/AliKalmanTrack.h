@@ -78,9 +78,9 @@ public:
   void SetFakeRatio(Float_t ratio) {fFakeRatio=ratio;}
   Float_t  GetFakeRatio()   const {return fFakeRatio;}
   void SetMass(Double_t mass) {fMass=mass;}
+  void SetChi2(Double_t chi2) {fChi2=chi2;} 
 
 protected:
-  void SetChi2(Double_t chi2) {fChi2=chi2;} 
 
   Double32_t fFakeRatio;  // fake ratio
   Double32_t fChi2;       // total chi2 value for this track
