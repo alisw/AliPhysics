@@ -643,6 +643,28 @@ protected:
     return AddSETask(macro, args);
   }
   /** 
+   * Find an already added task 
+   * 
+   * @param name    Name of the task 
+   * @param verbose If true, 
+   * 
+   * @return 
+   */
+  virtual AliAnalysisTask* FindTask(const TString& name, 
+				    Bool_t verbose=true) const
+  {
+    AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+    if (!mgr) {
+      ::Warning("FindTask", "No manager defined");
+      return 0;
+    }
+    AliAnalysisTask* task = mgr->GetTask(name);
+    if (!task && verbose)
+      ::Warning("FindTask", "Task \"%s\" not found in train", 
+		name.Data());
+    return task;
+  }
+  /** 
    * Check if we have an MC handler attached 
    * 
    * @return True if MC handler is found in a valid manager.  False if
