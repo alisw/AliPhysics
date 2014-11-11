@@ -5,7 +5,7 @@
 // Authors: Panos Cristakoglou, Jan Fiete Grosse-Oetringhaus, Christian Klein-Boesing
 
 class TH1F;
-class AliESDEvent;
+//class AliESDEvent;
 class AliVfriendEvent;
 class AliVEvent;
 class AliESDtrackCuts;
@@ -39,7 +39,7 @@ class AliAnalysisTaskPt : public AliAnalysisTask {
   Bool_t            fUseFriends;               // flag to decide whether friends should be use
   TH1F*             fHistNTPCCl;               // histo with the number of TPC clusters
   TH1F*             fHistNESDtracks;           // histo with number of ESD tracks
-  TH1F*             fHistNESDfriendtracks;     // histo with number of ESD tracks
+  TH1F*             fHistNESDfriendtracks;     // histo with number of ESD friend tracks
 
   AliAnalysisTaskPt(const AliAnalysisTaskPt&); // not implemented
   AliAnalysisTaskPt& operator=(const AliAnalysisTaskPt&); // not implemented
