@@ -1691,12 +1691,13 @@ protected:
     fParVal->SetTextSize(save);
   }
   //____________________________________________________________________
-  void DrawTrackDensity(TCollection* parent)
+  void DrawTrackDensity(TCollection* parent, 
+			const char* folderName="mcTrackDensity")
   {
     Info("DrawTrackDensity", "Drawing track density");
 
     // --- MC --------------------------------------------------------
-    TCollection* mc = GetCollection(parent, "mcTrackDensity", false);
+    TCollection* mc = GetCollection(parent, folderName, false);
     if (!mc) return; // Not MC 
 
     fBody->Divide(2,3);
