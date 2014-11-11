@@ -210,8 +210,9 @@ AliESDEvent* AliStorageDatabase::GetEvent(struct eventStruct event)
 	data = (AliESDEvent*)gDirectory->Get(Form("event%d;1",event.eventNumber));
 
 
-	//	tmpFile->GetObject(Form("event%d;1",event.eventNumber),data);
-
+    tmpFile->Close();
+    delete tmpFile;
+    
 	return data;
 }
 

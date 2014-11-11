@@ -147,7 +147,7 @@ bool AliStorageServerThread::MarkEvent(struct eventStruct event)
   if(!eventToMark)
     {
       cout<<"SERVER -- couldn't find such event"<<endl;
-      if(tmpFile){delete tmpFile;}
+        if(tmpFile){tmpFile->Close();delete tmpFile;}
       return false;
     }
   cout<<"SERVER -- Marking event:"<<eventToMark->GetEventNumberInFile()<<endl;
@@ -157,7 +157,7 @@ bool AliStorageServerThread::MarkEvent(struct eventStruct event)
   if(!permFile)
     {
       cout<<"SERVER -- Couldn't open perm file"<<endl;
-      if(tmpFile){delete tmpFile;}
+        if(tmpFile){tmpFile->Close();delete tmpFile;}
       if(eventToMark){delete eventToMark;}
       return false;
     }
