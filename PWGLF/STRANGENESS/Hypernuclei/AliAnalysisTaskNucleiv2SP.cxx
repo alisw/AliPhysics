@@ -401,8 +401,8 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
   hQyVzAvsCentrality = new TH2F("hQyVzAvsCentrality","hQyVzAvsCentrality",100,-5,5,105,-0.5,105.5);
   hQxVzCvsCentrality = new TH2F("hQxVzCvsCentrality","hQxVzCvsCentrality",100,-5,5,105,-0.5,105.5);
   hQyVzCvsCentrality = new TH2F("hQyVzCvsCentrality","hQyVzCvsCentrality",100,-5,5,105,-0.5,105.5);
-  hQxVzMvsCentrality = new TH2F("hQxVzCvsCentrality","hQxVzCvsCentrality",100,-5,5,105,-0.5,105.5);
-  hQyVzMvsCentrality = new TH2F("hQyVzCvsCentrality","hQyVzCvsCentrality",100,-5,5,105,-0.5,105.5);
+  hQxVzMvsCentrality = new TH2F("hQxVzMvsCentrality","hQxVzMvsCentrality",100,-5,5,105,-0.5,105.5);
+  hQyVzMvsCentrality = new TH2F("hQyVzMvsCentrality","hQyVzMvsCentrality",100,-5,5,105,-0.5,105.5);
 
   fListHist->Add(hQxVzAvsCentrality);
   fListHist->Add(hQyVzAvsCentrality);
@@ -766,7 +766,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
       tpull            = pullTPC;
       tphi             = tPhi;
 
-      ftree->Fill();
+      //      ftree->Fill();
     } 
   }  //track
   
