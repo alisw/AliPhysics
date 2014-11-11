@@ -2,7 +2,7 @@ const char * recoStorage="local:///cvmfs/alice.gsi.de/alice/data/2010/OCDB";
 Int_t run=0;
 
 
-void ModifyRecoParam(TObjArray* recoArray, Bool_t useIonTail, Double_t crossTalkCorrection){
+void ModifyRecoParam(TObjArray* recoArray, Bool_t useIonTail, Double_t crossTalkCorrection, Int_t nrowsBellow=2){
   //
   // Modify reco param - and store it in the OCDB in local directory
   //
@@ -11,6 +11,7 @@ void ModifyRecoParam(TObjArray* recoArray, Bool_t useIonTail, Double_t crossTalk
     AliTPCRecoParam* p = ( AliTPCRecoParam*)recoArray->At(i);
     p->SetUseIonTailCorrection(useIonTail);
     p->SetCrosstalkCorrection(crossTalkCorrection);
+    p->SetNeighborRowsDedx(nrowsBellow);
   }
   TString localStorage = "local://"+gSystem->GetFromPipe("pwd")+"/OCDBrec";
   AliCDBStorage*pocdbStorage = AliCDBManager::Instance()->GetStorage(localStorage.Data());  
@@ -21,7 +22,7 @@ void ModifyRecoParam(TObjArray* recoArray, Bool_t useIonTail, Double_t crossTalk
 }
 
 
-void rec(Bool_t useIonTail, Double_t crossTalkCorrection) {
+void rec(Bool_t useIonTail, Double_t crossTalkCorrection, Int_t nrowsBelow=2) {
   //
   // run reconstruction
   // Parameters:
@@ -50,7 +51,7 @@ void rec(Bool_t useIonTail, Double_t crossTalkCorrection) {
   AliCDBEntry* e = man->Get("TPC/Calib/RecoParam/",run); // get default
   // modify content
   TObjArray* recoArray = (TObjArray*)e->GetObject();
-  ModifyRecoParam(recoArray, useIonTail, crossTalkCorrection);
+  ModifyRecoParam(recoArray, useIonTail, crossTalkCorrection, nrowsBelow);
   //
   //
   // Run reconstruction
