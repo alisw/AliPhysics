@@ -21,11 +21,16 @@ public:
 
   AliEMCALConfiguration *CreateConfiguration(const char *name);
   void AddParam(const char *configName, const char *key, AliEMCALConfigurationValue *value);
+  const char *GetConfigurationString() const;
   const char *GetConfigurationString(const char *configname) const;
-  AliEMCALConfiguration *FindConfiguration(const char *configName);
+  AliEMCALConfiguration *FindConfiguration(const char *configName) const;
 
 protected:
   TList *fConfiguration;
+
+private:
+  AliEMCALConfigHandler(const AliEMCALConfigHandler & ref);
+  AliEMCALConfigHandler &operator=(const AliEMCALConfigHandler &ref);
 
   ClassDef(AliEMCALConfigHandler, 1);
 };
