@@ -48,12 +48,13 @@ int main(int argc, char **argv)
       return 0;
     }
 
-  TApplication app("AliOnlineReconstruction", &argc, argv);
+  //TApplication app("AliOnlineReconstruction", &argc, argv);
 
   std::cout<<"Starting Online Reconstruction for run:"<<atoi(argv[1])<<std::endl;
   AliOnlineReconstruction *onlineReconstruction = new AliOnlineReconstruction(atoi(argv[1]));
-  app.Run(kTRUE);
+  //app.Run(kTRUE);
+  std::cout<<"after run"<<std::endl;
   if(onlineReconstruction){delete onlineReconstruction;}
-  
+  std::cout<<"deleted"<<std::endl;
   return 0;
 }

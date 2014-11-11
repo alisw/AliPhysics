@@ -2,11 +2,7 @@
 #define __AliDIMListenerThread__
 
 #include "AliDimIntNotifier.h"
-/*
-#ifdef ALI_DATE
-#include <dic.hxx>
-#endif
-*/
+
 class AliDimIntNotifier;
 
 class AliDIMListenerThread
@@ -21,8 +17,11 @@ public:
 private:
     void InitDIMListeners();
     
-    AliDimIntNotifier *fDimSORListener[5];
-    AliDimIntNotifier *fDimEORListener[5];
+    AliDimIntNotifier *fDimSORListener;//[5]; //now listening just in PHYSICS_1
+    AliDimIntNotifier *fDimEORListener;//[5];
+
+    std::string fOnlineReconstructionHostname;
+    std::string fOnlineReconstructionUsername;
 };
 
-#endif /* defined(__AliDIMListenerThread__) */
+#endif
