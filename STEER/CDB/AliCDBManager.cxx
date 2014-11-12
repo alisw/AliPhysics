@@ -1060,7 +1060,7 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& queryId, Bool_t forceCaching) {
     return NULL;
   }
 
-  Int_t version = 0, subVersion = 0;
+  Int_t version = -1, subVersion = -1;
   AliCDBStorage *aStorage=0;
   if(aPar) {
     aStorage=GetStorage(aPar);
