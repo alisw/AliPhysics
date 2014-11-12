@@ -22,7 +22,7 @@ ccc new
       common/vars0/ mf127, mf1525, m0, mmes0, mmes1, mmes2, mp, 
      &              mwidth, pi, rt2, ebeam, sum, sum1, weightm,
      &              bjac, bp 
-      common /ivars/ ncut, ll, icut, nev, num
+      common /ivars/ ncut, ll, icut, nev, num, ntotal
 ccc new
       common/cuts/etaelmax,etaelmin,ptelmin,ptphmin,ecut,rmax,rmin,mcut
       common/flags/ pflag, fsi, ppbar, output, cuts, unw
@@ -572,14 +572,14 @@ ccccc
       double precision m0, mmes0, mmes1, mmes2, mp, mwidth, pi, rt2,
      &ebeam, sh, th, uh, sum, sum1, weightm
 
-      integer id(20), ncut, ll, icut, nev, num, iin
+      integer id(20), ncut, ll, icut, nev, num, iin, ntotal
 
       common/vars/s,rts,mmes,yx, iin
       common/hvars/sh,th,uh
       common/vars0/ mf127, mf1525, m0, mmes0, mmes1, mmes2, mp, 
      &              mwidth, pi, rt2, ebeam, sum, sum1, weightm,
      &              bjac, bp 
-      common /ivars/ ncut, ll, icut, nev, num
+      common /ivars/ ncut, ll, icut, nev, num, ntotal
 ccccc
       character prefix*50,fsp*10,order*10,pflag*10,fsi*10,formf*10
      &,ppbar*10,output*10,mregge*10,cuts*10,unw*10
@@ -603,7 +603,7 @@ cccccc local variables ...
       double precision pboo(4), pcm(4), plb(4)
       double precision svec(4)
       complex*16 zmat
-      integer h, i, j, k, ntotal, isuccess
+      integer h, i, j, k, isuccess
       weight=0d0
       isuccess = 0
       call r2455(ran0)
