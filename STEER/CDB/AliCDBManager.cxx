@@ -896,7 +896,8 @@ void AliCDBManager::SetSpecificStorage(const char* calibType, const AliCDBParam*
 // AliCDBManager::instance()->SetSpecificStorage("TPC/*","local://DB_TPC");
 // AliCDBManager::instance()->SetSpecificStorage("*/Align/*","local://DB_TPCAlign");
 // calibType must be a valid CDB path! (3 level folder structure)
-// Specific version/subversion is set in the uniqueid of the TObjString used as key
+// Specific version/subversion is set in the uniqueid of the AliCDBParam value stored in the
+// specific storages map
 
   if(!fDefaultStorage && !fRaw) {
     AliError("Please activate a default storage first!");
@@ -920,7 +921,7 @@ void AliCDBManager::SetSpecificStorage(const char* calibType, const AliCDBParam*
   AliCDBStorage *aStorage = GetStorage(param);
   if(!aStorage) return;
 
-  // Set the unique id of the TObjString used as key to store specific version/subversion
+  // Set the unique id of the AliCDBParam stored in the map to store specific version/subversion
   UInt_t uId = ((subVersion+1)<<16) + (version+1);
   AliCDBParam *specificParam = param->CloneParam();
   specificParam->SetUniqueID(uId);
