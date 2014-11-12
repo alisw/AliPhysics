@@ -73,6 +73,9 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fHistClustE(0),
   fEMCClsEtaPhi(0),
   fHistoNCls(0),
+  fHistoNClsE1(0),
+  fHistoNClsE2(0),
+  fHistoNClsE3(0),
   fHistoNCells(0),
   fHistoCalCell(0),
   fNegTrkIDPt(0),
@@ -139,6 +142,9 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fHistClustE(0),
   fEMCClsEtaPhi(0),
   fHistoNCls(0),
+  fHistoNClsE1(0),
+  fHistoNClsE2(0),
+  fHistoNClsE3(0),
   fHistoNCells(0),
   fHistoCalCell(0),
   fNegTrkIDPt(0),
@@ -240,7 +246,7 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   fTrigMulti = new TH2F("fTrigMulti","Multiplicity distribution for different triggers; Trigger type; multiplicity",11,-1,10,2000,0,2000);
   fOutputList->Add(fTrigMulti);
 
-  fHistClustE = new TH1F("fHistClustE", "EMCAL cluster energy distribution; Cluster E;counts", 500, 0.0, 50.0);
+  fHistClustE = new TH1F("fHistClustE", "EMCAL cluster energy distribution; Cluster E;counts", 5000, 0.0, 50.0);
   fOutputList->Add(fHistClustE);
 
   fEMCClsEtaPhi = new TH2F("fEMCClsEtaPhi","EMCAL cluster #eta and #phi distribution;#eta;#phi",100,-0.9,0.9,200,0,6.3);
@@ -248,12 +254,21 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
    
   fHistoNCls = new TH1F("fHistoNCls","No of EMCAL cluster in the event;N^{EMC}_{cls};counts",150,0,150);
   fOutputList->Add(fHistoNCls);
-    
+ 
+  fHistoNClsE1 = new TH1F("fHistoNClsE1","No of EMCAL cluster in the event (E>0.1 GeV);N^{EMC}_{cls};counts",150,0,150);
+  fOutputList->Add(fHistoNClsE1);
+ 
+  fHistoNClsE2 = new TH1F("fHistoNClsE2","No of EMCAL cluster in the event (E>0.2 GeV);N^{EMC}_{cls};counts",150,0,150);
+  fOutputList->Add(fHistoNClsE2);
+ 
+  fHistoNClsE3 = new TH1F("fHistoNClsE3","No of EMCAL cluster in the event (E>0.5 GeV);N^{EMC}_{cls};counts",150,0,150);
+  fOutputList->Add(fHistoNClsE3);
+ 
   //fHistoNCells = new TH1F("fHistoNCells","No of EMCAL cells in a cluster;N^{EMC}_{cells};counts",30,0,30);
   fHistoNCells = new TH2F("fHistoNCells","No of EMCAL cells in a cluster;Cluster E;N^{EMC}_{cells}",300,0,30,30,0,30);
   fOutputList->Add(fHistoNCells);
 
-  fHistoCalCell = new TH2F("fHistoCalCell","EMCAL cells in a cluster;cell ID;E (GeV)",20000,-0.5,19999.5,100,0,10);
+  fHistoCalCell = new TH2F("fHistoCalCell","EMCAL cells in a cluster;cell ID;E (GeV)",15000,-0.5,14999.5,600,0,30);
   fOutputList->Add(fHistoCalCell);
 
   fNegTrkIDPt = new TH1F("fNegTrkIDPt", "p_{T} distribution of tracks with negative track id;p_{T} (GeV/c);counts", 500, 0.0, 50.0); 
@@ -488,6 +503,10 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   if(fUseTender) Nclust = fCaloClusters_tender->GetEntries();
   fHistoNCls->Fill(Nclust);
     
+  int NclustE1 = 0; //# of clust E>0.1
+  int NclustE2 = 0; //# of clust E>0.2
+  int NclustE3 = 0; //# of clust E>0.5
+
   for(Int_t icl=0; icl<Nclust; icl++)
   {
     AliVCluster *clust = 0x0;
@@ -507,8 +526,16 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       fEMCClsEtaPhi->Fill(emceta,emcphi);
       fHistoNCells->Fill(clustE,clust->GetNCells());
       //fHistoNCells->Fill(clust->GetNCells());
+
+      if(clustE>0.1)NclustE1++;
+      if(clustE>0.2)NclustE2++;
+      if(clustE>0.5)NclustE3++;
     }
   }
+
+  fHistoNClsE1->Fill(NclustE1);
+  fHistoNClsE2->Fill(NclustE2);
+  fHistoNClsE3->Fill(NclustE3);
 
   // cell information
   AliVCaloCells *fCaloCells = fVevent->GetEMCALCells();
