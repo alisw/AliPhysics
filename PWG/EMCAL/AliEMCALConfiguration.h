@@ -24,7 +24,8 @@ public:
   void Build(TList *entries);
   const char *CreateJSONString() const;
 
-  TObject *GetValue(const char *key);
+  AliEMCALConfigurationValue *GetValue(const char *key);
+  void Print(Option_t *) const;
 
 protected:
   TList *fParams;

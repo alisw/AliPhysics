@@ -4,6 +4,7 @@
  *  Created on: 06.11.2014
  *      Author: markusfasel
  */
+
 #include <TList.h>
 #include <TString.h>
 
@@ -47,12 +48,10 @@ void AliEMCALJSONSyntaxTreeNode::SetOwner(bool owner) {
 }
 
 AliEMCALJSONReader::AliEMCALJSONReader() {
-  // TODO Auto-generated constructor stub
 
 }
 
 AliEMCALJSONReader::~AliEMCALJSONReader() {
-  // TODO Auto-generated destructor stub
 }
 
 TList* AliEMCALJSONReader::Decode(const char* jsonstring) const {
@@ -68,8 +67,8 @@ TList* AliEMCALJSONReader::Decode(const char* jsonstring) const {
   jsontstring.ReplaceAll(" ","");
 
   // First strip away the left and right brackets
-  int first(jsontstring.First('{')+1), last(jsontstring.Last('}')-1);
-  jsontstring = jsontstring(first, last-first);
+  int first(jsontstring.First('{')+1), last(jsontstring.Last('}'));
+  jsontstring = jsontstring(first, last-first+1);
   bool hasNext = jsontstring.Length() > 0;
   while(hasNext){ // Create the abstract syntax tree
     if(jsontstring[0] == '}'){
@@ -94,6 +93,9 @@ TList* AliEMCALJSONReader::Decode(const char* jsonstring) const {
       } else{
         // Handle simple value
         separator = jsontstring.First(',');
+    	if(separator == kNPOS){
+          separator = jsontstring.First('}');
+	}
         TString value = jsontstring(0, separator -1);
         jsontstring = jsontstring(separator+1, jsontstring.Length() - (separator + 1));
         value.ReplaceAll("\"", "");
