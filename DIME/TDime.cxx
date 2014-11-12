@@ -45,7 +45,11 @@ ClassImp(TDime)
 
 TDime::TDime(): 
     TGenerator("Dime","Dime"),
-    fEfrm(5500.)
+  fEfrm(5500.),
+  fProcess("rho       "),
+  fEcut(0),
+  fRmin(-1.8),
+  fRmax(1.8)
 {
 // Default constructor 
 }
@@ -53,7 +57,11 @@ TDime::TDime():
 //______________________________________________________________________________
 TDime::TDime(Double_t efrm) :
     TGenerator("Dime","Dime"),
-    fEfrm(efrm)
+    fEfrm(efrm),
+    fProcess("rho      "),
+    fEcut(0.),
+    fRmin(-1.8),
+    fRmax(1.8)
 {
 // TDime constructor: 
 // Note that there may be only one functional TDime object
@@ -69,11 +77,12 @@ TDime::~TDime()
   void  TDime::Initialize()
 {
     VARS.rts = fEfrm;  
-    CUTS.rmax = 1.8; 
-    CUTS.rmin = -1.8;
-    CUTS.ecut = 2.;
+    CUTS.rmax = fRmax; 
+    CUTS.rmin = fRmin;
+    CUTS.ecut = fEcut;
     Int_t len = 10;
-    strncpy(FLAGS.pflag,     "rho       ", len);
+    //    strncpy(FLAGS.pflag,     "rho       ", len);
+    strncpy(FLAGS.pflag,     fProcess.Data(), len);
     strncpy(FLAGS.fsi,       "true      ", len);
     strncpy(FLAGS.ppbar,     "false     ", len);
     strncpy(FLAGS.cuts,      "true      ", len);
