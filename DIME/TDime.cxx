@@ -34,7 +34,7 @@
 
 #ifndef WIN32
 extern "C" void type_of_call dimeinit();
-extern "C" void type_of_call dimegenerate();
+extern "C" void type_of_call dimegenerate(int& success);
 #else
 #endif
 
@@ -94,7 +94,9 @@ TDime::~TDime()
 
 void  TDime::GenerateEvent()
 {
-   dimegenerate();
+  Int_t ok = 0;
+  while(!ok)
+    dimegenerate(ok);
    //for (Int_t i = 0; i < HEPEUP.NUP; i++) {
    //printf("%5d %5d %5d %5d %5d %13.3f %13.3f\n", i, 
    //	 HEPEUP.IDUP[i], HEPEUP.ISTUP[i], HEPEUP.MOTHUP[i][0],

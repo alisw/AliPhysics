@@ -163,8 +163,8 @@ ccAM      iin=1           ! Model for soft survival factor, as described in arXi
           write(6,*) "*************************************************"
 cccccccc
 
-ccAM      ntotal=1000000            ! no. of runs for weighted events
-ccAM      nev=100                  ! no. of unweighted events generated to event record
+          ntotal=1000000             ! no. of runs for weighted events
+          nev=100                    ! no. of unweighted events generated to event record
 
 ccccccccc
 
@@ -512,31 +512,24 @@ ccc   HEPEVT
       else
          lmax=1
       endif
-
-c      do ll=1,lmax
-      ll = 2
-      if(ll.eq.2)then
-c         ntotal=nev*10
-         ntotal=1000000000
-      endif
-
+c
+c
+c     first  generate weighted events first
+      ll = 1 
       ip=ntotal+1
-
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c                                                       c
-c     Start of event loop                               c
-c                                                       c
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-
-      if(ll.eq.1)then
-         write(6,*)'Generating weighted events...'
-      else
-        write(6,*)'Generating unweighted events...'
-      endif
+      write(6,*)'Generating weighted events...'
+      do i=1, ntotal
+         isuc = 0
+         call dimegenerate(isuc)
+      enddo
+c     prepare for unweighted generation      
+      ll = 2
+      write(6,*)'Generating unweighted events...'
+c
       return
       end
       
-      subroutine dimegenerate
+      subroutine dimegenerate(isuccess)
       implicit none
       
 ccccc hepevt output
@@ -610,8 +603,9 @@ cccccc local variables ...
       double precision pboo(4), pcm(4), plb(4)
       double precision svec(4)
       complex*16 zmat
-      integer h, i, j, k, ntotal
+      integer h, i, j, k, ntotal, isuccess
       weight=0d0
+      isuccess = 0
       call r2455(ran0)
       call r2455(ran1)
       call r2455(ran2)
@@ -870,7 +864,6 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c      place cuts
 
          if(cuts.eq.'true')then
-
             call cut(icut)
             
             if(icut.eq.0)then
@@ -1050,7 +1043,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccc
          call r2455(ranhist)
          
          if(ranhist.lt.weight/weightm)then
-            
+            isuccess = 1
             xwgtup=1d0
 
             num=num+1
@@ -1089,9 +1082,7 @@ c            call binit(sumt/nev)
       if(num.gt.nev-1)then  ! exit loop once required no. of unweighted events generated
 
          ntotal=i
-!         goto 888
-c         call terminate(ntotal)
-
+         return
       endif
       endif
 
