@@ -55,12 +55,24 @@ void AliEMCALConfiguration::Build(TList *entries){
   }
 }
 
+void AliEMCALConfiguration::Print(Option_t * /*value*/) const {
+  std::cout << "Configuration " << GetName() << ":" << std::endl;
+  std::cout << "=================================================" << std::endl;
+  TIter parIter(fParams);
+  AliEMCALConfigurationObject *conf(NULL);
+  while((conf = dynamic_cast<AliEMCALConfigurationObject *>(parIter()))){
+    std::cout << "Key " << conf->GetName() << ", value " << conf->GetValue()->ToString() << std::endl;
+  }
+  std::cout << "=================================================" << std::endl;
+}
 void AliEMCALConfiguration::AddConfiguration(AliEMCALConfiguration* conf) {
   fParams->Add(conf);
 }
 
-TObject* AliEMCALConfiguration::GetValue(const char *key) {
-  return fParams->FindObject(key);
+AliEMCALConfigurationValue* AliEMCALConfiguration::GetValue(const char *key) {
+  AliEMCALConfigurationObject *val = dynamic_cast<AliEMCALConfigurationObject *>(fParams->FindObject(key));
+  if(!val) return NULL;
+  return val->GetValue();
 }
 
 const char* AliEMCALConfiguration::CreateJSONString() const {
@@ -83,14 +95,10 @@ const char* AliEMCALConfiguration::CreateJSONString() const {
     if(isFirst) isFirst = false;
   }
   jsonbuilder << "}";
-  return jsonbuilder.str().c_str();
-/*
-  std::cout << "My json string " << jsonbuilder.str().c_str() << std::endl;
+
   char * result = new char[jsonbuilder.str().length()];
   strcpy(result, jsonbuilder.str().c_str());  
   return result;
-*/
-
 }
 
 std::ostream &operator<<(std::ostream & os, const AliEMCALConfiguration &conf){
