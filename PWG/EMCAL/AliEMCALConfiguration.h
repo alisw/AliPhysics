@@ -8,6 +8,7 @@
 #ifndef PWG_EMCAL_ALIEMCALCONFIGURATION_H_
 #define PWG_EMCAL_ALIEMCALCONFIGURATION_H_
 
+#include <ostream>
 #include <TNamed.h>
 
 class TList;
@@ -34,5 +35,7 @@ private:
 
   ClassDef(AliEMCALConfiguration, 1);
 };
+
+std::ostream &operator<<(std::ostream &, const AliEMCALConfiguration &); 
 
 #endif /* PWG_EMCAL_ALIEMCALCONFIGURATION_H_ */

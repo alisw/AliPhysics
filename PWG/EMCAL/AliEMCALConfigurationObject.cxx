@@ -9,6 +9,13 @@
 
 #include <AliEMCALConfigurationObject.h>
 
+ClassImp(AliEMCALConfigurationValue)
+ClassImp(AliEMCALConfigurationValueInt)
+ClassImp(AliEMCALConfigurationValueFloat)
+ClassImp(AliEMCALConfigurationValueDouble)
+ClassImp(AliEMCALConfigurationValueBool)
+ClassImp(AliEMCALConfigurationValueString)
+ClassImp(AliEMCALConfigurationObject)
 
 const char* AliEMCALConfigurationValueInt::ToString() const { 
   std::stringstream stringbuilder;
@@ -51,3 +58,14 @@ const char* AliEMCALConfigurationObject::ToString() const {
   jsonbuilder << "\"" << GetName() << "\":\"" << fValue->ToString() << "\"";
   return jsonbuilder.str().c_str();
 }
+
+std::ostream &operator<<(std::ostream &os, const AliEMCALConfigurationValue &val){
+  os << val.ToString();
+  return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const AliEMCALConfigurationObject &obj){
+  os << obj.ToString();
+  return os;
+}
+
