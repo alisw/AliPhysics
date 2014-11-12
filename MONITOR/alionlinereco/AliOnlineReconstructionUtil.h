@@ -29,6 +29,7 @@
 #define DEFAULT_LOGBOOK_USER "logbookdqm"
 #define DEFAULT_LOGBOOK_PASS "SivaGJqi"
 #define DEFAULT_DATA_SOURCE "local"
+#define DEFAULT_DATA_ONLINE_SOURCE "mem@*:"
 
 #include <TSystem.h>
 #include <TString.h>
