@@ -102,10 +102,14 @@ fhNtrArr(),
 fhNJetPerEv(),
 fhdeltaRJetTracks(),
 fhsJet(),
+fhImpPar(),
 fhNDPerEvNoJet(),
 fhptDPerEvNoJet(),
 fhNJetPerEvNoD(),
 fhPtJetPerEvNoD(),
+fhVtxX(),
+fhVtxY(),
+fhVtxZ(),
 fhsDstandalone(),
 fhInvMassptD(),
 fhDiffSideBand(),
@@ -133,6 +137,7 @@ fhDeltaRD(),
 fhDeltaRptDptj(),
 fhDeltaRptDptjB(),
 fhsDphiz()
+
 {
    //
    // Default ctor
@@ -189,10 +194,14 @@ fhNtrArr(),
 fhNJetPerEv(),
 fhdeltaRJetTracks(),
 fhsJet(),
+fhImpPar(),
 fhNDPerEvNoJet(),
 fhptDPerEvNoJet(),
 fhNJetPerEvNoD(),
 fhPtJetPerEvNoD(),
+fhVtxX(),
+fhVtxY(),
+fhVtxZ(),
 fhsDstandalone(),
 fhInvMassptD(),
 fhDiffSideBand(),
@@ -429,7 +438,14 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
    if(!iseventselected) return kFALSE;
    
    fhstat->Fill(1);
-
+   
+   const AliVVertex *vertex = aodEvent->GetPrimaryVertex();
+   Double_t vtx[3];
+   vertex->GetXYZ(vtx);
+   fhVtxX->Fill(vtx[0]);
+   fhVtxY->Fill(vtx[1]);
+   fhVtxZ->Fill(vtx[2]);
+   //Printf(">>>>>>>>.>>>Primary vertex %.3f,%.3f,%.3f",vtx[0], vtx[1],vtx[2]);
    //retrieve charm candidates selected
    Int_t candidates = 0;
    Int_t njets=fJetCont->GetNJets();
@@ -531,13 +547,30 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
    fhNtrArr->Fill(ntrarr);
    
    for(Int_t i=0;i<ntrarr;i++){
-      AliVTrack *jtrack=static_cast<AliVTrack*>(fTrackCont->GetParticle(i));
+      AliAODTrack *jtrack=static_cast<AliAODTrack*>(fTrackCont->GetParticle(i));
       //reusing histograms
       if(!jtrack) continue;
       fhPtJetTrks->Fill(jtrack->Pt());
       fhPhiJetTrks->Fill(jtrack->Phi());
       fhEtaJetTrks->Fill(jtrack->Eta());
       fhEjetTrks->Fill(jtrack->E());
+      Double_t vDCAglobalxy;
+      //Double_t vDCAglobalz;
+      if(jtrack->IsGlobalConstrained()){
+      // retrieve impact parameter
+      Double_t pos[3];
+
+      jtrack->GetXYZ(pos);
+      
+      vDCAglobalxy  = pos[0] - vtx[0]; //should be impact parameter in transverse plane
+      //vDCAglobalz  = pos[1] - vtx[1]; //should be impact parameter in z direction
+      }
+      else{
+      vDCAglobalxy=jtrack->DCA(); 
+      //vDCAglobalz=jtrack->ZAtDCA();
+      }
+      fhImpPar->Fill(vDCAglobalxy,jtrack->Pt());
+      //Printf("Track position  %.3f,%.3f,%.3f",pos[0],pos[1],pos[2]);
    }
    
    
@@ -883,7 +916,7 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    fhstat->SetNdivisions(1);
    fOutput->Add(fhstat);
    
-   const Int_t nbinsmass=200;
+   const Int_t nbinsmass=300;
    const Int_t nbinsptjet=500;
    const Int_t nbinsptD=100;
    const Int_t nbinsz=100;
@@ -937,6 +970,19 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    fhNJetPerEv=new TH1F("hNJetPerEv","Number of jets used per event; number of jets/ev",10,-0.5,9.5);
    fhNJetPerEv->Sumw2();
    
+   fhImpPar = new TH2F("hImpPar", "Impact parameter of daughter tracks; Getd0Prong();#it{p}^{daugh}_{T} (GeV/c)",200, -0.1,0.1,nbinsptD, ptDlims[0], ptDlims[1]); //same range of pt of the D, but pt daughter used 
+   //NB at the moment fillet with jet track imp par!!!
+   fhVtxX = new TH1F("hVtxX", "Vertex X;vtx_x",100,-0.5,0.5);
+   fhVtxY = new TH1F("hVtxY", "Vertex Y;vtx_y",100,-0.5,0.5);
+   fhVtxZ = new TH1F("hVtxZ", "Vertex Z;vtx_z",100,-10,10);
+   /*
+   if(fUseMCInfo){
+   //understand how to do this. At the moment fhImpPar is filled with the impact parameter of jet tracks even if it is written differently in the fhImpPar definition
+      fhImpParB = new TH2F("hImpParB", "Impact parameter of daughter tracks (Background); Getd0Prong();#it{p}^{daugh}_{T} (GeV/c)",200, -0.1,0.1,nbinsptD, ptDlims[0], ptDlims[1]); //same range of pt of the D, but pt daughter used
+      fOutput->Add(fhImpParB);
+      
+   }
+   */
    
    fOutput->Add(fhEjetTrks);
    fOutput->Add(fhPhiJetTrks);
@@ -949,7 +995,10 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    fOutput->Add(fhdeltaRJetTracks);
    fOutput->Add(fhNtrArr);
    fOutput->Add(fhNJetPerEv);
-   
+   fOutput->Add(fhImpPar);
+   fOutput->Add(fhVtxX);
+   fOutput->Add(fhVtxY); 
+   fOutput->Add(fhVtxZ);
    if(fJetOnlyMode && fSwitchOnSparses){
       //thnsparse for jets
       const Int_t nAxis=6;   
@@ -1282,7 +1331,7 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsD0JetCorr(AliAODRecoDe
    }
    
    
-   Printf("Candidate in FillHistogramsD0JetCorr IsA %s", (candidate->IsA())->GetName());   
+   //Printf("Candidate in FillHistogramsD0JetCorr IsA %s", (candidate->IsA())->GetName());   
    Int_t isselected=fCuts->IsSelected(candidate,AliRDHFCuts::kAll,aodEvent);
    if(isselected==1 || isselected==3) {
       
@@ -1690,6 +1739,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::AreDaughtersInJet(AliEmcalJet *the
    Int_t nchtrk=thejet->GetNumberOfTracks();
    for(Int_t itk=0;itk<nchtrk;itk++){
       AliVTrack* tkjet=((AliPicoTrack*)thejet->TrackAt(itk,fTrackArr))->GetTrack();
+      if(!tkjet) continue;
       Int_t idtkjet=tkjet->GetID();
       if(fillH) fhIDjetTracks->Fill(idtkjet);
       for(Int_t id=0;id<ndaugh;id++){
