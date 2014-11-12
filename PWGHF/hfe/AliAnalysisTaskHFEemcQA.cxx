@@ -251,19 +251,19 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
 
   fEMCClsEtaPhi = new TH2F("fEMCClsEtaPhi","EMCAL cluster #eta and #phi distribution;#eta;#phi",100,-0.9,0.9,200,0,6.3);
   fOutputList->Add(fEMCClsEtaPhi);
-   
+
   fHistoNCls = new TH1F("fHistoNCls","No of EMCAL cluster in the event;N^{EMC}_{cls};counts",150,0,150);
   fOutputList->Add(fHistoNCls);
- 
+
   fHistoNClsE1 = new TH1F("fHistoNClsE1","No of EMCAL cluster in the event (E>0.1 GeV);N^{EMC}_{cls};counts",150,0,150);
   fOutputList->Add(fHistoNClsE1);
- 
+
   fHistoNClsE2 = new TH1F("fHistoNClsE2","No of EMCAL cluster in the event (E>0.2 GeV);N^{EMC}_{cls};counts",150,0,150);
   fOutputList->Add(fHistoNClsE2);
- 
+
   fHistoNClsE3 = new TH1F("fHistoNClsE3","No of EMCAL cluster in the event (E>0.5 GeV);N^{EMC}_{cls};counts",150,0,150);
   fOutputList->Add(fHistoNClsE3);
- 
+
   //fHistoNCells = new TH1F("fHistoNCells","No of EMCAL cells in a cluster;N^{EMC}_{cells};counts",30,0,30);
   fHistoNCells = new TH2F("fHistoNCells","No of EMCAL cells in a cluster;Cluster E;N^{EMC}_{cells}",300,0,30,30,0,30);
   fOutputList->Add(fHistoNCells);
@@ -315,7 +315,7 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
 
   fEMCTPCNpts = new TH2F("fEMCTPCNpts","TPC Npoints used for dE/dx for tracks matched to EMCAL;p (GeV/c);N points",200,0,20,200,0.,200.);
   fOutputList->Add(fEMCTPCNpts);
-    
+
   fClsEAftMatch = new TH1F("fClsEAftMatch", "EMCAL cluster energy distribution after track matching; Cluster E;counts", 500, 0.0, 50.0);
   fOutputList->Add(fClsEAftMatch);
 
@@ -393,16 +393,16 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     //   printf("fESD available\n");
     //return;
   }
-    
+
   //////////////
   //if Tender //
   //////////////
   if(fUseTender){
-        //new branches with calibrated tracks and clusters
-        if(IsAODanalysis()) fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
-        if(!IsAODanalysis()) fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("ESDFilterTracks"));
-        
-        fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+    //new branches with calibrated tracks and clusters
+    if(IsAODanalysis()) fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
+    if(!IsAODanalysis()) fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("ESDFilterTracks"));
+
+    fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
   }
 
   ////////////////////
@@ -466,7 +466,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     AliAODHeader *header = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
     if(!header) AliFatal("Not a standard AOD");
     Double_t multiplicity = header->GetRefMultiplicity();
-      
+
     fTrigMulti->Fill(-0.5, multiplicity);
     if(evSelMask & AliVEvent::kAny) fTrigMulti->Fill(0.5, multiplicity);
     if(evSelMask & AliVEvent::kMB) fTrigMulti->Fill(1.5, multiplicity);
@@ -501,8 +501,8 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   Int_t Nclust = -999;
   if(!fUseTender) Nclust = fVevent->GetNumberOfCaloClusters();
   if(fUseTender) Nclust = fCaloClusters_tender->GetEntries();
-  fHistoNCls->Fill(Nclust);
-    
+
+  int NclustAll= 0;
   int NclustE1 = 0; //# of clust E>0.1
   int NclustE2 = 0; //# of clust E>0.2
   int NclustE3 = 0; //# of clust E>0.5
@@ -513,7 +513,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     if(!fUseTender) clust = fVevent->GetCaloCluster(icl);
     if(fUseTender) clust = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(icl));
     if(!clust)  printf("ERROR: Could not receive cluster matched calibrated from track %d\n", icl);
-      
+
     if(clust && clust->IsEMCAL())
     {
       Double_t clustE = clust->E();
@@ -527,12 +527,14 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       fHistoNCells->Fill(clustE,clust->GetNCells());
       //fHistoNCells->Fill(clust->GetNCells());
 
+      NclustAll++;  
       if(clustE>0.1)NclustE1++;
       if(clustE>0.2)NclustE2++;
       if(clustE>0.5)NclustE3++;
     }
   }
 
+  fHistoNCls->Fill(NclustAll);
   fHistoNClsE1->Fill(NclustE1);
   fHistoNClsE2->Fill(NclustE2);
   fHistoNClsE3->Fill(NclustE3);
@@ -547,12 +549,12 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
   nSACell = fCaloCells->GetNumberOfCells();
-    for(iSACell = 0; iSACell < nSACell; iSACell++ ){ 
-        Bool_t haveCell = fCaloCells->GetCell(iSACell, cellAddr, cellAmp, cellTimeT , mclabel, efrac);
-        //virtual Bool_t   GetCell(Short_t pos, Short_t &cellNumber, Double_t &amplitude, Double_t &time, Int_t &mclabel,    Double_t  &efrac)      
-        if(haveCell)fHistoCalCell->Fill(cellAddr,cellAmp);
-     
-}
+  for(iSACell = 0; iSACell < nSACell; iSACell++ ){ 
+    Bool_t haveCell = fCaloCells->GetCell(iSACell, cellAddr, cellAmp, cellTimeT , mclabel, efrac);
+    //virtual Bool_t   GetCell(Short_t pos, Short_t &cellNumber, Double_t &amplitude, Double_t &time, Int_t &mclabel,    Double_t  &efrac)      
+    if(haveCell)fHistoCalCell->Fill(cellAddr,cellAmp);
+
+  }
 
   /////////////////////////////////
   //Look for kink mother for AOD//
@@ -585,7 +587,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     AliVParticle* Vtrack = 0x0;
     if(!fUseTender) Vtrack  = fVevent->GetTrack(iTracks);
     if(fUseTender) Vtrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(iTracks));
-      
+
     if (!Vtrack) {
       printf("ERROR: Could not receive track %d\n", iTracks);
       continue;
@@ -644,15 +646,15 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     AliVCluster *clustMatch=0x0;
     if(!fUseTender) clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex);
     if(fUseTender) clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
-      
+
     if(clustMatch && clustMatch->IsEMCAL())
     {
       /////////////////////////////////////////////
       //Properties of tracks matched to the EMCAL//
       /////////////////////////////////////////////
       fEMCTrkMatch->Fill(clustMatch->GetTrackDx(),clustMatch->GetTrackDz());
-        if(TMath::Abs(clustMatch->GetTrackDx())>0.05 || TMath::Abs(clustMatch->GetTrackDz())>0.05) continue;
-  
+      if(TMath::Abs(clustMatch->GetTrackDx())>0.05 || TMath::Abs(clustMatch->GetTrackDz())>0.05) continue;
+
       fEMCTrkPt->Fill(track->Pt());
       fEMCTrketa->Fill(track->Eta());
       fEMCTrkphi->Fill(track->Phi());
@@ -662,7 +664,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
 
       Double_t clustMatchE = clustMatch->E();
       fClsEAftMatch->Fill(clustMatchE);
-        
+
       //EMCAL EID info
       Double_t eop = -1.0;
       Double_t m02 = -99999;
