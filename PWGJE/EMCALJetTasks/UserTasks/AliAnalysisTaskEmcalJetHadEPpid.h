@@ -124,7 +124,7 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   // event trigger/mixed selection - setters
   virtual void            SetTriggerEventType(UInt_t te)       { fTriggerEventType = te; }
   virtual void            SetMixedEventType(UInt_t me)         { fMixingEventType = me; }
-  virtual void            SetCentBinSize(Bool_t centbins)      { fCentBinSize = centbins; }
+  virtual void            SetCentBinSize(Int_t centbins)       { fCentBinSize = centbins; }
 
   // set efficiency correction
   void                    SetDoEffCorr(Int_t effcorr)          { fDoEffCorr = effcorr; }
@@ -175,7 +175,7 @@ protected:
   Int_t			 fMixingTracks;
   Int_t          fNMIXtracks;
   Int_t          fNMIXevents;
-  UInt_t         fCentBinSize; // centrality bin size of mixed event pools
+  Int_t          fCentBinSize; // centrality bin size of mixed event pools
 
   // event selection types
   UInt_t         fTriggerEventType;
