@@ -1,6 +1,6 @@
 {
   // open file
-  TFile* f = new TFile("GlauberMC_PbPb_ntuple.root");
+  TFile* f = new TFile("glau_pbpb_ntuple.root");
   TTree* t = (TTree*)gDirectory->Get("nt_Pb_Pb"); // get the tree
 
   gStyle->SetCanvasColor(0);
