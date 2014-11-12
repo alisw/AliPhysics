@@ -238,7 +238,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   }
   
   for (Int_t ipmt=0; ipmt<12; ipmt++){
-    if(time[ipmt] !=0  
+    if(time[ipmt] !=0  && time[ipmt] != -99999
        &&  adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold )
       {
 	if(time[ipmt]<besttimeC) besttimeC=time[ipmt]; //timeC
@@ -248,7 +248,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   }
   for ( Int_t ipmt=12; ipmt<24; ipmt++)
     {
-      if(time[ipmt] != 0 
+      if(time[ipmt] != 0 && time[ipmt] != -99999
 	 && adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold)
 	{
 	  if(time[ipmt]<besttimeA) besttimeA=time[ipmt]; 
