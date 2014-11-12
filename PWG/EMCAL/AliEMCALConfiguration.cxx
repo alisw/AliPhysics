@@ -4,7 +4,9 @@
  *  Created on: 06.11.2014
  *      Author: markusfasel
  */
+#include <cstring>
 #include <sstream>
+#include <iostream>
 #include <TList.h>
 
 #include "AliEMCALJSONReader.h"
@@ -82,4 +84,16 @@ const char* AliEMCALConfiguration::CreateJSONString() const {
   }
   jsonbuilder << "}";
   return jsonbuilder.str().c_str();
+/*
+  std::cout << "My json string " << jsonbuilder.str().c_str() << std::endl;
+  char * result = new char[jsonbuilder.str().length()];
+  strcpy(result, jsonbuilder.str().c_str());  
+  return result;
+*/
+
+}
+
+std::ostream &operator<<(std::ostream & os, const AliEMCALConfiguration &conf){
+  os << conf.CreateJSONString();
+  return os;
 }
