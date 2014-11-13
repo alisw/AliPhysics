@@ -1192,6 +1192,15 @@ AliFMDEnergyFitter::RingHistos::FitSlices(TList*           dir,
 
 
 //____________________________________________________________________
+void
+AliFMDEnergyFitter::RingHistos::Scale(TH1* dist) const
+{
+  // Scale to the bin-width
+  dist->Scale(1., "width");
+}  
+
+
+//____________________________________________________________________
 AliFMDEnergyFitter::RingHistos::ELossFit_t*
 AliFMDEnergyFitter::RingHistos::FitHist(TH1*      dist,
 					Double_t  lowCut, 
@@ -1239,10 +1248,8 @@ AliFMDEnergyFitter::RingHistos::FitHist(TH1*      dist,
     status = 1; // `empty'
     return 0;
   }
-
-  // Scale to the bin-width
-  dist->Scale(1., "width");
-    
+  Scale(dist);
+  
   // Narrow search window for the peak 
   Int_t    cutBin  = TMath::Max(dist->GetXaxis()->FindBin(lowCut),3);
   Int_t    maxBin  = TMath::Min(dist->GetXaxis()->FindBin(10),
