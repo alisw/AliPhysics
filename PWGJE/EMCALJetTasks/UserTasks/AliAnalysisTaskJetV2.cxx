@@ -648,7 +648,13 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
     if(fUserSuppliedV3)         fOutputList->Add(fUserSuppliedV3);
     if(fUserSuppliedR2)         fOutputList->Add(fUserSuppliedR2);
     if(fUserSuppliedR3)         fOutputList->Add(fUserSuppliedR3);
-    if(fEventPlaneWeights)      fOutputList->Add(fEventPlaneWeights);
+    if(fEventPlaneWeights) {
+        // add the original event plane weight histogram
+        fOutputList->Add((TH1F*)(fEventPlaneWeights->Clone("EP_distribution_original")));
+        // calculate the weights that will actually be used
+        fEventPlaneWeights = GetEventPlaneWeights(fEventPlaneWeights);
+        fOutputList->Add(fEventPlaneWeights);
+    }
     // increase readability of output list
     fOutputList->Sort();
     // cdf and pdf of chisquare distribution
@@ -844,11 +850,8 @@ Bool_t AliAnalysisTaskJetV2::Run()
     // and only at this point can the leading jet after rho subtraction be evaluated
     if(fFillQAHistograms) fLeadingJetAfterSub = GetLeadingJet(fLocalRho);
     // fill a number of histograms. event qa needs to be filled first as it also determines the runnumber for the track qa 
-    if(fFillQAHistograms)       {
-        if(fEventPlaneWeights) FillWeightedQAHistograms(InputEvent());
-        else FillQAHistograms(InputEvent());
-    }
-    if(fFillHistograms)         FillHistogramsAfterSubtraction(psi2, vzero, vzeroComb, tpc);
+    if(fFillQAHistograms) FillWeightedQAHistograms(InputEvent());
+    if(fFillHistograms)   FillHistogramsAfterSubtraction(psi2, vzero, vzeroComb, tpc);
     // send the output to the connected output container
     PostData(1, fOutputList);
     switch (fRunModeType) {
@@ -1850,168 +1853,13 @@ void AliAnalysisTaskJetV2::FillHistogramsAfterSubtraction(Double_t psi2, Double_
 {
     // fill histograms 
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    if(fEventPlaneWeights) {
-        FillWeightedTrackHistograms();
-        if(fAnalysisType == AliAnalysisTaskJetV2::kFull) FillWeightedClusterHistograms();
-        FillWeightedJetHistograms(psi2); 
-        if(fFillQAHistograms) FillWeightedEventPlaneHistograms(vzero, vzeroComb, tpc);
-        FillWeightedRhoHistograms();
-        FillWeightedDeltaPtHistograms(psi2);
-    } else {
-        FillTrackHistograms();
-        if(fAnalysisType == AliAnalysisTaskJetV2::kFull) FillClusterHistograms();
-        FillJetHistograms(psi2); 
-        if(fFillQAHistograms) FillEventPlaneHistograms(vzero, vzeroComb, tpc);
-        FillRhoHistograms();
-        FillDeltaPtHistograms(psi2);
-    }
-}
-//_____________________________________________________________________________
-void AliAnalysisTaskJetV2::FillTrackHistograms() const
-{
-    // fill track histograms
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    Int_t iTracks(fTracks->GetEntriesFast()), iAcceptedTracks(0);
-    for(Int_t i(0); i < iTracks; i++) {
-        AliVTrack* track = static_cast<AliVTrack*>(fTracks->At(i));
-        if(!PassesCuts(track)) continue;
-        iAcceptedTracks++;
-        fHistPicoTrackPt[fInCentralitySelection]->Fill(track->Pt());
-        if(fFillQAHistograms) FillQAHistograms(track);
-    }
-    fHistPicoTrackMult[fInCentralitySelection]->Fill(iAcceptedTracks);
-}
-//_____________________________________________________________________________
-void AliAnalysisTaskJetV2::FillClusterHistograms() const
-{
-    // fill cluster histograms
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    if(!fClusterCont) return;
-    Int_t iClusters(fClusterCont->GetNClusters());
-    TLorentzVector clusterLorentzVector;
-    for(Int_t i(0); i < iClusters; i++) {
-        AliVCluster* cluster = fClusterCont->GetCluster(i);
-        if (!PassesCuts(cluster)) continue;
-        cluster->GetMomentum(clusterLorentzVector, const_cast<Double_t*>(fVertex));
-        fHistClusterPt[fInCentralitySelection]->Fill(clusterLorentzVector.Pt());
-        fHistClusterEtaPhi[fInCentralitySelection]->Fill(clusterLorentzVector.Eta(), clusterLorentzVector.Phi());
-        fHistClusterEtaPhiWeighted[fInCentralitySelection]->Fill(clusterLorentzVector.Eta(), clusterLorentzVector.Phi(), clusterLorentzVector.Pt());
-    }
-    return;
-}
-//_____________________________________________________________________________
-void AliAnalysisTaskJetV2::FillEventPlaneHistograms(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc) const
-{
-    // fill event plane histograms, only called in qa mode
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    fHistPsiControl->Fill(0.5, vzero[0][0]);    // vzero a psi2
-    fHistPsiControl->Fill(1.5, vzero[1][0]);    // vzero c psi2
-    fHistPsiControl->Fill(2.5, tpc[0]);         // tpc psi 2
-    fHistPsiControl->Fill(5.5, vzero[0][1]);    // vzero a psi3
-    fHistPsiControl->Fill(6.5, vzero[1][1]);    // vzero b psi3
-    fHistPsiControl->Fill(7.5, tpc[1]);         // tpc psi 3
-    fHistPsiVZEROA->Fill(vzero[0][0]);
-    fHistPsiVZEROC->Fill(vzero[1][0]);
-    fHistPsiVZERO->Fill(vzeroComb[0]);
-    fHistPsiTPC->Fill(tpc[0]);
-    fHistPsiSpread->Fill(0.5, TMath::Abs(vzero[0][0]-vzero[1][0]));
-    fHistPsiSpread->Fill(1.5, TMath::Abs(vzero[0][0]-tpc[0]));
-    fHistPsiSpread->Fill(2.5, TMath::Abs(vzero[1][0]-tpc[0]));
-    // event plane vs centrality QA histo's to check recentering
-    Double_t TRK(InputEvent()->GetCentrality()->GetCentralityPercentile("TRK"));
-    Double_t V0M(InputEvent()->GetCentrality()->GetCentralityPercentile("V0M"));
-    fHistPsiVZEROAV0M->Fill(V0M, vzero[0][0]);
-    fHistPsiVZEROCV0M->Fill(V0M, vzero[1][0]);
-    fHistPsiVZEROVV0M->Fill(V0M, vzeroComb[0]);
-    fHistPsiTPCV0M->Fill(V0M, tpc[0]);
-    fHistPsiVZEROATRK->Fill(TRK, vzero[0][0]);
-    fHistPsiVZEROCTRK->Fill(TRK, vzero[1][0]);
-    fHistPsiVZEROTRK->Fill(TRK, vzeroComb[0]);
-    fHistPsiTPCTRK->Fill(TRK, tpc[0]);
-    // leading jet vs event plane bias
-    if(fLeadingJet) {
-        Double_t rho(fLocalRho->GetLocalVal(fLeadingJet->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()));
-        Double_t pt(fLeadingJet->Pt() - fLeadingJet->Area()*rho);
-        fHistPsiTPCLeadingJet[fInCentralitySelection]->Fill(pt, tpc[0], fLeadingJet->Phi());
-        fHistPsiVZEROALeadingJet[fInCentralitySelection]->Fill(pt, vzero[0][0], fLeadingJet->Phi());
-        fHistPsiVZEROCLeadingJet[fInCentralitySelection]->Fill(pt, vzero[1][0], fLeadingJet->Phi());
-        fHistPsiVZEROCombLeadingJet[fInCentralitySelection]->Fill(pt, vzeroComb[0], fLeadingJet->Phi());
-    }
-    // correlation of event planes
-    fHistPsi2Correlation[fInCentralitySelection]->Fill(tpc[0], vzero[0][0], vzero[1][0]);
-}
-//_____________________________________________________________________________
-void AliAnalysisTaskJetV2::FillRhoHistograms()
-{
-    // fill rho histograms
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    fHistRhoPackage[fInCentralitySelection]->Fill(fLocalRho->GetVal());    // save the rho estimate from the emcal jet package
-    // get multiplicity FIXME inefficient
-    Int_t iJets(fJets->GetEntriesFast());
-    Double_t rho(fLocalRho->GetLocalVal(TMath::Pi(), TMath::Pi(), fLocalRho->GetVal()));
-    fHistRho[fInCentralitySelection]->Fill(rho);
-    fHistRhoVsMult->Fill(fTracks->GetEntries(), rho);
-    fHistRhoVsCent->Fill(fCent, rho);
-    for(Int_t i(0); i < iJets; i++) {
-        AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(i));
-        if(!PassesCuts(jet)) continue;
-        fHistRhoAVsMult->Fill(fTracks->GetEntries(), rho * jet->Area());
-        fHistRhoAVsCent->Fill(fCent, rho * jet->Area());
-    }
-}
-//_____________________________________________________________________________
-void AliAnalysisTaskJetV2::FillDeltaPtHistograms(Double_t psi2) const
-{
-    // fill delta pt histograms
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    Int_t i(0);
-    const Float_t areaRC = GetJetRadius()*GetJetRadius()*TMath::Pi();
-    // we're retrieved the leading jet, now get a random cone
-    for(i = 0; i < fMaxCones; i++) {
-       Float_t pt(0), eta(0), phi(0);
-       // get a random cone without constraints on leading jet position
-       CalculateRandomCone(pt, eta, phi, fTracksCont, fClusterCont, 0x0);
-       if(pt > 0) {
-           if(fFillQAHistograms) fHistRCPhiEta[fInCentralitySelection]->Fill(phi, eta);
-           fHistRhoVsRCPt[fInCentralitySelection]->Fill(pt, fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC);
-           fHistRCPt[fInCentralitySelection]->Fill(pt);
-           fHistDeltaPtDeltaPhi2[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt - areaRC*fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()));
-           fHistDeltaPtDeltaPhi2Rho0[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt - areaRC*fLocalRho->GetVal());
-
-       }
-       // get a random cone excluding leading jet area
-       CalculateRandomCone(pt, eta, phi, fTracksCont, fClusterCont, fLeadingJet);
-       if(pt > 0) {
-           if(fFillQAHistograms) fHistRCPhiEtaExLJ[fInCentralitySelection]->Fill(phi, eta);
-           fHistRhoVsRCPtExLJ[fInCentralitySelection]->Fill(pt, fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC);
-           fHistRCPtExLJ[fInCentralitySelection]->Fill(pt);
-           fHistDeltaPtDeltaPhi2ExLJ[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt - areaRC*fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()));
-           fHistDeltaPtDeltaPhi2ExLJRho0[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt - areaRC*fLocalRho->GetVal());
-       }
-    } 
-}
-//_____________________________________________________________________________
-void AliAnalysisTaskJetV2::FillJetHistograms(Double_t psi2)
-{
-    // fill jet histograms
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    Int_t iJets(fJets->GetEntriesFast());
-    for(Int_t i(0); i < iJets; i++) {
-        AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(i));
-        if(PassesCuts(jet)) {
-            Double_t pt(jet->Pt()), area(jet->Area()), eta(jet->Eta()), phi(jet->Phi());
-            Double_t rho(fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()));
-            fHistJetPtRaw[fInCentralitySelection]->Fill(pt);
-            fHistJetPt[fInCentralitySelection]->Fill(pt-area*rho);
-            if(fFillQAHistograms) fHistJetEtaPhi[fInCentralitySelection]->Fill(eta, phi);
-            fHistJetPtArea[fInCentralitySelection]->Fill(pt-area*rho, area);
-            fHistJetPtEta[fInCentralitySelection]->Fill(pt-area*rho, eta);
-            fHistJetPsi2Pt[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt-area*rho);
-            fHistJetPsi2PtRho0[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt-area*fLocalRho->GetVal());
-            fHistJetPtConstituents[fInCentralitySelection]->Fill(pt-area*rho, jet->GetNumberOfConstituents());
-            fHistJetEtaRho[fInCentralitySelection]->Fill(eta, pt/area);
-        } 
-    }
+    // fill histograms. weight is 1 when no procedure is defined
+    FillWeightedTrackHistograms();
+    if(fAnalysisType == AliAnalysisTaskJetV2::kFull) FillWeightedClusterHistograms();
+    FillWeightedJetHistograms(psi2); 
+    if(fFillQAHistograms) FillWeightedEventPlaneHistograms(vzero, vzeroComb, tpc);
+    FillWeightedRhoHistograms();
+    FillWeightedDeltaPtHistograms(psi2);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV2::FillQAHistograms(AliVTrack* vtrack) const
@@ -2585,6 +2433,7 @@ AliEmcalJet* AliAnalysisTaskJetV2::GetLeadingJet(AliLocalRhoParameter* localRho)
     // return pointer to the highest pt jet (before background subtraction) within acceptance
     // only rudimentary cuts are applied on this level, hence the implementation outside of
     // the framework
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     Int_t iJets(fJets->GetEntriesFast());
     Double_t pt(0);
     AliEmcalJet* leadingJet(0x0);
@@ -2614,5 +2463,18 @@ AliEmcalJet* AliAnalysisTaskJetV2::GetLeadingJet(AliLocalRhoParameter* localRho)
 
     }
     return 0x0;
+}
+//_____________________________________________________________________________
+TH1F* AliAnalysisTaskJetV2::GetEventPlaneWeights(TH1F* hist)
+{
+    // get event weights distribution from event plane distribution
+    TH1F* temp((TH1F*)hist->Clone("EP_weights"));
+    Double_t integral(hist->Integral()/hist->GetNbinsX());
+    // loop over bins and extract the weights 
+    for(Int_t i(0); i < hist->GetNbinsX(); i++) {
+        temp->SetBinError(1+i, 0.);     // uncertainty is irrelevant
+        temp->SetBinContent(1+i, integral/hist->GetBinContent(1+i));
+   }
+   return temp;
 }
 //_____________________________________________________________________________
