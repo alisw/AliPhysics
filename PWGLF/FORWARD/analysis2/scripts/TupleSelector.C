@@ -252,18 +252,23 @@ struct Spectra : public TObject
 	continue;
       }
       Spectra* oth  = static_cast<Spectra*>(obj);
-      if (!oth->fName.EqualTo(fName)) {
-	Warning("Merge", "Will not merge %s with %s", 
-		oth->fName.Data(), fName.Data());
-	continue;
-      }
-	
-      fPrimary  ->Add(oth->fPrimary);
-      fSecondary->Add(oth->fSecondary);
-      cnt++;
+      if (Add(oth)) cnt++;
     }
     Info("Merge", "%s merged %lld entries", fName.Data(), cnt);
     return cnt;
+  }
+  Bool_t Add(const Spectra* oth) 
+  {
+    if (!oth->fName.EqualTo(fName)) {
+      Warning("Merge", "Will not merge %s with %s", 
+	      oth->fName.Data(), fName.Data());
+      return false;
+    }
+    fPrimary  ->Add(oth->fPrimary);
+    fSecondary->Add(oth->fSecondary);
+    Info("Added", "%s merged with %s", fName.Data(), 
+	 oth->fName.Data());
+    return true;
   }
   /** 
    * List this object 
@@ -529,7 +534,18 @@ struct Ring : public TObject
 	continue;
       }
       
-      if (fSpectra) fSpectra->Merge(oth->fSpectra);
+      if (fSpectra) {
+	// fSpectra->Merge(oth->fSpectra);
+	TIter thsNext(fSpectra);
+	TIter othNext(oth->fSpectra);
+	Spectra* thsSpec = 0;
+	Spectra* othSpec = 0;
+	
+	while ((thsSpec = static_cast<Spectra*>(thsNext())) && 
+	       (othSpec = static_cast<Spectra*>(othNext()))) 
+	  thsSpec->Add(othSpec);
+
+      }
       cnt++;
     }
     Info("Merge", "FMD%d%c merged %lld entries", fD, fR, cnt);
