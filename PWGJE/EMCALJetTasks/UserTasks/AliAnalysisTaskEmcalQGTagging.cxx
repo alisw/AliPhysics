@@ -192,11 +192,13 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
 	    Printf("jet2 not exists, returning");
 	    continue;
 	  }
-	  
+	  Printf("there is a jet that has a matched partner");
 	  Double_t fraction = jetCont->GetFractionSharedPt(jet1);
 	  if(fraction<fMinFractionShared) continue;
-	  partonsInfo = (AliStackPartonInfo*) jetContTrue->GetStackPartonInfo();     
-	  if(!partonsInfo) return 0;
+          cout<<"the shared fraction is: "<<fraction<<" "<<jet1->Pt()<<" "<<jet2->Pt()<<endl;
+          InputEvent()->Print();
+ 	  partonsInfo = (AliStackPartonInfo*) jetContTrue->GetStackPartonInfo();   
+          if(!partonsInfo) return 0;
 	}
 	else {
 	  partonsInfo = (AliStackPartonInfo*) jetCont->GetStackPartonInfo(); 
