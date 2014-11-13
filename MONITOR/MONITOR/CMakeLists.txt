@@ -14,59 +14,38 @@
 # **************************************************************************
 
 # Module
-set(MODULE AliHLTITS)
+set(MODULE MONITOR)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/HLT/ITS
-                    ${AliRoot_SOURCE_DIR}/HLT/ITS/clusterfinders
-                    ${AliRoot_SOURCE_DIR}/HLT/ITS/tracking
-                    ${AliRoot_SOURCE_DIR}/HLT/ITS/trackingSAP
+include_directories(${AliRoot_SOURCE_DIR}/MONITOR/${MODULE}
+                    ${AliRoot_SOURCE_DIR}/MONITOR/alistoragemanager
                    )
 
-# Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/HLT/BASE
-                    ${AliRoot_SOURCE_DIR}/HLT/BASE/util
-                    ${AliRoot_SOURCE_DIR}/ITS/ITSbase
-                    ${AliRoot_SOURCE_DIR}/ITS/ITSrec
-                    ${AliRoot_SOURCE_DIR}/ITS/ITSsim
-                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
-                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
-                    ${AliRoot_SOURCE_DIR}/STEER/CDB
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEER
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+# Additional include folders in alphabetical order
+include_directories(${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order
 set(SRCS
-    AliHLTITSAgent.cxx
-    AliHLTITSclusterer.cxx
-    AliHLTITSClusterFinderComponent.cxx
-    AliHLTITSClusterHistoComponent.cxx
-    AliHLTITSCompressRawDataSDDComponent.cxx
-    AliHLTITSDigitPublisherComponent.cxx
-    AliHLTITSQAComponent.cxx
-    AliHLTITSSSDQARecPointsComponent.cxx
-#    AliHLTITStracker.cxx
-#    AliHLTITStrack.cxx
-    AliHLTITSVertexerSPDComponent.cxx
-    AliHLTITSVertexerZ.cxx
-    clusterfinders/AliHLTITSClusterFinderSPD.cxx
-    clusterfinders/AliHLTITSClusterFinderSSD.cxx
-    tracking/AliHLTITSDetector.cxx
-    tracking/AliHLTITSLayer.cxx
-    tracking/AliHLTITSTrackerComponent.cxx
-    tracking/AliHLTITSTrack.cxx
-    tracking/AliITStrackerHLT.cxx
+    AliChildProcTerminator.cxx
+    AliDimIntNotifier.cxx
+    AliOnlineRecoTrigger.cxx
+    AliQAHistNavigator.cxx
+    AliQAHistViewer.cxx
+    AliTestChildProc.cxx
    )
+
+if(DIMDIR AND ODIR)
+    set(SRCS ${SRCS}
+        SORNotifier.cxx
+       )
+    include_directories(${DIMDIR}/dim)
+    link_directories(${DIMDIR}/${ODIR})
+    add_definitions(-DALI_DIM)
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
-set(HDRS ${HDRS}
-    AliHLTITSSpacePointData.h
-    AliHLTITSClusterDataFormat.h
-)
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
@@ -75,12 +54,15 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec HLTbase AliHLTUtil ITSbase ITSrec ITSsim)
+set(LIBDEPS STEERBase Core Gpad Graf Gui Hist RIO Thread)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} STEERBase STEER ESD CDB RAWDatabase RAWDatarec HLTbase AliHLTUtil ITSbase ITSrec ITSsim)
+target_link_libraries(${MODULE} STEERBase Core Gpad Graf Gui Hist RIO Thread)
+if(DIMDIR AND ODIR)
+    target_link_libraries(${MODULE} dim)
+endif()
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")

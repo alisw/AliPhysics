@@ -69,6 +69,9 @@ find_package(DATE)
 # FastJet
 find_package(FASTJET)
 
+# ZEROMQ
+find_package(ZeroMQ)
+
 # AliRoot version extracted from Git repository
 # Sets 4 git variables
 #  - GIT_REFSPEC - complete name of the current reference
@@ -131,6 +134,7 @@ add_subdirectory(HLT)
 add_subdirectory(STARLIGHT)
 add_subdirectory(EVE)
 add_subdirectory(AD)
+add_subdirectory(MONITOR)
 
 # Enable SHUTTLE compilation
 # Check if DIMDIR and ODIR are set

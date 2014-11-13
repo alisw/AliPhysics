@@ -22,6 +22,7 @@ include_directories(${AliRoot_SOURCE_DIR}/TPC/${MODULE})
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/RAW/dateStream
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
@@ -71,9 +72,8 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase CDB ESD STEER ANALYSIS STAT RAWDatarec RAWDatabase TPCbase TPCrec Minuit)
+set(LIBDEPS STEERBase CDB ESD STEER ANALYSIS ANALYSISalice STAT RAWDatarec RAWDatabase TPCbase TPCrec Minuit)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
-
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)

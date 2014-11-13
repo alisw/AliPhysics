@@ -23,7 +23,6 @@ include_directories(${AliRoot_SOURCE_DIR}/STEER/${MODULE})
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
-                    ${AliRoot_SOURCE_DIR}/RAW/
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
@@ -165,7 +164,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSIS RAWDatabase RAWDatarec CDB ESD Core EG GenVector GeomPainter Geom Gpad Graf Hist MathCore Matrix Minuit Net Physics Proof RIO Tree VMC)
+set(LIBDEPS STEERBase ANALYSIS RAWDatabase RAWDatarec CDB ESD Core EG GenVector GeomPainter Geom Gpad Graf Hist MathCore Matrix Minuit Net Physics Proof RIO Tree VMC)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 set(LIBHLTSIM_VERSION "1")
@@ -176,7 +175,7 @@ add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
-target_link_libraries(${MODULE} ANALYSIS RAWDatabase RAWDatarec CDB ESD HLTbase Core EG GenVector GeomPainter Geom Gpad Graf Hist MathCore Matrix Minuit Net Physics Proof RIO Tree VMC)
+target_link_libraries(${MODULE} STEERBase RAWDatabase RAWDatarec CDB ESD ANALYSIS HLTbase Core EG GenVector GeomPainter Geom Gpad Graf Hist MathCore Matrix Minuit Net Physics Proof RIO Tree VMC)
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)

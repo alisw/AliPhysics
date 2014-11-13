@@ -24,13 +24,17 @@ include_directories(${AliRoot_SOURCE_DIR}/HLT/global
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliRoot_SOURCE_DIR}/ITS/ITSrec
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
                     ${AliRoot_SOURCE_DIR}/HLT/BASE/util
                     ${AliRoot_SOURCE_DIR}/HLT/ITS
+                    ${AliRoot_SOURCE_DIR}/HLT/TPCLib
+                    ${AliRoot_SOURCE_DIR}/ITS/ITSbase
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/TPC/TPCrec
                    )
 
 # Sources in alphabetical order
@@ -72,12 +76,12 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB ANALYSISalice HLTbase AliHLTUtil AliHLTITS)
+set(LIBDEPS STEERBase STEER ESD CDB ANALYSISalice HLTbase AliHLTUtil AliHLTITS AliHLTTPC TPCrec ITSbase ITSrec)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} STEERBase STEER ESD CDB ANALYSISalice HLTbase AliHLTUtil AliHLTITS)
+target_link_libraries(${MODULE} STEERBase STEER ESD CDB ANALYSISalice AliHLTTPC HLTbase AliHLTUtil AliHLTITS TPCrec ITSbase ITSrec)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")

@@ -13,24 +13,39 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-# MONITOR libraries
-add_subdirectory(MONITOR)
+set(MODULE deroot)
 
-# MONITOR executables
-add_subdirectory(alitestproc)
-add_subdirectory(deroot)
-add_subdirectory(monitorCheck)
-add_subdirectory(monitorGDC)
+# Module include folder
+include_directories(${AliRoot_SOURCE_DIR}/MONITOR/${MODULE}
+                   )
+
+# Additional include folders in alphabetical order
+include_directories(${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                   )
+
+# Sources in alphabetical order
+set(SRCS
+    deroot.cxx
+    root2date.cxx
+   )
+
+# Headers from sources
+string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+if(DIMDIR AND ODIR)
+    link_directories(${DIMDIR}/${ODIR})
+endif()
+
+# Add an executable to the project using the specified source files
+add_executable(${MODULE} ${SRCS})
+target_link_libraries(${MODULE} STEERBase RAWDatabase)
+
 
 if(ZEROMQ_FOUND)
-    add_subdirectory(MONITORzmq)
-#  alistoragemanager/CMakebinalistorage.pkg
-#  alistoragemanager/CMakebinalistorageadmin.pkg
-#  alistoragemanager/CMakebinalifakedisplay.pkg
-#  alistoragemanager/CMakebinalistorageminimalexample.pkg
-#  alistoragemanager/CMakebinalistoragegetpoints.pkg
-#  alieventserver/CMakebinalieventserver.pkg
-endif(ZEROMQ_FOUND)
+    target_link_libraries(${MODULE} MONITORzmq)
+    add_definitions(-DZMQ)
+ENDIF(ZEROMQ_FOUND)
 
-
-message(STATUS "MONITOR enabled")
+# Installation
+install(TARGETS ${MODULE} RUNTIME DESTINATION bin)

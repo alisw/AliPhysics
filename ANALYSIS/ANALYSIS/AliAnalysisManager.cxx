@@ -55,7 +55,7 @@
 #include "AliSysInfo.h"
 #include "AliAnalysisStatistics.h"
 #include "AliVEvent.h"
-#include "AliHLTTestInputHandler.h"
+//#include "AliHLTTestInputHandler.h"
 
 using std::ofstream;
 using std::ios;
