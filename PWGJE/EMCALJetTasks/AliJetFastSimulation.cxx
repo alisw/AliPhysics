@@ -41,7 +41,7 @@ AliAnalysisTaskEmcal("AliJetFastSimulation",kTRUE),
   fTracksOut(0x0),
   fNTrackClasses(2),
   fRandom(0),
-  fEfficiencyFixed(1.),
+  fEfficiencyFixed(1.1),
   fMomResH1(0x0),
   fMomResH2(0x0),
   fMomResH3(0x0),
@@ -74,7 +74,7 @@ AliJetFastSimulation::AliJetFastSimulation(const char *name) :
   fTracksOut(0x0),
   fNTrackClasses(2),
   fRandom(0),
-  fEfficiencyFixed(1.),
+  fEfficiencyFixed(1.1),
   fMomResH1(0x0),
   fMomResH2(0x0),
   fMomResH3(0x0),
@@ -179,7 +179,7 @@ Bool_t AliJetFastSimulation::Run()
   if(!fMomResH3 && fNTrackClasses>2 ) 
     fUseTrPtResolutionSmearing = 0;
 
-  if(fEfficiencyFixed < 1. && !fUseDiceEfficiency)
+  if(fEfficiencyFixed < 1.)
     fUseDiceEfficiency = 1; // 1 is the default; 2 can be set by user but not implemented
   else {
     if(!fhEffH1 && fNTrackClasses>0 ) 
