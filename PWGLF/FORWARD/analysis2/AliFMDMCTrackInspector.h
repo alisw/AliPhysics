@@ -159,14 +159,13 @@ protected:
      */
     virtual void FillMC(UShort_t flag, Double_t eta, Double_t mult);
     /** 
-     * Smooth the selected histogram 
+     * Do scaling of histogram before fitting.  This can be
+     * overwritten to do some smoothing or the like. By default, this
+     * simply scales to the bin width.
      * 
-     * @param dir  Directory 
-     * @param name Name of histogram 
-     * 
-     * @return true on success
-     */
-    virtual Bool_t Smooth(const TList* dir, const char* name) const;
+     * @param dist Histogram to scale. 
+     */     
+    virtual void  Scale(TH1* dist) const;
     /** 
      * Fit the final distributions - called via Terminate 
      * 
