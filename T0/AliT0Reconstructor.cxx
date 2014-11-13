@@ -398,7 +398,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	AliDebug(10,Form(" CDH BC ID %i, TRM BC ID %i \n", fBCID, trmbunch ));
 	if( (trmbunch-fBCID)!=37  ) {
 	  AliDebug(0,Form("wrong :::: CDH BC ID %i, TRM BC ID %i \n", fBCID, trmbunch ));
-	  type = -1;
+	  //	  type = -1;
 	}
 	for (Int_t in=0; in<12; in++)  
 	  {
