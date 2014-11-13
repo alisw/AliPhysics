@@ -19,6 +19,8 @@ LoadLibs(bool alsoHit=false)
   gROOT->LoadClass("AliOADBPhysicsSelection"  "libOADB");
   gROOT->LoadClass("AliAODForwardMult",       "libPWGLFforward2");
 
+  // Printf("AliFMDMCTrackELoss=%p", gROOT->GetClass("AliFMDMCTrackELoss"));
+
   if (!alsoHit) return;
   
   gROOT->LoadClass("TProof",                  "libProof");
