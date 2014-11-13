@@ -791,27 +791,10 @@ void AliFRAMEv3::CreateGeometry()
   lbox[0] = 2.0;
   lbox[1] = longLI / 2.;
   TVirtualMC::GetMC()->Gsvolu("BTRDR_14", "BOX",  kG10, lbox, 3); 
-
-  // Pos 2
-  // 40 x 10 
-  lbox[2] = 2.0;
-  lbox[0] = 0.5;
-  lbox[1] = longLI / 2.;
-  TVirtualMC::GetMC()->Gsvolu("BTRDR_2", "BOX", kAlu, lbox, 3); 
-
-  // Pos 3
-  // 40 x 14
-  lbox[0] = 2.0;
-  lbox[2] = 0.7;
-  lbox[1] = 307.5;
-  TVirtualMC::GetMC()->Gsvolu("BTRDR_3", "BOX", kAlu, lbox, 3); 
-  
   dz = -iFrH / 2. + longH / 2.;
   Float_t zpos = 80.;
   Int_t isec_1[11] = {0, 1, 2, 3, 4, 5, 13, 14, 15, 16, 17};
-  Int_t isec_2a[16] = {1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17};
-  Int_t isec_2b[6]  = {6, 7, 8, 10, 11, 12};
-  Int_t isec_3[9]  = {5, 6, 7, 8, 9, 10, 11, 12, 13};
+
    for (Int_t index = 0; index < 11; index++) {
      jmod = isec_1[index];
      Float_t dz1 =  dz + 3. + (zpos - 4.);
@@ -831,25 +814,57 @@ void AliFRAMEv3::CreateGeometry()
      if (jmod != 13) TVirtualMC::GetMC()->Gspos("BTRDR_14", 2*jmod+2, module[jmod],  -dx0,  0.0, dz1, 0, "ONLY");
    }
 
-   for (Int_t index = 0; index < 16; index++) {
-     jmod = isec_2a[index];
-     dx0 = (hR + dz0 ) * tan10 + 10. * sin10 - (longW / 4. + 0.5) / cos10;
-     if (jmod >8) {
-       TVirtualMC::GetMC()->Gspos("BTRDR_2", 2*jmod+1, module[jmod],   dx0-1.5,  0.0, dz + 3. + 8. * cos10, idrotm[2096], "ONLY");
-     } else {
-       TVirtualMC::GetMC()->Gspos("BTRDR_2", 2*jmod+2, module[jmod],  -dx0+1.5,  0.0, dz + 3. + 8. * cos10, idrotm[2086], "ONLY");
-     }
-   }
+  // Pos 2
+  // 40 x 10 
+  lbox[2] = 2.0;
+  lbox[0] = 0.5;
+  lbox[1] = longLI / 2.;
+  TVirtualMC::GetMC()->Gsvolu("BTRDR_2", "BOX", kAlu, lbox, 3); 
+  lbox[2] = 2.0;
+  lbox[0] = 0.1;
+  lbox[1] = longLI / 2.;
+  TVirtualMC::GetMC()->Gsvolu("BTRDR_21", "BOX", kG10, lbox, 3); 
+  TVirtualMC::GetMC()->Gspos("BTRDR_21", 1, "BTRDR_2",   -0.4, 0.0, 0.0, 0, "ONLY");
 
-   for (Int_t index = 0; index < 6; index++) {
-     jmod = isec_2b[index];
-     dx0 = (hR + dz0 + zpos) * tan10 - (longW / 4. + 0.5) / cos10;
-     if (index < 3) {
-       TVirtualMC::GetMC()->Gspos("BTRDR_2", 2*jmod+2, module[jmod],  -dx0+1.5,  0.0, dz + 3. + zpos, idrotm[2086], "ONLY");
-     } else {
-       TVirtualMC::GetMC()->Gspos("BTRDR_2", 2*jmod+1, module[jmod],   dx0-1.5,  0.0, dz + 3. + zpos, idrotm[2096], "ONLY");
-     }
-   }
+  Int_t isec_2a[16] = {1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17};
+  for (Int_t index = 0; index < 16; index++) {
+    jmod = isec_2a[index];
+    dx0 = (hR + dz0 ) * tan10 + 10. * sin10 - (longW / 4. + 0.5) / cos10;
+    if (jmod >8) {
+      TVirtualMC::GetMC()->Gspos("BTRDR_2", 2*jmod+1, module[jmod],   dx0-1.5,  0.0, dz + 3. + 8. * cos10, idrotm[2096], "ONLY");
+    } else {
+      TVirtualMC::GetMC()->Gspos("BTRDR_2", 2*jmod+2, module[jmod],  -dx0+1.5,  0.0, dz + 3. + 8. * cos10, idrotm[2087], "ONLY");
+    }
+  }
+  
+  Int_t isec_2b[6]  = {6, 7, 8, 10, 11, 12};
+  for (Int_t index = 0; index < 6; index++) {
+    jmod = isec_2b[index];
+    dx0 = (hR + dz0 + zpos - 3.) * tan10 - (longW / 4. + 0.5) / cos10;
+    if (index < 3) {
+      TVirtualMC::GetMC()->Gspos("BTRDR_2", 2*jmod+2, module[jmod],  -dx0+1.5,  0.0, dz + 3. + zpos - 3., idrotm[2087], "ONLY");
+    } else {
+      TVirtualMC::GetMC()->Gspos("BTRDR_2", 2*jmod+1, module[jmod],   dx0-1.5,  0.0, dz + 3. + zpos -3. , idrotm[2096], "ONLY");
+    }
+  }
+
+
+  // Pos 3
+  // 40 x 14
+  lbox[0] = 2.0;
+  lbox[2] = 0.7;
+  lbox[1] = 307.5;
+  TVirtualMC::GetMC()->Gsvolu("BTRDR_3", "BOX", kAlu, lbox, 3); 
+
+  lbox[0] = 2.0;
+  lbox[2] = 0.1;
+  lbox[1] = 307.5;
+  TVirtualMC::GetMC()->Gsvolu("BTRDR_31", "BOX", kG10, lbox, 3); 
+  TVirtualMC::GetMC()->Gspos("BTRDR_31", 1, "BTRDR_3",   0,  0.0, 0.6, 0, "ONLY");
+  
+  Int_t isec_3[9]  = {5, 6, 7, 8, 9, 10, 11, 12, 13};
+
+
 
    for (Int_t index = 0; index < 9; index++) {
      jmod = isec_3[index];
