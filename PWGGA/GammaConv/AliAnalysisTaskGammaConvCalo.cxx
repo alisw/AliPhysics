@@ -652,7 +652,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 	fHistoPhotonPairAllGam = new TH2F*[fnCuts];
 	
 	fHistoClusGammaPt = new TH1F*[fnCuts];
-	
+	fHistoClusOverlapHeadersGammaPt = new TH1F*[fnCuts];
+
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
 		TString cutstringEvent 	= ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
 		TString cutstringPhoton = ((AliConversionPhotonCuts*)fCutArray->At(iCut))->GetCutNumber();
@@ -782,6 +783,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 	
 		fHistoClusGammaPt[iCut] = new TH1F("ClusGamma_Pt","ClusGamma_Pt",250,0,25);
 		fTagOutputList[iCut]->Add(fHistoClusGammaPt[iCut]);
+		fHistoClusOverlapHeadersGammaPt[iCut] = new TH1F("ClusGammaOverlapHeaders_Pt","ClusGammaOverlapHeaders_Pt",250,0,25);
+		fTagOutputList[iCut]->Add(fHistoClusOverlapHeadersGammaPt[iCut]);
 
 		
 		if(fDoMesonAnalysis){
