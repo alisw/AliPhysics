@@ -27,7 +27,7 @@ set(SRCS
     AliCentrality.cxx
     AliCheb3DCalc.cxx
     AliCheb3D.cxx
-    AliCodeTimer.cx 
+    AliCodeTimer.cxx
     AliCollisionGeometry.cxx
     AliCounterCollection.cxx
     AliDAQ.cxx
