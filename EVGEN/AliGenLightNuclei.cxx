@@ -36,7 +36,7 @@
 //
 //    gener->UsePerEventRates();
 //    gener->AddGenerator(pythia, "PYTHIA", 1);
-//    gener->SetCoalescenceMomentum(0.213); // default (GeV/c)
+//    gener->SetCoalescenceMomentum(0.200); // default (GeV/c)
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -60,7 +60,7 @@ ClassImp(AliGenLightNuclei)
 
 AliGenLightNuclei::AliGenLightNuclei()
 :AliGenCocktail()
-,fP0(0.213)
+,fP0(0.200)
 ,fGenDeuterons(kTRUE)
 ,fGenTritons(kTRUE)
 ,fGenHe3Nuclei(kTRUE)
