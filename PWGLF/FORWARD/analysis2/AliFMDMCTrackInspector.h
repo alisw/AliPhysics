@@ -92,6 +92,7 @@ protected:
    * Container of ring histograms 
    * 
    */
+public:
   struct RingHistos : public AliFMDEnergyFitter::RingHistos
   {
     /** 
@@ -202,6 +203,7 @@ protected:
     TH2* fDedxEta;
     ClassDef(RingHistos,1); // Cache of histograms per ring 
   };
+protected:
   /** 
    * Create a container of histograms for a single ring
    * 
