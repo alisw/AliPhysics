@@ -13,6 +13,8 @@
 
 class TList;
 
+class AliEMCALConfigurationValue;
+
 class AliEMCALConfiguration : public TNamed {
 public:
   AliEMCALConfiguration(const char *name);
@@ -24,7 +26,8 @@ public:
   void Build(TList *entries);
   const char *CreateJSONString() const;
 
-  AliEMCALConfigurationValue *GetValue(const char *key);
+  Bool_t HasKey(const char *key) const { return GetValue(key) != NULL; }
+  AliEMCALConfigurationValue *GetValue(const char *key) const ;
   void Print(Option_t *) const;
 
 protected:

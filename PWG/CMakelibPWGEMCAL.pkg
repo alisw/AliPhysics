@@ -62,6 +62,7 @@ set ( SRCS
  EMCAL/AliEMCALConfigurationObject.cxx
  EMCAL/AliEMCALConfiguration.cxx
  EMCAL/AliEMCALConfigHandler.cxx
+ EMCAL/AliEMCALConfigurationMatcher.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
