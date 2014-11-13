@@ -155,6 +155,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         AliLocalRhoParameter*   GetLocalRhoParameter() const                    {return fLocalRho;}
         Double_t                GetJetRadius() const                            {return GetJetContainer()->GetJetRadius();}
         AliEmcalJet*            GetLeadingJet(AliLocalRhoParameter* localRho = 0x0);
+        static TH1F*            GetEventPlaneWeights(TH1F* hist);
         void                    ExecMe()                                        {ExecOnce();}
 
         AliAnalysisTaskJetV2*   ReturnMe()                                      {return this;}
@@ -208,12 +209,6 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         Bool_t                  PassesCuts(const AliVCluster* track) const;
         // filling histograms
         void                    FillHistogramsAfterSubtraction(Double_t psi2, Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc);
-        void                    FillTrackHistograms() const;
-        void                    FillClusterHistograms() const;
-        void                    FillEventPlaneHistograms(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc) const;
-        void                    FillRhoHistograms();
-        void                    FillDeltaPtHistograms(Double_t psi2) const; 
-        void                    FillJetHistograms(Double_t psi2);
         void                    FillQAHistograms(AliVTrack* vtrack) const;
         void                    FillQAHistograms(AliVEvent* vevent);
         void                    FillWeightedTrackHistograms() const;
