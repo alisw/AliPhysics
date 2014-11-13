@@ -88,10 +88,10 @@ class AliCheb3D: public TNamed
   AliCheb3D(FILE* stream);
   //
 #ifdef _INC_CREATION_ALICHEB3D_
-  AliCheb3D(const char* funName, Int_t DimOut, const Float_t  *bmin, const Float_t  *bmax, Int_t *npoints, Float_t  prec=1E-6);
-  AliCheb3D(void (*ptr)(float*,float*), Int_t DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npoints, Float_t  prec=1E-6);
-  AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npX,Int_t *npY,Int_t *npZ, Float_t prec=1E-6);
-  AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Float_t prec=1E-6, Bool_t run=kTRUE);
+  AliCheb3D(const char* funName, Int_t DimOut, const Float_t  *bmin, const Float_t  *bmax, Int_t *npoints, Float_t  prec=1E-6, const Float_t* precD=0);
+  AliCheb3D(void (*ptr)(float*,float*), Int_t DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npoints, Float_t  prec=1E-6, const Float_t* precD=0);
+  AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npX,Int_t *npY,Int_t *npZ, Float_t prec=1E-6, const Float_t* precD=0);
+  AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Float_t prec=1E-6, Bool_t run=kTRUE, const Float_t* precD=0);
 #endif
   //
   ~AliCheb3D()                                                                 {Clear();}
@@ -126,7 +126,7 @@ class AliCheb3D: public TNamed
 #ifdef _INC_CREATION_ALICHEB3D_
   void         InvertSign();
   int*         GetNCNeeded(float xyz[3],int DimVar, float mn,float mx, float prec, Int_t npCheck=30);
-  void         EstimateNPoints(float Prec, int gridBC[3][3],Int_t npd1=30,Int_t npd2=30,Int_t npd3=30);
+  void         EstimateNPoints(float prec, int gridBC[3][3],Int_t npd1=30,Int_t npd2=30,Int_t npd3=30);
   void         SaveData(const char* outfile,Bool_t append=kFALSE)        const;
   void         SaveData(FILE* stream=stdout)                             const;
   //
@@ -139,7 +139,7 @@ class AliCheb3D: public TNamed
   //
  protected:
   void         Clear(const Option_t* option = "");
-  void         SetDimOut(const int d);
+  void         SetDimOut(const int d, const float* prec=0);
   void         PrepareBoundaries(const Float_t  *bmin,const Float_t  *bmax);
   //
 #ifdef _INC_CREATION_ALICHEB3D_
@@ -172,6 +172,8 @@ class AliCheb3D: public TNamed
   Int_t        fGridOffs[3];       //! start of grid for each dimension
   TString      fUsrFunName;        //! name of user macro containing the function of  "void (*fcn)(float*,float*)" format
   TMethodCall* fUsrMacro;          //! Pointer to MethodCall for function from user macro 
+  //
+  static const Float_t fgkMinPrec;         // smallest precision
   //
   ClassDef(AliCheb3D,2)  // Chebyshev parametrization for 3D->N function
 };
