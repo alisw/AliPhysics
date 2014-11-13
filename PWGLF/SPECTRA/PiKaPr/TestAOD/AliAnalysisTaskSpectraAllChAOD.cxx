@@ -72,7 +72,8 @@ AliAnalysisTaskSpectraAllChAOD::AliAnalysisTaskSpectraAllChAOD(const char *name)
   fDCAmin(-3),
   fDCAmax(3),
   fDCAzCut(999999.),
-  fQvecGen(0),
+  fQst(1),
+  fQtrk(0),
   fQgenType(0),
   fDoCentrSystCentrality(0)
 {
@@ -242,7 +243,10 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
 	  varSt[3]=(Double_t)partMC->IsPhysicalPrimary();
 	  varSt[4]=partMC->Y();
 	  varSt[5]=etaselected;
-	  varSt[6]=QvecMC;
+	  
+	  if(fQst==0) varSt[6]=Qvec;
+	  else varSt[6]=QvecMC;
+	  
 	  ((THnSparseF*)fOutput->FindObject("NSparseHistSt"))->Fill(varSt);//stack loop
 	  
 	  //Printf("a particle");
@@ -296,7 +300,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
       Double_t varTrk[8];
       varTrk[0]=track->Pt();
       varTrk[1]=Cent;
-      if(fIsMC && fQvecGen) varTrk[2]=QvecMC;
+      if(fIsMC && fQtrk==1) varTrk[2]=QvecMC;
         else varTrk[2]=Qvec;
       varTrk[3]=(Double_t)IDrec;
       varTrk[4]=(Double_t)IDgen;
