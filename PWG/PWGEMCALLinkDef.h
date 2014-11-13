@@ -45,6 +45,7 @@
 #pragma link C++ class AliEMCALConfigurationValueDouble+;
 #pragma link C++ class AliEMCALConfigurationValueBool+;
 #pragma link C++ class AliEMCALConfigurationValueString+;
+#pragma link C++ class AliEMCALConfigurationMatcher+;
 
 #endif
 

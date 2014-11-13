@@ -69,7 +69,7 @@ void AliEMCALConfiguration::AddConfiguration(AliEMCALConfiguration* conf) {
   fParams->Add(conf);
 }
 
-AliEMCALConfigurationValue* AliEMCALConfiguration::GetValue(const char *key) {
+AliEMCALConfigurationValue* AliEMCALConfiguration::GetValue(const char *key) const {
   AliEMCALConfigurationObject *val = dynamic_cast<AliEMCALConfigurationObject *>(fParams->FindObject(key));
   if(!val) return NULL;
   return val->GetValue();
