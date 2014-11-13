@@ -238,7 +238,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   }
   
   for (Int_t ipmt=0; ipmt<12; ipmt++){
-    if(time[ipmt] !=0 &&  time[ipmt] > 0 
+    if(time[ipmt] !=0  && time[ipmt] != -99999
        &&  adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold )
       {
 	if(time[ipmt]<besttimeC) besttimeC=time[ipmt]; //timeC
@@ -248,7 +248,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   }
   for ( Int_t ipmt=12; ipmt<24; ipmt++)
     {
-      if(time[ipmt] != 0 &&  time[ipmt] > 0 
+      if(time[ipmt] != 0 && time[ipmt] != -99999
 	 && adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold)
 	{
 	  if(time[ipmt]<besttimeA) besttimeA=time[ipmt]; 
@@ -398,7 +398,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	AliDebug(10,Form(" CDH BC ID %i, TRM BC ID %i \n", fBCID, trmbunch ));
 	if( (trmbunch-fBCID)!=37  ) {
 	  AliDebug(0,Form("wrong :::: CDH BC ID %i, TRM BC ID %i \n", fBCID, trmbunch ));
-	  //	type = -1;
+	  //	  type = -1;
 	}
 	for (Int_t in=0; in<12; in++)  
 	  {

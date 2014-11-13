@@ -36,6 +36,7 @@ public:
 
 protected:
   Int_t fIdSens1; // Sensetive volume  in T0
+  Int_t fIdSens2; // Sensetive volume  in T0
   TGraph *fPMTeff; //pmt registration effeicincy
  
   ClassDef(AliFITv1,1)  //Class for FIT version 1

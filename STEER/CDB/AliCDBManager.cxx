@@ -879,24 +879,25 @@ void AliCDBManager::UnsetDefaultStorage() {
 }
 
 //_____________________________________________________________________________
-void AliCDBManager::SetSpecificStorage(const char* calibType, const char* dbString) {
+void AliCDBManager::SetSpecificStorage(const char* calibType, const char* dbString, Int_t version, Int_t subVersion) {
 // sets storage specific for detector or calibration type (works with AliCDBManager::Get(...))
 
   AliCDBParam *aPar = CreateParameter(dbString);
   if(!aPar) return;
-  SetSpecificStorage(calibType, aPar);
+  SetSpecificStorage(calibType, aPar, version, subVersion);
   delete aPar;
 }
 
 //_____________________________________________________________________________
-void AliCDBManager::SetSpecificStorage(const char* calibType, const AliCDBParam* param) {
+void AliCDBManager::SetSpecificStorage(const char* calibType, const AliCDBParam* param, Int_t version, Int_t subVersion) {
 // sets storage specific for detector or calibration type (works with AliCDBManager::Get(...))
 // Default storage should be defined prior to any specific storages, e.g.:
 // AliCDBManager::instance()->SetDefaultStorage("alien://");
 // AliCDBManager::instance()->SetSpecificStorage("TPC/*","local://DB_TPC");
 // AliCDBManager::instance()->SetSpecificStorage("*/Align/*","local://DB_TPCAlign");
 // calibType must be a valid CDB path! (3 level folder structure)
-
+// Specific version/subversion is set in the uniqueid of the AliCDBParam value stored in the
+// specific storages map
 
   if(!fDefaultStorage && !fRaw) {
     AliError("Please activate a default storage first!");
@@ -920,7 +921,11 @@ void AliCDBManager::SetSpecificStorage(const char* calibType, const AliCDBParam*
   AliCDBStorage *aStorage = GetStorage(param);
   if(!aStorage) return;
 
-  fSpecificStorages.Add(objCalibType, param->CloneParam());
+  // Set the unique id of the AliCDBParam stored in the map to store specific version/subversion
+  UInt_t uId = ((subVersion+1)<<16) + (version+1);
+  AliCDBParam *specificParam = param->CloneParam();
+  specificParam->SetUniqueID(uId);
+  fSpecificStorages.Add(objCalibType, specificParam);
 
   if(fStorageMap->Contains(objCalibType)){
     delete fStorageMap->Remove(objCalibType);
@@ -995,50 +1000,50 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBPath& path,
 }
 
 //_____________________________________________________________________________
-AliCDBEntry* AliCDBManager::Get(const AliCDBId& query, Bool_t forceCaching) {
+AliCDBEntry* AliCDBManager::Get(const AliCDBId& queryId, Bool_t forceCaching) {
 // get an AliCDBEntry object from the database
 
-  // check if query's path and runRange are valid
-  // query is invalid also if version is not specified and subversion is!
-  if (!query.IsValid()) {
-    AliError(Form("Invalid query: %s", query.ToString().Data()));
+  // check if queryId's path and runRange are valid
+  // queryId is invalid also if version is not specified and subversion is!
+  if (!queryId.IsValid()) {
+    AliError(Form("Invalid query: %s", queryId.ToString().Data()));
     return NULL;
   }
 
-  // query is not specified if path contains wildcard or run range= [-1,-1]
-  if (!query.IsSpecified()) {
+  // queryId is not specified if path contains wildcard or run range= [-1,-1]
+  if (!queryId.IsSpecified()) {
     AliError(Form("Unspecified query: %s",
-          query.ToString().Data()));
+          queryId.ToString().Data()));
     return NULL;
   }
 
-  if(fLock && !(fRun >= query.GetFirstRun() && fRun <= query.GetLastRun()))
+  if(fLock && !(fRun >= queryId.GetFirstRun() && fRun <= queryId.GetLastRun()))
     AliFatal("Lock is ON: cannot use different run number than the internal one!");
 
-  if(fCache && !(fRun >= query.GetFirstRun() && fRun <= query.GetLastRun()))
+  if(fCache && !(fRun >= queryId.GetFirstRun() && fRun <= queryId.GetLastRun()))
     AliWarning("Run number explicitly set in query: CDB cache temporarily disabled!");
 
   AliCDBEntry *entry=0;
 
   // first look into map of cached objects
-  if(fCache && query.GetFirstRun() == fRun)
-    entry = (AliCDBEntry*) fEntryCache.GetValue(query.GetPath());
+  if(fCache && queryId.GetFirstRun() == fRun)
+    entry = (AliCDBEntry*) fEntryCache.GetValue(queryId.GetPath());
   if(entry) {
-    AliDebug(2, Form("Object %s retrieved from cache !!",query.GetPath().Data()));
+    AliDebug(2, Form("Object %s retrieved from cache !!",queryId.GetPath().Data()));
     return entry;
   }
 
   // if snapshot flag is set, try getting from the snapshot
   // but in the case a specific storage is specified for this path
-  AliCDBParam *aPar=SelectSpecificStorage(query.GetPath());
+  AliCDBParam *aPar=SelectSpecificStorage(queryId.GetPath());
   if(!aPar){
-    if(fSnapshotMode && query.GetFirstRun() == fRun)
+    if(fSnapshotMode && queryId.GetFirstRun() == fRun)
     {
-      entry = GetEntryFromSnapshot(query.GetPath());
+      entry = GetEntryFromSnapshot(queryId.GetPath());
       if(entry) {
-        AliInfo(Form("Object \"%s\" retrieved from the snapshot.",query.GetPath().Data()));
-        if(query.GetFirstRun() == fRun) // no need to check fCache, fSnapshotMode not possible otherwise
-          CacheEntry(query.GetPath(), entry);
+        AliInfo(Form("Object \"%s\" retrieved from the snapshot.",queryId.GetPath().Data()));
+        if(queryId.GetFirstRun() == fRun) // no need to check fCache, fSnapshotMode not possible otherwise
+          CacheEntry(queryId.GetPath(), entry);
 
         if(!fIds->Contains(&entry->GetId()))
           fIds->Add(entry->GetId().Clone());
@@ -1055,20 +1060,33 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query, Bool_t forceCaching) {
     return NULL;
   }
 
+  Int_t version = -1, subVersion = -1;
   AliCDBStorage *aStorage=0;
   if(aPar) {
     aStorage=GetStorage(aPar);
     TString str = aPar->GetURI();
+    UInt_t uId = aPar->GetUniqueID();
+    version = Int_t(uId&0xffff) - 1;
+    subVersion = Int_t(uId>>16) - 1;
     AliDebug(2,Form("Looking into storage: %s",str.Data()));
   } else {
     aStorage=GetDefaultStorage();
     AliDebug(2,"Looking into default storage");
   }
 
-  entry = aStorage->Get(query);
+  AliCDBId finalQueryId(queryId);
+  if(version >= 0) {
+    AliDebug(2,Form("Specific version set to: %d", version));
+    finalQueryId.SetVersion(version);
+  }
+  if(subVersion >= 0) {
+    AliDebug(2,Form("Specific subversion set to: %d", subVersion));
+    finalQueryId.SetSubVersion(subVersion);
+  }
+  entry = aStorage->Get(finalQueryId);
 
-  if(entry && fCache && (query.GetFirstRun()==fRun || forceCaching)){
-    CacheEntry(query.GetPath(), entry);
+  if(entry && fCache && (queryId.GetFirstRun()==fRun || forceCaching)){
+    CacheEntry(queryId.GetPath(), entry);
   }
 
   if(entry && !fIds->Contains(&entry->GetId())){

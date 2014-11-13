@@ -42,6 +42,8 @@ class AliCheb3DCalc: public TNamed
   //
   void       InitRows(int nr);
   void       InitCols(int nc);
+  void       SetPrecision(Float_t prc=1e-6)                                   {fPrec = prc;}
+  Float_t    GetPrecision()                                             const {return fPrec;}
   Int_t      GetNCoefs()                                                const {return fNCoefs;}
   Int_t      GetNCols()                                                 const {return (Int_t)fNCols;}
   Int_t      GetNRows()                                                 const {return (Int_t)fNRows;}
@@ -78,7 +80,8 @@ class AliCheb3DCalc: public TNamed
   Float_t *  fTmpCf1;            //[fNCols] temp. coeffs for 2d summation
   Float_t *  fTmpCf0;            //[fNRows] temp. coeffs for 1d summation
   //
-  ClassDef(AliCheb3DCalc,3)      // Class for interpolation of 3D->1 function by Chebyshev parametrization 
+  Float_t    fPrec;              // Requested precision
+  ClassDef(AliCheb3DCalc,4)      // Class for interpolation of 3D->1 function by Chebyshev parametrization 
 };
 
 //__________________________________________________________________________________________

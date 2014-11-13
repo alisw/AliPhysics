@@ -1021,7 +1021,12 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xk, Double_t b) {
     //    double rot = 2*TMath::ASin(0.5*chord*crv); // angular difference seen from the circle center
     //    fP1 += rot/crv*fP3;
     // 
-    fP1 += fP3/crv*TMath::ASin(r1*f2 - r2*f1); // more economic version from Yura.
+    double rot = TMath::ASin(r1*f2 - r2*f1); // more economic version from Yura.
+    if (f1*f1+f2*f2>1 && f1*f2<0) {          // special cases of large rotations or large abs angles
+      if (f2>0) rot =  TMath::Pi() - rot;    //
+      else      rot = -TMath::Pi() - rot;
+    }
+    fP1 += fP3/crv*rot; // more economic version from Yura.
   }
 
   //f = F - 1

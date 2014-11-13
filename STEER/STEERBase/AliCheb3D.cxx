@@ -27,6 +27,8 @@
 
 ClassImp(AliCheb3D)
 
+const Float_t AliCheb3D::fgkMinPrec = 1.e-12f;
+
 //__________________________________________________________________________________________
 AliCheb3D::AliCheb3D() : 
   fDimOut(0), 
@@ -118,10 +120,10 @@ AliCheb3D::AliCheb3D(FILE* stream) :
 
 //__________________________________________________________________________________________
 #ifdef _INC_CREATION_ALICHEB3D_
-AliCheb3D::AliCheb3D(const char* funName, int DimOut, const Float_t  *bmin, const Float_t  *bmax, Int_t *npoints, Float_t prec) : 
+AliCheb3D::AliCheb3D(const char* funName, int DimOut, const Float_t  *bmin, const Float_t  *bmax, Int_t *npoints, Float_t prec, const Float_t* precD) : 
   TNamed(funName,funName), 
   fDimOut(0), 
-  fPrec(TMath::Max(1.E-12f,prec)), 
+  fPrec(TMath::Max(fgkMinPrec,prec)), 
   fChebCalc(1), 
   fMaxCoefs(0), 
   fResTmp(0), 
@@ -136,7 +138,7 @@ AliCheb3D::AliCheb3D(const char* funName, int DimOut, const Float_t  *bmin, cons
   // bmax    : array of 3 elements with the upper boundaries of the region where the function is defined
   // npoints : array of 3 elements with the number of points to compute in each of 3 dimension
   // prec    : max allowed absolute difference between the user function and computed parameterization on the requested grid
-  //
+  // precD   : optional array with precisions per output dimension (if >fgkMinPrec will override common prec)
   if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
   for (int i=3;i--;) {
     fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
@@ -144,7 +146,7 @@ AliCheb3D::AliCheb3D(const char* funName, int DimOut, const Float_t  *bmin, cons
     fGridOffs[i] = 0.;
     fArgsTmp[i]  = 0;
   }
-  SetDimOut(DimOut);
+  SetDimOut(DimOut,precD);
   PrepareBoundaries(bmin,bmax);
   DefineGrid(npoints);
   SetUsrFunction(funName);
@@ -155,9 +157,10 @@ AliCheb3D::AliCheb3D(const char* funName, int DimOut, const Float_t  *bmin, cons
 
 //__________________________________________________________________________________________
 #ifdef _INC_CREATION_ALICHEB3D_
-AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npoints, Float_t prec) : 
+AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npoints, Float_t prec, const Float_t* precD) : 
+  TNamed("Cheb3D","Cheb3D"),
   fDimOut(0), 
-  fPrec(TMath::Max(1.E-12f,prec)), 
+  fPrec(TMath::Max(fgkMinPrec,prec)), 
   fChebCalc(1), 
   fMaxCoefs(0), 
   fResTmp(0), 
@@ -172,6 +175,7 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
   // bmax    : array of 3 elements with the upper boundaries of the region where the function is defined
   // npoints : array of 3 elements with the number of points to compute in each of 3 dimension
   // prec    : max allowed absolute difference between the user function and computed parameterization on the requested grid
+  // precD   : optional array with precisions per output dimension (if >fgkMinPrec will override common prec)
   //
   if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
   if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
@@ -181,7 +185,7 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
     fGridOffs[i] = 0.;
     fArgsTmp[i]  = 0;
   }
-  SetDimOut(DimOut);
+  SetDimOut(DimOut,precD);
   PrepareBoundaries(bmin,bmax);
   DefineGrid(npoints);
   SetUsrFunction(ptr);
@@ -192,9 +196,10 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
 
 //__________________________________________________________________________________________
 #ifdef _INC_CREATION_ALICHEB3D_
-AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npX,Int_t *npY,Int_t *npZ, Float_t prec) : 
+AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npX,Int_t *npY,Int_t *npZ, Float_t prec, const Float_t* precD) : 
+  TNamed("Cheb3D","Cheb3D"),
   fDimOut(0), 
-  fPrec(TMath::Max(1.E-12f,prec)), 
+  fPrec(TMath::Max(fgkMinPrec,prec)), 
   fChebCalc(1), 
   fMaxCoefs(0), 
   fResTmp(0), 
@@ -211,6 +216,7 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
   // npY     : array of 3 elements with the number of points to compute in each dimension for 2nd component 
   // npZ     : array of 3 elements with the number of points to compute in each dimension for 3d  component 
   // prec    : max allowed absolute difference between the user function and computed parameterization on the requested grid
+  // precD   : optional array with precisions per output dimension (if >fgkMinPrec will override common prec)
   //
   if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
   if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
@@ -220,7 +226,7 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
     fGridOffs[i] = 0.;
     fArgsTmp[i]  = 0;
   }
-  SetDimOut(DimOut);
+  SetDimOut(DimOut,precD);
   PrepareBoundaries(bmin,bmax);
   SetUsrFunction(ptr);
   //
@@ -237,9 +243,10 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
 
 //__________________________________________________________________________________________
 #ifdef _INC_CREATION_ALICHEB3D_
-AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Float_t prec, Bool_t run) : 
+AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Float_t prec, Bool_t run, const Float_t* precD) : 
+  TNamed("Cheb3D","Cheb3D"),
   fDimOut(0), 
-  fPrec(TMath::Max(1.E-12f,prec)), 
+  fPrec(TMath::Max(fgkMinPrec,prec)), 
   fChebCalc(1), 
   fMaxCoefs(0), 
   fResTmp(0), 
@@ -253,6 +260,7 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
   // bmin    : array of 3 elements with the lower boundaries of the region where the function is defined
   // bmax    : array of 3 elements with the upper boundaries of the region where the function is defined
   // prec    : max allowed absolute difference between the user function and computed parameterization on the requested grid
+  // precD   : optional array with precisions per output dimension (if >fgkMinPrec will override common prec)
   //
   if (DimOut!=3) {Error("AliCheb3D","This constructor works only for 3D fits, %dD fit was requested\n",fDimOut); exit(1);}
   if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
@@ -262,7 +270,7 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
     fGridOffs[i] = 0.;
     fArgsTmp[i]  = 0;
   }
-  SetDimOut(DimOut);
+  SetDimOut(DimOut,precD);
   PrepareBoundaries(bmin,bmax);
   SetUsrFunction(ptr);
   //
@@ -503,13 +511,16 @@ Int_t AliCheb3D::ChebFit(int dmOut)
   Float_t  *tmpCoef2D  = new Float_t [ fNPoints[0]*fNPoints[1] ]; 
   Float_t  *tmpCoef1D  = new Float_t [ maxDim ];
   //
-  Float_t rTiny = 0.1*fPrec/Float_t(maxDim); // neglect coefficient below this threshold
-  //
   // 1D Cheb.fit for 0-th dimension at current steps of remaining dimensions
   int ncmax = 0;
   //
   printf("Dim%d : 00.00%% Done",dmOut);fflush(stdout);
   AliCheb3DCalc* cheb =  GetChebCalc(dmOut);
+  //
+  Float_t prec = cheb->GetPrecision(); 
+  if (prec<fgkMinPrec) prec = fPrec;         // no specific precision for this dim.
+  //
+  Float_t rTiny = 0.1*prec/Float_t(maxDim); // neglect coefficient below this threshold
   //
   float ncals2count = fNPoints[2]*fNPoints[1]*fNPoints[0];
   float ncals = 0;
@@ -535,7 +546,7 @@ Int_t AliCheb3D::ChebFit(int dmOut)
 	}
 	//
       }
-      int nc = CalcChebCoefs(fvals,fNPoints[0], tmpCoef1D, fPrec);
+      int nc = CalcChebCoefs(fvals,fNPoints[0], tmpCoef1D, prec);
       for (int id0=fNPoints[0];id0--;) tmpCoef2D[id1 + id0*fNPoints[1]] = tmpCoef1D[id0];
       if (ncmax<nc) ncmax = nc;              // max coefs to be kept in dim0 to guarantee needed precision
     }
@@ -555,7 +566,7 @@ Int_t AliCheb3D::ChebFit(int dmOut)
     }
   }
   //
-  // now find 2D surface which separates significant coefficients of 3D matrix from nonsignificant ones (up to fPrec)
+  // now find 2D surface which separates significant coefficients of 3D matrix from nonsignificant ones (up to prec)
   UShort_t *tmpCoefSurf = new UShort_t[ fNPoints[0]*fNPoints[1] ];
   for (int id0=fNPoints[0];id0--;) for (int id1=fNPoints[1];id1--;) tmpCoefSurf[id1+id0*fNPoints[1]]=0;  
   Double_t resid = 0;
@@ -566,7 +577,7 @@ Int_t AliCheb3D::ChebFit(int dmOut)
 	Float_t  cfa = TMath::Abs(tmpCoef3D[id]);
 	if (cfa < rTiny) {tmpCoef3D[id] = 0; continue;} // neglect coefs below the threshold
 	resid += cfa;
-	if (resid<fPrec) continue; // this coeff is negligible
+	if (resid<prec) continue; // this coeff is negligible
 	// otherwise go back 1 step
 	resid -= cfa;
 	tmpCoefSurf[id1+id0*fNPoints[1]] = id2+1; // how many coefs to keep
@@ -774,14 +785,18 @@ void AliCheb3D::LoadData(FILE* stream)
 }
 
 //_______________________________________________
-void AliCheb3D::SetDimOut(const int d)
+void AliCheb3D::SetDimOut(const int d, const float* prec)
 {
   // init output dimensions
   fDimOut = d;
   if (fResTmp) delete fResTmp;
   fResTmp = new Float_t[fDimOut];
   fChebCalc.Delete();
-  for (int i=0;i<d;i++) fChebCalc.AddAtAndExpand(new AliCheb3DCalc(),i);
+  for (int i=0;i<d;i++) {
+    AliCheb3DCalc* clc = new AliCheb3DCalc();
+    clc->SetPrecision(prec && prec[i]>fgkMinPrec ? prec[i] : fPrec);
+    fChebCalc.AddAtAndExpand(clc,i);
+  }
 }
 
 //_______________________________________________
@@ -806,7 +821,9 @@ TH1* AliCheb3D::TestRMS(int idim,int npoints,TH1* histo)
     printf("No user function is set\n");
     return 0;
   }
-  if (!histo) histo = new TH1D(GetName(),"Control: Function - Parametrization",100,-2*fPrec,2*fPrec);
+  float prc = GetChebCalc(idim)->GetPrecision();
+  if (prc<fgkMinPrec) prc = fPrec;   // no dimension specific precision
+  if (!histo) histo = new TH1D(GetName(),"Control: Function - Parametrization",100,-2*prc,2*prc);
   for (int ip=npoints;ip--;) {
     gRandom->RndmArray(3,(Float_t *)fArgsTmp);
     for (int i=3;i--;) fArgsTmp[i] = fBMin[i] + fArgsTmp[i]*(fBMax[i]-fBMin[i]);
@@ -824,7 +841,7 @@ TH1* AliCheb3D::TestRMS(int idim,int npoints,TH1* histo)
 //_______________________________________________
 #ifdef _INC_CREATION_ALICHEB3D_
 
-void AliCheb3D::EstimateNPoints(float Prec, int gridBC[3][3],Int_t npd1,Int_t npd2,Int_t npd3)
+void AliCheb3D::EstimateNPoints(float prec, int gridBC[3][3],Int_t npd1,Int_t npd2,Int_t npd3)
 {
   // Estimate number of points to generate a training data
   //
@@ -849,7 +866,7 @@ void AliCheb3D::EstimateNPoints(float Prec, int gridBC[3][3],Int_t npd1,Int_t np
       xyz[ id1 ] = fBMin[id1] + kScl[i1]*( fBMax[id1]-fBMin[id1] );
       for (int i2=0;i2<kScp;i2++) {
 	xyz[ id2 ] = fBMin[id2] + kScl[i2]*( fBMax[id2]-fBMin[id2] );
-	int* npt = GetNCNeeded(xyz,idim, dimMN,dimMX, Prec, npdTst[idim]); // npoints for Bx,By,Bz
+	int* npt = GetNCNeeded(xyz,idim, dimMN,dimMX, prec, npdTst[idim]); // npoints for Bx,By,Bz
 	for (int ib=0;ib<3;ib++) if (npt[ib]>gridBC[ib][idim]) gridBC[ib][idim] = npt[ib];
       }
     }
@@ -857,7 +874,7 @@ void AliCheb3D::EstimateNPoints(float Prec, int gridBC[3][3],Int_t npd1,Int_t np
 }
 
 /*
-void AliCheb3D::EstimateNPoints(float Prec, int gridBC[3][3])
+void AliCheb3D::EstimateNPoints(float prec, int gridBC[3][3])
 {
   // Estimate number of points to generate a training data
   //
@@ -879,7 +896,7 @@ void AliCheb3D::EstimateNPoints(float Prec, int gridBC[3][3])
       xyz[ id1 ] = fBMin[id1] + sclA[it]*( fBMax[id1]-fBMin[id1] );
       xyz[ id2 ] = fBMin[id2] + sclB[it]*( fBMax[id2]-fBMin[id2] );
       //
-      int* npt = GetNCNeeded(xyz,idim, dimMN,dimMX, Prec); // npoints for Bx,By,Bz
+      int* npt = GetNCNeeded(xyz,idim, dimMN,dimMX, prec); // npoints for Bx,By,Bz
       for (int ib=0;ib<3;ib++) if (npt[ib]>gridBC[ib][idim]) gridBC[ib][idim] = npt[ib];//+2;
       //
     }

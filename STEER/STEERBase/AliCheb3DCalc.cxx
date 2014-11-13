@@ -31,7 +31,8 @@ AliCheb3DCalc::AliCheb3DCalc() :
   fCoefBound2D1(0), 
   fCoefs(0), 
   fTmpCf1(0), 
-  fTmpCf0(0)
+  fTmpCf0(0),
+  fPrec(0)
 {
   // default constructor
 }
@@ -49,7 +50,8 @@ AliCheb3DCalc::AliCheb3DCalc(const AliCheb3DCalc& src) :
   fCoefBound2D1(0), 
   fCoefs(0), 
   fTmpCf1(0), 
-  fTmpCf0(0)
+  fTmpCf0(0), 
+  fPrec(src.fPrec)
 {
   // copy constructor
   //
@@ -89,7 +91,8 @@ AliCheb3DCalc::AliCheb3DCalc(FILE* stream) :
   fCoefBound2D1(0), 
   fCoefs(0), 
   fTmpCf1(0), 
-  fTmpCf0(0)
+  fTmpCf0(0),
+  fPrec(0)
 {
   // constructor from coeffs. streem
   LoadData(stream);
@@ -106,6 +109,7 @@ AliCheb3DCalc& AliCheb3DCalc::operator=(const AliCheb3DCalc& rhs)
     fNCoefs = rhs.fNCoefs;
     fNRows  = rhs.fNRows;
     fNCols  = rhs.fNCols;    
+    fPrec   = rhs.fPrec;
     if (rhs.fNColsAtRow) {
       fNColsAtRow = new UShort_t[fNRows]; 
       for (int i=fNRows;i--;) fNColsAtRow[i] = rhs.fNColsAtRow[i];
@@ -150,7 +154,7 @@ void AliCheb3DCalc::Clear(const Option_t*)
 void AliCheb3DCalc::Print(const Option_t* ) const
 {
   // print info
-  printf("Chebyshev parameterization data %s for 3D->1 function.\n",GetName());
+  printf("Chebyshev parameterization data %s for 3D->1 function. Prec:%e\n",GetName(),fPrec);
   int nmax3d = 0; 
   for (int i=fNElemBound2D;i--;) if (fCoefBound2D0[i]>nmax3d) nmax3d = fCoefBound2D0[i];
   printf("%d coefficients in %dx%dx%d matrix\n",fNCoefs,fNRows,fNCols,nmax3d);
@@ -241,6 +245,10 @@ void AliCheb3DCalc::SaveData(FILE* stream) const
   //
   fprintf(stream,"# Coefficients\n");
   for (int i=0;i<fNCoefs;i++) fprintf(stream,"%+.8e\n",fCoefs[i]);
+  //
+  fprintf(stream,"# Precision\n");
+  fprintf(stream,"%+.8e\n",fPrec);
+  //
   fprintf(stream,"END %s\n",GetName());
   //
 }
@@ -291,6 +299,11 @@ void AliCheb3DCalc::LoadData(FILE* stream)
     ReadLine(buffs,stream);
     fCoefs[i] = buffs.Atof();
   }
+  //
+  // read precision
+  ReadLine(buffs,stream);
+  fPrec = buffs.Atof();
+  //
   // check end_of_data record
   ReadLine(buffs,stream);
   if (!buffs.BeginsWith("END") || !buffs.Contains(GetName())) {

@@ -99,7 +99,7 @@ void AliDIMListenerThread::StartOfRun(int run)
     cout<<"AliDIMListenerThread -- SOR signal received for run:"<<run<<endl;
    
     // Kill reconstruction and start new one
-    gSystem->Exec(Form("ssh -n -f %s@%s \"killall alionlinereco;alionlinereco %d\"",fOnlineReconstructionUsername.c_str(),fOnlineReconstructionHostname.c_str(),run));
+    gSystem->Exec(Form("ssh -n -f %s@%s \". ~/EventServerTesting/setEnv.sh;killall alionlinereco;alionlinereco %d\"",fOnlineReconstructionUsername.c_str(),fOnlineReconstructionHostname.c_str(),run));
 }
 
 void AliDIMListenerThread::EndOfRun(int run)

@@ -68,7 +68,7 @@ void AliOnlineReconstruction::StartOfRun()
   else if(strcmp(fSettings.GetValue("data.source", DEFAULT_DATA_SOURCE),"run")==0)
     {
       cout<<"Starting Reco for GDCs active in current run:"<<fRun<<endl;
-      fDataSource = "mem://@*:";
+      fDataSource = fSettings.GetValue("data.online.source", DEFAULT_DATA_ONLINE_SOURCE);
     }
   else{cout<<"\n\nWrong data source. Quitting\n\n"<<endl;}
 
