@@ -254,18 +254,10 @@ class AliJetFlowTools {
                 Int_t low,                      // pt lower level
                 Int_t up                        // pt upper level
         );
-        static void     MinimizeChi22d();
-        static Double_t PhenixChi22d(const Double_t *xx );
-        static Double_t ConstructFunction2d(Double_t *x, Double_t *par);
-        static TF2*     ReturnFunction2d();
         static void     MinimizeChi2nd();
         static Double_t PhenixChi2nd(const Double_t *xx );
         static Double_t ConstructFunctionnd(Double_t *x, Double_t *par);
-        static void     MinimizeChi2();
         static TF2*     ReturnFunctionnd();
-        static Double_t PhenixChi2(const Double_t *xx );
-        static Double_t ConstructFunction(Double_t *x, Double_t *par);
-        static TF1*     ReturnFunction();
         static void     WriteObject(TObject* object, TString suffix = "", Bool_t kill = kTRUE);
         static TH2D*    ConstructDPtResponseFromTH1D(TH1D* dpt, Bool_t AvoidRoundingError);
         static TH2D*    GetUnityResponse(TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
