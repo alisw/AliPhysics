@@ -60,6 +60,9 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     TH1F        *fHistClustE;//!cluster energy
     TH2F        *fEMCClsEtaPhi;//! EMC cluster eta and phi
     TH1F        *fHistoNCls;//! No of clusters per event
+    TH1F        *fHistoNClsE1;//! No of clusters per event
+    TH1F        *fHistoNClsE2;//! No of clusters per event
+    TH1F        *fHistoNClsE3;//! No of clusters per event
     //TH1F        *fHistoNCells;//! No of cells per cluster
     TH2F        *fHistoNCells;//! No of cells per cluster
     TH2F        *fHistoCalCell;//! No of cells per cluster

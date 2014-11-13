@@ -97,8 +97,13 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE
 
   TClonesArray *fCandidateArray;   //! contains candidates selected by AliRDHFCuts
   TClonesArray *fSideBandArray;    //! contains candidates selected by AliRDHFCuts::IsSelected(kTracks), to be used for side bands (DStar case only!!)
-
-  ClassDef(AliAnalysisTaskSEDmesonsFilterCJ,2); // class for charm-jet correlations
+  //Histograms
+  TH2F* fhImpPar;
+  TH2F* fhImpParB;
+  TH1F* fhInvMassS;
+  TH1F* fhInvMassB;
+  
+  ClassDef(AliAnalysisTaskSEDmesonsFilterCJ,3); // class for charm-jet correlations
 };
 
 #endif

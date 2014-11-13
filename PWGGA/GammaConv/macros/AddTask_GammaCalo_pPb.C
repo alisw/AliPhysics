@@ -1,12 +1,13 @@
-void AddTask_GammaCalo_pPb(  Int_t trainConfig = 1,  //change different set of cuts
-                              Bool_t isMC   = kFALSE, //run MC
-                              Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
-                              Int_t enableQAClusterTask = 0, // enable additional QA task
-                              TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
-                              Int_t doWeightingPart = 0,  //enable Weighting
-                              TString generatorName = "DPMJET",
-                              TString cutnumberAODBranch = "8000000060084000001500000" // cutnumber for AOD branch
-							) {
+void AddTask_GammaCalo_pPb(  
+							Int_t trainConfig = 1,  //change different set of cuts
+							Bool_t isMC   = kFALSE, //run MC
+							Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
+							Int_t enableQAClusterTask = 0, // enable additional QA task
+							TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
+							Int_t doWeightingPart = 0,  //enable Weighting
+							TString generatorName = "DPMJET",
+							TString cutnumberAODBranch = "8000000060084000001500000" // cutnumber for AOD branch
+						   ) {
 
 	// ================= Load Librariers =================================
 	gSystem->Load("libCore.so");  
@@ -109,7 +110,7 @@ void AddTask_GammaCalo_pPb(  Int_t trainConfig = 1,  //change different set of c
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 2;
 	if (trainConfig == 3 || trainConfig == 5  ){ numberOfCuts = 6;}
-	if (trainConfig == 6 ){ numberOfCuts = 1;}
+	if (trainConfig == 6 || trainConfig == 7 ){ numberOfCuts = 1;}
 	
 	TString *eventCutArray = new TString[numberOfCuts];
 	TString *clusterCutArray = new TString[numberOfCuts];
@@ -142,8 +143,10 @@ void AddTask_GammaCalo_pPb(  Int_t trainConfig = 1,  //change different set of c
 		eventCutArray[ 3] = "8009101"; clusterCutArray[3] = "10000040052030000"; mesonCutArray[3] = "01525065000000"; //standard cut, kEMCEJE based on INT7 // EMCAL clusters
 		eventCutArray[ 4] = "8009301"; clusterCutArray[4] = "10000040052030000"; mesonCutArray[4] = "01525065000000"; //standard cut, kEMCEJ1 based on INT7 // EMCAL clusters
 		eventCutArray[ 5] = "8009501"; clusterCutArray[5] = "10000040052030000"; mesonCutArray[5] = "01525065000000"; //standard cut, kEMCEG2 based on INT7 // EMCAL clusters		
-	} else if (trainConfig == 6){ // Validation
+	} else if (trainConfig == 6){ // Validation EMCAL
 		eventCutArray[ 0] = "8000001"; clusterCutArray[0] = "10000040062000000"; mesonCutArray[0] = "01630031009000"; 	
+	} else if (trainConfig == 7){ // Validation PHOS
+		eventCutArray[ 0] = "8000001"; clusterCutArray[0] = "20000040053200000"; mesonCutArray[0] = "01630031009000"; 	
 	} else {
 		Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;

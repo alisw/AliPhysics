@@ -38,6 +38,7 @@ AliDhcTask::AliDhcTask()
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
   fRequireMuon(kFALSE), fReqPtLo(0.0), fReqPtHi(1000.0),
   fPtTACrit(kTRUE), fAllTAHists(kFALSE), fMixInEtaT(kFALSE),
+  fUseMuonUtils(kFALSE), fMuonCutMask(0), fMuonTrackCuts(0x0),
   fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0), fOmitFirstEv(kTRUE),
   fDoFillSame(kFALSE), fDoMassCut(kFALSE), fCheckVertex(kTRUE), fClassName(),
   fCentMethod("V0M"), fNBdeta(20), fNBdphi(36), fTriggerMatch(kTRUE),
@@ -62,6 +63,7 @@ AliDhcTask::AliDhcTask(const char *name, Bool_t def)
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
   fRequireMuon(kFALSE), fReqPtLo(0.0), fReqPtHi(1000.0),
   fPtTACrit(kTRUE), fAllTAHists(kFALSE), fMixInEtaT(kFALSE),
+  fUseMuonUtils(kFALSE), fMuonCutMask(0), fMuonTrackCuts(0x0),
   fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0), fOmitFirstEv(kTRUE),
   fDoFillSame(kFALSE), fDoMassCut(kFALSE), fCheckVertex(kTRUE), fClassName(),
   fCentMethod("V0M"), fNBdeta(20), fNBdphi(36), fTriggerMatch(kTRUE),
@@ -116,6 +118,12 @@ void AliDhcTask::UserCreateOutputObjects()
   fOutputList->SetOwner(1);
 
   fUtils = new AliAnalysisUtils();
+  if (fUseMuonUtils) {
+    fMuonTrackCuts = new AliMuonTrackCuts("StdMuonCuts","StdMuonCuts");
+    fMuonTrackCuts->SetCustomParamFromRun(197388,"muon_pass2"); // for LHC13b,c,d,e,f ?
+    fMuonTrackCuts->SetFilterMask(fMuonCutMask);
+    AliInfo(Form(" using muon track cuts with bit %u\n", fMuonCutMask));
+  }
 
   BookHistos();
   InitEventMixer(); 
@@ -146,8 +154,9 @@ void AliDhcTask::PrintDhcSettings()
   AliInfo(Form(" associate eta range %f .. %f", fEtaALo, fEtaAHi));
   AliInfo(Form(" fill same event in any case? %d", fDoFillSame));
   AliInfo(Form(" do invariant mass cut? %d", fDoMassCut));
-  AliInfo(Form(" omit first event? %d\n", fOmitFirstEv));
-  AliInfo(Form(" check the vertex? %d\n", fCheckVertex));
+  AliInfo(Form(" omit first event? %d", fOmitFirstEv));
+  AliInfo(Form(" check the vertex? %d", fCheckVertex));
+  AliInfo(Form(" use the muon PWG muon cuts? %d", fUseMuonUtils));
 }
 
 //________________________________________________________________________
@@ -414,6 +423,9 @@ void AliDhcTask::UserExec(Option_t *)
 {
   // Main loop, called for each event.
 
+  if (fVerbosity > 10)
+    AliInfo(Form("======= Dhc Task %s start next event",fName.Data()));
+
   LoadBranches();
 
   if (fOmitFirstEv) {
@@ -425,11 +437,11 @@ void AliDhcTask::UserExec(Option_t *)
   Int_t dType = -1;       // Will be set to kESD or kAOD.
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-  if (fESD)
+  if (fESD) {
     dType = kESD;
-  else if (fAOD)
+  } else if (fAOD) {
     dType = kAOD;
-  else {
+  } else {
     AliError("Neither fESD nor fAOD available");
     return;
   }
@@ -461,9 +473,8 @@ void AliDhcTask::UserExec(Option_t *)
     if (!bAccEvent)
       return;
     
-    if (fVerbosity > 10) {
-      AliInfo(Form("After trigger class selection: This event has classes %s", strFiredClass.Data()));
-    }
+    if (fVerbosity > 10)
+      AliInfo(Form("Passed trigger class selection, this event has classes %s", strFiredClass.Data()));
   }
 
   Bool_t mcgen = 0;
@@ -517,6 +528,26 @@ void AliDhcTask::UserExec(Option_t *)
       AliInfo(Form("Event REJECTED (centrality out of range). fCentrality = %.1f", fCentrality));
     return;
   }
+  if (fZVertex > fBZvtx->GetXmax() || fZVertex < fBZvtx->GetXmin()) {
+    if (fVerbosity > 1)
+      AliInfo(Form("Event REJECTED (z_vertex out of range). fZVertex = %.1f", fZVertex));
+    return;
+  }
+
+  // reject events without muon if required
+  if (fRequireMuon) {
+    Bool_t bHasMuon = kFALSE;
+    if (dType == kESD) {
+      bHasMuon = HasMuonESD();
+    } else if (dType == kAOD) {
+      bHasMuon = HasMuonAOD();
+    }
+    if (!bHasMuon) {
+      if (fVerbosity > 1)
+        AliInfo(Form("Event REJECTED (no muon). fCentrality = %.1f", fCentrality));
+      return;
+    }
+  }
 
   // Get pool containing tracks from other events like this one
   AliEvtPool* pool = fPoolMgr->GetEventPool(fCentrality, fZVertex);
@@ -526,7 +557,9 @@ void AliDhcTask::UserExec(Option_t *)
     return;
   }
 
-  // Get array of selected tracks
+  if (fVerbosity > 10)
+    AliInfo("--- prepare to get tracks");
+
   MiniEvent* sTracks = new MiniEvent(0); // deleted by pool mgr.
   if (dType == kESD) {
     GetESDTracks(sTracks);
@@ -534,9 +567,11 @@ void AliDhcTask::UserExec(Option_t *)
     GetAODTracks(sTracks);
   }
 
+  if (fVerbosity > 10)
+    AliInfo(Form("--- got a track array with %lu tracks",sTracks->size()));
+
   if (sTracks->size()==0) {
-    if (fVerbosity > 1)
-      AliWarning(Form("Track array empty"));
+    AliWarning(Form("Track array empty"));
     delete sTracks;
     return;
   }
@@ -587,26 +622,6 @@ void AliDhcTask::UserExec(Option_t *)
 //________________________________________________________________________
 void AliDhcTask::GetESDTracks(MiniEvent* miniEvt)
 {
-  // check / count muons
-  Int_t nGoodMuons = 0;
-  Bool_t bAtLeastOneMuon = kFALSE;
-  if (fFillMuons || fRequireMuon) {
-    for (Int_t iMu = 0; iMu<fESD->GetNumberOfMuonTracks(); iMu++) {
-      AliESDMuonTrack* muonTrack = fESD->GetMuonTrack(iMu);
-      if (muonTrack) {
-        if (!IsGoodMUONtrack(*muonTrack))
-          continue;
-        Double_t ptMu   = muonTrack->Pt();
-        if (ptMu>fReqPtLo && ptMu<fReqPtHi)
-          bAtLeastOneMuon = kTRUE;
-        Double_t etaMu  = muonTrack->Eta();
-        if (IsTrigger(etaMu,ptMu)||IsAssociated(etaMu,ptMu))
-          nGoodMuons++;
-      }
-    }
-  }
-  if (fRequireMuon && !bAtLeastOneMuon)
-    return;
   
   // Loop twice: 1. Count sel. tracks. 2. Fill vector.
   if (fTracksName.IsNull()) {
@@ -738,16 +753,27 @@ void AliDhcTask::GetESDTracks(MiniEvent* miniEvt)
         miniEvt->push_back(AliMiniTrack(pt, eta, phi, sign));
     }
   }
-  
-  // fill muons into minievent
+
+  // count and fill muons if required
   if (fFillMuons) {
-    miniEvt->reserve(miniEvt->size()+nGoodMuons);
-    // fill them into the mini event
+    // count muons
+    Int_t nGoodMuons = 0;
     for (Int_t iMu = 0; iMu<fESD->GetNumberOfMuonTracks(); iMu++) {
       AliESDMuonTrack* muonTrack = fESD->GetMuonTrack(iMu);
       if (muonTrack) {
-        if (!IsGoodMUONtrack(*muonTrack)) 
-          continue;
+        if ( !IsGoodMUONtrack(*muonTrack) ) continue;
+        Double_t ptMu   = muonTrack->Pt();
+        Double_t etaMu  = muonTrack->Eta();
+        if (IsTrigger(etaMu,ptMu)||IsAssociated(etaMu,ptMu))
+          nGoodMuons++;
+      }
+    }
+    // fill them into the mini event
+    miniEvt->reserve(miniEvt->size()+nGoodMuons);
+    for (Int_t iMu = 0; iMu<fESD->GetNumberOfMuonTracks(); iMu++) {
+      AliESDMuonTrack* muonTrack = fESD->GetMuonTrack(iMu);
+      if (muonTrack) {
+        if ( !IsGoodMUONtrack(*muonTrack) ) continue;
         Double_t ptMu   = muonTrack->Pt();
         Double_t etaMu  = muonTrack->Eta();
         Double_t phiMu  = muonTrack->Phi();
@@ -763,27 +789,6 @@ void AliDhcTask::GetESDTracks(MiniEvent* miniEvt)
 //________________________________________________________________________
 void AliDhcTask::GetAODTracks(MiniEvent* miniEvt)
 {
-  // check / count muons
-  Int_t nGoodMuons = 0;
-  Bool_t bAtLeastOneMuon = kFALSE;
-  if (fFillMuons || fRequireMuon) {
-    for (Int_t iMu = 0; iMu<fAOD->GetNumberOfTracks(); iMu++) {
-      AliAODTrack* muonTrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iMu));
-      if(!muonTrack) AliFatal("Not a standard AOD");
-      if (muonTrack) {
-        if (!IsGoodMUONtrack(*muonTrack))
-          continue;
-        Double_t ptMu   = muonTrack->Pt();
-        if (ptMu>fReqPtLo && ptMu<fReqPtHi)
-          bAtLeastOneMuon = kTRUE;
-        Double_t etaMu  = muonTrack->Eta();
-        if (IsTrigger(etaMu,ptMu)||IsAssociated(etaMu,ptMu))
-          nGoodMuons++;
-      }
-    }
-  }
-  if (fRequireMuon && !bAtLeastOneMuon)
-    return;
   
   // Loop twice: 1. Count sel. tracks. 2. Fill vector.
   if (fTracksName.IsNull()) {
@@ -885,16 +890,28 @@ void AliDhcTask::GetAODTracks(MiniEvent* miniEvt)
     }
   }
 
-  // fill muons into minievent
+  // count and fill muons if required
   if (fFillMuons) {
-    miniEvt->reserve(miniEvt->size()+nGoodMuons);
-    // fill them into the mini event
+    // count muons
+    Int_t nGoodMuons = 0;
     for (Int_t iMu = 0; iMu<fAOD->GetNumberOfTracks(); iMu++) {
       AliAODTrack* muonTrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iMu));
       if(!muonTrack) AliFatal("Not a standard AOD");
       if (muonTrack) {
-        if (!IsGoodMUONtrack(*muonTrack)) 
-          continue;
+        if ( !IsGoodMUONtrack(*muonTrack) ) continue;
+        Double_t ptMu   = muonTrack->Pt();
+        Double_t etaMu  = muonTrack->Eta();
+        if (IsTrigger(etaMu,ptMu)||IsAssociated(etaMu,ptMu))
+          nGoodMuons++;
+      }
+    }
+    // fill them into the mini event
+    miniEvt->reserve(miniEvt->size()+nGoodMuons);
+    for (Int_t iMu = 0; iMu<fAOD->GetNumberOfTracks(); iMu++) {
+      AliAODTrack* muonTrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iMu));
+      if(!muonTrack) AliFatal("Not a standard AOD");
+      if (muonTrack) {
+        if ( !IsGoodMUONtrack(*muonTrack) ) continue;
         Double_t ptMu   = muonTrack->Pt();
         Double_t etaMu  = muonTrack->Eta();
         Double_t phiMu  = muonTrack->Phi();
@@ -1153,6 +1170,41 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
   return 1;
 }
 
+
+//________________________________________________________________________
+Bool_t AliDhcTask::HasMuonESD()
+{
+  // does this ESD event have a good muon?
+  for (Int_t iMu = 0; iMu<fESD->GetNumberOfMuonTracks(); iMu++) {
+    AliESDMuonTrack* muonTrack = fESD->GetMuonTrack(iMu);
+    if (muonTrack) {
+      if ( IsGoodMUONtrack(*muonTrack) ) {
+        Double_t ptMu   = muonTrack->Pt();
+        if (ptMu>fReqPtLo && ptMu<fReqPtHi)
+          return kTRUE;
+      }
+    }
+  }
+  return kFALSE;
+}
+
+//________________________________________________________________________
+Bool_t AliDhcTask::HasMuonAOD()
+{
+  // does this AOD event have a good muon?
+  for (Int_t iMu = 0; iMu<fAOD->GetNumberOfTracks(); iMu++) {
+    AliAODTrack* muonTrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iMu));
+    if(!muonTrack) AliFatal("Not a standard AOD");
+    if (muonTrack) {
+      if ( IsGoodMUONtrack(*muonTrack) ) {
+        Double_t ptMu   = muonTrack->Pt();
+        if (ptMu>fReqPtLo && ptMu<fReqPtHi)
+          return kTRUE;
+      }
+    }
+  }
+  return kFALSE;
+}
 //________________________________________________________________________
 void AliDhcTask::Terminate(Option_t *) 
 {
@@ -1207,22 +1259,26 @@ Bool_t AliDhcTask::VertexOk() const
 Bool_t AliDhcTask::IsGoodMUONtrack(AliESDMuonTrack &track)
 {
   // Applying track cuts for MUON tracks
-
-  if (!track.ContainTrackerData()) 
-    return kFALSE;
-  Double_t thetaTrackAbsEnd = TMath::ATan(track.GetRAtAbsorberEnd()/505.) * TMath::RadToDeg();
-  if ((thetaTrackAbsEnd < 2.) || (thetaTrackAbsEnd > 10.)) 
-    return kFALSE;
-  Double_t eta = track.Eta();
-  if ((eta < -4.) || (eta > -2.5))
-    return kFALSE;
-  if (fTriggerMatch) {
-    if (!track.ContainTriggerData()) 
+  
+  if (fUseMuonUtils) { // muon cut using official class
+    return fMuonTrackCuts->IsSelected(&track);
+  } else {             // manual muon cut
+    if (!track.ContainTrackerData())
       return kFALSE;
-    if (track.GetMatchTrigger() < 0.5) 
+    Double_t thetaTrackAbsEnd = TMath::ATan(track.GetRAtAbsorberEnd()/505.) * TMath::RadToDeg();
+    if ((thetaTrackAbsEnd < 2.) || (thetaTrackAbsEnd > 10.))
       return kFALSE;
+    Double_t eta = track.Eta();
+    if ((eta < -4.) || (eta > -2.5))
+      return kFALSE;
+    if (fTriggerMatch) {
+      if (!track.ContainTriggerData())
+        return kFALSE;
+      if (track.GetMatchTrigger() < 0.5)
+        return kFALSE;
+    }
+    return kTRUE;
   }
-  return kTRUE;
 }
 
 //________________________________________________________________________
@@ -1230,19 +1286,23 @@ Bool_t AliDhcTask::IsGoodMUONtrack(AliAODTrack &track)
 {
   // Applying track cuts for MUON tracks
 
-  if (!track.IsMuonTrack()) 
-    return kFALSE;
-  Double_t dThetaAbs = TMath::ATan(track.GetRAtAbsorberEnd()/505.)* TMath::RadToDeg();
-  if ((dThetaAbs<2.) || (dThetaAbs>10.)) 
-    return kFALSE;
-  Double_t dEta = track.Eta();
-  if ((dEta<-4.) || (dEta>-2.5)) 
-    return kFALSE;
-  if (fTriggerMatch) {
-    if (track.GetMatchTrigger()<0.5) 
+  if (fUseMuonUtils) { // muon cut using official class
+    return fMuonTrackCuts->IsSelected(&track);
+  } else {             // manual muon cut
+    if (!track.IsMuonTrack())
       return kFALSE;
+    Double_t dThetaAbs = TMath::ATan(track.GetRAtAbsorberEnd()/505.)* TMath::RadToDeg();
+    if ((dThetaAbs<2.) || (dThetaAbs>10.))
+      return kFALSE;
+    Double_t dEta = track.Eta();
+    if ((dEta<-4.) || (dEta>-2.5))
+      return kFALSE;
+    if (fTriggerMatch) {
+      if (track.GetMatchTrigger()<0.5)
+        return kFALSE;
+    }
+    return kTRUE;
   }
-  return kTRUE;
 }
 
 //________________________________________________________________________

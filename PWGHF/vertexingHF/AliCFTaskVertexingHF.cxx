@@ -852,7 +852,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 		
     //Fill the MC container
     Bool_t mcContainerFilled = cfVtxHF -> FillMCContainer(containerInputMC);
-    AliDebug(2, Form("particle = %d mcContainerFilled = %d",iPart, mcContainerFilled));
+    AliDebug(2, Form("particle = %d mcContainerFilled = %d", iPart, mcContainerFilled));
     if (mcContainerFilled) {
       if (fUseWeight){
 	if (fHistoPtWeight) { // using an histogram as weight function
@@ -1019,7 +1019,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       }		
       //Reco Step
       Bool_t recoStep = cfVtxHF->RecoStep();
-      if (recoStep) AliDebug(2, Form("CF task: Reco step for candidate %d is %d", iCandid, (Int_t)recoStep));
+      if (recoStep) AliDebug(2, Form("particle = %d --> CF task: Reco step for candidate %d is %d", iCandid, iCandid, (Int_t)recoStep));
       Bool_t vtxCheck = fCuts->IsEventSelected(aodEvent);
 			
 
@@ -1073,7 +1073,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	      if(keepDs) recoAnalysisCuts=3;
 	    }
 	    else if (fDecayChannel==22){ // Lc->V0+bachelor case, where more possibilities are considered
-	      Bool_t keepLctoV0bachelor=ProcessLctoV0Bachelor(recoAnalysisCuts);
+	      Bool_t keepLctoV0bachelor = ProcessLctoV0Bachelor(recoAnalysisCuts);
 	      if (keepLctoV0bachelor) recoAnalysisCuts=3;
 	      AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
 	      AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
@@ -1085,6 +1085,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 
 	    fCuts->SetUsePID(iscutsusingpid); //restoring usage of the PID from the cuts object	
 	    Bool_t tempAn=(recoAnalysisCuts == 3 || recoAnalysisCuts == isPartOrAntipart);
+	    if (fDecayChannel == 22) tempAn = (recoAnalysisCuts == 3);
 	    if (fDecayChannel == 32) tempAn=(recoAnalysisCuts >0 || recoAnalysisCuts == isPartOrAntipart);
                                                 
 	    if (tempAn){
@@ -1105,6 +1106,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	      }
 
 	      Bool_t tempPid=(recoPidSelection == 3 || recoPidSelection == isPartOrAntipart);
+	      if (fDecayChannel == 22) tempPid = (recoPidSelection == 3);
 	      if (fDecayChannel == 32) tempPid=(recoPidSelection >0 || recoPidSelection == isPartOrAntipart);
 
 	      if (tempPid){
@@ -1746,24 +1748,27 @@ Bool_t AliCFTaskVertexingHF::ProcessDs(Int_t recoAnalysisCuts) const{
 }
 //__________________________________________________________________________________________________
 Bool_t AliCFTaskVertexingHF::ProcessLctoV0Bachelor(Int_t recoAnalysisCuts) const{
+
   // processes output of Lc->V0+bnachelor is selected
+
   Bool_t keep=kFALSE;
-  if(recoAnalysisCuts > 0){
+
+  if (recoAnalysisCuts > 0){
 
     Int_t isK0Sp = recoAnalysisCuts&1;
     Int_t isLambdaBarpi = recoAnalysisCuts&2;
     Int_t isLambdapi = recoAnalysisCuts&4;
 
-    if(fLctoV0bachelorOption==1){
+    if(fLctoV0bachelorOption == 1){
       if(isK0Sp) keep=kTRUE;
     }
-    else if(fLctoV0bachelorOption==2){
+    else if(fLctoV0bachelorOption == 2){
       if(isLambdaBarpi) keep=kTRUE;
     }
-    else if(fLctoV0bachelorOption==4){
+    else if(fLctoV0bachelorOption == 4){
       if(isLambdapi) keep=kTRUE;
     }
-    else if(fLctoV0bachelorOption==7) {
+    else if(fLctoV0bachelorOption == 7) {
       if (isK0Sp || isLambdaBarpi || isLambdapi) keep=kTRUE;
     }
   }

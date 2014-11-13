@@ -138,6 +138,24 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t trainConfig = 1,  //change different s
 		eventCutArray[ 2] = "5260001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "10000040022030000"; mesonCutArray[ 2] = "01525065000000"; // 20-60%
 		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "10000040022030000"; mesonCutArray[ 3] = "01525065000000"; // 40-80%
 		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "10000040022030000"; mesonCutArray[ 4] = "01525065000000"; // 20-50%				
+	} else if (trainConfig == 4){ // EMCAL clusters
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "10000043022030000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "10000043022030000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "10000043022030000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "10000043022030000"; mesonCutArray[ 3] = "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "10000043022030000"; mesonCutArray[ 4] = "01525065000000"; // 20-50%
+	} else if (trainConfig == 5){ // EMCAL clusters
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "10000043022030000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "10000043022030000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "10000043022030000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "10000043022030000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5240001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "10000043022030000"; mesonCutArray[ 4] = "01525065000000"; // 20-40%		
+	} else if (trainConfig == 6){ // EMCAL clusters
+		eventCutArray[ 0] = "5460001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "10000043022030000"; mesonCutArray[ 0] = "01525065000000"; // 40-60%
+		eventCutArray[ 1] = "5680001"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "10000043022030000"; mesonCutArray[ 1] = "01525065000000"; // 60-80%
+		eventCutArray[ 2] = "5260001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "10000043022030000"; mesonCutArray[ 2] = "01525065000000"; // 20-60%
+		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "10000043022030000"; mesonCutArray[ 3] = "01525065000000"; // 40-80%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "10000043022030000"; mesonCutArray[ 4] = "01525065000000"; // 20-50%				
 	} else if (trainConfig == 31){ // PHOS clusters
 		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "20000042053200000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
 		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "20000042053200000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
@@ -156,6 +174,24 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t trainConfig = 1,  //change different s
 		eventCutArray[ 2] = "5260001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "20000042053200000"; mesonCutArray[ 2] = "01525065000000"; // 20-60%
 		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "20000042053200000"; mesonCutArray[ 3] = "01525065000000"; // 40-80%
 		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "20000042053200000"; mesonCutArray[ 4] = "01525065000000"; // 20-50%						
+	} else if (trainConfig == 34){ // PHOS clusters
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "20000043053200000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "20000043053200000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "20000043053200000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "20000043053200000"; mesonCutArray[ 3] = "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "20000043053200000"; mesonCutArray[ 4] = "01525065000000"; // 20-50%
+	} else if (trainConfig == 35){ // PHOS clusters
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "20000043053200000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "20000043053200000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "20000043053200000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "20000043053200000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5240001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "20000043053200000"; mesonCutArray[ 4] = "01525065000000"; // 20-40%		
+	} else if (trainConfig == 36){ // PHOS clusters
+		eventCutArray[ 0] = "5460001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "20000043053200000"; mesonCutArray[ 0] = "01525065000000"; // 40-60%
+		eventCutArray[ 1] = "5680001"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "20000043053200000"; mesonCutArray[ 1] = "01525065000000"; // 60-80%
+		eventCutArray[ 2] = "5260001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "20000043053200000"; mesonCutArray[ 2] = "01525065000000"; // 20-60%
+		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "20000043053200000"; mesonCutArray[ 3] = "01525065000000"; // 40-80%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "20000043053200000"; mesonCutArray[ 4] = "01525065000000"; // 20-50%								
 	} else {
 		Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
