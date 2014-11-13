@@ -899,6 +899,16 @@ protected:
     }
     x2 = TMath::Min(x1 + dX, xR);
   } 
+  //__________________________________________________________________
+  /** 
+   * Make a legend 
+   * 
+   * @param p 
+   * @param flags 
+   * @param autoFill 
+   * 
+   * @return 
+   */
   TLegend* MakeLegend(TVirtualPad* p, UInt_t flags, Bool_t autoFill)
   {
     Double_t x1 = fParVal->GetX();
