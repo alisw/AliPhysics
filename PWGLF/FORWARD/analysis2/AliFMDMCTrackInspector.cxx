@@ -231,25 +231,15 @@ AliFMDMCTrackInspector::RingHistos::FillMC(UShort_t flag, Double_t eta,
 }
 
 //____________________________________________________________________
-Bool_t
-AliFMDMCTrackInspector::RingHistos::Smooth(const TList* dir, 
-					   const char* name) const
+void
+AliFMDMCTrackInspector::RingHistos::Scale(TH1* dist) const
 {
-  TList* l = GetOutputList(dir);
-  if (!l) return false; 
-  
-  TH2* h = static_cast<TH2*>(l->FindObject(name));
-  if (!h) return false;
-  
-  // Smooth distributions looking at 3 bins together. 
-  TH2* orig = static_cast<TH2*>(h->Clone(Form("%s_orig", name)));
-  l->Add(orig);
-
-  h->Smooth(1, "k3a");
-
-  return true;
+  // First scale to bin width 
+  AliFMDEnergyFitter::RingHistos::Scale(dist);
+  // Then smoothen the histogram 
+  dist->Smooth(2);
 }
-
+  
 //____________________________________________________________________
 TObjArray*
 AliFMDMCTrackInspector::RingHistos::Fit(TList*           dir, 
@@ -263,10 +253,6 @@ AliFMDMCTrackInspector::RingHistos::Fit(TList*           dir,
 					Double_t         regCut,
 					EResidualMethod  residuals) const
 {
-  if (!Smooth(dir, "eloss")) return 0;
-  if (!Smooth(dir, "primary")) return 0;
-  if (!Smooth(dir, "secondary")) return 0;
-  
   TObjArray* all  = FitSlices(dir, "eloss", lowCut, nParticles, minEntries, 
 			      minusBins, relErrorCut, chi2nuCut, minWeight, 
 			      regCut, residuals, false, 0);
