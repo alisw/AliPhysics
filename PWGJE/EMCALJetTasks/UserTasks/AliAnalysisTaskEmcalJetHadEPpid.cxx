@@ -2336,18 +2336,28 @@ Double_t AliAnalysisTaskEmcalJetHadEPpid::EffCorrection(Double_t trackETA, Doubl
   TRefficiency = new TF2("eff", "([0]*exp(-pow([1]/x,[2])) + [3]*x) * ( (y>-0.07)*([4] + [5]*y + [6]*y*y) + (y<=-0.07)*([7] + [8]*y + [9]*y*y) ) ", trETAmin, trETAmax, trPTmin, trPTmax, npar);
 */
 
+  Int_t runNUM = fCurrentRunNumber;
+
+  if ((runNUM == 169975 || runNUM == 169981 || runNUM == 170038 || runNUM == 170040 || runNUM == 170083 || runNUM == 170084 || runNUM == 170085 || runNUM == 170088 || runNUM == 170089 || runNUM == 170091 || runNUM == 170155 || runNUM == 170159 || runNUM == 170163 || runNUM == 170193 || runNUM == 170195 || runNUM == 170203 || runNUM == 170204 || runNUM == 170228 || runNUM == 170230 || runNUM == 170268 || runNUM == 170269 || runNUM == 170270 || runNUM == 170306 || runNUM == 170308 || runNUM == 170309) && fCent < 30 && effSwitch!=1 && effSwitch!=6) effSwitch = 2;
+
+  if ((runNUM == 169975 || runNUM == 169981 || runNUM == 170038 || runNUM == 170040 || runNUM == 170083 || runNUM == 170084 || runNUM == 170085 || runNUM == 170088 || runNUM == 170089 || runNUM == 170091 || runNUM == 170155 || runNUM == 170159 || runNUM == 170163 || runNUM == 170193 || runNUM == 170195 || runNUM == 170203 || runNUM == 170204 || runNUM == 170228 || runNUM == 170230 || runNUM == 170268 || runNUM == 170269 || runNUM == 170270 || runNUM == 170306 || runNUM == 170308 || runNUM == 170309) && fCent > 30 && effSwitch!=1 && effSwitch!=6) effSwitch = 3;
+
+  if ((runNUM == 167903 || runNUM == 167915 || runNUM == 167987 || runNUM == 167988 || runNUM == 168066 || runNUM == 168068 || runNUM == 168069 || runNUM == 168076 || runNUM == 168104 || runNUM == 168107 || runNUM == 168108 || runNUM == 168115 || runNUM == 168212 || runNUM == 168310 || runNUM == 168311 || runNUM == 168322 || runNUM == 168325 || runNUM == 168341 || runNUM == 168342 || runNUM == 168361 || runNUM == 168362 || runNUM == 168458 || runNUM == 168460 || runNUM == 168461 || runNUM == 168464 || runNUM == 168467 || runNUM == 168511 || runNUM == 168512 || runNUM == 168777 || runNUM == 168826 || runNUM == 168984 || runNUM == 168988 || runNUM == 168992 || runNUM == 169035 || runNUM == 169091 || runNUM == 169094 || runNUM == 169138 || runNUM == 169143 || runNUM == 169144 || runNUM == 169145 || runNUM == 169148 || runNUM == 169156 || runNUM == 169160 || runNUM == 169167 || runNUM == 169238 || runNUM == 169411 || runNUM == 169415 || runNUM == 169417 || runNUM == 169835 || runNUM == 169837 || runNUM == 169838 || runNUM == 169846 || runNUM == 169855 || runNUM == 169858 || runNUM == 169859 || runNUM == 169923 || runNUM == 169956 || runNUM == 170027 || runNUM == 170036 || runNUM == 170081) && fCent < 30 && effSwitch!=1 && effSwitch!=6) effSwitch = 4;
+
+  if ((runNUM == 167903 || runNUM == 167915 || runNUM == 167987 || runNUM == 167988 || runNUM == 168066 || runNUM == 168068 || runNUM == 168069 || runNUM == 168076 || runNUM == 168104 || runNUM == 168107 || runNUM == 168108 || runNUM == 168115 || runNUM == 168212 || runNUM == 168310 || runNUM == 168311 || runNUM == 168322 || runNUM == 168325 || runNUM == 168341 || runNUM == 168342 || runNUM == 168361 || runNUM == 168362 || runNUM == 168458 || runNUM == 168460 || runNUM == 168461 || runNUM == 168464 || runNUM == 168467 || runNUM == 168511 || runNUM == 168512 || runNUM == 168777 || runNUM == 168826 || runNUM == 168984 || runNUM == 168988 || runNUM == 168992 || runNUM == 169035 || runNUM == 169091 || runNUM == 169094 || runNUM == 169138 || runNUM == 169143 || runNUM == 169144 || runNUM == 169145 || runNUM == 169148 || runNUM == 169156 || runNUM == 169160 || runNUM == 169167 || runNUM == 169238 || runNUM == 169411 || runNUM == 169415 || runNUM == 169417 || runNUM == 169835 || runNUM == 169837 || runNUM == 169838 || runNUM == 169846 || runNUM == 169855 || runNUM == 169858 || runNUM == 169859 || runNUM == 169923 || runNUM == 169956 || runNUM == 170027 || runNUM == 170036 || runNUM == 170081) && fCent > 30 && effSwitch!=1 && effSwitch!=6) effSwitch = 5;
+
   // set parameter values
   Double_t p[10] = {9.30132e-01, 9.78828e-02, 1.50626e+00, -1.30398e-02, 9.04935e-01, 2.93456e-01, -3.84654e-01, 8.64688e-01, -2.59244e-01, -3.50544e-01};  
-  Double_t m[10] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-  Double_t n[10] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-  Double_t q[10] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+  Double_t m[10] = {9.64508e-01, 9.53247e-01, 3.34584e+01, -4.44705e-03, 8.42526e-01, 2.64031e-01, -3.37155e-01, 8.00933e-01, -2.52274e-01, -3.32314e-01};
+  Double_t r[10] = {9.32462e-01, 9.65724e-02, 1.46878e+00, -1.58579e-02, 9.46241e-01, 1.98548e-01, -2.93280e-01, 9.05743e-01, -1.55519e-01, -2.54959e-01};
+  Double_t n[9] = {1.01595e+00, 4.46603e-05, 1.53587e+00, -1.14282e-03, 7.87525e-01, 3.35267e-01, -5.68939e-01, 5.19236e-01, -5.20195e-01};
+  Double_t q[9] = {19.72915e-01, 6.38626e-01, 8.47813e+00, -1.03864e-02, 9.01610e-01, 9.71765e-02, -4.94174e-01, 1.11112e+00, -9.64431e-01};
 
   // x-variable = track pt, y-variable = track eta
   Double_t x = trackPT;
   Double_t y = trackETA;
   Double_t TRefficiency = -999;
 
-  // Case 2, 3, 4 - Waiting for Natasha's parametrizations..
   // set up a switch for different parameter values...
   switch(effSwitch) {
     case 1 :
@@ -2359,21 +2369,29 @@ Double_t AliAnalysisTaskEmcalJetHadEPpid::EffCorrection(Double_t trackETA, Doubl
       break;
 
     case 2 :
-      // Parameter values for Semi-GOOD TPC (LHC11h) runs:
+      // Parameter values for Semi-GOOD TPC (LHC11h) runs (0-30%):
       TRefficiency = (m[0]*exp(-pow(m[1]/x,m[2])) + m[3]*x) * ( (y>-0.07)*(m[4] + m[5]*y + m[6]*y*y) + (y<=-0.07)*(m[7] + m[8]*y + m[9]*y*y) );
-      TRefficiency = 1.0;
       break;
 
     case 3 :
-      // Parameter values for GOOD TPC (LHC11h) runs:
-      TRefficiency = (n[0]*exp(-pow(n[1]/x,n[2])) + n[3]*x) * ( (y>-0.07)*(n[4] + n[5]*y + n[6]*y*y) + (y<=-0.07)*(n[7] + n[8]*y + n[9]*y*y) );
-      TRefficiency = 1.0;
+      // Parameter values for Semi-GOOD TPC (LHC11h) runs (30-90%):
+      TRefficiency = (r[0]*exp(-pow(r[1]/x,r[2])) + r[3]*x) * ( (y>-0.07)*(r[4] + r[5]*y + r[6]*y*y) + (y<=-0.07)*(r[7] + r[8]*y + r[9]*y*y) );
       break;
 
     case 4 :
+      // Parameter values for GOOD TPC (LHC11h) runs (0-30%):
+      TRefficiency = (n[0]*exp(-pow(n[1]/x,n[2])) + n[3]*x) * (n[4] + n[5]*y + n[6]*y*y + n[7]*y*y*y + n[8]*y*y*y*y);
+      break;
+
+    case 5 :
+      // Parameter values for GOOD TPC (LHC11h) runs (30-90%):
+      TRefficiency = (q[0]*exp(-pow(q[1]/x,q[2])) + q[3]*x) * (q[4] + q[5]*y + q[6]*y*y + q[7]*y*y*y + q[8]*y*y*y*y);
+      break;
+
+    case 6 :
       // Parameter values for tweaking efficiency function..
       TRefficiency = (q[0]*exp(-pow(q[1]/x,q[2])) + q[3]*x) * ( (y>-0.07)*(q[4] + q[5]*y + q[6]*y*y) + (y<=-0.07)*(q[7] + q[8]*y + q[9]*y*y) );
-      TRefficiency = 1.0;
+      TRefficiency = 1.0; // for now
       break;
 
     default :

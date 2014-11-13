@@ -122,7 +122,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 
 		// histograms for rec photon clusters
 		TH1F								** fHistoClusGammaPt;				//! array of histos with cluster, pt
-										
+		TH1F								** fHistoClusOverlapHeadersGammaPt;	//! array of histos with cluster, pt overlapping with other headers
 		//histograms for pure MC quantities
 		TH1I 								**fHistoMCHeaders;					//! array of histos for header names
 		TH1F 								**fHistoMCAllGammaPt;				//! array of histos with all gamma, pT
@@ -256,6 +256,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		Int_t 								fDoMesonQA;							// flag for meson QA
 		Int_t 								fDoClusterQA;						// flag for cluster QA
 		Bool_t 								fIsFromMBHeader;					// flag for MC headers
+		Bool_t								fIsOverlappingWithOtherHeader; 		// flag for particles in MC overlapping between headers
 		Bool_t 								fIsMC;								// flag for MC information
 
 

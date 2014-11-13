@@ -78,7 +78,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   // histos
   void FillLc2pK0Sspectrum(AliAODRecoCascadeHF *part, Int_t isLc,
 			   Int_t &nSelectedAnal, AliRDHFCutsLctoV0 *cutsAnal,
-			   TClonesArray *mcArray);
+			   TClonesArray *mcArray, Int_t iLctopK0s);
 
   void MakeAnalysisForLc2prK0S(TClonesArray *arrayLctopK0s,
 			       TClonesArray *mcArray,
