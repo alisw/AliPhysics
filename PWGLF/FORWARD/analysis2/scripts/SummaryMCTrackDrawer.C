@@ -94,6 +94,8 @@ protected:
 			 const char* prefix,
 			 UShort_t extra=0x1F)
   {
+    Info("DrawBetaGammadEdx", "Drawing beta*gamma & dE/dx from %s", 
+	 dir->GetName());
     fBody->Divide(2,2);
     
     TH2* betaGammadEdx = GetH2(dir, "betaGammadEdx");
@@ -101,23 +103,49 @@ protected:
     TH2* dEdxEta       = GetH2(dir, "dEdxEta");
 
     if (betaGammadEdx) {
-      UInt_t opt = kLogx|kLogy|kLogz;
+      Int_t n = betaGammadEdx->GetEntries();
+      betaGammadEdx->Scale(1./n, "width");
+      UInt_t opt = kLogx|kLogy|kLogz|kGridx;
       DrawInPad(fBody, 1, betaGammadEdx, "colz", opt);
-      TList l;
-      if (extra & 0x01 && FromGFMATE())     l.Add(FromGFMATE(),     "C3 SAME");
-      if (extra & 0x02 && FromRPPFull())    l.Add(FromRPPFull(),    "C SAME");
-      if (extra & 0x04 && FromRPPNoDelta()) l.Add(FromRPPNoDelta(), "C SAME");
-      if (extra & 0x08 && FromRPPNoRad())   l.Add(FromRPPNoRad(),   "C SAME");
-      if (extra & 0x10 && FromRPPMean())    l.Add(FromRPPMean(),    "C SAME");
-      TObjLink* lnk = l.FirstLink();
-      while (lnk && lnk->GetObject()) { 
-	DrawInPad(fBody, 1, lnk->GetObject(), 
-		  lnk->GetOption(), lnk == l.LastLink() ? kLegend : 0);
-	lnk = lnk->Next();
+      TGraph* gs[] = { 0, 0, 0, 0, 0 }; 
+
+      if (extra & 0x01) DrawInPad(fBody, 1, gs[0]=FromGFMATE(),     "C3 SAME");
+      if (extra & 0x02) DrawInPad(fBody, 1, gs[1]=FromRPPFull(),    "C SAME");
+      if (extra & 0x04) DrawInPad(fBody, 1, gs[2]=FromRPPNoDelta(), "C SAME");
+      if (extra & 0x08) DrawInPad(fBody, 1, gs[3]=FromRPPNoRad(),   "C SAME");
+      if (extra & 0x10) DrawInPad(fBody, 1, gs[4]=FromRPPMean(),    "C SAME");
+
+      TArrow* mip = new TArrow(3.5, 1.1*betaGammadEdx->GetYaxis()->GetXmin(), 
+			       3.5, .6, 0.02, "<|");
+      mip->SetAngle(30);
+      mip->SetLineWidth(2);
+      mip->SetFillColor(mip->GetLineColor());
+      fBody->cd(1);
+      mip->Draw();
+
+      TLegend* l = new TLegend(0.05, 0.05, 0.95, 0.95);
+      l->SetBorderSize(0);
+      l->SetFillColor(0);
+      l->SetFillStyle(0);
+      // l->SetNColumns(2);
+      // l->SetNDC();
+      for (Int_t i = 0; i < 5; i++) { 
+	if (!gs[i]) continue; 
+	l->AddEntry(gs[i], gs[i]->GetTitle(), "l");
       }
+      fBody->cd(4);
+      l->Draw();
     }
-    if (betaGammaEta) DrawInPad(fBody, 2, betaGammaEta, "colz", kLogy|kLogz);
-    if (dEdxEta)      DrawInPad(fBody, 3, dEdxEta,      "colz", kLogy|kLogz);
+    if (betaGammaEta) {
+      Int_t n = betaGammaEta->GetEntries();
+      betaGammaEta->Scale(1./n, "width");      
+      DrawInPad(fBody, 2, betaGammaEta, "colz", kLogy|kLogz|kGridx);
+    }
+    if (dEdxEta) {
+      Int_t n = dEdxEta->GetEntries();
+      dEdxEta->Scale(1. / n, "width");      
+      DrawInPad(fBody, 3, dEdxEta,      "colz", kLogy|kLogz|kGridy);
+    }
 
     TString tit(prefix);
     if (!tit.IsNull()) tit.Append(" - ");
@@ -137,6 +165,7 @@ protected:
   //____________________________________________________________________
   void DrawELossFits(TCollection* parent)
   {
+    Info("DrawELossFits", "Drawing energy loss fits");
     TCollection* ef = GetCollection(parent, "fmdEnergyFitter");
     if (!ef) return ; 
 
@@ -151,6 +180,7 @@ protected:
       }
       
       DrawBetaGammadEdx(ringCol, *ringPtr);
+      Info("DrawELossFits", "Drawing energy loss fits for %s", *ringPtr);
 
       TCollection* all  = GetCollection(ringCol, "elossDists");
       TCollection* prim = GetCollection(ringCol, "primaryDists");
@@ -164,6 +194,7 @@ protected:
       TH1*  allHist = 0;
       Int_t iPad    = 0;
       Int_t nPad    = 2;
+      Int_t nTotal  = 0;
       while ((allHist = static_cast<TH1*>(next()))) {
 	TH1* primHist = static_cast<TH1*>(prim->FindObject(allHist->GetName()));
 	TH1* secHist  = static_cast<TH1*>(sec ->FindObject(allHist->GetName()));
@@ -179,7 +210,8 @@ protected:
 	DrawInPad(fBody, iPad, allHist,  "",     kLogy);
 	DrawInPad(fBody, iPad, primHist, "same", kLogy);
 	DrawInPad(fBody, iPad, secHist,  "same", kLogy|kLegend);
-	
+	nTotal++;
+
 	if (iPad == nPad) { 
 	  PrintCanvas(Form("%s Delta fits - page %d", 
 			   *ringPtr, iPad/nPad));
@@ -187,6 +219,8 @@ protected:
 	  iPad = 0;
 	}
       }
+      Info("DrawELossFits", "Drew %d energy loss fits for %s", 
+	   nTotal, *ringPtr);
       
       ringPtr++;
     }
