@@ -109,7 +109,7 @@ protected:
     // --- Add the task ----------------------------------------------
     TString cenConfig = fOptions.Get("central-config");
     AliAnalysisTask* cen = CoupleCar("AddTaskCentralMult.C",
-				   Form("%d,%ld,%d,%d,%d,\"%s\",\"%s\")", 
+				   Form("%d,%ld,%d,%d,%d,\"%s\",\"%s\"", 
 					  mc, run, sys, sNN, fld, 
 					  cenConfig.Data(), cor.Data()));
     if (cen)
