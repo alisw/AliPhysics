@@ -25,6 +25,7 @@ class AliTPCPreprocessor : public AliPreprocessor
     virtual UInt_t Process(TMap* dcsAliasMap);
     UInt_t  MapTemperature(TMap* dcsAliasMap);
     UInt_t  MapHighVoltage(TMap* dcsAliasMap);
+    UInt_t  MapGasComposition(TMap* dcsAliasMap);
     UInt_t  MapGoofie(TMap* dcsAliasMap);
     UInt_t  MapPressure(TMap* dcsAliasMap);
     UInt_t  ExtractPedestals(Int_t sourceFXS);
@@ -42,6 +43,7 @@ class AliTPCPreprocessor : public AliPreprocessor
     AliDCSSensorArray      *fHighVoltageStat; // DCS high voltage status
     AliDCSSensorArray      *fGoofie;   // Goofie values from DCS
     AliDCSSensorArray      *fPressure;   // Pressure values from DCS
+    AliDCSSensorArray      *fGasComposition;   // Gas composition values from DCS
     Bool_t                 fConfigOK;  // Identify succesful reading of OCDB Config
     AliTPCROC              *fROC;      // TPC Read-Out configuration
 
