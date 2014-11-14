@@ -211,7 +211,8 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
   TString suffixPIDtaskJets1 = "",
   TString suffixPIDtaskJets2 = "",
   TString suffixPIDtaskInclusive1 = "",
-  TString suffixPIDtaskInclusive2 = "")
+  TString suffixPIDtaskInclusive2 = "",
+  Float_t MC_pThard_cut = -1.)
 {
    // Creates a fragmentation function task,
    // configures it and adds it to the analysis manager.
@@ -276,6 +277,7 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
    
    Printf("Radius cut: %f", radius);
    Printf("FilterMaskTracks: %d", filterMaskTracks);
+   Printf("MC_pThard_cut: %f", MC_pThard_cut);
    
    // attach the filter mask and options
    TString cAdd = "";
@@ -378,6 +380,8 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
    
    task->SetOnlyLeadingJets(onlyConsiderLeadingJets); // default: kFALSE
    
+   task->SetMCPtHardCut(MC_pThard_cut);
+   
    // Define histo bins
    task->SetFFHistoBins(23, 5, 120, 480, 0., 120.,70,  0., 7.,22,  0.,  1.1);
  
@@ -424,7 +428,7 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
                      strDir);
 
    mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
-   mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer()); 
+   mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());// Comment to run locally
    mgr->ConnectOutput (task, 1, coutput_FragFunc);
    
    postConfig(task, suffixPIDtaskJets1, suffixPIDtaskJets2, suffixPIDtaskInclusive1, suffixPIDtaskInclusive2);
