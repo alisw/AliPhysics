@@ -1028,7 +1028,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   //double b[2];
   //double bCov[3];
   const  AliAODVertex*	vertex;
-  int    nClus;
+  //int    nClus;
   bool   bitOK;
   
   AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
@@ -1122,7 +1122,9 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	}
       
       
-      if ( centrality < _centralityMin ||  centrality > _centralityMax )
+      if ( centrality < _centralityMin ||  
+	   centrality > _centralityMax ||
+	   fabs(v0Centr-trkCentr)>5.0)         //only for PbPb centrality
 	{
 	  return;
 	}
