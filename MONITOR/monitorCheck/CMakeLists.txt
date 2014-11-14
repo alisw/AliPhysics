@@ -44,10 +44,10 @@ target_link_libraries(${MODULE} RAWDatarec Core)
 set(MODULE_COMPILE_FLAGS)
 set(MODULE_LINK_FLAGS)
 
-#if(DATE_FOUND)
-#    set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
-#    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS}")
-#endif(DATE_FOUND)
+if(DATE_FOUND)
+    set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
+    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS} ${DATE_MONLIBS}")
+endif(DATE_FOUND)
 
 # Additional compilation and linking flags
 set(MODULE_COMPILE_FLAGS "-O -g ${MODULE_COMPILE_FLAGS}")
