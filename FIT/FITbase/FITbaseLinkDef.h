@@ -10,5 +10,9 @@
  
 #pragma link C++ class  AliFIT+;
 #pragma link C++ class  AliFITDigit+;
+#pragma link C++ class  AliFITDigitizer+;
+#pragma link C++ class  AliFITHits+;
+#pragma link C++ class  AliFITRawData+;
+#pragma link C++ class  AliFITRawReader+;
 
 #endif

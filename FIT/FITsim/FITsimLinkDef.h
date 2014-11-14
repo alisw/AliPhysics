@@ -7,7 +7,9 @@
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
- 
-#pragma link C++ class  AliFITReconstructor+;
-#pragma link C++ class  AliFITRawReader+;
+
+#pragma link C++ class  AliFITv2+;
+#pragma link C++ class  AliFITv1+;
+#pragma link C++ class  AliFITv0+;
+
 #endif
