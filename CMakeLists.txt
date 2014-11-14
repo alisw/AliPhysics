@@ -59,7 +59,7 @@ check_language(Fortran)
 if(CMAKE_Fortran_COMPILER)
     enable_language(Fortran OPTIONAL)
 else()
-    message("No Fortran support. Disabling LHAPDF, PHYTIA6, MICROCERN")
+    message("No Fortran support. Disabling LHAPDF, PHYTIA6, MICROCERN, etc.")
 endif()
 
 
@@ -131,6 +131,7 @@ add_subdirectory(ZDC)
 
 # Fortran modules
 if(CMAKE_Fortran_COMPILER)
+  add_subdirectory(HERWIG)
   add_subdirectory(HIJING)
   add_subdirectory(LHAPDF)
   add_subdirectory(MICROCERN)
