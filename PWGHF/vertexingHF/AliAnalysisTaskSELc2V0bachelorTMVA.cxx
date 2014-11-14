@@ -423,13 +423,25 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::Terminate(Option_t*)
   }
 
   
-  AliDebug(2, Form("At MC level, %f Lc --> K0S + p were found", fHistoMCLcK0SpGen->GetEntries()));
-  AliDebug(2, Form("At MC level, %f Lc --> K0S + p were found in the acceptance", fHistoMCLcK0SpGenAcc->GetEntries()));
-  AliDebug(2, Form("At Reco level, %lld Lc --> K0S + p were found", fVariablesTreeSgn->GetEntries()));
-  AliInfo(Form("At MC level, %f Lc --> K0S + p were found", fHistoMCLcK0SpGen->GetEntries()));
-  AliInfo(Form("At MC level, %f Lc --> K0S + p were found in the acceptance", fHistoMCLcK0SpGenAcc->GetEntries()));
-  AliInfo(Form("At Reco level, %lld Lc --> K0S + p were found", fVariablesTreeSgn->GetEntries()));
-
+  //AliDebug(2, Form("At MC level, %f Lc --> K0S + p were found", fHistoMCLcK0SpGen->GetEntries()));
+  //AliDebug(2, Form("At MC level, %f Lc --> K0S + p were found in the acceptance", fHistoMCLcK0SpGenAcc->GetEntries()));
+  //AliDebug(2, Form("At Reco level, %lld Lc --> K0S + p were found", fVariablesTreeSgn->GetEntries()));
+  if(fHistoMCLcK0SpGen) {
+    AliInfo(Form("At MC level, %f Lc --> K0S + p were found", fHistoMCLcK0SpGen->GetEntries()));
+  } else {
+    AliInfo("fHistoMCLcK0SpGen not available");
+  }
+  if(fHistoMCLcK0SpGenAcc) {
+    AliInfo(Form("At MC level, %f Lc --> K0S + p were found in the acceptance", fHistoMCLcK0SpGenAcc->GetEntries()));
+  } else {
+    AliInfo("fHistoMCLcK0SpGenAcc not available");
+  }
+  if(fVariablesTreeSgn) {
+    AliInfo(Form("At Reco level, %lld Lc --> K0S + p were found", fVariablesTreeSgn->GetEntries()));
+  } else {
+    AliInfo("fVariablesTreeSgn not available");
+  }    
+  
   fOutputKF = dynamic_cast<TList*> (GetOutputData(6));
   if (!fOutputKF) {     
     AliError("fOutputKF not available");
@@ -879,12 +891,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
   if ( !fUseMCInfo && fIspA) {
     fAnalCuts->SetTriggerClass("");
     fAnalCuts->SetTriggerMask(AliVEvent::kINT7);
-  }
-
-  Int_t runnumber = aodEvent->GetRunNumber();
-  if (aodEvent->GetTriggerMask() == 0 && (runnumber >= 195344 && runnumber <= 195677)){
-    AliDebug(3,"Event rejected because of null trigger mask");
-    return;
   }
 
   fCounter->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo);
