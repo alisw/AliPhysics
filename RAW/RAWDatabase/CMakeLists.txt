@@ -48,7 +48,9 @@ set(SRCS
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 # Extra headers in alphabetical order
-set(HDRS ${HDRS} AliRawEventHeaderVersions.h AliRawDataHeader.h AliRawDataHeaderV3.h)
+set(HDRS ${HDRS} AliRawEventHeaderVersions.h)
+
+#There is some DATE here, check out the lib version
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument

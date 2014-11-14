@@ -13,20 +13,36 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-# MONITOR libraries
-add_subdirectory(MONITOR)
+# Module include folder
+include_directories(${AliRoot_SOURCE_DIR}/MONITOR/alionlinereco
+                   )
 
-# MONITOR executables
-add_subdirectory(alitestproc)
-add_subdirectory(deroot)
-add_subdirectory(monitorCheck)
-add_subdirectory(monitorGDC)
+# Additional include folders in alphabetical order
+include_directories(${AliRoot_SOURCE_DIR}/MONITOR/MONITOR
+                    ${AliRoot_SOURCE_DIR}/MONITOR/MONITORzmq
+                    ${AliRoot_SOURCE_DIR}/STEER/CDB
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                   )
 
-if(ZEROMQ_FOUND)
-    add_subdirectory(MONITORzmq)
-    add_subdirectory(alistoragemanager)
-    add_subdirectory(alionlinereco)
-endif(ZEROMQ_FOUND)
+add_definitions(-DZMQ)
+
+if(DIMDIR AND ODIR)
+    link_directories(${DIMDIR}/${ODIR})
+endif()
+
+if(DATE_FOUND)
+    message(STATUS  "Do something here")
+endif()
+
+# alistorage executable
+add_executable(alionlinereco onlinereco.cxx)
+target_link_libraries(alionlinereco MONITOR MONITORzmq STEERBase STEER)
+if(PYTHIA6)
+    target_link_libraries(alionlinereco EVGEN HepMC HepMCParser)
+endif(PYTHIA6)
+
+# Installation
+install(TARGETS alionlinereco RUNTIME DESTINATION bin)
 
 
-message(STATUS "MONITOR enabled")
