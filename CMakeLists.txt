@@ -123,6 +123,7 @@ if(CMAKE_Fortran_COMPILER)
   add_subdirectory(TEPEMGEN)
   add_subdirectory(THbtp)
   add_subdirectory(THijing)
+  add_subdirectory(HIJING)
 endif(CMAKE_Fortran_COMPILER)
 
 add_subdirectory(EVGEN)
