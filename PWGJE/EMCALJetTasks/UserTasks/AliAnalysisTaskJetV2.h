@@ -64,6 +64,8 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
                 if(x>TMath::TwoPi()/n) x = TMath::TwoPi()-(x+TMath::TwoPi()/n);
             }
             return x; }
+        /* inline */    static Bool_t   IsInPlane(Double_t dPhi) {
+            return (dPhi < -1.*TMath::Pi()/4. || dPhi > TMath::Pi()/4.); }
         /* inline */    static Double_t ChiSquarePDF(Int_t ndf, Double_t x) {
             Double_t n(ndf/2.), denom(TMath::Power(2, n)*TMath::Gamma(n));
             if (denom!=0)  return ((1./denom)*TMath::Power(x, n-1)*TMath::Exp(-x/2.)); 
@@ -219,6 +221,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         void                    FillWeightedJetHistograms(Double_t psi2);
         void                    FillWeightedQAHistograms(AliVTrack* vtrack) const;
         void                    FillWeightedQAHistograms(AliVEvent* vevent);
+        void                    FillWeightedTriggerQA(Double_t dPhi, Double_t pt, Double_t bkg, UInt_t trigger);
         void                    FillAnalysisSummaryHistogram() const;
         virtual void            Terminate(Option_t* option);
         // interface methods for the output file
@@ -337,6 +340,9 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TH1F*                   fHistClusterPt[10];     //! pt emcal clusters
         TH2F*                   fHistClusterEtaPhi[10]; //! eta phi emcal clusters
         TH2F*                   fHistClusterEtaPhiWeighted[10]; //! eta phi emcal clusters, pt weighted
+        // qa histograms for triggers
+        TH2F*                   fHistTriggerQAIn[10];   //! trigger qa in plane
+        TH2F*                   fHistTriggerQAOut[10];  //! trigger qa out of plane
         // qa event planes
         TProfile*               fHistPsiControl;        //! event plane control histogram
         TProfile*               fHistPsiSpread;         //! event plane spread histogram
