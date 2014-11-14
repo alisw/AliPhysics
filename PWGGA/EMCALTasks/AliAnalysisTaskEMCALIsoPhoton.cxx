@@ -986,7 +986,6 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
     if(nEt<0)
       printf("nEt=%1.1f\n",nEt);
     if(R<fIsoConeR){
-      totiso += nEt;
       if(c->GetM02()>0.1 && c->GetM02()<0.3 && !(matchedpt>0)){
 	TLorentzVector lv, lvec;
 	lv.SetPtEtaPhiM(Et,cv.Eta(),cv.Phi(),0);
@@ -996,10 +995,14 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
 	if(lpair.M()>0.11 && lpair.M()<0.165){
 	  fInConePairedClusEtVsCandEt->Fill(EtCl,Et);
 	  fInConePairClEt += Form("%f;",Et);
+	  continue;
 	}
 	else 
 	  fInConePairClEt += Form("%f;",0.0);
+	if(lpair.M()>0.52 && lpair.M()<0.58)
+	  continue;
       }
+      totiso += nEt;
       if(R<0.04)
 	totcore += nEt;
     }
