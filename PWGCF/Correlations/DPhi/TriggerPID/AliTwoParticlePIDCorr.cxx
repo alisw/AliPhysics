@@ -156,6 +156,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr() // All data members should be ini
  fPriHistShare(0),
   fhistcentrality(0),
  fhistImpactParm(0),
+ fhistImpactParmvsMult(0),
   fEventCounter(0),
   fEtaSpectrasso(0),
   fphiSpectraasso(0),
@@ -433,6 +434,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data membe
    fPriHistShare(0),
   fhistcentrality(0),
    fhistImpactParm(0),
+   fhistImpactParmvsMult(0),
   fEventCounter(0),
   fEtaSpectrasso(0),
   fphiSpectraasso(0),
@@ -751,7 +753,7 @@ fOutput->Add(fEtaSpectrasso);
 fphiSpectraasso=new TH2F("fphiSpectraasso","fphiSpectraasso",72,0,2*TMath::Pi(),100,0.,20.);
 fOutput->Add(fphiSpectraasso);
 
- if(fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE || fCentralityMethod == "MC_b"){ fCentralityCorrelation = new TH2D("fCentralityCorrelation", ";centrality;multiplicity", 101, 0, 101, 20000, 0,40000);
+ if(fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE || fCentralityMethod == "MC_b"){ fCentralityCorrelation = new TH2D("fCentralityCorrelation", ";centrality_ImpactParam;multiplicity", 101, 0, 101, 20000, 0,40000);
       fOutput->Add(fCentralityCorrelation);
  }
 
@@ -778,8 +780,10 @@ fhistcentrality=new TH1F("fhistcentrality","centrality",220,-5,105);
 fOutput->Add(fhistcentrality);
  }
  if(fCentralityMethod=="MC_b"){
-fhistImpactParm=new TH1F("fhistImpactParm","Impact_Parameter",300,0,30);
+fhistImpactParm=new TH1F("fhistImpactParm","Impact_Parameter",300,0,300);
 fOutput->Add(fhistImpactParm);
+fhistImpactParmvsMult=new TH2F("fhistImpactParmvsMult","Impact_Parameter_vs_Multiplicity",300,0,300,50001,-0.5,50000.5);
+fOutput->Add(fhistImpactParmvsMult);
  }
 
  TString gmultName[4] = {"V0A_MANUAL","V0C_MANUAL","V0M_MANUAL","TRACKS_MANUAL"};
@@ -2428,19 +2432,6 @@ fTrackHistEfficiency[5]->Fill(allrecomatchedpid,2);//for allreco matched
  }
  }
 
- //now start the particle identification process:)
-
-Float_t dEdx = PIDtrack->GetTPCsignal();
- fHistoTPCdEdx->Fill(track->Pt(), dEdx);
-
- if(HasTOFPID(PIDtrack))
-{
-Double_t beta = GetBeta(PIDtrack);
-fHistoTOFbeta->Fill(track->Pt(), beta);
- }
-
-//do track identification(nsigma method)
-  particletypeMC=GetParticle(PIDtrack,fFIllPIDQAHistos);//******************************problem is here
 switch(TMath::Abs(pdgCode)){
   case 2212:
     if(fFIllPIDQAHistos){
@@ -2471,6 +2462,24 @@ switch(TMath::Abs(pdgCode)){
     break;
   }
 
+
+ //now start the particle identification process:)
+
+Float_t dEdx = PIDtrack->GetTPCsignal();
+ fHistoTPCdEdx->Fill(track->Pt(), dEdx);
+
+ if(HasTOFPID(PIDtrack))
+{
+Double_t beta = GetBeta(PIDtrack);
+fHistoTOFbeta->Fill(track->Pt(), beta);
+ }
+
+ //remove the tracks which don't have proper TOF response-otherwise the misIDentification rate values will be wrong
+if(fRequestTOFPID && track->Pt()>fPtTOFPIDmin && (!HasTOFPID(PIDtrack)) ) continue;
+ 
+
+//do track identification(nsigma method)
+  particletypeMC=GetParticle(PIDtrack,fFIllPIDQAHistos);//******************************problem is here
 
 //2-d TPCTOF map(for each Pt interval)
   if(HasTOFPID(PIDtrack)){
@@ -2533,9 +2542,7 @@ if (((AliAODMCParticle*)recomatched)->IsPhysicalPrimary())  fTrackHistEfficiency
  }
    }
 
- //remove the tracks which don't have proper TOF response-otherwise the misIDentification rate values will be wrong(do it after the efficiency filling is complete)
-if(fRequestTOFPID && track->Pt()>fPtTOFPIDmin && (!HasTOFPID(PIDtrack)) ) continue;
- 
+
  //for misidentification fraction calculation(do it with tuneonPID)
  if(particletypeMC==SpPion )
    {
@@ -2869,7 +2876,9 @@ if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleT
   fHistoTOFbeta->Fill(track->Pt(), beta);
  }
   
-
+ //remove the tracks which don't have proper TOF response-otherwise the misIDentification rate values will be wrong(in MC)
+if(fRequestTOFPID && track->Pt()>fPtTOFPIDmin && (!HasTOFPID(PIDtrack)) ) continue;
+ 
 //track identification(using nsigma method)
      particletype=GetParticle(PIDtrack,fFIllPIDQAHistos);//*******************************change may be required(It should return only pion,kaon, proton and Spundefined; NOT unidentifed***************be careful)
 
@@ -4733,7 +4742,7 @@ Double_t AliTwoParticlePIDCorr::GetRefMultiOrCentrality(AliVEvent *mainevent, Bo
 
 if(fCentralityMethod=="V0M" || fCentralityMethod=="V0A" || fCentralityMethod=="V0C" || fCentralityMethod=="CL1" || fCentralityMethod=="ZNA" || fCentralityMethod=="V0AEq" || fCentralityMethod=="V0CEq" || fCentralityMethod=="V0MEq")//for PbPb, pPb, pp7TeV(still to be introduced)//data or RecoMC and also for TRUTH
     {
-          
+               
 if(fSampleType=="pp_7" && fPPVsMultUtils)
    {//for pp 7 TeV case only using Alianalysisutils class
 	if(fAnalysisUtils) cent_v0 = fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,fCentralityMethod);
@@ -4745,8 +4754,9 @@ if(fSampleType=="pp_7" && fPPVsMultUtils)
   fHistCentStats->Fill(4.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0CEq"));//only available for LHC10d at present (Quantile info)
   fHistCentStats->Fill(5.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0MEq"));//only available for LHC10d at present (Quantile info)
       }
+      
           
-else if(fSampleType=="pPb" || fSampleType=="PbPb")
+ else if(fSampleType=="pPb" || fSampleType=="PbPb")
   {
   AliCentrality *centralityObj=0;
   AliAODHeader *header = (AliAODHeader*) event->GetHeader();
@@ -4930,6 +4940,7 @@ else if(fAnalysisType == "MC"){
  if (fCentralityMethod == "MC_b"){
        cent_v0=gImpactParameter;
        fhistImpactParm->Fill(gImpactParameter);
+       fhistImpactParmvsMult->Fill(gImpactParameter,gRefMultiplicityTPC_Truth);
  }
 
  else if(fCentralityMethod == "TRACKS_MANUAL")   cent_v0=gRefMultiplicityTPC_Truth;
