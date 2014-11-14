@@ -1,6 +1,4 @@
-// $Id$
-
-AliAnalysisTaskRho* AddTaskRho(
+AliAnalysisTaskRho* AddTaskRho (
    const char    *nJets       = "Jets",
    const char    *nTracks     = "PicoTracks",
    const char    *nClusters   = "CaloClusters",  
@@ -76,4 +74,45 @@ AliAnalysisTaskRho* AddTaskRho(
   }
 
   return rhotask;
+}
+
+AliAnalysisTaskRho* AddTaskRho(
+   const char    *nJets       = "Jets",
+   const char    *nTracks     = "PicoTracks",
+   const char    *nClusters   = "CaloClusters",  
+   const char    *nRho        = "Rho",
+   Double_t       jetradius   = 0.2,
+   const char    *cutType     = "TPC",
+   Double_t       jetareacut  = 0.01,
+   Double_t       emcareacut  = 0,
+   const char    *sfuncPath   = "alien:///alice/cern.ch/user/s/saiola/LHC11h_ScaleFactorFunctions.root",
+   const char    *sfuncName   = "LHC11h_HadCorr20_ClustersV2",
+   const UInt_t   exclJets    = 2,
+   const Bool_t   histo       = kFALSE,
+   const char    *taskname    = "Rho"
+)
+{
+  TFile *file = TFile::Open(sfuncPath);
+  if (!file || file->IsZombie()) {
+    ::Error("AddTaskRho", "Could not open scale function file");
+    return NULL;
+  }
+
+  TF1* sfunc = dynamic_cast<TF1*>(file->Get(sfuncName));
+
+  if (sfunc) {
+    ::Info("AddTaskRho", Form("Scale function %s loaded from file %s.", sfuncName, sfuncPath));
+  }
+  else {
+    ::Error("AddTaskRho", Form("Scale function %s not found in file %s.", sfuncName, sfuncPath));
+    return NULL;
+  }
+
+  AliAnalysisTaskRho *task = AddTaskRho(nJets, nTracks, nClusters, nRho, jetradius, cutType, jetareacut, emcareacut, sfunc, exclJets, histo, taskname);
+
+  file->Close();
+  delete file;
+  file = 0;
+
+  return task;
 }
