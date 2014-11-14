@@ -723,10 +723,10 @@ Bool_t AliCFVertexingHFCascade::CheckAdditionalCuts(AliPIDResponse* pidResponse)
     Double_t invmassK0s = v0part->MassK0Short();
     Double_t mK0SPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
 
-    Bool_t cutsForTMVA = ((nSigmaTOFpr > -800) && (nSigmaTOFpr < 3)) &&  
-      ((ptArm > 0.07) && (ptArm < 0.105)) &&
+    Bool_t cutsForTMVA = ((nSigmaTOFpr < -800) || (TMath::Abs(nSigmaTOFpr) < 3)) &&  
+      ((ptArm < 0.07) || (ptArm > 0.105)) &&
       ((TMath::Abs(invmassK0s - mK0SPDG)) < 0.01);
-    
+
     if (!fUseCutsForTMVA) cutsForTMVA = kTRUE;
 
     Bool_t cutsForInvMassTask = !(onFlyV0) && 
