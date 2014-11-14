@@ -33,10 +33,10 @@ set(SRCS
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 add_executable(alieve ${SRCS})
-target_link_libraries(alieve STEERBase STEER ESD CDB AOD RAWDatabase RAWDatarec ANALYSIS ANALYSISalice ITSbase ITSrec TPCbase TPCrec TPCsim EveBase Core Eve Rint)
+target_link_libraries(alieve STEERBase EveBase)
 
 if(ZEROMQ_FOUND)
-    target_link_libraries(MONITORzmq)
+    target_link_libraries(alieve MONITORzmq)
     add_definitions(-DZMQ)
 endif(ZEROMQ_FOUND)
 

@@ -64,6 +64,7 @@ set(SRCS
     AliAODVertex.cxx
     AliAODVZERO.cxx
     AliAODZDC.cxx
+    AliNanoAODHeader.cxx
     AliNanoAODTrackMapping.cxx
    )
 

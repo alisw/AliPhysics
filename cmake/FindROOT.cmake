@@ -139,14 +139,28 @@ if(ROOTSYS)
     if(error)
         message(FATAL_ERROR "Error checking if ROOT was build with AliEn support: ${error}")
     endif(error)
-    string(STRIP ${ROOT_HASALIEN} ROOT_HASALIEN)
+    
+    #if defined
+    if(ROOT_HASALIEN)
+        string(STRIP ${ROOT_HASALIEN} ROOT_HASALIEN)
+        if(ROOT_HASALIEN STREQUAL "yes")
+            add_definitions(-DWITHALIEN)
+        endif()
+    endif(ROOT_HASALIEN)
 
     # Checking for xml support
     execute_process(COMMAND ${ROOT_CONFIG} --has-xml OUTPUT_VARIABLE ROOT_HASXML ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error checking if ROOT was build with xml support: ${error}")
     endif(error)
-    string(STRIP ${ROOT_HASXML} ROOT_HASXML)
+    
+    # if defined
+    if(ROOT_HASXML)
+        string(STRIP ${ROOT_HASXML} ROOT_HASXML)
+        if(ROOT_HASXML STREQUAL "yes")
+            add_definitions(-DWITHXML)
+        endif()
+    endif(ROOT_HASXML)
 
     # Checking for OpenGL support
     execute_process(COMMAND ${ROOT_CONFIG} --has-opengl OUTPUT_VARIABLE ROOT_HASOPENGL ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
