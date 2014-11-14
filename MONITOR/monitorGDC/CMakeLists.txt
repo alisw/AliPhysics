@@ -39,9 +39,25 @@ endif()
 add_executable(${MODULE} ${SRCS})
 target_link_libraries(${MODULE} Core)
 
+set(MODULE_COMPILE_FLAGS)
+set(MODULE_LINK_FLAGS)
+
 if(DATE_FOUND)
-    target_link_libraries(${MODULE} ${DATE_MONLIBS})
-endif()
+    set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
+    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS}")
+endif(DATE_FOUND)
+
+# Additional compilation and linking flags
+set(MODULE_COMPILE_FLAGS "-O -g ${MODULE_COMPILE_FLAGS}")
+
+# System dependent: Modify the way the library is build
+if(${CMAKE_SYSTEM} MATCHES Darwin)
+    set(MODULE_LINK_FLAGS "-undefined dynamic_lookup ${MODULE_LINK_FLAGS}")
+endif(${CMAKE_SYSTEM} MATCHES Darwin)
+
+# Setting target compile and linking flags
+set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
+set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
 
 if(ZEROMQ_FOUND)
     target_link_libraries(${MODULE} MONITORzmq)

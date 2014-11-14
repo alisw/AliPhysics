@@ -58,15 +58,28 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} ESD RAWDatabase STEERBase Core Net RIO TreePlayer Tree)
+target_link_libraries(${MODULE} STEERBase ESD RAWDatabase Core Net RIO TreePlayer Tree)
 
-# Additional compilation flags
-set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
+# Compile and link flags
+set(MODULE_COMPILE_FLAGS)
+set(MODULE_LINK_FLAGS)
+
+if(DATE_FOUND)
+    set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
+    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS}")
+endif(DATE_FOUND)
+
+# Additional compilation and linking flags
+set(MODULE_COMPILE_FLAGS "-O -g ${MODULE_COMPILE_FLAGS}")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
-    set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    set(MODULE_LINK_FLAGS "-undefined dynamic_lookup ${MODULE_LINK_FLAGS}")
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
+
+# Setting target compile and linking flags
+set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
+set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
 
 # Installation
 install(TARGETS ${MODULE}
