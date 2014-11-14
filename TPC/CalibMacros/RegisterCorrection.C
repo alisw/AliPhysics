@@ -10,6 +10,7 @@
   TPCCorrectionPrimitives.root                  - Alignment, Quadrants, 2D symentrid and rod misalingment
   TPCCorrectionPrimitivesROC.root               - ExB distortion due to the common ROC misalignment
   TPCCorrectionPrimitivesSector.root            - ExB distortion due to the one sector misalingment (sector 0)
+  TPCCorrectionPrimitivesFieldCage.root         - ExB distortion due to the Field cage missalignment
   //      
 
   RegisterCorrection();                         - Reserved id's  0 -999
@@ -85,7 +86,7 @@
 
 
 
-TFile *fCorrections=0;       //file with corrections
+TFile *fCorrections=0;                         //file with corrections
 //
 //models E field distortion   AliTPCFCVoltError3D
 //
@@ -95,12 +96,18 @@ AliTPCFCVoltError3D *rodOFC2 =0;
 AliTPCFCVoltError3D *rotIFC  =0;
 AliTPCFCVoltError3D *rodIFC1 =0;
 AliTPCFCVoltError3D *rodIFC2 =0;
+//
 AliTPCFCVoltError3D *rodIFCShift=0;     //common IFC shift
-AliTPCFCVoltError3D *rodOFCShift=0;     //common OFC shift
 AliTPCFCVoltError3D *rodIFCSin=0;       //common IFC shift -sinus
 AliTPCFCVoltError3D *rodOFCSin=0;       //common OFC shift -sinus
+AliTPCFCVoltError3D *rodOFCShift=0;     //common OFC shift
 AliTPCFCVoltError3D *rodIFCCos=0;       //common IFC shift -cos
 AliTPCFCVoltError3D *rodOFCCos=0;       //common OFC shift -cos
+//
+TObjArray  *rodFCSideRadiusType=0;  // field cage shift, A/C side, OFC/IFC, Fourier(const,sin,cos) 
+//
+
+
 
 AliTPCROCVoltError3D *rocRotgXA=0;     // roc rotation A side - inclination in X
 AliTPCROCVoltError3D *rocRotgYA=0;     // roc rotation A side - inclination in Y
@@ -165,7 +172,7 @@ void RegisterAliTPCExBTwist();
 void RegisterAliTPCROCVoltError3D();
 void RegisterAliTPCROCVoltError3DSector();
 void RegisterAliTPCCorrectionDrift();
-
+void RegisterAliTPCFCVoltError3DRodFCSideRadiusType();
 //
 
 void RegisterCorrection(Int_t type=0){
@@ -179,6 +186,8 @@ void RegisterCorrection(Int_t type=0){
   //
   if (type==1) return RegisterAliTPCROCVoltError3D();            // 3D distortion due misalignemnt of FC ....
   if (type==2) return RegisterAliTPCROCVoltError3DSector();      // 3D distortion due misalingment of Sectors
+  if (type==4) return RegisterAliTPCFCVoltError3DRodFCSideRadiusType(); 
+  //
   if (type==3) {                                                 // 2D distortions
     fCorrections = TFile::Open("TPCCorrectionPrimitives.root","recreate");
     RegisterAliTPCCalibGlobalMisalignment();
@@ -198,6 +207,7 @@ void RegisterCorrection(Int_t type=0){
   if (type==0) {
     RegisterAliTPCROCVoltError3D();
     RegisterAliTPCROCVoltError3DSector();
+    RegisterAliTPCFCVoltError3DRodFCSideRadiusType(); 
   }
   RegisterAliTPCCalibGlobalMisalignment();
   RegisterAliTPCBoundaryVoltError();
@@ -375,6 +385,82 @@ void RegisterAliTPCFCVoltError3D(){
   AliTPCCorrection::AddVisualCorrection(rodOFCShift,9); 
   AliTPCCorrection::AddVisualCorrection(rodOFCSin,10); 
   AliTPCCorrection::AddVisualCorrection(rodOFCCos,11); 
+}
+
+
+void RegisterAliTPCFCVoltError3DRodFCSideRadiusType(){
+  //
+  // Load the models from the file
+  // Or create it
+  // Register functions with following IDs:
+  // IMPORTANT: The nominal shift is in mm 
+  //
+  // naming convention:
+  // rodFCSide%dRadius%dType%d  
+  //
+  ::Info("RegisterAliTPCFCVoltError3DRodFCSideRadiusType()","Start");
+  Int_t volt = 40; // 40 V ~  1mm
+  TFile * fCorrectionsRodFCSideRadiusType = TFile::Open("TPCCorrectionPrimitivesFieldCage.root","update");
+  if (!fCorrectionsRodFCSideRadiusType)  fCorrectionsRodFCSideRadiusType = TFile::Open("TPCCorrectionPrimitivesFieldCage.root","recreate");
+  rodFCSideRadiusType= new TObjArray(100);
+  //
+  AliTPCComposedCorrection *corrFieldCage = (AliTPCComposedCorrection*) fCorrectionsRodFCSideRadiusType->Get("TPCRodFCSideRadiusType");    
+  if (corrFieldCage) { // load from file
+    TCollection *corrections = corrFieldCage->GetCorrections();    
+    for (Int_t itype=0; itype<3; itype++){
+      for (Int_t iside=0; iside<2; iside++){
+	for (Int_t ifc=0; ifc<2; ifc++){
+	  Int_t id=4*itype+2*iside+ifc;
+	  AliTPCFCVoltError3D *corr =  (AliTPCFCVoltError3D *)corrections->FindObject(TString::Format("rodFCSide%dRadius%dType%d",iside,ifc,itype).Data());
+	  rodFCSideRadiusType->AddLast(corr);
+	  ::Info("Read AliTPCFCVoltError3DRodFCSideRadiusType", TString::Format("Init: rodFCSide%dRadius%dType%d\tId=%d",iside,ifc,itype,900+id).Data());
+	  AliTPCCorrection::AddVisualCorrection(corr,900+id); 
+	}
+      }
+    }    
+    corrFieldCage->Print();
+  } else {    
+    for (Int_t itype=0; itype<3; itype++){
+      for (Int_t iside=0; iside<2; iside++){
+	for (Int_t ifc=0; ifc<2; ifc++){
+	  Int_t id=4*itype+2*iside+ifc;
+	  AliTPCFCVoltError3D *corr =  new AliTPCFCVoltError3D();
+	  corr->SetName(TString::Format("rodFCSide%dRadius%dType%d",iside,ifc,itype).Data());
+	  corr->SetTitle(TString::Format("rodFCSide%dRadius%dType%d",iside,ifc,itype).Data());
+	  //
+	  for (Int_t isec=0; isec<18; isec++){
+	    Double_t phi=TMath::Pi()*isec/9.;
+	    Int_t sectorOffset=(ifc==0) ? 0:18;
+	    corr->SetOmegaTauT1T2(0,1,1);
+	    Double_t sectorVoltage=0;
+	    if (itype==0) sectorVoltage=volt;
+	    if (itype==1) sectorVoltage=volt*TMath::Sin(phi);
+	    if (itype==2) sectorVoltage=volt*TMath::Cos(phi);
+	    if (iside==0){
+	      corr->SetRodVoltShiftA(isec+sectorOffset,sectorVoltage);
+	    }
+	    if (iside==1){
+	      corr->SetRodVoltShiftC(isec+sectorOffset,sectorVoltage);
+	    }
+	  }
+	  rodFCSideRadiusType->AddLast(corr); 
+	  ::Info("Generate AliTPCFCVoltError3DRodFCSideRadiusType", TString::Format("Init: rodFCSide%dRadius%dType%d",iside,ifc,itype).Data());
+	  corr->InitFCVoltError3D();	  
+	  AliTPCCorrection::AddVisualCorrection(corr,900+id); 
+	}
+      }
+    }
+    //
+    corrFieldCage = new AliTPCComposedCorrection();
+    corrFieldCage->SetCorrections(rodFCSideRadiusType);
+    corrFieldCage->SetOmegaTauT1T2(0,1.,1.);
+    
+    corrFieldCage->Print();    
+    fCorrectionsRodFCSideRadiusType->cd();
+    corrFieldCage->Write("TPCRodFCSideRadiusType");    
+  }
+  fCorrectionsRodFCSideRadiusType->Close();
+  ::Info("RegisterAliTPCFCVoltError3DRodFCSideRadiusType()","End");
 }
 
 
@@ -1417,8 +1503,8 @@ AliTPCComposedCorrection * GetCorrectionFromFile(){
     return 0;
     }}
   TObjArray * corr = (TObjArray*)(cc->GetCorrections());
-  TObjArray * corrLocal =new TObjArray;
-  TObjArray * corrGlobal =new TObjArray;
+  //  TObjArray * corrLocal =new TObjArray;
+  // TObjArray * corrGlobal =new TObjArray;
   //
   if (fitter){
     if (fitter->GetKey("FitBoundary")) corr->AddLast(fitter->Get("FitBoundary"));
