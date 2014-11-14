@@ -52,6 +52,8 @@
 #include <AliAODEvent.h>
 #include <AliAODTrack.h>
 #include <AliOADBContainer.h>
+//#include <AliVEventHandler.h>
+#include <AliInputEventHandler.h>
 // emcal jet framework includes
 #include <AliPicoTrack.h>
 #include <AliEmcalJet.h>
@@ -79,6 +81,8 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2() : AliAnalysisTaskEmcalJet("AliAnaly
         fHistClusterPt[i] = 0;
         fHistClusterEtaPhi[i] = 0;
         fHistClusterEtaPhiWeighted[i] = 0;
+        fHistTriggerQAIn[i] = 0;
+        fHistTriggerQAOut[i] = 0;
         fHistPsiTPCLeadingJet[i] = 0;
         fHistPsiVZEROALeadingJet[i] = 0;  
         fHistPsiVZEROCLeadingJet[i] = 0;
@@ -139,6 +143,8 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2(const char* name, runModeType type) :
         fHistClusterPt[i] = 0;
         fHistClusterEtaPhi[i] = 0;
         fHistClusterEtaPhiWeighted[i] = 0;
+        fHistTriggerQAIn[i] = 0;
+        fHistTriggerQAOut[i] = 0;
         fHistPsiTPCLeadingJet[i] = 0;
         fHistPsiVZEROALeadingJet[i] = 0;  
         fHistPsiVZEROCLeadingJet[i] = 0;
@@ -473,7 +479,7 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
         default : break;
     }
 
-    // pico track and emcal cluster kinematics
+    // pico track and emcal cluster kinematics, trigger qa
     for(Int_t i(0); i < fCentralityClasses->GetSize()-1; i++) { 
         fHistPicoTrackPt[i] =           BookTH1F("fHistPicoTrackPt", "p_{t} [GeV/c]", 100, 0, 100, i);
         fHistPicoTrackMult[i] =         BookTH1F("fHistPicoTrackMult", "multiplicity", 100, 0, 5000, i);
@@ -492,6 +498,49 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
             fHistPsiVZEROCombLeadingJet[i] =    BookTH3F("fHistPsiVZEROCombLeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROComb}", "#varphi_{jet}", 70, 0, 210, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, phiMin, phiMax, i);
             fHistPsi2Correlation[i] = BookTH3F("fHistPsi2Correlation", "#Psi_{TPC}", "#Psi_{VZEROA}", "#Psi_{VZEROC}",  20, -1.*TMath::Pi()/2., TMath::Pi()/2., 20, -1.*TMath::Pi()/2., TMath::Pi()/2., 20, -1.*TMath::Pi()/2., TMath::Pi()/2., i);
             fHistLeadingJetBackground[i] =      BookTH2F("fHistLeadingJetBackground", "#Delta #eta (leading jet with, without sub)", "Delta #varphi (leading jet with, without sub)", 50, 0., 2, 50, 0., TMath::TwoPi(), i);
+            // trigger qa
+            fHistTriggerQAIn[i] = BookTH2F("fHistTriggerQAIn", "trigger configuration", "p_{T}^{jet} (GeV/c) in-plane jets", 20, 0.5, 20.5, 70, -100, 250, i);
+            fHistTriggerQAOut[i] = BookTH2F("fHistTriggerQAOut", "trigger configuration", "p_{T}^{jet} (GeV/c) out-of-plane jets", 20, 0.5, 20.5, 70, -100, 250, i);
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(1, "no trigger");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(2, "kAny");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(3, "kAnyINT");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(4, "kMB");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(5, "kINT7");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(6, "kEMC1");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(7, "kEMC7");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(8, "kEMC8");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(9, "kEMCEJE");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(10, "kEMCEGA");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(11, "kCentral");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(12, "kSemiCentral");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(13, "kINT8");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(14, "kEMCEJE or kMB");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(15, "kEMCEGA or kMB");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(16, "kAnyINT or kMB");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(17, "kEMCEJE & kAnyINT");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(18, "kEMCEGA & kAnyINT");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(19, "kAnyINT & kAnyINT");
+            fHistTriggerQAIn[i]->LabelsOption("v");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(1, "no trigger");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(2, "kAny");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(3, "kAnyINT");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(4, "kMB");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(5, "kINT7");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(6, "kEMC1");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(7, "kEMC7");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(8, "kEMC8");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(9, "kEMCEJE");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(10, "kEMCEGA");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(11, "kCentral");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(12, "kSemiCentral");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(13, "kINT8");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(14, "kEMCEJE or kMB");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(15, "kEMCEGA or kMB");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(16, "kAnyINT or kMB");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(17, "kEMCEJE & kAnyINT");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(18, "kEMCEGA & kAnyINT");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(19, "kAnyINT & kAnyINT");
+            fHistTriggerQAOut[i]->LabelsOption("v");
         }
     }
 
@@ -2029,6 +2078,8 @@ void AliAnalysisTaskJetV2::FillWeightedJetHistograms(Double_t psi2)
     // fill jet histograms
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     Int_t iJets(fJets->GetEntriesFast());
+    UInt_t trigger(0);
+    if(fFillQAHistograms) trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     for(Int_t i(0); i < iJets; i++) {
         AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(i));
         if(PassesCuts(jet)) {
@@ -2036,7 +2087,10 @@ void AliAnalysisTaskJetV2::FillWeightedJetHistograms(Double_t psi2)
             Double_t rho(fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()));
             fHistJetPtRaw[fInCentralitySelection]->Fill(pt, fEventPlaneWeight);
             fHistJetPt[fInCentralitySelection]->Fill(pt-area*rho, fEventPlaneWeight);
-            if(fFillQAHistograms) fHistJetEtaPhi[fInCentralitySelection]->Fill(eta, phi, fEventPlaneWeight);
+            if(fFillQAHistograms) {
+                fHistJetEtaPhi[fInCentralitySelection]->Fill(eta, phi, fEventPlaneWeight);
+                FillWeightedTriggerQA(PhaseShift(phi-psi2, 2.), pt, area*rho, trigger);
+            }
             fHistJetPtArea[fInCentralitySelection]->Fill(pt-area*rho, area, fEventPlaneWeight);
             fHistJetPtEta[fInCentralitySelection]->Fill(pt-area*rho, eta, fEventPlaneWeight);
             fHistJetPsi2Pt[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt-area*rho, fEventPlaneWeight);
@@ -2083,6 +2137,57 @@ void AliAnalysisTaskJetV2::FillWeightedQAHistograms(AliVEvent* vevent)
         if(fExpectedRuns->At(fMappedRunNumber) == runNumber) return;
     }
     if(fDebug > 0) printf("\n > TASK %s CANNOT IDENTIFY RUN - CONFIGURATION COULD BE INCORRECT < \n", GetName());
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskJetV2::FillWeightedTriggerQA(Double_t dPhi, Double_t pt, Double_t bkg, UInt_t trigger)
+{
+    // fill the trigger efficiency histograms
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    // qa histograms to bookkeep trigger efficiencies of acceptaced events in-plane and out-of-plane
+    pt-=bkg;
+    if(IsInPlane(dPhi)) {
+        // in plane stuff
+        if(trigger == 0) fHistTriggerQAIn[fInCentralitySelection]->Fill(1, pt);
+        if(trigger & AliVEvent::kAny) fHistTriggerQAIn[fInCentralitySelection]->Fill(2, pt);
+        if(trigger & AliVEvent::kAnyINT) fHistTriggerQAIn[fInCentralitySelection]->Fill(3, pt);
+        if(trigger & AliVEvent::kMB) fHistTriggerQAIn[fInCentralitySelection]->Fill(4, pt);
+        if(trigger & AliVEvent::kINT7) fHistTriggerQAIn[fInCentralitySelection]->Fill(5, pt);
+        if(trigger & AliVEvent::kEMC1) fHistTriggerQAIn[fInCentralitySelection]->Fill(6, pt);
+        if(trigger & AliVEvent::kEMC7) fHistTriggerQAIn[fInCentralitySelection]->Fill(7, pt);
+        if(trigger & AliVEvent::kEMC8) fHistTriggerQAIn[fInCentralitySelection]->Fill(8, pt);
+        if(trigger & AliVEvent::kEMCEJE) fHistTriggerQAIn[fInCentralitySelection]->Fill(9, pt);
+        if(trigger & AliVEvent::kEMCEGA) fHistTriggerQAIn[fInCentralitySelection]->Fill(10, pt);
+        if(trigger & AliVEvent::kCentral) fHistTriggerQAIn[fInCentralitySelection]->Fill(11, pt);
+        if(trigger & AliVEvent::kSemiCentral) fHistTriggerQAIn[fInCentralitySelection]->Fill(12, pt);
+        if(trigger & AliVEvent::kINT8) fHistTriggerQAIn[fInCentralitySelection]->Fill(13, pt);
+        if(trigger & (AliVEvent::kEMCEJE | AliVEvent::kMB)) fHistTriggerQAIn[fInCentralitySelection]->Fill(14, pt);
+        if(trigger & (AliVEvent::kEMCEGA | AliVEvent::kMB)) fHistTriggerQAIn[fInCentralitySelection]->Fill(15, pt);
+        if(trigger & (AliVEvent::kAnyINT | AliVEvent::kMB)) fHistTriggerQAIn[fInCentralitySelection]->Fill(16, pt);
+        if((trigger & AliVEvent::kAnyINT) && (trigger & AliVEvent::kEMCEJE)) fHistTriggerQAIn[fInCentralitySelection]->Fill(17, pt); 
+        if((trigger & AliVEvent::kAnyINT) && (trigger & AliVEvent::kEMCEGA)) fHistTriggerQAIn[fInCentralitySelection]->Fill(18, pt); 
+        if((trigger & AliVEvent::kAnyINT) && (trigger & AliVEvent::kMB)) fHistTriggerQAIn[fInCentralitySelection]->Fill(19, pt); 
+    } else {
+        // out of plane stuff
+        if(trigger == 0) fHistTriggerQAOut[fInCentralitySelection]->Fill(1, pt);
+        if(trigger & AliVEvent::kAny) fHistTriggerQAOut[fInCentralitySelection]->Fill(2, pt);
+        if(trigger & AliVEvent::kAnyINT) fHistTriggerQAOut[fInCentralitySelection]->Fill(3, pt);
+        if(trigger & AliVEvent::kMB) fHistTriggerQAOut[fInCentralitySelection]->Fill(4, pt);
+        if(trigger & AliVEvent::kINT7) fHistTriggerQAOut[fInCentralitySelection]->Fill(5, pt);
+        if(trigger & AliVEvent::kEMC1) fHistTriggerQAOut[fInCentralitySelection]->Fill(6, pt);
+        if(trigger & AliVEvent::kEMC7) fHistTriggerQAOut[fInCentralitySelection]->Fill(7, pt);
+        if(trigger & AliVEvent::kEMC8) fHistTriggerQAOut[fInCentralitySelection]->Fill(8, pt);
+        if(trigger & AliVEvent::kEMCEJE) fHistTriggerQAOut[fInCentralitySelection]->Fill(9, pt);
+        if(trigger & AliVEvent::kEMCEGA) fHistTriggerQAOut[fInCentralitySelection]->Fill(10, pt);
+        if(trigger & AliVEvent::kCentral) fHistTriggerQAOut[fInCentralitySelection]->Fill(11, pt);
+        if(trigger & AliVEvent::kSemiCentral) fHistTriggerQAOut[fInCentralitySelection]->Fill(12, pt);
+        if(trigger & AliVEvent::kINT8) fHistTriggerQAOut[fInCentralitySelection]->Fill(13, pt);
+        if(trigger & (AliVEvent::kEMCEJE | AliVEvent::kMB)) fHistTriggerQAOut[fInCentralitySelection]->Fill(14, pt);
+        if(trigger & (AliVEvent::kEMCEGA | AliVEvent::kMB)) fHistTriggerQAOut[fInCentralitySelection]->Fill(15, pt);
+        if(trigger & (AliVEvent::kAnyINT | AliVEvent::kMB)) fHistTriggerQAOut[fInCentralitySelection]->Fill(16, pt);
+        if((trigger & AliVEvent::kAnyINT) & (trigger & AliVEvent::kEMCEJE)) fHistTriggerQAOut[fInCentralitySelection]->Fill(17, pt);
+        if((trigger & AliVEvent::kAnyINT) & (trigger & AliVEvent::kEMCEGA)) fHistTriggerQAOut[fInCentralitySelection]->Fill(18, pt); 
+        if((trigger & AliVEvent::kAnyINT) & (trigger & AliVEvent::kMB)) fHistTriggerQAOut[fInCentralitySelection]->Fill(19, pt); 
+    }
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV2::FillAnalysisSummaryHistogram() const
