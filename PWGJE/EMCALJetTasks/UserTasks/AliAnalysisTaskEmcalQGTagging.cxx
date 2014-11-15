@@ -52,11 +52,9 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalQGTagging", kTRUE),
   fContainer(0),
   fMinFractionShared(0),
-  fJetShapeType(kRaw),
+  fJetShapeType(kData),
+  fJetShapeSub(kNoSub),
   fShapesVar(0),
-  fIsMC(kFALSE),
-  fIsEmbedding(kFALSE),
-  fIsConstSub(kFALSE),
   fPtThreshold(-9999.),
   fRMatching(0.3),
   fPhiJetCorr6(0x0), 
@@ -76,11 +74,9 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fContainer(0),
   fMinFractionShared(0),
-  fJetShapeType(kRaw),
+  fJetShapeType(kData),
+  fJetShapeSub(kNoSub),
   fShapesVar(0),
-  fIsMC(kFALSE),
-  fIsEmbedding(kFALSE),
-  fIsConstSub(kFALSE),
   fPtThreshold(-9999.),
   fRMatching(0.3),
   fPhiJetCorr6(0x0), 
@@ -117,7 +113,7 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   TH1::AddDirectory(kFALSE);
 
   fTreeObservableTagging = new TTree("fTreeJetShape", "fTreeJetShape");
-  Int_t nVar = 9; 
+  Int_t nVar = 17; 
   fShapesVar = new Float_t [nVar]; 
   TString *fShapesVarNames = new TString [nVar];
 
@@ -130,6 +126,15 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   fShapesVarNames[6] = "circularity";
   fShapesVarNames[7] = "lesub";
   fShapesVarNames[8] = "sigma2";
+
+  fShapesVarNames[9] = "ptJetMatch"; 
+  fShapesVarNames[10] = "ptDJetMatch"; 
+  fShapesVarNames[11] = "mJetMatch";
+  fShapesVarNames[12] = "nbOfConstMatch";
+  fShapesVarNames[13] = "angularityMatch";
+  fShapesVarNames[14] = "circularityMatch";
+  fShapesVarNames[15] = "lesubMatch";
+  fShapesVarNames[16] = "sigma2Match";
   
   for(Int_t ivar=0; ivar < nVar; ivar++){
     cout<<"looping over variables"<<endl;
@@ -176,29 +181,29 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
   //cout<<"base container"<<endl;
   AliEmcalJet* jet1 = NULL;
   AliJetContainer *jetCont = GetJetContainer(0);
-  
+
   if(jetCont) {
     jetCont->ResetCurrentID();
     while((jet1 = jetCont->GetNextAcceptJet())) {
       if (!jet1) continue;
+      AliEmcalJet* jet2 = 0x0;
       fPtJet->Fill(jet1->Pt());
-      if (fIsMC) {
+
+      if (!(fJetShapeType == kData)) {
 	AliStackPartonInfo *partonsInfo = 0x0;
-	AliEmcalJet* jet2 = 0x0;
-	if (fIsEmbedding){ 
+	if((fJetShapeType == kTrueDet) || (fJetShapeType == kDetEmb)){
 	  AliJetContainer *jetContTrue = GetJetContainer(1);
 	  jet2 = jet1->ClosestJet();
 	  if (!jet2) {
 	    Printf("jet2 not exists, returning");
 	    continue;
 	  }
-	  Printf("there is a jet that has a matched partner");
+	  
 	  Double_t fraction = jetCont->GetFractionSharedPt(jet1);
+          cout<<"hey a jet"<<fraction<<" "<<jet1->Pt()<<" "<<jet2->Pt()<<endl;
 	  if(fraction<fMinFractionShared) continue;
-          cout<<"the shared fraction is: "<<fraction<<" "<<jet1->Pt()<<" "<<jet2->Pt()<<endl;
-          InputEvent()->Print();
- 	  partonsInfo = (AliStackPartonInfo*) jetContTrue->GetStackPartonInfo();   
-          if(!partonsInfo) return 0;
+	  partonsInfo = (AliStackPartonInfo*) jetContTrue->GetStackPartonInfo();     
+	  if(!partonsInfo) return 0;
 	}
 	else {
 	  partonsInfo = (AliStackPartonInfo*) jetCont->GetStackPartonInfo(); 
@@ -238,20 +243,57 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
      
       Double_t ptSubtracted = 0; 
 
-      if ((fJetShapeType==AliAnalysisTaskEmcalQGTagging::kRaw && fIsConstSub==kFALSE) || (fJetShapeType==AliAnalysisTaskEmcalQGTagging::kDeriv)) ptSubtracted  = jet1->Pt() - GetRhoVal(0)*jet1->Area();
-      else ptSubtracted = jet1->Pt(); 
-
-      if ((fJetShapeType==AliAnalysisTaskEmcalQGTagging::kRaw || fJetShapeType==AliAnalysisTaskEmcalQGTagging::kDeriv)) 
-	if ( ptSubtracted < fPtThreshold) continue;
-
+      if (((fJetShapeType == kData) || (fJetShapeType == kDetEmb)) && (fJetShapeSub == kConstSub))
+	  ptSubtracted = jet1->Pt(); 
+      else ptSubtracted  = jet1->Pt() - GetRhoVal(0)*jet1->Area();
+	  
+      if ((fJetShapeType == kData || fJetShapeType== kDetEmb)) 
+	if ( ptSubtracted < fPtThreshold) continue;	
+      
       fShapesVar[1] = ptSubtracted;
-      fShapesVar[2] = GetJetpTD(jet1);
+      fShapesVar[2] = GetJetpTD(jet1,0);
       fShapesVar[3] = GetJetMass(jet1);
       fShapesVar[4] = 1.*GetJetNumberOfConstituents(jet1);
-      fShapesVar[5] = GetJetAngularity(jet1);
-      fShapesVar[6] = GetJetCircularity(jet1);
-      fShapesVar[7] = GetJetLeSub(jet1);
-      fShapesVar[8] = GetSigma2(jet1);
+      fShapesVar[5] = GetJetAngularity(jet1,0);
+      fShapesVar[6] = GetJetCircularity(jet1,0);
+      fShapesVar[7] = GetJetLeSub(jet1,0);
+      fShapesVar[8] = GetSigma2(jet1,0);
+      
+      Float_t ptMatch=0., ptDMatch=0., massMatch=0., constMatch=0.,angulMatch=0.,circMatch=0., lesubMatch=0., sigma2Match=0.;
+      Int_t kMatched = 0;
+      if (fJetShapeType == kTrueDet || fJetShapeType == kDetEmb) {
+	kMatched = 1;
+	ptMatch=jet2->Pt();
+	ptDMatch=GetJetpTD(jet2, kMatched); 
+	massMatch=GetJetMass(jet2);
+	constMatch=1.*GetJetNumberOfConstituents(jet2);
+	angulMatch=GetJetAngularity(jet2, kMatched);
+	circMatch=GetJetCircularity(jet2, kMatched);
+	lesubMatch=GetJetLeSub(jet2, kMatched);
+	sigma2Match = GetSigma2(jet2, kMatched);
+      }
+
+      if (fJetShapeType == kTrue || fJetShapeType == kData) {
+	kMatched = 0;
+	ptMatch=0.;
+	ptDMatch=0.; 
+	massMatch=0.;
+	constMatch=0.;
+	angulMatch=0.;
+	circMatch=0.;
+	lesubMatch=0.;
+	sigma2Match =0.;
+      }
+      
+      fShapesVar[9] = ptMatch;
+      fShapesVar[10] = ptDMatch;
+      fShapesVar[11] = massMatch;
+      fShapesVar[12] = constMatch;
+      fShapesVar[13] = angulMatch;
+      fShapesVar[14] = circMatch;
+      fShapesVar[15] = lesubMatch;
+      fShapesVar[16] = sigma2Match;
+
       fTreeObservableTagging->Fill();
        
     }
@@ -264,16 +306,16 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
 //________________________________________________________________________
 Float_t AliAnalysisTaskEmcalQGTagging::GetJetMass(AliEmcalJet *jet) {
   //calc subtracted jet mass
-  if(fJetShapeType==kDeriv)
+  if(fJetShapeSub==kDerivSub)
     return jet->GetSecondOrderSubtracted();
   else 
     return jet->M();
 }
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskEmcalQGTagging::Angularity(AliEmcalJet *jet){
+Float_t AliAnalysisTaskEmcalQGTagging::Angularity(AliEmcalJet *jet, Int_t jetContNb = 0){
 
-  AliJetContainer *jetCont = GetJetContainer(0);
+  AliJetContainer *jetCont = GetJetContainer(jetContNb);
   if (!jet->GetNumberOfTracks())
       return 0; 
     Double_t den=0.;
@@ -293,20 +335,20 @@ Float_t AliAnalysisTaskEmcalQGTagging::Angularity(AliEmcalJet *jet){
 } 
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskEmcalQGTagging::GetJetAngularity(AliEmcalJet *jet) {
+Float_t AliAnalysisTaskEmcalQGTagging::GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb = 0) {
 
-  if(fJetShapeType==kDeriv)
+  if(fJetShapeSub==kDerivSub)
     return jet->GetSecondOrderSubtractedAngularity();
   else
-    return Angularity(jet);
+    return Angularity(jet, jetContNb);
  
 }
 
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskEmcalQGTagging::PTD(AliEmcalJet *jet){
+Float_t AliAnalysisTaskEmcalQGTagging::PTD(AliEmcalJet *jet, Int_t jetContNb = 0){
 
-  AliJetContainer *jetCont = GetJetContainer(0);
+  AliJetContainer *jetCont = GetJetContainer(jetContNb);
   if (!jet->GetNumberOfTracks())
       return 0; 
     Double_t den=0.;
@@ -321,19 +363,19 @@ Float_t AliAnalysisTaskEmcalQGTagging::PTD(AliEmcalJet *jet){
 } 
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskEmcalQGTagging::GetJetpTD(AliEmcalJet *jet) {
+Float_t AliAnalysisTaskEmcalQGTagging::GetJetpTD(AliEmcalJet *jet, Int_t jetContNb = 0) {
   //calc subtracted jet mass
-  if(fJetShapeType==kDeriv)
+  if(fJetShapeSub==kDerivSub)
     return jet->GetSecondOrderSubtractedpTD();
   else
-    return PTD(jet);
+    return PTD(jet, jetContNb);
  
 }
 
 //_____________________________________________________________________________
-Float_t AliAnalysisTaskEmcalQGTagging::Circularity(AliEmcalJet *jet){
+Float_t AliAnalysisTaskEmcalQGTagging::Circularity(AliEmcalJet *jet, Int_t jetContNb = 0){
 
-  AliJetContainer *jetCont = GetJetContainer(0);
+  AliJetContainer *jetCont = GetJetContainer(jetContNb);
   if (!jet->GetNumberOfTracks())
     return 0; 
   Double_t mxx    = 0.;
@@ -410,20 +452,20 @@ Float_t AliAnalysisTaskEmcalQGTagging::Circularity(AliEmcalJet *jet){
 
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskEmcalQGTagging::GetJetCircularity(AliEmcalJet *jet) {
+Float_t AliAnalysisTaskEmcalQGTagging::GetJetCircularity(AliEmcalJet *jet, Int_t jetContNb =0 ) {
   //calc subtracted jet mass
  
-  if(fJetShapeType==kDeriv)
+  if(fJetShapeSub==kDerivSub)
     return jet->GetSecondOrderSubtractedCircularity();
   else
-    return Circularity(jet);
+    return Circularity(jet, jetContNb);
  
 }
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskEmcalQGTagging::LeSub(AliEmcalJet *jet){
+Float_t AliAnalysisTaskEmcalQGTagging::LeSub(AliEmcalJet *jet, Int_t jetContNb =0 ){
 
-  AliJetContainer *jetCont = GetJetContainer(0);
+  AliJetContainer *jetCont = GetJetContainer(jetContNb);
   if (!jet->GetNumberOfTracks())
       return 0; 
     Double_t den=0.;
@@ -443,13 +485,13 @@ return num-den;
 } 
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskEmcalQGTagging::GetJetLeSub(AliEmcalJet *jet) {
+Float_t AliAnalysisTaskEmcalQGTagging::GetJetLeSub(AliEmcalJet *jet, Int_t jetContNb =0) {
   //calc subtracted jet mass
  
-  if(fJetShapeType==kDeriv)
+  if(fJetShapeSub==kDerivSub)
     return jet->GetSecondOrderSubtractedLeSub();
   else
-    return LeSub(jet);
+    return LeSub(jet, jetContNb);
  
 }
 
@@ -457,7 +499,7 @@ Float_t AliAnalysisTaskEmcalQGTagging::GetJetLeSub(AliEmcalJet *jet) {
 Float_t AliAnalysisTaskEmcalQGTagging::GetJetNumberOfConstituents(AliEmcalJet *jet) {
   //calc subtracted jet mass
   
-  if(fJetShapeType==kDeriv)
+  if(fJetShapeSub==kDerivSub)
     return jet->GetSecondOrderSubtractedConstituent();
   else
     return jet->GetNumberOfTracks();
@@ -466,9 +508,9 @@ Float_t AliAnalysisTaskEmcalQGTagging::GetJetNumberOfConstituents(AliEmcalJet *j
    
 
 //______________________________________________________________________________
-Float_t AliAnalysisTaskEmcalQGTagging::Sigma2(AliEmcalJet *jet){
+Float_t AliAnalysisTaskEmcalQGTagging::Sigma2(AliEmcalJet *jet, Int_t jetContNb=0){
 
-  AliJetContainer *jetCont = GetJetContainer(0);
+  AliJetContainer *jetCont = GetJetContainer(jetContNb);
   if (!jet->GetNumberOfTracks())
       return 0; 
       Double_t mxx    = 0.;
@@ -522,13 +564,13 @@ Float_t AliAnalysisTaskEmcalQGTagging::Sigma2(AliEmcalJet *jet){
 }
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskEmcalQGTagging::GetSigma2(AliEmcalJet *jet) {
+Float_t AliAnalysisTaskEmcalQGTagging::GetSigma2(AliEmcalJet *jet, Int_t jetContNb=0) {
   //calc subtracted jet mass
  
-  if(fJetShapeType==kDeriv)
+  if(fJetShapeSub==kDerivSub)
     return jet->GetSecondOrderSubtractedSigma2();
   else
-    return Sigma2(jet);
+    return Sigma2(jet, jetContNb);
  
 }
 
