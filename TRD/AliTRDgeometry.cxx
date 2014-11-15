@@ -185,7 +185,7 @@ ClassImp(AliTRDgeometry)
   const Int_t    AliTRDgeometry::fgkRowmaxC1  = 16;
 
   const Double_t AliTRDgeometry::fgkTime0Base = 300.65;
-const Float_t  AliTRDgeometry::fgkTime0[6]  = { static_cast<Float_t>(fgkTime0Base + 0 * (Cheight() + Cspace())) 
+  const Float_t  AliTRDgeometry::fgkTime0[6]  = { static_cast<Float_t>(fgkTime0Base + 0 * (Cheight() + Cspace())) 
                                                 , static_cast<Float_t>(fgkTime0Base + 1 * (Cheight() + Cspace())) 
                                                 , static_cast<Float_t>(fgkTime0Base + 2 * (Cheight() + Cspace())) 
                                                 , static_cast<Float_t>(fgkTime0Base + 3 * (Cheight() + Cspace())) 
@@ -201,11 +201,11 @@ const Float_t  AliTRDgeometry::fgkTime0[6]  = { static_cast<Float_t>(fgkTime0Bas
   // The outer lengths of the chambers
   // Includes the spacings between the chambers!
   const Float_t AliTRDgeometry::fgkClength[kNlayer][kNstack] = { { 124.0, 124.0, 110.0, 124.0, 124.0 }
-							      , { 124.0, 124.0, 110.0, 124.0, 124.0 }
-							      , { 131.0, 131.0, 110.0, 131.0, 131.0 }
-							      , { 138.0, 138.0, 110.0, 138.0, 138.0 }
-							      , { 145.0, 145.0, 110.0, 145.0, 145.0 }
-							      , { 147.0, 147.0, 110.0, 147.0, 147.0 } };
+							       , { 124.0, 124.0, 110.0, 124.0, 124.0 }
+							       , { 131.0, 131.0, 110.0, 131.0, 131.0 }
+							       , { 138.0, 138.0, 110.0, 138.0, 138.0 }
+							       , { 145.0, 145.0, 110.0, 145.0, 145.0 }
+							       , { 147.0, 147.0, 110.0, 147.0, 147.0 } };
 
         Char_t  AliTRDgeometry::fgSMstatus[kNsector]         = { 1, 1, 1, 1, 1, 1, 1, 1, 1
 				       		               , 1, 1, 1, 1, 1, 1, 1, 1, 1 };
@@ -515,6 +515,7 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   // UTR1: Default supermodule
   // UTR2: Supermodule in front of PHOS with double carbon cover
   // UTR3: As UTR2, but w/o middle stack
+  // UTR4: Sector 17 with missing chamber L4S4
   //
   // The mother volume for one sector (Air), full length in z-direction
   // Provides material for side plates of super module
@@ -525,6 +526,7 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   TVirtualMC::GetMC()->Gsvolu("UTR1","TRD1",idtmed[1302-1],parTrd,kNparTrd);
   TVirtualMC::GetMC()->Gsvolu("UTR2","TRD1",idtmed[1302-1],parTrd,kNparTrd);
   TVirtualMC::GetMC()->Gsvolu("UTR3","TRD1",idtmed[1302-1],parTrd,kNparTrd);
+  TVirtualMC::GetMC()->Gsvolu("UTR4","TRD1",idtmed[1302-1],parTrd,kNparTrd);
   // The outer aluminum plates of the super module (Al)
   parTrd[0] = fgkSwidth1/2.0;
   parTrd[1] = fgkSwidth2/2.0;
@@ -533,6 +535,7 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   TVirtualMC::GetMC()->Gsvolu("UTS1","TRD1",idtmed[1301-1],parTrd,kNparTrd);
   TVirtualMC::GetMC()->Gsvolu("UTS2","TRD1",idtmed[1301-1],parTrd,kNparTrd);
   TVirtualMC::GetMC()->Gsvolu("UTS3","TRD1",idtmed[1301-1],parTrd,kNparTrd);
+  TVirtualMC::GetMC()->Gsvolu("UTS4","TRD1",idtmed[1301-1],parTrd,kNparTrd);
   // The inner part of the TRD mother volume for one sector (Air), 
   // full length in z-direction
   parTrd[0] = fgkSwidth1/2.0 - fgkSMpltT;
@@ -542,6 +545,7 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   TVirtualMC::GetMC()->Gsvolu("UTI1","TRD1",idtmed[1302-1],parTrd,kNparTrd);
   TVirtualMC::GetMC()->Gsvolu("UTI2","TRD1",idtmed[1302-1],parTrd,kNparTrd);
   TVirtualMC::GetMC()->Gsvolu("UTI3","TRD1",idtmed[1302-1],parTrd,kNparTrd);
+  TVirtualMC::GetMC()->Gsvolu("UTI4","TRD1",idtmed[1302-1],parTrd,kNparTrd);
 
   // The inner part of the TRD mother volume for services in front
   // of the supermodules  (Air), 
@@ -900,6 +904,7 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   TVirtualMC::GetMC()->Gspos("UTI1",1,"UTS1",xpos,ypos,zpos,0,"ONLY");
   TVirtualMC::GetMC()->Gspos("UTI2",1,"UTS2",xpos,ypos,zpos,0,"ONLY");
   TVirtualMC::GetMC()->Gspos("UTI3",1,"UTS3",xpos,ypos,zpos,0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("UTI4",1,"UTS4",xpos,ypos,zpos,0,"ONLY");
 
   xpos = 0.0;
   ypos = 0.0;
@@ -907,6 +912,7 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   TVirtualMC::GetMC()->Gspos("UTS1",1,"UTR1",xpos,ypos,zpos,0,"ONLY");
   TVirtualMC::GetMC()->Gspos("UTS2",1,"UTR2",xpos,ypos,zpos,0,"ONLY");
   TVirtualMC::GetMC()->Gspos("UTS3",1,"UTR3",xpos,ypos,zpos,0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("UTS4",1,"UTR4",xpos,ypos,zpos,0,"ONLY");
 
   // Put the TRD volumes into the space frame mother volumes
   // if enabled via status flag
@@ -917,6 +923,10 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
     if (GetSMstatus(isector)) {
       snprintf(cTagV,kTag,"BTRD%d",isector);
       switch (isector) {
+      case 17:
+        // Missing L4S4 chamber
+        TVirtualMC::GetMC()->Gspos("UTR4",1,cTagV,xpos,ypos,zpos,0,"ONLY");
+        break;
       case 13:
       case 14:
       case 15:
@@ -1012,6 +1022,7 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   TVirtualMC::GetMC()->Gsposp("USCR", 1,"UTS1", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
   TVirtualMC::GetMC()->Gsposp("USCR", 2,"UTS2", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
   TVirtualMC::GetMC()->Gsposp("USCR", 3,"UTS3", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR", 4,"UTS4", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
   // Bottom 2 (all sectors)
   parCrb[0] =  77.49/2.0;
   parCrb[1] =  55.80/2.0;
@@ -1019,12 +1030,14 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   xpos      =   0.0;
   ypos      =  85.6;
   zpos      = fgkSMpltT/2.0 - fgkSheight/2.0;
-  TVirtualMC::GetMC()->Gsposp("USCR", 4,"UTS1", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
-  TVirtualMC::GetMC()->Gsposp("USCR", 5,"UTS2", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
-  TVirtualMC::GetMC()->Gsposp("USCR", 6,"UTS3", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
-  TVirtualMC::GetMC()->Gsposp("USCR", 7,"UTS1", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
-  TVirtualMC::GetMC()->Gsposp("USCR", 8,"UTS2", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
-  TVirtualMC::GetMC()->Gsposp("USCR", 9,"UTS3", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR", 5,"UTS1", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR", 6,"UTS2", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR", 7,"UTS3", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR", 8,"UTS4", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR", 9,"UTS1", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",10,"UTS2", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",11,"UTS3", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",12,"UTS4", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
   // Bottom 3 (all sectors)
   parCrb[0] =  77.49/2.0;
   parCrb[1] =  56.00/2.0;
@@ -1032,12 +1045,14 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   xpos      =   0.0;
   ypos      = 148.5;
   zpos      = fgkSMpltT/2.0 - fgkSheight/2.0;
-  TVirtualMC::GetMC()->Gsposp("USCR",10,"UTS1", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
-  TVirtualMC::GetMC()->Gsposp("USCR",11,"UTS2", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
-  TVirtualMC::GetMC()->Gsposp("USCR",12,"UTS3", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
-  TVirtualMC::GetMC()->Gsposp("USCR",13,"UTS1", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
-  TVirtualMC::GetMC()->Gsposp("USCR",14,"UTS2", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
-  TVirtualMC::GetMC()->Gsposp("USCR",15,"UTS3", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",13,"UTS1", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",14,"UTS2", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",15,"UTS3", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",16,"UTS4", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",17,"UTS1", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",18,"UTS2", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",19,"UTS3", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",20,"UTS4", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
   // Bottom 4 (all sectors)
   parCrb[0] =  77.49/2.0;
   parCrb[1] = 118.00/2.0;
@@ -1045,12 +1060,14 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   xpos      =   0.0;
   ypos      = 240.5;
   zpos      = fgkSMpltT/2.0 - fgkSheight/2.0;
-  TVirtualMC::GetMC()->Gsposp("USCR",16,"UTS1", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
-  TVirtualMC::GetMC()->Gsposp("USCR",17,"UTS2", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
-  TVirtualMC::GetMC()->Gsposp("USCR",18,"UTS3", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
-  TVirtualMC::GetMC()->Gsposp("USCR",19,"UTS1", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
-  TVirtualMC::GetMC()->Gsposp("USCR",20,"UTS2", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
-  TVirtualMC::GetMC()->Gsposp("USCR",21,"UTS3", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",21,"UTS1", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",22,"UTS2", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",23,"UTS3", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",24,"UTS4", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",25,"UTS1", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",26,"UTS2", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",27,"UTS3", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",28,"UTS4", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
   // Top 1 (only in front of PHOS)
   parCrb[0] = 111.48/2.0;
   parCrb[1] = 105.00/2.0;
@@ -1058,8 +1075,8 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   xpos      =   0.0;
   ypos      =   0.0;
   zpos      = fgkSMpltT/2.0 - fgkSheight/2.0;
-  TVirtualMC::GetMC()->Gsposp("USCR",22,"UTS2", xpos, ypos,-zpos,0,"ONLY",parCrb,kNparCrb);
-  TVirtualMC::GetMC()->Gsposp("USCR",23,"UTS3", xpos, ypos,-zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",29,"UTS2", xpos, ypos,-zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",30,"UTS3", xpos, ypos,-zpos,0,"ONLY",parCrb,kNparCrb);
   // Top 2 (only in front of PHOS)
   parCrb[0] = 111.48/2.0;
   parCrb[1] =  56.00/2.0;
@@ -1067,10 +1084,10 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   xpos      =   0.0;
   ypos      =  85.5;
   zpos      = fgkSMpltT/2.0 - fgkSheight/2.0;
-  TVirtualMC::GetMC()->Gsposp("USCR",24,"UTS2", xpos, ypos,-zpos,0,"ONLY",parCrb,kNparCrb);
-  TVirtualMC::GetMC()->Gsposp("USCR",25,"UTS3", xpos, ypos,-zpos,0,"ONLY",parCrb,kNparCrb);
-  TVirtualMC::GetMC()->Gsposp("USCR",26,"UTS2", xpos,-ypos,-zpos,0,"ONLY",parCrb,kNparCrb);
-  TVirtualMC::GetMC()->Gsposp("USCR",27,"UTS3", xpos,-ypos,-zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",31,"UTS2", xpos, ypos,-zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",32,"UTS3", xpos, ypos,-zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",33,"UTS2", xpos,-ypos,-zpos,0,"ONLY",parCrb,kNparCrb);
+  TVirtualMC::GetMC()->Gsposp("USCR",34,"UTS3", xpos,-ypos,-zpos,0,"ONLY",parCrb,kNparCrb);
 
   //
   // The chamber support rails
@@ -1111,6 +1128,8 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
     TVirtualMC::GetMC()->Gspos("USRL",ilayer+1+3*kNlayer,"UTI2",-xpos,ypos,zpos,matrix[3],"ONLY");
     TVirtualMC::GetMC()->Gspos("USRL",ilayer+1+4*kNlayer,"UTI3", xpos,ypos,zpos,matrix[2],"ONLY");
     TVirtualMC::GetMC()->Gspos("USRL",ilayer+1+5*kNlayer,"UTI3",-xpos,ypos,zpos,matrix[3],"ONLY");
+    TVirtualMC::GetMC()->Gspos("USRL",ilayer+1+6*kNlayer,"UTI4", xpos,ypos,zpos,matrix[2],"ONLY");
+    TVirtualMC::GetMC()->Gspos("USRL",ilayer+1+7*kNlayer,"UTI4",-xpos,ypos,zpos,matrix[3],"ONLY");
   }
 
   //
@@ -1172,11 +1191,13 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
     TVirtualMC::GetMC()->Gspos(cTagV, 1,"UTI1", xpos,ypos,zpos,0,"ONLY");
     TVirtualMC::GetMC()->Gspos(cTagV, 3,"UTI2", xpos,ypos,zpos,0,"ONLY");
     TVirtualMC::GetMC()->Gspos(cTagV, 5,"UTI3", xpos,ypos,zpos,0,"ONLY");
+    TVirtualMC::GetMC()->Gspos(cTagV, 7,"UTI4", xpos,ypos,zpos,0,"ONLY");
 
     ypos  = - fgkClength[ilayer][2]/2.0 - fgkClength[ilayer][1];
     TVirtualMC::GetMC()->Gspos(cTagV, 2,"UTI1", xpos,ypos,zpos,0,"ONLY");
     TVirtualMC::GetMC()->Gspos(cTagV, 4,"UTI2", xpos,ypos,zpos,0,"ONLY");
     TVirtualMC::GetMC()->Gspos(cTagV, 6,"UTI3", xpos,ypos,zpos,0,"ONLY");
+    TVirtualMC::GetMC()->Gspos(cTagV, 8,"UTI4", xpos,ypos,zpos,0,"ONLY");
 
   }
 
@@ -1203,10 +1224,12 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
     TVirtualMC::GetMC()->Gspos(cTagV,1,"UTI1", xpos,ypos,zpos,0,"ONLY");
     TVirtualMC::GetMC()->Gspos(cTagV,3,"UTI2", xpos,ypos,zpos,0,"ONLY");
     TVirtualMC::GetMC()->Gspos(cTagV,5,"UTI3", xpos,ypos,zpos,0,"ONLY");
+    TVirtualMC::GetMC()->Gspos(cTagV,7,"UTI4", xpos,ypos,zpos,0,"ONLY");
     ypos  = -ypos;
     TVirtualMC::GetMC()->Gspos(cTagV,2,"UTI1", xpos,ypos,zpos,0,"ONLY");
     TVirtualMC::GetMC()->Gspos(cTagV,4,"UTI2", xpos,ypos,zpos,0,"ONLY");
     TVirtualMC::GetMC()->Gspos(cTagV,6,"UTI3", xpos,ypos,zpos,0,"ONLY");
+    TVirtualMC::GetMC()->Gspos(cTagV,8,"UTI4", xpos,ypos,zpos,0,"ONLY");
 
   }
 
@@ -1323,6 +1346,8 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   TVirtualMC::GetMC()->Gspos("USDB",4,"UTI2", xpos,-ypos, zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USDB",5,"UTI3", xpos, ypos, zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USDB",6,"UTI3", xpos,-ypos, zpos,        0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("USDB",7,"UTI4", xpos, ypos, zpos,        0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("USDB",8,"UTI4", xpos,-ypos, zpos,        0,"ONLY");
   // Upper bar (aluminum)
   parBOX[0] = 95.00/2.0;
   parBOX[1] =  1.20/2.0;
@@ -1337,6 +1362,8 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   TVirtualMC::GetMC()->Gspos("USD7",4,"UTI2", xpos,-ypos, zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USD7",5,"UTI3", xpos, ypos, zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USD7",6,"UTI3", xpos,-ypos, zpos,        0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("USD7",7,"UTI4", xpos, ypos, zpos,        0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("USD7",8,"UTI4", xpos,-ypos, zpos,        0,"ONLY");
   // Lower bar (aluminum)
   parBOX[0] = 90.22/2.0;
   parBOX[1] =  1.20/2.0;
@@ -1351,6 +1378,8 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   TVirtualMC::GetMC()->Gspos("USD8",4,"UTI2", xpos,-ypos, zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USD8",5,"UTI3", xpos, ypos, zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USD8",6,"UTI3", xpos,-ypos, zpos,        0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("USD8",7,"UTI4", xpos, ypos, zpos,        0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("USD8",8,"UTI4", xpos,-ypos, zpos,        0,"ONLY");
   // Lower bar (aluminum)
   parBOX[0] = 82.60/2.0;
   parBOX[1] =  1.20/2.0;
@@ -1365,6 +1394,8 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   TVirtualMC::GetMC()->Gspos("USD9",4,"UTI2", xpos,-ypos, zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USD9",5,"UTI3", xpos, ypos, zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USD9",6,"UTI3", xpos,-ypos, zpos,        0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("USD9",7,"UTI4", xpos, ypos, zpos,        0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("USD9",8,"UTI4", xpos,-ypos, zpos,        0,"ONLY");
   // Front sheet (aluminum)
   parTRP[ 0] =   0.10/2.0;
   parTRP[ 1] =   0.0;
@@ -1387,6 +1418,8 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   TVirtualMC::GetMC()->Gspos("USDF",4,"UTI2", xpos,-ypos, zpos,matrix[2],"ONLY");
   TVirtualMC::GetMC()->Gspos("USDF",5,"UTI3", xpos, ypos, zpos,matrix[2],"ONLY");
   TVirtualMC::GetMC()->Gspos("USDF",6,"UTI3", xpos,-ypos, zpos,matrix[2],"ONLY");
+  TVirtualMC::GetMC()->Gspos("USDF",7,"UTI4", xpos, ypos, zpos,matrix[2],"ONLY");
+  TVirtualMC::GetMC()->Gspos("USDF",8,"UTI4", xpos,-ypos, zpos,matrix[2],"ONLY");
 
   //
   // The flat frame in front of the chambers
@@ -1445,6 +1478,8 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   TVirtualMC::GetMC()->Gspos("USCB",4,"UTI2", xpos,-ypos, zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USCB",5,"UTI3", xpos, ypos, zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USCB",6,"UTI3", xpos,-ypos, zpos,        0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("USCB",7,"UTI4", xpos, ypos, zpos,        0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("USCB",8,"UTI4", xpos,-ypos, zpos,        0,"ONLY");
   // Upper bar (aluminum)
   parBOX[0] = 95.00/2.0;
   parBOX[1] =  1.50/2.0;
@@ -1459,6 +1494,8 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   TVirtualMC::GetMC()->Gspos("USC4",4,"UTI2", xpos,-ypos, zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USC4",5,"UTI3", xpos, ypos, zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USC4",6,"UTI3", xpos,-ypos, zpos,        0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("USC4",7,"UTI4", xpos, ypos, zpos,        0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("USC4",8,"UTI4", xpos,-ypos, zpos,        0,"ONLY");
   // Lower bar (aluminum)
   parBOX[0] = 90.22/2.0;
   parBOX[1] =  1.50/2.0;
@@ -1473,6 +1510,8 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   TVirtualMC::GetMC()->Gspos("USC5",4,"UTI2", xpos,-ypos, zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USC5",5,"UTI3", xpos, ypos, zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USC5",6,"UTI3", xpos,-ypos, zpos,        0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("USC5",7,"UTI4", xpos, ypos, zpos,        0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("USC5",8,"UTI4", xpos,-ypos, zpos,        0,"ONLY");
   // Lower bar (aluminum)
   parBOX[0] = 82.60/2.0;
   parBOX[1] =  1.50/2.0;
@@ -1487,6 +1526,8 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   TVirtualMC::GetMC()->Gspos("USC6",4,"UTI2", xpos,-ypos, zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USC6",5,"UTI3", xpos, ypos, zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USC6",6,"UTI3", xpos,-ypos, zpos,        0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("USC6",7,"UTI4", xpos, ypos, zpos,        0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("USC6",8,"UTI4", xpos,-ypos, zpos,        0,"ONLY");
 
   //
   // The long corner ledges
@@ -1518,8 +1559,10 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   ypos  =   0.0;
   zpos  =   fgkSheight/2.0 - fgkSMpltT - kSCLposzUa;
   TVirtualMC::GetMC()->Gspos("USL1",1,"UTI1", xpos,ypos,zpos,matrix[0],"ONLY");
+  TVirtualMC::GetMC()->Gspos("USL1",3,"UTI4", xpos,ypos,zpos,matrix[0],"ONLY");
   xpos  = -xpos;
   TVirtualMC::GetMC()->Gspos("USL1",2,"UTI1", xpos,ypos,zpos,matrix[1],"ONLY");
+  TVirtualMC::GetMC()->Gspos("USL1",4,"UTI4", xpos,ypos,zpos,matrix[1],"ONLY");
   // Horizontal
   parSCL[0]  = kSCLwidUb /2.0;
   parSCL[1]  = fgkSlength/2.0;
@@ -1531,10 +1574,12 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   TVirtualMC::GetMC()->Gspos("USL2",1,"UTI1", xpos,ypos,zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USL2",3,"UTI2", xpos,ypos,zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USL2",5,"UTI3", xpos,ypos,zpos,        0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("USL2",7,"UTI4", xpos,ypos,zpos,        0,"ONLY");
   xpos  = -xpos;
   TVirtualMC::GetMC()->Gspos("USL2",2,"UTI1", xpos,ypos,zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USL2",4,"UTI2", xpos,ypos,zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USL2",6,"UTI3", xpos,ypos,zpos,        0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("USL2",8,"UTI4", xpos,ypos,zpos,        0,"ONLY");
 
   // Lower ledges 
   // Thickness of the corner ledges
@@ -1568,10 +1613,12 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   TVirtualMC::GetMC()->Gspos("USL3",1,"UTI1", xpos,ypos,zpos,matrix[2],"ONLY");
   TVirtualMC::GetMC()->Gspos("USL3",3,"UTI2", xpos,ypos,zpos,matrix[2],"ONLY");
   TVirtualMC::GetMC()->Gspos("USL3",5,"UTI3", xpos,ypos,zpos,matrix[2],"ONLY");
+  TVirtualMC::GetMC()->Gspos("USL3",7,"UTI4", xpos,ypos,zpos,matrix[2],"ONLY");
   xpos  = -xpos;
   TVirtualMC::GetMC()->Gspos("USL3",2,"UTI1", xpos,ypos,zpos,matrix[3],"ONLY");
   TVirtualMC::GetMC()->Gspos("USL3",4,"UTI2", xpos,ypos,zpos,matrix[3],"ONLY");
   TVirtualMC::GetMC()->Gspos("USL3",6,"UTI3", xpos,ypos,zpos,matrix[3],"ONLY");
+  TVirtualMC::GetMC()->Gspos("USL3",8,"UTI4", xpos,ypos,zpos,matrix[3],"ONLY");
   // Horizontal part
   parSCL[0]  = kSCLwidLb /2.0;
   parSCL[1]  = fgkSlength/2.0;
@@ -1583,10 +1630,12 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   TVirtualMC::GetMC()->Gspos("USL4",1,"UTI1", xpos,ypos,zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USL4",3,"UTI2", xpos,ypos,zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USL4",5,"UTI3", xpos,ypos,zpos,        0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("USL4",7,"UTI4", xpos,ypos,zpos,        0,"ONLY");
   xpos  = -xpos;
   TVirtualMC::GetMC()->Gspos("USL4",2,"UTI1", xpos,ypos,zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USL4",4,"UTI2", xpos,ypos,zpos,        0,"ONLY");
   TVirtualMC::GetMC()->Gspos("USL4",6,"UTI3", xpos,ypos,zpos,        0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("USL4",8,"UTI4", xpos,ypos,zpos,        0,"ONLY");
 
   //
   // Aluminum plates in the front part of the super modules
@@ -1744,17 +1793,21 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
     parCOL[0] = kCOLwid   /2.0;
     parCOL[1] = fgkSlength/2.0;
     parCOL[2] = kCOLhgt   /2.0;
-    TVirtualMC::GetMC()->Gsposp("UTC1",ilayer          ,"UTI1", xpos,ypos,zpos
+    TVirtualMC::GetMC()->Gsposp("UTC1",ilayer           ,"UTI1", xpos,ypos,zpos
                       ,matrix[0],"ONLY",parCOL,kNparCOL);
-    TVirtualMC::GetMC()->Gsposp("UTC1",ilayer+  kNlayer,"UTI1",-xpos,ypos,zpos
+    TVirtualMC::GetMC()->Gsposp("UTC1",ilayer+   kNlayer,"UTI1",-xpos,ypos,zpos
                       ,matrix[1],"ONLY",parCOL,kNparCOL);
-    TVirtualMC::GetMC()->Gsposp("UTC1",ilayer+6*kNlayer,"UTI2", xpos,ypos,zpos
+    TVirtualMC::GetMC()->Gsposp("UTC1",ilayer+ 6*kNlayer,"UTI2", xpos,ypos,zpos
                       ,matrix[0],"ONLY",parCOL,kNparCOL);
-    TVirtualMC::GetMC()->Gsposp("UTC1",ilayer+7*kNlayer,"UTI2",-xpos,ypos,zpos
+    TVirtualMC::GetMC()->Gsposp("UTC1",ilayer+ 7*kNlayer,"UTI2",-xpos,ypos,zpos
                       ,matrix[1],"ONLY",parCOL,kNparCOL);
-    TVirtualMC::GetMC()->Gsposp("UTC1",ilayer+8*kNlayer ,"UTI3", xpos,ypos,zpos
+    TVirtualMC::GetMC()->Gsposp("UTC1",ilayer+ 8*kNlayer,"UTI3", xpos,ypos,zpos
                       ,matrix[0],"ONLY",parCOL,kNparCOL);
-    TVirtualMC::GetMC()->Gsposp("UTC1",ilayer+9*kNlayer,"UTI3",-xpos,ypos,zpos
+    TVirtualMC::GetMC()->Gsposp("UTC1",ilayer+ 9*kNlayer,"UTI3",-xpos,ypos,zpos
+                      ,matrix[1],"ONLY",parCOL,kNparCOL);
+    TVirtualMC::GetMC()->Gsposp("UTC1",ilayer+10*kNlayer,"UTI4", xpos,ypos,zpos
+                      ,matrix[0],"ONLY",parCOL,kNparCOL);
+    TVirtualMC::GetMC()->Gsposp("UTC1",ilayer+11*kNlayer,"UTI4",-xpos,ypos,zpos
                       ,matrix[1],"ONLY",parCOL,kNparCOL);
 
     // Front of supermodules
@@ -1821,17 +1874,21 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   parCOL[0] = kCOLwid   /2.0;
   parCOL[1] = fgkSlength/2.0;
   parCOL[2] = kCOLhgt   /2.0;
-  TVirtualMC::GetMC()->Gsposp("UTC1",6          ,"UTI1", xpos,ypos,zpos
+  TVirtualMC::GetMC()->Gsposp("UTC1",6           ,"UTI1", xpos,ypos,zpos
                     ,matrix[3],"ONLY",parCOL,kNparCOL);
-  TVirtualMC::GetMC()->Gsposp("UTC1",6+  kNlayer,"UTI1",-xpos,ypos,zpos
+  TVirtualMC::GetMC()->Gsposp("UTC1",6+   kNlayer,"UTI1",-xpos,ypos,zpos
                     ,matrix[3],"ONLY",parCOL,kNparCOL);
-  TVirtualMC::GetMC()->Gsposp("UTC1",6+6*kNlayer,"UTI2", xpos,ypos,zpos
+  TVirtualMC::GetMC()->Gsposp("UTC1",6+ 6*kNlayer,"UTI2", xpos,ypos,zpos
                     ,matrix[3],"ONLY",parCOL,kNparCOL);
-  TVirtualMC::GetMC()->Gsposp("UTC1",6+7*kNlayer,"UTI2",-xpos,ypos,zpos
+  TVirtualMC::GetMC()->Gsposp("UTC1",6+ 7*kNlayer,"UTI2",-xpos,ypos,zpos
                     ,matrix[3],"ONLY",parCOL,kNparCOL);
-  TVirtualMC::GetMC()->Gsposp("UTC1",6+8*kNlayer,"UTI3", xpos,ypos,zpos
+  TVirtualMC::GetMC()->Gsposp("UTC1",6+ 8*kNlayer,"UTI3", xpos,ypos,zpos
                     ,matrix[3],"ONLY",parCOL,kNparCOL);
-  TVirtualMC::GetMC()->Gsposp("UTC1",6+9*kNlayer,"UTI3",-xpos,ypos,zpos
+  TVirtualMC::GetMC()->Gsposp("UTC1",6+ 9*kNlayer,"UTI3",-xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parCOL,kNparCOL);
+  TVirtualMC::GetMC()->Gsposp("UTC1",6+10*kNlayer,"UTI4", xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parCOL,kNparCOL);
+  TVirtualMC::GetMC()->Gsposp("UTC1",6+11*kNlayer,"UTI4",-xpos,ypos,zpos
                     ,matrix[3],"ONLY",parCOL,kNparCOL);
   // Front of supermodules
   xpos      = fgkCwidth[5]/2.0 - kCOLhgt/2.0 - 1.3;
@@ -1840,13 +1897,13 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   parCOL[0] = kCOLwid   /2.0;
   parCOL[1] = fgkFlength/2.0;
   parCOL[2] = kCOLhgt   /2.0;
-  TVirtualMC::GetMC()->Gsposp("UTC3",6+2*kNlayer,"UTF1", xpos,ypos,zpos
+  TVirtualMC::GetMC()->Gsposp("UTC3",6+ 2*kNlayer,"UTF1", xpos,ypos,zpos
                     ,matrix[3],"ONLY",parCOL,kNparCOL);
-  TVirtualMC::GetMC()->Gsposp("UTC3",6+3*kNlayer,"UTF1",-xpos,ypos,zpos
+  TVirtualMC::GetMC()->Gsposp("UTC3",6+ 3*kNlayer,"UTF1",-xpos,ypos,zpos
                     ,matrix[3],"ONLY",parCOL,kNparCOL);
-  TVirtualMC::GetMC()->Gsposp("UTC3",6+4*kNlayer,"UTF2", xpos,ypos,zpos
+  TVirtualMC::GetMC()->Gsposp("UTC3",6+ 4*kNlayer,"UTF2", xpos,ypos,zpos
                     ,matrix[3],"ONLY",parCOL,kNparCOL);
-  TVirtualMC::GetMC()->Gsposp("UTC3",6+5*kNlayer,"UTF2",-xpos,ypos,zpos
+  TVirtualMC::GetMC()->Gsposp("UTC3",6+ 5*kNlayer,"UTF2",-xpos,ypos,zpos
                     ,matrix[3],"ONLY",parCOL,kNparCOL);
   // In baby frame
   xpos      = fgkCwidth[5]/2.0 - kCOLhgt/2.0 - 3.1;
@@ -1901,17 +1958,21 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
     parPWR[0] = kPWRwid   /2.0;
     parPWR[1] = fgkSlength/2.0;
     parPWR[2] = kPWRhgtA  /2.0;
-    TVirtualMC::GetMC()->Gsposp("UTP1",ilayer          ,"UTI1", xpos,ypos,zpos
+    TVirtualMC::GetMC()->Gsposp("UTP1",ilayer           ,"UTI1", xpos,ypos,zpos
                       ,matrix[0],"ONLY",parPWR,kNparPWR);
-    TVirtualMC::GetMC()->Gsposp("UTP1",ilayer+  kNlayer,"UTI1",-xpos,ypos,zpos
+    TVirtualMC::GetMC()->Gsposp("UTP1",ilayer+   kNlayer,"UTI1",-xpos,ypos,zpos
                       ,matrix[1],"ONLY",parPWR,kNparPWR);
-    TVirtualMC::GetMC()->Gsposp("UTP1",ilayer+6*kNlayer,"UTI2", xpos,ypos,zpos
+    TVirtualMC::GetMC()->Gsposp("UTP1",ilayer+ 6*kNlayer,"UTI2", xpos,ypos,zpos
                       ,matrix[0],"ONLY",parPWR,kNparPWR);
-    TVirtualMC::GetMC()->Gsposp("UTP1",ilayer+7*kNlayer,"UTI2",-xpos,ypos,zpos
+    TVirtualMC::GetMC()->Gsposp("UTP1",ilayer+ 7*kNlayer,"UTI2",-xpos,ypos,zpos
                       ,matrix[1],"ONLY",parPWR,kNparPWR);
-    TVirtualMC::GetMC()->Gsposp("UTP1",ilayer+8*kNlayer,"UTI3", xpos,ypos,zpos
+    TVirtualMC::GetMC()->Gsposp("UTP1",ilayer+ 8*kNlayer,"UTI3", xpos,ypos,zpos
                       ,matrix[0],"ONLY",parPWR,kNparPWR);
-    TVirtualMC::GetMC()->Gsposp("UTP1",ilayer+9*kNlayer,"UTI3",-xpos,ypos,zpos
+    TVirtualMC::GetMC()->Gsposp("UTP1",ilayer+ 9*kNlayer,"UTI3",-xpos,ypos,zpos
+                      ,matrix[1],"ONLY",parPWR,kNparPWR);
+    TVirtualMC::GetMC()->Gsposp("UTP1",ilayer+10*kNlayer,"UTI4", xpos,ypos,zpos
+                      ,matrix[0],"ONLY",parPWR,kNparPWR);
+    TVirtualMC::GetMC()->Gsposp("UTP1",ilayer+11*kNlayer,"UTI4",-xpos,ypos,zpos
                       ,matrix[1],"ONLY",parPWR,kNparPWR);
 
     // Front of supermodule
@@ -1923,13 +1984,13 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
     parPWR[0] = kPWRwid   /2.0;
     parPWR[1] = fgkFlength/2.0;
     parPWR[2] = kPWRhgtA  /2.0;
-    TVirtualMC::GetMC()->Gsposp("UTP3",ilayer+2*kNlayer,"UTF1", xpos,ypos,zpos
+    TVirtualMC::GetMC()->Gsposp("UTP3",ilayer+ 2*kNlayer,"UTF1", xpos,ypos,zpos
                       ,matrix[0],"ONLY",parPWR,kNparPWR);
-    TVirtualMC::GetMC()->Gsposp("UTP3",ilayer+3*kNlayer,"UTF1",-xpos,ypos,zpos
+    TVirtualMC::GetMC()->Gsposp("UTP3",ilayer+ 3*kNlayer,"UTF1",-xpos,ypos,zpos
                       ,matrix[1],"ONLY",parPWR,kNparPWR);
-    TVirtualMC::GetMC()->Gsposp("UTP3",ilayer+4*kNlayer,"UTF2", xpos,ypos,zpos
+    TVirtualMC::GetMC()->Gsposp("UTP3",ilayer+ 4*kNlayer,"UTF2", xpos,ypos,zpos
                       ,matrix[0],"ONLY",parPWR,kNparPWR);
-    TVirtualMC::GetMC()->Gsposp("UTP3",ilayer+5*kNlayer,"UTF2",-xpos,ypos,zpos
+    TVirtualMC::GetMC()->Gsposp("UTP3",ilayer+ 5*kNlayer,"UTF2",-xpos,ypos,zpos
                       ,matrix[1],"ONLY",parPWR,kNparPWR);
 
   }
@@ -1978,17 +2039,21 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   parPWR[0] = kPWRwid   /2.0;
   parPWR[1] = fgkSlength/2.0;
   parPWR[2] = kPWRhgtB  /2.0 ;
-  TVirtualMC::GetMC()->Gsposp("UTP1",6          ,"UTI1", xpos,ypos,zpos
+  TVirtualMC::GetMC()->Gsposp("UTP1",6           ,"UTI1", xpos,ypos,zpos
                     ,matrix[3],"ONLY",parPWR,kNparPWR);
-  TVirtualMC::GetMC()->Gsposp("UTP1",6+  kNlayer,"UTI1",-xpos,ypos,zpos
+  TVirtualMC::GetMC()->Gsposp("UTP1",6+   kNlayer,"UTI1",-xpos,ypos,zpos
                     ,matrix[3],"ONLY",parPWR,kNparPWR);
-  TVirtualMC::GetMC()->Gsposp("UTP1",6+6*kNlayer,"UTI2", xpos,ypos,zpos
+  TVirtualMC::GetMC()->Gsposp("UTP1",6+ 6*kNlayer,"UTI2", xpos,ypos,zpos
                     ,matrix[3],"ONLY",parPWR,kNparPWR);
-  TVirtualMC::GetMC()->Gsposp("UTP1",6+7*kNlayer,"UTI2",-xpos,ypos,zpos
+  TVirtualMC::GetMC()->Gsposp("UTP1",6+ 7*kNlayer,"UTI2",-xpos,ypos,zpos
                     ,matrix[3],"ONLY",parPWR,kNparPWR);
-  TVirtualMC::GetMC()->Gsposp("UTP1",6+8*kNlayer,"UTI3", xpos,ypos,zpos
+  TVirtualMC::GetMC()->Gsposp("UTP1",6+ 8*kNlayer,"UTI3", xpos,ypos,zpos
                     ,matrix[3],"ONLY",parPWR,kNparPWR);
-  TVirtualMC::GetMC()->Gsposp("UTP1",6+9*kNlayer,"UTI3",-xpos,ypos,zpos
+  TVirtualMC::GetMC()->Gsposp("UTP1",6+ 9*kNlayer,"UTI3",-xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parPWR,kNparPWR);
+  TVirtualMC::GetMC()->Gsposp("UTP1",6+10*kNlayer,"UTI4", xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parPWR,kNparPWR);
+  TVirtualMC::GetMC()->Gsposp("UTP1",6+11*kNlayer,"UTI4",-xpos,ypos,zpos
                     ,matrix[3],"ONLY",parPWR,kNparPWR);
   // Front of supermodules
   xpos      = fgkCwidth[5]/2.0 + kPWRhgtB/2.0 - 1.3;
@@ -2033,6 +2098,7 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   // Material: Stainless steel
   //
 
+  // PHOS holes
   parTube[0] = 0.0;
   parTube[1] = 2.2/2.0;
   parTube[2] = fgkClength[5][2]/2.0 - fgkHspace/2.0;
@@ -2053,6 +2119,24 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
     TVirtualMC::GetMC()->Gspos("UTG1",1+ilayer,"UTI3", xpos, ypos, zpos,matrix[4],"ONLY");
     TVirtualMC::GetMC()->Gspos("UTG1",7+ilayer,"UTI3",-xpos, ypos, zpos,matrix[4],"ONLY");
   }
+  // Missing L4S4 chamber in sector 17
+  parTube[0] = 0.0;
+  parTube[1] = 2.2/2.0;
+  parTube[2] = fgkClength[4][4]/2.0 - fgkHspace/2.0;
+  TVirtualMC::GetMC()->Gsvolu("UTG3","TUBE",idtmed[1308-1],parTube,kNparTube);
+  parTube[0] = 0.0;
+  parTube[1] = 2.1/2.0;
+  parTube[2] = fgkClength[4][4]/2.0 - fgkHspace/2.0;
+  TVirtualMC::GetMC()->Gsvolu("UTG4","TUBE",idtmed[1309-1],parTube,kNparTube);
+  xpos  = 0.0;
+  ypos  = 0.0;
+  zpos  = 0.0;
+  TVirtualMC::GetMC()->Gspos("UTG4",1,"UTG3",xpos,ypos,zpos,0,"ONLY");
+  xpos  = fgkCwidth[4]/2.0 + kCOLwid/2.0 - 1.5;
+  ypos  = -fgkClength[4][0]/2.0 - fgkClength[4][1] - fgkClength[4][2]/2.0;
+  zpos  = fgkVrocsm + fgkSMpltT + kCOLhgt/2.0 - fgkSheight/2.0 + 5.0 + 4 * (fgkCH + fgkVspace);
+  TVirtualMC::GetMC()->Gspos("UTG3",1,"UTI4", xpos, ypos, zpos,matrix[4],"ONLY");
+  TVirtualMC::GetMC()->Gspos("UTG4",2,"UTI4",-xpos, ypos, zpos,matrix[4],"ONLY");
 
   //
   // The volumes for the services at the chambers
@@ -2417,6 +2501,10 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
                       ,matrix[2],"ONLY",parTube,kNparTube);
     TVirtualMC::GetMC()->Gsposp("UTG3",ilayer+1+5*kNlayer,"UTI3", xpos,-ypos, zpos
                       ,matrix[2],"ONLY",parTube,kNparTube);
+    TVirtualMC::GetMC()->Gsposp("UTG3",ilayer+1+6*kNlayer,"UTI4", xpos, ypos, zpos
+                      ,matrix[2],"ONLY",parTube,kNparTube);
+    TVirtualMC::GetMC()->Gsposp("UTG3",ilayer+1+7*kNlayer,"UTI4", xpos,-ypos, zpos
+                      ,matrix[2],"ONLY",parTube,kNparTube);
   }
 
   // Gas distribution box
@@ -2571,6 +2659,7 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   TVirtualMC::GetMC()->Gspos("UTE1",1,"UTI1", xpos,ypos,zpos,0,"ONLY");
   TVirtualMC::GetMC()->Gspos("UTE1",2,"UTI2", xpos,ypos,zpos,0,"ONLY");
   TVirtualMC::GetMC()->Gspos("UTE1",3,"UTI3", xpos,ypos,zpos,0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("UTE1",4,"UTI4", xpos,ypos,zpos,0,"ONLY");
 
   // Casing (INOX)
   parBox[0] = 50.0/2.0;
@@ -2592,6 +2681,7 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   TVirtualMC::GetMC()->Gspos("UTE3",1,"UTI1", xpos,ypos,zpos,0,"ONLY");
   TVirtualMC::GetMC()->Gspos("UTE3",2,"UTI2", xpos,ypos,zpos,0,"ONLY");
   TVirtualMC::GetMC()->Gspos("UTE3",3,"UTI3", xpos,ypos,zpos,0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("UTE3",4,"UTI4", xpos,ypos,zpos,0,"ONLY");
 
   // Casing (INOX)
   parBox[0] = 20.0/2.0;
@@ -2613,10 +2703,12 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   TVirtualMC::GetMC()->Gspos("UTE5",1,"UTI1", xpos,ypos,zpos,0,"ONLY");
   TVirtualMC::GetMC()->Gspos("UTE5",2,"UTI2", xpos,ypos,zpos,0,"ONLY");
   TVirtualMC::GetMC()->Gspos("UTE5",3,"UTI3", xpos,ypos,zpos,0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("UTE5",4,"UTI4", xpos,ypos,zpos,0,"ONLY");
   xpos      = -xpos;
-  TVirtualMC::GetMC()->Gspos("UTE5",4,"UTI1", xpos,ypos,zpos,0,"ONLY");
-  TVirtualMC::GetMC()->Gspos("UTE5",5,"UTI2", xpos,ypos,zpos,0,"ONLY");
-  TVirtualMC::GetMC()->Gspos("UTE5",6,"UTI3", xpos,ypos,zpos,0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("UTE5",5,"UTI1", xpos,ypos,zpos,0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("UTE5",6,"UTI2", xpos,ypos,zpos,0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("UTE5",7,"UTI3", xpos,ypos,zpos,0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("UTE5",8,"UTI4", xpos,ypos,zpos,0,"ONLY");
 
 }
 
@@ -2708,14 +2800,19 @@ void AliTRDgeometry::AssembleChamber(Int_t ilayer, Int_t istack)
   TGeoVolume *sm1 = gGeoManager->GetVolume("UTI1");
   TGeoVolume *sm2 = gGeoManager->GetVolume("UTI2");
   TGeoVolume *sm3 = gGeoManager->GetVolume("UTI3");
+  TGeoVolume *sm4 = gGeoManager->GetVolume("UTI4");
   sm1->AddNode(roc,1,new TGeoTranslation(xpos,ypos,zpos));
   sm2->AddNode(roc,1,new TGeoTranslation(xpos,ypos,zpos));
   if (istack != 2) {
     // w/o middle stack
     sm3->AddNode(roc,1,new TGeoTranslation(xpos,ypos,zpos));
   }
+  if (!((ilayer == 4) && (istack == 4))) {
+    // Sector 17 w/o L4S4 chamber
+    sm4->AddNode(roc,1,new TGeoTranslation(xpos,ypos,zpos));
+  }
 
-}
+} 
 
 //_____________________________________________________________________________
 Bool_t AliTRDgeometry::RotateBack(Int_t det
@@ -2906,6 +3003,7 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
   TString vpApp3a = "/UTR1_1/UTS1_1/UTI1_1";
   TString vpApp3b = "/UTR2_1/UTS2_1/UTI2_1";
   TString vpApp3c = "/UTR3_1/UTS3_1/UTI3_1";
+  TString vpApp3d = "/UTR4_1/UTS4_1/UTI4_1";
 
   fgClusterMatrixArray = new TObjArray(kNdet);
   AliAlignObjParams o;
@@ -2925,6 +3023,12 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
       volPath += isector;
       volPath += vpApp2;
       switch (isector) {
+      case 17:
+        if ((istack == 4) && (iLayerTRD == 4)) {
+	  continue;
+	}
+        volPath += vpApp3d;
+        break;
       case 13:
       case 14:
       case 15:

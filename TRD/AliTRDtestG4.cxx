@@ -114,6 +114,7 @@ void AliTRDtestG4::AddAlignableVolumes() const
   TString vpApp3a = "/UTR1_1/UTS1_1/UTI1_1/UT";
   TString vpApp3b = "/UTR2_1/UTS2_1/UTI2_1/UT";
   TString vpApp3c = "/UTR3_1/UTS3_1/UTI3_1/UT";
+  TString vpApp3d = "/UTR4_1/UTS4_1/UTI4_1/UT";
 
   TString snStr   = "TRD/sm";
   TString snApp1  = "/st";
@@ -167,6 +168,12 @@ void AliTRDtestG4::AddAlignableVolumes() const
         volPath += isector;
         volPath += vpApp2;
         switch (isector) {
+        case 17:
+          if ((istack == 4) && (ilayer == 4)) {
+  	    continue;
+  	  }
+          volPath += vpApp3d;
+          break;
         case 13:
         case 14:
         case 15:
