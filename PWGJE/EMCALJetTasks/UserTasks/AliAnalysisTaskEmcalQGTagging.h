@@ -51,7 +51,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Bool_t                              Run();
   Bool_t                              FillHistograms();
 
-  Float_t                            GetJetMass(AliEmcalJet *jet);
+  Float_t                            GetJetMass(AliEmcalJet *jet,Int_t jetContNb);
   Float_t                            Angularity(AliEmcalJet *jet, Int_t jetContNb);
   Float_t                            GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb);
   Float_t                            PTD(AliEmcalJet *jet, Int_t jetContNb);
@@ -60,7 +60,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Float_t                            GetJetCircularity(AliEmcalJet *jet, Int_t jetContNb);
   Float_t                            LeSub(AliEmcalJet *jet, Int_t jetContNb);
   Float_t                            GetJetLeSub(AliEmcalJet *jet, Int_t jetContNb);
-  Float_t                            GetJetNumberOfConstituents(AliEmcalJet *jet);
+  Float_t                            GetJetNumberOfConstituents(AliEmcalJet *jet,Int_t jetContNb);
   Float_t                            GetSigma2(AliEmcalJet *jet, Int_t jetContNb);
   Float_t                            Sigma2(AliEmcalJet *jet, Int_t jetContNb);
 

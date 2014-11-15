@@ -252,8 +252,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       
       fShapesVar[1] = ptSubtracted;
       fShapesVar[2] = GetJetpTD(jet1,0);
-      fShapesVar[3] = GetJetMass(jet1);
-      fShapesVar[4] = 1.*GetJetNumberOfConstituents(jet1);
+      fShapesVar[3] = GetJetMass(jet1,0);
+      fShapesVar[4] = 1.*GetJetNumberOfConstituents(jet1,0);
       fShapesVar[5] = GetJetAngularity(jet1,0);
       fShapesVar[6] = GetJetCircularity(jet1,0);
       fShapesVar[7] = GetJetLeSub(jet1,0);
@@ -265,8 +265,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
 	kMatched = 1;
 	ptMatch=jet2->Pt();
 	ptDMatch=GetJetpTD(jet2, kMatched); 
-	massMatch=GetJetMass(jet2);
-	constMatch=1.*GetJetNumberOfConstituents(jet2);
+	massMatch=GetJetMass(jet2,kMatched);
+	constMatch=1.*GetJetNumberOfConstituents(jet2,kMatched);
 	angulMatch=GetJetAngularity(jet2, kMatched);
 	circMatch=GetJetCircularity(jet2, kMatched);
 	lesubMatch=GetJetLeSub(jet2, kMatched);
@@ -304,9 +304,9 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
 }
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskEmcalQGTagging::GetJetMass(AliEmcalJet *jet) {
+Float_t AliAnalysisTaskEmcalQGTagging::GetJetMass(AliEmcalJet *jet,Int_t jetContNb=0) {
   //calc subtracted jet mass
-  if(fJetShapeSub==kDerivSub)
+  if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
     return jet->GetSecondOrderSubtracted();
   else 
     return jet->M();
@@ -337,7 +337,7 @@ Float_t AliAnalysisTaskEmcalQGTagging::Angularity(AliEmcalJet *jet, Int_t jetCon
 //________________________________________________________________________
 Float_t AliAnalysisTaskEmcalQGTagging::GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb = 0) {
 
-  if(fJetShapeSub==kDerivSub)
+  if((fJetShapeSub==kDerivSub) && (jetContNb==0))
     return jet->GetSecondOrderSubtractedAngularity();
   else
     return Angularity(jet, jetContNb);
@@ -365,7 +365,7 @@ Float_t AliAnalysisTaskEmcalQGTagging::PTD(AliEmcalJet *jet, Int_t jetContNb = 0
 //________________________________________________________________________
 Float_t AliAnalysisTaskEmcalQGTagging::GetJetpTD(AliEmcalJet *jet, Int_t jetContNb = 0) {
   //calc subtracted jet mass
-  if(fJetShapeSub==kDerivSub)
+  if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
     return jet->GetSecondOrderSubtractedpTD();
   else
     return PTD(jet, jetContNb);
@@ -455,7 +455,7 @@ Float_t AliAnalysisTaskEmcalQGTagging::Circularity(AliEmcalJet *jet, Int_t jetCo
 Float_t AliAnalysisTaskEmcalQGTagging::GetJetCircularity(AliEmcalJet *jet, Int_t jetContNb =0 ) {
   //calc subtracted jet mass
  
-  if(fJetShapeSub==kDerivSub)
+  if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
     return jet->GetSecondOrderSubtractedCircularity();
   else
     return Circularity(jet, jetContNb);
@@ -488,7 +488,7 @@ return num-den;
 Float_t AliAnalysisTaskEmcalQGTagging::GetJetLeSub(AliEmcalJet *jet, Int_t jetContNb =0) {
   //calc subtracted jet mass
  
-  if(fJetShapeSub==kDerivSub)
+  if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
     return jet->GetSecondOrderSubtractedLeSub();
   else
     return LeSub(jet, jetContNb);
@@ -496,10 +496,10 @@ Float_t AliAnalysisTaskEmcalQGTagging::GetJetLeSub(AliEmcalJet *jet, Int_t jetCo
 }
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskEmcalQGTagging::GetJetNumberOfConstituents(AliEmcalJet *jet) {
+Float_t AliAnalysisTaskEmcalQGTagging::GetJetNumberOfConstituents(AliEmcalJet *jet,Int_t jetContNb=0) {
   //calc subtracted jet mass
   
-  if(fJetShapeSub==kDerivSub)
+  if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
     return jet->GetSecondOrderSubtractedConstituent();
   else
     return jet->GetNumberOfTracks();
@@ -567,7 +567,7 @@ Float_t AliAnalysisTaskEmcalQGTagging::Sigma2(AliEmcalJet *jet, Int_t jetContNb=
 Float_t AliAnalysisTaskEmcalQGTagging::GetSigma2(AliEmcalJet *jet, Int_t jetContNb=0) {
   //calc subtracted jet mass
  
-  if(fJetShapeSub==kDerivSub)
+  if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
     return jet->GetSecondOrderSubtractedSigma2();
   else
     return Sigma2(jet, jetContNb);
