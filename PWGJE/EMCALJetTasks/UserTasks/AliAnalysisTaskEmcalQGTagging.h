@@ -19,11 +19,17 @@ class AliJetContainer;
 class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
  public:
   enum JetShapeType {
-    kRaw   = 0,  //mass form anti-kt 4-vector
-    kConstSub = 1,   //constituent subtracted jetshape
-    kTrue  = 2, 
-    kDeriv = 3 //area based subtracted jet mass
+    kTrue = 0,   // generated jets only 
+    kTrueDet =1,  // detector and generated jets  
+    kData   = 2,  // raw data 
+    kDetEmb = 3,  //detector embedded jets 
   };
+
+  enum JetShapeSub {
+    kNoSub = 0, 
+    kConstSub = 1,
+    kDerivSub = 2 
+  } ;
 
   AliAnalysisTaskEmcalQGTagging();
   AliAnalysisTaskEmcalQGTagging(const char *name);
@@ -36,9 +42,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   void SetJetContainer(Int_t c)                             { fContainer     = c   ; }
   void SetMinFractionShared(Double_t f)                     { fMinFractionShared = f   ; }
   void SetJetShapeType(JetShapeType t)                      { fJetShapeType       = t   ; }
-  void SetMCTask(Int_t f)                                   { fIsMC       = f   ; }
-  void SetEmbeddingTask(Int_t f)                            { fIsEmbedding       = f   ; }
-  void SetIsConstSub(Bool_t f)                              { fIsConstSub     = f   ; }
+  void SetJetShapeSub(JetShapeSub t)                        { fJetShapeSub     = t   ; }
   void SetJetPtThreshold(Float_t f)                         { fPtThreshold     = f   ; }
   void SetRMatching(Float_t f)                              { fRMatching = f ;}
 
@@ -48,26 +52,24 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Bool_t                              FillHistograms();
 
   Float_t                            GetJetMass(AliEmcalJet *jet);
-  Float_t                            Angularity(AliEmcalJet *jet);
-  Float_t                            GetJetAngularity(AliEmcalJet *jet);
-  Float_t                            PTD(AliEmcalJet *jet);
-  Float_t                            GetJetpTD(AliEmcalJet *jet);
-  Float_t                            Circularity(AliEmcalJet *jet); 
-  Float_t                            GetJetCircularity(AliEmcalJet *jet);
-  Float_t                            LeSub(AliEmcalJet *jet);
-  Float_t                            GetJetLeSub(AliEmcalJet *jet);
+  Float_t                            Angularity(AliEmcalJet *jet, Int_t jetContNb);
+  Float_t                            GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb);
+  Float_t                            PTD(AliEmcalJet *jet, Int_t jetContNb);
+  Float_t                            GetJetpTD(AliEmcalJet *jet, Int_t jetContNb);
+  Float_t                            Circularity(AliEmcalJet *jet, Int_t jetContNb); 
+  Float_t                            GetJetCircularity(AliEmcalJet *jet, Int_t jetContNb);
+  Float_t                            LeSub(AliEmcalJet *jet, Int_t jetContNb);
+  Float_t                            GetJetLeSub(AliEmcalJet *jet, Int_t jetContNb);
   Float_t                            GetJetNumberOfConstituents(AliEmcalJet *jet);
-  Float_t                            GetSigma2(AliEmcalJet *jet);
-  Float_t                            Sigma2(AliEmcalJet *jet);
+  Float_t                            GetSigma2(AliEmcalJet *jet, Int_t jetContNb);
+  Float_t                            Sigma2(AliEmcalJet *jet, Int_t jetContNb);
 
 
   Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 
   Float_t                            fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
-  JetShapeType                        fJetShapeType;                // jet mass type to be used
+  JetShapeType                        fJetShapeType;               // jet type to be used
+  JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
   Float_t                            *fShapesVar;                  // jet shapes used for the tagging
-  Int_t                               fIsMC;
-  Int_t                               fIsEmbedding;
-  Bool_t                              fIsConstSub;
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
   
@@ -85,7 +87,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalQGTagging(const AliAnalysisTaskEmcalQGTagging&);            // not implemented
   AliAnalysisTaskEmcalQGTagging &operator=(const AliAnalysisTaskEmcalQGTagging&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalQGTagging, 2)
+  ClassDef(AliAnalysisTaskEmcalQGTagging, 3)
 };
 #endif
 

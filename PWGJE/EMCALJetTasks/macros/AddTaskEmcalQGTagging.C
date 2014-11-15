@@ -11,7 +11,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
 						     TString     trigClass      = "",
 						     TString     kEmcalTriggers = "",
 						     TString     tag            = "",
-						     AliAnalysisTaskEmcalQGTagging::JetShapeType jetShapeType, Int_t isEmbedding = 0) {
+						     AliAnalysisTaskEmcalQGTagging::JetShapeType jetShapeType, AliAnalysisTaskEmcalQGTagging::JetShapeSub jetShapeSub ) {
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
@@ -37,58 +37,105 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
 
   //task->SetNCentBins(4);
   task->SetJetShapeType(jetShapeType);
+  task->SetJetShapeSub(jetShapeSub);
+  
   TString thename(njetsBase);
-  if(thename.Contains("Sub")) task->SetIsConstSub(kTRUE);
+  //if(thename.Contains("Sub")) task->SetIsConstSub(kTRUE);
   //task->SetVzRange(-10.,10.);
 
   AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
   AliParticleContainer *trackContTrue  = task->AddParticleContainer(ntracksTrue);
   AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
 
-  task->SetJetContainer(0);
-  
+  AliJetContainer *jetContBase=0x0;
+  AliJetContainer *jetContTrue=0x0;
+
   TString strType(type);
-  AliJetContainer *jetContBase = task->AddJetContainer(njetsBase,strType,R);
-  if(jetContBase) {
-    jetContBase->SetRhoName(nrhoBase);
-    jetContBase->ConnectParticleContainer(trackCont);
-    jetContBase->ConnectClusterContainer(clusterCont);
-    jetContBase->SetPercAreaCut(0.6);
-    if(jetShapeType == AliAnalysisTaskEmcalQGTagging::kTrue){ jetContBase->SetPartonInfoName("PartonsInfo");}
+
+  if (jetShapeType==AliAnalysisTaskEmcalQGTagging::kTrue) {
+    jetContBase = task->AddJetContainer(njetsBase,strType,R);
+    if(jetContBase) {
+      jetContBase->SetRhoName(nrhoBase);
+      jetContBase->ConnectParticleContainer(trackCont);
+      jetContBase->ConnectClusterContainer(clusterCont);
+      jetContBase->SetPercAreaCut(0.6);
+      jetContBase->SetPartonInfoName("PartonsInfo");
+    }
   }
-
-
-  if(isEmbedding){
-    task->SetJetContainer(1);
+  
+  if (jetShapeType==AliAnalysisTaskEmcalQGTagging::kTrueDet){
     
-    AliJetContainer *jetContTrue = task->AddJetContainer(njetsTrue,strType,R);
+    jetContBase = task->AddJetContainer(njetsBase,strType,R);
+    if(jetContBase) {
+      jetContBase->SetRhoName(nrhoBase);
+      jetContBase->ConnectParticleContainer(trackCont);
+      jetContBase->ConnectClusterContainer(clusterCont);
+      jetContBase->SetPercAreaCut(0.6);
+      jetContBase->SetPartonInfoName("PartonsInfo");
+    }
+
+    jetContTrue = task->AddJetContainer(njetsTrue,strType,R);
     if(jetContTrue) {
       jetContTrue->SetRhoName(nrhoBase);
       jetContTrue->ConnectParticleContainer(trackContTrue);
       jetContTrue->SetPercAreaCut(0.6); 
       jetContTrue->SetPartonInfoName("PartonsInfo");
     }
-  } 
-    //  task->SetJetContainer(1);
+  }  
 
+  if (jetShapeType==AliAnalysisTaskEmcalQGTagging::kData){
+    jetContBase = task->AddJetContainer(njetsBase,strType,R);
+    if(jetContBase) {
+      jetContBase->SetRhoName(nrhoBase);
+      jetContBase->ConnectParticleContainer(trackCont);
+      jetContBase->ConnectClusterContainer(clusterCont);
+      jetContBase->SetPercAreaCut(0.6);
+    }    
+  }
+  
+  if (jetShapeType==AliAnalysisTaskEmcalQGTagging::kDetEmb){
+    jetContBase = task->AddJetContainer(njetsBase,strType,R);
+    if(jetContBase) {
+      jetContBase->SetRhoName(nrhoBase);
+      jetContBase->ConnectParticleContainer(trackCont);
+      jetContBase->ConnectClusterContainer(clusterCont);
+      jetContBase->SetPercAreaCut(0.6);
+      jetContBase->SetPartonInfoName("PartonsInfo");
+    }
+
+    jetContTrue = task->AddJetContainer(njetsTrue,strType,R);
+    if(jetContTrue) {
+      jetContTrue->SetRhoName(nrhoBase);
+      jetContTrue->ConnectParticleContainer(trackContTrue);
+      jetContTrue->SetPercAreaCut(0.6); 
+      jetContTrue->SetPartonInfoName("PartonsInfo");
+    }
+    
+  }
+  
   task->SetCaloTriggerPatchInfoName(kEmcalTriggers.Data());
   task->SetCentralityEstimator(CentEst);
   task->SelectCollisionCandidates(pSel);
   task->SetUseAliAnaUtils(kFALSE);
 
   mgr->AddTask(task);
-
+  
   //Connnect input
   mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer() );
 
   //Connect output
   TString contName1(wagonName);
 
-  if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kRaw) contName1 += "_Raw"; 
-  if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kConstSub) contName1 += "_ConstSub"; 
   if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kTrue) contName1 += "_True"; 
-  if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kDeriv) contName1 += "_Deriv"; 
+  if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kTrueDet) contName1 += "_TrueDet"; 
+  if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kData) contName1 += "_Data"; 
+  if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kDetEmb) contName1 += "_DetEmb"; 
  
+  if (jetShapeSub == AliAnalysisTaskEmcalQGTagging::kNoSub) contName1 += "_NoSub"; 
+  if (jetShapeSub == AliAnalysisTaskEmcalQGTagging::kConstSub) contName1 += "_ConstSub"; 
+  if (jetShapeSub == AliAnalysisTaskEmcalQGTagging::kDerivSub) contName1 += "_DerivSub"; 
+
+
   TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName1.Data(), TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
     
