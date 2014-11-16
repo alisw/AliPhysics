@@ -71,6 +71,27 @@ class AliEbyEPidRatioHelper : public TNamed {
   Bool_t           GetIsPtBin()                {return fIsPtBin;         }
   Bool_t           GetDetWise()                {return fIsDetectorWise ; }
 
+
+  Bool_t   GetUsePID(Int_t i)                         { if (i == 0) return kFALSE; else return kTRUE;}
+
+  AliPID::EParticleType GetParticleSpecies(Int_t i) {
+    if (i == 0) return AliPID::kUnknown;
+    else if (i == 1) return  AliPID::kPion;  
+    else if (i == 2) return  AliPID::kKaon;  
+    else if (i == 3) return  AliPID::kProton;  
+    else return AliPID::kUnknown;
+  }
+  
+  Int_t GetPdg(Int_t i) {
+    if (i == 0) return 0;
+    else if (i == 1) return  211;  
+    else if (i == 2) return  321;  
+    else if (i == 3) return  2212;  
+    else return 0;
+  }
+
+
+
   Int_t            GetAODtrackCutBit()         {return fAODtrackCutBit;  }
   AliMCEvent*           GetMCEvent()           {return fMCEvent;         }
   AliInputEventHandler* GetInputEventHandler() {return fInputEventHandler;}
