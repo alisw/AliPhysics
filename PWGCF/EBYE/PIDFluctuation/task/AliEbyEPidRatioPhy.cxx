@@ -129,6 +129,7 @@ void AliEbyEPidRatioPhy::Process() {
 
 //________________________________________________________________________
 void AliEbyEPidRatioPhy::Init() {
+ 
   fNp = new Int_t**[fNNp];
   for (Int_t ii = 0 ; ii < fNNp; ++ii) {
     fNp[ii] = new Int_t*[4];
@@ -166,6 +167,7 @@ void AliEbyEPidRatioPhy::Init() {
   fRedFactp = new Double_t*[fOrder+1];
   for (Int_t ii = 0 ; ii <= fOrder; ++ii)
     fRedFactp[ii] = new Double_t[2];
+  Printf(" >>>> AliEbyEPidRatioEffContExtra - inside");
 }
 
 //________________________________________________________________________

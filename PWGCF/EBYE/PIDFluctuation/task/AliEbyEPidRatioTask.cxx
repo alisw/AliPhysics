@@ -59,6 +59,7 @@ AliEbyEPidRatioTask::AliEbyEPidRatioTask(const char *name) :
   AliAnalysisTaskSE(name),
   fHelper(NULL),
   fEffCont(NULL),
+  fEffContExtra(NULL),
   fDCA(NULL),
   fDist(NULL),
   fQA(NULL),
@@ -88,6 +89,8 @@ AliEbyEPidRatioTask::AliEbyEPidRatioTask(const char *name) :
   fIsSub(kFALSE),
   fIsBS(kFALSE),
   fIsPer(kFALSE),
+
+  fIsEffExtra(kFALSE),
 
   fESDTrackCutMode(0),
   fModeEffCreation(0),
@@ -129,6 +132,7 @@ AliEbyEPidRatioTask::~AliEbyEPidRatioTask() {
   if (fESDTrackCutsEff)  delete fESDTrackCutsEff;
 
   if (fEffCont)          delete fEffCont;
+  if (fEffContExtra)     delete fEffContExtra;
   if (fDCA)              delete fDCA;
   if (fDist)             delete fDist;
   if (fQA)               delete fQA;
@@ -204,11 +208,22 @@ void AliEbyEPidRatioTask::UserCreateOutputObjects() {
   list->Add(fHelper->GetHCentralityPercentileAll());
 
   if ((fIsAOD||fIsMC) && fModeEffCreation == 1) {
-    fOutListEff->Add(fEffCont->GetHnEffMc());
-    fOutListEff->Add(fEffCont->GetHnEffRec());
+    if (fIsEffExtra) {
+      for (Int_t i = 0; i < 4; i++) {
+	for (Int_t j = 0; j < 4; j++) {
+	  if (fEffContExtra->GetHnEff(i,j))
+	    fOutListEff->Add(fEffContExtra->GetHnEff(i,j));
+	}
+      }
+    }
+    else {
+      fOutListEff->Add(fEffCont->GetHnEffMc());
+      fOutListEff->Add(fEffCont->GetHnEffRec());
+      
+      fOutListCont->Add(fEffCont->GetHnContMc());
+      fOutListCont->Add(fEffCont->GetHnContRec());
 
-    fOutListCont->Add(fEffCont->GetHnContMc());
-    fOutListCont->Add(fEffCont->GetHnContRec());
+    }
   }
   
   if (fModeDCACreation == 1)
@@ -243,8 +258,10 @@ void AliEbyEPidRatioTask::UserExec(Option_t *) {
   }
 
 
-  if ((fIsMC||fIsAOD) && fModeEffCreation == 1)
-    fEffCont->Process();
+  if ((fIsMC||fIsAOD) && fModeEffCreation == 1) {
+    if (fIsEffExtra)  fEffContExtra->Process();
+    else fEffCont->Process();
+  }
 
   if (fModeDCACreation == 1)
     fDCA->Process();
@@ -365,8 +382,15 @@ Int_t AliEbyEPidRatioTask::Initialize() {
   // -- Create / Initialize Efficiency/Contamination
   // ------------------------------------------------------------------
   if ((fIsMC||fIsAOD) && fModeEffCreation == 1) {
-    fEffCont = new AliEbyEPidRatioEffCont;
-    fEffCont->Initialize(fHelper, fESDTrackCutsEff);
+    if (fIsEffExtra) {
+      fEffContExtra = new AliEbyEPidRatioEffContExtra;
+      fEffContExtra->Initialize(fHelper, fESDTrackCutsEff);
+      Printf(" >>>> AliEbyEPidRatioEffContExtra::Initialize()-ed  ");
+    } else {
+      fEffCont = new AliEbyEPidRatioEffCont;
+      fEffCont->Initialize(fHelper, fESDTrackCutsEff);
+      Printf(" >>>> AliEbyEPidRatioEffCont::Initialize()-ed  ");
+    }
   }
 
   // ------------------------------------------------------------------
@@ -376,6 +400,7 @@ Int_t AliEbyEPidRatioTask::Initialize() {
     fDCA = new AliEbyEPidRatioDCA;
     fDCA->SetESDTrackCutsBkg(fESDTrackCutsBkg);
     fDCA->Initialize(fHelper, fESDTrackCutsEff);
+    Printf(" >>>> AliEbyEPidRatioDCA:Initialize()-ed  ");
   }
 
   // ------------------------------------------------------------------
@@ -389,6 +414,7 @@ Int_t AliEbyEPidRatioTask::Initialize() {
     if (fIsBS) fDist->SetBSRun();
     if (fIsPer) fDist->SetIsPer();
     fDist->Initialize(fHelper, fESDTrackCuts);
+    Printf(" >>>> AliEbyEPidRatioPhy:Initialize()-ed  ");
   }
 
   // ------------------------------------------------------------------
@@ -397,6 +423,7 @@ Int_t AliEbyEPidRatioTask::Initialize() {
   if (fModeQACreation == 1) {
     fQA = new AliEbyEPidRatioQA();
     fQA->Initialize(fHelper, fESDTrackCutsEff);
+    Printf(" >>>> AliEbyEPidRatioQA:Initialize()-ed  ");
   }
 
   // ------------------------------------------------------------------
@@ -438,8 +465,10 @@ Int_t AliEbyEPidRatioTask::SetupEvent() {
   fHelper->SetupEvent(fESDHandler, fAODHandler, fMCEvent);
 
   
-  if (fModeEffCreation && (fIsMC || fIsAOD) )
-    fEffCont->SetupEvent(); 
+  if (fModeEffCreation && (fIsMC || fIsAOD) ) {
+    if (fIsEffExtra) fEffContExtra->SetupEvent(); 
+    else fEffCont->SetupEvent(); 
+  }
 
   if (fModeDCACreation == 1)
     fDCA->SetupEvent();

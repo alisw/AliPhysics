@@ -49,6 +49,7 @@
 #pragma link C++ class AliEbyEPidRatioQA+;
 #pragma link C++ class AliEbyEPidRatioPhy+;
 #pragma link C++ class AliEbyEPidRatioEffCont+;
+#pragma link C++ class AliEbyEPidRatioEffContExtra+;
 #pragma link C++ class AliEbyEPidRatioHelper+;
 #pragma link C++ class AliEbyEPidRatioTaskOnFly+;
 #pragma link C++ class AliEbyEPidQATaskOnFlyKine+;
