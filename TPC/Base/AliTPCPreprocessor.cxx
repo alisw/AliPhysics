@@ -324,7 +324,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
     // Gas composition recordings
 
 
-    TString gasConf = fConfEnv->GetValue("GasComposition","ON");
+    TString gasConf = fConfEnv->GetValue("GasComposition","OFF");
     gasConf.ToUpper();
     if (gasConf != "OFF" ) { 
      UInt_t gasResult = MapGasComposition(dcsAliasMap);
