@@ -14,86 +14,20 @@
 # **************************************************************************
 
 # Module
-set(MODULE EVGEN)
+set(MODULE THepMCParser)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/TEvtGen/${MODULE}
+                    ${AliRoot_SOURCE_DIR}/TEvtGen
+                   )
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/FASTSIM
-                    ${AliRoot_SOURCE_DIR}/LHAPDF
-                    ${AliRoot_SOURCE_DIR}/PYTHIA6/AliPythia6
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEER
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
-                    ${AliRoot_SOURCE_DIR}/TEvtGen
-                    ${AliRoot_SOURCE_DIR}/TEvtGen/THepMCParser
                    )
 
 # Sources
 set(SRCS
-    AliDecayerExodus.cxx
-    AliDecayerPolarized.cxx
-    AliDimuCombinator.cxx
-    AliGenAfterBurnerFlow.cxx
-    AliGenBeamGas.cxx
-    AliGenBox.cxx
-    AliGenCocktailAfterBurner.cxx
-    AliGenCocktail.cxx
-    AliGenCocktailEntry.cxx
-    AliGenCorrHF.cxx
-    AliGenCosmicsParam.cxx
-    AliGenDeuteron.cxx
-    AliGenDoubleScan.cxx
-    AliGenEMCocktail.cxx
-    AliGenEMlib.cxx
-    AliGenExtFile.cxx
-    AliGenFixed.cxx
-    AliGenFunction.cxx
-    AliGenGeVSim.cxx
-    AliGenGSIlib.cxx
-    AliGenHalo.cxx
-    AliGenHaloProtvino.cxx
-    AliGenHBTosl.cxx
-    AliGenHIJINGparaBa.cxx
-    AliGenHIJINGpara.cxx
-    AliGenHMPIDlib.cxx
-    AliGenITSULib.cxx
-    AliGenKrypton.cxx
-    AliGenLcLib.cxx
-    AliGenLib.cxx
-    AliGenLightNuclei.cxx
-    AliGenMC.cxx
-    AliGenMUONCocktail.cxx
-    AliGenMUONCocktailpp.cxx
-    AliGenMUONlib.cxx
-    AliGenMUONLMR.cxx
-    AliGenPairFlat.cxx
-    AliGenParam.cxx
-    AliGenPHOSlib.cxx
-    AliGenPileup.cxx
-    AliGenPMDlib.cxx
-    AliGenPromptPhotons.cxx
-    AliGenReaderCwn.cxx
-    AliGenReader.cxx
-    AliGenReaderEcalHijing.cxx
-    AliGenReaderEcalJets.cxx
-    AliGenReaderEMD.cxx
-    AliGenReaderHepMC.cxx
-    AliGenReaderSL.cxx
-    AliGenReaderTreeK.cxx
-    AliGenScan.cxx
-    AliGenSlowNucleons.cxx
-    AliGenSTRANGElib.cxx
-    AliGenThermalPhotons.cxx
-    AliGenThetaSlice.cxx
-    AliGenTHnSparse.cxx
-    AliGenTunedOnPbPb.cxx
-    AliGeVSimParticle.cxx
-    AliOmegaDalitz.cxx
-    AliSlowNucleonModel.cxx
-    AliSlowNucleonModelExp.cxx
+  THepMCParser.cxx
 )
 
 # Headers from sources
@@ -106,7 +40,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERbase STEER ESD AliPythia6 lhapdf TEvtGen FASTSIM)
+set(LIBDEPS  )
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
