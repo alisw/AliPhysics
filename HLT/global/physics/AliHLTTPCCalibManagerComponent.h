@@ -24,8 +24,8 @@
 class TH1F;
 class TList;
 
-class AliESDVZERO;
-class AliESDtrackCuts;
+//class AliESDVZERO;
+//class AliESDtrackCuts;
 class AliHLTCTPData;
 //class AliHLTMultiplicityCorrelations;
 class AliHLTGlobalTriggerDecision;

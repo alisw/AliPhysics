@@ -26,7 +26,7 @@
 #include "TObjString.h"
 #include "TH1F.h"
 #include "TList.h"
-#include "AliESDtrackCuts.h"
+//#include "AliESDtrackCuts.h"
 #include "AliESDEvent.h"
 #include "AliHLTErrorGuard.h"
 #include "AliHLTDataTypes.h"
@@ -228,7 +228,7 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
     }
     esdEvent->GetStdContent();
   }
-  printf("----> ESDEvent %p has %d tracks: \n", esdEvent, esdEvent->GetNumberOfTracks());
+  if (esdEvent) {printf("----> ESDEvent %p has %d tracks: \n", esdEvent, esdEvent->GetNumberOfTracks());}
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject); iter != NULL; iter = GetNextInputObject() ) {
     esdFriend = dynamic_cast<AliESDfriend*>(const_cast<TObject*>( iter ) );
     if( !esdFriend ){ 
@@ -237,20 +237,22 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
       continue;
     }
   }
-  printf("----> ESDFriend %p has %d tracks: \n", esdFriend, esdFriend->GetNumberOfTracks());
+  if(esdFriend) {printf("----> ESDFriend %p has %d tracks: \n", esdFriend, esdFriend->GetNumberOfTracks());}
 
- for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
-       pBlock!=NULL; pBlock=GetNextInputBlock()) {
-   flatEsd = reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
-   if (flatEsd->GetSize()==pBlock->fSize ){
-     flatEsd->Reinitialize();
-   } else {
-     flatEsd = NULL;
-     HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESD information", 
-		DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
-   }
-   break;
- }
+  if (!esdEvent){
+     for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
+           pBlock!=NULL; pBlock=GetNextInputBlock()) {
+       flatEsd = reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
+       if (flatEsd->GetSize()==pBlock->fSize ){
+         flatEsd->Reinitialize();
+       } else {
+         flatEsd = NULL;
+         HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESD information",
+            DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
+       }
+       break;
+     }
+    }
 
  if( flatEsd ){
    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
@@ -268,7 +270,11 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
    }   
  }
 
-  fAnalysisManager->InitInputData(esdEvent, esdFriend);
+ if (esdEvent){
+     fAnalysisManager->InitInputData(esdEvent, esdFriend);
+ } else if (flatEsd) {
+     fAnalysisManager->InitInputData(flatEsd, flatEsdFriend);
+ }
   //  fInputHandler->BeginEvent(0);
   fAnalysisManager->ExecAnalysis();
   fInputHandler->FinishEvent();
