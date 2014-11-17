@@ -63,19 +63,18 @@ class AliFlatESDFriendTrack :public AliVfriendTrack
 
   Int_t SetFromESDfriendTrack( const AliESDfriendTrack* track, size_t allocatedMemory );
 
-  void ResetTrackParamTPCOut( const AliExternalTrackParam *p ){ ResetTrackParam( fTPCOutPointer, p ); }
-  void ResetTPCseed( const AliTPCseed* s );
+  //void SetTrackParamTPCOut( const AliExternalTrackParam *p ){ SetTrackParam( fTPCOutPointer, p ); }
   
-  void SetTrackParamTPCOut( const AliExternalTrackParam *p ){ SetTrackParam( fTPCOutPointer, p ); }
-  void SetTrackParamITSOut( const AliExternalTrackParam *p ){ SetTrackParam( fITSOutPointer, p ); }
-  void SetTrackParamTRDIn ( const AliExternalTrackParam *p ){ SetTrackParam( fTRDInPointer,  p );  }
+  void AddTrackParamTPCOut( const AliExternalTrackParam *p ){ AddTrackParam( fTPCOutPointer, p ); }
+  void AddTrackParamITSOut( const AliExternalTrackParam *p ){ AddTrackParam( fITSOutPointer, p ); }
+  void AddTrackParamTRDIn ( const AliExternalTrackParam *p ){ AddTrackParam( fTRDInPointer,  p );  }
 
-  void SetTPCseed         ( const AliTPCseed *p );
+  void AddTPCseed         ( const AliTPCseed *p );
 
   // -- 
 
-  AliFlatTPCseed* SetTPCseedStart();
-  void SetTPCseedEnd( size_t tpcSeedSize );
+  AliFlatTPCseed* AddTPCseedStart();
+  void AddTPCseedEnd( size_t tpcSeedSize );
 
 	
 	
@@ -99,8 +98,7 @@ class AliFlatESDFriendTrack :public AliVfriendTrack
   AliFlatESDFriendTrack& operator=(const AliFlatESDFriendTrack& ); 
 
   Int_t GetTrackParam( Long64_t ptr, AliExternalTrackParam &param ) const;
-  void  SetTrackParam( Long64_t &ptr, const AliExternalTrackParam *p );
-  void  ResetTrackParam( Long64_t &ptr, const AliExternalTrackParam *p );
+  void  AddTrackParam( Long64_t &ptr, const AliExternalTrackParam *p );
 
   // --------------------------------------------------------------------------------
 
@@ -127,7 +125,7 @@ inline Int_t AliFlatESDFriendTrack::GetTrackParam( Long64_t ptr, AliExternalTrac
 	return 0;
 }
 
-inline void AliFlatESDFriendTrack::SetTrackParam( Long64_t &ptr, const AliExternalTrackParam *p )
+inline void AliFlatESDFriendTrack::AddTrackParam( Long64_t &ptr, const AliExternalTrackParam *p )
 {
   if(!p ) return;
   if( ptr<0 ){
@@ -138,21 +136,7 @@ inline void AliFlatESDFriendTrack::SetTrackParam( Long64_t &ptr, const AliExtern
   fp->SetExternalTrackParam( p );
 }
 
-inline void AliFlatESDFriendTrack::ResetTrackParam( Long64_t &ptr, const AliExternalTrackParam *p )
-{
-  if( ptr<0 || !p ) return;
-  AliFlatExternalTrackParam *fp = reinterpret_cast< AliFlatExternalTrackParam* >( fContent + ptr );
-  fp->SetExternalTrackParam( p );
-}
-
-inline void AliFlatESDFriendTrack::ResetTPCseed( const AliTPCseed* s )
-{
-  if (!s) return;
-  AliFlatTPCseed* fs = reinterpret_cast<AliFlatTPCseed*>(fContent+fTPCseedPointer);
-  fs->SetFromTPCseed( s );
-}
-
-inline void AliFlatESDFriendTrack::SetTPCseed( const AliTPCseed *p )
+inline void AliFlatESDFriendTrack::AddTPCseed( const AliTPCseed *p )
 {
   fTPCseedPointer = -1;
   if(!p ) return;
@@ -170,13 +154,13 @@ inline Int_t AliFlatESDFriendTrack::GetTPCseed( AliTPCseed &s ) const
   return 0;
 }
 
-inline AliFlatTPCseed* AliFlatESDFriendTrack::SetTPCseedStart()
+inline AliFlatTPCseed* AliFlatESDFriendTrack::AddTPCseedStart()
 {
   fTPCseedPointer = fContentSize;
   return  reinterpret_cast< AliFlatTPCseed* >( fContent + fTPCseedPointer );
 }
 
-inline void AliFlatESDFriendTrack::SetTPCseedEnd( size_t tpcSeedSize ){
+inline void AliFlatESDFriendTrack::AddTPCseedEnd( size_t tpcSeedSize ){
   fContentSize += tpcSeedSize;
 }
 

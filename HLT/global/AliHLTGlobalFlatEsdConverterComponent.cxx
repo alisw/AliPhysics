@@ -849,10 +849,54 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	  continue;
 	}
 	
-	if(iCluster >= partitionNClusters[iSlice*6 + iPartition]){
-	  HLTError("TPC slice %d, partition %d: ClusterID==%d >= N Cluaters==%d ", iSlice, iPartition,iCluster, partitionNClusters[iSlice*6 + iPartition] );
-	  continue;
-	}
+	// fill track parameters
+		  
+	table[tpcIter] = trackSize;
+	err = ( freeSpace < flatTrack->EstimateSize() );	  
+	if( err ) break;
+	new (flatTrack) AliFlatESDFriendTrack;
+	  	  
+	freeSpace = freeSpaceTotal - flatFriend->GetSize();
+
+	flatTrack->SetSkipBit( 0 );
+	flatTrack->AddTrackParamTPCOut( tpcOutTrack );
+	flatTrack->AddTrackParamITSOut( itsOut );
+	// flatTrack->AddTrackParamTRDIn( track->GetTRDIn() );
+
+	// fill TPC seed
+
+	AliFlatTPCseed* seed = flatTrack->AddTPCseedStart();
+	new( seed ) AliFlatTPCseed;
+
+	seed->SetLabel( tpcTrack->GetLabel() );
+	seed->SetExternalTrackParam( tpcTrack );
+	
+	// clusters 
+
+	UInt_t nClusters = tpcTrack->GetNumberOfPoints();	
+	const UInt_t*clusterIDs = tpcTrack->GetPoints();
+	for(UInt_t ic=0; ic<nClusters; ic++){	 
+	  UInt_t id      = clusterIDs[ic];	     
+	  int iSlice = AliHLTTPCSpacePointData::GetSlice(id);
+	  int iPartition = AliHLTTPCSpacePointData::GetPatch(id);
+	  int iCluster = AliHLTTPCSpacePointData::GetNumber(id);
+	  
+	  if(iSlice<0 || iSlice>36 || iPartition<0 || iPartition>5){
+	    HLTError("Corrupted TPC cluster Id: slice %d, partition %d, cluster %d", iSlice, iPartition, iCluster);
+	    continue;
+	  }
+	  
+	  const AliHLTTPCClusterData * clusterData = partitionClusters[iSlice*6 + iPartition];
+	  if(!clusterData ){
+	    HLTError("Clusters are missed for slice %d, partition %d", iSlice, iPartition );
+	    continue;
+	  }
+	    
+	  if(iCluster >= partitionNClusters[iSlice*6 + iPartition]){
+	    HLTError("TPC slice %d, partition %d: ClusterID==%d >= N Cluaters==%d ", iSlice, iPartition,iCluster, partitionNClusters[iSlice*6 + iPartition] );
+	    continue;
+	  }
+
 	    
 	const AliHLTTPCSpacePointData *chlt = &( clusterData->fSpacePoints[iCluster] );
 	AliTPCclusterMI cl;
@@ -869,9 +913,13 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	cl.SetDetector( sector );
 	cl.SetRow( row );
 	
-	int j=row;
-	if( sector>=36 ) j+=AliHLTTPCTransform::GetNRowLow();
-	if( j<0 || j>=160 || clustersSet[j] ) continue;
+	flatTrack->AddTPCseedEnd( seed->GetSize() );	
+	  
+	trackSize += flatTrack->GetSize();
+	freeSpace -= flatTrack->GetSize();
+	nTrackEntries++;
+	nTracks++;
+ 	flatTrack = flatTrack->GetNextTrackNonConst();	
 	
 	//TODO: these are just approximate coordinates! if agreed we need to use the
   //proper numbers from "TPC-HWCFDecoder" component.
