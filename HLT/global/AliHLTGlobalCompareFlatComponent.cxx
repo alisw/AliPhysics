@@ -53,8 +53,8 @@ void AliHLTGlobalCompareFlatComponent::printDiff( string name, double val1, doub
 	double relDiff = ( val1 != 0 || val2!=0 ) ? (val1-val2)/sum: 0;
 	
 	int diff = 0;
-	if (relDiff > 1e-4 && sum > 1e-6) diff = 1;
-	else if(relDiff < -1e-4 && sum > 1e-6) diff = -1;
+	if (relDiff > 1e-3 && sum > 1e-6) diff = 1;
+	else if(relDiff < -1e-3 && sum > 1e-6) diff = -1;
 	outFile<<name<<"\t" << val1 << "\t" << val2 <<"\t" << diff << "\n";
 }
 
@@ -67,8 +67,8 @@ void AliHLTGlobalCompareFlatComponent::printDiff( string name, int n , Float_t* 
 	for(int i=0; i<n && diff == 0; i++){
 		sum = fabs(vals1[i]) + fabs(vals2[i]) ; 
 		relDiff = ( vals1[i] != 0 || vals2[i] !=0 ) ? (vals1[i]-vals2[i])/sum : 0;
-		if (relDiff > 1e-4 && sum > 1e-6) diff = 1;
-		else if(relDiff < -1e-4 && sum > 1e-6) diff = -1;
+		if (relDiff > 1e-3 && sum > 1e-6) diff = 1;
+		else if(relDiff < -1e-3 && sum > 1e-6) diff = -1;
 	}
 		
 	outFile<<name<<"\t";
@@ -90,8 +90,8 @@ void AliHLTGlobalCompareFlatComponent::printDiff( string name, int n , Double_t*
 	for(int i=0; i<n && diff == 0; i++){
 		sum = fabs(vals1[i]) + fabs(vals2[i]) ; 
 		relDiff = ( vals1[i] != 0 || vals2[i] !=0 ) ? (vals1[i]-vals2[i])/sum : 0;
-		if (relDiff > 1e-4 && sum > 1e-6) diff = 1;
-		else if(relDiff < -1e-4 && sum > 1e-6) diff = -1;
+		if (relDiff > 1e-3 && sum > 1e-6) diff = 1;
+		else if(relDiff < -1e-3 && sum > 1e-6) diff = -1;
 	}
 		
 	outFile<<name<<"\t";
