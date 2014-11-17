@@ -438,27 +438,13 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     
     const AliESDVertex *primaryVertex = 0;
     const AliESDVertex *primaryVertexTracks = 0;
-    const AliESDVertex *primaryVertexSPD = 0;    
-    const AliESDVertex *primaryVertexTPC = 0;
-    AliESDVertex primaryVertexTracksTmp;
-   
 
-    { // fill ITS standalone primary vertex
- 
-      const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDVertex|kAliHLTDataOriginITS);
-      if (pBlock) { // Get ITS Standalone primaries (SAP) vertexTracks
-	fBenchmark.AddInput(pBlock->fSize);
-	AliFlatESDVertex *vtxFlat =  reinterpret_cast<AliFlatESDVertex*>( pBlock->fPtr );
-	if (vtxFlat->GetNContributors()>0) {
-	  //cout<<"\n\n ESD converter: input vertexTrackSAP with "<<vtxFlat->GetNContributors()<<" contributors"<<endl;
-	  vtxFlat->GetESDVertex( primaryVertexTracksTmp );
-	  primaryVertexTracksTmp.SetTitle("vertexITSSAP");
-	  primaryVertexTracks = &primaryVertexTracksTmp;
-	  primaryVertex = primaryVertexTracks;  
-	  err = flatEsd->SetPrimaryVertexTracks( primaryVertexTracks, freeSpace );
-	  freeSpace = maxOutputSize - flatEsd->GetSize();     
-	}
-      }
+    { // fill primary vertex Tracks
+
+      primaryVertexTracks = dynamic_cast<const AliESDVertex*>( GetFirstInputObject( kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut ) );               
+      primaryVertex = primaryVertexTracks;
+      err = flatEsd->SetPrimaryVertexTracks( primaryVertexTracks, freeSpace );
+      freeSpace = maxOutputSize - flatEsd->GetSize();
     }
  
     if( err ) break;
