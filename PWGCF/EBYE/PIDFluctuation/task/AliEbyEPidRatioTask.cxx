@@ -210,10 +210,15 @@ void AliEbyEPidRatioTask::UserCreateOutputObjects() {
   if ((fIsAOD||fIsMC) && fModeEffCreation == 1) {
     if (fIsEffExtra) {
       for (Int_t i = 0; i < 4; i++) {
-	for (Int_t j = 0; j < 4; j++) {
+	for (Int_t j = 0; j < 2; j++) {
 	  if (fEffContExtra->GetHnEff(i,j))
 	    fOutListEff->Add(fEffContExtra->GetHnEff(i,j));
 	}
+	for (Int_t j = 2; j < 4; j++) {
+	  if (fEffContExtra->GetHnEff(i,j))
+	    fOutListCont->Add(fEffContExtra->GetHnEff(i,j));
+	}
+
       }
     }
     else {
