@@ -45,7 +45,7 @@
 
 
 // _______________________________________________________________________________________________________
-Int_t AliFlatESDTrack::SetFromESDTrack(const AliESDtrack* track)
+Int_t AliFlatESDTrack::AddFromESDTrack(const AliESDtrack* track)
 {
   // Fill external track parameters 
   fTrackParamMask = 0;
@@ -55,7 +55,7 @@ Int_t AliFlatESDTrack::SetFromESDTrack(const AliESDtrack* track)
   
   if( !track ) return 0;
 
-  Int_t iResult = SetExternalTrackParam( track,
+  Int_t iResult = AddExternalTrackParam( track,
 					 track->GetInnerParam(),
 					 track->GetTPCInnerParam(),
 					 track->GetOuterParam(),
@@ -107,7 +107,7 @@ void  AliFlatESDTrack::GetESDTrack( AliESDtrack* esdTrack ) const
 
 
 // _______________________________________________________________________________________________________
-Int_t AliFlatESDTrack::SetExternalTrackParam( 
+Int_t AliFlatESDTrack::AddExternalTrackParam( 
 					     const AliExternalTrackParam* refittedParam,
 					     const AliExternalTrackParam* innerParam,
 					     const AliExternalTrackParam* innerTPC,
@@ -122,20 +122,20 @@ Int_t AliFlatESDTrack::SetExternalTrackParam(
 
   Int_t iResult = 0;
 
+  SetTrackParamIp( innerParam );
+  SetTrackParamOp( outerParam );
+
   Byte_t flag = 0x1;
   iResult = FillExternalTrackParam(refittedParam, flag);
 
   flag = 0x2;
-  iResult = FillExternalTrackParam(innerParam, flag);
-  
-  flag = 0x4;
   iResult = FillExternalTrackParam(innerTPC, flag);
   
-  flag = 0x8;
-  iResult = FillExternalTrackParam(outerParam, flag);
-
-  flag = 0x10;
+  flag = 0x4;
   iResult = FillExternalTrackParam(constrainedParam, flag);
+
+  flag = 0x8;
+  iResult = FillExternalTrackParam(outerITS, flag);
 
   return iResult;
 }

@@ -625,7 +625,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	
 	new (flatTrack) AliFlatESDTrack;       
 	
-	flatTrack->SetExternalTrackParam( itsRefit, tpcTrack, tpcInner, tpcOutTrack, tpcConstrained, itsOut );
+	flatTrack->AddExternalTrackParam( itsRefit, tpcTrack, tpcInner, tpcOutTrack, tpcConstrained, itsOut );
 	flatTrack->SetNumberOfTPCClusters( nClustersTPC );
 	flatTrack->SetNumberOfITSClusters( nClustersITS );
 	trackSize += flatTrack->GetSize();

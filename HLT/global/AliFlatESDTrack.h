@@ -41,10 +41,9 @@ class AliFlatESDTrack :public AliVTrack {
 
   // -- Set methods
  
-  Int_t SetFromESDTrack( const AliESDtrack* track );
-  void  GetESDTrack( AliESDtrack* track ) const;
+  Int_t AddFromESDTrack( const AliESDtrack* track );
 
-  Int_t SetExternalTrackParam( 
+  Int_t AddExternalTrackParam( 
 			      const AliExternalTrackParam* refittedParam,
 			      const AliExternalTrackParam* innerParam,
 			      const AliExternalTrackParam* innerTPC,
@@ -55,34 +54,33 @@ class AliFlatESDTrack :public AliVTrack {
   void SetNumberOfTPCClusters( Int_t nCl ) { fNTPCClusters = nCl; } 
   void SetNumberOfITSClusters( Int_t nCl ) { fNITSClusters = nCl; } 
 
-  void SetImpactParameters( const Float_t p[2], const Float_t cov[3], const Float_t chi2 ){
-    fImp[0] = p[0];
-    fImp[1] = p[2];
-    fImp[2] = cov[0];
-    fImp[3] = cov[1];
-    fImp[4] = cov[2];
-    fImp[5] = chi2; 
+  void  SetTrackParamIp       ( const AliExternalTrackParam* p) { 
+    if( !p ) fIpFlag = 0;
+    else{
+      fIp.SetExternalTrackParam(p);
+      fIpFlag = 1;
+    }
   }
 
-  void SetImpactParametersTPC( const Float_t p[2], const Float_t cov[3], const Float_t chi2){
-    fImpTPC[0] = p[0];
-    fImpTPC[1] = p[2];
-    fImpTPC[2] = cov[0];
-    fImpTPC[3] = cov[1];
-    fImpTPC[4] = cov[2];
-    fImpTPC[5] = chi2; 
+  void  SetTrackParamOp       ( const AliExternalTrackParam* p) { 
+    if( !p ) fOpFlag = 0;
+    else{
+      fOp.SetExternalTrackParam(p);
+      fOpFlag = 1;
+    }
   }
 
-  
   // --------------------------------------------------------------------------------
   // -- Getter methods
 
-  const AliFlatExternalTrackParam* GetFlatTrackParam()         const { return GetFlatParam( 0x0  ); }
-  const AliFlatExternalTrackParam* GetFlatTrackParamRefitted() const { return GetFlatParam( 0x1  ); }
-  const AliFlatExternalTrackParam* GetFlatTrackParamIp()       const { return GetFlatParam( 0x2  ); } 
-  const AliFlatExternalTrackParam* GetFlatTrackParamTPCInner() const { return GetFlatParam( 0x4  ); } 
-  const AliFlatExternalTrackParam* GetFlatTrackParamOp()       const { return GetFlatParam( 0x8  ); }     
-  const AliFlatExternalTrackParam* GetFlatTrackParamCp()       const { return GetFlatParam( 0x10 ); }
+  const AliFlatExternalTrackParam* GetFlatTrackParamIp()       const { return fIpFlag ? &fIp :0; }
+  const AliFlatExternalTrackParam* GetFlatTrackParamOp()       const { return fOpFlag ? &fOp :0; }
+
+  const AliFlatExternalTrackParam* GetFlatTrackParam()         const { return GetFlatParam( 0x0 ); }
+  const AliFlatExternalTrackParam* GetFlatTrackParamRefitted() const { return GetFlatParam( 0x1 ); }
+  const AliFlatExternalTrackParam* GetFlatTrackParamTPCInner() const { return GetFlatParam( 0x2 ); } 
+  const AliFlatExternalTrackParam* GetFlatTrackParamCp()       const { return GetFlatParam( 0x4 ); }
+  const AliFlatExternalTrackParam* GetFlatTrackParamITSOut()   const { return GetFlatParam( 0x8 ); }
 
   // --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  
 
@@ -105,16 +103,22 @@ class AliFlatESDTrack :public AliVTrack {
     
   // -------------------------------------------------------------------------------
   // the calibration interface methods:
-  Int_t GetTrackParam         ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x0  ); }
-  Int_t GetTrackParamRefitted ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x1  ); }
-  Int_t GetTrackParamIp       ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x2  ); }
-  Int_t GetTrackParamTPCInner ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x4  ); }
-  Int_t GetTrackParamOp       ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x8  ); }
-  Int_t GetTrackParamCp       ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x10 ); }
-  Int_t GetTrackParamITSOut   ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x20 ); }
+  Int_t GetTrackParamIp       ( AliExternalTrackParam &p ) const { 
+    if( !fIpFlag ) return -1;
+    fIp.GetExternalTrackParam( p );
+    return 0;
+  }
+  Int_t GetTrackParamOp       ( AliExternalTrackParam &p ) const { 
+    if( !fOpFlag ) return -1;
+    fOp.GetExternalTrackParam( p );
+    return 0;
+  }
 
-  void  SetTrackParamIp       ( AliExternalTrackParam* ) { /*to be implemented*/;}
-  void  SetTrackParamOp       ( AliExternalTrackParam* ) { /*to be implemented*/;}
+  Int_t GetTrackParam         ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x0 ); }
+  Int_t GetTrackParamRefitted ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x1 ); }
+  Int_t GetTrackParamTPCInner ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x2 ); }
+  Int_t GetTrackParamCp       ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x4 ); }
+  Int_t GetTrackParamITSOut   ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x8 ); }
 
   UShort_t GetTPCNcls() const {return GetNumberOfTPCClusters(); }
   Float_t GetTPCCrossedRows() const {return GetNumberOfTPCClusters();}
@@ -196,6 +200,10 @@ class AliFlatESDTrack :public AliVTrack {
   // -- Fixed size member objects
   //    -> Try to align in memory
 
+  AliFlatExternalTrackParam fIp; // inner params
+  AliFlatExternalTrackParam fOp; // outer params
+  Bool_t fIpFlag; // is fIp present
+  Bool_t fOpFlag; // is fOp present
   Byte_t   fTrackParamMask;            // Bit mask specfifying which ExternalTrackParam are present
   Int_t    fNTPCClusters;                 // Number of TPC clusters in track
   Int_t    fNITSClusters;                 // Number of ITS clusters in track
@@ -215,7 +223,12 @@ class AliFlatESDTrack :public AliVTrack {
 };
 
 // _______________________________________________________________________________________________________
-inline AliFlatESDTrack::AliFlatESDTrack() :
+inline AliFlatESDTrack::AliFlatESDTrack() 
+:
+  fIp(),
+  fOp(),
+  fIpFlag(0),
+  fOpFlag(0),
   fTrackParamMask(0),
   fNTPCClusters(0),
   fNITSClusters(0),
