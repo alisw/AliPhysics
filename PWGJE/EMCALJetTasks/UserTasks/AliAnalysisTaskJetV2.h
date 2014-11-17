@@ -221,7 +221,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         void                    FillWeightedJetHistograms(Double_t psi2);
         void                    FillWeightedQAHistograms(AliVTrack* vtrack) const;
         void                    FillWeightedQAHistograms(AliVEvent* vevent);
-        void                    FillWeightedTriggerQA(Double_t dPhi, Double_t pt, Double_t bkg, UInt_t trigger);
+        void                    FillWeightedTriggerQA(Double_t dPhi, Double_t pt, UInt_t trigger);
         void                    FillAnalysisSummaryHistogram() const;
         virtual void            Terminate(Option_t* option);
         // interface methods for the output file
