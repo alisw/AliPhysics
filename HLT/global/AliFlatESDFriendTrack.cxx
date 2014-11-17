@@ -82,9 +82,9 @@ Int_t AliFlatESDFriendTrack::SetFromESDfriendTrack( const AliESDfriendTrack* tra
   Reset();
   if( !track ) return 0;
   SetSkipBit(track->TestSkipBit() );
-  SetTrackParamTPCOut( track->GetTPCOut() );
-  SetTrackParamITSOut( track->GetITSOut() );
-  SetTrackParamTRDIn( track->GetTRDIn() );
+  AddTrackParamTPCOut( track->GetTPCOut() );
+  AddTrackParamITSOut( track->GetITSOut() );
+  AddTrackParamTRDIn( track->GetTRDIn() );
   const AliTPCseed* seedP = NULL;
   {
     TObject* calibObject = NULL;
@@ -94,6 +94,6 @@ Int_t AliFlatESDFriendTrack::SetFromESDfriendTrack( const AliESDfriendTrack* tra
       }
     }
   }
-  SetTPCseed( seedP );
+  AddTPCseed( seedP );
   return 0;
 }

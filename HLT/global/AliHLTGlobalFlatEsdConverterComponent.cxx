@@ -710,13 +710,13 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	freeSpace = freeSpaceTotal - flatFriend->GetSize();
 
 	flatTrack->SetSkipBit( 0 );
-	flatTrack->SetTrackParamTPCOut( tpcOutTrack );
-	flatTrack->SetTrackParamITSOut( itsOut );
-	// flatTrack->SetTrackParamTRDIn( track->GetTRDIn() );
+	flatTrack->AddTrackParamTPCOut( tpcOutTrack );
+	flatTrack->AddTrackParamITSOut( itsOut );
+	// flatTrack->AddTrackParamTRDIn( track->GetTRDIn() );
 
 	// fill TPC seed
 
-	AliFlatTPCseed* seed = flatTrack->SetTPCseedStart();
+	AliFlatTPCseed* seed = flatTrack->AddTPCseedStart();
 	new( seed ) AliFlatTPCseed;
 
 	seed->SetLabel( tpcTrack->GetLabel() );
@@ -780,7 +780,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	} // end of associated cluster loop
 	        
 	
-	flatTrack->SetTPCseedEnd( seed->GetSize() );	
+	flatTrack->AddTPCseedEnd( seed->GetSize() );	
 	  
 	trackSize += flatTrack->GetSize();
 	freeSpace -= flatTrack->GetSize();
