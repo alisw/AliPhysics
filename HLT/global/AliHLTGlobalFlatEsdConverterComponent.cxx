@@ -584,7 +584,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	const AliExternalTrackParam *tpcConstrained=0;       
 	const AliExternalTrackParam *tpcInner=0;       
 	AliESDtrack esdTrack;
-	if( primaryVertex ){
+	if( primaryVertexTracks ){
 	  esdTrack.UpdateTrackParams(&(*tpcTrack),AliESDtrack::kTPCin);	  
 	  esdTrack.RelateToVertexTPC( primaryVertexTracks, GetBz(), 1000 );	
 	  tpcConstrained = esdTrack.GetConstrainedParam();	
