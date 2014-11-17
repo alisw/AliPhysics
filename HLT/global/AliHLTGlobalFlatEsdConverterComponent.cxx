@@ -168,7 +168,16 @@ void AliHLTGlobalFlatEsdConverterComponent::GetInputDataTypes(AliHLTComponentDat
 AliHLTComponentDataType AliHLTGlobalFlatEsdConverterComponent::GetOutputDataType()
 {
   // see header file for class documentation
-  return kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut;
+  return kAliHLTMultipleDataType;
+}
+
+int AliHLTGlobalFlatEsdConverterComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& list)
+{
+  // see header file for class documentation
+  list.clear();
+  list.push_back(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
+  list.push_back(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
+  return list.size();
 }
 
 void AliHLTGlobalFlatEsdConverterComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
