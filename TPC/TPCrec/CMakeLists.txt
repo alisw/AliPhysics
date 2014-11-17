@@ -70,13 +70,13 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER CDB ESD RAWDatabase RAWDatarec ANALYSIS ANALYSISalice TPCbase TPCsim Graf)
+set(LIBDEPS STEERBase STEER CDB ESD RAWDatabase RAWDatarec ANALYSIS ANALYSISalice TPCbase TPCsim Core Gpad Graf Hist MathCore Matrix Minuit Physics RIO Tree)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE}  STEERBase STEER CDB ESD RAWDatabase RAWDatarec ANALYSIS ANALYSISalice TPCbase TPCsim Graf)
+target_link_libraries(${MODULE}  STEERBase STEER CDB ESD RAWDatabase RAWDatarec ANALYSIS ANALYSISalice TPCbase TPCsim Core Gpad Graf Hist MathCore Matrix Minuit Physics RIO Tree)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")

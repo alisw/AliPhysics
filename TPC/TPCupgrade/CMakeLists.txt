@@ -14,31 +14,29 @@
 # **************************************************************************
 
 # Module
-set(MODULE TPCutil)
+set(MODULE TPCupgrade)
 
 # Module include folder
 include_directories(${AliRoot_SOURCE_DIR}/TPC/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
-                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+include_directories(${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                     ${AliRoot_SOURCE_DIR}/TPC/TPCbase
+                    ${AliRoot_SOURCE_DIR}/TPC/TPCrec
                    )
 
 # Sources in alphabetical order
 set(SRCS
-    AliTPCAlign.cxx
-    AliTPCAltroEmulator.cxx
-    AliTPCCalibQAChecker.cxx
-    AliTPCCalibViewerGUIAlarms.cxx
-    AliTPCGenDBConf.cxx
-    AliTPCGenDBTemp.cxx
-    AliTPCkalmanTime.cxx
+    AliToyMCDrawer.cxx
+    AliToyMCEvent.cxx
+    AliToyMCEventGenerator.cxx
+    AliToyMCEventGeneratorSimple.cxx
+    AliToyMCReconstruction.cxx
+    AliToyMCTrack.cxx
    )
 
 # Headers from sources
@@ -49,15 +47,20 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+# ROOT and other AliRoot depencies
+# Used to create the root maps and for the actual linking
+set(ROOT_DEPENDENCIES Core EG Geom Gpad Graf3d Graf Hist MathCore Matrix Minuit RIO Tree)
+set(ALIROOT_DEPENDENCIES STEERBase STEER ESD CDB ANALYSISalice TPCbase TPCrec)
+
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec TPCbase Core Gpad Graf Gui Hist MathCore Matrix RIO Tree)
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} STEERBase STEER ESD CDB RAWDatabase RAWDatarec TPCbase Core Gpad Graf Gui Hist MathCore Matrix RIO Tree)
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")

@@ -18,8 +18,8 @@ add_subdirectory(EveBase)
 add_subdirectory(EveDet)
 add_subdirectory(EveHLT)
 
-# EVE executables
-#add_subdirectory(alieve_main)
+# EVE: alieve & alihlteve executables
+add_subdirectory(alieve_main)
 
 # Installing the macros
 install(DIRECTORY macros DESTINATION EVE)

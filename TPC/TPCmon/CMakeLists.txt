@@ -56,13 +56,13 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase ESD RAWDatabase RAWDatarec RAWDatarecOnline Gui)
+set(LIBDEPS STEERBase ESD RAWDatabase RAWDatarec RAWDatarecOnline Core Gpad Graf Gui Hist RIO)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} STEERBase ESD RAWDatabase RAWDatarec RAWDatarecOnline Gui)
+target_link_libraries(${MODULE} STEERBase ESD RAWDatabase RAWDatarec RAWDatarecOnline Core Gpad Graf Gui Hist RIO)
 
 set(MODULE_COMPILE_FLAGS)
 set(MODULE_LINK_FLAGS)

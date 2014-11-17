@@ -24,6 +24,7 @@ include_directories(
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
+# alieve executable
 # Sources in alphabetical order
 set(SRCS
     alieve_main.cxx
@@ -40,6 +41,17 @@ if(ZEROMQ_FOUND)
     add_definitions(-DZMQ)
 endif(ZEROMQ_FOUND)
 
+# alihlteve executable
+set(SRCSHLT
+    alihlteve_main.cxx
+)
+
+add_executable(alihlteve ${SRCSHLT})
+target_link_libraries(alihlteve)
+
+if(ZEROMQ_FOUND)
+    target_link_libraries(alihlteve EveBase MONITORzmq)
+endif(ZEROMQ_FOUND)
 
 # Installation
-install(TARGETS ${MODULE} RUNTIME DESTINATION bin)
+install(TARGETS alieve alihlteve RUNTIME DESTINATION bin)
