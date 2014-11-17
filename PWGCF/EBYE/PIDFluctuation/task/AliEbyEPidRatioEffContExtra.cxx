@@ -76,26 +76,13 @@ AliEbyEPidRatioEffContExtra::~AliEbyEPidRatioEffContExtra() {
   }
   if (fLabelsRec) delete[] fLabelsRec;
 
-
-  /*
-  if (fLabelsRec) {
-    if (fLabelsRec[0])
-      delete[] (fLabelsRec[0]);
-    if (fLabelsRec[1])
-      delete[] (fLabelsRec[1]);
-    if (fLabelsRec)
-      delete[] fLabelsRec;
-      }*/
 }
 
 
 //________________________________________________________________________
 void AliEbyEPidRatioEffContExtra::Process() {
-  // -- Process event
-  // -- Setup (clean, create and fill) MC labels
   for(Int_t i = 0; i < 4; i++)  {
     FillMCLabels(i);
-    // -- Fill  MC histograms for efficiency studies
     FillMCEffHist(i);
   }
   return;
@@ -103,35 +90,18 @@ void AliEbyEPidRatioEffContExtra::Process() {
 
 //________________________________________________________________________
 void AliEbyEPidRatioEffContExtra::Init() {
-
- 
-
-  /*
-  fLabelsRec        = new Int_t*[2];
-  for (Int_t ii = 0; ii < 2 ; ++ii)
-    fLabelsRec[ii] = NULL;
-  */
-
   fLabelsRec = new Int_t**[2];
   for (Int_t ii = 0 ; ii < 2; ++ii) {
     fLabelsRec[ii] = new Int_t*[4];
     for (Int_t kk = 0 ; kk < 4; ++kk)
       fLabelsRec[ii][kk] = NULL;
   }
-
-
   Printf(" >>>> AliEbyEPidRatioEffContExtra - inside");
 }
 
 //________________________________________________________________________
 void AliEbyEPidRatioEffContExtra::CreateHistograms() {
-  // -- Create histograms
- 
-  // ------------------------------------------------------------------
-  // -- Create THnSparse - Eff
-  // ------------------------------------------------------------------
-
-  Int_t    binHnEffPIDMC[8] = {AliEbyEPidRatioHelper::fgkfHistNBinsCent, 
+   Int_t    binHnEffPIDMC[8] = {AliEbyEPidRatioHelper::fgkfHistNBinsCent, 
 			       AliEbyEPidRatioHelper::fgkfHistNBinsSign, 
 			       2, 2, 2,
 			       AliEbyEPidRatioHelper::fgkfHistNBinsRap,     
@@ -311,29 +281,6 @@ void AliEbyEPidRatioEffContExtra::CreateHistograms() {
 
 //________________________________________________________________________
 Int_t AliEbyEPidRatioEffContExtra::Setup() {
-  // -- Setup eventwise
-
-  // -- Create label arrays
-  /* fLabelsRec[0] = new Int_t[fNTracks];
-  if(!fLabelsRec[0]) {
-    AliError("Cannot create fLabelsRec[0]");
-    return -1;
-  }
-  
-  fLabelsRec[1] = new Int_t[fNTracks];
-  if(!fLabelsRec[1]) {
-    AliError("Cannot create fLabelsRec[1] for PID");
-    return -1;
-  }
-  
-  for(Int_t ii = 0; ii < fNTracks; ++ii) {
-    fLabelsRec[0][ii] = 0;
-    fLabelsRec[1][ii] = 0;
-  }
-
-  */
-
-  // -- Create label arrays
   for(Int_t i = 0; i < 4; i++) {
     fLabelsRec[0][i] = new Int_t[fNTracks];
     if(!fLabelsRec[0][i]) {
@@ -352,10 +299,7 @@ Int_t AliEbyEPidRatioEffContExtra::Setup() {
       fLabelsRec[1][i][ii] = 0;
     }
   }
-  
-
-
-
+ 
   return 0;
 }
 
@@ -370,20 +314,7 @@ void AliEbyEPidRatioEffContExtra::Reset() {
       fLabelsRec[ii][i] = NULL;
     }
   }
-  /*
-
-  for (Int_t ii = 0; ii < 2 ; ++ii) {
-    if (fLabelsRec[ii])
-      delete[] fLabelsRec[ii];
-    fLabelsRec[ii] = NULL;
-    }*/
 }
-
-/*
- * ---------------------------------------------------------------------------------
- *                                 Private Methods
- * ---------------------------------------------------------------------------------
- */
 
 //________________________________________________________________________
 void AliEbyEPidRatioEffContExtra::FillMCLabels(Int_t ipid) {
@@ -436,8 +367,6 @@ void AliEbyEPidRatioEffContExtra::FillMCLabels(Int_t ipid) {
       continue;
 
  
-    // -- Check if accepted with thighter DCA cuts
-    // -- returns kTRUE for AODs for now : MW
     if (!fHelper->IsTrackAcceptedDCA(track))
       continue;
 
@@ -595,10 +524,10 @@ void AliEbyEPidRatioEffContExtra::FillMCEffHist(Int_t ipid) {
 
     // -- Loop over all labels
     for (Int_t idxRec=0; idxRec < fNTracks; ++idxRec) {
-      if (idxMC == fLabelsRec[ipid][0][idxRec]) {
+      if (idxMC == fLabelsRec[0][ipid][idxRec]) {
 	recStatus = 1.;
 	
-	if (idxMC == fLabelsRec[ipid][1][idxRec])
+	if (idxMC == fLabelsRec[1][ipid][idxRec])
 	  recPid = 1.;
 	
         AliVTrack *track = NULL;
@@ -617,7 +546,7 @@ void AliEbyEPidRatioEffContExtra::FillMCEffHist(Int_t ipid) {
           ptRec   = track->Pt();
 	  signRec = track->Charge();
           fHelper->IsTrackAcceptedRapidity(track, yRec, ipid); // yRec = y for identified particles | yRec = eta for charged particles
-        }      
+        }     
         break;
       }
     } // for (Int_t idxRec=0; idxRec < fNTracks; ++idxRec) {  
@@ -634,7 +563,7 @@ void AliEbyEPidRatioEffContExtra::FillMCEffHist(Int_t ipid) {
     Double_t yetapid = (ipid == 0 ) ? particle->Eta() : particle->Y();
     Double_t yeta    = (ipid == 0 ) ? etaRec : yRec;
 
-    //  Printf("%2d  %10.5f %10.5f %10.5f %10.5f %10.5f %10.5f", ipid, yetapid, yeta, particle->Eta(), particle->Y(),  etaRec, yRec);    
+    // Printf("%2d  %10.5f %10.5f %10.5f %10.5f %10.5f %10.5f", ipid, yetapid, yeta, particle->Eta(), particle->Y(),  etaRec, yRec);    
 
     Double_t hneffMc[8]  = {fCentralityBin,signMC,findable, recStatus, recPid,yetapid,particle->Phi(),particle->Pt()};
     Double_t hneffRec[5] = {fCentralityBin,signRec, yeta,phiRec,ptRec};
