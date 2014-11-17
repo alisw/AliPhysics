@@ -418,10 +418,11 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     if( err ) break;
     
     const AliESDVertex *primaryVertex = 0;
+    const AliESDVertex *primaryVertexTracks = 0;
 
     { // fill primary vertex Tracks
 
-      const AliESDVertex *primaryVertexTracks = dynamic_cast<const AliESDVertex*>( GetFirstInputObject( kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut ) );               
+      primaryVertexTracks = dynamic_cast<const AliESDVertex*>( GetFirstInputObject( kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut ) );               
       primaryVertex = primaryVertexTracks;
       err = flatEsd->SetPrimaryVertexTracks( primaryVertexTracks, freeSpace );
       freeSpace = maxOutputSize - flatEsd->GetSize();
