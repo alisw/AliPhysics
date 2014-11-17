@@ -95,6 +95,10 @@ class AliFlatESDTrack :public AliVTrack {
   Int_t GetTrackParamOp       ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x8  ); }
   Int_t GetTrackParamCp       ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x10 ); }
   Int_t GetTrackParamITSOut   ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x20 ); }
+
+  void  SetTrackParamIp       ( AliExternalTrackParam* ) { /*to be implemented*/;}
+  void  SetTrackParamOp       ( AliExternalTrackParam* ) { /*to be implemented*/;}
+
   UShort_t GetTPCNcls() const {return GetNumberOfTPCClusters(); }
   Double_t GetPt() const {
     const AliFlatExternalTrackParam *f = GetFlatTrackParam();

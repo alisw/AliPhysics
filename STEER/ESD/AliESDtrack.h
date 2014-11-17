@@ -491,6 +491,15 @@ public:
       p=*GetConstrainedParam();
       return 0;}
 
+  void SetTrackParamIp ( AliExternalTrackParam *p ) {
+      if (fIp) delete fIp;
+      fIp=new AliExternalTrackParam(*p);
+      }
+
+  void SetTrackParamOp ( AliExternalTrackParam *p ) {
+      if (fOp) delete fOp;
+      fOp=new AliExternalTrackParam(*p);
+      }
 
 protected:
   

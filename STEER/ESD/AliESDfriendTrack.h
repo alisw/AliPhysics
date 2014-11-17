@@ -72,6 +72,8 @@ public:
       p=*GetITSOut();
       return 0;}
 
+  void SetTrackParamTPCOut( const AliExternalTrackParam *p){ SetTPCOut(*p); }
+
   void SetITSIndices(Int_t* indices, Int_t n);
   void SetTPCIndices(Int_t* indices, Int_t n);
   void SetTRDIndices(Int_t* indices, Int_t n);
