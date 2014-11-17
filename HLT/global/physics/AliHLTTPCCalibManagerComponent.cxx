@@ -37,6 +37,8 @@
 #include "AliAnalysisTaskPt.h"
 #include "AliAnalysisDataContainer.h"
 #include "TTree.h"
+#include "AliFlatESDEvent.h"
+#include "AliFlatESDFriend.h"
 
 using namespace std;
 
@@ -92,6 +94,8 @@ void AliHLTTPCCalibManagerComponent::GetInputDataTypes( vector<AliHLTComponentDa
   list.push_back(kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD);
   list.push_back(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO);
   list.push_back(kAliHLTDataTypeESDfriendObject|kAliHLTDataOriginAny);
+  list.push_back(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
+  list.push_back(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
 }
 
 // #################################################################################
@@ -211,6 +215,10 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
   // -------------------
   AliESDEvent *esdEvent = NULL;
   AliESDfriend *esdFriend = NULL;
+
+  AliFlatESDEvent *flatEsd = NULL;
+  AliFlatESDFriend *flatEsdFriend = NULL;
+
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
     esdEvent = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
     if( !esdEvent ){ 
@@ -230,6 +238,35 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
     }
   }
   printf("----> ESDFriend %p has %d tracks: \n", esdFriend, esdFriend->GetNumberOfTracks());
+
+ for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
+       pBlock!=NULL; pBlock=GetNextInputBlock()) {
+   flatEsd = reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
+   if (flatEsd->GetSize()==pBlock->fSize ){
+     flatEsd->Reinitialize();
+   } else {
+     flatEsd = NULL;
+     HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESD information", 
+		DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
+   }
+   break;
+ }
+
+ if( flatEsd ){
+   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
+	pBlock!=NULL; pBlock=GetNextInputBlock()) {
+     flatEsdFriend = reinterpret_cast<AliFlatESDFriend*>( pBlock->fPtr );
+     if (flatEsdFriend->GetSize()==pBlock->fSize ){
+       flatEsdFriend->Reinitialize();
+       flatEsd->SetFriendEvent(flatEsdFriend);
+     } else {
+       flatEsdFriend = NULL;
+       HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESDfriend information", 
+		  DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
+     }
+     break;
+   }   
+ }
 
   fAnalysisManager->InitInputData(esdEvent, esdFriend);
   //  fInputHandler->BeginEvent(0);

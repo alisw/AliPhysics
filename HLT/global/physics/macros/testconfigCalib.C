@@ -1,4 +1,4 @@
-void testconfigCalib(const char* parent = "GLOBAL-esd-converter")
+void testconfigCalib(const char* parent = "GLOBAL-esd-converter, GlobalFlatEsdConverter")
 {
   // set up HLT system to enable configuration registration
   AliHLTSystem* pHLT=AliHLTPluginBase::GetInstance();
