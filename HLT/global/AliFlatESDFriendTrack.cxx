@@ -42,7 +42,7 @@
 :
  AliVfriendTrack()
  ,fContentSize(0),
- fTPCOutPointer(-1),
+ fTPCOutFlag(0),
  fITSOutPointer(-1),
  fTRDInPointer(-1),
  fTPCseedPointer(-1),
@@ -69,7 +69,7 @@ void AliFlatESDFriendTrack::Reset()
 {
   // reset
   fContentSize = 0;
-  fTPCOutPointer = -1;
+  fTPCOutFlag =  0;
   fITSOutPointer = -1;
   fTRDInPointer = -1;
   fTPCseedPointer = -1;

@@ -186,8 +186,8 @@ public:
   virtual Int_t GetTrackParamCp       ( AliExternalTrackParam& ) const {return 0;}
   virtual Int_t GetTrackParamITSOut   ( AliExternalTrackParam& ) const {return 0;}
 
-  virtual void  SetTrackParamIp       ( AliExternalTrackParam* ) {;}
-  virtual void  SetTrackParamOp       ( AliExternalTrackParam* ) {;}
+  virtual void  SetTrackParamIp       ( const AliExternalTrackParam* ) {;}
+  virtual void  SetTrackParamOp       ( const AliExternalTrackParam* ) {;}
 
   virtual Int_t             GetKinkIndex(Int_t /*i*/) const { return 0;}
   virtual Double_t          GetSigned1Pt()         const { return 0;}
