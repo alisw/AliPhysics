@@ -54,9 +54,9 @@ public:
   Bool_t                 IsPair(const AliExternalTrackParam *tr0, const AliExternalTrackParam *tr1);
   Bool_t                 IsCross(const AliVTrack *const tr0, const AliVTrack *const tr1);
   Bool_t                 IsSame (const AliVTrack *const tr0, const AliVTrack *const tr1);
-  void                   ProcessSame(const AliVTrack *const track, const AliVfriendTrack *const friendTrack, const AliVEvent *const event);
-  void                   ProcessAlignITS(AliVTrack *const track, const AliVfriendTrack *const friendTrack, const AliVEvent *const event, AliVfriendEvent *const friendEvent);
-  void                   ProcessAlignTRD(AliVTrack* const track, const AliVfriendTrack *const friendTrack);
+  void                   ProcessSame(const AliVTrack *const track, AliVfriendTrack *const friendTrack, const AliVEvent *const event);
+  void                   ProcessAlignITS(AliVTrack *const track, const AliVfriendTrack *const friendTrack, const AliVEvent *const event, AliVfriendEvent *const vFriend);
+  void                   ProcessAlignTRD(AliVTrack* const track, AliVfriendTrack *const friendTrack);
   void                   ProcessAlignTOF(AliVTrack* const track, const AliVfriendTrack *const friendTrack);
 
   THnSparse*    GetHistVdriftLaserA(Int_t index=1) const {return fHistVdriftLaserA[index];};

@@ -17,7 +17,6 @@
 class AliVEvent;
 class AliVTrack;
 class AliVfriendEvent;
-
 class AliTPCseed;
 
 class AliTPCAnalysisTaskcalib:public AliAnalysisTask {
@@ -43,8 +42,8 @@ protected:
   void             RegisterDebugOutput();
 private:
   TObjArray *fCalibJobs;      // array of calibration objects - WE ARE NOT OWNER?
-  AliVEvent *fEvent;         //! current event
-  AliVfriendEvent *fEventFriend;  //! current event friend
+  AliVEvent *fV;         //! current esd
+  AliVfriendEvent *fVfriend;  //! current esd friend
   TString      fDebugOutputPath; // debug output path   
   AliTPCAnalysisTaskcalib(const AliTPCAnalysisTaskcalib&);
   AliTPCAnalysisTaskcalib& operator=(const AliTPCAnalysisTaskcalib&);

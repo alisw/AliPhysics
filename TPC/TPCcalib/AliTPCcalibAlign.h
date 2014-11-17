@@ -23,7 +23,6 @@ class TTree;
 class AliExternalTrackParam;
 class AliTPCPointCorrection;
 class AliTPCseed;
-class AliVEvent;
 
 class AliTPCcalibAlign:public AliTPCcalibBase {
 public:
@@ -91,7 +90,6 @@ public:
 //   Bool_t GetTransformationCovar6(Int_t s1,Int_t s2,TMatrixD &a, Bool_t norm=kFALSE);
   void Add(AliTPCcalibAlign * align);
   const Int_t *GetPoints() const {return fPoints;}
-  //void     Process(AliESDtrack *const track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);}
   void     Process(AliVTrack *const track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);}
   TLinearFitter* GetOrMakeFitter12(Int_t s1,Int_t s2);
   TLinearFitter* GetOrMakeFitter9(Int_t s1,Int_t s2);
