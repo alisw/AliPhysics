@@ -892,9 +892,15 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
     fAnalCuts->SetTriggerClass("");
     fAnalCuts->SetTriggerMask(AliVEvent::kINT7);
   }
-
+  
+  Int_t runnumber = aodEvent->GetRunNumber();
+  if (aodEvent->GetTriggerMask() == 0 && (runnumber >= 195344 && runnumber <= 195677)){
+    AliDebug(3,"Event rejected because of null trigger mask");
+    return;
+  }
+  
   fCounter->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo);
-
+  
   // mc analysis 
   TClonesArray *mcArray = 0;
   AliAODMCHeader *mcHeader=0;
