@@ -39,14 +39,15 @@
 using namespace std;
 
 //
-int CollisionType_def=1;// PbPb, pPb, pp
+int CollisionType_def=0;// PbPb, pPb, pp
 int FitType=0;// (0)Edgeworth, (1)Laguerre, (2)Levy
 //
 int Mbin=0;// 0-9: centrality bin in widths of 5%
 int CHARGE=-1;// -1 or +1: + or - pions for same-charge case, --+ or -++,  ---+ or -+++
 //
 int EDbin=0;// 0 or 1: Kt3 bin
-double G_def = 90.;// coherent %
+double G_def = 0.;// coherent %
+double Rcoh_def = 1.;// Radius of Gaussian coherent component in fm
 //
 bool MRC=1;// Momentum Resolution Corrections?
 bool MuonCorrection=1;// correct for Muons?
@@ -107,32 +108,37 @@ double BinCentersQ4[20];
 
 
 
-void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def, double G=G_def){
+void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def, double G=G_def, double Rcoh=Rcoh_def){
   
   SaveToFile_def=SaveToFile;
   CollisionType_def=CollisionType;
   G /= 100.;
   G_def=G;
+  Rcoh_def=Rcoh;
 
   TFile *_file0;
   if(CollisionType==0){// PbPb
-    _file0 = new TFile("Results/PDC_11h_3Dhistos.root","READ");
+    //_file0 = new TFile("Results/PDC_11h_3Dhistos.root","READ");
+    //_file0 = new TFile("Results/PDC_11h_c3FitBuild.root","READ");
+    _file0 = new TFile("Results/PDC_11h_LowNorm_HighNorm.root","READ");
   }else if(CollisionType==1){// pPb
-    _file0 = new TFile("Results/PDC_13bc_kINT7.root","READ");
+    //_file0 = new TFile("Results/PDC_13bc_kINT7_LowNorm.root","READ");
+    _file0 = new TFile("Results/PDC_13bc_kINT7_LowNorm_HighNorm.root","READ");
   }else{// pp
-    _file0 = new TFile("Results/PDC_10bcde_kMB.root","READ");
+    _file0 = new TFile("Results/PDC_10bcde_kMB_3Dhisto_LowNorm_HighNorm.root","READ");
   }
 
   TList *MyList;
   TDirectoryFile *tdir = (TDirectoryFile*)_file0->Get("PWGCF.outputFourPionAnalysis.root");
-  MyList=(TList*)tdir->Get("FourPionOutput_1");
+  if(CollisionType==0) MyList=(TList*)tdir->Get("FourPionOutput_1");
+  else MyList=(TList*)tdir->Get("FourPionOutput_2");
   //MyList=(TList*)_file0->Get("MyList");
 
   _file0->Close();
 
 
-  if(CollisionType==0) {Q3LimitLow = 0.02; Q3LimitHigh = 0.06;}// 0.01 and 0.08 
-  else {Q3LimitLow = 0.08; Q3LimitHigh = 0.2;}// 0.01 and 0.25
+  if(CollisionType==0) {Q3LimitLow = 0.01; Q3LimitHigh = 0.08;}// 0.01 and 0.08 
+  else {Q3LimitLow = 0.01; Q3LimitHigh = 0.25;}// 0.01 and 0.25
   
   
   //
@@ -487,11 +493,11 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   double minVal_c3[npar_c3];            // minimum bound on parameter 
   double maxVal_c3[npar_c3];            // maximum bound on parameter
   string parName_c3[npar_c3];
-  //          1.0              1.5              10.              0.              0.              0.             1.5  
-  par_c3[0] = 1.0; par_c3[1] = 1.5; par_c3[2] = 10.; par_c3[3] = 0.; par_c3[4] = 0.; par_c3[5] = 0; par_c3[6] = 1.5;
+  //          1.0              1.0              10.              0.              0.              0.             1.5  
+  par_c3[0] = 1.0; par_c3[1] = 1.0; par_c3[2] = 10.; par_c3[3] = 0.; par_c3[4] = 0.; par_c3[5] = 0; par_c3[6] = 1.5;
   stepSize_c3[0] = 0.01; stepSize_c3[1] = 0.1; stepSize_c3[2] = 0.1; stepSize_c3[3] = 0.01; stepSize_c3[4] = 0.01; stepSize_c3[5] = 0.01; stepSize_c3[6] = 0.1;
-  minVal_c3[0] = 0.8; minVal_c3[1] = 0.4; minVal_c3[2] = 4.; minVal_c3[3] = -2; minVal_c3[4] = -1; minVal_c3[5] = -1; minVal_c3[6] = 0.5;
-  maxVal_c3[0] = 1.1; maxVal_c3[1] = 2000.; maxVal_c3[2] = 100.; maxVal_c3[3] = +2; maxVal_c3[4] = +1; maxVal_c3[5] = +1; maxVal_c3[6] = 2.5;
+  minVal_c3[0] = 0.8; minVal_c3[1] = 0.2; minVal_c3[2] = 4.; minVal_c3[3] = -2; minVal_c3[4] = -1; minVal_c3[5] = -1; minVal_c3[6] = 0.5;
+  maxVal_c3[0] = 1.1; maxVal_c3[1] = 1000.; maxVal_c3[2] = 100.; maxVal_c3[3] = +2; maxVal_c3[4] = +1; maxVal_c3[5] = +1; maxVal_c3[6] = 2.5;
   parName_c3[0] = "N"; parName_c3[1] = "#lambda_{3}"; parName_c3[2] = "R_{inv}"; parName_c3[3] = "coeff_{3}"; parName_c3[4] = "coeff_{4}"; parName_c3[5] = "coeff_{5}"; parName_c3[6] = "#alpha";
 
   if(CollisionType==0){ 
@@ -543,7 +549,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
     MyMinuit_c3.GetParameter(i,OutputPar_c3[i],OutputPar_c3_e[i]);
   }
   
-  cout<<"Tij Norm = "<<pow(OutputPar_c3[1]/2., 1/3.)<<endl;
+  cout<<"Tij Norm = "<<pow(OutputPar_c3[1], 1/3.)<<endl;
   
   if(FitType!=2){
     c3Fit1D_Expan->FixParameter(0,OutputPar_c3[0]);
@@ -613,12 +619,14 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
 	}else{}
 	
 	//
-	double C = OutputPar_c3[1] * pow(1-G,3)*exp(-(pow(arg12,OutputPar_c3[6])+pow(arg13,OutputPar_c3[6])+pow(arg23,OutputPar_c3[6]))/2.)*Expan12*Expan13*Expan23;
-	C += pow(OutputPar_c3[1], 2/3.) * G*pow(1-G,2)*exp(-(pow(arg12,OutputPar_c3[6])+pow(arg13,OutputPar_c3[6]))/2.)*Expan12*Expan13;
-	C += pow(OutputPar_c3[1], 2/3.) * G*pow(1-G,2)*exp(-(pow(arg12,OutputPar_c3[6])+pow(arg23,OutputPar_c3[6]))/2.)*Expan12*Expan23;
-	C += pow(OutputPar_c3[1], 2/3.) * G*pow(1-G,2)*exp(-(pow(arg13,OutputPar_c3[6])+pow(arg23,OutputPar_c3[6]))/2.)*Expan13*Expan23;
+	double t12_coh = exp(-pow(Rcoh/FmToGeV * Q12,2)/2.);
+	double t23_coh = exp(-pow(Rcoh/FmToGeV * Q23,2)/2.);
+	double t13_coh = exp(-pow(Rcoh/FmToGeV * Q13,2)/2.);
+	double C = 2*OutputPar_c3[1] * pow(1-G,3)*exp(-(pow(arg12,OutputPar_c3[6])+pow(arg13,OutputPar_c3[6])+pow(arg23,OutputPar_c3[6]))/2.)*Expan12*Expan13*Expan23;
+	C += 2*pow(OutputPar_c3[1], 2/3.) * G*pow(1-G,2)*exp(-(pow(arg12,OutputPar_c3[6])+pow(arg13,OutputPar_c3[6]))/2.)*Expan12*Expan13*t23_coh;
+	C += 2*pow(OutputPar_c3[1], 2/3.) * G*pow(1-G,2)*exp(-(pow(arg12,OutputPar_c3[6])+pow(arg23,OutputPar_c3[6]))/2.)*Expan12*Expan23*t13_coh;
+	C += 2*pow(OutputPar_c3[1], 2/3.) * G*pow(1-G,2)*exp(-(pow(arg13,OutputPar_c3[6])+pow(arg23,OutputPar_c3[6]))/2.)*Expan13*Expan23*t12_coh;
 	C += 1.0;
-	//if(Q3<0.026) cout<<Q3<<"  "<<C<<endl;
 	C *= TERM5;
 	C *= OutputPar_c3[0];
 	//if(Q3<0.018) continue;
@@ -689,6 +697,8 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
     *savefilename += CollisionType;
     savefilename->Append("_FT");
     *savefilename += FitType;
+    savefilename->Append("_R");
+    *savefilename += Rcoh;
     savefilename->Append("_G");
     *savefilename += int((G+0.001)/0.02);
     savefilename->Append(".root");
@@ -912,11 +922,13 @@ void fcn_c3(int& npar, double* deriv, double& f, double par[], int flag){
 	  Expan23 += par[5]/6.*(-pow(arg23,3) + 9*pow(arg23,2) - 18*arg23 + 6);
 	}else{Expan12=1.0; Expan13=1.0; Expan23=1.0;}
 	//
-
-	C = par[1] * pow(1-G_def,3)*exp(-(pow(arg12,par[6])+pow(arg13,par[6])+pow(arg23,par[6]))/2.)*Expan12*Expan13*Expan23;
-	C += pow(par[1],2/3.) * G_def*pow(1-G_def,2)*exp(-(pow(arg12,par[6])+pow(arg13,par[6]))/2.)*Expan12*Expan13;
-	C += pow(par[1],2/3.) * G_def*pow(1-G_def,2)*exp(-(pow(arg12,par[6])+pow(arg23,par[6]))/2.)*Expan12*Expan23;
-	C += pow(par[1],2/3.) * G_def*pow(1-G_def,2)*exp(-(pow(arg13,par[6])+pow(arg23,par[6]))/2.)*Expan13*Expan23;
+	double t12_coh = exp(-pow(Rcoh_def/FmToGeV * q12,2)/2.);
+	double t23_coh = exp(-pow(Rcoh_def/FmToGeV * q23,2)/2.);
+	double t13_coh = exp(-pow(Rcoh_def/FmToGeV * q13,2)/2.);
+	C = 2*par[1] * pow(1-G_def,3)*exp(-(pow(arg12,par[6])+pow(arg13,par[6])+pow(arg23,par[6]))/2.)*Expan12*Expan13*Expan23;
+	C += 2*pow(par[1],2/3.) * G_def*pow(1-G_def,2)*exp(-(pow(arg12,par[6])+pow(arg13,par[6]))/2.)*Expan12*Expan13*t23_coh;
+	C += 2*pow(par[1],2/3.) * G_def*pow(1-G_def,2)*exp(-(pow(arg12,par[6])+pow(arg23,par[6]))/2.)*Expan12*Expan23*t13_coh;
+	C += 2*pow(par[1],2/3.) * G_def*pow(1-G_def,2)*exp(-(pow(arg13,par[6])+pow(arg23,par[6]))/2.)*Expan13*Expan23*t12_coh;
 	C += 1.0;
 	C *= par[0];// Norm
 	
