@@ -71,8 +71,8 @@ void AliHLTGlobalCompareFlatComponent::printDiff( string name, int n , Float_t* 
 	for(int i=0; i<n && diff == 0; i++){
 		sum = fabs(vals1[i]) + fabs(vals2[i]) ; 
 		relDiff = ( vals1[i] != 0 || vals2[i] !=0 ) ? (vals1[i]-vals2[i])/sum : 0;
-		if (relDiff > 1e-4 && sum > 1e-6) diff = 1;
-		else if(relDiff < -1e-4 && sum > 1e-6) diff = -1;
+		if (relDiff > 1e-3 && sum > 1e-6) diff = 1;
+		else if(relDiff < -1e-3 && sum > 1e-6) diff = -1;
 	}
 		
 	outFile<<name<<"\t";
