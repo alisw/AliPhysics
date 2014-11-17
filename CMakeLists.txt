@@ -145,6 +145,7 @@ if(CMAKE_Fortran_COMPILER)
   add_subdirectory(THydjet)
   add_subdirectory(TPHIC)
   add_subdirectory(TUHKMgen)
+  add_subdirectory(TAmpt)
 endif(CMAKE_Fortran_COMPILER)
 
 # Enable SHUTTLE compilation
