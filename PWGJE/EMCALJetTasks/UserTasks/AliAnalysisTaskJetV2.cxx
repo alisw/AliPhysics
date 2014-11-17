@@ -2089,7 +2089,7 @@ void AliAnalysisTaskJetV2::FillWeightedJetHistograms(Double_t psi2)
             fHistJetPt[fInCentralitySelection]->Fill(pt-area*rho, fEventPlaneWeight);
             if(fFillQAHistograms) {
                 fHistJetEtaPhi[fInCentralitySelection]->Fill(eta, phi, fEventPlaneWeight);
-                FillWeightedTriggerQA(PhaseShift(phi-psi2, 2.), pt, area*rho, trigger);
+                FillWeightedTriggerQA(PhaseShift(phi-psi2, 2.), pt - area*rho, trigger);
             }
             fHistJetPtArea[fInCentralitySelection]->Fill(pt-area*rho, area, fEventPlaneWeight);
             fHistJetPtEta[fInCentralitySelection]->Fill(pt-area*rho, eta, fEventPlaneWeight);
@@ -2139,12 +2139,11 @@ void AliAnalysisTaskJetV2::FillWeightedQAHistograms(AliVEvent* vevent)
     if(fDebug > 0) printf("\n > TASK %s CANNOT IDENTIFY RUN - CONFIGURATION COULD BE INCORRECT < \n", GetName());
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskJetV2::FillWeightedTriggerQA(Double_t dPhi, Double_t pt, Double_t bkg, UInt_t trigger)
+void AliAnalysisTaskJetV2::FillWeightedTriggerQA(Double_t dPhi, Double_t pt, UInt_t trigger)
 {
     // fill the trigger efficiency histograms
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     // qa histograms to bookkeep trigger efficiencies of acceptaced events in-plane and out-of-plane
-    pt-=bkg;
     if(IsInPlane(dPhi)) {
         // in plane stuff
         if(trigger == 0) fHistTriggerQAIn[fInCentralitySelection]->Fill(1, pt);
@@ -2184,9 +2183,9 @@ void AliAnalysisTaskJetV2::FillWeightedTriggerQA(Double_t dPhi, Double_t pt, Dou
         if(trigger & (AliVEvent::kEMCEJE | AliVEvent::kMB)) fHistTriggerQAOut[fInCentralitySelection]->Fill(14, pt);
         if(trigger & (AliVEvent::kEMCEGA | AliVEvent::kMB)) fHistTriggerQAOut[fInCentralitySelection]->Fill(15, pt);
         if(trigger & (AliVEvent::kAnyINT | AliVEvent::kMB)) fHistTriggerQAOut[fInCentralitySelection]->Fill(16, pt);
-        if((trigger & AliVEvent::kAnyINT) & (trigger & AliVEvent::kEMCEJE)) fHistTriggerQAOut[fInCentralitySelection]->Fill(17, pt);
-        if((trigger & AliVEvent::kAnyINT) & (trigger & AliVEvent::kEMCEGA)) fHistTriggerQAOut[fInCentralitySelection]->Fill(18, pt); 
-        if((trigger & AliVEvent::kAnyINT) & (trigger & AliVEvent::kMB)) fHistTriggerQAOut[fInCentralitySelection]->Fill(19, pt); 
+        if((trigger & AliVEvent::kAnyINT) && (trigger & AliVEvent::kEMCEJE)) fHistTriggerQAOut[fInCentralitySelection]->Fill(17, pt);
+        if((trigger & AliVEvent::kAnyINT) && (trigger & AliVEvent::kEMCEGA)) fHistTriggerQAOut[fInCentralitySelection]->Fill(18, pt); 
+        if((trigger & AliVEvent::kAnyINT) && (trigger & AliVEvent::kMB)) fHistTriggerQAOut[fInCentralitySelection]->Fill(19, pt); 
     }
 }
 //_____________________________________________________________________________
