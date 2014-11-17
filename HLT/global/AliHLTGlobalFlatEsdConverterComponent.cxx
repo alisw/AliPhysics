@@ -503,11 +503,13 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	// vertex-constrained parameters for TPC tracks	
 
 	const AliExternalTrackParam *tpcConstrained=0;       
+	const AliExternalTrackParam *tpcInner=0;       
 	AliESDtrack esdTrack;
 	if( primaryVertex ){
-	  esdTrack.UpdateTrackParams(&(*tpcTrack),AliESDtrack::kTPCrefit);	  
+	  esdTrack.UpdateTrackParams(&(*tpcTrack),AliESDtrack::kTPCin);	  
 	  esdTrack.RelateToVertex( primaryVertex, GetBz(), 1000 );	
 	  tpcConstrained = esdTrack.GetConstrainedParam();	
+	  tpcInner = esdTrack.GetTPCInnerParam();
 	}
 
 	UInt_t nClustersTPC = tpcTrack->GetNumberOfPoints();
@@ -523,7 +525,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	
 	new (flatTrack) AliFlatESDTrack;       
 	
-	flatTrack->SetExternalTrackParam( itsRefit, itsRefit, tpcTrack, tpcOutTrack, tpcConstrained, itsOut );
+	flatTrack->SetExternalTrackParam( itsRefit, tpcTrack, tpcInner, tpcOutTrack, tpcConstrained, itsOut );
 	flatTrack->SetNumberOfTPCClusters( nClustersTPC );
 	flatTrack->SetNumberOfITSClusters( nClustersITS );
 	trackSize += flatTrack->GetSize();
