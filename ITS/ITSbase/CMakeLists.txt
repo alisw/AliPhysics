@@ -66,7 +66,6 @@ set(SRCS
     AliITSgeom.cxx
     AliITSgeomMatrix.cxx
     AliITSgeomTGeo.cxx
-    AliITSHandleDaSSD.cxx
     AliITSHLTforSDD.cxx
     AliITSInitGeometry.cxx
     AliITSIntMap.cxx
@@ -108,6 +107,9 @@ set(SRCS
     AliITSTriggerAlgorithmConditions.cxx
     AliITSTriggerConditions.cxx
    )
+if (DATE_FOUND)
+    set (SRCS "${SRCS} AliITSHandleDaSSD.cxx")
+endif (DATE_FOUND)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
