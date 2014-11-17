@@ -2351,11 +2351,11 @@ Double_t AliAnalysisTaskEmcalJetHadEPpid::EffCorrection(Double_t trackETA, Doubl
   Double_t m[10] = {9.64508e-01, 9.53247e-01, 3.34584e+01, -4.44705e-03, 8.42526e-01, 2.64031e-01, -3.37155e-01, 8.00933e-01, -2.52274e-01, -3.32314e-01};
   Double_t r[10] = {9.32462e-01, 9.65724e-02, 1.46878e+00, -1.58579e-02, 9.46241e-01, 1.98548e-01, -2.93280e-01, 9.05743e-01, -1.55519e-01, -2.54959e-01};
   Double_t n[9] = {1.01595e+00, 4.46603e-05, 1.53587e+00, -1.14282e-03, 7.87525e-01, 3.35267e-01, -5.68939e-01, 5.19236e-01, -5.20195e-01};
-  Double_t q[9] = {19.72915e-01, 6.38626e-01, 8.47813e+00, -1.03864e-02, 9.01610e-01, 9.71765e-02, -4.94174e-01, 1.11112e+00, -9.64431e-01};
+  Double_t q[9] = {9.72915e-01, 6.38626e-01, 8.47813e+00, -1.03864e-02, 9.01610e-01, 9.71765e-02, -4.94174e-01, 1.11112e+00, -9.64431e-01};
 
   // x-variable = track pt, y-variable = track eta
   Double_t x = trackPT;
-  Double_t y = trackETA;
+  Double_t y = TMath::Abs(trackETA);
   Double_t TRefficiency = -999;
 
   // set up a switch for different parameter values...
