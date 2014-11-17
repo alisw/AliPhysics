@@ -498,23 +498,15 @@ public:
       p=*GetConstrainedParam();
       return 0;}
 
-  void ResetTrackParamIp ( const AliExternalTrackParam *p ) {
+  void SetTrackParamIp ( AliExternalTrackParam *p ) {
       if (fIp) delete fIp;
       fIp=new AliExternalTrackParam(*p);
       }
 
-  void ResetTrackParamOp ( const AliExternalTrackParam *p ) {
+  void SetTrackParamOp ( AliExternalTrackParam *p ) {
       if (fOp) delete fOp;
       fOp=new AliExternalTrackParam(*p);
       }
-
-  void ResetTrackParamTPCInner ( const AliExternalTrackParam *p ) {
-      if (fTPCInner) delete fTPCInner;
-      fTPCInner=new AliExternalTrackParam(*p);
-      }
-  Int_t GetNumberOfITSClusters() const { return fITSncls;}
-  Int_t GetNumberOfTPCClusters() const { return fTPCncls;}
-  Int_t GetNumberOfTRDClusters() const { return fTRDncls;}
 
 protected:
   

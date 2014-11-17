@@ -111,20 +111,10 @@ class AliFlatESDTrack :public AliVTrack {
   Int_t GetTrackParamTPCInner ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x4  ); }
   Int_t GetTrackParamOp       ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x8  ); }
   Int_t GetTrackParamCp       ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x10 ); }
+  Int_t GetTrackParamITSOut   ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x20 ); }
 
-  void  ResetTrackParamIp( const AliExternalTrackParam *p ) { 
-    AliFlatExternalTrackParam *f = GetFlatParamNonConst( 0x2 );
-    if( f ) f->SetExternalTrackParam( p );
-  }
-  void  ResetTrackParamOp( const AliExternalTrackParam *p ) { 
-    AliFlatExternalTrackParam *f = GetFlatParamNonConst( 0x8 );
-    if( f ) f->SetExternalTrackParam( p );    
-  }
-
-  void ResetTrackParamTPCInner( const AliExternalTrackParam *p ) {
-    AliFlatExternalTrackParam *f = GetFlatParamNonConst( 0x4 );
-    if( f ) f->SetExternalTrackParam( p );
-  }
+  void  SetTrackParamIp       ( AliExternalTrackParam* ) { /*to be implemented*/;}
+  void  SetTrackParamOp       ( AliExternalTrackParam* ) { /*to be implemented*/;}
 
   UShort_t GetTPCNcls() const {return GetNumberOfTPCClusters(); }
   Float_t GetTPCCrossedRows() const {return GetNumberOfTPCClusters();}
