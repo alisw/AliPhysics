@@ -72,7 +72,10 @@ public:
       p=*GetITSOut();
       return 0;}
 
-  void SetTrackParamTPCOut( const AliExternalTrackParam *p){ SetTPCOut(*p); }
+  void SetTrackParamTPCOut( const AliExternalTrackParam *p){
+          if (fTPCOut) delete fTPCOut;
+          fTPCOut=new AliExternalTrackParam(*p);
+  }
 
   void SetITSIndices(Int_t* indices, Int_t n);
   void SetTPCIndices(Int_t* indices, Int_t n);
