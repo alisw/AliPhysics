@@ -617,6 +617,9 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     ndEdxTPC = pBlock->fSize / (3*sizeof(AliHLTFloat32_t));
   }
 
+  
+  std::map<int,int> mapTpcId2esdId;
+
   // 2) convert the TPC tracks to ESD tracks
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
@@ -696,7 +699,11 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	  if( dEdxTPC ) HLTWarning("Wrong number of dEdx TPC labels");
 	}
 	iotrack.SetLabel(mcLabel);
+
+	mapTpcId2esdId[element->TrackID()] = pESD->GetNumberOfTracks();
+
 	pESD->AddTrack(&iotrack);
+
 	if (fVerbosity>0) element->Print();
 
 	if( pESDfriend ){ // create friend track
@@ -871,13 +878,19 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
       for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
 	   element!=tracks.end(); element++) {
 	int tpcID=element->TrackID();
+
+	Int_t esdID = -1;
+	if( mapTpcId2esdId.find(tpcID) != mapTpcId2esdId.end() ) esdID = mapTpcId2esdId[tpcID];
+	
 	// the ITS tracker assigns the TPC track used as seed for a certain track to
 	// the trackID
-	if( tpcID<0 || tpcID>=pESD->GetNumberOfTracks()) continue;
+	if( esdID<0 || esdID>=pESD->GetNumberOfTracks()) continue;
 	Int_t mcLabel = -1;
-	if( mcLabelsITS.find(element->TrackID())!=mcLabelsITS.end() )
-	  mcLabel = mcLabelsITS[element->TrackID()];
-	AliESDtrack *tESD = pESD->GetTrack( tpcID );
+	if( mcLabelsITS.find(tpcID)!=mcLabelsITS.end() )
+	  mcLabel = mcLabelsITS[tpcID];
+
+	AliESDtrack *tESD = pESD->GetTrack( esdID );
+	
 	if (!tESD) continue;
 	// the labels for the TPC and ITS tracking params can be different, e.g.
 	// there can be a decay. The ITS label should then be the better one, the
