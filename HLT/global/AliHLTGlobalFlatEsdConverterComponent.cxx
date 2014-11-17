@@ -580,7 +580,30 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       nTracks++;
       flatTrack = flatTrack->GetNextTrackNonConst();    
 
-    } // TPC tracks
+	Float_t tpcDeDx[3]={0,0,0};
+	
+	if( ndEdxTPC>0 ){ 	
+	  if( tpcTrack->TrackID() < ndEdxTPC ){
+	    AliHLTFloat32_t *val = &(dEdxTPC[3*tpcTrack->TrackID()]);
+	    tpcDeDx[0] = val[0];
+	    tpcDeDx[1] = val[1];
+	    tpcDeDx[2] = val[2];
+	  } else {
+	    HLTWarning("Wrong number of dEdx TPC labels");
+	  }
+	}
+    
+	// vertex-constrained parameters for TPC tracks	
+
+	const AliExternalTrackParam *tpcConstrained=0;       
+	const AliExternalTrackParam *tpcInner=0;       
+	AliESDtrack esdTrack;
+	if( primaryVertex ){
+	  esdTrack.UpdateTrackParams(&(*tpcTrack),AliESDtrack::kTPCin);	  
+	  esdTrack.RelateToVertex( primaryVertex, GetBz(), 1000 );	
+	  tpcConstrained = esdTrack.GetConstrainedParam();	
+	  tpcInner = esdTrack.GetTPCInnerParam();
+	}
 
     if( err ) break;
 
@@ -610,8 +633,22 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     
     if( err ) break;
 
-    flatEsd->SetTracksEnd( nTracks, trackSize );
-    numberOfTracks=nTracks;
+	table[tpcIter] = trackSize;
+	err = ( freeSpace < flatTrack->EstimateSize() );
+	if( err ) break;
+	
+	new (flatTrack) AliFlatESDTrack;       
+	
+	flatTrack->SetExternalTrackParam( itsRefit, tpcTrack, tpcInner, tpcOutTrack, tpcConstrained, itsOut );
+	flatTrack->SetNumberOfTPCClusters( nClustersTPC );
+	flatTrack->SetNumberOfITSClusters( nClustersITS );
+	trackSize += flatTrack->GetSize();
+	freeSpace -= flatTrack->GetSize();
+	nTracks++;
+	flatTrack = flatTrack->GetNextTrackNonConst();    
+      }
+      flatEsd->SetTracksEnd( nTracks, trackSize );
+    }       
 
     if( err ) break;
 
