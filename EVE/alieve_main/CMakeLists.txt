@@ -47,7 +47,7 @@ set(SRCSHLT
 )
 
 add_executable(alihlteve ${SRCSHLT})
-target_link_libraries(alihlteve)
+target_link_libraries(alihlteve EveBase)
 
 if(ZEROMQ_FOUND)
     target_link_libraries(alihlteve EveBase MONITORzmq)
