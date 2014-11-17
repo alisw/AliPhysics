@@ -181,7 +181,7 @@ void AliHLTVertexFinderBase::FillESD(AliESDEvent* esd, AliKFVertex* vtx,
   const int nESDTracks = esd->GetNumberOfTracks();
   std::vector<bool> constrainedToVtx(nESDTracks);
 
-  if (prim->fFitTracksFlag) {
+  if (0&&prim->fFitTracksFlag) {
     for (int i = 0; i < nESDTracks; ++i) {
       if (!esd->GetTrack(i))
         continue;
@@ -219,7 +219,7 @@ void AliHLTVertexFinderBase::FillESD(AliESDEvent* esd, AliKFVertex* vtx,
     AliESDv0 v0(*esd->GetTrack(iTr), iTr, *esd->GetTrack(jTr), jTr);
     esd->AddV0(&v0);
     // relate the tracks to the vertex
-    if (prim->fFitTracksFlag) {
+    if (0&&prim->fFitTracksFlag) {
       if (constrainedToVtx[iTr] || constrainedToVtx[jTr])
         continue;
 
