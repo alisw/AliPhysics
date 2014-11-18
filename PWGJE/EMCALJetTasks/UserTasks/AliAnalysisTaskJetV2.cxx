@@ -499,47 +499,41 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
             fHistPsi2Correlation[i] = BookTH3F("fHistPsi2Correlation", "#Psi_{TPC}", "#Psi_{VZEROA}", "#Psi_{VZEROC}",  20, -1.*TMath::Pi()/2., TMath::Pi()/2., 20, -1.*TMath::Pi()/2., TMath::Pi()/2., 20, -1.*TMath::Pi()/2., TMath::Pi()/2., i);
             fHistLeadingJetBackground[i] =      BookTH2F("fHistLeadingJetBackground", "#Delta #eta (leading jet with, without sub)", "Delta #varphi (leading jet with, without sub)", 50, 0., 2, 50, 0., TMath::TwoPi(), i);
             // trigger qa
-            fHistTriggerQAIn[i] = BookTH2F("fHistTriggerQAIn", "trigger configuration", "p_{T}^{jet} (GeV/c) in-plane jets", 20, 0.5, 20.5, 70, -100, 250, i);
-            fHistTriggerQAOut[i] = BookTH2F("fHistTriggerQAOut", "trigger configuration", "p_{T}^{jet} (GeV/c) out-of-plane jets", 20, 0.5, 20.5, 70, -100, 250, i);
+            fHistTriggerQAIn[i] = BookTH2F("fHistTriggerQAIn", "trigger configuration", "p_{T}^{jet} (GeV/c) in-plane jets", 16, 0.5, 16.5, 70, -100, 250, i);
+            fHistTriggerQAOut[i] = BookTH2F("fHistTriggerQAOut", "trigger configuration", "p_{T}^{jet} (GeV/c) out-of-plane jets", 16, 0.5, 16.5, 70, -100, 250, i);
             fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(1, "no trigger");
             fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(2, "kAny");
             fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(3, "kAnyINT");
             fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(4, "kMB");
-            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(5, "kINT7");
-            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(6, "kEMC1");
-            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(7, "kEMC7");
-            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(8, "kEMC8");
-            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(9, "kEMCEJE");
-            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(10, "kEMCEGA");
-            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(11, "kCentral");
-            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(12, "kSemiCentral");
-            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(13, "kINT8");
-            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(14, "kEMCEJE or kMB");
-            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(15, "kEMCEGA or kMB");
-            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(16, "kAnyINT or kMB");
-            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(17, "kEMCEJE & kAnyINT");
-            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(18, "kEMCEGA & kAnyINT");
-            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(19, "kAnyINT & kAnyINT");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(5, "kCentral");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(6, "kSemiCentral");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(7, "kEMCEJE");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(8, "kEMCEGA");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(9, "kEMCEJE & kMB");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(10, "kEMCEJE & kCentral");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(11, "kEMCEJE & kSemiCentral");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(12, "kEMCEJE & all min bias");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(13, "kEMCEGA & kMB");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(14, "kEMCEGA & kCentral");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(15, "kEMCEGA & kSemiCentral");
+            fHistTriggerQAIn[i]->GetXaxis()->SetBinLabel(16, "kEMCEGA & all min bias");
             fHistTriggerQAIn[i]->LabelsOption("v");
             fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(1, "no trigger");
             fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(2, "kAny");
             fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(3, "kAnyINT");
             fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(4, "kMB");
-            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(5, "kINT7");
-            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(6, "kEMC1");
-            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(7, "kEMC7");
-            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(8, "kEMC8");
-            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(9, "kEMCEJE");
-            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(10, "kEMCEGA");
-            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(11, "kCentral");
-            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(12, "kSemiCentral");
-            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(13, "kINT8");
-            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(14, "kEMCEJE or kMB");
-            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(15, "kEMCEGA or kMB");
-            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(16, "kAnyINT or kMB");
-            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(17, "kEMCEJE & kAnyINT");
-            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(18, "kEMCEGA & kAnyINT");
-            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(19, "kAnyINT & kAnyINT");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(5, "kCentral");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(6, "kSemiCentral");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(7, "kEMCEJE");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(8, "kEMCEGA");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(9, "kEMCEJE & kMB");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(10, "kEMCEJE & kCentral");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(11, "kEMCEJE & kSemiCentral");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(12, "kEMCEJE & all min bias");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(13, "kEMCEGA & kMB");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(14, "kEMCEGA & kCentral");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(15, "kEMCEGA & kSemiCentral");
+            fHistTriggerQAOut[i]->GetXaxis()->SetBinLabel(16, "kEMCEGA & all min bias");
             fHistTriggerQAOut[i]->LabelsOption("v");
         }
     }
@@ -2079,7 +2073,10 @@ void AliAnalysisTaskJetV2::FillWeightedJetHistograms(Double_t psi2)
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     Int_t iJets(fJets->GetEntriesFast());
     UInt_t trigger(0);
-    if(fFillQAHistograms) trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    if(fFillQAHistograms) {
+        trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+        if(fDebug > 0 ) PrintTriggerSummary(trigger);
+    }
     for(Int_t i(0); i < iJets; i++) {
         AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(i));
         if(PassesCuts(jet)) {
@@ -2143,49 +2140,70 @@ void AliAnalysisTaskJetV2::FillWeightedTriggerQA(Double_t dPhi, Double_t pt, UIn
 {
     // fill the trigger efficiency histograms
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    // qa histograms to bookkeep trigger efficiencies of acceptaced events in-plane and out-of-plane
+    // some trigger definitions for readability. the way this routine is set up is as follows
+    // 1) define combined trigger conditions, e.g. bitwise representation of a combined trigger
+    //      trigger a = 0 0 1
+    //      trigger b = 1 0 0
+    //      combined trigger mask = 1 0 1
+    //    combined trigger is mask is defined using bitwise OR
+    // 2) check the condition using bitwise AND and equals operator on unsigned integer
+    //      (incoming trigger & mask) == mask
+    //    2a) which will do, when incoming trigger equals mask
+    //      1 0 1 & 1 0 1 -> 1 0 1
+    //    when checked against requested mask
+    //    UInt_t(1 0 1) == UInt_t(1 0 1) returns true
+    //    2b) for an imcompatible trigger, e.g.
+    //      0 0 1 & 1 0 1 -> 0 0 1
+    //    UInt_t(0 0 1) == UInt_t(1 0 1) returns false
+    
+    // preparing the combined trigger masks
+    UInt_t MB_EMCEJE(AliVEvent::kMB | AliVEvent::kEMCEJE);
+    UInt_t CEN_EMCEJE(AliVEvent::kCentral | AliVEvent::kEMCEJE);
+    UInt_t SEM_EMCEJE(AliVEvent::kSemiCentral | AliVEvent::kEMCEJE);
+    UInt_t ALL_EMCEJE(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kEMCEJE);
+    UInt_t MB_EMCEGA(AliVEvent::kMB | AliVEvent::kEMCEGA);
+    UInt_t CEN_EMCEGA(AliVEvent::kCentral | AliVEvent::kEMCEGA);
+    UInt_t SEM_EMCEGA(AliVEvent::kSemiCentral | AliVEvent::kEMCEGA);
+    UInt_t ALL_EMCEGA(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kEMCEGA);
+    // actual routine
     if(IsInPlane(dPhi)) {
-        // in plane stuff
-        if(trigger == 0) fHistTriggerQAIn[fInCentralitySelection]->Fill(1, pt);
-        if(trigger & AliVEvent::kAny) fHistTriggerQAIn[fInCentralitySelection]->Fill(2, pt);
-        if(trigger & AliVEvent::kAnyINT) fHistTriggerQAIn[fInCentralitySelection]->Fill(3, pt);
-        if(trigger & AliVEvent::kMB) fHistTriggerQAIn[fInCentralitySelection]->Fill(4, pt);
-        if(trigger & AliVEvent::kINT7) fHistTriggerQAIn[fInCentralitySelection]->Fill(5, pt);
-        if(trigger & AliVEvent::kEMC1) fHistTriggerQAIn[fInCentralitySelection]->Fill(6, pt);
-        if(trigger & AliVEvent::kEMC7) fHistTriggerQAIn[fInCentralitySelection]->Fill(7, pt);
-        if(trigger & AliVEvent::kEMC8) fHistTriggerQAIn[fInCentralitySelection]->Fill(8, pt);
-        if(trigger & AliVEvent::kEMCEJE) fHistTriggerQAIn[fInCentralitySelection]->Fill(9, pt);
-        if(trigger & AliVEvent::kEMCEGA) fHistTriggerQAIn[fInCentralitySelection]->Fill(10, pt);
-        if(trigger & AliVEvent::kCentral) fHistTriggerQAIn[fInCentralitySelection]->Fill(11, pt);
-        if(trigger & AliVEvent::kSemiCentral) fHistTriggerQAIn[fInCentralitySelection]->Fill(12, pt);
-        if(trigger & AliVEvent::kINT8) fHistTriggerQAIn[fInCentralitySelection]->Fill(13, pt);
-        if(trigger & (AliVEvent::kEMCEJE | AliVEvent::kMB)) fHistTriggerQAIn[fInCentralitySelection]->Fill(14, pt);
-        if(trigger & (AliVEvent::kEMCEGA | AliVEvent::kMB)) fHistTriggerQAIn[fInCentralitySelection]->Fill(15, pt);
-        if(trigger & (AliVEvent::kAnyINT | AliVEvent::kMB)) fHistTriggerQAIn[fInCentralitySelection]->Fill(16, pt);
-        if((trigger & AliVEvent::kAnyINT) && (trigger & AliVEvent::kEMCEJE)) fHistTriggerQAIn[fInCentralitySelection]->Fill(17, pt); 
-        if((trigger & AliVEvent::kAnyINT) && (trigger & AliVEvent::kEMCEGA)) fHistTriggerQAIn[fInCentralitySelection]->Fill(18, pt); 
-        if((trigger & AliVEvent::kAnyINT) && (trigger & AliVEvent::kMB)) fHistTriggerQAIn[fInCentralitySelection]->Fill(19, pt); 
+        // in plane bookkeeping of fired triggers. not 'exclusive' so no == necessary
+        if(trigger == 0)                                fHistTriggerQAIn[fInCentralitySelection]->Fill(1, pt);
+        if(trigger & AliVEvent::kAny)                   fHistTriggerQAIn[fInCentralitySelection]->Fill(2, pt);
+        if(trigger & AliVEvent::kAnyINT)                fHistTriggerQAIn[fInCentralitySelection]->Fill(3, pt);
+        if(trigger & AliVEvent::kMB)                    fHistTriggerQAIn[fInCentralitySelection]->Fill(4, pt);
+        if(trigger & AliVEvent::kCentral)               fHistTriggerQAIn[fInCentralitySelection]->Fill(5, pt);
+        if(trigger & AliVEvent::kSemiCentral)           fHistTriggerQAIn[fInCentralitySelection]->Fill(6, pt);
+        if(trigger & AliVEvent::kEMCEJE)                fHistTriggerQAIn[fInCentralitySelection]->Fill(7, pt);
+        if(trigger & AliVEvent::kEMCEGA)                fHistTriggerQAIn[fInCentralitySelection]->Fill(8, pt);
+        // in plane bookkeeping of trigger combinations (for efficiency)
+        if((trigger & MB_EMCEJE) == MB_EMCEJE)          fHistTriggerQAIn[fInCentralitySelection]->Fill(9, pt);
+        if((trigger & CEN_EMCEJE) == CEN_EMCEJE)        fHistTriggerQAIn[fInCentralitySelection]->Fill(10, pt);
+        if((trigger & SEM_EMCEJE) == SEM_EMCEJE)        fHistTriggerQAIn[fInCentralitySelection]->Fill(11, pt);
+        if((trigger & ALL_EMCEJE) == ALL_EMCEJE)        fHistTriggerQAIn[fInCentralitySelection]->Fill(12, pt);
+        if((trigger & MB_EMCEGA) == MB_EMCEGA)          fHistTriggerQAIn[fInCentralitySelection]->Fill(13, pt);
+        if((trigger & CEN_EMCEGA) == CEN_EMCEGA)        fHistTriggerQAIn[fInCentralitySelection]->Fill(14, pt);
+        if((trigger & SEM_EMCEGA) == SEM_EMCEGA)        fHistTriggerQAIn[fInCentralitySelection]->Fill(15, pt);
+        if((trigger & ALL_EMCEGA) == ALL_EMCEGA)        fHistTriggerQAIn[fInCentralitySelection]->Fill(16, pt);
     } else {
-        // out of plane stuff
-        if(trigger == 0) fHistTriggerQAOut[fInCentralitySelection]->Fill(1, pt);
-        if(trigger & AliVEvent::kAny) fHistTriggerQAOut[fInCentralitySelection]->Fill(2, pt);
-        if(trigger & AliVEvent::kAnyINT) fHistTriggerQAOut[fInCentralitySelection]->Fill(3, pt);
-        if(trigger & AliVEvent::kMB) fHistTriggerQAOut[fInCentralitySelection]->Fill(4, pt);
-        if(trigger & AliVEvent::kINT7) fHistTriggerQAOut[fInCentralitySelection]->Fill(5, pt);
-        if(trigger & AliVEvent::kEMC1) fHistTriggerQAOut[fInCentralitySelection]->Fill(6, pt);
-        if(trigger & AliVEvent::kEMC7) fHistTriggerQAOut[fInCentralitySelection]->Fill(7, pt);
-        if(trigger & AliVEvent::kEMC8) fHistTriggerQAOut[fInCentralitySelection]->Fill(8, pt);
-        if(trigger & AliVEvent::kEMCEJE) fHistTriggerQAOut[fInCentralitySelection]->Fill(9, pt);
-        if(trigger & AliVEvent::kEMCEGA) fHistTriggerQAOut[fInCentralitySelection]->Fill(10, pt);
-        if(trigger & AliVEvent::kCentral) fHistTriggerQAOut[fInCentralitySelection]->Fill(11, pt);
-        if(trigger & AliVEvent::kSemiCentral) fHistTriggerQAOut[fInCentralitySelection]->Fill(12, pt);
-        if(trigger & AliVEvent::kINT8) fHistTriggerQAOut[fInCentralitySelection]->Fill(13, pt);
-        if(trigger & (AliVEvent::kEMCEJE | AliVEvent::kMB)) fHistTriggerQAOut[fInCentralitySelection]->Fill(14, pt);
-        if(trigger & (AliVEvent::kEMCEGA | AliVEvent::kMB)) fHistTriggerQAOut[fInCentralitySelection]->Fill(15, pt);
-        if(trigger & (AliVEvent::kAnyINT | AliVEvent::kMB)) fHistTriggerQAOut[fInCentralitySelection]->Fill(16, pt);
-        if((trigger & AliVEvent::kAnyINT) && (trigger & AliVEvent::kEMCEJE)) fHistTriggerQAOut[fInCentralitySelection]->Fill(17, pt);
-        if((trigger & AliVEvent::kAnyINT) && (trigger & AliVEvent::kEMCEGA)) fHistTriggerQAOut[fInCentralitySelection]->Fill(18, pt); 
-        if((trigger & AliVEvent::kAnyINT) && (trigger & AliVEvent::kMB)) fHistTriggerQAOut[fInCentralitySelection]->Fill(19, pt); 
+        // out-of-plane bookkeeping of fired triggers. not 'exclusive' so no == necessary
+        if(trigger == 0)                                fHistTriggerQAOut[fInCentralitySelection]->Fill(1, pt);
+        if(trigger & AliVEvent::kAny)                   fHistTriggerQAOut[fInCentralitySelection]->Fill(2, pt);
+        if(trigger & AliVEvent::kAnyINT)                fHistTriggerQAOut[fInCentralitySelection]->Fill(3, pt);
+        if(trigger & AliVEvent::kMB)                    fHistTriggerQAOut[fInCentralitySelection]->Fill(4, pt);
+        if(trigger & AliVEvent::kCentral)               fHistTriggerQAOut[fInCentralitySelection]->Fill(5, pt);
+        if(trigger & AliVEvent::kSemiCentral)           fHistTriggerQAOut[fInCentralitySelection]->Fill(6, pt);
+        if(trigger & AliVEvent::kEMCEJE)                fHistTriggerQAOut[fInCentralitySelection]->Fill(7, pt);
+        if(trigger & AliVEvent::kEMCEGA)                fHistTriggerQAOut[fInCentralitySelection]->Fill(8, pt);
+        // out-of-plane bookkeeping of trigger combinations (for efficiency)
+        if((trigger & MB_EMCEJE) == MB_EMCEJE)          fHistTriggerQAOut[fInCentralitySelection]->Fill(9, pt);
+        if((trigger & CEN_EMCEJE) == CEN_EMCEJE)        fHistTriggerQAOut[fInCentralitySelection]->Fill(10, pt);
+        if((trigger & SEM_EMCEJE) == SEM_EMCEJE)        fHistTriggerQAOut[fInCentralitySelection]->Fill(11, pt);
+        if((trigger & ALL_EMCEJE) == ALL_EMCEJE)        fHistTriggerQAOut[fInCentralitySelection]->Fill(12, pt);
+        if((trigger & MB_EMCEGA) == MB_EMCEGA)          fHistTriggerQAOut[fInCentralitySelection]->Fill(13, pt);
+        if((trigger & CEN_EMCEGA) == CEN_EMCEGA)        fHistTriggerQAOut[fInCentralitySelection]->Fill(14, pt);
+        if((trigger & SEM_EMCEGA) == SEM_EMCEGA)        fHistTriggerQAOut[fInCentralitySelection]->Fill(15, pt);
+        if((trigger & ALL_EMCEGA) == ALL_EMCEGA)        fHistTriggerQAOut[fInCentralitySelection]->Fill(16, pt);
     }
 }
 //_____________________________________________________________________________
@@ -2580,5 +2598,73 @@ TH1F* AliAnalysisTaskJetV2::GetEventPlaneWeights(TH1F* hist)
         temp->SetBinContent(1+i, integral/hist->GetBinContent(1+i));
    }
    return temp;
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskJetV2::PrintTriggerSummary(UInt_t trigger)
+{
+    // test function to print binary representation of given trigger mask
+    // trigger mask is represented by 32 bits (hardcoded as it is an UInt_t ) 
+    TString triggerName[] = { // trigger names and their corresponding bits. some bits have multiple names
+        "kMB",                  // 0
+        "kINT7",                // 1
+        "kMUON",                // 2
+        "kHighMult",            // 3
+        "kEMC1",                // 4
+        "kCINT5",               // 5
+        "kCMUS5 kMUSPB",        // 6
+        "kMUSH7 kMUSHPB",       // 7
+        "kMUL7 kMuonLikePB",    // 8
+        "kMUU7 kMuonUnlikePB",  // 9
+        "kEMC7 kEMC8",          // 10
+        "kMUS7",                // 11
+        "kPHI1",                // 12
+        "kPHI7 kPHI8 kPHOSPb",  // 13
+        "kEMCEJE",              // 14
+        "kEMCEGA",              // 15
+        "kCentral",             // 16
+        "kSemiCentral",         // 17
+        "kDG5",                 // 18
+        "kZED",                 // 19
+        "kSPI7 kSPI",           // 20
+        "kINT8",                // 21
+        "kMuonSingleLowPt",     // 22
+        "kMuonSingleHighPt8",   // 23
+        "kMuonLikeLowPt8",      // 24
+        "kMuonUnlikeLowPt8",    // 25 
+        "kMuonUnlikeLowPt0",    // 26
+        "kUserDefined",         // 27
+        "kTRD"};                // 28 
+    TString notTriggered = "not fired";
+    printf(" > trigger is %u \n ", trigger);
+
+    // extract which triggers have been fired exactly and print summary of bits 
+    for (Int_t i(0); i < 29; i++) printf("[bit  %i]\t [%u] [%s]\n", i, (trigger & ((UInt_t)1 << i)) ? 1U : 0U, (trigger & ((UInt_t)1 << i)) ? triggerName[i].Data() : notTriggered.Data());
+    
+    // print accepted trigger combinations
+    printf(" ====== accepted trigger combinations ======= \n");
+    UInt_t MB_EMCEJE(AliVEvent::kMB | AliVEvent::kEMCEJE);
+    UInt_t CEN_EMCEJE(AliVEvent::kCentral | AliVEvent::kEMCEJE);
+    UInt_t SEM_EMCEJE(AliVEvent::kSemiCentral | AliVEvent::kEMCEJE);
+    UInt_t ALL_EMCEJE(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kEMCEJE);
+    UInt_t MB_EMCEGA(AliVEvent::kMB | AliVEvent::kEMCEGA);
+    UInt_t CEN_EMCEGA(AliVEvent::kCentral | AliVEvent::kEMCEGA);
+    UInt_t SEM_EMCEGA(AliVEvent::kSemiCentral | AliVEvent::kEMCEGA);
+    UInt_t ALL_EMCEGA(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kEMCEGA);
+    if(trigger == 0)                                printf("(trigger == 0)\n");
+    if(trigger & AliVEvent::kAny)                   printf("(trigger & AliVEvent::kAny)\n");
+    if(trigger & AliVEvent::kAnyINT)                printf("(trigger & AliVEvent::kAnyINT\n");
+    if(trigger & AliVEvent::kMB)                    printf("(trigger & AliVEvent::kMB)\n");       
+    if(trigger & AliVEvent::kCentral)               printf("(trigger & AliVEvent::kCentral)\n");
+    if(trigger & AliVEvent::kSemiCentral)           printf("(trigger & AliVEvent::kSemiCentral)\n");
+    if(trigger & AliVEvent::kEMCEJE)                printf("(trigger & AliVEvent::kEMCEJE)\n"); 
+    if(trigger & AliVEvent::kEMCEGA)                printf("(trigger & AliVEvent::kEMCEGA)\n");
+    if((trigger & MB_EMCEJE) == MB_EMCEJE)          printf("(trigger & MB_EMCEJE) == MB_EMCEJE)\n");
+    if((trigger & CEN_EMCEJE) == CEN_EMCEJE)        printf("(trigger & CEN_EMCEJE) == CEN_EMCEJE)\n");
+    if((trigger & SEM_EMCEJE) == SEM_EMCEJE)        printf("(trigger & SEM_EMCEJE) == SEM_EMCEJE)\n");
+    if((trigger & ALL_EMCEJE) == ALL_EMCEJE)        printf("(trigger & ALL_EMCEJE) == ALL_EMCEJE)\n");
+    if((trigger & MB_EMCEGA) == MB_EMCEGA)          printf("(trigger & MB_EMCEGA) == MB_EMCEGA)\n");
+    if((trigger & CEN_EMCEGA) == CEN_EMCEGA)        printf("(trigger & CEN_EMCEGA) == CEN_EMCEGA)\n");
+    if((trigger & SEM_EMCEGA) == SEM_EMCEGA)        printf("(trigger & SEM_EMCEGA) == SEM_EMCEGA)\n");
+    if((trigger & ALL_EMCEGA) == ALL_EMCEGA)        printf("(trigger & ALL_EMCEGA) == ALL_EMCEGA)\n");
 }
 //_____________________________________________________________________________
