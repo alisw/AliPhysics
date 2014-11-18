@@ -491,12 +491,12 @@ public:
       p=*GetConstrainedParam();
       return 0;}
 
-  void SetTrackParamIp ( const AliExternalTrackParam *p ) {
+  void ResetTrackParamIp ( const AliExternalTrackParam *p ) {
       if (fIp) delete fIp;
       fIp=new AliExternalTrackParam(*p);
       }
 
-  void SetTrackParamOp ( const AliExternalTrackParam *p ) {
+  void ResetTrackParamOp ( const AliExternalTrackParam *p ) {
       if (fOp) delete fOp;
       fOp=new AliExternalTrackParam(*p);
       }
