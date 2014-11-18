@@ -26,6 +26,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatasim
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
@@ -51,6 +52,7 @@ set(SRCS
     AliEMCALPreprocessor.cxx
     AliEMCALQAChecker.cxx
     AliEMCALRawDigit.cxx
+    AliEMCALRawUtils.cxx
     AliEMCALRecParam.cxx
     AliEMCALRecPoint.cxx
     AliEMCALSDigitizer.cxx

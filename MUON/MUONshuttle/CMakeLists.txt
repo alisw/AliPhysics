@@ -21,6 +21,7 @@ include_directories(${AliRoot_SOURCE_DIR}/MUON/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONbase
                     ${AliRoot_SOURCE_DIR}/MUON/MUONcalib
                     ${AliRoot_SOURCE_DIR}/MUON/MUONcore
                     ${AliRoot_SOURCE_DIR}/MUON/MUONgeometry
@@ -32,6 +33,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order
 set(SRCS
+    AliMUONGainSubprocessor.cxx
     AliMUONGMSSubprocessor.cxx
     AliMUONHVSubprocessor.cxx
     AliMUONOccupancySubprocessor.cxx
