@@ -422,7 +422,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 
     { // fill primary vertex Tracks
 
-      primaryVertexTracks = dynamic_cast<const AliESDVertex*>( GetFirstInputObject( kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut ) );               
+      primaryVertexTracks = dynamic_cast<const AliESDVertex*>( GetFirstInputObject( kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut ) ); 
       primaryVertex = primaryVertexTracks;
       err = flatEsd->SetPrimaryVertexTracks( primaryVertexTracks, freeSpace );
       freeSpace = maxOutputSize - flatEsd->GetSize();
@@ -505,7 +505,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	// vertex-constrained parameters for TPC tracks	
 
 	const AliExternalTrackParam *tpcConstrained=0;       
-	const AliExternalTrackParam *tpcInner=0;       
+	const AliExternalTrackParam *tpcInner=tpcTrack;       
 	AliESDtrack esdTrack;
 	if( primaryVertexTracks ){
 	  esdTrack.UpdateTrackParams(&(*tpcTrack),AliESDtrack::kTPCin);	  

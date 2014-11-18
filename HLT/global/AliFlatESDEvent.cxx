@@ -208,7 +208,7 @@ Int_t AliFlatESDEvent::SetPrimaryVertexTracks( const AliESDVertex *vtx, size_t a
 {
   // fill primary vertex tracks
   if( !vtx ) return 0;
-	if(!vtx->GetStatus()) return 0;
+  if(!vtx->GetStatus()) return 0;
   if( allocatedVtxMemory < sizeof(AliFlatESDVertex) ) return -1;
   fPrimaryVertexMask |= 0x1;
   fPrimaryVertexTracksPointer = fContentSize;
@@ -222,7 +222,7 @@ Int_t AliFlatESDEvent::SetPrimaryVertexSPD( const AliESDVertex *vtx, size_t allo
 {
   // fill primary vertex SPD
   if( !vtx ) return 0;
-	if(!vtx->GetStatus()) return 0;
+  if(!vtx->GetStatus()) return 0;
   if( allocatedVtxMemory < sizeof(AliFlatESDVertex) ) return -1;
   fPrimaryVertexMask |= 0x2;
   fPrimaryVertexSPDPointer = fContentSize;
