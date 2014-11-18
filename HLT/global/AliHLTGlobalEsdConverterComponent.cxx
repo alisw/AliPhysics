@@ -789,8 +789,6 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   }
 
   // Get ITS Standalone primaries (SAP) vertexTracks
-  
-  /*
   {
     const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDVertex|kAliHLTDataOriginITS);
     if (pBlock) {
@@ -805,10 +803,9 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     }
   }
   
-  */
 
   // Get ITS Standalone primary (SAP) Tracks
-  /*
+
   {
     const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeITSSAPData|kAliHLTDataOriginITS);
     if (pBlock) {
@@ -838,7 +835,6 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     }
   }
 
-*/
 
   // 3.1. now update ESD tracks with the ITSOut info
   // updating track parameters with flag kITSout will overwrite parameter set above with flag kTPCout
