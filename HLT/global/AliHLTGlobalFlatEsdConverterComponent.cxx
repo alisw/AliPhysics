@@ -484,36 +484,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     freeSpace = maxOutputSize - flatEsd->GetSize();
   
     if( err ) break;
-  
-    // Fill ITS Standalone primary (SAP) Tracks  
-      
-    for (int itr=0;itr<ntrITSSAP;itr++) {
-      const AliHLTITSSAPTrackerData& trcFlatSAP = dataSAP->fTracks[itr];	  
-      AliExternalTrackParam itsRefit, itsOut;
-      trcFlatSAP.paramInw.GetExternalTrackParam(itsRefit); // track at the vertex
-      trcFlatSAP.paramOut.GetExternalTrackParam(itsOut); // track at the ITS out      
-
-      // -- fill flat track structure      
-      table[nTracks] = trackSize;
-      err = ( freeSpace < flatTrack->EstimateSize() );
-      if( err ) break;	
-      new (flatTrack) AliFlatESDTrack;             
-      flatTrack->AddExternalTrackParam( &itsRefit, NULL, NULL, NULL, NULL, &itsOut );
-      //inpESDtrc.SetStatus( (AliESDtrack::kITSin|AliESDtrack::kITSout|AliESDtrack::kITSpureSA) );
-      //trcV2.SetLabel(trcFlatSAP.label);
-      //trcV2.SetChi2(trcFlatSAP.chi2);
-      flatTrack->SetNumberOfTPCClusters( 0 );
-      flatTrack->SetNumberOfITSClusters( trcFlatSAP.ncl );
-      trackSize += flatTrack->GetSize();
-      freeSpace -= flatTrack->GetSize();
-      nTracks++;
-      flatTrack = flatTrack->GetNextTrackNonConst();                      
-    } // ITS standalone tracks
-    
-    if( err ) break;
-   
-    int nSAPTracks  = nTracks;
-
+     
     // Fill TPC & TPC-ITS track information to the flat ESD structure       
       
     for( UInt_t tpcIter=0, itsIter = 0, itsOutIter = 0; tpcIter < tracksTPC.size(); tpcIter++) {
@@ -600,8 +571,36 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       flatTrack = flatTrack->GetNextTrackNonConst();    
 
     } // TPC tracks
-         
+
+    if( err ) break;
+
+    // Fill ITS Standalone primary (SAP) Tracks  
+      
+    for (int itr=0;itr<ntrITSSAP;itr++) {
+      const AliHLTITSSAPTrackerData& trcFlatSAP = dataSAP->fTracks[itr];	  
+      AliExternalTrackParam itsRefit, itsOut;
+      trcFlatSAP.paramInw.GetExternalTrackParam(itsRefit); // track at the vertex
+      trcFlatSAP.paramOut.GetExternalTrackParam(itsOut); // track at the ITS out      
+
+      // -- fill flat track structure      
+      table[nTracks] = trackSize;
+      err = ( freeSpace < flatTrack->EstimateSize() );
+      if( err ) break;
+      new (flatTrack) AliFlatESDTrack;             
+      flatTrack->AddExternalTrackParam( &itsRefit, NULL, NULL, NULL, NULL, &itsOut );
+      //inpESDtrc.SetStatus( (AliESDtrack::kITSin|AliESDtrack::kITSout|AliESDtrack::kITSpureSA) );
+      //trcV2.SetLabel(trcFlatSAP.label);
+      //trcV2.SetChi2(trcFlatSAP.chi2);
+      flatTrack->SetNumberOfTPCClusters( 0 );
+      flatTrack->SetNumberOfITSClusters( trcFlatSAP.ncl );
+      trackSize += flatTrack->GetSize();
+      freeSpace -= flatTrack->GetSize();
+      nTracks++;
+      flatTrack = flatTrack->GetNextTrackNonConst();                      
+    } // ITS standalone tracks
     
+    if( err ) break;
+
     flatEsd->SetTracksEnd( nTracks, trackSize );
 
     if( err ) break;
@@ -621,8 +620,8 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	for (int i = 0; i < data->fNV0s; ++i) {
 	  if(  freeSpace < flatV0->GetSize() ) { err = -1; break; }
 	  new (flatV0) AliFlatESDV0;
-	  flatV0->SetNegTrackID( nSAPTracks + v0s[2 * i] );
-	  flatV0->SetPosTrackID( nSAPTracks + v0s[2 * i + 1] );
+	  flatV0->SetNegTrackID( v0s[2 * i] );
+	  flatV0->SetPosTrackID( v0s[2 * i + 1] );
 	  nV0s++;
 	  v0size += flatV0->GetSize();
 	  freeSpace -= flatV0->GetSize(); 
@@ -655,6 +654,9 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     size += outBlock.fSize;
   }
   
+
+  // ====================================================================================================
+
   // ---------------------------------------------
   //
   // Fill the flat ESD friend structure
@@ -731,34 +733,9 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     int nTrackEntries = 0;
     Long64_t *table = NULL;
     AliFlatESDFriendTrack *flatTrack = NULL;
-    err = flatFriend->SetTracksStart( flatTrack, table, tracksTPC.size(), freeSpace );
+    err = flatFriend->SetTracksStart( flatTrack, table, ntrITSSAP + tracksTPC.size(), freeSpace );
     if( err ) break;
     freeSpace = freeSpaceTotal - flatFriend->GetSize();
-    
-    // Fill friends for ITS standalone tracks
-
-    for( int itr=0; itr< ntrITSSAP; itr++ ){
-      table[itr] = -1;
-      const AliHLTITSSAPTrackerData& trcFlatSAP = dataSAP->fTracks[itr];	  
-      AliExternalTrackParam itsRefit, itsOut;
-      trcFlatSAP.paramInw.GetExternalTrackParam(itsRefit); // track at the vertex
-      trcFlatSAP.paramOut.GetExternalTrackParam(itsOut); // track at the ITS out      
-
-      // -- fill flat friend track structure      
-      err = ( freeSpace < flatTrack->EstimateSize() );
-      if( err ) break;
-      new (flatTrack) AliFlatESDFriendTrack;
-
-      flatTrack->SetSkipBit( 0 );
-      flatTrack->AddTrackParamITSOut( &itsOut );      
-      
-      table[itr] = trackSize;
-      trackSize += flatTrack->GetSize();
-      freeSpace -= flatTrack->GetSize();
-      nTrackEntries++;
-      nTracks++;
-      flatTrack = flatTrack->GetNextTrackNonConst();
-    }
     
     // Fill TPC track friends information to the flat ESD friend structure
      
@@ -882,10 +859,36 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       
     } // fill TPC tracks
     
+    if( err ) break;
     
-    flatFriend->SetTracksEnd( nTracks, nTrackEntries, trackSize );      
+    // Fill friends for ITS standalone tracks
+
+    for( int itr=0; itr< ntrITSSAP; itr++ ){
+      table[nTracks] = -1;
+      const AliHLTITSSAPTrackerData& trcFlatSAP = dataSAP->fTracks[itr];	  
+      AliExternalTrackParam itsRefit, itsOut;
+      trcFlatSAP.paramInw.GetExternalTrackParam(itsRefit); // track at the vertex
+      trcFlatSAP.paramOut.GetExternalTrackParam(itsOut); // track at the ITS out      
+
+      // -- fill flat friend track structure      
+      err = ( freeSpace < flatTrack->EstimateSize() );
+      if( err ) break;
+      new (flatTrack) AliFlatESDFriendTrack;
+
+      flatTrack->SetSkipBit( 0 );
+      flatTrack->AddTrackParamITSOut( &itsOut );      
+      
+      table[nTracks] = trackSize;
+      trackSize += flatTrack->GetSize();
+      freeSpace -= flatTrack->GetSize();
+      nTrackEntries++;
+      nTracks++;
+      flatTrack = flatTrack->GetNextTrackNonConst();
+    }
 
     if( err ) break;
+   
+    flatFriend->SetTracksEnd( nTracks, nTrackEntries, trackSize );      
 
     { // set up the output block description
     
