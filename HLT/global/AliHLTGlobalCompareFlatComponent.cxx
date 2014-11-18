@@ -485,15 +485,40 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			const AliFlatTPCseed* s[2]={ track[0]->GetFlatTPCseed(), track[1]->GetFlatTPCseed()};
 			if(s[0] && s[1]){
 			
+			
       outFile<<"\nnew AliFlatTPCseed\n";
 			
-      outFile<<"_FlatTPCseed\n";
-			fCurrentClass = "FlatTPCseed";
+			printDiff( "AliFlatTPCseed::GetSize",s[0]->GetSize(),s[1]->GetSize() ); 
+			printDiff( "AliFlatTPCseed::GetLabel",s[0]->GetLabel(),s[1]->GetLabel() ); 
+			printDiff( "AliFlatTPCseed::GetNClusters",s[0]->GetNClusters(),s[1]->GetNClusters() ); 
 			
 			printDiff( "GetSize",s[0]->GetSize(),s[1]->GetSize() ); 
 			printDiff( "GetLabel",s[0]->GetLabel(),s[1]->GetLabel() ); 
 			printDiff( "GetNClusters",s[0]->GetNClusters(),s[1]->GetNClusters() ); 
 			
+			}
+			/*
+			// loop over clusters 
+			if(s[0]->GetNClusters() == s[1]->GetNClusters()){
+				int ncl = s[0]->GetNClusters();
+				cout<<"number of clusters: "<<ncl<<endl;
+				AliFlatTPCCluster* cl[2] ;
+				for(int icl=0; icl < ncl; icl++){
+					outFile<<"\nnew AliFlatTPCCluster\n";
+					cl[0] = const_cast<AliFlatTPCCluster*>( s[0]->GetClusters()  );
+					cl[1] = const_cast<AliFlatTPCCluster*>( s[1]->GetClusters()  );
+					
+					printDiff( "AliFlatTPCCluster::GetX",cl[0]->GetX(),cl[1]->GetX() ); 
+				}
+			}
+			
+			*/
+			
+			
+			
+			
+			//printf("track0: %p next: %p", track[0], track[0]->GetNextTrackNonConst() );
+			//printf("track1: %p next: %p", track[1], track[1]->GetNextTrackNonConst() );
 			
 			
 				
