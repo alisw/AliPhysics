@@ -13,24 +13,28 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-# MUON libraries
-add_subdirectory(MUONcore)
-add_subdirectory(MUONbase)
-add_subdirectory(MUONcalib)
-add_subdirectory(MUONcalign)
-add_subdirectory(MUONevaluation)
-add_subdirectory(MUONgeometry)
-add_subdirectory(MUONgraphics)
-add_subdirectory(MUONmapping)
-add_subdirectory(MUONmpgraphics)
-add_subdirectory(MUONraw)
-add_subdirectory(MUONrec)
-add_subdirectory(MUONshuttle)
-add_subdirectory(MUONsim)
-add_subdirectory(MUONtrigger)
-add_subdirectory(mchview)
+# alieve executable
 
-# Install data folder
-install(DIRECTORY data DESTINATION MUON)
+# Module include folder
+include_directories(${AliRoot_SOURCE_DIR}/MUON/mchview)
 
-message(STATUS "MUON enabled")
+# Additional include folders in alphabetical order
+include_directories(
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONcore
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONgraphics
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONmapping
+                    ${AliRoot_SOURCE_DIR}/STEER/CDB
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                   )
+
+# aliroot executable
+# Sources in alphabetical order
+set(SRCS
+  mchview.cxx
+)
+  
+add_executable(mchview ${SRCS})
+target_link_libraries(mchview MUONmapping RAWDatabase MUONshuttle MUONgraphics MUONrec MUONgeometry MUONcalib MUONbase MUONraw RAWDatasim MUONtrigger MUONcore STEER CDB AOD RAWDatarec ESD RAWDatabase STEERBase ANALYSIS)
+
+# Installation
+install(TARGETS mchview RUNTIME DESTINATION bin)
