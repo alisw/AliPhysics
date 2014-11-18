@@ -58,7 +58,6 @@ set ( SRCS
     muon/AliMuonEventCuts.cxx 
     muon/AliMuonTrackCuts.cxx 
     muon/AliMuonPairCuts.cxx 
-    muon/AliMergeableCollection.cxx 
     muon/AliVAnalysisMuon.cxx 
     muon/AliAnalysisTaskFlowSingleMu.cxx 
     muon/AliAnalysisMuonUtility.cxx
