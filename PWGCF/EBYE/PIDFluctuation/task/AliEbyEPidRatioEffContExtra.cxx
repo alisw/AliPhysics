@@ -160,20 +160,20 @@ void AliEbyEPidRatioEffContExtra::CreateHistograms() {
 			     AliEbyEPidRatioHelper::fgkfHistNBinsSign, 
 			     AliEbyEPidRatioHelper::fgkfHistNBinsRap, 
 			     AliEbyEPidRatioHelper::fgkfHistNBinsPhi,     
-			     AliEbyEPidRatioHelper::fgkfHistNBinsPt};
+			     35};
 
   Double_t minHnEffPID[5] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0], 
 			     AliEbyEPidRatioHelper::fgkfHistRangeSign[0],			  
 			     AliEbyEPidRatioHelper::fgkfHistRangeRap[0], 
 			     AliEbyEPidRatioHelper::fgkfHistRangePhi[0],  
-			     AliEbyEPidRatioHelper::fgkfHistRangePt[0]};
+			     0.2};
 
   
   Double_t maxHnEffPID[5] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[1], 
-			       AliEbyEPidRatioHelper::fgkfHistRangeSign[1], 
-			       AliEbyEPidRatioHelper::fgkfHistRangeRap[1], 
-			       AliEbyEPidRatioHelper::fgkfHistRangePhi[1],  
-			       AliEbyEPidRatioHelper::fgkfHistRangePt[1]};
+			     AliEbyEPidRatioHelper::fgkfHistRangeSign[1], 
+			     AliEbyEPidRatioHelper::fgkfHistRangeRap[1], 
+			     AliEbyEPidRatioHelper::fgkfHistRangePhi[1],  
+			     3.0};
 
 
   TString titilerec      = "cent:signRec:yRec:phiRec:ptRec";
