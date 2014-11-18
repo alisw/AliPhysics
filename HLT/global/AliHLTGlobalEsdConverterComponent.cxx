@@ -665,8 +665,8 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	// parameter again so this can be done only for ITS standalone tracks, meaning
 	// tracks in the ITS not associated with any TPC track
 	// HLT does not provide such standalone tracking
+	AliHLTGlobalBarrelTrack outPar(*element);	  
 	{
-	  AliHLTGlobalBarrelTrack outPar(*element);	  
 	  //outPar.AliExternalTrackParam::PropagateTo( element->GetLastPointX(), fSolenoidBz );
 	  const Int_t N=10; // number of steps.
 	  const Float_t xRange = element->GetLastPointX() - element->GetX();
@@ -765,6 +765,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
 	  AliESDfriendTrack friendTrack;
 	  friendTrack.AddCalibObject(&tTPC);
+	  friendTrack.SetTPCOut( outPar);
 	  pESDfriend->AddTrack(&friendTrack);
 	}
       }
@@ -856,11 +857,17 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	int tpcID=element->TrackID();
 	// the ITS tracker assigns the TPC track used as seed for a certain track to
 	// the trackID
-	if( tpcID<0 || tpcID>=pESD->GetNumberOfTracks()) continue;
-	AliESDtrack *tESD = pESD->GetTrack( tpcID );
-	element->SetLabel(tESD->GetLabel());
+	Int_t esdID = -1;
+	if( mapTpcId2esdId.find(tpcID) != mapTpcId2esdId.end() ) esdID = mapTpcId2esdId[tpcID];	
+	if( esdID<0 || esdID>=pESD->GetNumberOfTracks()) continue;
+	//AliESDtrack *tESD = pESD->GetTrack( esdID );
+	//element->SetLabel(tESD->GetLabel());
 	// 2010-07-12 disabled, see above, bugfix https://savannah.cern.ch/bugs/index.php?69872
 	//if( tESD ) tESD->UpdateTrackParams( &(*element), AliESDtrack::kITSout );
+	if( pESDfriend ) {
+	  AliESDfriendTrack *friendTrack = pESDfriend->GetTrack(esdID);
+	  if( friendTrack ) friendTrack->SetITSOut( (*element) );	  
+	}
       }
     }
   }
