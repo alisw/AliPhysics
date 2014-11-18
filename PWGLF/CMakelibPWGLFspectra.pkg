@@ -79,7 +79,7 @@ set ( SRCS SPECTRA/ChargedHadrons/dNdPt/AlidNdPtAcceptanceCuts.cxx
 
  )
 
-string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
+string ( REPLACE ".cxx" ".h" HDRS "${SRCS} SPECTRA/XtAnalysis/AliJConst.h" )
 
 set ( DHDR PWGLFspectraLinkDef.h)
 
