@@ -74,10 +74,7 @@ set ( SRCS SPECTRA/ChargedHadrons/dNdPt/AlidNdPtAcceptanceCuts.cxx
 	SPECTRA/Nuclei/deuteronpA/AliAnalysisDeuteronpA.cxx
 	SPECTRA/XtAnalysis/AliXtAnalysis.cxx
 	SPECTRA/XtAnalysis/AliJXtHistos.cxx
-	SPECTRA/XtAnalysis/AliJBaseTrack.cxx
-	SPECTRA/XtAnalysis/AliJBaseCard.cxx
-        SPECTRA/XtAnalysis/AliJCard.cxx
-        SPECTRA/IdentifiedHighPt/train/AliAnalysisTaskHighPtDeDx.cxx
+	SPECTRA/IdentifiedHighPt/train/AliAnalysisTaskHighPtDeDx.cxx
         SPECTRA/IdentifiedHighPt/train/DebugClassesMultESA2013.cxx
 
  )
