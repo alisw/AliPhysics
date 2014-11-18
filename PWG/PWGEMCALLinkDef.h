@@ -35,16 +35,8 @@
 #pragma link C++ class AliHadCorrTask+;
 #pragma link C++ class AliParticleContainer+;
 #pragma link C++ class AliPicoTrack+;
-#pragma link C++ class AliEMCALJSONReader+;
 #pragma link C++ class AliEMCALConfiguration+;
 #pragma link C++ class AliEMCALConfigHandler+;
-#pragma link C++ class AliEMCALConfigurationObject+;
-#pragma link C++ class AliEMCALConfigurationValue+;
-#pragma link C++ class AliEMCALConfigurationValueInt+;
-#pragma link C++ class AliEMCALConfigurationValueFloat+;
-#pragma link C++ class AliEMCALConfigurationValueDouble+;
-#pragma link C++ class AliEMCALConfigurationValueBool+;
-#pragma link C++ class AliEMCALConfigurationValueString+;
 #pragma link C++ class AliEMCALConfigurationMatcher+;
 
 #endif

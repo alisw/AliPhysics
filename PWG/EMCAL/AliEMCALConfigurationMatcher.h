@@ -12,7 +12,7 @@
 #include<TObject.h>
 
 class AliEMCALConfiguration;
-class AliEMCALConfigurationValue;
+class AliJSONValue;
 
 class AliEMCALConfigurationMatcher : public TObject{
 public:
@@ -22,7 +22,7 @@ public:
   void SetUserConfiguration(AliEMCALConfiguration *conf) { fUserConfiguration = conf; }
   void SetDefaultConfiguration(AliEMCALConfiguration *conf) { fDefaultConfiguration = conf; } 
 
-  AliEMCALConfigurationValue *GetValue(const char * key) const;
+  AliJSONValue *GetValue(const char * key) const;
 
 protected:
   AliEMCALConfiguration *fUserConfiguration;

@@ -10,7 +10,7 @@
 
 #include "AliEMCALConfigHandler.h"
 #include "AliEMCALConfiguration.h"
-#include "AliEMCALConfigurationObject.h"
+#include "AliJSONData.h"
 
 ClassImp(AliEMCALConfigHandler)
 
@@ -38,7 +38,7 @@ AliEMCALConfiguration *AliEMCALConfigHandler::CreateConfiguration(const char* na
 }
 
 void AliEMCALConfigHandler::AddParam(const char* configName, const char* key,
-    AliEMCALConfigurationValue* value) {
+    AliJSONValue* value) {
   AliEMCALConfiguration *config = FindConfiguration(configName);
   if(!config){
     this->Warning("AliEMCALConfigHandler", "Configuration with name %s does not exist, creating it", configName);

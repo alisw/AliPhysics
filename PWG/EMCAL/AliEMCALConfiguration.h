@@ -5,29 +5,29 @@
  *      Author: markusfasel
  */
 
-#ifndef PWG_EMCAL_ALIEMCALCONFIGURATION_H_
-#define PWG_EMCAL_ALIEMCALCONFIGURATION_H_
+#ifndef _ALIEMCALCONFIGURATION_H_
+#define _ALIEMCALCONFIGURATION_H_
 
 #include <ostream>
 #include <TNamed.h>
 
 class TList;
 
-class AliEMCALConfigurationValue;
+class AliJSONValue;
 
 class AliEMCALConfiguration : public TNamed {
 public:
   AliEMCALConfiguration(const char *name);
   virtual ~AliEMCALConfiguration();
 
-  void AddParam(const char *name, AliEMCALConfigurationValue *value);
+  void AddParam(const char *name, AliJSONValue *value);
   void AddConfiguration(AliEMCALConfiguration * conf);
   void Build(const char * jsonstring);
   void Build(TList *entries);
   const char *CreateJSONString() const;
 
   Bool_t HasKey(const char *key) const { return GetValue(key) != NULL; }
-  AliEMCALConfigurationValue *GetValue(const char *key) const ;
+  AliJSONValue *GetValue(const char *key) const ;
   void Print(Option_t *) const;
 
 protected:
@@ -42,4 +42,4 @@ private:
 
 std::ostream &operator<<(std::ostream &, const AliEMCALConfiguration &); 
 
-#endif /* PWG_EMCAL_ALIEMCALCONFIGURATION_H_ */
+#endif /* _ALIEMCALCONFIGURATION_H_ */

@@ -1,5 +1,5 @@
 /*
- * AliEMCALJSONReader.cxx
+ * AliJSONReader.cxx
  *
  *  Created on: 06.11.2014
  *      Author: markusfasel
@@ -8,10 +8,10 @@
 #include <TList.h>
 #include <TString.h>
 
-#include "AliEMCALConfigurationObject.h"
-#include "AliEMCALJSONReader.h"
+#include "AliJSONData.h"
+#include "AliJSONReader.h"
 
-AliEMCALJSONSyntaxTreeNode::AliEMCALJSONSyntaxTreeNode(const char *name, AliEMCALJSONSyntaxTreeNode *mother):
+AliJSONSyntaxTreeNode::AliJSONSyntaxTreeNode(const char *name, AliJSONSyntaxTreeNode *mother):
     fName(name),
     fMotherNode(mother),
     fEntries(),
@@ -20,47 +20,47 @@ AliEMCALJSONSyntaxTreeNode::AliEMCALJSONSyntaxTreeNode(const char *name, AliEMCA
 {
 }
 
-AliEMCALJSONSyntaxTreeNode:: ~AliEMCALJSONSyntaxTreeNode() {
+AliJSONSyntaxTreeNode:: ~AliJSONSyntaxTreeNode() {
   if(fOwner){
-    for(std::vector<AliEMCALConfigurationObject *>::iterator it = fEntries.begin(); it != fEntries.end(); it++){
+    for(std::vector<AliJSONData *>::iterator it = fEntries.begin(); it != fEntries.end(); it++){
       delete *it;
     }
   }
-  for(std::vector<AliEMCALJSONSyntaxTreeNode *>::iterator it = fDaughters.begin(); it != fDaughters.end(); it++){
+  for(std::vector<AliJSONSyntaxTreeNode *>::iterator it = fDaughters.begin(); it != fDaughters.end(); it++){
     delete *it;
   }
 }
 
-void AliEMCALJSONSyntaxTreeNode::AddEntry(AliEMCALConfigurationObject *entry) {
+void AliJSONSyntaxTreeNode::AddEntry(AliJSONData *entry) {
   fEntries.push_back(entry);
 }
 
-AliEMCALJSONSyntaxTreeNode *AliEMCALJSONSyntaxTreeNode::CreateDaughter(const char *name){
-  AliEMCALJSONSyntaxTreeNode *daughter = new AliEMCALJSONSyntaxTreeNode(name, this);
+AliJSONSyntaxTreeNode *AliJSONSyntaxTreeNode::CreateDaughter(const char *name){
+  AliJSONSyntaxTreeNode *daughter = new AliJSONSyntaxTreeNode(name, this);
   fDaughters.push_back(daughter);
   return daughter;
 }
 
-void AliEMCALJSONSyntaxTreeNode::SetOwner(bool owner) {
+void AliJSONSyntaxTreeNode::SetOwner(bool owner) {
   fOwner = owner;
-  for(std::vector<AliEMCALJSONSyntaxTreeNode *>::iterator it = fDaughters.begin(); it != fDaughters.end(); it++)
+  for(std::vector<AliJSONSyntaxTreeNode *>::iterator it = fDaughters.begin(); it != fDaughters.end(); it++)
     (*it)->SetOwner(owner);
 }
 
-AliEMCALJSONReader::AliEMCALJSONReader() {
+AliJSONReader::AliJSONReader() {
 
 }
 
-AliEMCALJSONReader::~AliEMCALJSONReader() {
+AliJSONReader::~AliJSONReader() {
 }
 
-TList* AliEMCALJSONReader::Decode(const char* jsonstring) const {
+TList* AliJSONReader::Decode(const char* jsonstring) const {
   /*
    * Decode JSON String
    * 1st create the abstract syntax tree
    * 2nd serialise the abstract syntax tree it into a TList
    */
-  AliEMCALJSONSyntaxTreeNode * ast = new AliEMCALJSONSyntaxTreeNode("", NULL),
+  AliJSONSyntaxTreeNode * ast = new AliJSONSyntaxTreeNode("", NULL),
       *current = ast;
 
   TString jsontstring(jsonstring);
@@ -99,7 +99,7 @@ TList* AliEMCALJSONReader::Decode(const char* jsonstring) const {
         TString value = jsontstring(0, separator -1);
         jsontstring = jsontstring(separator+1, jsontstring.Length() - (separator + 1));
         value.ReplaceAll("\"", "");
-        current->AddEntry(new AliEMCALConfigurationObject(key.Data(), value.Data()));
+        current->AddEntry(new AliJSONData(key.Data(), value.Data()));
       }
     }
   }
@@ -108,23 +108,23 @@ TList* AliEMCALJSONReader::Decode(const char* jsonstring) const {
 
   // Serialise it into a TList
   TList *entries = new TList;
-  std::vector<AliEMCALConfigurationObject *> &rootnodeentries = ast->GetEntries();
-  for(std::vector<AliEMCALConfigurationObject *>::iterator it = rootnodeentries.begin(); it != rootnodeentries.end(); it++)
+  std::vector<AliJSONData *> &rootnodeentries = ast->GetEntries();
+  for(std::vector<AliJSONData *>::iterator it = rootnodeentries.begin(); it != rootnodeentries.end(); it++)
     entries->Add(*it);
-  std::vector<AliEMCALJSONSyntaxTreeNode *> &daughters = ast->GetDaughters();
-  for(std::vector<AliEMCALJSONSyntaxTreeNode *>::iterator it = daughters.begin(); it != daughters.end(); it++)
+  std::vector<AliJSONSyntaxTreeNode *> &daughters = ast->GetDaughters();
+  for(std::vector<AliJSONSyntaxTreeNode *>::iterator it = daughters.begin(); it != daughters.end(); it++)
     AddNodeToList(*it, entries);
   return entries;
 }
 
-void AliEMCALJSONReader::AddNodeToList(AliEMCALJSONSyntaxTreeNode* node, TList* consumer) const {
+void AliJSONReader::AddNodeToList(AliJSONSyntaxTreeNode* node, TList* consumer) const {
   TList *entries = new TList;
   entries->SetName(node->GetName());
-  std::vector<AliEMCALConfigurationObject *> &nodeentries = node->GetEntries();
-  std::vector<AliEMCALJSONSyntaxTreeNode *> &daughters = node->GetDaughters();
-  for(std::vector<AliEMCALConfigurationObject *>::iterator it = nodeentries.begin(); it != nodeentries.end(); it++)
+  std::vector<AliJSONData *> &nodeentries = node->GetEntries();
+  std::vector<AliJSONSyntaxTreeNode *> &daughters = node->GetDaughters();
+  for(std::vector<AliJSONData *>::iterator it = nodeentries.begin(); it != nodeentries.end(); it++)
     entries->Add(*it);
-  for(std::vector<AliEMCALJSONSyntaxTreeNode *>::iterator it = daughters.begin(); it != daughters.end(); it++)
+  for(std::vector<AliJSONSyntaxTreeNode *>::iterator it = daughters.begin(); it != daughters.end(); it++)
     AddNodeToList(*it, entries);
   consumer->Add(entries);
 }

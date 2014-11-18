@@ -5,13 +5,13 @@
  *      Author: markusfasel
  */
 
-#ifndef PWG_EMCAL_ALIEMCALCONFIGHANDLER_H_
-#define PWG_EMCAL_ALIEMCALCONFIGHANDLER_H_
+#ifndef _ALIEMCALCONFIGHANDLER_H_
+#define _ALIEMCALCONFIGHANDLER_H_
 
 #include <TObject.h>
 
 class AliEMCALConfiguration;
-class AliEMCALConfigurationValue;
+class AliJSONValue;
 class TList;
 
 class AliEMCALConfigHandler : public TObject {
@@ -20,7 +20,7 @@ public:
   virtual ~AliEMCALConfigHandler();
 
   AliEMCALConfiguration *CreateConfiguration(const char *name);
-  void AddParam(const char *configName, const char *key, AliEMCALConfigurationValue *value);
+  void AddParam(const char *configName, const char *key, AliJSONValue *value);
   const char *GetConfigurationString() const;
   const char *GetConfigurationString(const char *configname) const;
   AliEMCALConfiguration *FindConfiguration(const char *configName) const;
