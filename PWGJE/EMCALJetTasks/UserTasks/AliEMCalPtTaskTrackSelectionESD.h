@@ -8,6 +8,8 @@
 #include <AliEMCalPtTaskVTrackSelection.h>
 #include <AliESDtrackCuts.h>
 
+class AliVTrack;
+
 namespace EMCalTriggerPtAnalysis {
 
 class AliEMCalPtTaskTrackSelectionESD: public AliEMCalPtTaskVTrackSelection {
@@ -20,6 +22,7 @@ public:
 
 	virtual TObjArray *GetAcceptedTracks(const TClonesArray * const tracks);
 	virtual TObjArray *GetAcceptedTracks(const AliVEvent *const event);
+	virtual bool IsTrackAccepted(AliVTrack * const trk);
 
 	void SetTrackCuts(AliESDtrackCuts * cuts) { fTrackCuts = cuts; }
 	virtual TObject *GetTrackCuts() { return fTrackCuts; }

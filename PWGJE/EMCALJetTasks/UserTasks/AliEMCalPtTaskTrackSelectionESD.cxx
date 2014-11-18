@@ -152,4 +152,18 @@ TObjArray* AliEMCalPtTaskTrackSelectionESD::GetAcceptedTracks(const AliVEvent* c
 	return fListOfTracks;
 }
 
+//______________________________________________________________________________
+bool AliEMCalPtTaskTrackSelectionESD::IsTrackAccepted(AliVTrack* const trk) {
+  /*
+   * Check whether track is accepted
+   *
+   * @param trk: Track to check
+   * @return: true if selected, false otherwise
+   */
+  AliESDtrack *esdt = dynamic_cast<AliESDtrack *>(trk);
+  if(!esdt) return kFALSE;
+  return fTrackCuts->AcceptTrack(esdt);
+}
+
 } /* namespace EMCalTriggerPtAnalysis */
+
