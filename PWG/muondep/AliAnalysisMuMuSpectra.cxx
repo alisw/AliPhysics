@@ -28,6 +28,7 @@
 #include "AliAnalysisMuMuJpsiResult.h"
 #include "Riostream.h"
 #include "TH1.h"
+#include "TH2.h"
 #include "TList.h"
 #include "TObjArray.h"
 
@@ -118,18 +119,33 @@ AliAnalysisMuMuSpectra::~AliAnalysisMuMuSpectra()
 }
 
 //______________________________________________________________________________
-void AliAnalysisMuMuSpectra::AdoptResult(const AliAnalysisMuMuBinning::Range& bin,
+Bool_t AliAnalysisMuMuSpectra::AdoptResult(const AliAnalysisMuMuBinning::Range& bin,
                                          AliAnalysisMuMuResult* result)
 {
   // adopt (i.e. we are becoming the owner) a result for a given bin
+  if ( !result )
+  {
+    AliError("Cannot adopt a null result");
+    return kFALSE
+    ;
+  }
   if (!fBinning)
   {
     fBinning = new AliAnalysisMuMuBinning;
     fBins = new TObjArray;
     fBins->SetOwner(kTRUE);
   }
-  fBinning->AddBin(bin);
-  fBins->Add(result);
+  fBinning->AddBin(bin); // Add a bin to the spectra
+  
+  Int_t sizeBeforeAdd = fBins->GetEntriesFast();
+  fBins->Add(result); // Add the result to the recently added bin
+  Int_t sizeAfterAdd = fBins->GetEntriesFast();
+  if ( sizeBeforeAdd >= sizeAfterAdd )
+  {
+   AliError(Form("Error adopting result %s to spectra %s",result->GetName(),GetName()));
+    return kFALSE;
+  }
+  else return kTRUE;
 }
 
 //______________________________________________________________________________
@@ -153,6 +169,9 @@ Bool_t AliAnalysisMuMuSpectra::Correct(const AliAnalysisMuMuSpectra& accEff, con
   
   TObjArray* particles = fBinning->CreateWhatArray();
   TObjArray* types = fBinning->CreateQuantityArray();
+  
+  // FIXME : cross-check what happens here with a binning containing
+  // centralities, etc...
   
   if (particles->GetEntries()!=1 || types->GetEntries()!=1 )
   {
@@ -217,6 +236,44 @@ AliAnalysisMuMuSpectra::GetResultForBin(const AliAnalysisMuMuBinning::Range& bin
   else
   {
     StdoutToAliDebug(1,std::cout << "Could not find result for bin:" << std::endl; bin.Print(););
+  }
+  return 0x0;
+}
+
+//______________________________________________________________________________
+AliAnalysisMuMuResult*
+AliAnalysisMuMuSpectra::GetResultForBin(const char* binName) const
+{
+  /// Get result for a given bin
+  /// Warning: this requires a loop on bins
+  
+  if ( IsEmpty() ) return 0x0;
+  
+  TObjArray* bins = fBinning->CreateBinObjArray();
+  
+  Int_t j(-1);
+  
+  AliDebug(1,Form("searching for bin %s",binName));
+  
+  for ( Int_t i = 0; i <= bins->GetLast() && j < 0 ; ++i )
+  {
+    AliAnalysisMuMuBinning::Range* b = static_cast<AliAnalysisMuMuBinning::Range*>(bins->At(i));
+    
+    if ( b->AsString() == binName )
+    {
+      j = i;
+    }
+  }
+  
+  delete bins;
+  
+  if (j>=0)
+  {
+    return static_cast<AliAnalysisMuMuResult*>(fBins->At(j));
+  }
+  else
+  {
+    AliDebug(1,Form("Could not find result for bin %s",binName));
   }
   return 0x0;
 }
@@ -308,9 +365,15 @@ TH1* AliAnalysisMuMuSpectra::Plot(const char* what, const char* subresult, Bool_
   // Convert the spectra into an histogram
   
   TString swhat(what);
+  TString swhatT(what);
   swhat.ToUpper();
   
   Double_t* bins = fBinning->CreateBinArray();
+  Double_t* binsX = fBinning->CreateBinArrayX();
+  Double_t* binsY = fBinning->CreateBinArrayY();
+  
+  Int_t nbinsX = fBinning->GetNBinsX();
+  Int_t nbinsY = fBinning->GetNBinsY();
   
   TObjArray* binArray = fBinning->CreateBinObjArray();
   
@@ -325,40 +388,83 @@ TH1* AliAnalysisMuMuSpectra::Plot(const char* what, const char* subresult, Bool_
     if ( strlen(subresult) > 0 && r->SubResults() )
     {
       TString sub(subresult);
-      sub.ToUpper();
       r = static_cast<AliAnalysisMuMuJpsiResult*>(r->SubResult(sub.Data()));
       if (!r) continue;
     }
     
     const AliAnalysisMuMuBinning::Range& b = r->Bin();
     
-    if (!h)
+    if ( b.Is2D() )
     {
-      h = new TH1F(r->GetName(),r->GetName(),binArray->GetEntries(),bins);
-      h->SetDirectory(0);
+      if (!h)
+      {
+        h = new TH2F(r->GetName(),r->GetName(),nbinsX,binsX,nbinsY,binsY);
+        h->SetDirectory(0);
+      }
+      
+      Double_t z = r->GetValue(swhatT.Data());
+      Double_t zerr = r->GetErrorStat(swhatT.Data());
+      
+      if ( swhat.Contains("AccEff",TString::kIgnoreCase) )
+      {
+        if ( z < 0. || z > 5.)
+        {
+          z = -1.;
+          zerr = 0.;
+        }
+      }
+      
+      if ( divideByBinWidth && b.WidthX()>0 )
+      {
+        z /= (b.WidthX()*b.WidthY());
+        zerr /= (b.WidthX()*b.WidthY());
+        
+      }
+      
+      std::cout << b.AsString();
+      r->PrintValue(swhat.Data(),"",z,zerr);
+      
+      Int_t x = j/nbinsY + 1;
+      Int_t y = (j % nbinsY) + 1;
+      
+      std::cout << "x="  << x << ";" << "y=" << y << std::endl;
+      
+      h->SetBinContent(x,y,z);
+      h->SetBinError(x,y,zerr);
+      
     }
-    
-    Double_t y = r->GetValue(what);
-    Double_t yerr = r->GetErrorStat(what);
-  
-    if ( divideByBinWidth && b.WidthX()>0 )
-    {
-      y /= (b.WidthX());
-      yerr /= (b.WidthX());
-    }
-    
-    if (!TMath::Finite(y)) y = 0.0;
-    if (!TMath::Finite(yerr)) yerr = 0.0;
 
-    std::cout << b.AsString();
-    r->PrintValue(swhat.Data(),"",y,yerr);
-    
-    h->SetBinContent(j+1,y);
-    h->SetBinError(j+1,yerr);
-    
+    else
+    {
+      if (!h)
+      {
+        h = new TH1F(r->GetName(),r->GetName(),binArray->GetEntries(),bins);
+        h->SetDirectory(0);
+      }
+      
+      Double_t y = r->GetValue(swhatT.Data());
+      Double_t yerr = r->GetErrorStat(swhatT.Data());
+      
+      if ( divideByBinWidth && b.WidthX()>0 )
+      {
+        y /= (b.WidthX());
+        yerr /= (b.WidthX());
+      }
+      
+      if (!TMath::Finite(y)) y = 0.0;
+      if (!TMath::Finite(yerr)) yerr = 0.0;
+      
+      std::cout << b.AsString();
+      r->PrintValue(swhat.Data(),"",y,yerr);
+      
+      h->SetBinContent(j+1,y);
+      h->SetBinError(j+1,yerr);
+    }
   }
   
   delete binArray;
+  delete[] binsX;
+  delete[] binsY;
   delete[] bins;
   
   return h;
