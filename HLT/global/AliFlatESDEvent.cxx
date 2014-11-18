@@ -334,7 +334,7 @@ Int_t AliFlatESDEvent::SetFromESD( const size_t allocatedMemorySize, const AliES
        table[idxTrack] = trackSize;
        if( freeSpace<flatTrack->EstimateSize() ) return -1;
        new (flatTrack) AliFlatESDTrack;       
-       flatTrack->AddFromESDTrack( esdTrack );
+       flatTrack->SetFromESDTrack( esdTrack );
        trackSize += flatTrack->GetSize();
        freeSpace -= flatTrack->GetSize();
        nTracks++;

@@ -42,7 +42,7 @@
 :
  AliVfriendTrack()
  ,fContentSize(0),
- fTPCOutFlag(0),
+ fTPCOutPointer(-1),
  fITSOutPointer(-1),
  fTRDInPointer(-1),
  fTPCseedPointer(-1),
@@ -69,7 +69,7 @@ void AliFlatESDFriendTrack::Reset()
 {
   // reset
   fContentSize = 0;
-  fTPCOutFlag =  0;
+  fTPCOutPointer = -1;
   fITSOutPointer = -1;
   fTRDInPointer = -1;
   fTPCseedPointer = -1;
@@ -82,9 +82,9 @@ Int_t AliFlatESDFriendTrack::SetFromESDfriendTrack( const AliESDfriendTrack* tra
   Reset();
   if( !track ) return 0;
   SetSkipBit(track->TestSkipBit() );
-  AddTrackParamTPCOut( track->GetTPCOut() );
-  AddTrackParamITSOut( track->GetITSOut() );
-  AddTrackParamTRDIn( track->GetTRDIn() );
+  SetTrackParamTPCOut( track->GetTPCOut() );
+  SetTrackParamITSOut( track->GetITSOut() );
+  SetTrackParamTRDIn( track->GetTRDIn() );
   const AliTPCseed* seedP = NULL;
   {
     TObject* calibObject = NULL;
@@ -94,6 +94,6 @@ Int_t AliFlatESDFriendTrack::SetFromESDfriendTrack( const AliESDfriendTrack* tra
       }
     }
   }
-  AddTPCseed( seedP );
+  SetTPCseed( seedP );
   return 0;
 }
