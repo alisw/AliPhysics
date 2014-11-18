@@ -38,6 +38,7 @@
 #include "AliSpectraBothTrackCuts.h"
 #include "AliAnalysisUtils.h"
 #include "AliPPVsMultUtils.h"	
+#include "AliGenPythiaEventHeader.h"
 //#include "AliSpectraBothHistoManager.h"
 #include <iostream>
 
@@ -48,6 +49,7 @@ ClassImp(AliSpectraBothEventCuts)
 AliSpectraBothEventCuts::AliSpectraBothEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0),fAODEvent(AliSpectraBothTrackCuts::kAODobject), fTrackBits(0),fIsMC(0),fCentEstimator(""), fUseCentPatchAOD049(0), fUseSDDPatchforLHC11a(kDoNotCheckforSDD),fTriggerSettings(AliVEvent::kMB),fTrackCuts(0),
 fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0),fMaxChi2perNDFforVertex(0),
 fMinRun(0),fMaxRun(0),fetarangeofmultiplicitycut(0.0),fUseAliPPVsMultUtils(false),
+fNMCProcessType(0),fEventMCProcessType(0),fEventMCProcessTypeIncluded(0),
 fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0)
 ,fHistoEP(0),fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0),fHistoRunNumbers(0),
 fHistoCentrality(0),fHistoMultiplicty(0),fAnalysisUtils(0),fAliPPVsMultUtils(0)
@@ -83,7 +85,7 @@ fHistoCentrality(0),fHistoMultiplicty(0),fAnalysisUtils(0),fAliPPVsMultUtils(0)
   fMultiplicityCutMax=-1.0;
   fTrackBits=1;
   fCentEstimator="V0M";
-  fMaxChi2perNDFforVertex=-1;
+  fMaxChi2perNDFforVertex=-1;	
  // TH1::AddDirectory(oldStatus);	
 }
 //______________________________________________________
@@ -122,6 +124,8 @@ AliSpectraBothEventCuts::~AliSpectraBothEventCuts()
 		delete fAnalysisUtils;
 	if(fAliPPVsMultUtils)
 		delete fAliPPVsMultUtils;
+	if(fEventMCProcessType)
+		delete [] fEventMCProcessType;
 
 }
 //______________________________________________________
@@ -400,7 +404,7 @@ Bool_t AliSpectraBothEventCuts::CheckMultiplicityCut()
 		return kFALSE;	 
 
    fHistoMultiplicty->Fill(0.5,Ncharged);
-   if(Ncharged>=fMultiplicityCutMin && Ncharged<fMultiplicityCutMax&& Ncharged>0)
+   if(Ncharged>=fMultiplicityCutMin && Ncharged<fMultiplicityCutMax)
    { 
 	fHistoMultiplicty->Fill(1.5,Ncharged);
   	return kTRUE;
@@ -681,3 +685,50 @@ void AliSpectraBothEventCuts::SetRunNumberRange(Int_t min, Int_t max)
   		 fMaxRun=max;
 	}
 }
+//__________________________________________________________________________________________________________
+Bool_t AliSpectraBothEventCuts::CheckMCProcessType(AliMCEvent* mcevent)
+{
+	if(fNMCProcessType<0)
+		return kTRUE;
+	if(!mcevent)
+		return kFALSE;
+	AliHeader* aHeader=mcevent->Header();
+	if(!aHeader)
+		return kFALSE;
+	AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(aHeader->GenEventHeader());
+	if(!pythiaGenHeader)
+		return kFALSE;	
+	Int_t processtype=pythiaGenHeader->ProcessType();
+	for(int i=0;i<fNMCProcessType;i++)
+	{
+		if(fEventMCProcessType[i]<0)
+			continue;
+		if (processtype==fEventMCProcessType[i])
+			return fEventMCProcessTypeIncluded;
+	}
+	return !fEventMCProcessTypeIncluded;
+}
+//_____________________________________________________________________________________________________________
+void AliSpectraBothEventCuts::SetNMCProcessType(Int_t flag) 
+{
+	fNMCProcessType=flag;
+	if(fEventMCProcessType)
+		delete [] fEventMCProcessType;
+	
+	fEventMCProcessType= new Int_t[fNMCProcessType];
+	if(!fEventMCProcessType)
+	{
+		fNMCProcessType=-1;
+		return;
+	}
+	for(int i=0;i<fNMCProcessType;i++)
+		fEventMCProcessType[i]=-1.0;
+	return;
+}
+//________________________________________________________________________________________________________________________
+void AliSpectraBothEventCuts::AddMCProcessType(Int_t type,Int_t index)
+{
+	if(index<fNMCProcessType)
+		fEventMCProcessType[index]=type;
+}
+

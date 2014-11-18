@@ -21,6 +21,9 @@
 //                  Date: Wed Jul  9 18:38:30 CEST 2014                    //
 //          New approch to find particle ratio to reduce memory            //
 //                             (Test Only)                                 //
+//        Copied from NetParticle Classes
+//        Origin: Authors: Jochen Thaeder <jochen@thaeder.de>
+//                         Michael Weber <m.weber@cern.ch>
 //=========================================================================//
 
 #include "TMath.h"
@@ -129,6 +132,7 @@ void AliEbyEPidRatioPhy::Process() {
 
 //________________________________________________________________________
 void AliEbyEPidRatioPhy::Init() {
+ 
   fNp = new Int_t**[fNNp];
   for (Int_t ii = 0 ; ii < fNNp; ++ii) {
     fNp[ii] = new Int_t*[4];
@@ -166,6 +170,7 @@ void AliEbyEPidRatioPhy::Init() {
   fRedFactp = new Double_t*[fOrder+1];
   for (Int_t ii = 0 ; ii <= fOrder; ++ii)
     fRedFactp[ii] = new Double_t[2];
+  Printf(" >>>> AliEbyEPidRatioEffContExtra - inside");
 }
 
 //________________________________________________________________________

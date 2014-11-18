@@ -41,10 +41,13 @@ enum {kDoNotCheckforSDD=0,kwithSDD,kwithoutSDD};
  AliSpectraBothEventCuts() : TNamed(), fAOD(0),fAODEvent(AliSpectraBothTrackCuts::kAODobject),fTrackBits(0), fIsMC(0), fCentEstimator(""), fUseCentPatchAOD049(0),fUseSDDPatchforLHC11a(kDoNotCheckforSDD),fTriggerSettings(AliVEvent::kMB),fTrackCuts(0),
 fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), 
 fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0), fMaxChi2perNDFforVertex(0),fMinRun(0),fMaxRun(0),fetarangeofmultiplicitycut(0.0),fUseAliPPVsMultUtils(false),
+fNMCProcessType(-1),fEventMCProcessType(0),fEventMCProcessTypeIncluded(0),
 fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),
 fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0),fHistoRunNumbers(0),fHistoCentrality(0),fHistoMultiplicty(0),fAnalysisUtils(0),fAliPPVsMultUtils(0)
 
-{}
+{
+
+}
   AliSpectraBothEventCuts(const char *name);
   virtual ~AliSpectraBothEventCuts();// {}
   
@@ -70,6 +73,7 @@ fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZvertexCu
   Bool_t CheckMultiplicityCut();
   Bool_t CheckQVectorCut();
   Bool_t CheckVtxChi2perNDF();
+  Bool_t CheckMCProcessType(AliMCEvent* mcevent);	
   void  SetCentralityCutMin(Float_t cut)  { fCentralityCutMin = cut; }
   void  SetCentralityCutMax(Float_t cut)  { fCentralityCutMax = cut; }
   //void  SetQVectorPosCut(Float_t min,Float_t max)  { fQVectorPosCutMin = min; fQVectorPosCutMax = max; }
@@ -83,7 +87,9 @@ fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZvertexCu
   void SetEtaRangeforMultiplictyCut(Float_t eta) {fetarangeofmultiplicitycut=eta;}
   void  SetAnalysisUtils(AliAnalysisUtils* inAnalysisUtils){fAnalysisUtils=inAnalysisUtils;}
   void SetUseAliPPVsMultUtils(Bool_t flag){fUseAliPPVsMultUtils=flag;} 
- 
+  void  SetEventMCProcessTypeIncluded(Bool_t flag) {fEventMCProcessTypeIncluded=flag;}
+  void SetNMCProcessType(Int_t flag); 
+   void AddMCProcessType(Int_t type,Int_t index);
   UInt_t GetTrackType()  const    { return fTrackBits;}
   TH1I * GetHistoCuts()         {  return fHistoCuts; }
   TH1F * GetHistoVtxBefSel()         {  return fHistoVtxBefSel; }
@@ -117,6 +123,10 @@ fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZvertexCu
   Float_t GetMaxChi2perNDFforVertex() const {return fMaxChi2perNDFforVertex;}
    AliAnalysisUtils* GetAnalysisUtils() const {return fAnalysisUtils; }
 Bool_t GetUseAliPPVsMultUtils() const {return fUseAliPPVsMultUtils;} 
+ Int_t  GetNMCProcessType() const { return fNMCProcessType;}
+ Bool_t  GetEventMCProcessTypeIncluded(Bool_t flag) const {return flag;}
+
+
 
   void InitHisto();	
   void   PrintCuts();
@@ -157,7 +167,10 @@ Bool_t GetUseAliPPVsMultUtils() const {return fUseAliPPVsMultUtils;}
   Int_t           fMinRun;                //minmum run number 			 
   Int_t 	  fMaxRun;		  //maximum run number 	 
   Float_t         fetarangeofmultiplicitycut; // eta range fot multipilicty cut 
-  Bool_t 	  fUseAliPPVsMultUtils;   // use  AliPPVsMultUtils for centrailty 			
+  Bool_t 	  fUseAliPPVsMultUtils;   // use  AliPPVsMultUtils for centrailty 
+  Int_t           fNMCProcessType;  // to include or exlude 
+  Int_t 	  *fEventMCProcessType;   //[fNMCProcessType] process typ cut 				  
+  Bool_t 	  fEventMCProcessTypeIncluded; // if false those process are excluded if true they are included  
   TH1I            *fHistoCuts;        // Cuts statistics
   TH1F            *fHistoVtxBefSel;        // Vtx distr before event selection 	
   TH1F            *fHistoVtxAftSel;        // Vtx distr after event selection
@@ -180,7 +193,7 @@ Bool_t GetUseAliPPVsMultUtils() const {return fUseAliPPVsMultUtils;}
   AliSpectraBothEventCuts(const AliSpectraBothEventCuts&);
   AliSpectraBothEventCuts& operator=(const AliSpectraBothEventCuts&);
   
-  ClassDef(AliSpectraBothEventCuts, 12);
+  ClassDef(AliSpectraBothEventCuts, 13);
   
 };
 #endif

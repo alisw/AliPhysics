@@ -66,6 +66,7 @@ set ( SRCS
     EBYE/PIDFluctuation/task/AliEbyEPidRatioDCA.cxx
     EBYE/PIDFluctuation/task/AliEbyEPidRatioPhy.cxx
     EBYE/PIDFluctuation/task/AliEbyEPidRatioEffCont.cxx
+    EBYE/PIDFluctuation/task/AliEbyEPidRatioEffContExtra.cxx
     EBYE/PIDFluctuation/task/AliEbyEPidRatioHelper.cxx
     EBYE/PIDFluctuation/task/AliEbyEPidRatioQA.cxx	
     EBYE/PIDFluctuation/task/AliEbyEPidRatioTaskOnFly.cxx
