@@ -39,7 +39,9 @@ ClassImp(AliAnalysisTaskEmcalJetMass)
 AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetMass", kTRUE),
   fContainerBase(0),
+  fContainerUnsub(1),
   fMinFractionShared(0),
+  fUseUnsubJet(0),
   fJetMassType(kRaw),
   fh3PtJet1VsMassVsLeadPtAllSel(0),
   fh3PtJet1VsMassVsLeadPtTagged(0),
@@ -124,7 +126,7 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass() :
     fh2RatVsNConstJet1Tagged[i]            = 0;
     fh2RatVsNConstJet1TaggedMatch[i]       = 0;
 
-    fh2EtMassOverEtRSq[i]                   = 0;
+    fh2EtMassOverEtRSq[i]                  = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -134,7 +136,9 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass() :
 AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),  
   fContainerBase(0),
+  fContainerUnsub(1),
   fMinFractionShared(0),
+  fUseUnsubJet(0),
   fJetMassType(kRaw),
   fh3PtJet1VsMassVsLeadPtAllSel(0),
   fh3PtJet1VsMassVsLeadPtTagged(0),
@@ -177,18 +181,18 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass(const char *name) :
   fh2MassVsNConstJet1Tagged            = new TH2F*[fNcentBins];
   fh2MassVsNConstJet1TaggedMatch       = new TH2F*[fNcentBins];
 
-  fh3PtJet1VsRatVsLeadPtAllSel        = new TH3F*[fNcentBins];
-  fh3PtJet1VsRatVsLeadPtTagged        = new TH3F*[fNcentBins];
-  fh3PtJet1VsRatVsLeadPtTaggedMatch   = new TH3F*[fNcentBins];
-  fpPtVsRatJet1All                    = new TProfile*[fNcentBins];
-  fpPtVsRatJet1Tagged                 = new TProfile*[fNcentBins];
-  fpPtVsRatJet1TaggedMatch            = new TProfile*[fNcentBins];
-  fh2RatVsAreaJet1All                 = new TH2F*[fNcentBins];
-  fh2RatVsAreaJet1Tagged              = new TH2F*[fNcentBins];
-  fh2RatVsAreaJet1TaggedMatch         = new TH2F*[fNcentBins];
-  fh2RatVsNConstJet1All               = new TH2F*[fNcentBins];
-  fh2RatVsNConstJet1Tagged            = new TH2F*[fNcentBins];
-  fh2RatVsNConstJet1TaggedMatch       = new TH2F*[fNcentBins];
+  fh3PtJet1VsRatVsLeadPtAllSel         = new TH3F*[fNcentBins];
+  fh3PtJet1VsRatVsLeadPtTagged         = new TH3F*[fNcentBins];
+  fh3PtJet1VsRatVsLeadPtTaggedMatch    = new TH3F*[fNcentBins];
+  fpPtVsRatJet1All                     = new TProfile*[fNcentBins];
+  fpPtVsRatJet1Tagged                  = new TProfile*[fNcentBins];
+  fpPtVsRatJet1TaggedMatch             = new TProfile*[fNcentBins];
+  fh2RatVsAreaJet1All                  = new TH2F*[fNcentBins];
+  fh2RatVsAreaJet1Tagged               = new TH2F*[fNcentBins];
+  fh2RatVsAreaJet1TaggedMatch          = new TH2F*[fNcentBins];
+  fh2RatVsNConstJet1All                = new TH2F*[fNcentBins];
+  fh2RatVsNConstJet1Tagged             = new TH2F*[fNcentBins];
+  fh2RatVsNConstJet1TaggedMatch        = new TH2F*[fNcentBins];
 
   fh2EtMassOverEtRSq                   = new TH2F*[fNcentBins];
 
@@ -454,7 +458,26 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
       fh2RatVsAreaJet1Tagged[fCentBin]->Fill(rat,jet1->Area());
       fh2RatVsNConstJet1Tagged[fCentBin]->Fill(rat,jet1->GetNumberOfConstituents());
 
-      Double_t fraction = jetCont->GetFractionSharedPt(jet1);
+      Double_t fraction = -1.;
+      if(fUseUnsubJet) {
+	AliEmcalJet *jetUS = NULL;
+	AliJetContainer *jetContUS = GetJetContainer(fContainerUnsub);
+	Int_t ifound = 0;
+	Int_t ilab = -1;
+	for(Int_t i = 0; i<jetContUS->GetNJets(); i++) {
+	  jetUS = jetContUS->GetJet(i);
+	  if(jetUS->GetLabel()==jet1->GetLabel()) {
+	    ifound++;
+	    if(ifound==1) ilab = i;
+	  }
+	}
+	if(ifound>1) AliDebug(2,Form("Found %d partners",ifound));
+	if(ifound==0) jetUS = 0x0;
+	else          jetUS = jetContUS->GetJet(ilab);
+	fraction = jetCont->GetFractionSharedPt(jetUS);
+      } else
+	fraction = jetCont->GetFractionSharedPt(jet1);
+
       if(fMinFractionShared>0. && fraction>fMinFractionShared) {
 	fh3PtJet1VsMassVsLeadPtTaggedMatch[fCentBin]->Fill(ptJet1,mJet1,jet1->MaxTrackPt());
 	fpPtVsMassJet1TaggedMatch[fCentBin]->Fill(ptJet1,mJet1);

@@ -8,7 +8,8 @@ AliAnalysisTaskEmcalJetMass* AddTaskEmcalJetMass(const char * njetsBase,
 						 Int_t       pSel,
 						 TString     trigClass      = "",
 						 TString     kEmcalTriggers = "",
-						 TString     tag            = "") {
+						 TString     tag            = "",
+						 TString     nJetsUnsub    = "") {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
@@ -47,6 +48,15 @@ AliAnalysisTaskEmcalJetMass* AddTaskEmcalJetMass(const char * njetsBase,
     jetContBase->ConnectParticleContainer(trackCont);
     jetContBase->ConnectClusterContainer(clusterCont);
     jetContBase->SetPercAreaCut(0.6);
+  }
+  if(!nJetsUnsub.IsNull()) {
+    AliJetContainer *jetContUS = task->AddJetContainer(nJetsUnsub.Data(),strType,R);
+    if(jetContUS) {
+      jetContUS->SetRhoName(nrhoBase);
+      jetContUS->ConnectParticleContainer(trackCont);
+      jetContUS->ConnectClusterContainer(clusterCont);
+      jetContUS->SetPercAreaCut(0.6);
+    }
   }
 
   task->SetCaloTriggerPatchInfoName(kEmcalTriggers.Data());
