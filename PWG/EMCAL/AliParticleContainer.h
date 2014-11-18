@@ -38,6 +38,7 @@ class AliParticleContainer : public AliEmcalContainer {
   void                        SetParticlePtCut(Double_t cut)                    { fParticlePtCut = cut ; }
   void                        SetParticleEtaLimits(Double_t min, Double_t max)  { fParticleMaxEta = max ; fParticleMinEta = min ; }
   void                        SetParticlePhiLimits(Double_t min, Double_t max)  { fParticleMaxPhi = max ; fParticleMinPhi = min ; }
+  void                        SetMinDistanceTPCSectorEdge(Double_t min)         { fMinDistanceTPCSectorEdge = min; }
   void                        SetTrackBitMap(UInt_t m)                          { fTrackBitMap     = m ; }
   void                        SetMCFlag(UInt_t m)                               { fMCFlag          = m ; }
   void                        SelectHIJING(Bool_t s)                            { if (s) fGeneratorIndex = 0; else fGeneratorIndex = -1; }
@@ -52,6 +53,7 @@ class AliParticleContainer : public AliEmcalContainer {
   Double_t                    fParticleMaxEta;                // cut on particle eta
   Double_t                    fParticleMinPhi;                // cut on particle phi
   Double_t                    fParticleMaxPhi;                // cut on particle phi
+  Double_t                    fMinDistanceTPCSectorEdge;      // require minimum distance to edge of TPC sector edge
   UInt_t                      fTrackBitMap;                   // bit map of accepted tracks (non MC)
   UInt_t                      fMCTrackBitMap;                 // bit map of accepted MC tracks
   Int_t                       fMinMCLabel;                    // minimum MC label value for the tracks/clusters being considered MC particles
@@ -63,7 +65,7 @@ class AliParticleContainer : public AliEmcalContainer {
   AliParticleContainer(const AliParticleContainer& obj); // copy constructor
   AliParticleContainer& operator=(const AliParticleContainer& other); // assignment
 
-  ClassDef(AliParticleContainer,3);
+  ClassDef(AliParticleContainer,4);
 
 };
 
