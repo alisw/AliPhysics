@@ -135,6 +135,8 @@ add_subdirectory(ZDC)
 
 # Fortran modules
 if(CMAKE_Fortran_COMPILER)
+  add_subdirectory(DIME)
+  add_subdirectory(DPMJET)
   add_subdirectory(HERWIG)
   add_subdirectory(HIJING)
   add_subdirectory(LHAPDF)
@@ -147,7 +149,6 @@ if(CMAKE_Fortran_COMPILER)
   add_subdirectory(TPHIC)
   add_subdirectory(TUHKMgen)
   add_subdirectory(TAmpt)
-  add_subdirectory(DIME)
 endif(CMAKE_Fortran_COMPILER)
 
 # Enable SHUTTLE compilation
