@@ -34,7 +34,7 @@ set(SRCS
 )
   
 add_executable(mchview ${SRCS})
-target_link_libraries(mchview MUONmapping RAWDatabase MUONshuttle MUONgraphics MUONrec MUONgeometry MUONcalib MUONbase MUONraw RAWDatasim MUONtrigger MUONcore STEER CDB AOD RAWDatarec ESD RAWDatabase STEERBase ANALYSIS)
+target_link_libraries(mchview MUONmapping RAWDatabase MUONshuttle MUONgraphics MUONrec MUONgeometry MUONcalib MUONbase MUONraw RAWDatasim MUONtrigger MUONcore STEER CDB AOD RAWDatarec ESD RAWDatabase STEERBase ANALYSIS Rint)
 
 # Installation
 install(TARGETS mchview RUNTIME DESTINATION bin)
