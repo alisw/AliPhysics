@@ -426,16 +426,26 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
         // generator for the dEdx simulation study
 	gSystem->Getenv("TestdEdxNTracks");
 	Int_t ntracks =50;
+	AliGenCocktail *generCocktail  = new AliGenCocktail();
         if (gSystem->Getenv("TestdEdxNTracks")) ntracks= atoi(gSystem->Getenv("TestdEdxNTracks"));
 	comment = comment.Append(":HIJINGparam test N particles");
-	AliGenHIJINGpara *gener = new AliGenHIJINGpara(ntracks);
-	gener->SetMomentumRange(0, 999999.);
-	gener->SetPhiRange(0., 360.);
+	generCocktail->SetMomentumRange(0, 999999.);
+	generCocktail->SetPhiRange(0., 360.);
+	
 	// Set pseudorapidity range from -8 to 8.
 	Float_t thmin = EtaToTheta(2);   // theta min. <---> eta max
 	Float_t thmax = EtaToTheta(-2);  // theta max. <---> eta min 
-	gener->SetThetaRange(thmin,thmax);
-	gGener=gener;
+	generCocktail->SetThetaRange(thmin,thmax);
+	//
+	AliGenHIJINGpara *generHijing = new AliGenHIJINGpara(ntracks);	
+	generHijing->SetThetaRange(thmin,thmax);
+	generCocktail->AddGenerator(generHijing,"Hijing param", 1);
+	AliGenBox *generEl = new AliGenBox(0.2*ntracks);
+	generEl->SetThetaRange(thmin,thmax);	
+	generEl->SetMomentumRange(0.2,1.);
+	generEl->SetPart(kElectron);
+	generCocktail->AddGenerator(generEl,"GENBOX Electrons for the dEdx study",1);
+	gGener=generCocktail;
       }
       break;
 
