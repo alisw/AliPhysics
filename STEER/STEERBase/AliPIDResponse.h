@@ -189,6 +189,7 @@ public:
 
   EBeamType GetBeamType() const {return fBeamTypeNum;};
 
+  void SetNoTOFmism(Bool_t value=kTRUE){fNoTOFmism=value;};
 
 protected:
   AliITSPIDResponse   fITSResponse;    //PID response function of the ITS
@@ -259,6 +260,8 @@ private:
 
   EBeamType fBeamTypeNum;              //! beam type enum 
   
+  Bool_t fNoTOFmism;                   //! flag to switch off the TOF mismatch in the TOF weights (to check with old aliroot version)
+
   void ExecNewRun();
   
   //
@@ -341,7 +344,7 @@ private:
   EDetPidStatus GetPHOSPIDStatus(const AliVTrack *track) const;
   EDetPidStatus GetEMCALPIDStatus(const AliVTrack *track) const;
 
-  ClassDef(AliPIDResponse, 13);  //PID response handling
+  ClassDef(AliPIDResponse, 14);  //PID response handling
 };
 
 #endif
