@@ -508,10 +508,10 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			pp[2][0] = track[0]->GetTrackParamTRDIn(p[2][0] ) >-1 ? 1: 0;
 			pp[2][1] = track[1]->GetTrackParamTRDIn(p[2][1] ) >-1 ? 1: 0;
 			printDiff( "AliFlatESDFriendTrack::GetTrackParamTRDIn",pp[2][0], pp[2][1] ); 
-			/*
+			
  			for(int i = 0 ; i<3; i++){
 				
-				if(pp[0][i] && pp[1][i]){
+				if(pp[i][0] && pp[i][1]){
 					
 				outFile<<"\nnew AliExternalTrackParam" << pNames[i] << "\n";
 				printDiff( Form("AliExternalTrackParam%s::GetAlpha",pNames[i]),p[i][0].GetAlpha(),p[i][1].GetAlpha() ); 
@@ -527,7 +527,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 				printDiff( Form("AliExternalTrackParam%s::GetCovariance",pNames[i]) , 15, cov[0], cov[1]); 
 				}
 			}
-			*/
+			
 			
 			
 			const AliFlatTPCseed* s[2]={ track[0]->GetFlatTPCseed(), track[1]->GetFlatTPCseed()};
