@@ -109,21 +109,21 @@ void AliEbyEPidRatioEffContExtra::CreateHistograms() {
 			       2, 2, 2,
 			       AliEbyEPidRatioHelper::fgkfHistNBinsRap,     
 			       AliEbyEPidRatioHelper::fgkfHistNBinsPhi, 
-			       AliEbyEPidRatioHelper::fgkfHistNBinsPt};
+			       35};
   
   Double_t minHnEffPIDMC[8] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0], 
 			       AliEbyEPidRatioHelper::fgkfHistRangeSign[0], 
 			       -0.5,     -0.5,     -0.5,
 			       AliEbyEPidRatioHelper::fgkfHistRangeRap[0],  
 			       AliEbyEPidRatioHelper::fgkfHistRangePhi[0], 
-			       AliEbyEPidRatioHelper::fgkfHistRangePt[0]};  
+			       0.2};  
   
   Double_t maxHnEffPIDMC[8] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[1], 
 			       AliEbyEPidRatioHelper::fgkfHistRangeSign[1], 
 			       1.5,      1.5,      1.5,
 			       AliEbyEPidRatioHelper::fgkfHistRangeRap[1],  
 			       AliEbyEPidRatioHelper::fgkfHistRangePhi[1], 
-			       AliEbyEPidRatioHelper::fgkfHistRangePt[1]};  
+			       3.0};  
   
   
 
@@ -206,14 +206,14 @@ void AliEbyEPidRatioEffContExtra::CreateHistograms() {
 			   8,                                        
 			   AliEbyEPidRatioHelper::fgkfHistNBinsRap,  
 			   AliEbyEPidRatioHelper::fgkfHistNBinsPhi, 
-			   AliEbyEPidRatioHelper::fgkfHistNBinsPt};  
+			   35};  
   
   Double_t minHnCont[6] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0], 
 			   AliEbyEPidRatioHelper::fgkfHistRangeSign[0], 
 			   0.5,                                            
 			   AliEbyEPidRatioHelper::fgkfHistRangeRap[0],  
 			   AliEbyEPidRatioHelper::fgkfHistRangePhi[0], 
-			   AliEbyEPidRatioHelper::fgkfHistRangePt[0]};
+			   0.2};
   
   
   
@@ -222,7 +222,7 @@ void AliEbyEPidRatioEffContExtra::CreateHistograms() {
 			   8.5,                        
 			   AliEbyEPidRatioHelper::fgkfHistRangeRap[1],  
 			   AliEbyEPidRatioHelper::fgkfHistRangePhi[1], 
-			   AliEbyEPidRatioHelper::fgkfHistRangePt[1]};   
+			   3.0};   
 
 
 
