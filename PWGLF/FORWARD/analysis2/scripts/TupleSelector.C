@@ -39,6 +39,7 @@
 #define SELECTOR_C
 
 #include <TSelector.h>
+#include <TQObject.h>
 #ifndef __CINT__
 # include <TH1.h>
 # include <TString.h>
@@ -57,9 +58,20 @@
 # include <TROOT.h>
 # include <TFile.h>
 # include <TDirectory.h>
+# include <TSystemDirectory.h>
+# include <TRegexp.h>
+# include <TKey.h>
+# include <TFileCollection.h>
+# include <THashList.h>
+# include <TDSet.h>
+# include <TQConnection.h>
 # include <iostream>
+# include <TProof.h>
+# include <TStopwatch.h>
 # include "AliFMDMCTrackELoss.h"
 #else
+// Forward declarations of types in the interface, and to trigger
+// autoloading of some libraries
 class TTree;
 class TChain;
 class TCanvas;
@@ -69,6 +81,10 @@ class TLegend;
 class TCanvas;
 class TString;
 class TDirectory;
+class TSystemDirectory;
+class TRegexp;
+class TDSet;
+class TProof;
 class AliFMDMCTrackELoss;
 class AliFMDMCTrackELoss::Hit;
 #endif
@@ -254,7 +270,7 @@ struct Spectra : public TObject
       Spectra* oth  = static_cast<Spectra*>(obj);
       if (Add(oth)) cnt++;
     }
-    Info("Merge", "%s merged %lld entries", fName.Data(), cnt);
+    // Info("Merge", "%s merged %lld entries", fName.Data(), cnt);
     return cnt;
   }
   Bool_t Add(const Spectra* oth) 
@@ -264,10 +280,17 @@ struct Spectra : public TObject
 	      oth->fName.Data(), fName.Data());
       return false;
     }
+    // Int_t nPrmOld = fPrimary->GetEntries();
+    // Int_t nSecOld = fPrimary->GetEntries();
+
     fPrimary  ->Add(oth->fPrimary);
     fSecondary->Add(oth->fSecondary);
-    Info("Added", "%s merged with %s", fName.Data(), 
-	 oth->fName.Data());
+
+    // Int_t nPrmNow = fPrimary->GetEntries();
+    // Int_t nSecNow = fPrimary->GetEntries();
+
+    // Info("Add", "%s: %d/%d merged to %d/%d", 
+    //      fName.Data(), nPrmOld, nSecOld, nPrmNow, nSecNow);
     return true;
   }
   /** 
@@ -396,7 +419,7 @@ struct Ring : public TObject
   {
     Color_t color = AliForwardUtil::RingColor(fD, fR);
     TArrayD bgArray(601);
-    AliForwardUtil::MakeLogScale(600, -2, 5, bgArray);
+    AliForwardUtil::MakeLogScale(300, -2, 5, bgArray);
     
     fSpectra   = new TObjArray(kNSpectra);
     fSpectra->SetOwner(true);
@@ -407,7 +430,7 @@ struct Ring : public TObject
     fSpectra->AddAt(new Spectra("BetaGammaElectron", fName, color, bgArray), 
 		    kBetaGammaElectron);
     fSpectra->AddAt(new Type("Type", fName, color), kTypes);
-    fSpectra->ls();
+    // fSpectra->ls();
   }
   /** 
    * Copy constructor 
@@ -548,8 +571,13 @@ struct Ring : public TObject
       }
       cnt++;
     }
-    Info("Merge", "FMD%d%c merged %lld entries", fD, fR, cnt);
+    // Info("Merge", "FMD%d%c merged %lld entries", fD, fR, cnt);
     return cnt;
+  }
+  void Draw(Option_t* opt="") 
+  { 
+    Info("Draw", "Should draw rings here");
+    ls(opt); 
   }
   /** 
    * List this object 
@@ -583,6 +611,40 @@ struct Ring : public TObject
 };
 
 //====================================================================
+struct Monitor : public TObject, public TQObject 
+{
+  Monitor()
+  {
+    if (!gProof) return;
+
+    fName = gProof->GetSessionTag();
+    gDirectory->Add(this);
+    // _must_ specify signal _exactly_ like below, or we won't be called
+    Bool_t ret = gProof->Connect("Feedback(TList *objs)", "Monitor", this, 
+				 "Feedback(TList *objs)");
+    if (!ret) 
+      Warning("Monitor", "Failed to connect to Proof");
+  }
+  virtual ~Monitor() 
+  {
+    if (!gProof) return;
+    gProof->Disconnect("Feedback(TList *objs)",this, 
+		       "Feedback(TList* objs)");
+  }
+  void SetName(const char* name) { fName = name; }
+  const char* GetName() const { return fName.Data(); }
+  void Feedback(TList* objs)
+  {
+    Info("Feedback", "Got a list of objects (%p)", objs);
+    if (!objs) return;
+    objs->ls();
+  }
+  TString fName;
+  ClassDef(Monitor,1);
+};
+
+
+//====================================================================
 struct TupleSelector : public TSelector 
 {
   TString       fTitle; //! Must not be persistent 
@@ -601,6 +663,8 @@ struct TupleSelector : public TSelector
   {
     if (fTitle.IsNull()) 
       fTitle = gSystem->BaseName(gSystem->WorkingDirectory());
+    // SetOption("fb=rings");
+    
   }
   const char* GetName() const { return fTitle.Data(); }
   /** 
@@ -639,6 +703,12 @@ struct TupleSelector : public TSelector
     fHits = new TClonesArray("AliFMDMCTrackELoss::Hit");
     fTree->SetBranchAddress("hits", &fHits);
   }    
+  void Begin(TTree* tree)
+  {
+    Info("Begin", "Called w/tree @ %p", tree);
+    // if (tree) SlaveBegin(tree);
+    new Monitor;
+  }
   /** 
    * Begin on slave 
    * 
@@ -657,7 +727,6 @@ struct TupleSelector : public TSelector
     fRings->AddAt(new Ring(3,'I'), Index(3,'I'));
 
     fOutput->Add(fRings);
-
     if (tree) {
       // In case of local mode, we get the tree here, 
       // and init isn't called 
@@ -766,7 +835,7 @@ struct TupleSelector : public TSelector
       Error("Terminate", "No rings in output array");
       return;
     }
-    fRings->ls();
+    // fRings->ls();
     
     TFile* out = TFile::Open("tuple_summary.root", "RECREATE");
     Store(out);
@@ -894,35 +963,339 @@ struct TupleSelector : public TSelector
   Long64_t GetStatus() const { return fI; }
   
   /* @} */
-
+    
+  //------------------------------------------------------------------
   /** 
    * @{ 
    * @name Service functions 
    */
+  //------------------------------------------------------------------
+  /** 
+   * Get a chain or data set from the given file 
+   * 
+   * @param file File to look in 
+   * 
+   * @return Pointer to object or null
+   */
+  static TObject* GetChainOrDataSet(const char* file)
+  {
+    if (gSystem->AccessPathName(file)) return 0;
+
+    TFile* in = TFile::Open(file, "READ");
+    if (!in) return 0;
+
+    TObject* ret = in->Get("tree");
+    if (!ret) { 
+      in->Close();
+      return 0;
+    }
+    
+    if (ret->IsA()->InheritsFrom(TChain::Class())) 
+      static_cast<TChain*>(ret)->SetDirectory(0);
+    else if (ret->IsA()->InheritsFrom(TDSet::Class())) 
+      static_cast<TDSet*>(ret)->SetDirectory(0);
+    else { 
+      ::Warning("GetChainOrDataSet", "Found object is a %s", 
+		ret->IsA()->GetName());
+      ret = 0;
+    }
+    in->Close();
+    return ret;
+  }
+  //------------------------------------------------------------------
+  /** 
+   * make our data set
+   * 
+   * @param src        Source directory 
+   * @param recursive  Whether to scan recursively 
+   * @param verbose    Be verbose
+   * 
+   * @return Data set or null
+   */
+  static TDSet* MakeDataSet(const TString& src=".", 
+			    Bool_t recursive=false, 
+			    Bool_t verbose=false)
+  {
+    TString dsFile(Form("%s/dataset.root", src.Data()));
+    TDSet* dataset = static_cast<TDSet*>(GetChainOrDataSet(dsFile));
+    if (dataset) {
+      /// dataset->Print("a");
+      return dataset;
+    }
+
+    TChain* c = DoMakeChain(src, recursive, verbose);
+    if (!c) return 0;
+    
+    dataset = new TDSet(*c, false);
+    dataset->SetName("tree");
+    dataset->SetLookedUp();
+    dataset->Validate();
+    
+    delete c;
+    if (dataset) { 
+      TFile* out = TFile::Open(dsFile, "RECREATE");
+      dataset->Write();
+      dataset->SetDirectory(0);
+      out->Close();
+    }
+      
+    return dataset;
+    
+  }
+  //------------------------------------------------------------------
   /** 
    * Create our chain 
    * 
-   * @param max Maximum number of files 
+   * @param src        Source directory 
+   * @param recursive  Whether to scan recursively 
+   * @param verbose    Be verbose
    * 
    * @return Chain or null
    */
-  static TChain* MakeChain(Int_t max)
+  static TChain* MakeChain(const TString& src=".", 
+			   Bool_t recursive=false,
+			   Bool_t verbose=false)
   {
-    TChain* chain = new TChain("tree");
-    Int_t missed = 0;
-    for (Int_t i = 1; i <= max; i++) { 
-      TString fn(Form("tuple/forward_tuple_%03d.root", i));
-      if (gSystem->AccessPathName(fn.Data())) { 
-	// ::Warning("", "File %s does not exist", fn.Data());
-	if (missed < 10) { missed++; continue; }
-	else break;
+    TString chFile(Form("%s/chain.root", src.Data()));
+    if (!gSystem->AccessPathName(chFile)) { 
+      TFile* in = TFile::Open(chFile, "READ");
+      if (in) { 
+	TChain* ret = static_cast<TChain*>(in->Get("tree"));
+	if (ret) {
+	  ret->SetDirectory(0);
+	  // ret->GetListOfFiles()->ls();
+	}
+	in->Close();
+	if (ret) return ret;
       }
-      ::Info("", "Adding %s to chain", fn.Data());
-      missed = 0;
-      chain->AddFile(fn);
+    }
+	  
+    TChain* chain = DoMakeChain(src, recursive, verbose);
+    if (chain) { 
+      TFile* out = TFile::Open(chFile, "RECREATE");
+      chain->Write();
+      chain->SetDirectory(0);
+      out->Close();
+    }
+      
+    return chain;
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Create our chain 
+   * 
+   * @param src        Source directory 
+   * @param recursive  Whether to scan recursively 
+   * @param verbose    Be verbose
+   * 
+   * @return Chain or null
+   */
+  static TChain* DoMakeChain(const TString& src=".", 
+			     Bool_t recursive=false,
+			     Bool_t verbose=false)
+  {
+    TChain* chain = new TChain("tree"); 
+    TString savdir(gSystem->WorkingDirectory());
+    TSystemDirectory d(gSystem->BaseName(src.Data()), src.Data());
+    if (!ScanDirectory(&d, chain, "forward_tree_*", recursive, verbose)) {
+      delete chain;
+      chain = 0;
+    }
+    else if (!chain->GetListOfFiles() || 
+	chain->GetListOfFiles()->GetEntries() <= 0) {
+      delete chain;
+      chain = 0;
     }
     return chain;
   }
+
+  //------------------------------------------------------------------
+  /** 
+   * Scan directory @a dir (possibly recursive) for tree files to add
+   * to the chain.    This does not follow sym-links
+   * 
+   * @param dir        Directory to scan
+   * @param chain      Chain to add to
+   * @param pattern    File name pattern 
+   * @param anchor     Anchor (tree name)
+   * @param flags      Flags
+   *
+   * @return true if any files where added 
+   */
+  static Bool_t ScanDirectory(TSystemDirectory* dir,
+			      TChain*           chain, 
+			      const TString&    pattern, 
+			      Bool_t            recursive,
+			      Bool_t            verbose) 
+  {
+    if (!dir) {
+      ::Error("ScanDirectory", "No diretory passed");
+      return false;
+    }
+    if (verbose) ::Info("ScanDirectory", "Scanning %s", dir->GetName());
+
+    Bool_t  ret = false;
+    TRegexp wild(pattern, true);
+    TString oldDir(gSystem->WorkingDirectory());
+    TList* files = dir->GetListOfFiles();
+
+    if (!gSystem->ChangeDirectory(oldDir)) { 
+      ::Error("ScanDirectory", "Failed to go back to %s", 
+	      oldDir.Data());
+      return false;
+    }
+    if (!files) {
+      ::Warning("ScanDirectory", "No files");
+      return false;
+    }
+
+    TList toAdd;
+    toAdd.SetOwner();
+
+    // Sort list of files and check if we should add it 
+    files->Sort();
+    TIter next(files);
+    TSystemFile* file = 0;
+    while ((file = static_cast<TSystemFile*>(next()))) {
+      TString name(file->GetName());
+      TString title(file->GetTitle());
+      TString full(gSystem->ConcatFileName(file->GetTitle(), name.Data()));
+      if (file->IsA()->InheritsFrom(TSystemDirectory::Class())) full = title;
+
+
+      if (name.EqualTo(".")||name.EqualTo(".."))  {
+	// Ignore special links 
+	if (verbose) ::Info("ScanDirectory", "Ignoring special %s",
+			    name.Data());
+	continue;
+      }
+
+      if (verbose) ::Info("ScanDirectory", "Looking at %s", full.Data());
+
+      FileStat_t fs;
+      if (gSystem->GetPathInfo(full.Data(), fs)) {
+	::Warning("ScanDirectory", "Cannot stat %s (%s)", 
+		  full.Data(), gSystem->WorkingDirectory());
+	continue;
+      }
+      // Check if this is a directory 
+      if (file->IsDirectory(full)) { 
+	if (verbose) ::Info("ScanDirectory", "Got a directory: %s", 
+			    full.Data());
+	if (recursive) {
+	  // if (title[0] == '/') 
+	  TSystemDirectory* d = new TSystemDirectory(file->GetName(),
+						     full.Data());
+	  if (ScanDirectory(d, chain, pattern, recursive, verbose))
+	    ret = true;
+	  delete d;
+	}
+	continue;
+      }
+
+      // If this is not a root file, ignore 
+      if (!name.EndsWith(".root") && 
+	  !name.EndsWith(".zip",TString::kIgnoreCase)) {
+	if (verbose) ::Info("ScanDirectory", "Ignoring non-ROOT or ZIP %s",
+			    name.Data());
+	continue;
+      }
+
+      // If this file does not contain AliESDs, ignore 
+      if (!name.Contains(wild)) {
+	if (verbose) ::Info("ScanDirectory", "%s does not match %s",
+			    name.Data(), pattern.Data());
+	continue;
+      }
+      // Add 
+      if (verbose) 
+	::Info("::ScanDirectory", "Candidate %s", full.Data());
+      toAdd.Add(new TObjString(full));
+    }
+    TIter nextAdd(&toAdd);
+    TObjString* s = 0;
+    Int_t added = 0;
+    while ((s = static_cast<TObjString*>(nextAdd()))) {
+      // Info("ChainBuilder::ScanDirectory", 
+      //      "Adding %s", s->GetString().Data());
+      TString fn = s->GetString();
+      if (!CheckFile(fn, chain, true/*verbose*/)) continue;
+       
+      added++;
+    }
+    if (added > 0) ret = true;
+    if (verbose) ::Info("ScanDirectory", "Added %d files", added);
+
+    gSystem->ChangeDirectory(oldDir);
+    return ret;  
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Check if we can add a file to the chain 
+   * 
+   * @param path   Full path to file 
+   * @param chain  Chain 
+   * 
+   * @return true on success, false otherwise
+   */
+  static Bool_t CheckFile(const TString& path, 
+			  TChain* chain,
+			  Bool_t verbose)
+  {
+    // Info("", "Checking %s", path.Data());
+    TString fn   = path;
+
+    gSystem->RedirectOutput("/dev/null", "w");
+    TFile*  test = TFile::Open(fn, "READ");
+    gSystem->RedirectOutput(0);
+    if (!test) { 
+      ::Warning("CheckFile", "Failed to open %s", fn.Data());
+      return false;
+    }
+    
+    Bool_t           ok = false;
+    TObject*         o  = test->Get(chain->GetName());
+    TTree*           t  = dynamic_cast<TTree*>(o);
+    TFileCollection* c  = dynamic_cast<TFileCollection*>(o);
+    if (t) {
+      Int_t n = t->GetEntries();
+      test->Close();
+      chain->Add(fn, n);
+      ok = true;
+      if (verbose) ::Info("CheckFile", "Added file %s (%d)", fn.Data(), n);
+    } else if (c) {
+      chain->AddFileInfoList(c->GetList());
+      ok = true;
+      if (verbose) ::Info("CheckFile", "Added file collection %s", fn.Data());
+    } else {
+      // Let's try to find a TFileCollection 
+      TList* l = test->GetListOfKeys();
+      TIter next(l);
+      TKey* k = 0;
+      while ((k = static_cast<TKey*>(next()))) {
+	TString cl(k->GetClassName());
+	if (!cl.EqualTo("TFileCollection")) continue;
+	c = dynamic_cast<TFileCollection*>(k->ReadObj());
+	if (!c) { 
+	  ::Warning("CheckFile", "Returned collection invalid");
+	  continue;
+	}
+	// Info("", "Adding file collection");
+	chain->AddFileInfoList(c->GetList());
+	ok = true;
+	if (verbose) ::Info("CheckFile", "Added file collection %s", fn.Data());
+      }
+      test->Close();
+    }
+
+    if (!ok) 
+      ::Warning("CheckFile", 
+		"The file %s does not contain the tree %s "
+		"or a file collection", 
+		path.Data(), chain->GetName());
+    return ok;
+  }
+
   /** 
    * Run this selector on a chain locally 
    * 
@@ -932,15 +1305,20 @@ struct TupleSelector : public TSelector
    * 
    * @return true on sucess 
    */
-  static Bool_t Run(Long64_t maxEvents, 
-		    const char* title="",
-		    UInt_t maxFiles=600)
+  static Bool_t Run(Long64_t maxEvents=-1, 
+		    const char* title="")
   {
-    TTree* tree = MakeChain(maxFiles);
-    if (!tree) return false;
+    TStopwatch timer;
+    timer.Start();
+    TChain* chain = MakeChain("tuple");
+    if (!chain) { 
+      ::Error("Run", "No chain!");
+      return false;
+    }
 
     TupleSelector* s = new TupleSelector(title);
-    Int_t status= tree->Process(s, "", maxEvents);
+    Int_t status= chain->Process(s, "", maxEvents);
+    timer.Print();
     return status >= 0;
   }
   /** 
@@ -954,28 +1332,32 @@ struct TupleSelector : public TSelector
    */
   static Bool_t Proof(Long64_t    maxEvents, 
 		      const char* opt="",
-		      const char* title="", 
-		      UInt_t      maxFiles=600)
+		      const char* title="")
   {
-    gROOT->ProcessLine("TProof::Reset(\"lite:///?workers=8\")");
-    gROOT->ProcessLine("TProof::Open(\"lite:///?workers=8\")");   
-    gROOT->ProcessLine("gProof->ClearCache()");
+    TStopwatch timer;
+    timer.Start();
+    TProof::Reset("lite:///?workers=8");
+    TProof::Open("lite:///?workers=8");
+    gProof->ClearCache();
     TString ali = gSystem->ExpandPathName("$(ALICE_ROOT)");
     TString fwd = ali + "/PWGLF/FORWARD/analysis2";
-    gROOT->ProcessLine(Form("gProof->AddIncludePath(\"%s/include\")",
-			    ali.Data()));
-    gROOT->ProcessLine(Form("gProof->Load(\"%s/scripts/LoadLibs.C\",true)", 
-			    fwd.Data()));
-    gROOT->ProcessLine("gProof->Exec(\"LoadLibs()\")");
-    gROOT->ProcessLine(Form("gProof->Load(\"%s/scripts/TupleSelector.C+%s,\","
-			    "true)", fwd.Data(), opt));
+    gProof->AddIncludePath(Form("%s/include", ali.Data()));
+    gProof->Load(Form("%s/scripts/LoadLibs.C",fwd.Data()), true);
+    gProof->Exec("LoadLibs()");
+    // gROOT->ProcessLine("gProof->SetLogLevel(5);");
+    gProof->Load(Form("%s/scripts/TupleSelector.C+%s", fwd.Data(), opt),true);
 
-    TChain*  chain = MakeChain(maxFiles);
-    chain->SetProof();
-
+    TDSet* dataset = MakeDataSet("tuple");
+    if (!dataset) { 
+      ::Error("Proof", "No dataset");
+      return false;
+    }
+    
     TupleSelector* s = new TupleSelector(title);
-    Int_t status= chain->Process(s, "", maxEvents);
-    return status >= 0;
+    gProof->AddFeedback("rings");
+    gProof->Process(dataset, s, "", maxEvents);
+    timer.Print();
+    return true; // status >= 0;
   }    
 
   /* @} */
