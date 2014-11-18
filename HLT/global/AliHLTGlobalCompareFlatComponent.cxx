@@ -485,6 +485,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			const AliFlatTPCseed* s[2]={ track[0]->GetFlatTPCseed(), track[1]->GetFlatTPCseed()};
 			if(s[0] && s[1]){
 			
+      outFile<<"\nnew AliFlatTPCseed\n";
 			
       outFile<<"_FlatTPCseed\n";
 			fCurrentClass = "FlatTPCseed";
