@@ -78,7 +78,7 @@ class AliFlatESDFriendTrack :public AliVfriendTrack
 
 	
 	
-  const AliFlatTPCseed* GetFlatTPCseed( ) const{return reinterpret_cast<const AliFlatTPCseed*>(fContent+fTPCseedPointer); };
+  const AliFlatTPCseed* GetFlatTPCseed( ) const{return fTPCseedPointer<0? NULL : reinterpret_cast<const AliFlatTPCseed*>(fContent+fTPCseedPointer); };
   
   const AliFlatESDFriendTrack *GetNextTrack() const { return reinterpret_cast<const AliFlatESDFriendTrack*>(fContent+fContentSize); }
   AliFlatESDFriendTrack *GetNextTrackNonConst() { return reinterpret_cast<AliFlatESDFriendTrack*>(fContent+fContentSize); }
