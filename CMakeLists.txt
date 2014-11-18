@@ -160,3 +160,5 @@ if(SHUTTLE)
         message(FATAL_ERROR "SHUTTLE enabled! Please specify DIMDIR, ODIR and ALIEN")
     endif()
 endif(SHUTTLE)
+
+add_subdirectory(ALIROOT)
