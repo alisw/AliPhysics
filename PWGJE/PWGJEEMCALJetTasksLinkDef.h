@@ -44,6 +44,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalDiJetAna+;
 #pragma link C++ class AliAnalysisTaskEmcalDiJetResponse+;
 #pragma link C++ class AliAnalysisTaskEmcalHighMultTrigger+;
+#pragma link C++ class AliAnalysisTaskEmcalHJetMass+;
 #pragma link C++ class AliAnalysisTaskEmcalJetHMEC+;
 #pragma link C++ class AliAnalysisTaskEmcalJetHadCorQA+;
 #pragma link C++ class AliAnalysisTaskEmcalJetHadEPpid+;
