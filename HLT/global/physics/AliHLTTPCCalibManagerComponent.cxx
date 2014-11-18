@@ -34,11 +34,17 @@
 #include "AliHLTITSClusterDataFormat.h"
 #include "AliAnalysisManager.h"
 #include "AliHLTTestInputHandler.h"
-#include "AliAnalysisTaskPt.h"
+#include "AliTPCAnalysisTaskcalib.h"
 #include "AliAnalysisDataContainer.h"
 #include "TTree.h"
+#include "TChain.h"
 #include "AliFlatESDEvent.h"
 #include "AliFlatESDFriend.h"
+
+#include "AliTPCcalibAlign.h"
+#include "AliTPCcalibBase.h"
+
+#include "TROOT.h"
 
 using namespace std;
 
@@ -143,37 +149,47 @@ Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
   // see header file for class documentation
   printf("AliHLTTPCCalibManagerComponent::DoInit\n");
 
+  gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/LoadLibraries.C");
+
   Int_t iResult=0;
 
   Printf("----> AliHLTTPCCalibManagerComponent::DoInit");
   fAnalysisManager = new AliAnalysisManager;
   fInputHandler    = new AliHLTTestInputHandler;
   fAnalysisManager->SetInputEventHandler(fInputHandler);
-  fAnalysisManager->SetExternalLoop(kTRUE); 
+  fAnalysisManager->SetExternalLoop(kTRUE);
 
-  AliAnalysisTaskPt *task = new AliAnalysisTaskPt("TaskPt");
-  printf("-----> AliHLTTPCCalibManagerComponent: here we set the usage of the friends to %d\n", (Int_t)task->GetUseFriends());
-  task->SetUseFriends(kTRUE);
-  fAnalysisManager->AddTask(task);
-  AliAnalysisDataContainer *cinput  = fAnalysisManager->GetCommonInputContainer();
-  Printf("Defining output file");
-  AliAnalysisDataContainer *coutput1 = fAnalysisManager->CreateContainer("pt", TList::Class(),
-      AliAnalysisManager::kOutputContainer, "Pt.root");
+  //gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C");
 
-  //           connect containers
-  Printf("---> Connecting input...");
-  fAnalysisManager->ConnectInput  (task,  0, cinput ); 
-  Printf("---> ...connected.");
-  Printf("---> Connecting output...");
-  fAnalysisManager->ConnectOutput (task,  0, coutput1);
-  Printf("---> ...connected.");
+  // setup task TPCCalib
+  AliTPCAnalysisTaskcalib *task1=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
+
+  AliTPCcalibAlign *calibAlign = new AliTPCcalibAlign("alignTPC","Alignment of the TPC sectors");
+  calibAlign->SetDebugLevel(0);
+  calibAlign->SetStreamLevel(0);
+  calibAlign->SetTriggerMask(-1,-1,kTRUE);        //accept everything
+  task1->AddJob(calibAlign);
+
+  fAnalysisManager->AddTask(task1);
+  AliAnalysisDataContainer *cinput1 = fAnalysisManager->GetCommonInputContainer();
+  if (!cinput1) cinput1 = fAnalysisManager->CreateContainer("cchain",TChain::Class(),
+                                      AliAnalysisManager::kInputContainer);
+  for (Int_t i=0; i<task1->GetJobs()->GetEntries(); i++) {
+    if (task1->GetJobs()->At(i)) {
+      AliAnalysisDataContainer* coutput = fAnalysisManager->CreateContainer(task1->GetJobs()->At(i)->GetName(),
+                                                               AliTPCcalibBase::Class(),
+                                                               AliAnalysisManager::kOutputContainer,
+                                                               "AliESDfriends_v1.root:TPCAlign");
+      fAnalysisManager->ConnectOutput(task1,i,coutput);
+    }
+  }
+  fAnalysisManager->ConnectInput(task1,0,cinput1);
 
   Printf("----> Calling InitAnalysis");
   fAnalysisManager->InitAnalysis();
   Printf("----> Done.");
   Printf("----> Calling StartAnalysis");
   fAnalysisManager->StartAnalysis("local", (TTree*)new TTree);
-  //fAnalysisManager->StartAnalysis("local", (TTree*)NULL);
   Printf("----> Done.");
 
   return iResult;
@@ -276,6 +292,7 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
      fAnalysisManager->InitInputData(flatEsd, flatEsdFriend);
  }
   //  fInputHandler->BeginEvent(0);
+  Printf("----> ExecAnalysis");
   fAnalysisManager->ExecAnalysis();
   fInputHandler->FinishEvent();
 
