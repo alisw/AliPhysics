@@ -28,9 +28,10 @@ class AliAnalysisTaskEmcalJetMass : public AliAnalysisTaskEmcalJet {
   void                                Terminate(Option_t *option);
 
   //Setters
-  void SetJetContainerBase(Int_t c)                             { fContainerBase     = c   ; }
-  void SetMinFractionShared(Double_t f)                         { fMinFractionShared = f   ; }
-  void SetJetMassType(JetMassType t)                            { fJetMassType       = t   ; }
+  void SetJetContainerBase(Int_t c)                                  { fContainerBase     = c   ; }
+  void SetJetContainerUnsub(Int_t c)                                 { fContainerUnsub    = c   ; }
+  void SetMinFractionShared(Double_t f, Bool_t useUnsubJet = kFALSE) { fMinFractionShared = f   ; fUseUnsubJet = useUnsubJet; }
+  void SetJetMassType(JetMassType t)                                 { fJetMassType       = t   ; }
 
  protected:
   Bool_t                              RetrieveEventObjects();
@@ -40,7 +41,9 @@ class AliAnalysisTaskEmcalJetMass : public AliAnalysisTaskEmcalJet {
   Double_t                            GetJetMass(AliEmcalJet *jet);
  
   Int_t                               fContainerBase;              // jets to be analyzed
+  Int_t                               fContainerUnsub;             // unsubtracted jets
   Double_t                            fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
+  Bool_t                              fUseUnsubJet;                // calc fraction of unsubtracted jet (relevant for constituent subtraction)
   JetMassType                         fJetMassType;                // jet mass type to be used
 
   TH3F            **fh3PtJet1VsMassVsLeadPtAllSel;         //!all jets after std selection pt vs mass vs leading track pt
@@ -75,7 +78,7 @@ class AliAnalysisTaskEmcalJetMass : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetMass(const AliAnalysisTaskEmcalJetMass&);            // not implemented
   AliAnalysisTaskEmcalJetMass &operator=(const AliAnalysisTaskEmcalJetMass&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetMass, 7)
+  ClassDef(AliAnalysisTaskEmcalJetMass, 8)
 };
 #endif
 
