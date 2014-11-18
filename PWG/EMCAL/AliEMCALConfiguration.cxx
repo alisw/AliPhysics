@@ -9,9 +9,9 @@
 #include <iostream>
 #include <TList.h>
 
-#include "AliEMCALJSONReader.h"
+#include "AliJSONReader.h"
 #include "AliEMCALConfiguration.h"
-#include "AliEMCALConfigurationObject.h"
+#include "AliJSONData.h"
 
 
 AliEMCALConfiguration::AliEMCALConfiguration(const char* name) :
@@ -27,21 +27,21 @@ AliEMCALConfiguration::~AliEMCALConfiguration() {
 }
 
 void AliEMCALConfiguration::AddParam(const char* name,
-    AliEMCALConfigurationValue* value) {
-  AliEMCALConfigurationObject *entry = dynamic_cast<AliEMCALConfigurationObject *>(fParams->FindObject(name));
+    AliJSONValue* value) {
+  AliJSONData *entry = dynamic_cast<AliJSONData *>(fParams->FindObject(name));
   if(entry) entry->SetValue(value);
-  else fParams->Add(new AliEMCALConfigurationObject(name, value));
+  else fParams->Add(new AliJSONData(name, value));
 }
 
 void AliEMCALConfiguration::Build(const char *jsonstring) {
-  AliEMCALJSONReader parser;
+  AliJSONReader parser;
   Build(parser.Decode(jsonstring));
 }
 
 void AliEMCALConfiguration::Build(TList *entries){
   TIter objects(entries);
   for(TIter entry = objects.Begin(); entry != objects.End(); ++entry){
-    AliEMCALConfigurationObject *val = dynamic_cast<AliEMCALConfigurationObject *>(*entry);
+    AliJSONData *val = dynamic_cast<AliJSONData *>(*entry);
     if(val)
       fParams->Add(val);
     else{
@@ -59,8 +59,8 @@ void AliEMCALConfiguration::Print(Option_t * /*value*/) const {
   std::cout << "Configuration " << GetName() << ":" << std::endl;
   std::cout << "=================================================" << std::endl;
   TIter parIter(fParams);
-  AliEMCALConfigurationObject *conf(NULL);
-  while((conf = dynamic_cast<AliEMCALConfigurationObject *>(parIter()))){
+  AliJSONData *conf(NULL);
+  while((conf = dynamic_cast<AliJSONData *>(parIter()))){
     std::cout << "Key " << conf->GetName() << ", value " << conf->GetValue()->ToString() << std::endl;
   }
   std::cout << "=================================================" << std::endl;
@@ -69,8 +69,8 @@ void AliEMCALConfiguration::AddConfiguration(AliEMCALConfiguration* conf) {
   fParams->Add(conf);
 }
 
-AliEMCALConfigurationValue* AliEMCALConfiguration::GetValue(const char *key) const {
-  AliEMCALConfigurationObject *val = dynamic_cast<AliEMCALConfigurationObject *>(fParams->FindObject(key));
+AliJSONValue* AliEMCALConfiguration::GetValue(const char *key) const {
+  AliJSONData *val = dynamic_cast<AliJSONData *>(fParams->FindObject(key));
   if(!val) return NULL;
   return val->GetValue();
 }
@@ -86,7 +86,7 @@ const char* AliEMCALConfiguration::CreateJSONString() const {
       if(!isFirst) jsonbuilder << ",";
       jsonbuilder << "\"" << conf->GetName() << "\":" << conf->CreateJSONString();
     } else {
-      AliEMCALConfigurationObject *obj = dynamic_cast<AliEMCALConfigurationObject *>(*it);
+      AliJSONData *obj = dynamic_cast<AliJSONData *>(*it);
       if(obj){
         if(!isFirst) jsonbuilder << ",";
         jsonbuilder << obj->ToString();
