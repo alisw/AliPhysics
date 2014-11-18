@@ -103,6 +103,7 @@ set ( SRCS
     STEERBase/AliVMisc.cxx
     STEERBase/AliVfriendTrack.cxx
     STEERBase/AliVfriendEvent.cxx
+    STEERBase/AliMergeableCollection.cxx
   )
 
 string(REPLACE ".cxx" ".h" HDRS  "${SRCS}")
