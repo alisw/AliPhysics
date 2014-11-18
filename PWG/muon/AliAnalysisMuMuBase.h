@@ -12,6 +12,7 @@
 
 #include "TObject.h"
 #include "TString.h"
+#include "TProfile.h"
 
 class AliCounterCollection;
 class AliAnalysisMuMuBinning;
@@ -71,10 +72,12 @@ public:
   
   AliMCEvent* MCEvent() const { return fMCEvent; }
   
+  static const char* MCInputPrefix() { return "MCINPUT" ; }
+  
   /// Called at each new run
-  void SetRun(const AliInputEventHandler* /*eventHandler*/) {}
+  virtual void SetRun(const AliInputEventHandler* /*eventHandler*/) {}
 
-  void Terminate(Option_t* /*opt*/="") {}
+  virtual void Terminate(Option_t* /*opt*/="") {}
   
   enum EDataType
   {
@@ -95,6 +98,8 @@ public:
   Bool_t AlwaysFalse(const AliVParticle& /*particle*/) const { return kFALSE; }
   Bool_t AlwaysFalse(const AliVParticle& /*particle*/, const AliVParticle& /*particle*/) const { return kFALSE; }
   void NameOfAlwaysFalse(TString& name) const { name = "NONE"; }
+  
+  void SetHistogramCollection(AliMergeableCollection* h) { fHistogramCollection = h; }
   
 protected:
 
@@ -118,14 +123,16 @@ protected:
                          Int_t nbinsy=-1, Double_t ymin=0.0, Double_t ymax=0.0) const;
   
   
-  void CreateTrackHistos(const char* eventSelection,
+  void CreateTrackHistos(UInt_t dataType,
+                         const char* eventSelection,
                          const char* triggerClassName,
                          const char* centrality,
                          const char* hname, const char* htitle,
                          Int_t nbinsx, Double_t xmin, Double_t xmax,
                          Int_t nbinsy=-1, Double_t ymin=0.0, Double_t ymax=0.0) const;
   
-  void CreatePairHistos(const char* eventSelection,
+  void CreatePairHistos(UInt_t dataType,
+                        const char* eventSelection,
                         const char* triggerClassName,
                         const char* centrality,
                         const char* hname, const char* htitle,
@@ -143,6 +150,18 @@ protected:
   TH1* MCHisto(const char* eventSelection, const char* triggerClassName, const char* cent, const char* histoname);
   TH1* MCHisto(const char* eventSelection, const char* triggerClassName, const char* cent,
              const char* what, const char* histoname);
+  
+  TProfile* Prof(const char* eventSelection, const char* histoname);
+  TProfile* Prof(const char* eventSelection, const char* triggerClassName, const char* histoname);
+  TProfile* Prof(const char* eventSelection, const char* triggerClassName, const char* cent, const char* histoname);
+  TProfile* Prof(const char* eventSelection, const char* triggerClassName, const char* cent,
+                 const char* what, const char* histoname);
+  
+  TProfile* MCProf(const char* eventSelection, const char* histoname);
+  TProfile* MCProf(const char* eventSelection, const char* triggerClassName, const char* histoname);
+  TProfile* MCProf(const char* eventSelection, const char* triggerClassName, const char* cent, const char* histoname);
+  TProfile* MCProf(const char* eventSelection, const char* triggerClassName, const char* cent,
+                 const char* what, const char* histoname);
 
   Int_t GetNbins(Double_t xmin, Double_t xmax, Double_t xstep);
 

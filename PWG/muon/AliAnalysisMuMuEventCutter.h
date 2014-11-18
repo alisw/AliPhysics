@@ -2,12 +2,12 @@
 #define ALIANALYSISMUMUEVENTCUTTER_H
 
 /**
- * 
+ *
  * \class AliAnalysisMuMuEventCutter
  *
  * \brief Various event cuts used in AliAnalysisTaskMuMu
  *
- * \author L. Aphecetche and J. Martin-Bianco
+ * \author L. Aphecetche and J. Martin Blanco
  *
  */
 
@@ -23,7 +23,7 @@ class AliInputEventHandler;
 class AliAnalysisMuMuEventCutter : public TObject
 {
 public:
-  AliAnalysisMuMuEventCutter(TList* triggerClassesToConsider=0x0);
+  AliAnalysisMuMuEventCutter(TList* triggerClassesToConsider=0x0, TList* triggerInputsMap=0x0);
   virtual ~AliAnalysisMuMuEventCutter();
   
   Bool_t SelectTriggerClass(const TString& firedTriggerClasses, TString& acceptedClasses,
@@ -40,6 +40,9 @@ public:
 
   Bool_t IsPhysicsSelectedVDM(const AliVEvent& event) const;
   void NameOfIsPhysicsSelectedVDM(TString& name) const { name="VDM"; }
+  
+  Bool_t IsMCEventNSD(const AliVEvent& event) const;
+  void NameOfIsMCEventNSD(TString& name) const { name="NSD"; }
 
   Bool_t IsAbsZBelowValue(const AliVEvent& event, const Double_t& z) const;
   void NameOfIsAbsZBelowValue(TString& name, const Double_t& z) const;
