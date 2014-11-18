@@ -496,23 +496,33 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			printDiff( "GetLabel",s[0]->GetLabel(),s[1]->GetLabel() ); 
 			printDiff( "GetNClusters",s[0]->GetNClusters(),s[1]->GetNClusters() ); 
 			
-			}
-			/*
-			// loop over clusters 
-			if(s[0]->GetNClusters() == s[1]->GetNClusters()){
-				int ncl = s[0]->GetNClusters();
-				cout<<"number of clusters: "<<ncl<<endl;
-				AliFlatTPCCluster* cl[2] ;
-				for(int icl=0; icl < ncl; icl++){
-					outFile<<"\nnew AliFlatTPCCluster\n";
-					cl[0] = const_cast<AliFlatTPCCluster*>( s[0]->GetClusters()  );
-					cl[1] = const_cast<AliFlatTPCCluster*>( s[1]->GetClusters()  );
-					
-					printDiff( "AliFlatTPCCluster::GetX",cl[0]->GetX(),cl[1]->GetX() ); 
-				}
-			}
 			
-			*/
+				
+				// loop over clusters 
+				if(s[0]->GetNClusters() == s[1]->GetNClusters()){
+					int ncl = s[0]->GetNClusters();
+				//	cout<<"number of clusters: "<<ncl<<endl;
+					AliFlatTPCCluster* cl[2] ;
+					for(int icl=0; icl < ncl; icl++){
+						outFile<<"\nnew AliFlatTPCCluster\n";
+						cl[0] = const_cast<AliFlatTPCCluster*>( &(s[0]->GetClusters()[icl])  );
+						cl[1] = const_cast<AliFlatTPCCluster*>( &(s[1]->GetClusters()[icl])  );
+						
+						printDiff( "AliFlatTPCCluster::GetX",cl[0]->GetX(),cl[1]->GetX() ); 
+						printDiff( "AliFlatTPCCluster::GetY",cl[0]->GetY(),cl[1]->GetY() ); 
+						printDiff( "AliFlatTPCCluster::GetZ",cl[0]->GetZ(),cl[1]->GetZ() ); 
+						printDiff( "AliFlatTPCCluster::GetSector",cl[0]->GetSector(),cl[1]->GetSector() ); 
+						printDiff( "AliFlatTPCCluster::GetPadRow",cl[0]->GetPadRow(),cl[1]->GetPadRow() ); 
+						printDiff( "AliFlatTPCCluster::GetSigmaY2",cl[0]->GetSigmaY2(),cl[1]->GetSigmaY2() ); 
+						printDiff( "AliFlatTPCCluster::GetSigmaZ2",cl[0]->GetSigmaZ2(),cl[1]->GetSigmaZ2() ); 
+						printDiff( "AliFlatTPCCluster::GetCharge",cl[0]->GetCharge(),cl[1]->GetCharge() ); 
+						printDiff( "AliFlatTPCCluster::GetQMax",cl[0]->GetQMax(),cl[1]->GetQMax() ); 
+						printDiff( "AliFlatTPCCluster::GetTrackAngleY",cl[0]->GetTrackAngleY(),cl[1]->GetTrackAngleY() ); 
+						printDiff( "AliFlatTPCCluster::GetTrackAngleZ",cl[0]->GetTrackAngleZ(),cl[1]->GetTrackAngleZ() ); 
+					}
+				}
+			
+			}
 			
 			
 			
