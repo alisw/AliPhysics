@@ -717,8 +717,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	  UInt_t nClusters = element->GetNumberOfPoints();
 	  const UInt_t*clusterIDs = element->GetPoints();
 
-	  tTPC.SetNumberOfClusters(nClusters);
-
+	  int nClustersSet=0;
 	  for(UInt_t ic=0; ic<nClusters; ic++){	 
 
 	    UInt_t id      = clusterIDs[ic];	     
@@ -746,17 +745,21 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	    int sec = c->GetDetector();
 	    int row = c->GetRow();
 	    if(sec >= 36) row = row + AliHLTTPCTransform::GetNRowLow();
-	  
+	    
+	    if( tTPC.GetClusterPointer(row) ) continue;
 	    tTPC.SetClusterPointer(row, c);	
-	
+	    nClustersSet++;
+
 	    AliTPCTrackerPoint &point = *( tTPC.GetTrackPoint( row ) );
-	    //tTPC.Propagate( TMath::DegToRad()*(sec%18*20.+10.), c->GetX(), fSolenoidBz );
+	    tTPC.Propagate( TMath::DegToRad()*(sec%18*20.+10.), c->GetX(), fSolenoidBz );
 	    Double_t angle2 = tTPC.GetSnp()*tTPC.GetSnp();
 	    angle2 = (angle2<1) ?TMath::Sqrt(angle2/(1-angle2)) :10.; 
 	    point.SetAngleY( angle2 );
 	    point.SetAngleZ( tTPC.GetTgl() );
 	  } // end of associated cluster loop
-	  
+
+	  tTPC.SetNumberOfClusters(nClustersSet);
+  
 	  // Cook dEdx
 	  
 	  //AliTPCseed *seed = &(tTPC);      
