@@ -38,7 +38,7 @@ using namespace std;
 
 bool SaveFiles=kFALSE;
 const int KT3Bin=0;// Kt3 bin. 0-1
-int FitType=2;// 0 (Gaussian), 1 (Edgeworth), 2 (Exponential)
+int FitType=1;// 0 (Gaussian), 1 (Edgeworth), 2 (Exponential)
 bool pp_pPb_Comp=0;
 bool AddedCC=kTRUE;// Charge Conjugate already added?
 bool NchOneThirdAxis=0;
@@ -839,7 +839,7 @@ void Plot_plotsTPR(){
   for(int i=0; i<Sys_K0s_C3->GetNbinsX(); i++) { 
     Sys_K0s_C3->SetBinError(i+1, 0.01 * Sys_K0s_C3->GetBinContent(i+1));
     Sys_K0s_c3->SetBinError(i+1, sqrt(pow(0.01 * Sys_K0s_c3->GetBinContent(i+1),2) + pow(0.1*(Sys_K0s_c3->GetBinContent(i+1)-1),2)));
-    //cout<<K0s_C3->GetXaxis()->GetBinLowEdge(i+1)<<"  "<<K0s_C3->GetXaxis()->GetBinUpEdge(i+1)<<"    "<<K0s_C3->GetBinContent(i+1)<<"    "<<K0s_C3->GetBinError(i+1)<<"    "<<Sys_K0s_C3->GetBinError(i+1)<<endl;
+    cout<<K0s_C3->GetXaxis()->GetBinLowEdge(i+1)<<" TO "<<K0s_C3->GetXaxis()->GetBinUpEdge(i+1)<<"; "<<K0s_C3->GetBinContent(i+1)<<" +- "<<K0s_C3->GetBinError(i+1)<<"  (DSYS="<<Sys_K0s_C3->GetBinError(i+1)<<"); "<<K0s_c3->GetBinContent(i+1)<<" +- "<<K0s_c3->GetBinError(i+1)<<"  (DSYS="<<Sys_K0s_c3->GetBinError(i+1)<<"); "<<endl;
     //cout<<K0s_C3->GetXaxis()->GetBinLowEdge(i+1)<<"  "<<K0s_C3->GetXaxis()->GetBinUpEdge(i+1)<<"    "<<K0s_c3->GetBinContent(i+1)<<"    "<<K0s_c3->GetBinError(i+1)<<"    "<<Sys_K0s_c3->GetBinError(i+1)<<endl;
   }
 
@@ -1303,36 +1303,50 @@ void Plot_plotsTPR(){
 
   // print radii and lambda
   cout.precision(3);
-  cout<<"Pb--Pb:"<<endl;
-  for(int cb=0; cb<20; cb++){
-    int binPbPb = RadiiC2PbPb->GetXaxis()->FindBin(meanNchPbPb[cb]);
-    if(RadiiPbPb->GetBinContent(binPbPb)==0) continue;
-    //cout<<meanNchPbPb[cb]-(0.05)*meanNchPbPb[cb]<<"  "<<meanNchPbPb[cb]+(0.05)*meanNchPbPb[cb]<<"     "<<RadiiC2PbPb->GetBinContent(binPbPb)<<"     "<<RadiiC2PbPb->GetBinError(binPbPb)<<"     "<<grRadiiC2Sys_PbPb->GetErrorY(cb)<<"           "<<RadiiPbPb->GetBinContent(binPbPb)<<"     "<<RadiiPbPb->GetBinError(binPbPb)<<"     "<<grRadiiSys_PbPb->GetErrorY(cb)<<endl;
-    //
-    //cout<<meanNchPbPb[cb]-(0.05)*meanNchPbPb[cb]<<"  "<<meanNchPbPb[cb]+(0.05)*meanNchPbPb[cb]<<"     "<<LambdaC2PbPb->GetBinContent(binPbPb)<<"     "<<LambdaC2PbPb->GetBinError(binPbPb)<<"     "<<grLambdaC2Sys_PbPb->GetErrorY(cb)<<"           "<<LambdaPbPb->GetBinContent(binPbPb)<<"     "<<LambdaPbPb->GetBinError(binPbPb)<<"     "<<grLambdaSys_PbPb->GetErrorY(cb)<<endl;
+  cout<<"Radii and Lambda data"<<endl;
+  cout<<"p--p:"<<endl;
+  // new way for HEP
+  for(int cb=19; cb>=0; cb--){
+    int binpp = RadiiC2pp->GetXaxis()->FindBin(meanNchpp[cb]);
+    if(Radiipp->GetBinContent(binpp)==0) continue;
+    cout<<meanNchpp[cb]-(0.05)*meanNchpp[cb]<<" TO "<<meanNchpp[cb]+(0.05)*meanNchpp[cb]<<"; "<<RadiiC2pp->GetBinContent(binpp)<<" +- "<<RadiiC2pp->GetBinError(binpp)<<" (DSYS=+"<<grRadiiC2Sys_pp->GetErrorYhigh(cb)<<", -"<<grRadiiC2Sys_pp->GetErrorYlow(cb)<<"); ";
+    cout<<LambdaC2pp->GetBinContent(binpp)<<" +- "<<LambdaC2pp->GetBinError(binpp)<<" (DSYS=+"<<grLambdaC2Sys_pp->GetErrorYhigh(cb)<<", -"<<grLambdaC2Sys_pp->GetErrorYlow(cb)<<"); ";
+    cout<<Radiipp->GetBinContent(binpp)<<" +- "<<Radiipp->GetBinError(binpp)<<" (DSYS="<<grRadiiSys_pp->GetErrorY(cb)<<"); ";
+    cout<<Lambdapp->GetBinContent(binpp)<<" +- "<<Lambdapp->GetBinError(binpp)<<" (DSYS="<<grLambdaSys_pp->GetErrorY(cb)<<");"<<endl;
+    // Edgeworth lambdas
+    //cout<<meanNchpp[cb]-(0.05)*meanNchpp[cb]<<"  "<<meanNchpp[cb]+(0.05)*meanNchpp[cb]<<"     "<<LambdaC2pp->GetBinContent(binpp)<<"     "<<LambdaC2pp->GetBinError(binpp)<<"     "<<grLambdaC2Sys_pp->GetErrorYhigh(cb)<<"     "<<grLambdaC2Sys_pp->GetErrorYlow(cb)<<"           "<<Lambdapp->GetBinContent(binpp)<<"     "<<Lambdapp->GetBinError(binpp)<<"     "<<grLambdaSys_pp->GetErrorY(cb)<<endl;
   }
+  cout<<endl;
+  
   cout<<"p--Pb:"<<endl;
-  for(int cb=0; cb<20; cb++){
+  for(int cb=19; cb>=0; cb--){
     int binpPb = RadiiC2pPb->GetXaxis()->FindBin(meanNchpPb[cb]);
     if(RadiipPb->GetBinContent(binpPb)==0) continue;
-    //cout<<meanNchpPb[cb]-(0.05)*meanNchpPb[cb]<<"  "<<meanNchpPb[cb]+(0.05)*meanNchpPb[cb]<<"     "<<RadiiC2pPb->GetBinContent(binpPb)<<"     "<<RadiiC2pPb->GetBinError(binpPb)<<"     "<<grRadiiC2Sys_pPb->GetErrorYhigh(cb)<<"     "<<grRadiiC2Sys_pPb->GetErrorYlow(cb)<<"           "<<RadiipPb->GetBinContent(binpPb)<<"     "<<RadiipPb->GetBinError(binpPb)<<"     "<<grRadiiSys_pPb->GetErrorY(cb)<<endl;
+    cout<<meanNchpPb[cb]-(0.05)*meanNchpPb[cb]<<" TO "<<meanNchpPb[cb]+(0.05)*meanNchpPb[cb]<<"; "<<RadiiC2pPb->GetBinContent(binpPb)<<" +- "<<RadiiC2pPb->GetBinError(binpPb)<<" (DSYS=+"<<grRadiiC2Sys_pPb->GetErrorYhigh(cb)<<", -"<<grRadiiC2Sys_pPb->GetErrorYlow(cb)<<"); ";
+    cout<<LambdaC2pPb->GetBinContent(binpPb)<<" +- "<<LambdaC2pPb->GetBinError(binpPb)<<" (DSYS=+"<<grLambdaC2Sys_pPb->GetErrorYhigh(cb)<<", -"<<grLambdaC2Sys_pPb->GetErrorYlow(cb)<<"); ";
+    cout<<RadiipPb->GetBinContent(binpPb)<<" +- "<<RadiipPb->GetBinError(binpPb)<<" (DSYS="<<grRadiiSys_pPb->GetErrorY(cb)<<"); ";
+    cout<<LambdapPb->GetBinContent(binpPb)<<" +- "<<LambdapPb->GetBinError(binpPb)<<" (DSYS="<<grLambdaSys_pPb->GetErrorY(cb)<<");"<<endl;
     // Gaussian lambdas
     //cout<<meanNchpPb[cb]-(0.05)*meanNchpPb[cb]<<"  "<<meanNchpPb[cb]+(0.05)*meanNchpPb[cb]<<"     "<<LambdaC2pPb->GetBinContent(binpPb)<<"     "<<LambdaC2pPb->GetBinError(binpPb)<<"     "<<grLambdaC2Sys_pPb->GetErrorY(cb)<<"           "<<LambdapPb->GetBinContent(binpPb)<<"     "<<LambdapPb->GetBinError(binpPb)<<"     "<<grLambdaSys_pPb->GetErrorY(cb)<<endl;
     // Edgeworth lambdas
     //cout<<meanNchpPb[cb]-(0.05)*meanNchpPb[cb]<<"  "<<meanNchpPb[cb]+(0.05)*meanNchpPb[cb]<<"     "<<LambdaC2pPb->GetBinContent(binpPb)<<"     "<<LambdaC2pPb->GetBinError(binpPb)<<"     "<<grLambdaC2Sys_pPb->GetErrorYhigh(cb)<<"     "<<grLambdaC2Sys_pPb->GetErrorYlow(cb)<<"           "<<LambdapPb->GetBinContent(binpPb)<<"     "<<LambdapPb->GetBinError(binpPb)<<"     "<<grLambdaSys_pPb->GetErrorY(cb)<<endl;
   }
-  cout<<"p--p:"<<endl;
-  for(int cb=0; cb<20; cb++){
-    int binpp = RadiiC2pp->GetXaxis()->FindBin(meanNchpp[cb]);
-    if(Radiipp->GetBinContent(binpp)==0) continue;
-    //cout<<meanNchpp[cb]-(0.05)*meanNchpp[cb]<<"  "<<meanNchpp[cb]+(0.05)*meanNchpp[cb]<<"     "<<RadiiC2pp->GetBinContent(binpp)<<"     "<<RadiiC2pp->GetBinError(binpp)<<"     "<<grRadiiC2Sys_pp->GetErrorYhigh(cb)<<"     "<<grRadiiC2Sys_pp->GetErrorYlow(cb)<<"           "<<Radiipp->GetBinContent(binpp)<<"     "<<Radiipp->GetBinError(binpp)<<"     "<<grRadiiSys_pp->GetErrorY(cb)<<endl;
-    // Gaussian lambdas
-    //cout<<meanNchpp[cb]-(0.05)*meanNchpp[cb]<<"  "<<meanNchpp[cb]+(0.05)*meanNchpp[cb]<<"     "<<LambdaC2pp->GetBinContent(binpp)<<"     "<<LambdaC2pp->GetBinError(binpp)<<"     "<<grLambdaC2Sys_pp->GetErrorY(cb)<<"           "<<Lambdapp->GetBinContent(binpp)<<"     "<<Lambdapp->GetBinError(binpp)<<"     "<<grLambdaSys_pp->GetErrorY(cb)<<endl;
-    // Edgeworth lambdas
-    //cout<<meanNchpp[cb]-(0.05)*meanNchpp[cb]<<"  "<<meanNchpp[cb]+(0.05)*meanNchpp[cb]<<"     "<<LambdaC2pp->GetBinContent(binpp)<<"     "<<LambdaC2pp->GetBinError(binpp)<<"     "<<grLambdaC2Sys_pp->GetErrorYhigh(cb)<<"     "<<grLambdaC2Sys_pp->GetErrorYlow(cb)<<"           "<<Lambdapp->GetBinContent(binpp)<<"     "<<Lambdapp->GetBinError(binpp)<<"     "<<grLambdaSys_pp->GetErrorY(cb)<<endl;
+  cout<<endl;
+  cout<<"Pb--Pb:"<<endl;
+  for(int cb=19; cb>=0; cb--){
+    int binPbPb = RadiiC2PbPb->GetXaxis()->FindBin(meanNchPbPb[cb]);
+    if(RadiiPbPb->GetBinContent(binPbPb)==0) continue;
+    cout<<meanNchPbPb[cb]-(0.05)*meanNchPbPb[cb]<<" TO "<<meanNchPbPb[cb]+(0.05)*meanNchPbPb[cb]<<"; "<<RadiiC2PbPb->GetBinContent(binPbPb)<<" +- "<<RadiiC2PbPb->GetBinError(binPbPb)<<" (DSYS=+"<<grRadiiC2Sys_PbPb->GetErrorYhigh(cb)<<", -"<<grRadiiC2Sys_PbPb->GetErrorYlow(cb)<<"); ";
+    cout<<LambdaC2PbPb->GetBinContent(binPbPb)<<" +- "<<LambdaC2PbPb->GetBinError(binPbPb)<<" (DSYS=+"<<grLambdaC2Sys_PbPb->GetErrorYhigh(cb)<<", -"<<grLambdaC2Sys_PbPb->GetErrorYlow(cb)<<"); ";
+    cout<<RadiiPbPb->GetBinContent(binPbPb)<<" +- "<<RadiiPbPb->GetBinError(binPbPb)<<" (DSYS="<<grRadiiSys_PbPb->GetErrorY(cb)<<"); ";
+    cout<<LambdaPbPb->GetBinContent(binPbPb)<<" +- "<<LambdaPbPb->GetBinError(binPbPb)<<" (DSYS="<<grLambdaSys_PbPb->GetErrorY(cb)<<");"<<endl;
+    //
+    //cout<<meanNchPbPb[cb]-(0.05)*meanNchPbPb[cb]<<"  "<<meanNchPbPb[cb]+(0.05)*meanNchPbPb[cb]<<"     "<<LambdaC2PbPb->GetBinContent(binPbPb)<<"     "<<LambdaC2PbPb->GetBinError(binPbPb)<<"     "<<grLambdaC2Sys_PbPb->GetErrorY(cb)<<"           "<<LambdaPbPb->GetBinContent(binPbPb)<<"     "<<LambdaPbPb->GetBinError(binPbPb)<<"     "<<grLambdaSys_PbPb->GetErrorY(cb)<<endl;
   }
+  cout<<endl;
   
     
+
   
   can3->cd();
   TPad *pad3_2 = new TPad("pad3_2","pad3_2",0.0,0.0,1.,1.);
@@ -1585,18 +1599,15 @@ void Plot_plotsTPR(){
     if(padNum==6) {System_proof=0; ChComb_proof=1; Mb_proof=3;}
     
     // print out data points
-    //for(int binN=1; binN<=C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetNbinsX(); binN++){
-      //cout<<C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetXaxis()->GetBinLowEdge(binN)<<"  "<<C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetXaxis()->GetBinUpEdge(binN)<<"    "<<C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetBinContent(binN)<<"    "<<C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetBinError(binN)<<"    "<<C3_Sys[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetBinError(binN)<<endl;
-      //
-      //cout<<c3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetXaxis()->GetBinLowEdge(binN)<<"  "<<c3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetXaxis()->GetBinUpEdge(binN)<<"    "<<c3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetBinContent(binN)<<"    "<<c3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetBinError(binN)<<"    "<<c3_Sys[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetBinError(binN)<<endl;
-      //
-      //if(System_proof==0){
-      //cout<<HIJING_c3_SC->GetXaxis()->GetBinLowEdge(binN)<<"  "<<HIJING_c3_SC->GetXaxis()->GetBinUpEdge(binN)<<"    "<<HIJING_c3_SC->GetBinContent(binN)<<"    "<<HIJING_c3_SC->GetBinError(binN)<<endl;
-      //}else{
-      //cout<<c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof]->GetXaxis()->GetBinLowEdge(binN)<<"  "<<c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof]->GetXaxis()->GetBinUpEdge(binN)<<"    "<<c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof]->GetBinContent(binN)<<"    "<<c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof]->GetBinError(binN)<<endl;
-      //}
-    //}
-    //cout<<endl;
+    for(int binN=1; binN<=C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetNbinsX(); binN++){
+      cout<<C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetXaxis()->GetBinLowEdge(binN)<<" TO "<<C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetXaxis()->GetBinUpEdge(binN)<<"; "<<C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetBinContent(binN)<<" +- "<<C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetBinError(binN)<<" (DSYS="<<C3_Sys[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetBinError(binN)<<"); "<<c3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetBinContent(binN)<<" +- "<<c3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetBinError(binN)<<" (DSYS="<<c3_Sys[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetBinError(binN)<<"); ";
+      if(System_proof==0){
+	cout<<HIJING_c3_SC->GetBinContent(binN)<<" +- "<<HIJING_c3_SC->GetBinError(binN)<<"; - ;"<<endl;
+      }else{
+	cout<<c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof]->GetBinContent(binN)<<" +- "<<c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof]->GetBinError(binN)<<"; - ;"<<endl;
+      }
+    }
+    cout<<endl;
     C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->SetMinimum(0.9); 
     C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->SetMaximum(3.4);// 3.4
     //
@@ -1842,8 +1853,8 @@ void Plot_plotsTPR(){
   
   // print out data points
   for(int binN=1; binN<=c3_pPb->GetNbinsX(); binN++){
-    if(pp_pPb_Comp) cout<<c3_pPb->GetXaxis()->GetBinLowEdge(binN)<<"  "<<c3_pPb->GetXaxis()->GetBinUpEdge(binN)<<"      "<<c3_pPb->GetBinContent(binN)<<"      "<<c3_pPb->GetBinError(binN)<<"      "<<c3_Sys[1][0][0][KT3Bin_CorrComp][Mbin_SysComp_pPb]->GetBinError(binN)<<"                "<<c3_pp->GetBinContent(binN)<<"      "<<c3_pp->GetBinError(binN)<<"      "<<c3_Sys[2][0][0][KT3Bin_CorrComp][Mbin_SysComp_pp]->GetBinError(binN)<<endl;
-    else cout<<c3_pPb->GetXaxis()->GetBinLowEdge(binN)<<"  "<<c3_pPb->GetXaxis()->GetBinUpEdge(binN)<<"      "<<c3_pPb->GetBinContent(binN)<<"      "<<c3_pPb->GetBinError(binN)<<"      "<<c3_Sys[1][0][0][KT3Bin_CorrComp][Mbin_SysComp_pPb]->GetBinError(binN)<<"                "<<c3_PbPb->GetBinContent(binN)<<"      "<<c3_PbPb->GetBinError(binN)<<"      "<<c3_Sys[0][0][0][KT3Bin][Mbin_SysComp_PbPb]->GetBinError(binN)<<endl;
+    if(pp_pPb_Comp) cout<<c3_pPb->GetXaxis()->GetBinLowEdge(binN)<<" TO "<<c3_pPb->GetXaxis()->GetBinUpEdge(binN)<<"; "<<c3_pp->GetBinContent(binN)<<" +- "<<c3_pp->GetBinError(binN)<<" (DSYS="<<c3_Sys[2][0][0][KT3Bin_CorrComp][Mbin_SysComp_pp]->GetBinError(binN)<<"); "<<c3_pPb->GetBinContent(binN)<<" +- "<<c3_pPb->GetBinError(binN)<<" (DSYS="<<c3_Sys[1][0][0][KT3Bin_CorrComp][Mbin_SysComp_pPb]->GetBinError(binN)<<");"<<endl;
+    else cout<<c3_pPb->GetXaxis()->GetBinLowEdge(binN)<<" TO "<<c3_pPb->GetXaxis()->GetBinUpEdge(binN)<<"; "<<c3_pPb->GetBinContent(binN)<<" +- "<<c3_pPb->GetBinError(binN)<<" (DSYS="<<c3_Sys[1][0][0][KT3Bin_CorrComp][Mbin_SysComp_pPb]->GetBinError(binN)<<"); "<<c3_PbPb->GetBinContent(binN)<<" +- "<<c3_PbPb->GetBinError(binN)<<" (DSYS="<<c3_Sys[0][0][0][KT3Bin][Mbin_SysComp_PbPb]->GetBinError(binN)<<");"<<endl;
   }
 
   //
@@ -2014,26 +2025,26 @@ void Plot_plotsTPR(){
   grShade[2]->SetFillStyle(1000);
   grShade[2]->SetFillColor(kBlue-10);
   //
-  /*grShade[0]->Draw("f same");
+  grShade[0]->Draw("f same");
   grShade[1]->Draw("f same");
   grShade[2]->Draw("f same");
   Radii_Bjoern[0][0]->Draw("l same");
   Radii_Bjoern[0][1]->Draw("l same");
   Radii_Bjoern[0][2]->Draw("l same");
-  */
+  
   grRadiiC2Sys_pp->Draw("|| p");
   grRadiiC2Sys_pPb->Draw("|| p");
-  grRadiiC2Sys_PbPb->Draw("|| p");
+  grRadiiC2Sys_PbPb->Draw("E p");
   RadiiC2PbPb->Draw("same");
   RadiiC2pPb->Draw("same");
   RadiiC2pp->Draw("same");
 
-  //legend9->AddEntry(Radii_Bjoern[0][2],"GLASMA pp R_{initial}","l");
-  //legend9->AddEntry(Radii_Bjoern[0][1],"GLASMA p-Pb R_{initial}","l");
-  //legend9->AddEntry(Radii_Bjoern[0][0],"GLASMA Pb-Pb R_{initial}","l");
-  //legend9->AddEntry(grShade[2],"GLASMA pp R_{hydro}","f");
-  //legend9->AddEntry(grShade[1],"GLASMA p-Pb R_{hydro}","f");
-  //legend9->AddEntry(grShade[0],"GLASMA Pb-Pb R_{hydro}","f");
+  legend9->AddEntry(Radii_Bjoern[0][2],"GLASMA pp R_{initial}","l");
+  legend9->AddEntry(Radii_Bjoern[0][1],"GLASMA p-Pb R_{initial}","l");
+  legend9->AddEntry(Radii_Bjoern[0][0],"GLASMA Pb-Pb R_{initial}","l");
+  legend9->AddEntry(grShade[2],"GLASMA pp R_{hydro}","f");
+  legend9->AddEntry(grShade[1],"GLASMA p-Pb R_{hydro}","f");
+  legend9->AddEntry(grShade[0],"GLASMA Pb-Pb R_{hydro}","f");
   /*
   TF1 *fit1=new TF1("fit1","pol5",0,1000);
   fit1->SetLineColor(1);
@@ -2084,13 +2095,13 @@ void Plot_plotsTPR(){
   BjoernRatio_pp->Draw("same");
   */
   
-  //legend8->AddEntry(Parameters_Bjoern[0][2],"pp R_{initial} (no hydro)","p");
-  //legend8->AddEntry(Parameters_Bjoern[0][1],"p-Pb R_{initial} (no hydro)","p");
-  //legend8->AddEntry(Parameters_Bjoern[0][0],"Pb-Pb R_{initial} (no hydro)","p");
-  //legend9->AddEntry(Parameters_Bjoern[1][2],"pp R_{max} (hydro)","p");
-  //legend9->AddEntry(Parameters_Bjoern[1][1],"p-Pb R_{max} (hydro)","p");
-  //legend9->AddEntry(Parameters_Bjoern[1][0],"Pb-Pb R_{max} (hydro)","p");
-  
+  /*legend8->AddEntry(Parameters_Bjoern[0][2],"pp R_{initial} (no hydro)","p");
+  legend8->AddEntry(Parameters_Bjoern[0][1],"p-Pb R_{initial} (no hydro)","p");
+  legend8->AddEntry(Parameters_Bjoern[0][0],"Pb-Pb R_{initial} (no hydro)","p");
+  legend9->AddEntry(Parameters_Bjoern[1][2],"pp R_{max} (hydro)","p");
+  legend9->AddEntry(Parameters_Bjoern[1][1],"p-Pb R_{max} (hydro)","p");
+  legend9->AddEntry(Parameters_Bjoern[1][0],"Pb-Pb R_{max} (hydro)","p");
+  */
   legend8->Draw("same");
   legend9->Draw("same");
   // Normalization plots

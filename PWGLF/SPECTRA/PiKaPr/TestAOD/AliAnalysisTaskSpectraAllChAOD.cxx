@@ -295,7 +295,10 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
       if(GetDCA(track,p)){ dcaxy=p[0]; dcaz=p[1];}
       
       if(dcaz >= fDCAzCut) continue;
-      
+
+      //if the q vector is done using the TPC, we avoid overlap
+      if (fVZEROside==2 && TMath::Abs(track->Eta())<0.5)continue;
+          
     //pt     cent    Q vec     IDrec     IDgen       isph      y
       Double_t varTrk[8];
       varTrk[0]=track->Pt();

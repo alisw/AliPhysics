@@ -20,6 +20,9 @@
 //                  Date: Wed Jul  9 18:38:30 CEST 2014                    // 
 //          New approch to find particle ratio to reduce memory            //
 //                             (Test Only)                                 //
+//        Copied from NetParticle Classes
+//        Origin: Authors: Jochen Thaeder <jochen@thaeder.de>
+//                         Michael Weber <m.weber@cern.ch>
 //=========================================================================//
 
 #include "TMath.h"
@@ -118,7 +121,7 @@ const Float_t AliEbyEPidRatioHelper::fgkfHistRangeRap[]   = {-0.8, 0.8};
 const Int_t   AliEbyEPidRatioHelper::fgkfHistNBinsRap     = Int_t((AliEbyEPidRatioHelper::fgkfHistRangeRap[1] - AliEbyEPidRatioHelper::fgkfHistRangeRap[0]) / AliEbyEPidRatioHelper::fgkfHistBinWitdthRap) +1;
 
 const Float_t AliEbyEPidRatioHelper::fgkfHistRangePhi[]   = {0.0, static_cast<Float_t>(TMath::TwoPi())};
-const Int_t   AliEbyEPidRatioHelper::fgkfHistNBinsPhi     = 21 ;
+const Int_t   AliEbyEPidRatioHelper::fgkfHistNBinsPhi     = 42;
 
 const Float_t AliEbyEPidRatioHelper::fgkfHistRangePt[]    = {0.2, 2.9}; // {0.2, 5.}; // was {0.3, 2.22}
 const Int_t   AliEbyEPidRatioHelper::fgkfHistNBinsPt      = Int_t((AliEbyEPidRatioHelper::fgkfHistRangePt[1] - AliEbyEPidRatioHelper::fgkfHistRangePt[0]) / AliEbyEPidRatioHelper::fgkfHistBinWitdthPt); 
@@ -599,7 +602,7 @@ Bool_t AliEbyEPidRatioHelper::IsTrackAcceptedPID(AliVTrack *track, Double_t* pid
   Bool_t isAccepted       = kFALSE;
 
   // -- In case not PID is used
-  if (gCurPid == 0) {
+  if (gCurPid == AliPID::kUnknown) {
     pid[0] = 10.;
     pid[1] = 10.;
     pid[2] = 10.;

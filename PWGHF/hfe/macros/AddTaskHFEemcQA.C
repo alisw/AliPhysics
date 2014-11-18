@@ -19,6 +19,15 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
     MCthere=kTRUE;
   }
   
+  char calib[100];
+  if(UseTender)
+     {
+      sprintf(calib,"wTender");
+     }
+  else
+     {
+      sprintf(calib,"woTender");
+     }
 
   // +++ EMCal MB
   AliAnalysisTaskHFEemcQA *hfecalqa = new AliAnalysisTaskHFEemcQA("emcqa");
@@ -28,16 +37,9 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
   hfecalqa->SetTenderSwitch(UseTender);
 
   TString containerName = mgr->GetCommonFileName();
-  if(UseTender)
-     {
-      containerName += ":PWGHF_hfeHFEemcQAINT8_wTender";
-     }
-  else
-     {
-      containerName += ":PWGHF_hfeHFEemcQAINT8";
-     }
+  containerName += ":PWGHF_hfeHFEemcQAINT8";
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("HFEemcQAINT8", TList::Class(),AliAnalysisManager::kOutputContainer, containerName.Data());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("HFEemcQAINT8_%s",calib), TList::Class(),AliAnalysisManager::kOutputContainer, containerName.Data());
   mgr->ConnectInput(hfecalqa, 0, cinput);
   mgr->ConnectOutput(hfecalqa, 1, coutput1); 
 
@@ -48,16 +50,9 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
   hfecalqa7->SetTenderSwitch(UseTender);
 
   TString containerName7 = mgr->GetCommonFileName();
-  if(UseTender)
-     {
-      containerName7 += ":PWGHF_hfeHFEemcQAINT7_wTender";
-     }
-  else
-     {
-      containerName7 += ":PWGHF_hfeHFEemcQAINT7";
-     }
+  containerName7 += ":PWGHF_hfeHFEemcQAINT7";
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("HFEemcQAINT7", TList::Class(),AliAnalysisManager::kOutputContainer, containerName7.Data());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("HFEemcQAINT7_%s",calib), TList::Class(),AliAnalysisManager::kOutputContainer, containerName7.Data());
   mgr->ConnectInput(hfecalqa7, 0, cinput);
   mgr->ConnectOutput(hfecalqa7, 1, coutput1); 
 
@@ -69,16 +64,9 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
   hfecalqaTrig0->SetTenderSwitch(UseTender);
 
   TString containerName1 = mgr->GetCommonFileName();
-  if(UseTender)
-     {
-      containerName1 += ":PWGHF_hfeHFEemcQATrigGA_wTender";
-     }
-  else
-     {
-      containerName1 += ":PWGHF_hfeHFEemcQATrigGA";
-     } 
+  containerName1 += ":PWGHF_hfeHFEemcQATrigGA";
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("HFEemcQATrigGA", TList::Class(),AliAnalysisManager::kOutputContainer, containerName1.Data());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("HFEemcQATrigGA_%s",calib), TList::Class(),AliAnalysisManager::kOutputContainer, containerName1.Data());
   mgr->ConnectInput(hfecalqaTrig0, 0, cinput);
   mgr->ConnectOutput(hfecalqaTrig0, 1, coutput1); 
 
@@ -91,17 +79,9 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
   hfecalqaTrig1->SetTenderSwitch(UseTender);
 
   TString containerName2 = mgr->GetCommonFileName();
-  if(UseTender)
-     {
-      containerName2 += ":PWGHF_hfeHFEemcQATrigJE_wTender";
-     }
-  else
-     {
-      containerName2 += ":PWGHF_hfeHFEemcQATrigJE";
-     }
-
+  containerName2 += ":PWGHF_hfeHFEemcQATrigJE";
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("HFEemcQATrigJE", TList::Class(),AliAnalysisManager::kOutputContainer, containerName2.Data());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("HFEemcQATrigJE_%s",calib), TList::Class(),AliAnalysisManager::kOutputContainer, containerName2.Data());
   mgr->ConnectInput(hfecalqaTrig1, 0, cinput);
   mgr->ConnectOutput(hfecalqaTrig1, 1, coutput1); 
 
