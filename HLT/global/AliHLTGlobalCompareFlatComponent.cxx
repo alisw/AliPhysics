@@ -530,6 +530,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			
 			
 			
+      outFile<<"\nnew AliFlatTPCseed\n";
 			
 			const AliFlatTPCseed* s[2]={ track[0]->GetFlatTPCseed(), track[1]->GetFlatTPCseed()};
 			printDiff( "AliFlatTPCseed::GetSize",s[0]->GetSize(),s[1]->GetSize() ); 

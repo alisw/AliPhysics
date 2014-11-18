@@ -255,9 +255,6 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
 	new (flatEsd) AliFlatESDEvent;
 	
 	Int_t converted1 = flatEsd->SetFromESD(AliFlatESDEvent::EstimateSize(esd),esd, kTRUE); 
-	
-	
-			cout <<"XXX conversion successfull? "<<converted1<<endl;
 			cout <<"nr of flat v0s:"<<flatEsd->GetNumberOfV0s()<<endl;
 	
 	if( maxOutputSize > flatEsd->GetSize() ){
@@ -288,9 +285,6 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
 		Int_t converted = flatFriend->SetFromESDfriend(AliFlatESDFriend::EstimateSize(esdFriend),esdFriend); 
 		
 			cout <<"nr of flat friend tracks:"<<flatFriend->GetNumberOfTracks()<<endl;
-			cout <<"YYY friend conversion successfull? "<<converted<<endl;
-	
- 
     esd->SaveAs("tmp.root");
     TFile * fTmp = new TFile ("tmp.root");
     Int_t sizeIn = fTmp->GetSize();
