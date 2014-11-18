@@ -231,10 +231,10 @@ void AliEbyEPidRatioEffContExtra::CreateHistograms() {
   TString tiltlelaxcont[6] 
     = {"Centrality","sign","contPart","#it{y}_{MC}","#varphi_{MC} (rad)","#it{p}_{T,MC} (GeV/#it{c})"};
   
-  fHnNpiCMc  = new THnSparseF("hmNpiContMc",titilemc.Data(),6,binHnCont,minHnCont, maxHnCont);
-  fHnNkaCMc  = new THnSparseF("hmNkaContMc",titilemc.Data(),6,binHnCont,minHnCont, maxHnCont);
-  fHnNprCMc  = new THnSparseF("hmNprContMc",titilemc.Data(),6,binHnCont,minHnCont, maxHnCont);
-  fHnNchCMc  = new THnSparseF("hmNchContMc",titilemc.Data(),6,binHnCont,minHnCont, maxHnCont);
+  fHnNpiCMc  = new THnSparseF("hmNpiContMc",titilecont.Data(),6,binHnCont,minHnCont, maxHnCont);
+  fHnNkaCMc  = new THnSparseF("hmNkaContMc",titilecont.Data(),6,binHnCont,minHnCont, maxHnCont);
+  fHnNprCMc  = new THnSparseF("hmNprContMc",titilecont.Data(),6,binHnCont,minHnCont, maxHnCont);
+  fHnNchCMc  = new THnSparseF("hmNchContMc",titilecont.Data(),6,binHnCont,minHnCont, maxHnCont);
 
  for (Int_t i = 0; i < 6; i++) {  
     fHnNchCMc->GetAxis(i)->SetTitle(tiltlelaxcont[i].Data());
