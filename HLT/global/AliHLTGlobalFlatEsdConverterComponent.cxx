@@ -793,7 +793,10 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       seed->SetExternalTrackParam( tpcTrack );
       
       // clusters 
-      
+
+      bool clustersSet[160];
+      for( int i=0; i<160; i++ ) clustersSet[i]=0;
+
       UInt_t nClusters = tpcTrack->GetNumberOfPoints();	
       const UInt_t*clusterIDs = tpcTrack->GetPoints();
       for(UInt_t ic=0; ic<nClusters; ic++){	 
@@ -832,12 +835,16 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	AliHLTTPCTransform::Slice2Sector(iSlice,chlt->fPadRow, sector, row);
 	cl.SetDetector( sector );
 	cl.SetRow( row );
+	
+	int j=row;
+	if( sector>=36 ) j+=AliHLTTPCTransform::GetNRowLow();
+	if( j<0 || j>=160 || clustersSet[j] ) continue;
+	
 	//Float_t padtime[3] = {0,chlt->fY,chlt->fZ};
 	//AliHLTTPCTransform::Local2Raw( padtime, sector, row);
 	//cl.SetPad( (Int_t) padtime[1] );
 	//cl.SetTimeBin( (Int_t) padtime[2] );
-	  
-	  	  
+	  	  	  
 	tpcTrack->Propagate( TMath::DegToRad()*(sector%18*20.+10.), cl.GetX(), GetBz() );
 	Double_t angle2 = tpcTrack->GetSnp()*tpcTrack->GetSnp();
 	angle2 = (angle2<1) ?TMath::Sqrt(angle2/(1-angle2)) :10.; 
@@ -846,6 +853,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	point.SetAngleZ( tpcTrack->GetTgl() );
 
 	seed->AddCluster(&cl, &point ); 
+	clustersSet[j] = 1;
       } // end of associated cluster loop
 	        
       
