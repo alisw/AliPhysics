@@ -29,7 +29,7 @@ class AliESDtrackCuts;
 class AliHLTCTPData;
 class AliHLTMultiplicityCorrelations;
 class AliHLTGlobalTriggerDecision;
-class AliHLTTestInputHandler;
+class AliHLTVEventInputHandler;
 
 class AliHLTGlobalEsdToFlatConverterComponent : public AliHLTProcessor {
 public:

@@ -28,7 +28,7 @@ class AliESDtrackCuts;
 class AliHLTCTPData;
 class AliHLTMultiplicityCorrelations;
 class AliHLTGlobalTriggerDecision;
-class AliHLTTestInputHandler;
+class AliHLTVEventInputHandler;
 
 
 class AliHLTGlobalCompareFlatComponent : public AliHLTProcessor {

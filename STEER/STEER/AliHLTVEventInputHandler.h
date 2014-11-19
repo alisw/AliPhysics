@@ -16,14 +16,14 @@ class TObjArray;
 class AliVfriendevent;
 class AliVEvent;
 
-class AliHLTTestInputHandler : public AliVEventHandler {
+class AliHLTVEventInputHandler : public AliVEventHandler {
 
  public:
-    AliHLTTestInputHandler();
-    AliHLTTestInputHandler(AliHLTTestInputHandler&);
-    AliHLTTestInputHandler(const char* name, const char* title);
-    virtual ~AliHLTTestInputHandler() {}
-    AliHLTTestInputHandler& operator=(const AliHLTTestInputHandler&) {return *this;}
+    AliHLTVEventInputHandler();
+    AliHLTVEventInputHandler(AliHLTVEventInputHandler&);
+    AliHLTVEventInputHandler(const char* name, const char* title);
+    virtual ~AliHLTVEventInputHandler() {}
+    AliHLTVEventInputHandler& operator=(const AliHLTVEventInputHandler&) {return *this;}
     virtual Bool_t Notify() { return kFALSE; }
     virtual Bool_t Notify(const char *) {return kTRUE;}
     virtual Bool_t Init(Option_t* /*opt*/) {return kTRUE;}
@@ -50,13 +50,13 @@ class AliHLTTestInputHandler : public AliVEventHandler {
     void  SetVFriendEvent(AliVfriendEvent *friendEvent) {fFriendEvent = friendEvent;}
       
  private:
-    AliHLTTestInputHandler(const AliVEventHandler& handler);             
-    AliHLTTestInputHandler& operator=(const AliVEventHandler& handler);  
+    AliHLTVEventInputHandler(const AliVEventHandler& handler);             
+    AliHLTVEventInputHandler& operator=(const AliVEventHandler& handler);  
     
     AliVEvent       *fEvent;          //! Pointer to the event
     AliVfriendEvent *fFriendEvent;    //! Pointer to the friend event
 
-    ClassDef(AliHLTTestInputHandler, 1);
+    ClassDef(AliHLTVEventInputHandler, 1);
 };
 
 #endif

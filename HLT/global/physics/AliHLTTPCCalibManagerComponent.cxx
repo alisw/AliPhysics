@@ -33,7 +33,7 @@
 #include "AliHLTTPCCalibManagerComponent.h"
 #include "AliHLTITSClusterDataFormat.h"
 #include "AliAnalysisManager.h"
-#include "AliHLTTestInputHandler.h"
+#include "AliHLTVEventInputHandler.h"
 #include "AliTPCAnalysisTaskcalib.h"
 #include "AliAnalysisDataContainer.h"
 #include "TTree.h"
@@ -155,7 +155,7 @@ Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
 
   Printf("----> AliHLTTPCCalibManagerComponent::DoInit");
   fAnalysisManager = new AliAnalysisManager;
-  fInputHandler    = new AliHLTTestInputHandler;
+  fInputHandler    = new AliHLTVEventInputHandler;
   fAnalysisManager->SetInputEventHandler(fInputHandler);
   fAnalysisManager->SetExternalLoop(kTRUE);
 

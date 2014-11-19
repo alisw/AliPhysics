@@ -55,7 +55,6 @@
 #include "AliSysInfo.h"
 #include "AliAnalysisStatistics.h"
 #include "AliVEvent.h"
-//#include "AliHLTTestInputHandler.h"
 
 using std::ofstream;
 using std::ios;
@@ -2777,8 +2776,8 @@ const char* AliAnalysisManager::GetOADBPath()
 
    if (gSystem->Getenv("OADB_PATH"))
       oadbPath = gSystem->Getenv("OADB_PATH");
-   else if (gSystem->Getenv("ALICE_PHYSICS"))
-      oadbPath.Form("%s/OADB", gSystem->Getenv("ALICE_PHYSICS"));
+   else if (gSystem->Getenv("ALICE_ROOT"))
+      oadbPath.Form("%s/OADB", gSystem->Getenv("ALICE_ROOT"));
    else
       ::Fatal("AliAnalysisManager::GetOADBPath", "Cannot figure out AODB path. Define ALICE_PHYSICS or OADB_PATH!");
       

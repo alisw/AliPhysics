@@ -30,7 +30,7 @@ class AliHLTCTPData;
 class AliHLTMultiplicityCorrelations;
 class AliHLTGlobalTriggerDecision;
 class AliAnalysisManager;
-class AliHLTTestInputHandler;
+class AliHLTVEventInputHandler;
 
 /**
  * @class AliHLTAnaManagerComponent
@@ -223,7 +223,7 @@ private:
 
   AliAnalysisManager *fAnalysisManager;        // Manger
 
-  AliHLTTestInputHandler *fInputHandler;    // input handler
+  AliHLTVEventInputHandler *fInputHandler;    // input handler
 
   ClassDef(AliHLTAnaManagerComponent, 0)
 };
