@@ -349,10 +349,12 @@ void AliStorageEventManager::Send(bool message,storageSockets socket)
 
 void AliStorageEventManager::Send(AliESDEvent *event, storageSockets socket)
 {
+  if(!event){return;}
+
     TMessage tmess(kMESS_OBJECT);
     tmess.Reset();
     tmess.WriteObject(event);
-    TMessage::EnableSchemaEvolutionForAll(kTRUE);
+    //  TMessage::EnableSchemaEvolutionForAll(kTRUE);
     
     int bufsize = tmess.Length();
     char* buf = (char*) malloc(bufsize * sizeof(char));
@@ -378,8 +380,18 @@ void AliStorageEventManager::SendAsXml(AliESDEvent *event,storageSockets socket)
     for(int i=0;i<event->GetNumberOfTracks();i++)
     {
         AliESDtrack *track = event->GetTrack(i);
-        bufferStream << "\t<track mass=\""<<track->GetMass()<<"\">" <<endl;
-        const AliTrackPointArray *array = track->GetTrackPointArray();
+	AliKalmanTrack *ITStrack = track->GetITStrack();
+	const AliTrackPointArray *array = track->GetTrackPointArray();
+      
+	bufferStream << "\t<track mass=\""<<track->GetMass()<<"\"";
+	//	bufferStream << "\t<track esdpid=\""<<track->GetESDpid();
+	bufferStream << "\t pid=\""<<track->PID()<<"\"";
+	bufferStream << "\t energy=\""<<track->E()<<"\"";
+	bufferStream << "\t volumeID=\""<<array->GetVolumeID()<<"\">" <<endl;
+
+	
+
+      
         
         if(array)
         {
@@ -390,7 +402,7 @@ void AliStorageEventManager::SendAsXml(AliESDEvent *event,storageSockets socket)
             
             for(int j=0;j<n;j++)
             {
-                bufferStream <<"\t\t<point>"<<endl;
+	      bufferStream <<"\t\t<point volumeID=\""<<array->GetVolumeID()[j]<<"\">"<<endl;
                 bufferStream <<"\t\t\t<x>"<< x[j] <<"</x>"<<endl;
                 bufferStream <<"\t\t\t<y>"<< y[j] <<"</y>"<<endl;
                 bufferStream <<"\t\t\t<z>"<< z[j] <<"</z>"<<endl;
@@ -512,6 +524,8 @@ struct serverRequestStruct* AliStorageEventManager::GetServerStruct(storageSocke
     catch(const zmq::error_t &e)
     {
         cout<<"MANAGER -- get serverRequestStruct -- "<<e.what()<<endl;
+	request->messageType = -1;
+	return request;
     }
     request = static_cast<struct serverRequestStruct*>(requestMessage->data());
     return request;
