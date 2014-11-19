@@ -82,6 +82,7 @@ Bool_t AliHLTTestInputHandler::InitTaskInputData(AliVEvent* esdEvent, AliVfriend
   Printf("----> AliHLTTestInputHandler::InitTaskInpuData: Setting the event...");
   SetEvent(esdEvent);
   SetVFriendEvent(friendEvent);
+  esdEvent->SetFriendEvent(friendEvent);
   // set transient pointer to event inside tracks
   fEvent->ConnectTracks();
   Printf("----> AliHLTTestInputHandler::InitTaskInpuData: ...Event set: fEvent = %p; friend = %p", fEvent, friendEvent);
