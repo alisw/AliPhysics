@@ -20,12 +20,14 @@ void AddTask_GammaConvEtaPiPlPiMiGamma_pPb(
 	gSystem->Load("libAOD");
 	gSystem->Load("libANALYSIS");
 	gSystem->Load("libANALYSISalice");  
-	gSystem->Load("libPWGGAGammaConv.so");
 	gSystem->Load("libCDB.so");
 	gSystem->Load("libSTEER.so");
 	gSystem->Load("libSTEERBase.so");
 	gSystem->Load("libTENDER.so");
 	gSystem->Load("libTENDERSupplies.so");
+	gSystem->Load("libPWGflowBase.so");
+	gSystem->Load("libPWGflowTasks.so");
+	gSystem->Load("libPWGGAGammaConv.so");
 
 	Int_t isHeavyIon = 2;
 	
