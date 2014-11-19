@@ -216,7 +216,7 @@ public:
   virtual Int_t            GetV0(AliESDv0&, Int_t /*iv0*/) const {return 0;}
   virtual UInt_t           GetTimeStamp() const { return 0; }
   virtual AliVfriendEvent* FindFriend() const { return 0; }
-  virtual void             SetFriendEvent( AliVfriendEvent* ) {}
+  virtual void             SetFriendEvent(AliVfriendEvent*) {}
   virtual UInt_t           GetEventSpecie() const { return 0; }
   virtual AliESDkink*      GetKink(Int_t /*i*/) const { return NULL; }
   virtual Int_t            GetNumberOfKinks() const { return 0; }
