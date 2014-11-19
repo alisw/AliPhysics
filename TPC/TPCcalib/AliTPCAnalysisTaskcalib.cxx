@@ -29,6 +29,7 @@
 #include "AliVfriendTrack.h"
 #include "AliTPCseed.h"
 #include "AliVEventHandler.h"
+#include "AliESDInputHandler.h"
 #include "AliAnalysisManager.h"
 #include "TFile.h"
 #include "TSystem.h"
@@ -84,18 +85,24 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
   //
   // Exec function
   // Loop over tracks and call  Process function
+    //Printf(" **************** AliTPCAnalysisTaskcalib::Exec() **************** ");
   if (!fV) {
     //Printf("ERROR: fV not available");
     return;
   }
-  fVfriend=fV->FindFriend();
+  //fVfriend=fV->FindFriend();
   Int_t n=fV->GetNumberOfTracks();
   Process(fV);
   if (!fVfriend) {
-    //Printf("ERROR: fVfriend not available");
+    Printf("ERROR: fVfriend not available");
     return;
   }
-  if (fVfriend->TestSkipBit()) return;
+  if (fVfriend->TestSkipBit()) {
+      //Printf("Skipping Event...");
+      return;}
+  //else if (!fVfriend->TestSkipBit()){
+      //Printf("continue with event...");
+  //}
   //
   Int_t run = fV->GetRunNumber();
   for (Int_t i=0;i<n;++i) {
@@ -119,16 +126,30 @@ void AliTPCAnalysisTaskcalib::ConnectInputData(Option_t *) {
   //
   TTree* tree=dynamic_cast<TTree*>(GetInputData(0));
   if (!tree) {
-    //Printf("ERROR: Could not read chain from input slot 0");
+    Printf("ERROR: Could not read chain from input slot 0");
   } 
   else {
     AliVEventHandler *vH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+    TString classInputHandler = vH->ClassName();
       if (!vH) {
-      //Printf("ERROR: Could not get VEventHandler");
-    } 
+      Printf("ERROR: Could not get VEventHandler");
+    }
     else {
       fV = vH->GetEvent();
-      //Printf("*** CONNECTED NEW EVENT ****");
+      //if (fV) {Printf("*** CONNECTED NEW EVENT ****");}
+      if (classInputHandler.Contains("HLT")) { // we are running in HLT
+        fVfriend = vH->GetVfriendEvent();
+        //if (fVfriend) Printf("Connected friend Event from V manager!");
+      }
+      else { /// we are running offline
+        if (vH && vH->GetTree()) {
+          //Printf("...We got the tree...");
+          if (vH->GetTree()->GetBranch("ESDfriend.")){
+            //Printf("friend branch found, use AliESDInputHandler");
+            fVfriend = ((AliESDInputHandler*)vH)->GetESDfriend();
+          }
+        }
+      }
     }
   }
 }
@@ -177,6 +198,8 @@ void AliTPCAnalysisTaskcalib::Process(AliVEvent *event) {
   //
   // Process V event
   //
+
+    //Printf("AliTPCAnalysisTaskcalib::Process event");
   AliTPCcalibBase *job=0;
   Int_t njobs = fCalibJobs->GetEntriesFast();
   for (Int_t i=0;i<njobs;i++){

@@ -165,9 +165,7 @@ void     AliTPCcalibCalib::Process(AliVEvent *event){
 
     AliExternalTrackParam prmtpcOut;
     if((friendTrack->GetTrackParamTPCOut(prmtpcOut)) < 0) continue;
-    AliExternalTrackParam * tpcOut   = &prmtpcOut;
 
-    if (!tpcOut) continue;
     TObject *calibObject;
     AliTPCseed *seed = 0;
     for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
@@ -177,8 +175,7 @@ void     AliTPCcalibCalib::Process(AliVEvent *event){
     RefitTrack(track, seed, event->GetMagneticField());
     AliExternalTrackParam prmOut;
     track->GetTrackParamOp(prmOut);
-    AliExternalTrackParam * paramOut = &prmOut;
-    (*tpcOut)=*paramOut;
+    friendTrack->ResetTrackParamTPCOut(&prmOut);
   }
   return;
 }
