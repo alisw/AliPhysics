@@ -127,3 +127,7 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+
+# Compilation of some executables
+add_subdirectory(utils)
+      

@@ -93,4 +93,21 @@ install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
 
-install(FILES ${HDRS} DESTINATION include)
+ install(FILES ${HDRS} DESTINATION include)
+
+ # dHLTdumpraw executable
+# Additional include folders in alphabetical order except ROOT
+include_directories(
+                    ${AliRoot_SOURCE_DIR}/HLT/BASE/HOMER
+                   )
+
+ 
+set(SRCS
+    hltdimserver.cxx
+   )
+
+add_executable(hltdimserver ${SRCS})
+target_link_libraries(hltdimserver HLTbase AliHLTHOMER Hist Core)
+
+# Installation of hltdimserver
+install(TARGETS hltdimserver RUNTIME DESTINATION bin)
