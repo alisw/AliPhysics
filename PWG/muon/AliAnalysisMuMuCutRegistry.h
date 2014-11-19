@@ -17,6 +17,7 @@
 #include "AliAnalysisMuMuCutElement.h"
 
 class AliVEvent;
+class AliAnalysisMuMuCutElementBar;
 class AliAnalysisMuMuCutCombination;
 class AliVParticle;
 class AliVEventHandler;
@@ -28,20 +29,20 @@ public:
   virtual ~AliAnalysisMuMuCutRegistry();
 
   AliAnalysisMuMuCutElement* AddEventCut(TObject& cutClass,
-                                         const char* cutMethodName,
-                                         const char* cutMethodPrototype,
-                                         const char* defaultParameters);
-  
+                                           const char* cutMethodName,
+                                           const char* cutMethodPrototype,
+                                           const char* defaultParameters);
+
   AliAnalysisMuMuCutElement* AddTrackCut(TObject& cutClass,
-                                         const char* cutMethodName,
-                                         const char* cutMethodPrototype,
-                                         const char* defaultParameters);
-  
+                                           const char* cutMethodName,
+                                           const char* cutMethodPrototype,
+                                           const char* defaultParameters);
+
   AliAnalysisMuMuCutElement* AddTrackPairCut(TObject& cutClass,
                                              const char* cutMethodName,
                                              const char* cutMethodPrototype,
                                              const char* defaultParameters);
-  
+
   AliAnalysisMuMuCutElement* AddTriggerClassCut(TObject& cutClass,
                                                 const char* cutMethodName,
                                                 const char* cutMethodPrototype,
@@ -55,20 +56,19 @@ public:
   
   Int_t AddCutCombination(AliAnalysisMuMuCutElement* ce1);
   Int_t AddCutCombination(AliAnalysisMuMuCutElement* ce1, AliAnalysisMuMuCutElement* ce2);
-  Int_t AddCutCombination(AliAnalysisMuMuCutElement* ce1, AliAnalysisMuMuCutElement* ce2,
-                          AliAnalysisMuMuCutElement* ce3);
-  Int_t AddCutCombination(AliAnalysisMuMuCutElement* ce1, AliAnalysisMuMuCutElement* ce2,
-                          AliAnalysisMuMuCutElement* ce3, AliAnalysisMuMuCutElement* ce4);
-  Int_t AddCutCombination(AliAnalysisMuMuCutElement* ce1, AliAnalysisMuMuCutElement* ce2,
-                          AliAnalysisMuMuCutElement* ce3, AliAnalysisMuMuCutElement* ce4,
-                          AliAnalysisMuMuCutElement* ce5);
-  Int_t AddCutCombination(AliAnalysisMuMuCutElement* ce1, AliAnalysisMuMuCutElement* ce2,
-                          AliAnalysisMuMuCutElement* ce3, AliAnalysisMuMuCutElement* ce4,
-                          AliAnalysisMuMuCutElement* ce5, AliAnalysisMuMuCutElement* ce6);
+  Int_t AddCutCombination(AliAnalysisMuMuCutElement* ce1, AliAnalysisMuMuCutElement* ce2, AliAnalysisMuMuCutElement* ce3);
+  Int_t AddCutCombination(AliAnalysisMuMuCutElement* ce1, AliAnalysisMuMuCutElement* ce2, AliAnalysisMuMuCutElement* ce3,
+                          AliAnalysisMuMuCutElement* ce4);
+  Int_t AddCutCombination(AliAnalysisMuMuCutElement* ce1, AliAnalysisMuMuCutElement* ce2, AliAnalysisMuMuCutElement* ce3,
+                          AliAnalysisMuMuCutElement* ce4, AliAnalysisMuMuCutElement* ce5);
+  Int_t AddCutCombination(AliAnalysisMuMuCutElement* ce1, AliAnalysisMuMuCutElement* ce2, AliAnalysisMuMuCutElement* ce3,
+                          AliAnalysisMuMuCutElement* ce4, AliAnalysisMuMuCutElement* ce5, AliAnalysisMuMuCutElement* ce6);
 
+  /// Get cut combinations of a given type
   const TObjArray* GetCutCombinations(AliAnalysisMuMuCutElement::ECutType type) const;
   TObjArray* GetCutCombinations(AliAnalysisMuMuCutElement::ECutType type);
 
+  /// Get cut elements of a given type
   const TObjArray* GetCutElements(AliAnalysisMuMuCutElement::ECutType type) const;
   TObjArray* GetCutElements(AliAnalysisMuMuCutElement::ECutType type);
 

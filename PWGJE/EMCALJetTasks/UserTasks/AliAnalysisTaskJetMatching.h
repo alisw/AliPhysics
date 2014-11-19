@@ -9,8 +9,9 @@
 #include <TRandom3.h>
 
 class TF1;
-class THF1;
-class THF2;
+class TH1F;
+class TH2F;
+class TH3F;
 class TProfile;
 class AliRhoParameter;
 class AliLocalRhoParameter;
@@ -33,6 +34,8 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
         virtual void            UserCreateOutputObjects();
         TH1F*                   BookTH1F(const char* name, const char* x, Int_t bins, Double_t min, Double_t max, Bool_t append = kTRUE);
         TH2F*                   BookTH2F(const char* name, const char* x, const char* y, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Bool_t append = kTRUE);
+        TH3F*                   BookTH3F(const char* name, const char* x, const char* y, const char* z, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Int_t binsz, Double_t minz, Double_t maxz, Bool_t append = kTRUE);
+
         virtual Bool_t          Run();
         /* inline */    Double_t PhaseShift(Double_t x) const {  
             while (x>=TMath::TwoPi())x-=TMath::TwoPi();
@@ -137,10 +140,10 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
         TProfile*               fProfFracPtJets;        //! sum pt fraction for matched jets
         TProfile*               fProfFracNoMatched;     //! no of constituents fraction found / jet
         TProfile*               fProfFracNoJets;        //! no of consstituents fraction jet / jet
-        TH2F*                   fHistDiJet;             //! matched dijet eta, phi
-        TH2F*                   fHistDiJetLeadingJet;   //! leading jet (for dijet) eta, phi
-        TH1F*                   fHistDiJetDPhi;         //! dijet dphi
-        TH1F*                   fHistDiJetDPt;          //! dijet dpt
+        TH3F*                   fHistDiJet;             //! matched dijet eta, phi
+        TH3F*                   fHistDiJetLeadingJet;   //! leading jet (for dijet) eta, phi
+        TH2F*                   fHistDiJetDPhi;         //! dijet dphi
+        TH2F*                   fHistDiJetDPt;          //! dijet dpt
         TH1F*                   fHistAnalysisSummary;   //! flags
         TProfile*               fProfQAMatched;         //! QA spreads of matched jets
         TProfile*               fProfQA;                //! QA spreads of source and target jets
