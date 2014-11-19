@@ -378,7 +378,7 @@ TH1F* AliAnalysisTaskJetV2::BookTH1F(const char* name, const char* x, Int_t bins
     // book a TH1F and connect it to the output container
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     if(fReduceBinsXByFactor > 0 ) bins = TMath::Nint(bins/fReduceBinsXByFactor);
-    if(!fOutputList) return 0x0;
+    if(append && !fOutputList) return 0x0;
     TString title(name);
     if(c!=-1) { // format centrality dependent histograms accordingly
         name = Form("%s_%i", name, c);
@@ -397,7 +397,7 @@ TH2F* AliAnalysisTaskJetV2::BookTH2F(const char* name, const char* x, const char
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     if(fReduceBinsXByFactor > 0 ) binsx = TMath::Nint(binsx/fReduceBinsXByFactor);
     if(fReduceBinsYByFactor > 0 ) binsy = TMath::Nint(binsy/fReduceBinsYByFactor);
-    if(!fOutputList) return 0x0;
+    if(append && !fOutputList) return 0x0;
     TString title(name);
     if(c!=-1) { // format centrality dependent histograms accordingly
         name = Form("%s_%i", name, c);
@@ -419,7 +419,7 @@ TH3F* AliAnalysisTaskJetV2::BookTH3F(const char* name, const char* x, const char
         binsy = TMath::Nint(binsy/fReduceBinsXByFactor);
         binsz = TMath::Nint(binsz/fReduceBinsXByFactor);
     }
-    if(!fOutputList) return 0x0;
+    if(append && !fOutputList) return 0x0;
     TString title(name);
     if(c!=-1) { // format centrality dependent histograms accordingly
         name = Form("%s_%i", name, c);
