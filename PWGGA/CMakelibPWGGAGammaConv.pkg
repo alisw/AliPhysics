@@ -63,6 +63,7 @@ set ( SRCS
 	GammaConv/AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero.cxx
         GammaConv/AliAnalysisTaskGammaConvCalo.cxx
 	GammaConv/AliAnalysisTaskGammaCalo.cxx
+	GammaConv/AliAnalysisTaskGammaConvFlow.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -71,4 +72,4 @@ set ( DHDR  PWGGAGammaConvLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE  PWGGA/PWGGAUtils PWGGA/GammaConv PWG/TRD PWG/EMCAL EMCAL OADB STEER/STEER CORRFW STEER/AOD STEER/ESD STEER/STEERBase ANALYSIS)
+set ( EINCLUDE PWG/muon PWGGA/PWGGAUtils PWGGA/GammaConv PWG/TRD PWG/EMCAL EMCAL OADB STEER/STEER CORRFW STEER/AOD STEER/ESD STEER/STEERBase ANALYSIS PWG/FLOW/Base PWG/FLOW/Tasks )
