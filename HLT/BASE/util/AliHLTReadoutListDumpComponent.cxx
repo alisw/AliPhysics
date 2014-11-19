@@ -100,13 +100,16 @@ int AliHLTReadoutListDumpComponent::DumpEvent( const AliHLTComponentEventData& /
 	 pBlock && iResult>=0;
 	 pBlock=GetNextInputBlock()) {
       if (pBlock->fDataType!=hltrdlstdt) continue;
-      if (pBlock->fSize==sizeof(AliHLTEventDDL) or pBlock->fSize==sizeof(AliHLTEventDDLV0)) {
+      if (pBlock->fSize==sizeof(AliHLTEventDDL) or 
+          pBlock->fSize==sizeof(AliHLTEventDDLV0) or 
+          pBlock->fSize==sizeof(AliHLTEventDDLV1)) 
+      {
 	HLTDebug("Filling histograms from binary buffer");
 	AliHLTReadoutList readoutlist(*reinterpret_cast<AliHLTEventDDL*>(pBlock->fPtr));
 	FillReadoutListHistogram(fBitsHisto, &readoutlist);
 	FillReadoutListVsCTP(fBitsVsCTP, &readoutlist, &trigData);
       } else {
-	HLTError("HLTRDLST size missmatch: %d, expected %d or %d", pBlock->fSize, sizeof(AliHLTEventDDL), sizeof(AliHLTEventDDLV0));
+	HLTError("HLTRDLST size missmatch: %d, expected V0:%d, V1:%d or V2%d", pBlock->fSize, sizeof(AliHLTEventDDLV0), sizeof(AliHLTEventDDLV1), sizeof(AliHLTEventDDLV2));
       }
     }
   } else if (fMode==AliHLTReadoutListDumpComponent::kModeHLTDecision) {
