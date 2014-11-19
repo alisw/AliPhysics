@@ -52,6 +52,7 @@ class AliAnalysisTaskEmcalHJetMass : public AliAnalysisTaskEmcalJet {
   Double_t                            fDPhiHJetMax;                // maximum delta phi between hadron and jet
 
   TH1F            **fh1PtHadron;                        //!pt of hadrons
+  TH3F            **fh3PtHPtJDPhi;                      //!pt hadron vs pt jet vs delta phi
   TH3F            **fh3PtJet1VsMassVsHPtAllSel;         //!all jets after std selection pt vs mass vs track pt
   TH3F            **fh3PtJet1VsMassVsHPtTagged;         //!tagged jets pt vs mass vs track pt
   TH3F            **fh3PtJet1VsMassVsHPtTaggedMatch;    //!tagged jets pt vs mass vs track pt matched to MC
@@ -64,7 +65,7 @@ class AliAnalysisTaskEmcalHJetMass : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalHJetMass(const AliAnalysisTaskEmcalHJetMass&);            // not implemented
   AliAnalysisTaskEmcalHJetMass &operator=(const AliAnalysisTaskEmcalHJetMass&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalHJetMass, 1)
+  ClassDef(AliAnalysisTaskEmcalHJetMass, 2)
 };
 #endif
 
