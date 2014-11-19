@@ -7,11 +7,10 @@
  * \class AliAnalysisMuMuSingle
  *
  * Histogramming of single muon tracks. Mostly to get control plots for
- * the AliAnalysisMuMuMinv sub-analysis, with respect to track cuts used, 
+ * the AliAnalysisMuMuMinv sub-analysis, with respect to track cuts used,
  * like Rabs, p x DCA, etc...
  *
  */
-
 
 #include "TH2F.h"
 #include "AliMuonTrackCuts.h"
@@ -73,15 +72,23 @@ AliAnalysisMuMuSingle::CreateTrackHisto(const char* eventSelection,
       
       shname += suffix[i];
       
-      CreateTrackHistos(eventSelection,triggerClassName,centrality,shname.Data(),shtitle.Data(),
+      CreateTrackHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,shname.Data(),shtitle.Data(),
                         nbinsx,xmin,xmax,nbinsy,ymin,ymax);
     }
   }
   else
   {
-    CreateTrackHistos(eventSelection,triggerClassName,centrality,hname,htitle,
+    CreateTrackHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,hname,htitle,
                 nbinsx,xmin,xmax,nbinsy,ymin,ymax);
   }
+}
+
+//_____________________________________________________________________________
+Bool_t AliAnalysisMuMuSingle::IsPDCAOK(const AliVParticle& part)
+{
+  UInt_t selectionMask = MuonTrackCuts() ? MuonTrackCuts()->GetSelectionMask(&part) : 0;
+
+  return ( ( selectionMask & AliMuonTrackCuts::kMuPdca ) == AliMuonTrackCuts::kMuPdca );
 }
 
 //_____________________________________________________________________________
@@ -93,9 +100,9 @@ Bool_t AliAnalysisMuMuSingle::IsRabsOK(const AliVParticle& part) const
 }
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisMuMuSingle::IsEtaInRange(const AliVParticle& part, Double_t& etamin, Double_t& etamax) const
+Bool_t AliAnalysisMuMuSingle::IsEtaInRange(const AliVParticle& part) const
 {
-  return (part.Eta() >= etamin && part.Eta() <= etamax);
+  return (part.Eta() > -4.0 && part.Eta() < -2.5);
 }
 
 //_____________________________________________________________________________

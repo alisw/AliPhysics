@@ -159,5 +159,21 @@ namespace EMCalTriggerPtAnalysis {
 		return fListOfTracks;
 	}
 
+	//______________________________________________________________________________
+	bool AliEMCalPtTaskTrackSelectionAOD::IsTrackAccepted(AliVTrack * const trk){
+	  /*
+	   * Check whether track is accepted
+	   *
+	   * @param trk: Track to check
+	   * @return: true if selected, false otherwise
+	   */
+	  AliAODTrack *aodt = dynamic_cast<AliAODTrack *>(trk);
+	  if(!aodt) return kFALSE;
+	  if(fFilterBits && !aodt->TestFilterBit(fFilterBits)) return kFALSE;
+	  AliESDtrack copyTrack(aodt);
+	  return fTrackCuts->AcceptTrack(&copyTrack);
+	}
+
+
 } /* namespace EMCalTriggerPtAnalysis */
 

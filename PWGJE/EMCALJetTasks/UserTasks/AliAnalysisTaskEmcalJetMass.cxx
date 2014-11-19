@@ -432,31 +432,10 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
     while((jet1 = jetCont->GetNextAcceptJet())) {
 
       Double_t ptJet1 = jet1->Pt() - GetRhoVal(fContainerBase)*jet1->Area();
+      Double_t maxTrackPt = jet1->MaxTrackPt();
       Double_t mJet1 = GetJetMass(jet1);
       Double_t rat = -1.;
       if(ptJet1<0. || ptJet1>0.) rat = mJet1/ptJet1;
-      fh3PtJet1VsMassVsLeadPtAllSel[fCentBin]->Fill(ptJet1,mJet1,jet1->MaxTrackPt());
-      fpPtVsMassJet1All[fCentBin]->Fill(ptJet1,mJet1);
-      fh2MassVsAreaJet1All[fCentBin]->Fill(mJet1,jet1->Area());
-      fh2MassVsNConstJet1All[fCentBin]->Fill(mJet1,jet1->GetNumberOfConstituents());
-
-      fh3PtJet1VsRatVsLeadPtAllSel[fCentBin]->Fill(ptJet1,rat,jet1->MaxTrackPt());
-      fpPtVsRatJet1All[fCentBin]->Fill(ptJet1,rat);
-      fh2RatVsAreaJet1All[fCentBin]->Fill(rat,jet1->Area());
-      fh2RatVsNConstJet1All[fCentBin]->Fill(rat,jet1->GetNumberOfConstituents());
-      
-      if(jet1->GetTagStatus()<1 || !jet1->GetTaggedJet())
-	continue;
-
-      fh3PtJet1VsMassVsLeadPtTagged[fCentBin]->Fill(ptJet1,mJet1,jet1->MaxTrackPt());
-      fpPtVsMassJet1Tagged[fCentBin]->Fill(ptJet1,mJet1);
-      fh2MassVsAreaJet1Tagged[fCentBin]->Fill(mJet1,jet1->Area());
-      fh2MassVsNConstJet1Tagged[fCentBin]->Fill(mJet1,jet1->GetNumberOfConstituents());
-
-      fh3PtJet1VsRatVsLeadPtTagged[fCentBin]->Fill(ptJet1,rat,jet1->MaxTrackPt());
-      fpPtVsRatJet1Tagged[fCentBin]->Fill(ptJet1,rat);
-      fh2RatVsAreaJet1Tagged[fCentBin]->Fill(rat,jet1->Area());
-      fh2RatVsNConstJet1Tagged[fCentBin]->Fill(rat,jet1->GetNumberOfConstituents());
 
       Double_t fraction = -1.;
       if(fUseUnsubJet) {
@@ -474,17 +453,42 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
 	if(ifound>1) AliDebug(2,Form("Found %d partners",ifound));
 	if(ifound==0) jetUS = 0x0;
 	else          jetUS = jetContUS->GetJet(ilab);
-	fraction = jetCont->GetFractionSharedPt(jetUS);
+	fraction = jetContUS->GetFractionSharedPt(jetUS);
+	maxTrackPt = jetUS->MaxTrackPt();
       } else
 	fraction = jetCont->GetFractionSharedPt(jet1);
 
+      fh3PtJet1VsMassVsLeadPtAllSel[fCentBin]->Fill(ptJet1,mJet1,maxTrackPt);
+      fpPtVsMassJet1All[fCentBin]->Fill(ptJet1,mJet1);
+      fh2MassVsAreaJet1All[fCentBin]->Fill(mJet1,jet1->Area());
+      fh2MassVsNConstJet1All[fCentBin]->Fill(mJet1,jet1->GetNumberOfConstituents());
+
+      fh3PtJet1VsRatVsLeadPtAllSel[fCentBin]->Fill(ptJet1,rat,maxTrackPt);
+      fpPtVsRatJet1All[fCentBin]->Fill(ptJet1,rat);
+      fh2RatVsAreaJet1All[fCentBin]->Fill(rat,jet1->Area());
+      fh2RatVsNConstJet1All[fCentBin]->Fill(rat,jet1->GetNumberOfConstituents());
+      
+      if(jet1->GetTagStatus()<1 || !jet1->GetTaggedJet())
+	continue;
+
+      fh3PtJet1VsMassVsLeadPtTagged[fCentBin]->Fill(ptJet1,mJet1,maxTrackPt);
+      fpPtVsMassJet1Tagged[fCentBin]->Fill(ptJet1,mJet1);
+      fh2MassVsAreaJet1Tagged[fCentBin]->Fill(mJet1,jet1->Area());
+      fh2MassVsNConstJet1Tagged[fCentBin]->Fill(mJet1,jet1->GetNumberOfConstituents());
+
+      fh3PtJet1VsRatVsLeadPtTagged[fCentBin]->Fill(ptJet1,rat,maxTrackPt);
+      fpPtVsRatJet1Tagged[fCentBin]->Fill(ptJet1,rat);
+      fh2RatVsAreaJet1Tagged[fCentBin]->Fill(rat,jet1->Area());
+      fh2RatVsNConstJet1Tagged[fCentBin]->Fill(rat,jet1->GetNumberOfConstituents());
+
+      //matching
       if(fMinFractionShared>0. && fraction>fMinFractionShared) {
-	fh3PtJet1VsMassVsLeadPtTaggedMatch[fCentBin]->Fill(ptJet1,mJet1,jet1->MaxTrackPt());
+	fh3PtJet1VsMassVsLeadPtTaggedMatch[fCentBin]->Fill(ptJet1,mJet1,maxTrackPt);
 	fpPtVsMassJet1TaggedMatch[fCentBin]->Fill(ptJet1,mJet1);
 	fh2MassVsAreaJet1TaggedMatch[fCentBin]->Fill(mJet1,jet1->Area());
 	fh2MassVsNConstJet1TaggedMatch[fCentBin]->Fill(mJet1,jet1->GetNumberOfConstituents());
 
-	fh3PtJet1VsRatVsLeadPtTaggedMatch[fCentBin]->Fill(ptJet1,rat,jet1->MaxTrackPt());
+	fh3PtJet1VsRatVsLeadPtTaggedMatch[fCentBin]->Fill(ptJet1,rat,maxTrackPt);
 	fpPtVsRatJet1TaggedMatch[fCentBin]->Fill(ptJet1,rat);
 	fh2RatVsAreaJet1TaggedMatch[fCentBin]->Fill(rat,jet1->Area());
 	fh2RatVsNConstJet1TaggedMatch[fCentBin]->Fill(rat,jet1->GetNumberOfConstituents());

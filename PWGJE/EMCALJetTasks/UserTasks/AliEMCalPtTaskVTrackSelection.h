@@ -10,6 +10,7 @@
 class TClonesArray;
 class TObjArray;
 class AliVEvent;
+class AliVTrack;
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -22,6 +23,7 @@ public:
 
 	virtual TObjArray *GetAcceptedTracks(const TClonesArray * const tracks) = 0;
 	virtual TObjArray *GetAcceptedTracks(const AliVEvent *const event) = 0;
+	virtual bool IsTrackAccepted(AliVTrack * const trk) = 0;
 
 	virtual TObject *GetTrackCuts() = 0;
 

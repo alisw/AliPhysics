@@ -32,6 +32,7 @@ set ( SRCS
     muondep/AliAnalysisTaskMuonRefit.cxx
     muondep/AliAnalysisTriggerScalers.cxx
     muondep/AliAnalysisMuMu.cxx
+    muondep/AliAnalysisMuMuConfig.cxx
     muondep/AliAnalysisMuMuResult.cxx
     muondep/AliAnalysisMuMuJpsiResult.cxx
     muondep/AliAnalysisMuMuFnorm.cxx

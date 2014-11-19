@@ -32,10 +32,11 @@ ClassImp(AliAnalysisMuMuResult)
 #include "TObjArray.h"
 #include "TParameter.h"
 #include "AliLog.h"
+#include "TPRegexp.h"
 #include <map>
 
 //_____________________________________________________________________________
-AliAnalysisMuMuResult::AliAnalysisMuMuResult(const char* name, const char* title) :
+AliAnalysisMuMuResult::AliAnalysisMuMuResult(const char* name, const char* title, AliAnalysisMuMuResult::EResultMergingMethod mergingMethod) :
 TNamed(name,title),
 fSubResults(0x0),
 fMap(0x0),
@@ -43,7 +44,10 @@ fMother(0x0),
 fKeys(0x0),
 fWeight(0.0),
 fAlias(),
-fSubResultsToBeIncluded(0x0)
+fSubResultsToBeIncluded(0x0),
+fResultMergingMethod(mergingMethod),
+fIsValid(kTRUE),
+fVisibleKeys(0x0)
 {
   /// default ctor
 }
@@ -58,7 +62,9 @@ fMother(0x0),
 fKeys(0x0),
 fWeight(rhs.fWeight),
 fAlias(),
-fSubResultsToBeIncluded(0x0)
+fSubResultsToBeIncluded(0x0),
+fIsValid(kTRUE),
+fVisibleKeys(0x0)
 {
   /// copy ctor
   /// Note that the mother is lost
@@ -84,6 +90,10 @@ fSubResultsToBeIncluded(0x0)
     fSubResultsToBeIncluded = static_cast<TList*>(rhs.fSubResultsToBeIncluded->Clone());
   }
 
+  if ( rhs.fVisibleKeys )
+  {
+    fVisibleKeys = static_cast<THashList*>(rhs.Clone());
+  }
 }
 
 //_____________________________________________________________________________
@@ -126,6 +136,14 @@ AliAnalysisMuMuResult& AliAnalysisMuMuResult::operator=(const AliAnalysisMuMuRes
     {
       fAlias = rhs.fAlias;
     }
+    
+    fIsValid = rhs.fIsValid;
+    
+    if ( rhs.fVisibleKeys )
+    {
+      fVisibleKeys = static_cast<THashList*>(rhs.Clone());
+    }
+
   }
   
   return *this;
@@ -139,10 +157,11 @@ AliAnalysisMuMuResult::~AliAnalysisMuMuResult()
   delete fSubResults;
   delete fKeys;
   delete fSubResultsToBeIncluded;
+  delete fVisibleKeys;
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuResult::AdoptSubResult(AliAnalysisMuMuResult* r)
+Bool_t AliAnalysisMuMuResult::AdoptSubResult(AliAnalysisMuMuResult* r)
 {
   /// Adopt (i.e. becomes owner) of a subresult
   if (!fSubResults)
@@ -151,9 +170,16 @@ void AliAnalysisMuMuResult::AdoptSubResult(AliAnalysisMuMuResult* r)
     fSubResults->SetOwner(kTRUE);
   }
 
+  Int_t subresultsBeforeAdd = fSubResults->GetEntriesFast();
+  
   fSubResults->Add(r);
   
+  Int_t subresultsAfterAdd = fSubResults->GetEntriesFast();
+  
   SubResultsToBeIncluded()->Add(new TObjString(r->Alias()));
+  
+  if ( subresultsBeforeAdd < subresultsAfterAdd ) return kTRUE;
+  else return kFALSE;
 }
 
 //_____________________________________________________________________________
@@ -340,49 +366,102 @@ Double_t AliAnalysisMuMuResult::GetErrorStat(const char* name, const char* subRe
   
   TIter next(fSubResults);
   AliAnalysisMuMuResult* r;
-  Int_t n(0);
-  Double_t v1(0);
-  Double_t v2(0);
-  Double_t d(0);
   
-  Double_t mean = GetValue(name);
-  
-  while ( ( r = static_cast<AliAnalysisMuMuResult*>(next()) ) )
-  {    
-    if ( IsIncluded(r->Alias()) && r->HasValue(name) )
-    {
-      Double_t error = r->GetErrorStat(name);
-      if (error)
-      {
-        v1 += 1.0/(error*error);
-        v2 += 1.0/(error*error*error*error);
-       
-        d += ( (r->GetValue(name) - mean)*(r->GetValue(name)-mean) / (error*error));
-      }
-      ++n;
-    }
-  }
-  
-  if ( n<1 ) return 0.0;
-  
-  if ( n == 1 )
+  if ( fResultMergingMethod == kMean )
   {
-    next.Reset();
+    
+    Int_t n(0);
+//    Double_t v1(0);
+//    Double_t v2(0);
+//    Double_t d(0);
+    
+//    Double_t mean = GetValue(name);
+    Double_t wval = 0, wval2 = 0, w2err2 = 0, sumw = 0;
     while ( ( r = static_cast<AliAnalysisMuMuResult*>(next()) ) )
     {
       if ( IsIncluded(r->Alias()) && r->HasValue(name) )
       {
-        return r->GetErrorStat(name);
+        Double_t val = r->GetValue(name);
+        Double_t err = r->GetErrorStat(name);
+        // weight
+        Double_t wstat = 1./val;
+        Double_t w = 1./err/err/wstat;
+        sumw += w;
+        
+        // mean
+        wval += w*val;
+        
+        // stat
+        w2err2 += w*w*err*err;
+        
+        // rms
+        wval2 += w*val*val;
+        
+//        Double_t error = r->GetErrorStat(name);
+//
+//        Double_t e2 = error*error;
+//        
+//        if ( !(e2>0.0 ) ) e2 = TMath::Sqrt(r->GetValue(name));
+//
+//
+//        v1 += 1.0/e2;
+//        v2 += 1.0/(e2*e2);
+//          
+//        d += ( (r->GetValue(name) - mean)*(r->GetValue(name)-mean) / e2);
+        ++n;
       }
     }
-    return 0.0;
+    
+    if ( n<1 ) return 0.0;
+    
+    if ( n == 1 )
+    {
+      next.Reset();
+      while ( ( r = static_cast<AliAnalysisMuMuResult*>(next()) ) )
+      {
+        if ( IsIncluded(r->Alias()) && r->HasValue(name) )
+        {
+          return r->GetErrorStat(name);
+        }
+      }
+    }
+    // results
+//    mean = wval/sumw;
+    return TMath::Sqrt(w2err2*n)/sumw;
+//    sys = TMath::Sqrt(wval2/sumw - mean*mean);
+    
+//    Double_t variance= (1.0/v1)*(1.0/(n-1))*d;
+//    // variance corrected by over/under-estimation of errors
+//    // i.e. scaled by chisquare per ndf
+    
+//    return TMath::Sqrt(variance);
   }
-  
-  Double_t variance= (1.0/v1)*(1.0/(n-1))*d;
-    // variance corrected by over/under-estimation of errors
-    // i.e. scaled by chisquare per ndf
-  
-  return TMath::Sqrt(variance);
+  else
+  {
+    Double_t sume2(0.0);
+    Double_t sum(0.0);
+    Int_t n(0);
+    
+    while ( ( r = static_cast<AliAnalysisMuMuResult*>(next()) ) )
+    {
+      if ( IsIncluded(r->Alias()) && r->HasValue(name) )
+      {
+        Double_t e = r->GetErrorStat(name)/r->GetValue(name);
+        sume2 += e*e;
+        sum += r->GetValue(name);
+        ++n;
+      }
+    }
+    if (n)
+    {
+      return sum*TMath::Sqrt(sume2);
+    }
+    else
+    {
+      return TMath::Limits<Double_t>::Max();
+    }
+  }
+  return TMath::Limits<Double_t>::Max();
 }
 
 //_____________________________________________________________________________
@@ -430,16 +509,18 @@ Double_t AliAnalysisMuMuResult::GetRMS(const char* name, const char* subResultNa
   {
     if ( IsIncluded(r->Alias()) && r->HasValue(name) )
     {
-      if ( r->GetErrorStat(name) > 0 )
-      {
-        Double_t ei = r->GetErrorStat(name);
-        Double_t wi = 1.0/(ei*ei);
-        v1 += wi;
-        v2 += wi*wi;
-        Double_t diff = r->GetValue(name) - xmean;
-        sum += wi*diff*diff;
-        ++n;
-      }
+      Double_t e2 = r->GetErrorStat(name);
+      
+      e2 *= e2;
+      
+      if ( !(e2>0.0) ) e2 = TMath::Sqrt(r->GetValue(name));
+      
+      Double_t wi = 1.0/e2;
+      v1 += wi;
+      v2 += wi*wi;
+      Double_t diff = r->GetValue(name) - xmean;
+      sum += wi*diff*diff;
+      ++n;
     }
   }
   
@@ -513,73 +594,127 @@ Double_t AliAnalysisMuMuResult::GetValue(const char* name, const char* subResult
     }
   }
   
-  // compute the mean value from all subresults
+  // merge the value from all subresults
   TIter next(fSubResults);
   AliAnalysisMuMuResult* r;
-  Double_t mean(0);
-  Double_t errorSum(0.0);
   
-  while ( ( r = static_cast<AliAnalysisMuMuResult*>(next()) ) )
+  if ( fResultMergingMethod == kMean )
   {
-    if ( IsIncluded(r->Alias()) && r->HasValue(name) )
+    Double_t mean(0);
+    Double_t errorSum(0.0);
+
+    while ( ( r = static_cast<AliAnalysisMuMuResult*>(next()) ) )
     {
-      Double_t e = r->GetErrorStat(name);
-      Double_t e2 = e*e;
-      if ( e != 0.0 )
+      if ( IsIncluded(r->Alias()) && r->HasValue(name) )
       {
+        Double_t e = r->GetErrorStat(name)/TMath::Sqrt(r->GetValue(name)); //The Sqrt(r->GetValue(name)) was not here before
+        Double_t e2 = e*e;
+        if ( !(e2>0.0 ) ) e2 = TMath::Sqrt(r->GetValue(name));
+
         mean += r->GetValue(name)/e2;
         errorSum += 1.0/e2;
       }
     }
-  }
-  if ( errorSum != 0.0 )
-  {
-    return mean/errorSum;
+    if ( errorSum != 0.0 )
+    {
+      return mean/errorSum;
+    }
+    else
+    {
+      return TMath::Limits<Double_t>::Max();
+    }
   }
   else
   {
-    return TMath::Limits<Double_t>::Max();
+    Double_t sum(0.0);
+    
+    while ( ( r = static_cast<AliAnalysisMuMuResult*>(next()) ) )
+    {
+      if ( IsIncluded(r->Alias()) && r->HasValue(name) )
+      {
+        sum += r->GetValue(name);
+      }
+    }
+    
+    return sum;
   }
 }
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisMuMuResult::HasValue(const char* name, const char* subResultName) const
+Int_t AliAnalysisMuMuResult::HasValue(const char* name, const char* subResultName) const
 {
   /// Whether this result (or subresult if subResultName is provided) has a property
   /// named "name"
+  ///
+  /// When having subresults, return the number of subresults that have this value
+  ///
   
   if ( strlen(subResultName) > 0 )
   {
     if ( !fSubResults)
     {
       AliError(Form("No subresult from which I could get the %s one...",subResultName));
-      return kFALSE;
+      return 0;
     }
     AliAnalysisMuMuResult* sub = static_cast<AliAnalysisMuMuResult*>(fSubResults->FindObject(subResultName));
     if (!sub)
     {
       AliError(Form("Could not get subresult named %s",subResultName));
-      return kFALSE;
+      return 0;
     }
     return sub->HasValue(name);
   }
 
   if ( fMap && ( fMap->GetValue(name) != 0x0 ) )
   {
-    return kTRUE;
+    return 1;
   }
   
   TIter next(fSubResults);
   AliAnalysisMuMuResult* r;
-
+  Int_t n(0);
+  
   while ( ( r = static_cast<AliAnalysisMuMuResult*>(next()) ) )
   {
-    if ( r->HasValue(name) ) return kTRUE;
+    if ( r->HasValue(name) ) ++n;
   }
   
-  return kFALSE;
+  return n;
 }
 
+//_____________________________________________________________________________
+void AliAnalysisMuMuResult::Hide(const char* keyPattern)
+{
+  /// Specify which keys will be hidden in the Print method...
+  
+  if (!fVisibleKeys)
+  {
+    fVisibleKeys = new THashList;
+    fVisibleKeys->SetOwner(kTRUE);
+  }
+  fVisibleKeys->Clear();
+  
+  TIter next(fSubResults);
+  AliAnalysisMuMuResult* r;
+  while ( ( r = static_cast<AliAnalysisMuMuResult*>(next())) )
+  {
+    r->Hide(keyPattern);
+  }
+  
+  TIter nextKey(Keys());
+  TObjString* str;
+  
+  TPRegexp re(keyPattern);
+  
+  while ( ( str = static_cast<TObjString*>(nextKey()) ) )
+  {
+    if ( !re.MatchB(str->String()) )
+    {
+      fVisibleKeys->Add(new TObjString(*str));
+    }
+  }
+  
+}
 //_____________________________________________________________________________
 void AliAnalysisMuMuResult::Include(const char* subResultList)
 {
@@ -630,6 +765,13 @@ Bool_t AliAnalysisMuMuResult::IsIncluded(const TString& alias) const
 }
 
 //_____________________________________________________________________________
+Bool_t AliAnalysisMuMuResult::IsValidValue(Double_t val) const
+{
+  /// Whether val is a valid one
+  return ( val < TMath::Limits<Double_t>::Max() );
+}
+
+//_____________________________________________________________________________
 THashList* AliAnalysisMuMuResult::Keys() const
 {
   /// Return the complete list of keys we're using
@@ -665,6 +807,7 @@ THashList* AliAnalysisMuMuResult::Keys() const
       }
     }
 
+    fKeys->Sort();
   }
   return fKeys;
 }
@@ -799,7 +942,7 @@ void AliAnalysisMuMuResult::Print(Option_t* opt) const
   pot.ReplaceAll("ALL","");
   pot.ReplaceAll("FULL","");
 
-  std::cout << pot.Data();
+  std::cout << pot.Data() << " ";
   
     if ( fAlias.Length() > 0 )
     {
@@ -819,12 +962,19 @@ void AliAnalysisMuMuResult::Print(Option_t* opt) const
   TIter next(Keys());
   TObjString* key;
   
+  Int_t nsub = fSubResults ? fSubResults->GetEntries() : 0;
+  
   while ( ( key = static_cast<TObjString*>(next())) )
   {
-    PrintValue(key->String().Data(),pot.Data(),
-               GetValue(key->String()),
-               GetErrorStat(key->String()),
-               GetRMS(key->String()));
+    if ( fVisibleKeys  && ! fVisibleKeys->FindObject(key->String()) ) continue;
+        
+    if ( nsub==0 || nsub == HasValue(key->String().Data()) )
+    {
+      PrintValue(key->String().Data(),pot.Data(),
+                 GetValue(key->String()),
+                 GetErrorStat(key->String()),
+                 GetRMS(key->String()));
+    }
   }
 
   if ( fSubResults /* && fSubResults->GetEntries() > 1 */ && ( sopt.Contains("ALL") || sopt.Contains("FULL") ) )
@@ -879,7 +1029,7 @@ void AliAnalysisMuMuResult::PrintValue(const char* key, const char* opt,
   }
   else if ( TString(key).Contains("Nof") || ( TString(key).Contains("Fnorm") && !TString(key).Contains("persion") ) )
   {
-    std::cout << opt << Form("\t\t%20s %9.2f +- %5.2f (%5.2f %%)",key,value,errorStat,
+    std::cout << opt << Form("\t\t%20s %9.3f +- %5.3f (%5.2f %%)",key,value,errorStat,
                              value != 0.0 ? errorStat*100.0/value : 0.0);
     
     if ( rms )
@@ -890,21 +1040,36 @@ void AliAnalysisMuMuResult::PrintValue(const char* key, const char* opt,
   }
   else if ( value > 1E-3 && value < 1E3 )
   {
-    std::cout << opt << Form("\t\t%20s %9.2f +- %5.2f (%5.2f %%)",key,value,errorStat,
-                             value != 0.0 ? errorStat*100.0/value : 0.0);
-    if ( rms )
+    if (errorStat > 0.0)
     {
-      std::cout << Form(" RMS %9.2f (%5.2f %%)",rms,100.0*rms/value);
+      std::cout << opt << Form("\t\t%20s %9.3f +- %5.3f (%5.3f %%)",key,value,errorStat,
+                             value != 0.0 ? errorStat*100.0/value : 0.0);
+      if ( rms )
+      {
+        std::cout << Form(" RMS %9.2f (%5.2f %%)",rms,100.0*rms/value);
+      }
+    }
+    else
+    {
+      std::cout << opt << Form("\t\t%20s %9.3f",key,value);
     }
     std::cout << std::endl;
   }
   else
   {
-    std::cout << opt << Form("\t\t%20s %9.2e +- %9.2e (%5.2f %%)",key,value,errorStat,
-                             value != 0.0 ? errorStat*100.0/value : 0.0);
-    if ( rms )
+    if ( errorStat > 0.0 )
     {
-      std::cout << Form(" RMS %9.2e (%5.2f %%)",rms,100.0*rms/value);
+      
+      std::cout << opt << Form("\t\t%20s %9.2e +- %9.2e (%5.2f %%)",key,value,errorStat,
+                               value != 0.0 ? errorStat*100.0/value : 0.0);
+      if ( rms )
+      {
+        std::cout << Form(" RMS %9.2e (%5.2f %%)",rms,100.0*rms/value);
+      }
+    }
+    else
+    {
+      std::cout << opt << Form("\t\t%20s %9.2e ",key,value);
     }
     std::cout << std::endl;
   }
@@ -952,6 +1117,10 @@ void AliAnalysisMuMuResult::Set(const char* name, Double_t value, Double_t error
     p->AddAt(new TParameter<Double_t>(name,rms),kRMS);
     
     fMap->Add(new TObjString(name),p);
+    
+    delete fKeys; // invalidate previously computed keys arrays, if any
+    fKeys=0x0;
+//    Show("*"); // invalidate as well any printout filter that may have been set
   }
   else
   {
@@ -959,6 +1128,40 @@ void AliAnalysisMuMuResult::Set(const char* name, Double_t value, Double_t error
     static_cast<TParameter<double>*>(p->At(kErrorStat))->SetVal(errorStat);
     static_cast<TParameter<double>*>(p->At(kRMS))->SetVal(rms);
   }
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMuResult::Show(const char* keyPattern)
+{
+  /// Specify which keys will be shown in the Print method...
+
+  if (!fVisibleKeys)
+  {
+    fVisibleKeys = new THashList;
+    fVisibleKeys->SetOwner(kTRUE);
+  }
+  fVisibleKeys->Clear();
+
+  TIter next(fSubResults);
+  AliAnalysisMuMuResult* r;
+  while ( ( r = static_cast<AliAnalysisMuMuResult*>(next())) )
+  {
+    r->Show(keyPattern);
+  }
+
+  TIter nextKey(Keys());
+  TObjString* str;
+  
+  TPRegexp re(keyPattern);
+  
+  while ( ( str = static_cast<TObjString*>(nextKey()) ) )
+  {
+    if ( re.MatchB(str->String()) )
+    {
+      fVisibleKeys->Add(new TObjString(*str));
+    }
+  }
+  
 }
 
 //_____________________________________________________________________________

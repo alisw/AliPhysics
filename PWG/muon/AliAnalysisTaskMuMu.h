@@ -15,11 +15,11 @@
 /**
  * \ingroup pwg-muon-mumu
  *
- * \class AliAnalysisTaskMuMu 
+ * \class AliAnalysisTaskMuMu
  *
  * \brief Steering class for mu pairs analysis (and more...)
  *
- * This class acts as a small sub-framework to steer various sub-analysis which 
+ * This class acts as a small sub-framework to steer various sub-analysis which
  * share the same MergeableCollection and the same CounterCollection.
  *
  *  \author: L. Aphecetche (Subatech)
@@ -55,6 +55,10 @@ public:
   void AdoptSubAnalysis(AliAnalysisMuMuBase* analysis);
   
   virtual void DisableHistograms(const char* pattern="*");
+  
+  void SetCountInBins( Bool_t disableHistoLoop=kTRUE ) { fCountInBins = kTRUE; fDisableHistoLoop = disableHistoLoop; }
+  
+  void DisableHistoLoop( Bool_t disableHistoLoop=kTRUE ) { fDisableHistoLoop = disableHistoLoop; }
 
   void SetBeamYear(const char* beamYear) { fBeamYear = beamYear; }
   
@@ -91,6 +95,8 @@ private:
   
   void FillHistos(const char* eventSelection, const char* triggerClassName, const char* centrality);
   
+  void FillCounters(const char* eventSelection, const char* triggerClassName, const char* centrality, Int_t currentRun, const char* binningName="ntrcorr"/*"dnchdeta"*/);
+  
   void Fill(const char* eventSelection, const char* triggerClassName);
   
   void FillMC();
@@ -121,6 +127,10 @@ private:
   TList* fHistogramToDisable; // list of regexp of histo name(s) to disable
   
   TObjArray* fSubAnalysisVector; // list of companion analysis
+  
+  Bool_t fCountInBins; //Flag to count events in bins
+  
+  Bool_t fDisableHistoLoop; //Flag to not enter in the Filling histos Loop without disabling the histogramming (neccesary to have dNhcdEta event info avaliable)
   
   ClassDef(AliAnalysisTaskMuMu,26) // a class to analyse muon pairs (and single also ;-) )
 };
