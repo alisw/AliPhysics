@@ -107,7 +107,7 @@ set(SRCS
    )
 
 add_executable(hltdimserver ${SRCS})
-target_link_libraries(hltdimserver HLTbase AliHLTHOMER Hist Core)
+target_link_libraries(hltdimserver HLTbase AliHLTHOMER STEERBase XMLParser Graf3d RIO Hist Core)
 
 # Installation of hltdimserver
 install(TARGETS hltdimserver RUNTIME DESTINATION bin)
