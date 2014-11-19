@@ -42,6 +42,7 @@ AliAnalysisTaskEmcalHJetMass::AliAnalysisTaskEmcalHJetMass() :
   fJetMassType(kRaw),
   fDPhiHJetMax(0.6),
   fh1PtHadron(0),
+  fh3PtHPtJDPhi(0),
   fh3PtJet1VsMassVsHPtAllSel(0),
   fh3PtJet1VsMassVsHPtTagged(0),
   fh3PtJet1VsMassVsHPtTaggedMatch(0),
@@ -51,7 +52,8 @@ AliAnalysisTaskEmcalHJetMass::AliAnalysisTaskEmcalHJetMass() :
 {
   // Default constructor.
 
-  fh1PtHadron                          = new TH1F*[fNcentBins];
+  fh1PtHadron                       = new TH1F*[fNcentBins];
+  fh3PtHPtJDPhi                     = new TH3F*[fNcentBins];
   fh3PtJet1VsMassVsHPtAllSel        = new TH3F*[fNcentBins];
   fh3PtJet1VsMassVsHPtTagged        = new TH3F*[fNcentBins];
   fh3PtJet1VsMassVsHPtTaggedMatch   = new TH3F*[fNcentBins];
@@ -60,7 +62,8 @@ AliAnalysisTaskEmcalHJetMass::AliAnalysisTaskEmcalHJetMass() :
   fh3PtJet1VsRatVsHPtTaggedMatch    = new TH3F*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
-    fh1PtHadron[i]                          = 0;
+    fh1PtHadron[i]                       = 0;
+    fh3PtHPtJDPhi[i]                     = 0;
     fh3PtJet1VsMassVsHPtAllSel[i]        = 0;
     fh3PtJet1VsMassVsHPtTagged[i]        = 0;
     fh3PtJet1VsMassVsHPtTaggedMatch[i]   = 0;
@@ -82,6 +85,7 @@ AliAnalysisTaskEmcalHJetMass::AliAnalysisTaskEmcalHJetMass(const char *name) :
   fJetMassType(kRaw),
   fDPhiHJetMax(0.6),
   fh1PtHadron(0),
+  fh3PtHPtJDPhi(0),
   fh3PtJet1VsMassVsHPtAllSel(0),
   fh3PtJet1VsMassVsHPtTagged(0),
   fh3PtJet1VsMassVsHPtTaggedMatch(0),
@@ -91,7 +95,8 @@ AliAnalysisTaskEmcalHJetMass::AliAnalysisTaskEmcalHJetMass(const char *name) :
 {
   // Standard constructor.
 
-  fh1PtHadron                          = new TH1F*[fNcentBins];
+  fh1PtHadron                       = new TH1F*[fNcentBins];
+  fh3PtHPtJDPhi                     = new TH3F*[fNcentBins];
   fh3PtJet1VsMassVsHPtAllSel        = new TH3F*[fNcentBins];
   fh3PtJet1VsMassVsHPtTagged        = new TH3F*[fNcentBins];
   fh3PtJet1VsMassVsHPtTaggedMatch   = new TH3F*[fNcentBins];
@@ -100,7 +105,8 @@ AliAnalysisTaskEmcalHJetMass::AliAnalysisTaskEmcalHJetMass(const char *name) :
   fh3PtJet1VsRatVsHPtTaggedMatch    = new TH3F*[fNcentBins];
  
   for (Int_t i = 0; i < fNcentBins; i++) {
-    fh1PtHadron[i]                          = 0;
+    fh1PtHadron[i]                       = 0;
+    fh3PtHPtJDPhi[i]                     = 0;
     fh3PtJet1VsMassVsHPtAllSel[i]        = 0;
     fh3PtJet1VsMassVsHPtTagged[i]        = 0;
     fh3PtJet1VsMassVsHPtTaggedMatch[i]   = 0;
@@ -144,6 +150,10 @@ void AliAnalysisTaskEmcalHJetMass::UserCreateOutputObjects()
   const Double_t minPtH = 0.;
   const Double_t maxPtH = 100.;
 
+  const Int_t nBinsPhi  = 18*4;
+  const Double_t minPhi = -0.5*TMath::Pi();
+  const Double_t maxPhi = 1.5*TMath::Pi();
+
   TString histName = "";
   TString histTitle = "";
   for (Int_t i = 0; i < fNcentBins; i++) {
@@ -151,6 +161,11 @@ void AliAnalysisTaskEmcalHJetMass::UserCreateOutputObjects()
     histTitle = TString::Format("%s;#it{p}_{T,h}",histName.Data());
     fh1PtHadron[i] = new TH1F(histName.Data(),histTitle.Data(),200.,0.,200.);
     fOutput->Add(fh1PtHadron[i]);
+
+    histName = TString::Format("fh3PtHPtJDPhi_%d",i);
+    histTitle = TString::Format("%s;#it{p}_{T,h};#it{p}_{T,jet};#Delta#varphi_{h,jet}",histName.Data());
+    fh3PtHPtJDPhi[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPtH,minPtH,maxPtH,nBinsPt,minPt,maxPt,nBinsPhi,minPhi,maxPhi);
+    fOutput->Add(fh3PtHPtJDPhi[i]);
 
     histName = TString::Format("fh3PtJet1VsMassVsHPtAllSel_%d",i);
     histTitle = TString::Format("%s;#it{p}_{T,jet1};#it{M}_{jet1};#it{p}_{T,h}",histName.Data());
@@ -205,7 +220,8 @@ Bool_t AliAnalysisTaskEmcalHJetMass::Run()
       if(jCont) {
 	jCont->ResetCurrentID();
 	while((jet = jCont->GetNextAcceptJet())) {
-	  Double_t dphi = GetDeltaPhi(vp,jet)+TMath::Pi();
+	  Double_t dphi = GetDeltaPhi(vp,jet)-TMath::Pi();
+	  fh3PtHPtJDPhi[fCentBin]->Fill(vp->Pt(),jet->Pt() - GetRhoVal(fContainerBase)*jet->Area(),dphi);
 	  if(dphi>fDPhiHJetMax) continue;
 	  FillHJetHistograms(vp->Pt(),jet);
 	}
