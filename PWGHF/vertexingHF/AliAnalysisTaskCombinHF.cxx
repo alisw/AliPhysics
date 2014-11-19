@@ -1143,7 +1143,7 @@ void AliAnalysisTaskCombinHF::DoMixingWithCuts(){
 	      FillMEHistos(421,2,tmpRD2,px,py,pz,pdg0);
 	    }	  
 	    if(fMeson==kDzero && chargePi1*chargeK>0){
-	      FillMEHistosLS(421,2,tmpRD2,px,py,pz,pdg0,chargePi1);
+	      FillMEHistosLS(421,2,tmpRD2,px,py,pz,pdg0,(Int_t)chargePi1);
 	    }
 	  }
 	}
@@ -1263,7 +1263,7 @@ void AliAnalysisTaskCombinHF::DoMixingWithPools(Int_t poolIndex){
 	      }
 	    }
 	  }else if(chargePi1*chargeK>0){
-	    if(fMeson==kDzero) FillMEHistosLS(421,2,tmpRD2,px,py,pz,pdg0,chargePi1);
+	    if(fMeson==kDzero) FillMEHistosLS(421,2,tmpRD2,px,py,pz,pdg0,(Int_t)chargePi1);
 	  }
 	}
       }
