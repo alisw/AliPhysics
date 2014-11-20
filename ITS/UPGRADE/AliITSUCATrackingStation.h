@@ -103,6 +103,8 @@ public:
   virtual void Print(Option_t *opt="")  const;
   
 protected:
+  AliITSUCATrackingStation(const AliITSUCATrackingStation &);
+  AliITSUCATrackingStation &operator=(const AliITSUCATrackingStation &);
   TClonesArray* fClusters;    // externally supplied clusters
   int   fVIDOffset;           // offset of VID for detectors of this layer
   int   fNClusters;           // N clusters

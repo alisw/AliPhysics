@@ -1021,7 +1021,12 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xk, Double_t b) {
     //    double rot = 2*TMath::ASin(0.5*chord*crv); // angular difference seen from the circle center
     //    fP1 += rot/crv*fP3;
     // 
-    fP1 += fP3/crv*TMath::ASin(r1*f2 - r2*f1); // more economic version from Yura.
+    double rot = TMath::ASin(r1*f2 - r2*f1); // more economic version from Yura.
+    if (f1*f1+f2*f2>1 && f1*f2<0) {          // special cases of large rotations or large abs angles
+      if (f2>0) rot =  TMath::Pi() - rot;    //
+      else      rot = -TMath::Pi() - rot;
+    }
+    fP1 += fP3/crv*rot; 
   }
 
   //f = F - 1
@@ -1103,9 +1108,24 @@ Bool_t AliExternalTrackParam::PropagateParamOnlyTo(Double_t xk, Double_t b) {
   fX=xk;
   double dy2dx = (f1+f2)/(r1+r2);
   fP[0] += dx*dy2dx;
-  fP[1] += dx*(r2 + f2*dy2dx)*fP[3];  // Many thanks to P.Hristov !
   fP[2] += x2r;
-
+  if (TMath::Abs(x2r)<0.05) fP[1] += dx*(r2 + f2*dy2dx)*fP[3];  // Many thanks to P.Hristov !
+  else { 
+    // for small dx/R the linear apporximation of the arc by the segment is OK,
+    // but at large dx/R the error is very large and leads to incorrect Z propagation
+    // angle traversed delta = 2*asin(dist_start_end / R / 2), hence the arc is: R*deltaPhi
+    // The dist_start_end is obtained from sqrt(dx^2+dy^2) = x/(r1+r2)*sqrt(2+f1*f2+r1*r2)
+    //    double chord = dx*TMath::Sqrt(1+dy2dx*dy2dx);   // distance from old position to new one
+    //    double rot = 2*TMath::ASin(0.5*chord*crv); // angular difference seen from the circle center
+    //    fP1 += rot/crv*fP3;
+    // 
+    double rot = TMath::ASin(r1*f2 - r2*f1); // more economic version from Yura.
+    if (f1*f1+f2*f2>1 && f1*f2<0) {          // special cases of large rotations or large abs angles
+      if (f2>0) rot =  TMath::Pi() - rot;    //
+      else      rot = -TMath::Pi() - rot;
+    }
+    fP[1] += fP[3]/crv*rot; 
+  }
   return kTRUE;
 }
 

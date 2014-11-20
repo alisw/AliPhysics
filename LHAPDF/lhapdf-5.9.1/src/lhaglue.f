@@ -2343,8 +2343,8 @@ subroutine structm(dx,dq,upv,dnv,usea,dsea,str,chm,bot,top,glu)
   include 'commonlhacontrol.inc'
   include 'commonlhaglsta.inc'
   ! commonblocks.
-  common/pydat1/mstu(200),paru(200),mstj(200),parj(200)
-  save /pydat1/
+!  common/pydat1/mstu(200),paru(200),mstj(200),parj(200)
+!  save /pydat1/
   ! interface to lhapdflib.
   double precision qcdlha4, qcdlha5
   integer nfllha
@@ -2430,8 +2430,8 @@ subroutine structp(dx,dq2,p2,ip2,upv,dnv,usea,dsea,str,chm,bot,top,glu)
   include 'commonlhacontrol.inc'
   include 'commonlhaglsta.inc'
   ! Commonblocks.
-  common/pydat1/mstu(200),paru(200),mstj(200),parj(200)
-  save /pydat1/
+!  common/pydat1/mstu(200),paru(200),mstj(200),parj(200)
+!  save /pydat1/
   ! Interface to LHAPDFLIB.
   double precision qcdlha4, qcdlha5
   integer nfllha

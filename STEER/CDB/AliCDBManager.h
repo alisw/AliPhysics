@@ -56,7 +56,7 @@ class AliCDBManager: public TObject {
     AliCDBStorage* GetDefaultStorage() const {return fDefaultStorage;}
     void UnsetDefaultStorage();
 
-    void SetSpecificStorage(const char* calibType, const char* dbString);
+    void SetSpecificStorage(const char* calibType, const char* dbString, Int_t version = -1, Int_t subVersion = -1);
 
     AliCDBStorage* GetSpecificStorage(const char* calibType);
 
@@ -158,7 +158,7 @@ class AliCDBManager: public TObject {
     AliCDBStorage* GetStorage(const AliCDBParam* param);
     AliCDBStorage* GetActiveStorage(const AliCDBParam* param);
     void PutActiveStorage(AliCDBParam* param, AliCDBStorage* storage);
-    void SetSpecificStorage(const char* calibType, const AliCDBParam* param);
+    void SetSpecificStorage(const char* calibType, const AliCDBParam* param, Int_t version = -1, Int_t subVersion = -1);
     void AlienToCvmfsUri(TString& uriString) const;
     void ValidateCvmfsCase() const;
     void GetLHCPeriodAgainstAlienFile(Int_t run, TString& lhcPeriod, Int_t& startRun, Int_t& endRun);

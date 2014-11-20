@@ -20,7 +20,7 @@
 //
 //Begin Html       
 /*
-<img src="gif/AliFITv1Class.gif">
+<img src="gif/AliFITv2Class.gif">
 */
 //End Html
 //                                                                  //
@@ -51,7 +51,7 @@
 #include "AliRun.h"
 
 #include "AliFITHits.h"
-#include "AliFITv1.h"
+#include "AliFITv2.h"
 
 #include "AliMC.h"
 #include "AliCDBLocal.h"
@@ -60,11 +60,11 @@
 #include "AliCDBEntry.h"
 #include "AliTrackReference.h"
 
-ClassImp(AliFITv1)
+ClassImp(AliFITv2)
 
 
 //--------------------------------------------------------------------
-AliFITv1::AliFITv1():  AliFIT(),
+AliFITv2::AliFITv2():  AliFIT(),
 		     fIdSens1(0),
 		     fPMTeff(0x0)
 
@@ -73,7 +73,7 @@ AliFITv1::AliFITv1():  AliFIT(),
   // Standart constructor for T0 Detector version 0
 }
 //--------------------------------------------------------------------
-AliFITv1::AliFITv1(const char *name, const char *title):
+AliFITv2::AliFITv2(const char *name, const char *title):
   AliFIT(name,title),
   fIdSens1(0),
   fPMTeff(0x0)
@@ -87,13 +87,13 @@ AliFITv1::AliFITv1(const char *name, const char *title):
 }
 //_____________________________________________________________________________
 
-AliFITv1::~AliFITv1() 
+AliFITv2::~AliFITv2() 
 {
   // desctructor  
 }
 
 //-------------------------------------------------------------------------
-void AliFITv1::CreateGeometry()
+void AliFITv2::CreateGeometry()
 {
   //
   // Create the geometry of FIT Detector version 1 full geometry
@@ -102,7 +102,7 @@ void AliFITv1::CreateGeometry()
   //
 
   Int_t *idtmed = fIdtmed->GetArray();
-  Float_t zdetC = 85; //center of mother volume
+  Float_t zdetC = 81;
   Float_t zdetA = 333;
   
   Int_t idrotm[999];
@@ -114,7 +114,7 @@ void AliFITv1::CreateGeometry()
   Float_t  pmcp[3] = {3.19, 3.19, 2.8}; //MCP
   Float_t ptop[3] = {1.324, 1.324, 1.};//cherenkov radiator
   Float_t preg[3] = {1.324, 1.324, 0.05};//photcathode 
- 
+
   Float_t zV0A = 329.;
   Float_t pV0Amother[3] = {4.25, 41.25, 0.6};
   Float_t pV0A[3] = {4.3, 41.2, 0.5};
@@ -126,32 +126,8 @@ void AliFITv1::CreateGeometry()
   //-------------------------------------------------------------------
   //C side
 
-
-  Float_t xc[20] = {9.6,  16, -9.6, -16, 9.6, 16,
-		    -9.6, -16, -9.6, -3.2, 3.2, 9.6,
-		    -9.6, -3.2, 3.2, 9.6, -3.2, 3.2, 
-		    -3.2, 3.2};
-  
-  Float_t yc[20] = {3.2, 3.2, 3.2, 3.2, -3.2, -3.2, 
-		    -3.2, -3.2, 9.6, 9.6, 9.6, 9.6,
-		    -9.6, -9.6, -9.6, -9.6, 16, 16,
-		    -16, -16};
-  
-  // A side
-  Float_t xa[20] = {0.0, 0.0, 0.0, 0.0, 6.4,
-                    6.4, 6.4, 6.4, 6.4,
-                    -6.4, -6.4, -6.4, -6.4, -6.4,
-                    12.8, 12.8, 12.8, 
-                    -12.8, -12.8, -12.8};
-  
-  Float_t ya[20] = { 6.4, 12.8, -6.4, -12.8,
-		     0, 6.4, 12.8, -6.4,
-		     -12.8, 0., 6.4, 12.8,
-	             -6.4, -12.8, 0, 6.4,
-		     -6.4, 0.0, 6.4, -6.4};  
-  
-  Float_t zc[20] = {2,0, 2,0, 2,0, 2,0, 2,2, 2,2, 2,2, 2,2, 0,0,0,0};
-  Float_t za[20] = {2,0, 2,0, 2,2, 0,2, 0,2, 2,0, 2,0, 0,0, 0,0,0,0};
+   Float_t zc[36] = {2,0, 2,0, 2,0, 2,0, 2,2, 2,2, 2,2, 2,2, 0,0,0,0};
+   Float_t za[25] = {2,0, 2,0, 2,2, 0,2, 0,2, 2,0, 2,0, 0,0, 0,0,0,0};
   
    
   TGeoVolumeAssembly * stlinA = new TGeoVolumeAssembly("0STL");  // A side mother 
@@ -163,20 +139,47 @@ void AliFITv1::CreateGeometry()
   TGeoTranslation *tr[40];
   TString nameTr;
   //C side
-  for (Int_t itr=0; itr<20; itr++) {
-    nameTr = Form("0TR%i",itr+1);
-    z=-pstartA[2]+pinstart[2]+za[itr];
-    tr[itr] = new TGeoTranslation(nameTr.Data(),xa[itr],ya[itr], z );
-    printf(" A %f %f %f \n",xa[itr], ya[itr], z+zdetA);
-    tr[itr]->RegisterYourself();
-    stlinA->AddNode(ins,itr,tr[itr]);
-    z=-pstartC[2]+pinstart[2]+zc[itr];
-    tr[itr+20] = new TGeoTranslation(nameTr.Data(),xc[itr],yc[itr], z );
-    tr[itr+20]->RegisterYourself();
-    stlinC->AddNode(ins,itr+20,tr[itr+20]);
-    printf(" C %f %f %f \n",xc[itr], yc[itr], z+zdetC);
+  Float_t xa=-12.8;
+  Float_t ya=-12.8;
+  Int_t itr=0;
+  Int_t itrHole=0;
+  for (Int_t itrx=0; itrx<5; itrx++) {
+    for (Int_t itry=0; itry<5; itry++) {
+      nameTr = Form("0TR%i",itr+1);
+      z=-pstartA[2]+pinstart[2]/*+za[itr]*/;
+      if(itr !=12){
+	if(TMath::Abs(xa)<10 && TMath::Abs(ya)<10) z= z-2;
+	tr[itr] = new TGeoTranslation(nameTr.Data(),xa,ya, z );
+	tr[itr]->RegisterYourself();
+	stlinA->AddNode(ins,itr,tr[itr]);
+      }
+      printf(" A %i %f %f %f \n",itr, xa, ya, z+zdetA);
+      itr++;
+      ya+=6.4;
+    }
+    ya=-12.8;
+    xa+=6.4;
   }
-  TGeoVolume *alice = gGeoManager->GetVolume("ALIC");
+  Float_t xc=-16;
+  Float_t yc=-16;
+  for (Int_t itrx=0; itrx<6; itrx++) {
+    for (Int_t itry=0; itry<6; itry++) {
+      nameTr = Form("0TR%i",itr+1);
+      z=-pstartC[2]+pinstart[2]/*+zc[itr]*/;
+      if (itr!=39 && itr!=40 && itr!=45 &&itr!=46) {
+	if( TMath::Abs(xc)<10 &&  TMath::Abs(yc)<10) z= z+2;
+	tr[itr] = new TGeoTranslation(nameTr.Data(),xc,yc, z );
+	tr[itr]->RegisterYourself();
+	stlinC->AddNode(ins,itr,tr[itr]);
+      }
+      printf(" C %i %f %f %f \n",itr,xc, yc, z+zdetC);
+      itr++;
+      yc+=6.4;
+    }
+    yc=-16;
+    xc+=6.4;
+  }
+    TGeoVolume *alice = gGeoManager->GetVolume("ALIC");
   alice->AddNode(stlinA,1,new TGeoTranslation(0,0, zdetA ) );
   //  alice->AddNode(stlinC,1,new TGeoTranslation(0,0, zdetC ) );
   TGeoRotation * rotC = new TGeoRotation( "rotC",90., 0., 90., 90., 180., 0.);
@@ -224,7 +227,7 @@ void AliFITv1::CreateGeometry()
  
 }    
 //------------------------------------------------------------------------
-void AliFITv1::AddAlignableVolumes() const
+void AliFITv2::AddAlignableVolumes() const
 {
   //
   // Create entries for alignable volumes associating the symbolic volume
@@ -249,7 +252,7 @@ symName.Data(),volPath.Data()));
    }
 }   
 //------------------------------------------------------------------------
-void AliFITv1::CreateMaterials()
+void AliFITv2::CreateMaterials()
 {
 
    Int_t isxfld   = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
@@ -290,7 +293,7 @@ void AliFITv1::CreateMaterials()
 }
 
 //-------------------------------------------------------------------
-void AliFITv1::DefineOpticalProperties()
+void AliFITv2::DefineOpticalProperties()
 {
 
 
@@ -366,7 +369,7 @@ void AliFITv1::DefineOpticalProperties()
 }
 
 //-------------------------------------------------------------------
-void AliFITv1::Init()
+void AliFITv2::Init()
 {
 // Initialises version 0 of the Forward Multiplicity Detector
 //
@@ -379,7 +382,7 @@ void AliFITv1::Init()
 
 //-------------------------------------------------------------------
 
-void AliFITv1::StepManager()
+void AliFITv2::StepManager()
 {
   //
   // Called for every step in the T0 Detector
@@ -460,7 +463,7 @@ void AliFITv1::StepManager()
 
 
 //------------------------------------------------------------------------
-Bool_t AliFITv1::RegisterPhotoE(Double_t energy)
+Bool_t AliFITv2::RegisterPhotoE(Double_t energy)
 {
   
   
@@ -478,7 +481,7 @@ Bool_t AliFITv1::RegisterPhotoE(Double_t energy)
 
 //----------------------------------------------------------------------------
 
-void AliFITv1::SetPMTeff()
+void AliFITv2::SetPMTeff()
 {
   Float_t lambda[50];
   Float_t eff[50 ] = {0,        0,       0.23619,  0.202909, 0.177913, 

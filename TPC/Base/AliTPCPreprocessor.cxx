@@ -43,6 +43,9 @@ const Int_t kDiffCutTemp = 5;	             // discard temperature differences > 
 const Double_t kHighVoltageDifference = 1e-4; // don't record High Voltage points 
                                              // differing by less than 1e-4 from
 					     // previous point.
+const Double_t kGasCompositionDifference = 1e-3; // don't record Gas Composition points 
+                                             // differing by less than 1e-3 from
+					     // previous point
 const TString kPedestalRunType = "PEDESTAL";  // pedestal run identifier
 const TString kPulserRunType = "PULSER";     // pulser run identifier
 const TString kPhysicsRunType = "PHYSICS";   // physics run identifier
@@ -74,7 +77,7 @@ ClassImp(AliTPCPreprocessor)
 AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
   AliPreprocessor("TPC",shuttle),
   fConfEnv(0), fTemp(0), fHighVoltage(0), fHighVoltageStat(0), fGoofie(0),
-  fPressure(0), fConfigOK(kTRUE), fROC(0)
+  fPressure(0), fGasComposition(0), fConfigOK(kTRUE), fROC(0)
 {
   // constructor
   fROC = AliTPCROC::Instance();
@@ -93,7 +96,7 @@ AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
  AliTPCPreprocessor::AliTPCPreprocessor(const AliTPCPreprocessor&  ) :
    AliPreprocessor("TPC",0),
    fConfEnv(0), fTemp(0), fHighVoltage(0), fHighVoltageStat(0), fGoofie(0),
-   fPressure(0), fConfigOK(kTRUE), fROC(0)
+   fPressure(0), fGasComposition(0), fConfigOK(kTRUE), fROC(0)
  {
 
    Fatal("AliTPCPreprocessor", "copy constructor not implemented");
@@ -110,6 +113,7 @@ AliTPCPreprocessor::~AliTPCPreprocessor()
   delete fHighVoltage;
   delete fHighVoltageStat;
   delete fGoofie;
+  delete fGasComposition;
   delete fPressure;
 }
 //______________________________________________________________________________________________
@@ -214,6 +218,26 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
         fGoofie = new AliDCSSensorArray(startTime, endTime, confTree);
       }
 
+
+  // Gas composition measurements
+
+      TString gasConf = fConfEnv->GetValue("GasComposition","OFF");
+      gasConf.ToUpper();
+      if (gasConf != "OFF" ) { 
+        confTree=0;
+        entry=0;
+        entry = GetFromOCDB("Config", "GasComposition");
+        if (entry) confTree = (TTree*) entry->GetObject();
+        if ( confTree==0 ) {
+           Log("AliTPCPreprocsessor: Gas Composition Config OCDB entry missing.\n");
+           fConfigOK = kFALSE;
+           return;
+        }
+        time_t timeStart = (time_t)(((TString)GetRunParameter("DAQ_time_start")).Atoi());
+	time_t timeEnd = (time_t)(((TString)GetRunParameter("DAQ_time_end")).Atoi());
+        fGasComposition = new AliDCSSensorArray (UInt_t(timeStart), 
+	                                    UInt_t(timeEnd), confTree);
+      }
    // Pressure values
      
        TString runType = GetRunType();
@@ -294,6 +318,19 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
      UInt_t goofieResult = MapGoofie(dcsAliasMap);
      if (goofieConf != "TRY") result+=goofieResult;
      status = new TParameter<int>("goofieResult",goofieResult);
+     resultArray->Add(status);
+    }
+
+
+    // Gas composition recordings
+
+
+    TString gasConf = fConfEnv->GetValue("GasComposition","OFF");
+    gasConf.ToUpper();
+    if (gasConf != "OFF" ) { 
+     UInt_t gasResult = MapGasComposition(dcsAliasMap);
+     if (gasConf != "TRY") result+=gasResult;
+     status = new TParameter<int>("gasResult",gasResult);
      resultArray->Add(status);
     }
 
@@ -639,6 +676,43 @@ UInt_t AliTPCPreprocessor::MapGoofie(TMap* dcsAliasMap)
 	metaData.SetComment("Preprocessor AliTPC data base entries.");
 
 	Bool_t storeOK = Store("Calib", "Goofie", fGoofie, &metaData, 0, kFALSE);
+        if ( !storeOK )  result=1;
+
+   }
+
+   return result;
+
+}
+
+//______________________________________________________________________________________________
+UInt_t AliTPCPreprocessor::MapGasComposition(TMap* dcsAliasMap)
+{
+
+   // extract DCS HV maps. Perform fits to save space
+
+  UInt_t result=0;
+  TMap *map = fGasComposition->ExtractDCS(dcsAliasMap);
+  if (map) {
+    fGasComposition->ClearFit();
+    fGasComposition->RemoveGraphDuplicates(kGasCompositionDifference);
+               // don't keep new point if too similar to previous one
+    fGasComposition->SetGraph(map);
+  } else {
+    Log("No gas composition recordings extracted. \n");
+    result=9;
+  }
+  delete map;
+
+  // Now store the final CDB file
+
+  if ( result == 0 ) {
+        AliCDBMetaData metaData;
+	metaData.SetBeamPeriod(0);
+	metaData.SetResponsible("Haavard Helstrup");
+	metaData.SetAliRootVersion(ALIROOT_BRANCH);
+	metaData.SetComment("Preprocessor AliTPC data base entries.");
+
+	Bool_t storeOK = Store("Calib", "GasComposition", fGasComposition, &metaData, 0, kFALSE);
         if ( !storeOK )  result=1;
 
    }

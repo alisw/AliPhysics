@@ -37,7 +37,7 @@ class AliGenCocktailAfterBurner : public  AliGenCocktail
     //
     // Add a new generator to the list
     virtual void  AddAfterBurner
-	(AliGenerator *Generator, char* Name, Float_t RateExp );
+	(AliGenerator *Generator, const char* Name, Float_t RateExp );
     
     AliStack*     GetStack(Int_t n) const;
     AliStack*     GetActiveStack() const{return fActiveStack;}

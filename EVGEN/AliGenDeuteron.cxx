@@ -67,7 +67,6 @@ AliGenDeuteron::AliGenDeuteron(Int_t sign, Double_t pmax, Double_t rmax, Int_t c
  ,fR(0)
  ,fPsiR(0)
  ,fCurStack(0)
- ,fNtrk(0)
 {
 //
 // constructor
@@ -349,11 +348,19 @@ void AliGenDeuteron::PushDeuteron(TParticle* parent1, TParticle* parent2)
 	// E^2 = p^2 + m^2
 	Double_t energy = TMath::Sqrt(pN.Mag2() + kDeuteronMass*kDeuteronMass);
 	
+	Int_t ntrk = 0;
+	Double_t weight = 1;
+	Int_t is = 1; // final state particle
+	
 	// Add a new (anti)deuteron to current event stack
 	fCurStack->PushTrack(1, -1, fSign*kDeuteronPdg,
 	                 pN.X(), pN.Y(), pN.Z(), energy,
 	                 vN.X(), vN.Y(), vN.Z(), parent1->T(),
-	                 0., 0., 0., kPNCapture, fNtrk, 1., 0);
+	                 0., 0., 0., kPNCapture, ntrk, weight, is);
+	
+	// change the status code of the parents
+	parent1->SetStatusCode(kCluster);
+	parent2->SetStatusCode(kCluster);
 	
 	// Set kDoneBit for the parents
 	parent1->SetBit(kDoneBit);

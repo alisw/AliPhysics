@@ -1916,13 +1916,13 @@ void AliAnalysisTaskESDfilter::ConvertTZERO(const AliESDEvent& esd)
   Int_t idxOfFirstPmtA = -1,       idxOfFirstPmtC = -1;
   Float_t timeOfFirstPmtA = 9999, timeOfFirstPmtC = 9999;
   for(int ipmt=0;  ipmt<12; ipmt++){
-    if( rawTime[ipmt] > -200 && rawTime[ipmt] < timeOfFirstPmtC && rawTime[ipmt]!=0){
+    if( rawTime[ipmt] > -2 && rawTime[ipmt] < timeOfFirstPmtC && rawTime[ipmt]!=0){
       timeOfFirstPmtC = rawTime[ipmt];
       idxOfFirstPmtC  = ipmt;
     }
   }
   for(int ipmt=12; ipmt<24; ipmt++){
-    if( rawTime[ipmt] > -200 && rawTime[ipmt] < timeOfFirstPmtA && rawTime[ipmt]!=0 ){
+    if( rawTime[ipmt] > -2 && rawTime[ipmt] < timeOfFirstPmtA && rawTime[ipmt]!=0 ){
       timeOfFirstPmtA = rawTime[ipmt];
       idxOfFirstPmtA  = ipmt;
     }

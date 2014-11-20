@@ -22,7 +22,7 @@ ccc new
       common/vars0/ mf127, mf1525, m0, mmes0, mmes1, mmes2, mp, 
      &              mwidth, pi, rt2, ebeam, sum, sum1, weightm,
      &              bjac, bp 
-      common /ivars/ ncut, ll, icut, nev, num
+      common /ivars/ ncut, ll, icut, nev, num, ntotal
 ccc new
       common/cuts/etaelmax,etaelmin,ptelmin,ptphmin,ecut,rmax,rmin,mcut
       common/flags/ pflag, fsi, ppbar, output, cuts, unw
@@ -163,8 +163,8 @@ ccAM      iin=1           ! Model for soft survival factor, as described in arXi
           write(6,*) "*************************************************"
 cccccccc
 
-ccAM      ntotal=1000000            ! no. of runs for weighted events
-ccAM      nev=100                  ! no. of unweighted events generated to event record
+          ntotal=1000000             ! no. of runs for weighted events
+          nev=100                    ! no. of unweighted events generated to event record
 
 ccccccccc
 
@@ -512,31 +512,24 @@ ccc   HEPEVT
       else
          lmax=1
       endif
-
-c      do ll=1,lmax
-      ll = 2
-      if(ll.eq.2)then
-c         ntotal=nev*10
-         ntotal=1000000000
-      endif
-
+c
+c
+c     first  generate weighted events first
+      ll = 1 
       ip=ntotal+1
-
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c                                                       c
-c     Start of event loop                               c
-c                                                       c
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-
-      if(ll.eq.1)then
-         write(6,*)'Generating weighted events...'
-      else
-        write(6,*)'Generating unweighted events...'
-      endif
+      write(6,*)'Generating weighted events...'
+      do i=1, ntotal
+         isuc = 0
+         call dimegenerate(isuc)
+      enddo
+c     prepare for unweighted generation      
+      ll = 2
+      write(6,*)'Generating unweighted events...'
+c
       return
       end
       
-      subroutine dimegenerate
+      subroutine dimegenerate(isuccess)
       implicit none
       
 ccccc hepevt output
@@ -579,14 +572,14 @@ ccccc
       double precision m0, mmes0, mmes1, mmes2, mp, mwidth, pi, rt2,
      &ebeam, sh, th, uh, sum, sum1, weightm
 
-      integer id(20), ncut, ll, icut, nev, num, iin
+      integer id(20), ncut, ll, icut, nev, num, iin, ntotal
 
       common/vars/s,rts,mmes,yx, iin
       common/hvars/sh,th,uh
       common/vars0/ mf127, mf1525, m0, mmes0, mmes1, mmes2, mp, 
      &              mwidth, pi, rt2, ebeam, sum, sum1, weightm,
      &              bjac, bp 
-      common /ivars/ ncut, ll, icut, nev, num
+      common /ivars/ ncut, ll, icut, nev, num, ntotal
 ccccc
       character prefix*50,fsp*10,order*10,pflag*10,fsi*10,formf*10
      &,ppbar*10,output*10,mregge*10,cuts*10,unw*10
@@ -610,8 +603,9 @@ cccccc local variables ...
       double precision pboo(4), pcm(4), plb(4)
       double precision svec(4)
       complex*16 zmat
-      integer h, i, j, k, ntotal
+      integer h, i, j, k, isuccess
       weight=0d0
+      isuccess = 0
       call r2455(ran0)
       call r2455(ran1)
       call r2455(ran2)
@@ -870,7 +864,6 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c      place cuts
 
          if(cuts.eq.'true')then
-
             call cut(icut)
             
             if(icut.eq.0)then
@@ -1050,7 +1043,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccc
          call r2455(ranhist)
          
          if(ranhist.lt.weight/weightm)then
-            
+            isuccess = 1
             xwgtup=1d0
 
             num=num+1
@@ -1089,9 +1082,7 @@ c            call binit(sumt/nev)
       if(num.gt.nev-1)then  ! exit loop once required no. of unweighted events generated
 
          ntotal=i
-!         goto 888
-c         call terminate(ntotal)
-
+         return
       endif
       endif
 

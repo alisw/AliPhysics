@@ -43,6 +43,7 @@ class AliGenDeuteron: public AliGenerator
 
 	enum { kFirstPartner=0, kLowestMomentum, kLowestDistance, kBoth };
 	enum { kNone=0, kThermal, kExpansion };
+	enum { kCluster=77 };
 	
  private:
  
@@ -71,7 +72,6 @@ class AliGenDeuteron: public AliGenerator
 	Double_t fR;          // Projectile/Target nuclear radius (fm)
 	Double_t fPsiR;       // Reaction plane angle
 	AliStack* fCurStack;  //! current event stack
-	Int_t fNtrk;          //! number of the stored track
 	
 	ClassDef(AliGenDeuteron,2)
 };
