@@ -1,5 +1,5 @@
-#ifndef ALIHLTTESTINPUTHANDLER_H
-#define ALIHLTTESTINPUTHANDLER_H
+#ifndef ALIHLTVEVENTINPUTHANDLER_H
+#define ALIHLTVEVENTINPUTHANDLER_H
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
