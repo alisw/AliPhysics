@@ -22,7 +22,7 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 */
 
 #include "AliEMCALTriggerData.h"
-#include "AliEMCALTriggerPatch.h"
+//#include "AliEMCALTriggerPatch.h"
 #include "AliLog.h"
 #include "TIterator.h"
 #include "Riostream.h"

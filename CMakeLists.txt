@@ -31,6 +31,51 @@ include(CheckCompiler)
 # ROOT dictionaries and maps
 include(CMakeALICE)
 
+# Checking first for DIM, DATE, AMORE and daqDA 
+# in case ROOT Extra static library needs to be enabled
+
+# DATE
+if(DATE_CONFIG)
+    find_package(DATE)
+endif(DATE_CONFIG)
+
+# daqDA
+if(daqDA)
+    find_package(daqDA)
+endif(daqDA)
+
+# AMORE
+if(AMORE_CONFIG)
+    find_package(AMORE)
+endif(AMORE_CONFIG)
+
+# DA is enabled
+if(DA)
+    if(NOT DIMDIR AND NOT ODIR)
+        set(DA FALSE)
+        message(FATAL_ERROR "Das enabled but no DIMDIR and ODIR set. Please set DIMDIR to DIM installation and ODIR to platform (default linux)")
+    endif()
+
+    if(NOT DATE_FOUND)
+        set(DA FALSE)
+        message(FATAL_ERROR "DAs enabled but no DATE support found. Please point to your date installation using \"DATE_CONFIG\" variable")
+    endif()
+
+    if(NOT daqDA_FOUND)
+        set(DA FALSE)
+        message(FATAL_ERROR "DAs enabled but no daqDA support found. Please point to your daqDA installation using \"daqDA\" variable")
+    endif()
+
+    if(NOT AMORE_FOUND)
+        set(DA FALSE)
+        message(FATAL_ERROR "DAs enabled but no AMORE support found. Please point to your AMORE installation using \"AMORE_CONFIG\" variable")
+    endif()
+    
+    # Enable static libraries
+    set(ALIROOT_STATIC TRUE)
+    message(STATUS "DAs enabled")
+endif(DA)
+
 # ROOT configuration mandatory
 if(ROOTSYS)
     find_package(ROOT REQUIRED)
@@ -59,12 +104,36 @@ check_language(Fortran)
 if(CMAKE_Fortran_COMPILER)
     enable_language(Fortran OPTIONAL)
 else()
-    message("No Fortran support. Disabling LHAPDF, PHYTIA6, MICROCERN, etc.")
+    message(STATUS "No Fortran support. Disabling LHAPDF, PHYTIA6, MICROCERN, etc.")
 endif()
 
 
 # DATE
-find_package(DATE)
+if(DATE_CONFIG)
+    find_package(DATE)
+endif(DATE_CONFIG)
+
+# daqDA
+if(daqDA)
+    find_package(daqDA)
+endif(daqDA)
+
+# DA is enabled
+if(DA)
+    if(NOT DATE_FOUND)
+        set(DA FALSE)
+        message(FATAL_ERROR "DAs enabled but no DATE support found. Please point to your date installation using \"DATE_CONFIG\"")
+    endif()
+    
+    if(NOT daqDA_FOUND)
+        set(DA FALSE)
+        message(FATAL_ERROR "DAs enabled but no daqDA support found. Please point to your daqDA installation using \"daqDA\" variable")
+    endif()
+    
+    # Enable static libraries
+    set(ALIROOT_STATIC TRUE)
+    message(STATUS "DAs enabled")
+endif(DA)
 
 # FastJet
 find_package(FASTJET)

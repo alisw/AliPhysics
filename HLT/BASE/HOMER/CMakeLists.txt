@@ -42,11 +42,14 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 set(LIBDEPS)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
-# Add a library to the project using the specified source files
-add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+# Create an object to be reused in case of static libraries 
+# Otherwise the sources will be compiled twice
+add_library(AliHLTHOMER-object OBJECT ${SRCS} G__${MODULE}.cxx)
+# Add a library to the project using the object
+add_library(AliHLTHOMER SHARED $<TARGET_OBJECTS:AliHLTHOMER-object>)
 
 # Additional compilation flags
-set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-fPIC -O -g")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
@@ -59,3 +62,16 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+
+# Static version if DA enabled
+if(ALIROOT_STATIC)
+    add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:AliHLTHOMER-object>)
+    set_target_properties(${MODULE}-static PROPERTIES OUTPUT_NAME ${MODULE})
+    target_link_libraries(${MODULE}-static Root RootExtra)
+    set_target_properties(${MODULE}-static PROPERTIES LINK_FLAGS "-Wl,--whole-archive")
+    
+    # Installation
+    install(TARGETS ${MODULE}-static
+            ARCHIVE DESTINATION lib
+            LIBRARY DESTINATION lib)
+endif(ALIROOT_STATIC)

@@ -26,11 +26,40 @@
 # - DATE_CONFIG - path to date-config script
 # - DATE_CFLAGS - cflags reported by date-config
 # - DATE_LDFLAGS - ldflags reported by date-config
-# - DATE_LIBS - DATE libs to be linked against to
-# - DATE_MONLIBS - monitorlibs reported by date-config
+# - DATE_LIBS - DATE libs to be linked against to reported by date-config --libs
+# - DATE_LIBRARIES - DATE libs as as list as extracted from date-config --libs
+# - DATE_MONLIBS - monitorlibs reported by date-config --monitorlibs
+# - DATE_MONLIBRARIES - DATE monitor libs as a list extracted from the date-config --monitorlibs
+# - DATE_STATICMON - DATE static monitor libs needed by the DA
+# - DATE_RCPROXYLIBS - rcproxylibs reported by date-config --rcproxylibs
+# - DATE_RCPROXYLIBRARIES - rcproxylibs as a list as extracted from date-config --rcproxylibs
 
-find_program(DATE_CONFIG date-config)
+#########################
+# Functions definitions
+#########################
 
+# A function to find all the libraries listed in library_list. The list contains the short
+# names of libraries (ie. Db instead of libDb.so). 
+# Libraries are search in library_paths. 
+# It returns the list of libraries, with full path and full name.
+# Author: Barthelemy Von Haller
+function(find_date_libraries _output library_list library_paths)
+    FOREACH (LIB ${library_list})
+        # Find first static, this is used by the DA
+        find_library(DATE_LIBRARY_${LIB} NAMES "lib${LIB}.a" PATHS ${library_paths})
+        
+        if(NOT DATE_LIBRARY_${LIB})
+            find_library(DATE_LIBRARY_${LIB} NAMES ${LIB}  PATHS ${library_paths})
+        endif()
+        
+        mark_as_advanced(DATE_LIBRARY_${LIB})
+        set(_output_tmp ${_output_tmp} ${DATE_LIBRARY_${LIB}})
+    ENDFOREACH (LIB ${library_list})
+    
+    set(${_output} ${_output_tmp} PARENT_SCOPE)
+endfunction(find_date_libraries _output library_list library_paths)
+
+# DATE_CONFIG set from the configuration
 if(DATE_CONFIG)
     # Checking DATE version
     execute_process(COMMAND ${DATE_CONFIG} --version OUTPUT_VARIABLE DATE_VERSION ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
@@ -44,28 +73,6 @@ if(DATE_CONFIG)
     string(REGEX REPLACE "^[0-9]+\\.([0-9]+)" "\\1" DATE_VERSION_MINOR "${DATE_VERSION}")
     message(STATUS "DATE version ${DATE_VERSION_MAJOR}.${DATE_VERSION_MINOR} found.")
     
-    # Checking if the environment is properly set
-#    if(NOT DEFINED ENV{DATE_ROOT})
-#        message(FATAL_ERROR "date-config found. Please set DATE_ROOT environment variable")
-#    else()
-#        set(DATE_ROOT ENV{DATE_ROOT})
-#        message(STATUS "DATE_ROOT found ${DATE_ROOT}")
-#    endif()
-
-#    if(NOT DEFINED ENV{DATE_COMMON_DEFS})
-#        message(FATAL_ERROR "date-config found. Please set DATE_COMMON_DEFS environment variable")
-#    else()
-#        set(DATE_COMMON_DEFS ENV{DATE_COMMON_DEFS})
-#        message(STATUS "DATE_COMMON_DEFS found ${DATE_COMMON_DEFS}")
-#    endif()
-
-#    if(NOT DEFINED ENV{DATE_MONITOR_DIR})
-#        message(FATAL_ERROR "date-config found. Please set DATE_MONITOR_DIR environment variable")
-#    else()
-#        set(DATE_MONITOR_DIR ENV{DATE_MONITOR_DIR})
-#        message(STATUS "DATE_MONITOR_DIR found ${DATE_MONITOR_DIR}")
-#    endif()
-
     # setting the cflags
     execute_process(COMMAND ${DATE_CONFIG} --cflags OUTPUT_VARIABLE DATE_CFLAGS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
@@ -101,8 +108,23 @@ if(DATE_CONFIG)
         string(STRIP ${DATE_LIBS} DATE_LIBS)
     endif()
     
+    # DATE_LIBRARIES
+    # Extracting the list of dynamic and static libraries from the --libs 
+    # The list is needed during the generation of the DAs
+    # using a find_library in order to get the full path and not need to use -L during linking of the DAs
+    string(REGEX MATCHALL "[-]l[^- ]+" DATE_LIBRARIES_TMP ${DATE_LIBS})
+    string(REGEX REPLACE "[-]l" ";" DATE_LIBRARIES_TMP ${DATE_LIBRARIES_TMP})
+    # Get the list of search path using -Lyyy -> yyy
+    string(REGEX MATCHALL "[-]L[^- ]+" DATE_LIBRARIES_PATH_TMP ${DATE_LIBS})
+    string(REGEX REPLACE "[-]L" ";" DATE_LIBRARIES_PATH_TMP ${DATE_LIBRARIES_PATH_TMP})
+    find_date_libraries(DATE_LIBRARIES "${DATE_LIBRARIES_TMP}" "${DATE_LIBRARIES_PATH_TMP}")
+    message(STATUS "DATE LIBs ${DATE_LIBRARIES}")
+    
+    # Fix for mysql bug https://bugs.launchpad.net/percona-server/+bug/1287374
+    set(DATE_LIBS "${DATE_LIBS} -L/usr/lib64/mysql/")
+    
     # setting the monlibs
-    execute_process(COMMAND ${DATE_CONFIG} --monitorlibs OUTPUT_VARIABLE DATE_MONLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
+    execute_process(COMMAND ${DATE_CONFIG} --monitorlibs=noshift OUTPUT_VARIABLE DATE_MONLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error retrieving DATE monitorlibs : ${error}")
     endif(error)
@@ -112,10 +134,54 @@ if(DATE_CONFIG)
         string(STRIP ${DATE_MONLIBS} DATE_MONLIBS)
     endif()
 
+    # DATE_MONLIBRARIES
+    # Extracting the list of dynamic and static libraries from the --libs 
+    # The list is needed during the generation of the DAs
+    # Removing everything that starts with - to leave all the static libraries
+    # Replacing space with ; to create a list that will be sent to the linked 
+    string(REGEX REPLACE "-[^ \r\n\t].+( |$)?" "" DATE_STATICMON ${DATE_MONLIBS})
+    if(DATE_STATICMON)
+        string(REPLACE " " ";"  DATE_STATICMON ${DATE_STATICMON})
+    endif(DATE_STATICMON)
+    
+    # Extracting all the shared libraries 
+    # using a find_library in order to get the full path and not need to use -L during linking of the DAs
+    string(REGEX MATCHALL "[-]l[^- ]+" DATE_MONLIBRARIES_TMP ${DATE_MONLIBS})
+    string(REGEX REPLACE "[-]l" ";" DATE_MONLIBRARIES_TMP ${DATE_MONLIBRARIES_TMP})
+    # Get the list of search path using -Lyyy -> yyy
+    string(REGEX MATCHALL "[-]L[^- ]+" DATE_MONLIBRARIES_PATH_TMP ${DATE_MONLIBS})
+    string(REGEX REPLACE "[-]L" ";" DATE_MONLIBRARIES_PATH_TMP ${DATE_MONLIBRARIES_PATH_TMP})
+    find_date_libraries(DATE_MONLIBRARIES "${DATE_MONLIBRARIES_TMP}" "${DATE_MONLIBRARIES_PATH_TMP}")
+    set(DATE_MONLIBRARIES ${DATE_STATICMON} ${DATE_MONLIBRARIES})
+    message(STATUS "MONSTATIC ${DATE_STATICMON}")
+    
+    # Fix for mysql bug https://bugs.launchpad.net/percona-server/+bug/1287374
+    set(DATE_MONLIBS "${DATE_MONLIBS} -L/usr/lib64/mysql/")
+
+    # setting the monlibs
+    execute_process(COMMAND ${DATE_CONFIG} --rcproxylibs OUTPUT_VARIABLE DATE_RCPROXYLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
+    if(error)
+        message(FATAL_ERROR "Error retrieving DATE rcproxylibs")
+    endif(error)
+
+    # If the flags are not empty we strip them
+    if(DATE_RCPROXYLIBS)
+        string(STRIP ${DATE_RCPROXYLIBS} DATE_RCPROXYLIBS)
+    endif()
+
+    # DATE_LIBRARIES
+    # Extracting the list of dynamic and static libraries from the --libs 
+    # The list is needed during the generation of the DAs
+    string(REGEX MATCHALL "[-]l[^- ]+" DATE_RCPROXYLIBRARIES_TMP ${DATE_RCPROXYLIBS})
+    string(REGEX REPLACE "[-]l" ";" DATE_RCPROXYLIBRARIES_TMP ${DATE_RCPROXYLIBRARIES_TMP})
+    # Get the list of search path using -Lyyy -> yyy
+    string(REGEX MATCHALL "[-]L[^- ]+" DATE_RCPROXYLIBRARIES_PATH_TMP ${DATE_RCPROXYLIBS})
+    string(REGEX REPLACE "[-]L" ";" DATE_RCPROXYLIBRARIES_PATH_TMP ${DATE_RCPROXYLIBRARIES_PATH_TMP})
+    find_date_libraries(DATE_RCPROXYLIBRARIES "${DATE_RCPROXYLIBRARIES_TMP}" "${DATE_RCPROXYLIBRARIES_PATH_TMP}")
+    message(STATUS "DATE RCLIBs ${DATE_RCPROXYLIBRARIES}")
+
     set(DATE_FOUND TRUE)
 else()
     message(STATUS "DATE not found")
-    
-#    set(DATEFLAGS "-D${CMAKE_SYSTEM_NAME} -DDATE_SYS=${CMAKE_SYSTEM_NAME} -Dlong32='int' -Dlong64='long long' -DdatePointer='long'")
 endif(DATE_CONFIG)
 

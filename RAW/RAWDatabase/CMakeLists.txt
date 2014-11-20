@@ -64,9 +64,12 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 set(LIBDEPS ESD STEERBase)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
-# Add a library to the project using the specified source files
-add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} ESD STEERBase Core Hist RIO)
+# Create an object to be reused in case of static libraries 
+# Otherwise the sources will be compiled twice
+add_library(RAWDatabase-object OBJECT ${SRCS} G__${MODULE}.cxx)
+# Add a library to the project using the object
+add_library(RAWDatabase SHARED $<TARGET_OBJECTS:RAWDatabase-object>)
+target_link_libraries(RAWDatabase ESD STEERBase)
 
 set(MODULE_COMPILE_FLAGS)
 set(MODULE_LINK_FLAGS)
@@ -77,15 +80,16 @@ if(DATE_FOUND)
 endif(DATE_FOUND)
 
 # Additional compilation and linking flags
-set(MODULE_COMPILE_FLAGS "-O -g ${MODULE_COMPILE_FLAGS}")
+set(MODULE_COMPILE_FLAGS "-fPIC -O -g ${MODULE_COMPILE_FLAGS}")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
     set(MODULE_LINK_FLAGS "-undefined dynamic_lookup ${MODULE_LINK_FLAGS}")
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
-# Setting target compile and linking flags
-set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
+# Setting compilation flags for the object
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
+# Setting the linking flags for the library
 set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
 
 # Installation
@@ -94,3 +98,17 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+
+# Static version if DA enabled
+if(ALIROOT_STATIC)
+    add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:RAWDatabase-object>)
+    target_link_libraries(${MODULE}-static STEERBase-static ESD-static Root)
+
+    set_target_properties(${MODULE}-static PROPERTIES OUTPUT_NAME ${MODULE})
+    set_target_properties(${MODULE}-static PROPERTIES LINK_FLAGS "-Wl,--whole-archive")
+
+    # Installation
+    install(TARGETS ${MODULE}-static
+            ARCHIVE DESTINATION lib
+            LIBRARY DESTINATION lib)
+endif(ALIROOT_STATIC)

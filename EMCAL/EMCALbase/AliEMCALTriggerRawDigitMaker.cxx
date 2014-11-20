@@ -36,7 +36,7 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 #include "AliEMCALTriggerTRUDCSConfig.h"
 #include "AliEMCALTriggerSTUDCSConfig.h"
 #include "AliEMCALTriggerData.h"
-#include "AliEMCALTriggerPatch.h"
+//#include "AliEMCALTriggerPatch.h"
 #include "AliLog.h"
 
 #include "AliRawVEvent.h"

@@ -13,17 +13,23 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-# HMPID libraries
-add_subdirectory(ACORDEbase)
-add_subdirectory(ACORDErec)
-add_subdirectory(ACORDEsim)
+# Check for daqDA library in order to build detectors DA
 
-# DA
-if(DA)
-    add_subdirectory(DA)
-endif(DA)
+set(daqDA_FOUND false)
 
-# Install the macros
-install(DIRECTORY macros DESTINATION ACORDE)
+if(daqDA)
+    # Check for header
+    find_path(DAQDAH daqDA.h PATHS ${daqDA})
+    
+    if(DAQDAH-NOTFOUND)
+        message(FATAL_ERROR "daqDA enabled but daqDA.h not found. Please check that daqDA points to your installation")
+    endif(DAQDAH-NOTFOUND)
+    
+    find_path(DAQDALIB libdaqDA.a PATHS ${daqDA})
+    
+    if(DAQDALIB-NOTFOUND)
+        message(FATAL_ERROR "daqDA enabled but libdaqDA.a not found. Please check that daqDA points to your installation")
+    endif(DAQDALIB-NOTFOUND)
 
-message(STATUS "ACORDE enabled")
+    set(daqDA_FOUND TRUE)
+endif(daqDA)

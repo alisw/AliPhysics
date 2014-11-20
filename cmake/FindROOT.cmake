@@ -180,6 +180,34 @@ if(ROOTSYS)
     link_directories(${ROOT_LIBDIR})
     include_directories(${ROOT_INCLUDE_DIR})
     set(ROOT_FOUND TRUE)
+
+    # Workaround misssing XML, VMC, Minuit from ROOT static library
+    # Also adding libzma.a libfreetype.a libpcre.a
+    # To be removed where https://sft.its.cern.ch/jira/browse/ROOT-6904 issue is fixed
+    if(ALIROOT_STATIC)
+        message(WARNING "AliRoot static build enabled! libRootExtra.a will be created.\nPlease remove when ROOT https://sft.its.cern.ch/jira/browse/ROOT-6904 issue is fixed")
+
+        # ROOT needs xml2 but it is not build with the static version so we have to add it
+        find_package(LibXml2)
+
+        if(LIBXML2_FOUND)
+        
+            # adding SSL
+            find_package(OpenSSL)
+        
+            if(OPENSSL_FOUND)
+                file(GLOB _extraroot "${ROOTSYS}/montercarlo/vmc/src/*.o" "${ROOTSYS}/tree/treeplayer/src/*.o" "${ROOTSYS}/io/xmlparser/src/*.o" "${ROOTSYS}/math/minuit2/src/*.o")
+                add_library(RootExtra STATIC ${_extraroot})
+                set_target_properties(RootExtra PROPERTIES COMPILE_FLAGS "${LIBXML2_INCLUDE_DIR} ${OPENSSL_INCLUDE_DIR}")
+                set_target_properties(RootExtra PROPERTIES LINKER_LANGUAGE CXX)
+                target_link_libraries(RootExtra ${ROOT_LIBDIR}/libfreetype.a ${ROOT_LIBDIR}/libpcre.a ${ROOT_LIBDIR}/liblzma.a ${LIBXML2_LIBRARIES} ${OPENSSL_LIBRARIES})
+            else()
+                message(FATAL_ERROR "OpenSSL not found. Coould not generate the static RootExtra. Please install Openssl")
+            endif()
+        else()
+            message(FATAL_ERROR "libxml2 not found. Can not generate the static RootExtra. Please install libxml2")
+        endif()
+    endif(ALIROOT_STATIC)
 else()
     message(FATAL_ERROR "ROOT installation not found! Please point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR.")
 endif(ROOTSYS)

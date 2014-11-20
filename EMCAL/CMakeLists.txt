@@ -20,6 +20,10 @@ add_subdirectory(EMCALraw)
 add_subdirectory(EMCALrec)
 add_subdirectory(EMCALsim)
 
+if(DA)
+    add_subdirectory(DA)
+endif(DA)
+
 # Install the macros, docs
 install(DIRECTORY macros DESTINATION ACORDE)
 install(DIRECTORY doc DESTINATION ACORDER)

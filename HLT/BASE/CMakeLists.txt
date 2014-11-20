@@ -14,7 +14,7 @@
 # **************************************************************************
 
 # HLTbase + subfolders (end of the cmake file)
-# Subfolders hve to be includes at the begining otherwise
+# Subfolders have to be includes at the begining otherwise
 # they will inherit properties from the parent
 add_subdirectory(HOMER)
 add_subdirectory(interface)
@@ -132,11 +132,15 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 set(LIBDEPS STEERBase RAWDatabase AliHLTHOMER)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
-# Add a library to the project using the specified source files
-add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+# Create an object to be reused in case of static libraries 
+# Otherwise the sources will be compiled twice
+add_library(HLTbase-object OBJECT ${SRCS} G__${MODULE}.cxx)
+# Add a library to the project using the object
+add_library(HLTbase SHARED $<TARGET_OBJECTS:HLTbase-object>)
+target_link_libraries(HLTbase STEERBase RAWDatabase AliHLTHOMER)
 
 # Additional compilation flags
-set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-fPIC -O -g")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
@@ -149,3 +153,16 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+
+# Static version if DA enabled
+if(ALIROOT_STATIC)
+    add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:HLTbase-object>)
+    set_target_properties(${MODULE}-static PROPERTIES OUTPUT_NAME ${MODULE})
+    target_link_libraries(${MODULE}-static STEERBase-static RAWDatabase-static AliHLTHOMER-static HLTbase-static Root RootExtra)
+    set_target_properties(${MODULE}-static PROPERTIES LINK_FLAGS "-Wl,--whole-archive")
+    
+    # Installation
+    install(TARGETS ${MODULE}-static
+            ARCHIVE DESTINATION lib
+            LIBRARY DESTINATION lib)
+endif(ALIROOT_STATIC)

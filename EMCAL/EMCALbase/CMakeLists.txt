@@ -22,7 +22,6 @@ include_directories(${AliRoot_SOURCE_DIR}/EMCAL/${MODULE})
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALraw
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALsim
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
@@ -83,15 +82,20 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER CDB ESD RAWDatabase RAWDatarec EMCALUtils EMCALsim)
+set(LIBDEPS STEERBase STEER CDB ESD RAWDatabase RAWDatarec EMCALraw EMCALUtils)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
+# Create an object to be reused in case of static libraries 
+# Otherwise the sources will be compiled twice
+add_library(EMCALbase-object OBJECT ${SRCS} G__${MODULE}.cxx)
+# Add a library to the project using the object
+add_library(EMCALbase SHARED $<TARGET_OBJECTS:EMCALbase-object>)
 
-# Add a library to the project using the specified source files
-add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+# dependencies
+target_link_libraries(${MODULE} STEERBase STEER CDB ESD RAWDatabase RAWDatarec RAWDatasim EMCALraw EMCALUtils)
 
 # Additional compilation flags
-set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-O -g -fPIC")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
@@ -104,3 +108,16 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+
+# Static version if DA enabled
+if(ALIROOT_STATIC)
+    add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:EMCALbase-object>)
+    set_target_properties(${MODULE}-static PROPERTIES OUTPUT_NAME ${MODULE})
+    target_link_libraries(${MODULE}-static STEERBase-static STEER-static ESD-static CDB-static AOD-static RAWDatabase-static RAWDatarec-static RAWDatasim-static  EMCALraw-static EMCALUtils-static Root)
+    set_target_properties(${MODULE}-static PROPERTIES LINK_FLAGS "-Wl,--whole-archive")
+
+    # Installation
+    install(TARGETS ${MODULE}-static
+            ARCHIVE DESTINATION lib
+            LIBRARY DESTINATION lib)
+endif(ALIROOT_STATIC)
