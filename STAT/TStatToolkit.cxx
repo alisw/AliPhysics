@@ -1694,6 +1694,22 @@ TMultiGraph*  TStatToolkit::MakeStatusMultGr(TTree * tree, const char * expr, co
   // note: the aliases 'varname_Out' etc have to be defined by function TStatToolkit::SetStatusAlias(...)
   // counter igr is used to shift the multigraph in y when filling a TObjArray.
   //
+  //
+  // To create the Status Bar, the following is done in principle.
+  //    ( example current usage in $ALICE_ROOT/PWGPP/TPC/macros/drawPerformanceTPCQAMatchTrends.C and ./qaConfig.C. )
+  //
+  //  TStatToolkit::SetStatusAlias(tree, "meanTPCncl",    "", "varname_Out:(abs(varname-MeanEF)>6.*RMSEF):0.8");
+  //  TStatToolkit::SetStatusAlias(tree, "tpcItsMatchA",  "", "varname_Out:(abs(varname-MeanEF)>6.*RMSEF):0.8");
+  //  TStatToolkit::SetStatusAlias(tree, "meanTPCncl",    "", "varname_Warning:(abs(varname-MeanEF)>3.*RMSEF):0.8");
+  //  TStatToolkit::SetStatusAlias(tree, "tpcItsMatchA",  "", "varname_Warning:(abs(varname-MeanEF)>3.*RMSEF):0.8");
+  //  TObjArray* oaMultGr = new TObjArray(); int igr=0;
+  //  oaMultGr->Add( TStatToolkit::MakeStatusMultGr(tree, "tpcItsMatchA:run",  "", "(1):(meanTPCncl>0):(varname_Warning):(varname_Outlier):", igr) ); igr++;
+  //  oaMultGr->Add( TStatToolkit::MakeStatusMultGr(tree, "meanTPCncl:run",    "", "(1):(meanTPCncl>0):(varname_Warning):(varname_Outlier):", igr) ); igr++;
+  //  TCanvas *c1 = new TCanvas("c1","c1");
+  //  TStatToolkit::AddStatusPad(c1, 0.30, 0.40);
+  //  TStatToolkit::DrawStatusGraphs(oaMultGr);
+  
+  
   TObjArray* oaVar = TString(expr).Tokenize(":");
   if (oaVar->GetEntries()<2) {
     printf("Expression has to be of type 'varname:xaxis':\t%s\n", expr);
@@ -1800,6 +1816,8 @@ TTree*  TStatToolkit::WriteStatusToTree(TObject* oStatusGr)
   // input: either a TMultiGraph with status of single variable, which 
   //        was computed by TStatToolkit::MakeStatusMultGr(),
   //        or a TObjArray which contains up to 10 of such variables.
+  //        example: TTree* statusTree = WriteStatusToTree( TStatToolkit::MakeStatusMultGr(tree, "tpcItsMatch:run",  "", sCriteria.Data(), 0) );
+  //        or     : TTree* statusTree = TStatToolkit::WriteStatusToTree(oaMultGr);
   // 
   // output tree: 1=flag is true, 0=flag is false, -1=flag was not computed.
   //
