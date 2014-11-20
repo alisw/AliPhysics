@@ -534,6 +534,7 @@ void AliDielectron::ProcessMC(AliVEvent *ev1)
     for(Int_t i1=0;i1<indexes1[isig];++i1) {
       if(!indexes2[isig]) FillMCHistograms(labels1[isig][i1], -1, isig); // (e.g. single electrons only, no pairs)
       for(Int_t i2=0;i2<indexes2[isig];++i2) {
+	// add pair cuts on mc truth level
 	if(bFillCF) fCfManagerPair->FillMC(labels1[isig][i1], labels2[isig][i2], isig);
 	if(bFillHF) fHistoArray->Fill(labels1[isig][i1], labels2[isig][i2], isig);
 	FillMCHistograms(labels1[isig][i1], labels2[isig][i2], isig);
@@ -542,6 +543,7 @@ void AliDielectron::ProcessMC(AliVEvent *ev1)
     // mix the particles which satisfy both branches
     for(Int_t i1=0;i1<indexes12[isig];++i1) {
       for(Int_t i2=0; i2<i1; ++i2) {
+	// add pair cuts on mc truth level
 	if(bFillCF) fCfManagerPair->FillMC(labels12[isig][i1], labels12[isig][i2], isig);
 	if(bFillHF) fHistoArray->Fill(labels12[isig][i1], labels12[isig][i2], isig);
 	FillMCHistograms(labels12[isig][i1], labels12[isig][i2], isig);
@@ -654,7 +656,7 @@ void AliDielectron::FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly)
     Int_t ntracks=PairArray(i)->GetEntriesFast();
     for (Int_t ipair=0; ipair<ntracks; ++ipair){
       AliDielectronPair *pair=static_cast<AliDielectronPair*>(PairArray(i)->UncheckedAt(ipair));
-      
+
       //fill pair information
       if (pairClass){
         AliDielectronVarManager::Fill(pair, values);
@@ -775,6 +777,13 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
     AliEPSelectionTask *eptask = dynamic_cast<AliEPSelectionTask *>(man->GetTask("EventplaneSelection"));
     if(!eptask) return;
 
+    // get recentering values for Qx and Qy (only rms is needed for correction)
+    // Double_t mean[2]={0.,0.}
+    // eptask->Recenter(0, mean);
+    Double_t rms[2] ={1.,1.};
+    eptask->Recenter(1, rms);
+
+
     // track mapping
     TMap mapRemovedTracks;
 
@@ -794,8 +803,8 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
 	if (cutMask==selectedMask) continue;
 
 	mapRemovedTracks.Add(track,track);
-	cQX += (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()));
-	cQY += (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()));
+	cQX += (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()) / rms[0]);
+	cQY += (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()) / rms[1]);
       }
     }
 
@@ -848,8 +857,8 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
       if (mapRemovedTracks.FindObject(track)) continue;
       else mapRemovedTracks.Add(track,track);
 
-      cQX += (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()));
-      cQY += (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()));
+      cQX += (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()) / rms[0]);
+      cQY += (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()) / rms[1]);
     }
     // remove leg2 contribution
     for (Int_t itrack=0; itrack<ntrack2; ++itrack){
@@ -859,8 +868,8 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
       if (mapRemovedTracks.FindObject(track)) continue;
       else mapRemovedTracks.Add(track,track);
 
-      cQX += (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()));
-      cQY += (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()));
+      cQX += (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()) / rms[0]);
+      cQY += (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()) / rms[1]);
     }
 
     // build a corrected alieventplane using the values from the var manager

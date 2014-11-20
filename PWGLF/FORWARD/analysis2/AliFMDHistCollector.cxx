@@ -823,8 +823,10 @@ AliFMDHistCollector::VtxBin::Collect(const AliForwardUtil::Histos& hists,
 	// Add to our per-ring sum 
 	o->Add(t);
 
-	// If we store hit maps, update here 
-	if (fHitMap) fHitMap->Get(d, r)->Add(t);
+	// If we store hit maps, update here If "eta2phi" is true,
+	// then we are here for MC, and so we do not update the hit
+	// maps - ever!
+	if (fHitMap && !eta2phi) fHitMap->Get(d, r)->Add(t);
       
 
 	if (byCent) { 

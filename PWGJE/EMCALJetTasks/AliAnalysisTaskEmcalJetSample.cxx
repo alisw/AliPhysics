@@ -39,6 +39,8 @@ AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample() :
   fHistJetsCorrPtArea(0),
   fHistPtDEtaDPhiTrackClus(0),
   fHistPtDEtaDPhiClusTrack(0),
+  fHistClustDx(0),
+  fHistClustDz(0),
   fJetsCont(0),
   fTracksCont(0),
   fCaloClustersCont(0)
@@ -79,6 +81,8 @@ AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample(const char *name) :
   fHistJetsCorrPtArea(0),
   fHistPtDEtaDPhiTrackClus(0),
   fHistPtDEtaDPhiClusTrack(0),
+  fHistClustDx(0),
+  fHistClustDz(0),
   fJetsCont(0),
   fTracksCont(0),
   fCaloClustersCont(0)
@@ -200,6 +204,12 @@ void AliAnalysisTaskEmcalJetSample::UserCreateOutputObjects()
   fHistPtDEtaDPhiClusTrack = new TH3F(histname.Data(),Form("%s;#it{p}_{T}^{clus};#Delta#eta;#Delta#varphi",histname.Data()),100,0.,100.,100,-0.1,0.1,100,-0.1,0.1);
   fOutput->Add(fHistPtDEtaDPhiClusTrack);
 
+  fHistClustDx = new TH1F("fHistClustDx","fHistClustDx;Dx",1000,0.,1.);
+  fOutput->Add(fHistClustDx);
+
+  fHistClustDz = new TH1F("fHistClustDz","fHistClustDz;Dz",1000,0.,1.);
+  fOutput->Add(fHistClustDz);
+
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
 
@@ -215,14 +225,17 @@ Bool_t AliAnalysisTaskEmcalJetSample::FillHistograms()
       track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
     }
   }
-  
+
   if (fCaloClustersCont) {
     AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0); 
     while(cluster) {
       TLorentzVector nPart;
       cluster->GetMomentum(nPart, fVertex);
       fHistClustersPt[fCentBin]->Fill(nPart.Pt());
-
+      Double_t dx = cluster->GetTrackDx();
+      Double_t dz = cluster->GetTrackDz();
+      fHistClustDx->Fill(dx);
+      fHistClustDz->Fill(dz);
       cluster = fCaloClustersCont->GetNextAcceptCluster();
     }
   }

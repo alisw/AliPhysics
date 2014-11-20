@@ -34,31 +34,33 @@
 #include "TProfile.h"
 #include "TRegexp.h"
 #include "TROOT.h"
+#include "TParameter.h"
 #include <algorithm>
 #include <cassert>
 #include "AliAnalysisMuMuBase.h"
-#include "AliInputEventHandler.h"
 #include "AliAnalysisMuMuCutRegistry.h"
 #include "AliAnalysisMuMuCutElement.h"
 #include "AliAnalysisMuMuCutCombination.h"
 #include <set>
 
-/**
- * \class AliAnalysisTaskMuMu
- * 
- * This class steers the work of one or more sub-analysis deriving from AliAnalysisMuMuBase
- * The output contains an AliHistogramCollection, an AliCounterCollection 
- * and an AliAnalysisMuMuBinning
- * This task must be configured a bit before being used. For instance
- * you can select various event cuts, single muon track cuts and
- *  muon pairs cut, as well as defining various bins (for minv and mean pt
- * histograms) in pt,y,phi etc...
- *
- * Note that it's also possible to disable some (or all) histograms
- * (to save speed/memory), using DisableHistograms() method.
- *
- * For an example of such configuration, \see AddTaskMuMu.C
- */
+///
+/// AliAnalysisTaskMuMu : steering class for muon analysis
+///
+/// The output contains an AliHistogramCollection and
+/// an AliCounterCollection
+///
+/// \author: L. Aphecetche (Subatech)
+///
+/// This task must be configured a bit before being used. For instance
+/// you can select various event cuts, single muon track cuts and
+/// muon pairs cut, as well as defining various bins (for minv and mean pt
+/// histograms) in pt,y,phi etc...
+///
+/// Note that it's also possible to disable some (or all) histograms
+/// (to save speed/memory), using DisableHistograms() method.
+///
+/// For an example of such configuration, \see AddTaskMuMu.C
+///
 
 using std::cout;
 using std::endl;
@@ -74,7 +76,9 @@ fBinning(0x0),
 fCutRegistry(0x0),
 fBeamYear(""),
 fHistogramToDisable(0x0),
-fSubAnalysisVector(0x0)
+fSubAnalysisVector(0x0),
+fCountInBins(kFALSE),
+fDisableHistoLoop(kFALSE)
 {
   /// Constructor with a predefined list of triggers to consider
   /// Note that we take ownership of cutRegister
@@ -178,29 +182,31 @@ void AliAnalysisTaskMuMu::Fill(const char* eventSelection, const char* triggerCl
   TString seventSelection(eventSelection);
   seventSelection.ToLower();
   
-  fEventCounters->Count(Form("event:%s/trigger:%s/centrality:%s/run:%d", seventSelection.Data(), triggerClassName, "ALL", fCurrentRunNumber));
+  FillCounters(seventSelection.Data(), triggerClassName, "ALL", fCurrentRunNumber);
+//  fEventCounters->Count(Form("event:%s/trigger:%s/centrality:%s/run:%d", seventSelection.Data(), triggerClassName, "ALL", fCurrentRunNumber));
 
-  if ( !IsHistogrammingDisabled() )
+//  if ( !IsHistogrammingDisabled() )
+//  {
+  TObjArray* centralities = fBinning->CreateBinObjArray("centrality");
+  
+  TIter next(centralities);
+  AliAnalysisMuMuBinning::Range* r;
+  
+  while ( ( r = static_cast<AliAnalysisMuMuBinning::Range*>(next()) ) )
   {
-    TObjArray* centralities = fBinning->CreateBinObjArray("centrality");
+    TString estimator = r->Quantity();
     
-    TIter next(centralities);
-    AliAnalysisMuMuBinning::Range* r;
+    Float_t fcent = Event()->GetCentrality()->GetCentralityPercentile(estimator.Data());
+    //      if ( fcent < 0.) FillHistos(eventSelection,triggerClassName,"MV0");
+    //      if ( fcent == 0.) FillHistos(eventSelection,triggerClassName,"0V0");
     
-    while ( ( r = static_cast<AliAnalysisMuMuBinning::Range*>(next()) ) )
+    if ( r->IsInRange(fcent) )
     {
-      TString estimator = r->Quantity();
-      
-      Float_t fcent = Event()->GetCentrality()->GetCentralityPercentile(estimator.Data());
-      if ( fcent < 0.) FillHistos(eventSelection,triggerClassName,"MV0");
-      if ( fcent == 0.) FillHistos(eventSelection,triggerClassName,"0V0");
-      if ( r->IsInRange(fcent) )
-      {
-        FillHistos(eventSelection,triggerClassName,r->AsString());
-      }
+      FillHistos(eventSelection,triggerClassName,r->AsString());
     }
-    delete centralities;
   }
+  delete centralities;
+//  }
 }
 
 //_____________________________________________________________________________
@@ -217,67 +223,131 @@ void AliAnalysisTaskMuMu::FillHistos(const char* eventSelection,
   
   Int_t nTracks = AliAnalysisMuonUtility::GetNTracks(Event());
   
-  fEventCounters->Count(Form("event:%s/trigger:%s/centrality:%s/run:%d", eventSelection, triggerClassName, centrality, fCurrentRunNumber));
+  FillCounters( eventSelection, triggerClassName, centrality, fCurrentRunNumber);
+// fEventCounters->Count(Form("event:%s/trigger:%s/centrality:%s/run:%d", eventSelection, triggerClassName, centrality, fCurrentRunNumber));
   
+
   TIter nextTrackCut(fCutRegistry->GetCutCombinations(AliAnalysisMuMuCutElement::kTrack));
   TIter nextPairCut(fCutRegistry->GetCutCombinations(AliAnalysisMuMuCutElement::kTrackPair));
   
   // loop on single tracks (whatever the type of tracks
-  while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(nextAnalysis()) ) )
+  if ( !IsHistogrammingDisabled() && !fDisableHistoLoop )
   {
-    analysis->DefineHistogramCollection(eventSelection,triggerClassName,centrality);
-    
-    AliCodeTimerAuto(Form("%s (FillHistosForEvent)",analysis->ClassName()),1);
-
-    if ( MCEvent() != 0x0 )
+    while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(nextAnalysis()) ) )
     {
-      analysis->FillHistosForMCEvent(eventSelection,triggerClassName,centrality);
-    }
-
-    analysis->FillHistosForEvent(eventSelection,triggerClassName,centrality);
-    
-    for (Int_t i = 0; i < nTracks; ++i)
-    {
-      AliVParticle* tracki = AliAnalysisMuonUtility::GetTrack(i,Event());
+      analysis->DefineHistogramCollection(eventSelection,triggerClassName,centrality);
       
-      nextTrackCut.Reset();
-      AliAnalysisMuMuCutCombination* trackCut;
+      AliCodeTimerAuto(Form("%s (FillHistosForEvent)",analysis->ClassName()),1);
       
-      while ( ( trackCut = static_cast<AliAnalysisMuMuCutCombination*>(nextTrackCut()) ) )
+      if ( MCEvent() != 0x0 )
       {
-        if ( trackCut->Pass(*tracki) )
-        {
-          analysis->FillHistosForTrack(eventSelection,triggerClassName,centrality,trackCut->GetName(),*tracki);
-        }
+        analysis->FillHistosForMCEvent(eventSelection,triggerClassName,centrality);
       }
       
-      if (!AliAnalysisMuonUtility::IsMuonTrack(tracki) ) continue;
+      analysis->FillHistosForEvent(eventSelection,triggerClassName,centrality);
       
-      // loop on track pairs (here we only consider muon pairs)
-      
-      for (Int_t j = i+1; j < nTracks; ++j)
+      for (Int_t i = 0; i < nTracks; ++i)
       {
-        AliVParticle* trackj = AliAnalysisMuonUtility::GetTrack(j,Event());
+        AliVParticle* tracki = AliAnalysisMuonUtility::GetTrack(i,Event());
         
-        if (!AliAnalysisMuonUtility::IsMuonTrack(trackj) ) continue;
+        nextTrackCut.Reset();
+        AliAnalysisMuMuCutCombination* trackCut;
         
-        nextPairCut.Reset();
-        AliAnalysisMuMuCutCombination* pairCut;
-        
-        while ( ( pairCut = static_cast<AliAnalysisMuMuCutCombination*>(nextPairCut()) ) )
+        while ( ( trackCut = static_cast<AliAnalysisMuMuCutCombination*>(nextTrackCut()) ) )
         {
-          Bool_t testi = (pairCut->IsTrackCutter()) ? pairCut->Pass(*tracki) : kTRUE;
-          Bool_t testj = (pairCut->IsTrackCutter()) ? pairCut->Pass(*trackj) : kTRUE;
-          Bool_t testij = pairCut->Pass(*tracki,*trackj);
-          
-          if ( ( testi || testj ) && testij )
+          if ( trackCut->Pass(*tracki) )
           {
-            analysis->FillHistosForPair(eventSelection,triggerClassName,centrality,pairCut->GetName(),*tracki,*trackj);
+            analysis->FillHistosForTrack(eventSelection,triggerClassName,centrality,trackCut->GetName(),*tracki);
+          }
+        }
+        
+        if (!AliAnalysisMuonUtility::IsMuonTrack(tracki) ) continue;
+        
+        // loop on track pairs (here we only consider muon pairs)
+        
+        for (Int_t j = i+1; j < nTracks; ++j)
+        {
+          AliVParticle* trackj = AliAnalysisMuonUtility::GetTrack(j,Event());
+          
+          if (!AliAnalysisMuonUtility::IsMuonTrack(trackj) ) continue;
+          
+          nextPairCut.Reset();
+          AliAnalysisMuMuCutCombination* pairCut;
+          
+          while ( ( pairCut = static_cast<AliAnalysisMuMuCutCombination*>(nextPairCut()) ) )
+          {
+            Bool_t testi = (pairCut->IsTrackCutter()) ? pairCut->Pass(*tracki) : kTRUE;
+            Bool_t testj = (pairCut->IsTrackCutter()) ? pairCut->Pass(*trackj) : kTRUE;
+            Bool_t testij = pairCut->Pass(*tracki,*trackj);
+            
+            if ( ( testi && testj ) && testij ) 
+            {
+              analysis->FillHistosForPair(eventSelection,triggerClassName,centrality,pairCut->GetName(),*tracki,*trackj);
+            }
           }
         }
       }
     }
   }
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskMuMu::FillCounters(const char* eventSelection, const char* triggerClassName, const char* centrality, Int_t currentRun, const char* binningName)
+{
+  // The binning has to be an already existing event property or one (like i.e. <dNch/dEta>) which we can compute in the SetEvent() method and attach it to the event list
+  // We can generalize this method (if needed), now it is only valid for dNchdEta
+  
+  TString sbinningName(binningName);
+  sbinningName.ToUpper();
+  
+  if( fCountInBins )
+  {
+    TParameter<Double_t>* p(0x0);
+    TObjArray* bin = fBinning->CreateBinObjArray("psi",sbinningName.Data(),"JAVI"); // FIXME: Dependence on binning name
+    if ( !bin ) AliError(Form("%s binning does not exist",binningName));
+    else
+    {
+      TList* list = static_cast<TList*>(Event()->FindListObject("NCH"));
+      if (list)
+      {
+        Int_t i(-1);
+        Bool_t parFound(kFALSE);
+        while ( i < list->GetEntries() - 1 && !parFound )
+        {
+          i++;
+          while ( list->At(i)->IsA() != TParameter<Double_t>::Class()  && i < list->GetEntries() - 1 ) // In case there is a diferent object, just to skip it
+          {
+            i++;
+          }
+          
+          p = static_cast<TParameter<Double_t>*>(list->At(i));
+          
+          if ( TString(p->GetName()).Contains("NtrCorr") ) // FIXME: make this valid for dnch/deta also
+          {
+            parFound = kTRUE;
+          }
+        }
+      }
+      else AliFatal("No dNchdEta info on Event");
+
+      TIter next(bin);
+      AliAnalysisMuMuBinning::Range* r;
+      
+      while ( ( r = static_cast<AliAnalysisMuMuBinning::Range*>(next()) ) )
+      {
+        
+        if ( r->IsInRange(p->GetVal()) )
+        {
+          fEventCounters->Count(Form("event:%s/trigger:%s/centrality:%s/run:%d/bin:%s", eventSelection, triggerClassName,
+                                             centrality, currentRun,r->AsString().Data()));
+        }
+      }
+      
+      delete bin;
+    }
+  }
+  
+  else fEventCounters->Count(Form("event:%s/trigger:%s/centrality:%s/run:%d", eventSelection, triggerClassName,  centrality, currentRun));
 }
 
 //_____________________________________________________________________________
@@ -429,21 +499,23 @@ AliAnalysisTaskMuMu::Print(Option_t* opt) const
 
 //_____________________________________________________________________________
 void
-AliAnalysisTaskMuMu::Terminate(Option_t* opt)
+AliAnalysisTaskMuMu::Terminate(Option_t *)
 {
   /// Called once at the end of the query
   /// Just a simple printout of the stat we analyse and how many histograms
   /// we got
   
-  TIter next(fSubAnalysisVector);
+  
+  fHistogramCollection = dynamic_cast<AliMergeableCollection*>(GetOutputData(1));
+  
+  TIter nextAnalysis(fSubAnalysisVector);
   AliAnalysisMuMuBase* analysis;
   
-  while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(next()) ) )
+  while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(nextAnalysis()) ) )
   {
-    analysis->Terminate(opt);
+    analysis->SetHistogramCollection(fHistogramCollection);
+    analysis->Terminate();
   }
-
-  fHistogramCollection = dynamic_cast<AliMergeableCollection*>(GetOutputData(1));
 
   if (!fHistogramCollection)
   {
@@ -451,7 +523,7 @@ AliAnalysisTaskMuMu::Terminate(Option_t* opt)
   }
   else
   {
-    // Removes empty objects and also the event histos of the Nch task
+    // Removes empty objects
     fHistogramCollection->PruneEmptyObjects();
     
     UInt_t size2 = fHistogramCollection->EstimateSize();
@@ -510,7 +582,7 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
 //  static Int_t n(0);
 //  AliInfo(Form("EVENT %10d Event()=%p MCEvent()=%p",n,Event(),MCEvent()));
 //  ++n;
-//  
+//
   AliCodeTimerAuto("",0);
   
   Binning(); // insure we have a binning...
@@ -530,23 +602,24 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
     analysis->SetEvent(Event(),MCEvent()); // Set the new event properties derived in the analysis
   }
   //  }
-  
-  
+
   TString firedTriggerClasses(AliAnalysisMuonUtility::GetFiredTriggerClasses(Event()));
-  
+    
   // first loop to count things not associated to a specific trigger
   TIter nextEventCutCombination(CutRegistry()->GetCutCombinations(AliAnalysisMuMuCutElement::kEvent));
   AliAnalysisMuMuCutCombination* cutCombination;
-  
+
   while ( ( cutCombination = static_cast<AliAnalysisMuMuCutCombination*>(nextEventCutCombination())))
   {
     if ( cutCombination->Pass(*fInputHandler) )
     {
-      fEventCounters->Count(Form("event:%s/trigger:%s/centrality:%s/run:%d", cutCombination->GetName(), "EVERYTHING",  "ALL", fCurrentRunNumber));
-
+      FillCounters(cutCombination->GetName(), "EVERYTHING",  "ALL", fCurrentRunNumber);
+//      fEventCounters->Count(Form("event:%s/trigger:%s/centrality:%s/run:%d", cutCombination->GetName(), "EVERYTHING",  "ALL", fCurrentRunNumber));
+      
       if ( firedTriggerClasses == "" )
       {
-        fEventCounters->Count(Form("event:%s/trigger:%s/centrality:%s/run:%d", cutCombination->GetName(), "EMPTY", "ALL", fCurrentRunNumber));
+        FillCounters(cutCombination->GetName(),"EMPTY","ALL",fCurrentRunNumber);
+//        fEventCounters->Count(Form("event:%s/trigger:%s/centrality:%s/run:%d", cutCombination->GetName(), "EMPTY", "ALL", fCurrentRunNumber));
       }
     }
   }
@@ -627,8 +700,15 @@ void AliAnalysisTaskMuMu::UserCreateOutputObjects()
   fEventCounters->AddRubric("trigger", 100);
   
   fEventCounters->AddRubric("centrality", 100);
-  
+    
   fEventCounters->AddRubric("run", 1000000);
+  
+  //____New
+  if ( fCountInBins )
+  {
+    fEventCounters->AddRubric("bin", 1000000);
+  }
+  //_____
   
   // Initialize our subtasks, if any...
   

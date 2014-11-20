@@ -447,6 +447,7 @@ protected:
     TH2F *fHistGammaCrossCheck;//!
     TH2F *fHistGammaCrossCheckAlt;//!//includes gammas that did not hit as gammas
     TH2F *fHistGammaEnergyCrossCheck;//!
+    TH3F *fHistGammaEnergyCrossCheckCent;//!
     TH2F *fHistGammaEnergyCrossCheckAlt;//!//includes gammas that did not hit as gammas
     TH2F *fHistNeutronCrossCheck;//!
     TH2F *fHistSecondaryCrossCheck;//!

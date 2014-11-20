@@ -113,7 +113,7 @@ class AliJetContainer : public AliEmcalContainer {
   void                        SetArray(AliVEvent *event);
   AliParticleContainer       *GetParticleContainer() const                   {return fParticleContainer;}
   AliClusterContainer        *GetClusterContainer() const                    {return fClusterContainer;}
-  Double_t                    GetFractionSharedPt(AliEmcalJet *jet) const;
+  Double_t                    GetFractionSharedPt(const AliEmcalJet *jet) const;
  
 
  protected:

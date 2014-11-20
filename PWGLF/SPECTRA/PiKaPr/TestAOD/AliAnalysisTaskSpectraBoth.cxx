@@ -113,6 +113,13 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 	}
 	else
 		AliFatal("Not processing AODs or ESDS") ;
+	if(fIsMC)
+  	{		
+  		if(!fEventCuts->CheckMCProcessType(MCEvent()))
+			return ;		
+  	}
+
+
 	if(fdotheMCLoopAfterEventCuts)
   		if(!fEventCuts->IsSelected(fAOD,fTrackCuts,fIsMC,-100,fHistMan->GetEventStatHist()))
 			return;//event selection

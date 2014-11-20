@@ -156,6 +156,9 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
 	hESDTrueEtaPtOpenAngle(NULL),
 	hESDTrueMotherDalitzInvMassPt(NULL),
 	hESDTrueConvGammaPt(NULL),
+        hESDTrueConvGammaR(NULL),
+	hESDTrueConvGammaPtMC(NULL),
+        hESDTrueConvGammaRMC(NULL),
 	hESDTrueConvGammaEta(NULL),
 	hESDCombinatorialPt(NULL),
 	hESDTruePrimaryConvGammaPt(NULL),
@@ -302,6 +305,9 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
 	hESDTrueEtaPtOpenAngle(NULL),
 	hESDTrueMotherDalitzInvMassPt(NULL),
 	hESDTrueConvGammaPt(NULL),
+	hESDTrueConvGammaR(NULL),
+	hESDTrueConvGammaPtMC(NULL),
+	hESDTrueConvGammaRMC(NULL),
 	hESDTrueConvGammaEta(NULL),
 	hESDCombinatorialPt(NULL),
 	hESDTruePrimaryConvGammaPt(NULL),
@@ -505,11 +511,11 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 		fESDList[iCut]->SetOwner(kTRUE);
 		fCutFolder[iCut]->Add(fESDList[iCut]);
 
-		hNEvents[iCut] = new TH1I("NEvents","NEvents",10,-0.5,9.5);
+        hNEvents[iCut] = new TH1I("NEvents","NEvents",10,-0.5,9.5);
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
-		if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 1 ){ 
+        if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 1 ){
 			TString TriggerNames = "Not Trigger: ";
 			TriggerNames = TriggerNames+ ( (AliConvEventCuts*)fEventCutArray->At(iCut))->GetSpecialTriggerName();
 			hNEvents[iCut]->GetXaxis()->SetBinLabel(4,TriggerNames.Data());
@@ -521,7 +527,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
-		hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
+        hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
 		fESDList[iCut]->Add(hNEvents[iCut]);
 		
 		if(fIsHeavyIon == 1) hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",4000,0,4000);
@@ -611,10 +617,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 				hESDMotherEtaPtAlpha[iCut] = new TH2F("ESD_MotherEta_Pt_Alpha","ESD_MotherEta_Pt_Alpha",150,0.03,15.,100,0,1);
 				SetLogBinningXTH2(hESDMotherEtaPtAlpha[iCut]);
 				fESDList[iCut]->Add(hESDMotherEtaPtAlpha[iCut]);
-				hESDMotherPi0PtOpenAngle[iCut] = new TH2F("ESD_MotherPi0_Pt_OpenAngle","ESD_MotherPi0_Pt_OpenAngle",150,0.03,15.,100,0,TMath::Pi());            
+                hESDMotherPi0PtOpenAngle[iCut] = new TH2F("ESD_MotherPi0_Pt_OpenAngle","ESD_MotherPi0_Pt_OpenAngle",150,0.03,15.,100,0,TMath::Pi());
 				SetLogBinningXTH2(hESDMotherPi0PtOpenAngle[iCut]);
 				fESDList[iCut]->Add(hESDMotherPi0PtOpenAngle[iCut]);
-				hESDMotherEtaPtOpenAngle[iCut] = new TH2F("ESD_MotherEta_Pt_OpenAngle","ESD_MotherEta_Pt_OpenAngle",150,0.03,15.,100,0,TMath::Pi());            
+                hESDMotherEtaPtOpenAngle[iCut] = new TH2F("ESD_MotherEta_Pt_OpenAngle","ESD_MotherEta_Pt_OpenAngle",150,0.03,15.,100,0,TMath::Pi());
 				SetLogBinningXTH2(hESDMotherEtaPtOpenAngle[iCut]);
 				fESDList[iCut]->Add(hESDMotherEtaPtOpenAngle[iCut]);
 			}
@@ -661,6 +667,9 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 			hMCConvGammaR = new TH1F*[fnCuts];
 			hMCConvGammaEta = new TH1F*[fnCuts];
 		hESDTrueConvGammaEta = new TH1F*[fnCuts];
+		hESDTrueConvGammaR = new TH1F*[fnCuts];
+                hESDTrueConvGammaRMC = new TH1F*[fnCuts];
+                hESDTrueConvGammaPtMC = new TH1F*[fnCuts];
 		}
 
 		if(fDoMesonAnalysis){
@@ -854,6 +863,19 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
 			hESDTruePrimaryConvGammaESDPtMCPt[iCut] = new TH2F("ESD_TruePrimaryConvGammaESD_PtMCPt", "ESD_TruePrimaryConvGammaESD_PtMCPt",250,0,25,250,0,25);
 			fTrueList[iCut]->Add(hESDTruePrimaryConvGammaESDPtMCPt[iCut]);
+
+		
+			if (fDoPhotonQA > 0){
+			
+                                hESDTrueConvGammaEta[iCut] = new TH1F("ESD_TrueConvGamma_Eta","ESD_TrueConvGamma_Eta",2000,-2,2);
+                                fTrueList[iCut]->Add(hESDTrueConvGammaEta[iCut]);
+                                hESDTrueConvGammaR[iCut] = new TH1F("ESD_TrueConvGamma_R","ESD_TrueConvGamma_R",800,0,200);
+                                fTrueList[iCut]->Add(hESDTrueConvGammaR[iCut]);
+                                hESDTrueConvGammaRMC[iCut] = new TH1F("ESD_TrueConvGamma_RMC","ESD_TrueConvGamma_RMC",800,0,200);
+                                fTrueList[iCut]->Add(hESDTrueConvGammaRMC[iCut]);
+                                hESDTrueConvGammaPtMC[iCut] = new TH1F("ESD_TrueConvGamma_PtMC","ESD_TrueConvGamma_PtMC",250,0,25);
+                                fTrueList[iCut]->Add(hESDTrueConvGammaPtMC[iCut]);
+			}
 			
 			if(fDoMesonAnalysis){
 				hESDTrueMotherInvMassPt[iCut] = new TH2F("ESD_TrueMother_InvMass_Pt","ESD_TrueMother_InvMass_Pt",800,0,0.8,250,0,25);
@@ -925,9 +947,6 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 					hESDTrueEtaPtOpenAngle[iCut] = new TH2F("ESD_TrueEta_Pt_OpenAngle","ESD_TrueEta_Pt_OpenAngle",150,0.03,15.,200,0,2*TMath::Pi());            
 					SetLogBinningXTH2(hESDTrueEtaPtOpenAngle[iCut]);
 					fTrueList[iCut]->Add(hESDTrueEtaPtOpenAngle[iCut]);
-
-					hESDTrueConvGammaEta[iCut] = new TH1F("ESD_TrueConvGamma_Eta","ESD_TrueConvGamma_Eta",2000,-2,2);
-					fTrueList[iCut]->Add(hESDTrueConvGammaEta[iCut]);
 
 				}
 			}
@@ -1028,7 +1047,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 		fiCut = iCut;
 		Int_t eventNotAccepted =
 			((AliConvEventCuts*)fEventCutArray->At(iCut))
-			->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
+            ->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
 		if(eventNotAccepted){
 			// cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
 			hNEvents[iCut]->Fill(eventNotAccepted); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
@@ -1361,12 +1380,19 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversion
 		}   
 		// STILL A BUG IN ALIROOT >>8 HAS TPO BE REMOVED AFTER FIX
 		
-		
+                Double_t rConv=0.;       
+                rConv = sqrt( (posDaughter->Xv()*posDaughter->Xv()) + (posDaughter->Yv()*posDaughter->Yv()) ); 
 		
 		// True Photon
 		if(fIsFromMBHeader){
-			hESDTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-			if (fDoPhotonQA > 0) hESDTrueConvGammaEta[fiCut]->Fill(TruePhotonCandidate->Eta());
+                   hESDTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+                   if (fDoPhotonQA > 0){
+                      hESDTrueConvGammaEta[fiCut]->Fill(TruePhotonCandidate->Eta()); 
+                      hESDTrueConvGammaR[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius());
+                      hESDTrueConvGammaRMC[fiCut]->Fill(rConv);
+                      hESDTrueConvGammaPtMC[fiCut]->Fill(Photon->Pt());
+                    
+                   }
 		}
 		hESDTrueGammaPsiPairDeltaPhi[fiCut]->Fill(deltaPhi,TruePhotonCandidate->GetPsiPair());  
 		if(Photon->IsPrimary()){ 
@@ -1451,7 +1477,13 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidates(AliAODConversionPho
 	// True Photon
 	if(fIsFromMBHeader){
 		hESDTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-		if (fDoPhotonQA > 0) hESDTrueConvGammaEta[fiCut]->Fill(TruePhotonCandidate->Eta());
+		if (fDoPhotonQA > 0){
+                   hESDTrueConvGammaEta[fiCut]->Fill(TruePhotonCandidate->Eta());
+                   hESDTrueConvGammaR[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius());
+                   hESDTrueConvGammaRMC[fiCut]->Fill(posDaughter->R());
+                   hESDTrueConvGammaPtMC[fiCut]->Fill(Photon->Pt());
+                }
+
 	}
 	hESDTrueGammaPsiPairDeltaPhi[fiCut]->Fill(deltaPhi,TruePhotonCandidate->GetPsiPair());  
 	if(posDaughter->GetMother(0) <= fMCStack->GetNprimary()){
@@ -2633,5 +2665,4 @@ Int_t AliAnalysisTaskGammaConvV1::GetSourceClassification(Int_t daughter, Int_t 
 		else return 15;		
 	} 
 	return 15;
-
 }

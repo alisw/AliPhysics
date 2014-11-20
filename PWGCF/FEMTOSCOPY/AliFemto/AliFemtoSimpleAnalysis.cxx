@@ -147,7 +147,8 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis() :
   fNumEventsToMix(0),
   fNeventsProcessed(0),
   fMinSizePartCollection(0),
-  fVerbose(kTRUE)
+  fVerbose(kTRUE),
+  fPerformSharedDaughterCut(kFALSE)
 {
   // Default constructor
   //  mControlSwitch     = 0;
@@ -169,7 +170,8 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a) 
   fNumEventsToMix(0),
   fNeventsProcessed(0),
   fMinSizePartCollection(0),
-  fVerbose(kTRUE)
+  fVerbose(kTRUE),
+  fPerformSharedDaughterCut(kFALSE)
 {
   // Copy constructor
   //AliFemtoSimpleAnalysis();
@@ -295,6 +297,8 @@ AliFemtoSimpleAnalysis& AliFemtoSimpleAnalysis::operator=(const AliFemtoSimpleAn
   fMinSizePartCollection = aAna.fMinSizePartCollection;  // minimum # particles in ParticleCollection
 
   fVerbose = aAna.fVerbose;
+
+  fPerformSharedDaughterCut = aAna.fPerformSharedDaughterCut;
 
   return *this;
 }

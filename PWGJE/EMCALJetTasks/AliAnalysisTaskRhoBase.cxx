@@ -8,6 +8,7 @@
 #include <TF1.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TClonesArray.h>
 
 #include "AliLog.h"
@@ -15,6 +16,7 @@
 #include "AliEmcalJet.h"
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
+#include "AliVVZERO.h"
 
 #include "AliAnalysisTaskRhoBase.h"
 
@@ -46,8 +48,8 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase() :
   fHistRhoScaledvsCent(0),
   fHistDeltaRhovsCent(0),
   fHistDeltaRhoScalevsCent(0),
-  fHistRhovsNtrack(0),
-  fHistRhoScaledvsNtrack(0),
+  fHistRhovsNtrackvsV0Mult(0),
+  fHistRhoScaledvsNtrackvsV0Mult(0),
   fHistDeltaRhovsNtrack(0),
   fHistDeltaRhoScalevsNtrack(0),
   fHistRhovsNcluster(0),
@@ -90,8 +92,8 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase(const char *name, Bool_t histo) :
   fHistRhoScaledvsCent(0),
   fHistDeltaRhovsCent(0),
   fHistDeltaRhoScalevsCent(0),
-  fHistRhovsNtrack(0),
-  fHistRhoScaledvsNtrack(0),
+  fHistRhovsNtrackvsV0Mult(0),
+  fHistRhoScaledvsNtrackvsV0Mult(0),
   fHistDeltaRhovsNtrack(0),
   fHistDeltaRhoScalevsNtrack(0),
   fHistRhovsNcluster(0),
@@ -125,10 +127,11 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
   fOutput->Add(fHistRhovsCent);
 
   if (fParticleCollArray.GetEntriesFast()>0) {
-    fHistRhovsNtrack = new TH2F("fHistRhovsNtrack", "fHistRhovsNtrack", 150, 0, 6000, fNbins, fMinBinPt, fMaxBinPt*2);
-    fHistRhovsNtrack->GetXaxis()->SetTitle("No. of tracks");
-    fHistRhovsNtrack->GetYaxis()->SetTitle("#rho (GeV/c * rad^{-1})");
-    fOutput->Add(fHistRhovsNtrack);
+    fHistRhovsNtrackvsV0Mult = new TH3F("fHistRhovsNtrackvsV0Mult", "fHistRhovsNtrackvsV0Mult", 150, 0, 6000, fNbins, fMinBinPt, fMaxBinPt*2,100,0.,20000.);
+    fHistRhovsNtrackvsV0Mult->GetXaxis()->SetTitle("No. of tracks");
+    fHistRhovsNtrackvsV0Mult->GetYaxis()->SetTitle("#rho (GeV/c * rad^{-1})");
+    fHistRhovsNtrackvsV0Mult->GetZaxis()->SetTitle("V0 mult");
+    fOutput->Add(fHistRhovsNtrackvsV0Mult);
   }
 
   if (fClusterCollArray.GetEntriesFast()>0) {
@@ -223,10 +226,11 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
     fOutput->Add(fHistRhoScaledvsCent);
 
     if (fParticleCollArray.GetEntriesFast()>0) {
-      fHistRhoScaledvsNtrack = new TH2F("fHistRhoScaledvsNtrack", "fHistRhoScaledvsNtrack", 150, 0, 6000, fNbins, fMinBinPt, fMaxBinPt*2);
-      fHistRhoScaledvsNtrack->GetXaxis()->SetTitle("No. of tracks");
-      fHistRhoScaledvsNtrack->GetYaxis()->SetTitle("#rho_{scaled} (GeV/c * rad^{-1})");
-      fOutput->Add(fHistRhoScaledvsNtrack);
+      fHistRhoScaledvsNtrackvsV0Mult = new TH3F("fHistRhoScaledvsNtrackvsV0Mult", "fHistRhoScaledvsNtrackvsV0Mult", 150, 0, 6000, fNbins, fMinBinPt, fMaxBinPt*2,100,0.,20000.);
+      fHistRhoScaledvsNtrackvsV0Mult->GetXaxis()->SetTitle("No. of tracks");
+      fHistRhoScaledvsNtrackvsV0Mult->GetYaxis()->SetTitle("#rho (GeV/c * rad^{-1})");
+      fHistRhoScaledvsNtrackvsV0Mult->GetZaxis()->SetTitle("V0 mult");
+      fOutput->Add(fHistRhoScaledvsNtrackvsV0Mult);
     }
 
     if (fClusterCollArray.GetEntriesFast()>0) {
@@ -275,6 +279,10 @@ Bool_t AliAnalysisTaskRhoBase::FillHistograms()
 
   Int_t Ntracks   = 0;
   Int_t Nclusters = 0;
+
+  AliVVZERO* vV0 = InputEvent()->GetVZEROData();
+  Float_t multV0A = vV0->GetMTotV0A();
+  Float_t multV0C = vV0->GetMTotV0C();
 
   if (GetParticleContainer(0))
     Ntracks = GetParticleContainer(0)->GetNAcceptedParticles();
@@ -340,7 +348,7 @@ Bool_t AliAnalysisTaskRhoBase::FillHistograms()
   fHistRhovsCent->Fill(fCent, fOutRho->GetVal());
 
   if (fTracks)
-    fHistRhovsNtrack->Fill(Ntracks, fOutRho->GetVal());
+    fHistRhovsNtrackvsV0Mult->Fill(Ntracks, fOutRho->GetVal(),multV0A+multV0C);
   if (fCaloClusters)
     fHistRhovsNcluster->Fill(Nclusters, fOutRho->GetVal());
   if (fCompareRho) {
@@ -352,7 +360,7 @@ Bool_t AliAnalysisTaskRhoBase::FillHistograms()
   if (fOutRhoScaled) {
     fHistRhoScaledvsCent->Fill(fCent, fOutRhoScaled->GetVal());
     if (fTracks)
-      fHistRhoScaledvsNtrack->Fill(Ntracks, fOutRhoScaled->GetVal());
+      fHistRhoScaledvsNtrackvsV0Mult->Fill(Ntracks, fOutRhoScaled->GetVal(),multV0A+multV0C);
     if (fCaloClusters)
       fHistRhoScaledvsNcluster->Fill(Nclusters,  fOutRhoScaled->GetVal());
     if (fCompareRhoScaled) {

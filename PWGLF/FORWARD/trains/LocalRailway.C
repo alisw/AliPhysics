@@ -1,5 +1,5 @@
 /**
- * @file   LocalHelper.C
+ * @file   LocalRailway.C
  * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
  * @date   Tue Oct 16 18:59:42 2012
  * 
@@ -11,7 +11,7 @@
 #ifndef LOCALHELPER_C
 #define LOCALHELPER_C
 #ifndef __CINT__
-# include "Helper.C"
+# include "Railway.C"
 # include "ChainBuilder.C"
 # include <TUrl.h>
 # include <TString.h>
@@ -19,7 +19,7 @@
 # include <AliAnalysisManager.h>
 #else
 class TChain;
-class Helper;
+class Railway;
 class TUrl;
 #endif
 
@@ -62,7 +62,7 @@ class TUrl;
  *       
  * @ingroup pwglf_forward_trains_helper
  */
-struct LocalHelper : public Helper
+struct LocalRailway : public Railway
 {
   /** 
    * Constructor 
@@ -70,8 +70,8 @@ struct LocalHelper : public Helper
    * @param url   Url 
    * @param verbose Verbosity level 
    */
-  LocalHelper(const TUrl& url, Int_t verbose)
-    : Helper(url, verbose), fChain(0)
+  LocalRailway(const TUrl& url, Int_t verbose)
+    : Railway(url, verbose), fChain(0)
   {
     fOptions.Add("recursive","Scan recursive");
     fOptions.Add("pattern",  "GLOB", "File name pattern", "*.root");
@@ -81,8 +81,8 @@ struct LocalHelper : public Helper
    * 
    * @param o Object to copy from 
    */
-  LocalHelper(const LocalHelper& o) 
-    : Helper(o), fChain(o.fChain)
+  LocalRailway(const LocalRailway& o) 
+    : Railway(o), fChain(o.fChain)
   {}
   /** 
    * Assignment operator 
@@ -91,17 +91,17 @@ struct LocalHelper : public Helper
    * 
    * @return Reference to this 
    */
-  LocalHelper& operator=(const LocalHelper& o) 
+  LocalRailway& operator=(const LocalRailway& o) 
   {
     if (&o == this) return *this;
-    Helper::operator=(o);
+    Railway::operator=(o);
     fChain = o.fChain;
     return *this;
   }
   /** 
    * Destructor 
    */
-  virtual ~LocalHelper() {}
+  virtual ~LocalRailway() {}
   /** 
    * Load a library 
    * 

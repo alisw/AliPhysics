@@ -334,6 +334,10 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 	// Cluster quality related histograms
     Double_t timeMin = -2e-6;
     Double_t timeMax = 8e-6;
+	if (GetClusterType() == 1){
+		timeMin = -2e-7;
+		timeMax = 12e-7;
+	}	
     fHistClusterTimevsEBeforeQA=new TH2F(Form("ClusterTimeVsE_beforeClusterQA %s",GetCutNumber().Data()),"ClusterTimeVsE_beforeClusterQA",800,timeMin,timeMax,100,0,40);
 	fHistograms->Add(fHistClusterTimevsEBeforeQA);
     fHistClusterTimevsEAfterQA=new TH2F(Form("ClusterTimeVsE_afterClusterQA %s",GetCutNumber().Data()),"ClusterTimeVsE_afterClusterQA",800,timeMin,timeMax,100,0,40);

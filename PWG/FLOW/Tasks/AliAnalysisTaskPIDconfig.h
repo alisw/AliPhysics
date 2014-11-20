@@ -17,7 +17,7 @@
 #include <TVectorDfwd.h>
 
 #include "AliAnalysisTaskSE.h"
-#include "AliPID.h"  
+#include "AliPID.h"
 #include "AliPIDResponse.h"
 #include "AliCentrality.h"
 #include "TCutG.h"
@@ -33,22 +33,22 @@ class TList;
 class AliVEvent;
 class TH1F;
 class TH2F;
-class TH3F; 
+class TH3F;
 class TH3F;
 
 
 
 class AliAnalysisTaskPIDconfig : public AliAnalysisTaskSE {
-  
-  
+    
+    
 public:
     AliAnalysisTaskPIDconfig();
     AliAnalysisTaskPIDconfig(const char *name);
     virtual ~AliAnalysisTaskPIDconfig();
-
+    
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t * /*option*/);
-
+    
     void SetFilterBit(Double_t b){fFilterBit = b;}
     void SetCentralityPercentileMin(Int_t b){fCentralityPercentileMin = b;}
     void SetCentralityPercentileMax(Int_t b){fCentralityPercentileMax = b;}
@@ -61,15 +61,15 @@ public:
     void SetData2011(Bool_t b){fData2011 = b;}
     void CheckCentrality(AliVEvent *event,Bool_t &centralitypass); //to use only events with the correct centrality....
     void SetCuts(Bool_t b){fPIDcuts = b;}
-  //void MultiplicityOutlierCut(AliVEvent *event,Bool_t &centralitypass,Int_t ntracks);
+    //void MultiplicityOutlierCut(AliVEvent *event,Bool_t &centralitypass,Int_t ntracks);
     void SetPIDcontoursList(TDirectory* b){fContourCutList = b;}
-  //TGraph* GetPIDcontours(TString specie, Double_t Plow, Double_t Phigh,Int_t centMin, Int_t centMax){}
+    //TGraph* GetPIDcontours(TString specie, Double_t Plow, Double_t Phigh,Int_t centMin, Int_t centMax){}
     void GetPIDContours();
-
-protected:  
-
-
-  
+    
+protected:
+    
+    
+    
 private:
     AliVEvent             *fVevent;
     AliESDEvent           *fESD;
@@ -105,23 +105,23 @@ private:
     TH2F                  *fTPCvsGlobalMultAfterOutliers;
     TH2F                  *fTPCvsGlobalMultAfter;
     TH2F                  *fHistBetavsPTOFbeforePID;
-    TH2F                  *fHistdEdxVsPTPCbeforePID;
-    TH2F                  *fHistBetavsPTOFafterPID;
-    TH2F                  *fHistdEdxVsPTPCafterPID;
+    TH2F                  *fHistdEdxvsPTPCbeforePID;
     TH3F                  *fhistNsigmaP;
     TH3F                  *fhistNsigmaPt;
-    TCutG                 *fContourCut[3][10];
-
-
-  //qa object initialisation
-  void SetupTPCTOFqa();
-  void SetupEventInfo();
-  //
-
-  AliAnalysisTaskPIDconfig(const AliAnalysisTaskPIDconfig &other);
-  AliAnalysisTaskPIDconfig& operator=(const AliAnalysisTaskPIDconfig &other);
-  
-  ClassDef(AliAnalysisTaskPIDconfig,2)  // Task to properly set the PID response functions of all detectors
+    TH2F                  *fHistBetavsPTOFafterPID;
+    TH2F                  *fHistdEdxvsPTPCafterPID;
+    TCutG                 *fContourCut[150];
+    
+    
+    //qa object initialisation
+    void SetupTPCTOFqa();
+    void SetupEventInfo();
+    //
+    
+    AliAnalysisTaskPIDconfig(const AliAnalysisTaskPIDconfig &other);
+    AliAnalysisTaskPIDconfig& operator=(const AliAnalysisTaskPIDconfig &other);
+    
+    ClassDef(AliAnalysisTaskPIDconfig,2)  // Task to properly set the PID response functions of all detectors
 };
 
 #endif

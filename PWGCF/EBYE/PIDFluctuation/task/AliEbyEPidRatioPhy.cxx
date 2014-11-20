@@ -21,6 +21,9 @@
 //                  Date: Wed Jul  9 18:38:30 CEST 2014                    //
 //          New approch to find particle ratio to reduce memory            //
 //                             (Test Only)                                 //
+//        Copied from NetParticle Classes
+//        Origin: Authors: Jochen Thaeder <jochen@thaeder.de>
+//                         Michael Weber <m.weber@cern.ch>
 //=========================================================================//
 
 #include "TMath.h"
@@ -129,6 +132,7 @@ void AliEbyEPidRatioPhy::Process() {
 
 //________________________________________________________________________
 void AliEbyEPidRatioPhy::Init() {
+ 
   fNp = new Int_t**[fNNp];
   for (Int_t ii = 0 ; ii < fNNp; ++ii) {
     fNp[ii] = new Int_t*[4];
@@ -166,6 +170,7 @@ void AliEbyEPidRatioPhy::Init() {
   fRedFactp = new Double_t*[fOrder+1];
   for (Int_t ii = 0 ; ii <= fOrder; ++ii)
     fRedFactp[ii] = new Double_t[2];
+  Printf(" >>>> AliEbyEPidRatioEffContExtra - inside");
 }
 
 //________________________________________________________________________
@@ -680,8 +685,10 @@ void  AliEbyEPidRatioPhy::AddHistSetRatio(const Char_t *name, const Char_t *titl
   Int_t    nRbin  = 15000;
   Double_t mRat[] = {0,1.5};
 
-  Int_t nBinsCent         =  AliEbyEPidRatioHelper::fgkfHistNBinsCent;
-  Double_t centBinRange[] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0], AliEbyEPidRatioHelper::fgkfHistRangeCent[1]};
+  Int_t nBinsCent         =  (fIsPer) ? 100 : AliEbyEPidRatioHelper::fgkfHistNBinsCent;
+  Double_t centBinRange[2];  
+  centBinRange[0]  =  (fIsPer) ?  0   : AliEbyEPidRatioHelper::fgkfHistRangeCent[0];
+  centBinRange[1]  =  (fIsPer) ?  100 : AliEbyEPidRatioHelper::fgkfHistRangeCent[1];
 
   TString xyz = Form("|y| < %.1f",fHelper->GetRapidityMax()); 
 
@@ -739,7 +746,7 @@ void  AliEbyEPidRatioPhy::AddHistSetRatio(const Char_t *name, const Char_t *titl
   
 
   //------- - - -  -  -   -   - - -   - --- - - --- - - - - - -- --------
-  Int_t bin[4] = {4000,3600,1600,800}; 
+  Int_t bin[4] = {2800,2200,1200,600}; 
   Int_t bd[] = {1,2,2,2};
   for (Int_t iPid = 0; iPid < 4; ++iPid) {
     Int_t bb = bin[iPid];
@@ -879,8 +886,8 @@ void AliEbyEPidRatioPhy::FillHistSetRatio(const Char_t *name, Int_t idx, Bool_t 
    
   Int_t ***np = (isMC) ? fMCNp : fNp;
 
-  Float_t centralityBin = fHelper->GetCentralityBin();
-  
+  Float_t centralityBin = (fIsPer) ? fHelper->GetCentralityPercentile() : fHelper->GetCentralityBin();
+
   TList *list = static_cast<TList*>(fOutList->FindObject(Form("f%s",name)));
     
   

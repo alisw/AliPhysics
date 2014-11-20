@@ -20,7 +20,7 @@ Introduction:
           {
             LoadLibrary("MyAnalysis");
             
-            gROOT->Macro("AddTaskMyAnalysis.C");
+ 	    CoupleCar("AddTaskMyAnalysis.C");
           }
           const char* ClassName() const { return "MyTrain"; }
         };

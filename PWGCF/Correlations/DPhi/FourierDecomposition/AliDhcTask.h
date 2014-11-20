@@ -7,6 +7,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliPool.h"
+#include "PWG/muon/AliMuonTrackCuts.h"
 
 class TFormula;
 class TH1;
@@ -36,30 +37,35 @@ class AliDhcTask : public AliAnalysisTaskSE {
   void         SetCentBins(TAxis *bins)               { fBCent=bins;              }
   void         SetCentMethod(const char *name)        { fCentMethod = name;       }
   void         SetCentMixBins(TAxis *bins)            { fMixBCent=bins;           }
+  void         SetCheckVertex(Bool_t b)               { fCheckVertex = b;         }
   void         SetClassName(const char *n)            { fClassName = n;           }
   void         SetDEtaDPhiBins(Int_t nbe, Int_t nbp)  { fNBdeta=nbe; fNBdphi=nbp; }
   void         SetDoFillSame(Bool_t b)                { fDoFillSame = b;          }
   void         SetDoMassCut(Bool_t b)                 { fDoMassCut = b;           }
-  void         SetCheckVertex(Bool_t b)               { fCheckVertex = b;         }
   void         SetDoWeights(Bool_t b)                 { fDoWeights = b;           }
   void         SetEtaMax(Double_t eta)                { fEtaMax = eta;            }
   void         SetEtaTRange(Double_t eL, Double_t eH) { fEtaTLo=eL; fEtaTHi=eH;   }
   void         SetEtaARange(Double_t eL, Double_t eH) { fEtaALo=eL; fEtaAHi=eH;   }
   void         SetFillMuons(Bool_t b)                 { fFillMuons = b;           }
-  void         SetRequireMuon(Bool_t b, Double_t l=0.5, Double_t h=4.0) {
-    fRequireMuon = b;
-    fReqPtLo = l;
-    fReqPtHi = h;
-  }
   void         SetHEffA(THnF *h)                      { fHEffA=h;                 }
   void         SetHEffT(THnF *h)                      { fHEffT=h;                 }
   void         SetMixInEtaT(Bool_t b)                 { fMixInEtaT = b;           }
+  void         SetMuonUtils(Bool_t b = kTRUE,
+                            UInt_t mask = AliMuonTrackCuts::kMuEta | AliMuonTrackCuts::kMuThetaAbs | AliMuonTrackCuts::kMuPdca | AliMuonTrackCuts::kMuMatchApt ) {
+    fUseMuonUtils = b;
+    fMuonCutMask = mask;
+  }
   void         SetOmitFirstEv(Bool_t b)               { fOmitFirstEv = b;         }
   void         SetPoolSize(Int_t p)                   { fPoolSize = p;            }
   void         SetPtABins(TAxis *bins)                { fBPtA=bins;               }
   void         SetPtRange(Double_t min, Double_t max) { fPtMin=min; fPtMax=max;   }
   void         SetPtTACrit(Bool_t b)                  { fPtTACrit = b;            }
   void         SetPtTBins(TAxis *bins)                { fBPtT=bins;               }
+  void         SetRequireMuon(Bool_t b, Double_t l=0.5, Double_t h=4.0) {
+    fRequireMuon = b;
+    fReqPtLo = l;
+    fReqPtHi = h;
+  }
   void         SetTrackDepth(Int_t t)                 { fTrackDepth = t;          }
   void         SetTracksName(const char *n)           { fTracksName = n;          }
   void         SetTriggerMatch(Bool_t b)              { fTriggerMatch = b;        }
@@ -80,6 +86,8 @@ class AliDhcTask : public AliAnalysisTaskSE {
   void         GetESDTracks(MiniEvent*);
   void         GetAODTracks(MiniEvent*);
   Bool_t       VertexOk() const;
+  Bool_t       HasMuonESD();
+  Bool_t       HasMuonAOD();
   Bool_t       IsGoodMUONtrack(AliESDMuonTrack &track);
   Bool_t       IsGoodMUONtrack(AliAODTrack &track);
   Bool_t       IsTrigger(Double_t eta, Double_t pt);
@@ -109,6 +117,9 @@ class AliDhcTask : public AliAnalysisTaskSE {
   Bool_t             fPtTACrit;        //  use the pTT > pTA criterion?
   Bool_t             fAllTAHists;      //  create all pTT,pTA combination hists, even t<a?
   Bool_t             fMixInEtaT;       //  mix in bins of eta_T instead of z_vertex
+  Bool_t             fUseMuonUtils;    //  use muon cuts from PWG/muon/AliMuonTrackCuts ?
+  UInt_t             fMuonCutMask;     //  muon cut mask for above
+  AliMuonTrackCuts  *fMuonTrackCuts;   //  muon track cut object
   Double_t           fEtaTLo;          //  Min eta for triggers
   Double_t           fEtaTHi;          //  Max eta for triggers
   Double_t           fEtaALo;          //  Min eta for associated

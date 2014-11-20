@@ -29,6 +29,7 @@
 set ( SRCS
   UPC/AliAnalysisTaskUpcPsi2s.cxx
   UPC/AliAnalysisTaskUpcK0sK0s.cxx
+  UPC/AliAnalysisTaskUpcPhi.cxx
   UPC/AliUpcParticle.cxx
   UPC/AliAnalysisTaskUpcTree.cxx
 )

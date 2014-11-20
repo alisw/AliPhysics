@@ -20,23 +20,33 @@
 #include "TObjString.h"
 #include "AliLog.h"
 #include "AliMuonEventCuts.h"
+#include "AliAnalysisMuonUtility.h"
 #include "TList.h"
+#include "TTree.h"
 #include "Riostream.h"
 #include "AliVVertex.h"
 #include "AliAODVertex.h"
 #include "AliVVZERO.h"
 #include "AliInputEventHandler.h"
+#include "AliMCEventHandler.h"
 #include "AliVEvent.h"
+#include "AliMCEvent.h"
 #include "TMath.h"
+#include "TParameter.h"
 #include "AliESDTZERO.h"
 #include "AliAODTZERO.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
+#include "AliAODMCHeader.h"
+#include "AliGenEventHeader.h"
+#include "AliGenHijingEventHeader.h"
+#include "AliGenDPMjetEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
 
 ClassImp(AliAnalysisMuMuEventCutter)
 
 //______________________________________________________________________________
-AliAnalysisMuMuEventCutter::AliAnalysisMuMuEventCutter(TList* triggerClasses)
+AliAnalysisMuMuEventCutter::AliAnalysisMuMuEventCutter(TList* triggerClasses, TList* triggerInputsMap)
 : TObject(), fMuonEventCuts(0x0)
 {
   /// ctor
@@ -62,8 +72,32 @@ AliAnalysisMuMuEventCutter::AliAnalysisMuMuEventCutter(TList* triggerClasses)
     }
   }
   
-  MuonEventCuts()->SetTrigClassPatterns(tclasses);
+  TString tinputs;
+  
+  if ( !triggerInputsMap )
+  {
+    tinputs = "";
+  }
+  else
+  {
+    TObjString* tinputsname;
+    TIter next(triggerInputsMap);
+    
+    while ( ( tinputsname = static_cast<TObjString*>(next()) ) )
+    {
+      if (tinputs.Length()>0)
+      {
+        tinputs += ",";
+      }
+      
+      tinputs += tinputsname->String();
+    }
+  }
+  
+  MuonEventCuts()->SetTrigClassPatterns(tclasses,tinputs);
+  
 }
+
 
 //______________________________________________________________________________
 AliAnalysisMuMuEventCutter::~AliAnalysisMuMuEventCutter()
@@ -122,6 +156,84 @@ Bool_t AliAnalysisMuMuEventCutter::IsPhysicsSelectedVDM(const AliVEvent& event) 
 }
 
 //_____________________________________________________________________________
+Bool_t AliAnalysisMuMuEventCutter::IsMCEventNSD(const AliVEvent& event) const
+{
+  // Check for headers
+  //FIXME: For now this is only valid for DPMJET
+  //FIXME: working only on AODs
+  
+  if ( static_cast<const AliVEvent*>(&event)->IsA() == AliESDEvent::Class() )
+  {
+    AliWarning("Not implemented for ESDs yet");
+    return kFALSE;
+  }
+  
+  const AliAODEvent* eventAOD = static_cast<const AliAODEvent*>(&event);
+  
+  AliAODMCHeader* mcHeader = static_cast<AliAODMCHeader*>(eventAOD->FindListObject(AliAODMCHeader::StdBranchName()));
+  
+  if(mcHeader)
+  {
+    TList* lheaders = mcHeader->GetCocktailHeaders();
+    
+    if ( lheaders->GetEntries() > 1 ) AliWarning("There is more than one header: The simulation is a cocktail");
+    
+    AliGenEventHeader* mcGenH(0x0);
+    AliGenHijingEventHeader* hHijing(0x0);
+    AliGenDPMjetEventHeader* hDpmJet(0x0);
+    TIter next(lheaders); // Get the iterator on the list of cocktail headers
+
+//    lheaders->Print();
+    
+    while ( (mcGenH = static_cast<AliGenEventHeader*>(next())) ) // Loop over the cocktail headers
+    {
+//      std::cout << mcGenH->GetName() << std::endl;
+      if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
+      {
+        hHijing = static_cast<AliGenHijingEventHeader*>(mcGenH);
+      }
+      if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class()))
+      {
+        hDpmJet = static_cast<AliGenDPMjetEventHeader*>(mcGenH);
+      }
+    } // End of loop over cocktail headers
+    
+    if ( !hDpmJet && !hHijing )
+    {
+      AliError("No GenHeader found");
+      return kFALSE;
+    }
+    else if ( hDpmJet )
+    {
+      Int_t nsd1,nsd2,ndd;
+      Int_t npProj = hDpmJet->ProjectileParticipants();
+//      Int_t npProj = hDpmJet->TargetParticipants();
+      
+//      std::cout << hDpmJet->ProcessType() << std::endl;
+      hDpmJet->GetNDiffractive(nsd1,nsd2,ndd);
+      
+      if (ndd==0 && (npProj==nsd1 || npProj==nsd2))
+      {
+        return kFALSE; // reject SD
+      }
+      else return kTRUE; //Is NSD event
+
+    }
+    else
+    {
+      AliWarning("Implement the Hijing section");
+      return kFALSE;
+    }
+  }
+  else
+  {
+    AliError("No MCheader in MCEvent");
+    return kFALSE;
+  }
+
+}
+
+//_____________________________________________________________________________
 Bool_t AliAnalysisMuMuEventCutter::IsAbsZBelowValue(const AliVEvent& event, const Double_t& z) const
 {
   // Checks if the absolute value of the Z component of the primary vertex is below a certain value
@@ -134,15 +246,24 @@ Bool_t AliAnalysisMuMuEventCutter::IsAbsZBelowValue(const AliVEvent& event, cons
 Bool_t AliAnalysisMuMuEventCutter::IsAbsZSPDBelowValue(const AliVEvent& event, const Double_t& z) const
 {
   // Checks if the absolute value of the SPD Z component of the given vertex is below a certain value
-  AliAODVertex* SPDVertex = static_cast<const AliAODEvent*>(&event)->GetPrimaryVertexSPD();
   
-  if ( !SPDVertex )
+  Double_t SPDzv(0.);
+  Bool_t vertexFound(kFALSE);
+  
+  AliVVertex* SPDVertex = AliAnalysisMuonUtility::GetVertexSPD(static_cast<const AliVEvent*>(&event));
+  if ( SPDVertex )
+  {
+    vertexFound = kTRUE;
+    SPDzv = SPDVertex->GetZ();
+  }
+  
+  if ( !vertexFound )
   {
     AliError("SPD |z| cut requested and no SPD vertex found in the event");
     return kFALSE;
   }
   
-  else return (TMath::Abs(SPDVertex->GetZ())<=z);
+  else return (TMath::Abs(SPDzv)<z);
 }
 
 
@@ -151,7 +272,7 @@ Bool_t AliAnalysisMuMuEventCutter::IsSPDzVertexInRange(AliVEvent& event, const D
 {
   /// Whether or not the SPD Z vertex is in the range [zMin,zMax[
   
-  AliAODVertex* SPDVertex = static_cast<AliAODEvent*>(&event)->GetPrimaryVertexSPD();
+  AliVVertex* SPDVertex = AliAnalysisMuonUtility::GetVertexSPD(static_cast<const AliVEvent*>(&event));
   
   if ( !SPDVertex )
   {
@@ -169,7 +290,7 @@ Bool_t AliAnalysisMuMuEventCutter::IsSPDzVertexInRange(AliVEvent& event, const D
 Bool_t AliAnalysisMuMuEventCutter::HasSPDVertex(AliVEvent& event) const
 {
   /// Does the event have a SPD vertex ?
-  AliAODVertex* SPDVertex = static_cast<AliAODEvent*>(&event)->GetPrimaryVertexSPD();
+  AliVVertex* SPDVertex = AliAnalysisMuonUtility::GetVertexSPD(static_cast<const AliVEvent*>(&event));
   if ( SPDVertex && SPDVertex->GetNContributors() > 0) return kTRUE;
   else return kFALSE;
 }
@@ -179,15 +300,37 @@ Bool_t AliAnalysisMuMuEventCutter::HasSPDVertex(AliVEvent& event) const
 Bool_t AliAnalysisMuMuEventCutter::IsSPDzQA(const AliVEvent& event, /*const AliVVertex& vertex2Test,*/ const Double_t& zResCut, const Double_t& zDifCut) const
 {
   // Checks if the value of the Z component of the given vertex fullfills the quality assurance condition
+  Double_t zRes,zvertex;
   
   const AliVVertex* vertex = event.GetPrimaryVertex();
-  const AliAODVertex* vertex2Test = static_cast<const AliAODEvent*>(&event)->GetPrimaryVertexSPD();
   
-  Double_t cov[6]={0};
-  vertex2Test->GetCovarianceMatrix(cov);
-  Double_t zRes = TMath::Sqrt(cov[5]);
+  if ( vertex )
+  {
+    AliVVertex* SPDVertex = AliAnalysisMuonUtility::GetVertexSPD(static_cast<const AliVEvent*>(&event));
+    if ( SPDVertex )
+    {
+     if ( SPDVertex->GetNContributors() > 0 )
+     {
+       Double_t cov[6]={0};
+       SPDVertex->GetCovarianceMatrix(cov);
+       zRes = TMath::Sqrt(cov[5]);
+       zvertex = SPDVertex->GetZ();
+     }
+     else return kFALSE;
+    }
+    else
+    {
+      AliError("Cut on SPD z Vertex requested for an event with no SPD vertex info");
+      return kFALSE;
+    }
+  }
+  else
+  {
+    AliError("Cut on SPD z Vertex requested for an event with no vertex info");
+    return kFALSE;
+  }
   
-  if ( (zRes < zResCut) && TMath::Abs(vertex2Test->GetZ() - vertex->GetZ()) <= zDifCut )
+  if ( (zRes < zResCut) && TMath::Abs(zvertex - vertex->GetZ()) <= zDifCut )
   {
     return kTRUE;
   }
@@ -207,19 +350,26 @@ Bool_t AliAnalysisMuMuEventCutter::IsMeandNchdEtaInRange(AliVEvent& event, const
   }
   
   Int_t i(0);
+  Bool_t parFound(kFALSE);
+  TParameter<Double_t>* eventdNchdEta;
   
-  while ( nchList->At(i)->IsA() != TObjString::Class() ) //Asign a name to find it by name
+  while ( !parFound )
   {
-    i++;
+    while ( nchList->At(i)->IsA() != TParameter<Double_t>::Class() )
+    {
+      i++;
+    }
+    
+    eventdNchdEta = static_cast<TParameter<Double_t>*>(nchList->At(i));
+    
+    if ( TString(eventdNchdEta->GetName()).Contains("MeandNchdEta") ) parFound = kTRUE;
   }
   
-  TObjString* value = static_cast<TObjString*>(nchList->At(i));
-  Double_t meandNchdEta = value->String().Atof();
+  Double_t meandNchdEta = eventdNchdEta->GetVal();
   
   if ( meandNchdEta >= dNchdEtaMin && meandNchdEta < dNchdEtaMax ) return kTRUE;
   else return kFALSE;
 }
-
 
 //_____________________________________________________________________________
 AliMuonEventCuts*
