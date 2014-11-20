@@ -22,7 +22,9 @@
 #include "AliVCuts.h"
 #include "AliVEvent.h"
 #include "TObjArray.h"
+#include "TList.h"
 #include "AliAnalysisTask.h"
+#include "AliVfriendEvent.h"
 
 ClassImp(AliHLTVEventInputHandler)
 
@@ -70,6 +72,18 @@ Bool_t AliHLTVEventInputHandler::BeginEvent(Long64_t)
   Printf("----> HLTTestInputHandler: BeginEvent: now fEvent is %p", fEvent);
 
   Printf("----> HLTTestInputHandler: at the end of BeginEvent: now fEvent is %p", fEvent);
+  return kTRUE;
+}     
+
+//______________________________________________________________________________
+Bool_t AliHLTVEventInputHandler::AliHLTVEventInputHandler::FinishEvent()
+{
+  // Called at the end of every event   
+  //when we are processing an AliESDEvent we have to detach the previously
+  //attached friend as is is owned by us, not AliESDEvent
+  TList* list = fEvent->GetList();
+  if (list) { list->Remove(fFriendEvent); }
+
   return kTRUE;
 }     
 

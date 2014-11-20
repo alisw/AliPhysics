@@ -13,7 +13,7 @@
 #endif
 
 class TObjArray;
-class AliVfriendevent;
+class AliVfriendEvent;
 class AliVEvent;
 
 class AliHLTVEventInputHandler : public AliVEventHandler {
@@ -29,7 +29,7 @@ class AliHLTVEventInputHandler : public AliVEventHandler {
     virtual Bool_t Init(Option_t* /*opt*/) {return kTRUE;}
     virtual Bool_t Init(TTree* /*tree*/, Option_t* /*opt*/);
     virtual Bool_t BeginEvent(Long64_t entry);
-    virtual Bool_t FinishEvent() {return kTRUE;}
+    virtual Bool_t FinishEvent();
     virtual void  SetOutputFileName(const char* /*fname*/) {};
     virtual const char* GetOutputFileName() const {return NULL;}
     // Input

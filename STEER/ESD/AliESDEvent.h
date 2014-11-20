@@ -553,6 +553,9 @@ public:
   void SetStdNames();
   void CopyFromOldESD();
   TList* GetList() const {return fESDObjects;}
+
+  //part of the hlt interface
+  void SetFriendEvent( AliVfriendEvent *f ) { AddObject(f); }
   
     //Following needed only for mixed event
   virtual Int_t        EventIndex(Int_t)       const {return 0;}

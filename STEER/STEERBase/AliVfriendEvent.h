@@ -35,6 +35,8 @@ public:
  //TPC cluster occupancy
   virtual Int_t GetNclustersTPC(UInt_t /*sector*/) const = 0;
   virtual Int_t GetNclustersTPCused(UInt_t /*sector*/) const = 0;
+  
+  virtual ULong64_t  GetSize()  const {return 0;}
 
 private: 
 

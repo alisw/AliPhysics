@@ -239,6 +239,7 @@ public:
   virtual void ConnectTracks() {}
   virtual EDataLayoutType GetDataLayoutType() const = 0;
   const char* Whoami();
+  virtual ULong64_t  GetSize()  const {return 0;}
 
   ClassDef(AliVEvent, 3)  // base class for AliEvent data
 };
