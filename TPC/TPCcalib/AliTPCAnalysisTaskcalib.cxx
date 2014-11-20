@@ -87,23 +87,19 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
   // Loop over tracks and call  Process function
     //Printf(" **************** AliTPCAnalysisTaskcalib::Exec() **************** ");
   if (!fV) {
-    //Printf("ERROR: fV not available");
+    Printf("ERROR: fV not available");
     return;
   }
-  //fVfriend=fV->FindFriend();
+
+  fVfriend=fV->FindFriend();
   Int_t n=fV->GetNumberOfTracks();
   Process(fV);
   if (!fVfriend) {
     Printf("ERROR: fVfriend not available");
     return;
   }
-  if (fVfriend->TestSkipBit()) {
-      //Printf("Skipping Event...");
-      return;}
-  //else if (!fVfriend->TestSkipBit()){
-      //Printf("continue with event...");
-  //}
-  //
+
+  if (fVfriend->TestSkipBit()) return;
   Int_t run = fV->GetRunNumber();
   for (Int_t i=0;i<n;++i) {
     AliVfriendTrack *friendTrack=const_cast<AliVfriendTrack*>(fVfriend->GetTrack(i));
@@ -130,14 +126,17 @@ void AliTPCAnalysisTaskcalib::ConnectInputData(Option_t *) {
   } 
   else {
     AliVEventHandler *vH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-    TString classInputHandler = vH->ClassName();
+    //TString classInputHandler = vH->ClassName();
       if (!vH) {
       Printf("ERROR: Could not get VEventHandler");
     }
     else {
       fV = vH->GetEvent();
+      if(!fV) Printf("ERROR: no V event!");
+
       //if (fV) {Printf("*** CONNECTED NEW EVENT ****");}
-      if (classInputHandler.Contains("HLT")) { // we are running in HLT
+
+      /*if (classInputHandler.Contains("HLT")) { // we are running in HLT
         fVfriend = vH->GetVfriendEvent();
         //if (fVfriend) Printf("Connected friend Event from V manager!");
       }
@@ -149,7 +148,8 @@ void AliTPCAnalysisTaskcalib::ConnectInputData(Option_t *) {
             fVfriend = ((AliESDInputHandler*)vH)->GetESDfriend();
           }
         }
-      }
+      }*/
+
     }
   }
 }
