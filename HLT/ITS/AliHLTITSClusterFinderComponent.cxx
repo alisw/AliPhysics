@@ -250,7 +250,7 @@ Int_t AliHLTITSClusterFinderComponent::DoInit( int argc, const char** argv ) {
   fDettype = new AliITSDetTypeRec();
   fDettype->SetITSgeom(fgeom); 
   fDettype->SetDefaults();
-  fDettype->SetDefaultClusterFindersV2(kTRUE); 
+  fDettype->SetDefaultClusterFindersV2(kTRUE,kTRUE); 
 
   if ( fRawReader )
     return -EINPROGRESS;
@@ -393,7 +393,7 @@ int AliHLTITSClusterFinderComponent::DoEvent
       fDettype->SetTreeAddressR(tR);
       Option_t *opt="All";
       fBenchmark.Start(1);
-      fDettype->DigitsToRecPoints(tD,tR,0,opt,0);
+      fDettype->DigitsToRecPoints(tD,tR,0,opt,1);
       fBenchmark.Stop(1);
       TClonesArray * fRecPoints = NULL;
       tR->SetBranchAddress("ITSRecPoints",&fRecPoints);
