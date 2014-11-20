@@ -32,6 +32,7 @@ class AliAnalysisTaskEmcalJetMass : public AliAnalysisTaskEmcalJet {
   void SetJetContainerUnsub(Int_t c)                                 { fContainerUnsub    = c   ; }
   void SetMinFractionShared(Double_t f, Bool_t useUnsubJet = kFALSE) { fMinFractionShared = f   ; fUseUnsubJet = useUnsubJet; }
   void SetJetMassType(JetMassType t)                                 { fJetMassType       = t   ; }
+  void SetUseSumw2(Bool_t b)                                         { fUseSumw2          = b   ; }
 
  protected:
   Bool_t                              RetrieveEventObjects();
@@ -40,11 +41,13 @@ class AliAnalysisTaskEmcalJetMass : public AliAnalysisTaskEmcalJet {
 
   Double_t                            GetJetMass(AliEmcalJet *jet);
  
+ private:
   Int_t                               fContainerBase;              // jets to be analyzed
   Int_t                               fContainerUnsub;             // unsubtracted jets
   Double_t                            fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
   Bool_t                              fUseUnsubJet;                // calc fraction of unsubtracted jet (relevant for constituent subtraction)
   JetMassType                         fJetMassType;                // jet mass type to be used
+  Bool_t                              fUseSumw2;                   // activate sumw2 for output histograms
 
   TH3F            **fh3PtJet1VsMassVsLeadPtAllSel;         //!all jets after std selection pt vs mass vs leading track pt
   TH3F            **fh3PtJet1VsMassVsLeadPtTagged;         //!tagged jets pt vs mass vs leading track pt
@@ -72,13 +75,14 @@ class AliAnalysisTaskEmcalJetMass : public AliAnalysisTaskEmcalJet {
   TH2F            **fh2RatVsNConstJet1Tagged;              //!mass/pt vs number of constituents of tagged jets
   TH2F            **fh2RatVsNConstJet1TaggedMatch;         //!mass/pt vs number of constituents of tagged jets matched to MC
 
-  TH2F            **fh2EtMassOverEtRSq;                    //!Et vs (M/Et*R)^2
+  TH3F            **fh3JetPtVsMassVsEPRelAllSel;           //!jet pt vs mass vs (phi-ep) for all jets
+  TH3F            **fh3JetPtVsMassVsEPRelTagged;           //!jet pt vs mass vs (phi-ep) for tagged jets
+  TH3F            **fh3JetPtVsMassVsEPRelTaggedMatch;      //!jet pt vs mass vs (phi-ep) for tagged matched jets
 
- private:
   AliAnalysisTaskEmcalJetMass(const AliAnalysisTaskEmcalJetMass&);            // not implemented
   AliAnalysisTaskEmcalJetMass &operator=(const AliAnalysisTaskEmcalJetMass&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetMass, 8)
+  ClassDef(AliAnalysisTaskEmcalJetMass, 9)
 };
 #endif
 
