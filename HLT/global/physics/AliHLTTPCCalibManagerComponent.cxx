@@ -40,6 +40,8 @@
 #include "TChain.h"
 #include "AliFlatESDEvent.h"
 #include "AliFlatESDFriend.h"
+#include "AliVEvent.h"
+#include "AliVfriendEvent.h"
 
 #include "AliTPCcalibAlign.h"
 #include "AliTPCcalibBase.h"
@@ -212,7 +214,7 @@ Int_t AliHLTTPCCalibManagerComponent::DoDeinit() {
 
 // #################################################################################
 Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& evtData,
-					AliHLTComponentTriggerData& /*trigData*/) {
+    AliHLTComponentTriggerData& /*trigData*/) {
   // see header file for class documentation
 
   printf("AliHLTTPCCalibManagerComponent::DoEvent\n");
@@ -221,76 +223,73 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
   // -- Only use data event
   if (!IsDataEvent()) 
     return 0;
-  
+
   if( fUID == 0 ){
     TTimeStamp t;
     fUID = ( gSystem->GetPid() + t.GetNanoSec())*10 + evtData.fEventID;
   }
-  
+
   // -- Get ESD object
   // -------------------
-  AliESDEvent *esdEvent = NULL;
-  AliESDfriend *esdFriend = NULL;
-
-  AliFlatESDEvent *flatEsd = NULL;
-  AliFlatESDFriend *flatEsdFriend = NULL;
+  AliVEvent* vEvent=NULL;
+  AliVfriendEvent* vFriend=NULL;
 
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
-    esdEvent = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
-    if( !esdEvent ){ 
+    vEvent = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
+    if( !vEvent ){ 
       HLTWarning("Wrong ESDEvent object received");
       iResult = -1;
       continue;
     }
-    esdEvent->GetStdContent();
+    vEvent->GetStdContent();
   }
-  if (esdEvent) {printf("----> ESDEvent %p has %d tracks: \n", esdEvent, esdEvent->GetNumberOfTracks());}
+  if (vEvent) {printf("----> ESDEvent %p has %d tracks: \n", vEvent, vEvent->GetNumberOfTracks());}
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject); iter != NULL; iter = GetNextInputObject() ) {
-    esdFriend = dynamic_cast<AliESDfriend*>(const_cast<TObject*>( iter ) );
-    if( !esdFriend ){ 
+    vFriend = dynamic_cast<AliESDfriend*>(const_cast<TObject*>( iter ) );
+    if( !vFriend ){ 
       HLTWarning("Wrong ESDFriend object received");
       iResult = -1;
       continue;
     }
   }
-  if(esdFriend) {printf("----> ESDFriend %p has %d tracks: \n", esdFriend, esdFriend->GetNumberOfTracks());}
+  if(vFriend) {printf("----> ESDFriend %p has %d tracks: \n", vFriend, vFriend->GetNumberOfTracks());}
 
-  if (!esdEvent){
-     for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
-           pBlock!=NULL; pBlock=GetNextInputBlock()) {
-       flatEsd = reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
-       if (flatEsd->GetSize()==pBlock->fSize ){
-         flatEsd->Reinitialize();
-       } else {
-         flatEsd = NULL;
-         HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESD information",
+  if (!vEvent){
+    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
+        pBlock!=NULL; pBlock=GetNextInputBlock()) {
+      AliFlatESDEvent* tmpFlatEvent=reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
+      if (tmpFlatEvent->GetSize()==pBlock->fSize ){
+        tmpFlatEvent->Reinitialize();
+      } else {
+        tmpFlatEvent = NULL;
+        HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESD information",
             DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
-       }
-       break;
-     }
+      }
+      vEvent = tmpFlatEvent;
+      break;
     }
 
- if( flatEsd ){
-   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
-	pBlock!=NULL; pBlock=GetNextInputBlock()) {
-     flatEsdFriend = reinterpret_cast<AliFlatESDFriend*>( pBlock->fPtr );
-     if (flatEsdFriend->GetSize()==pBlock->fSize ){
-       flatEsdFriend->Reinitialize();
-       flatEsd->SetFriendEvent(flatEsdFriend);
-     } else {
-       flatEsdFriend = NULL;
-       HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESDfriend information", 
-		  DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
-     }
-     break;
-   }   
- }
+    if( vEvent ){
+      for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
+          pBlock!=NULL; pBlock=GetNextInputBlock()) {
+        AliFlatESDFriend* tmpFlatFriend = reinterpret_cast<AliFlatESDFriend*>( pBlock->fPtr );
+        if (tmpFlatFriend->GetSize()==pBlock->fSize ){
+          tmpFlatFriend->Reinitialize();
+        } else {
+          tmpFlatFriend = NULL;
+          HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESDfriend information", 
+              DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
+        }
+        break;
+        vFriend = tmpFlatFriend;
+      }   
+    }
+  }
 
- if (esdEvent){
-     fAnalysisManager->InitInputData(esdEvent, esdFriend);
- } else if (flatEsd) {
-     fAnalysisManager->InitInputData(flatEsd, flatEsdFriend);
- }
+  fAnalysisManager->InitInputData(vEvent, vFriend);
+  Printf("The friend is: %p",vEvent->FindFriend());
+
+
   //  fInputHandler->BeginEvent(0);
   Printf("----> ExecAnalysis");
   fAnalysisManager->ExecAnalysis();
@@ -298,9 +297,9 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
 
 
   // -- Send histlist
-//  PushBack(dynamic_cast<TObject*>(fCorrObj->GetHistList()),
-//	   kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
- 
+  //  PushBack(dynamic_cast<TObject*>(fCorrObj->GetHistList()),
+  //	   kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
+
   return iResult;
 }
 

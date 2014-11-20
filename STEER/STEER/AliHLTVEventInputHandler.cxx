@@ -76,6 +76,18 @@ Bool_t AliHLTVEventInputHandler::BeginEvent(Long64_t)
 }     
 
 //______________________________________________________________________________
+Bool_t AliHLTVEventInputHandler::AliHLTVEventInputHandler::FinishEvent()
+{
+  // Called at the end of every event   
+  //when we are processing an AliESDEvent we have to detach the previously
+  //attached friend as is is owned by us, not AliESDEvent
+  TList* list = fEvent->GetList();
+  if (list) { list->Remove(fFriendEvent); }
+
+  return kTRUE;
+}     
+
+//______________________________________________________________________________
 Bool_t AliHLTVEventInputHandler::InitTaskInputData(AliVEvent* esdEvent, AliVfriendEvent* friendEvent, TObjArray* arrTasks) {
 
 // Method to propagte to all the connected tasks the HLT event.
