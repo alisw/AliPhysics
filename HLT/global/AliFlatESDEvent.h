@@ -76,7 +76,7 @@ class AliFlatESDEvent :public AliVEvent {
 
   Int_t SetFromESD( size_t allocatedMemorySize, const AliESDEvent *esd, const Bool_t fillV0s=kTRUE );
 
-  void SetFriendEvent( AliFlatESDFriend *f ) { fFriendEvent=f; }
+  void SetFriendEvent( AliVfriendEvent *f ) { fFriendEvent=dynamic_cast<AliFlatESDFriend*>(f); }
 
   void  SetMagneticField( Double_t mf ){ fMagneticField = mf; }
   void  SetPeriodNumber( Int_t n ) { fPeriodNumber = n; }
