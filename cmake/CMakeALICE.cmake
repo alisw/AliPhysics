@@ -80,3 +80,19 @@ macro(generate_rootmap LIBNAME LIBDEPS LINKDEF)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/lib${LIBNAME}.rootmap DESTINATION lib)
     
 endmacro(generate_rootmap)
+
+# Generate the static dependecies from dynamic list
+# @ shared_list - list of shared libraries
+# @ static_list - the name of the variable that will contain the list of static libraries
+macro(generate_static_dependencies shared_list static_list)
+message(STATUS "list ${shared_list}")
+    set(static_list_tmp "")
+    foreach(shared_lib ${shared_list})
+        set(static_list_tmp ${static_list_tmp} "${shared_lib}-static")
+    endforeach()
+    
+    # create the variable with the name received by the macro
+    set(${static_list} ${static_list_tmp})
+    # set the scope to parent in order to be visible in the parent
+    set(${static_list} PARENT_SCOPE)
+endmacro(generate_static_dependencies)
