@@ -12,7 +12,7 @@ class AliVEvent;
 class AliParticleContainer;
 class AliClusterContainer;
 class AliLocalRhoParameter;
-class AliStackPartonInfo;
+class AliPythiaInfo;
 
 #include "AliRhoParameter.h"
 
@@ -37,7 +37,7 @@ class AliJetContainer : public AliEmcalContainer {
   void LoadRho(AliVEvent *event);
   void LoadLocalRho(AliVEvent *event);
   void LoadRhoMass(AliVEvent *event);
-  void LoadPartonsInfo(AliVEvent *event);
+  void LoadPythiaInfo(AliVEvent *event);
 
   void                        SetJetAcceptanceType(JetAcceptanceType type)         { fJetAcceptanceType          = type ; }
   void                        PrintCuts();
@@ -69,7 +69,7 @@ class AliJetContainer : public AliEmcalContainer {
   virtual void                SetRhoName(const char *n)                            { fRhoName        = n                ; }
   virtual void                SetLocalRhoName(const char *n)                       { fLocalRhoName   = n                ; }
   virtual void                SetRhoMassName(const char *n)                        { fRhoMassName    = n                ; }
-  virtual void                SetPartonInfoName(const char *n)                      { fPartonInfoName    = n; }
+  virtual void                SetPythiaInfoName(const char *n)                      { fPythiaInfoName    = n; }
     
   void                        ConnectParticleContainer(AliParticleContainer *c)    { fParticleContainer = c             ; }
   void                        ConnectClusterContainer(AliClusterContainer *c)      { fClusterContainer  = c             ; }
@@ -99,8 +99,8 @@ class AliJetContainer : public AliEmcalContainer {
   AliRhoParameter            *GetRhoMassParameter()                          {return fRhoMass;}
   Double_t                    GetRhoMassVal()                       const    {if (fRhoMass) return fRhoMass->GetVal(); else return 0;}
   const TString&              GetRhoMassName()                      const    {return fRhoMassName;}
-  const TString&              GetPartonInfoName()                   const    {return fPartonInfoName;}
-  AliStackPartonInfo         *GetStackPartonInfo()                  const    {return fPartonsInfo;}
+  const TString&              GetPythiaInfoName()                   const    {return fPythiaInfoName;}
+  AliPythiaInfo         *GetPythiaInfo()                  const    {return fPythiaInfo;}
   Double_t                    GetJetPtCorr(Int_t i)                 const;
   Double_t                    GetJetPtCorrLocal(Int_t i)            const;
   Float_t                     GetJetRadius()                        const    {return fJetRadius;}
@@ -122,7 +122,7 @@ class AliJetContainer : public AliEmcalContainer {
   TString                     fRhoName;              //  Name of rho object
   TString                     fLocalRhoName;         //  Name of local rho object
   TString                     fRhoMassName;          //  Name of rho mass object
-  TString                     fPartonInfoName;       //  Name of parton info object
+  TString                     fPythiaInfoName;       //  Name of pythia info object
   Int_t                       fFlavourSelection;     //  selection on jet flavour
   Float_t                     fPtBiasJetTrack;       //  select jets with a minimum pt track
   Float_t                     fPtBiasJetClus;        //  select jets with a minimum pt cluster
@@ -149,7 +149,7 @@ class AliJetContainer : public AliEmcalContainer {
   AliRhoParameter            *fRho;                  //! event rho for these jets
   AliLocalRhoParameter       *fLocalRho;             //! event local rho for these jets
   AliRhoParameter            *fRhoMass;              //! event rho mass for these jets
-  AliStackPartonInfo         *fPartonsInfo;          //! event parton info
+  AliPythiaInfo         *fPythiaInfo;          //! event parton info
   AliEMCALGeometry           *fGeom;                 //! emcal geometry
   Int_t                       fRunNumber;            //! run number
 
