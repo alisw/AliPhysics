@@ -48,7 +48,7 @@ public:
     //void CalculateBackground();
   //  void CalculateBackgroundRP();
 
-    void RelabelAODPhotonCandidates(Bool_t mode);
+//     void RelabelAODPhotonCandidates(Bool_t mode);
 
     //void RotateParticle(AliAODConversionPhoton *gamma);
     //void RotateParticleAccordingToEP(AliAODConversionPhoton *gamma, Double_t previousEventEP, Double_t thisEventEP);
@@ -68,7 +68,7 @@ public:
     
     // BG HandlerSettings
    // void SetMoveParticleAccordingToVertex(Bool_t flag){fMoveParticleAccordingToVertex = flag;}
-    void FillPhotonCombinatorialBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode[]);
+//     void FillPhotonCombinatorialBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode[]);
    // void MoveParticleAccordingToVertex(AliAODConversionPhoton* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
     void UpdateEventByEventData();
     void SetLogBinningXTH2(TH2* histoRebin);
@@ -77,7 +77,7 @@ public:
     
     //=========================================Flow Staff=========================================================================================
     template <typename T> void           SetNullCuts(T* esd);
-    void                                 PrepareFlowEvent(Int_t iMulti, AliFlowEvent *FlowEv) const;
+    void                                 PrepareFlowEvent(Int_t iMulti) const;
     void                                 SetRPCuts(AliFlowTrackCuts *cutsRP) { fCutsRP = cutsRP; }
     void                                 ProcessPhotonCandidatesforV2();
     void                                 MakeTrack(Double_t mass, Double_t pt, Double_t phi, Double_t eta/*, Int_t nDau, Int_t iID[]*/) const;

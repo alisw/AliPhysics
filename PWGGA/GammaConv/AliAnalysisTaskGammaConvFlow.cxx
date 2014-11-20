@@ -143,17 +143,12 @@ fDoMesonAnalysis(kTRUE),
 fDoMesonQA(0),
 fDoPhotonQA(0),
 fIsFromMBHeader(kTRUE),
-
 fCandidates(0),
 fDebug(0),
 fCutsRP(0),     // track cuts for reference particles
 fNullCuts(0), // dummy cuts for flow event tracks
 fFlowEvent(0) // flow events
-
-
 {
-    DefineOutput(1, TList::Class());
-    DefineOutput(2, AliFlowEventSimple::Class());
 
 }
 
@@ -164,7 +159,6 @@ fV0Reader(NULL),
 fBGHandler(NULL),
 fBGHandlerRP(NULL),
 fInputEvent(NULL),
-
 fCutFolder(NULL),
 fESDList(NULL),
 fBackList(NULL),
@@ -204,7 +198,6 @@ hESDMotherPi0PtAlpha(NULL),
 hESDMotherEtaPtAlpha(NULL),
 hESDMotherPi0PtOpenAngle(NULL),
 hESDMotherEtaPtOpenAngle(NULL),
-
 hNEvents(NULL),
 hNGoodESDTracks(NULL),
 hNGammaCandidates(NULL),
@@ -667,7 +660,7 @@ void AliAnalysisTaskGammaConvFlow::UserExec(Option_t *)
         //======================= FlowPackage Stuff ================================
         fCandidates->SetLast(-1);
         SetNullCuts(fInputEvent);
-        PrepareFlowEvent(fInputEvent->GetNumberOfTracks(),fFlowEvent);    //Calculate event plane Qvector and EP resolution for inclusive
+        PrepareFlowEvent(fInputEvent->GetNumberOfTracks());    //Calculate event plane Qvector and EP resolution for inclusive
         //==========================================================================
         
         hNEvents[iCut]->Fill(eventQuality); // Should be 0 here
@@ -952,7 +945,7 @@ template <typename T> void AliAnalysisTaskGammaConvFlow::SetNullCuts(T* event)
     fNullCuts->SetEvent(event, MCEvent());
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskGammaConvFlow::PrepareFlowEvent(Int_t iMulti, AliFlowEvent *FlowEv) const
+void AliAnalysisTaskGammaConvFlow::PrepareFlowEvent(Int_t iMulti) const
 {
     // Prepare flow events
     if (fDebug > 0 ) cout << " *** PrepareFlowEvent() *** " << endl;
