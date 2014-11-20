@@ -1,5 +1,5 @@
 /**
- * @file   AAFPluginHelper.C
+ * @file   AAFPluginRailway.C
  * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
  * @date   Tue Oct 16 19:01:45 2012
  * 
@@ -10,7 +10,7 @@
  */
 #ifndef AAFPLUGINHELPER_C
 #define AAFPLUGINHELPER_C
-#include "PluginHelper.C"
+#include "PluginRailway.C"
 #ifndef __CINT__
 # include <TUrl.h>
 # include <TString.h>
@@ -70,7 +70,7 @@ class AliAnalysisAlien;
  *
  * @ingroup pwglf_forward_trains_helper
  */
-struct AAFPluginHelper : public PluginHelper
+struct AAFPluginRailway : public PluginRailway
 {
   /** 
    * Constructor 
@@ -78,8 +78,8 @@ struct AAFPluginHelper : public PluginHelper
    * @param url  Url 
    * @param verbose Verbosity level
    */
-  AAFPluginHelper(const TUrl& url, Int_t verbose)
-    : PluginHelper(url, verbose)
+  AAFPluginRailway(const TUrl& url, Int_t verbose)
+    : PluginRailway(url, verbose)
   {
     fOptions.Add("workers", "N[x]", "Number of workers to use", 0);
     fOptions.Add("dsname",  "NAME", "Make output dataset", "");
@@ -91,7 +91,7 @@ struct AAFPluginHelper : public PluginHelper
   /** 
    * Destructor
    */
-  virtual ~AAFPluginHelper() {}
+  virtual ~AAFPluginRailway() {}
   /** 
    * Called before setting up 
    * 
@@ -121,7 +121,7 @@ struct AAFPluginHelper : public PluginHelper
 	// In case of no argument, use GDB 
 	// Just run and backtrace 
 	wrapper = "/usr/bin/gdb --batch -ex run -ex bt --args";
-      Info("ProofHelper::PreSetup", "Using wrapper command: %s", 
+      Info("ProofRailway::PreSetup", "Using wrapper command: %s", 
 	   wrapper.Data());
       TProof::AddEnvVar("PROOF_WRAPPERCMD", wrapper);
     }
@@ -134,12 +134,12 @@ struct AAFPluginHelper : public PluginHelper
       TString reset = fOptions.Get("reset");
       Bool_t  hard  = (reset.IsNull() || 
 		       reset.EqualTo("hard", TString::kIgnoreCase));
-      Info("AAFPluginHelper::PreSetup", "Will do a %s reset of %s", 
+      Info("AAFPluginRailway::PreSetup", "Will do a %s reset of %s", 
 	   hard ? "hard" : "soft", fUrl.GetHost());
       fHandler->SetProofReset(hard ? 2 : 1);
     }
     
-    return PluginHelper::PreSetup();
+    return PluginRailway::PreSetup();
   }
   /** 
    * Set-up done after the task set-ups 
@@ -148,7 +148,7 @@ struct AAFPluginHelper : public PluginHelper
    */
   virtual Bool_t PostSetup() 
   {
-    if (!PluginHelper::PostSetup()) return false;
+    if (!PluginRailway::PostSetup()) return false;
     if (fOptions.Has("dsname")) 
       OutputUtilities::RegisterDataset(fOptions.Get("dsname"));
 

@@ -180,6 +180,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fh1Trials(0)
    ,fh1PtHard(0)
    ,fh1PtHardTrials(0)
+   ,fh1EvtsPtHardCut(0)
    ,fh1nRecJetsCuts(0)
    ,fh1nGenJets(0)
    ,fh1nRecEffJets(0)
@@ -252,6 +253,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fRandom(0)
    
    ,fOnlyLeadingJets(kFALSE)
+   ,fMCPtHardCut(-1.)
    
    ,fAnaUtils(0)
    
@@ -414,6 +416,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fh1Trials(0)
   ,fh1PtHard(0)
   ,fh1PtHardTrials(0)
+  ,fh1EvtsPtHardCut(0)
   ,fh1nRecJetsCuts(0)
   ,fh1nGenJets(0)
   ,fh1nRecEffJets(0)
@@ -484,6 +487,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fProNtracksLeadingJetRecSecSsc(0)
   ,fRandom(0)
   ,fOnlyLeadingJets(kFALSE)
+  ,fMCPtHardCut(-1.)
   ,fAnaUtils(0)
   // PID framework
   ,fNumInclusivePIDtasks(0)
@@ -645,7 +649,8 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fh1Xsec(copy.fh1Xsec)
   ,fh1Trials(copy.fh1Trials)
   ,fh1PtHard(copy.fh1PtHard)  
-  ,fh1PtHardTrials(copy.fh1PtHardTrials)  
+  ,fh1PtHardTrials(copy.fh1PtHardTrials) 
+  ,fh1EvtsPtHardCut(copy.fh1EvtsPtHardCut)
   ,fh1nRecJetsCuts(copy.fh1nRecJetsCuts)
   ,fh1nGenJets(copy.fh1nGenJets)
   ,fh1nRecEffJets(copy.fh1nRecEffJets)
@@ -716,6 +721,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fProNtracksLeadingJetRecSecSsc(copy.fProNtracksLeadingJetRecSecSsc)
   ,fRandom(copy.fRandom)
   ,fOnlyLeadingJets(copy.fOnlyLeadingJets)
+  ,fMCPtHardCut(copy.fMCPtHardCut)
   ,fAnaUtils(copy.fAnaUtils)
   // PID framework
   ,fNumInclusivePIDtasks(copy.fNumInclusivePIDtasks)
@@ -935,6 +941,7 @@ AliAnalysisTaskIDFragmentationFunction& AliAnalysisTaskIDFragmentationFunction::
     fh1Trials                      = o.fh1Trials;
     fh1PtHard                      = o.fh1PtHard;
     fh1PtHardTrials                = o.fh1PtHardTrials;
+    fh1EvtsPtHardCut               = o.fh1EvtsPtHardCut;
     fh1nRecJetsCuts                = o.fh1nRecJetsCuts;
     fh1nGenJets                    = o.fh1nGenJets; 
     fh1nRecEffJets                 = o.fh1nRecEffJets;
@@ -1002,6 +1009,7 @@ AliAnalysisTaskIDFragmentationFunction& AliAnalysisTaskIDFragmentationFunction::
     fProNtracksLeadingJetRecSecSsc = o.fProNtracksLeadingJetRecSecSsc;
     fRandom                        = o.fRandom;
     fOnlyLeadingJets               = o.fOnlyLeadingJets;
+    fMCPtHardCut                   = o.fMCPtHardCut;
     fAnaUtils                      = o.fAnaUtils;
     
     // PID framework
@@ -1698,6 +1706,11 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
   fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
   fh1PtHard                  = new TH1F("fh1PtHard","PYTHIA Pt hard;p_{T,hard}",350,-.5,349.5);
   fh1PtHardTrials            = new TH1F("fh1PtHardTrials","PYTHIA Pt hard weight with trials;p_{T,hard}",350,-.5,349.5);
+  
+  fh1EvtsPtHardCut           = new TH1F("fh1EvtsPtHardCut", "#events before and after MC #it{p}_{T,hard} cut;;Events",2,0,2);
+  fh1EvtsPtHardCut->GetXaxis()->SetBinLabel(1, "All");
+  fh1EvtsPtHardCut->GetXaxis()->SetBinLabel(2, "#it{p}_{T,hard}");
+  
 
   fh1nRecJetsCuts            = new TH1F("fh1nRecJetsCuts","reconstructed jets per event",10,-0.5,9.5);
   fh1nGenJets                = new TH1F("fh1nGenJets","generated jets per event",10,-0.5,9.5);
@@ -2134,6 +2147,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
   fCommonHistList->Add(fh1Trials);
   fCommonHistList->Add(fh1PtHard);
   fCommonHistList->Add(fh1PtHardTrials);
+  fCommonHistList->Add(fh1EvtsPtHardCut);
  
   if(genJets) fCommonHistList->Add(fh1nGenJets);
 
@@ -2506,6 +2520,87 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
   
   if(fDebug > 1) Printf("Analysis event #%5d", (Int_t) fEntry);
   
+  fMCEvent = MCEvent();
+  if(!fMCEvent){
+    if(fDebug>3) Printf("%s:%d MCEvent not found in the input", (char*)__FILE__,__LINE__);
+  }
+  
+  // Extract pThard and nTrials in case of MC. 
+  
+  Double_t ptHard = 0.;
+  Double_t nTrials = 1; // trials for MC trigger weight for real data
+  Bool_t pythiaGenHeaderFound = kFALSE;
+
+  if(fMCEvent){
+    AliGenEventHeader* genHeader = fMCEvent->GenEventHeader();
+    
+    if(genHeader){
+      AliGenPythiaEventHeader*  pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
+      AliGenHijingEventHeader*  hijingGenHeader = 0x0;
+      
+      if(pythiaGenHeader){
+        if(fDebug>3) Printf("%s:%d pythiaGenHeader found", (char*)__FILE__,__LINE__);
+        pythiaGenHeaderFound = kTRUE;
+        nTrials = pythiaGenHeader->Trials();
+        ptHard  = pythiaGenHeader->GetPtHard();
+      } else { // no pythia, hijing?
+        
+        if(fDebug>3) Printf("%s:%d no pythiaGenHeader found", (char*)__FILE__,__LINE__);
+        
+        hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(genHeader);
+        if(!hijingGenHeader){
+          Printf("%s:%d no pythiaGenHeader or hjingGenHeader found", (char*)__FILE__,__LINE__);
+        } else {
+          if(fDebug>3) Printf("%s:%d hijingGenHeader found", (char*)__FILE__,__LINE__);
+        }
+      }
+      
+      //fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
+    }
+  }
+  
+  
+  // Cut on pThard if fMCEvent and pThard >= 0 and fill histo with #evt before and after the cut
+  if (pythiaGenHeaderFound) {
+    // Before cut
+    fh1EvtsPtHardCut->Fill(0.); 
+    
+    if (fUseJetPIDtask) {
+      for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
+        fJetPIDtask[i]->FillCutHisto(0., AliAnalysisTaskPID::kMCPtHardCut);
+      }
+    }
+    
+    if (fUseInclusivePIDtask) {
+      for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
+        fInclusivePIDtask[i]->FillCutHisto(0., AliAnalysisTaskPID::kMCPtHardCut);
+      }
+    }
+    
+    
+    // Cut
+    if (fMCPtHardCut >= 0. && ptHard >= fMCPtHardCut) {
+      if (fDebug>3) Printf("%s:%d skipping event with pThard %f (>= %f)", (char*)__FILE__,__LINE__, ptHard, fMCPtHardCut);
+      PostData(1, fCommonHistList);
+      return;
+    }
+    
+    // After cut
+    fh1EvtsPtHardCut->Fill(1.);
+    
+    if (fUseJetPIDtask) {
+      for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
+        fJetPIDtask[i]->FillCutHisto(1., AliAnalysisTaskPID::kMCPtHardCut);
+      }
+    }
+    
+    if (fUseInclusivePIDtask) {
+      for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
+        fInclusivePIDtask[i]->FillCutHisto(1., AliAnalysisTaskPID::kMCPtHardCut);
+      }
+    }
+  }
+  
   // Trigger selection
   AliInputEventHandler* inputHandler = (AliInputEventHandler*)
     ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
@@ -2520,11 +2615,6 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if(!fESD){
     if(fDebug>3) Printf("%s:%d ESDEvent not found in the input", (char*)__FILE__,__LINE__);
-  }
-  
-  fMCEvent = MCEvent();
-  if(!fMCEvent){
-    if(fDebug>3) Printf("%s:%d MCEvent not found in the input", (char*)__FILE__,__LINE__);
   }
   
   // get AOD event from input/ouput
@@ -2580,7 +2670,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
     Int_t cl = 0;
     if(handler->InheritsFrom("AliAODInputHandler")){ 
       // since it is not supported by the helper task define own classes
-      centPercent = ((AliVAODHeader*)fAOD->GetHeader())->GetCentrality();
+      centPercent = ((AliAODHeader*)fAOD->GetHeader())->GetCentrality();
       cl = 1;
       if(centPercent>10) cl = 2;
       if(centPercent>30) cl = 3;
@@ -2601,12 +2691,8 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
   }
   
   // Retrieve reference multiplicities in |eta|<0.8 and <0.5
-
-  AliAODHeader * header = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
-  if(!header) AliFatal("Not a standard AOD");
-
-  const Int_t refMult5 = header->GetRefMultiplicityComb05();
-  const Int_t refMult8 = header->GetRefMultiplicityComb08();
+  const Int_t refMult5 = ((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb05();
+  const Int_t refMult8 = ((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb08();
   const Double_t centPercentPP = fAnaUtils->GetMultiplicityPercentile(fAOD, "V0M");
   
   
@@ -2753,7 +2839,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
   
   
   
-  //___ get MC information __________________________________________________________________
+  //___ fill MC information __________________________________________________________________
 
   fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
   
@@ -2771,39 +2857,9 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
     }
   }
 
-  Double_t ptHard = 0.;
-  Double_t nTrials = 1; // trials for MC trigger weight for real data
-
-  if(fMCEvent){
-    AliGenEventHeader* genHeader = fMCEvent->GenEventHeader();
-    
-    if(genHeader){
-      
-      AliGenPythiaEventHeader*  pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
-      AliGenHijingEventHeader*  hijingGenHeader = 0x0;
-      
-      if(pythiaGenHeader){
-	if(fDebug>3) Printf("%s:%d pythiaGenHeader found", (char*)__FILE__,__LINE__);
-	nTrials = pythiaGenHeader->Trials();
-	ptHard  = pythiaGenHeader->GetPtHard();
-	
-	fh1PtHard->Fill(ptHard);
-	fh1PtHardTrials->Fill(ptHard,nTrials);
-	
-      } else { // no pythia, hijing?
-	
-	if(fDebug>3) Printf("%s:%d no pythiaGenHeader found", (char*)__FILE__,__LINE__);
-	
-	hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(genHeader);
-	if(!hijingGenHeader){
-	  Printf("%s:%d no pythiaGenHeader or hjingGenHeader found", (char*)__FILE__,__LINE__);
-	} else {
-	  if(fDebug>3) Printf("%s:%d hijingGenHeader found", (char*)__FILE__,__LINE__);
-	}
-      }
-      
-      //fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
-    }
+  if (pythiaGenHeaderFound) {
+    fh1PtHard->Fill(ptHard);
+    fh1PtHardTrials->Fill(ptHard,nTrials);
   }
   
   //___ fetch jets __________________________________________________________________________
@@ -4009,8 +4065,7 @@ Int_t AliAnalysisTaskIDFragmentationFunction::GetListOfTracks(TList *list, Int_t
     // all rec. tracks, esd filter mask, eta range
     
     for(Int_t it=0; it<fAOD->GetNumberOfTracks(); ++it){
-      AliAODTrack *tr = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(it));
-      if(!tr) AliFatal("Not a standard AOD");
+      AliAODTrack *tr = (AliAODTrack*)fAOD->GetTrack(it);
       
       if(type == kTrackAODCuts || type==kTrackAODQualityCuts || type==kTrackAODExtraCuts){
 

@@ -84,6 +84,7 @@ namespace EMCalTriggerPtAnalysis {
                 		    fVertexRange(),
                 		    fJetContainersMC(),
                 		    fJetContainersData(),
+                		    fSelectAllTracks(kFALSE),
                 		    fSwapEta(kFALSE),
                 		    fUseTriggersFromTriggerMaker(kFALSE)
   {
@@ -103,6 +104,7 @@ namespace EMCalTriggerPtAnalysis {
                         fVertexRange(),
                         fJetContainersMC(),
                         fJetContainersData(),
+                        fSelectAllTracks(kFALSE),
                 		    fSwapEta(kFALSE),
                 		    fUseTriggersFromTriggerMaker(kFALSE)
   {
@@ -295,7 +297,6 @@ namespace EMCalTriggerPtAnalysis {
       }
       fHistos->CreateTHnSparse("hEventTriggers", "Trigger type per event", 5, triggeraxis);
       fHistos->CreateTHnSparse("hEventsTriggerbit", "Trigger bits for the different events", 4, bitaxes);
-      fHistos->CreateTH2("hTRUADC", "ADC value of the TRU", 10001, -0.5, 10000.5, 2, -0.5, 1.5);
     } catch (HistoContainerContentException &e){
       std::stringstream errormessage;
       errormessage << "Creation of histogram failed: " << e.what();
@@ -332,19 +333,6 @@ namespace EMCalTriggerPtAnalysis {
     }
 
     Bool_t emcalGood = fInputHandler->IsEventSelected() & AliEmcalPhysicsSelection::kEmcalOk;
-
-    // Fill TRU ADC
-    // for debugging
-    fCaloTriggers = fInputEvent->GetCaloTrigger(fIsEsd ? "EMCALTrigger" : "emcalTrigger");
-    if(fCaloTriggers){
-      fCaloTriggers->Reset();
-      Int_t adcAMP;
-      while(fCaloTriggers->Next()){
-        fCaloTriggers->GetL1TimeSum(adcAMP);
-        if(adcAMP == -1) adcAMP = 0;  // Set ADC amps, which have a negative value, to 0
-        fHistos->FillTH2("hTRUADC", adcAMP, emcalGood ? 1. : 0.);
-      }
-    }
 
     // Loop over trigger patches, fill patch energy
     AliEmcalTriggerPatchInfo *triggerpatch(NULL);
@@ -523,22 +511,25 @@ namespace EMCalTriggerPtAnalysis {
     AliPicoTrack *picoTrack(NULL);
     TObject *containerObject(NULL);
     // Loop over all tracks (No cuts applied)
-    TIter allTrackIter(fTracks);
-    while((containerObject = dynamic_cast<TObject *>(allTrackIter()))){
-      if((picoTrack = dynamic_cast<AliPicoTrack *>(containerObject))){
-        track = picoTrack->GetTrack();
-      } else
-        track = dynamic_cast<AliVTrack *>(containerObject);
-      if(!IsTrueTrack(track)) continue;
-      if(!fEtaRange.IsInRange(track->Eta())) continue;
-      if(!fPtRange.IsInRange(track->Pt())) continue;
-      if(triggers[0]) FillTrackHist("MinBias", track, zv, isPileupEvent, 0, triggers[0]);
-      if(!triggerstrings.size()) // Non-EMCal-triggered
-        FillTrackHist("NoEMCal", track, zv, isPileupEvent, 0, triggers[0]);
-      else {
-        // EMCal-triggered events
-        for(std::vector<std::string>::iterator it = triggerstrings.begin(); it != triggerstrings.end(); ++it)
-          FillTrackHist(it->c_str(), track, zv, isPileupEvent, 0, triggers[0]);
+    if(fSelectAllTracks){
+      // loop over all tracks only if requested
+      TIter allTrackIter(fTracks);
+      while((containerObject = dynamic_cast<TObject *>(allTrackIter()))){
+        if((picoTrack = dynamic_cast<AliPicoTrack *>(containerObject))){
+          track = picoTrack->GetTrack();
+        } else
+          track = dynamic_cast<AliVTrack *>(containerObject);
+        if(!IsTrueTrack(track)) continue;
+        if(!fEtaRange.IsInRange(track->Eta())) continue;
+        if(!fPtRange.IsInRange(track->Pt())) continue;
+        if(triggers[0]) FillTrackHist("MinBias", track, zv, isPileupEvent, 0, triggers[0]);
+        if(!triggerstrings.size()) // Non-EMCal-triggered
+          FillTrackHist("NoEMCal", track, zv, isPileupEvent, 0, triggers[0]);
+        else {
+          // EMCal-triggered events
+          for(std::vector<std::string>::iterator it = triggerstrings.begin(); it != triggerstrings.end(); ++it)
+            FillTrackHist(it->c_str(), track, zv, isPileupEvent, 0, triggers[0]);
+        }
       }
     }
 
@@ -553,7 +544,7 @@ namespace EMCalTriggerPtAnalysis {
         AliEMCalPtTaskVTrackSelection *trackSelection = static_cast<AliEMCalPtTaskVTrackSelection *>(fListTrackCuts->At(icut));
         TIter trackIter(trackSelection->GetAcceptedTracks(fTracks));
         while((track = dynamic_cast<AliVTrack *>(trackIter()))){
-          //if(!IsTrueTrack(track)) continue;
+          if(fMCEvent && !IsTrueTrack(track)) continue;   // Reject fake tracks in case of MC
           if(!fEtaRange.IsInRange(track->Eta())) continue;
           if(!fPtRange.IsInRange(track->Pt())) continue;
           coneradii.clear();
@@ -790,6 +781,7 @@ namespace EMCalTriggerPtAnalysis {
     double dataMC[7] = {0., 0., 0., vz, 0, static_cast<double>(cut), isMinBias ? 1. : 0.};
     AliVParticle *assocMC(NULL);
     if(fMCEvent && (assocMC = fMCEvent->GetTrack(TMath::Abs(track->GetLabel())))){
+      // Select track onl
       dataMC[0] = TMath::Abs(assocMC->Pt());
       dataMC[1] = etasign * assocMC->Eta();
       dataMC[2] = assocMC->Phi();
@@ -1099,7 +1091,6 @@ namespace EMCalTriggerPtAnalysis {
     return found;
   }
 
-
   //______________________________________________________________________________
   void EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger::AddJetContainerName(const Char_t* contname, Bool_t isMC) {
     /*
@@ -1112,4 +1103,3 @@ namespace EMCalTriggerPtAnalysis {
     mycontainer.Add(new TObjString(contname));
   }
 }
-

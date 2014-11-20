@@ -131,6 +131,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
 	fHistoPhotonPairAll(NULL),
 	fHistoPhotonPairAllGam(NULL),
 	fHistoClusGammaPt(NULL),
+	fHistoClusOverlapHeadersGammaPt(NULL),
 	fHistoMCHeaders(NULL),
 	fHistoMCAllGammaPt(NULL),
 	fHistoMCAllGammaEMCALAccPt(NULL),
@@ -256,6 +257,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
 	fDoPhotonQA(0),
 	fDoClusterQA(0),
 	fIsFromMBHeader(kTRUE),
+	fIsOverlappingWithOtherHeader(kFALSE),
 	fIsMC(kFALSE)
 {
   
@@ -334,6 +336,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
 	fHistoPhotonPairAll(NULL),
 	fHistoPhotonPairAllGam(NULL),
 	fHistoClusGammaPt(NULL),
+	fHistoClusOverlapHeadersGammaPt(NULL),
 	fHistoMCHeaders(NULL),
 	fHistoMCAllGammaPt(NULL),
 	fHistoMCAllGammaEMCALAccPt(NULL),
@@ -459,6 +462,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
 	fDoPhotonQA(0),
 	fDoClusterQA(0),
 	fIsFromMBHeader(kTRUE),
+	fIsOverlappingWithOtherHeader(kFALSE),
 	fIsMC(kFALSE)
 {
   // Define output slots here
@@ -648,7 +652,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 	fHistoPhotonPairAllGam = new TH2F*[fnCuts];
 	
 	fHistoClusGammaPt = new TH1F*[fnCuts];
-	
+	fHistoClusOverlapHeadersGammaPt = new TH1F*[fnCuts];
+
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
 		TString cutstringEvent 	= ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
 		TString cutstringPhoton = ((AliConversionPhotonCuts*)fCutArray->At(iCut))->GetCutNumber();
@@ -778,6 +783,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 	
 		fHistoClusGammaPt[iCut] = new TH1F("ClusGamma_Pt","ClusGamma_Pt",250,0,25);
 		fTagOutputList[iCut]->Add(fHistoClusGammaPt[iCut]);
+		fHistoClusOverlapHeadersGammaPt[iCut] = new TH1F("ClusGammaOverlapHeaders_Pt","ClusGammaOverlapHeaders_Pt",250,0,25);
+		fTagOutputList[iCut]->Add(fHistoClusOverlapHeadersGammaPt[iCut]);
 
 		
 		if(fDoMesonAnalysis){
@@ -1550,11 +1557,23 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters()
 		}
 		
 		fIsFromMBHeader = kTRUE; 
+		fIsOverlappingWithOtherHeader = kFALSE;
 		// test whether largest contribution to cluster orginates in added signals
 		if (fIsMC && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCStack, fInputEvent) == 0) fIsFromMBHeader = kFALSE;
-		
-		fHistoClusGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
-		fClusterCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
+		if (fIsMC ){
+			if (clus->GetNLabels()>1){
+				Int_t* mclabelsCluster = clus->GetLabels();
+				for (Int_t l = 1; l < (Int_t)clus->GetNLabels(); l++ ){
+					if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(mclabelsCluster[l], fMCStack, fInputEvent) == 0) fIsOverlappingWithOtherHeader = kTRUE;
+				}	
+			}	
+		}	
+
+		if (fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
+			fHistoClusGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
+			fClusterCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
+		}
+		if (fIsFromMBHeader && fIsOverlappingWithOtherHeader) fHistoClusOverlapHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
 		
 		if(fIsMC){
 			if(fInputEvent->IsA()==AliESDEvent::Class()){
@@ -1588,7 +1607,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidates(AliAODConversion
 	TruePhotonCandidate->SetCaloPhotonMCFlags(fMCStack);
 	
 	// True Photon
-	if(fIsFromMBHeader){
+	if(fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
 		if (TruePhotonCandidate->IsLargestComponentPhoton() || TruePhotonCandidate->IsLargestComponentElectron() )fHistoTrueClusGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
 			else fHistoTrueClusEMNonLeadingPt[fiCut]->Fill(TruePhotonCandidate->Pt());
 		if (fDoClusterQA > 0){
@@ -1654,7 +1673,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidatesAOD(AliAODConvers
 	TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent);
 	fHistoTrueNLabelsInClus[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMCLabels());	
 	// True Photon
-	if(fIsFromMBHeader){
+	if(fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
 		if (TruePhotonCandidate->IsLargestComponentPhoton() || TruePhotonCandidate->IsLargestComponentElectron() )fHistoTrueClusGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
 			else fHistoTrueClusEMNonLeadingPt[fiCut]->Fill(TruePhotonCandidate->Pt());
 		if (fDoClusterQA > 0){

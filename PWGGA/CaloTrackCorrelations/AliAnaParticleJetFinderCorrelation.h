@@ -54,6 +54,7 @@ class AliAnaParticleJetFinderCorrelation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   IsCorrelationMadeInHistoMaker()       const { return fMakeCorrelationInHistoMaker ; } 
   Double_t GetJetConeSize()                      const { return fJetConeSize                 ; } 
   Double_t GetJetMinPt()                         const { return fJetMinPt                    ; }
+  Double_t GetJetMinPtBkgSub()                   const { return fJetMinPtBkgSub              ; }
   Double_t GetJetAreaFraction()                  const { return fJetAreaFraction             ; }
   Double_t GetGammaConeSize()                    const { return fGammaConeSize               ; }
 
@@ -67,6 +68,7 @@ class AliAnaParticleJetFinderCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void     SetMakeCorrelationInHistoMaker(Bool_t make) { fMakeCorrelationInHistoMaker = make ; }
   void     SetJetConeSize(Double_t cone)               { fJetConeSize = cone ;                 }
   void     SetJetMinPt(Double_t minpt)                 { fJetMinPt = minpt ;                   }
+  void     SetJetMinPtBkgSub(Double_t minpt)           { fJetMinPtBkgSub = minpt ;             }
   void     SetJetAreaFraction(Double_t areafr)         { fJetAreaFraction = areafr ;           }
   void     SetGammaConeSize(Float_t cone)              { fGammaConeSize = cone               ; }
 
@@ -133,9 +135,10 @@ private:
   Bool_t     fUseJetRefTracks ;   //! Use track references from JETAN not the AOD tracks to calculate fragmentation function
   Bool_t     fMakeCorrelationInHistoMaker ; //!Make particle-jet correlation in histogram maker
   Bool_t     fSelectIsolated ;    //! Select only trigger particles isolated
-  
+
   Double_t   fJetConeSize ;       //! Reconstructed jet cone size 
   Double_t   fJetMinPt ;          //! Minumum jet pt, default 5GeV/c
+  Double_t   fJetMinPtBkgSub ;    //! Minumum jet pt after bkg subtraction, default -100 GeV/c
   Double_t   fJetAreaFraction ;   //! Jet area fraction X in X*pi*R^2, default 0.6
   //Bool_t     fNonStandardJetFromReader; //! use non standard jet from reader //new
   TString    fJetBranchName ;//! name of jet branch not set in reader part //new
@@ -179,6 +182,9 @@ private:
   TH2F *     fhJetFFzCor ;        //! Accepted reconstructed jet fragmentation function, z=pt^particle,jet*-cos(jet,trig)/ptjet
   TH2F *     fhJetFFxiCor;        //! Accepted reconstructed jet fragmentation function, xsi = ln(ptjet/pt^particle*-cos(jet,trig),jet)
 
+  TH1F * fhGamPtPerTrig ; //! per trigger normalisation
+  TH2F * fhPtGamPtJet ;   //! gamma jet correlation filling 
+
   //background from RC
   TH2F *     fhBkgFFz[5] ;              //! Background fragmentation function, z=ptjet/pttrig
   TH2F *     fhBkgFFxi[5];              //! Background fragmentation function, xsi = ln(pttrig/ptjet)
@@ -200,6 +206,7 @@ private:
 
   //temporary jet histograms
   TH1F * fhJetPtBefore;           //! Pt of all jets
+  TH1F * fhJetPtBeforeCut;        //! Pt of all jets after bkg correction, raw jet pt>fJetMinPt
   TH1F * fhJetPt;                 //! Pt of all jets after bkg correction
   TH1F * fhJetPtMostEne;          //! Pt of the most energetic jet
   TH1F * fhJetPhi;	              //! Phi of all jets

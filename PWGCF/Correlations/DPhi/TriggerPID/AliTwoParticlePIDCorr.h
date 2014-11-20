@@ -357,6 +357,7 @@ fFracTPCcls=FracSharedTPCcls;//0.4
     TH1F *fPriHistShare;//!
     TH1F *fhistcentrality;//!
     TH1F *fhistImpactParm;//!
+    TH2F *fhistImpactParmvsMult;//!
     TH1F *fEventCounter; //!
     TH2F *fEtaSpectrasso;//!
     TH2F *fphiSpectraasso;//!

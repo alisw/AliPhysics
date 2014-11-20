@@ -195,11 +195,16 @@ private:
    TH1F* fhNJetPerEv;               //!
    TH1F* fhdeltaRJetTracks;         //!
    THnSparse* fhsJet; //available in jet only mode
+   TH2F* fhImpPar;                  //!
+   //TH2F* fhImpParB;                 //!
    // event characteristics;        
    TH1F* fhNDPerEvNoJet;            //!
    TH1F* fhptDPerEvNoJet;           //!
    TH1F* fhNJetPerEvNoD;            //!
    TH1F* fhPtJetPerEvNoD;           //!
+   TH1F* fhVtxX;                    //!
+   TH1F* fhVtxY;                    //!
+   TH1F* fhVtxZ;                    //!
    //D mesons                       
    THnSparse* fhsDstandalone;       //!
    TH2F* fhInvMassptD;              //!

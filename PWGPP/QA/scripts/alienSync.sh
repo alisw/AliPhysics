@@ -346,11 +346,13 @@ main()
   
   [[ -n ${MAILTO} ]] && echo $logFile | mail -s "alienSync ${alienFindCommand} done" ${MAILTO}
 
-  echo
-  echo
-  echo '###############################'
-  echo "eval ${executeEnd}"
-  eval "${executeEnd}"
+  if [[ -n ${executeEnd} ]]; then
+    echo
+    echo
+    echo '###############################'
+    echo "eval ${executeEnd}"
+    eval "${executeEnd}"
+  fi
 
   exitScript 0
 }

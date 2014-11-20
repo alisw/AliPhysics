@@ -58,11 +58,12 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
   //----------------------- Add clusterizer -------------------------------------------------------
   clusterizer    = AliEMCALRecParam::kClusterizerv2;
   remExoticCell  = kTRUE;
+  TString tmpClusters = "tmpCaloClusters";
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskClusterizerFast.C");
-  AliAnalysisTaskEMCALClusterizeFast *clusterizerTask = AddTaskClusterizerFast("ClusterizerFast","","",clusterizer,cellthresh,seedthresh,
+  AliAnalysisTaskEMCALClusterizeFast *clusterizerTask = AddTaskClusterizerFast("ClusterizerFast","",tmpClusters.Data(),clusterizer,cellthresh,seedthresh,
 									       timeMin,timeMax,timeCut,remExoticCell,distBC,
 									       AliAnalysisTaskEMCALClusterizeFast::kFEEData);
-
+  
   //----------------------- Add cluster maker -----------------------------------------------------
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalClusterMaker.C"); //cluster maker: non-linearity, 
   UInt_t nonLinFunct = AliEMCALRecoUtils::kBeamTestCorrected;
@@ -73,7 +74,8 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
       nonLinFunct = AliEMCALRecoUtils::kPi0MCv3;
   }
   remExoticClus  = kTRUE;
-  AliEmcalClusterMaker *clusMaker = AddTaskEmcalClusterMaker(nonLinFunct,remExoticClus,0,"EmcCaloClusters",0.,kTRUE);
+  AliEmcalClusterMaker *clusMaker = AddTaskEmcalClusterMaker(nonLinFunct,remExoticClus,tmpClusters.Data(),"EmcCaloClusters",0.,kTRUE);
   
   return clusterizerTask;
+  
 }

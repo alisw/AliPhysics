@@ -83,6 +83,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   enum EventCounterType { kTriggerSel = 0, kTriggerSelAndVtxCut = 1, kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection = 2,
                           kTriggerSelAndVtxCutAndZvtxCut = 3 };
   
+  enum CutHistoType { kMCPtHardCut = 0 };
+  
   static Int_t PDGtoMCID(Int_t pdg);
   
   static void GetJetTrackObservables(Double_t trackPt, Double_t jetPt, Double_t& z, Double_t& xi);
@@ -119,6 +121,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Bool_t FillRecJets(Double_t centralityPercentile, Double_t jetPt, Double_t norm = -1.);
   
   Bool_t IncrementEventCounter(Double_t centralityPercentile, EventCounterType type);
+  
+  Bool_t FillCutHisto(Double_t value, CutHistoType type);
   
   void PostOutputData();
   
@@ -418,6 +422,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   TProfile* fh1Xsec;              //! pythia cross section and trials
   TH1D*     fh1Trials;            //! sum of trials
+  TH1F*     fh1EvtsPtHardCut;     //! Number events before and after the cut on MC pT hard
   
   AliCFContainer* fContainerEff; //! Container for efficiency determination
   
@@ -433,7 +438,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   AliAnalysisTaskPID(const AliAnalysisTaskPID&); // not implemented
   AliAnalysisTaskPID& operator=(const AliAnalysisTaskPID&); // not implemented
   
-  ClassDef(AliAnalysisTaskPID, 21);
+  ClassDef(AliAnalysisTaskPID, 22);
 };
 
 
@@ -572,6 +577,23 @@ inline Bool_t AliAnalysisTaskPID::IncrementEventCounter(Double_t centralityPerce
   
   return kTRUE;
 };
+
+
+//_____________________________________________________________________________
+inline Bool_t AliAnalysisTaskPID::FillCutHisto(Double_t value, AliAnalysisTaskPID::CutHistoType type)
+{
+  // Fill cut histo of corresponding type at given value.
+  if (type == kMCPtHardCut) {
+    if (!fh1EvtsPtHardCut) {
+      AliError("Histogram \"fh1EvtsPtHardCut\" not initialised -> cannot be filled!");
+      return kFALSE;
+    }
+    
+    fh1EvtsPtHardCut->Fill(value);
+  }
+  
+  return kTRUE;
+}
 
 
 //_____________________________________________________________________________

@@ -9,6 +9,7 @@
 #pragma link C++ class AliAnalysisTaskMuonRefit+;
 
 #pragma link C++ class AliAnalysisMuMu+;
+#pragma link C++ class AliAnalysisMuMuConfig+;
 #pragma link C++ class AliAnalysisMuMuResult+;
 #pragma link C++ class AliAnalysisMuMuJpsiResult+;
 #pragma link C++ class AliAnalysisMuMuFnorm+;

@@ -61,8 +61,11 @@ fCuts(0),
 fMinMass(0.),
 fMaxMass(0.),
 fCandidateArray(0),
-fSideBandArray(0)
-
+fSideBandArray(0),
+fhImpPar(0),
+fhImpParB(0),
+fhInvMassS(0),
+fhInvMassB(0)
 {
    //
    // Default constructor
@@ -88,7 +91,11 @@ fCuts(cuts),
 fMinMass(0.),
 fMaxMass(0.),
 fCandidateArray(0),
-fSideBandArray(0)
+fSideBandArray(0),
+fhImpPar(0),
+fhImpParB(0),
+fhInvMassS(0),
+fhInvMassB(0)
 {
    //
    // Constructor. Initialization of Inputs and Outputs
@@ -291,7 +298,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
    hstat->Fill(1);
    
    const Int_t nD = arrayDStartoD0pi->GetEntriesFast();
-   if(fUseReco) hstat->Fill(2, nD);
+   if(!fUseMCInfo) hstat->Fill(2, nD);
    
    //D* and D0 prongs needed to MatchToMC method
    Int_t pdgDgDStartoD0pi[2] = { 421, 211 };  // D0,pi
@@ -335,8 +342,14 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       	 if (fCandidateType==kD0toKpi) 
       	    mcLabel = charmCand->MatchToMC(421,mcArray,fNProngs,fPDGdaughters);
       	 
-      	 if (mcLabel<=0) isMCBkg=kTRUE;
-      	 else hstat->Fill(2);
+      	 if (mcLabel<=0) {
+      	    isMCBkg=kTRUE;
+      	    hstat->Fill(5);
+      	 }
+      	 else {
+      	    hstat->Fill(2);
+      	    
+      	 }
       	 if (!isMCBkg) charmPart=(AliAODMCParticle*)mcArray->At(mcLabel);
       	       	 
       	 if (isMCBkg) smcTruth="B";
@@ -369,19 +382,34 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       isSelected = fCuts->IsSelected(charmCand,AliRDHFCuts::kAll,aodEvent); //selected
       if (!isSelected) continue;
       
+      Int_t nprongs=charmCand->GetNProngs();
+      
       //for data and MC signal fill fCandidateArray
       if(!fUseMCInfo || (fUseMCInfo && !isMCBkg)){
       	 // for data or MC with the requirement fUseReco fill with candidates
+      	       
       	 if(fUseReco) {
       	    if (fCandidateType==kDstartoKpipi){
       	       new ((*fCandidateArray)[iCand]) AliAODRecoCascadeHF(*dstar);
-      	       AliInfo(Form("Dstar delta mass = %f",dstar->DeltaInvMass()));
+      	       AliInfo(Form("Dstar delta mass = %f",dstar->DeltaInvMass())); 
+      	       fhInvMassS->Fill(dstar->DeltaInvMass());
+
       	    } else{
       	       new ((*fCandidateArray)[iCand]) AliAODRecoDecayHF(*charmCand);
       	       //Printf("Filling reco");
+      	       for(Int_t kd=0;kd<nprongs;kd++){
+      	       	  fhImpPar->Fill(charmCand->Getd0Prong(kd),charmCand->PtProng(kd));
+      	       }
+      	       Double_t masses[2];
+      	       masses[0] = charmCand->InvMass(fNProngs, (UInt_t*)pdgdaughtersD0); //D0
+      	       masses[1] = charmCand->InvMass(fNProngs, (UInt_t*)pdgdaughtersD0bar); //D0bar
+      	       fhInvMassS->Fill(masses[0]);
+      	       fhInvMassS->Fill(masses[1]);
+      	       
       	    }      	    
       	    
       	    hstat->Fill(3);
+      	    
       	 }
       	 // for MC with requirement particle level fill with AliAODMCParticle
       	 else if (fUseMCInfo) {
@@ -396,9 +424,16 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       else if(fUseReco){
       	 if (fCandidateType==kDstartoKpipi){
       	    new ((*fSideBandArray)[iSBCand]) AliAODRecoCascadeHF(*dstar);
+      	    fhInvMassB->Fill(dstar->DeltaInvMass());
       	 }
       	 if (fCandidateType==kD0toKpi){
       	    new ((*fSideBandArray)[iSBCand]) AliAODRecoDecayHF(*charmCand);
+      	    Double_t masses[2];
+      	    masses[0] = charmCand->InvMass(fNProngs, (UInt_t*)pdgdaughtersD0); //D0
+      	    masses[1] = charmCand->InvMass(fNProngs, (UInt_t*)pdgdaughtersD0bar); //D0bar
+      	    fhInvMassB->Fill(masses[0]);
+      	    fhInvMassB->Fill(masses[1]);
+
       	 }
       	 iSBCand++;
       }
@@ -473,6 +508,24 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       	    hdeltaRDpi-> Fill(dRDpi,ptD);
       	    hdeltaRDK->  Fill(dRDK,ptD);
       	    
+      	    if (isMCBkg){
+      	       fhImpParB->Fill(charmCand->Getd0Prong(0),charmCand->PtProng(0)); //bachelor
+      	       fhImpParB->Fill(D0fromDstar->Getd0Prong(0),D0fromDstar->PtProng(0));
+      	       fhImpParB->Fill(D0fromDstar->Getd0Prong(1),D0fromDstar->PtProng(1));
+      	       
+      	    } else {
+      	       fhImpPar->Fill(charmCand->Getd0Prong(0),charmCand->PtProng(0)); //bachelor
+      	       fhImpPar->Fill(D0fromDstar->Getd0Prong(0),D0fromDstar->PtProng(0));
+      	       fhImpPar->Fill(D0fromDstar->Getd0Prong(1),D0fromDstar->PtProng(1));
+     	    
+      	    }
+      	    
+      	    
+      	 } else{
+      	    fhImpPar->Fill(charmCand->Getd0Prong(0),charmCand->PtProng(0)); //bachelor
+      	    AliAODRecoDecayHF2Prong* D0fromDstar=dstar->Get2Prong();
+      	    fhImpPar->Fill(D0fromDstar->Getd0Prong(0),D0fromDstar->PtProng(0));
+      	    fhImpPar->Fill(D0fromDstar->Getd0Prong(1),D0fromDstar->PtProng(1));
       	 }
 
       } //Dstar specific
@@ -681,13 +734,18 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
    //
    
    // Statistics 
-   TH1I* hstat = new TH1I("hstat","Statistics",5,-0.5,4.5);
+   TH1I* hstat = new TH1I("hstat","Statistics",6,-0.5,5.5);
    hstat->GetXaxis()->SetBinLabel(1, "N ev anal");
    hstat->GetXaxis()->SetBinLabel(2, "N ev sel");
-   if(fUseReco) hstat->GetXaxis()->SetBinLabel(3, "N cand");
-   else hstat->GetXaxis()->SetBinLabel(3, "N Gen D");
+   if(fUseMCInfo){
+      if(fUseReco) hstat->GetXaxis()->SetBinLabel(3, "N D");
+      else hstat->GetXaxis()->SetBinLabel(3, "N Gen D");
+   } else hstat->GetXaxis()->SetBinLabel(3, "N Cand");
    hstat->GetXaxis()->SetBinLabel(4, "N cand sel cuts");
    if (fCandidateType==kDstartoKpipi) hstat->GetXaxis()->SetBinLabel(5, "N side band cand");  
+   if(fUseMCInfo) {
+      hstat->GetXaxis()->SetBinLabel(6, "N Background");
+   }
    hstat->SetNdivisions(1);
    fOutput->Add(hstat);
    
@@ -715,6 +773,9 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
       hPtPion->GetYaxis()->SetTitle("entries");
       fOutput->Add(hPtPion);
    }
+   
+   fhImpPar = new TH2F("hImpPar", "Impact parameter of daughter tracks; Getd0Prong();#it{p}^{daugh}_{T} (GeV/c)",200, -0.1,0.1,ptbinsD, ptmin, ptmax); //same range of pt of the D, but pt daughter used
+   fOutput->Add(fhImpPar);
    
    const Int_t nbinsalpha=200;
    Float_t minalpha=-TMath::Pi(), maxalpha=TMath::Pi();
@@ -795,7 +856,21 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
       	 fOutput->Add(hdeltaRDKB);
 
       }
-   
+      fhImpParB = new TH2F("hImpParB", "Impact parameter of daughter tracks (Background); Getd0Prong();#it{p}^{daugh}_{T} (GeV/c)",200, -0.1,0.1,ptbinsD, ptmin, ptmax); //same range of pt of the D, but pt daughter used
+      fOutput->Add(fhImpParB);
+      
+      fhInvMassS = new TH1F("hInvMassS", "D invariant mass distribution", nbinsmass, fMinMass, fMaxMass);
+      fhInvMassS->SetStats(kTRUE);
+      fhInvMassS->GetXaxis()->SetTitle("mass (GeV/c)");
+      fhInvMassS->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+      fOutput->Add(fhInvMassS);
+      
+      fhInvMassB = new TH1F("hInvMassB", "D invariant mass distribution", nbinsmass, fMinMass, fMaxMass);
+      fhInvMassB->SetStats(kTRUE);
+      fhInvMassB->GetXaxis()->SetTitle("mass (GeV/c)");
+      fhInvMassB->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+      fOutput->Add(fhInvMassB);
+
    }
    return kTRUE; 
 }

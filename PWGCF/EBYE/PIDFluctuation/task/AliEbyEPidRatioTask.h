@@ -10,6 +10,9 @@
 //                  Date: Wed Jul  9 18:38:30 CEST 2014                    // 
 //          New approch to find particle ratio to reduce memory            //
 //                             (Test Only)                                 //
+//        Copied from NetParticle Classes
+//        Origin: Authors: Jochen Thaeder <jochen@thaeder.de>
+//                         Michael Weber <m.weber@cern.ch>
 //=========================================================================//
 
 #include "AliAnalysisTaskSE.h"
@@ -18,6 +21,7 @@
 
 #include "AliEbyEPidRatioHelper.h"
 #include "AliEbyEPidRatioEffCont.h"
+#include "AliEbyEPidRatioEffContExtra.h"
 #include "AliEbyEPidRatioDCA.h"
 #include "AliEbyEPidRatioPhy.h"
 #include "AliEbyEPidRatioQA.h"
@@ -48,7 +52,8 @@ class AliEbyEPidRatioTask : public AliAnalysisTaskSE {
   void SetIsMC()                             {fIsMC         = kTRUE;}
   void SetIsRatio(Int_t i);
   void SetIsPer()                            {fIsPer        = kTRUE;}
-  
+  void SetEffExtra()                         {fIsEffExtra   = kTRUE;}  
+
   void SetIsAOD(Bool_t b          )          {fIsAOD            = b;}
   void SetESDTrackCutMode(Int_t i )          {fESDTrackCutMode  = i;}
   void SetModeEffCreation(Int_t i )          {fModeEffCreation  = i;}
@@ -92,6 +97,7 @@ class AliEbyEPidRatioTask : public AliAnalysisTaskSE {
 
   AliEbyEPidRatioHelper       *fHelper;  //  Helper class
   AliEbyEPidRatioEffCont      *fEffCont; //! Efficiency and Contamination class
+  AliEbyEPidRatioEffContExtra *fEffContExtra; //! Efficiency and Contamination class
   AliEbyEPidRatioDCA          *fDCA;     //! DCA class
   AliEbyEPidRatioPhy          *fDist;    //! Distributions class
   AliEbyEPidRatioQA           *fQA;      //! QA class
@@ -121,7 +127,7 @@ class AliEbyEPidRatioTask : public AliAnalysisTaskSE {
   Bool_t              fIsSub;                   //  analysis mode      SS  
   Bool_t              fIsBS;                    //  analysis mode      BS
   Bool_t              fIsPer;                   //  analysis mode      PER
-    
+  Bool_t              fIsEffExtra; 
   Int_t               fESDTrackCutMode;         //  ESD track cut mode       : 0 = clean | 1 = dirty
   Int_t               fModeEffCreation ;        //  Correction creation mode : 1 = on    | 0 = off
   Int_t               fModeDCACreation;         //  DCA creation mode        : 1 = on    | 0 = off

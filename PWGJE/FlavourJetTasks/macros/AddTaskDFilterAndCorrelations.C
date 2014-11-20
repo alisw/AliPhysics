@@ -58,7 +58,7 @@ void *AddTaskDFilterAndCorrelations(
 
   TString candname="DStar"; 
   if(cand==0)  candname="D0";
-  TString sR = Form("R%.1f",R);
+  TString sR = Form("R%.0f",R*10);
   
   TString taskFiltername="DmesonsFilterCJ";
   taskFiltername+=candname;

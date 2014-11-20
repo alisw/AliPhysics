@@ -124,7 +124,8 @@ public:
     kNeutrons,
     kV0vsFMD, 
     kV0vsNTracks, 
-    kZEMvsZDC
+    kZEMvsZDC,
+    kDefaultCent 
   };
 
   /** 
