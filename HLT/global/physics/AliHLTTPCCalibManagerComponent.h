@@ -8,7 +8,7 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/** @file    AliHLTAnaManagerComponent.h
+/** @file    AliHLTESDAnaManagerComponent.h
     @author  Jochen Thaeder <jochen@thaeder.de>
     @brief   Component for Multiplicty Correlations
 */
@@ -33,7 +33,7 @@ class AliAnalysisManager;
 class AliHLTVEventInputHandler;
 
 /**
- * @class AliHLTAnaManagerComponent
+ * @class AliHLTESDAnaManagerComponent
  * Create Correlations for Multiplicities
  * 
  * <h2>General properties:</h2>

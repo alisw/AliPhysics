@@ -1,4 +1,4 @@
-To run an example using the AliHLTAnaManagerComponent, please, run:
+To run an example using the AliHLTESDAnaManagerComponent, please, run:
 
 rm galice.root; aliroot -b -q -l testconfig.C'("GLOBAL-esd-converter")' $ALICE_ROOT/HLT/exa/recraw-local.C'("raw.root","local://$ALICE_ROOT/OCDB", 0, 10, "HLT", "chains=RootWriter ignore-hltout")' 2>&1| tee recHLT.log
 

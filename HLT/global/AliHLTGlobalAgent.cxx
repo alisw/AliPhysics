@@ -47,7 +47,7 @@
 #include "AliHLTMultiplicityCorrelationsComponent.h"
 #include "AliHLTPrimaryVertexFinderComponent.h"
 #include "AliHLTV0FinderComponent.h"
-#include "AliHLTAnaManagerComponent.h"
+#include "AliHLTESDAnaManagerComponent.h"
 #include "AliHLTFlatAnaManagerComponent.h"
 #include "AliHLTTPCCalibManagerComponent.h"
 
@@ -99,7 +99,7 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   pHandler->AddComponent(new AliHLTV0FinderComponent);
   pHandler->AddComponent(new AliHLTGlobalHistoCollector );
   pHandler->AddComponent(new AliHLTGlobalDCSPublisherComponent );
-  pHandler->AddComponent(new AliHLTAnaManagerComponent);
+  pHandler->AddComponent(new AliHLTESDAnaManagerComponent);
   pHandler->AddComponent(new AliHLTFlatAnaManagerComponent);
   pHandler->AddComponent(new AliHLTTPCCalibManagerComponent);
   return 0;

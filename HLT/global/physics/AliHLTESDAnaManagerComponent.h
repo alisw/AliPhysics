@@ -1,14 +1,14 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTAnaManagerComponent $
+// $Id: AliHLTESDAnaManagerComponent $
 
-#ifndef ALIHLTANAMANAGERCOMPONENT_H
-#define ALIHLTANAMANAGERCOMPONENT_H
+#ifndef ALIHLTESDANAMANAGERCOMPONENT_H
+#define ALIHLTESDANAMANAGERCOMPONENT_H
 
 /* This file is property of and copyright by the ALICE HLT Project        * 
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/** @file    AliHLTAnaManagerComponent.h
+/** @file    AliHLTESDAnaManagerComponent.h
     @author  Jochen Thaeder <jochen@thaeder.de>
     @brief   Component for Multiplicty Correlations
 */
@@ -33,7 +33,7 @@ class AliAnalysisManager;
 class AliHLTVEventInputHandler;
 
 /**
- * @class AliHLTAnaManagerComponent
+ * @class AliHLTESDAnaManagerComponent
  * Create Correlations for Multiplicities
  * 
  * <h2>General properties:</h2>
@@ -117,7 +117,7 @@ class AliHLTVEventInputHandler;
  *
  * @ingroup alihlt_physics
  */
-class AliHLTAnaManagerComponent : public AliHLTProcessor {
+class AliHLTESDAnaManagerComponent : public AliHLTProcessor {
 public:
 
   /*
@@ -127,10 +127,10 @@ public:
    */
 
   /** constructor */
-  AliHLTAnaManagerComponent();
+  AliHLTESDAnaManagerComponent();
   
   /** destructor */
-  virtual ~AliHLTAnaManagerComponent();
+  virtual ~AliHLTESDAnaManagerComponent();
 
   /*
    * ---------------------------------------------------------------------------------
@@ -200,10 +200,10 @@ private:
    */
 
   /** copy constructor prohibited */
-  AliHLTAnaManagerComponent(const AliHLTAnaManagerComponent&);
+  AliHLTESDAnaManagerComponent(const AliHLTESDAnaManagerComponent&);
 
   /** assignment operator prohibited */
-  AliHLTAnaManagerComponent& operator=(const AliHLTAnaManagerComponent&);
+  AliHLTESDAnaManagerComponent& operator=(const AliHLTESDAnaManagerComponent&);
 
 
   /*
@@ -225,6 +225,6 @@ private:
 
   AliHLTVEventInputHandler *fInputHandler;    // input handler
 
-  ClassDef(AliHLTAnaManagerComponent, 0)
+  ClassDef(AliHLTESDAnaManagerComponent, 0)
 };
 #endif
