@@ -38,6 +38,10 @@ AliGenerator* CreatePythia8Gen(Float_t e_cms, Bool_t kCR, Int_t kF) {
   // color reconnection
   (AliPythia8::Instance())->ReadString("Tune:pp = 5");//CR
 
+  //random seed based on time
+  AliPythia8::Instance()->ReadString("Random:setSeed = on");
+  AliPythia8::Instance()->ReadString("Random:seed = 0");
+
   if(kCR)             
     (AliPythia8::Instance())->ReadString("BeamRemnants:reconnectColours = on");
   else
