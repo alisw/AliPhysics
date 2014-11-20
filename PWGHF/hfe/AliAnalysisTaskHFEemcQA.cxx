@@ -78,6 +78,8 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fHistoNClsE3(0),
   fHistoNCells(0),
   fHistoCalCell(0),
+  fHistoCalTime(0),
+  fHistoCalCellTime(0),
   fNegTrkIDPt(0),
   fTrkPt(0),
   fTrketa(0),
@@ -147,6 +149,8 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fHistoNClsE3(0),
   fHistoNCells(0),
   fHistoCalCell(0),
+  fHistoCalTime(0),
+  fHistoCalCellTime(0),
   fNegTrkIDPt(0),
   fTrkPt(0),
   fTrketa(0),
@@ -270,6 +274,12 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
 
   fHistoCalCell = new TH2F("fHistoCalCell","EMCAL cells in a cluster;cell ID;E (GeV)",15000,-0.5,14999.5,600,0,30);
   fOutputList->Add(fHistoCalCell);
+
+  fHistoCalTime = new TH2F("fHistoCalTime","Cluster Time;  p_{T} (GeV/c); Time (s)",300,0,30,1000,1e-8,1e-5);
+  fOutputList->Add(fHistoCalTime);
+
+  fHistoCalCellTime = new TH2F("fHistoCalCellTime","Cell Time;  ID; Time (s)",15000,-0.5,14999.5,1000,1e-8,1e-5);
+  fOutputList->Add(fHistoCalCellTime);
 
   fNegTrkIDPt = new TH1F("fNegTrkIDPt", "p_{T} distribution of tracks with negative track id;p_{T} (GeV/c);counts", 500, 0.0, 50.0); 
   fOutputList->Add(fNegTrkIDPt);
@@ -526,6 +536,9 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       fEMCClsEtaPhi->Fill(emceta,emcphi);
       fHistoNCells->Fill(clustE,clust->GetNCells());
       //fHistoNCells->Fill(clust->GetNCells());
+    
+      double emctof = clust->GetTOF();
+      fHistoCalTime->Fill(clustE,emctof);
 
       NclustAll++;  
       if(clustE>0.1)NclustE1++;
@@ -546,14 +559,17 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   Short_t cellAddr, nSACell;
   Int_t  mclabel;
   Short_t iSACell;
-  Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
+  Double_t cellAmp=-1., cellTimeT=-1., efrac=-1.;
 
   nSACell = fCaloCells->GetNumberOfCells();
   for(iSACell = 0; iSACell < nSACell; iSACell++ ){ 
     Bool_t haveCell = fCaloCells->GetCell(iSACell, cellAddr, cellAmp, cellTimeT , mclabel, efrac);
     //virtual Bool_t   GetCell(Short_t pos, Short_t &cellNumber, Double_t &amplitude, Double_t &time, Int_t &mclabel,    Double_t  &efrac)      
-    if(haveCell)fHistoCalCell->Fill(cellAddr,cellAmp);
-
+    if(haveCell)
+       {
+        fHistoCalCell->Fill(cellAddr,cellAmp);
+        fHistoCalCellTime->Fill(cellAddr,cellTimeT);
+        }
   }
 
   /////////////////////////////////
