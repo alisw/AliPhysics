@@ -283,7 +283,6 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
  // Compare Event variables
  
  outFile<<"_FlatESDEvent\n";
- fCurrentClass = "FlatESDEvent";
  printDiff( "GetSize" ,flatEsd[0]->GetSize(), flatEsd[1]->GetSize() ) ;
 	printDiff( "GetMagneticField",flatEsd[0]->GetMagneticField(),flatEsd[1]->GetMagneticField() );
 	printDiff( "GetPeriodNumber",flatEsd[0]->GetPeriodNumber(),flatEsd[1]->GetPeriodNumber() );
@@ -309,7 +308,6 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 	
 	if(vertexTracks[0] && vertexTracks[1]){
       outFile<<"_FlatESDVertexTracks\n";
-			fCurrentClass = "FlatESDVertexTracks";
 			printDiff( "GetSize",vertexTracks[0]->GetSize(),vertexTracks[1]->GetSize() ); 
 			printDiff( "GetX",vertexTracks[0]->GetX(),vertexTracks[1]->GetX() ); 
 			printDiff( "GetY",vertexTracks[0]->GetY(),vertexTracks[1]->GetY() ); 
@@ -318,7 +316,6 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
  
 	if(vertexSPD[0] && vertexSPD[1]){
       outFile<<"_FlatESDVertexSPD\n";
-			fCurrentClass = "FlatESDVertexSPD";
 			printDiff( "GetSize",vertexSPD[0]->GetSize(),vertexSPD[1]->GetSize() ); 
 			printDiff( "GetX",vertexSPD[0]->GetX(),vertexSPD[1]->GetX() ); 
 			printDiff( "GetY",vertexSPD[0]->GetY(),vertexSPD[1]->GetY() ); 
@@ -332,7 +329,6 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
     AliFlatESDTrigger * trigger[2] = { const_cast<AliFlatESDTrigger*>(flatEsd[0]->GetTriggerClasses() ) , const_cast<AliFlatESDTrigger*>(flatEsd[1]->GetTriggerClasses() ) };
     for( Int_t i = 0; i < flatEsd[0]->GetNumberOfTriggerClasses()  && i < flatEsd[1]->GetNumberOfTriggerClasses()  ; i++ ){
       outFile<<"_FlatESDTrigger\n";
-			fCurrentClass = "FlatESDTrigger";
 			printDiff( "GetSize",trigger[0]->GetSize(),trigger[1]->GetSize() ); 
 			printDiff( "GetTriggerIndex",trigger[0]->GetTriggerIndex(),trigger[1]->GetTriggerIndex() ); 
 			printDiff( "GetTriggerClassName",trigger[0]->GetTriggerClassName(),trigger[1]->GetTriggerClassName() ); 
@@ -348,7 +344,6 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
     AliFlatESDV0 * v0[2] = { const_cast<AliFlatESDV0*>(flatEsd[0]->GetV0s() ) , const_cast<AliFlatESDV0*>(flatEsd[1]->GetV0s() ) };
     for( Int_t i = 0; i < flatEsd[0]->GetNumberOfV0s()  && i < flatEsd[1]->GetNumberOfV0s()  ; i++ ){
       outFile<<"_FlatESDV0\n";
-			fCurrentClass = "FlatESDV0";
 			printDiff( "GetSize",v0[0]->GetSize(),v0[1]->GetSize() ); 
 			printDiff( "GetNegTrackID",v0[0]->GetNegTrackID(),v0[1]->GetNegTrackID() ); 
 			printDiff( "GetPosTrackID",v0[0]->GetPosTrackID(),v0[1]->GetPosTrackID() ); 
@@ -364,7 +359,6 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
     AliFlatESDTrack * track[2] = { const_cast<AliFlatESDTrack*>(flatEsd[0]->GetTracks() ) , const_cast<AliFlatESDTrack*>(flatEsd[1]->GetTracks() ) };
     for( Int_t t = 0; t < flatEsd[0]->GetNumberOfTracks()  && t < flatEsd[1]->GetNumberOfTracks()  ; t++ ){
       outFile<<"_FlatESDTrack\n";
-			fCurrentClass = "FlatESDTrack";
 			printDiff( "GetSize",track[0]->GetSize(),track[1]->GetSize() ); 
 			printDiff( "GetNumberOfTPCClusters",track[0]->GetNumberOfTPCClusters(),track[1]->GetNumberOfTPCClusters() ); 
 			printDiff( "GetNumberOfITSClusters",track[0]->GetNumberOfITSClusters(),track[1]->GetNumberOfITSClusters() ); 
@@ -380,24 +374,24 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 				{track[0]->GetFlatTrackParamCp(), track[1]->GetFlatTrackParamCp()}
 			};
 			
-			for(int i = 0 ; i<6; i++){
+			for(int i = 0 ; i<7; i++){
 				printDiff( Form("GetFlatTrackParam%s",pNames[i]) ,(p[i][0] ? 1:0), (p[i][1] ? 1:0) );
 			}
 
 			for(int i = 0 ; i<7 ; i++){
 				if(p[i][0] && p[i][1]){
-				outFile<<"\nnew AliFlatExternalTrackParam" << pNames[i] << "\n";
-				printDiff( Form("AliFlatExternalTrackParam%s::GetAlpha",pNames[i]),p[i][0]->GetAlpha(),p[i][1]->GetAlpha() ); 
-				printDiff( Form("AliFlatExternalTrackParam%s::GetX",pNames[i]),p[i][0]->GetX(),p[i][1]->GetX() ); 
-				printDiff( Form("AliFlatExternalTrackParam%s::GetY",pNames[i]),p[i][0]->GetY(),p[i][1]->GetY() ); 
-				printDiff( Form("AliFlatExternalTrackParam%s::GetZ",pNames[i]),p[i][0]->GetZ(),p[i][1]->GetZ() ); 
-				printDiff( Form("AliFlatExternalTrackParam%s::GetSnp",pNames[i]),p[i][0]->GetSnp(),p[i][1]->GetSnp() ); 
-				printDiff( Form("AliFlatExternalTrackParam%s::GetTgl",pNames[i]),p[i][0]->GetTgl(),p[i][1]->GetTgl() ); 
-				printDiff( Form("AliFlatExternalTrackParam%s::GetSigned1Pt",pNames[i]),p[i][0]->GetSigned1Pt(),p[i][1]->GetSigned1Pt() ); 
+				outFile<<"_FlatExternalTrackParam" << pNames[i] << "\n";
+				printDiff( "GetAlpha",p[i][0]->GetAlpha(),p[i][1]->GetAlpha() ); 
+				printDiff( "GetX",p[i][0]->GetX(),p[i][1]->GetX() ); 
+				printDiff( "GetY",p[i][0]->GetY(),p[i][1]->GetY() ); 
+				printDiff( "GetZ",p[i][0]->GetZ(),p[i][1]->GetZ() ); 
+				printDiff( "GetSnp",p[i][0]->GetSnp(),p[i][1]->GetSnp() ); 
+				printDiff( "GetTgl",p[i][0]->GetTgl(),p[i][1]->GetTgl() ); 
+				printDiff( "GetSigned1Pt",p[i][0]->GetSigned1Pt(),p[i][1]->GetSigned1Pt() ); 
 				
 				
 				Float_t* cov[2] = { p[i][0]->GetCov() , p[i][1]->GetCov() };
-				printDiff( Form("AliFlatExternalTrackParam%s::GetCov",pNames[i]) , 15, cov[0], cov[1]); 
+				printDiff( "GetCov", 15, cov[0], cov[1]); 
 				}
 			}
       track[0] = track[0]->GetNextTrackNonConst();
@@ -409,7 +403,6 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
  // Compare Friend variables
  
 	outFile<<"_FlatESDFriend\n";
-	fCurrentClass = "FlatESDFriend";
 	printDiff( "GetSize" ,flatFriend[0]->GetSize(), flatFriend[1]->GetSize() ) ;
 	printDiff( "GetNumberOfTracks" ,flatFriend[0]->GetNumberOfTracks(), flatFriend[1]->GetNumberOfTracks());
 	printDiff( "GetEntriesInTracks" ,flatFriend[0]->GetEntriesInTracks(), flatFriend[1]->GetEntriesInTracks());
@@ -440,7 +433,6 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
     for( Int_t t = 0; t < flatFriend[0]->GetEntriesInTracks()  && t < flatFriend[1]->GetEntriesInTracks()  ; t++ ){
 			if(!track[0] || !track[1]) continue;
       outFile<<"_FlatESDFriendTrack\n";
-			fCurrentClass = "FlatESDFriendTrack";
 			printDiff( "GetSize",track[0]->GetSize(),track[1]->GetSize() ); 
 			
 			AliExternalTrackParam p[3][2]; 
@@ -450,33 +442,33 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			
 			pp[0][0] = track[0]->GetTrackParamTPCOut(p[0][0] ) >-1 ? 1: 0;
 			pp[0][1] = track[1]->GetTrackParamTPCOut(p[0][1] ) >-1 ? 1: 0;
-			printDiff( "AliFlatESDFriendTrack::GetTrackParamTPCOut",pp[0][0], pp[0][1] ); 
+			printDiff( "GetTrackParamTPCOut",pp[0][0], pp[0][1] ); 
 			
 			pp[1][0] = track[0]->GetTrackParamITSOut(p[1][0] ) >-1 ? 1: 0;
 			pp[1][1] = track[1]->GetTrackParamITSOut(p[1][1] ) >-1 ? 1: 0;
-			printDiff( "AliFlatESDFriendTrack::GetTrackParamITSOut",pp[1][0], pp[1][1] ); 
+			printDiff( "GetTrackParamITSOut",pp[1][0], pp[1][1] ); 
 			
 			
 			pp[2][0] = track[0]->GetTrackParamTRDIn(p[2][0] ) >-1 ? 1: 0;
 			pp[2][1] = track[1]->GetTrackParamTRDIn(p[2][1] ) >-1 ? 1: 0;
-			printDiff( "AliFlatESDFriendTrack::GetTrackParamTRDIn",pp[2][0], pp[2][1] ); 
+			printDiff( "GetTrackParamTRDIn",pp[2][0], pp[2][1] ); 
 			
  			for(int i = 0 ; i<3; i++){
 				
 				if(pp[i][0] && pp[i][1]){
 					
-				outFile<<"\nnew AliExternalTrackParam" << pNames[i] << "\n";
-				printDiff( Form("AliExternalTrackParam%s::GetAlpha",pNames[i]),p[i][0].GetAlpha(),p[i][1].GetAlpha() ); 
-				printDiff( Form("AliExternalTrackParam%s::GetX",pNames[i]),p[i][0].GetX(),p[i][1].GetX() ); 
-				printDiff( Form("AliExternalTrackParam%s::GetY",pNames[i]),p[i][0].GetY(),p[i][1].GetY() ); 
-				printDiff( Form("AliExternalTrackParam%s::GetZ",pNames[i]),p[i][0].GetZ(),p[i][1].GetZ() ); 
-				printDiff( Form("AliExternalTrackParam%s::GetSnp",pNames[i]),p[i][0].GetSnp(),p[i][1].GetSnp() ); 
-				printDiff( Form("AliExternalTrackParam%s::GetTgl",pNames[i]),p[i][0].GetTgl(),p[i][1].GetTgl() ); 
-				printDiff( Form("AliExternalTrackParam%s::GetSigned1Pt",pNames[i]),p[i][0].GetSigned1Pt(),p[i][1].GetSigned1Pt() ); 
+				outFile<<"_ExternalTrackParam" << pNames[i] << "\n";
+				printDiff( "GetAlpha" ,p[i][0].GetAlpha(),p[i][1].GetAlpha() ); 
+				printDiff( "GetX",p[i][0].GetX(),p[i][1].GetX() ); 
+				printDiff( "GetY",p[i][0].GetY(),p[i][1].GetY() ); 
+				printDiff( "GetZ",p[i][0].GetZ(),p[i][1].GetZ() ); 
+				printDiff( "GetSnp",p[i][0].GetSnp(),p[i][1].GetSnp() ); 
+				printDiff( "GetTgl",p[i][0].GetTgl(),p[i][1].GetTgl() ); 
+				printDiff( "GetSigned1Pt",p[i][0].GetSigned1Pt(),p[i][1].GetSigned1Pt() ); 
 					
 					
 				Double_t* cov[2] = { const_cast<Double_t*>( p[i][0].GetCovariance()) , const_cast<Double_t*>( p[i][1].GetCovariance() ) };
-				printDiff( Form("AliExternalTrackParam%s::GetCovariance",pNames[i]) , 15, cov[0], cov[1]); 
+				printDiff( Form("ExternalTrackParam%s::GetCovariance",pNames[i]) , 15, cov[0], cov[1]); 
 				}
 			}
 			
@@ -486,11 +478,11 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			if(s[0] && s[1]){
 			
 			
-      outFile<<"\nnew AliFlatTPCseed\n";
+      outFile<<"_FlatTPCseed\n";
 			
-			printDiff( "AliFlatTPCseed::GetSize",s[0]->GetSize(),s[1]->GetSize() ); 
-			printDiff( "AliFlatTPCseed::GetLabel",s[0]->GetLabel(),s[1]->GetLabel() ); 
-			printDiff( "AliFlatTPCseed::GetNClusters",s[0]->GetNClusters(),s[1]->GetNClusters() ); 
+			printDiff( "GetSize",s[0]->GetSize(),s[1]->GetSize() ); 
+			printDiff( "GetLabel",s[0]->GetLabel(),s[1]->GetLabel() ); 
+			printDiff( "GetNClusters",s[0]->GetNClusters(),s[1]->GetNClusters() ); 
 			
 			printDiff( "GetSize",s[0]->GetSize(),s[1]->GetSize() ); 
 			printDiff( "GetLabel",s[0]->GetLabel(),s[1]->GetLabel() ); 
@@ -502,24 +494,34 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 				if(s[0]->GetNClusters() == s[1]->GetNClusters()){
 					int ncl = s[0]->GetNClusters();
 				//	cout<<"number of clusters: "<<ncl<<endl;
-					AliFlatTPCCluster* cl[2] ;
+					AliFlatTPCCluster* cl[160][2] ={{0},{0}};
 					for(int icl=0; icl < ncl; icl++){
-						outFile<<"\nnew AliFlatTPCCluster\n";
-						cl[0] = const_cast<AliFlatTPCCluster*>( &(s[0]->GetClusters()[icl])  );
-						cl[1] = const_cast<AliFlatTPCCluster*>( &(s[1]->GetClusters()[icl])  );
+						outFile<<"_FlatTPCCluster\n";
+						cl[ (s[0]->GetClusters()[icl]).GetPadRow() ][0] = const_cast<AliFlatTPCCluster*>( &(s[0]->GetClusters()[icl])  );
+						cl[ (s[1]->GetClusters()[icl]).GetPadRow() ][1] = const_cast<AliFlatTPCCluster*>( &(s[1]->GetClusters()[icl])  );
 						
-						printDiff( "AliFlatTPCCluster::GetX",cl[0]->GetX(),cl[1]->GetX() ); 
-						printDiff( "AliFlatTPCCluster::GetY",cl[0]->GetY(),cl[1]->GetY() ); 
-						printDiff( "AliFlatTPCCluster::GetZ",cl[0]->GetZ(),cl[1]->GetZ() ); 
-						printDiff( "AliFlatTPCCluster::GetSector",cl[0]->GetSector(),cl[1]->GetSector() ); 
-						printDiff( "AliFlatTPCCluster::GetPadRow",cl[0]->GetPadRow(),cl[1]->GetPadRow() ); 
-						printDiff( "AliFlatTPCCluster::GetSigmaY2",cl[0]->GetSigmaY2(),cl[1]->GetSigmaY2() ); 
-						printDiff( "AliFlatTPCCluster::GetSigmaZ2",cl[0]->GetSigmaZ2(),cl[1]->GetSigmaZ2() ); 
-						printDiff( "AliFlatTPCCluster::GetCharge",cl[0]->GetCharge(),cl[1]->GetCharge() ); 
-						printDiff( "AliFlatTPCCluster::GetQMax",cl[0]->GetQMax(),cl[1]->GetQMax() ); 
-						printDiff( "AliFlatTPCCluster::GetTrackAngleY",cl[0]->GetTrackAngleY(),cl[1]->GetTrackAngleY() ); 
-						printDiff( "AliFlatTPCCluster::GetTrackAngleZ",cl[0]->GetTrackAngleZ(),cl[1]->GetTrackAngleZ() ); 
 					}
+					for(int irow= 0; irow<160;irow++){
+						if( cl[irow][0] && cl[irow][1] ){
+							printDiff( "GetX",cl[irow][0]->GetX(),cl[irow][1]->GetX() ); 
+							printDiff( "GetY",cl[irow][0]->GetY(),cl[irow][1]->GetY() ); 
+							printDiff( "GetZ",cl[irow][0]->GetZ(),cl[irow][1]->GetZ() ); 
+							printDiff( "GetSector",cl[irow][0]->GetSector(),cl[irow][1]->GetSector() ); 
+							printDiff( "GetPadRow",cl[irow][0]->GetPadRow(),cl[irow][1]->GetPadRow() ); 
+							printDiff( "GetSigmaY2",cl[irow][0]->GetSigmaY2(),cl[irow][1]->GetSigmaY2() ); 
+							printDiff( "GetSigmaZ2",cl[irow][0]->GetSigmaZ2(),cl[irow][1]->GetSigmaZ2() ); 
+							printDiff( "GetCharge",cl[irow][0]->GetCharge(),cl[irow][1]->GetCharge() ); 
+							printDiff( "GetQMax",cl[irow][0]->GetQMax(),cl[irow][1]->GetQMax() ); 
+							printDiff( "GetTrackAngleY",cl[irow][0]->GetTrackAngleY(),cl[irow][1]->GetTrackAngleY() ); 
+							printDiff( "GetTrackAngleZ",cl[irow][0]->GetTrackAngleZ(),cl[irow][1]->GetTrackAngleZ() ); 
+						}
+						else if( cl[irow][0] || cl[irow][1] ){
+							printDiff( "GetClusters(i)",  cl[irow][0] ?1:0 ,cl[irow][1] ?1:0 ); 
+						}
+						
+					}
+					
+					
 				}
 			
 			}
