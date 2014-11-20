@@ -67,7 +67,6 @@ using std::endl;
 AliAnalysisTaskUpcPhi::AliAnalysisTaskUpcPhi() 
   : AliAnalysisTaskSE(),fType(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fRunSystematics(kFALSE),fPIDResponse(0),fPhiTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
-    fTOFtrig1(0), fTOFtrig2(0),
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),
     fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
@@ -88,7 +87,6 @@ AliAnalysisTaskUpcPhi::AliAnalysisTaskUpcPhi()
 AliAnalysisTaskUpcPhi::AliAnalysisTaskUpcPhi(const char *name) 
   : AliAnalysisTaskSE(name),fType(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fRunSystematics(kFALSE),fPIDResponse(0),fPhiTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
-    fTOFtrig1(0), fTOFtrig2(0),
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),
     fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
@@ -118,18 +116,11 @@ void AliAnalysisTaskUpcPhi::Init()
   
   for(Int_t i=0; i<ntrg; i++) fTrigger[i] = kFALSE;
   for(Int_t i=0; i<4; i++) {
-  	fTOFphi[i] = -666;
-	fPIDTPCMuon[i] = -666;
-	fPIDTPCElectron[i] = -666;
-	fPIDTPCPion[i] = -666;
-	fPIDTPCKaon[i] = -666;
-	fPIDTPCProton[i] = -666;
-	
-	fPIDTOFMuon[i] = -666;
-	fPIDTOFElectron[i] = -666;
-	fPIDTOFPion[i] = -666;
-	fPIDTOFKaon[i] = -666;
-	fPIDTOFProton[i] = -666;
+	fPIDITSMuon[i] = -666;
+	fPIDITSElectron[i] = -666;
+	fPIDITSPion[i] = -666;
+	fPIDITSKaon[i] = -666;
+	fPIDITSProton[i] = -666;
 	
 	fTriggerInputsMC[i] = kFALSE;
 	}
@@ -193,21 +184,11 @@ void AliAnalysisTaskUpcPhi::UserCreateOutputObjects()
   fPhiTree ->Branch("fNLooseTracks", &fNLooseTracks, "fNLooseTracks/s");
   fPhiTree ->Branch("fVtxContrib", &fVtxContrib, "fVtxContrib/I");
   
-  fPhiTree ->Branch("fTOFtrig1", &fTOFtrig1, "fTOFtrig1/O");
-  fPhiTree ->Branch("fTOFtrig2", &fTOFtrig2, "fTOFtrig2/O");
-  fPhiTree ->Branch("fTOFphi", &fTOFphi[0], "fTOFphi[2]/D");
-  
-  fPhiTree ->Branch("fPIDTPCMuon", &fPIDTPCMuon[0], "fPIDTPCMuon[2]/D");
-  fPhiTree ->Branch("fPIDTPCElectron", &fPIDTPCElectron[0], "fPIDTPCElectron[2]/D");
-  fPhiTree ->Branch("fPIDTPCPion", &fPIDTPCPion[0], "fPIDTPCPion[2]/D");
-  fPhiTree ->Branch("fPIDTPCKaon", &fPIDTPCKaon[0], "fPIDTPCKaon[2]/D");
-  fPhiTree ->Branch("fPIDTPCProton", &fPIDTPCProton[0], "fPIDTPCProton[2]/D");
-  
-  fPhiTree ->Branch("fPIDTOFMuon", &fPIDTOFMuon[0], "fPIDTOFMuon[2]/D");
-  fPhiTree ->Branch("fPIDTOFElectron", &fPIDTOFElectron[0], "fPIDTOFElectron[2]/D");
-  fPhiTree ->Branch("fPIDTOFPion", &fPIDTOFPion[0], "fPIDTOFPion[2]/D");
-  fPhiTree ->Branch("fPIDTOFKaon", &fPIDTOFKaon[0], "fPIDTOFKaon[2]/D");
-  fPhiTree ->Branch("fPIDTOFProton", &fPIDTOFProton[0], "fPIDTOFProton[2]/D");
+  fPhiTree ->Branch("fPIDITSMuon", &fPIDITSMuon[0], "fPIDITSMuon[2]/D");
+  fPhiTree ->Branch("fPIDITSElectron", &fPIDITSElectron[0], "fPIDITSElectron[2]/D");
+  fPhiTree ->Branch("fPIDITSPion", &fPIDITSPion[0], "fPIDITSPion[2]/D");
+  fPhiTree ->Branch("fPIDITSKaon", &fPIDITSKaon[0], "fPIDITSKaon[2]/D");
+  fPhiTree ->Branch("fPIDITSProton", &fPIDITSProton[0], "fPIDITSProton[2]/D");
   
   fPhiTree ->Branch("fVtxPos", &fVtxPos[0], "fVtxPos[3]/D");
   fPhiTree ->Branch("fVtxErr", &fVtxErr[0], "fVtxErr[3]/D");
@@ -446,8 +427,8 @@ void AliAnalysisTaskUpcPhi::RunAODtree()
     if(!(trk->TestFilterBit(1<<1))) continue;
 
       if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
-      if(trk->GetITSNcls() < 3)continue;
-      if(trk->Chi2perNDF() > 4)continue;
+      if(trk->GetITSNcls() < 4)continue;
+      if(trk->Chi2perNDF() > 2.5)continue;
       if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1)))continue;
  
       TrackIndex[nGoodTracks] = itr;
@@ -462,6 +443,12 @@ void AliAnalysisTaskUpcPhi::RunAODtree()
   	  for(Int_t i=0; i<2; i++){
                 AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(TrackIndex[i]));
                 if(!trk) AliFatal("Not a standard AOD");
+		
+		fPIDITSMuon[i] = fPIDResponse->NumberOfSigmasITS(trk,AliPID::kMuon);
+		fPIDITSElectron[i] = fPIDResponse->NumberOfSigmasITS(trk,AliPID::kElectron);
+		fPIDITSPion[i] = fPIDResponse->NumberOfSigmasITS(trk,AliPID::kPion);
+		fPIDITSKaon[i] = fPIDResponse->NumberOfSigmasITS(trk,AliPID::kKaon);
+		fPIDITSProton[i] = fPIDResponse->NumberOfSigmasITS(trk,AliPID::kProton);
 		
 		new((*fPhiAODTracks)[i]) AliAODTrack(*trk);
 		}

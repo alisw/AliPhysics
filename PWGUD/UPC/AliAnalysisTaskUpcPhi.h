@@ -59,20 +59,12 @@ class AliAnalysisTaskUpcPhi : public AliAnalysisTaskSE {
   Bool_t fTrigger[ntrg];
   Bool_t fTriggerInputsMC[2];
   UInt_t fL0inputs, fL1inputs;
-  Bool_t fTOFtrig1, fTOFtrig2;
-  Double_t fTOFphi[2];
   
-  Double_t fPIDTPCMuon[2];
-  Double_t fPIDTPCElectron[2];
-  Double_t fPIDTPCPion[2];
-  Double_t fPIDTPCKaon[2];
-  Double_t fPIDTPCProton[2];
-  
-  Double_t fPIDTOFMuon[2];
-  Double_t fPIDTOFElectron[2];
-  Double_t fPIDTOFPion[2];
-  Double_t fPIDTOFKaon[2];
-  Double_t fPIDTOFProton[2];
+  Double_t fPIDITSMuon[2];
+  Double_t fPIDITSElectron[2];
+  Double_t fPIDITSPion[2];
+  Double_t fPIDITSKaon[2];
+  Double_t fPIDITSProton[2];
   
   Int_t fVtxContrib;
   Double_t fVtxPos[3];
