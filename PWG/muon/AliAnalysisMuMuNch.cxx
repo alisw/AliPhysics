@@ -442,7 +442,8 @@ void AliAnalysisMuMuNch::DefineHistogramCollection(const char* eventSelection,
     CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"DispersiondNchdetaComparison2Corrections","dN_{ch}/d#eta dispersion with SPD AccxEff and data-driven corrections;(dN_{ch}/d#eta - A*N^{corr}_{Tracklets}) /dN_{ch}/d#eta;N_{events}",201,-1.005,1.005);
     CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"CheckMeanNtrCorrVsZVertex","Check for NtrCorr",fZAxis->GetNbins(),fZAxis->GetXmin(),fZAxis->GetXmax(),0);
     CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"CheckNtrCorr","Check for NtrCorr distribution;N^{corr}_{tr};N_{events}",nbinsMult,multMin,multMax);
-    
+  }
+  
     CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"RelDispersiondNchdetaFromNtrCorrVsdNchdEtaMC",Form("Relative dispersion of dN_{ch}/d#eta from N_{tr}^{corr} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;((dN_{ch}/d#eta)_{gen} - A*N^{corr}_{Tracklets}) /(dN_{ch}/d#eta)_{gen}",fEtaMax),201,-1.005,1.005);
     CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"DispersiondNchdetaFromNtrCorrVsdNchdEtaMC",Form("Dispersion of dN_{ch}/d#eta from N_{tr}^{corr} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{gen} - A*N^{corr}_{Tracklets}",fEtaMax),402,-100.5,100.5);
     CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"dNchdetaFromNtrCorrVsdNchdEtaMC",Form("dN_{ch}/d#eta from N_{tr}^{corr} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{gen};dN_{ch}/d#eta",fEtaMax),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
@@ -450,7 +451,7 @@ void AliAnalysisMuMuNch::DefineHistogramCollection(const char* eventSelection,
     CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"RelDispersiondNchdetaFromAccEffVsdNchdEtaMC",Form("Relative dispersion of dN_{ch}/d#eta from N_{tr}^{AccxEff} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;((dN_{ch}/d#eta)_{gen} - dN_{ch}/d#eta) /(dN_{ch}/d#eta)_{gen};N_{events}",fEtaMax),201,-1.005,1.005);
      CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"DispersiondNchdetaFromAccEffVsdNchdEtaMC",Form("Dispersion of dN_{ch}/d#eta from N_{tr}^{AccxEff} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{gen} - dN_{ch}/d#eta;N_{events}",fEtaMax),402,-100.5,100.5);
     CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"dNchdetaFromAccEffVsdNchdEtaMC",Form("dN_{ch}/d#eta from N_{tr}^{AccxEff} vs MC dN_{ch}/d#eta in |#eta| < %1.1f;(dN_{ch}/d#eta)_{gen};dN_{ch}/d#eta",fEtaMax),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
-  }
+  
   
 //   CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"CorrTrackletsVsNch","Reco tracklets corrected vs number of generated charged particles;N_{ch};N_{tracklets}^{corr}",nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
 CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"CorrTrackletsVsNch",Form("%s vs number of generated charged particles in |#eta| < %1.1f;N_{ch};%s",TrackletsCorrectedName.Data(),fEtaMax,TrackletsCorrectedAxisName.Data()),nbinsMult,multMin,multMax,nbinsMult,multMin,multMax);
@@ -1184,7 +1185,6 @@ void AliAnalysisMuMuNch::FillHistosForMCEvent(const char* eventSelection,const c
       MCHisto(eventSelection,triggerClassName,centrality,"DispersiondNchdetaFromAccEffVsdNchdEtaMC")->Fill((meandNchdEta - dNchdetaReco));
     }
   }
-  
   
   Double_t V0AMult = 0.;
   Double_t V0CMult = 0.;
