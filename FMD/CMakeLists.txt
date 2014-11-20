@@ -19,6 +19,10 @@ add_subdirectory(FMDutil)
 add_subdirectory(FMDrec)
 add_subdirectory(FMDsim)
 
+if(DA)
+    add_subdirectory(DA)
+endif()
+
 # Install files to destination
 install(DIRECTORY scripts DESTINATION FMD)
 install(FILES 

@@ -85,7 +85,6 @@ endmacro(generate_rootmap)
 # @ shared_list - list of shared libraries
 # @ static_list - the name of the variable that will contain the list of static libraries
 macro(generate_static_dependencies shared_list static_list)
-message(STATUS "list ${shared_list}")
     set(static_list_tmp "")
     foreach(shared_lib ${shared_list})
         set(static_list_tmp ${static_list_tmp} "${shared_lib}-static")

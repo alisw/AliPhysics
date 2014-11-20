@@ -108,7 +108,7 @@ set(SRCS
     AliITSTriggerConditions.cxx
    )
 if (DATE_FOUND)
-    set (SRCS "${SRCS} AliITSHandleDaSSD.cxx")
+    set (SRCS ${SRCS} "AliITSHandleDaSSD.cxx")
 endif (DATE_FOUND)
 
 # Headers from sources

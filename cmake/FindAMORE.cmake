@@ -19,6 +19,8 @@
 #               - AMORE_STATICLIBS - libraries and linking folders for static build
 #               - AMORE_AUXLIBS - auxiliary libraries for DA 
 #               - AMORE_DEFINITIONS
+#               - AMORE_CFLAGS
+#               - AMORE_INCLUDE_DIR
 
 set(AMORE_FOUND FALSE)
 
@@ -49,6 +51,27 @@ if(AMORE_CONFIG)
         message(FATAL_ERROR "Error retrieving AMORE auxiliary libraries : ${error}")
     endif(error)
     string(STRIP ${AMORE_AUXLIBS} AMORE_AUXLIBS)
+
+    # Checking AMORE cflags
+    execute_process(COMMAND ${AMORE_CONFIG} --cflags OUTPUT_VARIABLE AMORE_CFLAGS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
+    if(error)
+        message(FATAL_ERROR "Error retrieving AMORE cflags : ${error}")
+    endif(error)
+    
+    if(AMORE_CFLAGS)
+        string(STRIP ${AMORE_CFLAGS} AMORE_CFLAGS)
+    endif(AMORE_CFLAGS)
+
+    # Checking AMORE cflags
+    execute_process(COMMAND ${AMORE_CONFIG} --include-dir OUTPUT_VARIABLE AMORE_INCLUDE_DIR ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
+    if(error)
+        message(FATAL_ERROR "Error retrieving AMORE include directory : ${error}")
+    endif(error)
+    
+    if(AMORE_INCLUDE_DIR)
+        string(STRIP ${AMORE_INCLUDE_DIR} AMORE_INCLUDE_DIR)
+    endif(AMORE_INCLUDE_DIR)
+
 
     set(AMORE_DEFINITIONS "-DALI_AMORE")
     set(AMORE_FOUND TRUE)
