@@ -469,10 +469,11 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
 	  }
 	}
 	if(ifound>1) AliDebug(2,Form("Found %d partners",ifound));
-	if(ifound==0) jetUS = 0x0;
-	else          jetUS = jetContUS->GetJet(ilab);
-	fraction = jetContUS->GetFractionSharedPt(jetUS);
-	maxTrackPt = jetUS->MaxTrackPt();
+	if(ilab>-1) {
+	  jetUS = jetContUS->GetJet(ilab);
+	  fraction = jetContUS->GetFractionSharedPt(jetUS);
+	  maxTrackPt = jetUS->MaxTrackPt();
+	}
       } else
 	fraction = jetCont->GetFractionSharedPt(jet1);
 

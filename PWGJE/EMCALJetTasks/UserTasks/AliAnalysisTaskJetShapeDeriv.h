@@ -38,6 +38,7 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   void SetMinFractionShared(Double_t f)                         { fMinFractionShared = f   ; }
   void SetSingleTrackEmbedding(Bool_t b)                        { fSingleTrackEmb    = b   ; }
   void SetJetMassVarType(JetMassVarType t)                      { fJetMassVarType    = t   ; }
+  void SetUseSumw2(Bool_t b)                                    { fUseSumw2          = b   ; }
 
  protected:
   Bool_t                              RetrieveEventObjects();
@@ -46,12 +47,14 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
 
   AliVParticle*                       GetEmbeddedConstituent(AliEmcalJet *jet);
 
+ private:
   Int_t                               fContainerBase;              // jets to be analyzed
   Int_t                               fContainerNoEmb;             // subtracted jets from Pb-Pb only events
   Double_t                            fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
   Bool_t                              fSingleTrackEmb;             // single track embedding
   Bool_t                              fCreateTree;                 // create output tree
   JetMassVarType                      fJetMassVarType;             // observable to use
+  Bool_t                              fUseSumw2;                   // activate sumw2 for output histograms
 
   TTree           *fTreeJetBkg;                                    //!tree with jet and bkg variables
   TLorentzVector  *fJet1Vec;                                       // jet1(AA) vector  
@@ -86,11 +89,10 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   TH2F          **fh2PtCorrSubFacV2;                               //! subtracted pT vs 0.5(rho+rhom)^2*V2
   TH2F          **fh2NConstSubFacV2;                               //! N constituents vs 0.5(rho+rhom)^2*V2
 
- private:
   AliAnalysisTaskJetShapeDeriv(const AliAnalysisTaskJetShapeDeriv&);            // not implemented
   AliAnalysisTaskJetShapeDeriv &operator=(const AliAnalysisTaskJetShapeDeriv&); // not implemented
 
-  ClassDef(AliAnalysisTaskJetShapeDeriv, 4)
+  ClassDef(AliAnalysisTaskJetShapeDeriv, 5)
 };
 #endif
 
