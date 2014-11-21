@@ -30,6 +30,10 @@ add_subdirectory(MUONsim)
 add_subdirectory(MUONtrigger)
 add_subdirectory(mchview)
 
+if(DA)
+    add_subdirectory(DA)
+endif(DA)
+
 # Install data folder
 install(DIRECTORY data DESTINATION MUON)
 
