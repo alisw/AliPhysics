@@ -1,0 +1,112 @@
+// $Id$
+
+AliAnalysisTaskJetJTJT* AddTaskJetJTJT(
+  const char *ntracks            = "Tracks",
+  const char *nclusters          = "CaloClusters",
+  const char *njets              = "Jets",
+  const char *nrho               = "Rho",
+  Int_t       nCentBins          = 1,
+  Double_t    jetradius          = 0.2,
+  Double_t    jetptcut           = 1,
+  Double_t    jetareacut         = 0.6,
+  const char *type               = "EMCAL",
+  Int_t       leadhadtype        = 0,
+  const char *taskname           = "AliAnalysisTaskJetJTJT"
+)
+{  
+  // Get the pointer to the existing analysis manager via the static access method.
+  //==============================================================================
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr)
+  {
+    ::Error("AddTaskJetJTJT", "No analysis manager to connect to.");
+    return NULL;
+  }  
+  
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //==============================================================================
+  if (!mgr->GetInputEventHandler())
+  {
+    ::Error("AddTaskJetJTJT", "This task requires an input event handler");
+    return NULL;
+  }
+  
+  //-------------------------------------------------------
+  // Init the task and do settings
+  //-------------------------------------------------------
+
+  TString name(taskname);
+  if (strcmp(njets,"")) {
+    name += "_";
+    name += njets;
+  }
+  if (strcmp(nrho,"")) {
+    name += "_";
+    name += nrho;
+  }
+  if (strcmp(type,"")) {
+    name += "_";
+    name += type;
+  }
+
+  TString tracksName = "PicoTracks";
+  TString clustersName = "EmcCaloClusters";
+  TString clustersCorrName = "CaloClustersCorr";
+  TString rhoName = "";
+
+
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
+  AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(tracksName,clustersCorrName,1,0.4,1,0.15,0.300); // anti-kt
+
+  ntracks = tracksName;
+  nclusters = clustersCorrName;
+  nrho = rhoName;
+  Printf("name: %s",name.Data());
+
+  AliAnalysisTaskJetJTJT* jtTask = new AliAnalysisTaskJetJTJT(name);
+  jtTask->SetCentRange(0.,100.);
+  jtTask->SetNCentBins(nCentBins);
+  jtTask->SetTrackArrayName(ntracks);
+  Double_t borders[5] = {0,10,20,40,100};
+  Double_t triggpt[8] = {0,5,10,20,40,80,100,150};
+  Double_t triggpta[2] = {0,100};
+  //cout << "Size of {0,10,20,40,100}: " << borders->size() << endl;
+  jtTask->setCentBinBorders(5,borders);
+  jtTask->setTriggPtBorders(8,triggpt);
+  jtTask->setAssocPtBorders(2,triggpta);
+
+  AliParticleContainer *trackCont  = jtTask->AddParticleContainer(ntracks);
+  trackCont->SetClassName("AliVTrack");
+  AliClusterContainer *clusterCont = jtTask->AddClusterContainer(nclusters);
+
+  TString strType(type);
+  AliJetContainer *jetCont = jtTask->AddJetContainer(jetFinderTask->GetName(),strType,jetradius);
+  if(jetCont) {
+	  jetCont->SetRhoName(nrho);
+	  jetCont->ConnectParticleContainer(trackCont);
+	  jetCont->ConnectClusterContainer(clusterCont);
+	  jetCont->SetZLeadingCut(0.98,0.98);
+	  jetCont->SetPercAreaCut(0.6);
+	  jetCont->SetJetPtCut(jetptcut);    
+	  jetCont->SetLeadingHadronType(leadhadtype);
+  }
+
+  //-------------------------------------------------------
+  // Final settings, pass to manager and set the containers
+  //-------------------------------------------------------
+
+  mgr->AddTask(jtTask);
+
+  // Create containers for input/output
+  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
+  TString contname(name);
+  contname += "_histos";
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(), 
+		  TList::Class(),AliAnalysisManager::kOutputContainer,
+		  Form("%s", AliAnalysisManager::GetCommonFileName()));
+
+  mgr->ConnectInput  (jtTask, 0,  cinput1 );
+  mgr->ConnectOutput (jtTask, 1, coutput1 );
+
+  return jtTask;
+}
