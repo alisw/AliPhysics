@@ -62,7 +62,7 @@ public:
     void CheckCentrality(AliVEvent *event,Bool_t &centralitypass); //to use only events with the correct centrality....
     void SetCuts(Bool_t b){fPIDcuts = b;}
     //void MultiplicityOutlierCut(AliVEvent *event,Bool_t &centralitypass,Int_t ntracks);
-    void SetPIDcontoursList(TDirectory* b){fContourCutList = b;}
+    void SetPIDcontoursList(TDirectory* b){fCutContourList = b;}
     //TGraph* GetPIDcontours(TString specie, Double_t Plow, Double_t Phigh,Int_t centMin, Int_t centMax){}
     void GetPIDContours();
     
@@ -71,46 +71,48 @@ protected:
     
     
 private:
-    AliVEvent             *fVevent;
-    AliESDEvent           *fESD;
-    AliAODEvent           *fAOD;
-    AliPIDResponse        *fPIDResponse;             //! PID response Handler
-    Int_t                  fTriggerSelection;
-    Int_t                  fCentralityPercentileMin;
-    Int_t                  fCentralityPercentileMax;
-    Double_t               fFilterBit;
-    Double_t               fDCAxyCut;
-    Double_t               fDCAzCut;
-    Bool_t                 fData2011;
-    Bool_t                 fTriggerMB;
-    Bool_t                 fTriggerCentral;
-    Bool_t                 fUseCentrality;
-    Bool_t                 fCutTPCmultiplicityOutliersAOD;
-    Bool_t                 fPIDcuts;
-    TString                fCentralityEstimator;   //"V0M","TRK","TKL","ZDC","FMD"
-    TDirectory            *fContourCutList;
-    TList                 *fListQA;           // List of all lists
-    TList                 *fListQAtpctof;     //! List with combined PID from TPC + TOF
-    TList                 *fListQAInfo;
-    TH1F                  *fhistCentralityPass;
-    TH1F                  *fNoEvents;
-    TH1F                  *fpVtxZ;
-    TH2F                  *fhistDCABefore;
-    TH2F                  *fhistDCAAfter;
-    TH1F                  *fhistPhiDistBefore;
-    TH1F                  *fhistPhiDistAfter;
-    TH1F                  *fhistEtaDistBefore;
-    TH1F                  *fhistEtaDistAfter;
-    TH2F                  *fTPCvsGlobalMultBeforeOutliers;
-    TH2F                  *fTPCvsGlobalMultAfterOutliers;
-    TH2F                  *fTPCvsGlobalMultAfter;
-    TH2F                  *fHistBetavsPTOFbeforePID;
-    TH2F                  *fHistdEdxvsPTPCbeforePID;
-    TH3F                  *fhistNsigmaP;
-    TH3F                  *fhistNsigmaPt;
-    TH2F                  *fHistBetavsPTOFafterPID;
-    TH2F                  *fHistdEdxvsPTPCafterPID;
-    TCutG                 *fContourCut[150];
+    AliVEvent             *fVevent;             //! event
+    AliESDEvent           *fESD;                //! esd
+    AliAODEvent           *fAOD;                //! aod
+    AliPIDResponse        *fPIDResponse;        //! PID response Handler
+    Int_t                  fTriggerSelection;   // trigger selection
+    Int_t                  fCentralityPercentileMin;    // min centrality
+    Int_t                  fCentralityPercentileMax;    // max cen
+    Double_t               fFilterBit;                  // filterbit
+    Double_t               fDCAxyCut;           // dca cut
+    Double_t               fDCAzCut;            // dcz z
+    Bool_t                 fData2011;           // 2011 data
+    Bool_t                 fTriggerMB;          // minB trigger
+    Bool_t                 fTriggerCentral;     // cen trigger
+    Bool_t                 fUseCentrality;      // use centrality
+    Bool_t                 fCutTPCmultiplicityOutliersAOD;      // do outlier cut
+    Bool_t                 fPIDcuts;            // pid cuts
+    TString                fCentralityEstimator;// cen estimator "V0M","TRK","TKL","ZDC","FMD"
+    TFile                 *fContoursFile;       //! contours file
+    TDirectory            *fCutContourList;     //! contour list
+    TList                 *fListQA;             //! List of all lists
+    TList                 *fListQAtpctof;       //! List with combined PID from TPC + TOF
+    TList                 *fListQAInfo;         //! list q ainfo
+    TH1F                  *fhistCentralityPass; //! cen histo   
+    TH1F                  *fNoEvents;           //! event no    
+    TH1F                  *fpVtxZ;              //! v vertex no
+    TH2F                  *fhistDCABefore;      //! dca after hist
+    TH2F                  *fhistDCAAfter;       //! another hist
+    TH1F                  *fhistPhiDistBefore;  //! another hist
+    TH1F                  *fhistPhiDistAfter;   //! another hist
+    TH1F                  *fhistEtaDistBefore;  //! another hist
+    TH1F                  *fhistEtaDistAfter;   //! another hist
+    TH2F                  *fTPCvsGlobalMultBeforeOutliers;      //! another hist
+    TH2F                  *fTPCvsGlobalMultAfterOutliers;       //! another hist
+    TH2F                  *fTPCvsGlobalMultAfter;       //! another hist
+    TH2F                  *fHistBetavsPTOFbeforePID;    //! another hist
+    TH2F                  *fHistdEdxvsPTPCbeforePID;    //! another hist
+    TH3F                  *fhistNsigmaP;        //! another hist
+    TH3F                  *fhistNsigmaPt;       //! another hist
+    TH2F                  *fHistBetavsPTOFafterPID;     //! another hist
+    TH2F                  *fHistdEdxvsPTPCafterPID;     //! another hist
+    TCutG                 *fCutContour[150];    //! another hist
+    TGraph                *fCutGraph[150];      //! grpahs
     
     
     //qa object initialisation
@@ -121,7 +123,7 @@ private:
     AliAnalysisTaskPIDconfig(const AliAnalysisTaskPIDconfig &other);
     AliAnalysisTaskPIDconfig& operator=(const AliAnalysisTaskPIDconfig &other);
     
-    ClassDef(AliAnalysisTaskPIDconfig,2)  // Task to properly set the PID response functions of all detectors
+    ClassDef(AliAnalysisTaskPIDconfig,3)  // Task to properly set the PID response functions of all detectors
 };
 
 #endif
