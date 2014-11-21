@@ -498,6 +498,8 @@ validateLog()
             '\.C.*error:.*\.h: No such file'
             'segmentation'
             'Interpreter error recovered'
+            ': command not found'
+            ': comando non trovato'
   )
 
   warningConditions=(
