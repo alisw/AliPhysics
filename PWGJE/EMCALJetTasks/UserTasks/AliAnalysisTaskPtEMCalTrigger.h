@@ -51,6 +51,7 @@ public:
   void SetSwapEta() { fSwapEta = kTRUE; }
   void UseTriggersFromTriggerMaker() { fUseTriggersFromTriggerMaker = kTRUE; }
   void AddJetContainerName(const Char_t * contname, Bool_t isMC = kFALSE);
+  void SelectAllTracks(Bool_t doAll) { fSelectAllTracks = doAll; }
 
 private:
   AliAnalysisTaskPtEMCalTrigger(const AliAnalysisTaskPtEMCalTrigger &);
@@ -88,6 +89,7 @@ private:
   TList                         fJetContainersData;        // List of jet containers for Data
 
   // Settings
+  Bool_t                        fSelectAllTracks;         // Loop over all tracks
   Bool_t						            fSwapEta;				          // Allow swapping of the eta sign in asymmetric collision systems
   Bool_t 						            fUseTriggersFromTriggerMaker; // Use trigger classes from trigger maker
 

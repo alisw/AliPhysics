@@ -97,11 +97,12 @@ using std::endl;
 ClassImp(AliAnalysisTaskStrangenessVsMultiplicityMC)
 
 AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultiplicityMC()
-  : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0),
+  : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0), fUtils(0),
   fkSaveV0Tree      ( kFALSE ),
   fkSaveCascadeTree ( kTRUE  ),
   fkRunVertexers    ( kTRUE  ),
   fkSkipEventSelection( kFALSE ),
+  fkApplyTrackletsVsClustersCut( kTRUE ),
   //---> Variables for fTreeEvent
   fAmplitude_V0A   (0),   
   fAmplitude_V0C   (0),   
@@ -320,11 +321,12 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
 }
 
 AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultiplicityMC(const char *name) 
-  : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0),  
+  : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0), fUtils(0),
   fkSaveV0Tree      ( kFALSE ),
   fkSaveCascadeTree ( kTRUE  ), 
   fkRunVertexers    ( kTRUE  ),
   fkSkipEventSelection( kFALSE ),
+  fkApplyTrackletsVsClustersCut( kTRUE ),
   //---> Variables for fTreeEvent
   fAmplitude_V0A (0),   
   fAmplitude_V0C (0), 
@@ -590,6 +592,10 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::~AliAnalysisTaskStrangenessVsMultipl
         delete fPPVsMultUtils;
         fPPVsMultUtils = 0x0;
     }
+    if (fUtils){
+        delete fUtils;
+        fUtils = 0x0;
+    }
 }
 
 //________________________________________________________________________
@@ -785,9 +791,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
   if(! fESDtrackCuts ){
     fESDtrackCuts = new AliESDtrackCuts();
   }
+    //Helper
   if(! fPPVsMultUtils ){
     fPPVsMultUtils = new AliPPVsMultUtils();
   }
+    //Analysis Utils
+    if(! fUtils ){
+        fUtils = new AliAnalysisUtils();
+    }
 
 //------------------------------------------------
 // V0 Multiplicity Histograms
@@ -1166,6 +1177,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     PostData(4, fTreeCascade);
     return;
   }
+    
+    //Tracklets vs Clusters cut via AliAnalysisUtils
+    if ( fkApplyTrackletsVsClustersCut && (! fkSkipEventSelection ) ) {
+        if( fUtils->IsSPDClusterVsTrackletBG( lESDevent ) ){
+            PostData(1, fListHist);
+            PostData(2, fTreeEvent);
+            PostData(3, fTreeV0);
+            PostData(4, fTreeCascade);
+            return;
+        }
+    }
 
   fHistEventCounter->Fill(1.5);
  

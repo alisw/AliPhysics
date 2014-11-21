@@ -68,25 +68,25 @@ public:
   void CreateTasks(AliAnalysisManager* mgr)
   {
 
-    fHelper->LoadLibrary("libCORRFW");
+    fRailway->LoadLibrary("libCORRFW");
 
     Bool_t cdb              = fOptions.Has("cdb");
     Bool_t tender           = fOptions.Has("tender");
     Bool_t physicsSelection = fOptions.Has("physics-selection");
 
     if (cdb || tender) {
-      fHelper->LoadLibrary("libCDB");
-      fHelper->LoadLibrary("libProof");
-      fHelper->LoadLibrary("libRAWDatabase");
-      fHelper->LoadLibrary("libSTEER");
-      fHelper->LoadLibrary("libSTAT");
-      fHelper->LoadLibrary("libTRDbase");
-      fHelper->LoadLibrary("libVZERObase");
-      fHelper->LoadLibrary("libTPCbase");
-      fHelper->LoadLibrary("libITSbase");
-      fHelper->LoadLibrary("libHMPIDbase");
-      fHelper->LoadLibrary("libTENDER");
-      fHelper->LoadLibrary("libTENDERSupplies");
+      fRailway->LoadLibrary("libCDB");
+      fRailway->LoadLibrary("libProof");
+      fRailway->LoadLibrary("libRAWDatabase");
+      fRailway->LoadLibrary("libSTEER");
+      fRailway->LoadLibrary("libSTAT");
+      fRailway->LoadLibrary("libTRDbase");
+      fRailway->LoadLibrary("libVZERObase");
+      fRailway->LoadLibrary("libTPCbase");
+      fRailway->LoadLibrary("libITSbase");
+      fRailway->LoadLibrary("libHMPIDbase");
+      fRailway->LoadLibrary("libTENDER");
+      fRailway->LoadLibrary("libTENDERSupplies");
     }
 
     if (fOptions.Has("sys-info")) mgr->SetNSysInfo(100);
@@ -96,26 +96,26 @@ public:
 
     AliAnalysisManager::SetCommonFileName("AODQA.root");
     if (tender) 
-      AddTask("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C",
+      CoupleCar("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C",
 	      Form("%d", fOptions.Has("v0-tender")));
     
     if (fOptions.Has("pid-response")) 
-      AddTask("AddTaskPIDResponse.C");
+      CoupleCar("AddTaskPIDResponse.C");
 
     if (fOptions.Has("pid-qa")) {
-      seTask = AddSETask("AddTaskPIDqa.C");
+      seTask = CoupleSECar("AddTaskPIDqa.C");
       seTask->SelectCollisionCandidates(AliVEvent::kAny);
     }
     
     if (cdb && !tender) {
-      fHelper->LoadLibrary("libRAWDatarec");
-      fHelper->LoadLibrary("libTRDrec");
-      fHelper->LoadLibrary("libVZEROrec");
-      fHelper->LoadLibrary("libTPCrec");
-      fHelper->LoadLibrary("libITSrec");
-      fHelper->LoadLibrary("libPWGPP");
+      fRailway->LoadLibrary("libRAWDatarec");
+      fRailway->LoadLibrary("libTRDrec");
+      fRailway->LoadLibrary("libVZEROrec");
+      fRailway->LoadLibrary("libTPCrec");
+      fRailway->LoadLibrary("libITSrec");
+      fRailway->LoadLibrary("libPWGPP");
 
-      // AddTask("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
+      // CoupleCar("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
       gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
       gROOT->ProcessLine(Form("AddTaskCDBconnect(%d)", fOptions.AsInt("run")));
       gROOT->ProcessLine("AliCDBManager* cdb = AliCDBManager::Instance();"
@@ -123,10 +123,10 @@ public:
     }
     
     if (fOptions.Has("high-pt"))
-      AddTask("AddTaskFilteredTree.C");
+      CoupleCar("AddTaskFilteredTree.C");
   
     if (fOptions.Has("esd-filter")) {
-      fHelper->LoadLibrary("PWGmuon");
+      fRailway->LoadLibrary("PWGmuon");
       if (fOptions.Has("muon-copy")) {
 	mgr->RegisterExtraFile("AliAOD.Muons.root");
 	mgr->RegisterExtraFile("AliAOD.Dimuons.root");
@@ -136,7 +136,7 @@ public:
 	TString::Format("%d,%d,false,false,false,false,true,false,false,%d",
 			fOptions.Has("kinematics-filter"), 
 			fOptions.Has("muon-copy"), runFlag);
-      AddTask("AddTaskESDFilter.C", args);
+      CoupleCar("AddTaskESDFilter.C", args);
     }
   
     Bool_t vertexing = fOptions.Has("vertexing");
@@ -146,49 +146,49 @@ public:
       if (fOptions.AsInt("collision") == 1) 
 	src.ReplaceAll(".C", "highmult.C");
       TFile::Cp(src, "ConfigVertexingHF.C");
-      fHelper->LoadAux("ConfigVertexingHF.C");
+      fRailway->LoadAux("ConfigVertexingHF.C");
     }    
 
     if (vertexing) {
-      fHelper->LoadLibrary("PWGflowBase");
-      fHelper->LoadLibrary("PWGflowTasks");
-      fHelper->LoadLibrary("PWGHFvertexingHF");
+      fRailway->LoadLibrary("PWGflowBase");
+      fRailway->LoadLibrary("PWGflowTasks");
+      fRailway->LoadLibrary("PWGHFvertexingHF");
       seTask = 
-	AddSETask("$ALICE_ROOT/PWGHF/vertexingHF/macros/AddTaskVertexingHF.C");
+	CoupleSECar("$ALICE_ROOT/PWGHF/vertexingHF/macros/AddTaskVertexingHF.C");
       seTask->SelectCollisionCandidates(0);
       mgr->RegisterExtraFile("AliAOD.VertexingHF.root");
     }
 
     if (fOptions.Has("jpsi-filtering")) { 
-      fHelper->LoadLibrary("PWGDQdielectron");
+      fRailway->LoadLibrary("PWGDQdielectron");
       seTask = 
-	AddSETask("$ALICE_ROOT/PWGDQ/dielectron/macros/AddTaskJPSIFilter.C");
+	CoupleSECar("$ALICE_ROOT/PWGDQ/dielectron/macros/AddTaskJPSIFilter.C");
       seTask->SelectCollisionCandidates(0);
       mgr->RegisterExtraFile("AliAOD.Dielectron.root");
     }
   
     if (d0Decay) 
-      AddTask("$ALICE_ROOT/PWGHF/vertexingHF/AddD2HTrain.C",
+      CoupleCar("$ALICE_ROOT/PWGHF/vertexingHF/AddD2HTrain.C",
 	      "kFALSE, 1,0,0,0,0,0,0,0,0,0,0");
   
     if (fOptions.Has("jetan")) {
-      fHelper->LoadLibrary("JETAN");
+      fRailway->LoadLibrary("JETAN");
       
       Bool_t jetanDelta = fOptions.Has("jetan-delta");      
       if (jetanDelta) {
-	fHelper->LoadLibrary("CGAL");
-	fHelper->LoadLibrary("fastjet");
-	fHelper->LoadLibrary("siscone");
-	fHelper->LoadLibrary("SISConePlugin");
-	fHelper->LoadLibrary("FASTJETAN");
+	fRailway->LoadLibrary("CGAL");
+	fRailway->LoadLibrary("fastjet");
+	fRailway->LoadLibrary("siscone");
+	fRailway->LoadLibrary("SISConePlugin");
+	fRailway->LoadLibrary("FASTJETAN");
 	// --- For newer fastjet ---
-	// fHelper->LoadLibrary("CGAL");
-	// fHelper->LoadLibrary("fastjet");
-	// fHelper->LoadLibrary("fastjettools");
-	// fHelper->LoadLibrary("siscone");
-	// fHelper->LoadLibrary("siscone_spherical");
-	// fHelper->LoadLibrary("fastjetplugins");
-	// fHelper->LoadLibrary("FASTJETAN");
+	// fRailway->LoadLibrary("CGAL");
+	// fRailway->LoadLibrary("fastjet");
+	// fRailway->LoadLibrary("fastjettools");
+	// fRailway->LoadLibrary("siscone");
+	// fRailway->LoadLibrary("siscone_spherical");
+	// fRailway->LoadLibrary("fastjetplugins");
+	// fRailway->LoadLibrary("FASTJETAN");
       }
       
       // Write script to do this - avoid useless links against loadable
@@ -277,7 +277,7 @@ public:
       Bool_t fwdMC = (mgr->GetMCtruthEventHandler() != 0 && 
 		      fOptions.Has("track-refs"));
     
-      AddTask("$ALICE_ROOT/PWGLF/FORWARD/analysis2/AddTaskForwardMult.C",
+      CoupleCar("$ALICE_ROOT/PWGLF/FORWARD/analysis2/AddTaskForwardMult.C",
 	      Form("%d", fwdMC));
     }
   }

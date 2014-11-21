@@ -10,7 +10,7 @@ double centPercent[nbins]={5.,10.,20.,30.,40.,50.,60.,70.,80.,90.,100};
 TArrayI* binUp = new TArrayI(nbins);
 TArrayI* Multbin = new TArrayI(nbins);
 
-void plotGlauberCenVars(const Char_t* file="GlauberMC_PbPb_ntuple.root")
+void plotGlauberCenVars(const Char_t* file="glau_pbpb_ntuple.root")
 {
  TFile f(file);
  TNtuple* ntuple = f.Get("nt_Pb_Pb");

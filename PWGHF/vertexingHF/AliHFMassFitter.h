@@ -110,7 +110,9 @@ class AliHFMassFitter : public TNamed {
   TF1*     GetMassFunc(){
     return fhistoInvMass->GetFunction("funcmass");
   }
-
+  void SetUseLikelihoodFit(){fFitOption="L,";}
+  void SetUseLikelihoodWithWeightsFit(){fFitOption="WL,";}
+  void SetUseChi2Fit(){fFitOption="";}
 
  private:
 
@@ -147,9 +149,10 @@ class AliHFMassFitter : public TNamed {
   Int_t     fSideBandl;        // left side band limit (bin number)
   Int_t     fSideBandr;        // right side band limit (bin number)
   Int_t     fcounter;          // internal counter
+  TString   fFitOption;        // L, LW or Chi2
   TList*    fContourGraph;     // TList of TGraph containing contour plots
 
-  ClassDef(AliHFMassFitter,6); // class for invariant mass fit
+  ClassDef(AliHFMassFitter,7); // class for invariant mass fit
 };
 
 #endif

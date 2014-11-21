@@ -26,7 +26,8 @@ class AliEmcalContainer : public TNamed {
     kMCFlag = 1<<8,
     kMCGeneratorCut = 1<<9,
     kChargeCut = 1<<10,
-    // leave bits 11-12 free for future implementations
+    kMinDistanceTPCSectorEdgeCut = 1<<11,
+    // leave bit 12 free for future implementations
 
     // AliClusterContainer
     kIsEMCalCut = 1<<13,
@@ -81,6 +82,6 @@ class AliEmcalContainer : public TNamed {
   AliEmcalContainer(const AliEmcalContainer& obj); // copy constructor
   AliEmcalContainer& operator=(const AliEmcalContainer& other); // assignment
 
-  ClassDef(AliEmcalContainer,3);
+  ClassDef(AliEmcalContainer,4);
 };
 #endif

@@ -58,7 +58,8 @@ void AddTaskPIDconfig(Int_t CentralityTriggerSelection = AliVEvent::kMB, Double_
         pidTask[i]->SetDCAzCut(10);
         pidTask[i]->SetCuts(PIDcuts);
         if(PIDcuts){
-            TFile *ContoursFile = new TFile(Form("PurityHistContours_%.f-%.f.root",centrMin[icentr],centrMax[icentr]));
+            
+            TFile *ContoursFile = new TFile(Form("$ALICE_ROOT/PWGCF/FLOW/database/PIDCutContours_%.f-%.f.root",centrMin[icentr],centrMax[icentr]));
 
             Contourlist = new TDirectory;
             Contourlist=(TDirectory*)ContoursFile->Get("Filterbit1");

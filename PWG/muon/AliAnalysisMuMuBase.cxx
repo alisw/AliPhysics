@@ -57,11 +57,6 @@
 
 ClassImp(AliAnalysisMuMuBase)
 
-namespace
-{
-    const char* MCINPUTPREFIX = "MCINPUT";
-};
-
 //_____________________________________________________________________________
 AliAnalysisMuMuBase::AliAnalysisMuMuBase()
 :
@@ -101,7 +96,7 @@ AliAnalysisMuMuBase::CreateEventHistos(UInt_t dataType,
   }
   if ( ( dataType & kHistoForMCInput ) && HasMC() )
   {
-    pathNames.Add(new TObjString(Form("/%s/%s",MCINPUTPREFIX,what)));
+    pathNames.Add(new TObjString(Form("/%s/%s",MCInputPrefix(),what)));
   }
   
   CreateHistos(pathNames,hname,htitle,nbinsx,xmin,xmax,nbinsy,ymin,ymax);
@@ -132,7 +127,7 @@ AliAnalysisMuMuBase::CreateEventHistos(UInt_t dataType,
   }
   if ( ( dataType & kHistoForMCInput ) && HasMC() )
   {
-    pathNames.Add(new TObjString(Form("/%s/%s/%s/%s",MCINPUTPREFIX,eventSelection,triggerClassName,centrality)));
+    pathNames.Add(new TObjString(Form("/%s/%s/%s/%s",MCInputPrefix(),eventSelection,triggerClassName,centrality)));
   }
   
   CreateHistos(pathNames,hname,htitle,nbinsx,xmin,xmax,nbinsy,ymin,ymax);
@@ -168,6 +163,7 @@ AliAnalysisMuMuBase::CreateHistos(const TObjArray& paths,
       AliDebug(1,Form("Created TProfile %s/%s",pathName->String().Data(),hname));
       h = new TProfile(hname,htitle,nbinsx,xmin,xmax,ymin,ymax);
       h->Sumw2();
+      static_cast<TProfile*>(h)->Approximate();
     }
     else
     {
@@ -188,7 +184,8 @@ AliAnalysisMuMuBase::CreateHistos(const TObjArray& paths,
 
 //_____________________________________________________________________________
 void
-AliAnalysisMuMuBase::CreateTrackHistos(const char* eventSelection,
+AliAnalysisMuMuBase::CreateTrackHistos(UInt_t dataType,
+                                       const char* eventSelection,
                                        const char* triggerClassName,
                                        const char* centrality,
                                        const char* hname, const char* htitle,
@@ -210,7 +207,15 @@ AliAnalysisMuMuBase::CreateTrackHistos(const char* eventSelection,
   
   while ( ( cutCombination = static_cast<AliAnalysisMuMuCutCombination*>(nextCutCombination())) )
   {
-    pathNames.Add(new TObjString(Form("/%s/%s/%s/%s",eventSelection,triggerClassName,centrality,cutCombination->GetName())));
+    if ( dataType & kHistoForData )
+    {
+      pathNames.Add(new TObjString(Form("/%s/%s/%s/%s",eventSelection,triggerClassName,centrality,cutCombination->GetName())));
+    }
+    if ( ( dataType & kHistoForMCInput ) && HasMC() )
+    {
+      pathNames.Add(new TObjString(Form("/%s/%s/%s/%s/%s",MCInputPrefix(),eventSelection,triggerClassName,centrality,cutCombination->GetName())));
+    }
+    
   }
   
   CreateHistos(pathNames,hname,htitle,nbinsx,xmin,xmax,nbinsy,ymin,ymax);
@@ -218,18 +223,18 @@ AliAnalysisMuMuBase::CreateTrackHistos(const char* eventSelection,
 
 //_____________________________________________________________________________
 void
-AliAnalysisMuMuBase::CreatePairHistos(const char* eventSelection,
-                                       const char* triggerClassName,
-                                       const char* centrality,
-                                       const char* hname, const char* htitle,
-                                       Int_t nbinsx, Double_t xmin, Double_t xmax,
-                                       Int_t nbinsy, Double_t ymin, Double_t ymax) const
+AliAnalysisMuMuBase::CreatePairHistos(UInt_t dataType,
+                                      const char* eventSelection,
+                                      const char* triggerClassName,
+                                      const char* centrality,
+                                      const char* hname, const char* htitle,
+                                      Int_t nbinsx, Double_t xmin, Double_t xmax,
+                                      Int_t nbinsy, Double_t ymin, Double_t ymax) const
 {
   /// Create n copies of an histogram (with name=hname, title=htitle, etc..)
   /// where n = # of track *pair* cut combinations defined
   /// see also CreateHistos
-  
-  
+
   if ( IsHistogramDisabled(hname) ) return;
   
   TObjArray pathNames;
@@ -240,7 +245,14 @@ AliAnalysisMuMuBase::CreatePairHistos(const char* eventSelection,
   
   while ( ( cutCombination = static_cast<AliAnalysisMuMuCutCombination*>(nextCutCombination())) )
   {
-    pathNames.Add(new TObjString(Form("/%s/%s/%s/%s",eventSelection,triggerClassName,centrality,cutCombination->GetName())));
+    if ( dataType & kHistoForData )
+    {
+      pathNames.Add(new TObjString(Form("/%s/%s/%s/%s",eventSelection,triggerClassName,centrality,cutCombination->GetName())));
+    }
+    if ( ( dataType & kHistoForMCInput ) && HasMC() )
+    {
+      pathNames.Add(new TObjString(Form("/%s/%s/%s/%s/%s",MCInputPrefix(),eventSelection,triggerClassName,centrality,cutCombination->GetName())));
+    }
   }
   
   CreateHistos(pathNames,hname,htitle,nbinsx,xmin,xmax,nbinsy,ymin,ymax);
@@ -313,6 +325,48 @@ TH1* AliAnalysisMuMuBase::Histo(const char* eventSelection,
 }
 
 //_____________________________________________________________________________
+TProfile* AliAnalysisMuMuBase::Prof(const char* eventSelection,
+                                    const char* histoname)
+{
+	/// Get one histo profile back
+	
+	return fHistogramCollection ? static_cast<TProfile*>(fHistogramCollection->GetObject(Form("/%s",eventSelection),histoname)) : 0x0;
+}
+
+//_____________________________________________________________________________
+TProfile* AliAnalysisMuMuBase::Prof(const char* eventSelection,
+                                    const char* triggerClassName,
+                                    const char* histoname)
+{
+	/// Get one histo profile back
+	
+	return fHistogramCollection ? static_cast<TProfile*>(fHistogramCollection->GetObject(Form("/%s/%s",eventSelection,triggerClassName),histoname)) : 0x0;
+}
+
+//_____________________________________________________________________________
+TProfile* AliAnalysisMuMuBase::Prof(const char* eventSelection,
+                                    const char* triggerClassName,
+                                    const char* cent,
+                                    const char* histoname)
+{
+	/// Get one histo profile back
+	
+	return fHistogramCollection ? static_cast<TProfile*>(fHistogramCollection->GetObject(Form("/%s/%s/%s",eventSelection,triggerClassName,cent),histoname)) : 0x0;
+}
+
+//_____________________________________________________________________________
+TProfile* AliAnalysisMuMuBase::Prof(const char* eventSelection,
+                                    const char* triggerClassName,
+                                    const char* cent,
+                                    const char* what,
+                                    const char* histoname)
+{
+	/// Get one histo profile back
+	
+	return fHistogramCollection ? static_cast<TProfile*>(fHistogramCollection->GetObject(Form("/%s/%s/%s/%s",eventSelection,triggerClassName,cent,what),histoname)) : 0x0;
+}
+
+//_____________________________________________________________________________
 void AliAnalysisMuMuBase::Init(AliCounterCollection& cc,
                                AliMergeableCollection& hc,
                                const AliAnalysisMuMuBinning& binning,
@@ -369,14 +423,14 @@ Bool_t AliAnalysisMuMuBase::IsHistogrammingDisabled() const
 TH1* AliAnalysisMuMuBase::MCHisto(const char* eventSelection, const char* triggerClassName, const char* histoname)
 {
   /// Get one histo back
-  return fHistogramCollection ? fHistogramCollection->Histo(Form("/%s/%s/%s/%s",MCINPUTPREFIX,eventSelection,triggerClassName,histoname)) : 0x0;
+  return fHistogramCollection ? fHistogramCollection->Histo(Form("/%s/%s/%s/%s",MCInputPrefix(),eventSelection,triggerClassName,histoname)) : 0x0;
 }
 
 //_____________________________________________________________________________
 TH1* AliAnalysisMuMuBase::MCHisto(const char* eventSelection, const char* histoname)
 {
   /// Get one histo back
-  return fHistogramCollection ? fHistogramCollection->Histo(Form("/%s/%s/%s",MCINPUTPREFIX,eventSelection,histoname)) : 0x0;
+  return fHistogramCollection ? fHistogramCollection->Histo(Form("/%s/%s/%s",MCInputPrefix(),eventSelection,histoname)) : 0x0;
 }
 
 //_____________________________________________________________________________
@@ -386,7 +440,7 @@ TH1* AliAnalysisMuMuBase::MCHisto(const char* eventSelection,
                                   const char* histoname)
 {
   /// Get one histo back
-  return fHistogramCollection ? fHistogramCollection->Histo(Form("/%s/%s/%s/%s",MCINPUTPREFIX,eventSelection,triggerClassName,cent),histoname) : 0x0;
+  return fHistogramCollection ? fHistogramCollection->Histo(Form("/%s/%s/%s/%s",MCInputPrefix(),eventSelection,triggerClassName,cent),histoname) : 0x0;
 }
 
 //_____________________________________________________________________________
@@ -398,7 +452,49 @@ TH1* AliAnalysisMuMuBase::MCHisto(const char* eventSelection,
 {
   /// Get one histo back
   
-  return fHistogramCollection ? fHistogramCollection->Histo(Form("/%s/%s/%s/%s/%s",MCINPUTPREFIX,eventSelection,triggerClassName,cent,what),histoname) : 0x0;
+  return fHistogramCollection ? fHistogramCollection->Histo(Form("/%s/%s/%s/%s/%s",MCInputPrefix(),eventSelection,triggerClassName,cent,what),histoname) : 0x0;
+}
+
+//_____________________________________________________________________________
+TProfile* AliAnalysisMuMuBase::MCProf(const char* eventSelection,
+                                    const char* histoname)
+{
+	/// Get one histo profile back
+	
+	return fHistogramCollection ? static_cast<TProfile*>(fHistogramCollection->GetObject(Form("/%s/%s",MCInputPrefix(),eventSelection),histoname)) : 0x0;
+}
+
+//_____________________________________________________________________________
+TProfile* AliAnalysisMuMuBase::MCProf(const char* eventSelection,
+                                    const char* triggerClassName,
+                                    const char* histoname)
+{
+	/// Get one histo profile back
+	
+	return fHistogramCollection ? static_cast<TProfile*>(fHistogramCollection->GetObject(Form("/%s/%s/%s",MCInputPrefix(),eventSelection,triggerClassName),histoname)) : 0x0;
+}
+
+//_____________________________________________________________________________
+TProfile* AliAnalysisMuMuBase::MCProf(const char* eventSelection,
+                                    const char* triggerClassName,
+                                    const char* cent,
+                                    const char* histoname)
+{
+	/// Get one histo profile back
+	
+	return fHistogramCollection ? static_cast<TProfile*>(fHistogramCollection->GetObject(Form("/%s/%s/%s/%s",MCInputPrefix(),eventSelection,triggerClassName,cent),histoname)) : 0x0;
+}
+
+//_____________________________________________________________________________
+TProfile* AliAnalysisMuMuBase::MCProf(const char* eventSelection,
+                                    const char* triggerClassName,
+                                    const char* cent,
+                                    const char* what,
+                                    const char* histoname)
+{
+	/// Get one histo profile back
+	
+	return fHistogramCollection ? static_cast<TProfile*>(fHistogramCollection->GetObject(Form("/%s/%s/%s/%s/%s",MCInputPrefix(),eventSelection,triggerClassName,cent,what),histoname)) : 0x0;
 }
 
 //_____________________________________________________________________________
@@ -413,4 +509,3 @@ void AliAnalysisMuMuBase::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
   fEvent = event;
   fMCEvent = mcEvent;
 }
-

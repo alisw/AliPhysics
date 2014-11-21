@@ -1,17 +1,19 @@
 #ifndef ALIANALYSISMUMUSINGLE_H
 #define ALIANALYSISMUMUSINGLE_H
 
+#include "AliAnalysisMuMuBase.h"
+
 /**
  *
  * \class AliAnalysisMuMuSingle
- * 
+ *
  * \brief Histogramming of single muon tracks.
  *
  * \author L. Aphecetche (Subatech)
  *
  */
 
-#include "AliAnalysisMuMuBase.h"
+#include "AliAnalysisMuonUtility.h"
 
 class AliMuonTrackCuts;
 class TH2F;
@@ -32,12 +34,24 @@ public:
   
   void SetMuonTrackCuts(const AliMuonTrackCuts& trackCuts);
   
+  Bool_t IsPDCAOK(const AliVParticle& part);
+  void NameOfIsPDCAOK(TString& name) const { name = "PDCA";}
+  
+  Bool_t IsMatchingTriggerAnyPt(const AliVParticle& part) const { return ( AliAnalysisMuonUtility::GetMatchTrigger(&part) >= 1 ); }
+  void NameOfIsMatchingTriggerAnyPt(TString& name) const { name = "MATCHANY";}
+  
+  Bool_t IsMatchingTriggerLowPt(const AliVParticle& part) const { return ( AliAnalysisMuonUtility::GetMatchTrigger(&part) >= 2 ); }
+  void NameOfIsMatchingTriggerLowPt(TString& name) const { name = "MATCHLOW";}
+  
+  Bool_t IsMatchingTriggerHighPt(const AliVParticle& part) const { return ( AliAnalysisMuonUtility::GetMatchTrigger(&part) >= 3 ); }
+  void NameOfIsMatchingTriggerHighPt(TString& name) const { name = "MATCHHIGH";}
+  
   Bool_t IsRabsOK(const AliVParticle& part) const;
   void NameOfIsRabsOK(TString& name) const { name = "RABS"; }
 
-  Bool_t IsEtaInRange(const AliVParticle& part, Double_t& etamin, Double_t& etamax) const;
-  void NameOfIsEtaInRange(TString& name, Double_t& etamin, Double_t& etamax) const
-  { name.Form("ETA%3.1f-%3.1f",etamin,etamax); }
+  Bool_t IsEtaInRange(const AliVParticle& part) const;
+  void NameOfIsEtaInRange(TString& name) const
+  { name = "ETA"; }
 
   void SetRun(const AliInputEventHandler* eventHandler);
 

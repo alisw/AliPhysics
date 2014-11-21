@@ -592,6 +592,7 @@ AliForwardUtil::MakeFullIpZAxis(Int_t nCenter)
   TAxis* a = new TAxis(bins.GetSize()-1,bins.GetArray());
   return a;
 }
+//____________________________________________________________________
 void
 AliForwardUtil::MakeFullIpZAxis(Int_t nCenter, TArrayD& bins)
 {
@@ -628,6 +629,7 @@ AliForwardUtil::MakeFullIpZAxis(Int_t nCenter, TArrayD& bins)
     bins[mBin+o] = +v;
   }
 }
+//____________________________________________________________________
 void 
 AliForwardUtil::MakeLogScale(Int_t    nBins, 
 			     Int_t    minOrder, 
@@ -636,9 +638,10 @@ AliForwardUtil::MakeLogScale(Int_t    nBins,
 {
   Double_t dO = Double_t(maxOrder-minOrder) / nBins; 
   bins.Set(nBins+1);
-  for (Int_t i = 0; i <= nBins; i++) bins[i] = TMath::Power(10, i * dO);
+  for (Int_t i = 0; i <= nBins; i++) bins[i] = TMath::Power(10, i * dO+minOrder);
 }
 
+//____________________________________________________________________
 void 
 AliForwardUtil::PrintTask(const TObject& o)
 {
@@ -652,6 +655,7 @@ AliForwardUtil::PrintTask(const TObject& o)
   std::cout << "--- " << t << " " << std::setfill('-') 
 	    << std::setw(maxN-ind-5-t.Length()) << "-" << std::endl;
 }
+//____________________________________________________________________
 void
 AliForwardUtil::PrintName(const char* name)
 {
@@ -673,6 +677,7 @@ AliForwardUtil::PrintName(const char* name)
   std::cout << std::setfill(' ') << std::left << std::setw(width) 
 	    << n << std::right << std::flush;
 }
+//____________________________________________________________________
 void
 AliForwardUtil::PrintField(const char* name, const char* value, ...)
 {

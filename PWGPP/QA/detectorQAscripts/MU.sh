@@ -10,13 +10,17 @@ runLevelQA()
 {
   #full path of QAresults.root is provided
   local qaFile=$1
+  local isMC=0
+  if [ "$dataType" = "sim" ]; then
+    isMC=1
+  fi
 
   # This is used only to extract the muon information
   ln -s $ALICE_ROOT/PWGPP/MUON/lite/LoadLibsForMuonQA.C
   ln -s $ALICE_ROOT/PWGPP/MUON/lite/MakeTrend.C
   aliroot -b -l <<EOF
 .x LoadLibsForMuonQA.C+("maketrend")
-.x MakeTrend.C("${qaFile}",${runNumber})
+.x MakeTrend.C("${qaFile}",${runNumber},$isMC)
 .q
 EOF
   rm LoadLibsForMuonQA.C
@@ -91,10 +95,15 @@ periodLevelQA()
     fi
   done
 
+  local usePhysicsSelection=1
+  if [ "$dataType" = "sim" ]; then
+    usePhysicsSelection=0
+  fi
+
   ln -s $ALICE_ROOT/PWGPP/MUON/lite/PlotMuonQA.C
 aliroot -b <<EOF
 .x LoadLibsForMuonQA.C+("tracktrend");
-.x PlotMuonQA.C+(".","${fileList}",${triggerList},kTRUE,"muon_tracker","${mergedQAname}");
+.x PlotMuonQA.C+(".","${fileList}",${triggerList},${usePhysicsSelection},"muon_tracker","${mergedQAname}");
 .q
 EOF
   rm PlotMuonQA.C

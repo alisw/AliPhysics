@@ -85,7 +85,7 @@ fAOD(0),  fCollision("PbPb2010"), fIsMC(kFALSE), fUsePID(kFALSE), fCentMin(0.), 
 
   fMinPtDaughter(0.160), fMaxEtaDaughter(0.8), fMaxDCADaughter(1.0), fUseEtaCut(kFALSE), fYMax(0.7), fDCAToPrimVtx(0.1), fMinCPA(0.998), fNSigma(3.0), fDaugNClsTPC(70.), fMinCtau(0.), fMaxCtau(3.), fIdTrigger(-1), fIsV0LP(0), fPtV0LP(0.), fIsSndCheck(0),
 
-  fTPCRadius(125.), fDiffTrigDaugFracTPCSharedCls(0.06),
+fTPCRadius(125.), fFracTPCcls(1.0), fDiffTrigDaugFracTPCSharedCls(0.06),
 
 fOutput(0), fOutputQA(0), fOutputME(0), fMEList(0x0), fTriggerParticles(0x0), fTriggerPartMC(0x0), fAssocParticles(0x0), fAssocPartMC(0x0), fEvents(0), fEvtPerCent(0), fCentrality(0),  fCentrality2(0), fCentralityTrig(0), fPrimayVtxGlobalvsSPD(0), fPrimaryVertexX(0), fPrimaryVertexY(0), fPrimaryVertexZ(0), fChargedMultiplicity(0),
 
@@ -624,7 +624,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     Int_t binsEff6[5] = {nbins,nbins,20,170,170};        Double_t xminEff6[5] = {0.398,pMin,-1.0,0.5,0.5};      Double_t xmaxEff6[5] = {0.598,pMax,1.0,170.5,170};   // No. TPC Cls
     Int_t binsEffKsh[5] = {nbins,nbins,20,50,50};        Double_t xminEffKsh[5] = {0.398,pMin,-1.0,0.,0.};      Double_t xmaxEffKsh[5] = {0.598,pMax,1.0,1.0,1.0};   //shared TPC cls
     Int_t binsEffKPtDaug[5] = {nbins,nbins,20,100,100};  Double_t xminEffKPtDaug[5] = {0.398,pMin,-1.0,0.,0.};  Double_t xmaxEffKPtDaug[5] = {0.598,pMax,1.0,10.,10.};     //PtDaug
-    Int_t binsEffKCtau[4] = {nbins,nbins,20,60};         Double_t xminEffKCtau[4] = {0.398,pMin,-1.0,0.};       Double_t xmaxEffKCtau[4] = {0.598,pMax,1.0,30.0};          //CTau
+    Int_t binsEffKCtau[4] = {nbins,nbins,20,100};         Double_t xminEffKCtau[4] = {0.398,pMin,-1.0,0.};       Double_t xmaxEffKCtau[4] = {0.598,pMax,1.0,50.0};          //CTau
     Int_t binsEffKFidVol[4] = {nbins,nbins,20,100};      Double_t xminEffKFidVol[4] = {0.398,pMin,-1.0,0.};     Double_t xmaxEffKFidVol[4] = {0.598,pMax,1.0,100.};        //Fiducial volume
 
     for(Int_t i=0; i<kNCent; i++){
@@ -815,7 +815,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     Int_t binsEff12[5] = {nbins,nbins,20,170,170}; Double_t xminEff12[5] = {1.065,pMin,-1.0,0.5,0.5};  Double_t xmaxEff12[5] = {1.165,pMax,1.0,170.5,170.5};   // No. TPC Cls
     Int_t binsEffLsh[5] = {nbins,nbins,20,50,50};  Double_t xminEffLsh[5] = {1.065,pMin,-1.0,0.,0.};   Double_t xmaxEffLsh[5] = {1.165,pMax,1.0,1.0,1.0};      // shared TPC cls
     Int_t binsEffLPtDaug[5] = {nbins,nbins,20,100,100};  Double_t xminEffLPtDaug[5] = {1.065,pMin,-1.0,0.,0.};  Double_t xmaxEffLPtDaug[5] = {1.165,pMax,1.0,10.,10.};     //PtDaug
-    Int_t binsEffLCtau[4]   = {nbins,nbins,20,60};       Double_t xminEffLCtau[4]   = {1.065,pMin,-1.0,0.};     Double_t xmaxEffLCtau[4]   = {1.165,pMax,1.0,30.0};         //CTau
+    Int_t binsEffLCtau[4]   = {nbins,nbins,20,100};       Double_t xminEffLCtau[4]   = {1.065,pMin,-1.0,0.};     Double_t xmaxEffLCtau[4]   = {1.165,pMax,1.0,50.0};         //CTau
     Int_t binsEffLFidVol[4] = {nbins,nbins,20,100};      Double_t xminEffLFidVol[4] = {1.065,pMin,-1.0,0.};     Double_t xmaxEffLFidVol[4] = {1.165,pMax,1.0,100.};        //Fiducial volume
 
 
@@ -1014,7 +1014,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     Int_t binsEff18[5] = {nbins,nbins,20,170,170};  Double_t xminEff18[5] = {1.065,pMin,-1.0,0.5,0.5};  Double_t xmaxEff18[5] = {1.165,pMax,1.0,170.5,170.5};  // No. TPC Cls
     Int_t binsEffALsh[5] = {nbins,nbins,20,50,50};  Double_t xminEffALsh[5] = {1.065,pMin,-1.0,0.,0.};  Double_t xmaxEffALsh[5] = {1.165,pMax,1.0,1.0,1.0};    // shared TPC cls
     Int_t binsEffALPtDaug[5] = {nbins,nbins,20,100,100};  Double_t xminEffALPtDaug[5] = {1.065,pMin,-1.0,0.,0.};  Double_t xmaxEffALPtDaug[5] = {1.065,pMax,1.0,10.,10.};     //PtDaug
-    Int_t binsEffALCtau[4]   = {nbins,nbins,20,60};       Double_t xminEffALCtau[4]   = {1.065,pMin,-1.0,0.};     Double_t xmaxEffALCtau[4]   = {1.065,pMax,1.0,30.0};         //CTau 
+    Int_t binsEffALCtau[4]   = {nbins,nbins,20,100};       Double_t xminEffALCtau[4]   = {1.065,pMin,-1.0,0.};     Double_t xmaxEffALCtau[4]   = {1.065,pMax,1.0,50.0};         //CTau 
     Int_t binsEffALFidVol[4] = {nbins,nbins,20,100};      Double_t xminEffALFidVol[4] = {1.065,pMin,-1.0,0.};     Double_t xmaxEffALFidVol[4] = {1.065,pMax,1.0,100.};        //Fiducial volume
 
     for(Int_t i=0; i<kNCent; i++){
@@ -2004,11 +2004,11 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     // ctau:
     //     --- signal ---
     fK0sCTau = 
-      new TH2F("fK0sCTau","K^{0}_{S}: #it{c}#tau;c#tau (cm);#it{p}_{T} (GeV/#it{c})",150,0.,30,nbins,pMin,pMax); 
+      new TH2F("fK0sCTau","K^{0}_{S}: #it{c}#tau;c#tau (cm);#it{p}_{T} (GeV/#it{c})",100,0.,50.,nbins,pMin,pMax); 
     fOutputQA->Add(fK0sCTau);
     //     --- background ---
     fK0sBckgCTau = 
-      new TH2F("fK0sBckgCTau","K^{0}_{S} Bckg: #it{c}#tau;c#tau (cm);#it{p}_{T} (GeV/#it{c})",150,0.,30,nbins,pMin,pMax); 
+      new TH2F("fK0sBckgCTau","K^{0}_{S} Bckg: #it{c}#tau;c#tau (cm);#it{p}_{T} (GeV/#it{c})",100,0.,50,nbins,pMin,pMax); 
     fOutputQA->Add(fK0sBckgCTau);
 
 
@@ -2182,11 +2182,11 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     // ctau:
     //     --- signal ---
     fLambdaCTau = 
-      new TH2F("fLambdaCTau","#Lambda: #it{c}#tau;c#tau (cm);#it{p}_{T} (GeV/#it{c})",150,0.,30,nbins,pMin,pMax); 
+      new TH2F("fLambdaCTau","#Lambda: #it{c}#tau;c#tau (cm);#it{p}_{T} (GeV/#it{c})",100,0.,50.,nbins,pMin,pMax); 
     fOutputQA->Add(fLambdaCTau);
     //     --- background ---
     fLambdaBckgCTau = 
-      new TH2F("fLambdaBckgCTau","#Lambda Bckg: #it{c}#tau;c#tau (cm);#it{p}_{T} (GeV/#it{c})",150,0.,30,nbins,pMin,pMax); 
+      new TH2F("fLambdaBckgCTau","#Lambda Bckg: #it{c}#tau;c#tau (cm);#it{p}_{T} (GeV/#it{c})",100,0.,50.,nbins,pMin,pMax); 
     fOutputQA->Add(fLambdaBckgCTau);
 
 
@@ -2357,11 +2357,11 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
   // ctau:
     //     --- signal ---
     fAntiLambdaCTau = 
-      new TH2F("fAntiLambdaCTau","#bar{#Lambda}: #it{c}#tau;c#tau (cm);#it{p}_{T} (GeV/#it{c})",150,0.,30,nbins,pMin,pMax); 
+      new TH2F("fAntiLambdaCTau","#bar{#Lambda}: #it{c}#tau;c#tau (cm);#it{p}_{T} (GeV/#it{c})",100,0.,50.,nbins,pMin,pMax); 
     fOutputQA->Add(fAntiLambdaCTau);
     //     --- background ---
     fAntiLambdaBckgCTau = 
-      new TH2F("fAntiLambdaBckgCTau","#bar{#Lambda} Bckg: #it{c}#tau;c#tau (cm);#it{p}_{T} (GeV/#it{c})",150,0.,30,nbins,pMin,pMax); 
+      new TH2F("fAntiLambdaBckgCTau","#bar{#Lambda} Bckg: #it{c}#tau;c#tau (cm);#it{p}_{T} (GeV/#it{c})",100,0.,50.,nbins,pMin,pMax); 
     fOutputQA->Add(fAntiLambdaBckgCTau);
 
 
@@ -4876,7 +4876,6 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
   Float_t dlK=-100., dlL=-100.;
   Float_t dPhi=-100., dEta=-100., radio=-100.;
   Double_t xDCA[2], cov[3];
-  Bool_t   proptodca;
 
   // variables for track splititing checks:
   Float_t  posdPhiS = -9999., posdEtaS = -9999., negdPhiS = -9999., negdEtaS = -9999.; 
@@ -4911,7 +4910,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
     const AliAODTrack *tTrig = (AliAODTrack*)fAOD->GetTrack(trig->ID());
     ptTrig = tTrig->Pt();  pxTrig = tTrig->Px();  pyTrig = tTrig->Py(); 
  
-    proptodca = ((AliAODTrack*)fAOD->GetTrack(trig->ID()))->PropagateToDCA(vtx,bSign,100.0,xDCA,cov);
+    Bool_t proptodca = ((AliAODTrack*)fAOD->GetTrack(trig->ID()))->PropagateToDCA(vtx,bSign,100.0,xDCA,cov);
     xDCA[0] = TMath::Abs(xDCA[0]);   xDCA[1] = TMath::Abs(xDCA[1]);
 
     fTriggerDCA->Fill(xDCA[0],1.);

@@ -47,7 +47,7 @@ protected:
     AliAnalysisManager::SetCommonFileName("forward_multdists.root");
 
     // --- Load libraries/pars ---------------------------------------
-    fHelper->LoadLibrary("PWGLFforward2");
+    fRailway->LoadLibrary("PWGLFforward2");
     
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
@@ -65,7 +65,7 @@ protected:
     args.Form("\"%s\",%f,%f,%d,%d",
 	      trig.Data(), vzMin, vzMax, phiAcc, aSymm);
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskForwardMultDists.C(%s);", args.Data()));
+    CoupleCar("AddTaskForwardMultDists.C(%s)", args);
     AddMonitor("ForwardMultSums");
   }
   //__________________________________________________________________
@@ -73,7 +73,7 @@ protected:
    * Do not the centrality selection
    */
   //__________________________________________________________________
-  void CreateCentralitySelection(Bool_t, AliAnalysisManager*) {}
+  void CreateCentralitySelection(Bool_t) {}
   /** 
    * Do not create MC input handler 
    * 

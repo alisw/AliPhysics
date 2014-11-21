@@ -136,6 +136,13 @@
 #pragma link C++ class AliFMDMCSharingFilter+;
 #pragma link C++ class AliFMDMCTrackDensity+;
 
+// FMD MC investigations 
+#pragma link C++ class AliFMDMCTrackELoss+;
+#pragma link C++ class AliFMDMCTrackELoss::Hit+;
+#pragma link C++ class AliFMDMCTrackInspector+;
+#pragma link C++ class AliFMDMCTrackInspector::RingHistos+;
+#pragma link C++ class AliFMDMCTrackInspectorTask+;
+
 // Forward (FMD) tasks 
 #pragma link C++ class AliBaseESDTask+;
 #pragma link C++ class AliBaseAODTask+;

@@ -8,8 +8,8 @@
  * An AliAnalysisMuMuCutElement is an interface/proxy to another method (see ctor)
  *
  * A cut has a type (event cut, track cut, etc..., see ECutType and the IsXXX methods),
- * a name, and offers a Pass method. A cut can be of one type only. 
- * Generally a real cut is made of several cut elements, 
+ * a name, and offers a Pass method. A cut can be of one type only.
+ * Generally a real cut is made of several cut elements,
  * see \ref AliAnalysisMuMuCutCombination
  *
  *  \author L. Aphecetche (Subatech)
@@ -182,13 +182,13 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
     * performed below to ensure that are far from being bullet-proof though... You've been
     * warned !
     *
-    * For event cutters (3 or them instead of just one because of the, imo, 
+    * For event cutters (3 or them instead of just one because of the, imo,
     * improper event/eventhandler interfaces we currently have in AliRoot)
     *
     * Bool_t XXXX(const AliVEvent&, ...)
     * Bool_t XXXX(const AliVEventHandler&, ...)
     * Bool_t XXXX(const AliInputEventHandler&, ...)
-    * 
+    *
     * For track cutters :
     *
     * Bool_t XXXX(const AliVParticle&, ...)
@@ -203,7 +203,7 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
     *
     * where ... stands for optional arguments (different from VEvent VParticle, etc...), 
     * which can have default values
-    * 
+    *
     * Note that Root reflexion does not allow (yet?) to check for constness of the arguments,
     * so AliVEvent& and const AliVEvent& will be the same.
     *
@@ -219,12 +219,11 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
   delete tmp;
   
   Int_t nVEvent = CountOccurences(fCutMethodPrototype,"AliVEvent");
-  Int_t nVEventHandler = CountOccurences(fCutMethodPrototype,"AliVEventHandler");
-  Int_t nInputHandler = CountOccurences(fCutMethodPrototype,"AliInputEventHandler");
+  Int_t nVEventHandler = CountOccurences(fCutMethodPrototype,"AliVEventHandler") + CountOccurences(fCutMethodPrototype,"AliInputEventHandler");
   Int_t nparticles = CountOccurences(fCutMethodPrototype,"AliVParticle");
   Int_t nstrings = CountOccurences(fCutMethodPrototype,"TString");
   
-  if ( expectedType == kEvent && ( nVEvent == 0 && nVEventHandler == 0 && nInputHandler == 0 ) )
+  if ( expectedType == kEvent && ( nVEvent == 0 && nVEventHandler == 0 ) )
   {
     AliError(Form("Cut not of the expected %s type : did not find required prototype arguments AliVEvent, AliVEventHandler or AliInputEventHandler",CutTypeName(kEvent)));
     return;
@@ -276,7 +275,7 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
     fIsEventCutter=kTRUE;
     ++nMainPar;
   }
-  if ( scutMethodPrototype.Contains("AliInputEventHandler") )
+  if ( scutMethodPrototype.Contains("AliInputEventHandler") || scutMethodPrototype.Contains("AliVEventHandler") )
   {
     fIsEventHandlerCutter=kTRUE;
     ++nMainPar;
@@ -327,6 +326,7 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
     scutMethodPrototype.ReplaceAll("const AliVEvent&","");
     scutMethodPrototype.ReplaceAll("const AliVParticle&","");
     scutMethodPrototype.ReplaceAll("const AliInputEventHandler&","");
+    scutMethodPrototype.ReplaceAll("const AliVEventHandler&","");
     
     prototype += scutMethodPrototype;
     

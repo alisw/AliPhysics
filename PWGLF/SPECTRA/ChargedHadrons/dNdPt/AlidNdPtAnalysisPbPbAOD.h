@@ -232,6 +232,8 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 
 	// cross check for event plane determination
 	TH2F		*fDeltaPhiCent; // DeltaPhi:Cent - DeltaPhi in the range from -pi to pi
+	
+	THnSparseF	*fCrossCheckFilterBitPhiCent; // FilterBit:Phi:Centrality
 
 	// global variables
     Bool_t fIsMonteCarlo;
@@ -297,7 +299,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AlidNdPtAnalysisPbPbAOD(const AlidNdPtAnalysisPbPbAOD&); // not implemented
     AlidNdPtAnalysisPbPbAOD& operator=(const AlidNdPtAnalysisPbPbAOD&); // not implemented  
     
-    ClassDef(AlidNdPtAnalysisPbPbAOD,12); // has to be at least 1, otherwise not streamable...
+    ClassDef(AlidNdPtAnalysisPbPbAOD,13); // has to be at least 1, otherwise not streamable...
 };
 
 #endif

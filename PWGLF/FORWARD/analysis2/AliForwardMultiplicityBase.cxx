@@ -337,11 +337,12 @@ AliForwardMultiplicityBase::Finalize()
   GetDensityCalculator().Terminate(list,output,Int_t(nTrVtx));
   GetCorrections()	.Terminate(list,output,Int_t(nTrVtx));
 
-  TProfile* timing = static_cast<TProfile*>(list->FindObject("timing"));
-  if (timing) { 
+  TProfile* timing  = static_cast<TProfile*>(list->FindObject("timing"));
+  Int_t     nTiming = (timing ? timing->GetBinContent(timing->GetNbinsX()) : 0);
+  if (timing && nTiming > 0) { 
     TProfile* p = static_cast<TProfile*>(timing->Clone());
     p->SetDirectory(0);
-    p->Scale(100. / p->GetBinContent(p->GetNbinsX()));
+    p->Scale(100. / nTiming);
     p->SetYTitle("#LTt_{part}#GT/#LTt_{total}#GT [%]");
     p->SetTitle("Relative timing of task");
     output->Add(p);

@@ -624,7 +624,7 @@ void AliJetContainer::SetClassName(const char *clname)
 }
 
 //________________________________________________________________________
-Double_t AliJetContainer::GetFractionSharedPt(AliEmcalJet *jet1) const
+Double_t AliJetContainer::GetFractionSharedPt(const AliEmcalJet *jet1) const
 {
   //
   // Get fraction of shared pT between matched full and charged jet

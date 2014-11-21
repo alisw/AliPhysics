@@ -401,7 +401,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
               // cqinvinnertpc[aniter]->SetRadius(1.2);
               // anetaphitpc[aniter]->AddCorrFctn(cqinvinnertpc[aniter]);
 
-              cq3dlcmskttpc[aniter] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%i", chrgs[ichg], imult),100,0.5);
+              cq3dlcmskttpc[aniter] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%i", chrgs[ichg], imult),160,0.8);
               cq3dlcmskttpc[aniter]->SetUseLCMS(runshlcms);
               anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[aniter]);
 

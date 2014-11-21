@@ -56,7 +56,7 @@ AliAnalysisTaskEmcalJetSample* AddTaskEmcalJetSample(
   jetTask->SetNCentBins(nCentBins);
 
   AliParticleContainer *trackCont  = jetTask->AddParticleContainer(ntracks);
-  trackCont->SetClassName("AliVTrack");
+  if(trackCont) trackCont->SetClassName("AliVTrack");
   AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);
 
   TString strType(type);
