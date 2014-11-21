@@ -40,14 +40,21 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+# Setting the dependencies
+set(ROOT_DEPENDENCIES Core)
+set(ALIROOT_DEPENDENCIES STEERBase ESD RAWDatabase RAWDatarec)
+
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ESD RAWDatabase RAWDatarec STEERBase Core)
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
-# Add a library to the project using the specified source files
-add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} ESD RAWDatabase RAWDatarec STEERBase Core)
+# Create an object to be reused in case of static libraries 
+# Otherwise the sources will be compiled twice
+add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
+# Add a library to the project using the object
+add_library(${MODULE} SHARED $<TARGET_OBJECTS:RAWDatarecOnline-object>)
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
 # Compile and link flags
 set(MODULE_COMPILE_FLAGS)
@@ -59,7 +66,7 @@ if(DATE_FOUND)
 endif(DATE_FOUND)
 
 # Additional compilation and linking flags
-set(MODULE_COMPILE_FLAGS "-O -g ${MODULE_COMPILE_FLAGS}")
+set(MODULE_COMPILE_FLAGS "-O -g -fPIC ${MODULE_COMPILE_FLAGS}")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
@@ -67,7 +74,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Setting target compile and linking flags
-set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
 set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
 
 # Installation
@@ -76,3 +83,19 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+
+# Static version if DA enabled
+if(ALIROOT_STATIC)
+    add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:RAWDatarecOnline-object>)
+    set_target_properties(${MODULE}-static PROPERTIES OUTPUT_NAME ${MODULE})
+
+    # list of shared dependencies / the name of the variable containing the list of static ones
+    generate_static_dependencies("${ALIROOT_DEPENDENCIES}" "STATIC_ALIROOT_DEPENDENCIES")
+    target_link_libraries(${MODULE}-static ${STATIC_ALIROOT_DEPENDENCIES} Root)
+    set_target_properties(${MODULE}-static PROPERTIES LINK_FLAGS "-Wl,--whole-archive")
+
+    # Installation
+    install(TARGETS ${MODULE}-static
+            ARCHIVE DESTINATION lib
+            LIBRARY DESTINATION lib)
+endif(ALIROOT_STATIC)

@@ -18,4 +18,8 @@ add_subdirectory(HMPIDbase)
 add_subdirectory(HMPIDrec)
 add_subdirectory(HMPIDsim)
 
+if(DA)
+    add_subdirectory(DA)
+endif(DA)
+
 message(STATUS "HMPID enabled")

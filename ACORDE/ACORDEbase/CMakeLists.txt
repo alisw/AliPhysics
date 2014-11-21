@@ -69,9 +69,6 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 add_library(${MODULE} SHARED $<TARGET_OBJECTS:ACORDEbase-object>)
 target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
-
-message(STATUS "STATIC ${STATIC_ALIROOT_DEPENDENCIES}")
-
 # Additional compilation flags for the object
 set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-fPIC -O -g")
 

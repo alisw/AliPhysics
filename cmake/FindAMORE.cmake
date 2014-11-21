@@ -46,7 +46,7 @@ if(AMORE_CONFIG)
     string(REPLACE "\n" " " AMORE_STATICLIBS ${AMORE_STATICLIBS})
 
     # Checking AMORE auxiliary libraries
-    execute_process(COMMAND ${AMORE_CONFIG} --auxlibs OUTPUT_VARIABLE AMORE_AUXLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
+    execute_process(COMMAND ${AMORE_CONFIG} --auxlibs-list OUTPUT_VARIABLE AMORE_AUXLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error retrieving AMORE auxiliary libraries : ${error}")
     endif(error)
