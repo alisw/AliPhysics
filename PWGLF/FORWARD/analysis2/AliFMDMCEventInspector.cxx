@@ -357,8 +357,9 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
   //   dynamic_cast<AliGenEposEventHeader*>(genHeader);
   
   // Check if this is a single diffractive event 
-  Bool_t   sd    = kFALSE;
+  Bool_t   sd    = false;
   Double_t phi   = -1111;
+  Bool_t   egSD  = false;
   npart          = 0;
   nbin           = 0;
   b              = -1;
@@ -378,14 +379,23 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
     
   if(pythiaHeader) {
     Int_t pythiaType = pythiaHeader->ProcessType();
-    // 92 and 93 are SD 
-    // 94 is DD 
-    if (pythiaType==92 || pythiaType==93) sd = kTRUE;
+    egSD = true; // We have SD flag in EG
+    if (pythiaType <= 100) {
+      // Pythia6 
+      // 92 and 93 are SD 
+      // 94 is DD 
+      if (pythiaType==92 || pythiaType==93) sd = true;
+    }
+    else {
+      // Pythia8 
+      if (pythiaType==103 || pythiaType==104) sd = true;
+    }
     b     = pythiaHeader->GetImpactParameter();
     npart = 2; // Always 2 protons
     nbin  = 1; // Always 1 binary collision 
   }
   if (b >= 0) { 
+#if 0
     if      (b <  3.5)  c = 2.5; //0-5%
     else if (b <  4.95) c = 7.5; //5-10%
     else if (b <  6.98) c = 15; //10-20%
@@ -393,9 +403,43 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
     else if (b <  9.88) c = 35; //30-40%
     else if (b < 11.04) c = 45; //40-50%
     else                c = 55; //50-60%
+#else 
+    // Updated 4th of November 2014 from 
+    // cern.ch/twiki/bin/view/ALICE/CentStudies#Tables_with_centrality_bins_AN1
+    Float_t np=0;
+    UInt_t  nc=0;
+    if      (0.00 >= b  && b < 1.57)  { c=0.5;  np=403.8; nc=1861; } 
+    else if (1.57 >= b  && b < 2.22)  { c=1.5;  np=393.6; nc=1766; } 
+    else if (2.22 >= b  && b < 2.71)  { c=2.5;  np=382.9; nc=1678; } 
+    else if (2.71 >= b  && b < 3.13)  { c=3.5;  np=372;   nc=1597; }  
+    else if (3.13 >= b  && b < 3.50)  { c=4.5;  np=361.1; nc=1520; } 
+    else if (3.50 >= b  && b < 4.94)  { c=7.5;  np=329.4; nc=1316; } 
+    else if (4.94 >= b  && b < 6.05)  { c=12.5; np=281.2; nc=1032; } 
+    else if (6.05 >= b  && b < 6.98)  { c=17.5; np=239;   nc=809.8; }
+    else if (6.98 >= b  && b < 7.81)  { c=22.5; np=202.1; nc=629.6; }
+    else if (7.81 >= b  && b < 8.55)  { c=27.5; np=169.5; nc=483.7; }
+    else if (8.55 >= b  && b < 9.23)  { c=32.5; np=141;   nc=366.7; }
+    else if (9.23 >= b  && b < 9.88)  { c=37.5; np=116;   nc=273.4; }
+    else if (9.88 >= b  && b < 10.47) { c=42.5; np=94.11; nc=199.4; } 
+    else if (10.47 >= b && b < 11.04) { c=47.5; np=75.3;  nc=143.1; } 
+    else if (11.04 >= b && b < 11.58) { c=52.5; np=59.24; nc=100.1; }
+    else if (11.58 >= b && b < 12.09) { c=57.5; np=45.58; nc=68.46; }
+    else if (12.09 >= b && b < 12.58) { c=62.5; np=34.33; nc=45.79; }
+    else if (12.58 >= b && b < 13.05) { c=67.5; np=25.21; nc=29.92; }
+    else if (13.05 >= b && b < 13.52) { c=72.5; np=17.96; nc=19.08; }
+    else if (13.52 >= b && b < 13.97) { c=77.5; np=12.58; nc=12.07; }
+    else if (13.97 >= b && b < 14.43) { c=82.5; np=8.812; nc=7.682; }
+    else if (14.43 >= b && b < 14.96) { c=87.5; np=6.158; nc=4.904; }
+    else if (14.96 >= b && b < 15.67) { c=92.5; np=4.376; nc=3.181; }
+    else if (15.67 >= b && b < 20.00) { c=97.5; np=3.064; nc=1.994; }
+    // Be careful to round off
+    if (npart <= 0) npart = Int_t(np+.5);
+    if (nbin  <= 0) nbin  = Int_t(nc+.5)/2;
+#endif
   }
   if(dpmHeader) { // Also an AliCollisionGeometry 
     Int_t processType = dpmHeader->ProcessType();
+    egSD = true; // We have SD flag in EG
     // 1 & 4 are ND 
     // 5 & 6 are SD 
     // 7 is DD 
@@ -406,6 +450,7 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
   }
   if (herwigHeader) {
     Int_t processType = herwigHeader->ProcessType();
+    egSD = true; // We have SD flag in EG
     // This is a guess 
     if (processType == 5 || processType == 6)  sd = kTRUE;
     npart = 2; // Always 2 protons
@@ -435,8 +480,9 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
     phiR = phi;
   }
 
-  // Do a check on particles
-  sd = IsSingleDiffractive(event->Stack());
+  // Do a check on particles - but only if the EG does not give it or
+  // the impact parameter is large enough
+  if (!egSD && (b < 0 || b > 15)) sd = IsSingleDiffractive(event->Stack());
 
   // Set NSD flag
   if(!sd) {

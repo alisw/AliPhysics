@@ -31,7 +31,7 @@ public:
    */
   void CreateTasks(AliAnalysisManager*)
   {
-    if (!ParUtilities::MakeScriptPAR(fHelper->Mode() == Helper::kLocal,
+    if (!ParUtilities::MakeScriptPAR(fRailway->Mode() == Railway::kLocal,
 				     "EventTimeTask.C",
 				     // Gui because of CDB 
 				     // XMLParser because of CDB
@@ -39,9 +39,9 @@ public:
 				     "Gui,XMLParser,"
 				     "STEERBase,CDB,ESD,AOD,ANALYSIS,OADB,"
 				     "ANALYSISalice",
-				     fHelper)) 
+				     fRailway)) 
       Fatal("","Failed to make PAR");
-    fHelper->LoadLibrary("EventTimeTask");
+    fRailway->LoadLibrary("EventTimeTask");
     gROOT->ProcessLine("EventTimeTask::Create()");
   }
   /** 
@@ -51,7 +51,7 @@ public:
   /** 
    * Do not create a centrality selection
    */
-  void CreateCentralitySelection(Bool_t, AliAnalysisManager*) {}
+  void CreateCentralitySelection(Bool_t*) {}
   /** 
    * Do not create an output handler
    */

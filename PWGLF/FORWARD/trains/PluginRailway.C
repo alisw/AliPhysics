@@ -1,5 +1,5 @@
 /**
- * @file   PluginHelper.C
+ * @file   PluginRailway.C
  * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
  * @date   Tue Oct 16 18:57:18 2012
  * 
@@ -10,7 +10,7 @@
  */
 #ifndef PLUGINHELPER_C
 #define PLUGINHELPER_C
-#include "Helper.C"
+#include "Railway.C"
 #ifndef __CINT__
 # include "AvailableSoftware.C"
 # include "ParUtilities.C"
@@ -60,7 +60,7 @@ class AliAnalysisAlien;
  *
  * @ingroup pwglf_forward_trains_helper
  */
-struct PluginHelper : public Helper
+struct PluginRailway : public Railway
 {
   /** 
    * Constructor 
@@ -68,8 +68,8 @@ struct PluginHelper : public Helper
    * @param url  Url 
    * @param verbose Verbosity level 
    */
-  PluginHelper(const TUrl& url, Int_t verbose)
-    : Helper(url, verbose), fHandler(0), fUsePars(false), 
+  PluginRailway(const TUrl& url, Int_t verbose)
+    : Railway(url, verbose), fHandler(0), fUsePars(false), 
       fTestBuild(true), fExtraLibs(), fExtraPars(), fExtraSrcs()
   {
     fHandler = new AliAnalysisAlien();
@@ -91,8 +91,8 @@ struct PluginHelper : public Helper
    * 
    * @param o Object to copy from 
    */
-  PluginHelper(const PluginHelper& o) 
-    : Helper(o), fHandler(o.fHandler), fUsePars(o.fUsePars), 
+  PluginRailway(const PluginRailway& o) 
+    : Railway(o), fHandler(o.fHandler), fUsePars(o.fUsePars), 
       fTestBuild(o.fTestBuild), fExtraLibs(), fExtraPars(), fExtraSrcs()
   {}
   /** 
@@ -102,10 +102,10 @@ struct PluginHelper : public Helper
    * 
    * @return Reference to this 
    */
-  PluginHelper& operator=(const PluginHelper& o) 
+  PluginRailway& operator=(const PluginRailway& o) 
   {
     if (&o == this) return *this;
-    Helper::operator=(o);
+    Railway::operator=(o);
     fHandler   = o.fHandler;
     fUsePars   = o.fUsePars;
     fTestBuild = o.fTestBuild;
@@ -114,7 +114,7 @@ struct PluginHelper : public Helper
   /** 
    * Destructor 
    */
-  virtual ~PluginHelper() {}
+  virtual ~PluginRailway() {}
   /** 
    * Load a library/PAR/script 
    * 
@@ -137,12 +137,12 @@ struct PluginHelper : public Helper
     }
     else { 
       if (!ParUtilities::Find(name)) { 
-	Error("PluginHelper::LoadLibrary", "Failed to find PAR file %s", 
+	Error("PluginRailway::LoadLibrary", "Failed to find PAR file %s", 
 	      name.Data());
 	return false;
       }
       if (fTestBuild && !ParUtilities::Build(name)) { 
-	Error("PluginHelper::LoadLibrary", "Failed to build PAR file %s", 
+	Error("PluginRailway::LoadLibrary", "Failed to build PAR file %s", 
 	      name.Data());
 	return false;
       }
@@ -162,7 +162,7 @@ struct PluginHelper : public Helper
   virtual Bool_t LoadSource(const TString& name, bool copy=false)
   {
     static TString s;
-    if (!Helper::LoadSource(name, copy)) return false;
+    if (!Railway::LoadSource(name, copy)) return false;
     s.Append(Form(" %s", gSystem->BaseName(name.Data())));
     fHandler->SetAnalysisSource(s);
     fExtraSrcs.Add(new TObjString(name));
@@ -177,7 +177,7 @@ struct PluginHelper : public Helper
   virtual Bool_t LoadAliROOT()
   {
     if (!gSystem->Getenv("ALICE_ROOT")) { 
-      Error("PluginHelper::LoadAliROOT", "Local AliROOT not available");
+      Error("PluginRailway::LoadAliROOT", "Local AliROOT not available");
       return false;
     }
     Bool_t tmp = fUsePars;
@@ -235,7 +235,7 @@ struct PluginHelper : public Helper
   {
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) { 
-      Error("PluginHelper::PostSetup", "No analysis manager defined");
+      Error("PluginRailway::PostSetup", "No analysis manager defined");
       return false;
     }
     mgr->SetGridHandler(fHandler);
@@ -273,7 +273,7 @@ struct PluginHelper : public Helper
    */
   virtual void Print(Option_t* option="") const 
   {
-    Helper::Print(option);
+    Railway::Print(option);
     fHandler->Print(option);
   }
   AliAnalysisAlien* fHandler;

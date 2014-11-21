@@ -6,7 +6,7 @@
  * 
  */
 /**
- * @file   Helper.C
+ * @file   Railway.C
  * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
  * @date   Tue Oct 16 19:00:17 2012
  * 
@@ -43,7 +43,7 @@ class OptionList;
  *
  * @ingroup pwglf_forward_trains_helper
  */
-struct Helper 
+struct Railway 
 {
   enum EMode { 
     kLocal, 
@@ -62,10 +62,10 @@ struct Helper
     kAOD, 
     kUser
   };
-  Helper(const Helper& o) 
+  Railway(const Railway& o) 
     : fUrl(o.fUrl), fOptions(o.fOptions), fVerbose(o.fVerbose)
   {}
-  Helper& operator=(const Helper&) { return *this; }
+  Railway& operator=(const Railway&) { return *this; }
   /** 
    * Create a helper object. 
    *
@@ -108,7 +108,7 @@ struct Helper
    * 
    * @return Newly allocated helper or null 
    */
-  static Helper* Create(const TUrl& url, Int_t verbose=0);
+  static Railway* Create(const TUrl& url, Int_t verbose=0);
   /** 
    * Load a library 
    * 
@@ -171,7 +171,7 @@ struct Helper
   virtual Bool_t LoadAliROOT()
   {
     if (!gSystem->Getenv("ALICE_ROOT")) { 
-      Error("Helper::LoadAliROOT", "Local AliROOT not available");
+      Error("Railway::LoadAliROOT", "Local AliROOT not available");
       return false;
     }
     if (!LoadLibrary("STEERBase"))     return false;
@@ -316,7 +316,7 @@ struct Helper
   /** 
    * Create an instance of a helper class 
    */
-  static Helper* CreateObject(const TString& cl, 
+  static Railway* CreateObject(const TString& cl, 
 			      const TUrl&    url, 
 			      Int_t verbose=0)
   {
@@ -333,20 +333,20 @@ struct Helper
 					 cl.Data(), url.GetUrl(), verbose));
     if (verbose < 3) gSystem->RedirectOutput(0);
     if (!ptr) { 
-      Warning("Helper::CreateObject", "Failed to instantize a %s", cl.Data());
+      Warning("Railway::CreateObject", "Failed to instantize a %s", cl.Data());
       return 0;
     }
-    Helper* h = reinterpret_cast<Helper*>(ptr);
+    Railway* h = reinterpret_cast<Railway*>(ptr);
     return h;
   }
   /** 
    * Show help on URL using the interpreter 
    * 
-   * @param cl Helper class 
+   * @param cl Railway class 
    */
   static void ShowUrlHelp(const TString& cl)
   {
-    Helper* h = CreateObject(cl, "", true);
+    Railway* h = CreateObject(cl, "", true);
     if (!h) return;
 
     std::cout << "   " << h->UrlHelp() << std::endl;
@@ -354,11 +354,11 @@ struct Helper
   /** 
    * Show help on URL and options using the interpreter 
    * 
-   * @param cl Helper class 
+   * @param cl Railway class 
    */
   static void ShowFullHelp(const TString& cl) 
   {
-    Helper* h = CreateObject(cl, "", true);
+    Railway* h = CreateObject(cl, "", true);
     if (!h) return;
     
     std::cout << h->Desc() << ":\n" 
@@ -379,7 +379,7 @@ protected:
    * @param url Set-up URL
    * @param verbose Verbosity level 
    */
-  Helper(const TUrl& url, Int_t verbose) 
+  Railway(const TUrl& url, Int_t verbose) 
     : fUrl(url), fOptions(), fVerbose(verbose)
   {
     fOptions.Add("mc", "Assume simulation input");
@@ -393,7 +393,7 @@ protected:
   /** 
    * Destructor 
    */
-  virtual ~Helper()
+  virtual ~Railway()
   {
   }
   /** 
@@ -437,14 +437,14 @@ protected:
     if (!path.BeginsWith("/")) path.Prepend("../");
     if (gSystem->AccessPathName(path.Data())) { 
       // File not accessible
-      Warning("Helper::AuxFile", "File %s not accessible", path.Data());
+      Warning("Railway::AuxFile", "File %s not accessible", path.Data());
       return false;
     }
     TString base(gSystem->BaseName(path.Data()));
     if (gSystem->AccessPathName(base.Data()) == 0) { 
       // File or link exists - remove it 
       if (gSystem->Unlink(base) != 0) { 
-	Error("Helper::AuxFile", "Failed to remove old %s", base.Data());
+	Error("Railway::AuxFile", "Failed to remove old %s", base.Data());
 	return false;
       }
     }
@@ -478,11 +478,11 @@ protected:
 
 
 // ===================================================================
-Helper* 
-Helper::Create(const TUrl& url, Int_t verbose)
+Railway* 
+Railway::Create(const TUrl& url, Int_t verbose)
 {
   if (!url.IsValid()) { 
-    Warning("Helper::Create", "URL is invalid");
+    Warning("Railway::Create", "URL is invalid");
     return 0;
   }
 
@@ -495,58 +495,58 @@ Helper::Create(const TUrl& url, Int_t verbose)
   TString cl = "";
   if (prot.EqualTo("alien")) { 
     // Create an AliEn helper 
-    cl = "GridHelper";
+    cl = "GridRailway";
   }
   else if (prot.EqualTo("local")) { 
     // Create Lite helper 
-    cl = "LocalHelper";
+    cl = "LocalRailway";
   }
   else if (prot.EqualTo("proof")) { 
     // Create a Proof helper 
     if (host.IsNull()) 
-      cl = "LiteHelper";
+      cl = "LiteRailway";
     else if (host.BeginsWith("alice-caf")) { 
       // AAF 
-      cl = opts.Contains("plugin") ? "AAFPluginHelper" : "AAFHelper";
+      cl = opts.Contains("plugin") ? "AAFPluginRailway" : "AAFRailway";
     }
     else 
-      cl = "ProofHelper";
+      cl = "ProofRailway";
   }
   else if (prot.EqualTo("lite")) { 
     // Create a Proof helper 
-    cl = "LiteHelper";
+    cl = "LiteRailway";
   }
   else if (prot.EqualTo("help")) {
     // Special HELP protocol
     if (host.Contains("options")) {
       std::cout << "Possible URL types and options are:" << std::endl;
-      ShowFullHelp("LocalHelper");
-      ShowFullHelp("ProofHelper");
-      ShowFullHelp("LiteHelper");
-      ShowFullHelp("AAFHelper");
-      ShowFullHelp("AAFPluginHelper");
-      ShowFullHelp("GridHelper");
+      ShowFullHelp("LocalRailway");
+      ShowFullHelp("ProofRailway");
+      ShowFullHelp("LiteRailway");
+      ShowFullHelp("AAFRailway");
+      ShowFullHelp("AAFPluginRailway");
+      ShowFullHelp("GridRailway");
       return 0;
     }
     std::cout << "Possible URL types are:" << std::endl;
-    ShowUrlHelp("LocalHelper");
-    ShowUrlHelp("ProofHelper");
-    ShowUrlHelp("LiteHelper");
-    ShowUrlHelp("AAFHelper");
-    ShowUrlHelp("AAFPluginHelper");
-    ShowUrlHelp("GridHelper");
+    ShowUrlHelp("LocalRailway");
+    ShowUrlHelp("ProofRailway");
+    ShowUrlHelp("LiteRailway");
+    ShowUrlHelp("AAFRailway");
+    ShowUrlHelp("AAFPluginRailway");
+    ShowUrlHelp("GridRailway");
     return 0;
   }
   // --- Check if we got a scheme ------------------------------------
   if (cl.IsNull()) {
-    Error("Helper::Create", "Unknown scheme: %s", prot.Data());
+    Error("Railway::Create", "Unknown scheme: %s", prot.Data());
     return 0;
   }
 
   // --- Use interpreter to make our object --------------------------
-  Helper* helper = CreateObject(cl, url, verbose);
+  Railway* helper = CreateObject(cl, url, verbose);
   if (!helper) {
-    Error("Helper::Create", "Failed to make object of class %s", cl.Data());
+    Error("Railway::Create", "Failed to make object of class %s", cl.Data());
     return 0;
   }
 

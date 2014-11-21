@@ -553,7 +553,14 @@ protected:
 				 EResidualMethod residuals,
 				 Bool_t          scaleToPeak=true,
 				 TObjArray*      best=0) const;
-     
+    /** 
+     * Do scaling of histogram before fitting.  This can be
+     * overwritten to do some smoothing or the like. By default, this
+     * simply scales to the bin width.
+     * 
+     * @param dist Histogram to scale. 
+     */     
+    virtual void Scale(TH1* dist) const;
     /** 
      * Fit a signal histogram.  First, the bin @f$ b_{min}@f$ with
      * maximum bin content in the range @f$ [E_{min},\infty]@f$ is

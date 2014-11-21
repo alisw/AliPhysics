@@ -27,25 +27,51 @@
 #include  "AliJCard.h"
 
 //______________________________________________________________________________
-AliJXtHistos::AliJXtHistos(AliJCard* cardP):
-	fUseDirectory(true)
-{   // constructor
-
-	fcard=cardP;
-	fmaxEtaRange = fcard->Get("EtaRange");
+AliJXtHistos::AliJXtHistos(AliJCard* cardP)
+      :	fUseDirectory(true),
+	fTopDirectory(0x0),
+	fCard(0x0),
+        fmaxEtaRange(0.8),
+        fhistoList(0x0),
+        fhConeActivity(0x0),
+        fhConeActivityIsolated(0x0),
+        fhZVertRaw(0x0),
+        fhCentr(0x0),
+        fhiCentr(0x0),
+        fhEventPerRun(0x0),
+        fhVertexZTriggVtx(0x0)
+{
+	// constructor
+	fCard=cardP;
+	fmaxEtaRange = fCard->Get("EtaRange");
 
 	fhistoList = new TList();
 	fTopDirectory = gDirectory;
 }
 
 //______________________________________________________________________________
-AliJXtHistos::AliJXtHistos(const AliJXtHistos& obj){
+AliJXtHistos::AliJXtHistos(const AliJXtHistos& obj)
+      :	fUseDirectory(obj.fUseDirectory),
+	fTopDirectory(obj.fTopDirectory),
+	fCard(obj.fCard),
+	fmaxEtaRange(obj.fmaxEtaRange),
+	fhistoList(obj.fhistoList),
+	fhConeActivity(obj.fhConeActivity),
+	fhConeActivityIsolated(obj.fhConeActivityIsolated),
+	fhZVertRaw(obj.fhZVertRaw),
+	fhCentr(obj.fhCentr),
+	fhiCentr(obj.fhiCentr),
+	fhEventPerRun(obj.fhEventPerRun),
+	fhVertexZTriggVtx(obj.fhVertexZTriggVtx)
+{
 	// copy constructor
 }
 
 //______________________________________________________________________________
 AliJXtHistos& AliJXtHistos::operator=(const AliJXtHistos& obj){
 	// copy constructor
+        this->~AliJXtHistos();
+        new(this) AliJXtHistos(obj);
 	return *this;
 }
 //______________________________________________________________________________
@@ -109,9 +135,9 @@ void AliJXtHistos::CreateXtHistos(){
 	for(int ij=0;ij<=nBinsXt;ij++) logBinsXt[ij]=xTlimL*exp(ij*xTlogBW);
     
     // === create histos
-	for (int hic = 0;hic < fcard->GetNoOfBins(kCentrType);hic++) {
-		float b1 = fcard->GetBinBorder(kCentrType, hic);
-		float b2 = fcard->GetBinBorder(kCentrType, hic + 1);
+	for (int hic = 0;hic < fCard->GetNoOfBins(kCentrType);hic++) {
+		float b1 = fCard->GetBinBorder(kCentrType, hic);
+		float b2 = fCard->GetBinBorder(kCentrType, hic + 1);
         
 		fhChargedPt[hic] = new TH1D(Form("hChargedPt%d",hic), Form("C: %2.0f-%2.0f%%",b1,b2), nBins, logBinsPt );
 		fhChargedPt[hic]->Sumw2();

@@ -105,7 +105,8 @@ class AliAnalysisTaskStrangenessVsMultiplicity : public AliAnalysisTaskSE {
 
   //Objects Controlling Task Behaviour: has to be streamed! 
   Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts *** only for CASCADES! *** 
-  Bool_t    fkSkipEventSelection;     // if true, will only perform TRIGGER selection (currently kMB, to change) 
+  Bool_t    fkSkipEventSelection;     // if true, will only perform TRIGGER selection (currently kMB, to change)
+    Bool_t    fkApplyTrackletsVsClustersCut; //if true, applies Tracklet vs clusters cut together with PS
   Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
   Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
 

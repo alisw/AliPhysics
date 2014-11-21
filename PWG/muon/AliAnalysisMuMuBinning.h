@@ -48,10 +48,15 @@ public:
   TObjArray* CreateQuantityArray() const;
   
   Double_t* CreateBinArray() const;
+  Double_t* CreateBinArrayY() const;
+  Double_t* CreateBinArrayX() const;
 
   TObjArray* CreateBinObjArray() const;
   TObjArray* CreateBinObjArray(const char* what) const;
   TObjArray* CreateBinObjArray(const char* what, const char* quantity, const char* flavour) const;
+  
+  Int_t GetNBinsX() const;
+  Int_t GetNBinsY() const;
   
   AliAnalysisMuMuBinning* Project(const char* what, const char* quantity, const char* flavour="") const;
   

@@ -17,7 +17,7 @@
  * @ingroup pwglf_forward_mc
  */
 AliAnalysisTask*
-AddTaskForwardMCCorr()
+AddTaskForwardMCCorr(UShort_t maxStrips=2)
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
@@ -36,7 +36,7 @@ AddTaskForwardMCCorr()
   task->GetTrackDensity().SetDebug(false);
   AliFMDMCTrackDensity& dn = 
     static_cast<AliFMDMCTrackDensity&>(task->GetTrackDensity());
-  dn.SetMaxConsequtiveStrips(3);
+  dn.SetMaxConsequtiveStrips(maxStrips); // was 3
   //  task->SetVertexAxis(40, -20., 20.);
   
   // --- connect input/output ----------------------------------------

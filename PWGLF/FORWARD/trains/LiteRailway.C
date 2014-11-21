@@ -1,5 +1,5 @@
 /**
- * @file   LiteHelper.C
+ * @file   LiteRailway.C
  * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
  * @date   Tue Oct 16 18:59:59 2012
  * 
@@ -10,7 +10,7 @@
  */
 #ifndef LITEHELPER_C
 #define LITEHELPER_C
-#include "ProofHelper.C"
+#include "ProofRailway.C"
 #ifndef __CINT__
 # include "ChainBuilder.C"
 # include <TUrl.h>
@@ -72,7 +72,7 @@ class TUrl;
  *       
  * @ingroup pwglf_forward_trains_helper
  */
-struct LiteHelper : public ProofHelper
+struct LiteRailway : public ProofRailway
 {
   /** 
    * Constructor 
@@ -80,8 +80,8 @@ struct LiteHelper : public ProofHelper
    * @param url     Url 
    * @param verbose Verbosity
    */
-  LiteHelper(const TUrl& url, Int_t verbose)
-    : ProofHelper(url, verbose), fChain(0)
+  LiteRailway(const TUrl& url, Int_t verbose)
+    : ProofRailway(url, verbose), fChain(0)
   {
     fOptions.Add("recursive","Recursive scan");
     fOptions.Add("pattern",  "GLOB", "File name pattern", "*.root");
@@ -93,8 +93,8 @@ struct LiteHelper : public ProofHelper
    * 
    * @param o Object to copy from 
    */
-  LiteHelper(const LiteHelper& o) 
-    : ProofHelper(o), fChain(o.fChain)
+  LiteRailway(const LiteRailway& o) 
+    : ProofRailway(o), fChain(o.fChain)
   {}
   /** 
    * Assignment operator 
@@ -103,17 +103,17 @@ struct LiteHelper : public ProofHelper
    * 
    * @return Reference to this 
    */
-  LiteHelper& operator=(const LiteHelper& o) 
+  LiteRailway& operator=(const LiteRailway& o) 
   {
     if (&o == this) return *this;
-    ProofHelper::operator=(o);
+    ProofRailway::operator=(o);
     fChain = o.fChain;
     return *this;
   }
   /** 
    * Destructor 
    */
-  virtual ~LiteHelper() {}
+  virtual ~LiteRailway() {}
   /** 
    * Set-up done before task set-ups 
    * 
@@ -122,7 +122,7 @@ struct LiteHelper : public ProofHelper
   virtual Bool_t PreSetup() 
   {
     fUrl.SetProtocol("lite");
-    Bool_t ret = ProofHelper::PreSetup();
+    Bool_t ret = ProofRailway::PreSetup();
     return ret;
   }
   /** 
@@ -140,7 +140,7 @@ struct LiteHelper : public ProofHelper
     TString  src       = fUrl.GetFile();
     UShort_t type      = ChainBuilder::CheckSource(src, 0);
     if (type == ChainBuilder::kInvalid) {
-      Error("LiteHelper", "Cannot generate TChain from %s", src.Data());
+      Error("LiteRailway", "Cannot generate TChain from %s", src.Data());
       return false;
     }
 
@@ -158,7 +158,7 @@ struct LiteHelper : public ProofHelper
       return false;
     }
 
-    return ProofHelper::PostSetup();
+    return ProofRailway::PostSetup();
   }
   /** 
    * Start the analysis 

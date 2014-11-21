@@ -94,20 +94,19 @@ protected:
     ih->SetActiveBranches("ESDfriend");
     return ih;
   }
-  AliAnalysisTaskSE* CreateTaskAndSetCollisionCandidates(const char* macro)
+  AliAnalysisTaskSE* CreateTaskAndSetCollisionCandidates(const char* macro,
+							 const char* args="")
   {
-    Long_t ret = gROOT->Macro(macro);
-    if (!ret) return 0;
-    AliAnalysisTaskSE* task = reinterpret_cast<AliAnalysisTaskSE*>(ret);
-    task->SelectCollisionCandidates(fTriggerMask);
+    AliAnalysisTaskSE* task = CoupleSECar(macro, args);
+    if (task) task->SelectCollisionCandidates(fTriggerMask);
     return task;
   }
   void CreateCDBConnect()
   {                                 
     ::Info("CreateCDBConnect", "Loading CDB connect w/run=%d", fRun);
-    Long_t ret = gROOT->Macro(Form("AddTaskCDBconnect.C(%d)", fRun));
-    ::Info("CreateCDBConnect", "Loaded %p", fRun);
-    if (!ret) return;
+    AliAnalysisTask* task = CoupleCar("AddTaskCDBconnect.C", Form("%d", fRun));
+    ::Info("CreateCDBConnect", "Loaded %p", task);
+    if (!task) return;
     AliCDBManager::Instance()->SetDefaultStorage("raw://");
   }
   void CreatePhysicsSelection(Bool_t mc,
@@ -126,19 +125,19 @@ protected:
   void CreateVertex()
   {
     // Vertexing (A. Dainese)
-    gROOT->Macro(Form("AddTaskVertexESD.C(kFALSE,0x%x)", fTriggerMask));
+    CoupleCar("AddTaskVertexESD.C", Form("kFALSE,0x%x", fTriggerMask));
   }
   void CreateSymmetric()
   {
     // TPC QA (E. Sicking)
-    gROOT->Macro(Form("AddTaskQAsym.C(0,0x%x,0x%x,0x%x,0x%x)",
-		      fTriggerMask, fTriggerHM, fTriggerEMC, 
-		      fTriggerMUONBarrel));
+    CoupleCar("AddTaskQAsym.C", Form("0,0x%x,0x%x,0x%x,0x%x",
+				     fTriggerMask, fTriggerHM, fTriggerEMC, 
+				     fTriggerMUONBarrel));
   }
   void CreateVZERO()
   {
     //  VZERO QA  (C. Cheshkov)
-    gROOT->Macro("AddTaskVZEROQA.C(0)");
+    CoupleCar("AddTaskVZEROQA.C", "0");
   }
   void CreateTPC()
   {
@@ -154,7 +153,8 @@ protected:
     // argument to true (for PbPb)
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGPP/TPC/macros",
 			     gROOT->GetMacroPath()));
-    CreateTaskAndSetCollisionCandidates("AddTaskPerformanceTPCdEdxQA.C(kFALSE,kTRUE,kFALSE)");
+    CreateTaskAndSetCollisionCandidates("AddTaskPerformanceTPCdEdxQA.C",
+					"kFALSE,kTRUE,kFALSE");
   }
   void CreateSPD()
   {
@@ -177,28 +177,29 @@ protected:
   }
   void CreateITS()
   {
-    gROOT->Macro("AddTaskPerformanceITS.C(kFALSE)");
+    CoupleCar("AddTaskPerformanceITS.C","false");
     if (fCollisionType == 0) return;
 
-    gROOT->ProcessLine("AddTaskPerformanceITS(kFALSE,kFALSE,kFALSE,3500,10000)");
-    gROOT->ProcessLine("AddTaskPerformanceITS(kFALSE,kFALSE,kFALSE,590,1570)");
-    gROOT->ProcessLine("AddTaskPerformanceITS(kFALSE,kFALSE,kFALSE,70,310)");
+    gROOT->ProcessLine("AddTaskPerformanceITS(false,false,false,3500,10000)");
+    gROOT->ProcessLine("AddTaskPerformanceITS(false,false,false,590,1570)");
+    gROOT->ProcessLine("AddTaskPerformanceITS(false,false,false,70,310)");
   }
   void CreateITSSA() 
   {
     // ITS saTracks, align (F.Prino)
-    CreateTaskAndSetCollisionCandidates("AddTaskITSsaTracks.C(kFALSE,kFALSE)");
+    CreateTaskAndSetCollisionCandidates("AddTaskITSsaTracks.C",
+					"false,false)");
   }
   void CreateITSAlign()
   {
     // ITS saTracks, align (F.Prino)
-    gROOT->Macro("AddTaskITSAlign.C(0,2011");
+    CoupleCar("AddTaskITSAlign.C","0,2011");
   }
   void CreateTRD()
   {
     // TRD (Alex Bercuci, M. Fasel) 
     gSystem->AddIncludePath("-I${ALICE_ROOT}/PWGPP/TRD");
-    gROOT->Macro("AddTrainPerformanceTRD.C(\"ESD DET EFF RES PID\")"); 
+    CoupleCar("AddTrainPerformanceTRD.C","\"ESD DET EFF RES PID\""); 
   }
   void CreateZDC()
   {
@@ -217,8 +218,10 @@ protected:
     
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG4/macros/QA",
 			     gROOT->GetMacroPath()));
-    CreateTaskAndSetCollisionCandidates("AddTaskCalorimeterQA.C(\"ESD\",20011,kFALSE,kFALSE)");
-    Long_t ret = gROOT->ProcessLine("AddTaskCalorimeterQA(\"ESD\",2011,kFALSE,kFALSE,\"\",\"EMC7\")");
+    CreateTaskAndSetCollisionCandidates("AddTaskCalorimeterQA.C",
+					"\"ESD\",20011,false,false)");
+    Long_t ret = 
+      gROOT->ProcessLine("AddTaskCalorimeterQA(\"ESD\",2011,false,false,\"\",\"EMC7\")");
     if (!ret) return;
     AliAnalysisTaskSE* task = reinterpret_cast<AliAnalysisTaskSE*>(ret);
     task->SelectCollisionCandidates(fTriggerEMC);
@@ -230,27 +233,27 @@ protected:
     LoadLibrary("PWG3muon", mode, par, true);
     LoadLibrary("PWG3muondep", mode, par, true);
     
-    gROOT->Macro("AddTaskMTRchamberEfficiency.C");
+    CoupleCar("AddTaskMTRchamberEfficiency.C");
   }
   void CreateMUONEff()
   {
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG3/muondep",
 			     gROOT->GetMacroPath()));
-    gROOT->Macro("AddTaskMUONTrackingEfficiency.C");
+    CoupleCar("AddTaskMUONTrackingEfficiency.C");
   }
   void CreateV0()
   {
     // V0-Decay Reconstruction (Ana Marin) (not used)
-    gROOT->Macro("AddTaskV0QA.C(kFALSE)");
+    CoupleCar("AddTaskV0QA.C","false");
   }
   void CreateBRes()
   {
     // Impact parameter resolution (xianbao.yuan@pd.infn.it,
     // andrea.dainese@pd.infn.it) 
-    CreateTaskAndSetCollisionCandidates(Form("AddTaskImpParRes.C(%s)", 
+    CreateTaskAndSetCollisionCandidates(Form("AddTaskImpParRes.C", 
 					     fCollisionType == 0 ? 
 					     "" : 
-					     "kFALSE,-1,kFALSE,kFALSE"));
+					     "false,-1,false,false"));
   }
   void CreateMUON(EMode mode, Bool_t par)
   {
@@ -260,7 +263,7 @@ protected:
     LoadLibrary("PWG3muondep", mode, par, true);
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG3/muon",
 			     gROOT->GetMacroPath()));
-    gROOT->Macro("AddTaskMuonQA.C");
+    CoupleCar("AddTaskMuonQA.C");
   }
   void CreateTOF()
   {
@@ -300,7 +303,7 @@ protected:
     LoadLibrary("PWGLFforward2", mode, par, true);
     Bool_t mc = AliAnalysisManager::GetAnalysisManager()
       ->GetMCtruthEventHandler() != 0;
-    gROOT->Macro(Form("AddTaskForwardQA.C(%d,%d)", mc, (fFlags & kCentrality)));
+    CoupleCar("AddTaskForwardQA.C", Form("(%d,%d)",mc,(fFlags & kCentrality)));
   }
   //__________________________________________________________________
   /** 

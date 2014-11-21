@@ -34,17 +34,18 @@ using namespace std;
 
 void Makec3EAfile(){
 
- 
+  int FT=0;// 0(EW) or 1(LG)
+
   TFile *infile;
   TMinuit *fit;
   //
-  TH3D *PbPbEA = new TH3D("PbPbEA","",2,0.5,2.5, 4,0.5,4.5, 50,-0.5,49.5);
+  TH3D *PbPbEA = new TH3D("PbPbEA","",6,0.5,6.5, 4,0.5,4.5, 50,-0.5,49.5);// Rcoh type, parNum, Gindex
   PbPbEA->SetDirectory(0);
   //
-  TH3D *pPbEA = new TH3D("pPbEA","",2,0.5,2.5, 4,0.5,4.5, 50,-0.5,49.5);
+  TH3D *pPbEA = new TH3D("pPbEA","",6,0.5,6.5, 4,0.5,4.5, 50,-0.5,49.5);
   pPbEA->SetDirectory(0);
   //
-  TH3D *ppEA = new TH3D("ppEA","",2,0.5,2.5, 4,0.5,4.5, 50,-0.5,49.5);
+  TH3D *ppEA = new TH3D("ppEA","",6,0.5,6.5, 4,0.5,4.5, 50,-0.5,49.5);
   ppEA->SetDirectory(0);
   //
  
@@ -55,12 +56,14 @@ void Makec3EAfile(){
   //////////////////////////////
   double value=0, value_e=0;
   // 
-  for(int Gindex=0; Gindex<46; Gindex++){
+  for(int Gindex=0; Gindex<=25; Gindex++){
     // PbPb
-    for(int FT=0; FT<2; FT++){// EW or LG
+    for(int RT=0; RT<6; RT++){// Rcoh type
       
       TString *name1 = new TString("FitFiles/FitFile_CT0_FT");
       *name1 += FT;
+      name1->Append("_R");
+      *name1 += RT;
       name1->Append("_G");
       *name1 += Gindex;
       name1->Append(".root");
@@ -68,7 +71,7 @@ void Makec3EAfile(){
       fit = (TMinuit*)infile->Get("MyMinuit_c3");
       for(int parNum=0; parNum<4; parNum++){
 	fit->GetParameter(parNum+1, value,value_e);
-	PbPbEA->SetBinContent(FT+1, parNum+1, Gindex+1, value);
+	PbPbEA->SetBinContent(RT+1, parNum+1, Gindex+1, value);
       }
       infile->Close();
    
@@ -76,6 +79,8 @@ void Makec3EAfile(){
       // pPb
       TString *name1 = new TString("FitFiles/FitFile_CT1_FT");
       *name1 += FT;
+      name1->Append("_R");
+      *name1 += RT;
       name1->Append("_G");
       *name1 += Gindex;
       name1->Append(".root");
@@ -83,13 +88,15 @@ void Makec3EAfile(){
       fit = (TMinuit*)infile->Get("MyMinuit_c3");
       for(int parNum=0; parNum<4; parNum++){
 	fit->GetParameter(parNum+1, value,value_e);
-	pPbEA->SetBinContent(FT+1, parNum+1, Gindex+1, value);
+	pPbEA->SetBinContent(RT+1, parNum+1, Gindex+1, value);
       }
       infile->Close();
       //
       //
       TString *name1 = new TString("FitFiles/FitFile_CT2_FT");
       *name1 += FT;
+      name1->Append("_R");
+      *name1 += RT;
       name1->Append("_G");
       *name1 += Gindex;
       name1->Append(".root");
@@ -97,28 +104,28 @@ void Makec3EAfile(){
       fit = (TMinuit*)infile->Get("MyMinuit_c3");
       for(int parNum=0; parNum<4; parNum++){
 	fit->GetParameter(parNum+1, value,value_e);
-	ppEA->SetBinContent(FT+1, parNum+1, Gindex+1, value);
+	ppEA->SetBinContent(RT+1, parNum+1, Gindex+1, value);
       }
       infile->Close();
     }
   }
   // blank for the rest
-  for(int Gindex=46; Gindex<50; Gindex++){
-    for(int FT=0; FT<2; FT++){// EW or LG
+  for(int Gindex=26; Gindex<50; Gindex++){
+    for(int RT=0; RT<6; RT++){// EW or LG
       for(int parNum=0; parNum<4; parNum++){
-	PbPbEA->SetBinContent(FT+1, parNum+1, Gindex+1, PbPbEA->GetBinContent(FT+1, parNum+1, 46));
-	pPbEA->SetBinContent(FT+1, parNum+1, Gindex+1, pPbEA->GetBinContent(FT+1, parNum+1, 46));
-	ppEA->SetBinContent(FT+1, parNum+1, Gindex+1, ppEA->GetBinContent(FT+1, parNum+1, 46));
+	PbPbEA->SetBinContent(RT+1, parNum+1, Gindex+1, PbPbEA->GetBinContent(RT+1, parNum+1, 26));
+	pPbEA->SetBinContent(RT+1, parNum+1, Gindex+1, pPbEA->GetBinContent(RT+1, parNum+1, 26));
+	ppEA->SetBinContent(RT+1, parNum+1, Gindex+1, ppEA->GetBinContent(RT+1, parNum+1, 26));
       }
     }
   }
 
   // Convert Lam_3 to proper EA normalization
   for(int Gindex=0; Gindex<50; Gindex++){
-    for(int FT=0; FT<2; FT++){// EW or LG
-      PbPbEA->SetBinContent(FT+1, 1, Gindex+1, pow(PbPbEA->GetBinContent(FT+1, 1, Gindex+1)/ 2., 1/3.));
-      pPbEA->SetBinContent(FT+1, 1, Gindex+1, pow(pPbEA->GetBinContent(FT+1, 1, Gindex+1)/ 2., 1/3.));
-      ppEA->SetBinContent(FT+1, 1, Gindex+1, pow(ppEA->GetBinContent(FT+1, 1, Gindex+1)/ 2., 1/3.));
+    for(int RT=0; RT<6; RT++){// EW or LG
+      PbPbEA->SetBinContent(RT+1, 1, Gindex+1, pow(PbPbEA->GetBinContent(RT+1, 1, Gindex+1), 1/3.));
+      pPbEA->SetBinContent(RT+1, 1, Gindex+1, pow(pPbEA->GetBinContent(RT+1, 1, Gindex+1), 1/3.));
+      ppEA->SetBinContent(RT+1, 1, Gindex+1, pow(ppEA->GetBinContent(RT+1, 1, Gindex+1), 1/3.));
     }
   }
   

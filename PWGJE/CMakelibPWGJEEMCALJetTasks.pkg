@@ -63,6 +63,7 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalDiJetAna.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalDiJetResponse.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalHighMultTrigger.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalHJetMass.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHMEC.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
