@@ -1039,6 +1039,7 @@ void AliCDBLocal::QueryValidCVMFSFiles(TString& cvmfsOcdbTag) {
   }
 
   file.close();
+  gSystem->Exec( Form( "rm %s", runValidFile.Data() ) );
   return;
 }
 

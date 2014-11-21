@@ -869,6 +869,9 @@ AliMagWrapCheb::AliMagWrapCheb(const char* inputFile) :
   fNParamsDip(0),fNZSegDip(0),fNYSegDip(0),fNXSegDip(0),
   fSegZDip(0),fSegYDip(0),fSegXDip(0),
   fBegSegYDip(0),fNSegYDip(0),fBegSegXDip(0),fNSegXDip(0),fSegIDDip(0),fMinZDip(1.e6),fMaxZDip(-1.e6),fParamsDip(0)
+#ifdef _MAGCHEB_CACHE_
+  ,fCacheSol(0),fCacheDip(0),fCacheTPCInt(0),fCacheTPCRat(0)
+#endif
 //
 {
   // construct from coeffs from the text file

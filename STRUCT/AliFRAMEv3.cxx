@@ -152,6 +152,8 @@ void AliFRAMEv3::CreateGeometry()
   const Float_t kEps   = 0.01;
   const Int_t   kAir   = idtmed[2004];
   const Int_t   kSteel = idtmed[2064];
+  const Int_t   kAlu   = idtmed[2008];
+  const Int_t   kG10   = idtmed[2021];
   
   const Float_t krad2deg = 180. / TMath::Pi();
   const Float_t kdeg2rad = 1. / krad2deg;
@@ -303,7 +305,7 @@ void AliFRAMEv3::CreateGeometry()
    TVirtualMC::GetMC()->Gspos("BREF2", 1, "B080",  3.37 - 0.05, 0., 0., 0, "ONLY");
 
   TVirtualMC::GetMC()->Gspos("B080", 1, "B077",  283.3, 0., 0., 0, "ONLY");
-  TVirtualMC::GetMC()->Gspos("B080", 2, "B077", -283.3, 0., 0., idrotm[2087], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B080", 2, "B077", -283.3, 0., 0., idrotm[2088], "ONLY");
 
    
 //
@@ -743,7 +745,8 @@ void AliFRAMEv3::CreateGeometry()
     lbox[0] = longW  / 4.;
     lbox[2] = longH  / 2.;
     lbox[1] = longLI / 2.;
-    TVirtualMC::GetMC()->Gsvolu("BA59", "BOX", kSteel, lbox, 3); 
+    TVirtualMC::GetMC()->Gsvolu("BA59", "BOX", kSteel, lbox, 3);
+    gGeoManager->GetVolume("BA59")->SetVisContainers();
     lbox[0] = longW / 4. - 0.25;
     lbox[2] = longH / 2. - 0.50;
     TVirtualMC::GetMC()->Gsvolu("BA62", "BOX", kAir, lbox, 3); 
@@ -760,46 +763,113 @@ void AliFRAMEv3::CreateGeometry()
   //
   // Pos 1
   //
+  // angular 80deg profile
   lbox[2] = 4.0;
   lbox[0] = 0.2;
   lbox[1] = longLI / 2.;
   TVirtualMC::GetMC()->Gsvolu("BTRDR_10", "BOX",  kSteel, lbox, 3); 
+
   ptrd1[0] =  3.;
   ptrd1[1] =  3. + 0.4 * tan10;
   ptrd1[2] =  307.5;
   ptrd1[3] =  0.2;  
   TVirtualMC::GetMC()->Gsvolu("BTRDR_11", "TRD1", kSteel, ptrd1, 4);
+
+  lbox[2] = 2.0;
+  lbox[0] = 0.3;
+  lbox[1] = longLI / 2.;
+  TVirtualMC::GetMC()->Gsvolu("BTRDR_12", "BOX",  kAlu, lbox, 3); 
+  gGeoManager->GetVolume("BTRDR_12")->SetVisContainers();
+
+  lbox[2] = 2.0;
+  lbox[0] = 0.1;
+  lbox[1] = longLI / 2.;
+  TVirtualMC::GetMC()->Gsvolu("BTRDR_13", "BOX",  kG10, lbox, 3); 
+  TVirtualMC::GetMC()->Gspos("BTRDR_13", 1, "BTRDR_12",   -0.2,  0.0, 0.0, 0, "ONLY");
+
+  lbox[2] = 0.1;
+  lbox[0] = 2.0;
+  lbox[1] = longLI / 2.;
+  TVirtualMC::GetMC()->Gsvolu("BTRDR_14", "BOX",  kG10, lbox, 3); 
+  dz = -iFrH / 2. + longH / 2.;
+  Float_t zpos = 80.;
+  Int_t isec_1[11] = {0, 1, 2, 3, 4, 5, 13, 14, 15, 16, 17};
+
+   for (Int_t index = 0; index < 11; index++) {
+     jmod = isec_1[index];
+     Float_t dz1 =  dz + 3. + (zpos - 4.);
+     dx0 = (hR + dz0 + zpos - 4.) * tan10 - (longW / 2. + 0.2) / cos10;
+     if (jmod !=  5) TVirtualMC::GetMC()->Gspos("BTRDR_10", 2*jmod+1, module[jmod],   dx0,  0.0, dz1, idrotm[2096], "ONLY");
+     if (jmod != 13) TVirtualMC::GetMC()->Gspos("BTRDR_10", 2*jmod+2, module[jmod],  -dx0,  0.0, dz1, idrotm[2086], "ONLY");
+     dx0 -= 0.5;
+     if (jmod !=  5) TVirtualMC::GetMC()->Gspos("BTRDR_12", 2*jmod+1, module[jmod],   dx0,  0.0, dz1, idrotm[2096], "ONLY");
+     if (jmod != 13) TVirtualMC::GetMC()->Gspos("BTRDR_12", 2*jmod+2, module[jmod],  -dx0,  0.0, dz1, idrotm[2087], "ONLY");
+     dz1 += (4 - 0.2);		       
+     dx0 = (hR + dz0 + zpos - 0.2) * tan10 - (longW / 2. + 3. + 0.4) / cos10;
+     if (jmod !=  5) TVirtualMC::GetMC()->Gspos("BTRDR_11", 2*jmod+1, module[jmod],   dx0,  0.0, dz1, 0, "ONLY");
+     if (jmod != 13) TVirtualMC::GetMC()->Gspos("BTRDR_11", 2*jmod+2, module[jmod],  -dx0,  0.0, dz1, 0, "ONLY");
+     dz1 -= 0.3;
+     dx0 -= 0.5;
+     if (jmod !=  5) TVirtualMC::GetMC()->Gspos("BTRDR_14", 2*jmod+1, module[jmod],   dx0,  0.0, dz1, 0, "ONLY");
+     if (jmod != 13) TVirtualMC::GetMC()->Gspos("BTRDR_14", 2*jmod+2, module[jmod],  -dx0,  0.0, dz1, 0, "ONLY");
+   }
+
   // Pos 2
   // 40 x 10 
   lbox[2] = 2.0;
   lbox[0] = 0.5;
   lbox[1] = longLI / 2.;
-  TVirtualMC::GetMC()->Gsvolu("BTRDR_2", "BOX", kAir, lbox, 3); 
+  TVirtualMC::GetMC()->Gsvolu("BTRDR_2", "BOX", kAlu, lbox, 3); 
+  lbox[2] = 2.0;
+  lbox[0] = 0.1;
+  lbox[1] = longLI / 2.;
+  TVirtualMC::GetMC()->Gsvolu("BTRDR_21", "BOX", kG10, lbox, 3); 
+  TVirtualMC::GetMC()->Gspos("BTRDR_21", 1, "BTRDR_2",   -0.4, 0.0, 0.0, 0, "ONLY");
+
+  Int_t isec_2a[16] = {1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17};
+  for (Int_t index = 0; index < 16; index++) {
+    jmod = isec_2a[index];
+    dx0 = (hR + dz0 ) * tan10 + 10. * sin10 - (longW / 4. + 0.5) / cos10;
+    if (jmod >8) {
+      TVirtualMC::GetMC()->Gspos("BTRDR_2", 2*jmod+1, module[jmod],   dx0-1.5,  0.0, dz + 3. + 8. * cos10, idrotm[2096], "ONLY");
+    } else {
+      TVirtualMC::GetMC()->Gspos("BTRDR_2", 2*jmod+2, module[jmod],  -dx0+1.5,  0.0, dz + 3. + 8. * cos10, idrotm[2087], "ONLY");
+    }
+  }
+  
+  Int_t isec_2b[6]  = {6, 7, 8, 10, 11, 12};
+  for (Int_t index = 0; index < 6; index++) {
+    jmod = isec_2b[index];
+    dx0 = (hR + dz0 + zpos - 3.) * tan10 - (longW / 4. + 0.5) / cos10;
+    if (index < 3) {
+      TVirtualMC::GetMC()->Gspos("BTRDR_2", 2*jmod+2, module[jmod],  -dx0+1.5,  0.0, dz + 3. + zpos - 3., idrotm[2087], "ONLY");
+    } else {
+      TVirtualMC::GetMC()->Gspos("BTRDR_2", 2*jmod+1, module[jmod],   dx0-1.5,  0.0, dz + 3. + zpos -3. , idrotm[2096], "ONLY");
+    }
+  }
+
 
   // Pos 3
   // 40 x 14
   lbox[0] = 2.0;
   lbox[2] = 0.7;
   lbox[1] = 307.5;
-  TVirtualMC::GetMC()->Gsvolu("BTRDR_3", "BOX", kAir, lbox, 3); 
+  TVirtualMC::GetMC()->Gsvolu("BTRDR_3", "BOX", kAlu, lbox, 3); 
+
+  lbox[0] = 2.0;
+  lbox[2] = 0.1;
+  lbox[1] = 307.5;
+  TVirtualMC::GetMC()->Gsvolu("BTRDR_31", "BOX", kG10, lbox, 3); 
+  TVirtualMC::GetMC()->Gspos("BTRDR_31", 1, "BTRDR_3",   0,  0.0, 0.6, 0, "ONLY");
   
-   dz = -iFrH / 2. + longH / 2.;
-   
-   for (jmod = 0; jmod < 18; jmod++) {
-     dx0 = (hR + dz0 + 80.5 - 4.) * tan10 - (longW / 2. + 0.2) / cos10;
-     TVirtualMC::GetMC()->Gspos("BTRDR_10", 2*jmod+1, module[jmod],   dx0,  0.0, dz + 3. + (80. - 4.), idrotm[2096], "ONLY");
-     TVirtualMC::GetMC()->Gspos("BTRDR_10", 2*jmod+2, module[jmod],  -dx0,  0.0, dz + 3. + (80. - 4.), idrotm[2086], "ONLY");
+  Int_t isec_3[9]  = {5, 6, 7, 8, 9, 10, 11, 12, 13};
 
-     dx0 = (hR + dz0 + 80.5 - 0.2) * tan10 - (longW / 2. + 3. + 0.4) / cos10;
-     TVirtualMC::GetMC()->Gspos("BTRDR_11", 2*jmod+1, module[jmod],   dx0,  0.0, dz + 3. + 80.5 - 0.2, 0, "ONLY");
-     TVirtualMC::GetMC()->Gspos("BTRDR_11", 2*jmod+2, module[jmod],  -dx0,  0.0, dz + 3. + 80.5 - 0.2, 0, "ONLY");
 
-     dx0 = (hR + dz0 ) * tan10 + 10. * sin10 - (longW / 4. + 0.5) / cos10;
-     TVirtualMC::GetMC()->Gspos("BTRDR_2", 2*jmod+1, module[jmod],   dx0-1.5,  0.0, dz + 3. + 8. * cos10, idrotm[2096], "ONLY");
-     TVirtualMC::GetMC()->Gspos("BTRDR_2", 2*jmod+2, module[jmod],  -dx0+1.5,  0.0, dz + 3. + 8. * cos10, idrotm[2086], "ONLY");
-    
-     TVirtualMC::GetMC()->Gspos("BTRDR_3", 2*jmod+1, module[jmod],   50.96-5-2.,  0.0, dz+3.7, 0, "ONLY");
-     TVirtualMC::GetMC()->Gspos("BTRDR_3", 2*jmod+2, module[jmod],  -50.96+5+2.,  0.0, dz+3.7, 0, "ONLY");
+
+   for (Int_t index = 0; index < 9; index++) {
+     jmod = isec_3[index];
+     if (index > 1) TVirtualMC::GetMC()->Gspos("BTRDR_3", 2*jmod+1, module[jmod],   50.96-5-2.,  0.0, dz+3.7, 0, "ONLY");
+     if (index < 7) TVirtualMC::GetMC()->Gspos("BTRDR_3", 2*jmod+2, module[jmod],  -50.96+5+2.,  0.0, dz+3.7, 0, "ONLY");
    }
 //
 // Thermal shield
@@ -1336,6 +1406,15 @@ void AliFRAMEv3::CreateMaterials()
   Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
   Float_t dAir = 1.20479E-3;
 
+  // G10 
+  // G10 60% SiO2 40% epoxy
+  Float_t ag10[4]= {12.01, 1., 15.994, 28.086};
+  Float_t zg10[4] = { 6.,   1.,  8.,    14.};
+  Float_t wg10[4] = {0.194, 0.023, 0.443, 0.340};
+
+
+  AliMixture(22, "G10", ag10, zg10, 1.7 , 4, wg10);
+
   AliMixture(65, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
   AliMixture(5, "AIR$      ", aAir, zAir, dAir,4, wAir);
   AliMaterial(9, "ALU      ", 26.98, 13., 2.7, 8.9, 37.2);
@@ -1343,6 +1422,7 @@ void AliFRAMEv3::CreateMaterials()
   AliMedium(65, "Stainless Steel", 65, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium( 5, "Air", 5, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium( 9, "Aluminum", 9, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(22, "G10", 22, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 
 }
 
@@ -1535,6 +1615,7 @@ void AliFRAMEv3::WebFrame(const char* name, Float_t dHz, Float_t theta0, Float_t
     TVirtualMC::GetMC()->Gsvolu(nameA, "TRAP", kAir, ptrap, 11);
     TVirtualMC::GetMC()->Gspos(nameA, 1, name,  -0.25, 0.0, 0., 0, "ONLY");
     TVirtualMC::GetMC()->Gspos(nameA, 2, nameI, +0.25, 0.0, 0., 0, "ONLY");
-    gGeoManager->GetVolume(name)->SetVisibility(1);
+    gGeoManager->GetVolume(name)->SetVisContainers();;
+    gGeoManager->GetVolume(nameI)->SetVisContainers();;
 }
 

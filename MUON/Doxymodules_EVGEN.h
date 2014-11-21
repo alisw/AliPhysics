@@ -64,6 +64,7 @@
     class  AliGenTHnSparse {};
     class  AliOmegaDalitz {};
     class  AliGenDeuteron {};
+    class  AliGenLightNuclei {};
     class  AliGenReaderSL {};
     class  AliGenMUONLMR {};
     class  AliGenLcLib {};

@@ -1,17 +1,18 @@
-AliGenerator* AddMCGenPythia8(Float_t e_cms = 2760., Bool_t kCR = kTRUE) 
+AliGenerator* AddMCGenPythia8(Float_t e_cms = 2760., Bool_t kCR = kTRUE, Int_t kF = 1) 
 {
   // Add Pythia 8 generator: 
   //    - Color reconnection = ON/OFF
+  //    - Set k factor, default = 1; range of possible values in xmldoc/CouplingsAndScales.xml
 
   gSystem->Load("liblhapdf.so");
  
   AliGenerator *genP = NULL;
-  genP = CreatePythia8Gen(e_cms, kCR);
+  genP = CreatePythia8Gen(e_cms, kCR, kF);
   
   return genP;
 }
 
-AliGenerator* CreatePythia8Gen(Float_t e_cms, Bool_t kCR) {
+AliGenerator* CreatePythia8Gen(Float_t e_cms, Bool_t kCR, Int_t kF) {
     
    gSystem->Load("libpythia6.so");
    gSystem->Load("libEGPythia6.so");
@@ -37,10 +38,17 @@ AliGenerator* CreatePythia8Gen(Float_t e_cms, Bool_t kCR) {
   // color reconnection
   (AliPythia8::Instance())->ReadString("Tune:pp = 5");//CR
 
+  //random seed based on time
+  AliPythia8::Instance()->ReadString("Random:setSeed = on");
+  AliPythia8::Instance()->ReadString("Random:seed = 0");
+
   if(kCR)             
     (AliPythia8::Instance())->ReadString("BeamRemnants:reconnectColours = on");
   else
     (AliPythia8::Instance())->ReadString("BeamRemnants:reconnectColours = off");
+  
+ 
+  AliPythia8::Instance()->ReadString(Form("MultipartonInteractions:kFactor = %i", kF));
   
   return gener;
 }

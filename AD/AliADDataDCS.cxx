@@ -193,47 +193,37 @@ void AliADDataDCS::Init(){
   TString sindex;
   int iAlias = 0;
   
-  for(int iSide = 0; iSide<2 ; iSide++){
-  	for(int iRing = 0; iRing<4 ; iRing++){
-  		for(int iSector = 0; iSector<2 ; iSector++){
-  			if(iSide == 0) fAliasNames[iAlias] = "AD0/HV/V0A/SECTOR";
-  			else fAliasNames[iAlias] = "AD0/HV/V0C/SECTOR";
-			sindex.Form("%d/RING%d",iSector,iRing);
-			fAliasNames[iAlias] += sindex;
+  for(int iPM = 0; iPM<16 ; iPM++){
+  		fAliasNames[iAlias] = Form("AD0/HV/PM%d",iPM);
 			
-			fHv[iAlias] = new TH1F(fAliasNames[iAlias].Data(),fAliasNames[iAlias].Data(), 3000, kHvMin, kHvMax);
-			fHv[iAlias]->GetXaxis()->SetTitle("Hv");
-			iAlias++;
-  		}
-  	}
+		fHv[iAlias] = new TH1F(fAliasNames[iAlias].Data(),fAliasNames[iAlias].Data(), 3000, kHvMin, kHvMax);
+		fHv[iAlias]->GetXaxis()->SetTitle("Hv");
+		iAlias++;
   }
-
- // Time Resolution Parameters
-	
-	for(int iCIU = 0; iCIU<2 ; iCIU++){
+ // Time Resolution Parameters	
+  for(int iCIU = 0; iCIU<2 ; iCIU++){
 		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/TimeResolution",iCIU);
 		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/WidthResolution",iCIU);
-	}
+  }
+  // HPTDC parameters
+  for(int iCIU = 0; iCIU<2 ; iCIU++){
+	  	fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/MatchWindow",iCIU);
+	  	fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/SearchWindow",iCIU);
+	  	fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/TriggerCountOffset",iCIU);
+	  	fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/RollOver",iCIU);
+  }
 
-	// HPTDC parameters
-	for(int iCIU = 0; iCIU<2 ; iCIU++){
-	  fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/MatchWindow",iCIU);
-	  fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/SearchWindow",iCIU);
-	  fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/TriggerCountOffset",iCIU);
-	  fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/RollOver",iCIU);
-	}
-
-	for(int iCIU = 0; iCIU<2 ; iCIU++){
+  for(int iCIU = 0; iCIU<2 ; iCIU++){
 	  for(int iCh=1;iCh<=8;iCh++){
-	    fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/DelayHit%d",iCIU,iCh);
+	    	fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/DelayHit%d",iCIU,iCh);
 	  }
-	}
+  }
 
-	for(int iCIU = 0; iCIU<2 ; iCIU++){
+  for(int iCIU = 0; iCIU<2 ; iCIU++){
 	  for(int iCh=1;iCh<=8;iCh++){
-	    fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/DiscriThr%d",iCIU,iCh);
+	    	fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/DiscriThr%d",iCIU,iCh);
 	  }
-	}
+  }
 
   if(iAlias!=kNAliases) 
   	      AliError(Form("Number of DCS Aliases defined not correct"));
@@ -277,27 +267,13 @@ void AliADDataDCS::Draw(const Option_t* /*option*/)
 
   if(fGraphs.GetEntries()==0)  return;
   
-  TString canvasName;
-  TCanvas *cHV[8];
+  TCanvas *cHV = new TCanvas("AD0_HV","AD0_HV");
+  cHV->Divide(4,4);
   
-  for(int iSide = 0 ;iSide<2;iSide++){
-  	for(int iRing=0;iRing<4;iRing++){
-  		if(iSide == 0)  canvasName = "V0A_Ring";
-  		else  canvasName = "V0C_Ring";
-  		canvasName += iRing;
-  		int iCanvas = iSide*4 + iRing;
-  		cHV[iCanvas] = new TCanvas(canvasName,canvasName);
-  		cHV[iCanvas]->Divide(3,3);
-  		for(int iSector=0;iSector<2;iSector++){
-  			cHV[iCanvas]->cd(iSector+1);
-  			int iChannel = iSide*8 + iRing*2 + iSector; 
-  			((TGraph*) fGraphs.UncheckedAt(iChannel))->SetMarkerStyle(20);
-  			((TGraph*) fGraphs.UncheckedAt(iChannel))->Draw("ALP");
-
-  		}
-  		  		
+  for(int iPM = 0; iPM<16 ; iPM++){
+  	cHV->cd(iPM+1);
+  	((TGraph*) fGraphs.UncheckedAt(iPM))->SetMarkerStyle(20);
+  	((TGraph*) fGraphs.UncheckedAt(iPM))->Draw("ALP");	  		
   	}
-  }
-
 }
 

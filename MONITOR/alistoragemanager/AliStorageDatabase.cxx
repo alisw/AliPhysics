@@ -21,10 +21,8 @@ AliStorageDatabase::AliStorageDatabase() :
 	fServer(0),
 	fStoragePath("")
 {
-	TThread::Lock();	
+    TThread::Lock();
 	ifstream configFile (GetConfigFilePath());
-
-	
 	if (configFile.is_open())
 	{
 		string line;
@@ -34,50 +32,38 @@ AliStorageDatabase::AliStorageDatabase() :
 			getline(configFile,line);
 			from = line.find("\"")+1;
 			to = line.find_last_of("\"");
-			if(line.find("HOST=")==0)
-			{
+			if(line.find("HOST=")==0){
 				fHost=line.substr(from,to-from);
 			}
-			else if(line.find("PORT=")==0)
-			{
+			else if(line.find("PORT=")==0){
 				fPort=line.substr(from,to-from);
 			}
-			else if(line.find("DATABASE=")==0)
-			{
+			else if(line.find("DATABASE=")==0){
 				fDatabase=line.substr(from,to-from);
 			}
-			else if(line.find("USER=")==0)
-			{
+			else if(line.find("USER=")==0){
 				fUID=line.substr(from,to-from);
 			}
-			else if(line.find("PASS=")==0)
-			{
+			else if(line.find("PASS=")==0){
 				fPassword=line.substr(from,to-from);
 			}
-			else if(line.find("TABLE=")==0)
-			{
+			else if(line.find("TABLE=")==0){
 				fTable=line.substr(from,to-from);
 			}
-			else if(line.find("STORAGE_PATH=")==0)
-			{
+			else if(line.find("STORAGE_PATH=")==0){
 				fStoragePath=line.substr(from,to-from);
 			}
 
 		}
-		if(configFile.eof())
-		{
-			configFile.clear();
-		}
+		if(configFile.eof()){configFile.clear();}
 		configFile.close();
 	}
-	else
-	{
-		cout << "DATABASE -- Unable to open file" <<endl;
-	}
+	else{cout << "DATABASE -- Unable to open file" <<endl;}
 	TThread::UnLock();
 
-	
+    cout<<"DATABASE -- connecting to server:"<<Form("mysql://%s:%s/%s",fHost.c_str(),fPort.c_str(),fDatabase.c_str())<<fUID.c_str()<<fPassword.c_str()<<endl;
 	fServer = TSQLServer::Connect(Form("mysql://%s:%s/%s",fHost.c_str(),fPort.c_str(),fDatabase.c_str()),fUID.c_str(),fPassword.c_str());
+    cout<<"Connected"<<endl;
 }
 
 AliStorageDatabase::~AliStorageDatabase(){
@@ -210,8 +196,9 @@ AliESDEvent* AliStorageDatabase::GetEvent(struct eventStruct event)
 	data = (AliESDEvent*)gDirectory->Get(Form("event%d;1",event.eventNumber));
 
 
-	//	tmpFile->GetObject(Form("event%d;1",event.eventNumber),data);
-
+    tmpFile->Close();
+    delete tmpFile;
+    
 	return data;
 }
 

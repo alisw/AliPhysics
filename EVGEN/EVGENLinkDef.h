@@ -66,6 +66,7 @@
 #pragma link C++ class  AliGenTHnSparse+;
 #pragma link C++ class  AliOmegaDalitz+;
 #pragma link C++ class  AliGenDeuteron+;
+#pragma link C++ class  AliGenLightNuclei+;
 #pragma link C++ class  AliGenReaderSL+;
 #pragma link C++ class  AliGenMUONLMR+;
 #pragma link C++ class  AliGenLcLib+;

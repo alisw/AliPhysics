@@ -99,7 +99,7 @@ AliGenCocktailAfterBurner::~AliGenCocktailAfterBurner()
 /*********************************************************************/ 
 
 void AliGenCocktailAfterBurner::
-AddAfterBurner(AliGenerator *AfterBurner, char* Name, Float_t RateExp)
+AddAfterBurner(AliGenerator *AfterBurner, const char* Name, Float_t RateExp)
 {
 //
 //  Forward parameters to the new AfterBurner
@@ -386,6 +386,7 @@ void AliGenCocktailAfterBurner::SetTracks(Int_t stackno)
     Int_t ntr;
     Float_t weight;
     TVector3 pol;
+    Int_t is;
     
     TParticle * p;
     Int_t n = instack->GetNtrack();
@@ -415,8 +416,9 @@ void AliGenCocktailAfterBurner::SetTracks(Int_t stackno)
       polz = pol.Z();
       mech = AliGenCocktailAfterBurner::IntToMCProcess(p->GetUniqueID());
       weight = p->GetWeight();
+      is = p->GetStatusCode();
 
-      gAlice->GetMCApp()->PushTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,polx, poly, polz, mech, ntr, weight);
+      gAlice->GetMCApp()->PushTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,polx, poly, polz, mech, ntr, weight, is);
 
       SetHighWaterMark(ntr) ; 
 

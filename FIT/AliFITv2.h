@@ -1,5 +1,5 @@
-#ifndef FITV1_H
-#define FITV1_H
+#ifndef FITV2_H
+#define FITV2_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -9,21 +9,21 @@
  
 #include "AliFIT.h"
 #include "TGraph.h" 
-class AliFITv1 : public AliFIT {
+class AliFITv2 : public AliFIT {
   
 public:
 
   enum constants {kAir=1, kVac=3, kGlass=6, kOpGlass=16, kOpGlassCathode=19,kSensAir=22};
 
  
-  AliFITv1();
-  AliFITv1(const char *name, const char *title);
-  AliFITv1(const AliFITv1& o):AliFIT(),
+  AliFITv2();
+  AliFITv2(const char *name, const char *title);
+  AliFITv2(const AliFITv2& o):AliFIT(),
     fIdSens1(0),
-    fPMTeff(0x0) {((AliFITv1 &) o).Copy(*this);}
+    fPMTeff(0x0) {((AliFITv2 &) o).Copy(*this);}
   
-  AliFITv1& operator=(const AliFITv1&) { return *this; }
-  virtual       ~AliFITv1();
+  AliFITv2& operator=(const AliFITv2&) { return *this; }
+  virtual       ~AliFITv2();
   virtual void   CreateGeometry();
   virtual void   DefineOpticalProperties();
   virtual void   AddAlignableVolumes() const;
@@ -39,7 +39,7 @@ protected:
   Int_t fIdSens2; // Sensetive volume  in T0
   TGraph *fPMTeff; //pmt registration effeicincy
  
-  ClassDef(AliFITv1,1)  //Class for FIT version 1
+  ClassDef(AliFITv2,1)  //Class for FIT version 1
 };
 
 
