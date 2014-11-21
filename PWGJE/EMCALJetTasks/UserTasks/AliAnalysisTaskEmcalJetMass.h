@@ -30,7 +30,8 @@ class AliAnalysisTaskEmcalJetMass : public AliAnalysisTaskEmcalJet {
   //Setters
   void SetJetContainerBase(Int_t c)                                  { fContainerBase     = c   ; }
   void SetJetContainerUnsub(Int_t c)                                 { fContainerUnsub    = c   ; }
-  void SetMinFractionShared(Double_t f, Bool_t useUnsubJet = kFALSE) { fMinFractionShared = f   ; fUseUnsubJet = useUnsubJet; }
+  void SetMinFractionShared(Double_t f, Bool_t useUnsubJet = kFALSE) { fMinFractionShared = f   ; SetUseUnsubJet(useUnsubJet); }
+  void SetUseUnsubJet(Bool_t b)                                      { fUseUnsubJet       = b   ; }
   void SetJetMassType(JetMassType t)                                 { fJetMassType       = t   ; }
   void SetUseSumw2(Bool_t b)                                         { fUseSumw2          = b   ; }
 

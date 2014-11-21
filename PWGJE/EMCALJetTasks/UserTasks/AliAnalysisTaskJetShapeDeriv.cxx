@@ -45,6 +45,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
   fSingleTrackEmb(kFALSE),
   fCreateTree(kFALSE),
   fJetMassVarType(kMass),
+  fUseSumw2(0),
   fTreeJetBkg(),
   fJet1Vec(new TLorentzVector()),
   fJet2Vec(new TLorentzVector()),
@@ -127,6 +128,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
   fSingleTrackEmb(kFALSE),
   fCreateTree(kFALSE),
   fJetMassVarType(kMass),
+  fUseSumw2(0),
   fTreeJetBkg(0),
   fJet1Vec(new TLorentzVector()),
   fJet2Vec(new TLorentzVector()),
@@ -337,15 +339,17 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
 
   }
 
-  // =========== Switch on Sumw2 for all histos ===========
-  for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
-    TH1 *h1 = dynamic_cast<TH1*>(fOutput->At(i));
-    if (h1){
-      h1->Sumw2();
-      continue;
+  if(fUseSumw2) {
+    // =========== Switch on Sumw2 for all histos ===========
+    for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
+      TH1 *h1 = dynamic_cast<TH1*>(fOutput->At(i));
+      if (h1){
+	h1->Sumw2();
+	continue;
+      }
+      THnSparse *hn = dynamic_cast<THnSparse*>(fOutput->At(i));
+      if(hn)hn->Sumw2();
     }
-    THnSparse *hn = dynamic_cast<THnSparse*>(fOutput->At(i));
-    if(hn)hn->Sumw2();
   }
 
   TH1::AddDirectory(oldStatus);
