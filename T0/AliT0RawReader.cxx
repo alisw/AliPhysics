@@ -107,7 +107,7 @@ Bool_t  AliT0RawReader::Next()
   Int_t time=0,  itdc=0, ichannel=0, uu; 
   Int_t numberOfWordsInTRM=0, iTRM=0;
   Int_t tdcTime, koef,hit=0;
-  Int_t koefhits[110];
+  Int_t koefhits[220];
   Int_t trm_chain_header =  0x00000000;
   Int_t  trm_chain_trailer =  0x10000000;
   
@@ -116,7 +116,7 @@ Bool_t  AliT0RawReader::Next()
   Int_t header;
 
   Int_t fNTRM = fParam->GetNumberOfTRMs();
-  for ( Int_t k=0; k<110; k++) {
+  for ( Int_t k=0; k<220; k++) {
     koefhits[k]=0;
     for ( Int_t jj=0; jj<5; jj++) {
       fAllData[k][jj]=0;
@@ -171,7 +171,6 @@ Bool_t  AliT0RawReader::Next()
 	  {
 	    //chain header
 	    word = GetNextWord();
-	    // cout<<" chain header "<<word<<endl;
 	    uu = word & trm_chain_header;
 	    if(uu != trm_chain_header) 
 	      {
@@ -195,9 +194,10 @@ Bool_t  AliT0RawReader::Next()
 		
 		koef = fParam->GetChannel(iTRM,itdc,ichain,ichannel);
 		if (koef != 0 ) 
-		  //		  		  cout<<"RawReader>> "<<"koef "<<koef<<" trm "<<iTRM<<
-		  //		  		    " tdc "<<itdc<<" chain "<<ichain<<
-		  //	  		    " channel "<<ichannel<<" time "<<time<<endl;
+		 if(fPrintout)
+		   cout<<"RawReader>> "<<"koef "<<koef<<" trm "<<iTRM<<
+		    " tdc "<<itdc<<" chain "<<ichain<<
+		    " channel "<<ichannel<<" time "<<time<<endl;
 		if (koef ==-1 ){
 		  AliWarning(Form("Incorrect lookup table ! "));
 		  fRawReader->AddMajorErrorLog(kIncorrectLUT);
@@ -218,7 +218,6 @@ Bool_t  AliT0RawReader::Next()
 		
 	      }
 	    
-	    //   cout<<" trailer :: "<<word<<endl;
 	    uu = word&trm_chain_trailer;
 	    if(uu != trm_chain_trailer )
 	      {
@@ -227,11 +226,11 @@ Bool_t  AliT0RawReader::Next()
 		break;
 	      }
 	    if(fPrintout)
-	      cout<<" trailer:: event counter "<< AliBitPacking::UnpackWord(word,16,27)<<endl;
+	      cout<<"chain trailer:: event counter "<< AliBitPacking::UnpackWord(word,16,27)<<endl;
 	  }
             
 	word = GetNextWord(); //TRM trailer
-	//	cout<<" TRM trailer "<<word<<endl;
+	if(fPrintout)	cout<<" TRM trailer "<<word<<endl;
 	header = AliBitPacking::UnpackWord(word,28,31);
 	if( header !=5 )
 	  {
@@ -243,7 +242,6 @@ Bool_t  AliT0RawReader::Next()
 	  cout<<"  TRM trailer :: event counter "<< AliBitPacking::UnpackWord(word,16,27)<<endl;
       } //TRM loop
     word = GetNextWord(); //
-    //  cout<<" after TRM trailer "<<word<<endl;
     if (word == filler )  word = GetNextWord(); 
      header = AliBitPacking::UnpackWord(word,28,31);
      if( header !=5 )
