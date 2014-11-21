@@ -79,6 +79,7 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalTriggerInfoQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskHJetEmbed.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskJetJTJT.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetShapeDeriv.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetShapeConst.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetShapeGR.cxx
