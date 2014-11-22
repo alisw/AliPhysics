@@ -177,6 +177,7 @@ updateQA()
       #if we are explicit about the input file this takes precedence 
       #over earlier additions
       [[ "${inputFile}" =~ QAresults.root$ ]] && qaFile=${inputFile}
+      [[ "${inputFile}" =~ QAresults_barrel.root$ ]] && qaFile=${inputFile}
       [[ "${inputFile}" =~ QAresults_outer.root$ ]] && qaFileOuter=${inputFile}
       [[ "${inputFile}" =~ FilterEvents_Trees.root$ ]] && highPtTree=${inputFile}
       [[ "${inputFile}" =~ event_stat.root$ ]] && eventStatFile=${inputFile}
