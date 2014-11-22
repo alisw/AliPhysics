@@ -59,7 +59,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
       jetContBase->ConnectParticleContainer(trackCont);
       jetContBase->ConnectClusterContainer(clusterCont);
       jetContBase->SetPercAreaCut(0.6);
-      jetContBase->SetPartonInfoName("PartonsInfo");
+      jetContBase->SetPythiaInfoName("PythiaInfo");
     }
   }
   
@@ -71,7 +71,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
       jetContBase->ConnectParticleContainer(trackCont);
       jetContBase->ConnectClusterContainer(clusterCont);
       jetContBase->SetPercAreaCut(0.6);
-      jetContBase->SetPartonInfoName("PartonsInfo");
+      jetContBase->SetPythiaInfoName("PythiaInfo");
     }
 
     jetContTrue = task->AddJetContainer(njetsTrue,strType,R);
@@ -79,7 +79,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
       jetContTrue->SetRhoName(nrhoBase);
       jetContTrue->ConnectParticleContainer(trackContTrue);
       jetContTrue->SetPercAreaCut(0.6); 
-      jetContTrue->SetPartonInfoName("PartonsInfo");
+      jetContTrue->SetPythiaInfoName("PythiaInfo");
     }
   }  
 
@@ -100,7 +100,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
       jetContBase->ConnectParticleContainer(trackCont);
       jetContBase->ConnectClusterContainer(clusterCont);
       jetContBase->SetPercAreaCut(0.6);
-      jetContBase->SetPartonInfoName("PartonsInfo");
+      jetContBase->SetPythiaInfoName("PythiaInfo");
     }
 
     jetContTrue = task->AddJetContainer(njetsTrue,strType,R);
@@ -108,7 +108,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
       jetContTrue->SetRhoName(nrhoBase);
       jetContTrue->ConnectParticleContainer(trackContTrue);
       jetContTrue->SetPercAreaCut(0.6); 
-      jetContTrue->SetPartonInfoName("PartonsInfo");
+      jetContTrue->SetPythiaInfoName("PythiaInfo");
     }
     
   }
