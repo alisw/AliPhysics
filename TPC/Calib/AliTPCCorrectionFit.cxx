@@ -130,7 +130,7 @@ Double_t AliTPCCorrectionFit::EvalAt(Double_t phi, Double_t refX, Double_t evalX
 
 
 
-Double_t AliTPCCorrectionFit::EvalAtPar(Double_t phi0, Double_t snp, Double_t refX, Double_t evalX, Double_t theta, Int_t corr, Int_t ptype, Int_t nsteps,Float_t wt, Float_t t1, Float_t t2){
+Double_t AliTPCCorrectionFit::EvalAtPar(Double_t phi0, Double_t snp, Double_t refX, Double_t evalX, Double_t theta, Int_t corr, Int_t ptype, Int_t nsteps,Float_t wt, Float_t t1, Float_t t2, Bool_t *pstatus){
   //
   // Fit the distortion along the line with the parabolic model
   // We assume that the track are primaries  - where the vertex is at (0,0,0)
@@ -157,7 +157,7 @@ Double_t AliTPCCorrectionFit::EvalAtPar(Double_t phi0, Double_t snp, Double_t re
   AliTPCCorrection* pcorr = AliTPCCorrection::GetVisualCorrection(corr);	
   if (pcorr==0) return 0;
   if (wt<50){
-    pcorr->SetOmegaTauT1T2(wt,t1,t2);
+    if (pcorr) pcorr->SetOmegaTauT1T2(wt,t1,t2);
   }
   Double_t deltaX=(245-85)/(nsteps);
   Double_t curv=2.*snp/refX;
@@ -185,8 +185,10 @@ Double_t AliTPCCorrectionFit::EvalAtPar(Double_t phi0, Double_t snp, Double_t re
   Double_t schi2= TMath::Sqrt(fitter.GetChisquare()/nsteps);
   if (schi2> fgMaxChi2HelixAt){
     ::Error("AliTPCCorrectionFit::EvalAtHelix",TString::Format("%s\tbad chi2:\t%2.2f",pcorr->GetName(),schi2).Data());
+    if (pstatus) (*pstatus)=kFALSE;    
     return 0;
   }
+  if (pstatus) (*pstatus)=kTRUE;
   if (ptype==0) return par[0]+par[1]*evalX+par[2]*evalX*evalX;
   if (ptype==2) return par[1]+2*par[2]*evalX;
   if (ptype==4) return par[2];
@@ -195,7 +197,7 @@ Double_t AliTPCCorrectionFit::EvalAtPar(Double_t phi0, Double_t snp, Double_t re
 }
 
 
-Double_t AliTPCCorrectionFit::EvalAtHelix(Double_t phi0, Double_t snp, Double_t refX, Double_t evalX, Double_t theta, Int_t corr, Int_t ptype, Int_t nsteps, Float_t wt, Float_t t1, Float_t t2){
+Double_t AliTPCCorrectionFit::EvalAtHelix(Double_t phi0, Double_t snp, Double_t refX, Double_t evalX, Double_t theta, Int_t corr, Int_t ptype, Int_t nsteps, Float_t wt, Float_t t1, Float_t t2, Bool_t *pstatus){
   //
   // Fit the distortion along the line with the helix model
   // FIXME - original trajectory to be changed - AliHelix to be used
@@ -230,8 +232,8 @@ Double_t AliTPCCorrectionFit::EvalAtHelix(Double_t phi0, Double_t snp, Double_t 
   Double_t deltaX=(245-85)/(nsteps);
   AliRieman rieman(nsteps);
   if (wt<50){
-    AliTPCCorrection* pcorr = AliTPCCorrection::GetVisualCorrection(corr);	
-    pcorr->SetOmegaTauT1T2(wt,t1,t2);
+    AliTPCCorrection* pcorr = AliTPCCorrection::GetVisualCorrection(corr);	    
+    if (pcorr) pcorr->SetOmegaTauT1T2(wt,t1,t2);
   }
   Double_t curv=2.*snp/refX;
   Double_t dPhi0=TMath::ASin(snp);
@@ -256,8 +258,10 @@ Double_t AliTPCCorrectionFit::EvalAtHelix(Double_t phi0, Double_t snp, Double_t 
   Double_t schi2= TMath::Sqrt(fitter.GetChisquare()/nsteps);
   if (schi2>fgMaxChi2HelixAt){
     ::Error("AliTPCCorrectionFit::EvalAtHelix",TString::Format("Bad chi2\t%2.2f",schi2).Data());
+    if (pstatus) (*pstatus)=kFALSE;    
     return 0;
   }
+  if (pstatus) (*pstatus)=kTRUE;    
   if (ptype==0) return rieman.GetYat(evalX);
   if (ptype==2) return rieman.GetDYat(evalX);
   if (ptype==4) return rieman.GetC();
