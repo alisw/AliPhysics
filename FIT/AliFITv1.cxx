@@ -103,7 +103,7 @@ void AliFITv1::CreateGeometry()
 
   Int_t *idtmed = fIdtmed->GetArray();
   Float_t zdetC = 85; //center of mother volume
-  Float_t zdetA = 333;
+  Float_t zdetA = 335;
   
   Int_t idrotm[999];
   Double_t x,y,z;

@@ -1361,7 +1361,7 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelInnerB22(const Double_t xsta,
     /* Double_t yv[6] = {-2*(kConeOutRadius+klay1+1.5*klay2+klay3+klay4+fSensorThick+klay5),
                         0-0.02,kStaveHeight+0.01,kStaveHeight+0.01,0-0.02,
 			-2*(kConeOutRadius+klay1+1.5*klay2+klay3+klay4+fSensorThick+klay5)};  // (kConeOutRadius*2)-0.0635 */
-    Double_t yv[6] = {-(kConeOutRadius*2)-0.06395,0-0.02,kStaveHeight+0.01,kStaveHeight+0.01,0-0.02,-(kConeOutRadius*2)-0.06395};  // (kConeOutRadius*2)-0.064
+    Double_t yv[6] = {-(kConeOutRadius*2)-0.07295,0-0.02,kStaveHeight+0.01,kStaveHeight+0.01,0-0.02,-(kConeOutRadius*2)-0.07295};  // (kConeOutRadius*2)-0.064
     mechStruct->DefinePolygon(6,xv,yv);
     mechStruct->DefineSection(0,-kStaveLength,0,0,1.);
     mechStruct->DefineSection(1,kStaveLength,0,0,1.);
@@ -1522,7 +1522,7 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelInnerB22(const Double_t xsta,
       volCable->SetLineColor(28);
       volCable->SetFillColor(28); 
       //      mechStavVol->AddNode(volCable, 0, new TGeoCombiTrans(x, y-(kConeOutRadius+klay3+klay2+klay4+fSensorThick+(klay5)/2)+0.0002, z, new TGeoRotation("",0, 0, 0)));
-      mechStavVol->AddNode(volCable, 0, new TGeoCombiTrans(x, y-(kConeOutRadius+klay3+klay2+klay4+fSensorThick+(klay5)/2)+0.01185, z, new TGeoRotation("",0, 0, 0)));
+      mechStavVol->AddNode(volCable, 0, new TGeoCombiTrans(x, y-(kConeOutRadius+klay3+klay2+klay4+(klay5)/2), z, new TGeoRotation("",0, 0, 0)));
       }
     // Done, return the stave structe
     return mechStavVol;

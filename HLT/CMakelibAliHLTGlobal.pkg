@@ -78,7 +78,7 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE  HLT/global HLT/global/physics HLT/BASE HLT/BASE/util HLT/TPCLib TPC TPC/Rec RAW TRD PHOS STEER/ESD STEER/STEERBase ANALYSIS STEER/STEER)
 
-set ( ELIBS  "HLTbase AliHLTUtil CDB ESD STEER STEERBase TPCrec TPCcalib TPCbase RAWDatarec RAWDatabase TRDbase -lEG")
+set ( ELIBS  "HLTbase AliHLTTPC AliHLTUtil CDB ESD STEER STEERBase TPCrec TPCcalib TPCbase RAWDatarec RAWDatabase TRDbase -lEG")
 
 set ( ELIBSDIR  "${ROOTLIBDIR}" )
 
