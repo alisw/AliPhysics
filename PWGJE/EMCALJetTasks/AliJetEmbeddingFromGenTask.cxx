@@ -24,11 +24,10 @@
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliStack.h"
-#include "AliStack.h"
 #include "AliVCluster.h"
 #include "AliVEvent.h"
 #include "AliGenPythiaEventHeader.h"
-#include "AliStackPartonInfo.h"
+#include "AliPythiaInfo.h"
 #include "AliPythiaRndm.h"
 ClassImp(AliJetEmbeddingFromGenTask)
 
@@ -129,11 +128,11 @@ Bool_t AliJetEmbeddingFromGenTask::ExecOnce()
     fNTracks = 0;
   }
 
-  if(!fPartonInfoName.IsNull()) {
-    if (!(InputEvent()->FindListObject(fPartonInfoName))) {
-      fStackPartonInfo = new AliStackPartonInfo("PartonsInfo");
-      fStackPartonInfo->SetName(fPartonInfoName);
-      InputEvent()->AddObject(fStackPartonInfo);
+  if(!fPythiaInfoName.IsNull()) {
+    if (!(InputEvent()->FindListObject(fPythiaInfoName))) {
+      fPythiaInfo = new AliPythiaInfo("PythiaInfo");
+      fPythiaInfo->SetName(fPythiaInfoName);
+      InputEvent()->AddObject(fPythiaInfo);
     }
   }
   return kTRUE;
@@ -154,19 +153,19 @@ void AliJetEmbeddingFromGenTask::Run()
   const Int_t nprim = stack->GetNprimary();
   // reject if partons are missing from stack for some reason
   if(nprim < 8) return;
-  if(fStackPartonInfo) {
+  if(fPythiaInfo) {
     TParticle *part6 = stack->Particle(6);
     TParticle *part7 = stack->Particle(7);
     
-    fStackPartonInfo->SetPartonFlag6(TMath::Abs(part6->GetPdgCode()));
-    fStackPartonInfo->SetPartonPt6(part6->Pt());
-    fStackPartonInfo->SetPartonEta6(part6->Eta());
-    fStackPartonInfo->SetPartonPhi6(part6->Phi());
+    fPythiaInfo->SetPartonFlag6(TMath::Abs(part6->GetPdgCode()));
+    fPythiaInfo->SetPartonPt6(part6->Pt());
+    fPythiaInfo->SetPartonEta6(part6->Eta());
+    fPythiaInfo->SetPartonPhi6(part6->Phi());
     
-    fStackPartonInfo->SetPartonFlag7(TMath::Abs(part7->GetPdgCode()));
-    fStackPartonInfo->SetPartonPt7(part7->Pt());
-    fStackPartonInfo->SetPartonEta7(part7->Eta());
-    fStackPartonInfo->SetPartonPhi7(part7->Phi());
+    fPythiaInfo->SetPartonFlag7(TMath::Abs(part7->GetPdgCode()));
+    fPythiaInfo->SetPartonPt7(part7->Pt());
+    fPythiaInfo->SetPartonEta7(part7->Eta());
+    fPythiaInfo->SetPartonPhi7(part7->Phi());
   }
 
   for (Int_t i=0;i<nprim;++i) {
@@ -216,7 +215,8 @@ void AliJetEmbeddingFromGenTask::FillPythiaHistograms() {
     Float_t xsec = genPH->GetXsection();
     Int_t trials = genPH->Trials();
     Float_t pthard = genPH->GetPtHard();
-
+    Float_t ptWeight=genPH->EventWeight(); 
+    if(fPythiaInfo) fPythiaInfo->SetPythiaEventWeight(ptWeight);
     fHistXsection->Fill(0.5,xsec);
     fHistTrials->Fill(0.5,trials);
     fHistPtHard->Fill(pthard);

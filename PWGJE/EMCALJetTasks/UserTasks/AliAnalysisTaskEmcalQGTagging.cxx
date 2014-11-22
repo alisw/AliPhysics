@@ -35,7 +35,7 @@
 #include "AliAnalysisManager.h"
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
-#include "AliStackPartonInfo.h"
+#include "AliPythiaInfo.h"
 
 
 #include "AliAODEvent.h"
@@ -181,7 +181,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
   //cout<<"base container"<<endl;
   AliEmcalJet* jet1 = NULL;
   AliJetContainer *jetCont = GetJetContainer(0);
-
+  Float_t kWeight=1;
   if(jetCont) {
     jetCont->ResetCurrentID();
     while((jet1 = jetCont->GetNextAcceptJet())) {
@@ -190,7 +190,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       fPtJet->Fill(jet1->Pt());
 
       if (!(fJetShapeType == kData)) {
-	AliStackPartonInfo *partonsInfo = 0x0;
+	AliPythiaInfo *partonsInfo = 0x0;
 	if((fJetShapeType == kTrueDet) || (fJetShapeType == kDetEmb)){
 	  AliJetContainer *jetContTrue = GetJetContainer(1);
 	  jet2 = jet1->ClosestJet();
@@ -202,18 +202,19 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
 	  Double_t fraction = jetCont->GetFractionSharedPt(jet1);
           cout<<"hey a jet"<<fraction<<" "<<jet1->Pt()<<" "<<jet2->Pt()<<endl;
 	  if(fraction<fMinFractionShared) continue;
-	  partonsInfo = (AliStackPartonInfo*) jetContTrue->GetStackPartonInfo();     
+	  partonsInfo = (AliPythiaInfo*) jetContTrue->GetPythiaInfo();     
 	  if(!partonsInfo) return 0;
+          
 	}
 	else {
-	  partonsInfo = (AliStackPartonInfo*) jetCont->GetStackPartonInfo(); 
+	  partonsInfo = (AliPythiaInfo*) jetCont->GetPythiaInfo(); 
 	  jet2=jet1;
           if(!partonsInfo) return 0;
 	}
 	
 	Double_t jp1=(jet2->Phi())-(partonsInfo->GetPartonPhi6()); 
 	Double_t detap1=(jet2->Eta())-(partonsInfo->GetPartonEta6());
-     	
+     	kWeight=partonsInfo->GetPythiaEventWeight();
 	if (jp1< -1*TMath::Pi()) jp1 = (-2*TMath::Pi())-jp1;
 	else if (jp1 > TMath::Pi()) jp1 = (2*TMath::Pi())-jp1;
 	Float_t dRp1 = TMath::Sqrt(jp1 * jp1 + detap1 * detap1);
@@ -295,7 +296,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       fShapesVar[16] = sigma2Match;
 
       fTreeObservableTagging->Fill();
-       
+      fTreeObservableTagging->SetWeight(kWeight); 
     }
     
   } 

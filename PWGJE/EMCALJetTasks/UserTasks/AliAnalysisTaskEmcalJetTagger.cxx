@@ -45,6 +45,7 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger() :
   fContainerBase(0),
   fContainerTag(1),
   fMinFractionShared(0),
+  fUseSumw2(0),
   fMatchingDone(0),
   fh3PtJet1VsDeltaEtaDeltaPhi(0),
   fh2PtJet1VsDeltaR(0),
@@ -88,6 +89,7 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger(const char *name) :
   fContainerBase(0),
   fContainerTag(1),
   fMinFractionShared(0),
+  fUseSumw2(0),
   fMatchingDone(0),
   fh3PtJet1VsDeltaEtaDeltaPhi(0),
   fh2PtJet1VsDeltaR(0),
@@ -140,7 +142,7 @@ void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
   TH1::AddDirectory(kFALSE);
 
   const Int_t nBinsPt          = 250;
-  const Int_t nBinsDPhi        = 100;
+  const Int_t nBinsDPhi        = 72;
   const Int_t nBinsDEta        = 100;
   const Int_t nBinsDR          = 50;
   const Int_t nBinsFraction    = 101;
@@ -205,15 +207,17 @@ void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
   fh3PtJetAreaDRConst = new TH3F("fh3PtJetAreaDRConst","fh3PtJetAreaDRConst;pT;A;#Delta R",nBinsPt,minPt,maxPt,100,0.,1.,100,0.,1.);
   fOutput->Add(fh3PtJetAreaDRConst);
 
-  // =========== Switch on Sumw2 for all histos ===========
-  for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
-    TH1 *h1 = dynamic_cast<TH1*>(fOutput->At(i));
-    if (h1){
-      h1->Sumw2();
-      continue;
+  if(fUseSumw2) {
+    // =========== Switch on Sumw2 for all histos ===========
+    for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
+      TH1 *h1 = dynamic_cast<TH1*>(fOutput->At(i));
+      if (h1){
+	h1->Sumw2();
+	continue;
+      }
+      THnSparse *hn = dynamic_cast<THnSparse*>(fOutput->At(i));
+      if(hn)hn->Sumw2();
     }
-    THnSparse *hn = dynamic_cast<THnSparse*>(fOutput->At(i));
-    if(hn)hn->Sumw2();
   }
 
   TH1::AddDirectory(oldStatus);

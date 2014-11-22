@@ -13,7 +13,7 @@
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
 #include "AliLocalRhoParameter.h"
-#include "AliStackPartonInfo.h"
+#include "AliPythiaInfo.h"
 
 #include "AliJetContainer.h"
 
@@ -27,7 +27,7 @@ AliJetContainer::AliJetContainer():
   fRhoName(),
   fLocalRhoName(),
   fRhoMassName(),
-  fPartonInfoName(),
+  fPythiaInfoName(),
   fFlavourSelection(0),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
@@ -54,7 +54,7 @@ AliJetContainer::AliJetContainer():
   fRho(0),
   fLocalRho(0),
   fRhoMass(0),
-  fPartonsInfo(0),
+  fPythiaInfo(0),
   fGeom(0),
   fRunNumber(0)
 {
@@ -71,7 +71,7 @@ AliJetContainer::AliJetContainer(const char *name):
   fRhoName(),
   fLocalRhoName(),
   fRhoMassName(),
-  fPartonInfoName(),
+  fPythiaInfoName(),
   fFlavourSelection(0),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
@@ -98,7 +98,7 @@ AliJetContainer::AliJetContainer(const char *name):
   fRho(0),
   fLocalRho(0),
   fRhoMass(0),
-  fPartonsInfo(0),
+  fPythiaInfo(0),
   fGeom(0),
   fRunNumber(0)
 {
@@ -176,14 +176,15 @@ void AliJetContainer::LoadRhoMass(AliVEvent *event)
   }
 }
 //________________________________________________________________________
-void AliJetContainer::LoadPartonsInfo(AliVEvent *event)
+void AliJetContainer::LoadPythiaInfo(AliVEvent *event)
 {
     // Load parton info
     
-    if (!fPartonInfoName.IsNull() && !fPartonsInfo) {
-        fPartonsInfo = dynamic_cast<AliStackPartonInfo*>(event->FindListObject(fPartonInfoName));
-        if (!fPartonsInfo) {
-           AliError(Form("%s: Could not retrieve parton infos! %s!", GetName(), fPartonInfoName.Data()));            return;
+    if (!fPythiaInfoName.IsNull() && !fPythiaInfo) {
+        fPythiaInfo = dynamic_cast<AliPythiaInfo*>(event->FindListObject(fPythiaInfoName));
+        if (!fPythiaInfo) {
+           AliError(Form("%s: Could not retrieve parton infos! %s!", GetName(), fPythiaInfoName.Data()));    
+        return;
         }
     }
 }
@@ -627,8 +628,8 @@ void AliJetContainer::SetClassName(const char *clname)
 Double_t AliJetContainer::GetFractionSharedPt(const AliEmcalJet *jet1) const
 {
   //
-  // Get fraction of shared pT between matched full and charged jet
-  // Uses charged jet pT as baseline: fraction = \Sum_{const,full jet} pT,const,i / pT,jet,ch
+  // Get fraction of shared pT between matched jets
+  // Uses ClosestJet() jet pT as baseline: fraction = \Sum_{const,jet1} pT,const,i / pT,jet,closest
   // Only works if tracks array of both jets is the same
   //
 
