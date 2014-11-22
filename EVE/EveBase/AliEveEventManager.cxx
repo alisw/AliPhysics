@@ -764,10 +764,10 @@ void AliEveEventManager::Open()
 
 void AliEveEventManager::InitOCDB(int runNo)
 {
-		static const TEveException kEH("AliEveEventManager::InitOCDB ");
+  static const TEveException kEH("AliEveEventManager::InitOCDB ");
     //if (this == fgMaster)
     {
-        AliCDBManager* cdb = AliCDBManager::Instance();
+      AliCDBManager* cdb = AliCDBManager::Instance();
         if (cdb->IsDefaultStorageSet() == kTRUE)
         {
             Warning(kEH, "CDB already set - using the old storage:\n  '%s'",
@@ -799,7 +799,6 @@ void AliEveEventManager::InitOCDB(int runNo)
             if (cdb->IsDefaultStorageSet() == kFALSE)
                 throw kEH + "CDB initialization failed for '" + fgCdbUri + "'.";
         }
-
         if (fgCdbUri.BeginsWith("local://"))
         {
             TString curPath = gSystem->WorkingDirectory();
@@ -819,7 +818,7 @@ void AliEveEventManager::InitOCDB(int runNo)
                     cdb->SetSpecificStorage(grp, lpath);
                 }
             }
-        }
+	}
     }
 }
 
@@ -1214,7 +1213,7 @@ void AliEveEventManager::NextEvent()
             {
                 if(fCurrentEvent[fEventInUse]->GetRunNumber() >= 0)
                 {
-                    printf("======================= setting event to %d\n", fEventId);
+		  printf("======================= setting event to %d\n", fCurrentEvent[fEventInUse]->GetEventNumberInFile());
                     
                     DestroyElements();
                     InitOCDB(fCurrentEvent[fEventInUse]->GetRunNumber());

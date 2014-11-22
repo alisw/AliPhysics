@@ -477,8 +477,13 @@ vector<serverListStruct> AliStorageEventManager::GetServerListVector(storageSock
 AliESDEvent* AliStorageEventManager::GetEvent(storageSockets socket,int timeout)
 {
     pollitem_t items[1] =  {{*fSockets[socket],0,ZMQ_POLLIN,0}} ;
-    if(timeout>=0){if(poll (&items[0], 1, timeout)==0){return NULL;}}
-    
+    if(timeout>=0){
+	try{(poll (&items[0], 1, timeout)==0);}
+	catch(const zmq::error_t &e){
+	  cout<<"EVENT MANAGER -- GetEvent():"<<e.what()<<endl;
+	    return NULL;
+	  }
+    }
     message_t* message = new message_t();
     
     try
@@ -490,7 +495,6 @@ AliESDEvent* AliStorageEventManager::GetEvent(storageSockets socket,int timeout)
         cout<<"MANAGER -- "<<e.what()<<endl;
         return NULL;
     }
-    
     TBufferFile *mess = new TBufferFile(TBuffer::kRead,
                                         message->size()+sizeof(UInt_t),
                                         message->data());
