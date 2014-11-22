@@ -627,8 +627,8 @@ void AliJetContainer::SetClassName(const char *clname)
 Double_t AliJetContainer::GetFractionSharedPt(const AliEmcalJet *jet1) const
 {
   //
-  // Get fraction of shared pT between matched full and charged jet
-  // Uses charged jet pT as baseline: fraction = \Sum_{const,full jet} pT,const,i / pT,jet,ch
+  // Get fraction of shared pT between matched jets
+  // Uses ClosestJet() jet pT as baseline: fraction = \Sum_{const,jet1} pT,const,i / pT,jet,closest
   // Only works if tracks array of both jets is the same
   //
 
