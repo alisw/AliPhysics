@@ -917,8 +917,8 @@ void AliTPCcalibV0::FilterV0s(AliESDEvent* event){
     AliKFParticle *v0KFK0CVM = new AliKFParticle(*v0KFK0CV);
     v0KFK0CVM->SetMassConstraint(pdg.GetParticle("K_S0")->Mass());
     Double_t chi2K0 = v0KFK0CV->GetChi2();
-    Double_t chi2K0M= v0KFK0CVM->GetChi2();    
-    Double_t massK0=v0KFK0CV->GetMass();
+    //    Double_t chi2K0M= v0KFK0CVM->GetChi2();    
+    //Double_t massK0=v0KFK0CV->GetMass();
     if (chi2K0>kChi2Cut) continue;
     if (v0->GetRr()>kMinR) continue;
     //
