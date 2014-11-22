@@ -262,7 +262,7 @@ UInt_t AliTOFPreprocessor::ProcessHVandLVdps(TMap *dcsAliasMap)
  
     resultDCSMap = fHVLVmaps->ProcessData(*dcsAliasMap);
     if (!resultDCSMap) {
-      Log("Some problems occurred while processing DCS data, TOF exiting from Shuttle");
+      Log("Some problems occurred while processing DCS data for HV and LV, TOF exiting from Shuttle");
       if (fHVLVmaps) {
 	delete fHVLVmaps;
 	fHVLVmaps = 0;
@@ -1878,7 +1878,9 @@ UInt_t AliTOFPreprocessor::Process(TMap *dcsAliasMap)
     Int_t iresultReadout = ProcessReadout();
     Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
     Int_t iResultHVandLVdps = ProcessHVandLVdps(dcsAliasMap);
-    return iresultDAQ+iresultNoiseCalib+iresultDCS+iResultHVandLVdps+iresultReadout;
+    Int_t totResult = iresultDAQ + iresultNoiseCalib + iresultDCS + iResultHVandLVdps + iresultReadout; 
+    Log(Form("Processing PHYSICS, returning %d (iresultDAQ = %d, iresultNoiseCalib = %d, iresultDCS = %d, iResultHVandLVdps = %d, iresultReadout = %d)", totResult, iresultDAQ, iresultNoiseCalib, iresultDCS, iResultHVandLVdps, iresultReadout));
+    return totResult;
   }
 
   // storing
