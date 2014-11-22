@@ -456,8 +456,8 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
       while (ep >= TMath::Pi()) ep -= TMath::Pi();
 
       Double_t fraction = -1.;
+      AliEmcalJet *jetUS = NULL;
       if(fUseUnsubJet) {
-	AliEmcalJet *jetUS = NULL;
 	AliJetContainer *jetContUS = GetJetContainer(fContainerUnsub);
 	Int_t ifound = 0;
 	Int_t ilab = -1;
@@ -504,8 +504,14 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
 
       //matching
       if(fMinFractionShared>0. && fraction>fMinFractionShared) {
-	AliEmcalJet *jetM = jet1->ClosestJet();
-	maxTrackPt = jetM->MaxTrackPt();
+	AliEmcalJet *jetM = NULL;
+	if(fUseUnsubJet) {
+	  if(jetUS) jetM = jetUS->ClosestJet();
+	}
+	else jetM = jet1->ClosestJet();
+	if(jetM) maxTrackPt = jetM->MaxTrackPt();
+	else     maxTrackPt = -1.;
+	if(fUseUnsubJet) Printf("fraction: %f maxTrackPt: %f",fraction,maxTrackPt);
 	fh3PtJet1VsMassVsLeadPtTaggedMatch[fCentBin]->Fill(ptJet1,mJet1,maxTrackPt);
 	fpPtVsMassJet1TaggedMatch[fCentBin]->Fill(ptJet1,mJet1);
 	fh2MassVsAreaJet1TaggedMatch[fCentBin]->Fill(mJet1,jet1->Area());
