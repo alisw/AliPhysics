@@ -294,7 +294,14 @@ Bool_t  AliTPCCalROC::Convolute(Double_t sigmaPad, Double_t sigmaRow,  AliTPCCal
   }
   memcpy(fData, newBuffer,GetNchannels()*sizeof(Float_t));
   delete []newBuffer;
+  return kTRUE;
 }
+
+
+//
+
+
+
 
 
 // algebra fuctions:

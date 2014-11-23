@@ -3213,6 +3213,9 @@ TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
     tMain->SetAlias((friendName+".spectrMean_MeanRatio").Data(),
                     TString::Format("(%s.spectrMean.fElements/(%s.spectrMean_Mean+0))",
                                     friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".spectrMean_MeanRatio").Data(),
+                    TString::Format("(%s.spectrMean.fElements/%s.spectrMean_Mean)",
+                                    friendName.Data(),friendName.Data()).Data());
 
     tMain->SetAlias((friendName+".fitMean_LTMRatio").Data(),
                     TString::Format("(%s.fitMean.fElements/(%s.fitMean_LTM+0))",
@@ -3232,6 +3235,9 @@ TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
                                     friendName.Data(),friendName.Data()).Data());
     tMain->SetAlias((friendName+".fitRMS_MeanRatio").Data(),
                     TString::Format("(%s.fitRMS.fElements/(%s.fitRMS_Mean+0))",
+                                    friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".fitMean_MeanRatio").Data(),
+                    TString::Format("(%s.fitMean.fElements/%s.fitMean_Mean)",
                                     friendName.Data(),friendName.Data()).Data());
     
   }
