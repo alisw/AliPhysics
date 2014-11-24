@@ -18,6 +18,10 @@ add_subdirectory(ITSrec)
 add_subdirectory(ITSsim)
 add_subdirectory(UPGRADE)
 
+if(DA)
+    add_subdirectory(DA)
+endif(DA)
+
 # Macros
 install(DIRECTORY oldmacros DESTINATION ITS)
 install(DIRECTORY macrosSDD DESTINATION ITS)

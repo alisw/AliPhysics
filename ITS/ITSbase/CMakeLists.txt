@@ -29,7 +29,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
-                    ${AliRoot_SOURCE_DIR}/TPC
                    )
 
 # Sources in alphabetical order
@@ -146,6 +145,8 @@ set(SRCS
    )
 if (DATE_FOUND)
     set (SRCS ${SRCS} "AliITSHandleDaSSD.cxx")
+    # set the definitions per folder to be passed to ROOT
+    add_definitions(-DALI_DATE)
 endif (DATE_FOUND)
 
 # Headers from sources
