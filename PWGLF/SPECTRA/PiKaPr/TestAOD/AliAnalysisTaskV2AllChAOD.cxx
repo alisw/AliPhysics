@@ -519,7 +519,7 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
 
   Double_t QxGap1A = 0., QyGap1A = 0.;
   Double_t QxGap1B = 0., QyGap1B = 0.;
-  Int_t multGap1A = 0, multGap1B = 0;
+  Double_t multGap1A = 0, multGap1B = 0;
   
   for (Int_t loop = 0; loop < 2; loop++){
 
@@ -532,34 +532,41 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
     
       fEta_vs_Phi_bef->Fill( track->Eta(), track->Phi() );
       
-      if (fIsRecoEff){
+//       if (fIsRecoEff){
+// 
+// 	// 2) reject randomly tracks at high pT until the reconstruction efficiency becomes flat (add the following before the loop == 0 part): (mail by Alexandru)
+// 
+// 	Double_t recoEff = GetRecoEff(track->Pt(), centV0);
+//         if (recoEff < 0){
+// 	  cout<<"No reconstruction efficiency!"<<endl;
+//           continue;
+// 	}
+// 	
+// 	Double_t rndPt = gRandom->Rndm();
+// //         cout<<"rndPt: "<<rndPt<<endl;
 
-	// 2) reject randomly tracks at high pT until the reconstruction efficiency becomes flat (add the following before the loop == 0 part): (mail by Alexandru)
-
-	Double_t recoEff = GetRecoEff(track->Pt(), centV0);
-        if (recoEff < 0){
-	  cout<<"No reconstruction efficiency!"<<endl;
-          continue;
-	}
-	
-	Double_t rndPt = gRandom->Rndm();
-//         cout<<"rndPt: "<<rndPt<<endl;
-
-	Double_t minRecPt = GetRecoEff(0.200001, centV0);
-//         cout<<"minRecPt: "<<minRecPt<<endl;            
+// 	Double_t minRecPt = GetRecoEff(0.200001, centV0);
+// //         cout<<"minRecPt: "<<minRecPt<<endl;            
                     
-	if (rndPt > minRecPt/recoEff){
-// 	  cout<<"Track rejected: "<<iTracks<<"  from "<<fAOD->GetNumberOfTracks()<<endl;
-	  continue;
-	}
-
-      } // end fIsRecoEff
+// 	if (rndPt > minRecPt/recoEff){
+// // 	  cout<<"Track rejected: "<<iTracks<<"  from "<<fAOD->GetNumberOfTracks()<<endl;
+// 	  continue;
+// 	}
+// 
+//       } // end fIsRecoEff
   
       if (loop == 0) {
 	
 	if (track->Eta() > fEtaGapMax){
-	  QxGap1A += TMath::Cos(2.*track->Phi());
-          QyGap1A += TMath::Sin(2.*track->Phi());
+	  
+	  if(fIsRecoEff){
+	    Double_t receff = GetRecoEff(track->Pt(), centV0);
+	    QxGap1A += (TMath::Cos(2.*track->Phi()))/receff;
+            QyGap1A += (TMath::Sin(2.*track->Phi()))/receff;
+	  } else  {
+	    QxGap1A += TMath::Cos(2.*track->Phi());
+            QyGap1A += TMath::Sin(2.*track->Phi());
+	  }
           multGap1A++;
 
           fSinGap1Aq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
@@ -580,8 +587,15 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
 	}
     
       if (track->Eta() < fEtaGapMin){
-	QxGap1B += TMath::Cos(2.*track->Phi());
-        QyGap1B += TMath::Sin(2.*track->Phi());
+	  
+	if(fIsRecoEff){
+	  Double_t receff = GetRecoEff(track->Pt(), centV0);
+	  QxGap1B += (TMath::Cos(2.*track->Phi()))/receff;
+          QyGap1B += (TMath::Sin(2.*track->Phi()))/receff;
+	} else {
+	  QxGap1B += TMath::Cos(2.*track->Phi());
+          QyGap1B += TMath::Sin(2.*track->Phi());
+	}
         multGap1B++;
                     
         fCosGap1Bq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
@@ -605,8 +619,19 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
       
         //eval v2 scalar product
         if (track->Eta() < fEtaGapMin && multGap1A > 0){
-          Double_t v2SPGap1A = (TMath::Cos(2.*track->Phi())*QxGap1A + TMath::Sin(2.*track->Phi())*QyGap1A)/(Double_t)multGap1A;
-          fv2SPGap1A[centV0]->Fill(track->Pt(), v2SPGap1A);
+	  
+	  Double_t v2SPGap1A = 0.;
+	  if(fIsRecoEff){
+	    Double_t receff = GetRecoEff(track->Pt(), centV0);
+	    Double_t uxGap1A = (TMath::Cos(2.*track->Phi()))/receff;
+	    Double_t uyGap1A = (TMath::Sin(2.*track->Phi()))/receff;
+	    multGap1A = multGap1A/receff;
+            v2SPGap1A = (uxGap1A*QxGap1A + uyGap1A*QyGap1A)/(Double_t)multGap1A;
+	  } else v2SPGap1A = (TMath::Cos(2.*track->Phi())*QxGap1A + TMath::Sin(2.*track->Phi())*QyGap1A)/(Double_t)multGap1A;
+	  
+//           Double_t v2SPGap1A = (TMath::Cos(2.*track->Phi())*QxGap1A + TMath::Sin(2.*track->Phi())*QyGap1A)/(Double_t)multGap1A;
+          
+	  fv2SPGap1A[centV0]->Fill(track->Pt(), v2SPGap1A);
           
 	  fv2SPGap1A_inclusive_mb->Fill(track->Pt(), v2SPGap1A); //mb v2 for mc closure
 
@@ -632,8 +657,20 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
         }
       
         if (track->Eta() > fEtaGapMax && multGap1B > 0){
-          Double_t v2SPGap1B = (TMath::Cos(2.*track->Phi())*QxGap1B + TMath::Sin(2.*track->Phi())*QyGap1B)/(Double_t)multGap1B;
-          fv2SPGap1B[centV0]->Fill(track->Pt(), v2SPGap1B);
+          
+	  Double_t v2SPGap1B = 0;
+	  if(fIsRecoEff){
+	    Double_t receff = GetRecoEff(track->Pt(), centV0);
+	    Double_t uxGap1B = (TMath::Cos(2.*track->Phi()))/receff;
+	    Double_t uyGap1B = (TMath::Sin(2.*track->Phi()))/receff;
+	    multGap1B = multGap1B/receff;
+	    v2SPGap1B = (uxGap1B*QxGap1B + uyGap1B*QyGap1B)/(Double_t)multGap1B;
+	  }
+	  else v2SPGap1B = (TMath::Cos(2.*track->Phi())*QxGap1B + TMath::Sin(2.*track->Phi())*QyGap1B)/(Double_t)multGap1B;
+	    
+// 	  Double_t v2SPGap1B = (TMath::Cos(2.*track->Phi())*QxGap1B + TMath::Sin(2.*track->Phi())*QyGap1B)/(Double_t)multGap1B;
+          
+	  fv2SPGap1B[centV0]->Fill(track->Pt(), v2SPGap1B);
           
 	  fv2SPGap1B_inclusive_mb->Fill(track->Pt(), v2SPGap1B); //mb v2 for mc closure
 	  
@@ -713,24 +750,24 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
     
   }
     
-//   if( fFillTHn ){ 
-// 
-//     Double_t varEv[6];
-//     varEv[0]=Cent;
-//     
-//     varEv[1]=(Double_t)Qvec; // qvec_rec_perc
-//     
-//     varEv[2]=(Double_t)fEventCuts->GetqV0A();
-// 
-//     varEv[3]=(Double_t)fEventCuts->GetqV0C();
-// 
-//     varEv[4]=(Double_t)fEventCuts->GetqTPC();
-//     
-//     varEv[5]=(Double_t)fEventCuts->GetNch(); // Nch
-//     
-//     ((THnSparseF*)fOutput->FindObject("NSparseHistEv"))->Fill(varEv);//event loop
-// 
-//   }
+  if( fFillTHn ){ 
+
+    Double_t varEv[6];
+    varEv[0]=Cent;
+    
+    varEv[1]=(Double_t)Qvec; // qvec_rec_perc
+    
+    varEv[2]=(Double_t)fEventCuts->GetqV0A();
+
+    varEv[3]=(Double_t)fEventCuts->GetqV0C();
+
+    varEv[4]=(Double_t)fEventCuts->GetqTPC();
+    
+    varEv[5]=(Double_t)fEventCuts->GetNch(); // Nch
+    
+    ((THnSparseF*)fOutput->FindObject("NSparseHistEv"))->Fill(varEv);//event loop
+
+  }
 
   
   PostData(1, fOutput  );
@@ -875,19 +912,22 @@ Double_t AliAnalysisTaskV2AllChAOD::GetRecoEff(Double_t pt, Int_t iC){
 // // //   //const Int_t nptBins=34;
   
   const Double_t fEpsilon=0.000001;
-  
-  TH1F *h = (TH1F*)fRecoEffList->At(iC);
+//   cout<<"list: "<<endl;
+//   fRecoEffList->ls();
+  TH1D *h = (TH1D*)fRecoEffList->At(iC);
   
   Int_t bin = h->FindBin(pt);
   
   Double_t lowlim = h->GetBinLowEdge(bin);
   Double_t uplim = h->GetBinLowEdge(bin) + h->GetBinWidth(bin);
   
-  if( pt>lowlim && pt<uplim ) return h->GetBinContent(bin);
-  if( pt == lowlim ) return h->GetBinContent( h->FindBin(pt+fEpsilon) );
-  if( pt == uplim ) return h->GetBinContent( h->FindBin(pt-fEpsilon) );
-
-  else return 1.;
+  Double_t eff = 1.;
+  
+  if( pt>lowlim && pt<uplim ) eff = h->GetBinContent(bin);
+  if( pt == lowlim ) eff = h->GetBinContent( h->FindBin(pt+fEpsilon) );
+  if( pt == uplim ) eff = h->GetBinContent( h->FindBin(pt-fEpsilon) );
+  
+  return eff;
   
 }
 //_________________________________________________________________
