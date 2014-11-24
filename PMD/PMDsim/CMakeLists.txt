@@ -31,8 +31,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order
 set(SRCS
-    AliPMDcell.cxx
     AliPMD.cxx
+    AliPMDcell.cxx
     AliPMDDDLRawData.cxx
     AliPMDDigitizer.cxx
     AliPMDhit.cxx

@@ -18,4 +18,8 @@ add_subdirectory(PMDbase)
 add_subdirectory(PMDrec)
 add_subdirectory(PMDsim)
 
+if(DA)
+    add_subdirectory(DA)
+endif(DA)
+
 message(STATUS "PMD enabled")
