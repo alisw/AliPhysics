@@ -212,6 +212,9 @@ fUseAODMerging(kFALSE)
   SetVar("VAR_PYTHIA6_INCLUDES","");
   SetVar("VAR_PYTHIA6_SETENV","");
   
+  SetVar("VAR_LHAPDF","liblhapdf");
+  SetVar("VAR_MUONMCMODE","1");
+  
   if ( TString(generator).Contains("pythia8",TString::kIgnoreCase) )
   {
     fMaxEventsPerChunk =  500; // 5000 is not reasonable with Pythia8 (and ITS+MUON...)
