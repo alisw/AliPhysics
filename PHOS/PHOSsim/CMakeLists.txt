@@ -35,9 +35,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources in alphabetical order
 set(SRCS
     AliPHOSCPVDigit.cxx
-    AliPHOS.cxx
     AliPHOSQADataMakerSim.cxx
-    AliPHOSTick.cxx
     AliPHOSv0.cxx
     AliPHOSv1.cxx
     AliPHOSv2.cxx

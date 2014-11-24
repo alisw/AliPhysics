@@ -36,27 +36,17 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources in alphabetical order
 set(SRCS
     AliPHOSAodCluster.cxx
-    AliPHOSClusterizerv1.cxx
     AliPHOSClusterizerv2.cxx
     AliPHOSEsdCluster.cxx
     AliPHOSEvalRecPoint.cxx
     AliPHOSGridFile.cxx
     AliPHOSIhepAnalyze.cxx
-    AliPHOSLink.cxx
     AliPHOSPIDv0.cxx
-    AliPHOSPIDv1.cxx
     AliPHOSQADataMakerRec.cxx
     AliPHOSRecCpvManager.cxx
     AliPHOSRecEmcManager.cxx
     AliPHOSRecManager.cxx
-    AliPHOSReconstructor.cxx
-    AliPHOSTracker.cxx
-    AliPHOSTrackSegmentMakerv1.cxx
     AliPHOSTrackSegmentMakerv2.cxx
-    AliPHOSTriggerRawDigiProducer.cxx
-    AliPHOSTriggerRawDigit.cxx
-    AliPHOSTriggerRawReader.cxx
-    AliPHOSTRURawReader.cxx
    )
 
 # Headers from sources

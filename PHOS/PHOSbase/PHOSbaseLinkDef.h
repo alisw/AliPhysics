@@ -43,4 +43,17 @@
 #pragma link C++ class AliPHOSImpact+;
 #pragma link C++ class AliPHOSTrigger+;
 
+#pragma link C++ class AliPHOSTick+;
+#pragma link C++ class AliPHOSReconstructor+;
+#pragma link C++ class AliPHOS+;
+#pragma link C++ class AliPHOSClusterizerv1+;
+#pragma link C++ class AliPHOSTrackSegmentMakerv1+;
+#pragma link C++ class AliPHOSPIDv1+;
+#pragma link C++ class AliPHOSTracker+;
+#pragma link C++ class AliPHOSTriggerRawDigiProducer+;
+#pragma link C++ class AliPHOSTriggerRawDigit+;
+#pragma link C++ class AliPHOSLink+;
+#pragma link C++ class AliPHOSTriggerRawReader+;
+#pragma link C++ class AliPHOSTRURawReader+;
+
 #endif
