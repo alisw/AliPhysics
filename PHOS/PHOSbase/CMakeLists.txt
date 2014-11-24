@@ -91,8 +91,8 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
-set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES STEERBase STEER CDB ESD RAWDatabase RAWDatarec PHOSUtils)
+set(ROOT_DEPENDENCIES Core EG Geom Gpad Graf Hist MathCore Matrix Minuit Physics RIO Tree VMC)
+set(ALIROOT_DEPENDENCIES STEERBase STEER CDB ESD RAWDatabase RAWDatarec RAWDatasim PHOSUtils)
 
 # Generate the ROOT map
 # Dependecies
@@ -106,7 +106,7 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 add_library(${MODULE} SHARED $<TARGET_OBJECTS:PHOSbase-object>)
 
 # Linking
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ALIROOT_DEPENDENCIES})
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
 # Additional compilation flags
 set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-O -g -fPIC")

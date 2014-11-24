@@ -21,6 +21,10 @@ add_subdirectory(PHOSsim)
 add_subdirectory(PHOSpi0Calib)
 add_subdirectory(PHOSshuttle)
 
+if(DA)
+    add_subdirectory(DA)
+endif(DA)
+
 # Install the macros, mapping, .root, .dat
 install(DIRECTORY macros DESTINATION PHOS)
 install(DIRECTORY mapping DESTINATION PHOS)

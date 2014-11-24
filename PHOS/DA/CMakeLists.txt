@@ -21,7 +21,10 @@ include_directories(
                     ${AliRoot_SOURCE_DIR}/PHOS/PHOSbase
                     ${AliRoot_SOURCE_DIR}/PHOS/PHOSshuttle
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatasim
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
@@ -46,14 +49,14 @@ add_executable(PHOSPEDda PHOSPEDda.cxx) # 4
 set(MODULE_COMPILE_FLAGS)
 set(MODULE_LINK_FLAGS)
 
-target_link_libraries(PHOSBCMda PHOSbase-static PHOSshuttle-static RAWDatabase-static RAWDatarec-static STEERBase-static ${DATE_MONLIBRARIES} daqDA Root RootExtra ${DATE_RCPROXYLIBRARIES}) # 1
-target_link_libraries(PHOSGAINda PHOSbase-static PHOSshuttle-static RAWDatabase-static RAWDatarec-static STEERBase-static AmoreDA daqDA ${DATE_MONLIBRARIES}  Root RootExtra ${DATE_RCPROXYLIBRARIES}) # 2
-target_link_libraries(PHOSLEDda PHOSbase-static PHOSshuttle-static RAWDatabase-static RAWDatarec-static STEERBase-static AmoreDA daqDA ${DATE_MONLIBRARIES} Root RootExtra ${DATE_RCPROXYLIBRARIES}) # 3 
-target_link_libraries(PHOSPEDda RAWDatabase-static RAWDatarec-static STEERBase-static AmoreDA daqDA ${DATE_MONLIBRARIES} Root RootExtra ${DATE_RCPROXYLIBRARIES}) # 4
+target_link_libraries(PHOSBCMda PHOSbase-static PHOSshuttle-static RAWDatabase-static RAWDatarec-static STEERBase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 1
+target_link_libraries(PHOSGAINda PHOSbase-static PHOSshuttle-static RAWDatabase-static RAWDatarec-static STEERBase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 2
+target_link_libraries(PHOSLEDda PHOSbase-static PHOSshuttle-static RAWDatabase-static RAWDatarec-static STEERBase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 3 
+target_link_libraries(PHOSPEDda RAWDatabase-static RAWDatarec-static STEERBase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 4
 
 # different flags
 set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS} ${AMORE_CFLAGS}")
-set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS} ${AMORE_AUXLIBS}")
+set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
 
 set_target_properties(PHOSBCMda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
 set_target_properties(PHOSBCMda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
