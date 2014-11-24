@@ -167,8 +167,8 @@ void AliAODMuonReplicator::FilterMC(const AliAODEvent& source)
   
   fParticleSelected.Delete();
   
-  if ( fMCMode>=2 && !fTracks->GetEntries() ) return;
-  // for fMCMode>=2 we only copy MC information for events where there's at least one muon track
+  if ( fMCMode==2 && !fTracks->GetEntries() ) return;
+  // for fMCMode==2 we only copy MC information for events where there's at least one muon track
     
   mcHeader = static_cast<AliAODMCHeader*>(source.FindListObject(AliAODMCHeader::StdBranchName()));
   
@@ -201,6 +201,32 @@ void AliAODMuonReplicator::FilterMC(const AliAODEvent& source)
         else
         {
           label = mother->GetMother();
+        }
+      }
+    }
+    
+    if ( mcParticles && fMCMode==3 )
+    {
+      // loop on MC muon tracks to find their ancestors
+      for ( Int_t ipart=0; ipart<mcParticles->GetEntries(); ipart++ )
+      {
+        AliAODMCParticle* mcp = static_cast<AliAODMCParticle*>(mcParticles->UncheckedAt(ipart));
+        if ( TMath::Abs(mcp->PdgCode()) != 13 ) continue;
+        Int_t label = ipart;
+
+        while ( label >= 0 )
+        {
+          SelectParticle(label);
+          AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(mcParticles->UncheckedAt(label));
+          if (!mother)
+          {
+            AliError("Got a null mother ! Check that !");
+            label = -1;
+          }
+          else
+          {
+            label = mother->GetMother();
+          }
         }
       }
     }

@@ -132,9 +132,12 @@ void AliAnalysisTaskESDMuonFilter::PrintTask(Option_t *option, Int_t indent) con
     {
       cout << spaces.Data() << "  (will write MC information irrespective of whether or not we have reconstructed muons in the event)" << endl;
     }
-    else
+    else if ( fMCMode == 2 )
     {
       cout << spaces.Data() << "  (will write MC information only if we have reconstructed muons in the event)" << endl;
+    }
+    else {
+      cout << spaces.Data() << "  (will write MC information for all muons in the event)" << endl;
     }
   }
   
