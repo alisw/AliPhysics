@@ -30,15 +30,17 @@ AliAnalysisTaskUpcPhi *AddTaskUpcPhi(Bool_t runTree = kTRUE,Bool_t runHist = kTR
 
    // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("PhiTree", TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:PhiITSsa", AliAnalysisManager::GetCommonFileName()));
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("ListTrig", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:PhiITSsa", AliAnalysisManager::GetCommonFileName()));
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("PhiListHist", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:PhiITSsa", AliAnalysisManager::GetCommonFileName()));  
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("ITSTree", TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:Phi", AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("TPCTree", TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:Phi", AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("ListTrig", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:Phi", AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("PhiListHist", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:Phi", AliAnalysisManager::GetCommonFileName()));  
 
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutput1);
   mgr->ConnectOutput(task, 2, coutput2);
   mgr->ConnectOutput(task, 3, coutput3);
+  mgr->ConnectOutput(task, 4, coutput4);
 
 return task;
 }
