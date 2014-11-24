@@ -431,6 +431,11 @@ Bool_t AliCFVertexingHFCascade::CheckMCChannelDecay() const
     return checkCD;
   }
 
+  if(TMath::Abs(fmcPartCandidate->GetPdgCode()) == 4122 && (daughter1 - daughter0 != 1)) {
+    AliDebug(2, Form("The MC particle doesn't have the correct daughters!!"));
+    return checkCD;
+  }
+
   if (!(TMath::Abs(mcPartDaughter0->GetPdgCode()) == fPDGneutrDaughForMC &&
 	TMath::Abs(mcPartDaughter1->GetPdgCode()) == fPDGbachelor) && 
       !(TMath::Abs(mcPartDaughter0->GetPdgCode()) == fPDGbachelor &&
@@ -713,6 +718,11 @@ Bool_t AliCFVertexingHFCascade::CheckAdditionalCuts(AliPIDResponse* pidResponse)
     AliAODRecoCascadeHF* cascade = (AliAODRecoCascadeHF*)fRecoCandidate;
     AliAODv0 * v0part = cascade->Getv0();
     AliAODTrack *bachelor = (AliAODTrack*)cascade->GetBachelor();
+    Double_t bachelorEta = bachelor->Eta();
+    AliAODTrack *v0pos = (AliAODTrack*)v0part->GetDaughter(0);
+    AliAODTrack *v0neg = (AliAODTrack*)v0part->GetDaughter(1);
+    Double_t v0posEta = v0pos->Eta();
+    Double_t v0negEta = v0neg->Eta();
 
     Bool_t onFlyV0 = v0part->GetOnFlyStatus(); // on-the-flight V0s
     Double_t nSigmaTPCpr=-999.;
@@ -723,9 +733,11 @@ Bool_t AliCFVertexingHFCascade::CheckAdditionalCuts(AliPIDResponse* pidResponse)
     Double_t invmassK0s = v0part->MassK0Short();
     Double_t mK0SPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
 
-    Bool_t cutsForTMVA = ((nSigmaTOFpr < -800) || (TMath::Abs(nSigmaTOFpr) < 3)) &&  
+    Bool_t cutsForTMVA = (TMath::Abs(bachelorEta) < 0.8 && TMath::Abs(v0posEta) < 0.8 && TMath::Abs(v0negEta) < 0.8) &&
+      ((nSigmaTOFpr < -800) || (TMath::Abs(nSigmaTOFpr) < 3)) &&  
       ((ptArm < 0.07) || (ptArm > 0.105)) &&
       ((TMath::Abs(invmassK0s - mK0SPDG)) < 0.01);
+
 
     if (!fUseCutsForTMVA) cutsForTMVA = kTRUE;
 
