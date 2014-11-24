@@ -33,7 +33,6 @@ class AliAnalysisTaskUpcPhi : public AliAnalysisTaskSE {
   virtual void RunESDtrig();
   virtual void RunESDhist();
   virtual void RunESDtree();
-  virtual void RunESDMC(AliESDEvent *esd);
   virtual void Terminate(Option_t *);
   void SetRunTree(Bool_t runTree){fRunTree = runTree;}
   void SetRunHist(Bool_t runHist){fRunHist = runHist;}
@@ -51,7 +50,9 @@ class AliAnalysisTaskUpcPhi : public AliAnalysisTaskSE {
   AliPIDResponse *fPIDResponse;
   
   //event tree
-  TTree *fPhiTree;
+  TTree *fITSTree;
+  TTree *fTPCTree;
+  
   //tree variables
   Int_t fRunNum;
   UInt_t fPerNum, fOrbNum;
@@ -66,13 +67,19 @@ class AliAnalysisTaskUpcPhi : public AliAnalysisTaskSE {
   Double_t fPIDITSKaon[2];
   Double_t fPIDITSProton[2];
   
+  Double_t fPIDTPCMuon[2];
+  Double_t fPIDTPCElectron[2];
+  Double_t fPIDTPCPion[2];
+  Double_t fPIDTPCKaon[2];
+  Double_t fPIDTPCProton[2];
+  
   Int_t fVtxContrib;
   Double_t fVtxPos[3];
   Double_t fVtxErr[3];
   Double_t fVtxChi2,fVtxNDF;
   Double_t fKfVtxPos[3];
   Double_t fSpdVtxPos[3];
-  UShort_t fBCrossNum, fNtracklets, fNLooseTracks;
+  UShort_t fBCrossNum, fNtracklets, fNLooseITSTracks, fNLooseTPCTracks;
   //vzero, zdc
   Double_t fZDCAenergy, fZDCCenergy;
   Int_t fV0Adecision, fV0Cdecision;

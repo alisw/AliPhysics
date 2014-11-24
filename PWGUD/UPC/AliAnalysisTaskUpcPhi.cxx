@@ -65,10 +65,10 @@ using std::endl;
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcPhi::AliAnalysisTaskUpcPhi() 
-  : AliAnalysisTaskSE(),fType(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fRunSystematics(kFALSE),fPIDResponse(0),fPhiTree(0),
+  : AliAnalysisTaskSE(),fType(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fRunSystematics(kFALSE),fPIDResponse(0),fITSTree(0),fTPCTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),
-    fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
+    fBCrossNum(0),fNtracklets(0),fNLooseITSTracks(0),fNLooseTPCTracks(0),
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fPhiAODTracks(0),fPhiESDTracks(0),fGenPart(0),
@@ -85,10 +85,10 @@ AliAnalysisTaskUpcPhi::AliAnalysisTaskUpcPhi()
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcPhi::AliAnalysisTaskUpcPhi(const char *name) 
-  : AliAnalysisTaskSE(name),fType(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fRunSystematics(kFALSE),fPIDResponse(0),fPhiTree(0),
+  : AliAnalysisTaskSE(name),fType(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fRunSystematics(kFALSE),fPIDResponse(0),fITSTree(0),fTPCTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),
-    fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
+    fBCrossNum(0),fNtracklets(0),fNLooseITSTracks(0),fNLooseTPCTracks(0),
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fPhiAODTracks(0),fPhiESDTracks(0),fGenPart(0),
@@ -105,8 +105,9 @@ AliAnalysisTaskUpcPhi::AliAnalysisTaskUpcPhi(const char *name)
   Init();
 
   DefineOutput(1, TTree::Class());
-  DefineOutput(2, TList::Class());
+  DefineOutput(2, TTree::Class());
   DefineOutput(3, TList::Class());
+  DefineOutput(4, TList::Class());
 
 }//AliAnalysisTaskUpcPhi
 
@@ -121,6 +122,12 @@ void AliAnalysisTaskUpcPhi::Init()
 	fPIDITSPion[i] = -666;
 	fPIDITSKaon[i] = -666;
 	fPIDITSProton[i] = -666;
+	
+	fPIDTPCMuon[i] = -666;
+	fPIDTPCElectron[i] = -666;
+	fPIDTPCPion[i] = -666;
+	fPIDTPCKaon[i] = -666;
+	fPIDTPCProton[i] = -666;
 	
 	fTriggerInputsMC[i] = kFALSE;
 	}
@@ -137,9 +144,13 @@ void AliAnalysisTaskUpcPhi::Init()
 AliAnalysisTaskUpcPhi::~AliAnalysisTaskUpcPhi() 
 {
   // Destructor
-  if(fPhiTree){
-     delete fPhiTree;
-     fPhiTree = 0x0;
+  if(fITSTree){
+     delete fITSTree;
+     fITSTree = 0x0;
+  }
+  if(fTPCTree){
+     delete fTPCTree;
+     fTPCTree = 0x0;
   }
   if(fListTrig){
      delete fListTrig;
@@ -170,50 +181,96 @@ void AliAnalysisTaskUpcPhi::UserCreateOutputObjects()
   fPhiESDTracks = new TClonesArray("AliESDtrack", 1000);
   fGenPart = new TClonesArray("TParticle", 1000);
 
- //output tree with Phi candidate events
-  fPhiTree = new TTree("fPhiTree", "fPhiTree");
-  fPhiTree ->Branch("fRunNum", &fRunNum, "fRunNum/I");
-  fPhiTree ->Branch("fPerNum", &fPerNum, "fPerNum/i");
-  fPhiTree ->Branch("fOrbNum", &fOrbNum, "fOrbNum/i");
+ //output tree with Phi ITSsa candidate events
+  fITSTree = new TTree("fITSTree", "fITSTree");
+  fITSTree ->Branch("fRunNum", &fRunNum, "fRunNum/I");
+  fITSTree ->Branch("fPerNum", &fPerNum, "fPerNum/i");
+  fITSTree ->Branch("fOrbNum", &fOrbNum, "fOrbNum/i");
   
-  fPhiTree ->Branch("fBCrossNum", &fBCrossNum, "fBCrossNum/s");
-  fPhiTree ->Branch("fTrigger", &fTrigger[0], Form("fTrigger[%i]/O", ntrg));
-  fPhiTree ->Branch("fL0inputs", &fL0inputs, "fL0inputs/i");
-  fPhiTree ->Branch("fL1inputs", &fL1inputs, "fL1inputs/i");
-  fPhiTree ->Branch("fNtracklets", &fNtracklets, "fNtracklets/s");
-  fPhiTree ->Branch("fNLooseTracks", &fNLooseTracks, "fNLooseTracks/s");
-  fPhiTree ->Branch("fVtxContrib", &fVtxContrib, "fVtxContrib/I");
+  fITSTree ->Branch("fBCrossNum", &fBCrossNum, "fBCrossNum/s");
+  fITSTree ->Branch("fTrigger", &fTrigger[0], Form("fTrigger[%i]/O", ntrg));
+  fITSTree ->Branch("fL0inputs", &fL0inputs, "fL0inputs/i");
+  fITSTree ->Branch("fL1inputs", &fL1inputs, "fL1inputs/i");
+  fITSTree ->Branch("fNtracklets", &fNtracklets, "fNtracklets/s");
+  fITSTree ->Branch("fNLooseITSTracks", &fNLooseITSTracks, "fNLooseITSTracks/s");
+  fITSTree ->Branch("fVtxContrib", &fVtxContrib, "fVtxContrib/I");
   
-  fPhiTree ->Branch("fPIDITSMuon", &fPIDITSMuon[0], "fPIDITSMuon[2]/D");
-  fPhiTree ->Branch("fPIDITSElectron", &fPIDITSElectron[0], "fPIDITSElectron[2]/D");
-  fPhiTree ->Branch("fPIDITSPion", &fPIDITSPion[0], "fPIDITSPion[2]/D");
-  fPhiTree ->Branch("fPIDITSKaon", &fPIDITSKaon[0], "fPIDITSKaon[2]/D");
-  fPhiTree ->Branch("fPIDITSProton", &fPIDITSProton[0], "fPIDITSProton[2]/D");
+  fITSTree ->Branch("fPIDITSMuon", &fPIDITSMuon[0], "fPIDITSMuon[2]/D");
+  fITSTree ->Branch("fPIDITSElectron", &fPIDITSElectron[0], "fPIDITSElectron[2]/D");
+  fITSTree ->Branch("fPIDITSPion", &fPIDITSPion[0], "fPIDITSPion[2]/D");
+  fITSTree ->Branch("fPIDITSKaon", &fPIDITSKaon[0], "fPIDITSKaon[2]/D");
+  fITSTree ->Branch("fPIDITSProton", &fPIDITSProton[0], "fPIDITSProton[2]/D");
   
-  fPhiTree ->Branch("fVtxPos", &fVtxPos[0], "fVtxPos[3]/D");
-  fPhiTree ->Branch("fVtxErr", &fVtxErr[0], "fVtxErr[3]/D");
-  fPhiTree ->Branch("fVtxChi2", &fVtxChi2, "fVtxChi2/D");
-  fPhiTree ->Branch("fVtxNDF", &fVtxNDF, "fVtxNDF/D");
+  fITSTree ->Branch("fVtxPos", &fVtxPos[0], "fVtxPos[3]/D");
+  fITSTree ->Branch("fVtxErr", &fVtxErr[0], "fVtxErr[3]/D");
+  fITSTree ->Branch("fVtxChi2", &fVtxChi2, "fVtxChi2/D");
+  fITSTree ->Branch("fVtxNDF", &fVtxNDF, "fVtxNDF/D");
   
-  fPhiTree ->Branch("fKfVtxPos", &fKfVtxPos[0], "fKfVtxPos[3]/D");
-  fPhiTree ->Branch("fSpdVtxPos", &fSpdVtxPos[0], "fSpdVtxPos[3]/D");
+  fITSTree ->Branch("fKfVtxPos", &fKfVtxPos[0], "fKfVtxPos[3]/D");
+  fITSTree ->Branch("fSpdVtxPos", &fSpdVtxPos[0], "fSpdVtxPos[3]/D");
   
-  fPhiTree ->Branch("fZDCAenergy", &fZDCAenergy, "fZDCAenergy/D");
-  fPhiTree ->Branch("fZDCCenergy", &fZDCCenergy, "fZDCCenergy/D");
-  fPhiTree ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
-  fPhiTree ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");  
-  fPhiTree ->Branch("fDataFilnam", &fDataFilnam);
-  fPhiTree ->Branch("fRecoPass", &fRecoPass, "fRecoPass/S");
-  fPhiTree ->Branch("fEvtNum", &fEvtNum, "fEvtNum/L");  		       
+  fITSTree ->Branch("fZDCAenergy", &fZDCAenergy, "fZDCAenergy/D");
+  fITSTree ->Branch("fZDCCenergy", &fZDCCenergy, "fZDCCenergy/D");
+  fITSTree ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
+  fITSTree ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");  
+  fITSTree ->Branch("fDataFilnam", &fDataFilnam);
+  fITSTree ->Branch("fRecoPass", &fRecoPass, "fRecoPass/S");
+  fITSTree ->Branch("fEvtNum", &fEvtNum, "fEvtNum/L");  		       
   if( fType == 0 ) {
-    fPhiTree ->Branch("fPhiESDTracks", &fPhiESDTracks);
+    fITSTree ->Branch("fPhiESDTracks", &fPhiESDTracks);
   }
   if( fType == 1 ) {
-    fPhiTree ->Branch("fPhiAODTracks", &fPhiAODTracks);
+    fITSTree ->Branch("fPhiAODTracks", &fPhiAODTracks);
   }
   if(isMC) {
-    fPhiTree ->Branch("fGenPart", &fGenPart);
-    fPhiTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[2]/O");
+    fITSTree ->Branch("fGenPart", &fGenPart);
+    fITSTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[2]/O");
+  }
+
+ //output tree with Phi ITS-TPC candidate events
+  fTPCTree = new TTree("fTPCTree", "fTPCTree");
+  fTPCTree ->Branch("fRunNum", &fRunNum, "fRunNum/I");
+  fTPCTree ->Branch("fPerNum", &fPerNum, "fPerNum/i");
+  fTPCTree ->Branch("fOrbNum", &fOrbNum, "fOrbNum/i");
+  
+  fTPCTree ->Branch("fBCrossNum", &fBCrossNum, "fBCrossNum/s");
+  fTPCTree ->Branch("fTrigger", &fTrigger[0], Form("fTrigger[%i]/O", ntrg));
+  fTPCTree ->Branch("fL0inputs", &fL0inputs, "fL0inputs/i");
+  fTPCTree ->Branch("fL1inputs", &fL1inputs, "fL1inputs/i");
+  fTPCTree ->Branch("fNtracklets", &fNtracklets, "fNtracklets/s");
+  fTPCTree ->Branch("fNLooseTPCTracks", &fNLooseTPCTracks, "fNLooseTPCTracks/s");
+  fTPCTree ->Branch("fVtxContrib", &fVtxContrib, "fVtxContrib/I");
+  
+  fTPCTree ->Branch("fPIDTPCMuon", &fPIDTPCMuon[0], "fPIDTPCMuon[2]/D");
+  fTPCTree ->Branch("fPIDTPCElectron", &fPIDTPCElectron[0], "fPIDTPCElectron[2]/D");
+  fTPCTree ->Branch("fPIDTPCPion", &fPIDTPCPion[0], "fPIDTPCPion[2]/D");
+  fTPCTree ->Branch("fPIDTPCKaon", &fPIDTPCKaon[0], "fPIDTPCKaon[2]/D");
+  fTPCTree ->Branch("fPIDTPCProton", &fPIDTPCProton[0], "fPIDTPCProton[2]/D");
+  
+  fTPCTree ->Branch("fVtxPos", &fVtxPos[0], "fVtxPos[3]/D");
+  fTPCTree ->Branch("fVtxErr", &fVtxErr[0], "fVtxErr[3]/D");
+  fTPCTree ->Branch("fVtxChi2", &fVtxChi2, "fVtxChi2/D");
+  fTPCTree ->Branch("fVtxNDF", &fVtxNDF, "fVtxNDF/D");
+  
+  fTPCTree ->Branch("fKfVtxPos", &fKfVtxPos[0], "fKfVtxPos[3]/D");
+  fTPCTree ->Branch("fSpdVtxPos", &fSpdVtxPos[0], "fSpdVtxPos[3]/D");
+  
+  fTPCTree ->Branch("fZDCAenergy", &fZDCAenergy, "fZDCAenergy/D");
+  fTPCTree ->Branch("fZDCCenergy", &fZDCCenergy, "fZDCCenergy/D");
+  fTPCTree ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
+  fTPCTree ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");  
+  fTPCTree ->Branch("fDataFilnam", &fDataFilnam);
+  fTPCTree ->Branch("fRecoPass", &fRecoPass, "fRecoPass/S");
+  fTPCTree ->Branch("fEvtNum", &fEvtNum, "fEvtNum/L");  		       
+  if( fType == 0 ) {
+    fTPCTree ->Branch("fPhiESDTracks", &fPhiESDTracks);
+  }
+  if( fType == 1 ) {
+    fTPCTree ->Branch("fPhiAODTracks", &fPhiAODTracks);
+  }
+  if(isMC) {
+    fTPCTree ->Branch("fGenPart", &fGenPart);
+    fTPCTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[2]/O");
   }
 
   
@@ -253,9 +310,10 @@ void AliAnalysisTaskUpcPhi::UserCreateOutputObjects()
   fListHist = new TList();
   fListHist ->SetOwner();
   
-  PostData(1, fPhiTree);
-  PostData(2, fListTrig);
-  PostData(3, fListHist);
+  PostData(1, fITSTree);
+  PostData(2, fTPCTree);
+  PostData(3, fListTrig);
+  PostData(4, fListHist);
 
 }//UserCreateOutputObjects
 
@@ -406,21 +464,22 @@ void AliAnalysisTaskUpcPhi::RunAODtree()
   fZDCAenergy = fZDCdata->GetZNATowerEnergy()[0];
   fZDCCenergy = fZDCdata->GetZNCTowerEnergy()[0];
   
-  fNLooseTracks = 0;
+  fNLooseITSTracks = 0;
+  fNLooseTPCTracks = 0;
   
   //Track loop - loose cuts
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
     AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
     if( !trk ) continue;
-    if(!(trk->TestFilterBit(1<<1))) continue;
-
-      fNLooseTracks++; 
+    if((trk->TestFilterBit(1<<0))) fNLooseTPCTracks++;
+    if((trk->TestFilterBit(1<<1))) fNLooseITSTracks++;
+      
   }//Track loop -loose cuts
   
   Int_t nGoodTracks=0;
   Int_t TrackIndex[5] = {-1,-1,-1,-1,-1};
   
-   //Two track loop
+   //ITSsa track loop
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
     AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
     if( !trk ) continue;
@@ -453,12 +512,60 @@ void AliAnalysisTaskUpcPhi::RunAODtree()
 		new((*fPhiAODTracks)[i]) AliAODTrack(*trk);
 		}
 			
-  if(!isMC) fPhiTree ->Fill();
+  fITSTree ->Fill();
   }
-  if(isMC) fPhiTree ->Fill();
+  
+  nGoodTracks=0;
+  
+   //TPC track loop
+  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
+    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
+    if( !trk ) continue;
+    if(!(trk->TestFilterBit(1<<0))) continue;
+    
+      if(!(trk->GetStatus() & AliAODTrack::kTPCrefit) ) continue;
+      if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
+      if(trk->GetTPCNcls() < 70)continue;
+      if(trk->Chi2perNDF() > 4)continue;
+      if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1))) continue;
+      Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
+      AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
+      if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      delete trk_clone;
+      if(TMath::Abs(dca[1]) > 2) continue;
+      Double_t cut_DCAxy = (0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
+      if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
+      
+     
+      TrackIndex[nGoodTracks] = itr;
+      nGoodTracks++;
+				  
+      if(nGoodTracks > 2) break;  
+  }//Track loop
+      
+  fPhiAODTracks->Clear("C");  
+  if(nGoodTracks == 2){
+
+  	  for(Int_t i=0; i<2; i++){
+                AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(TrackIndex[i]));
+                if(!trk) AliFatal("Not a standard AOD");
+		
+		fPIDTPCMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
+		fPIDTPCElectron[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
+		fPIDTPCPion[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+		fPIDTPCKaon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kKaon);
+		fPIDTPCProton[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton);
+		
+		new((*fPhiAODTracks)[i]) AliAODTrack(*trk);
+		}
+			
+  fTPCTree ->Fill();
+  }
   
   
-  PostData(1, fPhiTree);
+  
+  PostData(1, fITSTree);
+  PostData(2, fTPCTree);
 
 }//RunAOD
 
@@ -514,15 +621,6 @@ void AliAnalysisTaskUpcPhi::RunESDtree()
 
 
 }//RunESD
-
-
-//_____________________________________________________________________________
-void AliAnalysisTaskUpcPhi::RunESDMC(AliESDEvent* esd)
-{
-
-
-}//RunESDMC
-
 
 
 //_____________________________________________________________________________
