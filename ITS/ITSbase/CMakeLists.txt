@@ -21,8 +21,6 @@ include_directories(${AliRoot_SOURCE_DIR}/ITS/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ITS/ITSrec
-                    ${AliRoot_SOURCE_DIR}/ITS/ITSsim
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatasim
@@ -44,6 +42,13 @@ set(SRCS
     AliITSCalibrationSSD.cxx
     AliITSChannelDaSSD.cxx
     AliITSChannelStatus.cxx
+    AliITSClusterFinder.cxx
+    AliITSClusterFinderSDDfast.cxx
+    AliITSClusterFinderV2SDD.cxx
+    AliITSClusterFinderV2SPD.cxx
+    AliITSClusterFinderV2SSD.cxx
+    AliITSClusterParam.cxx
+    AliITSclusterTable.cxx
     AliITSclusterV2.cxx
     AliITSCompressRawDataSDD.cxx
     AliITSCorrMap1DSDD.cxx
@@ -54,6 +59,7 @@ set(SRCS
     AliITSDDLModuleMapSDD.cxx
     AliITSDDLRawData.cxx
     AliITSdEdxSamples.cxx
+    AliITSDetTypeRec.cxx
     AliITSdigit.cxx
     AliITSdigitSDD.cxx
     AliITSdigitSPD.cxx
@@ -61,6 +67,7 @@ set(SRCS
     AliITSDriftSpeedArraySDD.cxx
     AliITSDriftSpeedSDD.cxx
     AliITSEventHeader.cxx
+    AliITSFOSignalsSPD.cxx
     AliITSGainSSD.cxx
     AliITSGainSSDv2.cxx
     AliITSgeom.cxx
@@ -77,6 +84,7 @@ set(SRCS
     AliITSMapSDD.cxx
     AliITSMisAligner.cxx
     AliITSModuleDaSSD.cxx
+    AliITSMultReconstructor.cxx
     AliITSNoiseSSD.cxx
     AliITSNoiseSSDv2.cxx
     AliITSPedestalSSD.cxx
@@ -87,6 +95,14 @@ set(SRCS
     AliITSPlaneEffSSD.cxx
     AliITSpList.cxx
     AliITSpListItem.cxx
+    AliITSQAChecker.cxx
+    AliITSQADataMakerRec.cxx
+    AliITSQASDDChecker.cxx
+    AliITSQASPDChecker.cxx
+    AliITSQASSDChecker.cxx
+    AliITSQASDDDataMakerRec.cxx
+    AliITSQASPDDataMakerRec.cxx
+    AliITSQASSDDataMakerRec.cxx
     AliITSRawStream.cxx
     AliITSRawStreamSDDCompressed.cxx
     AliITSRawStreamSDD.cxx
@@ -94,7 +110,10 @@ set(SRCS
     AliITSRawStreamSPDErrorLog.cxx
     AliITSRawStreamSSD.cxx
     AliITSRawStreamSSDv1.cxx
+    AliITSReconstructor.cxx
+    AliITSRecoParam.cxx
     AliITSRecPoint.cxx
+    AliITSRecPointContainer.cxx
     AliITSresponse.cxx
     AliITSresponseSDD.cxx
     AliITSresponseSPD.cxx
@@ -102,10 +121,28 @@ set(SRCS
     AliITSsegmentationSDD.cxx
     AliITSsegmentationSPD.cxx
     AliITSsegmentationSSD.cxx
+    AliITSSortTrkl.cxx
     AliITSSurveyToAlign.cxx
+    AliITStrackMI.cxx
+    AliITStrackerMI.cxx
+    AliITSTracklPairs.cxx
+    AliITStrackSA.cxx
+    AliITStrackV2.cxx
+    AliITStrackerSA.cxx
+    AliITStrackerV2.cxx
+    AliITSTrackleterSPDEff.cxx
     AliITSTransientDigit.cxx
     AliITSTriggerAlgorithmConditions.cxx
     AliITSTriggerConditions.cxx
+    AliITSV0Finder.cxx
+    AliITSVertexer.cxx
+    AliITSVertexer3D.cxx
+    AliITSVertexerCosmics.cxx
+    AliITSVertexerFast.cxx
+    AliITSVertexerFixed.cxx
+    AliITSVertexerZ.cxx
+    AliITSVertexerZD.cxx
+    AliITSZPoint.cxx
    )
 if (DATE_FOUND)
     set (SRCS ${SRCS} "AliITSHandleDaSSD.cxx")
@@ -120,8 +157,8 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Setting the dependencies
-set(ROOT_DEPENDENCIES GenVector Gui)
-set(ALIROOT_DEPENDENCIES CDB ESD STEERBase STEER ITSrec ITSsim RAWDatabase RAWDatarec RAWDatasim)
+set(ROOT_DEPENDENCIES Core EG GenVector Geom Gpad Graf3d Graf Gui HistPainter Hist MathCore Matrix Minuit Physics RIO Tree)
+set(ALIROOT_DEPENDENCIES CDB ESD STEERBase STEER RAWDatabase RAWDatarec RAWDatasim)
 
 # Generate the ROOT map
 # Dependecies
@@ -135,8 +172,13 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 add_library(${MODULE} SHARED $<TARGET_OBJECTS:ITSbase-object>)
 target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
+set(MODULE_COMPILE_FLAGS "-o -g -fPIC")
+if(DATE_FOUND)
+    set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS} ${MODULE_COMPILE_FLAGS}")
+endif(DATE_FOUND)
+
 # Additional compilation flags
-set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-O -g -fPIC")
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)

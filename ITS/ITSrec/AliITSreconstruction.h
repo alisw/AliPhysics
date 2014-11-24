@@ -17,6 +17,7 @@
 class AliRunLoader;
 class AliITSLoader;
 class TString;
+class AliITSgeom;
 
 class AliITSreconstruction : public TNamed{
  public:

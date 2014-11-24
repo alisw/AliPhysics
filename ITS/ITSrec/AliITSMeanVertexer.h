@@ -12,6 +12,7 @@
 
 #include <TObject.h>
 #include <TBits.h>
+#include "TClonesArray.h"
 
 class TClonesArray;
 class TH1F;

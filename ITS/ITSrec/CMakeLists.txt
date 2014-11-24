@@ -29,7 +29,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
-                    ${AliRoot_SOURCE_DIR}/TPC
                    )
 
 # Sources in alphabetical order
@@ -45,19 +44,10 @@ set(SRCS
     AliITSBadChannelsSPD.cxx
     AliITSChannelSPD.cxx
     AliITSclustererV2.cxx
-    AliITSClusterFinder.cxx
-    AliITSClusterFinderSDDfast.cxx
-    AliITSClusterFinderV2SDD.cxx
-    AliITSClusterFinderV2SPD.cxx
-    AliITSClusterFinderV2SSD.cxx
-    AliITSClusterParam.cxx
-    AliITSclusterTable.cxx
     AliITSCorrectSDDPoints.cxx
     AliITSdEdxAnalyzer.cxx
-    AliITSDetTypeRec.cxx
     AliITSIOTrack.cxx
     AliITSMeanVertexer.cxx
-    AliITSMultReconstructor.cxx
     AliITSOnlineCalibrationSPD.cxx
     AliITSOnlineCalibrationSPDhandler.cxx
     AliITSOnlineSDDBase.cxx
@@ -86,42 +76,13 @@ set(SRCS
     AliITSPreprocessorSDD.cxx
     AliITSPreprocessorSPD.cxx
     AliITSPreprocessorSSD.cxx
-    AliITSQAChecker.cxx
-    AliITSQADataMakerRec.cxx
-    AliITSQASDDChecker.cxx
-    AliITSQASDDDataMakerRec.cxx
-    AliITSQASPDChecker.cxx
-    AliITSQASPDDataMakerRec.cxx
-    AliITSQASSDChecker.cxx
-    AliITSQASSDDataMakerRec.cxx
     AliITSQASSDRefData.cxx
     AliITSRad.cxx
     AliITSRealignTracks.cxx
     AliITSreconstruction.cxx
-    AliITSReconstructor.cxx
-    AliITSRecoParam.cxx
-    AliITSRecPointContainer.cxx
-    AliITSSortTrkl.cxx
     AliITSSumTP.cxx
     AliITSTPArrayFit.cxx
-    AliITStrackerMI.cxx
-    AliITStrackerSA.cxx
-    AliITStrackerV2.cxx
-    AliITSTrackleterSPDEff.cxx
-    AliITSTracklPairs.cxx
-    AliITStrackMI.cxx
-    AliITStrackSA.cxx
-    AliITStrackV2.cxx
-    AliITSV0Finder.cxx
-    AliITSVertexer3D.cxx
     AliITSVertexer3DTapan.cxx
-    AliITSVertexerCosmics.cxx
-    AliITSVertexer.cxx
-    AliITSVertexerFast.cxx
-    AliITSVertexerFixed.cxx
-    AliITSVertexerZ.cxx
-    AliITSVertexerZD.cxx
-    AliITSZPoint.cxx
    )
 
 # Headers from sources
@@ -132,14 +93,17 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+set(ROOT_DEPENDECIES Core EG Geom Gpad Graf Hist MathCore Matrix Net RIO Tree)
+set(ALIROOT_DEPENDECIES CDB ESD STEERBase STEER ITSbase ITSsim RAWDatabase RAWDatarec)
+
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS CDB ESD STEERBase STEER ITSbase ITSsim RAWDatabase RAWDatarec Gpad Graf)
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ALIROOT_DEPENDECIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
-
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ALIROOT_DEPENDENCIES})
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")

@@ -47,7 +47,6 @@
 #pragma link C++ class AliITSFOEfficiencySPDColumn+;
 #pragma link C++ class AliITSFONoiseSPD+;
 #pragma link C++ class AliITSFOGeneratorSPD+;
-#pragma link C++ class AliITSFOSignalsSPD+;
 
 #pragma link C++ class AliITSTrigger+;
 #pragma link C++ class AliITSTriggerFOProcessor+;

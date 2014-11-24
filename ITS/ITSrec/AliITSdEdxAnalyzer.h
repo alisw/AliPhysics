@@ -19,6 +19,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TGraph.h>
+#include <AliLog.h>
 
 class AliESDEvent;
 class AliESDtrack;

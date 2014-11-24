@@ -19,6 +19,7 @@
 //  A. Dainese Jun 2008 
 
 #include "AliQADataMakerRec.h"
+#include "AliITSRecPoint.h"
 
 class AliDetectorRecoParam;
 class AliReconstructor;
@@ -28,7 +29,6 @@ class AliQAManager;
 class AliITSQASPDDataMakerRec;
 class AliITSQASDDDataMakerRec;
 class AliITSQASSDDataMakerRec;
-class AliITSRecPoint;
 class AliRawReader;
 class TH2F;
 class AliITSDDLModuleMapSDD;

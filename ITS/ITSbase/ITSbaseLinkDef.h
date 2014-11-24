@@ -13,7 +13,10 @@
 
 // Standard ITS classes 
 
+#pragma link C++ class  AliITSClusterFinder+;
 #pragma link C++ class  AliITSRecPoint+;
+#pragma link C++ class AliITSRecoParam+;
+#pragma link C++ class  AliITSDetTypeRec+;
 #pragma link C++ class  AliITSclusterV2+; 
 #pragma link C++ class  AliITSdigit+;
 #pragma link C++ class  AliITSdigitSPD+;
@@ -24,6 +27,43 @@
 #pragma link C++ class  AliITSgeom+;
 #pragma link C++ class  AliITSgeomTGeo+;
 #pragma link C++ class  AliITSgeomMatrix-;
+
+#pragma link C++ class AliITSClusterFinderV2SPD+;
+#pragma link C++ class AliITSReconstructor+;
+#pragma link C++ class  AliITSRecPointContainer+;
+#pragma link C++ class AliITSClusterFinderV2SDD+;
+#pragma link C++ class AliITSClusterFinderSDDfast+;
+#pragma link C++ class AliITSClusterFinderV2SSD+;
+#pragma link C++ class AliITStrackerMI+;
+#pragma link C++ class AliITStrackMI+;
+#pragma link C++ class AliITStrackV2+;
+#pragma link C++ class AliITStrackerV2+;
+#pragma link C++ class AliITStrackerSA+;
+#pragma link C++ class AliITSVertexerFast+;
+#pragma link C++ class  AliITSVertexer+;
+#pragma link C++ class AliITSVertexerFixed+;
+#pragma link C++ class  AliITSVertexer3D+;
+#pragma link C++ class  AliITSVertexerZ+;
+#pragma link C++ class  AliITSVertexerZD+;
+#pragma link C++ class  AliITSVertexerCosmics+;
+#pragma link C++ class AliITSTrackleterSPDEff+;
+#pragma link C++ class AliITSMultReconstructor+;
+#pragma link C++ class  AliITSClusterParam+;
+#pragma link C++ class AliITSV0Finder+;
+#pragma link C++ class AliITSclusterTable+;
+#pragma link C++ class AliITStrackSA+;
+#pragma link C++ class  AliITSSortTrkl+;
+#pragma link C++ class  AliITSTracklPairs+;
+#pragma link C++ class  AliITSZPoint+;
+#pragma link C++ class AliITSQAChecker+;
+#pragma link C++ class AliITSQASPDChecker+;
+#pragma link C++ class AliITSQASDDChecker+;
+#pragma link C++ class AliITSQASSDChecker+;
+#pragma link C++ class AliITSQADataMakerRec+;
+#pragma link C++ class AliITSQASPDDataMakerRec+;
+#pragma link C++ class AliITSQASDDDataMakerRec+;
+#pragma link C++ class AliITSQASSDDataMakerRec+;
+
 
 #pragma link C++ class  AliITSMap+;
 #pragma link C++ class  AliITSMapA1+;
@@ -55,6 +95,7 @@
 #pragma link C++ class  AliITSGainSSDv2+;
 #pragma link C++ class  AliITSNoiseSSD+;
 #pragma link C++ class  AliITSNoiseSSDv2+;
+#pragma link C++ class AliITSFOSignalsSPD+;
 
 #ifdef ALI_DATE
 #pragma link C++ class  AliITSHandleDaSSD+;
