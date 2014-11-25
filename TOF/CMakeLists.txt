@@ -18,6 +18,10 @@ add_subdirectory(TOFcalib)
 add_subdirectory(TOFrec)
 add_subdirectory(TOFsim)
 
+if(DA)
+    add_subdirectory(DA)
+endif(DA)
+
 # Install the data folder
 install (DIRECTORY data DESTINATION TOF)
 
