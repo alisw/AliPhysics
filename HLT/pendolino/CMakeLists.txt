@@ -56,7 +56,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER CDB TPCbase HLTbase)
+set(LIBDEPS STEER CDB TPCbase TPCrec HLTbase)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 set(LIBHLTPENDOLINO_VERSION 0)
@@ -64,6 +64,7 @@ add_definitions("-DLIBHLTPENDELINO_VERSION=${LIBHLTPENDOLINO_VERSION}")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+target_link_libraries(${MODULE} STEER CDB TPCbase TPCrec HLTbase)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")

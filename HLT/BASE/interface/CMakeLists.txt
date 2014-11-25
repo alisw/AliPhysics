@@ -40,7 +40,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "HLTinterface-LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
-# Dependecies
+# Dependencies
 set(LIBDEPS HLTbase)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
@@ -49,6 +49,7 @@ add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
+target_link_libraries(${MODULE} HLTbase)
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
