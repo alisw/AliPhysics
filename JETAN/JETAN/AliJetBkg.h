@@ -23,7 +23,6 @@ class AliJetBkg : public TObject
   AliJetBkg();
   AliJetBkg(const AliJetBkg &input);
   ~AliJetBkg();
-  AliJetBkg& operator=(const AliJetBkg& source);
   void    SetHeader(AliJetHeader *header)  {fHeader=header;}
   void    SetCalTrkEvent(AliJetCalTrkEvent *evt)  {fEvent=evt;}
   Bool_t  PtCutPass(Int_t id, Int_t nTracks);
@@ -56,6 +55,7 @@ class AliJetBkg : public TObject
   enum {kMaxJets = 60};
 
  private:
+  AliJetBkg& operator=(const AliJetBkg& source); // not implemented
   //    Double_t CalcRho(vector<fastjet::PseudoJet> input_particles,Double_t RparamBkg,TString method);
 
   AliJetCalTrkEvent* fEvent;    //! reader
