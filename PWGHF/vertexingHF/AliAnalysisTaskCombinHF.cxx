@@ -637,7 +637,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
       pz[1] = tmpp[2];
       dgLabels[1]=trPi1->GetLabel();
       if(chargePi1==chargeK){
-        if(fMeson==kDzero) FillLSHistos(421,2,tmpRD2,px,py,pz,pdg0,(Int_t)chargePi1);
+        if(fMeson==kDzero) FillLSHistos(421,2,tmpRD2,px,py,pz,pdg0,chargePi1);
         continue;
       }
       if(fMeson==kDzero){
