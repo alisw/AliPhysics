@@ -83,7 +83,7 @@ if(ROOTSYS)
     # ROOT must be build with XML2 support
     if(NOT ROOT_HASXML)
         message(FATAL_ERROR "ROOT was not build with xml2 support. Please reinstall or rebuild ROOT with xml2 support")
-    endif(ROOT_HASXML)
+    endif(NOT ROOT_HASXML)
 else()
     message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
 endif(ROOTSYS)
