@@ -12,7 +12,7 @@ class AliHLTPHOSRawAnalyzer
  public:
   AliHLTPHOSRawAnalyzer();
   virtual ~AliHLTPHOSRawAnalyzer();
-  int FindStartIndex(double treshold);
+  int FindStartIndex(double treshold){return -1;} //not implemented??
   float GetTiming() const { return fDTof;};  // peak position in entities of sample indexes
   float GetEnergy() const { return fDAmpl;};  // amplitude in entities of ADC channels   ; 
   void SetData(const UShort_t *data, const int /*length*/) {fShortDataPtr = const_cast<UShort_t *>(data);};
