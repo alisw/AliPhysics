@@ -105,7 +105,9 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade()
    fEtaRefMult ( 0.5 ),
    fkRunVertexers ( kFALSE ),
    fkDebugMode (kTRUE),
-   fkSelectPeripheral (kFALSE),
+fkSelectCentrality (kFALSE),
+fCentSel_Low(0.0),
+fCentSel_High(0.0),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -257,7 +259,9 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade(const char *name)
    fEtaRefMult ( 0.5 ),
    fkRunVertexers ( kFALSE ),
    fkDebugMode (kTRUE),
-   fkSelectPeripheral (kFALSE),
+   fkSelectCentrality (kFALSE),
+    fCentSel_Low(0.0),
+    fCentSel_High(0.0),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -902,9 +906,9 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
       }
    }
     
-    if( fkSelectPeripheral ){
-        if( lMultiplicity < 60 || lMultiplicity >= 80. ){
-            //Event is outside 60-80% centrality in V0M!
+    if( fkSelectCentrality ){
+        if( lMultiplicity < fCentSel_Low || lMultiplicity >= fCentSel_High ){
+            //Event is outside desired centrality centrality in V0M!
             PostData(1, fListHist);
             PostData(2, fTreeCascade);
             return;

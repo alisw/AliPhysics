@@ -89,8 +89,12 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   //Bachelor and Pion Swapping Check
   void SetCheckSwapping ( Bool_t lCheckSwapping = kTRUE) { fkCheckSwapping = lCheckSwapping; }
 //---------------------------------------------------------------------------------------
-    //Bachelor and Pion Swapping Check
-    void SetSelectPeripheral ( Bool_t lSelectPeripheral = kTRUE) { fkSelectPeripheral = lSelectPeripheral; }
+    //Set Peripheral event debugging mode (Pb-Pb X-check)
+    void SetSelectCentrality ( Bool_t lSelectCentrality = kTRUE, Double_t lCentSelLow = 0.0, Double_t lCentSelHigh = 10.0) {
+        fkSelectCentrality = lSelectCentrality;
+        fCentSel_Low = lCentSelLow;
+        fCentSel_High = lCentSelHigh;
+    }
     //---------------------------------------------------------------------------------------
     
  private:
@@ -120,8 +124,10 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
   //Meson Swapping Check Switch
   Bool_t fkCheckSwapping; // if true, will perform association with mesons switched (in ADDITION to reg. association)
-        Bool_t fkSelectPeripheral; //if true, reject anything but 60-80% V0M (Pb-Pb X-check)
-  
+    Bool_t    fkSelectCentrality; //Switch to skip anything other than 60-80% V0M
+    Double_t fCentSel_Low;
+    Double_t fCentSel_High;
+    
 	//Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 	//Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related
 
