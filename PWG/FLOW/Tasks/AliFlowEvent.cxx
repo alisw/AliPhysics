@@ -1202,29 +1202,29 @@ void AliFlowEvent::SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
     if(cuts->GetVZEROgainEqualizationPerRing()) {
         // do the calibration per ring
         // start with the vzero c rings (segments 0 through 31)
-        fMultVZERO->Fit(fpol0, "", "", 0, 8);
+        fMultVZERO->Fit(fpol0, "N0", "", 0, 8);
         (cuts->GetUseVZERORing(0)) ? cuts->SetVZEROCpol(0, fpol0->GetParameter(0)) : cuts->SetVZEROCpol(0, 0.);
-        fMultVZERO->Fit(fpol0, "", "", 8, 16);
+        fMultVZERO->Fit(fpol0, "N0", "", 8, 16);
         (cuts->GetUseVZERORing(1)) ? cuts->SetVZEROCpol(1, fpol0->GetParameter(0)) : cuts->SetVZEROCpol(1, 0.);
-        fMultVZERO->Fit(fpol0, "", "", 16, 24);
+        fMultVZERO->Fit(fpol0, "N0", "", 16, 24);
         (cuts->GetUseVZERORing(2)) ? cuts->SetVZEROCpol(2, fpol0->GetParameter(0)) : cuts->SetVZEROCpol(2, 0.);
-        fMultVZERO->Fit(fpol0, "", "", 24, 32);
+        fMultVZERO->Fit(fpol0, "N0", "", 24, 32);
         (cuts->GetUseVZERORing(3)) ? cuts->SetVZEROCpol(3, fpol0->GetParameter(0)) : cuts->SetVZEROCpol(3, 0.);
         // same thing for vero A
-        fMultVZERO->Fit(fpol0, "", "", 32, 40);
+        fMultVZERO->Fit(fpol0, "N0", "", 32, 40);
         (cuts->GetUseVZERORing(4)) ? cuts->SetVZEROApol(0, fpol0->GetParameter(0)) : cuts->SetVZEROApol(0, 0.);
-        fMultVZERO->Fit(fpol0, "", "", 40, 48);
+        fMultVZERO->Fit(fpol0, "N0", "", 40, 48);
         (cuts->GetUseVZERORing(5)) ? cuts->SetVZEROApol(1, fpol0->GetParameter(0)) : cuts->SetVZEROApol(1, 0.);
-        fMultVZERO->Fit(fpol0, "", "", 48, 56);
+        fMultVZERO->Fit(fpol0, "N0", "", 48, 56);
         (cuts->GetUseVZERORing(6)) ? cuts->SetVZEROApol(2, fpol0->GetParameter(0)) : cuts->SetVZEROApol(2, 0.);
-        fMultVZERO->Fit(fpol0, "", "", 56, 64);
+        fMultVZERO->Fit(fpol0, "N0", "", 56, 64);
         (cuts->GetUseVZERORing(7)) ? cuts->SetVZEROApol(3, fpol0->GetParameter(0)) : cuts->SetVZEROApol(3, 0.);
     } else {
         // do the calibration in one go. the calibration will still be 
         // stored per ring, but each ring has the same weight now
-       fMultVZERO->Fit(fpol0,"","",0,31);
+       fMultVZERO->Fit(fpol0,"N0","",0,31);
        for(Int_t i(0); i < 4; i++) cuts->SetVZEROCpol(i, fpol0->GetParameter(0));
-       fMultVZERO->Fit(fpol0,"","",32,64);
+       fMultVZERO->Fit(fpol0,"N0","",32,64);
        for(Int_t i(0); i < 4; i++) cuts->SetVZEROApol(i, fpol0->GetParameter(0));
     }
     // the parameters to weigh the vzero track cuts have been extracted now, 
