@@ -56,7 +56,7 @@ target_link_libraries(MUONTRKOCCda MUONraw MUONmapping MUONcore MUONcalib RAWDat
 target_link_libraries(MUONTRKPEDda HLTrec MUONsim MUONshuttle MUONraw MUONmapping MUONcore MUONcalib RAWDatarecOnline RAWDatarec ESD STEERBase  ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra)
 
 # different flags
-set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS} ${AMORE_CFLAGS}")
+set(MODULE_COMPILE_FLAGS "-O -g ${DATE_CFLAGS} ${AMORE_CFLAGS}")
 set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
 
 set_target_properties(MUONTRGda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})

@@ -47,13 +47,13 @@ add_executable(FMDPedestalda FMDGainda.cxx)
 set(MODULE_COMPILE_FLAGS)
 set(MODULE_LINK_FLAGS)
 
-target_link_libraries(FMDBaseda FMDbase-static FMDutil-static RAWDatarec-static STEERBase-static ${DATE_MONLIBRARIES} daqDA Root RootExtra  ${DATE_RCPROXYLIBRARIES} )
-target_link_libraries(FMDGainda FMDbase-static FMDutil-static AmoreDA daqDA ${DATE_MONLIBRARIES}  Root RootExtra  ${DATE_RCPROXYLIBRARIES})
-target_link_libraries(FMDPedestalda FMDbase-static FMDutil-static AmoreDA daqDA ${DATE_MONLIBRARIES} Root RootExtra  ${DATE_RCPROXYLIBRARIES} )
+target_link_libraries(FMDBaseda FMDbase-static FMDutil-static RAWDatarec-static STEERBase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra)
+target_link_libraries(FMDGainda FMDbase-static FMDutil-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra)
+target_link_libraries(FMDPedestalda FMDbase-static FMDutil-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra)
 
 # different flags
-set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS} ${AMORE_CFLAGS}")
-set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS} ${AMORE_AUXLIBS}")
+set(MODULE_COMPILE_FLAGS "-O -g ${DATE_CFLAGS} ${AMORE_CFLAGS}")
+set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
 
 set_target_properties(FMDBaseda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
 set_target_properties(FMDBaseda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")

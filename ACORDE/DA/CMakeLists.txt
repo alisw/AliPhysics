@@ -47,9 +47,11 @@ add_executable(ACORDEda ${SRCS})
 set(MODULE_COMPILE_FLAGS)
 set(MODULE_LINK_FLAGS)
 
-target_link_libraries(ACORDEda ESD-static RAWDatabase-static RAWDatarec-static ACORDEbase-static ${DATE_MONLIBRARIES} daqDA Root RootExtra  ${DATE_RCPROXYLIBRARIES} )
-set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
-set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS} ${AMORE_AUXLIBS}")
+target_link_libraries(ACORDEda ESD-static RAWDatabase-static RAWDatarec-static ACORDEbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra)
+
+# different flags
+set(MODULE_COMPILE_FLAGS "-O -g ${DATE_CFLAGS} ${AMORE_CFLAGS}")
+set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
 
 # DATE flags
 set_target_properties(ACORDEda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})

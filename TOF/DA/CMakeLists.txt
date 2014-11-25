@@ -55,7 +55,7 @@ target_link_libraries(TOFphysicsda RAWDatarec-static STEERBase-static TOFbase-st
 target_link_libraries(TOFpulserda RAWDatarec-static STEERBase-static TOFbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 5
 
 # different flags
-set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS} ${AMORE_CFLAGS}")
+set(MODULE_COMPILE_FLAGS "-O -g ${DATE_CFLAGS} ${AMORE_CFLAGS}")
 set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
 
 set_target_properties(TOFcalibda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})

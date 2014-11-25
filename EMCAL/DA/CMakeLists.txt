@@ -43,11 +43,12 @@ add_executable(EMCALLEDda EMCALLEDda.cxx)
 set(MODULE_COMPILE_FLAGS)
 set(MODULE_LINK_FLAGS)
 
-target_link_libraries(EMCALPEDda EMCALbase-static RAWDatarec-static RAWDatabase-static STEERBase-static ${DATE_MONLIBRARIES} daqDA Root RootExtra  ${DATE_RCPROXYLIBRARIES} )
-target_link_libraries(EMCALLEDda EMCALbase-static RAWDatarec-static RAWDatabase-static STEERBase-static  ${DATE_MONLIBRARIES} daqDA Root RootExtra  ${DATE_RCPROXYLIBRARIES} )
+target_link_libraries(EMCALPEDda EMCALbase-static RAWDatarec-static RAWDatabase-static STEERBase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra)
+target_link_libraries(EMCALLEDda EMCALbase-static RAWDatarec-static RAWDatabase-static STEERBase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra)
 
-set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
-set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS} ${AMORE_AUXLIBS}")
+# different flags
+set(MODULE_COMPILE_FLAGS "-O -g ${DATE_CFLAGS} ${AMORE_CFLAGS}")
+set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
 
 # DATE flags
 set_target_properties(EMCALPEDda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
