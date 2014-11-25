@@ -169,7 +169,7 @@ if(ALIROOT_STATIC)
     add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:STEERBase-object>)
     set_target_properties(${MODULE}-static PROPERTIES OUTPUT_NAME ${MODULE})
     set_target_properties(${MODULE}-static PROPERTIES LINK_FLAGS "-Wl,--whole-archive")
-    target_link_libraries(${MODULE}-static Root)
+    target_link_libraries(${MODULE}-static Root RootExtra)
 
     # Installation
     install(TARGETS ${MODULE}-static

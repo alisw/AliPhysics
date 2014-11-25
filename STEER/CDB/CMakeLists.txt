@@ -61,9 +61,12 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+set(ROOT_DEPENDENCIES Core GenVector Gpad Graf Gui Hist MathCore Matrix Minuit Net RIO Tree XMLParser)
+set(ALIROOT_DEPENDENCIES STEERBase)
+
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase Core GenVector Gpad Graf Gui Hist MathCore Matrix Minuit Net RIO Tree XMLParser)
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Create an object to be reused in case of static libraries 
@@ -73,7 +76,7 @@ add_library(CDB-object OBJECT ${SRCS} G__${MODULE}.cxx)
 add_library(CDB SHARED $<TARGET_OBJECTS:CDB-object>)
 
 # Linking library
-target_link_libraries(${MODULE} STEERBase Core GenVector Gpad Graf Gui Hist MathCore Matrix Minuit Net RIO Tree XMLParser)
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
 # Additional compilation flags
 set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-fPIC -O -g")
@@ -93,7 +96,11 @@ install(FILES ${HDRS} DESTINATION include)
 if(ALIROOT_STATIC)
     add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:CDB-object>)
     set_target_properties(${MODULE}-static PROPERTIES OUTPUT_NAME ${MODULE})
-    target_link_libraries(${MODULE}-static STEERBase-static Root)
+    
+    # list of shared dependencies / the name of the variable containing the list of static ones
+    generate_static_dependencies("${ALIROOT_DEPENDENCIES}" "STATIC_ALIROOT_DEPENDENCIES")
+
+    target_link_libraries(${MODULE}-static ${STATIC_ALIROOT_DEPENDENCIES} Root RootExtra)
     set_target_properties(${MODULE}-static PROPERTIES LINK_FLAGS "-Wl,--whole-archive")
 
     # Installation

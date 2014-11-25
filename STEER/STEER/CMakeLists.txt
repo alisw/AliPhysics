@@ -162,9 +162,12 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+set(ROOT_DEPENDENCIES Core EG GenVector GeomPainter Geom Gpad Graf Hist MathCore Matrix Minuit Net Physics Proof RIO Tree VMC)
+set(ALIROOT_DEPENDENCIES STEERBase RAWDatabase RAWDatarec CDB ESD ANALYSIS HLTbase)
+
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase RAWDatabase RAWDatarec CDB ESD ANALYSIS HLTbase Core EG GenVector GeomPainter Geom Gpad Graf Hist MathCore Matrix Minuit Net Physics Proof RIO Tree VMC)
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 set(LIBHLTSIM_VERSION "1")
@@ -178,7 +181,7 @@ add_library(STEER SHARED $<TARGET_OBJECTS:STEER-object>)
 
 # Additional compilation flags
 set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-fPIC -O -g")
-target_link_libraries(${MODULE} STEERBase RAWDatabase RAWDatarec CDB ESD ANALYSIS HLTbase Core EG GenVector GeomPainter Geom Gpad Graf Hist MathCore Matrix Minuit Net Physics Proof RIO Tree VMC)
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
@@ -195,7 +198,11 @@ install(FILES ${HDRS} DESTINATION include)
 if(ALIROOT_STATIC)
     add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:STEER-object>)
     set_target_properties(${MODULE}-static PROPERTIES OUTPUT_NAME ${MODULE})
-    target_link_libraries(${MODULE}-static STEERBase-static RAWDatabase-static RAWDatarec-static CDB-static ESD-static ANALYSIS-static HLTbase-static Root)
+    
+    # list of shared dependencies / the name of the variable containing the list of static ones
+    generate_static_dependencies("${ALIROOT_DEPENDENCIES}" "STATIC_ALIROOT_DEPENDENCIES")
+
+    target_link_libraries(${MODULE}-static ${STATIC_ALIROOT_DEPENDENCIES} Root RootExtra)
     set_target_properties(${MODULE}-static PROPERTIES LINK_FLAGS "-Wl,--whole-archive")
 
     # Installation

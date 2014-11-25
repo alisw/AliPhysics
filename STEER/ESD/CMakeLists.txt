@@ -108,9 +108,12 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("ESD" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+set(ROOT_DEPENDENCIES Core EG Geom Gpad Graf3d MathCore Matrix Physics RIO Tree)
+set(ALIROOT_DEPENDENCIES STEERBase)
+
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase Core EG Geom Gpad Graf3d MathCore Matrix Physics RIO Tree)
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("ESD" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Create an object to be reused in case of static libraries 
@@ -119,7 +122,7 @@ add_library(ESD-object OBJECT ${SRCS} G__${MODULE}.cxx)
 
 # Add a library to the project using the object
 add_library(ESD SHARED $<TARGET_OBJECTS:ESD-object>)
-target_link_libraries(ESD STEERBase Core EG Geom Gpad Graf3d MathCore Matrix Physics RIO Tree)
+target_link_libraries(ESD ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
 # Additional compilation flags for the object
 set_target_properties(ESD-object PROPERTIES COMPILE_FLAGS "-fPIC -O -g")
@@ -140,8 +143,11 @@ if(ALIROOT_STATIC)
     add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:ESD-object>)
     set_target_properties(${MODULE}-static PROPERTIES OUTPUT_NAME ${MODULE})
 
+    # list of shared dependencies / the name of the variable containing the list of static ones
+    generate_static_dependencies("${ALIROOT_DEPENDENCIES}" "STATIC_ALIROOT_DEPENDENCIES")
+
     set_target_properties(${MODULE}-static PROPERTIES LINK_FLAGS "-Wl,--whole-archive")
-    target_link_libraries(${MODULE}-static STEERBase-static Root)
+    target_link_libraries(${MODULE}-static ${STATIC_ALIROOT_DEPENDENCIES} Root RootExtra)
 
     # Installation
     install(TARGETS ${MODULE}-static
