@@ -51,14 +51,16 @@ class AliJetFinder : public TObject
   virtual void              AddHistosToList(TList */*list*/) {}
 
  protected:
-  AliJetFinder(const AliJetFinder& rJetFinder);
-  AliJetFinder& operator = (const AliJetFinder& rhsf);
   AliJetHeader*             fHeader;         //  pointer to header
   TClonesArray*             fAODjets;        //! reconstructed jets
   Int_t                     fNAODjets;       //  number of reconstructed jets
   AliAODJetEventBackground* fAODEvBkg;       //! bkg object to be store
   Int_t                     fDebug;          //  debug option, set through the header
   AliJetCalTrkEvent*        fCalTrkEvent;    //  pointer to AliJetCalTrkEvent object
+
+ private:
+  AliJetFinder(const AliJetFinder& rJetFinder); // not implemented
+  AliJetFinder& operator = (const AliJetFinder& rhsf); // not implemented
  
   ClassDef(AliJetFinder,3)                   //  base class for any jet finder
 
