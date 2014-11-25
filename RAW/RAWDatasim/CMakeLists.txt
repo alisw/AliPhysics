@@ -41,17 +41,23 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+set(ROOT_DEPENDENCIES)
+set(ALIROOT_DEPENDENCIES RAWDatabase STEERBase STEER)
+
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS RAWDatabase STEERBase STEER Core)
+set(LIBDEPS ${ROOT_DEPENDENCIES} ${ALIROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Create an object to be reused in case of static libraries 
 # Otherwise the sources will be compiled twice
-add_library(RAWDatasim-object OBJECT ${SRCS} G__${MODULE}.cxx)
+add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
-add_library(RAWDatasim SHARED $<TARGET_OBJECTS:RAWDatasim-object>)
-target_link_libraries(${MODULE} RAWDatabase STEERBase STEER Core)
+add_library(${MODULE} SHARED $<TARGET_OBJECTS:RAWDatasim-object>)
+target_link_libraries(${MODULE} ${ROOT_DEPENDENCIES} ${ALIROOT_DEPENDENCIES})
+
+# Public include folders that will be propagated to the dependecies
+target_include_directories(${MODULE} PUBLIC ${incdirs})
 
 # Compile and link flags
 set(MODULE_COMPILE_FLAGS)
@@ -63,7 +69,7 @@ if(DATE_FOUND)
 endif(DATE_FOUND)
 
 # Additional compilation and linking flags
-set(MODULE_COMPILE_FLAGS "-fPIC -O -g ${MODULE_COMPILE_FLAGS}")
+set(MODULE_COMPILE_FLAGS "-O -g ${MODULE_COMPILE_FLAGS}")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
@@ -87,7 +93,14 @@ install(FILES ${HDRS} DESTINATION include)
 if(ALIROOT_STATIC)
     add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:RAWDatasim-object>)
     set_target_properties(${MODULE}-static PROPERTIES OUTPUT_NAME ${MODULE})
-    target_link_libraries(${MODULE}-static RAWDatabase-static STEERBase-static STEER-static Root)
+    
+    # list of shared dependencies / the name of the variable containing the list of static ones
+    generate_static_dependencies("${ALIROOT_DEPENDENCIES}" "STATIC_ALIROOT_DEPENDENCIES")
+    target_link_libraries(${MODULE}-static ${STATIC_ALIROOT_DEPENDENCIES} Root)
+    
+    # Public include folders that will be propagated to the dependecies
+    target_include_directories(${MODULE}-static PUBLIC ${incdirs})
+    
     set_target_properties(${MODULE}-static PROPERTIES LINK_FLAGS "-Wl,--whole-archive")
 
     # Installation

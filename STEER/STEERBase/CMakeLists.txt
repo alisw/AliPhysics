@@ -174,6 +174,9 @@ if(ALIROOT_STATIC)
     set_target_properties(${MODULE}-static PROPERTIES LINK_FLAGS "-Wl,--whole-archive")
     target_link_libraries(${MODULE}-static Root RootExtra)
 
+    # Public include folders that will be propagated to the dependecies
+    target_include_directories(${MODULE}-static PUBLIC ${incdirs})
+
     # Installation
     install(TARGETS ${MODULE}-static
             ARCHIVE DESTINATION lib

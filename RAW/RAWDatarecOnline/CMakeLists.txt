@@ -56,6 +56,9 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 add_library(${MODULE} SHARED $<TARGET_OBJECTS:RAWDatarecOnline-object>)
 target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
+# Public include folders that will be propagated to the dependecies
+target_include_directories(${MODULE} PUBLIC ${incdirs})
+
 # Compile and link flags
 set(MODULE_COMPILE_FLAGS)
 set(MODULE_LINK_FLAGS)
@@ -66,7 +69,7 @@ if(DATE_FOUND)
 endif(DATE_FOUND)
 
 # Additional compilation and linking flags
-set(MODULE_COMPILE_FLAGS "-O -g -fPIC ${MODULE_COMPILE_FLAGS}")
+set(MODULE_COMPILE_FLAGS "-O -g ${MODULE_COMPILE_FLAGS}")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
@@ -92,6 +95,10 @@ if(ALIROOT_STATIC)
     # list of shared dependencies / the name of the variable containing the list of static ones
     generate_static_dependencies("${ALIROOT_DEPENDENCIES}" "STATIC_ALIROOT_DEPENDENCIES")
     target_link_libraries(${MODULE}-static ${STATIC_ALIROOT_DEPENDENCIES} Root)
+    
+    # Public include folders that will be propagated to the dependecies
+    target_include_directories(${MODULE}-static PUBLIC ${incdirs})
+    
     set_target_properties(${MODULE}-static PROPERTIES LINK_FLAGS "-Wl,--whole-archive")
 
     # Installation
