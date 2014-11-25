@@ -1,0 +1,68 @@
+# **************************************************************************
+# * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+# *                                                                        *
+# * Author: The ALICE Off-line Project.                                    *
+# * Contributors are mentioned in the code where appropriate.              *
+# *                                                                        *
+# * Permission to use, copy, modify and distribute this software and its   *
+# * documentation strictly for non-commercial purposes is hereby granted   *
+# * without fee, provided that the above copyright notice appears in all   *
+# * copies and that both the copyright notice and this permission notice   *
+# * appear in the supporting documentation. The authors make no claims     *
+# * about the suitability of this software for any purpose. It is          *
+# * provided "as is" without express or implied warranty.                  *
+# **************************************************************************
+
+# Module include folder
+include_directories(${AliRoot_SOURCE_DIR}/T0/DA)
+
+# Additional include folders in alphabetical order
+include_directories(
+                    ${AliRoot_SOURCE_DIR}/T0/T0base
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+                    ${AliRoot_SOURCE_DIR}/STEER/CDB
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                   )
+
+
+# DIM
+link_directories(${DIMDIR}/${ODIR})
+
+#daqDA flags
+include_directories(${daqDA})
+link_directories(${daqDA})
+
+# AMORE definitions
+add_definitions(${AMORE_DEFINITIONS})
+include_directories(${AMORE_INCLUDE_DIR})
+
+# Generating the DA executable
+add_executable(T0Cosmicda T0Cosmicda.cxx) # 1
+add_executable(T0Laserda T0Laserda.cxx) # 2
+add_executable(T0Physda T0Physda.cxx) # 3
+
+set(MODULE_COMPILE_FLAGS)
+set(MODULE_LINK_FLAGS)
+
+target_link_libraries(T0Cosmicda RAWDatarec-static T0base-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 1
+target_link_libraries(T0Laserda RAWDatarec-static T0base-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 2
+target_link_libraries(T0Physda CDB-static RAWDatarec-static T0base-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 3
+
+# different flags
+set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS} ${AMORE_CFLAGS}")
+set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
+
+set_target_properties(T0Cosmicda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
+set_target_properties(T0Cosmicda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
+
+set_target_properties(T0Laserda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
+set_target_properties(T0Laserda PMDPEDESTALda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
+
+set_target_properties(T0Physda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
+set_target_properties(T0Physda PMDPEDESTALda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
+
+# Installation
+install(TARGETS T0Cosmicda T0Laserda T0Physda RUNTIME DESTINATION bin)

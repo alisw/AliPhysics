@@ -173,7 +173,7 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 add_library(${MODULE} SHARED $<TARGET_OBJECTS:ITSbase-object>)
 target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
-set(MODULE_COMPILE_FLAGS "-o -g -fPIC")
+set(MODULE_COMPILE_FLAGS "-O -g -fPIC")
 if(DATE_FOUND)
     set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS} ${MODULE_COMPILE_FLAGS}")
 endif(DATE_FOUND)

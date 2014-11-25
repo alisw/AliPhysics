@@ -60,7 +60,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
-set(ROOT_DEPENDENCIES Core Hist MathCore RIO Tree)
+set(ROOT_DEPENDENCIES Core Geom Graf Hist MathCore RIO Spectrum Tree)
 set(ALIROOT_DEPENDENCIES STEERBase STEER CDB ESD RAWDatabase  RAWDatarec)
 
 # Generate the ROOT map

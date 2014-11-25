@@ -19,4 +19,8 @@ add_subdirectory(T0rec)
 add_subdirectory(T0sim)
 add_subdirectory(T0shuttle)
 
+if(DA)
+    add_subdirectory(DA)
+endif(DA)
+
 message(STATUS "T0 enabled")

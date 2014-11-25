@@ -62,7 +62,7 @@ target_link_libraries(ITSSPDVertexDiamondda ITSrec-static RAWDatarec-static STEE
 target_link_libraries(ITSSSDPEDda ITSbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 8
 
 # different flags
-set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS} ${AMORE_CFLAGS}")
+set(MODULE_COMPILE_FLAGS "-O -g ${DATE_CFLAGS} ${AMORE_CFLAGS}")
 set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
 
 # 1
