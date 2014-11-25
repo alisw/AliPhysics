@@ -30,5 +30,15 @@
 #pragma link C++ class AliHLTCaloHistoCellEnergy+;
 #pragma link C++ class AliHLTMultiplicityCorrelations+;
 #pragma link C++ class AliHLTMultiplicityCorrelationsComponent+;
-
+#pragma link C++ class AliHLTGlobalCompareFlatComponent+;
+#pragma link C++ class AliHLTFlatAnaManagerComponent+;
+#pragma link C++ class AliHLTGlobalFlatEsdConverterComponent+;
+#pragma link C++ class AliFlatESDFriendTrack+;
+#pragma link C++ class AliFlatTPCseed+;
+#pragma link C++ class AliFlatESDEvent+;
+#pragma link C++ class AliHLTGlobalEsdToFlatConverterComponent+;
+#pragma link C++ class AliFlatESDFriend+;
+#pragma link C++ class AliFlatESDTrack+;
+#pragma link C++ class AliHLTGlobalFlatEsdTestComponent+;
+#pragma link C++ class AliHLTAnaManagerComponent+;
 #endif // __CINT__
