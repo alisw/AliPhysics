@@ -73,11 +73,11 @@ add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
 
-if(ROOT_HASALIEN STREQUAL "yes")
+if(ROOT_HASALIEN)
     add_definitions(-DWITHALIEN)
 endif()
 
-if(ROOT_HASXML STREQUAL "yes")
+if(ROOT_HASXML)
     add_definitions(-DWITHXML)
 endif()
 
