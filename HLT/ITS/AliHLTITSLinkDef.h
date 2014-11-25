@@ -25,4 +25,7 @@
 #pragma link C++ class AliHLTITSClusterFinderSSD+;
 #pragma link C++ class AliHLTITSVertexerSPDComponent+;
 
+#pragma link C++ class AliHLTITSSAPTrackerComponent+;
+#pragma link C++ class AliITSSAPTracker+;
+#pragma link C++ class AliITSSAPLayer+;
 #endif // __CINT__

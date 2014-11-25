@@ -21,6 +21,7 @@ include_directories(${AliRoot_SOURCE_DIR}/HLT/ITS
                     ${AliRoot_SOURCE_DIR}/HLT/ITS/clusterfinders
                     ${AliRoot_SOURCE_DIR}/HLT/ITS/tracking
                     ${AliRoot_SOURCE_DIR}/HLT/ITS/trackingSAP
+		    ${AliRoot_SOURCE_DIR}/HLT/global
                    )
 
 # Additional include folders in alphabetical order except ROOT
@@ -59,6 +60,9 @@ set(SRCS
     tracking/AliHLTITSTrackerComponent.cxx
     tracking/AliHLTITSTrack.cxx
     tracking/AliITStrackerHLT.cxx
+    trackingSAP/AliHLTITSSAPTrackerComponent.cxx
+    trackingSAP/AliITSSAPTracker.cxx
+    trackingSAP/AliITSSAPLayer.cxx
    )
 
 # Headers from sources
