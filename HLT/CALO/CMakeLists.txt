@@ -22,13 +22,16 @@ include_directories(${AliRoot_SOURCE_DIR}/HLT/CALO
                    )
 
 # Additional include folders in alphabetical order
-include_directories(${AliRoot_SOURCE_DIR}/EMCAL/EMCALraw
+include_directories(${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
+                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALraw
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
                     ${AliRoot_SOURCE_DIR}/HLT/BASE/util
                     ${AliRoot_SOURCE_DIR}/HLT/EMCAL
                     ${AliRoot_SOURCE_DIR}/HLT/PHOS
                     ${AliRoot_SOURCE_DIR}/HLT/TPCLib
+                    ${AliRoot_SOURCE_DIR}/PHOS/PHOSbase
+                    ${AliRoot_SOURCE_DIR}/PHOS/PHOSUtils
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
@@ -55,9 +58,15 @@ set(SRCS
     AliHLTCaloRecoParamHandler.cxx
     AliHLTCaloSanityInspector.cxx
     AliHLTCaloSharedMemoryInterfacev2.cxx
+    AliHLTEMCALDefinitions.cxx
+    AliHLTEMCALGeometry.cxx
     AliHLTCaloUtilities.cxx
+    AliHLTPHOSDefinitions.cxx
+    AliHLTPHOSGeometry.cxx
     offline/AliHLTCaloDigitHandler.cxx
     offline/AliHLTCaloDigitPublisherComponent.cxx
+    offline/AliHLTEMCALDigitHandler.cxx
+    offline/AliHLTPHOSDigitHandler.cxx
    )
 
 # Headers from sources
@@ -76,12 +85,12 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER CDB RAWDatabase RAWDatarec HLTbase AliHLTTPC  AliHLTEMCAL AliHLTPHOS EMCALUtils EMCALraw)
+set(LIBDEPS STEERBase STEER CDB RAWDatabase RAWDatarec HLTbase AliHLTTPC  AliHLTEMCAL AliHLTPHOS EMCALbase EMCALUtils EMCALraw PHOSbase PHOSUtils)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} STEERBase STEER CDB RAWDatabase RAWDatarec HLTbase AliHLTTPC EMCALUtils EMCALraw)
+target_link_libraries(${MODULE} STEERBase STEER CDB RAWDatabase RAWDatarec HLTbase AliHLTTPC EMCALUtils EMCALraw EMCALbase PHOSbase PHOSUtils)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")

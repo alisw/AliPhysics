@@ -40,9 +40,7 @@ set(SRCS
     AliHLTPHOSClusterizerComponent.cxx
     AliHLTPHOSClusterizerComponentNbyN.cxx
     AliHLTPHOSConstants.cxx
-    AliHLTPHOSDefinitions.cxx
     AliHLTPHOSDigitMakerComponent.cxx
-    AliHLTPHOSGeometry.cxx
     AliHLTPHOSMapper.cxx
     AliHLTPHOSMonitorTriggerComponent.cxx
     AliHLTPHOSRawAnalyzerComponentv3.cxx
@@ -52,7 +50,6 @@ set(SRCS
     AliHLTPHOSRawAnalyzerPeakFinder.cxx
     AliHLTPHOSRecoParamHandler.cxx
     AliHLTPHOSSanityInspector.cxx
-    offline/AliHLTPHOSDigitHandler.cxx
    )
 
 # Headers from sources
@@ -74,7 +71,7 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} STEER STEERBase CDB RAWDatabase AliHLTUtil EMCALraw EMCALUtils HLTbase PHOSUtils PHOSbase PHOSrec)
+target_link_libraries(${MODULE} STEER STEERBase CDB RAWDatabase AliHLTUtil EMCALraw EMCALUtils HLTbase PHOSUtils PHOSbase PHOSrec AliHLTCalo)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")

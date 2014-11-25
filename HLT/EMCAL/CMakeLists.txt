@@ -40,9 +40,7 @@ set(SRCS
     AliHLTEMCALClusterMonitorComponent.cxx
     AliHLTEMCALClusterMonitor.cxx
     AliHLTEMCALConstants.cxx
-    AliHLTEMCALDefinitions.cxx
     AliHLTEMCALDigitMakerComponent.cxx
-    AliHLTEMCALGeometry.cxx
     AliHLTEMCALMapper.cxx
     AliHLTEMCALRawAnalyzerComponent.cxx
     AliHLTEMCALRawAnalyzerCrudeComponent.cxx
@@ -51,7 +49,6 @@ set(SRCS
     AliHLTEMCALRawAnalyzerNNComponent.cxx
     AliHLTEMCALRawAnalyzerPeakFinderComponent.cxx
     AliHLTEMCALRecoParamHandler.cxx
-    offline/AliHLTEMCALDigitHandler.cxx
    )
 
 # Headers from sources
@@ -69,7 +66,7 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} STEERBase STEER CDB HLTbase AliHLTUtil EMCALbase EMCALUtils EMCALraw)
+target_link_libraries(${MODULE} STEERBase STEER CDB HLTbase AliHLTUtil EMCALbase EMCALUtils EMCALraw AliHLTCalo)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")

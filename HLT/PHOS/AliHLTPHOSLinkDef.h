@@ -8,7 +8,6 @@
 
 #pragma link C++ class AliHLTPHOSClusterizerComponent+;
 #pragma link C++ class AliHLTPHOSClusterizerComponentNbyN+;
-#pragma link C++ class AliHLTPHOSDefinitions+;
 #pragma link C++ class AliHLTPHOSRawAnalyzer+;
 #pragma link C++ class AliHLTPHOSRawAnalyzerComponentv3+;
 #pragma link C++ class AliHLTPHOSRawAnalyzerCrude+;
@@ -19,9 +18,7 @@
 #pragma link C++ class AliHLTPHOSSanityInspector+;
 #pragma link C++ class AliHLTPHOSMonitorTriggerComponent+;
 #pragma link C++ class AliHLTPHOSConstants+;
-#pragma link C++ class AliHLTPHOSGeometry+;
 #pragma link C++ class AliHLTPHOSRecoParamHandler+;
-#pragma link C++ class AliHLTPHOSDigitHandler+;
 
 #endif // __CINT__
 //

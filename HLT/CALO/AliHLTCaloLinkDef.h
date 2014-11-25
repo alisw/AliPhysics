@@ -24,5 +24,11 @@
 #pragma link C++ class AliHLTCaloRecoParamHandler+;
 #pragma link C++ class AliHLTCaloDigitPublisherComponent+;
 #pragma link C++ class AliHLTCaloDigitHandler+;
+#pragma link C++ class AliHLTEMCALDefinitions+;
+#pragma link C++ class AliHLTEMCALDigitHandler+;
+#pragma link C++ class AliHLTEMCALGeometry+;
+#pragma link C++ class AliHLTPHOSDefinitions+;
+#pragma link C++ class AliHLTPHOSDigitHandler+;
+#pragma link C++ class AliHLTPHOSGeometry+;
 
 #endif // __CINT__
