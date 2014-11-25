@@ -38,7 +38,6 @@ set(SRCS
     AliTOFClusterFinderV1.cxx
     AliTOFQADataMakerRec.cxx
     AliTOFReconstructor.cxx
-    AliTOFRecoParam.cxx
     AliTOFT0maker.cxx
     AliTOFT0v1.cxx
     AliTOFtrack.cxx

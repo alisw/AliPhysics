@@ -42,7 +42,6 @@ set(SRCS
     AliTOFhitT0.cxx
     AliTOFQAChecker.cxx
     AliTOFQADataMakerSim.cxx
-    AliTOFSDigit.cxx
     AliTOFSDigitizer.cxx
     AliTOFT0.cxx
     AliTOFTrigger.cxx

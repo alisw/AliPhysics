@@ -44,6 +44,8 @@
 #pragma link C++ class  AliTOFT0FillOnlineCalib+;
 #pragma link C++ class  AliTOFDCSmaps+;
 #pragma link C++ class  AliTOFLvHvDataPoints+;
+#pragma link C++ class  AliTOFRecoParam+;
+#pragma link C++ class  AliTOFSDigit+;
 
 #pragma link C++ class  AliTOFChainSummaryData+;
 #pragma link C++ class  AliTOFDRMSummaryData+;

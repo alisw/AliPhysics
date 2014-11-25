@@ -62,7 +62,7 @@ set_target_properties(T0Laserda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS}
 set_target_properties(T0Laserda PMDPEDESTALda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
 
 set_target_properties(T0Physda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(T0Physda PMDPEDESTALda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
+set_target_properties(T0Physda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
 
 # Installation
 install(TARGETS T0Cosmicda T0Laserda T0Physda RUNTIME DESTINATION bin)
