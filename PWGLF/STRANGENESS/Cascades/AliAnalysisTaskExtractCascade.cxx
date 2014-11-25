@@ -108,6 +108,7 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade()
 fkSelectCentrality (kFALSE),
 fCentSel_Low(0.0),
 fCentSel_High(0.0),
+fLowPtCutoff(0.0),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -262,6 +263,7 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade(const char *name)
    fkSelectCentrality (kFALSE),
     fCentSel_Low(0.0),
     fCentSel_High(0.0),
+fLowPtCutoff(0.0),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -1493,7 +1495,19 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
 
   if( (fTreeCascVarMassAsXi<1.32+0.075&&fTreeCascVarMassAsXi>1.32-0.075) ||
       (fTreeCascVarMassAsOmega<1.68+0.075&&fTreeCascVarMassAsOmega>1.68-0.075) ){
-      fTreeCascade->Fill();
+      
+      if( !fkIsNuclear ) fTreeCascade->Fill();
+      if( fkIsNuclear  ){
+          //Extra selections in case this is a nuclear collision...
+          if (TMath::Abs(fTreeCascVarNegEta) < 0.8 &&
+              TMath::Abs(fTreeCascVarPosEta) < 0.8 &&
+              TMath::Abs(fTreeCascVarBachEta) < 0.8 &&
+              fTreeCascVarPt > fLowPtCutoff){ //beware ptMC and ptreco differences
+                fTreeCascade->Fill();
+          }
+      }
+      
+
   }
 
 //------------------------------------------------

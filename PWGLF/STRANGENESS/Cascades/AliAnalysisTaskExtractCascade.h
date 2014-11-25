@@ -74,7 +74,11 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
         fCentSel_High = lCentSelHigh;
     }
     //---------------------------------------------------------------------------------------
-//Setters for the V0 Vertexer Parameters
+    void SetLowPtCutoff ( Double_t lLowPtCutoff = 1.0) {
+        fLowPtCutoff = lLowPtCutoff;
+    }
+    //---------------------------------------------------------------------------------------
+    //Setters for the V0 Vertexer Parameters
   void SetV0VertexerMaxChisquare   ( Double_t lParameter ){ fV0VertexerSels[0] = lParameter; }
   void SetV0VertexerDCAFirstToPV   ( Double_t lParameter ){ fV0VertexerSels[1] = lParameter; }
   void SetV0VertexerDCASecondtoPV  ( Double_t lParameter ){ fV0VertexerSels[2] = lParameter; }
@@ -122,6 +126,8 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
     
     Double_t fCentSel_Low;
     Double_t fCentSel_High;
+    
+    Double_t fLowPtCutoff; //Reduction of data volume
 
 	//Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 	//Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related
