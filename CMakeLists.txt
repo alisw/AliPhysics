@@ -81,9 +81,9 @@ if(ROOTSYS)
     find_package(ROOT REQUIRED)
 
     # ROOT must be build with XML2 support
-    if(ROOT_HASXML STREQUAL "no")
+    if(NOT ROOT_HASXML)
         message(FATAL_ERROR "ROOT was not build with xml2 support. Please reinstall or rebuild ROOT with xml2 support")
-    endif(ROOT_HASXML STREQUAL "no")
+    endif(ROOT_HASXML)
 else()
     message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
 endif(ROOTSYS)
@@ -154,6 +154,8 @@ message(STATUS "Build folder: ${AliRoot_BINARY_DIR}")
 message(STATUS "Source folder: ${AliRoot_SOURCE_DIR}")
 message(STATUS "Installation folder: ${CMAKE_INSTALL_PREFIX}")
 
+# General flags -> Should be moved into a configuration file
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 # AliRoot base modules
 add_subdirectory(STEER)
