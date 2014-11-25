@@ -39,7 +39,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS)
+set(LIBDEPS Core)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Create an object to be reused in case of static libraries 
@@ -47,6 +47,7 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 add_library(AliHLTHOMER-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
 add_library(AliHLTHOMER SHARED $<TARGET_OBJECTS:AliHLTHOMER-object>)
+target_link_libraries(${MODULE} Core)
 
 # Additional compilation flags
 set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-fPIC -O -g")

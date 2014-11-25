@@ -25,11 +25,11 @@ set(MODULE HLTbase)
 
 # Module include folder
 include_directories(${AliRoot_SOURCE_DIR}/HLT/BASE
-                    ${AliRoot_SOURCE_DIR}/HLT/BASE/HOMER
                    )
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(
+                    ${AliRoot_SOURCE_DIR}/HLT/BASE/HOMER
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
@@ -127,17 +127,19 @@ set(HDRS ${HDRS}
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+set(ROOT_DEPENDENCIES Core Geom Graf Hist MathCore Net RIO Tree XMLParser)
+set(ALIROOT_DEPENDENCIES STEERBase RAWDatabase AliHLTHOMER)
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase RAWDatabase AliHLTHOMER)
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Create an object to be reused in case of static libraries 
 # Otherwise the sources will be compiled twice
-add_library(HLTbase-object OBJECT ${SRCS} G__${MODULE}.cxx)
+add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
-add_library(HLTbase SHARED $<TARGET_OBJECTS:HLTbase-object>)
-target_link_libraries(HLTbase STEERBase RAWDatabase AliHLTHOMER)
+add_library(${MODULE} SHARED $<TARGET_OBJECTS:HLTbase-object>)
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
 # Additional compilation flags
 set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-fPIC -O -g")
