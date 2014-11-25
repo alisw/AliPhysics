@@ -119,7 +119,6 @@ if(DATE_CONFIG)
     string(REGEX MATCHALL "[-]L[^- ]+" DATE_LIBRARIES_PATH_TMP ${DATE_LIBS})
     string(REGEX REPLACE "[-]L" ";" DATE_LIBRARIES_PATH_TMP ${DATE_LIBRARIES_PATH_TMP})
     find_date_libraries(DATE_LIBRARIES "${DATE_LIBRARIES_TMP}" "${DATE_LIBRARIES_PATH_TMP}")
-    message(STATUS "DATE LIBs ${DATE_LIBRARIES}")
     
     # Fix for mysql bug https://bugs.launchpad.net/percona-server/+bug/1287374
     set(DATE_LIBS "${DATE_LIBS} -L/usr/lib64/mysql/")
@@ -154,7 +153,6 @@ if(DATE_CONFIG)
     string(REGEX REPLACE "[-]L" ";" DATE_MONLIBRARIES_PATH_TMP ${DATE_MONLIBRARIES_PATH_TMP})
     find_date_libraries(DATE_MONLIBRARIES "${DATE_MONLIBRARIES_TMP}" "${DATE_MONLIBRARIES_PATH_TMP}")
     set(DATE_MONLIBRARIES ${DATE_STATICMON} ${DATE_MONLIBRARIES})
-    message(STATUS "MONSTATIC ${DATE_STATICMON}")
     
     # Fix for mysql bug https://bugs.launchpad.net/percona-server/+bug/1287374
     set(DATE_MONLIBS "${DATE_MONLIBS} -L/usr/lib64/mysql/")
@@ -179,7 +177,6 @@ if(DATE_CONFIG)
     string(REGEX MATCHALL "[-]L[^- ]+" DATE_RCPROXYLIBRARIES_PATH_TMP ${DATE_RCPROXYLIBS})
     string(REGEX REPLACE "[-]L" ";" DATE_RCPROXYLIBRARIES_PATH_TMP ${DATE_RCPROXYLIBRARIES_PATH_TMP})
     find_date_libraries(DATE_RCPROXYLIBRARIES "${DATE_RCPROXYLIBRARIES_TMP}" "${DATE_RCPROXYLIBRARIES_PATH_TMP}")
-    message(STATUS "DATE RCLIBs ${DATE_RCPROXYLIBRARIES}")
 
     # setting the monlibs
     execute_process(COMMAND ${DATE_CONFIG} --monitorlibs=dyn OUTPUT_VARIABLE DATE_DYNMONLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
@@ -191,7 +188,6 @@ if(DATE_CONFIG)
     if(DATE_DYNMONLIBS)
         string(STRIP ${DATE_DYNMONLIBS} DATE_DYNMONLIBS)
     endif()
-
 
     set(DATE_FOUND TRUE)
 else()

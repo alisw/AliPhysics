@@ -18,11 +18,8 @@ include_directories(${AliRoot_SOURCE_DIR}/TOF/DA)
 
 # Additional include folders in alphabetical order
 include_directories(
-                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                     ${AliRoot_SOURCE_DIR}/TOF/TOFbase
                    )
 
