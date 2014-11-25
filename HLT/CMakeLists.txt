@@ -16,7 +16,7 @@
 option(HLT_CUDA   "Build HLT GPU tracker using CUDA"   OFF)
 option(HLT_OPENCL "Build HLT GPU tracker using OpenCL" OFF)
 
-add_definitions(-Duse_aliroot -Duse_root -DROWHOUGHPARAMS)
+add_definitions(-Duse_aliroot -DUSE_ROOT -DROWHOUGHPARAMS)
 
 # AliRoot debug mode
 if(ALIDEBUG)
