@@ -980,7 +980,7 @@ void AliEMCALRecoUtils::InitParameters()
   
   fExoticCellFraction     = 0.97;
   fExoticCellDiffTime     = 1e6;
-  fExoticCellMinAmplitude = 0.5;
+  fExoticCellMinAmplitude = 4.0;
   
   fAODFilterMask    = 128;
   fAODHybridTracks  = kFALSE;
