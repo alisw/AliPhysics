@@ -184,7 +184,6 @@ Bool_t AliPPVsMultUtils::LoadCalibration(Int_t lLoadThisCalibration)
     lCalibFile_V0CEq = TFile::Open("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/corrections/calibration_V0CEq.root");
     
     //AliInfo("Casting");
-    //check memory consumption later...
     fBoundaryHisto_V0M   = dynamic_cast<TH1F *>(lCalibFile_V0M  -> Get(Form("histocalib%i",lLoadThisCalibration)) );
     fBoundaryHisto_V0A   = dynamic_cast<TH1F *>(lCalibFile_V0A  -> Get(Form("histocalib%i",lLoadThisCalibration)) );
     fBoundaryHisto_V0C   = dynamic_cast<TH1F *>(lCalibFile_V0C  -> Get(Form("histocalib%i",lLoadThisCalibration)) );
@@ -195,12 +194,12 @@ Bool_t AliPPVsMultUtils::LoadCalibration(Int_t lLoadThisCalibration)
     if ( !fBoundaryHisto_V0M   || !fBoundaryHisto_V0A   || !fBoundaryHisto_V0C ||
         !fBoundaryHisto_V0MEq || !fBoundaryHisto_V0AEq || !fBoundaryHisto_V0CEq ){
         AliInfo(Form("No calibration for run %i exists at the moment!",lLoadThisCalibration));
-        if( lCalibFile_V0M ) lCalibFile_V0M->Close();
-        if( lCalibFile_V0A ) lCalibFile_V0A->Close();
-        if( lCalibFile_V0C ) lCalibFile_V0C->Close();
-        if( lCalibFile_V0MEq ) lCalibFile_V0MEq->Close();
-        if( lCalibFile_V0AEq ) lCalibFile_V0AEq->Close();
-        if( lCalibFile_V0CEq ) lCalibFile_V0CEq->Close();
+        if( lCalibFile_V0M ) {lCalibFile_V0M->Close(); lCalibFile_V0M->Delete(); delete lCalibFile_V0M; }
+        if( lCalibFile_V0A ) {lCalibFile_V0A->Close(); lCalibFile_V0A->Delete(); delete lCalibFile_V0A; }
+        if( lCalibFile_V0C ) {lCalibFile_V0C->Close(); lCalibFile_V0C->Delete(); delete lCalibFile_V0C; }
+        if( lCalibFile_V0MEq ) {lCalibFile_V0MEq->Close(); lCalibFile_V0MEq->Delete(); delete lCalibFile_V0MEq; }
+        if( lCalibFile_V0AEq ) {lCalibFile_V0AEq->Close(); lCalibFile_V0AEq->Delete(); delete lCalibFile_V0AEq; }
+        if( lCalibFile_V0CEq ) {lCalibFile_V0CEq->Close(); lCalibFile_V0CEq->Delete(); delete lCalibFile_V0CEq; }
         fRunNumber = lLoadThisCalibration;
         return kFALSE; //return denial
     }
