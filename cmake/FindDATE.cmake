@@ -28,7 +28,8 @@
 # - DATE_LDFLAGS - ldflags reported by date-config
 # - DATE_LIBS - DATE libs to be linked against to reported by date-config --libs
 # - DATE_LIBRARIES - DATE libs as as list as extracted from date-config --libs
-# - DATE_MONLIBS - monitorlibs reported by date-config --monitorlibs
+# - DATE_MONLIBS - static monitorlibs reported by date-config --monitorlibs without shift
+# - DATE_DYNMONLIBS - dynamic monitorlibs reported by date-config --monitorlibs without shift
 # - DATE_MONLIBRARIES - DATE monitor libs as a list extracted from the date-config --monitorlibs
 # - DATE_STATICMON - DATE static monitor libs needed by the DA
 # - DATE_RCPROXYLIBS - rcproxylibs reported by date-config --rcproxylibs
@@ -158,7 +159,7 @@ if(DATE_CONFIG)
     # Fix for mysql bug https://bugs.launchpad.net/percona-server/+bug/1287374
     set(DATE_MONLIBS "${DATE_MONLIBS} -L/usr/lib64/mysql/")
 
-    # setting the monlibs
+    # setting the rclibs
     execute_process(COMMAND ${DATE_CONFIG} --rcproxylibs OUTPUT_VARIABLE DATE_RCPROXYLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error retrieving DATE rcproxylibs")
@@ -179,6 +180,18 @@ if(DATE_CONFIG)
     string(REGEX REPLACE "[-]L" ";" DATE_RCPROXYLIBRARIES_PATH_TMP ${DATE_RCPROXYLIBRARIES_PATH_TMP})
     find_date_libraries(DATE_RCPROXYLIBRARIES "${DATE_RCPROXYLIBRARIES_TMP}" "${DATE_RCPROXYLIBRARIES_PATH_TMP}")
     message(STATUS "DATE RCLIBs ${DATE_RCPROXYLIBRARIES}")
+
+    # setting the monlibs
+    execute_process(COMMAND ${DATE_CONFIG} --monitorlibs=dyn OUTPUT_VARIABLE DATE_DYNMONLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
+    if(error)
+        message(FATAL_ERROR "Error retrieving DATE monitorlibs : ${error}")
+    endif(error)
+    
+    # If the flags are not empty we strip them
+    if(DATE_DYNMONLIBS)
+        string(STRIP ${DATE_DYNMONLIBS} DATE_DYNMONLIBS)
+    endif()
+
 
     set(DATE_FOUND TRUE)
 else()

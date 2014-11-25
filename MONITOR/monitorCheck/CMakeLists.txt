@@ -21,8 +21,6 @@ include_directories(${AliRoot_SOURCE_DIR}/MONITOR/${MODULE}
 
 # Additional include folders in alphabetical order
 include_directories(${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
-                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
                    )
 
 # Sources in alphabetical order
@@ -46,7 +44,7 @@ set(MODULE_LINK_FLAGS)
 
 if(DATE_FOUND)
     set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
-    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS} ${DATE_MONLIBS}")
+    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS} ${DATE_DYNMONLIBS}")
 endif(DATE_FOUND)
 
 # Additional compilation and linking flags

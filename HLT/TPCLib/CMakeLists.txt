@@ -17,7 +17,7 @@
 # Submodules have to be included before the main library otherwise
 # they will inherit parent folder properties
 add_subdirectory(calibration)
-if(ROOT_HASOPENGL STREQUAL "yes")
+if(ROOT_HASOPENGL)
     add_subdirectory(EVE)
 endif()
 

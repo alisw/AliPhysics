@@ -72,12 +72,25 @@ set(SRCS
     AliXMLCollection.cxx
   )
 
-# If ROOT was build with no AliEn support we disable the AliROOT AliEn support
-if(ROOT_HASALIEN STREQUAL "no")
-    message(STATUS "ROOT was build with no alien support. Disabling AliROOT AliEn support")
+
+# If ROOT has no xml support desabling collections and AliEn support
+if(ROOT_HASXML)
+    set(SRCS ${SRCS}
+         AliTagAnalysis.cxx
+         AliXMLCollection.cxx
+       )
+
+    # If ROOT was build with no AliEn support we disable the AliROOT AliEn support
+    if(ROOT_HASALIEN)
+        set(SRCS ${SRCS} 
+            AliAnalysisAlien.cxx
+        )
+    else()
+        message(STATUS "${MODULE} - ROOT was build with no alien support. Disabling AliROOT AliEn support")
+    endif()
 else()
-    set(SRCS ${SRCS} AliAnalysisAlien.cxx)
-endif(ROOT_HASALIEN STREQUAL "no")
+    message(STATUS "${MODULE} - ROOT was build with no xml support. Disabling XML collection and AliEn support")
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")

@@ -23,6 +23,15 @@ include_directories(${AliRoot_SOURCE_DIR}/MONITOR/${MODULE}
 include_directories(${AliRoot_SOURCE_DIR}
                    )
 
+if(DATE_FOUND)
+    include_directories(
+                        ${AliRoot_SOURCE_DIR}/ITS/ITSbase
+                        ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+                        ${AliRoot_SOURCE_DIR}/STEER/ESD
+                        ${AliRoot_SOURCE_DIR}/STEER/STEER
+                       )
+endif(DATE_FOUND)
+
 # Sources in alphabetical order
 set(SRCS
     monitorGDC.cxx
@@ -37,15 +46,24 @@ endif()
 
 # Add an executable to the project using the specified source files
 add_executable(${MODULE} ${SRCS})
-target_link_libraries(${MODULE} Core)
 
 set(MODULE_COMPILE_FLAGS)
 set(MODULE_LINK_FLAGS)
+set(MODULE_DEPENDENCIES Core)
 
 if(DATE_FOUND)
     set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
-    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS}")
+    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS} ${DATE_DYNMONLIBS}")
+
+    set(MODULE_DEPENDENCIES STEER ESD RAWDatarec ITSbase ${MODULE_DEPENDENCIES})
 endif(DATE_FOUND)
+
+if(ZEROMQ_FOUND)
+    set(MODULE_DEPENDENCIES MONITORzmq ${MODULE_DEPENDENCIES})
+    add_definitions(-DZMQ)
+ENDIF(ZEROMQ_FOUND)
+
+target_link_libraries(${MODULE} ${MODULE_DEPENDENCIES})
 
 # Additional compilation and linking flags
 set(MODULE_COMPILE_FLAGS "-O -g ${MODULE_COMPILE_FLAGS}")
@@ -58,11 +76,6 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 # Setting target compile and linking flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
 set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-if(ZEROMQ_FOUND)
-    target_link_libraries(${MODULE} MONITORzmq)
-    add_definitions(-DZMQ)
-ENDIF(ZEROMQ_FOUND)
 
 # Installation
 install(TARGETS ${MODULE} RUNTIME DESTINATION bin)

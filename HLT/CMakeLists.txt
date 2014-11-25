@@ -51,7 +51,7 @@ add_subdirectory(trigger)
 add_subdirectory(VZERO)
 add_subdirectory(ZDC)
 # Enable EVE if ROOT has OpenGL support
-if(ROOT_HASOPENGL STREQUAL "yes")
+if(ROOT_HASOPENGL)
     add_subdirectory(EVE)
 endif()
 add_subdirectory(QA)
