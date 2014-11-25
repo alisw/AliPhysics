@@ -96,8 +96,11 @@ add_library(${MODULE} SHARED $<TARGET_OBJECTS:AOD-object>)
 # library dependecies
 target_link_libraries(${MODULE} ${ROOT_DEPENDENCIES} ${ALIROOT_DEPENDENCIES})
 
+# Public include folders that will be propagated to the dependecies
+target_include_directories(${MODULE} PUBLIC ${incdirs})
+
 # Additional compilation flags
-set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-O -g -fPIC")
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-O -g")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)

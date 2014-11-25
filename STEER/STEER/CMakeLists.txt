@@ -179,9 +179,13 @@ add_library(STEER-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
 add_library(STEER SHARED $<TARGET_OBJECTS:STEER-object>)
 
-# Additional compilation flags
-set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-fPIC -O -g")
 target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+
+# Public include folders that will be propagated to the dependecies
+target_include_directories(${MODULE} PUBLIC ${incdirs})
+
+# Additional compilation flags
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-O -g")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)

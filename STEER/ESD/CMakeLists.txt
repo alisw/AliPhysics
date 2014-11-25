@@ -118,14 +118,17 @@ generate_rootmap("ESD" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDe
 
 # Create an object to be reused in case of static libraries 
 # Otherwise the sources will be compiled twice
-add_library(ESD-object OBJECT ${SRCS} G__${MODULE}.cxx)
+add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 
 # Add a library to the project using the object
-add_library(ESD SHARED $<TARGET_OBJECTS:ESD-object>)
-target_link_libraries(ESD ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+add_library(${MODULE} SHARED $<TARGET_OBJECTS:ESD-object>)
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+
+# Public include folders that will be propagated to the dependecies
+target_include_directories(${MODULE} PUBLIC ${incdirs})
 
 # Additional compilation flags for the object
-set_target_properties(ESD-object PROPERTIES COMPILE_FLAGS "-fPIC -O -g")
+set_target_properties(ESD-object PROPERTIES COMPILE_FLAGS "-O -g")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
