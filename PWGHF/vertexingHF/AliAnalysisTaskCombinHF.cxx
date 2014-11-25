@@ -637,7 +637,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
       pz[1] = tmpp[2];
       dgLabels[1]=trPi1->GetLabel();
       if(chargePi1==chargeK){
-        if(fMeson==kDzero) FillLSHistos(421,2,tmpRD2,px,py,pz,pdg0,chargePi1);
+        if(fMeson==kDzero) FillLSHistos(421,2,tmpRD2,px,py,pz,pdg0,(Int_t)chargePi1);
         continue;
       }
       if(fMeson==kDzero){
@@ -688,7 +688,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   fEventInfo->SetString(Form("Ev%d_esd%d_Pi%d_K%d",mgr->GetNcalls(),((AliAODHeader*)aod->GetHeader())->GetEventNumberESDFile(),fPionTracks->GetEntries(),fKaonTracks->GetEntries()));
   if(fDoEventMixing==1){
     Int_t ind=GetPoolIndex(fVtxZ,fMultiplicity);
-    if(ind>=0){
+    if(ind>=0 && ind<fNOfPools){
       fEventsPerPool->Fill(fVtxZ,fMultiplicity);
       fEventBuffer[ind]->Fill();
       if(fEventBuffer[ind]->GetEntries() >= fNumberOfEventsForMixing){
@@ -1042,7 +1042,7 @@ Int_t AliAnalysisTaskCombinHF::GetPoolIndex(Double_t zvert, Double_t mult){
 //_________________________________________________________________
 void AliAnalysisTaskCombinHF::ResetPool(Int_t poolIndex){
   // delete the contets of the pool
-  if(poolIndex<0 || poolIndex>fNzVertPools*fNMultPools) return;
+  if(poolIndex<0 || poolIndex>=fNOfPools) return;
   delete fEventBuffer[poolIndex];
   fEventBuffer[poolIndex]=new TTree(Form("EventBuffer_%d",poolIndex), "Temporary buffer for event mixing");
   fEventBuffer[poolIndex]->Branch("zVertex", &fVtxZ);
