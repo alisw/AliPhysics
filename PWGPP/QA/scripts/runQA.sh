@@ -8,6 +8,33 @@ if [ ${BASH_VERSINFO} -lt 4 ]; then
   exit 1
 fi
 
+##############################
+#default values:
+##############################
+#config file
+configFile=""
+#where to search for qa files
+inputList=file.list
+#working directory
+workingDirectory="${PWD}"
+#where to place the final qa plots
+#outputDirectory="/afs/cern.ch/work/a/aliqa%det/www/"
+outputDirectory="${workingDirectory}/%DET"
+#filter out detector option
+excludeDetectors="EXAMPLE"
+#logs
+logDirectory=${workingDirectory}/logs
+#OCDB storage
+ocdbStorage="raw://"
+#email to
+#MAILTO="fbellini@cern.ch"
+runMap="
+2010 108350 139517
+2011 140441 170593
+2012 171590 193766
+2013 194482 197692
+"
+
 main()
 {
   if [[ -z $1 ]]; then
@@ -539,30 +566,6 @@ validateLog()
 parseConfig()
 {
   args=("$@")
-
-  #config file
-  configFile=""
-  #where to search for qa files
-  inputList=file.list
-  #working directory
-  workingDirectory="${PWD}"
-  #where to place the final qa plots
-  #outputDirectory="/afs/cern.ch/work/a/aliqa%det/www/"
-  outputDirectory="${workingDirectory}/%DET"
-  #filter out detector option
-  excludeDetectors="EXAMPLE"
-  #logs
-  logDirectory=${workingDirectory}/logs
-  #OCDB storage
-  ocdbStorage="raw://"
-  #email to
-  #MAILTO="fbellini@cern.ch"
-  runMap="
-  2010 108350 139517
-  2011 140441 170593
-  2012 171590 193766
-  2013 194482 197692
-  "
 
   #first, check if the config file is configured
   #is yes - source it so that other options can override it
