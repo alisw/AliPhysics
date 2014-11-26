@@ -19,7 +19,6 @@
 // To be done:
 // - reorganize last part (reading and extracting info from run per run histos)
 // - remove trigger selection when muon QA task modified (now a selection is done one triggers' name)
-
 //--------------------------------------------------------------------------
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
@@ -297,8 +296,9 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       histo = (TH1*) ProcessHisto(trackCounters, "run", selection, "");
       trackMatched.AddAt(histo,index);
 		
-      selection = selectionCent; selection += Form("trigger:%s/%s/%s", triggerName.Data(), selectRuns.Data(), select.Data());
-      histo = (TH1*) ProcessHisto(trackCounters, "run", selection, "");
+      histo = (TH1*) ( (TH1*) trackTrigger.At(index))->Clone("");
+      histo->Add( (TH1*) trackTracker.At(index) );
+      histo->Add( (TH1*) trackMatched.At(index) );
       trackAll.AddAt(histo,index);
 
       //for the following, only integrated over centrality
@@ -1759,10 +1759,12 @@ TCanvas *ProcessCanvasTracksoverTrigger(TObjArray *triggersB, TObjArray trigSel,
   if (!histo) return 0;
   hAllTracksPerB = (TH1*) histo->Clone(hName);
   if ( hAllTracksPerB->GetEntries() > 0 ) hAllTracksPerB->Divide(hTrigSel);
+ 
   hAllTracksPerB->SetLineWidth(3);
   hAllTracksPerB->SetLineColor(kBlack);
   hAllTracksPerB->SetTitle(Form("Number of Tracks /%s %s",hNameBase.Data(),legendHeader.Data()));
   hAllTracksPerB->SetMinimum(0.0001);
+  if ( hAllTracksPerB->GetEntries() == 0 ) hAllTracksPerB->SetMaximum(0.1);
   hAllTracksPerB->SetLabelSize(0.02);
 	
   TString cName = "c";
@@ -2142,13 +2144,32 @@ Bool_t GetTriggerLists(const char* triggerList, TString listFromContainer, TObjA
   }
   else {
     TObjArray *triggersInContainer = listFromContainer.Tokenize(",");
+    Int_t nTrig = 0;
     for ( Int_t iTrig = 0; iTrig < triggersInContainer->GetEntriesFast(); iTrig++ ) {
       currTrigName = triggersInContainer->At(iTrig)->GetName();
       Bool_t keep = kFALSE;
-      if ( ( currTrigName.Contains("-B-") ||  currTrigName.Contains("-ABCE-") ) && ( ! ((TString) currTrigName(0)).CompareTo("C") ) && !currTrigName.Contains("WU") && !currTrigName.Contains("UP") && !currTrigName.Contains("SPI") && !currTrigName.Contains("PHI") && !currTrigName.Contains("EMC") && !currTrigName.Contains("ZED") && !currTrigName.Contains("TRUE") && !currTrigName.Contains("SHM")  && !currTrigName.Contains("TPC") && !currTrigName.Contains("BEAM") && !currTrigName.Contains("1A") && !currTrigName.Contains("1C")) keep = kTRUE;//cyn: to be removed once the trigger filtering is carried out in the analysis task
+      if ( ( currTrigName.Contains("-B-") ||  currTrigName.Contains("-ABCE-") ) && 
+	   ( ! ((TString) currTrigName(0)).CompareTo("C") ) && !currTrigName.Contains("WU") && 
+	   !currTrigName.Contains("UP") && !currTrigName.Contains("SPI") && !currTrigName.Contains("PHI") && 
+	   !currTrigName.Contains("EMC") && !currTrigName.Contains("ZED") && !currTrigName.Contains("TRUE") && 
+	   !currTrigName.Contains("SHM")  && !currTrigName.Contains("TPC") && !currTrigName.Contains("BEAM") && 
+	   !currTrigName.Contains("1A") && !currTrigName.Contains("1C")) 
+	keep = kTRUE;//cyn: to be removed once the trigger filtering is carried out in the analysis task
       if (!keep) continue;
+      nTrig++;
       for (Int_t ibeam = 0; ibeam < nColumn; ibeam++) {
 	fullTriggerList[ibeam]->AddLast( new TObjString(currTrigName) );
+      }
+    }
+    //if no triggers are kept, then keep all of them
+    if (nTrig == 0) {
+      printf("INFO: no trigger selected over %d triggers: all triggers kept!!\n",
+	     triggersInContainer->GetEntriesFast());
+      for ( Int_t iTrig = 0; iTrig < triggersInContainer->GetEntriesFast(); iTrig++ ) {
+	currTrigName = triggersInContainer->At(iTrig)->GetName();
+	for (Int_t ibeam = 0; ibeam < nColumn; ibeam++) {
+	  fullTriggerList[ibeam]->AddLast( new TObjString(currTrigName) );
+	}
       }
     }
     if ( triggersInContainer ) delete triggersInContainer;
