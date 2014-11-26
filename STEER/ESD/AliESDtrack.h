@@ -508,6 +508,11 @@ public:
       fOp=new AliExternalTrackParam(*p);
       }
 
+  void ResetTrackParamTPCInner ( const AliExternalTrackParam *p ) {
+      if (fTPCInner) delete fTPCInner;
+      fTPCInner=new AliExternalTrackParam(*p);
+      }
+
 protected:
   
   AliExternalTrackParam *fCp; // Track parameters constrained to the primary vertex
