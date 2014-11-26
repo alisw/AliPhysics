@@ -967,14 +967,12 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
       continue;
     if(maxid==id)
       continue;
-    Double_t matchedpt =  0;
+    Double_t matchedpt =  GetTrackMatchedPt(c->GetTrackMatchedIndex());
     if(fCpvFromTrack){
-      matchedpt = GetTrackMatchedPt(c->GetTrackMatchedIndex());
       if(matchedpt>0 && fRemMatchClus )
 	continue;
     } else {
       if(TMath::Abs(c->GetTrackDx())<0.03 && TMath::Abs(c->GetTrackDz())<0.02){
-	matchedpt = GetTrackMatchedPt(c->GetTrackMatchedIndex());
 	if(fRemMatchClus){
 	  if(fDebug)
 	    printf("This isolation cluster is matched to a track!++++++++++++++++++++++++++++++++++++++++++++++++++\n");
