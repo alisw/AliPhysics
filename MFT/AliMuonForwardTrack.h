@@ -76,7 +76,7 @@ public:
   Double_t GetRAtAbsorberEnd() { return fRAtAbsorberEnd; }
   void SetRAtAbsorberEnd(Double_t rAtAbsorberEnd) { fRAtAbsorberEnd = rAtAbsorberEnd; }
 
-  Double_t GetChi2OverNdf() { return GetGlobalChi2()/Double_t(GetNMUONClusters()+GetNMFTClusters()-5); };   // chi2/ndf
+  Double_t GetChi2OverNdf() { return GetGlobalChi2()/Double_t(2*(GetNMUONClusters()+GetNMFTClusters())-5); };   // chi2/ndf
 
   void SetParentMCLabel(Int_t iParent, Int_t MClabel) { if (0<=iParent && iParent<fgkNParentsMax) fParentMCLabel[iParent] = MClabel; }
   void SetParentPDGCode(Int_t iParent, Int_t PDGCode) { if (0<=iParent && iParent<fgkNParentsMax) fParentPDGCode[iParent] = PDGCode; }

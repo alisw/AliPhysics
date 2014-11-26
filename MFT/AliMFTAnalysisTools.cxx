@@ -808,3 +808,34 @@ Bool_t AliMFTAnalysisTools::TranslateMuonToOrigin(AliAODTrack *muon, Double_t vt
 }
 
 //====================================================================================================================================================
+
+Bool_t AliMFTAnalysisTools::IsPDGCharm(Int_t pdgCode) {
+
+  pdgCode = TMath::Abs(pdgCode/100);
+  if (pdgCode>9) pdgCode /= 10;
+  if (pdgCode == 4 ) return kTRUE;
+  else return kFALSE;
+  
+}
+
+//====================================================================================================================================================
+
+Bool_t AliMFTAnalysisTools::IsPDGBeauty(Int_t pdgCode) {
+
+  pdgCode = TMath::Abs(pdgCode/100);
+  if (pdgCode>9) pdgCode /= 10;
+  if (pdgCode == 5) return kTRUE;
+  else return kFALSE;
+
+}
+
+//====================================================================================================================================================
+
+Bool_t AliMFTAnalysisTools::IsPDGResonance(Int_t pdgCode) {
+
+  Int_t id = pdgCode%100000;
+  return (!((id-id%10)%110));
+
+} 
+
+//====================================================================================================================================================
