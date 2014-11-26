@@ -62,6 +62,9 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name, Bool_t doQA) :
   fQAHistos(NULL)
 {
   // Constructor.
+  fRunTriggerType[kTMEMCalJet] = kTRUE;
+  fRunTriggerType[kTMEMCalGamma] = kTRUE;
+  fRunTriggerType[kTMEMCalLevel0] = kTRUE;
   memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
   memset(fPatchADCSimple, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
   memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
@@ -126,7 +129,7 @@ void AliEmcalTriggerMaker::UserCreateOutputObjects()
   // Do basic QA monitoring (if requested)
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
-  if(fDoQA){
+  if(fDoQA && fOutput){
     fQAHistos = new THistManager("TriggerQA");
 
     TString trtypenames[3] = {"EJE", "EGA", "EL0"};
