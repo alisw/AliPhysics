@@ -127,7 +127,7 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
   fOutput->Add(fHistRhovsCent);
 
   if (fParticleCollArray.GetEntriesFast()>0) {
-    fHistRhovsNtrackvsV0Mult = new TH3F("fHistRhovsNtrackvsV0Mult", "fHistRhovsNtrackvsV0Mult", 150, 0, 6000, fNbins, fMinBinPt, fMaxBinPt*2,100,0.,20000.);
+    fHistRhovsNtrackvsV0Mult = new TH3F("fHistRhovsNtrackvsV0Mult", "fHistRhovsNtrackvsV0Mult", 150, 0, 6000, fNbins, fMinBinPt, fMaxBinPt*2,100,0.,25000.);
     fHistRhovsNtrackvsV0Mult->GetXaxis()->SetTitle("No. of tracks");
     fHistRhovsNtrackvsV0Mult->GetYaxis()->SetTitle("#rho (GeV/c * rad^{-1})");
     fHistRhovsNtrackvsV0Mult->GetZaxis()->SetTitle("V0 mult");
@@ -226,7 +226,7 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
     fOutput->Add(fHistRhoScaledvsCent);
 
     if (fParticleCollArray.GetEntriesFast()>0) {
-      fHistRhoScaledvsNtrackvsV0Mult = new TH3F("fHistRhoScaledvsNtrackvsV0Mult", "fHistRhoScaledvsNtrackvsV0Mult", 150, 0, 6000, fNbins, fMinBinPt, fMaxBinPt*2,100,0.,20000.);
+      fHistRhoScaledvsNtrackvsV0Mult = new TH3F("fHistRhoScaledvsNtrackvsV0Mult", "fHistRhoScaledvsNtrackvsV0Mult", 150, 0, 6000, fNbins, fMinBinPt, fMaxBinPt*2,100,0.,25000.);
       fHistRhoScaledvsNtrackvsV0Mult->GetXaxis()->SetTitle("No. of tracks");
       fHistRhoScaledvsNtrackvsV0Mult->GetYaxis()->SetTitle("#rho (GeV/c * rad^{-1})");
       fHistRhoScaledvsNtrackvsV0Mult->GetZaxis()->SetTitle("V0 mult");
