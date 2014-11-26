@@ -24,7 +24,9 @@ AliADdigit::AliADdigit()
     fPMNumber(0),
     fTime(0.),
     fWidth(0.),
-    fIntegrator(0)
+    fIntegrator(0),
+    fBBflag(0),
+    fBGflag(0)
 
 {
   // Standard default
@@ -37,12 +39,16 @@ AliADdigit::AliADdigit(Int_t   PMnumber, Float_t time,
                              Float_t width,
 			     Bool_t integrator,
 			     Short_t *chargeADC,
+			     Bool_t  BBflag,
+		  	     Bool_t  BGflag,
 			     Int_t *labels)
 :AliDigit(),
 fPMNumber(PMnumber),
 fTime(time),
 fWidth(width),
-fIntegrator(integrator)
+fIntegrator(integrator),
+fBBflag(BBflag),
+fBGflag(BGflag)
 {  
   // Constructor
   // Used in the digitizer

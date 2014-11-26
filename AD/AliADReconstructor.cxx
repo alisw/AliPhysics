@@ -93,11 +93,6 @@ void AliADReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTre
   AliADRawStream rawStream(rawReader);
   if (rawStream.Next()) { 
 
-    Int_t aBBflagsADA = 0;
-    Int_t aBBflagsADC = 0;
-    Int_t aBGflagsADA = 0;
-    Int_t aBGflagsADC = 0;
-
     for(Int_t iChannel=0; iChannel < 16; ++iChannel) {
       Int_t offlineCh = rawStream.GetOfflineChannel(iChannel);
       // ADC charge samples
@@ -107,29 +102,18 @@ void AliADReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTre
       }
       // Integrator flag
       Bool_t integrator = rawStream.GetIntegratorFlag(iChannel,kNClocks/2);
-      // Beam-beam and beam-gas flags
-      if(offlineCh<8) {
-	if (rawStream.GetBBFlag(iChannel,kNClocks/2)) aBBflagsADC |= (1 << offlineCh);
-	if (rawStream.GetBGFlag(iChannel,kNClocks/2)) aBGflagsADC |= (1 << offlineCh);
-      } else {
-	if (rawStream.GetBBFlag(iChannel,kNClocks/2)) aBBflagsADA |= (1 << (offlineCh-32));
-	if (rawStream.GetBGFlag(iChannel,kNClocks/2)) aBGflagsADA |= (1 << (offlineCh-32));
-      }
+      Bool_t BBflag = rawStream.GetBBFlag(iChannel,kNClocks/2); 
+      Bool_t BGflag = rawStream.GetBGFlag(iChannel,kNClocks/2);
+   
       // HPTDC data (leading time and width)
       Int_t board = AliADCalibData::GetBoardNumber(offlineCh);
       Float_t time = rawStream.GetTime(iChannel)*fCalibData->GetTimeResolution(board);
       Float_t width = rawStream.GetWidth(iChannel)*fCalibData->GetWidthResolution(board);
       // Add a digit
       if(!fCalibData->IsChannelDead(iChannel)){
-	  new ((*fDigitsArray)[fDigitsArray->GetEntriesFast()]) AliADdigit(offlineCh, time, width,integrator, chargeADC);
+	  new ((*fDigitsArray)[fDigitsArray->GetEntriesFast()]) AliADdigit(offlineCh, time, width,integrator, chargeADC, BBflag, BGflag);
       }
     }
-    // Store the BB and BG flags in the digits tree (user info)
-    digitsTree->GetUserInfo()->Add(new TParameter<int>("BBflagsADA",aBBflagsADA));
-    digitsTree->GetUserInfo()->Add(new TParameter<int>("BBflagsADC",aBBflagsADC));
-    digitsTree->GetUserInfo()->Add(new TParameter<int>("BGflagsADA",aBGflagsADA));
-    digitsTree->GetUserInfo()->Add(new TParameter<int>("BGflagsADC",aBGflagsADC));
-
 
     digitsTree->Fill();
   }
