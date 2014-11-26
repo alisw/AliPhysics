@@ -20,6 +20,9 @@
 //                  Date: Wed Jul  9 18:38:30 CEST 2014                    //
 //          New approch to find particle ratio to reduce memory            //
 //                             (Test Only)                                 //
+//        Copied from NetParticle Classes
+//        Origin: Authors: Jochen Thaeder <jochen@thaeder.de>
+//                         Michael Weber <m.weber@cern.ch>
 //=========================================================================//
 
 #include "TMath.h"
@@ -102,7 +105,7 @@ void AliEbyEPidRatioBase::Initialize(AliEbyEPidRatioHelper* helper, AliESDtrackC
  
   Float_t ptRange[2];
   fESDTrackCuts->GetPtRange(ptRange[0],ptRange[1]);
-  Printf(">>>> Pt Initialisation: [%f,%f]",ptRange[0],ptRange[1]);
+  Printf(">>>> Pt Initialisation:  [%f,%f]",ptRange[0],ptRange[1]);
   fESDTrackCuts->GetEtaRange(ptRange[0],ptRange[1]);
   Printf(">>>> Eta Initialisation: [%f,%f]",ptRange[0],ptRange[1]);
  

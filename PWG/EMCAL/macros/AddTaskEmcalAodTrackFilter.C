@@ -23,7 +23,7 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
   }
 
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  if (inputDataType != "AOD")) {
+  if (inputDataType != "AOD") {
     ::Info("AddTaskEmcalAodTpcTrack", "This task is only needed for AOD analysis. No task added.");
     return NULL;
   }
@@ -37,8 +37,11 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
   aodTask->SetTracksInName(inname);
   aodTask->SetMC(kFALSE);
 
-  Bool_t includeNoITS = kFALSE;
-  Bool_t doProp = kFALSE;
+  Bool_t includeNoITS  = kFALSE;
+  Bool_t doProp        = kFALSE; //force propagation of all tracks to EMCal
+  Bool_t doAttemptProp = kTRUE;  //only propagate the tracks which were not propagated during AOD filtering
+  Bool_t isMC          = kFALSE;
+
   TString runPeriod(runperiod);
   runPeriod.ToLower();
   if (runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10h" || 
@@ -52,13 +55,11 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
     aodTask->SetAODfilterBits(256,512); // hybrid tracks
     if (runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10h")
       includeNoITS = kTRUE;
-    else if (runPeriod == "lhc11h") // fix cascade bug in LHC11h AOD145
-      aodTask->SetAttemptProp(kTRUE);
   } else if (runPeriod == "lhc12a15e"   || runPeriod.Contains("lhc12a17") || runPeriod == "lhc13b4" ||
 	     runPeriod == "lhc13b4_fix" || runPeriod == "lhc13b4_plus"    || runPeriod.Contains("lhc14a1") || runPeriod.Contains("lhc13b2_efix")
 	     ) {
     aodTask->SetAODfilterBits(256,512); // hybrid tracks
-    aodTask->SetMC(kTRUE);
+    isMC = kTRUE;
   } else if (runPeriod == "lhc11a" || runPeriod == "lhc10hold") {
     aodTask->SetAODfilterBits(256,16); // hybrid tracks
     includeNoITS = kTRUE;
@@ -67,7 +68,7 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
     includeNoITS = kFALSE;
   } else if (runPeriod.Contains("lhc12a15a") || runPeriod == "lhc12a15f" || runPeriod == "lhc12a15g") {
     aodTask->SetAODfilterBits(256,16); // hybrid tracks
-    aodTask->SetMC(kTRUE);
+    isMC = kTRUE;
     includeNoITS = kTRUE;
   } else if (runPeriod.Contains(":")) {
     TObjArray *arr = runPeriod.Tokenize(":");
@@ -81,6 +82,10 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
 	includeNoITS=kTRUE;
       if (arg3.Contains("doProp=kTRUE"))
 	doProp=kTRUE;
+      if (arg3.Contains("doAttemptProp=kFALSE"))
+	doAttemptProp=kFALSE;
+      if (arg3.Contains("isMC=kTRUE"))
+	isMC = kTRUE;
     }
     aodTask->SetAODfilterBits(arg1.Atoi(),arg2.Atoi());
     delete arr;
@@ -90,6 +95,8 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
   }
   aodTask->SetIncludeNoITS(includeNoITS);
   aodTask->SetDoPropagation(doProp);
+  aodTask->SetAttemptProp(doAttemptProp);
+  aodTask->SetMC(isMC);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

@@ -64,7 +64,7 @@ enum {
 };
 
 //_____________________________________________________________________________
-void terminateQA ( TString outfilename = "QAresults.root", UInt_t force = 0, UInt_t mask = (trackQA|trigQA) )
+void terminateQA ( TString outfilename = "QAresults.root", Bool_t isMC = kFALSE, UInt_t force = 0, UInt_t mask = (trackQA|trigQA) )
 {
   //
   // Load common libraries
@@ -104,12 +104,15 @@ void terminateQA ( TString outfilename = "QAresults.root", UInt_t force = 0, UIn
 
   if ( mask & trigQA ) {
     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskMTRchamberEfficiency.C");
-    AliAnalysisTaskTrigChEff* trigChEffTask = AddTaskMTRchamberEfficiency(kFALSE);
-    trigChEffTask->SetTerminateOptions("PhysSelPass","ANY","-5_105",Form("FORCEBATCH %s?PhysSelPass?ANY?-5_105?NoSelMatchAptFromTrg",trigOutName));
+    AliAnalysisTaskTrigChEff* trigChEffTask = AddTaskMTRchamberEfficiency(isMC);
+    TString physSelName = "PhysSelPass";
+    if ( isMC ) physSelName += ",PhysSelReject";
+    trigChEffTask->SetTerminateOptions(physSelName,"ANY","-5_105",Form("FORCEBATCH NoSelMatchApt FromTrg %s?%s?ANY?-5_105?NoSelMatchAptFromTrg",trigOutName.Data(),physSelName.Data()));
   }
   if ( mask & trackQA ) {
     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskMuonQA.C");
-    AliAnalysisTaskMuonQA* muonQATask = AddTaskMuonQA();
+    Bool_t selectPhysics = ( isMC ) ? kFALSE : kTRUE;
+    AliAnalysisTaskMuonQA* muonQATask = AddTaskMuonQA(selectPhysics);
   }
 
 #endif
@@ -298,14 +301,14 @@ void AddTrigVars ( TString filename, TList &parList )
 }
 
 //_____________________________________________________________________________
-void MakeTrend ( const char* qaFile, Int_t runNumber, UInt_t force = trigQA, UInt_t mask = (trackQA|trigQA) )
+void MakeTrend ( const char* qaFile, Int_t runNumber, Bool_t isMC = kFALSE, UInt_t force = trigQA, UInt_t mask = (trackQA|trigQA) )
 {
   Bool_t isOk = GetQAInfo(qaFile);
   if ( ! isOk ) return;
 
   TString inFilename = GetBaseName(qaFile);
 
-  terminateQA(inFilename,force,mask);
+  terminateQA(inFilename,isMC,force,mask);
 
   TList parList;
   parList.SetOwner();

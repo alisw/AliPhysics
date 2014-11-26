@@ -172,6 +172,8 @@ fhCellAreaToMedianGen(0x0),
 fhNofMultipleTriggersGen(0x0),
 fhNofMultipleTriggersConeGen(0x0),
 fhDeltaRMultTriggersGen(0x0),
+fhNofMultipleTriggersConeGenA(0x0),
+fhNofMultipleTriggersConeGenB(0x0),
 fIsChargedMC(0),
 fIsKine(0),
 fIsFullMC(0),
@@ -307,6 +309,8 @@ fhCellAreaToMedianGen(0x0),
 fhNofMultipleTriggersGen(0x0),
 fhNofMultipleTriggersConeGen(0x0),
 fhDeltaRMultTriggersGen(0x0),
+fhNofMultipleTriggersConeGenA(0x0),
+fhNofMultipleTriggersConeGenB(0x0),
 fIsChargedMC(0),
 fIsKine(0),
 fIsFullMC(0),
@@ -448,6 +452,8 @@ fhCellAreaToMedianGen(a.fhCellAreaToMedianGen),
 fhNofMultipleTriggersGen(a.fhNofMultipleTriggersGen),
 fhNofMultipleTriggersConeGen(a.fhNofMultipleTriggersConeGen),
 fhDeltaRMultTriggersGen(a.fhDeltaRMultTriggersGen),
+fhNofMultipleTriggersConeGenA(a.fhNofMultipleTriggersConeGenA),
+fhNofMultipleTriggersConeGenB(a.fhNofMultipleTriggersConeGenB),
 fIsChargedMC(a.fIsChargedMC),
 fIsKine(a.fIsKine),
 fIsFullMC(a.fIsFullMC),
@@ -888,9 +894,14 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
       fhNofMultipleTriggersConeGen = (TH1D*) fhNofMultipleTriggersCone->Clone("fhNofMultipleTriggersConeGen"); 
       fOutputList->Add(fhNofMultipleTriggersConeGen);
 
-
       fhDeltaRMultTriggersGen  = (TH1D*) fhDeltaRMultTriggers->Clone("fhDeltaRMultTriggersGen");
       fOutputList->Add(fhDeltaRMultTriggersGen);
+
+      fhNofMultipleTriggersConeGenA = (TH1D*) fhNofMultipleTriggersConeGen->Clone("fhNofMultipleTriggersConeGen10"); 
+      fOutputList->Add(fhNofMultipleTriggersConeGenA);
+
+      fhNofMultipleTriggersConeGenB = (TH1D*) fhNofMultipleTriggersConeGen->Clone("fhNofMultipleTriggersConeGen5"); 
+      fOutputList->Add(fhNofMultipleTriggersConeGenB);
 
    }
    //-------------------------------------
@@ -1200,6 +1211,11 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
       Int_t    iCounterGen   =  0; //number of entries in particleListGen array
       Int_t    triggersMC[200];//list of trigger candidates
       Int_t    ntriggersMC   = 0; //index in triggers array
+      Int_t    triggersMCa[200];   //list of trigger candidates  10%eloss
+      Int_t    ntriggersMCa   = 0; //index in triggers array   10%eloss
+      Int_t    triggersMCb[200];   //list of trigger candidates  5%eloss
+      Int_t    ntriggersMCb   = 0; //index in triggers array     5%eloss
+
 
       if(!fIsKine){  
          if(fESD){//ESD input
@@ -1281,7 +1297,91 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
             }
          }
       }
-  
+ 
+      if(fHardest==0){
+         Int_t npar = particleListGen.GetEntries();
+         for(Int_t ip=0; ip < npar; ip++){
+            AliVParticle *part = (AliVParticle*) particleListGen.At(ip);
+            if(!part) continue;
+            
+            Double_t pta = 0.9 * part->Pt(); //10% energy loss 
+            Double_t ptb = 0.95 * part->Pt(); //5% energy loss  
+            if(fTriggerPtRangeLow <= pta && pta < fTriggerPtRangeHigh  &&  ntriggersMCa<200){
+               triggersMCa[ntriggersMCa] = ip;
+               ntriggersMCa++;
+            }
+
+            if(fTriggerPtRangeLow <= ptb && ptb < fTriggerPtRangeHigh  &&  ntriggersMCb<200){
+               triggersMCb[ntriggersMCb] = ip;
+               ntriggersMCb++;
+            }
+         }
+
+         if(ntriggersMCa>0){
+            Int_t rnda     = fRandom->Integer(ntriggersMCa); //0 to ntriggers-1
+            Int_t indexTriggGena = triggersMCa[rnda];
+
+            Double_t deltaPhia, deltaEtaa, deltaRa;
+            Int_t aa = 0; 
+
+            //Correlation with single inclusive  TRIGGER
+            AliVParticle* tGenTa = (AliVParticle*) particleListGen.At(indexTriggGena);  
+            if(tGenTa){
+               //for(Int_t ia=0; ia<ntriggersMCa; ia++)
+               for(Int_t ia=0; ia< npar; ia++){
+                  //if(indexTriggGena == triggersMCa[ia]) continue;
+                  if(indexTriggGena == ia) continue;
+               
+                  //AliVParticle* tGenTz = (AliVParticle*) particleListGen.At(triggersMCa[ia]);  
+                  AliVParticle* tGenTz = (AliVParticle*) particleListGen.At(ia);  
+                  if(!tGenTz) continue;
+                  if(tGenTz->Pt()*0.9<15.0) continue;
+                  if(tGenTz->Pt()*0.9>100.0) continue;
+               
+                  deltaPhia = RelativePhi(tGenTa->Phi(),tGenTz->Phi());
+                  deltaEtaa = tGenTa->Eta()-tGenTz->Eta(); 
+                  deltaRa = sqrt(deltaPhia*deltaPhia + deltaEtaa*deltaEtaa);
+                  
+                  if(deltaRa<0.4) aa++;
+               }
+            }
+            fhNofMultipleTriggersConeGenA->Fill(aa);
+         }
+
+         if(ntriggersMCb>0){
+            Int_t rndb     = fRandom->Integer(ntriggersMCb); //0 to ntriggers-1
+            Int_t indexTriggGenb = triggersMCb[rndb];
+
+            Double_t deltaPhib, deltaEtab, deltaRb;
+            Int_t bb = 0; 
+
+            //Correlation with single inclusive  TRIGGER
+            AliVParticle* tGenTb = (AliVParticle*) particleListGen.At(indexTriggGenb);  
+            if(tGenTb){
+               //for(Int_t ib=0; ib<ntriggersMCb; ib++)
+               for(Int_t ib=0; ib<npar; ib++){
+                  //if(indexTriggGenb == triggersMCb[ib]) continue;
+                  if(indexTriggGenb == ib) continue;
+               
+                  //AliVParticle* tGenTz = (AliVParticle*) particleListGen.At(triggersMCb[ib]);  
+                  AliVParticle* tGenTz = (AliVParticle*) particleListGen.At(ib);  
+                  if(!tGenTz) continue;
+                  if(tGenTz->Pt()*0.95<15.0) continue;
+                  if(tGenTz->Pt()*0.95>100.0) continue;
+               
+                  deltaPhib = RelativePhi(tGenTb->Phi(),tGenTz->Phi());
+                  deltaEtab = tGenTb->Eta()-tGenTz->Eta(); 
+                  deltaRb = sqrt(deltaPhib*deltaPhib + deltaEtab*deltaEtab);
+                  
+                  if(deltaRb<0.4) bb++;
+               }
+            }
+            fhNofMultipleTriggersConeGenB->Fill(bb);
+         }
+      }
+
+
+ 
       //==============  Estimate bg in generated events ==============
       Double_t rhoFromCellMedianGen=0.0, rhoConeGen=0.0;
 
@@ -1305,12 +1405,16 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
             //Correlation with single inclusive  TRIGGER
             AliVParticle* tGenT1 = (AliVParticle*) particleListGen.At(indexTriggGen);  
             if(tGenT1){
-               for(Int_t ia=0; ia<ntriggersMC; ia++){
-                  if(indexTriggGen == triggersMC[ia]) continue;
+               //for(Int_t ia=0; ia<ntriggersMC; ia++)
+               for(Int_t ia=0; ia< particleListGen.GetEntries(); ia++){
+                  //if(indexTriggGen == triggersMC[ia]) continue;
+                  if(indexTriggGen == ia) continue;
                
-                  AliVParticle* tGenT2 = (AliVParticle*) particleListGen.At(triggersMC[ia]);  
+                  //AliVParticle* tGenT2 = (AliVParticle*) particleListGen.At(triggersMC[ia]);  
+                  AliVParticle* tGenT2 = (AliVParticle*) particleListGen.At(ia);  
                   if(!tGenT2) continue;
-               
+                  if(tGenT2->Pt()<15.0) continue; 
+                  if(tGenT2->Pt()>100.0) continue; 
                   deltaPhi = RelativePhi(tGenT1->Phi(),tGenT2->Phi());
                   deltaEta = tGenT1->Eta()-tGenT2->Eta(); 
                   deltaR = sqrt(deltaPhi*deltaPhi + deltaEta*deltaEta);
@@ -1867,10 +1971,15 @@ Int_t  AliAnalysisTaskJetCorePP::GetListOfTracks(TList *list){
       //Correlation with single inclusive trigger
       AliVParticle* tGent1 = (AliVParticle*) list->At(index);  
       if(tGent1){
-         for(Int_t ia=0; ia<ntriggers; ia++){
-            if(triggers[ia]==index) continue;
-            AliVParticle* tGent2 = (AliVParticle*) list->At(triggers[ia]);  
+         //for(Int_t ia=0; ia<ntriggers; ia++)
+         for(Int_t ia=0; ia<list->GetEntries(); ia++){
+            //if(triggers[ia]==index) continue;
+            if(ia==index) continue;
+            //AliVParticle* tGent2 = (AliVParticle*) list->At(triggers[ia]);  
+            AliVParticle* tGent2 = (AliVParticle*) list->At(ia);  
             if(!tGent2) continue;
+            if(tGent2->Pt()<15.0) continue;
+            if(tGent2->Pt()>100.0) continue;
             deltaPhi = RelativePhi(tGent1->Phi(),tGent2->Phi());
             deltaEta = tGent1->Eta()-tGent2->Eta(); 
             deltaR   = sqrt(deltaPhi*deltaPhi + deltaEta*deltaEta);

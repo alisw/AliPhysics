@@ -42,9 +42,9 @@ protected:
     AliAnalysisManager::SetCommonFileName("AnalysisResults.root");
 
     // --- Load libraries/pars ---------------------------------------
-    LoadLibrary("PWGLFforward2)");
+    fRailway->LoadLibrary("PWGLFforward2)");
     
-    Bool_t mc   = mgr->GetMCtruthEventHandler() != 0;
+    Bool_t mc = HasMCHandler();
 
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2:"
@@ -52,12 +52,12 @@ protected:
 			     gROOT->GetMacroPath()));
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskFMDEventPlane.C(%d)", mc));
+    CoupleCar("AddTaskFMDEventPlane.C", Form("%d", mc));
   }
   /** 
    * Do not the centrality selection
    */
-  void CreateCentralitySelection(Bool_t, AliAnalysisManager*) {}
+  void CreateCentralitySelection(Bool_t) {}
   /** 
    * Crete output handler - we don't want one here. 
    * 

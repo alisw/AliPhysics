@@ -439,12 +439,30 @@ Double_t AliSpectraAODEventCuts::CalculateQVector(){
 	((TH2F*)fOutput->FindObject("fPsiACor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fPsiV0A);
 	((TH2F*)fOutput->FindObject("fPsiCCor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fPsiV0C);
 
-	fqV0A = TMath::Sqrt((Qxa2*Qxa2 + Qya2*Qya2));
-	fqV0C = TMath::Sqrt((Qxc2*Qxc2 + Qyc2*Qyc2));
-	fqV0Ax = Qxa2;
-	fqV0Cx = Qxc2;
-	fqV0Ay = Qya2;
-	fqV0Cy = Qyc2;
+	if(fIsMC){
+	  //in MC, when the EPSelectionTask is not called the q-vectors are no longer self-normalized
+	  
+	  Double_t multA = aodV0->GetMTotV0A();
+	  fqV0A = TMath::Sqrt((Qxa2*Qxa2 + Qya2*Qya2)/multA);
+	  
+	  Double_t multC = aodV0->GetMTotV0C();
+	  fqV0C = TMath::Sqrt((Qxc2*Qxc2 + Qyc2*Qyc2)/multC);
+	  
+	  fqV0Ax = Qxa2*TMath::Sqrt(1./multA);
+	  fqV0Cx = Qxc2*TMath::Sqrt(1./multC);
+	  fqV0Ay = Qya2*TMath::Sqrt(1./multA);
+	  fqV0Cy = Qyc2*TMath::Sqrt(1./multC);
+
+	} else {
+	
+	  fqV0A = TMath::Sqrt((Qxa2*Qxa2 + Qya2*Qya2));
+	  fqV0C = TMath::Sqrt((Qxc2*Qxc2 + Qyc2*Qyc2));
+	  fqV0Ax = Qxa2;
+	  fqV0Cx = Qxc2;
+	  fqV0Ay = Qya2;
+	  fqV0Cy = Qyc2;
+	  
+	}
 
 	((TH2F*)fOutput->FindObject("fQVecACor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fqV0A);
 	((TH2F*)fOutput->FindObject("fQVecCCor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fqV0C);

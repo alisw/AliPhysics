@@ -212,6 +212,9 @@ private:
    TH1D *fhNofMultipleTriggersConeGen; // The number of additional triggers in events with at least one trigger in R<0.4 
    TH1D *fhDeltaRMultTriggersGen; // Angular distributions of mult. triggers. 
 
+   TH1D *fhNofMultipleTriggersConeGenA; // The number of additional triggers in events with at least one trigger in R<0.4 
+   TH1D *fhNofMultipleTriggersConeGenB; // The number of additional triggers in events with at least one trigger in R<0.4 
+
    Bool_t fIsChargedMC;   //flag analysis on MC data with true and on the real+kine data false
    Bool_t fIsKine;       //flag analysis on kine data with true and on the real+MC data false
    Bool_t fIsFullMC;   //flag analysis on MC data with true and on the real+kine data false
@@ -250,7 +253,7 @@ private:
 
    Bool_t fDoubleBinning; //0=use 2 GeV/c bins  ; 1= use 1 GeV/c bins
  
-   ClassDef(AliAnalysisTaskJetCorePP, 13);  //has to end with number larger than 0
+   ClassDef(AliAnalysisTaskJetCorePP, 14);  //has to end with number larger than 0
 };
 
 #endif

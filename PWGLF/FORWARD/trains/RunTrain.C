@@ -48,7 +48,7 @@ BuildScript(const char* name, Bool_t verbose, Bool_t force, Bool_t debug)
  * @ingroup pwglf_forward_trains
  */
 Bool_t
-BuildHelpers(Bool_t verbose, Bool_t force, Bool_t debug,
+BuildRailways(Bool_t verbose, Bool_t force, Bool_t debug,
 	     Bool_t all=false)
 {
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
@@ -62,15 +62,15 @@ BuildHelpers(Bool_t verbose, Bool_t force, Bool_t debug,
 			    "ParUtilities",
 			    "OutputUtilities", 
 			    "Option",
-			    "Helper", 
+			    "Railway", 
 			    "TrainSetup",
-			    (all ? "LocalHelper" : 0), 
-			    "ProofHelper", 
-			    "LiteHelper", 
-			    "AAFHelper", 
-			    "PluginHelper", 
-			    "AAFPluginHelper", 
-			    "GridHelper", 
+			    (all ? "LocalRailway" : 0), 
+			    "ProofRailway", 
+			    "LiteRailway", 
+			    "AAFRailway", 
+			    "PluginRailway", 
+			    "AAFPluginRailway", 
+			    "GridRailway", 
 			    0 };
   const char** ptr = scripts;
   while ((*ptr)) {
@@ -120,7 +120,7 @@ Bool_t RunTrain(const TString& name, const TString& cls,
   
   Bool_t verb = opts.Contains("verbose");
   // Build our helpers 
-  if (!BuildHelpers(verb, false, true)) return false;
+  if (!BuildRailways(verb, false, true)) return false;
 
   // Tokenize options 
   if (!opts.EndsWith(",")) opts.Append(",");

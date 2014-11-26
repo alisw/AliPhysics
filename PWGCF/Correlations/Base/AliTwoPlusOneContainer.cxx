@@ -35,6 +35,7 @@
 #include "AliVParticle.h"
 
 #include "TH1F.h"
+#include "TH2F.h"
 #include "TMath.h"
 
 ClassImp(AliTwoPlusOneContainer)
@@ -42,6 +43,9 @@ ClassImp(AliTwoPlusOneContainer)
 AliTwoPlusOneContainer::AliTwoPlusOneContainer(const char* name, const char* binning, Double_t alpha) : 
   TNamed(name, name),
   fTwoPlusOne(0),
+  fAsymmetry(0),
+  fAsymmetryMixed(0),
+  fTriggerPt(0),
   fTriggerPt1Min(0),
   fTriggerPt1Max(0),
   fTriggerPt2Min(0),
@@ -77,7 +81,13 @@ AliTwoPlusOneContainer::AliTwoPlusOneContainer(const char* name, const char* bin
   fTriggerPt2Max = fTwoPlusOne->GetTrackHist(AliUEHist::kToward)->GetGrid((AliUEHist::CFStep) AliTwoPlusOneContainer::kSameNS)->GetAxis(6)->GetXmax();
   fPtAssocMin = fTwoPlusOne->GetTrackHist(AliUEHist::kToward)->GetGrid((AliUEHist::CFStep) AliTwoPlusOneContainer::kSameNS)->GetAxis(1)->GetXmin();
   fPtAssocMax = fTwoPlusOne->GetTrackHist(AliUEHist::kToward)->GetGrid((AliUEHist::CFStep) AliTwoPlusOneContainer::kSameNS)->GetAxis(1)->GetXmax();
-
+  
+  fAsymmetry  = new TH1F("fAsymmetry", ";A;dN", 50, 0, 1);
+  fAsymmetryMixed  = new TH1F("fAsymmetryMixed", ";A;dN", 50, 0, 1);
+  Int_t pt1_bins = (fTriggerPt1Max - fTriggerPt1Min)/0.1;
+  Int_t pt2_bins = (fTriggerPt2Max - fTriggerPt2Min)/0.1;
+  fTriggerPt = new TH2F("fTriggerPt", ";p_{T,1};p_{T,2}", pt1_bins, fTriggerPt1Min, fTriggerPt1Max, pt2_bins, fTriggerPt2Min, fTriggerPt2Max);
+  
   TH1::AddDirectory();
 }
 
@@ -85,6 +95,9 @@ AliTwoPlusOneContainer::AliTwoPlusOneContainer(const char* name, const char* bin
 AliTwoPlusOneContainer::AliTwoPlusOneContainer(const AliTwoPlusOneContainer &c) :
   TNamed(fName, fTitle),
   fTwoPlusOne(0),
+  fAsymmetry(0),
+  fAsymmetryMixed(0),
+  fTriggerPt(0),
   fTriggerPt1Min(0),
   fTriggerPt1Max(0),
   fTriggerPt2Min(0),
@@ -124,6 +137,24 @@ void AliTwoPlusOneContainer::DeleteContainers()
   {
     delete fTwoPlusOne;
     fTwoPlusOne = 0;
+  }
+  
+  if(fAsymmetry)
+  {
+    delete fAsymmetry;
+    fAsymmetry = 0;
+  }
+
+  if(fAsymmetryMixed)
+  {
+    delete fAsymmetryMixed;
+    fAsymmetryMixed = 0;
+  }
+
+  if(fTriggerPt)
+  {
+    delete fTriggerPt;
+    fTriggerPt = 0;
   }
 }
 
@@ -232,6 +263,24 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
 	    vars[3] = found_particle[k]->Pt();
 	    event_hist->Fill(vars, stepUEHist+1, weight);//away side
 	  }
+	
+	//fill fTriggerPt only once, choosed kSameNS
+	if(step==AliTwoPlusOneContainer::kSameNS)
+	  for(Int_t k=0; k< ind_found; k++)
+	    fTriggerPt->Fill(part_pt, found_particle[k]->Pt());
+
+	//fill asymmetry only for kSameNS and kMixedNS
+	if(step==AliTwoPlusOneContainer::kSameNS||step==AliTwoPlusOneContainer::kMixedNS){
+	  for(Int_t k=0; k< ind_found; k++){
+	    Float_t asymmetry = (part_pt-found_particle[k]->Pt())/(part_pt+found_particle[k]->Pt());
+	    if(step==AliTwoPlusOneContainer::kSameNS){
+	      fAsymmetry->Fill(asymmetry);
+	    }else{
+	      fAsymmetryMixed->Fill(asymmetry);
+	    }
+	  }
+	}
+	  
     }
  
     //add correlated particles on the near side
@@ -336,7 +385,16 @@ void AliTwoPlusOneContainer::Copy(TObject& c) const
 
   if (fTwoPlusOne)
     target.fTwoPlusOne = dynamic_cast<AliUEHist*> (fTwoPlusOne->Clone());
+  
+  if (fAsymmetry)
+    target.fAsymmetry = dynamic_cast<TH1F*> (fAsymmetry->Clone());
 
+  if (fAsymmetryMixed)
+    target.fAsymmetryMixed = dynamic_cast<TH1F*> (fAsymmetryMixed->Clone());
+
+  if (fTriggerPt)
+    target.fTriggerPt = dynamic_cast<TH2F*> (fTriggerPt->Clone());
+  
 }
 
 //____________________________________________________________________
@@ -353,9 +411,13 @@ Long64_t AliTwoPlusOneContainer::Merge(TCollection* list)
 
   TIterator* iter = list->MakeIterator();
   TObject* obj;
-
+  
   // collections of objects
-  TList* lists = new TList;
+  const Int_t kMaxLists = 4;
+  TList* lists[kMaxLists];
+
+  for (Int_t i=0; i<kMaxLists; i++)
+    lists[i] = new TList;
 
   Int_t count = 0;
   while ((obj = iter->Next())) {
@@ -364,15 +426,24 @@ Long64_t AliTwoPlusOneContainer::Merge(TCollection* list)
     if (entry == 0) 
       continue;
 
-    lists->Add(entry->fTwoPlusOne);
+    lists[0]->Add(entry->fTwoPlusOne);
+    lists[1]->Add(entry->fAsymmetry);
+    lists[2]->Add(entry->fAsymmetryMixed);
+    lists[3]->Add(entry->fTriggerPt);
 
     fMergeCount += entry->fMergeCount;
     count++;
   }
   
-  fTwoPlusOne->Merge(lists);
+  fTwoPlusOne->Merge(lists[0]);
+  fAsymmetry->Merge(lists[1]);
+  fAsymmetryMixed->Merge(lists[2]);
+  fTriggerPt->Merge(lists[3]);
 
-  delete lists;
+  for (Int_t i=0; i<kMaxLists; i++)
+  delete lists[i];
+
+  //  delete lists;
   return count+1;
 
 }

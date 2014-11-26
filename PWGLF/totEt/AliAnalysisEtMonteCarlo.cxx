@@ -359,6 +359,7 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
 						  ,fHistGammaCrossCheck(0)
 						  ,fHistGammaCrossCheckAlt(0)
 						  ,fHistGammaEnergyCrossCheck(0)
+						  ,fHistGammaEnergyCrossCheckCent(0)
 						  ,fHistGammaEnergyCrossCheckAlt(0)
     ,fHistNeutronCrossCheck(0)
     ,fHistSecondaryCrossCheck(0)
@@ -618,6 +619,7 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistGammaCrossCheck;
     delete fHistGammaCrossCheckAlt;
     delete fHistGammaEnergyCrossCheck;
+    delete fHistGammaEnergyCrossCheckCent;
     delete fHistGammaEnergyCrossCheckAlt;
     delete fHistNeutronCrossCheck;
     delete fHistSecondaryCrossCheck;
@@ -1520,6 +1522,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  etGammaCrossCheck += clEt;
 		  // cout<<"Found gamma et "<<fReconstructedEt<<" sim et "<< fPrimaryEt<<endl;
 		  if(fPrimaryEt>0) fHistGammaEnergyCrossCheck->Fill(fPrimaryEt,(fReconstructedEt-fPrimaryEt)/fReconstructedEt);
+		  if(fPrimaryEt>0) fHistGammaEnergyCrossCheckCent->Fill(fPrimaryEt,(fReconstructedEt-fPrimaryEt)/fReconstructedEt,fCentClass);
 		  fHistGammasFoundAltCent->Fill(fReconstructedE,fCentClass);
 		}
 	      }
@@ -2359,6 +2362,7 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
    fHistGammaCrossCheck =  new TH2F("fHistGammaCrossCheck", "(E_{T}^{#gamma,rec}-E_{T}^{#gamma,sim})/E_{T}^{#gamma,rec}",20,-0.5,19.5,100,-1.5,4);
    fHistGammaCrossCheckAlt =  new TH2F("fHistGammaCrossCheckAlt", "(E_{T}^{#gamma,rec}-E_{T}^{#gamma,sim})/E_{T}^{#gamma,rec}",20,-0.5,19.5,100,-1.5,4);
    fHistGammaEnergyCrossCheck =  new TH2F("fHistGammaEnergyCrossCheck", "(E_{T}^{#gamma,rec}-E_{T}^{#gamma,sim})/E_{T}^{#gamma,rec}",100,0.0,10.0,100,-2,2);
+   fHistGammaEnergyCrossCheckCent =  new TH3F("fHistGammaEnergyCrossCheckCent", "(E_{T}^{#gamma,rec}-E_{T}^{#gamma,sim})/E_{T}^{#gamma,rec} vs Cent",100,0.0,10.0,100,-2,2,20,-0.5,19.5);
    fHistGammaEnergyCrossCheckAlt =  new TH2F("fHistGammaEnergyCrossCheckAlt", "(E_{T}^{#gamma,rec}-E_{T}^{#gamma,sim})/E_{T}^{#gamma,rec}",100,0.0,10.0,100,-2,2);
    fHistNeutronCrossCheck =  new TH2F("fHistNeutronCrossCheck", "(E_{T}^{n,rec}-E_{T}^{n,sim})/E_{T}^{n,rec}",20,-0.5,19.5,100,-14.8,1.2);
    fHistSecondaryCrossCheck =  new TH2F("fHistSecondaryCrossCheck", "(E_{T}^{sec,rec}-E_{T}^{sec,sim})/E_{T}^{sec,rec}",20,-0.5,19.5,100,-14.8,1.2);
@@ -2642,6 +2646,7 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistGammaCrossCheck);
     list->Add(fHistGammaCrossCheckAlt);
     list->Add(fHistGammaEnergyCrossCheck);
+    list->Add(fHistGammaEnergyCrossCheckCent);
     list->Add(fHistGammaEnergyCrossCheckAlt);
     list->Add(fHistNeutronCrossCheck);
     list->Add(fHistSecondaryCrossCheck);

@@ -66,8 +66,6 @@ class AliAODv0;
 
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
-#include "AliV0vertexer.h"
-#include "AliCascadeVertexer.h"
 #include "AliESDpid.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
@@ -77,8 +75,8 @@ class AliAODv0;
 #include "AliMCEvent.h"
 #include "AliStack.h"
 
-#include "AliV0vertexer.h"
-#include "AliCascadeVertexer.h"
+#include "AliLightV0vertexer.h"
+#include "AliLightCascadeVertexer.h"
 
 #include "AliCFContainer.h"
 #include "AliMultiplicity.h"
@@ -105,7 +103,10 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade()
    fEtaRefMult ( 0.5 ),
    fkRunVertexers ( kFALSE ),
    fkDebugMode (kTRUE),
-   fkSelectPeripheral (kFALSE),
+fkSelectCentrality (kFALSE),
+fCentSel_Low(0.0),
+fCentSel_High(0.0),
+fLowPtCutoff(0.0),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -257,7 +258,10 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade(const char *name)
    fEtaRefMult ( 0.5 ),
    fkRunVertexers ( kFALSE ),
    fkDebugMode (kTRUE),
-   fkSelectPeripheral (kFALSE),
+   fkSelectCentrality (kFALSE),
+    fCentSel_Low(0.0),
+    fCentSel_High(0.0),
+fLowPtCutoff(0.0),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -902,9 +906,9 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
       }
    }
     
-    if( fkSelectPeripheral ){
-        if( lMultiplicity < 60 || lMultiplicity >= 80. ){
-            //Event is outside 60-80% centrality in V0M!
+    if( fkSelectCentrality ){
+        if( lMultiplicity < fCentSel_Low || lMultiplicity >= fCentSel_High ){
+            //Event is outside desired centrality centrality in V0M!
             PostData(1, fListHist);
             PostData(2, fTreeCascade);
             return;
@@ -954,8 +958,8 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
     lESDevent->ResetCascades();
     lESDevent->ResetV0s();
 
-    AliV0vertexer lV0vtxer;
-    AliCascadeVertexer lCascVtxer;
+    AliLightV0vertexer lV0vtxer;
+    AliLightCascadeVertexer lCascVtxer;
                   
     lV0vtxer.SetDefaultCuts(fV0VertexerSels);
     lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
@@ -1301,9 +1305,9 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
     fTreeCascVarkITSRefitNegative = kTRUE; 
     fTreeCascVarkITSRefitPositive = kTRUE; 
 
-    if ((pStatus&AliESDtrack::kTPCrefit)    == 0) { AliWarning("Pb / V0 Pos. track has no TPCrefit ... continue!"); continue; }
-    if ((nStatus&AliESDtrack::kTPCrefit)    == 0) { AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!"); continue; }
-    if ((bachStatus&AliESDtrack::kTPCrefit) == 0) { AliWarning("Pb / Bach.   track has no TPCrefit ... continue!"); continue; }
+    if ((pStatus&AliESDtrack::kTPCrefit)    == 0) { /*AliWarning("Pb / V0 Pos. track has no TPCrefit ... continue!"); */continue; }
+    if ((nStatus&AliESDtrack::kTPCrefit)    == 0) { /*AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!"); */continue; }
+    if ((bachStatus&AliESDtrack::kTPCrefit) == 0) { /*AliWarning("Pb / Bach.   track has no TPCrefit ... continue!"); */continue; }
 
     //Extra Debug Information: booleans for ITS refit
     if ((pStatus&AliESDtrack::kITSrefit)    == 0) { fTreeCascVarkITSRefitPositive = kFALSE; }
@@ -1311,9 +1315,9 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
     if ((bachStatus&AliESDtrack::kITSrefit) == 0) { fTreeCascVarkITSRefitBachelor = kFALSE; }
 
 	  // 2 - Poor quality related to TPC clusters: lowest cut of 70 clusters
-    if(lPosTPCClusters  < 70) { AliWarning("Pb / V0 Pos. track has less than 70 TPC clusters ... continue!"); continue; }
-	  if(lNegTPCClusters  < 70) { AliWarning("Pb / V0 Neg. track has less than 70 TPC clusters ... continue!"); continue; }
-	  if(lBachTPCClusters < 70) { AliWarning("Pb / Bach.   track has less than 70 TPC clusters ... continue!"); continue; }
+      if(lPosTPCClusters  < 70) { /*AliWarning("Pb / V0 Pos. track has less than 70 TPC clusters ... continue!"); */continue; }
+	  if(lNegTPCClusters  < 70) { /*AliWarning("Pb / V0 Neg. track has less than 70 TPC clusters ... continue!"); */continue; }
+	  if(lBachTPCClusters < 70) { /*AliWarning("Pb / Bach.   track has less than 70 TPC clusters ... continue!"); */continue; }
 	  Int_t leastnumberofclusters = 1000; 
 	  if( lPosTPCClusters < leastnumberofclusters ) leastnumberofclusters = lPosTPCClusters;
 	  if( lNegTPCClusters < leastnumberofclusters ) leastnumberofclusters = lNegTPCClusters;
@@ -1489,7 +1493,19 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
 
   if( (fTreeCascVarMassAsXi<1.32+0.075&&fTreeCascVarMassAsXi>1.32-0.075) ||
       (fTreeCascVarMassAsOmega<1.68+0.075&&fTreeCascVarMassAsOmega>1.68-0.075) ){
-      fTreeCascade->Fill();
+      
+      if( !fkIsNuclear ) fTreeCascade->Fill();
+      if( fkIsNuclear  ){
+          //Extra selections in case this is a nuclear collision...
+          if (TMath::Abs(fTreeCascVarNegEta) < 0.8 &&
+              TMath::Abs(fTreeCascVarPosEta) < 0.8 &&
+              TMath::Abs(fTreeCascVarBachEta) < 0.8 &&
+              fTreeCascVarPt > fLowPtCutoff){ //beware ptMC and ptreco differences
+                fTreeCascade->Fill();
+          }
+      }
+      
+
   }
 
 //------------------------------------------------

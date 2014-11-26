@@ -60,13 +60,14 @@ class AliJXtHistos {
         void FillIsolatedConeActivities(double pT, double sumPt){fhConeActivityIsolated->Fill(pT,sumPt);}  // Fill TProfile
     
     protected:
-        AliJCard  *fcard; // parameters in card
+        bool   fUseDirectory; // to create sub-directories in the final results, used more in case of JCORRAN
+	TDirectory * fTopDirectory; // top directory, different analysis (JCORRAN) in sub-directories.
+	
+	AliJCard  *fCard; // parameters in card
     
         double fmaxEtaRange; // charged track eta acceptance
     
         TList *fhistoList; // list of histograms
-        bool   fUseDirectory; // to create sub-directories in the final results, used more in case of JCORRAN
-        TDirectory * fTopDirectory; // top directory, different analysis (JCORRAN) in sub-directories.
 
     private:
         char  fhname[40], fhtit[40]; // dummy variables to create histogram names and titles
@@ -91,25 +92,3 @@ class AliJXtHistos {
 };
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

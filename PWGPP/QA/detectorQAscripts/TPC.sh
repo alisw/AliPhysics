@@ -66,7 +66,9 @@ makeHTMLindexPerPeriod()
 <a href="meanVertX_vs_run.png">Mean of Vertex_X</a>, <a href="meanVertY_vs_run.png">Vertex_Y</a>, <a href="meanVertZ_vs_run.png">Vertex_Z</a>
 <br><br>
 <a href="meanMult_vs_run.png">Multiplicities of Primary Tracks</a><br>
-<a href="TPC-ITS_vs_run.png">TPC-ITS matching efficiency</a><br>
+<a href="TPC-ITS-matching-efficiency_vs_run.png">TPC-ITS matching efficiency</a><br>
+<a href="ITS-TPC-matching-quality_vs_run.png">ITS-TPC matching quality</a><br>
+
 <a href="1overPt_vs_run.png">Delta 1/pt</a><br>
 <a href="DCAOffset_vs_run.png">DCAs</a><br>
 <br>
@@ -95,8 +97,9 @@ done
 <a href="resolutionMeandEdxEle_vs_run.png">Resolution of mean electron energy loss</a><br>
 <a href="ElectroMIPSeparation_vs_run.png">Separation between electon and MIPs energy loss</a><br>
 <br>
-<a href="MIPattachSlopeA_vs_run.png">Attachment parameter p1, A side</a><br>
-<a href="MIPattachSlopeC_vs_run.png">Attachment parameter p1, C side</a><br>
+<a href="MIPattachSlopes_vs_run.png">Attachment parameter p1, A side and C side</a><br>
+#<a href="MIPattachSlopeA_vs_run.png">Attachment parameter p1, A side</a><br>
+#<a href="MIPattachSlopeC_vs_run.png">Attachment parameter p1, C side</a><br>
 <br>
 <a href="pullPhiConstrain_vs_run.png">Tracking parameter phi</a><br>
 <br>

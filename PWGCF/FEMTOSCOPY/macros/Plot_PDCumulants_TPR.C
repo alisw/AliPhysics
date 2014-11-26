@@ -38,18 +38,18 @@ double kappa4 = 0.5; // 0.5 (default),
 
 using namespace std;
 
-int CollisionType_def=2;// 0=PbPb, 1=pPb, 2=pp
+int CollisionType_def=0;// 0=PbPb, 1=pPb, 2=pp
 bool MCcase_def=0;// MC data?
 int CHARGE_def=-1;// -1 or +1: + or - pions for same-charge case, --+ or ++- for mixed-charge case
 bool SameCharge_def=kTRUE;// 3-pion same-charge?
 bool AddCC=kTRUE;
-bool Gaussian=0;// Gaussian or Exponential?
+bool Gaussian=1;// Gaussian or Exponential?
 bool UseC2Bkg=1;// use Pythia/DPMJET bkg?
 //
 bool MuonCorrection=1;// apply Muon correction?
 bool IncludeExpansion=kTRUE;// Include EdgeWorth coefficients?
 bool FixExpansionAvg=1;
-int Mbin_def=16;// 0-19 (0=1050-2000 pions, 19=0-5 pions)
+int Mbin_def=2;// 0-19 (0=1050-2000 pions, 19=0-5 pions)
 int EDbin_def=0;// 0-2: Kt3 bin
 int Ktbin_def=1;// 1-6, 10=full range
 double MRCShift=1.0;// 1.0=full Momentum Resolution Correction. 1.1 for 10% systematic increase

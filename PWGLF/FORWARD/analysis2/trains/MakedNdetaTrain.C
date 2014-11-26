@@ -57,7 +57,7 @@ protected:
     AliAnalysisManager::SetCommonFileName("forward_dndeta.root");
 
     // --- Load libraries/pars ---------------------------------------
-    fHelper->LoadLibrary("PWGLFforward2");
+    fRailway->LoadLibrary("PWGLFforward2");
     
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
@@ -76,7 +76,7 @@ protected:
     TString  fwdCfg  = fOptions.Get("forward-config");
     TString  cenCfg  = fOptions.Get("central-config");
     TString  mcCfg   = fOptions.Get("truth-config");
-    if (!mc) mc      = fHelper->IsMC(); 
+    if (!mc) mc      = fRailway->IsMC(); 
     if (!fOptions.Has("cent")) cent="none";
 
     // Info("", "Centrality option is '%s'", cent.Data());
@@ -92,12 +92,12 @@ protected:
     // Info("", "fargs=\"%s\", cargs=\"%s\"", fargs.Data(), cargs.Data()); 
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskForwarddNdeta.C(%s);", fargs.Data()));
-    gROOT->Macro(Form("AddTaskCentraldNdeta.C(%s);", cargs.Data()));
+    CoupleCar("AddTaskForwarddNdeta.C", fargs);
+    CoupleCar("AddTaskCentraldNdeta.C", cargs);
     if (mc) {
       TString margs(fargs);
       margs.ReplaceAll(fwdCfg, mcCfg);
-      gROOT->Macro(Form("AddTaskMCTruthdNdeta.C(%s);", margs.Data()));
+      CoupleCar("AddTaskMCTruthdNdeta.C", margs);
     }
   }
   //__________________________________________________________________
@@ -105,7 +105,7 @@ protected:
    * Do not the centrality selection
    */
   //__________________________________________________________________
-  void CreateCentralitySelection(Bool_t, AliAnalysisManager*) {}
+  void CreateCentralitySelection(Bool_t) {}
   /** 
    * Do not create MC input handler 
    * 

@@ -967,14 +967,12 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
       continue;
     if(maxid==id)
       continue;
-    Double_t matchedpt =  0;
+    Double_t matchedpt =  GetTrackMatchedPt(c->GetTrackMatchedIndex());
     if(fCpvFromTrack){
-      matchedpt = GetTrackMatchedPt(c->GetTrackMatchedIndex());
       if(matchedpt>0 && fRemMatchClus )
 	continue;
     } else {
       if(TMath::Abs(c->GetTrackDx())<0.03 && TMath::Abs(c->GetTrackDz())<0.02){
-	matchedpt = GetTrackMatchedPt(c->GetTrackMatchedIndex());
 	if(fRemMatchClus){
 	  if(fDebug)
 	    printf("This isolation cluster is matched to a track!++++++++++++++++++++++++++++++++++++++++++++++++++\n");
@@ -986,7 +984,6 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
     if(nEt<0)
       printf("nEt=%1.1f\n",nEt);
     if(R<fIsoConeR){
-      totiso += nEt;
       if(c->GetM02()>0.1 && c->GetM02()<0.3 && !(matchedpt>0)){
 	TLorentzVector lv, lvec;
 	lv.SetPtEtaPhiM(Et,cv.Eta(),cv.Phi(),0);
@@ -996,10 +993,14 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
 	if(lpair.M()>0.11 && lpair.M()<0.165){
 	  fInConePairedClusEtVsCandEt->Fill(EtCl,Et);
 	  fInConePairClEt += Form("%f;",Et);
+	  continue;
 	}
 	else 
 	  fInConePairClEt += Form("%f;",0.0);
+	if(lpair.M()>0.52 && lpair.M()<0.58)
+	  continue;
       }
+      totiso += nEt;
       if(R<0.04)
 	totcore += nEt;
     }
@@ -1274,7 +1275,8 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetClusSource(const AliVCluster *c)
       fClusMcDetaDphi->Fill(clsVec.Eta() - mcd->Eta(), clsVec.Phi() - mcd->Phi());
     }
     else{
-      printf("Warning: daughter of photon parton is not a photon\n");
+      if(fDebug)
+	printf("Warning: daughter of photon parton is not a photon\n");
       return -0.1;
     }
   }
