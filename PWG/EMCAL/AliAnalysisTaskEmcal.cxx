@@ -47,6 +47,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fGeneralHistograms(kFALSE),
   fInitialized(kFALSE),
   fCreateHisto(kTRUE),
+  fMainTriggerPatchSet(kFALSE),
   fCaloCellsName(),
   fCaloTriggersName(),
   fCaloTriggerPatchInfoName(),
@@ -99,7 +100,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fXsection(0),
   fParticleCollArray(),
   fClusterCollArray(),
-  fMainTriggerPatch(0x0),
   fTriggers(0),
   fOutput(0),
   fHistEventCount(0),
@@ -123,6 +123,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
 
   fParticleCollArray.SetOwner(kTRUE);
   fClusterCollArray.SetOwner(kTRUE);
+  memset(fMainTriggerPatch, 0, sizeof(AliEmcalTriggerPatchInfo *) * kNType);
 }
 
 //________________________________________________________________________
@@ -132,6 +133,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fGeneralHistograms(kFALSE),
   fInitialized(kFALSE),
   fCreateHisto(histo),
+  fMainTriggerPatchSet(kFALSE),
   fCaloCellsName(),
   fCaloTriggersName(),
   fCaloTriggerPatchInfoName(),
@@ -184,7 +186,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fXsection(0),
   fParticleCollArray(),
   fClusterCollArray(),
-  fMainTriggerPatch(0x0),
   fTriggers(0),
   fOutput(0),
   fHistEventCount(0),
@@ -208,6 +209,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
 
   fParticleCollArray.SetOwner(kTRUE);
   fClusterCollArray.SetOwner(kTRUE);
+  memset(fMainTriggerPatch, 0, sizeof(AliEmcalTriggerPatchInfo *) * kNType);
 
   if (fCreateHisto) {
     DefineOutput(1, TList::Class()); 
@@ -411,7 +413,7 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *)
 {
   // Main loop, called for each event.
 
-  fMainTriggerPatch = NULL;
+  memset(fMainTriggerPatch, 0, sizeof(AliEmcalTriggerPatchInfo *) * kNType);
 
   if (!fInitialized)
     ExecOnce();
@@ -754,24 +756,24 @@ ULong_t AliAnalysisTaskEmcal::GetTriggerList()
 
   ULong_t triggers(0);
   if (nG1>0)
-    SETBIT(triggers, kG1);
+    triggers |= kG1;
   if (nG2>0)
-    SETBIT(triggers, kG2);
+    triggers |= kG2;
   if (nJ1>0)
-    SETBIT(triggers, kJ1);
+    triggers |= kJ1;
   if (nJ2>0)
-    SETBIT(triggers, kJ2);
+    triggers |= kJ2;
   return triggers;
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcal::HasTriggerType(TriggerType t)
+Bool_t AliAnalysisTaskEmcal::HasTriggerType(Int_t trigger)
 {
   // Check if event has a given trigger type
-  if(t == kND){
+  if(trigger & kND){
     return fTriggers == 0;
   }
-  return TESTBIT(fTriggers, int(t));
+  return (fTriggers & trigger);
 }
 
 //________________________________________________________________________
@@ -833,7 +835,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     }
   }
 
-  if (fTriggerTypeSel != kND) {
+  if (!(fTriggerTypeSel & kND)) {
     if (!HasTriggerType(fTriggerTypeSel)) {
       if (fGeneralHistograms) fHistEventRejection->Fill("trigTypeSel",1);
       return kFALSE;
@@ -1069,6 +1071,8 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   }
 
   fTriggers = GetTriggerList();
+  fMainTriggerPatchSet = kFALSE;
+  memset(fMainTriggerPatch, 0, sizeof(AliEmcalTriggerPatchInfo *) * (kNType - 1));
 
   return kTRUE;
 }
@@ -1234,12 +1238,18 @@ Int_t AliAnalysisTaskEmcal::GetNClusters(Int_t i) const
 }
 
 //________________________________________________________________________
-AliEmcalTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch() 
+AliEmcalTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch(Int_t types)
 {
   //get main trigger match; if not known yet, look for it and cache
+  //
+  // In order to be able to select more than one class at the same time (i.e. low and
+  // high threshold trigger), the argument must be a bit string, however using the enum
+  // of trigger classes in order to define the selection
 
-  if (fMainTriggerPatch) 
-    return fMainTriggerPatch;
+  // Get from cache (if already set)
+  if(fMainTriggerPatchSet){
+    return ApplyMainTriggerSelection(types);
+  }
 
   if (!fTriggerPatchInfo) {
     AliError(Form("%s: fTriggerPatchInfo not available",GetName()));
@@ -1249,18 +1259,67 @@ AliEmcalTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch()
   //number of patches in event
   Int_t nPatch = fTriggerPatchInfo->GetEntries();
 
-  //extract main trigger patch
+  //extract main trigger patch(es)
   AliEmcalTriggerPatchInfo *patch;
   for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
-    
+
     patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
     if (patch->IsMainTrigger()) {
-      fMainTriggerPatch = patch;
-      break;
+      if(patch->IsJetHigh()) fMainTriggerPatch[kPosJ1] = patch;
+      if(patch->IsJetLow()) fMainTriggerPatch[kPosJ2] = patch;
+      if(patch->IsGammaHigh()) fMainTriggerPatch[kPosG1] = patch;
+      if(patch->IsGammaLow()) fMainTriggerPatch[kPosG2] = patch;
+      if(patch->IsLevel0()) fMainTriggerPatch[kPosL0] = patch;
+    }
+  }
+  fMainTriggerPatchSet = kTRUE;
+
+  return ApplyMainTriggerSelection(types);
+}
+
+AliEmcalTriggerPatchInfo *AliAnalysisTaskEmcal::ApplyMainTriggerSelection(Int_t selectionBitmap) const {
+  //
+  // Select main trigger patch for a given combination of trigger classes
+  // If the bitmap contains only one class, the selection is trivial
+  // If the bitmap contains many classes, the selection takes the highest of the patchess according to the
+  // ADC Amplitude
+  //
+  AliEmcalTriggerPatchInfo *highest(NULL);
+  if(selectionBitmap & kJ1){
+    highest = fMainTriggerPatch[kPosJ1];
+  }
+  if(selectionBitmap & kJ2){
+    if(!highest) highest = fMainTriggerPatch[kPosJ2];
+    else{
+      if(fMainTriggerPatch[kPosJ2] && fMainTriggerPatch[kPosJ2]->GetADCAmp() > highest->GetADCAmp())
+        highest = fMainTriggerPatch[kPosJ2];
     }
   }
 
-  return fMainTriggerPatch;
+  if(selectionBitmap & kG1){
+    if(!highest) highest = fMainTriggerPatch[kPosG1];
+    else{
+      if(fMainTriggerPatch[kPosG1] && fMainTriggerPatch[kPosG1]->GetADCAmp() > highest->GetADCAmp())
+        highest = fMainTriggerPatch[kPosG1];
+    }
+  }
+
+  if(selectionBitmap & kG2){
+    if(!highest) highest = fMainTriggerPatch[kPosG2];
+    else{
+      if(fMainTriggerPatch[kPosG2] && fMainTriggerPatch[kPosG2]->GetADCAmp() > highest->GetADCAmp())
+        highest = fMainTriggerPatch[kPosG2];
+    }
+  }
+  if(selectionBitmap & kL0){
+    if(!highest) highest = fMainTriggerPatch[kPosL0];
+    else{
+      if(fMainTriggerPatch[kPosL0] && fMainTriggerPatch[kPosL0]->GetADCAmp() > highest->GetADCAmp())
+        highest = fMainTriggerPatch[kPosL0];
+    }
+  }
+
+  return highest;
 }
 
 //________________________________________________________________________

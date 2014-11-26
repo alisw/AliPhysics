@@ -32,6 +32,8 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   void SetTriggerThresholdGammaHigh( Int_t a, Int_t b, Int_t c ) { fThresholdConstants[3][0] = a; fThresholdConstants[1][1] = b; fThresholdConstants[1][2] = c; }
   void SetV0InName(const char *name) { fV0InName      = name; }
 
+  void SetRunTriggerType(TriggerMakerTriggerType_t type, Bool_t doTrigger = kTRUE) { fRunTriggerType[type] = doTrigger; }
+
   Bool_t IsEJE(Int_t tBits) const { if( tBits & ( 1 << (kTriggerTypeEnd + kL1JetLow) | 1 << (kTriggerTypeEnd + kL1JetHigh) | 1 << (kL1JetLow) | 1 << (kL1JetHigh) )) return kTRUE; else return kFALSE; }
   Bool_t IsEGA(Int_t tBits) const { if( tBits & ( 1 << (kTriggerTypeEnd + kL1GammaLow) | 1 << (kTriggerTypeEnd + kL1GammaHigh) | 1 << (kL1GammaLow) | 1 << (kL1GammaHigh) )) return kTRUE; else return kFALSE; }
   Bool_t IsLevel0(Int_t tBits) const { if( tBits & (1 << (kTriggerTypeEnd + kL0) | (1 << kL0))) return kTRUE; return kFALSE; }
@@ -60,6 +62,7 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   Double_t                   fPatchADCSimple[kPatchCols][kPatchRows];   //!patch map for simple offline trigger
   Int_t                      fPatchADC[kPatchCols][kPatchRows];         //!ADC values map
   Int_t                      fITrigger;                 //!trigger counter
+  Bool_t                     fRunTriggerType[3];        // Run patch maker for a given trigger type
   Bool_t                     fDoQA;                     // Fill QA histograms
   THistManager              *fQAHistos;                 //! Histograms for QA
 
