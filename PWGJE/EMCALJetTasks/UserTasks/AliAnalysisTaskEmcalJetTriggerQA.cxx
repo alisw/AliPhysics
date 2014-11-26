@@ -14,6 +14,7 @@
 
 #include "AliVCluster.h"
 #include "AliVTrack.h"
+#include "AliVVZERO.h"
 #include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
 #include "AliLog.h"
@@ -40,6 +41,7 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fContainerFull(0),
   fContainerCharged(1),
   fMaxPatchEnergy(0),
+  fMaxPatchADCEnergy(0),
   fTriggerType(-1),
   fNFastOR(16),
   fhNEvents(0),
@@ -73,6 +75,8 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fh3EEtaPhiCluster(0),
   fh3PtLeadJet1VsPatchEnergy(0),
   fh3PtLeadJet2VsPatchEnergy(0),
+  fh3PtLeadJet1PatchEnergyVZEROAmp(0),
+  fh3PtLeadJet1RawPatchEnergyVZEROAmp(0),
   fh3PatchEnergyEtaPhiCenterJ1(0),
   fh3PatchEnergyEtaPhiCenterJ2(0),
   fh3PatchEnergyEtaPhiCenterJ1J2(0),
@@ -132,6 +136,8 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fh3EEtaPhiCluster(0),
   fh3PtLeadJet1VsPatchEnergy(0),
   fh3PtLeadJet2VsPatchEnergy(0),
+  fh3PtLeadJet1PatchEnergyVZEROAmp(0),
+  fh3PtLeadJet1RawPatchEnergyVZEROAmp(0),
   fh3PatchEnergyEtaPhiCenterJ1(0),
   fh3PatchEnergyEtaPhiCenterJ2(0),
   fh3PatchEnergyEtaPhiCenterJ1J2(0),
@@ -199,19 +205,19 @@ void AliAnalysisTaskEmcalJetTriggerQA::FillTriggerPatchHistos() {
   AliEmcalTriggerPatchInfo *patch = GetMainTriggerPatch();
   if(patch) {
     fMaxPatchEnergy = patch->GetPatchE();
-    Double_t patchADCGeV = patch->GetADCAmpGeVRough();
-    fh3PatchADCEnergyEtaPhiCenterAll->Fill(patchADCGeV,patch->GetEtaGeo(),patch->GetPhiGeo());
+    fMaxPatchADCEnergy = patch->GetADCAmpGeVRough();
+    fh3PatchADCEnergyEtaPhiCenterAll->Fill(fMaxPatchADCEnergy,patch->GetEtaGeo(),patch->GetPhiGeo());
     if(patch->IsJetLow() && !patch->IsJetHigh()) { //main patch only fired low threshold trigger
       fh3PatchEnergyEtaPhiCenterJ2->Fill(patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
-      fh3PatchADCEnergyEtaPhiCenterJ2->Fill(patchADCGeV,patch->GetEtaGeo(),patch->GetPhiGeo());
+      fh3PatchADCEnergyEtaPhiCenterJ2->Fill(fMaxPatchADCEnergy,patch->GetEtaGeo(),patch->GetPhiGeo());
     }
     else if(patch->IsJetHigh() && !patch->IsJetLow()) { //main patch only fired high threshold trigger - should never happen
       fh3PatchEnergyEtaPhiCenterJ1->Fill(patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
-      fh3PatchADCEnergyEtaPhiCenterJ1->Fill(patchADCGeV,patch->GetEtaGeo(),patch->GetPhiGeo());
+      fh3PatchADCEnergyEtaPhiCenterJ1->Fill(fMaxPatchADCEnergy,patch->GetEtaGeo(),patch->GetPhiGeo());
     }
     else if(patch->IsJetHigh() && patch->IsJetLow()) { //main patch fired both triggers
       fh3PatchEnergyEtaPhiCenterJ1J2->Fill(patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
-      fh3PatchADCEnergyEtaPhiCenterJ1J2->Fill(patchADCGeV,patch->GetEtaGeo(),patch->GetPhiGeo());
+      fh3PatchADCEnergyEtaPhiCenterJ1J2->Fill(fMaxPatchADCEnergy,patch->GetEtaGeo(),patch->GetPhiGeo());
     }
   }
 }
@@ -315,6 +321,12 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   Float_t kMaxTime   = 200;
   Double_t *binsTime = new Double_t[fgkNTimeBins+1];
   for(Int_t i=0; i<=fgkNTimeBins; i++) binsTime[i]=(Double_t)kMinTime + (kMaxTime-kMinTime)/fgkNTimeBins*(Double_t)i ;
+
+  Int_t fgkNVZEROBins = 100;
+  Float_t kMinVZERO   = 0.;
+  Float_t kMaxVZERO   = 25000;
+  Double_t *binsVZERO = new Double_t[fgkNVZEROBins+1];
+  for(Int_t i=0; i<=fgkNVZEROBins; i++) binsVZERO[i]=(Double_t)kMinVZERO + (kMaxVZERO-kMinVZERO)/fgkNVZEROBins*(Double_t)i ;
 
   Double_t enBinEdges[3][2];
   enBinEdges[0][0] = 1.; //10 bins
@@ -422,6 +434,11 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   fh3PtLeadJet2VsPatchEnergy = new TH3F("fh3PtLeadJet2VsPatchEnergy","fh3PtLeadJet2VsPatchEnergy;#it{p}_{T}^{jet 1};Amplitude_{patch};trig type",fgkNPtBins,binsPt,fgkNPtBins,binsPt,fgkNJetTypeBins,binsJetType);
   fOutput->Add(fh3PtLeadJet2VsPatchEnergy);
 
+  fh3PtLeadJet1PatchEnergyVZEROAmp = new TH3F("fh3PtLeadJet1PatchEnergyVZEROAmp","fh3PtLeadJet1VsPatchEnergyVZEROAmp;#it{p}_{T}^{jet 1};Amplitude_{patch};VZERO amp",fgkNPtBins,binsPt,fgkNPtBins,binsPt,fgkNVZEROBins,binsVZERO);
+  fOutput->Add(fh3PtLeadJet1PatchEnergyVZEROAmp);
+  fh3PtLeadJet1RawPatchEnergyVZEROAmp = new TH3F("fh3PtLeadJet1RawPatchEnergyVZEROAmp","fh3PtLeadJet1RawPatchEnergyVZEROAmp;#it{p}_{T}^{jet 1};ADC Amplitude_{patch} (GeV);VZERO amp",fgkNPtBins,binsPt,fgkNPtBins,binsPt,fgkNVZEROBins,binsVZERO);
+  fOutput->Add(fh3PtLeadJet1RawPatchEnergyVZEROAmp);
+
   fh3PatchEnergyEtaPhiCenterJ1 = new TH3F("fh3PatchEnergyEtaPhiCenterJ1","fh3PatchEnergyEtaPhiCenterJ1;E_{patch};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PatchEnergyEtaPhiCenterJ1);
 
@@ -496,6 +513,7 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   if(binsz)                 delete [] binsz;
   if(binsJetType)           delete [] binsJetType;
   if(binsTime)              delete [] binsTime;
+  if(binsVZERO)             delete [] binsVZERO;
 
 }
 
@@ -692,6 +710,12 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
 
   fh3PtLeadJet1VsPatchEnergy->Fill(ptLeadJet1,fMaxPatchEnergy,fTriggerType);
   fh3PtLeadJet2VsPatchEnergy->Fill(ptLeadJet2,fMaxPatchEnergy,fTriggerType);
+
+  // Get VZERO amplitude
+  Float_t VZEROAmp = InputEvent()->GetVZEROData()->GetMTotV0A() + InputEvent()->GetVZEROData()->GetMTotV0C();  // Need to check whether this is close to the online amplitude or not
+
+  fh3PtLeadJet1PatchEnergyVZEROAmp->Fill(ptLeadJet1,fMaxPatchEnergy,VZEROAmp);
+  fh3PtLeadJet1RawPatchEnergyVZEROAmp->Fill(ptLeadJet1,fMaxPatchADCEnergy,VZEROAmp);
 
   delete nJetsArr;
 
