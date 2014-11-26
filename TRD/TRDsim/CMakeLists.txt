@@ -61,17 +61,28 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+set(ROOT_DEPENDENCIES Core Geom Gpad Hist MathCore Physics RIO RooFit Tree VMC)
+set(ALIROOT_DEPENDENCIES STEERBase STEER ESD RAWDatarec RAWDatabase TRDbase TRDrec T0base TOFbase TOFsim VZERObase)
+
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD RAWDatarec RAWDatabase TRDbase TRDrec T0base TOFbase TOFsim VZERObase)
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
+# Create an object to be reused in case of static libraries 
+# Otherwise the sources will be compiled twice
+add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
+# Add a library to the project using the object
+add_library(${MODULE} SHARED $<TARGET_OBJECTS:TRDsim-object>)
 
-# Add a library to the project using the specified source files
-add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+# Linking
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+
+# Public include folders that will be propagated to the dependecies
+target_include_directories(${MODULE} PUBLIC ${incdirs})
 
 # Additional compilation flags
-set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-O -g")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)

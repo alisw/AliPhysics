@@ -21,10 +21,9 @@ include_directories(${AliRoot_SOURCE_DIR}/TRD/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase // this should not be here, but it is still asked, why?
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
                     ${AliRoot_SOURCE_DIR}/STAT
-                    ${AliRoot_SOURCE_DIR}/STEER/CDB
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
@@ -33,30 +32,12 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order
 set(SRCS
-    AliTRDCalibraFillHisto.cxx
     AliTRDCalPIDLQ.cxx
     AliTRDCalPIDNN.cxx
-    AliTRDchamberTimeBin.cxx
-    AliTRDcluster.cxx
-    AliTRDclusterizer.cxx
-    AliTRDdEdxBaseUtils.cxx
-    AliTRDdEdxCalibHistArray.cxx
-    AliTRDdEdxCalibUtils.cxx
-    AliTRDdEdxReconUtils.cxx
     AliTRDpidESD.cxx
-    AliTRDpidUtil.cxx
     AliTRDqaBuildReference.cxx
     AliTRDQADataMakerRec.cxx
     AliTRDqaRecPoints.cxx
-    AliTRDReconstructor.cxx
-    AliTRDseedV1.cxx
-    AliTRDtrackerDebug.cxx
-    AliTRDtrackerV1.cxx
-    AliTRDtrackingChamber.cxx
-    AliTRDtrackingSector.cxx
-    AliTRDtrackletOflHelper.cxx
-    AliTRDtrackV1.cxx
-    AliTRDtransform.cxx
    )
 
 # Headers from sources
@@ -67,17 +48,28 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+set(ROOT_DEPENDENCIES Core Gpad Hist MLP RIO)
+set(ALIROOT_DEPENDENCIES STEERBase STEER ESD RAWDatarec STAT TRDbase)
+
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec STAT TRDbase)
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
+# Create an object to be reused in case of static libraries 
+# Otherwise the sources will be compiled twice
+add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
+# Add a library to the project using the object
+add_library(${MODULE} SHARED $<TARGET_OBJECTS:TRDrec-object>)
 
-# Add a library to the project using the specified source files
-add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+# Linking
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+
+# Public include folders that will be propagated to the dependecies
+target_include_directories(${MODULE} PUBLIC ${incdirs})
 
 # Additional compilation flags
-set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-O -g")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)

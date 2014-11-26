@@ -18,6 +18,7 @@
 
 class TH1;
 class TH1D;
+class TH2D;
 class TH3D;
 class TObjArray;
 

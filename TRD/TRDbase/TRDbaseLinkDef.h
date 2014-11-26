@@ -114,4 +114,25 @@
 #pragma link C++ class  AliTRDrecoParam+;
 #pragma link C++ class  AliTRDSimParam+;
 
+#pragma link C++ class  AliTRDpidUtil+; // moved from TRDrec
+#pragma link C++ class  AliTRDseedV1+; // moved from TRDrec
+#pragma link C++ class  AliTRDcluster+; //moved from TRDrec
+#pragma link C++ class  AliTRDtrackV1+; // moved from TRDrec
+#pragma link C++ class  AliTRDReconstructor+; // moved from TRDrec
+#pragma link C++ class  AliTRDtransform+;// moved from TRDrec
+#pragma link C++ class  AliTRDchamberTimeBin+;// moved from TRDrec
+#pragma link C++ class  AliTRDtrackingChamber+;// moved from TRDrec
+#pragma link C++ class  AliTRDtrackerV1+;// moved from TRDrec
+#pragma link C++ class  AliTRDtrackletOflHelper+;// moved from TRDrec
+#pragma link C++ class  AliTRDtrackingSector+; //moved from TRDrec
+#pragma link C++ class  AliTRDclusterizer+; // moved from TRDrec
+#pragma link C++ class  AliTRDCalibraFillHisto+; //moved from TRDrec
+#pragma link C++ class  AliTRDtrackerDebug+; // moved from TRDrec
+#pragma link C++ class  AliTRDdEdxBaseUtils+;
+#pragma link C++ class  AliTRDdEdxCalibHistArray+;
+#pragma link C++ class  AliTRDdEdxCalibUtils+;
+#pragma link C++ class  AliTRDdEdxReconUtils+;
+#pragma link C++ class  AliTRDtrackerV1::AliTRDLeastSquare+;
+#pragma link C++ class  AliTRDtrackerV1::AliTRDtrackFitterRieman+;
+
 #endif

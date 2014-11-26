@@ -20,6 +20,10 @@ add_subdirectory(TRDrec)
 add_subdirectory(TRDsim)
 add_subdirectory(TRDqaAnalysis)
 
+if(DA)
+    add_subdirectory(DA)
+endif(DA)
+
 # Install macros
 install(DIRECTORY Macros DESTINATION TRD)
 
