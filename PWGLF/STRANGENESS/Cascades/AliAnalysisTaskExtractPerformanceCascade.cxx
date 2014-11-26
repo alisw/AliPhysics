@@ -2510,9 +2510,9 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
 	  ULong_t pStatus    = pTrackXi->GetStatus();
 	  ULong_t nStatus    = nTrackXi->GetStatus();
 	  ULong_t bachStatus = bachTrackXi->GetStatus();
-    if ((pStatus&AliESDtrack::kTPCrefit)    == 0) { AliWarning("Pb / V0 Pos. track has no TPCrefit ... continue!"); continue; }
-    if ((nStatus&AliESDtrack::kTPCrefit)    == 0) { AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!"); continue; }
-    if ((bachStatus&AliESDtrack::kTPCrefit) == 0) { AliWarning("Pb / Bach.   track has no TPCrefit ... continue!"); continue; }
+    if ((pStatus&AliESDtrack::kTPCrefit)    == 0) { /*AliWarning("Pb / V0 Pos. track has no TPCrefit ... continue!"); */continue; }
+    if ((nStatus&AliESDtrack::kTPCrefit)    == 0) { /*AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!"); */continue; }
+    if ((bachStatus&AliESDtrack::kTPCrefit) == 0) { /*AliWarning("Pb / Bach.   track has no TPCrefit ... continue!"); */continue; }
 
     //Extra Debug Information: booleans for ITS refit
     if ((pStatus&AliESDtrack::kITSrefit)    == 0) { fTreeCascVarkITSRefitPositive = kFALSE; }
@@ -2520,9 +2520,9 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
     if ((bachStatus&AliESDtrack::kITSrefit) == 0) { fTreeCascVarkITSRefitBachelor = kFALSE; }
 
 	  // 2 - Poor quality related to TPC clusters: lowest cut of 70 clusters
-    if(lPosTPCClusters  < 70) { AliWarning("Pb / V0 Pos. track has less than 70 TPC clusters ... continue!"); continue; }
-	  if(lNegTPCClusters  < 70) { AliWarning("Pb / V0 Neg. track has less than 70 TPC clusters ... continue!"); continue; }
-	  if(lBachTPCClusters < 70) { AliWarning("Pb / Bach.   track has less than 70 TPC clusters ... continue!"); continue; }
+    if(lPosTPCClusters  < 70)   { /*AliWarning("Pb / V0 Pos. track has less than 70 TPC clusters ... continue!"); */continue; }
+	  if(lNegTPCClusters  < 70) { /*AliWarning("Pb / V0 Neg. track has less than 70 TPC clusters ... continue!"); */continue; }
+	  if(lBachTPCClusters < 70) { /*AliWarning("Pb / Bach.   track has less than 70 TPC clusters ... continue!"); */continue; }
 	  Int_t leastnumberofclusters = 1000; 
 	  if( lPosTPCClusters < leastnumberofclusters ) leastnumberofclusters = lPosTPCClusters;
 	  if( lNegTPCClusters < leastnumberofclusters ) leastnumberofclusters = lNegTPCClusters;
