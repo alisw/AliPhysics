@@ -38,6 +38,7 @@
 #include "AliSpectraBothTrackCuts.h"
 #include "AliAnalysisUtils.h"
 #include "AliPPVsMultUtils.h"	
+#include "AliGenPythiaEventHeader.h"
 //#include "AliSpectraBothHistoManager.h"
 #include <iostream>
 
@@ -48,6 +49,7 @@ ClassImp(AliSpectraBothEventCuts)
 AliSpectraBothEventCuts::AliSpectraBothEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0),fAODEvent(AliSpectraBothTrackCuts::kAODobject), fTrackBits(0),fIsMC(0),fCentEstimator(""), fUseCentPatchAOD049(0), fUseSDDPatchforLHC11a(kDoNotCheckforSDD),fTriggerSettings(AliVEvent::kMB),fTrackCuts(0),
 fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0),fMaxChi2perNDFforVertex(0),
 fMinRun(0),fMaxRun(0),fetarangeofmultiplicitycut(0.0),fUseAliPPVsMultUtils(false),
+fNMCProcessType(0),fEventMCProcessType(0),fEventMCProcessTypeIncluded(0),
 fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0)
 ,fHistoEP(0),fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0),fHistoRunNumbers(0),
 fHistoCentrality(0),fHistoMultiplicty(0),fAnalysisUtils(0),fAliPPVsMultUtils(0)
@@ -83,7 +85,7 @@ fHistoCentrality(0),fHistoMultiplicty(0),fAnalysisUtils(0),fAliPPVsMultUtils(0)
   fMultiplicityCutMax=-1.0;
   fTrackBits=1;
   fCentEstimator="V0M";
-  fMaxChi2perNDFforVertex=-1;
+  fMaxChi2perNDFforVertex=-1;	
  // TH1::AddDirectory(oldStatus);	
 }
 //______________________________________________________
@@ -122,6 +124,8 @@ AliSpectraBothEventCuts::~AliSpectraBothEventCuts()
 		delete fAnalysisUtils;
 	if(fAliPPVsMultUtils)
 		delete fAliPPVsMultUtils;
+	if(fEventMCProcessType)
+		delete [] fEventMCProcessType;
 
 }
 //______________________________________________________
@@ -400,7 +404,7 @@ Bool_t AliSpectraBothEventCuts::CheckMultiplicityCut()
 		return kFALSE;	 
 
    fHistoMultiplicty->Fill(0.5,Ncharged);
-   if(Ncharged>=fMultiplicityCutMin && Ncharged<fMultiplicityCutMax&& Ncharged>0)
+   if(Ncharged>=fMultiplicityCutMin && Ncharged<fMultiplicityCutMax)
    { 
 	fHistoMultiplicty->Fill(1.5,Ncharged);
   	return kTRUE;
@@ -608,64 +612,90 @@ Long64_t AliSpectraBothEventCuts::Merge(TCollection* list)
     if (entry == 0) 
       continue;
 
-    TH1I * histo = entry->GetHistoCuts();      
-    collections.Add(histo);
+    TH1I * histo = entry->GetHistoCuts(); 
+    if(histo)    
+    	collections.Add(histo);
     TH1F * histo_histoVtxBefSel = entry->GetHistoVtxBefSel();      
-    collections_histoVtxBefSel.Add(histo_histoVtxBefSel);
+    if(histo_histoVtxBefSel)
+    	collections_histoVtxBefSel.Add(histo_histoVtxBefSel);
     TH1F * histo_histoVtxAftSel = entry->GetHistoVtxAftSel();      
-    collections_histoVtxAftSel.Add(histo_histoVtxAftSel);
-    TH1F * histo_histoEtaBefSel = entry->GetHistoEtaBefSel();      
-    collections_histoEtaBefSel.Add(histo_histoEtaBefSel);
-    TH1F * histo_histoEtaAftSel = entry->GetHistoEtaAftSel();      
-    collections_histoEtaAftSel.Add(histo_histoEtaAftSel);
-    TH1F * histo_histoNChAftSel = entry->GetHistoNChAftSel();      
-    collections_histoNChAftSel.Add(histo_histoNChAftSel);
+    if(histo_histoVtxAftSel)
+    	collections_histoVtxAftSel.Add(histo_histoVtxAftSel);
+    TH1F * histo_histoEtaBefSel = entry->GetHistoEtaBefSel(); 
+    if(histo_histoEtaBefSel)	     
+    	collections_histoEtaBefSel.Add(histo_histoEtaBefSel);
+    TH1F * histo_histoEtaAftSel = entry->GetHistoEtaAftSel();
+    if(histo_histoEtaAftSel)	      
+    	collections_histoEtaAftSel.Add(histo_histoEtaAftSel);
+    TH1F * histo_histoNChAftSel = entry->GetHistoNChAftSel();
+    if(histo_histoNChAftSel)	      
+    	collections_histoNChAftSel.Add(histo_histoNChAftSel);
     // TH1F * histo_histoQVectorPos = entry->GetHistoQVectorPos();      
     // collections_histoQVectorPos.Add(histo_histoQVectorPos);
     // TH1F * histo_histoQVectorNeg = entry->GetHistoQVectorNeg();      
-    // collections_histoQVectorNeg.Add(histo_histoQVectorNeg);
-    TH1F * histo_histoQVector = entry->GetHistoQVector();      
-    collections_histoQVector.Add(histo_histoQVector);
+    // collections_histoQVectorNeg.Add(histo_histoQVectorNeg);	
+    TH1F * histo_histoQVector = entry->GetHistoQVector();     
+    if(histo_histoQVector)	 
+    	collections_histoQVector.Add(histo_histoQVector);
     TH1F * histo_histoEP = entry->GetHistoEP();      
-    collections_histoEP.Add(histo_histoEP);
+    if(histo_histoEP) 
+    	collections_histoEP.Add(histo_histoEP);
     TH1F* histo_histoVtxAftSelwithoutZvertexCut=entry->GetHistoVtxAftSelwithoutZvertexCut();
-    collections_histoVtxAftSelwithoutZvertexCut.Add(histo_histoVtxAftSelwithoutZvertexCut);
+     if(histo_histoVtxAftSelwithoutZvertexCut)
+    	collections_histoVtxAftSelwithoutZvertexCut.Add(histo_histoVtxAftSelwithoutZvertexCut);
     TH1F* histo_histoVtxalltriggerEventswithMCz=entry->GetHistoVtxGenerated();
-    collections_histoVtxalltriggerEventswithMCz.Add(histo_histoVtxalltriggerEventswithMCz);
+     if(histo_histoVtxalltriggerEventswithMCz)
+    	collections_histoVtxalltriggerEventswithMCz.Add(histo_histoVtxalltriggerEventswithMCz);
     
    TH1F* histo_histoVtxAftSelwithoutZvertexCutusingMCz=entry->GetHistoVtxAftSelwithoutZvertexCutusingMCz();
-    collections_histoVtxAftSelwithoutZvertexCutusingMCz.Add(histo_histoVtxAftSelwithoutZvertexCutusingMCz);	
+     if(histo_histoVtxAftSelwithoutZvertexCutusingMCz)	
+    	collections_histoVtxAftSelwithoutZvertexCutusingMCz.Add(histo_histoVtxAftSelwithoutZvertexCutusingMCz);	
     
     TH1F* histo_histoRunNumbers=entry->GetHistoRunNumbers();
-    collections_histoRunNumbers.Add(histo_histoRunNumbers);
+    if(histo_histoRunNumbers)
+	collections_histoRunNumbers.Add(histo_histoRunNumbers);
  
    TH2F* histo_histoCentrality=entry->GetHistoCentrality();
-  collections_histoCentrality.Add(histo_histoCentrality);	 	
+  if(histo_histoCentrality)
+ 	 collections_histoCentrality.Add(histo_histoCentrality);	 	
 
 TH2F* histo_histoMultiplicty=entry->GetHistoMultiplicty();
-  collections_histoMultiplicty.Add(histo_histoMultiplicty);
+  if(histo_histoMultiplicty)
+  	collections_histoMultiplicty.Add(histo_histoMultiplicty);
 
 
     count++;
   }
-  
-  fHistoCuts->Merge(&collections);
-  fHistoVtxBefSel->Merge(&collections_histoVtxBefSel);
-  fHistoVtxAftSel->Merge(&collections_histoVtxAftSel);
-  fHistoEtaBefSel->Merge(&collections_histoEtaBefSel);
-  fHistoEtaAftSel->Merge(&collections_histoEtaAftSel);
-  fHistoNChAftSel->Merge(&collections_histoNChAftSel);
+  if(fHistoCuts)
+  	fHistoCuts->Merge(&collections);
+  if(fHistoVtxBefSel)
+  	fHistoVtxBefSel->Merge(&collections_histoVtxBefSel);
+  if(fHistoVtxAftSel)
+  	fHistoVtxAftSel->Merge(&collections_histoVtxAftSel);
+  if(fHistoEtaBefSel)
+ 	 fHistoEtaBefSel->Merge(&collections_histoEtaBefSel);
+  if(fHistoEtaAftSel)
+  	fHistoEtaAftSel->Merge(&collections_histoEtaAftSel);
+  if(fHistoNChAftSel)
+  	fHistoNChAftSel->Merge(&collections_histoNChAftSel);
   // fHistoQVectorPos->Merge(&collections_histoQVectorPos);
   // fHistoQVectorNeg->Merge(&collections_histoQVectorNeg);
-  fHistoQVector->Merge(&collections_histoQVector);
-  fHistoEP->Merge(&collections_histoEP);
-
-  fHistoVtxAftSelwithoutZvertexCut->Merge(&collections_histoVtxAftSelwithoutZvertexCut);
-  fHistoVtxalltriggerEventswithMCz->Merge(&collections_histoVtxalltriggerEventswithMCz);
-  fHistoVtxAftSelwithoutZvertexCutusingMCz->Merge(&collections_histoVtxAftSelwithoutZvertexCutusingMCz);
-  fHistoRunNumbers->Merge(&collections_histoRunNumbers);
-  fHistoCentrality->Merge(&collections_histoCentrality);
-  fHistoMultiplicty->Merge(&collections_histoMultiplicty);
+  if(fHistoQVector)
+ 	 fHistoQVector->Merge(&collections_histoQVector);
+  if(fHistoEP)
+  	fHistoEP->Merge(&collections_histoEP);
+  if(fHistoVtxAftSelwithoutZvertexCut)
+  	fHistoVtxAftSelwithoutZvertexCut->Merge(&collections_histoVtxAftSelwithoutZvertexCut);
+  if(fHistoVtxalltriggerEventswithMCz)
+ 	 fHistoVtxalltriggerEventswithMCz->Merge(&collections_histoVtxalltriggerEventswithMCz);
+  if(fHistoVtxAftSelwithoutZvertexCutusingMCz)	
+  	fHistoVtxAftSelwithoutZvertexCutusingMCz->Merge(&collections_histoVtxAftSelwithoutZvertexCutusingMCz);
+  if(fHistoRunNumbers)
+  	fHistoRunNumbers->Merge(&collections_histoRunNumbers);
+  if(fHistoCentrality)
+ 	 fHistoCentrality->Merge(&collections_histoCentrality);
+  if(fHistoMultiplicty)
+  	fHistoMultiplicty->Merge(&collections_histoMultiplicty);
 
 
   delete iter;
@@ -681,3 +711,50 @@ void AliSpectraBothEventCuts::SetRunNumberRange(Int_t min, Int_t max)
   		 fMaxRun=max;
 	}
 }
+//__________________________________________________________________________________________________________
+Bool_t AliSpectraBothEventCuts::CheckMCProcessType(AliMCEvent* mcevent)
+{
+	if(fNMCProcessType<0)
+		return kTRUE;
+	if(!mcevent)
+		return kFALSE;
+	AliHeader* aHeader=mcevent->Header();
+	if(!aHeader)
+		return kFALSE;
+	AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(aHeader->GenEventHeader());
+	if(!pythiaGenHeader)
+		return kFALSE;	
+	Int_t processtype=pythiaGenHeader->ProcessType();
+	for(int i=0;i<fNMCProcessType;i++)
+	{
+		if(fEventMCProcessType[i]<0)
+			continue;
+		if (processtype==fEventMCProcessType[i])
+			return fEventMCProcessTypeIncluded;
+	}
+	return !fEventMCProcessTypeIncluded;
+}
+//_____________________________________________________________________________________________________________
+void AliSpectraBothEventCuts::SetNMCProcessType(Int_t flag) 
+{
+	fNMCProcessType=flag;
+	if(fEventMCProcessType)
+		delete [] fEventMCProcessType;
+	
+	fEventMCProcessType= new Int_t[fNMCProcessType];
+	if(!fEventMCProcessType)
+	{
+		fNMCProcessType=-1;
+		return;
+	}
+	for(int i=0;i<fNMCProcessType;i++)
+		fEventMCProcessType[i]=-1.0;
+	return;
+}
+//________________________________________________________________________________________________________________________
+void AliSpectraBothEventCuts::AddMCProcessType(Int_t type,Int_t index)
+{
+	if(index<fNMCProcessType)
+		fEventMCProcessType[index]=type;
+}
+

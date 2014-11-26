@@ -41,6 +41,8 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
 
   void SetMinFractionShared(Double_t f)                         { fMinFractionShared = f; }
 
+  void SetUseSumw2(Bool_t b)                                    { fUseSumw2 = b;}
+
   //Getters
   Double_t GetFractionSharedPt(const AliEmcalJet *jet1, const AliEmcalJet *jet2) const;
 
@@ -57,16 +59,15 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
   void     MatchJetsGeo(Int_t c1 = -1, Int_t c2 = -1, Int_t iDebug = 0, Float_t maxDist = 0.3, Int_t type = 2, Bool_t bReset = kTRUE);
   void     ResetTagging(const Int_t c);
   
+ private:
   JetTaggingType                      fJetTaggingType;             // jet matching type
   JetTaggingMethod                    fJetTaggingMethod;           // jet matching method
-
   Int_t                               fContainerBase;              // jets to be tagged
   Int_t                               fContainerTag;               // jets used for tagging
-
   Double_t                            fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
-  
- private:
-  Bool_t            fMatchingDone;                // flag to indicate if matching is done or not
+  Bool_t                              fUseSumw2;                   // activate sumw2 for output histograms
+  Bool_t                              fMatchingDone;               // flag to indicate if matching is done or not
+
   TH3F            **fh3PtJet1VsDeltaEtaDeltaPhi;  //!pt jet 1 vs deta vs dphi
   TH2F            **fh2PtJet1VsDeltaR;            //!pt jet 1 vs dR
   TH2F            **fh2PtJet2VsFraction;          //!pt jet 1 vs shared fraction
@@ -83,7 +84,7 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetTagger(const AliAnalysisTaskEmcalJetTagger&);            // not implemented
   AliAnalysisTaskEmcalJetTagger &operator=(const AliAnalysisTaskEmcalJetTagger&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetTagger, 5)
+  ClassDef(AliAnalysisTaskEmcalJetTagger, 6)
 };
 #endif
 

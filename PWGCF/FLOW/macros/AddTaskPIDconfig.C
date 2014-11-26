@@ -57,16 +57,6 @@ void AddTaskPIDconfig(Int_t CentralityTriggerSelection = AliVEvent::kMB, Double_
         pidTask[i]->SetDCAxyCut(10);
         pidTask[i]->SetDCAzCut(10);
         pidTask[i]->SetCuts(PIDcuts);
-        if(PIDcuts){
-            TFile *ContoursFile = new TFile(Form("PurityHistContours_%.f-%.f.root",centrMin[icentr],centrMax[icentr]));
-
-            Contourlist = new TDirectory;
-            Contourlist=(TDirectory*)ContoursFile->Get("Filterbit1");
-            if(!Contourlist){printf("The contour file is empty"); continue;}
-    
-            pidTask[i]->SetPIDcontoursList(Contourlist);
-            
-        }
         
         mgr->AddTask(pidTask[i]);
         

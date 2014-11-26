@@ -12,6 +12,7 @@
 #include <TLorentzVector.h>
 #include <TMath.h>
 #include <TRandom3.h>
+#include <TParticle.h>
 
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
@@ -22,9 +23,13 @@
 #include "AliFJWrapper.h"
 #include "AliMCEvent.h"
 #include "AliVCluster.h"
+#include "AliAODCaloCluster.h"
+#include "AliESDCaloCluster.h"
 #include "AliVEvent.h"
 #include "AliVParticle.h"
 #include "AliRhoParameter.h"
+#include "AliPicoTrack.h"
+
 using std::cout;
 using std::endl;
 using std::cerr;
@@ -38,6 +43,8 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fCaloName("CaloClusters"),
   fJetsName("Jets"),
   fJetsSubName(""),
+  fTracksSubName(""),
+  fClusSubName(""),
   fJetType(kNone),
   fConstSel(0),
   fMCConstSel(0),
@@ -66,6 +73,8 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fIsPSelSet(0),
   fIsMcPart(0),
   fIsEmcPart(0),
+  fIsPicoTrack(0),
+  fIsEsdClus(0),
   fLegacyMode(kFALSE),
   fCodeDebug(kFALSE),
   fPionMassClusters(kFALSE),
@@ -83,6 +92,8 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fPtMinGR(40.),
   fJets(0),
   fJetsSub(0),
+  fTracksSub(0),
+  fClusSub(0),
   fEvent(0),
   fTracks(0),
   fClus(0),
@@ -99,6 +110,8 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fCaloName("CaloClusters"),
   fJetsName("Jets"),
   fJetsSubName(""),
+  fTracksSubName(""),
+  fClusSubName(""),
   fJetType(kAKT|kFullJet|kRX1Jet),
   fConstSel(0),
   fMCConstSel(0),
@@ -127,6 +140,8 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fIsPSelSet(0),
   fIsMcPart(0),
   fIsEmcPart(0),
+  fIsPicoTrack(0),
+  fIsEsdClus(0),
   fLegacyMode(kFALSE),
   fCodeDebug(kFALSE),
   fPionMassClusters(kFALSE),
@@ -144,6 +159,8 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fPtMinGR(40.),
   fJets(0),
   fJetsSub(0),
+  fTracksSub(0),
+  fClusSub(0),
   fEvent(0),
   fTracks(0),
   fClus(0),
@@ -173,6 +190,17 @@ void AliEmcalJetTask::UserCreateOutputObjects()
     fJetsSub = new TClonesArray("AliEmcalJet");
     fJetsSub->SetName(fJetsSubName);
   }
+
+  if (fDoConstituentSubtraction && !fTracksSubName.IsNull()) {
+    fTracksSub = new TClonesArray();
+    fTracksSub->SetName(fTracksSubName);
+  }
+
+  if (fDoConstituentSubtraction && !fClusSubName.IsNull()) {
+    fClusSub = new TClonesArray();
+    fClusSub->SetName(fClusSubName);
+  }
+  
 }
 
 //________________________________________________________________________
@@ -187,8 +215,11 @@ void AliEmcalJetTask::UserExec(Option_t *)
 
   // clear the jet array (normally a null operation)
   fJets->Delete();
-  if(fJetsSub) fJetsSub->Delete();
+  if(fJetsSub)   fJetsSub->Delete();
+  if(fTracksSub) fTracksSub->Delete();
+  if(fClusSub)   fClusSub->Delete();
 
+  //Run jet finding
   FindJets();
 }
 
@@ -203,7 +234,7 @@ void AliEmcalJetTask::FindJets()
 {
   // Find jets.
   if (!fTracks && !fClus){
-    cout << "WARNING NO TRACKS OR CLUSTERS:"  <<endl;
+    AliInfo("WARNING NO TRACKS OR CLUSTERS");
     return;
   }
 
@@ -698,9 +729,6 @@ Bool_t AliEmcalJetTask::DoInit()
     return 0;
   }
 
-  if (!(fEvent->FindListObject(fJetsSubName)) && fJetsSub)
-    fEvent->AddObject(fJetsSub);
-
   if (fTracksName == "Tracks")
     am->LoadBranch("Tracks");
   if (!fTracks && !fTracksName.IsNull()) {
@@ -712,8 +740,12 @@ Bool_t AliEmcalJetTask::DoInit()
   }
   if (fTracks) {
     TClass cls(fTracks->GetClass()->GetName());
-    if (cls.InheritsFrom("AliMCParticle") || cls.InheritsFrom("AliAODMCParticle"))
-      fIsMcPart = 1;
+    if (cls.InheritsFrom("AliPicoTrack"))
+      fIsPicoTrack = 1; 
+    else if (cls.InheritsFrom("AliMCParticle") || cls.InheritsFrom("AliAODMCParticle"))
+     fIsMcPart = 1;
+    else if (cls.InheritsFrom("AliEmcalParticle"))
+     fIsEmcPart = 1;
   }
 
   if (fCaloName == "CaloClusters")
@@ -731,6 +763,68 @@ Bool_t AliEmcalJetTask::DoInit()
       fIsEmcPart = 1;
   }
 
+  //Add constituent subtracted jets to event
+  if(!fJetsSubName.IsNull()) {
+    if (!(fEvent->FindListObject(fJetsSubName)) ) {
+      if(fJetsSub) fEvent->AddObject(fJetsSub);
+    } else {
+      AliError(Form("%s: Object for subtracted jet branch with name %s already in event! Returning", GetName(), fJetsSubName.Data()));
+      return 0;
+    }
+  }
+
+  //Add tracks from constituent subtracted jets to event
+  if(!fTracksSubName.IsNull()) {
+    if (!(fEvent->FindListObject(fTracksSubName))) {
+      if(fTracksSub) fEvent->AddObject(fTracksSub);
+    } else {
+      AliError(Form("%s: Object with name %s already in event! Returning", GetName(), fTracksSubName.Data()));
+      return 0;
+    }
+  }
+
+  if(fDoConstituentSubtraction && fTracksSub) {
+    if(fIsEmcPart==1) { 
+      AliFatal("Constituent subtraction method not implemented for AliEmcalParticle as input tracks. Use AliPicoTracks instead. Aborting!");
+      return 0;
+    }
+    if(fIsPicoTrack==1)   fTracksSub->SetClass("AliPicoTrack");
+    else if(fIsMcPart==1) fTracksSub->SetClass("AliMCParticle");
+    else {
+      AliError(Form("%s Object type of subtracted track branch %s not known",GetName(),fTracksSubName.Data()));
+      return 0;
+    }
+    fTracksSub->SetName(fTracksSubName);
+  }
+
+  //Add clusters from constituent subtracted jets to event
+  if(!fClusSubName.IsNull()) {
+    if (!(fEvent->FindListObject(fClusSubName))) {
+      if(fClusSub) fEvent->AddObject(fClusSub);
+    } else {
+      AliError(Form("%s: Object with name %s already in event! Returning", GetName(), fClusSubName.Data()));
+      return 0;
+    }
+  }
+
+  if(fDoConstituentSubtraction && fClusSub) {
+    TClass cls(fClus->GetClass()->GetName());
+    if (cls.InheritsFrom("AliESDCaloCluster")) {
+      fClusSub->SetClass("AliESDCaloCluster");
+      fIsEsdClus = kTRUE;
+    }
+    else if (cls.InheritsFrom("AliAODCaloCluster"))
+      fClusSub->SetClass("AliAODCaloCluster");
+    else if (cls.InheritsFrom("AliEmcalParticle")) { 
+      AliFatal("Constituent subtraction method not implemented for AliEmcalParticle as input clusters. Use AliESD(AOD)CaloCluster instead. Aborting!");
+      return 0;
+    } else {
+      AliError(Form("%s Object type of subtracted cluster branch %s not known",GetName(),fClusSubName.Data()));
+      return 0;
+    }
+    fClusSub->SetName(fClusSubName);
+  }
+
   if (!fRhoName.IsNull() && !fRhoParam) { // get rho from the event
     fRhoParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhoName));
     if (!fRhoParam) {
@@ -741,7 +835,7 @@ Bool_t AliEmcalJetTask::DoInit()
   if (!fRhomName.IsNull() && !fRhomParam) { // get rhom from the event
     fRhomParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhomName));
     if (!fRhomParam) {
-      AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhomName.Data()));
+      AliError(Form("%s: Could not retrieve rho_m %s!", GetName(), fRhomName.Data()));
       return 0;
     }
   }
@@ -750,7 +844,7 @@ Bool_t AliEmcalJetTask::DoInit()
   if (!(fEvent->FindListObject(fJetsName)))
     fEvent->AddObject(fJets);
   else {
-    AliError(Form("%s: Object with name %s already in event! Returning", GetName(), fJetsName.Data()));
+    AliError(Form("%s: Object for jet branch with name %s already in event! Returning", GetName(), fJetsName.Data()));
     return 0;
   }
 
@@ -759,23 +853,23 @@ Bool_t AliEmcalJetTask::DoInit()
 
 //___________________________________________________________________________________________________________________
 void  AliEmcalJetTask::FillJetConstituents(std::vector<fastjet::PseudoJet>& constituents,AliEmcalJet *jet,Double_t vertex[3],UInt_t jetCount,Int_t& nt,Int_t& nc,Double_t& maxCh,Double_t& maxNe,Int_t& ncharged,Int_t& nneutral,Double_t& neutralE,Double_t& mcpt,Int_t& cemc,Double_t& emcpt,Int_t& gall,Int_t& gemc,std::vector<fastjet::PseudoJet>& constituentsunsub,Int_t flagsub){
-    nt            = 0;
-    nc            = 0;
+    nt         = 0;
+    nc         = 0;
     neutralE   = 0;
     maxCh      = 0;
     maxNe      = 0;
-    gall          = 0;
-    gemc       =0;
-    cemc          = 0;
-    ncharged      = 0;
-    nneutral      = 0;
+    gall       = 0;
+    gemc       = 0;
+    cemc       = 0;
+    ncharged   = 0;
+    nneutral   = 0;
     mcpt       = 0;
     emcpt      = 0;
     Int_t uid   = -1;
-   AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
+    AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
     for(UInt_t ic = 0; ic < constituents.size(); ++ic) {
       if(flagsub==0) uid = constituents[ic].user_index();
-      if(flagsub!=0) uid=GetIndexSub(constituents[ic].perp(),constituentsunsub);
+      else           uid = GetIndexSub(constituents[ic].phi(),constituentsunsub);
       AliDebug(3,Form("Processing constituent %d", uid));
       if ((uid == -1) /*&& (constituents[ic].kt2() < 1e-25)*/) { //ghost particle
         ++gall;
@@ -823,7 +917,16 @@ void  AliEmcalJetTask::FillJetConstituents(std::vector<fastjet::PseudoJet>& cons
           emcpt += cPt;
           ++cemc;
         }
-	// cout<<"Adding the track"<<endl;
+
+        if(flagsub!=0 && fTracksSub) {       //fill the subtracted track branch
+	  if(fIsPicoTrack) 
+	    new ((*fTracksSub)[tid]) AliPicoTrack(constituents[ic].perp(),constituents[ic].eta(),constituents[ic].phi(),0,0,0,0,0,0,0,constituents[ic].m());
+	  else if(fIsMcPart) { 
+	    AliMCParticle *tmc = static_cast<AliMCParticle*>(fTracks->At(tid));
+	    TParticle *mcPart = new TParticle(tmc->PdgCode(),tmc->Particle()->GetStatusCode(),tmc->GetMother(),0,tmc->GetFirstDaughter(),tmc->GetLastDaughter(),constituents[ic].px(),constituents[ic].py(),constituents[ic].pz(),constituents[ic].e(),0.,0.,0.,0.);
+	    new ((*fTracksSub)[tid]) AliMCParticle(mcPart,0x0,tid);
+	  }
+	}
         jet->AddTrackAt(tid, nt);
         ++nt;
       } else if (fClus) { // cluster constituent
@@ -873,6 +976,21 @@ void  AliEmcalJetTask::FillJetConstituents(std::vector<fastjet::PseudoJet>& cons
           ++cemc;
         }
 
+	//Add constituent subtracted clusters 
+	if(flagsub!=0 && fClusSub && !fIsEmcPart) {       //fill the subtracted track branch
+	  AliVCluster *oc;
+ 	  if(fIsEsdClus) {
+	    AliESDCaloCluster *ec = dynamic_cast<AliESDCaloCluster*>(c);
+	    if (!ec) continue;
+	    oc = new ((*fClusSub)[cid]) AliESDCaloCluster(*ec);
+	  } else {
+	    AliAODCaloCluster *ac = dynamic_cast<AliAODCaloCluster*>(c);
+	    if (!ac) continue;
+	    oc = new ((*fClusSub)[cid]) AliAODCaloCluster(*ac);
+	  }
+	  oc->SetE(constituents[ic].E());
+	}
+
         jet->AddClusterAt(cid, nc);
         ++nc;
         ++nneutral;
@@ -883,12 +1001,11 @@ void  AliEmcalJetTask::FillJetConstituents(std::vector<fastjet::PseudoJet>& cons
     }
 }
 //______________________________________________________________________________________
-Int_t AliEmcalJetTask::GetIndexSub(Double_t ptsub,std::vector<fastjet::PseudoJet>& constituentsunsub){
-
-    for(UInt_t ii=0;ii<constituentsunsub.size();ii++){
-    Double_t ptunsub=constituentsunsub[ii].perp();
-    //cout<<ptunsub<<" "<<ptsub<<endl;
-    if(ptsub==ptunsub) return constituentsunsub[ii].user_index();
-
-    } return -1;}
+Int_t AliEmcalJetTask::GetIndexSub(Double_t phisub,std::vector<fastjet::PseudoJet>& constituentsunsub) {
+  for(UInt_t ii=0;ii<constituentsunsub.size();ii++) {
+    Double_t phiunsub=constituentsunsub[ii].phi();
+    if(phisub==phiunsub) return constituentsunsub[ii].user_index();
+  } 
+  return -1;
+}
 //______________________________________________________________________________________

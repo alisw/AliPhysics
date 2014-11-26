@@ -961,17 +961,29 @@ Double_t AliRsnMiniAnalysisTask::ComputeTracklets()
 // Get number of tracklets
 //
 
-   Double_t count = 100;
+   Double_t nTr = 100;
+   Double_t count = 0.0;
 
    if (fInputEvent->InheritsFrom(AliESDEvent::Class())){
       AliESDEvent *esdEvent = (AliESDEvent *)fInputEvent;
       const AliMultiplicity *spdmult = esdEvent->GetMultiplicity();
-      count = 1.0*spdmult->GetNumberOfTracklets();
+      nTr = 1.0*spdmult->GetNumberOfTracklets();
+      for(Int_t iTr=0; iTr<nTr; iTr++){
+      Double_t theta=spdmult->GetTheta(iTr);
+      Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
+      if(eta>-1.0 && eta<1.0) count++;
+  } 
       }
    else if (fInputEvent->InheritsFrom(AliAODEvent::Class())) {
       AliAODEvent *aodEvent = (AliAODEvent *)fInputEvent;
       AliAODTracklets *spdmult = aodEvent->GetTracklets();
-      count = 1.0*spdmult->GetNumberOfTracklets();
+      nTr = 1.0*spdmult->GetNumberOfTracklets();
+      for(Int_t iTr=0; iTr<nTr; iTr++){
+      Double_t theta=spdmult->GetTheta(iTr);
+      Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
+      if(eta>-1.0 && eta<1.0) count++;
+  }
+      
    }
 
    return count;

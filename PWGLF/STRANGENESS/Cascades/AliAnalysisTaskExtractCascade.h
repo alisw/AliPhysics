@@ -68,9 +68,17 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
   void SetDebugMode ( Bool_t lDebugMode = kTRUE) { fkDebugMode = lDebugMode; }
     //---------------------------------------------------------------------------------------
     //Set Peripheral event debugging mode (Pb-Pb X-check)
-    void SetSelectPeripheral ( Bool_t lSelectPeripheral = kTRUE) { fkSelectPeripheral = lSelectPeripheral; }
+    void SetSelectCentrality ( Bool_t lSelectCentrality = kTRUE, Double_t lCentSelLow = 0.0, Double_t lCentSelHigh = 10.0) {
+        fkSelectCentrality = lSelectCentrality;
+        fCentSel_Low = lCentSelLow;
+        fCentSel_High = lCentSelHigh;
+    }
     //---------------------------------------------------------------------------------------
-//Setters for the V0 Vertexer Parameters
+    void SetLowPtCutoff ( Double_t lLowPtCutoff = 1.0) {
+        fLowPtCutoff = lLowPtCutoff;
+    }
+    //---------------------------------------------------------------------------------------
+    //Setters for the V0 Vertexer Parameters
   void SetV0VertexerMaxChisquare   ( Double_t lParameter ){ fV0VertexerSels[0] = lParameter; }
   void SetV0VertexerDCAFirstToPV   ( Double_t lParameter ){ fV0VertexerSels[1] = lParameter; }
   void SetV0VertexerDCASecondtoPV  ( Double_t lParameter ){ fV0VertexerSels[2] = lParameter; }
@@ -112,10 +120,14 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
   //Objects Controlling Task Behaviour: has to be streamed! 
   Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts. CARE MUST BE TAKEN in PbPb!
   Bool_t    fkDebugMode; //Store extra debugging information in tree
-    Bool_t    fkSelectPeripheral; //Switch to skip anything other than 60-80% V0M
+    Bool_t    fkSelectCentrality; //Switch to skip anything other than 60-80% V0M
   Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
   Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
-
+    
+    Double_t fCentSel_Low;
+    Double_t fCentSel_High;
+    
+    Double_t fLowPtCutoff; //Reduction of data volume
 
 	//Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 	//Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related

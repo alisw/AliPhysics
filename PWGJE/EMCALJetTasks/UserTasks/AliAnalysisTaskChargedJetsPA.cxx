@@ -65,23 +65,24 @@ void AliAnalysisTaskChargedJetsPA::Init()
   SetCurrentOutputList(0);
 
   // Cuts
-  TH1D* tmpHisto = AddHistogram1D<TH1D>("hNumberEvents", "Number of events (0 = before cuts, 1 = after cuts)", "", 2, 0, 2, "stage","N^{Events}/cut");
-  tmpHisto->GetXaxis()->SetBinLabel(1, "Before cuts");
-  tmpHisto->GetXaxis()->SetBinLabel(2, "After cuts");
-  tmpHisto = AddHistogram1D<TH1D>("hEventAcceptance", "Accepted events (0 = before cuts, 1 = after pile up, 2 = after vertex)", "", 3, 0, 3, "stage","N^{Events}/cut");
-  tmpHisto->GetXaxis()->SetBinLabel(1, "Before cuts");
-  tmpHisto->GetXaxis()->SetBinLabel(2, "After pile up");
-  tmpHisto->GetXaxis()->SetBinLabel(3, "After vertex");
-  tmpHisto = AddHistogram1D<TH1D>("hTrackAcceptance", "Accepted tracks (0 = before cuts, 1 = after eta, 2 = after pT)", "", 3, 0, 3, "stage","N^{Tracks}/cut");
+  TH2* tmpHisto2D = AddHistogram2D<TH2D>("hCentrality", Form("Accepted events in centrality (%s)", fCentralityType.Data()), "COLZ", 102, 0., 102., 4, 0,4,"Centrality","Cut stage","dN^{Events}");
+  tmpHisto2D->GetYaxis()->SetBinLabel(1, "Before cuts");
+  tmpHisto2D->GetYaxis()->SetBinLabel(2, "After pile up");
+  tmpHisto2D->GetYaxis()->SetBinLabel(3, "After vertex demand");
+  tmpHisto2D->GetYaxis()->SetBinLabel(4, "After vertex cuts");
+
+  TH1* tmpHisto = AddHistogram1D<TH1D>("hTrackAcceptance", "Accepted tracks (0 = before cuts, 1 = after eta, 2 = after pT)", "", 3, 0, 3, "stage","N^{Tracks}/cut");
   tmpHisto->GetXaxis()->SetBinLabel(1, "Before cuts");
   tmpHisto->GetXaxis()->SetBinLabel(2, "After eta");
   tmpHisto->GetXaxis()->SetBinLabel(3, "After p_{T}");
+
   tmpHisto = AddHistogram1D<TH1D>("hJetAcceptance", "Accepted jets (0 = before cuts, 1 = after eta, 2 = after pT, 3 = after area)", "", 4, 0, 4, "stage","N^{Jets}/cut");
   tmpHisto->GetXaxis()->SetBinLabel(1, "Before cuts");
   tmpHisto->GetXaxis()->SetBinLabel(2, "After eta");
   tmpHisto->GetXaxis()->SetBinLabel(3, "After p_{T}");
   tmpHisto->GetXaxis()->SetBinLabel(4, "After area");
-  TH2* tmpHisto2D = AddHistogram2D<TH2D>("hJetPtCutStages", "Jets p_{T} distribution", "", 500, -50., 200., 4, 0, 4, "p_{T} (GeV/c)","Cut stage","dN^{Jets}/dp_{T}");
+
+  tmpHisto2D = AddHistogram2D<TH2D>("hJetPtCutStages", "Jets p_{T} distribution", "", 500, -50., 200., 4, 0, 4, "p_{T} (GeV/c)","Cut stage","dN^{Jets}/dp_{T}");
   tmpHisto2D->GetYaxis()->SetBinLabel(1, "Before cuts");
   tmpHisto2D->GetYaxis()->SetBinLabel(2, "After eta");
   tmpHisto2D->GetYaxis()->SetBinLabel(3, "After p_{T}");
@@ -90,14 +91,13 @@ void AliAnalysisTaskChargedJetsPA::Init()
   AddHistogram1D<TH1D>("hVertexX", "X distribution of the vertex", "", 2000, -1., 1., "#Delta x(cm)","dN^{Events}/dx");
   AddHistogram1D<TH1D>("hVertexY", "Y distribution of the vertex", "", 2000, -1., 1., "#Delta y(cm)","dN^{Events}/dy");
   AddHistogram2D<TH2D>("hVertexXY", "XY distribution of the vertex", "COLZ", 500, -1., 1., 500, -1., 1.,"#Delta x(cm)", "#Delta y(cm)","dN^{Events}/dxdy");
-  AddHistogram1D<TH1D>("hVertexZBeforeVertexCut", "Z distribution of the vertex (before std. vertex cut)", "", 200, -20., 20., "#Delta z(cm)","dN^{Events}/dz");
-  AddHistogram1D<TH1D>("hVertexZAfterVertexCut", "Z distribution of the vertex (after std. vertex cut)", "", 200, -20., 20., "#Delta z(cm)","dN^{Events}/dz");
+  AddHistogram1D<TH1D>("hVertexZ", "Z distribution of the vertex (after std. vertex cut)", "", 200, -20., 20., "#Delta z(cm)","dN^{Events}/dz");
   AddHistogram1D<TH1D>("hVertexR", "R distribution of the vertex", "", 100, 0., 1., "#Delta r(cm)","dN^{Events}/dr");
   AddHistogram1D<TH1D>("hCentralityV0M", "Centrality distribution V0M", "", fNumberOfCentralityBins, 0., 100., "Centrality","dN^{Events}");
+  AddHistogram1D<TH1D>("hCentralityCL1", "Centrality distribution CL1", "", fNumberOfCentralityBins, 0., 100., "Centrality","dN^{Events}");
   AddHistogram1D<TH1D>("hCentralityV0A", "Centrality distribution V0A", "", fNumberOfCentralityBins, 0., 100., "Centrality","dN^{Events}");
   AddHistogram1D<TH1D>("hCentralityV0C", "Centrality distribution V0C", "", fNumberOfCentralityBins, 0., 100., "Centrality","dN^{Events}");
   AddHistogram1D<TH1D>("hCentralityZNA", "Centrality distribution ZNA", "", fNumberOfCentralityBins, 0., 100., "Centrality","dN^{Events}");
-  AddHistogram1D<TH1D>("hCentrality", Form("Centrality distribution %s", fCentralityType.Data()), "", fNumberOfCentralityBins, 0., 100., "Centrality","dN^{Events}");
 
   if(fDoJetAnalysis)
   {
@@ -160,6 +160,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
     AddHistogram2D<TH2D>("hTRBackgroundExact",  "TR background density (signal jets exactly excluded)", "LEGO2", 400, 0., 40., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
 
     // Delta pt distributions
+    AddHistogram2D<TH2D>("hDeltaPtPP", "Background fluctuations #delta p_{T} (PP approach)", "", 1801, -40.0, 80.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
     AddHistogram2D<TH2D>("hDeltaPtExternalBgrd", "Background fluctuations #delta p_{T} (KT, External)", "", 1801, -40.0, 80.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
     AddHistogram2D<TH2D>("hDeltaPtExternalBgrdVsPt", "Background fluctuations #delta p_{T} (KT, External, in p_{T} bins)", "", 1801, -40.0, 80.0, 200, 0, 200, "#delta p_{T} (GeV/c)","Raw jet p_{T}","dN^{Jets}/d#delta p_{T}");
     AddHistogram2D<TH2D>("hDeltaPtKTImprovedCMS", "Background fluctuations #delta p_{T} (KT, Improved CMS-like)", "", 1801, -40.0, 80.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
@@ -1017,32 +1018,56 @@ inline Bool_t AliAnalysisTaskChargedJetsPA::IsEventInAcceptance(AliVEvent* event
   if (!event)
     return kFALSE;
 
-  FillHistogram("hEventAcceptance", 0.5); // number of events before manual cuts
+  // ### Get centrality values
+
+  AliCentrality* tmpCentrality = event->GetCentrality();
+  Double_t centralityPercentile = -1.0;
+  if (tmpCentrality != NULL)
+    centralityPercentile = tmpCentrality->GetCentralityPercentile(fCentralityType.Data());
+  FillHistogram("hCentrality",centralityPercentile);
+
+  if(fSetCentralityToOne)
+    centralityPercentile = 1.0;
+
+  if((centralityPercentile < 0.0) || (centralityPercentile > 101.0))
+    AliWarning(Form("Centrality value not valid (c=%E)",centralityPercentile)); 
+
+  FillHistogram("hCentrality", centralityPercentile, 0.5); // before any cuts
+
+  // ### CUT STAGE 1: Pile-up events (only holds for pPb)
   if(fUsePileUpCut)
     if(fHelperClass->IsPileUpEvent(event))
       return kFALSE;
 
-  FillHistogram("hEventAcceptance", 1.5); // number of events after pileup cuts
+  FillHistogram("hCentrality", centralityPercentile, 1.5); // after pileup cut
 
+  // ### CUT STAGE 2: Existence of primary vertex
   fPrimaryVertex = event->GetPrimaryVertex();
-
-  FillHistogram("hVertexZBeforeVertexCut",fPrimaryVertex->GetZ());
 
   if(fUseDefaultVertexCut)
   {
+    fHelperClass->SetMaxVtxZ(10000.);
     if(!fHelperClass->IsVertexSelected2013pA(event))
-      return kFALSE;
+    {
+      fHelperClass->SetMaxVtxZ(10.);
+      return kFALSE; 
+    }
+    fHelperClass->SetMaxVtxZ(10.);
   }
-  else // Failsafe vertex cut
+  else // Vertex cut for pp
   {
-    if(!fPrimaryVertex || (TMath::Abs(fPrimaryVertex->GetZ()) > 10.0) || (fPrimaryVertex->GetNContributors()<1)) 
+    if(!fPrimaryVertex || (fPrimaryVertex->GetNContributors()<2) || (TMath::Sqrt(fPrimaryVertex->GetX()*fPrimaryVertex->GetX() + fPrimaryVertex->GetY()*fPrimaryVertex->GetY()) > 1.0)) 
       return kFALSE;
   }
 
+  FillHistogram("hVertexZ",fPrimaryVertex->GetZ());
+  FillHistogram("hCentrality", centralityPercentile, 2.5); // after vertex existance cut
 
-  FillHistogram("hVertexZAfterVertexCut",fPrimaryVertex->GetZ());
+  // ### CUT STAGE 3: Position of primary vertex
+  if((TMath::Abs(fPrimaryVertex->GetZ()) > 10.0))
+    return kFALSE;
 
-  FillHistogram("hEventAcceptance", 2.5); // number of events after vertex cut
+  FillHistogram("hCentrality", centralityPercentile, 3.5); // after vertex position cut
 
   return kTRUE;
 }
@@ -1786,12 +1811,8 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
   if((fEventCounter+fPartialAnalysisIndex) % fPartialAnalysisNParts != 0)
     return;
 
-  FillHistogram("hNumberEvents",0.5);
-
   if(!IsEventInAcceptance(event))
     return;
-
-  FillHistogram("hNumberEvents",1.5);
 
   #ifdef DEBUGMODE
     AliInfo("Calculate()::Init done.");
@@ -1805,24 +1826,22 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
   ////////////////////// NOTE: Get Centrality, (Leading)Signal jets and Background
 
   // Get centrality
-  AliCentrality* tmpCentrality = NULL;
-  tmpCentrality = event->GetCentrality();
+  AliCentrality* tmpCentrality = event->GetCentrality();
   Double_t centralityPercentile = -1.0;
+  Double_t centralityPercentileCL1 = 0.0;
   Double_t centralityPercentileV0A = 0.0;
   Double_t centralityPercentileV0C = 0.0;
   Double_t centralityPercentileV0M = 0.0;
   Double_t centralityPercentileZNA = 0.0;
   if (tmpCentrality != NULL)
   {
-    centralityPercentile = tmpCentrality->GetCentralityPercentile(fCentralityType.Data());
+    centralityPercentile    = tmpCentrality->GetCentralityPercentile(fCentralityType.Data());
+    centralityPercentileCL1 = tmpCentrality->GetCentralityPercentile("CL1");
     centralityPercentileV0A = tmpCentrality->GetCentralityPercentile("V0A");
     centralityPercentileV0C = tmpCentrality->GetCentralityPercentile("V0C");
     centralityPercentileV0M = tmpCentrality->GetCentralityPercentile("V0M");
     centralityPercentileZNA = tmpCentrality->GetCentralityPercentile("ZNA");
   }
-
-  if((centralityPercentile < 0.0) || (centralityPercentile > 100.0))
-    AliWarning(Form("Centrality value not valid (c=%E)",centralityPercentile)); 
 
   if(fSetCentralityToOne)
     centralityPercentile = 1.0;
@@ -1833,11 +1852,11 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
   FillHistogram("hVertexY",fPrimaryVertex->GetY());
   FillHistogram("hVertexXY",fPrimaryVertex->GetX(), fPrimaryVertex->GetY());
   FillHistogram("hVertexR",TMath::Sqrt(fPrimaryVertex->GetX()*fPrimaryVertex->GetX() + fPrimaryVertex->GetY()*fPrimaryVertex->GetY()));
+  FillHistogram("hCentralityCL1",centralityPercentileCL1);
   FillHistogram("hCentralityV0M",centralityPercentileV0M);
   FillHistogram("hCentralityV0A",centralityPercentileV0A);
   FillHistogram("hCentralityV0C",centralityPercentileV0C);
   FillHistogram("hCentralityZNA",centralityPercentileZNA);
-  FillHistogram("hCentrality",centralityPercentile);
 
   if(!fDoJetAnalysis)
     return;
@@ -1993,7 +2012,6 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
     {
       // Background corrected jet spectra
       FillHistogram("hJetPtNoBgrdSubtracted", GetCorrectedJetPt(tmpJet, 0.0), centralityPercentile);
-
       FillHistogram("hJetPtBgrdSubtractedExternal", GetCorrectedJetPt(tmpJet, backgroundExternal), centralityPercentile);
       FillHistogram("hJetPtBgrdSubtractedKTImprovedCMS", GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS), centralityPercentile);
       FillHistogram("hJetPtBgrdSubtractedPP", GetCorrectedJetPt(tmpJet, backgroundPP), centralityPercentile);
@@ -2094,7 +2112,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
         Double_t highestTrackPt = 0.0;
         for(Int_t j=0; j<tmpJet->GetNumberOfTracks(); j++)
         {
-          FillHistogram("hJetConstituentPt", tmpJet->TrackAt(j, fTrackArray)->Pt(), centralityPercentile);
+//          FillHistogram("hJetConstituentPt", tmpJet->TrackAt(j, fTrackArray)->Pt(), centralityPercentile);
           // Find the lowest pT of a track in the jet
           if (tmpJet->TrackAt(j, fTrackArray)->Pt() < lowestTrackPt)
             lowestTrackPt = tmpJet->TrackAt(j, fTrackArray)->Pt();
@@ -2154,6 +2172,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
   // Calculate the delta pt
   Double_t tmpDeltaPtNoBackground = GetDeltaPt(0.0);
   Double_t tmpDeltaPtExternalBgrd = GetDeltaPt(backgroundExternal);
+  Double_t tmpDeltaPtPP = GetDeltaPt(backgroundPP);
   Double_t tmpDeltaPtKTImprovedCMS = GetDeltaPt(backgroundKTImprovedCMS);
   Double_t tmpDeltaPtKTImprovedCMSFullExclusion = GetDeltaPt(backgroundKTImprovedCMS, 1.0);
 
@@ -2180,6 +2199,8 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
     FillHistogram("hDeltaPtKTImprovedCMS", tmpDeltaPtKTImprovedCMS, centralityPercentile);
   if(tmpDeltaPtKTImprovedCMSFullExclusion > -10000.0)
     FillHistogram("hDeltaPtKTImprovedCMSFullExclusion", tmpDeltaPtKTImprovedCMSFullExclusion, centralityPercentile);
+  if(tmpDeltaPtPP > -10000.0)
+    FillHistogram("hDeltaPtPP", tmpDeltaPtPP, centralityPercentile);
 
   if(tmpDeltaPtNoBackground > -10000.0)
     FillHistogram("hDeltaPtNoBackground", tmpDeltaPtNoBackground, centralityPercentile);

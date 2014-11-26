@@ -39,6 +39,9 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker() :
   fQAHistos(NULL)
 {
   // Constructor.
+  fRunTriggerType[kTMEMCalJet] = kTRUE;
+  fRunTriggerType[kTMEMCalGamma] = kTRUE;
+  fRunTriggerType[kTMEMCalLevel0] = kTRUE;
   memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
   memset(fPatchADCSimple, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
   memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
@@ -59,6 +62,9 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name, Bool_t doQA) :
   fQAHistos(NULL)
 {
   // Constructor.
+  fRunTriggerType[kTMEMCalJet] = kTRUE;
+  fRunTriggerType[kTMEMCalGamma] = kTRUE;
+  fRunTriggerType[kTMEMCalLevel0] = kTRUE;
   memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
   memset(fPatchADCSimple, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
   memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
@@ -123,7 +129,7 @@ void AliEmcalTriggerMaker::UserCreateOutputObjects()
   // Do basic QA monitoring (if requested)
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
-  if(fDoQA){
+  if(fDoQA && fOutput){
     fQAHistos = new THistManager("TriggerQA");
 
     TString trtypenames[3] = {"EJE", "EGA", "EL0"};
@@ -268,39 +274,45 @@ Bool_t AliEmcalTriggerMaker::Run()
     Bool_t isOfflineSimple=0;
     while (NextTrigger(isOfflineSimple)) {
       // process jet
-      trigger = ProcessPatch(kTMEMCalJet, isOfflineSimple);
-      // save main jet triggers in event
-      if (trigger != 0) {
-        // check if more energetic than others for main patch marking
-        if (!isOfflineSimple) {
-          if (triggerMainJet == 0 || (triggerMainJet->GetPatchE() < trigger->GetPatchE()))
-            triggerMainJet = trigger;
-        } else {
-          if (triggerMainJetSimple == 0 || (triggerMainJetSimple->GetPatchE() < trigger->GetPatchE()))
-            triggerMainJetSimple = trigger;
+      if(fRunTriggerType[kTMEMCalJet]){
+        trigger = ProcessPatch(kTMEMCalJet, isOfflineSimple);
+        // save main jet triggers in event
+        if (trigger != 0) {
+          // check if more energetic than others for main patch marking
+          if (!isOfflineSimple) {
+            if (triggerMainJet == 0 || (triggerMainJet->GetPatchE() < trigger->GetPatchE()))
+              triggerMainJet = trigger;
+          } else {
+            if (triggerMainJetSimple == 0 || (triggerMainJetSimple->GetPatchE() < trigger->GetPatchE()))
+              triggerMainJetSimple = trigger;
+          }
         }
       }
       
       // process gamma
-      trigger = ProcessPatch(kTMEMCalGamma, isOfflineSimple);
-      // save main gamma triggers in event
-      if (trigger != 0) {
-        // check if more energetic than others for main patch marking
-        if (!isOfflineSimple) {
-          if (triggerMainGamma == 0 || (triggerMainGamma->GetPatchE() < trigger->GetPatchE()))
-            triggerMainGamma = trigger;
-        } else {
-          if (triggerMainGammaSimple == 0 || (triggerMainGammaSimple->GetPatchE() < trigger->GetPatchE()))
-            triggerMainGammaSimple = trigger;
+      if(fRunTriggerType[kTMEMCalGamma]){
+        trigger = ProcessPatch(kTMEMCalGamma, isOfflineSimple);
+        // save main gamma triggers in event
+        if (trigger != 0) {
+          // check if more energetic than others for main patch marking
+          if (!isOfflineSimple) {
+            if (triggerMainGamma == 0 || (triggerMainGamma->GetPatchE() < trigger->GetPatchE()))
+              triggerMainGamma = trigger;
+          } else {
+            if (triggerMainGammaSimple == 0 || (triggerMainGammaSimple->GetPatchE() < trigger->GetPatchE()))
+              triggerMainGammaSimple = trigger;
+          }
         }
       }
 
       // level 0 triggers
-      trigger = ProcessPatch(kTMEMCalLevel0, isOfflineSimple);
-      // save main level0 trigger in the event
-      if (trigger) {
-        if (!triggerMainLevel0 || (triggerMainLevel0->GetPatchE() < trigger->GetPatchE()))
-          triggerMainLevel0 = trigger;
+      if(fRunTriggerType[kTMEMCalLevel0]){
+        trigger = ProcessPatch(kTMEMCalLevel0, isOfflineSimple);
+        // save main level0 trigger in the event
+        if (trigger) {
+          if (!triggerMainLevel0 || (triggerMainLevel0->GetPatchE() < trigger->GetPatchE()))
+            triggerMainLevel0 = trigger;
+        }
       }
     } // triggers
     

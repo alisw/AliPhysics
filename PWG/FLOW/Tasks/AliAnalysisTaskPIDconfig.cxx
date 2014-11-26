@@ -26,8 +26,8 @@
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TH3F.h" 
-#include "TH2D.h"                  
+#include "TH3F.h"
+#include "TH2D.h"
 #include "TH3D.h"
 #include "TArrayF.h"
 #include "TF1.h"
@@ -47,7 +47,7 @@
 #include "AliCollisionGeometry.h"
 #include "AliGenEventHeader.h"
 #include "AliAnalysisUtils.h"
-#include "AliPIDCombined.h"        
+#include "AliPIDCombined.h"
 #include "AliAnalysisTask.h"
 #include "AliAODHandler.h"
 #include <AliInputEventHandler.h>
@@ -74,6 +74,7 @@
 using std::cout;
 using std::endl;
 
+
 ClassImp(AliAnalysisTaskPIDconfig)
 //ClassImp()
 //___________________________________________________________________
@@ -96,7 +97,8 @@ fUseCentrality(kTRUE),
 fCutTPCmultiplicityOutliersAOD(kFALSE),
 fPIDcuts(kFALSE),
 fCentralityEstimator("V0M"),
-fContourCutList(0),
+fContoursFile(0),
+fCutContourList(0),
 fListQA(0x0),
 fListQAtpctof(0x0),
 fListQAInfo(0x0),
@@ -113,15 +115,18 @@ fTPCvsGlobalMultBeforeOutliers(0),
 fTPCvsGlobalMultAfterOutliers(0),
 fTPCvsGlobalMultAfter(0),
 fHistBetavsPTOFbeforePID(0),
-fHistdEdxVsPTPCbeforePID(0),
-fHistBetavsPTOFafterPID(0),
-fHistdEdxVsPTPCafterPID(0),
+fHistdEdxvsPTPCbeforePID(0),
 fhistNsigmaP(0),
-fhistNsigmaPt(0)
+fhistNsigmaPt(0),
+fHistBetavsPTOFafterPID(0),
+fHistdEdxvsPTPCafterPID(0)
 //fSparseSpecies(0),
 //fvalueSpecies(0)
 {
-    for(int i=0;i<3;i++){for(int j=0;j<10;j++){fContourCut[i][j]= NULL;}}
+    for(int i=0;i<150;i++){
+        fCutContour[i]= NULL;
+        fCutGraph[i]=NULL;
+    }
 }
 
 
@@ -146,7 +151,8 @@ fUseCentrality(kTRUE),
 fCutTPCmultiplicityOutliersAOD(kFALSE),
 fPIDcuts(kFALSE),
 fCentralityEstimator("V0M"),
-fContourCutList(0),
+fContoursFile(0),
+fCutContourList(0),
 fListQA(0x0),
 fListQAtpctof(0x0),
 fListQAInfo(0x0),
@@ -163,17 +169,17 @@ fTPCvsGlobalMultBeforeOutliers(0),
 fTPCvsGlobalMultAfterOutliers(0),
 fTPCvsGlobalMultAfter(0),
 fHistBetavsPTOFbeforePID(0),
-fHistdEdxVsPTPCbeforePID(0),
-fHistBetavsPTOFafterPID(0),
-fHistdEdxVsPTPCafterPID(0),
+fHistdEdxvsPTPCbeforePID(0),
 fhistNsigmaP(0),
-fhistNsigmaPt(0)
+fhistNsigmaPt(0),
+fHistBetavsPTOFafterPID(0),
+fHistdEdxvsPTPCafterPID(0)
 //fSparseSpecies(0),
 //fvalueSpecies(0)
 {
-    //fvalueSpecies = new Double_t[9];
     //Default Constructor
-    //fContourCut[3][10]=NULL;
+    //fCutContour[150]=NULL;
+    //fCutGraph[150]=NULL;
     DefineInput(0,TChain::Class());
     DefineOutput(1,TList::Class());
 }
@@ -183,13 +189,20 @@ AliAnalysisTaskPIDconfig::~AliAnalysisTaskPIDconfig()
 {
     //Destructor
     
- //   delete fPID;
-  //  delete fPIDqa;
- //   delete fTrackCuts;
-   // delete fSparseSpecies;
+    fContoursFile->Close();
+    for(int i=0;i<150;i++){
+        delete fCutContour[i];
+        delete fCutGraph[i];
+    }
+    
+    
+    //   delete fPID;
+    //  delete fPIDqa;
+    //   delete fTrackCuts;
+    // delete fSparseSpecies;
     //delete []fvalueSpecies;
-
-
+    
+    
 }
 //______________________________________________________________________
 void AliAnalysisTaskPIDconfig::UserCreateOutputObjects()
@@ -209,7 +222,7 @@ void AliAnalysisTaskPIDconfig::UserCreateOutputObjects()
     fPIDResponse=inputHandler->GetPIDResponse();
     if (!fPIDResponse) AliError("PIDResponse object was not created");
     
-    if(fPIDcuts){ GetPIDContours();}
+    if(fPIDcuts){ GetPIDContours(); cout<<"********** PID cut contours retrieved **********"<<endl;}
     //
     fListQA=new TList;
     fListQA->SetOwner();
@@ -240,8 +253,8 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
     fESD = dynamic_cast<AliESDEvent*>(InputEvent());
     
     Int_t ntracks=fAOD->GetNumberOfTracks();
-
-
+    
+    
     if(!(fESD || fAOD)){
         printf("ERROR: fESD & fAOD not available\n");
         return;
@@ -263,28 +276,27 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
     pVtxZ = pVtx->GetZ();
     
     if(TMath::Abs(pVtxZ)>10) return;
-
+    
     TH1F *hNoEvents = (TH1F*)fListQAInfo->At(1);
     TH1F *histpVtxZ = (TH1F*)fListQAInfo->At(2);
-
+    
     if(hNoEvents) hNoEvents->Fill(0);
     if(histpVtxZ) histpVtxZ->Fill(pVtxZ);
-
+    
     if(ntracks<2) return;
     
-   // if(!pass) return;
+    // if(!pass) return;
     
     TH2F *HistTPCvsGlobalMultBeforeOutliers = (TH2F*)fListQAInfo->At(3);
-
+    
     TH2F *HistTPCvsGlobalMultAfterOutliers = (TH2F*)fListQAInfo->At(4);
-
     
     Float_t multTPC(0.); // tpc mult estimate
     Float_t multGlobal(0.); // global multiplicity
     
     const Int_t nGoodTracks = fVevent->GetNumberOfTracks();
     if(!fData2011) { // cut on outliers
-      
+        
         for(Int_t iTrack = 0; iTrack < nGoodTracks; iTrack++) { // fill tpc mult
             AliAODTrack* AODtrack =dynamic_cast<AliAODTrack*>(fVevent->GetTrack(iTrack));
             if (!AODtrack) continue;
@@ -292,7 +304,7 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
             if ((AODtrack->Pt() < .2) || (AODtrack->Pt() > 5.0) || (TMath::Abs(AODtrack->Eta()) > .8) || (AODtrack->GetTPCNcls() < 70)  || (AODtrack->GetDetPid()->GetTPCsignal() < 10.0) || (AODtrack->Chi2perNDF() < 0.2)) continue;
             multTPC++;
         }//track loop
-
+        
         for(Int_t iTrack = 0; iTrack < nGoodTracks; iTrack++) { // fill global mult
             AliAODTrack *AODtrack=dynamic_cast<AliAODTrack*>(fVevent->GetTrack(iTrack));
             if (!AODtrack) continue;
@@ -307,12 +319,12 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
         } //track loop
         
         HistTPCvsGlobalMultBeforeOutliers->Fill(multGlobal,multTPC);
-
+        
         if(multTPC < (-40.3+1.22*multGlobal) || multTPC > (32.1+1.59*multGlobal)){ pass = kFALSE;}
         
         if(!pass) return;
         HistTPCvsGlobalMultAfterOutliers->Fill(multGlobal,multTPC);
-
+        
     }
     
     
@@ -341,52 +353,50 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
         } //track loop
         
         HistTPCvsGlobalMultBeforeOutliers->Fill(multGlobal,multTPC);
-
+        
         if(multTPC < (-36.73 + 1.48*multGlobal) || multTPC > (62.87 + 1.78*multGlobal)){pass = kFALSE;}
         
         if(!pass) return;
         HistTPCvsGlobalMultAfterOutliers->Fill(multGlobal,multTPC);
-
+        
     }
     
-     for(Int_t itrack = 0; itrack < ntracks; itrack++){
-
+    for(Int_t itrack = 0; itrack < ntracks; itrack++){
+        
         AliAODTrack *track=dynamic_cast<AliAODTrack*>(fVevent->GetTrack(itrack));
         if(!track) continue;
         
         Float_t dcaXY = track->DCA();
         Float_t dcaZ  = track->ZAtDCA();
-         
+        
         TH2F* HistDCAbefore =(TH2F*)fListQAInfo->At(5);
         HistDCAbefore->Fill(dcaZ,dcaXY);
         
-        Double_t p = -999, /*pTPC = -999,*/ pT = -999, phi = -999, eta = -999, dEdx =-999;
+        Double_t p = -999, pT = -999, phi = -999, eta = -999, dEdx =-999;
         Double_t length = -999., beta =-999, tofTime = -999., tof = -999.;
         Double_t c = TMath::C()*1.E-9;// m/ns
-
+        
         //cout<<"track->GetFilterMap()= "<<track->GetFilterMap()<<endl;
         if(!track->TestFilterBit(fFilterBit)) continue;
-
-        //Float_t dcaXY = -999, dcaZ = -999;
+        
         p=track->P();
-        //pTPC=track->GetTPCmomentum();
         pT=track->Pt();
         phi=track->Phi();
         eta=track->Eta();
         dEdx=track->GetDetPid()->GetTPCsignal();
-         
+        
         Float_t probMis = fPIDResponse->GetTOFMismatchProbability(track);
         if (probMis < 0.01) { //if u want to reduce mismatch using also TPC
-
+            
             //if ( (track->IsOn(AliAODTrack::kTOFin)) && (track->IsOn(AliAODTrack::kTIME)) &&  (track->IsOn(AliAODTrack::kTOFout))) {
             if ( (track->IsOn(AliAODTrack::kITSin)) && (track->IsOn(AliAODTrack::kTOFpid)) ) {
-
+                
                 tofTime = track->GetTOFsignal();//in ps
                 length = track->GetIntegratedLength();
                 
                 tof = tofTime*1E-3; // ns
                 //cout<<"tof = "<<tof<<endl;
-                if (tof <= 0)continue;
+                if (tof <= 0) continue;
                 //cout<<"length = "<<length<<endl;
                 if (length <= 0) continue;
                 
@@ -397,84 +407,93 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
                 TH2F *HistBetavsPTOFbeforePID = (TH2F*)fListQAInfo->At(6);
                 HistBetavsPTOFbeforePID ->Fill(track->P()*track->Charge(),beta);
             }//TOF signal
-
-            TH2F *HistdEdxVsPTPCbeforePID = (TH2F*)fListQAInfo->At(7);
-            HistdEdxVsPTPCbeforePID -> Fill(p*track->Charge(),dEdx); //TPC signal
-        }//probMis
-         
-        //QA plot
-        TH1F *HistPhiDistBefore = (TH1F*)fListQAInfo->At(8);
-        HistPhiDistBefore->Fill(phi);
-        //
-        TH1F *HistEtaDistBefore = (TH1F*)fListQAInfo->At(9);
-        HistEtaDistBefore->Fill(eta);
-         
-
-        if(pT<0.1) continue;
-        if(TMath::Abs(eta)>0.8) continue;
-        
-        Int_t TPCNcls = track->GetTPCNcls();
             
-        if(TPCNcls<70 || dEdx<10) continue;
+            TH2F *HistdEdxvsPTPCbeforePID = (TH2F*)fListQAInfo->At(7);
+            HistdEdxvsPTPCbeforePID -> Fill(track->P()*track->Charge(),dEdx); //TPC signal
         
-        // fill QA histograms
-
-        TH2F* HistDCAAfter =(TH2F*)fListQAInfo->At(10);
-        HistDCAAfter->Fill(dcaZ,dcaXY);
+            //QA plot
+            TH1F *HistPhiDistBefore = (TH1F*)fListQAInfo->At(8);
+            HistPhiDistBefore->Fill(phi);
+            //
+            TH1F *HistEtaDistBefore = (TH1F*)fListQAInfo->At(9);
+            HistEtaDistBefore->Fill(eta);
         
-        TH1F *HistPhiDistAfter = (TH1F*)fListQAInfo->At(11);
-        HistPhiDistAfter->Fill(phi);
-                
-        TH1F *HistEtaDistAfter = (TH1F*)fListQAInfo->At(12);
-        HistEtaDistAfter->Fill(eta);
-         
-         
-        Bool_t pWithinRange = kFALSE;
-        Int_t pRange = -999;
-        Double_t pBins[11] = {0.2,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5};
-        for(int i=0;i<10;i++){
-            if(p>pBins[i] && p<pBins[i+1]){
-                //cout<<"Inside if(p>pBins[i] && p<pBins[i+1])"<<endl;
-                pWithinRange = kTRUE;
-                pRange = i;
+        
+            if(pT<0.1) continue;
+            if(TMath::Abs(eta)>0.8) continue;
+        
+            Int_t TPCNcls = track->GetTPCNcls();
+        
+            if(TPCNcls<70 || dEdx<10) continue;
+        
+            // fill QA histograms
+        
+            TH2F* HistDCAAfter =(TH2F*)fListQAInfo->At(10);
+            HistDCAAfter->Fill(dcaZ,dcaXY);
+        
+            TH1F *HistPhiDistAfter = (TH1F*)fListQAInfo->At(11);
+            HistPhiDistAfter->Fill(phi);
+        
+            TH1F *HistEtaDistAfter = (TH1F*)fListQAInfo->At(12);
+            HistEtaDistAfter->Fill(eta);
+        
+        
+            Bool_t pWithinRange = kFALSE;
+            Int_t p_bin = -999;
+            Double_t pBins[50];
+            for(int b=0;b<50;b++){pBins[b] = 0.1*b;}
+            for(int i=0;i<50;i++){
+                if(p>pBins[i] && p<(pBins[i]+0.1)){
+                    pWithinRange = kTRUE;
+                    p_bin = i;
+                }
             }
-        }
-        for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
-            //TOF nSigma
-            Double_t nSigmaTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)ispecie);
-            Double_t nSigmaTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)ispecie);
-                
-            if(fPIDcuts && ispecie>1 && ispecie<5 && pWithinRange){// for pions, kaons and protons only
+        
+            for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
 
+                Double_t nSigmaTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)ispecie);
+                Double_t nSigmaTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)ispecie);
+            
+                int i = ispecie - AliPID::kPion;
+            
+                if(fPIDcuts && pWithinRange){// for pions, kaons and protons only
+                    if(ispecie==AliPID::kPion || ispecie==AliPID::kKaon || ispecie==AliPID::kProton){
+                        int index = 50*i+p_bin;
+                        if(fCutContour[index]->IsInside(nSigmaTOF,nSigmaTPC)){
+                            TH3 *hist1 = (TH3*)fListQAtpctof->At(ispecie);
+                            if (hist1){
+                                hist1->Fill(nSigmaTPC,nSigmaTOF,p);}
+                        
+                            TH3 *hist2 = (TH3*)fListQAtpctof->At(ispecie+AliPID::kSPECIESC);
+                            if (hist2){
+                                hist2->Fill(nSigmaTPC,nSigmaTOF,pT);}
+                            
+                            if ( (track->IsOn(AliAODTrack::kITSin)) && (track->IsOn(AliAODTrack::kTOFpid)) ) {
+                                TH2F *HistBetavsPTOFafterPID = (TH2F*)fListQAInfo->At(13);
+                                HistBetavsPTOFafterPID ->Fill(track->P()*track->Charge(),beta);
+                            }
+                            TH2F *HistdEdxvsPTPCafterPID = (TH2F*)fListQAInfo->At(14);
+                            HistdEdxvsPTPCafterPID -> Fill(track->P()*track->Charge(),dEdx); //TPC signal
 
-                if(fContourCut[ispecie-2][pRange]){cout<<"4) fContourCut exists"<<endl;}
+                        }
+                    }
+                }
+                if(!fPIDcuts){
+                    TH3 *hist1 = (TH3*)fListQAtpctof->At(ispecie);
+                    if (hist1){
+                        hist1->Fill(nSigmaTPC,nSigmaTOF,p);}
                     
-                if(fContourCut[ispecie-2][pRange]->IsInside(nSigmaTOF,nSigmaTPC)){
-                    pass = kTRUE;
-                }
-                else{
-                    pass = kFALSE;
-                    continue;
+                    TH3 *hist2 = (TH3*)fListQAtpctof->At(ispecie+AliPID::kSPECIESC);
+                    if (hist2){
+                        hist2->Fill(nSigmaTPC,nSigmaTOF,pT);}
+                    
                 }
             }
-                
-            //TPC and TOF cuts, TPC TOF nsigma vs. momentum
-            if(pass){
-                TH3 *hist1 = (TH3*)fListQAtpctof->At(ispecie);
-                if (hist1){
-                    hist1->Fill(nSigmaTPC,nSigmaTOF,p);}
-                
-                TH3 *hist2 = (TH3*)fListQAtpctof->At(ispecie+AliPID::kSPECIESC);
-                if (hist2){
-                    hist2->Fill(nSigmaTPC,nSigmaTOF,pT);}
-            }
-                
-        }
-         
-
+        }//probMis
+        
     }//track loop
     
-    TH2F *HistTPCvsGlobalMultAfter = (TH2F*) fListQAInfo->At(13);
+    TH2F *HistTPCvsGlobalMultAfter = (TH2F*) fListQAInfo->At(15);
     HistTPCvsGlobalMultAfter->Fill(multGlobal,multTPC);
     
 }
@@ -484,7 +503,7 @@ void AliAnalysisTaskPIDconfig::CheckCentrality(AliVEvent* event, Bool_t &central
     // Check if event is within the set centrality range. Falls back to V0 centrality determination if no method is set
     if (!fUseCentrality) AliFatal("No centrality method set! FATAL ERROR!");
     Double_t centvalue = event->GetCentrality()->GetCentralityPercentile(fCentralityEstimator);
-     //cout << "Centrality evaluated-------------------------: " << centvalue <<endl;
+    //cout << "Centrality evaluated-------------------------: " << centvalue <<endl;
     if ((centvalue >= fCentralityPercentileMin) && (centvalue < fCentralityPercentileMax))
     {
         TH1F *hCentralityPass = (TH1F*)fListQAInfo->At(0);
@@ -497,31 +516,33 @@ void AliAnalysisTaskPIDconfig::CheckCentrality(AliVEvent* event, Bool_t &central
 //______________________________________________________________________________
 void AliAnalysisTaskPIDconfig::GetPIDContours()
 {
-    if(fContourCutList){cout<<"+++++++++++++++++The contour file has been retrieved+++++++++++++++++++"<<endl;}
+    fContoursFile = new TFile(Form("$ALICE_ROOT/PWGCF/FLOW/database/PIDCutContours_%i-%i.root",fCentralityPercentileMin,fCentralityPercentileMax));
     
-    TGraph *CutGraph[3][10];
-    //TCutG *cut[3][10];
-    Double_t phigh=0 ,plow=0;
-    Double_t pBinning[11] = {0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5};
-    TString species[3] = {"pion","kaon","proton"};
-    for(int i=0;i<3;i++){
-        TList *Species_contours = (TList*)fContourCutList->Get(species[i]);
-        if(Species_contours){cout<<"Species_contours exists"<<endl;}
-        for(int j=0;j<10;j++){
-            phigh = pBinning[j+1]*10;
-            plow = pBinning[j]*10;
-            TString Graph_Name = "contourlines_";
-            Graph_Name += species[i];
-            Graph_Name += Form("%.f%.f-%i%icent",plow,phigh,fCentralityPercentileMin,fCentralityPercentileMax);
-            cout<<Graph_Name<<endl;
-            CutGraph[i][j] = (TGraph*)Species_contours->FindObject(Graph_Name);
-            if(!CutGraph[i][j]){cout<<"Contour Graph does not exist"<<endl; continue;}
-            
-            fContourCut[i][j] = new TCutG(Graph_Name.Data(),CutGraph[i][j]->GetN(),CutGraph[i][j]->GetX(),CutGraph[i][j]->GetY());
-            if(!fContourCut[i][j]){cout<<"i,j "<<i<<" "<<j<<endl;}
+    fCutContourList=(TDirectory*)fContoursFile->Get("Filterbit1");
+    if(!fCutContourList){printf("The contour file is empty"); return;}
 
-        }
+    Double_t pBinning[50];
+    for(int b=0;b<50;b++){pBinning[b]=b;}
+    TString species[3] = {"pion","kaon","proton"};
+    
+    for(int i=0;i<150;i++){
+        int ispecie = i/50;
+        int iPbin = i%50;
+        TList *Species_contours = (TList*)fCutContourList->Get(species[ispecie]);
+        //if(Species_contours){cout<<"Species_contours exists"<<endl;}
+        
+        TString Graph_Name = "contourlines_";
+        Graph_Name += species[ispecie];
+        Graph_Name += Form("%.f%.f-%i%icent",pBinning[iPbin],pBinning[iPbin]+1,fCentralityPercentileMin,fCentralityPercentileMax);
+        //cout<<Graph_Name<<endl;
+        fCutGraph[i] = (TGraph*)Species_contours->FindObject(Graph_Name);
+        
+        if(!fCutGraph[i]){cout<<"Contour Graph does not exist"<<endl; continue;}
+        
+        fCutContour[i] = new TCutG(Graph_Name.Data(),fCutGraph[i]->GetN(),fCutGraph[i]->GetX(),fCutGraph[i]->GetY());
+        
     }
+    
 }
 //______________________________________________________________________________
 void AliAnalysisTaskPIDconfig::SetupTPCTOFqa()
@@ -529,7 +550,7 @@ void AliAnalysisTaskPIDconfig::SetupTPCTOFqa()
     //
     // Create the qa objects for TPC + TOF combination
     
-
+    
     //TPC and TOF signal vs. momentum
     for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
         fhistNsigmaP = new TH3F(Form("NsigmaP_TPC_TOF_%s",AliPID::ParticleName(ispecie)),Form("TPC n#sigma vs. TOF n#sigma %s vs. p ;TPC n#sigma;TOF n#sigma;p [GeV]",AliPID::ParticleName(ispecie)),200,-20,20,200,-20,20,60,0.1,6);
@@ -540,7 +561,7 @@ void AliAnalysisTaskPIDconfig::SetupTPCTOFqa()
         fhistNsigmaPt = new TH3F(Form("NsigmaPt_TPC_TOF_%s",AliPID::ParticleName(ispecie)),Form("TPC n#sigma vs. TOF n#sigma %s vs. Pt ;TPC n#sigma;TOF n#sigma;pT [GeV]",AliPID::ParticleName(ispecie)),200,-20,20,200,-20,20,60,0.1,6);
         fListQAtpctof->Add(fhistNsigmaPt);
     }
-
+    
 }
 //______________________________________________________________________________
 void AliAnalysisTaskPIDconfig::SetupEventInfo()
@@ -549,10 +570,10 @@ void AliAnalysisTaskPIDconfig::SetupEventInfo()
     
     fhistCentralityPass = new TH1F("fcentralityPass","centralityPass", 100,0,100);
     fListQAInfo->Add(fhistCentralityPass);
-
+    
     fNoEvents = new TH1F("number of events","no. of events",1,0,1);
     fListQAInfo->Add(fNoEvents);
-
+    
     fpVtxZ = new TH1F("pVtxZ","pVtxZ",100,-20,20);
     fListQAInfo->Add(fpVtxZ);
     
@@ -568,12 +589,12 @@ void AliAnalysisTaskPIDconfig::SetupEventInfo()
     fHistBetavsPTOFbeforePID = new TH2F("momentum vs beta before PID","momentum vs beta before PID",1000,-10.,10.,1000,0,1.2);
     fListQAInfo->Add(fHistBetavsPTOFbeforePID);
     
-    fHistdEdxVsPTPCbeforePID = new TH2F("momentum vs dEdx before PID","momentum vs dEdx before PID",1000,-10.,10.,1000,0,1000);
-    fListQAInfo->Add(fHistdEdxVsPTPCbeforePID);
+    fHistdEdxvsPTPCbeforePID = new TH2F("momentum vs dEdx before PID","momentum vs dEdx before PID",1000,-10.,10.,1000,0,1000);
+    fListQAInfo->Add(fHistdEdxvsPTPCbeforePID);
     
     fhistPhiDistBefore = new TH1F("Phi Distribution Before Cuts","Phi Distribution Before Cuts",200,0,6.4);
     fListQAInfo->Add(fhistPhiDistBefore);
-
+    
     fhistEtaDistBefore = new TH1F("Eta Distribution Before Cuts","Eta Distribution Before Cuts",200,-10,10);
     fListQAInfo->Add(fhistEtaDistBefore);
     
@@ -586,15 +607,15 @@ void AliAnalysisTaskPIDconfig::SetupEventInfo()
     fhistEtaDistAfter = new TH1F("Eta Distribution After Cuts","Eta Distribution After Cuts",200,-10,10);
     fListQAInfo->Add(fhistEtaDistAfter);
     
+    fHistBetavsPTOFafterPID = new TH2F("momentum vs beta after PID","momentum vs beta after PID",1000,-10.,10.,1000,0,1.2);
+    fListQAInfo->Add(fHistBetavsPTOFafterPID);
+    
+    fHistdEdxvsPTPCafterPID = new TH2F("momentum vs dEdx after PID","momentum vs dEdx after PID",1000,-10.,10.,1000,0,1000);
+    fListQAInfo->Add(fHistdEdxvsPTPCafterPID);
+    
     fTPCvsGlobalMultAfter = new TH2F("TPC vs. Global Multiplicity After","TPC vs. Global Multiplicity After",500,0,6000,500,0,6000);
     fListQAInfo->Add(fTPCvsGlobalMultAfter);
     
-//    fHistBetavsPTOFafterPID = new TH2F("momentum vs beta after PID","momentum vs beta after PID",1000,-10.,10.,1000,0,1.2);
-//    fListQAInfo->Add(fHistBetavsPTOFafterPID);
-    
-//    fHistdEdxVsPTPCafterPID = new TH2F("momentum vs dEdx after PID","momentum vs dEdx after PID",1000,-10.,10.,1000,0,1000);
-//    fListQAInfo->Add(fHistdEdxVsPTPCafterPID);
-
 }
 
 

@@ -1861,7 +1861,7 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
 
     }
 
-    Int_t nMassBins=fMaxMass*1000.-fMinMass*1000.;
+    Int_t nMassBins=(Int_t)(fMaxMass*1000.-fMinMass*1000.);
     Double_t maxm=fMinMass+nMassBins*0.001;
     TH3F *hMassVsPtVsY=new TH3F("hMassVsPtVsY","",nMassBins,fMinMass,maxm,15,0.,15.,20,-1.,1.);
     TH3F *hMassVsPtVsYOffline=new TH3F("hMassVsPtVsYOffline","",nMassBins,fMinMass,maxm,15,0.,15.,20,-1.,1.);

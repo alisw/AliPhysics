@@ -141,10 +141,12 @@ private:
   TH2F      * fhXEPhotonIsolated[2][4];      //! Leading photon, xE away side
   TH2F      * fhXEPi0Isolated[2][4];         //! Leading pi0, isolated, xE away side
   
-  TH2F      * fhXEUEPhoton[2][4];              //! Leading photon, xE away side
-  TH2F      * fhXEUEPi0[2][4];                 //! Leading pi0, xE away side
-  TH2F      * fhXEUEPhotonIsolated[2][4];      //! Leading photon, xE away side
-  TH2F      * fhXEUEPi0Isolated[2][4];         //! Leading pi0, isolated, xE away side
+  TH2F      * fhXEUEPhoton[2][4];            //! Leading photon, xE away side
+  TH2F      * fhXEUEPi0[2][4];               //! Leading pi0, xE away side
+  TH2F      * fhXEUEPhotonIsolated[2][4];    //! Leading photon, xE away side
+  TH2F      * fhXEUEPi0Isolated[2][4];       //! Leading pi0, isolated, xE away side
+  
+  TH2F      * fhPtAcceptedGammaJet[2][4];    //! gamma-jet pair in acceptance (jet in good eta window)
   
   AliAnaGeneratorKine              (const AliAnaGeneratorKine & gk) ; // cpy ctor
   AliAnaGeneratorKine & operator = (const AliAnaGeneratorKine & gk) ; // cpy assignment

@@ -120,6 +120,14 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   task->SetCentralityType(centralityType);
   task->SetNumberOfCentralityBins(numberOfCentralityBins);
   task->SetDoJetAnalysis(doJetAnalysis);
+  // for the case of pp analysis, set special settings
+  if(!isPA)
+  {
+    task->SetCentralityToOne(1);
+    task->SetUsePileUpCut(0);
+    task->SetUseDefaultVertexCut(kFALSE);
+    cout << " Using pp settings: No pileup correction, simple vertex correction, centrality=1" << endl;
+  }
   cout << " Settings set." << endl;
 
   // #### Add analysis task
@@ -144,7 +152,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   }
 
   if(isEMCalTrain)
-    RequestMemory(task,200*1024);
+    RequestMemory(task,600*1024);
 
   cout << " ############ MACRO EXECUTION SUCCESSFUL, will return " << task << " ############\n";
   return task;

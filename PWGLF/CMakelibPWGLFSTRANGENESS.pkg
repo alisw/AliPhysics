@@ -67,6 +67,8 @@ set ( SRCS
   STRANGENESS/Hypernuclei/AliAnalysisTaskAntiHe4.cxx
   STRANGENESS/Hypernuclei/AliAnalysisTaskNucleiv2.cxx
   STRANGENESS/Hypernuclei/AliAnalysisTaskNucleiv2SP.cxx
+  STRANGENESS/Cascades/lightvertexers/AliLightV0vertexer.cxx
+  STRANGENESS/Cascades/lightvertexers/AliLightCascadeVertexer.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -75,7 +77,7 @@ set ( DHDR PWGLFSTRANGENESSLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PWGLF/STRANGENESS/Cascades PWGLF/STRANGENESS/LambdaK0 PWGLF/STRANGENESS/LambdaK0PbPb PWGLF/STRANGENESS/Correlations PWGLF/STRANGENESS/Hypernuclei PWGCF/Correlations/Base STEER/ESD STEER/AOD STEER/STEERBase ANALYSIS PWG/FLOW/Base PWG/FLOW/Tasks)
+set ( EINCLUDE  PWGLF/STRANGENESS/Cascades PWGLF/STRANGENESS/LambdaK0 PWGLF/STRANGENESS/LambdaK0PbPb PWGLF/STRANGENESS/Correlations PWGLF/STRANGENESS/Hypernuclei PWGCF/Correlations/Base STEER/ESD STEER/AOD STEER/STEERBase ANALYSIS PWG/FLOW/Base PWG/FLOW/Tasks PWGLF/STRANGENESS/Cascades/lightvertexers)
 
 #install (DIRECTORY PWGLF/STRANGENESS/Cascades/macros
 #         DESTINATION PWGLF/STRANGENESS 

@@ -2,7 +2,7 @@
 // 05.2013 new functionality: Status Bar
 // 07.2014 updated to steer most of this from the qaConfig.C
 // 09.2014 new functions to produce status lines from aliases and to write status infos to a tree for later use (see TStatToolkit).
-// to set the status variables, the following is done in principle. more info & examples in the TStatToolkit and qaConfig.C.
+// To create the Status Bar, the following is done in principle. more info & examples in the TStatToolkit and qaConfig.C.
 /*{
  TStatToolkit::SetStatusAlias(tree, "meanTPCncl",    "", "varname_Out:(abs(varname-MeanEF)>6.*RMSEF):0.8");
  TStatToolkit::SetStatusAlias(tree, "tpcItsMatchA",  "", "varname_Out:(abs(varname-MeanEF)>6.*RMSEF):0.8");
@@ -11,7 +11,8 @@
  TObjArray* oaMultGr = new TObjArray(); int igr=0;
  oaMultGr->Add( TStatToolkit::MakeStatusMultGr(tree, "tpcItsMatchA:run",  "", "(1):(meanTPCncl>0):(varname_Warning):(varname_Outlier):", igr) ); igr++;
  oaMultGr->Add( TStatToolkit::MakeStatusMultGr(tree, "meanTPCncl:run",    "", "(1):(meanTPCncl>0):(varname_Warning):(varname_Outlier):", igr) ); igr++;
- TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
+ TCanvas *c1 = new TCanvas("c1","c1");
+ TStatToolkit::AddStatusPad(c1, 0.30, 0.40);
  TStatToolkit::DrawStatusGraphs(oaMultGr);
  }*/
 
@@ -112,9 +113,15 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
     mult_min = 5; mult_max = 50;
   }
   
+  // make backup of rootfile
+  //
+  TString sBackupfile(inFile);
+  sBackupfile.ReplaceAll(".root",".backup.root");
+  gSystem->Exec(Form("cp %s %s", inFile, sBackupfile.Data()));
+  
   // open input file
   //
-  TFile *_file0 = TFile::Open(inFile);
+  TFile *_file0 = TFile::Open(inFile, "UPDATE");
   if(!_file0) return;
   _file0->cd();
   
@@ -143,13 +150,13 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   
   int const canvas_width  = int(((entries*1.0)/norm_runs)*1700.0);
   int const canvas_height = 600;
-  gStyle->SetPadLeftMargin(0.1*900/canvas_width);
+  gStyle->SetPadLeftMargin(0.12*900/canvas_width);
   gStyle->SetPadRightMargin(0.01);
   
   if(entries>50){
     gStyle->SetTickLength(0.03*norm_runs/(entries*1.0),"Y");
     gStyle->SetTitleYOffset((norm_runs/(entries*1.0))*0.8);
-    gStyle->SetPadLeftMargin(0.1*norm_runs/(entries*1.0));
+    gStyle->SetPadLeftMargin(0.12*norm_runs/(entries*1.0));
     gStyle->SetPadRightMargin(0.01*norm_runs/(entries*1.0));
   }
   
@@ -190,36 +197,66 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   
   //
   // save status into Tree and write to rootfile
+  // we update the original rootfile trending.root, as it is complicated to 'copy-paste' a TTree...
   //
   statusTree = TStatToolkit::WriteStatusToTree(oaMultGr);
-  //for testing with TMultiGraph (case of only 1 status variable):
-  //statusTree = WriteStatusToTree( TStatToolkit::MakeStatusMultGr(tree, "tpcItsMatch:run",  "", sCriteria.Data(), 0) );
-  TFile* file_out = new TFile("trendingStatusTree.root","RECREATE");
-  file_out->cd();
-  statusTree->Write();
-  file_out->Close();
-  Printf("Status tree written to file '%s'", file_out->GetName());
+  statusTree->BuildIndex("run");
+  tree->AddFriend(statusTree,"Tstatus");
+//  tree->Write("", TObject::kOverwrite);
+//  statusTree->Write();
+  // if we save statusTree to file here, then the run number in the plots will be always the same run. no idea why.
+  // so we do it at the end...
+  //
+  // alternative: write statusTree to different rootfile: (same problem)
+//  TFile* file_out = new TFile("trendingStatusTree.root","RECREATE");
+//  file_out->cd();
+//  statusTree->Write();
+//  file_out->Close();
+//  Printf("Status tree written to file '%s'", file_out->GetName());
+  
+  //afterwards one can open the rootfile and correlate the trees:
+  /*
+   // read the trees and draw tests:
+   // [terminal]$ aliroot -l trending.root
+   TTree* tree = (TTree*)_file0->Get("tpcQA");
+   tree->Draw("meanMIP:run","run>0","*");
+   TTree* statusTree = (TTree*)_file0->Get("statusTree");
+   statusTree->Draw("MIPquality_Warning:run","run>0","*");
+   
+   // correlate:
+   tree->Draw("meanMIP:Tstatus.MIPquality_Warning","run>0","*");
+   
+   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"Tstatus.MIPquality_Warning:run","",20,kRed,1.0);
+   gr->Draw("AP");
+  */
   
   
+  cout << "Start plotting of trending graphs... " << endl;
   // configure the pad in which the status graphs are plotted ('status bar')
   Float_t statPadHeight=0.30; //fraction of canvas height (was 0.25 until Aug 2014)
   Float_t statPadBotMar=0.40; //bottom margin of pad for run numbers
   //
+  // automatic plot ranges based on outlier bands, computed for each variable later.
+  Float_t plotmean;
+  Float_t plotoutlier;
+  //
   c1->cd();
-  
   
   /****** Number of TPC Clusters vs run number ******/
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"meanTPCncl:run","",marA1,colPosA,1.0);
   gr->SetName("meanTPCncl:run");
   gr->GetHistogram()->SetYTitle("Number of TPC Clusters");
   gr->GetHistogram()->SetTitle("p_{T} > 0.25GeV/c, |DCA_{R}| < 3cm, |DCA_{Z}| < 3cm, |#eta| < 1.0");
-  gr->GetHistogram()->SetMinimum(ncl_min);
-  gr->GetHistogram()->SetMaximum(ncl_max);
+  ComputeRange(tree, "meanTPCncl", plotmean, plotoutlier);
+  gr->GetHistogram()->SetMinimum(plotmean-3*plotoutlier);
+  gr->GetHistogram()->SetMaximum(plotmean+3*plotoutlier);
+//  gr->GetHistogram()->SetMinimum(ncl_min);
+//  gr->GetHistogram()->SetMaximum(ncl_max);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
   
   PlotStatusLines(tree,"meanTPCncl:run","");
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("meanTPCncl_vs_run.png");
@@ -230,13 +267,16 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr->SetName("meanTPCnclF:run");
   gr->GetHistogram()->SetYTitle("# of Found Clusters/ # of Findable Clusters");
   gr->GetHistogram()->SetTitle("p_{T} > 0.25GeV/c, |DCA_{R}| < 3cm, |DCA_{Z}| < 3cm, |#eta| < 1.0");
-  gr->GetHistogram()->SetMinimum(ratio_min);
-  gr->GetHistogram()->SetMaximum(ratio_max);
+  ComputeRange(tree, "meanTPCnclF", plotmean, plotoutlier);
+  gr->GetHistogram()->SetMinimum(plotmean-3*plotoutlier);
+  gr->GetHistogram()->SetMaximum(plotmean+3*plotoutlier);
+//  gr->GetHistogram()->SetMinimum(ratio_min);
+//  gr->GetHistogram()->SetMaximum(ratio_max);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
   
 	PlotStatusLines(tree,"meanTPCnclF:run","");
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("meanTPCnclF_vs_run.png");
@@ -247,13 +287,16 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr->SetName("meanMIP:run");
   gr->GetHistogram()->SetYTitle("Mean of MIPs");
   gr->GetHistogram()->SetTitle("0,4<p<0.55GeV/c, |DCA_{R}| < 3cm, |DCA_{Z}| < 3cm, |#eta| < 1.0, 80<#Cluster<160, 35<dE/dx<60");
-  gr->GetHistogram()->SetMinimum(mip_min);
-  gr->GetHistogram()->SetMaximum(mip_max);
+  ComputeRange(tree, "meanMIP", plotmean, plotoutlier);
+  gr->GetHistogram()->SetMinimum(plotmean-3*plotoutlier);
+  gr->GetHistogram()->SetMaximum(plotmean+3*plotoutlier);
+//  gr->GetHistogram()->SetMinimum(mip_min);
+//  gr->GetHistogram()->SetMaximum(mip_max);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
   
 	PlotStatusLines(tree,"meanMIP:run","");
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("meanMIP_vs_run.png");
@@ -264,13 +307,16 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr->SetName("resolutionMIP:run");
   gr->GetHistogram()->SetYTitle("Resolution of MIPs");
   gr->GetHistogram()->SetTitle("0,4<p<0.55GeV/c, |DCA_{R}| < 3cm, |DCA_{Z}| < 3cm, |#eta| < 1.0, 80<#Cluster<160, 35<dE/dx<60");
-  gr->GetHistogram()->SetMinimum(mipr_min);
-  gr->GetHistogram()->SetMaximum(mipr_max);
+  ComputeRange(tree, "resolutionMIP", plotmean, plotoutlier);
+  gr->GetHistogram()->SetMinimum(plotmean-3*plotoutlier);
+  gr->GetHistogram()->SetMaximum(plotmean+3*plotoutlier);
+//  gr->GetHistogram()->SetMinimum(mipr_min);
+//  gr->GetHistogram()->SetMaximum(mipr_max);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
   
   PlotStatusLines(tree,"resolutionMIP:run","");
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("resolutionMIP_vs_run.png");
@@ -281,12 +327,16 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr->SetName("meanMIPele:run");
   gr->GetHistogram()->SetYTitle("Mean of electron dEdx");
   gr->GetHistogram()->SetTitle("0,32<p<0.38GeV/c, |DCA_{R}| < 3cm, |DCA_{Z}| < 3cm, |#eta| < 1.0, 80<#Cluster<160, 70<dE/dx<100");
-  gr->GetHistogram()->SetMinimum(40);
-  gr->GetHistogram()->SetMaximum(110);
+  ComputeRange(tree, "meanMIPele", plotmean, plotoutlier);
+  gr->GetHistogram()->SetMinimum(plotmean-3*plotoutlier);
+  gr->GetHistogram()->SetMaximum(plotmean+3*plotoutlier);
+//  gr->GetHistogram()->SetMinimum(40);
+//  gr->GetHistogram()->SetMaximum(110);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
   
-  PlotTimestamp();
+  PlotStatusLines(tree,"meanMIPele:run","");
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("meandEdxele_vs_run.png");
@@ -299,12 +349,16 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr->GetHistogram()->SetYTitle("Resolution of electrons dEdx");
   //gr->GetHistogram()->SetTitle("0,4<p<0.55GeV/c, |DCA_{R}| < 3cm, |DCA_{Z}| < 3cm, |#eta| < 1.0, 80<#Cluster<160, 35<dE/dx<60");
   gr->GetHistogram()->SetTitle("0,32<p<0.38GeV/c, |DCA_{R}| < 3cm, |DCA_{Z}| < 3cm, |#eta| < 1.0, 80<#Cluster<160, 70<dE/dx<100");
-  gr->GetHistogram()->SetMinimum(mipr_min);
-  gr->GetHistogram()->SetMaximum(mipr_max);
+  ComputeRange(tree, "resolutionMIPele", plotmean, plotoutlier);
+  gr->GetHistogram()->SetMinimum(plotmean-3*plotoutlier);
+  gr->GetHistogram()->SetMaximum(plotmean+3*plotoutlier);
+//  gr->GetHistogram()->SetMinimum(mipr_min);
+//  gr->GetHistogram()->SetMaximum(mipr_max);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
   
-  PlotTimestamp();
+  PlotStatusLines(tree,"resolutionMIPele:run","");
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("resolutionMeandEdxEle_vs_run.png");
@@ -319,13 +373,16 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr->SetName("meanVertX:run");
   gr->GetHistogram()->SetYTitle("Mean of Vert_{X} / [cm]");
   gr->GetHistogram()->SetTitle("");
+//  ComputeRange(tree, "meanVertX", plotmean, plotoutlier);
+//  gr->GetHistogram()->SetMinimum(plotmean-3*plotoutlier);
+//  gr->GetHistogram()->SetMaximum(plotmean+3*plotoutlier);
   gr->GetHistogram()->SetMinimum(vx_min);
   gr->GetHistogram()->SetMaximum(vx_max);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
   
   PlotStatusLines(tree,"meanVertX:run","");
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("meanVertX_vs_run.png");
@@ -336,13 +393,16 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr->SetName("meanVertY:run");
   gr->GetHistogram()->SetYTitle("Mean of Vert_{Y} / [cm]");
   gr->GetHistogram()->SetTitle("");
+//  ComputeRange(tree, "meanVertY", plotmean, plotoutlier);
+//  gr->GetHistogram()->SetMinimum(plotmean-3*plotoutlier);
+//  gr->GetHistogram()->SetMaximum(plotmean+3*plotoutlier);
   gr->GetHistogram()->SetMinimum(vy_min);
   gr->GetHistogram()->SetMaximum(vy_max);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
   
   PlotStatusLines(tree,"meanVertY:run","");
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("meanVertY_vs_run.png");
@@ -353,13 +413,16 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr->SetName("meanVertZ:run");
   gr->GetHistogram()->SetYTitle("Mean of Vert_{Z} / [cm]");
   gr->GetHistogram()->SetTitle("");
+//  ComputeRange(tree, "meanVertZ", plotmean, plotoutlier);
+//  gr->GetHistogram()->SetMinimum(plotmean-3*plotoutlier);
+//  gr->GetHistogram()->SetMaximum(plotmean+3*plotoutlier);
   gr->GetHistogram()->SetMinimum(vz_min);
   gr->GetHistogram()->SetMaximum(vz_max);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
   
   PlotStatusLines(tree,"meanVertZ:run","");
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("meanVertZ_vs_run.png");
@@ -380,8 +443,11 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
 
   gr->GetHistogram()->SetYTitle("DCAs / [cm]");
   gr->GetHistogram()->SetTitle("p_{T} > 0.25GeV/c, |DCA_{R}| < 3cm, |DCA_{Z}| < 3cm, |#eta| < 0.8");
-  gr->GetHistogram()->SetMinimum(dca_min);
-  gr->GetHistogram()->SetMaximum(dca_max);
+  ComputeRange(tree, "offsetd_comb4", plotmean, plotoutlier);
+  gr->GetHistogram()->SetMinimum(-plotmean-2*plotoutlier);
+  gr->GetHistogram()->SetMaximum(+plotmean+2*plotoutlier);
+//  gr->GetHistogram()->SetMinimum(dca_min);
+//  gr->GetHistogram()->SetMaximum(dca_max);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
   gr1->Draw("P");
@@ -401,7 +467,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->Draw();
   
   PlotStatusLines(tree,"offsetd_comb4:run","");
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
 	c1->SaveAs("DCAOffset_vs_run.png");
@@ -418,10 +484,11 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   
   gr->GetHistogram()->SetYTitle("Multiplicites of Primary Tracks");
   gr->GetHistogram()->SetTitle("|DCA_{R}| < 3cm, |DCA_{Z}| < 3cm, #Cluster > 70");
-  //gr->GetHistogram()->SetMinimum(mult_min);
-  //gr->GetHistogram()->SetMaximum(mult_max);
-  gr->GetHistogram()->SetMinimum(0);
-  gr->GetHistogram()->SetMaximum(100);
+  ComputeRange(tree, "meanMult_comb2", plotmean, plotoutlier);
+  gr->GetHistogram()->SetMinimum(plotmean-3*plotoutlier);
+  gr->GetHistogram()->SetMaximum(plotmean+3*plotoutlier);
+//  gr->GetHistogram()->SetMinimum(0);  //gr->GetHistogram()->SetMinimum(mult_min);
+//  gr->GetHistogram()->SetMaximum(100);  //gr->GetHistogram()->SetMaximum(mult_max);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
   gr1->Draw("P");
@@ -437,7 +504,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->Draw();
   
   PlotStatusLines(tree,"meanMult_comb2:run","");
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("meanMult_vs_run.png");
@@ -456,8 +523,9 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   grComb->SetName("grComb");
   
   gr->GetHistogram()->SetYTitle("Matching Efficiencies");
-  gr->GetHistogram()->SetTitle("");
-  gr->GetHistogram()->SetMinimum(0.0);
+  gr->GetHistogram()->SetTitle("TPC-ITS Matching Efficiency");
+  ComputeRange(tree, "tpcItsMatch_comb4", plotmean, plotoutlier);
+  gr->GetHistogram()->SetMinimum(plotmean-3*plotoutlier);
   gr->GetHistogram()->SetMaximum(1.2);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
@@ -478,10 +546,10 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->Draw();
   
   PlotStatusLines(tree,"tpcItsMatch_comb4:run","");
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
-  c1->SaveAs("TPC-ITS_vs_run.png");
+  c1->SaveAs("TPC-ITS-matching-efficiency_vs_run.png");
   c1->Clear();
   
   /****** ITS-TPC matching quality  ******/
@@ -497,7 +565,10 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   grComb->SetName("grComb");
 
   gr->GetHistogram()->SetYTitle("Pulls");
-  gr->GetHistogram()->SetTitle("");
+  gr->GetHistogram()->SetTitle("ITS-TPC Matching Quality");
+//  ComputeRange(tree, "itsTpcPulls_comb4", plotmean, plotoutlier);
+//  gr->GetHistogram()->SetMinimum(plotmean-3*plotoutlier);
+//  gr->GetHistogram()->SetMaximum(plotmean+3*plotoutlier);
   gr->GetHistogram()->SetMinimum(-3);
   gr->GetHistogram()->SetMaximum(3);
   gr->GetXaxis()->LabelsOption("v");
@@ -519,7 +590,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->Draw();
   
   PlotStatusLines(tree,"itsTpcPulls_comb4:run","");
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
 	c1->SaveAs("ITS-TPC-matching-quality_vs_run.png");
@@ -535,8 +606,11 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   
   gr->GetHistogram()->SetYTitle("(sin#phi_{TPC} - sin#phi_{Global})/#sigma");
   gr->GetHistogram()->SetTitle("");
-  gr->GetHistogram()->SetMinimum(-1);
-  gr->GetHistogram()->SetMaximum(1);
+  ComputeRange(tree, "tpcConstrainPhi_comb2", plotmean, plotoutlier);
+  gr->GetHistogram()->SetMinimum(-plotmean-2*plotoutlier);
+  gr->GetHistogram()->SetMaximum(+plotmean+2*plotoutlier);
+//  gr->GetHistogram()->SetMinimum(-1);
+//  gr->GetHistogram()->SetMaximum(1);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
   gr1->Draw("P");
@@ -552,7 +626,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->Draw();
   
   PlotStatusLines(tree,"tpcConstrainPhi_comb2:run","");
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("pullPhiConstrain_vs_run.png");
@@ -570,8 +644,11 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   
   gr0->GetHistogram()->SetYTitle("delta (q/pt) ");
   gr0->GetHistogram()->SetTitle("delta (q/pt)");
-  gr0->GetHistogram()->SetMinimum(-0.008);
-  gr0->GetHistogram()->SetMaximum(0.008);
+  ComputeRange(tree, "deltaPt", plotmean, plotoutlier);
+  gr0->GetHistogram()->SetMinimum(plotmean-3*plotoutlier);
+  gr0->GetHistogram()->SetMaximum(plotmean+3*plotoutlier);
+//  gr0->GetHistogram()->SetMinimum(-0.008);
+//  gr0->GetHistogram()->SetMaximum(0.008);
   gr0->GetXaxis()->LabelsOption("v");
   
   TLegend *leg = new TLegend(0.6,0.75,0.62*sqrt(norm_runs/entries),0.95,"","brNDC");
@@ -584,7 +661,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->Draw();
   
   PlotStatusLines(tree,"deltaPt:run","");
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("1overPt_vs_run.png");
@@ -605,6 +682,9 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   
   gr->GetHistogram()->SetYTitle("DCAR Fitting Parameters");
   gr->GetHistogram()->SetTitle("sqrt(P0^{2} + P1^{2}/(pT^{2}))");
+  ComputeRange(tree, "dcarFitpar_comb4", plotmean, plotoutlier);
+  gr->GetHistogram()->SetMinimum(-plotmean-3*plotoutlier);
+  gr->GetHistogram()->SetMaximum(+plotmean+3*plotoutlier);
   gr->GetHistogram()->SetMinimum(-1);
   gr->GetHistogram()->SetMaximum(1);
   gr->GetXaxis()->LabelsOption("v");
@@ -626,7 +706,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->Draw();
   
   PlotStatusLines(tree,"dcarFitpar_comb4:run","");
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("dcar_fitting_run.png");
@@ -654,8 +734,11 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   DrawPlot(grComb, "grComb", marSum, 1.4, colSum, "P");    
   
   gr0->GetHistogram()->SetYTitle("DCARs");
-  gr0->GetHistogram()->SetMinimum(-0.2);
-  gr0->GetHistogram()->SetMaximum(0.2);
+  ComputeRange(tree, "dcar0_comb4", plotmean, plotoutlier);
+  gr0->GetHistogram()->SetMinimum(-plotmean-2*plotoutlier);
+  gr0->GetHistogram()->SetMaximum(+plotmean+2*plotoutlier);
+//  gr0->GetHistogram()->SetMinimum(-0.2);
+//  gr0->GetHistogram()->SetMaximum(0.2);
   gr0->GetHistogram()->SetTitleOffset(10);
   gr0->GetXaxis()->LabelsOption("v");
   gr0->SetName("dcar_posA_0:run");
@@ -672,7 +755,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->Draw();
   
   PlotStatusLines(tree,"dcar0_comb4:run","");
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c2, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c2->SaveAs("dcar_0_vs_run.png");//for C,A side and pos/neg particle
@@ -698,8 +781,11 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   DrawPlot(grComb, "grComb", marSum, 1.4, colSum, "P");    
   
   gr0->GetHistogram()->SetYTitle("DCARs");
-  gr0->GetHistogram()->SetMinimum(-0.1);
-  gr0->GetHistogram()->SetMaximum(0.1);
+  ComputeRange(tree, "dcar1_comb4", plotmean, plotoutlier);
+  gr0->GetHistogram()->SetMinimum(-plotmean-2*plotoutlier);
+  gr0->GetHistogram()->SetMaximum(+plotmean+2*plotoutlier);
+//  gr0->GetHistogram()->SetMinimum(-0.1);
+//  gr0->GetHistogram()->SetMaximum(0.1);
   gr0->GetHistogram()->SetTitleOffset(10);
   gr0->GetXaxis()->LabelsOption("v");
   gr0->SetName("dcar_posA_1:run");
@@ -716,7 +802,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->Draw();
   
   PlotStatusLines(tree,"dcar1_comb4:run","");
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c3, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c3->SaveAs("dcar_1_vs_run.png");//for C,A side and pos/neg particle
@@ -742,8 +828,11 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   DrawPlot(grComb, "grComb", marSum, 1.4, colSum, "P");    
 
   gr0->GetHistogram()->SetYTitle("DCARs");
-  gr0->GetHistogram()->SetMinimum(-0.1);
-  gr0->GetHistogram()->SetMaximum(0.1);
+  ComputeRange(tree, "dcar2_comb4", plotmean, plotoutlier);
+  gr0->GetHistogram()->SetMinimum(-plotmean-2*plotoutlier);
+  gr0->GetHistogram()->SetMaximum(+plotmean+2*plotoutlier);
+//  gr0->GetHistogram()->SetMinimum(-0.1);
+//  gr0->GetHistogram()->SetMaximum(0.1);
   gr0->GetHistogram()->SetTitleOffset(10);
   gr0->GetXaxis()->LabelsOption("v");
   gr0->SetName("dcar_posA_2:run");
@@ -760,7 +849,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->Draw();
   
   PlotStatusLines(tree,"dcar2_comb4:run","");
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c5, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c5->SaveAs("dcar_2_vs_run.png");//for C,A side and pos/neg particle
@@ -787,8 +876,11 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   DrawPlot(grComb, "grComb", marSum, 1.4, colSum, "P");    
 
   gr0->GetHistogram()->SetYTitle("DCAZs");
-  gr0->GetHistogram()->SetMinimum(-2.);
-  gr0->GetHistogram()->SetMaximum(2.);
+  ComputeRange(tree, "dcaz0_comb4", plotmean, plotoutlier);
+  gr0->GetHistogram()->SetMinimum(-plotmean-2*plotoutlier);
+  gr0->GetHistogram()->SetMaximum(+plotmean+2*plotoutlier);
+//  gr0->GetHistogram()->SetMinimum(-2.);
+//  gr0->GetHistogram()->SetMaximum(2.);
   gr0->GetHistogram()->SetTitleOffset(10);
   gr0->GetXaxis()->LabelsOption("v");
   gr0->SetName("dcaz_posA_0:run");
@@ -805,7 +897,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->Draw();
   
   PlotStatusLines(tree,"dcaz0_comb4:run","");
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c6, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c6->SaveAs("dcaz_0_vs_run.png");//for C,A side and pos/neg particle
@@ -831,8 +923,11 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   DrawPlot(grComb, "grComb", marSum, 1.4, colSum, "P");    
 
   gr0->GetHistogram()->SetYTitle("DCAZs");
-  gr0->GetHistogram()->SetMinimum(-0.2);
-  gr0->GetHistogram()->SetMaximum(0.2);
+  ComputeRange(tree, "dcaz1_comb4", plotmean, plotoutlier);
+  gr0->GetHistogram()->SetMinimum(-plotmean-2*plotoutlier);
+  gr0->GetHistogram()->SetMaximum(+plotmean+2*plotoutlier);
+//  gr0->GetHistogram()->SetMinimum(-0.2);
+//  gr0->GetHistogram()->SetMaximum(0.2);
   gr0->GetHistogram()->SetTitleOffset(10);
   gr0->GetXaxis()->LabelsOption("v");
   gr0->SetName("dcaz_posA_1:run");
@@ -849,7 +944,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->Draw();
   
   PlotStatusLines(tree,"dcaz1_comb4:run","");
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c7, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c7->SaveAs("dcaz_1_vs_run.png");//for C,A side and pos/neg particle
@@ -875,8 +970,11 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   DrawPlot(grComb, "grComb", marSum, 1.4, colSum, "P");    
 
   gr0->GetHistogram()->SetYTitle("DCAZs");
-  gr0->GetHistogram()->SetMinimum(-0.1);
-  gr0->GetHistogram()->SetMaximum(0.1);
+  ComputeRange(tree, "dcaz2_comb4", plotmean, plotoutlier);
+  gr0->GetHistogram()->SetMinimum(-plotmean-2*plotoutlier);
+  gr0->GetHistogram()->SetMaximum(+plotmean+2*plotoutlier);
+//  gr0->GetHistogram()->SetMinimum(-0.1);
+//  gr0->GetHistogram()->SetMaximum(0.1);
   gr0->GetHistogram()->SetTitleOffset(10);
   gr0->GetXaxis()->LabelsOption("v");
   gr0->SetName("dcaz_posA_2:run");
@@ -893,7 +991,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->Draw();
   
   PlotStatusLines(tree,"dcaz2_comb4:run","");
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c8, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c8->SaveAs("dcaz_2_vs_run.png");//for C,A side and pos/neg particle
@@ -938,7 +1036,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->AddEntry("gr3","oroc_C_side","p");
   leg->Draw();
   
-  PlotTimestamp();
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c9, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c9->SaveAs("occ_AC_Side_IROC_OROC_vs_run.png");//for C,A side and IROC,OROC                                                                                                 
@@ -951,39 +1049,59 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   c10->Update();
   c10->SetGrid(3);
   
-  TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"MIPattachSlopeA:run","",marA1,colPosA,1.0);
+  TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"MIPattachSlopeA:run","",marA1,colPosA,1.0,sh_gr1);
   gr->SetName("MIPattachSlopeA:run");
+  TGraphErrors *gr1 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"MIPattachSlopeC*(-1):run","",marC1,colPosC,1.0,sh_gr2);
+  gr1->SetName("gr1");
+  TGraphErrors *grComb = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"MIPattachSlope_comb2:run","",marSum,colSum,1.2);
+  grComb->SetName("grComb");
+  
   gr->GetHistogram()->SetYTitle("Attachment parameter p1");
-  gr->GetHistogram()->SetMinimum(-20);
-  gr->GetHistogram()->SetMaximum(20);
+  gr->GetHistogram()->SetTitle("showing p1 of fit: p0 + p1 * tan(#theta)"); // info from Marian, 19.11.2014. to be checked in code that produces the tree.
+  ComputeRange(tree, "MIPattachSlope_comb2", plotmean, plotoutlier);
+  gr->GetHistogram()->SetMinimum(plotmean-3*plotoutlier);
+  gr->GetHistogram()->SetMaximum(plotmean+3*plotoutlier);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
+  gr1->Draw("P");
+  grComb->Draw("P");
   
-  PlotTimestamp();
+  TLegend *leg = new TLegend(0.6,0.75,0.62*sqrt(norm_runs/entries),0.95,"","brNDC");
+  leg->SetTextSize(0.03);
+  leg->SetFillColor(10);
+  leg->SetBorderSize(0);
+  leg->AddEntry("MIPattachSlopeA:run","A Side","p");
+  leg->AddEntry("gr1","C Side *(-1)","p");
+  leg->AddEntry("grComb","combined = (#Sigma x_{i})/N","p");
+  leg->Draw();
+  
+  PlotStatusLines(tree,"MIPattachSlope_comb2:run","");
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c10, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
-  c10->SaveAs("MIPattachSlopeA_vs_run.png");
+  c10->SaveAs("MIPattachSlopes_vs_run.png");
   c10->Clear();
   
-  //C side
-  TCanvas *c11  = new  TCanvas("can11","can11",canvas_width,canvas_height);
-  c11->cd();
-  c11->Update();
-  c11->SetGrid(3);
-  
-  TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"MIPattachSlopeC:run","",marA1,colPosA,1.0);
-  gr->SetName("MIPattachSlopeC:run");
-  gr->GetHistogram()->SetYTitle("Attachment parameter p1");
-  gr->GetHistogram()->SetMinimum(-20);
-  gr->GetHistogram()->SetMaximum(20);
-  gr->GetXaxis()->LabelsOption("v");
-  gr->Draw("AP");
-  
-  PlotTimestamp();
-  TStatToolkit::AddStatusPad(c11, statPadHeight, statPadBotMar);
-  TStatToolkit::DrawStatusGraphs(oaMultGr);
-  c11->SaveAs("MIPattachSlopeC_vs_run.png");
-  c11->Clear();
+//  //C side
+//  TCanvas *c11  = new  TCanvas("can11","can11",canvas_width,canvas_height);
+//  c11->cd();
+//  c11->Update();
+//  c11->SetGrid(3);
+//  
+//  TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"MIPattachSlopeC*(-1):run","",marA1,colPosA,1.0);
+//  gr->SetName("MIPattachSlopeC:run");
+//  gr->GetHistogram()->SetYTitle("Attachment parameter p1");
+//  gr->GetHistogram()->SetMinimum(-10);
+//  gr->GetHistogram()->SetMaximum(+10);
+//  gr->GetXaxis()->LabelsOption("v");
+//  gr->Draw("AP");
+//  
+//  PlotStatusLines(tree,"MIPattachSlopeC:run","");
+//  PlotTimestamp(entries,entries_tree);
+//  TStatToolkit::AddStatusPad(c11, statPadHeight, statPadBotMar);
+//  TStatToolkit::DrawStatusGraphs(oaMultGr);
+//  c11->SaveAs("MIPattachSlopeC_vs_run.png");
+//  c11->Clear();
   
   /****** electron and MIPs separation ******/
   
@@ -995,23 +1113,38 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"electroMIPSeparation:run","",marA1,colPosA,1.0);
   gr->SetName("electroMIPSeparation:run");
   gr->GetHistogram()->SetYTitle("Electron - MIP");
-  gr->GetHistogram()->SetMinimum(0);
-  gr->GetHistogram()->SetMaximum(120);
+  ComputeRange(tree, "electroMIPSeparation", plotmean, plotoutlier);
+  gr->GetHistogram()->SetMinimum(plotmean-3*plotoutlier);
+  gr->GetHistogram()->SetMaximum(plotmean+3*plotoutlier);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
   
-  PlotTimestamp();
+  PlotStatusLines(tree,"electroMIPSeparation:run","");
+  PlotTimestamp(entries,entries_tree);
   TStatToolkit::AddStatusPad(c12, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c12->SaveAs("ElectroMIPSeparation_vs_run.png");
   c12->Clear();
   
+  //
+  // save status into Tree and write to rootfile
+  //
+  if (statusTree) {
+    cout << "updating trending rootfile with status tree... ";
+    //tree->AddFriend(statusTree,"Tstatus");
+    tree->Write("", TObject::kOverwrite);
+    statusTree->Write();
+    cout << " successful." << endl;
+  }
+  
+  cout << "...done with trending." << endl;
+  return 1;
 }
 
 
-//the function plots status lines and timestamp
 Int_t PlotStatusLines(TTree * tree, const char * expr, const char * cut)
 {
+  //the function plots status lines
   char* alias = "varname_OutlierMin:varname_OutlierMax:varname_WarningMin:varname_WarningMax:varname_PhysAccMin:varname_PhysAccMax:varname_RobustMean";
   TMultiGraph* mgStatusLines = TStatToolkit::MakeStatusLines(tree,expr,cut,alias);
   
@@ -1021,10 +1154,9 @@ Int_t PlotStatusLines(TTree * tree, const char * expr, const char * cut)
   return 1;
 }
 
-//the function plots a timestamp and the used Aliroot version
-Int_t PlotTimestamp()
+Int_t PlotTimestamp(const int nruns=0, const int nentries=0)
 {
-  // draw timestamp and Aliroot version
+  //the function plots a timestamp, the used Aliroot version, and the number of runs
   TString sTimestamp  = gSystem->GetFromPipe("date");
   TString sAlirootVer = "AliRoot " + gSystem->GetFromPipe("wdir=`pwd`; cd $ALICE_ROOT; git describe; cd $wdir;");
   TLatex* latTime = new TLatex(0.99,0.95,sTimestamp.Data());
@@ -1037,14 +1169,25 @@ Int_t PlotTimestamp()
   latAliroot->SetTextAlign(31);
   latAliroot->SetNDC();
   latAliroot->Draw("same");
-  
+  TLatex* latNruns = new TLatex(0.99,0.87,Form("N shown runs: %i (tree entries: %i)",nruns,nentries));
+  latNruns->SetTextSize(0.03);
+  latNruns->SetTextAlign(31);
+  latNruns->SetNDC();
+  if (nruns>0) latNruns->Draw("same");
   return 1;
 }
 
+Int_t ComputeRange(TTree* tree, const char* varname, Float_t &plotmean, Float_t &plotoutlier)
+{
+  //the function computes useful numbers for plot ranges from the outlier criteria
+  plotmean    = (Float_t) TFormula("fcn", tree->GetAlias(Form("%s_RobustMean",varname))).Eval(0);
+  plotoutlier = (Float_t) TFormula("fcn", tree->GetAlias(Form("%s_OutlierMax",varname))).Eval(0) - plotmean;
+  return 1;
+}
 
-//the function draws the plots
 Int_t DrawPlot(TGraphErrors* gr, TString nameHisto, Int_t markerStyle, Int_t markerSize, Int_t markerColor, TString drawMode)
 {
+  //the function draws the plots
   gr->SetName(nameHisto);
   gr->SetMarkerStyle(markerStyle);
   gr->SetMarkerSize(markerSize);
@@ -1052,4 +1195,3 @@ Int_t DrawPlot(TGraphErrors* gr, TString nameHisto, Int_t markerStyle, Int_t mar
   gr->Draw(drawMode);
   return 1;
 }
-

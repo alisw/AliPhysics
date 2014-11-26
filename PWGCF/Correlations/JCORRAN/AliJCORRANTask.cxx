@@ -132,8 +132,9 @@ void AliJCORRANTask::UserExec(Option_t* /*option*/)
 	// Processing of one event
 	if(fDebug > 5) cout << "------- AliJCORRANTask Exec-------"<<endl;
 	if(!((Entry()-1)%100))  AliInfo(Form(" Processing event # %lld",  Entry())); 
-
-	fFilter->UserExec("");
+	if( fFilter->GetEventSuccess() ){
+		fFilter->UserExec("");
+	}
 
 	if(fDebug > 5) cout << "\t------- End UserExec "<<endl;
 }

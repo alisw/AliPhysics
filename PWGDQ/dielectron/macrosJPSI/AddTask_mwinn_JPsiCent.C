@@ -15,7 +15,7 @@ AliAnalysisTask *AddTask_mwinn_JPsiCent(){
   
   //set config file name
   //  TString configFile("$TRAIN_ROOT/mwinn_jpsiCorr/ConfigJpsi2eeDataCent_light.C");
-  TString configFile("ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_mw_pPbCENT.C");
+  TString configFile("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_mw_pPbCENT.C");
   //  TString configFile("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_mw_pPbcent.C");
   //TString configFile("$TRAIN_ROOT/jpsi_JPSI/ConfigJpsiStandard.C");
   if ( trainConfig.Contains("PbPb") ) configFile="$TRAIN_ROOT/jpsi_JPSI/ConfigJpsi2eePbPb.C";
@@ -85,19 +85,19 @@ AliAnalysisTask *AddTask_mwinn_JPsiCent(){
     mgr->CreateContainer("jpsiAOD_mwinn_QA",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "jpsi_mwinn.root");
+                         "JPSI.root");
 
   AliAnalysisDataContainer *cOutputHist2 =
     mgr->CreateContainer("jpsi_mwinn_CF",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "jpsi_mwinn.root");
+                         "JPSI.root");
   
   AliAnalysisDataContainer *cOutputHist3 =
     mgr->CreateContainer("jpsi_mwinn_EventStat",
                          TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "jpsi_mwinn.root");
+                         "JPSI.root");
   
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 0, coutput1 );

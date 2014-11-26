@@ -26,6 +26,7 @@
 class AliESDEvent;
 class TH2D;
 class TList;
+class AliFMDMCTrackDensity;
 
 /** 
  * Calculate the multiplicity in the forward regions event-by-event 
@@ -145,6 +146,18 @@ public:
    * @return Reference to AliFMDHistCollector object 
    */
   AliFMDHistCollector& GetHistCollector() { return fHistCollector; }
+   /**
+   * Get reference to the EventPlaneFinder algorithm 
+   * 
+   * @return Reference to AliFMDEventPlaneFinder object 
+   */
+  AliFMDEventPlaneFinder& GetEventPlaneFinder() { return fEventPlaneFinder; }
+  /** 
+   * Get the track density calculator in the sharing filter 
+   * 
+   * @return Reference to AliFMDMCTrackDensity object in sharing filter 
+   */
+  AliFMDMCTrackDensity& GetTrackDensity() { return fSharingFilter.GetTrackDensity(); }
   /**
    * Get reference to the EventInspector algorithm 
    * 
@@ -181,18 +194,18 @@ public:
    * @return Reference to AliFMDHistCollector object 
    */
   const AliFMDHistCollector& GetHistCollector() const { return fHistCollector; }
-   /**
-   * Get reference to the EventPlaneFinder algorithm 
-   * 
-   * @return Reference to AliFMDEventPlaneFinder object 
-   */
-  AliFMDEventPlaneFinder& GetEventPlaneFinder() { return fEventPlaneFinder; }
   /**
    * Get reference to the EventPlaneFinder algorithm 
    * 
    * @return Reference to AliFMDEventPlaneFinder object 
    */
   const AliFMDEventPlaneFinder& GetEventPlaneFinder() const { return fEventPlaneFinder; }
+  /** 
+   * Get the track density calculator in the sharing filter 
+   * 
+   * @return Reference to AliFMDMCTrackDensity object in sharing filter 
+   */
+  const AliFMDMCTrackDensity& GetTrackDensity() const { return fSharingFilter.GetTrackDensity(); }
   /** 
    * @} 
    */

@@ -56,8 +56,10 @@
 #include <TMath.h>
 #include <TF1.h>
 #include <TF2.h>
+#include <TH3.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TProfile.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -187,10 +189,10 @@ void AliAnalysisTaskJetMatching::UserCreateOutputObjects()
     fOutputList->Add(fProfFracNoJets);
     switch (fMatchingScheme) {
         case kDiJet : {
-            fHistDiJet = BookTH2F("fHistDiJet", "matched di-jet #varphi", "matched di-jet #eta", 100, 0., TMath::TwoPi(), 100, -5., 5.);
-            fHistDiJetLeadingJet = BookTH2F("fHistDiJetLeadingJet", "leading jet #varphi", "leadingd jet #eta", 100, 0., TMath::TwoPi(), 100, -5., 5.);
-            fHistDiJetDPhi = BookTH1F("fHistDiJetDPhi", "leading jet #varphi - (matched jet #varphi - #pi)", 100, -1.*TMath::Pi(), TMath::Pi());
-            fHistDiJetDPt = BookTH1F("fHistDiJetDPt", "leading jet p_{T} - sub leading jet p_{T} (GeV/c)", 100, -25, 25);
+            fHistDiJet = BookTH3F("fHistDiJet", "matched di-jet #varphi", "matched di-jet #eta", "leading jet p_{T} (GeV/c)", 100, 0., TMath::TwoPi(), 100, -5., 5., 100, 0, 200);
+            fHistDiJetLeadingJet = BookTH3F("fHistDiJetLeadingJet", "leading jet #varphi", "leadingd jet #eta", "leading jet p_{T} (GeV/c)", 100, 0., TMath::TwoPi(), 100, -5., 5., 100, 0, 200);
+            fHistDiJetDPhi = BookTH2F("fHistDiJetDPhi", "leading jet #varphi - (matched jet #varphi - #pi)", "leading jet p_{T} (GeV/c)", 100, -1.*TMath::Pi(), TMath::Pi(), 100, 0, 200);
+            fHistDiJetDPt = BookTH2F("fHistDiJetDPt", "leading jet p_{T} - sub leading jet p_{T} (GeV/c)", "leading jet p_{T} (GeV/c)", 100, -25, 25, 100, 0, 200);
         } break;
         default : break;
     }
@@ -202,7 +204,7 @@ TH1F* AliAnalysisTaskJetMatching::BookTH1F(const char* name, const char* x, Int_
 {
     // book a TH1F and connect it to the output container
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    if(!fOutputList) return 0x0;
+    if(append && !fOutputList) return 0x0;
     TString title(name);
     title += Form(";%s;[counts]", x);
     TH1F* histogram = new TH1F(name, title.Data(), bins, min, max);
@@ -215,10 +217,23 @@ TH2F* AliAnalysisTaskJetMatching::BookTH2F(const char* name, const char* x, cons
 {
     // book a TH2F and connect it to the output container
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    if(!fOutputList) return 0x0;
+    if(append && !fOutputList) return 0x0;
     TString title(name);
     title += Form(";%s;%s", x, y);
     TH2F* histogram = new TH2F(name, title.Data(), binsx, minx, maxx, binsy, miny, maxy);
+    histogram->Sumw2();
+    if(append) fOutputList->Add(histogram);
+    return histogram;   
+}
+//_____________________________________________________________________________
+TH3F* AliAnalysisTaskJetMatching::BookTH3F(const char* name, const char* x, const char* y, const char* z, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Int_t binsz, Double_t minz, Double_t maxz, Bool_t append)
+{
+    // book a TH2F and connect it to the output container
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    if(append && !fOutputList) return 0x0;
+    TString title(name);
+    title += Form(";%s;%s;%s", x, y, z);
+    TH3F* histogram = new TH3F(name, title.Data(), binsx, minx, maxx, binsy, miny, maxy, binsz, minz, maxz);
     histogram->Sumw2();
     if(append) fOutputList->Add(histogram);
     return histogram;   
@@ -415,7 +430,7 @@ void AliAnalysisTaskJetMatching::DoDiJetMatching()
     AliEmcalJet* leadingJet(GetLeadingJet(fSourceJets, leadingJetIndex));
     if(!leadingJet) return;
     // fill phi and eta of leading jet (should always be in selected acceptance)
-    fHistDiJetLeadingJet->Fill(leadingJet->Phi(), leadingJet->Eta());
+    fHistDiJetLeadingJet->Fill(leadingJet->Phi(), leadingJet->Eta(), leadingJet->Pt());
     Double_t sourcePhi(leadingJet->Phi()), targetPhi(-1);
     // get the sub-leading jet - faster when leading jet is also provided
     AliEmcalJet* subLeadingJet(GetSubLeadingJet(fSourceJets, leadingJetIndex, subLeadingJetIndex));
@@ -428,9 +443,9 @@ void AliAnalysisTaskJetMatching::DoDiJetMatching()
         if(TMath::Abs(targetPhi) > TMath::Abs(targetPhi+TMath::TwoPi())) targetPhi+=TMath::TwoPi();
         if(TMath::Abs(targetPhi) > TMath::Abs(targetPhi-TMath::TwoPi())) targetPhi-=TMath::TwoPi();
         if(TMath::Abs(sourcePhi-targetPhi) < fMatchPhi) {
-            fHistDiJet->Fill(subLeadingJet->Phi(), subLeadingJet->Eta());
-            fHistDiJetDPhi->Fill(sourcePhi-targetPhi);
-            fHistDiJetDPt->Fill(leadingJet->Pt() - subLeadingJet->Pt());
+            fHistDiJet->Fill(subLeadingJet->Phi(), subLeadingJet->Eta(), leadingJet->Pt());
+            fHistDiJetDPhi->Fill(sourcePhi-targetPhi, leadingJet->Pt());
+            fHistDiJetDPt->Fill(leadingJet->Pt() - subLeadingJet->Pt(), leadingJet->Pt());
         }
     }
 }

@@ -899,6 +899,16 @@ protected:
     }
     x2 = TMath::Min(x1 + dX, xR);
   } 
+  //__________________________________________________________________
+  /** 
+   * Make a legend 
+   * 
+   * @param p 
+   * @param flags 
+   * @param autoFill 
+   * 
+   * @return 
+   */
   TLegend* MakeLegend(TVirtualPad* p, UInt_t flags, Bool_t autoFill)
   {
     Double_t x1 = fParVal->GetX();
@@ -1691,12 +1701,13 @@ protected:
     fParVal->SetTextSize(save);
   }
   //____________________________________________________________________
-  void DrawTrackDensity(TCollection* parent)
+  void DrawTrackDensity(TCollection* parent, 
+			const char* folderName="mcTrackDensity")
   {
     Info("DrawTrackDensity", "Drawing track density");
 
     // --- MC --------------------------------------------------------
-    TCollection* mc = GetCollection(parent, "mcTrackDensity", false);
+    TCollection* mc = GetCollection(parent, folderName, false);
     if (!mc) return; // Not MC 
 
     fBody->Divide(2,3);

@@ -37,12 +37,20 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   };
 
   enum TriggerType {
-    kND       = -1,  //not defined
-    kJ1       = 0,
-    kJ2       = 1,
-    kG1		  = 2,
-    kG2 	  = 3,
-    kNType    = 4
+    kND       = BIT(31),  //not defined := Sign bit of int
+    kJ1       = BIT(0),
+    kJ2       = BIT(1),
+    kG1		    = BIT(2),
+    kG2 	    = BIT(3),
+    kL0       = BIT(4)
+  };
+  enum MainTriggers{
+    kPosJ1    = 0,
+    kPosJ2    = 1,
+    kPosG1		= 2,
+    kPosG2 	  = 3,
+    kPosL0    = 4,
+    kNType    = 5
   };
 
   AliAnalysisTaskEmcal();
@@ -103,9 +111,10 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TClonesArray               *GetClusterArray(Int_t i=0)                         const;
   Int_t                       GetNParticles(Int_t i=0)                           const;
   Int_t                       GetNClusters(Int_t i=0)                            const;
-  AliEmcalTriggerPatchInfo   *GetMainTriggerPatch();
-  Bool_t					  HasTriggerType(TriggerType);
-  ULong_t 					  GetTriggerList();
+  AliEmcalTriggerPatchInfo   *GetMainTriggerPatch(Int_t triggersel = kJ1 | kJ2);
+  AliEmcalTriggerPatchInfo   *ApplyMainTriggerSelection(Int_t selectionBitmap) const;
+  Bool_t					            HasTriggerType(Int_t triggersel);
+  ULong_t 					          GetTriggerList();
   Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
   void                        UserCreateOutputObjects();
   void                        UserExec(Option_t *option);
@@ -123,6 +132,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      fGeneralHistograms;          // whether or not it should fill some general histograms
   Bool_t                      fInitialized;                // whether or not the task has been already initialized
   Bool_t                      fCreateHisto;                // whether or not create histograms
+  Bool_t                      fMainTriggerPatchSet;        // Internal variable indicating whether the array of main trigger patches is initialised
   TString                     fCaloCellsName;              // name of calo cell collection
   TString                     fCaloTriggersName;           // name of calo triggers collection
   TString                     fCaloTriggerPatchInfoName;   // trigger patch info array name
@@ -138,7 +148,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisUtils           *fAliAnalysisUtils;           //! vertex selection (optional)
   UInt_t                      fOffTrigger;                 // offline trigger for event selection
   TString                     fTrigClass;                  // trigger class name for event selection
-  TriggerType                 fTriggerTypeSel;             // trigger type to select based on trigger patches
+  Int_t                       fTriggerTypeSel;             // trigger type to select based on trigger patches
   Int_t                       fNbins;                      // no. of pt bins
   Double_t                    fMinBinPt;                   // min pt in histograms
   Double_t                    fMaxBinPt;                   // max pt in histograms
@@ -176,7 +186,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Float_t                     fXsection;                   //!x-section from pythia header
   TObjArray                   fParticleCollArray;          // particle/track collection array
   TObjArray                   fClusterCollArray;           // cluster collection array
-  AliEmcalTriggerPatchInfo   *fMainTriggerPatch;           // main trigger patch, will be cached after calling GetMainTriggerPatch() first time
+  AliEmcalTriggerPatchInfo   *fMainTriggerPatch[kNType];   // main trigger patch, will be cached after calling GetMainTriggerPatch() first time
   ULong_t                     fTriggers;                   // list of fired triggers
 
   TList                      *fOutput;                     //!output list

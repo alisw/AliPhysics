@@ -123,7 +123,7 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
     } else {
       if (track->TestFilterBit(fAODfilterBits[0])) {
 	type = 0;
-      } else if (track->TestFilterBit(fAODfilterBits[1])) {
+      } else if (fAODfilterBits[1]>-1 && track->TestFilterBit(fAODfilterBits[1])) {
 	if ((track->GetStatus()&AliVTrack::kITSrefit)==0) {
 	  if (fIncludeNoITS)
 	    type = 2;

@@ -74,13 +74,14 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
   void SetQPercDetector(Int_t det){fQPercDet = det;};
   void SetEPDetector(Int_t det){fEPDet = det;};
   void SetNMixingTracks(Int_t n){fMixingTracks = n;};
+  void SetQBinning(Int_t n, Double_t q){qbins = n; qlimit = q;};
 
   void SetKtBins(Int_t n, Double_t* bins);
-  void SetEPBins(Int_t n, Double_t min, Double_t max);
+  void SetEPBins(Int_t n);
   void SetCentBins(Int_t n, Double_t* bins);
   void SetVzBins(Int_t n, Double_t* bins);
 
-  Double_t GetQPercLHC11h(Double_t qvec);
+  //Double_t GetQPercLHC11h(Double_t qvec);
 
   Double_t GetCentralityWeight(Double_t cent);
 
@@ -120,6 +121,9 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
 
   Double_t fMinQPerc;
   Double_t fMaxQPerc;
+
+  Double_t qlimit;
+  Int_t qbins;
 
   Int_t fQPercDet; // detector used for q-vector (0-V0A, 1-V0C)
   Int_t fEPDet; // detector used for event plane (0-V0A, 1-V0C)

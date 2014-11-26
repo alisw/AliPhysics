@@ -42,6 +42,9 @@ public:
     fOptions.Add("satelitte", "Use satelitte interactions");
     fOptions.Add("corr", "DIR", "Corrections dir", "");
     fOptions.Add("secmap", "Use secondary maps to correct", false);
+    fOptions.Add("mc-tracks", "Enable MC track filter", false);
+    fOptions.Add("max-strips", "NUMBER", 
+                 "Maximum consequtive strips (MC)", 2); 
     fOptions.Set("type", "ESD");
   }
 protected:
@@ -56,7 +59,7 @@ protected:
     AliAnalysisManager::SetCommonFileName("forward.root");
 
     // --- Load libraries/pars ---------------------------------------
-    fHelper->LoadLibrary("PWGLFforward2");
+    fRailway->LoadLibrary("PWGLFforward2");
     
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
@@ -68,43 +71,59 @@ protected:
     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
     
     // --- Add TPC eventplane task
-    if (fOptions.Has("tpc-ep")) gROOT->Macro("AddTaskEventplane.C");
+    if (fOptions.Has("tpc-ep")) CoupleCar("AddTaskEventplane.C","");
 
     // --- Task to copy header information ---------------------------
-    gROOT->Macro("AddTaskCopyHeader.C");
+    CoupleCar("AddTaskCopyHeader.C", "");
 
     // --- Get options -----------------------------------------------
-    ULong_t  run = fOptions.AsInt("run", 0);
-    UShort_t sys = fOptions.AsInt("sys", 0);
-    UShort_t sNN = fOptions.AsInt("snn", 0);
-    UShort_t fld = fOptions.AsInt("field", 0);
-    Bool_t   sec = fOptions.Has("secmap");
-    TString  cor = "";
+    ULong_t  run  = fOptions.AsInt("run", 0);
+    UShort_t sys  = fOptions.AsInt("sys", 0);
+    UShort_t sNN  = fOptions.AsInt("snn", 0);
+    UShort_t fld  = fOptions.AsInt("field", 0);
+    UShort_t mSt  = fOptions.AsInt("max-strips", 2);
+    Bool_t   sec  = fOptions.Has("secmap");
+    TString  cor  = "";
     if (fOptions.Has("corr")) cor = fOptions.Get("corr"); 
     
     // --- Add the task ----------------------------------------------
     TString fwdConfig = fOptions.Get("forward-config");
-    gROOT->Macro(Form("AddTaskForwardMult.C(%d,%ld,%d,%d,%d,\"%s\",\"%s\")", 
-		      mc, run, sys, sNN, fld, fwdConfig.Data(), cor.Data()));
-    gROOT->ProcessLine(Form("((AliForwardMultiplicityBase*)"
-			    " ((AliAnalysisManager*)%p)"
-			    " ->GetTask(\"Forward%s\"))"
+    AliAnalysisTask* fwd = CoupleCar("AddTaskForwardMult.C",
+				   Form("%d,%ld,%d,%d,%d,\"%s\",\"%s\"", 
+					mc, run, sys, sNN, fld, 
+					fwdConfig.Data(), cor.Data()));
+    if (!fwd)
+      Fatal("CoupleCars", "Failed to add forward task");
+
+    gROOT->ProcessLine(Form("((AliForwardMultiplicityBase*)%p)"
 			    "->GetCorrections().SetUseSecondaryMap(%d)",
-			    mgr, mc ? "MC" : "", sec));
-    fHelper->LoadAux(gSystem->Which(gROOT->GetMacroPath(), fwdConfig), true);
+			    fwd, sec));
+    if (mc) { 
+      gROOT->ProcessLine(Form("((AliForwardMCMultiplicityTask*)%p)"
+			      "->GetTrackDensity()"
+			      ".SetMaxConsequtiveStrips(%d)", 
+			      fwd, mSt));
+    }
+    fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(), fwdConfig), true);
 
     // --- Add the task ----------------------------------------------
     TString cenConfig = fOptions.Get("central-config");
-    gROOT->Macro(Form("AddTaskCentralMult.C(%d,%ld,%d,%d,%d,\"%s\",\"%s\")", 
-		      mc, run, sys, sNN, fld, cenConfig.Data(), cor.Data()));
-    fHelper->LoadAux(gSystem->Which(gROOT->GetMacroPath(), cenConfig), true);
+    AliAnalysisTask* cen = CoupleCar("AddTaskCentralMult.C",
+				   Form("%d,%ld,%d,%d,%d,\"%s\",\"%s\"", 
+					  mc, run, sys, sNN, fld, 
+					  cenConfig.Data(), cor.Data()));
+    if (cen)
+      fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(), cenConfig), true);
 
     // --- Add MC particle task --------------------------------------
-    if (mc) gROOT->Macro("AddTaskMCParticleFilter.C");
+    if (mc && fOptions.Has("mc-tracks")) 
+      CoupleCar("AddTaskMCParticleFilter.C","");
 
     if (!cor.IsNull()) {
-      fHelper->LoadAux(Form("%s/fmd_corrections.root",cor.Data()), true);
-      fHelper->LoadAux(Form("%s/spd_corrections.root",cor.Data()), true);
+      if (fwd) 
+	fRailway->LoadAux(Form("%s/fmd_corrections.root",cor.Data()), true);
+      if (cen) 
+	fRailway->LoadAux(Form("%s/spd_corrections.root",cor.Data()), true);
     }
   }
   //__________________________________________________________________
@@ -141,10 +160,10 @@ protected:
    * @param mc  Monte-Carlo truth flag 
    * @param mgr Manager
    */
-  void CreateCentralitySelection(Bool_t mc, AliAnalysisManager* mgr)
+  void CreateCentralitySelection(Bool_t mc)
   {
     if (!fOptions.Has("cent")) return;
-    TrainSetup::CreateCentralitySelection(mc, mgr);
+    TrainSetup::CreateCentralitySelection(mc);
   }
   //__________________________________________________________________
   const char* ClassName() const { return "MakeAODTrain"; }
@@ -161,13 +180,13 @@ protected:
     SaveSummarize();
     SavedNdeta(asShellScript);
 
-    if (!fHelper || fHelper->Mode() != Helper::kGrid) return;
+    if (!fRailway || fRailway->Mode() != Railway::kGrid) return;
 
     SaveDownloadAODs();
   }
   void SavedNdeta(Bool_t asShellScript)
   {
-    if (!fHelper) { 
+    if (!fRailway) { 
       Warning("MakeAODTrain::SaveSetup", 
 	      "Cannot make dNdeta.C script without helper");
       return;
@@ -175,7 +194,7 @@ protected:
     
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     Bool_t              mc  = mgr && (mgr->GetMCtruthEventHandler() != 0);
-    OptionList          uopts(fHelper->Options());
+    OptionList          uopts(fRailway->Options());
     OptionList          opts(fOptions);
     TString             cls("MakedNdetaTrain");
     TString             name(fName);
@@ -196,11 +215,11 @@ protected:
     opts.Add("scheme", "FLAGS", "Normalization scheme", "TRIGGER,EVENT");
     opts.Add("trigEff", "EFFICIENCY", "Trigger efficiency", 1.);
     opts.Add("trigEff0", "EFFICIENCY", "0-bin trigger efficiency", 1.);
-    opts.Add("mc", "Also analyse MC truth", fHelper->IsMC());
+    opts.Add("mc", "Also analyse MC truth", fRailway->IsMC());
     opts.Add("truth-config", "FILE", "MC-Truth configuration", "");
     
     // Rewrite our URL 
-    TString outString = fHelper->OutputLocation();
+    TString outString = fRailway->OutputLocation();
     if (outString.IsNull()) outString = fEscapedName;
     TUrl    outUrl(outString);
     
@@ -299,7 +318,7 @@ protected:
       << "    Error(\"DownloadAODs\",\"Failed to connect to AliEn\");\n"
       << "    return;\n"
       << "  }\n\n"
-      << "  TString dir(\"" << fHelper->OutputPath() << "\");\n"
+      << "  TString dir(\"" << fRailway->OutputPath() << "\");\n"
       << "  TString pat(\"*/AliAOD.root\");\n"
       << "  TGridResult* r = gGrid->Query(dir,pat);\n"
       << "  if (!r) {\n"

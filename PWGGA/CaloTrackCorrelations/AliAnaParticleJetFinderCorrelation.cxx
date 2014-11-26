@@ -53,7 +53,7 @@ AliAnaCaloTrackCorrBaseClass(),
   fDeltaPhiMaxCut(0.), fDeltaPhiMinCut(0.), fRatioMaxCut(0.),  fRatioMinCut(0.), 
   fConeSize(0.), fPtThresholdInCone(0.),fUseJetRefTracks(kTRUE),
   fMakeCorrelationInHistoMaker(kFALSE), fSelectIsolated(kTRUE),
-  fJetConeSize(0.4),fJetMinPt(5),fJetAreaFraction(0.6),
+  fJetConeSize(0.4),fJetMinPt(5),fJetMinPtBkgSub(-100.),fJetAreaFraction(0.6),
 //fNonStandardJetFromReader(kTRUE), 
   fJetBranchName("jets"),
   fBackgroundJetFromReader(kTRUE),
@@ -65,11 +65,12 @@ AliAnaCaloTrackCorrBaseClass(),
   fhDeltaEta(0), /*fhDeltaPhi(0),*/fhDeltaPhiCorrect(0),fhDeltaPhi0PiCorrect(0), fhDeltaPt(0), fhPtRatio(0), fhPt(0),
   fhFFz(0),fhFFxi(0),fhFFpt(0),fhNTracksInCone(0),
   fhJetFFz(0),fhJetFFxi(0),fhJetFFpt(0),fhJetFFzCor(0),fhJetFFxiCor(0),
-  fhBkgFFz(),fhBkgFFxi(),fhBkgFFpt(),fhBkgNTracksInCone(),fhBkgSumPtInCone(),fhBkgSumPtnTracksInCone(),//<<---new
+  fhGamPtPerTrig(0),fhPtGamPtJet(0),
+  fhBkgFFz(),fhBkgFFxi(),fhBkgFFpt(),fhBkgNTracksInCone(),fhBkgSumPtInCone(),fhBkgSumPtnTracksInCone(),
   fhNjetsNgammas(0),fhCuts(0),
   fhDeltaEtaBefore(0),fhDeltaPhiBefore(0),fhDeltaPtBefore(0),fhPtRatioBefore(0),
   fhPtBefore(0),fhDeltaPhi0PiCorrectBefore(0),
-  fhJetPtBefore(0),fhJetPt(0),fhJetPtMostEne(0),fhJetPhi(0),fhJetEta(0),fhJetEtaVsPt(0),
+  fhJetPtBefore(0),fhJetPtBeforeCut(0),fhJetPt(0),fhJetPtMostEne(0),fhJetPhi(0),fhJetEta(0),fhJetEtaVsPt(0),
   fhJetPhiVsEta(0),fhJetEtaVsNpartInJet(0),fhJetEtaVsNpartInJetBkg(0),fhJetChBkgEnergyVsPt(0),fhJetChAreaVsPt(0),/*fhJetNjet(0),*/
   fhTrackPhiVsEta(0),fhTrackAveTrackPt(0),fhJetNjetOverPtCut(),
 /*fhJetChBkgEnergyVsPtEtaGt05(0),fhJetChBkgEnergyVsPtEtaLe05(0),fhJetChAreaVsPtEtaGt05(0),fhJetChAreaVsPtEtaLe05(0),*/
@@ -266,6 +267,16 @@ TList *  AliAnaParticleJetFinderCorrelation::GetCreateOutputObjects()
   fhJetFFxiCor->SetXTitle("p_{T jet}");
   outputContainer->Add(fhJetFFxiCor) ;
 
+  fhGamPtPerTrig  = new TH1F("GamPtPerTrig","GamPtPerTrig", nptbins,ptmin,ptmax); 
+  fhGamPtPerTrig->SetYTitle("Counts");
+  fhGamPtPerTrig->SetXTitle("p_{T, #gamma}");
+  outputContainer->Add(fhGamPtPerTrig) ;
+  
+  fhPtGamPtJet  = new TH2F("PtGamPtJet","p_{T #gamma} vs p_{T jet}", nptbins,ptmin,ptmax,150,-50.,100.); 
+  fhPtGamPtJet->SetXTitle("p_{T #gamma}");
+  fhPtGamPtJet->SetYTitle("p_{T jet}");
+  outputContainer->Add(fhPtGamPtJet) ;
+
 
   //background FF
   fhBkgFFz[0]  = new TH2F("BkgFFzRC",  "z = p_{T i charged}/p_{T trigger} vs p_{T trigger} Bkg RC"  ,nptbins,ptmin,ptmax,200,0.,2);  
@@ -381,6 +392,11 @@ TList *  AliAnaParticleJetFinderCorrelation::GetCreateOutputObjects()
   fhJetPtBefore->SetYTitle("Counts");
   fhJetPtBefore->SetXTitle("p_{T jet}(GeV/c)");
   outputContainer->Add(fhJetPtBefore) ;
+
+  fhJetPtBeforeCut            = new TH1F("JetPtBeforeCut","JetPtBeforeCut",150,-50,100); 
+  fhJetPtBeforeCut->SetYTitle("Counts");
+  fhJetPtBeforeCut->SetXTitle("p_{T jet}(GeV/c)");
+  outputContainer->Add(fhJetPtBeforeCut) ;
 
   fhJetPt            = new TH1F("JetPt","JetPt",150,-50,100); 
   fhJetPt->SetYTitle("Counts");
@@ -893,6 +909,7 @@ void AliAnaParticleJetFinderCorrelation::InitParameters()
   fSelectIsolated = kTRUE;
   fJetConeSize = 0.4 ;
   fJetMinPt = 15. ; //GeV/c
+  fJetMinPtBkgSub = -100. ;//GeV/c
   fJetAreaFraction = 0.6 ;
   fJetBranchName = "jets";
   fBkgJetBranchName = "jets";
@@ -942,6 +959,8 @@ Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * partic
   Double_t deltaPhi=-10000.;// in the range (0; 2*pi)
   Double_t jetPt=0.;
   
+  Bool_t photonOnlyOnce=kTRUE;  
+
   for(Int_t ijet = 0; ijet < njets ; ijet++){
     jet = dynamic_cast<AliAODJet*>(aodRecJets->At(ijet));
     if(!jet)
@@ -953,15 +972,16 @@ Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * partic
     jetPt=jet->Pt();
     if(jetPt<fJetMinPt) continue;
     fhCuts2->Fill(3.,1.);
+    //put jet eta requirement here |eta_jet|<0.9-jet_cone_size
+    if(TMath::Abs(jet->Eta()) > (0.9 - fJetConeSize) ) continue;
+    fhCuts2->Fill(4.,1.);
+    if(jet->EffectiveAreaCharged()<fJetAreaFraction*TMath::Pi()*fJetConeSize*fJetConeSize) continue;
+    fhCuts2->Fill(5.,1.);
     if(fBackgroundJetFromReader ){
       jetPt-= (fJetRho * jet->EffectiveAreaCharged() );
     }
-    if(jetPt<0.) continue;
-    //put jet eta requirement here |eta_jet|<0.9-jet_cone_size
-    fhCuts2->Fill(4.,1.);
-    if(TMath::Abs(jet->Eta()) > (0.9 - fJetConeSize) ) continue;
-    fhCuts2->Fill(5.,1.);
-    if(jet->EffectiveAreaCharged()<fJetAreaFraction*TMath::Pi()*fJetConeSize*fJetConeSize) continue;
+
+    if(jetPt<fJetMinPtBkgSub) continue;
     fhCuts2->Fill(6.,1.);
     //printf("jet found\n");
     Double_t deltaPhi0pi  = TMath::Abs(particle->Phi()-jet->Phi());
@@ -971,6 +991,19 @@ Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * partic
     if ( deltaPhi0pi > TMath::Pi() ) deltaPhi0pi = 2. * TMath::Pi() - deltaPhi0pi ;
     if(deltaPhi<0) deltaPhi +=(TMath::Pi()*2.);
     
+    //new histogram for Leticia x-check
+    //isolated photon + jet(s)
+    if(OnlyIsolated() && !particle->IsIsolated() && 
+       (deltaPhi > fDeltaPhiMinCut) && (deltaPhi < fDeltaPhiMaxCut) ){
+      //fill 1D photon + 2D photon+jets
+      if(photonOnlyOnce) {
+	fhGamPtPerTrig->Fill(particlePt);
+	photonOnlyOnce=kFALSE;
+      }
+      fhPtGamPtJet->Fill(particlePt,jetPt);
+    }
+    
+
     fhDeltaPtBefore ->Fill(particlePt, particlePt - jetPt);
     fhDeltaPhiBefore->Fill(particlePt, deltaPhi);
     fhDeltaEtaBefore->Fill(particlePt, particle->Eta() - jet->Eta());
@@ -1422,6 +1455,9 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
       ptMostEne = jetPttmp;
       //indexMostEne=ijet;
     }
+    if(jettmp->Pt()>=fJetMinPt)
+      fhJetPtBeforeCut->Fill(jetPttmp);
+
     fhJetPt->Fill(jetPttmp);
     fhJetChBkgEnergyVsPt->Fill(jetPttmp,effectiveChargedBgEnergy);
     fhJetChAreaVsPt->Fill(jetPttmp,jettmp->EffectiveAreaCharged());
@@ -1911,6 +1947,7 @@ void AliAnaParticleJetFinderCorrelation::Print(const Option_t * opt) const
   printf("Isolated Trigger?  %d\n", fSelectIsolated) ;
   printf("Reconstructed jet cone size = %3.2f\n", fJetConeSize) ;
   printf("Reconstructed jet minimum pt before background subtraction = %3.2f\n", fJetMinPt) ;
+  printf("Reconstructed jet minimum pt after background subtraction = %3.2f\n", fJetMinPtBkgSub) ;
   printf("Reconstructed jet minimum area fraction = %3.2f\n", fJetAreaFraction) ;
 
   //if(!fNonStandardJetFromReader){

@@ -318,7 +318,7 @@ AliBaseMCTrackDensity::ProcessTracks(const AliMCEvent& event,
     // track back to the original primary?
     if (fUseOnlyPrimary && !isPrimary) continue;
 
-    const AliMCParticle* mother = GetMother(iTr, event);
+    const AliMCParticle* mother = isPrimary ? particle : GetMother(iTr, event);
     ProcessTrack(particle, mother);
 
   } // Loop over tracks

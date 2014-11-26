@@ -1734,7 +1734,7 @@ struct dNdetaDrawer
     }
 
     // --- Put trigger efficiency on the plot (only pp and if != 1) --
-    if (fTriggerEff > 0 && fTriggerEff <= 1 && !HasCent()) { 
+    if (fTriggerEff > 0 && fTriggerEff < 1 && !HasCent()) { 
       TLatex* ef = new TLatex(xR, yR, Form("#varepsilon_{%s} = %5.3f", 
 					 fTrigString->GetTitle(), 
 					 fTriggerEff));

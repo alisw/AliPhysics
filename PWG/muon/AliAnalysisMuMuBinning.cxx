@@ -283,6 +283,163 @@ TObjArray* AliAnalysisMuMuBinning::CreateBinObjArray(const char* what, const cha
 }
 
 //______________________________________________________________________________
+Double_t* AliAnalysisMuMuBinning::CreateBinArrayY() const
+{
+  /// Create a TObjArray with 2 (variable) bin array with x and y binning, suitable for TH1
+  /// The returned array must be deleted by the user
+  /// (using delete[] )
+  
+  TObjArray* binArray = CreateBinObjArray();
+  if (!binArray) return 0x0;
+  
+  AliAnalysisMuMuBinning::Range* firstBin = static_cast<AliAnalysisMuMuBinning::Range*>(binArray->First());
+  
+  Double_t* binsY = new Double_t[binArray->GetEntries()+1];
+  
+  Double_t minY = firstBin->Ymin();
+  Double_t maxY = firstBin->Ymax();
+  
+  if ( !(minY < maxY))
+  {
+    std::cout << "No 2D binning" << std::endl;
+    delete binsY;
+    delete binArray;
+    return 0x0;
+  }
+  
+  TIter next(binArray);
+  AliAnalysisMuMuBinning::Range* b;
+  Int_t i(0);
+  while ( ( b = static_cast<AliAnalysisMuMuBinning::Range*>(next()) ) )
+  {
+    if ( (i != 0) && (minY == b->Ymin()) ) break;
+    
+    binsY[i] = b->Ymin();
+    ++i;
+  }
+  
+  b = static_cast<AliAnalysisMuMuBinning::Range*>(binArray->At(i-1));
+  
+  binsY[i] = b->Ymax();
+  
+  Double_t* bins = new Double_t[i + 1];
+  
+  for (Int_t j = 0 ; j < (i+1) ; j++)
+  {
+    bins[j] = binsY[j];
+  }
+  
+  delete binArray;
+  delete[] binsY;
+  return bins;
+}
+
+//______________________________________________________________________________
+Int_t AliAnalysisMuMuBinning::GetNBinsX() const
+{
+  /// Gets the number of x bins, suitable for TH1
+  
+  
+  TObjArray* binArray = CreateBinObjArray();
+  if (!binArray) return 0;
+  
+  Double_t binsX(0);
+  
+  
+  TIter next(binArray);
+  AliAnalysisMuMuBinning::Range* b;
+  Int_t i(0);
+  while ( ( b = static_cast<AliAnalysisMuMuBinning::Range*>(next()) ) )
+  {
+    if ( (i != 0) && (binsX == b->Xmin()) ) continue;
+    
+    binsX = b->Xmin();
+    ++i;
+  }
+  
+  delete binArray;
+  return i;
+}
+
+//______________________________________________________________________________
+Int_t AliAnalysisMuMuBinning::GetNBinsY() const
+{
+  /// Gets the number of x bins, suitable for TH1
+  
+  
+  TObjArray* binArray = CreateBinObjArray();
+  if (!binArray) return 0x0;
+  
+  Double_t binsY(0);
+  
+  AliAnalysisMuMuBinning::Range* firstBin = static_cast<AliAnalysisMuMuBinning::Range*>(binArray->First());
+  
+  Double_t minY = firstBin->Ymin();
+  Double_t maxY = firstBin->Ymax();
+  
+  if ( !(minY < maxY))
+  {
+    std::cout << "No 2D binning" << std::endl;
+    delete binArray;
+    return 0;
+  }
+  
+  TIter next(binArray);
+  AliAnalysisMuMuBinning::Range* b;
+  Int_t i(0);
+  while ( ( b = static_cast<AliAnalysisMuMuBinning::Range*>(next()) ) )
+  {
+    if ( (i != 0) && (minY == b->Ymin()) ) break;
+    
+    binsY = b->Ymin();
+    ++i;
+  }
+  
+  delete binArray;
+  return i;
+}
+
+//______________________________________________________________________________
+Double_t* AliAnalysisMuMuBinning::CreateBinArrayX() const
+{
+  /// Create a TObjArray with 2 (variable) bin array with x and y binning , suitable for TH1
+  /// The returned array must be deleted by the user
+  /// (using delete[] )
+  
+  TObjArray* binArray = CreateBinObjArray();
+  if (!binArray) return 0x0;
+  
+  Double_t* binsX = new Double_t[binArray->GetEntries()+1];
+  
+  
+  TIter next(binArray);
+  AliAnalysisMuMuBinning::Range* b;
+  Int_t i(0);
+  while ( ( b = static_cast<AliAnalysisMuMuBinning::Range*>(next()) ) )
+  {
+    if ( (i != 0) && (binsX[i-1] == b->Xmin()) ) continue;
+    
+    binsX[i] = b->Xmin();
+    ++i;
+  }
+  
+  b = static_cast<AliAnalysisMuMuBinning::Range*>(binArray->At(binArray->GetEntries()-1));
+  
+  binsX[i] = b->Xmax();
+  
+  Double_t* bins = new Double_t[i + 1];
+  
+  for (Int_t j = 0 ; j < (i+1) ; j++)
+  {
+    bins[j] = binsX[j];
+  }
+  
+  delete binArray;
+  delete[] binsX;
+  return bins;
+}
+
+//______________________________________________________________________________
 void AliAnalysisMuMuBinning::CreateMesh(const char* what,
                                         const char* quantity1, const char* quantity2,
                                         const char* flavour,

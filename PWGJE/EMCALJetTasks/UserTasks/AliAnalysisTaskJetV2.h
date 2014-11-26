@@ -64,6 +64,8 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
                 if(x>TMath::TwoPi()/n) x = TMath::TwoPi()-(x+TMath::TwoPi()/n);
             }
             return x; }
+        /* inline */    static Bool_t   IsInPlane(Double_t dPhi) {
+            return (dPhi < -1.*TMath::Pi()/4. || dPhi > TMath::Pi()/4.); }
         /* inline */    static Double_t ChiSquarePDF(Int_t ndf, Double_t x) {
             Double_t n(ndf/2.), denom(TMath::Power(2, n)*TMath::Gamma(n));
             if (denom!=0)  return ((1./denom)*TMath::Power(x, n-1)*TMath::Exp(-x/2.)); 
@@ -155,8 +157,9 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         AliLocalRhoParameter*   GetLocalRhoParameter() const                    {return fLocalRho;}
         Double_t                GetJetRadius() const                            {return GetJetContainer()->GetJetRadius();}
         AliEmcalJet*            GetLeadingJet(AliLocalRhoParameter* localRho = 0x0);
+        static TH1F*            GetEventPlaneWeights(TH1F* hist);
+        static void             PrintTriggerSummary(UInt_t trigger);
         void                    ExecMe()                                        {ExecOnce();}
-
         AliAnalysisTaskJetV2*   ReturnMe()                                      {return this;}
         // local cuts
         void                    SetSoftTrackMinMaxPt(Float_t min, Float_t max)          {fSoftTrackMinPt = min; fSoftTrackMaxPt = max;}
@@ -208,12 +211,6 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         Bool_t                  PassesCuts(const AliVCluster* track) const;
         // filling histograms
         void                    FillHistogramsAfterSubtraction(Double_t psi2, Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc);
-        void                    FillTrackHistograms() const;
-        void                    FillClusterHistograms() const;
-        void                    FillEventPlaneHistograms(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc) const;
-        void                    FillRhoHistograms();
-        void                    FillDeltaPtHistograms(Double_t psi2) const; 
-        void                    FillJetHistograms(Double_t psi2);
         void                    FillQAHistograms(AliVTrack* vtrack) const;
         void                    FillQAHistograms(AliVEvent* vevent);
         void                    FillWeightedTrackHistograms() const;
@@ -224,6 +221,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         void                    FillWeightedJetHistograms(Double_t psi2);
         void                    FillWeightedQAHistograms(AliVTrack* vtrack) const;
         void                    FillWeightedQAHistograms(AliVEvent* vevent);
+        void                    FillWeightedTriggerQA(Double_t dPhi, Double_t pt, UInt_t trigger);
         void                    FillAnalysisSummaryHistogram() const;
         virtual void            Terminate(Option_t* option);
         // interface methods for the output file
@@ -342,6 +340,9 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TH1F*                   fHistClusterPt[10];     //! pt emcal clusters
         TH2F*                   fHistClusterEtaPhi[10]; //! eta phi emcal clusters
         TH2F*                   fHistClusterEtaPhiWeighted[10]; //! eta phi emcal clusters, pt weighted
+        // qa histograms for triggers
+        TH2F*                   fHistTriggerQAIn[10];   //! trigger qa in plane
+        TH2F*                   fHistTriggerQAOut[10];  //! trigger qa out of plane
         // qa event planes
         TProfile*               fHistPsiControl;        //! event plane control histogram
         TProfile*               fHistPsiSpread;         //! event plane spread histogram
