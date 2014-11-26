@@ -88,6 +88,7 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD+;
+#pragma link C++ class AliAnalysisTaskEmcalTriggerTreeWriter+;
 
 #ifdef HAVE_FASTJET
 #pragma link C++ class AliEmcalJetTask+;
