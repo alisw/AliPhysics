@@ -31,6 +31,7 @@ void CreateITSUv1()
   const double kPitchZ = 20e-4;
   const int    kNRow   = 650; 
   const int    kNCol   = 1500;
+//  const double kSiThickIB = 250e-4;
   const double kSiThickIB = 50e-4;
   const double kSiThickOB = 50e-4;
   //  const double kSensThick = 120e-4;   // -> sensor Si thickness
@@ -40,7 +41,7 @@ void CreateITSUv1()
   //
   const int kNLr = 7;
   const int kNLrInner = 3;
-  const int kBuildLevel = 0;
+  const int kBuildLevel = BUILDLEVEL;
   enum {kRmn,kRmd,kRmx,kNModPerStave,kPhi0,kNStave,kNPar};
   // Radii are from last TDR (ALICE-TDR-017.pdf Tab. 1.1, rMid is mean value)
   const double tdr5dat[kNLr][kNPar] = { 

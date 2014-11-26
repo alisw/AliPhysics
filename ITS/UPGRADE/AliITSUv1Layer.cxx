@@ -47,8 +47,8 @@ using namespace TMath;
 // General Parameters
 const Int_t    AliITSUv1Layer::fgkNumberOfInnerLayers =   3;
 
-const Double_t AliITSUv1Layer::fgkDefaultSensorThick  = 300*fgkmicron;
-const Double_t AliITSUv1Layer::fgkDefaultStaveThick   =   1*fgkcm;
+const Double_t AliITSUv1Layer::fgkDefaultSensorThick  =  18*fgkmicron;
+const Double_t AliITSUv1Layer::fgkDefaultChipThick    =  50*fgkmicron;
 
 // Inner Barrel Parameters
 const Int_t    AliITSUv1Layer::fgkIBChipsPerRow       =   9;
@@ -64,17 +64,21 @@ const Double_t AliITSUv1Layer::fgkOBModuleGap         =   0.01 *fgkcm;
 const Double_t AliITSUv1Layer::fgkOBChipXGap          =   0.01 *fgkcm;
 const Double_t AliITSUv1Layer::fgkOBChipZGap          =   0.01 *fgkcm;
 const Double_t AliITSUv1Layer::fgkOBFlexCableAlThick  =   0.005*fgkcm;
+const Double_t AliITSUv1Layer::fgkOBFlexCableCuThick  =   0.004*fgkcm;
 const Double_t AliITSUv1Layer::fgkOBFlexCableKapThick =   0.01 *fgkcm;
 const Double_t AliITSUv1Layer::fgkOBBusCableAlThick   =   0.02 *fgkcm;
 const Double_t AliITSUv1Layer::fgkOBBusCableKapThick  =   0.02 *fgkcm;
 const Double_t AliITSUv1Layer::fgkOBColdPlateThick    =   0.012*fgkcm;
 const Double_t AliITSUv1Layer::fgkOBCarbonPlateThick  =   0.012*fgkcm;
-const Double_t AliITSUv1Layer::fgkOBGlueThick         =   0.03 *fgkcm;
+const Double_t AliITSUv1Layer::fgkOBGlueThickM1       =   0.03 *fgkcm;
+const Double_t AliITSUv1Layer::fgkOBGlueThick         =   0.01 *fgkcm;
 const Double_t AliITSUv1Layer::fgkOBModuleZLength     =  21.06 *fgkcm;
 const Double_t AliITSUv1Layer::fgkOBHalfStaveYTrans   =   1.76 *fgkmm;
 const Double_t AliITSUv1Layer::fgkOBHalfStaveXOverlap =   4.3  *fgkmm;
 const Double_t AliITSUv1Layer::fgkOBGraphiteFoilThick =  30.0  *fgkmicron;
-const Double_t AliITSUv1Layer::fgkOBCoolTubeInnerD    =   2.052*fgkmm;
+const Double_t AliITSUv1Layer::fgkOBCarbonFleeceThick =  20.0  *fgkmicron;
+const Double_t AliITSUv1Layer::fgkOBCoolTubeInnerDM1  =   2.052*fgkmm;
+const Double_t AliITSUv1Layer::fgkOBCoolTubeInnerD    =   2.05 *fgkmm;
 const Double_t AliITSUv1Layer::fgkOBCoolTubeThick     =  32.0  *fgkmicron;
 const Double_t AliITSUv1Layer::fgkOBCoolTubeXDist     =  11.1  *fgkmm;
 
@@ -102,7 +106,7 @@ AliITSUv1Layer::AliITSUv1Layer():
   fLayRadius(0),
   fZLength(0),
   fSensorThick(0),
-  fStaveThick(0),
+  fChipThick(0),
   fStaveWidth(0),
   fStaveTilt(0),
   fNStaves(0),
@@ -127,7 +131,7 @@ AliITSUv1Layer::AliITSUv1Layer(Int_t debug):
   fLayRadius(0),
   fZLength(0),
   fSensorThick(0),
-  fStaveThick(0),
+  fChipThick(0),
   fStaveWidth(0),
   fStaveTilt(0),
   fNStaves(0),
@@ -152,7 +156,7 @@ AliITSUv1Layer::AliITSUv1Layer(Int_t lay, Int_t debug):
   fLayRadius(0),
   fZLength(0),
   fSensorThick(0),
-  fStaveThick(0),
+  fChipThick(0),
   fStaveWidth(0),
   fStaveTilt(0),
   fNStaves(0),
@@ -177,7 +181,7 @@ AliITSUv1Layer::AliITSUv1Layer(Int_t lay, Bool_t turbo, Int_t debug):
   fLayRadius(0),
   fZLength(0),
   fSensorThick(0),
-  fStaveThick(0),
+  fChipThick(0),
   fStaveWidth(0),
   fStaveTilt(0),
   fNStaves(0),
@@ -203,7 +207,7 @@ AliITSUv1Layer::AliITSUv1Layer(const AliITSUv1Layer &s):
   fLayRadius(s.fLayRadius),
   fZLength(s.fZLength),
   fSensorThick(s.fSensorThick),
-  fStaveThick(s.fStaveThick),
+  fChipThick(s.fChipThick),
   fStaveWidth(s.fStaveWidth),
   fStaveTilt(s.fStaveTilt),
   fNStaves(s.fNStaves),
@@ -233,7 +237,7 @@ AliITSUv1Layer& AliITSUv1Layer::operator=(const AliITSUv1Layer &s)
   fLayRadius   = s.fLayRadius;
   fZLength     = s.fZLength;
   fSensorThick = s.fSensorThick;
-  fStaveThick  = s.fStaveThick;
+  fChipThick   = s.fChipThick;
   fStaveWidth  = s.fStaveWidth;
   fStaveTilt   = s.fStaveTilt;
   fNStaves     = s.fNStaves;
@@ -286,10 +290,10 @@ void AliITSUv1Layer::CreateLayer(TGeoVolume *moth){
   if (fLayerNumber >= fgkNumberOfInnerLayers && fNModules <= 0)
     AliFatal(Form("Wrong number of modules (%d)",fNModules));
 
-  if (fStaveThick <= 0) {
-    AliInfo(Form("Stave thickness wrong or not set (%f), using default (%f)",
-		 fStaveThick,fgkDefaultStaveThick));
-    fStaveThick = fgkDefaultStaveThick;
+  if (fChipThick <= 0) {
+    AliInfo(Form("Chip thickness wrong or not set (%f), using default (%f)",
+		 fChipThick,fgkDefaultChipThick));
+    fChipThick = fgkDefaultChipThick;
   }
 
   if (fSensorThick <= 0) {
@@ -298,10 +302,10 @@ void AliITSUv1Layer::CreateLayer(TGeoVolume *moth){
     fSensorThick = fgkDefaultSensorThick;
   }
 
-  if (fSensorThick > fStaveThick) {
-    AliWarning(Form("Sensor thickness (%f) is greater than stave thickness (%f), fixing",
-		 fSensorThick,fStaveThick));
-    fSensorThick = fStaveThick;
+  if (fSensorThick > fChipThick) {
+    AliWarning(Form("Sensor thickness (%f) is greater than chip thickness (%f), fixing",
+		 fSensorThick,fChipThick));
+    fSensorThick = fChipThick;
   }
 
 
@@ -319,6 +323,8 @@ void AliITSUv1Layer::CreateLayer(TGeoVolume *moth){
 
   snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSLayerPattern(),fLayerNumber);
   TGeoVolume *layVol = new TGeoVolumeAssembly(volname);
+  layVol->SetTitle(
+	   Form("Model %d Build level %d",(Int_t)fStaveModel,fBuildLevel));
   layVol->SetUniqueID(fChipTypeID);
 
 //  layVol->SetVisibility(kFALSE);
@@ -386,6 +392,8 @@ void AliITSUv1Layer::CreateLayerTurbo(TGeoVolume *moth){
 
   snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSLayerPattern(), fLayerNumber);
   TGeoVolume *layVol = new TGeoVolumeAssembly(volname);
+  layVol->SetTitle(
+	   Form("Model %d Build level %d",(Int_t)fStaveModel,fBuildLevel));
   layVol->SetUniqueID(fChipTypeID);
   layVol->SetVisibility(kTRUE);
   layVol->SetLineColor(1);
@@ -441,7 +449,7 @@ TGeoVolume* AliITSUv1Layer::CreateStave(const TGeoManager * /*mgr*/){
   // The stave
   xlen = fLayRadius*Tan(alpha);
   if (fIsTurbo) xlen = 0.5*fStaveWidth;
-  ylen = 0.5*fStaveThick;
+  ylen = 0.5*fChipThick;
   zlen = 0.5*fZLength;
 
   Double_t yplus = 0.46;
@@ -1930,7 +1938,8 @@ TGeoVolume* AliITSUv1Layer::CreateStaveOuterB(const TGeoManager *mgr){
       mechStavVol = CreateStaveModelOuterB0(mgr);
       break;
     case AliITSUv1::kOBModel1:
-      mechStavVol = CreateStaveModelOuterB1(mgr);
+    case AliITSUv1::kOBModel2:
+      mechStavVol = CreateStaveModelOuterB12(mgr);
       break;
     default:
       AliFatal(Form("Unknown stave model %d",fStaveModel));
@@ -1988,7 +1997,7 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB0(const TGeoManager *mgr){
 
   // The chip
   xlen = fgkOBHalfStaveWidth;
-  ylen = 0.5*fStaveThick; // TO BE CHECKED
+  ylen = 0.5*fChipThick;
   zlen = fgkOBModuleZLength/2;
 
   TGeoVolume *chipVol = CreateChipInnerB(xlen, ylen, zlen);
@@ -2032,7 +2041,7 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB0(const TGeoManager *mgr){
 }
 
 //________________________________________________________________________
-TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB1(const TGeoManager *mgr){
+TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
 //
 // Create the mechanical half stave structure
 // for the Outer Barrel as in TDR
@@ -2047,26 +2056,31 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB1(const TGeoManager *mgr){
 // Created:      20 Nov 2013  Anastasia Barbano
 // Updated:      16 Jan 2014  Mario Sitta
 // Updated:      24 Feb 2014  Mario Sitta
+// Updated:      11 Nov 2014  Mario Sitta  Model2
 //
 
 
   // Local parameters
   Double_t yFlex1      = fgkOBFlexCableAlThick;
   Double_t yFlex2      = fgkOBFlexCableKapThick;
-  Double_t flexOverlap = 5; // to be checked
+  Double_t flexOverlap = 5; // to be checked - unused for the time being
   Double_t xHalfSt     = fgkOBHalfStaveWidth/2;
-  Double_t rCoolMin    = fgkOBCoolTubeInnerD/2;
-  Double_t rCoolMax    = rCoolMin + fgkOBCoolTubeThick;
-  Double_t kLay1       = 0.004; // to be checked
+  Double_t kLay1       = fgkOBCarbonFleeceThick;
   Double_t kLay2       = fgkOBGraphiteFoilThick;
 
-  Double_t xlen, ylen;
   Double_t ymod, zmod;
   Double_t xtru[12], ytru[12];
   Double_t xpos, ypos, ypos1, zpos/*, zpos5cm*/;
-  Double_t zlen;
+  Double_t xlen, ylen, zlen;
   char volname[30];
 
+  Double_t rCoolMin, rCoolMax;
+  if (fStaveModel == AliITSUv1::kOBModel1)
+    rCoolMin = fgkOBCoolTubeInnerDM1/2;
+  else
+    rCoolMin = fgkOBCoolTubeInnerD/2;
+
+  rCoolMax = rCoolMin + fgkOBCoolTubeThick;
 
   zlen = (fNModules*fgkOBModuleZLength + (fNModules-1)*fgkOBModuleGap)/2;
 
@@ -2082,6 +2096,8 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB1(const TGeoManager *mgr){
 					    zlen);
   TGeoBBox *busKap = new TGeoBBox("BusKap", xHalfSt, fgkOBBusCableKapThick/2,
 					    zlen);
+
+  TGeoBBox *glue = new TGeoBBox("Glue", xHalfSt, fgkOBGlueThick/2, zlen);
 
   TGeoBBox *coldPlate  = new TGeoBBox("ColdPlate", fgkOBHalfStaveWidth/2,
 				      fgkOBColdPlateThick/2, zlen);
@@ -2119,11 +2135,15 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB1(const TGeoManager *mgr){
   TGeoBBox *flex2_5cm  = new TGeoBBox("Flex2MV_5cm",xHalfSt,yFlex2/2,flexOverlap/2);
 
   // The half stave container (an XTru to avoid overlaps between neightbours)
+  ylen = ymod + busAl->GetDY() + busKap->GetDY() + coldPlate->GetDY()
+	      + graphlat->GetDY() + fleeclat->GetDY();
+  if (fStaveModel == AliITSUv1::kOBModel2)
+    ylen += 2*glue->GetDY();
+
   xtru[0] = xHalfSt;
   ytru[0] = 0;
   xtru[1] = xtru[0];
-  ytru[1] = -2*(ymod + busAl->GetDY() + busKap->GetDY() + coldPlate->GetDY()
-		+ graphlat->GetDY() + fleeclat->GetDY());
+  ytru[1] = -2*ylen;
   xtru[2] = fgkOBCoolTubeXDist/2 + fleectub->GetRmax();
   ytru[2] = ytru[1];
   xtru[3] = xtru[2];
@@ -2151,14 +2171,15 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB1(const TGeoManager *mgr){
   TGeoMedium *medCarbonFleece = mgr->GetMedium("ITS_CarbonFleece$"); 
   TGeoMedium *medFGS003       = mgr->GetMedium("ITS_FGS003$"); //amec thermasol
   TGeoMedium *medAir          = mgr->GetMedium("ITS_AIR$");
+  TGeoMedium *medGlue         = mgr->GetMedium("ITS_GLUE$");
 
 
-  TGeoVolume *busAlVol = new TGeoVolume("BusAlVol", busAl , medAluminum);
+  TGeoVolume *busAlVol = new TGeoVolume("PowerBusAlVol", busAl , medAluminum);
   busAlVol->SetLineColor(kCyan);
   busAlVol->SetFillColor(busAlVol->GetLineColor());
   busAlVol->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *busKapVol = new TGeoVolume("BusKapVol", busKap, medKapton);
+  TGeoVolume *busKapVol = new TGeoVolume("PowerBusKapVol", busKap, medKapton);
   busKapVol->SetLineColor(kBlue);
   busKapVol->SetFillColor(busKapVol->GetLineColor());
   busKapVol->SetFillStyle(4000); // 0% transparent
@@ -2168,6 +2189,11 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB1(const TGeoManager *mgr){
   coldPlateVol->SetLineColor(kYellow-3);
   coldPlateVol->SetFillColor(coldPlateVol->GetLineColor());
   coldPlateVol->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *glueVol = new TGeoVolume("GlueVol", glue, medGlue);
+  glueVol->SetLineColor(kBlack);
+  glueVol->SetFillColor(glueVol->GetLineColor());
+  glueVol->SetFillStyle(4000); // 0% transparent
 
   TGeoVolume *coolTubeVol  = new TGeoVolume("CoolingTubeVol",
 					    coolTube, medKapton);
@@ -2246,36 +2272,61 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB1(const TGeoManager *mgr){
 
   // Now build up the half stave
   ypos = - busKap->GetDY();
-  if (fBuildLevel < 4) // 4 = Kapton
+  if ( (fStaveModel == AliITSUv1::kOBModel1 && fBuildLevel < 4) || // Kapton
+       (fStaveModel == AliITSUv1::kOBModel2 && fBuildLevel < 5) )
     halfStaveVol->AddNode(busKapVol, 1, new TGeoTranslation(0, ypos, 0));
 
   ypos -= (busKap->GetDY() + busAl->GetDY());
-  if (fBuildLevel < 1) // 1 = Aluminum
+  if ( (fStaveModel == AliITSUv1::kOBModel1 && fBuildLevel < 1) || // Aluminum
+       (fStaveModel == AliITSUv1::kOBModel2 && fBuildLevel < 2) )
     halfStaveVol->AddNode(busAlVol, 1, new TGeoTranslation(0, ypos, 0));
 
-  ypos -= (busAl->GetDY() + ymod);
+  ypos -= busAl->GetDY();
+
+  if (fStaveModel == AliITSUv1::kOBModel2) {
+    ypos -= glue->GetDY();
+    if (fBuildLevel < 3) // Glue
+      halfStaveVol->AddNode(glueVol, 1, new TGeoTranslation(0, ypos, 0));
+    ypos -= glue->GetDY();
+  }
+
+  ypos -= ymod;
   for (Int_t j=0; j<fNModules; j++) {
     zpos = -zlen + j*(2*zmod + fgkOBModuleGap) + zmod;
     halfStaveVol->AddNode(moduleVol, j, new TGeoTranslation(0, ypos, zpos));
     fHierarchy[kModule]++;
   }
 
-  ypos -= (ymod + coldPlate->GetDY());
-  if (fBuildLevel < 5) // 5 = Carbon
+  ypos -= ymod;
+
+  if (fStaveModel == AliITSUv1::kOBModel2) {
+    ypos -= glue->GetDY();
+    if (fBuildLevel < 3) // Glue
+      halfStaveVol->AddNode(glueVol, 2, new TGeoTranslation(0, ypos, 0));
+    ypos -= glue->GetDY();
+  }
+
+  ypos -= coldPlate->GetDY();
+  if ( (fStaveModel == AliITSUv1::kOBModel1 && fBuildLevel < 5) || // Carbon
+       (fStaveModel == AliITSUv1::kOBModel2 && fBuildLevel < 6) )
     halfStaveVol->AddNode(coldPlateVol, 1, new TGeoTranslation(0, ypos, 0));
 
   xpos = fgkOBCoolTubeXDist/2;
   ypos1 = ypos - (coldPlate->GetDY() + coolTube->GetRmax());
-  if (fBuildLevel < 3) { // 3 = Water
+  if ( (fStaveModel == AliITSUv1::kOBModel1 && fBuildLevel < 3) || // Water
+       (fStaveModel == AliITSUv1::kOBModel2 && fBuildLevel < 4) ) {
     halfStaveVol->AddNode(coolWaterVol, 1, new TGeoTranslation(-xpos, ypos1, 0));
     halfStaveVol->AddNode(coolWaterVol, 2, new TGeoTranslation( xpos, ypos1, 0));
   }
-  if (fBuildLevel < 4) { // 4 = Kapton
+
+  if ( (fStaveModel == AliITSUv1::kOBModel1 && fBuildLevel < 4) || // Kapton
+       (fStaveModel == AliITSUv1::kOBModel2 && fBuildLevel < 5) ) {
     halfStaveVol->AddNode(coolTubeVol,1, new TGeoTranslation(-xpos, ypos1, 0));
     halfStaveVol->AddNode(coolTubeVol,2, new TGeoTranslation( xpos, ypos1, 0));
   }
 
-  if (fBuildLevel < 5) { // 5 = Carbon
+  if ( (fStaveModel == AliITSUv1::kOBModel1 && fBuildLevel < 5) || // Carbon
+       (fStaveModel == AliITSUv1::kOBModel2 && fBuildLevel < 6) ) {
     halfStaveVol->AddNode(graphtubVol,1, new TGeoTranslation(-xpos, ypos1, 0));
     halfStaveVol->AddNode(graphtubVol,2, new TGeoTranslation( xpos, ypos1, 0));
 
@@ -2285,7 +2336,8 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB1(const TGeoManager *mgr){
 
   xpos = xHalfSt - graphlat->GetDX();
   ypos1 = ypos - (coldPlate->GetDY() + graphlat->GetDY());
-  if (fBuildLevel < 5) { // 5 = Carbon
+  if ( (fStaveModel == AliITSUv1::kOBModel1 && fBuildLevel < 5) || // Carbon
+       (fStaveModel == AliITSUv1::kOBModel2 && fBuildLevel < 6) ) {
     halfStaveVol->AddNode(graphlatVol,1, new TGeoTranslation(-xpos, ypos1, 0));
     halfStaveVol->AddNode(graphlatVol,2, new TGeoTranslation( xpos, ypos1, 0));
 
@@ -2302,7 +2354,8 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB1(const TGeoManager *mgr){
 
   xpos = xHalfSt - fleeclat->GetDX();
   ypos1 = ypos - (coldPlate->GetDY() +2*graphlat->GetDY() +fleeclat->GetDY());
-  if (fBuildLevel < 5) { // 5 = Carbon
+  if ( (fStaveModel == AliITSUv1::kOBModel1 && fBuildLevel < 5) || // Carbon
+       (fStaveModel == AliITSUv1::kOBModel2 && fBuildLevel < 6) ) {
     halfStaveVol->AddNode(fleeclatVol,1, new TGeoTranslation(-xpos, ypos1, 0));
     halfStaveVol->AddNode(fleeclatVol,2, new TGeoTranslation( xpos, ypos1, 0));
 
@@ -2371,6 +2424,7 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB(const TGeoManager *mgr){
       mechStavVol = CreateSpaceFrameOuterBDummy(mgr);
       break;
     case AliITSUv1::kOBModel1:
+    case AliITSUv1::kOBModel2:
       mechStavVol = CreateSpaceFrameOuterB1(mgr);
       break;
     default:
@@ -2703,6 +2757,8 @@ TGeoVolume* AliITSUv1Layer::CreateModuleOuterB(const TGeoManager *mgr){
 //
 // Created:      18 Dec 2013  M. Sitta, A. Barbano
 // Updated:      26 Feb 2014  M. Sitta
+// Updated:      12 Nov 2014  M. Sitta  Model2 is w/o Carbon Plate and Glue
+//                                      and Cu instead of Al
 //
 
 
@@ -2719,7 +2775,7 @@ TGeoVolume* AliITSUv1Layer::CreateModuleOuterB(const TGeoManager *mgr){
 
   // The chip (the same as for IB)
   xlen = (fgkOBHalfStaveWidth/2-xGap/2)/fgkOBNChipRows;
-  ylen = 0.5*fStaveThick; // TO BE CHECKED
+  ylen = 0.5*fChipThick;
   zlen = (fgkOBModuleZLength - (fgkOBChipsPerRow-1)*zGap)/(2*fgkOBChipsPerRow);
 
   TGeoVolume *chipVol = CreateChipInnerB(xlen, ylen, zlen);
@@ -2735,12 +2791,18 @@ TGeoVolume* AliITSUv1Layer::CreateModuleOuterB(const TGeoManager *mgr){
   TGeoBBox *modPlate = new TGeoBBox("CarbonPlate", xlen, ylen, zlen);
 
   // The glue
-  ylen = fgkOBGlueThick/2;
+  ylen = fgkOBGlueThickM1/2;
   TGeoBBox *glue = new TGeoBBox("Glue", xlen, ylen, zlen);
 
-  // The flex cables
-  ylen = fgkOBFlexCableAlThick/2;
-  TGeoBBox *flexAl = new TGeoBBox("FlexAl", xlen, ylen, zlen);
+  // The FPC cables
+  TGeoBBox *flexMetal;
+  if (fStaveModel == AliITSUv1::kOBModel1) {
+    ylen = fgkOBFlexCableAlThick/2;
+    flexMetal = new TGeoBBox("FlexAl", xlen, ylen, zlen);
+  } else {
+    ylen = fgkOBFlexCableCuThick/2;
+    flexMetal = new TGeoBBox("FlexCu", xlen, ylen, zlen);
+  }
 
   ylen = fgkOBFlexCableKapThick/2;
   TGeoBBox *flexKap = new TGeoBBox("FlexKap", xlen, ylen, zlen);
@@ -2748,7 +2810,7 @@ TGeoVolume* AliITSUv1Layer::CreateModuleOuterB(const TGeoManager *mgr){
   // The module
   xlen = fgkOBHalfStaveWidth/2;
   ylen = ychip + modPlate->GetDY() + glue->GetDY() +
-         flexAl->GetDY() + flexKap->GetDY();
+         flexMetal->GetDY() + flexKap->GetDY();
   zlen = fgkOBModuleZLength/2;
   TGeoBBox *module = new TGeoBBox("OBModule", xlen,  ylen, zlen);
 
@@ -2759,6 +2821,7 @@ TGeoVolume* AliITSUv1Layer::CreateModuleOuterB(const TGeoManager *mgr){
   TGeoMedium *medCarbon   = mgr->GetMedium("ITS_CARBON$");
   TGeoMedium *medGlue     = mgr->GetMedium("ITS_GLUE$");
   TGeoMedium *medAluminum = mgr->GetMedium("ITS_ALUMINUM$");
+  TGeoMedium *medCopper   = mgr->GetMedium("ITS_COPPER$");
   TGeoMedium *medKapton   = mgr->GetMedium("ITS_KAPTON(POLYCH2)$");
 
   TGeoVolume *modPlateVol = new TGeoVolume("CarbonPlateVol",
@@ -2772,12 +2835,16 @@ TGeoVolume* AliITSUv1Layer::CreateModuleOuterB(const TGeoManager *mgr){
   glueVol->SetFillColor(glueVol->GetLineColor());
   glueVol->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *flexAlVol = new TGeoVolume("FlexAlVol", flexAl, medAluminum);
-  flexAlVol->SetLineColor(kRed);
-  flexAlVol->SetFillColor(flexAlVol->GetLineColor());
-  flexAlVol->SetFillStyle(4000); // 0% transparent
+  TGeoVolume *flexMetalVol;
+  if (fStaveModel == AliITSUv1::kOBModel1)
+    flexMetalVol = new TGeoVolume("FPCAlVol", flexMetal, medAluminum);
+  else
+    flexMetalVol = new TGeoVolume("FPCCuVol", flexMetal, medCopper);
+  flexMetalVol->SetLineColor(kRed);
+  flexMetalVol->SetFillColor(flexMetalVol->GetLineColor());
+  flexMetalVol->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *flexKapVol = new TGeoVolume("FlexKapVol", flexKap, medKapton);
+  TGeoVolume *flexKapVol = new TGeoVolume("FPCKapVol", flexKap, medKapton);
   flexKapVol->SetLineColor(kGreen);
   flexKapVol->SetFillColor(flexKapVol->GetLineColor());
   flexKapVol->SetFillStyle(4000); // 0% transparent
@@ -2788,16 +2855,24 @@ TGeoVolume* AliITSUv1Layer::CreateModuleOuterB(const TGeoManager *mgr){
   
 
   // Now build up the module
-  ypos = -module->GetDY() + modPlate->GetDY();
-  if (fBuildLevel < 5) // 5 = Carbon
-    modVol->AddNode(modPlateVol, 1, new TGeoTranslation(0, ypos, 0));
+  // Model1 : CarbonPlate-Glue-Chips-AluminumFPC-KaptonFPC
+  // Model2 : Chips-CopperFPC-KaptonFPCChips
+  ypos = -module->GetDY();
 
-  ypos += (modPlate->GetDY() + glue->GetDY());
-  if (fBuildLevel < 2) // 2 = Glue
-    modVol->AddNode(glueVol, 1, new TGeoTranslation(0, ypos, 0));
+  if (fStaveModel == AliITSUv1::kOBModel1) {
+    ypos += modPlate->GetDY();
+    if (fBuildLevel < 5) // Carbon
+      modVol->AddNode(modPlateVol, 1, new TGeoTranslation(0, ypos, 0));
+
+    ypos += (modPlate->GetDY() + glue->GetDY());
+    if (fBuildLevel < 2) // Glue
+      modVol->AddNode(glueVol, 1, new TGeoTranslation(0, ypos, 0));
+
+    ypos += glue->GetDY();
+  }
 
   xpos = -module->GetDX() + xchip;
-  ypos += (glue->GetDY() + ychip);
+  ypos += ychip;
   for(Int_t k=0; k<fgkOBChipsPerRow; k++)   //put 7x2 chip into one module
     {
       zpos = -module->GetDZ() + zchip + k*(2*zchip + zGap);
@@ -2807,53 +2882,17 @@ TGeoVolume* AliITSUv1Layer::CreateModuleOuterB(const TGeoManager *mgr){
       fHierarchy[kChip]+=2;
     }
 
-  ypos += (ychip + flexAl->GetDY());
-  if (fBuildLevel < 1) // 1 = Aluminum
-    modVol->AddNode(flexAlVol, 1, new TGeoTranslation(0, ypos, 0));
+  ypos += (ychip + flexMetal->GetDY());
+  if (fBuildLevel < 1) // Model1: Aluminum  Model2: Copper
+    modVol->AddNode(flexMetalVol, 1, new TGeoTranslation(0, ypos, 0));
 
-  ypos += (flexAl->GetDY() + flexKap->GetDY());
-  if (fBuildLevel < 4) // 4 = Kapton
+  ypos += (flexMetal->GetDY() + flexKap->GetDY());
+  if ( (fStaveModel == AliITSUv1::kOBModel1 && fBuildLevel < 4) || // Kapton
+       (fStaveModel == AliITSUv1::kOBModel2 && fBuildLevel < 5) )
     modVol->AddNode(flexKapVol, 1, new TGeoTranslation(0, ypos, 0));
-  
 
   // Done, return the module
   return modVol;
-}
-
-//________________________________________________________________________
-Double_t AliITSUv1Layer::RadiusOfTurboContainer(){
-//
-// Computes the inner radius of the air container for the Turbo configuration
-// as the radius of either the circle tangent to the stave or the circle
-// passing for the stave's lower vertex
-//
-// Input:
-//         none (all needed parameters are class members)
-//
-// Output:
-//
-// Return:
-//        the radius of the container if >0, else flag to use the lower vertex
-//
-// Created:      08 Mar 2012  Mario Sitta
-//
-
-  Double_t rr, delta, z, lstav, rstav;
-
-  if (fStaveThick > 89.) // Very big angle: avoid overflows since surely
-    return -1;            // the radius from lower vertex is the right value
-
-  rstav = fLayRadius + 0.5*fStaveThick;
-  delta = (0.5*fStaveThick)/CosD(fStaveTilt);
-  z     = (0.5*fStaveThick)*TanD(fStaveTilt);
-
-  rr = rstav - delta;
-  lstav = (0.5*fStaveWidth) - z;
-
-  if ( (rr*SinD(fStaveTilt) < lstav) )
-    return (rr*CosD(fStaveTilt));
-  else
-    return -1;
 }
 
 //________________________________________________________________________
