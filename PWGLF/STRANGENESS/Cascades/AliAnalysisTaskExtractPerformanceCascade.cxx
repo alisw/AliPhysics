@@ -68,8 +68,8 @@ class AliAODv0;
 
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
-#include "AliV0vertexer.h"
-#include "AliCascadeVertexer.h"
+#include "AliLightV0vertexer.h"
+#include "AliLightCascadeVertexer.h"
 #include "AliESDpid.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
@@ -2025,8 +2025,8 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
     lESDevent->ResetCascades();
     lESDevent->ResetV0s();
 
-    AliV0vertexer lV0vtxer;
-    AliCascadeVertexer lCascVtxer;
+    AliLightV0vertexer lV0vtxer;
+    AliLightCascadeVertexer lCascVtxer;
                   
     lV0vtxer.SetDefaultCuts(fV0VertexerSels);
     lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
