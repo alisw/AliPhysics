@@ -29,7 +29,6 @@
 #include "AliVfriendTrack.h"
 #include "AliTPCseed.h"
 #include "AliVEventHandler.h"
-#include "AliESDInputHandler.h"
 #include "AliAnalysisManager.h"
 #include "TFile.h"
 #include "TSystem.h"
@@ -135,21 +134,6 @@ void AliTPCAnalysisTaskcalib::ConnectInputData(Option_t *) {
       if(!fV) Printf("ERROR: no V event!");
 
       //if (fV) {Printf("*** CONNECTED NEW EVENT ****");}
-
-      /*if (classInputHandler.Contains("HLT")) { // we are running in HLT
-        fVfriend = vH->GetVfriendEvent();
-        //if (fVfriend) Printf("Connected friend Event from V manager!");
-      }
-      else { /// we are running offline
-        if (vH && vH->GetTree()) {
-          //Printf("...We got the tree...");
-          if (vH->GetTree()->GetBranch("ESDfriend.")){
-            //Printf("friend branch found, use AliESDInputHandler");
-            fVfriend = ((AliESDInputHandler*)vH)->GetESDfriend();
-          }
-        }
-      }*/
-
     }
   }
 }

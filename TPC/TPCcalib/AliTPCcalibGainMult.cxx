@@ -335,13 +335,9 @@ void AliTPCcalibGainMult::Process(AliVEvent *event) {
   //const Double_t kMaxDCAR=10; // maximal DCA R of the track
   //const Double_t kMaxDCAZ=5;  // maximal DCA Z of the track
   //  const Double_t kMIPPt=0.525; // MIP pt
-
-    //Printf("AliTPCcalibGainMult::Process()...");
-
-    //AliESDEvent *event=(AliESDEvent*)event;
   
   if (!event) {
-    Printf("ERROR AliTPCcalibGainMult::Process(): event not available");
+    //Printf("ERROR AliTPCcalibGainMult::Process(): event not available");
     return;
   }  
   fCurrentEvent=event;
@@ -1876,6 +1872,8 @@ void AliTPCcalibGainMult::DumpHPT(const AliVEvent *event){
     if (!tpcInner) continue;
     tpcInner->Rotate(track->GetAlpha());
     tpcInner->PropagateTo(track->GetX(),event->GetMagneticField());
+    track->ResetTrackParamTPCInner(&prmtpcInner);
+
     //
     // tpc constrained
     //
@@ -1887,6 +1885,7 @@ void AliTPCcalibGainMult::DumpHPT(const AliVEvent *event){
     if (!tpcInnerC) continue;
     tpcInnerC->Rotate(track->GetAlpha());
     tpcInnerC->PropagateTo(track->GetX(),event->GetMagneticField());
+
     Double_t dz[2],cov[3];
     AliESDVertex dummyvtx;
     event->GetPrimaryVertex(dummyvtx);

@@ -1363,174 +1363,176 @@ Bool_t AliTPCcalibTime::IsSame(const AliVTrack *const tr0, const AliVTrack *cons
 
 
 void  AliTPCcalibTime::ProcessSame(const AliVTrack *const track, AliVfriendTrack *const friendTrack, const AliVEvent *const event){
-  //
-  // Process  TPC tracks crossing CE
-  //
-  // 0. Select only track crossing the CE
-  // 1. Cut on the track length
-  // 2. Refit the the track on A and C side separatelly
-  // 3. Fill time histograms
-  const Int_t kMinNcl=100;
-  const Int_t kMinNclS=25;  // minimul number of clusters on the sides
-  const Double_t pimass=TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
-  const Double_t kMaxDy=1;  // maximal distance in y
-  const Double_t kMaxDsnp=0.05;  // maximal distance in snp
-  const Double_t kMaxDtheta=0.05;  // maximal distance in theta
-  
-  AliExternalTrackParam trckTPCOut;
-  if ( (friendTrack->GetTrackParamTPCOut(trckTPCOut)) < 0) return;
-
-  AliExternalTrackParam trckIn;
-  track->GetTrackParam(trckIn);
-  //
-  // 0. Select only track crossing the CE
-  //
-  if (trckIn.GetZ()*trckTPCOut.GetZ()>0) return;
-  //
-  // 1. cut on track length
-  //
-  if (track->GetTPCNcls()<kMinNcl) return;
-  //
-  // 2. Refit track sepparatel on A and C side
-  //
-  TObject *calibObject;
-  AliTPCseed *seed = 0;
-  for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
-    if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
-  }
-  if (!seed) return;
-  //
-  AliExternalTrackParam trackIn;
-  track->GetTrackParamIp(trackIn);
-  AliExternalTrackParam trackOut;
-  track->GetTrackParamOp(trackOut);
-
-  Double_t cov[3]={0.01,0.,0.01}; //use the same errors
-  Double_t xyz[3]={0,0.,0.0};  
-  Double_t bz   =0;
-  Int_t nclIn=0,nclOut=0;
-  trackIn.ResetCovariance(1000.);
-  trackOut.ResetCovariance(1000.);
-  //
-  //2.a Refit inner
-  // 
-  Int_t sideIn=0;
-  for (Int_t irow=0;irow<kMaxRow;irow++) {
-    AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
-    if (!cl) continue;
-    if (cl->GetX()<80) continue;
-    if (sideIn==0){
-      if (cl->GetDetector()%36<18) sideIn=1;
-      if (cl->GetDetector()%36>=18) sideIn=-1;
-    }
-    if (sideIn== -1 && (cl->GetDetector()%36)<18) break;
-    if (sideIn==  1 &&(cl->GetDetector()%36)>=18) break;
-    Int_t sector = cl->GetDetector();
-    Float_t dalpha = TMath::DegToRad()*(sector%18*20.+10.)-trackIn.GetAlpha();
-    if (TMath::Abs(dalpha)>0.01){
-      if (!trackIn.Rotate(TMath::DegToRad()*(sector%18*20.+10.))) break;
-    }
-    Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
-    trackIn.GetXYZ(xyz);
-    bz = AliTracker::GetBz(xyz);
-    AliTracker::PropagateTrackToBxByBz(&trackIn,r[0],pimass,1.,kFALSE);
-    if (!trackIn.PropagateTo(r[0],bz)) break;
-    nclIn++;
-    trackIn.Update(&r[1],cov);    
-  }
-  //
-  //2.b Refit outer
-  //
-  Int_t sideOut=0;
-  for (Int_t irow=kMaxRow;irow--;) {
-    AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
-    if (!cl) continue;
-    if (cl->GetX()<80) continue;
-    if (sideOut==0){
-      if (cl->GetDetector()%36<18) sideOut=1;
-      if (cl->GetDetector()%36>=18) sideOut=-1;
-      if (sideIn==sideOut) break;
-    }
-    if (sideOut== -1 && (cl->GetDetector()%36)<18) break;
-    if (sideOut==  1 &&(cl->GetDetector()%36)>=18) break;
     //
-    Int_t sector = cl->GetDetector();
-    Float_t dalpha = TMath::DegToRad()*(sector%18*20.+10.)-trackOut.GetAlpha();
-    if (TMath::Abs(dalpha)>0.01){
-      if (!trackOut.Rotate(TMath::DegToRad()*(sector%18*20.+10.))) break;
+    // Process  TPC tracks crossing CE
+    //
+    // 0. Select only track crossing the CE
+    // 1. Cut on the track length
+    // 2. Refit the the track on A and C side separatelly
+    // 3. Fill time histograms
+    const Int_t kMinNcl=100;
+    const Int_t kMinNclS=25;  // minimul number of clusters on the sides
+    const Double_t pimass=TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+    const Double_t kMaxDy=1;  // maximal distance in y
+    const Double_t kMaxDsnp=0.05;  // maximal distance in snp
+    const Double_t kMaxDtheta=0.05;  // maximal distance in theta
+
+    AliExternalTrackParam trckTPCOut;
+    if ( (friendTrack->GetTrackParamTPCOut(trckTPCOut)) < 0) return;
+
+    AliExternalTrackParam trckIn;
+    track->GetTrackParamIp(trckIn);
+    //
+    // 0. Select only track crossing the CE
+    //
+
+    if (trckIn.GetZ()*trckTPCOut.GetZ()>0) return;
+    //
+    // 1. cut on track length
+    //
+    if (track->GetTPCNcls()<kMinNcl) return;
+    //
+    // 2. Refit track sepparatel on A and C side
+    //
+    TObject *calibObject;
+    AliTPCseed *seed = 0;
+    for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
+      if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
     }
-    Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
-    trackOut.GetXYZ(xyz);
-    bz = AliTracker::GetBz(xyz);
-    AliTracker::PropagateTrackToBxByBz(&trackOut,r[0],pimass,1.,kFALSE);
-    if (!trackOut.PropagateTo(r[0],bz)) break;
-    nclOut++;
-    trackOut.Update(&r[1],cov);    
-  }
-  trackOut.Rotate(trackIn.GetAlpha());
-  Double_t meanX = (trackIn.GetX()+trackOut.GetX())*0.5;
-  trackIn.PropagateTo(meanX,bz); 
-  trackOut.PropagateTo(meanX,bz); 
-  if (TMath::Abs(trackIn.GetY()-trackOut.GetY())>kMaxDy) return;
-  if (TMath::Abs(trackIn.GetSnp()-trackOut.GetSnp())>kMaxDsnp) return;
-  if (TMath::Abs(trackIn.GetTgl()-trackOut.GetTgl())>kMaxDtheta) return;
-  if (TMath::Min(nclIn,nclOut)>kMinNclS){
-    FillResHistoTPCCE(&trackIn,&trackOut);
-  }
-  TTreeSRedirector *cstream = GetDebugStreamer();
-  if (cstream){
-    TVectorD gxyz(3);
-    trackIn.GetXYZ(gxyz.GetMatrixArray());
-    TTimeStamp tstamp(fTime);
-    (*cstream)<<"tpctpc"<<
-      "run="<<fRun<<              //  run number
-      "event="<<fEvent<<          //  event number
-      "time="<<fTime<<            //  time stamp of event
-      "trigger="<<fTrigger<<      //  trigger
-      "mag="<<fMagF<<             //  magnetic field
+    if (!seed) return;
+    //
+
+    AliExternalTrackParam trackIn;
+    track->GetTrackParamIp(trackIn);
+    AliExternalTrackParam trackOut;
+    track->GetTrackParamOp(trackOut);
+
+    Double_t cov[3]={0.01,0.,0.01}; //use the same errors
+    Double_t xyz[3]={0,0.,0.0};
+    Double_t bz   =0;
+    Int_t nclIn=0,nclOut=0;
+    trackIn.ResetCovariance(1000.);
+    trackOut.ResetCovariance(1000.);
+    //
+    //2.a Refit inner
+    //
+    Int_t sideIn=0;
+    for (Int_t irow=0;irow<kMaxRow;irow++) {
+      AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
+      if (!cl) continue;
+      if (cl->GetX()<80) continue;
+      if (sideIn==0){
+        if (cl->GetDetector()%36<18) sideIn=1;
+        if (cl->GetDetector()%36>=18) sideIn=-1;
+      }
+      if (sideIn== -1 && (cl->GetDetector()%36)<18) break;
+      if (sideIn==  1 &&(cl->GetDetector()%36)>=18) break;
+      Int_t sector = cl->GetDetector();
+      Float_t dalpha = TMath::DegToRad()*(sector%18*20.+10.)-trackIn.GetAlpha();
+      if (TMath::Abs(dalpha)>0.01){
+        if (!trackIn.Rotate(TMath::DegToRad()*(sector%18*20.+10.))) break;
+      }
+      Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
+      trackIn.GetXYZ(xyz);
+      bz = AliTracker::GetBz(xyz);
+      AliTracker::PropagateTrackToBxByBz(&trackIn,r[0],pimass,1.,kFALSE);
+      if (!trackIn.PropagateTo(r[0],bz)) break;
+      nclIn++;
+      trackIn.Update(&r[1],cov);
+    }
+    //
+    //2.b Refit outer
+    //
+    Int_t sideOut=0;
+    for (Int_t irow=kMaxRow;irow--;) {
+      AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
+      if (!cl) continue;
+      if (cl->GetX()<80) continue;
+      if (sideOut==0){
+        if (cl->GetDetector()%36<18) sideOut=1;
+        if (cl->GetDetector()%36>=18) sideOut=-1;
+        if (sideIn==sideOut) break;
+      }
+      if (sideOut== -1 && (cl->GetDetector()%36)<18) break;
+      if (sideOut==  1 &&(cl->GetDetector()%36)>=18) break;
       //
-      "sideIn="<<sideIn<<         // side at inner part
-      "sideOut="<<sideOut<<         // side at puter part
-      "xyz.="<<&gxyz<<             // global position
-      "tIn.="<<&trackIn<<         // refitterd track in 
-      "tOut.="<<&trackOut<<       // refitter track out
-      "nclIn="<<nclIn<<           // 
-      "nclOut="<<nclOut<<         //
-      "\n";  
-  }
-  //
-  // 3. Fill time histograms
-  // Debug stremaer expression
-  // chainTPCTPC->Draw("(tIn.fP[1]-tOut.fP[1])*sign(-tIn.fP[3]):tIn.fP[3]","min(nclIn,nclOut)>30","")
-  if (TMath::Min(nclIn,nclOut)>kMinNclS){
-    fDz = trackOut.GetZ()-trackIn.GetZ();
-    if (trackOut.GetTgl()<0) fDz*=-1.;
-    TTimeStamp tstamp(fTime);
-    Double_t ptrelative0 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
-    Double_t ptrelative1 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
-    Double_t vecDrift[4]={static_cast<Double_t>(fTime),(ptrelative0+ptrelative1)/2.0,fDz/500.0,static_cast<Double_t>(event->GetRunNumber())};
-    //
-    // fill histograms per trigger class and itegrated
-    //
-    THnSparse* curHist=NULL;
-    for (Int_t itype=0; itype<2; itype++){
-      TString name="MEAN_VDRIFT_CROSS_";  
-      if (itype==0){
-	name+=event->GetFiredTriggerClasses();
-	name.ToUpper();
-      }else{
-	name+="ALL";
+      Int_t sector = cl->GetDetector();
+      Float_t dalpha = TMath::DegToRad()*(sector%18*20.+10.)-trackOut.GetAlpha();
+      if (TMath::Abs(dalpha)>0.01){
+        if (!trackOut.Rotate(TMath::DegToRad()*(sector%18*20.+10.))) break;
       }
-      curHist=(THnSparseF*)fArrayDz->FindObject(name);
-      if(!curHist){
-	curHist=new THnSparseF(name,"HistVdrift;time;p/T ratio;Vdrift;run",4,fBinsVdrift,fXminVdrift,fXmaxVdrift);
-	fArrayDz->AddLast(curHist);
-      }
-      curHist->Fill(vecDrift);
+      Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
+      trackOut.GetXYZ(xyz);
+      bz = AliTracker::GetBz(xyz);
+      AliTracker::PropagateTrackToBxByBz(&trackOut,r[0],pimass,1.,kFALSE);
+      if (!trackOut.PropagateTo(r[0],bz)) break;
+      nclOut++;
+      trackOut.Update(&r[1],cov);
     }
-  }
+    trackOut.Rotate(trackIn.GetAlpha());
+    Double_t meanX = (trackIn.GetX()+trackOut.GetX())*0.5;
+    trackIn.PropagateTo(meanX,bz);
+    trackOut.PropagateTo(meanX,bz);
+    if (TMath::Abs(trackIn.GetY()-trackOut.GetY())>kMaxDy) return;
+    if (TMath::Abs(trackIn.GetSnp()-trackOut.GetSnp())>kMaxDsnp) return;
+    if (TMath::Abs(trackIn.GetTgl()-trackOut.GetTgl())>kMaxDtheta) return;
+    if (TMath::Min(nclIn,nclOut)>kMinNclS){
+      FillResHistoTPCCE(&trackIn,&trackOut);
+    }
+    TTreeSRedirector *cstream = GetDebugStreamer();
+    if (cstream){
+      TVectorD gxyz(3);
+      trackIn.GetXYZ(gxyz.GetMatrixArray());
+      TTimeStamp tstamp(fTime);
+      (*cstream)<<"tpctpc"<<
+        "run="<<fRun<<              //  run number
+        "event="<<fEvent<<          //  event number
+        "time="<<fTime<<            //  time stamp of event
+        "trigger="<<fTrigger<<      //  trigger
+        "mag="<<fMagF<<             //  magnetic field
+        //
+        "sideIn="<<sideIn<<         // side at inner part
+        "sideOut="<<sideOut<<         // side at puter part
+        "xyz.="<<&gxyz<<             // global position
+        "tIn.="<<&trackIn<<         // refitterd track in
+        "tOut.="<<&trackOut<<       // refitter track out
+        "nclIn="<<nclIn<<           //
+        "nclOut="<<nclOut<<         //
+        "\n";
+    }
+    //
+    // 3. Fill time histograms
+    // Debug stremaer expression
+    // chainTPCTPC->Draw("(tIn.fP[1]-tOut.fP[1])*sign(-tIn.fP[3]):tIn.fP[3]","min(nclIn,nclOut)>30","")
+    if (TMath::Min(nclIn,nclOut)>kMinNclS){
+      fDz = trackOut.GetZ()-trackIn.GetZ();
+      if (trackOut.GetTgl()<0) fDz*=-1.;
+      TTimeStamp tstamp(fTime);
+      Double_t ptrelative0 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
+      Double_t ptrelative1 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
+      Double_t vecDrift[4]={static_cast<Double_t>(fTime),(ptrelative0+ptrelative1)/2.0,fDz/500.0,static_cast<Double_t>(event->GetRunNumber())};
+      //
+      // fill histograms per trigger class and itegrated
+      //
+      THnSparse* curHist=NULL;
+      for (Int_t itype=0; itype<2; itype++){
+        TString name="MEAN_VDRIFT_CROSS_";
+        if (itype==0){
+      name+=event->GetFiredTriggerClasses();
+      name.ToUpper();
+        }else{
+      name+="ALL";
+        }
+        curHist=(THnSparseF*)fArrayDz->FindObject(name);
+        if(!curHist){
+      curHist=new THnSparseF(name,"HistVdrift;time;p/T ratio;Vdrift;run",4,fBinsVdrift,fXminVdrift,fXmaxVdrift);
+      fArrayDz->AddLast(curHist);
+        }
+        curHist->Fill(vecDrift);
+      }
+    }
 
-}
+  }
 
 void  AliTPCcalibTime::ProcessAlignITS(AliVTrack *const track, const AliVfriendTrack *const friendTrack, const AliVEvent *const event, AliVfriendEvent *const vFriend){
   //
@@ -1779,7 +1781,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliVTrack *const track, AliVfriendTrack *
   AliExternalTrackParam &pTPC = trckTPCOut;
 
   AliTracker::PropagateTrackToBxByBz(&pTPC,kRefX,0.1,0.1,kFALSE);
-  friendTrack->ResetTrackParamTPCOut(&trckTPCOut);
+  //friendTrack->ResetTrackParamTPCOut(&trckTPCOut);
   AliExternalTrackParam *pTRDtrack = 0; 
   TObject *calibObject=0;
   for (Int_t l=0;(calibObject=((AliVfriendTrack*)friendTrack)->GetCalibObject(l));++l) {

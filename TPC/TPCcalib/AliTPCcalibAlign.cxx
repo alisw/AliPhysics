@@ -469,10 +469,6 @@ void AliTPCcalibAlign::Process(AliVEvent *event) {
   const Int_t kMaxTracks =6;
   const Int_t kminCl = 40;
 
-  //AliVEventHandler *vH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-  //AliVfriendEvent *Vfriend = vH->GetVfriendEvent();
-  //if (!Vfriend) (Vfriend=event->FindFriend());
-
   AliVfriendEvent *Vfriend=event->FindFriend();
 
   if (!Vfriend) {
@@ -488,14 +484,14 @@ void AliTPCcalibAlign::Process(AliVEvent *event) {
   //
   for (Int_t i0=0;i0<ntracks;++i0) {
     AliVTrack *track0 = event->GetVTrack(i0);
-    if (!track0) Printf("ERROR! NO TRACK!!");
+    //if (!track0) Printf("ERROR! NO TRACK!!");
     AliVfriendTrack *friendTrack = 0;
     TObject *calibObject=0;
     AliTPCseed *seed0 = 0;
     //
     friendTrack = const_cast<AliVfriendTrack*>(Vfriend->GetTrack(i0));
     if (!friendTrack) {
-        Printf("ERROR!! NO FRIEND TRACK!!");
+        //Printf("ERROR!! NO FRIEND TRACK!!"); //
         continue;}
     for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
       if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
@@ -505,6 +501,7 @@ void AliTPCcalibAlign::Process(AliVEvent *event) {
     fCurrentFriendTrack=friendTrack;
     fCurrentSeed=seed0;
     fCurrentEvent=event;
+
     Double_t scalept= TMath::Min(1./TMath::Abs(track0->GetParameter()[4]),2.);
     Bool_t   isSelected = (TMath::Exp(2*scalept)>kptDownscale*gRandom->Rndm());
     if (isSelected) ProcessSeed(seed0);
@@ -634,10 +631,6 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliVEvent *event){
   //
 
   AliVfriendEvent *Vfriend=event->FindFriend();
-  //AliVEventHandler *vH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-  //AliVfriendEvent *Vfriend = vH->GetVfriendEvent();
-  //if (!Vfriend) Vfriend=event->FindFriend();
-
   if (!Vfriend) return;
   Int_t ntracks=event->GetNumberOfTracks();
   Int_t kMaxTracks=4;   // maximal number of tracks for cosmic pairs
@@ -2659,16 +2652,11 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
   // 3. Refit the track - out-in
   // 4. Combine In and Out track - - fil cluster residuals
   //
-    //Printf("AliTPCcalibAlign::UpdateClusterDeltaField()");
 
-  if (!fCurrentFriendTrack) {
-      Printf("UpdateClusterDeltaField(): no friend track!");
-      return;}
+  if (!fCurrentFriendTrack) return;
 
   AliExternalTrackParam trckTPCOut;
-  if((fCurrentFriendTrack->GetTrackParamTPCOut(trckTPCOut)) < 0) {
-      Printf("UpdateClusterDeltaField(): no TCP Out param at friend track!");
-      return;}
+  if((fCurrentFriendTrack->GetTrackParamTPCOut(trckTPCOut)) < 0) return;
 
   const Double_t kPtCut=1.0;    // pt
   const Double_t kSnpCut=0.2; // snp cut
@@ -2680,9 +2668,7 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
   const Double_t kSigma=0.3;       // error increase towards edges of TPC 
   const Double_t kSkipBoundary=7.5;  // skip track updates in the boundary IFC,OFC, IO
   //
-  if (!fCurrentTrack) {
-      Printf("UpdateClusterDeltaField(): no current track!");
-      return;}
+  if (!fCurrentTrack) return;
   if (!fCurrentFriendTrack) return;
   Float_t vertexXY=0,vertexZ=0;
   fCurrentTrack->GetImpactParameters(vertexXY,vertexZ);
@@ -2764,7 +2750,7 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
     cov[2]+=kSigma/dedge;      // bigger error close to the boundary
     cov[0]*=cov[0];
     cov[2]*=cov[2];
-    if (!AliTracker::PropagateTrackToBxByBz(&trackOut, r[0],mass,1.,kFALSE)) continue;    //??
+    if (!AliTracker::PropagateTrackToBxByBz(&trackOut, r[0],mass,1.,kFALSE)) continue;
     if (TMath::Abs(dedge)<kEdgeCut) continue;
     //
     Bool_t doUpdate=kTRUE;
