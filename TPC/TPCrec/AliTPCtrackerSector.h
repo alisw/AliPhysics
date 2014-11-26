@@ -14,6 +14,7 @@
 //   Origin: 
 //-------------------------------------------------------
 
+#include "TClonesArray.h"
 
 //class TFile;
 class AliTPCParam;

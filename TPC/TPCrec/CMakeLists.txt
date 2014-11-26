@@ -30,28 +30,19 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                     ${AliRoot_SOURCE_DIR}/TPC/TPCbase
-                    ${AliRoot_SOURCE_DIR}/TPC/TPCsim
                    )
 
 # Sources in alphabetical order
 set(SRCS
-    AliClusters.cxx
-    AliComplexCluster.cxx
     AliCosmicTracker.cxx
     AliPadMax.cxx
     AliTPCclusterer.cxx
     AliTPCclustererKr.cxx
-    AliTPCclusterInfo.cxx
     AliTPCclusterKr.cxx
-    AliTPCclusterMI.cxx
-    AliTPCClusterParam.cxx
-    AliTPCClustersRow.cxx
     AliTPCCosmicTrackfit.cxx
     AliTPCCosmicUtils.cxx
     AliTPCpolyTrack.cxx
-    AliTPCQADataMakerRec.cxx
     AliTPCReconstructor.cxx
-    AliTPCRecoParam.cxx
     AliTPCseed.cxx
     AliTPCtrack.cxx
     AliTPCtracker.cxx
@@ -68,18 +59,28 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+set(ROOT_DEPENDENCIES Core Gpad Graf Hist MathCore Matrix Minuit Physics RIO Tree)
+set(ALIROOT_DEPENDENCIES STEERBase STEER CDB ESD RAWDatabase RAWDatarec ANALYSIS ANALYSISalice TPCbase)
+
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER CDB ESD RAWDatabase RAWDatarec ANALYSIS ANALYSISalice TPCbase TPCsim Core Gpad Graf Hist MathCore Matrix Minuit Physics RIO Tree)
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
+# Create an object to be reused in case of static libraries 
+# Otherwise the sources will be compiled twice
+add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
+# Add a library to the project using the object
+add_library(${MODULE} SHARED $<TARGET_OBJECTS:TPCrec-object>)
 
-# Add a library to the project using the specified source files
-add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE}  STEERBase STEER CDB ESD RAWDatabase RAWDatarec ANALYSIS ANALYSISalice TPCbase TPCsim Core Gpad Graf Hist MathCore Matrix Minuit Physics RIO Tree)
+# Linking
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+
+# Public include folders that will be propagated to the dependecies
+target_include_directories(${MODULE} PUBLIC ${incdirs})
 
 # Additional compilation flags
-set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-O -g")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)

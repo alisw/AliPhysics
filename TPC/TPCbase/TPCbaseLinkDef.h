@@ -118,4 +118,25 @@
 #pragma link C++ class AliTPCExBEffectiveSector+;      // sectorwise above
                                                        // --- still used in CalibMacros --- move to attic if removed there
 
+// Solving the circular rependecies
+#pragma link C++ class AliTPCClusterParam+;   // Cluster parametrization - Moved from TPCrec
+#pragma link C++ class AliTPCQADataMakerRec+; // Offline QA - Moved from TPCrec
+#pragma link C++ class AliTPCRecoParam+;      // Config parameters for reconstruction - moved from TPCrec
+#pragma link C++ class AliTPCClustersRow+;    // TPC Container array of "cluster" inside 1 padrow - moved from TPCrec
+#pragma link C++ class AliTPCclusterMI+;      // Derived from Cluster (shape in addition) - moved from TPCrec
+                                              // --- ask Peter what can happen if renamed (add some pragma !??!)
+#pragma link C++ class AliTPCclusterInfo+;    // additional info attach to cluster (add digit map) - moved from TPCrec
+                                              // currently not used by default
+#pragma link C++ class AliClusters+;          // Generic container for clusters derived from segmentID - all clusters - moved from TPCrec
+                                              //   contains 1 AliTPCClustersRow per segment (1 segment = 1 padrow)
+#pragma link C++ class AliComplexCluster+;    // Used to store additional cluster and tracklet information along track - moved from TPCrec
+                                              // Following classes are derived
+                                              // --- Documentation to be added - classes to be cleaned
+                                              // --- Marian to investigate
+#pragma link C++ class AliTPCExactPoint+;     // defined in AliComplexCluster.h -- moved from TPCrec
+#pragma link C++ class AliTPCClusterPoint+;   // defined in AliComplexCluster.h - moved from TPCrec
+#pragma link C++ class AliTPCTrackerPoint+;   // defined in AliComplexCluster.h - moved from TPCrec
+#pragma link C++ class AliTPCTrackPoint+;     // defined in AliComplexCluster.h - moved from TPCrec
+#pragma link C++ class AliTPCTrackPoint2+;    // defined in AliComplexCluster.h - moved from TPCrec
 #endif
+

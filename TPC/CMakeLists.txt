@@ -21,6 +21,10 @@ add_subdirectory(TPCsim)
 add_subdirectory(TPCmon)
 add_subdirectory(TPCupgrade)
 
+if(DA)
+    add_subdirectory(DA)
+endif(DA)
+
 # Installing the mapping
 install(DIRECTORY mapping DESTINATION TPC)
 
