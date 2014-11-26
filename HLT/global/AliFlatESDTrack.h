@@ -105,6 +105,11 @@ class AliFlatESDTrack :public AliVTrack {
     if( f ) f->SetExternalTrackParam( p );    
   }
 
+  void ResetTrackParamTPCInner( const AliExternalTrackParam *p ) {
+    AliFlatExternalTrackParam *f = GetFlatParamNonConst( 0x4 );
+    if( f ) f->SetExternalTrackParam( p );
+  }
+
   UShort_t GetTPCNcls() const {return GetNumberOfTPCClusters(); }
   Double_t GetPt() const {
     const AliFlatExternalTrackParam *f = GetFlatTrackParam();

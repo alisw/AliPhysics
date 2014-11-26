@@ -188,6 +188,7 @@ public:
 
   virtual void  ResetTrackParamIp       ( const AliExternalTrackParam* ) {;}
   virtual void  ResetTrackParamOp       ( const AliExternalTrackParam* ) {;}
+  virtual void  ResetTrackParamTPCInner ( const AliExternalTrackParam* ) {;}
 
   virtual Int_t             GetKinkIndex(Int_t /*i*/) const { return 0;}
   virtual Double_t          GetSigned1Pt()         const { return 0;}
