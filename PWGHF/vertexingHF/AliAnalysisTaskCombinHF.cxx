@@ -53,11 +53,11 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fHistCheckOriginSel(0x0),
   fHistCheckDecChan(0x0),
   fHistCheckDecChanAcc(0x0),
-  fPtVsYGen(0x0),
-  fPtVsYGenLargeAcc(0x0),
-  fPtVsYGenLimAcc(0x0),
-  fPtVsYGenAcc(0x0),
-  fPtVsYReco(0x0),
+  fPtVsYVsMultGen(0x0),
+  fPtVsYVsMultGenLargeAcc(0x0),
+  fPtVsYVsMultGenLimAcc(0x0),
+  fPtVsYVsMultGenAcc(0x0),
+  fPtVsYVsMultReco(0x0),
   fMassVsPtVsY(0x0),
   fMassVsPtVsYRot(0x0),
   fMassVsPtVsYLSpp(0x0),
@@ -119,6 +119,8 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fEventInfo(new TObjString("")),
   fVtxZ(0),
   fMultiplicity(0),
+  fMinMultiplicity(-0.5),
+  fMaxMultiplicity(199.5),
   fKaonTracks(0x0),
   fPionTracks(0x0)
 {
@@ -135,11 +137,11 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fHistCheckOriginSel(0x0),
   fHistCheckDecChan(0x0),
   fHistCheckDecChanAcc(0x0),
-  fPtVsYGen(0x0),
-  fPtVsYGenLargeAcc(0x0),
-  fPtVsYGenLimAcc(0x0),
-  fPtVsYGenAcc(0x0),
-  fPtVsYReco(0x0),
+  fPtVsYVsMultGen(0x0),
+  fPtVsYVsMultGenLargeAcc(0x0),
+  fPtVsYVsMultGenLimAcc(0x0),
+  fPtVsYVsMultGenAcc(0x0),
+  fPtVsYVsMultReco(0x0),
   fMassVsPtVsY(0x0),
   fMassVsPtVsYRot(0x0),
   fMassVsPtVsYLSpp(0x0),
@@ -201,6 +203,8 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fEventInfo(new TObjString("")),
   fVtxZ(0),
   fMultiplicity(0),
+  fMinMultiplicity(-0.5),
+  fMaxMultiplicity(199.5),
   fKaonTracks(0x0),
   fPionTracks(0x0)
 {
@@ -223,11 +227,11 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
     delete fHistCheckOriginSel;
     delete fHistCheckDecChan;
     delete fHistCheckDecChanAcc;
-    delete fPtVsYGen;
-    delete fPtVsYGenLargeAcc;
-    delete fPtVsYGenLimAcc;
-    delete fPtVsYGenAcc;
-    delete fPtVsYReco;
+    delete fPtVsYVsMultGen;
+    delete fPtVsYVsMultGenLargeAcc;
+    delete fPtVsYVsMultGenLimAcc;
+    delete fPtVsYVsMultGenAcc;
+    delete fPtVsYVsMultReco;
     delete fMassVsPtVsY;
     delete fMassVsPtVsYLSpp;
     delete fMassVsPtVsYLSmm;
@@ -298,15 +302,16 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
   
-  fHistNEvents = new TH1F("hNEvents", "number of events ",8,-0.5,7.5);
+  fHistNEvents = new TH1F("hNEvents", "number of events ",9,-0.5,8.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"n. passing IsEvSelected");
   fHistNEvents->GetXaxis()->SetBinLabel(3,"n. rejected due to trigger");
-  fHistNEvents->GetXaxis()->SetBinLabel(4,"n. rejected due to not reco vertex");
-  fHistNEvents->GetXaxis()->SetBinLabel(5,"n. rejected for contr vertex");
-  fHistNEvents->GetXaxis()->SetBinLabel(6,"n. rejected for vertex out of accept");
-  fHistNEvents->GetXaxis()->SetBinLabel(7,"n. rejected for pileup events");
-  fHistNEvents->GetXaxis()->SetBinLabel(8,"no. of out centrality events");
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"n. rejected due to phys sel");
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"n. rejected due to not reco vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"n. rejected for contr vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(7,"n. rejected for vertex out of accept");
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"n. rejected for pileup events");
+  fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of out centrality events");
   
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
   fHistNEvents->Sumw2();
@@ -352,30 +357,30 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
     fHistCheckDecChanAcc->SetMinimum(0);
     fOutput->Add(fHistCheckDecChanAcc);
     
-    fPtVsYGen= new TH2F("hPtVsYGen","",nPtBins,0.,maxPt,20,-1.,1.);
-    fPtVsYGen->Sumw2();
-    fPtVsYGen->SetMinimum(0);
-    fOutput->Add(fPtVsYGen);
+    fPtVsYVsMultGen= new TH3F("hPtVsYVsMultGen","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
+    fPtVsYVsMultGen->Sumw2();
+    fPtVsYVsMultGen->SetMinimum(0);
+    fOutput->Add(fPtVsYVsMultGen);
     
-    fPtVsYGenLargeAcc= new TH2F("hPtVsYGenLargeAcc","",nPtBins,0.,maxPt,20,-1.,1.);
-    fPtVsYGenLargeAcc->Sumw2();
-    fPtVsYGenLargeAcc->SetMinimum(0);
-    fOutput->Add(fPtVsYGenLargeAcc);
+    fPtVsYVsMultGenLargeAcc= new TH3F("hPtVsYVsMultGenLargeAcc","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
+    fPtVsYVsMultGenLargeAcc->Sumw2();
+    fPtVsYVsMultGenLargeAcc->SetMinimum(0);
+    fOutput->Add(fPtVsYVsMultGenLargeAcc);
     
-    fPtVsYGenLimAcc= new TH2F("hPtVsYGenLimAcc","",nPtBins,0.,maxPt,20,-1.,1.);
-    fPtVsYGenLimAcc->Sumw2();
-    fPtVsYGenLimAcc->SetMinimum(0);
-    fOutput->Add(fPtVsYGenLimAcc);
+    fPtVsYVsMultGenLimAcc= new TH3F("hPtVsYVsMultGenLimAcc","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
+    fPtVsYVsMultGenLimAcc->Sumw2();
+    fPtVsYVsMultGenLimAcc->SetMinimum(0);
+    fOutput->Add(fPtVsYVsMultGenLimAcc);
     
-    fPtVsYGenAcc= new TH2F("hPtVsYGenAcc","",nPtBins,0.,maxPt,20,-1.,1.);
-    fPtVsYGenAcc->Sumw2();
-    fPtVsYGenAcc->SetMinimum(0);
-    fOutput->Add(fPtVsYGenAcc);
+    fPtVsYVsMultGenAcc= new TH3F("hPtVsYVsMultGenAcc","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
+    fPtVsYVsMultGenAcc->Sumw2();
+    fPtVsYVsMultGenAcc->SetMinimum(0);
+    fOutput->Add(fPtVsYVsMultGenAcc);
     
-    fPtVsYReco= new TH2F("hPtVsYReco","",nPtBins,0.,maxPt,20,-1.,1.);
-    fPtVsYReco->Sumw2();
-    fPtVsYReco->SetMinimum(0);
-    fOutput->Add(fPtVsYReco);
+    fPtVsYVsMultReco= new TH3F("hPtVsYVsMultReco","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
+    fPtVsYVsMultReco->Sumw2();
+    fPtVsYVsMultReco->SetMinimum(0);
+    fOutput->Add(fPtVsYVsMultReco);
   }
   
   
@@ -524,12 +529,23 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   fCounter->StoreEvent(aod,fAnalysisCuts,fReadMC);
   
   Bool_t isEvSel=fAnalysisCuts->IsEventSelected(aod);
-  if(fAnalysisCuts->IsEventRejectedDueToTrigger())fHistNEvents->Fill(2);
-  if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex())fHistNEvents->Fill(3);
-  if(fAnalysisCuts->IsEventRejectedDueToVertexContributors())fHistNEvents->Fill(4);
-  if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion())fHistNEvents->Fill(5);
-  //  if(fAnalysisCuts->IsEventRejectedDueToPileup())fHistNEvents->Fill(6);
-  if(fAnalysisCuts->IsEventRejectedDueToCentrality()) fHistNEvents->Fill(7);
+  if(fAnalysisCuts->IsEventRejectedDueToTrigger() || fAnalysisCuts->IsEventRejectedDuePhysicsSelection()){
+    if(fAnalysisCuts->IsEventRejectedDueToTrigger()) fHistNEvents->Fill(2);
+    if(fAnalysisCuts->IsEventRejectedDuePhysicsSelection()) fHistNEvents->Fill(3);
+  }else{
+    if(fAnalysisCuts->IsEventRejectedDueToCentrality()){
+      fHistNEvents->Fill(8);
+    }else{
+      if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex() || fAnalysisCuts->IsEventRejectedDueToVertexContributors()){
+	if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex())fHistNEvents->Fill(4);
+	if(fAnalysisCuts->IsEventRejectedDueToVertexContributors())fHistNEvents->Fill(5);
+      }else{
+	if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion())fHistNEvents->Fill(6);
+	else if(fAnalysisCuts->IsEventRejectedDueToPileup())fHistNEvents->Fill(7);
+      }
+    }
+  }
+
   
   if(!isEvSel)return;
   
@@ -764,11 +780,11 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC){
         Double_t ptgen=part->Pt();
         Double_t ygen=part->Y();
 	if(fAnalysisCuts->IsInFiducialAcceptance(ptgen,ygen)){
-	  fPtVsYGen->Fill(ptgen,ygen);
-	  if(TMath::Abs(ygen)<0.5) fPtVsYGenLimAcc->Fill(ptgen,ygen);
-	  if(isInAcc) fPtVsYGenAcc->Fill(ptgen,ygen);
+	  fPtVsYVsMultGen->Fill(ptgen,ygen,fMultiplicity);
+	  if(TMath::Abs(ygen)<0.5) fPtVsYVsMultGenLimAcc->Fill(ptgen,ygen,fMultiplicity);
+	  if(isInAcc) fPtVsYVsMultGenAcc->Fill(ptgen,ygen,fMultiplicity);
 	}
-        if(TMath::Abs(ygen)<0.9) fPtVsYGenLargeAcc->Fill(ptgen,ygen);
+        if(TMath::Abs(ygen)<0.9) fPtVsYVsMultGenLargeAcc->Fill(ptgen,ygen,fMultiplicity);
       }
     }
   }
@@ -804,7 +820,7 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
               if(pdgCode==321){
                 fMassVsPtVsYSig->Fill(mass,pt,rapid);
                 AliAODMCParticle* dmes =  dynamic_cast<AliAODMCParticle*>(arrayMC->At(labD));
-                fPtVsYReco->Fill(dmes->Pt(),dmes->Y());
+                fPtVsYVsMultReco->Fill(dmes->Pt(),dmes->Y(),fMultiplicity);
               }else{
                 fMassVsPtVsYRefl->Fill(mass,pt,rapid);
               }
