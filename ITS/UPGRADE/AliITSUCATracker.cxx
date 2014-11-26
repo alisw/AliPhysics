@@ -151,6 +151,7 @@ AliITSUCATracker::AliITSUCATracker(AliITSUReconstructor* rec) : AliITSUTrackerGl
 ,fGood(0)
 ,fTan(NULL)
 ,fTanF(NULL)
+,fPhi(NULL)
 ,fPhiF(NULL)
 ,fNEntries(NULL)
 #endif

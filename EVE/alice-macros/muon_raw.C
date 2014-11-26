@@ -40,11 +40,11 @@ void muon_raw()
 
   // load raw data
   AliRawReader* reader = AliEveEventManager::AssertRawReader();
-  if ( reader->GetEventHeader() ) 
+/*  if ( reader->GetEventHeader() ) 
     AliInfoGeneral("muon_raw.C", Form("RUN %d EVENT %d", reader->GetRunNumber(),reader->GetEventIndex()) );
   else
     AliInfoGeneral("muon_raw.C", "NO EVENT HEADER ?");
-  
+*/  
   // convert raw to digits
   AliMUONDigitMaker digitMaker;
   digitMaker.SetMakeTriggerDigits(kTRUE);

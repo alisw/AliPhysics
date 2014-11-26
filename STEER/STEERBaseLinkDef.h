@@ -143,6 +143,8 @@
 #pragma link C++ class AliVTOFcluster+;
 #pragma link C++ class AliVMultiplicity+;
 #pragma link C++ class AliGenHepMCEventHeader+;
+#pragma link C++ class AliMergeableCollection+;
+#pragma link C++ class AliMergeableCollectionIterator+;
 
 #endif
 

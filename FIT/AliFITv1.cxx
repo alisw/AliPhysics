@@ -102,53 +102,85 @@ void AliFITv1::CreateGeometry()
   //
 
   Int_t *idtmed = fIdtmed->GetArray();
-  Float_t zdetC = 83;
-  Float_t zdetA = 375.;
+  Float_t zdetC = 85; //center of mother volume
+  Float_t zdetA = 335;
   
   Int_t idrotm[999];
   Double_t x,y,z;
-  Float_t pstart[3] = {6, 20 ,3};
-  Float_t pinstart[3] = {3,3,2.55};
-  Float_t  pmcp[3] = {2.95, 2.95, 1.5}; //MCP
+  Float_t pstartC[3] = {6., 20 ,5};
+  Float_t pstartA[3] = {2.55, 20 ,5};
+  // Float_t pinstart[3] = {3.2,3.2,3.9};
+  Float_t pinstart[3] = {3.2,3.2,4.};
+  Float_t  pmcp[3] = {3.19, 3.19, 2.8}; //MCP
   Float_t ptop[3] = {1.324, 1.324, 1.};//cherenkov radiator
   Float_t preg[3] = {1.324, 1.324, 0.05};//photcathode 
  
+  Float_t zV0A = 329.;
+  Float_t pV0Amother[3] = {4.25, 41.25, 0.6};
+  Float_t pV0A[3] = {4.3, 41.2, 0.5};
+
   AliMatrix(idrotm[901], 90., 0., 90., 90., 180., 0.);
   
   //-------------------------------------------------------------------
   //  T0 volume 
   //-------------------------------------------------------------------
+  //C side
+
+
+  Float_t xc[20] = {9.6,  16, -9.6, -16, 9.6, 16,
+		    -9.6, -16, -9.6, -3.2, 3.2, 9.6,
+		    -9.6, -3.2, 3.2, 9.6, -3.2, 3.2, 
+		    -3.2, 3.2};
   
-  Float_t x1[20] = {9,  9, 15 ,15 , 9,  
-		    3, -3,  3, -3, -9, 
-		    -9, -9, -15, -15, -9, 
-		    -3, 3, -3, 3, 9}; 
+  Float_t yc[20] = {3.2, 3.2, 3.2, 3.2, -3.2, -3.2, 
+		    -3.2, -3.2, 9.6, 9.6, 9.6, 9.6,
+		    -9.6, -9.6, -9.6, -9.6, 16, 16,
+		    -16, -16};
   
-  Float_t y1[20] = {3.2, -3.2, 3.2, -3.2, -9.2, 
-		    -9, -9, -15, -15, -9.2,
-		    -3.2, 3.2, -3.2, 3.2, 9.2,
-		    9, 9, 15, 15, 9.2};
+  // A side
+  Float_t xa[20] = {0.0, 0.0, 0.0, 0.0, 6.4,
+                    6.4, 6.4, 6.4, 6.4,
+                    -6.4, -6.4, -6.4, -6.4, -6.4,
+                    12.8, 12.8, 12.8, 
+                    -12.8, -12.8, -12.8};
   
+  Float_t ya[20] = { 6.4, 12.8, -6.4, -12.8,
+		     0, 6.4, 12.8, -6.4,
+		     -12.8, 0., 6.4, 12.8,
+	             -6.4, -12.8, 0, 6.4,
+		     -6.4, 0.0, 6.4, -6.4};  
+  
+  Float_t zc[20] = {2,0, 2,0, 2,0, 2,0, 2,2, 2,2, 2,2, 2,2, 0,0,0,0};
+  Float_t za[20] = {2,0, 2,0, 2,2, 0,2, 0,2, 2,0, 2,0, 0,0, 0,0,0,0};
   
    
-  TGeoVolumeAssembly * stlin = new TGeoVolumeAssembly("0STL");//empty segment  
+  TGeoVolumeAssembly * stlinA = new TGeoVolumeAssembly("0STL");  // A side mother 
+  TGeoVolumeAssembly * stlinC = new TGeoVolumeAssembly("0STR");  // C side mother 
  //T0 interior
   TVirtualMC::GetMC()->Gsvolu("0INS","BOX",idtmed[kAir],pinstart,3);
   TGeoVolume *ins = gGeoManager->GetVolume("0INS");
  // 
-  TGeoTranslation *tr [20];
+  TGeoTranslation *tr[40];
   TString nameTr;
+  //C side
   for (Int_t itr=0; itr<20; itr++) {
     nameTr = Form("0TR%i",itr+1);
-    z=-pstart[2]+pinstart[2];
-    tr[itr] = new TGeoTranslation(nameTr.Data(),x1[itr],y1[itr], z );
+    z=-pstartA[2]+pinstart[2]+za[itr];
+    tr[itr] = new TGeoTranslation(nameTr.Data(),xa[itr],ya[itr], z );
+    printf(" A %f %f %f \n",xa[itr], ya[itr], z+zdetA);
     tr[itr]->RegisterYourself();
-    stlin->AddNode(ins,itr,tr[itr]);
+    stlinA->AddNode(ins,itr,tr[itr]);
+    z=-pstartC[2]+pinstart[2]+zc[itr];
+    tr[itr+20] = new TGeoTranslation(nameTr.Data(),xc[itr],yc[itr], z );
+    tr[itr+20]->RegisterYourself();
+    stlinC->AddNode(ins,itr+20,tr[itr+20]);
+    printf(" C %f %f %f \n",xc[itr], yc[itr], z+zdetC);
   }
   TGeoVolume *alice = gGeoManager->GetVolume("ALIC");
-  alice->AddNode(stlin,1,new TGeoTranslation(0,0, zdetA ) );
+  alice->AddNode(stlinA,1,new TGeoTranslation(0,0, zdetA ) );
+  //  alice->AddNode(stlinC,1,new TGeoTranslation(0,0, zdetC ) );
   TGeoRotation * rotC = new TGeoRotation( "rotC",90., 0., 90., 90., 180., 0.);
-   alice->AddNode(stlin,2, new TGeoCombiTrans(0., 0., -zdetC , rotC) );
+  alice->AddNode(stlinC,1, new TGeoCombiTrans(0., 0., -zdetC , rotC) );
   
   x=0;
   y=0;
@@ -164,10 +196,10 @@ void AliFITv1::CreateGeometry()
   Int_t ntops=0;
    Float_t xin=0, yin=0;
    for (Int_t ix=0; ix<2; ix++) {
-     xin = - pinstart[0] + 0.35 + (ix+0.5)*2*ptop[0] ;
-     for (Int_t iy=0; iy<2; iy++) {
+     xin = - pinstart[0] + 0.55 + (ix+0.5)*2*ptop[0] ;
+     for (Int_t iy=0; iy<2 ; iy++) {
        z = - pinstart[2]+ptop[2];
-       yin = - pinstart[1] + 0.35 + (iy+0.5)*2*ptop[1];
+       yin = - pinstart[1] + 0.55 + (iy+0.5)*2*ptop[1];
        ntops++;
        ins->AddNode(top, ntops, new TGeoTranslation(xin,yin,z) );
        // printf(" 0TOP  full x %f y %f z %f \n", xin, yin, z);
@@ -181,8 +213,13 @@ void AliFITv1::CreateGeometry()
 // MCP
    z=-pinstart[2] + 2*ptop[2] + 2*preg[2] + pmcp[2];
   ins->AddNode(mcp, 1 , new TGeoTranslation(0,0,z) );
- 
-  
+/*
+  //V0A 
+   TVirtualMC::GetMC()->Gsvolu("0V0AM","TUBE",idtmed[kAir],pV0Amother,3);
+   TVirtualMC::GetMC()->Gspos ("0V0AM",1, "ALIC", 0,0,zV0A , 0, "ONLY");
+   TVirtualMC::GetMC()->Gsvolu("0V0A","TUBE",idtmed[kSensAir],pV0A,3);
+   TVirtualMC::GetMC()->Gspos ("0V0A",1, "0V0AM", 0, 0, 0, 0, "ONLY");
+*/
 
  
 }    
@@ -197,10 +234,10 @@ void AliFITv1::AddAlignableVolumes() const
   TString volPath;
   TString symName, sn;
   TString vpAalign = "/ALIC_1/0STL_1";
-  TString vpCalign = "/ALIC_1/0STL_2";
+  TString vpCalign = "/ALIC_1/0STR_1";
   for (Int_t imod=0; imod<2; imod++)  {
-    if (imod==0) {volPath  = vpCalign; symName="/ALIC_1/0STL_1"; }
-    if (imod==1) {volPath  = vpAalign; symName="/ALIC_1/0STL_2"; }
+    if (imod==0) {volPath  = vpCalign; symName="/ALIC_1/0STL"; }
+    if (imod==1) {volPath  = vpAalign; symName="/ALIC_1/0STR"; }
     
     AliDebug(2,"--------------------------------------------");
     AliDebug(2,Form("volPath=%s\n",volPath.Data()));
@@ -335,6 +372,7 @@ void AliFITv1::Init()
 //
   AliFIT::Init();
   fIdSens1=TVirtualMC::GetMC()->VolId("0REG");
+  fIdSens2=TVirtualMC::GetMC()->VolId("0V0A");
 
    AliDebug(1,Form("%s: *** FIT version 1 initialized ***\n",ClassName()));
 }
@@ -393,9 +431,32 @@ void AliFITv1::StepManager()
       
      }// trck entering		
   } //sensitive
-  
-}
+  //V0A
+  if(id==fIdSens2 ) { 
+    if ( TVirtualMC::GetMC()->TrackCharge()  ) {
+      if(TVirtualMC::GetMC()->IsTrackEntering()) {
+	TVirtualMC::GetMC()->TrackPosition(pos);
+	hits[0] = pos[0];
+	hits[1] = pos[1];
+	hits[2] = pos[2];
+	vol[0]=0;
+	vol[1]=0;
+	vol[2]=2;
+	
+	Float_t etot=TVirtualMC::GetMC()->Etot();
+	hits[3]=etot;
+	Int_t iPart= TVirtualMC::GetMC()->TrackPid();
+	Int_t partID=TVirtualMC::GetMC()->IdFromPDG(iPart);
+	hits[4]=partID;
+	Float_t ttime=TVirtualMC::GetMC()->TrackTime();
+	hits[5]=ttime*1e12;
+	AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
+	//	printf(" volumes pmt %i mcp %i vol %i x %f y %f z %f particle %i all \n",  vol[0], vol[1],  vol[2], hits[0], hits[1], hits[2], hits[4]);
+      }
+    }    
+  }
 
+}
 
 
 //------------------------------------------------------------------------

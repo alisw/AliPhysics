@@ -3213,6 +3213,9 @@ TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
     tMain->SetAlias((friendName+".spectrMean_MeanRatio").Data(),
                     TString::Format("(%s.spectrMean.fElements/(%s.spectrMean_Mean+0))",
                                     friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".spectrMean_MeanRatio").Data(),
+                    TString::Format("(%s.spectrMean.fElements/%s.spectrMean_Mean)",
+                                    friendName.Data(),friendName.Data()).Data());
 
     tMain->SetAlias((friendName+".fitMean_LTMRatio").Data(),
                     TString::Format("(%s.fitMean.fElements/(%s.fitMean_LTM+0))",
@@ -3232,6 +3235,9 @@ TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
                                     friendName.Data(),friendName.Data()).Data());
     tMain->SetAlias((friendName+".fitRMS_MeanRatio").Data(),
                     TString::Format("(%s.fitRMS.fElements/(%s.fitRMS_Mean+0))",
+                                    friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".fitMean_MeanRatio").Data(),
+                    TString::Format("(%s.fitMean.fElements/%s.fitMean_Mean)",
                                     friendName.Data(),friendName.Data()).Data());
     
   }
@@ -3324,7 +3330,7 @@ TTree* AliTPCcalibDButil::ConnectPulserTrees(TString baseDir, TTree *tMain)
 }  
   
 
-TTree* AliTPCcalibDButil::ConnectDistortionTrees(TString baseDir, TTree *tMain){
+TTree* AliTPCcalibDButil::ConnectDistortionTrees(TString baseDir, TString  selection,  TTree *tMain){
   //
   // baseDir:   Base directory with Distortion information
   // TTrees are added to the base tree as a friend tree
@@ -3333,9 +3339,14 @@ TTree* AliTPCcalibDButil::ConnectDistortionTrees(TString baseDir, TTree *tMain){
   // === add the calibDistortion trees ======================================
   //TString inputTreesDistortionCalib       = gSystem->GetFromPipe(Form("ls %s/calibDistortion/20*/*.tree.root",baseDir.Data()));
   // TString baseDir="$NOTES/reconstruction/distortionFit/"; TTree *tMain=0;
+  // AliTPCcalibDButil::ConnectDistortionTrees("$NOTES/reconstruction/distortionFit/", "calibTimeResHisto.root", 0);
 
-
-  TString inputTreesDistortionCalib       = gSystem->GetFromPipe(Form("find  %s -iname \"calibTimeResHisto.root\"",baseDir.Data()));
+  TString inputTreesDistortionCalib       = "";
+  if (selection.Contains(".list")){    
+    inputTreesDistortionCalib=gSystem->GetFromPipe(Form("cat %s",selection.Data()));
+  }else{
+    inputTreesDistortionCalib=gSystem->GetFromPipe(Form("find  %s -iname \"%s\"",baseDir.Data(),selection.Data()));
+  }
   TObjArray *arrInputTreesDistortionCalib = inputTreesDistortionCalib.Tokenize("\n");  
   //
   for (Int_t itree=0; itree<arrInputTreesDistortionCalib->GetEntriesFast(); ++itree) {
@@ -3387,6 +3398,7 @@ TTree* AliTPCcalibDButil::ConnectCalPadTrees(TString baseDir, TString pattern, T
     friendName.ReplaceAll(baseDir.Data(),"");
     friendName.ReplaceAll("^/","");
     friendName.ReplaceAll("/",".");
+    friendName.ReplaceAll(".tree.",".");
     friendName.ReplaceAll(".root","");
     printf("%s\n", friendName.Data());
     ::Info("AliTPCcalibDButil::ConnectCalPadTrees","%s",friendName.Data());  

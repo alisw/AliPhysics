@@ -190,11 +190,13 @@ void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root
       }
       // get the digits of current event
       TTree* treeD = MUONLoader->TreeD();
-      digitStore = AliMUONVDigitStore::Create(*treeD);
-      if ( digitStore != 0x0 ) {
-	digitStore->Clear();
-	digitStore->Connect(*treeD);
-	treeD->GetEvent(0);
+      if (treeD) {
+	digitStore = AliMUONVDigitStore::Create(*treeD);
+	if ( digitStore != 0x0 ) {
+	  digitStore->Clear();
+	  digitStore->Connect(*treeD);
+	  treeD->GetEvent(0);
+	}
       }
     }
     
@@ -239,7 +241,7 @@ void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root
 	  clusterInfo->SetTrackChamberHitMap(muonClusterMap);
 	  
 	  // fill pad info if available	  
-	  for (Int_t i=0; i<cluster->GetNDigits(); i++) {
+	  if (digitStore) for (Int_t i=0; i<cluster->GetNDigits(); i++) {
 	    AliMUONVDigit* digit = digitStore->FindObject(cluster->GetDigitId(i));
 	    if (!digit) continue;
 	    
@@ -320,7 +322,7 @@ void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root
 	clusterInfo->SetTrackChamberHitMap(0);
 	
 	// fill pad info if available	  
-	for (Int_t i=0; i<cluster->GetNDigits(); i++) {
+	if (digitStore) for (Int_t i=0; i<cluster->GetNDigits(); i++) {
 	  AliMUONVDigit* digit = digitStore->FindObject(cluster->GetDigitId(i));
 	  if (!digit) continue;
 	  

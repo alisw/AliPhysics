@@ -31,8 +31,8 @@ void CreateITSUv1()
   const double kPitchZ = 20e-4;
   const int    kNRow   = 650; 
   const int    kNCol   = 1500;
-  const double kSiThickIB = 150e-4;
-  const double kSiThickOB = 150e-4;
+  const double kSiThickIB = 50e-4;
+  const double kSiThickOB = 50e-4;
   //  const double kSensThick = 120e-4;   // -> sensor Si thickness
   //
   const double kReadOutEdge = 0.2;   // width of the readout edge (passive bottom)
@@ -78,7 +78,7 @@ void CreateITSUv1()
   //
   AliITSUv1 *ITS  = new AliITSUv1("ITS Upgrade",kNLr);
   ITS->SetStaveModelIB(AliITSUv1::kIBModel22);
-  ITS->SetStaveModelOB(AliITSUv1::kOBModel1);
+  ITS->SetStaveModelOB(AliITSUv1::kOBModel2);
   //
   const int kNWrapVol = 3;
   const double wrpRMin[kNWrapVol]  = { 2.1, 15.0, 32.0};

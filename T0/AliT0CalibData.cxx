@@ -131,7 +131,7 @@ void AliT0CalibData::ReadAsciiLookup(const Char_t *filename)
     AliError(Form("Please, specify file with database")) ;
     return ;
   }
-
+  cout<<" read file "<<filename<<endl;
 
   ifstream lookup;
   lookup.open(filename);
@@ -147,6 +147,7 @@ void AliT0CalibData::ReadAsciiLookup(const Char_t *filename)
       lookup>>ntrms;
       //      fNumberOfTRMs=ntrms;
       SetNumberOfTRMs(ntrms);
+      cout<<" N TRMS "<<ntrms<<endl;
        while(!lookup.eof())
 	{
 	  AliT0LookUpKey * lookkey= new AliT0LookUpKey();
@@ -159,7 +160,7 @@ void AliT0CalibData::ReadAsciiLookup(const Char_t *filename)
 	  lookvalue->SetChannel(channel);
 	  lookkey->SetKey(key);
 	  lookkey->SetChannelName(varname);
-	  
+	  cout<<trm<<" "<<chain<<" "<<tdc<<" "<<channel<<" "<<key<<" "<<varname<<endl;
 	  fLookup.Add((TObject*)lookvalue,(TObject*)lookkey);
 	  
 	}

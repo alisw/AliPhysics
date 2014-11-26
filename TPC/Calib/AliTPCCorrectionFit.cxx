@@ -90,6 +90,8 @@
 
 ClassImp(AliTPCCorrectionFit)
 
+Double_t  AliTPCCorrectionFit::fgMaxChi2HelixAt=1;
+
 AliTPCCorrectionFit::AliTPCCorrectionFit():
   TNamed("TPCCorrectionFit","TPCCorrectionFit")
 {
@@ -104,24 +106,31 @@ AliTPCCorrectionFit::~AliTPCCorrectionFit() {
   //
 }
 
+/*
+Double_t AliTPCCorrectionFit::EvalAt(Double_t phi, Double_t refX, Double_t evalX, Double_t theta, Int_t corr, Int_t ptype, Float_t wt, Float_t t1, Float_t t2){
+  //
+  // Evaluation distortion at point using the linear approximation
+  //
+  //  refX  -  reference X where phi and snp is calculated
+  //  evalX  - ref X where the distortion is evaluated
 
-Double_t AliTPCCorrectionFit::EvalAt(Double_t phi, Double_t refX, Double_t theta, Int_t corr, Int_t ptype){
-  //
-  // Evalution at point using the lienar approximation
-  //
+  if (wt<50){
+    AliTPCCorrection* pcorr = AliTPCCorrection::GetVisualCorrection(corr);	
+    pcorr->SetOmegaTauT1T2(wt,t1,t2);
+  }
   Double_t sector = 9*phi/TMath::Pi();
   if (sector<0) sector+=18;
   Double_t y85=AliTPCCorrection::GetCorrSector(sector,85,theta,1,corr);
   Double_t y245=AliTPCCorrection::GetCorrSector(sector,245,theta,1,corr);
-  if (ptype==0) return y85+(y245-y85)*(refX-85.)/(245.-85.);
+  if (ptype==0) return y85+(y245-y85)*(evalX-85.)/(245.-85.);
   if (ptype==2) return (y245-y85)/(245.-85.);
   return 0;
 }
+*/
 
 
 
-
-Double_t AliTPCCorrectionFit::EvalAtPar(Double_t phi0, Double_t snp, Double_t refX, Double_t theta, Int_t corr, Int_t ptype, Int_t nsteps){
+Double_t AliTPCCorrectionFit::EvalAtPar(Double_t phi0, Double_t snp, Double_t refX, Double_t evalX, Double_t theta, Int_t corr, Int_t ptype, Int_t nsteps,Float_t wt, Float_t t1, Float_t t2, Bool_t *pstatus){
   //
   // Fit the distortion along the line with the parabolic model
   // We assume that the track are primaries  - where the vertex is at (0,0,0)
@@ -129,7 +138,82 @@ Double_t AliTPCCorrectionFit::EvalAtPar(Double_t phi0, Double_t snp, Double_t re
   // Parameters:
   //  phi0  -  phi at the entrance of the TPC
   //  snp   -  local inclination angle at the entrance of the TPC
-  //  refX  -  ref X where the distortion is evanluated
+  //  refX  -  reference X where phi and snp is calculated
+  //  evalX  - ref X where the distortion is evaluated
+  //  theta -  inclination angle
+  //  corr  -  internal number of the correction and distortion 
+  //  ptype -  0 - local y distortion
+  //           //1 - local z distortion
+  //           2 - local derivative distortion
+  //           //3
+  //           4 - distortion in the curvature
+  //  nsteps - number of fit points
+  //
+  // return value -  distortion at point evalX with type ptype
+  //
+  static TLinearFitter fitter(3,"pol2"); 
+  fitter.ClearPoints();
+  if (nsteps<3) nsteps=3;
+  AliTPCCorrection* pcorr = AliTPCCorrection::GetVisualCorrection(corr);	
+  if (pcorr==0) return 0;
+  if (wt<50){
+    if (pcorr) pcorr->SetOmegaTauT1T2(wt,t1,t2);
+  }
+  Double_t deltaX=(245-85)/(nsteps);
+  Double_t curv=2.*snp/refX;
+  Double_t dPhi0=TMath::ASin(snp);
+
+  for (Int_t istep=0; istep<(nsteps+1); istep++){
+    //
+    Double_t localX =85.+deltaX*istep;
+    Double_t dPhi =TMath::ASin(0.5*localX*curv)-dPhi0;
+    Double_t localPhi=phi0+dPhi;
+    Double_t sector = 9*localPhi/TMath::Pi();
+    if (sector<0) sector+=18;
+    if (sector>18) sector-=18;
+    Double_t dy=AliTPCCorrection::GetCorrSector(sector,localX,theta,1,corr);
+    Double_t dlocalX=AliTPCCorrection::GetCorrSector(sector,localX,theta,0,corr);
+    Double_t x[1]={localX-dlocalX};
+    fitter.AddPoint(x,dy);
+  }
+  fitter.Eval();
+  Double_t par[3];
+  par[0]=fitter.GetParameter(0);
+  par[1]=fitter.GetParameter(1);
+  par[2]=fitter.GetParameter(2);
+  
+  Double_t schi2= TMath::Sqrt(fitter.GetChisquare()/nsteps);
+  if (schi2> fgMaxChi2HelixAt){
+    ::Error("AliTPCCorrectionFit::EvalAtHelix",TString::Format("%s\tbad chi2:\t%2.2f",pcorr->GetName(),schi2).Data());
+    if (pstatus) (*pstatus)=kFALSE;    
+    return 0;
+  }
+  if (pstatus) (*pstatus)=kTRUE;
+  if (ptype==0) return par[0]+par[1]*evalX+par[2]*evalX*evalX;
+  if (ptype==2) return par[1]+2*par[2]*evalX;
+  if (ptype==4) return par[2];
+  if (ptype==5) return schi2;
+  return 0;
+}
+
+
+Double_t AliTPCCorrectionFit::EvalAtHelix(Double_t phi0, Double_t snp, Double_t refX, Double_t evalX, Double_t theta, Int_t corr, Int_t ptype, Int_t nsteps, Float_t wt, Float_t t1, Float_t t2, Bool_t *pstatus){
+  //
+  // Fit the distortion along the line with the helix model
+  // FIXME - original trajectory to be changed - AliHelix to be used
+  // We assume that the track are primaries  - where the vertex is at (0,0,0)
+  //
+  // This procedure should emulate distortions as calibrated in the AliTPCcalibTime class
+  //     a.) AliTPCcalibTime::FillResHistoTPCTOF                     -  residuals, phi0 and snp  evaluated at reference refX  TOF clusters (refX=evalX)
+  //     b.) AliTPCcalibTime::FillResHistoTPCTRD                     -  residuals, phi0 and snp  evaluated at reference refX  TPCout radius (refX=evalX)
+  //     c.) AliTPCcalibTime::FillResHistoTPCITS                     -  residuals, phi0 and snp  evaluated at reference refX  TPCin radius (refX=evalX)
+  //     d.) AliTPCcalibTime::FillResHistoTPC  (vertex)              -  phi0 and snp  evaluated at reference refX  TPCin radius, residuals at vertex (refX!=evalX)
+  //         *         
+  // Parameters:
+  //  phi0  -  phi at the entrance of the TPC
+  //  snp   -  local inclination angle at the entrance of the TPC
+  //  refX  -  reference X where phi and snp is calculated
+  //  evalX  - ref X where the distortion is evaluated
   //  theta -  inclination angle
   //  corr  -  internal number of the correction and distortion 
   //  ptype -  0 - local y distortion
@@ -143,74 +227,43 @@ Double_t AliTPCCorrectionFit::EvalAtPar(Double_t phi0, Double_t snp, Double_t re
   //
   static TLinearFitter fitter(3,"pol2"); 
   fitter.ClearPoints();
-  if (nsteps<3) nsteps=3;
-  Double_t deltaX=(245-85)/(nsteps);
-  for (Int_t istep=0; istep<(nsteps+1); istep++){
-    //
-    Double_t localX =85.+deltaX*istep;
-    Double_t localPhi=phi0+deltaX*snp*istep;
-    Double_t sector = 9*localPhi/TMath::Pi();
-    if (sector<0) sector+=18;
-    Double_t dy=AliTPCCorrection::GetCorrSector(sector,localX,theta,1,corr);
-    Double_t dlocalX=AliTPCCorrection::GetCorrSector(sector,localX,theta,0,corr);
-    Double_t x[1]={localX-dlocalX};
-    fitter.AddPoint(x,dy);
-  }
-  fitter.Eval();
-  Double_t par[3];
-  par[0]=fitter.GetParameter(0);
-  par[1]=fitter.GetParameter(1);
-  par[2]=fitter.GetParameter(2);
-
-  if (ptype==0) return par[0]+par[1]*refX+par[2]*refX*refX;
-  if (ptype==2) return par[1]+2*par[2]*refX;
-  if (ptype==4) return par[2];
-  return 0;
-}
-
-
-Double_t AliTPCCorrectionFit::EvalAtHelix(Double_t phi0, Double_t snp, Double_t refX, Double_t theta, Int_t corr, Int_t ptype, Int_t nsteps){
   //
-  // Fit the distortion along the line with the helix model
-  // FIXME - original trajectory to be changed - AliHelix to be used
-  // We assume that the track are primaries  - where the vertex is at (0,0,0)
-  //
-  // Parameters:
-  //  phi0  -  phi at the entrance of the TPC
-  //  snp   -  local inclination angle at the entrance of the TPC
-  //  refX  -  ref X where the distortion is evanluated
-  //  theta -  inclination angle
-  //  corr  -  internal number of the correction and distortion 
-  //  ptype -  0 - local y distortion
-  //           //1 - local z distortion
-  //           2 - local derivative distortion
-  //           //3
-  //           4 - distortion in the curvature
-  //  nsteps - number of fit points
-  //
-  // return value -  distortion at point refX with type ptype
-  //
-  if (nsteps<3) nsteps=3;
+  if (nsteps<4) nsteps=4;
   Double_t deltaX=(245-85)/(nsteps);
   AliRieman rieman(nsteps);
-
+  if (wt<50){
+    AliTPCCorrection* pcorr = AliTPCCorrection::GetVisualCorrection(corr);	    
+    if (pcorr) pcorr->SetOmegaTauT1T2(wt,t1,t2);
+  }
+  Double_t curv=2.*snp/refX;
+  Double_t dPhi0=TMath::ASin(snp);
   for (Int_t istep=0; istep<(nsteps+1); istep++){
     //
     Double_t localX =85.+deltaX*istep;
-    Double_t localPhi=phi0+deltaX*snp*istep;
+    Double_t dPhi =TMath::ASin(0.5*localX*curv)-dPhi0;
+    Double_t localPhi=phi0+dPhi;
     Double_t sector = 9*localPhi/TMath::Pi();
     if (sector<0) sector+=18;
+    if (sector>18) sector-=18;
     Double_t dy=AliTPCCorrection::GetCorrSector(sector,localX,theta,1,corr);
     Double_t dlocalX=AliTPCCorrection::GetCorrSector(sector,localX,theta,0,corr);
     Double_t x[1]={localX-dlocalX};
     Double_t z=theta*x[0];
     rieman.AddPoint(x[0],dy,z,0.1,0.1);
+    fitter.AddPoint(x,dy);
   }
+  fitter.Eval();
   rieman.Update();
   //
- 
-  if (ptype==0) return rieman.GetYat(refX);
-  if (ptype==2) return rieman.GetDYat(refX);
+  Double_t schi2= TMath::Sqrt(fitter.GetChisquare()/nsteps);
+  if (schi2>fgMaxChi2HelixAt){
+    ::Error("AliTPCCorrectionFit::EvalAtHelix",TString::Format("Bad chi2\t%2.2f",schi2).Data());
+    if (pstatus) (*pstatus)=kFALSE;    
+    return 0;
+  }
+  if (pstatus) (*pstatus)=kTRUE;    
+  if (ptype==0) return rieman.GetYat(evalX);
+  if (ptype==2) return rieman.GetDYat(evalX);
   if (ptype==4) return rieman.GetC();
   return 0;
 }

@@ -751,12 +751,14 @@ AliMUONRecoParam::Create(const char* settings)
     param->SetSigmaCutForTracking(5.);
     param->SetStripCutForTrigger(1.5);
     param->SetSigmaCutForTrigger(4.);
+//    param->MakeMoreTrackCandidates(kTRUE);
     param->ImproveTracks(kTRUE, 4.);
     param->SetPedMeanLimits(20, 700);
     param->SetManuOccupancyLimits(-1.,0.03);
     param->SetBuspatchOccupancyLimits(-1.,0.1); // 10 % (this cut not used for the reco anyway)
     param->SetFractionOfBuspatchOutsideOccupancyLimit(0.05); // 5 %
     param->SetEventSizeLimits(100., 150.);
+    param->DiscardMonoCathodClusters(kTRUE, 10., 10.);
     
     // specific parameters for Pb-Pb data or realistic Pb-Pb simu
     if ( stype == "pbpbreal" )
@@ -839,7 +841,7 @@ AliMUONRecoParam::Show(Int_t runNumber, const char* ocdb)
     for ( Int_t i = 0; i <= array->GetLast(); ++i ) 
     {
       AliDetectorRecoParam* p = static_cast<AliDetectorRecoParam*>(array->At(i));
-      if ( p ) p->Print("");
+      if ( p ) p->Print("FULL");
     }
   }
   else

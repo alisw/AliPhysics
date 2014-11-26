@@ -47,6 +47,9 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
 	       const TString ocdbPath = "local://$ALICE_ROOT/OCDB")
 {
   
+  // Disable printout of AliMCEvent
+  AliLog::SetClassDebugLevel("AliMCEvent",-1);
+  
   //Reset ROOT and connect tree file
   gROOT->Reset();
   
@@ -78,6 +81,9 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
   TH1F *hPhi = new TH1F("hPhi"," Muon phi distribution",100,-1.,9.);
   TH1F *hPhiM = new TH1F("hPhiM"," matched track phi distribution",100,-1.,9.);
   TH1F *hPhiF = new TH1F("hPhiF"," fake track phi distribution",100,-1.,9.);
+  TH1F *hNumberOfChamberHit = new TH1F("hNumberOfChamberHit","nb of chambers hit /track",20,0.,20.);
+  TH1F *hNumberOfChamberHitM = new TH1F("hNumberOfChamberHitM","nb of chambers hit /matched track",20,0.,20.);
+  TH1F *hNumberOfChamberHitF = new TH1F("hNumberOfChamberHitF","nb of chambers hit /fake track",20,0.,20.);
   
   // link to reconstructed and simulated tracks
   AliMUONRecoCheck rc(esdFileName, SimDir);
@@ -88,7 +94,7 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
   AliMUONRecoParam* recoParam = AliMUONCDB::LoadRecoParam();
   if (!recoParam) return;
   
-  // get sigma cut from recoParam to associate clusters with TrackRefs in case the label are not used
+  // get sigma cut from recoParam to associate clusters with TrackRefs in case the labels are not used
   sigmaCut = (recoParam->ImproveTracks()) ? recoParam->GetSigmaCutForImprovement() : recoParam->GetSigmaCutForTracking();
   // compute the mask of requested stations from recoParam
   for (Int_t i = 0; i < 5; i++) if (recoParam->RequestStation(i)) requestedStationMask |= ( 1 << i );
@@ -152,6 +158,8 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
       Double_t pT = esdTrack->Pt();
       Double_t eta = esdTrack->Eta();
       Double_t phi = esdTrack->Phi();
+      Int_t nChamberHit = 0;
+      for (Int_t ich=0; ich<10; ich++) if (esdTrack->IsInMuonClusterMap(ich)) nChamberHit++;
       
       // fill global histograms
       hNumberOfClusters->Fill(nClusters);
@@ -160,6 +168,7 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
       hPt->Fill(pT);
       hEta->Fill(eta);
       hPhi->Fill(phi);
+      hNumberOfChamberHit->Fill(nChamberHit);
       
       // try to match the reconstructed track with a simulated one
       Int_t nMatchClusters = 0;
@@ -184,6 +193,7 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
 	hPtM->Fill(pT);
 	hEtaM->Fill(eta);
 	hPhiM->Fill(phi);
+	hNumberOfChamberHitM->Fill(nChamberHit);
 	
 	// remove already matched trackRefs
 	trackRefStore->Remove(*matchedTrackRef);
@@ -200,6 +210,7 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
 	hPtF->Fill(pT);
 	hEtaF->Fill(eta);
 	hPhiF->Fill(phi);
+	hNumberOfChamberHitF->Fill(nChamberHit);
 	
 	// store fake tracks
 	fakeTrackStore->Add(*muonTrack);
@@ -211,7 +222,11 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
     // fill histograms
     hNumberOfTracks->Fill(nTrackerTracks);
     nReconstructedTracks += nTrackerTracks;
-    if (trackReconstructedYet) eventsWithTrackReconstructedYet[nEventsWithTrackReconstructedYet++] = iEvent;
+    if (trackReconstructedYet) {
+      if (nEventsWithTrackReconstructedYet >= eventsWithTrackReconstructedYet.GetSize())
+	eventsWithTrackReconstructedYet.Set(10*eventsWithTrackReconstructedYet.GetSize());
+      eventsWithTrackReconstructedYet[nEventsWithTrackReconstructedYet++] = iEvent;
+    }
     
     // count the number the additional fake tracks
     if (fakeTrackStore->GetSize() > 0) {
@@ -223,11 +238,11 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
       Int_t nAdditionalTracks = fakeTrackStore->GetSize() - nFreeMissingTracks;
       
       // fill histograms
-      eventsWithFake[nEventsWithFake] = iEvent;
-      nEventsWithFake++;
+      if (nEventsWithFake >= eventsWithFake.GetSize()) eventsWithFake.Set(10*eventsWithFake.GetSize());
+      eventsWithFake[nEventsWithFake++] = iEvent;
       if (nAdditionalTracks > 0) {
-	eventsWithAdditionalFake[nEventsWithAdditionalFake] = iEvent;
-	nEventsWithAdditionalFake++;
+	if (nEventsWithAdditionalFake >= eventsWithAdditionalFake.GetSize()) eventsWithAdditionalFake.Set(10*eventsWithAdditionalFake.GetSize());
+	eventsWithAdditionalFake[nEventsWithAdditionalFake++] = iEvent;
 	nTotAdditionalTracks += nAdditionalTracks;
 	hNumberOfAdditionalTracks->Fill(nAdditionalTracks);
       }
@@ -245,7 +260,10 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
   TCanvas cFakesSummary("cFakesSummary","cFakesSummary",900,600);
   cFakesSummary.Divide(3,2);
   cFakesSummary.cd(1);
-  cFakesSummary.GetPad(1)->SetLogy();
+  TVirtualPad* pad1 = cFakesSummary.GetPad(1);
+  pad1->Divide(0,2);
+  pad1->cd(1);
+  pad1->GetPad(1)->SetLogy();
   hNumberOfClusters->Draw();
   hNumberOfClusters->SetMinimum(0.5);
   hNumberOfClustersM->Draw("same");
@@ -254,6 +272,16 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
   hNumberOfClustersF->SetLineColor(2);
   hNumberOfClustersF->SetFillColor(2);
   hNumberOfClustersF->SetFillStyle(3017);
+  pad1->cd(2);
+  pad1->GetPad(2)->SetLogy();
+  hNumberOfChamberHit->Draw();
+  hNumberOfChamberHit->SetMinimum(0.5);
+  hNumberOfChamberHitM->Draw("same");
+  hNumberOfChamberHitM->SetLineColor(4);
+  hNumberOfChamberHitF->Draw("same");
+  hNumberOfChamberHitF->SetLineColor(2);
+  hNumberOfChamberHitF->SetFillColor(2);
+  hNumberOfChamberHitF->SetFillStyle(3017);
   cFakesSummary.cd(2);
   cFakesSummary.GetPad(2)->SetLogy();
   hChi2PerDof->Draw();

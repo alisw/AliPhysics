@@ -481,19 +481,14 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
     }
   }
 
-  Double_t xv, yv;
-  Float_t ax, bx, ay, by;
+  Float_t ax, bx, ay, by, z;
   Float_t xr[28], yr[28], zr[28];
-  Float_t xrc[28], yrc[28], zrc[28];
   Int_t chr[28];
   char form[1000];
 
   TMatrixD smatrix(2,2);
   TMatrixD sums(2,1);
   TMatrixD res(2,1);
-
-  // middle z between the two detector planes of the trigger chambers
-  Float_t zg[4] = { -1603.5, -1620.5, -1703.5, -1720.5 };
 
   Float_t pt    = 0.0;
   Float_t pv[3] = {0., 0., 0.};
@@ -553,87 +548,43 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
   }
   
   if (!fIsMUONTrack && !fIsESDTrack) return;
-
-  Int_t nrc = 0;
-  if (mtrack->GetMatchTrigger()) {
-
-    for (Int_t i = 0; i < nTrackHits; i++) {
-      if (TMath::Abs(zr[i]) > 1000.0) {
-	//printf("TEveHit %d x %f y %f z %f \n",iHit,xr[i],yr[i],zr[i]);
-	xrc[nrc] = xr[i];
-	yrc[nrc] = yr[i];
-	zrc[nrc] = zr[i];
-	nrc++;
-      }
-    }
-
-    if (nrc < 2) return;
-
-    // fit x-z
-    smatrix.Zero();
-    sums.Zero();
-    for (Int_t i = 0; i < nrc; i++) {
-      xv = (Double_t)zrc[i];
-      yv = (Double_t)xrc[i];
-      //printf("x-z: xv %f yv %f \n",xv,yv);
-      smatrix(0,0) += 1.0;
-      smatrix(1,1) += xv*xv;
-      smatrix(0,1) += xv;
-      smatrix(1,0) += xv;
-      sums(0,0)    += yv;
-      sums(1,0)    += xv*yv;
-    }
-    res = smatrix.Invert() * sums;
-    ax = res(0,0);
-    bx = res(1,0);
-
-    // fit y-z
-    smatrix.Zero();
-    sums.Zero();
-    for (Int_t i = 0; i < nrc; i++) {
-      xv = (Double_t)zrc[i];
-      yv = (Double_t)yrc[i];
-      //printf("y-z: xv %f yv %f \n",xv,yv);
-      smatrix(0,0) += 1.0;
-      smatrix(1,1) += xv*xv;
-      smatrix(0,1) += xv;
-      smatrix(1,0) += xv;
-      sums(0,0)    += yv;
-      sums(1,0)    += xv*yv;
-    }
-    res = smatrix.Invert() * sums;
-    ay = res(0,0);
-    by = res(1,0);
-
-    Float_t xtc, ytc, ztc;
-    for (Int_t ii = 0; ii < 4; ii++) {
-
-      ztc = zg[ii];
-      ytc = ay+by*zg[ii];
-      xtc = ax+bx*zg[ii];
-
-      //printf("tc: x %f y %f z %f \n",xtc,ytc,ztc);
-
-      SetPoint(fCount,xtc,ytc,ztc);
-      fCount++;
-
-    }
-
-  }  // end match trigger
-
+  
+  // Propagate the track till the trigger planes
+  trackParam = (AliMUONTrackParam*) trackParamAtCluster->Last();
+  ax = trackParam->GetNonBendingCoor();
+  bx = trackParam->GetNonBendingSlope();
+  ay = trackParam->GetBendingCoor();
+  by = trackParam->GetBendingSlope();
+  z  = trackParam->GetZ();
+  
+  Float_t xtc, ytc, ztc;
+  Int_t endPlane = (mtrack->GetMatchTrigger()) ? 4 : 1;
+  for (Int_t ii = 0; ii < endPlane; ii++) {
+    
+    ztc = AliMUONConstants::DefaultChamberZ(10+ii);
+    ytc = ay+by*(ztc-z);
+    xtc = ax+bx*(ztc-z);
+    
+    //printf("tc: x %f y %f z %f \n",xtc,ytc,ztc);
+    
+    SetPoint(fCount,xtc,ytc,ztc);
+    fCount++;
+    
+  }
+  
 }
 
 //______________________________________________________________________________
-void AliEveMUONTrack::MakeMUONTriggerTrack(AliMUONTriggerTrack *mtrack)
+void AliEveMUONTrack::MakeMUONTriggerTrack(AliESDMuonTrack *mtrack)
 {
   //
   // builds the trigger track from one point and direction
   //
 
-  Float_t x1   = mtrack->GetX11();
-  Float_t y1   = mtrack->GetY11();
-  Float_t thex = mtrack->GetThetax();
-  Float_t they = mtrack->GetThetay();
+  Float_t x1   = mtrack->GetNonBendingCoorUncorrected();
+  Float_t y1   = mtrack->GetBendingCoorUncorrected();
+  Float_t thex = mtrack->GetThetaXUncorrected();
+  Float_t they = mtrack->GetThetaYUncorrected();
 
   Float_t z11 = -1600.0;
   Float_t z22 = -1724.0;
@@ -647,9 +598,10 @@ void AliEveMUONTrack::MakeMUONTriggerTrack(AliMUONTriggerTrack *mtrack)
 
   char form[1000];
 
-  snprintf(form,1000,"MUONTriggerTrack %2d",mtrack->GetLoTrgNum());
+  snprintf(form,1000,"MUONTriggerTrack %2d",mtrack->LoCircuit());
   SetName(form);
   SetLineStyle(1);
+  SetLineColor(0);
 
 }
 
@@ -659,31 +611,39 @@ void AliEveMUONTrack::MakeESDTrack(AliESDMuonTrack *mtrack)
   //
   // builds the track with dipole field starting from the TParticle
   //
-
+  
   fIsESDTrack = kTRUE;
-
-  char form[1000];
-  if (mtrack->GetMatchTrigger()) {
-    snprintf(form,1000,"ESDTrack %2d (MT)", fLabel);
+  
+  if (mtrack->ContainTrackerData()) {
+    
+    char form[1000];
+    if (mtrack->GetMatchTrigger()) {
+      snprintf(form,1000,"ESDTrack %2d (MT)", fLabel);
+    } else {
+      snprintf(form,1000,"ESDTrack %2d     ", fLabel);
+    }
+    SetName(form);
+    SetLineStyle(3);
+    SetLineColor(0);
+    
+    fTrack = new AliMUONTrack();
+    
+    // create a simple track from the ESD track
+    AliMUONESDInterface::ESDToMUON(*mtrack,*fTrack);
+    
+    // reset track parameters at vertex to the ones at DCA
+    AliMUONTrackParam paramAtDCA;
+    AliMUONESDInterface::GetParamAtDCA(*mtrack, paramAtDCA);
+    fTrack->SetTrackParamAtVertex(&paramAtDCA);
+    
+    MakeMUONTrack(fTrack);
+    
   } else {
-    snprintf(form,1000,"ESDTrack %2d     ", fLabel);
+    
+    MakeMUONTriggerTrack(mtrack);
+    
   }
-  SetName(form);
-  SetLineStyle(3);
-  SetLineColor(0);
-
-  fTrack = new AliMUONTrack();
-
-  // create a simple track from the ESD track
-  AliMUONESDInterface::ESDToMUON(*mtrack,*fTrack);
   
-  // reset track parameters at vertex to the ones at DCA
-  AliMUONTrackParam paramAtDCA;
-  AliMUONESDInterface::GetParamAtDCA(*mtrack, paramAtDCA);
-  fTrack->SetTrackParamAtVertex(&paramAtDCA);
-  
-  MakeMUONTrack(fTrack);
-
 }
 
 //______________________________________________________________________________

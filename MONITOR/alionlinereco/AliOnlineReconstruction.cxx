@@ -15,9 +15,13 @@
 #include <TSQLRow.h>
 #include <TTimeStamp.h>
 
+#include <signal.h>
 #include <iostream>
 
 using namespace std;
+
+bool gQuit = false;
+void GotSignal(int){gQuit = true;}
 
 AliOnlineReconstruction::AliOnlineReconstruction(int run) :
   fRun(run),
@@ -26,14 +30,32 @@ AliOnlineReconstruction::AliOnlineReconstruction(int run) :
   fAliReco(new AliReconstruction()),
   fCDBmanager(AliCDBManager::Instance())
 {
+  // make sure that destructor is called when kill signal comes
+  struct sigaction sa;
+  memset(&sa,0,sizeof(sa));
+  sa.sa_handler = GotSignal;
+  sigfillset(&sa.sa_mask);
+  sigaction(SIGINT,&sa,NULL);
+
+  printf("CDB Lock is %s\n",AliCDBManager::Instance()->GetLock() ? "ON":"OFF");
+
+
   fSettings.ReadFile(AliOnlineReconstructionUtil::GetPathToServerConf(), kEnvUser);
   StartOfRun();
+  cout<<"after startofrun"<<endl;
 }
 
 AliOnlineReconstruction::~AliOnlineReconstruction()
 {
-  if(fAliReco){delete fAliReco;fAliReco=0;}
+  cout<<"AliOnlineReconstruction -- destructor called...";
+  if(fAliReco)
+    {
+      //	fAliReco->SlaveTerminate();
+      //	fAliReco->Terminate(); 
+      //	delete fAliReco;fAliReco=0;
+    }
   if(fCDBmanager){fCDBmanager->Destroy();fCDBmanager=0;}
+  cout<<"OK"<<endl;
 }
 
 void AliOnlineReconstruction::StartOfRun()
@@ -46,7 +68,7 @@ void AliOnlineReconstruction::StartOfRun()
   else if(strcmp(fSettings.GetValue("data.source", DEFAULT_DATA_SOURCE),"run")==0)
     {
       cout<<"Starting Reco for GDCs active in current run:"<<fRun<<endl;
-      fDataSource = "mem://@*:";
+      fDataSource = fSettings.GetValue("data.online.source", DEFAULT_DATA_ONLINE_SOURCE);
     }
   else{cout<<"\n\nWrong data source. Quitting\n\n"<<endl;}
 
@@ -139,7 +161,7 @@ void AliOnlineReconstruction::ReconstructionLoop()
 	//******* The loop over events
 	Int_t iEvent = 0;
 	AliESDEvent* event;
-	while (fAliReco->HasNextEventAfter(iEvent))
+	while (fAliReco->HasNextEventAfter(iEvent) && !gQuit)
 	{
 		if (!fAliReco->HasEnoughResources(iEvent)) break;
 		Bool_t status = fAliReco->ProcessEvent(iEvent);
@@ -153,11 +175,14 @@ void AliOnlineReconstruction::ReconstructionLoop()
 		  cout<<"Event server -- aborting"<<endl;
 		  fAliReco->Abort("ProcessEvent",TSelector::kAbortFile);
 		}
+		cout<<"clean"<<endl;
 		fAliReco->CleanProcessedEvent();
+		cout<<"iEvent++"<<endl;
 		iEvent++;
 	}
-	fAliReco->SlaveTerminate();
-	if (fAliReco->GetAbort() != TSelector::kContinue) return;
-	fAliReco->Terminate();
-	if (fAliReco->GetAbort() != TSelector::kContinue) return; 
+	cout<<"after while"<<endl;
+	//	fAliReco->SlaveTerminate();
+	//if (fAliReco->GetAbort() != TSelector::kContinue) return;
+	//fAliReco->Terminate();
+	//if (fAliReco->GetAbort() != TSelector::kContinue) return; 
 }

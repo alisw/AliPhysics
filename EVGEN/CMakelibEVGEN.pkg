@@ -82,6 +82,7 @@ set ( SRCS
   AliGenTHnSparse.cxx 
   AliOmegaDalitz.cxx 
   AliGenDeuteron.cxx 
+  AliGenLightNuclei.cxx 
   AliGenReaderSL.cxx 
   AliGenMUONLMR.cxx
   AliGenLcLib.cxx

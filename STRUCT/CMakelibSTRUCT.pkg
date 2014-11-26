@@ -34,6 +34,7 @@ set ( SRCS
     AliDIPOv3.cxx 
     AliFRAME.cxx 
     AliFRAMEv2.cxx 
+    AliFRAMEv3.cxx 
     AliHALL.cxx 
     AliHALLv3.cxx 
     AliSHIL.cxx	

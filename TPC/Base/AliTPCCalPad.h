@@ -29,6 +29,7 @@ class TH1F;
 class TCanvas;
 class TTree;
 class TH2;
+class TF1;
 
 class AliTPCCalPad : public TNamed {
  public:
@@ -44,12 +45,13 @@ class AliTPCCalPad : public TNamed {
   void SetCalROC(AliTPCCalROC* roc, Int_t sector = -1);  
   virtual void	Draw(Option_t* option = "");
   // TTree functions
-  static AliTPCCalPad *MakePadFromTree(TTree * tree, const char *query, const char*name=0);  
+  static AliTPCCalPad *MakePadFromTree(TTree * tree, const char *query, const char*name=0, Bool_t doFast=kFALSE);  
   void AddFriend(TTree * tree, const char *friendName, const char *fname=0);
   //
   // convolution
   Bool_t MedianFilter(Int_t deltaRow, Int_t deltaPad, AliTPCCalPad*outlierPad=0, Bool_t doEdge=kTRUE);
   Bool_t LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction, Int_t type, AliTPCCalPad*outlierPad=0, Bool_t doEdge=kTRUE);
+  Bool_t Convolute(Double_t sigmaPad, Double_t sigmaRow,  AliTPCCalPad*outlierPad=0, TF1 *fpad=0, TF1 *frow=0 );
   //
   // algebra
   void Add(Float_t c1);   // add constant c1 to all channels of all ROCs
@@ -57,6 +59,7 @@ class AliTPCCalPad : public TNamed {
   void Add(const AliTPCCalPad * roc, Double_t c1 = 1);   // multiply AliTPCCalPad 'pad' by c1 and add each channel to the coresponing channel in all ROCs
   void Multiply(const AliTPCCalPad * pad);  // multiply each channel of all ROCs with the coresponding channel of 'pad'
   void Divide(const AliTPCCalPad * pad);    // divide each channel of all ROCs by the coresponding channel of 'pad'
+  void Reset();
   //
   Double_t GetMeanRMS(Double_t &rms);   // Calculates mean and RMS of all ROCs
   Double_t GetMean(AliTPCCalPad* outlierPad = 0);   // return mean of the mean of all ROCs

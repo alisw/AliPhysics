@@ -12,6 +12,7 @@
 #pragma link C++ class  AliFITDigitizer+;
 #pragma link C++ class  AliFITv1+;
 #pragma link C++ class  AliFITv0+;
+#pragma link C++ class  AliFITv2+;
 #pragma link C++ class  AliFITRawData+;
 
 #endif

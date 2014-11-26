@@ -140,6 +140,8 @@ Bool_t AliMUONTrackReconstructorK::MakeTrackCandidates(AliMUONVClusterStore& clu
     
   }
   
+  AliDebug(1,Form("Number of candidates before cleaning = %d",fNRecTracks));
+  
   // Keep all different tracks if required
   if (GetRecoParam()->TrackAllTracks()) RemoveIdenticalTracks();
   
@@ -234,6 +236,8 @@ Bool_t AliMUONTrackReconstructorK::MakeMoreTrackCandidates(AliMUONVClusterStore&
       
     }
   }
+  
+  AliDebug(1,Form("Number of candidates before cleaning = %d",fNRecTracks));
   
   // Retrace tracks using Kalman filter (also compute track chi2) and select them
   nCurrentTracks = fRecTracksPtr->GetLast()+1;
@@ -486,8 +490,12 @@ Bool_t AliMUONTrackReconstructorK::FollowTracks(AliMUONVClusterStore& clusterSto
     
     fRecTracksPtr->Compress(); // this is essential before checking tracks
     
+    AliDebug(1,Form("In stations(1..) %d: Number of candidates before cleaning = %d",station+1,fNRecTracks));
+    
     // Keep only the best tracks if required
     if (!GetRecoParam()->TrackAllTracks()) RemoveDoubleTracks();
+    
+    AliDebug(1,Form("In stations(1..) %d: Number of good candidates = %d",station+1,fNRecTracks));
     
   }
   

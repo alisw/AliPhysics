@@ -262,8 +262,10 @@ void AliPIPEupgrade::CreateGeometry()
   voberylliumTubeVacuum->SetVisibility(0);
   voberylliumTubeVacuum->SetLineColor(kGreen);
 
-  voberylliumTube->AddNode(voberylliumTubeVacuum, 1,
-			   new TGeoTranslation(0., 0., 0.));
+  beamPipeCsideSection->AddNode(voberylliumTubeVacuum, 1,
+			      new TGeoTranslation(0.,0.,
+			      (fBeryliumSectionZmax+fBeryliumSectionZmin)/2));
+
   beamPipeCsideSection->AddNode(voberylliumTube, 1, new TGeoTranslation(0., 0.,
 			      (fBeryliumSectionZmax+fBeryliumSectionZmin)/2));
   //-------------------------------------------------
