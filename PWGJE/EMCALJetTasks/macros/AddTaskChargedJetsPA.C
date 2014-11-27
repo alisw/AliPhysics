@@ -18,7 +18,8 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   Double_t            maxEta                  = +0.9,
   Double_t            minJetEta               = -0.5,
   Double_t            maxJetEta               = +0.5,
-  Bool_t              isEMCalTrain            = kFALSE
+  Int_t               recombscheme            = 1,
+  Bool_t              isEMCalTrain            = kTRUE
 )
 {
   cout << " ############ MACRO EXECUTION STARTED ############\n";
@@ -74,13 +75,13 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   {
     // #### Add necessary jet finder tasks
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
-    AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,"",1,jetRadius,1,minJetTrackPt,0.300); // anti-kt
-    AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,ktJetRadius,1,minJetTrackPt,0.300); // kt
+    AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,"",1,jetRadius,1,minJetTrackPt,0.300,0.005,recombscheme, "Jet", 1.0); // anti-kt
+    AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,ktJetRadius,1,minJetTrackPt,0.300,0.005,recombscheme, "Jet", 1.0); // kt
     cout << " Jet finder tasks added: " <<  jetFinderTask << " + " <<  jetFinderTaskKT << endl;
 
     // #### Define external rho task
-    AliEmcalJetTask* jetFinderRho = AddTaskEmcalJet(usedTracks,"",1,0.4,1,minJetTrackPt,0.300); // anti-kt
-    AliEmcalJetTask* jetFinderRhoKT = AddTaskEmcalJet(usedTracks,"",0,0.4,1,minJetTrackPt,0.300); // kt
+    AliEmcalJetTask* jetFinderRho = AddTaskEmcalJet(usedTracks,"",1,0.4,1,minJetTrackPt,0.300,0.005,recombscheme, "Jet", 1.0); // anti-kt
+    AliEmcalJetTask* jetFinderRhoKT = AddTaskEmcalJet(usedTracks,"",0,0.4,1,minJetTrackPt,0.300,0.005,recombscheme, "Jet", 1.0); // kt
     cout << " Jet finder tasks (used for bgrd) added: " <<  jetFinderRho << " + " <<  jetFinderRhoKT << endl;
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
     AliAnalysisTaskRhoSparse* rhotask = AddTaskRhoSparse(jetFinderRhoKT->GetName(), NULL, usedTracks, "", bgrdName.Data(), 0.4,"TPC", 0., 5., 0, 0,2,kFALSE,bgrdName.Data(),kTRUE);
