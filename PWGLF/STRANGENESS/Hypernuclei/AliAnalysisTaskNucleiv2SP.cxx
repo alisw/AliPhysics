@@ -323,17 +323,17 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
   } 
  
   if(! fhBB ){
-    fhBB = new TH2F( "fhBB" , "BetheBlochTPC" , 240,-6,6,250,0,1000);
+    fhBB = new TH2F( "fhBB" , "BetheBlochTPC" , 240,-10,10,250,0,1000);
     fListHist->Add(fhBB);
   }
   
   if(! fhBBDeu ){
-    fhBBDeu = new TH2F( "fhBBDeu" , "BetheBlochTPC - Deuteron" , 240,-6,6,250,0,1000);
+    fhBBDeu = new TH2F( "fhBBDeu" , "BetheBlochTPC - Deuteron" , 240,-10,10,250,0,1000);
     fListHist->Add(fhBBDeu);
   }
  
   if(! fhTOF ){
-    fhTOF = new TH2F( "fhTOF" , "Scatter Plot TOF" , 240,-6,6,500,0,1.2);
+    fhTOF = new TH2F( "fhTOF" , "Scatter Plot TOF" , 240,-10,10,500,0,1.2);
     fListHist->Add(fhTOF);
   }
   if(! fhMassTOF){
@@ -486,7 +486,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   ULong_t  status=0;
  
   Double_t pmax  = 10;
-  Double_t ptmax = 7;
+  Double_t ptmax = 10;
   // Primary vertex cut
   
   const AliESDVertex *vtx = lESDevent->GetPrimaryVertexTracks();
@@ -649,12 +649,18 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   TVector2 *q = 0x0;
   q = pl->GetQVector();
 
-  Float_t ptcExp  = -999;
+  Double_t ptcExp  = -999;
   Double_t pullTPC = -999;
+  Double_t expbeta = -999;
+  Double_t pullTOF = -999;
   Float_t deltaphiTPC = -3;
   Float_t deltaphiV0  = -3;
   Float_t deltaphiV0A = -3;
   Float_t deltaphiV0C = -3;
+
+  Double_t massd   = 1.875612762;
+  Double_t masst   = 2.808939;
+  Double_t mass3he = 2.80892;
 
   Float_t  uqV0A = -999;
   Float_t  uqV0C = -999; 
@@ -680,7 +686,8 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
     
     Double_t ptot = esdtrack->GetInnerParam()->GetP(); // momentum for dEdx determination
  
-    if(ptot<0.2)continue;
+    //   if(ptot<0.2)continue;
+    if(ptot<0.6)continue;
     fhBB->Fill(ptot*esdtrack->GetSign(),TPCSignal);
     esdtrack->GetImpactParameters(impactXY, impactZ);
               
@@ -702,37 +709,57 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
     Float_t  gamma = 0;
     Float_t  mass  = -99;
     Double_t pt  = esdtrack->Pt();
+ 
+    if(fptc==1)
+      expbeta = TMath::Sqrt(1-((massd*massd)/(ptot*ptot+massd*massd))); 
+    if(fptc==2)
+      expbeta = TMath::Sqrt(1-((masst*masst)/(ptot*ptot+masst*masst))); 
+    if(fptc==3)
+      expbeta = TMath::Sqrt(1-((mass3he*mass3he)/(ptot*ptot+mass3he*mass3he))); 
+     
 
     if(fptc==3)
       pt = 2*pt;
 
-    if(TMath::Abs(ptot) < pmax && TMath::Abs(pullTPC) <= 3 && TMath::Abs(pt) < ptmax){
-
-      fhBBDeu->Fill(ptot*esdtrack->GetSign(),TPCSignal);
+    if(TMath::Abs(ptot) < pmax  && TMath::Abs(pt) < ptmax){
+      // if(TMath::Abs(pullTPC) <= 3)
       
       //
       // Process TOF information
       //
-      if (hasTOF) {
-	beta = length / (2.99792457999999984e-02 * tof);
-	gamma = 1/TMath::Sqrt(1 - beta*beta);
-	mass = ptot/TMath::Sqrt(gamma*gamma - 1); // using inner TPC mom. as approx.
-	
-	fhTOF->Fill(ptot*esdtrack->GetSign(),beta);
-	if(fptc==1){
-	  if(TMath::Abs(mass) > 2.7)continue;
-	  if(TMath::Abs(mass) < 1. )continue;
-	}
-	if(fptc==2){
-	  if(TMath::Abs(mass) > 5.0)continue;
-	  if(TMath::Abs(mass) < 1.8 )continue;
-	}
-	if(fptc==3){
-	  if(TMath::Abs(mass) > 5.0)continue;
-	  if(TMath::Abs(mass) < 1.8 )continue;
-	}
-	fhMassTOF->Fill(mass);
+      if(!hasTOF)continue;
+      //      if (hasTOF) {
+      beta = length / (2.99792457999999984e-02 * tof);
+      gamma = 1/TMath::Sqrt(1 - beta*beta);
+      mass = ptot/TMath::Sqrt(gamma*gamma - 1); // using inner TPC mom. as approx.
+  
+      //   cout<<expbeta<<" "<<beta<<" "<<(beta - expbeta)/(0.008*expbeta)<<endl;
+      pullTOF  = (beta - expbeta)/(0.01*expbeta);
+
+      if(TMath::Abs(ptot)< 2)
+	if(TMath::Abs(pullTPC) > 3)continue;
+      
+      // if(TMath::Abs(ptot)< 4)
+      // 	if( beta>1)continue;
+      if(TMath::Abs(pullTOF) > 3)continue;
+
+      if(fptc==1){
+	if(TMath::Abs(mass) > 2.65)continue;
+	if(TMath::Abs(mass) < 1.05)continue;
       }
+      if(fptc==2){
+	if(TMath::Abs(mass) > 5.0)continue;
+	if(TMath::Abs(mass) < 1.8 )continue;
+      }
+      if(fptc==3){
+	if(TMath::Abs(mass) > 5.0)continue;
+	if(TMath::Abs(mass) < 1.8)continue;
+      }
+      fhMassTOF->Fill(mass);
+      //}
+      fhTOF->Fill(ptot*esdtrack->GetSign(),beta);
+      fhBBDeu->Fill(ptot*esdtrack->GetSign(),TPCSignal);
+      
    
       // Event Plane
       // Remove AutoCorrelation
@@ -766,7 +793,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
       tpull            = pullTPC;
       tphi             = tPhi;
 
-      //      ftree->Fill();
+      ftree->Fill();
     } 
   }  //track
   
