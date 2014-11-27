@@ -20,4 +20,8 @@
 #pragma link C++ class  AliVZEROTriggerSimulator+;
 #pragma link C++ class  AliVZEROTriggerData+;
 
+// moved from VZEROrec
+#pragma link C++ class  AliVZEROQADataMakerRec+;
+#pragma link C++ class  AliVZERORawStream+;
+
 #endif

@@ -137,6 +137,8 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 # Create an object to be reused in case of static libraries 
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
+# Follow headers dependencies
+add_dependencies(${MODULE}-object ${ALIROOT_DEPENDENCIES})
 # Add a library to the project using the object
 add_library(${MODULE} SHARED $<TARGET_OBJECTS:HLTbase-object>)
 target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
@@ -160,7 +162,7 @@ install(FILES ${HDRS} DESTINATION include)
 if(ALIROOT_STATIC)
     add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:HLTbase-object>)
     set_target_properties(${MODULE}-static PROPERTIES OUTPUT_NAME ${MODULE})
-    target_link_libraries(${MODULE}-static STEERBase-static RAWDatabase-static AliHLTHOMER-static HLTbase-static Root RootExtra)
+    target_link_libraries(${MODULE}-static STEERBase-static RAWDatabase-static AliHLTHOMER-static Root RootExtra)
     set_target_properties(${MODULE}-static PROPERTIES LINK_FLAGS "-Wl,--whole-archive")
     
     # Installation

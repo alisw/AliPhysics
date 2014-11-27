@@ -21,7 +21,6 @@ include_directories(${AliRoot_SOURCE_DIR}/TRD/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase // this should not be here, but it is still asked, why?
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
                     ${AliRoot_SOURCE_DIR}/STAT
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
@@ -59,14 +58,16 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 # Create an object to be reused in case of static libraries 
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
+# Follow headers dependencies
+add_dependencies(${MODULE}-object ${ALIROOT_DEPENDENCIES})
 # Add a library to the project using the object
 add_library(${MODULE} SHARED $<TARGET_OBJECTS:TRDrec-object>)
 
 # Linking
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+target_link_libraries(${MODULE} RAWDatarec ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
 # Public include folders that will be propagated to the dependecies
-target_include_directories(${MODULE} PUBLIC ${incdirs})
+#target_include_directories(${MODULE} PUBLIC ${incdirs})
 
 # Additional compilation flags
 set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-O -g")
@@ -81,4 +82,3 @@ install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
 
-install(FILES ${HDRS} DESTINATION include)

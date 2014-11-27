@@ -149,7 +149,7 @@ set(LIBDEPS Core EG Geom Gpad Graf3d Graf Hist MathCore Matrix Minuit Net Physic
 generate_rootmap("STEERBase" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Additional compilation flags for the object
-set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-O -g")
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "")
 # Linking the library, not the object
 target_link_libraries(${MODULE} Core EG Geom Gpad Graf3d Graf Hist MathCore Matrix Minuit Net Physics RIO Tree VMC)
 

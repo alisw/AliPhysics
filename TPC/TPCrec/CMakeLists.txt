@@ -70,6 +70,8 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 # Create an object to be reused in case of static libraries 
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
+# Follow headers dependencies
+add_dependencies(${MODULE}-object ${ALIROOT_DEPENDENCIES})
 # Add a library to the project using the object
 add_library(${MODULE} SHARED $<TARGET_OBJECTS:TPCrec-object>)
 
@@ -92,4 +94,3 @@ install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
 
-install(FILES ${HDRS} DESTINATION include)

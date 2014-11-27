@@ -44,22 +44,26 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+set(ROOT_DEPENDENCIES Core Gpad Hist Net RIO Tree XMLParser)
+set(ALIROOT_DEPENDENCIES STEERBase)
+
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase Core Gpad Hist Net RIO Tree XMLParser)
+set(LIBDEPS ${ROOT_DEPENDENCIE} ${ALIROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Create an object to be reused in case of static libraries 
 # Otherwise the sources will be compiled twice
-add_library(ANALYSIS-object OBJECT ${SRCS} G__${MODULE}.cxx)
+add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
+add_dependencies(${MODULE}-object ${ALIROOT_DEPENDENCIES})
 # Add a library to the project using the object
-add_library(ANALYSIS SHARED $<TARGET_OBJECTS:ANALYSIS-object>)
+add_library(${MODULE} SHARED $<TARGET_OBJECTS:ANALYSIS-object>)
 
 # linking
-target_link_libraries(${MODULE} STEERBase Core Gpad Hist Net RIO Tree XMLParser)
+target_link_libraries(${MODULE} ${ROOT_DEPENDENCIE} ${ALIROOT_DEPENDENCIES})
 
 # Additional compilation flags
-set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-fPIC -O -g")
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)

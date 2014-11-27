@@ -48,17 +48,22 @@ set(HDRS ${HDRS} AliCaloConstants.h)
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+set(ROOT_DEPENDENCIES)
+set(ALIROOT_DEPENDENCIES STEERBase ESD AOD)
+
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase ESD AOD)
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Create an object to be reused in case of static libraries 
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
+# Follow headers dependencies
+add_dependencies(${MODULE}-object ${ALIROOT_DEPENDENCIES})
 # Add a library to the project using the object
 add_library(${MODULE} SHARED $<TARGET_OBJECTS:EMCALUtils-object>)
-target_link_libraries(${MODULE} STEERBase ESD AOD)
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
 # Additional compilation flags
 set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-O -g -fPIC")

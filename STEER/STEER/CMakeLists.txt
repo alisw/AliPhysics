@@ -175,9 +175,11 @@ add_definitions("-DLIBHLTSIM_VERSION=${LIBHLTSIM_VERSION}")
 
 # Create an object to be reused in case of static libraries 
 # Otherwise the sources will be compiled twice
-add_library(STEER-object OBJECT ${SRCS} G__${MODULE}.cxx)
+add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
+# Dependencies for the object
+add_dependencies(${MODULE}-object ${ALIROOT_DEPENDENCIES})
 # Add a library to the project using the object
-add_library(STEER SHARED $<TARGET_OBJECTS:STEER-object>)
+add_library(${MODULE} SHARED $<TARGET_OBJECTS:STEER-object>)
 
 target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 

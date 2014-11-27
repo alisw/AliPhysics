@@ -80,22 +80,27 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+set(ROOT_DEPENDENCIES)
+set(ALIROOT_DEPENDENCIES STEERBase STEER CDB ESD RAWDatabase RAWDatarec EMCALraw EMCALUtils)
+
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER CDB ESD RAWDatabase RAWDatarec EMCALraw EMCALUtils)
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Create an object to be reused in case of static libraries 
 # Otherwise the sources will be compiled twice
-add_library(EMCALbase-object OBJECT ${SRCS} G__${MODULE}.cxx)
+add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
+# Build dependencies for object, headers, defines etc
+add_dependencies(${MODULE}-object ${ALIROOT_DEPENDENCIES})
 # Add a library to the project using the object
-add_library(EMCALbase SHARED $<TARGET_OBJECTS:EMCALbase-object>)
+add_library(${MODULE} SHARED $<TARGET_OBJECTS:EMCALbase-object>)
 
 # dependencies
-target_link_libraries(${MODULE} STEERBase STEER CDB ESD RAWDatabase RAWDatarec RAWDatasim EMCALraw EMCALUtils)
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
 # Additional compilation flags
-set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-O -g -fPIC")
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)

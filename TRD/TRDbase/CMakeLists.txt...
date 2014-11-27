@@ -14,14 +14,13 @@
 # **************************************************************************
 
 # Module
-set(MODULE VZERObase)
+set(MODULE TRDbase)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/VZERO/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/TRD/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/RAW/dateStream
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
@@ -32,21 +31,99 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order
 set(SRCS
-    AliVZEROCalibData.cxx
-    AliVZERODataDCS.cxx
-    AliVZERODataFEE.cxx
-    AliVZEROdigit.cxx
-    AliVZEROLoader.cxx
-    AliVZEROLogicalSignal.cxx
-    AliVZEROMisAligner.cxx
-    AliVZEROPreprocessor.cxx
-    AliVZEROQAChecker.cxx
-    AliVZEROQADataMakerRec.cxx
-    AliVZERORawStream.cxx
-    AliVZEROSDigit.cxx
-    AliVZEROTrending.cxx
-    AliVZEROTriggerData.cxx
-    AliVZEROTriggerSimulator.cxx
+    AliTRDalignment.cxx
+    AliTRDarrayADC.cxx
+    AliTRDarrayDictionary.cxx
+    AliTRDarraySignal.cxx
+    AliTRDCalChamberStatus.cxx
+    AliTRDCalDCS.cxx
+    AliTRDCalDCSFEE.cxx
+    AliTRDCalDCSFEEv2.cxx
+    AliTRDCalDCSGTUBoardInfo.cxx
+    AliTRDCalDCSGTUCtpOpc.cxx
+    AliTRDCalDCSGTU.cxx
+    AliTRDCalDCSGTUSegment.cxx
+    AliTRDCalDCSGTUTgu.cxx
+    AliTRDCalDCSGTUTmu.cxx
+    AliTRDCalDCSPTR.cxx
+    AliTRDCalDCSv2.cxx
+    AliTRDCalDet.cxx
+    AliTRDCalibChamberStatus.cxx
+    AliTRDcalibDB.cxx
+    AliTRDCalibPadStatus.cxx
+    AliTRDCalibraExbAltFit.cxx
+    AliTRDCalibraFillHisto.cxx
+    AliTRDCalibraFit.cxx
+    AliTRDCalibraMode.cxx
+    AliTRDCalibraVdriftLinearFit.cxx
+    AliTRDCalibraVector.cxx
+    AliTRDCalibViewer.cxx
+    AliTRDCalibViewerGUI.cxx
+    AliTRDCalMonitoring.cxx
+    AliTRDCalOnlineGainTable.cxx
+    AliTRDCalOnlineGainTableMCM.cxx
+    AliTRDCalOnlineGainTableROC.cxx
+    AliTRDCalPad.cxx
+    AliTRDCalPadStatus.cxx
+    AliTRDCalPID.cxx
+    AliTRDCalROC.cxx
+    AliTRDCalSingleChamberStatus.cxx
+    AliTRDCalTrapConfig.cxx
+    AliTRDCalTrkAttach.cxx
+    AliTRDchamberTimeBin.cxx
+    AliTRDCommonParam.cxx
+    AliTRDcluster.cxx
+    AliTRDclusterizer.cxx
+    AliTRDDataDCS.cxx
+    AliTRDdEdxBaseUtils.cxx
+    AliTRDdEdxCalibHistArray.cxx
+    AliTRDdEdxCalibUtils.cxx
+    AliTRDdEdxReconUtils.cxx
+    AliTRDdigit.cxx
+    AliTRDdigitsManager.cxx
+    AliTRDdigitsParam.cxx
+    AliTRDEntriesInfo.cxx
+    AliTRDfeeParam.cxx
+    AliTRDgeometry.cxx
+    AliTRDgtuParam.cxx
+    AliTRDgtuSim.cxx
+    AliTRDgtuTMU.cxx
+    AliTRDhit.cxx
+    AliTRDltuParam.cxx
+    AliTRDmcmSim.cxx
+    AliTRDonlineTrackMatching.cxx
+    AliTRDpadPlane.cxx
+    AliTRDPhInfo.cxx
+    AliTRDpidUtil.cxx
+    AliTRDPreprocessor.cxx
+    AliTRDPrfInfo.cxx
+    AliTRDQAChecker.cxx
+    AliTRDrawData.cxx
+    AliTRDrawStream.cxx
+    AliTRDrecoParam.cxx
+    AliTRDReconstructor.cxx
+    AliTRDSaxHandler.cxx
+    AliTRDseedV1.cxx
+    AliTRDSensorArray.cxx
+    AliTRDSensor.cxx
+    AliTRDSignalIndex.cxx
+    AliTRDSimParam.cxx
+    AliTRDtrackGTU.cxx
+    AliTRDtrackerDebug.cxx
+    AliTRDtrackerV1.cxx
+    AliTRDtrackingChamber.cxx
+    AliTRDtrackingSector.cxx
+    AliTRDtrackletBase.cxx
+    AliTRDtrackletGTU.cxx
+    AliTRDtrackletOflHelper.cxx
+    AliTRDtrackletMCM.cxx
+    AliTRDtrackletWord.cxx
+    AliTRDtrackOnline.cxx
+    AliTRDtrackV1.cxx
+    AliTRDtransform.cxx
+    AliTRDtrapConfig.cxx
+    AliTRDtrapConfigHandler.cxx
+    AliTRDUshortInfo.cxx
    )
 
 # Headers from sources
@@ -57,7 +134,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
-set(ROOT_DEPENDENCIES Core Gpad Graf Hist MathCore RIO Tree)
+set(ROOT_DEPENDENCIES Core GenVector Geom Gpad Graf Gui Hist MathCore Matrix Minuit Net RIO Tree VMC XMLParser)
 set(ALIROOT_DEPENDENCIES STEERBase STEER ESD CDB RAWDatabase RAWDatarec)
 
 # Generate the ROOT map
@@ -69,9 +146,11 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Follow headers dependencies
-add_dependencies(${MODULE}-object ${ALIROOT_DEPENDENCIES})
+add_dependencies(${MODULE}-object ${ALIROOT_DEPDENDENCIES})
+# Follow headers dependencies
+add_dependencies(${MODULE}-object ${ALIROOT_DEPDENDENCIES})
 # Add a library to the project using the object
-add_library(${MODULE} SHARED $<TARGET_OBJECTS:VZERObase-object>)
+add_library(${MODULE} SHARED $<TARGET_OBJECTS:TRDbase-object>)
 
 # Linking
 target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
@@ -80,12 +159,25 @@ target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 target_include_directories(${MODULE} PUBLIC ${incdirs})
 
 # Additional compilation flags
-set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-O -g")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
     set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
+
+# Check if CRS support was enabled
+if(TRD_RAW_CRC)
+    message(STATUS "CRC support for AliTRDrawStream enabled")
+    add_definitions(-DTRD_RAW_CRC)
+endif(TRD_RAW_CRC)
+
+# Check if RAW debug enabled
+if(TRD_RAW_DEBUG)
+    message(STATUS "Debug support for AliTRDrawStream enabled")
+    add_definitions(-DTRD_RAW_DEBUG)
+endif(TRD_RAW_DEBUG)
+
 
 # Installation
 install(TARGETS ${MODULE}
@@ -96,7 +188,7 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Static version if DA enabled
 if(ALIROOT_STATIC)
-    add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:VZERObase-object>)
+    add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:TRDbase-object>)
     set_target_properties(${MODULE}-static PROPERTIES OUTPUT_NAME ${MODULE})
 
     # list of shared dependencies / the name of the variable containing the list of static ones

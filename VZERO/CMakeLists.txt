@@ -17,4 +17,8 @@ add_subdirectory(VZERObase)
 add_subdirectory(VZEROrec)
 add_subdirectory(VZEROsim)
 
+if(DA)
+    add_subdirectory(DA)
+endif(DA)
+
 message(STATUS "VZERO enabled")

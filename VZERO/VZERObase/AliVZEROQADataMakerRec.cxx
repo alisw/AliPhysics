@@ -45,7 +45,7 @@
 #include "AliVZERORawStream.h"
 #include "AliVZEROdigit.h"
 #include "AliVZEROConst.h"
-#include "AliVZEROReconstructor.h"
+//#include "AliVZEROReconstructor.h"
 #include "AliVZEROTrending.h"
 #include "AliVZEROCalibData.h"
 #include "AliVZEROTriggerData.h"
