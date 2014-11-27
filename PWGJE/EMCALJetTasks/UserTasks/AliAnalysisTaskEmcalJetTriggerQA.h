@@ -19,7 +19,6 @@ class TArrayI;
 
 class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
  public:
-
   AliAnalysisTaskEmcalJetTriggerQA();
   AliAnalysisTaskEmcalJetTriggerQA(const char *name);
   virtual ~AliAnalysisTaskEmcalJetTriggerQA();
@@ -37,6 +36,8 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
  
   void SetContainerFull(Int_t c)            { fContainerFull      = c;}
   void SetContainerCharged(Int_t c)         { fContainerCharged   = c;}
+
+  void SetMainTriggerTypeCat(TriggerCategory cat, Bool_t b) {fMainTrigCat = cat; fMainTrigSimple = b;}
 
   Int_t    GetLeadingCellId(const AliVCluster *clus) const;
   Double_t GetEnergyLeadingCell(const AliVCluster *clus) const;
@@ -60,6 +61,8 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   Double_t           fMaxPatchADCEnergy;     // energy of patch with largest energy from online ADC
   Int_t              fTriggerType;           // trigger type
   Int_t              fNFastOR;               // size of trigger patch fNFastORxfNFastOR
+  TriggerCategory    fMainTrigCat;           // trigger category for main trigger
+  Bool_t             fMainTrigSimple;        // use offline trigger instead of online
 
   TH1F     *fhNEvents;                         //! Histo number of events
   TProfile *fhTriggerbit;                      //! histogram containing the triggerbit (fOfflineTriggerMask)
