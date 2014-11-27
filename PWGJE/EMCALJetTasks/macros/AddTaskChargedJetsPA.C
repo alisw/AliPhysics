@@ -19,7 +19,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   Double_t            minJetEta               = -0.5,
   Double_t            maxJetEta               = +0.5,
   Int_t               recombscheme            = 1,
-  Bool_t              isEMCalTrain            = kTRUE
+  Bool_t              isEMCalTrain            = kFALSE
 )
 {
   cout << " ############ MACRO EXECUTION STARTED ############\n";
