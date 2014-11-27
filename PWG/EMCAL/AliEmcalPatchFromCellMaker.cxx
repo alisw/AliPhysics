@@ -261,7 +261,9 @@ void AliEmcalPatchFromCellMaker::RunSimpleOfflineTrigger()
   Int_t patchSize = GetDimFastor();
   Int_t stepSize = GetSlidingStepSizeFastor();
   Int_t maxCol = kPatchCols - patchSize;
-  Int_t maxRow = kPatchRows - patchSize;
+  //  Int_t maxRow = kPatchRows - patchSize;
+  Int_t maxRow = fGeom->GetNTotalTRU()*2 - patchSize; //apparently this is the total TRU in phi ??
+  //  Printf("fGeom->GetNTotalTRU(): %d %d = %d x %d ;  %d x %d",fGeom->GetNTRU(),fGeom->GetNTotalTRU(),fGeom->GetNTRUEta(),fGeom->GetNTRUPhi(),fGeom->GetNModulesInTRUEta(),fGeom->GetNModulesInTRUPhi());
 
   for (Int_t i = 0; i <= maxCol; i += stepSize) {
     for (Int_t j = 0; j <= maxRow; j += stepSize) {

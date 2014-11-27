@@ -75,6 +75,7 @@
 #pragma link C++ class AliAnalysisTaskSAJF+;
 #pragma link C++ class AliAnalysisTaskSAQA+;
 #pragma link C++ class AliAnalysisTaskSOH+;
+#pragma link C++ class AliAnalysisTaskTriggerRejection+;
 #pragma link C++ class AliAnalysisTaskV0sInJetsEmcal+;
 #pragma link C++ class AliEmcalPicoTrackFromJetMaker+;
 #pragma link C++ class AliNtupCumInfo+;

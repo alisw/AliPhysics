@@ -94,6 +94,7 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSOH.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskTriggerRejection.cxx
  EMCALJetTasks/UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
  EMCALJetTasks/UserTasks/AliCutValueRange.cxx 
  EMCALJetTasks/UserTasks/AliEMCalHistoContainer.cxx 
