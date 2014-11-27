@@ -173,8 +173,10 @@ private:
    TH1D *fhCentralityAccept;  //Deltaphi between trigger and jet after cut
    TH1D *fhNofMultipleTriggers; // The number of additional triggers in events with at least one trigger 
    TH1D *fhNofMultipleTriggersCone; // The number of additional triggers in events with at least one trigger 
-   TH1D *fhDeltaRMultTriggers; // Angular distributions of mult. triggers. 
-
+   TH1D *fhNofMultipleTriggersConeLow; // The number of additional triggers in events with at least one trigger 
+   TH1D *fhNofMultipleTriggersConeHigh; // The number of additional triggers in events with at least one trigger 
+   TH1D *fhDeltaRMultTriggers; // Angular distributions between trigger and assoc
+   TH1D *fhDeltaPhiMultTriggers; // Delta phi between trigger and assoc
 
    //THnSparse *fHJetPtRaw;      //bg unsubtr. vs bg subtr. pT spectrum of jets vs jet area
    //THnSparse *fHLeadingJetPtRaw; //bg unsubtr. vs bg. subtr. leading jet pT vs area 
@@ -209,11 +211,18 @@ private:
    TH1D  *fhCellAreaToMedianGen; //how many entries were used to calculate in MC
  
    TH1D *fhNofMultipleTriggersGen; // The number of additional triggers in events with at least one trigger 
-   TH1D *fhNofMultipleTriggersConeGen; // The number of additional triggers in events with at least one trigger in R<0.4 
-   TH1D *fhDeltaRMultTriggersGen; // Angular distributions of mult. triggers. 
+   TH1D *fhNofMultipleTriggersConeGen; // The number of additional triggers in events with at least one trigger in R<0.4 15-50
+   TH1D *fhNofMultipleTriggersConeGenLow; // The number of additional triggers in events with at least one trigger in R<0.4 15-20
+   TH1D *fhNofMultipleTriggersConeGenHigh; // The number of additional triggers in events with at least one trigger in R<0.4 20-50 
+   TH1D *fhDeltaRMultTriggersGen; // Angular distributions between trigger and assoc
+   TH1D *fhDeltaPhiMultTriggersGen; // Angular distributions between trigger and assoc
 
    TH1D *fhNofMultipleTriggersConeGenA; // The number of additional triggers in events with at least one trigger in R<0.4 
-   TH1D *fhNofMultipleTriggersConeGenB; // The number of additional triggers in events with at least one trigger in R<0.4 
+   TH1D *fhNofMultipleTriggersConeGenALow; // The number of additional triggers in events with at least one trigger in R<0.4 15-20 
+   TH1D *fhNofMultipleTriggersConeGenAHigh; // The number of additional triggers in events with at least one trigger in R<0.4  20-50
+   TH1D *fhNofMultipleTriggersConeGenB; // The number of additional triggers in events with at least one trigger in R<0.4 15-50
+   TH1D *fhNofMultipleTriggersConeGenBLow; // The number of additional triggers in events with at least one trigger in R<0.4 15-20
+   TH1D *fhNofMultipleTriggersConeGenBHigh; // The number of additional triggers in events with at least one trigger in R<0.4 20-50 
 
    Bool_t fIsChargedMC;   //flag analysis on MC data with true and on the real+kine data false
    Bool_t fIsKine;       //flag analysis on kine data with true and on the real+MC data false
@@ -253,7 +262,7 @@ private:
 
    Bool_t fDoubleBinning; //0=use 2 GeV/c bins  ; 1= use 1 GeV/c bins
  
-   ClassDef(AliAnalysisTaskJetCorePP, 14);  //has to end with number larger than 0
+   ClassDef(AliAnalysisTaskJetCorePP, 15);  //has to end with number larger than 0
 };
 
 #endif
