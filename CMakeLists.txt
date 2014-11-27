@@ -17,7 +17,7 @@
 # Set Basic CMake Configuration                                            #
 #--------------------------------------------------------------------------#
 
-cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8.11 FATAL_ERROR)
 
 project(AliRoot CXX C)
 
@@ -156,6 +156,7 @@ message(STATUS "Installation folder: ${CMAKE_INSTALL_PREFIX}")
 
 # General flags -> Should be moved into a configuration file
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+set(CMAKE_NO_SYSTEM_FROM_IMPORTED TRUE)
 
 # AliRoot base modules
 add_subdirectory(STEER)
