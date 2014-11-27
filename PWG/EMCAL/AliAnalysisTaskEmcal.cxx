@@ -47,7 +47,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fGeneralHistograms(kFALSE),
   fInitialized(kFALSE),
   fCreateHisto(kTRUE),
-  fMainTriggerPatchSet(kFALSE),
   fCaloCellsName(),
   fCaloTriggersName(),
   fCaloTriggerPatchInfoName(),
@@ -123,7 +122,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
 
   fParticleCollArray.SetOwner(kTRUE);
   fClusterCollArray.SetOwner(kTRUE);
-  memset(fMainTriggerPatch, 0, sizeof(AliEmcalTriggerPatchInfo *) * kNType);
 }
 
 //________________________________________________________________________
@@ -133,7 +131,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fGeneralHistograms(kFALSE),
   fInitialized(kFALSE),
   fCreateHisto(histo),
-  fMainTriggerPatchSet(kFALSE),
   fCaloCellsName(),
   fCaloTriggersName(),
   fCaloTriggerPatchInfoName(),
@@ -209,7 +206,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
 
   fParticleCollArray.SetOwner(kTRUE);
   fClusterCollArray.SetOwner(kTRUE);
-  memset(fMainTriggerPatch, 0, sizeof(AliEmcalTriggerPatchInfo *) * kNType);
 
   if (fCreateHisto) {
     DefineOutput(1, TList::Class()); 
@@ -412,8 +408,6 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
 void AliAnalysisTaskEmcal::UserExec(Option_t *) 
 {
   // Main loop, called for each event.
-
-  memset(fMainTriggerPatch, 0, sizeof(AliEmcalTriggerPatchInfo *) * kNType);
 
   if (!fInitialized)
     ExecOnce();
@@ -740,6 +734,7 @@ ULong_t AliAnalysisTaskEmcal::GetTriggerList()
   Int_t nG2 = 0;
   Int_t nJ1 = 0;
   Int_t nJ2 = 0;
+  Int_t nL0 = 0;
   AliEmcalTriggerPatchInfo *patch;
   for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
     patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
@@ -747,6 +742,7 @@ ULong_t AliAnalysisTaskEmcal::GetTriggerList()
     if (patch->IsGammaLow())  nG2++;
     if (patch->IsJetHigh()) nJ1++;
     if (patch->IsJetLow())  nJ2++;
+    if (patch->IsLevel0())  nL0++;
   }
 
   AliDebug(2, "Patch summary: ");
@@ -755,25 +751,22 @@ ULong_t AliAnalysisTaskEmcal::GetTriggerList()
   AliDebug(2, Form("Gamma: low[%d], high[%d]" ,nG2, nG1));
 
   ULong_t triggers(0);
-  if (nG1>0)
-    triggers |= kG1;
-  if (nG2>0)
-    triggers |= kG2;
-  if (nJ1>0)
-    triggers |= kJ1;
-  if (nJ2>0)
-    triggers |= kJ2;
+  if (nL0>0) SETBIT(triggers, kL0);
+  if (nG1>0) SETBIT(triggers, kG1);
+  if (nG2>0) SETBIT(triggers, kG2);
+  if (nJ1>0) SETBIT(triggers, kJ1);
+  if (nJ2>0) SETBIT(triggers, kJ2);
   return triggers;
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcal::HasTriggerType(Int_t trigger)
+Bool_t AliAnalysisTaskEmcal::HasTriggerType(TriggerType trigger)
 {
   // Check if event has a given trigger type
   if(trigger & kND){
     return fTriggers == 0;
   }
-  return (fTriggers & trigger);
+  return TESTBIT(fTriggers, trigger);
 }
 
 //________________________________________________________________________
@@ -835,7 +828,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     }
   }
 
-  if (!(fTriggerTypeSel & kND)) {
+  if (fTriggerTypeSel != kND) {
     if (!HasTriggerType(fTriggerTypeSel)) {
       if (fGeneralHistograms) fHistEventRejection->Fill("trigTypeSel",1);
       return kFALSE;
@@ -1071,8 +1064,6 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   }
 
   fTriggers = GetTriggerList();
-  fMainTriggerPatchSet = kFALSE;
-  memset(fMainTriggerPatch, 0, sizeof(AliEmcalTriggerPatchInfo *) * (kNType - 1));
 
   return kTRUE;
 }
@@ -1238,18 +1229,14 @@ Int_t AliAnalysisTaskEmcal::GetNClusters(Int_t i) const
 }
 
 //________________________________________________________________________
-AliEmcalTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch(Int_t types)
+AliEmcalTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch(TriggerCategory trigger, Bool_t doSimpleOffline)
 {
-  //get main trigger match; if not known yet, look for it and cache
+  // Get main trigger match
   //
-  // In order to be able to select more than one class at the same time (i.e. low and
-  // high threshold trigger), the argument must be a bit string, however using the enum
-  // of trigger classes in order to define the selection
-
-  // Get from cache (if already set)
-  if(fMainTriggerPatchSet){
-    return ApplyMainTriggerSelection(types);
-  }
+  // For the selection of the main trigger patch, high and low threshold triggers of a given category are grouped
+  // If there are more than 1 main patch of a given trigger category (i.e. different high and low threshold patches),
+  // the highest one according to the ADC value is taken. In case doSimpleOffline is true, then only the patches from
+  // the simple offline trigger are used.
 
   if (!fTriggerPatchInfo) {
     AliError(Form("%s: fTriggerPatchInfo not available",GetName()));
@@ -1260,66 +1247,55 @@ AliEmcalTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch(Int_t types)
   Int_t nPatch = fTriggerPatchInfo->GetEntries();
 
   //extract main trigger patch(es)
-  AliEmcalTriggerPatchInfo *patch;
+  AliEmcalTriggerPatchInfo *patch(NULL), *selected(NULL);
   for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
 
     patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
     if (patch->IsMainTrigger()) {
-      if(patch->IsJetHigh()) fMainTriggerPatch[kPosJ1] = patch;
-      if(patch->IsJetLow()) fMainTriggerPatch[kPosJ2] = patch;
-      if(patch->IsGammaHigh()) fMainTriggerPatch[kPosG1] = patch;
-      if(patch->IsGammaLow()) fMainTriggerPatch[kPosG2] = patch;
-      if(patch->IsLevel0()) fMainTriggerPatch[kPosL0] = patch;
-    }
-  }
-  fMainTriggerPatchSet = kTRUE;
-
-  return ApplyMainTriggerSelection(types);
-}
-
-AliEmcalTriggerPatchInfo *AliAnalysisTaskEmcal::ApplyMainTriggerSelection(Int_t selectionBitmap) const {
-  //
-  // Select main trigger patch for a given combination of trigger classes
-  // If the bitmap contains only one class, the selection is trivial
-  // If the bitmap contains many classes, the selection takes the highest of the patchess according to the
-  // ADC Amplitude
-  //
-  AliEmcalTriggerPatchInfo *highest(NULL);
-  if(selectionBitmap & kJ1){
-    highest = fMainTriggerPatch[kPosJ1];
-  }
-  if(selectionBitmap & kJ2){
-    if(!highest) highest = fMainTriggerPatch[kPosJ2];
-    else{
-      if(fMainTriggerPatch[kPosJ2] && fMainTriggerPatch[kPosJ2]->GetADCAmp() > highest->GetADCAmp())
-        highest = fMainTriggerPatch[kPosJ2];
-    }
-  }
-
-  if(selectionBitmap & kG1){
-    if(!highest) highest = fMainTriggerPatch[kPosG1];
-    else{
-      if(fMainTriggerPatch[kPosG1] && fMainTriggerPatch[kPosG1]->GetADCAmp() > highest->GetADCAmp())
-        highest = fMainTriggerPatch[kPosG1];
-    }
-  }
-
-  if(selectionBitmap & kG2){
-    if(!highest) highest = fMainTriggerPatch[kPosG2];
-    else{
-      if(fMainTriggerPatch[kPosG2] && fMainTriggerPatch[kPosG2]->GetADCAmp() > highest->GetADCAmp())
-        highest = fMainTriggerPatch[kPosG2];
-    }
-  }
-  if(selectionBitmap & kL0){
-    if(!highest) highest = fMainTriggerPatch[kPosL0];
-    else{
-      if(fMainTriggerPatch[kPosL0] && fMainTriggerPatch[kPosL0]->GetADCAmp() > highest->GetADCAmp())
-        highest = fMainTriggerPatch[kPosL0];
+      if(doSimpleOffline){
+        if(patch->IsOfflineSimple()){
+          switch(trigger){
+          case kTriggerLevel0:
+            // option not yet implemented in the trigger maker
+            if(patch->IsLevel0()) selected = patch;
+            break;
+          case kTriggerLevel1Jet: break;
+          if(patch->IsJetHighSimple() || patch->IsJetLowSimple()){
+            if(!selected) selected = patch;
+            else if(patch->GetADCAmp() > selected->GetADCAmp()) selected = patch;
+          }
+          break;
+          case kTriggerLevel1Gamma: break;
+          if(patch->IsGammaHigh() || patch->IsGammaLow()){
+            if(!selected) selected = patch;
+            else if(patch->GetADCAmp() > selected->GetADCAmp()) selected = patch;
+          }
+          break;
+          };
+        }
+      } else {
+        switch(trigger){
+        case kTriggerLevel0:
+            if(patch->IsLevel0()) selected = patch;
+            break;
+        case kTriggerLevel1Jet:
+            if(patch->IsJetHigh() || patch->IsJetLow()){
+              if(!selected) selected = patch;
+              else if(patch->GetADCAmp() > selected->GetADCAmp()) selected = patch;
+            }
+            break;
+        case kTriggerLevel1Gamma:
+            if(patch->IsGammaHigh() || patch->IsGammaLow()){
+              if(!selected) selected = patch;
+              else if(patch->GetADCAmp() > selected->GetADCAmp()) selected = patch;
+            }
+            break;
+        };
+      }
     }
   }
 
-  return highest;
+  return selected;
 }
 
 //________________________________________________________________________
