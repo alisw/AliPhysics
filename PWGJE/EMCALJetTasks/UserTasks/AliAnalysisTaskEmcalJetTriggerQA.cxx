@@ -1,4 +1,3 @@
-//
 // Jet trigger QA analysis task.
 //
 // Author: M.Verweij
@@ -44,6 +43,8 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fMaxPatchADCEnergy(0),
   fTriggerType(-1),
   fNFastOR(16),
+  fMainTrigCat(kTriggerLevel1Jet),
+  fMainTrigSimple(kFALSE),
   fhNEvents(0),
   fhTriggerbit(0), 
   fHistRhovsCentFull(0),
@@ -103,8 +104,11 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fContainerFull(0),
   fContainerCharged(1),
   fMaxPatchEnergy(0),
+  fMaxPatchADCEnergy(0),
   fTriggerType(-1),
   fNFastOR(16),
+  fMainTrigCat(kTriggerLevel1Jet),
+  fMainTrigSimple(kFALSE),
   fhNEvents(0),
   fhTriggerbit(0),
   fHistRhovsCentFull(0),
@@ -202,7 +206,7 @@ void AliAnalysisTaskEmcalJetTriggerQA::FillTriggerPatchHistos() {
 
   //Fill trigger patch histos for main trigger
 
-  AliEmcalTriggerPatchInfo *patch = GetMainTriggerPatch();
+  AliEmcalTriggerPatchInfo *patch = GetMainTriggerPatch(fMainTrigCat,fMainTrigSimple);
   if(patch) {
     fMaxPatchEnergy = patch->GetPatchE();
     fMaxPatchADCEnergy = patch->GetADCAmpGeVRough();
