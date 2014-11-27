@@ -51,7 +51,7 @@ add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 target_link_libraries(${MODULE} STEERBase STEER ESD RAWDatabase RAWDatarec FITbase Core)
 
 # Additional compilation flags
-set(MODULE_COMPILE_FLAGS "-O -g")
+set(MODULE_COMPILE_FLAGS "")
 set(MODULE_LINK_FLAGS)
 
 # System dependent: Modify the way the library is build

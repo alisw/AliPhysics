@@ -61,16 +61,19 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Follow headers dependencies
 add_dependencies(${MODULE}-object ${ALIROOT_DEPENDENCIES})
 # Add a library to the project using the object
-add_library(${MODULE} SHARED $<TARGET_OBJECTS:TRDrec-object>)
+add_library(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
 
 # Linking
-target_link_libraries(${MODULE} RAWDatarec ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+
+# Setting the correct headers for the object as gathered from the dependencies
+target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
 
 # Public include folders that will be propagated to the dependecies
-#target_include_directories(${MODULE} PUBLIC ${incdirs})
+target_include_directories(${MODULE} PUBLIC ${incdirs})
 
 # Additional compilation flags
-set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-O -g")
+#set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
@@ -81,4 +84,3 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
-

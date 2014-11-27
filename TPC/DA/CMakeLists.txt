@@ -54,7 +54,7 @@ target_link_libraries(TPCQAda RAWDatarec-static STEERBase-static TPCbase-static 
 target_link_libraries(TPCRAWda RAWDatarec-static STEERBase-static TPCbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 6
 
 # different flags
-set(MODULE_COMPILE_FLAGS "-O -g ${DATE_CFLAGS} ${AMORE_CFLAGS}")
+set(MODULE_COMPILE_FLAGS "  ${DATE_CFLAGS} ${AMORE_CFLAGS}")
 set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
 
 set_target_properties(TPCCEda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS}) # 1

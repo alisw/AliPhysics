@@ -57,7 +57,7 @@ set (EVTGEN_TAUOLA "ON")
 
 add_definitions ("-DEVTGEN_PYTHIA -DEVTGEN_PHOTOS -DEVTGEN_TAUOLA")
 
-set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
+set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")
 target_link_libraries(${MODULE} )
 
 # System dependent: Modify the way the library is build

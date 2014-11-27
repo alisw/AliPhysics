@@ -50,7 +50,7 @@ set(MODULE_LINK_FLAGS)
 target_link_libraries(ACORDEda ESD-static RAWDatabase-static RAWDatarec-static ACORDEbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra)
 
 # different flags
-set(MODULE_COMPILE_FLAGS "-O -g ${DATE_CFLAGS} ${AMORE_CFLAGS}")
+set(MODULE_COMPILE_FLAGS "  ${DATE_CFLAGS} ${AMORE_CFLAGS}")
 set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
 
 # DATE flags

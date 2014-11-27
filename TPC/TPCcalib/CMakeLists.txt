@@ -80,7 +80,7 @@ add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 target_link_libraries(${MODULE} STEERBase CDB ESD STEER ANALYSIS ANALYSISalice STAT RAWDatarec RAWDatabase TPCbase TPCrec Core EG Geom Gpad Graf Hist MathCore Matrix Minuit Postscript Proof RIO Tree)
 
 # Additional compilation flags
-set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
+set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)

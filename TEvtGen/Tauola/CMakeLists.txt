@@ -72,8 +72,8 @@ add_library(${MODULE} SHARED ${SRCS} ${FSRCS})
 # Do not generate the ROOT map
 
 # Additional compilation flags
-set( CMAKE_Fortran_FLAGS "-O2 -fPIC -fno-automatic -fno-backslash -ffixed-line-length-132")
-set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
+set( CMAKE_Fortran_FLAGS "-O2  -fno-automatic -fno-backslash -ffixed-line-length-132")
+set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")
 target_link_libraries(${MODULE} )
 
 # System dependent: Modify the way the library is build

@@ -131,7 +131,7 @@ add_definitions(-DDEFAULTPREFIXPATH="NONE"  -DDEFAULTLHAPATH="${AliRoot_SOURCE_D
 # Additional compilation and linking flags
 set(CMAKE_C_FLAGS "-ansi ${CMAKE_C_FLAGS}")
 set(CMAKE_Fortran_FLAGS "-cpp")
-set(MODULE_COMPILE_FLAGS "-O -g")
+set(MODULE_COMPILE_FLAGS "")
 set(MODULE_LINK_FLAGS)
 
 # System dependent: Modify the way the library is build

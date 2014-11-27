@@ -56,7 +56,7 @@ add_definitions("-DLIBHLTSIM_VERSION=${LIBHLTSIM_VERSION}")
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 
 # Additional compilation flags
-set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
+set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")
 target_link_libraries(${MODULE} HLTbase)
 
 # System dependent: Modify the way the library is build

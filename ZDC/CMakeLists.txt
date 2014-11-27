@@ -17,6 +17,10 @@ add_subdirectory(ZDCbase)
 add_subdirectory(ZDCrec)
 add_subdirectory(ZDCsim)
 
+if(DA)
+    add_subdirectory(DA)
+endif(DA)
+
 install(FILES 
   GlauberMCDist.root
   GlauberMCHistos.root

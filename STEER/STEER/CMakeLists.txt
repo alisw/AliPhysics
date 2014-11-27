@@ -176,18 +176,20 @@ add_definitions("-DLIBHLTSIM_VERSION=${LIBHLTSIM_VERSION}")
 # Create an object to be reused in case of static libraries 
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
-# Dependencies for the object
-add_dependencies(${MODULE}-object ${ALIROOT_DEPENDENCIES})
 # Add a library to the project using the object
 add_library(${MODULE} SHARED $<TARGET_OBJECTS:STEER-object>)
 
 target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
+# Setting the correct headers for the object as gathered from the dependencies
+target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_PROPERTY:${MODULE},COMPILE_DEFINITIONS>)
+
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
 
 # Additional compilation flags
-set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-O -g")
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
@@ -202,7 +204,7 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Static version if DA enabled
 if(ALIROOT_STATIC)
-    add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:STEER-object>)
+    add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:${MODULE}-object>)
     set_target_properties(${MODULE}-static PROPERTIES OUTPUT_NAME ${MODULE})
     
     # list of shared dependencies / the name of the variable containing the list of static ones
@@ -219,3 +221,4 @@ if(ALIROOT_STATIC)
             ARCHIVE DESTINATION lib
             LIBRARY DESTINATION lib)
 endif(ALIROOT_STATIC)
+

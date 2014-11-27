@@ -144,7 +144,7 @@ add_library(${MODULE} SHARED $<TARGET_OBJECTS:HLTbase-object>)
 target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
 # Additional compilation flags
-set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "-fPIC -O -g")
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS " ")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)

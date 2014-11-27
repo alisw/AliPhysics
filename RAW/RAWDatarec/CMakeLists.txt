@@ -69,6 +69,10 @@ add_library(${MODULE} SHARED $<TARGET_OBJECTS:RAWDatarec-object>)
 
 target_link_libraries(${MODULE} LINK_PUBLIC ${ROOT_DEPENDENCIES} ${ALIROOT_DEPENDENCIES})
 
+# Setting the correct headers for the object as gathered from the dependencies
+target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_PROPERTY:${MODULE},COMPILE_DEFINITIONS>)
+
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
 
@@ -82,7 +86,7 @@ if(DATE_FOUND)
 endif(DATE_FOUND)
 
 # Additional compilation and linking flags
-set(MODULE_COMPILE_FLAGS "-O -g ${MODULE_COMPILE_FLAGS}")
+set(MODULE_COMPILE_FLAGS " ${MODULE_COMPILE_FLAGS}")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)

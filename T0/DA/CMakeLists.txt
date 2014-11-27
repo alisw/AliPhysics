@@ -52,7 +52,7 @@ target_link_libraries(T0Laserda RAWDatarec-static T0base-static ${AMORE_AUXLIBS}
 target_link_libraries(T0Physda CDB-static RAWDatarec-static T0base-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 3
 
 # different flags
-set(MODULE_COMPILE_FLAGS "-O -g ${DATE_CFLAGS} ${AMORE_CFLAGS}")
+set(MODULE_COMPILE_FLAGS "  ${DATE_CFLAGS} ${AMORE_CFLAGS}")
 set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
 
 set_target_properties(T0Cosmicda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
