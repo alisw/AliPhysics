@@ -45,6 +45,8 @@ class AliEmcalTriggerPatchInfo: public TObject {
   Bool_t   IsMainTrigger() const { return (Bool_t)((fTriggerBits >> 24)&(!(fTriggerBits >> 25))&1); }
   Bool_t   IsJetLowSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + kL1JetLow))&(fTriggerBits >> 25)&1); }
   Bool_t   IsJetHighSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + kL1JetHigh))&(fTriggerBits >> 25)&1); }
+  Bool_t   IsGammaLowSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + kL1GammaLow))&(fTriggerBits >> 25)&1); }
+  Bool_t   IsGammaHighSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + kL1GammaHigh))&(fTriggerBits >> 25)&1); }
   Bool_t   IsMainTriggerSimple() const { return (Bool_t)((fTriggerBits >> 24)&(fTriggerBits >> 25)&1); }
   Bool_t   IsOfflineSimple() const { return (Bool_t)((fTriggerBits >> 25)&1); }
   
