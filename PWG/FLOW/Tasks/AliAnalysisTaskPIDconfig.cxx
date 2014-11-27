@@ -459,7 +459,8 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
                 if(fPIDcuts && pWithinRange){// for pions, kaons and protons only
                     if(ispecie==AliPID::kPion || ispecie==AliPID::kKaon || ispecie==AliPID::kProton){
                         int index = 50*i+p_bin;
-                        if(fCutContour[index]->IsInside(nSigmaTOF,nSigmaTPC)){
+                       
+                        if(p_bin>6 && fCutContour[index]->IsInside(nSigmaTOF,nSigmaTPC)){
                             TH3 *hist1 = (TH3*)fListQAtpctof->At(ispecie);
                             if (hist1){
                                 hist1->Fill(nSigmaTPC,nSigmaTOF,p);}
@@ -474,7 +475,16 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
                             }
                             TH2F *HistdEdxvsPTPCafterPID = (TH2F*)fListQAInfo->At(14);
                             HistdEdxvsPTPCafterPID -> Fill(track->P()*track->Charge(),dEdx); //TPC signal
-
+                        }
+                        
+                        if(p_bin<7 && nSigmaTPC<3 && nSigmaTPC>-3){
+                            if ( (track->IsOn(AliAODTrack::kITSin)) && (track->IsOn(AliAODTrack::kTOFpid)) ) {
+                                TH2F *HistBetavsPTOFafterPID = (TH2F*)fListQAInfo->At(13);
+                                HistBetavsPTOFafterPID ->Fill(track->P()*track->Charge(),beta);
+                            }
+                            TH2F *HistdEdxvsPTPCafterPID = (TH2F*)fListQAInfo->At(14);
+                            HistdEdxvsPTPCafterPID -> Fill(track->P()*track->Charge(),dEdx); //TPC signal
+                            
                         }
                     }
                 }
