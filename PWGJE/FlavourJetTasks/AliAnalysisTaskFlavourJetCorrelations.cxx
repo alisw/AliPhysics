@@ -1781,6 +1781,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::IsDInJet(AliEmcalJet *thejet, AliA
    //type 0 : DeltaR < jet radius, don't check daughters (and don't correct pt jet) 
    //type 1 : DeltaR < jet radius and check for all daughters among jet tracks, don't correct ptjet
    //type 2 (default) : DeltaR < jet radius and check for all daughters among jet tracks, if not present, correct the ptjet
+   //type 3 (under development) :  DeltaR < jet radius and check for all daughters among jet tracks, if not present, correct the ptjet usign the pt-scheme 
   
    fPmissing[0]=0; 
    fPmissing[1]=0;
@@ -1797,7 +1798,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::IsDInJet(AliEmcalJet *thejet, AliA
       fhzDinjet->Fill(Z(charm,thejet));
       
    }
-   if(!testDaugh && testDeltaR && fTypeDInJet==2){
+   if(!testDaugh && testDeltaR && fTypeDInJet>=2){
       
       Int_t ndaugh=3;
       if(fCandidateType==kD0toKpi) ndaugh=2;
@@ -1813,9 +1814,26 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::IsDInJet(AliEmcalJet *thejet, AliA
       	       if(id==2)fhControlDInJ->Fill(5);
       	       fhDRdaughOut->Fill(DeltaR(thejet, charmDaugh[id]));
       	    }
-      	    fPmissing[0]+=charmDaugh[id]->Px(); 
-      	    fPmissing[1]+=charmDaugh[id]->Py();
-      	    fPmissing[2]+=charmDaugh[id]->Pz();
+      	    if(fTypeDInJet==2){
+      	       fPmissing[0]+=charmDaugh[id]->Px(); 
+      	       fPmissing[1]+=charmDaugh[id]->Py();
+      	       fPmissing[2]+=charmDaugh[id]->Pz();
+      	    }
+      	    if(fTypeDInJet==3){
+      	       Double_t ptdaug  = charmDaugh[id]->Pt();
+      	       Double_t ptjet   = thejet->Pt();
+      	       Double_t ptn     = ptjet+ptdaug;
+      	       Double_t phidaug = charmDaugh[id]->Phi();
+      	       Double_t phijet  = thejet->Phi();
+      	       Double_t phin    = (phijet/ptjet+phidaug/ptdaug)/(1./ptjet+ 1./ptdaug);
+      	       Double_t etadaug = charmDaugh[id]->Eta();
+      	       Double_t etajet  = thejet->Eta();
+      	       Double_t etan    = (etajet/ptjet+etadaug/ptdaug)/(1./ptjet+ 1./ptdaug);
+      	       
+      	       fPmissing[0]+= ptn*TMath::Cos(phin);
+      	       fPmissing[1]+= ptn*TMath::Sin(phin);
+      	       fPmissing[2]+= ptn*TMath::SinH(etan);
+      	    }
       	 }
       
       }
@@ -1835,8 +1853,8 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::IsDInJet(AliEmcalJet *thejet, AliA
    case 1:
       result=testDeltaR && testDaugh;
       break;
-   case 2:
-      result=testDeltaR && testDaugh;
+   case 2: //this case defines fPmissing
+      result=testDeltaR && testDaugh; 
       break;
    default:
       AliInfo("Selection type not specified, use 1");
