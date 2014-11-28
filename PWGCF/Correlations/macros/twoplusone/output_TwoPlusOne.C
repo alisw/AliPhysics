@@ -505,6 +505,26 @@ void peakDifference(const char* fileName, double pt1Min = 4.0, double pt1Max = 1
 
 
 
+void create_peakDifference_pictures(const char* fileName){
+
+  gROOT->SetBatch(kTRUE);
+  
+  peakDifference_draw(fileName, 6, 8, 4, 1, 1, 1);
+  peakDifference_draw(fileName, 6, 8, 6, 1, 1, 1);
+  peakDifference_draw(fileName, 8, 10, 4, 1, 1, 1);
+  peakDifference_draw(fileName, 8, 10, 6, 1, 1, 1);
+  peakDifference_draw(fileName, 10, 12, 4, 1, 1, 1);
+  peakDifference_draw(fileName, 10, 12, 6, 1, 1, 1);
+  
+  TCanvas* can = new TCanvas("can", "can");
+  TH1F* mixedDist = getMixedDist(fileName);
+  mixedDist->SetTitle(fileName);
+  mixedDist->Draw("colz");
+  can->SaveAs("pt_spectra/filename.eps");
+  
+}
+
+
 
 
 
@@ -517,20 +537,43 @@ void peakDifference_draw(const char* fileName, double pt1Min = 4.0, double pt1Ma
   TGraphErrors* graph_semi_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 9, 10, 1, yPos, subtractMixedComb, subtractFlow)->Clone());
 
   TCanvas* can_graph = new TCanvas(Form("result %i", yPos), Form("result %i", yPos), gBasisSize+50, yPos*(gBasisSize+50), gBasisSize, gBasisSize);
-  /*
-  for(Int_t i=0; i<10; i++){
-    Double_t x;
-    Double_t y;
-    Int_t return_value = graph_central_near->GetPoint(i, x, y);
 
-    printf("point %i, %f %f, returns %i", i, x, y, return_value);
-  }
-  */
+  Int_t elements = 7;
+
+  Double_t maximum = TMath::MaxElement(elements, graph_central_near->GetY());
+  Printf("maximum of central near is %f ", maximum);
+  Double_t max  = TMath::MaxElement(elements, graph_central_away->GetY());
+  Printf("maximum of central away is %f ", max);
+  if(max>maximum) maximum = max;
+  max = TMath::MaxElement(elements, graph_semi_near->GetY());
+  Printf("maximum of semi near is %f ", max);
+  if(max>maximum) maximum = max;
+  max = TMath::MaxElement(elements, graph_semi_away->GetY());
+  Printf("maximum of semi away is %f ", max);
+  if(max>maximum) maximum = max;
+  graph_central_near->SetMaximum(maximum*1.25);
+  
+  Double_t minimum = TMath::MinElement(elements, graph_central_near->GetY());
+  Printf("minimum of central near is %f ", minimum);
+  Double_t min = TMath::MinElement(elements, graph_central_away->GetY());
+  Printf("minimum of central away is %f ", min);
+  if(min>0 && min<minimum) minimum = min;
+  min = TMath::MinElement(elements, graph_semi_near->GetY());
+  Printf("minimum of semi near is %f ", min);
+  if(min>0 && min<minimum) minimum = min;
+  min = TMath::MinElement(elements, graph_semi_away->GetY());
+  Printf("minimum of semi away is %f ", min);
+  if(min>0 && min<minimum) minimum = min;
+  graph_central_near->SetMinimum(minimum/1.30);
+  
+
+  graph_central_near->SetTitle(Form("p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < p_{T,1}", pt1Min, pt1Max, pt2Min));
   graph_central_near->Draw("AP");
+
   graph_central_away->SetMarkerColor(kRed);
   graph_central_away->SetLineColor(kRed);
   graph_central_away->Draw("P");
-  
+
   graph_semi_near->SetMarkerColor(kCyan);
   graph_semi_near->SetLineColor(kCyan);
   graph_semi_near->Draw("P");
@@ -541,14 +584,88 @@ void peakDifference_draw(const char* fileName, double pt1Min = 4.0, double pt1Ma
 
   gPad->SetLogy();
 
-  TLegend* leg = getLegend();
+  TLegend* leg = getLegend(0.40,0.75,0.85,0.9);
   leg->AddEntry(graph_central_near,"central near","l");
   leg->AddEntry(graph_central_away,"central away side","l");
   leg->AddEntry(graph_semi_near,"semi central near","l");
   leg->AddEntry(graph_semi_away,"semi central away","l");
   leg->Draw("same");
 
+  can_graph->SaveAs(Form("pt_spectra/pt_spectrum_%.0f_%.0f_%.0f.eps", pt1Min, pt1Max, pt2Min));
+
+  save_graph_ratio(graph_central_near, graph_central_away, elements, Form("central near over central away p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < p_{T,1}", pt1Min, pt1Max, pt2Min), Form("pt_spectra/central_near_away_ratio_%.0f_%.0f_%.0f.eps", pt1Min, pt1Max, pt2Min));
+  save_graph_ratio(graph_semi_near, graph_semi_away, elements, Form("semi near over semi away p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < p_{T,1}", pt1Min, pt1Max, pt2Min), Form("pt_spectra/semi_near_away_ratio_%.0f_%.0f_%.0f.eps", pt1Min, pt1Max, pt2Min));
+
+  save_graph_ratio(graph_central_near, graph_semi_near, elements, Form("central near over semi near p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < p_{T,1}", pt1Min, pt1Max, pt2Min), Form("pt_spectra/central_semi_near_ratio_%.0f_%.0f_%.0f.eps", pt1Min, pt1Max, pt2Min));
+  save_graph_ratio(graph_central_away, graph_semi_away, elements, Form("central away over semi away p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < p_{T,1}", pt1Min, pt1Max, pt2Min), Form("pt_spectra/central_semi_away_ratio_%.0f_%.0f_%.0f.eps", pt1Min, pt1Max, pt2Min));
+
+
+  save_graph_difference(graph_central_near, graph_central_away, elements, Form("central near minus central away p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < p_{T,1}", pt1Min, pt1Max, pt2Min), Form("pt_spectra/central_near_away_diff_%.0f_%.0f_%.0f.eps", pt1Min, pt1Max, pt2Min));
+  save_graph_difference(graph_semi_near, graph_semi_away, elements, Form("semi near minus semi away p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < p_{T,1}", pt1Min, pt1Max, pt2Min), Form("pt_spectra/semi_near_away_diff_%.0f_%.0f_%.0f.eps", pt1Min, pt1Max, pt2Min));
+
+  save_graph_difference(graph_central_near, graph_semi_near, elements, Form("central near minus semi near p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < p_{T,1}", pt1Min, pt1Max, pt2Min), Form("pt_spectra/central_semi_near_diff_%.0f_%.0f_%.0f.eps", pt1Min, pt1Max, pt2Min));
+  save_graph_difference(graph_central_away, graph_semi_away, elements, Form("central away minus semi away p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < p_{T,1}", pt1Min, pt1Max, pt2Min), Form("pt_spectra/central_semi_away_diff_%.0f_%.0f_%.0f.eps", pt1Min, pt1Max, pt2Min));
 }
+
+
+void save_graph_ratio(TGraphErrors* first, TGraphErrors* second, const Int_t bins, char* title, char* name){
+
+  save_graph(first, second, bins, title, name, 0);
+
+}
+
+
+void save_graph_difference(TGraphErrors* first, TGraphErrors* second, const Int_t bins, char* title, char* name){
+
+  save_graph(first, second, bins, title, name, 1);
+
+}
+
+
+//mode: 0 ratio of the graphs
+//mode: 1 difference of the graphs
+void save_graph(TGraphErrors* first, TGraphErrors* second, const Int_t bins, char* title, char* name, int mode){
+  Double_t content_x[bins];
+  Double_t content_y[bins];
+  Double_t x_error[bins];
+  Double_t y_error[bins];
+
+  for(int i=0; i<bins; i++){
+    Double_t error_first;
+    Double_t error_second;
+    first->GetPoint(i, content_x[i], content_y[i]);
+    x_error[i] = first->GetErrorX(i);
+    error_first = first->GetErrorY(i);
+    Double_t content_second;
+    second->GetPoint(i, content_x[i], content_second);
+    error_second = second->GetErrorY(i);
+    if(content_second>0 && error_second>0){
+      if(mode==0){
+	content_y[i] /= content_second;
+	y_error[i] = TMath::Sqrt(TMath::Power(error_first/content_second, 2) + TMath::Power(error_second/content_second*content_y[i], 2));
+      }else if(mode==1){
+	content_y[i] -= content_second;
+	y_error[i] = TMath::Sqrt(TMath::Power(error_first, 2) + TMath::Power(error_second, 2));
+      }else{
+	Printf("calls save graph with no correct mode");
+	return;
+      }
+    }
+  }
+
+  TGraphErrors* graph = new TGraphErrors(bins, content_x, content_y, x_error, y_error);
+  graph->SetTitle(title);
+
+  TCanvas* can_graph_ratio = new TCanvas("can", "can", gBasisSize+50, gBasisSize+50, gBasisSize, gBasisSize);
+  graph->SetMarkerSize(1);
+  graph->SetLineWidth(3);
+  graph->SetMarkerColor(kRed);
+  graph->SetLineColor(kRed);
+  graph->SetMarkerStyle(20);
+  graph->Draw("AP");
+  can_graph_ratio->SaveAs(name);
+}
+
 
 TGraphErrors* peakDifference_graph(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, double pt2Min = 2.0, Int_t multBinBegin = 1, Int_t multBinEnd = 5, Int_t side = 0, Int_t yPos = 0, Int_t subtractMixedComb = 1, Int_t subtractFlow = 1, Int_t draw = 0){
 
@@ -579,7 +696,7 @@ TGraphErrors* peakDifference_graph(const char* fileName, double pt1Min = 4.0, do
 
   graph->GetXaxis()->SetTitle("p_{T,assoc} (GeV/c)");
   graph->GetYaxis()->SetTitle("1/N dN/dpT");
-  graph->SetMarkerSize(2);
+  graph->SetMarkerSize(1);
   graph->SetLineWidth(3);
   graph->SetMarkerColor(kBlue);
   graph->SetLineColor(kBlue);
@@ -775,9 +892,9 @@ TH1D* getAnalysis(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.
       h2_etaPhi_mixedComb = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_1plus1, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_1plus1_mixed, &trigger_mixed_comb);
     else if(step==1)
       h2_etaPhi_mixedComb = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_1plus1, 0, pt2Min, pt1Min, multBinBegin, multBinEnd, kFALSE, step_1plus1_mixed, &trigger_mixed_comb);
-    else //this is never used, it's the old method of getting the background    
-    */
-    h2_etaPhi_mixedComb = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_mixedComb, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_mixed, &trigger_mixed_comb);
+    else //this is never used, it's the old method of getting the background
+*/
+      h2_etaPhi_mixedComb = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_mixedComb, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_mixed, &trigger_mixed_comb);
 
     h2_etaPhi_backgroundSame = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_backgroundSame, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_mixed, &trigger_background_same);
 
@@ -933,8 +1050,8 @@ TH1D* projectToTH1D(TH2D* etaPhi, char* name, int firstbin, int lastbin, int tri
   return h1_phi_1;
 }
 
-TLegend* getLegend(){
-  TLegend *leg  = new TLegend(0.65,0.7,0.85,0.9);
+TLegend* getLegend(double x_start = 0.65, double y_start = 0.7, double x_end = 0.85, double y_end = 0.9){
+  TLegend *leg  = new TLegend(x_start, y_start, x_end, y_end);
   leg->SetFillColor(10);
   leg->SetFillStyle(0);
   leg->SetBorderSize(0);
@@ -1594,7 +1711,15 @@ void showMixedDist(const char* fileName){
   TH1F* mixedDist = (TH1F*) list->FindObject("mixedDist");
   TCanvas* can = new TCanvas();
   mixedDist->DrawCopy("colz");
+}
 
+TH1F* getMixedDist(const char* fileName){
+  loadlibs();
+
+  list = (TList*) getList(fileName, "PWGCF_TwoPlusOne/histosTwoPlusOne");
+
+  TH1F* mixedDist = (TH1F*) list->FindObject("mixedDist");
+  return mixedDist;
 }
 
 
