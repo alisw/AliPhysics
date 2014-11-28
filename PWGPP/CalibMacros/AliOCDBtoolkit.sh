@@ -72,10 +72,10 @@ dumpObject(){
     local ftype=${3}
     local outFile=${4}
     shift 4
-    if [ ! -f ${inFile} ] ; then 
-        echo ${inFile} not found!
-        return 1
-    fi
+#    if [ ! -f ${inFile} ] ; then 
+#        echo ${inFile} not found!
+#        return 1
+#    fi
     if [ -f ${outFile} ] ; then 
         >${outFile}
     fi
