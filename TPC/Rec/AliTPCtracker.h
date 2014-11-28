@@ -1,3 +1,4 @@
+
 #ifndef ALITPCTRACKER_H
 #define ALITPCTRACKER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -14,6 +15,7 @@
 //-------------------------------------------------------
 
 #include <TArrayI.h>
+#include <TMatrixD.h>
 #include "AliTracker.h"
 #include "AliTPCreco.h"
 #include "AliTPCclusterMI.h"
@@ -39,6 +41,28 @@ class TGraphErrors;
 
 class AliTPCtracker : public AliTracker {
 public:
+  enum EStreamFlags{ // flags to store addition data/code debugging infomation which is not stored in ESD but in specaial TPCdebug.root file
+    kStreamTransform          =0x00001,    // flag:stream cluster transformation 
+    kStreamErrParam           =0x00002,    // flag:stream in debug mode cluster and track extrapolation at given row together with error nad shape estimate
+    kStreamFilterClusterInfo  =0x00004,    // flag:stream TPC data ouliers filtering information
+    kStreamClDump             =0x00008,    // flag:stream clusters at the end of process (signed with useage flags)
+    kStreamRemoveUsed         =0x00010,    // flag:stream information about TPC tracks which were descarded (double track removal)
+    kStreamRemoveShort        =0x00020,    // flag:stream information about TPC tracks which were discarded (short track removal) 
+    kStreamSplitted2          =0x00040,    // flag:stream information about discarded TPC tracks pair algorithm 
+    kStreamFillESD            =0x00080,    // flag: stream track information in FillESD function (after track Iteration 0)
+    kStreamCPropagateBack     =0x00100,    // flag: stream track information in PropagateBack function (after tracking Iteration 1)
+    kStreamRecoverBack        =0x00200,    // flag: stream track information for track  failing PropagateBack function and recovered back
+    kStreamRefitInward        =0x00400,    // flag: stream track information in RefitInward function (after tracking Iteration 2)
+    kStreamRecoverIn          =0x00800,    // flag: stream track information for track  failing in RefitInward function and recovered back
+    kStreamUpdateTrack        =0x01000,    // flag: stream track/cluster infroamtion in track update method
+    //
+    kStreamCrosstalkMatrix    =0x02000,    // flag: stream crosstalk matrix as used in the reconstruction at given region of TPC
+    kStreamXtalk              =0x04000,    // flag: stream crosstalk correction as applied to cluster
+    kStreamIonTail            =0x08000,    // flag: stream ion tail correction  as applied to cluster
+    kStreamFindMultiMC        =0x10000,    // flag: stream MC infomation about the multiple find track (ONLY for MC data)
+    kStreamFindCurling        =0x20000,    // flag: stream track infroamtion in the FindCurling tracks method
+    kStreamFindKinks          =0x40000,    // flag: stream track infroamtion in the FindKinks method
+  };
   AliTPCtracker();
   AliTPCtracker(const AliTPCParam *par); 
   virtual ~AliTPCtracker();
@@ -50,6 +74,7 @@ public:
   virtual Int_t LoadClusters (TTree * const tree);
   virtual Int_t LoadClusters (const TObjArray * arr); // another input
   virtual Int_t LoadClusters (const TClonesArray * arr); // another input
+  void    FilterOutlierClusters();   // filter outlier clusters  
   virtual Int_t PostProcess(AliESDEvent *esd); 
   Int_t  LoadClusters();
   void   UnloadClusters();
@@ -58,6 +83,8 @@ public:
   virtual void FillClusterArray(TObjArray* array) const;
   void   Transform(AliTPCclusterMI * cluster);
   void ApplyTailCancellation();
+  void ApplyXtalkCorrection();
+  void CalculateXtalkCorrection();
   void GetTailValue(Float_t ampfactor,Double_t &ionTailMax,Double_t &ionTailTotal,TGraphErrors **graphRes,Float_t *indexAmpGraphs,AliTPCclusterMI *cl0,AliTPCclusterMI *cl1);
   //
   void FillESD(const TObjArray* arr);
@@ -219,6 +246,8 @@ private:
    TTreeSRedirector *fDebugStreamer;     //!debug streamer
    Int_t  fUseHLTClusters;              // use HLT clusters instead of offline clusters
    //
+  
+   TObjArray * fCrossTalkSignalArray;  // for 36 sectors    
    TClonesArray* fSeedsPool;            //! pool of seeds
    TArrayI fFreeSeedsID;                //! array of ID's of freed seeds
    Int_t fNFreeSeeds;                   //! number of seeds freed in the pool

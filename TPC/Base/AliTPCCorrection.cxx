@@ -216,7 +216,7 @@ void AliTPCCorrection::DistortPointLocal(Float_t x[], Short_t roc) {
   // roc represents the TPC read out chamber (offline numbering convention)
   //
   Float_t gxyz[3]={0,0,0};
-  Double_t alpha = TMath::Pi()*(roc%18+0.5)/18;
+  Double_t alpha = TMath::TwoPi()*(roc%18+0.5)/18;
   Double_t ca=TMath::Cos(alpha), sa= TMath::Sin(alpha);
   gxyz[0]=  ca*x[0]+sa*x[1];
   gxyz[1]= -sa*x[0]+ca*x[1];
@@ -233,7 +233,7 @@ void AliTPCCorrection::CorrectPointLocal(Float_t x[], Short_t roc) {
   // roc represents the TPC read out chamber (offline numbering convention)
   //
   Float_t gxyz[3]={0,0,0};
-  Double_t alpha = TMath::Pi()*(roc%18+0.5)/18;
+  Double_t alpha = TMath::TwoPi()*(roc%18+0.5)/18;
   Double_t ca=TMath::Cos(alpha), sa= TMath::Sin(alpha);
   gxyz[0]=  ca*x[0]+sa*x[1];
   gxyz[1]= -sa*x[0]+ca*x[1];

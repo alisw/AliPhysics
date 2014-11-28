@@ -41,6 +41,11 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Int_t GetClusterMaxRange(Int_t index)const { return fClusterMaxRange[index];}
   void     SetClusterMaxRange(Int_t index, Int_t value){ fClusterMaxRange[index]=value;}
   //
+  // Outlier filtering configuration
+  //
+  Int_t   GetUseOulierClusterFilter() const { return fUseOulierClusterFilter;}  // swith to use outlier cluster filter
+  void    SetUseOulierClusterFilter(Int_t value){ fUseOulierClusterFilter=value;}  // swith to use outlier cluster filter
+  //
   Bool_t   DumpSignal()     const  { return fDumpSignal;}
   void     SetTimeInterval(Int_t first, Int_t last) { fFirstBin=first, fLastBin =last;}
   Int_t    GetFirstBin() const     { return fFirstBin;}
@@ -108,7 +113,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void  SetUseTOFCorrection(Bool_t flag) {fUseTOFCorrection = flag;}
   void  SetUseIonTailCorrection(Int_t flag) {fUseIonTailCorrection = flag;}
   void  SetCrosstalkCorrection(Float_t crosstalkCorrection) {fCrosstalkCorrection= crosstalkCorrection; }
-  //
+  void  SetCrosstalkCorrectionMissingCharge(Float_t crosstalkCorrection) {fCrosstalkCorrectionMissingCharge= crosstalkCorrection; }
+ //
   Int_t GetUseFieldCorrection() const {return fUseFieldCorrection;}
   Int_t GetUseComposedCorrection() const {return fUseComposedCorrection;}
   Int_t GetUseRPHICorrection() const {return fUseRPHICorrection;}
@@ -122,6 +128,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t GetUseTOFCorrection() {return fUseTOFCorrection;}
   Int_t GetUseIonTailCorrection() const {return fUseIonTailCorrection;}
   Double_t GetCrosstalkCorrection() const {return fCrosstalkCorrection;}
+ Double_t GetCrosstalkCorrectionMissingCharge() const {return fCrosstalkCorrectionMissingCharge;}
 
   Bool_t GetUseMultiplicityCorrectionDedx() const {return fUseMultiplicityCorrectionDedx;}
   Int_t  GetGainCorrectionHVandPTMode() const  { return   fGainCorrectionHVandPTMode;}
@@ -136,8 +143,10 @@ class AliTPCRecoParam : public AliDetectorRecoParam
 
   //
   void     SetSystematicError(Double_t *systematic){ for (Int_t i=0; i<5;i++) fSystematicErrors[i]=systematic[i];}
+  void     SetSystematicErrorCluster(Double_t *systematic){ for (Int_t i=0; i<2;i++) fSystematicErrorCluster[i]=systematic[i];}
   const Double_t * GetSystematicError() const { return fSystematicErrors;}
   const Double_t * GetSystematicErrorClusterInner() const { return fSystematicErrorClusterInner;}
+  const Double_t * GetSystematicErrorCluster() const { return fSystematicErrorCluster;}
 
   void    SetUseSystematicCorrelation(Bool_t useCorrelation)  {fUseSystematicCorrelation=useCorrelation;}
   Bool_t  GetUseSystematicCorrelation() const { return fUseSystematicCorrelation;}
@@ -160,7 +169,10 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Double_t fMaxChi2TPCTRD;     // maximal allowed chi2 between the TRD in and TPC out to be accepted for refit
   Double_t fMaxChi2TPCITS;     // maximal allowed chi2 between the ITS in and TPC out to be accepted for backpropagation
   //
+  // Outlier filtering configuration
   //
+  Int_t   fUseOulierClusterFilter;  // swith to use outlier cluster filter
+
   Double_t fCutSharedClusters[2]; // cut value - maximal amount  of shared clusters  
   Int_t fClusterMaxRange[2];   // neighborhood  - to define local maxima for cluster  
   //
@@ -208,7 +220,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t fUseAlignmentTime;              // use time dependent alignment correction
   Int_t fUseIonTailCorrection;   // use ion tail correction
   Double_t fCrosstalkCorrection;   // crosstalk correction factor (fro each signal substracted by (mean signal in wite patch)xfCrosstalkCorrection) - Effect important only after removing oc capacitors in 2012
-  //
+  Double_t fCrosstalkCorrectionMissingCharge;   // crosstalk correction factor - missing charge factor (from each signal substracted by (mean signal in wite patch)xfCrosstalkCorrection) - Effect important only after removing  capacitors in 2012
+ //
   // dEdx switches
   //
   Bool_t   fUseTotCharge;          // switch use total or max charge
@@ -224,13 +237,14 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   //
   Double_t fSystematicErrors[5];  //systematic errors in the track parameters - to be added to TPC covariance matrix 
   Double_t fSystematicErrorClusterInner[2];  // systematic error of the cluster - used to downscale the information
+  Double_t fSystematicErrorCluster[2];        // systematic error of the cluster - used e.g in OpenGG run to provide better cluster to track association efficiency
   Bool_t fUseSystematicCorrelation;         // switch to use the correlation for the sys
 public:   
   static Bool_t fgUseTimeCalibration; // flag usage the time dependent calibration
                                       // to be switched off for pass 0 reconstruction
                                       // Use static function, other option will be to use 
                                       // additional specific storage ?
-  ClassDef(AliTPCRecoParam, 19)
+  ClassDef(AliTPCRecoParam, 21)
 };
 
 

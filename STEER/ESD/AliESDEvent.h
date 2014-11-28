@@ -55,6 +55,8 @@ class AliESDHLTtrack;
 class AliESDVertex;
 class AliESDPmdTrack;
 class AliESDFMD;
+class AliESDkink;
+class AliESDv0;
 class AliRawDataErrorLog;
 class AliESDRun;
 class AliESDTrdTrigger;

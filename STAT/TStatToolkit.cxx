@@ -1820,7 +1820,7 @@ TTree*  TStatToolkit::WriteStatusToTree(TObject* oStatusGr)
   //        or     : TTree* statusTree = TStatToolkit::WriteStatusToTree(oaMultGr);
   // 
   // output tree: 1=flag is true, 0=flag is false, -1=flag was not computed.
-  //
+  // To be rewritten to the pcstream
   
   TObjArray* oaMultGr = NULL;
   Bool_t needDeletion=kFALSE;
@@ -1949,6 +1949,62 @@ TTree*  TStatToolkit::WriteStatusToTree(TObject* oStatusGr)
   
   return statusTree;
 }
+
+
+void   TStatToolkit::MakeSummaryTree(TTree* treeIn, TTreeSRedirector *pcstream, TObjString & sumID, TCut &selection){
+  //
+  // Make a  summary tree for the input tree 
+  // For the moment statistic works only for the primitive branches (Float/Double/Int)
+  // Extension recursive version planned for graphs a and histograms
+  //
+  // Following statistics are exctracted:
+  //   - Standard: mean, meadian, rms
+  //   - LTM robust statistic: mean60, rms60, mean90, rms90
+  // Parameters:
+  //    treeIn    - input tree 
+  //    pctream   - Output redirector
+  //    sumID     - ID as will be used in output tree
+  //    selection - selection criteria define the set of entries used to evaluat statistic 
+  //
+  TObjArray * brArray = treeIn->GetListOfBranches();
+  Int_t tEntries= treeIn->GetEntries();
+  Int_t nBranches=brArray->GetEntries();
+  TString treeName = treeIn->GetName();
+  treeName+="Summary";
+
+  (*pcstream)<<treeName.Data()<<"entries="<<tEntries;
+  (*pcstream)<<treeName.Data()<<"ID.="<<&sumID;
+  
+  TMatrixD valBranch(nBranches,7);
+  for (Int_t iBr=0; iBr<nBranches; iBr++){    
+    TString brName= brArray->At(iBr)->GetName();
+    Int_t entries=treeIn->Draw(brArray->At(iBr)->GetName(),selection);
+    if (entries==0) continue;
+    Double_t median, mean, rms, mean60,rms60, mean90, rms90;
+    mean  = TMath::Mean(entries,treeIn->GetV1());
+    median= TMath::Median(entries,treeIn->GetV1());
+    rms   = TMath::RMS(entries,treeIn->GetV1());
+    TStatToolkit::EvaluateUni(entries, treeIn->GetV1(), mean60,rms60,TMath::Min(TMath::Max(2., 0.60*entries),Double_t(entries)));
+    TStatToolkit::EvaluateUni(entries, treeIn->GetV1(), mean90,rms90,TMath::Min(TMath::Max(2., 0.90*entries),Double_t(entries)));
+    valBranch(iBr,0)=mean; 
+    valBranch(iBr,1)=median; 
+    valBranch(iBr,2)=rms; 
+    valBranch(iBr,3)=mean60; 
+    valBranch(iBr,4)=rms60; 
+    valBranch(iBr,5)=mean90; 
+    valBranch(iBr,6)=rms90; 
+    (*pcstream)<<treeName.Data()<<
+      brName+"_Mean="<<valBranch(iBr,0)<<
+      brName+"_Median="<<valBranch(iBr,1)<<
+      brName+"_RMS="<<valBranch(iBr,2)<<
+      brName+"_Mean60="<<valBranch(iBr,3)<<
+      brName+"_RMS60="<<valBranch(iBr,4)<<
+      brName+"_Mean90="<<valBranch(iBr,5)<<
+      brName+"_RMS90="<<valBranch(iBr,6);  
+  }
+  (*pcstream)<<treeName.Data()<<"\n";
+}
+
 
 
 TMultiGraph*  TStatToolkit::MakeStatusLines(TTree * tree, const char * expr, const char * cut, const char * alias) 
