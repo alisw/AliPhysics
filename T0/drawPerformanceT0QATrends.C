@@ -127,7 +127,7 @@ drawPerformanceT0QATrends(const char* inFile = "trending.root", const char* runT
   }
 
   //Define ranges of you trending plots
-  double resolutionMin = 10,   resolutionMax = 50;    // OR A - OR C
+  double resolutionMin = 10,   resolutionMax = 100;    // OR A - OR C
   double oraplusorcMin = -100, oraplusorcMax = 100;   // OR A + OR CA
   double oraMin        = -100, oraMax        = 100;   // OR A  
   double orcMin        = -100, orcMax        = 100;   // OR C
