@@ -62,6 +62,11 @@ endfunction(find_date_libraries _output library_list library_paths)
 
 # DATE_CONFIG set from the configuration
 if(DATE_CONFIG)
+    # Setting DIMDIR, ODIR and ROOTSYS in the environment, they are needed by date-config
+    set(ENV{DIMDIR} ${DIMDIR})
+    set(ENV{ODIR} ${ODIR})
+    set(ENV{ROOTSYS} ${ROOTSYS})
+
     # Checking DATE version
     execute_process(COMMAND ${DATE_CONFIG} --version OUTPUT_VARIABLE DATE_VERSION ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
@@ -188,6 +193,11 @@ if(DATE_CONFIG)
     if(DATE_DYNMONLIBS)
         string(STRIP ${DATE_DYNMONLIBS} DATE_DYNMONLIBS)
     endif()
+
+    # unsetting all environment variables
+    unset(ENV{DIMDIR})
+    unset(ENV{ODIR})
+    unset(ENV{ROOTSYS})
 
     set(DATE_FOUND TRUE)
 else()

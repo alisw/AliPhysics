@@ -25,12 +25,19 @@
 set(AMORE_FOUND FALSE)
 
 if(AMORE_CONFIG)
+    # Setting ROOTSYS environment variable for the amore-config to find root-config
+    # The variable is unset after the Find is finished
+    set(ENV{ROOTSYS} ${ROOTSYS})
+
     # Checking AMORE version
     execute_process(COMMAND ${AMORE_CONFIG} --version OUTPUT_VARIABLE AMORE_VERSION ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error retrieving AMORE version : ${error}")
     endif(error)
-    string(STRIP ${AMORE_VERSION} AMORE_VERSION)
+    
+    if(AMORE_VERSION)
+        string(STRIP ${AMORE_VERSION} AMORE_VERSION)
+    endif(AMORE_VERSION)
 
     # Extract major, minor, and patch versions from
 #    string(REGEX REPLACE "^([0-9]+)\\.[0-9]+" "\\1" DATE_VERSION_MAJOR "${DATE_VERSION}")
@@ -42,15 +49,21 @@ if(AMORE_CONFIG)
     if(error)
         message(FATAL_ERROR "Error retrieving AMORE static libraries : ${error}")
     endif(error)
-    string(STRIP ${AMORE_STATICLIBS} AMORE_STATICLIBS)
-    string(REPLACE "\n" " " AMORE_STATICLIBS ${AMORE_STATICLIBS})
+    
+    if(AMORE_STATICLIBS)
+        string(STRIP ${AMORE_STATICLIBS} AMORE_STATICLIBS)
+        string(REPLACE "\n" " " AMORE_STATICLIBS ${AMORE_STATICLIBS})
+    endif(AMORE_STATICLIBS)
 
     # Checking AMORE auxiliary libraries
     execute_process(COMMAND ${AMORE_CONFIG} --auxlibs-list OUTPUT_VARIABLE AMORE_AUXLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error retrieving AMORE auxiliary libraries : ${error}")
     endif(error)
-    string(STRIP ${AMORE_AUXLIBS} AMORE_AUXLIBS)
+    
+    if(AMORE_AUXLIBS)
+        string(STRIP ${AMORE_AUXLIBS} AMORE_AUXLIBS)
+    endif(AMORE_AUXLIBS)
 
     # Checking AMORE cflags
     execute_process(COMMAND ${AMORE_CONFIG} --cflags OUTPUT_VARIABLE AMORE_CFLAGS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
@@ -72,8 +85,8 @@ if(AMORE_CONFIG)
         string(STRIP ${AMORE_INCLUDE_DIR} AMORE_INCLUDE_DIR)
     endif(AMORE_INCLUDE_DIR)
 
-
     set(AMORE_DEFINITIONS "-DALI_AMORE")
     set(AMORE_FOUND TRUE)
+    unset(ENV{ROOTSYS})
 
 endif(AMORE_CONFIG)
