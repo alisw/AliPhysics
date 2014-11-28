@@ -38,6 +38,8 @@
 #pragma link C++ class AliEMCALConfiguration+;
 #pragma link C++ class AliEMCALConfigHandler+;
 #pragma link C++ class AliEMCALConfigurationMatcher+;
-
+#pragma link C++ class AliEmcalTriggerBitConfig+;
+#pragma link C++ class AliEmcalTriggerBitConfigOld+;
+#pragma link C++ class AliEmcalTriggerBitConfigNew+;
 #endif
 
