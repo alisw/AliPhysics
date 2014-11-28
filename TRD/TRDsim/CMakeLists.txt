@@ -61,7 +61,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
-set(ROOT_DEPENDENCIES Core Geom Gpad Hist MathCore Physics RIO RooFit Tree VMC)
+set(ROOT_DEPENDENCIES Core Geom Gpad Hist MathCore Physics RIO Tree VMC)
 set(ALIROOT_DEPENDENCIES STEERBase STEER ESD RAWDatarec RAWDatabase TRDbase TRDrec T0base TOFbase TOFsim VZERObase)
 
 # Generate the ROOT map
@@ -79,6 +79,10 @@ add_library(${MODULE} SHARED $<TARGET_OBJECTS:TRDsim-object>)
 
 # Linking
 target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+
+# Setting the correct headers for the object as gathered from the dependencies
+target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_PROPERTY:${MODULE},COMPILE_DEFINITIONS>)
 
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
