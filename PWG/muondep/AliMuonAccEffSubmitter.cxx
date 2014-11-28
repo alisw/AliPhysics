@@ -465,7 +465,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateRunJDL(const char* name) const
   {
     // keep only muon AODs and QA
     OutputToJDL(*os,"OutputArchive",  "log_archive.zip:stderr,stdout,*.log@disk=1",
-           "root_archive.zip:galice*.root,AliAOD.Muons.root,Merged.QA.Data.root@disk=2");
+           "root_archive.zip:AliAOD.Muons.root,Merged.QA.Data.root@disk=2");
   }
   else if ( CompactMode() == 2 )
   {
