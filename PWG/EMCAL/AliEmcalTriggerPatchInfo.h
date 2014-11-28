@@ -8,7 +8,7 @@
 #include <TLorentzVector.h>
 #include <TMath.h>
 #include "AliEmcalTriggerBitConfig.h"
-#include "AliEMCALTriggerTypes.h"
+//#include "AliEMCALTriggerTypes.h"
 #include "AliEmcalTriggerSetupInfo.h"
 
 class AliEMCALGeometry;

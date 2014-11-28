@@ -18,7 +18,7 @@ AliEmcalTriggerPatchInfo::AliEmcalTriggerPatchInfo() :
   fEdge2(),
   fADCAmp(0),
   fTriggerBits(0),
-  fOffSet(kTriggerTypeEnd)
+  fOffSet(0)            // To be set explictly by the trigger maker in order to avoid hard coding
 {
   // Default constructor.
   fEdgeCell[0] = -1;
