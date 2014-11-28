@@ -2164,7 +2164,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetMultEstTrackCuts(MultEstTrackCuts cut)
   return fgMultEstTrackCuts[cut];
 }
 
-Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstTrackType trackType, Float_t etaRange) 
+Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstTrackType trackType, Float_t etaRange, Float_t etaCent) 
 {
   // Get multiplicity estimate based on TPC/ITS tracks and tracklets
   // Adapted for AliESDtrackCuts from a version developed by: Ruben Shahoyan, Anton Alkin, Arvinder Palaha
@@ -2181,7 +2181,9 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
   //   1. Count global tracks and flag them
   //   2. Count ITSSA as complementaries for ITSTPC+ or as main tracks
   //   3. Count the complementary SPD tracklets
-  
+  //
+  // Estimator is calculated for etaCent-etaRange : etaCent+etaRange
+  //  
   const AliESDVertex* vertices[2];
   vertices[0] = esd->GetPrimaryVertexSPD();
   vertices[1] = esd->GetPrimaryVertexTracks();
@@ -2206,7 +2208,7 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
     const AliMultiplicity* spdmult = esd->GetMultiplicity();    // spd multiplicity object
     for (Int_t i=0; i<spdmult->GetNumberOfTracklets(); ++i) 
     {
-      if (TMath::Abs(spdmult->GetEta(i)) > etaRange) 
+      if (TMath::Abs(spdmult->GetEta(i)-etaCent) > etaRange) 
 	continue; // eta selection for tracklets
       multiplicityEstimate++;
     }
@@ -2230,9 +2232,10 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
   }
   
   // update eta range in track cuts
-  GetMultEstTrackCuts(kMultEstTrackCutITSSA)->SetEtaRange(-etaRange, etaRange);
-  GetMultEstTrackCuts(kMultEstTrackCutDCAwSPD)->SetEtaRange(-etaRange, etaRange);
-  GetMultEstTrackCuts(kMultEstTrackCutDCAwoSPD)->SetEtaRange(-etaRange, etaRange);
+  float etaMin = etaCent - etaRange, etaMax = etaCent + etaRange;
+  GetMultEstTrackCuts(kMultEstTrackCutITSSA)->SetEtaRange(etaMin, etaMax);
+  GetMultEstTrackCuts(kMultEstTrackCutDCAwSPD)->SetEtaRange(etaMin, etaMax);
+  GetMultEstTrackCuts(kMultEstTrackCutDCAwoSPD)->SetEtaRange(etaMin, etaMax);
   
   //*******************************************************************************************************
   //set counters to initial zeros
@@ -2323,7 +2326,7 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
   // get multiplicity from ITS tracklets to complement TPC+ITS, and ITSpureSA
   const AliMultiplicity* spdmult = esd->GetMultiplicity();    // spd multiplicity object
   for (Int_t i=0; i<spdmult->GetNumberOfTracklets(); ++i) {
-    if (TMath::Abs(spdmult->GetEta(i)) > etaRange) continue; // eta selection for tracklets
+    if (TMath::Abs(spdmult->GetEta(i)-etaCent) > etaRange) continue; // eta selection for tracklets
     
     // if counting tracks+tracklets, check if clusters were already used in tracks
     Int_t id1, id2, id3, id4;
