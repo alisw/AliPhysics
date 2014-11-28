@@ -1,4 +1,4 @@
-AliAnalysisTaskTwoPlusOne *AddTaskTwoPlusOne(const char* outputFileName = 0, Double_t alpha = 0.2, const char* containerName = "histosTwoPlusOne", const char* folderName = "PWGCF_TwoPlusOne")
+AliAnalysisTaskTwoPlusOne *AddTaskTwoPlusOne(const char* outputFileName = 0, Double_t alpha = 0.2, const char* containerName = "histosTwoPlusOne", const char* folderName = "PWGCF_TwoPlusOne", const char* suffix = "")
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -9,7 +9,10 @@ AliAnalysisTaskTwoPlusOne *AddTaskTwoPlusOne(const char* outputFileName = 0, Dou
   
   // Create the task and configure it.
   //===========================================================================
-  AliAnalysisTaskTwoPlusOne* ana = new  AliAnalysisTaskTwoPlusOne(containerName);
+  TString combinedName;
+  combinedName.Form("%s_%s", containerName, suffix);
+
+  AliAnalysisTaskTwoPlusOne* ana = new  AliAnalysisTaskTwoPlusOne(combinedName);
  
   Int_t bit = 32 | 64;
   ana->SetFilterBit(bit);  
@@ -28,7 +31,7 @@ AliAnalysisTaskTwoPlusOne *AddTaskTwoPlusOne(const char* outputFileName = 0, Dou
   if (!outputFileName)
     outputFileName = AliAnalysisManager::GetCommonFileName();
   
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer(containerName, TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:%s", outputFileName, folderName));
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer(combinedName, TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:%s", outputFileName, folderName));
   
   mgr->ConnectInput  (ana, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput (ana, 1, coutput );

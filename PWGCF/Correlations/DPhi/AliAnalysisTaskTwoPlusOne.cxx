@@ -32,6 +32,8 @@ AliAnalysisTaskTwoPlusOne::AliAnalysisTaskTwoPlusOne(const char *name)
 // handlers and events
   fAOD(0x0),
   fPoolMgr(0x0),
+  fEventCombination(0x0),
+  fUsedEvents(0),
 // histogram settings
   fListOfHistos(0x0), 
 // event QA
@@ -49,6 +51,7 @@ AliAnalysisTaskTwoPlusOne::AliAnalysisTaskTwoPlusOne(const char *name)
   fFilterBit(0xFF),
   fTrackStatus(0),
   fThreeParticleMixed(0),
+  fUseEventCombination(0),
   fCustomBinning(),
   fAlpha(0.2)
 {
@@ -107,6 +110,8 @@ void AliAnalysisTaskTwoPlusOne::UserCreateOutputObjects()
 
   fPoolMgr = new AliEventPoolManager(poolsize, fMixingTracks, nCentralityBins, centralityBins, nZvtxBins, zvtxbin);
   fPoolMgr->SetTargetValues(fMixingTracks, 0.1, 5);
+
+  fEventCombination = new TObjArray;
 }
 
 //________________________________________________________________________
@@ -167,6 +172,20 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
 
   const AliVVertex* vertex = InputEvent()->GetPrimaryVertex();
   Double_t zVtx = vertex->GetZ();
+
+  //at this point of the code the event is acctepted
+  //if this run is used to add 30-50% centrality events to the multiplicity of central events this is done here, all other events are skipped. 
+  if(fUseEventCombination){
+    if(centrality<30||centrality>50)
+      return;
+
+    AddEventCombination(tracksClone);
+    //do only continue if there are 4 events in the fEventCombination
+    if(fUsedEvents==4)
+      tracksClone = fEventCombination;
+    else
+      return;
+  }
 
   fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kSameNS, tracksClone, tracksClone, tracksClone, tracksClone, 1.0, kFALSE, kFALSE);//same event for near and away side
 
@@ -268,6 +287,23 @@ TObjArray* AliAnalysisTaskTwoPlusOne::CloneAndReduceTrackList(TObjArray* tracks)
   }
   
   return tracksClone;
+}
+
+//____________________________________________________________________
+void AliAnalysisTaskTwoPlusOne::AddEventCombination(TObjArray* tracks)
+{
+  //if fEventCombination was full before, clear it
+  if(fUsedEvents==4){
+    fEventCombination->Clear();
+    fUsedEvents = 0;
+  }
+
+  for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
+  {
+    AliCFParticle* part = (AliCFParticle*) tracks->UncheckedAt(i);
+    fEventCombination->Add(part);
+  }
+  fUsedEvents++;
 }
 
 
