@@ -35,9 +35,14 @@ include(CMakeALICE)
 # in case ROOT Extra static library needs to be enabled
 
 # DATE
+# date-config needs DIMDIR and ODIR set
 if(DATE_CONFIG)
-    find_package(DATE)
-endif(DATE_CONFIG)
+    if(DIMDIR AND ODIR)
+        find_package(DATE)
+    else()
+        message(FATAL_ERROR "DATE enabled but no DIMDIR and ODIR set. Please set DIMDIR and ODIR")
+    endif()
+endif()
 
 # daqDA
 if(daqDA)
@@ -46,7 +51,11 @@ endif(daqDA)
 
 # AMORE
 if(AMORE_CONFIG)
-    find_package(AMORE)
+    if(ROOTSYS)
+        find_package(AMORE)
+    else()
+        message(FATAL_ERROR "AMORE enabled but no ROOTSYS defined")
+    endif()
 endif(AMORE_CONFIG)
 
 # DA is enabled
