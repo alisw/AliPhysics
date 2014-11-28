@@ -7,6 +7,7 @@
 
 #include <TLorentzVector.h>
 #include <TMath.h>
+#include "AliEmcalTriggerBitConfig.h"
 #include "AliEMCALTriggerTypes.h"
 #include "AliEmcalTriggerSetupInfo.h"
 
@@ -37,16 +38,16 @@ class AliEmcalTriggerPatchInfo: public TObject {
   Int_t    GetEdgeCellY() const { return fEdgeCell[1]; }
   void     GetCellIndices( AliEMCALGeometry *geom, TArrayI *cells );
   
-  Bool_t   IsLevel0() const { return (Bool_t)((fTriggerBits >> (fOffSet + kL0))&(!(fTriggerBits >> 25))&1); }
-  Bool_t   IsJetLow() const { return (Bool_t)((fTriggerBits >> (fOffSet + kL1JetLow))&(!(fTriggerBits >> 25))&1); }
-  Bool_t   IsJetHigh() const { return (Bool_t)((fTriggerBits >> (fOffSet + kL1JetHigh))&(!(fTriggerBits >> 25))&1); }
-  Bool_t   IsGammaLow() const { return (Bool_t)((fTriggerBits >> (fOffSet + kL1GammaLow))&(!(fTriggerBits >> 25))&1); }
-  Bool_t   IsGammaHigh() const { return (Bool_t)((fTriggerBits >> (fOffSet + kL1GammaHigh))&(!(fTriggerBits >> 25))&1); }
+  Bool_t   IsLevel0() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetLevel0Bit()))&(!(fTriggerBits >> 25))&1); }
+  Bool_t   IsJetLow() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetJetLowBit()))&(!(fTriggerBits >> 25))&1); }
+  Bool_t   IsJetHigh() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetJetHighBit()))&(!(fTriggerBits >> 25))&1); }
+  Bool_t   IsGammaLow() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetGammaLowBit()))&(!(fTriggerBits >> 25))&1); }
+  Bool_t   IsGammaHigh() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetGammaHighBit()))&(!(fTriggerBits >> 25))&1); }
   Bool_t   IsMainTrigger() const { return (Bool_t)((fTriggerBits >> 24)&(!(fTriggerBits >> 25))&1); }
-  Bool_t   IsJetLowSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + kL1JetLow))&(fTriggerBits >> 25)&1); }
-  Bool_t   IsJetHighSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + kL1JetHigh))&(fTriggerBits >> 25)&1); }
-  Bool_t   IsGammaLowSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + kL1GammaLow))&(fTriggerBits >> 25)&1); }
-  Bool_t   IsGammaHighSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + kL1GammaHigh))&(fTriggerBits >> 25)&1); }
+  Bool_t   IsJetLowSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetJetLowBit()))&(fTriggerBits >> 25)&1); }
+  Bool_t   IsJetHighSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetJetHighBit()))&(fTriggerBits >> 25)&1); }
+  Bool_t   IsGammaLowSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetGammaLowBit()))&(fTriggerBits >> 25)&1); }
+  Bool_t   IsGammaHighSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetGammaHighBit()))&(fTriggerBits >> 25)&1); }
   Bool_t   IsMainTriggerSimple() const { return (Bool_t)((fTriggerBits >> 24)&(fTriggerBits >> 25)&1); }
   Bool_t   IsOfflineSimple() const { return (Bool_t)((fTriggerBits >> 25)&1); }
   
@@ -67,6 +68,8 @@ class AliEmcalTriggerPatchInfo: public TObject {
 
   void SetOffSet(Int_t i)        { fOffSet      = i; }
 
+  void SetTriggerBitConfig(const AliEmcalTriggerBitConfig * ref) { fTriggerBitConfig.Initialise(*ref); }
+
 
  protected:
   TLorentzVector   &GetLorentzVector(const Double_t *vertex = 0)  const;
@@ -79,7 +82,8 @@ class AliEmcalTriggerPatchInfo: public TObject {
   Int_t             fTriggerBits;                   //trigger bit mask
   Int_t             fEdgeCell[2];                   // cell "bottom lower" edge (min phi, max eta)
   Int_t             fOffSet;                        // offset of bit (different in data and MC)
+  AliEmcalTriggerBitConfig   fTriggerBitConfig;     // Trigger bit configuration
 
-  ClassDef(AliEmcalTriggerPatchInfo, 4) // Emcal particle class
+  ClassDef(AliEmcalTriggerPatchInfo, 5) // Emcal particle class
 };
 #endif
