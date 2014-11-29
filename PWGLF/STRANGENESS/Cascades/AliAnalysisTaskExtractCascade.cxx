@@ -107,6 +107,7 @@ fkSelectCentrality (kFALSE),
 fCentSel_Low(0.0),
 fCentSel_High(0.0),
 fLowPtCutoff(0.0),
+fCascadeMassWindow(0.075),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -282,6 +283,7 @@ fkSelectCentrality (kFALSE),
 fCentSel_Low(0.0),
 fCentSel_High(0.0),
 fLowPtCutoff(0.0),
+fCascadeMassWindow(0.075),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -1558,8 +1560,8 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
         //Xi    Mass window: 150MeV wide
         //Omega mass window: 150MeV wide
         
-        if( (fTreeCascVarMassAsXi<1.32+0.075&&fTreeCascVarMassAsXi>1.32-0.075) ||
-           (fTreeCascVarMassAsOmega<1.68+0.075&&fTreeCascVarMassAsOmega>1.68-0.075) ){
+        if( (fTreeCascVarMassAsXi<1.321+fCascadeMassWindow&&fTreeCascVarMassAsXi>1.321-fCascadeMassWindow) ||
+           (fTreeCascVarMassAsOmega<1.672+fCascadeMassWindow&&fTreeCascVarMassAsOmega>1.672-fCascadeMassWindow) ){
             
             //All inclusive: save everything (OK for p-Pb, pp, NOT OK for Pb-Pb)
             if( !fkLight && !fkSuperLight ) fTreeCascade->Fill();
@@ -1579,7 +1581,7 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
                     //Extra selections applied on a case-by-case basis:
                     // (1) XiMinus
                     if( fTreeCascVarCharge == -1 &&
-                       TMath::Abs(fTreeCascVarMassAsXi-1.321)<0.60 &&
+                       TMath::Abs(fTreeCascVarMassAsXi-1.321)<fCascadeMassWindow &&
                        TMath::Abs(fTreeCascVarPosNSigmaProton) <= 4 &&
                        TMath::Abs(fTreeCascVarNegNSigmaPion  ) <= 4 &&
                        TMath::Abs(fTreeCascVarBachNSigmaPion ) <= 4 &&
@@ -1588,7 +1590,7 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
                     }
                     // (2) XiPlus
                     if( fTreeCascVarCharge == +1 &&
-                       TMath::Abs(fTreeCascVarMassAsXi-1.321)<0.60 &&
+                       TMath::Abs(fTreeCascVarMassAsXi-1.321)<fCascadeMassWindow &&
                        TMath::Abs(fTreeCascVarPosNSigmaPion  ) <= 4 &&
                        TMath::Abs(fTreeCascVarNegNSigmaProton) <= 4 &&
                        TMath::Abs(fTreeCascVarBachNSigmaPion ) <= 4 &&
@@ -1597,7 +1599,7 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
                     }
                     // (3) OmegaMinus
                     if( fTreeCascVarCharge == -1 &&
-                       TMath::Abs(fTreeCascVarMassAsOmega-1.672)<0.60 &&
+                       TMath::Abs(fTreeCascVarMassAsOmega-1.672)<fCascadeMassWindow &&
                        TMath::Abs(fTreeCascVarPosNSigmaProton) <= 4 &&
                        TMath::Abs(fTreeCascVarNegNSigmaPion  ) <= 4 &&
                        TMath::Abs(fTreeCascVarBachNSigmaKaon ) <= 4 &&
@@ -1606,7 +1608,7 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
                     }
                     // (4) OmegaPlus
                     if( fTreeCascVarCharge == +1 &&
-                       TMath::Abs(fTreeCascVarMassAsOmega-1.672)<0.60 &&
+                       TMath::Abs(fTreeCascVarMassAsOmega-1.672)<fCascadeMassWindow &&
                        TMath::Abs(fTreeCascVarPosNSigmaPion    ) <= 4 &&
                        TMath::Abs(fTreeCascVarNegNSigmaProton  ) <= 4 &&
                        TMath::Abs(fTreeCascVarBachNSigmaKaon   ) <= 4 &&
