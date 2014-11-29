@@ -508,8 +508,7 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
         fOutputList->Add(fh1TrigSig); 
         fOutputList->Add(fh1TrackPhiDistance);
         fOutputList->Add(fh1TrackRDistance);
-        fOutputList->Add(fh1TrigSig); 
-	fOutputList->Add(fh2Ntriggers);
+       	fOutputList->Add(fh2Ntriggers);
         fOutputList->Add(fh2Ntriggers2C10);
         fOutputList->Add(fh2Ntriggers2C20); 
         fOutputList->Add(fh3JetDensity);
