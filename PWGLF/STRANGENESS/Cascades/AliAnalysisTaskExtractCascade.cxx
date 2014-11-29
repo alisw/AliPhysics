@@ -1563,7 +1563,7 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
             
             //All inclusive: save everything (OK for p-Pb, pp, NOT OK for Pb-Pb)
             if( !fkLight && !fkSuperLight ) fTreeCascade->Fill();
-            //Intermediate mode: filter on dE/dx, rapidity, eta...
+            //Intermediate mode: filter on dE/dx, rapidity, eta
             if(  fkLight && !fkSuperLight){
                 
                 //This cascade is useless until proven otherwise
@@ -1598,8 +1598,8 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
                     // (3) OmegaMinus
                     if( fTreeCascVarCharge == -1 &&
                        TMath::Abs(fTreeCascVarMassAsOmega-1.672)<0.60 &&
-                       TMath::Abs(fTreeCascVarPosNSigmaPion  ) <= 4 &&
-                       TMath::Abs(fTreeCascVarNegNSigmaProton) <= 4 &&
+                       TMath::Abs(fTreeCascVarPosNSigmaProton) <= 4 &&
+                       TMath::Abs(fTreeCascVarNegNSigmaPion  ) <= 4 &&
                        TMath::Abs(fTreeCascVarBachNSigmaKaon ) <= 4 &&
                        TMath::Abs(fTreeCascVarRapOmega       ) <= 0.5 ){
                         lSaveThisCascade = kTRUE;
@@ -1607,8 +1607,8 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
                     // (4) OmegaPlus
                     if( fTreeCascVarCharge == +1 &&
                        TMath::Abs(fTreeCascVarMassAsOmega-1.672)<0.60 &&
-                       TMath::Abs(fTreeCascVarPosNSigmaProton  ) <= 4 &&
-                       TMath::Abs(fTreeCascVarNegNSigmaPion    ) <= 4 &&
+                       TMath::Abs(fTreeCascVarPosNSigmaPion    ) <= 4 &&
+                       TMath::Abs(fTreeCascVarNegNSigmaProton  ) <= 4 &&
                        TMath::Abs(fTreeCascVarBachNSigmaKaon   ) <= 4 &&
                        TMath::Abs(fTreeCascVarRapOmega         ) <= 0.5 ){
                         lSaveThisCascade = kTRUE;
