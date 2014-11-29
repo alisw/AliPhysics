@@ -86,6 +86,10 @@ public:
         fkLight = lLight;
     }
     //---------------------------------------------------------------------------------------
+    void SetCascadeMassWindow ( Double_t lCascadeMassWindow = 0.060) {
+        fCascadeMassWindow = lCascadeMassWindow;
+    }
+    //---------------------------------------------------------------------------------------
     //Setters for the V0 Vertexer Parameters
     void SetV0VertexerMaxChisquare   ( Double_t lParameter ){ fV0VertexerSels[0] = lParameter; }
     void SetV0VertexerDCAFirstToPV   ( Double_t lParameter ){ fV0VertexerSels[1] = lParameter; }
@@ -150,7 +154,8 @@ private:
     Double_t fCentSel_Low;
     Double_t fCentSel_High;
     
-    Double_t fLowPtCutoff; //Reduction of data volume
+    Double_t fLowPtCutoff;          //Reduction of data volume
+    Double_t fCascadeMassWindow;    //Reduction of data volume: mass window selection
     
 	//Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 	//Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related
