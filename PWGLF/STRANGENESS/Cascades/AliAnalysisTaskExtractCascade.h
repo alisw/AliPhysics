@@ -82,6 +82,10 @@ public:
         fkSuperLight = lSuperLight;
     }
     //---------------------------------------------------------------------------------------
+    void SetLightMode ( Bool_t lLight = kTRUE) {
+        fkLight = lLight;
+    }
+    //---------------------------------------------------------------------------------------
     //Setters for the V0 Vertexer Parameters
     void SetV0VertexerMaxChisquare   ( Double_t lParameter ){ fV0VertexerSels[0] = lParameter; }
     void SetV0VertexerDCAFirstToPV   ( Double_t lParameter ){ fV0VertexerSels[1] = lParameter; }
@@ -298,6 +302,7 @@ private:
     //     --- Superlight Output Mode - Experimental ---
     //=======================================================
     
+    Bool_t fkLight; //Switch for intermediate mode
     Bool_t fkSuperLight; //Switch for super light output mode
     
     //Selection criteria for superlight analysis

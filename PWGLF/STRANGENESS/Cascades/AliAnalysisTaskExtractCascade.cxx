@@ -247,6 +247,7 @@ fHistPVyAnalysis(0),
 fHistPVzAnalysis(0),
 
 //Superlight !
+fkLight(kTRUE),
 fkSuperLight(kFALSE),
 fCut_V0Radius(1.2),
 fCut_CascRadius(0.6),
@@ -422,6 +423,7 @@ fHistPVyAnalysis(0),
 fHistPVzAnalysis(0),
 
 //Superlight !
+fkLight(kTRUE),
 fkSuperLight(kFALSE),
 fCut_V0Radius(1.2),
 fCut_CascRadius(0.6),
@@ -881,20 +883,20 @@ void AliAnalysisTaskExtractCascade::UserCreateOutputObjects()
     }
     if(! f2dHist_MassVsPt_XiPlus) {
         f2dHist_MassVsPt_XiPlus = new TH2F("f2dHist_MassVsPt_XiPlus","",
-                                            800,1.321-0.100,1.321+0.100,
-                                            100,0,10);
+                                           800,1.321-0.100,1.321+0.100,
+                                           100,0,10);
         fListHist->Add(f2dHist_MassVsPt_XiPlus);
     }
     if(! f2dHist_MassVsPt_OmegaMinus) {
         f2dHist_MassVsPt_OmegaMinus = new TH2F("f2dHist_MassVsPt_OmegaMinus","",
-                                            800,1.672-0.100,1.672+0.100,
-                                            100,0,10);
+                                               800,1.672-0.100,1.672+0.100,
+                                               100,0,10);
         fListHist->Add(f2dHist_MassVsPt_OmegaMinus);
     }
     if(! f2dHist_MassVsPt_OmegaPlus) {
         f2dHist_MassVsPt_OmegaPlus = new TH2F("f2dHist_MassVsPt_OmegaPlus","",
-                                           800,1.672-0.100,1.672+0.100,
-                                           100,0,10);
+                                              800,1.672-0.100,1.672+0.100,
+                                              100,0,10);
         fListHist->Add(f2dHist_MassVsPt_OmegaPlus);
     }
     
@@ -1559,15 +1561,61 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
         if( (fTreeCascVarMassAsXi<1.32+0.075&&fTreeCascVarMassAsXi>1.32-0.075) ||
            (fTreeCascVarMassAsOmega<1.68+0.075&&fTreeCascVarMassAsOmega>1.68-0.075) ){
             
-            if( !fkIsNuclear && !fkSuperLight ) fTreeCascade->Fill();
-            if( fkIsNuclear  && !fkSuperLight){
-                //Extra selections in case this is a nuclear collision...
+            //All inclusive: save everything (OK for p-Pb, pp, NOT OK for Pb-Pb)
+            if( !fkLight && !fkSuperLight ) fTreeCascade->Fill();
+            //Intermediate mode: filter on dE/dx, rapidity, eta...
+            if(  fkLight && !fkSuperLight){
+                
+                //This cascade is useless until proven otherwise
+                Bool_t lSaveThisCascade = kFALSE;
+                
+                //Extra selections in case this is supposed to be super-filtered
+                //Inspired on tricks used for the V0 analysis in Pb-Pb
                 if (TMath::Abs(fTreeCascVarNegEta) < 0.8 &&
                     TMath::Abs(fTreeCascVarPosEta) < 0.8 &&
                     TMath::Abs(fTreeCascVarBachEta) < 0.8 &&
                     fTreeCascVarPt > fLowPtCutoff){ //beware ptMC and ptreco differences
-                    fTreeCascade->Fill();
+                    
+                    //Extra selections applied on a case-by-case basis:
+                    // (1) XiMinus
+                    if( fTreeCascVarCharge == -1 &&
+                       TMath::Abs(fTreeCascVarMassAsXi-1.321)<0.60 &&
+                       TMath::Abs(fTreeCascVarPosNSigmaProton) <= 4 &&
+                       TMath::Abs(fTreeCascVarNegNSigmaPion  ) <= 4 &&
+                       TMath::Abs(fTreeCascVarBachNSigmaPion ) <= 4 &&
+                       TMath::Abs(fTreeCascVarRapXi          ) <= 0.5 ){
+                        lSaveThisCascade = kTRUE;
+                    }
+                    // (2) XiPlus
+                    if( fTreeCascVarCharge == +1 &&
+                       TMath::Abs(fTreeCascVarMassAsXi-1.321)<0.60 &&
+                       TMath::Abs(fTreeCascVarPosNSigmaPion  ) <= 4 &&
+                       TMath::Abs(fTreeCascVarNegNSigmaProton) <= 4 &&
+                       TMath::Abs(fTreeCascVarBachNSigmaPion ) <= 4 &&
+                       TMath::Abs(fTreeCascVarRapXi          ) <= 0.5 ){
+                        lSaveThisCascade = kTRUE;
+                    }
+                    // (3) OmegaMinus
+                    if( fTreeCascVarCharge == -1 &&
+                       TMath::Abs(fTreeCascVarMassAsOmega-1.672)<0.60 &&
+                       TMath::Abs(fTreeCascVarPosNSigmaPion  ) <= 4 &&
+                       TMath::Abs(fTreeCascVarNegNSigmaProton) <= 4 &&
+                       TMath::Abs(fTreeCascVarBachNSigmaKaon ) <= 4 &&
+                       TMath::Abs(fTreeCascVarRapOmega       ) <= 0.5 ){
+                        lSaveThisCascade = kTRUE;
+                    }
+                    // (4) OmegaPlus
+                    if( fTreeCascVarCharge == +1 &&
+                       TMath::Abs(fTreeCascVarMassAsOmega-1.672)<0.60 &&
+                       TMath::Abs(fTreeCascVarPosNSigmaProton  ) <= 4 &&
+                       TMath::Abs(fTreeCascVarNegNSigmaPion    ) <= 4 &&
+                       TMath::Abs(fTreeCascVarBachNSigmaKaon   ) <= 4 &&
+                       TMath::Abs(fTreeCascVarRapOmega         ) <= 0.5 ){
+                        lSaveThisCascade = kTRUE;
+                    }
                 }
+                if (lSaveThisCascade) fTreeCascade -> Fill() ;
+                
             }
         }
         
@@ -1577,6 +1625,11 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
         
         //------------------------------------------------
         // Super-lightweight mode filling
+        //
+        //  THIS MODE OVERRIDES LIGHT MODE
+        //
+        //  If fkSuperLight is kTRUE, only histograms are saved
+        //
         //------------------------------------------------
         
         if( fkSuperLight ){
@@ -1671,7 +1724,7 @@ void AliAnalysisTaskExtractCascade::Terminate(Option_t *)
     if(!cRetrievedList){
         Printf("ERROR - AliAnalysisTaskExtractCascade : ouput data container list not available\n");
         return;
-    }	
+    }
 	
     fHistV0MultiplicityForTrigEvt = dynamic_cast<TH1F*> (  cRetrievedList->FindObject("fHistV0MultiplicityForTrigEvt")  );
     if (!fHistV0MultiplicityForTrigEvt) {
@@ -1692,8 +1745,8 @@ Double_t AliAnalysisTaskExtractCascade::MyRapidity(Double_t rE, Double_t rPz) co
 {
     // Local calculation for rapidity
     Double_t ReturnValue = -100;
-    if( (rE-rPz+1.e-13) != 0 && (rE+rPz) != 0 ){ 
+    if( (rE-rPz+1.e-13) != 0 && (rE+rPz) != 0 ){
         ReturnValue =  0.5*TMath::Log((rE+rPz)/(rE-rPz+1.e-13));
     }
     return ReturnValue;
-} 
+}
