@@ -113,7 +113,7 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   TH1::AddDirectory(kFALSE);
 
   fTreeObservableTagging = new TTree("fTreeJetShape", "fTreeJetShape");
-  Int_t nVar = 17; 
+  Int_t nVar = 18; 
   fShapesVar = new Float_t [nVar]; 
   TString *fShapesVarNames = new TString [nVar];
 
@@ -135,7 +135,8 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   fShapesVarNames[14] = "circularityMatch";
   fShapesVarNames[15] = "lesubMatch";
   fShapesVarNames[16] = "sigma2Match";
-  
+  fShapesVarNames[17]="weightPythia";
+
   for(Int_t ivar=0; ivar < nVar; ivar++){
     cout<<"looping over variables"<<endl;
     fTreeObservableTagging->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar], Form("%s/F", fShapesVarNames[ivar].Data()));
@@ -272,6 +273,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
 	circMatch=GetJetCircularity(jet2, kMatched);
 	lesubMatch=GetJetLeSub(jet2, kMatched);
 	sigma2Match = GetSigma2(jet2, kMatched);
+        
       }
 
       if (fJetShapeType == kTrue || fJetShapeType == kData) {
@@ -284,6 +286,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
 	circMatch=0.;
 	lesubMatch=0.;
 	sigma2Match =0.;
+      
       }
       
       fShapesVar[9] = ptMatch;
@@ -294,9 +297,9 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       fShapesVar[14] = circMatch;
       fShapesVar[15] = lesubMatch;
       fShapesVar[16] = sigma2Match;
-
+      fShapesVar[17] = kWeight;
       fTreeObservableTagging->Fill();
-      fTreeObservableTagging->SetWeight(kWeight); 
+       
     }
     
   } 
