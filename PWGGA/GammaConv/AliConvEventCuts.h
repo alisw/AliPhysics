@@ -186,7 +186,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		// Request Flags
 		Int_t 		IsHeavyIon()											{ return fIsHeavyIon									; }
 		void 		DoEtaShift(Bool_t doEtaShift)							{ fDoEtaShift = doEtaShift								; }
-	
+		
 		
 	protected:
 		TList 						*fHistograms;
