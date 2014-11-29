@@ -115,7 +115,6 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TList 								**fBackList;						// Array of lists with BG THnSparseF
 		TList 								**fMotherList;						// Array of lists with Signal THnSparseF
 		TList 								**fPhotonDCAList;					// Array of lists with photon dca trees
-		TList 								**fMesonDCAList;					// Array of lists with meson dca trees
 		TList 								**fTrueList;						// Array of lists with histograms with MC validated reconstructed properties
 		TList 								**fMCList;							// Array of lists with histograms with pure MC information
 		TList 								**fHeaderNameList;					// Array of lists with header names for MC header selection
