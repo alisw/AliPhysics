@@ -12,7 +12,7 @@ void AddSPmethod(char *name, char *Qvector, int harmonic, AliAnalysisDataContain
 {
     // add sp task and invm filter tasks
     if(debug) (bEP) ? cout << " ****** Reveived request for EP task ****** " << endl : cout << " ******* Switching to SP task ******* " << endl;
-    TString fileName = Form("GammaConvFlow_%i.root",trainConfig);
+    TString fileName = Form("GammaConvFlow_%i.root:SP_V0",trainConfig);
     //    (bEP) ? fileName+=":EP_tpctof" : fileName+=":SP_tpctof";
     //          if(etagap) {
     //            fileName+="_SUBEVENTS";
@@ -152,8 +152,7 @@ void AddTask_GammaConvFlow_PbPb2(
         
         //connect input V0Reader
         mgr->AddTask(fV0ReaderV1);
-        mgr->ConnectInput(fV0ReaderV1,0,cinput);
-        
+        mgr->ConnectInput(fV0ReaderV1,0,cinput);        
     }
     
     //================================================

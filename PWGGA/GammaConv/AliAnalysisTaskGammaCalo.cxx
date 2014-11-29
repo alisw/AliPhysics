@@ -1968,7 +1968,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
 		}
 	}
 	
-	if (convertedPhotonLabel0 > -1 && convertedPhotonLabel1 > 1){
+	if (convertedPhotonLabel0 > -1 && convertedPhotonLabel1 > -1){
 		if (convertedPhotonLabel0==convertedPhotonLabel1) isSameConvertedGamma = kTRUE;
 	}
 	
@@ -2034,7 +2034,9 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
 			if ( (TrueGammaCandidate0->IsLargestComponentPhoton() && !TrueGammaCandidate0->IsMerged()) && (TrueGammaCandidate1->IsLargestComponentElectron() && TrueGammaCandidate1->IsConversion())) {
 				if (isTruePi0){
 					if (TrueGammaCandidate1->IsMergedPartConv())	fHistoTruePi0Category2[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
-					if (!TrueGammaCandidate1->IsMergedPartConv())	fHistoTruePi0Category3[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+					if (!TrueGammaCandidate1->IsMergedPartConv()){
+						fHistoTruePi0Category3[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+					}	
 				}
 				if (isTrueEta){
 					if (TrueGammaCandidate1->IsMergedPartConv())	fHistoTrueEtaCategory2[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
@@ -2045,7 +2047,9 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
 			if ( ( TrueGammaCandidate1->IsLargestComponentPhoton() && !TrueGammaCandidate1->IsMerged()) && (TrueGammaCandidate0->IsLargestComponentElectron() && TrueGammaCandidate0->IsConversion())) {
 				if (isTruePi0){
 					if (TrueGammaCandidate0->IsMergedPartConv())	fHistoTruePi0Category2[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
-					if (!TrueGammaCandidate0->IsMergedPartConv())	fHistoTruePi0Category3[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+					if (!TrueGammaCandidate0->IsMergedPartConv()){
+						fHistoTruePi0Category3[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+					}	
 				}
 				if (isTrueEta){
 					if (TrueGammaCandidate0->IsMergedPartConv())	fHistoTrueEtaCategory2[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());

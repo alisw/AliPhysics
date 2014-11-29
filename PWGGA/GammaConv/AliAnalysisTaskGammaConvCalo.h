@@ -119,7 +119,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TList 								**fTrueList;						// Array of lists with histograms with MC validated reconstructed properties
 		TList 								**fMCList;							// Array of lists with histograms with pure MC information
 		TList 								**fHeaderNameList;					// Array of lists with header names for MC header selection
-		TList								**fTagOutputList;     					//!Array of lists of output histograms for tagged photons
+		TList								**fClusterOutputList;     			//!Array of lists of output histograms for cluster photons
 		TList 								*fOutputContainer;					// Output container
 		TClonesArray 						*fReaderGammas;						// Array with conversion photons selected by V0Reader Cut
 		TList 								*fGammaCandidates;					// current list of photon candidates
@@ -168,28 +168,10 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
         TH2F                                **fHistoMotherEtaConvPhotonEtaPhi;  //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65 ,eta/phi of conversion photon
 		TH2F								**fHistoMotherInvMassECalib;		//! array of histogram with signal + BG for same event photon pairs, inv Mass, energy of cluster
 		TH2F								**fHistoMotherInvMassECalibalpha;	//! array of histogram with signal + BG for same event photon pairs, inv Mass, energy of cluster, alpha cut 0.1
-		TTree 								**fTreeMesonsInvMassPtDcazMinDcazMaxFlag; //! array of trees with dca information for mesons
-		Float_t 							fInvMass;							// inv mass for meson tree
-		Float_t 							fPt;								// pt for meson tree 
-		Float_t 							fDCAzGammaMin;						// dcaz for meson tree gamma 1
-		Float_t 							fDCAzGammaMax;						// dcaz for meson tree gamma 2
-		UChar_t 							fCharFlag;							// category of meson for tree
-		UChar_t 							fCharMesonMCInfo; 					// MC information meson for tree
-												// 0: garbage,
-												// 1: background
-												// 2: secondary meson not from eta or k0s,
-												// 3: secondary meson from eta, 
-												// 4: secondary meson from k0s, 
-												// 5: dalitz
-												// 6: primary meson gamma-gamma-channel
 
 		// histograms for rec photons tagged by Calo
-		TH1F								**fHistoConvGammaUntagged;			//! array of histo for untagged photon candidates vs pt
-		TH1F								**fHistoConvGammaTagged;			//! array of histo for tagged photon candidates vs pt
-		TH1F								**fHistoConvGammaPi0Tagged;			//! array of histo for tagged photon candidates vs pt
-		TH1F								**fHistoConvGammaEtaTagged;			//! array of histo for tagged photon candidates vs pt
-		TH2F								**fHistoPhotonPairAll;				//! array of histo for pairs
-		TH2F				 				**fHistoPhotonPairAllGam;			//! array of histo for pairs vs. pt of converted photon
+		TH2F				 				**fHistoPhotonPairPtconv;			//! array of histo for pairs vs. pt of converted photon
+		TH2F				 				**fHistoPhotonPairMixedEventPtconv;			//! array of histo for pairs vs. pt of converted photon
 		// histograms for rec photon clusters
 		TH1F								** fHistoClusGammaPt;				//! array of histos with cluster, pt
 		TH1F								** fHistoClusOverlapHeadersGammaPt;	//! array of histos with cluster, pt overlapping with other headers
@@ -296,7 +278,11 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH1F								**fHistoTrueNLabelsInClus;						//! array of histos with number of labels in cluster 
 		TH1F								**fHistoTruePrimaryClusGammaPt;					//! array of histos with validated primary cluster, pt
 		TH2F								**fHistoTruePrimaryClusGammaESDPtMCPt;			//! array of histos with validated primary cluster, rec Pt, MC pt
-
+		TH2F				 				**fHistoTruePrimaryPi0PhotonPairPtconv;			//! array of histos with validated primary pi0's vs conversion photon pT
+		TH2F				 				**fHistoTruePrimaryEtaPhotonPairPtconv;			//! array of histos with validated primary eta's vs conversion photon pT
+		TH2F				 				**fHistoTrueSecondaryPi0PhotonPairPtconv;		//! array of histos with validated secondary pi0's vs conversion photon pT
+		TH2F				 				**fHistoTrueSecondaryEtaPhotonPairPtconv;		//! array of histos with validated secondary eta's vs conversion photon pT
+		
 		// event histograms
 		TH1I 								**fHistoNEvents;								//! array of histos with event information
 		TH1I 								**fHistoNGoodESDTracks;							//! array of histos with number of good tracks (2010 Standard track cuts)
@@ -329,6 +315,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		Bool_t								fIsOverlappingWithOtherHeader; 		// flag for particles in MC overlapping between headers
 		Bool_t 								fIsMC;								// flag for MC information
 
+		
 	private:
 		AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment

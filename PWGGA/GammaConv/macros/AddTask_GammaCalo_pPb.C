@@ -112,7 +112,7 @@ void AddTask_GammaCalo_pPb(
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 2;
 	if (trainConfig == 3 || trainConfig == 5  ){ numberOfCuts = 6;}
-	if (trainConfig == 6 || trainConfig == 7 ){ numberOfCuts = 1;}
+	if (trainConfig == 6 || trainConfig == 7 || trainConfig == 8 || trainConfig == 9){ numberOfCuts = 1;}
 	
 	TString *eventCutArray = new TString[numberOfCuts];
 	TString *clusterCutArray = new TString[numberOfCuts];
@@ -149,6 +149,12 @@ void AddTask_GammaCalo_pPb(
 		eventCutArray[ 0] = "8000001"; clusterCutArray[0] = "10000040062000000"; mesonCutArray[0] = "01630031009000"; 	
 	} else if (trainConfig == 7){ // Validation PHOS
 		eventCutArray[ 0] = "8000001"; clusterCutArray[0] = "20000040053200000"; mesonCutArray[0] = "01630031009000"; 	
+	} else if (trainConfig == 8){ // Validation EMCAL, only added signals
+		eventCutArray[ 0] = "8000002"; clusterCutArray[0] = "10000040062000000"; mesonCutArray[0] = "01630031009000"; 	
+	} else if (trainConfig == 9){ // Validation PHOS, only added signals
+		eventCutArray[ 0] = "8000002"; clusterCutArray[0] = "20000040053200000"; mesonCutArray[0] = "01630031009000"; 	
+
+		
 	} else {
 		Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
