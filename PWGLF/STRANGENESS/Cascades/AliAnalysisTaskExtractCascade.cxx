@@ -1635,9 +1635,9 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
         if( fkSuperLight ){
             //Conditionals
             if (
-                TMath::Abs(fTreeCascVarNegEta)  > 0.8 &&
-                TMath::Abs(fTreeCascVarPosEta)  > 0.8 &&
-                TMath::Abs(fTreeCascVarBachEta) > 0.8 &&
+                TMath::Abs(fTreeCascVarNegEta)  < 0.8 &&
+                TMath::Abs(fTreeCascVarPosEta)  < 0.8 &&
+                TMath::Abs(fTreeCascVarBachEta) < 0.8 &&
                 fTreeCascVarBachClusters >= 70 &&
                 fTreeCascVarNegClusters  >= 70 &&
                 fTreeCascVarPosClusters  >= 70 &&
