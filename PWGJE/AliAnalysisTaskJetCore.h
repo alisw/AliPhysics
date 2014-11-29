@@ -86,6 +86,7 @@ public:
    virtual void     SetFlagPhiBkg(Int_t yesno){fFlagPhiBkg=yesno;}
    virtual void     SetFlagEtaBkg(Int_t yesno){fFlagEtaBkg=yesno;}
    virtual void     SetFlagJetHadron(Int_t yesno){fFlagJetHadron=yesno;}
+   virtual void     SetFlagDodiHadron(Int_t yesno){fDodiHadron=yesno;}
    virtual void     SetFlagFrac(Float_t fraction){fFrac=fraction;} 
    virtual void     SetTTLowRef(Float_t ttlow){fTTLowRef=ttlow;}
    virtual void     SetTTUpRef(Float_t ttup){fTTUpRef=ttup;}
@@ -152,6 +153,7 @@ private:
    Int_t   fFlagPhiBkg;
    Int_t   fFlagEtaBkg;
    Int_t   fFlagJetHadron;
+   Int_t   fDodiHadron;
    Float_t fFrac;               //fraction of events to evaluate signal
    Float_t fTTLowRef;
    Float_t fTTUpRef;
@@ -221,6 +223,8 @@ private:
   
      TH1D*      fh1TrigRef;                 //ref multiple triggers
      TH1D*      fh1TrigSig;                 //sig multiple triggers    
+     TH1D*      fh1TrackPhiDistance;   //distance between high pT triggers
+     TH1D*      fh1TrackRDistance;     //distance between high pT triggers
      TH2F*      fh2Ntriggers;              //triggers
      TH2F*      fh2Ntriggers2C10;             //centrality bias of triggers 
      TH2F*      fh2Ntriggers2C20;             //centrality bias of triggers 

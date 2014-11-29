@@ -89,6 +89,7 @@ fDoEventMixing(0),
 fFlagPhiBkg(0),
 fFlagEtaBkg(0),
 fFlagJetHadron(0),
+fDodiHadron(0),
 fFrac(0.8),
 fTTLowRef(11),
 fTTUpRef(13),
@@ -152,6 +153,8 @@ fh2AngStructpt3C60(0x0),
 fh2AngStructpt4C60(0x0),
 fh1TrigRef(0x0),
 fh1TrigSig(0x0),
+fh1TrackPhiDistance(0x0),
+fh1TrackRDistance(0x0), 
 fh2Ntriggers(0x0),
 fh2Ntriggers2C10(0x0),
 fh2Ntriggers2C20(0x0), 
@@ -220,6 +223,7 @@ fDoEventMixing(0),
 fFlagPhiBkg(0),
 fFlagEtaBkg(0),
 fFlagJetHadron(0),
+fDodiHadron(0),
 fFrac(0.8),
 fTTLowRef(11),
 fTTUpRef(13),
@@ -283,6 +287,8 @@ fh2AngStructpt3C60(0x0),
 fh2AngStructpt4C60(0x0),    
 fh1TrigRef(0x0),
 fh1TrigSig(0x0),
+fh1TrackPhiDistance(0x0),
+fh1TrackRDistance(0x0), 
 fh2Ntriggers(0x0),
 fh2Ntriggers2C10(0x0),
 fh2Ntriggers2C20(0x0),
@@ -436,6 +442,8 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
    
     fh1TrigRef=new TH1D("Trig Ref","",10,0.,10);
     fh1TrigSig=new TH1D("Trig Sig","",10,0.,10);  
+    fh1TrackPhiDistance=new TH1D("PhiDistance","",35,0.,3.5);
+    fh1TrackRDistance=new TH1D("RDistance","",10,0.,1); 
     fh2Ntriggers=new TH2F("# of triggers","",100,0.,100.,50,0.,50.);
     fh2Ntriggers2C10=new TH2F("# of triggers2C10","",50,0.,50.,50,0.,50.);
     fh2Ntriggers2C20=new TH2F("# of triggers2C20","",50,0.,50.,50,0.,50.);
@@ -497,6 +505,9 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
 
 
         fOutputList->Add(fh1TrigRef);
+        fOutputList->Add(fh1TrigSig); 
+        fOutputList->Add(fh1TrackPhiDistance);
+        fOutputList->Add(fh1TrackRDistance);
         fOutputList->Add(fh1TrigSig); 
 	fOutputList->Add(fh2Ntriggers);
         fOutputList->Add(fh2Ntriggers2C10);
@@ -1278,8 +1289,12 @@ Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t 
        Double_t detat=tr1->Eta()-tr2->Eta();
        Double_t dphit=RelativePhi(tr1->Phi(),tr2->Phi());
        Double_t deltaRt=TMath::Sqrt(detat*detat+dphit*dphit);
-     
-        if(deltaRt>0.4) number=number-1;}      
+       fh1TrackPhiDistance->Fill(TMath::Abs(dphit));
+       fh1TrackRDistance->Fill(deltaRt);
+       
+       if(fDodiHadron==1)  if(deltaRt>0.4) number=number-1;
+       if(fDodiHadron==2) if((deltaRt>0.4) && (TMath::Abs(dphit)>TMath::Pi()-0.6)) number=number-1;}
+
 
      
   
