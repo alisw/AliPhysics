@@ -17,6 +17,7 @@
 //                 AliAnalysisKinkESDMC class
 //       Example of an analysis task for kink topology study
 //      Kaons from kink topology are 'identified' in this code
+//       Nominal Radius 120-210 cm, kaon Rap < 0.5 , eta < 0.8
 //-----------------------------------------------------------------
 
 #include "TChain.h"
@@ -79,7 +80,7 @@ AliAnalysisKinkESDMC::AliAnalysisKinkESDMC(const char *name)
     flifeKink(), flenHelx(0), fradPtRapMC(0), fradPtRapDC(0), fradPtRapESD(0), fRadNclcln(0),
     f1(0), f2(0),
 // fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1), fKinkRadUp(200),fKinkRadLow(130), fLowCluster(20), fLowQt(.12),  fCutsMul(0),fMaxDCAtoVtxCut(0), fPIDResponse(0)
-  fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1), fKinkRadUp(200),fKinkRadLow(130), fLowCluster(20), fLowQt(.12), fRapiK(0.7),  fCutsMul(0),fMaxDCAtoVtxCut(0), fPIDResponse(0)
+  fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1), fKinkRadUp(210),fKinkRadLow(120), fLowCluster(20), fLowQt(.12), fRapiK(0.5),  fCutsMul(0),fMaxDCAtoVtxCut(0), fPIDResponse(0)
 
 {
   // Constructor
@@ -138,12 +139,14 @@ void AliAnalysisKinkESDMC::UserCreateOutputObjects()
                          4.2, 4.6,5.0, 5.4, 5.9,  6.5,   7.0,7.5, 8.0,8.5,  9.2, 10., 11., 12., 13.5,15.0 };  // David K0
 */
 //
+/*
 //! ! ! ! !  KINK FROM HERE --------------->
                   Double_t gPt7Comb[48] = { 
 0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0, 1.1, 1.2,
 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9,
 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.2, 4.4, 4.6, 4.8,5.0, 5.5, 6.0
  };  // 25/11/2013 from Francesco
+*/
 /*
    Double_t gPt7TOF[47] = { 0.2,0.25, 0.3,0.35,  0.4,0.45,  0.5,0.55,  0.6,0.65,  0.7,0.75,  0.8, 0.85, 0.9, 0.95, 1.0,
                         1.1, 1.2, 1.3, 1.4, 1.5, 1.6,1.7,1.8,1.9,  2.0,
@@ -500,6 +503,8 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
 
      if( ptK <0.200) continue;       //    12/2/2012
 //
+            Double_t EtaMC  = particle->Eta();
+             if ((TMath::Abs(EtaMC)) > 0.8) continue ; //  27/11/2014 
 
                 Float_t charg=0;
       Float_t code = particle->GetPdgCode();
@@ -512,7 +517,7 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
          Double_t rapidiKMC = 0.5 * (TMath::Log(  (etracKMC +particle->Pz())/( etracKMC-particle->Pz() )) )  ;
 
      //if ( TMath::Abs( rapidiKMC) > 0.7) continue;   // 
-     if ( TMath::Abs( rapidiKMC) > fRapiK ) continue;   // 
+     if ( (TMath::Abs( rapidiKMC)) > fRapiK ) continue;   // 
             frapidKMC ->Fill(rapidiKMC) ;  //18/feb rapiddistr of PDG kink ESD  kaons
  
 	    
@@ -556,7 +561,7 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
        Double_t LengthK =0.;
        Double_t lenYuri =0.;
         Double_t MCQt =0.;
-        Double_t MCQt3[2];
+//        Double_t MCQt3[2];
 	    Int_t firstD=particle->GetFirstDaughter();
 	    Int_t lastD=particle->GetLastDaughter();
 
@@ -701,7 +706,7 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
         if (( ( code==321 )&& ( dcode ==211  ))|| (( code == -321 )&& ( dcode ==-211)))    nMCKpi++ ; 
         if (( ( code==321 )&& ( dcode ==211  ))|| (( code == -321 )&& ( dcode ==-211)))   {                
                  if ( nMCKpi > 0) {
-              MCQt3[nMCKpi-1] = MCQt ;// k to pipipi 
+//              MCQt3[nMCKpi-1] = MCQt ;// k to pipipi 
 }
                        } 
     nMCKinkKs++;
@@ -793,7 +798,7 @@ Bool_t isSelected =
 //
       Double_t nsigmall = 100.0;
        Double_t nsigma = 100.0;
-       Double_t nsigmaPion =-100.0;
+//         Double_t nsigmaPion =-100.0;
        Double_t nsigmaPi=-100.0;
   //     Double_t dEdxDauMC  =   0.0;
 
@@ -808,7 +813,7 @@ for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
 
          //       Int_t indexKinkDau=trackD->GetKinkIndex(0);
 // daughter kink 
-          nsigmaPion     = (fPIDResponse->NumberOfSigmasTPC(trackD  , AliPID::kPion));// 26/10 eftihis
+ //         nsigmaPion     = (fPIDResponse->NumberOfSigmasTPC(trackD  , AliPID::kPion));// 26/10 eftihis
  //   nsigmaPion= (fESDpid->NumberOfSigmasTPC(trackD,AliPID::kPion));
  //   22/11/12 if((indexKinkDau >0)&& (nsigmaPion>1.2)) fTPCSgnlKinkDau->Fill(trackD->P(), (trackD->GetTPCsignal()  ) ) ;  //  daughter kink 
  //if((indexKinkDau >0)) fTPCSgnlKinkDau->Fill(trackD->P(), (trackD->GetTPCsignal()  ) ) ;  //  daughter kink 
@@ -915,8 +920,10 @@ for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
 
  //  cut on eta 
  //       if(  (TMath::Abs(trackEta )) > 0.9 ) continue;
-        if(  (TMath::Abs(rapiditK  )) > 0.7 ) continue; ////   rapid K, Feb 20
+        //  if(  (TMath::Abs(rapiditK  )) > 0.7 ) continue; ////   rapid K, Feb 20
+        if(  (TMath::Abs(rapiditK  )) > fRapiK ) continue; ////   rapid K, Feb 20
     fHistPtESD->Fill(track->Pt());
+        if(  (TMath::Abs(trackEta )) > 0.8 ) continue;
 
    // Add Kink analysis
    
@@ -1133,7 +1140,7 @@ for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
 	  Int_t ESDLabelM   =  0. ;                                      
 	  Int_t ESDLabelD   =  0. ;                                      
        Double_t dEdxDauMC  =   0.0;
-        Double_t raDAU=0.;
+ //       Double_t raDAU=0.;
         Int_t Ikink =0;
         Int_t IRkink =0;
 for (Int_t jTrack = 0; jTrack < esd->GetNumberOfTracks(); jTrack++) {
@@ -1146,7 +1153,7 @@ for (Int_t jTrack = 0; jTrack < esd->GetNumberOfTracks(); jTrack++) {
                 Int_t indexKinkDAU =trackDau->GetKinkIndex(0);
                      if (indexKinkDAU <0  ){
 	  AliESDkink *kinkDau=esd->GetKink(TMath::Abs(indexKinkDAU)-1);
-               raDAU= kinkDau->GetR();
+   //            raDAU= kinkDau->GetR();
 	   ESDLabelM=kinkDau->GetLabel(0);   //  mothers's label
                 ESDLabelM = TMath::Abs(ESDLabelM);
 	   ESDLabelD=kinkDau->GetLabel(1);   //  Daughter'slabel
