@@ -10,6 +10,7 @@
 //                 AliAnalysisKinkESDat class
 //       Example of an analysis task for kink topology study
 //      Kaons from kink topology are 'identified' in this code
+//     Nov 2014 : Nominal R->120-210 cm,  Rapidity kaon 0.5, eta< 0.8
 //-----------------------------------------------------------------
 
 #include "TChain.h"
@@ -61,7 +62,7 @@ AliAnalysisKinkESDat::AliAnalysisKinkESDat(const char *name)
        fRatioCrossedRows(0), fRatioCrossedRowsKink(0),fRadiusPt(0), fRadiusPtcln(0),  fInvMassMuNuPt(0), fInvMassMuNuPtAll(0),fPtCut1(0), fPtCut2(0), 
       fPtCut3(0), fAngMomKKinks(0),
  f1(0), f2(0),
-      fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1), fKinkRadUp(200), fKinkRadLow(130), fLowCluster(20), fLowQt(.12), fCutsMul(0),  fMaxDCAtoVtxCut(0),  fPIDResponse(0)
+      fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1), fKinkRadUp(210), fKinkRadLow(120), fLowCluster(20), fLowQt(.12), fRapiK(0.5),  fCutsMul(0),   fMaxDCAtoVtxCut(0),  fPIDResponse(0)
 {
   // Constructor
 
@@ -116,11 +117,12 @@ void AliAnalysisKinkESDat::UserCreateOutputObjects()
    f2->SetParameter(2,TMath::Pi());
    //Open file  1= CAF 
     //OpenFile(1); 
+/*
    Double_t gPt7K0[45] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8,0.9,1.0,
                         1.1, 1.2, 1.3, 1.4, 1.5, 1.6,1.7,1.8,1.9,  2.0,
                          2.2, 2.4, 2.6, 2.8,  3.0,   3.3, 3.6, 3.9,   
                          4.2, 4.6,5.0, 5.4, 5.9,  6.5,   7.0,7.5, 8.0,8.5,  9.2, 10., 11., 12., 13.5,15.0 };  // David K0
-
+*/
  Double_t gPt7Comb[48] = {
 0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0, 1.1, 1.2,
 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9,
@@ -373,7 +375,7 @@ void AliAnalysisKinkESDat::UserExec(Option_t *)
        Double_t nsigmaPion =-100.0;
   //     Double_t nsigmaDau  =-100.0;
        Double_t dEdxKinkDau =0.0;
-       Double_t KinkDauCl   =0.0;
+ //      Double_t KinkDauCl   =0.0;
 // apo Eftihi 
                   if(!fPIDResponse) {
     AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
@@ -399,7 +401,7 @@ void AliAnalysisKinkESDat::UserExec(Option_t *)
     labelD = TMath::Abs(labelD);
    nsigmaPion     = (fPIDResponse->NumberOfSigmasTPC(trackD  , AliPID::kPion));// 26/10 eftihis
      dEdxKinkDau =  (trackD->GetTPCsignal()  )  ;  //  daughter kink  dEdx 
-   KinkDauCl=(trackD->GetTPCclusters(0)  )  ;
+//   KinkDauCl=(trackD->GetTPCclusters(0)  )  ;
  }
 //if((indexKinkDau >0)&& (nsigmaPion>1.2)) fTPCSgnlKinkDau->Fill(trackD->P(), (trackD->GetTPCsignal()  ) ) ;  //  daughter kink 
 // Ayto mexri 26/11/2012     if(indexKinkDau >0) fTPCSgnlKinkDau->Fill(trackD->P(), (trackD->GetTPCsignal()  ) ) ;  //  daughter kink 
@@ -549,8 +551,12 @@ void AliAnalysisKinkESDat::UserExec(Option_t *)
            Float_t kinkAngle=TMath::RadToDeg()*kink->GetAngle(2);
 
 //   rapiditya nd pt selection 
-          if(  (TMath::Abs(rapiditK )) > 0.7 ) continue;
+          //  if(  (TMath::Abs(rapiditK )) > 0.7 ) continue;
+          //  if(  (TMath::Abs(rapiditK )) > 0.5 ) continue; //  allagh  Nov. 2014 , better acceptance 
+          if(  (TMath::Abs(rapiditK )) > fRapiK ) continue; //  allagh  Nov. 2014 , better acceptance 
         if ( (track->Pt())<.200)continue;  // new Feb 2012
+//              eta selection 
+        if ( TMath::Abs(trackEta) > 0.8) continue;  // new  NOv   2014 
 
                 fQtMothP->Fill( track->P(), qT);
 
@@ -618,7 +624,8 @@ void AliAnalysisKinkESDat::UserExec(Option_t *)
     //  if((kinkAngle>maxDecAngpimu)&&(qT>0.12)&&(qT<0.30)&&((kink->GetR()>=120.)&&(kink->GetR()<=210.))&&(TMath::Abs(rapiditK)<0.7)&&(invariantMassKmu<0.6)){
      //if((kinkAngle>maxDecAngpimu)&&(qT>0.12)&&(qT<0.30)&&((kink->GetR()>=120.)&&(kink->GetR()<=210.))&&(TMath::Abs(rapiditK)<0.7)&&(invariantMassKmu<0.8)){
      //if((kinkAngle>maxDecAngpimu)&&(qT>0.04)&&(qT<0.30)&&((kink->GetR()>= fKinkRadLow )&&(kink->GetR()<= fKinkRadUp ))&&(TMath::Abs(rapiditK)<0.7)&&(invariantMassKmu<0.8)){
-     if((kinkAngle>maxDecAngpimu)&&(qT>fLowQt)&&(qT<0.30)&&((kink->GetR()>= fKinkRadLow )&&(kink->GetR()<= fKinkRadUp ))&&(TMath::Abs(rapiditK)<0.7)&&(invariantMassKmu<0.8)){
+     if((kinkAngle>maxDecAngpimu)&&(qT>fLowQt)&&(qT<0.30)&&((kink->GetR()>= fKinkRadLow )&&(kink->GetR()<= fKinkRadUp ))&&(TMath::Abs(rapiditK)<fRapiK  )&&(invariantMassKmu<0.8)){
+     //          if((kinkAngle>maxDecAngpimu)&&(qT>fLowQt)&&(qT<0.30)&&((kink->GetR()>= fKinkRadLow )&&(kink->GetR()<= fKinkRadUp ))&&(TMath::Abs(rapiditK)<0.7)&&(invariantMassKmu<0.8)){
   // systematics   if((kinkAngle>maxDecAngpimu)&&(qT>0.12)&&(qT<0.30)&&((kink->GetR()>=130.)&&(kink->GetR()<=200.))&&(TMath::Abs(rapiditK)<0.7)&&(invariantMassKmu<0.8)){
 //
         fAngMomKKinks->Fill(track->P(), kinkAngle); 
