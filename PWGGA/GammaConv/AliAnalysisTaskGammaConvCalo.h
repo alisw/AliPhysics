@@ -36,7 +36,6 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		// base functions for selecting photon and meson candidates in reconstructed data
 		void ProcessClusters();
 		void ProcessPhotonCandidates();
-		void PhotonTagging();
 		void CalculatePi0Candidates();
 		
 		// MC functions
@@ -50,6 +49,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		void ProcessTruePhotonCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate);
 		void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched);
 		void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched);
+		void ProcessConversionPhotonsForMissingTags();
+		void ProcessConversionPhotonsForMissingTagsAOD();
 		
 		// switches for additional analysis streams or outputs
 		void SetDoMesonAnalysis(Bool_t flag){fDoMesonAnalysis = flag;}
@@ -94,6 +95,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		// Additional functions for convenience
 		void SetLogBinningXTH2(TH2* histoRebin);
 		Int_t GetSourceClassification(Int_t daughter, Int_t pdgCode);
+		Bool_t CheckIfContainedInString(TString input, Int_t tobechecked);
+		Bool_t CheckIfContainedInStringAndAppend(TString &input, Int_t tobechecked);
 	
 	protected:
 		AliV0ReaderV1 						*fV0Reader;							// basic photon Selection Task
@@ -233,7 +236,6 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
         TH2F                                **fHistoTrueMotherPi0ConvPhotonEtaPhi;  		//! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17 ,eta/phi of conversion photon
         TH2F                                **fHistoTrueMotherEtaConvPhotonEtaPhi;  		//! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65 ,eta/phi of conversion photon
 		TH2F 								**fHistoTrueSecondaryPi0InvMassPt;				//! array of histos with validated secondary mothers, invMass, pt
-		TH2F 								**fHistoTrueSecondaryEtaInvMassPt;				//! array of histos with validated secondary mothers, invMass, pt
 		TH2F 								**fHistoTrueSecondaryPi0FromK0sInvMassPt;		//! array of histos with validated secondary mothers from K0s, invMass, pt
 		TH1F 								**fHistoTrueK0sWithPi0DaughterMCPt;				//! array of histos with K0s with reconstructed pi0 as daughter, pt
 		TH2F 								**fHistoTrueSecondaryPi0FromEtaInvMassPt;		//! array of histos with validated secondary mothers from eta, invMass, pt
@@ -278,10 +280,16 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH1F								**fHistoTruePrimaryClusGammaPt;					//! array of histos with validated primary cluster, pt
 		TH2F								**fHistoTruePrimaryClusGammaESDPtMCPt;			//! array of histos with validated primary cluster, rec Pt, MC pt
 		TH2F				 				**fHistoTruePrimaryPi0PhotonPairPtconv;			//! array of histos with validated primary pi0's vs conversion photon pT
+		TH1F				 				**fHistoTruePrimaryPi0DCPtconv;					//! array of histos with validated primary pi0's vs conversion photon pT, double counting
+		TH1F				 				**fHistoTruePrimaryPi0MissingPtconv;			//! array of histos with validated primary pi0's vs conversion photon pT, missing
 		TH2F				 				**fHistoTruePrimaryEtaPhotonPairPtconv;			//! array of histos with validated primary eta's vs conversion photon pT
+		TH1F				 				**fHistoTruePrimaryEtaDCPtconv;					//! array of histos with validated primary eta's vs conversion photon pT, double counting
+		TH1F				 				**fHistoTruePrimaryEtaMissingPtconv;			//! array of histos with validated primary eta's vs conversion photon pT, missing
 		TH2F				 				**fHistoTrueSecondaryPi0PhotonPairPtconv;		//! array of histos with validated secondary pi0's vs conversion photon pT
-		TH2F				 				**fHistoTrueSecondaryEtaPhotonPairPtconv;		//! array of histos with validated secondary eta's vs conversion photon pT
-		
+		TH1F				 				**fHistoTrueSecondaryPi0DCPtconv;				//! array of histos with validated secondary pi0's vs conversion photon pT, double counting
+		TH1F				 				**fHistoTrueSecondaryPi0MissingPtconv;			//! array of histos with validated secondary pi0's vs conversion photon pT, missing
+		TString 							*fStringRecTruePi0s;							//! array of strings containing the stack position of the reconstructed validated pi0
+		TString 							*fStringRecTrueEtas;							//! array of strings containing the stack position of the reconstructed validated eta
 		// event histograms
 		TH1I 								**fHistoNEvents;								//! array of histos with event information
 		TH1I 								**fHistoNGoodESDTracks;							//! array of histos with number of good tracks (2010 Standard track cuts)
@@ -319,7 +327,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaConvCalo, 4);
+		ClassDef(AliAnalysisTaskGammaConvCalo, 5);
 };
 
 #endif
