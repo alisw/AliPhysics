@@ -81,7 +81,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		// Additional functions for convenience
 		void SetLogBinningXTH2(TH2* histoRebin);
 		Int_t GetSourceClassification(Int_t daughter, Int_t pdgCode);
-	
+		
 	protected:
 		AliV0ReaderV1 						*fV0Reader;							// basic photon Selection Task
 		AliGammaConversionAODBGHandler 		**fBGHandler;						// BG handler for Conversion 
@@ -190,7 +190,6 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		TH2F 								**fHistoTruePrimaryPi0MCPtResolPt;				//! array of histos with validated weighted primary pi0, MCpt, resol pt
 		TH2F	 							**fHistoTruePrimaryEtaMCPtResolPt;				//! array of histos with validated weighted primary eta, MCpt, resol pt
 		TH2F 								**fHistoTrueSecondaryPi0InvMassPt;				//! array of histos with validated secondary mothers, invMass, pt
-		TH2F 								**fHistoTrueSecondaryEtaInvMassPt;				//! array of histos with validated secondary mothers, invMass, pt
 		TH2F 								**fHistoTrueSecondaryPi0FromK0sInvMassPt;		//! array of histos with validated secondary mothers from K0s, invMass, pt
 		TH1F 								**fHistoTrueK0sWithPi0DaughterMCPt;				//! array of histos with K0s with reconstructed pi0 as daughter, pt
 		TH2F 								**fHistoTrueSecondaryPi0FromEtaInvMassPt;		//! array of histos with validated secondary mothers from eta, invMass, pt
