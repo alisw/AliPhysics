@@ -779,8 +779,8 @@ void AliMagWrapCheb::LoadData(const char* inpfile)
   }
   //
   AliCheb3DCalc::ReadLine(buffs,stream);
-  if (!buffs.BeginsWith("END DIPOLE") || !buffs.Contains(GetName())) {
-    Error("LoadData","Expected: \"END DIPOLE\", found \"%s\"\nStop\n",buffs.Data());
+  if (!buffs.BeginsWith("END ") && !buffs.Contains(GetName())) {
+    Error("LoadData","Expected: \"END %s\", found \"%s\"\nStop\n",GetName(),buffs.Data());
     exit(1);
   }
   //
@@ -1222,13 +1222,13 @@ void AliMagWrapCheb::SaveData(const char* outfile) const
   fprintf(stream,"#\nEND SOLENOID\n");
   //
   // TPCInt part ---------------------------------------------------------
-  fprintf(stream,"# Set of Chebyshev parameterizations for ALICE magnetic field\nSTART %s\n",GetName());
+  //  fprintf(stream,"# Set of Chebyshev parameterizations for ALICE magnetic field\nSTART %s\n",GetName());
   fprintf(stream,"START TPCINT\n#Number of pieces\n%d\n",fNParamsTPC);
   for (int ip=0;ip<fNParamsTPC;ip++) GetParamTPCInt(ip)->SaveData(stream);
   fprintf(stream,"#\nEND TPCINT\n");
   //
   // TPCRatInt part ---------------------------------------------------------
-  fprintf(stream,"# Set of Chebyshev parameterizations for ALICE magnetic field\nSTART %s\n",GetName());
+  //  fprintf(stream,"# Set of Chebyshev parameterizations for ALICE magnetic field\nSTART %s\n",GetName());
   fprintf(stream,"START TPCRatINT\n#Number of pieces\n%d\n",fNParamsTPCRat);
   for (int ip=0;ip<fNParamsTPCRat;ip++) GetParamTPCRatInt(ip)->SaveData(stream);
   fprintf(stream,"#\nEND TPCRatINT\n");
