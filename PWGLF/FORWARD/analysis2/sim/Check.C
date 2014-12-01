@@ -376,7 +376,8 @@ Bool_t Check(const char* gAliceFileName = "galice.root",
       if (track->GetLabel() < 0) nFake++;
 
       // resolutions
-      hResPtInv->Fill(100. * (TMath::Abs(track->GetSigned1Pt()) - 1./particle->Pt()) * 
+      hResPtInv->Fill(100. * (TMath::Abs(track->GetSigned1Pt()) -
+			      1./particle->Pt()) * 
 		      particle->Pt());
       hResPhi->Fill(1000. * (track->Phi() - particle->Phi()));
       hResTheta->Fill(1000. * (track->Theta() - particle->Theta()));
@@ -488,7 +489,7 @@ Bool_t Check(const char* gAliceFileName = "galice.root",
 
     // loop over the clusters
     {
-      for (Int_t iCluster=0; iCluster<esd->GetNumberOfCaloClusters(); iCluster++) {
+      for (Int_t iCluster=0;iCluster<esd->GetNumberOfCaloClusters();iCluster++){
 	AliESDCaloCluster * clust = esd->GetCaloCluster(iCluster);
 	if (clust->IsPHOS()) hEPHOS->Fill(clust->E());
 	if (clust->IsEMCAL()) hEEMCAL->Fill(clust->E());

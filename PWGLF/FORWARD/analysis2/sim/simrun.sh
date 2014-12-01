@@ -191,6 +191,14 @@ echo "SIMRUN: Now read to process"
 # --- Run simulation (out: hits, digits, sdigits) --------------------
 runcommand "SIMULATION"     "Simulate.C($DC_EVENT,$DC_RUN)" 	sim.log     5
 rm -f *.Hits.root
+type=`echo $CONFIG_RUN_TYPE | tr '[A-Z]' '[a-z]'` 
+case x$type in
+    lego*) 
+	rm -f *.Digits.root *.SDigits.root
+	cleanRecPoints 1
+	exit 0
+	;;
+esac
 
 # --- Run reconstruction (in: digits, sdigits, raw out: ESDs) --------
 runcommand "RECONSTRUCTION" "Reconstruct.C($DC_RUN)" 		rec.log    10

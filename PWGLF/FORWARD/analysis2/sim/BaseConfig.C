@@ -179,15 +179,45 @@ struct VirtualEGCfg
   TString runType;
   VirtualEGCfg() : runType("") {}
   virtual ~VirtualEGCfg() {}
+  virtual Bool_t IsLego() const { return false; }
+    /** 
+   * Set the default generator based on the beam type 
+   *
+   * - p-p PYTHIA
+   * - p-A or A-p DPMJet
+   * - A-A Hijing 
+   */
+  static const char* DeduceRunType()
+  {
+    if      (grp->IsPP())                return "pythia";
+    else if (grp->IsPA() || grp->IsAP()) return "dpmjet";
+    else if (grp->IsAA())                return "hijing";
+    return "hijing";
+  }
+
+  static void LoadLibrary(const TString& name,
+			  const TString& cls="")
+  {
+    // If we're looking for a specific class, check that first, and
+    // if available, do nothing;
+    if (!cls.IsNull() && gROOT->GetClass(cls)) return;
+
+    // Now check the list of loaded and linekd libraries 
+    TString libs(gSystem->GetLibraries("", "SD"));
+
+    // IF already in the list, do nothing 
+    if (libs.Contains(name)) return;
+
+    // Otherwise load the library 
+    gSystem->Load(name);
+  }
   /**
    * Load the general libraries needed
    *
    */
   static void LoadGen(const TString& runType) {
-    if (!gROOT->GetClass("AliStructFuncType"))
-      gSystem->Load("liblhapdf");      // Parton density functions
-    if (!gROOT->GetClass("TPythia6"))
-      gSystem->Load("libEGPythia6");   // TGenerator interface
+    LoadLibrary("liblhapdf","AliStructFuncType"); // Parton density functions
+    LoadLibrary("libEGPythia6","TPythia6");       // TGenerator interface
     if (!runType.EqualTo("hydjet", TString::kIgnoreCase))
       LoadPythia(false);
   }
@@ -202,8 +232,10 @@ struct VirtualEGCfg
     if (gen) LoadGen("");
     char m = vers[0];
     if (gROOT->GetClass(Form("AliPythia6%c", m))) return;
-    gSystem->Load(Form("libpythia%s", vers));
-    gSystem->Load(Form("libAliPythia%c", m));
+
+    LoadLibrary("libmicrocern");
+    LoadLibrary(Form("libpythia%s",vers));
+    LoadLibrary(Form("libAliPythia%c", m));
   }
   /**
    * Load HIJING libraries
@@ -212,8 +244,8 @@ struct VirtualEGCfg
   {
     LoadPythia();
     if (gROOT->GetClass("THijing")) return;
-    gSystem->Load("libhijing");
-    gSystem->Load("libTHijing");
+    LoadLibrary("libhijing");
+    LoadLibrary("libTHijing");
     AliPDG::AddParticlesToPdgDataBase();
   }
   /**
@@ -221,8 +253,7 @@ struct VirtualEGCfg
    */
   static void LoadHydjet()
   {
-    if (gROOT->GetClass("TUHKMgen")) return;
-    gSystem->Load("libTUHKMgen");
+    LoadLibrary("libTUHKMgen","TUHKMgen");
   }
   /**
    * Load DPMJet libraries
@@ -231,8 +262,8 @@ struct VirtualEGCfg
   {
     LoadPythia();
     if (gROOT->GetClass("TDPMjet")) return;
-    gSystem->Load("libdpmjet");
-    gSystem->Load("libTDPMjet");
+    LoadLibrary("libdpmjet");
+    LoadLibrary("libTDPMjet");
   }
   /**
    * Load AMPT libraries
@@ -241,8 +272,8 @@ struct VirtualEGCfg
   {
     LoadPythia();
     if (gROOT->GetClass("TAmpt")) return;
-    gSystem->Load("libampt");
-    gSystem->Load("libTAmpt");
+    LoadLibrary("libampt");
+    LoadLibrary("libTAmpt");
   }
   /**
    * Make the generator
@@ -501,7 +532,7 @@ struct VirtualTrain
     gROOT->IncreaseDirLevel();
 
     if (mod.IsNull()) {
-      ::Error("AnalysisTrainNew.C::LoadLibrary", "Empty module name");
+      ::Error("LoadLibrary", "Empty module name");
       gROOT->DecreaseDirLevel();
       return kFALSE;
     }
@@ -512,8 +543,7 @@ struct VirtualTrain
       ::Info("LoadLibrary", "Loading .so: %s", mod.Data()); 
       result = gSystem->Load(mod);
       if (result < 0) {
-	::Error("AnalysisTrainNew.C::LoadLibrary", 
-		"Could not load library %s", module);
+	::Error("oadLibrary", "Could not load library %s", module);
       }
       gROOT->DecreaseDirLevel();      
       return (result >= 0);
@@ -528,8 +558,7 @@ struct VirtualTrain
     ::Info("LoadLibrary", "Trying to load lib%s.so", module);
     result = gSystem->Load(Form("lib%s.so", module));
     if (result < 0)
-      ::Error("AnalysisTrainNew.C::LoadLibrary", 
-	      "Could not load module %s", module);
+      ::Error("LoadLibrary", "Could not load module %s", module);
     ::Info("LoadLibrary", "Module %s, successfully loaded", module);
     gROOT->DecreaseDirLevel();      
     return (result >= 0);
@@ -651,7 +680,7 @@ struct VirtualTrain
    * 
    * @return false
    */
-  virtual Bool_t MergFileInfo() const { return false; }
+  virtual Bool_t MergeFileInfo() const { return false; }
   /** 
    * Return the list of ouput files (TObjString objects)
    *

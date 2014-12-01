@@ -252,6 +252,14 @@ install ( DIRECTORY FORWARD/analysis2/trains
 	  PATTERN "*.d"  EXCLUDE 
 	  PATTERN "*.so" EXCLUDE)
 
+# install sim 
+install ( DIRECTORY FORWARD/analysis2/sim 
+	  DESTINATION PWGLF/FORWARD/analysis2 
+	  PATTERN "*~"   EXCLUDE
+	  PATTERN ".svn" EXCLUDE
+	  PATTERN "*.d"  EXCLUDE 
+	  PATTERN "*.so" EXCLUDE)
+	
 # install trains 
 install ( DIRECTORY FORWARD/trains 
 	  DESTINATION PWGLF/FORWARD 
