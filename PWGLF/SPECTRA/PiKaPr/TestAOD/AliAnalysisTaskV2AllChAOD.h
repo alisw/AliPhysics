@@ -263,7 +263,7 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   TProfile*     fV2IntGap1wq[9];     //!
   
   Bool_t fIsRecoEff;   // TBD
-  TList * fRecoEffList; //! reconstruction efficiency file
+  TList * fRecoEffList; // reconstruction efficiency file
   
   Bool_t fQvecGen;  //enable Qvec from generated
   Int_t  fQgenType; // type==0 qgen from tracks - type==1 qgen from vzero
@@ -275,7 +275,7 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   AliAnalysisTaskV2AllChAOD(const AliAnalysisTaskV2AllChAOD&);
   AliAnalysisTaskV2AllChAOD& operator=(const AliAnalysisTaskV2AllChAOD&);
   
-  ClassDef(AliAnalysisTaskV2AllChAOD, 15);
+  ClassDef(AliAnalysisTaskV2AllChAOD, 16);
 };
 
 #endif

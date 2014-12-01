@@ -918,10 +918,18 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
       AliError("AliAnalysisTaskSELc2V0bachelorTMVA::UserExec: MC header branch not found!\n");
       return;
     }
+
+    Double_t zMCVertex = mcHeader->GetVtxZ();
+    if (TMath::Abs(zMCVertex) > fAnalCuts->GetMaxVtxZ()){
+      AliDebug(3,Form("z coordinate of MC vertex = %f, it was required to be within [-%f, +%f], skipping event", zMCVertex, fAnalCuts->GetMaxVtxZ(), fAnalCuts->GetMaxVtxZ()));
+      AliInfo(Form("z coordinate of MC vertex = %f, it was required to be within [-%f, +%f], skipping event", zMCVertex, fAnalCuts->GetMaxVtxZ(), fAnalCuts->GetMaxVtxZ()));
+      return;
+    }
+    
     //Printf("Filling MC histo");
     FillMCHisto(mcArray);
   }
-
+  
   // AOD primary vertex
   fVtx1 = (AliAODVertex*)aodEvent->GetPrimaryVertex();
   if (!fVtx1) return;

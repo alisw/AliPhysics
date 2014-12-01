@@ -1,10 +1,10 @@
-#include "AliStackPartonInfo.h" 
+#include "AliPythiaInfo.h" 
 
-ClassImp(AliStackPartonInfo)
+ClassImp(AliPythiaInfo)
 
 //_______________________________________________
-AliStackPartonInfo::AliStackPartonInfo() :
-TNamed("AliStackPartonInfo","AliStackPartonInfo"),
+AliPythiaInfo::AliPythiaInfo() :
+TNamed("AliPythiaInfo","AliPythiaInfo"),
   fPartonFlag6(0),
   fPartonPt6(0),
   fPartonEta6(0),
@@ -12,13 +12,14 @@ TNamed("AliStackPartonInfo","AliStackPartonInfo"),
   fPartonFlag7(0),
   fPartonPt7(0),
   fPartonEta7(0),
-  fPartonPhi7(0)
+  fPartonPhi7(0),
+  fPythiaEventWeight(1)
 {
   
 }
 
 //_______________________________________________
-AliStackPartonInfo::AliStackPartonInfo(const char* name) :
+AliPythiaInfo::AliPythiaInfo(const char* name) :
   TNamed(name,name),
   fPartonFlag6(0),
   fPartonPt6(0),
@@ -27,7 +28,9 @@ AliStackPartonInfo::AliStackPartonInfo(const char* name) :
   fPartonFlag7(0),
   fPartonPt7(0),
   fPartonEta7(0),
-  fPartonPhi7(0)
+  fPartonPhi7(0),
+  fPythiaEventWeight(1)
+
 {
   
 }

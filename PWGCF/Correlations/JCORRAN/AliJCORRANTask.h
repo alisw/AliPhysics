@@ -82,12 +82,14 @@ class AliJCORRANTask : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t* );
 
   AliJFilter *GetFilter() { return fFilter; }
+  Int_t GetFilterEntry(){ return fFilterEntry; }
 
   AliJRunHeader * GetJRunHeader(){ return fAliJRunHeader; }
   void SetJRunHeader( AliJRunHeader * hdr ){ fAliJRunHeader = hdr ; }
 
  private:
   
+  Int_t 			fFilterEntry; // entry to compare
   AliJFilter *fFilter; // filter object
   AliJRunHeader * fAliJRunHeader;
 

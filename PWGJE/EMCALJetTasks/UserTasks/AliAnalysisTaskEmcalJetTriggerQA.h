@@ -19,7 +19,6 @@ class TArrayI;
 
 class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
  public:
-
   AliAnalysisTaskEmcalJetTriggerQA();
   AliAnalysisTaskEmcalJetTriggerQA(const char *name);
   virtual ~AliAnalysisTaskEmcalJetTriggerQA();
@@ -37,6 +36,8 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
  
   void SetContainerFull(Int_t c)            { fContainerFull      = c;}
   void SetContainerCharged(Int_t c)         { fContainerCharged   = c;}
+
+  void SetMainTriggerTypeCat(TriggerCategory cat, Bool_t b) {fMainTrigCat = cat; fMainTrigSimple = b;}
 
   Int_t    GetLeadingCellId(const AliVCluster *clus) const;
   Double_t GetEnergyLeadingCell(const AliVCluster *clus) const;
@@ -56,9 +57,12 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   TString            fTriggerClass;          // trigger class to analyze EJ1 or EJ2    
   Int_t              fContainerFull;         // number of container with full jets DET
   Int_t              fContainerCharged;      // number of container with charged jets DET
-  Double_t           fMaxPatchEnergy;        // energy of patch with largest energy
+  Double_t           fMaxPatchEnergy;        // energy of patch with largest energy (offline)
+  Double_t           fMaxPatchADCEnergy;     // energy of patch with largest energy from online ADC
   Int_t              fTriggerType;           // trigger type
   Int_t              fNFastOR;               // size of trigger patch fNFastORxfNFastOR
+  TriggerCategory    fMainTrigCat;           // trigger category for main trigger
+  Bool_t             fMainTrigSimple;        // use offline trigger instead of online
 
   TH1F     *fhNEvents;                         //! Histo number of events
   TProfile *fhTriggerbit;                      //! histogram containing the triggerbit (fOfflineTriggerMask)
@@ -91,6 +95,8 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   TH3F     *fh3EEtaPhiCluster;                 //! cluster E, eta, phi
   TH3F     *fh3PtLeadJet1VsPatchEnergy;        //! leading jet energy vs leading patch energy vs jet trigger (J1/J2)
   TH3F     *fh3PtLeadJet2VsPatchEnergy;        //! leading jet energy vs leading patch energy vs jet trigger (J1/J2)
+  TH3F     *fh3PtLeadJet1PatchEnergyVZEROAmp;  //! leading jet energy vs leading patch energy vs VZERO amplitude
+  TH3F     *fh3PtLeadJet1RawPatchEnergyVZEROAmp;  //! leading jet energy vs online leading patch energy vs VZERO amplitude
   TH3F     *fh3PatchEnergyEtaPhiCenterJ1;      //! patch energy vs eta, phi at center of patch, high threshold
   TH3F     *fh3PatchEnergyEtaPhiCenterJ2;      //! patch energy vs eta, phi at center of patch, low threshold
   TH3F     *fh3PatchEnergyEtaPhiCenterJ1J2;    //! patch energy vs eta, phi at center of patch, low + high threshold

@@ -15,24 +15,29 @@ AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
   const Double_t  maxPhi         = TMath::Pi() * 2,
   const Bool_t    copyArray      = kTRUE,
   const Bool_t    drawQA         = kTRUE,
-  const char     *partonInfoName = "PartonInfo"
+  const char     *pythiaInfoName = "PythiaInfo",
+  Float_t            ptWeight        =0,
+  Int_t               kTune            =2,
+  Int_t               kColorReco     =1,
+  Float_t            kQuench        =4.4e6,
+  Int_t               kAnglePyquen = 2   
 )
 {
   AliGenerator *genGen = NULL;
   if(genType==0) { //PYTHIA Perugia 2011
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddMCGenPythia.C");
-    genGen = AddMCGenPythia(ecms, ptHardMin, ptHardMax, 2);
+    genGen = AddMCGenPythia(ecms, ptHardMin, ptHardMax, kTune,kColorReco,ptWeight);
   }
   else if(genType==1 || genType==2) { //QPYTHIA and PYQUEN
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddMCGenQuench.C");
-    genGen = AddMCGenQuench(ecms, ptHardMin, ptHardMax, genType);
+    genGen = AddMCGenQuench(ecms, ptHardMin, ptHardMax, genType,kQuench,kAnglePyquen,ptWeight);
   }
   if(!genGen)   {
     ::Error("AddTaskJetEmbeddingFromGenTask", "Generator does not exist");
     return NULL;
   }
 
-  AliJetEmbeddingFromGenTask *task = AddTaskJetEmbeddingFromGen(genGen,tracksName,taskName,minPt,maxPt,minEta,maxEta,minPhi,maxPhi,copyArray,drawQA,partonInfoName);
+  AliJetEmbeddingFromGenTask *task = AddTaskJetEmbeddingFromGen(genGen,tracksName,taskName,minPt,maxPt,minEta,maxEta,minPhi,maxPhi,copyArray,drawQA,pythiaInfoName);
 
   return task;
 
@@ -50,7 +55,7 @@ AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
   const Double_t  maxPhi         = TMath::Pi() * 2,
   const Bool_t    copyArray      = kTRUE,
   const Bool_t    drawQA         = kTRUE,
-  const char     *partonInfoName = ""
+  const char     *pythiaInfoName = ""
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -81,7 +86,7 @@ AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
     jetEmb->SetGen(genGen);
   }
   jetEmb->SetTracksName(tracksName);
-  jetEmb->SetPartonInfoName(partonInfoName);
+  jetEmb->SetPythiaInfoName(pythiaInfoName);
   jetEmb->SetEtaRange(minEta, maxEta);
   jetEmb->SetPhiRange(minPhi, maxPhi);
   jetEmb->SetPtRange(minPt, maxPt);

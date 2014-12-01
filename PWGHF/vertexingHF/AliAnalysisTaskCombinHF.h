@@ -84,7 +84,11 @@ public:
   void SetPtBinWidth(Double_t binw){fPtBinWidth=binw;}
   void SetEtaAccCut(Double_t etacut){fEtaAccCut=etacut;}
   void SetPtAccCut(Double_t ptcut){fPtAccCut=ptcut;}
-  
+  void SetMultiplicityRange(Double_t mmin=-0.5, Double_t mmax=199.5){
+    fMinMultiplicity=mmin;
+    fMaxMultiplicity=mmax;
+  }
+
   void SetPIDstrategy(Int_t strat){fPIDstrategy=strat;}
   void SetMaxPforIDPion(Double_t maxpIdPion){fmaxPforIDPion=maxpIdPion;}
   void SetMaxPforIDKaon(Double_t maxpIdKaon){fmaxPforIDKaon=maxpIdKaon;}
@@ -126,11 +130,11 @@ private:
   TH1F *fHistCheckOriginSel;  //!hist. of origin (c/b) of D meson
   TH1F *fHistCheckDecChan;    //!hist. of decay channel of D meson
   TH1F *fHistCheckDecChanAcc; //!hist. of decay channel of D meson in acc.
-  TH2F *fPtVsYGen;        //! hist. of Y vs. Pt generated (all D)
-  TH2F *fPtVsYGenLargeAcc; //! hist. of Y vs. Pt generated (|y|<0.9)
-  TH2F *fPtVsYGenLimAcc;  //! hist. of Y vs. Pt generated (|y|<0.5)
-  TH2F *fPtVsYGenAcc;     //! hist. of Y vs. Pt generated (D in acc)
-  TH2F *fPtVsYReco;       //! hist. of Y vs. Pt generated (Reco D)
+  TH3F *fPtVsYVsMultGen;        //! hist. of Y vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsYVsMultGenLargeAcc; //! hist. of Y vs. Pt vs. Mult generated (|y|<0.9)
+  TH3F *fPtVsYVsMultGenLimAcc;  //! hist. of Y vs. Pt vs. Mult generated (|y|<0.5)
+  TH3F *fPtVsYVsMultGenAcc;     //! hist. of Y vs. Pt vs. Mult generated (D in acc)
+  TH3F *fPtVsYVsMultReco;       //! hist. of Y vs. Pt vs. Mult generated (Reco D)
   TH3F *fMassVsPtVsY;     //! hist. of Y vs. Pt vs. Mass (all cand)
   TH3F *fMassVsPtVsYRot;   //! hist. of Y vs. Pt vs. Mass (rotations)
   TH3F *fMassVsPtVsYLSpp;  //! hist. of Y vs. Pt vs. Mass (like sign ++)
@@ -198,9 +202,11 @@ private:
   TObjString* fEventInfo;  // unique event Id for event mixing checks
   Double_t fVtxZ;         // zVertex
   Double_t fMultiplicity; // multiplicity
+  Double_t fMinMultiplicity;  // lower limit for multiplcities in MC histos
+  Double_t fMaxMultiplicity; // upper limit for multiplcities in MC histos
   TObjArray* fKaonTracks; // array of kaon-compatible tracks (TLorentzVectors)
   TObjArray* fPionTracks; // array of pion-compatible tracks (TLorentzVectors)  
-  ClassDef(AliAnalysisTaskCombinHF,9); // D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,10); // D0D+ task from AOD tracks
 };
 
 #endif

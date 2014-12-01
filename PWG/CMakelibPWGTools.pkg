@@ -37,6 +37,8 @@ set ( SRCS
     Tools/AliNamedArrayI.cxx
     Tools/AliNamedString.cxx
     Tools/THistManager.cxx
+    Tools/AliJSONReader.cxx
+    Tools/AliJSONData.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

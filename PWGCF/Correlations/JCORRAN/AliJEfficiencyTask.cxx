@@ -129,6 +129,7 @@ void AliJEfficiencyTask::UserExec(Option_t* /*option*/)
 	// Processing of one event
 	if(fDebug > 5) cout << "------- AliJEfficiencyTask Exec-------"<<endl;
 	if(!((Entry()-1)%100))  AliInfo(Form(" Processing event # %lld",  Entry())); 
+	if( fFilterTask->GetFilterEntry() != fEntry ) return;
 
 	if( fFilterTask->GetFilter()->GetEventSuccess() ){
 		fEfficiencyScanner->SetJEventHeader( (AliJEventHeader*) fFilterTask->GetFilter()->GetHeaderList()->At(0) );

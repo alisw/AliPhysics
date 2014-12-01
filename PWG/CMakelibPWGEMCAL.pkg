@@ -50,6 +50,7 @@ set ( SRCS
  EMCAL/AliEmcalTenderTask.cxx
  EMCAL/AliEmcalTrackingQATask.cxx
  EMCAL/AliEmcalTrackPropagatorTask.cxx
+ EMCAL/AliEmcalTriggerBitConfig.cxx
  EMCAL/AliEmcalTriggerMaker.cxx
  EMCAL/AliEmcalTriggerPatchInfo.cxx
  EMCAL/AliEmcalTriggerSetupInfo.cxx
@@ -58,6 +59,9 @@ set ( SRCS
  EMCAL/AliHadCorrTask.cxx
  EMCAL/AliParticleContainer.cxx
  EMCAL/AliPicoTrack.cxx
+ EMCAL/AliEMCALConfiguration.cxx
+ EMCAL/AliEMCALConfigHandler.cxx
+ EMCAL/AliEMCALConfigurationMatcher.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

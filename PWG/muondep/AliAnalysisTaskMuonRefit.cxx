@@ -360,13 +360,13 @@ void AliAnalysisTaskMuonRefit::NotifyRun()
   
   // set OCDB location
   AliCDBManager* cdbm = AliCDBManager::Instance();
-  if (cdbm->IsDefaultStorageSet()) printf("MCLabelAddition: CDB default storage already set!\n");
+  if (cdbm->IsDefaultStorageSet()) printf("MuonRefit: CDB default storage already set!\n");
   else {
     cdbm->SetDefaultStorage(fDefaultStorage.Data());
     if (fOldAlignStorage != "none" && !fOldAlignStorage.IsNull())
       cdbm->SetSpecificStorage("MUON/Align/Data",fOldAlignStorage.Data());
   }
-  if (cdbm->GetRun() > -1) printf("MCLabelAddition: run number already set!\n");
+  if (cdbm->GetRun() > -1) printf("MuonRefit: run number already set!\n");
   else cdbm->SetRun(fCurrentRunNumber);
   
   // load magnetic field or create it for track extrapolation

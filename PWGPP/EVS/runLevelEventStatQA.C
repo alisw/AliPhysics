@@ -7,6 +7,7 @@
 
 // TODO read number of bits from AliVEvent?
 #define NBITS 29
+#define NMAXCLASSES 100
 TString bitNames[NBITS] = {
 "kMB",
 "kINT7",
@@ -21,14 +22,14 @@ TString bitNames[NBITS] = {
 "kEMC7",
 "kMUS7",
 "kPHI1",
-"kPHI7/kPHI8",
+"kPHI78",
 "kEMCEJE",
 "kEMCEGA",
 "kCentral",
 "kSemiCentral",
 "kDG5",
 "kZED",
-"kSPI7/kSPI8",
+"kSPI78",
 "kINT8",
 "kMuonSingleLowPt8",
 "kMuonSingleHighPt8",
@@ -40,7 +41,16 @@ TString bitNames[NBITS] = {
 };
 
 
-Int_t runLevelEventStatQA(TString qafilename="/data/alice/2010/LHC10b/000114783/pass4/QA_merge_archive.zip#event_stat.root", Int_t run=114783, TString ocdbStorage = "raw://"){
+//Int_t runLevelEventStatQA(TString qafilename="/data/alice/2013/LHC13f/000197348/pass2/QA_merge_archive.zip#event_stat.root", Int_t run=197348, TString ocdbStorage = "local:///data/alice/OCDB"){
+//Int_t runLevelEventStatQA(TString qafilename="/data/alice/2011/LHC11a/000146805/pass4_with_SDD/QA_merge_archive.zip#event_stat.root", Int_t run=146805, TString ocdbStorage = "local:///data/alice/OCDB"){
+//Int_t runLevelEventStatQA(TString qafilename="/data/alice/2013/LHC13g/000197584/pass1/QA_merge_archive.zip#event_stat.root", Int_t run=114783, TString ocdbStorage = "raw://"){
+//Int_t runLevelEventStatQA(TString qafilename="/data/alice/2012/LHC12b/000177789/pass1/QA_merge_archive.zip#event_stat.root", Int_t run=177789, TString ocdbStorage = "local:///data/alice/OCDB"){
+//Int_t runLevelEventStatQA(TString qafilename="/data/alice/2010/LHC10b/000114751/pass4/QA_merge_archive.zip#event_stat.root", Int_t run=114751, TString ocdbStorage = "local:///data/alice/OCDB"){
+//Int_t runLevelEventStatQA(TString qafilename="/data/alice/2012/LHC12d/000184719/pass1/QA_merge_archive.zip#event_stat.root", Int_t run=184719, TString ocdbStorage = "local:///data/alice/OCDB"){
+//Int_t runLevelEventStatQA(TString qafilename="/data/alice/2012/LHC12h/000189694/pass1/QA_merge_archive.zip#event_stat.root", Int_t run=189694, TString ocdbStorage = "local:///data/alice/OCDB"){
+//Int_t runLevelEventStatQA(TString qafilename="/data/alice/sim/2014/LHC14j5/138192/QA_merge_archive.zip#event_stat.root", Int_t run=138192, TString ocdbStorage = "local:///data/alice/OCDB"){
+//  Int_t runLevelEventStatQA(TString qafilename="/alice/data/2010/LHC10d/000124360/pass4/QA_merge_archive.zip#event_stat.root", Int_t run=124360, TString ocdbStorage = "local:///alice/data/OCDB"){
+  Int_t runLevelEventStatQA(TString qafilename="/alice/data/2010/LHC10f/000133007/pass4/QA_merge_archive.zip#event_stat.root", Int_t run=133007, TString ocdbStorage = "local:///alice/data/OCDB"){
   printf("runLevelEventStatQA %s %i\n",qafilename.Data(),run);
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(1.5);
@@ -50,88 +60,145 @@ Int_t runLevelEventStatQA(TString qafilename="/data/alice/2010/LHC10b/000114783/
   gStyle->SetPadLeftMargin(0.07);
 
   TFile* fin = new TFile(qafilename);
-  fin->ls();
-  fin->cd("trigger_histograms_+CINT1B-ABCE-NOPF-ALL,CINT1-B-NOPF-ALLNOTRD &1 *0");
-  fin->ls();
-//  TH1F* fHistV0A = (TH1F*) gDirectory->Get("fHistV0A");
-//  fHistV0A->Draw();
-//  return 0;
   TH2D* h = (TH2D*) fin->Get("fHistStatistics");
   if (!h) { printf("fHistStatistics not found\n"); return 1; }
 
   // tree variables
-  Int_t all[NBITS]      = {0};
-  Int_t accepted[NBITS] = {0};
-  Int_t fill=0;
-  Double_t duration=0;
-  UInt_t l0b=0;
-  Int_t nBCsPerOrbit=0;
-  Double_t mu=0;
-  Double_t lumi_seen=0;
+  TObjArray classes = TObjArray();
+  TObjString activeDetectors = TObjString();
+  Int_t fill               = 0;
+  Double_t run_duration    = 0;
+  Int_t nBCsPerOrbit       = 0;
+  Double_t refl0b          = 0;
+  Double_t mu              = 0;
+  Double_t lumi_seen       = 0;
+  Double_t interactionRate = 0;
+  ULong64_t class_l0b[NMAXCLASSES]         = {0};
+  ULong64_t class_l0a[NMAXCLASSES]         = {0};
+  ULong64_t class_l1b[NMAXCLASSES]         = {0};
+  ULong64_t class_l1a[NMAXCLASSES]         = {0};
+  ULong64_t class_l2b[NMAXCLASSES]         = {0};
+  ULong64_t class_l2a[NMAXCLASSES]         = {0};
+  Double_t  class_lifetime[NMAXCLASSES]    = {0};
+  Double_t  class_lumi[NMAXCLASSES]        = {0};
+  ULong64_t alias_recorded[NBITS]          = {0};
+  ULong64_t alias_reconstructed[NBITS]     = {0};
+  ULong64_t alias_accepted[NBITS]          = {0};
+  Double_t alias_l0b_rate[NBITS]           = {0};
+  Double_t alias_lifetime[NBITS]           = {0};
+  Double_t alias_lumi_recorded[NBITS]      = {0};
+  Double_t alias_lumi_reconstructed[NBITS] = {0};
+  Double_t alias_lumi_accepted[NBITS]      = {0};
 
   TString refClass="";
   Double_t refSigma=-1;
-  if      (               run<=118501) { refSigma=  62.; refClass = "CINT1B-ABCE-NOPF-ALL";   } // pp_7.00: 62mb=54.3mb*1.15=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
-  else if (run>=118502 && run<=121040) { refSigma=  47.; refClass = "CINT1B-ABCE-NOPF-ALL";   } // pp_0.90: 47mb=52 mb *0.91=sigma(INEL)*R(INT1/INEL) (arxiv: 1208.4968, fig.10 + table 3)
-  else if (run>=121041 && run<=126437) { refSigma=  62.; refClass = "CINT1B-ABCE-NOPF-ALL";   } // pp_7.00: 62mb=54.3mb*1.15=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
-  else if (run>=126438 && run<=127718) { refSigma=  62.; refClass = "CINT1-B-NOPF-ALLNOTRD";  } // pp_7.00: 62mb=54.3mb*1.15=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
-  else if (run>=127719 && run<=127730) { refSigma=  62.; refClass = "CINT1B-ABCE-NOPF-ALL";   } // pp_7.00: 62mb=54.3mb*1.15=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
-  else if (run>=127731 && run<=136848) { refSigma=  62.; refClass = "CINT1-B-NOPF-ALLNOTRD";  } // pp_7.00: 62mb=54.3mb*1.15=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
-  else if (run>=136849 && run<=139316) { refSigma=5970.; refClass = "C0SMH-B-NOPF-ALL";       } // PbPb_2.76: (Oyama,2011-05-20,RunCond)
-  else if (run>=139328 && run<=139517) { refSigma=5970.; refClass = "C0SMH-B-NOPF-ALLNOTRD";  } // PbPb_2.76: (Oyama,2011-05-20,RunCond)
-  else if (run>=145289 && run<=146860) { refSigma=  57.; refClass = "CINT1-B-NOPF-ALLNOTRD";  } // pp_2.76: 57mb=47.7mb*1.20=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
-  else if (run>=146808 && run<=146814) { refSigma=  57.; refClass = "CINT1-B-NOPF-ALL";       } // pp_2.76: 57mb=47.7mb*1.20=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
-  else if (run>=145815 && run<=146856) { refSigma=  57.; refClass = "CINT1-B-NOPF-ALLNOTRD";  } // pp_2.76: 57mb=47.7mb*1.20=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
-  else if (run>=146857 && run<=146857) { refSigma=  57.; refClass = "CINT1-B-NOPF-ALL";       } // pp_2.76: 57mb=47.7mb*1.20=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
-  else if (run>=146858 && run<=146860) { refSigma=  57.; refClass = "CINT1-B-NOPF-ALLNOTRD";  } // pp_2.76: 57mb=47.7mb*1.20=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
-  else if (run>=148370 && run<=157078) { refSigma=  54.; refClass = "CVBAND-B-NOPF-ALLNOTRD"; } // pp_7.00: 54.3mb (Martino,2012-03-12,RunCond)
-  else if (run>=157079 && run<=165746) { refSigma=  24.; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_7.00: 24mb=54.3mb*0.44=sigma(VBAND)*R(0TVX/VBAND) (Martino,2012-03-12,RunCond)
-  else if (run>=166477 && run<=170593) { refSigma=4100.; refClass = "CVLN-B-NOPF-ALLNOTRD";   } // PbPb_2.76: (Martino,2013-03-15,RunCond)
-  else if (run>=176658 && run<=177143) { refSigma=  25.; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
-  else if (run>=177146 && run<=177147) { refSigma=  25.; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // pp_8.00: (Artem, 2013-10-04,RunCond)
-  else if (run>=177148 && run<=177149) { refSigma=  25.; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
-  else if (run>=177150 && run<=177506) { refSigma=  25.; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // pp_8.00: (Artem, 2013-10-04,RunCond)
-  else if (run>=177580 && run<=178220) { refSigma=  25.; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
-  else if (run>=179444 && run<=193692) { refSigma=  25.; refClass = "C0TVX-S-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
-  else if (run>=193693 && run<=193766) { refSigma=  25.; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
-  else if (run>=195344 && run<=197388) { refSigma=1590.; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pPb_5.02: arxiv:1405.1849
-  else if (run>=197470 && run<=197692) { refSigma=  18.; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_2.76: 18mb=47.7mb*0.39=sigma(VBAND)*R(0TVX/VBAND) (Martino,2012-03-12,RunCond)
-  Double_t par[5] = {0};
-  triggerInfo(run,refClass,ocdbStorage,par);
-  fill         = TMath::Nint(par[0]);
-  duration     = par[1];
-  l0b          = TMath::Nint(par[2]);
-  nBCsPerOrbit = TMath::Nint(par[3]);
-  mu           = par[4];
-  if (refSigma>0) lumi_seen = l0b/refSigma;
+  Double_t refEff = 1.;
+  if      (               run<=118501) { refSigma=  62.; refEff = 1.00; refClass = "CINT1B-ABCE-NOPF-ALL";   } // pp_7.00: 62mb=54.3mb*1.15=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
+  else if (run>=118502 && run<=118561) { refSigma=  47.; refEff = 1.00; refClass = "CINT1B-ABCE-NOPF-ALL";   } // pp_0.90: 47mb=52 mb *0.91=sigma(INEL)*R(INT1/INEL) (arxiv: 1208.4968, fig.10 + table 3)
+  else if (run>=118903 && run<=120829) { refSigma=  62.; refEff = 1.00; refClass = "CINT1B-ABCE-NOPF-ALL";   } // pp_7.00: 62mb=54.3mb*1.15=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
+  else if (run>=121039 && run<=121040) { refSigma=  47.; refEff = 1.00; refClass = "CINT1B-ABCE-NOPF-ALL";   } // pp_0.90: 47mb=52 mb *0.91=sigma(INEL)*R(INT1/INEL) (arxiv: 1208.4968, fig.10 + table 3)
+  else if (run>=121041 && run<=126437) { refSigma=  62.; refEff = 1.00; refClass = "CINT1B-ABCE-NOPF-ALL";   } // pp_7.00: 62mb=54.3mb*1.15=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
+  else if (run>=126438 && run<=127718) { refSigma=  62.; refEff = 1.00; refClass = "CINT1-B-NOPF-ALLNOTRD";  } // pp_7.00: 62mb=54.3mb*1.15=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
+  else if (run>=127719 && run<=127730) { refSigma=  62.; refEff = 1.00; refClass = "CINT1B-ABCE-NOPF-ALL";   } // pp_7.00: 62mb=54.3mb*1.15=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
+  else if (run>=127731 && run<=136848) { refSigma=  62.; refEff = 1.00; refClass = "CINT1-B-NOPF-ALLNOTRD";  } // pp_7.00: 62mb=54.3mb*1.15=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
+  else if (run>=136849 && run<=139316) { refSigma=5970.; refEff = 0.78; refClass = "C0SMH-B-NOPF-ALL";       } // PbPb_2.76: (Oyama,2011-05-20,RunCond), sigma_hardronic = 7.64 b
+  else if (run>=139328 && run<=139517) { refSigma=5970.; refEff = 0.78; refClass = "C0SMH-B-NOPF-ALLNOTRD";  } // PbPb_2.76: (Oyama,2011-05-20,RunCond), sigma_hardronic = 7.64 b
+  else if (run>=145289 && run<=146860) { refSigma=  57.; refEff = 1.00; refClass = "CINT1-B-NOPF-ALLNOTRD";  } // pp_2.76: 57mb=47.7mb*1.20=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
+  else if (run>=146808 && run<=146814) { refSigma=  57.; refEff = 1.00; refClass = "CINT1-B-NOPF-ALL";       } // pp_2.76: 57mb=47.7mb*1.20=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
+  else if (run>=145815 && run<=146856) { refSigma=  57.; refEff = 1.00; refClass = "CINT1-B-NOPF-ALLNOTRD";  } // pp_2.76: 57mb=47.7mb*1.20=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
+  else if (run>=146857 && run<=146857) { refSigma=  57.; refEff = 1.00; refClass = "CINT1-B-NOPF-ALL";       } // pp_2.76: 57mb=47.7mb*1.20=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
+  else if (run>=146858 && run<=146860) { refSigma=  57.; refEff = 1.00; refClass = "CINT1-B-NOPF-ALLNOTRD";  } // pp_2.76: 57mb=47.7mb*1.20=sigma(VBAND)*R(INT1/VBAND) (Martino,2012-03-12,RunCond)
+  else if (run>=148370 && run<=157078) { refSigma=  54.; refEff = 1.00; refClass = "CVBAND-B-NOPF-ALLNOTRD"; } // pp_7.00: 54.3mb (Martino,2012-03-12,RunCond)
+  else if (run>=157079 && run<=165746) { refSigma=  24.; refEff = 0.44; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_7.00: 24mb=54.3mb*0.44=sigma(VBAND)*R(0TVX/VBAND) (Martino,2012-03-12,RunCond)
+  else if (run>=166477 && run<=170593) { refSigma=4100.; refEff = 0.54; refClass = "CVLN-B-NOPF-ALLNOTRD";   } // PbPb_2.76: (Martino,2013-03-15,RunCond)
+  else if (run>=176658 && run<=177143) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=177146 && run<=177147) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=177148 && run<=177149) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=177150 && run<=177506) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=177580 && run<=178220) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=179444 && run<=188229) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-S-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=188230 && run<=188366) { refSigma=1590.; refEff = 0.76; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pPb_5.02: pilot. arxiv:1405.1849
+  else if (run>=188367 && run<=193692) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-S-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=193693 && run<=193766) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
+  else if (run>=195344 && run<=197388) { refSigma=1590.; refEff = 0.76; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pPb_5.02: arxiv:1405.1849
+  else if (run>=197470 && run<=197692) { refSigma=  18.; refEff = 0.39; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_2.76: 18mb=47.7mb*0.39=sigma(VBAND)*R(0TVX/VBAND) (Martino,2012-03-12,RunCond)
 
+  Double_t par[5] = {0};
+  TString det;
+  triggerInfo(run,refClass,ocdbStorage,det,par);
+  fill          = TMath::Nint(par[0]);
+  run_duration   = par[1];
+  refl0b         = par[2];
+  nBCsPerOrbit   = TMath::Nint(par[3]);
+  mu             = par[4];
+  activeDetectors.SetString(det.Data());
+
+  interactionRate = (run_duration>1e-10) ? refl0b/run_duration/refEff : 0;
+  if (refSigma>1.e-10) lumi_seen = refl0b/refSigma/1000; //[ub-1]
+  if (mu>1.e-10) lumi_seen*=mu/(1-TMath::Exp(-mu)); // pile-up correction
+
+  classes = GetClasses(run,ocdbStorage,class_l0b,class_l0a,class_l1b,class_l1a,class_l2b,class_l2a);
+  for (Int_t i=0;i<classes.GetEntriesFast();i++){
+    // printf("%30s %12lli %10lli %10lli %10lli %10lli %10lli\n",classes.At(i)->GetName(),class_l0b[i],class_l0a[i],class_l1b[i],class_l1a[i],class_l2b[i],class_l2a[i]);
+    class_lifetime[i] = class_l0b[i]>0 ? Double_t(class_l0a[i])/class_l0b[i]: 0;
+    class_lifetime[i]*= class_l1b[i]>0 ? Double_t(class_l1a[i])/class_l1b[i]: 0;
+    class_lifetime[i]*= class_l2b[i]>0 ? Double_t(class_l2a[i])/class_l2b[i]: 0;
+    class_lumi[i] = lumi_seen*class_lifetime[i];
+  }
+  
+
+  TFile* fout = new TFile("trending.root","recreate");
   TTree* t = new TTree("trending","tree of trending variables");
   t->Branch("run",&run);
   t->Branch("fill",&fill);
   t->Branch("bcs",&nBCsPerOrbit);
-  t->Branch("duration",&duration);
+  t->Branch("run_duration",&run_duration);
   t->Branch("mu",&mu);
-  t->Branch("l0b",&l0b);
+  t->Branch("interactionRate",&interactionRate);
+  t->Branch("refl0b",&refl0b);
   t->Branch("lumi_seen",&lumi_seen);
-  t->Branch("all",&all,Form("all[%i]/I",NBITS));
-  t->Branch("accepted",&accepted,Form("accepted[%i]/I",NBITS));
-
-  TFile* fout = new TFile("trending.root","recreate");
-
+  t->Branch("classes",&classes);
+  t->Branch("class_l0b",&class_l0b,Form("class_l0b[%i]/l",NMAXCLASSES));
+  t->Branch("class_l0a",&class_l0a,Form("class_l0a[%i]/l",NMAXCLASSES));
+  t->Branch("class_l1b",&class_l1b,Form("class_l1b[%i]/l",NMAXCLASSES));
+  t->Branch("class_l1a",&class_l1a,Form("class_l1a[%i]/l",NMAXCLASSES));
+  t->Branch("class_l2b",&class_l2b,Form("class_l2b[%i]/l",NMAXCLASSES));
+  t->Branch("class_l2a",&class_l2a,Form("class_l2a[%i]/l",NMAXCLASSES));
+  t->Branch("class_lifetime",&class_lifetime,Form("class_lifetime[%i]/D",NMAXCLASSES));
+  t->Branch("class_lumi",&class_lumi,Form("class_lumi[%i]/D",NMAXCLASSES));
+  t->Branch("alias_recorded",&alias_recorded,Form("alias_recorded[%i]/l",NBITS));
+  t->Branch("alias_reconstructed",&alias_reconstructed,Form("alias_reconstructed[%i]/l",NBITS));
+  t->Branch("alias_accepted",&alias_accepted,Form("alias_accepted[%i]/l",NBITS));
+  t->Branch("alias_l0b_rate",&alias_lifetime,Form("alias_l0b_rate[%i]/D",NBITS));
+  t->Branch("alias_lifetime",&alias_lifetime,Form("alias_lifetime[%i]/D",NBITS));
+  t->Branch("alias_lumi_recorded",&alias_lumi_recorded,Form("alias_lumi_recorded[%i]/D",NBITS));
+  t->Branch("alias_lumi_reconstructed",&alias_lumi_reconstructed,Form("alias_lumi_reconstructed[%i]/D",NBITS));
+  t->Branch("alias_lumi_accepted",&alias_lumi_accepted,Form("alias_lumi_accepted[%i]/D",NBITS));
+  t->Branch("activeDetectors",&activeDetectors);
+  
   for (Int_t j=1;j<=h->GetNbinsY();j++){
     TString label = h->GetYaxis()->GetBinLabel(j);
-
     // skip background triggers
     // TODO introduce identifier to filter-out background triggers
-    if (!label.Contains("-B-") && !label.Contains("-S-") && !(label.Contains("-ABCE-") && label.Contains("1B-"))) continue;
+    if      (label.Contains("-A-"))      continue;
+    else if (label.Contains("-C-"))      continue;
+    else if (label.Contains("-E-"))      continue;
+    else if (label.Contains("-AC-"))     continue;
+    else if (label.Contains("-ACE-"))    continue;
+    else if (label.Contains("-GA-"))     continue;
+    else if (label.Contains("-GC-"))     continue;
+    else if (label.Contains("1A-ABCE-")) continue;
+    else if (label.Contains("1C-ABCE-")) continue;
+    else if (label.Contains("C0LSR-ABCE-")) continue;
 
-    printf("%s\n",label.Data());
     // Read mask
     // TODO think how to propagate mask with TBit aliases
     UInt_t mask = 0;
+    TString classList = ""; // list of classes for given PS bit
     TObjArray* array = label.Tokenize(" ");
     for (Int_t itoken=0;itoken<array->GetEntries();itoken++){
       TString token = array->At(itoken)->GetName();
+      if (itoken==0) classList = token; 
       if (token[0]!='&') continue;
       token.Remove(0,1);
       mask = token.Atoi();
@@ -139,92 +206,132 @@ Int_t runLevelEventStatQA(TString qafilename="/data/alice/2010/LHC10b/000114783/
     }
     array->Delete();
     delete array;
+    printf("%s\n",label.Data());
+    printf("%i\n",mask);
     if (!mask) continue;
-    // Fill all and accepted counters for active bits
-    // TODO can we accidentally double count events?
-    for (Int_t ibit=0;ibit<NBITS;ibit++) {
-      if (!(mask & 1<<ibit)) continue; // to be changed with TBits
-      all[ibit]      += Int_t(h->GetBinContent(1             ,j)); 
-      accepted[ibit] += Int_t(h->GetBinContent(h->GetNbinsX(),j));
+    // Fill all and accepted counters for the most significant bit
+    Int_t ibit = TMath::Nint(TMath::Log2(mask));
+    if (ibit>=NBITS) continue;
+    if (alias_recorded[ibit]) break; 
+
+    alias_reconstructed[ibit] = Int_t(h->GetBinContent(1             ,j));
+    alias_accepted[ibit]      = Int_t(h->GetBinContent(h->GetNbinsX(),j));
+    
+//    printf("%4i %8i %8i\n",ibit,alias_reconstructed[ibit],alias_accepted[ibit]);
+    
+    classList.Remove(0,1); // remove +
+    array = classList.Tokenize(",");
+    // if trigger bit corresponds to several active classes, just take the last one
+    // example: kTRD
+    // TODO think about more elegant solution
+    for (Int_t i=0;i<array->GetEntriesFast();i++){
+      TString token = array->At(i)->GetName();
+      AliTriggerClass* cl = (AliTriggerClass*) classes.FindObject(token.Data());
+      if (!cl) continue;
+      Int_t iclass = classes.IndexOf(cl);
+      printf(" %30s",token.Data());
+      printf(" %12lli",class_l0b[iclass]);
+      printf(" %12lli",class_l0a[iclass]);
+      printf(" %12lli",class_l1b[iclass]);
+      printf(" %12lli",class_l1a[iclass]);
+      printf(" %12lli",class_l2b[iclass]);
+      printf(" %12lli",class_l2a[iclass]);
+      printf("\n");
+      alias_recorded[ibit]      = class_l2a[iclass];
+      alias_lifetime[ibit]      = class_lifetime[iclass];
+      alias_lumi_recorded[ibit] = class_lumi[iclass];
+      if (!alias_recorded[ibit]) continue;
+      alias_lumi_reconstructed[ibit] = alias_lumi_recorded[ibit]/alias_recorded[ibit]*alias_reconstructed[ibit];
+      alias_lumi_accepted[ibit]      = alias_lumi_recorded[ibit]/alias_recorded[ibit]*alias_accepted[ibit];
     }
-    if (h->GetBinContent(1,j)<1) continue;
-    TH1F* fHistV0A = (TH1F*) fin->Get(Form("trigger_histograms_%s/fHistV0A",label.Data()));
-    TH1F* fHistV0C = (TH1F*) fin->Get(Form("trigger_histograms_%s/fHistV0C",label.Data()));
-    TH1F* fHistFiredBitsSPD = (TH1F*) fin->Get(Form("trigger_histograms_%s/fHistFiredBitsSPD",label.Data()));
-    TH2F* fHistBitsSPD      = (TH2F*) fin->Get(Form("trigger_histograms_%s/fHistBitsSPD",label.Data()));
-    TH1F* fHistTDCZDC       = (TH1F*) fin->Get(Form("trigger_histograms_%s/fHistTDCZDC",label.Data()));
-    TH2F* fHistTimeZDC      = (TH2F*) fin->Get(Form("trigger_histograms_%s/fHistTimeZDC",label.Data()));
-    TH2F* fHistTimeCorrZDC  = (TH2F*) fin->Get(Form("trigger_histograms_%s/fHistTimeCorrZDC",label.Data()));
+    array->Delete();
+    delete array;
 
-    const char* bitName = bitNames[j-1].Data();
-    TCanvas* cHistV0A = new TCanvas(Form("cHistV0A",j),Form("cHistV0A_%s",bitName),1000,800);
+    // Fill run QA histograms
+    const char* bitName = bitNames[ibit].Data();
+    TH1F* hV0A          = (TH1F*) fin->Get(Form("trigger_histograms_%s/fHistV0A"         ,label.Data()));
+    TH1F* hV0C          = (TH1F*) fin->Get(Form("trigger_histograms_%s/fHistV0C"         ,label.Data()));
+    TH1F* hFiredBitsSPD = (TH1F*) fin->Get(Form("trigger_histograms_%s/fHistFiredBitsSPD",label.Data()));
+    TH2F* hBitsSPD      = (TH2F*) fin->Get(Form("trigger_histograms_%s/fHistBitsSPD"     ,label.Data()));
+    TH1F* hTDCZDC       = (TH1F*) fin->Get(Form("trigger_histograms_%s/fHistTDCZDC"      ,label.Data()));
+    TH2F* hTimeZDC      = (TH2F*) fin->Get(Form("trigger_histograms_%s/fHistTimeZDC"     ,label.Data()));
+    TH2F* hTimeCorrZDC  = (TH2F*) fin->Get(Form("trigger_histograms_%s/fHistTimeCorrZDC" ,label.Data()));
+    if (!hV0A)          { printf("QA histogram not found\n"); return 1; }
+    if (!hV0C)          { printf("QA histogram not found\n"); return 1; }
+    if (!hFiredBitsSPD) { printf("QA histogram not found\n"); return 1; }
+    if (!hBitsSPD)      { printf("QA histogram not found\n"); return 1; }
+    if (!hTDCZDC)       { printf("QA histogram not found\n"); return 1; }
+    if (!hTimeZDC)      { printf("QA histogram not found\n"); return 1; }
+    if (!hTimeCorrZDC)  { printf("QA histogram not found\n"); return 1; }
+
+    TCanvas* cV0A = new TCanvas(Form("cV0A_%s",bitName),Form("cV0A_%s",bitName),1000,800);
     gPad->SetLogy();
-    fHistV0A->SetTitle(Form("%s: V0A",bitName));
-    fHistV0A->SetLineWidth(2);
-    fHistV0A->SetLineColor(kBlue);
-    fHistV0A->Draw();
-    gPad->Print(Form("%s_histV0A.pdf",bitName));
-    fHistV0A->Write(Form("%s_histV0A",bitName));
+    hV0A->SetTitle(Form("%s: V0A",bitName));
+    hV0A->SetLineWidth(2);
+    hV0A->SetLineColor(kBlue);
+    hV0A->Draw();
+    gPad->Print(Form("%s_V0A.pdf",bitName));
+    hV0A->Write(Form("%s_V0A",bitName));
 
-    TCanvas* cHistV0C = new TCanvas(Form("cHistV0C",j),Form("cHistV0C_%s",bitName),1000,800);
+    TCanvas* cV0C = new TCanvas(Form("cV0C_%s",bitName),Form("cV0C_%s",bitName),1000,800);
     gPad->SetLogy();
-    fHistV0C->SetTitle(Form("%s: V0C",bitName));
-    fHistV0C->SetLineWidth(2);
-    fHistV0C->SetLineColor(kBlue);
-    fHistV0C->Draw();
-    gPad->Print(Form("%s_histV0C.pdf",bitName));
-    fHistV0C->Write(Form("%s_histV0C",bitName));
+    hV0C->SetTitle(Form("%s: V0C",bitName));
+    hV0C->SetLineWidth(2);
+    hV0C->SetLineColor(kBlue);
+    hV0C->Draw();
+    gPad->Print(Form("%s_V0C.pdf",bitName));
+    hV0C->Write(Form("%s_V0C",bitName));
 
-    TCanvas* cHistFiredBitsSPD = new TCanvas(Form("cHistFiredBitsSPD",j),Form("cHistFiredBitsSPD_%s",bitName),1800,500);
+    TCanvas* cFiredBitsSPD = new TCanvas(Form("cFiredBitsSPD_%s",bitName),Form("cFiredBitsSPD_%s",bitName),1800,500);
     gPad->SetLogy();
     gPad->SetMargin(0.05,0.01,0.12,0.06);
-    fHistFiredBitsSPD->SetTitle(Form("%s: hardware FO",bitName));
-    fHistFiredBitsSPD->SetTitleFont(43);
-    fHistFiredBitsSPD->SetTitleSize(25);
-    fHistFiredBitsSPD->GetYaxis()->SetTitleFont(43);
-    fHistFiredBitsSPD->GetXaxis()->SetLabelFont(43);
-    fHistFiredBitsSPD->GetYaxis()->SetLabelFont(43);
-    fHistFiredBitsSPD->GetYaxis()->SetTitleSize(25);
-    fHistFiredBitsSPD->GetXaxis()->SetLabelSize(25);
-    fHistFiredBitsSPD->GetYaxis()->SetLabelSize(25);
-    fHistFiredBitsSPD->GetYaxis()->SetTickLength(0.01);
-    fHistFiredBitsSPD->GetYaxis()->SetTitleOffset(0.5);
-    fHistFiredBitsSPD->GetYaxis()->SetDecimals(1);
-    fHistFiredBitsSPD->SetLineWidth(2);
-    fHistFiredBitsSPD->SetLineColor(kBlue);
-    fHistFiredBitsSPD->Draw();
-    gPad->Print(Form("%s_histFiredBitsSPD.pdf",bitName));
-    fHistFiredBitsSPD->Write(Form("%s_histFiredBitsSPD",bitName));
+    hFiredBitsSPD->SetTitle(Form("%s: hardware FO",bitName));
+    hFiredBitsSPD->SetTitleFont(43);
+    hFiredBitsSPD->SetTitleSize(25);
+    hFiredBitsSPD->GetYaxis()->SetTitleFont(43);
+    hFiredBitsSPD->GetXaxis()->SetLabelFont(43);
+    hFiredBitsSPD->GetYaxis()->SetLabelFont(43);
+    hFiredBitsSPD->GetYaxis()->SetTitleSize(25);
+    hFiredBitsSPD->GetXaxis()->SetLabelSize(25);
+    hFiredBitsSPD->GetYaxis()->SetLabelSize(25);
+    hFiredBitsSPD->GetYaxis()->SetTickLength(0.01);
+    hFiredBitsSPD->GetYaxis()->SetTitleOffset(0.5);
+    hFiredBitsSPD->GetYaxis()->SetDecimals(1);
+    hFiredBitsSPD->SetLineWidth(2);
+    hFiredBitsSPD->SetLineColor(kBlue);
+    hFiredBitsSPD->Draw();
+    gPad->Print(Form("%s_FiredBitsSPD.pdf",bitName));
+    hFiredBitsSPD->Write(Form("%s_FiredBitsSPD",bitName));
 
-    TCanvas* cHistBitsSPD = new TCanvas(Form("cHistBitsSPD",j),Form("cHistBitsSPD_%s",bitName),800,800);
+    TCanvas* cBitsSPD = new TCanvas(Form("cBitsSPD_%s",bitName),Form("cBitsSPD_%s",bitName),800,800);
     gPad->SetLogz();
     gPad->SetMargin(0.12,0.12,0.10,0.06);
-    fHistBitsSPD->SetTitle(Form("%s: hardware FO vs offline FO",bitName));
-    fHistBitsSPD->GetXaxis()->SetTitleOffset(1.3);
-    fHistBitsSPD->GetYaxis()->SetTitleOffset(1.6);
-    fHistBitsSPD->Draw("colz");
-    gPad->Print(Form("%s_histBitsSPD.pdf",bitName));
-    fHistBitsSPD->Write(Form("%s_histBitsSPD",bitName));
+    hBitsSPD->SetTitle(Form("%s: hardware FO vs offline FO",bitName));
+    hBitsSPD->GetXaxis()->SetTitleOffset(1.3);
+    hBitsSPD->GetYaxis()->SetTitleOffset(1.6);
+    hBitsSPD->Draw("colz");
+    gPad->Print(Form("%s_BitsSPD.pdf",bitName));
+    hBitsSPD->Write(Form("%s_BitsSPD",bitName));
 
-    TCanvas* cHistTimeZDC = new TCanvas(Form("cHistTimeZDC",j),Form("cHistTimeZDC_%s",bitName),800,800);
+    TCanvas* cTimeZDC = new TCanvas(Form("cTimeZDC_%s",bitName),Form("cTimeZDC_%s",bitName),800,800);
     gPad->SetLogz();
     gPad->SetMargin(0.12,0.12,0.10,0.06);
-    fHistTimeZDC->SetTitle(Form("%s: ZDC timing;TDC timing C-A;TDC timing C+A",bitName));
-    fHistTimeZDC->GetXaxis()->SetTitleOffset(1.3);
-    fHistTimeZDC->GetYaxis()->SetTitleOffset(1.6);
-    fHistTimeZDC->Draw("colz");
-    gPad->Print(Form("%s_histTimeZDC.pdf",bitName));
-    fHistTimeZDC->Write(Form("%s_histTimeZDC",bitName));
+    hTimeZDC->SetTitle(Form("%s: ZDC timing;TDC timing C-A;TDC timing C+A",bitName));
+    hTimeZDC->GetXaxis()->SetTitleOffset(1.3);
+    hTimeZDC->GetYaxis()->SetTitleOffset(1.6);
+    hTimeZDC->Draw("colz");
+    gPad->Print(Form("%s_TimeZDC.pdf",bitName));
+    hTimeZDC->Write(Form("%s_TimeZDC",bitName));
 
-    TCanvas* cHistTimeCorrZDC = new TCanvas(Form("cHistTimeCorrZDC",j),Form("cHistTimeCorrZDC_%s",bitName),800,800);
+    TCanvas* cTimeCorrZDC = new TCanvas(Form("cTimeCorrZDC_%s",bitName),Form("cTimeCorrZDC_%s",bitName),800,800);
     gPad->SetLogz();
     gPad->SetMargin(0.12,0.12,0.10,0.06);
-    fHistTimeCorrZDC->SetTitle(Form("%s: corrected ZDC timing;TDC timing C-A;TDC timing C+A",bitName));
-    fHistTimeCorrZDC->GetXaxis()->SetTitleOffset(1.3);
-    fHistTimeCorrZDC->GetYaxis()->SetTitleOffset(1.6);
-    fHistTimeCorrZDC->Draw("colz");
-    gPad->Print(Form("%s_histTimeCorrZDC.pdf",bitName));
-    fHistTimeCorrZDC->Write(Form("%s_histTimeCorrZDC",bitName));
+    hTimeCorrZDC->SetTitle(Form("%s: corrected ZDC timing;TDC timing C-A;TDC timing C+A",bitName));
+    hTimeCorrZDC->GetXaxis()->SetTitleOffset(1.3);
+    hTimeCorrZDC->GetYaxis()->SetTitleOffset(1.6);
+    hTimeCorrZDC->Draw("colz");
+    gPad->Print(Form("%s_TimeCorrZDC.pdf",bitName));
+    hTimeCorrZDC->Write(Form("%s_TimeCorrZDC",bitName));
   }
   
   t->Fill();
@@ -232,3 +339,5 @@ Int_t runLevelEventStatQA(TString qafilename="/data/alice/2010/LHC10b/000114783/
   fout->Close();
   return 0;
 }
+
+

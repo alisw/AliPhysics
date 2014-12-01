@@ -158,8 +158,8 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         Double_t                GetJetRadius() const                            {return GetJetContainer()->GetJetRadius();}
         AliEmcalJet*            GetLeadingJet(AliLocalRhoParameter* localRho = 0x0);
         static TH1F*            GetEventPlaneWeights(TH1F* hist);
+        static void             PrintTriggerSummary(UInt_t trigger);
         void                    ExecMe()                                        {ExecOnce();}
-
         AliAnalysisTaskJetV2*   ReturnMe()                                      {return this;}
         // local cuts
         void                    SetSoftTrackMinMaxPt(Float_t min, Float_t max)          {fSoftTrackMinPt = min; fSoftTrackMaxPt = max;}

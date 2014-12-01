@@ -103,6 +103,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fOutputList(0),
   fEvtSel(0),
   fNClusEt10(0),
+  fClusArrayNames(0),
   fRecoPV(0),
   fPVtxZ(0),
   fTrMultDist(0),
@@ -219,6 +220,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fOutputList(0),
   fEvtSel(0),
   fNClusEt10(0),
+  fClusArrayNames(0),
   fRecoPV(0),
   fPVtxZ(0),            
   fTrMultDist(0),
@@ -303,6 +305,9 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   
   fNClusEt10 = new TH1F("hNClusEt10","# of cluster with E_{T}>10 per event;E;",101,-0.5,100.5);
   fOutputList->Add(fNClusEt10);
+
+  fClusArrayNames = new TH1F("hClusArrayNames","cluster array names (0=CaloClusters,1=EmcCaloClusters,2=Others);option;#events",3,0,3);
+  fOutputList->Add(fClusArrayNames);
   
   fRecoPV = new TH1F("hRecoPV","Prim. vert. reconstruction (yes or no);reco (0=no, 1=yes) ;",2,-0.5,1.5);
   fOutputList->Add(fRecoPV);
@@ -645,27 +650,46 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
       printf("AOD Track mult= %d\n",fTrackMult);
   }
   fTrMultDist->Fill(fTrackMult);
-
+  TList *l = 0;
+  TString clusArrayName = "";
   if(fESD){
-    TList *l = fESD->GetList();
-    if(fDebug){
-      for(int nk=0;nk<l->GetEntries();nk++){
-	  TObject *obj = (TObject*)l->At(nk);
-	  TString oname = obj->GetName();
-	  //if(oname.Contains("lus"))
-	    printf("Object %d has a clus array named %s +++++++++\n",nk,oname.Data());
-	}
+    l = fESD->GetList();
+    for(int nk=0;nk<l->GetEntries();nk++){
+      TObject *obj = (TObject*)l->At(nk);
+      TString oname = obj->GetName();
+      if(oname.Contains("CaloClus"))
+	clusArrayName = oname;
     }
-    fESDClusters =  dynamic_cast<TClonesArray*>(l->FindObject("CaloClusters"));
+    fESDClusters =  dynamic_cast<TClonesArray*>(l->FindObject(clusArrayName));
     fESDCells = fESD->GetEMCALCells();
     if(fDebug)
       printf("ESD cluster mult= %d\n",fESDClusters->GetEntriesFast());
   }
   else if(fAOD){
-    fAODClusters = dynamic_cast<TClonesArray*>(fAOD->GetCaloClusters());
+    l = fAOD->GetList();
+    //l->Print();
+    //fAODClusters = dynamic_cast<TClonesArray*>(fAOD->GetCaloClusters());
+    for(int nk=0;nk<l->GetEntries();nk++){
+      TObject *obj = (TObject*)l->At(nk);
+      TString oname = obj->GetName();
+      if(oname.Contains("aloClus"))
+	clusArrayName = oname;
+    }
+    fAODClusters = dynamic_cast<TClonesArray*>(l->FindObject(clusArrayName));
     fAODCells = fAOD->GetEMCALCells();
     if(fDebug)
       printf("AOD cluster mult= %d\n",fAODClusters->GetEntriesFast());
+  }
+  if(clusArrayName=="CaloClusters")
+    fClusArrayNames->Fill(0);
+  else{
+    if(clusArrayName=="EmcCaloClusters")
+      fClusArrayNames->Fill(1);
+    else
+      fClusArrayNames->Fill(2);
+  }
+  if(fDebug){
+	printf("clus array is named %s +++++++++\n",clusArrayName.Data());
   }
     
 
@@ -903,7 +927,7 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
   if (!cells){
     cells = fAODCells;
     if(fDebug)
-      printf("ESD cells empty...");
+      printf("ESD cells empty...\n");
   }
   if (!cells){
      if(fDebug)
@@ -967,14 +991,12 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
       continue;
     if(maxid==id)
       continue;
-    Double_t matchedpt =  0;
+    Double_t matchedpt =  GetTrackMatchedPt(c->GetTrackMatchedIndex());
     if(fCpvFromTrack){
-      matchedpt = GetTrackMatchedPt(c->GetTrackMatchedIndex());
       if(matchedpt>0 && fRemMatchClus )
 	continue;
     } else {
       if(TMath::Abs(c->GetTrackDx())<0.03 && TMath::Abs(c->GetTrackDz())<0.02){
-	matchedpt = GetTrackMatchedPt(c->GetTrackMatchedIndex());
 	if(fRemMatchClus){
 	  if(fDebug)
 	    printf("This isolation cluster is matched to a track!++++++++++++++++++++++++++++++++++++++++++++++++++\n");

@@ -493,38 +493,55 @@ Long64_t AliSpectraBothTrackCuts::Merge(TCollection* list)
     if (entry == 0) 
       continue;
     
-    TH1I * histo = entry->GetHistoCuts();      
-    collections.Add(histo);
-    TH1F * histoNSelectedPos = entry->GetHistoNSelectedPos();      
-    collections_histoNSelectedPos.Add(histoNSelectedPos);
+    TH1I * histo = entry->GetHistoCuts();   
+    if(histo)	   
+    	collections.Add(histo);
+    TH1F * histoNSelectedPos = entry->GetHistoNSelectedPos();
+    if(histoNSelectedPos)	      
+    	collections_histoNSelectedPos.Add(histoNSelectedPos);
     TH1F * histoNSelectedNeg = entry->GetHistoNSelectedNeg();      
-    collections_histoNSelectedNeg.Add(histoNSelectedNeg);
-    TH1F * histoNMatchedPos = entry->GetHistoNMatchedPos();      
-    collections_histoNMatchedPos.Add(histoNMatchedPos);
+    if(histoNSelectedNeg)
+    	collections_histoNSelectedNeg.Add(histoNSelectedNeg);
+    TH1F * histoNMatchedPos = entry->GetHistoNMatchedPos();  
+    if(histoNMatchedPos)	    
+    	collections_histoNMatchedPos.Add(histoNMatchedPos);
     TH1F * histoNMatchedNeg = entry->GetHistoNMatchedNeg();      
-    collections_histoNMatchedNeg.Add(histoNMatchedNeg);
+    if(histoNMatchedNeg)
+    	collections_histoNMatchedNeg.Add(histoNMatchedNeg);
     TH2F * histoEtaPhiHighPt = entry->GetHistoEtaPhiHighPt();      
-    collections_histoEtaPhiHighPt.Add(histoEtaPhiHighPt);
-    TH3F* histoDCAzQA=entry->GetHistoDCAzQA(); 	
-    collections_histoDCAzQA.Add(histoDCAzQA);
-     TH3F* histoNclustersQA=entry->GetHistoNclustersQA(); 	
-    collections_histoNclustersQA.Add(histoNclustersQA);
+    if(histoEtaPhiHighPt)
+    	collections_histoEtaPhiHighPt.Add(histoEtaPhiHighPt);
+    TH3F* histoDCAzQA=entry->GetHistoDCAzQA();
+    if(histoDCAzQA)	 	
+    	collections_histoDCAzQA.Add(histoDCAzQA);
+    TH3F* histoNclustersQA=entry->GetHistoNclustersQA(); 	
+    if(histoNclustersQA)
+   	collections_histoNclustersQA.Add(histoNclustersQA);
     TH3F* histochi2perNDFQA=entry->GetHistochi2perNDFQA(); 	
-    collections_histochi2perNDFQA.Add(histochi2perNDFQA);
+    if(histochi2perNDFQA)
+    	collections_histochi2perNDFQA.Add(histochi2perNDFQA);
 	
 
 
     count++;
   }
-  
-  fHistoCuts->Merge(&collections);
-  fHistoNSelectedPos->Merge(&collections_histoNSelectedPos);
-  fHistoNSelectedNeg->Merge(&collections_histoNSelectedNeg);
-  fHistoNMatchedPos->Merge(&collections_histoNMatchedPos);
-  fHistoNMatchedNeg->Merge(&collections_histoNMatchedNeg);
-  fHistoEtaPhiHighPt->Merge(&collections_histoEtaPhiHighPt);
-  fHistoDCAzQA->Merge(&collections_histoDCAzQA);
-  fHistoNclustersQA->Merge(&collections_histoNclustersQA);
+  if(fHistoCuts)	 
+  	fHistoCuts->Merge(&collections);
+  if(fHistoNSelectedPos)
+  	fHistoNSelectedPos->Merge(&collections_histoNSelectedPos);
+  if(fHistoNSelectedNeg)
+  	fHistoNSelectedNeg->Merge(&collections_histoNSelectedNeg);
+  if(fHistoNMatchedPos)
+  	fHistoNMatchedPos->Merge(&collections_histoNMatchedPos);
+  if(fHistoNMatchedNeg)
+  	fHistoNMatchedNeg->Merge(&collections_histoNMatchedNeg);
+  if(fHistoEtaPhiHighPt)
+  	fHistoEtaPhiHighPt->Merge(&collections_histoEtaPhiHighPt);
+  if(fHistoDCAzQA)
+ 	 fHistoDCAzQA->Merge(&collections_histoDCAzQA);
+  if(fHistoNclustersQA)
+  	fHistoNclustersQA->Merge(&collections_histoNclustersQA);
+  if(fHistochi2perNDFQA)
   fHistochi2perNDFQA->Merge(&collections_histochi2perNDFQA);
 
   delete iter;

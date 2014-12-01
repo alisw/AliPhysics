@@ -12,6 +12,7 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMaker(
   int jetHighA                    = 0,
   int jetHighB                    = 0,
   int jetHighC                    = 0,
+  bool useOldBitConfig            = kFALSE,
   bool doQA                       = kFALSE
 )
 {  

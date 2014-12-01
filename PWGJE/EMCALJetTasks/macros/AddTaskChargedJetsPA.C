@@ -18,6 +18,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   Double_t            maxEta                  = +0.9,
   Double_t            minJetEta               = -0.5,
   Double_t            maxJetEta               = +0.5,
+  Int_t               recombscheme            = 1,
   Bool_t              isEMCalTrain            = kFALSE
 )
 {
@@ -74,13 +75,13 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   {
     // #### Add necessary jet finder tasks
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
-    AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,"",1,jetRadius,1,minJetTrackPt,0.300); // anti-kt
-    AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,ktJetRadius,1,minJetTrackPt,0.300); // kt
+    AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,"",1,jetRadius,1,minJetTrackPt,0.300,0.005,recombscheme, "Jet", 0.0); // anti-kt
+    AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,ktJetRadius,1,minJetTrackPt,0.300,0.005,recombscheme, "Jet", 0.0); // kt
     cout << " Jet finder tasks added: " <<  jetFinderTask << " + " <<  jetFinderTaskKT << endl;
 
     // #### Define external rho task
-    AliEmcalJetTask* jetFinderRho = AddTaskEmcalJet(usedTracks,"",1,0.4,1,minJetTrackPt,0.300); // anti-kt
-    AliEmcalJetTask* jetFinderRhoKT = AddTaskEmcalJet(usedTracks,"",0,0.4,1,minJetTrackPt,0.300); // kt
+    AliEmcalJetTask* jetFinderRho = AddTaskEmcalJet(usedTracks,"",1,0.4,1,minJetTrackPt,0.300,0.005,recombscheme, "Jet", 0.0); // anti-kt
+    AliEmcalJetTask* jetFinderRhoKT = AddTaskEmcalJet(usedTracks,"",0,0.4,1,minJetTrackPt,0.300,0.005,recombscheme, "Jet", 0.0); // kt
     cout << " Jet finder tasks (used for bgrd) added: " <<  jetFinderRho << " + " <<  jetFinderRhoKT << endl;
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
     AliAnalysisTaskRhoSparse* rhotask = AddTaskRhoSparse(jetFinderRhoKT->GetName(), NULL, usedTracks, "", bgrdName.Data(), 0.4,"TPC", 0., 5., 0, 0,2,kFALSE,bgrdName.Data(),kTRUE);
@@ -120,6 +121,14 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   task->SetCentralityType(centralityType);
   task->SetNumberOfCentralityBins(numberOfCentralityBins);
   task->SetDoJetAnalysis(doJetAnalysis);
+  // for the case of pp analysis, set special settings
+  if(!isPA)
+  {
+    task->SetCentralityToOne(1);
+    task->SetUsePileUpCut(0);
+    task->SetUseDefaultVertexCut(kFALSE);
+    cout << " Using pp settings: No pileup correction, simple vertex correction, centrality=1" << endl;
+  }
   cout << " Settings set." << endl;
 
   // #### Add analysis task
@@ -144,7 +153,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   }
 
   if(isEMCalTrain)
-    RequestMemory(task,200*1024);
+    RequestMemory(task,600*1024);
 
   cout << " ############ MACRO EXECUTION SUCCESSFUL, will return " << task << " ############\n";
   return task;

@@ -14,5 +14,13 @@
 #pragma link C++ class AliPWGHistoTools+;
 #pragma link C++ class AliTHn+;
 #pragma link C++ class THistManager+;
+#pragma link C++ class AliJSONReader+;
+#pragma link C++ class AliJSONData+;
+#pragma link C++ class AliJSONValue+;
+#pragma link C++ class AliJSONInt+;
+#pragma link C++ class AliJSONFloat+;
+#pragma link C++ class AliJSONDouble+;
+#pragma link C++ class AliJSONBool+;
+#pragma link C++ class AliJSONString+;
 
 #endif

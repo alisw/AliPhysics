@@ -20,12 +20,14 @@ void AddTask_GammaConvV1_pPb2(  Int_t trainConfig = 1,  //change different set o
 	gSystem->Load("libAOD");
 	gSystem->Load("libANALYSIS");
 	gSystem->Load("libANALYSISalice");  
-	gSystem->Load("libPWGGAGammaConv.so");
 	gSystem->Load("libCDB.so");
 	gSystem->Load("libSTEER.so");
 	gSystem->Load("libSTEERBase.so");
 	gSystem->Load("libTENDER.so");
 	gSystem->Load("libTENDERSupplies.so");
+	gSystem->Load("libPWGflowBase.so");
+	gSystem->Load("libPWGflowTasks.so");
+	gSystem->Load("libPWGGAGammaConv.so");
      
 	Int_t isHeavyIon = 2;
 		
@@ -132,7 +134,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t trainConfig = 1,  //change different set o
 	} else if (trainConfig == 7) {   
 		eventCutArray[ 0] = "8600011"; photonCutArray[ 0] = "002092170008260400000"; mesonCutArray[ 0] = "01621035009000";         
 	} else if (trainConfig == 8) {   
-	        eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "009092170008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 7.5cm   
+	    eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "009092170008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 7.5cm   
 	} else if (trainConfig == 9) {   
 		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "005092170008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 10cm     
 	} else if (trainConfig == 10) {   

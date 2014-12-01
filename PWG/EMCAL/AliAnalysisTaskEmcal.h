@@ -37,12 +37,18 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   };
 
   enum TriggerType {
-    kND       = -1,  //not defined
+    kND       = -1,
     kJ1       = 0,
     kJ2       = 1,
-    kG1		  = 2,
-    kG2 	  = 3,
-    kNType    = 4
+    kG1		    = 2,
+    kG2 	    = 3,
+    kL0       = 4
+  };
+
+  enum TriggerCategory {
+    kTriggerLevel0 = 0,
+    kTriggerLevel1Jet = 1,
+    kTriggerLevel1Gamma=2
   };
 
   AliAnalysisTaskEmcal();
@@ -103,9 +109,9 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TClonesArray               *GetClusterArray(Int_t i=0)                         const;
   Int_t                       GetNParticles(Int_t i=0)                           const;
   Int_t                       GetNClusters(Int_t i=0)                            const;
-  AliEmcalTriggerPatchInfo   *GetMainTriggerPatch();
-  Bool_t					  HasTriggerType(TriggerType);
-  ULong_t 					  GetTriggerList();
+  AliEmcalTriggerPatchInfo   *GetMainTriggerPatch(TriggerCategory triggersel = kTriggerLevel1Jet, Bool_t doOfflinSimple = kFALSE);
+  Bool_t					            HasTriggerType(TriggerType triggersel);
+  ULong_t 					          GetTriggerList();
   Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
   void                        UserCreateOutputObjects();
   void                        UserExec(Option_t *option);
@@ -176,7 +182,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Float_t                     fXsection;                   //!x-section from pythia header
   TObjArray                   fParticleCollArray;          // particle/track collection array
   TObjArray                   fClusterCollArray;           // cluster collection array
-  AliEmcalTriggerPatchInfo   *fMainTriggerPatch;           // main trigger patch, will be cached after calling GetMainTriggerPatch() first time
   ULong_t                     fTriggers;                   // list of fired triggers
 
   TList                      *fOutput;                     //!output list

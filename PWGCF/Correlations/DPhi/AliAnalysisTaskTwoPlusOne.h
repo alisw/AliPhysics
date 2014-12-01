@@ -59,6 +59,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
   void   SetTrackStatus(UInt_t status)     { fTrackStatus = status; }
 
   void   SetThreeParticleMixed(Bool_t flag) { fThreeParticleMixed = flag; }
+  void   SetUseEventCombination(Bool_t flag) { fUseEventCombination = flag; }
   
   void   SetCentralityMethod(const char* method) { fCentralityMethod = method; }
 
@@ -70,6 +71,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
   void            AddSettingsTree();                                  // add list of settings to output list
 
   TObjArray* CloneAndReduceTrackList(TObjArray* tracks);
+  void AddEventCombination(TObjArray* tracks);
 
   //general configuration
   Int_t  		fMixingTracks;		// size of track buffer for event mixing
@@ -81,6 +83,9 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
   // Handlers and events
   AliAODEvent*             fAOD;             //! AOD Event 
   AliEventPoolManager*     fPoolMgr;         //! event pool manager
+
+  TObjArray*     fEventCombination;         //reduced tracklist which contains 4 semi central events which have the same multiplicity as 1 central event
+  Int_t          fUsedEvents;               //used events in fEventCombination
 
   // Histogram settings
   TList*              fListOfHistos;    //  Output list of containers 
@@ -102,6 +107,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
     UInt_t         	fTrackStatus;          // if non-0, the bits set in this variable are required for each track
     
     Bool_t              fThreeParticleMixed;   //0 use trigger from one event and mixed particles from another; 1 use trigger particles from two different events and mixed event from a third event
+    Bool_t              fUseEventCombination;   //0 normal analysis run; 1 add 4 30-50% events up to the multiplicity of an 0-5% event
 
     TString fCustomBinning;	   // supersedes default binning if set, see AliUEHist::GetBinning or AliUEHistograms::AliUEHistograms for syntax and examples
     Double_t fAlpha;            //sets the alpha parameter in the container

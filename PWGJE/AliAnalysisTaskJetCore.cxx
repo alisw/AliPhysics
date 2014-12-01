@@ -89,6 +89,7 @@ fDoEventMixing(0),
 fFlagPhiBkg(0),
 fFlagEtaBkg(0),
 fFlagJetHadron(0),
+fDodiHadron(0),
 fFrac(0.8),
 fTTLowRef(11),
 fTTUpRef(13),
@@ -152,6 +153,8 @@ fh2AngStructpt3C60(0x0),
 fh2AngStructpt4C60(0x0),
 fh1TrigRef(0x0),
 fh1TrigSig(0x0),
+fh1TrackPhiDistance(0x0),
+fh1TrackRDistance(0x0), 
 fh2Ntriggers(0x0),
 fh2Ntriggers2C10(0x0),
 fh2Ntriggers2C20(0x0), 
@@ -220,6 +223,7 @@ fDoEventMixing(0),
 fFlagPhiBkg(0),
 fFlagEtaBkg(0),
 fFlagJetHadron(0),
+fDodiHadron(0),
 fFrac(0.8),
 fTTLowRef(11),
 fTTUpRef(13),
@@ -283,6 +287,8 @@ fh2AngStructpt3C60(0x0),
 fh2AngStructpt4C60(0x0),    
 fh1TrigRef(0x0),
 fh1TrigSig(0x0),
+fh1TrackPhiDistance(0x0),
+fh1TrackRDistance(0x0), 
 fh2Ntriggers(0x0),
 fh2Ntriggers2C10(0x0),
 fh2Ntriggers2C20(0x0),
@@ -436,6 +442,8 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
    
     fh1TrigRef=new TH1D("Trig Ref","",10,0.,10);
     fh1TrigSig=new TH1D("Trig Sig","",10,0.,10);  
+    fh1TrackPhiDistance=new TH1D("PhiDistance","",35,0.,3.5);
+    fh1TrackRDistance=new TH1D("RDistance","",10,0.,1); 
     fh2Ntriggers=new TH2F("# of triggers","",100,0.,100.,50,0.,50.);
     fh2Ntriggers2C10=new TH2F("# of triggers2C10","",50,0.,50.,50,0.,50.);
     fh2Ntriggers2C20=new TH2F("# of triggers2C20","",50,0.,50.,50,0.,50.);
@@ -498,7 +506,9 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
 
         fOutputList->Add(fh1TrigRef);
         fOutputList->Add(fh1TrigSig); 
-	fOutputList->Add(fh2Ntriggers);
+        fOutputList->Add(fh1TrackPhiDistance);
+        fOutputList->Add(fh1TrackRDistance);
+       	fOutputList->Add(fh2Ntriggers);
         fOutputList->Add(fh2Ntriggers2C10);
         fOutputList->Add(fh2Ntriggers2C20); 
         fOutputList->Add(fh3JetDensity);
@@ -1228,8 +1238,11 @@ Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t 
      if(!aod)return 0;
      Int_t index=-1;
      Int_t triggers[100];
-     for(Int_t cr=0;cr<100;cr++){triggers[cr]=-1;}
+     Int_t triggers2[100];
+     for(Int_t cr=0;cr<100;cr++){triggers[cr]=-1;
+       triggers2[cr]=-1;}
      Int_t im=0;
+     Int_t im2=0;
      for(int it = 0;it < aod->GetNumberOfTracks();++it){
       AliAODTrack *tr = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
       if(!tr) AliFatal("Not a standard AOD");
@@ -1251,28 +1264,36 @@ Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t 
       
       if(tr->Pt()>=minT && tr->Pt()<maxT){
       	triggers[im]=iCount-1;
-        im=im+1;}
+        im=im+1;
+	if(tr->Pt()>=20.){triggers2[im2]=iCount-1;
+	  im2=im2+1;}
 
-     }
+      }}
+      
       number=im;
       Int_t rd=0;
-      if(im==0) rd=0;
-      if(im>0) rd=fRandom->Integer(im);
-      index=triggers[rd];
-       AliVParticle *tr1 = (AliVParticle*)list->At(index);     
+      if(im2==0) rd=0;
+      if(im2>0) rd=fRandom->Integer(im2);
+      index=triggers2[rd];
+      AliVParticle *tr1 = (AliVParticle*)list->At(index);     
       
     
 
-      for(Int_t kk=0;kk<number;kk++){
-	if(kk==rd) continue;
+      for(Int_t kk=0;kk<im;kk++){
+	//if(kk==rd) continue;
+        if(index==triggers[kk]) continue;
 	Int_t lab=triggers[kk];
          AliVParticle *tr2 = (AliVParticle*)list->At(lab);     
        
        Double_t detat=tr1->Eta()-tr2->Eta();
        Double_t dphit=RelativePhi(tr1->Phi(),tr2->Phi());
-	Double_t deltaRt=TMath::Sqrt(detat*detat+dphit*dphit);
-     
-        if(deltaRt>0.4) number=number-1;}      
+       Double_t deltaRt=TMath::Sqrt(detat*detat+dphit*dphit);
+       fh1TrackPhiDistance->Fill(TMath::Abs(dphit));
+       fh1TrackRDistance->Fill(deltaRt);
+       
+       if(fDodiHadron==1)  if(deltaRt>0.4) number=number-1;
+       if(fDodiHadron==2) if((deltaRt>0.4) && (TMath::Abs(dphit)>TMath::Pi()-0.6)) number=number-1;}
+
 
      
   

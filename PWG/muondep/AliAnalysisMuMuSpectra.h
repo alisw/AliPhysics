@@ -29,7 +29,7 @@ public:
   
   virtual ~AliAnalysisMuMuSpectra();
 
-  void AdoptResult(const AliAnalysisMuMuBinning::Range& bin, AliAnalysisMuMuResult* result);
+  Bool_t AdoptResult(const AliAnalysisMuMuBinning::Range& bin, AliAnalysisMuMuResult* result);
 
   Bool_t IsEmpty() const;
   
@@ -46,7 +46,9 @@ public:
   Bool_t Correct(const AliAnalysisMuMuSpectra& accEff, const char* particle, const char* subResultName="");
   
   AliAnalysisMuMuResult* GetResultForBin(const AliAnalysisMuMuBinning::Range& bin) const;
-  
+
+  AliAnalysisMuMuResult* GetResultForBin(const char* binName) const;
+
   Bool_t HasValue(const char* what="NofJpsi") const;
   
   void Scale(Double_t value);
