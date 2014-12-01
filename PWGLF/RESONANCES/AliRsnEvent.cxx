@@ -372,7 +372,7 @@ Bool_t AliRsnEvent::SetMCInfoESD(AliRsnDaughter &out)
 
    // if label too large --> failed
    if (label >= nMC) {
-      AliWarning(Form("Stack overflow: track label = %d -- stack maximum = %d", label, nMC));
+     AliDebug(4, Form("Stack overflow: track label = %d -- stack maximum = %d", label, nMC));
       return kFALSE;
    }
 
@@ -398,7 +398,7 @@ Bool_t AliRsnEvent::SetMCInfoESD(AliRsnDaughter &out)
          AliWarning(Form("Stack discontinuity: label mother %d refers to a NULL object", imum));
       }
    } else {
-      AliWarning(Form("Stack overflow: mother label = %d -- stack maximum = %d", imum, nMC));
+     AliDebug(4, Form("Stack overflow: mother label = %d -- stack maximum = %d", imum, nMC));
    }
 
    return kTRUE;
@@ -426,7 +426,7 @@ Bool_t AliRsnEvent::SetMCInfoAOD(AliRsnDaughter &out)
 
    // if label too large --> failed
    if (label >= nMC) {
-      AliWarning(Form("Stack overflow: track label = %d -- stack maximum = %d", label, nMC));
+     AliDebug(4, Form("Stack overflow: track label = %d -- stack maximum = %d", label, nMC));
       return kFALSE;
    }
 
@@ -449,7 +449,7 @@ Bool_t AliRsnEvent::SetMCInfoAOD(AliRsnDaughter &out)
          AliWarning(Form("Stack discontinuity: label mother %d refers to a NULL object", imum));
       }
    } else if (imum >= nMC) {
-      AliWarning(Form("Stack overflow: mother label = %d -- stack maximum = %d", imum, nMC));
+     AliDebug(4, Form("Stack overflow: mother label = %d -- stack maximum = %d", imum, nMC));
    }
 
    return kTRUE;

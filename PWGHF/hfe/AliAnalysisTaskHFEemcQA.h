@@ -66,6 +66,8 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     //TH1F        *fHistoNCells;//! No of cells per cluster
     TH2F        *fHistoNCells;//! No of cells per cluster
     TH2F        *fHistoCalCell;//! No of cells per cluster
+    TH2F        *fHistoCalTime;
+    TH2F        *fHistoCalCellTime;
     TH1F        *fNegTrkIDPt;//!neg track ID
     TH1F        *fTrkPt;//!track pt
     TH1F        *fTrketa;//!track eta

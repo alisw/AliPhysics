@@ -21,6 +21,7 @@ AliParticleContainer::AliParticleContainer():
   fParticleMaxEta(0.9),
   fParticleMinPhi(-10),
   fParticleMaxPhi(10),
+  fMinDistanceTPCSectorEdge(-1),
   fTrackBitMap(0),
   fMCTrackBitMap(0),
   fMinMCLabel(0),
@@ -41,6 +42,7 @@ AliParticleContainer::AliParticleContainer(const char *name):
   fParticleMaxEta(0.9),
   fParticleMinPhi(-10),
   fParticleMaxPhi(10),
+  fMinDistanceTPCSectorEdge(-1),
   fTrackBitMap(0),
   fMCTrackBitMap(0),
   fMinMCLabel(0),
@@ -191,6 +193,16 @@ Bool_t AliParticleContainer::AcceptParticle(AliVParticle *vp)
       vp->Phi() < fParticleMinPhi || vp->Phi() > fParticleMaxPhi) {
     fRejectionReason |= kAcceptanceCut;
     return kFALSE;
+  }
+
+  if(fMinDistanceTPCSectorEdge>0.) {
+    const Double_t pi = TMath::Pi();
+    const Double_t kSector = pi/9;
+    Double_t phiDist = TMath::Abs(vp->Phi() - TMath::FloorNint(vp->Phi()/kSector)*kSector);
+    if(phiDist<fMinDistanceTPCSectorEdge) {
+      fRejectionReason |= kMinDistanceTPCSectorEdgeCut;
+      return kFALSE;
+    }
   }
 
   if (TMath::Abs(vp->GetLabel()) > fMinMCLabel) {

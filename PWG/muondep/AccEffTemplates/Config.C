@@ -52,7 +52,7 @@ void Config()
 {
   // Libraries required by geant321
 #if defined(__CINT__)
-  gSystem->Load("liblhapdf");      // Parton density functions
+  gSystem->Load("VAR_LHAPDF");      // Parton density functions
   gSystem->Load("libEGPythia6");   // TGenerator interface
   if ( TString("VAR_GENERATOR").Contains("pythia6",TString::kIgnoreCase) )
   {

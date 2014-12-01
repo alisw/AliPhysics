@@ -353,7 +353,7 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   
   // initialize track counters
   fTrackCounters = new AliCounterCollection("trackCounters");
-  fTrackCounters->AddRubric("track", "trackeronly/triggeronly/matched");
+  fTrackCounters->AddRubric("track", "trackeronly/triggeronly/matched/notrack");
   fTrackCounters->AddRubric("trigger", 1000000);
   fTrackCounters->AddRubric("run", 1000000);
   fTrackCounters->AddRubric("selected", "yes/no");
@@ -494,8 +494,16 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
       fEventCounters->Count(Form("event:any/%s/run:%d/%s/%s/%s", triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), v0MultKey->GetName()));
       
       // muon event
-      if (nTracks > 0) fEventCounters->Count(Form("event:muon/%s/run:%d/%s/%s/%s", triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), v0MultKey->GetName()));
-      
+      if (nTracks > 0) {
+	fEventCounters->Count(Form("event:muon/%s/run:%d/%s/%s/%s", triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), v0MultKey->GetName()));
+      }
+      else {
+	// fill track counter in case of no muon track
+	fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/%s/%s/%s/%s/%s", "track:notrack", triggerKey->GetName(), 
+				   fCurrentRunNumber,selected.Data(), "charge:any", "pt:any", "triggerRO:bad", 
+				   v0MultKey->GetName(), "acc:out", "tagTrack:good"));
+      }
+
     }
       
   }
@@ -504,6 +512,7 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
   Int_t nSelectedTrackerTracks = 0;
   Int_t nSelectedTrackMatchTrig = 0;
   Int_t nPVTracks = fESD->GetPrimaryVertex()->GetNContributors();
+
   for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack) {
     
     // get the ESD track
@@ -521,6 +530,7 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     TList ptKeyList;
     ptKeyList.SetOwner();
     ptKeyList.Add(new TObjString("pt:any"));
+
     if (esdTrack->ContainTrackerData()) {
       
       if (esdTrack->ContainTriggerData()) trackKey += "matched";

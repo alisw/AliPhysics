@@ -22,8 +22,8 @@
 //          New approch to find particle ratio to reduce memory            //
 //                             (Test Only)                                 //
 //        Copied from NetParticle Classes
-//        Origin: Authors: Jochen Thaeder <jochen@thaeder.de>
-//                         Michael Weber <m.weber@cern.ch>
+//        Origin: Jochen Thaeder <jochen@thaeder.de>
+//                Michael Weber <m.weber@cern.ch>
 //=========================================================================//
 
 #include "TMath.h"
@@ -109,21 +109,21 @@ void AliEbyEPidRatioEffContExtra::CreateHistograms() {
 			       2, 2, 2,
 			       AliEbyEPidRatioHelper::fgkfHistNBinsRap,     
 			       AliEbyEPidRatioHelper::fgkfHistNBinsPhi, 
-			       AliEbyEPidRatioHelper::fgkfHistNBinsPt};
+			       35};
   
   Double_t minHnEffPIDMC[8] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0], 
 			       AliEbyEPidRatioHelper::fgkfHistRangeSign[0], 
 			       -0.5,     -0.5,     -0.5,
 			       AliEbyEPidRatioHelper::fgkfHistRangeRap[0],  
 			       AliEbyEPidRatioHelper::fgkfHistRangePhi[0], 
-			       AliEbyEPidRatioHelper::fgkfHistRangePt[0]};  
+			       0.2};  
   
   Double_t maxHnEffPIDMC[8] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[1], 
 			       AliEbyEPidRatioHelper::fgkfHistRangeSign[1], 
 			       1.5,      1.5,      1.5,
 			       AliEbyEPidRatioHelper::fgkfHistRangeRap[1],  
 			       AliEbyEPidRatioHelper::fgkfHistRangePhi[1], 
-			       AliEbyEPidRatioHelper::fgkfHistRangePt[1]};  
+			       3.0};  
   
   
 
@@ -160,20 +160,20 @@ void AliEbyEPidRatioEffContExtra::CreateHistograms() {
 			     AliEbyEPidRatioHelper::fgkfHistNBinsSign, 
 			     AliEbyEPidRatioHelper::fgkfHistNBinsRap, 
 			     AliEbyEPidRatioHelper::fgkfHistNBinsPhi,     
-			     AliEbyEPidRatioHelper::fgkfHistNBinsPt};
+			     35};
 
   Double_t minHnEffPID[5] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0], 
 			     AliEbyEPidRatioHelper::fgkfHistRangeSign[0],			  
 			     AliEbyEPidRatioHelper::fgkfHistRangeRap[0], 
 			     AliEbyEPidRatioHelper::fgkfHistRangePhi[0],  
-			     AliEbyEPidRatioHelper::fgkfHistRangePt[0]};
+			     0.2};
 
   
   Double_t maxHnEffPID[5] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[1], 
-			       AliEbyEPidRatioHelper::fgkfHistRangeSign[1], 
-			       AliEbyEPidRatioHelper::fgkfHistRangeRap[1], 
-			       AliEbyEPidRatioHelper::fgkfHistRangePhi[1],  
-			       AliEbyEPidRatioHelper::fgkfHistRangePt[1]};
+			     AliEbyEPidRatioHelper::fgkfHistRangeSign[1], 
+			     AliEbyEPidRatioHelper::fgkfHistRangeRap[1], 
+			     AliEbyEPidRatioHelper::fgkfHistRangePhi[1],  
+			     3.0};
 
 
   TString titilerec      = "cent:signRec:yRec:phiRec:ptRec";
@@ -206,14 +206,14 @@ void AliEbyEPidRatioEffContExtra::CreateHistograms() {
 			   8,                                        
 			   AliEbyEPidRatioHelper::fgkfHistNBinsRap,  
 			   AliEbyEPidRatioHelper::fgkfHistNBinsPhi, 
-			   AliEbyEPidRatioHelper::fgkfHistNBinsPt};  
+			   35};  
   
   Double_t minHnCont[6] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0], 
 			   AliEbyEPidRatioHelper::fgkfHistRangeSign[0], 
 			   0.5,                                            
 			   AliEbyEPidRatioHelper::fgkfHistRangeRap[0],  
 			   AliEbyEPidRatioHelper::fgkfHistRangePhi[0], 
-			   AliEbyEPidRatioHelper::fgkfHistRangePt[0]};
+			   0.2};
   
   
   
@@ -222,7 +222,7 @@ void AliEbyEPidRatioEffContExtra::CreateHistograms() {
 			   8.5,                        
 			   AliEbyEPidRatioHelper::fgkfHistRangeRap[1],  
 			   AliEbyEPidRatioHelper::fgkfHistRangePhi[1], 
-			   AliEbyEPidRatioHelper::fgkfHistRangePt[1]};   
+			   3.0};   
 
 
 
@@ -231,10 +231,10 @@ void AliEbyEPidRatioEffContExtra::CreateHistograms() {
   TString tiltlelaxcont[6] 
     = {"Centrality","sign","contPart","#it{y}_{MC}","#varphi_{MC} (rad)","#it{p}_{T,MC} (GeV/#it{c})"};
   
-  fHnNpiCMc  = new THnSparseF("hmNpiContMc",titilemc.Data(),6,binHnCont,minHnCont, maxHnCont);
-  fHnNkaCMc  = new THnSparseF("hmNkaContMc",titilemc.Data(),6,binHnCont,minHnCont, maxHnCont);
-  fHnNprCMc  = new THnSparseF("hmNprContMc",titilemc.Data(),6,binHnCont,minHnCont, maxHnCont);
-  fHnNchCMc  = new THnSparseF("hmNchContMc",titilemc.Data(),6,binHnCont,minHnCont, maxHnCont);
+  fHnNpiCMc  = new THnSparseF("hmNpiContMc",titilecont.Data(),6,binHnCont,minHnCont, maxHnCont);
+  fHnNkaCMc  = new THnSparseF("hmNkaContMc",titilecont.Data(),6,binHnCont,minHnCont, maxHnCont);
+  fHnNprCMc  = new THnSparseF("hmNprContMc",titilecont.Data(),6,binHnCont,minHnCont, maxHnCont);
+  fHnNchCMc  = new THnSparseF("hmNchContMc",titilecont.Data(),6,binHnCont,minHnCont, maxHnCont);
 
  for (Int_t i = 0; i < 6; i++) {  
     fHnNchCMc->GetAxis(i)->SetTitle(tiltlelaxcont[i].Data());
@@ -412,7 +412,7 @@ void AliEbyEPidRatioEffContExtra::CheckContTrack(AliVTrack *track, Int_t ipid) {
     return;
 
   Bool_t isPhysicalPrimary = (fESD) ? fStack->IsPhysicalPrimary(label): (static_cast<AliAODMCParticle*>(particle))->IsPhysicalPrimary();
-  
+
   // -- Check if correctly identified 
   //    > return if correctly identified -> all ok, no action neededin this method
   //    > if PID required check -> for the correct (signed pdgcode) particle
@@ -455,14 +455,6 @@ void AliEbyEPidRatioEffContExtra::CheckContTrack(AliVTrack *track, Int_t ipid) {
   Double_t yRec  = 0.;
   fHelper->IsTrackAcceptedRapidity(track, yRec, ipid); 
 
-  Double_t deltaPhi = particle->Phi()-track->Phi();
-  if (TMath::Abs(deltaPhi) > TMath::TwoPi()) {
-    if (deltaPhi < 0)
-      deltaPhi += TMath::TwoPi();
-    else
-      deltaPhi -= TMath::TwoPi();
-  }
-
  
   Double_t yetapid = (ipid == 0 ) ? particle->Eta() : particle->Y();
   Double_t yeta    = (ipid == 0 ) ? track->Eta() : yRec;
@@ -471,9 +463,9 @@ void AliEbyEPidRatioEffContExtra::CheckContTrack(AliVTrack *track, Int_t ipid) {
   Double_t hnContRec[5] = {fCentralityBin,signRec, yeta,track->Phi(),track->Pt()};
   
   if (ipid == 0) { fHnNchCRec->Fill(hnContRec); fHnNchCMc->Fill(hnContMc); }
-  if (ipid == 1) { fHnNpiCRec->Fill(hnContRec); fHnNpiCMc->Fill(hnContMc); }
-  if (ipid == 2) { fHnNkaCRec->Fill(hnContRec); fHnNkaCMc->Fill(hnContMc); }
-  if (ipid == 3) { fHnNprCRec->Fill(hnContRec); fHnNprCMc->Fill(hnContMc); }
+  else if (ipid == 1) { fHnNpiCRec->Fill(hnContRec); fHnNpiCMc->Fill(hnContMc); }
+  else if (ipid == 2) { fHnNkaCRec->Fill(hnContRec); fHnNkaCMc->Fill(hnContMc); }
+  else if (ipid == 3) { fHnNprCRec->Fill(hnContRec); fHnNprCMc->Fill(hnContMc); }
   
   
 }
@@ -530,8 +522,7 @@ void AliEbyEPidRatioEffContExtra::FillMCEffHist(Int_t ipid) {
       if (idxMC == fLabelsRec[0][ipid][idxRec]) {
 	recStatus = 1.;
 	
-	if (idxMC == fLabelsRec[1][ipid][idxRec])
-	  recPid = 1.;
+	if (idxMC == fLabelsRec[1][ipid][idxRec]) recPid = 1.;
 	
         AliVTrack *track = NULL;
         if(fESD)
@@ -540,15 +531,18 @@ void AliEbyEPidRatioEffContExtra::FillMCEffHist(Int_t ipid) {
           track = fAOD->GetTrack(idxRec);
 	
         if (track) {
-          // if no track present (which should not happen)
-          // -> pt = 0. , which is not in the looked at range
-	  
-          // -- Get Reconstructed values
-          etaRec  = track->Eta();
+	  etaRec  = track->Eta();
           phiRec  = track->Phi();         
           ptRec   = track->Pt();
 	  signRec = track->Charge();
-          fHelper->IsTrackAcceptedRapidity(track, yRec, ipid); // yRec = y for identified particles | yRec = eta for charged particles
+          fHelper->IsTrackAcceptedRapidity(track, yRec, ipid); 
+	  Double_t yeta    = (ipid == 0 ) ? etaRec : yRec;
+	  Double_t hneffRec[5] = {fCentralityBin,signRec, yeta,phiRec,ptRec};
+	  if (ipid == 0) { fHnNchERec->Fill(hneffRec); }
+	  else if (ipid == 1) { fHnNpiERec->Fill(hneffRec); }
+	  else if (ipid == 2) { fHnNkaERec->Fill(hneffRec); }
+	  else if (ipid == 3) { fHnNprERec->Fill(hneffRec); }
+
         }     
         break;
       }
@@ -564,17 +558,17 @@ void AliEbyEPidRatioEffContExtra::FillMCEffHist(Int_t ipid) {
     */
   
     Double_t yetapid = (ipid == 0 ) ? particle->Eta() : particle->Y();
-    Double_t yeta    = (ipid == 0 ) ? etaRec : yRec;
+   
 
     // Printf("%2d  %10.5f %10.5f %10.5f %10.5f %10.5f %10.5f", ipid, yetapid, yeta, particle->Eta(), particle->Y(),  etaRec, yRec);    
 
     Double_t hneffMc[8]  = {fCentralityBin,signMC,findable, recStatus, recPid,yetapid,particle->Phi(),particle->Pt()};
-    Double_t hneffRec[5] = {fCentralityBin,signRec, yeta,phiRec,ptRec};
+    
 
-    if (ipid == 0) { fHnNchERec->Fill(hneffRec); fHnNchEMc->Fill(hneffMc); }
-    if (ipid == 1) { fHnNpiERec->Fill(hneffRec); fHnNpiEMc->Fill(hneffMc); }
-    if (ipid == 2) { fHnNkaERec->Fill(hneffRec); fHnNkaEMc->Fill(hneffMc); }
-    if (ipid == 3) { fHnNprERec->Fill(hneffRec); fHnNprEMc->Fill(hneffMc); }
+    if (ipid == 0) { fHnNchEMc->Fill(hneffMc); }
+    else if (ipid == 1) { fHnNpiEMc->Fill(hneffMc); }
+    else if (ipid == 2) { fHnNkaEMc->Fill(hneffMc); }
+    else if (ipid == 3) { fHnNprEMc->Fill(hneffMc); }
    
 
   } // for (Int_t idxMC = 0; idxMC < nPart; ++idxMC) {

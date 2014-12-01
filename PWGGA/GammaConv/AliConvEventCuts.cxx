@@ -2063,9 +2063,9 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 
 //_________________________________________________________________________
 Float_t AliConvEventCuts::GetWeightForMeson(TString period, Int_t index, AliStack *MCStack, AliVEvent *InputEvent){
-	if (!(period.CompareTo("LHC12f1a") == 0 || period.CompareTo("LHC12f1b") == 0  || period.CompareTo("LHC12i3") == 0 || period.CompareTo("LHC11a10a") == 0 || period.CompareTo("LHC11a10b") == 0 || period.CompareTo("LHC11a10b_bis") == 0 || period.CompareTo("LHC11a10a_bis") == 0 || period.CompareTo("LHC11a10b_plus") == 0 || period.Contains("LHC13d2")|| period.Contains("LHC14a1") || 
+	if (!( period.CompareTo("LHC11a10a") == 0 || period.CompareTo("LHC11a10b") == 0 || period.CompareTo("LHC11a10b_bis") == 0 || period.CompareTo("LHC11a10a_bis") == 0 || period.CompareTo("LHC11a10b_plus") == 0 || period.Contains("LHC13d2")|| period.Contains("LHC14a1") || 
 	period.CompareTo("LHC13e7") == 0 || period.Contains("LHC13b2_efix") || period.CompareTo("LHC14b2") == 0 )) return 1.;
-
+	//period.CompareTo("LHC12f1a") == 0 || period.CompareTo("LHC12f1b") == 0  || period.CompareTo("LHC12i3") == 0 ||
 	Int_t kCaseGen = 0;
 	for (Int_t i = 0; i < fnHeaders; i++){
 		if (index >= fNotRejectedStart[i] && index < fNotRejectedEnd[i]+1){

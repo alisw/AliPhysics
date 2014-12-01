@@ -8,7 +8,7 @@
 #include <THashList.h>
 #include "AliAODCaloTrigger.h"
 #include "AliEMCALGeometry.h"
-#include "AliEMCALTriggerTypes.h"
+//#include "AliEMCALTriggerTypes.h"
 #include "AliEmcalTriggerPatchInfo.h"
 #include "AliEmcalTriggerSetupInfo.h"
 #include "AliLog.h"
@@ -30,6 +30,8 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker() :
   fCaloTriggersOutName("EmcalTriggers"),
   fCaloTriggerSetupOutName("EmcalTriggersSetup"),
   fV0InName("AliAODVZERO"),
+  fUseTriggerBitConfig(kNewConfig),
+  fTriggerBitConfig(NULL),
   fCaloTriggersOut(0),
   fCaloTriggerSetupOut(0),
   fSimpleOfflineTriggers(0),
@@ -39,6 +41,9 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker() :
   fQAHistos(NULL)
 {
   // Constructor.
+  fRunTriggerType[kTMEMCalJet] = kTRUE;
+  fRunTriggerType[kTMEMCalGamma] = kTRUE;
+  fRunTriggerType[kTMEMCalLevel0] = kTRUE;
   memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
   memset(fPatchADCSimple, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
   memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
@@ -50,6 +55,8 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name, Bool_t doQA) :
   fCaloTriggersOutName("EmcalTriggers"),
   fCaloTriggerSetupOutName("EmcalTriggersSetup"),
   fV0InName("AliAODVZERO"),
+  fUseTriggerBitConfig(kNewConfig),
+  fTriggerBitConfig(NULL),
   fCaloTriggersOut(0),
   fCaloTriggerSetupOut(0),
   fSimpleOfflineTriggers(0),
@@ -59,6 +66,9 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name, Bool_t doQA) :
   fQAHistos(NULL)
 {
   // Constructor.
+  fRunTriggerType[kTMEMCalJet] = kTRUE;
+  fRunTriggerType[kTMEMCalGamma] = kTRUE;
+  fRunTriggerType[kTMEMCalLevel0] = kTRUE;
   memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
   memset(fPatchADCSimple, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
   memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
@@ -68,6 +78,7 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name, Bool_t doQA) :
 AliEmcalTriggerMaker::~AliEmcalTriggerMaker()
 {
   // Destructor.
+  if(fTriggerBitConfig) delete fTriggerBitConfig;
 }
 
 //________________________________________________________________________
@@ -79,6 +90,17 @@ void AliEmcalTriggerMaker::ExecOnce()
 
   if (!fInitialized)
     return;
+
+  if(!fTriggerBitConfig){
+    switch(fUseTriggerBitConfig){
+    case kNewConfig:
+      fTriggerBitConfig = new AliEmcalTriggerBitConfigNew();
+      break;
+    case kOldConfig:
+      fTriggerBitConfig = new AliEmcalTriggerBitConfigOld();
+      break;
+    }
+  }
 
   if (!fCaloTriggersOutName.IsNull()) {
     fCaloTriggersOut = new TClonesArray("AliEmcalTriggerPatchInfo");
@@ -123,7 +145,7 @@ void AliEmcalTriggerMaker::UserCreateOutputObjects()
   // Do basic QA monitoring (if requested)
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
-  if(fDoQA){
+  if(fDoQA && fOutput){
     fQAHistos = new THistManager("TriggerQA");
 
     TString trtypenames[3] = {"EJE", "EGA", "EL0"};
@@ -268,39 +290,45 @@ Bool_t AliEmcalTriggerMaker::Run()
     Bool_t isOfflineSimple=0;
     while (NextTrigger(isOfflineSimple)) {
       // process jet
-      trigger = ProcessPatch(kTMEMCalJet, isOfflineSimple);
-      // save main jet triggers in event
-      if (trigger != 0) {
-        // check if more energetic than others for main patch marking
-        if (!isOfflineSimple) {
-          if (triggerMainJet == 0 || (triggerMainJet->GetPatchE() < trigger->GetPatchE()))
-            triggerMainJet = trigger;
-        } else {
-          if (triggerMainJetSimple == 0 || (triggerMainJetSimple->GetPatchE() < trigger->GetPatchE()))
-            triggerMainJetSimple = trigger;
+      if(fRunTriggerType[kTMEMCalJet]){
+        trigger = ProcessPatch(kTMEMCalJet, isOfflineSimple);
+        // save main jet triggers in event
+        if (trigger != 0) {
+          // check if more energetic than others for main patch marking
+          if (!isOfflineSimple) {
+            if (triggerMainJet == 0 || (triggerMainJet->GetPatchE() < trigger->GetPatchE()))
+              triggerMainJet = trigger;
+          } else {
+            if (triggerMainJetSimple == 0 || (triggerMainJetSimple->GetPatchE() < trigger->GetPatchE()))
+              triggerMainJetSimple = trigger;
+          }
         }
       }
       
       // process gamma
-      trigger = ProcessPatch(kTMEMCalGamma, isOfflineSimple);
-      // save main gamma triggers in event
-      if (trigger != 0) {
-        // check if more energetic than others for main patch marking
-        if (!isOfflineSimple) {
-          if (triggerMainGamma == 0 || (triggerMainGamma->GetPatchE() < trigger->GetPatchE()))
-            triggerMainGamma = trigger;
-        } else {
-          if (triggerMainGammaSimple == 0 || (triggerMainGammaSimple->GetPatchE() < trigger->GetPatchE()))
-            triggerMainGammaSimple = trigger;
+      if(fRunTriggerType[kTMEMCalGamma]){
+        trigger = ProcessPatch(kTMEMCalGamma, isOfflineSimple);
+        // save main gamma triggers in event
+        if (trigger != 0) {
+          // check if more energetic than others for main patch marking
+          if (!isOfflineSimple) {
+            if (triggerMainGamma == 0 || (triggerMainGamma->GetPatchE() < trigger->GetPatchE()))
+              triggerMainGamma = trigger;
+          } else {
+            if (triggerMainGammaSimple == 0 || (triggerMainGammaSimple->GetPatchE() < trigger->GetPatchE()))
+              triggerMainGammaSimple = trigger;
+          }
         }
       }
 
       // level 0 triggers
-      trigger = ProcessPatch(kTMEMCalLevel0, isOfflineSimple);
-      // save main level0 trigger in the event
-      if (trigger) {
-        if (!triggerMainLevel0 || (triggerMainLevel0->GetPatchE() < trigger->GetPatchE()))
-          triggerMainLevel0 = trigger;
+      if(fRunTriggerType[kTMEMCalLevel0]){
+        trigger = ProcessPatch(kTMEMCalLevel0, isOfflineSimple);
+        // save main level0 trigger in the event
+        if (trigger) {
+          if (!triggerMainLevel0 || (triggerMainLevel0->GetPatchE() < trigger->GetPatchE()))
+            triggerMainLevel0 = trigger;
+        }
       }
     } // triggers
     
@@ -516,25 +544,28 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   edge2 -= vertex;
 
   Int_t isMC = MCEvent() ? 1 : 0;
-  Int_t offSet = (1 - isMC) * kTriggerTypeEnd;
+  Int_t offSet = (1 - isMC) * fTriggerBitConfig->GetTriggerTypesEnd();
 	
   // fix tbits .. remove the unwanted type triggers
   // for Jet and Gamma triggers we remove also the level 0 bit since it will be stored in the level 0 patch
   // for level 0 we remove all gamma and jet trigger bits
   switch(type){
   case kTMEMCalJet:
-    tBits = tBits & ~( 1 << (kTriggerTypeEnd + kL1GammaLow) | 1 << (kTriggerTypeEnd + kL1GammaHigh) | 1 << (kL1GammaLow) | 1 << (kL1GammaHigh) |
-		       1 << (kTriggerTypeEnd + kL0) | 1 << (kL0));
+    tBits = tBits & ~( 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaLowBit()) | 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaHighBit()) |
+        1 << (fTriggerBitConfig->GetGammaLowBit()) | 1 << (fTriggerBitConfig->GetGammaHighBit()) |
+		       1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetLevel0Bit()) | 1 << (fTriggerBitConfig->GetLevel0Bit()));
     break;
   case kTMEMCalGamma:
-    tBits = tBits & ~( 1 << (kTriggerTypeEnd + kL1JetLow) | 1 << (kTriggerTypeEnd + kL1JetHigh) | 1 << (kL1JetLow) | 1 << (kL1JetHigh) |
-		       1 << (kTriggerTypeEnd + kL0) | 1 << (kL0));
+    tBits = tBits & ~( 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetLowBit()) | 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetHighBit()) |
+        1 << (fTriggerBitConfig->GetJetLowBit()) | 1 << (fTriggerBitConfig->GetJetHighBit()) |
+		       1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetLevel0Bit()) | 1 << (fTriggerBitConfig->GetLevel0Bit()));
     break;
   case kTMEMCalLevel0:
     // Explicitly set the level 0 bit to overcome the masking out
-    tBits |= 1 << (offSet + kL0);
-    tBits = tBits & ~( 1 << (kTriggerTypeEnd + kL1JetLow) | 1 << (kTriggerTypeEnd + kL1JetHigh) | 1 << (kL1JetLow) | 1 << (kL1JetHigh) |
-		       1 << (kTriggerTypeEnd + kL1GammaLow) | 1 << (kTriggerTypeEnd + kL1GammaHigh) | 1 << (kL1GammaLow) | 1 << (kL1GammaHigh));
+    tBits |= 1 << (offSet + fTriggerBitConfig->GetLevel0Bit());
+    tBits = tBits & ~( 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetLowBit()) | 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetHighBit()) |
+        1 << (fTriggerBitConfig->GetJetLowBit()) | 1 << (fTriggerBitConfig->GetJetHighBit()) | 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaLowBit()) |
+        1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaHighBit()) | 1 << (fTriggerBitConfig->GetGammaLowBit()) | 1 << (fTriggerBitConfig->GetGammaHighBit()));
     break;
   };
 
@@ -542,6 +573,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   AliEmcalTriggerPatchInfo *trigger = 
     new ((*fCaloTriggersOut)[fITrigger]) AliEmcalTriggerPatchInfo();
   fITrigger++;
+  trigger->SetTriggerBitConfig(fTriggerBitConfig);
   trigger->SetCenterGeo(centerGeo, amp);
   trigger->SetCenterMass(centerMass, amp);
   trigger->SetEdge1(edge1, amp);
@@ -589,9 +621,9 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
       
       // check thresholds
       if (tSum > fCaloTriggerSetupOut->GetThresholdJetLowSimple())
-        tBits = tBits | ( 1 << ( kTriggerTypeEnd + kL1JetLow ));
+        tBits = tBits | ( 1 << ( fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetLowBit() ));
       if (tSum > fCaloTriggerSetupOut->GetThresholdJetHighSimple())
-        tBits = tBits | ( 1 << ( kTriggerTypeEnd + kL1JetHigh ));
+        tBits = tBits | ( 1 << ( fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetHighBit() ));
       
       // add trigger values
       if (tBits != 0) {
@@ -620,9 +652,9 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
       
       // check thresholds
       if (tSum > fCaloTriggerSetupOut->GetThresholdGammaLowSimple())
-        tBits = tBits | ( 1 << ( kTriggerTypeEnd + kL1GammaLow ));
+        tBits = tBits | ( 1 << ( fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaLowBit() ));
       if (tSum > fCaloTriggerSetupOut->GetThresholdGammaHighSimple())
-        tBits = tBits | ( 1 << ( kTriggerTypeEnd + kL1GammaHigh ));
+        tBits = tBits | ( 1 << ( fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaHighBit() ));
       
       // add trigger values
       if (tBits != 0) {
@@ -667,7 +699,7 @@ Bool_t AliEmcalTriggerMaker::CheckForL0(const AliVCaloTrigger& trg) const {
     // For Monte-Carlo select
     Int_t tbits(-1);
     trg.GetTriggerBits(tbits);
-    return tbits & (1 << kL0);
+    return tbits & (1 << fTriggerBitConfig->GetLevel0Bit());
   } else {
     // For Data check from the level0 times if the trigger has fired at level0
     Int_t nl0times(0);

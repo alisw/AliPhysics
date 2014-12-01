@@ -21,13 +21,15 @@ void AddTask_Resolution(	TString V0ReaderEventCutNumber 	= "8000000",
 	gSystem->Load("libAOD");
 	gSystem->Load("libANALYSIS");
 	gSystem->Load("libANALYSISalice");  
-	gSystem->Load("libPWGGAGammaConv.so");
 	gSystem->Load("libCDB.so");
 	gSystem->Load("libSTEER.so");
 	gSystem->Load("libSTEERBase.so");
 	gSystem->Load("libTENDER.so");
 	gSystem->Load("libTENDERSupplies.so");
-		
+	gSystem->Load("libPWGflowBase.so");
+	gSystem->Load("libPWGflowTasks.so");
+	gSystem->Load("libPWGGAGammaConv.so");
+	
 	// ================== GetAnalysisManager ===============================
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr) {

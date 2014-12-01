@@ -72,7 +72,7 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t trainConfig = 1,
    
    if(trainConfig == 9 || trainConfig == 10 ){
    cutnumberPhoton = "160084001001500000000";   //Offline  V0 finder 
-   } else if ( trainConfig == 54  ){   // Warning!!!   Those trains must run in stand-alone mode
+   } else if ( trainConfig >= 54 && trainConfig <= 60  ){   // Warning!!!   Those trains must run in stand-alone mode
    cutnumberPhoton = "000700040000500000000";  
    } else {
    cutnumberPhoton = "060084001000500000000";   //Online  V0 finder //change	      
@@ -434,6 +434,30 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
   
         eventCutArray[0]="8000011"; photonCutArray[0] = "000000040000500000000"; ElecCutarray[0] = "90475400233202623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny    + new psiPair Cut    0.60, 0.0 0.12   + 0   cm < Rconv  < 180 cm   //open cuts
 	
+} else if( trainConfig == 55 ) {
+      
+	eventCutArray[0]="8000011"; photonCutArray[0] = "002000040000500000000"; ElecCutarray[0] = "90475400233202623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair Cut    0.60, 0.0 0.12 + Rconv > 5 cm
+	
+} else if( trainConfig == 56 ) {
+      
+	eventCutArray[0]="8000011"; photonCutArray[0] = "009000040000500000000"; ElecCutarray[0] = "90475400233202623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair Cut    0.60, 0.0 0.12 + Rconv > 7.5 cm
+	
+} else if( trainConfig == 57 ) {
+      
+	eventCutArray[0]="8000011"; photonCutArray[0] = "005000040000500000000"; ElecCutarray[0] = "90475400233202623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair Cut    0.60, 0.0 0.12 + Rconv > 10 cm
+	
+} else if( trainConfig == 58 ) {
+      
+	eventCutArray[0]="8000011"; photonCutArray[0] = "008000040000500000000"; ElecCutarray[0] = "90475400233202623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair Cut    0.60, 0.0 0.12 + Rconv > 12.5 cm
+	
+} else if( trainConfig == 59 ) {
+      
+	eventCutArray[0]="8000011"; photonCutArray[0] = "006000040000500000000"; ElecCutarray[0] = "90475400233202623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair Cut    0.60, 0.0 0.12 + Rconv > 20 cm
+	
+} else if( trainConfig == 60 ) {
+      
+	eventCutArray[0]="8000011"; photonCutArray[0] = "007000040000500000000"; ElecCutarray[0] = "90475400233202623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny  + new psiPair Cut    0.60, 0.0 0.12 + Rconv > 35 cm
+	
 }
 	
 
@@ -479,7 +503,8 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 
 	  if (  ( trainConfig >= 1 && trainConfig <= 6 ) || trainConfig == 9  ||  trainConfig == 11  || trainConfig == 13 || trainConfig == 14 || trainConfig == 16 || trainConfig == 17 || trainConfig == 18 || trainConfig == 19 || trainConfig == 20 || trainConfig == 21 || trainConfig == 22 || trainConfig == 23 ||
 		  trainConfig == 28 || trainConfig == 29 || trainConfig == 30 ||  trainConfig == 31  || trainConfig == 32 || trainConfig == 33 || trainConfig == 37 || trainConfig == 38 || trainConfig == 39 || trainConfig == 40 || trainConfig == 41 || trainConfig == 41 || trainConfig == 43 || trainConfig == 44 ||
-		  trainConfig == 45 || trainConfig == 46 || trainConfig == 47 ||  trainConfig == 48  || trainConfig == 49 || trainConfig == 50 || trainConfig == 51 || trainConfig == 52 || trainConfig == 54 ) {
+		  trainConfig == 45 || trainConfig == 46 || trainConfig == 47 ||  trainConfig == 48  || trainConfig == 49 || trainConfig == 50 || trainConfig == 51 || trainConfig == 52 || trainConfig == 54 || trainConfig == 55 || trainConfig == 56 || trainConfig == 57 || trainConfig == 58 || trainConfig == 59 || 
+		  trainConfig == 60 ) {
 	    
 	    if (doWeighting){
 	      if (generatorName.CompareTo("DPMJET")==0){

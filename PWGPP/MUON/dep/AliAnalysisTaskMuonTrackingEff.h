@@ -11,17 +11,25 @@
 //Author: Nicolas LE BRIS - SUBATECH Nantes
 
 #include "AliAnalysisTaskSE.h"
+#include "AliMuonTrackCuts.h"
+#include "TString.h"
 
-class AliMUONGeometryTransformer;
-class AliESDMuonTrack;
-class AliMUONTrackParam;
 class TList;
-class TString;
 class TObjArray;
+class AliCounterCollection;
+class AliMUONGeometryTransformer;
+class AliMUONTrack;
+class AliMUONTrackParam;
+class AliMpArea;
+class AliMpPad;
+class AliMUON2DMap;
+
 
 class AliAnalysisTaskMuonTrackingEff : public AliAnalysisTaskSE
 {
+  
  public:
+  
   AliAnalysisTaskMuonTrackingEff();
   AliAnalysisTaskMuonTrackingEff(TString name);
   virtual ~AliAnalysisTaskMuonTrackingEff();
@@ -29,29 +37,32 @@ class AliAnalysisTaskMuonTrackingEff : public AliAnalysisTaskSE
   /// Set location of the default OCDB storage (if not set use "raw://")
   void SetDefaultStorage(const char* ocdbPath) { fOCDBpath = ocdbPath; }
   
-  /// set the flag to use only tracks matched with trigger or not
-  void MatchTrigger(Bool_t flag = kTRUE) { fMatchTrig = flag; }
+  /// Set the OCDB path to the alignment file used in the reco (if not set use default storage)
+  void SetAlignStorage(const char* ocdbPath) { fAlignOCDBpath = ocdbPath; }
   
-  /// set the flag to use only tracks passing the acceptance cuts (Rabs, eta)
-  void ApplyAccCut(Bool_t flag = kTRUE) { fApplyAccCut = flag; }
+  /// Set the OCDB path to the recoParam file used in the reco (if not set use default storage)
+  void SetRecoParamStorage(const char* ocdbPath) { fRecoParamOCDBpath = ocdbPath; }
   
-  /// set the sigma cut value on p*DCA
-  void PDCACut(Double_t cut) { fPDCACut = cut; }
+  /// Select tracks in the given centrality range
+  void SelectCentrality(Double_t min, Double_t max) {fCentMin = min; fCentMax = max;}
   
-  /// set the cut value on normalized chi2
-  void Chi2Cut(Double_t cut) { fChi2Cut = cut; }
+  // set standard cuts to select tracks to be considered
+  void SetMuonTrackCuts(AliMuonTrackCuts &trackCuts);
   
-  /// set the cut value on minimum pt
-  void PtCut(Double_t cut) { fPtCut = cut; }
+  /// set the muon low pT cut
+  void SetMuonPtCut(Double_t cut) {fPtCut = cut;}
   
-  /// set the cut value on minimum pt
+  /// set the flag to select tracks using MC label
   void UseMCLabel(Bool_t flag = kTRUE) { fUseMCLabel = flag; }
   
+  /// enable the display in the terminate
+  void EnableDisplay(Bool_t flag = kTRUE) { fEnableDisplay = flag; }
+  
   // Implementation of interface methods
-  virtual void   UserCreateOutputObjects();
-  virtual void   UserExec(Option_t *);
-  virtual void   NotifyRun();
-  virtual void   Terminate(Option_t *);
+  virtual void UserCreateOutputObjects();
+  virtual void UserExec(Option_t *);
+  virtual void NotifyRun();
+  virtual void Terminate(Option_t *);
   
   
  private:
@@ -61,58 +72,66 @@ class AliAnalysisTaskMuonTrackingEff : public AliAnalysisTaskSE
   /// Not implemented
   AliAnalysisTaskMuonTrackingEff& operator = (const AliAnalysisTaskMuonTrackingEff& rhs);
   
-  void TrackParamLoop(const TObjArray* trackParams);
+  // Identify clusters/chambers that can be removed from the track
+  Bool_t TagRemovableClusters(AliMUONTrack &track, Bool_t removableChambers[10]);
   
-  void FindAndFillMissedDetElt (const AliMUONTrackParam* trackParam,
-				const Bool_t* trackFilter,
-				Int_t firstMissCh, Int_t lastChamber);
+  // Find which detection elements should have been hit and record the missing clusters
+  void FindAndRecordMissingClusters(AliMUONTrackParam &param, Int_t chamber, Double_t trackInfo[6]);
   
-  void CoordinatesOfMissingCluster(Double_t x1, Double_t y1, Double_t z1,
-				   Double_t x2, Double_t y2, Double_t z2,
-				   Double_t& x, Double_t& y) const;
+  // Find the intersection point between the track (assuming straight line) and the DE in the global frame
+  void Intersect(AliMUONTrackParam &param, Int_t deId, Double_t p[3]);
   
-  Bool_t CoordinatesInDetElt(Int_t DeId, Double_t x, Double_t y) const;
+  // Check whether (global) area overlaps with the given DE
+  Bool_t OverlapDE(AliMpArea &area, Int_t deId);
   
-  void FillTDHistos (Int_t chamber, Int_t detElt, Double_t posXL, Double_t posYL);
+  // Register the cluster in the given stores
+  void RecordCluster(Int_t chamber, Int_t deId, AliMpPad pad[2], Double_t trackInfo[6],
+		     TString clusterKey, TList *chamberHistList, Bool_t recordChamber);
   
-  void FillTTHistos (Int_t chamber, Int_t detElt, Double_t posXL, Double_t posYL);
-
-  void FillSDHistos (Int_t chamber, Int_t detElt, Double_t posXL, Double_t posYL);
-  
-  Int_t FromDetElt2iDet (Int_t chamber, Int_t detElt) const;
-  Int_t FromDetElt2LocalId (Int_t chamber, Int_t detElt) const;
-  Int_t FromLocalId2DetElt(Int_t chamber, Int_t iDet) const;
+  /// Look for pads at the cluster's location
+  Bool_t FindPads(Int_t deId, Double_t pos[3], AliMpPad pad[2]);
   
   
 private:
   
-  static const Int_t fgkNbrOfDetectionElt[10]; ///< The total number of detection element in each chamber.
-  static const Int_t fgkOffset;                ///< fFirstDetectionElt[iChamber] = fOffset * (iChamber+1).
+  static const Int_t fgkNofDE[11];  ///< Total number of detection elements in each chamber
+  static const Int_t fgkNofBusPath; ///< Total number of bus patches
+  static const Int_t fgkNofManu;    ///< Total number of manus
   
-  Bool_t   fOCDBLoaded;           //!< Determine if the OCDB and =geometry have been loaded
-  TString  fOCDBpath;             ///< OCDB path
-  Bool_t   fMatchTrig;            ///< use only tracks matched with trigger
-  Bool_t   fApplyAccCut;          ///< use only tracks passing the acceptance cuts (Rabs, eta)
-  Double_t fPDCACut;              ///< sigma cut on p*DCA
-  Double_t fChi2Cut;              ///< cut on normalized chi2
-  Double_t fPtCut;                ///< cut on minimum pt
-  Bool_t   fUseMCLabel;           ///< select tracks using MC label
-  Float_t  fCurrentCentrality;    //!< centrality of the current event
-  AliESDMuonTrack* fCurrentTrack; //!< pointer to the currently analyzed track
+  Bool_t   fOCDBLoaded;             //!< Determine if the OCDB and =geometry have been loaded
+  TString  fOCDBpath;               ///< OCDB path
+  TString  fAlignOCDBpath;          ///< OCDB path to the alignment file
+  TString  fRecoParamOCDBpath;      ///< OCDB path to the recoParam file
+  Double_t fCentMin;                ///< select centrality > fCentMin
+  Double_t fCentMax;                ///< select centrality <= fCentMax
+  AliMuonTrackCuts* fMuonTrackCuts; ///< cuts to select tracks to be considered
+  Double_t fPtCut;                  ///< cut on minimum pt
+  Bool_t   fUseMCLabel;             ///< select tracks using MC label
+  Bool_t   fEnableDisplay;          ///< enable the display in the terminate
 
   AliMUONGeometryTransformer *fTransformer; //!< Transformer object
-
-  TList* fDetEltTDHistList;  //!< List of histograms of the tracks detected in the detection elements. 
-  TList* fDetEltTTHistList;  //!< List of histograms of the tracks which have passed through the detection elements. 
-  TList* fDetEltSDHistList;  //!< List of histograms of the tracks only detected by one chamber of the station at the detection element level.
+  
+  TObjArray *fDEPlanes; //!< vectors (x0, y0, z0, a, b, c) defining the plane of each DE in the global frame
+  
+  AliCounterCollection* fClusters; //!< detected (all), accepted (for efficiency calculation) and expected clusters
   TList* fChamberTDHistList; //!< List of histograms of the tracks detected in the chambers.
   TList* fChamberTTHistList; //!< List of histograms of the tracks which have passed through the chambers.
   TList* fChamberSDHistList; //!< List of histograms of the tracks only detected by one chamber of the station.
   TList* fExtraHistList;     //!< List of extra histograms.
 
+
+  ClassDef(AliAnalysisTaskMuonTrackingEff, 5)
   
-  ClassDef(AliAnalysisTaskMuonTrackingEff, 4)
 };
+
+
+//________________________________________________________________________
+inline void AliAnalysisTaskMuonTrackingEff::SetMuonTrackCuts(AliMuonTrackCuts &trackCuts)
+{
+  /// set standard cuts to select tracks to be considered
+  delete fMuonTrackCuts;
+  fMuonTrackCuts = new AliMuonTrackCuts(trackCuts);
+}
 
 #endif
 

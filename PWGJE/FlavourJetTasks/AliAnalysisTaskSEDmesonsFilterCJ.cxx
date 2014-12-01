@@ -62,10 +62,10 @@ fMinMass(0.),
 fMaxMass(0.),
 fCandidateArray(0),
 fSideBandArray(0),
-fhImpPar(0),
-fhImpParB(0),
-fhInvMassS(0),
-fhInvMassB(0)
+fhImpPar(),
+fhImpParB(),
+fhInvMassS(),
+fhInvMassB()
 {
    //
    // Default constructor
@@ -92,10 +92,10 @@ fMinMass(0.),
 fMaxMass(0.),
 fCandidateArray(0),
 fSideBandArray(0),
-fhImpPar(0),
-fhImpParB(0),
-fhInvMassS(0),
-fhInvMassB(0)
+fhImpPar(),
+fhImpParB(),
+fhInvMassS(),
+fhInvMassB()
 {
    //
    // Constructor. Initialization of Inputs and Outputs
@@ -391,8 +391,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       	 if(fUseReco) {
       	    if (fCandidateType==kDstartoKpipi){
       	       new ((*fCandidateArray)[iCand]) AliAODRecoCascadeHF(*dstar);
-      	       AliInfo(Form("Dstar delta mass = %f",dstar->DeltaInvMass())); 
-      	       fhInvMassS->Fill(dstar->DeltaInvMass());
+      	       fhInvMassS->Fill(dstar->DeltaInvMass(),dstar->Pt());
 
       	    } else{
       	       new ((*fCandidateArray)[iCand]) AliAODRecoDecayHF(*charmCand);
@@ -776,7 +775,13 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
    
    fhImpPar = new TH2F("hImpPar", "Impact parameter of daughter tracks; Getd0Prong();#it{p}^{daugh}_{T} (GeV/c)",200, -0.1,0.1,ptbinsD, ptmin, ptmax); //same range of pt of the D, but pt daughter used
    fOutput->Add(fhImpPar);
-   
+
+   fhInvMassS = new TH1F("hInvMassS", "D invariant mass distribution (filled with fCandidateArray)", nbinsmass, fMinMass, fMaxMass);
+   fhInvMassS->SetStats(kTRUE);
+   fhInvMassS->GetXaxis()->SetTitle("mass (GeV/c)");
+   fhInvMassS->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+   fOutput->Add(fhInvMassS);
+
    const Int_t nbinsalpha=200;
    Float_t minalpha=-TMath::Pi(), maxalpha=TMath::Pi();
    const Int_t nbinsdeltaR= 200;
@@ -858,13 +863,7 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
       }
       fhImpParB = new TH2F("hImpParB", "Impact parameter of daughter tracks (Background); Getd0Prong();#it{p}^{daugh}_{T} (GeV/c)",200, -0.1,0.1,ptbinsD, ptmin, ptmax); //same range of pt of the D, but pt daughter used
       fOutput->Add(fhImpParB);
-      
-      fhInvMassS = new TH1F("hInvMassS", "D invariant mass distribution", nbinsmass, fMinMass, fMaxMass);
-      fhInvMassS->SetStats(kTRUE);
-      fhInvMassS->GetXaxis()->SetTitle("mass (GeV/c)");
-      fhInvMassS->GetYaxis()->SetTitle("p_{T} (GeV/c)");
-      fOutput->Add(fhInvMassS);
-      
+            
       fhInvMassB = new TH1F("hInvMassB", "D invariant mass distribution", nbinsmass, fMinMass, fMaxMass);
       fhInvMassB->SetStats(kTRUE);
       fhInvMassB->GetXaxis()->SetTitle("mass (GeV/c)");

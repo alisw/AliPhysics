@@ -7,7 +7,8 @@ Int_t qaConfig(TTree* tree, TString* returnStrings)
   // specify all variables for which the status aliases shall be defined.
   // only for these variables the lines in the trending plots can be computed and plotted.
   //
-  TString sTrendVars="meanTPCncl;meanTPCnclF;meanMIP;resolutionMIP;meanVertX;meanVertY;meanVertZ;meanMultPos;meanMultNeg;";
+  TString sTrendVars="meanTPCncl;meanTPCnclF;meanMIP;resolutionMIP;MIPattachSlopeA;MIPattachSlopeC;";
+  sTrendVars+=";meanMIPele;resolutionMIPele;electroMIPSeparation;meanVertX;meanVertY;meanVertZ;meanMultPos;meanMultNeg;";
   sTrendVars+=";tpcItsMatchA;tpcItsMatchC;tpcItsMatchHighPtA;tpcItsMatchHighPtC;lambdaPull;ptPull;yPull;zPull;";
   sTrendVars+=";tpcConstrainPhiA;tpcConstrainPhiC;deltaPt;";
   sTrendVars+=";offsetdRA;offsetdZA;offsetdRC;offsetdZC;dcarAP0;dcarAP1;dcarCP0;dcarCP1;";
@@ -32,12 +33,15 @@ Int_t qaConfig(TTree* tree, TString* returnStrings)
   tree->SetAlias("dcaz0_comb4"            , "(TMath::Sqrt(dcaz_posA_0**2+dcaz_posC_0**2+dcaz_negA_0**2+dcaz_negC_0**2))");
   tree->SetAlias("dcaz1_comb4"            , "(TMath::Sqrt(dcaz_posA_1**2+dcaz_posC_1**2+dcaz_negA_1**2+dcaz_negC_1**2))");
   tree->SetAlias("dcaz2_comb4"            , "(TMath::Sqrt(dcaz_posA_2**2+dcaz_posC_2**2+dcaz_negA_2**2+dcaz_negC_2**2))");
+  tree->SetAlias("MIPattachSlope_comb2"   , "((MIPattachSlopeA+MIPattachSlopeC*(-1))/2)");
+  
   //
   // add all combined variables to sTrendVars!
   // only then the statistics aliases will be computed for them as well.
   //
   sTrendVars+=";meanMult_comb2;tpcItsMatch_comb4;itsTpcPulls_comb4;tpcConstrainPhi_comb2;";
   sTrendVars+=";offsetd_comb4;dcarFitpar_comb4;dcar0_comb4;dcar1_comb4;dcar2_comb4;dcaz0_comb4;dcaz1_comb4;dcaz2_comb4;";
+  sTrendVars+=";MIPattachSlope_comb2;";
   
   //
   // specify criterion to mark runs with enough statistics.
@@ -75,6 +79,7 @@ Int_t qaConfig(TTree* tree, TString* returnStrings)
       TStatToolkit::SetStatusAlias(tree, sVar.Data(),    "statisticOK", Form("varname_PhysAccMax:(MeanEF+%f+0)", 0.2*combfac)); // 2 mm around mean
     }
     else if (sVar.Contains("Pull")) {
+      TStatToolkit::SetStatusAlias(tree, sVar.Data(),    "statisticOK", Form("varname_PhysAccMin:(MeanEF-%f+0)", 1.0*combfac)); // check them!
       TStatToolkit::SetStatusAlias(tree, sVar.Data(),    "statisticOK", Form("varname_PhysAccMin:(MeanEF-%f+0)", 1.0*combfac));
       TStatToolkit::SetStatusAlias(tree, sVar.Data(),    "statisticOK", Form("varname_PhysAccMax:(MeanEF+%f+0)", 1.0*combfac));
     }
@@ -95,6 +100,14 @@ Int_t qaConfig(TTree* tree, TString* returnStrings)
   TStatToolkit::SetStatusAlias(tree, "meanMIP",       "statisticOK", Form("varname_PhysAccMax:(MeanEF+%f*MeanEF):%f", 0.01, entryFrac));
   TStatToolkit::SetStatusAlias(tree, "resolutionMIP", "statisticOK", Form("varname_PhysAccMin:(MeanEF-%f*MeanEF):%f", 0.10, entryFrac));
   TStatToolkit::SetStatusAlias(tree, "resolutionMIP", "statisticOK", Form("varname_PhysAccMax:(MeanEF+%f*MeanEF):%f", 0.10, entryFrac));
+  TStatToolkit::SetStatusAlias(tree, "MIPattachSlopeA",  "statisticOK", Form("varname_PhysAccMin:(MeanEF-%f*MeanEF):%f", 0.005, entryFrac)); // p0 + p1 * tan(theta) // showing p1
+  TStatToolkit::SetStatusAlias(tree, "MIPattachSlopeA",  "statisticOK", Form("varname_PhysAccMax:(MeanEF+%f*MeanEF):%f", 0.005, entryFrac));
+  TStatToolkit::SetStatusAlias(tree, "MIPattachSlopeC",  "statisticOK", Form("varname_PhysAccMin:(MeanEF-%f*MeanEF):%f", 0.005, entryFrac));
+  TStatToolkit::SetStatusAlias(tree, "MIPattachSlopeC",  "statisticOK", Form("varname_PhysAccMax:(MeanEF+%f*MeanEF):%f", 0.005, entryFrac));
+  TStatToolkit::SetStatusAlias(tree, "meanMIPele",       "statisticOK", Form("varname_PhysAccMin:(MeanEF-%f*MeanEF):%f", 0.01, entryFrac));
+  TStatToolkit::SetStatusAlias(tree, "meanMIPele",       "statisticOK", Form("varname_PhysAccMax:(MeanEF+%f*MeanEF):%f", 0.01, entryFrac));
+  TStatToolkit::SetStatusAlias(tree, "resolutionMIPele", "statisticOK", Form("varname_PhysAccMin:(MeanEF-%f*MeanEF):%f", 0.10, entryFrac));
+  TStatToolkit::SetStatusAlias(tree, "resolutionMIPele", "statisticOK", Form("varname_PhysAccMax:(MeanEF+%f*MeanEF):%f", 0.10, entryFrac));
   TStatToolkit::SetStatusAlias(tree, "meanVertZ",     "statisticOK", Form("varname_PhysAccMin:(%f+0)",-1.0 ));
   TStatToolkit::SetStatusAlias(tree, "meanVertZ",     "statisticOK", Form("varname_PhysAccMax:(%f+0)", 1.0 ));
 //  TStatToolkit::SetStatusAlias(tree, "tpcItsMatchA",  "statisticOK", Form("varname_PhysAccMin:(%f+0)", 0.7 )); // TODO: set to +-3% after multiplicity correction (see wiki)
@@ -116,11 +129,14 @@ Int_t qaConfig(TTree* tree, TString* returnStrings)
   //
   // COMBINED CRITERIA
   //
+  // Adding new subcriteria to the following combined criteria may change the descision based on the individual ones.
+  // e.g.: Assume a meanMIP warning that was vetoed by a meanMIP physacc before. It will not be vetoed anymore, if the physacc of MIPattach is very small.
+  //
   
   // combined MIP quality
-  tree->SetAlias("MIPquality_Outlier", "(meanMIP_Outlier||resolutionMIP_Outlier)");
-  tree->SetAlias("MIPquality_Warning", "(meanMIP_Warning||resolutionMIP_Warning)");
-  tree->SetAlias("MIPquality_PhysAcc", "(meanMIP_PhysAcc&&resolutionMIP_PhysAcc)");
+  tree->SetAlias("MIPquality_Outlier", "(meanMIP_Outlier||resolutionMIP_Outlier||MIPattachSlopeA_Outlier||MIPattachSlopeC_Outlier)");
+  tree->SetAlias("MIPquality_Warning", "(meanMIP_Warning||resolutionMIP_Warning||MIPattachSlopeA_Warning||MIPattachSlopeC_Warning)");
+  tree->SetAlias("MIPquality_PhysAcc", "(meanMIP_PhysAcc&&resolutionMIP_PhysAcc&&MIPattachSlopeA_PhysAcc&&MIPattachSlopeC_PhysAcc)");
   
   // combined matching efficiency
   tree->SetAlias("tpcItsMatch_Outlier", "(tpcItsMatchA_Outlier||tpcItsMatchC_Outlier||tpcItsMatchHighPtA_Outlier||tpcItsMatchHighPtC_Outlier)");
@@ -166,7 +182,7 @@ Int_t qaConfig(TTree* tree, TString* returnStrings)
   // give them meaningful names for the y axis of the status bar!
   //
   TString sStatusbarVars ("MIPquality;dcaz;dcar;tpcItsMatch;itsTpcPulls;meanTPCncl;global");
-  TString sStatusbarNames("MIP mean&rms;v_drift(DCAZ);space p.(DCAR);TPC-ITS m.eff.;ITS-TPC m.qual.;mean TPC Ncl;global result");
+  TString sStatusbarNames("dE/dx (MIP);v_drift (DCAZ);space p.(DCAR);TPC-ITS m.eff.;ITS-TPC m.qual.;mean TPC Ncl;global result");
   
   //
   // global descision is made automatically from the other entries in the status bar.

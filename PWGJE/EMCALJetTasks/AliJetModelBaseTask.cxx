@@ -42,7 +42,7 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
   fOutCellsName(),
   fMCParticlesName(),
   fOutMCParticlesName(),
-  fPartonInfoName(""),
+  fPythiaInfoName(""),
   fIsMC(kFALSE),
   fSuffix(),
   fEtaMin(-1),
@@ -80,7 +80,7 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
   fMCLabelShift(0),
   fEsdMode(kFALSE),
   fOutput(0),
-  fStackPartonInfo(0x0)
+  fPythiaInfo(0x0)
 {
   // Default constructor.
 
@@ -101,7 +101,7 @@ AliJetModelBaseTask::AliJetModelBaseTask(const char *name, Bool_t drawqa) :
   fOutCellsName(""),
   fMCParticlesName(""),
   fOutMCParticlesName(""),
-  fPartonInfoName(""),
+  fPythiaInfoName(""),
   fIsMC(kFALSE),
   fSuffix("Processed"),
   fEtaMin(-1),
@@ -139,7 +139,7 @@ AliJetModelBaseTask::AliJetModelBaseTask(const char *name, Bool_t drawqa) :
   fMCLabelShift(0),
   fEsdMode(kFALSE),
   fOutput(0),
-  fStackPartonInfo(0x0)
+  fPythiaInfo(0x0)
 {
   // Standard constructor.
 

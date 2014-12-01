@@ -123,7 +123,7 @@ void AliJDiHadronCorrTask::UserCreateOutputObjects()
    fJCORRAN->SetHeaderList(fFilterTask->GetFilter()->GetHeaderList() );
    fJCORRAN->SetTrackList( fFilterTask->GetFilter()->GetTrackList()     );
    fJCORRAN->SetMCTrackList( fFilterTask->GetFilter()->GetMCTrackList()    );
-	fJCORRAN->GetCard()->WriteCard(fOutput);
+   fJCORRAN->GetCard()->WriteCard(fOutput);
 
    PostData( 1, fOutput );
    //TH1::AddDirectory( orignalTH1AdddirectoryStatus );
@@ -140,7 +140,7 @@ void AliJDiHadronCorrTask::UserExec(Option_t* /*option*/)
 	// Processing of one event
 	if(fDebug > 5) cout << "------- AliJDiHadronCorrTask Exec-------"<<endl;
 	//if(!((Entry()-1)%100))  cout << Form(" Processing event # %lld",  Entry()) << endl; 
-
+	if( fFilterTask->GetFilterEntry() != fEntry ) return;
 
 	//cout << "AliJDiHadronCorrTask::UserExec fFilterTask->GetFilter()->GetEventSuccess() = " << fFilterTask->GetFilter()->GetEventSuccess() << endl;
 	if( fFilterTask->GetFilter()->GetEventSuccess() ){
@@ -163,16 +163,16 @@ void AliJDiHadronCorrTask::Init()
 //______________________________________________________________________________
 void AliJDiHadronCorrTask::Terminate(Option_t *)
 {
-/*
-	fJCORRAN->Terminate();
-	OpenFile(1);
-	fOutput->cd();
+	/*
+	   fJCORRAN->Terminate();
+	   OpenFile(1);
+	   fOutput->cd();
 
-	cout<<"# Write Data "<<endl;
+	   cout<<"# Write Data "<<endl;
 	//write Trigg ID and Assoc ID
 	fOutput->Write(0,TObject::kOverwrite);
 	PostData(1,fOutput);
-*/
+	*/
 	cout<<"AliJDiHadronCorrTask Analysis DONE !!"<<endl; 
 
 }

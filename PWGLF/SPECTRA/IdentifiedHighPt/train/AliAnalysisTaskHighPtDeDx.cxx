@@ -2587,8 +2587,10 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	// Check if V0 is primary = first and the same mother of both partciles
 	if(p_mother_label>0 && n_mother_label>0 && p_mother_label == n_mother_label) {
 	  pdgV0 = p_pdgMother;
-	  if(p_mother_steps == 1 && n_mother_steps == 1) {
-	    primaryV0 = 1;
+	  //if(p_mother_steps == 1 && n_mother_steps == 1) {
+        //Consistent choice of primary particle criteria (eff numerator / denominator)
+      if( fMCStack->IsPhysicalPrimary( p_mother_label ) ) {
+        primaryV0 = 1;
 	  }
 	}
       }
@@ -3918,7 +3920,8 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	 // Check if V0 is primary = first and the same mother of both partciles
 	 if(p_mother && n_mother && p_mother == n_mother) {
 	   pdgV0 = p_pdgMother;
-	   if(p_mother_steps == 1 && n_mother_steps == 1) {
+         //Primary particle criteria change: consistency in eff num/denom
+	   if(n_mcTrack->IsPhysicalPrimary() ) {
 	     primaryV0 = 1;
 	   }
 	 }

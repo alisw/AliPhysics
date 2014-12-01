@@ -38,7 +38,7 @@
 #include <AliAODEvent.h>
 
 // Jyväskylä classes
-#include "AliJCard.h"
+#include <AliJCard.h>  // this class at PWGCF / JCORRAN
 #include "AliJXtHistos.h"
 //#include "AliIsolatedEfficiency.h"
 
@@ -49,74 +49,78 @@ ClassImp(AliXtAnalysis)
 
 //________________________________________________________________________
 AliXtAnalysis::AliXtAnalysis() 
-	: AliAnalysisTaskSE(), fOutputList(0x0)
-{
-	// Constructor
-	fhEvents = NULL;
-	fAnaUtils = NULL;
-    fHistDir = NULL;
-	fHistos = NULL;
-    fhEvents = NULL;
-	//fEfficiency = NULL;
-	fCard = NULL;
-	fChargedList = NULL;
-	fIsolatedChargedList = NULL;
-    fCentBin = -1;
-    fZBin = -1;
-    fZVert = 999999.;
-	fevt = 0;
-	fDebugMode = 0;
-}
-//________________________________________________________________________
-AliXtAnalysis::AliXtAnalysis(const char *name, const char * cardname) 
-	: AliAnalysisTaskSE(name), 
-	fOutputList(0x0), 
-	fAnaUtils(0x0),
-    fHistDir(0x0),
-	fHistos(0x0),
-    fhEvents(0x0),
+      : AliAnalysisTaskSE(),
+        fOutputList(0x0),
+        fAnaUtils(0x0),
+        fCard(0x0),
+        fHistDir(0x0),
+        fHistos(0x0),
+        fhEvents(0x0),
 	//fEfficiency(0x0),
 	fChargedList(0x0),
 	fIsolatedChargedList(0x0),
-    fCentBin(-1),
-    fZBin(-1),
-    fZVert(999999.),
+	fCentBin(-1),
+	fZBin(-1),
+	fZVert(999999.),
 	fevt(0),
 	fDebugMode(0)
 {
-    // All parameters of the analysis
-    fCard = new AliJCard(cardname);
-    fCard->PrintOut();
-
+// Constructor
+}
+//________________________________________________________________________
+AliXtAnalysis::AliXtAnalysis(const char *name, const char * cardname) 
+      :	AliAnalysisTaskSE(name),
+	fOutputList(0x0), 
+	fAnaUtils(0x0),
+   	fCard(0x0),
+	fHistDir(0x0),
+	fHistos(0x0),
+   	fhEvents(0x0),
+	//fEfficiency(0x0),
+	fChargedList(0x0),
+	fIsolatedChargedList(0x0),
+	fCentBin(-1),
+	fZBin(-1),
+	fZVert(999999.),
+	fevt(0),
+	fDebugMode(0)
+{
+	// All parameters of the analysis
+	fCard = new AliJCard(cardname);
+	
+	cout << "debug: card created to address " << fCard << endl;
+	
+	fCard->PrintOut();
+	
 	fAnaUtils = new AliAnalysisUtils();
 	fAnaUtils->SetUseOutOfBunchPileUp( kTRUE );
 	fAnaUtils->SetUseSPDCutInMultBins( kTRUE);
-
-    // Define input and output slots here
-    // Input slot #0 works with a TChain
-    DefineInput(0, TChain::Class());
-    // Output slot #0 writes into a TH1 container
-    DefineOutput(1, TList::Class());
-    // JHistos into TDirectory
-    DefineOutput(2, TDirectory::Class());
+	
+	// Define input and output slots here
+	// Input slot #0 works with a TChain
+	DefineInput(0, TChain::Class());
+	// Output slot #0 writes into a TH1 container
+	DefineOutput(1, TList::Class());
+	// JHistos into TDirectory
+	DefineOutput(2, TDirectory::Class());
 }
 //________________________________________________________________________
-AliXtAnalysis::AliXtAnalysis(const AliXtAnalysis& a):
-	AliAnalysisTaskSE(a.GetName()),
+AliXtAnalysis::AliXtAnalysis(const AliXtAnalysis& a)
+      :	AliAnalysisTaskSE(a.GetName()),
 	fOutputList(a.fOutputList),
 	fAnaUtils(a.fAnaUtils),
-    fCard(a.fCard),
-    fHistDir(a.fHistDir),
-    fHistos(a.fHistos),
-    fhEvents(a.fhEvents),
+	fCard(a.fCard),
+	fHistDir(a.fHistDir),
+	fHistos(a.fHistos),
+	fhEvents(a.fhEvents),
 	//fEfficiency(a.fEfficiency),
 	fChargedList(a.fChargedList),
 	fIsolatedChargedList(a.fIsolatedChargedList),
-    fCentBin(-1),
-    fZBin(-1),
-    fZVert(999999.),
-    fevt(0),
-    fDebugMode(0)
+	fCentBin(-1),
+	fZBin(-1),
+	fZVert(999999.),
+	fevt(0),
+	fDebugMode(0)
 {
     //copy constructor
     fhEvents = (TH1D*) a.fhEvents->Clone(a.fhEvents->GetName());
@@ -167,7 +171,7 @@ void AliXtAnalysis::UserCreateOutputObjects(){
     bool orignalTH1AdddirectoryStatus=TH1::AddDirectoryStatus();
     TH1::AddDirectory(kTRUE);
     if( !orignalTH1AdddirectoryStatus ) cout<<"DEBUG : TH1::AddDirectory is turned on"<<endl;
-    TFile * file2 = OpenFile(2);
+    //TFile * file2 = OpenFile(2);
     
     fHistDir=gDirectory;
     fHistos = new AliJXtHistos(fCard);

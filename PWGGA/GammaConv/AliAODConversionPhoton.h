@@ -45,6 +45,11 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
 		void CalculateDistanceOfClossetApproachToPrimVtx(const AliVVertex* primVertex);
 		void SetMassToZero() { SetE(P()); }
 		
+		void SetIsTrueConvertedPhoton(){
+			fCaloPhoton = 0;
+			fCaloPhotonMCFlags = 1;	
+		}	
+		
 		Float_t GetDCAzToPrimVtx()const {return fDCAzPrimVtx;}
 		Float_t GetDCArToPrimVtx()const {return fDCArPrimVtx;}
 		
@@ -75,6 +80,11 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
 		Bool_t IsEMNonLeading(){return !(fCaloPhotonMCFlags&kIsPhoton) && !(fCaloPhotonMCFlags&kIsElectron);} // largest contribution is from hadron
         Bool_t IsSubLeadingEM(){return fCaloPhotonMCFlags&kIsSubLeadingEM;}                         // cluster contains at least one electron or photon from a pi0 or eta in subleading contribution
 		
+		Bool_t IsTrueConvertedPhoton() {
+			if (!fCaloPhoton && fCaloPhotonMCFlags == 1) return kTRUE;
+				else return kFALSE;
+		}
+		
 		Float_t fDCArPrimVtx;
 		Float_t fDCAzPrimVtx;
 		Bool_t fCaloPhoton;
@@ -86,7 +96,7 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
         Int_t fCaloPhotonMotherMCLabels[20];
 		
 	
-	ClassDef(AliAODConversionPhoton,3)
+	ClassDef(AliAODConversionPhoton,4)
 };
 
 

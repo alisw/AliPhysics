@@ -20,6 +20,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   Double_t trackeff                 = 1.0,
   Bool_t   doAODTrackProp           = kTRUE,
   Bool_t   modifyMatchObjs          = kTRUE,
+  Bool_t   useOldBitConfig          = kFALSE,
   Bool_t   doTriggerQA              = kFALSE
 )
 {
@@ -70,7 +71,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
      *   jetHighC             (int)                = 0,
      *   doQA                 (bool)               = kFALSE
      */
-    AliEmcalTriggerMaker *emcalTriggers = AddTaskEmcalTriggerMaker("EmcalTriggers", "EmcalTriggerSetup", 0, 0, "AliEmcalTriggerMaker", 0, 0, 0, 0, 0, 0, doTriggerQA);
+    AliEmcalTriggerMaker *emcalTriggers = AddTaskEmcalTriggerMaker("EmcalTriggers", "EmcalTriggerSetup", 0, 0, "AliEmcalTriggerMaker", 0, 0, 0, 0, 0, 0, useOldBitConfig, doTriggerQA);
     emcalTriggers->SelectCollisionCandidates(pSel);
   }
 

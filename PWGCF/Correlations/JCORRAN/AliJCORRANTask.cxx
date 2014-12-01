@@ -44,6 +44,7 @@
 //______________________________________________________________________________
 AliJCORRANTask::AliJCORRANTask() :   
     AliAnalysisTaskSE("PWG4JCORRAN"),
+	fFilterEntry(0),
     fFilter(0x0),
     fAliJRunHeader(0x0)
 {
@@ -56,6 +57,7 @@ AliJCORRANTask::AliJCORRANTask() :
 //______________________________________________________________________________
 AliJCORRANTask::AliJCORRANTask(const char *name, TString inputformat):
     AliAnalysisTaskSE(name), 
+	fFilterEntry(0),
     fFilter(0x0),
     fAliJRunHeader(0x0)
 {
@@ -72,6 +74,7 @@ AliJCORRANTask::AliJCORRANTask(const char *name, TString inputformat):
 //____________________________________________________________________________
 AliJCORRANTask::AliJCORRANTask(const AliJCORRANTask& ap) :
     AliAnalysisTaskSE(ap.GetName()), 
+	fFilterEntry(ap.fFilterEntry),
     fFilter(ap.fFilter),
     fAliJRunHeader(ap.fAliJRunHeader)
 { 
@@ -132,7 +135,7 @@ void AliJCORRANTask::UserExec(Option_t* /*option*/)
 	// Processing of one event
 	if(fDebug > 5) cout << "------- AliJCORRANTask Exec-------"<<endl;
 	if(!((Entry()-1)%100))  AliInfo(Form(" Processing event # %lld",  Entry())); 
-
+	fFilterEntry = fEntry;
 	fFilter->UserExec("");
 
 	if(fDebug > 5) cout << "\t------- End UserExec "<<endl;

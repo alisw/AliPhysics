@@ -140,7 +140,10 @@ fhCentrality(0x0),
 fhCentralityAccept(0x0),
 fhNofMultipleTriggers(0x0),
 fhNofMultipleTriggersCone(0x0),
+fhNofMultipleTriggersConeLow(0x0),
+fhNofMultipleTriggersConeHigh(0x0),
 fhDeltaRMultTriggers(0x0),
+fhDeltaPhiMultTriggers(0x0),
 //fHJetPtRaw(0x0),
 //fHLeadingJetPtRaw(0x0), 
 //fHDphiVsJetPtAll(0x0), 
@@ -171,9 +174,16 @@ fhCellAreaToMedian(0x0),
 fhCellAreaToMedianGen(0x0),
 fhNofMultipleTriggersGen(0x0),
 fhNofMultipleTriggersConeGen(0x0),
+fhNofMultipleTriggersConeGenLow(0x0),
+fhNofMultipleTriggersConeGenHigh(0x0),
 fhDeltaRMultTriggersGen(0x0),
+fhDeltaPhiMultTriggersGen(0x0),
 fhNofMultipleTriggersConeGenA(0x0),
+fhNofMultipleTriggersConeGenALow(0x0),
+fhNofMultipleTriggersConeGenAHigh(0x0),
 fhNofMultipleTriggersConeGenB(0x0),
+fhNofMultipleTriggersConeGenBLow(0x0),
+fhNofMultipleTriggersConeGenBHigh(0x0),
 fIsChargedMC(0),
 fIsKine(0),
 fIsFullMC(0),
@@ -277,7 +287,10 @@ fhCentrality(0x0),
 fhCentralityAccept(0x0),
 fhNofMultipleTriggers(0x0),
 fhNofMultipleTriggersCone(0x0),
+fhNofMultipleTriggersConeLow(0x0),
+fhNofMultipleTriggersConeHigh(0x0),
 fhDeltaRMultTriggers(0x0),
+fhDeltaPhiMultTriggers(0x0),
 //fHJetPtRaw(0x0),
 //fHLeadingJetPtRaw(0x0), 
 //fHDphiVsJetPtAll(0x0), 
@@ -308,9 +321,16 @@ fhCellAreaToMedian(0x0),
 fhCellAreaToMedianGen(0x0),
 fhNofMultipleTriggersGen(0x0),
 fhNofMultipleTriggersConeGen(0x0),
+fhNofMultipleTriggersConeGenLow(0x0),
+fhNofMultipleTriggersConeGenHigh(0x0),
 fhDeltaRMultTriggersGen(0x0),
+fhDeltaPhiMultTriggersGen(0x0),
 fhNofMultipleTriggersConeGenA(0x0),
+fhNofMultipleTriggersConeGenALow(0x0),
+fhNofMultipleTriggersConeGenAHigh(0x0),
 fhNofMultipleTriggersConeGenB(0x0),
+fhNofMultipleTriggersConeGenBLow(0x0),
+fhNofMultipleTriggersConeGenBHigh(0x0),
 fIsChargedMC(0),
 fIsKine(0),
 fIsFullMC(0),
@@ -420,7 +440,10 @@ fhCentrality(a.fhCentrality),
 fhCentralityAccept(a.fhCentralityAccept),
 fhNofMultipleTriggers(a.fhNofMultipleTriggers),
 fhNofMultipleTriggersCone(a.fhNofMultipleTriggersCone),
+fhNofMultipleTriggersConeLow(a.fhNofMultipleTriggersConeLow),
+fhNofMultipleTriggersConeHigh(a.fhNofMultipleTriggersConeHigh),
 fhDeltaRMultTriggers(a.fhDeltaRMultTriggers),
+fhDeltaPhiMultTriggers(a.fhDeltaPhiMultTriggers),
 //fHJetPtRaw(a.fHJetPtRaw),
 //fHLeadingJetPtRaw(a.fHLeadingJetPtRaw),
 //fHDphiVsJetPtAll(a.fHDphiVsJetPtAll),
@@ -451,9 +474,16 @@ fhCellAreaToMedian(a.fhCellAreaToMedian),
 fhCellAreaToMedianGen(a.fhCellAreaToMedianGen),
 fhNofMultipleTriggersGen(a.fhNofMultipleTriggersGen),
 fhNofMultipleTriggersConeGen(a.fhNofMultipleTriggersConeGen),
+fhNofMultipleTriggersConeGenLow(a.fhNofMultipleTriggersConeGenLow),
+fhNofMultipleTriggersConeGenHigh(a.fhNofMultipleTriggersConeGenHigh),
 fhDeltaRMultTriggersGen(a.fhDeltaRMultTriggersGen),
+fhDeltaPhiMultTriggersGen(a.fhDeltaPhiMultTriggersGen),
 fhNofMultipleTriggersConeGenA(a.fhNofMultipleTriggersConeGenA),
+fhNofMultipleTriggersConeGenALow(a.fhNofMultipleTriggersConeGenALow),
+fhNofMultipleTriggersConeGenAHigh(a.fhNofMultipleTriggersConeGenAHigh),
 fhNofMultipleTriggersConeGenB(a.fhNofMultipleTriggersConeGenB),
+fhNofMultipleTriggersConeGenBLow(a.fhNofMultipleTriggersConeGenBLow),
+fhNofMultipleTriggersConeGenBHigh(a.fhNofMultipleTriggersConeGenBHigh),
 fIsChargedMC(a.fIsChargedMC),
 fIsKine(a.fIsKine),
 fIsFullMC(a.fIsFullMC),
@@ -736,9 +766,12 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
    fhEntriesToMedian = new TH1D("fhEntriesToMedian","fhEntriesToMedian",30,0,30);
    fhCellAreaToMedian =  new TH1D("fhCellAreaToMedian", "fhCellAreaToMedian", 75,0,1.5);
 
-   fhNofMultipleTriggers = new TH1D("fhNofMultipleTriggers","fhNofMultipleTriggers",100,0,100);
-   fhNofMultipleTriggersCone = new TH1D("fhNofMultipleTriggersCone","fhNofMultipleTriggersCone R<0.4",100,0,100);
+   fhNofMultipleTriggers = new TH1D("fhNofMultipleTriggers","fhNofMultipleTriggers",20,0,20);
+   fhNofMultipleTriggersCone = new TH1D("fhNofMultipleTriggersCone","fhNofMultipleTriggersCone R<0.4",20,0,20);
+   fhNofMultipleTriggersConeLow  = (TH1D*) fhNofMultipleTriggersCone->Clone("fhNofMultipleTriggersConepTa15to20");
+   fhNofMultipleTriggersConeHigh = (TH1D*) fhNofMultipleTriggersCone->Clone("fhNofMultipleTriggersConepTa20to50");
    fhDeltaRMultTriggers = new  TH1D("fhDeltaRMultTriggers","fhDeltaRMultTriggers", 100,0,4);  
+   fhDeltaPhiMultTriggers = new  TH1D("fhDeltaPhiMultTriggers","fhDeltaPhiRultTriggers", 100,-TMath::Pi(),TMath::Pi());  
 
    if(!fIsKine){
       fOutputList->Add(fhJetPhi);
@@ -759,7 +792,10 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
       fOutputList->Add(fhCellAreaToMedian);
       fOutputList->Add(fhNofMultipleTriggers);
       fOutputList->Add(fhNofMultipleTriggersCone);
+      fOutputList->Add(fhNofMultipleTriggersConeLow);
+      fOutputList->Add(fhNofMultipleTriggersConeHigh);
       fOutputList->Add(fhDeltaRMultTriggers);
+      fOutputList->Add(fhDeltaPhiMultTriggers);
    }
    // raw spectra of INCLUSIVE jets  
    //Centrality, pTjet, A
@@ -894,14 +930,40 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
       fhNofMultipleTriggersConeGen = (TH1D*) fhNofMultipleTriggersCone->Clone("fhNofMultipleTriggersConeGen"); 
       fOutputList->Add(fhNofMultipleTriggersConeGen);
 
+      fhNofMultipleTriggersConeGenLow = (TH1D*) fhNofMultipleTriggersCone->Clone("fhNofMultipleTriggersConeGenpta15to20"); 
+      fOutputList->Add(fhNofMultipleTriggersConeGenLow);
+
+      fhNofMultipleTriggersConeGenHigh = (TH1D*) fhNofMultipleTriggersCone->Clone("fhNofMultipleTriggersConeGenpta20to50"); 
+      fOutputList->Add(fhNofMultipleTriggersConeGenHigh);
+
+
+
       fhDeltaRMultTriggersGen  = (TH1D*) fhDeltaRMultTriggers->Clone("fhDeltaRMultTriggersGen");
       fOutputList->Add(fhDeltaRMultTriggersGen);
+
+      fhDeltaPhiMultTriggersGen  = (TH1D*) fhDeltaPhiMultTriggers->Clone("fhDeltaPhiMultTriggersGen");
+      fOutputList->Add(fhDeltaPhiMultTriggersGen);
+
 
       fhNofMultipleTriggersConeGenA = (TH1D*) fhNofMultipleTriggersConeGen->Clone("fhNofMultipleTriggersConeGen10"); 
       fOutputList->Add(fhNofMultipleTriggersConeGenA);
 
+      fhNofMultipleTriggersConeGenALow = (TH1D*) fhNofMultipleTriggersConeGen->Clone("fhNofMultipleTriggersConeGen10pTa15to20"); 
+      fOutputList->Add(fhNofMultipleTriggersConeGenALow);
+
+      fhNofMultipleTriggersConeGenAHigh = (TH1D*) fhNofMultipleTriggersConeGen->Clone("fhNofMultipleTriggersConeGen10pTa20to50"); 
+      fOutputList->Add(fhNofMultipleTriggersConeGenAHigh);
+
       fhNofMultipleTriggersConeGenB = (TH1D*) fhNofMultipleTriggersConeGen->Clone("fhNofMultipleTriggersConeGen5"); 
       fOutputList->Add(fhNofMultipleTriggersConeGenB);
+
+      fhNofMultipleTriggersConeGenBLow = (TH1D*) fhNofMultipleTriggersConeGen->Clone("fhNofMultipleTriggersConeGen5pTa15to20"); 
+      fOutputList->Add(fhNofMultipleTriggersConeGenBLow);
+
+      fhNofMultipleTriggersConeGenBHigh = (TH1D*) fhNofMultipleTriggersConeGen->Clone("fhNofMultipleTriggersConeGen5pTa20to50"); 
+      fOutputList->Add(fhNofMultipleTriggersConeGenBHigh);
+
+
 
    }
    //-------------------------------------
@@ -1322,25 +1384,36 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
             Int_t indexTriggGena = triggersMCa[rnda];
 
             Double_t deltaPhia, deltaEtaa, deltaRa;
-            Int_t aa = 0; 
+            Int_t aaLow = 0; 
+            Int_t aaHigh = 0; 
 
             //Correlation with single inclusive  TRIGGER
             AliVParticle* tGenTa = (AliVParticle*) particleListGen.At(indexTriggGena);  
             if(tGenTa){
-               for(Int_t ia=0; ia<ntriggersMCa; ia++){
-                  if(indexTriggGena == triggersMCa[ia]) continue;
+               //for(Int_t ia=0; ia<ntriggersMCa; ia++)
+               for(Int_t ia=0; ia< npar; ia++){
+                  //if(indexTriggGena == triggersMCa[ia]) continue;
+                  if(indexTriggGena == ia) continue;
                
-                  AliVParticle* tGenTz = (AliVParticle*) particleListGen.At(triggersMCa[ia]);  
+                  //AliVParticle* tGenTz = (AliVParticle*) particleListGen.At(triggersMCa[ia]);  
+                  AliVParticle* tGenTz = (AliVParticle*) particleListGen.At(ia);  
                   if(!tGenTz) continue;
+                  if(tGenTz->Pt()*0.9<15.0) continue;
+                  if(tGenTz->Pt()*0.9>50.0) continue;
                
                   deltaPhia = RelativePhi(tGenTa->Phi(),tGenTz->Phi());
                   deltaEtaa = tGenTa->Eta()-tGenTz->Eta(); 
                   deltaRa = sqrt(deltaPhia*deltaPhia + deltaEtaa*deltaEtaa);
                   
-                  if(deltaRa<0.4) aa++;
+                  if(deltaRa<0.4){ 
+                     if(tGenTz->Pt()*0.9<20.0) aaLow++; //15-20
+                     else aaHigh++;  //20-50
+                  }
                }
             }
-            fhNofMultipleTriggersConeGenA->Fill(aa);
+            fhNofMultipleTriggersConeGenA->Fill(aaLow+aaHigh); // 15-50
+            fhNofMultipleTriggersConeGenALow->Fill(aaLow); //15-20
+            fhNofMultipleTriggersConeGenAHigh->Fill(aaHigh);//20-50
          }
 
          if(ntriggersMCb>0){
@@ -1348,25 +1421,36 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
             Int_t indexTriggGenb = triggersMCb[rndb];
 
             Double_t deltaPhib, deltaEtab, deltaRb;
-            Int_t bb = 0; 
+            Int_t bbLow = 0; 
+            Int_t bbHigh = 0; 
 
             //Correlation with single inclusive  TRIGGER
             AliVParticle* tGenTb = (AliVParticle*) particleListGen.At(indexTriggGenb);  
             if(tGenTb){
-               for(Int_t ib=0; ib<ntriggersMCb; ib++){
-                  if(indexTriggGenb == triggersMCb[ib]) continue;
+               //for(Int_t ib=0; ib<ntriggersMCb; ib++)
+               for(Int_t ib=0; ib<npar; ib++){
+                  //if(indexTriggGenb == triggersMCb[ib]) continue;
+                  if(indexTriggGenb == ib) continue;
                
-                  AliVParticle* tGenTz = (AliVParticle*) particleListGen.At(triggersMCb[ib]);  
+                  //AliVParticle* tGenTz = (AliVParticle*) particleListGen.At(triggersMCb[ib]);  
+                  AliVParticle* tGenTz = (AliVParticle*) particleListGen.At(ib);  
                   if(!tGenTz) continue;
+                  if(tGenTz->Pt()*0.95<15.0) continue;
+                  if(tGenTz->Pt()*0.95>50.0) continue;
                
                   deltaPhib = RelativePhi(tGenTb->Phi(),tGenTz->Phi());
                   deltaEtab = tGenTb->Eta()-tGenTz->Eta(); 
                   deltaRb = sqrt(deltaPhib*deltaPhib + deltaEtab*deltaEtab);
                   
-                  if(deltaRb<0.4) bb++;
+                  if(deltaRb<0.4){
+                     if(tGenTz->Pt()*0.95<20.0) bbLow++; //15-20
+                     else bbHigh++;
+                  }
                }
             }
-            fhNofMultipleTriggersConeGenB->Fill(bb);
+            fhNofMultipleTriggersConeGenB->Fill(bbLow+bbHigh); //15-50
+            fhNofMultipleTriggersConeGenBLow->Fill(bbLow);//15-20
+            fhNofMultipleTriggersConeGenBHigh->Fill(bbHigh);//20-50
          }
       }
 
@@ -1390,42 +1474,38 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
             fhNofMultipleTriggersGen->Fill(ntriggersMC-1);
 
             Double_t deltaPhi, deltaEta, deltaR;
-            Int_t k = 0; 
+            Int_t iLow = 0; 
+            Int_t iHigh = 0; 
 
             //Correlation with single inclusive  TRIGGER
             AliVParticle* tGenT1 = (AliVParticle*) particleListGen.At(indexTriggGen);  
             if(tGenT1){
-               for(Int_t ia=0; ia<ntriggersMC; ia++){
-                  if(indexTriggGen == triggersMC[ia]) continue;
+               //for(Int_t ia=0; ia<ntriggersMC; ia++)
+               for(Int_t ia=0; ia< particleListGen.GetEntries(); ia++){
+                  //if(indexTriggGen == triggersMC[ia]) continue;
+                  if(indexTriggGen == ia) continue;
                
-                  AliVParticle* tGenT2 = (AliVParticle*) particleListGen.At(triggersMC[ia]);  
+                  //AliVParticle* tGenT2 = (AliVParticle*) particleListGen.At(triggersMC[ia]);  
+                  AliVParticle* tGenT2 = (AliVParticle*) particleListGen.At(ia);  
                   if(!tGenT2) continue;
-               
+                  if(tGenT2->Pt()<15.0) continue; 
+                  if(tGenT2->Pt()>50.0) continue; 
                   deltaPhi = RelativePhi(tGenT1->Phi(),tGenT2->Phi());
                   deltaEta = tGenT1->Eta()-tGenT2->Eta(); 
                   deltaR = sqrt(deltaPhi*deltaPhi + deltaEta*deltaEta);
                   
-                  if(deltaR<0.4) k++;
-               }
-            }
-            fhNofMultipleTriggersConeGen->Fill(k);
+                  fhDeltaRMultTriggersGen->Fill(deltaR);
+                  fhDeltaPhiMultTriggersGen->Fill(deltaPhi);
 
-            if(ntriggersMC>1){
-               //Correlation of each trigger with any other trigger
-               for(Int_t ia=0; ia<ntriggersMC-1; ia++){
-                  AliVParticle* tGenI = (AliVParticle*) particleListGen.At(triggersMC[ia]);  
-                  if(!tGenI) continue;
-                  for(Int_t ib=ia+1; ib<ntriggersMC; ib++){
-                     AliVParticle* tGenII = (AliVParticle*) particleListGen.At(triggersMC[ib]);  
-                     if(!tGenII) continue;
-                        
-                        deltaPhi = RelativePhi(tGenI->Phi(),tGenII->Phi());
-                        deltaEta = tGenI->Eta()-tGenII->Eta(); 
-                        deltaR = sqrt(deltaPhi*deltaPhi + deltaEta*deltaEta);
-                        fhDeltaRMultTriggersGen->Fill(deltaR);
+                  if(deltaR<0.4){
+                     if(tGenT2->Pt()<20.0) iLow++;
+                     else iHigh++;
                   }
                }
-            } 
+            }
+            fhNofMultipleTriggersConeGen->Fill(iLow+iHigh);
+            fhNofMultipleTriggersConeGenLow->Fill(iLow);
+            fhNofMultipleTriggersConeGenHigh->Fill(iHigh);
 
          }else{
             indexTriggGen = -1; //trigger not found
@@ -1953,37 +2033,37 @@ Int_t  AliAnalysisTaskJetCorePP::GetListOfTracks(TList *list){
       fhNofMultipleTriggers->Fill(ntriggers-1);
      
       Double_t deltaPhi, deltaEta, deltaR;
-      Int_t k=0;
+      Int_t iLow=0;
+      Int_t iHigh=0;
       //Correlation with single inclusive trigger
       AliVParticle* tGent1 = (AliVParticle*) list->At(index);  
       if(tGent1){
-         for(Int_t ia=0; ia<ntriggers; ia++){
-            if(triggers[ia]==index) continue;
-            AliVParticle* tGent2 = (AliVParticle*) list->At(triggers[ia]);  
+         //for(Int_t ia=0; ia<ntriggers; ia++)
+         for(Int_t ia=0; ia<list->GetEntries(); ia++){
+            //if(triggers[ia]==index) continue;
+            if(ia==index) continue;
+            //AliVParticle* tGent2 = (AliVParticle*) list->At(triggers[ia]);  
+            AliVParticle* tGent2 = (AliVParticle*) list->At(ia);  
             if(!tGent2) continue;
+            if(tGent2->Pt()<15.0) continue;
+            if(tGent2->Pt()>50.0) continue;
             deltaPhi = RelativePhi(tGent1->Phi(),tGent2->Phi());
             deltaEta = tGent1->Eta()-tGent2->Eta(); 
             deltaR   = sqrt(deltaPhi*deltaPhi + deltaEta*deltaEta);
-            if(deltaR<0.4) k++;
+
+            fhDeltaRMultTriggers->Fill(deltaR);
+            fhDeltaPhiMultTriggers->Fill(deltaPhi);
+
+            if(deltaR<0.4){
+               if(tGent2->Pt()<20.0) iLow++;
+               else iHigh++;
+            }
          } 
       }
-      fhNofMultipleTriggersCone->Fill(k);
+      fhNofMultipleTriggersCone->Fill(iLow+iHigh);
+      fhNofMultipleTriggersConeLow->Fill(iLow);
+      fhNofMultipleTriggersConeHigh->Fill(iHigh);
 
-      if(ntriggers>1){
-         //Correlation with any other trigger
-         for(Int_t ia=0; ia<ntriggers-1; ia++){
-            AliVParticle* tGeni = (AliVParticle*) list->At(triggers[ia]);  
-            if(!tGeni) continue;
-            for(Int_t ib=ia+1; ib<ntriggers; ib++){
-               AliVParticle* tGenii = (AliVParticle*) list->At(triggers[ib]);  
-               if(!tGenii) continue;
-               deltaPhi = RelativePhi(tGeni->Phi(),tGenii->Phi());
-               deltaEta = tGeni->Eta()-tGenii->Eta(); 
-               deltaR   = sqrt(deltaPhi*deltaPhi + deltaEta*deltaEta);
-               fhDeltaRMultTriggers->Fill(deltaR);
-            }
-         }
-      }
    }
 
    return index;

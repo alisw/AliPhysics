@@ -31,6 +31,9 @@ class AliTwoPlusOneContainer : public TNamed
   void FillCorrelations(Double_t centrality, Float_t zVtx, AliTwoPlusOneContainer::PlotKind step, TObjArray* triggerNear, TObjArray* triggerAway, TObjArray* assocNear, TObjArray* assocAway, Double_t weight, Bool_t is1plus1, Bool_t isBackgroundSame);
   
   AliUEHist* GetData() {return fTwoPlusOne;}
+  TH1F* GetAsymmetry() {return fAsymmetry;}
+  TH1F* GetAsymmetryMixed() {return fAsymmetryMixed;}
+  TH2F* GetTriggerPt() {return fTriggerPt;}
   Double_t getTriggerPt1Min() {return fTriggerPt1Min;}
   Double_t getTriggerPt1Max() {return fTriggerPt1Max;}
   Double_t getTriggerPt2Min() {return fTriggerPt2Min;}
@@ -49,8 +52,13 @@ class AliTwoPlusOneContainer : public TNamed
 protected:
   void DeleteContainers();
   
-  AliUEHist* fTwoPlusOne;	     //a 6 dim histogram which actually contains all the data
-  
+  AliUEHist* fTwoPlusOne;	     //a 7 dim histogram which actually contains all the data
+
+  TH1F* fAsymmetry;                  //asymmetry of the same event
+  TH1F* fAsymmetryMixed;             //asymmetry of the mixed event
+
+  TH2F* fTriggerPt;                  //2 dim histogramm with fine binning to describe the pT distribution of the trigger particles
+
   Double_t fTriggerPt1Min;           //minimum energy for the first trigger particle
   Double_t fTriggerPt1Max;           //maximum energy for the first trigger particle
   Double_t fTriggerPt2Min;           //minimum energy for the second trigger particle
@@ -60,7 +68,7 @@ protected:
   Double_t fAlpha;                   //minimum energy for the first trigger particle
   Int_t fMergeCount;	             // counts how many objects have been merged together
   
-  ClassDef(AliTwoPlusOneContainer, 3)  // underlying event histogram container
+  ClassDef(AliTwoPlusOneContainer, 4)  // underlying event histogram container
 };
 
 
