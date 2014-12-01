@@ -846,7 +846,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   
   //SPD primary vertex
   AliAODVertex *fSPDVertex = aod->GetPrimaryVertexSPD();
-  if(fSPDVertex){
+  if(fSPDVertex->GetNContributors()>0){
   	fSpdVtxPos[0] = fSPDVertex->GetX();
 	fSpdVtxPos[1] = fSPDVertex->GetY();
 	fSpdVtxPos[2] = fSPDVertex->GetZ();
