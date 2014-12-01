@@ -23,6 +23,7 @@ class AliGenerator;
 class AliRunLoader;
 class AliStack;
 class AliHeader;
+class TMacro;
 
 class AliMCGenHandler : public AliInputEventHandler
 {
@@ -40,9 +41,14 @@ public:
     AliMCEvent* MCEvent() const {return fMCEvent;}
     
     void 		 SetGenerator(AliGenerator* generator) { fGenerator = generator; }
+    
     void		 SetSeedMode(Int_t mode) { fSeedMode = mode; }
     void		 SetSeed(UInt_t seed) { fSeed = seed; }
     UInt_t		 GetSeed() { return fSeed; }
+    
+    void		 SetGeneratorMacroPath(const char* macroPath) { fGeneratorMacroPath = macroPath; }
+    void		 SetGeneratorMacroParameters(const char* params) { fGeneratorMacroParameters = params; }
+    void		 SetGeneratorCustomization(TMacro* macro) { fGeneratorCustomization = macro; }
 
 private:
     AliMCGenHandler(const AliMCGenHandler& handler);             
@@ -56,7 +62,11 @@ private:
     AliGenerator	  *fGenerator;		// generator
     Int_t		   fSeedMode;		// which seed is to be used: 0 (default): nothing/set externally; 1: use fSeed; 2: current time; 3: AliEn job id
     UInt_t		   fSeed;		// can be used to set seed manually (fSeedMode == 1); contains last used seed (fSeedMode == 2 || 3)
+    
+    TString		   fGeneratorMacroPath; // path to macro creating the generator object
+    TString		   fGeneratorMacroParameters; // parameters passed to the creating macro
+    TMacro		  *fGeneratorCustomization; // customization macro for generator object
 
-    ClassDef(AliMCGenHandler,1)  // MC Gen Handler
+    ClassDef(AliMCGenHandler, 2)  // MC Gen Handler
 };
 #endif 
