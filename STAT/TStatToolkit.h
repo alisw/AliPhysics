@@ -24,6 +24,10 @@ class TGraph2D;
 class TCanvas;
 class TMultiGraph; 
 class TGraphErrors; 
+class TObjString;
+class TCut;
+class TTreeSRedirector;
+
 
 class TStatToolkit : public TObject
 {
@@ -80,6 +84,7 @@ class TStatToolkit : public TObject
   static void  DrawStatusGraphs(TObjArray* oaMultGr);
   static TTree*  WriteStatusToTree(TObject* oStatusGr);
   static TMultiGraph*  MakeStatusLines(TTree * tree, const char * expr, const char * cut, const char * alias);
+  static void  MakeSummaryTree(TTree* treeIn, TTreeSRedirector *pcstream, TObjString& sumID, TCut &selection);
   //
   // TTree function for robust draw
   //

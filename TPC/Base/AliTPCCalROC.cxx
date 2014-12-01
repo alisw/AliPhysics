@@ -74,7 +74,8 @@ AliTPCCalROC::AliTPCCalROC(UInt_t  sector)
   fNRows        =  AliTPCROC::Instance()->GetNRows(fSector);
   fkIndexes      =  AliTPCROC::Instance()->GetRowIndexes(fSector);
   fData = new Float_t[fNChannels];
-  for (UInt_t  idata = 0; idata< fNChannels; idata++) fData[idata] = 0.;
+  Reset();
+//   for (UInt_t  idata = 0; idata< fNChannels; idata++) fData[idata] = 0.;
 }
 
 //_____________________________________________________________________________
@@ -257,6 +258,50 @@ Bool_t AliTPCCalROC::LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction,
   return kTRUE;
 }
 
+Bool_t  AliTPCCalROC::Convolute(Double_t sigmaPad, Double_t sigmaRow,  AliTPCCalROC*outlierROC, TF1 */*fpad*/, TF1 */*frow*/){
+  //
+  // convolute the calibration with function fpad,frow
+  // in range +-4 sigma
+
+  Float_t *newBuffer=new Float_t[fNChannels] ;
+  //
+  for (Int_t iRow=0; iRow< Int_t(fNRows); iRow++){
+    Int_t nPads=GetNPads(iRow); // number of rows in current row
+    for (Int_t iPad=0; iPad<nPads; iPad++){
+      Int_t jRow0=TMath::Max(TMath::Nint(iRow-sigmaRow*4.),0);
+      Int_t jRow1=TMath::Min(TMath::Nint(iRow+sigmaRow*4.),Int_t(fNRows));
+      Int_t jPad0=TMath::Max(TMath::Nint(iPad-sigmaPad*4.),0);
+      Int_t jPad1=TMath::Min(TMath::Nint(iRow+sigmaPad*4.),Int_t(nPads));
+      //
+      Double_t sumW=0;
+      Double_t sumCal=0;
+      for (Int_t jRow=jRow0; jRow<=jRow1; jRow++){
+	for (Int_t jPad=jPad0; jPad<=jPad1; jPad++){
+	  if (!IsInRange(jRow,jPad)) continue;
+	  Bool_t isOutlier=(outlierROC==NULL)?kFALSE:outlierROC->GetValue(jRow,jPad)>0;
+	  if (!isOutlier){
+	    Double_t weight= TMath::Gaus(jPad,iPad,sigmaPad)*TMath::Gaus(jRow,iRow,sigmaRow);	    
+	    sumCal+=weight*GetValue(jRow,jPad);
+	    sumW+=weight;
+	  }
+	}
+      }
+      if (sumW>0){
+	sumCal/=sumW;
+	newBuffer[fkIndexes[iRow]+iPad]=sumCal;
+      }
+    }
+  }
+  memcpy(fData, newBuffer,GetNchannels()*sizeof(Float_t));
+  delete []newBuffer;
+  return kTRUE;
+}
+
+
+//
+
+
+
 
 
 // algebra fuctions:
@@ -282,6 +327,7 @@ void AliTPCCalROC::Add(const AliTPCCalROC * roc, Double_t c1){
   // multiply AliTPCCalROC roc by c1 and add each channel to the coresponing channel in the ROC
   //  - pad by pad 
   //
+  if (!roc) return;
   for (UInt_t  idata = 0; idata< fNChannels; idata++){
     fData[idata]+=roc->fData[idata]*c1;
   }
@@ -293,6 +339,7 @@ void AliTPCCalROC::Multiply(const AliTPCCalROC*  roc) {
   // multiply each channel of the ROC with the coresponding channel of 'roc'
   //     - pad by pad -
   //
+  if (!roc) return;
   for (UInt_t  idata = 0; idata< fNChannels; idata++){
     fData[idata]*=roc->fData[idata];
   }
@@ -304,11 +351,20 @@ void AliTPCCalROC::Divide(const AliTPCCalROC*  roc) {
   // divide each channel of the ROC by the coresponding channel of 'roc'
   //     - pad by pad -
   //
+  if (!roc) return;
   Float_t kEpsilon=0.00000000000000001;
   for (UInt_t  idata = 0; idata< fNChannels; idata++){
     if (TMath::Abs(roc->fData[idata])>kEpsilon)
       fData[idata]/=roc->fData[idata];
   }
+}
+
+void AliTPCCalROC::Reset()
+{
+  //
+  // reset to ZERO
+  //
+  memset(fData,0,sizeof(Float_t)*fNChannels); // set all values to 0
 }
 
 Double_t AliTPCCalROC::GetMean(AliTPCCalROC *const outlierROC) const {

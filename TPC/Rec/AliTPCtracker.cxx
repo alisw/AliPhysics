@@ -22,13 +22,11 @@
 //  AliTPC parallel tracker
 //
 //  The track fitting is based on Kalman filtering approach
-
 //  The track finding steps:
 //      1. Seeding - with and without vertex constraint
 //                 - seeding with vertex constain done at first n^2 proble
 //                 - seeding without vertex constraint n^3 problem
 //      2. Tracking - follow prolongation road - find cluster - update kalman track
-
 //  The seeding and tracking is repeated several times, in different seeding region.
 //  This approach enables to find the track which cannot be seeded in some region of TPC
 //  This can happen because of low momenta (track do not reach outer radius), or track is currently in the ded region between sectors, or the track is for the moment overlapped with other track (seed quality is poor) ...
@@ -69,8 +67,7 @@
 // To enable storage of the TPC tracks in the ESD friend track
 // use AliTPCReconstructor::SetStreamLevel(n); 
 //
-// The debug level -  different procedure produce tree for numerical debugging
-//                    To enable them set AliTPCReconstructor::SetStreamLevel(n); where nis bigger 1
+// The debug level -  different procedure produce tree for numerical debugging of code and data (see comments foEStreamFlags in AliTPCtracker.h  )
 //
 
 //
@@ -82,7 +79,7 @@
 // The systematic errors are expressed there in RMS - position (cm), angle (rad), curvature (1/GeV)
 // The default values are 0. 
 //
-// The sytematic errors are added to the covariance matrix in following places:
+// The systematic errors are added to the covariance matrix in following places:
 //
 // 1. During fisrt itteration - AliTPCtracker::FillESD
 // 2. Second iteration - 
@@ -92,19 +89,6 @@
 //      3.a TRD->TPC   - AliTPCtracker::ReadSeeds
 //      3.b TPC->ITS   - AliTPCtracker::RefitInward
 //
-// There are several places in the code which can be numerically debuged
-// This code is keeped in order to enable code development and to check the calibration implementtion
-//
-//      1. ErrParam stream  - dump information about 
-//         1.a) cluster
-//         2.a) cluster error estimate
-//         3.a) cluster shape estimate
-//
-//
-//  Debug streamer levels:
-//  
-//-------------------------------------------------------
-
 
 /* $Id$ */
 
@@ -113,6 +97,7 @@
 #include <TFile.h>
 #include <TObjArray.h>
 #include <TTree.h>
+#include <TMatrixD.h>
 #include <TGraphErrors.h>
 #include <TTimeStamp.h>
 #include "AliLog.h"
@@ -147,7 +132,8 @@
 #include "AliDCSSensor.h"
 #include "AliDAQ.h"
 #include "AliCosmicTracker.h"
-
+#include "AliTPCROC.h"
+#include "AliMathBase.h"
 //
 
 using std::cerr;
@@ -210,6 +196,7 @@ AliTPCtracker::AliTPCtracker()
 		 fkParam(0),
 		 fDebugStreamer(0),
 		 fUseHLTClusters(4),
+         fCrossTalkSignalArray(0),
 		 fSeedsPool(0),
 		 fFreeSeedsID(500),
 		 fNFreeSeeds(0),
@@ -223,7 +210,6 @@ AliTPCtracker::AliTPCtracker()
     fYMax[irow]=0;
     fPadLength[irow]=0;
   }
-
 }
 //_____________________________________________________________________
 
@@ -302,12 +288,13 @@ Int_t AliTPCtracker::UpdateTrack(AliTPCseed * track, Int_t accept){
     //  new(larr[ihelix]) AliHelix(*track) ;    
     //}
   }
-  if (AliTPCReconstructor::StreamLevel()>5) {
+  if (AliTPCReconstructor::StreamLevel()&kStreamUpdateTrack) {
     Int_t event = (fEvent==NULL)? 0: fEvent->GetEventNumberInFile();
     AliExternalTrackParam param(*track);
     TTreeSRedirector &cstream = *fDebugStreamer;
-    cstream<<"Update"<<
+    cstream<<"UpdateTrack"<<
       "cl.="<<c<<
+      "event="<<event<<
       "track.="<<&param<<
       "\n";
   }
@@ -355,9 +342,12 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
     gcl[0]=gclf[0];    gcl[1]=gclf[1];    gcl[2]=gclf[2];
     Int_t nclSeed=seed->GetNumberOfClusters();
     
-    if (AliTPCReconstructor::StreamLevel()>2) {
+    if (AliTPCReconstructor::StreamLevel()&kStreamErrParam) { // flag:stream in debug mode cluster and track extrapolation at given row together with error nad shape estimate
+      Int_t eventNr = fEvent->GetEventNumberInFile();
+	
     (*fDebugStreamer)<<"ErrParam"<<
       "iter="<<fIteration<<
+      "eventNr="<<eventNr<<
       "Cl.="<<cluster<<
       "nclSeed="<<nclSeed<<
       "T.="<<&param<<
@@ -436,9 +426,10 @@ AliTracker(),
 		 fSeeds(0),
 		 fIteration(0),
 		 fkParam(0),
-                 fDebugStreamer(0),
-                 fUseHLTClusters(4),
-                 fSeedsPool(0),
+         fDebugStreamer(0),
+         fUseHLTClusters(4),
+         fCrossTalkSignalArray(0),
+         fSeedsPool(0),
 		 fFreeSeedsID(500),
 		 fNFreeSeeds(0),
 		 fLastSeedID(-1)
@@ -476,6 +467,22 @@ AliTracker(),
   }
   //
   fSeedsPool = new TClonesArray("AliTPCseed",1000);
+
+  // crosstalk array and matrix initialization
+  Int_t nROCs   = 72;
+  Int_t nTimeBinsAll  = par->GetMaxTBin();
+  Int_t nWireSegments = 11;
+  fCrossTalkSignalArray = new TObjArray(nROCs*4);  //  
+  fCrossTalkSignalArray->SetOwner(kTRUE);
+  for (Int_t isector=0; isector<4*nROCs; isector++){
+    TMatrixD * crossTalkSignal = new TMatrixD(nWireSegments,nTimeBinsAll);
+    for (Int_t imatrix = 0; imatrix<11; imatrix++)
+      for (Int_t jmatrix = 0; jmatrix<nTimeBinsAll; jmatrix++){
+        (*crossTalkSignal)[imatrix][jmatrix]=0.;
+      }
+    fCrossTalkSignalArray->AddAt(crossTalkSignal,isector);
+  }
+
 }
 //________________________________________________________________________
 AliTPCtracker::AliTPCtracker(const AliTPCtracker &t):
@@ -498,9 +505,10 @@ AliTPCtracker::AliTPCtracker(const AliTPCtracker &t):
 		 fSeeds(0),
 		 fIteration(0),
 		 fkParam(0),
-                 fDebugStreamer(0),
-                 fUseHLTClusters(4),
-                 fSeedsPool(0),
+         fDebugStreamer(0),
+         fUseHLTClusters(4),
+         fCrossTalkSignalArray(0),
+         fSeedsPool(0),
 		 fFreeSeedsID(500),
 		 fNFreeSeeds(0),
 		 fLastSeedID(-1)
@@ -534,6 +542,7 @@ AliTPCtracker::~AliTPCtracker() {
     fSeeds->Clear(); 
     delete fSeeds;
   }
+  if (fCrossTalkSignalArray) delete fCrossTalkSignalArray;
   if (fDebugStreamer) delete fDebugStreamer;
   if (fSeedsPool) delete fSeedsPool;
 }
@@ -558,8 +567,8 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
       if (!pt) continue; 
       pt->UpdatePoints();
       AddCovariance(pt);
-      if (AliTPCReconstructor::StreamLevel()>1) {
-	(*fDebugStreamer)<<"Track0"<<
+      if (AliTPCReconstructor::StreamLevel()&kStreamFillESD) {
+	(*fDebugStreamer)<<"FillESD"<<  // flag: stream track information in FillESD function (after track Iteration 0)
 	  "Tr0.="<<pt<<
 	  "\n";       
       }
@@ -728,6 +737,8 @@ Double_t AliTPCtracker::ErrY2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   const Double_t *errInner = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorClusterInner();
   addErr=errInner[0]*TMath::Exp(-TMath::Abs((cl->GetX()-85.)/errInner[1]));
   erry2+=addErr*addErr;
+  const Double_t *errCluster = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorCluster();
+  erry2+=errCluster[0]*errCluster[0];
   seed->SetErrorY2(erry2);
   //
   return erry2;
@@ -884,6 +895,8 @@ Double_t AliTPCtracker::ErrZ2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   const Double_t *errInner = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorClusterInner();
   addErr=errInner[0]*TMath::Exp(-TMath::Abs((cl->GetX()-85.)/errInner[1]));
   errz2+=addErr*addErr;
+  const Double_t *errCluster = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorCluster();
+  errz2+=errCluster[1]*errCluster[1];
   seed->SetErrorZ2(errz2);
   //
   return errz2;
@@ -1332,7 +1345,7 @@ Int_t  AliTPCtracker::LoadClusters(const TClonesArray *arr)
 
 Int_t  AliTPCtracker::LoadClusters()
 {
-  //
+ //
   // load clusters to the memory
   static AliTPCClustersRow *clrow= new AliTPCClustersRow("AliTPCclusterMI");
   //
@@ -1381,10 +1394,408 @@ Int_t  AliTPCtracker::LoadClusters()
   clrow->Clear("C");
   LoadOuterSectors();
   LoadInnerSectors();
+
+  cout << " =================================================================================================================================== " << endl;
+  cout << " AliTPCReconstructor::GetRecoParam()->GetUseIonTailCorrection() =  " << AliTPCReconstructor::GetRecoParam()->GetUseIonTailCorrection() << endl;
+  cout << " AliTPCReconstructor::GetRecoParam()->GetCrosstalkCorrection()  =  " << AliTPCReconstructor::GetRecoParam()->GetCrosstalkCorrection()  << endl;
+  cout << " =================================================================================================================================== " << endl;
+
   if (AliTPCReconstructor::GetRecoParam()->GetUseIonTailCorrection()) ApplyTailCancellation();
+  if (AliTPCReconstructor::GetRecoParam()->GetCrosstalkCorrection()!=0.) CalculateXtalkCorrection();
+  if (AliTPCReconstructor::GetRecoParam()->GetCrosstalkCorrection()!=0.) ApplyXtalkCorrection();
+  //if (AliTPCReconstructor::GetRecoParam()->GetUseOulierClusterFilter()) FilterOutlierClusters();  
   return 0;
 }
 
+
+void  AliTPCtracker::CalculateXtalkCorrection(){
+  //
+  // Calculate crosstalk estimate
+  //
+  const Int_t nROCs   = 72;
+  const Int_t   nIterations=3;  // 
+  // 0.) reset crosstalk matrix 
+  //
+  for (Int_t isector=0; isector<nROCs*4; isector++){  //set all ellemts of crosstalk matrix to 0 
+    TMatrixD * crossTalkMatrix = (TMatrixD*)fCrossTalkSignalArray->At(isector);
+    if (crossTalkMatrix)(*crossTalkMatrix)*=0;
+  }
+  
+  //
+  // 1.) Filling part -- loop over clusters
+  //
+  Double_t missingChargeFactor= AliTPCReconstructor::GetRecoParam()->GetCrosstalkCorrectionMissingCharge();
+  for (Int_t iter=0; iter<nIterations;iter++){
+    for (Int_t isector=0; isector<36; isector++){      // loop over sectors
+      for (Int_t iside=0; iside<2; iside++){           // loop over sides A/C
+	AliTPCtrackerSector &sector= (isector<18)?fInnerSec[isector%18]:fOuterSec[isector%18];
+	Int_t nrows = sector.GetNRows();
+	Int_t sec=0;
+	if (isector<18) sec=isector+18*iside;
+	if (isector>=18) sec=18+isector+18*iside;
+	for (Int_t row = 0;row<nrows;row++){           // loop over rows       
+	  //
+	  //
+	  Int_t wireSegmentID     = fkParam->GetWireSegment(sec,row);
+	  Float_t nPadsPerSegment = (Float_t)(fkParam->GetNPadsPerSegment(wireSegmentID));
+	  TMatrixD &crossTalkSignal =  *((TMatrixD*)fCrossTalkSignalArray->At(sec));
+	  TMatrixD &crossTalkSignalCache =  *((TMatrixD*)fCrossTalkSignalArray->At(sec+nROCs*2));   // this is the cache value of the crosstalk from previous iteration
+	  TMatrixD &crossTalkSignalBelow =  *((TMatrixD*)fCrossTalkSignalArray->At(sec+nROCs));
+	  Int_t nCols=crossTalkSignal.GetNcols();
+	  //
+	  AliTPCtrackerRow&  tpcrow = sector[row];       
+	  Int_t ncl = tpcrow.GetN1();                  // number of clusters in the row
+	  if (iside>0) ncl=tpcrow.GetN2();
+	  for (Int_t i=0;i<ncl;i++) {  // loop over clusters
+	    AliTPCclusterMI *clXtalk= (iside>0)?(tpcrow.GetCluster2(i)):(tpcrow.GetCluster1(i));
+	    
+	    Int_t timeBinXtalk = clXtalk->GetTimeBin();      
+	    Double_t rmsPadMin2=0.5*0.5+(fkParam->GetDiffT()*fkParam->GetDiffT())*(TMath::Abs((clXtalk->GetZ()-fkParam->GetZLength())))/(fkParam->GetPadPitchWidth(sec)*fkParam->GetPadPitchWidth(sec)); // minimal PRF width - 0.5 is the PRF in the pad units - we should et it from fkparam getters 
+	    Double_t rmsTimeMin2=1+(fkParam->GetDiffL()*fkParam->GetDiffL())*(TMath::Abs((clXtalk->GetZ()-fkParam->GetZLength())))/(fkParam->GetZWidth()*fkParam->GetZWidth()); // minimal PRF width - 1 is the TRF in the time bin units - we should et it from fkParam getters
+	    Double_t rmsTime2   = clXtalk->GetSigmaZ2()/(fkParam->GetZWidth()*fkParam->GetZWidth()); 
+	    Double_t rmsPad2    = clXtalk->GetSigmaY2()/(fkParam->GetPadPitchWidth(sec)*fkParam->GetPadPitchWidth(sec)); 
+	    if (rmsPadMin2>rmsPad2){
+	      rmsPad2=rmsPadMin2;
+	    }
+	    if (rmsTimeMin2>rmsTime2){
+	      rmsTime2=rmsTimeMin2;
+	    }
+	    
+	    Double_t norm= 2.*TMath::Exp(-1.0/(2.*rmsTime2))+2.*TMath::Exp(-4.0/(2.*rmsTime2))+1.;
+	    Double_t qTotXtalk = 0.;   
+	    Double_t qTotXtalkMissing = 0.;   
+	    for (Int_t itb=timeBinXtalk-2, idelta=-2; itb<=timeBinXtalk+2; itb++,idelta++) {        
+	      if (itb<0 || itb>=nCols) continue;
+	      Double_t missingCharge=0;
+	      Double_t trf= TMath::Exp(-idelta*idelta/(2.*rmsTime2));
+	      if (missingChargeFactor>0) {
+		for (Int_t dpad=-2; dpad<=2; dpad++){
+		  Double_t qPad =   clXtalk->GetMax()*TMath::Exp(-dpad*dpad/(2.*rmsPad2))*trf;
+		  if (TMath::Nint(qPad-crossTalkSignalCache[wireSegmentID][itb])<=fkParam->GetZeroSup()){
+		    missingCharge+=qPad+crossTalkSignalCache[wireSegmentID][itb];
+		  }else{
+		    missingCharge+=crossTalkSignalCache[wireSegmentID][itb];
+		  }
+		}
+	      }
+	      qTotXtalk = clXtalk->GetQ()*trf/norm+missingCharge*missingChargeFactor;
+	      qTotXtalkMissing = missingCharge;
+	      crossTalkSignal[wireSegmentID][itb]+= qTotXtalk/nPadsPerSegment; 
+	      crossTalkSignalBelow[wireSegmentID][itb]+= qTotXtalkMissing/nPadsPerSegment; 
+	    } // end of time bin loop
+	  } // end of cluster loop	
+	} // end of rows loop
+      }  // end of side loop
+    }    // end of sector loop
+    //
+    // copy crosstalk matrix to cached used for next itteration
+    //
+    //
+    // 2.) dump the crosstalk matrices to tree for further investigation
+    //     a.) to estimate fluctuation of pedestal in indiviula wire segments
+    //     b.) to check correlation between regions
+    //     c.) to check relative conribution of signal below threshold to crosstalk
+    
+    if (AliTPCReconstructor::StreamLevel()&kStreamCrosstalkMatrix) {
+      for (Int_t isector=0; isector<nROCs; isector++){  //set all ellemts of crosstalk matrix to 0
+	TMatrixD * crossTalkMatrix = (TMatrixD*)fCrossTalkSignalArray->At(isector);
+	TMatrixD * crossTalkMatrixBelow = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs);
+	TMatrixD * crossTalkMatrixCache = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs*2);
+	TVectorD vecAll(crossTalkMatrix->GetNrows());
+	TVectorD vecBelow(crossTalkMatrix->GetNrows());
+	TVectorD vecCache(crossTalkMatrixCache->GetNrows());
+	//
+	for (Int_t itime=0; itime<crossTalkMatrix->GetNcols(); itime++){
+	  for (Int_t iwire=0; iwire<crossTalkMatrix->GetNrows(); iwire++){
+	    vecAll[iwire]=(*crossTalkMatrix)(iwire,itime);
+	    vecBelow[iwire]=(*crossTalkMatrixBelow)(iwire,itime);
+	    vecCache[iwire]=(*crossTalkMatrixCache)(iwire,itime);
+	  }
+	  (*fDebugStreamer)<<"crosstalkMatrix"<<
+	    "iter="<<iter<<                      //iteration
+	    "sector="<<isector<<                 // sector
+	    "itime="<<itime<<                    // time bin index
+	    "vecAll.="<<&vecAll<<                // crosstalk charge + charge below threshold
+	    "vecCache.="<<&vecCache<<                // crosstalk charge + charge below threshold	  
+	    "vecBelow.="<<&vecBelow<<            // crosstalk contribution from signal below threshold
+	    "\n";
+	}
+      }
+    }
+    if (iter<nIterations-1) for (Int_t isector=0; isector<nROCs*2; isector++){  //set all ellemts of crosstalk matrix to 0 
+      TMatrixD * crossTalkMatrix = (TMatrixD*)fCrossTalkSignalArray->At(isector);
+      TMatrixD * crossTalkMatrixCache = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs*2);
+      if (crossTalkMatrix){
+	(*crossTalkMatrixCache)*=0;
+	(*crossTalkMatrixCache)+=(*crossTalkMatrix);
+	(*crossTalkMatrix)*=0;
+      }
+    }      
+  }
+
+
+}
+
+
+
+
+void    AliTPCtracker::FilterOutlierClusters(){
+  //
+  // filter outlier clusters  
+  //
+  /*
+    1.)..... booking part
+    nSectors=72;
+    nTimeBins=fParam->Get....
+    TH2F hisTime("","", sector,0,sector, nTimeBins,0,nTimeBins);
+    TH2F hisPadRow("","", sector,0,sector, nPadRows,0,nPadRows);
+    2.) .... filling part
+    .... cluster loop { hisTime.Fill(cluster->GetDetector(),cluster->GetTimeBin()); }
+    
+    3.) ...filtering part 
+    sector loop { calculate median,mean80 and rms80 of the nclusters per time bin; calculate median,mean80 and rms80 of the nclusters per par row; .... export values to the debug streamers - to decide which threshold to be used... }
+    
+    sector loop
+    { disable clusters in time bins > mean+ n rms80+ offsetTime disable clusters in padRow > mean+ n rms80+ offsetPadRow // how to dislable clusters? - new bit to introduce } 
+    //
+    4. Disabling clusters
+    
+  */
+  
+  //
+  // 1.) booking part 
+  // 
+  //  AliTPCcalibDB *db=AliTPCcalibDB::Instance();
+  Int_t nSectors=AliTPCROC::Instance()->GetNSectors(); 
+  Int_t nTimeBins= 1100; // *Bug here - we should get NTimeBins from ALTRO - Parameters not relyable
+  Int_t nPadRows=(AliTPCROC::Instance()->GetNRows(0) + AliTPCROC::Instance()->GetNRows(36));
+  // parameters for filtering
+  const Double_t nSigmaCut=9.;           // should be in recoParam ?
+  const Double_t offsetTime=100;         // should be in RecoParam ?  -
+  const Double_t offsetPadRow=300;       // should be in RecoParam ?
+  const Double_t offsetTimeAccept=8;     // should be in RecoParam ?  - obtained as mean +1 rms in high IR pp
+  TH2F hisTime("hisSectorTime","hisSectorTime", nSectors,0,nSectors, nTimeBins,0,nTimeBins);
+  TH2F hisPadRow("hisSectorRow","hisSectorRow", nSectors,0,nSectors, nPadRows,0,nPadRows);
+  //
+  // 2.) Filling part -- loop over clusters
+  //
+  for (Int_t isector=0; isector<36; isector++){      // loop over sectors
+    for (Int_t iside=0; iside<2; iside++){           // loop over sides A/C
+      AliTPCtrackerSector &sector= (isector<18)?fInnerSec[isector%18]:fOuterSec[isector%18];
+      Int_t nrows = sector.GetNRows();
+      for (Int_t row = 0;row<nrows;row++){           // loop over rows       
+        AliTPCtrackerRow&  tpcrow = sector[row];       
+        Int_t ncl = tpcrow.GetN1();                  // number of clusters in the row
+        if (iside>0) ncl=tpcrow.GetN2();
+        for (Int_t i=0;i<ncl;i++) {  // loop over clusters
+          AliTPCclusterMI *cluster= (iside>0)?(tpcrow.GetCluster2(i)):(tpcrow.GetCluster1(i));
+          hisTime.Fill(cluster->GetDetector(),cluster->GetTimeBin()); 
+          hisPadRow.Fill(cluster->GetDetector(),cluster->GetRow()); 
+	}
+      } 
+    } 
+  } 
+
+  //
+  // 3. Filtering part
+  //
+  TVectorD vecTime(nTimeBins);
+  TVectorD vecPadRow(nPadRows);
+  TVectorD vecMedianSectorTime(nSectors);
+  TVectorD vecRMSSectorTime(nSectors);
+  TVectorD vecMedianSectorTimeOut6(nSectors);
+  TVectorD vecMedianSectorTimeOut9(nSectors);//
+  TVectorD vecMedianSectorTimeOut(nSectors);//
+  TVectorD vecMedianSectorPadRow(nSectors);
+  TVectorD vecRMSSectorPadRow(nSectors);
+  TVectorD vecMedianSectorPadRowOut6(nSectors);
+  TVectorD vecMedianSectorPadRowOut9(nSectors);
+  TVectorD vecMedianSectorPadRowOut(nSectors);
+  TVectorD vecSectorOut6(nSectors);
+  TVectorD vecSectorOut9(nSectors);
+  TMatrixD matSectorCluster(nSectors,2);
+  //
+  // 3.a)  median, rms calculations for hisTime 
+  //
+  for (Int_t isec=0; isec<nSectors; isec++){
+    vecMedianSectorTimeOut6[isec]=0;
+    vecMedianSectorTimeOut9[isec]=0;
+    for (Int_t itime=0; itime<nTimeBins; itime++){
+      vecTime[itime]=hisTime.GetBinContent(isec+1, itime+1);      
+    }
+    Double_t median= TMath::Mean(nTimeBins,vecTime.GetMatrixArray());
+    Double_t rms= TMath::RMS(nTimeBins,vecTime.GetMatrixArray()); 
+    vecMedianSectorTime[isec]=median;
+    vecRMSSectorTime[isec]=rms;
+    if ((AliTPCReconstructor::StreamLevel()&kStreamFilterClusterInfo)>0) AliInfo(TString::Format("Sector TimeStat: %d\t%8.0f\t%8.0f",isec,median,rms).Data());
+    //
+    // declare outliers
+    for (Int_t itime=0; itime<nTimeBins; itime++){
+      Double_t entries= hisTime.GetBinContent(isec+1, itime+1); 
+      if (entries>median+6.*rms+offsetTime) {
+	vecMedianSectorTimeOut6[isec]+=1;
+      }
+      if (entries>median+9.*rms+offsetTime) {
+	vecMedianSectorTimeOut9[isec]+=1;
+      }
+    }
+  }    
+  //
+  // 3.b) median, rms calculations for hisPadRow
+  // 
+  for (Int_t isec=0; isec<nSectors; isec++){
+    vecMedianSectorPadRowOut6[isec]=0;
+    vecMedianSectorPadRowOut9[isec]=0;
+    for (Int_t ipadrow=0; ipadrow<nPadRows; ipadrow++){
+      vecPadRow[ipadrow]=hisPadRow.GetBinContent(isec+1, ipadrow+1);      
+    }
+    Int_t nPadRowsSector= AliTPCROC::Instance()->GetNRows(isec);
+    Double_t median= TMath::Mean(nPadRowsSector,vecPadRow.GetMatrixArray());
+    Double_t rms= TMath::RMS(nPadRowsSector,vecPadRow.GetMatrixArray());
+    vecMedianSectorPadRow[isec]=median;
+    vecRMSSectorPadRow[isec]=rms;
+    if ((AliTPCReconstructor::StreamLevel()&kStreamFilterClusterInfo)>0) AliInfo(TString::Format("Sector PadRowStat: %d\t%8.0f\t%8.0f",isec,median,rms).Data());
+    //
+    // declare outliers
+    for (Int_t ipadrow=0; ipadrow<nPadRows; ipadrow++){
+      Double_t entries= hisPadRow.GetBinContent(isec+1, ipadrow+1);
+      if (entries>median+6.*rms+offsetPadRow) {
+        vecMedianSectorPadRowOut6[isec]+=1;
+      }
+      if (entries>median+9.*rms+offsetPadRow) {
+        vecMedianSectorPadRowOut9[isec]+=1;
+      }
+    }
+  }
+  //
+  // 3.c) filter outlier sectors
+  //
+  Double_t medianSectorTime = TMath::Median(nSectors, vecTime.GetMatrixArray());
+  Double_t mean69SectorTime, rms69SectorTime=0;
+  AliMathBase::EvaluateUni(nSectors,  vecTime.GetMatrixArray(), mean69SectorTime,rms69SectorTime,69);
+  for (Int_t isec=0; isec<nSectors; isec++){
+    vecSectorOut6[isec]=0;
+    vecSectorOut9[isec]=0;
+    matSectorCluster(isec,0)=0;
+    matSectorCluster(isec,1)=0;
+    if (TMath::Abs(vecMedianSectorTime[isec])>(mean69SectorTime+6.*(rms69SectorTime+ offsetTimeAccept))) {
+      vecSectorOut6[isec]=1;
+    }
+    if (TMath::Abs(vecMedianSectorTime[isec])>(mean69SectorTime+9.*(rms69SectorTime+ offsetTimeAccept))){
+      vecSectorOut9[isec]=1;
+    }
+  }
+  // light version of export variable
+  Int_t filteredSector= vecSectorOut9.Sum();                  // light version of export variable
+  Int_t filteredSectorTime= vecMedianSectorTimeOut9.Sum();
+  Int_t filteredSectorPadRow= vecMedianSectorPadRowOut9.Sum();
+  if (fEvent) if (fEvent->GetHeader()){
+    fEvent->GetHeader()->SetTPCNoiseFilterCounter(0,TMath::Min(filteredSector,255));
+    fEvent->GetHeader()->SetTPCNoiseFilterCounter(1,TMath::Min(filteredSectorTime,255));
+    fEvent->GetHeader()->SetTPCNoiseFilterCounter(2,TMath::Min(filteredSectorPadRow,255));
+  }
+ 
+  //
+  // 4. Disabling clusters in outlier layers
+  //
+  Int_t counterAll=0;
+  Int_t counterOut=0;
+  for (Int_t isector=0; isector<36; isector++){      // loop over sectors
+    for (Int_t iside=0; iside<2; iside++){           // loop over sides A/C
+      AliTPCtrackerSector &sector= (isector<18)?fInnerSec[isector%18]:fOuterSec[isector%18];
+      Int_t nrows = sector.GetNRows();
+      for (Int_t row = 0;row<nrows;row++){           // loop over rows       
+        AliTPCtrackerRow&  tpcrow = sector[row];       
+        Int_t ncl = tpcrow.GetN1();                  // number of clusters in the row
+        if (iside>0) ncl=tpcrow.GetN2();
+        for (Int_t i=0;i<ncl;i++) {  // loop over clusters
+          AliTPCclusterMI *cluster= (iside>0)?(tpcrow.GetCluster2(i)):(tpcrow.GetCluster1(i));
+	  Double_t medianTime=vecMedianSectorTime[cluster->GetDetector()];
+	  Double_t medianPadRow=vecMedianSectorPadRow[cluster->GetDetector()];
+	  Double_t rmsTime=vecRMSSectorTime[cluster->GetDetector()];
+	  Double_t rmsPadRow=vecRMSSectorPadRow[cluster->GetDetector()];
+	  Int_t entriesPadRow=hisPadRow.GetBinContent(cluster->GetDetector()+1, cluster->GetRow()+1);
+	  Int_t entriesTime=hisTime.GetBinContent(cluster->GetDetector()+1, cluster->GetTimeBin()+1);
+	  Bool_t isOut=kFALSE;
+	  if (vecSectorOut9[cluster->GetDetector()]>0.5) {
+	    isOut=kTRUE;
+	  }
+	  
+	  if (entriesTime>medianTime+nSigmaCut*rmsTime+offsetTime) {
+	    isOut=kTRUE;
+	    vecMedianSectorTimeOut[cluster->GetDetector()]++;
+	  }
+	  if (entriesPadRow>medianPadRow+nSigmaCut*rmsPadRow+offsetPadRow) {
+	    isOut=kTRUE;
+	    vecMedianSectorPadRowOut[cluster->GetDetector()]++;
+	  }
+	  counterAll++;
+	  matSectorCluster(cluster->GetDetector(),0)+=1;
+	  if (isOut){
+	    cluster->Disable();
+	    counterOut++;
+	    matSectorCluster(cluster->GetDetector(),1)+=1;
+	  }
+	}
+      }
+    }
+  }
+  for (Int_t isec=0; isec<nSectors; isec++){
+    if ((AliTPCReconstructor::StreamLevel()&kStreamFilterClusterInfo)>0) AliInfo(TString::Format("Sector Stat: %d\t%8.0f\t%8.0f",isec,matSectorCluster(isec,1),matSectorCluster(isec,0)).Data());
+  }
+  //
+  // dump info to streamer - for later tuning of cuts
+  //
+  if ((AliTPCReconstructor::StreamLevel()&kStreamFilterClusterInfo)>0) {  // stream TPC data ouliers filtering infomation
+    AliLog::Flush();
+    AliInfo(TString::Format("Cluster counter: (%d/%d) (Filtered/All)",counterOut,counterAll).Data());
+    for (Int_t iSec=0; iSec<nSectors; iSec++){
+      if (vecSectorOut9[iSec]>0 ||  matSectorCluster(iSec,1)>0) {
+	AliInfo(TString::Format("Filtered sector\t%d",iSec).Data());
+	Double_t vecMedTime =TMath::Median(72,vecMedianSectorTime.GetMatrixArray());
+	Double_t vecMedPadRow =TMath::Median(72,vecMedianSectorPadRow.GetMatrixArray());
+	Double_t vecMedCluster=(counterAll-counterOut)/72;
+	AliInfo(TString::Format("VecMedianSectorTime\t(%4.4f/%4.4f/%4.4f)",       vecMedianSectorTimeOut[iSec],vecMedianSectorTime[iSec],vecMedTime).Data());
+	AliInfo(TString::Format("VecMedianSectorPadRow\t(%4.4f/%4.4f/%4.4f)",     vecMedianSectorPadRowOut[iSec],vecMedianSectorPadRow[iSec],vecMedPadRow).Data());
+	AliInfo(TString::Format("MatSectorCluster\t(%4.4f/%4.4f/%4.4f)\n",          matSectorCluster(iSec,1), matSectorCluster(iSec,0),  vecMedCluster).Data());
+	AliLog::Flush();
+      }
+    }
+    AliLog::Flush();
+    Int_t eventNr = fEvent->GetEventNumberInFile();
+    (*fDebugStreamer)<<"filterClusterInfo"<<
+      // minimal set variables for the ESDevent
+      "eventNr="<<eventNr<<
+      "counterAll="<<counterAll<<
+      "counterOut="<<counterOut<<
+      "matSectotCluster.="<<&matSectorCluster<<                   // 
+      //
+      "filteredSector="<<filteredSector<<                        //  counter filtered sectors                   
+      "filteredSectorTime="<<filteredSectorTime<<                //  counter filtered time bins
+      "filteredSectorPadRow="<<filteredSectorPadRow<<            //  counter filtered pad-rows
+      // per sector outlier information
+      "medianSectorTime="<<medianSectorTime<<                    // median number of clusters per sector/timebin
+      "mean69SectorTime="<<mean69SectorTime<<                    // LTM statistic  mean of clusters per sector/timebin
+      "rms69SectorTime="<<rms69SectorTime<<                      // LTM statistic  RMS of clusters per sector/timebin
+      "vecSectorOut6.="<<&vecSectorOut6<<                        // flag array sector  - 6 sigma +accept margin outlier
+      "vecSectorOut9.="<<&vecSectorOut9<<                        // flag array sector  - 9 sigma + accept margin outlier
+      // per sector/timebin outlier detection
+      "vecMedianSectorTime.="<<&vecMedianSectorTime<<
+      "vecRMSSectorTime.="<<&vecRMSSectorTime<<
+      "vecMedianSectorTimeOut6.="<<&vecMedianSectorTimeOut6<<
+      "vecMedianSectorTimeOut9.="<<&vecMedianSectorTimeOut9<<
+      "vecMedianSectorTimeOut0.="<<&vecMedianSectorTimeOut<<
+      // per sector/pad-row outlier detection
+      "vecMedianSectorPadRow.="<<&vecMedianSectorPadRow<<
+      "vecRMSSectorPadRow.="<<&vecRMSSectorPadRow<<
+      "vecMedianSectorPadRowOut6.="<<&vecMedianSectorPadRowOut6<<
+      "vecMedianSectorPadRowOut9.="<<&vecMedianSectorPadRowOut9<<
+      "vecMedianSectorPadRowOut9.="<<&vecMedianSectorPadRowOut<<
+      "\n";
+    ((*fDebugStreamer)<<"filterClusterInfo").GetTree()->Write();
+    fDebugStreamer->GetFile()->Flush();
+  }
+}
 
 void AliTPCtracker::UnloadClusters()
 {
@@ -1463,12 +1874,12 @@ void   AliTPCtracker::Transform(AliTPCclusterMI * cluster){
   //
   // in debug mode  check the transformation
   //
-  if (AliTPCReconstructor::StreamLevel()>2) {
+  if ((AliTPCReconstructor::StreamLevel()&kStreamTransform)>0) { 
     Float_t gx[3];
     cluster->GetGlobalXYZ(gx);
     Int_t event = (fEvent==NULL)? 0: fEvent->GetEventNumberInFile();
     TTreeSRedirector &cstream = *fDebugStreamer;
-    cstream<<"Transform"<<
+    cstream<<"Transform"<<  // needed for debugging of the cluster transformation, resp. used for later visualization 
       "event="<<event<<
       "x0="<<x[0]<<
       "x1="<<x[1]<<
@@ -1499,6 +1910,67 @@ void   AliTPCtracker::Transform(AliTPCclusterMI * cluster){
     cluster->SetX(posC[0]);
     cluster->SetY(posC[1]);
     cluster->SetZ(posC[2]);
+  }
+}
+
+void  AliTPCtracker::ApplyXtalkCorrection(){
+  //
+  // ApplyXtalk correction 
+  // Loop over all clusters
+  //      add to each cluster signal corresponding to common Xtalk mode for given time bin at given wire segment
+  // cluster loop
+  for (Int_t isector=0; isector<36; isector++){  //loop tracking sectors
+    for (Int_t iside=0; iside<2; iside++){       // loop over sides A/C
+      AliTPCtrackerSector &sector= (isector<18)?fInnerSec[isector%18]:fOuterSec[isector%18];
+      Int_t nrows     = sector.GetNRows();       
+      for (Int_t row = 0;row<nrows;row++){           // loop over rows       
+	AliTPCtrackerRow&  tpcrow = sector[row];     // row object   
+	Int_t ncl = tpcrow.GetN1();                  // number of clusters in the row
+	if (iside>0) ncl=tpcrow.GetN2();
+	Int_t xSector=0;    // sector number in the TPC convention 0-72
+	if (isector<18){  //if IROC
+	  xSector=isector+(iside>0)*18;
+	}else{
+	  xSector=isector+18;  // isector -18 +36   
+	  if (iside>0) xSector+=18;
+	}	
+	TMatrixD &crossTalkMatrix= *((TMatrixD*)fCrossTalkSignalArray->At(xSector));
+	Int_t wireSegmentID     = fkParam->GetWireSegment(xSector,row);
+	for (Int_t i=0;i<ncl;i++) {
+	  AliTPCclusterMI *cluster= (iside>0)?(tpcrow.GetCluster2(i)):(tpcrow.GetCluster1(i));
+	  Int_t iTimeBin=TMath::Nint(cluster->GetTimeBin());
+	  Double_t xTalk= crossTalkMatrix[wireSegmentID][iTimeBin];
+	  cluster->SetMax(cluster->GetMax()+xTalk);
+	  const Double_t kDummy=4;
+	  Double_t sumxTalk=xTalk*kDummy; // should be calculated via time response function
+	  cluster->SetQ(cluster->GetQ()+sumxTalk);
+
+
+          if ((AliTPCReconstructor::StreamLevel()&kStreamXtalk)>0) {  // flag: stream crosstalk correctio as applied to cluster
+            TTreeSRedirector &cstream = *fDebugStreamer;
+            if (gRandom->Rndm() > 0.){
+              cstream<<"Xtalk"<<
+                "isector=" << isector <<               // sector [0,36]
+                "iside=" << iside <<                   // side A or C
+                "row=" << row <<                       // padrow
+                "i=" << i <<                           // index of the cluster 
+                "xSector=" << xSector <<               // sector [0,72] 
+                "wireSegmentID=" << wireSegmentID <<   // anode wire segment id [0,10] 
+                "iTimeBin=" << iTimeBin <<             // timebin of the corrected cluster 
+                "xTalk=" << xTalk <<                   // Xtalk contribution added to Qmax
+                "sumxTalk=" << sumxTalk <<             // Xtalk contribution added to Qtot (roughly 3*Xtalk) 
+                "cluster.=" << cluster <<              // corrected cluster object 
+                "\n";
+            }
+          }// dump the results to the debug streamer if in debug mode
+
+
+
+
+
+	}
+      }
+    }
   }
 }
 
@@ -1594,8 +2066,7 @@ void  AliTPCtracker::ApplyTailCancellation(){
             
             if (!cl0) continue;
             Int_t nclPad=0;                       
-            for (Int_t icl1=0; icl1<ncl;icl1++){  // second loop over clusters
-	   
+            for (Int_t icl1=0; icl1<ncl;icl1++){  // second loop over clusters	   
               AliTPCclusterMI *cl1= static_cast<AliTPCclusterMI*>(rowClusterArray->At(sortedClusterIndex[icl1]));
 	      if (!cl1) continue;
 	      if (TMath::Abs(cl0->GetPad()-cl1->GetPad())>4) continue;           // no contribution if far away in pad direction
@@ -1614,7 +2085,7 @@ void  AliTPCtracker::ApplyTailCancellation(){
               qMaxArray[icl0]+=ionTailMax;
 
               // Dump some info for debugging while clusters are being corrected
-              if (AliTPCReconstructor::StreamLevel()>2) {
+              if ((AliTPCReconstructor::StreamLevel()&kStreamIonTail)>0) {  // flag: stream ion tail correction  as applied to cluster
                 TTreeSRedirector &cstream = *fDebugStreamer;
                 if (gRandom->Rndm() > 0.999){
                   cstream<<"IonTail"<<
@@ -1633,7 +2104,7 @@ void  AliTPCtracker::ApplyTailCancellation(){
             cl0->SetMax(TMath::Nint(Float_t(cl0->GetMax())+qMaxArray[icl0]));
           
             // Dump some info for debugging after clusters are corrected 
-            if (AliTPCReconstructor::StreamLevel()>2) {
+            if ((AliTPCReconstructor::StreamLevel()&kStreamIonTail)>0) {
               TTreeSRedirector &cstream = *fDebugStreamer;
               if (gRandom->Rndm() > 0.999){
               cstream<<"IonTailCorrected"<<
@@ -1667,8 +2138,10 @@ void AliTPCtracker::GetTailValue(Float_t ampfactor,Double_t &ionTailMax, Double_
 
   //
   // Function in order to calculate the amount of the correction to be added for a given cluster, return values are ionTailTaoltal and ionTailMax
+  // Parameters:
+  // cl0 -  cluster to be modified
+  // cl1 -  source cluster ion tail of this cluster will be added to the cl0 (accroding time and pad response function)
   // 
-
   const Double_t kMinPRF    = 0.5;                           // minimal PRF width
   ionTailTotal              = 0.;                            // correction value to be added to Qtot of cl0
   ionTailMax                = 0.;                            // correction value to be added to Qmax of cl0
@@ -1682,7 +2155,8 @@ void AliTPCtracker::GetTailValue(Float_t ampfactor,Double_t &ionTailMax, Double_
   const Int_t deltaTimebin  =  TMath::Nint(TMath::Abs(cl1->GetTimeBin()-cl0->GetTimeBin()))+12;  //distance between pads of cl1 and cl0 increased by 12 bins
   Double_t rmsPad1          = (cl1->GetSigmaY2()==0)?kMinPRF:(TMath::Sqrt(cl1->GetSigmaY2())/padWidth);
   Double_t rmsPad0          = (cl0->GetSigmaY2()==0)?kMinPRF:(TMath::Sqrt(cl0->GetSigmaY2())/padWidth);
- 
+  
+   
   
   Double_t sumAmp1=0.;
   for (Int_t idelta =-2; idelta<=2;idelta++){
@@ -2627,7 +3101,7 @@ void AliTPCtracker::RemoveUsed2(TObjArray * arr, Float_t factor1,  Float_t facto
       //
       if (Float_t(shared+1)/Float_t(found+1)>factor){
 	if (pt->GetKinkIndexes()[0]!=0) continue;  //don't remove tracks  - part of the kinks
-	if( AliTPCReconstructor::StreamLevel()>3){
+	if( (AliTPCReconstructor::StreamLevel()&kStreamRemoveUsed)>0){ // flag:stream  information about TPC tracks which were descarded (double track removal)
 	  TTreeSRedirector &cstream = *fDebugStreamer;
 	  cstream<<"RemoveUsed"<<
 	    "iter="<<fIteration<<
@@ -2639,7 +3113,7 @@ void AliTPCtracker::RemoveUsed2(TObjArray * arr, Float_t factor1,  Float_t facto
       }      
       if (pt->GetNumberOfClusters()<50&&(found-0.5*shared)<minimal){  //remove short tracks
 	if (pt->GetKinkIndexes()[0]!=0) continue;  //don't remove tracks  - part of the kinks
-	if( AliTPCReconstructor::StreamLevel()>3){
+	if( (AliTPCReconstructor::StreamLevel()&kStreamRemoveShort)>0){ // flag:stream  information about TPC tracks which were discarded (short track removal)
 	  TTreeSRedirector &cstream = *fDebugStreamer;
 	  cstream<<"RemoveShort"<<
 	    "iter="<<fIteration<<
@@ -2700,6 +3174,7 @@ void AliTPCtracker::DumpClusters(Int_t iter, TObjArray *trackArray)
     }
   }
   //
+  Int_t eventNr = fEvent->GetEventNumberInFile();
 
   for (Int_t sec=0;sec<fkNIS;sec++){
     for (Int_t row=0;row<fInnerSec->GetNRows();row++){
@@ -2708,6 +3183,7 @@ void AliTPCtracker::DumpClusters(Int_t iter, TObjArray *trackArray)
 	AliTPCclusterMI* cl = (AliTPCclusterMI*)cla->At(icl);
 	Float_t gx[3];	cl->GetGlobalXYZ(gx);
 	(*fDebugStreamer)<<"clDump"<< 
+	  "eventNr="<<eventNr<<
 	  "iter="<<iter<<
 	  "cl.="<<cl<<      
 	  "gx0="<<gx[0]<<
@@ -2720,6 +3196,7 @@ void AliTPCtracker::DumpClusters(Int_t iter, TObjArray *trackArray)
 	AliTPCclusterMI* cl = (AliTPCclusterMI*)cla->At(icl);
 	Float_t gx[3];	cl->GetGlobalXYZ(gx);
 	(*fDebugStreamer)<<"clDump"<< 
+	  "eventNr="<<eventNr<<
 	  "iter="<<iter<<
 	  "cl.="<<cl<<
 	  "gx0="<<gx[0]<<
@@ -2738,6 +3215,7 @@ void AliTPCtracker::DumpClusters(Int_t iter, TObjArray *trackArray)
 	AliTPCclusterMI* cl = (AliTPCclusterMI*) cla->At(icl);
 	cl->GetGlobalXYZ(gx);
 	(*fDebugStreamer)<<"clDump"<< 
+	  "eventNr="<<eventNr<<
 	  "iter="<<iter<<
 	  "cl.="<<cl<<
 	  "gx0="<<gx[0]<<
@@ -2751,6 +3229,7 @@ void AliTPCtracker::DumpClusters(Int_t iter, TObjArray *trackArray)
 	AliTPCclusterMI* cl = (AliTPCclusterMI*) cla->At(icl);
 	cl->GetGlobalXYZ(gx);
 	(*fDebugStreamer)<<"clDump"<< 
+	  "eventNr="<<eventNr<<
 	  "iter="<<iter<<
 	  "cl.="<<cl<<
 	  "gx0="<<gx[0]<<
@@ -3009,7 +3488,7 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
   SignShared(&arraySeed);
   //  FindCurling(fSeeds, event,2); // find multi found tracks
   FindSplitted(fSeeds, event,2); // find multi found tracks
-  if (AliTPCReconstructor::StreamLevel()>5)  FindMultiMC(fSeeds, fEvent,2); // find multi found tracks
+  if ((AliTPCReconstructor::StreamLevel()&kStreamFindMultiMC)>0)  FindMultiMC(fSeeds, fEvent,2); // flag: stream MC infomation about the multiple find track (ONLY for MC data)
 
   Int_t ntracks=0;
   Int_t nseed = fSeeds->GetEntriesFast();
@@ -3023,8 +3502,8 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
       AliExternalTrackParam paramIn;
       AliExternalTrackParam paramOut;
       Int_t ncl = seed->RefitTrack(seed,&paramIn,&paramOut);
-      if (AliTPCReconstructor::StreamLevel()>2) {
-	(*fDebugStreamer)<<"RecoverIn"<<
+      if ((AliTPCReconstructor::StreamLevel() & kStreamRecoverIn)>0) {  // flag: stream track information for track  failing in RefitInward function and recovered back
+	(*fDebugStreamer)<<"RecoverIn"<< 
 	  "seed.="<<seed<<
 	  "esd.="<<esd<<
 	  "pin.="<<&paramIn<<
@@ -3045,9 +3524,9 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
     seed->CookdEdx(0.02,0.6);
     CookLabel(seed,0.1); //For comparison only
     //
-    if (AliTPCReconstructor::StreamLevel()>1 && seed!=0) {
+    if (((AliTPCReconstructor::StreamLevel()&kStreamRefitInward)>0) && seed!=0) {
       TTreeSRedirector &cstream = *fDebugStreamer;
-      cstream<<"Crefit"<<
+      cstream<<"RefitInward"<<  // flag: stream track information in RefitInward function (after tracking Iteration 2)
 	"Esd.="<<esd<<
 	"Track.="<<seed<<
 	"\n"; 
@@ -3105,7 +3584,7 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
     }
   }
   //FindKinks(fSeeds,event);
-  if (AliTPCReconstructor::StreamLevel()>3)  DumpClusters(2,fSeeds);
+  if ((AliTPCReconstructor::StreamLevel()&kStreamClDump)>0)  DumpClusters(2,fSeeds);  // dump clusters at the end of process (signed with useage flags)
   Info("RefitInward","Number of refitted tracks %d",ntracks);
 
   AliCosmicTracker::FindCosmic(event, kTRUE);
@@ -3130,7 +3609,7 @@ Int_t AliTPCtracker::PropagateBack(AliESDEvent *event)
   RemoveUsed2(fSeeds,0.4,0.4,20);
   //FindCurling(fSeeds, fEvent,1);  
   FindSplitted(fSeeds, event,1); // find multi found tracks
-  if (AliTPCReconstructor::StreamLevel()>5)  FindMultiMC(fSeeds, fEvent,1); // find multi found tracks
+  if ((AliTPCReconstructor::StreamLevel()&kStreamFindMultiMC)>0)  FindMultiMC(fSeeds, fEvent,1); // find multi found tracks
 
   //
   Int_t nseed = fSeeds->GetEntriesFast();
@@ -3147,7 +3626,7 @@ Int_t AliTPCtracker::PropagateBack(AliESDEvent *event)
       AliExternalTrackParam paramIn;
       AliExternalTrackParam paramOut;
       Int_t ncl = seed->RefitTrack(seed,&paramIn,&paramOut);
-      if (AliTPCReconstructor::StreamLevel()>2) {
+      if ((AliTPCReconstructor::StreamLevel()&kStreamRecoverBack)>0) { // flag: stream track information for track  faling PropagateBack function and recovered back (RefitTrack)
 	(*fDebugStreamer)<<"RecoverBack"<<
 	  "seed.="<<seed<<
 	  "esd.="<<esd<<
@@ -3174,8 +3653,8 @@ Int_t AliTPCtracker::PropagateBack(AliESDEvent *event)
       ntracks++;
       Int_t eventnumber = event->GetEventNumberInFile();// patch 28 fev 06
       // This is most likely NOT the event number you'd like to use. It has nothing to do with the 'real' event number      
-      if (AliTPCReconstructor::StreamLevel()>1 && esd) {
-	(*fDebugStreamer)<<"Cback"<<
+      if (((AliTPCReconstructor::StreamLevel()&kStreamCPropagateBack)>0) && esd) {
+	(*fDebugStreamer)<<"PropagateBack"<<  // flag: stream track information in PropagateBack function (after tracking Iteration 1)
 	  "Tr0.="<<seed<<
 	  "esd.="<<esd<<
 	  "EventNrInFile="<<eventnumber<<
@@ -3183,7 +3662,7 @@ Int_t AliTPCtracker::PropagateBack(AliESDEvent *event)
       }
     }
   }
-  if (AliTPCReconstructor::StreamLevel()>3)  DumpClusters(1,fSeeds);
+  if (AliTPCReconstructor::StreamLevel()&kStreamClDump)  DumpClusters(1,fSeeds); // flag:stream clusters at the end of process (signed with usage flag)
   //FindKinks(fSeeds,event);
   Info("PropagateBack","Number of back propagated tracks %d",ntracks);
   fEvent =0;
@@ -3383,6 +3862,10 @@ void AliTPCtracker::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
   for (Int_t is=0; is < kr1; is++) {
     //
     if (kr1[is]->IsUsed(10)) continue;
+    if (kr1[is]->IsDisabled()) {
+      continue;
+    }
+
     Double_t y1=kr1[is]->GetY(), z1=kr1[is]->GetZ();    
     //if (TMath::Abs(y1)>ymax) continue;
 
@@ -3434,7 +3917,10 @@ void AliTPCtracker::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
       Double_t dyy0 =  (xx2-x3)*sn13r;
       for (Int_t js=index1; js < index2; js++) {
 	const AliTPCclusterMI *kcl = kr2[js];
-	if (kcl->IsUsed(10)) continue;	
+	if (kcl->IsUsed(10)) continue; 	
+	if (kcl->IsDisabled()) {
+	  continue;
+	}
 	//
 	//calcutate parameters
 	//	
@@ -3707,7 +4193,11 @@ void AliTPCtracker::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
   // loop over clusters  
   for (Int_t is=0; is < kr1; is++) {
     //
-    if (kr1[is]->IsUsed(10)) continue;
+    if (kr1[is]->IsUsed(10)) continue;	
+    if (kr1[is]->IsDisabled()) {
+      continue;
+    }
+
     Double_t y1=kr1[is]->GetY(), z1=kr1[is]->GetZ();    
     //
     if (deltay>0 && TMath::Abs(y1max-TMath::Abs(y1))> deltay ) continue;  // seed only at the edge    
@@ -3721,6 +4211,10 @@ void AliTPCtracker::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
     UInt_t index;
     for (Int_t js=index1; js < index2; js++) {
       const AliTPCclusterMI *kcl = kr3[js];
+      if (kcl->IsDisabled()) {
+	continue;
+      }
+
       if (kcl->IsUsed(10)) continue;
       y3 = kcl->GetY(); 
       // apply angular cuts
@@ -3741,7 +4235,10 @@ void AliTPCtracker::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
       const AliTPCclusterMI *kcm = krm.FindNearest2(yyym,zzzm,erry,errz,index);
       if (!kcm) continue;
       if (kcm->IsUsed(10)) continue;
-      
+      if (kcm->IsDisabled()) {
+	continue;
+      }
+
       erry = TMath::Abs(angley)*(x1-x1m)*0.4+0.5;
       errz = TMath::Abs(anglez)*(x1-x1m)*0.4+0.5;
       //
@@ -3936,7 +4433,10 @@ void AliTPCtracker::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, F
       const AliTPCtrackerRow& krm=fSectors[sec][row0-iter];
       const AliTPCtrackerRow& krp=fSectors[sec][row0+iter];      
       const AliTPCclusterMI * cl= kr0[is];
-      
+      if (cl->IsDisabled()) {
+	continue;
+      }
+
       if (cl->IsUsed(10)) {
 	cused++;
       }
@@ -4561,7 +5061,7 @@ void  AliTPCtracker::FindMultiMC(const TObjArray * array, AliESDEvent */*esd*/, 
   //
   //  find multi tracks - THIS FUNCTION IS ONLY FOR DEBUG PURPOSES
   //                      USES MC LABELS
-  //  Use AliTPCReconstructor::StreamLevel()>2 if you want to tune parameters - cuts
+  //  Use AliTPCReconstructor::StreamLevel()& kStreamFindMultiMC if you want to tune parameters - cuts
   //
   //  Two reasons to have multiple find tracks
   //  1. Curling tracks can be find more than once
@@ -4685,7 +5185,7 @@ void  AliTPCtracker::FindMultiMC(const TObjArray * array, AliESDEvent */*esd*/, 
 	}
       }
       //
-      if (AliTPCReconstructor::StreamLevel()>5) {
+      if ((AliTPCReconstructor::StreamLevel()&kStreamFindMultiMC)>0) {  // flag: stream MC infomation about the multiple find track (ONLY for MC data)
       TTreeSRedirector &cstream = *fDebugStreamer;
       cstream<<"Multi"<<
 	"iter="<<iter<<
@@ -4729,7 +5229,7 @@ void  AliTPCtracker::FindMultiMC(const TObjArray * array, AliESDEvent */*esd*/, 
   delete [] xm;
   delete [] dz0;
   delete [] dz1;
-  if (AliTPCReconstructor::StreamLevel()>1) {
+  if (AliTPCReconstructor::StreamLevel()>0) {
     AliInfo("Time for curling tracks removal DEBUGGING MC");
     timer.Print();
   }
@@ -4742,7 +5242,7 @@ void  AliTPCtracker::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int_t
   // Find Splitted tracks and remove the one with worst quality  
   // Corresponding debug streamer to tune selections - "Splitted2"
   // Algorithm:
-  // 0. Sort tracks according quility
+  // 0. Sort tracks according quality
   // 1. Propagate the tracks to the reference radius
   // 2. Double_t loop to select close tracks (only to speed up process)
   // 3. Calculate cluster overlap ratio - and remove the track if bigger than a threshold
@@ -4833,7 +5333,7 @@ void  AliTPCtracker::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int_t
       Double_t ratio0 = Float_t(sumShared)/Float_t(TMath::Min(nall0+1,nall1+1));
       Double_t ratio1 = Float_t(sumShared)/Float_t(TMath::Max(nall0+1,nall1+1));
       
-      if( AliTPCReconstructor::StreamLevel()>1){
+      if ((AliTPCReconstructor::StreamLevel()&kStreamSplitted2)>0){ // flag:stream information about discarded TPC tracks pair algorithm 
 	TTreeSRedirector &cstream = *fDebugStreamer;
 	Int_t n0=s1->GetNumberOfClusters();
 	Int_t n1=s2->GetNumberOfClusters();
@@ -4842,7 +5342,7 @@ void  AliTPCtracker::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int_t
 	Int_t lab0=s1->GetLabel();
 	Int_t lab1=s2->GetLabel();
 
-	cstream<<"Splitted2"<<
+	cstream<<"Splitted2"<<    // flag:stream information about discarded TPC tracks pair algorithm 
 	  "iter="<<fIteration<<
 	  "lab0="<<lab0<<        // MC label if exist
 	  "lab1="<<lab1<<        // MC label if exist
@@ -4894,7 +5394,7 @@ void  AliTPCtracker::FindCurling(const TObjArray * array, AliESDEvent */*esd*/, 
 {
   //
   //  find Curling tracks
-  //  Use AliTPCReconstructor::StreamLevel()>1 if you want to tune parameters - cuts
+  //  Use AliTPCReconstructor::StreamLevel()&kStreamFindCurling if you want to tune parameters - cuts
   //
   //
   //  Algorithm done in 2 phases - because of CPU consumption
@@ -5048,7 +5548,7 @@ void  AliTPCtracker::FindCurling(const TObjArray * array, AliESDEvent */*esd*/, 
 	    track0->SetCircular(track0->GetCircular()+2);
 	  }
 	}		
-	if (AliTPCReconstructor::StreamLevel()>2){	  
+	if ((AliTPCReconstructor::StreamLevel()&kStreamFindCurling)>0){  // flag: stream track infroamtion if the FindCurling tracks method	  
 	  //
 	  //debug stream to tune "fine" cuts	  
 	  Int_t lab0=track0->GetLabel();
@@ -5249,7 +5749,7 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
 	    track0->SetCircular(track0->GetCircular()+2);
 	  }
 	}		
-	if (lsign&&AliTPCReconstructor::StreamLevel()>1){	  
+	if (lsign&&((AliTPCReconstructor::StreamLevel()&kStreamFindCurling)>0)){	  
 	  //debug stream	  
 	  Int_t lab0=track0->GetLabel();
 	  Int_t lab1=track1->GetLabel();
@@ -5495,7 +5995,7 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
       chi2P3*=chi2P3;
       chi2P3/=paramm.GetCovariance()[9]+paramd.GetCovariance()[9];
       //
-      if (AliTPCReconstructor::StreamLevel()>1) {
+      if ((AliTPCReconstructor::StreamLevel()&kStreamFindKinks)>0) {   // flag: stream track infroamtion in the FindKinks method
 	(*fDebugStreamer)<<"kinkLpt"<<
 	  "chi2P2="<<chi2P2<<
 	  "chi2P3="<<chi2P3<<
@@ -5971,7 +6471,7 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
 	    track0->SetCircular(track0->GetCircular()+2);
 	  }
 	}		
-	if (lsign&&AliTPCReconstructor::StreamLevel()>1){	  
+	if (lsign&&((AliTPCReconstructor::StreamLevel()&kStreamFindKinks)>0)){// flag: stream track infroamtion in the FindKinks method	  
 	  //debug stream	  
 	  Int_t lab0=track0->GetLabel();
 	  Int_t lab1=track1->GetLabel();
@@ -6217,7 +6717,7 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
       chi2P3*=chi2P3;
       chi2P3/=paramm.GetCovariance()[9]+paramd.GetCovariance()[9];
       //
-      if (AliTPCReconstructor::StreamLevel()>1) {
+      if (AliTPCReconstructor::StreamLevel()&kStreamFindKinks) {// flag: stream track infroamtion in the FindKinks method
 	(*fDebugStreamer)<<"kinkLpt"<<
 	  "chi2P2="<<chi2P2<<
 	  "chi2P3="<<chi2P3<<
@@ -6830,7 +7330,7 @@ Int_t  AliTPCtracker::CheckKinkPoint(AliTPCseed*seed,AliTPCseed &mother, AliTPCs
   chi2P3*=chi2P3;
   chi2P3/=param0[index].GetCovariance()[9]+param1[index].GetCovariance()[9];
   //
-  if (AliTPCReconstructor::StreamLevel()>1) {
+  if (AliTPCReconstructor::StreamLevel()&kStreamFindKinks) { // flag: stream track infroamtion in the FindKinks method
     (*fDebugStreamer)<<"kinkHpt"<<
       "chi2P2="<<chi2P2<<
       "chi2P3="<<chi2P3<<
@@ -6950,16 +7450,17 @@ Int_t AliTPCtracker::Clusters2TracksHLT (AliESDEvent *const esd, const AliESDEve
   else ResetSeedsPool();
   fEvent = esd; 
   fEventHLT = hltEvent;
-
+  if (AliTPCReconstructor::GetRecoParam()->GetUseOulierClusterFilter()) FilterOutlierClusters();  
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;  
   transform->SetCurrentTimeStamp( esd->GetTimeStamp());
   transform->SetCurrentRun(esd->GetRunNumber());
 
+  
   Clusters2Tracks();
   fEventHLT = 0;
   if (!fSeeds) return 1;
   FillESD(fSeeds);
-  if (AliTPCReconstructor::StreamLevel()>3)  DumpClusters(0,fSeeds);
+  if ((AliTPCReconstructor::StreamLevel()&kStreamClDump)>0)  DumpClusters(0,fSeeds);
   return 0;
   //
 }
@@ -7008,10 +7509,10 @@ Int_t AliTPCtracker::Clusters2Tracks() {
   RemoveUsed2(fSeeds,0.85,0.85,0);
   if (AliTPCReconstructor::GetRecoParam()->GetDoKinks()) FindKinks(fSeeds,fEvent);
   //FindCurling(fSeeds, fEvent,0);  
-  if (AliTPCReconstructor::StreamLevel()>5)  FindMultiMC(fSeeds, fEvent,-1); // find multi found tracks
+  if (AliTPCReconstructor::StreamLevel()&kStreamFindMultiMC)  FindMultiMC(fSeeds, fEvent,-1); // find multi found tracks
   RemoveUsed2(fSeeds,0.5,0.4,20);
   FindSplitted(fSeeds, fEvent,0); // find multi found tracks
-  if (AliTPCReconstructor::StreamLevel()>5)  FindMultiMC(fSeeds, fEvent,0); // find multi found tracks
+  if (AliTPCReconstructor::StreamLevel()&kStreamFindMultiMC)  FindMultiMC(fSeeds, fEvent,0); // find multi found tracks
 
  //  //
 //   // refit short tracks

@@ -58,7 +58,7 @@ public:
   Int_t CountAcceptedTracks(const AliESDEvent* const esd);
   
   static Int_t GetReferenceMultiplicity(const AliESDEvent* esd, Bool_t tpcOnly);
-  static Int_t GetReferenceMultiplicity(const AliESDEvent* esd, MultEstTrackType trackType = kTrackletsITSTPC, Float_t etaRange = 0.5);
+  static Int_t GetReferenceMultiplicity(const AliESDEvent* esd, MultEstTrackType trackType = kTrackletsITSTPC, Float_t etaRange = 0.5, Float_t etaCent=0.);
   static AliESDtrackCuts* GetMultEstTrackCuts(MultEstTrackCuts cut);
 
   static AliESDtrack* GetTPCOnlyTrack(const AliESDEvent* esd, Int_t iTrack);

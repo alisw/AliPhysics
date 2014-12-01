@@ -58,18 +58,21 @@
 #include "AliMUONESDInterface.h"
 #include "AliMUONVTriggerTrackStore.h"
 #include "AliMUONTriggerTrack.h"
+#include "AliMpDEIterator.h"
 
 Double_t langaufun(Double_t *x, Double_t *par);
 void     FitGausResVsMom(TH2* h, Int_t nBins, const Double_t mean0, const Double_t sigma0, const char* fitting, TGraphAsymmErrors* gMean, TGraphAsymmErrors* gSigma);
 void     FitPDCAVsMom(TH2* h, Int_t nBins, const char* fitting, TGraphAsymmErrors* gMean, TGraphAsymmErrors* gSigma);
+void     FillResidual(TH1* h, Int_t i, Double_t& sigma, TGraphErrors* gMean, TGraphErrors* gSigma, Bool_t correctForSystematics, Bool_t fitResiduals);
 TCanvas* DrawVsAng(const char* name, const char* title, TH1* h1, TH2* h2);
 TCanvas* DrawVsPos(const char* name, const char* title, TH2* h1, TH2* h2, TH2* h3);
 TCanvas* DrawResMomVsMom(const char* name, const char* title, TH2* h, Int_t nBins, TF1* f2 = 0x0, const char* fitting = "");
+void     Zoom(TH1* h, Double_t fractionCut = 0.01);
 
 //------------------------------------------------------------------------------------
 void MUONRecoCheck(Int_t nEvent = -1, const char* pathSim="./generated/", const char* esdFileName="AliESDs.root",
 		   const char* ocdbPath = "local://$ALICE_ROOT/OCDB", const Double_t pMin = 0., const Double_t pMax = 300.,
-		   const Int_t pNBins = 30, Int_t absorberRegion = -1)
+		   const Int_t pNBins = 30, Int_t absorberRegion = -1, Bool_t fitResiduals = kTRUE)
 {
   /// Associate the reconstructed tracks with the simulated ones and check the quality of the reconstruction
   /// (tracking/trigger efficiency; momentum, slope,... resolutions at first cluster and at vertex; cluster resolution).
@@ -102,6 +105,31 @@ void MUONRecoCheck(Int_t nEvent = -1, const char* pathSim="./generated/", const 
   
   AliLog::SetClassDebugLevel("AliMCEvent",-1);
   
+  // ###################################### initialize ###################################### //
+  AliMUONRecoCheck rc(esdFileName, pathSim);
+  
+  // load necessary data from OCDB
+  AliCDBManager::Instance()->SetDefaultStorage(ocdbPath);
+  AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
+  AliCDBManager::Instance()->SetRun(rc.GetRunNumber());
+  if (!AliMUONCDB::LoadField()) return;
+  AliMUONTrackExtrap::SetField();
+  if (!AliMUONCDB::LoadMapping()) return;
+//  AliGeomManager::LoadGeometry();
+  AliGeomManager::LoadGeometry("geometry.root");
+  if (!AliGeomManager::GetGeometry()) return;
+  AliMUONRecoParam* recoParam = AliMUONCDB::LoadRecoParam();
+  if (!recoParam) return;
+  AliMUONESDInterface::ResetTracker(recoParam);
+  
+  // get sigma cut from recoParam to associate clusters with TrackRefs in case the label are not used
+  Double_t sigmaCut = (recoParam->ImproveTracks()) ? recoParam->GetSigmaCutForImprovement() : recoParam->GetSigmaCutForTracking();
+  // compute the mask of requested stations from recoParam
+  UInt_t requestedStationMask = 0;
+  for (Int_t i = 0; i < 5; i++) if (recoParam->RequestStation(i)) requestedStationMask |= ( 1 << i );
+  // get from recoParam whether a track need 2 chambers hit in the same station (4 or 5) or not to be reconstructible
+  Bool_t request2ChInSameSt45 = !recoParam->MakeMoreTrackCandidates();
+  
   // ###################################### define histograms ###################################### //
   // File for histograms and histogram booking
   TFile *histoFile = new TFile("MUONRecoCheck.root", "RECREATE");
@@ -121,7 +149,7 @@ void MUONRecoCheck(Int_t nEvent = -1, const char* pathSim="./generated/", const 
   const Int_t deltaPAtVtxNBins = 250;
   Double_t deltaPAtVtxEdges[2];
   if (pMax < 50.) { deltaPAtVtxEdges[0] = -20.; deltaPAtVtxEdges[1] = 5.; }
-  else { deltaPAtVtxEdges[0] = -35.; deltaPAtVtxEdges[1] = 15.; }
+  else { deltaPAtVtxEdges[0] = -50.; deltaPAtVtxEdges[1] = 50.; }
   
   TH1F *hResMomVertex = new TH1F("hResMomVertex"," delta P at vertex;#Delta_{p} (GeV/c)",deltaPAtVtxNBins,deltaPAtVtxEdges[0],deltaPAtVtxEdges[1]);
   
@@ -148,6 +176,9 @@ void MUONRecoCheck(Int_t nEvent = -1, const char* pathSim="./generated/", const 
   gSigmaResMomVertexVsMom->SetName("gSigmaResMomVertexVsMom");
   gSigmaResMomVertexVsMom->SetTitle("#sigma_{p}/p at vertex versus p;p (GeV/c);#sigma_{p}/p (%)");
   
+  // transverse momentum resolution at vertex
+  TH2D *hResPtVertexVsPt = new TH2D("hResPtVertexVsPt","#Delta_{p_{t}} at vertex versus p_{t};p_{t} (GeV/c);#Delta_{p_{t}} (GeV/c)",2*pNBins,pEdges[0]/10.,pEdges[1]/10.,deltaPAtVtxNBins,deltaPAtVtxEdges[0]/10.,deltaPAtVtxEdges[1]/10.);
+  
   // momentum resolution at first cluster
   histoFile->mkdir("momentumAtFirstCluster","momentumAtFirstCluster");
   histoFile->cd("momentumAtFirstCluster");
@@ -167,6 +198,9 @@ void MUONRecoCheck(Int_t nEvent = -1, const char* pathSim="./generated/", const 
   TGraphAsymmErrors* gSigmaResMomFirstClusterVsMom = new TGraphAsymmErrors(pNBins);
   gSigmaResMomFirstClusterVsMom->SetName("gSigmaResMomFirstClusterVsMom");
   gSigmaResMomFirstClusterVsMom->SetTitle("#sigma_{p}/p at first cluster versus p;p (GeV/c);#sigma_{p}/p (%)");
+  
+  // transverse momentum resolution at vertex
+  TH2D *hResPtFirstClusterVsPt = new TH2D("hResPtFirstClusterVsPt","#Delta_{p_{t}} at first cluster versus p_{t};p_{t} (GeV/c);#Delta_{p_{t}} (GeV/c)",2*pNBins,pEdges[0]/10.,pEdges[1]/10.,deltaPAtFirstClNBins,deltaPAtFirstClEdges[0]/10.,deltaPAtFirstClEdges[1]/10.);
   
   // angular resolution at vertex
   histoFile->mkdir("slopesAtVertex","slopesAtVertex");
@@ -328,12 +362,41 @@ void MUONRecoCheck(Int_t nEvent = -1, const char* pathSim="./generated/", const 
   histoFile->mkdir("clusters","clusters");
   histoFile->cd("clusters");
   
+  // find the highest chamber resolution and set histogram bins
+  const Int_t clusterResNBins = 5000;
+  Double_t maxRes[2] = {-1., -1.};
+  for (Int_t i = 0; i < 10; i++) {
+    if (recoParam->GetDefaultNonBendingReso(i) > maxRes[0]) maxRes[0] = recoParam->GetDefaultNonBendingReso(i);
+    if (recoParam->GetDefaultBendingReso(i) > maxRes[1]) maxRes[1] = recoParam->GetDefaultBendingReso(i);
+  }
+  Double_t clusterResMaxX = 10.*maxRes[0];
+  Double_t clusterResMaxY = 10.*maxRes[1];
+  
   TH1F* hResidualXInCh[AliMUONConstants::NTrackingCh()];
   TH1F* hResidualYInCh[AliMUONConstants::NTrackingCh()];
   for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) {
-    hResidualXInCh[i] = new TH1F(Form("hResidualXInCh%d",i+1), Form("cluster-track residual-X distribution in chamber %d;#Delta_{X} (cm)",i+1), 1000, -1., 1.);
-    hResidualYInCh[i] = new TH1F(Form("hResidualYInCh%d",i+1), Form("cluster-track residual-Y distribution in chamber %d;#Delta_{Y} (cm)",i+1), 1000, -0.5, 0.5);
+    hResidualXInCh[i] = new TH1F(Form("hResidualXInCh%d",i+1), Form("cluster-track residual-X distribution in chamber %d;#Delta_{X} (cm)",i+1), clusterResNBins, -clusterResMaxX, clusterResMaxX);
+    hResidualYInCh[i] = new TH1F(Form("hResidualYInCh%d",i+1), Form("cluster-track residual-Y distribution in chamber %d;#Delta_{Y} (cm)",i+1), clusterResNBins, -clusterResMaxY, clusterResMaxY);
   }
+  
+  // fill correspondence between DEId and indices for histo (starting from 1)
+  Int_t deNBins = 0;
+  Int_t deIndices[1100];
+  Int_t deIds[200];
+  AliMpDEIterator it;
+  for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) {
+    it.First(i);
+    while (!it.IsDone()) {
+      deNBins++;
+      deIndices[it.CurrentDEId()] = deNBins;
+      deIds[deNBins] = it.CurrentDEId();
+      it.Next();
+    }
+  }
+  TH2F* hResidualXPerDE = new TH2F("hResidualXPerDE", "cluster-track residual-X distribution per DE;DE ID;#Delta_{X} (cm)", deNBins, 0.5, deNBins+0.5, clusterResNBins, -clusterResMaxX, clusterResMaxX);
+  for (Int_t i = 1; i <= deNBins; i++) hResidualXPerDE->GetXaxis()->SetBinLabel(i, Form("%d",deIds[i]));
+  TH2F* hResidualYPerDE = new TH2F("hResidualYPerDE", "cluster-track residual-Y distribution per DE;DE ID;#Delta_{Y} (cm)", deNBins, 0.5, deNBins+0.5, clusterResNBins, -clusterResMaxY, clusterResMaxY);
+  for (Int_t i = 1; i <= deNBins; i++) hResidualYPerDE->GetXaxis()->SetBinLabel(i, Form("%d",deIds[i]));
   
   TGraphErrors* gResidualXPerChMean = new TGraphErrors(AliMUONConstants::NTrackingCh());
   gResidualXPerChMean->SetName("gResidualXPerChMean");
@@ -351,7 +414,24 @@ void MUONRecoCheck(Int_t nEvent = -1, const char* pathSim="./generated/", const 
   gResidualYPerChSigma->SetName("gResidualYPerChSigma");
   gResidualYPerChSigma->SetTitle("cluster-trackRef residual-Y per Ch: sigma;chamber ID;#sigma_{Y} (cm)");
   gResidualYPerChSigma->SetMarkerStyle(kFullDotLarge);
-
+  
+  TGraphErrors* gResidualXPerDEMean = new TGraphErrors(deNBins);
+  gResidualXPerDEMean->SetName("gResidualXPerDEMean");
+  gResidualXPerDEMean->SetTitle("cluster-trackRef residual-X per DE: mean;DE ID;<#Delta_{X}> (cm)");
+  gResidualXPerDEMean->SetMarkerStyle(kFullDotLarge);
+  TGraphErrors* gResidualYPerDEMean = new TGraphErrors(deNBins);
+  gResidualYPerDEMean->SetName("gResidualYPerDEMean");
+  gResidualYPerDEMean->SetTitle("cluster-trackRef residual-Y per dE: mean;DE ID;<#Delta_{Y}> (cm)");
+  gResidualYPerDEMean->SetMarkerStyle(kFullDotLarge);
+  TGraphErrors* gResidualXPerDESigma = new TGraphErrors(deNBins);
+  gResidualXPerDESigma->SetName("gResidualXPerDESigma");
+  gResidualXPerDESigma->SetTitle("cluster-trackRef residual-X per DE: sigma;DE ID;#sigma_{X} (cm)");
+  gResidualXPerDESigma->SetMarkerStyle(kFullDotLarge);
+  TGraphErrors* gResidualYPerDESigma = new TGraphErrors(deNBins);
+  gResidualYPerDESigma->SetName("gResidualYPerDESigma");
+  gResidualYPerDESigma->SetTitle("cluster-trackRef residual-Y per DE: sigma;DE ID;#sigma_{Y} (cm)");
+  gResidualYPerDESigma->SetMarkerStyle(kFullDotLarge);
+  
   histoFile->mkdir("trigger");
   histoFile->cd("trigger");
   TH1F* hResidualTrigX11 = new TH1F("hResiudalTrigX11", "Residual X11", 100, -10., 10.);
@@ -359,33 +439,7 @@ void MUONRecoCheck(Int_t nEvent = -1, const char* pathSim="./generated/", const 
   TH1F* hResidualTrigSlopeY = new TH1F("hResiudalTrigSlopeY", "Residual Y slope", 100, -0.1, 0.1);
   TH1F* hTriggerableMatchFailed = new TH1F("hTriggerableMatchFailed", "Triggerable multiplicity for events with no match", 15, -0.5, 14.5);
   
-  
-  // ###################################### initialize ###################################### //
-  AliMUONRecoCheck rc(esdFileName, pathSim);
-  
-  // load necessary data from OCDB
-  AliCDBManager::Instance()->SetDefaultStorage(ocdbPath);
-  AliCDBManager::Instance()->SetRun(rc.GetRunNumber());
-  if (!AliMUONCDB::LoadField()) return;
-  AliMUONTrackExtrap::SetField();
-  AliGeomManager::LoadGeometry();
-  if (!AliGeomManager::GetGeometry()) return;
-  AliMUONRecoParam* recoParam = AliMUONCDB::LoadRecoParam();
-  if (!recoParam) return;
-  AliMUONESDInterface::ResetTracker(recoParam);
-  
-  // get sigma cut from recoParam to associate clusters with TrackRefs in case the label are not used
-  Double_t sigmaCut = (recoParam->ImproveTracks()) ? recoParam->GetSigmaCutForImprovement() : recoParam->GetSigmaCutForTracking();
-  // compute the mask of requested stations from recoParam
-  UInt_t requestedStationMask = 0;
-  for (Int_t i = 0; i < 5; i++) if (recoParam->RequestStation(i)) requestedStationMask |= ( 1 << i );
-  // get from recoParam whether a track need 2 chambers hit in the same station (4 or 5) or not to be reconstructible
-  Bool_t request2ChInSameSt45 = !recoParam->MakeMoreTrackCandidates();
-  
-  Int_t nevents = rc.NumberOfEvents();
-  
-  if (nevents < nEvent || nEvent < 0) nEvent = nevents;
-  
+  // ###################################### fill histograms ###################################### //
   Int_t ievent;
   Int_t nReconstructibleTracks = 0;
   Int_t nReconstructedTracks = 0;
@@ -399,7 +453,10 @@ void MUONRecoCheck(Int_t nEvent = -1, const char* pathSim="./generated/", const 
   Double_t aMCSMoy = 0., aMCS2Moy = 0., dMCSMoy = 0., dMCS2Moy = 0., adMCSMoy = 0.;
   Int_t nMCS = 0;
   
-  // ###################################### fill histograms ###################################### //
+  Int_t nevents = rc.NumberOfEvents();
+  if (nevents < nEvent || nEvent < 0) nEvent = nevents;
+  
+  // loop over events
   for (ievent=0; ievent<nEvent; ievent++)
   {
     if ((ievent+1)%100 == 0) cout<<"\rEvent processing... "<<ievent+1<<flush;
@@ -546,6 +603,7 @@ void MUONRecoCheck(Int_t nEvent = -1, const char* pathSim="./generated/", const 
 	  hResSlopeYVertexVsMom->Fill(p1,slopey2-slopey1);
 	  hResEtaVertexVsMom->Fill(p1,eta2-eta1);
 	  hResPhiVertexVsMom->Fill(p1,dPhi);
+	  hResPtVertexVsPt->Fill(pT1,pT2-pT1);
 	}
 	hResMomVertexVsAngleVsMom->Fill(p1,aAbs,p2-p1);
 	if (aAbs > 2. && aAbs < 3.) {
@@ -628,6 +686,7 @@ void MUONRecoCheck(Int_t nEvent = -1, const char* pathSim="./generated/", const 
         
         hResMomFirstCluster->Fill(p2-p1);
 	hResMomFirstClusterVsMom->Fill(p1,p2-p1);
+	hResPtFirstClusterVsPt->Fill(pT1,pT2-pT1);
 	
 	hResSlopeXFirstCluster->Fill(slopex2-slopex1);
 	hResSlopeYFirstCluster->Fill(slopey2-slopey1);
@@ -635,7 +694,6 @@ void MUONRecoCheck(Int_t nEvent = -1, const char* pathSim="./generated/", const 
 	hResSlopeYFirstClusterVsMom->Fill(p1,slopey2-slopey1);
 	
 	// Fill residuals
-	// Loop over clusters of first track
 	AliMUONTrackParam* trackParamAtCluster1 = (AliMUONTrackParam*) trackMatched->GetTrackParamAtCluster()->First();
 	while (trackParamAtCluster1) {
 	  AliMUONVCluster* cluster1 = trackParamAtCluster1->GetClusterPtr();
@@ -645,6 +703,8 @@ void MUONRecoCheck(Int_t nEvent = -1, const char* pathSim="./generated/", const 
 	    if (cluster1->GetDetElemId() == cluster2->GetDetElemId()) {
 	      hResidualXInCh[cluster1->GetChamberId()]->Fill(cluster1->GetX() - cluster2->GetX());
 	      hResidualYInCh[cluster1->GetChamberId()]->Fill(cluster1->GetY() - cluster2->GetY());
+	      hResidualXPerDE->Fill(deIndices[cluster1->GetDetElemId()], cluster1->GetX() - cluster2->GetX());
+	      hResidualYPerDE->Fill(deIndices[cluster1->GetDetElemId()], cluster1->GetY() - cluster2->GetY());
 	      break;
 	    }
 	    trackParamAtCluster2 = (AliMUONTrackParam*) trackRef->GetTrackParamAtCluster()->After(trackParamAtCluster2);
@@ -741,20 +801,22 @@ void MUONRecoCheck(Int_t nEvent = -1, const char* pathSim="./generated/", const 
   // compute phi resolution at vertex versus p
   FitGausResVsMom(hResPhiVertexVsMom, pNBins, 0., 0.01, "phi residuals at vertex", gMeanResPhiVertexVsMom, gSigmaResPhiVertexVsMom);
   
-  // compute cluster-track residual mean and dispersion
+  // compute cluster-track residual mean and dispersion per chamber
+  Double_t clusterResPerCh[10][2];
   for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) {
-    hResidualXInCh[i]->GetXaxis()->SetRangeUser(-3.*hResidualXInCh[i]->GetRMS(), 3.*hResidualXInCh[i]->GetRMS());
-    gResidualXPerChMean->SetPoint(i, i+1, hResidualXInCh[i]->GetMean());
-    gResidualXPerChMean->SetPointError(i, 0., hResidualXInCh[i]->GetMeanError());
-    gResidualXPerChSigma->SetPoint(i, i+1, hResidualXInCh[i]->GetRMS());
-    gResidualXPerChSigma->SetPointError(i, 0., hResidualXInCh[i]->GetRMSError());
-    hResidualXInCh[i]->GetXaxis()->SetRange(0,0);
-    hResidualYInCh[i]->GetXaxis()->SetRangeUser(-3.*hResidualYInCh[i]->GetRMS(), 3.*hResidualYInCh[i]->GetRMS());
-    gResidualYPerChMean->SetPoint(i, i+1, hResidualYInCh[i]->GetMean());
-    gResidualYPerChMean->SetPointError(i, 0., hResidualYInCh[i]->GetMeanError());
-    gResidualYPerChSigma->SetPoint(i, i+1, hResidualYInCh[i]->GetRMS());
-    gResidualYPerChSigma->SetPointError(i, 0., hResidualYInCh[i]->GetRMSError());
-    hResidualYInCh[i]->GetXaxis()->SetRange(0,0);
+    FillResidual(hResidualXInCh[i], i, clusterResPerCh[i][0], gResidualXPerChMean, gResidualXPerChSigma, kTRUE, fitResiduals);
+    FillResidual(hResidualYInCh[i], i, clusterResPerCh[i][1], gResidualYPerChMean, gResidualYPerChSigma, kTRUE, fitResiduals);
+  }
+  
+  // compute cluster-track residual mean and dispersion per DE
+  Double_t clusterResPerDE[200][2];
+  for (Int_t i = 0; i < deNBins; i++) {
+    TH1D *tmp = hResidualXPerDE->ProjectionY("tmp",i+1,i+1,"e");
+    FillResidual(tmp, i, clusterResPerDE[i][0], gResidualXPerDEMean, gResidualXPerDESigma, kTRUE, fitResiduals);
+    delete tmp;
+    tmp = hResidualYPerDE->ProjectionY("tmp",i+1,i+1,"e");
+    FillResidual(tmp, i, clusterResPerDE[i][1], gResidualYPerDEMean, gResidualYPerDESigma, kTRUE, fitResiduals);
+    delete tmp;
   }
   
   // ###################################### display histograms ###################################### //
@@ -867,6 +929,10 @@ void MUONRecoCheck(Int_t nEvent = -1, const char* pathSim="./generated/", const 
   gResidualXPerChSigma->Write();
   gResidualYPerChMean->Write();
   gResidualYPerChSigma->Write();
+  gResidualXPerDEMean->Write();
+  gResidualXPerDESigma->Write();
+  gResidualYPerDEMean->Write();
+  gResidualYPerDESigma->Write();
   
   histoFile->Close();
   
@@ -913,7 +979,20 @@ void MUONRecoCheck(Int_t nEvent = -1, const char* pathSim="./generated/", const 
   printf(" cov_ThetaPosMCS = %f\n", cov_ThetaPosMCS);
   printf(" --> sigma_DCA = %f\n", TMath::Sqrt(AliMUONConstants::AbsZEnd()*AliMUONConstants::AbsZEnd()*sigma2_ThetaMCS
 					      - 2.*AliMUONConstants::AbsZEnd()*cov_ThetaPosMCS + sigma2_PosMCS));
-  printf("\n");
+  
+  printf("\nchamber resolution:\n");
+  printf(" - non-bending:");
+  for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) printf((i==0)?" %5.3f":", %5.3f",clusterResPerCh[i][0]);
+  printf("\n -     bending:");
+  for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) printf((i==0)?" %6.4f":", %6.4f",clusterResPerCh[i][1]);
+  printf("\n\n");
+  
+  printf("\nDE resolution:\n");
+  printf(" - non-bending:");
+  for (Int_t i = 0; i < deNBins; i++) printf((i==0)?" %5.3f":", %5.3f",clusterResPerDE[i][0]);
+  printf("\n -     bending:");
+  for (Int_t i = 0; i < deNBins; i++) printf((i==0)?" %6.4f":", %6.4f",clusterResPerDE[i][1]);
+  printf("\n\n");
 }
 
 //------------------------------------------------------------------------------------
@@ -1034,6 +1113,45 @@ void FitPDCAVsMom(TH2* h, Int_t nBins, const char* fitting, TGraphAsymmErrors* g
 }
 
 //------------------------------------------------------------------------------------
+void FillResidual(TH1* h, Int_t i, Double_t& sigma, TGraphErrors* gMean, TGraphErrors* gSigma, Bool_t correctForSystematics, Bool_t fitResiduals)
+{
+  /// fill graphs with residual mean and sigma
+  static TF1* fRGaus = 0x0;
+  Double_t mean, meanErr, sigmaErr;
+  
+  if (fitResiduals) {
+    
+    if (!fRGaus) fRGaus = new TF1("fRGaus","gaus");
+    fRGaus->SetParameters(h->GetEntries(), 0., 0.1);
+    h->Fit("fRGaus", "WWNQ");
+    mean = fRGaus->GetParameter(1);
+    meanErr = fRGaus->GetParError(1);
+    sigma = fRGaus->GetParameter(2);
+    sigmaErr = fRGaus->GetParError(2);
+    
+  } else {
+    
+    Zoom(h);
+    mean = h->GetMean();
+    meanErr = h->GetMeanError();
+    sigma = h->GetRMS();
+    sigmaErr = h->GetRMSError();
+    h->GetXaxis()->SetRange(0,0);
+    
+  }
+  
+  gMean->SetPoint(i, i+1, mean);
+  gMean->SetPointError(i, 0., meanErr);
+  if (correctForSystematics) {
+    Double_t s = TMath::Sqrt(mean*mean + sigma*sigma);
+    sigmaErr = (s>0.) ? TMath::Sqrt(sigma*sigma*sigmaErr*sigmaErr + mean*mean*meanErr*meanErr) / s : 0.;
+    sigma = s;
+  }
+  gSigma->SetPoint(i, i+1, sigma);
+  gSigma->SetPointError(i, 0., sigmaErr);
+}
+
+//------------------------------------------------------------------------------------
 TCanvas* DrawVsAng(const char* name, const char* title, TH1* h1, TH2* h2)
 {
   /// generic function to draw histograms versus absorber angular region
@@ -1102,5 +1220,32 @@ TCanvas* DrawResMomVsMom(const char* name, const char* title, TH2* h, Int_t nBin
   if (f2) cout<<Form("\rFitting %s... %d/%d",fitting,nBins,nBins)<<endl;
   l->Draw("same");
   return c;
+}
+
+//------------------------------------------------------------------------------------
+void Zoom(TH1* h, Double_t fractionCut)
+{
+  /// Reduce the range of the histogram by removing a given fration of the statistic at each edge
+  Int_t maxEventsCut = fractionCut * h->GetEntries();
+  Int_t nBins = h->GetNbinsX();
+  
+  // set low edge  
+  Int_t minBin;
+  Int_t eventsCut = 0;
+  for (minBin = 1; minBin <= nBins; minBin++) {
+    eventsCut += h->GetBinContent(minBin);
+    if (eventsCut > maxEventsCut) break;
+  }
+  
+  // set high edge
+  Int_t maxBin;
+  eventsCut = 0;
+  for (maxBin = nBins; maxBin >= 1; maxBin--) {
+    eventsCut += h->GetBinContent(maxBin);
+    if (eventsCut > maxEventsCut) break;
+  }
+  
+  // set new axis range
+  h->GetXaxis()->SetRange(--minBin, ++maxBin);
 }
 

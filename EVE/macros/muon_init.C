@@ -27,7 +27,7 @@ Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
 
 void muon_init(const TString& cdburi = "",
                const TString& path   = ".",
-	       Bool_t showBarrel = kTRUE)
+	       Bool_t showBarrel = kFALSE)
 {
   if (gSystem->Getenv("ALICE_ROOT") != 0)
   {
@@ -62,7 +62,7 @@ void muon_init(const TString& cdburi = "",
   mv->SetDepth(-10);
   
   TEveUtil::LoadMacro("geom_gentle.C");
-  TEveUtil::LoadMacro("geom_gentle_muon.C");
+  TEveUtil::LoadMacro("geom_gentle_muon.C+");
 
   mv->InitGeomGentle(geom_gentle(), geom_gentle_rphi(), geom_gentle_rhoz(), geom_gentle_muon(kFALSE));
   
@@ -76,7 +76,7 @@ void muon_init(const TString& cdburi = "",
   
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Track","kine_tracks.C+",   "kine_tracks",  "", kFALSE));
 
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM TrackRef","muon_trackRefs.C+","muon_trackRefs","kTRUE", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM TrackRef","muon_trackRefs.C+","muon_trackRefs","kTRUE", kTRUE));
   
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW MUON", "muon_raw.C+",     "muon_raw",     "", kTRUE));
 

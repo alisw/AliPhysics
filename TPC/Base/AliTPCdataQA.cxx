@@ -103,6 +103,7 @@
 #include <TError.h>
 #include <TMap.h>
 #include <TProfile.h>
+#include <TObjArray.h>
 //AliRoot includes
 #include "AliRawReader.h"
 #include "AliRawReaderRoot.h"
@@ -128,8 +129,10 @@ ClassImp(AliTPCdataQA)
 AliTPCdataQA::AliTPCdataQA() : /*FOLD00*/  
   fFirstTimeBin(60),
   fLastTimeBin(1000),
-  fAdcMin(1),
-  fAdcMax(100),
+  fAdcMin(3),
+  fAdcMax(1000),
+  fMinQMax(5.f),
+  fRequireNeighbouringPad(kTRUE),
   fMapping(NULL),
   fPedestal(0),
   fNoise(0),
@@ -155,6 +158,7 @@ AliTPCdataQA::AliTPCdataQA() : /*FOLD00*/
   fEventsPerBin(1000),          // Events per bin for event histograms
   fSignalCounter(0),            // Signal counter
   fClusterCounter(0),           // Cluster counter
+  fActiveChambers(72),
   fAllBins(0),
   fAllSigBins(0),
   fAllNSigBins(0),
@@ -174,6 +178,8 @@ AliTPCdataQA::AliTPCdataQA() : /*FOLD00*/
   //
   // default constructor
   //
+
+  for (Int_t i=0; i<72; ++i) {fActiveChambers.SetBitNumber(i,kTRUE);}
 }
 
 //_____________________________________________________________________
@@ -183,6 +189,8 @@ AliTPCdataQA::AliTPCdataQA(const AliTPCdataQA &ped) : /*FOLD00*/
   fLastTimeBin(ped.GetLastTimeBin()),
   fAdcMin(ped.GetAdcMin()),
   fAdcMax(ped.GetAdcMax()),
+  fMinQMax(ped.GetMinQMax()),
+  fRequireNeighbouringPad(ped.GetRequireNeighbouringPad()),
   fMapping(NULL),
   fPedestal(0),
   fNoise(0),
@@ -208,6 +216,7 @@ AliTPCdataQA::AliTPCdataQA(const AliTPCdataQA &ped) : /*FOLD00*/
   fEventsPerBin(ped.GetEventsPerBin()),
   fSignalCounter(ped.GetSignalCounter()),
   fClusterCounter(ped.GetClusterCounter()),
+  fActiveChambers(ped.fActiveChambers),
   fAllBins(0),
   fAllSigBins(0),
   fAllNSigBins(0),
@@ -278,8 +287,10 @@ AliTPCdataQA::AliTPCdataQA(const TMap *config) : /*FOLD00*/
   TH1F("TPCRAW","TPCRAW",100,0,100),
   fFirstTimeBin(60),
   fLastTimeBin(1000),
-  fAdcMin(1),
-  fAdcMax(100),
+  fAdcMin(3),
+  fAdcMax(1000),
+  fMinQMax(5.f),
+  fRequireNeighbouringPad(kTRUE),
   fMapping(NULL),
   fPedestal(0),
   fNoise(0),
@@ -305,6 +316,7 @@ AliTPCdataQA::AliTPCdataQA(const TMap *config) : /*FOLD00*/
   fEventsPerBin(1000),
   fSignalCounter(0),
   fClusterCounter(0),
+  fActiveChambers(72),
   fAllBins(0),
   fAllSigBins(0),
   fAllNSigBins(0),
@@ -328,8 +340,11 @@ AliTPCdataQA::AliTPCdataQA(const TMap *config) : /*FOLD00*/
   if (config->GetValue("LastTimeBin"))  fLastTimeBin = ((TObjString*)config->GetValue("LastTimeBin"))->GetString().Atoi();
   if (config->GetValue("AdcMin"))       fAdcMin = ((TObjString*)config->GetValue("AdcMin"))->GetString().Atoi();
   if (config->GetValue("AdcMax"))       fAdcMax = ((TObjString*)config->GetValue("AdcMax"))->GetString().Atoi();
+  if (config->GetValue("MinQMax"))      fMinQMax = ((TObjString*)config->GetValue("MinQMax"))->GetString().Atof();
   if (config->GetValue("MaxEvents"))    fMaxEvents = ((TObjString*)config->GetValue("MaxEvents"))->GetString().Atoi();
   if (config->GetValue("EventsPerBin")) fEventsPerBin = ((TObjString*)config->GetValue("EventsPerBin"))->GetString().Atoi();
+  if (config->GetValue("RequireNeighbouringPad")) fRequireNeighbouringPad = ((TObjString*)config->GetValue("RequireNeighbouringPad"))->GetString().Atoi();
+  for (Int_t i=0; i<72; ++i) {fActiveChambers.SetBitNumber(i,kTRUE);}
 }
 
 //_____________________________________________________________________
@@ -504,6 +519,8 @@ Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStreamV3 *const rawStreamV3)
   Bool_t withInput = kFALSE;
   Int_t nSignals = 0;
   Int_t lastSector = -1;
+
+  Init();
   
   while ( rawStreamV3->NextDDL() ){
 
@@ -543,6 +560,8 @@ Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStreamV3 *const rawStreamV3)
     
   if (lastSector>=0&&nSignals>0)  
     FindLocalMaxima(lastSector);
+
+  CleanArrays();
   
   return withInput;
 }
@@ -620,118 +639,7 @@ Int_t AliTPCdataQA::Update(const Int_t iSector, /*FOLD00*/
   // Signal filling method
   //
   
-  //
-  // Define the calibration objects the first time Update is called
-  // NB! This has to be done first even if the data is rejected by the time 
-  // cut to make sure that the objects are available in Analyse
-  //
-  if(!fIsDQM) {
-
-    if (!fNLocalMaxima) fNLocalMaxima = new AliTPCCalPad("NLocalMaxima","NLocalMaxima");
-    if (!fMaxCharge) fMaxCharge = new AliTPCCalPad("MaxCharge","MaxCharge");
-    if (!fMeanCharge) fMeanCharge = new AliTPCCalPad("MeanCharge","MeanCharge");
-    if (!fNoThreshold) fNoThreshold = new AliTPCCalPad("NoThreshold","NoThreshold");
-    if (!fNTimeBins) fNTimeBins = new AliTPCCalPad("NTimeBins","NTimeBins");
-    if (!fNPads) fNPads = new AliTPCCalPad("NPads","NPads");
-    if (!fTimePosition) fTimePosition = new AliTPCCalPad("TimePosition","TimePosition");
-    if (!fOverThreshold10) fOverThreshold10 = new AliTPCCalPad("OverThreshold10","OverThreshold10");
-    if (!fOverThreshold20) fOverThreshold20 = new AliTPCCalPad("OverThreshold20","OverThreshold20");
-    if (!fOverThreshold30) fOverThreshold30 = new AliTPCCalPad("OverThreshold30","OverThreshold30");
-    if (!fHistQVsTimeSideA) {
-      fHistQVsTimeSideA  = new TProfile("hQVsTimeSideA", "Q vs time (side A); Time [Timebin]; Q [ADC ch]", 100, 0, 1000);
-      fHistQVsTimeSideA->SetDirectory(0);
-    }
-    if (!fHistQVsTimeSideC) {
-      fHistQVsTimeSideC  = new TProfile("hQVsTimeSideC", "Q vs time (side C); Time [Timebin]; Q [ADC ch]", 100, 0, 1000);
-      fHistQVsTimeSideC->SetDirectory(0);
-  }
-    if (!fHistQMaxVsTimeSideA) {
-      fHistQMaxVsTimeSideA  = new TProfile("hQMaxVsTimeSideA", "Q_{MAX} vs time (side A); Time [Timebin]; Q_{MAX} [ADC ch]", 100, 0, 1000);
-      fHistQMaxVsTimeSideA->SetDirectory(0);
-    }
-    if (!fHistQMaxVsTimeSideC) {
-      fHistQMaxVsTimeSideC  = new TProfile("hQMaxVsTimeSideC", "Q_{MAX} vs time (side C); Time [Timebin]; Q_{MAX} [ADC ch]", 100, 0, 1000);
-      fHistQMaxVsTimeSideC->SetDirectory(0);
-    }
-  } else { // DQM histograms and array
-    
-    if (!fHistOccVsSector) {
-      fHistOccVsSector  = new TProfile("hOccVsSector", "Occupancy vs sector; Sector; Occupancy", 72, 0, 72);
-      fHistOccVsSector->SetDirectory(0);
-
-      fHistOcc2dVsSector  = new TProfile2D("hOcc2dVsSector", "Occupancy vs sector and patch; Sector; Patch", 72, 0, 36, 6, 0, 6);
-      fHistOcc2dVsSector->SetDirectory(0);
-
-      fHistQVsSector  = new TProfile("hQVsSector", "Q vs sector; Sector; Q [ADC ch]", 72, 0, 72);
-      fHistQVsSector->SetDirectory(0);
-
-      fHistQmaxVsSector  = new TProfile("hQmaxVsSector", "Qmax vs sector; Sector; Qmax [ADC ch]", 72, 0, 72);
-      fHistQmaxVsSector->SetDirectory(0);
-
-      fOccVec = new TArrayD(72);
-      for(Int_t i = 0; i < 72; i++)
-	fOccVec->GetArray()[i] = 0;
-
-      fOccMaxVec = new TArrayD(72);
-      const Double_t nTimeBins = fLastTimeBin - fFirstTimeBin +1;
-      for(Int_t i = 0; i < 72; i++)
-	
-	if(i<36) // IROCs (5504 pads)
-	  fOccMaxVec->GetArray()[i] = nTimeBins*5504;
-	else     // OROCs (9984 pads)
-	  fOccMaxVec->GetArray()[i] = nTimeBins*9984;
-
-      // 12 branches for each full sector
-      const Int_t nBranches = 36*12;
-      fOccVecFine = new TArrayD(nBranches);
-      for(Int_t i = 0; i < nBranches; i++)
-	fOccVecFine->GetArray()[i] = 0;
-
-      // Pads per patch same for all sectors
-      Int_t nPads0[6] = {1152, 1536, 1152, 1280, 1280, 1280};
-      Int_t nPads1[6] = {1152, 1664, 1152, 1280, 1280, 1280};
-
-      fOccMaxVecFine = new TArrayD(nBranches);
-      for(Int_t i = 0; i < nBranches; i++) {
-	
-	const Int_t fullSector = Int_t(i/12);
-	Int_t branch = i - fullSector*12;
-	R__ASSERT(branch>=0 && branch<12);
-	
-	const Int_t patch = Int_t(branch/2);
-	branch -= patch*2;
-	
-	R__ASSERT(branch>=0 && branch<2);
-	if(branch == 0)
-	  fOccMaxVecFine->GetArray()[i] = nTimeBins*nPads0[patch];
-	else     // OROCs (9984 pads)
-	  fOccMaxVecFine->GetArray()[i] = nTimeBins*nPads1[patch];
-      }
-    }
-  }
-  // Make the arrays for expanding the data
-
-  if (!fAllBins)
-    MakeArrays();
-
-  //
-  // If Analyse has been previously called we need now to denormalize the data
-  // as more data is coming
-  //
-  if(fIsAnalysed == kTRUE && !fIsDQM) {
-    
-    const Int_t nTimeBins = fLastTimeBin - fFirstTimeBin +1;
-    const Float_t denormalization = Float_t(fEventCounter * nTimeBins);
-    fNoThreshold->Multiply(denormalization);  
-    
-    fMeanCharge->Multiply(fNLocalMaxima);
-    fMaxCharge->Multiply(fNLocalMaxima);
-    fNTimeBins->Multiply(fNLocalMaxima);
-    fNPads->Multiply(fNLocalMaxima);
-    fTimePosition->Multiply(fNLocalMaxima);
-    fIsAnalysed = kFALSE;
-  }
-
+  if (!fActiveChambers[iSector]) return 0;
   //
   // TimeBin cut
   //
@@ -761,7 +669,7 @@ Int_t AliTPCdataQA::Update(const Int_t iSector, /*FOLD00*/
   }
 
   // Require at least 3 ADC channels
-  if (signal < 3.0)
+  if (signal < fAdcMin)
     return 0;
 
   // if noise calibrations are loaded require at least 3*sigmaNoise
@@ -794,6 +702,8 @@ void AliTPCdataQA::FindLocalMaxima(const Int_t iSector)
   // calibration objects with the information
   //
 
+  if (!fActiveChambers[iSector]) return;
+  
   Int_t nLocalMaxima = 0;
   const Int_t maxTimeBin = fTimeBinsMax+4; // Used to step between neighboring pads 
                                            // Because we have tha pad-time data in a 
@@ -817,11 +727,11 @@ void AliTPCdataQA::FindLocalMaxima(const Int_t iSector)
       Float_t qMax = b[0];
 
       // First check that the charge is bigger than the threshold
-      if (qMax<5) 
+      if (qMax<fMinQMax) 
 	continue;
       
       // Require at least one neighboring pad with signal
-      if (b[-maxTimeBin]+b[maxTimeBin]<=0) continue;
+      if (fRequireNeighbouringPad && (b[-maxTimeBin]+b[maxTimeBin]<=0) ) continue;
 
       // Require at least one neighboring time bin with signal
       if (b[-1]+b[1]<=0) continue;
@@ -844,7 +754,7 @@ void AliTPCdataQA::FindLocalMaxima(const Int_t iSector)
       //
       // Now we accept the local maximum and fill the calibration/data objects
       //
-      nLocalMaxima++;
+      ++nLocalMaxima;
 
       Int_t iPad, iTimeBin;
       GetPadAndTimeBin(bin, iPad, iTimeBin);
@@ -1214,4 +1124,164 @@ void AliTPCdataQA::ResetProfiles()
   if(fOccVecFine)
     for(Int_t i = 0; i < 36*12; i++)
       fOccVecFine->GetArray()[i] = 0.0;
+}
+
+//____________________________________________________________________________________________
+void AliTPCdataQA::Init()
+{
+  //
+  // Define the calibration objects the first time Update is called
+  // NB! This has to be done first even if the data is rejected by the time
+  // cut to make sure that the objects are available in Analyse
+  //
+  if(!fIsDQM) {
+    
+    if (!fNLocalMaxima){
+      TObjArray configArr(72);
+      fNLocalMaxima = new AliTPCCalPad(ConfigArrRocs(&configArr,"NLocalMaxima"));
+      fMaxCharge = new AliTPCCalPad(ConfigArrRocs(&configArr,"MaxCharge"));
+      fMeanCharge = new AliTPCCalPad(ConfigArrRocs(&configArr,"MeanCharge"));
+      fNoThreshold = new AliTPCCalPad(ConfigArrRocs(&configArr,"NoThreshold"));
+      fNTimeBins = new AliTPCCalPad(ConfigArrRocs(&configArr,"NTimeBins"));
+      fNPads = new AliTPCCalPad(ConfigArrRocs(&configArr,"NPads"));
+      fTimePosition = new AliTPCCalPad(ConfigArrRocs(&configArr,"TimePosition"));
+      fOverThreshold10 = new AliTPCCalPad(ConfigArrRocs(&configArr,"OverThreshold10"));
+      fOverThreshold20 = new AliTPCCalPad(ConfigArrRocs(&configArr,"OverThreshold20"));
+      fOverThreshold30 = new AliTPCCalPad(ConfigArrRocs(&configArr,"OverThreshold30"));
+
+      fHistQVsTimeSideA  = new TProfile("hQVsTimeSideA", "Q vs time (side A); Time [Timebin]; Q [ADC ch]", 100, 0, 1000);
+      fHistQVsTimeSideA->SetDirectory(0);
+      fHistQVsTimeSideC  = new TProfile("hQVsTimeSideC", "Q vs time (side C); Time [Timebin]; Q [ADC ch]", 100, 0, 1000);
+      fHistQVsTimeSideC->SetDirectory(0);
+      fHistQMaxVsTimeSideA  = new TProfile("hQMaxVsTimeSideA", "Q_{MAX} vs time (side A); Time [Timebin]; Q_{MAX} [ADC ch]", 100, 0, 1000);
+      fHistQMaxVsTimeSideA->SetDirectory(0);
+      fHistQMaxVsTimeSideC  = new TProfile("hQMaxVsTimeSideC", "Q_{MAX} vs time (side C); Time [Timebin]; Q_{MAX} [ADC ch]", 100, 0, 1000);
+      fHistQMaxVsTimeSideC->SetDirectory(0);
+    }
+  } else { // DQM histograms and array
+
+    if (!fHistOccVsSector) {
+      fHistOccVsSector  = new TProfile("hOccVsSector", "Occupancy vs sector; Sector; Occupancy", 72, 0, 72);
+      fHistOccVsSector->SetDirectory(0);
+
+      fHistOcc2dVsSector  = new TProfile2D("hOcc2dVsSector", "Occupancy vs sector and patch; Sector; Patch", 72, 0, 36, 6, 0, 6);
+      fHistOcc2dVsSector->SetDirectory(0);
+
+      fHistQVsSector  = new TProfile("hQVsSector", "Q vs sector; Sector; Q [ADC ch]", 72, 0, 72);
+      fHistQVsSector->SetDirectory(0);
+
+      fHistQmaxVsSector  = new TProfile("hQmaxVsSector", "Qmax vs sector; Sector; Qmax [ADC ch]", 72, 0, 72);
+      fHistQmaxVsSector->SetDirectory(0);
+
+      fOccVec = new TArrayD(72);
+      for(Int_t i = 0; i < 72; i++)
+        fOccVec->GetArray()[i] = 0;
+
+      fOccMaxVec = new TArrayD(72);
+      const Double_t nTimeBins = fLastTimeBin - fFirstTimeBin +1;
+      for(Int_t i = 0; i < 72; i++)
+
+        if(i<36) // IROCs (5504 pads)
+          fOccMaxVec->GetArray()[i] = nTimeBins*5504;
+        else     // OROCs (9984 pads)
+          fOccMaxVec->GetArray()[i] = nTimeBins*9984;
+
+      // 12 branches for each full sector
+        const Int_t nBranches = 36*12;
+        fOccVecFine = new TArrayD(nBranches);
+        for(Int_t i = 0; i < nBranches; i++)
+          fOccVecFine->GetArray()[i] = 0;
+
+      // Pads per patch same for all sectors
+        Int_t nPads0[6] = {1152, 1536, 1152, 1280, 1280, 1280};
+        Int_t nPads1[6] = {1152, 1664, 1152, 1280, 1280, 1280};
+
+        fOccMaxVecFine = new TArrayD(nBranches);
+        for(Int_t i = 0; i < nBranches; i++) {
+
+          const Int_t fullSector = Int_t(i/12);
+          Int_t branch = i - fullSector*12;
+          R__ASSERT(branch>=0 && branch<12);
+
+          const Int_t patch = Int_t(branch/2);
+          branch -= patch*2;
+
+          R__ASSERT(branch>=0 && branch<2);
+          if(branch == 0)
+            fOccMaxVecFine->GetArray()[i] = nTimeBins*nPads0[patch];
+          else     // OROCs (9984 pads)
+      fOccMaxVecFine->GetArray()[i] = nTimeBins*nPads1[patch];
+        }
+    }
+  }
+  // Make the arrays for expanding the data
+  
+  if (!fAllBins)
+    MakeArrays();
+  
+  //
+  // If Analyse has been previously called we need now to denormalize the data
+  // as more data is coming
+  //
+  if(fIsAnalysed == kTRUE && !fIsDQM) {
+
+    const Int_t nTimeBins = fLastTimeBin - fFirstTimeBin +1;
+    const Float_t denormalization = Float_t(fEventCounter * nTimeBins);
+    fNoThreshold->Multiply(denormalization);
+
+    fMeanCharge->Multiply(fNLocalMaxima);
+    fMaxCharge->Multiply(fNLocalMaxima);
+    fNTimeBins->Multiply(fNLocalMaxima);
+    fNPads->Multiply(fNLocalMaxima);
+    fTimePosition->Multiply(fNLocalMaxima);
+    fIsAnalysed = kFALSE;
+  }
+}
+
+//____________________________________________________________________________________________
+void AliTPCdataQA::ResetData()
+{
+  //
+  // reset all data
+  //
+  if(!fIsDQM) {
+    
+    if (fNLocalMaxima){
+      fNoThreshold->Reset();
+      fNLocalMaxima->Reset();
+      fMeanCharge->Reset();
+      fMaxCharge->Reset();
+      fNTimeBins->Reset();
+      fNPads->Reset();
+      fTimePosition->Reset();
+      fOverThreshold10->Reset();
+      fOverThreshold20->Reset();
+      fOverThreshold30->Reset();
+      
+      fHistQVsTimeSideA->Reset();
+      fHistQVsTimeSideC->Reset();
+      fHistQMaxVsTimeSideA->Reset();
+      fHistQMaxVsTimeSideC->Reset();
+
+      fIsAnalysed = kFALSE;
+      
+    }
+  }
+  
+  fEventCounter=0;
+  fClusterCounter=0;
+}
+
+TObjArray *AliTPCdataQA::ConfigArrRocs(TObjArray *arr, const Text_t* name)
+{
+  //
+  // GetArray with confiured ROCs
+  //
+
+  arr->Clear();
+  arr->SetName(name);
+  for (Int_t i=0; i<72; ++i){
+    if (fActiveChambers[i]) arr->AddAt(new AliTPCCalROC(i),i);
+  }
+  return arr;
 }

@@ -25,6 +25,7 @@
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
 #include "AliMUONESDInterface.h"
+#include "AliMUONConstants.h"
 #endif
 
 /// \ingroup macros
@@ -45,7 +46,7 @@
 
 Bool_t MUONmassPlot(const char* esdFileName = "AliESDs.root", const char* geoFilename = "geometry.root",
 		    const char* ocdbPath = "local://$ALICE_ROOT/OCDB",
-		    Int_t FirstEvent = 0, Int_t LastEvent = 10000, Int_t ExtrapToVertex = -1,
+		    Int_t FirstEvent = 0, Int_t LastEvent = -1, Int_t ExtrapToVertex = -1,
 		    Int_t ResType = 553, Float_t Chi2Cut = 100., Float_t PtCutMin = 1.,
 		    Float_t PtCutMax = 10000., Float_t massMin = 9.17,Float_t massMax = 9.77)
 {
@@ -66,7 +67,7 @@ Bool_t MUONmassPlot(const char* esdFileName = "AliESDs.root", const char* geoFil
 
   cout << "MUONmassPlot " << endl;
   cout << "FirstEvent " << FirstEvent << endl;
-  cout << "LastEvent " << LastEvent << endl;
+  cout << "LastEvent " << ((LastEvent>=0) ? Form("%d",LastEvent) : "all") << endl;
   cout << "ResType " << ResType << endl;
   cout << "Chi2Cut " << Chi2Cut << endl;
   cout << "PtCutMin " << PtCutMin << endl;
@@ -161,6 +162,7 @@ Bool_t MUONmassPlot(const char* esdFileName = "AliESDs.root", const char* geoFil
   
   // load necessary data from OCDB
   AliCDBManager::Instance()->SetDefaultStorage(ocdbPath);
+  AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data","local://.");
   AliCDBManager::Instance()->SetRun(runNumber);
   if (!AliMUONCDB::LoadField()) return kFALSE;
   
@@ -168,10 +170,11 @@ Bool_t MUONmassPlot(const char* esdFileName = "AliESDs.root", const char* geoFil
   AliMUONTrackExtrap::SetField();
   
   AliMUONTrackParam trackParam;
-
+  AliMUONTrackParam trackParamAtAbsEnd;
+  
   // Loop over events
-  Int_t nevents = (Int_t)tree->GetEntries();
-  for (Int_t iEvent = FirstEvent; iEvent <= TMath::Min(LastEvent, nevents - 1); iEvent++) {
+  Int_t nevents = (LastEvent >= 0) ? TMath::Min(LastEvent, (Int_t)tree->GetEntries()-1) : (Int_t)tree->GetEntries()-1;
+  for (Int_t iEvent = FirstEvent; iEvent <= nevents; iEvent++) {
 
     // get the event summary data
     if (tree->GetEvent(iEvent) <= 0) {
@@ -214,6 +217,14 @@ Bool_t MUONmassPlot(const char* esdFileName = "AliESDs.root", const char* geoFil
 	AliMUONESDInterface::SetParamAtVertex(trackParam, *muonTrack); // put the new parameters in this copy of AliESDMuonTrack
       }
 
+      // compute track position at the end of the absorber
+      AliMUONESDInterface::GetParamAtFirstCluster(*muonTrack, trackParamAtAbsEnd);
+      AliMUONTrackExtrap::ExtrapToZ(&trackParamAtAbsEnd, AliMUONConstants::AbsZEnd());
+      Double_t xAbs = trackParamAtAbsEnd.GetNonBendingCoor();
+      Double_t yAbs = trackParamAtAbsEnd.GetBendingCoor();
+      Double_t dAbs1 = TMath::Sqrt(xAbs*xAbs + yAbs*yAbs);
+      Double_t aAbs1 = TMath::ATan(-dAbs1/AliMUONConstants::AbsZEnd()) * TMath::RadToDeg();
+      
       fCharge1 = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
       
       muonTrack->LorentzP(fV1);
@@ -270,6 +281,14 @@ Bool_t MUONmassPlot(const char* esdFileName = "AliESDs.root", const char* geoFil
 	    AliMUONESDInterface::SetParamAtVertex(trackParam, *muonTrack2); // put the new parameters in this copy of AliESDMuonTrack
 	  }
 	  
+	  // compute track position at the end of the absorber
+	  AliMUONESDInterface::GetParamAtFirstCluster(*muonTrack2, trackParamAtAbsEnd);
+	  AliMUONTrackExtrap::ExtrapToZ(&trackParamAtAbsEnd, AliMUONConstants::AbsZEnd());
+	  xAbs = trackParamAtAbsEnd.GetNonBendingCoor();
+	  yAbs = trackParamAtAbsEnd.GetBendingCoor();
+	  Double_t dAbs2 = TMath::Sqrt(xAbs*xAbs + yAbs*yAbs);
+	  Double_t aAbs2 = TMath::ATan(-dAbs2/AliMUONConstants::AbsZEnd()) * TMath::RadToDeg();
+	  
 	  fCharge2 = Int_t(TMath::Sign(1.,muonTrack2->GetInverseBendingMomentum()));
 
 	  muonTrack2->LorentzP(fV2);
@@ -285,6 +304,15 @@ Bool_t MUONmassPlot(const char* esdFileName = "AliESDs.root", const char* geoFil
 
 	  // condition for good track (Chi2Cut and PtCut)
 //	  if ((ch2 < Chi2Cut) && (pt2 > PtCutMin)  && (pt2 < PtCutMax)) {
+//	  if (aAbs1 < 2. || aAbs2 < 2.) {
+//	  if (aAbs1 > 2. && aAbs2 > 2. && (aAbs1 < 2.1 || aAbs2 < 2.1)) {
+//	  if (aAbs1 > 2. && aAbs2 > 2. && (dAbs1 < 17.8 || dAbs2 < 17.8)) {
+//	  if (dAbs1 > 17.8 && dAbs2 > 17.8 && (dAbs1 < 18. || dAbs2 < 18.)) {
+//	  if (dAbs1 > 18. && dAbs2 > 18. && (dAbs1 < 18.2 || dAbs2 < 18.2)) {
+//	  if (dAbs1 > 18.2 && dAbs2 > 18.2 && (aAbs1 < 2.1 || aAbs2 < 2.1)) {
+//	  if (dAbs1 > 18. && dAbs2 > 18.) {
+//	  if (aAbs1 > 2.1 && aAbs2 > 2.1) {
+//	  if (muonTrack->GetMatchTrigger() && muonTrack2->GetMatchTrigger()) {
 
 	    // condition for opposite charges
 	    if ((fCharge1 * fCharge2) == -1) {

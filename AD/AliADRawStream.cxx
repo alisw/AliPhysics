@@ -126,7 +126,7 @@ Bool_t AliADRawStream::Next()
   Int_t iCIU=0;
   for (Int_t  iV0CIU = 0; iV0CIU < 8; iV0CIU++) {
     
-    if(iV0CIU != 1 || iV0CIU != 5) {
+    if(iV0CIU != 1 || iV0CIU != 3) {
       for(Int_t iWord = 0; iWord<182; iWord++) GetNextWord();
       continue;
       	}

@@ -40,11 +40,11 @@ class AliITSUv1Layer : public AliITSv11Geometry {
     //
     Bool_t    IsTurbo() const {return fIsTurbo;};
 
-    Double_t  GetStaveThick() const {return fStaveThick;};
-    Double_t  GetStaveTilt()  const {return fStaveTilt;};
-    Double_t  GetStaveWidth() const {return fStaveWidth;};
+    Double_t  GetChipThick()   const {return fChipThick;};
+    Double_t  GetStaveTilt()   const {return fStaveTilt;};
+    Double_t  GetStaveWidth()  const {return fStaveWidth;};
     Double_t  GetSensorThick() const {return fSensorThick;};
-    Double_t  GetNStaves()    const {return fNStaves;};
+    Double_t  GetNStaves()     const {return fNStaves;};
     Double_t  GetNChips()      const {return fNChips;};
     Double_t  GetRadius()      const {return fLayRadius;};
     Double_t  GetPhi0()        const {return fPhi0;};
@@ -56,9 +56,10 @@ class AliITSUv1Layer : public AliITSv11Geometry {
     Int_t     GetNModulesPerParent()    const {return fHierarchy[kModule];}
     Int_t     GetNChipsPerParent()      const {return fHierarchy[kChip];}
     //
+    Int_t     GetBuildLevel()           const {return fBuildLevel;}
     AliITSUv1::AliITSUModel_t GetStaveModel() const {return fStaveModel;}
     //
-    void      SetStaveThick(Double_t t)      {fStaveThick = t;};
+    void      SetChipThick(Double_t t)       {fChipThick = t;};
     void      SetStaveTilt(Double_t t);
     void      SetStaveWidth(Double_t w);
     void      SetSensorThick(Double_t t)     {fSensorThick = t;};
@@ -74,8 +75,6 @@ class AliITSUv1Layer : public AliITSv11Geometry {
 
   private:
     void CreateLayerTurbo(TGeoVolume *moth);
-
-    Double_t RadiusOfTurboContainer();
 
     TGeoVolume* CreateStave(const TGeoManager *mgr=gGeoManager);
     //TGeoVolume* CreateChip(Double_t x, Double_t z, const TGeoManager *mgr=gGeoManager);
@@ -96,7 +95,7 @@ class AliITSUv1Layer : public AliITSv11Geometry {
     TGeoVolume* CreateStaveOuterB(const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateStaveModelOuterBDummy(const TGeoManager *mgr=gGeoManager) const;
     TGeoVolume* CreateStaveModelOuterB0(const TGeoManager *mgr=gGeoManager);
-    TGeoVolume* CreateStaveModelOuterB1(const TGeoManager *mgr=gGeoManager);
+    TGeoVolume* CreateStaveModelOuterB12(const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateSpaceFrameOuterB(const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateSpaceFrameOuterBDummy(const TGeoManager *mgr=gGeoManager) const;
     TGeoVolume* CreateSpaceFrameOuterB1(const TGeoManager *mgr=gGeoManager);
@@ -117,7 +116,7 @@ class AliITSUv1Layer : public AliITSv11Geometry {
     Double_t  fLayRadius;   // Inner radius of this layer
     Double_t  fZLength;     // Z length of this layer
     Double_t  fSensorThick; // Sensor thickness
-    Double_t  fStaveThick;  // Stave thickness
+    Double_t  fChipThick;   // Chip thickness
     Double_t  fStaveWidth;  // Stave width (for turbo layers only)
     Double_t  fStaveTilt;   // Stave tilt angle (for turbo layers only) in degrees
     Int_t     fNStaves;     // Number of staves in this layer
@@ -137,7 +136,7 @@ class AliITSUv1Layer : public AliITSv11Geometry {
     static const Int_t    fgkNumberOfInnerLayers;// Number of IB Layers
 
     static const Double_t fgkDefaultSensorThick; // Default sensor thickness
-    static const Double_t fgkDefaultStaveThick;  // Default stave thickness
+    static const Double_t fgkDefaultChipThick;   // Default chip thickness
 
     // Inner Barrel Parameters
     static const Int_t    fgkIBChipsPerRow;      // IB chips per row in module
@@ -153,16 +152,20 @@ class AliITSUv1Layer : public AliITSv11Geometry {
     static const Double_t fgkOBChipXGap;         // Gap between OB chips on X
     static const Double_t fgkOBChipZGap;         // Gap between OB chips on Z
     static const Double_t fgkOBFlexCableAlThick; // Thickness of FPC Aluminum
+    static const Double_t fgkOBFlexCableCuThick; // Thickness of FPC Copper
     static const Double_t fgkOBFlexCableKapThick;// Thickness of FPC Kapton
     static const Double_t fgkOBBusCableAlThick;  // Thickness of Bus Aluminum
     static const Double_t fgkOBBusCableKapThick; // Thickness of Bus Kapton
     static const Double_t fgkOBCarbonPlateThick; // OB Carbon Plate Thickness
     static const Double_t fgkOBColdPlateThick;   // OB Cold Plate Thickness
-    static const Double_t fgkOBGlueThick;        // OB Glue total Thickness
+    static const Double_t fgkOBGlueThickM1;      // OB Glue total Thickness
+    static const Double_t fgkOBGlueThick;        // OB Glue Thickness in Model2
     static const Double_t fgkOBModuleZLength;    // OB Chip Length along Z
     static const Double_t fgkOBHalfStaveYTrans;  // OB half staves Y transl.
     static const Double_t fgkOBHalfStaveXOverlap;// OB half staves X overlap
     static const Double_t fgkOBGraphiteFoilThick;// OB graphite foil thickness
+    static const Double_t fgkOBCarbonFleeceThick;// OB carbon fleece thickness
+    static const Double_t fgkOBCoolTubeInnerDM1; // OB cooling inner diameter
     static const Double_t fgkOBCoolTubeInnerD;   // OB cooling inner diameter
     static const Double_t fgkOBCoolTubeThick;    // OB cooling tube thickness
     static const Double_t fgkOBCoolTubeXDist;    // OB cooling tube separation

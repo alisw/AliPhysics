@@ -417,10 +417,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   Float_t timeResolution = 0;
   Int_t absID = -1 ;
   for(absID = 0; absID < nEMC; absID++)
-  { // Nov 30, 2006 by PAI; was from 1 to nEMC
-    
-    if (IsDead(absID)) continue; // Don't instantiate dead digits
-    
+  {
     Float_t energy = 0 ;
     
     // amplitude set to zero, noise will be added later
@@ -605,7 +602,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     Float_t ampADC = energy;
     DigitizeEnergyTime(ampADC, time, digit->GetId())  ;
     
-    if(ampADC < fDigitThreshold)
+    if(ampADC < fDigitThreshold || IsDead(digit->GetId()))
       digits->RemoveAt(i) ;
     
   } // digit loop

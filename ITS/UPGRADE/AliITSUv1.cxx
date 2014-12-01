@@ -72,10 +72,10 @@ AliITSUv1::AliITSUv1()
   ,fLayZLength(0)
   ,fStavPerLay(0)
   ,fUnitPerStave(0)
-  ,fStaveThick(0)
+  ,fChipThick(0)
   ,fStaveWidth(0)
   ,fStaveTilt(0)
-  ,fDetThick(0)
+  ,fSensThick(0)
   ,fChipTypeID(0)
   ,fBuildLevel(0)
   ,fUpGeom(0)
@@ -105,10 +105,10 @@ AliITSUv1::AliITSUv1(const char *title, Int_t nlay)
   ,fLayZLength(0)
   ,fStavPerLay(0)
   ,fUnitPerStave(0)
-  ,fStaveThick(0)
+  ,fChipThick(0)
   ,fStaveWidth(0)
   ,fStaveTilt(0)
-  ,fDetThick(0)
+  ,fSensThick(0)
   ,fChipTypeID(0)
   ,fBuildLevel(0)
   ,fUpGeom(0)
@@ -132,10 +132,10 @@ AliITSUv1::AliITSUv1(const char *title, Int_t nlay)
   fLayZLength   = new Double_t[fNLayers];
   fStavPerLay   = new Int_t[fNLayers];
   fUnitPerStave = new Int_t[fNLayers];
-  fStaveThick   = new Double_t[fNLayers];
+  fChipThick    = new Double_t[fNLayers];
   fStaveWidth   = new Double_t[fNLayers];
   fStaveTilt    = new Double_t[fNLayers];
-  fDetThick     = new Double_t[fNLayers];
+  fSensThick    = new Double_t[fNLayers];
   fChipTypeID   = new UInt_t[fNLayers];
   fBuildLevel   = new Int_t[fNLayers];
 
@@ -150,7 +150,7 @@ AliITSUv1::AliITSUv1(const char *title, Int_t nlay)
       fStavPerLay[j]   = 0;
       fUnitPerStave[j] = 0;
       fStaveWidth[j]   = 0.;
-      fDetThick[j]     = 0.;
+      fSensThick[j]    = 0.;
       fChipTypeID[j]   = 0;
       fBuildLevel[j]   = 0;
       fUpGeom[j]       = 0;
@@ -173,10 +173,10 @@ AliITSUv1::~AliITSUv1() {
   delete [] fLayZLength;
   delete [] fStavPerLay;
   delete [] fUnitPerStave;
-  delete [] fStaveThick;
+  delete [] fChipThick;
   delete [] fStaveWidth;
   delete [] fStaveTilt;
-  delete [] fDetThick;
+  delete [] fSensThick;
   delete [] fChipTypeID;
   delete [] fBuildLevel;
   delete [] fUpGeom;
@@ -355,17 +355,17 @@ void AliITSUv1::CreateGeometry() {
     if (fLayZLength[j] <= 0)                 AliFatal(Form("Wrong layer length for layer %d (%f)",j,fLayZLength[j]));
     if (fStavPerLay[j] <= 0)                 AliFatal(Form("Wrong number of staves for layer %d (%d)",j,fStavPerLay[j]));
     if (fUnitPerStave[j] <= 0)               AliFatal(Form("Wrong number of chips for layer %d (%d)",j,fUnitPerStave[j]));
-    if (fStaveThick[j] < 0)                  AliFatal(Form("Wrong stave thickness for layer %d (%f)",j,fStaveThick[j]));
+    if (fChipThick[j] < 0)                   AliFatal(Form("Wrong chip thickness for layer %d (%f)",j,fChipThick[j]));
     if (fLayTurbo[j] && fStaveWidth[j] <= 0) AliFatal(Form("Wrong stave width for layer %d (%f)",j,fStaveWidth[j]));
-    if (fDetThick[j] < 0)                    AliFatal(Form("Wrong chip thickness for layer %d (%f)",j,fDetThick[j]));
+    if (fSensThick[j] < 0)                   AliFatal(Form("Wrong sensor thickness for layer %d (%f)",j,fSensThick[j]));
     //
     if (j > 0) {
       if (fLayRadii[j]<=fLayRadii[j-1])      AliFatal(Form("Layer %d radius (%f) is smaller than layer %d radius (%f)",
 			   j,fLayRadii[j],j-1,fLayRadii[j-1]));
     } // if (j > 0)
 
-    if (fStaveThick[j] == 0) AliInfo(Form("Stave thickness for layer %d not set, using default",j));
-    if (fDetThick[j]   == 0) AliInfo(Form("Chip thickness for layer %d not set, using default",j));
+    if (fChipThick[j] == 0) AliInfo(Form("Chip thickness for layer %d not set, using default",j));
+    if (fSensThick[j] == 0) AliInfo(Form("Sensor thickness for layer %d not set, using default",j));
 
   } // for (Int_t j=0; j<fNLayers; j++)
 
@@ -406,8 +406,8 @@ void AliITSUv1::CreateGeometry() {
       fUpGeom[j]->SetStaveModel(fStaveModelOB);
     AliDebug(1,Form("fBuildLevel: %d\n",fBuildLevel[j]));
     //
-    if (fStaveThick[j] != 0) fUpGeom[j]->SetStaveThick(fStaveThick[j]);
-    if (fDetThick[j]   != 0) fUpGeom[j]->SetSensorThick(fDetThick[j]);
+    if (fChipThick[j] != 0) fUpGeom[j]->SetChipThick(fChipThick[j]);
+    if (fSensThick[j] != 0) fUpGeom[j]->SetSensorThick(fSensThick[j]);
     //
     for (int iw=0;iw<fNWrapVol;iw++) {
       if (fLayRadii[j]>fWrapRMin[iw] && fLayRadii[j]<fWrapRMax[iw]) {
@@ -609,8 +609,8 @@ void AliITSUv1::DefineLayer(Int_t nlay, double phi0, Double_t r,
   //          nstav   number of staves
   //          nunit   IB: number of chips per stave
   //                  OB: number of modules per half stave
-  //          lthick  stave thickness (if omitted, defaults to 0)
-  //          dthick  detector thickness (if omitted, defaults to 0)
+  //          lthick  chip thickness (if omitted, defaults to 0)
+  //          dthick  sensor thickness (if omitted, defaults to 0)
   //          dettypeID  ??
   //          buildLevel (if 0, all geometry is build, used for material budget studies)
   // Outputs:
@@ -632,8 +632,8 @@ void AliITSUv1::DefineLayer(Int_t nlay, double phi0, Double_t r,
   fLayZLength[nlay] = zlen;
   fStavPerLay[nlay] = nstav;
   fUnitPerStave[nlay] = nunit;
-  fStaveThick[nlay] = lthick;
-  fDetThick[nlay] = dthick;
+  fChipThick[nlay] = lthick;
+  fSensThick[nlay] = dthick;
   fChipTypeID[nlay] = dettypeID;
   fBuildLevel[nlay] = buildLevel;
     
@@ -657,8 +657,8 @@ void AliITSUv1::DefineLayerTurbo(Int_t nlay, Double_t phi0, Double_t r, Double_t
   //                  OB: number of modules per half stave
   //          width   stave width
   //          tilt    layer tilt angle (degrees)
-  //          lthick  stave thickness (if omitted, defaults to 0)
-  //          dthick  detector thickness (if omitted, defaults to 0)
+  //          lthick  chip thickness (if omitted, defaults to 0)
+  //          dthick  sensor thickness (if omitted, defaults to 0)
   //          dettypeID  ??
   //          buildLevel (if 0, all geometry is build, used for material budget studies)
   // Outputs:
@@ -680,10 +680,10 @@ void AliITSUv1::DefineLayerTurbo(Int_t nlay, Double_t phi0, Double_t r, Double_t
   fLayZLength[nlay] = zlen;
   fStavPerLay[nlay] = nstav;
   fUnitPerStave[nlay] = nunit;
-  fStaveThick[nlay] = lthick;
+  fChipThick[nlay] = lthick;
   fStaveWidth[nlay] = width;
   fStaveTilt[nlay] = tilt;
-  fDetThick[nlay] = dthick;
+  fSensThick[nlay] = dthick;
   fChipTypeID[nlay] = dettypeID;
   fBuildLevel[nlay] = buildLevel;
 
@@ -709,8 +709,8 @@ void AliITSUv1::GetLayerParameters(Int_t nlay, Double_t &phi0,
   //                  OB: number of modules per half stave
   //          width   stave width
   //          tilt    stave tilt angle
-  //          lthick  stave thickness
-  //          dthick  detector thickness
+  //          lthick  chip thickness
+  //          dthick  sensor thickness
   //          dettype detector type
   // Return:
   //   none.
@@ -727,8 +727,8 @@ void AliITSUv1::GetLayerParameters(Int_t nlay, Double_t &phi0,
   nmod   = fUnitPerStave[nlay];
   width  = fStaveWidth[nlay];
   tilt   = fStaveTilt[nlay];
-  lthick = fStaveThick[nlay];
-  dthick = fDetThick[nlay];
+  lthick = fChipThick[nlay];
+  dthick = fSensThick[nlay];
   dettype= fChipTypeID[nlay];
 }
 

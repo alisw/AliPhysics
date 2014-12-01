@@ -35,7 +35,8 @@ class AliITSUv1 : public AliITSU {
     kIBModel3=5,
     kOBModelDummy=6,
     kOBModel0=7,
-    kOBModel1=8 
+    kOBModel1=8, 
+    kOBModel2=9 
   } AliITSUModel_t;
   
 
@@ -94,10 +95,10 @@ class AliITSUv1 : public AliITSU {
   Double_t *fLayZLength;     // Vector of layer length along Z
   Int_t    *fStavPerLay;     // Vector of number of staves per layer
   Int_t    *fUnitPerStave;   // Vector of number of "units" per stave
-  Double_t *fStaveThick;     // Vector of stave thicknesses
+  Double_t *fChipThick;      // Vector of chip thicknesses
   Double_t *fStaveWidth;     // Vector of stave width (only used for turbo)
   Double_t *fStaveTilt;      // Vector of stave tilt (only used for turbo)
-  Double_t *fDetThick;       // Vector of detector thicknesses
+  Double_t *fSensThick;      // Vector of sensor thicknesses
   UInt_t   *fChipTypeID;     // Vector of detector type id
   Int_t    *fBuildLevel;     // Vector of Material Budget Studies
   //  
@@ -107,7 +108,7 @@ class AliITSUv1 : public AliITSU {
   
   // Parameters for the Upgrade geometry
   
-  ClassDef(AliITSUv1,0)                          
+  ClassDef(AliITSUv1,0)
 };
  
 #endif

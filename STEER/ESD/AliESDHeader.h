@@ -90,6 +90,8 @@ public:
   void      Print(const Option_t *opt=0) const;
 
   enum {kNTriggerInputs = 60};   //24 L0, 24 L1 and 12 L2 inputs
+  Char_t GetTPCNoiseFilterCounter(UInt_t index) {return fTPCNoiseFilterCounter[index%3];};
+  void SetTPCNoiseFilterCounter(UInt_t index,UChar_t value) {fTPCNoiseFilterCounter[index%3]=value;};
 
 private:
   void   SetIRInteractionMap() const;
@@ -120,9 +122,10 @@ private:
   TObjArray    fIRBufferArray;// Array with interaction records before and after triggered event
   mutable TBits   fIRInt2InteractionsMap;  // map of the Int2 events (normally 0TVX) near the event, that's Int2Id-EventId within -90 +90 BXs
   mutable TBits   fIRInt1InteractionsMap;  // map of the Int1 events (normally V0A&V0C) near the event, that's Int1Id-EventId within -90 +90 BXs
+  UChar_t fTPCNoiseFilterCounter[3];  // filter counter [0]=sector, [1]-timebin/sector, [2]-padrowsector 
 
 
-  ClassDef(AliESDHeader,12)
+  ClassDef(AliESDHeader,13)
 };
 
 #endif

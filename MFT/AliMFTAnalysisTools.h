@@ -72,6 +72,10 @@ public:
 
   static Bool_t TranslateMuon(AliAODTrack *muon, Double_t vtxInitial[3], Double_t vtxFinal[3]);
   static Bool_t TranslateMuonToOrigin(AliAODTrack *muon, Double_t vtx[3]);
+
+  static Bool_t IsPDGCharm(Int_t pdgCode);
+  static Bool_t IsPDGBeauty(Int_t pdgCode);
+  static Bool_t IsPDGResonance(Int_t pdgCode);
   
   ClassDef(AliMFTAnalysisTools,1)
     

@@ -1615,11 +1615,7 @@ void AliTPCcalibAlign::MakeResidualHistos(){
   // 4 - local   kz
   // 
   axisName[0]="delta";   axisTitle[0]="#Delta (cm)"; 
-  if (TMath::Abs(AliTracker::GetBz())<0.01){
-    binsTrack[0]=60;       xminTrack[0]=-1.2;        xmaxTrack[0]=1.2; 
-  }else{
-    binsTrack[0]=60;       xminTrack[0]=-0.6;        xmaxTrack[0]=0.6; 
-  }
+  binsTrack[0]=60;       xminTrack[0]=-0.6;        xmaxTrack[0]=0.6; 
   //
   axisName[1]="sector";   axisTitle[1]="Sector Number"; 
   binsTrack[1]=180;       xminTrack[1]=0;        xmaxTrack[1]=18; 

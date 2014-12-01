@@ -1,6 +1,5 @@
 #include "AliStorageClientThread.h"
 
-//#include <sstream>
 #include <signal.h>
 #include <fstream>
 #include <iostream>
@@ -30,7 +29,7 @@ fRemoveEventsPercentage(0)
     sa.sa_handler = GotSignalClient;
     sigfillset(&sa.sa_mask);
     sigaction(SIGINT,&sa,NULL);
-    
+   
     ifstream configFile (GetConfigFilePath());
     if (configFile.is_open())
     {

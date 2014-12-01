@@ -98,7 +98,8 @@ fHMPIDPIDParams(NULL),
 fEMCALPIDParams(NULL),
 fCurrentEvent(NULL),
 fCurrCentrality(0.0),
-fBeamTypeNum(kPP)
+fBeamTypeNum(kPP),
+fNoTOFmism(kFALSE)
 {
   //
   // default ctor
@@ -165,7 +166,8 @@ fHMPIDPIDParams(NULL),
 fEMCALPIDParams(NULL),
 fCurrentEvent(NULL),
 fCurrCentrality(0.0),
-fBeamTypeNum(kPP)
+fBeamTypeNum(kPP),
+fNoTOFmism(other.fNoTOFmism)
 {
   //
   // copy ctor
@@ -222,6 +224,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fTOFPIDParams=NULL;
     fHMPIDPIDParams=NULL;
     fCurrentEvent=other.fCurrentEvent;
+    fNoTOFmism = other.fNoTOFmism;
 
   }
   return *this;
@@ -2412,7 +2415,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
   // isMC --> fIsMC
   Float_t pt = track->Pt();
   Float_t mismPropagationFactor[10] = {1.,1.,1.,1.,1.,1.,1.,1.,1.,1.};
-  if(! kNoMism){ // this flag allows to disable mismatch for iterative procedure to get priors
+  if(! (kNoMism | fNoTOFmism)){ // this flag allows to disable mismatch for iterative procedure to get priors
     mismPropagationFactor[3] = 1 + TMath::Exp(1 - 1.12*pt);// it has to be alligned with the one in AliPIDCombined
     mismPropagationFactor[4] = 1 + 1./(4.71114 - 5.72372*pt + 2.94715*pt*pt);// it has to be alligned with the one in AliPIDCombined
     

@@ -49,6 +49,7 @@
 #endif
 
 const Int_t printLevel = 1;
+const Bool_t reconstructFromDigits = kTRUE; // kFALSE = reconstruct from clusters
 
 TTree* GetESDTree(TFile *esdFile);
 
@@ -140,17 +141,27 @@ void MUONRefit(Int_t nevents = -1, const char* esdFileNameIn = "AliESDs.root", c
     esd->FindListObject("MuonClusters")->Clear("C");
     esd->FindListObject("MuonPads")->Clear("C");
     
-    // loop over digits to modify their charge
-    AliMUONVDigit *digit;
-    TIter next(esdInterface.CreateDigitIterator());
-    while ((digit = static_cast<AliMUONVDigit*>(next()))) {
-      digit->SetCharge(digit->ADC());
-      digit->Calibrated(kFALSE);
+    AliMUONVTrackStore* newTrackStore = 0x0;
+    if (reconstructFromDigits) {
+      
+      // loop over digits to modify their charge
+      AliMUONVDigit *digit;
+      TIter next(esdInterface.CreateDigitIterator());
+      while ((digit = static_cast<AliMUONVDigit*>(next()))) {
+        digit->SetCharge(digit->ADC());
+        digit->Calibrated(kFALSE);
+      }
+      
+      // refit the tracks from digits
+      refitter.SetFirstClusterIndex(0);
+      newTrackStore = refitter.ReconstructFromDigits();
+      
+    } else {
+      
+      // refit the tracks from clusters
+      newTrackStore = refitter.ReconstructFromClusters();
+      
     }
-    
-    // refit the tracks from digits
-    refitter.SetFirstClusterIndex(0);
-    AliMUONVTrackStore* newTrackStore = refitter.ReconstructFromDigits();
     
     //----------------------------------------------//
     // ------ fill new ESD and print results ------ //
