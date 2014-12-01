@@ -4,7 +4,7 @@
  * @ingroup pwglf_forward_scripts
  */
 void
-LoadLibs(bool alsoHit=false)
+LoadLibs(bool alsoBase=false, bool alsoHit=false)
 {
 
   gROOT->LoadClass("TVirtualMC",              "libVMC");
@@ -19,15 +19,20 @@ LoadLibs(bool alsoHit=false)
   gROOT->LoadClass("AliOADBPhysicsSelection"  "libOADB");
   gROOT->LoadClass("AliAODForwardMult",       "libPWGLFforward2");
 
+  if (!alsoBase) return;
+  gROOT->LoadClass("TProof",                  "libProof");
+  gROOT->LoadClass("TGFrame",                 "libGui");
+  gROOT->LoadClass("TSAXParser",              "libXMLParser");
+  gROOT->LoadClass("AliCDBManager",           "libCDB");
+  gROOT->LoadClass("AliRawVEvent",            "libRAWDatabase");
+  gROOT->LoadClass("AliHit",                  "libSTEER");
+  gROOT->LoadClass("AliGenMC",                "libEVGEN");
+  gROOT->LoadClass("AliGenMC",                "libFASTSIM");
+  
   // Printf("AliFMDMCTrackELoss=%p", gROOT->GetClass("AliFMDMCTrackELoss"));
 
   if (!alsoHit) return;
   
-  gROOT->LoadClass("TProof",                  "libProof");
-  gROOT->LoadClass("TGFrame",                 "libGui");
-  gROOT->LoadClass("AliCDBManager",           "libCDB");
-  gROOT->LoadClass("AliRawVEvent",            "libRAWDatabase");
-  gROOT->LoadClass("AliHit",                  "libSTEER");
   gROOT->LoadClass("AliFMDDigit"              "libFMDbase");
   gROOT->LoadClass("AliFMDHit",               "libFMDsim");
   gROOT->LoadClass("AliFMDMCHitEnergyFitter", "libPWGLFforwardhit");

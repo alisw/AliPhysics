@@ -346,11 +346,12 @@ void Config()
   // 
   // Generator Configuration 
   //
-  // --- Make the generator - this loads libraries 
+  // --- Make the generator - this loads libraries
   AliGenerator* gener = egCfg->MakeGenerator(s.runType,
 					     s.minB,
 					     s.maxB);
-  gener->Init();
+  if (!egCfg->IsLego()) 
+    gener->Init();
 
   // --- Go back to galice.root --------------------------------------
   rl->CdGAFile();
