@@ -23,7 +23,6 @@ include_directories(${AliRoot_SOURCE_DIR}/${MODULE})
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/FASTSIM
                     ${AliRoot_SOURCE_DIR}/LHAPDF
-                    ${AliRoot_SOURCE_DIR}/PYTHIA6/AliPythia6
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
@@ -106,7 +105,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERbase STEER ESD AliPythia6 lhapdf TEvtGen FASTSIM)
+set(LIBDEPS STEERBase STEER ESD lhapdf TEvtGen FASTSIM)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
