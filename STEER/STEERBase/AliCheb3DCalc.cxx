@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <TSystem.h>
 #include "AliCheb3DCalc.h"
+#include "AliLog.h"
 
 ClassImp(AliCheb3DCalc)
 
@@ -258,16 +259,16 @@ void AliCheb3DCalc::SaveData(FILE* stream) const
 void AliCheb3DCalc::LoadData(FILE* stream)
 {
   // Load coefs. from the stream 
-  if (!stream) {Error("LoadData","No stream provided.\nStop"); exit(1);}
+  if (!stream) AliFatal("No stream provided");
   TString buffs;
   Clear();
   ReadLine(buffs,stream);
-  if (!buffs.BeginsWith("START")) {Error("LoadData","Expected: \"START <fit_name>\", found \"%s\"\nStop\n",buffs.Data());exit(1);}
+  if (!buffs.BeginsWith("START")) AliFatalF("Expected: \"START <fit_name>\", found \"%s\"",buffs.Data());
   if (buffs.First(' ')>0) SetName(buffs.Data()+buffs.First(' ')+1);
   //
   ReadLine(buffs,stream); // NRows
   fNRows = buffs.Atoi(); 
-  if (fNRows<0 && !buffs.IsDigit()) {Error("LoadData","Expected: '<number_of_rows>', found \"%s\"\nStop\n",buffs.Data());exit(1);}
+  if (fNRows<0 && !buffs.IsDigit()) AliFatalF("Expected: '<number_of_rows>', found \"%s\"",buffs.Data());
   //
   fNCols = 0;
   fNElemBound2D = 0;
@@ -292,8 +293,6 @@ void AliCheb3DCalc::LoadData(FILE* stream)
     fNCoefs += fCoefBound2D0[i];
   }
   //
-  //  if (fNCoefs<=0) {Error("LoadData","Negtive (%d) number of Chebychef coeffs. is obtained.\nStop\n",fNCoefs);exit(1);}
-  //
   InitCoefs(fNCoefs);
   for (int i=0;i<fNCoefs;i++) {
     ReadLine(buffs,stream);
@@ -306,10 +305,7 @@ void AliCheb3DCalc::LoadData(FILE* stream)
   //
   // check end_of_data record
   ReadLine(buffs,stream);
-  if (!buffs.BeginsWith("END") || !buffs.Contains(GetName())) {
-    Error("LoadData","Expected \"END %s\", found \"%s\".\nStop\n",GetName(),buffs.Data());
-    exit(1);
-  }
+  if (!buffs.BeginsWith("END") || !buffs.Contains(GetName())) AliFatalF("Expected \"END %s\", found \"%s\"",GetName(),buffs.Data());
   //
 }
 
@@ -322,7 +318,7 @@ void AliCheb3DCalc::ReadLine(TString& str,FILE* stream)
     if (str.IsNull()||str.BeginsWith("#")) continue;
     return;
   }
-  fprintf(stderr,"AliCheb3D::ReadLine: Failed to read from stream.\nStop");exit(1); // normally, should not reach here
+  AliFatalGeneral("ReadLine","Failed to read from stream"); // normally, should not reach here
 }
 
 //_______________________________________________
