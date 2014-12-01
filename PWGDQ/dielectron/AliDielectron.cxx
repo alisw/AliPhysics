@@ -328,6 +328,7 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   }
 
   // set event
+  AliDielectronVarManager::SetFillMap(fUsedVars);
   AliDielectronVarManager::SetEvent(ev1);
   if (fMixing){
     //set mixing bin to event data
