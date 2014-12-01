@@ -774,11 +774,11 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
 
   if(!fPtBinning.GetSize()) fPtBinning.Set(nBinsPt+1, binLimPt);
 
-  Int_t nBinsPtPlus = fNbBinsPtQCumulant;
-  Double_t minPtPlus = fMinPtQCumulant;
-  Double_t maxPtPlus = fMaxPtQCumulant;
-  Double_t binLimPtPlus[nBinsPtPlus+1];
-  for(Int_t i=0; i<=nBinsPtPlus; i++) binLimPtPlus[i]=(Double_t)minPtPlus + (maxPtPlus-minPtPlus)/nBinsPtPlus*(Double_t)i ;
+  //Int_t nBinsPtPlus = fNbBinsPtQCumulant;
+  //Double_t minPtPlus = fMinPtQCumulant;
+  //Double_t maxPtPlus = fMaxPtQCumulant;
+  //Double_t binLimPtPlus[nBinsPtPlus+1];
+  //for(Int_t i=0; i<=nBinsPtPlus; i++) binLimPtPlus[i]=(Double_t)minPtPlus + (maxPtPlus-minPtPlus)/nBinsPtPlus*(Double_t)i ;
 
   Int_t nBinsEta = 8;
   Double_t minEta = -0.8;
