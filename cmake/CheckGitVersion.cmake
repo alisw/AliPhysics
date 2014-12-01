@@ -62,6 +62,9 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
 
         set(ALIROOT_BRANCH ${SHORT_BRANCH})
         set(ALIROOT_VERSION ${SHORT_BRANCH})
+        
+        # Replace - with . for rpm creation
+        string(REPLACE "-" "." ALIROOT_VERSION_RPM ${ALIROOT_VERSION})
 
         message(STATUS "Aliroot branch/tag: \"${ALIROOT_VERSION}\" - Revision:  \"${GIT_SHORT_SHA1}\" ")
 

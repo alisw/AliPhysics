@@ -15,6 +15,10 @@
 
 # General purpose functions
 
+#########################
+# ROOT utilities
+#########################
+
 # Generation of the dictionaries
 # @DNAME  Dictionary name
 # @LDNAME LinkDef file name, ex: LinkDef.h
@@ -81,6 +85,10 @@ macro(generate_rootmap LIBNAME LIBDEPS LINKDEF)
     
 endmacro(generate_rootmap)
 
+#########################
+# Static utilities
+#########################
+
 # Generate the static dependecies from dynamic list
 # @ shared_list - list of shared libraries
 # @ static_list - the name of the variable that will contain the list of static libraries
@@ -95,3 +103,47 @@ macro(generate_static_dependencies shared_list static_list)
     # set the scope to parent in order to be visible in the parent
     set(${static_list} PARENT_SCOPE)
 endmacro(generate_static_dependencies)
+
+#########################
+# DA utilities
+#########################
+# Extract DA information to be inserted into the rpm
+function(getDAinfo _info _detector _daname info)
+    file(STRINGS "${_detector}${_daname}da.cxx" tmpinfo REGEX "${info}:")
+    string(REPLACE "${info}:\ " "" tmpinfo ${tmpinfo})
+    set(${_info} ${tmpinfo} PARENT_SCOPE)
+endfunction()
+
+# DA rpm creation
+macro(createDArpm DETECTOR ALGORITHM)
+    getDAinfo(contact "${DETECTOR}" "${ALGORITHM}" "Contact")
+    getDAinfo(link "${DETECTOR}" "${ALGORITHM}" "Link")
+    getDAinfo(refrun "${DETECTOR}" "${ALGORITHM}" "Reference Run")
+    getDAinfo(runtype "${DETECTOR}" "${ALGORITHM}" "Run Type")
+    getDAinfo(datype "${DETECTOR}" "${ALGORITHM}" "DA Type")
+    getDAinfo(evennr "${DETECTOR}" "${ALGORITHM}" "Number of events needed")
+    getDAinfo(ifiles "${DETECTOR}" "${ALGORITHM}" "Input Files")
+    getDAinfo(ofiles "${DETECTOR}" "${ALGORITHM}" "Output Files")
+    getDAinfo(trigger "${DETECTOR}" "${ALGORITHM}" "Trigger types used")
+    set(RPM_DESCRIPTION "contact: ${contact}
+Link:${link}
+Reference run:${refrun}
+Run Type:${runtype}
+DA Type:${datype}
+Number of events needed: ${evennr}
+Input Files:${ifiles}
+Output Files:${ofiles}
+Trigger types used:${trigger}")
+
+    set(DA_EXECUTABLE "${DETECTOR}${ALGORITHM}da")
+    set(DETECTOR ${DETECTOR})
+    set(ALGORITHM ${ALGORITHM})
+    configure_file("${AliRoot_SOURCE_DIR}/cmake/da.spec.in" "${CMAKE_CURRENT_BINARY_DIR}/${ALGORITHM}-da.spec" @ONLY)
+
+    add_custom_command(TARGET ${DETECTOR}${ALGORITHM}da POST_BUILD
+                       COMMAND mkdir ARGS -p da-${ALGORITHM}-rpm/opt/daqDA-${DETECTOR}-${ALGORITHM}/
+                       COMMAND cp ARGS ${DETECTOR}${ALGORITHM}da da-${ALGORITHM}-rpm/opt/daqDA-${DETECTOR}-${ALGORITHM}/
+                       COMMAND rpmbuild ARGS --verbose --define "_topdir ${CMAKE_CURRENT_BINARY_DIR}" --define "%buildroot ${CMAKE_CURRENT_BINARY_DIR}/da-${ALGORITHM}-rpm" -bb ${ALGORITHM}-da.spec
+                       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} VERBATIM
+    )
+endmacro()
