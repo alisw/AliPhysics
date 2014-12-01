@@ -511,7 +511,6 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
 	else jetM = jet1->ClosestJet();
 	if(jetM) maxTrackPt = jetM->MaxTrackPt();
 	else     maxTrackPt = -1.;
-	if(fUseUnsubJet) Printf("fraction: %f maxTrackPt: %f",fraction,maxTrackPt);
 	fh3PtJet1VsMassVsLeadPtTaggedMatch[fCentBin]->Fill(ptJet1,mJet1,maxTrackPt);
 	fpPtVsMassJet1TaggedMatch[fCentBin]->Fill(ptJet1,mJet1);
 	fh2MassVsAreaJet1TaggedMatch[fCentBin]->Fill(mJet1,jet1->Area());
