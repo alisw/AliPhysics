@@ -19,6 +19,9 @@
 #  - ALIROOT_BRANCH - name of the branch or tag extracted from the current reference
 #  - GIT_SHA1 - current hash in the long format
 #  - GIT_SHORT_SHA1 - current hash in the short format
+#
+#  - ALIROOT_VERSION - name of the branch/tag
+#  - ALIROOT_REVISION - short sha1
 if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
     include(GetGitRevisionDescription)
     
@@ -26,6 +29,18 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
     
     if(GIT_FOUND)
         get_git_head_revision(GIT_REFSPEC GIT_SHA1)
+
+        # generate the short version of the revision hash
+        execute_process(COMMAND git rev-parse --short ${GIT_SHA1}
+                          WORKING_DIRECTORY ${AliRoot_SOURCE_DIR}
+                          OUTPUT_STRIP_TRAILING_WHITESPACE
+                          RESULT_VARIABLE res
+                          OUTPUT_VARIABLE GIT_SHORT_SHA1)
+
+        # if the rev-parse fails we set the short sha to the long initial one
+        if(NOT res EQUAL 0)
+            set(GIT_SHORT_SHA1 ${GIT_SHA1})
+        endif()
 
         # GIT_REFSPEC is empty for detached mode = tags in detached mode or checkout to specific hash
 
@@ -42,24 +57,13 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
             STRING(REGEX REPLACE "^(.+/)(.+/)(.*)$" "\\3" SHORT_BRANCH "${GIT_REFSPEC}" )
         else()
             set(SHORT_BRANCH ${ALIROOT_GIT_TAG})
-            set(ALIROOT_REVISION ${GIT_SHA1})
+            set(ALIROOT_REVISION ${GIT_SHORT_SHA1})
         endif()
 
         set(ALIROOT_BRANCH ${SHORT_BRANCH})
-  
-        # generate the short version of the revision hash
-        execute_process(COMMAND git rev-parse --short ${GIT_SHA1} 
-                          WORKING_DIRECTORY ${AliRoot_SOURCE_DIR} 
-                          OUTPUT_STRIP_TRAILING_WHITESPACE 
-                          RESULT_VARIABLE res
-                          OUTPUT_VARIABLE GIT_SHORT_SHA1)
+        set(ALIROOT_VERSION ${SHORT_BRANCH})
 
-        # if the rev-parse fails we set the short sha to the long initial one
-        if(NOT res EQUAL 0)
-            set(GIT_SHORT_SHA1 ${GIT_SHA1})
-        endif()
-  
-        message(STATUS "Aliroot branch/tag: \"${ALIROOT_BRANCH}\" - Revision:  \"${GIT_SHORT_SHA1}\" ")
+        message(STATUS "Aliroot branch/tag: \"${ALIROOT_VERSION}\" - Revision:  \"${GIT_SHORT_SHA1}\" ")
 
     else()
         message(STATUS "Git not installed. I can't tell you which revision you are using!")
