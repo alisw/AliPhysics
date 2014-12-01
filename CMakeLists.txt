@@ -22,7 +22,17 @@ cmake_minimum_required(VERSION 2.8.11 FATAL_ERROR)
 project(AliRoot CXX C)
 
 # Path to additonal modules
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+set(CMAKE_MODULE_PATH "${AliRoot_SOURCE_DIR}/cmake")
+
+# AliRoot version extracted from Git repository
+# Sets 4 git variables
+#  - GIT_REFSPEC - complete name of the current reference
+#  - ALIROOT_BRANCH - name of the branch or tag extracted from the current reference
+#  - GIT_SHA1 - current hash in the long format
+#  - GIT_SHORT_SHA1 - current hash in the short format
+#  - ALIROOT_VERSION = ALIROOT_BRANCH
+#  - ALIROOT_REVISION = GIT_SHORT_SHA1
+include(CheckGitVersion)
 
 #       - CLANG_MAJOR.CLANG_MINOR or
 #       - GCC_MAJOR.GCC_MINOR.GCC_PATCH
@@ -149,14 +159,6 @@ find_package(FASTJET)
 
 # ZEROMQ
 find_package(ZeroMQ)
-
-# AliRoot version extracted from Git repository
-# Sets 4 git variables
-#  - GIT_REFSPEC - complete name of the current reference
-#  - ALIROOT_BRANCH - name of the branch or tag extracted from the current reference
-#  - GIT_SHA1 - current hash in the long format
-#  - GIT_SHORT_SHA1 - current hash in the short format
-include(CheckGitVersion)
 
 message(STATUS "CMake platform: ${CMAKE_SYSTEM}")
 message(STATUS "Build folder: ${AliRoot_BINARY_DIR}")
