@@ -25,6 +25,13 @@ struct GRPData
   {
     UInt_t z;
     UInt_t a;
+    /** 
+     * Get the per nucleon beam energy given a per charge beam energy
+     * 
+     * @param e Per charge beam energy 
+     * 
+     * @return Per nucleon beam energy 
+     */
     Float_t GetEnergy(Float_t e) const 
     {
       return e * sqrt(float(z)/a);
@@ -55,7 +62,7 @@ struct GRPData
     void Set(UInt_t b)
     {
       z = b % 1000;
-    a = b / 1000;
+      a = b / 1000;
     }
     /** 
      * Set from either a full LHC spec or from ALICE spec 

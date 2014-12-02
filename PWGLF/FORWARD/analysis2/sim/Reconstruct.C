@@ -93,7 +93,13 @@ void Reconstruct(UInt_t run)
     par->SetSkipSubdetsNotInTriggerCluster(kFALSE);
     reco.SetRecoParam("ITS",par);
   }
-
+  TString host(gSystem->HostName());
+  Bool_t  cholm = host.BeginsWith("hehi");
+  if (cholm) {
+    Warning("Reconstruct", "Disabling check of TPC reco-params");
+    reco.RemCheckRecoCDBvsSimuCDB("TPC/Calib/RecoParam");
+  }
+  
   // -----------------------------------------------------------------
   // 
   // Do not run QA in PbPb 

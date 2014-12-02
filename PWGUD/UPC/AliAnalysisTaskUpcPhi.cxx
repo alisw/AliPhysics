@@ -206,7 +206,6 @@ void AliAnalysisTaskUpcPhi::UserCreateOutputObjects()
   fITSTree ->Branch("fVtxChi2", &fVtxChi2, "fVtxChi2/D");
   fITSTree ->Branch("fVtxNDF", &fVtxNDF, "fVtxNDF/D");
   
-  fITSTree ->Branch("fKfVtxPos", &fKfVtxPos[0], "fKfVtxPos[3]/D");
   fITSTree ->Branch("fSpdVtxPos", &fSpdVtxPos[0], "fSpdVtxPos[3]/D");
   
   fITSTree ->Branch("fZDCAenergy", &fZDCAenergy, "fZDCAenergy/D");
@@ -251,8 +250,6 @@ void AliAnalysisTaskUpcPhi::UserCreateOutputObjects()
   fTPCTree ->Branch("fVtxErr", &fVtxErr[0], "fVtxErr[3]/D");
   fTPCTree ->Branch("fVtxChi2", &fVtxChi2, "fVtxChi2/D");
   fTPCTree ->Branch("fVtxNDF", &fVtxNDF, "fVtxNDF/D");
-  
-  fTPCTree ->Branch("fKfVtxPos", &fKfVtxPos[0], "fKfVtxPos[3]/D");
   fTPCTree ->Branch("fSpdVtxPos", &fSpdVtxPos[0], "fSpdVtxPos[3]/D");
   
   fTPCTree ->Branch("fZDCAenergy", &fZDCAenergy, "fZDCAenergy/D");
