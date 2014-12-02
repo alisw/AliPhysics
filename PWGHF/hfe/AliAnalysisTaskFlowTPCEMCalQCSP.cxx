@@ -201,6 +201,9 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP(const char *nam
 ,fSparsephipsiLS(0)
 ,fSparseMassULS(0)
 ,fSparseMassLS(0)
+,fHistEPDistrWeight(0)
+,EPweights(0)
+,EPVzAftW(0)
 {
     //Named constructor
     
@@ -313,6 +316,9 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP()
 ,fSparsephipsiLS(0)
 ,fSparseMassULS(0)
 ,fSparseMassLS(0)
+,fHistEPDistrWeight(0)
+,EPweights(0)
+,EPVzAftW(0)
 {
     //Default constructor
     fPID = new AliHFEpid("hfePid");
@@ -526,21 +532,31 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
     EPVz->Fill(evPlAngV0);
     
     
-    
+    Double_t weightEP =1;
+    if(EPweights){
+        weightEP = GiveMeWeight(evPlAngV0);
+        EPVzAftW->Fill(evPlAngV0,weightEP);
+        
+    }
+
     
     fSubEventDPhiv2->Fill(0.5, TMath::Cos(2.*(evPlAngV0A-evPlAngTPC))); // vzeroa - tpc
     fSubEventDPhiv2->Fill(1.5, TMath::Cos(2.*(evPlAngV0A-evPlAngV0C))); // vzeroa - vzeroc
     fSubEventDPhiv2->Fill(2.5, TMath::Cos(2.*(evPlAngV0C-evPlAngTPC))); // tpc - vzeroc
     
     
-    fSubEventDPhiv2new->Fill(0.5, TMath::Cos(2.*(evPlAngV0-evPlAngTPCp))); // vzero - tpcp
-    fSubEventDPhiv2new->Fill(1.5, TMath::Cos(2.*(evPlAngV0-evPlAngTPCn))); // vzero - tpcn
-    fSubEventDPhiv2new->Fill(2.5, TMath::Cos(2.*(evPlAngTPCp-evPlAngTPCn))); // tpcp - tpcn
-    
-    
-    
-    
+    if(EPweights){
+        fSubEventDPhiv2new->Fill(0.5, TMath::Cos(2.*(evPlAngV0-evPlAngTPCp)),weightEP); // vzero - tpcp
+        fSubEventDPhiv2new->Fill(1.5, TMath::Cos(2.*(evPlAngV0-evPlAngTPCn)),weightEP); // vzero - tpcn
+        fSubEventDPhiv2new->Fill(2.5, TMath::Cos(2.*(evPlAngTPCp-evPlAngTPCn))); // tpcp - tpcn
+    }
+    if(!EPweights){
+        fSubEventDPhiv2new->Fill(0.5, TMath::Cos(2.*(evPlAngV0-evPlAngTPCp))); // vzero - tpcp
+        fSubEventDPhiv2new->Fill(1.5, TMath::Cos(2.*(evPlAngV0-evPlAngTPCn))); // vzero - tpcn
+        fSubEventDPhiv2new->Fill(2.5, TMath::Cos(2.*(evPlAngTPCp-evPlAngTPCn))); // tpcp - tpcn
+    }
     //====================================================================================================================
+
     
     
     AliAODTrack *track = NULL;
@@ -683,7 +699,12 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
         Double_t v2PhiV0tot[2] = {
             v2PhiVz,
             pt};
-        fV2Phivzerotot->Fill(v2PhiV0tot);
+        
+        if(EPweights) fV2Phivzerotot->Fill(v2PhiV0tot,weightEP);
+        if(!EPweights) fV2Phivzerotot->Fill(v2PhiV0tot);
+        
+
+        
         //=========================================================================================================
         fTPCnsigmaAft->Fill(p,fTPCnSigma);
         fInclusiveElecPt->Fill(pt);
@@ -755,7 +776,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
         if(!fDCA){
             //----------------------Selection of Photonic Electrons KFParticle-----------------------------
             Bool_t fFlagPhotonicElec = kFALSE;
-            SelectPhotonicElectron(iTracks,track,fEovP, evPlAngV0, fFlagPhotonicElec);
+            SelectPhotonicElectron(iTracks,track,fEovP, evPlAngV0, fFlagPhotonicElec,weightEP);
             if(fFlagPhotonicElec){fPhotoElecPt->Fill(pt);}
             // Semi inclusive electron
             if(!fFlagPhotonicElec){fSemiInclElecPt->Fill(pt);}
@@ -774,7 +795,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
     //----------hfe end---------
 }
 //_________________________________________
-void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track,Double_t fEovP,Double_t evPlAngV0, Bool_t &fFlagPhotonicElec)
+void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track,Double_t fEovP,Double_t evPlAngV0, Bool_t &fFlagPhotonicElec, Double_t weightEPflat)
 {
     //Identify non-heavy flavour electrons using Invariant mass method KF
     
@@ -880,19 +901,21 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const 
  	if(fFlagULS){
 		Double_t ulsSparse[3] = {
 		track->Pt(),
-                fEovP,
+        fEovP,
 		DeltaPhi_eEP
 		}; 
- 		fSparsephipsiULS->Fill(ulsSparse);  
+        if(EPweights) fSparsephipsiULS->Fill(ulsSparse,weightEPflat);
+        if(!EPweights) fSparsephipsiULS->Fill(ulsSparse);
 		}
 	if(fFlagLS){
 		Double_t lsSparse[3] = {
 		track->Pt(),
-                fEovP,
+        fEovP,
 		DeltaPhi_eEP
 		}; 
- 		fSparsephipsiLS->Fill(lsSparse);  
-		}
+        if(EPweights) fSparsephipsiLS->Fill(lsSparse,weightEPflat);
+        if(!EPweights)fSparsephipsiLS->Fill(lsSparse);
+        }
 	}
         
         
@@ -1069,19 +1092,19 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     
     
     //----------------------------------------------------------------------------
-    EPVzA = new TH1D("EPVzA", "EPVzA", 80, -2, 2);
+    EPVzA = new TH1D("EPVzA", "EPVzA", 60, -TMath::Pi()/2, TMath::Pi()/2);
     fOutputList->Add(EPVzA);
-    EPVzC = new TH1D("EPVzC", "EPVzC", 80, -2, 2);
+    EPVzC = new TH1D("EPVzC", "EPVzC", 60, -TMath::Pi()/2, TMath::Pi()/2);
     fOutputList->Add(EPVzC);
-    EPTPC = new TH1D("EPTPC", "EPTPC", 80, -2, 2);
+    EPTPC = new TH1D("EPTPC", "EPTPC", 60, -TMath::Pi()/2, TMath::Pi()/2);
     fOutputList->Add(EPTPC);
     
     
-    EPVz = new TH1D("EPVz", "EPVz", 80, -2, 2);
+    EPVz = new TH1D("EPVz", "EPVz", 60, -TMath::Pi()/2, TMath::Pi()/2);
     fOutputList->Add(EPVz);
-    EPTPCp = new TH1D("EPTPCp", "EPTPCp", 80, -2, 2);
+    EPTPCp = new TH1D("EPTPCp", "EPTPCp", 60, -TMath::Pi()/2, TMath::Pi()/2);
     fOutputList->Add(EPTPCp);
-    EPTPCn = new TH1D("EPTPCn", "EPTPCn", 80, -2, 2);
+    EPTPCn = new TH1D("EPTPCn", "EPTPCn", 60, -TMath::Pi()/2, TMath::Pi()/2);
     fOutputList->Add(EPTPCn);
     
     //----------------------------------------------------------------------------
@@ -1089,6 +1112,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     fSubEventDPhiv2->GetXaxis()->SetBinLabel(1, "<cos(2(#Psi_{a} - #Psi_{b}))>");
     fSubEventDPhiv2->GetXaxis()->SetBinLabel(2, "<cos(2(#Psi_{a} - #Psi_{c}>))");
     fSubEventDPhiv2->GetXaxis()->SetBinLabel(3, "<cos(2(#Psi_{b} - #Psi_{c}>))");
+    fSubEventDPhiv2->Sumw2();
     fOutputList->Add(fSubEventDPhiv2);
     
     
@@ -1097,7 +1121,10 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     fSubEventDPhiv2new->GetXaxis()->SetBinLabel(1, "<cos(2(#Psi_{a} - #Psi_{b}))>");
     fSubEventDPhiv2new->GetXaxis()->SetBinLabel(2, "<cos(2(#Psi_{a} - #Psi_{c}>))");
     fSubEventDPhiv2new->GetXaxis()->SetBinLabel(3, "<cos(2(#Psi_{b} - #Psi_{c}>))");
+    fSubEventDPhiv2new->Sumw2();
     fOutputList->Add(fSubEventDPhiv2new);
+    
+    
     //================================Event Plane with VZERO A & C=====================
     const Int_t nPtBins = 12;
     Double_t binsPt[nPtBins+1] = {0, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10, 13};
@@ -1112,9 +1139,8 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     fV2Phi->GetAxis(0)->SetTitle("v_{2} (V0A)");
     fV2Phi->GetAxis(1)->SetTitle("v_{2} (V0C)");
     fV2Phi->GetAxis(2)->SetTitle("p_{T} (GeV/c)");
+    fV2Phi->Sumw2();
     fOutputList->Add(fV2Phi);
-    
-    
     
     //================================Event Plane with VZERO=====================
     // const Int_t nPtBins = 10;
@@ -1129,6 +1155,8 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     // set axes titles
     fV2Phivzerotot->GetAxis(0)->SetTitle("v_{2} (V0)");
     fV2Phivzerotot->GetAxis(1)->SetTitle("p_{T} (GeV/c)");
+    fV2Phivzerotot->Sumw2();
+
     fOutputList->Add(fV2Phivzerotot);
     
     
@@ -1172,12 +1200,14 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     fSparsephipsiULS->GetAxis(0)->SetTitle("pt (Gev/c)");
     fSparsephipsiULS->GetAxis(1)->SetTitle("eop");
     fSparsephipsiULS->GetAxis(2)->SetTitle("DeltaPhiULS");
+    fSparsephipsiULS->Sumw2();
     fOutputList->Add(fSparsephipsiULS);
  
     fSparsephipsiLS = new THnSparseF("fSparsephipsiLS", "pt:eop:DeltaPhiLS", 3, binsphipsi, xminphipsi, xmaxphipsi);
     fSparsephipsiLS->GetAxis(0)->SetTitle("pt (Gev/c)");
     fSparsephipsiLS->GetAxis(1)->SetTitle("eop");
     fSparsephipsiLS->GetAxis(2)->SetTitle("DeltaPhiLS");
+    fSparsephipsiLS->Sumw2();
     fOutputList->Add(fSparsephipsiLS);
     
     Int_t    binsmass[2] = { 100, 200};
@@ -1193,7 +1223,11 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     fSparseMassLS->GetAxis(1)->SetTitle("mass");
     fOutputList->Add(fSparseMassLS);
     
+    EPVzAftW = new TH1D("EPVzAftW", "EPVzAftW",60, -TMath::Pi()/2, TMath::Pi()/2);
+    fOutputList->Add(EPVzAftW);
     
+    fOutputList->Add(fHistEPDistrWeight);
+
     
     PostData(1,fOutputList);
     // create and post flowevent
@@ -1452,4 +1486,38 @@ Bool_t AliAnalysisTaskFlowTPCEMCalQCSP::IsEventSelectedForCentrFlattening(Float_
     
 }
 //---------------------------------------------------------------------------
+//_____________________________________________________________________________
+void AliAnalysisTaskFlowTPCEMCalQCSP::SetHistoForEPFlattWeights(TH1D *h){
+    
+    if(fHistEPDistrWeight)delete fHistEPDistrWeight;
+    fHistEPDistrWeight=(TH1D*)h->Clone("fHistEPDistrWeight");
+    Double_t Inte = fHistEPDistrWeight->Integral()/fHistEPDistrWeight->GetNbinsX();
+    
+    
+    
+    for(Int_t j=1;j<=h->GetNbinsX();j++){// Now set the "probabilities"
+        Double_t w = Inte/fHistEPDistrWeight->GetBinContent(j);
+        fHistEPDistrWeight->SetBinError(j,0./*h->GetBinError(j)*ref/bincont*/);
+        
+        fHistEPDistrWeight->SetBinContent(j,w);
+    }
+    return;
+    
+}
+//-------------------------------------------------
+Double_t AliAnalysisTaskFlowTPCEMCalQCSP::GiveMeWeight(Double_t EP){
+    
+    Int_t Bin = fHistEPDistrWeight->FindBin(EP);
+    Double_t ww = fHistEPDistrWeight->GetBinContent(Bin);
+    return ww;
+    
+}
+//-------------------------------------------------
+
+
+
+//_____________________________________________________________________________
+
+
+
 

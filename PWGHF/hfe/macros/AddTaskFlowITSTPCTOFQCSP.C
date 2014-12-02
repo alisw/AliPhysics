@@ -37,6 +37,7 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
                                                      Int_t TPCClusterforAsso = 80,
                                                      Bool_t AssoITSref = kTRUE,
                                                      Double_t ptminassocut = 0.0,
+                                                     Bool_t Weight = kFALSE,
                                                      Bool_t PhiCut = kFALSE,
                                                      Bool_t PhotonicElectronDCA = kFALSE,
                                                     // Bool_t QaPidSparse = kFALSE,
@@ -50,8 +51,7 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
                                                      Int_t RPFilterBit = 1,
                                                      Bool_t op_ang = kFALSE,
                                                      Int_t Vz = 10,
-                                                     Double_t op_angle_cut = 3.,
-                                                     TString histoflatname = "alien:///alice/cern.ch/user/a/adubla/CentrDistrBins005.root"
+                                                     Double_t op_angle_cut = 3.
                                                      )
 
 {
@@ -82,13 +82,26 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
         return 0x0;
     }
     taskHFE->SetTrigger(Trigger);
+    taskHFE->SetEPWeight(Weight);
+
     
+    TString histoflatname = "alien:///alice/cern.ch/user/a/adubla/CentrDistrBins005.root"
     if(Trigger==0 || Trigger==4){
         TFile *fFlat=TFile::Open(histoflatname.Data());
         TCanvas *c=fFlat->Get("cintegral");
         TH1F *hfl=(TH1F*)c->FindObject("hint");
         taskHFE->SetHistoForCentralityFlattening(hfl,centrMin,centrMax,0.,0);
     }
+    
+    TString histoflatnameEP = "alien:///alice/cern.ch/user/a/adubla/EPVZero010_Smart.root"
+    if(Weight){
+        TFile *fFlatEP=TFile::Open(histoflatnameEP,"READ");
+        TCanvas *cEP=fFlatEP->Get("c1_n7");
+        TH1D *hEPfl=(TH1D*)cEP->FindObject("EPVz");
+        taskHFE->SetHistoForEPFlattWeights(hEPfl);
+    }
+    
+    
     // Set centrality percentiles and method V0M, FMD, TRK, TKL, CL0, CL1, V0MvsFMD, TKLvsV0M, ZEMvsZDC
     taskHFE->SetCentralityParameters(centrMin, centrMax, Cent);
     taskHFE->SetInvariantMassCut(InvmassCut);

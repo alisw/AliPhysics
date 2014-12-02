@@ -51,7 +51,7 @@ public:
     void                                 SetEnableDebugMode() {fDebug = kTRUE; };
     void                                 SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod); //select centrality
     void                                 CheckCentrality(AliAODEvent *event,Bool_t &centralitypass); //to use only events with the correct centrality....
-    void                                 SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track, Double_t eopinc, Double_t evPlAnglV0, Bool_t &fFlagPhotonicElec);
+    void                                 SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track, Double_t eopinc, Double_t evPlAnglV0, Bool_t &fFlagPhotonicElec, Double_t weightEPflat);
     void                                 SetInvariantMassCut(Double_t invmass) {fInvmassCut = invmass;};
     void                                 SetpTCuttrack(Double_t ptcut) {fpTCut = ptcut;};
     void                                 SetTrigger(Int_t trig) {fTrigger = trig;};
@@ -76,7 +76,10 @@ public:
     void                                 SetHistoForCentralityFlattening(TH1F *h,Double_t minCentr,Double_t maxCentr,Double_t centrRef=0.,Int_t switchTRand=0);
     Bool_t                               IsEventSelectedForCentrFlattening(Float_t centvalue);
     
-    
+    void                                 SetHistoForEPFlattWeights(TH1D *h);
+    Double_t                             GiveMeWeight(Double_t EP);
+    void                                 SetEPWeight(Bool_t epw){EPweights = epw;};
+
     
     
     
@@ -177,6 +180,11 @@ private:
     THnSparseF           *fSparsephipsiLS;//!ssss
     THnSparseF           *fSparseMassULS;//!ssss
     THnSparseF           *fSparseMassLS;//!ssssss
+    
+    TH1D                 *fHistEPDistrWeight;// isto for Centr Flat
+    Bool_t               EPweights;//for mult correlationcut
+    TH1D                 *EPVzAftW;//!v0cep
+
     
     
     AliAnalysisTaskFlowTPCEMCalQCSP(const AliAnalysisTaskFlowTPCEMCalQCSP&); // not implemented
