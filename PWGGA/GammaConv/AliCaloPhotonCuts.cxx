@@ -320,11 +320,11 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 	fHistograms->Add(fHistClusterIdentificationCuts);
 
 	// Acceptance related histogramms
-    fHistClusterEtavsPhiBeforeAcc=new TH2F(Form("EtaPhi_beforeAcceptance %s",GetCutNumber().Data()),"EtaPhi_beforeAcceptance",430,-TMath::Pi(),TMath::Pi(),96,-0.7,0.7); // 462->430, 110->96
+    fHistClusterEtavsPhiBeforeAcc=new TH2F(Form("EtaPhi_beforeAcceptance %s",GetCutNumber().Data()),"EtaPhi_beforeAcceptance",430,0,2*TMath::Pi(),96,-0.7,0.7); // 462->430, 110->96
 	fHistograms->Add(fHistClusterEtavsPhiBeforeAcc);
-    fHistClusterEtavsPhiAfterAcc=new TH2F(Form("EtaPhi_afterAcceptance %s",GetCutNumber().Data()),"EtaPhi_afterAcceptance",430,-TMath::Pi(),TMath::Pi(),96,-0.7,0.7); // 462->430, 110->96
+    fHistClusterEtavsPhiAfterAcc=new TH2F(Form("EtaPhi_afterAcceptance %s",GetCutNumber().Data()),"EtaPhi_afterAcceptance",430,0,2*TMath::Pi(),96,-0.7,0.7); // 462->430, 110->96
 	fHistograms->Add(fHistClusterEtavsPhiAfterAcc);
-    fHistClusterEtavsPhiAfterQA=new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",430,-TMath::Pi(),TMath::Pi(),96,-0.7,0.7); // 462->430, 110->96
+    fHistClusterEtavsPhiAfterQA=new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",430,0,2*TMath::Pi(),96,-0.7,0.7); // 462->430, 110->96
 	fHistograms->Add(fHistClusterEtavsPhiAfterQA);
     //fHistDistanceToBadChannelBeforeAcc = new TH1F(Form("DistanceToBadChannel_beforeAcceptance %s",GetCutNumber().Data()),"DistanceToBadChannel_beforeAcceptance",200,0,40);
     //fHistograms->Add(fHistDistanceToBadChannelBeforeAcc);
@@ -649,7 +649,8 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
     TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
 	Double_t etaCluster = clusterVector.Eta();
 	Double_t phiCluster = clusterVector.Phi();
-	
+	if (phiCluster < 0) phiCluster= phiCluster+ 2*TMath::Pi();
+
 	if(fHistClusterEtavsPhiAfterQA) fHistClusterEtavsPhiAfterQA->Fill(phiCluster,etaCluster);
 	if(fHistClusterTimevsEAfterQA) fHistClusterTimevsEAfterQA->Fill(cluster->GetTOF(), cluster->E());
 // 	if(fHistExoticCellAfterQA) fHistExoticCellAfterQA->Fill(cluster->E(), );
@@ -684,6 +685,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelected(AliVCluster *cluster, AliVEvent * ev
     TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
 	Double_t etaCluster = clusterVector.Eta();
 	Double_t phiCluster = clusterVector.Phi();
+	if (phiCluster < 0) phiCluster= phiCluster+ 2*TMath::Pi();
 
 	// Histos before cuts
 	if(fHistClusterEtavsPhiBeforeAcc) fHistClusterEtavsPhiBeforeAcc->Fill(phiCluster,etaCluster);
@@ -741,6 +743,7 @@ Bool_t AliCaloPhotonCuts::AcceptanceCuts(AliVCluster *cluster, AliVEvent* event)
     TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
 	Double_t etaCluster = clusterVector.Eta();
 	Double_t phiCluster = clusterVector.Phi();
+	if (phiCluster < 0) phiCluster= phiCluster+ 2*TMath::Pi();
 	
 	// check eta range
 	if (fUseEtaCut){
@@ -1226,10 +1229,20 @@ Bool_t AliCaloPhotonCuts::SetMinPhiCut(Int_t minPhi)
 		if (!fUsePhiCut) fUsePhiCut=0;
 		fMinPhiCut=-10000;
 		break;
-	case 1: 
+	case 1: // min EMCAL
 		if (!fUsePhiCut) fUsePhiCut=1;
 		fMinPhiCut=1.39626;
 		break;
+	case 2: // min EMCAL with TRD 2012 
+		if (!fUsePhiCut) fUsePhiCut=1;
+		fMinPhiCut=2.10;
+		break;
+	case 3: // min EMCAL with TRD 2011 
+		if (!fUsePhiCut) fUsePhiCut=1;
+		fMinPhiCut=2.45;
+		break;
+		
+		
 	default:
 		AliError(Form("MinPhi Cut not defined %d",minPhi));
 		return kFALSE;
@@ -1245,10 +1258,20 @@ Bool_t AliCaloPhotonCuts::SetMaxPhiCut(Int_t maxPhi)
 		if (!fUsePhiCut) fUsePhiCut=0;
 		fMaxPhiCut=10000;
 		break;
-	case 1: 
+	case 1: // max EMCAL
 		if (!fUsePhiCut) fUsePhiCut=1;
-		fMaxPhiCut=3.125;
+		fMaxPhiCut=3.15;
 		break;
+	case 2: // max EMCAL with TRD 2011
+		if (!fUsePhiCut) fUsePhiCut=1;
+		fMaxPhiCut=2.45;
+		break;
+	case 3: // max EMCAL with TRD 2012
+		if (!fUsePhiCut) fUsePhiCut=1;
+		fMaxPhiCut=2.10;
+		break;
+		
+		
 	default:
 		AliError(Form("Max Phi Cut not defined %d",maxPhi));
 		return kFALSE;
@@ -1408,43 +1431,43 @@ Bool_t AliCaloPhotonCuts::SetMinEnergyCut(Int_t minEnergy)
 	switch(minEnergy){
 	case 0: 
 		if (!fUseMinEnergy) fUseMinEnergy=0;
-		fMinEnergy=0;
+		fMinEnergy=0.1;
 		break;
 	case 1: 
 		if (!fUseMinEnergy) fUseMinEnergy=1;
-		fMinEnergy=0.05; 
+		fMinEnergy=0.2; 
 		break;
 	case 2: 
 		if (!fUseMinEnergy) fUseMinEnergy=1;
-		fMinEnergy=0.1; 
+		fMinEnergy=0.3; 
 		break;
 	case 3: 
 		if (!fUseMinEnergy) fUseMinEnergy=1;
-		fMinEnergy=0.15; 
+		fMinEnergy=0.4; 
 		break;
 	case 4: 
 		if (!fUseMinEnergy) fUseMinEnergy=1;
-		fMinEnergy=0.2; 
+		fMinEnergy=0.5; 
 		break;
 	case 5: 
 		if (!fUseMinEnergy) fUseMinEnergy=1;
-		fMinEnergy=0.3; 
+		fMinEnergy=0.6; 
 		break;
 	case 6: 
 		if (!fUseMinEnergy) fUseMinEnergy=1;
-		fMinEnergy=0.4; 
+		fMinEnergy=4.5; 
 		break;
 	case 7: 
 		if (!fUseMinEnergy) fUseMinEnergy=1;
-		fMinEnergy=0.5; 
+		fMinEnergy=5.0; 
 		break;
 	case 8: 
 		if (!fUseMinEnergy) fUseMinEnergy=1;
-		fMinEnergy=0.75; 
+		fMinEnergy=5.5; 
 		break;
 	case 9: 
 		if (!fUseMinEnergy) fUseMinEnergy=1;
-		fMinEnergy=1.; 
+		fMinEnergy=6.0; 
 		break;
 	default:
 		AliError(Form("Minimum Energy Cut not defined %d",minEnergy));
