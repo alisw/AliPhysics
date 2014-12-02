@@ -658,7 +658,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   Float_t deltaphiV0A = -3;
   Float_t deltaphiV0C = -3;
 
-  Double_t massd   = 1.875612762;
+  Double_t massd   = 1.875612859;
   Double_t masst   = 2.808939;
   Double_t mass3he = 2.80892;
 
@@ -734,7 +734,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
       mass = ptot/TMath::Sqrt(gamma*gamma - 1); // using inner TPC mom. as approx.
   
       //   cout<<expbeta<<" "<<beta<<" "<<(beta - expbeta)/(0.008*expbeta)<<endl;
-      pullTOF  = (beta - expbeta)/(0.01*expbeta);
+      pullTOF  = (beta - expbeta)/(0.007*expbeta);
 
       if(TMath::Abs(ptot)< 2)
 	if(TMath::Abs(pullTPC) > 3)continue;
@@ -742,6 +742,8 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
       // if(TMath::Abs(ptot)< 4)
       // 	if( beta>1)continue;
       if(TMath::Abs(pullTOF) > 3)continue;
+
+      if(TMath::Sqrt(esdtrack->GetTOFsignalDz()*esdtrack->GetTOFsignalDz() + esdtrack->GetTOFsignalDx()*esdtrack->GetTOFsignalDx()) > 5.)continue; 
 
       if(fptc==1){
 	if(TMath::Abs(mass) > 2.65)continue;
