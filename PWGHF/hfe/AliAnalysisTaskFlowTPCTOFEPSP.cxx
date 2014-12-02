@@ -2277,16 +2277,19 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
       }
     }
 
-    if(fMonitorPhotonic) {
+    
+    if(fBackgroundSubtraction) {
       Int_t indexmother = -1;
       Int_t source = 1;
       if(mcthere) source = fBackgroundSubtraction->FindMother(mctrack->GetLabel(),indexmother);
       fBackgroundSubtraction->LookAtNonHFE(k, track, fInputEvent, 1, binct, deltaphi, source, indexmother);
-      
+    }
+
+    if(fMonitorPhotonic) {
       if((!fAODAnalysis && mcthere) || !mcthere) {
 	// background
-	source = 0;
-	indexmother = -1;
+	Int_t source = 0;
+	Int_t indexmother = -1;
 	source = FindMother(TMath::Abs(track->GetLabel()),mcEvent, indexmother);
 	valuensparseMCSourceDeltaPhiMaps[2] = source;
 	if(mcEvent) fMCSourceDeltaPhiMaps->Fill(&valuensparseMCSourceDeltaPhiMaps[0]);
@@ -2336,7 +2339,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
     }
   }
 
-  if(fMonitorPhotonic) fBackgroundSubtraction->CountPoolAssociated(fInputEvent,binct);
+  if(fBackgroundSubtraction) fBackgroundSubtraction->CountPoolAssociated(fInputEvent,binct);
 
   PostData(1, fListHist);
  
