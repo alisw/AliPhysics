@@ -38,6 +38,12 @@ include(CheckGitVersion)
 #       - GCC_MAJOR.GCC_MINOR.GCC_PATCH
 include(CheckCompiler)
 
+# You can change the build type using 
+# cmake -DCMAKE_BUILD_TYPE=DEBUG|RELEASE|RELWITHDEBINFO|MINSIZEREL...
+if (NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
+endif(NOT CMAKE_BUILD_TYPE)
+
 # ROOT dictionaries and maps
 include(CMakeALICE)
 
