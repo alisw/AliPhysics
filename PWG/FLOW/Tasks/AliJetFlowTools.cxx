@@ -1747,6 +1747,7 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         Float_t rangeLow,               // lower pt range
         Float_t rangeUp,                // upper pt range
         Float_t corr,                   // correlation strength
+        Float_t reductionPct,           // multiply final uncertainties by this number
         TString in,                     // input file name (created by this unfolding class)
         TString out                     // output file name (which will hold results of the systematic test)
         ) const
@@ -1761,6 +1762,9 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
     printf("\n\n\n\t\t GetCorrelatedUncertainty \n > Recovered the following file structure : \n <");
     readMe->ls();
     TFile* output(new TFile(out.Data(), "RECREATE"));   // create new output file
+
+    // later we'll multiply error square with this, so square here
+    reductionPct *= reductionPct;
 
     // create some null placeholder pointers
     TH1D* relativeErrorVariationInLow(0x0);
@@ -1915,9 +1919,11 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         if(relativeError2ndVariationOutLow) bOutLow = relativeError2ndVariationOutLow->GetBinContent(b+1);
         dInLow  = aInLow*aInLow + bInLow*bInLow + cInLow*cInLow;
         if(sym) dInLow += aInUp*aInUp;
+        dInLow *= reductionPct;         // for testing purposes
         if(dInLow > 0) relativeErrorInLow->SetBinContent(b+1, -1*TMath::Sqrt(dInLow));
         dOutLow = aOutLow*aOutLow + bOutLow*bOutLow + cOutLow*cOutLow;
         if(sym) dOutLow += aOutUp*aOutUp;
+        dOutLow *= reductionPct;        // for testing purposes
         if(dOutLow > 0) relativeErrorOutLow->SetBinContent(b+1, -1.*TMath::Sqrt(dOutLow));
     }
     // project the estimated errors on the nominal ratio
@@ -2043,6 +2049,8 @@ void AliJetFlowTools::GetShapeUncertainty(
         Int_t columns,                  // divide the output canvasses in this many columns
         Float_t rangeLow,               // lower pt range
         Float_t rangeUp,                // upper pt range
+        Float_t corr,                   // correlation strength
+        Float_t reductionPct,           // multiply final uncertainties by this number
         TString in,                     // input file name (created by this unfolding class)
         TString out                     // output file name (which will hold results of the systematic test)
         ) const
@@ -2057,6 +2065,9 @@ void AliJetFlowTools::GetShapeUncertainty(
     printf("\n\n\n\t\t DOSYSTEMATICS \n > Recovered the following file structure : \n <");
     readMe->ls();
     TFile* output(new TFile(out.Data(), "RECREATE"));   // create new output file
+
+    // later we'll multiply error square with this, so square here
+    reductionPct *= reductionPct;
 
     // create some null placeholder pointers
     TH1D* relativeErrorRegularizationInLow(0x0);
@@ -2256,8 +2267,10 @@ void AliJetFlowTools::GetShapeUncertainty(
         if(relativeErrorMethodInUp) dInUp = relativeErrorMethodInUp->GetBinContent(b+1);
         if(relativeErrorMethodOutUp) dOutUp = relativeErrorMethodOutUp->GetBinContent(b+1);
         eInUp  = aInUp*aInUp + bInUp*bInUp + cInUp*cInUp + dInUp*dInUp;
+        eInUp *= reductionPct;
         if(eInUp > 0) relativeErrorInUp->SetBinContent(b+1, 1.*TMath::Sqrt(eInUp));
         eOutUp = aOutUp*aOutUp + bOutUp*bOutUp + cOutUp*cOutUp + dOutUp*dOutUp;
+        eOutUp *= reductionPct;
         if(eOutUp > 0) relativeErrorOutUp->SetBinContent(b+1, 1.*TMath::Sqrt(eOutUp));
         // for the lower bound
         if(relativeErrorRegularizationInLow) aInLow = relativeErrorRegularizationInLow->GetBinContent(b+1);
@@ -2278,8 +2291,10 @@ void AliJetFlowTools::GetShapeUncertainty(
         }
 
         eInLow  = aInLow*aInLow + bInLow*bInLow + cInLow*cInLow + dInLow*dInLow;
+        eInLow *= reductionPct;         // can be used for testing
         if(eInLow > 0) relativeErrorInLow->SetBinContent(b+1, -1.*TMath::Sqrt(eInLow));
         eOutLow = aOutLow*aOutLow + bOutLow*bOutLow + cOutLow*cOutLow + dOutLow*dOutLow;
+        eOutLow *= reductionPct;        // can be used for testing
         if(eOutLow > 0) relativeErrorOutLow->SetBinContent(b+1, -1.*TMath::Sqrt(eOutLow));
     }
     // project the estimated errors on the nominal ratio
@@ -2335,7 +2350,8 @@ void AliJetFlowTools::GetShapeUncertainty(
                     relativeErrorInUp,
                     relativeErrorInLow,
                     relativeErrorOutUp,
-                    relativeErrorOutLow));
+                    relativeErrorOutLow,
+                    corr));
         shapeV2 = (TGraphAsymmErrors*)nominalV2Error->Clone();
         TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, fEventPlaneRes, "v_{2}"));
         nominalCanvas->cd(2);
@@ -4221,23 +4237,30 @@ void AliJetFlowTools::GetSignificance(
     Double_t statE(0), shapeE(0), corrE(0), totalE(0), y(0), x(0), chi2(0);
 
     // print some stuff
+    printf(" double v2[] = {");
     for(Int_t i(low); i < up+1; i++) { 
         n->GetPoint(i, x, y);
-        printf(" > v2 \t %.4f \n", y);
+        if(i==up) printf("%.4f}; \n\n", y);
+        else printf("%.4f, \n", y);
     }
+    printf(" double stat[] = {");
     for(Int_t i(low); i < up+1; i++) { 
-        statE = n->GetErrorYlow(i);
-        printf(" > stat \t %.4f \n", statE);
+        y = n->GetErrorYlow(i);
+        if(i==up) printf("%.4f}; \n\n", y);
+        else printf("%.4f, \n", y);
     }
+    printf(" double shape[] = {");
     for(Int_t i(low); i < up+1; i++) { 
-        shapeE = n->GetErrorYlow(i);
-        printf(" > shape \t %.4f \n", shapeE);
+        y = shape->GetErrorYlow(i);
+        if(i==up) printf("%.4f}; \n\n", y);
+        else printf("%.4f, \n", y);
     }
+    printf(" double corr[] = {");
     for(Int_t i(low); i < up+1; i++) { 
-        corrE = n->GetErrorYlow(i);
-        printf(" > corr \t %.4f \n", corrE);
+        y = corr->GetErrorYlow(i);
+        if(i==up) printf("%.4f}; \n\n", y);
+        else printf("%.4f, \n", y);
     }
-
 
     // get the p value based solely on statistical uncertainties
     for(Int_t i(low); i < up+1; i++) {
@@ -4319,26 +4342,26 @@ Double_t AliJetFlowTools::PhenixChi2nd(const Double_t *xx )
         0.1005 
     };
     Double_t stat[] = {
-     0.0065, 
-     0.0099, 
-     0.0127, 
-     0.0183, 
-     0.0271, 
-     0.0401};
+        0.0065, 
+        0.0099, 
+        0.0127, 
+        0.0183, 
+        0.0271, 
+        0.0401};
     Double_t shape[] = {
-     0.0065, 
-     0.0099, 
-     0.0127, 
-     0.0183, 
-     0.0271, 
-     0.0401};
+        0.0065, 
+        0.0099, 
+        0.0127, 
+        0.0183, 
+        0.0271, 
+        0.0401};
     Double_t corr[] = {
-     0.01, 
-     0.01, 
-     0.01, 
-     0.01, 
-     0.01, 
-     0.01};
+        0.01, 
+        0.01, 
+        0.01, 
+        0.01, 
+        0.01, 
+        0.01};
 
     // return the function value at certain epsilon
     const Double_t epsc = xx[0];
