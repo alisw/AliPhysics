@@ -10,7 +10,7 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, B
   
   // Create the task and configure it.
   //===========================================================================
-  AliAnalysisTaskPhiCorrelations* ana = new  AliAnalysisTaskPhiCorrelations(Form("%s_%s",containerName,folderName));
+  AliAnalysisTaskPhiCorrelations* ana = new  AliAnalysisTaskPhiCorrelations(containerName);
   ana->SetMode(analysisMode);// data or corrections mode
   
 //  if (analysisMode == 0) // data
@@ -94,8 +94,8 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, B
   //==============================================================================
   if (!outputFileName)
     outputFileName = AliAnalysisManager::GetCommonFileName();
-
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("%s_%s",containerName,folderName), TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:%s", outputFileName, folderName));
+  
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(containerName, TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:%s", outputFileName, folderName));
   
   mgr->ConnectInput  (ana, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput (ana, 0, coutput1 );
