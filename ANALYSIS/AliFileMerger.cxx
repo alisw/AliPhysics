@@ -91,7 +91,6 @@ AliFileMerger::AliFileMerger():
 }
 
 //______________________________________________________________________
-
 AliFileMerger::AliFileMerger(const char* name):
   TNamed(name,name),
   fRejectMask(0),
@@ -104,6 +103,13 @@ AliFileMerger::AliFileMerger(const char* name):
   //
 }
 
+//______________________________________________________________________
+AliFileMerger::~AliFileMerger()
+{
+  // d-tor
+  delete fRejectMask;
+  delete fAcceptMask;
+}
 
 void AliFileMerger::IterAlien(const char* outputDir, const char* outputFileName, const char* pattern, Bool_t dontOverwrite){
 
@@ -369,21 +375,28 @@ Bool_t AliFileMerger::IsRejected(TString name){
 
 
 
-void AliFileMerger::AddReject(const char *reject){
+void AliFileMerger::AddReject(const char *reject)
+{
   //
   // add reject string to the list of entries to be rejected for merging
   //
-  if (!fRejectMask) fRejectMask = new TObjArray;
+  if (!fRejectMask) {
+    fRejectMask = new TObjArray();
+    fRejectMask->SetOwner(kTRUE);
+  }
   fRejectMask->AddLast(new TObjString(reject));
 }
-void AliFileMerger::AddAccept(const char *accept){
+
+void AliFileMerger::AddAccept(const char *accept)
+{
   //
   // add reject string to the list of entries to be rejected for merging
   //
-  if (!fAcceptMask) fAcceptMask = new TObjArray;
+  if (!fAcceptMask) {
+    fAcceptMask = new TObjArray();
+    fAcceptMask->SetOwner(kTRUE);
+  }
   fAcceptMask->AddLast(new TObjString(accept));
-
-
 }
 
 //___________________________________________________________________________
@@ -404,6 +417,7 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist, Bool_t 
   //
   Int_t nguess = sourcelist->GetSize()+1000;
   THashList allNames(nguess);
+  allNames.SetOwner(kTRUE);
   ((THashList*)target->GetList())->Rehash(nguess);
   ((THashList*)target->GetListOfKeys())->Rehash(nguess);
   TList listH;
