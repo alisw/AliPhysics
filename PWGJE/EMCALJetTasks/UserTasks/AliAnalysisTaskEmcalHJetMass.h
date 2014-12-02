@@ -46,11 +46,12 @@ namespace EmcalHJetMassAnalysis {
     void SetMaxDeltaPhi(Double_t dphi)                                 { fDPhiHJetMax       = dphi; }
     void SetTriggerTrackType(TriggerTrackType t)                       { fTriggerTrackType  = t   ; }
     void AddTriggerTrackPtCuts(Float_t min, Float_t max);
+    void SelectConstituents(UInt_t constSel)                           { fEmbConstSel = constSel  ; }
 
   protected:
     Bool_t                              RetrieveEventObjects();
     Bool_t                              Run();
-    Bool_t                              FillHJetHistograms(Double_t pt, const AliEmcalJet *jet);
+    Bool_t                              FillHJetHistograms(const AliVParticle *vp, const AliEmcalJet *jet);
 
     Double_t                            GetJetMass(const AliEmcalJet *jet) const;
     Double_t                            GetDeltaPhi(const AliVParticle *vp, const AliEmcalJet* jet) const;
@@ -67,6 +68,7 @@ namespace EmcalHJetMassAnalysis {
     TArrayF                            *fPtTTMin;                    // minimum pt of trigger tracks
     TArrayF                            *fPtTTMax;                    // maximum pt of trigger tracks
     TRandom3                           *fRandom;                     //! Random number generator
+    UInt_t                              fEmbConstSel;                // select embedded constituents
 
     TH1F            **fh1PtHadron;                        //!pt of hadrons
     TH3F            **fh3PtHPtJDPhi;                      //!pt hadron vs pt jet vs delta phi
@@ -84,7 +86,7 @@ namespace EmcalHJetMassAnalysis {
     AliAnalysisTaskEmcalHJetMass(const AliAnalysisTaskEmcalHJetMass&);            // not implemented
     AliAnalysisTaskEmcalHJetMass &operator=(const AliAnalysisTaskEmcalHJetMass&); // not implemented
 
-    ClassDef(AliAnalysisTaskEmcalHJetMass, 4)
+    ClassDef(AliAnalysisTaskEmcalHJetMass, 5)
       };
 }
 #endif

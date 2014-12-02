@@ -50,6 +50,7 @@ namespace EmcalHJetMassAnalysis {
     fPtTTMin(0),
     fPtTTMax(0),
     fRandom(0),
+    fEmbConstSel(0),
     fh1PtHadron(0),
     fh3PtHPtJDPhi(0),
     fh3PtJet1VsMassVsHPtAllSel(0),
@@ -106,6 +107,7 @@ namespace EmcalHJetMassAnalysis {
     fPtTTMin(0),
     fPtTTMax(0),
     fRandom(0),
+    fEmbConstSel(0),
     fh1PtHadron(0),
     fh3PtHPtJDPhi(0),
     fh3PtJet1VsMassVsHPtAllSel(0),
@@ -273,7 +275,7 @@ namespace EmcalHJetMassAnalysis {
             Double_t dphi = GetDeltaPhi(vp,jet)-TMath::Pi();
             fh3PtHPtJDPhi[fCentBin]->Fill(vp->Pt(),jet->Pt() - GetRhoVal(fContainerBase)*jet->Area(),dphi);
             if(dphi>fDPhiHJetMax) continue;
-            FillHJetHistograms(vp->Pt(),jet);
+            FillHJetHistograms(vp,jet);
           }
         }
       }
@@ -289,7 +291,7 @@ namespace EmcalHJetMassAnalysis {
          Double_t dphi = GetDeltaPhi(vp,jet)-TMath::Pi();
          fh3PtHPtJDPhi[fCentBin]->Fill(vp->Pt(),jet->Pt() - GetRhoVal(fContainerBase)*jet->Area(),dphi);
          if(dphi>fDPhiHJetMax) continue;
-         FillHJetHistograms(vp->Pt(),jet);
+         FillHJetHistograms(vp,jet);
        }
      }//trigger track types
     }
@@ -319,9 +321,10 @@ namespace EmcalHJetMassAnalysis {
   }
 
   //________________________________________________________________________
-  Bool_t AliAnalysisTaskEmcalHJetMass::FillHJetHistograms(Double_t pt, const AliEmcalJet *jet)
+  Bool_t AliAnalysisTaskEmcalHJetMass::FillHJetHistograms(const AliVParticle *vp, const AliEmcalJet *jet)
   {
     // Fill hadron-jet histograms.
+    Double_t pt = vp->Pt();
     Double_t ptJet = jet->Pt() - GetRhoVal(fContainerBase)*jet->Area();
     Double_t mJet = GetJetMass(jet);
     Double_t rat = -1.;
@@ -353,8 +356,10 @@ namespace EmcalHJetMassAnalysis {
     }
   
     if(fMinFractionShared>0. && fraction>fMinFractionShared) {
-      fh3PtJet1VsMassVsHPtAllSelMatch[fCentBin]->Fill(ptJet,mJet,pt);
-      fh3PtJet1VsRatVsHPtAllSelMatch[fCentBin]->Fill(ptJet,rat,pt);
+      if(vp->TestBits(fEmbConstSel) == (Int_t)fEmbConstSel) {
+        fh3PtJet1VsMassVsHPtAllSelMatch[fCentBin]->Fill(ptJet,mJet,pt);
+        fh3PtJet1VsRatVsHPtAllSelMatch[fCentBin]->Fill(ptJet,rat,pt);
+      }
     }
 
     if(jet->GetTagStatus()<1 || !jet->GetTaggedJet())
@@ -364,8 +369,10 @@ namespace EmcalHJetMassAnalysis {
     fh3PtJet1VsRatVsHPtTagged[fCentBin]->Fill(ptJet,rat,pt);
 
     if(fMinFractionShared>0. && fraction>fMinFractionShared) {
-      fh3PtJet1VsMassVsHPtTaggedMatch[fCentBin]->Fill(ptJet,mJet,pt);
-      fh3PtJet1VsRatVsHPtTaggedMatch[fCentBin]->Fill(ptJet,rat,pt);
+      if(vp->TestBits(fEmbConstSel) == (Int_t)fEmbConstSel) {
+        fh3PtJet1VsMassVsHPtTaggedMatch[fCentBin]->Fill(ptJet,mJet,pt);
+        fh3PtJet1VsRatVsHPtTaggedMatch[fCentBin]->Fill(ptJet,rat,pt);
+      }
     }
     return kTRUE;
   }
