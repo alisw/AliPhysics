@@ -49,7 +49,7 @@ set(ALIROOT_DEPENDENCIES STEERBase)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ${ROOT_DEPENDENCIE} ${ALIROOT_DEPENDENCIES})
+set(LIBDEPS ${ROOT_DEPENDENCIES} ${ALIROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Create an object to be reused in case of static libraries 
@@ -59,7 +59,7 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 add_library(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
 
 # linking
-target_link_libraries(${MODULE} ${ROOT_DEPENDENCIE} ${ALIROOT_DEPENDENCIES})
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)

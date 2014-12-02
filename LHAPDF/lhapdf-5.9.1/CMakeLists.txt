@@ -144,6 +144,9 @@ set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS
 set_target_properties(${MODULE} PROPERTIES Fortran_FORMAT FREE)
 set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
 
+# Linking the library
+target_link_libraries(${MODULE} ${LIBDEPS})
+
 # Installation
 install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
