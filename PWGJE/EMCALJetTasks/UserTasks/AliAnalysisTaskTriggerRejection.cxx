@@ -168,7 +168,7 @@ Bool_t AliAnalysisTaskTriggerRejection::FillHistograms()
     ptLeadJet1,
     ptLeadJet2,
     fMaxPatch->GetPatchE(),
-    fMaxPatch->GetADCAmp(),
+    (Double_t)fMaxPatch->GetADCAmp(),
     fMaxPatch->GetEtaGeo(),
     fMaxPatch->GetPhiGeo()
   };
