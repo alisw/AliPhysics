@@ -294,8 +294,8 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition /*, Bool_
    //    histos->UserHistogram("Event","NAccRaw","Accepted raw SPD tracklets, |y|<1; nTrackl; #Entries",101,-0.5,100.5, AliDielectronVarManager::kNaccTrckltsEsd10); 
     //   histos->UserHistogram("Event","NAccCorr","Accepted corr SPD tracklets, |y|<1; nTrackl; #Entries",101,-0.5,100.5, AliDielectronVarManager::kNaccTrckltsEsd10Corr); 
    // nAcc vs Zvtx
-     histos->UserHistogram("Event","NAccRaw_vs_Zvtx","Accepted raw SPD tracklets vs Z vtx, |y|<1; Zvtx[cm]; nTrackl ",300,-15.,15.,301,-0.5,300.5, AliDielectronVarManager::kZvPrim,AliDielectronVarManager::kNaccTrckltsEsd10);
- histos->UserHistogram("Event","NAccRaw_vs_Zvtx_16","Accepted raw SPD tracklets vs Z vtx, |y|<1.6; Zvtx[cm]; nTrackl ",300,-15.,15.,301,-0.5,300.5, AliDielectronVarManager::kZvPrim,AliDielectronVarManager::kNaccTrckltsEsd16);
+     histos->UserHistogram("Event","NAccRaw_vs_Zvtx","Accepted raw SPD tracklets vs Z vtx, |y|<1; Zvtx[cm]; nTrackl ",300,-15.,15.,301,-0.5,300.5, AliDielectronVarManager::kZvPrim,AliDielectronVarManager::kNaccTrcklts10);
+ histos->UserHistogram("Event","NAccRaw_vs_Zvtx_16","Accepted raw SPD tracklets vs Z vtx, |y|<1.6; Zvtx[cm]; nTrackl ",300,-15.,15.,301,-0.5,300.5, AliDielectronVarManager::kZvPrim,AliDielectronVarManager::kNaccTrcklts);
  histos->UserHistogram("Event","NAccRaw_vs_Zvtx_05","Accepted raw SPD tracklets vs Z vtx, |y|<0.5; Zvtx[cm]; nTrackl ",300,-15.,15.,301,-0.5,300.5, AliDielectronVarManager::kZvPrim,AliDielectronVarManager::kNaccTrckltsEsd05);
 
   histos->UserHistogram("Event","NAccCorr_vs_Zvtx","Accepted corr. SPD tracklets vs Z vtx, |y|<1; Zvtx[cm]; nTrackl ",300,-15.,15.,201,-0.5,200.5, AliDielectronVarManager::kZvPrim,AliDielectronVarManager::kNaccTrckltsEsd10Corr);
@@ -324,9 +324,9 @@ histos->UserHistogram("Event","NAccITSsa_vs_Zvtx_05","Accepted raw ITS tracks +t
  histos->UserHistogram("Event","V0ACentrality_vs_NaccTrckltsEsd10Corr","Accepted corr SPD tracklets vs V0A centrality, |y|<1; Zvtx[cm]; nTrackl ",100,0.0,100.,201,-0.5,200.5, AliDielectronVarManager::kCentralityV0A,AliDielectronVarManager::kNaccTrckltsEsd10Corr);
 
    
- histos->UserHistogram("Event","NaccRaw_vs_NaccCorr","Accepted raw SPD tracklets vs acc. corrected SPD tracklets, |y|<1; nTrackl(raw); nTrackl(corr)",201,-0.5,200.5,201,-0.5,200.5, AliDielectronVarManager::kNaccTrckltsEsd10,AliDielectronVarManager::kNaccTrckltsEsd10Corr);
+ histos->UserHistogram("Event","NaccRaw_vs_NaccCorr","Accepted raw SPD tracklets vs acc. corrected SPD tracklets, |y|<1; nTrackl(raw); nTrackl(corr)",201,-0.5,200.5,201,-0.5,200.5, AliDielectronVarManager::kNaccTrcklts10,AliDielectronVarManager::kNaccTrckltsEsd10Corr);
    histos->UserHistogram("Event","NaccRaw_vs_NaccCorr_05","Accepted raw SPD tracklets vs acc. corrected SPD tracklets, |y|<0.5;  nTrackl(raw); nTrackl(corr)",201,-0.5,200.5,201,-0.5,200.5, AliDielectronVarManager::kNaccTrckltsEsd05,AliDielectronVarManager::kNaccTrckltsEsd05Corr);
-   histos->UserHistogram("Event","NaccRaw_vs_NaccCorr_16","Accepted raw SPD tracklets vs acc. corrected SPD tracklets, |y|<1.6;  nTrackl(raw); nTrackl(corr)",201,-0.5,200.5,201,-0.5,200.5, AliDielectronVarManager::kNaccTrckltsEsd16,AliDielectronVarManager::kNaccTrckltsEsd16Corr);
+   histos->UserHistogram("Event","NaccRaw_vs_NaccCorr_16","Accepted raw SPD tracklets vs acc. corrected SPD tracklets, |y|<1.6;  nTrackl(raw); nTrackl(corr)",201,-0.5,200.5,201,-0.5,200.5, AliDielectronVarManager::kNaccTrcklts,AliDielectronVarManager::kNaccTrckltsEsd16Corr);
     
 
  
