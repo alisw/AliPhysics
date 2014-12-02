@@ -66,12 +66,19 @@ AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( UInt_t uTriggerMask = AliVEvent:
 // 	0, 0.25*TMath::Pi(), 0.5*TMath::Pi(), 0.75*TMath::Pi(), TMath::Pi(),
 // 	1.25*TMath::Pi(), 1.5*TMath::Pi(), 1.75*TMath::Pi(), 2.*TMath::Pi()
 //   };
+// Double_t binsPhi[] = {
+//   0, 0.25*TMath::Pi(), 0.5*TMath::Pi(), 0.75*TMath::Pi(), TMath::Pi()
+// };
 Double_t binsPhi[] = {
-  0, 0.25*TMath::Pi(), 0.5*TMath::Pi(), 0.75*TMath::Pi(), TMath::Pi()
+  0, 1./16.*TMath::Pi(), 2./16.*TMath::Pi(), 3./16.*TMath::Pi(), 4./16.*TMath::Pi(), 5./16.*TMath::Pi(), 6./16.*TMath::Pi(), 7./16.*TMath::Pi(), 8./16.*TMath::Pi()
 };
 
+// Double_t binsPhi[] = {
+//   0, 1./8.*TMath::Pi(), 2./8.*TMath::Pi(), 3./8.*TMath::Pi(), 4./8.*TMath::Pi()
+// };
+
   Int_t nBinPhi = sizeof(binsPhi)/sizeof(Double_t);
-  task->SetBinsPhi(nBinPhi, binsPhi);
+  task->SetBinsDeltaphi(nBinPhi, binsPhi);
     
   task->SetFilterBit(iFilterBit);
   
