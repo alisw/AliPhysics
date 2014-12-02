@@ -50,6 +50,8 @@ int main(int argc, char **argv)
 
   //TApplication app("AliOnlineReconstruction", &argc, argv);
 
+    gSystem->Setenv("DATE_RUN_NUMBER",Form("%d",atoi(argv[1])));
+    
   std::cout<<"Starting Online Reconstruction for run:"<<atoi(argv[1])<<std::endl;
   AliOnlineReconstruction *onlineReconstruction = new AliOnlineReconstruction(atoi(argv[1]));
   //app.Run(kTRUE);

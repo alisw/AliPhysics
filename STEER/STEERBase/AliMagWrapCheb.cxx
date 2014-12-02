@@ -688,18 +688,12 @@ void AliMagWrapCheb::LoadData(const char* inpfile)
   //
   TString buffs;
   AliCheb3DCalc::ReadLine(buffs,stream);
-  if (!buffs.BeginsWith("START")) {
-    Error("LoadData","Expected: \"START <name>\", found \"%s\"\nStop\n",buffs.Data());
-    exit(1);
-  }
+  if (!buffs.BeginsWith("START")) AliFatalF("Expected: \"START <name>\", found \"%s\"",buffs.Data());
   if (buffs.First(' ')>0) SetName(buffs.Data()+buffs.First(' ')+1);
   //
   // Solenoid part    -----------------------------------------------------------
   AliCheb3DCalc::ReadLine(buffs,stream);
-  if (!buffs.BeginsWith("START SOLENOID")) {
-    Error("LoadData","Expected: \"START SOLENOID\", found \"%s\"\nStop\n",buffs.Data());
-    exit(1);
-  }
+  if (!buffs.BeginsWith("START SOLENOID")) AliFatalF("Expected: \"START SOLENOID\", found \"%s\"",buffs.Data());
   AliCheb3DCalc::ReadLine(buffs,stream); // nparam
   int nparSol = buffs.Atoi(); 
   //
@@ -710,17 +704,12 @@ void AliMagWrapCheb::LoadData(const char* inpfile)
   }
   //
   AliCheb3DCalc::ReadLine(buffs,stream);
-  if (!buffs.BeginsWith("END SOLENOID")) {
-    Error("LoadData","Expected \"END SOLENOID\", found \"%s\"\nStop\n",buffs.Data());
-    exit(1);
-  }
+  if (!buffs.BeginsWith("END SOLENOID")) AliFatalF("Expected \"END SOLENOID\", found \"%s\"",buffs.Data());
   //
   // TPCInt part     -----------------------------------------------------------
   AliCheb3DCalc::ReadLine(buffs,stream);
-  if (!buffs.BeginsWith("START TPCINT")) {
-    Error("LoadData","Expected: \"START TPCINT\", found \"%s\"\nStop\n",buffs.Data());
-    exit(1);
-  }
+  if (!buffs.BeginsWith("START TPCINT")) AliFatalF("Expected: \"START TPCINT\", found \"%s\"",buffs.Data());
+  //
   AliCheb3DCalc::ReadLine(buffs,stream); // nparam
   int nparTPCInt = buffs.Atoi(); 
   //
@@ -731,17 +720,11 @@ void AliMagWrapCheb::LoadData(const char* inpfile)
   }
   //
   AliCheb3DCalc::ReadLine(buffs,stream);
-  if (!buffs.BeginsWith("END TPCINT")) {
-    Error("LoadData","Expected \"END TPCINT\", found \"%s\"\nStop\n",buffs.Data());
-    exit(1);
-  }
+  if (!buffs.BeginsWith("END TPCINT")) AliFatalF("Expected \"END TPCINT\", found \"%s\"",buffs.Data());
   //
   // TPCRatInt part     -----------------------------------------------------------
   AliCheb3DCalc::ReadLine(buffs,stream);
-  if (!buffs.BeginsWith("START TPCRatINT")) {
-    Error("LoadData","Expected: \"START TPCRatINT\", found \"%s\"\nStop\n",buffs.Data());
-    exit(1);
-  }
+  if (!buffs.BeginsWith("START TPCRatINT")) AliFatalF("Expected: \"START TPCRatINT\", found \"%s\"",buffs.Data());
   AliCheb3DCalc::ReadLine(buffs,stream); // nparam
   int nparTPCRatInt = buffs.Atoi(); 
   //
@@ -752,17 +735,12 @@ void AliMagWrapCheb::LoadData(const char* inpfile)
   }
   //
   AliCheb3DCalc::ReadLine(buffs,stream);
-  if (!buffs.BeginsWith("END TPCRatINT")) {
-    Error("LoadData","Expected \"END TPCRatINT\", found \"%s\"\nStop\n",buffs.Data());
-    exit(1);
-  }
+  if (!buffs.BeginsWith("END TPCRatINT")) AliFatalF("Expected \"END TPCRatINT\", found \"%s\"",buffs.Data());
   //
   // Dipole part    -----------------------------------------------------------
   AliCheb3DCalc::ReadLine(buffs,stream);
-  if (!buffs.BeginsWith("START DIPOLE")) {
-    Error("LoadData","Expected: \"START DIPOLE\", found \"%s\"\nStop\n",buffs.Data());
-    exit(1);
-  }
+  if (!buffs.BeginsWith("START DIPOLE")) AliFatalF("Expected: \"START DIPOLE\", found \"%s\"",buffs.Data());
+  //
   AliCheb3DCalc::ReadLine(buffs,stream); // nparam
   int nparDip = buffs.Atoi();  
   //
@@ -773,16 +751,10 @@ void AliMagWrapCheb::LoadData(const char* inpfile)
   }
   //
   AliCheb3DCalc::ReadLine(buffs,stream);
-  if (!buffs.BeginsWith("END DIPOLE")) {
-    Error("LoadData","Expected \"END DIPOLE\", found \"%s\"\nStop\n",buffs.Data());
-    exit(1);
-  }
+  if (!buffs.BeginsWith("END DIPOLE")) AliFatalF("Expected \"END DIPOLE\", found \"%s\"",buffs.Data());
   //
   AliCheb3DCalc::ReadLine(buffs,stream);
-  if (!buffs.BeginsWith("END DIPOLE") || !buffs.Contains(GetName())) {
-    Error("LoadData","Expected: \"END DIPOLE\", found \"%s\"\nStop\n",buffs.Data());
-    exit(1);
-  }
+  if (!buffs.BeginsWith("END ") && !buffs.Contains(GetName())) AliFatalF("Expected: \"END %s\", found \"%s\"",GetName(),buffs.Data());
   //
   // ---------------------------------------------------------------------------
   fclose(stream);
@@ -1222,13 +1194,13 @@ void AliMagWrapCheb::SaveData(const char* outfile) const
   fprintf(stream,"#\nEND SOLENOID\n");
   //
   // TPCInt part ---------------------------------------------------------
-  fprintf(stream,"# Set of Chebyshev parameterizations for ALICE magnetic field\nSTART %s\n",GetName());
+  //  fprintf(stream,"# Set of Chebyshev parameterizations for ALICE magnetic field\nSTART %s\n",GetName());
   fprintf(stream,"START TPCINT\n#Number of pieces\n%d\n",fNParamsTPC);
   for (int ip=0;ip<fNParamsTPC;ip++) GetParamTPCInt(ip)->SaveData(stream);
   fprintf(stream,"#\nEND TPCINT\n");
   //
   // TPCRatInt part ---------------------------------------------------------
-  fprintf(stream,"# Set of Chebyshev parameterizations for ALICE magnetic field\nSTART %s\n",GetName());
+  //  fprintf(stream,"# Set of Chebyshev parameterizations for ALICE magnetic field\nSTART %s\n",GetName());
   fprintf(stream,"START TPCRatINT\n#Number of pieces\n%d\n",fNParamsTPCRat);
   for (int ip=0;ip<fNParamsTPCRat;ip++) GetParamTPCRatInt(ip)->SaveData(stream);
   fprintf(stream,"#\nEND TPCRatINT\n");

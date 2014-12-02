@@ -39,7 +39,6 @@ AliOnlineReconstruction::AliOnlineReconstruction(int run) :
 
   printf("CDB Lock is %s\n",AliCDBManager::Instance()->GetLock() ? "ON":"OFF");
 
-
   fSettings.ReadFile(AliOnlineReconstructionUtil::GetPathToServerConf(), kEnvUser);
   StartOfRun();
   cout<<"after startofrun"<<endl;
@@ -78,19 +77,21 @@ void AliOnlineReconstruction::StartOfRun()
   // Create directories and logfile
   TString logFile = Form("%s/log/run%d.log",recoBaseDir.Data(),fRun);
   Info("DoStart","Reconstruction log will be written to %s",logFile.Data());
-  if( gSystem->RedirectOutput(logFile.Data())!=0)
+  if( gSystem->RedirectOutput(logFile.Data(),"w")!=0)
     {
       printf(Form("AliRecoServer::StartReconstruction [] Error while trying to redirect output to [%s]. Exiting...", logFile.Data()) );
       return;
     }
   gSystem->cd(recoBaseDir.Data());
-
+  cout<<"\n\nRetriving GRP\n\n"<<endl;
   TString gdcs;
   if (RetrieveGRP(gdcs) <= 0 || gdcs.IsNull()){return;}
 
-  gSystem->Exec(Form("rm -fr run%d;mkdir run%d;cd run%d",fRun,fRun,fRun));
+  gSystem->Exec(Form("rm -fr run%d;mkdir run%d",fRun,fRun));
+  gSystem->cd(Form("run%d",fRun));
 
   SetupReco();
+  cout<<"\n\nStarting reconstruction loop\n\n"<<endl;
   ReconstructionLoop();
 }
 
@@ -102,11 +103,12 @@ int AliOnlineReconstruction::RetrieveGRP(TString &gdc)
 	TString dbName =  fSettings.GetValue("logbook.db", DEFAULT_LOGBOOK_DB);
 	TString user =  fSettings.GetValue("logbook.user", DEFAULT_LOGBOOK_USER);
 	TString password = fSettings.GetValue("logbook.pass", DEFAULT_LOGBOOK_PASS);
+	TString cdbPath = fSettings.GetValue("cdb.defaultStorage", DEFAULT_CDB_STORAGE);
 
 	Int_t ret=AliGRPPreprocessor::ReceivePromptRecoParameters(fRun, dbHost.Data(),
 								  dbPort, dbName.Data(),
 								  user.Data(), password.Data(),
-								  Form("local://%s",gSystem->pwd()),
+								  Form("local://%s",cdbPath.Data()),
 								  gdc);
 
 	if(ret>0) Info("RetrieveGRP","Last run of the same type is: %d",ret);
@@ -117,9 +119,11 @@ int AliOnlineReconstruction::RetrieveGRP(TString &gdc)
 
 void AliOnlineReconstruction::SetupReco()
 {
-	printf(Form("=========================[local://%s/..]===========\n",gSystem->pwd()));
+	printf(Form("=========================[local://%s/]===========\n",gSystem->pwd()));
 
 	/* Settings CDB */
+	cout<<"\n\nSetting CDB manager parameters\n\n"<<endl;
+	fCDBmanager->SetRun(fRun);
 	fCDBmanager->SetDefaultStorage(fSettings.GetValue("cdb.defaultStorage", DEFAULT_CDB_STORAGE));
 	fCDBmanager->SetSpecificStorage(fSettings.GetValue( "cdb.specificStoragePath1", DEFAULT_CDB_SPEC_STORAGE_PATH1),  
 				    fSettings.GetValue( "cdb.specificStorageValue1", DEFAULT_CDB_SPEC_STORAGE_VALUE1));
@@ -130,6 +134,7 @@ void AliOnlineReconstruction::SetupReco()
 	/* Reconstruction settings */  
 
 	// QA options
+	cout<<"\n\nSetting AliReconstruction parameters\n\n"<<endl;
 	fAliReco->SetRunQA(fSettings.GetValue("qa.runDetectors",DEFAULT_QA_RUN));
 	fAliReco->SetRunGlobalQA(fSettings.GetValue("qa.runGlobal",DEFAULT_QA_RUN_GLOBAL));
 	fAliReco->SetQARefDefaultStorage(fSettings.GetValue("qa.defaultStorage",DEFAULT_QAREF_STORAGE)) ;
@@ -149,27 +154,42 @@ void AliOnlineReconstruction::SetupReco()
 
 void AliOnlineReconstruction::ReconstructionLoop()
 {
+  cout<<"\n\nCreating sockets\n\n"<<endl;
 	AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
 	eventManager->CreateSocket(EVENTS_SERVER_PUB);
 	eventManager->CreateSocket(XML_PUB);
 
+	cout<<"\n\nStarting reconstruction\n\n"<<endl;
 	fAliReco->Begin(NULL);
 	if (fAliReco->GetAbort() != TSelector::kContinue) return;
 	fAliReco->SlaveBegin(NULL);
 	if (fAliReco->GetAbort() != TSelector::kContinue) return;
-	
+	cout<<"\n\nStarting loop over events\n\n"<<endl;
+
 	//******* The loop over events
 	Int_t iEvent = 0;
 	AliESDEvent* event;
-	while (fAliReco->HasNextEventAfter(iEvent) && !gQuit)
+	//	while (fAliReco->HasNextEventAfter(iEvent) && !gQuit)
+	while (!gQuit)
 	{
+	  if(fAliReco->HasNextEventAfter(iEvent))
+	    {
 		if (!fAliReco->HasEnoughResources(iEvent)) break;
+		cout<<"\n\nProcessing event:"<<iEvent<<endl<<endl;
 		Bool_t status = fAliReco->ProcessEvent(iEvent);
       
 		if (status){
 			event = fAliReco->GetESDEvent();
 			eventManager->Send(event,EVENTS_SERVER_PUB);
 			eventManager->SendAsXml(event,XML_PUB);
+			/*
+			TFile *file = new TFile(Form("/local/storedFiles/AliESDs.root_%d",iEvent),"recreate");
+			 TTree* tree= new TTree("esdTree", "esdTree");
+			 event->WriteToTree(tree);
+			 tree-> Fill();
+			 tree->Write();
+			 file->Close();
+			*/
 		}
 		else{
 		  cout<<"Event server -- aborting"<<endl;
@@ -179,6 +199,11 @@ void AliOnlineReconstruction::ReconstructionLoop()
 		fAliReco->CleanProcessedEvent();
 		cout<<"iEvent++"<<endl;
 		iEvent++;
+	    }
+	  else
+	    {
+	      cout<<"No event after!"<<endl;
+	    }
 	}
 	cout<<"after while"<<endl;
 	//	fAliReco->SlaveTerminate();
