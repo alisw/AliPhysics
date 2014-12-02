@@ -862,7 +862,7 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
 	
 	printf("Meson cuts \n");
 	printf("\t |y| < %3.2f \n", fRapidityCutMeson);
-	printf("\t theta_{open} < %3.2f\n", fOpeningAngle);
+	printf("\t theta_{open} < %3.4f\n", fOpeningAngle);
 	if (!fAlphaPtDepCut) printf("\t %3.2f < alpha < %3.2f\n", fAlphaMinCutMeson, fAlphaCutMeson);
 	if (fDCAGammaGammaCutOn)printf("\t dca_{gamma,gamma} > %3.2f\n", fDCAGammaGammaCut);
 	if (fDCARMesonPrimVtxCutOn)printf("\t dca_{R, prim Vtx} > %3.2f\n", fDCARMesonPrimVtxCut); 
