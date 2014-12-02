@@ -145,7 +145,7 @@ public:
 
   void DumpTracksToTree(const char* file);
   
-// private:
+ private:
   AliToyMCReconstruction(const AliToyMCReconstruction &rec);
   AliToyMCReconstruction& operator= (AliToyMCReconstruction& rec);
 

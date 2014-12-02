@@ -65,7 +65,7 @@ class AliToyMCEventGenerator : public TObject {
   void SetSpaceCharge(EEpsilon epsilon, EGasType gasType=kNeCO2_9010, ECollRate collRate=k50kHz, ECorrection corrType=kLookup);
   void SetSpaceChargeFile(const char* file) { fCorrectionFile=file; }
   
-  Int_t GetSector(Float_t xyz[3]);
+  /* Int_t GetSector(Float_t xyz[3]); */
 
   void InitSpaceCharge();
 
