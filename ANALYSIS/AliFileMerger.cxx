@@ -591,6 +591,7 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist, Bool_t 
 	}
 	hstack1->GetHists()->Merge(l);
 	l->Delete();
+	delete l;
       } else {
 	// object is of no type that we can merge
 	cout << "Cannot merge object type, name: "
