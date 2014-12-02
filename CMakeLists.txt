@@ -240,6 +240,9 @@ if(CMAKE_Fortran_COMPILER)
   add_subdirectory(TAmpt)
 endif(CMAKE_Fortran_COMPILER)
 
+# PWG libraries
+add_subdirectory(PWG)
+
 # Enable SHUTTLE compilation
 # Check if DIMDIR and ODIR are set
 if(SHUTTLE)
