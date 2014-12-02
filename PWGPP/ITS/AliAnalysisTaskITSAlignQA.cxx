@@ -116,7 +116,7 @@ void AliAnalysisTaskITSAlignQA::UserCreateOutputObjects() {
   fOutput->SetName("OutputHistos");
 
   fHistNEvents = new TH1F("hNEvents", "Number of processed events",kNEvStatBins,-0.5,kNEvStatBins-0.5);
-  fHistNEvents->Sumw2();
+  //fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fHistNEvents->GetXaxis()->SetBinLabel(kEvAll+1,"All Events");
   fHistNEvents->GetXaxis()->SetBinLabel(kEvCnt+1,"After Centrality cut");
@@ -126,7 +126,7 @@ void AliAnalysisTaskITSAlignQA::UserCreateOutputObjects() {
   fOutput->Add(fHistNEvents);
 
   fHistPtAccept = new TH1F("hPtAccept","Pt distrib of accepted tracks",50,0.,5.);
-  fHistPtAccept->Sumw2();
+  //fHistPtAccept->Sumw2();
   fHistPtAccept->SetMinimum(0);
   fOutput->Add(fHistPtAccept);
 
@@ -159,14 +159,14 @@ void AliAnalysisTaskITSAlignQA::CreateSPDHistos(){
 				    Form("hSPDResidX%d",iMod),
 				    fNPtBins,fPtBinLimits,
 				    250,-0.05,0.05);
-    fHistSPDResidX[iMod]->Sumw2();
+    //fHistSPDResidX[iMod]->Sumw2();
     fOutput->Add(fHistSPDResidX[iMod]);
 
     fHistSPDResidZ[iMod] = new TH2F(Form("hSPDResidZ%d",iMod),
 				    Form("hSPDResidZ%d",iMod),
 				    fNPtBins,fPtBinLimits,
 				    250,-0.1,0.1);
-    fHistSPDResidZ[iMod]->Sumw2();
+    //fHistSPDResidZ[iMod]->Sumw2();
     fOutput->Add(fHistSPDResidZ[iMod]);
   }
   return;
@@ -182,38 +182,38 @@ void AliAnalysisTaskITSAlignQA::CreateSDDHistos(){
 				      Form("hSDDResidX%d",iMod+kNSPDmods),
 				      fNPtBins,fPtBinLimits,
 				      300,-0.15,0.15);
-      fHistSDDResidX[iMod]->Sumw2();
+      //fHistSDDResidX[iMod]->Sumw2();
       fOutput->Add(fHistSDDResidX[iMod]);
       
       fHistSDDResidZ[iMod] = new TH2F(Form("hSDDResidZ%d",iMod+kNSPDmods),
 				      Form("hSDDResidZ%d",iMod+kNSPDmods),
 				      fNPtBins,fPtBinLimits,
 				      200,-0.1,0.1);
-      fHistSDDResidZ[iMod]->Sumw2();
+      //fHistSDDResidZ[iMod]->Sumw2();
       fOutput->Add(fHistSDDResidZ[iMod]);
       
       fHistSDDResidXvsX[iMod] = new TH2F(Form("hSDDResidXvsX%d",iMod+kNSPDmods),
 					 Form("hSDDResidXvsX%d",iMod+kNSPDmods),
 					 40,-3.5,3.5,300,-0.15,0.15);   
-      fHistSDDResidXvsX[iMod]->Sumw2();
+      //fHistSDDResidXvsX[iMod]->Sumw2();
       fOutput->Add(fHistSDDResidXvsX[iMod]);
       
       fHistSDDResidXvsZ[iMod] = new TH2F(Form("hSDDResidXvsZ%d",iMod+kNSPDmods),
 					 Form("hSDDResidXvsZ%d",iMod+kNSPDmods),
 					 10,-3.8,3.8,300,-0.15,0.15);   
-      fHistSDDResidXvsZ[iMod]->Sumw2();
+      //fHistSDDResidXvsZ[iMod]->Sumw2();
       fOutput->Add(fHistSDDResidXvsZ[iMod]);
       
       fHistSDDResidZvsX[iMod] = new TH2F(Form("hSDDResidZvsX%d",iMod+kNSPDmods),
 				      Form("hSDDResidZvsX%d",iMod+kNSPDmods),
 				      40,-3.5,3.5,200,-0.1,0.1);   
-      fHistSDDResidZvsX[iMod]->Sumw2();
+      //fHistSDDResidZvsX[iMod]->Sumw2();
       fOutput->Add(fHistSDDResidZvsX[iMod]);
       
       fHistSDDResidZvsZ[iMod] = new TH2F(Form("hSDDResidZvsZ%d",iMod+kNSPDmods),
 					 Form("hSDDResidZvsZ%d",iMod+kNSPDmods),
 					 10,-3.8,3.8,200,-0.1,0.1);   
-      fHistSDDResidZvsZ[iMod]->Sumw2();
+      //fHistSDDResidZvsZ[iMod]->Sumw2();
       fOutput->Add(fHistSDDResidZvsZ[iMod]);
       //
     }
@@ -225,22 +225,22 @@ void AliAnalysisTaskITSAlignQA::CreateSDDHistos(){
 	int nbX = 50, nbZ = 20, nbXOffs = 2, nbZOffs = 2;
 	double xRange = 3.5085e4, zRange = 7.5264e4, xOffs = nbXOffs*xRange/nbX, zOffs = nbZOffs*zRange/nbZ;
 	fHProfSDDResidXvsXD[iMod][ix] = new TProfile(hnm, hnm, nbX+2*nbXOffs, -xOffs, xRange + xOffs);
-	fHProfSDDResidXvsXD[iMod][ix]->Sumw2();
+	//fHProfSDDResidXvsXD[iMod][ix]->Sumw2();
 	fOutput->Add(fHProfSDDResidXvsXD[iMod][ix]);
 	//
 	hnm = Form("hpSDDDrTimevsXD%d_%d",iMod+kNSPDmods,ix);
 	fHProfSDDDrTimevsXD[iMod][ix] = new TProfile(hnm, hnm, nbX+2*nbXOffs, -xOffs, xRange + xOffs);
-	fHProfSDDDrTimevsXD[iMod][ix]->Sumw2();
+	//fHProfSDDDrTimevsXD[iMod][ix]->Sumw2();
 	fOutput->Add(fHProfSDDDrTimevsXD[iMod][ix]);
 	//
 	hnm = Form("hpSDDResXvsZ%d_%d",iMod+kNSPDmods,ix);
 	fHProfSDDResidXvsZ[iMod][ix] = new TProfile(hnm, hnm, nbZ+2*nbZOffs, -(0.5*zRange+zOffs),(0.5*zRange+zOffs));
-	fHProfSDDResidXvsZ[iMod][ix]->Sumw2();
+	//fHProfSDDResidXvsZ[iMod][ix]->Sumw2();
 	fOutput->Add(fHProfSDDResidXvsZ[iMod][ix]);
 	//
 	hnm = Form("hpSDDDrTimevsZ%d_%d",iMod+kNSPDmods,ix);
 	fHProfSDDDrTimevsZ[iMod][ix] = new TProfile(hnm, hnm, nbZ+2*nbZOffs, -(0.5*zRange+zOffs),(0.5*zRange+zOffs));
-	fHProfSDDDrTimevsZ[iMod][ix]->Sumw2();
+	//fHProfSDDDrTimevsZ[iMod][ix]->Sumw2();
 	fOutput->Add(fHProfSDDDrTimevsZ[iMod][ix]);
 	//
       }
@@ -250,7 +250,7 @@ void AliAnalysisTaskITSAlignQA::CreateSDDHistos(){
       fHistSDDdEdxvsDrTime[iMod] = new TH2F(Form("hSDDdEdxvsDrTime%d",iMod+kNSPDmods),
 					    Form("hSDDdEdxvsDrTime%d",iMod+kNSPDmods),
 					    16,0.,6400.,100,0.,300.);
-      fHistSDDdEdxvsDrTime[iMod]->Sumw2();
+      //fHistSDDdEdxvsDrTime[iMod]->Sumw2();
       fOutput->Add(fHistSDDdEdxvsDrTime[iMod]);
     }
     //
@@ -258,21 +258,21 @@ void AliAnalysisTaskITSAlignQA::CreateSDDHistos(){
       fHistSDDDrTimeAll[iMod]=new TH1F(Form("hSDDDrTimeAll%d",iMod+kNSPDmods),
 				       Form("hSDDDrTimeAll%d",iMod+kNSPDmods),
 				       3200,0.,6400.);
-      fHistSDDDrTimeAll[iMod]->Sumw2();
+      //fHistSDDDrTimeAll[iMod]->Sumw2();
       fHistSDDDrTimeAll[iMod]->SetMinimum(0.);
       fOutput->Add(fHistSDDDrTimeAll[iMod]);
       
       fHistSDDDrTimeExtra[iMod]=new TH1F(Form("hSDDDrTimeExtra%d",iMod+kNSPDmods),
 					 Form("hSDDDrTimeExtra%d",iMod+kNSPDmods),
 					 3200,0.,6400.);
-      fHistSDDDrTimeExtra[iMod]->Sumw2();
+      //fHistSDDDrTimeExtra[iMod]->Sumw2();
       fHistSDDDrTimeExtra[iMod]->SetMinimum(0.);
       fOutput->Add(fHistSDDDrTimeExtra[iMod]);
       
       fHistSDDDrTimeAttac[iMod]=new TH1F(Form("hSDDDrTimeAttac%d",iMod+kNSPDmods),
 					 Form("hSDDDrTimeAttac%d",iMod+kNSPDmods),
 					 3200,0.,6400.);
-      fHistSDDDrTimeAttac[iMod]->Sumw2();
+      //fHistSDDDrTimeAttac[iMod]->Sumw2();
       fHistSDDDrTimeAttac[iMod]->SetMinimum(0.);
       fOutput->Add(fHistSDDDrTimeAttac[iMod]);
     }
@@ -289,14 +289,14 @@ void AliAnalysisTaskITSAlignQA::CreateSSDHistos(){
 				    Form("hSSDResidX%d",iMod+kNSPDmods+kNSDDmods),
 				    fNPtBins,fPtBinLimits,
 				    250,-0.1,0.1);
-    fHistSSDResidX[iMod]->Sumw2();
+    //fHistSSDResidX[iMod]->Sumw2();
     fOutput->Add(fHistSSDResidX[iMod]);
 
     fHistSSDResidZ[iMod] = new TH2F(Form("hSSDResidZ%d",iMod+kNSPDmods+kNSDDmods),
 				    Form("hSSDResidZ%d",iMod+kNSPDmods+kNSDDmods),
 				    fNPtBins,fPtBinLimits,
 				    250,-1.,1.);
-    fHistSSDResidZ[iMod]->Sumw2();
+    //fHistSSDResidZ[iMod]->Sumw2();
     fOutput->Add(fHistSSDResidZ[iMod]);
   }
   return;
