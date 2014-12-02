@@ -13,6 +13,7 @@
 #include "AliLog.h"
 #include "AliEMCALGeometry.h"
 #include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerBitConfig.h"
 
 #include "AliEmcalPatchFromCellMaker.h"
 
@@ -28,6 +29,7 @@ AliEmcalPatchFromCellMaker::AliEmcalPatchFromCellMaker() :
   fCellTimeMin(485e-9),
   fCellTimeMax(685e-9),
   fL1Slide(0),
+  fTriggerBitConfig(0x0),
   fh3EEtaPhiCell(0),
   fh2CellEnergyVsTime(0),
   fh1CellEnergySum(0)
@@ -53,6 +55,7 @@ AliEmcalPatchFromCellMaker::AliEmcalPatchFromCellMaker(const char *name) :
   fCellTimeMin(485e-9),
   fCellTimeMax(685e-9),
   fL1Slide(0),
+  fTriggerBitConfig(0x0),
   fh3EEtaPhiCell(0),
   fh2CellEnergyVsTime(0),
   fh1CellEnergySum(0)
@@ -97,6 +100,9 @@ void AliEmcalPatchFromCellMaker::ExecOnce()
       return;
     }
   }
+
+  if(!fTriggerBitConfig)
+    fTriggerBitConfig = new AliEmcalTriggerBitConfigNew();
 
 }
 
@@ -320,6 +326,7 @@ void AliEmcalPatchFromCellMaker::RunSimpleOfflineTrigger()
       AliEmcalTriggerPatchInfo *trigger =
 	new ((*fCaloTriggersOut)[itrig]) AliEmcalTriggerPatchInfo();
       itrig++;
+      trigger->SetTriggerBitConfig(fTriggerBitConfig);
       trigger->SetCenterGeo(centerGeo, enAmp);
       trigger->SetEdge1(edge1, enAmp);
       trigger->SetEdge2(edge2, enAmp);
