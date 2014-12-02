@@ -30,9 +30,9 @@
 #include "AliLog.h"
 //#include "AliQAv1.h"
 //#include "AliQAChecker.h"
-#include "AliTOFQADataMakerRec.h"
 #include "AliTOFQAChecker.h"
 #include <TPaveText.h>
+#include <TList.h>
 
 ClassImp(AliTOFQAChecker)
 
