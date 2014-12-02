@@ -59,6 +59,9 @@ target_link_libraries(${MODULE} STEERBase STEER ESD RAWDatabase RAWDatarec RAWDa
 set(MODULE_COMPILE_FLAGS "")
 set(MODULE_LINK_FLAGS)
 
+# Linking the library
+target_link_libraries(${MODULE} ${LIBDEPS})
+
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
     set(MODULE_LINK_FLAGS "-undefined dynamic_lookup")

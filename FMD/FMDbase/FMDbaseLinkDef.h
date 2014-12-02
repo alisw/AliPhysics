@@ -33,7 +33,6 @@
 #pragma link C++ class  AliFMDCalibStripRange+;
 #pragma link C++ class  AliFMDAltroMapping+;
 #pragma link C++ class  AliFMDPreprocessor+;
-#pragma link C++ class  AliFMDQAChecker+;
 #pragma link C++ class  AliFMDGeometryBuilder+;
 #pragma link C++ class  AliFMDSurveyToAlignObjs+;
 

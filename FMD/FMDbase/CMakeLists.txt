@@ -21,7 +21,6 @@ include_directories(${AliRoot_SOURCE_DIR}/FMD/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/FMD/FMDrec
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
@@ -48,7 +47,6 @@ set(SRCS
     AliFMDIndex.cxx
     AliFMDParameters.cxx
     AliFMDPreprocessor.cxx
-    AliFMDQAChecker.cxx
     AliFMDRing.cxx
     AliFMDSDigit.cxx
     AliFMDSurveyToAlignObjs.cxx
@@ -66,7 +64,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Dependencies
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES STEERBase STEER ESD CDB RAWDatabase FMDrec)
+set(ALIROOT_DEPENDENCIES STEERBase STEER ESD CDB RAWDatabase)
 
 # Generate the ROOT map
 # Dependecies

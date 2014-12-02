@@ -4,6 +4,7 @@
 #pragma link off all functions;
 
 
+#pragma link C++ class  AliHMPID+;
 #pragma link C++ class  AliHMPIDDigit+;
 #pragma link C++ class  AliHMPIDHit+;
 #pragma link C++ class  AliHMPIDCluster+;

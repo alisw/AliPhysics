@@ -70,6 +70,9 @@ add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")
 add_definitions(-D__EMCALUTIL__)
 
+# Linking the library
+target_link_libraries(${MODULE} ${LIBDEPS})
+
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
     set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")

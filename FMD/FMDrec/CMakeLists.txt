@@ -33,6 +33,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
     AliFMDESDRevertexer.cxx
     AliFMDOfflineTrigger.cxx
+    AliFMDQAChecker.cxx
     AliFMDQADataMakerRec.cxx
     AliFMDRawReader.cxx
     AliFMDRawStream.cxx
@@ -51,7 +52,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Dependencies
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES STEERBase STEER ESD RAWDatabase RAWDatarec)
+set(ALIROOT_DEPENDENCIES STEERBase STEER ESD RAWDatabase RAWDatarec FMDbase)
 
 # Generate the ROOT map
 # Dependecies
@@ -75,6 +76,9 @@ set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_P
 
 # Additional compilation flags
 set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS " ")
+
+# Linking the library
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
