@@ -13,6 +13,7 @@ class TRandom3;
 class AliAnalysisManager;
 class AliJetContainer;
 class AliEmcalJet;
+class AliVParticle;
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -54,6 +55,7 @@ namespace EmcalHJetMassAnalysis {
     Double_t                            GetJetMass(const AliEmcalJet *jet) const;
     Double_t                            GetDeltaPhi(const AliVParticle *vp, const AliEmcalJet* jet) const;
     Double_t                            GetDeltaPhi(Double_t phi1,Double_t phi2) const; 
+    AliVParticle                       *GetSingleInclusiveTT(AliParticleContainer *pCont, Double_t ptmin, Double_t ptmax) const;
 
     Int_t                               fContainerBase;              // jets to be analyzed
     Int_t                               fContainerUnsub;             // unsubtracted jets
@@ -69,10 +71,12 @@ namespace EmcalHJetMassAnalysis {
     TH1F            **fh1PtHadron;                        //!pt of hadrons
     TH3F            **fh3PtHPtJDPhi;                      //!pt hadron vs pt jet vs delta phi
     TH3F            **fh3PtJet1VsMassVsHPtAllSel;         //!all jets after std selection pt vs mass vs track pt
+    TH3F            **fh3PtJet1VsMassVsHPtAllSelMatch;    //!all jets after std selection pt vs mass vs track pt matched to MC
     TH3F            **fh3PtJet1VsMassVsHPtTagged;         //!tagged jets pt vs mass vs track pt
     TH3F            **fh3PtJet1VsMassVsHPtTaggedMatch;    //!tagged jets pt vs mass vs track pt matched to MC
 
     TH3F            **fh3PtJet1VsRatVsHPtAllSel;          //!all jets after std selection pt vs mass/pt vs track pt
+    TH3F            **fh3PtJet1VsRatVsHPtAllSelMatch;     //!all jets after std selection pt vs mass/pt vs track pt matched to MC
     TH3F            **fh3PtJet1VsRatVsHPtTagged;          //!tagged jets pt vs mass/pt vs track pt
     TH3F            **fh3PtJet1VsRatVsHPtTaggedMatch;     //!tagged jets pt vs mas/pts vs track pt matched to MC
 
@@ -80,7 +84,7 @@ namespace EmcalHJetMassAnalysis {
     AliAnalysisTaskEmcalHJetMass(const AliAnalysisTaskEmcalHJetMass&);            // not implemented
     AliAnalysisTaskEmcalHJetMass &operator=(const AliAnalysisTaskEmcalHJetMass&); // not implemented
 
-    ClassDef(AliAnalysisTaskEmcalHJetMass, 3)
+    ClassDef(AliAnalysisTaskEmcalHJetMass, 4)
       };
 }
 #endif
