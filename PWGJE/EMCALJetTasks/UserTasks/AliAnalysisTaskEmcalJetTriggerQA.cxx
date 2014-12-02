@@ -207,6 +207,8 @@ void AliAnalysisTaskEmcalJetTriggerQA::FillTriggerPatchHistos() {
   //Fill trigger patch histos for main trigger
 
   AliEmcalTriggerPatchInfo *patch = GetMainTriggerPatch(fMainTrigCat,fMainTrigSimple);
+  fMaxPatchEnergy = 0;
+  fMaxPatchADCEnergy = 0;
   if(patch) {
     fMaxPatchEnergy = patch->GetPatchE();
     fMaxPatchADCEnergy = patch->GetADCAmpGeVRough();
