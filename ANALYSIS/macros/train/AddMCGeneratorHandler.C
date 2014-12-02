@@ -2,11 +2,14 @@ AliInputEventHandler* AddMCGeneratorHandler()
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) ::Fatal("handlers", "No analysis manager");
+  
   AliAnalysisAlien *plugin = (AliAnalysisAlien*)mgr->GetGridHandler();
   if (!plugin) ::Fatal("handlers", "The method should be called via: AliAnalysisAlien::CreateAnalysisManager()");
+
   mgr->SetInputEventHandler(new AliDummyHandler());
   AliMCGenHandler* mcInputHandler = new AliMCGenHandler();
 
+  plugin->SetGeneratorLibs(gSystem->Getenv("GEN_LIBRARIES"));
   mcInputHandler->SetGeneratorMacroPath(gSystem->Getenv("GEN_MACRO_PATH"));
   mcInputHandler->SetGeneratorMacroParameters(gSystem->Getenv("GEN_PARAMETERS"));
   
