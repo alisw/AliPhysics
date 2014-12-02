@@ -23,65 +23,20 @@ include_directories(
                     ${AliRoot_SOURCE_DIR}/TPC/TPCbase
                    )
 
+set(STATIC_DEPENDENCIES RAWDatarec-static STEERBase-static TPCbase-static)
+generateDA("TPC" "CE" "${STATIC_DEPENDENCIES}")
 
-# DIM
-link_directories(${DIMDIR}/${ODIR})
+set(STATIC_DEPENDENCIES RAWDatarec-static STEERBase-static TPCbase-static)
+generateDA("TPC" "CEnew" "${STATIC_DEPENDENCIES}")
 
-#daqDA flags
-include_directories(${daqDA})
-link_directories(${daqDA})
+set(STATIC_DEPENDENCIES RAWDatarec-static STEERBase-static TPCbase-static)
+generateDA("TPC" "PEDESTAL" "${STATIC_DEPENDENCIES}")
 
-# AMORE definitions
-add_definitions(${AMORE_DEFINITIONS})
-include_directories(${AMORE_INCLUDE_DIR})
+set(STATIC_DEPENDENCIES RAWDatarec-static STEERBase-static TPCbase-static)
+generateDA("TPC" "PULSER" "${STATIC_DEPENDENCIES}")
 
-# Generating the DA executable
-add_executable(TPCCEda TPCCEda.cxx) #1
-add_executable(TPCCEnewda TPCCEnewda.cxx) #2
-add_executable(TPCPEDESTALda TPCPEDESTALda.cxx) #3
-add_executable(TPCPULSERda TPCPULSERda.cxx) #4
-add_executable(TPCQAda TPCQAda.cxx) #5
-add_executable(TPCRAWda TPCRAWda.cxx) #6
+set(STATIC_DEPENDENCIES RAWDatarec-static STEERBase-static TPCbase-static)
+generateDA("TPC" "QA" "${STATIC_DEPENDENCIES}")
 
-set(MODULE_COMPILE_FLAGS)
-set(MODULE_LINK_FLAGS)
-
-target_link_libraries(TPCCEda RAWDatarec-static STEERBase-static TPCbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} RootExtra Root) # 1
-target_link_libraries(TPCCEnewda RAWDatarec-static STEERBase-static TPCbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 2
-target_link_libraries(TPCPEDESTALda RAWDatarec-static STEERBase-static TPCbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 3
-target_link_libraries(TPCPULSERda RAWDatarec-static STEERBase-static TPCbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 4
-target_link_libraries(TPCQAda RAWDatarec-static STEERBase-static TPCbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 5
-target_link_libraries(TPCRAWda RAWDatarec-static STEERBase-static TPCbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 6
-
-# different flags
-set(MODULE_COMPILE_FLAGS "  ${DATE_CFLAGS} ${AMORE_CFLAGS}")
-set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
-
-set_target_properties(TPCCEda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS}) # 1
-set_target_properties(TPCCEda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}") # 1
-
-set_target_properties(TPCCEnewda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS}) # 2
-set_target_properties(TPCCEnewda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}") # 2
-
-set_target_properties(TPCPEDESTALda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS}) # 3
-set_target_properties(TPCPEDESTALda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}") # 3
-
-set_target_properties(TPCPULSERda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS}) # 4
-set_target_properties(TPCPULSERda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}") # 4
-
-set_target_properties(TPCQAda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS}) # 5
-set_target_properties(TPCQAda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}") # 5
-
-set_target_properties(TPCRAWda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS}) # 6
-set_target_properties(TPCRAWda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}") # 6
-
-
-# Installation
-install(TARGETS 
-                TPCCEda
-                TPCCEnewda
-                TPCPEDESTALda
-                TPCPULSERda
-                TPCQAda
-                TPCRAWda
-        RUNTIME DESTINATION bin)
+set(STATIC_DEPENDENCIES RAWDatarec-static STEERBase-static TPCbase-static)
+generateDA("TPC" "RAW" "${STATIC_DEPENDENCIES}")

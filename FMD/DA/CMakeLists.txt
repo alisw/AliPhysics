@@ -27,42 +27,11 @@ include_directories(
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
+set(STATIC_DEPENDENCIES FMDbase-static FMDutil-static RAWDatarec-static STEERBase-static)
+generateDA("FMD" "Base" "${STATIC_DEPENDENCIES}")
 
-# DIM
-link_directories(${DIMDIR}/${ODIR})
+set(STATIC_DEPENDENCIES FMDbase-static FMDutil-static)
+generateDA("FMD" "Gain" "${STATIC_DEPENDENCIES}")
 
-#daqDA flags
-include_directories(${daqDA})
-link_directories(${daqDA})
-
-# AMORE definitions
-add_definitions(${AMORE_DEFINITIONS})
-include_directories(${AMORE_INCLUDE_DIR})
-
-# Generating the DA executable
-add_executable(FMDBaseda FMDBaseda.cxx)
-add_executable(FMDGainda FMDGainda.cxx)
-add_executable(FMDPedestalda FMDGainda.cxx)
-
-set(MODULE_COMPILE_FLAGS)
-set(MODULE_LINK_FLAGS)
-
-target_link_libraries(FMDBaseda FMDbase-static FMDutil-static RAWDatarec-static STEERBase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra)
-target_link_libraries(FMDGainda FMDbase-static FMDutil-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra)
-target_link_libraries(FMDPedestalda FMDbase-static FMDutil-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra)
-
-# different flags
-set(MODULE_COMPILE_FLAGS "  ${DATE_CFLAGS} ${AMORE_CFLAGS}")
-set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
-
-set_target_properties(FMDBaseda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(FMDBaseda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-set_target_properties(FMDGainda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(FMDGainda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-set_target_properties(FMDPedestalda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(FMDPedestalda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-# Installation
-install(TARGETS FMDBaseda FMDGainda FMDPedestalda RUNTIME DESTINATION bin)
+set(STATIC_DEPENDENCIES  FMDbase-static FMDutil-static)
+generateDA("FMD" "Pedestal" "${STATIC_DEPENDENCIES}")

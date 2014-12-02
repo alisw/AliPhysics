@@ -23,57 +23,18 @@ include_directories(
                     ${AliRoot_SOURCE_DIR}/TOF/TOFbase
                    )
 
+set(STATIC_DEPENDENCIES RAWDatarec-static STEERBase-static TOFbase-static)
+generateDA("TOF" "calib" "${STATIC_DEPENDENCIES}")
 
-# DIM
-link_directories(${DIMDIR}/${ODIR})
+set(STATIC_DEPENDENCIES RAWDatarec-static STEERBase-static TOFbase-static)
+generateDA("TOF" "" "${STATIC_DEPENDENCIES}")
 
-#daqDA flags
-include_directories(${daqDA})
-link_directories(${daqDA})
+set(STATIC_DEPENDENCIES RAWDatarec-static STEERBase-static TOFbase-static)
+generateDA("TOF" "noise" "${STATIC_DEPENDENCIES}")
 
-# AMORE definitions
-add_definitions(${AMORE_DEFINITIONS})
-include_directories(${AMORE_INCLUDE_DIR})
+set(STATIC_DEPENDENCIES RAWDatarec-static STEERBase-static TOFbase-static)
+generateDA("TOF" "physics" "${STATIC_DEPENDENCIES}")
 
-# Generating the DA executable
-add_executable(TOFcalibda TOFcalibda.cxx) # 1
-add_executable(TOFda TOFda.cxx) # 2
-add_executable(TOFnoiseda TOFnoiseda.cxx) # 3
-add_executable(TOFphysicsda TOFphysicsda.cxx) # 4
-add_executable(TOFpulserda TOFpulserda.cxx) # 5
+set(STATIC_DEPENDENCIES RAWDatarec-static STEERBase-static TOFbase-static)
+generateDA("TOF" "pulser" "${STATIC_DEPENDENCIES}")
 
-set(MODULE_COMPILE_FLAGS)
-set(MODULE_LINK_FLAGS)
-
-target_link_libraries(TOFcalibda RAWDatarec-static STEERBase-static TOFbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 1
-target_link_libraries(TOFda RAWDatarec-static STEERBase-static TOFbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 2
-target_link_libraries(TOFnoiseda RAWDatarec-static STEERBase-static TOFbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 3
-target_link_libraries(TOFphysicsda RAWDatarec-static STEERBase-static TOFbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 4
-target_link_libraries(TOFpulserda RAWDatarec-static STEERBase-static TOFbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 5
-
-# different flags
-set(MODULE_COMPILE_FLAGS "  ${DATE_CFLAGS} ${AMORE_CFLAGS}")
-set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
-
-set_target_properties(TOFcalibda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(TOFcalibda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-set_target_properties(TOFda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(TOFda PMDPEDESTALda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-set_target_properties(TOFnoiseda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(TOFnoiseda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-set_target_properties(TOFphysicsda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(TOFphysicsda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-set_target_properties(TOFpulserda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(TOFpulserda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-# Installation
-install(TARGETS TOFcalibda
-                TOFda
-                TOFnoiseda
-                TOFphysicsda
-                TOFpulserda
-        RUNTIME DESTINATION bin)

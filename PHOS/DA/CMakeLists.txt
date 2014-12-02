@@ -28,47 +28,15 @@ include_directories(
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
+set(STATIC_DEPENDENCIES PHOSbase-static PHOSshuttle-static RAWDatabase-static RAWDatarec-static STEERBase-static)
+generateDA("PHOS" "BCM" "${STATIC_DEPENDENCIES}")
 
-# DIM
-link_directories(${DIMDIR}/${ODIR})
+set(STATIC_DEPENDENCIES PHOSbase-static PHOSshuttle-static RAWDatabase-static RAWDatarec-static STEERBase-static)
+generateDA("PHOS" "GAIN" "${STATIC_DEPENDENCIES}")
 
-#daqDA flags
-include_directories(${daqDA})
-link_directories(${daqDA})
+set(STATIC_DEPENDENCIES PHOSbase-static PHOSshuttle-static RAWDatabase-static RAWDatarec-static STEERBase-static)
+generateDA("PHOS" "LED" "${STATIC_DEPENDENCIES}")
 
-# AMORE definitions
-add_definitions(${AMORE_DEFINITIONS})
-include_directories(${AMORE_INCLUDE_DIR})
+set(STATIC_DEPENDENCIES RAWDatabase-static RAWDatarec-static STEERBase-static)
+generateDA("PHOS" "PED" "${STATIC_DEPENDENCIES}")
 
-# Generating the DA executable
-add_executable(PHOSBCMda PHOSBCMda.cxx) # 1
-add_executable(PHOSGAINda PHOSGAINda.cxx) # 2
-add_executable(PHOSLEDda PHOSLEDda.cxx) # 3
-add_executable(PHOSPEDda PHOSPEDda.cxx) # 4
-
-set(MODULE_COMPILE_FLAGS)
-set(MODULE_LINK_FLAGS)
-
-target_link_libraries(PHOSBCMda PHOSbase-static PHOSshuttle-static RAWDatabase-static RAWDatarec-static STEERBase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 1
-target_link_libraries(PHOSGAINda PHOSbase-static PHOSshuttle-static RAWDatabase-static RAWDatarec-static STEERBase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 2
-target_link_libraries(PHOSLEDda PHOSbase-static PHOSshuttle-static RAWDatabase-static RAWDatarec-static STEERBase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 3 
-target_link_libraries(PHOSPEDda RAWDatabase-static RAWDatarec-static STEERBase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 4
-
-# different flags
-set(MODULE_COMPILE_FLAGS "  ${DATE_CFLAGS} ${AMORE_CFLAGS}")
-set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
-
-set_target_properties(PHOSBCMda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(PHOSBCMda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-set_target_properties(PHOSGAINda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(PHOSGAINda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-set_target_properties(PHOSLEDda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(PHOSLEDda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-set_target_properties(PHOSPEDda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(PHOSPEDda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-# Installation
-install(TARGETS PHOSBCMda PHOSGAINda PHOSLEDda PHOSPEDda RUNTIME DESTINATION bin)

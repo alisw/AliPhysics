@@ -1,12 +1,13 @@
 # RPM specfile for  Detector Algorithm
 Summary: @DETECTOR@ Detector Algorithm
-Name: daqDA-@DETECTOR@-@ALGORITHM@
+Name: @DA_NAME@
 Version: @ALIROOT_VERSION_RPM@
 Release: @GIT_SHORT_SHA1@
 License: CERN Alice DAQ/Offine
 Group: Applications/Alice
 Prefix: /opt/%{name}
-BuildRoot: /@CMAKE_CURRENT_BINARY_DIR@/da-@ALGORITHM@-rpm
+BuildRoot: /@CMAKE_CURRENT_BINARY_DIR@/da-@_ALGORITHM@-rpm/root
+#
 
 # automatic dependencies
 AutoReqProv: yes

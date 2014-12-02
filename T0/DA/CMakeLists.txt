@@ -27,42 +27,11 @@ include_directories(
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
+set(STATIC_DEPENDENCIES RAWDatarec-static T0base-static)
+generateDA("T0" "Cosmic" "${STATIC_DEPENDENCIES}")
 
-# DIM
-link_directories(${DIMDIR}/${ODIR})
+set(STATIC_DEPENDENCIES RAWDatarec-static T0base-static)
+generateDA("T0" "Laser" "${STATIC_DEPENDENCIES}")
 
-#daqDA flags
-include_directories(${daqDA})
-link_directories(${daqDA})
-
-# AMORE definitions
-add_definitions(${AMORE_DEFINITIONS})
-include_directories(${AMORE_INCLUDE_DIR})
-
-# Generating the DA executable
-add_executable(T0Cosmicda T0Cosmicda.cxx) # 1
-add_executable(T0Laserda T0Laserda.cxx) # 2
-add_executable(T0Physda T0Physda.cxx) # 3
-
-set(MODULE_COMPILE_FLAGS)
-set(MODULE_LINK_FLAGS)
-
-target_link_libraries(T0Cosmicda RAWDatarec-static T0base-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 1
-target_link_libraries(T0Laserda RAWDatarec-static T0base-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 2
-target_link_libraries(T0Physda CDB-static RAWDatarec-static T0base-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 3
-
-# different flags
-set(MODULE_COMPILE_FLAGS "  ${DATE_CFLAGS} ${AMORE_CFLAGS}")
-set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
-
-set_target_properties(T0Cosmicda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(T0Cosmicda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-set_target_properties(T0Laserda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(T0Laserda PMDPEDESTALda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-set_target_properties(T0Physda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(T0Physda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-# Installation
-install(TARGETS T0Cosmicda T0Laserda T0Physda RUNTIME DESTINATION bin)
+set(STATIC_DEPENDENCIES CDB-static RAWDatarec-static T0base-static)
+generateDA("T0" "Phys" "${STATIC_DEPENDENCIES}")

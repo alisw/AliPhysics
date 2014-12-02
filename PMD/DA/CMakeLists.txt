@@ -29,44 +29,10 @@ include_directories(
                    )
 
 
-# DIM
-link_directories(${DIMDIR}/${ODIR})
+setDAflags()
 
-#daqDA flags
-include_directories(${daqDA})
-link_directories(${daqDA})
+set(STATIC_DEPENDENCIES CDB-static PMDrec-static RAWDatarec-static STEERBase-static)
+generateDA("PMD" "GAIN" "${STATIC_DEPENDENCIES}")
 
-# AMORE definitions
-add_definitions(${AMORE_DEFINITIONS})
-include_directories(${AMORE_INCLUDE_DIR})
-
-# Generating the DA executable
-add_executable(PMDGAINda PMDGAINda.cxx) # 1
-add_executable(PMDPEDESTALda PMDPEDESTALda.cxx) # 2
-
-# Da information
-
-set(MODULE_COMPILE_FLAGS)
-set(MODULE_LINK_FLAGS)
-
-target_link_libraries(PMDGAINda CDB-static PMDrec-static RAWDatarec-static STEERBase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 1
-target_link_libraries(PMDPEDESTALda CDB-static PMDrec-static RAWDatarec-static STEERBase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 2
-
-# different flags
-set(MODULE_COMPILE_FLAGS "  ${DATE_CFLAGS} ${AMORE_CFLAGS}")
-set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
-
-set_target_properties(PMDGAINda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(PMDGAINda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-set_target_properties(PMDPEDESTALda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(PMDPEDESTALda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-# Installation
-install(TARGETS PMDGAINda RUNTIME DESTINATION bin COMPONENT PMDGAIN)
-install(TARGETS PMDPEDESTALda RUNTIME DESTINATION bin COMPONENT PMDPEDESTAL)
-
-if(DARPM)
-    createDArpm("PMD" "GAIN")
-    createDArpm("PMD" "PEDESTAL")
-endif(DARPM)
+set(STATIC_DEPENDENCIES CDB-static PMDrec-static RAWDatarec-static STEERBase-static)
+generateDA("PMD" "PEDESTAL" "${STATIC_DEPENDENCIES}")

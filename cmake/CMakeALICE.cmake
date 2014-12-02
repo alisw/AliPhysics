@@ -107,43 +107,113 @@ endmacro(generate_static_dependencies)
 #########################
 # DA utilities
 #########################
-# Extract DA information to be inserted into the rpm
-function(getDAinfo _info _detector _daname info)
-    file(STRINGS "${_detector}${_daname}da.cxx" tmpinfo REGEX "${info}:")
-    string(REPLACE "${info}:\ " "" tmpinfo ${tmpinfo})
-    set(${_info} ${tmpinfo} PARENT_SCOPE)
-endfunction()
+
+# Extract the first comment from a DA file
+# Find the position for first /* and */ and extract the substring
+macro(getDAdescription _detector _daname)
+    # Reading the file into a string
+    file(READ "${_detector}${_daname}da.cxx" tmpinfo)
+    
+    # Find the first occurance of /* */
+    string(FIND "${tmpinfo}" "/*" _first_position)
+    string(FIND "${tmpinfo}" "*/" _second_position)
+    
+    # Adding and removing 2 characters to remove /* */
+    math(EXPR _first_position ${_first_position}+2)
+    math(EXPR _second_position ${_second_position}-2)
+    
+    # Generating the length of the comment in order to take out the description
+    math(EXPR _desc_length ${_second_position}-${_first_position})
+    
+    if(${_desc_length} EQUAL 0 OR ${_desc_length} LESS 0)
+        message(FATAL_ERROR "{_detector}${_daname}da.cxx does not contain a description. Please add the description as the first /*comment*/ in the file")
+    else()
+        string(SUBSTRING "${tmpinfo}" ${_first_position}  ${_second_position} _da_description)
+        string(STRIP ${_da_description} _da_description)
+        
+        # The variable can be accesed by the parent
+        set(RPM_DESCRIPTION ${_da_description})
+    endif()
+endmacro()
+
+# Set the compilation flags
+macro(setDAflags)
+    # DIM
+    link_directories(${DIMDIR}/${ODIR})
+
+    #daqDA flags
+    include_directories(${daqDA})
+    link_directories(${daqDA})
+
+    # AMORE definitions
+    add_definitions(${AMORE_DEFINITIONS})
+    include_directories(${AMORE_INCLUDE_DIR})
+
+endmacro()
+
+# Generate a DA
+macro(generateDA DETECTOR ALGORITHM STATIC_DEPENDENCIES)
+    setDAflags()
+
+    # Generating the DA executable
+    add_executable(${DETECTOR}${ALGORITHM}da ${DETECTOR}${ALGORITHM}da.cxx) #
+
+    # DA flags and linking information
+    set(MODULE_COMPILE_FLAGS)
+    set(MODULE_LINK_FLAGS)
+
+    target_link_libraries(${DETECTOR}${ALGORITHM}da ${STATIC_DEPENDENCIES} ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 1
+
+    # different flags
+    set(MODULE_COMPILE_FLAGS "  ${DATE_CFLAGS} ${AMORE_CFLAGS}")
+    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
+
+    set_target_properties(${DETECTOR}${ALGORITHM}da PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
+    set_target_properties(${DETECTOR}${ALGORITHM}da PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
+
+    # Installation
+    install(TARGETS ${DETECTOR}${ALGORITHM}da RUNTIME DESTINATION bin)
+    
+    if(DARPM)
+        createDArpm("${DETECTOR}" "${ALGORITHM}")
+    endif(DARPM)
+endmacro()
 
 # DA rpm creation
 macro(createDArpm DETECTOR ALGORITHM)
-    getDAinfo(contact "${DETECTOR}" "${ALGORITHM}" "Contact")
-    getDAinfo(link "${DETECTOR}" "${ALGORITHM}" "Link")
-    getDAinfo(refrun "${DETECTOR}" "${ALGORITHM}" "Reference Run")
-    getDAinfo(runtype "${DETECTOR}" "${ALGORITHM}" "Run Type")
-    getDAinfo(datype "${DETECTOR}" "${ALGORITHM}" "DA Type")
-    getDAinfo(evennr "${DETECTOR}" "${ALGORITHM}" "Number of events needed")
-    getDAinfo(ifiles "${DETECTOR}" "${ALGORITHM}" "Input Files")
-    getDAinfo(ofiles "${DETECTOR}" "${ALGORITHM}" "Output Files")
-    getDAinfo(trigger "${DETECTOR}" "${ALGORITHM}" "Trigger types used")
-    set(RPM_DESCRIPTION "contact: ${contact}
-Link:${link}
-Reference run:${refrun}
-Run Type:${runtype}
-DA Type:${datype}
-Number of events needed: ${evennr}
-Input Files:${ifiles}
-Output Files:${ofiles}
-Trigger types used:${trigger}")
+    getDAdescription("${DETECTOR}" "${ALGORITHM}")
 
     set(DA_EXECUTABLE "${DETECTOR}${ALGORITHM}da")
-    set(DETECTOR ${DETECTOR})
-    set(ALGORITHM ${ALGORITHM})
-    configure_file("${AliRoot_SOURCE_DIR}/cmake/da.spec.in" "${CMAKE_CURRENT_BINARY_DIR}/${ALGORITHM}-da.spec" @ONLY)
+    set(DETECTOR "${DETECTOR}")
+    set(ALGORITHM "${ALGORITHM}")
+    set(RPM_DESCRIPTION ${RPM_DESCRIPTION})
+    
+    if(ALGORITHM STREQUAL "")
+        set(_ALGORITHM "none")
+        set(DA_PREFIX "opt/daqDA-${DETECTOR}")
+        set(DA_NAME "daqDA-${DETECTOR}")
+    else()
+        set(_ALGORITHM ${ALGORITHM})
+        set(DA_PREFIX "opt/daqDA-${DETECTOR}-${ALGORITHM}")
+        set(DA_NAME "daqDA-${DETECTOR}-${ALGORITHM}")
+    endif()
+
+    configure_file("${AliRoot_SOURCE_DIR}/cmake/da.spec.in" "${_ALGORITHM}-da.spec" @ONLY)
 
     add_custom_command(TARGET ${DETECTOR}${ALGORITHM}da POST_BUILD
-                       COMMAND mkdir ARGS -p da-${ALGORITHM}-rpm/opt/daqDA-${DETECTOR}-${ALGORITHM}/
-                       COMMAND cp ARGS ${DETECTOR}${ALGORITHM}da da-${ALGORITHM}-rpm/opt/daqDA-${DETECTOR}-${ALGORITHM}/
-                       COMMAND rpmbuild ARGS --verbose --define "_topdir ${CMAKE_CURRENT_BINARY_DIR}" --define "%buildroot ${CMAKE_CURRENT_BINARY_DIR}/da-${ALGORITHM}-rpm" -bb ${ALGORITHM}-da.spec
+                       COMMAND mkdir ARGS -p da-${_ALGORITHM}-rpm/root/${DA_PREFIX}/
+                       COMMAND cp ARGS ${DETECTOR}${ALGORITHM}da da-${_ALGORITHM}-rpm/root/${DA_PREFIX}/
+                       COMMAND rpmbuild ARGS --verbose --define "_topdir ${CMAKE_CURRENT_BINARY_DIR}/da-${_ALGORITHM}-rpm" --define "%buildroot ${CMAKE_CURRENT_BINARY_DIR}/da-${_ALGORITHM}-rpm/root" -bb ${_ALGORITHM}-da.spec
                        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} VERBATIM
+                       COMMENT "RPM creation for ${DETECTOR}-${_ALGORITHM}"
     )
+    
+    # make clean will remove also the rpm folder
+    # Retrive the current list of file to be deleted - set_directory_property is overwriting, not adding to the list
+    get_directory_property(_clean_files ADDITIONAL_MAKE_CLEAN_FILES)
+    set(_clean_files da-${_ALGORITHM}-rpm  ${_clean_files})
+    set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "${_clean_files}")
+    
+    # install RPM into $CMAKE_INSTALL_PREFIX/darpms
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/da-${_ALGORITHM}-rpm/RPMS/ DESTINATION darpms PATTERN "\\.rpm")
 endmacro()

@@ -20,57 +20,18 @@ include_directories(${AliRoot_SOURCE_DIR}/ZDC/DA)
 include_directories(
                    )
 
+set(STATIC_DEPENDENCIES RAWDatabase-static RAWDatarec-static ZDCbase-static)
+generateDA("ZDC" "CALIBMB" "${STATIC_DEPENDENCIES}")
 
-# DIM
-link_directories(${DIMDIR}/${ODIR})
+set(STATIC_DEPENDENCIES RAWDatabase-static RAWDatarec-static ZDCbase-static)
+generateDA("ZDC" "EMD" "${STATIC_DEPENDENCIES}")
 
-#daqDA flags
-include_directories(${daqDA})
-link_directories(${daqDA})
+set(STATIC_DEPENDENCIES  RAWDatabase-static RAWDatarec-static ZDCbase-static)
+generateDA("ZDC" "LASER" "${STATIC_DEPENDENCIES}")
 
-# AMORE definitions
-add_definitions(${AMORE_DEFINITIONS})
-include_directories(${AMORE_INCLUDE_DIR})
+set(STATIC_DEPENDENCIES RAWDatabase-static RAWDatarec-static ZDCbase-static)
+generateDA("ZDC" "MAPPING" "${STATIC_DEPENDENCIES}")
 
-# Generating the DA executable
-add_executable(ZDCCALIBMBda ZDCCALIBMBda.cxx) #1
-add_executable(ZDCEMDda ZDCEMDda.cxx) #2
-add_executable(ZDCLASERda ZDCLASERda.cxx) #3
-add_executable(ZDCMAPPINGda ZDCMAPPINGda.cxx) #4
-add_executable(ZDCPEDESTALda ZDCPEDESTALda.cxx) #5
+set(STATIC_DEPENDENCIES RAWDatabase-static RAWDatarec-static ZDCbase-static)
+generateDA("ZDC" "PEDESTAL" "${STATIC_DEPENDENCIES}")
 
-target_link_libraries(ZDCCALIBMBda RAWDatabase-static RAWDatarec-static ZDCbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 1
-target_link_libraries(ZDCEMDda RAWDatabase-static RAWDatarec-static ZDCbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 2
-target_link_libraries(ZDCLASERda RAWDatabase-static RAWDatarec-static ZDCbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 3
-target_link_libraries(ZDCMAPPINGda RAWDatabase-static RAWDatarec-static ZDCbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 4
-target_link_libraries(ZDCPEDESTALda RAWDatabase-static RAWDatarec-static ZDCbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 5
-
-set(MODULE_COMPILE_FLAGS)
-set(MODULE_LINK_FLAGS)
-
-# different flags
-set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS} ${AMORE_CFLAGS}")
-set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
-
-set_target_properties(ZDCCALIBMBda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS}) # 1
-set_target_properties(ZDCCALIBMBda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}") # 1
-
-set_target_properties(ZDCEMDda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS}) # 2
-set_target_properties(ZDCEMDda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}") # 2
-set_target_properties(ZDCLASERda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS}) # 3
-set_target_properties(ZDCLASERda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}") # 3
-
-set_target_properties(ZDCMAPPINGda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS}) # 4
-set_target_properties(ZDCMAPPINGda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}") # 4
-
-set_target_properties(ZDCPEDESTALda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS}) # 5
-set_target_properties(ZDCPEDESTALda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}") # 5
-
-# Installation
-install(TARGETS 
-                ZDCCALIBMBda
-                ZDCEMDda
-                ZDCLASERda
-                ZDCMAPPINGda
-                ZDCPEDESTALda
-        RUNTIME DESTINATION bin)

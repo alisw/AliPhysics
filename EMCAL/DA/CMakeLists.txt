@@ -26,36 +26,7 @@ include_directories(
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
-# DIM
-link_directories(${DIMDIR}/${ODIR})
 
-#daqDA flags
-include_directories(${daqDA})
-link_directories(${daqDA})
-
-# AMORE definitions
-add_definitions(${AMORE_DEFINITIONS})
-
-# Generating the DA executable
-add_executable(EMCALPEDda EMCALPEDda.cxx)
-add_executable(EMCALLEDda EMCALLEDda.cxx)
-
-set(MODULE_COMPILE_FLAGS)
-set(MODULE_LINK_FLAGS)
-
-target_link_libraries(EMCALPEDda EMCALbase-static RAWDatarec-static RAWDatabase-static STEERBase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra)
-target_link_libraries(EMCALLEDda EMCALbase-static RAWDatarec-static RAWDatabase-static STEERBase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra)
-
-# different flags
-set(MODULE_COMPILE_FLAGS "  ${DATE_CFLAGS} ${AMORE_CFLAGS}")
-set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
-
-# DATE flags
-set_target_properties(EMCALPEDda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(EMCALPEDda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-set_target_properties(EMCALLEDda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(EMCALLEDda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-# Installation
-install(TARGETS EMCALPEDda EMCALLEDda RUNTIME DESTINATION bin)
+set(STATIC_DEPENDENCIES EMCALbase-static RAWDatarec-static RAWDatabase-static STEERBase-static)
+generateDA("EMCAL" "PED" "${STATIC_DEPENDENCIES}")
+generateDA("EMCAL" "LED" "${STATIC_DEPENDENCIES}")

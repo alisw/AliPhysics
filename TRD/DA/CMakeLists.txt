@@ -23,46 +23,11 @@ include_directories(
                     ${AliRoot_SOURCE_DIR}/TPC/TPCbase
                    )
 
+set(STATIC_DEPENDENCIES CDB-static RAWDatarec-static STEERBase-static TRDbase-static)
+generateDA("TRD" "HALFCHAMBERSTATUS" "${STATIC_DEPENDENCIES}")
 
-# DIM
-link_directories(${DIMDIR}/${ODIR})
+set(STATIC_DEPENDENCIES CDB-static RAWDatarec-static STEERBase-static TRDbase-static)
+generateDA("TRD" "PEDESTAL" "${STATIC_DEPENDENCIES}")
 
-#daqDA flags
-include_directories(${daqDA})
-link_directories(${daqDA})
-
-# AMORE definitions
-add_definitions(${AMORE_DEFINITIONS})
-include_directories(${AMORE_INCLUDE_DIR})
-
-# Generating the DA executable
-add_executable(TRDHALFCHAMBERSTATUSda TRDHALFCHAMBERSTATUSda.cxx) #1
-add_executable(TRDPEDESTALda TRDPEDESTALda.cxx) #2
-add_executable(TRDVDRIFTda TRDVDRIFTda.cxx) #3
-
-target_link_libraries(TRDHALFCHAMBERSTATUSda CDB-static RAWDatarec-static STEERBase-static TRDbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 1
-target_link_libraries(TRDPEDESTALda CDB-static RAWDatarec-static STEERBase-static TRDbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 2
-target_link_libraries(TRDVDRIFTda RAWDatarec-static STEERBase-static TRDbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 3
-
-set(MODULE_COMPILE_FLAGS)
-set(MODULE_LINK_FLAGS)
-
-# different flags
-set(MODULE_COMPILE_FLAGS "  ${DATE_CFLAGS} ${AMORE_CFLAGS}")
-set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
-
-set_target_properties(TRDHALFCHAMBERSTATUSda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS}) # 1
-set_target_properties(TRDHALFCHAMBERSTATUSda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}") # 1
-
-set_target_properties(TRDPEDESTALda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS}) # 2
-set_target_properties(TRDPEDESTALda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}") # 2
-
-set_target_properties(TRDVDRIFTda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS}) # 3
-set_target_properties(TRDVDRIFTda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}") # 3
-
-# Installation
-install(TARGETS 
-                TRDHALFCHAMBERSTATUSda
-                TRDPEDESTALda
-                TRDVDRIFTda
-        RUNTIME DESTINATION bin)
+set(STATIC_DEPENDENCIES RAWDatarec-static STEERBase-static TRDbase-static)
+generateDA("TRD" "VDRIFT" "${STATIC_DEPENDENCIES}")

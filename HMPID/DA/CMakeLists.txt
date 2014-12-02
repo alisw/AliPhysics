@@ -29,36 +29,8 @@ include_directories(
                    )
 
 
-# DIM
-link_directories(${DIMDIR}/${ODIR})
+set(STATIC_DEPENDENCIES HMPIDbase-static RAWDatarecOnline-static RAWDatarec-static RAWDatasim-static)
+generateDA("HMPID" "" "${STATIC_DEPENDENCIES}")
 
-#daqDA flags
-include_directories(${daqDA})
-link_directories(${daqDA})
-
-# AMORE definitions
-add_definitions(${AMORE_DEFINITIONS})
-include_directories(${AMORE_INCLUDE_DIR})
-
-# Generating the DA executable
-add_executable(HMPIDda HMPIDda.cxx)
-add_executable(HMPIDphysda HMPIDphysda.cxx)
-
-set(MODULE_COMPILE_FLAGS)
-set(MODULE_LINK_FLAGS)
-
-target_link_libraries(HMPIDda HMPIDbase-static RAWDatarecOnline-static RAWDatarec-static RAWDatasim-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra)
-target_link_libraries(HMPIDphysda HMPIDbase-static RAWDatarecOnline-static RAWDatarec-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra)
-
-# different flags
-set(MODULE_COMPILE_FLAGS "  ${DATE_CFLAGS} ${AMORE_CFLAGS}")
-set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
-
-set_target_properties(HMPIDda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(HMPIDda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-set_target_properties(HMPIDphysda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(HMPIDphysda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-# Installation
-install(TARGETS HMPIDda HMPIDphysda RUNTIME DESTINATION bin)
+set(STATIC_DEPENDENCIES HMPIDbase-static RAWDatarecOnline-static RAWDatarec-static)
+generateDA("HMPID" "phys" "${STATIC_DEPENDENCIES}")

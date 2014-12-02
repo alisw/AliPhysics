@@ -25,37 +25,5 @@ include_directories(
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                    )
 
-
-# Sources in alphabetical order
-set(SRCS
-    ACORDEda.cxx
-   )
-   
-# DIM
-link_directories(${DIMDIR}/${ODIR})
-
-#daqDA flags
-include_directories(${daqDA})
-link_directories(${daqDA})
-
-# AMORE definitions
-add_definitions(${AMORE_DEFINITIONS})
-
-# Generating the DA executable
-add_executable(ACORDEda ${SRCS})
-
-set(MODULE_COMPILE_FLAGS)
-set(MODULE_LINK_FLAGS)
-
-target_link_libraries(ACORDEda ESD-static RAWDatabase-static RAWDatarec-static ACORDEbase-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra)
-
-# different flags
-set(MODULE_COMPILE_FLAGS "  ${DATE_CFLAGS} ${AMORE_CFLAGS}")
-set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
-
-# DATE flags
-set_target_properties(ACORDEda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-set_target_properties(ACORDEda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-# Installation
-install(TARGETS ACORDEda RUNTIME DESTINATION bin)
+set(STATIC_DEPENDENCIES  ESD-static RAWDatabase-static RAWDatarec-static ACORDEbase-static)
+generateDA("ACORDE" "" "${STATIC_DEPENDENCIES}")

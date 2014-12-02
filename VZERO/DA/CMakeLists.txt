@@ -21,52 +21,14 @@ include_directories(
                    )
 
 
-# DIM
-link_directories(${DIMDIR}/${ODIR})
+set(STATIC_DEPENDENCIES RAWDatarec-static STEERBase-static VZEROrec-static)
+generateDA("VZERO" "CHANNELDELAYTUNING" "${STATIC_DEPENDENCIES}")
 
-#daqDA flags
-include_directories(${daqDA})
-link_directories(${daqDA})
+set(STATIC_DEPENDENCIES RAWDatarec-static STEERBase-static VZEROrec-static)
+generateDA("VZERO" "" "${STATIC_DEPENDENCIES}")
 
-# AMORE definitions
-add_definitions(${AMORE_DEFINITIONS})
-include_directories(${AMORE_INCLUDE_DIR})
+set(STATIC_DEPENDENCIES RAWDatarec-static STEERBase-static VZEROrec-static)
+generateDA("VZERO" "INTEGRATIONGATETUNING" "${STATIC_DEPENDENCIES}")
 
-# Generating the DA executable
-add_executable(VZEROCHANNELDELAYTUNINGda VZEROCHANNELDELAYTUNINGda.cxx) #1
-add_executable(VZEROda VZEROda.cxx) #2
-add_executable(VZEROINTEGRATIONGATETUNINGda VZEROINTEGRATIONGATETUNINGda.cxx) #3
-add_executable(VZEROPbPbda VZEROPbPbda.cxx) #4
-
-target_link_libraries(VZEROCHANNELDELAYTUNINGda RAWDatarec-static STEERBase-static VZEROrec-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 1
-target_link_libraries(VZEROda RAWDatarec-static STEERBase-static VZEROrec-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 2
-target_link_libraries(VZEROINTEGRATIONGATETUNINGda RAWDatarec-static STEERBase-static VZEROrec-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 3
-target_link_libraries(VZEROPbPbda RAWDatarec-static STEERBase-static VZEROrec-static ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 4
-
-set(MODULE_COMPILE_FLAGS)
-set(MODULE_LINK_FLAGS)
-
-# different flags
-set(MODULE_COMPILE_FLAGS "  ${DATE_CFLAGS} ${AMORE_CFLAGS}")
-set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
-
-set_target_properties(VZEROCHANNELDELAYTUNINGda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS}) # 1
-set_target_properties(VZEROCHANNELDELAYTUNINGda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}") # 1
-
-set_target_properties(VZEROda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS}) # 2
- set_target_properties(VZEROda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}") # 2
- 
-set_target_properties(VZEROINTEGRATIONGATETUNINGda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS}) # 3
-set_target_properties(VZEROINTEGRATIONGATETUNINGda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}") # 3
-
-set_target_properties(VZEROPbPbda PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS}) # 4
-set_target_properties(VZEROPbPbda PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}") # 4
-
-
-# Installation
-install(TARGETS 
-                VZEROCHANNELDELAYTUNINGda
-                VZEROda
-                VZEROINTEGRATIONGATETUNINGda
-                VZEROPbPbda
-        RUNTIME DESTINATION bin)
+set(STATIC_DEPENDENCIES RAWDatarec-static STEERBase-static VZEROrec-static)
+generateDA("VZERO" "PbPb" "${STATIC_DEPENDENCIES}")
