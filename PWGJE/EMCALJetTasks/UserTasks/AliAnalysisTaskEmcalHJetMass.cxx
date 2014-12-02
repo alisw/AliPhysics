@@ -53,9 +53,11 @@ namespace EmcalHJetMassAnalysis {
     fh1PtHadron(0),
     fh3PtHPtJDPhi(0),
     fh3PtJet1VsMassVsHPtAllSel(0),
+    fh3PtJet1VsMassVsHPtAllSelMatch(0),
     fh3PtJet1VsMassVsHPtTagged(0),
     fh3PtJet1VsMassVsHPtTaggedMatch(0),
     fh3PtJet1VsRatVsHPtAllSel(0),
+    fh3PtJet1VsRatVsHPtAllSelMatch(0),
     fh3PtJet1VsRatVsHPtTagged(0),
     fh3PtJet1VsRatVsHPtTaggedMatch(0)
   {
@@ -64,9 +66,11 @@ namespace EmcalHJetMassAnalysis {
     fh1PtHadron                       = new TH1F*[fNcentBins];
     fh3PtHPtJDPhi                     = new TH3F*[fNcentBins];
     fh3PtJet1VsMassVsHPtAllSel        = new TH3F*[fNcentBins];
+    fh3PtJet1VsMassVsHPtAllSelMatch   = new TH3F*[fNcentBins];
     fh3PtJet1VsMassVsHPtTagged        = new TH3F*[fNcentBins];
     fh3PtJet1VsMassVsHPtTaggedMatch   = new TH3F*[fNcentBins];
     fh3PtJet1VsRatVsHPtAllSel         = new TH3F*[fNcentBins];
+    fh3PtJet1VsRatVsHPtAllSelMatch    = new TH3F*[fNcentBins];
     fh3PtJet1VsRatVsHPtTagged         = new TH3F*[fNcentBins];
     fh3PtJet1VsRatVsHPtTaggedMatch    = new TH3F*[fNcentBins];
 
@@ -74,9 +78,11 @@ namespace EmcalHJetMassAnalysis {
       fh1PtHadron[i]                       = 0;
       fh3PtHPtJDPhi[i]                     = 0;
       fh3PtJet1VsMassVsHPtAllSel[i]        = 0;
+      fh3PtJet1VsMassVsHPtAllSelMatch[i]   = 0;
       fh3PtJet1VsMassVsHPtTagged[i]        = 0;
       fh3PtJet1VsMassVsHPtTaggedMatch[i]   = 0;
       fh3PtJet1VsRatVsHPtAllSel[i]         = 0;
+      fh3PtJet1VsRatVsHPtAllSelMatch[i]    = 0;
       fh3PtJet1VsRatVsHPtTagged[i]         = 0;
       fh3PtJet1VsRatVsHPtTaggedMatch[i]    = 0;
     }
@@ -103,9 +109,11 @@ namespace EmcalHJetMassAnalysis {
     fh1PtHadron(0),
     fh3PtHPtJDPhi(0),
     fh3PtJet1VsMassVsHPtAllSel(0),
+    fh3PtJet1VsMassVsHPtAllSelMatch(0),
     fh3PtJet1VsMassVsHPtTagged(0),
     fh3PtJet1VsMassVsHPtTaggedMatch(0),
     fh3PtJet1VsRatVsHPtAllSel(0),
+    fh3PtJet1VsRatVsHPtAllSelMatch(0),
     fh3PtJet1VsRatVsHPtTagged(0),
     fh3PtJet1VsRatVsHPtTaggedMatch(0)
   {
@@ -114,9 +122,11 @@ namespace EmcalHJetMassAnalysis {
     fh1PtHadron                       = new TH1F*[fNcentBins];
     fh3PtHPtJDPhi                     = new TH3F*[fNcentBins];
     fh3PtJet1VsMassVsHPtAllSel        = new TH3F*[fNcentBins];
+    fh3PtJet1VsMassVsHPtAllSelMatch   = new TH3F*[fNcentBins];
     fh3PtJet1VsMassVsHPtTagged        = new TH3F*[fNcentBins];
     fh3PtJet1VsMassVsHPtTaggedMatch   = new TH3F*[fNcentBins];
     fh3PtJet1VsRatVsHPtAllSel         = new TH3F*[fNcentBins];
+    fh3PtJet1VsRatVsHPtAllSelMatch    = new TH3F*[fNcentBins];
     fh3PtJet1VsRatVsHPtTagged         = new TH3F*[fNcentBins];
     fh3PtJet1VsRatVsHPtTaggedMatch    = new TH3F*[fNcentBins];
  
@@ -124,9 +134,11 @@ namespace EmcalHJetMassAnalysis {
       fh1PtHadron[i]                       = 0;
       fh3PtHPtJDPhi[i]                     = 0;
       fh3PtJet1VsMassVsHPtAllSel[i]        = 0;
+      fh3PtJet1VsMassVsHPtAllSelMatch[i]   = 0;
       fh3PtJet1VsMassVsHPtTagged[i]        = 0;
       fh3PtJet1VsMassVsHPtTaggedMatch[i]   = 0;
       fh3PtJet1VsRatVsHPtAllSel[i]         = 0;
+      fh3PtJet1VsRatVsHPtAllSelMatch[i]    = 0;
       fh3PtJet1VsRatVsHPtTagged[i]         = 0;
       fh3PtJet1VsRatVsHPtTaggedMatch[i]    = 0;
     }
@@ -195,6 +207,11 @@ namespace EmcalHJetMassAnalysis {
       fh3PtJet1VsMassVsHPtAllSel[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsM,minM,maxM,nBinsPtH,minPtH,maxPtH);
       fOutput->Add(fh3PtJet1VsMassVsHPtAllSel[i]);
 
+      histName = TString::Format("fh3PtJet1VsMassVsHPtAllSelMatch_%d",i);
+      histTitle = TString::Format("%s;#it{p}_{T,jet1};#it{M}_{jet1};#it{p}_{T,h}",histName.Data());
+      fh3PtJet1VsMassVsHPtAllSelMatch[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsM,minM,maxM,nBinsPtH,minPtH,maxPtH);
+      fOutput->Add(fh3PtJet1VsMassVsHPtAllSelMatch[i]);
+
       histName = TString::Format("fh3PtJet1VsMassVsHPtTagged_%d",i);
       histTitle = TString::Format("%s;#it{p}_{T,jet1};#it{M}_{jet1};#it{p}_{T,h}",histName.Data());
       fh3PtJet1VsMassVsHPtTagged[i] =  new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsM,minM,maxM,nBinsPtH,minPtH,maxPtH);
@@ -210,6 +227,11 @@ namespace EmcalHJetMassAnalysis {
       histTitle = TString::Format("%s;#it{p}_{T,jet1};#it{M}_{jet1}/#it{p}_{T,jet1};#it{p}_{T,h}",histName.Data());
       fh3PtJet1VsRatVsHPtAllSel[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsR,minR,maxR,nBinsPtH,minPtH,maxPtH);
       fOutput->Add(fh3PtJet1VsRatVsHPtAllSel[i]);
+
+      histName = TString::Format("fh3PtJet1VsRatVsHPtAllSelMatch_%d",i);
+      histTitle = TString::Format("%s;#it{p}_{T,jet1};#it{M}_{jet1}/#it{p}_{T,jet1};#it{p}_{T,h}",histName.Data());
+      fh3PtJet1VsRatVsHPtAllSelMatch[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsR,minR,maxR,nBinsPtH,minPtH,maxPtH);
+      fOutput->Add(fh3PtJet1VsRatVsHPtAllSelMatch[i]);
 
       histName = TString::Format("fh3PtJet1VsRatVsHPtTagged_%d",i);
       histTitle = TString::Format("%s;#it{p}_{T,jet1};#it{M}_{jet1}/#it{p}_{T,jet1};#it{p}_{T,h}",histName.Data());
@@ -257,35 +279,43 @@ namespace EmcalHJetMassAnalysis {
       }
     }
     else if(fTriggerTrackType==kSingleInclusive) {
-      TArrayI arr; arr.Set(pCont->GetNParticles());
-      for(Int_t it = 0; it<fPtTTMin->GetSize(); it++) {
-        Int_t counter = -1;
-        arr.Reset();
-        pCont->ResetCurrentID();
-        while((vp = pCont->GetNextAcceptParticle())) {
-          if(vp->Pt()>fPtTTMin->At(it) && vp->Pt()<fPtTTMax->At(it) ) {
-            counter++;
-            arr.SetAt(pCont->GetCurrentID(),counter);
-          }
-        }
-        if(counter<0) continue;
-        //select trigger track randomly
-        fRandom->SetSeed(arr.At(0)); //random selection reproducible
-        Double_t rnd = fRandom->Uniform() * counter;
-        Int_t trigID = arr.At(TMath::FloorNint(rnd));
-        vp = pCont->GetParticle(trigID);
-        fh1PtHadron[fCentBin]->Fill(vp->Pt()); //all hadrons
-        AliEmcalJet* jet = NULL;
-        jCont->ResetCurrentID();
-        while((jet = jCont->GetNextAcceptJet())) {
-          Double_t dphi = GetDeltaPhi(vp,jet)-TMath::Pi();
-          fh3PtHPtJDPhi[fCentBin]->Fill(vp->Pt(),jet->Pt() - GetRhoVal(fContainerBase)*jet->Area(),dphi);
-          if(dphi>fDPhiHJetMax) continue;
-          FillHJetHistograms(vp->Pt(),jet);
-        }
-      }
+     for(Int_t it = 0; it<fPtTTMin->GetSize(); it++) {
+       vp = GetSingleInclusiveTT(pCont,fPtTTMin->At(it),fPtTTMax->At(it));
+       if(!vp) continue;
+       fh1PtHadron[fCentBin]->Fill(vp->Pt()); //all trigger tracks
+       AliEmcalJet* jet = NULL;
+       jCont->ResetCurrentID();
+       while((jet = jCont->GetNextAcceptJet())) {
+         Double_t dphi = GetDeltaPhi(vp,jet)-TMath::Pi();
+         fh3PtHPtJDPhi[fCentBin]->Fill(vp->Pt(),jet->Pt() - GetRhoVal(fContainerBase)*jet->Area(),dphi);
+         if(dphi>fDPhiHJetMax) continue;
+         FillHJetHistograms(vp->Pt(),jet);
+       }
+     }//trigger track types
     }
     return kTRUE;
+  }
+
+  //________________________________________________________________________
+  AliVParticle* AliAnalysisTaskEmcalHJetMass::GetSingleInclusiveTT(AliParticleContainer *pCont, Double_t ptmin, Double_t ptmax) const {
+    AliVParticle *vp;
+    TArrayI arr; arr.Set(pCont->GetNParticles());
+    arr.Reset();
+    Int_t counter = -1;
+    pCont->ResetCurrentID();
+    while((vp = pCont->GetNextAcceptParticle())) {
+      if(vp->Pt()>=ptmin && vp->Pt()<ptmax ) {
+        counter++;
+        arr.SetAt(pCont->GetCurrentID(),counter);
+      }
+    }
+    if(counter<0) return NULL;
+    //select trigger track randomly
+    fRandom->SetSeed(arr.At(0)); //random selection reproducible
+    Double_t rnd = fRandom->Uniform() * counter;
+    Int_t trigID = arr.At(TMath::FloorNint(rnd));
+    vp = pCont->GetParticle(trigID);
+    return vp;
   }
 
   //________________________________________________________________________
@@ -299,11 +329,6 @@ namespace EmcalHJetMassAnalysis {
 
     fh3PtJet1VsMassVsHPtAllSel[fCentBin]->Fill(ptJet,mJet,pt);
     fh3PtJet1VsRatVsHPtAllSel[fCentBin]->Fill(ptJet,rat,pt);
-
-    if(jet->GetTagStatus()<1 || !jet->GetTaggedJet())
-      return kFALSE;
-    fh3PtJet1VsMassVsHPtTagged[fCentBin]->Fill(ptJet,mJet,pt);
-    fh3PtJet1VsRatVsHPtTagged[fCentBin]->Fill(ptJet,rat,pt);
 
     Double_t fraction = -1.;
     if(fUseUnsubJet) {
@@ -327,6 +352,17 @@ namespace EmcalHJetMassAnalysis {
       fraction = jetCont->GetFractionSharedPt(jet);
     }
   
+    if(fMinFractionShared>0. && fraction>fMinFractionShared) {
+      fh3PtJet1VsMassVsHPtAllSelMatch[fCentBin]->Fill(ptJet,mJet,pt);
+      fh3PtJet1VsRatVsHPtAllSelMatch[fCentBin]->Fill(ptJet,rat,pt);
+    }
+
+    if(jet->GetTagStatus()<1 || !jet->GetTaggedJet())
+      return kFALSE;
+
+    fh3PtJet1VsMassVsHPtTagged[fCentBin]->Fill(ptJet,mJet,pt);
+    fh3PtJet1VsRatVsHPtTagged[fCentBin]->Fill(ptJet,rat,pt);
+
     if(fMinFractionShared>0. && fraction>fMinFractionShared) {
       fh3PtJet1VsMassVsHPtTaggedMatch[fCentBin]->Fill(ptJet,mJet,pt);
       fh3PtJet1VsRatVsHPtTaggedMatch[fCentBin]->Fill(ptJet,rat,pt);
