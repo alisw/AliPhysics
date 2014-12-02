@@ -388,6 +388,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"Nacc",                   "N_{acc} #cbar_{#||{#eta}<0.9}",                      ""},
   {"MatchEffITSTPC",         "N_{trk}^{TPC}/N_{trk}^{ITS} #cbar_{#||{#eta}<0.9}",  ""},
   {"NaccTrcklts",            "N_{acc. trkl} #cbar_{#||{#eta}<1.6}",                ""},
+  {"NaccTrcklts10",          "N_{acc. trkl} #cbar_{#||{#eta}<1.0}",                ""},
   {"NaccTrcklts0916",        "N_{acc. trkl} #cbar_{-1.6<#eta<-0.9}^{0.9<#eta<1.6}",""},
   
   {"NaccTrckltsEsd05",       "N_{acc. trkl} #cbar_{#||{#eta}<0.5} (SPD)",          ""},

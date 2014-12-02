@@ -1263,8 +1263,9 @@ Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t 
       iCount++;
       
       if(tr->Pt()>=minT && tr->Pt()<maxT){
+        if(tr->Pt()<20){
       	triggers[im]=iCount-1;
-        im=im+1;
+        im=im+1;}
 	if(tr->Pt()>=20.){triggers2[im2]=iCount-1;
 	  im2=im2+1;}
 

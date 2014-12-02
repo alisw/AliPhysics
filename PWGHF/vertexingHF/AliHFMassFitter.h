@@ -26,8 +26,12 @@ class TVirtualPad;
 class AliHFMassFitter : public TNamed {
 
  public:
+
+  enum ETypeOfBkg{ kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 };
+  enum ETypeOfSgn{ kGaus=0, k2Gaus=1  };
+
   AliHFMassFitter();
-  AliHFMassFitter(const TH1F* histoToFit, Double_t minvalue, Double_t maxvalue, Int_t rebin=1,Int_t fittypeb=0,Int_t fittypes=0);
+  AliHFMassFitter(const TH1F* histoToFit, Double_t minvalue, Double_t maxvalue, Int_t rebin=1, Int_t fittypeb=kExpo, Int_t fittypes=kGaus);
   virtual ~AliHFMassFitter();
 
   AliHFMassFitter(const AliHFMassFitter &mfit);
@@ -152,7 +156,7 @@ class AliHFMassFitter : public TNamed {
   TString   fFitOption;        // L, LW or Chi2
   TList*    fContourGraph;     // TList of TGraph containing contour plots
 
-  ClassDef(AliHFMassFitter,7); // class for invariant mass fit
+  ClassDef(AliHFMassFitter,8); // class for invariant mass fit
 };
 
 #endif

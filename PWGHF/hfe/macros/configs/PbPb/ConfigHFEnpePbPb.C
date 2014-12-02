@@ -45,20 +45,21 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
                 UChar_t TPCcl=70, UChar_t TPCclPID = 80, 
                 UChar_t ITScl=3, Double_t DCAxy=1000., Double_t DCAz=1000., 
                 Double_t* tpcdEdxcutlow=NULL, Double_t* tpcdEdxcuthigh=NULL, 
-                Double_t TOFs=3., Int_t TOFmis=0, 
+                Double_t TOFs=3., Int_t TOFmis=0,
+		Double_t ITSs=0.,  
                 Int_t itshitpixel = 0, Double_t itsChi2PerClusters, Double_t tpcClShared,
-                Bool_t etacor = kFALSE, Bool_t multicor = kFALSE, 
-		        Double_t etami=-0.8, Double_t etama=0.8,
+                Bool_t etacor = kFALSE, Bool_t multicor = kFALSE,Bool_t toflast = kFALSE,
+	        Double_t etami=-0.8, Double_t etama=0.8,
                 Double_t assETAm=-0.8, Double_t assETAp=0.8,
                 Int_t assITS=2, 
                 Int_t assTPCcl=100, Int_t assTPCPIDcl=80, 
                 Double_t assDCAr=1.0, Double_t assDCAz=2.0, 
                 Double_t *assTPCSminus=NULL, Double_t *assTPCSplus=NULL, 
 	        Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE,
-                Bool_t rejectMCFake = kFALSE)
+                Int_t weightlevelback = -1,Bool_t usekfparticle = kFALSE)
 {
   Bool_t kAnalyseTaggedTracks = kFALSE;
-  Bool_t kApplyPreselection = kTRUE;
+  Bool_t kApplyPreselection = kFALSE;
 
   //***************************************//
   //        Setting up the HFE cuts        //
@@ -78,7 +79,9 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
   hfecuts->SetEtaRange(etami,etama);
   hfecuts->SetFractionOfSharedTPCClusters(tpcClShared);
   hfecuts->SetAcceptKinkMothers();
-  if(isAOD) hfecuts->SetAODFilterBit(2);
+  //if(isAOD) hfecuts->SetAODFilterBit(2); // 2010
+  if(isAOD) hfecuts->SetAODFilterBit(4); // 2011
+  
   
   if((itshitpixel==AliHFEextraCuts::kAny) || (itshitpixel==AliHFEextraCuts::kSecond))     
   hfecuts->SetProductionVertex(0,7,0,7);
@@ -87,6 +90,10 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
   hfecuts->SetUseMixedVertex(kTRUE);
   hfecuts->SetVertexRange(10.);
 
+  //Bool_t ipSig = kFALSE;
+  //hfecuts->SetIPcutParam(0.0054,0.078,-0.56,0,ipSig,ipCharge,ipOpp);
+  //if(isBeauty || releasemcvx) hfecuts->SetProductionVertex(0,100,0,100);
+
   // TOF settings:
   Int_t usetof=0;
   Bool_t kTOFmis=kFALSE;
@@ -94,13 +101,20 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
     usetof = 1;
     printf("CONFIGURATION FILE: TOF is used \n");
     hfecuts->SetTOFPIDStep(kTRUE);
-    if(useMC) hfecuts->SetMatchTOFLabel(kTRUE);
+    if(useMC  && (!isAOD)) hfecuts->SetMatchTOFLabel(kTRUE);
     //if(useMC) hfecuts->SetMatchTOFLabel(kFALSE);
     printf("CONFIGURATION FILE: TOF PID step is requested !!!! \n");
     if (TOFmis>0){
       kTOFmis = kTRUE;
       printf("CONFIGURATION FILE: TOF mismatch rejection is set ON \n");
     }
+  }
+
+  // ITS settings:
+  Int_t useits=0;
+  if (ITSs>0.){
+    useits = 1;
+    printf("CONFIGURATION FILE: ITS is used \n");
   }
 
   //***************************************//
@@ -112,12 +126,15 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
   task->SetPbPbAnalysis();
   task->SetRemovePileUp(kFALSE);
   task->SetHFECuts(hfecuts);
-  task->SetRejectKinkMother(kFALSE);
   task->GetPIDQAManager()->SetHighResolutionHistos();
-  if(useMC && rejectMCFake) task->SetRejectMCFakeTracks(kTRUE); // MC label negative
+  task->SetRejectKinkMother(kFALSE);
+  //if(useMC && rejectMCFake) task->SetRejectMCFakeTracks(kTRUE); // MC label negative
 
   // Determine the centrality estimator
   task->SetCentralityEstimator("V0M");
+
+  // Get weights
+  task->SetWeightHist();
 
   //***************************************//
   //        Prepare preselection           //
@@ -167,13 +184,30 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
   AliHFEpid *pid = task->GetPID();
   if(useMC) pid->SetHasMCData(kTRUE);
 
-  if (usetof){
-    pid->AddDetector("TOF", 0);
-    pid->AddDetector("TPC", 1);
-  } else {
+  if (usetof && (useits<1)){
+    if(toflast){
+      pid->AddDetector("TPC", 0);
+      pid->AddDetector("TOF", 1);
+    } else {
+      pid->AddDetector("TOF", 0);
+      pid->AddDetector("TPC", 1);
+    }
+  } else if(usetof && (useits>0)){
+    if(toflast){
+      pid->AddDetector("ITS", 0);
+      pid->AddDetector("TPC", 1);
+      pid->AddDetector("TOF", 2);
+     
+    } else {
+      pid->AddDetector("TOF", 0);
+      pid->AddDetector("ITS", 1);
+      pid->AddDetector("TPC", 2);
+    }
+  }
+  else {
     pid->AddDetector("TPC", 0);
   }
-  
+
   // Configure TPC PID
   // do the identical thing in data and MC
   Double_t paramsTPCdEdxcutlow[12] ={0.0, 0.0, 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
@@ -215,6 +249,13 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
     if (kTOFmis){
       tofpid->SetRejectTOFmismatch();
     }
+    if(toflast) tofpid->SetGenerateTOFmismatch(); // Makes only sense if TOF is the last detector
+  }
+
+  // Configure ITS PID
+  if (useits>0){
+    AliHFEpidITS *itspid = pid->GetDetPID(AliHFEpid::kITSpid);
+    itspid->SetITSnSigma(1.);
   }
 
   // To make different upper TOF cut to see contamination effect
@@ -250,7 +291,8 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
   hfeBackgroundCuts->SetMinNClustersTPC(assTPCcl);
   hfeBackgroundCuts->SetMinNClustersTPCPID(assTPCPIDcl);
   hfeBackgroundCuts->SetMaxImpactParam(assDCAr,assDCAz);
-  if(isAOD) hfeBackgroundCuts->SetAODFilterBit(0);
+  if(isAOD) hfeBackgroundCuts->SetAODFilterBit(0); // 20102011
+  if(usekfparticle) backe->SetAlgorithmMA(kTRUE);
   //hfeBackgroundCuts->SetQAOn();			        // QA
 
   AliHFEpid *pidbackground = backe->GetPIDBackground();
@@ -282,8 +324,15 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
 
   // apply opening angle cut to reduce file size
   backe->SetMaxInvMass(0.3);
+  backe->SetStudyRadius(kTRUE);
   backe->SetPtBinning(sizept, ptbinning);
   backe->SetEtaBinning(sizeeta, etabinning);
+
+  // MC weight
+  if(useMC) {
+    //printf("test put weight %d\n",weightlevelback);
+    if((weightlevelback >=0) && (weightlevelback < 3)) backe->SetWithWeights(weightlevelback);
+  }
 
   task->SetHFEBackgroundSubtraction(backe);
 

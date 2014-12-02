@@ -86,7 +86,8 @@ void *AddTaskDFilterAndCorrelations(
   taskCorrName+=cutType;
   taskCorrName+=Form("PTj%.0f",jptcut);
   taskCorrName+=sR;
-  
+  taskCorrName+=Form("Typ%d",typeDjet);
+
   AliAnalysisTaskFlavourJetCorrelations *taskCorr = new AliAnalysisTaskFlavourJetCorrelations(taskCorrName.Data(), 
      analysiscuts, cand);
   
@@ -157,7 +158,10 @@ void *AddTaskDFilterAndCorrelations(
   
   nameContainerC0+=sR;
   nameContainerC1+=sR;
-  
+  if(typeDjet!=2) { //no particular name for default
+     nameContainerC0+=Form("Typ%d",typeDjet);
+     nameContainerC1+=Form("Typ%d",typeDjet);
+  }
   // ------ input data ------
   AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
   cinput0->SetName(Form("in%s%s",candname.Data(),suffix.Data()));
