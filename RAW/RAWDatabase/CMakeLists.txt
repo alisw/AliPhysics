@@ -13,20 +13,33 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-# Module
+# Mandatory fields, set empty if not needed
+# MODULE - target name
+# MODULE_SRCS - list of sources that belong to the library
+# MODULE_HDRS - list of headers that belong to the library
+# MODULE_HDRS_INSTALL - list of headers that will be installed
+# MODULE_INCLUDES - list of include directories
+#                   ROOT and current folder are taken by default
+#                   To add extra include folders use either 
+#                       - include_directories(${MODULE} FOLDER)
+#                       - target_include_directories(${MODULE}-object FOLDER)
+# MODULE_ROOT_DEPENDENCIES
+# MODULE_ALIROOT_DEPENDENCIES
+# MODULE_COMPILE_FLAGS - compilation flags for the ${MODULE}-object target
+# MODULE_LINK_FLAGS - linking flags for ${MODULE} target
+#                   - other flags accesible thorough standard cmake procedures
+#
+# Target/directory properties are accesible thorough cmake standard procedures
+# Target object name = ${MODULE}-object
+# Target library name = ${MODULE}
+# Shared and static library targets are using the same object target
+
+
+# Module name
 set(MODULE RAWDatabase)
 
-# Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/RAW/${MODULE})
-
-# Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
-                   )
-
 # Sources in alphabetical order
-set(SRCS
+set(MODULE_SRCS
     AliAltroMapping.cxx
     AliCaloAltroMapping.cxx
     AliRawDataArray.cxx
@@ -45,44 +58,30 @@ set(SRCS
    )
 
 # Headers from sources
-string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+string(REPLACE ".cxx" ".h" MODULE_HDRS "${MODULE_SRCS}")
 
 # Extra headers in alphabetical order
-set(HDRS ${HDRS}
+set(MODULE_HDRS ${MODULE_HDRS}
     AliRawDataHeader.h
     AliRawDataHeaderV3.h
     AliRawEventHeaderVersions.h
    )
 
-# Generate the dictionary
-# It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
-get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+# List of headers to be installed
+set(MODULE_HDRS_INSTALL ${MODULE_HDRS})
 
-set(ROOT_DEPENDENCIES Core Hist RIO)
-set(ALIROOT_DEPENDENCIES ESD STEERBase)
+# List of include folders
+set(MODULE_INCLUDES
+        STEER/ESD
+        STEER/STEERBase
+   )
 
-# Generate the ROOT map
-# Dependecies
-set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
-generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+# Root dependecies - please solve all symbols by searching them inside the *.rootmap files
+set(MODULE_ROOT_DEPENDENCIES Core Hist RIO)
+# AliRoot dependencies
+set(MODULE_ALIROOT_DEPENDENCIES ESD STEERBase)
 
-# Create an object to be reused in case of static libraries 
-# Otherwise the sources will be compiled twice
-add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
-# Follow headers dependencies
-add_dependencies(${MODULE}-object ${ALIROOT_DEPENDENCIES})
-# Add a library to the project using the object
-add_library(${MODULE} SHARED $<TARGET_OBJECTS:RAWDatabase-object>)
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
-
-# Setting the correct headers for the object as gathered from the dependencies
-target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
-set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_PROPERTY:${MODULE},COMPILE_DEFINITIONS>)
-
-# Public include folders that will be propagated to the dependecies
-target_include_directories(${MODULE} PUBLIC ${incdirs})
-
+# Compilation and linking flags
 set(MODULE_COMPILE_FLAGS)
 set(MODULE_LINK_FLAGS)
 
@@ -99,34 +98,10 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
     set(MODULE_LINK_FLAGS "-undefined dynamic_lookup ${MODULE_LINK_FLAGS}")
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
-# Setting compilation flags for the object
-set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
-# Setting the linking flags for the library
-set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-# Installation
-install(TARGETS ${MODULE}
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib)
-
-install(FILES ${HDRS} DESTINATION include)
+# Generating the static library
+generate_shared_library()
 
 # Static version if DA enabled
 if(ALIROOT_STATIC)
-    add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:RAWDatabase-object>)
-    
-    # list of shared dependencies / the name of the variable containing the list of static ones
-    generate_static_dependencies("${ALIROOT_DEPENDENCIES}" "STATIC_ALIROOT_DEPENDENCIES")
-    target_link_libraries(${MODULE}-static ${STATIC_ALIROOT_DEPENDENCIES} Root)
-    
-    # Public include folders that will be propagated to the dependecies
-    target_include_directories(${MODULE}-static PUBLIC ${incdirs})
-
-    set_target_properties(${MODULE}-static PROPERTIES OUTPUT_NAME ${MODULE})
-    set_target_properties(${MODULE}-static PROPERTIES LINK_FLAGS "-Wl,--whole-archive")
-
-    # Installation
-    install(TARGETS ${MODULE}-static
-            ARCHIVE DESTINATION lib
-            LIBRARY DESTINATION lib)
+    generate_static_library()
 endif(ALIROOT_STATIC)
