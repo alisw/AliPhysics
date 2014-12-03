@@ -15,5 +15,6 @@
 
 # Include the libraries
 add_subdirectory (Tools)
+add_subdirectory (Glauber)
 
 message(STATUS "PWG enabled")
