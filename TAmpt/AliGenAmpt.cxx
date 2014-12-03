@@ -234,6 +234,11 @@ void AliGenAmpt::Init()
   fAmpt->SetReactionPlaneAngle(0.0);
 }
 
+void AliGenAmpt::SetSeed(UInt_t seed)
+{
+  AliAmptRndm::GetAmptRandom()->SetSeed(seed);
+}
+
 void AliGenAmpt::Generate()
 {
   // Generate one event

@@ -149,6 +149,7 @@ Bool_t AliMCGenHandler::Init(Option_t* /*opt*/)
 
       Printf("AliMCGenHandler::Init: Using seed: %d", fSeed);
       gRandom->SetSeed(fSeed);
+      fGenerator->SetSeed(fSeed);
     }
 
     AliRunLoader* rl = AliRunLoader::Open("galice.root","FASTRUN","recreate");
