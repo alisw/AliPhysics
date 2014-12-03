@@ -108,10 +108,15 @@ private:
     TH2F                  *fHistBetavsPTOFbeforePID;    //! another hist
     TH2F                  *fHistdEdxvsPTPCbeforePID;    //! another hist
     TH3F                  *fhistNsigmaP;        //! another hist
-    TH3F                  *fhistNsigmaPt;       //! another hist
+    TH3F                  *fhistNsigmaPTPCTOF;        //! another hist
     TH2F                  *fhistTPCnSigmavsP;   //! another hist
     TH2F                  *fHistBetavsPTOFafterPID;     //! another hist
     TH2F                  *fHistdEdxvsPTPCafterPID;     //! another hist
+    TH2F                  *fHistBetavsPTOFafterPIDTPCTOF; //! another hist
+    TH2F                  *fHistdEdxvsPTPCafterPIDTPCTOF; //! another hist
+    TH2F                  *fHistBetavsPTOFafterPIDTPConly; //! another hist
+    TH2F                  *fHistdEdxvsPTPCafterPIDTPConly; //! another hist
+
     TCutG                 *fCutContour[150];    //! another hist
     TGraph                *fCutGraph[150];      //! grpahs
     
