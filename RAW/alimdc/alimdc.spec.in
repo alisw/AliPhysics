@@ -2,7 +2,7 @@
 
 # RPM Naming Tags
 Name: alimdc
-Version:  @ALIROOT_BRANCH_SPEC@
+Version:  @ALIROOT_VERSION_RPM@
 Release: @GIT_SHORT_SHA1@
 Summary: AliRoot MDC static libraries
 License: CERN Alice Offline
@@ -24,10 +24,14 @@ Package contains both ROOT and AliRoot static libs needed by mStreamRecorder
 in order to ROOT-ify the incoming raw data. The package version correspond to
 the AliRoot one.
 
+# Turning off the Fascist build policy
+%define _unpackaged_files_terminate_build 0
+
 %files
 %defattr ( -,root,root ) 
 %{prefix}/lib/libAliMDC.a
 %{prefix}/lib/libRoot.a
+%{prefix}/lib/libRootExtra.a
 %{prefix}/lib/libpcre.a
 %{prefix}/lib/liblzma.a
 %{prefix}/lib/libfreetype.a

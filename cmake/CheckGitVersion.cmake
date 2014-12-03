@@ -21,6 +21,7 @@
 #  - GIT_SHORT_SHA1 - current hash in the short format
 #
 #  - ALIROOT_VERSION - name of the branch/tag
+#  - ALIROOT_VERSION_RPM - name of the branch/tag in rpm format, - replaced with .
 #  - ALIROOT_REVISION - short sha1
 if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
     include(GetGitRevisionDescription)
@@ -77,5 +78,3 @@ endif(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
 
 configure_file(${PROJECT_SOURCE_DIR}/cmake/ARVersion.h.tmp ${CMAKE_BINARY_DIR}/version/ARVersion.h @ONLY)
 install(FILES ${PROJECT_BINARY_DIR}/version/ARVersion.h DESTINATION include)
-
-string (REPLACE "-" "." ALIROOT_BRANCH_SPEC "${ALIROOT_BRANCH}")
