@@ -14,8 +14,4 @@
 # **************************************************************************
 
 # Include the libraries
-add_subdirectory (Tools)
-add_subdirectory (Glauber)
-add_subdirectory (FLOW)
-
-message(STATUS "PWG enabled")
+add_subdirectory (Base)
