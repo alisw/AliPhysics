@@ -126,6 +126,7 @@ AliFMDParameters::AliFMDParameters()
   SetStripRange();
   SetGain();
   fAltroMap = new AliFMDAltroMapping;
+  fAltroMap->SetBit(TObject::kCanDelete);
 }
 
 //__________________________________________________________________
@@ -841,7 +842,7 @@ AliFMDParameters::InitAltroMap(AliFMDPreprocessor* pp)
   // Parameters:
   //    pp Pre-processor if called from shuttle
   //
-  if (fAltroMap) { 
+  if (fAltroMap && fAltroMap->TestBit(TObject::kCanDelete)) { 
     delete fAltroMap;
     fAltroMap = 0;
   }
@@ -849,10 +850,12 @@ AliFMDParameters::InitAltroMap(AliFMDPreprocessor* pp)
   if (hwMap) {
     AliFMDDebug(5, ("Got ALTRO map from CDB"));
     fAltroMap = dynamic_cast<AliFMDAltroMapping*>(hwMap->GetObject());
+    if (fAltroMap) fAltroMap->ResetBit(TObject::kCanDelete);
   }
   if (!fAltroMap) {
     AliError("Invalid ALTRO map object from CDB");
     fAltroMap = new AliFMDAltroMapping;
+    fAltroMap->SetBit(TObject::kCanDelete);
     // return kAltroMap;
   }
   return 0;
