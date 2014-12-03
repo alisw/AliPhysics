@@ -159,7 +159,7 @@ Bool_t AliAnalysisTaskTriggerRejection::FillHistograms()
   if(leadJet1) ptLeadJet1 = leadJet1->Pt() - GetRhoVal(fContainerFull)*leadJet1->Area();
   if(leadJet2) ptLeadJet2 = leadJet2->Pt() - GetRhoVal(fContainerCharged)*leadJet2->Area();
 
-  Double_t VZEROAmp = (Double_t)(InputEvent()->GetVZEROData()->GetMTotV0A() + InputEvent()->GetVZEROData()->GetMTotV0C());
+  Double_t VZEROAmp = (Double_t)(InputEvent()->GetVZEROData()->GetTriggerChargeA() + InputEvent()->GetVZEROData()->GetTriggerChargeC());
 
   //cent;V0mult;ptjet1;ptjet2;Epatch;ADCpatch;EtaPatch;PhiPatch
   Double_t var[8] = {
@@ -168,7 +168,7 @@ Bool_t AliAnalysisTaskTriggerRejection::FillHistograms()
     ptLeadJet1,
     ptLeadJet2,
     fMaxPatch->GetPatchE(),
-    fMaxPatch->GetADCAmp(),
+    (Double_t)fMaxPatch->GetADCAmp(),
     fMaxPatch->GetEtaGeo(),
     fMaxPatch->GetPhiGeo()
   };

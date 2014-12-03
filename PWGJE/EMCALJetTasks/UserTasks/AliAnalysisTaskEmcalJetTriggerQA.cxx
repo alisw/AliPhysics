@@ -207,6 +207,8 @@ void AliAnalysisTaskEmcalJetTriggerQA::FillTriggerPatchHistos() {
   //Fill trigger patch histos for main trigger
 
   AliEmcalTriggerPatchInfo *patch = GetMainTriggerPatch(fMainTrigCat,fMainTrigSimple);
+  fMaxPatchEnergy = 0;
+  fMaxPatchADCEnergy = 0;
   if(patch) {
     fMaxPatchEnergy = patch->GetPatchE();
     fMaxPatchADCEnergy = patch->GetADCAmpGeVRough();
@@ -716,7 +718,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
   fh3PtLeadJet2VsPatchEnergy->Fill(ptLeadJet2,fMaxPatchEnergy,fTriggerType);
 
   // Get VZERO amplitude
-  Float_t VZEROAmp = InputEvent()->GetVZEROData()->GetMTotV0A() + InputEvent()->GetVZEROData()->GetMTotV0C();  // Need to check whether this is close to the online amplitude or not
+  Float_t VZEROAmp = InputEvent()->GetVZEROData()->GetTriggerChargeA() + InputEvent()->GetVZEROData()->GetTriggerChargeC();
 
   fh3PtLeadJet1PatchEnergyVZEROAmp->Fill(ptLeadJet1,fMaxPatchEnergy,VZEROAmp);
   fh3PtLeadJet1RawPatchEnergyVZEROAmp->Fill(ptLeadJet1,fMaxPatchADCEnergy,VZEROAmp);

@@ -176,7 +176,12 @@ private:
    TH1D *fhNofMultipleTriggersConeLow; // The number of additional triggers in events with at least one trigger 
    TH1D *fhNofMultipleTriggersConeHigh; // The number of additional triggers in events with at least one trigger 
    TH1D *fhDeltaRMultTriggers; // Angular distributions between trigger and assoc
-   TH1D *fhDeltaPhiMultTriggers; // Delta phi between trigger and assoc
+   TH1D *fhDeltaPhiMultTriggersLow; // Delta phi between trigger and assoc single incl trigger
+   TH1D *fhDeltaPhiMultTriggersHigh; // Delta phi between trigger and assoc single incl triger
+
+   TH1D *fhDeltaPhiMultTriggersInclLow; // Delta phi between trigger and assoc  incl trigg
+   TH1D *fhDeltaPhiMultTriggersInclHigh; // Delta phi between trigger and assoc incl trigg
+   TH1D *fhInclTrigCounter; // count the total number of inclusive triggers
 
    //THnSparse *fHJetPtRaw;      //bg unsubtr. vs bg subtr. pT spectrum of jets vs jet area
    //THnSparse *fHLeadingJetPtRaw; //bg unsubtr. vs bg. subtr. leading jet pT vs area 
@@ -189,6 +194,8 @@ private:
    TH1D      *fhJetPtGen;           //generated pT spectrum of jets  
    TH1D      *fhJetPtSubUeMedianGen; //generated pT spectrum of jets with subtracted kT median  
    TH1D      *fhJetPtSubUeConeGen;    //generated pT spectrum of jets with perp cone
+   TH2D      *fhJetPtResolutionVsPtGen; // pTjet,rec-pTjet,gen/ pTjet,gen  versus pT jet,gen
+   TH2D      *fhJetPtResolutionVsPtConeGen;//pTjet,rec-pTjet,gen/ pTjet,gen  versus pT jet,gen
    TH2D      *fhJetPtGenChargVsJetPtGenFull; //generated pT spectrum of full jets
    TH1D      *fhJetPtGenFull; // generated pT spectrum of full jets
    TH2F      *fh2NtriggersGen; //trigger pT versus centrality in generator level
@@ -215,7 +222,12 @@ private:
    TH1D *fhNofMultipleTriggersConeGenLow; // The number of additional triggers in events with at least one trigger in R<0.4 15-20
    TH1D *fhNofMultipleTriggersConeGenHigh; // The number of additional triggers in events with at least one trigger in R<0.4 20-50 
    TH1D *fhDeltaRMultTriggersGen; // Angular distributions between trigger and assoc
-   TH1D *fhDeltaPhiMultTriggersGen; // Angular distributions between trigger and assoc
+   TH1D *fhDeltaPhiMultTriggersGenLow; // Angular distributions between trigger and assoc  15-20
+   TH1D *fhDeltaPhiMultTriggersGenHigh; // Angular distributions between trigger and assoc 20-50
+
+   TH1D *fhDeltaPhiMultTriggersInclGenLow; // Delta phi between trigger and assoc  incl trigg
+   TH1D *fhDeltaPhiMultTriggersInclGenHigh; // Delta phi between trigger and assoc incl trigg
+   TH1D *fhInclTrigCounterGen; // count the total number of inclusive triggers
 
    TH1D *fhNofMultipleTriggersConeGenA; // The number of additional triggers in events with at least one trigger in R<0.4 
    TH1D *fhNofMultipleTriggersConeGenALow; // The number of additional triggers in events with at least one trigger in R<0.4 15-20 
@@ -262,7 +274,7 @@ private:
 
    Bool_t fDoubleBinning; //0=use 2 GeV/c bins  ; 1= use 1 GeV/c bins
  
-   ClassDef(AliAnalysisTaskJetCorePP, 15);  //has to end with number larger than 0
+   ClassDef(AliAnalysisTaskJetCorePP, 16);  //has to end with number larger than 0
 };
 
 #endif

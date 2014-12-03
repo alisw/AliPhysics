@@ -610,8 +610,10 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
     return;
   
   // run the trigger algo, stepping by 8 towers (= 4 trigger channels)
-  for (Int_t i = 0; i < 32; i += 4) {
-    for (Int_t j = 0; j < 48; j += 4) {
+  Int_t maxCol = 48;
+  Int_t maxRow = fGeom->GetNTotalTRU()*2;
+  for (Int_t i = 0; i < (maxCol-16); i += 4) {
+    for (Int_t j = 0; j < (maxRow-16); j += 4) {
       Int_t tSum  = 0;
       Int_t tBits = 0;
       // window
@@ -640,8 +642,8 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
   } // trigger algo
   
   // 4x4 trigger algo, stepping by 2 towers (= 1 trigger channel)
-  for (Int_t i = 0; i < 46; ++i) {
-    for (Int_t j = 0; j < 62; ++j) {
+  for (Int_t i = 0; i < (maxCol-2); ++i) {
+    for (Int_t j = 0; j < (maxRow-2); ++j) {
       Int_t tSum = 0;
       Int_t tBits = 0;
       

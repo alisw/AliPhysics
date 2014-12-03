@@ -68,7 +68,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s()
   : AliAnalysisTaskSE(),fType(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fRunSystematics(kFALSE),fPIDResponse(0),fJPsiTree(0),fPsi2sTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
     fTOFtrig1(0), fTOFtrig2(0),
-    fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),
+    fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fSpdVtxContrib(0),
     fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
@@ -91,7 +91,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name)
   : AliAnalysisTaskSE(name),fType(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fRunSystematics(kFALSE),fPIDResponse(0),fJPsiTree(0),fPsi2sTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
     fTOFtrig1(0), fTOFtrig2(0),
-    fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),
+    fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fSpdVtxContrib(0),
     fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
@@ -137,6 +137,8 @@ void AliAnalysisTaskUpcPsi2s::Init()
 	fPIDTOFProton[i] = -666;
 	
 	fTriggerInputsMC[i] = kFALSE;
+	
+	fIsVtxContributor[i] = kFALSE;
 	}
   for(Int_t i=0; i<3; i++){
   	fVtxPos[i] = -666; 
@@ -203,22 +205,25 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fJPsiTree ->Branch("fNtracklets", &fNtracklets, "fNtracklets/s");
   fJPsiTree ->Branch("fNLooseTracks", &fNLooseTracks, "fNLooseTracks/s");
   fJPsiTree ->Branch("fVtxContrib", &fVtxContrib, "fVtxContrib/I");
+  fJPsiTree ->Branch("fSpdVtxContrib", &fSpdVtxContrib, "fSpdVtxContrib/I");
   
   fJPsiTree ->Branch("fTOFtrig1", &fTOFtrig1, "fTOFtrig1/O");
   fJPsiTree ->Branch("fTOFtrig2", &fTOFtrig2, "fTOFtrig2/O");
-  fJPsiTree ->Branch("fTOFphi", &fTOFphi[0], "fTOFphi[4]/D");
+  fJPsiTree ->Branch("fTOFphi", &fTOFphi[0], "fTOFphi[2]/D");
   
-  fJPsiTree ->Branch("fPIDTPCMuon", &fPIDTPCMuon[0], "fPIDTPCMuon[4]/D");
-  fJPsiTree ->Branch("fPIDTPCElectron", &fPIDTPCElectron[0], "fPIDTPCElectron[4]/D");
-  fJPsiTree ->Branch("fPIDTPCPion", &fPIDTPCPion[0], "fPIDTPCPion[4]/D");
-  fJPsiTree ->Branch("fPIDTPCKaon", &fPIDTPCKaon[0], "fPIDTPCKaon[4]/D");
-  fJPsiTree ->Branch("fPIDTPCProton", &fPIDTPCProton[0], "fPIDTPCProton[4]/D");
+  fJPsiTree ->Branch("fPIDTPCMuon", &fPIDTPCMuon[0], "fPIDTPCMuon[2]/D");
+  fJPsiTree ->Branch("fPIDTPCElectron", &fPIDTPCElectron[0], "fPIDTPCElectron[2]/D");
+  fJPsiTree ->Branch("fPIDTPCPion", &fPIDTPCPion[0], "fPIDTPCPion[2]/D");
+  fJPsiTree ->Branch("fPIDTPCKaon", &fPIDTPCKaon[0], "fPIDTPCKaon[2]/D");
+  fJPsiTree ->Branch("fPIDTPCProton", &fPIDTPCProton[0], "fPIDTPCProton[2]/D");
   
-  fJPsiTree ->Branch("fPIDTOFMuon", &fPIDTOFMuon[0], "fPIDTOFMuon[4]/D");
-  fJPsiTree ->Branch("fPIDTOFElectron", &fPIDTOFElectron[0], "fPIDTOFElectron[4]/D");
-  fJPsiTree ->Branch("fPIDTOFPion", &fPIDTOFPion[0], "fPIDTOFPion[4]/D");
-  fJPsiTree ->Branch("fPIDTOFKaon", &fPIDTOFKaon[0], "fPIDTOFKaon[4]/D");
-  fJPsiTree ->Branch("fPIDTOFProton", &fPIDTOFProton[0], "fPIDTOFProton[4]/D");
+  fJPsiTree ->Branch("fPIDTOFMuon", &fPIDTOFMuon[0], "fPIDTOFMuon[2]/D");
+  fJPsiTree ->Branch("fPIDTOFElectron", &fPIDTOFElectron[0], "fPIDTOFElectron[2]/D");
+  fJPsiTree ->Branch("fPIDTOFPion", &fPIDTOFPion[0], "fPIDTOFPion[2]/D");
+  fJPsiTree ->Branch("fPIDTOFKaon", &fPIDTOFKaon[0], "fPIDTOFKaon[2]/D");
+  fJPsiTree ->Branch("fPIDTOFProton", &fPIDTOFProton[0], "fPIDTOFProton[2]/D");
+  
+  fJPsiTree ->Branch("fIsVtxContributor", &fIsVtxContributor[0], "fIsVtxContributor[2]/O");
   
   fJPsiTree ->Branch("fVtxPos", &fVtxPos[0], "fVtxPos[3]/D");
   fJPsiTree ->Branch("fVtxErr", &fVtxErr[0], "fVtxErr[3]/D");
@@ -260,6 +265,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fPsi2sTree ->Branch("fNtracklets", &fNtracklets, "fNtracklets/s");
   fPsi2sTree ->Branch("fNLooseTracks", &fNLooseTracks, "fNLooseTracks/s");
   fPsi2sTree ->Branch("fVtxContrib", &fVtxContrib, "fVtxContrib/I");
+  fPsi2sTree ->Branch("fSpdVtxContrib", &fSpdVtxContrib, "fSpdVtxContrib/I");
   
   fPsi2sTree ->Branch("fTOFtrig1", &fTOFtrig1, "fTOFtrig1/O");
   fPsi2sTree ->Branch("fTOFtrig2", &fTOFtrig2, "fTOFtrig2/O");
@@ -276,6 +282,8 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fPsi2sTree ->Branch("fPIDTOFPion", &fPIDTOFPion[0], "fPIDTOFPion[4]/D");
   fPsi2sTree ->Branch("fPIDTOFKaon", &fPIDTOFKaon[0], "fPIDTOFKaon[4]/D");
   fPsi2sTree ->Branch("fPIDTOFProton", &fPIDTOFProton[0], "fPIDTOFProton[4]/D");
+  
+  fPsi2sTree ->Branch("fIsVtxContributor", &fIsVtxContributor[0], "fIsVtxContributor[4]/O");
   
   fPsi2sTree ->Branch("fVtxPos", &fVtxPos[0], "fVtxPos[3]/D");
   fPsi2sTree ->Branch("fVtxErr", &fVtxErr[0], "fVtxErr[3]/D");
@@ -846,16 +854,10 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   
   //SPD primary vertex
   AliAODVertex *fSPDVertex = aod->GetPrimaryVertexSPD();
-  if(fSPDVertex->GetNContributors()>0){
-  	fSpdVtxPos[0] = fSPDVertex->GetX();
-	fSpdVtxPos[1] = fSPDVertex->GetY();
-	fSpdVtxPos[2] = fSPDVertex->GetZ();
-	}
-  else{
-  	fSpdVtxPos[0] = -666;
-	fSpdVtxPos[1] = -666;
-	fSpdVtxPos[2] = -666;
-  	}
+  fSpdVtxContrib = fSPDVertex->GetNContributors();
+  fSpdVtxPos[0] = fSPDVertex->GetX();
+  fSpdVtxPos[1] = fSPDVertex->GetY();
+  fSpdVtxPos[2] = fSPDVertex->GetZ();
 
   //Tracklets
   fNtracklets = aod->GetTracklets()->GetNumberOfTracklets();
@@ -914,7 +916,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   
   fJPsiAODTracks->Clear("C");
   if(nGoodTracks == 2){
-  
+
    	  TDatabasePDG *pdgdat = TDatabasePDG::Instance();
 	  TParticlePDG *partMuon = pdgdat->GetParticle( 13 );
   	  Double_t muonMass = partMuon->Mass();  
@@ -934,6 +936,9 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   	  for(Int_t i=0; i<2; i++){
                 AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(TrackIndex[i]));
                 if(!trk) AliFatal("Not a standard AOD");
+		
+		if(fAODVertex->HasDaughter(trk) && trk->GetUsedForVtxFit())fIsVtxContributor[i] = kTRUE;
+		else fIsVtxContributor[i] = kFALSE;
 
 		Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
 		AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
@@ -1038,6 +1043,9 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   	  for(Int_t i=0; i<4; i++){
                 AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(TrackIndex[i]));
                 if(!trk) AliFatal("Not a standard AOD");
+		
+		if(fAODVertex->HasDaughter(trk) && trk->GetUsedForVtxFit())fIsVtxContributor[i] = kTRUE;
+		else fIsVtxContributor[i] = kFALSE;
 
 		Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
 		AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");

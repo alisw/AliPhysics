@@ -48,7 +48,7 @@ public:
     void                                 SetEnableDebugMode() {fDebug = kTRUE; };
     void                                 SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod); //select centrality
     void                                 CheckCentrality(AliAODEvent *event,Bool_t &centralitypass); //to use only events with the correct centrality....
-    void                                 SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track,Float_t fTPCnSigma,Double_t evPlAngV0, Bool_t &fFlagPhotonicElec);
+    void                                 SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track,Float_t fTPCnSigma,Double_t evPlAngV0, Bool_t &fFlagPhotonicElec, Double_t weightEPflat);
     void                                 SelectPhotonicElectronMethod(Bool_t dca){fDCA = dca;}
     void                                 SetInvariantMassCut(Double_t invmass) {fInvmassCut = invmass;};
     void                                 SetPtMinAssoCut(Double_t ptminimumasso) {fptminAsso = ptminimumasso;};
@@ -75,6 +75,10 @@ public:
     void                                 SetAssoITSRefit(Bool_t itsref) {fAssoITSRefit = itsref;};
     void                                 SetAssoTPCCluster(Int_t tpc_clust) {fAssoTPCCluster = tpc_clust;};
     void                                 SetPhiCut(Bool_t phicut){fPhiCut = phicut;};
+
+    void                                 SetHistoForEPFlattWeights(TH1D *h);
+    Double_t                             GiveMeWeight(Double_t EP);
+    void                                 SetEPWeight(Bool_t epw){EPweights = epw;};
 
     
     AliHFEpid *GetPID() const { return fPID; };
@@ -185,6 +189,11 @@ private:
     Int_t                 fAssoTPCCluster;//asso tpc cluster
     Bool_t                fAssoITSRefit;//asso its refit
     Bool_t                fPhiCut;//Phi cut to simulate emcal acc
+
+    TH1D                 *fHistEPDistrWeight;// isto for Centr Flat
+    Bool_t               EPweights;//for mult correlationcut
+    TH1D                 *EPVzAftW;//!v0cep
+    
 
     
     AliAnalysisTaskFlowITSTPCTOFQCSP(const AliAnalysisTaskFlowITSTPCTOFQCSP&); // not implemented
