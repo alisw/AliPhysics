@@ -5,7 +5,6 @@
 #include "AliITSURecoDet.h"
 #include "AliITSUGeomTGeo.h"
 #include "AliITSsegmentation.h"
-#include "AliITSUSegmentationPix.h"
 #include "AliITSUClusterPix.h"
 #include "AliITSUReconstructor.h"
 
@@ -257,4 +256,12 @@ Int_t AliITSURecoDet::LoadClusters(TTree* treeRP)
     br->SetAddress( GetLayerActive(ilr)->GetClustersAddress() );
   }
   return treeRP->GetEntry(0); // we are still in 1 ev/tree mode...
+}
+
+//______________________________________________________
+void AliITSURecoDet::SortClusters(AliITSUClusterPix::SortMode_t mode)
+{
+  // process clsuters according to requested mode
+  AliITSUClusterPix::SetSortMode( mode );
+  for (int ilr=fNLayersActive;ilr--;) GetLayerActive(ilr)->GetClusters()->Sort();
 }

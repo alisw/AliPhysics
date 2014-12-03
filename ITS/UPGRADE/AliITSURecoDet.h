@@ -4,6 +4,7 @@
 #include <TNamed.h>
 #include <TObjArray.h>
 #include "AliITSURecoLayer.h"
+#include "AliITSUClusterPix.h"
 class AliITSUGeomTGeo;
 class TTree;
 
@@ -42,6 +43,7 @@ class AliITSURecoDet : public TNamed
   void               AddLayer(const AliITSURecoLayer* lr);
   //
   void               ProcessClusters(Int_t mode=0);
+  void               SortClusters(AliITSUClusterPix::SortMode_t mode);
   void               CreateClusterArrays();
   Int_t              LoadClusters(TTree* treeRP);
   //
@@ -101,5 +103,6 @@ inline void AliITSURecoDet::ProcessClusters(Int_t mode)
   // prepare clsuters for reconstrunction
   for (int ilr=fNLayersActive;ilr--;) GetLayerActive(ilr)->ProcessClusters(mode);
 }
+
 
 #endif
