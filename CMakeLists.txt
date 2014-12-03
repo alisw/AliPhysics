@@ -247,6 +247,7 @@ endif(CMAKE_Fortran_COMPILER)
 
 # PWG libraries
 add_subdirectory(PWG)
+add_subdirectory(PWGUD)
 
 # Enable SHUTTLE compilation
 # Check if DIMDIR and ODIR are set
