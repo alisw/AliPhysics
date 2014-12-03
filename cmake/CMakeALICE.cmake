@@ -15,9 +15,9 @@
 
 # General purpose functions
 
-###########################################################################
+#########################
 # ROOT utilities
-###########################################################################
+#########################
 
 # Generation of the dictionaries
 # @DNAME  Dictionary name
@@ -85,51 +85,9 @@ macro(generate_rootmap LIBNAME LIBDEPS LINKDEF)
     
 endmacro(generate_rootmap)
 
-###########################################################################
-# Shared librarires utilities
-###########################################################################
-macro(generate_shared_library)
-    # Generate the dictionary
-    # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
-    get_directory_property(incdirs INCLUDE_DIRECTORIES)
-    set(incdirs ${MODULE_INCLUDES} ${CMAKE_CURRENT_SOURCE_DIR} ${incdirs})
-    generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${MODULE_HDRS}" "${incdirs}")
-
-    # Generate the ROOT map
-    # Dependecies
-    set(MODULE_LIBDEPS ${MODULE_ALIROOT_DEPENDENCIES} ${MODULE_ROOT_DEPENDENCIES})
-    generate_rootmap("${MODULE}" "${MODULE_LIBDEPS}" "${MODULE}LinkDef.h")
-
-    # Create an object to be reused in case of static libraries 
-    # Otherwise the sources will be compiled twice
-    add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
-    # Add a library to the project using the object
-    add_library(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
-    target_link_libraries(${MODULE} ${MODULE_LIBDEPS})
-
-    # Setting the correct headers for the object as gathered from the dependencies
-    target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
-    set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_PROPERTY:${MODULE},COMPILE_DEFINITIONS>)
-
-    # Public include folders that will be propagated to the dependecies
-    target_include_directories(${MODULE} PUBLIC ${incdirs})
-
-    # Setting compilation flags for the object
-    set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
-    # Setting the linking flags for the library
-    set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-    # Installation
-    install(TARGETS ${MODULE}
-            ARCHIVE DESTINATION lib
-            LIBRARY DESTINATION lib)
-
-    install(FILES ${MODULE_HDRS_INSTALL} DESTINATION include)
-endmacro()
-
-###########################################################################
-# Static libraries utilities
-###########################################################################
+#########################
+# Static utilities
+#########################
 
 # Generate the static dependecies from dynamic list
 # @ shared_list - list of shared libraries
@@ -146,29 +104,9 @@ macro(generate_static_dependencies shared_list static_list)
     set(${static_list} PARENT_SCOPE)
 endmacro(generate_static_dependencies)
 
-# Generate the static library
-macro(generate_static_library)
-    add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:${MODULE}-object>)
-    
-    # list of shared dependencies / the name of the variable containing the list of static ones
-    generate_static_dependencies("${MODULE_ALIROOT_DEPENDENCIES}" "STATIC_ALIROOT_DEPENDENCIES")
-    target_link_libraries(${MODULE}-static ${STATIC_ALIROOT_DEPENDENCIES} Root RootExtra)
-    
-    # Public include folders that will be propagated to the dependecies
-    target_include_directories(${MODULE}-static PUBLIC ${incdirs})
-
-    set_target_properties(${MODULE}-static PROPERTIES OUTPUT_NAME ${MODULE})
-    set_target_properties(${MODULE}-static PROPERTIES LINK_FLAGS "-Wl,--whole-archive")
-
-    # Installation
-    install(TARGETS ${MODULE}-static
-            ARCHIVE DESTINATION lib
-            LIBRARY DESTINATION lib)
-endmacro()
-
-###########################################################################
+#########################
 # DA utilities
-###########################################################################
+#########################
 
 # Extract the first comment from a DA file
 # Find the position for first /* and */ and extract the substring
