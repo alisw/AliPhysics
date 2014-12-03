@@ -75,3 +75,9 @@ rpm-tmp.*
 /Debug
 .cproject
 .project
+
+# OS X metafiles
+.DS_Store
+._*
+.AppleDouble
+.LSOverride
