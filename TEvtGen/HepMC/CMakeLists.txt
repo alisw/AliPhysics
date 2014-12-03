@@ -22,6 +22,7 @@ include_directories(${AliRoot_SOURCE_DIR}/TEvtGen/${MODULE})
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/TEvtGen
+                    ${AliRoot_SOURCE_DIR}/TEvtGen/EvtGen/EvtGenModels
 )
 
 # Sources - alphabetical order
@@ -52,10 +53,14 @@ set(SRCS
   Units.cc 
 )
 
+set (FSRCS
+  dummy.F
+)
+
 # No dictionary
 
 # Add a library to the project using the specified source files
-add_library(${MODULE} SHARED ${SRCS})
+add_library(${MODULE} SHARED ${SRCS} ${FSRCS})
 
 # Do not generate the ROOT map
 

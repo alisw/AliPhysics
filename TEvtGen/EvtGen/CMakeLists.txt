@@ -307,7 +307,7 @@ set ( FSRCS
 add_library(${MODULE} SHARED ${SRCS} ${FSRCS})
 
 # Do not generate the ROOT map
-# Dependecies
+# Dependencies
 set(LIBDEPS HepMC)
 
 # Additional compilation flags

@@ -61,6 +61,15 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 # Headers from sources
 #string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
+# System dependent definitions
+
+if(${CMAKE_SYSTEM} MATCHES Darwin)
+    add_definitions(-DCERNLIB_LXIA64 -DCERNLIB_BLDLIB -DCERNLIB_CZ -DCERNLIB_PPC)
+endif(${CMAKE_SYSTEM} MATCHES Darwin)
+if(${CMAKE_SYSTEM} MATCHES Linux)
+    add_definitions(-DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ)
+endif(${CMAKE_SYSTEM} MATCHES Linux)
+
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 #get_directory_property(incdirs INCLUDE_DIRECTORIES)

@@ -49,6 +49,8 @@ set(SRCS
 add_library(${MODULE} SHARED ${SRCS})
 
 # Do not generate the ROOT map
+# Dependecies
+set(LIBDEPS Photos Tauola pythia8175 EvtGen)
 
 # Additional compilation flags
 set (EVTGEN_PYTHIA "ON")
@@ -58,7 +60,9 @@ set (EVTGEN_TAUOLA "ON")
 add_definitions ("-DEVTGEN_PYTHIA -DEVTGEN_PHOTOS -DEVTGEN_TAUOLA")
 
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")
-target_link_libraries(${MODULE} )
+
+# Linking the library
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
