@@ -101,6 +101,12 @@ if(DA)
     message(STATUS "DAs enabled")
 endif(DA)
 
+# MDC rpm creation enables the static build
+if(MDCRPM)
+    set(ALIROOT_STATIC TRUE)
+    message(STATUS "AliMDC RPM enabled. AliRoot static build enabled")
+endif(MDCRPM)
+
 # ROOT configuration mandatory
 if(ROOTSYS)
     find_package(ROOT REQUIRED)
@@ -131,7 +137,6 @@ if(CMAKE_Fortran_COMPILER)
 else()
     message(STATUS "No Fortran support. Disabling LHAPDF, PHYTIA6, MICROCERN, etc.")
 endif()
-
 
 # DATE
 if(DATE_CONFIG)
