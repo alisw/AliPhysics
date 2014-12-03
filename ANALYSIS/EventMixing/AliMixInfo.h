@@ -26,7 +26,7 @@ public:
    AliMixInfo(const AliMixInfo &obj);
    virtual ~AliMixInfo();
 
-   void Reset();
+   void Reset(){;} // Not implemented
    virtual void Print(Option_t *option = "") const;
    virtual void Draw(Option_t *option = "");
    virtual Long64_t Merge(TCollection *list);
