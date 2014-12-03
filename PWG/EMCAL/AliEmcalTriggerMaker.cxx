@@ -590,7 +590,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
     // Redo checking of found trigger bits after masking of unwanted triggers
     for(unsigned int ibit = 0; ibit < sizeof(tBits)*8; ibit++) {
       if(tBits & (1 << ibit)){
-        fQAHistos->FillTH1("triggerBitsAll", ibit);
+        fQAHistos->FillTH1("triggerBitsSel", ibit);
       }
     }
   }
