@@ -16,6 +16,8 @@
 # Include the libraries
 add_subdirectory (Tools)
 add_subdirectory (Glauber)
+add_subdirectory (muon)
+add_subdirectory (EMCAL)
 add_subdirectory (FLOW)
 
 message(STATUS "PWG enabled")
