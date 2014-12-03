@@ -52,8 +52,12 @@ AliDIMListenerThread::AliDIMListenerThread() :
 
 AliDIMListenerThread::~AliDIMListenerThread()
 {
+  cout<<"AliDIMListenerThread -- destructor called...";
   if(fDimSORListener){delete fDimSORListener;fDimSORListener = 0;}
   if(fDimEORListener){delete fDimEORListener;fDimEORListener = 0;}
+
+  // kill all running reconstructions (to be changed later)
+    gSystem->Exec(Form("ssh -n -f %s@%s \"killall alionlinereco\"",fOnlineReconstructionUsername.c_str(),fOnlineReconstructionHostname.c_str()));
 
   /*
     for (int i = 0; i < 5; ++i){
@@ -63,6 +67,7 @@ AliDIMListenerThread::~AliDIMListenerThread()
         fDimSORListener[i] = 0;
         fDimEORListener[i] = 0;
 	}*/
+  cout<<"OK"<<endl;
 }
 
 void AliDIMListenerThread::InitDIMListeners()

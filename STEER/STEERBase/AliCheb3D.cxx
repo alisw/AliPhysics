@@ -139,7 +139,7 @@ AliCheb3D::AliCheb3D(const char* funName, int DimOut, const Float_t  *bmin, cons
   // npoints : array of 3 elements with the number of points to compute in each of 3 dimension
   // prec    : max allowed absolute difference between the user function and computed parameterization on the requested grid
   // precD   : optional array with precisions per output dimension (if >fgkMinPrec will override common prec)
-  if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
+  if (DimOut<1) AliFatalF("Requested output dimension is %d",fDimOut);
   for (int i=3;i--;) {
     fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
     fNPoints[i] = 0;
@@ -177,8 +177,7 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
   // prec    : max allowed absolute difference between the user function and computed parameterization on the requested grid
   // precD   : optional array with precisions per output dimension (if >fgkMinPrec will override common prec)
   //
-  if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
-  if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
+  if (DimOut<1) AliFatalF("Requested output dimension is %d",fDimOut);
   for (int i=3;i--;) {
     fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
     fNPoints[i] = 0;
@@ -218,8 +217,7 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
   // prec    : max allowed absolute difference between the user function and computed parameterization on the requested grid
   // precD   : optional array with precisions per output dimension (if >fgkMinPrec will override common prec)
   //
-  if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
-  if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
+  if (DimOut<1) AliFatalF("Requested output dimension is %d",fDimOut);
   for (int i=3;i--;) {
     fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
     fNPoints[i] = 0;
@@ -262,8 +260,8 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
   // prec    : max allowed absolute difference between the user function and computed parameterization on the requested grid
   // precD   : optional array with precisions per output dimension (if >fgkMinPrec will override common prec)
   //
-  if (DimOut!=3) {Error("AliCheb3D","This constructor works only for 3D fits, %dD fit was requested\n",fDimOut); exit(1);}
-  if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
+  if (DimOut!=3) AliFatalF("This constructor works only for 3D fits, %dD fit was requested",fDimOut);
+  if (DimOut<1)  AliFatalF("Requested output dimension is %d",fDimOut);
   for (int i=3;i--;) {
     fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
     fNPoints[i] = 0;
@@ -352,7 +350,7 @@ void AliCheb3D::PrepareBoundaries(const Float_t  *bmin, const Float_t  *bmax)
     fBMax[i]   = bmax[i];
     fBScale[i] = bmax[i]-bmin[i];
     if (fBScale[i]<=0) { 
-      AliFatal(Form("Boundaries for %d-th dimension are not increasing: %+.4e %+.4e\nStop\n",i,fBMin[i],fBMax[i]));
+      AliFatalF("Boundaries for %d-th dimension are not increasing: %+.4e %+.4e\nStop\n",i,fBMin[i],fBMax[i]);
     }
     fBOffset[i] = bmin[i] + fBScale[i]/2.0;
     fBScale[i] = 2./fBScale[i];
@@ -383,7 +381,7 @@ void AliCheb3D::SetUsrFunction(const char* name)
   if (fUsrMacro) delete fUsrMacro;
   TString tmpst = fUsrFunName;
   tmpst += "+"; // prepare filename to compile
-  if (gROOT->LoadMacro(tmpst.Data())) {Error("SetUsrFunction","Failed to load user function from %s\nStop\n",name); exit(1);}
+  if (gROOT->LoadMacro(tmpst.Data())) AliFatalF("Failed to load user function from %s",name);
   fUsrMacro = new TMethodCall();        
   tmpst = tmpst.Data() + tmpst.Last('/')+1; //Strip away any path preceding the macro file name
   int dot = tmpst.Last('.');
@@ -464,10 +462,7 @@ void AliCheb3D::DefineGrid(Int_t* npoints)
   fMaxCoefs = 1;
   for (int id=3;id--;) { 
     fNPoints[id] = npoints[id];
-    if (fNPoints[id]<kMinPoints) {
-      Error("DefineGrid","at %d-th dimension %d point is requested, at least %d is needed\nStop\n",id,fNPoints[id],kMinPoints);
-      exit(1);
-    }
+    if (fNPoints[id]<kMinPoints) AliFatalF("at %d-th dimension %d point is requested, at least %d is needed",id,fNPoints[id],kMinPoints);
     ntot += fNPoints[id];
     fMaxCoefs *= fNPoints[id];
   }
@@ -746,22 +741,22 @@ void AliCheb3D::LoadData(FILE* stream)
 {
   // load coefficients data from stream
   //
-  if (!stream) {AliFatal("No stream provided.\nStop");}
+  if (!stream) AliFatal("No stream provided");
   TString buffs;
   Clear();
   AliCheb3DCalc::ReadLine(buffs,stream);
-  if (!buffs.BeginsWith("START")) {AliFatal(Form("Expected: \"START <fit_name>\", found \"%s\"\nStop\n",buffs.Data()));}
+  if (!buffs.BeginsWith("START")) AliFatalF("Expected: \"START <fit_name>\", found \"%s\"",buffs.Data());
   SetName(buffs.Data()+buffs.First(' ')+1);
   //
   AliCheb3DCalc::ReadLine(buffs,stream); // N output dimensions
   fDimOut = buffs.Atoi(); 
-  if (fDimOut<1) {AliFatal(Form("Expected: '<number_of_output_dimensions>', found \"%s\"\nStop\n",buffs.Data()));}
+  if (fDimOut<1) AliFatalF("Expected: '<number_of_output_dimensions>', found \"%s\"",buffs.Data());
   //
   SetDimOut(fDimOut);
   //
   AliCheb3DCalc::ReadLine(buffs,stream); // Interpolation abs. precision
   fPrec = buffs.Atof();
-  if (fPrec<=0) {AliFatal(Form("Expected: '<abs.precision>', found \"%s\"\nStop\n",buffs.Data()));}
+  if (fPrec<=0) AliFatalF("Expected: '<abs.precision>', found \"%s\"",buffs.Data());
   //
   for (int i=0;i<3;i++) { // Lower boundaries of interpolation region
     AliCheb3DCalc::ReadLine(buffs,stream);
@@ -779,7 +774,7 @@ void AliCheb3D::LoadData(FILE* stream)
   // check end_of_data record
   AliCheb3DCalc::ReadLine(buffs,stream);
   if (!buffs.BeginsWith("END") || !buffs.Contains(GetName())) {
-    AliFatal(Form("Expected \"END %s\", found \"%s\".\nStop\n",GetName(),buffs.Data()));
+    AliFatalF("Expected \"END %s\", found \"%s\"",GetName(),buffs.Data());
   }
   //
 }

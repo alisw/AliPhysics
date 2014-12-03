@@ -22,6 +22,7 @@ class AliFileMerger : public TNamed
  public:
   AliFileMerger();
   AliFileMerger(const char* name);
+  virtual ~AliFileMerger();
   void Merge(TFile* fileIn, TObjArray * array);
 
   void IterTXT( const char * fileList,  const char* outputFileName,Bool_t dontOverwrite=kFALSE);

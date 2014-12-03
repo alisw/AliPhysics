@@ -13,7 +13,7 @@ class TSystem;
 
 // to decrease the compilable code size comment this define. This will exclude the routines 
 // used for the calculation and saving of the coefficients. 
-//#define _INC_CREATION_ALICHEB3D_
+#define _INC_CREATION_ALICHEB3D_
 
 // when _BRING_TO_BOUNDARY_ is defined, the point outside of the fitted folume is assumed
 // to be on the surface 

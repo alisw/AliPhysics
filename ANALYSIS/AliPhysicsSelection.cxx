@@ -1969,7 +1969,9 @@ void AliPhysicsSelection::DetectPassName(){
   if (!passName.Contains("pass")){
     AliError(" Failed to find reconstruction pass name:");
     AliError(" --> If these are MC data: please set kTRUE first argument of AddTaskPhysicsSelection");
-    AliFatal(" --> If these are real data: please insert pass name inside the path of your local file, e.g. /your_path/pass2/AliESDs.root");
+    AliError(" --> If these are real data: please insert pass name inside the path of your local file, e.g. /your_path/pass2/AliESDs.root");
+    AliError(" --> Setting default pass name...");
+    passName = "default";
   }
   
   AliInfo(Form("pass name: %s\n",passName.Data()));

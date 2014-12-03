@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <TSystem.h>
 #include "AliCheb3DCalc.h"
+#include "AliLog.h"
 
 ClassImp(AliCheb3DCalc)
 
@@ -258,16 +259,16 @@ void AliCheb3DCalc::SaveData(FILE* stream) const
 void AliCheb3DCalc::LoadData(FILE* stream)
 {
   // Load coefs. from the stream 
-  if (!stream) {Error("LoadData","No stream provided.\nStop"); exit(1);}
+  if (!stream) AliFatal("No stream provided");
   TString buffs;
   Clear();
   ReadLine(buffs,stream);
-  if (!buffs.BeginsWith("START")) {Error("LoadData","Expected: \"START <fit_name>\", found \"%s\"\nStop\n",buffs.Data());exit(1);}
+  if (!buffs.BeginsWith("START")) AliFatalF("Expected: \"START <fit_name>\", found \"%s\"",buffs.Data());
   if (buffs.First(' ')>0) SetName(buffs.Data()+buffs.First(' ')+1);
   //
   ReadLine(buffs,stream); // NRows
   fNRows = buffs.Atoi(); 
-  if (fNRows<1) {Error("LoadData","Expected: '<number_of_rows>', found \"%s\"\nStop\n",buffs.Data());exit(1);}
+  if (fNRows<0 && !buffs.IsDigit()) AliFatalF("Expected: '<number_of_rows>', found \"%s\"",buffs.Data());
   //
   fNCols = 0;
   fNElemBound2D = 0;
@@ -292,8 +293,6 @@ void AliCheb3DCalc::LoadData(FILE* stream)
     fNCoefs += fCoefBound2D0[i];
   }
   //
-  if (fNCoefs<=0) {Error("LoadData","Negtive (%d) number of Chebychef coeffs. is obtained.\nStop\n",fNCoefs);exit(1);}
-  //
   InitCoefs(fNCoefs);
   for (int i=0;i<fNCoefs;i++) {
     ReadLine(buffs,stream);
@@ -306,10 +305,7 @@ void AliCheb3DCalc::LoadData(FILE* stream)
   //
   // check end_of_data record
   ReadLine(buffs,stream);
-  if (!buffs.BeginsWith("END") || !buffs.Contains(GetName())) {
-    Error("LoadData","Expected \"END %s\", found \"%s\".\nStop\n",GetName(),buffs.Data());
-    exit(1);
-  }
+  if (!buffs.BeginsWith("END") || !buffs.Contains(GetName())) AliFatalF("Expected \"END %s\", found \"%s\"",GetName(),buffs.Data());
   //
 }
 
@@ -322,7 +318,7 @@ void AliCheb3DCalc::ReadLine(TString& str,FILE* stream)
     if (str.IsNull()||str.BeginsWith("#")) continue;
     return;
   }
-  fprintf(stderr,"AliCheb3D::ReadLine: Failed to read from stream.\nStop");exit(1); // normally, should not reach here
+  AliFatalGeneral("ReadLine","Failed to read from stream"); // normally, should not reach here
 }
 
 //_______________________________________________
@@ -330,44 +326,50 @@ void AliCheb3DCalc::InitCols(int nc)
 {
   // Set max.number of significant columns in the coefs matrix
   fNCols = nc;
-  if (fTmpCf1) delete[] fTmpCf1;
-  fTmpCf1 = new Float_t [fNCols];
+  if (fTmpCf1) {delete[] fTmpCf1; fTmpCf1 = 0;}
+  if (fNCols>0) fTmpCf1 = new Float_t [fNCols];
 }
 
 //_______________________________________________
 void AliCheb3DCalc::InitRows(int nr)
 {
   // Set max.number of significant rows in the coefs matrix
-  if (fNColsAtRow) delete[] fNColsAtRow;
-  if (fColAtRowBg) delete[] fColAtRowBg;
-  if (fTmpCf0)     delete[] fTmpCf0;
+  if (fNColsAtRow) {delete[] fNColsAtRow; fNColsAtRow = 0;}
+  if (fColAtRowBg) {delete[] fColAtRowBg; fColAtRowBg = 0;}
+  if (fTmpCf0)     {delete[] fTmpCf0; fTmpCf0 = 0;}
   fNRows = nr;
-  fNColsAtRow = new UShort_t[fNRows];
-  fTmpCf0     = new Float_t [fNRows];
-  fColAtRowBg = new UShort_t[fNRows];
-  for (int i=fNRows;i--;) fNColsAtRow[i] = fColAtRowBg[i] = 0;
+  if (fNRows>0) {
+    fNColsAtRow = new UShort_t[fNRows];
+    fTmpCf0     = new Float_t [fNRows];
+    fColAtRowBg = new UShort_t[fNRows];
+    for (int i=fNRows;i--;) fNColsAtRow[i] = fColAtRowBg[i] = 0;
+  }
 }
 
 //_______________________________________________
 void AliCheb3DCalc::InitElemBound2D(int ne)
 {
   // Set max number of significant coefs for given row/column of coefs 3D matrix
-  if (fCoefBound2D0) delete[] fCoefBound2D0; 
-  if (fCoefBound2D1) delete[] fCoefBound2D1; 
+  if (fCoefBound2D0) {delete[] fCoefBound2D0; fCoefBound2D0 = 0;}
+  if (fCoefBound2D1) {delete[] fCoefBound2D1; fCoefBound2D1 = 0;}
   fNElemBound2D = ne;
-  fCoefBound2D0 = new UShort_t[fNElemBound2D];
-  fCoefBound2D1 = new UShort_t[fNElemBound2D];
-  for (int i=fNElemBound2D;i--;) fCoefBound2D0[i] = fCoefBound2D1[i] = 0;
+  if (fNElemBound2D>0) {
+    fCoefBound2D0 = new UShort_t[fNElemBound2D];
+    fCoefBound2D1 = new UShort_t[fNElemBound2D];
+    for (int i=fNElemBound2D;i--;) fCoefBound2D0[i] = fCoefBound2D1[i] = 0;
+  }
 }
 
 //_______________________________________________
 void AliCheb3DCalc::InitCoefs(int nc)
 {
   // Set total number of significant coefs
-  if (fCoefs) delete[] fCoefs; 
+  if (fCoefs) {delete[] fCoefs; fCoefs = 0;}
   fNCoefs = nc;
-  fCoefs = new Float_t [fNCoefs];
-  for (int i=fNCoefs;i--;) fCoefs[i] = 0.0;
+  if (fNCoefs>0) {
+    fCoefs = new Float_t [fNCoefs];
+    for (int i=fNCoefs;i--;) fCoefs[i] = 0.0;
+  }
 }
 
 //__________________________________________________________________________________________

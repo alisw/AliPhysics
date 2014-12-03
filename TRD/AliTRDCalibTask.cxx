@@ -370,7 +370,7 @@ void AliTRDCalibTask::UserCreateOutputObjects()
   fAbsoluteGain->SetXTitle("charge deposit [a.u]");
   fAbsoluteGain->SetZTitle("counts");
   fAbsoluteGain->SetStats(0);
-  fAbsoluteGain->Sumw2();
+  //  fAbsoluteGain->Sumw2();
   fListHist->Add(fAbsoluteGain);
 
   fTOFbc = new TH2F(Form("TOFbc_%s",(const char*)fName),"TOFbc", 200, -150., 50., nBinsPt, binLimPt);
@@ -378,7 +378,7 @@ void AliTRDCalibTask::UserCreateOutputObjects()
   fTOFbc->SetXTitle("TOF bc");
   fTOFbc->SetZTitle("counts");
   fTOFbc->SetStats(0);
-  fTOFbc->Sumw2();
+  //  fTOFbc->Sumw2();
   fListHist->Add(fTOFbc);
   
   if(IsPHQon()){
@@ -416,7 +416,7 @@ void AliTRDCalibTask::UserCreateOutputObjects()
     fCH2dTest->SetXTitle("charge deposit [a.u]");
     fCH2dTest->SetZTitle("counts");
     fCH2dTest->SetStats(0);
-    fCH2dTest->Sumw2();
+    //    fCH2dTest->Sumw2();
 
     //
     fPH2dSM = new TProfile2D(Form("PH2dSM_%s",(const char*)fName),"Nz10Nrphi10"
@@ -432,7 +432,7 @@ void AliTRDCalibTask::UserCreateOutputObjects()
     fCH2dSM->SetXTitle("charge deposit [a.u]");
     fCH2dSM->SetZTitle("counts");
     fCH2dSM->SetStats(0);
-    fCH2dSM->Sumw2();
+    //    fCH2dSM->Sumw2();
     //
     fPH2dSum = new TProfile2D(Form("PH2dSum_%s",(const char*)fName),"Nz100Nrphi100"
 			    ,fNbTimeBins,-0.05,(Double_t)((fNbTimeBins-0.5)/10.0)
@@ -447,7 +447,7 @@ void AliTRDCalibTask::UserCreateOutputObjects()
     fCH2dSum->SetXTitle("charge deposit [a.u]");
     fCH2dSum->SetZTitle("counts");
     fCH2dSum->SetStats(0);
-    fCH2dSum->Sumw2();
+    //    fCH2dSum->Sumw2();
     
     
     // Add them
@@ -472,34 +472,34 @@ void AliTRDCalibTask::UserCreateOutputObjects()
     fNbGoodTracks->SetStats(0);
 
     fNbTRDTrack = new TH1F(Form("TRDTrack_%s",(const char*)fName),"TRDTrack",50,0,50);
-    fNbTRDTrack->Sumw2();
+    //    fNbTRDTrack->Sumw2();
     fNbTRDTrackOffline = new TH1F(Form("TRDTrackOffline_%s",(const char*)fName),"TRDTrackOffline",50,0,50);
-    fNbTRDTrackOffline->Sumw2();
+    //    fNbTRDTrackOffline->Sumw2();
     fNbTRDTrackStandalone = new TH1F(Form("TRDTrackStandalone_%s",(const char*)fName),"TRDTrackStandalone",50,0,50);
-    fNbTRDTrackStandalone->Sumw2();
+    //    fNbTRDTrackStandalone->Sumw2();
     fNbTPCTRDtrack = new TH2F(Form("NbTPCTRDtrack_%s",(const char*)fName),"NbTPCTRDtrack",100,0,100,100,0,100);
-    fNbTPCTRDtrack->Sumw2();
+    //    fNbTPCTRDtrack->Sumw2();
     //
     fNbTimeBin = new TH1F(Form("NbTimeBin_%s",(const char*)fName),"NbTimeBin",35,0,35);
-    fNbTimeBin->Sumw2();
+    //    fNbTimeBin->Sumw2();
     fNbTimeBinOffline = new TH1F(Form("NbTimeBinOffline_%s",(const char*)fName),"NbTimeBinOffline",35,0,35);
-    fNbTimeBinOffline->Sumw2();
+    //    fNbTimeBinOffline->Sumw2();
     fNbTimeBinStandalone = new TH1F(Form("NbTimeBinStandalone_%s",(const char*)fName),"NbTimeBinStandalone",35,0,35);
-    fNbTimeBinStandalone->Sumw2();
+    //    fNbTimeBinStandalone->Sumw2();
     //
     fNbClusters = new TH1F(Form("NbClusters_%s",(const char*)fName),"",35,0,35);
-    fNbClusters->Sumw2();
+    //    fNbClusters->Sumw2();
     fNbClustersOffline = new TH1F(Form("NbClustersOffline_%s",(const char*)fName),"",35,0,35);
-    fNbClustersOffline->Sumw2();
+    //    fNbClustersOffline->Sumw2();
     fNbClustersStandalone = new TH1F(Form("NbClustersStandalone_%s",(const char*)fName),"",35,0,35);
-    fNbClustersStandalone->Sumw2();
+    //    fNbClustersStandalone->Sumw2();
     //
     fNbTracklets = new TH1F(Form("NbTracklets_%s",(const char*)fName),"NbTracklets",540,0.,540.);
-    fNbTracklets->Sumw2();
+    //    fNbTracklets->Sumw2();
     fNbTrackletsOffline = new TH1F(Form("NbTrackletsOffline_%s",(const char*)fName),"NbTrackletsOffline",540,0.,540.);
-    fNbTrackletsOffline->Sumw2();
+    //    fNbTrackletsOffline->Sumw2();
     fNbTrackletsStandalone = new TH1F(Form("NbTrackletsStandalone_%s",(const char*)fName),"NbTrackletsStandalone",540,0.,540.);
-    fNbTrackletsStandalone->Sumw2();
+    //    fNbTrackletsStandalone->Sumw2();
    
     fListHist->Add(fNbGoodTracks);
    
