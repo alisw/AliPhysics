@@ -82,7 +82,11 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   Double_t fVtxErr[3];
   Double_t fVtxChi2,fVtxNDF;
   Double_t fKfVtxPos[3];
+  Int_t fSpdVtxContrib;
   Double_t fSpdVtxPos[3];
+  
+  Bool_t fIsVtxContributor[4];
+  
   UShort_t fBCrossNum, fNtracklets, fNLooseTracks;
   //vzero, zdc
   Double_t fZDCAenergy, fZDCCenergy;

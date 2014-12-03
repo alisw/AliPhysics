@@ -107,7 +107,7 @@ AliAnalysisTaskSE("PID efficiency Analysis")
   , fIdentifiedAsPileUp(kFALSE)
   , fIdentifiedAsOutInz(kFALSE)
   , fPassTheEventCut(kFALSE)
-  , fRejectKinkMother(kTRUE)
+  , fRejectKinkMother(kFALSE)
   , fisppMultiBin(kFALSE)
   , fPbPbUserCentralityBinning(kFALSE)
   , fRemoveFirstEvent(kFALSE)
@@ -179,7 +179,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fIdentifiedAsPileUp(kFALSE)
   , fIdentifiedAsOutInz(kFALSE)
   , fPassTheEventCut(kFALSE)  
-  , fRejectKinkMother(kTRUE)
+  , fRejectKinkMother(kFALSE)
   , fisppMultiBin(kFALSE)
   , fPbPbUserCentralityBinning(kFALSE)
   , fRemoveFirstEvent(kFALSE)
@@ -663,7 +663,7 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
     if(!mcH->TreeTR()) return;
 
     // Background subtraction-------------------------------------------------------------------
-    if(GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->SetMCEvent(fMCEvent);
+    if(GetPlugin(kNonPhotonicElectron)||GetPlugin(kNonPhotonicElectronBeauty)) fBackgroundSubtraction->SetMCEvent(fMCEvent);
     //------------------------------------------------------------------------------------------
   }
 
@@ -1020,7 +1020,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
 
 
   // Background subtraction-------------------------------------------------------------------
-  if (GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->FillPoolAssociatedTracks(fInputEvent, fCentralityF);
+  if (GetPlugin(kNonPhotonicElectron)||GetPlugin(kNonPhotonicElectronBeauty)) fBackgroundSubtraction->FillPoolAssociatedTracks(fInputEvent, fCentralityF);
   //------------------------------------------------------------------------------------------
 
   //
@@ -1267,7 +1267,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
     nElectronCandidates++;
     
     // Background subtraction------------------------------------------------------------------------------------------
-    if (GetPlugin(kNonPhotonicElectron)) {
+    if (GetPlugin(kNonPhotonicElectron)&&!GetPlugin(kNonPhotonicElectronBeauty)) {
       Int_t indexmother = -1;
       Int_t mcsource = -1;
       Int_t mcQAsource = -1;
@@ -1276,6 +1276,8 @@ void AliAnalysisTaskHFE::ProcessESD(){
 	mcsource = fBackgroundSubtraction->FindMother(mctrack->GetLabel(),indexmother);
 	if(fBackgroundSubtraction->GetLevelBack()>=0) {
 	  if(fMCQA) {
+	    fMCQA->SetCentrality(fCentralityF);
+	    fMCQA->SetPercentrality(static_cast<Int_t>(fCentralityPercent));
 	    mcQAsource = fMCQA->GetElecSource(mctrack, kTRUE);
 	    weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
 	  }
@@ -1489,10 +1491,30 @@ void AliAnalysisTaskHFE::ProcessESD(){
       }
     }
 
+    // Background subtraction------------------------------------------------------------------------------------------
+    if (!GetPlugin(kNonPhotonicElectron)&&GetPlugin(kNonPhotonicElectronBeauty)) {
+      Int_t indexmother = -1;
+      Int_t mcsource = -1;
+      Int_t mcQAsource = -1;
+      Double_t weightNonPhotonicFactor = 1.;
+      if(HasMCData()){
+        mcsource = fBackgroundSubtraction->FindMother(mctrack->GetLabel(),indexmother);
+        if(fBackgroundSubtraction->GetLevelBack()>=0) {
+          if(fMCQA) {
+            fMCQA->SetCentrality(fCentralityF);
+            fMCQA->SetPercentrality(static_cast<Int_t>(fCentralityPercent));
+            mcQAsource = fMCQA->GetElecSource(mctrack, kTRUE);
+            weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
+          }
+        }
+      }
+      fBackgroundSubtraction->LookAtNonHFE(itrack, track, fInputEvent, weightNonPhotonicFactor, fCentralityF, -1, mcsource, indexmother,mcQAsource);
+    }
+    //-----------------------------------------------------------------------------------------------------------------
   }
 
   // Background subtraction-------------------------------------------------------------------
-  if (GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->CountPoolAssociated(fInputEvent, fCentralityF);
+  if (GetPlugin(kNonPhotonicElectron)||GetPlugin(kNonPhotonicElectronBeauty)) fBackgroundSubtraction->CountPoolAssociated(fInputEvent, fCentralityF);
   //------------------------------------------------------------------------------------------
 
   fQACollection->Fill("nElectronTracksEvent", nElectronCandidates);
@@ -1608,8 +1630,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     kinkmother=kFALSE;
     kinkdaughter=kFALSE;
     kinkstatus = 0.;
-    track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(itrack));
-    if(!track) AliFatal("Not a standard AOD"); mctrack = NULL;
+    track = (AliAODTrack *) fAOD->GetTrack(itrack); mctrack = NULL;
     if(!track) continue;
 
     for(int ivx = 0; ivx < numberofmotherkink; ivx++){
@@ -1817,6 +1838,8 @@ void AliAnalysisTaskHFE::ProcessAOD(){
         mcsource = fBackgroundSubtraction->FindMother(TMath::Abs(track->GetLabel()),indexmother);
 	if(fBackgroundSubtraction->GetLevelBack()>=0) {
 	  if(fMCQA) {
+	    fMCQA->SetCentrality(fCentralityF);
+	    fMCQA->SetPercentrality(static_cast<Int_t>(fCentralityPercent));
 	    mcQAsource = fMCQA->GetElecSource(mctrack, kTRUE);
 	    weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
 	    //weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactorForPrimaries(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
@@ -1896,6 +1919,8 @@ void AliAnalysisTaskHFE::ProcessAOD(){
         mcsource = fBackgroundSubtraction->FindMother(TMath::Abs(track->GetLabel()),indexmother);
 	if(fBackgroundSubtraction->GetLevelBack()>=0) {
 	  if(fMCQA) {
+	    fMCQA->SetCentrality(fCentralityF);
+	    fMCQA->SetPercentrality(static_cast<Int_t>(fCentralityPercent));
 	    mcQAsource = fMCQA->GetElecSource(mctrack, kTRUE);
 	    weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
 	  }
@@ -1922,6 +1947,7 @@ Bool_t AliAnalysisTaskHFE::ProcessMCtrack(AliVParticle *track){
   // Works for AOD and MC analysis Type
   //
   fVarManager->NewTrack(track, NULL, fCentralityF, -1, kTRUE);
+  //printf("Is primary %d\n",((Int_t)track->IsPrimary()));
 
 
   Double_t vertex[3] = {0.,0.,0.}; // Production vertex cut to mask gammas which are NOT supposed to have hits in the first ITS layer(s)
@@ -2136,9 +2162,9 @@ void AliAnalysisTaskHFE::InitHistoRadius(){
   
   // Before   
   const Int_t kNDim = 3;
-  const Int_t kNBins[kNDim] = {11, 35, 100};
+  const Int_t kNBins[kNDim] = {11, 35, 25};
   const Double_t kMin[kNDim] = {0,0.1,0.01};
-  const Double_t kMax[kNDim] = {11,20.,500.};
+  const Double_t kMax[kNDim] = {11,20.,25.};
   fQACollection->CreateTHnSparse("RadiusBefore", "RadiusBefore; centrality; p_{T} (GeV/c);radius [cm]", kNDim, kNBins, kMin, kMax);
   fQACollection->BinLogAxis("RadiusBefore", 1);
   fQACollection->BinLogAxis("RadiusBefore", 2);

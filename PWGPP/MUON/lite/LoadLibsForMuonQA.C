@@ -36,9 +36,12 @@ void LoadAnalysis(const char* option = "")
 //_____________________________
 void IncludeAliroot()
 {
-  gSystem->AddIncludePath("-I${ALICE_ROOT}/include");
-  gSystem->AddIncludePath("-I${ALICE_INSTALL}/include");
-  gSystem->AddIncludePath("-I${ALICE_BUILD}/include");
+  TString envList[3] = {"ALICE_ROOT","ALICE_INSTALL","ALICE_BUILD"};
+  for ( Int_t ienv=0; ienv<3; ienv++ ) {
+    if ( ! gSystem->Getenv(envList[ienv].Data()) ) continue;
+    if ( gSystem->AccessPathName(gSystem->ExpandPathName(Form("${%s}/include",envList[ienv].Data()))) ) continue;
+    gSystem->AddIncludePath(Form("-I${%s}/include",envList[ienv].Data()));
+  }
 }
 
 //_____________________________

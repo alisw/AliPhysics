@@ -452,6 +452,7 @@ void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outC
   // Set correct range (do not show last empty bins)
   for ( Int_t ihisto=0; ihisto<effVsRunList.GetEntries(); ihisto++ ) {
     TH1* histo = static_cast<TH1*>(effVsRunList.At(ihisto));
+    if ( ! histo ) continue;
     SetRunAxisRange(histo->GetXaxis());
     outList.Add(histo);
     //histo->GetXaxis()->SetLabelSize(0.03);
@@ -481,6 +482,7 @@ void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outC
     for(Int_t icount=0; icount<AliMUONTriggerEfficiencyCells::kNcounts-1; icount++) {
       //can->cd(icount+1);
       TH2* histo = static_cast<TH2*>(effVsRunList.At(GetEffIndex(0, icount)));
+      if ( ! histo ) continue;
       TH1* chEff = histo->ProjectionX(Form("effEvolutionCh%i",11+ich), ich+1, ich+1);
       chEff->SetTitle(Form("%s for chamber %i", histo->GetTitle(), 11+ich));
       chEff->GetYaxis()->SetRangeUser(0.9,1.);
@@ -505,6 +507,7 @@ void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outC
         can = new TCanvas(canName.Data(), canName.Data(), 200, 10, 600, 600);
         can->SetRightMargin(0.14);
         TH2* histo = static_cast<TH2*>(effVsRunList.At(GetEffIndex(iel, icount,ich)));
+        if ( ! histo ) continue;
         histo->SetStats(kFALSE);
         histo->GetYaxis()->SetTitle(elementName[iel].Data());
         histo->DrawCopy("COLZ");
