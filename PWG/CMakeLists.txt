@@ -19,5 +19,6 @@ add_subdirectory (Glauber)
 add_subdirectory (muon)
 add_subdirectory (EMCAL)
 add_subdirectory (FLOW)
+add_subdirectory (TRD)
 
 message(STATUS "PWG enabled")
