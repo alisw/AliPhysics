@@ -34,6 +34,9 @@
 # Target library name = ${MODULE}
 # Shared and static library targets are using the same object target
 
+###########################################################################
+# Library description
+###########################################################################
 
 # Module name
 set(MODULE RAWDatabase)
@@ -98,10 +101,13 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
     set(MODULE_LINK_FLAGS "-undefined dynamic_lookup ${MODULE_LINK_FLAGS}")
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
-# Generating the static library
+###########################################################################
+# Generating the libraries
+###########################################################################
+# Shared librarys
 generate_shared_library()
 
-# Static version if DA enabled
+# Static library
 if(ALIROOT_STATIC)
     generate_static_library()
 endif(ALIROOT_STATIC)

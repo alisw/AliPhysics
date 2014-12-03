@@ -146,6 +146,7 @@ macro(generate_static_dependencies shared_list static_list)
     set(${static_list} PARENT_SCOPE)
 endmacro(generate_static_dependencies)
 
+# Generate the static library
 macro(generate_static_library)
     add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:${MODULE}-object>)
     
