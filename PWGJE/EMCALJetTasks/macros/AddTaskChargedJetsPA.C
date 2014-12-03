@@ -78,13 +78,18 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
     AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,"",1,jetRadius,1,minJetTrackPt,0.300,0.005,recombscheme, "Jet", 0.0); // anti-kt
     AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,ktJetRadius,1,minJetTrackPt,0.300,0.005,recombscheme, "Jet", 0.0); // kt
     cout << " Jet finder tasks added: " <<  jetFinderTask << " + " <<  jetFinderTaskKT << endl;
+    jetFinderTask->SelectCollisionCandidates(AliVEvent::kAny);
+    jetFinderTaskKT->SelectCollisionCandidates(AliVEvent::kAny);
 
     // #### Define external rho task
     AliEmcalJetTask* jetFinderRho = AddTaskEmcalJet(usedTracks,"",1,0.4,1,minJetTrackPt,0.300,0.005,recombscheme, "Jet", 0.0); // anti-kt
     AliEmcalJetTask* jetFinderRhoKT = AddTaskEmcalJet(usedTracks,"",0,0.4,1,minJetTrackPt,0.300,0.005,recombscheme, "Jet", 0.0); // kt
+    jetFinderRho->SelectCollisionCandidates(AliVEvent::kAny);
+    jetFinderRhoKT->SelectCollisionCandidates(AliVEvent::kAny);
     cout << " Jet finder tasks (used for bgrd) added: " <<  jetFinderRho << " + " <<  jetFinderRhoKT << endl;
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
     AliAnalysisTaskRhoSparse* rhotask = AddTaskRhoSparse(jetFinderRhoKT->GetName(), NULL, usedTracks, "", bgrdName.Data(), 0.4,"TPC", 0., 5., 0, 0,2,kFALSE,bgrdName.Data(),kTRUE);
+    rhotask->SelectCollisionCandidates(AliVEvent::kAny);
     cout << " Background task added: " <<  rhotask << endl;
   }
 
