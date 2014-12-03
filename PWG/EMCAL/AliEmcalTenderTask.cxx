@@ -8,7 +8,7 @@
 #include <TFile.h>
 
 #include "AliAnalysisManager.h"
-#include "TenderSupplies/AliEMCALTenderSupply.h"
+#include "AliEMCALTenderSupply.h"
 #include "AliAODEvent.h"
 
 #include "AliEmcalTenderTask.h"
