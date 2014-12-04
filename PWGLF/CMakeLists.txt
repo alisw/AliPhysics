@@ -15,6 +15,7 @@
 
 # Include the libraries
 add_subdirectory (FORWARD)
+add_subdirectory (QATasks)
 add_subdirectory (RESONANCES)
 add_subdirectory (RESONANCES/extra)
 add_subdirectory (SPECTRA)
