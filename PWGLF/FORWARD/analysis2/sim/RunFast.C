@@ -38,7 +38,8 @@ RunFast(Bool_t      proof=false,
     gROOT->LoadClass(obj->GetName(), obj->GetTitle());
   }
 
-  gROOT->LoadMacro(Form("%s/sim/FastSim.C++g",fwd.Data()));
+  const char* opt="";
+  gROOT->LoadMacro(Form("%s/sim/FastSim.C+%s",fwd.Data(),opt));
 
   const char* cleanFiles[] = { "grp.dat",
 			       "galice.root",
@@ -52,7 +53,8 @@ RunFast(Bool_t      proof=false,
     pClean++;
   }
 
+  const char* url = "lite:///?workers=8";
   ::Info("runFast", "Monitor=%d", monitor);
-  if (proof) FastSim::Proof(maxEvents, runNo, eg, bMin, bMax, monitor);
+  if (proof) FastSim::Proof(url,maxEvents, runNo, eg, bMin, bMax, monitor);
   else       FastSim::Run(maxEvents, runNo, eg, bMin, bMax, monitor);
 }

@@ -191,9 +191,10 @@ echo "SIMRUN: Now read to process"
 # --- Run simulation (out: hits, digits, sdigits) --------------------
 runcommand "SIMULATION"     "Simulate.C($DC_EVENT,$DC_RUN)" 	sim.log     5
 rm -f *.Hits.root
-type=`echo $CONFIG_RUN_TYPE | tr '[A-Z]' '[a-z]'` 
+type=`echo $CONFIG_RUN_TYPE | tr '[A-Z]' '[a-z]'`
+echo "Type=$type"
 case x$type in
-    lego*) 
+    xlego*) 
 	rm -f *.Digits.root *.SDigits.root
 	cleanRecPoints 1
 	exit 0

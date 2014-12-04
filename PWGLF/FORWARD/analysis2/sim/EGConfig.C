@@ -71,7 +71,7 @@ protected:
     else if (t.BeginsWith("phojet"))          g=Dpmjet(b1, b2);
     else if (t.BeginsWith("hydjet"))          g=Hydjet(b1, b2);
     else if (t.BeginsWith("lego"))            g=Lego(rt);
-    if (!g)
+    if (!g && !fIsLego)
       Fatal("", "Invalid run type \"%s\" specified", t.Data());
     return g;
   }
@@ -270,8 +270,8 @@ protected:
     // reference frame
     gener->SetReferenceFrame("CMS");
     // projectil
-    gener->SetProjectile(grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
-    gener->SetTarget    (grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
+    gener->SetTarget    (grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
+    gener->SetProjectile(grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
     // tell hijing to keep the full parent child chain
     gener->KeepFullEvent();
     // enable jet quenching
@@ -291,8 +291,8 @@ protected:
     if (!slowN || !grp->IsPA() || !grp->IsAP()) return gener;
 
     AliGenCocktail* cocktail = new AliGenCocktail();
-    cocktail->SetProjectile(grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
-    cocktail->SetTarget    (grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
+    cocktail->SetTarget    (grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
+    cocktail->SetProjectile(grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
     cocktail->SetEnergyCMS(grp->energy);
 
     AliGenSlowNucleons*     gray  = new AliGenSlowNucleons(1);
@@ -301,7 +301,7 @@ protected:
     //  Not yet in the release...
     //      model->SetSaturation(kTRUE);
     gray->SetSlowNucleonModel(model);
-    gray->SetTarget(grp->beam2.a, grp->beam2.z);
+    gray->SetTarget(grp->beam1.a, grp->beam1.z);
     gray->SetThetaDist(1);
     gray->SetProtonDirection(grp->beam1.IsP() ? 1 : 2);
     //      gray->SetDebug(1);
@@ -335,7 +335,7 @@ protected:
       dpmjet->SetPi0Decay(0);
     }
     else if (grp->IsPA() || grp->IsAP()) { 
-      dpmjet->SetTriggerParticle(3312, 1.2, 2.0);
+      // dpmjet->SetTriggerParticle(3312, 1.2, 2.0);
       dpmjet->SetFragmentProd(fragments); // Alwas disabled 
     }
     else if (grp->IsPP()) { // PhoJet
@@ -357,8 +357,8 @@ protected:
     AliGenAmpt *genHi = new AliGenAmpt(-1);
     genHi->SetEnergyCMS(grp->energy);
     genHi->SetReferenceFrame("CMS");
-    genHi->SetProjectile(grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
-    genHi->SetTarget    (grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
+    genHi->SetTarget    (grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
+    genHi->SetProjectile(grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
     genHi->SetPtHardMin (2);
     genHi->SetImpactParameterRange(minB,maxB);
     // disable jet quenching
@@ -382,8 +382,8 @@ protected:
     LoadHydjet();
     AliGenUHKM *genHi = new AliGenUHKM(-1);
     genHi->SetAllParametersLHC();
-    genHi->SetProjectile(grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
-    genHi->SetTarget    (grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
+    genHi->SetTarget    (grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
+    genHi->SetProjectile(grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
     genHi->SetEcms(grp->energy);
     genHi->SetEnergyCMS(grp->energy);
     genHi->SetBmin(minB);
@@ -467,8 +467,8 @@ protected:
   {
     
     AliGenCocktail *cocktail = new AliGenCocktail();
-    cocktail->SetProjectile(grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
-    cocktail->SetTarget    (grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
+    cocktail->SetTarget    (grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
+    cocktail->SetProjectile(grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
     cocktail->SetEnergyCMS(grp->energy);
     
     // Add underlying event

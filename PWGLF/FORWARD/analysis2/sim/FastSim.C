@@ -28,6 +28,7 @@
 # include <TFile.h>
 # include <TProofOutputFile.h>
 # include <TCanvas.h>
+# include <TTimer.h>
 # include <fstream>
 #else
 class AliGenerator;
@@ -44,6 +45,7 @@ class TFile;
 class TProofOutputFile;
 class TCanvas;
 class TVirtualPad;
+class TTimer;
 #endif
 
 //====================================================================
@@ -58,26 +60,28 @@ struct FastMonitor : public TObject, public TQObject
    * 
    * @return 
    */
-  FastMonitor()
-    : fName(""),
-      fCanvas(0)
+  FastMonitor(TSelector* s=0)
+    : fName("FastMonitor"),
+      fCanvas(0),
+      fSelector(s)
   {
-    if (!gProof) return;
-    
-    fName = gProof->GetSessionTag();
-    gDirectory->Add(this);
-    Bool_t ret = gProof->Connect("Feedback(TList *objs)", "FastMonitor", this, 
-				 "Feedback(TList *objs)");
-    if (!ret) {
-      Warning("FastMonitor", "Failed to connect to Proof");
-      return;
-    }
     if (gROOT->IsBatch()) {
       Warning("FastMonitor", "Batch processing, no monitoring");
       return;
     }
 
-
+    if (gProof) {
+      fName = gProof->GetSessionTag();
+      gDirectory->Add(this);
+      Bool_t ret = gProof->Connect("Feedback(TList *objs)", "FastMonitor", this, 
+				   "Feedback(TList *objs)");
+      if (!ret) {
+	Warning("FastMonitor", "Failed to connect to Proof");
+	return;
+      }
+    }
+    else if (!s) return;
+    
     fCanvas = new TCanvas(fName, Form("Monitor %s", fName.Data()), 1000, 800);
     fCanvas->SetFillColor(0);
     fCanvas->SetFillStyle(0);
@@ -89,9 +93,6 @@ struct FastMonitor : public TObject, public TQObject
     RegisterDraw(2, "b",      "", 0);
     RegisterDraw(3, "cent",   "", 0);
     RegisterDraw(4, "dNdeta", "", 0x8);
-
-
-    // divide the canvas 
   }
   /** 
    * Register a draw of a an object 
@@ -126,7 +127,6 @@ struct FastMonitor : public TObject, public TQObject
     if (flags & 0x2) p->SetLogy();
     if (flags & 0x4) p->SetLogz();
     if (flags & 0x8) p->SetBit(BIT(15));
-    
   }
   /** 
    * Desctructor 
@@ -184,6 +184,12 @@ struct FastMonitor : public TObject, public TQObject
       return;
     }
     Int_t nEvents = 1;
+    TObject* oIpz = l->FindObject("ipZ");
+    if (oIpz && oIpz->IsA()->InheritsFrom(TH1::Class())) 
+      nEvents = static_cast<TH1*>(oIpz)->GetEntries();
+    else 
+      Warning("Feedback", "Histogram ipZ not found");
+    
     TIter next(l);
     TObject* o = 0;
     while ((o = next())) {
@@ -194,30 +200,50 @@ struct FastMonitor : public TObject, public TQObject
 
       p->cd();
       if (o->IsA()->InheritsFrom(TH1::Class())) {
-	TH1*    h = static_cast<TH1*>(o);
-	TString n(o->GetName());
-	if (n == "type") nEvents = h->GetEntries();
-	
+	TH1* h = static_cast<TH1*>(o);
 	TH1* c = h->DrawCopy(p->GetTitle());
 	c->SetDirectory(0);
+	c->SetBit(TObject::kCanDelete);
 	if (p->TestBit(BIT(15))) {
 	  Info("Feedback", "Scaling %s by 1./%d and width",
-	       n.Data(), nEvents);
+	       c->GetName(), nEvents);
 	  c->Scale(1./nEvents, "width");
 	}
       }
-      else 
-	o->DrawClone(p->GetTitle());
+      else {
+	TObject* c = o->DrawClone(p->GetTitle());
+	c->SetBit(TObject::kCanDelete);
+      }
       p->Modified();
     }
     fCanvas->Modified();
     fCanvas->Update();
     fCanvas->cd();
   }
+  /** 
+   * Function to handle connect signals 
+   * 
+   */
+  void Handle()
+  {
+    HandleTimer(0);
+  }
+  /**
+   * Function to handle timer events 
+   */
+  Bool_t HandleTimer(TTimer*)
+  {
+    Info("HandleTimer", "Selector=%p", fSelector);
+    if (!fSelector) return false;
+    Feedback(fSelector->GetOutputList());
+    return true;
+  }
   /** Our name */
   TString fName;
   /** Our canvas */
-    TCanvas* fCanvas;
+  TCanvas* fCanvas;
+  /** Possibly link to selector */
+  TSelector* fSelector;
   ClassDef(FastMonitor,1);
 };
 
@@ -239,13 +265,15 @@ struct FastSim : public TSelector
   FastSim(const char* eg="",
 	  ULong_t runNo=0,
 	  Double_t bMin=0,
-	  Double_t bMax=20)
+	  Double_t bMax=20,
+	  Long64_t nEvents=0)
     : TSelector(),
       fEGName(eg),
       fRunNo(runNo),
       fBMin(bMin),
       fBMax(bMax),
       fGRP(0),
+      fNEvents(nEvents),
       fGenerator(0),
       fRunLoader(0),
       fStack(0),
@@ -270,7 +298,19 @@ struct FastSim : public TSelector
     if (fn.IsNull()) {
       if (!fFileName.IsNull())  fn = fFileName;
       else {
-	fn = Form("%s_%09d.root", fEGName.Data(), fRunNo);
+	const char* egName = (fGenerator ?
+			      fGenerator->GetName() :
+			      fEGName.Data());
+	fn = Form("%s_%09d", egName, fRunNo);
+	if (fNEvents > 0) {
+	  if (fNEvents >= 1000000)
+	    fn.Append(Form("_%lldM", fNEvents/1000000));
+	  else if (fNEvents >= 1000)
+	    fn.Append(Form("_%lldk", fNEvents/1000));
+	  else
+	    fn.Append(Form("_%lld", fNEvents));
+	}
+	fn.Append(".root");
 	fFileName = fn;
       }
     }
@@ -280,6 +320,8 @@ struct FastSim : public TSelector
       fFileName = Form("%s_%09d.root", fEGName.Data(), fRunNo);
       return fFileName.Data();*/
   }
+  const char* GetName() const { return "FastSim"; }
+  const char* GetTitle() const { return "ALICE Event Generator simulation"; }
   /** 
    * Create our outputs 
    * 
@@ -323,6 +365,10 @@ struct FastSim : public TSelector
     fTree->SetAlias("pion",    "(abs(particles.fPdgCode)==211)");
     fTree->SetAlias("kaon",    "(abs(particles.fPdgCode)==321)");
     fTree->SetAlias("proton",  "(abs(particles.fPdgCode)==2212)");
+    fTree->SetAlias("electron","(abs(particles.fPdgCode)==11)");
+    fTree->SetAlias("other",   "(!pion&&!kaon&&!proton&&!electron)");
+    fTree->SetAlias("beta",    "(particles.P()/particle.Energy())");
+    fTree->SetAlias("gamma",   "(1./sqrt(1-beta*beta))");
 
     Info("SetupOutput", "Making histograms");
     Double_t maxEta = 10;
@@ -443,8 +489,7 @@ struct FastSim : public TSelector
     fGenerator = reinterpret_cast<AliGenerator*>(egPtr);
 
 
-    if (fFileName.IsNull()) 
-      fFileName = Form("%s_%09d.root", fGenerator->GetName(), fRunNo);
+    if (fFileName.IsNull()) FileName();
     Info("SetupRun", "File name is '%s'", fFileName.Data());
 
     return true;
@@ -456,12 +501,13 @@ struct FastSim : public TSelector
    * 
    * @return true on success 
    */
-  Bool_t SetupRun(UInt_t nev=0xFFFFFFF)
+  Bool_t SetupRun()
   {
     // --- gAlice (bare ROOT) ----------------------------------------
     if (!gAlice)
       new AliRun("gAlice", "The ALICE Off-line framework");
 
+    Long64_t nev = (fNEvents <= 0 ? 0xFFFFFFFF : fNEvents);
     // --- Run-loader, stack, etc  -----------------------------------
     Info("SetupRun", "Set-up run Loader");    
     fRunLoader = AliRunLoader::Open("galice.root", "FASTRUN", "RECREATE");
@@ -569,7 +615,7 @@ struct FastSim : public TSelector
     fShortHead.fNpart   = -1;
     fShortHead.fNbin    = -1;
     fShortHead.fPhiR    = -1;
-    fShortHead.fB       = 1024;
+    fShortHead.fB       = -1;
     fShortHead.fC       = -1; 
     fParticles->Clear();
     // --- Reset header, etc.  ---------------------------------------
@@ -661,37 +707,38 @@ struct FastSim : public TSelector
     // cern.ch/twiki/bin/view/ALICE/CentStudies#Tables_with_centrality_bins_AN1
     Float_t  np = 0;
     UInt_t   nc = 0;
-    Double_t c  = 0;
+    Double_t c  = -1;
     Double_t b  = fShortHead.fB;
-    if      (0.00 >= b  && b < 1.57)  { c=0.5;  np=403.8; nc=1861; } 
-    else if (1.57 >= b  && b < 2.22)  { c=1.5;  np=393.6; nc=1766; } 
-    else if (2.22 >= b  && b < 2.71)  { c=2.5;  np=382.9; nc=1678; } 
-    else if (2.71 >= b  && b < 3.13)  { c=3.5;  np=372;   nc=1597; }  
-    else if (3.13 >= b  && b < 3.50)  { c=4.5;  np=361.1; nc=1520; } 
-    else if (3.50 >= b  && b < 4.94)  { c=7.5;  np=329.4; nc=1316; } 
-    else if (4.94 >= b  && b < 6.05)  { c=12.5; np=281.2; nc=1032; } 
-    else if (6.05 >= b  && b < 6.98)  { c=17.5; np=239;   nc=809.8; }
-    else if (6.98 >= b  && b < 7.81)  { c=22.5; np=202.1; nc=629.6; }
-    else if (7.81 >= b  && b < 8.55)  { c=27.5; np=169.5; nc=483.7; }
-    else if (8.55 >= b  && b < 9.23)  { c=32.5; np=141;   nc=366.7; }
-    else if (9.23 >= b  && b < 9.88)  { c=37.5; np=116;   nc=273.4; }
-    else if (9.88 >= b  && b < 10.47) { c=42.5; np=94.11; nc=199.4; } 
-    else if (10.47 >= b && b < 11.04) { c=47.5; np=75.3;  nc=143.1; } 
-    else if (11.04 >= b && b < 11.58) { c=52.5; np=59.24; nc=100.1; }
-    else if (11.58 >= b && b < 12.09) { c=57.5; np=45.58; nc=68.46; }
-    else if (12.09 >= b && b < 12.58) { c=62.5; np=34.33; nc=45.79; }
-    else if (12.58 >= b && b < 13.05) { c=67.5; np=25.21; nc=29.92; }
-    else if (13.05 >= b && b < 13.52) { c=72.5; np=17.96; nc=19.08; }
-    else if (13.52 >= b && b < 13.97) { c=77.5; np=12.58; nc=12.07; }
-    else if (13.97 >= b && b < 14.43) { c=82.5; np=8.812; nc=7.682; }
-    else if (14.43 >= b && b < 14.96) { c=87.5; np=6.158; nc=4.904; }
-    else if (14.96 >= b && b < 15.67) { c=92.5; np=4.376; nc=3.181; }
-    else if (15.67 >= b && b < 20.00) { c=97.5; np=3.064; nc=1.994; }
-    fShortHead.fC = c;
-    // Be careful to round off
-    if (fShortHead.fNpart <= 0) fShortHead.fNpart = Int_t(np+.5);
-    if (fShortHead.fNbin  <= 0) fShortHead.fNbin  = Int_t(nc+.5)/2;
-    
+    if (b >= 0) {
+      if      (0.00 >= b  && b < 1.57)  { c=0.5;  np=403.8; nc=1861; } 
+      else if (1.57 >= b  && b < 2.22)  { c=1.5;  np=393.6; nc=1766; } 
+      else if (2.22 >= b  && b < 2.71)  { c=2.5;  np=382.9; nc=1678; } 
+      else if (2.71 >= b  && b < 3.13)  { c=3.5;  np=372;   nc=1597; }  
+      else if (3.13 >= b  && b < 3.50)  { c=4.5;  np=361.1; nc=1520; } 
+      else if (3.50 >= b  && b < 4.94)  { c=7.5;  np=329.4; nc=1316; } 
+      else if (4.94 >= b  && b < 6.05)  { c=12.5; np=281.2; nc=1032; } 
+      else if (6.05 >= b  && b < 6.98)  { c=17.5; np=239;   nc=809.8; }
+      else if (6.98 >= b  && b < 7.81)  { c=22.5; np=202.1; nc=629.6; }
+      else if (7.81 >= b  && b < 8.55)  { c=27.5; np=169.5; nc=483.7; }
+      else if (8.55 >= b  && b < 9.23)  { c=32.5; np=141;   nc=366.7; }
+      else if (9.23 >= b  && b < 9.88)  { c=37.5; np=116;   nc=273.4; }
+      else if (9.88 >= b  && b < 10.47) { c=42.5; np=94.11; nc=199.4; } 
+      else if (10.47 >= b && b < 11.04) { c=47.5; np=75.3;  nc=143.1; } 
+      else if (11.04 >= b && b < 11.58) { c=52.5; np=59.24; nc=100.1; }
+      else if (11.58 >= b && b < 12.09) { c=57.5; np=45.58; nc=68.46; }
+      else if (12.09 >= b && b < 12.58) { c=62.5; np=34.33; nc=45.79; }
+      else if (12.58 >= b && b < 13.05) { c=67.5; np=25.21; nc=29.92; }
+      else if (13.05 >= b && b < 13.52) { c=72.5; np=17.96; nc=19.08; }
+      else if (13.52 >= b && b < 13.97) { c=77.5; np=12.58; nc=12.07; }
+      else if (13.97 >= b && b < 14.43) { c=82.5; np=8.812; nc=7.682; }
+      else if (14.43 >= b && b < 14.96) { c=87.5; np=6.158; nc=4.904; }
+      else if (14.96 >= b && b < 15.67) { c=92.5; np=4.376; nc=3.181; }
+      else if (15.67 >= b && b < 20.00) { c=97.5; np=3.064; nc=1.994; }
+      fShortHead.fC = c;
+      // Be careful to round off
+      if (fShortHead.fNpart <= 0) fShortHead.fNpart = Int_t(np+.5);
+      if (fShortHead.fNbin  <= 0) fShortHead.fNbin  = Int_t(nc+.5)/2;
+    }
     
     // --- Check if within vertex cut -------------------------------
     Bool_t selected = (fShortHead.fIpZ <= fHIpz->GetXaxis()->GetXmax() &&
@@ -804,8 +851,6 @@ struct FastSim : public TSelector
     fGenerator->Write();
     fRunLoader->Write();
 
-    Info("SlaveTerminate", "fFile=%p fProofFile=%p", fFile, fProofFile);
-
     if (fFile) {
       if (fProofFile) {
 	fOutput->Add(fProofFile);
@@ -825,6 +870,8 @@ struct FastSim : public TSelector
    */
   void Terminate()
   {
+    if (gProof) gProof->ClearFeedback();
+    
     if (!fList)
       fList = static_cast<TList*>(fOutput->FindObject("histograms"));
     if (!fList) {
@@ -838,11 +885,8 @@ struct FastSim : public TSelector
       fProofFile =
 	static_cast<TProofOutputFile*>(fOutput->FindObject(FileName()));
     }
-    if (fProofFile) {
-      Info("Terminate", "Got a Proof file %s/%s",
-	   fProofFile->GetFileName(), fProofFile->GetOutputFileName());
+    if (fProofFile) 
       fFile = fProofFile->OpenFile("UPDATE");
-    }
     if (!fFile)
       fFile = TFile::Open(FileName(),"UPDATE");
     
@@ -900,7 +944,8 @@ struct FastSim : public TSelector
   Int_t    fRunNo;                // Run to simulate 
   Double_t fBMin;                 // Least impact parameter 
   Double_t fBMax;                 // Largest impact parameter
-  TObject* fGRP;                  //! GRP in one line 
+  TObject* fGRP;                  //! GRP in one line
+  Long64_t fNEvents;              //  Number of requested events
   /* @} */
   /** 
    * @{ 
@@ -956,12 +1001,16 @@ struct FastSim : public TSelector
   } fShortHead;
 #endif
   /** 
-   * Run a job locally 
+   * Run this selector as a normal process
    * 
-   * @param nev Number of events
-   * @param gen Event generator 
+   * @param nev        Number of events
+   * @param run        Run number to anchor in
+   * @param gen        Generator 
+   * @param bMin       Least impact parameter [fm]
+   * @param bMax       Largest impact parameter [fm]
+   * @param monitor    Monitor frequency [s]
    * 
-   * @return 
+   * @return true on succes
    */
   static Bool_t  Run(Long64_t    nev,
 		     UInt_t      run,
@@ -970,22 +1019,37 @@ struct FastSim : public TSelector
 		     Double_t    bMax,
 		     Int_t       monitor)
   {
-    TStopwatch timer;
-    timer.Start();
+    TStopwatch stopwatch;
+    stopwatch.Start();
     
-    FastSim* sim = new FastSim(gen,run,bMin,bMax);
+    FastSim* sim = new FastSim(gen,run,bMin,bMax,nev);
     sim->Begin(0);
     sim->SlaveBegin(0);
 
+    TTimer* timer = 0;
+    if (monitor > 0) {
+      // timer = new TTimer(new FastMonitor(sim), monitor*1000,true);
+      timer = new TTimer(1000);
+      timer->Connect("Timeout()","FastMonitor",
+		     new FastMonitor(sim), "Handle()");
+      ::Info("Run", "Turning on monitoring");
+      timer->Start(-1,false);
+    }
+      
     for (Long64_t i=0; i <nev; i++) {
       Printf("=== Event # %6lld/%6lld ==========================",
 	     i+1, nev);
       sim->Process(i);
+      if (timer && (i > 0) && (i % 500 == 0)) {
+	if (timer->CheckTimer(gSystem->Now()))
+	  Printf("Fired timer");
+      }
     }
+    if (timer) timer->TurnOff();
     sim->SlaveTerminate();
     sim->Terminate();
 
-    timer.Print();
+    stopwatch.Print();
     return true;
   }
   static void ProofLoadLibs()
@@ -1018,8 +1082,22 @@ struct FastSim : public TSelector
 			obj->GetName(), obj->GetTitle()));
     }
   }
-
-  static Bool_t Proof(Long64_t     nev,
+  /** 
+   * Run this selector in PROOF(Lite)
+   * 
+   * @param url        Proof URL
+   * @param nev        Number of events
+   * @param run        Run number to anchor in
+   * @param gen        Generator 
+   * @param bMin       Least impact parameter [fm]
+   * @param bMax       Largest impact parameter [fm]
+   * @param monitor    Monitor frequency [s]
+   * @param opt        Compilation options
+   * 
+   * @return true on succes
+   */
+  static Bool_t Proof(const char*  url,
+		      Long64_t     nev,
 		      UInt_t       run,
 		      const char*  gen,
 		      Double_t     bMin,
@@ -1036,8 +1114,8 @@ struct FastSim : public TSelector
     TStopwatch timer;
     timer.Start();
     
-    TProof::Reset("lite:///?workers=8");
-    TProof::Open("lite:///?workers=8");
+    TProof::Reset(url);
+    TProof::Open(url);
     gProof->ClearCache();
 
     TString ali = gSystem->ExpandPathName("$(ALICE_ROOT)");
@@ -1057,7 +1135,7 @@ struct FastSim : public TSelector
     else              gProof->SetParameter("PROOF_FeedbackPeriod",
 					   monitor*1000/*ms*/);
 
-    FastSim* sim = new FastSim(gen,run,bMin,bMax);
+    FastSim* sim = new FastSim(gen,run,bMin,bMax,nev);
     gProof->Process(sim, nev, "");
 
     timer.Print();
