@@ -251,6 +251,7 @@ add_subdirectory(PWG)
 add_subdirectory(PWGGA)
 # Depends on CF and LF - To fix the dependencies
 add_subdirectory(PWGDQ)
+add_subdirectory(PWGHF)
 add_subdirectory(PWGJE)
 add_subdirectory(PWGLF)
 # Depends on PP - To fix depedencies
