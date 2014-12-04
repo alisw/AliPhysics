@@ -183,6 +183,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
   AliEmcalJet* jet1 = NULL;
   AliJetContainer *jetCont = GetJetContainer(0);
   Float_t kWeight=1;
+  if(fCent>10) return 0;
   if(jetCont) {
     jetCont->ResetCurrentID();
     while((jet1 = jetCont->GetNextAcceptJet())) {
@@ -201,7 +202,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
 	  }
 	  
 	  Double_t fraction = jetCont->GetFractionSharedPt(jet1);
-          cout<<"hey a jet"<<fraction<<" "<<jet1->Pt()<<" "<<jet2->Pt()<<endl;
+          cout<<"hey a jet"<<fraction<<" "<<jet1->Pt()<<" "<<jet2->Pt()<<" "<<fCent<<endl;
+          
 	  if(fraction<fMinFractionShared) continue;
 	  partonsInfo = (AliPythiaInfo*) jetContTrue->GetPythiaInfo();     
 	  if(!partonsInfo) return 0;
