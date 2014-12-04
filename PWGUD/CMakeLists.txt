@@ -15,5 +15,8 @@
 
 add_subdirectory(base)
 add_subdirectory(DIFFRACTIVE)
+add_subdirectory(FirstPhysics)
+add_subdirectory(selectors)
+add_subdirectory(UPC)
 
 message(STATUS "PWGUD enabled")

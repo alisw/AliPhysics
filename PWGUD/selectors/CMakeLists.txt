@@ -14,36 +14,32 @@
 # **************************************************************************
 
 # Module
-set(MODULE PWGUDdiffractive)
+set(MODULE PWGUDselectors)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWGUD/DIFFRACTIVE
-                    ${AliRoot_SOURCE_DIR}/PWGUD/DIFFRACTIVE/xsAndTwoProng
+include_directories(${AliRoot_SOURCE_DIR}/PWGUD/selectors
+                    ${AliRoot_SOURCE_DIR}/PWGUD/selectors/dNdEta
+                    ${AliRoot_SOURCE_DIR}/PWGUD/selectors/eventStat
+                    ${AliRoot_SOURCE_DIR}/PWGUD/selectors/multiplicity
+                    ${AliRoot_SOURCE_DIR}/PWGUD/selectors/trigger
                    )
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/ITS/ITSrec
-                    ${AliRoot_SOURCE_DIR}/PWGPP/ITS # what target here
-                    ${AliRoot_SOURCE_DIR}/STEER/CDB
-                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+                    ${AliRoot_SOURCE_DIR}/PWGUD/base
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
-                    ${AliRoot_SOURCE_DIR}/VZERO/VZERObase
                    )
 
 # Sources in alphabetical order
 set(SRCS
-    example/AliAnalysisTaskCDex.cxx
-    example/AliCDMesonBaseStripped.cxx
-    example/AliCDMesonUtilsStripped.cxx
-    QA/AliAnalysisTaskCPQA.cxx
-    xsAndTwoProng/AliAnalysisTaskCDMeson.cxx
-    xsAndTwoProng/AliAnalysisTaskCDskimESD.cxx
-    xsAndTwoProng/AliCDMesonBase.cxx
-    xsAndTwoProng/AliCDMesonTracks.cxx
-    xsAndTwoProng/AliCDMesonUtils.cxx
+    dNdEta/AlidNdEtaCorrectionTask.cxx
+    dNdEta/AlidNdEtaTask.cxx
+    eventStats/AliEventStatsTask.cxx
+    multiplicity/AliMultiplicityTask.cxx
+    trigger/AliTriggerTask.cxx
    )
 
 # Headers from sources
@@ -54,8 +50,8 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
-set(ROOT_DEPENDENCIES Core EG Geom Hist MathCore Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES STEERBase STEER CDB ANALYSISalice ANALYSIS ITSrec VZERObase)
+set(ROOT_DEPENDENCIES Core EG Gpad Hist MathCore Physics RIO Tree)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice ESD STEERBase PWGUDbase)
 
 # Generate the ROOT map
 # Dependecies
