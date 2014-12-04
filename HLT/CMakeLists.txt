@@ -40,6 +40,7 @@ add_subdirectory(EMCAL)
 add_subdirectory(FMD)
 add_subdirectory(ITS)
 add_subdirectory(JET)
+#add_subdirectory(FJWrapper) - not needed
 add_subdirectory(MUON)
 add_subdirectory(pendolino)
 add_subdirectory(PHOS)
