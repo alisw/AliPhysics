@@ -163,6 +163,10 @@ void *AddTaskDFilterAndCorrelations(
      nameContainerC0+=Form("Typ%d",typeDjet);
      nameContainerC1+=Form("Typ%d",typeDjet);
   }
+  
+  nameContainerC0 += subwagons;
+  nameContainerC1 += subwagons;
+  
   // ------ input data ------
   AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
   cinput0->SetName(Form("in%s%s",candname.Data(),suffix.Data()));
