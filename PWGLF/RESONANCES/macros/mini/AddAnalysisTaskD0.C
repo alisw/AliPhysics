@@ -142,9 +142,19 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
    AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", cutV, 1, kFALSE, kFALSE);
    if(checkpileup == kTRUE){
-   	if(SPDpileup == kTRUE)cutVertex->SetCheckPileUp(kTRUE);
-   	AliRsnCutEventUtils *eventUtils = new AliRsnCutEventUtils("cutEventUtils", kFALSE, kFALSE); 
-   	if(SPDpileup == kFALSE)eventUtils->SetUseMVPlpSelection(kTRUE);
+   	AliRsnCutEventUtils *cutEventUtils = new AliRsnCutEventUtils("cutEventUtils", kFALSE, kTRUE); 
+	if(SPDpileup == kTRUE) {cutEventUtils->SetRemovePileUppA2013(kTRUE); 
+				//cutEventUtils->SetRemoveFirstEvtInChunk(kTRUE);
+				//cutEventUtils->SetUseVertexSelection2013pA(kTRUE);
+				cutEventUtils->SetUseMVPlpSelection(kFALSE); 
+				cutEventUtils->SetMinPlpContribSPD(5);
+									  }
+   	if(SPDpileup == kFALSE){cutEventUtils->SetRemovePileUppA2013(kTRUE); 
+				//cutEventUtils->SetRemoveFirstEvtInChunk(kTRUE);
+				//cutEventUtils->SetUseVertexSelection2013pA(kTRUE);
+				cutEventUtils->SetUseMVPlpSelection(kTRUE); 
+				cutEventUtils->SetMinPlpContribMV(5);
+									  }
    } 
 		 
    ::Info("AddAnalysisTaskD0", Form("Checking Pile up? %s", (checkpileup ? "yes" : "no") ));
@@ -153,7 +163,9 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    // define and fill cut set for event cut
    AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
    eventCuts->AddCut(cutVertex);
-   eventCuts->SetCutScheme(cutVertex->GetName());
+   //if(SPDpileup == kFALSE) eventCuts->AddCut(cutEventUtils);
+   eventCuts->AddCut(cutEventUtils);
+   eventCuts->SetCutScheme(Form("%s&%s", cutEventUtils->GetName(), cutVertex->GetName() ));
    eventCuts->ShowCuts();
    eventCuts->PrintSetInfo();
    // set cuts in task

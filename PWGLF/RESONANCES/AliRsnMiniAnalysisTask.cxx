@@ -24,6 +24,7 @@
 #include "AliTriggerAnalysis.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
+#include "AliAnalysisUtils.h"
 
 #include "AliESDtrackCuts.h"
 #include "AliESDUtils.h"
@@ -313,15 +314,17 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    fOutput->SetOwner();
 
    // initialize event statistics counter
-   fHEventStat = new TH1F("hEventStat", "Event statistics", 8, 0.0, 8.0);
+   fHEventStat = new TH1F("hEventStat", "Event statistics", 9, 0.0, 9.0);
    fHEventStat->GetXaxis()->SetBinLabel(1, "CINT1B");
    fHEventStat->GetXaxis()->SetBinLabel(2, "V0AND");
    fHEventStat->GetXaxis()->SetBinLabel(3, "Candle");
    fHEventStat->GetXaxis()->SetBinLabel(4, "Accepted");
-   fHEventStat->GetXaxis()->SetBinLabel(5, "Not Accepted - Total");
+   fHEventStat->GetXaxis()->SetBinLabel(5, "Not Accepted - Total");   
    fHEventStat->GetXaxis()->SetBinLabel(6, "Not Accepted - No Track Vertex");
    fHEventStat->GetXaxis()->SetBinLabel(7, "Not Accepted - Not Enough Contributors");
    fHEventStat->GetXaxis()->SetBinLabel(8, "Not Accepted - No Vertex inside |z| < 10 cm");
+   fHEventStat->GetXaxis()->SetBinLabel(9, "Not Accepted - Pile Up Events");
+   
    
    fOutput->Add(fHEventStat);
 
@@ -759,26 +762,31 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
    // if the above exit point is not taken, the event is accepted
    AliDebugClass(2, Form("Stats: %s", msg.Data()));
    if (isSelected) {
-      fHEventStat->Fill(3.1);
-      Double_t multi = ComputeCentrality((output == 'E'));
-      Double_t tracklets = ComputeTracklets();
-      fHAEventsVsMulti->Fill(multi);
-      fHAEventsVsTracklets->Fill(tracklets);
-      if(fHAEventVz) fHAEventVz->Fill(multi,fInputEvent->GetPrimaryVertex()->GetZ());
-      if(fHAEventMultiCent) fHAEventMultiCent->Fill(multi,ComputeMultiplicity(output == 'E',fHAEventMultiCent->GetYaxis()->GetTitle()));
-      if(fHAEventPlane) fHAEventPlane->Fill(multi,ComputeAngle());
-      return output;
+     fHEventStat->Fill(3.1);
+     Double_t multi = ComputeCentrality((output == 'E'));
+     Double_t tracklets = ComputeTracklets();
+     fHAEventsVsMulti->Fill(multi);
+     fHAEventsVsTracklets->Fill(tracklets);
+     if(fHAEventVz) fHAEventVz->Fill(multi,fInputEvent->GetPrimaryVertex()->GetZ());
+     if(fHAEventMultiCent) fHAEventMultiCent->Fill(multi,ComputeMultiplicity(output == 'E',fHAEventMultiCent->GetYaxis()->GetTitle()));
+     if(fHAEventPlane) fHAEventPlane->Fill(multi,ComputeAngle());
+     return output;
    } else {
-      fHEventStat->Fill(4.1);
-      const AliVVertex *vertex = fInputEvent->GetPrimaryVertex();
-         if(!vertex) fHEventStat->Fill(5.1);
-  	 else{
-    	 TString title=vertex->GetTitle();
-    	 if( (title.Contains("Z")) || (title.Contains("3D")) ) fHEventStat->Fill(5.1);
+     fHEventStat->Fill(4.1);
+     AliAnalysisUtils *utils = new AliAnalysisUtils();
+     const AliVVertex *vertex = fInputEvent->GetPrimaryVertex();
+     if (!vertex) fHEventStat->Fill(5.1);
+     else {
+       TString title=vertex->GetTitle();
+       if( (title.Contains("Z")) || (title.Contains("3D")) || vertex->GetNContributors()<1.) {
+	 if( (title.Contains("Z")) || (title.Contains("3D")) ) fHEventStat->Fill(5.1);
 	 if(vertex->GetNContributors()<1.) fHEventStat->Fill(6.1);
-	 if(TMath::Abs(vertex->GetZ())>10.) fHEventStat->Fill(7.1);
-	 }
-      return 0;
+       }
+       else if(TMath::Abs(vertex->GetZ())>10.) fHEventStat->Fill(7.1);
+       else if(utils->IsPileUpEvent(fInputEvent)) fHEventStat->Fill(8.1);
+     }
+	 
+     return 0;
    }
 }
 
@@ -961,32 +969,31 @@ Double_t AliRsnMiniAnalysisTask::ComputeTracklets()
 // Get number of tracklets
 //
 
-   Double_t nTr = 100;
-   Double_t count = 0.0;
+  Double_t nTr = 100;
+  Double_t count = 0.0;
 
-   if (fInputEvent->InheritsFrom(AliESDEvent::Class())){
-      AliESDEvent *esdEvent = (AliESDEvent *)fInputEvent;
-      const AliMultiplicity *spdmult = esdEvent->GetMultiplicity();
-      nTr = 1.0*spdmult->GetNumberOfTracklets();
-      for(Int_t iTr=0; iTr<nTr; iTr++){
+  if (fInputEvent->InheritsFrom(AliESDEvent::Class())){
+    AliESDEvent *esdEvent = (AliESDEvent *)fInputEvent;
+    const AliMultiplicity *spdmult = esdEvent->GetMultiplicity();
+    nTr = 1.0*spdmult->GetNumberOfTracklets();
+    for(Int_t iTr=0; iTr<nTr; iTr++){
       Double_t theta=spdmult->GetTheta(iTr);
       Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
       if(eta>-1.0 && eta<1.0) count++;
-  } 
-      }
-   else if (fInputEvent->InheritsFrom(AliAODEvent::Class())) {
-      AliAODEvent *aodEvent = (AliAODEvent *)fInputEvent;
-      AliAODTracklets *spdmult = aodEvent->GetTracklets();
-      nTr = 1.0*spdmult->GetNumberOfTracklets();
-      for(Int_t iTr=0; iTr<nTr; iTr++){
-      Double_t theta=spdmult->GetTheta(iTr);
-      Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
-      if(eta>-1.0 && eta<1.0) count++;
+    } 
   }
-      
-   }
+  else if (fInputEvent->InheritsFrom(AliAODEvent::Class())) {
+    AliAODEvent *aodEvent = (AliAODEvent *)fInputEvent;
+    AliAODTracklets *spdmult = aodEvent->GetTracklets();
+    nTr = 1.0*spdmult->GetNumberOfTracklets();
+    for(Int_t iTr=0; iTr<nTr; iTr++){
+      Double_t theta=spdmult->GetTheta(iTr);
+      Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
+      if(eta>-1.0 && eta<1.0) count++;
+    }
+  }
 
-   return count;
+  return count;
 }
 
 //__________________________________________________________________________________________________
