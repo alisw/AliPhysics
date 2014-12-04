@@ -85,7 +85,7 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
     taskHFE->SetEPWeight(Weight);
 
     
-    TString histoflatname = "alien:///alice/cern.ch/user/a/adubla/CentrDistrBins005.root"
+    TString histoflatname = "alien:///alice/cern.ch/user/a/adubla/CentrDistrBins005.root";
     if(Trigger==0 || Trigger==4){
         TFile *fFlat=TFile::Open(histoflatname.Data());
         TCanvas *c=fFlat->Get("cintegral");
@@ -93,7 +93,7 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
         taskHFE->SetHistoForCentralityFlattening(hfl,centrMin,centrMax,0.,0);
     }
     
-    TString histoflatnameEP = "alien:///alice/cern.ch/user/a/adubla/EPVZero010_Smart.root"
+    TString histoflatnameEP = "alien:///alice/cern.ch/user/a/adubla/EPVZero010_Smart.root";
     if(Weight){
         TFile *fFlatEP=TFile::Open(histoflatnameEP,"READ");
         TCanvas *cEP=fFlatEP->Get("c1_n7");
