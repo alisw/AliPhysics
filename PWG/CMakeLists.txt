@@ -21,6 +21,7 @@ add_subdirectory (EMCAL)
 add_subdirectory (FLOW)
 add_subdirectory (TRD)
 add_subdirectory (muondep)
+add_subdirectory (CaloTrackCorrBase)
 
 # Needs PWGLFspectra
 # add_subdirectory (DevNanoAOD)
