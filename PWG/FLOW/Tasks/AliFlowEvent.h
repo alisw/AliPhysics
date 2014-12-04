@@ -23,6 +23,7 @@ class AliMultiplicity;
 class AliESDPmdTrack;
 class AliFlowVector;
 class TH2F;
+class TArrayD;
 
 #include "AliFlowEventSimple.h"
 
@@ -83,6 +84,7 @@ public:
 
   void InsertTrack(AliFlowTrack*);
 
+  virtual AliFlowVector GetQ(Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);
   virtual void Get2Qsub(AliFlowVector* Qarray, Int_t n = 2, TList *weightsList = 0x0, Bool_t usePhiWeights = 0x0, Bool_t usePtWeights = 0x0, Bool_t useEtaWeights = 0x0);
   void SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts);
 
@@ -101,9 +103,13 @@ private:
   Float_t       fMeanQv3[9][2][2];      //! recentering
   Float_t       fWidthQv3[9][2][2];     //! recentering
   AliVEvent*    fEvent;                 //! current event
+  TArrayD*      fChi2A;                 // chi vs cent for vzero A ep_2
+  TArrayD*      fChi2C;                 // chi vs cent for vzero C ep_2
+  TArrayD*      fChi3A;                 // chi vs cent for vzero A ep_3
+  TArrayD*      fChi3C;                 // chi vs cent for vzero C ep_3
 
 
-  ClassDef(AliFlowEvent,4)
+  ClassDef(AliFlowEvent,5)
 };
 
 #endif

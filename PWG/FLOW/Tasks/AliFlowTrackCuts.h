@@ -22,6 +22,7 @@
 #include "AliESDpid.h"
 
 class TBrowser;
+class TArrayD;
 class AliVParticle;
 class AliMCParticle;
 class AliFlowTrack;
@@ -297,6 +298,15 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
       fVZEROgainEqualizationPerRing = kTRUE;       // must be true for this option
   }
   Bool_t GetUseVZERORing(Int_t i) const {return fUseVZERORing[i];}
+  void SetChi2A(TArrayD*  Chi2A) {fChi2A = Chi2A;}  // chi vs cent for vzero A ep_2
+  void SetChi3A(TArrayD*  Chi3A) {fChi3A = Chi3A;}
+  void SetChi2C(TArrayD*  Chi2C) {fChi2C = Chi2C;}
+  void SetChi3C(TArrayD*  Chi3C) {fChi3C = Chi3C;}
+
+  TArrayD* GetChi2A() {return fChi2A;}  // chi vs cent for vzero A ep_2
+  TArrayD* GetChi3A() {return fChi3A;} 
+  TArrayD* GetChi2C() {return fChi2C;} 
+  TArrayD* GetChi3C() {return fChi3C;} 
 
   void SetNumberOfSigmas(Float_t val) {fNsigmaCut2 = val*val;};
   Float_t GetNumberOfSigmas() const {return TMath::Sqrt(fNsigmaCut2);};
@@ -428,11 +438,15 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Float_t fVZEROCpol[4];           //! calibration info per ring
   Bool_t fUseVZERORing[8];      // kTRUE means the ring is included
   static const Int_t fgkNumberOfVZEROtracks=64; //number of VZERO channels
+  TArrayD*      fChi2A;                 // chi vs cent for vzero A ep_2
+  TArrayD*      fChi2C;                 // chi vs cent for vzero C ep_2
+  TArrayD*      fChi3A;                 // chi vs cent for vzero A ep_3
+  TArrayD*      fChi3C;                 // chi vs cent for vzero C ep_3
 
   AliPIDResponse *fPIDResponse;            //! Pid reponse to manage Nsigma cuts
   Float_t fNsigmaCut2;                     // Number of sigma^2 (cut value) for TPC+TOF nsigma cut
 
-  ClassDef(AliFlowTrackCuts,14)
+  ClassDef(AliFlowTrackCuts,15)
 };
 
 #endif
