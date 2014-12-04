@@ -22,4 +22,7 @@ add_subdirectory (FLOW)
 add_subdirectory (TRD)
 add_subdirectory (muondep)
 
+# Needs PWGLFspectra
+# add_subdirectory (DevNanoAOD)
+
 message(STATUS "PWG enabled")
