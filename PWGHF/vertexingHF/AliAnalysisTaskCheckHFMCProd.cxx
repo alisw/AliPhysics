@@ -78,6 +78,7 @@ AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() : AliAnalysisTaskSE
   fHistMotherID(0),
   fHistDSpecies(0),
   fHistBSpecies(0),
+  fHistLcDecayChan(0),
   fHistNcollHFtype(0),
   fHistEtaPhiPtGenEle(0),
   fHistEtaPhiPtGenPi(0),
@@ -252,6 +253,7 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fHistYPtD0byDecChannel[1] = new TH2F("hyptD04","D0 - 4prong",40,0.,40.,20,-2.,2.);
   fHistYPtDplusbyDecChannel[0] = new TH2F("hyptDplusnonreson","Dplus - non reson",40,0.,40.,20,-2.,2.);
   fHistYPtDplusbyDecChannel[1] = new TH2F("hyptDplusreson","Dplus - reson via K0*",40,0.,40.,20,-2.,2.);
+  fHistYPtDplusbyDecChannel[2] = new TH2F("hyptDplusKKpi","Dplus -> KKpi",40,0.,40.,20,-2.,2.);
   fHistYPtDsbyDecChannel[0] = new TH2F("hyptDsphi","Ds - vis Phi",40,0.,40.,20,-2.,2.);
   fHistYPtDsbyDecChannel[1] = new TH2F("hyptDsk0st","Ds - via k0*",40,0.,40.,20,-2.,2.);
 
@@ -267,7 +269,10 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
     fHistYPtDsbyDecChannel[ih]->SetMinimum(0);
     fOutput->Add(fHistYPtDsbyDecChannel[ih]);
   }
-    
+  fHistYPtDplusbyDecChannel[2]->Sumw2();
+  fHistYPtDplusbyDecChannel[2]->SetMinimum(0);
+  fOutput->Add(fHistYPtDplusbyDecChannel[2]);
+
   fHistOriginPrompt=new TH1F("hOriginPrompt","",100,0.,0.5);
   fHistOriginPrompt->Sumw2();
   fHistOriginPrompt->SetMinimum(0);
@@ -305,6 +310,18 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fHistBSpecies->GetXaxis()->SetBinLabel(10,"Lb-");
   fHistBSpecies->SetMinimum(0);
   fOutput->Add(fHistBSpecies);
+  fHistLcDecayChan=new TH1F("hLcDecayChan","",9,-2.5,6.5);
+  fHistLcDecayChan->GetXaxis()->SetBinLabel(1,"Violates p cons");
+  fHistLcDecayChan->GetXaxis()->SetBinLabel(2,"Other decay");
+  fHistLcDecayChan->GetXaxis()->SetBinLabel(3,"Error");
+  fHistLcDecayChan->GetXaxis()->SetBinLabel(4,"pK#pi non res");
+  fHistLcDecayChan->GetXaxis()->SetBinLabel(5,"pK#pi via K*0");
+  fHistLcDecayChan->GetXaxis()->SetBinLabel(6,"pK#pi via #Delta++");
+  fHistLcDecayChan->GetXaxis()->SetBinLabel(7,"pK#pi via #Lambda1520");
+  fHistLcDecayChan->GetXaxis()->SetBinLabel(8,"pK0s#rightarrowp#pi#pi");
+  fHistLcDecayChan->GetXaxis()->SetBinLabel(9,"#pi#Lambda#rightarrowp#pi#pi");
+  fHistLcDecayChan->SetMinimum(0);
+  fOutput->Add(fHistLcDecayChan);
 
   fHistNcollHFtype=new TH2F("hNcollHFtype","",5,-1.5,3.5,30,-0.5,29.5);
   fOutput->Add(fHistNcollHFtype);
@@ -454,6 +471,13 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       }
       nColl=lgen->GetEntries();
       fHistNcollHFtype->Fill(typeHF,nColl);
+    }else{
+      TString genTitle=mcEvent->GenEventHeader()->GetTitle();
+      if(genTitle.Contains("bchadr")) typeHF=1;
+      else if(genTitle.Contains("chadr")) typeHF=0;
+      else if(genTitle.Contains("bele")) typeHF=3;
+      else if(genTitle.Contains("cele")) typeHF=2;
+      fHistNcollHFtype->Fill(typeHF,1.);
     }
     Int_t nParticles=stack->GetNtrack();
     Double_t dNchdy = 0.;
@@ -500,6 +524,10 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       else if(absPdg==411){
 	iSpecies=1;
 	iType=AliVertexingHFUtils::CheckDplusDecay(stack,i,dummy);
+	if(iType<0){
+	  Int_t iTypeKKpi=AliVertexingHFUtils::CheckDplusKKpiDecay(stack,i,dummy);
+	  if(iTypeKKpi>0) iType=3;
+	}
 	if(iType>0) iPart=1;
       }
       else if(absPdg==413){
@@ -514,7 +542,13 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       }
       else if(absPdg==4122){
 	iSpecies=4;
-	iType=CheckLcDecay(i,stack);
+	iType=AliVertexingHFUtils::CheckLcpKpiDecay(stack,i,dummy);
+	if(iType<0){
+	  Int_t iTypeV0=AliVertexingHFUtils::CheckLcV0bachelorDecay(stack,i,dummy);
+	  if(iTypeV0==1) iType=5;
+	  if(iTypeV0==2) iType=6;
+	}
+	fHistLcDecayChan->Fill(iType);
 	if(iType>=0) iPart=4;
       }
       if(iSpecies>=0) fHistYPtAllDecay[iSpecies]->Fill(part->Pt(),rapid);
@@ -570,7 +604,7 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       nCharmed++;
       if(iPart==0 && iType>0 && iType<=2){
 	fHistYPtD0byDecChannel[iType-1]->Fill(part->Pt(),rapid);
-      }else if(iPart==1 && iType>0 && iType<=2){
+      }else if(iPart==1 && iType>0 && iType<=3){
 	fHistYPtDplusbyDecChannel[iType-1]->Fill(part->Pt(),rapid);
       }else if(iPart==3 &&  iType>0 && iType<=2){
 	fHistYPtDsbyDecChannel[iType-1]->Fill(part->Pt(),rapid);
