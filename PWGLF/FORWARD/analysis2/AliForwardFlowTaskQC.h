@@ -325,7 +325,7 @@ protected:
      * 
      * @return VertexBin
      */
-    VertexBin(const VertexBin& o);
+    VertexBin(const VertexBin& o){;}
     /**
      * Assignment operator 
      * 

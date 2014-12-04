@@ -192,7 +192,7 @@ protected:
      * 
      * @param o Object to copy from 
      */
-    VtxBin(const VtxBin& o);
+    VtxBin(const VtxBin& o){;}
     /** 
      * Assignment operator 
      * 
@@ -200,7 +200,7 @@ protected:
      * 
      * @return Reference to this object
      */
-    VtxBin& operator=(const VtxBin& o);
+    VtxBin& operator=(const VtxBin& o){return *this;}
     /** 
      * Get bin name
      * 

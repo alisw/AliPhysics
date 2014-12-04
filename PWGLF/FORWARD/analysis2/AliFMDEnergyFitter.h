@@ -400,7 +400,7 @@ protected:
      * 
      * @param o Object to copy from 
      */
-    RingHistos(const RingHistos& o);
+    RingHistos(const RingHistos& o){;}
     /** 
      * Assignment operator  - not defined
      * 
@@ -408,7 +408,7 @@ protected:
      * 
      * @return Reference to this 
      */
-    RingHistos& operator=(const RingHistos& o);
+    RingHistos& operator=(const RingHistos& o){return *this;}
     /** 
      * Destructor 
      */
