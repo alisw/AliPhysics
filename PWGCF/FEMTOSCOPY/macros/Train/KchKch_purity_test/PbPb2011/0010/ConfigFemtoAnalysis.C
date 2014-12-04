@@ -64,8 +64,15 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   //-------Single track cuts-------------------------------------------------<
   //=======Double track cuts=================================================>
   //Dhevan's : PhiStarDifferenceMinimum=0.06; EtaDifferenceMinimum=0.02;
-  double PhiStarDifferenceMinimum=0.017; //[radian]
-  double EtaDifferenceMinimum=0.015; //[radian]
+  //standart
+  //double PhiStarDifferenceMinimum=0.017; //[radian]
+ // double EtaDifferenceMinimum=0.015; //[radian]
+ //for test
+   double PhiStarDifferenceMinimum=0.04; //[radian]
+  double EtaDifferenceMinimum=0.03; //[radian]
+  
+  
+  
   //=======Double track cuts=================================================<
 
   // Switches for QA analyses
