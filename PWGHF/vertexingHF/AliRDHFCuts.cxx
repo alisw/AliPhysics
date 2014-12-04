@@ -462,7 +462,8 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   if(fRecomputePrimVertex){
     Bool_t vertOK= RecomputePrimaryVertex((AliAODEvent*)event);
     if(!vertOK){
-      fWhyRejection=6;
+      fWhyRejection=0;
+      fEvRejectionBits+=1<<kNoVertex;
       return kFALSE;
     }
   }
