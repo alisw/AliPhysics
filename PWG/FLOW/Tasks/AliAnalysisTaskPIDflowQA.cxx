@@ -245,6 +245,7 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
   fOutputList=new TList();
   fOutputList->SetOwner(kTRUE);
 
+/* COMMENTED OUT ON 04122014 to squash unused variable warning
   const  Int_t ndec=2;
   Int_t startvalue=-1;
   const  Int_t npredec=50;
@@ -257,7 +258,7 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
     }
   }
   tabx[ndec*npredec]=TMath::Power(10,ndec+startvalue);
-
+*/
   Int_t kPtBins=60;
   Double_t binsPtDummy[kPtBins+1];
   binsPtDummy[0]=0.0;
