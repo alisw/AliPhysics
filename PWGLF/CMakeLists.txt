@@ -15,5 +15,8 @@
 
 # Include the libraries
 add_subdirectory (SPECTRA)
+add_subdirectory (spectraJET)
+add_subdirectory (STRANGENESS)
+add_subdirectory (ThermalFits)
 
 message(STATUS "PWGLF enabled")
