@@ -41,7 +41,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
-set(ROOT_DEPENDENCIES Core EG Geom Physic)
+set(ROOT_DEPENDENCIES Core EG Geom Physics)
 set(ALIROOT_DEPENDENCIES STEERBase)
 
 # Generate the ROOT map
@@ -58,7 +58,7 @@ add_dependencies(${MODULE}-object ${ALIROOT_DEPENDENCIES})
 add_library(${MODULE} SHARED $<TARGET_OBJECTS:PHOSUtils-object>)
 
 # Linking
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ALIROOT_DEPENDENCIES})
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
