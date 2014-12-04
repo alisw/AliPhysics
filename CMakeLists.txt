@@ -247,6 +247,7 @@ endif(CMAKE_Fortran_COMPILER)
 
 # PWG libraries
 add_subdirectory(PWG)
+add_subdirectory(PWGDQ)
 add_subdirectory(PWGUD)
 
 # Enable SHUTTLE compilation

@@ -22,7 +22,7 @@
 #include <vector>
 #include <deque>
 #include <cstdlib>
-
+#include "AliDielectronVarManager.h"
 
 using std::vector;
 using std::deque;
