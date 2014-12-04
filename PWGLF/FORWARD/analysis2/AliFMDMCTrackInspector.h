@@ -115,7 +115,7 @@ public:
      * 
      * @param o Object to copy from 
      */
-    RingHistos(const RingHistos& o);
+    RingHistos(const RingHistos& o){;}
     /** 
      * Assignment operator  - not defined
      * 
@@ -123,7 +123,7 @@ public:
      * 
      * @return Reference to this 
      */
-    RingHistos& operator=(const RingHistos& o);
+    RingHistos& operator=(const RingHistos& o){return *this;}
     /** 
      * Create a bin array of increasing bins. This overload uses the
      * service AliFMDEncodedEdx::Spec::FillBinArray. 
