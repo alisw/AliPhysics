@@ -1695,14 +1695,11 @@ sFileName[iDir] += momDirectory;
   cout<<" BF histogram "<<iDir<<" has "<<entries[iDir] <<" entries."<<endl;
 
   // scaling and adding (for average)
-  hBF[iDir]->Scale(entries[iDir]);
+  hBF[iDir]->SetBit(TH1::kIsAverage);
   if(!hBFOut) hBFOut = (TH2D*)hBF[iDir]->Clone("gHistBalanceFunctionSubtractedOut");
   else hBFOut->Add(hBF[iDir]);
   
  }
-
- // scaling with all entries
- hBFOut->Scale(1./entriesOut);
 
  drawProjections(hBFOut,
 		 kTRUE,
