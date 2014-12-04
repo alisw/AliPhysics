@@ -2058,8 +2058,8 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
       //if(!aodTrack->PropagateToDCA(vertex, AODevent->GetMagneticField(), kVeryBig, b, cov))
       //	filterFlag = 32; // propagation failed!!!!!
       
-      if(TMath::Abs(aodTrack->Eta()) > fEtaCut)
-	continue;
+      if(TMath::Abs(aodTrack->Eta()) > fEtaCut) continue;
+        
       if (aodTrack->Pt() < fMinPt) {
 	
 	// Keep small fraction of low pT tracks
@@ -3063,7 +3063,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	// Check if V0 is primary = first and the same mother of both partciles
 	if(p_mother_label>0 && n_mother_label>0 && p_mother_label == n_mother_label) {
 	  pdgV0 = p_pdgMother;
-	  if(p_mother_steps == 1 && n_mother_steps == 1) {
+	  if( fMCStack->IsPhysicalPrimary( p_mother_label ) ) {
 	    primaryV0 = 1;
 	  }
 	}
