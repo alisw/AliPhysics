@@ -114,12 +114,11 @@ AliFlowEvent& AliFlowEvent::operator=(const AliFlowEvent& event)
   fApplyRecentering = event.fApplyRecentering; 
   fCachedRun = event.fCachedRun; 
   fVZEROcentralityBin = event.fVZEROcentralityBin;
-  fEvent = 0x0;                         // should never be copied
-  // would be neater via copy ctor of TArrayD
-  fChi2A = new TArrayD(event.fChi2A->GetSize(), event.fChi2A->GetArray());
-  fChi2C = new TArrayD(event.fChi2C->GetSize(), event.fChi2C->GetArray());
-  fChi3A = new TArrayD(event.fChi3A->GetSize(), event.fChi3A->GetArray());
-  fChi3C = new TArrayD(event.fChi3C->GetSize(), event.fChi3C->GetArray());
+  fEvent = 0x0; // should never be copied
+  fChi2A = 0x0; // do not clone these; if 0x0 they will be retrieved from the rp cuts object
+  fChi2C = 0x0;
+  fChi3A = 0x0;
+  fChi3C = 0x0;
   for(Int_t i(0); i < 9; i++) {
       for(Int_t j(0); j < 2; j++) {
           for(Int_t k(0); k < 2; k++) {
