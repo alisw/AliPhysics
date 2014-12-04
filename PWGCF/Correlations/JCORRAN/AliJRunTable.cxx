@@ -39,7 +39,7 @@ void AliJRunTable::Init(){
     SetPeriodInformation( kLHC10d, "LHC10d", kPP, kRE, 7000, 122195, 126437, "LHC10f6a" );
     SetPeriodInformation( kLHC10e, "LHC10e", kPP, kRE, 7000, 127712, 130850, "LHC10e20" );
     SetPeriodInformation( kLHC10h, "LHC10h", kPbPb, kRE, 2760, 136851, 139517, "LHC11a10a_bis" );
-    SetPeriodInformation( kLHC11h, "LHC11h", kPbPb, kRE, 2760, 167813, 170309, "LHC12a17d_fix" );
+    SetPeriodInformation( kLHC11h, "LHC11h", kPbPb, kRE, 2760, 167813, 170595, "LHC12a17" );
 
     //LHC11a
     SetPeriodInformation(kLHC11a, "LHC11a", kPP, kRE, 2760, 144871, 146860, "LHC11b10a" );
