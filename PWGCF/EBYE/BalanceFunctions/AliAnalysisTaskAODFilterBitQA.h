@@ -25,6 +25,13 @@ class AliAnalysisTaskAODFilterBitQA : public AliAnalysisTaskSE {
   void SetFillOnlySecondaries(){
     fillOnlySecondaries = kTRUE;
   }
+
+  void SetFillHFVertexingTracks(TString HFBranchName="D0toKpi", Int_t bitIgnore1 = -1, Int_t bitIgnore2 = -1){
+    fillHFVertexingTracks = kTRUE;
+    fHFBranchName         = HFBranchName;
+    fBitIgnore1           = bitIgnore1;
+    fBitIgnore2           = bitIgnore2;
+  }
   
   void SetCentralityPercentileRange(Double_t min, Double_t max){
     fCentralityPercentileMin = min;
@@ -44,6 +51,7 @@ class AliAnalysisTaskAODFilterBitQA : public AliAnalysisTaskSE {
  private:
   Double_t IsEventAccepted(AliVEvent *event);
   void GetAcceptedTracks(AliVEvent *event, Double_t gCentrality);
+  void GetAcceptedHFVertexingTracks(AliVEvent *event, Double_t gCentrality);
   
   AliAnalysisTaskAODFilterBitQA(const AliAnalysisTaskAODFilterBitQA&); // not implemented
   AliAnalysisTaskAODFilterBitQA& operator=(const AliAnalysisTaskAODFilterBitQA&); // not implemented
@@ -53,6 +61,12 @@ class AliAnalysisTaskAODFilterBitQA : public AliAnalysisTaskSE {
   TList *fListQA;//output list for QA histograms
 
   Bool_t fillOnlySecondaries;//fill only secondary particles (only for MC running)
+  Bool_t fillHFVertexingTracks;//fill HF vertexing tracks
+
+  TString fHFBranchName;// name of HF branch: D0toKpi, Dstar, ...
+
+  Int_t fBitIgnore1;//filter bit to be skipped when looping over tracks (-1 = OFF)
+  Int_t fBitIgnore2;//filter bit to be skipped when looping over tracks (-1 = OFF)
 
   Double_t fCentralityPercentileMin;// minimum centrality threshold (default = 0)
   Double_t fCentralityPercentileMax;// maximum centrality threshold (default = 80)
