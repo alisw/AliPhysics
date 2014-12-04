@@ -509,7 +509,7 @@ printLogStatistics()
     write=0
     for (i=3; i<=NF; i++)
     { 
-      if ($i ~ /\:/) 
+      if ($i ~ /^\:$/) 
         write=1
       else
         write=0
