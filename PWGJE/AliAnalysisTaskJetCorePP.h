@@ -175,7 +175,8 @@ private:
    TH1D *fhNofMultipleTriggersCone; // The number of additional triggers in events with at least one trigger 
    TH1D *fhNofMultipleTriggersConeLow; // The number of additional triggers in events with at least one trigger 
    TH1D *fhNofMultipleTriggersConeHigh; // The number of additional triggers in events with at least one trigger 
-   TH1D *fhDeltaRMultTriggers; // Angular distributions between trigger and assoc
+   TH1D *fhDeltaRMultTriggersLow; // Angular distributions between trigger and assoc
+   TH1D *fhDeltaRMultTriggersHigh; // Angular distributions between trigger and assoc
    TH1D *fhDeltaPhiMultTriggersLow; // Delta phi between trigger and assoc single incl trigger
    TH1D *fhDeltaPhiMultTriggersHigh; // Delta phi between trigger and assoc single incl triger
 
@@ -221,7 +222,8 @@ private:
    TH1D *fhNofMultipleTriggersConeGen; // The number of additional triggers in events with at least one trigger in R<0.4 15-50
    TH1D *fhNofMultipleTriggersConeGenLow; // The number of additional triggers in events with at least one trigger in R<0.4 15-20
    TH1D *fhNofMultipleTriggersConeGenHigh; // The number of additional triggers in events with at least one trigger in R<0.4 20-50 
-   TH1D *fhDeltaRMultTriggersGen; // Angular distributions between trigger and assoc
+   TH1D *fhDeltaRMultTriggersGenLow; // Angular distributions between trigger and assoc
+   TH1D *fhDeltaRMultTriggersGenHigh; // Angular distributions between trigger and assoc
    TH1D *fhDeltaPhiMultTriggersGenLow; // Angular distributions between trigger and assoc  15-20
    TH1D *fhDeltaPhiMultTriggersGenHigh; // Angular distributions between trigger and assoc 20-50
 
@@ -232,9 +234,28 @@ private:
    TH1D *fhNofMultipleTriggersConeGenA; // The number of additional triggers in events with at least one trigger in R<0.4 
    TH1D *fhNofMultipleTriggersConeGenALow; // The number of additional triggers in events with at least one trigger in R<0.4 15-20 
    TH1D *fhNofMultipleTriggersConeGenAHigh; // The number of additional triggers in events with at least one trigger in R<0.4  20-50
+   TH1D *fhDeltaRMultTriggersGenALow; //Delta R for eloss scenation in assoc 15-20 bin 
+   TH1D *fhDeltaPhiMultTriggersGenALow;//Delta phi for eloss scenation in assoc 15-20 bin 
+   TH1D *fhDeltaRMultTriggersGenAHigh; //Delta R for eloss scenation in assoc 20-50 bin 
+   TH1D *fhDeltaPhiMultTriggersGenAHigh;//Delta phi for eloss scenation in assoc 20-50 bin 
+   TH1D *fhNofTriggersGenA; //Count triggers in eloss scenario
+
    TH1D *fhNofMultipleTriggersConeGenB; // The number of additional triggers in events with at least one trigger in R<0.4 15-50
    TH1D *fhNofMultipleTriggersConeGenBLow; // The number of additional triggers in events with at least one trigger in R<0.4 15-20
    TH1D *fhNofMultipleTriggersConeGenBHigh; // The number of additional triggers in events with at least one trigger in R<0.4 20-50 
+   TH1D *fhDeltaRMultTriggersGenBLow; //Delta R for eloss scenation in assoc 15-20 bin 
+   TH1D *fhDeltaPhiMultTriggersGenBLow;//Delta phi for eloss scenation in assoc 15-20 bin 
+   TH1D *fhDeltaRMultTriggersGenBHigh; //Delta R for eloss scenation in assoc 20-50 bin 
+   TH1D *fhDeltaPhiMultTriggersGenBHigh;//Delta phi for eloss scenation in assoc 20-50 bin 
+   TH1D *fhNofTriggersGenB; //Count triggers in eloss scenario
+
+
+   TH1D *fhTriggerCounterGenLevel; // The number of sing incl rec TT tracks that have gen level particle assigned within the same TT bin 
+   TH1D *fhDeltaRMultTriggersGenLevelLow; // corresp. genereator level TT track combined with generator level Assoc tracks 15-20 
+   TH1D *fhDeltaPhiMultTriggersGenLevelLow; //corresp. genereator level TT track combined with generator level Assoc tracks 15-20 
+   TH1D *fhDeltaRMultTriggersGenLevelHigh;  // corresp. genereator level TT track combined with generator level Assoc tracks 20-50 
+   TH1D *fhDeltaPhiMultTriggersGenLevelHigh;// corresp. genereator level TT track combined with generator level Assoc tracks 20-50
+
 
    Bool_t fIsChargedMC;   //flag analysis on MC data with true and on the real+kine data false
    Bool_t fIsKine;       //flag analysis on kine data with true and on the real+MC data false
@@ -274,7 +295,7 @@ private:
 
    Bool_t fDoubleBinning; //0=use 2 GeV/c bins  ; 1= use 1 GeV/c bins
  
-   ClassDef(AliAnalysisTaskJetCorePP, 16);  //has to end with number larger than 0
+   ClassDef(AliAnalysisTaskJetCorePP, 17);  //has to end with number larger than 0
 };
 
 #endif
