@@ -48,8 +48,8 @@ Bool_t RunLego(AliSimulation& steer)
   const char* cfg = "Config.C";
   Bool_t ret = false;
   Double_t rMin = 0;
-  Double_t rMax = 430;
-  Double_t zMax = 10000;
+  Double_t rMax = 32; // 430;
+  Double_t zMax = 400; // 10000;
   if (v.BeginsWith("X") || v.BeginsWith("Y"))
     ret = steer.RunLego(cfg,
 			 10,-2,2,      // Y, X
@@ -66,12 +66,12 @@ Bool_t RunLego(AliSimulation& steer)
 			 360,0,360, // phi
 			 rMin, rMax, zMax, gener);
   else if (v.BeginsWith("ETA")) {
-    Double_t aEta = 7;
-    Double_t dEta = (6--4)/200;
+    Double_t aEta = 6;
+    Double_t dEta = (6.--4.)/200;
     ret = steer.RunLego(cfg,
-			 360,0,360, // phi
-			 2*aEta/dEta,-aEta,+aEta, // Eta
-			 rMin, rMax, zMax, gener);
+			360,0,360, // phi
+			2*aEta/dEta,-aEta,+aEta, // Eta
+			rMin, rMax, zMax, gener);
   }
   else 
     ret = steer.RunLego(cfg);
@@ -129,9 +129,12 @@ void Simulate(Int_t nev=1, UInt_t run=0)
   // OCDB and specific storages 
   // 
   AliCDBManager* cdb = AliCDBManager::Instance();
+  cdb->SetRun(grp->run);
   cdb->SetDefaultStorageFromRun(grp->run);
+  cdb->SetRun(-1);
   ocdbCfg->Init(true);
-
+  steer.SetRunNumber(grp->run);
+  
   // -----------------------------------------------------------------
   // 
   // The rest - disable QA and HLT (memory heavy) for PbPb
