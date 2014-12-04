@@ -3180,12 +3180,11 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     // Not needed if already done at the particle identification level,
     // but for isolation studies, it is preferred not to remove so we do it here
     //
-    Int_t clID1  = particle->GetCaloLabel(0) ;
-    Int_t clID2  = particle->GetCaloLabel(1) ; // for photon clusters should not be set.
-    AliDebug(1,Form("%s Trigger : id1 %d, id2 %d, min %f, max %f, det %d",
-                    GetInputAODName().Data(),clID1,clID2,fM02MinCut,fM02MaxCut,particle->GetDetectorTag()));
-    
-    if(clID1 > 0 && clID2 < 0 && fM02MaxCut > 0 && fM02MinCut > 0)
+
+    AliDebug(1,Form("%s Trigger : min %f, max %f, det %d",
+                    GetInputAODName().Data(),fM02MinCut,fM02MaxCut,particle->GetDetectorTag()));
+
+    if(fM02MaxCut > 0 && fM02MinCut > 0) //clID1 > 0 && clID2 < 0 &&
     {
 //      Int_t iclus = -1;
 //      TObjArray* clusters = 0x0;
@@ -3200,9 +3199,12 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
 //      }
       
       Float_t m02 = particle->GetM02();
+
       if(m02 > fM02MaxCut || m02 < fM02MinCut) continue ;
       
       fhPtTriggerSSCut->Fill(pt);
+      
+      AliDebug(1,"Pass the shower shape cut");
     }
     
     //
@@ -3212,7 +3214,10 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     if(OnlyIsolated())
     {
       if( !particle->IsIsolated() ) continue;
+
       fhPtTriggerIsoCut->Fill(pt);
+      
+      AliDebug(1,"Pass the isolation cut");
     }
     
     //
@@ -3221,7 +3226,10 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     if(IsFiducialCutOn())
     {
       Bool_t in = GetFiducialCut()->IsInFiducialCut(particle->Eta(),particle->Phi(),particle->GetDetectorTag()) ;
+      
       if(! in ) continue ;
+      
+      AliDebug(1,"Pass the fiducial cut");
     }
     
     fhPtTriggerFidCut->Fill(pt);

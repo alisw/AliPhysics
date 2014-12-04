@@ -117,10 +117,14 @@ fTPCvsGlobalMultAfter(0),
 fHistBetavsPTOFbeforePID(0),
 fHistdEdxvsPTPCbeforePID(0),
 fhistNsigmaP(0),
-fhistNsigmaPt(0),
+fhistNsigmaPTPCTOF(0),
 fhistTPCnSigmavsP(0),
 fHistBetavsPTOFafterPID(0),
-fHistdEdxvsPTPCafterPID(0)
+fHistdEdxvsPTPCafterPID(0),
+fHistBetavsPTOFafterPIDTPCTOF(0),
+fHistdEdxvsPTPCafterPIDTPCTOF(0),
+fHistBetavsPTOFafterPIDTPConly(0),
+fHistdEdxvsPTPCafterPIDTPConly(0)
 //fSparseSpecies(0),
 //fvalueSpecies(0)
 {
@@ -172,7 +176,6 @@ fTPCvsGlobalMultAfter(0),
 fHistBetavsPTOFbeforePID(0),
 fHistdEdxvsPTPCbeforePID(0),
 fhistNsigmaP(0),
-fhistNsigmaPt(0),
 fhistTPCnSigmavsP(0),
 fHistBetavsPTOFafterPID(0),
 fHistdEdxvsPTPCafterPID(0)
@@ -462,14 +465,10 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
                     if(ispecie==AliPID::kPion || ispecie==AliPID::kKaon || ispecie==AliPID::kProton){
                         int index = 50*i+p_bin;
                        
-                        if(fCutContour[index]->IsInside(nSigmaTOF,nSigmaTPC)){
+                        if(p_bin>7 && fCutContour[index]->IsInside(nSigmaTOF,nSigmaTPC)){//p_bin>7
                             TH3 *hist1 = (TH3*)fListQAtpctof->At(ispecie);
                             if (hist1){
                                 hist1->Fill(nSigmaTPC,nSigmaTOF,p);}
-                        
-                            //TH3 *hist2 = (TH3*)fListQAtpctof->At(ispecie+AliPID::kSPECIESC);
-                            //if (hist2){
-                                //hist2->Fill(nSigmaTPC,nSigmaTOF,pT);}
                             
                             if ( (track->IsOn(AliAODTrack::kITSin)) && (track->IsOn(AliAODTrack::kTOFpid)) ) {
                                 TH2F *HistBetavsPTOFafterPID = (TH2F*)fListQAInfo->At(13);
@@ -479,7 +478,7 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
                             HistdEdxvsPTPCafterPID -> Fill(track->P()*track->Charge(),dEdx); //TPC signal
                         }
                         
-                        if(p_bin<8 && nSigmaTPC<3 && nSigmaTPC>-3){
+                        if(p_bin<8 && nSigmaTPC<3 && nSigmaTPC>-3){//p_bin<8
                             if ( (track->IsOn(AliAODTrack::kITSin)) && (track->IsOn(AliAODTrack::kTOFpid)) ) {
                                 TH2F *HistBetavsPTOFafterPID = (TH2F*)fListQAInfo->At(13);
                                 HistBetavsPTOFafterPID ->Fill(track->P()*track->Charge(),beta);
@@ -487,9 +486,36 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
                             TH2F *HistdEdxvsPTPCafterPID = (TH2F*)fListQAInfo->At(14);
                             HistdEdxvsPTPCafterPID -> Fill(track->P()*track->Charge(),dEdx); //TPC signal
                         }
+                        
                         TH2F *hTPCnSigmavsP = (TH2F*)fListQAtpctof->At(ispecie+AliPID::kSPECIESC);
                         if (hTPCnSigmavsP){
                             hTPCnSigmavsP->Fill(track->P()*track->Charge(),nSigmaTPC);}
+                        
+                        //=======================With TPC+TOF nsigma method Only!==============================
+                        if(fCutContour[index]->IsInside(nSigmaTOF,nSigmaTPC)){
+                            TH3 *hist2 = (TH3*)fListQAtpctof->At(ispecie+2*AliPID::kSPECIESC);
+                            if (hist2){
+                                hist2->Fill(nSigmaTPC,nSigmaTOF,p);}
+                            
+                            if ( (track->IsOn(AliAODTrack::kITSin)) && (track->IsOn(AliAODTrack::kTOFpid)) ) {
+                                TH2F *HistBetavsPTOFafterPIDTPCTOF = (TH2F*)fListQAInfo->At(15);
+                                HistBetavsPTOFafterPIDTPCTOF ->Fill(track->P()*track->Charge(),beta);
+                            }
+                            TH2F *HistdEdxvsPTPCafterPIDTPCTOF = (TH2F*)fListQAInfo->At(16);
+                            HistdEdxvsPTPCafterPIDTPCTOF -> Fill(track->P()*track->Charge(),dEdx); //TPC signal
+                        }
+                        //======================With TPC nsigma Only!
+                        if(nSigmaTPC<3 && nSigmaTPC>-3){
+                            if ( (track->IsOn(AliAODTrack::kITSin)) && (track->IsOn(AliAODTrack::kTOFpid)) ) {
+                                TH2F *HistBetavsPTOFafterPIDTPConly = (TH2F*)fListQAInfo->At(17);
+                                HistBetavsPTOFafterPIDTPConly ->Fill(track->P()*track->Charge(),beta);
+                            }
+                            TH2F *HistdEdxvsPTPCafterPIDTPConly = (TH2F*)fListQAInfo->At(18);
+                            HistdEdxvsPTPCafterPIDTPConly -> Fill(track->P()*track->Charge(),dEdx); //TPC signal
+                        }
+                        //========================================================================================
+                        
+                        
                         
                     }
                 }
@@ -497,10 +523,6 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
                     TH3 *hist1 = (TH3*)fListQAtpctof->At(ispecie);
                     if (hist1){
                         hist1->Fill(nSigmaTPC,nSigmaTOF,p);}
-                    
-                    //TH3 *hist2 = (TH3*)fListQAtpctof->At(ispecie+AliPID::kSPECIESC);
-                    //if (hist2){
-                        //hist2->Fill(nSigmaTPC,nSigmaTOF,pT);}
                     
                     TH2F *hTPCnSigmavsP = (TH2F*)fListQAtpctof->At(ispecie+AliPID::kSPECIESC);
                     if (hTPCnSigmavsP){
@@ -512,7 +534,7 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
         
     }//track loop
     
-    TH2F *HistTPCvsGlobalMultAfter = (TH2F*) fListQAInfo->At(15);
+    TH2F *HistTPCvsGlobalMultAfter = (TH2F*) fListQAInfo->At(19);
     HistTPCvsGlobalMultAfter->Fill(multGlobal,multTPC);
     
 }
@@ -575,13 +597,12 @@ void AliAnalysisTaskPIDconfig::SetupTPCTOFqa()
         fhistNsigmaP = new TH3F(Form("NsigmaP_TPC_TOF_%s",AliPID::ParticleName(ispecie)),Form("TPC n#sigma vs. TOF n#sigma %s vs. p ;TPC n#sigma;TOF n#sigma;p [GeV]",AliPID::ParticleName(ispecie)),200,-20,20,200,-20,20,60,0.1,6);
         fListQAtpctof->Add(fhistNsigmaP);
     }
-    //TPC and TOF signal vs. transverse momentum
-    /*
+    
     for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
-        fhistNsigmaPt = new TH3F(Form("NsigmaPt_TPC_TOF_%s",AliPID::ParticleName(ispecie)),Form("TPC n#sigma vs. TOF n#sigma %s vs. Pt ;TPC n#sigma;TOF n#sigma;pT [GeV]",AliPID::ParticleName(ispecie)),200,-20,20,200,-20,20,60,0.1,6);
-        fListQAtpctof->Add(fhistNsigmaPt);
+        fhistNsigmaPTPCTOF = new TH3F(Form("NsigmaP_TPC_TOF_%s_TPC+TOFMethod",AliPID::ParticleName(ispecie)),Form("TPC n#sigma vs. TOF n#sigma %s vs. p ;TPC n#sigma;TOF n#sigma;p [GeV]",AliPID::ParticleName(ispecie)),200,-20,20,200,-20,20,60,0.1,6);
+        fListQAtpctof->Add(fhistNsigmaPTPCTOF);
     }
-     */
+
     //TPC signal vs. momentum
     for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
         fhistTPCnSigmavsP = new TH2F(Form("NsigmaP_TPC_%s",AliPID::ParticleName(ispecie)),Form("TPC n#sigma %s vs. p ;p [GeV];TPC n#sigma",AliPID::ParticleName(ispecie)),60,0,6,125,-5,20);
@@ -637,6 +658,18 @@ void AliAnalysisTaskPIDconfig::SetupEventInfo()
     fListQAInfo->Add(fHistBetavsPTOFafterPID);
     
     fHistdEdxvsPTPCafterPID = new TH2F("momentum vs dEdx after PID","momentum vs dEdx after PID",1000,-10.,10.,1000,0,1000);
+    fListQAInfo->Add(fHistdEdxvsPTPCafterPID);
+    
+    fHistBetavsPTOFafterPIDTPCTOF = new TH2F("momentum vs beta after PID TPC+TOF","momentum vs beta after PID",1000,-10.,10.,1000,0,1.2);
+    fListQAInfo->Add(fHistBetavsPTOFafterPID);
+    
+    fHistdEdxvsPTPCafterPIDTPCTOF = new TH2F("momentum vs dEdx after PID TPC+TOF","momentum vs dEdx after PID",1000,-10.,10.,1000,0,1000);
+    fListQAInfo->Add(fHistdEdxvsPTPCafterPID);
+    
+    fHistBetavsPTOFafterPIDTPConly = new TH2F("momentum vs beta after PID TPC only","momentum vs beta after PID",1000,-10.,10.,1000,0,1.2);
+    fListQAInfo->Add(fHistBetavsPTOFafterPID);
+    
+    fHistdEdxvsPTPCafterPIDTPConly = new TH2F("momentum vs dEdx after PID TPC only","momentum vs dEdx after PID",1000,-10.,10.,1000,0,1000);
     fListQAInfo->Add(fHistdEdxvsPTPCafterPID);
     
     fTPCvsGlobalMultAfter = new TH2F("TPC vs. Global Multiplicity After","TPC vs. Global Multiplicity After",500,0,6000,500,0,6000);

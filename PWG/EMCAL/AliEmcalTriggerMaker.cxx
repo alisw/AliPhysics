@@ -380,12 +380,9 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   else
     fSimpleOfflineTriggers->GetTriggerBits(tBits);
 
-  Int_t nBitsFound = 0;
-  Int_t bitsFound[64];
   if(fDoQA){
     for(unsigned int ibit = 0; ibit < sizeof(tBits)*8; ibit++) {
       if(tBits & (1 << ibit)){
-        bitsFound[nBitsFound++] = ibit;
         fQAHistos->FillTH1("triggerBitsAll", ibit);
       }
     }
@@ -395,6 +392,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
       (type == kTMEMCalGamma  && !IsEGA( tBits )) || 
       (type == kTMEMCalLevel0 && !(CheckForL0(*fCaloTriggers))))
     return 0;
+
   TString trtypenames[3] = {"EJE", "EGA", "EL0"}; // For QA
 
   // save primary vertex in vector
@@ -408,6 +406,9 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
     fCaloTriggers->GetPosition(globCol,globRow);
   else
     fSimpleOfflineTriggers->GetPosition(globCol, globRow);
+
+  // In case of level0 reject triggers with an odd row-col combination
+  // if(type == kTMEMCalLevel0 && (globRow % 2 != 0 || globCol % 2 != 0)) return 0;
 
   // get the absolute trigger ID
   Int_t absId=-1;
@@ -586,9 +587,11 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
     fQAHistos->FillTH2(Form("RCPos%s", trtypenames[type].Data()), globCol, globRow);
     fQAHistos->FillTH2(Form("EPCentPos%s", trtypenames[type].Data()), centerGeo.Eta(), centerGeo.Phi());
     fQAHistos->FillTH2(Form("PatchADCvsE%s", trtypenames[type].Data()), adcAmp, trigger->GetPatchE());
-    if(nBitsFound){
-      for(int ibit = 0; ibit < nBitsFound; ibit++)
-        fQAHistos->FillTH1("triggerBitsSel", bitsFound[ibit]);
+    // Redo checking of found trigger bits after masking of unwanted triggers
+    for(unsigned int ibit = 0; ibit < sizeof(tBits)*8; ibit++) {
+      if(tBits & (1 << ibit)){
+        fQAHistos->FillTH1("triggerBitsSel", ibit);
+      }
     }
   }
   return trigger;
