@@ -87,13 +87,14 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   TH2F*  fHistYPtPrompt[5];   //! histo of y vs. pt from prompt D0, D+, D*, Ds, Lc
   TH2F*  fHistYPtFeeddown[5]; //! histo of y vs. pt from feeddown D0, D+, D*, Ds, Lc
   TH2F* fHistYPtD0byDecChannel[2]; //! histo of y vs. pt for D0->Kpi and D0->Kpipipi
-  TH2F* fHistYPtDplusbyDecChannel[2]; //! histo of y vs. pt for D+->Kpipi and D+->K0*pi
+  TH2F* fHistYPtDplusbyDecChannel[3]; //! histo of y vs. pt for D+->Kpipi and D+->K0*pi
   TH2F* fHistYPtDsbyDecChannel[2]; //! histo of y vs. pt for Ds->phipi and Ds->K0*K
   TH1F* fHistOriginPrompt;    //! histo of D production point (prompt)
   TH1F* fHistOriginFeeddown;  //! histo of D production point (feeddown)
   TH1F* fHistMotherID;        //! histo of mother ID
   TH1F* fHistDSpecies;          //! histo of D hadron species
   TH1F* fHistBSpecies;          //! histo of B hadron species
+  TH1F* fHistLcDecayChan;      //! histo of Lc decay modes
   TH2F* fHistNcollHFtype;      //! histo of B hadron species
   TH3F* fHistEtaPhiPtGenEle;   //! histo of generated electrons
   TH3F* fHistEtaPhiPtGenPi;   //! histo of generated pions
@@ -108,7 +109,7 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   AliESDtrackCuts *fESDtrackCuts; // track selection
   Bool_t fReadMC;
 
-  ClassDef(AliAnalysisTaskCheckHFMCProd,6);
+  ClassDef(AliAnalysisTaskCheckHFMCProd,7);
 };
 
 
