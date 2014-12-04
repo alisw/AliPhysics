@@ -11,8 +11,10 @@ PWGPP_runMap="
 2010 108350 139517
 2011 140441 170593
 2012 171590 193766
-2013 194482 197692
-2014 197693 999999
+2013 194308 199146
+2014 202369 206695
+2015 999999 999999
+2016 999999 999999
 "
 
 parseConfig()
@@ -254,7 +256,7 @@ summarizeLogs()
   
   #double inclusion protection+make full paths
   for file in "${input[@]}"; do
-    [[ ! "${file}" =~ ^/ ]] && file="${PWD}"/"${file}"
+    [[ ! "${file}" =~ ^/ ]] && file="${PWD}/${file}"
     files["${file}"]="${file}"
   done
 
@@ -288,13 +290,17 @@ summarizeLogs()
   for x in "${coreFiles[@]}"; do
     echo ${x}
     chmod 644 ${x}
-    gdb --batch --quiet -ex "bt" -ex "quit" aliroot ${x} > stacktrace_${x//\//_}.log
+    #gdb --batch --quiet -ex "bt" -ex "quit" aliroot ${x} > stacktrace_${x//\//_}.log
+    gdb --batch --quiet -ex "bt" -ex "quit" aliroot ${x} > stacktrace.log
     local nLines[2]
-    nLines=($(wc -l stacktrace_${x//\//_}.log))
+    #nLines=($(wc -l stacktrace_${x//\//_}.log))
+    nLines=($(wc -l stacktrace.log))
     if [[ ${nLines[0]} -eq 0 ]]; then
-      rm stacktrace_${x//\//_}.log
+      #rm stacktrace_${x//\//_}.log
+      rm stacktrace.log
     else
       logStatus=1
+      echo "${x%/*}/stacktrace.log"
     fi
   done
 
@@ -334,13 +340,13 @@ validateLog()
 
   for ((i=0; i<${#errorConditions[@]};i++)); do
     local tmp=$(grep -m1 -e "${errorConditions[${i}]}" ${log})
-    [[ -n ${tmp} ]] && tmp+=" : "
+    [[ -n ${tmp} ]] && tmp=" : ${tmp}"
     errorSummary+=${tmp}
   done
 
   for ((i=0; i<${#warningConditions[@]};i++)); do
     local tmp=$(grep -m1 -e "${warningConditions[${i}]}" ${log})
-    [[ -n ${tmp} ]] && tmp+=" : "
+    [[ -n ${tmp} ]] && tmp=" : ${tmp}"
     warningSummary+=${tmp}
   done
 
@@ -397,9 +403,10 @@ stackTraceTree()
     echo 'benchmark.sh stackTraceTree `cat file.list`'
     return 0
   fi
+  #cat "${@}" | gawk '
   gawk '
        BEGIN { 
-               print "frame/I:method/C:line/C:cpass/I:aliroot/I:file/C";
+       print "frame/I:method/C:line/C:cpass/I:aliroot/I:file/C";
                RS="#[0-9]*";
                aliroot=0;
                read=1;
@@ -411,7 +418,25 @@ stackTraceTree()
                gsub("#","",RT); 
                if ($NF!="" && RT!="" && $3!="") print RT" "$3" "$NF" "0" "aliroot" "FILENAME
              }
-      ' "$@" 2>/dev/null
+      ' "${@}" 2>/dev/null
+}
+
+plotStackTraceTree()
+{
+  #plot the stacktrace tree,
+  #first arg    is the text file in the root tree format
+  #second arg   is optional: a plot is written to file instead of screen
+  local tree=$1
+  local plot=${2:-"crashes.png"}
+  [[ ! -f ${tree} ]] && echo "no input" && return 1
+  aliroot -b <<EOF
+TTree* t=AliSysInfo::MakeTree("${tree}");
+TCanvas* canvas = new TCanvas("QA crashes","QA crashes",1);
+t->Draw("method","","");
+canvas->SaveAs("${plot}");
+.q
+EOF
+  return 0
 }
 
 encSpaces() 
@@ -424,3 +449,82 @@ decSpaces()
   echo "${1//±@@±/ }" 
 }
 
+get_realpath() 
+{
+  if [[ $# -lt 1 ]]; then
+    echo "print the full path of a file, like \"readlink -f\" on linux"
+    echo "Usage:"
+    echo "  get_realpath <someFile>"
+    return 0
+  fi
+  if [[ -f "$1" ]]
+  then
+    # file *must* exist
+    if cd "$(echo "${1%/*}")" &>/dev/null
+    then
+      # file *may* not be local
+      # exception is ./file.ext
+      # try 'cd .; cd -;' *works!*
+      local tmppwd="$PWD"
+      cd - &>/dev/null
+    else
+      # file *must* be local
+      local tmppwd="$PWD"
+    fi
+  else
+    # file *cannot* exist
+    return 1 # failure
+  fi
+  # reassemble realpath
+  echo "$tmppwd"/"${1##*/}"
+  return 0 # success
+}
+
+printLogStatistics()
+{
+  #this function processes the summary logs and prints some stats
+  #relies on the summary log format produced by summarizeLogs()
+  # - how many checked logs in total
+  # - number of each type of problem
+  # example usage:
+  #   printLogStatistics */*.log
+  [[ ! -f $1 ]] && return 1
+  #cat "${@}" | awk '
+  awk '
+  /\/core/ {nCores++}
+  /\/stacktrace.log/ {nStackTraces++}
+  /OK/ {nOK++; nLogs++;}
+  /BAD/ {
+    nLogs++
+    err=""
+    write=0
+    for (i=3; i<=NF; i++)
+    { 
+      if ($i ~ /\:/) 
+        write=1
+      else
+        write=0
+
+      if (write==0)
+      {
+        if (err=="") err=$i
+        else err=(err FS $i)
+      }
+
+      if (err != "" && (write==1 || i==NF))
+      {
+        sumBAD[err]++
+        err=""
+      }
+    }
+  } 
+  END {
+    print ("number of succesful jobs: " nOK" out of "nLogs )
+    for (key in sumBAD)
+    {
+      print key": "sumBAD[key]
+    }
+    if (nCores>0) print "core files: "nCores", stack traces: "nStackTraces 
+  }
+  ' "${@}"
+}
