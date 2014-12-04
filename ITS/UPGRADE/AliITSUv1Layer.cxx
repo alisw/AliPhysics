@@ -65,7 +65,8 @@ const Double_t AliITSUv1Layer::fgkOBChipXGap          =   0.01 *fgkcm;
 const Double_t AliITSUv1Layer::fgkOBChipZGap          =   0.01 *fgkcm;
 const Double_t AliITSUv1Layer::fgkOBFlexCableAlThick  =   0.005*fgkcm;
 const Double_t AliITSUv1Layer::fgkOBFlexCableCuThick  =   0.004*fgkcm;
-const Double_t AliITSUv1Layer::fgkOBFlexCableKapThick =   0.01 *fgkcm;
+const Double_t AliITSUv1Layer::fgkOBFlexCableKapThick1=   0.01 *fgkcm;
+const Double_t AliITSUv1Layer::fgkOBFlexCableKapThick = 125.0  *fgkmicron;
 const Double_t AliITSUv1Layer::fgkOBBusCableAlThick   =   0.02 *fgkcm;
 const Double_t AliITSUv1Layer::fgkOBBusCableKapThick  =   0.02 *fgkcm;
 const Double_t AliITSUv1Layer::fgkOBColdPlateThick    =   0.012*fgkcm;
@@ -2057,6 +2058,7 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
 // Updated:      16 Jan 2014  Mario Sitta
 // Updated:      24 Feb 2014  Mario Sitta
 // Updated:      11 Nov 2014  Mario Sitta  Model2
+// Updated:      03 Dec 2014  Mario Sitta  Revised with C.Gargiulo latest infos
 //
 
 
@@ -2065,8 +2067,8 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
   Double_t yFlex2      = fgkOBFlexCableKapThick;
   Double_t flexOverlap = 5; // to be checked - unused for the time being
   Double_t xHalfSt     = fgkOBHalfStaveWidth/2;
-  Double_t kLay1       = fgkOBCarbonFleeceThick;
-  Double_t kLay2       = fgkOBGraphiteFoilThick;
+  Double_t yCFleece    = fgkOBCarbonFleeceThick;
+  Double_t yGraph      = fgkOBGraphiteFoilThick;
 
   Double_t ymod, zmod;
   Double_t xtru[12], ytru[12];
@@ -2102,33 +2104,37 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
   TGeoBBox *coldPlate  = new TGeoBBox("ColdPlate", fgkOBHalfStaveWidth/2,
 				      fgkOBColdPlateThick/2, zlen);
 
+  TGeoBBox *fleeccent  = new TGeoBBox("FleeceCent",  xHalfSt,
+				      yCFleece/2, zlen);
+
   TGeoTube *coolTube   = new TGeoTube("CoolingTube", rCoolMin, rCoolMax, zlen);
   TGeoTube *coolWater  = new TGeoTube("CoolingWater", 0., rCoolMin, zlen);
 
   xlen = xHalfSt - fgkOBCoolTubeXDist/2 - coolTube->GetRmax();
-  TGeoBBox *graphlat    = new TGeoBBox("GraphLateral", xlen/2, kLay2/2, zlen);
+  TGeoBBox *graphlat   = new TGeoBBox("GraphLateral", xlen/2, yGraph/2, zlen);
 
   xlen = fgkOBCoolTubeXDist/2 - coolTube->GetRmax();
-  TGeoBBox *graphmid    = new TGeoBBox("GraphMiddle", xlen, kLay2/2, zlen);
+  TGeoBBox *graphmid   = new TGeoBBox("GraphMiddle", xlen, yGraph/2, zlen);
 
-  ylen = coolTube->GetRmax() - kLay2;
-  TGeoBBox *graphvert   = new TGeoBBox("GraphVertical", kLay2/2, ylen/2, zlen);
+  ylen = coolTube->GetRmax() - yGraph;
+  TGeoBBox *graphvert  = new TGeoBBox("GraphVertical", yGraph/2, ylen/2, zlen);
 
   TGeoTubeSeg *graphtub = new TGeoTubeSeg("GraphTube", rCoolMax,
-					  rCoolMax+kLay2, zlen,
+					  rCoolMax+yGraph, zlen,
 					  180., 360.);
 
-  xlen = xHalfSt - fgkOBCoolTubeXDist/2 - coolTube->GetRmax() - kLay2;
-  TGeoBBox *fleeclat    = new TGeoBBox("FleecLateral", xlen/2, kLay1/2, zlen);
+  xlen = xHalfSt - fgkOBCoolTubeXDist/2 - coolTube->GetRmax() - yGraph;
+  TGeoBBox *fleeclat  = new TGeoBBox("FleecLateral", xlen/2, yCFleece/2, zlen);
 
-  xlen = fgkOBCoolTubeXDist/2 - coolTube->GetRmax() - kLay2;
-  TGeoBBox *fleecmid    = new TGeoBBox("FleecMiddle", xlen, kLay1/2, zlen);
+  xlen = fgkOBCoolTubeXDist/2 - coolTube->GetRmax() - yGraph;
+  TGeoBBox *fleecmid  = new TGeoBBox("FleecMiddle", xlen, yCFleece/2, zlen);
 
-  ylen = coolTube->GetRmax() - kLay2 - kLay1;
-  TGeoBBox *fleecvert   = new TGeoBBox("FleecVertical", kLay1/2, ylen/2, zlen);
+  ylen = coolTube->GetRmax() - yGraph - yCFleece;
+  TGeoBBox *fleecvert = new TGeoBBox("FleecVertical", yCFleece/2, ylen/2,
+						      zlen);
 
-  TGeoTubeSeg *fleectub = new TGeoTubeSeg("FleecTube", rCoolMax+kLay2,
-					  rCoolMax+kLay1+kLay2,
+  TGeoTubeSeg *fleectub = new TGeoTubeSeg("FleecTube", rCoolMax+yGraph,
+					  rCoolMax+yCFleece+yGraph,
 					  zlen, 180., 360.);
 
   TGeoBBox *flex1_5cm  = new TGeoBBox("Flex1MV_5cm",xHalfSt,yFlex1/2,flexOverlap/2);
@@ -2136,7 +2142,7 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
 
   // The half stave container (an XTru to avoid overlaps between neightbours)
   ylen = ymod + busAl->GetDY() + busKap->GetDY() + coldPlate->GetDY()
-	      + graphlat->GetDY() + fleeclat->GetDY();
+	      + fleeccent->GetDY() + graphlat->GetDY() + fleeclat->GetDY();
   if (fStaveModel == AliITSUv1::kOBModel2)
     ylen += 2*glue->GetDY();
 
@@ -2165,7 +2171,7 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
   // We have all shapes: now create the real volumes
 
   TGeoMedium *medAluminum     = mgr->GetMedium("ITS_ALUMINUM$");
-  TGeoMedium *medCarbon       = mgr->GetMedium("ITS_CARBON$");
+  TGeoMedium *medK13D2U120    = mgr->GetMedium("ITS_K13D2U120$");
   TGeoMedium *medKapton       = mgr->GetMedium("ITS_KAPTON(POLYCH2)$");
   TGeoMedium *medWater        = mgr->GetMedium("ITS_WATER$");
   TGeoMedium *medCarbonFleece = mgr->GetMedium("ITS_CarbonFleece$"); 
@@ -2185,10 +2191,16 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
   busKapVol->SetFillStyle(4000); // 0% transparent
 
   TGeoVolume *coldPlateVol = new TGeoVolume("ColdPlateVol",
-					    coldPlate, medCarbon);
+					    coldPlate, medK13D2U120);
   coldPlateVol->SetLineColor(kYellow-3);
   coldPlateVol->SetFillColor(coldPlateVol->GetLineColor());
   coldPlateVol->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *fleeccentVol = new TGeoVolume("CarbonFleeceCentral",
+					    fleeccent, medCarbonFleece);
+  fleeccentVol->SetLineColor(kViolet);
+  fleeccentVol->SetFillColor(fleeccentVol->GetLineColor());
+  fleeccentVol->SetFillStyle(4000); // 0% transparent
 
   TGeoVolume *glueVol = new TGeoVolume("GlueVol", glue, medGlue);
   glueVol->SetLineColor(kBlack);
@@ -2305,6 +2317,12 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
       halfStaveVol->AddNode(glueVol, 2, new TGeoTranslation(0, ypos, 0));
     ypos -= glue->GetDY();
   }
+
+  ypos -= fleeccent->GetDY();
+  if ( (fStaveModel == AliITSUv1::kOBModel1 && fBuildLevel < 5) || // Carbon
+       (fStaveModel == AliITSUv1::kOBModel2 && fBuildLevel < 6) )
+    halfStaveVol->AddNode(fleeccentVol, 1, new TGeoTranslation(0, ypos, 0));
+  ypos -= fleeccent->GetDY();
 
   ypos -= coldPlate->GetDY();
   if ( (fStaveModel == AliITSUv1::kOBModel1 && fBuildLevel < 5) || // Carbon
@@ -2804,13 +2822,17 @@ TGeoVolume* AliITSUv1Layer::CreateModuleOuterB(const TGeoManager *mgr){
     flexMetal = new TGeoBBox("FlexCu", xlen, ylen, zlen);
   }
 
-  ylen = fgkOBFlexCableKapThick/2;
+  if (fStaveModel == AliITSUv1::kOBModel1)
+    ylen = fgkOBFlexCableKapThick1/2;
+  else
+    ylen = fgkOBFlexCableKapThick/2;
   TGeoBBox *flexKap = new TGeoBBox("FlexKap", xlen, ylen, zlen);
 
   // The module
   xlen = fgkOBHalfStaveWidth/2;
-  ylen = ychip + modPlate->GetDY() + glue->GetDY() +
-         flexMetal->GetDY() + flexKap->GetDY();
+  ylen = ychip + flexMetal->GetDY() + flexKap->GetDY();
+  if (fStaveModel == AliITSUv1::kOBModel1)
+    ylen += (modPlate->GetDY() + glue->GetDY());
   zlen = fgkOBModuleZLength/2;
   TGeoBBox *module = new TGeoBBox("OBModule", xlen,  ylen, zlen);
 
