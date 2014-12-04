@@ -38,6 +38,7 @@ ocdbStorage="raw://"
 #MAILTO_TPC="mivanov@cern.ch"
 #attach full debug info
 MAILdebugInfo=1
+MAILproductionSummary=1
 
 main()
 {
@@ -108,7 +109,7 @@ updateQA()
   [[ ! -d $logDirectory ]] && echo "no log dir $logDirectory" && return 1
   logFile="$logDirectory/${0##*/}.${dateString}.log"
   touch ${logFile}
-  [[ ! -f ${logFile} ]] && echo "cannot write logfile $logfile" && return 1
+  [[ ! -f ${logFile} ]] && echo "cannot write logFile $logFile" && return 1
   echo "logFile = $logFile"
 
   #check lock
@@ -503,6 +504,10 @@ executePlanB()
     file="${logDirectory}/stacktrace-core-${dateString}.tree"
     [[ -f ${file} ]] && mailoptions+=" -a ${file}"
     file="${logDirectory}/stacktrace-core-${dateString}.png"
+    [[ -f ${file} ]] && mailoptions+=" -a ${file}"
+  fi
+  if [[ -n "${MAILproductionSummary}"; then
+    file="${logFile}"
     [[ -f ${file} ]] && mailoptions+=" -a ${file}"
   fi
   printLogStatistics ${logSummary} | mail -s "${detector} QA in need of assistance" ${mailoptions} ${mailTo}

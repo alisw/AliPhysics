@@ -322,12 +322,13 @@ validateLog()
             's_err_syswatch_'
             'Thread [0-9]* (Thread'
             'AliFatal'
-            'core dumped'
             '\.C.*error:.*\.h: No such file'
             'segmentation'
+            'Segmentation fault'
             'Interpreter error recovered'
             ': command not found'
             ': comando non trovato'
+            'core dumped'
   )
 
   warningConditions=(
@@ -337,17 +338,20 @@ validateLog()
   local logStatus=0
   local errorSummary=""
   local warningSummary=""
-
-  for ((i=0; i<${#errorConditions[@]};i++)); do
-    local tmp=$(grep -m1 -e "${errorConditions[${i}]}" ${log})
-    [[ -n ${tmp} ]] && tmp=" : ${tmp}"
-    errorSummary+=${tmp}
+  local errorCondition=""
+  for errorCondition in "${errorConditions[@]}"; do
+    local tmp=$(grep -m1 -e "${errorCondition}" ${log})
+    local error=""
+    [[ -n ${tmp} ]] && error=" : ${errorCondition}"
+    errorSummary+=${error}
   done
 
-  for ((i=0; i<${#warningConditions[@]};i++)); do
-    local tmp=$(grep -m1 -e "${warningConditions[${i}]}" ${log})
-    [[ -n ${tmp} ]] && tmp=" : ${tmp}"
-    warningSummary+=${tmp}
+  local warningCondition=""
+  for warningCondition in "${warningConditions[@]}"; do
+    local tmp=$(grep -m1 -e "${warningCondition}" ${log})
+    local warning=""
+    [[ -n ${tmp} ]] && warning=" : ${warningCondition}"
+    warningSummary+=${warning}
   done
 
   if [[ -n ${errorSummary} ]]; then 
@@ -426,13 +430,16 @@ plotStackTraceTree()
   #plot the stacktrace tree,
   #first arg    is the text file in the root tree format
   #second arg   is optional: a plot is written to file instead of screen
+  #third arg    is optional: selection for plotting, default skip G_ stuff
   local tree=$1
   local plot=${2:-"crashes.png"}
+  local selection=${3:-'!strstr(method,\"G__\")'}
+  echo $selection
   [[ ! -f ${tree} ]] && echo "no input" && return 1
   aliroot -b <<EOF
 TTree* t=AliSysInfo::MakeTree("${tree}");
 TCanvas* canvas = new TCanvas("QA crashes","QA crashes",1);
-t->Draw("method","","");
+t->Draw("method","${selection}","");
 canvas->SaveAs("${plot}");
 .q
 EOF
@@ -489,8 +496,10 @@ printLogStatistics()
   # example usage:
   #   printLogStatistics */*.log
   [[ ! -f $1 ]] && return 1
+  echo "log statistics from: ${1%/*}"
   #cat "${@}" | awk '
   awk '
+  BEGIN {nOK=0; nCores=0; nStackTraces=0;}
   /\/core/ {nCores++}
   /\/stacktrace.log/ {nStackTraces++}
   /OK/ {nOK++; nLogs++;}
@@ -500,7 +509,7 @@ printLogStatistics()
     write=0
     for (i=3; i<=NF; i++)
     { 
-      if ($i ~ /\:/) 
+      if ($i ~ /^\:$/) 
         write=1
       else
         write=0
