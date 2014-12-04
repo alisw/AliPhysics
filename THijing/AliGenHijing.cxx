@@ -223,6 +223,11 @@ void AliGenHijing::Init()
 //
 }
 
+void AliGenHijing::SetSeed(UInt_t seed)
+{
+  AliHijingRndm::GetHijingRandom()->SetSeed(seed);
+}
+
 void AliGenHijing::Generate()
 {
 // Generate one event

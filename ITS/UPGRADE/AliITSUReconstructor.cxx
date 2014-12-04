@@ -169,8 +169,8 @@ void AliITSUReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) c
       clFinder->Clusterize();
     }
     //
-    AliITSUClusterPix::SetSortMode( AliITSUClusterPix::SortModeIdTrkYZ());
-    fClusters[ilr]->Sort();
+    //    AliITSUClusterPix::SetSortMode( AliITSUClusterPix::SortModeIdTrkYZ());
+    //    fClusters[ilr]->Sort();
     AliDebug(1,Form(" -> Lr%d : %d Cluster",ilr,fClusters[ilr]->GetEntries()));
     if (clustersTree) lrBranch[ilr]->Fill();
   }

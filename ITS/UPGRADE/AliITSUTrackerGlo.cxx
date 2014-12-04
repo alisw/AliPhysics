@@ -216,6 +216,7 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
   fHypStore.Delete();
   if (fHypStore.GetSize()<fNTracksESD) fHypStore.Expand(fNTracksESD+100);
   //
+  fITS->SortClusters(AliITSUClusterPix::SortModeIdTrkYZ());
   fITS->ProcessClusters();
   //
 #ifdef  _ITSU_TUNING_MODE_

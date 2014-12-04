@@ -14,7 +14,7 @@ AliInputEventHandler* AddMCGeneratorHandler()
   mcInputHandler->SetGeneratorMacroParameters(gSystem->Getenv("GEN_PARAMETERS"));
   
   TMacro* macro = new TMacro("generator_customization.C");
-  mcInputHandler->SetGeneratorCustomizatoin(macro);
+  mcInputHandler->SetGeneratorCustomization(macro);
   
   mcInputHandler->SetSeedMode(3);
 

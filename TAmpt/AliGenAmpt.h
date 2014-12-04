@@ -27,6 +27,7 @@ class AliGenAmpt : public AliGenMC
     virtual TAmpt  *Ampt() { return fAmpt; }
     virtual void    Generate();
     virtual void    Init();
+    virtual void    SetSeed(UInt_t seed);
     virtual void    SetEnergyCMS(Float_t energy=5500) {fEnergyCMS=energy;}
     virtual void    SetReferenceFrame(TString frame="CMS")
 	{fFrame=frame;}
