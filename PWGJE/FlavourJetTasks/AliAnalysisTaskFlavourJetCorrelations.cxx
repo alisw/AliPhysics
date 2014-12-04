@@ -549,7 +549,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
    for(Int_t i=0;i<ntrarr;i++){
       AliAODTrack *jtrack=static_cast<AliAODTrack*>(fTrackCont->GetParticle(i));
       //reusing histograms
-      if(!jtrack) continue;
+      if(!jtrack || jtrack->IsMuonTrack()) continue; // added check on IsMuonTrack because in some cases the DCA() gives crazy  YAtDCA values that issue floating point exception 
       fhPtJetTrks->Fill(jtrack->Pt());
       fhPhiJetTrks->Fill(jtrack->Phi());
       fhEtaJetTrks->Fill(jtrack->Eta());
@@ -564,10 +564,9 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
       
       vDCAglobalxy  = pos[0] - vtx[0]; //should be impact parameter in transverse plane
       //vDCAglobalz  = pos[1] - vtx[1]; //should be impact parameter in z direction
-      }
-      else{
-      vDCAglobalxy=jtrack->DCA(); 
-      //vDCAglobalz=jtrack->ZAtDCA();
+      } else {
+      	 vDCAglobalxy=jtrack->DCA(); 
+      	 //vDCAglobalz=jtrack->ZAtDCA();
       }
       fhImpPar->Fill(vDCAglobalxy,jtrack->Pt());
       //Printf("Track position  %.3f,%.3f,%.3f",pos[0],pos[1],pos[2]);
@@ -1789,6 +1788,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::IsDInJet(AliEmcalJet *thejet, AliA
    
    Bool_t testDeltaR=kFALSE;
    if(DeltaR(thejet,charm)<fJetRadius) testDeltaR=kTRUE;
+   //for type 3 this check should be redone after the modification of the jet axis
    
    Int_t* daughOutOfJet;
    AliAODTrack** charmDaugh;
@@ -1798,6 +1798,14 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::IsDInJet(AliEmcalJet *thejet, AliA
       fhzDinjet->Fill(Z(charm,thejet));
       
    }
+   
+   TVector3 thejetv;    //(x=0,y=0,z=0)
+   thejetv.SetPtEtaPhi(thejet->Pt(),thejet->Eta(),thejet->Phi());
+   TVector3 newjet(thejetv);
+   TVector3 correction; //(x=0,y=0,z=0)
+   TVector3 charmcand;  //(x=0,y=0,z=0)
+   charmcand.SetPtEtaPhi(charm->Pt(),charm->Eta(),charm->Phi());
+   
    if(!testDaugh && testDeltaR && fTypeDInJet>=2){
       
       Int_t ndaugh=3;
@@ -1815,32 +1823,42 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::IsDInJet(AliEmcalJet *thejet, AliA
       	       fhDRdaughOut->Fill(DeltaR(thejet, charmDaugh[id]));
       	    }
       	    if(fTypeDInJet==2){
-      	       fPmissing[0]+=charmDaugh[id]->Px(); 
-      	       fPmissing[1]+=charmDaugh[id]->Py();
-      	       fPmissing[2]+=charmDaugh[id]->Pz();
+      	       
+      	       newjet.SetX(newjet(0)+charmDaugh[id]->Px()); 
+      	       newjet.SetY(newjet(1)+charmDaugh[id]->Py());
+      	       newjet.SetZ(newjet(2)+charmDaugh[id]->Pz());
       	    }
       	    if(fTypeDInJet==3){
+      	       
       	       Double_t ptdaug  = charmDaugh[id]->Pt();
-      	       Double_t ptjet   = thejet->Pt();
+      	       Double_t ptjet   = newjet.Perp();
       	       Double_t ptn     = ptjet+ptdaug;
       	       Double_t phidaug = charmDaugh[id]->Phi();
-      	       Double_t phijet  = thejet->Phi();
-      	       Double_t phin    = (phijet/ptjet+phidaug/ptdaug)/(1./ptjet+ 1./ptdaug);
-      	       Double_t etadaug = charmDaugh[id]->Eta();
-      	       Double_t etajet  = thejet->Eta();
-      	       Double_t etan    = (etajet/ptjet+etadaug/ptdaug)/(1./ptjet+ 1./ptdaug);
+      	       Double_t phijet  = newjet.Phi();
+      	       Double_t phin    = (phijet*ptjet+phidaug*ptdaug)/(ptjet+ptdaug);
       	       
-      	       fPmissing[0]+= ptn*TMath::Cos(phin);
-      	       fPmissing[1]+= ptn*TMath::Sin(phin);
-      	       fPmissing[2]+= ptn*TMath::SinH(etan);
+      	       Double_t etadaug = charmDaugh[id]->Eta();
+      	       Double_t etajet  = newjet.Eta();
+      	       Double_t etan    = (etajet*ptjet+etadaug*ptdaug)/(ptjet+ptdaug);
+      	       
+      	       newjet.SetPtEtaPhi(ptn,etan,phin);
+ 
       	    }
-      	 }
-      
+      	 }      
       }
       
-      //now the D in within the jet
+      correction=newjet-thejetv;
+      fPmissing[0]=correction(0);
+      fPmissing[1]=correction(1);
+      fPmissing[2]=correction(2);
+
+      //now the D is within the jet
       testDaugh=kTRUE;
-   
+      if(fTypeDInJet==3){ //recalc R(D,jet)
+      	 Double_t dRnew=newjet.DeltaR(charmcand);
+      	 if(dRnew<fJetRadius) testDeltaR=kTRUE;
+      	 else testDeltaR=kFALSE;
+      }
    }
    
    delete[] charmDaugh;
@@ -1856,12 +1874,16 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::IsDInJet(AliEmcalJet *thejet, AliA
    case 2: //this case defines fPmissing
       result=testDeltaR && testDaugh; 
       break;
+   case 3: //this case defines fPmissing and recalculate R(jet,D) with the updated jet axis
+      result=testDeltaR && testDaugh; 
+      break;
+      
    default:
       AliInfo("Selection type not specified, use 1");
       result=testDeltaR && testDaugh;
       break;
    }
- return result;
+   return result;
 }
 
 Bool_t AliAnalysisTaskFlavourJetCorrelations::InEMCalAcceptance(AliVParticle *vpart){
