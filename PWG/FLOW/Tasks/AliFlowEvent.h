@@ -103,13 +103,13 @@ private:
   Float_t       fMeanQv3[9][2][2];      //! recentering
   Float_t       fWidthQv3[9][2][2];     //! recentering
   AliVEvent*    fEvent;                 //! current event
-  TArrayD*      fChi2A;                 // chi vs cent for vzero A ep_2
-  TArrayD*      fChi2C;                 // chi vs cent for vzero C ep_2
-  TArrayD*      fChi3A;                 // chi vs cent for vzero A ep_3
-  TArrayD*      fChi3C;                 // chi vs cent for vzero C ep_3
+  TArrayD*      fChi2A;                 //! chi vs cent for vzero A ep_2
+  TArrayD*      fChi2C;                 //! chi vs cent for vzero C ep_2
+  TArrayD*      fChi3A;                 //! chi vs cent for vzero A ep_3
+  TArrayD*      fChi3C;                 //! chi vs cent for vzero C ep_3
 
 
-  ClassDef(AliFlowEvent,5)
+  ClassDef(AliFlowEvent,4)
 };
 
 #endif
