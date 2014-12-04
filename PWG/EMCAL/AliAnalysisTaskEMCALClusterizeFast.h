@@ -1,8 +1,6 @@
 #ifndef ALIANALYSISTASKEMCALCLUSTERIZEFAST_H
 #define ALIANALYSISTASKEMCALCLUSTERIZEFAST_H
 
-// $Id$
-
 class TObjArray;
 class TClonesArray;
 class AliAODEvent;
@@ -86,6 +84,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   void                   SetFiducial(Bool_t b)                                { fFiducial                    = b     ; }
   void                   SetDoNonLinearity(Bool_t b)                          { fDoNonLinearity              = b     ; }
   void                   SetRecalDistToBadChannels(Bool_t b)                  { fRecalDistToBadChannels      = b     ; }
+  void                   SetCellMCLabelFromCluster(Int_t s)                   { fSetCellMCLabelFromCluster   = s     ; }
 
   // For backward compatibility
   const TString         &GetNewClusterArrayName()                     const   { return GetCaloClustersName()         ; }
@@ -145,6 +144,9 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   Bool_t                 fFiducial;                       // fiducial cut
   Bool_t                 fDoNonLinearity;                 // non linearity calib
   Bool_t                 fRecalDistToBadChannels;         // recalculate distance to bad channel
+  Int_t                  fSetCellMCLabelFromCluster;      // Use cluster MC label as cell label:
+                                                          // 0 - get the MC label stored in cells (not available for productions done with aliroot < v5-02-Rev09)
+                                                          // 1 - assign to the cell the MC label of the cluster
   AliVCaloCells         *fCaloCells;                      //!calo cells object
   TClonesArray          *fCaloClusters;                   //!calo clusters array       
   AliESDEvent           *fEsd;                            //!esd event

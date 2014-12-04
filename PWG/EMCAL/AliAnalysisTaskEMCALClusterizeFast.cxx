@@ -19,7 +19,6 @@
 // Author: Constantin Loizides, Salvatore Aiola
 //         Adapted from analysis class from Deepa Thomas
 //
-// $Id$
 //_________________________________________________________________________
 
 // --- Root ---
@@ -96,6 +95,7 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast() :
   fFiducial(kFALSE),
   fDoNonLinearity(kFALSE),
   fRecalDistToBadChannels(kFALSE),
+  fSetCellMCLabelFromCluster(0),
   fCaloCells(0),
   fCaloClusters(0),
   fEsd(0),
@@ -148,6 +148,7 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
   fFiducial(kFALSE),
   fDoNonLinearity(kFALSE),
   fRecalDistToBadChannels(kFALSE),
+  fSetCellMCLabelFromCluster(0),
   fCaloCells(0),
   fCaloClusters(0),
   fEsd(0),
@@ -345,6 +346,26 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
   case kFEEDataMCOnly :
   case kFEEDataExcludeMC :
     {
+      // In case of MC productions done before aliroot tag v5-02-Rev09
+      // assing the cluster label to all the cells belonging to this cluster
+      // very rough
+      // Copied and simplified from AliEMCALTenderSupply
+      Int_t cellLabels[12672]={-1};
+      if (fSetCellMCLabelFromCluster) {
+        Int_t nClusters = InputEvent()->GetNumberOfCaloClusters();
+        for (Int_t i = 0; i < nClusters; i++) {
+          AliVCluster *clus =  InputEvent()->GetCaloCluster(i);
+      
+          if (!clus) continue;
+          if (!clus->IsEMCAL()) continue ;
+      
+          Int_t      label = clus->GetLabel();
+          UShort_t * index = clus->GetCellsAbsId() ;
+      
+          for (Int_t icell=0; icell < clus->GetNCells(); icell++) cellLabels[index[icell]] = label;
+        } // cluster loop
+      }
+
       Double_t avgE        = 0; // for background subtraction
       const Int_t ncells   = fCaloCells->GetNumberOfCells();
       for (Int_t icell = 0, idigit = 0; icell < ncells; ++icell) {
@@ -353,6 +374,8 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
 	Int_t cellMCLabel=-1;
 	if (fCaloCells->GetCell(icell, cellNumber, cellAmplitude, cellTime, cellMCLabel, cellEFrac) != kTRUE)
 	  break;
+
+        if (fSetCellMCLabelFromCluster) cellMCLabel = cellLabels[cellNumber];
 
 	if (cellMCLabel > 0 && cellEFrac < 1e-6) 
 	  cellEFrac = 1;
