@@ -43,6 +43,7 @@
 #include "TH2F.h"
 #include "AliStack.h"
 #include "TBrowser.h"
+#include "TArrayD.h"
 #include "AliMCEvent.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
@@ -160,6 +161,10 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fVZEROgainEqualization(NULL),
   fApplyRecentering(kFALSE),
   fVZEROgainEqualizationPerRing(kFALSE),
+  fChi2A(0x0),
+  fChi2C(0x0),
+  fChi3A(0x0),
+  fChi3C(0x0),
   fPIDResponse(NULL),
   fNsigmaCut2(9)
 {
@@ -267,6 +272,10 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fVZEROgainEqualization(NULL),
   fApplyRecentering(kFALSE),
   fVZEROgainEqualizationPerRing(kFALSE),
+  fChi2A(0x0),
+  fChi2C(0x0),
+  fChi3A(0x0),
+  fChi3C(0x0),
   fPIDResponse(NULL),
   fNsigmaCut2(9)
 {
@@ -376,18 +385,25 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fVZEROgainEqualization(NULL),
   fApplyRecentering(that.fApplyRecentering),
   fVZEROgainEqualizationPerRing(that.fVZEROgainEqualizationPerRing),
+  fChi2A(0x0),
+  fChi2C(0x0),
+  fChi3A(0x0),
+  fChi3C(0x0),
   fPIDResponse(that.fPIDResponse),
   fNsigmaCut2(that.fNsigmaCut2)
 {
   //copy constructor
-  printf(" \n\n claling copy ctor \n\n" );
   if (that.fTPCpidCuts) fTPCpidCuts = new TMatrixF(*(that.fTPCpidCuts));
   if (that.fTOFpidCuts) fTOFpidCuts = new TMatrixF(*(that.fTOFpidCuts));
   if (that.fAliESDtrackCuts) fAliESDtrackCuts = new AliESDtrackCuts(*(that.fAliESDtrackCuts));
   if (that.fMuonTrackCuts)   fMuonTrackCuts   = new AliMuonTrackCuts(*(that.fMuonTrackCuts));  // XZhang 20120604
   SetPriors(); //init arrays
   if (that.fQA) DefineHistograms();
-
+  // would be neater via copy ctor of TArrayD
+  fChi2A = new TArrayD(that.fChi2A->GetSize(), that.fChi2A->GetArray());
+  fChi2C = new TArrayD(that.fChi2C->GetSize(), that.fChi2C->GetArray());
+  fChi3A = new TArrayD(that.fChi3A->GetSize(), that.fChi3A->GetArray());
+  fChi3C = new TArrayD(that.fChi3C->GetSize(), that.fChi3C->GetArray());
   // New PID procedure (Bayesian Combined PID)
   fBayesianResponse = new AliFlowBayesianPID();
   fBayesianResponse->SetNewTrackParam();
@@ -520,6 +536,11 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
       fVZEROCpol[i] = that.fVZEROCpol[i];
   }
   for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = that.fUseVZERORing[i];
+  // would be neater via copy ctor of TArrayD
+  fChi2A = new TArrayD(that.fChi2A->GetSize(), that.fChi2A->GetArray());
+  fChi2C = new TArrayD(that.fChi2C->GetSize(), that.fChi2C->GetArray());
+  fChi3A = new TArrayD(that.fChi3A->GetSize(), that.fChi3A->GetArray());
+  fChi3C = new TArrayD(that.fChi3C->GetSize(), that.fChi3C->GetArray());
 
   fPIDResponse = that.fPIDResponse;
   fNsigmaCut2 = that.fNsigmaCut2;
@@ -536,7 +557,26 @@ AliFlowTrackCuts::~AliFlowTrackCuts()
   delete fTOFpidCuts;
   if (fMuonTrackCuts) delete fMuonTrackCuts;  // XZhang 20120604
   if (fQA) { fQA->SetOwner(); fQA->Delete(); delete fQA; }
-  if (fVZEROgainEqualization) delete fVZEROgainEqualization;
+  if (fVZEROgainEqualization) {
+      delete fVZEROgainEqualization;
+      fVZEROgainEqualization = 0x0;
+  }
+  if(fChi2A) {
+      delete fChi2A;
+      fChi2A = 0x0;
+  }
+  if(fChi3A) {
+      delete fChi3A;
+      fChi3A = 0x0;
+  }
+  if(fChi2C) {
+      delete fChi2C;
+      fChi2C = 0x0;
+  }
+  if(fChi3C) {
+      delete fChi3C;
+      fChi3C = 0x0;
+  }
 }
 
 //-----------------------------------------------------------------------
