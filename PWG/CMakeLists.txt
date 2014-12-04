@@ -20,5 +20,6 @@ add_subdirectory (muon)
 add_subdirectory (EMCAL)
 add_subdirectory (FLOW)
 add_subdirectory (TRD)
+add_subdirectory (muondep)
 
 message(STATUS "PWG enabled")
