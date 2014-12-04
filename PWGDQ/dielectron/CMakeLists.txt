@@ -14,33 +14,70 @@
 # **************************************************************************
 
 # Module
-set(MODULE PWGUDupc)
+set(MODULE PWGDQdielectron)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWGUD/UPC
-                   )
+include_directories(${AliRoot_SOURCE_DIR}/PWGDQ/dielectron)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/PWG/muon
+                    ${AliRoot_SOURCE_DIR}/CORRFW/
+                    ${AliRoot_SOURCE_DIR}/PWGCF/Correlations # what deps here?
+                    ${AliRoot_SOURCE_DIR}/PWG/FLOW/Base
+                    ${AliRoot_SOURCE_DIR}/PWG/FLOW/Tasks
+                    ${AliRoot_SOURCE_DIR}/PWGLF/FORWARD # what deps here
                     ${AliRoot_SOURCE_DIR}/STEER/AOD
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/TRD/TRDbase
                    )
 
 # Sources in alphabetical order
 set(SRCS
-    AliAnalysisTaskUpcFilterSemiforward.cxx
-    AliAnalysisTaskUpcK0sK0s.cxx
-    AliAnalysisTaskUpcPhi.cxx
-    AliAnalysisTaskUpcPsi2s.cxx
-    AliAnalysisTaskUpcTree.cxx
-    AliUPCEvent.cxx
-    AliUPCMuonTrack.cxx
-    AliUpcParticle.cxx
-    AliUPCTrack.cxx
+      AliAnalysisTaskDielectronEfficiency.cxx
+      AliAnalysisTaskDielectronFilter.cxx
+      AliAnalysisTaskDielectronME.cxx
+      AliAnalysisTaskDielectronReadAODBranch.cxx
+      AliAnalysisTaskDielectronSE.cxx
+      AliAnalysisTaskMultiDielectron.cxx
+      AliAnalysisTaskMultiDielectronTG.cxx
+      AliAnalysisTaskReducedTree.cxx
+      AliAnalysisTaskSingleParticle.cxx
+      AliDielectronBtoJPSItoEleCDFfitFCN.cxx
+      AliDielectronBtoJPSItoEleCDFfitFCNfitter.cxx
+      AliDielectronBtoJPSItoEleCDFfitHandler.cxx
+      AliDielectronBtoJPSItoEle.cxx
+      AliDielectronCF.cxx
+      AliDielectronCFdraw.cxx
+      AliDielectronCutGroup.cxx
+      AliDielectronCutQA.cxx
+      AliDielectron.cxx
+      AliDielectronDebugTree.cxx
+      AliDielectronEventCuts.cxx
+      AliDielectronEvent.cxx
+      AliDielectronHelper.cxx
+      AliDielectronHF.cxx
+      AliDielectronHFhelper.cxx
+      AliDielectronHistos.cxx
+      AliDielectronMC.cxx
+      AliDielectronMixingHandler.cxx
+      AliDielectronPair.cxx
+      AliDielectronPairLegCuts.cxx
+      AliDielectronPID.cxx
+      AliDielectronSignalBase.cxx
+      AliDielectronSignalExt.cxx
+      AliDielectronSignalFunc.cxx
+      AliDielectronSignalMC.cxx
+      AliDielectronSpectrum.cxx
+      AliDielectronTrackCuts.cxx
+      AliDielectronTrackRotator.cxx
+      AliDielectronTRDpidCut.cxx
+      AliDielectronV0Cuts.cxx
+      AliDielectronVarCuts.cxx
+      AliDielectronVarManager.cxx
+      AliReducedEvent.cxx
    )
 
 # Headers from sources
@@ -51,8 +88,8 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
-set(ROOT_DEPENDENCIES Core EG Hist Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD STEERBase PWGmuon)
+set(ROOT_DEPENDENCIES Core EG Gpad Graf Hist MathCore Matrix Minuit Net Physics RIO Tree)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase STEERBase TRDbase)
 
 # Generate the ROOT map
 # Dependecies

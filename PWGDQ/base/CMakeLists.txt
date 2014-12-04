@@ -14,33 +14,20 @@
 # **************************************************************************
 
 # Module
-set(MODULE PWGUDupc)
+set(MODULE PWGDQbase)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWGUD/UPC
-                   )
+include_directories(${AliRoot_SOURCE_DIR}/PWGDQ/base)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/PWG/muon
-                    ${AliRoot_SOURCE_DIR}/STEER/AOD
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order
 set(SRCS
-    AliAnalysisTaskUpcFilterSemiforward.cxx
-    AliAnalysisTaskUpcK0sK0s.cxx
-    AliAnalysisTaskUpcPhi.cxx
-    AliAnalysisTaskUpcPsi2s.cxx
-    AliAnalysisTaskUpcTree.cxx
-    AliUPCEvent.cxx
-    AliUPCMuonTrack.cxx
-    AliUpcParticle.cxx
-    AliUPCTrack.cxx
+    AliQuarkoniaAcceptance.cxx
+    AliQuarkoniaEfficiency.cxx
    )
 
 # Headers from sources
@@ -51,8 +38,8 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
-set(ROOT_DEPENDENCIES Core EG Hist Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD STEERBase PWGmuon)
+set(ROOT_DEPENDENCIES Core Hist RIO)
+set(ALIROOT_DEPENDENCIES STEERBase)
 
 # Generate the ROOT map
 # Dependecies
