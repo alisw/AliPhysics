@@ -33,7 +33,6 @@ public:
   
   AliAODPidHF();
   AliAODPidHF(const AliAODPidHF& pid);
-  AliAODPidHF& operator=(const AliAODPidHF& pid);
   virtual ~AliAODPidHF();
   
   //Setters
@@ -227,6 +226,9 @@ protected:
   
   
 private:
+
+  AliAODPidHF& operator=(const AliAODPidHF& pid);
+
   Int_t fnNSigma; // number of sigmas
   Double_t *fnSigma; // [fnNSigma], sigma for the raw signal PID: 0-2 for TPC, 3 for TOF, 4 for ITS
   Double_t fTOFSigma; // TOF precision
