@@ -14,16 +14,14 @@
 # **************************************************************************
 
 # Include the libraries
-add_subdirectory (Tools)
-add_subdirectory (Glauber)
-add_subdirectory (muon)
+add_subdirectory (CaloTrackCorrBase)
+add_subdirectory (DevNanoAOD)
 add_subdirectory (EMCAL)
 add_subdirectory (FLOW)
-add_subdirectory (TRD)
+add_subdirectory (Glauber)
+add_subdirectory (muon)
 add_subdirectory (muondep)
-add_subdirectory (CaloTrackCorrBase)
-
-# Needs PWGLFspectra
-# add_subdirectory (DevNanoAOD)
+add_subdirectory (Tools)
+add_subdirectory (TRD)
 
 message(STATUS "PWG enabled")
