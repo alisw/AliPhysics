@@ -14,7 +14,8 @@ void *AddTaskDFilterAndCorrelations(
   Int_t thnsparse=1, /*-1 = no thnsparse, 0 = heavy, 1 = light*/
   Double_t percjetareacut = -1.,
   AliAnalysisTaskEmcal::TriggerType trType=AliAnalysisTaskEmcal::kND,
-  Int_t typeDjet=2
+  Int_t typeDjet=2,
+  TString subwagons=""
 )
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
