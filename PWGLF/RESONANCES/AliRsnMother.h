@@ -35,7 +35,7 @@ public:
    AliRsnDaughter   *GetDaughter(const Int_t &i) {return fDaughter[CkID(i)];}
    TLorentzVector   &Sum(Bool_t mc)              {return (mc ? fSumMC : fSum);}
    TLorentzVector   &Ref(Bool_t mc)              {return (mc ? fRefMC : fRef);}
-   Bool_t            GetResolution(Double_t &value);
+   //   Bool_t            GetResolution(Double_t &value); // Not implemented
    Double_t          Rapidity(Bool_t mc)         {if (mc) return fRefMC.Rapidity(); else return fRef.Rapidity();}
    Double_t          DCAproduct();
 
