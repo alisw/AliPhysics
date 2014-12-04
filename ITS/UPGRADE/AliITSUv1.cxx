@@ -561,8 +561,10 @@ void AliITSUv1::CreateMaterials() {
   // Unidirectional prepreg
  AliMaterial(8,"K13D2U2k$",12.0107,6,1.643,999,999);
  AliMedium(8,  "K13D2U2k$",8,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,epsilSi,stminSi);
+ AliMaterial(17,"K13D2U120$",12.0107,6,1.583,999,999);
+ AliMedium(17,  "K13D2U120$",17,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,epsilSi,stminSi);
  //Impregnated thread
- AliMaterial(9,"M60J3K$",12.0107,6,2.21,999,999);
+ AliMaterial(9,"M60J3K$",12.0107,6,2.12,999,999);
  AliMedium(9,  "M60J3K$",9,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,epsilSi,stminSi);
  //Impregnated thread
  AliMaterial(10,"M55J6K$",12.0107,6,1.63,999,999);

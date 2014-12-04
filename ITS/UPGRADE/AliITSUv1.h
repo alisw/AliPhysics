@@ -33,6 +33,7 @@ class AliITSUv1 : public AliITSU {
     kIBModel21=3,
     kIBModel22=4,
     kIBModel3=5,
+    kIBModel4=10,
     kOBModelDummy=6,
     kOBModel0=7,
     kOBModel1=8, 

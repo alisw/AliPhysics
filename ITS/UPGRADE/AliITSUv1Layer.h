@@ -153,6 +153,7 @@ class AliITSUv1Layer : public AliITSv11Geometry {
     static const Double_t fgkOBChipZGap;         // Gap between OB chips on Z
     static const Double_t fgkOBFlexCableAlThick; // Thickness of FPC Aluminum
     static const Double_t fgkOBFlexCableCuThick; // Thickness of FPC Copper
+    static const Double_t fgkOBFlexCableKapThick1;// Thickness of FPC Kapton
     static const Double_t fgkOBFlexCableKapThick;// Thickness of FPC Kapton
     static const Double_t fgkOBBusCableAlThick;  // Thickness of Bus Aluminum
     static const Double_t fgkOBBusCableKapThick; // Thickness of Bus Kapton
