@@ -47,7 +47,6 @@ set ( SRCS
       FLOW/Base/AliFlowLYZEventPlane.cxx 
       FLOW/Base/AliFlowAnalysis.cxx 
       FLOW/Base/AliFlowAnalysisWithScalarProduct.cxx 
-      FLOW/Base/AliFlowAnalysisWithScalarProductDev.cxx
       FLOW/Base/AliFlowAnalysisWithMCEventPlane.cxx 
       FLOW/Base/AliFlowAnalysisWithLYZEventPlane.cxx 
       FLOW/Base/AliFlowAnalysisWithLeeYangZeros.cxx 
