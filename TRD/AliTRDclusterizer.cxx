@@ -914,7 +914,8 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   // Apply the gain and the tail cancelation via digital filter
   // Use the configuration from the DCS to find out whether online 
   // tail cancellation was applied
-  if(!calibration->HasOnlineTailCancellation()){
+  if ((!calibration->HasOnlineTailCancellation()) &&
+      (recoParam->UseTailCancelation())) {
     // save a copy of raw data
     if(TestBit(kRawSignal)){
       if(fDigitsRaw){
