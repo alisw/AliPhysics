@@ -16,6 +16,7 @@
 # Include the libraries
 add_subdirectory (FORWARD)
 add_subdirectory (RESONANCES)
+add_subdirectory (RESONANCES/extra)
 add_subdirectory (SPECTRA)
 add_subdirectory (spectraJET)
 add_subdirectory (STRANGENESS)
