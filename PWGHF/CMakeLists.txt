@@ -15,5 +15,8 @@
 
 # Include the libraries
 add_subdirectory (base)
+add_subdirectory (correlationHF)
+add_subdirectory (hfe)
+add_subdirectory (vertexingHF)
 
 message(STATUS "PWGHF enabled")
