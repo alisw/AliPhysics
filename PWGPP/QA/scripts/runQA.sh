@@ -496,7 +496,7 @@ executePlanB()
   echo "trouble detected, sending email to ${mailTo}"
   local mailoptions=" -a ${logSummary}"
   local file=""
-  if [[ -n "${MAILdebugInfo}" ]]; then
+  if [[ "${MAILdebugInfo}" == 1 ]]; then
     file="${logDirectory}/stacktrace-log-${dateString}.tree"
     [[ -f ${file} ]] && mailoptions+=" -a ${file}"
     file="${logDirectory}/stacktrace-log-${dateString}.png"
@@ -506,7 +506,7 @@ executePlanB()
     file="${logDirectory}/stacktrace-core-${dateString}.png"
     [[ -f ${file} ]] && mailoptions+=" -a ${file}"
   fi
-  if [[ -n "${MAILproductionSummary}"; then
+  if [[ "${MAILproductionSummary}" == 1 ]]; then
     file="${logFile}"
     [[ -f ${file} ]] && mailoptions+=" -a ${file}"
   fi
