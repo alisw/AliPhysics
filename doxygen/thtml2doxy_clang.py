@@ -79,6 +79,7 @@ def traverse_ast(cursor, recursion=0):
 
     in_compound_stmt = False
     expect_comment = False
+    last_comment_line = -1
 
     for token in cursor.get_tokens():
 
@@ -86,6 +87,7 @@ def traverse_ast(cursor, recursion=0):
         if not in_compound_stmt:
           in_compound_stmt = True
           expect_comment = True
+          last_comment_line = -1
       else:
         if in_compound_stmt:
           in_compound_stmt = False
@@ -98,16 +100,18 @@ def traverse_ast(cursor, recursion=0):
 
         if expect_comment:
 
-          if token.kind == clang.cindex.TokenKind.COMMENT:
-            extent = token.extent
-            line_start = extent.start.line
-            line_end = extent.end.line
+          extent = token.extent
+          line_start = extent.start.line
+          line_end = extent.end.line
+
+          if token.kind == clang.cindex.TokenKind.PUNCTUATION and token.spelling == '{':
+            pass
+
+          elif token.kind == clang.cindex.TokenKind.COMMENT and (last_comment_line == -1 or line_start == last_comment_line+1):
             #print Colt("%s  %s:%s = %s" % (indent, ckind, tkind, token.spelling)).green()
+            last_comment_line = line_end
             print Colt("%s  [%d-%d]" % (indent, line_start, line_end)).cyan(),
             print Colt(token.spelling).yellow()
-
-          elif token.kind == clang.cindex.TokenKind.PUNCTUATION and token.spelling == '{':
-            pass
 
           else:
             expect_comment = False
