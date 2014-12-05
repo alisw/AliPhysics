@@ -188,9 +188,10 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     THnSparseF 	*fMCRecPrimZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
     THnSparseF 	*fMCGenZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
     THnSparseF 	*fMCRecSecZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent, only secondaries
-    THnSparseF 	*fMCRecPrimDeltaphiPtEtaPhiCent; //-> MC Phi:Pt:Eta:Phi:Cent, was fMCRecPrimDeltaphiPtEtaCent
-    THnSparseF 	*fMCGenDeltaphiPtEtaPhiCent; //-> MC Phi:Pt:Eta:Phi:Cent, was fMCGenDeltaphiPtEtaCent
-    THnSparseF 	*fMCRecSecDeltaphiPtEtaPhiCent; //-> MC Phi:Pt:Eta:Phi:Cent, only secondaries, was fMCRecSecDeltaphiPtEtaCent
+    THnF		*fMCPtEtaPhiCent; //-> MC Pt:Eta:Phi:Cent
+    THnF 		*fMCRecPrimPtEtaPhiCent; //-> MC Pt:Eta:Phi:Cent, was fMCRecPrimDeltaphiPtEtaCent
+    THnF 		*fMCGenPtEtaPhiCent; //-> MC Pt:Eta:Phi:Cent, was fMCGenDeltaphiPtEtaCent
+    THnF 		*fMCRecSecPtEtaPhiCent; //-> MC Pt:Eta:Phi:Cent, only secondaries, was fMCRecSecDeltaphiPtEtaCent
     TH1F	    *fEventStatistics; // contains statistics of number of events after each cut
     TH1F        *fEventStatisticsCentrality; // contains number of events vs centrality, events need to have a track in kinematic range
     TH1F	    *fMCEventStatisticsCentrality; // contains MC number of events vs centrality, events need to have a track in kinematic range
