@@ -31,24 +31,8 @@ https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentralQaRepository
 |  Event Selection  |  aliqaevs  |  Alexander Kalweit, Sandro Bjelogrlic, Zaida Conesa del Valle  
 |  Calibration  |  aliqacal  |  Marian Ivanov, Chiara Zampolli  |
 
-2. Mailing list for responsible  for automati messages in case of failure
+2. Mailing list for responsible  for automatic messages in case of failure
 =====================================
+Full list maintained can be found  on 
+https://twiki.cern.ch/twiki/pub/ALICE/PWGPPQualityAssurance/ListOfDetectorMailsForAutomaticQA.txt
 
-|  *System/group* | detname  <det>.sh  | mail adress |
-
-|  ITS   | ITS  | |
-|  TPC   | TPC  | "marian.ivanov@cern.ch"   |
-|  TRD   | TRD  | "ionut.cristian.arsene@cern.ch"   |
-|  TOF   | TOF  | "fbellini@cern.ch" |
-|  HMPID |      |
-|  PHOS  | PHO  | "Boris.Polishchuk@cern.ch" |
-|  EMCAL | EMC  |  "marie.germain@subatech.in2p3.fr"|
-|  V0    |  V0  |  b.cheynis@ipnl.in2p3.fr |
-|  T0    |  T0  |   Alla.Maevskaia@cern.ch|
-|  FMD   |  FMD |Christian.Holm.Christensen@cern.ch |
-|  PMD   |  PMD |   |
-|  MUON  |  MU  | Diego.Stocco@cern.ch  |
-|  ZDC   |  ZDC | marco.leoncino@cern.ch |
-|  PID   |   |  |
-|  Tracking  |  |
-|  Event Selection  | EVS | Evgeny.Kryshen@cern.ch |
