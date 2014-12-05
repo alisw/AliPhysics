@@ -537,3 +537,18 @@ printLogStatistics()
   }
   ' "${@}"
 }
+
+createUniquePID()
+{
+  #create a unique ID for jobs running in parallel
+  #consists of the ip address of the default network interface, PID,
+  #if an argument is given, append it (e.g. a production ID)
+  #the fields are space separated with a tag for easy parsing
+  #spaces in the productionID will be encoded using encSpaces()
+  local productionID=""
+  [[ -n "${1}" ]] && productionID=$(encSpaces "${1}")
+  local defaultIP=$(/sbin/route | awk '$1=="default" {print $8}' | xargs /sbin/ifconfig | awk '/inet / {print $2}' | sed 's/.*\([0-9]?\.[0-9]?\.[0-9]?\.[0-9]?\)/$1/')
+  local id="ip:${defaultIP} pid:${BASHPID}"
+  [[ -n "${productionID}" ]] && id+=" prod:${productionID}"
+  echo "${id}"
+}

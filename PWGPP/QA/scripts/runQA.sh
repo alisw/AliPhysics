@@ -39,6 +39,7 @@ ocdbStorage="raw://"
 #attach full debug info
 MAILdebugInfo=1
 MAILproductionSummary=1
+productionID="default"
 
 main()
 {
@@ -103,6 +104,7 @@ updateQA()
 
   dateString=$(date +%Y-%m-%d-%H-%M-%S-%N)
   echo "Start time QA process: $dateString"
+  uniquePID=$(createUniquePID "${productionID}")
 
   #logging
   mkdir -p $logDirectory
@@ -410,7 +412,7 @@ updateQA()
         #some of the output could be a directory, so handle that
         #TODO: maybe use rsync?
         #lock to avoid conflicts:
-        echo "${HOSTNAME} ${dateString}" > ${periodLevelLock}
+        echo "${uniquePID}" > ${periodLevelLock}
         for x in ${tmpPeriodLevelQAdir}/*; do  
           if [[ -d ${x} ]]; then
             echo "removing ${productionDir}/${x##*/}"
@@ -455,7 +457,7 @@ updateQA()
     stackTraceTree "${stackTraceArr[@]}" > ${logDirectory}/stacktrace-core-${dateString}.tree
   fi
   #sometimes core files are not available, use the root logs, which sometimes do have a stacktrace
-  stackTraceArr=($(awk '/log\s*BAD / {print $1}' ${logDirectory}/summary-*-${dateString}.log)) 
+  stackTraceArr=($(awk '/log[[:space:]]*BAD / {print $1}' ${logDirectory}/summary-*-${dateString}.log)) 
   if [[ ${#stackTraceArr[@]} > 0 ]]; then
     stackTraceTree "${stackTraceArr[@]}" > ${logDirectory}/stacktrace-log-${dateString}.tree
   fi
