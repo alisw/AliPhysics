@@ -48,7 +48,7 @@ void AddTask_GammaConvEtaPiPlPiMiGamma_pPb(
 	}
 	
 	//=========  Set Cutnumber for V0Reader ================================
-	TString cutnumberPhoton = "060084001001500000000";
+	TString cutnumberPhoton = "060000084001001500000000";
 	TString cutnumberEvent = "8000000";
 	TString PionCuts      = "000000200";            //Electron Cuts
 		
@@ -160,13 +160,13 @@ void AddTask_GammaConvEtaPiPlPiMiGamma_pPb(
 	stringShift = "pPb";
 
 	if( trainConfig == 1 ) {
-		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "000000400"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
+		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002000091170008260400000"; PionCutarray[0] = "000000400"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
 	} else if( trainConfig == 1 ) {
-		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "000000403"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
+		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002000091170008260400000"; PionCutarray[0] = "000000403"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
 	} else if( trainConfig == 1 ) {
-		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "000000404"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
+		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002000091170008260400000"; PionCutarray[0] = "000000404"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
 	} else if( trainConfig == 1 ) {
-		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "000000405"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
+		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002000091170008260400000"; PionCutarray[0] = "000000405"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
 	}
 	
 	TList *EventCutList = new TList();
