@@ -160,17 +160,9 @@ fTreeVariableDistOverTotMom(0),
 fTreeVariableLeastNbrCrossedRows(0),
 fTreeVariableLeastRatioCrossedRowsOverFindable(0),
 
-fTreeVariableCentV0A(0),
-fTreeVariableCentV0C(0),
 fTreeVariableCentV0M(0),
-fTreeVariableCentV0AEq(0),
-fTreeVariableCentV0CEq(0),
 fTreeVariableCentV0MEq(0),
 fTreeVariableCustomCentV0M(0),
-fTreeVariableAmpV0A(0),
-fTreeVariableAmpV0C(0),
-fTreeVariableAmpV0AEq(0),
-fTreeVariableAmpV0CEq(0),
 fTreeVariableRefMultEta8(0),
 fTreeVariableRefMultEta5(0),
 fTreeVariableRunNumber(0),
@@ -204,17 +196,9 @@ fTreeCascVarPosNSigmaPion(0),
 fTreeCascVarPosNSigmaProton(0),
 fTreeCascVarBachNSigmaPion(0),
 fTreeCascVarBachNSigmaKaon(0),
-fTreeCascVarCentV0A(0),
-fTreeCascVarCentV0C(0),
 fTreeCascVarCentV0M(0),
-fTreeCascVarCentV0AEq(0),
-fTreeCascVarCentV0CEq(0),
 fTreeCascVarCentV0MEq(0),
 fTreeCascVarCustomCentV0M(0),
-fTreeCascVarAmpV0A(0),
-fTreeCascVarAmpV0C(0),
-fTreeCascVarAmpV0AEq(0),
-fTreeCascVarAmpV0CEq(0),
 fTreeCascVarRefMultEta8(0),
 fTreeCascVarRefMultEta5(0),
 fTreeCascVarRunNumber(0),
@@ -291,17 +275,9 @@ fTreeVariableDistOverTotMom(0),
 fTreeVariableLeastNbrCrossedRows(0),
 fTreeVariableLeastRatioCrossedRowsOverFindable(0),
 
-fTreeVariableCentV0A(0),
-fTreeVariableCentV0C(0),
 fTreeVariableCentV0M(0),
-fTreeVariableCentV0AEq(0),
-fTreeVariableCentV0CEq(0),
 fTreeVariableCentV0MEq(0),
 fTreeVariableCustomCentV0M(0),
-fTreeVariableAmpV0A(0),
-fTreeVariableAmpV0C(0),
-fTreeVariableAmpV0AEq(0),
-fTreeVariableAmpV0CEq(0),
 fTreeVariableRefMultEta8(0),
 fTreeVariableRefMultEta5(0),
 fTreeVariableRunNumber(0),
@@ -335,17 +311,9 @@ fTreeCascVarPosNSigmaPion(0),
 fTreeCascVarPosNSigmaProton(0),
 fTreeCascVarBachNSigmaPion(0),
 fTreeCascVarBachNSigmaKaon(0),
-fTreeCascVarCentV0A(0),
-fTreeCascVarCentV0C(0),
 fTreeCascVarCentV0M(0),
-fTreeCascVarCentV0AEq(0),
-fTreeCascVarCentV0CEq(0),
 fTreeCascVarCentV0MEq(0),
 fTreeCascVarCustomCentV0M(0),
-fTreeCascVarAmpV0A(0),
-fTreeCascVarAmpV0C(0),
-fTreeCascVarAmpV0AEq(0),
-fTreeCascVarAmpV0CEq(0),
 fTreeCascVarRefMultEta8(0),
 fTreeCascVarRefMultEta5(0),
 fTreeCascVarRunNumber(0),
@@ -372,6 +340,11 @@ fHistEventCounter(0)
     fCascadeVertexerSels[6] =   0.4  ;  // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
     fCascadeVertexerSels[7] = 100.   ;  // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
     
+		for(int i=0; i<20; i++) {
+      fTreeCascVarRefMultDiffEta[i] = 0;
+      fTreeVariableRefMultDiffEta[i] = 0;
+      fRefMultDiffEta[i] = 0;
+    }
     
     DefineOutput(1, TList::Class()); // Event Counter Histo
     DefineOutput(2, TTree::Class()); // Event Tree
@@ -448,6 +421,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
     //Official GetReferenceMultiplicity
     fTreeEvent->Branch("fRefMultEta5",&fRefMultEta5,"fRefMultEta5/I");
     fTreeEvent->Branch("fRefMultEta8",&fRefMultEta8,"fRefMultEta8/I");
+		fTreeEvent->Branch("fRefMultDiffEta",fRefMultDiffEta,"fRefMultDiffEta[20]/I");
     
     //Run Number
     fTreeEvent->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
@@ -503,20 +477,14 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
     fTreeV0->Branch("fTreeVariableNegEta",&fTreeVariableNegEta,"fTreeVariableNegEta/F");
     fTreeV0->Branch("fTreeVariablePosEta",&fTreeVariablePosEta,"fTreeVariablePosEta/F");
     //-----------MULTIPLICITY-INFO--------------------
-    fTreeV0->Branch("fTreeVariableCentV0A",&fTreeVariableCentV0A,"fTreeVariableCentV0A/F");
-    fTreeV0->Branch("fTreeVariableCentV0C",&fTreeVariableCentV0C,"fTreeVariableCentV0C/F");
     fTreeV0->Branch("fTreeVariableCentV0M",&fTreeVariableCentV0M,"fTreeVariableCentV0M/F");
-    fTreeV0->Branch("fTreeVariableCentV0AEq",&fTreeVariableCentV0AEq,"fTreeVariableCentV0AEq/F");
-    fTreeV0->Branch("fTreeVariableCentV0CEq",&fTreeVariableCentV0CEq,"fTreeVariableCentV0CEq/F");
     fTreeV0->Branch("fTreeVariableCentV0MEq",&fTreeVariableCentV0MEq,"fTreeVariableCentV0MEq/F");
     fTreeV0->Branch("fTreeVariableCustomCentV0M",&fTreeVariableCustomCentV0M,"fTreeVariableCustomCentV0M/F");
-    fTreeV0->Branch("fTreeVariableAmpV0A",&fTreeVariableAmpV0A,"fTreeVariableAmpV0A/F");
-    fTreeV0->Branch("fTreeVariableAmpV0C",&fTreeVariableAmpV0C,"fTreeVariableAmpV0C/F");
-    fTreeV0->Branch("fTreeVariableAmpV0AEq",&fTreeVariableAmpV0AEq,"fTreeVariableAmpV0AEq/F");
-    fTreeV0->Branch("fTreeVariableAmpV0CEq",&fTreeVariableAmpV0CEq,"fTreeVariableAmpV0CEq/F");
     fTreeV0->Branch("fTreeVariableRefMultEta8",&fTreeVariableRefMultEta8,"fTreeVariableRefMultEta8/I");
     fTreeV0->Branch("fTreeVariableRefMultEta5",&fTreeVariableRefMultEta5,"fTreeVariableRefMultEta5/I");
-    fTreeV0->Branch("fTreeVariableRunNumber",&fTreeVariableRunNumber,"fTreeVariableRunNumber/I");
+		fTreeV0->Branch("fTreeVariableRefMultDiffEta",fTreeVariableRefMultDiffEta,"fTreeVariableRefMultDiffEta[20]/I");    
+		fTreeV0->Branch("fTreeVariableRunNumber",&fTreeVariableRunNumber,"fTreeVariableRunNumber/I");
+		
     //------------------------------------------------
     
     //Create Cascade output tree
@@ -551,20 +519,13 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
     fTreeCascade->Branch("fTreeCascVarV0Radius",&fTreeCascVarV0Radius,"fTreeCascVarV0Radius/F");
     fTreeCascade->Branch("fTreeCascVarLeastNbrClusters",&fTreeCascVarLeastNbrClusters,"fTreeCascVarLeastNbrClusters/I");
     //-----------MULTIPLICITY-INFO--------------------
-    fTreeCascade->Branch("fTreeCascVarCentV0A",&fTreeCascVarCentV0A,"fTreeCascVarCentV0A/F");
-    fTreeCascade->Branch("fTreeCascVarCentV0C",&fTreeCascVarCentV0C,"fTreeCascVarCentV0C/F");
     fTreeCascade->Branch("fTreeCascVarCentV0M",&fTreeCascVarCentV0M,"fTreeCascVarCentV0M/F");
-    fTreeCascade->Branch("fTreeCascVarCentV0AEq",&fTreeCascVarCentV0AEq,"fTreeCascVarCentV0AEq/F");
-    fTreeCascade->Branch("fTreeCascVarCentV0CEq",&fTreeCascVarCentV0CEq,"fTreeCascVarCentV0CEq/F");
     fTreeCascade->Branch("fTreeCascVarCentV0MEq",&fTreeCascVarCentV0MEq,"fTreeCascVarCentV0MEq/F");
     fTreeCascade->Branch("fTreeCascVarCustomCentV0M",&fTreeCascVarCustomCentV0M,"fTreeCascVarCustomCentV0M/F");
-    fTreeCascade->Branch("fTreeCascVarAmpV0A",&fTreeCascVarAmpV0A,"fTreeCascVarAmpV0A/F");
-    fTreeCascade->Branch("fTreeCascVarAmpV0C",&fTreeCascVarAmpV0C,"fTreeCascVarAmpV0C/F");
-    fTreeCascade->Branch("fTreeCascVarAmpV0AEq",&fTreeCascVarAmpV0AEq,"fTreeCascVarAmpV0AEq/F");
-    fTreeCascade->Branch("fTreeCascVarAmpV0CEq",&fTreeCascVarAmpV0CEq,"fTreeCascVarAmpV0CEq/F");
     fTreeCascade->Branch("fTreeCascVarRefMultEta8",&fTreeCascVarRefMultEta8,"fTreeCascVarRefMultEta8/I");
     fTreeCascade->Branch("fTreeCascVarRefMultEta5",&fTreeCascVarRefMultEta5,"fTreeCascVarRefMultEta5/I");
-    fTreeCascade->Branch("fTreeCascVarRunNumber",&fTreeCascVarRunNumber,"fTreeCascVarRunNumber/I");
+		fTreeCascade->Branch("fTreeCascVarRefMultDiffEta",fTreeCascVarRefMultDiffEta,"fTreeCascVarRefMultDiffEta[20]/I");    
+		fTreeCascade->Branch("fTreeCascVarRunNumber",&fTreeCascVarRunNumber,"fTreeCascVarRunNumber/I");
     //-----------DECAY-LENGTH-INFO--------------------
     fTreeCascade->Branch("fTreeCascVarDistOverTotMom",&fTreeCascVarDistOverTotMom,"fTreeCascVarDistOverTotMom/F");
     //------------------------------------------------
@@ -816,6 +777,19 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     fRefMultEta5 = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC,0.5);
     fRefMultEta8 = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC,0.8);
     
+		//Differential in eta 
+		//binning definition 
+		Float_t lEtaBinning[21] = {-1.5,-1.,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,1.0,1.5};
+		Float_t lEtaCent        = -666.; 
+		Float_t lEtaRange       = -666.; 
+
+    for(Int_t i=0; i<20; i++){
+    	lEtaCent  = lEtaBinning[i]+(lEtaBinning[i+1]-lEtaBinning[i])/2.;
+      lEtaRange = (lEtaBinning[i+1]-lEtaBinning[i])/2.;
+      if(i<2 || i>17) fRefMultDiffEta[i] = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTracklets,lEtaRange,lEtaCent);
+      else fRefMultDiffEta[i] = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC,lEtaRange,lEtaCent);
+    }
+
     // VZERO PART
     Float_t  multV0A  = 0;            //  multiplicity from V0 reco side A
     Float_t  multV0C  = 0;            //  multiplicity from V0 reco side C
@@ -1051,19 +1025,12 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
         fTreeVariableDistOverTotMom /= (lV0TotalMomentum+1e-10); //avoid division by zero, to be sure
         
         //Copy Multiplicity information
-        fTreeVariableCentV0A = fCentrality_V0A;
-        fTreeVariableCentV0C = fCentrality_V0C;
         fTreeVariableCentV0M = fCentrality_V0M;
-        fTreeVariableCentV0AEq = fCentrality_V0AEq;
-        fTreeVariableCentV0CEq = fCentrality_V0CEq;
         fTreeVariableCentV0MEq = fCentrality_V0MEq;
-        fTreeVariableAmpV0A = fAmplitude_V0A;
-        fTreeVariableAmpV0C = fAmplitude_V0C;
-        fTreeVariableAmpV0AEq = fAmplitude_V0AEq;
-        fTreeVariableAmpV0CEq = fAmplitude_V0CEq;
         fTreeVariableRefMultEta8 = fRefMultEta8;
         fTreeVariableRefMultEta5 = fRefMultEta5;
         fTreeVariableRunNumber = fRunNumber;
+				for(Int_t i=0; i<20; i++) fTreeVariableRefMultDiffEta[i] = fRefMultDiffEta[i];
         
         //------------------------------------------------
         // Fill Tree!
@@ -1413,19 +1380,12 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
         fTreeCascVarLeastNbrClusters = leastnumberofclusters;
         
         //Copy Multiplicity information 
-        fTreeCascVarCentV0A = fCentrality_V0A; 
-        fTreeCascVarCentV0C = fCentrality_V0C; 
         fTreeCascVarCentV0M = fCentrality_V0M; 
-        fTreeCascVarCentV0AEq = fCentrality_V0AEq; 
-        fTreeCascVarCentV0CEq = fCentrality_V0CEq; 
         fTreeCascVarCentV0MEq = fCentrality_V0MEq; 
-        fTreeCascVarAmpV0A = fAmplitude_V0A; 
-        fTreeCascVarAmpV0C = fAmplitude_V0C; 
-        fTreeCascVarAmpV0AEq = fAmplitude_V0AEq; 
-        fTreeCascVarAmpV0CEq = fAmplitude_V0CEq; 
         fTreeCascVarRefMultEta8 = fRefMultEta8;
         fTreeCascVarRefMultEta5 = fRefMultEta5;
         fTreeCascVarRunNumber = fRunNumber; 
+				for(Int_t i=0; i<20; i++) fTreeCascVarRefMultDiffEta[i] = fRefMultDiffEta[i];
         
         fTreeCascVarDistOverTotMom = TMath::Sqrt(
                                                  TMath::Power( lPosXi[0] - lBestPrimaryVtxPos[0] , 2) +
