@@ -116,6 +116,10 @@ def traverse_ast(cursor, recursion=0):
               print Colt("%s  [%d-%d]" % (indent, line_start, line_end)).green(),
               print Colt(comment_line).cyan()
 
+            # multiline comments are parsed in one go, therefore don't expect subsequent comments
+            if line_end - line_start > 0:
+              expect_comment = False
+
           else:
             expect_comment = False
 
