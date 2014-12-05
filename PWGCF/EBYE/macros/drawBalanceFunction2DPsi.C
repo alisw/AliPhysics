@@ -1,5 +1,5 @@
-const Int_t numberOfCentralityBins = 12;
-TString centralityArray[numberOfCentralityBins] = {"0-80","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
+const Int_t numberOfCentralityBins = 14;
+TString centralityArray[numberOfCentralityBins] = {"0-80","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3","92-8500","0-10000"};
 
 // reduced ranges for moments determination
 // (Average over all event classes of 3 sigma of Gauss + Pol0 Fit) 
