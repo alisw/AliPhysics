@@ -434,8 +434,7 @@ plotStackTraceTree()
   local tree=$1
   local plot=${2:-"crashes.png"}
   local selection=${3:-'!strstr(method,\"G__\")'}
-  echo $selection
-  [[ ! -f ${tree} ]] && echo "no input" && return 1
+  [[ ! -f ${tree} ]] && echo "plotStackTraceTree: no input file given" && return 1
   aliroot -b <<EOF
 TTree* t=AliSysInfo::MakeTree("${tree}");
 TCanvas* canvas = new TCanvas("QA crashes","QA crashes",1);
