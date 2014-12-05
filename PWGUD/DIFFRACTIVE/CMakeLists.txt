@@ -26,7 +26,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/ITS/ITSrec
-                    ${AliRoot_SOURCE_DIR}/PWGPP/ITS # what target here
+                    ${AliRoot_SOURCE_DIR}/PWGPP/ITS
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
@@ -55,7 +55,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG Geom Hist MathCore Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES STEERBase STEER CDB ANALYSISalice ANALYSIS ITSrec VZERObase)
+set(ALIROOT_DEPENDENCIES STEERBase STEER CDB ANALYSISalice ANALYSIS ITSrec VZERObase PWGPP)
 
 # Generate the ROOT map
 # Dependecies

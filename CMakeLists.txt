@@ -249,13 +249,13 @@ endif(CMAKE_Fortran_COMPILER)
 add_subdirectory(PWG)
 # Depends on PWGCF - To fix dependencies
 add_subdirectory(PWGGA)
-# Depends on CF and LF - To fix the dependencies
+# Depends on CF  - To fix the dependencies
 add_subdirectory(PWGDQ)
 add_subdirectory(PWGHF)
+# Depends on CF
 add_subdirectory(PWGJE)
 add_subdirectory(PWGLF)
 add_subdirectory(PWGPP)
-# Depends on PP - To fix depedencies
 add_subdirectory(PWGUD)
 
 # Enable SHUTTLE compilation
