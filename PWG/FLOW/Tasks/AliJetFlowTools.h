@@ -65,8 +65,9 @@ class AliJetFlowTools {
             kDeltaPhi,                  // default for delta phi
             kEmpty };                   // default style
         // setters, interface to the class
-        void            SetOffsetStart(Int_t g)         {gOffsetStop = g;}
-        void            SetOffsetStop(Int_t g)          {gOffsetStart = g;}
+        void            SetOffsetStart(Int_t g)         {gOffsetStop            = g;}
+        void            SetOffsetStop(Int_t g)          {gOffsetStart           = g;}
+        void            SetReductionFactor(Float_t g)   {gReductionFactor       = g;}
         void            SetSaveFull(Bool_t b)           {fSaveFull              = b;}
         void            SetInputList(TList* list)       {
             fInputList          = list;
@@ -204,7 +205,6 @@ class AliJetFlowTools {
                 Float_t rangeLow = 20,
                 Float_t rangeUp = 80,
                 Float_t corr = .5,
-                Float_t reductionPct = 1.,
                 TString in = "UnfoldedSpectra.root", 
                 TString out = "CorrelatedUncertainty.root") const;
         void            GetShapeUncertainty(
@@ -222,7 +222,6 @@ class AliJetFlowTools {
                 Float_t rangeLow = 20,
                 Float_t rangeUp = 80,
                 Float_t corr = .0,
-                Float_t reductionPct = 1.,
                 TString in = "UnfoldedSpectra.root", 
                 TString out = "ShapeUncertainty.root") const;
         Bool_t          SetRawInput (
@@ -490,6 +489,7 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         
         static Int_t            gOffsetStart;           // see initialization below
         static Int_t            gOffsetStop;            // see initialization below
+        static Float_t          gReductionFactor;       // multiply shape uncertainty by this factor
 
         // copy and assignment 
         AliJetFlowTools(const AliJetFlowTools&);             // not implemented
@@ -503,6 +503,7 @@ TArrayD* AliJetFlowTools::gShape        = new TArrayD(6);       // then used in 
 TArrayD* AliJetFlowTools::gCorr         = new TArrayD(6);       // to calculate the significance of the results
 Int_t    AliJetFlowTools::gOffsetStart  =  1;           // start chi2 fit from this bin w.r.t. the binning supplied in the 'GetCorr/GetShape' functions
 Int_t    AliJetFlowTools::gOffsetStop   = -1;           // stop chi2 fit at this bin w.r.t. the binning supplied in the 'GetCorr/GetShape' functions
+Float_t  AliJetFlowTools::gReductionFactor      = .5;   // multiply shape uncertainty by this factor
 
 #endif
 //_____________________________________________________________________________

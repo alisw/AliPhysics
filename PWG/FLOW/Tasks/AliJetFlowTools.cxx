@@ -1747,7 +1747,6 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         Float_t rangeLow,               // lower pt range
         Float_t rangeUp,                // upper pt range
         Float_t corr,                   // correlation strength
-        Float_t reductionPct,           // multiply final uncertainties by this number
         TString in,                     // input file name (created by this unfolding class)
         TString out                     // output file name (which will hold results of the systematic test)
         ) const
@@ -1762,9 +1761,6 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
     printf("\n\n\n\t\t GetCorrelatedUncertainty \n > Recovered the following file structure : \n <");
     readMe->ls();
     TFile* output(new TFile(out.Data(), "RECREATE"));   // create new output file
-
-    // later we'll multiply error square with this, so square here
-    reductionPct *= reductionPct;
 
     // create some null placeholder pointers
     TH1D* relativeErrorVariationInLow(0x0);
@@ -1919,11 +1915,9 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         if(relativeError2ndVariationOutLow) bOutLow = relativeError2ndVariationOutLow->GetBinContent(b+1);
         dInLow  = aInLow*aInLow + bInLow*bInLow + cInLow*cInLow;
         if(sym) dInLow += aInUp*aInUp;
-        dInLow *= reductionPct;         // for testing purposes
         if(dInLow > 0) relativeErrorInLow->SetBinContent(b+1, -1*TMath::Sqrt(dInLow));
         dOutLow = aOutLow*aOutLow + bOutLow*bOutLow + cOutLow*cOutLow;
         if(sym) dOutLow += aOutUp*aOutUp;
-        dOutLow *= reductionPct;        // for testing purposes
         if(dOutLow > 0) relativeErrorOutLow->SetBinContent(b+1, -1.*TMath::Sqrt(dOutLow));
     }
     // project the estimated errors on the nominal ratio
@@ -2050,7 +2044,6 @@ void AliJetFlowTools::GetShapeUncertainty(
         Float_t rangeLow,               // lower pt range
         Float_t rangeUp,                // upper pt range
         Float_t corr,                   // correlation strength
-        Float_t reductionPct,           // multiply final uncertainties by this number
         TString in,                     // input file name (created by this unfolding class)
         TString out                     // output file name (which will hold results of the systematic test)
         ) const
@@ -2065,9 +2058,6 @@ void AliJetFlowTools::GetShapeUncertainty(
     printf("\n\n\n\t\t DOSYSTEMATICS \n > Recovered the following file structure : \n <");
     readMe->ls();
     TFile* output(new TFile(out.Data(), "RECREATE"));   // create new output file
-
-    // later we'll multiply error square with this, so square here
-    reductionPct *= reductionPct;
 
     // create some null placeholder pointers
     TH1D* relativeErrorRegularizationInLow(0x0);
@@ -2267,10 +2257,8 @@ void AliJetFlowTools::GetShapeUncertainty(
         if(relativeErrorMethodInUp) dInUp = relativeErrorMethodInUp->GetBinContent(b+1);
         if(relativeErrorMethodOutUp) dOutUp = relativeErrorMethodOutUp->GetBinContent(b+1);
         eInUp  = aInUp*aInUp + bInUp*bInUp + cInUp*cInUp + dInUp*dInUp;
-        eInUp *= reductionPct;
         if(eInUp > 0) relativeErrorInUp->SetBinContent(b+1, 1.*TMath::Sqrt(eInUp));
         eOutUp = aOutUp*aOutUp + bOutUp*bOutUp + cOutUp*cOutUp + dOutUp*dOutUp;
-        eOutUp *= reductionPct;
         if(eOutUp > 0) relativeErrorOutUp->SetBinContent(b+1, 1.*TMath::Sqrt(eOutUp));
         // for the lower bound
         if(relativeErrorRegularizationInLow) aInLow = relativeErrorRegularizationInLow->GetBinContent(b+1);
@@ -2291,10 +2279,8 @@ void AliJetFlowTools::GetShapeUncertainty(
         }
 
         eInLow  = aInLow*aInLow + bInLow*bInLow + cInLow*cInLow + dInLow*dInLow;
-        eInLow *= reductionPct;         // can be used for testing
         if(eInLow > 0) relativeErrorInLow->SetBinContent(b+1, -1.*TMath::Sqrt(eInLow));
         eOutLow = aOutLow*aOutLow + bOutLow*bOutLow + cOutLow*cOutLow + dOutLow*dOutLow;
-        eOutLow *= reductionPct;        // can be used for testing
         if(eOutLow > 0) relativeErrorOutLow->SetBinContent(b+1, -1.*TMath::Sqrt(eOutLow));
     }
     // project the estimated errors on the nominal ratio
@@ -4258,7 +4244,12 @@ void AliJetFlowTools::GetSignificance(
     iterator = 0;
     printf(" double shape[] = {\n");
     for(Int_t i(low); i < up+1; i++) { 
+        y = shape->GetErrorYhigh(i);
+        y*=gReductionFactor;
+        shape->SetPointEYhigh(i, y);
         y = shape->GetErrorYlow(i);
+        y*=gReductionFactor;
+        shape->SetPointEYlow(i, y);
         if(i==up) printf("%.4f}; \n\n", y);
         else printf("%.4f, \n", y);
         gShape->SetAt(y, iterator);
