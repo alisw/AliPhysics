@@ -25,7 +25,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/PWG/CaloTrackCorrBase
                     ${AliRoot_SOURCE_DIR}/PWG/EMCAL
-                    ${AliRoot_SOURCE_DIR}/PWGHF/vertexingHF # to be added
+                    ${AliRoot_SOURCE_DIR}/PWGHF/vertexingHF
                     ${AliRoot_SOURCE_DIR}/PWGJE/EMCALJetTasks
                     ${AliRoot_SOURCE_DIR}/STEER/AOD
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
@@ -60,7 +60,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core Geom)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD STEERBase PWGJEEMCALJetTasks PWGEMCAL  PWGCaloTrackCorrBase)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD STEERBase PWGJEEMCALJetTasks PWGEMCAL  PWGCaloTrackCorrBase PWGHFvertexingHF)
 
 # Generate the ROOT map
 # Dependecies

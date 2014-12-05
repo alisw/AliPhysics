@@ -27,7 +27,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/PWGCF/Correlations # what deps here?
                     ${AliRoot_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliRoot_SOURCE_DIR}/PWG/FLOW/Tasks
-                    ${AliRoot_SOURCE_DIR}/PWGLF/FORWARD # what deps here
+                    ${AliRoot_SOURCE_DIR}/PWGLF/FORWARD
                     ${AliRoot_SOURCE_DIR}/STEER/AOD
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
@@ -89,7 +89,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG Gpad Graf Hist MathCore Matrix Minuit Net Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase STEERBase TRDbase)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase STEERBase TRDbase PWGLFforward2)
 
 # Generate the ROOT map
 # Dependecies
