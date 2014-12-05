@@ -962,10 +962,19 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
 	
 	if (fDoShrinkTPCAcceptance){
 		if(photon->GetPhotonEta() > fEtaForPhiCutMin && photon->GetPhotonEta() < fEtaForPhiCutMax ){
-			if( photon->GetPhotonPhi() > fMinPhiCut && photon->GetPhotonPhi() < fMaxPhiCut ) {
-				if(hAcceptanceCuts)hAcceptanceCuts->Fill(cutIndex);
-				return kFALSE;
-			}
+			if (fMinPhiCut < fMaxPhiCut){
+				if( photon->GetPhotonPhi() > fMinPhiCut && photon->GetPhotonPhi() < fMaxPhiCut ) {
+					if(hAcceptanceCuts)hAcceptanceCuts->Fill(cutIndex);
+					return kFALSE;
+				}
+			} else {
+				Double_t photonPhi = photon->GetPhotonPhi();
+				if (photon->GetPhotonPhi() < TMath::Pi()) photonPhi = photon->GetPhotonPhi() + 2*TMath::Pi();
+				if( photonPhi > fMinPhiCut && photonPhi < fMaxPhiCut+2*TMath::Pi() ) {
+					if(hAcceptanceCuts)hAcceptanceCuts->Fill(cutIndex);
+					return kFALSE;
+				}	
+			}	
 		}
 	}	
 	cutIndex++;
@@ -1869,6 +1878,7 @@ Bool_t AliConversionPhotonCuts::SetEtaForPhiCut(Int_t etaPhiCut) {
 }
 
 ///________________________________________________________________________
+// This are exclusion cuts, everything between fMinPhiCut & fMaxPhiCut will be excluded
 Bool_t AliConversionPhotonCuts::SetMinPhiSectorCut(Int_t minPhiCut) {
 
 	switch(minPhiCut) {
@@ -1887,6 +1897,11 @@ Bool_t AliConversionPhotonCuts::SetMinPhiSectorCut(Int_t minPhiCut) {
 		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
 		fMinPhiCut = 1.0; //PHOS
 		break;
+	case 5:
+		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+		fMinPhiCut = 3.4; //EMCal tight
+		break;
+
 	default:
 		AliError(Form("MinPhiCut not defined %d",minPhiCut));
 		return kFALSE;
@@ -1896,6 +1911,7 @@ Bool_t AliConversionPhotonCuts::SetMinPhiSectorCut(Int_t minPhiCut) {
 }
 
 ///________________________________________________________________________
+// This are exclusion cuts, everything between fMinPhiCut & fMaxPhiCut will be excluded
 Bool_t AliConversionPhotonCuts::SetMaxPhiSectorCut(Int_t maxPhiCut) {
 
 	switch(maxPhiCut) {
@@ -1914,6 +1930,11 @@ Bool_t AliConversionPhotonCuts::SetMaxPhiSectorCut(Int_t maxPhiCut) {
 		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
 		fMaxPhiCut = 3.0; //PHOS
 		break;
+	case 4:
+		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+		fMaxPhiCut = 1.; //EMCal
+		break;
+
 	default:
 		AliError(Form("MaxPhiCut not defined %d",maxPhiCut));
 		return kFALSE;
