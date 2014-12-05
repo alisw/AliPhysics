@@ -1781,7 +1781,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliVTrack *const track, AliVfriendTrack *
   AliExternalTrackParam &pTPC = trckTPCOut;
 
   AliTracker::PropagateTrackToBxByBz(&pTPC,kRefX,0.1,0.1,kFALSE);
-  //friendTrack->ResetTrackParamTPCOut(&trckTPCOut);
+  friendTrack->ResetTrackParamTPCOut(&trckTPCOut);
   AliExternalTrackParam *pTRDtrack = 0; 
   TObject *calibObject=0;
   for (Int_t l=0;(calibObject=((AliVfriendTrack*)friendTrack)->GetCalibObject(l));++l) {
