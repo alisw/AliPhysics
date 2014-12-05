@@ -142,10 +142,11 @@ fDoMesonAnalysis(kTRUE),
 fDoMesonQA(0),
 fDoPhotonQA(0),
 fIsFromMBHeader(kTRUE),
+fhistoEPVZ(NULL),
 fDebug(0),
 fCutsRP(0),
 fNullCuts(0), 
-fFlowEvent(0) 
+fFlowEvent(0)
 {
 	// DefineOutput(1, TList::Class());
 	// DefineOutput(2, AliFlowEventSimple::Class());
@@ -229,6 +230,7 @@ fDoMesonAnalysis(kTRUE),
 fDoMesonQA(0),
 fDoPhotonQA(0),
 fIsFromMBHeader(kTRUE),
+fhistoEPVZ(NULL),
 fDebug(0),
 fCutsRP(0), 
 fNullCuts(0), 
@@ -507,8 +509,8 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
 		}
 	}
 	
-	EPVZ = new TH1D("EPVZ", "EPVZ", 60, -TMath::Pi()/2, TMath::Pi()/2);
-    fOutputContainer->Add(EPVZ);
+	fhistoEPVZ = new TH1D("EPVZ", "EPVZ", 60, -TMath::Pi()/2, TMath::Pi()/2);
+    fOutputContainer->Add(fhistoEPVZ);
 
 
 	
@@ -604,7 +606,7 @@ void AliAnalysisTaskGammaConvFlow::UserExec(Option_t *)
 		fGammaCandidates->Clear(); // delete this cuts good gammas
 // 	}
 	
-	EPVZ->Fill(fEventPlaneAngle);
+	fhistoEPVZ->Fill(fEventPlaneAngle);
 
 	PostData(1, fOutputContainer);
 	PostData(2, fFlowEvent);

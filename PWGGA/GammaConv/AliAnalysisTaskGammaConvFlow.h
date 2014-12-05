@@ -172,7 +172,7 @@ protected:
 	Int_t 								fDoMesonQA;											//
 	Int_t 								fDoPhotonQA;										//
 	Bool_t 								fIsFromMBHeader;									//
-	TH1D                               	*EPVZ;												//!
+	TH1D                               	*fhistoEPVZ;										//!
 
     
 private:
