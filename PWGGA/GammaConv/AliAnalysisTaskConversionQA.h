@@ -84,6 +84,8 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
 		TH2F 					*hITSClusterPhi;				//
 		TH1F 					*hGammaPt;						//
 		TH1F 					*hGammaPhi;						//
+		TH1F 					*hGammaPhi_Pos;					//
+		TH1F 					*hGammaPhi_Neg;					//
 		TH1F 					*hGammaEta;						//
 		TH1F 					*hGammaChi2perNDF;				//
 		TH1F 					*hGammaPsiPair;					//
