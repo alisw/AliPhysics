@@ -25,6 +25,7 @@ class TArrayS;
 class AliAnalysisUtils;
 class AliAODTrack;
 class AliAODMCParticle;
+class AliAnalysisTaskPID;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliPID.h"
