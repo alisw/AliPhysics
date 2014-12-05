@@ -306,9 +306,21 @@ void AliADQADataMakerRec::InitRaws()
   // Creation of Time histograms 
   h2i = new TH2I("H2I_Width", "HPTDC Width;Channel;Width [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcWidthBins, kTdcWidthMin, kTdcWidthMax);
   Add2RawsList(h2i,kWidth, !expert, image, saveCorr); iHisto++;
+  
+  h2i = new TH2I("H2I_Width_BB", "HPTDC Width w/ BB Flag condition;Channel;Width [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcWidthBins, kTdcWidthMin, kTdcWidthMax);
+  Add2RawsList(h2i,kWidthBB, !expert, image, saveCorr); iHisto++;
+
+  h2i = new TH2I("H2I_Width_BG", "HPTDC Width w/ BG Flag condition;Channel;Width [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcWidthBins, kTdcWidthMin, kTdcWidthMax);
+  Add2RawsList(h2i,kWidthBG, !expert, image, saveCorr); iHisto++;
 
   h2i = new TH2I("H2I_HPTDCTime", "HPTDC Time;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
   Add2RawsList(h2i,kHPTDCTime, !expert, image, saveCorr); iHisto++;
+  
+  h2i = new TH2I("H2I_HPTDCTime_BB", "HPTDC Time w/ BB Flag condition;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
+  Add2RawsList(h2i,kHPTDCTimeBB, !expert, image, !saveCorr); iHisto++;
+
+  h2i = new TH2I("H2I_HPTDCTime_BG", "HPTDC Time w/ BG Flag condition;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
+  Add2RawsList(h2i,kHPTDCTimeBG, !expert, image, !saveCorr); iHisto++;
 	
   h1d = new TH1F("H1D_ADA_Time", "ADA Time;Time [ns];Counts",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
   Add2RawsList(h1d,kADATime, !expert, image, saveCorr); iHisto++;
@@ -334,6 +346,21 @@ void AliADQADataMakerRec::InitRaws()
   h2d = new TH2F("H2D_Pair_Diff_Charge","Diff Pair Charge;Pair number;Charge [ADC counts]",kNPairBins, kPairMin, kPairMax, 2*kNChargeBins, -kChargeMax, kChargeMax);
   Add2RawsList(h2d,kPairDiffCharge, !expert, image, saveCorr); iHisto++;
 
+  //Creation of Clock histograms
+  h2d = new TH2F("H2D_BBFlagVsClock", "BB-Flags Versus LHC-Clock;Channel;LHC Clocks",kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
+  Add2RawsList(h2d,kBBFlagVsClock, !expert, image, saveCorr); iHisto++;
+	
+  h2d = new TH2F("H2D_BGFlagVsClock", "BG-Flags Versus LHC-Clock;Channel;LHC Clocks",kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
+  Add2RawsList(h2d,kBGFlagVsClock, !expert, image, saveCorr); iHisto++;
+
+  for(Int_t iInt=0;iInt<kNintegrator;iInt++){
+  	h2d = new TH2F(Form("H2D_ChargeVsClock_Int%d",iInt), Form("Charge Versus LHC-Clock (Int%d);Channel;LHCClock;Charge [ADC counts]",iInt),kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
+  	Add2RawsList(h2d,(iInt == 0 ? kChargeVsClockInt0 : kChargeVsClockInt1 ), expert, !image, !saveCorr); iHisto++;
+	}
+  
+  h1d = new TH1F("H1D_BBFlagPerChannel", "BB-Flags Versus Channel;Channel;BB Flags Count",kNChannelBins, kChannelMin, kChannelMax );
+  h1d->SetMinimum(0);
+  Add2RawsList(h1d,kBBFlagsPerChannel, !expert, image, !saveCorr); iHisto++;
   
   AliDebug(AliQAv1::GetQADebugLevel(), Form("%d Histograms has been added to the Raws List",iHisto));
   //
@@ -416,8 +443,6 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       for(Int_t iClock=0; iClock<21; iClock++){
 	Bool_t iIntegrator = rawStream->GetIntegratorFlag(iChannel,iClock);
 	Int_t k = offlineCh+16*iIntegrator;
-
-	//printf(Form("clock = %d adc = %f ped %f\n",iClock,rawStream->GetPedestal(iChannel,iClock),fPedestal[k]));
 
 	adcPedSub[iClock] = rawStream->GetPedestal(iChannel,iClock) - fCalibData->GetPedestal(k);
 	//				if(adcPedSub[iClock] <= GetRecoParam()->GetNSigmaPed()*fCalibData->GetSigma(k)) {
@@ -503,6 +528,28 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       }
       FillRawsData(kHPTDCTime,offlineCh,timeCorr[offlineCh]);
       FillRawsData(kWidth,offlineCh,width[offlineCh]);
+      if(flagBB[offlineCh]) {
+	FillRawsData(kHPTDCTimeBB,offlineCh,timeCorr[offlineCh]);
+	FillRawsData(kWidthBB,offlineCh,width[offlineCh]);
+      }
+      if(flagBG[offlineCh]) {
+	FillRawsData(kHPTDCTimeBG,offlineCh,timeCorr[offlineCh]);
+	FillRawsData(kWidthBG,offlineCh,width[offlineCh]);
+      }
+      
+         // Fill Flag and Charge Versus LHC-Clock histograms
+	   
+      for(Int_t iEvent=0; iEvent<21; iEvent++){
+	charge = rawStream->GetPedestal(iChannel,iEvent);
+	Int_t intgr = rawStream->GetIntegratorFlag(iChannel,iEvent);
+	Bool_t bbFlag	  = rawStream->GetBBFlag(iChannel, iEvent);
+	Bool_t bgFlag	  = rawStream->GetBGFlag(iChannel,iEvent );
+
+	FillRawsData((intgr == 0 ? kChargeVsClockInt0 : kChargeVsClockInt1 ), offlineCh,(float)iEvent-10,(float)charge);
+	FillRawsData(kBBFlagVsClock, offlineCh,(float)iEvent-10,(float)bbFlag);
+	FillRawsData(kBGFlagVsClock, offlineCh,(float)iEvent-10,(float)bgFlag);
+	if(iEvent==10) FillRawsData(kBBFlagsPerChannel, offlineCh,(float)bbFlag);
+      }
 
     }// END of Loop over channels
     
