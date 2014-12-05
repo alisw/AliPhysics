@@ -57,7 +57,7 @@ public :
 
   // Process matching
   void ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack);
-  void ProcessTPCTRD(AliStack* const stack, AliESDtrack *const esdTrack, AliESDfriendTrack *const friendTrack);
+  //  void ProcessTPCTRD(AliStack* const stack, AliESDtrack *const esdTrack, AliESDfriendTrack *const friendTrack);
   void ProcessITSTPC(Int_t trackIdx, AliESDEvent* const esdEvent, AliStack* const stack, AliESDtrack *const esdTrack);
   void ProcessTPCConstrain(AliStack* const stack, AliESDEvent *const esdEvent, AliESDtrack *const esdTrack); // - 01.11.2011
 

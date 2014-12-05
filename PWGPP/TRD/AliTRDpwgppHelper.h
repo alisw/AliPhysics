@@ -47,8 +47,8 @@ public:
     kNTRDTASKS = kNTRDQATASKS + kNTRDCALIBTASKS
   };
 
-  AliTRDpwgppHelper();
-  ~AliTRDpwgppHelper();
+  AliTRDpwgppHelper(){;}
+  virtual ~AliTRDpwgppHelper(){;}
 
   static Bool_t DoTask(Int_t idx, Int_t map);
   static Int_t  GetTaskIndex(const Char_t *name);

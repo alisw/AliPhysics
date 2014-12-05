@@ -174,8 +174,8 @@
 #include "info/AliTRDeventInfo.h"
 
 #include "AliTRDcalibDB.h"
-#include "Cal/AliTRDCalROC.h"
-#include "Cal/AliTRDCalDet.h"
+#include "AliTRDCalROC.h"
+#include "AliTRDCalDet.h"
 #include "AliTRDCommonParam.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDpadPlane.h"
