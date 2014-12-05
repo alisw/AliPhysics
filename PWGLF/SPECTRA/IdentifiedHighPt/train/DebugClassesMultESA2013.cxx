@@ -17,16 +17,16 @@ TObject(),
   phi(-999),
   dedx(-999),
 
-  isTOFout(-1),
-  hasTOFtime(-1),
-  isTOFmatched(-1),
-  flength(-9999),
-  ftimetof(-9999),
-  exptoftimeel(-9999),
-  exptoftimemu(-9999),
-  exptoftimepi(-9999),
-  exptoftimeka(-9999),
-  exptoftimepr(-9999),
+  //isTOFout(-1),
+  //hasTOFtime(-1),
+  //isTOFmatched(-1),
+  //flength(-9999),
+  //ftimetof(-9999),
+  //exptoftimeel(-9999),
+  //exptoftimemu(-9999),
+  //exptoftimepi(-9999),
+  //exptoftimeka(-9999),
+  //exptoftimepr(-9999),
   
   dcaxy(-999),
   dcaz(-999),
@@ -61,17 +61,17 @@ void DeDxTrack::Copy(TObject& object) const
   track->eta        = eta;       
   track->phi        = phi;       
   track->dedx       = dedx;    
-  track->isTOFout     = isTOFout;
-  track->hasTOFtime   = hasTOFtime;
-  track->isTOFmatched = isTOFmatched;
+  //track->isTOFout     = isTOFout;
+  //track->hasTOFtime   = hasTOFtime;
+  //track->isTOFmatched = isTOFmatched;
 
-  track->flength      = flength;
-  track->ftimetof     = ftimetof;
-  track->exptoftimeel = exptoftimeel;
-  track->exptoftimemu = exptoftimemu;
-  track->exptoftimepi = exptoftimepi;
-  track->exptoftimeka = exptoftimeka;
-  track->exptoftimepr = exptoftimepr;
+  //track->flength      = flength;
+  //track->ftimetof     = ftimetof;
+  //track->exptoftimeel = exptoftimeel;
+  //track->exptoftimemu = exptoftimemu;
+  //track->exptoftimepi = exptoftimepi;
+  //track->exptoftimeka = exptoftimeka;
+  //track->exptoftimepr = exptoftimepr;
  
   track->dcaxy      = dcaxy;     
   track->dcaz       = dcaz;      
@@ -134,6 +134,7 @@ TObject(),
   dcav0(999),
   dcadaughters(999),
   pdg(0),
+  pdgmother(0),
   primary(-1),  
   status(),  
   ptrack(),
@@ -225,9 +226,9 @@ TObject(),
   run(-1),         // run number
   time(-1),        // time of event
   cent(1000),      // centrality
-  centV0A(1000),      // centrality
-  centZNA(1000),      // centrality
-  centCL1(1000),      // centrality
+  //centV0A(1000),      // centrality
+  //centZNA(1000),      // centrality
+  //centCL1(1000),      // centrality
   mag(+999),       // magnetic field
   zvtx(+999),      // rec vertex
   zvtxMC(+999),    // MC true vertes
@@ -239,14 +240,14 @@ TObject(),
   trackmultMC(-1), // MC track mult (primary tracks)
   nMC(-1),         // MC number of added tracks 
   process(-2),     // MC process: -1=invalid, 0=data, 1=ND, 2=SD, 3=DD
-  trig(-1),        // Was the event triggered
-  pileup(-1),       // Is the event marked as pileup?
-  sphericity(-2),  //|eta|<0.8, pt>0.5, Nch>3, rec
-  spherocity(-2),  //|eta|<0.8, pt>0.5, Nch>3, rec  
-  sphericityTPC(-2),  //|eta|<0.8, pt>0.5, Nch>3, rec
-  spherocityTPC(-2),  //|eta|<0.8, pt>0.5, Nch>3, rec  
-  sphericityMC(-2),  //|eta|<0.8, pt>0.5, Nch>3, true  
-  spherocityMC(-2)  //|eta|<0.8, pt>0.5, Nch>3, true  
+  trig(-1)         // Was the event triggered
+  //pileup(-1),       // Is the event marked as pileup?
+  //sphericity(-2),  //|eta|<0.8, pt>0.5, Nch>3, rec
+  //spherocity(-2),  //|eta|<0.8, pt>0.5, Nch>3, rec  
+  //sphericityTPC(-2),  //|eta|<0.8, pt>0.5, Nch>3, rec
+  //spherocityTPC(-2),  //|eta|<0.8, pt>0.5, Nch>3, rec  
+  //sphericityMC(-2),  //|eta|<0.8, pt>0.5, Nch>3, true  
+  //spherocityMC(-2)  //|eta|<0.8, pt>0.5, Nch>3, true  
 
 {
   // default constructor
@@ -264,9 +265,9 @@ void DeDxEvent::Copy(TObject& object) const
   eventIn->run           = run         ; 
   eventIn->time          = time        ; 
   eventIn->cent          = cent        ;
-  eventIn->centV0A       = centV0A     ;
-  eventIn->centZNA       = centZNA     ;
-  eventIn->centCL1       = centCL1     ;
+  //eventIn->centV0A       = centV0A     ;
+  //eventIn->centZNA       = centZNA     ;
+  //eventIn->centCL1       = centCL1     ;
   eventIn->mag           = mag         ; 
   eventIn->zvtx          = zvtx        ; 
   eventIn->zvtxMC        = zvtxMC      ; 
@@ -279,13 +280,11 @@ void DeDxEvent::Copy(TObject& object) const
   eventIn->nMC           = nMC         ; 
   eventIn->process       = process     ; 
   eventIn->trig          = trig        ; 
-  eventIn->pileup        = pileup      ;
-  eventIn->sphericity    = sphericity   ;
-  eventIn->spherocity    = spherocity   ;  
-  eventIn->sphericityTPC = sphericityTPC;
-  eventIn->spherocityTPC = spherocityTPC;  
-  eventIn->sphericityMC  = sphericityMC ; 
-  eventIn->spherocityMC  = spherocityMC ; 
-
-      
+  //eventIn->pileup        = pileup      ;
+  //eventIn->sphericity    = sphericity   ;
+  //eventIn->spherocity    = spherocity   ;  
+  //eventIn->sphericityTPC = sphericityTPC;
+  //eventIn->spherocityTPC = spherocityTPC;  
+  //eventIn->sphericityMC  = sphericityMC ; 
+  //eventIn->spherocityMC  = spherocityMC ;       
 }

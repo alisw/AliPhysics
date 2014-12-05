@@ -595,9 +595,9 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
     fEvent->trig    = fTriggeredEventMB;
     fEvent->zvtxMC  = fZvtxMC;
     fEvent->cent      = centralityV0M;
-    fEvent->centV0A      = centralityV0A;
-    fEvent->centZNA      = centralityZNA;
-    fEvent->centCL1      = centralityCL1;
+    //fEvent->centV0A      = centralityV0A;
+    //fEvent->centZNA      = centralityZNA;
+    //fEvent->centCL1      = centralityCL1;
 
 
     fTree->Fill();
@@ -690,7 +690,7 @@ void AliAnalysisTaskHighPtDeDx::AnalyzeESD(AliESDEvent* esdEvent)
     fEvent->mag       = magf;
     fEvent->zvtx      = fZvtx;
     fEvent->vtxstatus = fVtxStatus;
-    fEvent->pileup    = isPileup;
+    //fEvent->pileup    = isPileup;
 
   }
 
@@ -761,7 +761,7 @@ void AliAnalysisTaskHighPtDeDx::AnalyzeAOD(AliAODEvent* aodEvent)
     fEvent->vtxstatus = fVtxStatus;
     //fEvent->trackmult = trackmult;
     //fEvent->n         = nadded;
-    fEvent->pileup    = isPileup;
+    //fEvent->pileup    = isPileup;
   }
 }
 
@@ -898,8 +898,8 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthESD()
 
     fEvent->trackmultMC = trackmult;
     fEvent->nMC         = nadded;
-    fEvent->sphericityMC         = sphericityMC;
-    fEvent->spherocityMC         = spherocityMC;
+    //fEvent->sphericityMC         = sphericityMC;
+    //fEvent->spherocityMC         = spherocityMC;
 
   }
   
@@ -1000,8 +1000,8 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthAOD()
 
     fEvent->trackmultMC = trackmult;
     fEvent->nMC         = nadded;
-    fEvent->sphericityMC         = 0;
-    fEvent->spherocityMC         = 0;
+    //fEvent->sphericityMC         = 0;
+    //fEvent->spherocityMC         = 0;
 
   }
   //cout << " debug 5 " << endl;
@@ -1510,16 +1510,16 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksESD( AliESDEvent *ESDevent, Anal
 	track->neff       = neff;
 	track->dedx       = dedx;
 
-	track->isTOFout   = IsTOFout;
-	track->hasTOFtime = HasTOFTime;
-	track->isTOFmatched = IsMatched;
-	track->flength    = lengthtrack;
-	track->ftimetof   = timeTOF;
-	track->exptoftimeel = fexptimeel;
-	track->exptoftimemu = fexptimemu;
-	track->exptoftimepi = fexptimepi;
-	track->exptoftimeka = fexptimeka;
-	track->exptoftimepr = fexptimepr;
+	//track->isTOFout   = IsTOFout;
+	//track->hasTOFtime = HasTOFTime;
+	//track->isTOFmatched = IsMatched;
+	//track->flength    = lengthtrack;
+	//track->ftimetof   = timeTOF;
+	//track->exptoftimeel = fexptimeel;
+	//track->exptoftimemu = fexptimemu;
+	//track->exptoftimepi = fexptimepi;
+	//track->exptoftimeka = fexptimeka;
+	//track->exptoftimepr = fexptimepr;
 
 	track->dcaxy      = dcaxy;
 	track->dcaz       = dcaz;
@@ -1682,16 +1682,16 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksESD( AliESDEvent *ESDevent, Anal
 	tracktpc->neff       = neff;
 	tracktpc->dedx       = dedx;
 
-	tracktpc->isTOFout   = 0;
-	tracktpc->hasTOFtime = 0;
-	tracktpc->isTOFmatched = 0;
-	tracktpc->flength    = 0;
-	tracktpc->ftimetof   = 0;
-	tracktpc->exptoftimeel = 0;
-	tracktpc->exptoftimemu = 0;
-	tracktpc->exptoftimepi = 0;
-	tracktpc->exptoftimeka = 0;
-	tracktpc->exptoftimepr = 0;
+	//tracktpc->isTOFout   = 0;
+	//tracktpc->hasTOFtime = 0;
+	//tracktpc->isTOFmatched = 0;
+	//tracktpc->flength    = 0;
+	//tracktpc->ftimetof   = 0;
+	//tracktpc->exptoftimeel = 0;
+	//tracktpc->exptoftimemu = 0;
+	//tracktpc->exptoftimepi = 0;
+	//tracktpc->exptoftimeka = 0;
+	//tracktpc->exptoftimepr = 0;
 
 
 	tracktpc->dcaxy      = dcaxy;
@@ -1721,10 +1721,10 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksESD( AliESDEvent *ESDevent, Anal
       fEvent->trackmult = trackmult;
       fEvent->n         = nadded;
 
-      fEvent->sphericity         = sphericity;
-      fEvent->spherocity         = spherocity;
-      fEvent->sphericityTPC      = sphericityTPC;
-      fEvent->spherocityTPC      = spherocityTPC;
+      //fEvent->sphericity         = sphericity;
+      //fEvent->spherocity         = spherocity;
+      //fEvent->sphericityTPC      = sphericityTPC;
+      //fEvent->spherocityTPC      = spherocityTPC;
 
     }
     else if( analysisMode==kTPCTrk ){
@@ -1981,16 +1981,16 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
 	track->neff       = neff;
 	track->dedx       = dedx;
 	//track->beta       = beta;
-	track->isTOFout   = IsTOFout;
-	track->hasTOFtime = HasTOFTime;
-	track->isTOFmatched = IsMatched;
-	track->flength    = lengthtrack;
-	track->ftimetof   = timeTOF;
-	track->exptoftimeel = fexptimeel;
-	track->exptoftimemu = fexptimemu;
-	track->exptoftimepi = fexptimepi;
-	track->exptoftimeka = fexptimeka;
-	track->exptoftimepr = fexptimepr;
+	//track->isTOFout   = IsTOFout;
+	//track->hasTOFtime = HasTOFTime;
+	//track->isTOFmatched = IsMatched;
+	//track->flength    = lengthtrack;
+	//track->ftimetof   = timeTOF;
+	//track->exptoftimeel = fexptimeel;
+	//track->exptoftimemu = fexptimemu;
+	//track->exptoftimepi = fexptimepi;
+	//track->exptoftimeka = fexptimeka;
+	//track->exptoftimepr = fexptimepr;
 
 	track->dcaxy      = dcaxy;
 	track->dcaz       = dcaz;
@@ -2148,16 +2148,16 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
 	tracktpc->dedx       = dedx;
 	//tracktpc->beta       = beta;
 
-	tracktpc->isTOFout   = 0;
-	tracktpc->hasTOFtime = 0;
-	tracktpc->isTOFmatched = 0;
-	tracktpc->flength    = 0;
-	tracktpc->ftimetof   = 0;
-	tracktpc->exptoftimeel = 0;
-	tracktpc->exptoftimemu = 0;
-	tracktpc->exptoftimepi = 0;
-	tracktpc->exptoftimeka = 0;
-	tracktpc->exptoftimepr = 0;
+	//tracktpc->isTOFout   = 0;
+	//tracktpc->hasTOFtime = 0;
+	//tracktpc->isTOFmatched = 0;
+	//tracktpc->flength    = 0;
+	//tracktpc->ftimetof   = 0;
+	//tracktpc->exptoftimeel = 0;
+	//tracktpc->exptoftimemu = 0;
+	//tracktpc->exptoftimepi = 0;
+	//tracktpc->exptoftimeka = 0;
+	//tracktpc->exptoftimepr = 0;
 
 
 	tracktpc->dcaxy      = dcaxy;
@@ -2181,8 +2181,8 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
       
       fEvent->trackmult = trackmult;
       fEvent->n         = nadded;
-      fEvent->sphericity         = 0;
-      fEvent->spherocity         = 0;
+      //fEvent->sphericity         = 0;
+      //fEvent->spherocity         = 0;
 
     }
     if( analysisMode==kTPCTrk ){
@@ -2511,6 +2511,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
       Int_t   primaryV0     = 0; // 0 means that the tracks are not both daughters of a primary particle (1 means they are)
       Int_t   pdgV0         = 0; // 0 means that they don't have same origin for MC (1 means they have the same original mother)
       Float_t p_ptMC        = 0;
+			Int_t   pdgmotherV0   = 0; 
       Short_t p_pidCode     = 0; // 0 = real data / no mc track!
       Short_t p_primaryFlag = 0; // 0 = real data / not primary mc track  
       Int_t   p_pdgMother   = 0;
@@ -2521,8 +2522,10 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
       if(fAnalysisMC) {
 	
 	Int_t p_mother_label = 0;
+	Int_t p_grandmother_label = 0;
 	Int_t p_mother_steps = 0;
 	Int_t n_mother_label = 0;
+	Int_t n_grandmother_label = 0;
 	Int_t n_mother_steps = 0;
 	
 	// positive track
@@ -2547,10 +2550,14 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	  
 	  p_ptMC      = p_mcTrack->Pt();
 	  
-	  p_mother_label = FindPrimaryMotherLabelV0(fMCStack, p_label, 
-						  p_mother_steps);
+	  //p_mother_label = FindPrimaryMotherLabelV0(fMCStack, p_label, 
+		//				  p_mother_steps);
+		//Replace with simple mother check
+	  p_mother_label = p_mcTrack->GetMother(0); 
+	  
 	  if(p_mother_label>0) {
 	    TParticle* p_mother = fMCStack->Particle(p_mother_label);
+			p_grandmother_label = p_mother->GetMother(0); 
 	    p_pdgMother = p_mother->GetPdgCode();
 	  }
 	}
@@ -2576,10 +2583,14 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	  
 	  n_ptMC      = n_mcTrack->Pt();
 	  
-	  n_mother_label = FindPrimaryMotherLabelV0(fMCStack, n_label, 
-						  n_mother_steps);
+	  //p_mother_label = FindPrimaryMotherLabelV0(fMCStack, p_label, 
+		//				  p_mother_steps);
+		//Replace with simple mother check
+	  n_mother_label = n_mcTrack->GetMother(0); 
+
 	  if(n_mother_label>0) {
 	    TParticle* n_mother = fMCStack->Particle(n_mother_label);
+			n_grandmother_label = n_mother->GetMother(0);
 	    n_pdgMother = n_mother->GetPdgCode();
 	  }
 	}
@@ -2587,11 +2598,14 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	// Check if V0 is primary = first and the same mother of both partciles
 	if(p_mother_label>0 && n_mother_label>0 && p_mother_label == n_mother_label) {
 	  pdgV0 = p_pdgMother;
-	  //if(p_mother_steps == 1 && n_mother_steps == 1) {
-        //Consistent choice of primary particle criteria (eff numerator / denominator)
       if( fMCStack->IsPhysicalPrimary( p_mother_label ) ) {
         primaryV0 = 1;
 	  }
+		//store also PDG of the grandmother 
+		if ( n_grandmother_label > 0 && p_grandmother_label > 0 && n_grandmother_label==p_grandmother_label){ 
+			TParticle *lGrandMotherPart = fMCStack -> Particle (p_grandmother_label) ; 
+			pdgmotherV0 = lGrandMotherPart->GetPdgCode(); 
+		}
 	}
       }
 
@@ -2629,6 +2643,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	v0data->dcadaughters = esdV0->GetDcaV0Daughters();
 	v0data->primary = primaryV0;
 	v0data->pdg     = pdgV0;
+	v0data->pdgmother     = pdgmotherV0;
 	
 	// positive track
 	v0data->ptrack.p       = pp;
@@ -2643,16 +2658,16 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	v0data->ptrack.dedx    = pdedx;
 
 
-	v0data->ptrack.isTOFout   = pIsTOFout;
-	v0data->ptrack.hasTOFtime = pHasTOFTime;
-	v0data->ptrack.isTOFmatched = pIsMatched;
-	v0data->ptrack.flength    =   plengthtrack;
-	v0data->ptrack.ftimetof   = ptimeTOF;
-	v0data->ptrack.exptoftimeel = pfexptimeel;
-	v0data->ptrack.exptoftimemu = pfexptimemu;
-	v0data->ptrack.exptoftimepi = pfexptimepi;
-	v0data->ptrack.exptoftimeka = pfexptimeka;
-	v0data->ptrack.exptoftimepr = pfexptimepr;
+	//v0data->ptrack.isTOFout   = pIsTOFout;
+	//v0data->ptrack.hasTOFtime = pHasTOFTime;
+	//v0data->ptrack.isTOFmatched = pIsMatched;
+	//v0data->ptrack.flength    =   plengthtrack;
+	//v0data->ptrack.ftimetof   = ptimeTOF;
+	//v0data->ptrack.exptoftimeel = pfexptimeel;
+	//v0data->ptrack.exptoftimemu = pfexptimemu;
+	//v0data->ptrack.exptoftimepi = pfexptimepi;
+	//v0data->ptrack.exptoftimeka = pfexptimeka;
+	//v0data->ptrack.exptoftimepr = pfexptimepr;
 
 	v0data->ptrack.dcaxy   = pdcaxy;
 	v0data->ptrack.dcaz    = pdcaz;
@@ -2675,16 +2690,16 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	v0data->ntrack.neff    = nneff;
 	v0data->ntrack.dedx    = ndedx;
 
-	v0data->ntrack.isTOFout   = nIsTOFout;
-	v0data->ntrack.hasTOFtime = nHasTOFTime;
-	v0data->ntrack.isTOFmatched = nIsMatched;
-	v0data->ntrack.flength    =   nlengthtrack;
-	v0data->ntrack.ftimetof   = ntimeTOF;
-	v0data->ntrack.exptoftimeel = nfexptimeel;
-	v0data->ntrack.exptoftimemu = nfexptimemu;
-	v0data->ntrack.exptoftimepi = nfexptimepi;
-	v0data->ntrack.exptoftimeka = nfexptimeka;
-	v0data->ntrack.exptoftimepr = nfexptimepr;
+	//v0data->ntrack.isTOFout   = nIsTOFout;
+	//v0data->ntrack.hasTOFtime = nHasTOFTime;
+	//v0data->ntrack.isTOFmatched = nIsMatched;
+	//v0data->ntrack.flength    =   nlengthtrack;
+	//v0data->ntrack.ftimetof   = ntimeTOF;
+	//v0data->ntrack.exptoftimeel = nfexptimeel;
+	//v0data->ntrack.exptoftimemu = nfexptimemu;
+	//v0data->ntrack.exptoftimepi = nfexptimepi;
+	//v0data->ntrack.exptoftimeka = nfexptimeka;
+	//v0data->ntrack.exptoftimepr = nfexptimepr;
 
 
 	v0data->ntrack.dcaxy   = ndcaxy;
@@ -2984,6 +2999,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
       
       Int_t   primaryV0     = 0; // 0 means that the tracks are not both daughters of a primary particle (1 means they are)
       Int_t   pdgV0         = 0; // 0 means that they don't have same origin for MC (1 means they have the same original mother)
+			Int_t   pdgmotherV0   = 0; 
       Float_t p_ptMC        = 0;
       Short_t p_pidCode     = 0; // 0 = real data / no mc track!
       Short_t p_primaryFlag = 0; // 0 = real data / not primary mc track  
@@ -2995,8 +3011,10 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
       if(fAnalysisMC) {
 	
 	Int_t p_mother_label = 0;
+	Int_t p_grandmother_label = 0;
 	Int_t p_mother_steps = 0;
 	Int_t n_mother_label = 0;
+	Int_t n_grandmother_label = 0;
 	Int_t n_mother_steps = 0;
 	
 	// positive track
@@ -3022,10 +3040,14 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	  
 	  p_ptMC      = p_mcTrack->Pt();
 	  
-	  p_mother_label = FindPrimaryMotherLabelV0(fMCStack, p_label, 
-						  p_mother_steps);
+	  //p_mother_label = FindPrimaryMotherLabelV0(fMCStack, p_label, 
+		//				  p_mother_steps);
+		//Replace with simple mother check
+	  p_mother_label = p_mcTrack->GetMother(0); 
+
 	  if(p_mother_label>0) {
 	    TParticle* p_mother = fMCStack->Particle(p_mother_label);
+			p_grandmother_label = p_mother->GetMother(0); 
 	    p_pdgMother = p_mother->GetPdgCode();
 	  }
 	}
@@ -3052,10 +3074,14 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	  
 	  n_ptMC      = n_mcTrack->Pt();
 	  
-	  n_mother_label = FindPrimaryMotherLabelV0(fMCStack, n_label, 
-						  n_mother_steps);
+	  //p_mother_label = FindPrimaryMotherLabelV0(fMCStack, p_label, 
+		//				  p_mother_steps);
+		//Replace with simple mother check
+	  n_mother_label = n_mcTrack->GetMother(0); 
+
 	  if(n_mother_label>0) {
 	    TParticle* n_mother = fMCStack->Particle(n_mother_label);
+			n_grandmother_label = n_mother->GetMother(0); 
 	    n_pdgMother = n_mother->GetPdgCode();
 	  }
 	}
@@ -3063,9 +3089,14 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	// Check if V0 is primary = first and the same mother of both partciles
 	if(p_mother_label>0 && n_mother_label>0 && p_mother_label == n_mother_label) {
 	  pdgV0 = p_pdgMother;
-	  if( fMCStack->IsPhysicalPrimary( p_mother_label ) ) {
-	    primaryV0 = 1;
+      if( fMCStack->IsPhysicalPrimary( p_mother_label ) ) {
+        primaryV0 = 1;
 	  }
+		//store also PDG of the grandmother 
+		if ( n_grandmother_label > 0 && p_grandmother_label > 0 && n_grandmother_label==p_grandmother_label){ 
+			TParticle *lGrandMotherPart = fMCStack -> Particle (p_grandmother_label) ; 
+			pdgmotherV0 = lGrandMotherPart->GetPdgCode(); 
+		}
 	}
       }
       
@@ -3100,6 +3131,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	v0datatpc->dcadaughters = esdV0->GetDcaV0Daughters();
 	v0datatpc->primary = primaryV0;
 	v0datatpc->pdg     = pdgV0;
+	v0datatpc->pdgmother     = pdgmotherV0;
 	
 	// positive track
 	v0datatpc->ptrack.p       = pp;
@@ -3113,16 +3145,16 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	v0datatpc->ptrack.neff    = pneff;
 	v0datatpc->ptrack.dedx    = pdedx;
 
-	v0datatpc->ptrack.isTOFout   = 0;
-	v0datatpc->ptrack.hasTOFtime = 0;
-	v0datatpc->ptrack.isTOFmatched = 0;
-	v0datatpc->ptrack.flength    =   0;
-	v0datatpc->ptrack.ftimetof   = 0;
-	v0datatpc->ptrack.exptoftimeel = 0;
-	v0datatpc->ptrack.exptoftimemu = 0;
-	v0datatpc->ptrack.exptoftimepi = 0;
-	v0datatpc->ptrack.exptoftimeka = 0;
-	v0datatpc->ptrack.exptoftimepr = 0;
+	//v0datatpc->ptrack.isTOFout   = 0;
+	//v0datatpc->ptrack.hasTOFtime = 0;
+	//v0datatpc->ptrack.isTOFmatched = 0;
+	//v0datatpc->ptrack.flength    =   0;
+	//v0datatpc->ptrack.ftimetof   = 0;
+	//v0datatpc->ptrack.exptoftimeel = 0;
+	//v0datatpc->ptrack.exptoftimemu = 0;
+	//v0datatpc->ptrack.exptoftimepi = 0;
+	//v0datatpc->ptrack.exptoftimeka = 0;
+	//v0datatpc->ptrack.exptoftimepr = 0;
 
 
 	v0datatpc->ptrack.dcaxy   = pdcaxy;
@@ -3147,16 +3179,16 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	v0datatpc->ntrack.neff    = nneff;
 	v0datatpc->ntrack.dedx    = ndedx;
 
-	v0datatpc->ntrack.isTOFout   = 0;
-	v0datatpc->ntrack.hasTOFtime = 0;
-	v0datatpc->ntrack.isTOFmatched = 0;
-	v0datatpc->ntrack.flength    =   0;
-	v0datatpc->ntrack.ftimetof   = 0;
-	v0datatpc->ntrack.exptoftimeel = 0;
-	v0datatpc->ntrack.exptoftimemu = 0;
-	v0datatpc->ntrack.exptoftimepi = 0;
-	v0datatpc->ntrack.exptoftimeka = 0;
-	v0datatpc->ntrack.exptoftimepr = 0;
+	//v0datatpc->ntrack.isTOFout   = 0;
+	//v0datatpc->ntrack.hasTOFtime = 0;
+	//v0datatpc->ntrack.isTOFmatched = 0;
+	//v0datatpc->ntrack.flength    =   0;
+	//v0datatpc->ntrack.ftimetof   = 0;
+	//v0datatpc->ntrack.exptoftimeel = 0;
+	//v0datatpc->ntrack.exptoftimemu = 0;
+	//v0datatpc->ntrack.exptoftimepi = 0;
+	//v0datatpc->ntrack.exptoftimeka = 0;
+	//v0datatpc->ntrack.exptoftimepr = 0;
 
 	v0datatpc->ntrack.dcaxy   = ndcaxy;
 	v0datatpc->ntrack.dcaz    = ndcaz;
@@ -3620,16 +3652,16 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	v0data->ptrack.neff    = pneff;
 	v0data->ptrack.dedx    = pdedx;
 
-	v0data->ptrack.isTOFout   = pIsTOFout;
-	v0data->ptrack.hasTOFtime = pHasTOFTime;
-	v0data->ptrack.isTOFmatched = pIsMatched;
-	v0data->ptrack.flength    =   plengthtrack;
-	v0data->ptrack.ftimetof   = ptimeTOF;
-	v0data->ptrack.exptoftimeel = pfexptimeel;
-	v0data->ptrack.exptoftimemu = pfexptimemu;
-	v0data->ptrack.exptoftimepi = pfexptimepi;
-	v0data->ptrack.exptoftimeka = pfexptimeka;
-	v0data->ptrack.exptoftimepr = pfexptimepr;
+	//v0data->ptrack.isTOFout   = pIsTOFout;
+	//v0data->ptrack.hasTOFtime = pHasTOFTime;
+	//v0data->ptrack.isTOFmatched = pIsMatched;
+	//v0data->ptrack.flength    =   plengthtrack;
+	//v0data->ptrack.ftimetof   = ptimeTOF;
+	//v0data->ptrack.exptoftimeel = pfexptimeel;
+	//v0data->ptrack.exptoftimemu = pfexptimemu;
+	//v0data->ptrack.exptoftimepi = pfexptimepi;
+	//v0data->ptrack.exptoftimeka = pfexptimeka;
+	//v0data->ptrack.exptoftimepr = pfexptimepr;
 
 	v0data->ptrack.dcaxy   = pdcaxy;
 	v0data->ptrack.dcaz    = pdcaz;
@@ -3654,7 +3686,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	v0data->ntrack.ncl     = nncl;
 	v0data->ntrack.neff    = nneff;
 	v0data->ntrack.dedx    = ndedx;
-
+/*
 	v0data->ntrack.isTOFout   = nIsTOFout;
 	v0data->ntrack.hasTOFtime = nHasTOFTime;
 	v0data->ntrack.isTOFmatched = nIsMatched;
@@ -3665,7 +3697,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	v0data->ntrack.exptoftimepi = nfexptimepi;
 	v0data->ntrack.exptoftimeka = nfexptimeka;
 	v0data->ntrack.exptoftimepr = nfexptimepr;
-
+*/
 	v0data->ntrack.dcaxy   = ndcaxy;
 	v0data->ntrack.dcaz    = ndcaz;
 	v0data->ntrack.pid     = n_pidCode;
@@ -3973,16 +4005,16 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	 v0datatpc->ptrack.neff    = pneff;
 	 v0datatpc->ptrack.dedx    = pdedx;
 
-	v0datatpc->ptrack.isTOFout   = 0;
-	v0datatpc->ptrack.hasTOFtime = 0;
-	v0datatpc->ptrack.isTOFmatched = 0;
-	v0datatpc->ptrack.flength    =   0;
-	v0datatpc->ptrack.ftimetof   = 0;
-	v0datatpc->ptrack.exptoftimeel = 0;
-	v0datatpc->ptrack.exptoftimemu = 0;
-	v0datatpc->ptrack.exptoftimepi = 0;
-	v0datatpc->ptrack.exptoftimeka = 0;
-	v0datatpc->ptrack.exptoftimepr = 0;
+	//v0datatpc->ptrack.isTOFout   = 0;
+	//v0datatpc->ptrack.hasTOFtime = 0;
+	//v0datatpc->ptrack.isTOFmatched = 0;
+	//v0datatpc->ptrack.flength    =   0;
+	//v0datatpc->ptrack.ftimetof   = 0;
+	//v0datatpc->ptrack.exptoftimeel = 0;
+	//v0datatpc->ptrack.exptoftimemu = 0;
+	//v0datatpc->ptrack.exptoftimepi = 0;
+	//v0datatpc->ptrack.exptoftimeka = 0;
+	//v0datatpc->ptrack.exptoftimepr = 0;
 
 	 v0datatpc->ptrack.dcaxy   = pdcaxy;
 	 v0datatpc->ptrack.dcaz    = pdcaz;
@@ -4004,7 +4036,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	 v0datatpc->ntrack.ncl     = nncl;
 	 v0datatpc->ntrack.neff    = nneff;
 	 v0datatpc->ntrack.dedx    = ndedx;
-
+/*
 	v0datatpc->ntrack.isTOFout   = 0;
 	v0datatpc->ntrack.hasTOFtime = 0;
 	v0datatpc->ntrack.isTOFmatched = 0;
@@ -4015,7 +4047,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	v0datatpc->ntrack.exptoftimepi = 0;
 	v0datatpc->ntrack.exptoftimeka = 0;
 	v0datatpc->ntrack.exptoftimepr = 0;
-
+*/
 	 v0datatpc->ntrack.dcaxy   = ndcaxy;
 	 v0datatpc->ntrack.dcaz    = ndcaz;
 	 v0datatpc->ntrack.pid     = n_pidCode;
