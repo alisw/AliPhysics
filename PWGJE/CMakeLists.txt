@@ -14,5 +14,11 @@
 # **************************************************************************
 
 add_subdirectory(EMCALJetTasks)
+add_subdirectory(FlavourJetTasks)
+add_subdirectory(PWGJE)
+add_subdirectory(StrangenessInJets)
+
+# Installing the macros
+install (DIRECTORY macros DESTINATION PWGJE)
 
 message(STATUS "PWGJE enabled")
