@@ -63,6 +63,9 @@ const char* AliConversionPhotonCuts::fgkCutNames[AliConversionPhotonCuts::kNCuts
 	"V0FinderType",				// 0
 	"EtaCut",					// 1
 	"MinRCut",					// 2
+	"EtaForPhiCut",				// 3
+	"MinPhiCut",				// 4
+	"MaxPhiCut",				// 5
 	"SinglePtCut",				// 3
 	"ClsTPCCut", 				// 4
 	"ededxSigmaCut",			// 5
@@ -93,6 +96,11 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
 	fMinR(0),
 	fEtaCut(0.9),
 	fEtaCutMin(-0.1),
+	fEtaForPhiCutMin(-10.),
+	fEtaForPhiCutMax(10.),
+	fMinPhiCut(0.),
+	fMaxPhiCut(100.),
+	fDoShrinkTPCAcceptance(kFALSE),
 	fPtCut(0.02),
 	fSinglePtCut(0),
 	fMaxZ(1000),
@@ -195,6 +203,11 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
 	fMinR(ref.fMinR),
 	fEtaCut(ref.fEtaCut),
 	fEtaCutMin(ref.fEtaCutMin),
+	fEtaForPhiCutMin(ref.fEtaForPhiCutMin),
+	fEtaForPhiCutMax(ref.fEtaForPhiCutMax),
+	fMinPhiCut(ref.fMinPhiCut),
+	fMaxPhiCut(ref.fMaxPhiCut),
+	fDoShrinkTPCAcceptance(ref.fDoShrinkTPCAcceptance),
 	fPtCut(ref.fPtCut),
 	fSinglePtCut(ref.fSinglePtCut),
 	fMaxZ(ref.fMaxZ),
@@ -380,15 +393,16 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
 	hArmenterosafter=new TH2F(Form("Armenteros_after %s",GetCutNumber().Data()),"Armenteros_after",200,-1,1,250,0,0.25);
 	fHistograms->Add(hArmenterosafter);
 
-	hAcceptanceCuts=new TH1F(Form("PhotonAcceptanceCuts %s",GetCutNumber().Data()),"PhotonAcceptanceCuts",10,-0.5,9.5);
+	hAcceptanceCuts=new TH1F(Form("PhotonAcceptanceCuts %s",GetCutNumber().Data()),"PhotonAcceptanceCuts",11,-0.5,10.5);
 	hAcceptanceCuts->GetXaxis()->SetBinLabel(1,"in");
 	hAcceptanceCuts->GetXaxis()->SetBinLabel(2,"maxR");
 	hAcceptanceCuts->GetXaxis()->SetBinLabel(3,"minR");
 	hAcceptanceCuts->GetXaxis()->SetBinLabel(4,"line");
 	hAcceptanceCuts->GetXaxis()->SetBinLabel(5,"maxZ");
 	hAcceptanceCuts->GetXaxis()->SetBinLabel(6,"eta");
-	hAcceptanceCuts->GetXaxis()->SetBinLabel(7,"minpt");
-	hAcceptanceCuts->GetXaxis()->SetBinLabel(8,"out");
+	hAcceptanceCuts->GetXaxis()->SetBinLabel(7,"phisector");
+	hAcceptanceCuts->GetXaxis()->SetBinLabel(8,"minpt");
+	hAcceptanceCuts->GetXaxis()->SetBinLabel(9,"out");
 	fHistograms->Add(hAcceptanceCuts);
 
 	// dEdx Cuts
@@ -945,7 +959,19 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
 		}
 	}
 	cutIndex++;
+	
+	if (fDoShrinkTPCAcceptance){
+		if(photon->GetPhotonEta() > fEtaForPhiCutMin && photon->GetPhotonEta() < fEtaForPhiCutMax ){
+			if( photon->GetPhotonPhi() > fMinPhiCut && photon->GetPhotonPhi() < fMaxPhiCut ) {
+				if(hAcceptanceCuts)hAcceptanceCuts->Fill(cutIndex);
+				return kFALSE;
+			}
+		}
+	}	
+	cutIndex++;
+	
 
+	
 	if(photon->GetPhotonPt()<fPtCut){
 		if(hAcceptanceCuts)hAcceptanceCuts->Fill(cutIndex);
 		return kFALSE;
@@ -1426,6 +1452,53 @@ Bool_t AliConversionPhotonCuts::SetCut(cutIds cutID, const Int_t value) {
 				return kTRUE;
 			} else return kFALSE;
 
+		case ketaCut:
+			if( SetEtaCut(value)) {
+				fCuts[ketaCut] = value;
+				UpdateCutString();
+				return kTRUE;
+			} else return kFALSE;
+
+		case kRCut:
+			if( SetRCut(value)) {
+				fCuts[kRCut] = value;
+				UpdateCutString();
+				return kTRUE;
+			} else return kFALSE;
+	
+		case kEtaForPhiSector:
+			if( SetEtaForPhiCut(value)) {
+				fCuts[kEtaForPhiSector] = value;
+				UpdateCutString();
+				return kTRUE;
+			} else return kFALSE;
+		case kMinPhiSector:
+			if( SetMinPhiSectorCut(value)) {
+				fCuts[kMinPhiSector] = value;
+				UpdateCutString();
+				return kTRUE;
+			} else return kFALSE;
+		case kMaxPhiSector:
+			if( SetMaxPhiSectorCut(value)) {
+				fCuts[kMaxPhiSector] = value;
+				UpdateCutString();
+				return kTRUE;
+			} else return kFALSE;
+
+		case ksinglePtCut:
+			if( SetSinglePtCut(value)) {
+				fCuts[ksinglePtCut] = value;
+				UpdateCutString();
+				return kTRUE;
+			} else return kFALSE;
+
+		case kclsTPCCut:
+			if( SetTPCClusterCut(value)) {
+				fCuts[kclsTPCCut] = value;
+				UpdateCutString();
+				return kTRUE;
+			} else return kFALSE;
+			
 		case kededxSigmaCut:
 			if( SetTPCdEdxCutElectronLine(value)) {
 				fCuts[kededxSigmaCut] = value;
@@ -1447,30 +1520,9 @@ Bool_t AliConversionPhotonCuts::SetCut(cutIds cutID, const Int_t value) {
 				return kTRUE;
 			} else return kFALSE;
 
-		case kchi2GammaCut:
-			if( SetChi2GammaCut(value)) {
-				fCuts[kchi2GammaCut] = value;
-				UpdateCutString();
-				return kTRUE;
-			} else return kFALSE;
-
-		case ksinglePtCut:
-			if( SetSinglePtCut(value)) {
-				fCuts[ksinglePtCut] = value;
-				UpdateCutString();
-				return kTRUE;
-			} else return kFALSE;
-
-		case kclsTPCCut:
-			if( SetTPCClusterCut(value)) {
-				fCuts[kclsTPCCut] = value;
-				UpdateCutString();
-				return kTRUE;
-			} else return kFALSE;
-
-		case ketaCut:
-			if( SetEtaCut(value)) {
-				fCuts[ketaCut] = value;
+		case kpiMaxMomdedxSigmaCut:
+			if( SetMaxMomPiondEdxCut(value)) {
+				fCuts[kpiMaxMomdedxSigmaCut] = value;
 				UpdateCutString();
 				return kTRUE;
 			} else return kFALSE;
@@ -1482,6 +1534,13 @@ Bool_t AliConversionPhotonCuts::SetCut(cutIds cutID, const Int_t value) {
 				return kTRUE;
 			} else return kFALSE;
 
+		case kTOFelectronPID:
+			if( SetTOFElectronPIDCut(value)) {
+				fCuts[kTOFelectronPID] = value;
+				UpdateCutString();
+				return kTRUE;
+			} else return kFALSE;
+			
 		case kQtMaxCut:
 			if( SetQtMaxCut(value)) {
 				fCuts[kQtMaxCut] = value;
@@ -1489,30 +1548,10 @@ Bool_t AliConversionPhotonCuts::SetCut(cutIds cutID, const Int_t value) {
 				return kTRUE;
 			} else return kFALSE;
 
-		case kpiMaxMomdedxSigmaCut:
-			if( SetMaxMomPiondEdxCut(value)) {
-				fCuts[kpiMaxMomdedxSigmaCut] = value;
-				UpdateCutString();
-				return kTRUE;
-			} else return kFALSE;
-
-		case kRCut:
-			if( SetRCut(value)) {
-				fCuts[kRCut] = value;
-				UpdateCutString();
-				return kTRUE;
-			} else return kFALSE;
-
-		case kTOFelectronPID:
-			if( SetTOFElectronPIDCut(value)) {
-				fCuts[kTOFelectronPID] = value;
-				UpdateCutString();
-				return kTRUE;
-			} else return kFALSE;
-
-		case kdoPhotonAsymmetryCut:
-			if( SetPhotonAsymmetryCut(value)) {
-				fCuts[kdoPhotonAsymmetryCut] = value;
+		
+		case kchi2GammaCut:
+			if( SetChi2GammaCut(value)) {
+				fCuts[kchi2GammaCut] = value;
 				UpdateCutString();
 				return kTRUE;
 			} else return kFALSE;
@@ -1523,6 +1562,13 @@ Bool_t AliConversionPhotonCuts::SetCut(cutIds cutID, const Int_t value) {
 				UpdateCutString();
 				return kTRUE;
 			} else return kFALSE;
+			
+		case kdoPhotonAsymmetryCut:
+			if( SetPhotonAsymmetryCut(value)) {
+				fCuts[kdoPhotonAsymmetryCut] = value;
+				UpdateCutString();
+				return kTRUE;
+			} else return kFALSE;
 
 		case kCosPAngle:
 			if( SetCosPAngleCut(value)) {
@@ -1530,7 +1576,6 @@ Bool_t AliConversionPhotonCuts::SetCut(cutIds cutID, const Int_t value) {
 				UpdateCutString();
 				return kTRUE;
 			} else return kFALSE;
-
 
 		case kElecShare:
 			if( SetSharedElectronCut(value)) {
@@ -1567,9 +1612,6 @@ Bool_t AliConversionPhotonCuts::SetCut(cutIds cutID, const Int_t value) {
 				return kTRUE;
 			} else return kFALSE;
 
-
-			
-
 		case kNCuts:
 			AliError("Cut id out of range");
 			return kFALSE;
@@ -1600,6 +1642,7 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
 	if (!fUseCorrectedTPCClsInfo) printf("\t # TPC clusters > %3.2f \n", fMinClsTPC);
 	if (fEtaCutMin > -0.1) printf("\t %3.2f < eta_{e} < %3.2f\n", fEtaCutMin, fEtaCut );
 		else printf("\t eta_{e} < %3.2f\n", fEtaCut );
+	printf("\t reject: %3.2f < phi < %3.2f with %3.2f < eta < %3.2f  \n", fMinPhiCut, fMaxPhiCut, fEtaForPhiCutMin, fEtaForPhiCutMax);	
 	printf("\t p_{T,e} > %3.2f\n", fSinglePtCut );
 	printf("\t TPC refit \n");
 	printf("\t no kinks \n");
@@ -1798,6 +1841,87 @@ Bool_t AliConversionPhotonCuts::SetRCut(Int_t RCut){
 	}
 	return kTRUE;
 }
+
+///________________________________________________________________________
+Bool_t AliConversionPhotonCuts::SetEtaForPhiCut(Int_t etaPhiCut) {
+
+	switch(etaPhiCut) {
+	case 0: //no specific eta range selected, full eta range
+		fEtaForPhiCutMin = -fEtaCut;
+		fEtaForPhiCutMax = fEtaCut;
+		break;
+	case 1:  //eta < 0 only
+		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+		fEtaForPhiCutMin = -fEtaCut;
+		fEtaForPhiCutMax = 0.;
+		break;
+	case 2://eta > 0 only
+		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+		fEtaForPhiCutMin = 0.;
+		fEtaForPhiCutMax = fEtaCut;
+		break;
+	default:
+		AliError(Form("EtaForPhiCut not defined %d",etaPhiCut));
+		return kFALSE;
+	}
+
+	return kTRUE;
+}
+
+///________________________________________________________________________
+Bool_t AliConversionPhotonCuts::SetMinPhiSectorCut(Int_t minPhiCut) {
+
+	switch(minPhiCut) {
+	case 0:
+		fMinPhiCut = 6.3; //no cut on phi
+		break;
+	case 1:
+		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+		fMinPhiCut = 1.7; //OROC C08
+		break;
+	case 2:
+		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+		fMinPhiCut = 4.4; //EMCal
+		break;
+	case 3:
+		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+		fMinPhiCut = 1.0; //PHOS
+		break;
+	default:
+		AliError(Form("MinPhiCut not defined %d",minPhiCut));
+		return kFALSE;
+	}
+
+	return kTRUE;
+}
+
+///________________________________________________________________________
+Bool_t AliConversionPhotonCuts::SetMaxPhiSectorCut(Int_t maxPhiCut) {
+
+	switch(maxPhiCut) {
+	case 0:
+		fMaxPhiCut = 0.; //no cut
+		break;
+	case 1:
+		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+		fMaxPhiCut = 4.3; //OROC C08
+		break;
+	case 2:
+		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+		fMaxPhiCut = 5.8; //EMCal
+		break;
+	case 3:
+		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+		fMaxPhiCut = 3.0; //PHOS
+		break;
+	default:
+		AliError(Form("MaxPhiCut not defined %d",maxPhiCut));
+		return kFALSE;
+	}
+
+	return kTRUE;
+}
+
 
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::SetSinglePtCut(Int_t singlePtCut)
