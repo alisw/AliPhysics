@@ -1,4 +1,4 @@
-AliAnalysisTaskSEmcCorr* AddTaskSEmcCorr(TString fileout="d0D0.root",TString containerprefix="c",Bool_t readmc=kTRUE,Bool_t doHH=kFALSE)
+AliAnalysisTaskSEmcCorr* AddTaskSEmcCorr(TString fileout="d0D0.root",TString containerprefix="c",Bool_t readmc=kTRUE,Bool_t doHH=kFALSE,TString genTitle="")
 {  
   //
   // andrea.rossi@cern.ch
@@ -30,6 +30,7 @@ AliAnalysisTaskSEmcCorr* AddTaskSEmcCorr(TString fileout="d0D0.root",TString con
   AliAnalysisTaskSEmcCorr *hfTask = new AliAnalysisTaskSEmcCorr("AliAnalysisTaskSEmcCorr");
   hfTask->SetReadMC(readmc);
   hfTask->DoHadronHadron(doHH);
+  hfTask->SetGeneratorToBeChecked(genTitle);
   mgr->AddTask(hfTask);
  
  
@@ -120,6 +121,44 @@ AliAnalysisTaskSEmcCorr* AddTaskSEmcCorr(TString fileout="d0D0.root",TString con
   mgr->ConnectOutput(hfTask,8,coutputMChadroncorrelTrig);
 
 
+  containername="outputDzeroDecay";
+  containername.Prepend(containerprefix.Data());
+  containername.Append(str.Data());
+  AliAnalysisDataContainer *coutputDzeroDecay = mgr->CreateContainer(containername.Data(),TH1F::Class(),
+							   AliAnalysisManager::kOutputContainer, 
+							   fileout.Data());
+  
+  mgr->ConnectOutput(hfTask,9,coutputDzeroDecay);
 
+
+  containername="outputDplusDecay";
+  containername.Prepend(containerprefix.Data());
+  containername.Append(str.Data());
+  AliAnalysisDataContainer *coutputDplusDecay = mgr->CreateContainer(containername.Data(),TH1F::Class(),
+							   AliAnalysisManager::kOutputContainer, 
+							   fileout.Data());
+  
+  mgr->ConnectOutput(hfTask,10,coutputDplusDecay);
+
+
+  containername="outputLambdaCDecay";
+  containername.Prepend(containerprefix.Data());
+  containername.Append(str.Data());
+  AliAnalysisDataContainer *coutputLambdaCDecay = mgr->CreateContainer(containername.Data(),TH1F::Class(),
+							   AliAnalysisManager::kOutputContainer, 
+							   fileout.Data());
+  
+  mgr->ConnectOutput(hfTask,11,coutputLambdaCDecay);
+
+
+
+  containername="outputAllBDecay";
+  containername.Prepend(containerprefix.Data());
+  containername.Append(str.Data());
+  AliAnalysisDataContainer *coutputAllBDecay = mgr->CreateContainer(containername.Data(),TH1F::Class(),
+							   AliAnalysisManager::kOutputContainer, 
+							   fileout.Data());
+  
+  mgr->ConnectOutput(hfTask,12,coutputAllBDecay);
   return hfTask;
 }

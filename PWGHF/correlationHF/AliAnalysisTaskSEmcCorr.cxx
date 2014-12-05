@@ -30,6 +30,7 @@
 #include <TMath.h>
 #include <TROOT.h>
 #include <TArrayI.h>
+#include <TString.h>
 #include "AliAODEvent.h"
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF.h"
@@ -53,6 +54,7 @@
 #include "AliNormalizationCounter.h"
 //#include "/Users/administrator/ALICE/CHARM/HFCJ/TestsForProduction/AliAnalysisTaskSEmcCorr.h"
 #include "AliAnalysisTaskSEmcCorr.h"
+#include "AliGenEventHeader.h"
 
 class TCanvas;
 class TTree;
@@ -65,6 +67,9 @@ ClassImp(AliAnalysisTaskSEmcCorr)
 AliAnalysisTaskSEmcCorr::AliAnalysisTaskSEmcCorr() 
 : AliAnalysisTaskSE(),
   fReadMC(kTRUE),
+  fFastSimul(kFALSE),
+  fCheckDecay(kTRUE),
+  fDoHFCorrelations(kTRUE),
   fOnlyKine(kTRUE),
   fDoHadronHadron(kFALSE),
   fNentries(0),
@@ -83,7 +88,30 @@ AliAnalysisTaskSEmcCorr::AliAnalysisTaskSEmcCorr()
   fhMCcorrel(0x0),
   fhMCtrigPart(0x0),
   fhMChadroncorrel(0x0),
-  fhMChadrontrigPart(0x0)
+  fhMChadrontrigPart(0x0),
+  fhDzeroDecay(0x0),  
+  fhDplusDecay(0x0),
+  fhLambdaCDecay(0x0),
+  fhAllBDecay(0x0),
+  fnpionPlus(0),                         
+  fnpionMinus(0),                       
+  fnpionZero(0),                         
+  fnkaonPlus(0),                        
+  fnkaonMinus(0),                       
+  fnkaonZeroShort(0),                        
+  fnProton(0),                        
+  fnAntiProton(0),                       
+  fnElePlus(0),                        
+  fnEleMinus(0),                        
+  fnMuonPlus(0),
+  fnMuonMinus(0),
+  fnNeutrino(0),
+  fnJpsi(0),                            
+  fnPhysPrim(0),
+  fpxtotdaugh(0),
+  fpytotdaugh(0),
+  fpztotdaugh(0),
+  fGeneratorString(0)
 {// standard constructor
   
 }
@@ -94,6 +122,9 @@ AliAnalysisTaskSEmcCorr::AliAnalysisTaskSEmcCorr()
 AliAnalysisTaskSEmcCorr::AliAnalysisTaskSEmcCorr(const char *name) 
   : AliAnalysisTaskSE(name),
     fReadMC(kTRUE),
+    fFastSimul(kFALSE),
+    fCheckDecay(kTRUE),
+    fDoHFCorrelations(kTRUE),
     fOnlyKine(kTRUE),
     fDoHadronHadron(kFALSE),
     fNentries(0),
@@ -112,7 +143,30 @@ AliAnalysisTaskSEmcCorr::AliAnalysisTaskSEmcCorr(const char *name)
     fhMCcorrel(0x0),
     fhMCtrigPart(0x0),
     fhMChadroncorrel(0x0),
-    fhMChadrontrigPart(0x0)
+    fhMChadrontrigPart(0x0),
+    fhDzeroDecay(0x0),
+    fhDplusDecay(0x0),
+    fhLambdaCDecay(0x0),
+    fhAllBDecay(0x0),
+    fnpionPlus(0),                         
+    fnpionMinus(0),                       
+    fnpionZero(0),                         
+    fnkaonPlus(0),                        
+    fnkaonMinus(0),                       
+    fnkaonZeroShort(0),                        
+    fnProton(0),                        
+    fnAntiProton(0),                       
+    fnElePlus(0),                        
+    fnEleMinus(0),                        
+    fnMuonPlus(0),
+    fnMuonMinus(0),
+    fnNeutrino(0),
+    fnJpsi(0),                            
+    fnPhysPrim(0),
+    fpxtotdaugh(0),
+    fpytotdaugh(0),
+    fpztotdaugh(0),
+    fGeneratorString(0)
 { // default constructor
   
   DefineOutput(1, TH1F::Class());
@@ -123,7 +177,10 @@ AliAnalysisTaskSEmcCorr::AliAnalysisTaskSEmcCorr(const char *name)
   DefineOutput(6, THnSparseF::Class());
   DefineOutput(7, THnSparseF::Class());
   DefineOutput(8, THnSparseF::Class());
-
+  DefineOutput(9,TH1F::Class());
+  DefineOutput(10,TH1F::Class());
+  DefineOutput(11,TH1F::Class());
+  DefineOutput(12,TH1F::Class());
 }
 
 //________________________________________________________________________
@@ -139,6 +196,10 @@ AliAnalysisTaskSEmcCorr::~AliAnalysisTaskSEmcCorr(){
   delete fhMChadrontrigPart;
   delete fArrayDaugh;
   delete fArrayAssoc;
+  delete fhDzeroDecay;  
+  delete fhDplusDecay;
+  delete fhLambdaCDecay;
+  delete fhAllBDecay;
 }
 
 //________________________________________________________________________
@@ -150,6 +211,204 @@ void AliAnalysisTaskSEmcCorr::Init()
   fArrayAssoc=new TArrayI(200);
 
 }
+//_______________________________________________
+void AliAnalysisTaskSEmcCorr::GetFinalStateParticles(AliAODMCParticle *part,TClonesArray *clarr){
+  
+  Int_t fdaugh=part->GetDaughter(0);
+  Int_t ldaugh=part->GetDaughter(1);  
+  if(fdaugh<0||ldaugh<0||(fdaugh>ldaugh))return;
+  for(Int_t j=fdaugh;j<=ldaugh;j++){
+    AliAODMCParticle *pd=(AliAODMCParticle*)clarr->At(j);
+    Int_t pdg=pd->GetPdgCode();
+    fnPhysPrim++;// increment it now and decrement it after all if, in case the daughter is not a phys prim
+    fpxtotdaugh+=pd->Px(); // increment it now and decrement it after all if, in case the daughter is not a phys prim
+    fpytotdaugh+=pd->Py();
+    fpztotdaugh+=pd->Pz();
+    
+    if(pdg==211)fnpionPlus++;                         
+    else if(pdg==-211)fnpionMinus++;                           
+    else if(pdg==111)fnpionZero++;                         
+    else if(pdg==321)fnkaonPlus++;                        
+    else if(pdg==-321)fnkaonMinus++;                       
+    else if(pdg==310)fnkaonZeroShort++;                        
+    else if(pdg==2212)fnProton++;                        
+    else if(pdg==-2212)fnAntiProton++;                        
+    else if(pdg==-11)fnElePlus++;                        
+    else if(pdg==11)fnEleMinus++;                        
+    else if(pdg==-13)fnMuonPlus++;                        
+    else if(pdg==13)fnMuonMinus++;                        
+    else if(pdg==12||pdg==14||pdg==-12||pdg==-14)fnNeutrino++;
+    else if(pdg==443)fnJpsi++;                                 
+    else if(pdg!=130&&pdg!=22){
+      fnPhysPrim--;
+      fpxtotdaugh-=pd->Px();
+      fpytotdaugh-=pd->Py();
+      fpztotdaugh-=pd->Pz();
+      GetFinalStateParticles(pd,clarr);
+    }
+  }
+}
+
+//_______________________________________________
+void AliAnalysisTaskSEmcCorr::CheckDzeroChannels(AliAODMCParticle *part,TClonesArray *clarr){
+  Int_t pdg=part->GetPdgCode();
+  if(!(TMath::Abs(pdg)==421))return;
+  fhDzeroDecay->Fill(0);
+  fnpionPlus=0;                         
+  fnpionMinus=0;                       
+  fnpionZero=0;                         
+  fnkaonPlus=0;                        
+  fnkaonMinus=0;                       
+  fnkaonZeroShort=0;                        
+  fnProton=0;                        
+  fnAntiProton=0;
+  fnElePlus=0;                        
+  fnEleMinus=0;                        
+  fnMuonPlus=0;
+  fnMuonMinus=0;
+  fnNeutrino=0;
+  fnJpsi=0;                            
+  fnPhysPrim=0;
+  fpxtotdaugh=0.;
+  fpytotdaugh=0.; 
+  fpztotdaugh=0.;
+
+  GetFinalStateParticles(part,clarr);
+  
+  Double_t px=part->Px(); 
+  Double_t py=part->Py(); 
+  Double_t pz=part->Pz(); 
+  // check exclusive channels in the list
+  if(TMath::Abs(px-fpxtotdaugh)<1.e-6&&TMath::Abs(py-fpytotdaugh)<1.e-6&&TMath::Abs(pz-fpztotdaugh)<1.e-6){
+    if(fnPhysPrim==2&&((pdg==421&&fnpionPlus==1&&fnkaonMinus==1)||(pdg==-421&&fnpionMinus==1&&fnkaonPlus==1))){
+      fhDzeroDecay->Fill(6);
+    }
+    if(fnPhysPrim==3&&((pdg==421&&fnpionPlus==1&&fnkaonMinus==1&&fnpionZero==1)||(pdg==-421&&fnpionMinus==1&&fnkaonPlus==1&&fnpionZero==1))){
+      fhDzeroDecay->Fill(7);
+    }
+    if(fnPhysPrim==4&&((pdg==421&&fnpionPlus==2&&fnkaonMinus==1&&fnpionMinus==1)||(pdg==-421&&fnpionMinus==2&&fnkaonPlus==1&&fnpionPlus==1))){
+      fhDzeroDecay->Fill(8);
+    }
+    if(fnPhysPrim==3&&((pdg==421&&fnElePlus==1&&fnkaonMinus==1&&fnNeutrino==1)||(pdg==-421&&fnEleMinus==1&&fnkaonPlus==1&&fnNeutrino==1))){
+      fhDzeroDecay->Fill(9);
+    }
+    if(fnPhysPrim==3&&((pdg==421&&fnMuonPlus==1&&fnkaonMinus==1&&fnNeutrino==1)||(pdg==-421&&fnMuonMinus==1&&fnkaonPlus==1&&fnNeutrino==1))){
+      fhDzeroDecay->Fill(10);
+    }
+  }
+  
+  //now check decay to electron + X
+  if(fnElePlus>=1||fnEleMinus>=1){
+    fhDzeroDecay->Fill(11);
+  }
+  // no check number of prong
+  Int_t nprong=fnPhysPrim;
+  nprong-=fnpionZero;
+  nprong-=fnNeutrino;
+  nprong-=fnkaonZeroShort;
+  if(nprong==0){
+    fhDzeroDecay->Fill(1);
+  }
+  else if(nprong==1){// should never happen for D0
+    fhDzeroDecay->Fill(2);
+  }
+  else if(nprong==2){// should never happen for D0
+    fhDzeroDecay->Fill(3);
+  }
+  else if(nprong==3){
+    fhDzeroDecay->Fill(4);
+  }
+  else if(nprong==4){
+    fhDzeroDecay->Fill(5);
+  }
+  
+  return;
+}
+
+
+//_______________________________________________
+void AliAnalysisTaskSEmcCorr::CheckDplusChannels(AliAODMCParticle *part,TClonesArray *clarr){
+  Int_t pdg=part->GetPdgCode();
+  if(!(TMath::Abs(pdg)==411))return;
+  fhDplusDecay->Fill(0);
+  fnpionPlus=0;                         
+  fnpionMinus=0;                       
+  fnpionZero=0;                         
+  fnkaonPlus=0;                        
+  fnkaonMinus=0;                       
+  fnkaonZeroShort=0;                        
+  fnProton=0;                        
+  fnAntiProton=0;
+  fnElePlus=0;                        
+  fnEleMinus=0;                        
+  fnMuonPlus=0;
+  fnMuonMinus=0;
+  fnNeutrino=0;
+  fnJpsi=0;                            
+  fnPhysPrim=0;
+  fpxtotdaugh=0.;
+  fpytotdaugh=0.; 
+  fpztotdaugh=0.;
+  GetFinalStateParticles(part,clarr);
+  
+  Double_t px=part->Px(); 
+  Double_t py=part->Py(); 
+  Double_t pz=part->Pz(); 
+  // check exclusive channels in the list
+  if(TMath::Abs(px-fpxtotdaugh)<1.e-6&&TMath::Abs(py-fpytotdaugh)<1.e-6&&TMath::Abs(pz-fpztotdaugh)<1.e-6){
+    if(fnPhysPrim==3&&((pdg==411&&fnpionPlus==2&&fnkaonMinus==1)||(pdg==-411&&fnpionMinus==2&&fnkaonPlus==1))){
+      fhDplusDecay->Fill(6);
+    }
+    if(fnPhysPrim==3&&((pdg==411&&fnkaonZeroShort==1&&fnpionPlus==1&&fnpionZero==1)||(pdg==-411&&fnkaonZeroShort==1&&fnpionMinus==1&&fnpionZero==1))){
+      fhDplusDecay->Fill(7);
+    }
+    if(fnPhysPrim==4&&((pdg==411&&fnpionPlus==2&&fnkaonMinus==1&&fnpionZero==1)||(pdg==-411&&fnpionMinus==2&&fnkaonPlus==1&&fnpionZero==1))){
+      fhDzeroDecay->Fill(8);
+    }
+    if(fnPhysPrim==3&&((pdg==411&&fnElePlus==1&&fnkaonZeroShort==1&&fnNeutrino==1)||(pdg==-411&&fnEleMinus==1&&fnkaonZeroShort==1&&fnNeutrino==1))){
+      fhDplusDecay->Fill(9);
+    }
+    if(fnPhysPrim==3&&((pdg==411&&fnMuonPlus==1&&fnkaonZeroShort==1&&fnNeutrino==1)||(pdg==-411&&fnMuonMinus==1&&fnkaonZeroShort==1&&fnNeutrino==1))){
+      fhDplusDecay->Fill(10);
+    }
+  }
+  
+  //now check decay to electron + X
+  if(fnElePlus>=1||fnEleMinus>=1){
+    fhDplusDecay->Fill(11);
+  }
+  // no check number of prong
+  Int_t nprong=fnPhysPrim;
+  nprong-=fnpionZero;
+  nprong-=fnNeutrino;
+  nprong-=fnkaonZeroShort;
+  if(nprong==0){
+    fhDplusDecay->Fill(1);
+  }
+  else if(nprong==1){// should never happen for D0
+    fhDplusDecay->Fill(2);
+  }
+  else if(nprong==2){// should never happen for D0
+    fhDplusDecay->Fill(3);
+  }
+  else if(nprong==3){
+    fhDplusDecay->Fill(4);
+  }
+  else if(nprong==4){
+    fhDplusDecay->Fill(5);
+  }
+  
+  return;
+}
+//________________________________________________________________________
+// void AliAnalysisTaskSEmcCorr::CheckLambdaChannels(AliAODMCParticle *part,TClonesArray *clarr){
+//   // not implemented yet
+// }
+
+//________________________________________________________________________
+// void AliAnalysisTaskSEmcCorr::CheckBallChannels(AliAODMCParticle *part,TClonesArray *clarr){
+//   // not implemented yet
+// }
 
 
 //________________________________________________________________________
@@ -158,6 +417,7 @@ void AliAnalysisTaskSEmcCorr::UserCreateOutputObjects(){
   if(!fArrayDaugh)  fArrayDaugh=new TArrayI(20);
 
   if(!fArrayAssoc)fArrayAssoc=new TArrayI(200);
+  
 
   fNentries=new TH1F("nentriesChFr", "Analyzed sample properties", 21,0.5,21.5);
   fNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
@@ -166,6 +426,7 @@ void AliAnalysisTaskSEmcCorr::UserCreateOutputObjects(){
   fNentries->GetXaxis()->SetBinLabel(4,"nEvGoodVtxS");
   fNentries->GetXaxis()->SetBinLabel(5,"nEvRejVtxZ");
   fNentries->GetXaxis()->SetBinLabel(6,"nD0");
+  fNentries->GetXaxis()->SetBinLabel(7,"nEventsSelGenName");
 
   fhNprongsD0=new TH1F("fhNprongsD0","fhNprongsD0",20,-0.5,19.5);
   fhNprongsD0chargedOnly=new TH1F("fhNprongsD0chargedOnly","fhNprongsD0chargedOnly",20,-0.5,19.5);
@@ -182,7 +443,50 @@ void AliAnalysisTaskSEmcCorr::UserCreateOutputObjects(){
   Double_t binupTrigMC[3]={7.5,20.,1.};
   fhMCtrigPart=new THnSparseF("fhMCtrigPart","fhMCcorrel;pdg;ptTrig;etaTrig;",3,nbinsTrigMC,binlowTrigMC,binupTrigMC);
 
+  fhDzeroDecay=new TH1F("fhDzeroDecay","Dzero Decay channels",14,-0.5,13.5);
+  fhDzeroDecay->GetXaxis()->SetBinLabel(1,"All D0");
+  fhDzeroDecay->GetXaxis()->SetBinLabel(2,"0 prong");
+  fhDzeroDecay->GetXaxis()->SetBinLabel(3,"1 prong");
+  fhDzeroDecay->GetXaxis()->SetBinLabel(4,"2 prong");
+  fhDzeroDecay->GetXaxis()->SetBinLabel(5,"3 prong");
+  fhDzeroDecay->GetXaxis()->SetBinLabel(6,"4 prong");
+  fhDzeroDecay->GetXaxis()->SetBinLabel(7,"K pi (3.88)");
+  fhDzeroDecay->GetXaxis()->SetBinLabel(8,"K pi pi0 (13.9)");
+  fhDzeroDecay->GetXaxis()->SetBinLabel(9,"K pi pi pi (8.09)");
+  fhDzeroDecay->GetXaxis()->SetBinLabel(10,"e K nu (3.55)");
+  fhDzeroDecay->GetXaxis()->SetBinLabel(11,"mu K nu (3.31)");
+  fhDzeroDecay->GetXaxis()->SetBinLabel(12,"e X (6.49)");
 
+
+  fhDplusDecay=new TH1F("fhDplusDecay","Dplus Decay channels",14,-0.5,13.5);
+  fhDplusDecay->GetXaxis()->SetBinLabel(1,"All D+");
+  fhDplusDecay->GetXaxis()->SetBinLabel(2,"0 prong");
+  fhDplusDecay->GetXaxis()->SetBinLabel(3,"1 prong");
+  fhDplusDecay->GetXaxis()->SetBinLabel(4,"2 prong");
+  fhDplusDecay->GetXaxis()->SetBinLabel(5,"3 prong");
+  fhDplusDecay->GetXaxis()->SetBinLabel(6,"4 prong");
+  fhDplusDecay->GetXaxis()->SetBinLabel(7,"K pi pi (9.4)");
+  fhDplusDecay->GetXaxis()->SetBinLabel(8,"K0s pi pi0 (6.9)");
+  fhDplusDecay->GetXaxis()->SetBinLabel(9,"K pi pi pi0 (6.08)");
+  fhDplusDecay->GetXaxis()->SetBinLabel(10,"e K0bar nu (8.83)");
+  fhDplusDecay->GetXaxis()->SetBinLabel(11,"mu K0bar nu (9.4)");
+  fhDplusDecay->GetXaxis()->SetBinLabel(12,"e X (16.07");
+
+  fhLambdaCDecay=new TH1F("fhLambdaCDecay","LambdaC Decay channels",10,-0.5,9.5);
+  fhLambdaCDecay->GetXaxis()->SetBinLabel(1,"All LambdaC");
+  fhLambdaCDecay->GetXaxis()->SetBinLabel(2,"p K0s");
+  fhLambdaCDecay->GetXaxis()->SetBinLabel(3,"p K pi");
+
+  fhAllBDecay=new TH1F("fhAllBDecay","All bhadron (also LambdaB) Decay channels",10,-0.5,9.5);
+  fhAllBDecay->GetXaxis()->SetBinLabel(1,"All b-hadrons");
+  fhAllBDecay->GetXaxis()->SetBinLabel(2,"D0bar X (59.6)");
+  fhAllBDecay->GetXaxis()->SetBinLabel(3,"D0bar D0 X (5.1) ");
+  fhAllBDecay->GetXaxis()->SetBinLabel(4,"D+- D0 X (2.7)");
+  fhAllBDecay->GetXaxis()->SetBinLabel(5,"D- X (22.7)");
+  fhAllBDecay->GetXaxis()->SetBinLabel(6,"J/Psi X (1.16)");
+
+
+  
   Int_t nbinsCorrMChadron[8]={6,20,20,20,50,63,20,7};
   Double_t binlowCorrMChadron[8]={-1.5,0.,-1.,0.,-5.,-0.5*TMath::Pi(),-2,-1.5};
   Double_t binupCorrMChadron[8]={4.5,20.,1.,2.,5.,1.5*TMath::Pi(),2.,5.5};
@@ -202,6 +506,12 @@ void AliAnalysisTaskSEmcCorr::UserCreateOutputObjects(){
   PostData(6,fhMCtrigPart);
   PostData(7,fhMChadroncorrel);
   PostData(8,fhMChadrontrigPart);
+  PostData(9,fhDzeroDecay);
+  PostData(10,fhDplusDecay);
+  PostData(11,fhLambdaCDecay);
+  PostData(12,fhAllBDecay);
+
+
 }
 
 
@@ -241,7 +551,7 @@ void AliAnalysisTaskSEmcCorr::UserExec(Option_t */*option*/){
       
     }
   }
-
+  
 
   TClonesArray *arrayMC=0x0;
   AliAODMCHeader *aodmcHeader=0x0;
@@ -251,8 +561,14 @@ void AliAnalysisTaskSEmcCorr::UserExec(Option_t */*option*/){
   if(fReadMC){
     //    aod->GetList()->Print();
     // load MC particles
-    arrayMC = 
-      (TClonesArray*)aod->GetList()->At(23);//FindObject("mcparticles");
+    if(fFastSimul){
+      arrayMC = 
+	(TClonesArray*)aod->GetList()->At(23);//FindObject("mcparticles");
+    }
+    else{
+      arrayMC = 
+	(TClonesArray*)aod->GetList()->FindObject("mcparticles");
+    }
     if(!arrayMC) {
       Printf("AliAnalysisTaskSEmcCorr::UserExec: MC particles branch not found!\n");
       fNentries->Fill(2);
@@ -264,88 +580,98 @@ void AliAnalysisTaskSEmcCorr::UserExec(Option_t */*option*/){
       (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
     if(!aodmcHeader) {
       Printf("AliAnalysisTaskSEmcCorr::UserExec: MC header branch not found!\n");
-            fNentries->Fill(3);
+      fNentries->Fill(3);
       PostData(1,fNentries);
       return;
+    }
+    
+    if(!(fGeneratorString.IsNull())){
+      TString strGenTitle=((AliGenEventHeader*)aodmcHeader->GetCocktailHeader(0))->GetTitle();
+      // Printf("Gen Title: %s",strGenTitle.Data());
+      if(!fGeneratorString.Contains(strGenTitle.Data())){
+	//	Printf("Event rejected from generator title");
+	return;
+      }
     }
     fNentries->Fill(4);
     //    printf("N MC entries: %d \n",arrayMC->GetEntriesFast());
     // MC primary vertex
     aodmcHeader->GetVertex(vtxTrue);
-
+    
+    
     // FILL HISTOS FOR D0 mesons, c quarks and D0 from B properties
-    SelectAssociatedParticles(arrayMC);
+    if(fDoHFCorrelations)      SelectAssociatedParticles(arrayMC);
     for(Int_t jp=0;jp<arrayMC->GetEntriesFast();jp++){
-
       AliAODMCParticle *part=(AliAODMCParticle*)arrayMC->At(jp);
       Int_t pdg=TMath::Abs(part->GetPdgCode());
-
-      if(pdg==421||pdg==411||pdg==413){
-
-	if(TMath::Abs(part->Y())>fYrangeTrig)continue;
-	if(TMath::Abs(part->Pt())<fminDpt)continue;
-	FillSkipParticleArray(part,arrayMC,jp);
-	FillCorrelationPlots(part,arrayMC);
-	
-
+      if(fDoHFCorrelations){	
+	if(pdg==421||pdg==411||pdg==413){
+	  
+	  if(TMath::Abs(part->Y())>fYrangeTrig)continue;
+	  if(TMath::Abs(part->Pt())<fminDpt)continue;
+	  FillSkipParticleArray(part,arrayMC,jp);
+	  FillCorrelationPlots(part,arrayMC);
+	}
+	else if(pdg==11){	  
+	  if(TMath::Abs(part->Eta())>fEtarangeEleTrig)continue;
+	  if(TMath::Abs(part->Pt())<fminDpt)continue;
+	  FillSkipParticleArray(part,arrayMC,jp);
+	  FillCorrelationPlots(part,arrayMC);	
+	}       
       }
-      else if(pdg==11){
-
-	if(TMath::Abs(part->Eta())>fEtarangeEleTrig)continue;
-	if(TMath::Abs(part->Pt())<fminDpt)continue;
-	FillSkipParticleArray(part,arrayMC,jp);
-	FillCorrelationPlots(part,arrayMC);
-
-
-      }       
-
-      // NOW STUDY OF N-PRONGS
-      if(pdg==421){
-	Bool_t semilept=kFALSE;
-	Int_t nprongsD0=0;
-	Int_t nprongsD0charged=0;
-
-	Int_t lab1=part->GetDaughter(0);
-	Int_t lab2=part->GetDaughter(1);
-	if(lab1>=0&&lab2>=0){
-	  for(Int_t jd=lab1;jd<=lab2;jd++){
-	    AliAODMCParticle *d=(AliAODMCParticle*)arrayMC->At(jd);
-	    Int_t pdgd=TMath::Abs(d->GetPdgCode());
-	    if(pdgd>=11&&pdgd<=16){
-	      semilept=kTRUE;	   
-	      break;
-	    }
-	    if(pdgd==211||pdgd==111||pdgd==321||pdgd==311||pdgd==310||pdgd==130){
-	      nprongsD0++;
-	    }
-	    if(pdgd==211||pdgd==321){
-	      nprongsD0charged++;
-	    }	    
-	    else{	    
-	      Int_t lab1d=d->GetDaughter(0);
-	      Int_t lab2d=d->GetDaughter(1);
-	      if(lab1d>=0&&lab2d>=0){
-		for(Int_t jdd=lab1d;jdd<=lab2d;jdd++){
-		  AliAODMCParticle *dd=(AliAODMCParticle*)arrayMC->At(jdd);
-		  Int_t pdgdd=TMath::Abs(dd->GetPdgCode());
-		  if(pdgdd==211||pdgdd==111||pdgdd==321||pdgdd==311||pdgdd==310||pdgdd==130){
-		    nprongsD0++;
+      if(fCheckDecay){
+	CheckDzeroChannels(part,arrayMC);
+	CheckDplusChannels(part,arrayMC);
+	//	  CheckLambdaChannels(part,arrayMC);
+	//	  CheckBallChannels(part,arrayMC);
+	  
+	// NOW STUDY OF N-PRONGS (OLD PART OF THE TASK)
+	if(pdg==421){
+	  Bool_t semilept=kFALSE;
+	  Int_t nprongsD0=0;
+	  Int_t nprongsD0charged=0;
+	  
+	  Int_t lab1=part->GetDaughter(0);
+	  Int_t lab2=part->GetDaughter(1);
+	  if(lab1>=0&&lab2>=0){
+	    for(Int_t jd=lab1;jd<=lab2;jd++){
+	      AliAODMCParticle *d=(AliAODMCParticle*)arrayMC->At(jd);
+	      Int_t pdgd=TMath::Abs(d->GetPdgCode());
+	      if(pdgd>=11&&pdgd<=16){
+		semilept=kTRUE;	   
+		break;
+	      }
+	      if(pdgd==211||pdgd==111||pdgd==321||pdgd==311||pdgd==310||pdgd==130){
+		nprongsD0++;
+	      }
+	      if(pdgd==211||pdgd==321){
+		nprongsD0charged++;
+	      }	    
+	      else{	    
+		Int_t lab1d=d->GetDaughter(0);
+		Int_t lab2d=d->GetDaughter(1);
+		if(lab1d>=0&&lab2d>=0){
+		  for(Int_t jdd=lab1d;jdd<=lab2d;jdd++){
+		    AliAODMCParticle *dd=(AliAODMCParticle*)arrayMC->At(jdd);
+		    Int_t pdgdd=TMath::Abs(dd->GetPdgCode());
+		    if(pdgdd==211||pdgdd==111||pdgdd==321||pdgdd==311||pdgdd==310||pdgdd==130){
+		      nprongsD0++;
+		    }
+		    if(pdgd==211||pdgd==321){
+		      nprongsD0charged++;
+		    } 
 		  }
-		  if(pdgd==211||pdgd==321){
-		    nprongsD0charged++;
-		  } 
 		}
 	      }
 	    }
+	  }         
+	  if(!semilept){
+	    fhNprongsD0->Fill(nprongsD0);
+	    fhNprongsD0chargedOnly->Fill(nprongsD0charged);
+	    fhNprongsD0chargedRef->Fill(nprongsD0charged);
 	  }
-	}         
-	if(!semilept){
-	  fhNprongsD0->Fill(nprongsD0);
-	  fhNprongsD0chargedOnly->Fill(nprongsD0charged);
-	  fhNprongsD0chargedRef->Fill(nprongsD0charged);
 	}
       }
-
     }
     
     if(fDoHadronHadron){
@@ -374,6 +700,10 @@ void AliAnalysisTaskSEmcCorr::UserExec(Option_t */*option*/){
   PostData(6,fhMCtrigPart);
   PostData(7,fhMChadroncorrel);
   PostData(8,fhMChadrontrigPart);
+  PostData(9,fhDzeroDecay);
+  PostData(10,fhDplusDecay);
+  PostData(11,fhLambdaCDecay);
+  PostData(12,fhAllBDecay);
 }
 
 
@@ -456,6 +786,9 @@ void AliAnalysisTaskSEmcCorr::SelectAssociatedParticles(TClonesArray *arrayMC){
       }
       fArrayAssoc->AddAt(jAss,fLastAss);
       fLastAss++;
+      if(fLastAss==fArrayAssoc->GetSize()-1){
+	fArrayAssoc->Set(fArrayAssoc->GetSize()+200);
+      }
     }
   }  
   //  printf("n ass part: %d\n",fLastAss++);
@@ -509,13 +842,19 @@ void AliAnalysisTaskSEmcCorr::FillCorrelationPlots(AliAODMCParticle *part,TClone
 	}
       }
       labmum=moth->GetMother();
-      moth=(AliAODMCParticle*)arrayMC->At(labmum);
-      pdgmum=TMath::Abs(moth->GetPdgCode());
+      if(labmum>=0){
+	moth=(AliAODMCParticle*)arrayMC->At(labmum);
+	pdgmum=TMath::Abs(moth->GetPdgCode());
+      }
+      else pdgmum=-1;
     }
     else if(pdgmum==423){// D*0 -> go to the mother
       labmum=moth->GetMother();
-      moth=(AliAODMCParticle*)arrayMC->At(labmum);
-      pdgmum=TMath::Abs(moth->GetPdgCode());
+      if(labmum>=0){
+	moth=(AliAODMCParticle*)arrayMC->At(labmum);
+	pdgmum=TMath::Abs(moth->GetPdgCode());
+      }
+      else pdgmum=-1;
     }
     if(pdgmum==5||(500<pdgmum&&pdgmum<600)||(5000<pdgmum&&pdgmum<6000)){
       pdgTrig*=-1;
