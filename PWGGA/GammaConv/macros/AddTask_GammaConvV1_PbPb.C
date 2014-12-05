@@ -908,6 +908,12 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
 		eventCutArray[ 2] = "5340001"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
 		eventCutArray[ 3] = "5450001"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
 		eventCutArray[ 4] = "5560001"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%	
+	} else if ( trainConfig == 133){ // cleaner cuts
+		eventCutArray[ 0] = "5080001"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // no phi cut
+		eventCutArray[ 1] = "5080001"; photonCutArray[ 1] = "002111092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // oroc phi cut
+		eventCutArray[ 2] = "5080001"; photonCutArray[ 2] = "002022092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // EMCal phi cut
+		eventCutArray[ 3] = "5080001"; photonCutArray[ 3] = "002033092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // PHOS phi cut
+		eventCutArray[ 4] = "5080001"; photonCutArray[ 4] = "002223092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // inclusion phi
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
