@@ -107,7 +107,7 @@ def traverse_ast(cursor, recursion=0):
           if token.kind == clang.cindex.TokenKind.PUNCTUATION and token.spelling == '{':
             pass
 
-          elif token.kind == clang.cindex.TokenKind.COMMENT and (last_comment_line == -1 or line_start == last_comment_line+1):
+          elif token.kind == clang.cindex.TokenKind.COMMENT and (last_comment_line == -1 or (line_start == last_comment_line+1 and line_end-line_start == 0)):
             #print Colt("%s  %s:%s = %s" % (indent, ckind, tkind, token.spelling)).green()
             last_comment_line = line_end
             new_comment = refactor_comment(token.spelling)
