@@ -112,9 +112,11 @@ class AliVertexingHFUtils : public TObject{
   static Int_t CheckDplusDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckDplusDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
   static Int_t CheckDplusKKpiDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckDplusK0spiDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckDsDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckDsDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
-  static Int_t CheckDstarDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckDsK0sKDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
+   static Int_t CheckDstarDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckDstarDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
   static Int_t CheckLcpKpiDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckLcV0bachelorDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
