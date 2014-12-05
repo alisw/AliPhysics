@@ -1478,11 +1478,11 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidates(AliAODConversionPho
 	if(fIsFromMBHeader){
 		hESDTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
 		if (fDoPhotonQA > 0){
-                   hESDTrueConvGammaEta[fiCut]->Fill(TruePhotonCandidate->Eta());
-                   hESDTrueConvGammaR[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius());
-                   hESDTrueConvGammaRMC[fiCut]->Fill(posDaughter->R());
-                   hESDTrueConvGammaPtMC[fiCut]->Fill(Photon->Pt());
-                }
+			hESDTrueConvGammaEta[fiCut]->Fill(TruePhotonCandidate->Eta());
+			hESDTrueConvGammaR[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius());
+			hESDTrueConvGammaRMC[fiCut]->Fill(posDaughter->R());
+			hESDTrueConvGammaPtMC[fiCut]->Fill(Photon->Pt());
+		}
 
 	}
 	hESDTrueGammaPsiPairDeltaPhi[fiCut]->Fill(deltaPhi,TruePhotonCandidate->GetPsiPair());  
@@ -1499,20 +1499,19 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidates(AliAODConversionPho
 		if(fIsFromMBHeader){
 			iPhotonMCInfo = 2;
 			hESDTrueSecondaryConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-			if(fMCStack->Particle(Photon->GetMother(0))->GetMother(0) > -1 &&
-				fMCStack->Particle(fMCStack->Particle(Photon->GetMother(0))->GetMother(0))->GetPdgCode() == 3122){
-				hESDTrueSecondaryConvGammaFromXFromLambdaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-				iPhotonMCInfo = 5;
-			}
-			if(fMCStack->Particle(Photon->GetMother(0))->GetMother(0) > -1 &&
-				fMCStack->Particle(fMCStack->Particle(Photon->GetMother(0))->GetMother(0))->GetPdgCode() == 310){
-				hESDTrueSecondaryConvGammaFromXFromK0sPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-				iPhotonMCInfo = 4;
-			}
-			if(fMCStack->Particle(Photon->GetMother(0))->GetMother(0) > -1 &&
-				fMCStack->Particle(fMCStack->Particle(Photon->GetMother(0))->GetMother(0))->GetPdgCode() == 221){
-				iPhotonMCInfo = 3;
-			}
+			if(fMCStack->Particle(Photon->GetMother(0))->GetMother(0) > -1){
+				if ( fMCStack->Particle(fMCStack->Particle(Photon->GetMother(0))->GetMother(0))->GetPdgCode() == 3122){
+					hESDTrueSecondaryConvGammaFromXFromLambdaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+					iPhotonMCInfo = 5;
+				}
+				if (fMCStack->Particle(fMCStack->Particle(Photon->GetMother(0))->GetMother(0))->GetPdgCode() == 310){
+					hESDTrueSecondaryConvGammaFromXFromK0sPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+					iPhotonMCInfo = 4;
+				}
+				if (fMCStack->Particle(fMCStack->Particle(Photon->GetMother(0))->GetMother(0))->GetPdgCode() == 221){
+					iPhotonMCInfo = 3;
+				}
+		}	
 		}
 	}
 }
@@ -1919,7 +1918,7 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
 							if (fInvMass > 0.08 && fInvMass < 0.2) tESDMesonsInvMassPtDcazMinDcazMaxFlag[fiCut]->Fill();
 							if ((fInvMass > 0.45 && fInvMass < 0.6) &&  (fPt > 0.999 && fPt < 20.) )tESDMesonsInvMassPtDcazMinDcazMaxFlag[fiCut]->Fill();
 						} else if (fPt > 0.299 && fPt < 20. )  {
-							if ( (fInvMass > 0.08 && fInvMass < 0.2) || (fInvMass > 0.45 && fInvMass < 0.6)) tESDMesonsInvMassPtDcazMinDcazMaxFlag[fiCut]->Fill();
+							if ( (fInvMass > 0.08 && fInvMass < 0.6) ) tESDMesonsInvMassPtDcazMinDcazMaxFlag[fiCut]->Fill();
 						}   
 					}
 				}
