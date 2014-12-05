@@ -265,16 +265,16 @@ void AliHFCorrelationFDsubtraction::SubtractFeedDown(TH1D *hFDtempl){
 
   TH1D *hData=(TH1D*)fhDataUncorrected->DrawCopy();
   hData->SetTitle("Uncorrected");
-  hData->SetYTitle("#frac{1}{N_{trig}}#frac{dN}{d#Delta#phi} (rad^{-1})");
-  hData->SetXTitle("#phi_{ass}-#phi_{trig} (rad)");
+  hData->SetYTitle("#frac{1}{N_{trig}}#frac{dN}{d#Delta#varphi} (rad^{-1})");
+  hData->SetXTitle("#varphi_{ass}-#varphi_{trig} (rad)");
   hData->SetMarkerStyle(25);
   hData->SetMarkerColor(kBlack);
   hData->SetMarkerSize(1);
   hData->SetLineColor(kBlack);
 
   fhDataCorrected[fCountTempl*3]->SetLineColor(kRed);
-  fhDataCorrected[fCountTempl*3]->SetYTitle("#frac{1}{N_{trig}}#frac{dN}{d#Delta#phi} (rad^{-1})");
-  fhDataCorrected[fCountTempl*3]->SetXTitle("#phi_{ass}-#phi_{trig} (rad)");
+  fhDataCorrected[fCountTempl*3]->SetYTitle("#frac{1}{N_{trig}}#frac{dN}{d#Delta#varphi} (rad^{-1})");
+  fhDataCorrected[fCountTempl*3]->SetXTitle("#varphi_{ass}-#varphi_{trig} (rad)");
   fhDataCorrected[fCountTempl*3]->SetLineWidth(2);
   fhDataCorrected[fCountTempl*3]->SetMarkerColor(kRed);
   fhDataCorrected[fCountTempl*3]->SetMarkerStyle(21);
@@ -365,7 +365,10 @@ TH1D* AliHFCorrelationFDsubtraction::ReflectHisto(TH1D *h,Double_t scale){
     if(x>0&&x<TMath::Pi())j2=h2->FindBin(x);
     else if(x<0)j2=h2->FindBin(-1.*x);
     else if(x>TMath::Pi())j2=h2->FindBin(2.*TMath::Pi()-x);
-    else printf("Point %d excluded \n",j);
+    else {
+      printf("Point %d excluded \n",j);
+      continue;
+    }
     Double_t y=h2->GetBinContent(j2);
     Double_t ey=h2->GetBinError(j2);
     h2->SetBinContent(j2,scale*(y+y0));
@@ -398,7 +401,10 @@ TH1D* AliHFCorrelationFDsubtraction::DuplicateHistoTo2piRange(TH1D *h,Double_t s
     if(x>0&&x<TMath::Pi())j2=h->FindBin(x);
     else if(x<0)j2=h->FindBin(-1.*x);
     else if(x>TMath::Pi())j2=h->FindBin(2.*TMath::Pi()-x);
-    else printf("Point %d excluded \n",j);
+    else {
+      printf("Point %d excluded \n",j);
+      continue;
+    }
     Double_t y=h->GetBinContent(j2);
     Double_t ey=h->GetBinError(j2);
     h2->SetBinContent(j,y*scale);
@@ -466,7 +472,7 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMin(){// Method to extrac
 	Double_t xmin=h->GetBinLowEdge(j-1);
 	f->SetParameter(0,h->GetBinContent(j));
 	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(j)-h->GetBinContent(j-1))/(h->GetBinCenter(j+1)-h->GetBinCenter(j-1)));
-	h->Fit(f,"RLEM","N",xmin,xmax);
+	h->Fit(f,"REM","N",xmin,xmax);
 	hOut->SetBinContent(j,f->Eval(hOut->GetBinCenter(j)));
       }
       else if(j==2){
@@ -618,7 +624,7 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMax(){
 	Double_t xmin=h->GetBinLowEdge(j-1);
 	f->SetParameter(0,h->GetBinContent(j));
 	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(j)-h->GetBinContent(j-1))/(h->GetBinCenter(j+1)-h->GetBinCenter(j-1)));
-	h->Fit(f,"RLEM","N",xmin,xmax);
+	h->Fit(f,"REM","N",xmin,xmax);
 	hOut->SetBinContent(j,f->Eval(hOut->GetBinCenter(j)));
       }
       else if(j==2){
@@ -1020,16 +1026,16 @@ void AliHFCorrelationFDsubtraction::CalculateEnvelope(){
 //   cCompare->cd();
 //   hData->Draw();
 //   hData->SetTitle("Uncorrected");
-//   hData->SetYTitle("#frac{1}{N_{trig}}#frac{dN}{d#Delta#phi} (rad^{-1})");
-//   hData->SetXTitle("#phi_{ass}-#phi_{trig} (rad)");
+//   hData->SetYTitle("#frac{1}{N_{trig}}#frac{dN}{d#Delta#varphi} (rad^{-1})");
+//   hData->SetXTitle("#varphi_{ass}-#varphi_{trig} (rad)");
 //   hData->SetMarkerStyle(25);
 //   hData->SetMarkerColor(kBlack);
 //   hData->SetMarkerSize(1);
 //   hData->SetLineColor(kBlack);
 
 //   hDataCentr->SetLineColor(kRed);
-//   hDataCentr->SetYTitle("#frac{1}{N_{trig}}#frac{dN}{d#Delta#phi} (rad^{-1})");
-//   hDataCentr->SetXTitle("#phi_{ass}-#phi_{trig} (rad)");
+//   hDataCentr->SetYTitle("#frac{1}{N_{trig}}#frac{dN}{d#Delta#varphi} (rad^{-1})");
+//   hDataCentr->SetXTitle("#varphi_{ass}-#varphi_{trig} (rad)");
 //   hDataCentr->SetLineWidth(2);
 //   hDataCentr->SetMarkerColor(kRed);
 //   hDataCentr->SetMarkerStyle(21);
