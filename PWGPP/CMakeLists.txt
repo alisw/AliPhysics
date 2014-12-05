@@ -15,6 +15,7 @@
 
 # Libraries from subdirectories
 add_subdirectory(pid)
+add_subdirectory(EVCHAR)
 
 #Module
 set (MODULE PWGPP)
