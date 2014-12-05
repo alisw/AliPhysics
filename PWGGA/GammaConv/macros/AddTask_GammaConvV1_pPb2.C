@@ -48,7 +48,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t trainConfig = 1,  //change different set o
 	}
 	
 	//=========  Set Cutnumber for V0Reader ================================
-	TString cutnumberPhoton = "060084001001500000000";
+	TString cutnumberPhoton = "060000084001001500000000";
 	TString cutnumberEvent = "8000000";
 	Bool_t doEtaShift = kFALSE;
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
@@ -120,29 +120,29 @@ void AddTask_GammaConvV1_pPb2(  Int_t trainConfig = 1,  //change different set o
 	TString stringShift = "";
 	
 	if(trainConfig == 1){
-		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "002093172003290000000"; mesonCutArray[ 0] = "01621035009000"; 
+		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "002000093172003290000000"; mesonCutArray[ 0] = "01621035009000"; 
 	} else if (trainConfig == 2) {
-		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "002092170008260400000"; mesonCutArray[ 0] = "01621035009000";
+		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "002000092170008260400000"; mesonCutArray[ 0] = "01621035009000";
 	} else if (trainConfig == 3) {   
-		eventCutArray[ 0] = "8020011"; photonCutArray[ 0] = "002092170008260400000"; mesonCutArray[ 0] = "01621035009000";      
+		eventCutArray[ 0] = "8020011"; photonCutArray[ 0] = "002000092170008260400000"; mesonCutArray[ 0] = "01621035009000";      
 	} else if (trainConfig == 4) {   
-		eventCutArray[ 0] = "8240011"; photonCutArray[ 0] = "002092170008260400000"; mesonCutArray[ 0] = "01621035009000";         
+		eventCutArray[ 0] = "8240011"; photonCutArray[ 0] = "002000092170008260400000"; mesonCutArray[ 0] = "01621035009000";         
 	} else if (trainConfig == 5) {   
-		eventCutArray[ 0] = "8460011"; photonCutArray[ 0] = "002092170008260400000"; mesonCutArray[ 0] = "01621035009000";         
+		eventCutArray[ 0] = "8460011"; photonCutArray[ 0] = "002000092170008260400000"; mesonCutArray[ 0] = "01621035009000";         
 	} else if (trainConfig == 6) {   
-		eventCutArray[ 0] = "8680011"; photonCutArray[ 0] = "002092170008260400000"; mesonCutArray[ 0] = "01621035009000";      
+		eventCutArray[ 0] = "8680011"; photonCutArray[ 0] = "002000092170008260400000"; mesonCutArray[ 0] = "01621035009000";      
 	} else if (trainConfig == 7) {   
-		eventCutArray[ 0] = "8600011"; photonCutArray[ 0] = "002092170008260400000"; mesonCutArray[ 0] = "01621035009000";         
+		eventCutArray[ 0] = "8600011"; photonCutArray[ 0] = "002000092170008260400000"; mesonCutArray[ 0] = "01621035009000";         
 	} else if (trainConfig == 8) {   
-	    eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "009092170008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 7.5cm   
+	    eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "009000092170008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 7.5cm   
 	} else if (trainConfig == 9) {   
-		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "005092170008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 10cm     
+		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "005000092170008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 10cm     
 	} else if (trainConfig == 10) {   
-		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "008092170008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 12.5cm    
+		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "008000092170008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 12.5cm    
 	} else if (trainConfig == 11) {   
-		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "006092170008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 20cm    
+		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "006000092170008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 20cm    
 	} else if (trainConfig == 12) {   
-		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "007092170008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 35cm    
+		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "007000092170008260400000"; mesonCutArray[ 0] = "01621035009000";    //RCut 35cm    
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
