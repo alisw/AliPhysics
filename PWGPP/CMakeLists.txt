@@ -16,6 +16,7 @@
 # Libraries from subdirectories
 add_subdirectory(pid)
 add_subdirectory(EVCHAR)
+add_subdirectory(MUON)
 
 #Module
 set (MODULE PWGPP)
@@ -213,6 +214,11 @@ set ( SRCS16
   EvTrkSelection/AliCFSingleTrackEfficiencyTask.cxx
   EvTrkSelection/AliSingleTrackEffCuts.cxx
   )
+#file ( GLOB SRCS17 "TRD/TRDPID/*.cxx" )
+set ( SRCS17  
+  TRD/TRDPID/AliTRDPIDTree.cxx
+  TRD/TRDPID/AliTRDPIDmatching.cxx
+  )  
 
 list ( APPEND SRCS 
   ${SRCS1} 
@@ -231,6 +237,7 @@ list ( APPEND SRCS
   ${SRCS14}
   ${SRCS15}
   ${SRCS16}
+  ${SRCS17}
   )
 
 # Headers from sources
@@ -293,9 +300,14 @@ install ( DIRECTORY TPC/macros
 	  PATTERN ".C")
 install ( DIRECTORY TRD
 	  DESTINATION PWGPP)
+install ( FILES TRD/TRDPID/macros/AddTaskTRDPIDTree.C
+                TRD/TRDPID/macros/AddTaskTRDPIDmatching.C
+          DESTINATION PWGPP/TRD)
 install ( FILES ZDC/AddTaskZDCQA.C
 	  DESTINATION PWGPP/ZDC)
 install ( FILES PilotTrain/AddTaskMuonQA.C
   	  DESTINATION PWGPP/PilotTrain/ )
 install ( FILES VZERO/AddTaskVZEROPbPb.C
           DESTINATION PWGPP/VZERO/ )
+
+message(STATUS "PWGPP enabled")
