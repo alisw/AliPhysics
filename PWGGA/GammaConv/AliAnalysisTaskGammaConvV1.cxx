@@ -1511,7 +1511,7 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidates(AliAODConversionPho
 				if (fMCStack->Particle(fMCStack->Particle(Photon->GetMother(0))->GetMother(0))->GetPdgCode() == 221){
 					iPhotonMCInfo = 3;
 				}
-		}	
+			}	
 		}
 	}
 }
