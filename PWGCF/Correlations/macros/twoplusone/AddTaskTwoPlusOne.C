@@ -10,7 +10,10 @@ AliAnalysisTaskTwoPlusOne *AddTaskTwoPlusOne(const char* outputFileName = 0, Dou
   // Create the task and configure it.
   //===========================================================================
   TString combinedName;
-  combinedName.Form("%s_%s", containerName, suffix);
+  if(suffix!="")
+    combinedName.Form("%s_%s", containerName, suffix);
+  else
+    combinedName=containerName;
 
   AliAnalysisTaskTwoPlusOne* ana = new  AliAnalysisTaskTwoPlusOne(combinedName);
  

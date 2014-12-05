@@ -53,6 +53,7 @@ AliTwoPlusOneContainer::AliTwoPlusOneContainer(const char* name, const char* bin
   fPtAssocMin(0),
   fPtAssocMax(0),
   fAlpha(alpha),
+  fUseLeadingPt(1),
   fMergeCount(0)
 {
   // Constructor
@@ -192,6 +193,8 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
     Int_t triggerAway_entries = triggerAway->GetEntriesFast();
     AliVParticle* found_particle[triggerAway_entries];
 
+    Bool_t do_not_use_T1 = false;
+
     //have to fake the away side triggers for the 1+1 analysis
     if(is1plus1){
       found_particle[ind_found] = part;//in 1plus1 use first trigger particle also as pseudo second trigger particle
@@ -203,21 +206,27 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
 	AliVParticle* part2 = (AliVParticle*) triggerAway->UncheckedAt(j);
 
 	Double_t part2_pt = part2->Pt();
-	//check if pT of trigger 2 is within the trigger range
-	//also pt of trigger 2 needs to be smaller than the pt of trigger 1 (to have an ordering if both pt are close to each other)
-	if(part2_pt<fTriggerPt2Min || part2_pt>fTriggerPt2Max || part2_pt>part_pt)
+	//check if pT of trigger 2 has enough energy to be a trigger
+	//maximum energy is checked later after checking this particle may have to much energy for trigger 1 or 2
+	if(part2_pt<fTriggerPt2Min)
 	  continue;
-      
+
 	// don't use the same particle (is in any case impossible because the Delta phi angle will be 0)
 	if(part==part2){
 	  continue;
 	}
 	
 	Double_t dphi_triggers = part_phi-part2->Phi();
-	
 	if(dphi_triggers>1.5*TMath::Pi()) dphi_triggers -= TMath::TwoPi();
 	else if(dphi_triggers<-0.5*TMath::Pi()) dphi_triggers += TMath::TwoPi();
       
+	if(fUseLeadingPt && part2_pt>part_pt){
+	  if(TMath::Abs(dphi_triggers)<fAlpha){
+	    do_not_use_T1 = true;
+	    break;
+	  }
+	}
+
 	//if 2+1 analysis check if trigger particles have a delta phi = pi +/- alpha
 	if(!isBackgroundSame)
 	  dphi_triggers -= TMath::Pi();
@@ -234,11 +243,26 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
 	if(TMath::Abs(dphi_triggers)>fAlpha)
 	  continue;
 
+	//check if pT of trigger 2 is too high
+	if(part2_pt>fTriggerPt2Max || part2_pt>part_pt){
+	  //also pt of trigger 2 needs to be smaller than the pt of trigger 1 (to have an ordering if both pt are close to each other)
+	  if(fUseLeadingPt){
+	    do_not_use_T1 = true;
+	    break;
+	  }else
+	    continue;
+	}
+
 	found_particle[ind_found] = part2;
 	if(ind_max_found_pt==-1 || part2_pt>found_particle[ind_max_found_pt]->Pt()) ind_max_found_pt = ind_found;
 	ind_found++;
       }//end loop to search for the second trigger particle
     }
+
+    //if there is a particle with higher energy than T1 closer than alpha to T1, do not use this T1
+    //if there is a particle with higher energy than T1 or max(T2) within Delta phi = pi +/- alpha to T1, do not use this T1
+    if(do_not_use_T1)
+      continue;
 
     //if no second trigger particle was found continue to search for the next first trigger particle
     if(ind_found==0)
