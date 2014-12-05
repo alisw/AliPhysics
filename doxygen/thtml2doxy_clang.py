@@ -110,8 +110,11 @@ def traverse_ast(cursor, recursion=0):
           elif token.kind == clang.cindex.TokenKind.COMMENT and (last_comment_line == -1 or line_start == last_comment_line+1):
             #print Colt("%s  %s:%s = %s" % (indent, ckind, tkind, token.spelling)).green()
             last_comment_line = line_end
-            print Colt("%s  [%d-%d]" % (indent, line_start, line_end)).cyan(),
-            print Colt(token.spelling).yellow()
+            new_comment = refactor_comment(token.spelling)
+
+            for comment_line in new_comment:
+              print Colt("%s  [%d-%d]" % (indent, line_start, line_end)).green(),
+              print Colt(comment_line).cyan()
 
           else:
             expect_comment = False
@@ -124,37 +127,40 @@ def traverse_ast(cursor, recursion=0):
 
     print "%s%s(%s)" % (indent, kind, text)
 
-  # if cursor.kind == clang.cindex.CursorKind.CXX_METHOD:
-  #   # here we are inside the method
-  #   first_compound_stmt_found = False
-  #   expect_comment_block = False
-  #   print "%s ->->->->->->->->->->->->->->->->->->->->" % indent
-  #   for token in cursor.get_tokens():
-
-  #     print "%s %s::%s{%s}" % (indent, token.cursor.kind, token.kind, token.spelling)
-
-  #     # find the first "compound statement"
-  #     if token.cursor.kind == clang.cindex.CursorKind.COMPOUND_STMT:
-
-  #       if not first_compound_stmt_found:
-  #         # found first compound statement
-  #         print ">>>> EXPECTING COMMENT ANY TIME NOW"
-  #         first_compound_stmt_found = True
-  #         expect_comment_block = True
-
-  #     if expect_comment_block:
-  #       if token.kind == clang.cindex.TokenKind.COMMENT:
-  #         print "!!! [%s] %s" % (text, token.spelling)
-  #       elif token.kind == clang.cindex.TokenKind.PUNCTUATION and token.spelling == '{':
-  #         pass
-  #       else:
-  #         print "<<<< NOT EXPECTING COMMENT ANYMORE"
-  #         expect_comment_block = False
-
-  #   print "%s -<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<" % indent
-
   for child_cursor in cursor.get_children():
     traverse_ast(child_cursor, recursion+1)
+
+## Remove garbage from comments and convert special tags from THtml to Doxygen.
+#
+#  @param comment The original comment
+def refactor_comment(comment):
+
+  resingle = r'^/{2,}\s*(.*?)\s*(/{2,})?\s*$'
+  remulti_first = r'^/\*\s*(.*?)\s*\*?\s*$'
+  remulti_last = r'^\s*(.*?)\s*\*/$'
+
+  new_comment = comment.split('\n')
+
+  if len(new_comment) == 1:
+    msingle = re.search(resingle, comment)
+    if msingle:
+      new_comment[0] = msingle.group(1)
+
+  else:
+
+    for i in range(0, len(new_comment)):
+      if i == 0:
+        mmulti = re.search(remulti_first, new_comment[i])
+        if mmulti:
+          new_comment[i] = mmulti.group(1)
+      elif i == len(new_comment)-1:
+        mmulti = re.search(remulti_last, new_comment[i])
+        if mmulti:
+          new_comment[i] = mmulti.group(1)
+      else:
+        new_comment[i] = new_comment[i].strip()
+
+  return new_comment
 
 
 ## The main function.
