@@ -148,12 +148,6 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  //change different set o
 		eventCutArray[ 2] = "0000311"; photonCutArray[ 2] = "002093270008250400000"; clusterCutArray[2] = "10000043032030000"; mesonCutArray[2] = "01631031000000"; // 
 		eventCutArray[ 3] = "0000311"; photonCutArray[ 3] = "002093270008250400000"; clusterCutArray[3] = "10000044032030000"; mesonCutArray[3] = "01631031000000"; // 
 		eventCutArray[ 4] = "0000311"; photonCutArray[ 4] = "002093270008250400000"; clusterCutArray[4] = "10000045032030000"; mesonCutArray[4] = "01631031000000"; // 
-	} else if (trainConfig == 4){ // EMCAL track matching variations 
-		eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "002093270008250400000"; clusterCutArray[0] = "10000041032030000"; mesonCutArray[0] = "01631031000000"; // 
-		eventCutArray[ 1] = "0000311"; photonCutArray[ 1] = "002093270008250400000"; clusterCutArray[1] = "10000042032030000"; mesonCutArray[1] = "01631031000000"; // 
-		eventCutArray[ 2] = "0000311"; photonCutArray[ 2] = "002093270008250400000"; clusterCutArray[2] = "10000043032030000"; mesonCutArray[2] = "01631031000000"; // 
-		eventCutArray[ 3] = "0000311"; photonCutArray[ 3] = "002093270008250400000"; clusterCutArray[3] = "10000044032030000"; mesonCutArray[3] = "01631031000000"; // 
-		eventCutArray[ 4] = "0000311"; photonCutArray[ 4] = "002093270008250400000"; clusterCutArray[4] = "10000045032030000"; mesonCutArray[4] = "01631031000000"; // 
 	} else if (trainConfig == 5){ // PCM variations
 		eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "002092270008250400000"; clusterCutArray[0] = "10000042032030000"; mesonCutArray[0] = "01631031000000"; // dEdx e -3, 5
 		eventCutArray[ 1] = "0000311"; photonCutArray[ 1] = "002091270008250400000"; clusterCutArray[1] = "10000042032030000"; mesonCutArray[1] = "01631031000000"; // dEdx e -5, 5
