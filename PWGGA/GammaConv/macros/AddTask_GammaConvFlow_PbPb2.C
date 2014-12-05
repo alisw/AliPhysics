@@ -1,54 +1,15 @@
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
+// AddTaskGammaConvFlow_PbPb2 macro
+// Author: Andrea Dubla, Redmer A. Bertens, Friederike Bock
+//         Commented where necessary
+/////////////////////////////////////////////////////////////////////////////////////////////
+
 class AliAnalysisDataContainer;
 class AliFlowTrackCuts;
 class AliFlowTrackSimpleCuts;
 class AliFlowEventCuts;
 class AliFlowEventSimpleCuts;
-class AliAnalysisDataContainer;
-
-
-
-//===================from here Flow pakage================
-void AddSPmethod(char *name, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent,  bool shrink = false, bool debug, TString uniqueID,/*Bool_t VZERO_SP = kFALSE,*/  AliFlowTrackSimpleCuts* POIfilter, int trainConfig)
-{
-    // add sp task and invm filter tasks
-    if(debug) (bEP) ? cout << " ****** Reveived request for EP task ****** " << endl : cout << " ******* Switching to SP task ******* " << endl;
-    TString fileName = Form("GammaConvFlow_%i.root:SP_V0",trainConfig);
-    //    (bEP) ? fileName+=":EP_tpctof" : fileName+=":SP_tpctof";
-    //          if(etagap) {
-    //            fileName+="_SUBEVENTS";
-    //          if(debug) cout << "    --> Setting up subevent analysis <-- " << endl;
-    //    }
-    if(debug) cout << "    --> fileName " << fileName << endl;
-    TString myFolder = fileName;
-    if(debug) cout << "    --> myFolder " << myFolder << endl;
-    TString myNameSP;
-    //(bEP) ? myNameSP = Form("%sEPv%d%s", name, harmonic, Qvector): myNameSP = Form("%sSPv%d%s", name, harmonic, Qvector);
-    myNameSP = Form("%sSPv%d%s", name, harmonic, Qvector);
-    
-    if(debug) cout << " myNameSP " << myNameSP << endl;
-    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-    AliAnalysisDataContainer *flowEventOut = mgr->CreateContainer(Form("Filter_%s",myNameSP.Data()),AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
-    AliAnalysisTaskFilterFE *tskFilter = new AliAnalysisTaskFilterFE(Form("TaskFilter_%s", myNameSP.Data()), NULL, POIfilter);
-    //  tskFilter->SetSubeventEtaRange(minEtaA, maxEtaA, minEtaB, maxEtaB);
-    //if(VZERO_SP) tskFilter->SetSubeventEtaRange(-10, 0, 0, 10);
-    tskFilter->SetSubeventEtaRange(-10, -1, 1, 10);
-    mgr->AddTask(tskFilter);
-    mgr->ConnectInput(tskFilter, 0, flowEvent);
-    mgr->ConnectOutput(tskFilter, 1, flowEventOut);
-    AliAnalysisDataContainer *outSP = mgr->CreateContainer(myNameSP.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
-    AliAnalysisTaskScalarProduct *tskSP = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s", myNameSP.Data()), kFALSE);
-    tskSP->SetApplyCorrectionForNUA(kTRUE);
-    tskSP->SetHarmonic(harmonic);
-    tskSP->SetTotalQvector(Qvector);
-    // if (bEP) tskSP->SetBehaveAsEP();
-    if (shrink) tskSP->SetBookOnlyBasicCCH(kTRUE);
-    mgr->AddTask(tskSP);
-    mgr->ConnectInput(tskSP, 0, flowEventOut);
-    mgr->ConnectOutput(tskSP, 1, outSP);
-}
-//_____________________________________________________________________________
-
-
 
 void AddTask_GammaConvFlow_PbPb2(
                                TString uniqueID = "",
@@ -60,7 +21,7 @@ void AddTask_GammaConvFlow_PbPb2(
                                //TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
                                Bool_t doWeighting = kFALSE,  //enable Weighting
                                TString cutnumberAODBranch = "1000000060084000001500000",
-                               Bool_t shrinkSP = kTRUE,
+                               Bool_t BasicHistoSP = kFALSE,
                                Bool_t debug = kFALSE
                                ) {
     
@@ -159,13 +120,10 @@ void AddTask_GammaConvFlow_PbPb2(
     //========= Add task to the ANALYSIS manager =====
     //================================================
     AliAnalysisTaskGammaConvFlow *task=NULL;
-    task= new AliAnalysisTaskGammaConvFlow(Form("GammaConvV1_%i",trainConfig));
+    task= new AliAnalysisTaskGammaConvFlow(Form("GammaConvV1_%i_v%d",trainConfig,harmonic));
     task->SetIsHeavyIon(isHeavyIon);
     //task->SetIsMC(isMC);
     
-    
-//=====================from here call/book the flow package stuff==============
-    //set RP cuts for flow package analysis
     cutsRP = new AliFlowTrackCuts(Form("RFPcuts%s",uniqueID));
     if(!cutsRP) {
         if(debug) cout << " Fatal error: no RP cuts found, could be a library problem! " << endl;
@@ -174,30 +132,22 @@ void AddTask_GammaConvFlow_PbPb2(
     cutsRP = cutsRP->GetStandardVZEROOnlyTrackCuts(); // select vzero tracks
     cutsRP->SetVZEROgainEqualizationPerRing(kFALSE);
     cutsRP->SetApplyRecentering(kTRUE);
-    if(debug) cout << "    --> VZERO RP's " << cutsRP << endl;
     
     task->SetRPCuts(cutsRP);
     
     AliFlowTrackSimpleCuts *POIfilterVZERO = new AliFlowTrackSimpleCuts();
     POIfilterVZERO->SetEtaMin(-0.8);
     POIfilterVZERO->SetEtaMax(0.8);
-    //  POIfilterVZERO->SetMassMin(263731); POIfilterVZERO->SetMassMax(263733);
-    
+    POIfilterVZERO->SetMassMin(263731); POIfilterVZERO->SetMassMax(263733);
     
     if(debug) cout << " === RECEIVED REQUEST FOR FLOW ANALYSIS === " << endl;
     AliAnalysisDataContainer *flowEvent = mgr->CreateContainer(Form("FlowContainer_%s",uniqueID.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
     mgr->ConnectOutput(task, 2, flowEvent);
     if(debug) cout << "    --> Created IO containers " << flowEvent << endl;
-    
-    AddSPmethod(Form("SPVZEROQa_in_%s", uniqueID.Data()), "Qa", harmonic, flowEvent, shrinkSP, debug, uniqueID, POIfilterVZERO, trainConfig);
+    AddSPmethod(Form("SPVZEROQa_in_%s", uniqueID.Data()), "Qa", harmonic, flowEvent, debug,uniqueID, POIfilterVZERO, trainConfig,BasicHistoSP);
     if(debug) cout << "    --> Hanging SP Qa task ... succes!" << endl;
-    AddSPmethod(Form("SPVZEROQb_in_%s", uniqueID.Data()), "Qb", harmonic, flowEvent, shrinkSP, debug, uniqueID, POIfilterVZERO, trainConfig);
+    AddSPmethod(Form("SPVZEROQb_in_%s", uniqueID.Data()), "Qb", harmonic, flowEvent, debug,uniqueID, POIfilterVZERO, trainConfig,BasicHistoSP);
     if(debug) cout << "    --> Hanging SP Qb task ... succes!"<< endl;
-//================================END flow stuff===========================================
-    
-    
-    
-    
     
     
     // Cut Numbers to use in Analysis
@@ -330,9 +280,9 @@ void AddTask_GammaConvFlow_PbPb2(
     
     //connect containers
     AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer(Form("GammaConvV1_%i",trainConfig), TList::Class(),
+	mgr->CreateContainer(Form("GammaConvV1_%i_v%d",trainConfig,harmonic), TList::Class(),
                          AliAnalysisManager::kOutputContainer,Form("GammaConvFlow_%i.root",trainConfig));
-    
+        
     mgr->AddTask(task);
     mgr->ConnectInput(task,0,cinput);
     mgr->ConnectOutput(task,1,coutput);
@@ -340,6 +290,41 @@ void AddTask_GammaConvFlow_PbPb2(
     return;
     
 }
+
+//_____________________________________________________________________________
+void AddSPmethod(char *name, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, bool debug, TString uniqueID,  AliFlowTrackSimpleCuts* POIfilter,Int_t trainConfig, bool BasicHistoSP = kTRUE)
+{
+    // add sp task and invm filter tasks
+    if(debug)  cout << " ******* Switching to SP task ******* " << endl;
+    TString fileName = Form("GammaConvFlow_%i.root:SP_V0",trainConfig);
+    if(debug) cout << "    --> fileName " << fileName << endl;
+    TString myFolder = fileName;
+    if(debug) cout << "    --> myFolder " << myFolder << endl;
+    TString myNameSP;
+    myNameSP = Form("%sSPv%d%s", name, harmonic, Qvector);
+    if(debug) cout << " myNameSP " << myNameSP << endl;
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    AliAnalysisDataContainer *flowEventOut = mgr->CreateContainer(Form("Filter_%s",myNameSP.Data()),AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
+    AliAnalysisTaskFilterFE *tskFilter = new AliAnalysisTaskFilterFE(Form("TaskFilter_%s", myNameSP.Data()), NULL, POIfilter);
+   // tskFilter->SetSubeventEtaRange(minEtaA, maxEtaA, minEtaB, maxEtaB);
+    tskFilter->SetSubeventEtaRange(-10, -1, 1, 10);
+    mgr->AddTask(tskFilter);
+    mgr->ConnectInput(tskFilter, 0, flowEvent);
+    mgr->ConnectOutput(tskFilter, 1, flowEventOut);
+    AliAnalysisDataContainer *outSP = mgr->CreateContainer(myNameSP.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
+    AliAnalysisTaskScalarProduct *tskSP = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s", myNameSP.Data()), kFALSE);
+    tskSP->SetApplyCorrectionForNUA(kTRUE);
+    tskSP->SetHarmonic(harmonic);
+    tskSP->SetTotalQvector(Qvector);
+    //if (bEP) tskSP->SetBehaveAsEP();
+    tskSP->SetBookOnlyBasicCCH(BasicHistoSP);
+    mgr->AddTask(tskSP);
+    mgr->ConnectInput(tskSP, 0, flowEventOut);
+    mgr->ConnectOutput(tskSP, 1, outSP);
+}
+//_____________________________________________________________________________
+
+
 
 
 
