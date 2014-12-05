@@ -171,6 +171,9 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 		eventCutArray[ 2] = "8000001"; photonCutArray[ 2] = "002000093270028250400000"; clusterCutArray[2] = "10000042032000000"; mesonCutArray[2] = "01631031000000"; //no M02 cut
 		eventCutArray[ 3] = "8000001"; photonCutArray[ 3] = "002000093270028250400000"; clusterCutArray[3] = "10021042032030000"; mesonCutArray[3] = "01631031000000"; //only modules with TRD infront
 		eventCutArray[ 4] = "8000001"; photonCutArray[ 4] = "002000093270028250400000"; clusterCutArray[4] = "10013042032030000"; mesonCutArray[4] = "01631031000000"; //no modules with TRD infront		
+	} else if (trainConfig == 9){ //PCM restriction in acceptance 
+		eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "002022093270028250400000"; clusterCutArray[0] = "10000042032030000"; mesonCutArray[0] = "01631031000000"; // PCM photons pointing to EMCAL loose
+		eventCutArray[ 1] = "8000001"; photonCutArray[ 1] = "002044093270028250400000"; clusterCutArray[1] = "10000042032030000"; mesonCutArray[1] = "01631031000000"; // PCM photons pointing to EMCAL tight
 		
 	//************************************************ PHOS clusters **********************************************************	
 	} else if (trainConfig == 31) {	// min energy = 0.3 GeV/c

@@ -1897,7 +1897,7 @@ Bool_t AliConversionPhotonCuts::SetMinPhiSectorCut(Int_t minPhiCut) {
 		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
 		fMinPhiCut = 1.0; //PHOS
 		break;
-	case 5:
+	case 4:
 		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
 		fMinPhiCut = 3.4; //EMCal tight
 		break;

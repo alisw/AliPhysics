@@ -171,7 +171,9 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  //change different set o
 		eventCutArray[ 1] = "0000311"; photonCutArray[ 1] = "002000083270008250400000"; clusterCutArray[1] = "10000042032030000"; mesonCutArray[1] = "01631031000000"; // min TPC cl > 0.35
 		eventCutArray[ 2] = "0000311"; photonCutArray[ 2] = "002000093270008250400000"; clusterCutArray[2] = "10000042032030000"; mesonCutArray[2] = "01631061000000"; // alpha < 0.8
 		eventCutArray[ 3] = "0000311"; photonCutArray[ 3] = "002000093270008250400000"; clusterCutArray[3] = "10000042032030000"; mesonCutArray[3] = "01631051000000"; // alpha < 0.75
-
+	} else if (trainConfig == 9){ // PCM variations
+		eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "002022093270008250400000"; clusterCutArray[0] = "10000042032030000"; mesonCutArray[0] = "01631031000000"; // restrict acceptance to EMCAL loose
+		eventCutArray[ 1] = "0000311"; photonCutArray[ 1] = "002044093270008250400000"; clusterCutArray[1] = "10000042032030000"; mesonCutArray[1] = "01631031000000"; // restrict acceptance to EMCAL tight
 		// LHC13g	
 	} else if (trainConfig == 10){  // EMCAL clusters, EMCEGA triggers, track matching 0.035
 		eventCutArray[ 0] = "0008311"; photonCutArray[ 0] = "002000093270008250400000"; clusterCutArray[0] = "10000042032030000"; mesonCutArray[0] = "01631031000000"; // EMCEG1, 
