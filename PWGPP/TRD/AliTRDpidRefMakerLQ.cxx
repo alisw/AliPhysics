@@ -38,11 +38,11 @@
 #include <TCanvas.h>
 
 #include "AliLog.h"
-#include "../STAT/TKDPDF.h"
-#include "../STAT/TKDInterpolator.h"
+#include "TKDPDF.h"
+#include "TKDInterpolator.h"
 #include "AliTRDpidRefMakerLQ.h"
-#include "Cal/AliTRDCalPID.h"
-#include "Cal/AliTRDCalPIDLQ.h"
+#include "AliTRDCalPID.h"
+#include "AliTRDCalPIDLQ.h"
 #include "AliTRDseedV1.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDgeometry.h"

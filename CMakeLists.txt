@@ -254,6 +254,7 @@ add_subdirectory(PWGDQ)
 add_subdirectory(PWGHF)
 add_subdirectory(PWGJE)
 add_subdirectory(PWGLF)
+add_subdirectory(PWGPP)
 # Depends on PP - To fix depedencies
 add_subdirectory(PWGUD)
 

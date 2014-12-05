@@ -44,7 +44,7 @@
 #include "AliTRDseedV1.h"
 #include "AliTRDtrackV1.h"
 #include "AliTRDpidUtil.h"
-#include "Cal/AliTRDCalPID.h"
+#include "AliTRDCalPID.h"
 #include "info/AliTRDtrackInfo.h"
 #include "AliTRDinfoGen.h"
 #include "AliTRDefficiencyMC.h"
