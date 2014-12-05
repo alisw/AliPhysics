@@ -26,9 +26,12 @@ AliAnalysisTaskAODFilterBitQA::AliAnalysisTaskAODFilterBitQA(const char *name)
   : AliAnalysisTaskSE(name),
   fArrayMC(0x0),
   fListQA(0x0),
+  useCentrality(kFALSE),
   fillOnlySecondaries(kFALSE),
   fillHFVertexingTracks(kFALSE),
   fHFBranchName("D0toKpi"),
+  fBitIgnore1(-1),
+  fBitIgnore2(-1),
   fCentralityPercentileMin(0.),
   fCentralityPercentileMax(80.), 
   fPtMin(0),
@@ -167,16 +170,24 @@ Double_t AliAnalysisTaskAODFilterBitQA::IsEventAccepted(AliVEvent *event){
 	if(TMath::Abs(vertex->GetX()) < fVxMax) {
 	  if(TMath::Abs(vertex->GetY()) < fVyMax) {
 	    if(TMath::Abs(vertex->GetZ()) < fVzMax) {
+
+	      // get the reference multiplicty or centrality (if required)
+	      if(useCentrality){
 	      
-	      // get the reference multiplicty or centrality
-	      AliAODHeader *header = (AliAODHeader*) event->GetHeader();
-	      gCentrality = header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
-	      
-	      if((gCentrality > fCentralityPercentileMin) && (gCentrality < fCentralityPercentileMax)){
+		AliAODHeader *header = (AliAODHeader*) event->GetHeader();
+		gCentrality = header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
 		
-		return gCentrality;
-		
-	      }//centrality range
+		if((gCentrality > fCentralityPercentileMin) && (gCentrality < fCentralityPercentileMax)){		  
+		  return gCentrality;
+		}
+		else{
+		  return -1;
+		}//centrality range
+	      }//use centrality
+
+	      // if not using centrality/multiplicty, return 1
+	      return 1;
+
 	    }//Vz cut
 	  }//Vy cut
 	}//Vx cut

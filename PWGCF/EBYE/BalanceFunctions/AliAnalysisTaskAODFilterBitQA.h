@@ -34,6 +34,7 @@ class AliAnalysisTaskAODFilterBitQA : public AliAnalysisTaskSE {
   }
   
   void SetCentralityPercentileRange(Double_t min, Double_t max){
+    useCentrality            = kTRUE;
     fCentralityPercentileMin = min;
     fCentralityPercentileMax = max;
   }
@@ -60,6 +61,7 @@ class AliAnalysisTaskAODFilterBitQA : public AliAnalysisTaskSE {
 
   TList *fListQA;//output list for QA histograms
 
+  Bool_t useCentrality;// use centrality as event class estimator (default = OFF)
   Bool_t fillOnlySecondaries;//fill only secondary particles (only for MC running)
   Bool_t fillHFVertexingTracks;//fill HF vertexing tracks
 
