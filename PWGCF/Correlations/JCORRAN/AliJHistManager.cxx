@@ -622,20 +622,6 @@ bool AliJTH1::IsLoadMode(){
 }
 
 
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// AliJTH1Derived                                                       //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
-template< typename T>
-AliJTH1Derived<T>::AliJTH1Derived():
-    AliJTH1(), fPlayer(this)
-{
-}
-template< typename T>
-AliJTH1Derived<T>::~AliJTH1Derived(){
-}
-
 
 
 
