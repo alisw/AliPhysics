@@ -2759,12 +2759,13 @@ paranoidCopyFile()
   #returns 1 on failure, 0 on success
   src="${1}"
   dst="${2}"
+  #check if we are not trying to copy to the same file
+  [[ "${src}" == "${dst}" ]] && echo "$dst==$src, not copying" && return 0
   ok=0
   [[ -d "${dst}" ]] && dst="${dst}/${src##*/}"
   [[ -z "${maxCopyTries}" ]] && maxCopyTries=10
 
   echo "paranoid copy started: $src -> $dst"
-
   for (( i=1 ; i<=maxCopyTries ; i++ )) ; do
 
     echo "...attempt $i of $maxCopyTries"
