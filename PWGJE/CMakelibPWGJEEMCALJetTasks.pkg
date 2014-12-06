@@ -102,6 +102,11 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliEMCalPtTaskVTrackSelection.cxx
  EMCALJetTasks/UserTasks/AliEMCalPtTaskTrackSelectionESD.cxx
  EMCALJetTasks/UserTasks/AliEMCalPtTaskTrackSelectionAOD.cxx
+ EMCALJetTasks/UserTasks/AliEMCalTriggerEventData.cxx
+ EMCALJetTasks/UserTasks/AliEMCalTriggerEventSelection.cxx
+ EMCALJetTasks/UserTasks/AliEMCalTriggerTaskGroup.cxx
+ EMCALJetTasks/UserTasks/AliEMCalTriggerTracksAnalysisComponent.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskPtEMCalTriggerV1.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalTriggerTreeWriter.cxx
 )
 
