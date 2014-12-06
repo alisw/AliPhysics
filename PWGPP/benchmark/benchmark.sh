@@ -79,7 +79,7 @@ goCPass0()
   jobindex=${7}
   shift 7
   if ! parseConfig ${configFile} "$@"; then return 1; fi
-
+  echo Start: goCPass0
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
 
@@ -299,6 +299,7 @@ goCPass0()
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath} && echo "removing ${runpath}"
   cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
   [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
+  echo End: goCPass0
   return 0
 )
 
@@ -316,6 +317,7 @@ goCPass1()
   shift 7
   extraOpts=("$@")
   if ! parseConfig ${configFile} "$@"; then return 1; fi
+  echo Start: goCPass1
 
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
@@ -614,6 +616,7 @@ goCPass1()
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
   cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
   [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
+  echo End: goCPass1
   return 0
 )
 
@@ -631,6 +634,7 @@ goMergeCPass0()
   calibrationFilesToMerge=${5}  #can be a non-existent file, will then be produced on the fly
   shift 5
   if ! parseConfig ${configFile} "$@"; then return 1; fi
+  echo Start: goMergeCPass0
 
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
@@ -775,6 +779,7 @@ goMergeCPass0()
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
   cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
   [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
+  echo End: goMergeCPass0
   return 0
 )
 
@@ -793,6 +798,7 @@ goMergeCPass1()
   filteredFilesToMerge=${7}
   shift 7
   if ! parseConfig ${configFile} "$@"; then return 1; fi
+  echo Start: goMergeCPass1
 
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
@@ -985,6 +991,7 @@ goMergeCPass1()
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
   cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
   [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
+  echo End: goMergeCPass1
   return 0
 )
 
@@ -2102,6 +2109,7 @@ goWaitForOutput()
 (
   umask 0002
   [[ $# -lt 3 ]] && echo "goWaitForOutput() wrong number of arguments, exiting.." && return 1
+  echo Start:goWaitForOutput
   echo searchPath=${1}
   echo fileName=${2}
   echo numberOfFiles=${3}
@@ -2120,6 +2128,7 @@ goWaitForOutput()
     sleep 60
   done
   echo "DONE! exiting..."
+  echo End:goWaitForOutput
   return 0
 )
 
@@ -2570,6 +2579,7 @@ goMakeSummaryTree()
 
 parseConfig()
 {
+  echo Start: parseConfig
   configFile=${1}
   shift
   args=("$@")
@@ -2645,7 +2655,7 @@ parseConfig()
 
   #export the aliroot function if defined to override normal behaviour
   [[ $(type -t aliroot) =~ "function" ]] && export -f aliroot && echo "exporting aliroot() function..."
-
+  echo End: parseConfig
   return 0
 }
 
