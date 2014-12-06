@@ -147,14 +147,14 @@ class AliJFilter : public TNamed  {
   void ReadESDTracks(AliESDEvent* esd);
   void ConvertESDTPCOnlyTracks(AliESDEvent* esd, int iTrack, AliJTrack * ctrack, double ptMin, double ptMax);
   void ConvertESDGCGTracks(AliESDEvent* esd, int iTrack, AliJTrack * ctrack, double ptMin, double ptMax);
-  void ReadESDCaloClusters(const AliESDEvent* esd);
-  void ReadESDCaloCells(const AliESDEvent* esd);
+  void ReadESDCaloClusters(const AliESDEvent* esd){;} // Not implemented
+  void ReadESDCaloCells(const AliESDEvent* esd){;} // Not implemented
   void ReadESDHeader(AliESDEvent* esd);
   void ReadESDPID(AliESDtrack* track, AliJTrack* ctrack);
   // methods to read data from AOD
   Bool_t ReadAODTracks(const AliAODEvent* aod);
-  Bool_t ReadAODCaloClusters(const AliAODEvent* aod);
-  void ReadAODCaloCells(const AliAODEvent* aod);
+  Bool_t ReadAODCaloClusters(const AliAODEvent* aod) {return kFALSE;} // Not implemented
+  void ReadAODCaloCells(const AliAODEvent* aod){;} // Not implemented
   void ReadAODHeader(AliAODEvent* aod);
   void ReadFilter();
   void ReadMCTracksFromESD();

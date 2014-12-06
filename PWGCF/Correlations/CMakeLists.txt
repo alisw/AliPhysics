@@ -14,8 +14,6 @@
 # **************************************************************************
 
 # Include the libraries
-add_subdirectory(Correlations)
-add_subdirectory(EBYE)
-add_subdirectory(FLOW)
-
-message(STATUS "PWGCF enabled")
+add_subdirectory(Base)
+add_subdirectory(DPhi)
+add_subdirectory(JCORRAN)
