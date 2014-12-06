@@ -247,6 +247,7 @@ endif(CMAKE_Fortran_COMPILER)
 
 # PWG libraries
 add_subdirectory(PWG)
+add_subdirectory(PWGCF)
 # Depends on PWGCF - To fix dependencies
 add_subdirectory(PWGGA)
 # Depends on CF  - To fix the dependencies
