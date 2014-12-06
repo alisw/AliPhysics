@@ -14,7 +14,5 @@
 # **************************************************************************
 
 # Include the libraries
-add_subdirectory(EBYE)
-add_subdirectory(FLOW)
-
-message(STATUS "PWGCF enabled")
+add_subdirectory(blastwave)
+add_subdirectory(CME)
