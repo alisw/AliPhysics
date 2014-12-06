@@ -14,9 +14,9 @@
 # **************************************************************************
 
 # Include the libraries
-add_subdirectory(Correlations)
-add_subdirectory(EBYE)
-add_subdirectory(FEMTOSCOPY)
-add_subdirectory(FLOW)
+add_subdirectory(AliFemto)
+# add_subdirectory(AliFemtoUser)
 
-message(STATUS "PWGCF enabled")
+install (DIRECTORY macros
+         DESTINATION PWGCF/FEMTOSCOPY
+         PATTERN .svn EXCLUDE)
