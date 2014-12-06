@@ -2757,8 +2757,11 @@ paranoidCopyFile()
   #copy a single file to a target in an existing dir
   #repeat a few times if copy fails
   #returns 1 on failure, 0 on success
-  src="${1}"
-  dst="${2}"
+  src=$(get_realpath "${1}")
+  dst=$(get_realpath "${2}")
+  #some sanity check
+  [[ -z "${src}" ]] && return 1
+  [[ -z "${dst}" ]] && return 1
   #check if we are not trying to copy to the same file
   [[ "${src}" == "${dst}" ]] && echo "$dst==$src, not copying" && return 0
   ok=0
@@ -2788,6 +2791,37 @@ paranoidCopyFile()
   echo "paranoid copy FAILED after $maxCopyTries attempt(s): $src -> $dst"
   return 1
 )
+
+get_realpath() 
+{
+  if [[ $# -lt 1 ]]; then
+    echo "print the full path of a file, like \"readlink -f\" on linux"
+    echo "Usage:"
+    echo "  get_realpath <someFile>"
+    return 0
+  fi
+  if [[ -f "$1" ]]
+  then
+    # file *must* exist
+    if cd "$(echo "${1%/*}")" &>/dev/null
+    then
+      # file *may* not be local
+      # exception is ./file.ext
+      # try 'cd .; cd -;' *works!*
+      local tmppwd="$PWD"
+      cd - &>/dev/null
+    else
+      # file *must* be local
+      local tmppwd="$PWD"
+    fi
+  else
+    # file *cannot* exist
+    return 1 # failure
+  fi
+  # reassemble realpath
+  echo "$tmppwd"/"${1##*/}"
+  return 0 # success
+}
 
 guessRunData()
 {
