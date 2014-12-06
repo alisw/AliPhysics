@@ -15,7 +15,7 @@
 
 # Include the libraries
 add_subdirectory(AliFemto)
-# add_subdirectory(AliFemtoUser)
+add_subdirectory(AliFemtoUser)
 
 install (DIRECTORY macros
          DESTINATION PWGCF/FEMTOSCOPY
