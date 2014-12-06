@@ -1886,7 +1886,7 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, const AliESDfri
     Float_t xyz[3];
     point.GetXYZ(xyz);
     Double_t r=TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
-    if (r<350)  continue;
+    if (r<370)  continue;   // I will be happy to use flag in case it will be implemented in AliTrackPoint - should be requested
     if (r>400)  continue;
     AliTracker::PropagateTrackToBxByBz(&pTPC,r,mass,2.,kTRUE);
     AliTracker::PropagateTrackToBxByBz(&pTPC,r,mass,0.1,kTRUE);    
