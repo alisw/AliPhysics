@@ -96,6 +96,8 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerEventSelection+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerTracksAnalysisComponent+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerBinningDimension+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerBinningComponent+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerTreeWriter+;
 
 #ifdef HAVE_FASTJET
