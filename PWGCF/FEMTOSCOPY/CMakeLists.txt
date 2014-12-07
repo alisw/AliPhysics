@@ -19,6 +19,7 @@ add_subdirectory(AliFemtoUser)
 add_subdirectory(Chaoticity)
 add_subdirectory(ESE)
 add_subdirectory(K0Analysis)
+add_subdirectory(UNICOR)
 
 install (DIRECTORY macros
          DESTINATION PWGCF/FEMTOSCOPY
