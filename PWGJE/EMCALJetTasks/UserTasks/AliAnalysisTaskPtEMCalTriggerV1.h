@@ -10,7 +10,7 @@
 
 namespace EMCalTriggerPtAnalysis {
 
-class AliEMCalTriggerEventBuilderComponent;
+class AliEMCalTriggerBinningComponent;
 class AliEMCalTriggerEventData;
 class AliEMCalTriggerTaskGroup;
 
@@ -26,11 +26,13 @@ public:
 
   void SetMCJetContainerName(const char *name)          { fMCJetContainer = name; }
   void SetDataJetContainerName(const char *name)        { fDataJetContainer = name; }
+  void SetBinning(const char *dimname, int nbins, double *binning);
 
 protected:
   AliEMCalTriggerEventData *BuildEvent() const;
 
-  TObjArray                            *fTaskGroups;        // grouped analysis components
+  TObjArray                           *fTaskGroups;         // grouped analysis components
+  AliEMCalTriggerBinningComponent     *fBinning;            // Global binning component
   TString                              fMCJetContainer;     // Name of the Monte-Carlo jet container
   TString                              fDataJetContainer;   // Data jet container name
 

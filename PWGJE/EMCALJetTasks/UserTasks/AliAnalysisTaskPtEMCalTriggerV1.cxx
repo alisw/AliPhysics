@@ -22,6 +22,7 @@
  */
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
+#include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerTaskGroup.h"
 #include "AliAnalysisTaskPtEMCalTriggerV1.h"
@@ -35,6 +36,7 @@ namespace EMCalTriggerPtAnalysis {
 AliAnalysisTaskPtEMCalTriggerV1::AliAnalysisTaskPtEMCalTriggerV1() :
     AliAnalysisTaskEmcalJet(),
     fTaskGroups(NULL),
+    fBinning(NULL),
     fMCJetContainer(),
     fDataJetContainer()
 {
@@ -47,6 +49,7 @@ AliAnalysisTaskPtEMCalTriggerV1::AliAnalysisTaskPtEMCalTriggerV1() :
 AliAnalysisTaskPtEMCalTriggerV1::AliAnalysisTaskPtEMCalTriggerV1(const char* name) :
     AliAnalysisTaskEmcalJet(name, kTRUE),
     fTaskGroups(NULL),
+    fBinning(NULL),
     fMCJetContainer(),
     fDataJetContainer()
 {
@@ -63,6 +66,8 @@ AliAnalysisTaskPtEMCalTriggerV1::~AliAnalysisTaskPtEMCalTriggerV1() {
   /*
    * Destructor
    */
+  delete fTaskGroups;
+  delete fBinning;
 }
 
 //______________________________________________________________________________
@@ -77,6 +82,7 @@ void AliAnalysisTaskPtEMCalTriggerV1::UserCreateOutputObjects() {
   TList *outputList = new TList;
   outputList->SetName(Form("histos%s", GetName()));
   while((mygroup = dynamic_cast<AliEMCalTriggerTaskGroup *>(groupIter()))){
+    mygroup->SetGlobalBinning(fBinning);
     TList *ltmp = mygroup->InitialiseAnalysisComponents();
     // Collect output list and append it to the global output list
     TIter listIter(ltmp);
@@ -105,6 +111,18 @@ Bool_t AliAnalysisTaskPtEMCalTriggerV1::Run() {
 
   PostData(1, fOutput);
   return kTRUE;
+}
+
+//______________________________________________________________________________
+void AliAnalysisTaskPtEMCalTriggerV1::SetBinning(const char* dimname, int nbins, double* binning) {
+  /*
+   * Set binning for a give dimension
+   *
+   * @param dimname: name of the axis
+   * @param nbins: number of bins
+   * @param binning: the bin limits
+   */
+  fBinning->SetBinning(dimname, nbins, binning);
 }
 
 //______________________________________________________________________________
