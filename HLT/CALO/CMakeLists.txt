@@ -85,12 +85,12 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER CDB RAWDatabase RAWDatarec HLTbase AliHLTTPC  AliHLTEMCAL AliHLTPHOS EMCALbase EMCALUtils EMCALraw PHOSbase PHOSUtils)
+set(LIBDEPS STEERBase STEER CDB RAWDatabase RAWDatarec HLTbase AliHLTTPC EMCALbase EMCALUtils EMCALraw PHOSbase PHOSUtils)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} STEERBase STEER CDB RAWDatabase RAWDatarec HLTbase AliHLTTPC EMCALUtils EMCALraw EMCALbase PHOSbase PHOSUtils)
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")
