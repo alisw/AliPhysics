@@ -52,7 +52,7 @@ generateMC()
   #generate one raw chunk in current directory
   SEED=${JOB_ID}${SGE_TASK_ID}
   export CONFIG_SEED=${SEED}
-  runNumber=${1}
+  export runNumber=${1}
   OCDBpath=${2}
   nEventsim=${3}
   if [[ -n ${pretend} ]]; then
@@ -75,7 +75,7 @@ goCPass0()
   nEvents=${3}
   ocdbPath=${4}
   configFile=${5}
-  runNumber=${6}
+  export runNumber=${6}
   jobindex=${7}
   shift 7
   if ! parseConfig ${configFile} "$@"; then return 1; fi
@@ -312,7 +312,7 @@ goCPass1()
   nEvents=${3}
   ocdbPath=${4}
   configFile=${5}
-  runNumber=${6}
+  export runNumber=${6}
   jobindex=${7}
   shift 7
   extraOpts=("$@")
@@ -630,7 +630,7 @@ goMergeCPass0()
   outputDir=${1}
   ocdbStorage=${2}
   configFile=${3}
-  runNumber=${4}
+  export runNumber=${4}
   calibrationFilesToMerge=${5}  #can be a non-existent file, will then be produced on the fly
   shift 5
   if ! parseConfig ${configFile} "$@"; then return 1; fi
@@ -792,7 +792,7 @@ goMergeCPass1()
   outputDir=${1}
   ocdbStorage=${2}
   configFile=${3}
-  runNumber=${4}
+  export runNumber=${4}
   calibrationFilesToMerge=${5}
   qaFilesToMerge=${6}
   filteredFilesToMerge=${7}
