@@ -9,21 +9,24 @@
 
 namespace EMCalTriggerPtAnalysis {
 
+class AliEMCalTriggerBinningComponent;
 class AliEMCalTriggerEventData;
 
 class AliEMCalTriggerTracksAnalysisComponent : public TObject {
 public:
   AliEMCalTriggerTracksAnalysisComponent();
   AliEMCalTriggerTracksAnalysisComponent(const char *name);
-  virtual ~AliEMCalTriggerTracksAnalysisComponent();
+  virtual ~AliEMCalTriggerTracksAnalysisComponent() {}
 
   virtual void CreateHistos();
   virtual void Process(const AliEMCalTriggerEventData * const data) = 0;
 
   THashList *GetHistList() const { return fHistos->GetListOfHistograms(); }
+  void SetBinning(const AliEMCalTriggerBinningComponent * const binning) { fBinning = binning; }
 
 protected:
-  AliEMCalHistoContainer *fHistos;
+  AliEMCalHistoContainer                      *fHistos;
+  const AliEMCalTriggerBinningComponent       *fBinning;
 
   ClassDef(AliEMCalTriggerTracksAnalysisComponent, 1)
 };

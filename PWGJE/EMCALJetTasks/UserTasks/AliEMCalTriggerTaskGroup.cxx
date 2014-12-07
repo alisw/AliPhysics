@@ -34,7 +34,8 @@ namespace EMCalTriggerPtAnalysis {
 AliEMCalTriggerTaskGroup::AliEMCalTriggerTaskGroup() :
     TNamed(),
     fAnalysisComponents(NULL),
-    fEventSelection(NULL)
+    fEventSelection(NULL),
+    fBinning(NULL)
 {
   /*
    * Dummy constructor, not to be used
@@ -45,7 +46,8 @@ AliEMCalTriggerTaskGroup::AliEMCalTriggerTaskGroup() :
 AliEMCalTriggerTaskGroup::AliEMCalTriggerTaskGroup(const char* name) :
     TNamed(name, ""),
     fAnalysisComponents(NULL),
-    fEventSelection(NULL)
+    fEventSelection(NULL),
+    fBinning(NULL)
 {
   /*
    * Main constructor: to be used by the users
@@ -77,6 +79,7 @@ TList *AliEMCalTriggerTaskGroup::InitialiseAnalysisComponents() {
   TObject *htmp(NULL);
   while((ana = dynamic_cast<AliEMCalTriggerTracksAnalysisComponent *>(compIter()))){
     ana->CreateHistos();
+    ana->SetBinning(fBinning);
     TList *ltmp = ana->GetHistList();
     TIter hiter(ltmp);
     while((htmp = hiter())) histlist->Add(htmp);
