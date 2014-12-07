@@ -91,6 +91,7 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
   }
 
   fVfriend=fV->FindFriend();
+    
   Int_t n=fV->GetNumberOfTracks();
   Process(fV);
   if (!fVfriend) {
@@ -119,22 +120,16 @@ void AliTPCAnalysisTaskcalib::ConnectInputData(Option_t *) {
   //
   //
   //
-  TTree* tree=dynamic_cast<TTree*>(GetInputData(0));
-  if (!tree) {
-    Printf("ERROR: Could not read chain from input slot 0");
-  } 
+  AliVEventHandler *vH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  //TString classInputHandler = vH->ClassName();
+  if (!vH) {
+    Printf("ERROR: Could not get VEventHandler");
+  }
   else {
-    AliVEventHandler *vH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-    //TString classInputHandler = vH->ClassName();
-      if (!vH) {
-      Printf("ERROR: Could not get VEventHandler");
-    }
-    else {
-      fV = vH->GetEvent();
-      if(!fV) Printf("ERROR: no V event!");
+    fV = vH->GetEvent();
+    if(!fV) Printf("AliTPCAnalysisTaskcalib: ERROR: no V event!");
 
-      //if (fV) {Printf("*** CONNECTED NEW EVENT ****");}
-    }
+    //if (fV) {Printf("*** CONNECTED NEW EVENT ****");}
   }
 }
 
