@@ -8,6 +8,9 @@
 #pragma link C++ class AliAnalysisTaskDptDptQA+;
 #pragma link C++ class AliDptDptInMC+;
 #pragma link C++ class AliAnalysisTaskpxpx+;
+#pragma link C++ class AliAnalysisTaskpxpy+;
+#pragma link C++ class AliAnalysisTaskpypy+;
+#pragma link C++ class AliAnalysisTaskpzpz+;
 #pragma link C++ class AliAnalysisTask3PCorrelations+;
 #pragma link C++ class AliAnalysisTaskPhiCorrelations+;
 #pragma link C++ class AliAnalysisTaskTwoPlusOne+;
