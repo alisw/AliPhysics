@@ -59,8 +59,8 @@ AliHLTVEventInputHandler::AliHLTVEventInputHandler(AliHLTVEventInputHandler& tha
 Bool_t AliHLTVEventInputHandler::Init(TTree* /*tree*/,  Option_t* /*opt*/)
 {
 // Initialisation necessary for each new tree. In reco case this is once.
-  Printf("----> AliHLTVEventInputHandler::Init"); 
-  Printf("<---- AliHLTVEventInputHandler::Init"); 
+  //Printf("----> AliHLTVEventInputHandler::Init"); 
+  //Printf("<---- AliHLTVEventInputHandler::Init"); 
 
    return kTRUE;
 }  
@@ -69,9 +69,9 @@ Bool_t AliHLTVEventInputHandler::BeginEvent(Long64_t)
 {
 // Called at the beginning of every event   
 
-  Printf("----> HLTTestInputHandler: BeginEvent: now fEvent is %p", fEvent);
+  //Printf("----> HLTTestInputHandler: BeginEvent: now fEvent is %p", fEvent);
 
-  Printf("----> HLTTestInputHandler: at the end of BeginEvent: now fEvent is %p", fEvent);
+  //Printf("----> HLTTestInputHandler: at the end of BeginEvent: now fEvent is %p", fEvent);
   return kTRUE;
 }     
 
@@ -81,6 +81,7 @@ Bool_t AliHLTVEventInputHandler::AliHLTVEventInputHandler::FinishEvent()
   // Called at the end of every event   
   //when we are processing an AliESDEvent we have to detach the previously
   //attached friend as is is owned by us, not AliESDEvent
+  //Printf("----> HLTTestInputHandler: FinishEvent");
   TList* list = fEvent->GetList();
   if (list) { list->Remove(fFriendEvent); }
 
@@ -93,15 +94,16 @@ Bool_t AliHLTVEventInputHandler::InitTaskInputData(AliVEvent* esdEvent, AliVfrie
 // Method to propagte to all the connected tasks the HLT event.
 // The method gets the list of tasks from the manager
 
-  Printf("----> AliHLTVEventInputHandler::InitTaskInpuData: Setting the event...");
+  //Printf("----> AliHLTVEventInputHandler::InitTaskInpuData: Setting the event...");
   SetEvent(esdEvent);
   SetVFriendEvent(friendEvent);
   esdEvent->SetFriendEvent(friendEvent);
   // set transient pointer to event inside tracks
   fEvent->ConnectTracks();
-  Printf("----> AliHLTVEventInputHandler::InitTaskInpuData: ...Event set: fEvent = %p; friend = %p", fEvent, friendEvent);
+  //Printf("----> AliHLTVEventInputHandler::InitTaskInpuData: ...Event set: fEvent = %p; friend = %p", fEvent, friendEvent);
   for (Int_t i = 0; i < arrTasks->GetEntries(); i++){
     AliAnalysisTask* t = (AliAnalysisTask*)(arrTasks->At(i));
+  //Printf("  ----> AliHLTVEventInputHandler: calling ConnectInputData() for task %i, %s",i,t->GetName());
     t->ConnectInputData("");
   }
   return kTRUE;

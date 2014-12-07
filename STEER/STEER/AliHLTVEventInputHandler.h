@@ -42,7 +42,7 @@ class AliHLTVEventInputHandler : public AliVEventHandler {
     // Especially needed for HLT
     virtual Bool_t InitTaskInputData(AliVEvent* /*esdEvent*/, AliVfriendEvent* /*friendEvent*/, TObjArray* /*arrTasks*/);
 
-    AliVEvent* GetEvent() const {return fEvent;}
+    AliVEvent* GetEvent() const {return fEvent; printf("---->AliHLTVEventInputHandler: GetEvent %p\n",fEvent);}
     //AliVEvent* GetEvent() const {return NULL;}
     void  SetEvent(AliVEvent *event) {fEvent = event;}
 
