@@ -178,8 +178,8 @@ Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
   Int_t iResult=0;
 
   Printf("----> AliHLTTPCCalibManagerComponent::DoInit");
-  fAnalysisManager = new AliAnalysisManager;
-  fInputHandler    = new AliHLTVEventInputHandler;
+  fAnalysisManager = new AliAnalysisManager();
+  fInputHandler    = new AliHLTVEventInputHandler("HLTinputHandler","HLT input handler");
   fAnalysisManager->SetInputEventHandler(fInputHandler);
   fAnalysisManager->SetExternalLoop(kTRUE);
 
@@ -245,9 +245,9 @@ Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
   task1->AddJob(calibTime);*/
 
   fAnalysisManager->AddTask(task1);
-  AliAnalysisDataContainer *cinput1 = fAnalysisManager->GetCommonInputContainer();
-  if (!cinput1) cinput1 = fAnalysisManager->CreateContainer("cchain",TChain::Class(),
-                                      AliAnalysisManager::kInputContainer);
+  //AliAnalysisDataContainer *cinput1 = fAnalysisManager->GetCommonInputContainer();
+  //if (!cinput1) cinput1 = fAnalysisManager->CreateContainer("cchain",TChain::Class(),
+  //                                    AliAnalysisManager::kInputContainer);
   for (Int_t i=0; i<task1->GetJobs()->GetEntries(); i++) {
     if (task1->GetJobs()->At(i)) {
       AliAnalysisDataContainer* coutput = fAnalysisManager->CreateContainer(task1->GetJobs()->At(i)->GetName(),
@@ -257,7 +257,7 @@ Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
       fAnalysisManager->ConnectOutput(task1,i,coutput);
     }
   }
-  fAnalysisManager->ConnectInput(task1,0,cinput1);
+  //fAnalysisManager->ConnectInput(task1,0,cinput1);
 
   // setup task TPCAlign--------------------------------------------------------------------------
   AliTPCAnalysisTaskcalib *taskAlign=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
@@ -291,7 +291,7 @@ Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
       fAnalysisManager->ConnectOutput(taskAlign,i,coutput);
     }
   }
-  fAnalysisManager->ConnectInput(taskAlign,0,cinput1);
+  //fAnalysisManager->ConnectInput(taskAlign,0,cinput1);
 
   // setup task TPCCluster----------------------------------------------------------------
   AliTPCAnalysisTaskcalib *taskCluster=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
@@ -315,15 +315,21 @@ Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
       fAnalysisManager->ConnectOutput(taskCluster,i,coutput);
     }
   }
-  fAnalysisManager->ConnectInput(taskCluster,0,cinput1);
+  //fAnalysisManager->ConnectInput(taskCluster,0,cinput1);
   //--------------------------------------------------------------------------------------
 
-  Printf("----> Calling InitAnalysis");
   fAnalysisManager->InitAnalysis();
-  Printf("----> Done.");
-  Printf("----> Calling StartAnalysis");
-  fAnalysisManager->StartAnalysis("local", (TTree*)new TTree);
-  Printf("----> Done.");
+
+  //init stuff
+  Bool_t dirStatus = TH1::AddDirectoryStatus();  
+  TIter nextT(fAnalysisManager->GetTasks());
+  AliAnalysisTask* task=NULL;
+  while ((task=(AliAnalysisTask*)nextT())) 
+  {
+    TH1::AddDirectory(kFALSE);
+    task->CreateOutputObjects();
+  }
+  TH1::AddDirectory(dirStatus);
 
   return iResult;
 }
@@ -333,8 +339,55 @@ Int_t AliHLTTPCCalibManagerComponent::DoDeinit() {
   // see header file for class documentation
 
   fUID = 0;
-  fAnalysisManager->SetSkipTerminate(kTRUE);
-  fAnalysisManager->Terminate();
+  //write the data to file
+  TDirectory *opwd = gDirectory;  
+  TIter nextOutput(fAnalysisManager->GetOutputs());
+  TList listOfOpenFiles;
+  while (AliAnalysisDataContainer* output=(AliAnalysisDataContainer*)nextOutput())
+  {
+    const char* filename   = output->GetFileName();
+    const char* openoption = "RECREATE";
+    TFile* file=NULL;
+    if (!(file=(TFile*)listOfOpenFiles.FindObject(filename)))
+      { file = new TFile(filename,openoption); }
+    output->SetFile(file);
+    listOfOpenFiles.Add(file);
+    file->cd();
+    TString dir = output->GetFolderName();
+    if (!dir.IsNull())
+    {
+      if (!file->GetDirectory(dir)) file->mkdir(dir);
+      file->cd(dir);
+    }
+    TObject* outputData=output->GetData();
+    if (!outputData) 
+    {
+      continue;
+    }
+    outputData->Print();
+    if (outputData->InheritsFrom(TCollection::Class())) 
+    {
+      // If data is a collection, we set the name of the collection 
+      // as the one of the container and we save as a single key.
+      TCollection *coll = (TCollection*)output->GetData();
+      coll->SetName(output->GetName());
+      coll->Write(output->GetName(), TObject::kSingleKey);
+    } 
+    else 
+    {
+      if (outputData->InheritsFrom(TTree::Class())) 
+      {
+        TTree *tree = (TTree*)output->GetData();
+        tree->SetDirectory(gDirectory);
+        tree->AutoSave();
+      } 
+      else 
+      {
+        output->GetData()->Write();
+      }   
+    }
+    opwd->cd();
+  }
 
   delete fAnalysisManager;
 
@@ -415,15 +468,9 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
     }
   }
 
-  fAnalysisManager->InitInputData(vEvent, vFriend);
-  Printf("The friend is: %p",vEvent->FindFriend());
-
-
-  //  fInputHandler->BeginEvent(0);
-  Printf("----> ExecAnalysis");
+  fInputHandler->InitTaskInputData(vEvent, vFriend, fAnalysisManager->GetTasks());
   fAnalysisManager->ExecAnalysis();
   fInputHandler->FinishEvent();
-
 
   // -- Send histlist
   //  PushBack(dynamic_cast<TObject*>(fCorrObj->GetHistList()),
