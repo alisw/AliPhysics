@@ -80,7 +80,7 @@ AliAnalysisKinkESDMC::AliAnalysisKinkESDMC(const char *name)
     flifeKink(), flenHelx(0), fradPtRapMC(0), fradPtRapDC(0), fradPtRapESD(0), fRadNclcln(0),
     f1(0), f2(0),
 // fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1), fKinkRadUp(200),fKinkRadLow(130), fLowCluster(20), fLowQt(.12),  fCutsMul(0),fMaxDCAtoVtxCut(0), fPIDResponse(0)
-  fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1), fKinkRadUp(210),fKinkRadLow(120), fLowCluster(20), fLowQt(.12), fRapiK(0.5),  fCutsMul(0),fMaxDCAtoVtxCut(0), fPIDResponse(0)
+  fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1), fKinkRadUp(210.),fKinkRadLow(120.), fLowCluster(20), fLowQt(.12), fRapiK(0.5),  fCutsMul(0),fMaxDCAtoVtxCut(0), fPIDResponse(0)
 
 {
   // Constructor
@@ -556,11 +556,11 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
        Int_t nMCKpi =0;
        Int_t mcProc4 =0;
        Int_t mcProc13=0;
-        Double_t radiusD=0;
+        Float_t radiusD=0;
    //    Double_t lengthK =0.;
        Double_t LengthK =0.;
        Double_t lenYuri =0.;
-        Double_t MCQt =0.;
+        Float_t MCQt =0.;
 //        Double_t MCQt3[2];
 	    Int_t firstD=particle->GetFirstDaughter();
 	    Int_t lastD=particle->GetLastDaughter();
@@ -1032,7 +1032,8 @@ for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
               }
 //
          // ======8/1/13 if((kink->GetR()>120.)&&(kink->GetR()<210.)&&(TMath::Abs(rapiditK)<0.7)&&(label<nPrim)) {
-         if((kink->GetR()> fKinkRadLow )&&(kink->GetR()< fKinkRadUp )&&(TMath::Abs(rapiditK)<0.7)&&(label<nPrim)) {
+// allagh dec'14         if((kink->GetR()> fKinkRadLow )&&(kink->GetR()< fKinkRadUp )&&(TMath::Abs(rapiditK)<0.7)&&(label<nPrim)) {
+         if((kink->GetR()> fKinkRadLow )&&(kink->GetR()< fKinkRadUp )&&(TMath::Abs(rapiditK)<fRapiK)&&(label<nPrim)) {
     if(       ( (TMath::Abs(code1)==321)&&(TMath::Abs(dcode1)==13))) fQtKMu->Fill(qT);
     if     ( (TMath::Abs(code1)==321)&&(TMath::Abs(dcode1)==11))   fQtKEl->Fill(qT); 
     if     ( (TMath::Abs(code1)==321)&&(TMath::Abs(dcode1)==211))   fQtKPi->Fill(qT); 
@@ -1087,7 +1088,8 @@ for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
 
 //
     //  if((qT>0.12)&&((kink->GetR()>120.)&&(kink->GetR()<210.))&&(TMath::Abs(rapiditK )<0.7)) {
-    if((qT> fLowQt )&&((kink->GetR()> fKinkRadLow )&&(kink->GetR()< fKinkRadUp ))&&(TMath::Abs(rapiditK )<0.7)) {
+    // allagh Dec'14 if((qT> fLowQt )&&((kink->GetR()> fKinkRadLow )&&(kink->GetR()< fKinkRadUp ))&&(TMath::Abs(rapiditK )<0.7)) {
+    if((qT> fLowQt )&&((kink->GetR()> fKinkRadLow )&&(kink->GetR()< fKinkRadUp ))&&(TMath::Abs(rapiditK )<fRapiK)) {
          fM1kaon->Fill(invariantMassKmu);
          fMinvPi->Fill(invariantMassKpi);
          fMinvKa->Fill(invariantMassKK);
@@ -1115,7 +1117,8 @@ for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
 //  kaon selection from kinks
            
    //=====  8/2/13 if((kinkAngle>maxDecAngpimu)&&(qT>0.12)&&(qT<0.30)&&((kink->GetR()>120.)&&(kink->GetR()<210.))&&(TMath::Abs(rapiditK )<0.7)&&(invariantMassKmu<0.8)) {
-   if((kinkAngle>maxDecAngpimu)&&(qT>fLowQt )&&(qT<0.30)&&((kink->GetR()> fKinkRadLow )&&(kink->GetR()< fKinkRadUp ))&&(TMath::Abs(rapiditK )<0.7)&&(invariantMassKmu<0.8)) {
+// allagh Dec'14    if((kinkAngle>maxDecAngpimu)&&(qT>fLowQt )&&(qT<0.30)&&((kink->GetR()> fKinkRadLow )&&(kink->GetR()< fKinkRadUp ))&&(TMath::Abs(rapiditK )<0.7)&&(invariantMassKmu<0.8)) {
+   if((kinkAngle>maxDecAngpimu)&&(qT>fLowQt )&&(qT<0.30)&&((kink->GetR()> fKinkRadLow )&&(kink->GetR()< fKinkRadUp ))&&(TMath::Abs(rapiditK )< fRapiK)&&(invariantMassKmu<0.8)) {
 // 29092010     if((kinkAngle>maxDecAngpimu)&&(qT>0.120)&&(qT<0.25)&&((kink->GetR()>120.)&&(kink->GetR()<210.))&&(TMath::Abs(rapiditK )<0.7)&&(invariantMassKmu<0.6)) {
 //  if((kinkAngle>maxDecAngpimu)&&(qT>0.04)&&(qT<0.30)&&((kink->GetR()>133.)&&(kink->GetR()<179.))&&(TMath::Abs(rapiditK )<0.5)&&(invariantMassKmu<0.6)) {   
 
