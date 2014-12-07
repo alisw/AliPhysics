@@ -21,6 +21,13 @@ class AliEmcalTriggerPatchInfo: public TObject {
   AliEmcalTriggerPatchInfo &operator=(const AliEmcalTriggerPatchInfo &p);
   virtual ~AliEmcalTriggerPatchInfo();
 
+  enum TriggerMakerBits_t {
+    kRecalcJetBitNum = 22,
+    kRecalcGammaBitNum = 23,
+    kMainTriggerBitNum = 24,
+    kSimpleOfflineBitNum = 25
+  };
+  // The lower bits in fTriggerBits are defined in EMCAL/AliEmcalTriggerTypes.h
 
   Double_t GetPhiGeo() const { return fCenterGeo.Phi(); }
   Double_t GetPhiCM()  const { return fCenterMass.Phi(); }
@@ -32,24 +39,25 @@ class AliEmcalTriggerPatchInfo: public TObject {
   Double_t GetEtaMax() const { return fEdge1.Eta(); }
   Double_t GetPatchE() const { return fCenterGeo.E(); }
   Int_t    GetADCAmp() const { return fADCAmp; }
+  Int_t    GetADCOfflineAmp() const { return fADCOfflineAmp; }
   Double_t GetADCAmpGeVRough() const { return (Double_t)fADCAmp * kEMCL1ADCtoGeV; }
   Int_t    GetTriggerBits() const { return fTriggerBits; }
   Int_t    GetEdgeCellX() const { return fEdgeCell[0]; }
   Int_t    GetEdgeCellY() const { return fEdgeCell[1]; }
   void     GetCellIndices( AliEMCALGeometry *geom, TArrayI *cells );
   
-  Bool_t   IsLevel0() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetLevel0Bit()))&(!(fTriggerBits >> 25))&1); }
-  Bool_t   IsJetLow() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetJetLowBit()))&(!(fTriggerBits >> 25))&1); }
-  Bool_t   IsJetHigh() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetJetHighBit()))&(!(fTriggerBits >> 25))&1); }
-  Bool_t   IsGammaLow() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetGammaLowBit()))&(!(fTriggerBits >> 25))&1); }
-  Bool_t   IsGammaHigh() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetGammaHighBit()))&(!(fTriggerBits >> 25))&1); }
-  Bool_t   IsMainTrigger() const { return (Bool_t)((fTriggerBits >> 24)&(!(fTriggerBits >> 25))&1); }
-  Bool_t   IsJetLowSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetJetLowBit()))&(fTriggerBits >> 25)&1); }
-  Bool_t   IsJetHighSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetJetHighBit()))&(fTriggerBits >> 25)&1); }
-  Bool_t   IsGammaLowSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetGammaLowBit()))&(fTriggerBits >> 25)&1); }
-  Bool_t   IsGammaHighSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetGammaHighBit()))&(fTriggerBits >> 25)&1); }
-  Bool_t   IsMainTriggerSimple() const { return (Bool_t)((fTriggerBits >> 24)&(fTriggerBits >> 25)&1); }
-  Bool_t   IsOfflineSimple() const { return (Bool_t)((fTriggerBits >> 25)&1); }
+  Bool_t   IsLevel0() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetLevel0Bit()))&(!(fTriggerBits >> kSimpleOfflineBitNum))&1); }
+  Bool_t   IsJetLow() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetJetLowBit()))&(!(fTriggerBits >> kSimpleOfflineBitNum))&1); }
+  Bool_t   IsJetHigh() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetJetHighBit()))&(!(fTriggerBits >> kSimpleOfflineBitNum))&1); }
+  Bool_t   IsGammaLow() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetGammaLowBit()))&(!(fTriggerBits >> kSimpleOfflineBitNum))&1); }
+  Bool_t   IsGammaHigh() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetGammaHighBit()))&(!(fTriggerBits >> kSimpleOfflineBitNum))&1); }
+  Bool_t   IsMainTrigger() const { return (Bool_t)((fTriggerBits >> kMainTriggerBitNum)&(!(fTriggerBits >> kSimpleOfflineBitNum))&1); }
+  Bool_t   IsJetLowSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetJetLowBit()))&(fTriggerBits >> kSimpleOfflineBitNum)&1); }
+  Bool_t   IsJetHighSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetJetHighBit()))&(fTriggerBits >> kSimpleOfflineBitNum)&1); }
+  Bool_t   IsGammaLowSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetGammaLowBit()))&(fTriggerBits >> kSimpleOfflineBitNum)&1); }
+  Bool_t   IsGammaHighSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetGammaHighBit()))&(fTriggerBits >> kSimpleOfflineBitNum)&1); }
+  Bool_t   IsMainTriggerSimple() const { return (Bool_t)((fTriggerBits >> kMainTriggerBitNum)&(fTriggerBits >> kSimpleOfflineBitNum)&1); }
+  Bool_t   IsOfflineSimple() const { return (Bool_t)((fTriggerBits >> kSimpleOfflineBitNum)&1); }
   
   void SetCenterGeo( TVector3 &v, Double_t e ) { SetLorentzVector( fCenterGeo, v, e ); }
   void SetCenterGeo( TLorentzVector &v ) { fCenterGeo = v; }
@@ -60,6 +68,7 @@ class AliEmcalTriggerPatchInfo: public TObject {
   void SetEdge2( TLorentzVector &v ) { fEdge2 = v; }
   void SetEdge2( TVector3 &v, Double_t e ) { SetLorentzVector( fEdge2, v, e ); }
   void SetADCAmp( Int_t a ) { fADCAmp = a; }
+  void SetADCOfflineAmp( Int_t a ) { fADCOfflineAmp = a; }
   void SetEdgeCell( Int_t x, Int_t y ) { fEdgeCell[0] = x; fEdgeCell[1] = y; }
 
   void SetLorentzVector( TLorentzVector &lv, TVector3 &v, Double_t e );
@@ -78,12 +87,13 @@ class AliEmcalTriggerPatchInfo: public TObject {
   TLorentzVector    fCenterMass;                    // CM
   TLorentzVector    fEdge1;                         // max eta/ min phi edge
   TLorentzVector    fEdge2;                         // min eta/ max phi edge
-  Int_t             fADCAmp;                        // online ADC amplitude
-  Int_t             fTriggerBits;                   //trigger bit mask
+  Int_t             fADCAmp;                        // online (trigger) ADC amplitude
+  Int_t             fADCOfflineAmp;                 // offline (FEE) ADC amplitude
+  Int_t             fTriggerBits;                   // trigger bit mask, see definitions in AliEmcalTriggerType and TriggerMakerBits_t (above)
   Int_t             fEdgeCell[2];                   // cell "bottom lower" edge (min phi, max eta)
   Int_t             fOffSet;                        // offset of bit (different in data and MC)
   AliEmcalTriggerBitConfig   fTriggerBitConfig;     // Trigger bit configuration
 
-  ClassDef(AliEmcalTriggerPatchInfo, 5) // Emcal particle class
+  ClassDef(AliEmcalTriggerPatchInfo, 6) // Emcal particle class
 };
 #endif
