@@ -17,6 +17,7 @@
 add_subdirectory(AliFemto)
 add_subdirectory(AliFemtoUser)
 add_subdirectory(Chaoticity)
+add_subdirectory(ESE)
 
 install (DIRECTORY macros
          DESTINATION PWGCF/FEMTOSCOPY
