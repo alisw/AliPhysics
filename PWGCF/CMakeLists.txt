@@ -17,6 +17,7 @@
 add_subdirectory(Correlations)
 add_subdirectory(EBYE)
 add_subdirectory(FEMTOSCOPY)
+add_subdirectory(FEMTOSCOPYAOD)
 add_subdirectory(FLOW)
 
 message(STATUS "PWGCF enabled")
