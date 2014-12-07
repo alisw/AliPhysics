@@ -46,10 +46,9 @@ AliAnalysisTaskpxpx *AddTaskPxPx
     if (centralityMethod == 4)
       {
 	minCentrality[0] = 0.0;  maxCentrality[0]  = 5.0;
-        minCentrality[1] = 10.;  maxCentrality[1]  = 20.;
-        minCentrality[2] = 30.;  maxCentrality[2]  = 40.;
-        minCentrality[3] = 50.;  maxCentrality[3]  = 60.;
-        minCentrality[4] = 70.;  maxCentrality[4]  = 80.;
+        minCentrality[1] = 30.;  maxCentrality[1]  = 40.;
+        minCentrality[2] = 60.;  maxCentrality[2]  = 70.;
+        
       }
     else
       {
@@ -76,8 +75,6 @@ AliAnalysisTaskpxpx *AddTaskPxPx
     return 0;
     }
 
-  //double zMin                   = -10.;
-  //double zMax                   =  10.;
   double ptMin                  =  0.2;
   double ptMax                  =  2.0;
   double dedxMin                =  0.0;
