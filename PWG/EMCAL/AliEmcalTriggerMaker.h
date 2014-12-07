@@ -19,12 +19,15 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   enum TriggerMakerTriggerType_t {
     kTMEMCalJet = 0,
     kTMEMCalGamma = 1,
-    kTMEMCalLevel0 = 2
+    kTMEMCalLevel0 = 2,
+    kTMEMCalRecalcJet = 3,
+    kTMEMCalRecalcGamma = 4
   };
   enum TriggerMakerBitConfig_t {
     kOldConfig = 0,
     kNewConfig = 1
   };
+
   AliEmcalTriggerMaker();
   AliEmcalTriggerMaker(const char *name, Bool_t doQA = kFALSE);
   virtual ~AliEmcalTriggerMaker();
@@ -72,14 +75,14 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   Double_t                   fPatchADCSimple[kPatchCols][kPatchRows];   //!patch map for simple offline trigger
   Int_t                      fPatchADC[kPatchCols][kPatchRows];         //!ADC values map
   Int_t                      fITrigger;                 //!trigger counter
-  Bool_t                     fRunTriggerType[3];        // Run patch maker for a given trigger type
+  Bool_t                     fRunTriggerType[5];        // Run patch maker for a given trigger type
   Bool_t                     fDoQA;                     // Fill QA histograms
   THistManager              *fQAHistos;                 //! Histograms for QA
-
+  static const TString       fgkTriggerTypeNames[5];    //! Histogram name tags
  private:
   AliEmcalTriggerMaker(const AliEmcalTriggerMaker&);            // not implemented
   AliEmcalTriggerMaker &operator=(const AliEmcalTriggerMaker&); // not implemented
 
-  ClassDef(AliEmcalTriggerMaker, 4) // Task to make array of EMCAL trigger patches
+  ClassDef(AliEmcalTriggerMaker, 5) // Task to make array of EMCAL trigger patches
 };
 #endif
