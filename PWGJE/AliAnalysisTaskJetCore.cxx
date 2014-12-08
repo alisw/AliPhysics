@@ -503,7 +503,6 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
 
 
 
-
         fOutputList->Add(fh1TrigRef);
         fOutputList->Add(fh1TrigSig); 
         fOutputList->Add(fh1TrackPhiDistance);
@@ -1276,8 +1275,9 @@ Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t 
       if(im2==0) rd=0;
       if(im2>0) rd=fRandom->Integer(im2);
       index=triggers2[rd];
+      if(index==-1) return index;
       AliVParticle *tr1 = (AliVParticle*)list->At(index);     
-      
+      if(!tr1) return index;
     
 
       for(Int_t kk=0;kk<im;kk++){
@@ -1285,7 +1285,7 @@ Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t 
         if(index==triggers[kk]) continue;
 	Int_t lab=triggers[kk];
          AliVParticle *tr2 = (AliVParticle*)list->At(lab);     
-       
+	 if(!tr2) continue;
        Double_t detat=tr1->Eta()-tr2->Eta();
        Double_t dphit=RelativePhi(tr1->Phi(),tr2->Phi());
        Double_t deltaRt=TMath::Sqrt(detat*detat+dphit*dphit);
