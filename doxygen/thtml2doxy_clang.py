@@ -119,7 +119,7 @@ def traverse_ast(cursor, recursion=0):
 
             if comment_line_start == -1:
               comment_line_start = line_start
-            comment.extend( refactor_comment(token.spelling) )
+            comment.extend( token.spelling.split('\n') )
 
             # multiline comments are parsed in one go, therefore don't expect subsequent comments
             if line_end - line_start > 0:
@@ -132,16 +132,15 @@ def traverse_ast(cursor, recursion=0):
 
       if emit_comment:
 
+        comment = refactor_comment( comment )
 
         if len(comment) > 0:
-          count_line = comment_line_start
           logging.info("Comment found for function %s" % Colt(comment_function).magenta())
           for comment_line in comment:
             logging.info(
-              Colt("%s  [%d:%d] " % (indent, count_line, comment_line_end)).green() +
-              Colt(comment_line).cyan()
+              Colt("[%d:%d] " % (comment_line_start, comment_line_end)).green() + "{" +
+              Colt(comment_line).cyan() + "}"
             )
-            count_line = count_line + 1
 
         comment = []
         comment_line_start = -1
@@ -160,33 +159,28 @@ def traverse_ast(cursor, recursion=0):
 
 ## Remove garbage from comments and convert special tags from THtml to Doxygen.
 #
-#  @param comment The original comment
+#  @param comment An array containing the lines of the original comment
 def refactor_comment(comment):
 
-  resingle = r'^/{2,}\s*(.*?)\s*(/{2,})?\s*$'
-  remulti_first = r'^/\*\s*(.*?)\s*\*?\s*$'
-  remulti_last = r'^\s*(.*?)\s*\*/$'
+  recomm = r'^(/{2,}|/\*)?\s*(.*?)\s*((/{2,})?\s*|\*/)$'
 
-  new_comment = comment.split('\n')
-
-  if len(new_comment) == 1:
-    msingle = re.search(resingle, comment)
-    if msingle:
-      new_comment[0] = msingle.group(1)
-
-  else:
-
-    for i in range(0, len(new_comment)):
-      if i == 0:
-        mmulti = re.search(remulti_first, new_comment[i])
-        if mmulti:
-          new_comment[i] = mmulti.group(1)
-      elif i == len(new_comment)-1:
-        mmulti = re.search(remulti_last, new_comment[i])
-        if mmulti:
-          new_comment[i] = mmulti.group(1)
+  new_comment = []
+  insert_blank = False
+  wait_first_non_blank = True
+  for line_comment in comment:
+    mcomm = re.search( recomm, line_comment )
+    if mcomm:
+      new_line_comment = mcomm.group(2)
+      if new_line_comment == '':
+        insert_blank = True
       else:
-        new_comment[i] = new_comment[i].strip()
+        if insert_blank and not wait_first_non_blank:
+          new_comment.append('')
+          insert_blank = False
+        wait_first_non_blank = False
+        new_comment.append( new_line_comment )
+    else:
+      assert False, 'Comment regexp does not match'
 
   return new_comment
 
