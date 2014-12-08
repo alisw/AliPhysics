@@ -77,6 +77,35 @@ class Comment:
     return "<Comment for %s: [%d,%d:%d,%d] %s>" % (self.func, self.first_line, self.first_col, self.last_line, self.last_col, self.lines)
 
 
+## A data member comment.
+class MemberComment:
+
+  def __init__(self, text, is_transient, array_size, first_line, first_col, func):
+    self.lines = [ text ]
+    self.is_transient = is_transient
+    self.array_size = array_size
+    self.first_line = first_line
+    self.first_col = first_col
+    self.func = func
+
+  def has_comment(self, line):
+    return line == self.first_line
+
+  def __str__(self):
+
+    if self.is_transient:
+      tt = '!transient! '
+    else:
+      tt = ''
+
+    if self.array_size is not None:
+      ars = '[%s] ' % self.array_size
+    else:
+      ars = ''
+
+    return "<MemberComment for %s: [%d,%d] %s%s%s>" % (self.func, self.first_line, self.first_col, tt, ars, self.lines[0])
+
+
 ## Parses method comments.
 #
 #  @param cursor   Current libclang parser cursor
@@ -164,6 +193,60 @@ def comment_method(cursor, comments):
       break
 
 
+## Parses comments to class data members.
+#
+#  @param cursor   Current libclang parser cursor
+#  @param comments Array of comments: new ones will be appended there
+def comment_datamember(cursor, comments):
+
+  # Note: libclang 3.5 seems to have problems parsing a certain type of FIELD_DECL, so we revert
+  # to a partial manual parsing. When parsing fails, the cursor's "extent" is not set properly,
+  # returning a line range 0-0. We therefore make the not-so-absurd assumption that the datamember
+  # definition is fully on one line, and we take the line number from cursor.location.
+
+  line_num = cursor.location.line
+  raw = None
+
+  # Huge overkill
+  with open(str(cursor.location.file)) as fp:
+    cur_line = 0
+    for raw in fp:
+      cur_line = cur_line + 1
+      if cur_line == line_num:
+        break
+
+  recomm = r'(//(!)|///?)<?\s*(\[(.*?)\])?\s*(.*?)\s*$'
+
+  mcomm = re.search(recomm, raw)
+  if mcomm:
+    member_name = cursor.spelling;
+    is_transient = mcomm.group(2) is not None
+    array_size = mcomm.group(4)
+    text = mcomm.group(5)
+
+    col_num = mcomm.start()+1;
+
+    if is_transient:
+      transient_text = Colt('transient ').yellow()
+    else:
+      transient_text = ''
+
+    if array_size is not None:
+      array_text = Colt('arraysize=%s ' % array_size).yellow()
+    else:
+      array_text = ''
+
+    logging.debug('Comment found for member %s' % Colt(member_name).magenta())
+
+    comments.append( MemberComment(
+      text,
+      is_transient,
+      array_size,
+      line_num,
+      col_num,
+      member_name ))
+
+
 ## Traverse the AST recursively starting from the current cursor.
 #
 #  @param cursor    A Clang parser cursor
@@ -189,6 +272,12 @@ def traverse_ast(cursor, filename, comments, recursion=0):
     # cursor ran into a C++ method
     logging.debug( "%5d %s%s(%s)" % (cursor.extent.start.line, indent, Colt(kind).magenta(), Colt(text).blue()) )
     comment_method(cursor, comments)
+
+  elif cursor.kind == clang.cindex.CursorKind.FIELD_DECL:
+
+    # cursor ran into a data member declaration
+    logging.debug( "%5d %s%s(%s)" % (cursor.extent.start.line, indent, Colt(kind).magenta(), Colt(text).blue()) )
+    comment_datamember(cursor, comments)
 
   else:
 
@@ -238,6 +327,8 @@ def rewrite_comments(fhin, fhout, comments):
   in_comment = False
   skip_empty = False
 
+  rindent = r'^(\s*)'
+
   if len(comments) > 0:
     comm = comments[0]
   else:
@@ -249,7 +340,46 @@ def rewrite_comments(fhin, fhout, comments):
 
     if comm and comm.has_comment( line_num ):
 
-      if not in_comment:
+      if isinstance(comm, MemberComment):
+        non_comment = line[ 0:comments[cur_comment].first_col-1 ]
+
+        if comm.array_size is not None:
+
+          mindent = re.search(rindent, line)
+          if comm.is_transient:
+            tt = '!'
+          else:
+            tt = ''
+
+          # Special case: we need multiple lines not to confuse ROOT's C++ parser
+          fhout.write('\n%s/// %s\n%s//%s[%s]\n\n' % (
+            mindent.group(1),
+            comm.lines[0],
+            non_comment,
+            tt,
+            comm.array_size
+          ))
+
+        else:
+
+          if comm.is_transient:
+            tt = '!'
+          else:
+            tt = '/'
+
+          fhout.write('%s//%s< %s\n' % (
+            non_comment,
+            tt,
+            comm.lines[0]
+          ))
+
+        cur_comment = cur_comment + 1
+        if cur_comment < len(comments):
+          comm = comments[cur_comment]
+        else:
+          comm = None
+
+      elif not in_comment:
         in_comment = True
 
         # extract the non-comment part and print it if it exists
@@ -350,12 +480,35 @@ def main(argv):
     comments = []
     traverse_ast( translation_unit.cursor, fn, comments )
     for c in comments:
-      logging.debug("Comment found for %s:" % Colt(c.func).magenta())
-      for l in c.lines:
+
+      logging.debug("Comment found for entity %s:" % Colt(c.func).magenta())
+
+      if isinstance(c, MemberComment):
+
+        if c.is_transient:
+          transient_text = Colt('transient ').yellow()
+        else:
+          transient_text = ''
+
+        if c.array_size is not None:
+          array_text = Colt('arraysize=%s ' % c.array_size).yellow()
+        else:
+          array_text = ''
+
         logging.debug(
-          Colt("[%d,%d:%d,%d] " % (c.first_line, c.first_col, c.last_line, c.last_col)).green() +
-          "{%s}" % Colt(l).cyan()
-        )
+          "%s %s%s{%s}" % ( \
+            Colt("[%d,%d]" % (c.first_line, c.first_col)).green(),
+            transient_text,
+            array_text,
+            Colt(c.lines[0]).cyan()
+        ))
+
+      else:
+        for l in c.lines:
+          logging.debug(
+            Colt("[%d,%d:%d,%d] " % (c.first_line, c.first_col, c.last_line, c.last_col)).green() +
+            "{%s}" % Colt(l).cyan()
+          )
 
     try:
 
