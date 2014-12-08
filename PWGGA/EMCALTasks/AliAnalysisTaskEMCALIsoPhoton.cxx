@@ -654,11 +654,23 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   TString clusArrayName = "";
   if(fESD){
     l = fESD->GetList();
+    if(fDebug)
+      l->Print();
     for(int nk=0;nk<l->GetEntries();nk++){
       TObject *obj = (TObject*)l->At(nk);
       TString oname = obj->GetName();
       if(oname.Contains("CaloClus"))
 	clusArrayName = oname;
+      else
+	continue;
+      if(clusArrayName=="CaloClusters")
+	fClusArrayNames->Fill(0);
+      else{
+	if(clusArrayName=="EmcCaloClusters")
+	  fClusArrayNames->Fill(1);
+	else
+	  fClusArrayNames->Fill(2);
+      }
     }
     fESDClusters =  dynamic_cast<TClonesArray*>(l->FindObject(clusArrayName));
     fESDCells = fESD->GetEMCALCells();
@@ -667,32 +679,35 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   }
   else if(fAOD){
     l = fAOD->GetList();
-    //l->Print();
+    if(fDebug)
+      l->Print();
     //fAODClusters = dynamic_cast<TClonesArray*>(fAOD->GetCaloClusters());
     for(int nk=0;nk<l->GetEntries();nk++){
       TObject *obj = (TObject*)l->At(nk);
       TString oname = obj->GetName();
       if(oname.Contains("aloClus"))
 	clusArrayName = oname;
+      else
+	continue;
+      if(clusArrayName=="caloClusters")
+	fClusArrayNames->Fill(0);
+      else{
+	if(clusArrayName=="EmcCaloClusters")
+	  fClusArrayNames->Fill(1);
+	else
+	  fClusArrayNames->Fill(2);
+      }
     }
     fAODClusters = dynamic_cast<TClonesArray*>(l->FindObject(clusArrayName));
     fAODCells = fAOD->GetEMCALCells();
     if(fDebug)
       printf("AOD cluster mult= %d\n",fAODClusters->GetEntriesFast());
   }
-  if(clusArrayName=="CaloClusters")
-    fClusArrayNames->Fill(0);
-  else{
-    if(clusArrayName=="EmcCaloClusters")
-      fClusArrayNames->Fill(1);
-    else
-      fClusArrayNames->Fill(2);
-  }
   if(fDebug){
-	printf("clus array is named %s +++++++++\n",clusArrayName.Data());
+    printf("clus array is named %s +++++++++\n",clusArrayName.Data());
   }
-    
-
+  
+  
   fMCEvent = MCEvent();
   if(fMCEvent){
     if(fDebug)
