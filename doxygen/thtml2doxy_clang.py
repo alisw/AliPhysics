@@ -81,7 +81,12 @@ def traverse_ast(cursor, recursion=0):
 
     in_compound_stmt = False
     expect_comment = False
-    last_comment_line = -1
+    emit_comment = False
+
+    comment = []
+    comment_function = text
+    comment_line_start = -1
+    comment_line_end = -1
 
     for token in cursor.get_tokens():
 
@@ -89,11 +94,11 @@ def traverse_ast(cursor, recursion=0):
         if not in_compound_stmt:
           in_compound_stmt = True
           expect_comment = True
-          last_comment_line = -1
+          comment_line_end = -1
       else:
         if in_compound_stmt:
           in_compound_stmt = False
-          break
+          emit_comment = True
 
       # tkind = str(token.kind)[str(token.kind).index('.')+1:]
       # ckind = str(token.cursor.kind)[str(token.cursor.kind).index('.')+1:]
@@ -109,27 +114,41 @@ def traverse_ast(cursor, recursion=0):
           if token.kind == clang.cindex.TokenKind.PUNCTUATION and token.spelling == '{':
             pass
 
-          elif token.kind == clang.cindex.TokenKind.COMMENT and (last_comment_line == -1 or (line_start == last_comment_line+1 and line_end-line_start == 0)):
-            #print Colt("%s  %s:%s = %s" % (indent, ckind, tkind, token.spelling)).green()
-            last_comment_line = line_end
-            new_comment = refactor_comment(token.spelling)
+          elif token.kind == clang.cindex.TokenKind.COMMENT and (comment_line_end == -1 or (line_start == comment_line_end+1 and line_end-line_start == 0)):
+            comment_line_end = line_end
 
-            for comment_line in new_comment:
-              logging.info(
-                Colt("%s  [%d-%d]" % (indent, line_start, line_end)).green() +
-                Colt(comment_line).cyan()
-              )
+            if comment_line_start == -1:
+              comment_line_start = line_start
+            comment.extend( refactor_comment(token.spelling) )
 
             # multiline comments are parsed in one go, therefore don't expect subsequent comments
             if line_end - line_start > 0:
+              emit_comment = True
               expect_comment = False
 
           else:
+            emit_comment = True
             expect_comment = False
 
-      # else:
-      #   print Colt("%s  %s:%s = %s" % (indent, ckind, tkind, token.spelling)).yellow()
+      if emit_comment:
 
+
+        if len(comment) > 0:
+          count_line = comment_line_start
+          logging.info("Comment found for function %s" % Colt(comment_function).magenta())
+          for comment_line in comment:
+            logging.info(
+              Colt("%s  [%d:%d] " % (indent, count_line, comment_line_end)).green() +
+              Colt(comment_line).cyan()
+            )
+            count_line = count_line + 1
+
+        comment = []
+        comment_line_start = -1
+        comment_line_end = -1
+
+        emit_comment = False
+        break
 
   else:
 
@@ -137,6 +156,7 @@ def traverse_ast(cursor, recursion=0):
 
   for child_cursor in cursor.get_children():
     traverse_ast(child_cursor, recursion+1)
+
 
 ## Remove garbage from comments and convert special tags from THtml to Doxygen.
 #
@@ -223,6 +243,7 @@ def main(argv):
   # Loop over all files
   for fn in args:
 
+    logging.info('Input file: %s' % Colt(fn).magenta())
     index = clang.cindex.Index.create()
     translation_unit = index.parse(fn, args=['-x', 'c++'])
     traverse_ast( translation_unit.cursor )
