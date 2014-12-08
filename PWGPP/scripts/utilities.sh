@@ -1,3 +1,4 @@
+#!/bin/bash
 #library of useful PWGPP related bash functions
 #it REQUIRES BASH 4 !!!!
 #blame: Mikolaj Krzewicki, mkrzewic@cern.ch
@@ -714,3 +715,8 @@ paranoidCopyFile()
   return 1
 )
 
+#this makes debugging easier:
+#executes the command given as an argument in this environment
+#use case:
+#  bashdb utilities.sh summarizeLogs * */*
+[[ $# != 0 ]] && eval "$@"
