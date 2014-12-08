@@ -1255,6 +1255,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
 //      CdWork();
       if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
       else file = Form("%s.xml", gSystem->BaseName(path));
+      // cholm - Identical loop - should be put in common function for code simplification
       while (1) {
          ncount = 0;
          stage++;
@@ -1295,7 +1296,10 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             cadd = (TGridCollection*)gROOT->ProcessLine(Form("new TAlienCollection(\"__tmp%d__%s\", 1000000);",stage,file.Data()));
             if (!cbase) cbase = cadd;
             else {
-               cbase->Add(cadd);
+	      // cholm - Avoid using very slow TAlienCollection 
+	      // cbase->Add(cadd);
+	      // cholm - Use AddFast (via interpreter)
+	      gROOT->ProcessLine(Form("((TAlienCollection*)%p)->AddFast((TGridCollection*)%p)",cbase,cadd));
                delete cadd;
             }   
             nstart += ncount;
@@ -1303,7 +1307,10 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             if (cbase) {
                cadd = (TGridCollection*)gROOT->ProcessLine(Form("new TAlienCollection(\"__tmp%d__%s\", 1000000);",stage,file.Data()));
                printf("... please wait - TAlienCollection::Add() scales badly...\n");
-               cbase->Add(cadd);
+	      // cholm - Avoid using very slow TAlienCollection 
+	      // cbase->Add(cadd);
+	      // cholm - Use AddFast (via interpreter)
+	      gROOT->ProcessLine(Form("((TAlienCollection*)%p)->AddFast((TGridCollection*)%p)",cbase,cadd));
                delete cadd;
                cbase->ExportXML(Form("file://%s", file.Data()),kFALSE,kFALSE, file, "Merged entries for a run");
                delete cbase; cbase = 0;               
@@ -1343,6 +1350,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
 //         CdWork();
          if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
          else file = Form("%s.xml", os->GetString().Data());
+	 // cholm - Identical loop - should be put in common function for code simplification
          // If local collection file does not exist, create it via 'find' command.
          while (1) {
             ncount = 0;
@@ -1390,7 +1398,11 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                cadd = (TGridCollection*)gROOT->ProcessLine(Form("new TAlienCollection(\"__tmp%d__%s\", 1000000);",stage,file.Data()));
                if (!cbase) cbase = cadd;
                else {
-                  cbase->Add(cadd);
+		  // cholm - Avoid using very slow TAlienCollection 
+		  // cbase->Add(cadd);
+		  // cholm - Use AddFast (via interpreter)
+		  gROOT->ProcessLine(Form("((TAlienCollection*)%p)->AddFast((TGridCollection*)%p)",cbase,cadd));
+
                   delete cadd;
                }   
                nstart += ncount;
@@ -1398,7 +1410,10 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                if (cbase && fNrunsPerMaster<2) {
                   cadd = (TGridCollection*)gROOT->ProcessLine(Form("new TAlienCollection(\"__tmp%d__%s\", 1000000);",stage,file.Data()));
                   printf("... please wait - TAlienCollection::Add() scales badly...\n");
-                  cbase->Add(cadd);
+		  // cholm - Avoid using very slow TAlienCollection 
+		  // cbase->Add(cadd);
+		  // cholm - Use AddFast (via interpreter)
+		  gROOT->ProcessLine(Form("((TAlienCollection*)%p)->AddFast((TGridCollection*)%p)",cbase,cadd));
                   delete cadd;
                   cbase->ExportXML(Form("file://%s", file.Data()),kFALSE,kFALSE, file, "Merged entries for a run");
                   delete cbase; cbase = 0;               
@@ -1435,7 +1450,10 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             } else {
                cadd = (TGridCollection*)gROOT->ProcessLine(Form("new TAlienCollection(\"%s\", 1000000);",file.Data()));
                printf("   Merging collection <%s> into masterjob input...\n", file.Data());
-               cbase->Add(cadd);
+	       // cholm - Avoid using very slow TAlienCollection 
+	       // cbase->Add(cadd);
+	       // cholm - Use AddFast (via interpreter)
+	       gROOT->ProcessLine(Form("((TAlienCollection*)%p)->AddFast((TGridCollection*)%p)",cbase,cadd));
                delete cadd;
             }
             if ((nruns%fNrunsPerMaster)!=0 && os!=arr->Last()) {
@@ -1483,6 +1501,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                continue;
             }   
          }
+	 // cholm - Identical loop - should be put in common function for code simplification
          // If local collection file does not exist, create it via 'find' command.
          while (1) {
             ncount = 0;
@@ -1529,7 +1548,10 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                cadd = (TGridCollection*)gROOT->ProcessLine(Form("new TAlienCollection(\"__tmp%d__%s\", 1000000);",stage,file.Data()));
                if (!cbase) cbase = cadd;
                else {
-                  cbase->Add(cadd);
+		 // cholm - Avoid using very slow TAlienCollection 
+		 // cbase->Add(cadd);
+		 // cholm - Use AddFast (via interpreter)
+		 gROOT->ProcessLine(Form("((TAlienCollection*)%p)->AddFast((TGridCollection*)%p)",cbase,cadd));
                   delete cadd;
                }   
                nstart += ncount;
@@ -1537,7 +1559,10 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                if (cbase && fNrunsPerMaster<2) {
                   cadd = (TGridCollection*)gROOT->ProcessLine(Form("new TAlienCollection(\"__tmp%d__%s\", 1000000);",stage,file.Data()));
                   printf("... please wait - TAlienCollection::Add() scales badly...\n");
-                  cbase->Add(cadd);
+		 // cholm - Avoid using very slow TAlienCollection 
+		 // cbase->Add(cadd);
+		 // cholm - Use AddFast (via interpreter)
+		 gROOT->ProcessLine(Form("((TAlienCollection*)%p)->AddFast((TGridCollection*)%p)",cbase,cadd));
                   delete cadd;
                   cbase->ExportXML(Form("file://%s", file.Data()),kFALSE,kFALSE, file, "Merged entries for a run");
                   delete cbase; cbase = 0;               
@@ -1578,7 +1603,10 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                cbase = (TGridCollection*)gROOT->ProcessLine(Form("new TAlienCollection(\"%s\", 1000000);",file.Data()));
             } else {
                cadd = (TGridCollection*)gROOT->ProcessLine(Form("new TAlienCollection(\"%s\", 1000000);",file.Data()));
-               cbase->Add(cadd);
+	       // cholm - Avoid using very slow TAlienCollection 
+	       // cbase->Add(cadd);
+	       // cholm - Use AddFast (via interpreter)
+	       gROOT->ProcessLine(Form("((TAlienCollection*)%p)->AddFast((TGridCollection*)%p)",cbase,cadd));
                delete cadd;
             }
             format = Form("%%s_%s.xml", fRunPrefix.Data());
