@@ -356,7 +356,9 @@ namespace EmcalHJetMassAnalysis {
     }
   
     if(fMinFractionShared>0. && fraction>fMinFractionShared) {
-      if(vp->TestBits(fEmbConstSel) == (Int_t)fEmbConstSel) {
+      if(vp->TestBits(fEmbConstSel) != (Int_t)fEmbConstSel) 
+        AliDebug(11,Form("Skipping track with pT=%f because it does not match the bit mask (%d, %d)", vp->Pt(), fEmbConstSel, vp->TestBits(fEmbConstSel)));
+      else {
         fh3PtJet1VsMassVsHPtAllSelMatch[fCentBin]->Fill(ptJet,mJet,pt);
         fh3PtJet1VsRatVsHPtAllSelMatch[fCentBin]->Fill(ptJet,rat,pt);
       }
@@ -369,7 +371,9 @@ namespace EmcalHJetMassAnalysis {
     fh3PtJet1VsRatVsHPtTagged[fCentBin]->Fill(ptJet,rat,pt);
 
     if(fMinFractionShared>0. && fraction>fMinFractionShared) {
-      if(vp->TestBits(fEmbConstSel) == (Int_t)fEmbConstSel) {
+      if(vp->TestBits(fEmbConstSel) != (Int_t)fEmbConstSel) 
+        AliDebug(11,Form("Skipping track with pT=%f because it does not match the bit mask (%d, %d)", vp->Pt(), fEmbConstSel, vp->TestBits(fEmbConstSel)));
+      else {
         fh3PtJet1VsMassVsHPtTaggedMatch[fCentBin]->Fill(ptJet,mJet,pt);
         fh3PtJet1VsRatVsHPtTaggedMatch[fCentBin]->Fill(ptJet,rat,pt);
       }
