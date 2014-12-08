@@ -287,8 +287,9 @@ def main(argv):
   )
 
   # Parse command-line options
+  output_on_stdout = False
   try:
-    opts, args = getopt.getopt( argv, 'd', [ 'debug=' ] )
+    opts, args = getopt.getopt( argv, 'od', [ 'debug=', 'stdout' ] )
     for o, a in opts:
       if o == '--debug':
         log_level = getattr( logging, a.upper(), None )
@@ -296,6 +297,9 @@ def main(argv):
           raise getopt.GetoptError('log level must be one of: DEBUG, INFO, WARNING, ERROR, CRITICAL')
       elif o == '-d':
         log_level = logging.DEBUG
+      elif o == '-o' or o == '--stdout':
+        logging.debug('Output on stdout instead of replacing original files')
+        output_on_stdout = True
       else:
         assert False, 'Unhandled argument'
   except getopt.GetoptError as e:
@@ -341,15 +345,18 @@ def main(argv):
 
     try:
 
-      # rename current file to something else
-      fn_back = fn + '.thtml2doxy_backup'
-      os.rename( fn, fn_back )
+      if output_on_stdout:
+        with open(fn, 'r') as fhin:
+          rewrite_comments( fhin, sys.stdout, comments )
+      else:
+        fn_back = fn + '.thtml2doxy_backup'
+        os.rename( fn, fn_back )
 
-      with open(fn_back, 'r') as fhin, open(fn, 'w') as fhout:
-        rewrite_comments( fhin, fhout, comments )
+        with open(fn_back, 'r') as fhin, open(fn, 'w') as fhout:
+          rewrite_comments( fhin, fhout, comments )
 
-      os.remove( fn_back )
-      logging.info("File %s converted to Doxygen: check differences before committing!" % Colt(fn).magenta())
+        os.remove( fn_back )
+        logging.info("File %s converted to Doxygen: check differences before committing!" % Colt(fn).magenta())
     except (IOError,OSError) as e:
       logging.error('File operation failed: %s' % e)
 
