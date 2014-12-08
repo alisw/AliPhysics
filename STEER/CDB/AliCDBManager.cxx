@@ -788,7 +788,8 @@ void AliCDBManager::GetLHCPeriodAgainstAlienFile(Int_t run, TString& lhcPeriod, 
     }
   }
   TUUID uuid;
-  TString rndname = "/tmp/";
+  TString rndname = gSystem->TempDirectory(); // "/tmp/";
+  rndname += "/";
   rndname += "OCDBFolderXML.";
   rndname += uuid.AsString();
   rndname += ".xml";
