@@ -551,3 +551,14 @@ createUniquePID()
   [[ -n "${productionID}" ]] && id+=" prod:${productionID}"
   echo "${id}"
 }
+
+guessRunNumber()
+(
+  #guess the run number from the path, pick the rightmost one
+  if guessRunData "${1}"; then
+    echo ${runNumber}
+    return 0
+  fi
+  return 1
+)
+

@@ -1391,18 +1391,11 @@ guessYear()
 guessRunNumber()
 (
   #guess the run number from the path, pick the rightmost one
-  #works for /path/foo/000123456/bar/...
-  #and       /path/foo.run123456.bar
-  local IFS="/."
-  declare -a path=( ${1} )
-  local dirDepth=${#path[*]}
-  for ((x=${dirDepth}-1;x>=0;x--)); do
-    local field=${path[${x}]}
-    field=${field/run/000}
-    [[ ${field} =~ [0-9][0-9][0-9][0-9][0-9][0-9]$ ]] && runNumber=${field#000} && break
-  done
-  echo ${runNumber}
-  return 0
+  if guessRunData "${1}"; then
+    echo ${runNumber}
+    return 0
+  fi
+  return 1
 )
 
 validateLog()
