@@ -158,7 +158,6 @@ AliJEbECORRTask& AliJEbECORRTask::operator = (const AliJEbECORRTask& ap){
 Bool_t AliJEbECORRTask::UserNotify() {
 
 	cout <<"UserNotify  ievt =" << fevt << endl;
-	cout <<  MemoryStatus() << endl;
 	return kTRUE;
 }
 
@@ -167,7 +166,6 @@ Bool_t AliJEbECORRTask::UserNotify() {
 void AliJEbECORRTask::UserCreateOutputObjects(){
 	// Create histograms
 	// Called once
-	if(fDebugMode) cout <<"UserCreateOutputObjects:0 "<< MemoryStatus() << endl;
 
 	fRandom = new TRandom(0);
 
@@ -188,34 +186,23 @@ void AliJEbECORRTask::UserCreateOutputObjects(){
 	fOutput = gDirectory;
 	fOutput->cd();
 
-	if(fDebugMode) cout <<"UserCreateOutputObjects: fHistos 0 "<< MemoryStatus() << endl;
 	fHistos = new AliJHistos(fCard);
-	if(fDebugMode) cout <<"UserCreateOutputObjects: fHistos x1 "<< MemoryStatus() << endl;
 	fHistos->CreateEventTrackHistos();
-	if(fDebugMode) cout <<"UserCreateOutputObjects: fHistos x2 "<< MemoryStatus() << endl;
 	fHistos->CreateAzimuthCorrHistos();
-	if(fDebugMode) cout <<"UserCreateOutputObjects: fHistos x3 "<< MemoryStatus() << endl;
 	fHistos->CreateIAAMoons();
-	if(fDebugMode) cout <<"UserCreateOutputObjects: fHistos x4 "<< MemoryStatus() << endl;
 	fHistos->CreateXEHistos();
-	if(fDebugMode) cout <<"UserCreateOutputObjects: fHistos x5 "<< MemoryStatus() << endl;
 	fHistos->CreateXtHistos();
-	if(fDebugMode) cout <<"UserCreateOutputObjects: fHistos x6 "<< MemoryStatus() << endl;
 	fHistos->CreatePairPtCosThetaStar();
-	if(fDebugMode) cout <<"UserCreateOutputObjects: fHistos x7 "<< MemoryStatus() << endl;
 
 	fHistos->fHMG->Print();
-	if(fDebugMode) cout <<"UserCreateOutputObjects: fHistos 1 "<< MemoryStatus() << endl;
 	// E-b-E
 	fEbeHistos = new AliJEbeHistos(fCard);
 	fEbeHistos->CreateUnfoldingHistos();
-	if(fDebugMode) cout <<"UserCreateOutputObjects: fEbeHistos 1 "<< MemoryStatus() << endl;
 
 	fcorrelations = new AliJCorrelations(fCard, fHistos);
 	fassocPool   = new AliJEventPool( fCard, fHistos, fcorrelations, kJHadron);
 	fEbePercentile = new AliJEbePercentile(fCard, ebePercentileInputFileName);
 	fEbECentBinBorders = fCard->GetVector("EbECentBinBorders");
-	if(fDebugMode) cout <<"UserCreateOutputObjects: fEbePercentile 1 "<< MemoryStatus() << endl;
 
 	fEfficiency = new AliJEfficiency();	
 	fEfficiency->SetMode( fCard->Get("EfficiencyMode") ); // 0:NoEff, 1:Period 2:RunNum 3:Auto
