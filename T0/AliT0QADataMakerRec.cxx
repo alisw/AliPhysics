@@ -268,6 +268,34 @@ void AliT0QADataMakerRec::InitRaws()
   const Bool_t image    = kTRUE ; 
   Float_t low[500];
   Float_t high[500];
+  //new QTC
+  // 00,01, 10, 11; C1,C2,C3, A1, A2, A3
+  Float_t lowqt[100] = {
+    17500, 17500, 18500, 18500, //C1
+    17500, 17500, 18500, 18500, //C2
+    18500, 18500, 17500, 17500, //c3
+    17500, 17500, 18500, 18500, //c4
+    17500, 17500, 18500, 18500, //c5
+    18500, 18500, 17500, 17500, //c6
+    17500, 17500, 18500, 18500,  //c7
+    18500, 18500, 17500, 17500,  //c8
+    18500, 18500, 17500, 17500, //c9
+    17500, 17500, 18500, 18500,  //c10
+    18500, 18500, 17500, 17500,  //c11
+    18500, 18500, 17500, 17500,  //c12
+    22000, 22000, 21000, 21000,  //a1
+    21000, 21000, 22000, 22000, //a2
+    21000, 21000, 22000, 22000, //a3
+    22000, 22000, 21000, 21000,  //a4
+    21000, 21000, 22000, 22000, //a5
+    21000, 21000, 22000, 22000, //a6
+    22000, 22000, 21000, 21000,  //a7
+    21000, 21000, 22000, 22000, //a8
+    21000, 21000, 22000, 22000, //a9
+    22000, 22000, 21000, 21000,  //a10
+    21000, 21000, 22000, 22000, //a11
+    21000, 21000, 22000, 22000//a12
+  };
   //triggers
   const Char_t *triggers[6] = {"T0 OR", "vertex","ORA","ORC","central","semi-central"};
    
@@ -295,46 +323,87 @@ void AliT0QADataMakerRec::InitRaws()
   TH1F *hRawQTC[24]; TH1F *hRawLED[24];
   TH1F *hRawQT1[24]; TH1F *hRawQT0[24];
   TH1F* hRawNhits[24];
- 
+  TH1F* hRawNewQT00[24], *hRawNewQT01[24], *hRawNewQT10[24], *hRawNewQT11[24];
+  TH1F* hRawNewQTC0[24], *hRawNewQTC1[24];
   for(Int_t i=0; i<24; i++){
+    timename ="hRawCFD";
+    ledname = "hRawLED";
+    qtcname = "hRawQTC";
+    qt0name = "hRawQT0_";
+    qt1name = "hRawQT1_";
+    ampname = "hRawLEDminCFD";
+    nhits = "hRawNhits";
+    timename += i+1;
+    ampname += i+1;
+    qtcname += i+1;
+    qt0name += i+1;
+    qt1name += i+1;
+    ledname += i+1;
+    nhits   += i+1;
     
-      timename ="hRawCFD";
-      ledname = "hRawLED";
-      qtcname = "hRawQTC";
-      qt0name = "hRawQT0_";
-      qt1name = "hRawQT1_";
-      ampname = "hRawLEDminCFD";
-      nhits = "hRawNhits";
-      timename += i+1;
-      ampname += i+1;
-      qtcname += i+1;
-      qt0name += i+1;
-      qt1name += i+1;
-      ledname += i+1;
-      nhits   += i+1;
-      hRawCFD[i] = new TH1F(timename.Data(), Form("%s;CFD [#channels]; Counts", timename.Data()),Int_t((high[i+1]-low[i+1])/4),low[i+1],high[i+1]);
-      //      ForbidCloning(hRawCFD[i]);       //RS I don't know how histos 1-24 should be processed in MakeRaws, for the moment forbidding the cloning
-      Add2RawsList( hRawCFD[i],i+1, expert, !image, !saveCorr);
-      hRawLED[i] = new TH1F(ledname.Data(),  Form("%s;LED [#channels]; Counts", ledname.Data()),Int_t((high[i+25]-low[i+25])/4),low[i+25],high[i+25]);
-      Add2RawsList( hRawLED[i],i+25, expert, !image, !saveCorr);
-      hRawLEDamp[i] = new TH1F(ampname.Data(),  Form("%s;LED-CFD [#channels]; Counts", ampname.Data()),1000,0,1000);
-      Add2RawsList( hRawLEDamp[i],i+49, expert, !image, !saveCorr);
-      hRawQTC[i] = new TH1F(qtcname.Data(),  Form("%s;QTC[#channels]; Counts", qtcname.Data()), 2500,0,10000); //fk
-      //QT0
-      Add2RawsList( hRawQTC[i],i+73, expert, !image, !saveCorr);
-      hRawQT0[i] = new TH1F(qt0name.Data(),  Form("%s; QT0 [#channels]; Counts", qt0name.Data()),Int_t((high[97+i]-low[97+i])/4),low[97+i],high[97+i]);
-      Add2RawsList( hRawQT0[i],97+i, expert, !image, !saveCorr);
-      //QT1
-      hRawQT1[i] = new TH1F(qt1name.Data(),  Form("%s; QT1 [#channels]; Counts", qt1name.Data()),Int_t((high[121+i]-low[121+i])/4),low[121+i],high[121+i]);
-      Add2RawsList( hRawQT1[i],121+i, expert, !image, !saveCorr);
+    hRawCFD[i] = new TH1F(timename.Data(), Form("%s;CFD [#channels]; Counts", timename.Data()),Int_t((high[i+1]-low[i+1])/4),low[i+1],high[i+1]);
+    //      ForbidCloning(hRawCFD[i]);       //RS I don't know how histos 1-24 should be processed in MakeRaws, for the moment forbidding the cloning
+    Add2RawsList( hRawCFD[i],i+1, expert, !image, !saveCorr);
+    hRawLED[i] = new TH1F(ledname.Data(),  Form("%s;LED [#channels]; Counts", ledname.Data()),Int_t((high[i+25]-low[i+25])/4),low[i+25],high[i+25]);
+    Add2RawsList( hRawLED[i],i+25, expert, !image, !saveCorr);
+    hRawLEDamp[i] = new TH1F(ampname.Data(),  Form("%s;LED-CFD [#channels]; Counts", ampname.Data()),1000,0,1000);
+    Add2RawsList( hRawLEDamp[i],i+49, expert, !image, !saveCorr);
+    hRawQTC[i] = new TH1F(qtcname.Data(),  Form("%s;QTC[#channels]; Counts", qtcname.Data()), 2500,0,10000); //fk
+    //QT0
+    Add2RawsList( hRawQTC[i],i+73, expert, !image, !saveCorr);
+    hRawQT0[i] = new TH1F(qt0name.Data(),  Form("%s; QT0 [#channels]; Counts", qt0name.Data()),Int_t((high[97+i]-low[97+i])/4),low[97+i],high[97+i]);
+    Add2RawsList( hRawQT0[i],97+i, expert, !image, !saveCorr);
+    //QT1
+    hRawQT1[i] = new TH1F(qt1name.Data(),  Form("%s; QT1 [#channels]; Counts", qt1name.Data()),Int_t((high[121+i]-low[121+i])/4),low[121+i],high[121+i]);
+    Add2RawsList( hRawQT1[i],121+i, expert, !image, !saveCorr);
+    
+    hRawNhits[i] = new TH1F(nhits.Data(),  Form("%s;#Hits;Events", nhits.Data()),20, 0, 20);
+    Add2RawsList( hRawNhits[i],176+i, expert, !image, !saveCorr);
+  }     
+  // new QTC 
+  Int_t ihist=0;
+  for (Int_t i=0; i<12; i++)
+    {      
+      hRawNewQT00[i] = new TH1F(Form("hnewRawQT00_C%i",i+1),  Form("hRawQTnew00_%i; #channels;Events",i+1),1000, lowqt[ihist], lowqt[ihist]+1000);
+      Add2RawsList(hRawNewQT00[i],1000+ihist, expert, !image, !saveCorr);
+      ihist++;
+      hRawNewQT01[i] = new TH1F(Form("hnewRawQT01_C%i",i+1),  Form("hRawQTnew01_%i ;#channels;Events",i+1),1000, lowqt[ihist], lowqt[ihist]+1000);
+      Add2RawsList(hRawNewQT01[i],1000+ihist, expert, !image, !saveCorr);
+      ihist++;
+      hRawNewQT10[i] = new TH1F(Form("hnewRawQT10_C%i",i+1),  Form("hRawQTnew10_%i ;#channels;Events",i+1),1000, lowqt[ihist], lowqt[ihist]+1000);
+      Add2RawsList(hRawNewQT10[i],1000+ihist, expert, !image, !saveCorr);
+      ihist++;
+      hRawNewQT11[i] = new TH1F(Form("hnewRawQT11_C%i",i+1),  Form("hRawQTnew11_%i ;#channels;Events",i+1),1000, lowqt[ihist], lowqt[ihist]+1000);
+      Add2RawsList(hRawNewQT11[i],1000+ihist, expert, !image, !saveCorr);
+      ihist++;
+    }    
+  for (Int_t i=12; i<24; i++)
+    {      
+      hRawNewQT00[i] = new TH1F(Form("hnewRawQT00_A%i",i+1),  Form("hRawQTnew 00_A %i; #channels;Events",i+1-12),1000, lowqt[ihist], lowqt[ihist]+1000);
+      Add2RawsList(hRawNewQT00[i],1000+ihist, expert, !image, !saveCorr);
+      ihist++;
+      hRawNewQT01[i] = new TH1F(Form("hnewRawQT01_A%i",i+1),  Form("hRawQTnew01_A %i ;#channels;Events",i+1-12),1000, lowqt[ihist], lowqt[ihist]+1000);
+      Add2RawsList(hRawNewQT01[i],1000+ihist, expert, !image, !saveCorr);
+      ihist++;
+      hRawNewQT10[i] = new TH1F(Form("hnewRawQT10_A%i",i+1),  Form("hRawQTnew10_A %i ;#channels;Events",i+1-12),1000, lowqt[ihist], lowqt[ihist]+1000);
+      Add2RawsList(hRawNewQT10[i],1000+ihist, expert, !image, !saveCorr);
+      ihist++;
+      hRawNewQT11[i] = new TH1F(Form("hnewRawQT11_A%i",i+1),  Form("hRawQTnew11_A %i ;#channels;Events",i+1-12),1000, lowqt[ihist], lowqt[ihist]+1000);
+      Add2RawsList(hRawNewQT11[i],1000+ihist, expert, !image, !saveCorr);
+      ihist++;
+    }    
+  for (Int_t i=0; i<24; i++)
+    {      
+      hRawNewQTC0[i] = new TH1F(Form("hnewRawQTC0_%i",i+1),  Form("hRawQTC new 0_%i;#channels;Events",i+1),500, -10, 510);
+      Add2RawsList(hRawNewQTC0[i],1096+i, expert, !image, !saveCorr);
       
-      hRawNhits[i] = new TH1F(nhits.Data(),  Form("%s;#Hits;Events", nhits.Data()),20, 0, 20);
-      Add2RawsList( hRawNhits[i],176+i, expert, !image, !saveCorr);
-  }
-  
       
+      hRawNewQTC1[i] = new TH1F(Form("hnewRawQTC1_%i",i+1),  Form("hRawQTC new 1 %i ;#channels;Events",i+1),500, -10, 510);
+      Add2RawsList(hRawNewQTC1[i],1120+i, expert, !image, !saveCorr);
+      
+    }     
   TH1F* hRawTrigger = new TH1F("hRawTrigger"," triggers;Trigger ;Counts",6,0,6);
-  for (Int_t itr=0; itr<6; itr++) hRawTrigger->Fill(triggers[itr], 0); // RS Modified to allow cloning (no fNumTriggers member anymore)
+    for (Int_t itr=0; itr<6; itr++) hRawTrigger->Fill(triggers[itr], 0); // RS Modified to allow cloning (no fNumTriggers member anymore)
   Add2RawsList(hRawTrigger ,169, !expert, image, !saveCorr);
   TH1F* hRawMean = new TH1F("hRawMean","online timer mean signal, physics event;",Int_t((high[170]-low[170])/4),low[170],high[170]);
   Add2RawsList( hRawMean,170, expert, !image, !saveCorr);
@@ -649,14 +718,14 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
  
  //  }    
   //    if (type == 7){ shift=1;   fnEventPhys++;}
-  Int_t allData[110][5];
-  for(Int_t i0=0; i0<110; i0++){
+  Int_t allData[220][5];
+  for(Int_t i0=0; i0<220; i0++){
     for(Int_t j0=0; j0<5; j0++){
       allData[i0][j0]=0;
     } 
   }
 
-  for(Int_t i=0; i<=kT0multCQ1; i++){ 
+  for(Int_t i=0; i<=202; i++){ 
     for(Int_t iHit=0; iHit<5; iHit++){
       allData[i][iHit]= start->GetData(i,iHit);
     }
@@ -793,9 +862,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
       if(allData[kTZeroVertex][iHt]>0){ //TVDC on
 	FillRawsData(234, diffORA, diffORC);     
          //Estimate mean orA and orC based on these
-       //cout<<"ORA  "<<allData[kTZeroOrA][iHt]<<endl;
-       //cout<<"ORC  "<<allData[kTZeroOrC][iHt]<<endl;
-
+ 
       }else{//TVDC off
 	FillRawsData(235, diffORA, diffORC);
       }
@@ -829,7 +896,18 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
     
   FillRawsData(215,nhitsOrA);
   FillRawsData(216,nhitsOrC);
-    
+
+  // new QTC 
+  for(Int_t iHt = 0; iHt<5; iHt++) {
+    for(Int_t ik = 0; ik<96; ik++) 
+      { 
+	FillRawsData(ik+1000, allData[107+ik][iHt]);
+	Int_t pmt= ik/4;
+	FillRawsData(pmt+1096, allData[107+pmt*4][iHt] - allData[107+pmt*4+1][iHt]);
+	FillRawsData(pmt+371, allData[107+pmt*4+2][iHt] - allData[107+pmt*4+3][iHt]); 
+      }
+  }
+
   //draw satellite
   for (int itr=-1;itr<GetNEventTrigClasses();itr++) { //RS loop over all active trigger classes, including the global one
     int itrID = itr==-1 ? -1 : int( GetEventTrigClass(itr)->GetUniqueID());
