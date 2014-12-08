@@ -54,6 +54,7 @@ class AliJEbECORRTask : public AliAnalysisTaskSE {
 		AliJCard *GetCard() { return fCard; }
 		void SetCard( AliJCard *c ) { fCard = c; }
 		void SetEbePercentileInputFileName(TString name) { ebePercentileInputFileName = name; };
+/*
 		TString MemoryStatus(){
 			int pid = getpid();
 			TString key;
@@ -79,6 +80,7 @@ class AliJEbECORRTask : public AliAnalysisTaskSE {
 			ins.close();
 			return res;
 		};
+*/
 
 	private:
 		TDirectory           *fOutput;     // Output
