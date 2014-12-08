@@ -61,14 +61,16 @@ class Colt(str):
 ## Comment.
 class Comment:
 
-  def __init__(self, lines, first_line, last_line, func):
+  def __init__(self, lines, first_line, first_col, last_line, last_col, func):
     self.lines = lines
     self.first_line = first_line
+    self.first_col = first_col
     self.last_line = last_line
+    self.last_col = last_col
     self.func = func
 
   def __str__(self):
-    return "<Comment for %s: [%d:%d] %s>" % (self.func, self.first_line, self.last_line, self.lines)
+    return "<Comment for %s: [%d,%d:%d,%d] %s>" % (self.func, self.first_line, self.first_col, self.last_line, self.last_col, self.lines)
 
 
 ## Traverse the AST recursively starting from the current cursor.
@@ -101,6 +103,8 @@ def traverse_ast(cursor, comments, recursion=0):
     comment_function = text
     comment_line_start = -1
     comment_line_end = -1
+    comment_col_start = -1
+    comment_col_end = -1
 
     for token in cursor.get_tokens():
 
@@ -130,9 +134,11 @@ def traverse_ast(cursor, comments, recursion=0):
 
           elif token.kind == clang.cindex.TokenKind.COMMENT and (comment_line_end == -1 or (line_start == comment_line_end+1 and line_end-line_start == 0)):
             comment_line_end = line_end
+            comment_col_end = extent.end.column
 
             if comment_line_start == -1:
               comment_line_start = line_start
+              comment_col_start = extent.start.column
             comment.extend( token.spelling.split('\n') )
 
             # multiline comments are parsed in one go, therefore don't expect subsequent comments
@@ -150,11 +156,13 @@ def traverse_ast(cursor, comments, recursion=0):
 
         if len(comment) > 0:
           logging.debug("Comment found for function %s" % Colt(comment_function).magenta())
-          comments.append( Comment(comment, comment_line_start, comment_line_end, comment_function) )
+          comments.append( Comment(comment, comment_line_start, comment_col_start, comment_line_end, comment_col_end, comment_function) )
 
         comment = []
         comment_line_start = -1
         comment_line_end = -1
+        comment_col_start = -1
+        comment_col_end = -1
 
         emit_comment = False
         break
@@ -256,8 +264,8 @@ def main(argv):
     for c in comments:
       logging.info("Comment found for %s:" % Colt(c.func).magenta())
       for l in c.lines:
-        logging.warning(
-          Colt("[%d:%d] " % (c.first_line, c.last_line)).green() +
+        logging.info(
+          Colt("[%d,%d:%d,%d] " % (c.first_line, c.first_col, c.last_line, c.last_col)).green() +
           "{%s}" % Colt(l).cyan()
         )
 
