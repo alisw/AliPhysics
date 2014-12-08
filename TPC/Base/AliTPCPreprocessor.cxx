@@ -399,7 +399,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
  	 pulserSource[1] = AliShuttleInterface::kDAQ;
      }
      if (source == "DAQHLT" ) numSources=2;
-     if (source == "TRY" ) numSources=2;
+     if (source == "TRY" ) numSources=1;
      UInt_t pulserResult=0;
      for (Int_t i=0; i<numSources; i++ ) {	
        pulserResult = ExtractPulser(pulserSource[i]);
@@ -428,7 +428,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
  	 rawSource[1] = AliShuttleInterface::kDAQ;
      }
      if (source == "DAQHLT" ) numSources=2;
-     if (source == "TRY" ) numSources=2;
+     if (source == "TRY" ) numSources=1;
      UInt_t rawResult=0;
      for (Int_t i=0; i<numSources; i++ ) {	
        rawResult = ExtractRaw(rawSource[i]);
@@ -472,7 +472,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
 	ceSource[1] = AliShuttleInterface::kDAQ;
      }
      if (source == "DAQHLT" ) numSources=2;
-     if (source == "TRY" ) numSources=2;
+     if (source == "TRY" ) numSources=1;
      UInt_t ceResult=0;
      for (Int_t i=0; i<numSources; i++ ) {	
        ceResult = ExtractCE(ceSource[i]);
@@ -499,7 +499,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
 	qaSource[1] = AliShuttleInterface::kDAQ;
      }
      if (source == "DAQHLT" ) numSources=2;
-     if (source == "TRY" ) numSources=2;
+     if (source == "TRY" ) numSources=1;
      UInt_t qaResult=0;
      for (Int_t i=0; i<numSources; i++ ) {	
        qaResult = ExtractQA(qaSource[i]);
