@@ -128,6 +128,36 @@ guessRunData()
   return 0
 }
 
+guessRunNumber()
+(
+  #guess the run number from the path, pick the rightmost one
+  if guessRunData "${1}"; then
+    echo ${runNumber}
+    return 0
+  fi
+  return 1
+)
+
+guessYear()
+(
+  #guess the year from the path, pick the rightmost one
+  if guessRunData "${1}"; then
+    echo ${year}
+    return 0
+  fi
+  return 1
+)
+
+guessPeriod()
+(
+  #guess the period from the path, pick the rightmost one
+  if guessRunData "${1}"; then
+    echo ${period}
+    return 0
+  fi
+  return 1
+)
+
 setYear()
 {
   #set the year
@@ -245,6 +275,7 @@ summarizeLogs()
   #input is a list of logs, or a glob:
   #example (summarizes logs in current and subdirs):
   #  summarizeLogs * */*
+  #if no args given, process all files in PWD
   #exit code 1 if some logs are not validated
 
   #print a summary of logs
@@ -458,9 +489,9 @@ decSpaces()
 get_realpath() 
 {
   if [[ $# -lt 1 ]]; then
-    echo "print the full path of a file, like \"readlink -f\" on linux"
+    echo "print the full path of a file or directory, like \"readlink -f\" on linux"
     echo "Usage:"
-    echo "  get_realpath <someFile>"
+    echo "  get_realpath <someFileOrDir>"
     return 0
   fi
   if [[ -f "$1" ]]
@@ -476,6 +507,15 @@ get_realpath()
     else
       # file *must* be local
       local tmppwd="$PWD"
+    fi
+  elif [[ -d "$1" ]]; then
+    if cd "$1" &>/dev/null; then
+      local tmppwd="$PWD"
+      cd - &>/dev/null
+      echo "$tmppwd"
+      return 0
+    else
+      return 1
     fi
   else
     # file *cannot* exist
@@ -552,13 +592,120 @@ createUniquePID()
   echo "${id}"
 }
 
-guessRunNumber()
+copyFileToLocal()
 (
-  #guess the run number from the path, pick the rightmost one
-  if guessRunData "${1}"; then
-    echo ${runNumber}
+  #copies a single file to a local destination: the file may either come from
+  #a local filesystem or from a remote location (whose protocol must be
+  #supported)
+  #copy is "robust" and it is repeated some times in case of failure before
+  #giving up (1 is returned in that case)
+  src="$1"
+  dst="$2"
+  ok=0
+  [[ -z "${maxCopyTries}" ]] && maxCopyTries=10
+
+  proto="${src%%://*}"
+
+  echo "copy file to local dest started: $src -> $dst"
+
+  for (( i=1 ; i<=maxCopyTries ; i++ )) ; do
+
+    echo "...attempt $i of $maxCopyTries"
+    rm -f "$dst"
+
+    if [[ "$proto" == "$src" ]]; then
+      cp "$src" "$dst"
+    else
+      case "$proto" in
+        root)
+          xrdcp -f "$src" "$dst"
+        ;;
+        http)
+          curl -L "$src" -O "$dst"
+        ;;
+        *)
+          echo "protocol not supported: $proto"
+          return 2
+        ;;
+      esac
+    fi
+
+    if [ $? == 0 ] ; then
+      ok=1
+      break
+    fi
+
+  done
+
+  if [[ "$ok" == 1 ]] ; then
+    echo "copy file to local dest OK after $i attempt(s): $src -> $dst"
     return 0
   fi
+
+  echo "copy file to local dest FAILED after $maxCopyTries attempt(s): $src -> $dst"
+  return 1
+)
+
+paranoidCp()
+(
+  #recursively copy files and directories
+  #if target is a directory - it must exist!
+  #to avoid using find and the like as they kill
+  #the performance on some cluster file systems
+  #does not copy links to avoid problems
+  sourceFiles=("${@}")
+  destination="${sourceFiles[@]:(-1)}" #last element
+  unset sourceFiles[${#sourceFiles[@]}-1] #remove last element (dst)
+  #[[ ! -f "${destination}" ]] 
+  for src in "${sourceFiles[@]}"; do
+    if [[ -f "${src}" && ! -h  "${src}" ]]; then
+      paranoidCopyFile "${src}" "${destination}"
+    elif [[ -d "${src}" && ! -h "${src}" ]]; then
+      src="${src%/}"
+      dst="${destination}/${src##*/}"
+      mkdir -p "${dst}"
+      paranoidCp "${src}"/* "${dst}"
+    fi
+  done
+)
+
+paranoidCopyFile()
+(
+  #copy a single file to a target in an existing dir
+  #repeat a few times if copy fails
+  #returns 1 on failure, 0 on success
+  src=$(get_realpath "${1}")
+  dst=$(get_realpath "${2}")
+  [[ -d "${dst}" ]] && dst="${dst}/${src##*/}"
+  #some sanity check
+  [[ -z "${src}" ]] && echo "$1 does not exist" && return 1
+  [[ -z "${dst}" ]] && echo "$2 does not exist" && return 1
+  #check if we are not trying to copy to the same file
+  [[ "${src}" == "${dst}" ]] && echo "$dst==$src, not copying" && return 0
+  ok=0
+  [[ -z "${maxCopyTries}" ]] && maxCopyTries=10
+
+  echo "paranoid copy started: $src -> $dst"
+  for (( i=1 ; i<=maxCopyTries ; i++ )) ; do
+
+    echo "...attempt $i of $maxCopyTries"
+    rm -f "$dst"
+    cp "$src" "$dst"
+
+    cmp -s "$src" "$dst"
+    if [ $? == 0 ] ; then
+      ok=1
+      break
+    fi
+
+  done
+
+  if [[ "$ok" == 1 ]] ; then
+    echo "paranoid copy OK after $i attempt(s): $src -> $dst"
+    return 0
+  fi
+
+  echo "paranoid copy FAILED after $maxCopyTries attempt(s): $src -> $dst"
   return 1
 )
 
