@@ -167,9 +167,15 @@ def comment_method(cursor, comments):
 ## Traverse the AST recursively starting from the current cursor.
 #
 #  @param cursor    A Clang parser cursor
+#  @param filename  Name of the current file
 #  @param comments  Array of comments: new ones will be appended there
 #  @param recursion Current recursion depth
-def traverse_ast(cursor, comments, recursion=0):
+def traverse_ast(cursor, filename, comments, recursion=0):
+
+  # libclang traverses included files as well: we do not want this behavior
+  if cursor.location.file is not None and str(cursor.location.file) != filename:
+    logging.debug("Skipping processing of included %s" % cursor.location.file)
+    return
 
   text = cursor.spelling or cursor.displayname
   kind = str(cursor.kind)[str(cursor.kind).index('.')+1:]
@@ -189,7 +195,7 @@ def traverse_ast(cursor, comments, recursion=0):
     logging.debug( "%5d %s%s(%s)" % (cursor.extent.start.line, indent, kind, text) )
 
   for child_cursor in cursor.get_children():
-    traverse_ast(child_cursor, comments, recursion+1)
+    traverse_ast(child_cursor, filename, comments, recursion+1)
 
 
 ## Remove garbage from comments and convert special tags from THtml to Doxygen.
@@ -342,7 +348,7 @@ def main(argv):
     translation_unit = index.parse(fn, args=['-x', 'c++'])
 
     comments = []
-    traverse_ast( translation_unit.cursor, comments )
+    traverse_ast( translation_unit.cursor, fn, comments )
     for c in comments:
       logging.debug("Comment found for %s:" % Colt(c.func).magenta())
       for l in c.lines:
