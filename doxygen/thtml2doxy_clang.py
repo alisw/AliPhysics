@@ -61,13 +61,17 @@ class Colt(str):
 ## Comment.
 class Comment:
 
-  def __init__(self, lines, first_line, first_col, last_line, last_col, func):
+  def __init__(self, lines, first_line, first_col, last_line, last_col, indent, func):
     self.lines = lines
     self.first_line = first_line
     self.first_col = first_col
     self.last_line = last_line
     self.last_col = last_col
+    self.indent = indent
     self.func = func
+
+  def has_comment(self, line):
+    return line >= self.first_line and line <= self.last_line
 
   def __str__(self):
     return "<Comment for %s: [%d,%d:%d,%d] %s>" % (self.func, self.first_line, self.first_col, self.last_line, self.last_col, self.lines)
@@ -105,6 +109,7 @@ def traverse_ast(cursor, comments, recursion=0):
     comment_line_end = -1
     comment_col_start = -1
     comment_col_end = -1
+    comment_indent = -1
 
     for token in cursor.get_tokens():
 
@@ -136,6 +141,9 @@ def traverse_ast(cursor, comments, recursion=0):
             comment_line_end = line_end
             comment_col_end = extent.end.column
 
+            if comment_indent == -1 or (extent.start.column-1) < comment_indent:
+              comment_indent = extent.start.column-1
+
             if comment_line_start == -1:
               comment_line_start = line_start
               comment_col_start = extent.start.column
@@ -156,13 +164,14 @@ def traverse_ast(cursor, comments, recursion=0):
 
         if len(comment) > 0:
           logging.debug("Comment found for function %s" % Colt(comment_function).magenta())
-          comments.append( Comment(comment, comment_line_start, comment_col_start, comment_line_end, comment_col_end, comment_function) )
+          comments.append( Comment(comment, comment_line_start, comment_col_start, comment_line_end, comment_col_end, comment_indent, comment_function) )
 
         comment = []
         comment_line_start = -1
         comment_line_end = -1
         comment_col_start = -1
         comment_col_end = -1
+        comment_indent = -1
 
         emit_comment = False
         break
@@ -203,13 +212,74 @@ def refactor_comment(comment):
   return new_comment
 
 
+## Rewrites all comments from the given file handler.
+#
+#  @param fhin     The file handler to read from
+#  @param fhout    The file handler to write to
+#  @param comments Array of comments
+def rewrite_comments(fhin, fhout, comments):
+
+  line_num = 0
+  cur_comment = 0
+  in_comment = False
+  skip_empty = False
+
+  if len(comments) > 0:
+    comm = comments[0]
+  else:
+    comm = None
+
+  for line in fhin:
+
+    line_num = line_num + 1
+
+    if comm and comm.has_comment( line_num ):
+
+      if not in_comment:
+        in_comment = True
+
+        # extract the non-comment part and print it if it exists
+        non_comment = line[ 0:comments[cur_comment].first_col-1 ].rstrip()
+        if non_comment != '':
+          fhout.write( non_comment + '\n' )
+
+    else:
+      if in_comment:
+
+        in_comment = False
+
+        # dumping comments
+        text_indent = ''
+        for i in range(0,comments[cur_comment].indent):
+          text_indent = text_indent + ' '
+
+        for lc in comments[cur_comment].lines:
+          fhout.write( "%s/// %s\n" % (text_indent, lc) );
+        fhout.write('\n')
+        skip_empty = True
+
+        cur_comment = cur_comment + 1
+        if cur_comment < len(comments):
+          comm = comments[cur_comment]
+        else:
+          comm = None
+
+      line_out = line.rstrip('\n')
+      if skip_empty:
+        skip_empty = False
+        if line_out.strip() != '':
+          fhout.write( line_out + '\n' )
+      else:
+        fhout.write( line_out + '\n' )
+
+
 ## The main function.
 #
 #  Return value is the executable's return value.
 def main(argv):
 
   # Setup logging on stderr
-  log_level = logging.WARNING
+  log_level = logging.INFO
   logging.basicConfig(
     level=log_level,
     format='%(levelname)-8s %(funcName)-20s %(message)s',
@@ -262,12 +332,26 @@ def main(argv):
     comments = []
     traverse_ast( translation_unit.cursor, comments )
     for c in comments:
-      logging.info("Comment found for %s:" % Colt(c.func).magenta())
+      logging.debug("Comment found for %s:" % Colt(c.func).magenta())
       for l in c.lines:
-        logging.info(
+        logging.debug(
           Colt("[%d,%d:%d,%d] " % (c.first_line, c.first_col, c.last_line, c.last_col)).green() +
           "{%s}" % Colt(l).cyan()
         )
+
+    try:
+
+      # rename current file to something else
+      fn_back = fn + '.thtml2doxy_backup'
+      os.rename( fn, fn_back )
+
+      with open(fn_back, 'r') as fhin, open(fn, 'w') as fhout:
+        rewrite_comments( fhin, fhout, comments )
+
+      os.remove( fn_back )
+      logging.info("File %s converted to Doxygen: check differences before committing!" % Colt(fn).magenta())
+    except (IOError,OSError) as e:
+      logging.error('File operation failed: %s' % e)
 
   return 0
 
