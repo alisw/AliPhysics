@@ -5,7 +5,7 @@
 #include <TFile.h>
 
 inline const char* GetConfigFilePath(){
-	return Form("%s/MONITOR/alistoragemanager/setupStorageDatabase.sh",gSystem->Getenv("ALICE_ROOT"));
+    return Form("%s/setupStorageDatabase.sh",gSystem->Getenv("HOME"));
 }
 
 enum storageSockets{
