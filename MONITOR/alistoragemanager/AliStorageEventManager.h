@@ -9,6 +9,7 @@
 #include <sstream>
 
 #include <TMessage.h>
+#include <TFile.h>
 
 namespace zmq
 {
@@ -25,12 +26,16 @@ public:
 	void Send(struct serverRequestStruct *request,storageSockets socket);
 	bool Send(struct clientRequestStruct *request,storageSockets socket,int timeout = -1);
 	void Send(AliESDEvent *event,storageSockets socket);
+	void Send(TFile *file,storageSockets socket);
+	void Send(struct recPointsStruct *files,storageSockets socket);
 	void Send(long message,storageSockets socket);
 	void Send(bool message,storageSockets socket);
 	void SendAsXml(AliESDEvent *event,storageSockets socket);
 	
 	std::vector<serverListStruct> GetServerListVector(storageSockets socket,int timeout=-1);
 	AliESDEvent* GetEvent(storageSockets socket,int timeout=-1);
+	TFile* GetFile(storageSockets socket,int timeout=-1);
+	struct recPointsStruct* GetFiles(storageSockets socket,int timeout=-1);
 	struct serverRequestStruct* GetServerStruct(storageSockets socket);
 	struct clientRequestStruct* GetClientStruct(storageSockets socket,int timeout=-1);
 	long GetLong(storageSockets socket);
@@ -50,6 +55,7 @@ private:
 	int fStorageClientPort;
 	int fEventServerPort;
 	int fXmlServerPort;
+	int fItsPointsServerPort;
 	
 	zmq::context_t *fContexts[7];
 	zmq::socket_t *fSockets[7];

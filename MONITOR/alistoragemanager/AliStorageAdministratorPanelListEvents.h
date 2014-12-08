@@ -6,6 +6,8 @@
 
 #include <TGLabel.h>
 #include <TGNumberEntry.h>
+#include <TGDoubleSlider.h>
+#include <TGSlider.h>
 #include <TGListBox.h>
 #include <TQObject.h>
 
@@ -18,6 +20,13 @@ public:
     void SelectedEvent(); //*SIGNAL*
     void SetOfflineMode(Bool_t);
 
+    void RunSliderPositionChanged();
+    void EventSliderPositionChanged();
+    void MultiplicitySliderPositionChanged();
+    void RunChanged();
+    void EventChanged();
+    void MultiplicityChanged();
+
 private:
 	AliStorageAdministratorPanelListEvents();
 	virtual ~AliStorageAdministratorPanelListEvents();
@@ -28,24 +37,29 @@ private:
     
 	//gui components and methods
 	TGLabel *fStatusLabel;
-	TGNumberEntry *fRunNumberMinEntry;
-	TGNumberEntry *fRunNumberMaxEntry;
-	TGNumberEntry *fEventNumberMinEntry;
-	TGNumberEntry *fEventNumberMaxEntry;
+	TGNumberEntry *fRunMinEntry;
+	TGNumberEntry *fRunMaxEntry;
+	TGNumberEntry *fEventMinEntry;
+	TGNumberEntry *fEventMaxEntry;
 	TGNumberEntry *fMultiplicityMinEntry;
 	TGNumberEntry *fMultiplicityMaxEntry;
 
-	TGCheckButton *fProtonProtonCheckButton;
-	TGCheckButton *fLeadLeadCheckButton;
-	TGCheckButton *fTempCheckButton;
-	TGCheckButton *fPermCheckButton;
+	TGDoubleHSlider *fMultiplicitySlider;
+	TGDoubleHSlider *fRunNumberSlider;
+	TGDoubleHSlider *fEventSlider;
+
+
+	TGCheckButton *fPPcheckbox;
+	TGCheckButton *fPbPbcheckbox;
+	TGCheckButton *fTemporaryCheckbox;
+	TGCheckButton *fPermanentCheckbox;
 	
 	TGTextButton *fCloseButton;
 	TGTextButton *fGetListButton;
 	TGTextButton *fMarkButton;
 	TGTextButton *fLoadButton;
 
-	TGListBox *fEventsList;
+	TGListBox *fListBox;
 	
 	void InitWindow();
 	void onCloseButton();

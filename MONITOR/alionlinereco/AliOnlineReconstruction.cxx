@@ -83,10 +83,11 @@ void AliOnlineReconstruction::StartOfRun()
       return;
     }
   gSystem->cd(recoBaseDir.Data());
+  // gSystem->cd("/");
   cout<<"\n\nRetriving GRP\n\n"<<endl;
   TString gdcs;
   if (RetrieveGRP(gdcs) <= 0 || gdcs.IsNull()){return;}
-
+  //gSystem->cd(recoBaseDir.Data());
   gSystem->Exec(Form("rm -fr run%d;mkdir run%d",fRun,fRun));
   gSystem->cd(Form("run%d",fRun));
 
@@ -105,10 +106,13 @@ int AliOnlineReconstruction::RetrieveGRP(TString &gdc)
 	TString password = fSettings.GetValue("logbook.pass", DEFAULT_LOGBOOK_PASS);
 	TString cdbPath = fSettings.GetValue("cdb.defaultStorage", DEFAULT_CDB_STORAGE);
 
+	//	cdbPath = gSystem->pwd();
+	cout<<"CDB path for GRP:"<<cdbPath<<endl;
+
 	Int_t ret=AliGRPPreprocessor::ReceivePromptRecoParameters(fRun, dbHost.Data(),
 								  dbPort, dbName.Data(),
 								  user.Data(), password.Data(),
-								  Form("local://%s",cdbPath.Data()),
+								  Form("%s",cdbPath.Data()),
 								  gdc);
 
 	if(ret>0) Info("RetrieveGRP","Last run of the same type is: %d",ret);
@@ -158,6 +162,7 @@ void AliOnlineReconstruction::ReconstructionLoop()
 	AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
 	eventManager->CreateSocket(EVENTS_SERVER_PUB);
 	eventManager->CreateSocket(XML_PUB);
+	eventManager->CreateSocket(ITS_POINTS_PUB);
 
 	cout<<"\n\nStarting reconstruction\n\n"<<endl;
 	fAliReco->Begin(NULL);
@@ -166,39 +171,82 @@ void AliOnlineReconstruction::ReconstructionLoop()
 	if (fAliReco->GetAbort() != TSelector::kContinue) return;
 	cout<<"\n\nStarting loop over events\n\n"<<endl;
 
+	TString recoBaseDir = fSettings.GetValue("server.saveRecoDir",DEFAULT_SERVER_SAVE_RECO_DIR);
+
+
 	//******* The loop over events
 	Int_t iEvent = 0;
 	AliESDEvent* event;
+	struct recPointsStruct *files;
 	//	while (fAliReco->HasNextEventAfter(iEvent) && !gQuit)
 	while (!gQuit)
 	{
 	  if(fAliReco->HasNextEventAfter(iEvent))
 	    {
-		if (!fAliReco->HasEnoughResources(iEvent)) break;
-		cout<<"\n\nProcessing event:"<<iEvent<<endl<<endl;
-		Bool_t status = fAliReco->ProcessEvent(iEvent);
+	      // remove files for previous event: (needed to send RecPoints:
+	      /*
+	      gSystem->cd(recoBaseDir.Data());
+	      gSystem->Exec(Form("rm -fr run%d;mkdir run%d",fRun,fRun));
+	      gSystem->cd(Form("run%d",fRun));
+	      */
+	      
+	      if (!fAliReco->HasEnoughResources(iEvent)) break;
+	      cout<<"\n\nProcessing event:"<<iEvent<<endl<<endl;
+	      Bool_t status = fAliReco->ProcessEvent(iEvent);
       
-		if (status){
-			event = fAliReco->GetESDEvent();
-			eventManager->Send(event,EVENTS_SERVER_PUB);
-			eventManager->SendAsXml(event,XML_PUB);
-			/*
-			TFile *file = new TFile(Form("/local/storedFiles/AliESDs.root_%d",iEvent),"recreate");
-			 TTree* tree= new TTree("esdTree", "esdTree");
-			 event->WriteToTree(tree);
-			 tree-> Fill();
-			 tree->Write();
-			 file->Close();
-			*/
-		}
-		else{
-		  cout<<"Event server -- aborting"<<endl;
-		  fAliReco->Abort("ProcessEvent",TSelector::kAbortFile);
-		}
-		cout<<"clean"<<endl;
-		fAliReco->CleanProcessedEvent();
-		cout<<"iEvent++"<<endl;
-		iEvent++;
+	      if (status){
+		event = fAliReco->GetESDEvent();
+		eventManager->Send(event,EVENTS_SERVER_PUB);
+		eventManager->SendAsXml(event,XML_PUB);
+
+		// sending RecPoints:
+		/*
+		cout<<"loading file"<<endl;
+		files->files[0] = TFile::Open("./ITS.RecPoints.root");
+		files->files[1] = TFile::Open("./TOF.RecPoints.root");
+		files->files[2] = TFile::Open("./galice.root");
+		files->files[3] = NULL;
+		files->files[4] = NULL;
+		files->files[5] = NULL;
+		files->files[6] = NULL;
+		files->files[7] = NULL;
+		files->files[8] = NULL;
+		files->files[9] = NULL;
+
+
+		cout<<"sending files"<<endl;
+		eventManager->Send(files,ITS_POINTS_PUB);
+		cout<<"files sent"<<endl;
+	
+		for(int i=0;i<10;i++)
+		  {
+		    if(files->files[i])
+		      {
+			files->files[i]->Close();
+			delete files->files[i];files->files[i]=0;
+			cout<<"file deleted"<<endl;
+		      }
+		  }
+		*/
+
+		//Saving ESD to file:
+		/*
+		  TFile *file = new TFile(Form("/local/storedFiles/AliESDs.root_%d",iEvent),"recreate");
+		  TTree* tree= new TTree("esdTree", "esdTree");
+		  event->WriteToTree(tree);
+		  tree-> Fill();
+		  tree->Write();
+		  file->Close();
+		*/
+	      }
+	      else{
+		cout<<"Event server -- aborting"<<endl;
+		fAliReco->Abort("ProcessEvent",TSelector::kAbortFile);
+	      }
+	      cout<<"clean"<<endl;
+	      fAliReco->CleanProcessedEvent();
+	      cout<<"iEvent++"<<endl;
+	      iEvent++;
 	    }
 	  else
 	    {

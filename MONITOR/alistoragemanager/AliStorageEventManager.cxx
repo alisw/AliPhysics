@@ -62,6 +62,11 @@ AliStorageEventManager::AliStorageEventManager()
             {
                 fXmlServerPort=atoi(line.substr(from,to-from).c_str());
             }
+	    else if(line.find("ITS_POINTS_SERVER_PORT=")==0)
+            {
+                fItsPointsServerPort=atoi(line.substr(from,to-from).c_str());
+		cout<<"ITS port is:"<<fItsPointsServerPort<<endl;
+            }
         }
         if(configFile.eof()){configFile.clear();}
         configFile.close();
@@ -203,6 +208,38 @@ bool AliStorageEventManager::CreateSocket(storageSockets socket)
             {
                 cout<<"MANAGER -- "<<e.what()<<endl;
                 return 0;
+            }
+        }
+	break;
+    case ITS_POINTS_PUB:
+        {
+            fSockets[ITS_POINTS_PUB] =
+            new socket_t(*fContexts[ITS_POINTS_PUB],ZMQ_PUB);
+            try
+            {
+                fSockets[ITS_POINTS_PUB]->bind(Form("tcp://*:%d",fItsPointsServerPort));
+            }
+            catch (const zmq::error_t& e)
+            {
+                cout<<"MANAGER -- "<<e.what()<<endl;
+                return 0;
+            }
+        }
+	break;
+    case ITS_POINTS_SUB:
+        {
+            fSockets[ITS_POINTS_SUB] =
+            new socket_t(*fContexts[ITS_POINTS_SUB],ZMQ_SUB);
+            fSockets[ITS_POINTS_SUB]->setsockopt(ZMQ_SUBSCRIBE,"",0);
+            try
+            {
+	      fSockets[ITS_POINTS_SUB]->connect(Form("tcp://%s:%d",fEventServer.c_str(),fItsPointsServerPort));
+            }
+            catch (const zmq::error_t& e)
+            {
+                cout<<"MANAGER -- "<<e.what()<<endl;
+                return 0;
+                
             }
         }
             break;
@@ -370,6 +407,70 @@ void AliStorageEventManager::Send(AliESDEvent *event, storageSockets socket)
     }
 }
 
+void AliStorageEventManager::Send(TFile *file, storageSockets socket)
+{
+  cout<<"sending tfile to socket:"<<endl;
+  TTree *tree;
+
+  if(file)
+    {
+      file->ls();
+      cout<<"1"<<endl;
+      //std::string *dfTitle = new std::string(file->GetListOfKeys()->Last()->GetTitle());
+      string *name = new string(file->GetListOfKeys()->Last()->GetTitle());
+      cout<<"treeTitle:"<<name->data()<<endl;
+      
+      tree = (TTree*)((TDirectoryFile*)file->Get(name->data()))->Get("TreeR");
+
+
+	// TDirectoryFile *df = (TDirectoryFile*)file->Get(dfTitle->data());
+	//if(df)
+	//{
+	//	  cout<<"directory file extracted"<<endl;
+        //tree = (TTree*)df->Get("TreeR");
+	cout<<"2"<<endl;
+      tree->Branch("event",&name);
+      cout<<"branch created:"<<endl;
+      tree->Print();
+      tree->Fill();
+      cout<<"ttree filled with name"<<endl;
+	  // delete df;
+	  //}
+      tree->Print();
+    }
+  else
+    {
+      tree = NULL;
+      cout<<"file is empty"<<endl;
+    }
+
+  //TMessage::EnableSchemaEvolutionForAll(kTRUE);
+  TMessage tmess(kMESS_OBJECT);
+  tmess.Reset();
+  tmess.WriteObject(tree);
+  cout<<"file written to tmessage"<<endl;
+ 
+  int bufsize = tmess.Length();
+  char* buf = (char*) malloc(bufsize * sizeof(char));
+  memcpy(buf, tmess.Buffer(), bufsize);
+  cout<<"messaged copied to buffer"<<endl;
+      
+  message_t message((void*)buf, bufsize, freeBuff);
+  cout<<"message_t created"<<endl;
+  try{
+    fSockets[socket]->send(message);
+  }
+  catch(const zmq::error_t &e)
+    {
+      cout<<"MANAGER -- send TFile -- "<<e.what()<<endl;
+    }
+  //if(tree){delete tree;}
+}
+
+void AliStorageEventManager::Send(struct recPointsStruct *files, storageSockets socket)
+{
+  for(int i=0;i<10;i++){Send(files->files[i],socket);}
+}
 void AliStorageEventManager::SendAsXml(AliESDEvent *event,storageSockets socket)
 {
     cout<<"SENDING AS XML"<<endl;
@@ -516,6 +617,91 @@ AliESDEvent* AliStorageEventManager::GetEvent(storageSockets socket,int timeout)
         if(message){delete message;}
         return NULL;
     }
+}
+
+TFile* AliStorageEventManager::GetFile(storageSockets socket,int timeout)
+{
+  cout<<"get file"<<endl;
+    pollitem_t items[1] =  {{*fSockets[socket],0,ZMQ_POLLIN,0}} ;
+    if(timeout>=0){
+	try{(poll (&items[0], 1, timeout)==0);}
+	catch(const zmq::error_t &e){
+	  cout<<"EVENT MANAGER -- GetFile():"<<e.what()<<endl;
+	    return NULL;
+	  }
+    }
+    message_t* message = new message_t();
+    cout<<"polling passed"<<endl;
+
+    try
+    {
+      cout<<"waiting for file on socket:"<<socket<<endl;
+        fSockets[socket]->recv(message);
+    }
+    catch (const zmq::error_t& e)
+    {
+        cout<<"MANAGER -- "<<e.what()<<endl;
+        return NULL;
+    }
+    cout<<"createing buffer file"<<endl;
+    TBufferFile *mess = new TBufferFile(TBuffer::kRead,
+					message->size()+sizeof(UInt_t),
+                                        message->data());
+
+    //TMessage *mess = new TMessage();
+    //mess->SetReadMode();
+   
+    mess->InitMap();
+    mess->ReadClass();
+    mess->SetBufferOffset(sizeof(UInt_t) + sizeof(kMESS_OBJECT));
+    mess->ResetMap();
+
+    //mess->ReadBuf(message->data(),message->size()+sizeof(UInt_t));
+    
+    cout<<"reading file from buffer"<<endl;
+    TTree* tree = (TTree*)(mess->ReadObjectAny(TTree::Class()));
+    //TFile* data = (TFile*)mess->ReadObject(TFile::Class());
+
+    if(tree)
+      {
+	cout<<"received a tree:"<<endl;
+	tree->Print();
+	std::string *dfTitle = new std::string();
+	tree->SetBranchAddress("event",&dfTitle);
+	tree->GetEntry(0);
+
+	cout<<"setting df's name to:"<<dfTitle->data()<<endl;
+	TDirectoryFile *df = new TDirectoryFile(dfTitle->data(),dfTitle->data());
+	df->Add(tree);
+	cout<<"added tree to directory file"<<endl;
+	
+	TFile *file = new TFile();
+	df->Write();
+
+	cout<<"created file:"<<endl;
+	file->ls();
+	if(message){delete message;}
+	if(df){delete df;}
+	if(tree){delete tree;}
+	return file;
+      }
+    else
+      {
+	cout<<"no tree found"<<endl;
+	if(message){delete message;}
+        return NULL;
+      }
+}
+
+struct recPointsStruct* AliStorageEventManager::GetFiles(storageSockets socket,int timeout)
+{
+  struct recPointsStruct *files = new struct recPointsStruct;
+
+  for(int i=0;i<10;i++)
+    {
+      files->files[i] = GetFile(socket,timeout);
+    }
+  return files;
 }
 
 struct serverRequestStruct* AliStorageEventManager::GetServerStruct(storageSockets socket)

@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include <TThread.h>
+#include <TFile.h>
 
 using namespace std;
 
@@ -43,16 +44,17 @@ int main(int argc, char **argv)
     storageSockets socket;
     AliStorageEventManager *manager = AliStorageEventManager::GetEventManagerInstance();
     AliESDEvent *event;
+    struct recPointsStruct *files;
     
     if(atoi(argv[1])==0)
     {
-        socket = EVENTS_SERVER_SUB;
-        manager->CreateSocket(socket);
+        manager->CreateSocket(EVENTS_SERVER_SUB);
+	manager->CreateSocket(ITS_POINTS_SUB);
         cout<<"Socket created"<<endl;
         while(1)
         {
             cout<<"waiting for event..."<<flush;
-            event = manager->GetEvent(socket);
+            event = manager->GetEvent(EVENTS_SERVER_SUB);
             
             if(event)
             {
@@ -66,12 +68,36 @@ int main(int argc, char **argv)
                     if(strcmp(event->GetESDRun()->GetTriggerClass(i),"")){
                         cout<<event->GetESDRun()->GetTriggerClass(i)<<endl;}
                 }
-                delete event;
+                delete event;event=0;
             }
             else
             {
                 cout<<"NO EVENT"<<endl;
             }
+	    
+	    // Receiving RecPoints:
+	    /*
+
+	    files = manager->GetFiles(ITS_POINTS_SUB);
+
+	
+	    cout<<"Received file."<<endl;
+
+	    //file->Write("ITS.RecPoints.root",kOverwrite);
+	    if(files->files[0]){files->files[0]->SaveAs("ITS.RecPoints.root","recreate");}
+	    if(files->files[1]){files->files[1]->SaveAs("TOF.RecPoints.root","recreate");}
+	    if(files->files[2]){files->files[2]->SaveAs("galice.root","recreate");}
+
+	    for(int i=0;i<10;i++)
+	    {
+	    if(files->files[i])
+	    {
+	    files->files[i]->Close();
+	    delete files->files[i];files->files[i]=0;
+	    }
+	    }	
+	    sleep(2);
+	    */
         }
     }
     else if(atoi(argv[1])==1)
