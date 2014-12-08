@@ -190,7 +190,12 @@ set ( SRCS16
   EvTrkSelection/AliCFSingleTrackEfficiencyTask.cxx
   EvTrkSelection/AliSingleTrackEffCuts.cxx
   )
-
+#file ( GLOB SRCS17 "TRD/TRDPID/*.cxx" )
+set ( SRCS17  
+  TRD/TRDPID/AliTRDPIDTree.cxx
+  TRD/TRDPID/AliTRDPIDmatching.cxx
+  )
+  
 list ( APPEND SRCS 
   ${SRCS1} 
   ${SRCS2} 
@@ -208,6 +213,8 @@ list ( APPEND SRCS
   ${SRCS14}
   ${SRCS15}
   ${SRCS16}
+  ${SRCS17}
+  
   )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -226,6 +233,7 @@ set ( EINCLUDE
   TOF 
   TRD/Cal 
   TRD/info 
+  TRD/TRDPID 
   EMCAL
   ANALYSIS/Tender 
   ANALYSIS
@@ -239,6 +247,7 @@ set ( EINCLUDE
   PWGPP/TOF 
   PWGPP/TRD 
   PWGPP/TRD/info 
+  PWGPP/TRD/TRDPID 
   PWGPP/background 
   PWGPP/Centrality 
   PWGPP/EvTrkSelection
@@ -280,6 +289,9 @@ install ( DIRECTORY TPC/macros
 	  PATTERN ".C")
 install ( DIRECTORY TRD
 	  DESTINATION PWGPP)
+install ( FILES TRD/TRDPID/macros/AddTaskTRDPIDTree.C
+                TRD/TRDPID/macros/AddTaskTRDPIDmatching.C
+	  DESTINATION PWGPP/TRD)
 install ( FILES ZDC/AddTaskZDCQA.C
 	  DESTINATION PWGPP/ZDC)
 install ( FILES PilotTrain/AddTaskMuonQA.C
