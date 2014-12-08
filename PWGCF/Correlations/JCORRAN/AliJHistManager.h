@@ -98,6 +98,8 @@ class AliJBin : public AliJNamed {
         AliJBin & SetBin( const TString  v );
         AliJBin & SetBin( const int n );
 
+        int GetBin( double x );
+
         double GetMin(){ return fBinD[0]; }
         double GetMax(){ return fBinD[RawSize()-1]; }
 

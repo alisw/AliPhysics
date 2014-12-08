@@ -1,4 +1,5 @@
 #include "AliJHistManager.h"
+#include <TMath.h>
 using namespace std;
 //////////////////////////////////////////////////////
 //  AliJBin
@@ -156,13 +157,13 @@ AliJBin& AliJBin::SetBin(const int  n){
 }
 //_____________________________________________________
 void AliJBin::AddBin( const TString& v ){
-    if( fIsFixedBin ) { JERROR( "You can't Add Bin"); }
+    if( fIsFixedBin ) { JERROR( "You can't Add Bini "+GetName()); }
     fBinStr.push_back( (v=="_")?"":v );
     fBinD.push_back( v.Atof() );
 }
 //_____________________________________________________
 void AliJBin::AddBin( float v ){
-    if( fIsFixedBin ) { JERROR( "You can't Add Bin"); }
+    if( fIsFixedBin ) { JERROR( "You can't Add Bin "+GetName()); }
     fBinD.push_back( v ); 
     fBinStr.push_back(Form("%f",v));
 }
@@ -187,6 +188,12 @@ TString AliJBin::GetString(){
 //_____________________________________________________
 void AliJBin::Print(){
     std::cout<<"*"+GetString()<<std::endl;
+}
+
+int AliJBin::GetBin(double x){
+  int i =  TMath::BinarySearch( fBinD.size(), &fBinD[0], x ); 
+  if( fMode == kRange && i+1 >= int(fBinD.size()) ) return -1;
+  return i;
 }
 
 //////////////////////////////////////////////////////

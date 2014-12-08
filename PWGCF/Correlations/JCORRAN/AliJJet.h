@@ -37,7 +37,9 @@ public:
   AliJJet(float px,float py, float pz, float e, Int_t id, Short_t ptype, Char_t charge); // constructor
   AliJJet(const AliJJet& a);
   AliJJet(const TLorentzVector & a);
-  virtual ~AliJJet(){; }    //destructor
+  virtual ~AliJJet(){
+      ; 
+  }    //destructor
   AliJJet& operator=(const AliJJet& trk);
   
   void SetArea(double a){ fArea = a; }
@@ -45,11 +47,22 @@ public:
   Double_t Area() const{ return fArea; }
   void AddConstituent(TObject* t){ fConstituents.Add(t); }
   TObjArray* GetConstituents(){ return &fConstituents; }
+  int GetNConstituents(){ return fNConstituent; }
+  //int GetNConstituents(){ return fConstituents.GetEntriesFast(); }
   AliJBaseTrack * GetConstituent(int i) const{ return (AliJBaseTrack*)fConstituents[i]; }
+  void ReSum();
+  int LeadingParticleId(){ return fLeadingTrackId; }
+  double LeadingParticlePt(){ return fLeadingTrackPt; }
+  double LeadingParticleE(){ return fLeadingTrackE; }
   
 private:
+  int      fLeadingTrackId;     //! id of leading track in constituents
+  double   fLeadingTrackPt;
+  double   fLeadingTrackE;
+  double   fNConstituent;
   Double_t fArea;              // Area of the jet
-  TObjArray fConstituents;     // Constituent tracks of the jets
+  TObjArray fConstituents;     //! Constituent tracks of the jets
+
   
   ClassDef(AliJJet,1)
 };
