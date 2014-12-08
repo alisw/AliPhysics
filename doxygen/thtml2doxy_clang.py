@@ -58,11 +58,25 @@ class Colt(str):
     return c + self + '\033[m'
 
 
+## Comment.
+class Comment:
+
+  def __init__(self, lines, first_line, last_line, func):
+    self.lines = lines
+    self.first_line = first_line
+    self.last_line = last_line
+    self.func = func
+
+  def __str__(self):
+    return "<Comment for %s: [%d:%d] %s>" % (self.func, self.first_line, self.last_line, self.lines)
+
+
 ## Traverse the AST recursively starting from the current cursor.
 #
 #  @param cursor    A Clang parser cursor
+#  @param comments  Array of comments found (of class Comment)
 #  @param recursion Current recursion depth
-def traverse_ast(cursor, recursion=0):
+def traverse_ast(cursor, comments, recursion=0):
 
   text = cursor.spelling or cursor.displayname
   kind = str(cursor.kind)[str(cursor.kind).index('.')+1:]
@@ -135,12 +149,8 @@ def traverse_ast(cursor, recursion=0):
         comment = refactor_comment( comment )
 
         if len(comment) > 0:
-          logging.info("Comment found for function %s" % Colt(comment_function).magenta())
-          for comment_line in comment:
-            logging.info(
-              Colt("[%d:%d] " % (comment_line_start, comment_line_end)).green() + "{" +
-              Colt(comment_line).cyan() + "}"
-            )
+          logging.debug("Comment found for function %s" % Colt(comment_function).magenta())
+          comments.append( Comment(comment, comment_line_start, comment_line_end, comment_function) )
 
         comment = []
         comment_line_start = -1
@@ -154,7 +164,7 @@ def traverse_ast(cursor, recursion=0):
     logging.debug( "%s%s(%s)" % (indent, kind, text) )
 
   for child_cursor in cursor.get_children():
-    traverse_ast(child_cursor, recursion+1)
+    traverse_ast(child_cursor, comments, recursion+1)
 
 
 ## Remove garbage from comments and convert special tags from THtml to Doxygen.
@@ -240,7 +250,16 @@ def main(argv):
     logging.info('Input file: %s' % Colt(fn).magenta())
     index = clang.cindex.Index.create()
     translation_unit = index.parse(fn, args=['-x', 'c++'])
-    traverse_ast( translation_unit.cursor )
+
+    comments = []
+    traverse_ast( translation_unit.cursor, comments )
+    for c in comments:
+      logging.info("Comment found for %s:" % Colt(c.func).magenta())
+      for l in c.lines:
+        logging.warning(
+          Colt("[%d:%d] " % (c.first_line, c.last_line)).green() +
+          "{%s}" % Colt(l).cyan()
+        )
 
   return 0
 
