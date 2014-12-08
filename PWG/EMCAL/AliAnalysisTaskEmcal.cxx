@@ -1259,13 +1259,13 @@ AliEmcalTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch(TriggerCateg
             // option not yet implemented in the trigger maker
             if(patch->IsLevel0()) selected = patch;
             break;
-          case kTriggerLevel1Jet: break;
+          case kTriggerLevel1Jet:
           if(patch->IsJetHighSimple() || patch->IsJetLowSimple()){
             if(!selected) selected = patch;
             else if(patch->GetADCAmp() > selected->GetADCAmp()) selected = patch;
           }
           break;
-          case kTriggerLevel1Gamma: break;
+          case kTriggerLevel1Gamma:
           if(patch->IsGammaHigh() || patch->IsGammaLow()){
             if(!selected) selected = patch;
             else if(patch->GetADCAmp() > selected->GetADCAmp()) selected = patch;
