@@ -28,6 +28,8 @@
 import sys
 import os
 import re
+import logging
+import getopt
 import clang.cindex
 
 
@@ -72,7 +74,7 @@ def traverse_ast(cursor, recursion=0):
   if cursor.kind == clang.cindex.CursorKind.CXX_METHOD:
 
     # cursor ran into a C++ method
-    print "%s%s(%s)" % (indent, Colt(kind).magenta(), Colt(text).blue())
+    logging.debug( "%s%s(%s)" % (indent, Colt(kind).magenta(), Colt(text).blue()) )
 
     # we are looking for the following structure: method -> compound statement -> comment, i.e. we
     # need to extract the first comment in the compound statement composing the method
@@ -113,8 +115,10 @@ def traverse_ast(cursor, recursion=0):
             new_comment = refactor_comment(token.spelling)
 
             for comment_line in new_comment:
-              print Colt("%s  [%d-%d]" % (indent, line_start, line_end)).green(),
-              print Colt(comment_line).cyan()
+              logging.info(
+                Colt("%s  [%d-%d]" % (indent, line_start, line_end)).green() +
+                Colt(comment_line).cyan()
+              )
 
             # multiline comments are parsed in one go, therefore don't expect subsequent comments
             if line_end - line_start > 0:
@@ -129,7 +133,7 @@ def traverse_ast(cursor, recursion=0):
 
   else:
 
-    print "%s%s(%s)" % (indent, kind, text)
+    logging.debug( "%s%s(%s)" % (indent, kind, text) )
 
   for child_cursor in cursor.get_children():
     traverse_ast(child_cursor, recursion+1)
@@ -169,8 +173,34 @@ def refactor_comment(comment):
 
 ## The main function.
 #
-#  **Note:** this program only has this function.
+#  Return value is the executable's return value.
 def main(argv):
+
+  # Setup logging on stderr
+  log_level = logging.WARNING
+  logging.basicConfig(
+    level=log_level,
+    format='%(levelname)-8s %(funcName)-20s %(message)s',
+    stream=sys.stderr
+  )
+
+  # Parse command-line options
+  try:
+    opts, args = getopt.getopt( argv, 'd', [ 'debug=' ] )
+    for o, a in opts:
+      if o == '--debug':
+        log_level = getattr( logging, a.upper(), None )
+        if not isinstance(log_level, int):
+          raise getopt.GetoptError('log level must be one of: DEBUG, INFO, WARNING, ERROR, CRITICAL')
+      elif o == '-d':
+        log_level = logging.DEBUG
+      else:
+        assert False, 'Unhandled argument'
+  except getopt.GetoptError as e:
+    logging.fatal('Invalid arguments: %s' % e)
+    return 1
+
+  logging.getLogger('').setLevel(log_level)
 
   # Attempt to load libclang from a list of known locations
   libclang_locations = [
@@ -187,11 +217,11 @@ def main(argv):
       break
 
   if not libclang_found:
-    print Colt('[Error] Cannot find libclang, aborting').red()
+    logging.fatal('Cannot find libclang')
     return 1
 
   # Loop over all files
-  for fn in argv[1:]:
+  for fn in args:
 
     index = clang.cindex.Index.create()
     translation_unit = index.parse(fn, args=['-x', 'c++'])
@@ -201,4 +231,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  sys.exit( main( sys.argv ) )
+  sys.exit( main( sys.argv[1:] ) )
