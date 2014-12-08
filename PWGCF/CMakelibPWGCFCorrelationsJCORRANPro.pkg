@@ -1,0 +1,49 @@
+
+# -*- mode: CMake -*-
+#--------------------------------------------------------------------------------#
+# Package File for PWGCF/Correlations/JCORRAN                                    #
+# Author : D.J Kim (Dong.Jo.Kim@cern.ch)                                         #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( SRCS  
+	Correlations/JCORRAN/AliJEbeHistos.cxx
+	Correlations/JCORRAN/AliJEbePercentile.cxx
+	Correlations/JCORRAN/AliJEbECORRTask.cxx
+	Correlations/JCORRAN/AliJJetTask.cxx
+	Correlations/JCORRAN/AliJDiJetAnalysis.cxx
+	Correlations/JCORRAN/AliJDiJetTask.cxx
+	Correlations/JCORRAN/AliJJetCORRAnalysis.cxx
+	Correlations/JCORRAN/AliJJetCORRTask.cxx
+)
+
+string ( REPLACE ".cxx" ".h" HDRS "${SRCS}"  )
+
+set ( DHDR  PWGCFCorrelationsJCORRANProLinkDef.h )
+
+string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
+
+set ( EINCLUDE ANALYSIS CORRFW PWGCF/Correlations/JCORRAN PWG/Tools PWG/EMCAL PWGJE/EMCALJetTasks PWGJE/EMCALJetTasks/UserTasks OADB STEER/AOD STEER/ESD STEER/STEERBase EMCAL PHOS )
+
+
