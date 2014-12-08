@@ -178,15 +178,15 @@ def traverse_ast(cursor, comments, recursion=0):
   for i in range(0, recursion):
     indent = indent + '  '
 
-  if cursor.kind == clang.cindex.CursorKind.CXX_METHOD:
+  if cursor.kind == clang.cindex.CursorKind.CXX_METHOD or cursor.kind == clang.cindex.CursorKind.CONSTRUCTOR or cursor.kind == clang.cindex.CursorKind.DESTRUCTOR:
 
     # cursor ran into a C++ method
-    logging.debug( "%s%s(%s)" % (indent, Colt(kind).magenta(), Colt(text).blue()) )
+    logging.debug( "%5d %s%s(%s)" % (cursor.extent.start.line, indent, Colt(kind).magenta(), Colt(text).blue()) )
     comment_method(cursor, comments)
 
   else:
 
-    logging.debug( "%s%s(%s)" % (indent, kind, text) )
+    logging.debug( "%5d %s%s(%s)" % (cursor.extent.start.line, indent, kind, text) )
 
   for child_cursor in cursor.get_children():
     traverse_ast(child_cursor, comments, recursion+1)
