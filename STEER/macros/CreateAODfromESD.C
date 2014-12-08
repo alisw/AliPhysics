@@ -1,3 +1,4 @@
+#if !defined( __CINT__) || defined(__MAKECINT__)
 #include <cstring>
 #include <TChain.h>
 #include <TSystem.h>
@@ -7,6 +8,7 @@
 #include "AliAnalysisTaskESDfilter.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliTaskCDBconnect.h"
+#endif
 
 void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 		      const char *outFileName = "AliAOD.root",

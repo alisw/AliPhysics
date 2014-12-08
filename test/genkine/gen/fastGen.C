@@ -2,6 +2,8 @@
 // Below we select events containing the decays D* -> D0 pi, D0 -> K- pi+
 // inside the barrel part of the ALICE detector (45 < theta < 135)
 
+// To be able to compile, please add -I<ALIROOT_INSTALL_PATH>/include
+// to your .rootrc
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
 #include <TH1F.h>
@@ -19,8 +21,8 @@
 #include "AliRun.h"
 #include "AliStack.h"
 #include "AliHeader.h"
-#include "PYTHIA6/AliGenPythia.h"
-#include "PYTHIA6/AliPythia.h"
+#include "AliGenPythia.h"
+#include "AliPythia.h"
 #endif
 
 Float_t EtaToTheta(Float_t arg);

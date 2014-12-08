@@ -188,12 +188,12 @@ void fastMcProduction(Int_t nev = 300) {
   }
     
   if (proc == kHijing || proc == kHijing2000 || proc == kHijing_pA ) {
-    gSystem->Load("libhijing");	
+    gSystem->Load("libHIJING");	
     gSystem->Load("libTHijing");
   } 
   
   else if ( proc == kDPMjet || proc== kDPMjet_pA ) {
-    gSystem->Load("libdpmjet"); 
+    gSystem->Load("libDPMJET"); 
     gSystem->Load("libTDPMjet");
   } 
   
@@ -630,7 +630,7 @@ AliGenerator* MbPhojet()
 {
   comment = comment.Append(" pp: Pythia low-pt");
 #if defined(__CINT__)
-  gSystem->Load("libdpmjet");      // Parton density functions
+  gSystem->Load("libDPMJET");      // Parton density functions
   gSystem->Load("libTDPMjet");      // Parton density functions
 #endif
   AliGenDPMjet* dpmjet = new AliGenDPMjet(-1); 

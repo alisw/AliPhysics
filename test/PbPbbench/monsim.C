@@ -5,7 +5,7 @@ void monsim(Int_t nev=1){
   gSystem->Load("libAliPythia6");
   gSystem->Load("libgeant321");
   
-  gSystem->Load("libhijing");
+  gSystem->Load("libHIJING");
   gSystem->Load("libTHijing");
 
   // MonaLisa monitoring
