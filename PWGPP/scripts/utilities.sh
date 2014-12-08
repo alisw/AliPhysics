@@ -19,14 +19,19 @@ PWGPP_runMap="
 
 parseConfig()
 {
-  local args=("$@")
-
-  #first, check if the config file is configured
-  #is yes - source it so that other options can override it
+  #parse command line arguments, they have to be in the form
+  #  option=value
+  #they are then set in the environment
+  #
+  #optionally a config file can be specified in the arguments:
+  #  configFile=<someFile>
+  #config file sets variables: option=value
+  #command line options override config file
   #
   #recommended way of using (at the beginning of your funcion/script):
   #  if ! parseConfig "${@}"; then return; fi
   
+  local args=("$@")
   local opt=""
   
   #first check if we will need to decode spaces
