@@ -297,7 +297,7 @@ summarizeLogs()
   done
 
   local logFiles
-  logFiles=".*log|stdout|stderr"
+  logFiles="\.*log$|^stdout$|^stderr$"
 
   #check logs
   local logStatus=0
@@ -307,8 +307,8 @@ summarizeLogs()
   for file in "${files[@]}"; do
     [[ ! -f ${file} ]] && continue
     #keep track of core files for later processing
-    [[ "${file}" =~ core$ ]] && coreFiles[${file}]="${file}" && continue
-    [[ ! "${file}" =~ ${logFiles} ]] && continue
+    [[ "${file##*/}" =~ ^core$ ]] && coreFiles[${file}]="${file}" && continue
+    [[ ! "${file##*/}" =~ ${logFiles} ]] && continue
     errorSummary=$(validateLog ${file})
     validationStatus=$?
     [[ validationStatus -ne 0 ]] && logStatus=1
