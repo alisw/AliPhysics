@@ -77,10 +77,97 @@ class Comment:
     return "<Comment for %s: [%d,%d:%d,%d] %s>" % (self.func, self.first_line, self.first_col, self.last_line, self.last_col, self.lines)
 
 
+## Parses method comments.
+#
+#  @param cursor   Current libclang parser cursor
+#  @param comments Array of comments: new ones will be appended there
+def comment_method(cursor, comments):
+
+  # we are looking for the following structure: method -> compound statement -> comment, i.e. we
+  # need to extract the first comment in the compound statement composing the method
+
+  in_compound_stmt = False
+  expect_comment = False
+  emit_comment = False
+
+  comment = []
+  comment_function = cursor.spelling or cursor.displayname
+  comment_line_start = -1
+  comment_line_end = -1
+  comment_col_start = -1
+  comment_col_end = -1
+  comment_indent = -1
+
+  for token in cursor.get_tokens():
+
+    if token.cursor.kind == clang.cindex.CursorKind.COMPOUND_STMT:
+      if not in_compound_stmt:
+        in_compound_stmt = True
+        expect_comment = True
+        comment_line_end = -1
+    else:
+      if in_compound_stmt:
+        in_compound_stmt = False
+        emit_comment = True
+
+    # tkind = str(token.kind)[str(token.kind).index('.')+1:]
+    # ckind = str(token.cursor.kind)[str(token.cursor.kind).index('.')+1:]
+
+    if in_compound_stmt:
+
+      if expect_comment:
+
+        extent = token.extent
+        line_start = extent.start.line
+        line_end = extent.end.line
+
+        if token.kind == clang.cindex.TokenKind.PUNCTUATION and token.spelling == '{':
+          pass
+
+        elif token.kind == clang.cindex.TokenKind.COMMENT and (comment_line_end == -1 or (line_start == comment_line_end+1 and line_end-line_start == 0)):
+          comment_line_end = line_end
+          comment_col_end = extent.end.column
+
+          if comment_indent == -1 or (extent.start.column-1) < comment_indent:
+            comment_indent = extent.start.column-1
+
+          if comment_line_start == -1:
+            comment_line_start = line_start
+            comment_col_start = extent.start.column
+          comment.extend( token.spelling.split('\n') )
+
+          # multiline comments are parsed in one go, therefore don't expect subsequent comments
+          if line_end - line_start > 0:
+            emit_comment = True
+            expect_comment = False
+
+        else:
+          emit_comment = True
+          expect_comment = False
+
+    if emit_comment:
+
+      comment = refactor_comment( comment )
+
+      if len(comment) > 0:
+        logging.debug("Comment found for function %s" % Colt(comment_function).magenta())
+        comments.append( Comment(comment, comment_line_start, comment_col_start, comment_line_end, comment_col_end, comment_indent, comment_function) )
+
+      comment = []
+      comment_line_start = -1
+      comment_line_end = -1
+      comment_col_start = -1
+      comment_col_end = -1
+      comment_indent = -1
+
+      emit_comment = False
+      break
+
+
 ## Traverse the AST recursively starting from the current cursor.
 #
 #  @param cursor    A Clang parser cursor
-#  @param comments  Array of comments found (of class Comment)
+#  @param comments  Array of comments: new ones will be appended there
 #  @param recursion Current recursion depth
 def traverse_ast(cursor, comments, recursion=0):
 
@@ -95,86 +182,7 @@ def traverse_ast(cursor, comments, recursion=0):
 
     # cursor ran into a C++ method
     logging.debug( "%s%s(%s)" % (indent, Colt(kind).magenta(), Colt(text).blue()) )
-
-    # we are looking for the following structure: method -> compound statement -> comment, i.e. we
-    # need to extract the first comment in the compound statement composing the method
-
-    in_compound_stmt = False
-    expect_comment = False
-    emit_comment = False
-
-    comment = []
-    comment_function = text
-    comment_line_start = -1
-    comment_line_end = -1
-    comment_col_start = -1
-    comment_col_end = -1
-    comment_indent = -1
-
-    for token in cursor.get_tokens():
-
-      if token.cursor.kind == clang.cindex.CursorKind.COMPOUND_STMT:
-        if not in_compound_stmt:
-          in_compound_stmt = True
-          expect_comment = True
-          comment_line_end = -1
-      else:
-        if in_compound_stmt:
-          in_compound_stmt = False
-          emit_comment = True
-
-      # tkind = str(token.kind)[str(token.kind).index('.')+1:]
-      # ckind = str(token.cursor.kind)[str(token.cursor.kind).index('.')+1:]
-
-      if in_compound_stmt:
-
-        if expect_comment:
-
-          extent = token.extent
-          line_start = extent.start.line
-          line_end = extent.end.line
-
-          if token.kind == clang.cindex.TokenKind.PUNCTUATION and token.spelling == '{':
-            pass
-
-          elif token.kind == clang.cindex.TokenKind.COMMENT and (comment_line_end == -1 or (line_start == comment_line_end+1 and line_end-line_start == 0)):
-            comment_line_end = line_end
-            comment_col_end = extent.end.column
-
-            if comment_indent == -1 or (extent.start.column-1) < comment_indent:
-              comment_indent = extent.start.column-1
-
-            if comment_line_start == -1:
-              comment_line_start = line_start
-              comment_col_start = extent.start.column
-            comment.extend( token.spelling.split('\n') )
-
-            # multiline comments are parsed in one go, therefore don't expect subsequent comments
-            if line_end - line_start > 0:
-              emit_comment = True
-              expect_comment = False
-
-          else:
-            emit_comment = True
-            expect_comment = False
-
-      if emit_comment:
-
-        comment = refactor_comment( comment )
-
-        if len(comment) > 0:
-          logging.debug("Comment found for function %s" % Colt(comment_function).magenta())
-          comments.append( Comment(comment, comment_line_start, comment_col_start, comment_line_end, comment_col_end, comment_indent, comment_function) )
-
-        comment = []
-        comment_line_start = -1
-        comment_line_end = -1
-        comment_col_start = -1
-        comment_col_end = -1
-        comment_indent = -1
-
-        emit_comment = False
-        break
+    comment_method(cursor, comments)
 
   else:
 
