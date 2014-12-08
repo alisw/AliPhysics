@@ -69,14 +69,14 @@ macro(generate_rootmap LIBNAME LIBDEPS LINKDEF)
         if(ext)
             set(LOCAL_DEPS ${LOCAL_DEPS} ${file})
         else()
-            set(LOCAL_DEPS ${LOCAL_DEPS} lib${file}.so)
+            set(LOCAL_DEPS ${LOCAL_DEPS} lib${file})
         endif()
     endforeach()
 
 #    message(STATUS "Generating ROOT map for ${LIBNAME}")
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lib${LIBNAME}.rootmap
                        COMMAND LD_LIBRARY_PATH=${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOT_LIBMAP}
-                       ARGS -o ${CMAKE_CURRENT_BINARY_DIR}/lib${LIBNAME}.rootmap -l lib${LIBNAME}.so -d ${LOCAL_DEPS} -c ${LINKDEF}
+                       ARGS -o ${CMAKE_CURRENT_BINARY_DIR}/lib${LIBNAME}.rootmap -l lib${LIBNAME} -d ${LOCAL_DEPS} -c ${LINKDEF}
                        DEPENDS ${LIBNAME}
                        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} VERBATIM
                       )
