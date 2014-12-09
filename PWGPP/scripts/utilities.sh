@@ -74,6 +74,7 @@ parseConfig()
 guessRunData()
 {
   #guess the period from the path, pick the rightmost one
+  #if $ocdbStorage is set it will be reset to the anchorYear (for MC)
   period=""
   runNumber=""
   year=""
@@ -87,6 +88,7 @@ guessRunData()
 
   local oldIFS=${IFS}
   local IFS="/"
+  [[ -z ${1} ]] && return 1
   declare -a path=( $1 )
   IFS="${oldIFS}"
   local dirDepth=$(( ${#path[*]}-1 ))
@@ -104,25 +106,28 @@ guessRunData()
     [[ ${field} =~ ^20[0-9][0-9]$ ]] && year=${field}
     [[ ${field} =~ ^(^sim$|^data$) ]] && dataType=${field}
   done
-
   originalPass=${pass}
-  [[ -n ${shortRunNumber} && "${legoTrainRunNumber}" =~ ${shortRunNumber} ]] && legoTrainRunNumber=""
-  [[ -z ${legoTrainRunNumber} ]] && pass=${path[$((dirDepth-1))]}
-  [[ "${dataType}" =~ ^sim$ ]] && pass="passMC" && runNumber=${shortRunNumber} && originalPass="" #for MC not from lego, the runnumber is identified as lego train number, thus needs to be nulled
-  [[ -n ${legoTrainRunNumber} ]] && pass+="_lego${legoTrainRunNumber}"
-  
-  #modify the OCDB: set the year
-  if [[ ${dataType} =~ sim ]]; then 
+
+  if [[ ${dataType} =~ sim ]]; then
+    [[ -n ${shortRunNumber} && -z ${runNumber} ]] && runNumber=${shortRunNumber}
+    pass="passMC"
+    originalPass="" #for MC not from lego, the runNumber is identified as lego train number, thus needs to be nulled
     anchorYear=$(run2year $runNumber)
     if [[ -z "${anchorYear}" ]]; then
       echo "WARNING: anchorYear not available for this production: ${originalPeriod}, runNumber: ${runNumber}. Cannot set the OCDB."
       return 1
     fi
+    #modify the OCDB: set the year
     ocdbStorage=$(setYear ${anchorYear} ${ocdbStorage})
   else
     ocdbStorage=$(setYear ${year} ${ocdbStorage})
   fi
 
+  [[ -n ${shortRunNumber} && -z ${runNumber} && -z {dataType} ]] && runNumber=${shortRunNumber}
+  [[ -n ${shortRunNumber} && "${legoTrainRunNumber}" =~ ${shortRunNumber} ]] && legoTrainRunNumber=""
+  [[ -z ${legoTrainRunNumber} && ${dataType} == "data" ]] && pass=${path[$((dirDepth-1))]}
+  [[ -n ${legoTrainRunNumber} ]] && pass+="_lego${legoTrainRunNumber}"
+  
   #if [[ -z ${dataType} || -z ${year} || -z ${period} || -z ${runNumber}} || -z ${pass} ]];
   if [[ -z ${runNumber} ]]
   then
