@@ -313,6 +313,7 @@ def traverse_ast(cursor, filename, comments, recursion=0):
 def refactor_comment(comment):
 
   recomm = r'^(/{2,}|/\*)?\s*(.*?)\s*((/{2,})?\s*|\*/)$'
+  regarbage = r'^[\s*=-_#]+$'
 
   new_comment = []
   insert_blank = False
@@ -321,7 +322,8 @@ def refactor_comment(comment):
     mcomm = re.search( recomm, line_comment )
     if mcomm:
       new_line_comment = mcomm.group(2)
-      if new_line_comment == '':
+      mgarbage = re.search( regarbage, new_line_comment )
+      if new_line_comment == '' or mgarbage is not None:
         insert_blank = True
       else:
         if insert_blank and not wait_first_non_blank:
