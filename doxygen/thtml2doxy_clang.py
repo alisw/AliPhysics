@@ -282,8 +282,15 @@ def comment_datamember(cursor, comments):
 def comment_classdesc(filename, comments):
 
   recomm = r'^\s*///?\s*(.*?)\s*/*\s*$'
+
   reclass_doxy = r'(?i)^\\class:?\s*(.*?)\s*$'
   class_name_doxy = None
+
+  reauthor = r'(?i)\\?authors?:?\s*(.*?)\s*(,?\s*([0-9./-]+))?\s*$'
+  redate = r'(?i)\\?date:?\s*([0-9./-]+)\s*$'
+  author = None
+  date = None
+
   comment_lines = []
 
   start_line = -1
@@ -320,10 +327,27 @@ def comment_classdesc(filename, comments):
 
           start_line = line_num
 
+        append = True
+
         mclass_doxy = re.search(reclass_doxy, mcomm.group(1))
         if mclass_doxy:
           class_name_doxy = mclass_doxy.group(1)
+          append = False
         else:
+          mauthor = re.search(reauthor, mcomm.group(1))
+          if mauthor:
+            author = mauthor.group(1)
+            if date is None:
+              # Date specified in the standalone \date field has priority
+              date = mauthor.group(2)
+            append = False
+          else:
+            mdate = re.search(redate, mcomm.group(1))
+            if mdate:
+              date = mdate.group(1)
+              append = False
+
+        if append:
           comment_lines.append( mcomm.group(1) )
 
       else:
