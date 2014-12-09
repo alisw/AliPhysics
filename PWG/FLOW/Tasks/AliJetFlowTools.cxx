@@ -37,6 +37,7 @@
 // to see an example of how to use this class, see $ALICE_ROOT/PWGCF/FLOW/macros/jetFlowTools.C
 
 // root includes
+#include "TH1.h"
 #include "TF2.h"
 #include "TH2D.h"
 #include "TGraph.h"
@@ -145,13 +146,14 @@ AliJetFlowTools::AliJetFlowTools() :
         for(Int_t i(0); i < fPower->GetNpar(); i++) fPower->SetParameter(i, 0.);
 }
 //_____________________________________________________________________________
-void AliJetFlowTools::Make() {
+void AliJetFlowTools::Make(TH1* customIn, TH1* customOut) {
     // core function of the class
     if(fDphiDptUnfolding) {
         // to extract the yield as function of Dphi, Dpt - experimental
         MakeAU();
         return;
     }
+    cout << __LINE__ << endl;
     // 1) rebin the raw output of the jet task to the desired binnings
     // 2) calls the unfolding routine
     // 3) writes output to file
@@ -160,7 +162,7 @@ void AliJetFlowTools::Make() {
     // 1) manipulation of input histograms
     // check if the input variables are present
     if(fRefreshInput) {
-        if(!PrepareForUnfolding()) {
+        if(!PrepareForUnfolding(customIn, customOut)) {
             printf(" AliJetFlowTools::Make() Fatal error \n - couldn't prepare for unfolding ! \n");
             return;
         }
@@ -387,6 +389,7 @@ TH1D* AliJetFlowTools::UnfoldWrapper(
     else if(fUnfoldingAlgorithm == kBayesian)           myFunction = &AliJetFlowTools::UnfoldSpectrumBayesian;
     else if(fUnfoldingAlgorithm == kBayesianAli)        myFunction = &AliJetFlowTools::UnfoldSpectrumBayesianAli;
     else if(fUnfoldingAlgorithm == kSVD)                myFunction = &AliJetFlowTools::UnfoldSpectrumSVD;
+    else if(fUnfoldingAlgorithm == kNone)               myFunction = &AliJetFlowTools::FoldSpectrum;
     else if(fUnfoldingAlgorithm == kNone) {
         TH1D* clone((TH1D*)measuredJetSpectrum->Clone("clone"));
         clone->SetNameTitle(Form("MeasuredJetSpectrum%s", suffix.Data()), Form("measuredJetSpectrum %s", suffix.Data()));
@@ -875,7 +878,51 @@ TH1D* AliJetFlowTools::UnfoldSpectrumBayesian(
     return  unfoldedLocalBayes; 
 }
 //_____________________________________________________________________________
-Bool_t AliJetFlowTools::PrepareForUnfolding()
+TH1D* AliJetFlowTools::FoldSpectrum(
+        const TH1D* measuredJetSpectrum,      // truncated raw jets (same binning as pt rec of response) 
+        const TH2D* resizedResponse,          // response matrix
+        const TH1D* kinematicEfficiency,      // kinematic efficiency
+        const TH1D* measuredJetSpectrumTrueBins,        // unfolding template: same binning is pt gen of response
+        const TString suffix,                 // suffix (in or out of plane)
+        const TH1D* jetFindingEfficiency)     // jet finding efficiency (optional)
+{
+    // simple function to fold the given spectrum with the in-plane and out-of-plane response
+
+    // 0) for consistency with the other methods, keep the same nomenclature which admittedly is a bit confusing 
+    // what is 'unfolded' here, is just a clone of the input spectrum, binned to the 'unfolded' binning
+    TH1D* unfoldedLocal((TH1D*)measuredJetSpectrum->Clone(Form("unfoldedLocal_%s", suffix.Data())));
+
+    // 1) full response matrix and kinematic efficiency
+    TH2D* resizedResponseLocal = (TH2D*)resizedResponse->Clone(Form("resizedResponseLocal_%s", suffix.Data()));
+    TH1D* kinematicEfficiencyLocal = (TH1D*)kinematicEfficiency->Clone(Form("kinematicEfficiencyLocal_%s", suffix.Data()));
+
+    // step 2) fold the 'unfolded' spectrum and save the ratio measured / refolded
+    TH1D *foldedLocal(fResponseMaker->MultiplyResponseGenerated(unfoldedLocal, resizedResponseLocal,kinematicEfficiencyLocal));
+    foldedLocal->SetNameTitle(Form("RefoldedSpectrum_%s", suffix.Data()), Form("Refolded jet spectrum, %s plane", suffix.Data()));
+    unfoldedLocal->SetNameTitle(Form("UnfoldedSpectrum_%s", suffix.Data()), Form("Unfolded jet spectrum, %s plane", suffix.Data()));
+ 
+    // step 3) write histograms to file. to ensure that these have unique identifiers on the heap, 
+    // objects are cloned using 'ProtectHeap()'
+    TH1D* measuredJetSpectrumLocal((TH1D*)(measuredJetSpectrum->Clone("tempObject")));
+    measuredJetSpectrumLocal->SetNameTitle(Form("InputSpectrum_%s", suffix.Data()), Form("InputSpectrum_%s", suffix.Data()));
+    measuredJetSpectrumLocal = ProtectHeap(measuredJetSpectrumLocal);
+    measuredJetSpectrumLocal->Write(); 
+
+    resizedResponseLocal = ProtectHeap(resizedResponseLocal);
+    resizedResponseLocal->Write();
+
+    unfoldedLocal = ProtectHeap(unfoldedLocal);
+    if(jetFindingEfficiency) unfoldedLocal->Divide(jetFindingEfficiency);
+    unfoldedLocal->Write();
+
+    foldedLocal = ProtectHeap(foldedLocal);
+    foldedLocal->Write();
+
+    // return the folded result
+    return foldedLocal;
+}
+//_____________________________________________________________________________
+Bool_t AliJetFlowTools::PrepareForUnfolding(TH1* customIn, TH1* customOut)
 {
     // prepare for unfolding
     if(fRawInputProvided) return kTRUE;
@@ -933,6 +980,10 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
         fSpectrumOut = fJetPtDeltaPhi->ProjectionY(Form("_py_out_%s", spectrumName.Data()), 11, 30, "e");
         fSpectrumOut = ProtectHeap(fSpectrumOut);
     }
+    // if a custom input is passed, overwrite existing histograms
+    if(customIn)        fSpectrumIn = dynamic_cast<TH1D*>(customIn);
+    if(customOut)       fSpectrumOut = dynamic_cast<TH1D*>(customOut);
+
     // normalize spectra to event count if requested
     if(fNormalizeSpectra) {
         TH1* rho((TH1*)fInputList->FindObject(Form("fHistRho_%i", fCentralityArray->At(0))));

@@ -9,6 +9,7 @@
 #define AliJetFlowTools_H
 
 // root forward declarations
+class TH1;
 class TF2;
 class TH2D;
 class TCanvas;
@@ -47,6 +48,7 @@ class AliJetFlowTools {
             kBayesian,                  // Bayesian unfolding, implemented in RooUnfold
             kBayesianAli,               // Bayesian unfolding, implemented in AliUnfolding
             kSVD,                       // SVD unfolding, implemented in RooUnfold
+            kFold,                      // instead of unfolding, fold the input with the response
             kNone };                    // no unfolding
         enum prior {                    // prior that is used for unfolding
             kPriorChi2,                 // prior from chi^2 method
@@ -164,7 +166,7 @@ class AliJetFlowTools {
             }
         }
         // main function. buffers about 5mb per call!
-        void            Make();
+        void            Make(TH1* customIn = 0x0, TH1* customOut = 0x0);
         void            MakeAU();       // test function, use with caution (09012014)
         void            Finish() {
             fOutputFile->cd();
@@ -347,7 +349,7 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         static void     SetMinuitStrategy(Double_t s)   {AliUnfolding::SetMinuitStrategy(s);}
         static void     SetDebug(Int_t d)               {AliUnfolding::SetDebug(d);}
     private:
-        Bool_t          PrepareForUnfolding(); 
+        Bool_t          PrepareForUnfolding(TH1* customIn = 0x0, TH1* customOut = 0x0); 
         Bool_t          PrepareForUnfolding(Int_t low, Int_t up);
         TH1D*           GetPrior(                       const TH1D* measuredJetSpectrum,
                                                         const TH2D* resizedResponse,
@@ -380,6 +382,12 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
                                                         const TString suffix,
                                                         const TH1D* jetFindingEfficiency = 0x0);
         TH1D*           UnfoldSpectrumBayesian(         const TH1D* measuredJetSpectrum, 
+                                                        const TH2D* resizedResponse,
+                                                        const TH1D* kinematicEfficiency,
+                                                        const TH1D* measuredJetSpectrumTrueBins,
+                                                        const TString suffix,
+                                                        const TH1D* jetFindingEfficiency = 0x0);
+        TH1D*           FoldSpectrum(                   const TH1D* measuredJetSpectrum, 
                                                         const TH2D* resizedResponse,
                                                         const TH1D* kinematicEfficiency,
                                                         const TH1D* measuredJetSpectrumTrueBins,
