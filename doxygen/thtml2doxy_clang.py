@@ -267,6 +267,83 @@ def comment_datamember(cursor, comments):
     assert False, 'Regular expression does not match member comment'
 
 
+## Parses class description (beginning of file).
+#
+#  The clang parser does not work in this case so we do it manually, but it is very simple: we keep
+#  the first consecutive sequence of single-line comments (//) we find - provided that it occurs
+#  before any other comment found so far in the file (the comments array is inspected to ensure
+#  this).
+#
+#  Multi-line comments (/* ... */) are not considered as they are commonly used to display
+#  copyright notice.
+#
+#  @param filename Name of the current file
+#  @param comments Array of comments: new ones will be appended there
+def comment_classdesc(filename, comments):
+
+  recomm = r'^\s*///?\s*(.*?)\s*/*\s*$'
+  comment_lines = []
+
+  start_line = -1
+  end_line = -1
+
+  line_num = 0
+
+  with open(filename, 'r') as fp:
+
+    for raw in fp:
+
+      line_num = line_num + 1
+
+      if raw.strip() == '':
+        # Skip empty lines
+        end_line = line_num - 1
+        continue
+
+      mcomm = re.search(recomm, raw)
+      if mcomm:
+
+        if len(comment_lines) == 0:
+
+          # First line. Check if we do not overlap with other comments
+          comment_overlaps = False
+          for c in comments:
+            if c.has_comment(line_num):
+              comment_overlaps = True
+              break
+
+          if comment_overlaps:
+            # No need to look for other comments
+            break
+
+          start_line = line_num
+
+        comment_lines.append( mcomm.group(1) )
+
+      else:
+        if len(comment_lines) > 0:
+          # End of our comment
+          if end_line == -1:
+            end_line = line_num - 1
+          break
+
+  comment_lines = refactor_comment(comment_lines)
+
+  if len(comment_lines) > 0:
+
+    reclass = r'^(.*/)?(.*?)(\..*)?$'
+    mclass = re.search( reclass, filename )
+    if mclass:
+      class_name = mclass.group(2)
+      logging.debug('Comment found for class %s' % Colt(class_name).magenta())
+      comments.append(Comment(
+        comment_lines,
+        start_line, 1, end_line, 1,
+        0, class_name
+      ))
+    else:
+      assert False, 'Regexp unable to extract classname from file'
+
 ## Traverse the AST recursively starting from the current cursor.
 #
 #  @param cursor    A Clang parser cursor
@@ -305,6 +382,9 @@ def traverse_ast(cursor, filename, comments, recursion=0):
 
   for child_cursor in cursor.get_children():
     traverse_ast(child_cursor, filename, comments, recursion+1)
+
+  if recursion == 0:
+    comment_classdesc(filename, comments)
 
 
 ## Remove garbage from comments and convert special tags from THtml to Doxygen.
