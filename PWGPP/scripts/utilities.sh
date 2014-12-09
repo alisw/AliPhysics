@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #library of useful PWGPP related bash functions
 #it REQUIRES BASH 4 !!!!
 #blame: Mikolaj Krzewicki, mkrzewic@cern.ch
