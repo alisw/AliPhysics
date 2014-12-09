@@ -206,8 +206,9 @@ def comment_method(cursor, comments):
           logging.debug("Comment found for function %s" % Colt(comment_function).magenta())
           comments.append( Comment(comment, comment_line_start, comment_col_start, comment_line_end, comment_col_end, comment_indent, comment_function) )
         else:
-          logging.debug('Empty comment for function %s marked for removal' % Colt(comment_function).magenta())
-          comments.append(RemoveComment(comment_line_start, comment_line_end))
+          logging.debug('Empty comment found for function %s: collapsing' % Colt(comment_function).magenta())
+          comments.append( Comment([''], comment_line_start, comment_col_start, comment_line_end, comment_col_end, comment_indent, comment_function) )
+          #comments.append(RemoveComment(comment_line_start, comment_line_end))
 
       else:
         logging.warning('No comment found for function %s' % Colt(comment_function).magenta())
