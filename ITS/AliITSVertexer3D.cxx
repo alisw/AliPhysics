@@ -76,7 +76,13 @@ AliITSVertexer3D::AliITSVertexer3D(Double_t zcut):
   fGenerForDownScale(0),
   f3DPeak(),
   fHighMultAlgo(1),
-  fSwitchAlgorithm(kFALSE)
+  fSwitchAlgorithm(kFALSE),
+  fFallBack(kFALSE),
+  fFallBackThreshold(0),
+  fH3d(NULL),
+  fH3dcs(NULL),
+  fH3dfs(NULL),
+  fH3dv(NULL)
 {
   // Default constructor
   SetCoarseDiffPhiCut();
@@ -138,7 +144,13 @@ AliITSVertexer3D::AliITSVertexer3D(TRootIOCtor*):
   fGenerForDownScale(0),
   f3DPeak(),
   fHighMultAlgo(1),
-  fSwitchAlgorithm(kFALSE)
+  fSwitchAlgorithm(kFALSE),
+  fFallBack(kFALSE),
+  fFallBackThreshold(0),
+  fH3d(NULL),
+  fH3dcs(NULL),
+  fH3dfs(NULL),
+  fH3dv(NULL)
 {
   // I/O constructor
 
@@ -148,6 +160,10 @@ AliITSVertexer3D::AliITSVertexer3D(TRootIOCtor*):
 //______________________________________________________________________
 AliITSVertexer3D::~AliITSVertexer3D() {
   // Destructor
+  if(fH3d) delete fH3d;
+  if(fH3dcs) delete fH3dcs;
+  if(fH3dfs) delete fH3dfs;
+  if(fH3dv) delete fH3dv;
   fLines.Clear("C");
   if(fZHisto) delete fZHisto;
   if(fGenerForDownScale) delete fGenerForDownScale;
@@ -167,33 +183,47 @@ void AliITSVertexer3D::ResetVert3D(){
 //______________________________________________________________________
 AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(TTree *itsClusterTree){
   // Defines the AliESDVertex for the current event
+
+  //cleanup
+  if(fZHisto)fZHisto->Reset(); 
   ResetVert3D();
   AliDebug(1,"FindVertexForCurrentEvent - 3D - PROCESSING NEXT EVENT");
   fLines.Clear("C");
   fCurrentVertex = NULL;
 
-  Int_t nolines = FindTracklets(itsClusterTree,0);
-  Int_t rc;
-  if(nolines>=2){
-    if(fSwitchAlgorithm) {
-      rc = Prepare3DVertexPbPb();
-      FindVertex3D(itsClusterTree);
-    } else {
-      rc=Prepare3DVertex(0);
-      if(fVert3D.GetNContributors()>0){
-	fLines.Clear("C");
-	nolines = FindTracklets(itsClusterTree,1);
-	if(nolines>=2){
-	  rc=Prepare3DVertex(1);
-	  if(fPileupAlgo == 2 && rc == 0) FindVertex3DIterative();
-	  else if(fPileupAlgo!=2 && rc == 0) FindVertex3D(itsClusterTree);
-	  if(rc!=0) fVert3D.SetNContributors(0); // exclude this vertex      
+  // fall back to VertexerZ if too many clusters on SPD first layer
+  AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
+  rpcont->FetchClusters(0,itsClusterTree);
+  if(!rpcont->IsSPDActive()){
+    AliWarning("No SPD rec points found, 3D vertex not calculated");
+    return NULL;
+  }
+  Bool_t fallBack = kFALSE; // 3D algo , no fallback to vertexer Z
+  if(fFallBack && (rpcont->GetNClustersInLayerFast(1)) > fFallBackThreshold) 
+     fallBack = kTRUE;
+  if(!fallBack){
+    Int_t nolines = FindTracklets(itsClusterTree,0);
+    Int_t rc;
+    if(nolines>=2){
+      if(fSwitchAlgorithm) {
+	rc = Prepare3DVertexPbPb();
+	FindVertex3D(itsClusterTree);
+      } else {
+	rc=Prepare3DVertex(0);
+	if(fVert3D.GetNContributors()>0){
+	  fLines.Clear("C");
+	  nolines = FindTracklets(itsClusterTree,1);
+	  if(nolines>=2){
+	    rc=Prepare3DVertex(1);
+	    if(fPileupAlgo == 2 && rc == 0) FindVertex3DIterative();
+	    else if(fPileupAlgo!=2 && rc == 0) FindVertex3D(itsClusterTree);
+	    if(rc!=0) fVert3D.SetNContributors(0); // exclude this vertex      
+	  }
 	}
       }
     }
-  }
-
-  if(!fCurrentVertex){
+  }   // if(!fallBack)
+  if(fallBack  || (!fCurrentVertex)){
     AliITSVertexerZ vertz(GetNominalPos()[0],GetNominalPos()[1]);
     vertz.SetDetTypeRec(GetDetTypeRec());
     AliDebug(1,"Call Vertexer Z\n");
@@ -796,9 +826,18 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   Int_t nbz=(Int_t)((zh-zl)/fBinSizeZ+0.0001);
   Int_t nbrcs=(Int_t)((rh-rl)/(fBinSizeR*2.)+0.0001);
   Int_t nbzcs=(Int_t)((zh-zl)/(fBinSizeZ*2.)+0.0001);
-
-  TH3F *h3d = new TH3F("h3d","xyz distribution",nbr,rl,rh,nbr,rl,rh,nbz,zl,zh);
-  TH3F *h3dcs = new TH3F("h3dcs","xyz distribution",nbrcs,rl,rh,nbrcs,rl,rh,nbzcs,zl,zh);
+  if(!fH3d){
+    fH3d = new TH3F("fH3d","xyz distribution",nbr,rl,rh,nbr,rl,rh,nbz,zl,zh);
+    fH3d->SetDirectory(0);
+  }else{
+    fH3d->SetBins(nbr,rl,rh,nbr,rl,rh,nbz,zl,zh);
+  }
+  if(!fH3dcs){
+    fH3dcs = new TH3F("fH3dcs","xyz distribution",nbrcs,rl,rh,nbrcs,rl,rh,nbzcs,zl,zh);
+    fH3dcs->SetDirectory(0);
+  }else{ 
+    fH3dcs->SetBins(nbr,rl,rh,nbr,rl,rh,nbz,zl,zh);
+  }
 
   // cleanup of the TCLonesArray of tracklets (i.e. fakes are removed)
   Int_t vsiz = fLines.GetEntriesFast();
@@ -823,8 +862,8 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
       if(raddist>deltaR)continue;
       validate[i]=1;
       validate[j]=1;
-      h3d->Fill(point[0],point[1],point[2]);
-      h3dcs->Fill(point[0],point[1],point[2]);
+      fH3d->Fill(point[0],point[1],point[2]);
+      fH3dcs->Fill(point[0],point[1],point[2]);
     }
   }
 
@@ -832,8 +871,8 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   for(Int_t i=0; i<vsiz;i++)if(validate[i]>=1)numbtracklets++;
   if(numbtracklets<2){
     delete [] validate; 
-    delete h3d; 
-    delete h3dcs; 
+    fH3d->Reset(); 
+    fH3dcs->Reset(); 
     SetBinSizeR(origBinSizeR);
     SetBinSizeZ(origBinSizeZ);
     return retcode; 
@@ -848,8 +887,8 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
 
   // Exit here if Pileup Algorithm 2 has been chosen during second loop
   if(fPileupAlgo == 2 && optCuts==1){
-    delete h3d; 
-    delete h3dcs;     
+    fH3d->Reset();
+    fH3dcs->Reset();     
     SetBinSizeR(origBinSizeR);
     SetBinSizeZ(origBinSizeZ);
     return 0;
@@ -859,24 +898,24 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
 
   Double_t peak[3]={0.,0.,0.};
   Int_t ntrkl,ntimes;
-  FindPeaks(h3d,peak,ntrkl,ntimes);  
-  delete h3d;
+  FindPeaks(fH3d,peak,ntrkl,ntimes);  
+  fH3d->Reset();
   Double_t binsizer=(rh-rl)/nbr;
   Double_t binsizez=(zh-zl)/nbz;
   if(optCuts==0 && (ntrkl<=2 || ntimes>1)){
     ntrkl=0;
     ntimes=0;
-    FindPeaks(h3dcs,peak,ntrkl,ntimes);  
+    FindPeaks(fH3dcs,peak,ntrkl,ntimes);  
     binsizer=(rh-rl)/nbrcs;
     binsizez=(zh-zl)/nbzcs;
     if(ntrkl==1 || ntimes>1){
-      delete h3dcs; 
+      fH3dcs->Reset(); 
       SetBinSizeR(origBinSizeR);
       SetBinSizeZ(origBinSizeZ);
       return retcode;
     }
   }
-  delete h3dcs;
+  fH3dcs->Reset();
 
   Double_t bs=(binsizer+binsizez)/2.;
   for(Int_t i=0; i<fLines.GetEntriesFast();i++){
@@ -900,7 +939,12 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
     Int_t nbyfs=(Int_t)((yh-yl)/fBinSizeR+0.0001);
     Int_t nbzfs=(Int_t)((zh-zl)/fBinSizeZ+0.0001);
 
-    TH3F *h3dfs = new TH3F("h3dfs","xyz distribution",nbxfs,xl,xh,nbyfs,yl,yh,nbzfs,zl,zh);
+    if(!fH3dfs){
+      fH3dfs = new TH3F("fH3dfs","xyz distribution",nbxfs,xl,xh,nbyfs,yl,yh,nbzfs,zl,zh);
+      fH3dfs->SetDirectory(0);
+    }else{ 
+      fH3dfs->SetBins(nbxfs,xl,xh,nbyfs,yl,yh,nbzfs,zl,zh);
+    }
     for(Int_t i=0; i<fLines.GetEntriesFast()-1;i++){
       AliStrLine *l1 = (AliStrLine*)fLines.At(i);
       for(Int_t j=i+1;j<fLines.GetEntriesFast();j++){
@@ -918,20 +962,20 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
 	Double_t deltaY=point[1]-ybeam;
 	Double_t raddist=TMath::Sqrt(deltaX*deltaX+deltaY*deltaY);
 	if(raddist>deltaR)continue;
-	h3dfs->Fill(point[0],point[1],point[2]);
+	fH3dfs->Fill(point[0],point[1],point[2]);
       }
     }
     ntrkl=0;
     ntimes=0;
 
     Double_t newpeak[3]={0.,0.,0.};
-    FindPeaks(h3dfs,newpeak,ntrkl,ntimes);  
+    FindPeaks(fH3dfs,newpeak,ntrkl,ntimes);  
     if(ntimes==1){
       for(Int_t iCoo=0; iCoo<3; iCoo++) peak[iCoo]=newpeak[iCoo];
       binsizer=fBinSizeR;
       binsizez=fBinSizeZ;
     }
-    delete h3dfs;
+    fH3dfs->Reset();
     bs=(binsizer+binsizez)/2.;
     for(Int_t i=0; i<fLines.GetEntriesFast();i++){
       AliStrLine *l1 = (AliStrLine*)fLines.At(i);
@@ -1002,7 +1046,7 @@ Int_t  AliITSVertexer3D::Prepare3DVertexPbPb(){
   Double_t zmi=-nz*f3DBinSize/2.;
   Double_t zma=nz*f3DBinSize/2.;
   Int_t nolines=fLines.GetEntriesFast();
-  TH3F *h3dv = new TH3F("h3dv","3d tracklets",nxy,xymi,xyma,nxy,xymi,xyma,nz,zmi,zma);
+  if(!fH3dv)fH3dv = new TH3F("fH3dv","3d tracklets",nxy,xymi,xyma,nxy,xymi,xyma,nz,zmi,zma);
   
   for(Int_t itra=0; itra<nolines; itra++){
     Double_t wei = GetFraction(itra);
@@ -1014,14 +1058,14 @@ Int_t  AliITSVertexer3D::Prepare3DVertexPbPb(){
 	do{
 	  Double_t punt[3];
 	  str->ComputePointAtT(t1,punt);
-	  h3dv->Fill(punt[0],punt[1],punt[2],wei);
+	  fH3dv->Fill(punt[0],punt[1],punt[2],wei);
 	  t1+=f3DBinSize/3.;
 	} while(t1<t2);
       }
     }
   }
   Int_t noftrk,noftim;
-  FindPeaks(h3dv,f3DPeak,noftrk,noftim); // arg: histo3d, peak, # of contrib., # of other peak with same magnitude
+  FindPeaks(fH3dv,f3DPeak,noftrk,noftim); // arg: histo3d, peak, # of contrib., # of other peak with same magnitude
   
   
   // Remove all the tracklets which are not passing near peak
@@ -1034,7 +1078,7 @@ Int_t  AliITSVertexer3D::Prepare3DVertexPbPb(){
   fLines.Compress();
   nolines=fLines.GetEntriesFast();
 
-  delete h3dv;
+  fH3dv->Reset();
 
   Int_t *validate2 = new Int_t [fLines.GetEntriesFast()];
   for(Int_t i=0; i<fLines.GetEntriesFast();i++) validate2[i]=1; 

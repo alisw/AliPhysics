@@ -75,7 +75,10 @@ class AliITSVertexer3D : public AliITSVertexer {
   Int_t GetMaxNumOfClustersForHighMult() const {return fMaxNumOfCl;}
   Int_t GetMaxNumOfClustersForDownScale() const {return fMaxNumOfClForDownScale;}
   Int_t GetMaxNumOfClustersForRebin() const {return fMaxNumOfClForRebin;}
-
+  // Fall back to Vertexer Z
+  void SetFallBack(UInt_t th){ fFallBack = kTRUE; fFallBackThreshold = th;}
+  // Get the threshold for fall back. Returns 0 is the fall back is not set.
+  UInt_t GetFallBackThreshold() const {return fFallBackThreshold; } 
 protected:
   AliITSVertexer3D(const AliITSVertexer3D& vtxr);
   AliITSVertexer3D& operator=(const AliITSVertexer3D& /* vtxr */);
@@ -126,13 +129,21 @@ protected:
   Double_t f3DPeak[3];           // TH3F peak coords
   UChar_t fHighMultAlgo;    // algorithm used for high mult. events
   Bool_t fSwitchAlgorithm; // Switch between two algoritms in testing phase
+  Bool_t fFallBack;         // Switch to Vertexer Z if true and if the number
+                            // of clusters in SPD0>fFallBackThreshold
+  UInt_t fFallBackThreshold; // threshold on SPD0 clusters 
+  TH3F* fH3d;               //! 3D histogram used to find the vertex
+  TH3F* fH3dcs;             //! 3D histogram used to find the vertex
+  TH3F* fH3dfs;             //! 3D histogram used to find the vertex
+  TH3F* fH3dv;              //! 3D histogram used to find the vertex
+
 
   static const Int_t fgkMaxNumOfClDefault;      // Default max n. of clusters for downscale
   static const Int_t fgkMaxNumOfClRebinDefault; // Default max n. of clusters for rebin
   static const Int_t fgkMaxNumOfClDownscaleDefault; // Default max n. of clusters for rebin
   static const Float_t fgk3DBinSizeDefault;  // Default 3D bins size
 
-  ClassDef(AliITSVertexer3D,15);
+  ClassDef(AliITSVertexer3D,16);
 
 };
 
