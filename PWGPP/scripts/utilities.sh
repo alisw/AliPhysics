@@ -169,11 +169,25 @@ setYear()
   #set the year
   #  ${1} - year to be set
   #  ${2} - where to set the year
-  local year1=$(guessYear ${1})
-  local year2=$(guessYear ${2})
+  local year1=$(guessYearFast ${1})
+  local year2=$(guessYearFast ${2})
   local path=${2}
   [[ ${year1} -ne ${year2} && -n ${year2} && -n ${year1} ]] && path=${2/\/${year2}\//\/${year1}\/}
   echo ${path}
+  return 0
+}
+
+guessYearFast()
+{
+  #guess the year from the path, pick the rightmost one
+  local IFS="/"
+  declare -a pathArray=( ${1} )
+  local field
+  local year
+  for field in ${pathArray[@]}; do
+    [[ ${field} =~ ^20[0-9][0-9]$ ]] && year=${field}
+  done
+  echo ${year}
   return 0
 }
 
