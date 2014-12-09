@@ -294,7 +294,7 @@ def comment_classdesc(filename, comments):
   class_name_doxy = None
 
   reauthor = r'(?i)\\?authors?:?\s*(.*?)\s*(,?\s*([0-9./-]+))?\s*$'
-  redate = r'(?i)\\?date:?\s*([0-9./-]+)\s*$'
+  redate = r'(?i)\\?date:?\s*([0-9./-]+)'
   author = None
   date = None
 
@@ -438,10 +438,18 @@ def traverse_ast(cursor, filename, comments, recursion=0):
     comment_classdesc(filename, comments)
 
 
+## Strip some HTML tags from the given string. Returns clean string.
+#
+#  @param s Input string
+def strip_html(s):
+  rehtml = r'(?i)</?(P|H[0-9]|BR)/?>'
+  return re.sub(rehtml, '', s)
+
+
 ## Remove garbage from comments and convert special tags from THtml to Doxygen.
 #
 #  @param comment An array containing the lines of the original comment
-def refactor_comment(comment):
+def refactor_comment(comment, do_strip_html=True):
 
   recomm = r'^(/{2,}|/\*)?\s*(.*?)\s*((/{2,})?\s*|\*/)$'
   regarbage = r'^(?i)\s*([\s*=-_#]+|(Begin|End)_Html)\s*$'
@@ -450,6 +458,11 @@ def refactor_comment(comment):
   insert_blank = False
   wait_first_non_blank = True
   for line_comment in comment:
+
+    # Strip some HTML tags
+    if do_strip_html:
+      line_comment = strip_html(line_comment)
+
     mcomm = re.search( recomm, line_comment )
     if mcomm:
       new_line_comment = mcomm.group(2)
