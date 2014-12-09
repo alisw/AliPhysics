@@ -7,7 +7,8 @@ AliAnalysisTaskDiJetCorrelations *AddTaskDiJetCorrelations(TString suffixName=""
 							   Double_t pTrg1min = 12.0,
 							   Double_t pTrg1max = 16.0,
 							   Double_t pTrg2min = 5.0,
-							   Double_t pTrg2max = 8.0)
+							   Double_t pTrg2max = 8.0,
+							   TString effLoc = "/alice/cern.ch/user/r/rvarma/TEST/Dcorr/Dec9/THnEfficiency.root")
 {
   
   Bool_t UseFbits = kTRUE;
@@ -52,7 +53,7 @@ AliAnalysisTaskDiJetCorrelations *AddTaskDiJetCorrelations(TString suffixName=""
   AliAnalysisDataContainer *cinputDiJetCorrelations = mgr->CreateContainer(inname,TChain::Class(), AliAnalysisManager::kInputContainer);
   //TString outputfile = AliAnalysisManager::GetCommonFileName();
   //outputfile += ":PWGCF_Di_Jet_Corr";
-  TString outputfile = "resultsDiJetCorrelationsT112to16T25to8Dec8.root";
+  TString outputfile = AliAnalysisManager::GetCommonFileName();//"resultsDiJetCorrelationsT112to16T25to8Dec8.root";
 
   
   AliAnalysisDataContainer *coutputDiJetCorrelations1 = mgr->CreateContainer(outBasicname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
@@ -63,6 +64,30 @@ AliAnalysisTaskDiJetCorrelations *AddTaskDiJetCorrelations(TString suffixName=""
   mgr->ConnectOutput(dijetcorrelations,1,coutputDiJetCorrelations1);
   mgr->ConnectOutput(dijetcorrelations,2,coutputDiJetCorrelations2);
   
+  if(effLoc!="")
+    dijetcorrelations->Setf3DEffCor(GetEfficiencyCorr(effLoc));
+
   return dijetcorrelations;
   
+}
+
+
+
+//loads the efficiency correction
+TH3F *GetEfficiencyCorr(TString effLoc){
+
+  TFile* f = 0x0;
+  f = TFile::Open(effLoc.Data());
+  if(!f){
+    Printf("%s%d no input data",(char*)__FILE__,__LINE__);
+    return;
+  }
+  
+  TH3F *tmp1 = (TH3F*)f->Get("hpTetaCentRec");
+  if(!tmp1){
+    Printf("%s%d Couldn't find hpTetaCentRec",(char*)__FILE__,__LINE__);
+    return;
+  }
+  
+  return (TH3F*)tmp1->Clone("f3DEffCor");
 }
