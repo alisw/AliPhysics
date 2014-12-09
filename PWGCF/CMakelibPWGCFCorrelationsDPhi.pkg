@@ -64,6 +64,7 @@ set ( SRCS
     Correlations/DPhi/PidPid/AliAnalysisTaskPidPidCorrelations.cxx
     Correlations/DPhi/PhiEffMC/AliAnalysisTaskPhiEffMc.cxx
     Correlations/DPhi/AliAnalysisTaskPythiaMpi.cxx
+    Correlations/DPhi/AliAnalysisTaskDiJetCorrelations.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
