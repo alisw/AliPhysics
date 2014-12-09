@@ -70,7 +70,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s()
     fTOFtrig1(0), fTOFtrig2(0),
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fSpdVtxContrib(0),
     fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
-    fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
+    fZDCAenergy(0),fZDCCenergy(0),fZDCAtime(0),fZDCCtime(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistC0tvxAndCint1TriggersPerRun(0),
@@ -93,7 +93,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name)
     fTOFtrig1(0), fTOFtrig2(0),
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fSpdVtxContrib(0),
     fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
-    fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
+    fZDCAenergy(0),fZDCCenergy(0),fZDCAtime(0),fZDCCtime(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistC0tvxAndCint1TriggersPerRun(0),
@@ -235,6 +235,8 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   
   fJPsiTree ->Branch("fZDCAenergy", &fZDCAenergy, "fZDCAenergy/D");
   fJPsiTree ->Branch("fZDCCenergy", &fZDCCenergy, "fZDCCenergy/D");
+  fJPsiTree ->Branch("fZDCAtime", &fZDCAtime, "fZDCAtime/D");
+  fJPsiTree ->Branch("fZDCCtime", &fZDCCtime, "fZDCCtime/D");
   fJPsiTree ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
   fJPsiTree ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");  
   fJPsiTree ->Branch("fDataFilnam", &fDataFilnam);
@@ -295,6 +297,8 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   
   fPsi2sTree ->Branch("fZDCAenergy", &fZDCAenergy, "fZDCAenergy/D");
   fPsi2sTree ->Branch("fZDCCenergy", &fZDCCenergy, "fZDCCenergy/D");
+  fPsi2sTree ->Branch("fZDCAtime", &fZDCAtime, "fZDCAtime/D");
+  fPsi2sTree ->Branch("fZDCCtime", &fZDCCtime, "fZDCCtime/D");
   fPsi2sTree ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
   fPsi2sTree ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");  
   fPsi2sTree ->Branch("fDataFilnam", &fDataFilnam);
@@ -870,6 +874,9 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   fV0Cdecision = fV0data->GetV0CDecision();
   fZDCAenergy = fZDCdata->GetZNATowerEnergy()[0];
   fZDCCenergy = fZDCdata->GetZNCTowerEnergy()[0];
+  
+  fZDCAtime = fZDCdata->GetZNATime();
+  fZDCCtime = fZDCdata->GetZNCTime();
   
   fNLooseTracks = 0;
   
