@@ -57,6 +57,8 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fShapesVar(0),
   fPtThreshold(-9999.),
   fRMatching(0.3),
+  fh2ResponseUW(0x0),
+  fh2ResponseW(0x0), 
   fPhiJetCorr6(0x0), 
   fPhiJetCorr7(0x0),
   fEtaJetCorr6(0x0),
@@ -79,6 +81,8 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fShapesVar(0),
   fPtThreshold(-9999.),
   fRMatching(0.3),
+  fh2ResponseUW(0x0),
+  fh2ResponseW(0x0),
   fPhiJetCorr6(0x0), 
   fPhiJetCorr7(0x0),
   fEtaJetCorr6(0x0),
@@ -144,7 +148,11 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
     //if( ivar == 4 )  fTreeObservableTagging->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar], Form("%s/I", fShapesVarNames[ivar].Data()));
 
   }
-  
+
+  fh2ResponseUW= new TH2F("fh2ResponseUW", "fh2ResponseUW", 100, 0, 200,  100, 0, 200); 
+  fOutput->Add(fh2ResponseUW);
+   fh2ResponseW= new TH2F("fh2ResponseW", "fh2ResponseW", 100, 0, 200,  100, 0, 200); 
+   fOutput->Add(fh2ResponseW);
   fPhiJetCorr6= new TH2F("fPhiJetCorr6", "fPhiJetCorr6", 50, 0, 2*TMath::Pi(), 50, 0, 2*TMath::Pi());
   fOutput->Add(fPhiJetCorr6);
   fEtaJetCorr6= new TH2F("fEtaJetCorr6", "fEtaJetCorr6", 50, -1.5, 1.5, 50, -1.5, 1.5);
@@ -200,7 +208,9 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
 	    Printf("jet2 not exists, returning");
 	    continue;
 	  }
-	  
+          fh2ResponseUW->Fill(jet1->Pt(),jet2->Pt());	  
+
+
 	  Double_t fraction = jetCont->GetFractionSharedPt(jet1);
           cout<<"hey a jet"<<fraction<<" "<<jet1->Pt()<<" "<<jet2->Pt()<<" "<<fCent<<endl;
           
@@ -218,6 +228,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
 	Double_t jp1=(jet2->Phi())-(partonsInfo->GetPartonPhi6()); 
 	Double_t detap1=(jet2->Eta())-(partonsInfo->GetPartonEta6());
      	kWeight=partonsInfo->GetPythiaEventWeight();
+        fh2ResponseW->Fill(jet1->Pt(),jet2->Pt(),kWeight);
 	if (jp1< -1*TMath::Pi()) jp1 = (-2*TMath::Pi())-jp1;
 	else if (jp1 > TMath::Pi()) jp1 = (2*TMath::Pi())-jp1;
 	Float_t dRp1 = TMath::Sqrt(jp1 * jp1 + detap1 * detap1);
