@@ -69,6 +69,7 @@ class Colt(str):
 class Comment:
 
   def __init__(self, lines, first_line, first_col, last_line, last_col, indent, func):
+    assert first_line > 0 and last_line >= first_line, 'Wrong line numbers'
     self.lines = lines
     self.first_line = first_line
     self.first_col = first_col
@@ -88,6 +89,7 @@ class Comment:
 class MemberComment:
 
   def __init__(self, text, is_transient, array_size, first_line, first_col, func):
+    assert first_line > 0, 'Wrong line number'
     self.lines = [ text ]
     self.is_transient = is_transient
     self.array_size = array_size
@@ -117,6 +119,7 @@ class MemberComment:
 class RemoveComment(Comment):
 
   def __init__(self, first_line, last_line):
+    assert first_line > 0 and last_line >= first_line, 'Wrong line numbers'
     self.first_line = first_line
     self.last_line = last_line
     self.func = '<remove>'
