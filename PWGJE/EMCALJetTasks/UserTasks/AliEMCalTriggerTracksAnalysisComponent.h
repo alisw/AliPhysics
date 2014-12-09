@@ -4,29 +4,32 @@
  * See cxx source for full Copyright notice                               */
 
 // Author: Markus Fasel
-#include <TObject.h>
+#include <TNamed.h>
 #include "AliEMCalHistoContainer.h"
 
 namespace EMCalTriggerPtAnalysis {
 
 class AliEMCalTriggerBinningComponent;
 class AliEMCalTriggerEventData;
+class AliEMCalTriggerKineCuts;
 
-class AliEMCalTriggerTracksAnalysisComponent : public TObject {
+class AliEMCalTriggerTracksAnalysisComponent : public TNamed {
 public:
   AliEMCalTriggerTracksAnalysisComponent();
   AliEMCalTriggerTracksAnalysisComponent(const char *name);
-  virtual ~AliEMCalTriggerTracksAnalysisComponent() {}
+  virtual ~AliEMCalTriggerTracksAnalysisComponent();
 
   virtual void CreateHistos();
   virtual void Process(const AliEMCalTriggerEventData * const data) = 0;
 
   THashList *GetHistList() const { return fHistos->GetListOfHistograms(); }
   void SetBinning(const AliEMCalTriggerBinningComponent * const binning) { fBinning = binning; }
+  void SetKineCuts(const AliEMCalTriggerKineCuts * const cuts) { fKineCuts = cuts; }
 
 protected:
   AliEMCalHistoContainer                      *fHistos;
   const AliEMCalTriggerBinningComponent       *fBinning;
+  const AliEMCalTriggerKineCuts               *fKineCuts;
 
   ClassDef(AliEMCalTriggerTracksAnalysisComponent, 1)
 };

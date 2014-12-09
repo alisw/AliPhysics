@@ -25,6 +25,10 @@ public:
     TNamed(name, ""),
     fBinning(nbins+1, binning)
   {}
+  AliEMCalTriggerBinningDimension(const char *name, const TArrayD &binning):
+    TNamed(name, ""),
+    fBinning(binning.GetSize()-1, binning.GetArray())
+  {}
   ~AliEMCalTriggerBinningDimension() {}
 
   void Set(int nbins, double *binning) { fBinning.Set(nbins+1, binning); }
@@ -45,8 +49,9 @@ public:
   AliEMCalTriggerBinningComponent &operator=(const AliEMCalTriggerBinningComponent &ref);
   virtual ~AliEMCalTriggerBinningComponent();
 
-  AliEMCalTriggerBinningDimension *GetBinning(const char *name);
+  AliEMCalTriggerBinningDimension *GetBinning(const char *name) const;
   void SetBinning(const char *dimname, int nbins, double *binning);
+  void SetBinning(const char *dimname, const TArrayD &binning);
 
 private:
   TObjArray       *fDimensions;           // List of binnings (dimensions)
