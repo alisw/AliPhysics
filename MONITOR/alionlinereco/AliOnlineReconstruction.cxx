@@ -106,7 +106,7 @@ int AliOnlineReconstruction::RetrieveGRP(TString &gdc)
 	TString password = fSettings.GetValue("logbook.pass", DEFAULT_LOGBOOK_PASS);
 	TString cdbPath = fSettings.GetValue("cdb.defaultStorage", DEFAULT_CDB_STORAGE);
 
-	//	cdbPath = gSystem->pwd();
+	cdbPath = Form("local://%s",gSystem->pwd());
 	cout<<"CDB path for GRP:"<<cdbPath<<endl;
 
 	Int_t ret=AliGRPPreprocessor::ReceivePromptRecoParameters(fRun, dbHost.Data(),
@@ -128,13 +128,24 @@ void AliOnlineReconstruction::SetupReco()
 	/* Settings CDB */
 	cout<<"\n\nSetting CDB manager parameters\n\n"<<endl;
 	fCDBmanager->SetRun(fRun);
+	cout<<"Set default storage"<<endl;
+
 	fCDBmanager->SetDefaultStorage(fSettings.GetValue("cdb.defaultStorage", DEFAULT_CDB_STORAGE));
+
+	fCDBmanager->Print();
+	cout<<"Set specific storage 1"<<endl;
 	fCDBmanager->SetSpecificStorage(fSettings.GetValue( "cdb.specificStoragePath1", DEFAULT_CDB_SPEC_STORAGE_PATH1),  
 				    fSettings.GetValue( "cdb.specificStorageValue1", DEFAULT_CDB_SPEC_STORAGE_VALUE1));
+	fCDBmanager->Print();
+	cout<<"Set specific storage 2"<<endl;
 	fCDBmanager->SetSpecificStorage(fSettings.GetValue( "cdb.specificStoragePath2", DEFAULT_CDB_SPEC_STORAGE_PATH2),  
 				    fSettings.GetValue( "cdb.specificStorageValue2", DEFAULT_CDB_SPEC_STORAGE_VALUE2));
+	fCDBmanager->Print();
+	cout<<"Set specific storage 3"<<endl;
 	fCDBmanager->SetSpecificStorage(fSettings.GetValue( "cdb.specificStoragePath3", DEFAULT_CDB_SPEC_STORAGE_PATH3),  
 				    fSettings.GetValue( "cdb.specificStorageValue3", DEFAULT_CDB_SPEC_STORAGE_VALUE3));
+	fCDBmanager->Print();
+
 	/* Reconstruction settings */  
 
 	// QA options
@@ -143,7 +154,8 @@ void AliOnlineReconstruction::SetupReco()
 	fAliReco->SetRunGlobalQA(fSettings.GetValue("qa.runGlobal",DEFAULT_QA_RUN_GLOBAL));
 	fAliReco->SetQARefDefaultStorage(fSettings.GetValue("qa.defaultStorage",DEFAULT_QAREF_STORAGE)) ;
 	fAliReco->SetRunPlaneEff(fSettings.GetValue("reco.runPlaneEff",DEFAULT_RECO_RUN_PLANE_EFF));
-
+	fCDBmanager->Print();
+	cout<<"\n\nSetting other reco options"<<endl;
 	// AliReconstruction settings
 	fAliReco->SetWriteESDfriend(fSettings.GetValue( "reco.writeESDfriend",DEFAULT_RECO_WRITE_ESDF));
 	fAliReco->SetWriteAlignmentData(fSettings.GetValue( "reco.writeAlignment",DEFAULT_RECO_WRITE_ALIGN));
@@ -151,7 +163,7 @@ void AliOnlineReconstruction::SetupReco()
 	fAliReco->SetRunReconstruction(fSettings.GetValue( "reco.detectors", DEFAULT_RECO_DETECTORS));
 	fAliReco->SetUseTrackingErrorsForAlignment("ITS"); //-- !should be set from conf file!
 	fAliReco->SetCleanESD(fSettings.GetValue( "reco.cleanESD",DEFAULT_RECO_CLEAN_ESD));
-
+	fCDBmanager->Print();
 	// init reco for given run
  	fAliReco->InitRun(fDataSource.Data());
 }

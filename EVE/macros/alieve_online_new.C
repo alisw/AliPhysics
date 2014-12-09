@@ -46,13 +46,13 @@ void alieve_online_new()
                               geom_gentle_rhoz(),
                               geom_gentle_rhoz());
     
-    //These macros crashes on mac os. To be checked
+    //These macros crashes on mac os. To be checked. Problems on SLC as well.
     
-    TEveUtil::LoadMacro("geom_gentle_trd.C");
-    multiView->InitGeomGentleTrd(geom_gentle_trd());
+    //TEveUtil::LoadMacro("geom_gentle_trd.C");
+    //multiView->InitGeomGentleTrd(geom_gentle_trd());
     
-    TEveUtil::LoadMacro("geom_gentle_muon.C");
-    multiView->InitGeomGentleMuon(geom_gentle_muon(), kFALSE, kFALSE, kTRUE);
+    //TEveUtil::LoadMacro("geom_gentle_muon.C");
+    //multiView->InitGeomGentleMuon(geom_gentle_muon(), kFALSE, kFALSE, kTRUE);
     
     //============================================================================
     // Standard macros to execute -- not all are enabled by default.

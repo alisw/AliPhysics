@@ -32,7 +32,7 @@ if(DIMDIR)
   set ( ELIBS  dim)
   set ( ELIBSDIR  ${DIMDIR}/${ODIR})
   if(ELIBSDIR STREQUAL "${DIMDIR}/")
-    Aset (ELIBSDIR ${DIMDIR}/linux)
+    set (ELIBSDIR ${DIMDIR}/linux)
   endif(ELIBSDIR STREQUAL "${DIMDIR}/")
 
   set ( CXXFLAGS  "-DALI_DIM ${CXXFLAGS}")

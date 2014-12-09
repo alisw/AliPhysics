@@ -25,16 +25,16 @@ enum BUTTON{
 	BUTTON_CHECK_TEMP,
 	BUTTON_CHECK_PERM,
 	BUTTON_MARK_EVENT,
-    BUTTON_LOAD_EVENT
+	BUTTON_LOAD_EVENT
 };
 
-enum TEXTENTRY{
-	TEXTENTRY_RUN_MIN=1,
-	TEXTENTRY_RUN_MAX,
-	TEXTENTRY_EVENT_MIN,
-	TEXTENTRY_EVENT_MAX,
-	TEXTENTRY_MULTIPLICITY_MIN,
-	TEXTENTRY_MULTIPLICITY_MAX
+enum ENTRY{
+	ENTRY_RUN_MIN=1,
+	ENTRY_RUN_MAX,
+	ENTRY_EVENT_MIN,
+	ENTRY_EVENT_MAX,
+	ENTRY_MULTIPLICITY_MIN,
+	ENTRY_MULTIPLICITY_MAX
 };
 
 AliStorageAdministratorPanelListEvents::AliStorageAdministratorPanelListEvents() :
@@ -87,172 +87,135 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
    // "Run" group frame
    TGGroupFrame *fRunGroupFrame = new TGGroupFrame(this,"Run");
    fRunGroupFrame->SetLayoutBroken(kTRUE);
-   
-   fRunNumberSlider = new TGDoubleHSlider(fRunGroupFrame,312,kSlider1 | kScaleBoth,-1,kHorizontalFrame);
-   fRunNumberSlider->SetRange(0,999999);
-   fRunNumberSlider->SetPosition(0,999999);
-   fRunGroupFrame->AddFrame(fRunNumberSlider, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fRunNumberSlider->MoveResize(10,20,312,24);
-   fRunNumberSlider->Connect("PositionChanged()","AliStorageAdministratorPanelListEvents",this,"RunSliderPositionChanged()");
-
-   fRunMinEntry = new TGNumberEntry(fRunGroupFrame, 
-				    (Double_t) 0,
-				    10,
-				    TEXTENTRY_RUN_MIN,
-				    (TGNumberFormat::EStyle) 0,
-				    (TGNumberFormat::EAttribute) 1,
-				    (TGNumberFormat::ELimit) 2,1,999999);
+   fRunMinEntry = new TGNumberEntry(fRunGroupFrame, (Double_t) 0,9,ENTRY_RUN_MIN,(TGNumberFormat::EStyle) 5);
    fRunGroupFrame->AddFrame(fRunMinEntry, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fRunMinEntry->MoveResize(50,50,88,22);
-   fRunMinEntry->Connect("ValueSet(Long_t)","AliStorageAdministratorPanelListEvents",this,"RunChanged()");
+   fRunMinEntry->MoveResize(38,22,80,22);
+   TGLabel *fRunMinLabel = new TGLabel(fRunGroupFrame,"Min:");
+   fRunMinLabel->SetTextJustify(36);
+   fRunMinLabel->SetMargins(0,0,0,0);
+   fRunMinLabel->SetWrapLength(-1);
+   fRunGroupFrame->AddFrame(fRunMinLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
+   fRunMinLabel->MoveResize(8,22,30,18);
    
-   fRunMaxEntry = new TGNumberEntry(fRunGroupFrame, 
-				    (Double_t) 999999,
-				    10,
-				    TEXTENTRY_RUN_MAX,
-				    (TGNumberFormat::EStyle) 0,
-				    (TGNumberFormat::EAttribute) 1,
-				    (TGNumberFormat::ELimit) 2,0,999999);
+   TGLabel *fRunMaxLabel = new TGLabel(fRunGroupFrame,"Max:");
+   fRunMaxLabel->SetTextJustify(36);
+   fRunMaxLabel->SetMargins(0,0,0,0);
+   fRunMaxLabel->SetWrapLength(-1);
+   fRunGroupFrame->AddFrame(fRunMaxLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
+   fRunMaxLabel->MoveResize(120,22,30,24);
+   fRunMaxEntry = new TGNumberEntry(fRunGroupFrame, (Double_t) 0,8,ENTRY_RUN_MAX,(TGNumberFormat::EStyle) 5);
    fRunGroupFrame->AddFrame(fRunMaxEntry, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fRunMaxEntry->MoveResize(200,50,88,22);
-   fRunMaxEntry->Connect("ValueSet(Long_t)","AliStorageAdministratorPanelListEvents",this,"RunChanged()");
-   
-   TGLabel *fRunNumberMinLabel = new TGLabel(fRunGroupFrame,"Min:");
-   fRunNumberMinLabel->SetTextJustify(36);
-   fRunNumberMinLabel->SetMargins(0,0,0,0);
-   fRunNumberMinLabel->SetWrapLength(-1);
-   fRunGroupFrame->AddFrame(fRunNumberMinLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fRunNumberMinLabel->MoveResize(10,50,40,18);
-   TGLabel *fRunNumberMaxLabel = new TGLabel(fRunGroupFrame,"Max:");
-   fRunNumberMaxLabel->SetTextJustify(36);
-   fRunNumberMaxLabel->SetMargins(0,0,0,0);
-   fRunNumberMaxLabel->SetWrapLength(-1);
-   fRunGroupFrame->AddFrame(fRunNumberMaxLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fRunNumberMaxLabel->MoveResize(150,50,40,24);
+   fRunMaxEntry->MoveResize(150,22,72,22);
 
    fRunGroupFrame->SetLayoutManager(new TGVerticalLayout(fRunGroupFrame));
-   fRunGroupFrame->Resize(330,90);
+   fRunGroupFrame->Resize(230,60);
    AddFrame(fRunGroupFrame, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fRunGroupFrame->MoveResize(8,8,330,90);
-
-  // "Event" group frame
+   fRunGroupFrame->MoveResize(8,8,230,60);
+   
+   // "Event" group frame
    TGGroupFrame *fEventGroupFrame = new TGGroupFrame(this,"Event");
    fEventGroupFrame->SetLayoutBroken(kTRUE);
-   
-   fEventSlider = new TGDoubleHSlider(fEventGroupFrame,312,kSlider1 | kScaleBoth,-1,kHorizontalFrame);
-   fEventSlider->SetRange(0,999999);
-   fEventSlider->SetPosition(0,999999);
-   fEventGroupFrame->AddFrame(fEventSlider, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fEventSlider->MoveResize(10,20,312,24);
-   fEventSlider->Connect("PositionChanged()","AliStorageAdministratorPanelListEvents",this,"EventSliderPositionChanged()");
-   fEventMinEntry = new TGNumberEntry(fEventGroupFrame,0,10,TEXTENTRY_EVENT_MIN,(TGNumberFormat::EStyle) 0,(TGNumberFormat::EAttribute) 1,(TGNumberFormat::ELimit) 0,0,999999);
+   fEventMinEntry = new TGNumberEntry(fEventGroupFrame, (Double_t) 0,9,ENTRY_EVENT_MIN,(TGNumberFormat::EStyle) 5);
    fEventGroupFrame->AddFrame(fEventMinEntry, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fEventMinEntry->MoveResize(50,50,88,22);
-   fEventMinEntry->Connect("ValueSet(Long_t)","AliStorageAdministratorPanelListEvents",this,"EventChanged()");
-   
-   fEventMaxEntry = new TGNumberEntry(fEventGroupFrame,999999,10,TEXTENTRY_EVENT_MAX,(TGNumberFormat::EStyle) 5,(TGNumberFormat::EAttribute) 1,(TGNumberFormat::ELimit) 0,0,999999);
-   fEventGroupFrame->AddFrame(fEventMaxEntry, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fEventMaxEntry->MoveResize(200,50,88,22);
-   fEventMaxEntry->Connect("ValueSet(Long_t)","AliStorageAdministratorPanelListEvents",this,"EventChanged()");
-  
+   fEventMinEntry->MoveResize(38,22,80,22);
    TGLabel *fEventMinLabel = new TGLabel(fEventGroupFrame,"Min:");
    fEventMinLabel->SetTextJustify(36);
    fEventMinLabel->SetMargins(0,0,0,0);
    fEventMinLabel->SetWrapLength(-1);
    fEventGroupFrame->AddFrame(fEventMinLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fEventMinLabel->MoveResize(10,50,40,18);
+   fEventMinLabel->MoveResize(8,22,30,18);
    
    TGLabel *fEventMaxLabel = new TGLabel(fEventGroupFrame,"Max:");
    fEventMaxLabel->SetTextJustify(36);
    fEventMaxLabel->SetMargins(0,0,0,0);
    fEventMaxLabel->SetWrapLength(-1);
    fEventGroupFrame->AddFrame(fEventMaxLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fEventMaxLabel->MoveResize(150,50,40,24);
-
+   fEventMaxLabel->MoveResize(120,22,30,24);
+   fEventMaxEntry = new TGNumberEntry(fEventGroupFrame, (Double_t) 0,8,ENTRY_EVENT_MAX,(TGNumberFormat::EStyle) 5);
+   fEventGroupFrame->AddFrame(fEventMaxEntry, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
+   fEventMaxEntry->MoveResize(150,22,72,22);
    fEventGroupFrame->SetLayoutManager(new TGVerticalLayout(fEventGroupFrame));
-   fEventGroupFrame->Resize(330,100);
+   fEventGroupFrame->Resize(230,60);
    AddFrame(fEventGroupFrame, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fEventGroupFrame->MoveResize(8,102,330,100);
-
-  // "Multiplicity" group frame
+   fEventGroupFrame->MoveResize(8,68,230,60);
+   
+   // "Multiplicity" group frame
    TGGroupFrame *fMultiplicityGroupFrame = new TGGroupFrame(this,"Multiplicity");
    fMultiplicityGroupFrame->SetLayoutBroken(kTRUE);
-  
-   fMultiplicitySlider = new TGDoubleHSlider(fMultiplicityGroupFrame,312,kSlider1 | kScaleBoth,-1,kHorizontalFrame);
-   fMultiplicitySlider->SetRange(0,99999);
-   fMultiplicitySlider->SetPosition(0,99999);
-   fMultiplicityGroupFrame->AddFrame(fMultiplicitySlider, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fMultiplicitySlider->MoveResize(10,20,312,24);
-   fMultiplicitySlider->Connect("PositionChanged()","AliStorageAdministratorPanelListEvents",this,"MultiplicitySliderPositionChanged()");
-   
-   fMultiplicityMinEntry = new TGNumberEntry(fMultiplicityGroupFrame,0,10,TEXTENTRY_MULTIPLICITY_MIN,(TGNumberFormat::EStyle) 0,(TGNumberFormat::EAttribute) 1,(TGNumberFormat::ELimit) 0,0,999999);
+   fMultiplicityMinEntry = new TGNumberEntry(fMultiplicityGroupFrame, (Double_t) 0,9,ENTRY_MULTIPLICITY_MIN,(TGNumberFormat::EStyle) 5);
    fMultiplicityGroupFrame->AddFrame(fMultiplicityMinEntry, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fMultiplicityMinEntry->MoveResize(50,50,88,22);
-   fMultiplicityMinEntry->Connect("ValueSet(Long_t)","AliStorageAdministratorPanelListEvents",this,"MultiplicityChanged()");
-
-   fMultiplicityMaxEntry = new TGNumberEntry(fMultiplicityGroupFrame,99999,10,TEXTENTRY_MULTIPLICITY_MAX,(TGNumberFormat::EStyle) 0,(TGNumberFormat::EAttribute) 1,(TGNumberFormat::ELimit) 0,0,999999);
-   fMultiplicityGroupFrame->AddFrame(fMultiplicityMaxEntry, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fMultiplicityMaxEntry->MoveResize(200,50,88,22);
-   fMultiplicityMaxEntry->Connect("ValueSet(Long_t)","AliStorageAdministratorPanelListEvents",this,"MultiplicityChanged()");
-
+   fMultiplicityMinEntry->MoveResize(38,22,80,22);
    TGLabel *fMultiplicityMinLabel = new TGLabel(fMultiplicityGroupFrame,"Min:");
    fMultiplicityMinLabel->SetTextJustify(36);
    fMultiplicityMinLabel->SetMargins(0,0,0,0);
    fMultiplicityMinLabel->SetWrapLength(-1);
    fMultiplicityGroupFrame->AddFrame(fMultiplicityMinLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fMultiplicityMinLabel->MoveResize(10,50,40,18);
-   
+   fMultiplicityMinLabel->MoveResize(8,22,30,18);
    TGLabel *fMultiplicityMaxLabel = new TGLabel(fMultiplicityGroupFrame,"Max:");
    fMultiplicityMaxLabel->SetTextJustify(36);
    fMultiplicityMaxLabel->SetMargins(0,0,0,0);
    fMultiplicityMaxLabel->SetWrapLength(-1);
    fMultiplicityGroupFrame->AddFrame(fMultiplicityMaxLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fMultiplicityMaxLabel->MoveResize(150,50,40,24);
+   fMultiplicityMaxLabel->MoveResize(120,22,30,24);
+   fMultiplicityMaxEntry = new TGNumberEntry(fMultiplicityGroupFrame, (Double_t) 0,8,ENTRY_MULTIPLICITY_MAX,(TGNumberFormat::EStyle) 5);
+   fMultiplicityGroupFrame->AddFrame(fMultiplicityMaxEntry, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
+   fMultiplicityMaxEntry->MoveResize(150,22,72,22);
 
    fMultiplicityGroupFrame->SetLayoutManager(new TGVerticalLayout(fMultiplicityGroupFrame));
-   fMultiplicityGroupFrame->Resize(330,100);
+   fMultiplicityGroupFrame->Resize(230,60);
    AddFrame(fMultiplicityGroupFrame, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fMultiplicityGroupFrame->MoveResize(8,196,330,100);
-
+   fMultiplicityGroupFrame->MoveResize(8,128,230,60);
 
    // "Beam" group frame
    TGGroupFrame *fBeamGroupFrame = new TGGroupFrame(this,"Beam");
    fBeamGroupFrame->SetLayoutBroken(kTRUE);
-   
    fPPcheckbox = new TGCheckButton(fBeamGroupFrame,"p-p",BUTTON_CHECK_PP);
    fPPcheckbox->SetTextJustify(36);
    fPPcheckbox->SetMargins(0,0,0,0);
    fPPcheckbox->SetWrapLength(-1);
    fBeamGroupFrame->AddFrame(fPPcheckbox, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fPPcheckbox->MoveResize(10,20,60,24);
-   
+   fPPcheckbox->MoveResize(8,22,40,19);
    fPbPbcheckbox = new TGCheckButton(fBeamGroupFrame,"Pb-Pb",BUTTON_CHECK_PBPB);
    fPbPbcheckbox->SetTextJustify(36);
    fPbPbcheckbox->SetMargins(0,0,0,0);
    fPbPbcheckbox->SetWrapLength(-1);
    fBeamGroupFrame->AddFrame(fPbPbcheckbox, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fPbPbcheckbox->MoveResize(90,20,60,24);
+   fPbPbcheckbox->MoveResize(60,22,55,19);
 
    fBeamGroupFrame->SetLayoutManager(new TGVerticalLayout(fBeamGroupFrame));
-   fBeamGroupFrame->Resize(330,60);
+   fBeamGroupFrame->Resize(230,60);
    AddFrame(fBeamGroupFrame, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fBeamGroupFrame->MoveResize(8,290,330,60);
-  
-   fGetListButton = new TGTextButton(this,"Get events' list",BUTTON_GET_LIST);
-   fGetListButton->SetTextJustify(36);
-   fGetListButton->SetMargins(0,0,0,0);
-   fGetListButton->SetWrapLength(-1);
-   fGetListButton->Resize(130,24);
-   AddFrame(fGetListButton, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fGetListButton->MoveResize(8,408,130,24);
+   fBeamGroupFrame->MoveResize(8,188,230,60);
+
+   // "Storage" group frame
+   TGGroupFrame *fStorageGroupFrame = new TGGroupFrame(this,"Storage");
+   fStorageGroupFrame->SetLayoutBroken(kTRUE);
+   fPermanentCheckbox = new TGCheckButton(fStorageGroupFrame,"Permanent",BUTTON_CHECK_PERM);
+   fPermanentCheckbox->SetTextJustify(36);
+   fPermanentCheckbox->SetMargins(0,0,0,0);
+   fPermanentCheckbox->SetWrapLength(-1);
+   fStorageGroupFrame->AddFrame(fPermanentCheckbox, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
+   fPermanentCheckbox->MoveResize(8,22,80,19);
+   fTemporaryCheckbox = new TGCheckButton(fStorageGroupFrame,"Temporary",BUTTON_CHECK_TEMP);
+   fTemporaryCheckbox->SetTextJustify(36);
+   fTemporaryCheckbox->SetMargins(0,0,0,0);
+   fTemporaryCheckbox->SetWrapLength(-1);
+   fStorageGroupFrame->AddFrame(fTemporaryCheckbox, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
+   fTemporaryCheckbox->MoveResize(120,22,80,19);
+
+   fStorageGroupFrame->SetLayoutManager(new TGVerticalLayout(fStorageGroupFrame));
+   fStorageGroupFrame->Resize(230,60);
+   AddFrame(fStorageGroupFrame, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
+   fStorageGroupFrame->MoveResize(8,248,230,60);
    
-   fMarkButton = new TGTextButton(this,"Mark selected event",BUTTON_MARK_EVENT);
+   // buttons
+   fMarkButton = new TGTextButton(this,"Mark event",BUTTON_MARK_EVENT);
    fMarkButton->SetTextJustify(36);
    fMarkButton->SetMargins(0,0,0,0);
    fMarkButton->SetWrapLength(-1);
-   fMarkButton->Resize(130,24);
+   fMarkButton->Resize(100,24);
    AddFrame(fMarkButton, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fMarkButton->MoveResize(8,432,130,24);
+   fMarkButton->MoveResize(8,310,100,24);
    
    fLoadButton = new TGTextButton(this,"Load selected event",BUTTON_LOAD_EVENT);
    fLoadButton->SetTextJustify(36);
@@ -260,52 +223,31 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
    fLoadButton->SetWrapLength(-1);
    fLoadButton->Resize(130,24);
    AddFrame(fLoadButton, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fLoadButton->MoveResize(8,456,130,24);
+   fLoadButton->MoveResize(108,310,130,24);
+   
+   fGetListButton = new TGTextButton(this,"List events",BUTTON_GET_LIST);
+   fGetListButton->SetTextJustify(36);
+   fGetListButton->SetMargins(0,0,0,0);
+   fGetListButton->SetWrapLength(-1);
+   fGetListButton->Resize(100,24);
+   AddFrame(fGetListButton, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
+   fGetListButton->MoveResize(8,334,100,24);
 
    // list box
-   
    fListBox = new TGListBox(this);
    fListBox->SetName("fListBox");
    fListBox->AddEntry("Entry 1",0);
-   fListBox->AddEntry("Entry 2",1);
-   fListBox->AddEntry("Entry 3",2);
-   fListBox->AddEntry("Entry 4",3);
-   fListBox->AddEntry("Entry 5",4);
-   fListBox->AddEntry("Entry 6",5);
-   fListBox->AddEntry("Entry 7",6);
-   fListBox->Resize(330,132);
+   fListBox->Resize(230,436);
    AddFrame(fListBox, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fListBox->MoveResize(8,488,330,132);
+   fListBox->MoveResize(8,360,230,436);
 
- 
-   // "Type" group frame
-   TGGroupFrame *fTypeGroupFrame = new TGGroupFrame(this,"Type");
-   fTypeGroupFrame->SetLayoutBroken(kTRUE);
-   
-   fTemporaryCheckbox = new TGCheckButton(fTypeGroupFrame,"Temporary",BUTTON_CHECK_TEMP);
-   fTemporaryCheckbox->SetTextJustify(36);
-   fTemporaryCheckbox->SetMargins(0,0,0,0);
-   fTemporaryCheckbox->SetWrapLength(-1);
-   fTypeGroupFrame->AddFrame(fTemporaryCheckbox, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fTemporaryCheckbox->MoveResize(10,20,90,24);
-   
-   fPermanentCheckbox = new TGCheckButton(fTypeGroupFrame,"Permanent",BUTTON_CHECK_PERM);
-   fPermanentCheckbox->SetTextJustify(36);
-   fPermanentCheckbox->SetMargins(0,0,0,0);
-   fPermanentCheckbox->SetWrapLength(-1);
-   fTypeGroupFrame->AddFrame(fPermanentCheckbox, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fPermanentCheckbox->MoveResize(110,20,90,24);
-
-   fTypeGroupFrame->SetLayoutManager(new TGVerticalLayout(fTypeGroupFrame));
-   fTypeGroupFrame->Resize(330,60);
-   AddFrame(fTypeGroupFrame, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fTypeGroupFrame->MoveResize(8,344,330,60);
-
-   SetMWMHints(kMWMDecorAll, kMWMFuncAll, kMWMInputModeless);
+   SetMWMHints(kMWMDecorAll,
+                        kMWMFuncAll,
+                        kMWMInputModeless);
    MapSubwindows();
    Resize(GetDefaultSize());
    MapWindow();
-   Resize(341,945);
+   Resize(252,809);
 }
 
 
@@ -522,38 +464,4 @@ void AliStorageAdministratorPanelListEvents::SetOfflineMode(Bool_t ison)
   fGetListButton->SetEnabled(!ison);
   fMarkButton->SetEnabled(!ison);
   fLoadButton->SetEnabled(!ison);
-}
-
-
-void AliStorageAdministratorPanelListEvents::RunSliderPositionChanged()
-{
-  fRunMinEntry->SetNumber(fRunNumberSlider->GetMinPosition());
-  fRunMaxEntry->SetNumber(fRunNumberSlider->GetMaxPosition());
-}
-
-void AliStorageAdministratorPanelListEvents::RunChanged()
-{
-  fRunNumberSlider->SetPosition(fRunMinEntry->GetIntNumber(),fRunMaxEntry->GetIntNumber());
-}
-
-void AliStorageAdministratorPanelListEvents::EventSliderPositionChanged()
-{
-  fEventMinEntry->SetNumber(fEventSlider->GetMinPosition());
-  fEventMaxEntry->SetNumber(fEventSlider->GetMaxPosition());
-}
-
-void AliStorageAdministratorPanelListEvents::EventChanged()
-{
-  fEventSlider->SetPosition(fEventMinEntry->GetIntNumber(),fEventMaxEntry->GetIntNumber());
-}
-
-void AliStorageAdministratorPanelListEvents::MultiplicitySliderPositionChanged()
-{
-  fMultiplicityMinEntry->SetNumber(fMultiplicitySlider->GetMinPosition());
-  fMultiplicityMaxEntry->SetNumber(fMultiplicitySlider->GetMaxPosition());
-}
-
-void AliStorageAdministratorPanelListEvents::MultiplicityChanged()
-{
-  fMultiplicitySlider->SetPosition(fMultiplicityMinEntry->GetIntNumber(),fMultiplicityMaxEntry->GetIntNumber());
 }

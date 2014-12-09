@@ -19,14 +19,6 @@ public:
 	void onExit();
     void SelectedEvent(); //*SIGNAL*
     void SetOfflineMode(Bool_t);
-
-    void RunSliderPositionChanged();
-    void EventSliderPositionChanged();
-    void MultiplicitySliderPositionChanged();
-    void RunChanged();
-    void EventChanged();
-    void MultiplicityChanged();
-
 private:
 	AliStorageAdministratorPanelListEvents();
 	virtual ~AliStorageAdministratorPanelListEvents();
@@ -44,11 +36,6 @@ private:
 	TGNumberEntry *fMultiplicityMinEntry;
 	TGNumberEntry *fMultiplicityMaxEntry;
 
-	TGDoubleHSlider *fMultiplicitySlider;
-	TGDoubleHSlider *fRunNumberSlider;
-	TGDoubleHSlider *fEventSlider;
-
-
 	TGCheckButton *fPPcheckbox;
 	TGCheckButton *fPbPbcheckbox;
 	TGCheckButton *fTemporaryCheckbox;
@@ -65,7 +52,7 @@ private:
 	void onCloseButton();
 	void onGetListButton();
 	void onMarkButton();
-    void onLoadButton();
+	void onLoadButton();
 
 	std::vector<serverListStruct> fEventsListVector;
 
@@ -75,7 +62,7 @@ private:
 	storageSockets fServerSocket;
 	AliStorageEventManager *fEventManager;
     
-    AliESDEvent *fCurrentEvent;
+	AliESDEvent *fCurrentEvent;
 	
 	AliStorageAdministratorPanelListEvents(const AliStorageAdministratorPanelListEvents&);
 	AliStorageAdministratorPanelListEvents& operator=(const AliStorageAdministratorPanelListEvents&);
