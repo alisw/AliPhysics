@@ -195,6 +195,32 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
 
     Bool_t do_not_use_T1 = false;
 
+    //in case only the leading pt of a jet should be used, check every particle on the trigger near side if it's closer than alpha and if it has a higher pt than trigger 1
+    if(fUseLeadingPt){
+      for (Int_t i2=0; i2<triggerNear->GetEntriesFast(); i2++){
+	if(i==i2)
+	  continue;
+
+	AliVParticle* part_i2 = (AliVParticle*) triggerNear->UncheckedAt(i2);
+
+	if(part_i2->Pt()<=part_pt)
+	  continue;
+    
+	Double_t dphi_check = part_phi-part_i2->Phi(); 
+	if(dphi_check>1.5*TMath::Pi()) dphi_check -= TMath::TwoPi();
+	else if(dphi_check<-0.5*TMath::Pi()) dphi_check += TMath::TwoPi();
+
+	if(TMath::Abs(dphi_check)<fAlpha){
+	  do_not_use_T1 = true;
+	  break;
+	}
+      }
+    }
+
+    //if there is a particle with higher energy than T1 closer than alpha to T1, do not use this T1
+     if(do_not_use_T1)
+      continue;
+
     //have to fake the away side triggers for the 1+1 analysis
     if(is1plus1){
       found_particle[ind_found] = part;//in 1plus1 use first trigger particle also as pseudo second trigger particle
@@ -220,13 +246,6 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
 	if(dphi_triggers>1.5*TMath::Pi()) dphi_triggers -= TMath::TwoPi();
 	else if(dphi_triggers<-0.5*TMath::Pi()) dphi_triggers += TMath::TwoPi();
       
-	if(fUseLeadingPt && part2_pt>part_pt){
-	  if(TMath::Abs(dphi_triggers)<fAlpha){
-	    do_not_use_T1 = true;
-	    break;
-	  }
-	}
-
 	//if 2+1 analysis check if trigger particles have a delta phi = pi +/- alpha
 	if(!isBackgroundSame)
 	  dphi_triggers -= TMath::Pi();
@@ -245,7 +264,7 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
 
 	//check if pT of trigger 2 is too high
 	if(part2_pt>fTriggerPt2Max || part2_pt>part_pt){
-	  //also pt of trigger 2 needs to be smaller than the pt of trigger 1 (to have an ordering if both pt are close to each other)
+	  //pt of trigger 2 needs to be smaller than the pt of trigger 1 (to have an ordering if both pt are close to each other)
 	  if(fUseLeadingPt){
 	    do_not_use_T1 = true;
 	    break;
@@ -259,7 +278,6 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
       }//end loop to search for the second trigger particle
     }
 
-    //if there is a particle with higher energy than T1 closer than alpha to T1, do not use this T1
     //if there is a particle with higher energy than T1 or max(T2) within Delta phi = pi +/- alpha to T1, do not use this T1
     if(do_not_use_T1)
       continue;
@@ -268,45 +286,51 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
     if(ind_found==0)
       continue;
 
+    //use only the highest energetic particle on the away side, if there is only 1 away side trigger this is already the case
+    if(fUseLeadingPt && ind_found>1){
+      found_particle[0] = found_particle[ind_max_found_pt];
+      ind_found=1;
+      ind_max_found_pt = 0;
+    }
+
     //the energy of the second trigger particle is set for the near side to the maximum energy of all trigger 2 particles on the away side
     // this leads to the fact that the number of accepted trigger combinations can be artificial smaller than the real number if there is a cut on the pT 2 energy from the top; cutting away the smallest energy of pT 2 is still save; this is the reason why it is not allowed to use a cut on the top pt of trigger particle 2
     //fill trigger particles
     if(ind_found>0){
-	Double_t vars[4];
-	vars[0] = part_pt;
-	vars[1] = centrality;
-	vars[2] = zVtx;
-	vars[3] = found_particle[ind_max_found_pt]->Pt();
-	if(is1plus1)
-	  vars[3] = (fTriggerPt2Max+fTriggerPt2Min)/2;
-
-	event_hist->Fill(vars, stepUEHist, weight);//near side
-
-	if(!is1plus1)
-	  for(Int_t k=0; k< ind_found; k++){
-	    vars[3] = found_particle[k]->Pt();
-	    event_hist->Fill(vars, stepUEHist+1, weight);//away side
-	  }
+      Double_t vars[4];
+      vars[0] = part_pt;
+      vars[1] = centrality;
+      vars[2] = zVtx;
+      vars[3] = found_particle[ind_max_found_pt]->Pt();
+      if(is1plus1)
+	vars[3] = (fTriggerPt2Max+fTriggerPt2Min)/2;
+      
+      event_hist->Fill(vars, stepUEHist, weight);//near side
+      
+      if(!is1plus1)
+	for(Int_t k=0; k< ind_found; k++){
+	  vars[3] = found_particle[k]->Pt();
+	  event_hist->Fill(vars, stepUEHist+1, weight);//away side
+	}
 	
-	//fill fTriggerPt only once, choosed kSameNS
-	if(step==AliTwoPlusOneContainer::kSameNS)
-	  for(Int_t k=0; k< ind_found; k++)
-	    fTriggerPt->Fill(part_pt, found_particle[k]->Pt());
+      //fill fTriggerPt only once, choosed kSameNS
+      if(step==AliTwoPlusOneContainer::kSameNS)
+	for(Int_t k=0; k< ind_found; k++)
+	  fTriggerPt->Fill(part_pt, found_particle[k]->Pt());
 
-	//fill asymmetry only for kSameNS and kMixedNS
-	if(step==AliTwoPlusOneContainer::kSameNS||step==AliTwoPlusOneContainer::kMixedNS){
-	  for(Int_t k=0; k< ind_found; k++){
-	    Float_t asymmetry = (part_pt-found_particle[k]->Pt())/(part_pt+found_particle[k]->Pt());
-	    if(step==AliTwoPlusOneContainer::kSameNS){
-	      fAsymmetry->Fill(asymmetry);
-	    }else{
-	      fAsymmetryMixed->Fill(asymmetry);
-	    }
+      //fill asymmetry only for kSameNS and kMixedNS
+      if(step==AliTwoPlusOneContainer::kSameNS||step==AliTwoPlusOneContainer::kMixedNS){
+	for(Int_t k=0; k< ind_found; k++){
+	  Float_t asymmetry = (part_pt-found_particle[k]->Pt())/(part_pt+found_particle[k]->Pt());
+	  if(step==AliTwoPlusOneContainer::kSameNS){
+	    fAsymmetry->Fill(asymmetry);
+	  }else{
+	    fAsymmetryMixed->Fill(asymmetry);
 	  }
 	}
-	  
+      }
     }
- 
+    
     //add correlated particles on the near side
     for (Int_t k=0; k<assocNear->GetEntriesFast(); k++){
       AliVParticle* part3 = (AliVParticle*) assocNear->UncheckedAt(k);
@@ -384,8 +408,6 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
     }
   }//end loop to search for the first trigger particle
 }
-
-
 
 //____________________________________________________________________
 AliTwoPlusOneContainer &AliTwoPlusOneContainer::operator=(const AliTwoPlusOneContainer &c)
