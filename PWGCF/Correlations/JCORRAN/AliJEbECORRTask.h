@@ -10,12 +10,7 @@
 #include "AliAnalysisUtils.h"
 #include "AliJEfficiency.h"
 
-#include <sys/types.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <time.h>
-#include <math.h>
-#include <fstream>
+//#include <fstream>
 
 class AliESDEvent;
 class AliESDtrackCuts;
