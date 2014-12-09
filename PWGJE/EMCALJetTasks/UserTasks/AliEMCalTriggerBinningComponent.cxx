@@ -81,7 +81,7 @@ AliEMCalTriggerBinningComponent::~AliEMCalTriggerBinningComponent() {
 }
 
 //______________________________________________________________________________
-AliEMCalTriggerBinningDimension* AliEMCalTriggerBinningComponent::GetBinning(const char* name) {
+AliEMCalTriggerBinningDimension* AliEMCalTriggerBinningComponent::GetBinning(const char* name) const {
   /*
    * Get binning information for a given axis. Return nullpointer if axis is not yet defined
    *
@@ -108,4 +108,22 @@ void AliEMCalTriggerBinningComponent::SetBinning(const char* dimname, int nbins,
   }
 }
 
+//______________________________________________________________________________
+void AliEMCalTriggerBinningComponent::SetBinning(const char* dimname, const TArrayD& binning) {
+  /*
+   * Set binning for dimension. If not yet existing, create it
+   *
+   * @param dimname: axis name
+   * @param nbins: Number of bins
+   * @param binning: array of bin limits (size nbins+1)
+   */
+  AliEMCalTriggerBinningDimension *dim = GetBinning(dimname);
+  if(dim) dim->Set(binning);
+  else {
+    dim = new AliEMCalTriggerBinningDimension(dimname, binning);
+    fDimensions->Add(dim);
+  }
+}
+
 } /* namespace EMCalTriggerPtAnalysis */
+

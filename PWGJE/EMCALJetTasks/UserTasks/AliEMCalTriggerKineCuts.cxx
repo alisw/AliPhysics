@@ -13,60 +13,34 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /*
- * Base class for anaysis components. Inheriting classes have to implement the
- * functions CreateHistos and Process.
+ * Basic kinematic cuts for single track selection
  *
  *   Author: Markus Fasel
  */
-#include "AliEMCalTriggerTracksAnalysisComponent.h"
-
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerTracksAnalysisComponent)
+#include <TMath.h>
+#include "AliVParticle.h"
+#include "AliEMCalTriggerKineCuts.h"
 
 namespace EMCalTriggerPtAnalysis {
 
 //______________________________________________________________________________
-AliEMCalTriggerTracksAnalysisComponent::AliEMCalTriggerTracksAnalysisComponent() :
-  TNamed(),
-  fHistos(NULL),
-  fBinning(NULL),
-  fKineCuts(NULL)
+AliEMCalTriggerKineCuts::AliEMCalTriggerKineCuts():
+  TObject(),
+  fPtCut(0.1, 1000.),
+  fEtaCut(-0.8, 0.8),
+  fPhiCut()
 {
-  /*
-   * Dummy (I/O) constructor
-   */
 }
 
 //______________________________________________________________________________
-AliEMCalTriggerTracksAnalysisComponent::~AliEMCalTriggerTracksAnalysisComponent() {
+bool AliEMCalTriggerKineCuts::IsSelected(const AliVParticle* const track) const {
   /*
-   * Release histogram container
+   * Kinematic track selection
    */
-  if(fHistos) delete fHistos;
-}
-
-//______________________________________________________________________________
-AliEMCalTriggerTracksAnalysisComponent::AliEMCalTriggerTracksAnalysisComponent(const char* name) :
-  TNamed(name,""),
-  fHistos(NULL),
-  fBinning(NULL),
-  fKineCuts(NULL)
-{
-  /*
-   * Main constructor, to be called by the user
-   *
-   * @param name: component name
-   */
-}
-
-//______________________________________________________________________________
-void AliEMCalTriggerTracksAnalysisComponent::CreateHistos() {
-  /*
-   * Create Container for histograms. Inheriting classes overwrite this method, in which they call
-   * this and add the histograms of their choise.
-   */
-  fHistos = new AliEMCalHistoContainer(Form("Histos%s", GetName()));
-  fHistos->ReleaseOwner();
+  if(!fPtCut.IsInRange(TMath::Abs(track->Pt()))) return false;
+  if(!fEtaCut.IsInRange(track->Eta())) return false;
+  if(!fPhiCut.IsInRange(track->Eta())) return false;
+  return true;
 }
 
 } /* namespace EMCalTriggerPtAnalysis */
-

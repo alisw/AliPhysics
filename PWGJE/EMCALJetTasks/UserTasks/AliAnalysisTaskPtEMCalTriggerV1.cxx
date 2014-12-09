@@ -23,6 +23,7 @@
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
 #include "AliEMCalTriggerBinningComponent.h"
+#include "AliEMCalTriggerBinningFactory.h"
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerTaskGroup.h"
 #include "AliAnalysisTaskPtEMCalTriggerV1.h"
@@ -77,6 +78,9 @@ void AliAnalysisTaskPtEMCalTriggerV1::UserCreateOutputObjects() {
    */
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
+  AliEMCalTriggerBinningFactory binmaker;
+  binmaker.Create(fBinning);
+
   TIter groupIter(fTaskGroups);
   AliEMCalTriggerTaskGroup *mygroup(NULL);
   TList *outputList = new TList;
@@ -123,6 +127,16 @@ void AliAnalysisTaskPtEMCalTriggerV1::SetBinning(const char* dimname, int nbins,
    * @param binning: the bin limits
    */
   fBinning->SetBinning(dimname, nbins, binning);
+}
+
+//______________________________________________________________________________
+void AliAnalysisTaskPtEMCalTriggerV1::SetBinning(const char* dimname, const TArrayD &binning) {
+  /*
+   * Set binning for a give dimension
+   *
+   * @param binning: the bin limits
+   */
+  fBinning->SetBinning(dimname, binning);
 }
 
 //______________________________________________________________________________

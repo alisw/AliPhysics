@@ -21,7 +21,7 @@ public:
   virtual ~AliEMCalTriggerEventData() {}
 
   AliVEvent    * GetRecEvent() const { return fRecEvent; }
-  const AliMCEvent   * GetMCEvent() const { return fMCEvent; }
+  AliMCEvent   * GetMCEvent() const { return fMCEvent; }
   const TClonesArray * GetClusterContainer() const { return fClusterContainer; }
   const TClonesArray * GetMatchedTrackContainer() const { return fTrackContainer; }
   const TClonesArray * GetParticleContainer() const { return fParticleContainer; }
@@ -30,7 +30,7 @@ public:
   const AliJetContainer * GetJetContainerMC() const { return fJetContainerMC; }
 
   void SetRecEvent(AliVEvent * const ev) { fRecEvent = ev; }
-  void SetMCEvent(const AliMCEvent * const ev) { fMCEvent = ev; }
+  void SetMCEvent(AliMCEvent * const ev) { fMCEvent = ev; }
   void SetClusterContainer(const TClonesArray *const cont) { fClusterContainer = cont; }
   void SetTrackContainer(const TClonesArray * const cont) { fTrackContainer = cont; }
   void SetParticleContainer(const TClonesArray * const cont) { fParticleContainer = cont ;}
@@ -40,7 +40,7 @@ public:
 
 protected:
   AliVEvent             *fRecEvent;                     // Reconstructed event
-  const AliMCEvent      *fMCEvent;                      // Monte-Carlo event
+  AliMCEvent      *fMCEvent;                      // Monte-Carlo event
   const TClonesArray    *fClusterContainer;             // Container with calibrated clusters
   const TClonesArray    *fTrackContainer;               // Container with matched tracks
   const TClonesArray    *fParticleContainer;            // Container with MC-true filtered particles

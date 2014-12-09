@@ -8,6 +8,8 @@
 #include <TObjArray.h>
 #include <TString.h>
 
+class TArrayD;
+
 namespace EMCalTriggerPtAnalysis {
 
 class AliEMCalTriggerBinningComponent;
@@ -27,6 +29,7 @@ public:
   void SetMCJetContainerName(const char *name)          { fMCJetContainer = name; }
   void SetDataJetContainerName(const char *name)        { fDataJetContainer = name; }
   void SetBinning(const char *dimname, int nbins, double *binning);
+  void SetBinning(const char *dimname, const TArrayD &binning);
 
 protected:
   AliEMCalTriggerEventData *BuildEvent() const;
