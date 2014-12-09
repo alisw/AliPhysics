@@ -288,13 +288,13 @@ def comment_datamember(cursor, comments):
 #  @param comments Array of comments: new ones will be appended there
 def comment_classdesc(filename, comments):
 
-  recomm = r'^\s*///?\s*(.*?)\s*/*\s*$'
+  recomm = r'^\s*///?(\s*.*?)\s*/*\s*$'
 
-  reclass_doxy = r'(?i)^\\class:?\s*(.*?)\s*$'
+  reclass_doxy = r'(?i)^\s*\\class:?\s*(.*?)\s*$'
   class_name_doxy = None
 
-  reauthor = r'(?i)\\?authors?:?\s*(.*?)\s*(,?\s*([0-9./-]+))?\s*$'
-  redate = r'(?i)\\?date:?\s*([0-9./-]+)'
+  reauthor = r'(?i)^\s*\\?authors?:?\s*(.*?)\s*(,?\s*([0-9./-]+))?\s*$'
+  redate = r'(?i)^\s*\\?date:?\s*([0-9./-]+)\s*$'
   author = None
   date = None
 
@@ -316,7 +316,8 @@ def comment_classdesc(filename, comments):
         end_line = line_num - 1
         continue
 
-      mcomm = re.search(recomm, raw)
+      stripped = strip_html(raw)
+      mcomm = re.search(recomm, stripped)
       if mcomm:
 
         if start_line == -1 and len(comment_lines) == 0:
@@ -386,7 +387,7 @@ def comment_classdesc(filename, comments):
   if date is not None:
     comment_lines.append( '\\date ' + date )
 
-  comment_lines = refactor_comment(comment_lines)
+  comment_lines = refactor_comment(comment_lines, do_strip_html=False)
   logging.debug('Comment found for class %s' % Colt(class_name_doxy).magenta())
   comments.append(Comment(
     comment_lines,
