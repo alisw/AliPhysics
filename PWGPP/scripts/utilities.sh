@@ -177,20 +177,6 @@ setYear()
   return 0
 }
 
-guessYear()
-{
-  #guess the year from the path, pick the rightmost one
-  local IFS="/"
-  declare -a pathArray=( ${1} )
-  local field
-  local year
-  for field in ${pathArray[@]}; do
-    [[ ${field} =~ ^20[0-9][0-9]$ ]] && year=${field}
-  done
-  echo ${year}
-  return 0
-}
-
 run2year()
 {
   #for a given run print the year.
