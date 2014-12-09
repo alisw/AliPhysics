@@ -40,6 +40,7 @@
 #pragma link C++ class AliAnalysisTaskPtFlucPbPb+;
 
 #pragma link C++ class AliAnalysisTaskPIDFluctuation+;
+#pragma link C++ class AliEbyENetChargeFluctuationTask+;
 #pragma link C++ class AliEbyEParticleRatioFluctuationTask+;
 #pragma link C++ class AliEbyEPidTaskFastGen+;
 #pragma link C++ class AliEbyEPidTTask+;
