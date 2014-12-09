@@ -58,6 +58,11 @@ class AliEmcalTriggerPatchInfo: public TObject {
   Bool_t   IsGammaHighSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetGammaHighBit()))&(fTriggerBits >> kSimpleOfflineBitNum)&1); }
   Bool_t   IsMainTriggerSimple() const { return (Bool_t)((fTriggerBits >> kMainTriggerBitNum)&(fTriggerBits >> kSimpleOfflineBitNum)&1); }
   Bool_t   IsOfflineSimple() const { return (Bool_t)((fTriggerBits >> kSimpleOfflineBitNum)&1); }
+
+  // Recalculated max patches
+  Bool_t   IsRecalcJet() const { return (Bool_t) ((fTriggerBits >> kRecalcJetBitNum)&1); }
+  Bool_t   IsRecalcGamma() const { return (Bool_t) ((fTriggerBits >> kRecalcGammaBitNum)&1); }
+
   
   void SetCenterGeo( TVector3 &v, Double_t e ) { SetLorentzVector( fCenterGeo, v, e ); }
   void SetCenterGeo( TLorentzVector &v ) { fCenterGeo = v; }
