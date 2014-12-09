@@ -47,6 +47,7 @@ namespace EmcalHJetMassAnalysis {
     void SetTriggerTrackType(TriggerTrackType t)                       { fTriggerTrackType  = t   ; }
     void AddTriggerTrackPtCuts(Float_t min, Float_t max);
     void SelectConstituents(UInt_t constSel)                           { fEmbConstSel = constSel  ; }
+    void SetMarkMCLabel(Int_t l)                                       { fMarkMCLabel = l         ; }
 
   protected:
     Bool_t                              RetrieveEventObjects();
@@ -68,9 +69,11 @@ namespace EmcalHJetMassAnalysis {
     TArrayF                            *fPtTTMin;                    // minimum pt of trigger tracks
     TArrayF                            *fPtTTMax;                    // maximum pt of trigger tracks
     TRandom3                           *fRandom;                     //! Random number generator
-    UInt_t                              fEmbConstSel;                // select embedded constituents
+    UInt_t                              fEmbConstSel;                // select embedded constituents using bit
+    Int_t                               fMarkMCLabel;                // select embedded constituents using label
 
     TH1F            **fh1PtHadron;                        //!pt of hadrons
+    TH1F            **fh1PtHadronMatch;                   //!pt of hadrons matched to MC
     TH3F            **fh3PtHPtJDPhi;                      //!pt hadron vs pt jet vs delta phi
     TH3F            **fh3PtJet1VsMassVsHPtAllSel;         //!all jets after std selection pt vs mass vs track pt
     TH3F            **fh3PtJet1VsMassVsHPtAllSelMatch;    //!all jets after std selection pt vs mass vs track pt matched to MC
@@ -86,7 +89,7 @@ namespace EmcalHJetMassAnalysis {
     AliAnalysisTaskEmcalHJetMass(const AliAnalysisTaskEmcalHJetMass&);            // not implemented
     AliAnalysisTaskEmcalHJetMass &operator=(const AliAnalysisTaskEmcalHJetMass&); // not implemented
 
-    ClassDef(AliAnalysisTaskEmcalHJetMass, 5)
+    ClassDef(AliAnalysisTaskEmcalHJetMass, 6)
       };
 }
 #endif

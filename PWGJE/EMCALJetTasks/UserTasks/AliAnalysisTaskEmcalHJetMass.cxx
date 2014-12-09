@@ -51,7 +51,9 @@ namespace EmcalHJetMassAnalysis {
     fPtTTMax(0),
     fRandom(0),
     fEmbConstSel(0),
+    fMarkMCLabel(-1),
     fh1PtHadron(0),
+    fh1PtHadronMatch(0),
     fh3PtHPtJDPhi(0),
     fh3PtJet1VsMassVsHPtAllSel(0),
     fh3PtJet1VsMassVsHPtAllSelMatch(0),
@@ -65,6 +67,7 @@ namespace EmcalHJetMassAnalysis {
     // Default constructor.
 
     fh1PtHadron                       = new TH1F*[fNcentBins];
+    fh1PtHadronMatch                  = new TH1F*[fNcentBins];
     fh3PtHPtJDPhi                     = new TH3F*[fNcentBins];
     fh3PtJet1VsMassVsHPtAllSel        = new TH3F*[fNcentBins];
     fh3PtJet1VsMassVsHPtAllSelMatch   = new TH3F*[fNcentBins];
@@ -77,6 +80,7 @@ namespace EmcalHJetMassAnalysis {
 
     for (Int_t i = 0; i < fNcentBins; i++) {
       fh1PtHadron[i]                       = 0;
+      fh1PtHadronMatch[i]                  = 0;
       fh3PtHPtJDPhi[i]                     = 0;
       fh3PtJet1VsMassVsHPtAllSel[i]        = 0;
       fh3PtJet1VsMassVsHPtAllSelMatch[i]   = 0;
@@ -108,7 +112,9 @@ namespace EmcalHJetMassAnalysis {
     fPtTTMax(0),
     fRandom(0),
     fEmbConstSel(0),
+    fMarkMCLabel(-1),
     fh1PtHadron(0),
+    fh1PtHadronMatch(0),
     fh3PtHPtJDPhi(0),
     fh3PtJet1VsMassVsHPtAllSel(0),
     fh3PtJet1VsMassVsHPtAllSelMatch(0),
@@ -122,6 +128,7 @@ namespace EmcalHJetMassAnalysis {
     // Standard constructor.
 
     fh1PtHadron                       = new TH1F*[fNcentBins];
+    fh1PtHadronMatch                  = new TH1F*[fNcentBins];
     fh3PtHPtJDPhi                     = new TH3F*[fNcentBins];
     fh3PtJet1VsMassVsHPtAllSel        = new TH3F*[fNcentBins];
     fh3PtJet1VsMassVsHPtAllSelMatch   = new TH3F*[fNcentBins];
@@ -134,6 +141,7 @@ namespace EmcalHJetMassAnalysis {
  
     for (Int_t i = 0; i < fNcentBins; i++) {
       fh1PtHadron[i]                       = 0;
+      fh1PtHadronMatch[i]                  = 0;
       fh3PtHPtJDPhi[i]                     = 0;
       fh3PtJet1VsMassVsHPtAllSel[i]        = 0;
       fh3PtJet1VsMassVsHPtAllSelMatch[i]   = 0;
@@ -175,8 +183,8 @@ namespace EmcalHJetMassAnalysis {
     const Double_t minPt = -50.;
     const Double_t maxPt = 150.;
 
-    const Int_t nBinsM  = 100;
-    const Double_t minM = -20.;
+    const Int_t nBinsM  = 90;
+    const Double_t minM = -10.;
     const Double_t maxM = 80.;
 
     const Int_t nBinsR  = 100;
@@ -198,6 +206,11 @@ namespace EmcalHJetMassAnalysis {
       histTitle = TString::Format("%s;#it{p}_{T,h}",histName.Data());
       fh1PtHadron[i] = new TH1F(histName.Data(),histTitle.Data(),200.,0.,200.);
       fOutput->Add(fh1PtHadron[i]);
+
+      histName = TString::Format("fh1PtHadronMatch_%d",i);
+      histTitle = TString::Format("%s;#it{p}_{T,h}",histName.Data());
+      fh1PtHadronMatch[i] = new TH1F(histName.Data(),histTitle.Data(),200.,0.,200.);
+      fOutput->Add(fh1PtHadronMatch[i]);
 
       histName = TString::Format("fh3PtHPtJDPhi_%d",i);
       histTitle = TString::Format("%s;#it{p}_{T,h};#it{p}_{T,jet};#Delta#varphi_{h,jet}",histName.Data());
@@ -268,6 +281,8 @@ namespace EmcalHJetMassAnalysis {
       pCont->ResetCurrentID();
       while((vp = pCont->GetNextAcceptParticle())) {
         fh1PtHadron[fCentBin]->Fill(vp->Pt()); //all hadrons
+        if(fMarkMCLabel>0 && TMath::Abs(vp->GetLabel()) >= fMarkMCLabel )
+          fh1PtHadronMatch[fCentBin]->Fill(vp->Pt()); //hadrons matched to MC
         AliEmcalJet* jet = NULL;
         if(jCont) {
           jCont->ResetCurrentID();
@@ -285,6 +300,8 @@ namespace EmcalHJetMassAnalysis {
        vp = GetSingleInclusiveTT(pCont,fPtTTMin->At(it),fPtTTMax->At(it));
        if(!vp) continue;
        fh1PtHadron[fCentBin]->Fill(vp->Pt()); //all trigger tracks
+        if(fMarkMCLabel>0 && TMath::Abs(vp->GetLabel()) >= fMarkMCLabel )
+          fh1PtHadronMatch[fCentBin]->Fill(vp->Pt()); //hadrons matched to MC
        AliEmcalJet* jet = NULL;
        jCont->ResetCurrentID();
        while((jet = jCont->GetNextAcceptJet())) {
@@ -356,9 +373,8 @@ namespace EmcalHJetMassAnalysis {
     }
   
     if(fMinFractionShared>0. && fraction>fMinFractionShared) {
-      if(vp->TestBits(fEmbConstSel) != (Int_t)fEmbConstSel) 
-        AliDebug(11,Form("Skipping track with pT=%f because it does not match the bit mask (%d, %d)", vp->Pt(), fEmbConstSel, vp->TestBits(fEmbConstSel)));
-      else {
+      if(fMarkMCLabel>0 && TMath::Abs(vp->GetLabel()) >= fMarkMCLabel ) {
+        //        Printf("Accepting track with pT=%f because it does match the bit mask (%d, %d, %d). label: %d fMarkMCLabel: %d", vp->Pt(), fEmbConstSel, vp->TestBits(fEmbConstSel), vp->TestBit(fEmbConstSel),vp->GetLabel(),fMarkMCLabel);
         fh3PtJet1VsMassVsHPtAllSelMatch[fCentBin]->Fill(ptJet,mJet,pt);
         fh3PtJet1VsRatVsHPtAllSelMatch[fCentBin]->Fill(ptJet,rat,pt);
       }
@@ -371,9 +387,7 @@ namespace EmcalHJetMassAnalysis {
     fh3PtJet1VsRatVsHPtTagged[fCentBin]->Fill(ptJet,rat,pt);
 
     if(fMinFractionShared>0. && fraction>fMinFractionShared) {
-      if(vp->TestBits(fEmbConstSel) != (Int_t)fEmbConstSel) 
-        AliDebug(11,Form("Skipping track with pT=%f because it does not match the bit mask (%d, %d)", vp->Pt(), fEmbConstSel, vp->TestBits(fEmbConstSel)));
-      else {
+      if(fMarkMCLabel>0 && TMath::Abs(vp->GetLabel()) >= fMarkMCLabel ) {
         fh3PtJet1VsMassVsHPtTaggedMatch[fCentBin]->Fill(ptJet,mJet,pt);
         fh3PtJet1VsRatVsHPtTaggedMatch[fCentBin]->Fill(ptJet,rat,pt);
       }
