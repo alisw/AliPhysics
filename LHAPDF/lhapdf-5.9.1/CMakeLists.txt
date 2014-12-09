@@ -45,72 +45,72 @@ set(CSRCS
 
 # Fortran sources
 set(FSRCS
-    src/alphas.f
-    src/commoninit.f
-    src/description.f
-    src/eks98.f
-    src/eksarp.f
-    src/eps08.f
-    src/eps09.f
-    src/EVLCTEQ.f
-    src/EVLNNPDF.f
-    src/evolution.f
-    src/inputPDF.f
-    src/lhaglue.f
-    src/LHpdflib.f
-    src/parameter.F
-    src/QCDNUM.F
-    src/QCDparams.f
-    src/Smrst.f
-    src/Sqcdnum.f
-    src/Szeus.f
-    src/uncertainties.f
-    src/wrapa02m.f
-    src/wrapabfkwpi.f
-    src/wrapabkm09.f
-    src/wrapabm11.f
-    src/wrapacfgpg.f
-    src/wrapct12.f
-    src/wrapcteq5.f
-    src/wrapcteq65.f
-    src/wrapcteq6.f
-    src/wrapcteq6lg.f
-    src/wrapdgg.f
-    src/wrapdog.f
-    src/wrapEVLCTEQ.f
-    src/wrapevolve.F
-    src/wrapgjr.f
-    src/wrapgrv.f
-    src/wrapgrvg.f
-    src/wrapgrvpi.f
-    src/wrapgsg96.f
-    src/wrapgsg.f
-    src/wraph1.f
-    src/wraphera.f
-    src/wrapheragrid.f
-    src/wraphkn.f
-    src/wraplacg.f
-    src/wrapmrst2006.f
-    src/wrapmrst98.f
-    src/wrapmrst.f
-    src/wrapmrstqed.f
-    src/wrapmstw.f
-    src/wrapNNPDF20grid.f
-    src/wrapNNPDF20qedgrid.f
-    src/wrapNNPDF.f
-    src/wrapNNPDFgrid.f
-    src/wrapowpi.f
-    src/wrapQCDNUM3.f
-    src/wrapQCDNUM4.f
-    src/wrapQCDNUM.f
-    src/wrapsasg.f
-    src/wrapsmrspi.f
-    src/wrapUSER.f
-    src/wrapusergrid.f
-    src/wrapwhitg.f
-    src/wrapXNN.f
-    src/wrapzeus.f
-   )
+  src/alphas.f 
+  src/commoninit.f 
+  src/description.f 
+  src/eks98.f 
+  src/eksarp.f 
+  src/eps08.f  
+  src/eps09.f 
+  src/EVLCTEQ.f 
+  src/EVLNNPDF.f 
+  src/evolution.f 
+  src/inputPDF.F 
+  src/LHpdflib.F 
+  src/parameter.F
+  src/QCDNUM.F
+  src/QCDparams.f
+  src/Smrst.f 
+  src/Sqcdnum.f
+  src/Szeus.f
+  src/uncertainties.f
+  src/wrapNNPDF.f
+  src/wrapNNPDF20grid.f
+  src/wrapNNPDF20qedgrid.f
+  src/wrapNNPDFgrid.f
+  src/wrapa02m.f 
+  src/wrapabfkwpi.f
+  src/wrapabkm09.f
+  src/wrapabm11.f
+  src/wrapacfgpg.f
+  src/wrapct12.f
+  src/wrapcteq5.f 
+  src/wrapcteq6.f 
+  src/wrapcteq65.f 
+  src/wrapcteq6lg.f 
+  src/wrapdgg.f
+  src/wrapdog.f
+  src/wrapEVLCTEQ.f 
+  src/wrapevolve.F
+  src/wrapgjr.f  
+  src/wrapgrv.f 
+  src/wrapgrvg.f 
+  src/wrapgrvpi.f
+  src/wrapgsg96.f
+  src/wrapgsg.f 
+  src/wraph1.f 
+  src/wraphera.f 
+  src/wrapheragrid.f
+  src/wraphkn.f 
+  src/wraplacg.f
+  src/wrapowpi.f
+  src/wrapmrst.f 
+  src/wrapmrst2006.f 
+  src/wrapmrst98.f 
+  src/wrapmrstqed.f 
+  src/wrapQCDNUM3.f 
+  src/wrapQCDNUM4.f 
+  src/wrapQCDNUM.F 
+  src/wrapsasg.f 
+  src/wrapmstw.f 
+  src/wrapsmrspi.f 
+  src/wrapwhitg.f 
+  src/wrapzeus.f 
+  src/lhaglue.f 
+  src/wrapUSER.f
+  src/wrapusergrid.f
+  src/wrapXNN.f
+  )
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
@@ -126,11 +126,10 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx ${CSRCS} ${FSRCS})
 
 # Definitions
-add_definitions(-DDEFAULTPREFIXPATH="NONE"  -DDEFAULTLHAPATH="${AliRoot_SOURCE_DIR}/LHAPDF/PDFsets")
+add_definitions(-DDEFAULTPREFIXPATH="NONE"  -DDEFAULTLHAPATH="${AliRoot_SOURCE_DIR}/LHAPDF/PDFsets" -DCTEQ)
 
 # Additional compilation and linking flags
 set(CMAKE_C_FLAGS "-ansi ${CMAKE_C_FLAGS}")
-set(CMAKE_Fortran_FLAGS "-cpp")
 set(MODULE_COMPILE_FLAGS "")
 set(MODULE_LINK_FLAGS)
 
