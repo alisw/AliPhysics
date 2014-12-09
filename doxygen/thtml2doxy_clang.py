@@ -444,7 +444,7 @@ def traverse_ast(cursor, filename, comments, recursion=0):
 def refactor_comment(comment):
 
   recomm = r'^(/{2,}|/\*)?\s*(.*?)\s*((/{2,})?\s*|\*/)$'
-  regarbage = r'^[\s*=-_#]+$'
+  regarbage = r'^(?i)\s*([\s*=-_#]+|(Begin|End)_Html)\s*$'
 
   new_comment = []
   insert_blank = False
