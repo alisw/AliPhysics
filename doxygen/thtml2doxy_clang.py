@@ -323,14 +323,16 @@ def refactor_comment(comment):
     if mcomm:
       new_line_comment = mcomm.group(2)
       mgarbage = re.search( regarbage, new_line_comment )
+
       if new_line_comment == '' or mgarbage is not None:
         insert_blank = True
       else:
         if insert_blank and not wait_first_non_blank:
           new_comment.append('')
-          insert_blank = False
+        insert_blank = False
         wait_first_non_blank = False
         new_comment.append( new_line_comment )
+
     else:
       assert False, 'Comment regexp does not match'
 
