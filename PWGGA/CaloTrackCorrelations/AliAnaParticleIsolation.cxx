@@ -62,8 +62,8 @@ fIsoDetector(-1),                 fIsoDetectorString(""),
 fReMakeIC(0),                     fMakeSeveralIC(0),
 fFillTMHisto(0),                  fFillSSHisto(1),
 fFillUEBandSubtractHistograms(1), fFillCellHistograms(0),
-fFillTaggedDecayHistograms(0),
-fNDecayBits(0),                   fDecayBits(),
+fFillTaggedDecayHistograms(0),    fNDecayBits(0),
+fDecayBits(),                     fDecayTagsM02Cut(0),
 fFillNLMHistograms(0),
 fLeadingOnly(0),                  fCheckLeadingWithNeutralClusters(0),
 fSelectPrimariesInCone(0),        fMakePrimaryPi0DecayStudy(0),
@@ -1207,7 +1207,7 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
       
       // In case it was not done on the trigger selection task
       // apply here a shower shape cut, not too strong, to select photons
-      if( m02 < 0.3 ) continue;
+      if( m02 < fDecayTagsM02Cut ) continue;
       
       fhPtDecay    [isolated][ibit]->Fill(pt);
       fhEtaPhiDecay[isolated][ibit]->Fill(eta,phi);
@@ -1264,7 +1264,7 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
     }
     
     // Check if it was a decay
-    if(fFillTaggedDecayHistograms && m02 < 0.3)
+    if( fFillTaggedDecayHistograms && m02 < fDecayTagsM02Cut )
     {
       Int_t decayTag = pCandidate->DecayTag();
       if(decayTag < 0) decayTag = 0;
@@ -1343,7 +1343,7 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
     }
     
     // Check if it was a decay
-    if( fFillTaggedDecayHistograms && m02 < 0.3 )
+    if( fFillTaggedDecayHistograms && m02 < fDecayTagsM02Cut )
     {
       Int_t decayTag = pCandidate->DecayTag();
       if(decayTag < 0) decayTag = 0;
@@ -3719,6 +3719,7 @@ void AliAnaParticleIsolation::InitParameters()
   fDecayBits[1] = AliNeutralMesonSelection::kEta;
   fDecayBits[2] = AliNeutralMesonSelection::kPi0Side;
   fDecayBits[3] = AliNeutralMesonSelection::kEtaSide;
+  fDecayTagsM02Cut = 0.27;
   
   fNBkgBin = 11;
   fBkgBinLimit[ 0] = 00.0; fBkgBinLimit[ 1] = 00.2; fBkgBinLimit[ 2] = 00.3; fBkgBinLimit[ 3] = 00.4; fBkgBinLimit[ 4] = 00.5;

@@ -133,6 +133,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOffDecayTaggedHistoFill()       { fFillTaggedDecayHistograms = kFALSE; }
   void         SetNDecayBits(Int_t n)                { fNDecayBits = n               ; }
   void         SetDecayBits(Int_t i, UInt_t bit)     { if(i < 4) fDecayBits[i] = bit ; }
+  void         SetM02CutForTaggedDecays(Float_t m02) { fDecayTagsM02Cut        = m02 ; }
   
   void         SwitchOnBackgroundBinHistoFill()      { fFillBackgroundBinHistograms = kTRUE ; }
   void         SwitchOffBackgroundBinHistoFill()     { fFillBackgroundBinHistograms = kFALSE; }
@@ -172,9 +173,12 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillSSHisto;                          // Fill Shower shape plots
   Bool_t   fFillUEBandSubtractHistograms;         // Fill histograms working on the UE subtraction
   Bool_t   fFillCellHistograms;                   // Fill cell histograms
+  
   Bool_t   fFillTaggedDecayHistograms;            // Fill histograms for clusters tagged as decay
   Int_t    fNDecayBits ;                          // in case of study of decay triggers, select the decay bit
   UInt_t   fDecayBits[4] ;                        // in case of study of decay triggers, select the decay bit
+  Float_t  fDecayTagsM02Cut ;                     // Apply a m02 cut to clusters tagged as decay
+  
   Bool_t   fFillNLMHistograms;                    // Fill NLM histograms
   Bool_t   fLeadingOnly;                          // Do isolation with leading particle
   Bool_t   fCheckLeadingWithNeutralClusters;      // Compare the trigger candidate to Leading pT with the clusters pT, by default only charged
@@ -491,7 +495,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,32)
+  ClassDef(AliAnaParticleIsolation,33)
 } ;
 
 
