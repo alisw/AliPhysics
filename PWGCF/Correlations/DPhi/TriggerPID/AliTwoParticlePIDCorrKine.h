@@ -53,6 +53,9 @@ Double_t fZvtxLim;
 TString fCentralityFrom;
 TString fCentralityEstimator;
 	
+    AliTwoParticlePIDCorrKine(const AliTwoParticlePIDCorrKine&); // not implemented
+    AliTwoParticlePIDCorrKine& operator=(const AliTwoParticlePIDCorrKine&); // not implemented
+
   ClassDef(AliTwoParticlePIDCorrKine,1)
     
 };
