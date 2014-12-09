@@ -451,7 +451,7 @@ def strip_html(s):
 #  @param comment An array containing the lines of the original comment
 def refactor_comment(comment, do_strip_html=True):
 
-  recomm = r'^(/{2,}|/\*)?\s*(.*?)\s*((/{2,})?\s*|\*/)$'
+  recomm = r'^(/{2,}|/\*)? ?(\s*.*?)\s*((/{2,})?\s*|\*/)$'
   regarbage = r'^(?i)\s*([\s*=-_#]+|(Begin|End)_Html)\s*$'
 
   new_comment = []
