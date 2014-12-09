@@ -145,6 +145,7 @@ AliEveEventManager::AliEveEventManager(const TString& name, Int_t ev) :
     fEventInUse(1),
     fWritingToEventIndex(0),
     fIsNewEventAvaliable(false),
+	fOnlineMode(kFALSE),
     fStorageDown(false),
     fFinished(false)
 {
