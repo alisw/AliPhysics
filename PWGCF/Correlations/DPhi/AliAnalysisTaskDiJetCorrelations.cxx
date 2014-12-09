@@ -75,7 +75,12 @@ AliAnalysisTaskDiJetCorrelations::AliAnalysisTaskDiJetCorrelations():
   fMixedEvent(kTRUE),
   fMEMaxPoolEvent(1000),
   fMEMinTracks(20000),
-  fMEMinEventToMix(6)
+  fMEMinEventToMix(6),
+  fHistTrigDPhi(0x0),
+  fControlConvResT1(0x0),
+  fControlConvResT2(0x0),
+  fControlConvResMT1(0x0),
+  fControlConvResMT2(0x0)
 {
   for ( Int_t i = 0; i < 9; i++)fHistQA[i] = NULL;
 }
@@ -112,7 +117,12 @@ AliAnalysisTaskDiJetCorrelations::AliAnalysisTaskDiJetCorrelations(const char *n
   fMixedEvent(kTRUE),
   fMEMaxPoolEvent(1000),
   fMEMinTracks(2000),
-  fMEMinEventToMix(6)
+  fMEMinEventToMix(6),
+  fHistTrigDPhi(0x0),
+  fControlConvResT1(0x0),
+  fControlConvResT2(0x0),
+  fControlConvResMT1(0x0),
+  fControlConvResMT2(0x0)
 {
   Info("AliAnalysisTaskDiJetCorrelations","Calling Constructor");
   for ( Int_t i = 0; i < 9; i++)fHistQA[i] = NULL;
@@ -153,7 +163,12 @@ AliAnalysisTaskDiJetCorrelations::AliAnalysisTaskDiJetCorrelations(const AliAnal
   fMixedEvent(source.fMixedEvent),
   fMEMaxPoolEvent(source.fMEMaxPoolEvent),
   fMEMinTracks(source.fMEMinTracks),
-  fMEMinEventToMix(source.fMEMinEventToMix)
+  fMEMinEventToMix(source.fMEMinEventToMix),
+  fHistTrigDPhi(source.fHistTrigDPhi),
+  fControlConvResT1(source.fControlConvResT1),
+  fControlConvResT2(source.fControlConvResT2),
+  fControlConvResMT1(source.fControlConvResMT1),
+  fControlConvResMT2(source.fControlConvResMT2)
 {
   
 }
@@ -342,25 +357,7 @@ void  AliAnalysisTaskDiJetCorrelations::UserExec(Option_t *)
   if(vtxTyp.Contains("vertexer:Z") && (zRes > 0.25)) return;
   if(TMath::Abs(vtxSPD->GetZ() - vtxPrm->GetZ()) > 0.5) return;
   fHistNEvents->Fill(4);
-  
-  TFile* f = 0x0;
-  f = TFile::Open("THnEfficiency.root");
-  if(!f->IsOpen()){
-    cout<<"File is not found"<<endl;
-    return;
-  }
-  
-  TH3F *tmp1 = (TH3F*)f->Get("hpTetaCentRec");
-  if(!tmp1){
-    cout<<"Couldn't find hpTetaCentRec"<<endl;
-    return;
-  }
-  
-  f3DEffCor = (TH3F*)tmp1->Clone("f3DEffCor");
-  f3DEffCor->SetDirectory(0);
-  f->Close();
-  delete f;
-  
+   
   TObjArray* fTrackArray = new TObjArray;
   fTrackArray->SetOwner(kTRUE);
   
@@ -489,7 +486,7 @@ void  AliAnalysisTaskDiJetCorrelations::UserExec(Option_t *)
   if(TMath::Abs(zVertex)>=10)AliInfo(Form("Event with Zvertex = %.2f cm out of pool bounds, SKIPPING",zVertex));
   
   if(fMixedEvent){
-    Bool_t execPool = ProcessMixedEventPool();
+    //Bool_t execPool = ProcessMixedEventPool();
     NofEventsinPool = fPool->GetCurrentNEvents();
   }
   
@@ -531,7 +528,7 @@ void  AliAnalysisTaskDiJetCorrelations::UserExec(Option_t *)
 	if(ptTrack1 > ptLim_Sparse1) ptTrack1 = ptLim_Sparse1-0.01; //filling all the pT in last bin
         
 	Double_t CentzVtxDEtaDPhiTrg1[5] = {fCentrOrMult, zVertex, deltaEta1, deltaPhi1C, ptTrack1};
-	Double_t effvalueT1 = GetTrackbyTrackEffValue(fAodTracksAS, fCentrOrMult);
+	Double_t effvalueT1 = 1.0;//GetTrackbyTrackEffValue(fAodTracksAS, fCentrOrMult);
 	
 	((THnSparseD*)fOutputCorr->FindObject(Form("ThnTrg1CentZvtxDEtaDPhi_%s_%s",typeData.Data(), SEorME.Data())))->Fill(CentzVtxDEtaDPhiTrg1, 1/effvalueT1);
 	
@@ -560,7 +557,7 @@ void  AliAnalysisTaskDiJetCorrelations::UserExec(Option_t *)
 	if(ptTrack2 > ptLim_Sparse2) ptTrack2 = ptLim_Sparse2-0.01; //filling all the pT in last bin
 	
 	Double_t CentzVtxDEtaDPhiTrg2[5] = {fCentrOrMult, zVertex, deltaEta2, deltaPhi2C,ptTrack2};
-	Double_t effvalueT2 = GetTrackbyTrackEffValue(fAodTracksAS, fCentrOrMult);
+	Double_t effvalueT2 = 1.0;//GetTrackbyTrackEffValue(fAodTracksAS, fCentrOrMult);
 	
 	((THnSparseD*)fOutputCorr->FindObject(Form("ThnTrg2CentZvtxDEtaDPhi_%s_%s",typeData.Data(), SEorME.Data())))->Fill(CentzVtxDEtaDPhiTrg2,1/effvalueT2);
 	
@@ -578,7 +575,7 @@ void  AliAnalysisTaskDiJetCorrelations::UserExec(Option_t *)
   
   PostData(1, fOutputQA);
   PostData(2, fOutputCorr);  
-  delete f3DEffCor;
+  //delete f3DEffCor;
   
 }
 
@@ -668,14 +665,14 @@ Bool_t AliAnalysisTaskDiJetCorrelations::TwoTrackEfficiencyCut(Double_t refmaxpT
     
     const Float_t kLimit = 0.02*3;
     Float_t dphistarminabs = 1e5;
-    Float_t dphistarmin = 1e5;
+    //Float_t dphistarmin = 1e5;
   
     if (TMath::Abs(dphistar1) < kLimit || TMath::Abs(dphistar2) < kLimit || dphistar1 * dphistar2 < 0){
       for (Double_t rad=0.8; rad<2.51; rad+=0.01){
 	Float_t dphistar = GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, rad, bSigntmp);
 	Float_t dphistarabs = TMath::Abs(dphistar);
 	if (dphistarabs < dphistarminabs){
-	  dphistarmin = dphistar;
+	  //dphistarmin = dphistar;
 	  dphistarminabs = dphistarabs;
 	}
       }
