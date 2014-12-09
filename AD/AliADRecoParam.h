@@ -13,33 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-/**************************************************************************************
-
-        AD's RecoParams Version 1.0
-
-        In this version we only consider:
-
-        ->) The AD's Trigger Mode (Single Muon Trigger or Multi Muon Trigger)
-        ->) The AD's Trigger Mask (Same in SMT and MMT)
-        
-        In Runs PbPb, pp, and cosmics by default we have the same RecoParams.
-
-        From: 
-		Mario Rodriguez Cahuantzi <mrodrigu@mail.cern.ch> @ CERN
-        	FCFM, BUAP. Puebla, Mexico
-        
-	Further comments:
-
-		Arturo Fernandez <afernan@mail.cern.ch>
-
-        March 2nd. 2009 
-
-        NOTE: Please suggest improvements if needed.
-
-**************************************************************************************/
-
-
 #ifndef ALIADRECOPARAM_H
 #define ALIADRECOPARAM_H
 
@@ -49,46 +22,61 @@ class AliADRecoParam : public AliDetectorRecoParam
 {
  public: 
   AliADRecoParam();
-  AliADRecoParam(const AliADRecoParam &p); // Copy constructor 
-  AliADRecoParam& operator=(const AliADRecoParam &p); // Assignment operator
   virtual ~AliADRecoParam();
+  
+  void SetNSigmaPed(Float_t nSigma) { fNSigmaPed = nSigma; }
+  void SetStartClock(Int_t start) { fStartClock = start; }
+  void SetEndClock(Int_t end) {fEndClock = end; }
+  void SetNPreClocks(Int_t preClocks) { fNPreClocks = preClocks; }
+  void SetNPostClocks(Int_t postClocks) { fNPostClocks = postClocks; }
+  void SetAdcThresHold(Float_t val) { fAdcThresHold = val;}
+  void SetTimeWindowBBALow(Float_t val) { fTimeWindowBBALow = val; }
+  void SetTimeWindowBBAUp (Float_t val) { fTimeWindowBBAUp  = val; }
+  void SetTimeWindowBGALow(Float_t val) { fTimeWindowBGALow = val; }
+  void SetTimeWindowBGAUp (Float_t val) { fTimeWindowBGAUp  = val; }
+  void SetTimeWindowBBCLow(Float_t val) { fTimeWindowBBCLow = val; }
+  void SetTimeWindowBBCUp (Float_t val) { fTimeWindowBBCUp  = val; }
+  void SetTimeWindowBGCLow(Float_t val) { fTimeWindowBGCLow = val; }
+  void SetTimeWindowBGCUp (Float_t val) { fTimeWindowBGCUp  = val; }
+  void SetMaxResid (Float_t val) { fMaxResid  = val; }
 
-  virtual void PrintParameters() const;
+  Float_t GetNSigmaPed() const { return fNSigmaPed; }
+  Int_t  GetStartClock() const { return fStartClock; }
+  Int_t  GetEndClock() const { return fEndClock; }
+  Int_t  GetNPreClocks() const { return fNPreClocks; }
+  Int_t  GetNPostClocks() const { return fNPostClocks; }
+  Float_t  GetAdcThresHold() const { return fAdcThresHold; }
+  Float_t  GetTimeWindowBBALow() const { return fTimeWindowBBALow; }
+  Float_t  GetTimeWindowBBAUp () const { return fTimeWindowBBAUp ; }
+  Float_t  GetTimeWindowBGALow() const { return fTimeWindowBGALow; }
+  Float_t  GetTimeWindowBGAUp () const { return fTimeWindowBGAUp ; }
+  Float_t  GetTimeWindowBBCLow() const { return fTimeWindowBBCLow; }
+  Float_t  GetTimeWindowBBCUp () const { return fTimeWindowBBCUp ; }
+  Float_t  GetTimeWindowBGCLow() const { return fTimeWindowBGCLow; }
+  Float_t  GetTimeWindowBGCUp () const { return fTimeWindowBGCUp ; }
+  Float_t  GetMaxResid () const { return fMaxResid; }
 
-  //Getters
-/* 
-  Bool_t   GetAcordeSingleMuonTrigger()    const  {return fAcordeSingleMuonTrigger;}
-  Bool_t   GetAcordeMultiMuonTrigger()     const  {return fAcordeMultiMuonTrigger;}
-  UInt_t   GetAcordeWord0()    const  {return fAcordeWord0;}
-  UInt_t   GetAcordeWord1()    const  {return fAcordeWord1;}
-  UInt_t   GetAcordeWord2()    const  {return fAcordeWord2;}
-  UInt_t   GetAcordeWord3()    const  {return fAcordeWord3;}
+ private:
+
+  Float_t fNSigmaPed;  // Number of pedestal sigmas for adc cut
+  Int_t fStartClock;   // Start clock for max adc search
+  Int_t fEndClock;     // End clock for max adc search
+  Int_t fNPreClocks;   // Number of pre-clocks used in adc charge sum
+  Int_t fNPostClocks;  // Number of post-clocks used in adc charge sum
+  
+  // Cuts used in the trigger mask creation
+  Float_t fAdcThresHold;      // Threshold on the ADC
+  Float_t fTimeWindowBBALow;  // BBA window (lower cut)
+  Float_t fTimeWindowBBAUp;   // BBA window (upper cut)
+  Float_t fTimeWindowBGALow;  // BGA window (lower cut)
+  Float_t fTimeWindowBGAUp;   // BGA window (upper cut)
+  Float_t fTimeWindowBBCLow;  // BBC window (lower cut)
+  Float_t fTimeWindowBBCUp;   // BBC window (upper cut)
+  Float_t fTimeWindowBGCLow;  // BGC window (lower cut)
+  Float_t fTimeWindowBGCUp;   // BGC window (upper cut)
+  Float_t fMaxResid;   	      // Maximum residual of a single channel time
 
 
-  //Setters
-
-  void   SetAcordeSingleMuonTrigger(Bool_t flag)        {fAcordeSingleMuonTrigger=flag;}
-  void   SetAcordeMultiMuonTrigger(Bool_t flag)  {fAcordeMultiMuonTrigger=flag;}
-  void   SetAcordeWord0(UInt_t flag)  {fAcordeWord0=flag;}
-  void   SetAcordeWord1(UInt_t flag)  {fAcordeWord1=flag;}
-  void   SetAcordeWord2(UInt_t flag)  {fAcordeWord2=flag;}
-  void   SetAcordeWord3(UInt_t flag)  {fAcordeWord3=flag;}
-
-
-
-  static   AliADRecoParam *GetPbPbparam();       // reco param for PbPb.
-  static   AliADRecoParam *GetPPparam();         // reco param for PP
-  static   AliADRecoParam *GetCosmicMuonParam(); // reco param for cosmic muons
- 
-private:
-
-  Bool_t fAcordeSingleMuonTrigger; // kTRUE if AD triggered in Singe Muon Mode
-  Bool_t fAcordeMultiMuonTrigger; // kTRUE if AD triggered in Multi Muon Mode
-  UInt_t fAcordeWord0; // [1..30] Acorde's Modules in Single Muon Trigger
-  UInt_t fAcordeWord1; // [31..60] Acorde's Modules in Single Muon Trigger
-  UInt_t fAcordeWord2; // [1..30] Acorde's Modules in Multi Muon Trigger
-  UInt_t fAcordeWord3; // [31..60] Acorde's Modules in Multi Muon Trigger
-*/
   ClassDef(AliADRecoParam, 1)
 };
 #endif
