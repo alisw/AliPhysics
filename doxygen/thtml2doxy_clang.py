@@ -290,18 +290,18 @@ def traverse_ast(cursor, filename, comments, recursion=0):
   if cursor.kind == clang.cindex.CursorKind.CXX_METHOD or cursor.kind == clang.cindex.CursorKind.CONSTRUCTOR or cursor.kind == clang.cindex.CursorKind.DESTRUCTOR:
 
     # cursor ran into a C++ method
-    logging.debug( "%5d %s%s(%s)" % (cursor.extent.start.line, indent, Colt(kind).magenta(), Colt(text).blue()) )
+    logging.debug( "%5d %s%s(%s)" % (cursor.location.line, indent, Colt(kind).magenta(), Colt(text).blue()) )
     comment_method(cursor, comments)
 
   elif cursor.kind == clang.cindex.CursorKind.FIELD_DECL:
 
     # cursor ran into a data member declaration
-    logging.debug( "%5d %s%s(%s)" % (cursor.extent.start.line, indent, Colt(kind).magenta(), Colt(text).blue()) )
+    logging.debug( "%5d %s%s(%s)" % (cursor.location.line, indent, Colt(kind).magenta(), Colt(text).blue()) )
     comment_datamember(cursor, comments)
 
   else:
 
-    logging.debug( "%5d %s%s(%s)" % (cursor.extent.start.line, indent, kind, text) )
+    logging.debug( "%5d %s%s(%s)" % (cursor.location.line, indent, kind, text) )
 
   for child_cursor in cursor.get_children():
     traverse_ast(child_cursor, filename, comments, recursion+1)
