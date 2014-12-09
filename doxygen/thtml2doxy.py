@@ -198,11 +198,19 @@ def comment_method(cursor, comments):
 
     if emit_comment:
 
-      comment = refactor_comment( comment )
+      if comment_line_start > 0:
 
-      if len(comment) > 0:
-        logging.debug("Comment found for function %s" % Colt(comment_function).magenta())
-        comments.append( Comment(comment, comment_line_start, comment_col_start, comment_line_end, comment_col_end, comment_indent, comment_function) )
+        comment = refactor_comment( comment )
+
+        if len(comment) > 0:
+          logging.debug("Comment found for function %s" % Colt(comment_function).magenta())
+          comments.append( Comment(comment, comment_line_start, comment_col_start, comment_line_end, comment_col_end, comment_indent, comment_function) )
+        else:
+          logging.debug('Empty comment for function %s marked for removal' % Colt(comment_function).magenta())
+          comments.append(RemoveComment(comment_line_start, comment_line_end))
+
+      else:
+        logging.warning('No comment found for function %s' % Colt(comment_function).magenta())
 
       comment = []
       comment_line_start = -1
