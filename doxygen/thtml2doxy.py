@@ -245,6 +245,7 @@ def comment_datamember(cursor, comments):
 
   mcomm = re.search(recomm, raw)
   if mcomm:
+    # If it does not match, we do not have a comment
     member_name = cursor.spelling;
     is_transient = mcomm.group(2) is not None
     array_size = mcomm.group(4)
@@ -269,9 +270,6 @@ def comment_datamember(cursor, comments):
       line_num,
       col_num,
       member_name ))
-
-  else:
-    assert False, 'Regular expression does not match member comment'
 
 
 ## Parses class description (beginning of file).
