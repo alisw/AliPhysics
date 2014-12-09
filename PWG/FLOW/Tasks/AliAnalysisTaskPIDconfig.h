@@ -108,7 +108,6 @@ private:
     TH2F                  *fHistBetavsPTOFbeforePID;    //! another hist
     TH2F                  *fHistdEdxvsPTPCbeforePID;    //! another hist
     TH3F                  *fhistNsigmaP;        //! another hist
-    TH3F                  *fhistNsigmaPTPCTOF;        //! another hist
     TH2F                  *fhistTPCnSigmavsP;   //! another hist
     TH2F                  *fHistBetavsPTOFafterPID;     //! another hist
     TH2F                  *fHistdEdxvsPTPCafterPID;     //! another hist
@@ -116,9 +115,17 @@ private:
     TH2F                  *fHistdEdxvsPTPCafterPIDTPCTOF; //! another hist
     TH2F                  *fHistBetavsPTOFafterPIDTPConly; //! another hist
     TH2F                  *fHistdEdxvsPTPCafterPIDTPConly; //! another hist
-
-    TCutG                 *fCutContour[150];    //! another hist
-    TGraph                *fCutGraph[150];      //! grpahs
+    TH2F                  *fHistPion_BetavsPTOFafterPIDTPCTOF; //! another hist
+    TH2F                  *fHistPion_dEdxvsPTPCafterPIDTPCTOF; //!another hist
+    TH2F                  *fHistKaon_BetavsPTOFafterPIDTPCTOF; //! another hist
+    TH2F                  *fHistKaon_dEdxvsPTPCafterPIDTPCTOF; //!another hist
+    TH2F                  *fHistProton_BetavsPTOFafterPIDTPCTOF; //! another hist
+    TH2F                  *fHistProton_dEdxvsPTPCafterPIDTPCTOF; //!another hist
+    TH1F                  *fhistPionEtaDistAfter; //!another hist
+    TH1F                  *fhistKaonEtaDistAfter; //!another hist
+    TH1F                  *fhistProtonEtaDistAfter; //!another hist
+    TCutG                 *fCutContour[150];    //! TCutG contours
+    TGraph                *fCutGraph[150];      //! graphs
     
     
     //qa object initialisation
