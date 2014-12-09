@@ -1,4 +1,4 @@
-void *AddTaskDFilterAndCorrelations(
+AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
   AliAnalysisTaskSEDmesonsFilterCJ::ECandidateType cand = AliAnalysisTaskSEDmesonsFilterCJ::kDstartoKpipi,
   TString filename = "DStartoKpipiCuts.root",
   Bool_t theMCon = kFALSE,
@@ -215,6 +215,6 @@ void *AddTaskDFilterAndCorrelations(
   //if(cand==1) mgr->ConnectOutput(task,4,coutput4);
 
   Printf("Input and Output connected to the manager");
-  return; 
+  return taskCorr; 
 }
 
