@@ -153,7 +153,6 @@ void AliJetFlowTools::Make(TH1* customIn, TH1* customOut) {
         MakeAU();
         return;
     }
-    cout << __LINE__ << endl;
     // 1) rebin the raw output of the jet task to the desired binnings
     // 2) calls the unfolding routine
     // 3) writes output to file
@@ -389,7 +388,7 @@ TH1D* AliJetFlowTools::UnfoldWrapper(
     else if(fUnfoldingAlgorithm == kBayesian)           myFunction = &AliJetFlowTools::UnfoldSpectrumBayesian;
     else if(fUnfoldingAlgorithm == kBayesianAli)        myFunction = &AliJetFlowTools::UnfoldSpectrumBayesianAli;
     else if(fUnfoldingAlgorithm == kSVD)                myFunction = &AliJetFlowTools::UnfoldSpectrumSVD;
-    else if(fUnfoldingAlgorithm == kNone)               myFunction = &AliJetFlowTools::FoldSpectrum;
+    else if(fUnfoldingAlgorithm == kFold)               myFunction = &AliJetFlowTools::FoldSpectrum;
     else if(fUnfoldingAlgorithm == kNone) {
         TH1D* clone((TH1D*)measuredJetSpectrum->Clone("clone"));
         clone->SetNameTitle(Form("MeasuredJetSpectrum%s", suffix.Data()), Form("measuredJetSpectrum %s", suffix.Data()));
