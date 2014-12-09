@@ -19,7 +19,7 @@
 //***********************************************************
 // Class AliAODPidHF
 // class for PID with AliAODRecoDecayHF
-// Authors: D. Caffarri caffarri@pd.infn.it, A.Dainese andrea.dainese@pd.infn.it, S. Dash dash@to.infn.it, F. Prino prino@to.infn.it, R. Romita r.romita@gsi.de, Y. Wang yifei@pi0.physi.uni-heidelberg.de P. Antonioli pietro.antonioli@bo.infn.it
+// Authors: D. Caffarri caffarri@pd.infn.it, A.Dainese andrea.dainese@pd.infn.it, S. Dash dash@to.infn.it, F. Prino prino@to.infn.it, R. Romita r.romita@gsi.de, Y. Wang yifei@pi0.physi.uni-heidelberg.de P. Antonioli pietro.antonioli@bo.infn.it, J. van der Maarel j.vandermaarel@cern.ch
 //***********************************************************
 #include <TCanvas.h>
 #include <TString.h>
@@ -109,6 +109,14 @@ fDefaultPriors(kTRUE)
     fMinnSigmaTOF[i]=-3;
     fMaxnSigmaTOF[i]=3;
   }
+  for (Int_t s=0;s<AliPID::kSPECIES;s++) {
+    for (Int_t d=0;d<4;d++) {
+      fIdBandMin[s][d] = NULL;
+      fIdBandMax[s][d] = NULL;
+      fCompBandMin[s][d] = NULL;
+      fCompBandMax[s][d] = NULL;
+    }
+  }
   
 }
 //----------------------
@@ -124,6 +132,15 @@ AliAODPidHF::~AliAODPidHF()
   delete fTPCResponse;
   for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies) {
     delete fPriorsH[ispecies];
+  }
+
+  for (Int_t s=0;s<AliPID::kSPECIES;s++) {
+    for (Int_t d=0;d<4;d++) {
+      delete fIdBandMin[s][d];
+      delete fIdBandMax[s][d];
+      delete fCompBandMin[s][d];
+      delete fCompBandMax[s][d];
+    }
   }
 }
 //------------------------
@@ -208,6 +225,16 @@ fDefaultPriors(pid.fDefaultPriors)
   fPidCombined = new AliPIDCombined();
   //fPidResponse = new AliPIDResponse(*(pid.fPidResponse));
   //fPidCombined = new AliPIDCombined(*(pid.fPidCombined));
+
+  //Copy bands
+  for (Int_t s=0;s<AliPID::kSPECIES;s++) {
+    for (Int_t d=0;d<4;d++) {
+      fIdBandMin[s][d]   = pid.fIdBandMin[s][d]   ? new TF1(*pid.fIdBandMin[s][d])   : NULL;
+      fIdBandMax[s][d]   = pid.fIdBandMax[s][d]   ? new TF1(*pid.fIdBandMax[s][d])   : NULL;
+      fCompBandMin[s][d] = pid.fCompBandMin[s][d] ? new TF1(*pid.fCompBandMin[s][d]) : NULL;
+      fCompBandMax[s][d] = pid.fCompBandMax[s][d] ? new TF1(*pid.fCompBandMax[s][d]) : NULL;
+    }
+  }
   
 }
 //----------------------
@@ -624,7 +651,43 @@ Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track, Int_t specie){
     }
   }
   
-  
+  //Asymmetric cuts using user defined bands
+  if (fMatch == 10) {
+    if (fTPC && fTOF && !okTPC && !okTOF) {
+      return 0;
+    }
+    
+    Int_t tTPCinfo = 0;
+    if (fTPC && okTPC) {
+      tTPCinfo = CheckBands((AliPID::EParticleType) specie, AliPIDResponse::kTPC, track);
+    }
+    
+    Int_t tTOFinfo = 0;
+    if (fTOF) {
+      if (!okTOF && fTPC) {
+        return tTPCinfo;
+      }
+      tTOFinfo = CheckBands((AliPID::EParticleType) specie, AliPIDResponse::kTOF, track);
+    }
+    
+    
+    if (tTPCinfo+tTOFinfo == 0 && fTOFdecide) {
+      if (!okTOF) {
+        return tTPCinfo;
+      }
+      return tTOFinfo;
+    }
+    
+    if (tTPCinfo+tTOFinfo == 0 && fITS) {
+      if (!CheckITSPIDStatus(track)) {
+        return tTPCinfo+tTOFinfo;
+      }
+      Int_t tITSinfo = CheckBands((AliPID::EParticleType) specie, AliPIDResponse::kITS, track);
+      return tITSinfo;
+    }
+    return tTPCinfo+tTOFinfo;
+  }
+
   return -1;
   
 }
@@ -1029,5 +1092,378 @@ void AliAODPidHF::PrintAll() const {
            fMinnSigmaTPC[1],fMaxnSigmaTPC[1],fMinnSigmaTOF[1],fMaxnSigmaTOF[1]);
     printf(" Protons: %.2f<nSigmaTPC<%.2f   %.2f<nSigmaTOF<%.2f\n",
            fMinnSigmaTPC[2],fMaxnSigmaTPC[2],fMinnSigmaTOF[2],fMaxnSigmaTOF[2]);
+  } else if (fMatch == 10) {
+    printf("Asymmetric PID using identification/compatibility bands as a function of track momentum p\n");
+    printf("The following bands are set:\n");
+    TString species[] = {"electron", "muon", "pion", "kaon", "proton"};
+    TString detectors[] = {"ITS", "TPC", "TRD", "TOF"};
+    for (Int_t s=0;s<AliPID::kSPECIES;s++) {
+      for (Int_t d=0;d<4;d++) {
+        if (fIdBandMin[s][d] && fIdBandMax[s][d]) {
+          printf("  Identification band %s %s\n", species[s].Data(), detectors[d].Data());
+        }
+        if (fCompBandMin[s][d] && fCompBandMax[s][d]) {
+          printf("  Compatibility band %s %s\n", species[s].Data(), detectors[d].Data());
+        }
+      }
+    }
   }
+}
+
+//------------------
+void AliAODPidHF::SetIdBand(AliPID::EParticleType specie, AliPIDResponse::EDetector detector, TH1F *min, TH1F *max) {
+  int spe = (int) specie;
+  int det = (int) detector;
+
+  if (spe >= AliPID::kSPECIES || det > 3 || !min || !max) {
+    AliError("Identification band not set");
+    return;
+  }
+
+  TAxis *axis;
+  HistFunc *histFunc;
+
+  axis = min->GetXaxis();
+  histFunc = new HistFunc(min);
+  TF1 *minFunc = new TF1(Form("IdMin_%d_%d", spe, det), histFunc, axis->GetBinLowEdge(axis->GetFirst()), axis->GetBinUpEdge(axis->GetLast()), 0, "HistFunc");
+
+  axis = max->GetXaxis();
+  histFunc = new HistFunc(max);
+  TF1 *maxFunc = new TF1(Form("IdMax_%d_%d", spe, det), histFunc, axis->GetBinLowEdge(axis->GetFirst()), axis->GetBinUpEdge(axis->GetLast()), 0, "HistFunc");
+
+  SetIdBand(specie, detector, minFunc, maxFunc);
+}
+
+//------------------
+void AliAODPidHF::SetIdBand(AliPID::EParticleType specie, AliPIDResponse::EDetector detector, TF1 *min, TF1 *max) {
+  int spe = (int) specie;
+  int det = (int) detector;
+
+  if (spe >= AliPID::kSPECIES || det > 3 || !min || !max) {
+    AliError("Identification band not set");
+    return;
+  }
+
+  if (fIdBandMin[spe][det]) {
+    delete fIdBandMin[spe][det];
+  }
+  fIdBandMin[spe][det] = new TF1(*min);
+
+  if (fIdBandMax[spe][det]) {
+    delete fIdBandMax[spe][det];
+  }
+  fIdBandMax[spe][det] = new TF1(*max);
+}
+
+//------------------
+void AliAODPidHF::SetCompBand(AliPID::EParticleType specie, AliPIDResponse::EDetector detector, TH1F *min, TH1F *max) {
+  int spe = (int) specie;
+  int det = (int) detector;
+
+  if (spe >= AliPID::kSPECIES || det > 3 || !min || !max) {
+    AliError("Compatibility band not set");
+    return;
+  }
+
+  TAxis *axis;
+  HistFunc *histFunc;
+
+  axis = min->GetXaxis();
+  histFunc = new HistFunc(min);
+  TF1 *minFunc = new TF1(Form("CompMin_%d_%d", spe, det), histFunc, axis->GetBinLowEdge(axis->GetFirst()), axis->GetBinUpEdge(axis->GetLast()), 0, "HistFunc");
+
+  axis = max->GetXaxis();
+  histFunc = new HistFunc(max);
+  TF1 *maxFunc = new TF1(Form("CompMax_%d_%d", spe, det), histFunc, axis->GetBinLowEdge(axis->GetFirst()), axis->GetBinUpEdge(axis->GetLast()), 0, "HistFunc");
+
+  SetCompBand(specie, detector, minFunc, maxFunc);
+}
+
+//------------------
+void AliAODPidHF::SetCompBand(AliPID::EParticleType specie, AliPIDResponse::EDetector detector, TF1 *min, TF1 *max) {
+  int spe = (int) specie;
+  int det = (int) detector;
+
+  if (spe >= AliPID::kSPECIES || det > 3 || !min || !max) {
+    AliError("Compatibility band not set");
+    return;
+  }
+
+  if (fCompBandMin[spe][det]) {
+    delete fCompBandMin[spe][det];
+  }
+  fCompBandMin[spe][det] = new TF1(*min);
+
+  if (fCompBandMax[spe][det]) {
+    delete fCompBandMax[spe][det];
+  }
+  fCompBandMax[spe][det] = new TF1(*max);
+}
+
+//------------------
+Bool_t AliAODPidHF::CheckDetectorPIDStatus(AliPIDResponse::EDetector detector, AliAODTrack* track) {
+  switch (detector) {
+    case AliPIDResponse::kITS:
+      return CheckITSPIDStatus(track);
+      break;
+    case AliPIDResponse::kTPC:
+      return CheckTPCPIDStatus(track);
+      break;
+    case AliPIDResponse::kTRD:
+      return CheckTRDPIDStatus(track);
+      break;
+    case AliPIDResponse::kTOF:
+      return CheckTOFPIDStatus(track);
+      break;
+    default:
+      return kFALSE;
+      break;
+  }
+}
+
+//------------------
+Float_t AliAODPidHF::NumberOfSigmas(AliPID::EParticleType specie, AliPIDResponse::EDetector detector, AliAODTrack *track) {
+  switch (detector) {
+    case AliPIDResponse::kITS:
+      return fPidResponse->NumberOfSigmasITS(track, specie);
+      break;
+    case AliPIDResponse::kTPC:
+      return fPidResponse->NumberOfSigmasTPC(track, specie);
+      break;
+    case AliPIDResponse::kTOF:
+      return fPidResponse->NumberOfSigmasTOF(track, specie);
+      break;
+    default:
+      return -999.;
+      break;
+  }
+}
+
+//------------------
+Int_t AliAODPidHF::CheckBands(AliPID::EParticleType specie, AliPIDResponse::EDetector detector, AliAODTrack *track) {
+  //Return: -1 for no match, 0 for comp. band and 1 for id band
+
+  Int_t spe = (Int_t) specie;
+  Int_t det = (Int_t) detector;
+
+  if (!fPidResponse || spe >= AliPID::kSPECIES) {
+    return -1;
+  }
+
+  if (!CheckDetectorPIDStatus(detector, track)) {
+    return 1;
+  }
+
+  double P = track->P();
+
+  Float_t nSigma = NumberOfSigmas(specie, detector, track);
+  Float_t minContent, maxContent;
+
+  //Check if within identification band, return 1
+  TF1 *IdBandMin = fIdBandMin[spe][det];
+  TF1 *IdBandMax = fIdBandMax[spe][det];
+
+  if (IdBandMin && IdBandMax) {
+    minContent = IdBandMin->Eval(P);
+    maxContent = IdBandMax->Eval(P);
+    if ((minContent == 0 || nSigma >= minContent) && (maxContent == 0 || nSigma <= maxContent)) {
+      return 1;
+    }
+  }
+
+  //Check if within compatibility band, return 0
+  TF1 *CompBandMin = fCompBandMin[spe][det];
+  TF1 *CompBandMax = fCompBandMax[spe][det];
+
+  if (CompBandMin && CompBandMax) {
+    minContent = CompBandMin->Eval(P);
+    maxContent = CompBandMax->Eval(P);
+    if ((minContent == 0 || nSigma >= minContent) && (maxContent == 0 || nSigma <= maxContent)) {
+      return 0;
+    }
+  }
+
+  //No bands set: don't perform PID
+  if (!IdBandMin && !IdBandMax && !CompBandMin && !CompBandMax) {
+    AliWarning(Form("No identification & compatibility band set for specie=%d detector=%d", spe, det));
+    return 1;
+  }
+
+  //Otherwise, return -1
+  return -1;
+}
+
+//------------------
+void AliAODPidHF::SetShiftedAsymmetricPID() {
+  SetMatch(10);
+  SetTPC(kTRUE);
+  SetTOF(kTRUE);
+
+  //TPC K: shift by -0.2
+  TF1 *TPCCompBandMinK = new TF1("TPCCompBandMinK", "[0]", 0.3, 4); TPCCompBandMinK->SetParameter(0, -3.2);
+  TF1 *TPCCompBandMaxK = new TF1("TPCCompBandMaxK", "[0]", 0.3, 4); TPCCompBandMaxK->SetParameter(0, 2.8);
+  SetCompBand(AliPID::kKaon, AliPIDResponse::kTPC, TPCCompBandMinK, TPCCompBandMaxK);
+
+  TF1 *TPCIdBandMinK = new TF1("TPCIdBandMinK", "[0]", 0.3, 4); TPCIdBandMinK->SetParameter(0, -2.2);
+  TF1 *TPCIdBandMaxK = new TF1("TPCIdBandMaxK", "[0]", 0.3, 4); TPCIdBandMaxK->SetParameter(0, 1.8);
+  SetIdBand(AliPID::kKaon, AliPIDResponse::kTPC, TPCIdBandMinK, TPCIdBandMaxK);
+
+  //TPC pi: shift by -0.14
+  TF1 *TPCCompBandMinPi = new TF1("TPCCompBandMinPi", "[0]", 0.3, 4); TPCCompBandMinPi->SetParameter(0, -3.14);
+  TF1 *TPCCompBandMaxPi = new TF1("TPCCompBandMaxPi", "[0]", 0.3, 4); TPCCompBandMaxPi->SetParameter(0, 2.86);
+  SetCompBand(AliPID::kPion, AliPIDResponse::kTPC, TPCCompBandMinPi, TPCCompBandMaxPi);
+
+  TF1 *TPCIdBandMinPi = new TF1("TPCIdBandMinPi", "[0]", 0.3, 4); TPCIdBandMinPi->SetParameter(0, -2.14);
+  TF1 *TPCIdBandMaxPi = new TF1("TPCIdBandMaxPi", "[0]", 0.3, 4); TPCIdBandMaxPi->SetParameter(0, 1.86);
+  SetIdBand(AliPID::kPion, AliPIDResponse::kTPC, TPCIdBandMinPi, TPCIdBandMaxPi);
+
+  //TOF K: shift by -0.1
+  TF1 *TOFCompBandMinK = new TF1("TOFCompBandMinK", "[0]", 2, 50); TOFCompBandMinK->SetParameter(0, -3.1);
+  TF1 *TOFCompBandMaxK = new TF1("TOFCompBandMaxK", "[0]", 2, 50); TOFCompBandMaxK->SetParameter(0, 2.9);
+  SetCompBand(AliPID::kKaon, AliPIDResponse::kTOF, TOFCompBandMinK, TOFCompBandMaxK);
+
+  TF1 *TOFIdBandMinK = new TF1("TOFIdBandMinK", "[0]", 0.3, 2); TOFIdBandMinK->SetParameter(0, -3.1);
+  TF1 *TOFIdBandMaxK = new TF1("TOFIdBandMaxK", "[0]", 0.3, 2); TOFIdBandMaxK->SetParameter(0, 2.9);
+  SetIdBand(AliPID::kKaon, AliPIDResponse::kTOF, TOFIdBandMinK, TOFIdBandMaxK);
+
+  //TOF pi: shift by -0.15
+  TF1 *TOFCompBandMinPi = new TF1("TOFCompBandMinPi", "[0]", 2, 50); TOFCompBandMinPi->SetParameter(0, -3.15);
+  TF1 *TOFCompBandMaxPi = new TF1("TOFCompBandMaxPi", "[0]", 2, 50); TOFCompBandMaxPi->SetParameter(0, 2.85);
+  SetCompBand(AliPID::kPion, AliPIDResponse::kTOF, TOFCompBandMinPi, TOFCompBandMaxPi);
+
+  TF1 *TOFIdBandMinPi = new TF1("TOFIdBandMinPi", "[0]", 0.3, 2); TOFIdBandMinPi->SetParameter(0, -3.15);
+  TF1 *TOFIdBandMaxPi = new TF1("TOFIdBandMaxPi", "[0]", 0.3, 2); TOFIdBandMaxPi->SetParameter(0, 2.85);
+  SetIdBand(AliPID::kPion, AliPIDResponse::kTOF, TOFIdBandMinPi, TOFIdBandMaxPi);
+}
+
+//------------------
+void AliAODPidHF::SetIdAsymmetricPID() {
+  //Set identification bands
+
+  SetMatch(10);
+  SetTPC(kTRUE);
+  SetTOF(kTRUE);
+
+  //TPC K
+  Double_t TPCIdBandMinKBins[] = {0.3, 0.4, 0.5, 0.6, 0.9, 4};
+  TH1F *TPCIdBandMinK = new TH1F("TPCIdBandMinK", "TPC Id Band Min K", 5, TPCIdBandMinKBins);
+  TPCIdBandMinK->SetBinContent(1, -3); //0.3-0.4
+  TPCIdBandMinK->SetBinContent(2, -2); //0.4-0.5
+  TPCIdBandMinK->SetBinContent(3, -3); //0.5-0.6
+  TPCIdBandMinK->SetBinContent(4, -2); //0.6-0.9
+  TPCIdBandMinK->SetBinContent(5, -3); //0.9-4
+
+  Double_t TPCIdBandMaxKBins[] = {0.3, 0.6, 0.7, 4};
+  TH1F *TPCIdBandMaxK = new TH1F("TPCIdBandMaxK", "TPC Id Band Max K", 3, TPCIdBandMaxKBins);
+  TPCIdBandMaxK->SetBinContent(1, 3); //0.3-0.6
+  TPCIdBandMaxK->SetBinContent(2, 2); //0.6-0.7
+  TPCIdBandMaxK->SetBinContent(3, 3); //0.7-4
+
+  SetIdBand(AliPID::kKaon, AliPIDResponse::kTPC, TPCIdBandMinK, TPCIdBandMaxK);
+  GetIdBandMin(AliPID::kKaon, AliPIDResponse::kTPC)->SetNpx(1000);
+  GetIdBandMax(AliPID::kKaon, AliPIDResponse::kTPC)->SetNpx(1000);
+
+  //TPC pi
+  Double_t TPCIdBandMinpiBins[] = {0.3, 4};
+  TH1F *TPCIdBandMinpi = new TH1F("TPCIdBandMinpi", "TPC Id Band Min pi", 1, TPCIdBandMinpiBins);
+  TPCIdBandMinpi->SetBinContent(1, -3); //0.3-4
+
+  Double_t TPCIdBandMaxpiBins[] = {0.3, 0.7, 0.9, 1.3, 1.4, 4};
+  TH1F *TPCIdBandMaxpi = new TH1F("TPCIdBandMaxpi", "TPC Id Band Max pi", 5, TPCIdBandMaxpiBins);
+  TPCIdBandMaxpi->SetBinContent(1, 3); //0.3-0.7
+  TPCIdBandMaxpi->SetBinContent(2, 2); //0.7-0.9
+  TPCIdBandMaxpi->SetBinContent(3, 3); //0.9-1.3
+  TPCIdBandMaxpi->SetBinContent(4, 2); //1.3-1.4
+  TPCIdBandMaxpi->SetBinContent(5, 3); //1.4-4
+
+  SetIdBand(AliPID::kPion, AliPIDResponse::kTPC, TPCIdBandMinpi, TPCIdBandMaxpi);
+  GetIdBandMin(AliPID::kPion, AliPIDResponse::kTPC)->SetNpx(1000);
+  GetIdBandMax(AliPID::kPion, AliPIDResponse::kTPC)->SetNpx(1000);
+
+  //TOF K
+  TF1 *TOFIdBandMinK = new TF1("TOFIdBandMinK", "[0]", 0, 50); TOFIdBandMinK->SetParameter(0, -3);
+  TF1 *TOFIdBandMaxK = new TF1("TOFIdBandMaxK", "[0]", 0, 50); TOFIdBandMaxK->SetParameter(0, 3);
+  
+  SetIdBand(AliPID::kKaon, AliPIDResponse::kTOF, TOFIdBandMinK, TOFIdBandMaxK);
+
+  //TOF pi
+  TF1 *TOFIdBandMinPi = new TF1("TOFIdBandMinPi", "[0]", 0, 50); TOFIdBandMinPi->SetParameter(0, -3);
+  TF1 *TOFIdBandMaxPi = new TF1("TOFIdBandMaxPi", "[0]", 0, 50); TOFIdBandMaxPi->SetParameter(0, 3);
+  
+  SetIdBand(AliPID::kPion, AliPIDResponse::kTOF, TOFIdBandMinPi, TOFIdBandMaxPi);
+}
+
+//------------------
+void AliAODPidHF::SetIdCompAsymmetricPID() {
+  //Set compatibility and identification bands
+
+  SetMatch(10);
+  SetTPC(kTRUE);
+  SetTOF(kTRUE);
+
+  //TPC K
+  TF1 *TPCCompBandMinK = new TF1("TPCCompBandMinK", "[0]", 0.3, 4); TPCCompBandMinK->SetParameter(0, -3);
+  TF1 *TPCCompBandMaxK = new TF1("TPCCompBandMaxK", "[0]", 0.3, 4); TPCCompBandMaxK->SetParameter(0, 3);
+  
+  SetCompBand(AliPID::kKaon, AliPIDResponse::kTPC, TPCCompBandMinK, TPCCompBandMaxK);
+
+  Double_t TPCIdBandMinKBins[6] = {0.3, 0.45, 0.55, 0.7, 1.1, 4};
+  TH1F *TPCIdBandMinK = new TH1F("TPCIdBandMinK", "TPC Id Band Min K", 5, TPCIdBandMinKBins);
+  TPCIdBandMinK->SetBinContent(1, -2); //0.3 -0.45
+  TPCIdBandMinK->SetBinContent(2, -1); //0.45-0.55
+  TPCIdBandMinK->SetBinContent(3, -2); //0.55-0.7
+  TPCIdBandMinK->SetBinContent(4, -1); //0.7 -1.1
+  TPCIdBandMinK->SetBinContent(5, -2); //1.1 -4
+  
+  Double_t TPCIdBandMaxKBins[4] = {0.3, 0.5, 0.7, 4};
+  TH1F *TPCIdBandMaxK = new TH1F("TPCIdBandMaxK", "TPC Id Band Max K", 3, TPCIdBandMaxKBins);
+  TPCIdBandMaxK->SetBinContent(1, 2); //0.3-0.5
+  TPCIdBandMaxK->SetBinContent(2, 1); //0.5-0.7
+  TPCIdBandMaxK->SetBinContent(3, 2); //0.7-4
+
+  SetIdBand(AliPID::kKaon, AliPIDResponse::kTPC, TPCIdBandMinK, TPCIdBandMaxK);
+  GetIdBandMin(AliPID::kKaon, AliPIDResponse::kTPC)->SetNpx(1000);
+  GetIdBandMax(AliPID::kKaon, AliPIDResponse::kTPC)->SetNpx(1000);
+
+  //TPC pi
+  TF1 *TPCCompBandMinpi = new TF1("TPCCompBandMinpi", "[0]", 0.3, 4); TPCCompBandMinpi->SetParameter(0, -3);
+  TF1 *TPCCompBandMaxpi = new TF1("TPCCompBandMaxpi", "[0]", 0.3, 4); TPCCompBandMaxpi->SetParameter(0, 3);
+  
+  SetCompBand(AliPID::kPion, AliPIDResponse::kTPC, TPCCompBandMinpi, TPCCompBandMaxpi);
+
+  Double_t TPCIdBandMinpiBins[2] = {0.3, 4};
+  TH1F *TPCIdBandMinpi = new TH1F("TPCIdBandMinpi", "TPC Id Band Min pi", 1, TPCIdBandMinpiBins);
+  TPCIdBandMinpi->SetBinContent(1, -2); //0.3-4
+  
+  Double_t TPCIdBandMaxpiBins[4] = {0.3, 0.7, 1.7, 4};
+  TH1F *TPCIdBandMaxpi = new TH1F("TPCIdBandMaxpi", "TPC Id Band Max pi", 3, TPCIdBandMaxpiBins);
+  TPCIdBandMaxpi->SetBinContent(1, 2); //0.3-0.7
+  TPCIdBandMaxpi->SetBinContent(2, 1); //0.7-1.7
+  TPCIdBandMaxpi->SetBinContent(3, 2); //1.7-4
+  
+  SetIdBand(AliPID::kPion, AliPIDResponse::kTPC, TPCIdBandMinpi, TPCIdBandMaxpi);
+  GetIdBandMin(AliPID::kPion, AliPIDResponse::kTPC)->SetNpx(1000);
+  GetIdBandMax(AliPID::kPion, AliPIDResponse::kTPC)->SetNpx(1000);
+
+  //TOF K
+  TF1 *TOFCompBandMinK = new TF1("TOFCompBandMinK", "[0]", 2, 50); TOFCompBandMinK->SetParameter(0, -3);
+  TF1 *TOFCompBandMaxK = new TF1("TOFCompBandMaxK", "[0]", 2, 50); TOFCompBandMaxK->SetParameter(0, 3);
+
+  SetCompBand(AliPID::kKaon, AliPIDResponse::kTOF, TOFCompBandMinK, TOFCompBandMaxK);
+
+  TF1 *TOFIdBandMinK = new TF1("TOFIdBandMinK", "[0]", 0.3, 2); TOFIdBandMinK->SetParameter(0, -3);
+  TF1 *TOFIdBandMaxK = new TF1("TOFIdBandMaxK", "[0]", 0.3, 2); TOFIdBandMaxK->SetParameter(0, 3);
+
+  SetIdBand(AliPID::kKaon, AliPIDResponse::kTOF, TOFIdBandMinK, TOFIdBandMaxK);
+
+  //TOF pi
+  TF1 *TOFCompBandMinpi = new TF1("TOFCompBandMinpi", "[0]", 2, 50); TOFCompBandMinpi->SetParameter(0, -3);
+  TF1 *TOFCompBandMaxpi = new TF1("TOFCompBandMaxpi", "[0]", 2, 50); TOFCompBandMaxpi->SetParameter(0, 3);
+
+  SetCompBand(AliPID::kPion, AliPIDResponse::kTOF, TOFCompBandMinpi, TOFCompBandMaxpi);
+
+  TF1 *TOFIdBandMinpi = new TF1("TOFIdBandMinpi", "[0]", 0.3, 2); TOFIdBandMinpi->SetParameter(0, -3);
+  TF1 *TOFIdBandMaxpi = new TF1("TOFIdBandMaxpi", "[0]", 0.3, 2); TOFIdBandMaxpi->SetParameter(0, 3);
+
+  SetIdBand(AliPID::kPion, AliPIDResponse::kTOF, TOFIdBandMinpi, TOFIdBandMaxpi);
 }
