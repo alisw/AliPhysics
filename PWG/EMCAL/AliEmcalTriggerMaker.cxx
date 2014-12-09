@@ -61,7 +61,7 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker() :
   fRunTriggerType[kTMEMCalRecalcJet] = kTRUE;
   fRunTriggerType[kTMEMCalRecalcGamma] = kTRUE;
   memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
-  memset(fPatchADCSimple, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
+  memset(fPatchADCSimple, 0, sizeof(Double_t) * kPatchCols * kPatchRows);
   memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
 }
 
@@ -88,7 +88,7 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name, Bool_t doQA) :
   fRunTriggerType[kTMEMCalRecalcJet] = kTRUE;
   fRunTriggerType[kTMEMCalRecalcGamma] = kTRUE;
   memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
-  memset(fPatchADCSimple, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
+  memset(fPatchADCSimple, 0, sizeof(Double_t) * kPatchCols * kPatchRows);
   memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
 }
 
@@ -241,7 +241,7 @@ Bool_t AliEmcalTriggerMaker::Run()
   
   // fill the array for offline trigger processing
   // using calibrated cell energies
-  memset(fPatchADCSimple, 0, sizeof(Int_t) * kPatchRows * kPatchCols);
+  memset(fPatchADCSimple, 0, sizeof(Double_t) * kPatchRows * kPatchCols); // This works, but in principle cannot assume that the representation for 0 in a double really consists of only zeros...
 
   // fill the patch ADCs from cells
   Int_t nCell = fCaloCells->GetNumberOfCells();
@@ -660,20 +660,20 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
   colArray[3] = -1;
   rowArray[3] = -1;
 
-  Int_t maxPatchADCoffline = -1;
+  Double_t maxPatchADCoffline = -1;
   Int_t maxPatchADC = -1;
   // run the trigger algo, stepping by 8 towers (= 4 trigger channels)
   Int_t maxCol = 48;
   Int_t maxRow = fGeom->GetNTotalTRU()*2;
   for (Int_t i = 0; i < (maxCol-16); i += 4) {
     for (Int_t j = 0; j < (maxRow-16); j += 4) {
-      Int_t tSumOffline  = 0;
+      Double_t tSumOffline  = 0;
       Int_t tSum  = 0;
       Int_t tBits = 0;
       // window
       for (Int_t k = 0; k < 16; ++k) {
         for (Int_t l = 0; l < 16; ++l) {
-	  tSumOffline += (ULong64_t)fPatchADCSimple[i+k][j+l];	  
+	  tSumOffline += fPatchADCSimple[i+k][j+l];	  
 	  tSum += (ULong64_t)fPatchADC[i+k][j+l];
 	}
       }
@@ -717,13 +717,13 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
   for (Int_t i = 0; i < (maxCol-2); ++i) {
     for (Int_t j = 0; j < (maxRow-2); ++j) {
       Int_t tSum = 0;
-      Int_t tSumOffline = 0;
+      Double_t tSumOffline = 0;
       Int_t tBits = 0;
       
       // window
       for (Int_t k = 0; k < 2; ++k) {
         for (Int_t l = 0; l < 2; ++l) {
-	  tSumOffline += (ULong64_t)fPatchADCSimple[i+k][j+l];
+	  tSumOffline += fPatchADCSimple[i+k][j+l];
 	  tSum += (ULong64_t)fPatchADC[i+k][j+l];
 	}
       }
