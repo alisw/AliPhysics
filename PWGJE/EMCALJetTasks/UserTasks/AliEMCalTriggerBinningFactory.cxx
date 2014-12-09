@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "TArrayD.h"
+#include "TMath.h"
 
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerBinningFactory.h"
@@ -43,7 +44,6 @@ void AliEMCalTriggerBinningFactory::Create(AliEMCalTriggerBinningComponent* cons
    *
    * @param data: the binning component to be initialised
    */
-  AliEMCalTriggerBinningDimension *mybinning(NULL);
   TArrayD binLimits;
   if(!data->GetBinning("pt")){
     CreateDefaultPtBinning(binLimits);
@@ -52,6 +52,10 @@ void AliEMCalTriggerBinningFactory::Create(AliEMCalTriggerBinningComponent* cons
   if(!data->GetBinning("eta")){
     CreateDefaultEtaBinning(binLimits);
     data->SetBinning("eta", binLimits);
+  }
+  if(!data->GetBinning("phi")){
+    CreateLinearBinning(binLimits, 100, 0, 2*TMath::Pi());
+    data->SetBinning("phi", binLimits);
   }
   if(!data->GetBinning("zvertex")){
     CreateDefaultZVertexBinning(binLimits);
@@ -127,6 +131,26 @@ void AliEMCalTriggerBinningFactory::CreateDefaultEtaBinning(TArrayD& binning) co
   int ib = 0;
   for(std::vector<double>::iterator it = mybinning.begin(); it != mybinning.end(); ++it)
     binning[ib++] = *it;
+}
+
+//______________________________________________________________________________
+void AliEMCalTriggerBinningFactory::CreateLinearBinning(TArrayD& binning, int nbins, double min, double max) const {
+  /*
+   * Create any kind of linear binning from given ranges and stores it in the binning array.
+   *
+   * @param binning: output array
+   * @param nbins: Number of bins
+   * @param min: lower range
+   * @param max: upper range
+   */
+  double binwidth = (max-min)/static_cast<double>(nbins);
+  binning.Set(nbins+1);
+  binning[0] = min;
+  double currentlimit = min + binwidth;
+  for(int ibin = 0; ibin < nbins; ibin++){
+    binning[ibin+1] = currentlimit;
+    currentlimit += binwidth;
+  }
 }
 
 } /* namespace EMCalTriggerPtAnalysis */
