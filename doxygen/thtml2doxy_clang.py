@@ -282,6 +282,8 @@ def comment_datamember(cursor, comments):
 def comment_classdesc(filename, comments):
 
   recomm = r'^\s*///?\s*(.*?)\s*/*\s*$'
+  reclass_doxy = r'(?i)^\\class:?\s*(.*?)\s*$'
+  class_name_doxy = None
   comment_lines = []
 
   start_line = -1
@@ -303,9 +305,9 @@ def comment_classdesc(filename, comments):
       mcomm = re.search(recomm, raw)
       if mcomm:
 
-        if len(comment_lines) == 0:
+        if start_line == -1 and len(comment_lines) == 0:
 
-          # First line. Check if we do not overlap with other comments
+          # First line. Check that we do not overlap with other comments
           comment_overlaps = False
           for c in comments:
             if c.has_comment(line_num):
@@ -318,7 +320,11 @@ def comment_classdesc(filename, comments):
 
           start_line = line_num
 
-        comment_lines.append( mcomm.group(1) )
+        mclass_doxy = re.search(reclass_doxy, mcomm.group(1))
+        if mclass_doxy:
+          class_name_doxy = mclass_doxy.group(1)
+        else:
+          comment_lines.append( mcomm.group(1) )
 
       else:
         if len(comment_lines) > 0:
@@ -327,22 +333,36 @@ def comment_classdesc(filename, comments):
             end_line = line_num - 1
           break
 
-  comment_lines = refactor_comment(comment_lines)
+  if class_name_doxy is None:
 
-  if len(comment_lines) > 0:
-
+    # No \class specified: guess it from file name
     reclass = r'^(.*/)?(.*?)(\..*)?$'
     mclass = re.search( reclass, filename )
     if mclass:
-      class_name = mclass.group(2)
-      logging.debug('Comment found for class %s' % Colt(class_name).magenta())
-      comments.append(Comment(
-        comment_lines,
-        start_line, 1, end_line, 1,
-        0, class_name
-      ))
+      class_name_doxy = mclass.group(2)
     else:
       assert False, 'Regexp unable to extract classname from file'
+
+  # Prepend \class specifier (and an empty line)
+  comment_lines[:0] = [ '\\class ' + class_name_doxy ]
+
+  # Append author and date if they exist
+  comment_lines.append('')
+
+  if author is not None:
+    comment_lines.append( '\\author ' + author )
+
+  if date is not None:
+    comment_lines.append( '\\date ' + date )
+
+  comment_lines = refactor_comment(comment_lines)
+  logging.debug('Comment found for class %s' % Colt(class_name_doxy).magenta())
+  comments.append(Comment(
+    comment_lines,
+    start_line, 1, end_line, 1,
+    0, class_name_doxy
+  ))
+
 
 ## Traverse the AST recursively starting from the current cursor.
 #
