@@ -215,7 +215,7 @@ def comment_datamember(cursor, comments):
       if cur_line == line_num:
         break
 
-  recomm = r'(//(!)|///?)<?\s*(\[(.*?)\])?\s*(.*?)\s*$'
+  recomm = r'(//(!)|///?)(\[(.*?)\])?<?\s*(.*?)\s*$'
 
   mcomm = re.search(recomm, raw)
   if mcomm:
