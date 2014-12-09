@@ -18,6 +18,7 @@ protected:
   void CreateDefaultPtBinning(TArrayD &binning) const;
   void CreateDefaultEtaBinning(TArrayD& binning) const;
   void CreateDefaultZVertexBinning(TArrayD &binning) const;
+  void CreateLinearBinning(TArrayD &binning, int nbins, double min, double max) const;
 };
 
 } /* namespace EMCalTriggerPtAnalysis */
