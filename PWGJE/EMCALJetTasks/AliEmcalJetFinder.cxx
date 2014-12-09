@@ -87,6 +87,7 @@ Bool_t AliEmcalJetFinder::FindJets()
 
     // Set the most important properties of the jet
     Int_t nConstituents(fFastjetWrapper->GetJetConstituents(i).size());
+    jet->SetArea(fFastjetWrapper->GetJetArea(i));
     jet->SetNumberOfTracks(nConstituents);
     jet->SetNumberOfClusters(nConstituents);
     fJetArray[fJetCount] = jet;
