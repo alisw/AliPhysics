@@ -84,7 +84,6 @@ target_link_libraries(${MODULE} STEERBase STEER EVGEN Core EG MathCore)
 
 # Additional compilation and linking flags
 set(CMAKE_C_FLAGS "-ansi ${CMAKE_C_FLAGS}")
-set(CMAKE_Fortran_FLAGS "-cpp")
 set(MODULE_COMPILE_FLAGS "")
 set(MODULE_LINK_FLAGS)
 
