@@ -106,6 +106,18 @@ class MemberComment:
     return "<MemberComment for %s: [%d,%d] %s%s%s>" % (self.func, self.first_line, self.first_col, tt, ars, self.lines[0])
 
 
+## A dummy comment that removes comment lines.
+class RemoveComment(Comment):
+
+  def __init__(self, first_line, last_line):
+    self.first_line = first_line
+    self.last_line = last_line
+    self.func = '<remove>'
+
+  def __str__(self):
+    return "<RemoveComment: [%d,%d]>" % (self.first_line, self.last_line)
+
+
 ## Parses method comments.
 #
 #  @param cursor   Current libclang parser cursor
@@ -206,6 +218,8 @@ def comment_datamember(cursor, comments):
 
   line_num = cursor.location.line
   raw = None
+  prev = None
+  found = False
 
   # Huge overkill
   with open(str(cursor.location.file)) as fp:
@@ -213,9 +227,14 @@ def comment_datamember(cursor, comments):
     for raw in fp:
       cur_line = cur_line + 1
       if cur_line == line_num:
+        found = True
         break
+      prev = raw
+
+  assert found, 'A line that should exist was not found in file' % cursor.location.file
 
   recomm = r'(//(!)|///?)(\[(.*?)\])?<?\s*(.*?)\s*$'
+  recomm_doxyary = r'^\s*///\s*(.*?)\s*$'
 
   mcomm = re.search(recomm, raw)
   if mcomm:
@@ -226,15 +245,13 @@ def comment_datamember(cursor, comments):
 
     col_num = mcomm.start()+1;
 
-    if is_transient:
-      transient_text = Colt('transient ').yellow()
-    else:
-      transient_text = ''
-
-    if array_size is not None:
-      array_text = Colt('arraysize=%s ' % array_size).yellow()
-    else:
-      array_text = ''
+    if array_size is not None and prev is not None:
+      # ROOT arrays with comments already converted to Doxygen have the member description on the
+      # previous line
+      mcomm_doxyary = re.search(recomm_doxyary, prev)
+      if mcomm_doxyary:
+        text = mcomm_doxyary.group(1)
+        comments.append(RemoveComment(line_num-1, line_num-1))
 
     logging.debug('Comment found for member %s' % Colt(member_name).magenta())
 
@@ -245,6 +262,9 @@ def comment_datamember(cursor, comments):
       line_num,
       col_num,
       member_name ))
+
+  else:
+    assert False, 'Regular expression does not match member comment'
 
 
 ## Traverse the AST recursively starting from the current cursor.
@@ -323,25 +343,28 @@ def refactor_comment(comment):
 def rewrite_comments(fhin, fhout, comments):
 
   line_num = 0
-  cur_comment = 0
   in_comment = False
   skip_empty = False
+  comm = None
+  prev_comm = None
 
   rindent = r'^(\s*)'
-
-  if len(comments) > 0:
-    comm = comments[0]
-  else:
-    comm = None
 
   for line in fhin:
 
     line_num = line_num + 1
 
-    if comm and comm.has_comment( line_num ):
+    # Find current comment
+    prev_comm = comm
+    comm = None
+    for c in comments:
+      if c.has_comment(line_num):
+        comm = c
+
+    if comm:
 
       if isinstance(comm, MemberComment):
-        non_comment = line[ 0:comments[cur_comment].first_col-1 ]
+        non_comment = line[ 0:comm.first_col-1 ]
 
         if comm.array_size is not None:
 
@@ -352,7 +375,7 @@ def rewrite_comments(fhin, fhout, comments):
             tt = ''
 
           # Special case: we need multiple lines not to confuse ROOT's C++ parser
-          fhout.write('\n%s/// %s\n%s//%s[%s]\n\n' % (
+          fhout.write('%s/// %s\n%s//%s[%s]\n' % (
             mindent.group(1),
             comm.lines[0],
             non_comment,
@@ -373,40 +396,35 @@ def rewrite_comments(fhin, fhout, comments):
             comm.lines[0]
           ))
 
-        cur_comment = cur_comment + 1
-        if cur_comment < len(comments):
-          comm = comments[cur_comment]
-        else:
-          comm = None
+      elif isinstance(comm, RemoveComment):
+        # Do nothing: just skip line
+        pass
 
-      elif not in_comment:
+      elif prev_comm is None:
+        # Beginning of a new comment block of type Comment
         in_comment = True
 
-        # extract the non-comment part and print it if it exists
-        non_comment = line[ 0:comments[cur_comment].first_col-1 ].rstrip()
+        # Extract the non-comment part and print it if it exists
+        non_comment = line[ 0:comm.first_col-1 ].rstrip()
         if non_comment != '':
           fhout.write( non_comment + '\n' )
 
     else:
+
       if in_comment:
 
+        # We have just exited a comment block of type Comment
         in_comment = False
 
-        # dumping comments
+        # Dump revamped comment, if applicable
         text_indent = ''
-        for i in range(0,comments[cur_comment].indent):
+        for i in range(0,prev_comm.indent):
           text_indent = text_indent + ' '
 
-        for lc in comments[cur_comment].lines:
+        for lc in prev_comm.lines:
           fhout.write( "%s/// %s\n" % (text_indent, lc) );
         fhout.write('\n')
         skip_empty = True
-
-        cur_comment = cur_comment + 1
-        if cur_comment < len(comments):
-          comm = comments[cur_comment]
-        else:
-          comm = None
 
       line_out = line.rstrip('\n')
       if skip_empty:
@@ -502,6 +520,10 @@ def main(argv):
             array_text,
             Colt(c.lines[0]).cyan()
         ))
+
+      elif isinstance(c, RemoveComment):
+
+        logging.debug( Colt('[%d,%d]' % (c.first_line, c.last_line)).green() )
 
       else:
         for l in c.lines:
