@@ -49,4 +49,5 @@
 #pragma link C++ class AliPidPidCorrelationReducedTrack+;
 #pragma link C++ class AliAnalysisTaskPhiEffMc+;
 #pragma link C++ class AliAnalysisTaskPythiaMpi+;
+#pragma link C++ class AliAnalysisTaskDiJetCorrelations+;
 #endif
