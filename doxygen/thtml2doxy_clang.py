@@ -19,9 +19,16 @@
 #
 #  Usage:
 #
-#    `thtml2doxy_clang file1 [file2 [file3...]]`
+#    `thtml2doxy_clang [--stdout|-o] [-d] [--debug=DEBUG_LEVEL] file1 [file2 [file3...]]`
 #
-#  @author Dario Berzano <dario.berzano@cern.ch>
+#  Parameters:
+#
+#   - `--stdout|-o`: output all on standard output instead of writing files in place
+#   - `-d`: enable debug mode (very verbose output)
+#   - `--debug=DEBUG_LEVEL`: set debug level to one of `DEBUG`, `INFO`, `WARNING`, `ERROR`,
+#     `CRITICAL`
+#
+#  @author Dario Berzano, CERN
 #  @date 2014-12-05
 
 
