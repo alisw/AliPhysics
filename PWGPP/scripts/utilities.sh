@@ -605,6 +605,7 @@ copyFileToLocal()
   #supported)
   #copy is "robust" and it is repeated some times in case of failure before
   #giving up (1 is returned in that case)
+  #origin: Dario Berzano, dario.berzano@cern.ch
   src="$1"
   dst="$2"
   ok=0
