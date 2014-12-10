@@ -258,6 +258,7 @@ add_subdirectory(PWGJE)
 add_subdirectory(PWGLF)
 add_subdirectory(PWGPP)
 add_subdirectory(PWGUD)
+add_subdirectory(data)
 
 # Enable SHUTTLE compilation
 # Check if DIMDIR and ODIR are set
@@ -270,3 +271,6 @@ if(SHUTTLE)
 endif(SHUTTLE)
 
 add_subdirectory(ALIROOT)
+
+# Data
+add_subdirectory(data)
