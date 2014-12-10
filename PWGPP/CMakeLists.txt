@@ -274,40 +274,22 @@ install(TARGETS ${MODULE}
 install(FILES ${HDRS} DESTINATION include)
 
 # install macros as needed
-install ( DIRECTORY macros 
-	  DESTINATION PWGPP 
-	  PATTERN ".d"  EXCLUDE 
-	  PATTERN ".so" EXCLUDE)
-install ( DIRECTORY CalibMacros 
-	  DESTINATION PWGPP 
-	  PATTERN ".d"  EXCLUDE 
-	  PATTERN ".so" EXCLUDE)
-install ( DIRECTORY PilotTrain
-	  DESTINATION PWGPP/ 
-	  PATTERN ".d"  EXCLUDE 
-	  PATTERN ".so" EXCLUDE)
-install ( FILES HMPID/AddTaskHmpidQA.C
-	  DESTINATION PWGPP/HMPID)
-install ( FILES T0/AddTaskT0QA.C
-	  DESTINATION PWGPP/T0)
-install ( FILES TOF/AddTaskTOFQA.C
-                TOF/AddTaskTOFqaID.C
-	  DESTINATION PWGPP/TOF)
-install ( FILES TOF/AddTaskTOFQA.C
-	  DESTINATION PWGPP/TOF)
-install ( DIRECTORY TPC/macros
-	  DESTINATION PWGPP/TPC
-	  PATTERN ".C")
-install ( DIRECTORY TRD
-	  DESTINATION PWGPP)
-install ( FILES TRD/TRDPID/macros/AddTaskTRDPIDTree.C
-                TRD/TRDPID/macros/AddTaskTRDPIDmatching.C
-          DESTINATION PWGPP/TRD)
-install ( FILES ZDC/AddTaskZDCQA.C
-	  DESTINATION PWGPP/ZDC)
-install ( FILES PilotTrain/AddTaskMuonQA.C
-  	  DESTINATION PWGPP/PilotTrain/ )
-install ( FILES VZERO/AddTaskVZEROPbPb.C
-          DESTINATION PWGPP/VZERO/ )
+install(DIRECTORY macros DESTINATION PWGPP)
+install(DIRECTORY CalibMacros DESTINATION PWGPP)
+install(DIRECTORY PilotTrain DESTINATION PWGPP)
+install(FILES HMPID/AddTaskHmpidQA.C DESTINATION PWGPP/HMPID)
+install(FILES T0/AddTaskT0QA.C  DESTINATION PWGPP/T0)
+install(FILES TOF/AddTaskTOFQA.C
+              TOF/AddTaskTOFqaID.C
+        DESTINATION PWGPP/TOF)
+install(FILES TOF/AddTaskTOFQA.C DESTINATION PWGPP/TOF)
+install(DIRECTORY TPC/macros DESTINATION PWGPP/TPC PATTERN ".C")
+install(DIRECTORY TRD DESTINATION PWGPP)
+install(FILES TRD/TRDPID/macros/AddTaskTRDPIDTree.C
+            TRD/TRDPID/macros/AddTaskTRDPIDmatching.C
+         DESTINATION PWGPP/TRD)
+install(FILES ZDC/AddTaskZDCQA.C DESTINATION PWGPP/ZDC)
+install(FILES PilotTrain/AddTaskMuonQA.C DESTINATION PWGPP/PilotTrain/ )
+install(FILES VZERO/AddTaskVZEROPbPb.C DESTINATION PWGPP/VZERO/)
 
 message(STATUS "PWGPP enabled")

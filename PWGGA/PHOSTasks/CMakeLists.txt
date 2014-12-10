@@ -134,3 +134,21 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+
+install(FILES
+                CaloCellQA/macros/AddTaskCaloCellsQA.C
+                CaloCellQA/macros/AddTaskPHOSQA.C
+       DESTINATION
+                PWGGA/PHOSTasks/CaloCellQA/macros
+       )
+
+install(FILES
+                PHOS_TriggerQA/macros/AddTaskPHOSTriggerQA.C
+        DESTINATION
+                PWGGA/PHOSTasks/PHOS_TriggerQA/macros/
+       )
+
+install(FILES
+                PHOS_PbPbQA/macros/AddTaskPHOSPbPb.C
+        DESTINATION PWGGA/PHOSTasks/PHOS_PbPbQA/macros/
+       )
