@@ -3002,7 +3002,7 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	
 	// main logbook
 	TString sqlQuery;
-	sqlQuery.Form("SELECT DAQ_time_start, run_type, detectorMask, L3_magnetCurrent, Dipole_magnetCurrent,beamType FROM logbook WHERE run = %d", run);
+	sqlQuery.Form("SELECT DAQ_time_start, run_type, detectorMask, L3_magnetCurrent, Dipole_magnetCurrent,beamType, DAQ_time_end FROM logbook WHERE run = %d", run);
 	TSQLResult* result = server->Query(sqlQuery);
 	if (!result)
 		{
@@ -3031,7 +3031,10 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	TString l3CurrentString(row->GetField(3));
 	TString dipoleCurrentString(row->GetField(4));
 	TString beamTypeString(row->GetField(5));
+	TString timeEndString(row->GetField(6));
+
 	time_t timeStart = (time_t)(timeStartString.Atoi());
+	time_t timeEnd   = (time_t)(timeEndString.Atoi());
 	UInt_t detectorMask = (UInt_t)(detectorMaskString.Atoi());
 	Float_t l3Current = (Float_t)(TMath::Abs(l3CurrentString.Atof()));
 	Float_t dipoleCurrent = (Float_t)(TMath::Abs(dipoleCurrentString.Atof()));
@@ -3043,6 +3046,7 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	
 	AliGRPObject * grpObj = new AliGRPObject();
 	grpObj->SetTimeStart(timeStart); 
+	grpObj->SetTimeStart((timeEnd!=0 && timeEnd>timeStart) ? timeEnd : timeStart+24*3600 ); 
 	grpObj->SetRunType((TString)(row->GetField(1)));
 	grpObj->SetDetectorMask(detectorMask);
 	grpObj->SetL3Current(l3Current,(AliGRPObject::Stats)0);
