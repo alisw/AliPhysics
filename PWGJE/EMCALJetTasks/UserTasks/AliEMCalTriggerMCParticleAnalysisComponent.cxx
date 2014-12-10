@@ -94,18 +94,4 @@ void AliEMCalTriggerMCParticleAnalysisComponent::Process(const AliEMCalTriggerEv
   }
 }
 
-//______________________________________________________________________________
-TAxis* AliEMCalTriggerMCParticleAnalysisComponent::DefineAxis(const char* name, const AliEMCalTriggerBinningDimension* binning) {
-  /*
-   * Create and define axis
-   *
-   * @param name: Name of the axis
-   * @param binning: binning information
-   * @return: the new axis
-   */
-  TAxis *result = new TAxis(binning->GetNumberOfBins(), binning->GetBinLimits());
-  result->SetName(name);
-  return result;
-}
-
 } /* namespace EMCalTriggerPtAnalysis */

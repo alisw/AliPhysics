@@ -4,12 +4,16 @@
  * See cxx source for full Copyright notice                               */
 
 // Author: Markus Fasel
+#include <vector>
+#include <string>
 #include <TNamed.h>
 #include "AliEMCalHistoContainer.h"
 
 namespace EMCalTriggerPtAnalysis {
 
+class AliEMCalTriggerAnaTriggerDecision;
 class AliEMCalTriggerBinningComponent;
+class AliEMCalTriggerBinningDimension;
 class AliEMCalTriggerEventData;
 class AliEMCalTriggerKineCuts;
 
@@ -25,11 +29,17 @@ public:
   THashList *GetHistList() const { return fHistos->GetListOfHistograms(); }
   void SetBinning(const AliEMCalTriggerBinningComponent * const binning) { fBinning = binning; }
   void SetKineCuts(const AliEMCalTriggerKineCuts * const cuts) { fKineCuts = cuts; }
+  void SetTriggerDecision(const AliEMCalTriggerAnaTriggerDecision *trigger) { fTriggerDecision = trigger; }
 
 protected:
+  TAxis *DefineAxis(const char *name, const AliEMCalTriggerBinningDimension *binning);
+  TAxis *DefineAxis(const char *name, int nbins, double min, double max);
+  void GetMachingTriggerNames(std::vector<std::string> &triggernames, Bool_t usePatches);
+
   AliEMCalHistoContainer                      *fHistos;
   const AliEMCalTriggerBinningComponent       *fBinning;
   const AliEMCalTriggerKineCuts               *fKineCuts;
+  const AliEMCalTriggerAnaTriggerDecision     *fTriggerDecision;
 
   ClassDef(AliEMCalTriggerTracksAnalysisComponent, 1)
 };

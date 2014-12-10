@@ -22,12 +22,15 @@
  */
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
+#include "AliInputEventHandler.h"
+#include "AliVEvent.h"
+
+#include "AliEMCalTriggerAnaTriggerDecision.h"
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerBinningFactory.h"
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerTaskGroup.h"
 #include "AliAnalysisTaskPtEMCalTriggerV1.h"
-#include "AliVEvent.h"
 
 ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1)
 
@@ -106,10 +109,15 @@ Bool_t AliAnalysisTaskPtEMCalTriggerV1::Run() {
    * 2nd loop over task groups and run them
    */
   AliEMCalTriggerEventData *event = BuildEvent();
+  AliEMCalTriggerAnaTriggerDecision triggerDecision;
+  triggerDecision.Create(event);
+  triggerDecision.SetIsMinBias(fInputHandler->IsEventSelected() & AliVEvent::kINT7);
   TIter groupIter(fTaskGroups);
   AliEMCalTriggerTaskGroup *mygroup(NULL);
-  while((mygroup = dynamic_cast<AliEMCalTriggerTaskGroup *>(groupIter())))
+  while((mygroup = dynamic_cast<AliEMCalTriggerTaskGroup *>(groupIter()))){
+    mygroup->SetTriggerDecision(&triggerDecision);
     mygroup->Process(event);
+  }
 
   delete event;
 
