@@ -1,12 +1,12 @@
 #ifndef ALIEMCALPTTASKTRACKSELECTIONESD_H_
 #define ALIEMCALPTTASKTRACKSELECTIONESD_H_
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 // Author: Markus Fasel
 
-#include <AliEMCalPtTaskVTrackSelection.h>
 #include <AliESDtrackCuts.h>
+#include "AliEMCalPtTaskVTrackSelection.h"
 
 class AliVTrack;
 

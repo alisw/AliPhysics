@@ -1,6 +1,7 @@
+
 #if !defined (__CINT__) || defined (__MAKECINT__)
 #include "AliAnalysisManager.h"
-#include "AliAnalysisTaskPtEMCalTrigger.h"
+#include <Tracks/AliAnalysisTaskPtEMCalTrigger.h>
 #include "AliESDtrackCuts.h"
 #include <TList.h>
 #include <TString.h>

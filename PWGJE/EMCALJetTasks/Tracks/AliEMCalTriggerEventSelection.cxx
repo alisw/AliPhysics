@@ -18,10 +18,10 @@
  *
  *   Author: Markus Fasel
  */
+#include "AliEMCalTriggerEventSelection.h"
+#include "AliEMCalTriggerEventData.h"
 #include <TString.h>
 #include "AliAnalysisUtils.h"
-#include "AliEMCalTriggerEventData.h"
-#include "AliEMCalTriggerEventSelection.h"
 #include "AliVEvent.h"
 
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerEventSelection)

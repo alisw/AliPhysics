@@ -26,11 +26,12 @@
 #include "AliVEvent.h"
 #include "AliVVertex.h"
 
-#include "AliEMCalHistoContainer.h"
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerKineCuts.h"
+#include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerMCParticleAnalysisComponent.h"
+
 
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerMCParticleAnalysisComponent)
 

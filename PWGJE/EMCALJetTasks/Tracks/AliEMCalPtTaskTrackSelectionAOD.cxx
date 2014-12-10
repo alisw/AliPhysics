@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -28,7 +28,7 @@
 #include <AliAODTrack.h>
 #include <AliESDtrack.h>
 #include <AliPicoTrack.h>
-#include <AliEMCalPtTaskTrackSelectionAOD.h>
+#include "AliEMCalPtTaskTrackSelectionAOD.h"
 
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD)
 

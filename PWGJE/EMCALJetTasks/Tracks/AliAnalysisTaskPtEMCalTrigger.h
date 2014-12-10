@@ -1,15 +1,15 @@
 #ifndef ALIANALYSISTASKPTEMCALTRIGGER_H_
 #define ALIANALYSISTASKPTEMCALTRIGGER_H_
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 // Author: Markus Fasel
 
 #include "AliAnalysisTaskEmcalJet.h"
-#include "AliCutValueRange.h"
 #include "AliESDtrackCuts.h"
 #include <TClonesArray.h>
 #include <TList.h>
+#include "AliCutValueRange.h"
 
 class TArrayD;
 class Axis;

@@ -1,5 +1,10 @@
 #ifndef ALIEMCALTRIGGERANATRIGGERDECISION_H
 #define ALIEMCALTRIGGERANATRIGGERDECISION_H
+/* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+// Author: Markus Fasel
+#include <TObject.h>
 
 class TClonesArray;
 class TString;

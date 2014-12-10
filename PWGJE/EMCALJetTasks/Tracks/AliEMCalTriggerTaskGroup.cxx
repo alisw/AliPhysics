@@ -21,9 +21,9 @@
  */
 #include <THashList.h>
 #include <TList.h>
-
 #include "AliEMCalTriggerTracksAnalysisComponent.h"
 #include "AliEMCalTriggerEventSelection.h"
+
 #include "AliEMCalTriggerTaskGroup.h"
 
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup)

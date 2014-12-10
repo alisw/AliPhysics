@@ -20,16 +20,16 @@
  *
  *   Author: Markus Fasel
  */
-#include "AliJetContainer.h"
-#include "AliParticleContainer.h"
 #include "AliInputEventHandler.h"
-#include "AliVEvent.h"
+#include "AliParticleContainer.h"
+#include "AliJetContainer.h"
 
-#include "AliEMCalTriggerAnaTriggerDecision.h"
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerBinningFactory.h"
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerTaskGroup.h"
+#include "AliEMCalTriggerAnaTriggerDecision.h"
+#include "AliEMCalHistoContainer.h"
 #include "AliAnalysisTaskPtEMCalTriggerV1.h"
 
 ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1)
