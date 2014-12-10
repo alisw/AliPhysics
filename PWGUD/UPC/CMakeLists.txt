@@ -100,3 +100,6 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+
+# Install macros
+install(FILES AddTaskUpcPsi2s.C DESTINATION PWGUD/UPC)

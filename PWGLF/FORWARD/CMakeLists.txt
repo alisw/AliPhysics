@@ -210,43 +210,26 @@ add_custom_target( install-PWGLFforward2.par
 install ( DIRECTORY analysis2/scripts 
 	  DESTINATION PWGLF/FORWARD/analysis2 
 	  USE_SOURCE_PERMISSIONS
-	  PATTERN "*~"    EXCLUDE
-	  PATTERN ".svn"  EXCLUDE
-	  PATTERN "*.d"   EXCLUDE 
-	  PATTERN "*.so"  EXCLUDE)
-
+	  PATTERN "*~"    EXCLUDE)
+	  
 # install QA scripts 
 install ( DIRECTORY analysis2/qa
 	  DESTINATION PWGLF/FORWARD/analysis2 
 	  USE_SOURCE_PERMISSIONS
-	  PATTERN "*~"    EXCLUDE
-	  PATTERN ".svn"  EXCLUDE
-	  PATTERN "*.d"   EXCLUDE 
-	  PATTERN "*.so"  EXCLUDE)
-
+	  PATTERN "*~"    EXCLUDE)
 # install correction scripts 
 install ( DIRECTORY analysis2/corrs
 	  DESTINATION PWGLF/FORWARD/analysis2 
-	  PATTERN "*~"    EXCLUDE
-	  PATTERN ".svn"  EXCLUDE
-	  PATTERN "*.d"   EXCLUDE 
-	  PATTERN "*.so"  EXCLUDE)
-
+	  PATTERN "*~"    EXCLUDE)
 # install trains 
 install ( DIRECTORY analysis2/trains 
 	  DESTINATION PWGLF/FORWARD/analysis2 
-	  PATTERN "*~"   EXCLUDE
-	  PATTERN ".svn" EXCLUDE
-	  PATTERN "*.d"  EXCLUDE 
-	  PATTERN "*.so" EXCLUDE)
-
+	  PATTERN "*~"   EXCLUDE)
 # install trains 
 install ( DIRECTORY trains 
 	  DESTINATION PWGLF/FORWARD 
 	  FILES_MATCHING PATTERN "*.C"
-	  PATTERN "*~"        EXCLUDE
-	  PATTERN ".svn"      EXCLUDE)
-
+	  PATTERN "*~"        EXCLUDE)
 # Install other scripts
 install ( FILES analysis2/AddTaskCentraldNdeta.C
   		analysis2/AddTaskCentralMCCorr.C
@@ -304,11 +287,6 @@ install ( FILES analysis2/Run.sh
 
 # install sim 
 install ( DIRECTORY analysis2/sim 
-         DESTINATION PWGLF/FORWARD/analysis2 
-         PATTERN "*~"   EXCLUDE
-         PATTERN ".svn" EXCLUDE
-         PATTERN "*.d"  EXCLUDE 
-         PATTERN "*.so" EXCLUDE)
-       
+         DESTINATION PWGLF/FORWARD/analysis2)
 
 # --------------------------------------------------------------------

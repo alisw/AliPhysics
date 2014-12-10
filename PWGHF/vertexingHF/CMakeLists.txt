@@ -129,15 +129,15 @@ install(TARGETS ${MODULE}
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
 
-install ( FILES AliAODRecoDecayHF.h 
-  	  AliAODRecoDecayHF2Prong.h
-  	  AddD2HTrain.C 
-  	  ConfigVertexingHF.C 
-  	  ConfigVertexingHF_highmult.C 
-          DESTINATION PWGHF/vertexingHF/ )
+install(FILES
+            AliAODRecoDecayHF.h
+            AliAODRecoDecayHF2Prong.h
+            AddD2HTrain.C
+            ConfigVertexingHF.C
+            ConfigVertexingHF_highmult.C
+        DESTINATION 
+            PWGHF/vertexingHF/)
 
-install ( DIRECTORY macros
-          DESTINATION PWGHF/vertexingHF/
-          PATTERN ".d"  EXCLUDE
-          PATTERN ".so" EXCLUDE
-          PATTERN ".svn" EXCLUDE)
+install(DIRECTORY
+            macros
+        DESTINATION PWGHF/vertexingHF/)

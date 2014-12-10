@@ -109,3 +109,8 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+
+install(FILES macros/QA/AddTaskCalorimeterQA.C 
+              macros/QA/AddTaskPi0IMGammaCorrQA.C
+        DESTINATION PWGGA/CaloTrackCorrelations/macros/QA/
+       )
