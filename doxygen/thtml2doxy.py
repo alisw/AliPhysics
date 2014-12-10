@@ -612,8 +612,9 @@ def main(argv):
 
   # Parse command-line options
   output_on_stdout = False
+  include_flags = []
   try:
-    opts, args = getopt.getopt( argv, 'od', [ 'debug=', 'stdout' ] )
+    opts, args = getopt.getopt( argv, 'odI:', [ 'debug=', 'stdout' ] )
     for o, a in opts:
       if o == '--debug':
         log_level = getattr( logging, a.upper(), None )
@@ -622,8 +623,13 @@ def main(argv):
       elif o == '-d':
         log_level = logging.DEBUG
       elif o == '-o' or o == '--stdout':
-        logging.debug('Output on stdout instead of replacing original files')
         output_on_stdout = True
+      elif o == '-I':
+        if os.path.isdir(a):
+          include_flags.extend( [ '-I', a ] )
+        else:
+          logging.fatal('Include directory not found: %s' % Colt(a).magenta())
+          return 2
       else:
         assert False, 'Unhandled argument'
   except getopt.GetoptError as e:
@@ -655,7 +661,9 @@ def main(argv):
 
     logging.info('Input file: %s' % Colt(fn).magenta())
     index = clang.cindex.Index.create()
-    translation_unit = index.parse(fn, args=['-x', 'c++'])
+    clang_args = [ '-x', 'c++' ]
+    clang_args.extend( include_flags )
+    translation_unit = index.parse(fn, args=clang_args)
 
     comments = []
     traverse_ast( translation_unit.cursor, fn, comments )
