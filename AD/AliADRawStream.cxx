@@ -41,8 +41,8 @@ AliADRawStream::AliADRawStream(AliRawReader* rawReader) :
   // select the raw data corresponding to
   // the AD detector id
   fRawReader->Reset();
-  AliDebug(1,Form("Selecting raw data for detector %d",AliDAQ::DetectorID("VZERO")));
-  fRawReader->Select("VZERO");
+  AliDebug(1,Form("Selecting raw data for detector %d",AliDAQ::DetectorID("AD")));
+  fRawReader->Select("AD");
 
   // Initalize the containers
   for(Int_t i = 0; i < kNChannels; i++) {
@@ -126,7 +126,7 @@ Bool_t AliADRawStream::Next()
   Int_t iCIU=0;
   for (Int_t  iV0CIU = 0; iV0CIU < 8; iV0CIU++) {
     
-    if(iV0CIU != 0 || iV0CIU != 6) {
+    if(iV0CIU != 2 || iV0CIU != 5) {
       for(Int_t iWord = 0; iWord<182; iWord++) GetNextWord();
       continue;
       	}
