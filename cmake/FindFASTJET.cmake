@@ -60,22 +60,51 @@ if(FASTJET)
     if(error)
         message(FATAL_ERROR "Error retrieving FastJet compilation flags : ${error}")
     endif(error)
+    
+    # Extracting the include path from the CXX flags
+    set(FASTJET_INCLUDE_DIR)
+    if(FASTJET_CXXFLAGS)
+	string(STRIP ${FASTJET_CXXFLAGS} FASTJET_CXXFLAGS)
+	string(REGEX MATCHALL  "[-][I]([^ ])+" incfolders ${FASTJET_CXXFLAGS})
+	
+	foreach(incfolder ${incfolders})
+	    string(REPLACE "-I" "" incfolder ${incfolder})
+	    set(FASTJET_INCLUDE_DIR ${incfolder} ${FASTJET_INCLUDE_DIR})
+	endforeach()
+    endif(FASTJET_CXXFLAGS)
 
     # Extracting libraries and linking options
     execute_process(COMMAND ${FASTJET_CONFIG} --libs OUTPUT_VARIABLE FASTJET_CONFIGLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error retrieving FastJet libs : ${error}")
     endif(error)
-    string(REGEX MATCHALL "[-][l]([^ ])+" FASTJET_CONFIGLIBS "${FASTJET_CONFIGLIBS}")
+    
+    # Extracting the list of needed libraries during linking and the linking folders
+    set(FASTJET_LIBS)
+    set(FASTJET_LIBS_DIR)
+    if(FASTJET_CONFIGLIBS)
+	string(STRIP ${FASTJET_CONFIGLIBS} FASTJET_CONFIGLIBS)
+    	
+	# Extracting the list of libraries needed during linking
+	# -l strings
+	string(REGEX MATCHALL "[-][l]([^ ])+" fjlibs "${FASTJET_CONFIGLIBS}")
+    
+	foreach(flib ${fjlibs})
+    	    string(REPLACE "-l" "" flib "${flib}")
+    	    set(FASTJET_LIBS ${FASTJET_LIBS} ${flib})
+	endforeach()
 
-    foreach(flib ${FASTJET_CONFIGLIBS})
-        string(REPLACE "-l" "" flib "${flib}")
-        set(FASTJET_LIBS ${FASTJET_LIBS} ${flib})
-    endforeach()
+	# Extracting the list of libraries folders
+	# -L strings
+	string(REGEX MATCHALL "[-][L]([^ ])+" fjlibdirs "${FASTJET_CONFIGLIBS}")
+	
+	foreach(fjlibdir ${fjlibdirs})
+	    string(REPLACE "-L" "" fjlibdir ${fjlibdir})
+	    set(FASTJET_LIBS_DIR ${fjlibdir} ${FASTJET_LIBS_DIR})
+	endforeach()
+    endif()
 
     set(FASTJET_FOUND TRUE)
-    set(FASTJET_INCLUDE_DIR ${FASTJET}/include)
-    set(FASTJET_LIBS_DIR ${FASTJET}/lib)
     set(FASTJET_DEFINITIONS "-DHAVE_FASTJET")
     message(STATUS "FastJet ${FASTJET_VERSION_MAJOR}.${FASTJET_VERSION_MINOR}.${FASTJET_VERSION_PATCH} installation found: ${FASTJET}")
 else()
