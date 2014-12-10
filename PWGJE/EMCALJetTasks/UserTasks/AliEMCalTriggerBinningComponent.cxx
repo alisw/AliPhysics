@@ -25,7 +25,7 @@ ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerBinningComponent)
 
 namespace EMCalTriggerPtAnalysis {
 
-  //______________________________________________________________________________
+//______________________________________________________________________________
 AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningComponent() :
   TObject(),
   fDimensions(NULL)

@@ -111,4 +111,19 @@ void AliEMCalTriggerTaskGroup::AddAnalysisComponent(AliEMCalTriggerTracksAnalysi
   fAnalysisComponents->Add(analysis);
 }
 
+//______________________________________________________________________________
+void EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup::SetTriggerDecision(
+    const AliEMCalTriggerAnaTriggerDecision* trigger) {
+  /*
+   * Forward trigger decision to the analysis components
+   *
+   * @param trigger: the trigger decision
+   */
+  AliEMCalTriggerTracksAnalysisComponent *myana(NULL);
+  TIter compIter(fAnalysisComponents);
+  while((myana = dynamic_cast<AliEMCalTriggerTracksAnalysisComponent *>(compIter())))
+    myana->SetTriggerDecision(trigger);
+}
+
+
 } /* namespace EMCalTriggerPtAnalysis */

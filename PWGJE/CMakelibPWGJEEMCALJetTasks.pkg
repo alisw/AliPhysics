@@ -106,10 +106,13 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliEMCalTriggerEventSelection.cxx
  EMCALJetTasks/UserTasks/AliEMCalTriggerTaskGroup.cxx
  EMCALJetTasks/UserTasks/AliEMCalTriggerTracksAnalysisComponent.cxx
- EMCALJetTasks/UserTasks/AliEMCALTriggerMCParticleAnalysisComponent.cxx
+ EMCALJetTasks/UserTasks/AliEMCalTriggerMCParticleAnalysisComponent.cxx
+ EMCALJetTasks/UserTasks/AliEMCalTriggerClusterAnalysisComponent.cxx
+ EMCALJetTasks/UserTasks/AliEMCalTriggerRecTrackAnalysisComponent.cxx
  EMCALJetTasks/UserTasks/AliEMCalTriggerBinningComponent.cxx
  EMCALJetTasks/UserTasks/AliEMCalTriggerBinningFactory.cxx
  EMCALJetTasks/UserTasks/AliEMCalTriggerKineCuts.cxx
+ EMCALJetTasks/UserTasks/AliEMCalTriggerAnaTriggerDecision.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskPtEMCalTriggerV1.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalTriggerTreeWriter.cxx
 )

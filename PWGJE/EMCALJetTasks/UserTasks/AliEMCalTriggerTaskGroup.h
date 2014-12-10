@@ -9,6 +9,7 @@
 
 namespace EMCalTriggerPtAnalysis {
 
+class AliEMCalTriggerAnaTriggerDecision;
 class AliEMCalTriggerBinningComponent;
 class AliEMCalTriggerEventSelection;
 class AliEMCalTriggerTracksAnalysisComponent;
@@ -21,6 +22,7 @@ public:
 
   void SetEventSelection(const AliEMCalTriggerEventSelection *sel){ fEventSelection = sel; }
   void SetGlobalBinning(const AliEMCalTriggerBinningComponent *const binning) { fBinning = binning; }
+  void SetTriggerDecision(const AliEMCalTriggerAnaTriggerDecision *trigger);
   void AddAnalysisComponent(AliEMCalTriggerTracksAnalysisComponent * const analysis);
 
   TList * InitialiseAnalysisComponents();

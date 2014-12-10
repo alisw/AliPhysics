@@ -18,6 +18,10 @@
  *
  *   Author: Markus Fasel
  */
+#include <TAxis.h>
+
+#include "AliEMCalTriggerAnaTriggerDecision.h"
+#include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerTracksAnalysisComponent.h"
 
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerTracksAnalysisComponent)
@@ -29,7 +33,8 @@ AliEMCalTriggerTracksAnalysisComponent::AliEMCalTriggerTracksAnalysisComponent()
   TNamed(),
   fHistos(NULL),
   fBinning(NULL),
-  fKineCuts(NULL)
+  fKineCuts(NULL),
+  fTriggerDecision(NULL)
 {
   /*
    * Dummy (I/O) constructor
@@ -49,7 +54,8 @@ AliEMCalTriggerTracksAnalysisComponent::AliEMCalTriggerTracksAnalysisComponent(c
   TNamed(name,""),
   fHistos(NULL),
   fBinning(NULL),
-  fKineCuts(NULL)
+  fKineCuts(NULL),
+  fTriggerDecision(NULL)
 {
   /*
    * Main constructor, to be called by the user
@@ -66,6 +72,73 @@ void AliEMCalTriggerTracksAnalysisComponent::CreateHistos() {
    */
   fHistos = new AliEMCalHistoContainer(Form("Histos%s", GetName()));
   fHistos->ReleaseOwner();
+}
+
+//______________________________________________________________________________
+TAxis* AliEMCalTriggerTracksAnalysisComponent::DefineAxis(const char* name, const AliEMCalTriggerBinningDimension* binning) {
+  /*
+   * Create and define axis
+   *
+   * @param name: Name of the axis
+   * @param binning: binning information
+   * @return: the new axis
+   */
+  TAxis *result = new TAxis(binning->GetNumberOfBins(), binning->GetBinLimits());
+  result->SetName(name);
+  return result;
+}
+
+//______________________________________________________________________________
+TAxis* AliEMCalTriggerTracksAnalysisComponent::DefineAxis(const char* name, int nbins, double min, double max) {
+  /*
+   * Create and define axis
+   *
+   * @param name: Name of the axis
+   * @param nbins: number of bins
+   * @param min: min. range
+   * @param max: max. range
+   * @return: the new axis
+   */
+  TAxis *result = new TAxis(nbins, min, max);
+  result->SetName(name);
+  return result;
+}
+
+//______________________________________________________________________________
+void AliEMCalTriggerTracksAnalysisComponent::GetMachingTriggerNames(std::vector<std::string>& triggernames, Bool_t usePatches) {
+  /*
+   * Get a set of names of trigger strings that is matching with the trigger decision.
+   *
+   * @param triggernames: output container for selected trigger names
+   * @param usePatches: determines whether we use the trigger decision from patches
+   */
+  triggernames.clear();
+  if(!fTriggerDecision) return;
+  if(fTriggerDecision->IsMinBias()) triggernames.push_back("MinBias");
+  if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJHigh, usePatches)){
+    triggernames.push_back("EMCJHigh");
+    if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCGHigh, usePatches))
+      triggernames.push_back("EMCHighBoth");
+    else
+      triggernames.push_back("EMCHighJetOnly");
+  }
+  if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJLow, usePatches)){
+    triggernames.push_back("EMCJLow");
+    if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCGLow, usePatches))
+      triggernames.push_back("EMCLowBoth");
+    else
+      triggernames.push_back("EMCLowJetOnly");
+  }
+  if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCGHigh, usePatches)){
+    triggernames.push_back("EMCGHigh");
+    if(!fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJHigh, usePatches))
+      triggernames.push_back("EMCHighGammaOnly");
+  }
+  if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCGLow, usePatches)){
+    triggernames.push_back("EMCGLow");
+    if(!fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJLow, usePatches))
+      triggernames.push_back("EMCLowGammaOnly");
+  }
 }
 
 } /* namespace EMCalTriggerPtAnalysis */

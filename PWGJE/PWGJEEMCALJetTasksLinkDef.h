@@ -99,7 +99,10 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerBinningDimension+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerBinningComponent+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerKineCuts+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecision+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerMCParticleAnalysisComponent+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerClusterAnalysisComponent+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerTreeWriter+;
 
 #ifdef HAVE_FASTJET

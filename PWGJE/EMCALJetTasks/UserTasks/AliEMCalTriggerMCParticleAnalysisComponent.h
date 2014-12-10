@@ -24,7 +24,6 @@ public:
   virtual void Process(const AliEMCalTriggerEventData * const data);
 
 protected:
-  TAxis *DefineAxis(const char *name, const AliEMCalTriggerBinningDimension *binning);
 
   ClassDef(AliEMCalTriggerMCParticleAnalysisComponent, 1);
 };
