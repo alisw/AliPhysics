@@ -52,6 +52,9 @@ void AddAliEbyENetChargeFluctuationTask(const Char_t *taskname="TOFTPC",
     return NULL;
   }
 
+
+  Printf("============================== I am here very great ================================");
+
   if (isMC) task->SetIsMC();
 
   Int_t sysii = sysType;

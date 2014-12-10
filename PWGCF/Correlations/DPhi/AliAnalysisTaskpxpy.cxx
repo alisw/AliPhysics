@@ -1063,8 +1063,8 @@ void  AliAnalysisTaskpxpy::UserExec(Option_t */*option*/)
   float trkCentr = -999.;
   float spdCentr = -999.;
   
-  float vertexX  = -999;
-  float vertexY  = -999;
+  //float vertexX  = -999;
+  //float vertexY  = -999;
   float vertexZ  = -999;
   //float vertexXY = -999;
   //float dcaZ     = -999;
@@ -1128,8 +1128,8 @@ void  AliAnalysisTaskpxpy::UserExec(Option_t */*option*/)
 	    {
 	      if(fCov[5] != 0)
 		{
-		  vertexX = vertex->GetX();
-		  vertexY = vertex->GetY();
+		  //vertexX = vertex->GetX();
+		  //vertexY = vertex->GetY();
 		  vertexZ = vertex->GetZ();
 		  
 		  if(TMath::Abs(vertexZ) > 10)
@@ -1190,12 +1190,13 @@ void  AliAnalysisTaskpxpy::UserExec(Option_t */*option*/)
 	  charge = int(q);
 	  phi    = t->Phi();
 	  pt     = t->Pt(); 
-	  px     = t->Px();
-	  py     = t->Py();
+	  //px     = t->Px();
+	  //py     = t->Py();
 	  pz     = t->Pz();
 	  eta    = t->Eta();
 	  dedx   = t->GetTPCsignal();
-	  	  
+	  px     = pt*cos(phi);
+          py     = pt*sin(phi);
 	  //for Global tracks
 	  Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kElectron));
 	  Double_t nsigmapion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kPion));

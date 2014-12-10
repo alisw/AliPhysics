@@ -16,6 +16,8 @@
 #include "TProfile2D.h"
 #include "TRandom3.h"
 
+class TList;
+
 class AliESDtrack;
 class AliMCEvent;
 class AliStack;
@@ -29,7 +31,6 @@ class AliAODTrack;
 class AliAODMCParticle;
 class AliMCParticle;
 class TClonesArray;
-class TList;
 class AliHelperPID;
 
 #include "AliAnalysisTaskSE.h"
@@ -38,7 +39,7 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
 
  public:
 
-  AliEbyENetChargeFluctuationTask( const char *name = "HigherMomentAnalysis");
+  AliEbyENetChargeFluctuationTask( const char *name = "NetChargeFluctuation");
   virtual ~AliEbyENetChargeFluctuationTask();
   
   virtual void   UserCreateOutputObjects();
@@ -60,7 +61,7 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   void SetNSubSamples(Int_t i) {fNSubSamples = i;}
   void Debug() {fDebug = kTRUE;}
   void SetIsAOD() {fIsAOD = kTRUE;}
-  void SetAnal(Int_t i);
+  void SetAnal(Int_t i);// {fAnalType = i; };
   void SetHelperPID(AliHelperPID* pid){ fHelperPID = pid; }
  
  
@@ -135,74 +136,74 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   
   /* Global Members Private */
 
-  AliInputEventHandler *fInputEventHandler; //! 
-  AliESDEvent          *fESD;               //! 
-  AliAODEvent          *fAOD;               //! 
-  AliMCEvent           *fMCEvent;           //! 
-  AliStack             *fStack;             //! 
-  AliAODInputHandler   *fAODHandler;        //! 
-  AliESDInputHandler   *fESDHandler;        //! 
-  AliStack             *fMCStack;           //! 
-  TClonesArray         *fArrayMC;           //! 
-  AliESDtrackCuts      *fESDtrackCuts;      //!
+  AliInputEventHandler *fInputEventHandler; // Input Handler
+  AliESDEvent          *fESD;               // Current ESD events
+  AliAODEvent          *fAOD;               // Current AOD events
+  AliMCEvent           *fMCEvent;           // Current MC Event
+  AliStack             *fStack;             // Stak tree
+  AliAODInputHandler   *fAODHandler;        // AOD handler
+  AliESDInputHandler   *fESDHandler;        // ESD handler
+  AliStack             *fMCStack;           // MC Stack
+  TClonesArray         *fArrayMC;           // AOD MC stack
+  AliESDtrackCuts      *fESDtrackCuts;      // ESD Track Cuts
 
-  TList     *fQaList;                       //! Tree of QA
-  TList     *fPhyList;                      //! For Analysis
-  TList     *fDcaList;                      //! dca for Both Data and MC 
-  TList     *fEffList;                      //! Correction List
+  TList     *fQaList;                       // Tree of QA
+  TList     *fPhyList;                      // For Analysis
+  TList     *fDcaList;                      // dca for Both Data and MC 
+  TList     *fEffList;                      // Correction List
 
-  Int_t      fSystemType;                   //! "pp", "pA", "AA"
-  TString    fCentralityEstimator;          //! "V0M","TRK","TKL","ZDC","FMD"  
-
-  Double_t   fVxMax;                        //! X vertex  Range
-  Double_t   fVyMax;                        //! Y vertex Range
-  Double_t   fVzMax;                        //! Z vertex Range
-  Double_t   fPhiMin;                       //! Phi Minimum
-  Double_t   fPhiMax;                       //! Phi Maximum
-  Double_t   fPtMin;                        //! pT Minimum
-  Double_t   fPtMax;                        //! Pt Maximum
-  Double_t   fEtaMin;                       //! Eta Minimum
-  Double_t   fEtaMax;                       //! Eta Maximum
-  Double_t   fRapMin;                       //! Rapidity Minimum
-  Double_t   fRapMax;                       //! Rapidity Maximum
-  Double_t   fCentralityBin;                //  Centrality bin of current event within max centrality bin
-  Double_t   fCentralityPercentile;         //  Centrality percentile of current event
-  Double_t **fNp;                           //  Array of particle/anti-particle counts
-  Double_t **fMCNp;                         //  Array of MC particle/anti-particle counts
-  Double_t **fRedFactp;                     //  Array of particle/anti-particle reduced factorial
-  Double_t   fCurGen[8];                    // 
-  Double_t   fCurGenD[8];                   // 
-  Double_t   fCurRecD[7];                   // 
-  Double_t   fCurRec[5];                    // 
-  Double_t   fCurCont[6];                   //
+  Int_t      fSystemType;                   // Translated to Int_t 0:"pp", 1:"pA", 2:"AA"
+  TString    fCentralityEstimator;          // "V0M","TRK","TKL","ZDC","FMD"  
  
-  Float_t    fMinTrackLengthMC;             //!  Min track length for MC tracks
-  Int_t      fAODtrackCutBit;               //!
-  Int_t      fNSubSamples;                  //!  N subsamples
-  Int_t      fSubSampleIdx;                 //  Subsample idx for current event
-  Int_t      fOrder;                        //!  Max order of higher order distributions
-  Int_t      fNTriggers;                    //!  N triggers used
-  Int_t      fHEventStatMax;                //!  Max N cuts to be included in HEventSta
-  Int_t      fNCentralityBins;              //!  N centrality bins used
-  Int_t      fCentralityBinMax;             //!
-  Int_t      fNTracks;                      //
+  Double_t   fVxMax;                        // X vertex  Range
+  Double_t   fVyMax;                        // Y vertex Range
+  Double_t   fVzMax;                        // Z vertex Range
+  Double_t   fPhiMin;                       // Phi Minimum
+  Double_t   fPhiMax;                       // Phi Maximum
+  Double_t   fPtMin;                        // pT Minimum
+  Double_t   fPtMax;                        // Pt Maximum
+  Double_t   fEtaMin;                       // Eta Minimum
+  Double_t   fEtaMax;                       // Eta Maximum
+  Double_t   fRapMin;                       // Rapidity Minimum
+  Double_t   fRapMax;                       // Rapidity Maximum
+  Double_t   fCentralityBin;                // Centrality bin of current event within max centrality bin
+  Double_t   fCentralityPercentile;         // Centrality percentile of current event
+  Double_t   fNp[4][2];                     // Array of particle/anti-particle counts
+  Double_t   fMCNp[4][2];                   // Array of MC particle/anti-particle counts
+  Double_t   fRedFactp[9][2];               // Array of particle/anti-particle reduced factorial
+  Double_t   fCurGen[8];                    // Current Gen Track
+  Double_t   fCurGenD[8];                   // Current info on DGen
+  Double_t   fCurRecD[7];                   // Current DRec
+  Double_t   fCurRec[5];                    // Current Rec info
+  Double_t   fCurCont[6];                   // Current Contamination
 
-  Bool_t     fIsMC;                         //!  Is MC event 
-  Bool_t     fIsRatio;                      //!  Is Ratio
-  Bool_t     fIsAOD;                        //!  analysis mode: 0 = ESDs  | 1 = AODs
-  Bool_t     fIsSub;                        //!  analysis mode SS  
-  Bool_t     fIsBS;                         //!  analysis mode BS
-  Bool_t     fIsPer;                        //!  analysis mode PER
-  Bool_t     fIsEff;                        //!  analysis mode Eff
-  Bool_t     fDebug;                        //!  Check for QA
-  Bool_t     fIsQa;                         //!  Check for QA
-  Bool_t     fIsPhy;                        //!  Check for QA
-  Bool_t     fIsDca;                        //!  Check for QA
+  Float_t    fMinTrackLengthMC;             // Min track length for MC tracks
+  Int_t      fAODtrackCutBit;               // AOD BITs
+  Int_t      fNSubSamples;                  // N subsamples
+  Int_t      fSubSampleIdx;                 // Subsample idx for current event
+  Int_t      fOrder;                        // Max order of higher order distributions
+  Int_t      fNTriggers;                    // N triggers used
+  Int_t      fHEventStatMax;                // Max N cuts to be included in HEventSta
+  Int_t      fNCentralityBins;              // N centrality bins used
+  Int_t      fCentralityBinMax;             // Max Cent
+  Int_t      fNTracks;                      // Number of Tracks of Current Events
 
-  TRandom3  *fRan;                          //!  Radom Number BS
-  TRandom3  *fRanIdx;                       //!  Random Number SS
+  Bool_t     fIsMC;                         // Is MC event - Auto set by Add Task
+  Bool_t     fIsRatio;                      // Is Ratio
+  Bool_t     fIsAOD;                        // analysis mode: 0 = ESDs  | 1 = AODs
+  Bool_t     fIsSub;                        // analysis mode SS  
+  Bool_t     fIsBS;                         // analysis mode BS
+  Bool_t     fIsPer;                        // analysis mode PER
+  Bool_t     fIsEff;                        // analysis mode Eff
+  Bool_t     fDebug;                        // Check for QA
+  Bool_t     fIsQa;                         // Check for QA
+  Bool_t     fIsPhy;                        // Check for QA
+  Bool_t     fIsDca;                        // Check for QA
 
-  AliHelperPID *fHelperPID;       //! Customised HelperPID class
+  TRandom3  *fRan;                          // Radom Number BS
+  TRandom3  *fRanIdx;                       // Random Number SS
+
+  AliHelperPID *fHelperPID;                 // Customised HelperPID class
 
   AliEbyENetChargeFluctuationTask(const AliEbyENetChargeFluctuationTask&);
   AliEbyENetChargeFluctuationTask& operator = (const AliEbyENetChargeFluctuationTask&);

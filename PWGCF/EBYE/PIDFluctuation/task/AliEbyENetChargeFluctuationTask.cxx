@@ -106,9 +106,9 @@ AliEbyENetChargeFluctuationTask::AliEbyENetChargeFluctuationTask(const char *nam
   fRapMax(0.5),   
   fCentralityBin(-1.),    
   fCentralityPercentile(-1.),
-  fNp(NULL),
-  fMCNp(NULL),
-  fRedFactp(NULL),           
+// fNp(NULL),
+// fMCNp(NULL),
+// fRedFactp(NULL),           
    
   fMinTrackLengthMC(80), 
   fAODtrackCutBit(768),   
@@ -136,7 +136,26 @@ AliEbyENetChargeFluctuationTask::AliEbyENetChargeFluctuationTask(const char *nam
   fRan(0),             
   fRanIdx(0),                        
   fHelperPID(0x0) { 
+
+  Printf("Task is Initialized");
   
+
+  //-- -  - - -  - - ---- -- - --- -- --- -- - --
+  for (Int_t ii = 0; ii <= fOrder; ++ii)
+    for (Int_t jj = 0; jj < 2; ++jj)
+      fRedFactp[ii][jj] = 1.;
+  
+  //-- -  - - -  - - ---- -- - --- -- --- -- - -- 
+  for (Int_t kk = 0; kk < 4; ++kk)
+    for (Int_t jj = 0; jj < 2; ++jj)
+      fNp[kk][jj] = 0;
+  
+  //-- -  - - -  - - ---- -- - --- -- --- -- - --
+  for (Int_t kk = 0; kk < 4; ++kk)
+    for (Int_t jj = 0; jj < 2; ++jj)
+      fMCNp[kk][jj] = 0;  
+   
+
   DefineOutput(1, TList::Class()); 
   DefineOutput(2, TList::Class()); 
   DefineOutput(3, TList::Class()); 
@@ -149,25 +168,7 @@ AliEbyENetChargeFluctuationTask::~AliEbyENetChargeFluctuationTask() {
   if (fPhyList)   delete fPhyList;
   if (fEffList)   delete fEffList;
   if (fDcaList)   delete fDcaList;
-  
-
-
-  for (Int_t kk = 0; kk < 2; ++kk)
-    if (fNp[kk]) delete[] fNp[kk];
-  if (fNp) delete[] fNp;
-
-  for (Int_t kk = 0; kk < 2; ++kk)
-    if (fMCNp[kk]) delete[] fMCNp[kk];
-  if (fMCNp) delete[] fMCNp;
-
-
-  for (Int_t ii = 0; ii <= fOrder; ++ii)
-    if (fRedFactp[ii]) delete[] fRedFactp[ii];
-  if (fRedFactp) delete[] fRedFactp;  
-  
   return;
-
-
 }
 
 
@@ -208,8 +209,8 @@ const Char_t* fgkNetHistLatex[4]      = {"+ + +","+","-","+ - -"};
 
 //---------------------------------------------------------------------------------
 void AliEbyENetChargeFluctuationTask::UserCreateOutputObjects() {
-  Bool_t oldStatus = TH1::AddDirectoryStatus();
-  TH1::AddDirectory(kFALSE);
+  //Bool_t oldStatus = TH1::AddDirectoryStatus();
+  //TH1::AddDirectory(kFALSE);
   
   fQaList = new TList();
   fQaList->SetOwner(kTRUE);
@@ -223,15 +224,17 @@ void AliEbyENetChargeFluctuationTask::UserCreateOutputObjects() {
   fDcaList = new TList();
   fDcaList->SetOwner(kTRUE);
   
-  fRedFactp = new Double_t*[fOrder+1];
-  for (Int_t ii = 0 ; ii <= fOrder; ++ii)
-    fRedFactp[ii] = new Double_t[2];
-  
+    
   fRan = new TRandom3();
   fRan->SetSeed();
   
   fRanIdx = new TRandom3();
   fRanIdx->SetSeed();
+  
+  Printf(" >>>%d %d %d %d %d %d %d %d %d %d", 
+	 fIsAOD, fIsMC, fIsPhy, fIsEff, 
+	 fIsDca, fIsQa, 
+	 fIsRatio, fIsSub, fIsBS, fIsPer);
   
   CreateBasicQA();
   if (fIsQa)  CreateQA();
@@ -242,7 +245,7 @@ void AliEbyENetChargeFluctuationTask::UserCreateOutputObjects() {
 
   //  if (fIsQa) if (fESDtrackCuts) fQaList->Add(fESDtrackCuts);
 
-  TH1::AddDirectory(oldStatus);
+  // TH1::AddDirectory(oldStatus);
 
   PostData(1, fPhyList); 
   PostData(2, fQaList);
@@ -262,27 +265,14 @@ void AliEbyENetChargeFluctuationTask::UserExec( Option_t * ){
     PostData(4, fEffList);
     return;
   }
+   
   
- 
-  // Printf("Number of Track %d",fNTracks);
   
-  fRedFactp = new Double_t*[fOrder+1];
-  for (Int_t ii = 0 ; ii <= fOrder; ++ii)
-    fRedFactp[ii] = new Double_t[2];
   //-- -  - - -  - - ---- -- - --- -- --- -- - --
   for (Int_t ii = 0; ii <= fOrder; ++ii)
     for (Int_t jj = 0; jj < 2; ++jj)
       fRedFactp[ii][jj] = 1.;
   
-
-  fNp = new Double_t*[4];
-  for (Int_t ii = 0 ; ii < 4; ++ii)
-    fNp[ii] = new Double_t[2];
-
-  fMCNp = new Double_t*[4];
-  for (Int_t ii = 0 ; ii < 4; ++ii)
-    fMCNp[ii] = new Double_t[2];
-
   //-- -  - - -  - - ---- -- - --- -- --- -- - -- 
   for (Int_t kk = 0; kk < 4; ++kk)
     for (Int_t jj = 0; jj < 2; ++jj)
@@ -294,14 +284,25 @@ void AliEbyENetChargeFluctuationTask::UserExec( Option_t * ){
       fMCNp[kk][jj] = 0;  
   
   
+ 
+
+  // Printf("Number of Track %d",fNTracks);
+
   fSubSampleIdx = fRanIdx->Integer(fNSubSamples);
+
+  
+
   fNTracks  = (fESD) ? fESD->GetNumberOfTracks() : fAOD->GetNumberOfTracks();  
+
+  
 
   if (fIsMC && fIsAOD) {
     fArrayMC = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
     if (!fArrayMC)
       AliFatal("No array of MC particles found !!!"); 
   }
+
+  
 
   //-- -  - - -  - - ---- -- - --- -- --- -- - --
   if(fSystemType == 0)      { 
@@ -321,6 +322,9 @@ void AliEbyENetChargeFluctuationTask::UserExec( Option_t * ){
   else 
     return;
   
+
+  return;
+
   //-- -  - - -  - - ---- -- - --- -- --- -- - --
   PostData(1, fPhyList); 
   PostData(2, fQaList);
@@ -1137,8 +1141,21 @@ return;
 
 //________________________________________________________________________
 void AliEbyENetChargeFluctuationTask::FillBasicHistos(const Char_t *name, Bool_t isMC)  {
-  Double_t **np = (isMC) ? fMCNp : fNp;
+  //Double_t **np = (isMC) ? fMCNp : fNp;
   
+  Double_t np[4][2];
+  if (isMC) {
+    for (Int_t i = 0; i < 4; i++) {
+      np[i][0] = fMCNp[i][0];
+      np[i][1] = fMCNp[i][1];
+    }
+  } else {
+    for (Int_t i = 0; i < 4; i++) {
+      np[i][0] = fNp[i][0];
+      np[i][1] = fNp[i][1];
+    }
+  }
+
   Float_t centralityBin = fCentralityBin;
   Float_t centralityPer = fCentralityPercentile;
   
@@ -1249,7 +1266,22 @@ void AliEbyENetChargeFluctuationTask::FillBasicHistos(const Char_t *name, Bool_t
 //________________________________________________________________________
 void AliEbyENetChargeFluctuationTask::FillRatioHistos(const Char_t *name, Bool_t isMC,Bool_t isPer)  {
    
-  Double_t **np = (isMC) ? fMCNp : fNp;
+  //  Double_t **np = (isMC) ? fMCNp : fNp;
+
+  Double_t np[4][2];
+  if (isMC) {
+    for (Int_t i = 0; i < 4; i++) {
+      np[i][0] = fMCNp[i][0];
+      np[i][1] = fMCNp[i][1];
+    }
+  } else {
+    for (Int_t i = 0; i < 4; i++) {
+      np[i][0] = fNp[i][0];
+      np[i][1] = fNp[i][1];
+    }
+  }
+
+
 
   Float_t centralityBin = (isPer) ? fCentralityPercentile : fCentralityBin;
 
@@ -1394,8 +1426,21 @@ void AliEbyENetChargeFluctuationTask::FillGroupHistos(const Char_t *name,Int_t i
   TList *list    = static_cast<TList*>(fPhyList->FindObject(Form("f%s",name)));
   TList *listSub = static_cast<TList*>(list->FindObject(Form("%s%02d",name, iSub)));
 
-  Double_t **np = (isMC) ? fMCNp : fNp;
-      
+  // Double_t **np = (isMC) ? fMCNp : fNp;
+     
+  Double_t np[4][2];
+  if (isMC) {
+    for (Int_t i = 0; i < 4; i++) {
+      np[i][0] = fMCNp[i][0];
+      np[i][1] = fMCNp[i][1];
+    }
+  } else {
+    for (Int_t i = 0; i < 4; i++) {
+      np[i][0] = fNp[i][0];
+      np[i][1] = fNp[i][1];
+    }
+  }
+ 
   for (Int_t iPid = 0; iPid < 4; ++iPid) {
     Int_t deltaNp = np[iPid][1]-np[iPid][0];  
     Double_t delta = 1.;
