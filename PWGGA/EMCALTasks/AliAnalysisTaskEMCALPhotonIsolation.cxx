@@ -2229,7 +2229,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       eT=0.; phi=0.; eta=0.;
 
       mcpart = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTr));
-      /*if(mcpart->GetStatus()<10 /*&& mcpart->IsPrimary()==0){
+      /*if(mcpart->GetStatus()<10 && mcpart->IsPrimary()==0){
        //if(mcpart->GetMCProcessCode()!=0){
        if(mcpart->IsPrimary() && mcpart->IsPhysicalPrimary()){
 
