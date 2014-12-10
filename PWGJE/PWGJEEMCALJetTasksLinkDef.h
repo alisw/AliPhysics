@@ -102,6 +102,8 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecision+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerMCParticleAnalysisComponent+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerClusterAnalysisComponent+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerEventCounterAnalysisComponent+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerPatchAnalysisComponent+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerTreeWriter+;
 
