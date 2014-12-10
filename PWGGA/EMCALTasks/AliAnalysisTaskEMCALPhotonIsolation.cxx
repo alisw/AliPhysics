@@ -1664,7 +1664,7 @@ if(!fTPC4Iso)
 }
 
   //_________________________________________________________________________
-void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Double_t energyCLS, Double_t phiCLS, Double_t etaCLS, Double_t time, Double_t ss, Int_t ncells){
+void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Double_t energyCLS, Double_t phiCLS, Double_t etaCLS, Double_t /*time*/, Double_t ss, Int_t /*ncells*/){
 
     //time and ncells not used for the moment
 
@@ -2206,7 +2206,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     //AliInfo(Form("number of particles in the array %d",nTracks));
   AliAODMCParticle *mcpart, *mom, *mcpp,*mcsearch, *mcfirst, *mcfirstmom,*matchingtrack;
 
-  Bool_t prompt=kFALSE;
+  //Bool_t prompt=kFALSE;
   Double_t mcEnergy, maxE, energy;
   Int_t pdg, mompdg, photonlabel;
   Double_t mcFirstEta=0., mcFirstPhi=0.;
