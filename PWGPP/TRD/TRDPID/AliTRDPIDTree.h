@@ -158,7 +158,9 @@ class AliTRDPIDTree : public AliAnalysisTaskSE {
   Int_t fPDGTRUE;                    //! Tree: true PDG value (only available in MC)
   Float_t fDCA[2];                   //! Tree: DCA
   Float_t fChi2;                     //! Tree: Chi at TRD
-
+  Double_t fsigmaTRD[5];             //! Tree: truncated mean sigma
+  Double_t fdeltaTRD[5];             //! Tree: truncated delta
+  Double_t fratioTRD[5];             //! Tree: truncated ratio
 
   // Histograms
   TH1F *fhtrackCuts;                 //! Track and Event Cuts - QA
