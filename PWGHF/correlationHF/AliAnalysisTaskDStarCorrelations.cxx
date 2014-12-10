@@ -79,6 +79,7 @@ fUseEfficiencyCorrection(kFALSE),
 fUseDmesonEfficiencyCorrection(kFALSE),
 fUseCentrality(kFALSE),
 fUseHadronicChannelAtKineLevel(kFALSE),
+fRemoveMoreThanOneDmesonCandidate(kFALSE),
 fPhiBins(32),
 fEvents(0),
 fDebugLevel(0),
@@ -129,6 +130,7 @@ fUseEfficiencyCorrection(kFALSE),
 fUseDmesonEfficiencyCorrection(kFALSE),
 fUseCentrality(kFALSE),
 fUseHadronicChannelAtKineLevel(kFALSE),
+fRemoveMoreThanOneDmesonCandidate(kFALSE),
 fPhiBins(32),
 fEvents(0),
 fDebugLevel(0),
@@ -157,7 +159,7 @@ fDeffMapvsPtvsEta(0)
      Info("AliAnalysisTaskDStarCorrelations","Calling Constructor");
   
     SetDim();
-    if(fSystem == pp)  fUseCentrality = kFALSE; else fUseCentrality = kTRUE;
+    if(fSystem == AA)  fUseCentrality = kTRUE; else fUseCentrality = kFALSE;
     
  //   if(fSystem == AA) fBkgMethod = kDStarSB; else fBkgMethod = kDZeroSB;
   
@@ -491,7 +493,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
     // loop over D meson candidates
     for (Int_t iDStartoD0pi = 0; iDStartoD0pi<looponDCands; iDStartoD0pi++) {
     
-         //if(ncandidates) continue;  // if there is more than one D candidate, skip it
+         if(fRemoveMoreThanOneDmesonCandidate && ncandidates) continue;  // if there is more than one D candidate, skip it
         
         // initialize variables
         isInPeak = kFALSE;
@@ -543,6 +545,8 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
             
             // get D candidate variables
             ptDStar = dstarD0pi->Pt();
+            if(ptDStar<fCuts->GetMinPtCandidate()||ptDStar>fCuts->GetMaxPtCandidate()) continue;
+            
             phiDStar = dstarD0pi->Phi();
             etaDStar = dstarD0pi->Eta();
             if(TMath::Abs(etaDStar) > fMaxEtaDStar) continue;
@@ -599,7 +603,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
            // cout << "crash here 1" << endl;
             // plot D0 vs DStar mass
             if(!fmixing){
-                cout << Form("histDZerovsDStarMass_%d",ptbin) <<endl;
+               // cout << Form("histDZerovsDStarMass_%d",ptbin) <<endl;
                 ((TH2D*)fDmesonOutput->FindObject(Form("histDZerovsDStarMass_%d",ptbin)))->Fill(invMassDZero,deltainvMDStar);
                if(fUseDmesonEfficiencyCorrection) ((TH2D*)fDmesonOutput->FindObject(Form("histDZerovsDStarMassWeight_%d",ptbin)))->Fill(invMassDZero,deltainvMDStar,DmesonWeight);
             }
@@ -614,7 +618,17 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
             } // end if !mixing
             
         
+            // Check for D* and D0 invariant candidates for phi and eta
+            if(fFullmode){
+                Double_t arrayDStar[5];
             
+                arrayDStar[0] = deltainvMDStar;
+                arrayDStar[1] = invMassDZero;
+                arrayDStar[2] = phiDStar;
+                arrayDStar[3] = etaDStar;
+                arrayDStar[4] = ptDStar;
+            if(!fmixing)((THnSparseF*)fDmesonOutput->FindObject("DmesonMassCheck"))->Fill(arrayDStar);
+            }
             
             
             // good D0 canidates
@@ -768,19 +782,22 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
             phiDStar = DStarMC->Phi();
             etaDStar = DStarMC->Eta();
             
+             phiDStar = fCorrelator->SetCorrectPhiRange(phiDStar);
+            
             if(TMath::Abs(etaDStar) > fMaxEtaDStar) continue;
            // cout << "Dstars are selected" << endl;
             
         }// end if pure MC information
         
-        
-        
+        // check kinematics for tagged D*
+        if(fmontecarlo && !fmixing)	((TH2F*)fOutputMC->FindObject("MCTagEtaInclusiveDStar"))->Fill(etaDStar,ptDStar); // fill phi, eta
+        if(fmontecarlo && !fmixing)	((TH2F*)fOutputMC->FindObject("MCTagPhiInclusiveDStar"))->Fill(phiDStar,ptDStar); // fill phi, eta
         
         
         // getting the number of triggers in the MCtag D* case
-        if(fmontecarlo && isDStarMCtag) ((TH1F*)fOutputMC->FindObject("MCtagPtDStar"))->Fill(ptDStar);
-        if(fmontecarlo && isDStarMCtag && !isDfromB) ((TH1D*)fOutputMC->FindObject("MCtagPtDStarfromCharm"))->Fill(ptDStar);
-        if(fmontecarlo && isDStarMCtag && isDfromB) ((TH1D*)fOutputMC->FindObject("MCtagPtDStarfromBeauty"))->Fill(ptDStar);
+        if(fmontecarlo && isDStarMCtag) ((TH1F*)fOutputMC->FindObject("MCtagPtDStar"))->Fill(ptDStar,DmesonWeight);
+        if(fmontecarlo && isDStarMCtag && !isDfromB) ((TH1D*)fOutputMC->FindObject("MCtagPtDStarfromCharm"))->Fill(ptDStar,DmesonWeight);
+        if(fmontecarlo && isDStarMCtag && isDfromB) ((TH1D*)fOutputMC->FindObject("MCtagPtDStarfromBeauty"))->Fill(ptDStar,DmesonWeight);
         
         
         fCorrelator->SetTriggerParticleProperties(ptDStar,phiDStar,etaDStar); // pass to the object the necessary trigger part parameters
@@ -847,6 +864,15 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
             
               Int_t NofTracks = fCorrelator->GetNofTracks(); // number of tracks in event
             
+            
+            if(!fmixing){
+            if(EventHasDStarCandidate) ((TH1D*)fTracksOutput->FindObject("TracksPerDcandidate"))->Fill(NofTracks);
+            if(fBkgMethod == kDStarSB &&  EventHasDStarSideBandCandidate) ((TH1D*)fTracksOutput->FindObject("TracksPerSBcandidate"))->Fill(NofTracks);
+            if(fBkgMethod == kDZeroSB &&  EventHasDZeroSideBandCandidate) ((TH1D*)fTracksOutput->FindObject("TracksPerSBcandidate"))->Fill(NofTracks);
+            
+            if(isDStarMCtag && fmontecarlo) ((TH1D*)fTracksOutput->FindObject("TracksPerDMC"))->Fill(NofTracks);
+            }
+            
              //************************************************** LOOP ON TRACKS *****************************************************
            // cout << "crash here 6" << endl;
              for(Int_t iTrack = 0; iTrack<NofTracks; iTrack++){ // looping on track candidates
@@ -872,12 +898,18 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                  
                  
                  Int_t label = hadron->GetLabel();
-                 if(!fmixing && !fReco){ // for kinematic MC
+                 
+                 
+                 if(fmontecarlo){
                      AliAODMCParticle *part = (AliAODMCParticle*)fmcArray->At(label);
                      if(!part) continue;
-                     if(IsDDaughter(DStarMC, part)) continue;
-                     cout << "Skipping DStar  daugheter " << endl;
+                     if (!part->IsPhysicalPrimary()) continue; // removing secondary tracks
+                     if(!fmixing && !fReco){
+                         if(IsDDaughter(DStarMC, part)) continue; // skipping D* daughter
+                     }
                  }
+                 
+            
                   // if it is ok, then do the rest
              
                  Double_t ptHad = hadron->Pt();
@@ -891,7 +923,9 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
               
                  
                  
-                if(fmontecarlo) trackOrigin = fAssocCuts->IsMCpartFromHF(label,fmcArray);
+                 if(fmontecarlo) {trackOrigin = fAssocCuts->IsMCpartFromHF(label,fmcArray);
+                     if(trackOrigin[4]) {cout << "Something is wrong with hadron in MC - skipping" << endl; continue;}
+                 }
                  // cout << "crash correlation 3" << endl;
                   
                  if(!isTrackForPeakFilled && !fmixing && EventHasDStarCandidate){
@@ -933,9 +967,9 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                  MCarraytofill[3] = ptHad;
                  MCarraytofill[4] = poolbin;
                  
-                if(trackOrigin[0]) MCarraytofill[5] = 1 ;
-                else if(trackOrigin[1]) MCarraytofill[5] = 2 ;
-                else MCarraytofill[5] = 0;
+                if(trackOrigin[0]) MCarraytofill[5] = 1 ; // is from charm
+                else if(trackOrigin[1]) MCarraytofill[5] = 2 ; // is from beauty
+                else MCarraytofill[5] = 0; // non HF track
                  }
         
                  
@@ -943,7 +977,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                  
                  // filling signal
                //  if(isInPeak){
-                 if(EventHasDStarCandidate){
+                 if(isInPeak){
                    //  cout << "Filling signal " << endl;
                    // if(!fReco && TMath::Abs(etaHad)>0.8) continue;
                      //cout ("CorrelationsDStarHadron_%d",ptbin)
@@ -1052,7 +1086,7 @@ Bool_t AliAnalysisTaskDStarCorrelations::IsDDaughter(AliAODMCParticle* d, AliAOD
     while (mother > 0){
         AliAODMCParticle* mcMoth = dynamic_cast<AliAODMCParticle*>(fmcArray->At(mother)); //it's the mother of the track!
         if (mcMoth){
-            if (mcMoth->GetLabel() == labelD0) isDaughter = kTRUE;
+            if (mcMoth->GetLabel() == labelD0) {isDaughter = kTRUE; return isDaughter;}
             mother = mcMoth->GetMother(); //goes back by one
         } else{
             AliError("Failed casting the mother particle!");
@@ -1189,7 +1223,14 @@ void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
         
     } // end loop on bins
     
+    //  make Dstar mass ThnSparse
     
+    Int_t NDstarSparse[5]=        {30 ,  15 ,             32,    18,14};
+    Double_t binLowDstarSparse[5]={0.14,1.7 ,-0.5*TMath::Pi(), -0.9,2};
+    Double_t binUpDstarSparse[5]= {0.16,2.0 , 1.5*TMath::Pi(),  0.9,16};
+    
+    THnSparseF * DmesonMassCheck = new THnSparseF("DmesonMassCheck","Check D meson mass; #Delta Inv Mass GeV/c^{2}; M(K#pi) GeV/c^{2}; #varphi; #eta; p_{T} GeV/c",5,NDstarSparse,binLowDstarSparse,binUpDstarSparse);
+    if(!fmixing) fDmesonOutput->Add(DmesonMassCheck);
     
 }
 
@@ -1221,7 +1262,7 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
     fOutput->Add(EventPropsCheck);
     
     //event properties
-    TH1D * SPDMultiplicty = new TH1D("MultiplicityOnlyCheck","Properties of the event; SPD Multiplicity",1000,0,1000);
+    TH1D * SPDMultiplicty = new TH1D("MultiplicityOnlyCheck","Properties of the event; SPD Multiplicity",20000,0,20000);
     fOutput->Add(SPDMultiplicty);
     
     
@@ -1317,12 +1358,12 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
     if(!fmixing) fDmesonOutput->Add(NumberOfSBCandidates);
     
     // phi distribution
-    TH2F * PhiInclusiveDStar = new TH2F("PhiInclusiveDStar","Azimuthal distributions of Inclusive Dmesons; #phi; pT;Entries",nbinscorr,lowcorrbin,upcorrbin,30,0,30);
-    TH2F * PhiSidebandDStar = new TH2F("PhiSidebandDStar","Azimuthal distributions of Sideband Dmesons; #phi; pT;Entries",nbinscorr,lowcorrbin,upcorrbin,30,0,30);
+    TH2F * PhiInclusiveDStar = new TH2F("PhiInclusiveDStar","Azimuthal distributions of Inclusive Dmesons; #phi; pT;Entries",nbinscorr,lowcorrbin,upcorrbin,50,0,50);
+    TH2F * PhiSidebandDStar = new TH2F("PhiSidebandDStar","Azimuthal distributions of Sideband Dmesons; #phi; pT;Entries",nbinscorr,lowcorrbin,upcorrbin,50,0,50);
     
     // eta distribution
-    TH2F * EtaInclusiveDStar = new TH2F("EtaInclusiveDStar","Azimuthal distributions of Inclusive Dmesons; #eta; pT;Entries",20,-1,1,30,0,30);
-    TH2F * EtaSidebandDStar = new TH2F("EtaSidebandDStar","Azimuthal distributions of Sideband Dmesons; #eta; pT;Entries",20,-1,1,30,0,30);
+    TH2F * EtaInclusiveDStar = new TH2F("EtaInclusiveDStar","Azimuthal distributions of Inclusive Dmesons; #eta; pT;Entries",20,-1,1,50,0,50);
+    TH2F * EtaSidebandDStar = new TH2F("EtaSidebandDStar","Azimuthal distributions of Sideband Dmesons; #eta; pT;Entries",20,-1,1,50,0,50);
     
     if(!fmixing) fDmesonOutput->Add(PhiInclusiveDStar);
     if(!fmixing) fDmesonOutput->Add(PhiSidebandDStar);
@@ -1339,15 +1380,18 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
     TH2F * EtaInclusiveTracks = new TH2F("EtaInclusiveTracks","Azimuthal distributions of tracks if Inclusive Dmesons; #eta; pT;Entries",20,-1,1,100,0,10);
     TH2F * EtaSidebandTracks = new TH2F("EtaSidebandTracks","Azimuthal distributions of tracks if Sideband Dmesons; #eta; pT;Entries",20,-1,1,100,0,10);
     
-    TH1D * TracksPerDcandidate = new TH1D("TracksPerDcandidate","Distribution of number of tracks per D meson candidate; N tracks; counts",200,-0.5,199.5);
-    TH1D * TracksPerSBcandidate = new TH1D("TracksPerSBcandidate","Distribution of number of tracks per sideband candidate; N tracks; counts",200,-0.5,199.5);
+    TH1D * TracksPerDcandidate = new TH1D("TracksPerDcandidate","Distribution of number of tracks per D meson candidate; N tracks; counts",20000,-0.5,19999.5);
+    TH1D * TracksPerSBcandidate = new TH1D("TracksPerSBcandidate","Distribution of number of tracks per sideband candidate; N tracks; counts",20000,-0.5,19999.5);
+    TH1D * TracksPerDMC = new TH1D("TracksPerDMC","Distribution of number of tracks per tagged D ; N tracks; counts",20000,-0.5,19999.5);
     
     if(!fmixing) fTracksOutput->Add(PhiInclusiveTracks);
     if(!fmixing) fTracksOutput->Add(PhiSidebandTracks);
     if(!fmixing) fTracksOutput->Add(EtaInclusiveTracks);
     if(!fmixing) fTracksOutput->Add(EtaSidebandTracks);
+    
     if(!fmixing) fTracksOutput->Add(TracksPerDcandidate);
     if(!fmixing) fTracksOutput->Add(TracksPerSBcandidate);
+    if(!fmixing && fmontecarlo) fTracksOutput->Add(TracksPerDMC);
     
     
     // Montecarlo for D*
@@ -1359,6 +1403,14 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
 	
 	TH1F *MCtagPtDStar = new TH1F("MCtagPtDStar","RECO pt of MCtagged DStars side bands",50,0,50);
 	if(fmontecarlo) fOutputMC->Add(MCtagPtDStar);
+    
+    TH2F * MCTagEtaInclusiveDStar = new TH2F("MCTagEtaInclusiveDStar","MC Tag eta distributions of Inclusive Dmesons; #eta; pT;Entries",20,-1,1,50,0,50);
+    if(fmontecarlo && !fmixing) fOutputMC->Add(MCTagEtaInclusiveDStar);
+    
+    TH2F * MCTagPhiInclusiveDStar = new TH2F("MCTagPhiInclusiveDStar","MC Tag Azimuthal distributions of Inclusive Dmesons; #eta; pT;Entries",20,-0.5*TMath::Pi(),1.5*TMath::Pi(),50,0,50);
+    if(fmontecarlo && !fmixing) fOutputMC->Add(MCTagPhiInclusiveDStar);
+    
+    
     
     
     
