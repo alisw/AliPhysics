@@ -721,6 +721,19 @@ paranoidCopyFile()
   return 1
 )
 
+generPWD(){ 
+  #
+  # generate semirandom pwd using 2 keys 
+  # Example usage:
+  # generPWD  myserviceaccount10 key11
+  key0=$1
+  key1=$2
+  heslo0=`md5sum <<< "$key0 $key1" | cut -c 1-16`
+  heslo=`echo $heslo0 | cut -c 1-8| awk '{print toupper($0)}'`
+  heslo=$heslo`echo $heslo0 | cut -c 8-15| awk '{print tolower($0)}'`%
+  echo $heslo;
+}
+
 #this makes debugging easier:
 #executes the command given as an argument in this environment
 #use case:
