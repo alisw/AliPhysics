@@ -21,6 +21,15 @@ cmake_minimum_required(VERSION 2.8.11 FATAL_ERROR)
 
 project(AliRoot CXX C)
 
+message(STATUS "CMake platform: ${CMAKE_SYSTEM}")
+message(STATUS "Build folder: ${AliRoot_BINARY_DIR}")
+message(STATUS "Source folder: ${AliRoot_SOURCE_DIR}")
+message(STATUS "Installation folder: ${CMAKE_INSTALL_PREFIX}")
+
+if(CMAKE_INSTALL_PREFIX STREQUAL "${AliRoot_SOURCE_DIR}")
+    message(FATAL_ERROR "Please choose a different installation point than the source tree!")
+endif()
+
 # Path to additonal modules
 set(CMAKE_MODULE_PATH "${AliRoot_SOURCE_DIR}/cmake")
 
@@ -170,11 +179,6 @@ find_package(FASTJET)
 
 # ZEROMQ
 find_package(ZeroMQ)
-
-message(STATUS "CMake platform: ${CMAKE_SYSTEM}")
-message(STATUS "Build folder: ${AliRoot_BINARY_DIR}")
-message(STATUS "Source folder: ${AliRoot_SOURCE_DIR}")
-message(STATUS "Installation folder: ${CMAKE_INSTALL_PREFIX}")
 
 # General flags -> Should be moved into a configuration file
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
