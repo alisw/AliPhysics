@@ -155,6 +155,8 @@ void printDiff( string name, TString val1, TString val2);
 	static const	Int_t fDim = 14;
 	*/
 	ofstream outFile;
+	ofstream conflictsFile;
+	string fCurrentClass;
 	
 	
   ClassDef(AliHLTGlobalCompareFlatComponent, 0)

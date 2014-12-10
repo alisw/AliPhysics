@@ -57,6 +57,8 @@ void AliHLTGlobalCompareFlatComponent::printDiff( string name, double val1, doub
 	if (relDiff > 1e-3 && sum > 1e-6) diff = 1;
 	else if(relDiff < -1e-3 && sum > 1e-6) diff = -1;
 	outFile<<name<<"\t" << val1 << "\t" << val2 <<"\t" << diff << "\n";
+	if(diff!=0)
+		conflictsFile<<fCurrentClass<<"\t"<<name<<"\t" << val1 << "\t" << val2  << "\n";
 }
 
 
@@ -81,6 +83,8 @@ void AliHLTGlobalCompareFlatComponent::printDiff( string name, int n , Float_t* 
 			outFile<<vals2[i]<<" ";
 	}
 	outFile<<"\t" << diff << "\n";
+	if(diff!=0)
+		conflictsFile<<fCurrentClass<<"\t"<<name<< "\n";
 }
 
 void AliHLTGlobalCompareFlatComponent::printDiff( string name, int n , Double_t* vals1, Double_t* vals2 ){
@@ -104,6 +108,8 @@ void AliHLTGlobalCompareFlatComponent::printDiff( string name, int n , Double_t*
 			outFile<<vals2[i]<<" ";
 	}
 	outFile<<"\t" << diff << "\n";
+	if(diff!=0)
+		conflictsFile<<fCurrentClass<<"\t"<<name<< "\n";
 }
 
 
@@ -111,6 +117,8 @@ void AliHLTGlobalCompareFlatComponent::printDiff( string name, int n , Double_t*
 
 void AliHLTGlobalCompareFlatComponent::printDiff( string name, TString val1, TString val2){
 	outFile << name << "\t" << "\t\"" << val1 <<"\"\t\"" << val2 <<"\"\t" << (val1.EqualTo(val2) ?0:1)<<"\n";
+	if(! val1.EqualTo(val2) )
+		conflictsFile<<fCurrentClass<<"\t"<<name<<"\t" << val1 << "\t" << val2 << "\n";
 }
 
 /*
@@ -270,10 +278,10 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
  if (!IsDataEvent()) 
    return 0;
 
+  printf("AliHLTGlobalCompareFlatComponent::IsDataEvent\n");
  AliFlatESDEvent *flatEsd[2] ={0,0};
  AliFlatESDFriend *flatFriend[2] ={0,0};
 	
-  printf("search for input onbjects\n");
 	{
 	 int i=0;
 	for ( const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
@@ -307,19 +315,14 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			return 0;
 	}
 	
-	
- cout<<"size event : "<<flatEsd[0]->GetSize() << " "<<flatEsd[1]->GetSize()<<endl;
- cout<<"nTracks : "<<flatEsd[0]->GetNumberOfTracks()<<" "<<flatEsd[1]->GetNumberOfTracks()<<endl;
- cout<<"nV0s : "<<flatEsd[0]->GetNumberOfV0s()<<" "<<flatEsd[1]->GetNumberOfV0s()<<endl;
- 
- cout<<"size friend : "<<flatFriend[0]->GetSize() << " "<<flatFriend[1]->GetSize()<<endl;
- cout<<"nFriendTracks : "<<flatFriend[0]->GetNumberOfTracks()<<" "<<flatFriend[1]->GetNumberOfTracks()<<endl;
- 
  outFile.open("comparison.txt",ios::app);
+ 
+ conflictsFile.open("conflicts.txt",ios::app);
  
  // Compare Event variables
  
  outFile<<"_FlatESDEvent\n";
+ fCurrentClass = "FlatESDEvent";
  printDiff( "GetSize" ,flatEsd[0]->GetSize(), flatEsd[1]->GetSize() ) ;
 	printDiff( "GetMagneticField",flatEsd[0]->GetMagneticField(),flatEsd[1]->GetMagneticField() );
 	printDiff( "GetPeriodNumber",flatEsd[0]->GetPeriodNumber(),flatEsd[1]->GetPeriodNumber() );
@@ -345,6 +348,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 	
 	if(vertexTracks[0] && vertexTracks[1]){
       outFile<<"_FlatESDVertexTracks\n";
+ fCurrentClass = "FlatESDVertexTracks";
 			printDiff( "GetSize",vertexTracks[0]->GetSize(),vertexTracks[1]->GetSize() ); 
 			printDiff( "GetX",vertexTracks[0]->GetX(),vertexTracks[1]->GetX() ); 
 			printDiff( "GetY",vertexTracks[0]->GetY(),vertexTracks[1]->GetY() ); 
@@ -353,6 +357,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
  
 	if(vertexSPD[0] && vertexSPD[1]){
       outFile<<"_FlatESDVertexSPD\n";
+ fCurrentClass = "FlatESDVertexSPD";
 			printDiff( "GetSize",vertexSPD[0]->GetSize(),vertexSPD[1]->GetSize() ); 
 			printDiff( "GetX",vertexSPD[0]->GetX(),vertexSPD[1]->GetX() ); 
 			printDiff( "GetY",vertexSPD[0]->GetY(),vertexSPD[1]->GetY() ); 
@@ -366,6 +371,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
     AliFlatESDTrigger * trigger[2] = { const_cast<AliFlatESDTrigger*>(flatEsd[0]->GetTriggerClasses() ) , const_cast<AliFlatESDTrigger*>(flatEsd[1]->GetTriggerClasses() ) };
     for( Int_t i = 0; i < flatEsd[0]->GetNumberOfTriggerClasses()  && i < flatEsd[1]->GetNumberOfTriggerClasses()  ; i++ ){
       outFile<<"_FlatESDTrigger\n";
+ fCurrentClass = "FlatESDTrigger";
 			printDiff( "GetSize",trigger[0]->GetSize(),trigger[1]->GetSize() ); 
 			printDiff( "GetTriggerIndex",trigger[0]->GetTriggerIndex(),trigger[1]->GetTriggerIndex() ); 
 			printDiff( "GetTriggerClassName",trigger[0]->GetTriggerClassName(),trigger[1]->GetTriggerClassName() ); 
@@ -381,6 +387,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
     AliFlatESDV0 * v0[2] = { const_cast<AliFlatESDV0*>(flatEsd[0]->GetV0s() ) , const_cast<AliFlatESDV0*>(flatEsd[1]->GetV0s() ) };
     for( Int_t i = 0; i < flatEsd[0]->GetNumberOfV0s()  && i < flatEsd[1]->GetNumberOfV0s()  ; i++ ){
       outFile<<"_FlatESDV0\n";
+ fCurrentClass = "FlatESDV0";
 			printDiff( "GetSize",v0[0]->GetSize(),v0[1]->GetSize() ); 
 			printDiff( "GetNegTrackID",v0[0]->GetNegTrackID(),v0[1]->GetNegTrackID() ); 
 			printDiff( "GetPosTrackID",v0[0]->GetPosTrackID(),v0[1]->GetPosTrackID() ); 
@@ -396,6 +403,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
     AliFlatESDTrack * track[2] = { const_cast<AliFlatESDTrack*>(flatEsd[0]->GetTracks() ) , const_cast<AliFlatESDTrack*>(flatEsd[1]->GetTracks() ) };
     for( Int_t t = 0; t < flatEsd[0]->GetNumberOfTracks()  && t < flatEsd[1]->GetNumberOfTracks()  ; t++ ){
       outFile<<"_FlatESDTrack\n";
+ fCurrentClass = "FlatESDTrack";
 			printDiff( "GetSize",track[0]->GetSize(),track[1]->GetSize() ); 
 			printDiff( "GetNumberOfTPCClusters",track[0]->GetNumberOfTPCClusters(),track[1]->GetNumberOfTPCClusters() ); 
 			printDiff( "GetNumberOfITSClusters",track[0]->GetNumberOfITSClusters(),track[1]->GetNumberOfITSClusters() ); 
@@ -419,6 +427,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			for(int i = 0 ; i<7 ; i++){
 				if(p[i][0] && p[i][1]){
 				outFile<<"_FlatExternalTrackParam" << pNames[i] << "\n";
+ fCurrentClass = "FlatExternalTrackParam";
 				printDiff( "GetAlpha",p[i][0]->GetAlpha(),p[i][1]->GetAlpha() ); 
 				printDiff( "GetX",p[i][0]->GetX(),p[i][1]->GetX() ); 
 				printDiff( "GetY",p[i][0]->GetY(),p[i][1]->GetY() ); 
@@ -446,6 +455,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
  // Compare Friend variables
  
 	outFile<<"_FlatESDFriend\n";
+ fCurrentClass = "FlatESDFriend";
 	printDiff( "GetSize" ,flatFriend[0]->GetSize(), flatFriend[1]->GetSize() ) ;
 	printDiff( "GetNumberOfTracks" ,flatFriend[0]->GetNumberOfTracks(), flatFriend[1]->GetNumberOfTracks());
 	printDiff( "GetEntriesInTracks" ,flatFriend[0]->GetEntriesInTracks(), flatFriend[1]->GetEntriesInTracks());
@@ -482,6 +492,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			
 			if(!track[0] || !track[1]) continue;
       outFile<<"_FlatESDFriendTrack\n";
+ fCurrentClass = "FlatESDFriendTrack";
 			printDiff( "GetSize",track[0]->GetSize(),track[1]->GetSize() ); 
 			
 			AliExternalTrackParam p[3][2]; 
@@ -507,6 +518,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 				if(pp[i][0] && pp[i][1]){
 					
 				outFile<<"_ExternalTrackParam" << pNames[i] << "\n";
+ fCurrentClass = "ExternalTrackParam";
 				printDiff( "GetAlpha" ,p[i][0].GetAlpha(),p[i][1].GetAlpha() ); 
 				printDiff( "GetX",p[i][0].GetX(),p[i][1].GetX() ); 
 				printDiff( "GetY",p[i][0].GetY(),p[i][1].GetY() ); 
@@ -528,6 +540,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			
 			
       outFile<<"_FlatTPCseed\n";
+ fCurrentClass = "FlatTPCseed";
 			
 			printDiff( "GetSize",s[0]->GetSize(),s[1]->GetSize() ); 
 			printDiff( "GetLabel",s[0]->GetLabel(),s[1]->GetLabel() ); 
@@ -540,15 +553,23 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 				if(s[0]->GetNClusters() == s[1]->GetNClusters()){
 					int ncl = s[0]->GetNClusters();
 				//	cout<<"number of clusters: "<<ncl<<endl;
-					AliFlatTPCCluster* cl[160][2] ={{0},{0}};
-					for(int icl=0; icl < ncl; icl++){
-						outFile<<"_FlatTPCCluster\n";
+					AliFlatTPCCluster* cl[160][2];
+      for( int i=0; i<160; i++ ) {
+				cl[i][0]=0;
+				cl[i][1]=0;
+			}
+				for(int icl=0; icl < ncl; icl++){
+						
+						
+				//		if(cl[ (s[0]->GetClusters()[icl]).GetPadRow() ][0])  cout<<"ERROR: cluster " << icl <<" [0] already set!!!"<<endl;
+					//	if(cl[ (s[0]->GetClusters()[icl]).GetPadRow() ][1])  cout<<"ERROR: cluster " << icl <<" [1] already set!!!"<<endl;
 						cl[ (s[0]->GetClusters()[icl]).GetPadRow() ][0] = const_cast<AliFlatTPCCluster*>( &(s[0]->GetClusters()[icl])  );
 						cl[ (s[1]->GetClusters()[icl]).GetPadRow() ][1] = const_cast<AliFlatTPCCluster*>( &(s[1]->GetClusters()[icl])  );
-						
 					}
 					for(int irow= 0; irow<160;irow++){
 						if( cl[irow][0] && cl[irow][1] ){
+						outFile<<"_FlatTPCCluster\n";
+ fCurrentClass = "FlatTPCCluster";
 							printDiff( "GetX",cl[irow][0]->GetX(),cl[irow][1]->GetX() ); 
 							printDiff( "GetY",cl[irow][0]->GetY(),cl[irow][1]->GetY() ); 
 							printDiff( "GetZ",cl[irow][0]->GetZ(),cl[irow][1]->GetZ() ); 
