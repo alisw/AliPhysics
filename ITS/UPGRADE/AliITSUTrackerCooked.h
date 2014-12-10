@@ -22,7 +22,7 @@ class AliITSUReconstructor;
 class AliITSUTrackerCooked : public AliITSUTrackerGlo {
 public:
   enum {
-     kNLayers=7, kMaxClusterPerLayer=15000, kMaxSelected=kMaxClusterPerLayer/10
+     kNLayers=7, kMaxClusterPerLayer=150000, kMaxSelected=kMaxClusterPerLayer/10
   };
   AliITSUTrackerCooked(AliITSUReconstructor *rec);
   virtual ~AliITSUTrackerCooked();
