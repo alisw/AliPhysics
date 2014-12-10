@@ -727,6 +727,40 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       break;
     }
       
+    case kSDMv6:
+    {
+      //Based on fit to the MC/data using kNoCorrection on the data 
+      //  - utilizes symmetric decay method and kPi0MCv6(MC) - 09 Dec 2014
+      //  - parameters constrained by the test beam data as well
+      // described in the note: https://aliceinfo.cern.ch/Notes/node/211 - Sec 3.1.2 (Test Beam Constrained SDM).
+      //fNonLinearityParams[0] =  1.0;
+      //fNonLinearityParams[1] =  0.237767;
+      //fNonLinearityParams[2] =  0.651203;
+      //fNonLinearityParams[3] =  0.183741;
+      //fNonLinearityParams[4] =  155.427;
+      //fNonLinearityParams[5] =  17.0335;
+      //fNonLinearityParams[6] =  0.987054;
+      energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
+      
+      break;
+    }
+      
+    case kPi0MCv6:
+    {
+      //Based on comparing MC truth information to the reconstructed energy of clusters.
+      // described in the note: https://aliceinfo.cern.ch/Notes/node/211 - Sec 3.1.2 (Test Beam Constrained SDM).
+      //fNonLinearityParams[0] =  1.0;
+      //fNonLinearityParams[1] =  0.0797873;
+      //fNonLinearityParams[2] =  1.68322;
+      //fNonLinearityParams[3] =  0.0806098;
+      //fNonLinearityParams[4] =  244.586;
+      //fNonLinearityParams[5] =  116.938;
+      //fNonLinearityParams[6] =  1.00437;
+      energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
+      
+      break;
+    }
+      
     case kNoCorrection:
       AliDebug(2,"No correction on the energy\n");
       break;
@@ -833,6 +867,26 @@ void AliEMCALRecoUtils::InitNonLinearityParam()
     fNonLinearityParams[4] =  2.19381e+02;
     fNonLinearityParams[5] =  6.31604e+01;
     fNonLinearityParams[6] =  1.01286;
+  }
+
+  if (fNonLinearityFunction == kSDMv6) {
+    fNonLinearityParams[0] = 1.0;      
+    fNonLinearityParams[1] = 0.237767; 
+    fNonLinearityParams[2] = 0.651203; 
+    fNonLinearityParams[3] = 0.183741; 
+    fNonLinearityParams[4] = 155.427;  
+    fNonLinearityParams[5] = 17.0335;  
+    fNonLinearityParams[6] = 0.987054; 
+  }
+
+  if (fNonLinearityFunction == kPi0MCv6) {
+    fNonLinearityParams[0] = 1.0;       
+    fNonLinearityParams[1] = 0.0797873; 
+    fNonLinearityParams[2] = 1.68322;   
+    fNonLinearityParams[3] = 0.0806098; 
+    fNonLinearityParams[4] = 244.586;   
+    fNonLinearityParams[5] = 116.938;   
+    fNonLinearityParams[6] = 1.00437;   
   }
 
 }
