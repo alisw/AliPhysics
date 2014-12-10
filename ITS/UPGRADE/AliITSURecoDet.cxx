@@ -258,10 +258,47 @@ Int_t AliITSURecoDet::LoadClusters(TTree* treeRP)
   return treeRP->GetEntry(0); // we are still in 1 ev/tree mode...
 }
 
+Int_t FindIndex(AliITSUClusterPix **parr, Int_t i, AliITSUClusterPix *c) {
+  Int_t b=0;
+  AliITSUClusterPix *cc=parr[b];
+  if (c->Compare(cc) <= 0) return b;
+
+  Int_t e=b+i-1;
+  cc=parr[e];
+  if (c->Compare(cc) >  0) return e+1;
+
+  Int_t m=(b+e)/2;
+  for (; b<e; m=(b+e)/2) {
+    cc=parr[m];
+    if (c->Compare(cc) > 0) b=m+1;
+    else e=m; 
+  }
+  return m;   
+}
+
 //______________________________________________________
 void AliITSURecoDet::SortClusters(AliITSUClusterPix::SortMode_t mode)
 {
   // process clsuters according to requested mode
   AliITSUClusterPix::SetSortMode( mode );
-  for (int ilr=fNLayersActive;ilr--;) GetLayerActive(ilr)->GetClusters()->Sort();
+  for (int ilr=fNLayersActive;ilr--;) {
+      TClonesArray *arr=GetLayerActive(ilr)->GetClusters();
+
+      const Int_t kNcl=arr->GetEntriesFast();
+      AliITSUClusterPix **parr=new AliITSUClusterPix*[kNcl];
+      parr[0]=(AliITSUClusterPix *)arr->UncheckedAt(0);
+      for (Int_t j=1; j<kNcl; j++) {
+	  AliITSUClusterPix *c=(AliITSUClusterPix*)arr->UncheckedAt(j);
+          Int_t i=FindIndex(parr,j,c);
+          Int_t k=j-i;
+          memmove(parr+i+1 ,parr+i,k*sizeof(AliITSUClusterPix*));
+          parr[i]=c;
+      }
+
+      TObject **cont=arr->GetObjectRef();
+      for (Int_t i=0; i<kNcl; i++) cont[i]=parr[i];
+      delete[] parr;
+
+  }
 }
+
