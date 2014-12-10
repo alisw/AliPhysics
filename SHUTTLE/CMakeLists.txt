@@ -28,10 +28,6 @@ include_directories(${AliRoot_SOURCE_DIR}/STEER/CDB
 include_directories(${DIMDIR}/dim)
 link_directories(${DIMDIR}/${ODIR})
 
-# AliEn ApMon
-include_directories(${ALIEN}/api/include)
-link_directories(${ALIEN}/api/lib)
-
 # Sources in alphabetical order
 set(SRCS
     AliEmptyPreprocessor.cxx

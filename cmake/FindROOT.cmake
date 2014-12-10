@@ -135,6 +135,7 @@ if(ROOTSYS)
     separate_arguments(ROOT_GLIBRARIES)
 
     # Checking for AliEn support
+    # If AliEn support is enabled we need to point to AliEn
     execute_process(COMMAND ${ROOT_CONFIG} --has-alien OUTPUT_VARIABLE ROOT_HASALIEN ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error checking if ROOT was build with AliEn support: ${error}")
@@ -144,8 +145,20 @@ if(ROOTSYS)
     if(ROOT_HASALIEN)
         string(STRIP ${ROOT_HASALIEN} ROOT_HASALIEN)
         if(ROOT_HASALIEN STREQUAL "yes")
-            add_definitions(-DWITHALIEN)
-            set(ROOT_HASALIEN TRUE)
+    	    if(ALIEN)
+        	add_definitions(-DWITHALIEN)
+        	
+        	# AliEn might bring some system libraries, we need to follow them
+        	link_directories(${ALIEN}/lib)
+        	link_directories(${ALIEN}/api/lib)
+        	
+        	# include for AliEn
+        	include_directories(${ALIEN}/include)
+        	
+        	set(ROOT_HASALIEN TRUE)
+    	    else(ALIEN)
+    		message(FATAL_ERROR "ROOT was build with AliEn support but no AliEn installation found. Please set \"ALIEN\" to point to your AliEn installation.")
+    	    endif(ALIEN)
         else()
             set(ROOT_HASALIEN FALSE)
         endif()
