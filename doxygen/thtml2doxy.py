@@ -468,6 +468,8 @@ def refactor_comment(comment, do_strip_html=True):
   recomm = r'^(/{2,}|/\*)? ?(\s*.*?)\s*((/{2,})?\s*|\*/)$'
   regarbage = r'^(?i)\s*([\s*=-_#]+|(Begin|End)_Html)\s*$'
 
+  reinline_latex = r'(?i)(.*)BEGIN_LATEX\s+(.*?)\s+END_LATEX(.*)$'
+
   new_comment = []
   insert_blank = False
   wait_first_non_blank = True
@@ -489,6 +491,19 @@ def refactor_comment(comment, do_strip_html=True):
           new_comment.append('')
         insert_blank = False
         wait_first_non_blank = False
+
+        # Postprocessing: LaTeX formulas in ROOT format
+        # Marked by BEGIN_LATEX ... END_LATEX and they use # in place of \
+        # There can be several ROOT LaTeX forumlas per line
+        while True:
+          minline_latex = re.search( reinline_latex, new_line_comment )
+          if minline_latex:
+            new_line_comment = '%s\\f$%s\\f$%s' % \
+              ( minline_latex.group(1), minline_latex.group(2).replace('#', '\\'),
+                minline_latex.group(3) )
+          else:
+            break
+
         new_comment.append( new_line_comment )
 
     else:
