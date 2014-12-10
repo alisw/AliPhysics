@@ -263,6 +263,10 @@ add_subdirectory(data)
 # Enable SHUTTLE compilation
 # Check if DIMDIR and ODIR are set
 if(SHUTTLE)
+    if(ROOT_HASALIEN STREQUAL "no")
+	message(FATAL_ERROR "Shuttle needs ROOT build with AliEn support. Please build ROOT with AliEn support. Do not forget to set ALIEN to your AliEn installation")
+    endif()
+    
     if(DIMDIR AND ODIR AND ALIEN)
         add_subdirectory(SHUTTLE)
     else()
@@ -271,6 +275,3 @@ if(SHUTTLE)
 endif(SHUTTLE)
 
 add_subdirectory(ALIROOT)
-
-# Data
-add_subdirectory(data)

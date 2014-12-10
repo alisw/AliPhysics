@@ -15,6 +15,8 @@
 
 
 # Installing data files
-install(FILES maps/mfchebKGI_sym.root DESTINATION data/maps)
+install(DIRECTORY . DESTINATION data  
+		    PATTERN "CMakeLists.txt" EXCLUDE
+	)
 
 message(STATUS "DATA installed")
