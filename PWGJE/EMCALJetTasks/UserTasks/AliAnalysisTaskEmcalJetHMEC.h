@@ -54,6 +54,9 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   void                    SetDoWiderTrackBin(Bool_t wtrbin) { fDoWiderTrackBin = wtrbin; }
 
   virtual void            SetCentBinSize(Bool_t centbins) { fCentBinSize = centbins; }
+  // set efficiency correction
+  void                    SetDoEffCorr(Int_t effcorr)          { fDoEffCorrection = effcorr; }
+  virtual void            SetEffCorrFunc(Double_t efffunc)     { fEffFunctionCorrection = efffunc; }
 
  protected:
   void					 ExecOnce();
@@ -61,6 +64,7 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   virtual Int_t          GetCentBin(Double_t cent) const;
   virtual Int_t          GetEtaBin(Double_t eta) const;
   virtual Int_t          GetpTjetBin(Double_t pt) const;
+  virtual Double_t       EffCorrection(Double_t trkETA, Double_t trkPT, Int_t effswitch) const; // efficiency correction function
 
   TString                fTracksName;              // name of tracks collection
   TString                fJetsName;                // name of Jet collection
@@ -81,6 +85,10 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   // event selection types
   UInt_t         fTriggerEventType;
   UInt_t         fMixingEventType;
+
+  // efficiency correction
+  Int_t          fDoEffCorrection;
+  Double_t       fEffFunctionCorrection;
 
   Bool_t         fDoLessSparseAxes;
   Bool_t         fDoWiderTrackBin;
