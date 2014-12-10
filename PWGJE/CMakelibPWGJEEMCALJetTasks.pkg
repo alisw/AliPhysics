@@ -96,24 +96,24 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskSOH.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskTriggerRejection.cxx
  EMCALJetTasks/UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
- EMCALJetTasks/UserTasks/AliCutValueRange.cxx 
- EMCALJetTasks/UserTasks/AliEMCalHistoContainer.cxx 
- EMCALJetTasks/UserTasks/AliAnalysisTaskPtEMCalTrigger.cxx 
- EMCALJetTasks/UserTasks/AliEMCalPtTaskVTrackSelection.cxx
- EMCALJetTasks/UserTasks/AliEMCalPtTaskTrackSelectionESD.cxx
- EMCALJetTasks/UserTasks/AliEMCalPtTaskTrackSelectionAOD.cxx
- EMCALJetTasks/UserTasks/AliEMCalTriggerEventData.cxx
- EMCALJetTasks/UserTasks/AliEMCalTriggerEventSelection.cxx
- EMCALJetTasks/UserTasks/AliEMCalTriggerTaskGroup.cxx
- EMCALJetTasks/UserTasks/AliEMCalTriggerTracksAnalysisComponent.cxx
- EMCALJetTasks/UserTasks/AliEMCalTriggerMCParticleAnalysisComponent.cxx
- EMCALJetTasks/UserTasks/AliEMCalTriggerClusterAnalysisComponent.cxx
- EMCALJetTasks/UserTasks/AliEMCalTriggerRecTrackAnalysisComponent.cxx
- EMCALJetTasks/UserTasks/AliEMCalTriggerBinningComponent.cxx
- EMCALJetTasks/UserTasks/AliEMCalTriggerBinningFactory.cxx
- EMCALJetTasks/UserTasks/AliEMCalTriggerKineCuts.cxx
- EMCALJetTasks/UserTasks/AliEMCalTriggerAnaTriggerDecision.cxx
- EMCALJetTasks/UserTasks/AliAnalysisTaskPtEMCalTriggerV1.cxx
+ EMCALJetTasks/Tracks/AliCutValueRange.cxx 
+ EMCALJetTasks/Tracks/AliEMCalHistoContainer.cxx 
+ EMCALJetTasks/Tracks/AliAnalysisTaskPtEMCalTrigger.cxx 
+ EMCALJetTasks/Tracks/AliEMCalPtTaskVTrackSelection.cxx
+ EMCALJetTasks/Tracks/AliEMCalPtTaskTrackSelectionESD.cxx
+ EMCALJetTasks/Tracks/AliEMCalPtTaskTrackSelectionAOD.cxx
+ EMCALJetTasks/Tracks/AliEMCalTriggerEventData.cxx
+ EMCALJetTasks/Tracks/AliEMCalTriggerEventSelection.cxx
+ EMCALJetTasks/Tracks/AliEMCalTriggerTaskGroup.cxx
+ EMCALJetTasks/Tracks/AliEMCalTriggerTracksAnalysisComponent.cxx
+ EMCALJetTasks/Tracks/AliEMCalTriggerBinningComponent.cxx
+ EMCALJetTasks/Tracks/AliEMCalTriggerBinningFactory.cxx
+ EMCALJetTasks/Tracks/AliEMCalTriggerKineCuts.cxx
+ EMCALJetTasks/Tracks/AliEMCalTriggerAnaTriggerDecision.cxx
+ EMCALJetTasks/Tracks/AliAnalysisTaskPtEMCalTriggerV1.cxx
+ EMCALJetTasks/Tracks/AliEMCalTriggerMCParticleAnalysisComponent.cxx
+ EMCALJetTasks/Tracks/AliEMCalTriggerClusterAnalysisComponent.cxx
+ EMCALJetTasks/Tracks/AliEMCalTriggerRecTrackAnalysisComponent.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalTriggerTreeWriter.cxx
 )
 

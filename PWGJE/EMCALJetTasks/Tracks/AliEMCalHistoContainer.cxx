@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -38,11 +38,11 @@
 #include <THashList.h>
 #include <TObjArray.h>
 #include <TObjString.h>
+#include "AliEMCalHistoContainer.h"
 #include <TString.h>
 
 #include "AliLog.h"
 
-#include "AliEMCalHistoContainer.h"
 
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalHistoContainer)
 

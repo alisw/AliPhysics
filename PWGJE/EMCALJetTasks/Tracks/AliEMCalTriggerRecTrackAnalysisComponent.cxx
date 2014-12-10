@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+#include <TAxis.h>
 #include <TClonesArray.h>
 #include <TMath.h>
 #include <TString.h>
@@ -31,10 +32,9 @@
 #include "AliVEvent.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
-#include "AliVVertex.h"
 
-#include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerAnaTriggerDecision.h"
+#include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerKineCuts.h"
 #include "AliEMCalPtTaskVTrackSelection.h"

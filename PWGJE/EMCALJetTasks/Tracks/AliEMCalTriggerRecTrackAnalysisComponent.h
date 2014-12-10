@@ -5,7 +5,7 @@
 
 // Author: Markus Fasel
 
-#include "AliEMCalTriggerTracksAnalysisComponent.h"
+#include <Tracks/AliEMCalTriggerTracksAnalysisComponent.h>
 
 class TString;
 class AliVParticle;

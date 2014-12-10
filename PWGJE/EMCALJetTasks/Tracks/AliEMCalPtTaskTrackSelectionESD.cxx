@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -20,6 +20,7 @@
  * 		Markus Fasel
  */
 #include <TClonesArray.h>
+#include "AliEMCalPtTaskTrackSelectionESD.h"
 #include <memory>
 
 #include "AliESDEvent.h"
@@ -28,7 +29,6 @@
 #include "AliLog.h"
 #include "AliPicoTrack.h"
 
-#include <AliEMCalPtTaskTrackSelectionESD.h>
 
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD)
 

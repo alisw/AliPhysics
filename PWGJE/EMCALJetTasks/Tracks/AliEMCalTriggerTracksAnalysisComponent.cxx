@@ -19,10 +19,9 @@
  *   Author: Markus Fasel
  */
 #include <TAxis.h>
-
-#include "AliEMCalTriggerAnaTriggerDecision.h"
-#include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerTracksAnalysisComponent.h"
+#include "AliEMCalTriggerBinningComponent.h"
+#include "AliEMCalTriggerAnaTriggerDecision.h"
 
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerTracksAnalysisComponent)
 

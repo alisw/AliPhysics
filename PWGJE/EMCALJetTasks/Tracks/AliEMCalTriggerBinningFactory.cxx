@@ -18,14 +18,12 @@
  *
  *   Author: Markus Fasel
  */
-#include <map>
-#include <vector>
-
-#include "TArrayD.h"
-#include "TMath.h"
-
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerBinningFactory.h"
+#include <map>
+#include <vector>
+#include <TMath.h>
+#include <TArrayD.h>
 
 namespace EMCalTriggerPtAnalysis {
 

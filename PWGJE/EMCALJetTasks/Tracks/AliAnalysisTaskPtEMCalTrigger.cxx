@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -51,16 +51,16 @@
 
 #include "AliClusterContainer.h"
 #include "AliEmcalJet.h"
-#include "AliEmcalPhysicsSelection.h"
 #include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalPhysicsSelection.h"
+#include "AliAnalysisTaskPtEMCalTrigger.h"
 #include "AliEMCalHistoContainer.h"
 #include "AliEMCalPtTaskVTrackSelection.h"
-#include "AliEMCalPtTaskTrackSelectionAOD.h"
 #include "AliEMCalPtTaskTrackSelectionESD.h"
+#include "AliEMCalPtTaskTrackSelectionAOD.h"
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
 #include "AliPicoTrack.h"
-#include "AliAnalysisTaskPtEMCalTrigger.h"
 
 ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger)
 

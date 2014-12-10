@@ -18,8 +18,8 @@
  *   Author: Markus Fasel
  */
 #include <TMath.h>
-#include "AliVParticle.h"
 #include "AliEMCalTriggerKineCuts.h"
+#include "AliVParticle.h"
 
 namespace EMCalTriggerPtAnalysis {
 
