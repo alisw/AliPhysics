@@ -310,7 +310,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
 }
 
 //________________________________________________________________________
-AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* jetArrayName, const char* backgroundJetArrayName, Bool_t analyzeJetProfile, Bool_t analyzeTrackcuts) : AliAnalysisTaskSE(name), fOutputLists(), fCurrentOutputList(0), fDoJetAnalysis(1), fAnalyzeJetProfile(0), fAnalyzeTrackcuts(0), fAnalyzeJetConstituents(1), fParticleLevel(0), fUseDefaultVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fNoExternalBackground(0), fBackgroundForJetProfile(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(), fTrackArrayName(), fBackgroundJetArrayName(), fRhoTaskName(), fRandConeRadius(0.4), fRandConeNumber(10), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fNumberExcludedJets(-1), fMinEta(-0.9), fMaxEta(0.9), fMinJetEta(-0.5), fMaxJetEta(0.5), fMinTrackPt(0.150), fMinJetPt(5.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinNCrossedRows(70), fUsePtDepCrossedRowsCut(0), fNumberOfCentralityBins(20), fCentralityType("V0A"), fMatchTr(), fMatchChi(), fPrimaryVertex(0), fFirstLeadingJet(0), fSecondLeadingJet(0), fFirstLeadingKTJet(0), fSecondLeadingKTJet(0), fNumberSignalJets(0), fNumberSignalJetsAbove5GeV(0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fIsDEBUG(0), fIsPA(1), fNoTerminate(1), fEventCounter(0), fHybridESDtrackCuts(0), fHybridESDtrackCuts_variedPtDep(0), fHybridESDtrackCuts_variedPtDep2(0)
+AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* jetArrayName, const char* backgroundJetArrayName, Bool_t analyzeJetProfile, Bool_t analyzeTrackcuts) : AliAnalysisTaskSE(name), fOutputLists(), fCurrentOutputList(0), fDoJetAnalysis(1), fAnalyzeJetProfile(0), fAnalyzeTrackcuts(0), fAnalyzeJetConstituents(1), fParticleLevel(0), fUseDefaultVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fNoExternalBackground(0), fBackgroundForJetProfile(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(), fTrackArrayName(), fBackgroundJetArrayName(), fRhoTaskName(), fRandConeRadius(0.4), fRandConeNumber(10), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fNumberExcludedJets(-1), fMinEta(-0.9), fMaxEta(0.9), fMinJetEta(-0.5), fMaxJetEta(0.5), fMinTrackPt(0.150), fMinJetPt(5.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinNCrossedRows(70), fUsePtDepCrossedRowsCut(0), fNumberOfCentralityBins(20), fCentralityType("V0A"), fMatchTr(), fMatchChi(), fPrimaryVertex(0), fFirstLeadingJet(0), fSecondLeadingJet(0), fFirstLeadingKTJet(0), fSecondLeadingKTJet(0), fNumberSignalJets(0), fNumberSignalJetsAbove5GeV(0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fIsDEBUG(0), fIsPA(1), fNoTerminate(1), fEventCounter(0), fTempExcludedRCs(0), fTempAllRCs(1), fTempOverlapCounter(0), fTempMeanExclusionProbability(0), fHybridESDtrackCuts(0), fHybridESDtrackCuts_variedPtDep(0), fHybridESDtrackCuts_variedPtDep2(0)
 {
   #ifdef DEBUGMODE
     AliInfo("Calling constructor.");
@@ -1416,11 +1416,8 @@ Double_t AliAnalysisTaskChargedJetsPA::GetDeltaPt(Double_t rho, Double_t overlap
   // Define an invalid delta pt
   Double_t deltaPt = -10000.0;
 
-  // Define the static ratio of excluded RCs over all RCs
-  static Int_t excludedRCs = 0; 
-  static Int_t allRCs = 1; 
-  static Double_t meanExclusionProbability = 0;
-  Double_t ratioExcludedRCs = static_cast<Double_t>(excludedRCs)/allRCs;
+  // Define the ratio of excluded RCs over all RCs
+  Double_t ratioExcludedRCs = static_cast<Double_t>(fTempExcludedRCs)/fTempAllRCs;
 
   // Define eta range
   Double_t etaMin, etaMax;
@@ -1436,9 +1433,8 @@ Double_t AliAnalysisTaskChargedJetsPA::GetDeltaPt(Double_t rho, Double_t overlap
   if(overlappingJetExclusionProbability)
   {
     // Calculate the mean exclusion probability
-    static Int_t counter = 0;
-    counter++;
-    meanExclusionProbability += overlappingJetExclusionProbability;
+    fTempOverlapCounter++;
+    fTempMeanExclusionProbability += overlappingJetExclusionProbability;
     // For all jets, check overlap
     for (Int_t i = 0; i<fJetArray->GetEntries(); i++)
     {
@@ -1449,18 +1445,17 @@ Double_t AliAnalysisTaskChargedJetsPA::GetDeltaPt(Double_t rho, Double_t overlap
       Double_t tmpDeltaPhi = GetDeltaPhi(tmpRandConePhi, tmpJet->Phi());
       if ( tmpDeltaPhi*tmpDeltaPhi + (tmpRandConeEta-tmpJet->Eta())*(tmpRandConeEta-tmpJet->Eta()) <= fRandConeRadius*fRandConeRadius )
       {
-        allRCs++;
+        fTempAllRCs++;
         // If an overlap is given, discard or accept it according to the exclusion prob. 
-        if(ratioExcludedRCs < meanExclusionProbability/counter) // to few RCs excluded -> exclude this one
+        if(ratioExcludedRCs < fTempMeanExclusionProbability/fTempOverlapCounter) // to few RCs excluded -> exclude this one
         {
           coneValid = kFALSE;
-          excludedRCs++;
+          fTempExcludedRCs++;
         }
         else  // to many RCs excluded -> take this one
           coneValid = kTRUE;
       }
     }
-    cout << Form("Ratio of excluded RCs/all RCs: %d/%d=%3.3f, prob=%E, mean=%E", excludedRCs, allRCs, ratioExcludedRCs, overlappingJetExclusionProbability, meanExclusionProbability/counter) << endl;
   }
 
 
