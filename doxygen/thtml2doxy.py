@@ -323,7 +323,6 @@ def comment_classdesc(filename, comments):
 
       if raw.strip() == '' and start_line > 0:
         # Skip empty lines
-        end_line = line_num - 1
         continue
 
       stripped = strip_html(raw)
@@ -345,6 +344,7 @@ def comment_classdesc(filename, comments):
 
           start_line = line_num
 
+        end_line = line_num
         append = True
 
         mclass_doxy = re.search(reclass_doxy, mcomm.group(1))
@@ -370,9 +370,6 @@ def comment_classdesc(filename, comments):
 
       else:
         if start_line > 0:
-          # End of our comment
-          if end_line == -1:
-            end_line = line_num - 1
           break
 
   if class_name_doxy is None:
