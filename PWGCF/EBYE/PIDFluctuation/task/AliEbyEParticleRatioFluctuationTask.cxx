@@ -145,7 +145,7 @@ void AliEbyEParticleRatioFluctuationTask::UserExec( Option_t * ){
   
   AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(event->GetHeader());
   if(!aodHeader) AliFatal("Not a standard AOD");
-  gCent = (Int_t)aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
+  gCent = (Int_t)aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data()); // V0M`
   gRefMul = aodHeader->GetRefMultiplicity();
   if (gCent < 0 || gCent > 100) return;
   if (isQA) fEventCounter->Fill(2);  
