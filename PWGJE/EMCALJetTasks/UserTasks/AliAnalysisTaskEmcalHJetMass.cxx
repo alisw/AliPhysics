@@ -350,7 +350,7 @@ namespace EmcalHJetMassAnalysis {
     fh3PtJet1VsMassVsHPtAllSel[fCentBin]->Fill(ptJet,mJet,pt);
     fh3PtJet1VsRatVsHPtAllSel[fCentBin]->Fill(ptJet,rat,pt);
 
-    Double_t fraction = -1.;
+    Double_t fraction = 1.;
     if(fUseUnsubJet) {
       AliEmcalJet *jetUS = NULL;
       AliJetContainer *jetContUS = GetJetContainer(fContainerUnsub);
@@ -371,13 +371,15 @@ namespace EmcalHJetMassAnalysis {
       AliJetContainer *jetCont = GetJetContainer(fContainerBase);
       fraction = jetCont->GetFractionSharedPt(jet);
     }
-  
-    if(fMinFractionShared>0. && fraction>fMinFractionShared) {
-      if(fMarkMCLabel>0 && TMath::Abs(vp->GetLabel()) >= fMarkMCLabel ) {
-        //        Printf("Accepting track with pT=%f because it does match the bit mask (%d, %d, %d). label: %d fMarkMCLabel: %d", vp->Pt(), fEmbConstSel, vp->TestBits(fEmbConstSel), vp->TestBit(fEmbConstSel),vp->GetLabel(),fMarkMCLabel);
+
+    Bool_t mcMatch = kFALSE;
+    if(fMarkMCLabel>0 && TMath::Abs(vp->GetLabel()) >= fMarkMCLabel ) mcMatch = kTRUE;  
+    if(fMinFractionShared>0. && fraction>fMinFractionShared) mcMatch = kTRUE;
+    else mcMatch = kFALSE;
+
+    if(mcMatch) {
         fh3PtJet1VsMassVsHPtAllSelMatch[fCentBin]->Fill(ptJet,mJet,pt);
         fh3PtJet1VsRatVsHPtAllSelMatch[fCentBin]->Fill(ptJet,rat,pt);
-      }
     }
 
     if(jet->GetTagStatus()<1 || !jet->GetTaggedJet())
@@ -386,11 +388,9 @@ namespace EmcalHJetMassAnalysis {
     fh3PtJet1VsMassVsHPtTagged[fCentBin]->Fill(ptJet,mJet,pt);
     fh3PtJet1VsRatVsHPtTagged[fCentBin]->Fill(ptJet,rat,pt);
 
-    if(fMinFractionShared>0. && fraction>fMinFractionShared) {
-      if(fMarkMCLabel>0 && TMath::Abs(vp->GetLabel()) >= fMarkMCLabel ) {
+    if(mcMatch) {
         fh3PtJet1VsMassVsHPtTaggedMatch[fCentBin]->Fill(ptJet,mJet,pt);
         fh3PtJet1VsRatVsHPtTaggedMatch[fCentBin]->Fill(ptJet,rat,pt);
-      }
     }
     return kTRUE;
   }

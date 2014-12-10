@@ -35,6 +35,7 @@ class AliParticleContainer : public AliEmcalContainer {
   void                        SetClassName(const char *clname);
   void                        SetMCTrackBitMap(UInt_t m)                        { fMCTrackBitMap   = m ; }
   void                        SetMinMCLabel(Int_t s)                            { fMinMCLabel      = s ; }
+  void                        SetMinMCLabelAccept(Int_t s)                      { fMinMCLabelAccept= s ; }
   void                        SetParticlePtCut(Double_t cut)                    { fParticlePtCut = cut ; }
   void                        SetParticleEtaLimits(Double_t min, Double_t max)  { fParticleMaxEta = max ; fParticleMinEta = min ; }
   void                        SetParticlePhiLimits(Double_t min, Double_t max)  { fParticleMaxPhi = max ; fParticleMinPhi = min ; }
@@ -57,6 +58,7 @@ class AliParticleContainer : public AliEmcalContainer {
   UInt_t                      fTrackBitMap;                   // bit map of accepted tracks (non MC)
   UInt_t                      fMCTrackBitMap;                 // bit map of accepted MC tracks
   Int_t                       fMinMCLabel;                    // minimum MC label value for the tracks/clusters being considered MC particles
+  Int_t                       fMinMCLabelAccept;              // minimum MC label value to accept particle
   UInt_t                      fMCFlag;                        // select MC particles with flags
   Short_t                     fGeneratorIndex;                // select MC particles with generator index (default = -1 = switch off selection)
   Short_t                     fCharge;                        // select particles with charge=fCharge
@@ -65,7 +67,7 @@ class AliParticleContainer : public AliEmcalContainer {
   AliParticleContainer(const AliParticleContainer& obj); // copy constructor
   AliParticleContainer& operator=(const AliParticleContainer& other); // assignment
 
-  ClassDef(AliParticleContainer,4);
+  ClassDef(AliParticleContainer,5);
 
 };
 

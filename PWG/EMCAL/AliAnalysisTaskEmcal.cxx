@@ -1362,8 +1362,8 @@ void AliAnalysisTaskEmcal::SetRejectionReasonLabels(TAxis* axis)
   axis->SetBinLabel(9,  "MCFlag");
   axis->SetBinLabel(10, "MCGenerator");
   axis->SetBinLabel(11, "ChargeCut");
-  axis->SetBinLabel(12, "Bit11");
-  axis->SetBinLabel(13, "Bit12");
+  axis->SetBinLabel(12, "MinDistanceTPCSectorEdge");
+  axis->SetBinLabel(13, "MinMCLabelAccept");
   axis->SetBinLabel(14, "IsEMCal");
   axis->SetBinLabel(15, "Time");
   axis->SetBinLabel(16, "Energy");
