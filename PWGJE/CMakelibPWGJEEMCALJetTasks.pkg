@@ -113,6 +113,8 @@ set ( SRCS
  EMCALJetTasks/Tracks/AliAnalysisTaskPtEMCalTriggerV1.cxx
  EMCALJetTasks/Tracks/AliEMCalTriggerMCParticleAnalysisComponent.cxx
  EMCALJetTasks/Tracks/AliEMCalTriggerClusterAnalysisComponent.cxx
+ EMCALJetTasks/Tracks/AliEMCalTriggerEventCounterAnalysisComponent.cxx
+ EMCALJetTasks/Tracks/AliEMCalTriggerPatchAnalysisComponent.cxx
  EMCALJetTasks/Tracks/AliEMCalTriggerRecTrackAnalysisComponent.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalTriggerTreeWriter.cxx
 )
