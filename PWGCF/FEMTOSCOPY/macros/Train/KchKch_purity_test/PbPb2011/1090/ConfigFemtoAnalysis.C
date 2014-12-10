@@ -60,18 +60,18 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   //-------Single track cuts------------------------------------------------->
   //STANDART
-  //double DCAxy=2.4;//cm // our standard is 0.20 cm; super narrow was 0.015cm
- // double DCAz =3.0;//cm // our standard is 0.15 cm;
- //test //ptdependent cut
   double DCAxy=2.4;//cm // our standard is 0.20 cm; super narrow was 0.015cm
-  double DCAz =2.0;//cm // our standard is 0.15 cm;
+  double DCAz =3.0;//cm // our standard is 0.15 cm;
+ //test //ptdependent cut
+  //double DCAxy=2.4;//cm // our standard is 0.20 cm; super narrow was 0.015cm
+  //double DCAz =2.0;//cm // our standard is 0.15 cm;
   
   
   //-------Single track cuts-------------------------------------------------<
   //=======Double track cuts=================================================>
   //Dhevan's : PhiStarDifferenceMinimum=0.06; EtaDifferenceMinimum=0.02;
-  double PhiStarDifferenceMinimum=0.017; //[radian]
-  double EtaDifferenceMinimum=0.015; //[radian]
+  double PhiStarDifferenceMinimum=0.03;//0.017; //[radian]
+  double EtaDifferenceMinimum=0.02;//0.015; //[radian]
   //=======Double track cuts=================================================<
 
   // Switches for QA analyses
@@ -285,9 +285,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	    dtc1etaphitpc[aniter]->SetLabel(kFALSE);
 	    //    dtc1etaphitpc[aniter]->SetMaxITSChiNdof(6.0);
 	    dtc1etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);
-	//    dtc1etaphitpc[aniter]->SetMaxImpactXY(DCAxy);
+	    dtc1etaphitpc[aniter]->SetMaxImpactXY(DCAxy);
 //for TEST !!!!
-	    dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
+	//    dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
 	    dtc1etaphitpc[aniter]->SetMaxImpactZ(DCAz);  //3.0
 	    //      dtc1etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
 	  }
