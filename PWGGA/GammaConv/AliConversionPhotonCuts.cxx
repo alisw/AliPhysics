@@ -1883,7 +1883,8 @@ Bool_t AliConversionPhotonCuts::SetMinPhiSectorCut(Int_t minPhiCut) {
 
 	switch(minPhiCut) {
 	case 0:
-		fMinPhiCut = 6.3; //no cut on phi
+		fDoShrinkTPCAcceptance = kFALSE;
+		fMinPhiCut = 0;
 		break;
 	case 1:
 		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
@@ -1916,7 +1917,8 @@ Bool_t AliConversionPhotonCuts::SetMaxPhiSectorCut(Int_t maxPhiCut) {
 
 	switch(maxPhiCut) {
 	case 0:
-		fMaxPhiCut = 0.; //no cut
+		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kFALSE;
+		fMaxPhiCut = 2*TMath::Pi()+0.00001;
 		break;
 	case 1:
 		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;

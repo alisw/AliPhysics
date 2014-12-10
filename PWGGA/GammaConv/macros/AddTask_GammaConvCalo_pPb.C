@@ -114,6 +114,7 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 	task->SetIsMC(isMC);
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 2;
+	if (trainConfig==10 ){ numberOfCuts =4;}
 	if (trainConfig==2 || trainConfig==4  ){ numberOfCuts =6;}
 	if (trainConfig==5 || trainConfig==6 || trainConfig==7 || trainConfig==8 || trainConfig==32 || trainConfig==33){ numberOfCuts =5;}
 	
@@ -174,6 +175,11 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 	} else if (trainConfig == 9){ //PCM restriction in acceptance 
 		eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "002022093270028250400000"; clusterCutArray[0] = "10000042032030000"; mesonCutArray[0] = "01631031000000"; // PCM photons pointing to EMCAL loose
 		eventCutArray[ 1] = "8000001"; photonCutArray[ 1] = "002044093270028250400000"; clusterCutArray[1] = "10000042032030000"; mesonCutArray[1] = "01631031000000"; // PCM photons pointing to EMCAL tight
+	} else if (trainConfig == 10){ 
+		eventCutArray[ 0] = "8005201"; photonCutArray[ 0] = "002000093270028250400000"; clusterCutArray[0] = "10000042062030000"; mesonCutArray[0] = "01631031000000"; 
+		eventCutArray[ 1] = "8005201"; photonCutArray[ 1] = "002000093270028250400000"; clusterCutArray[1] = "10000042072030000"; mesonCutArray[1] = "01631031000000"; 
+		eventCutArray[ 2] = "8005201"; photonCutArray[ 2] = "002000093270028250400000"; clusterCutArray[2] = "10000042082030000"; mesonCutArray[2] = "01631031000000"; 
+		eventCutArray[ 3] = "8005201"; photonCutArray[ 3] = "002000093270028250400000"; clusterCutArray[3] = "10000042092030000"; mesonCutArray[3] = "01631031000000"; 
 		
 	//************************************************ PHOS clusters **********************************************************	
 	} else if (trainConfig == 31) {	// min energy = 0.3 GeV/c

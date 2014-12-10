@@ -113,8 +113,8 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  //change different set o
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 2;
 	if (trainConfig==2 || trainConfig==3 || trainConfig==4 || trainConfig==5 || trainConfig==6 || trainConfig==7 ){ numberOfCuts =5;}
-	if (trainConfig==8 ){ numberOfCuts =4;}
-	if (trainConfig==10 || trainConfig==31 || trainConfig==32 ){ numberOfCuts =6;}
+	if (trainConfig==8 || trainConfig==10){ numberOfCuts =4;}
+	if (trainConfig==11 || trainConfig==31 || trainConfig==32 ){ numberOfCuts =6;}
 
 	TString *eventCutArray = new TString[numberOfCuts];
 	TString *photonCutArray = new TString[numberOfCuts];
@@ -174,8 +174,13 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  //change different set o
 	} else if (trainConfig == 9){ // PCM variations
 		eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "002022093270008250400000"; clusterCutArray[0] = "10000042032030000"; mesonCutArray[0] = "01631031000000"; // restrict acceptance to EMCAL loose
 		eventCutArray[ 1] = "0000311"; photonCutArray[ 1] = "002044093270008250400000"; clusterCutArray[1] = "10000042032030000"; mesonCutArray[1] = "01631031000000"; // restrict acceptance to EMCAL tight
+	} else if (trainConfig == 10){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1)
+		eventCutArray[ 0] = "0005111"; photonCutArray[ 0] = "002000093270008250400000"; clusterCutArray[0] = "10000042062030000"; mesonCutArray[0] = "01631031000000"; // min Energy cluster = 4.5 GeV
+		eventCutArray[ 1] = "0005111"; photonCutArray[ 1] = "002000093270008250400000"; clusterCutArray[1] = "10000042072030000"; mesonCutArray[1] = "01631031000000"; // min Energy cluster = 5.0 GeV
+		eventCutArray[ 2] = "0005111"; photonCutArray[ 2] = "002000093270008250400000"; clusterCutArray[2] = "10000042082030000"; mesonCutArray[2] = "01631031000000"; // min Energy cluster = 5.5 GeV
+		eventCutArray[ 3] = "0005111"; photonCutArray[ 3] = "002000093270008250400000"; clusterCutArray[3] = "10000042092030000"; mesonCutArray[3] = "01631031000000"; // min Energy cluster = 6.0 GeV
 		// LHC13g	
-	} else if (trainConfig == 10){  // EMCAL clusters, EMCEGA triggers, track matching 0.035
+	} else if (trainConfig == 11){  // EMCAL clusters, EMCEGA triggers, track matching 0.035
 		eventCutArray[ 0] = "0008311"; photonCutArray[ 0] = "002000093270008250400000"; clusterCutArray[0] = "10000042032030000"; mesonCutArray[0] = "01631031000000"; // EMCEG1, 
 		eventCutArray[ 1] = "0008511"; photonCutArray[ 1] = "002000093270008250400000"; clusterCutArray[1] = "10000042032030000"; mesonCutArray[1] = "01631031000000"; // EMCEG2, 
 		eventCutArray[ 2] = "0009311"; photonCutArray[ 2] = "002000093270008250400000"; clusterCutArray[2] = "10000042032030000"; mesonCutArray[2] = "01631031000000"; // EMCEJ1, 
