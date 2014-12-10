@@ -36,7 +36,8 @@ namespace EMCalTriggerPtAnalysis {
 
 //______________________________________________________________________________
 AliEMCalTriggerEventCounterAnalysisComponent::AliEMCalTriggerEventCounterAnalysisComponent():
-  AliEMCalTriggerTracksAnalysisComponent()
+  AliEMCalTriggerTracksAnalysisComponent(),
+  fUsePatches(kFALSE)
 {
   /*
    * Default (I/O) constructor, not to be used
@@ -45,7 +46,8 @@ AliEMCalTriggerEventCounterAnalysisComponent::AliEMCalTriggerEventCounterAnalysi
 
 //______________________________________________________________________________
 AliEMCalTriggerEventCounterAnalysisComponent::AliEMCalTriggerEventCounterAnalysisComponent(const char *name):
-  AliEMCalTriggerTracksAnalysisComponent(name)
+  AliEMCalTriggerTracksAnalysisComponent(name),
+  fUsePatches(kFALSE)
 {
   /*
    * Main constructor
@@ -110,36 +112,36 @@ void AliEMCalTriggerEventCounterAnalysisComponent::Process(const AliEMCalTrigger
     triggerCorrelation[0] = 1.;
     fHistos->FillTH1("hEventHistMinBias", vz);
   }
-  if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJHigh)){
+  if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJHigh, fUsePatches)){
     triggerCorrelation[2] = 1.;
     fHistos->FillTH1("hEventHistEMCJHigh", vz);
     // Check whether also the gamma high-threshold trigger fired
-    if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCGHigh)){
+    if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCGHigh, fUsePatches)){
       fHistos->FillTH1("hEventHistEMCHighBoth", vz);
     } else {
       fHistos->FillTH1("hEventHistEMCHighJetOnly", vz);
     }
   }
-  if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJLow)){
+  if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJLow, fUsePatches)){
     triggerCorrelation[1] = 1.;
     fHistos->FillTH1("hEventHistEMCJLow", vz);
     // Check whether also the gamma high-threshold trigger fired
-    if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCGLow)){
+    if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCGLow, fUsePatches)){
       fHistos->FillTH1("hEventHistEMCLowBoth", vz);
     } else {
       fHistos->FillTH1("hEventHistEMCLowJetOnly", vz);
     }
   }
-  if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCGHigh)){
+  if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCGHigh, fUsePatches)){
     triggerCorrelation[3] = 1.;
     fHistos->FillTH1("hEventHistEMCGHigh", vz);
-    if(!fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJHigh))
+    if(!fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJHigh, fUsePatches))
       fHistos->FillTH1("hEventHistEMCHighGammaOnly", vz);
   }
-  if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCGLow)){
+  if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCGLow, fUsePatches)){
     triggerCorrelation[4] = 1.;
     fHistos->FillTH1("hEventHistEMCGLow", vz);
-    if(!fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJLow))
+    if(!fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJLow, fUsePatches))
       fHistos->FillTH1("hEventHistEMCLowGammaOnly", vz);
   }
 

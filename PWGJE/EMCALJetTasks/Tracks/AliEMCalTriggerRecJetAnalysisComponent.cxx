@@ -13,82 +13,79 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /*
- * Track analysis component: Loops over tracks from the EMCal track container and
- * counts the tracks in histograms
+ * Analysis component inspecting tracks with a minimum given jet pt
  *
  *   Author: Markus Fasel
  */
-#include <map>
 #include <string>
 #include <vector>
 
-#include <TAxis.h>
-#include <TClonesArray.h>
 #include <TMath.h>
 #include <TString.h>
 
+#include "AliEmcalJet.h"
+#include "AliJetContainer.h"
+#include "AliMCParticle.h"
 #include "AliMCEvent.h"
-#include "AliVCluster.h"
+#include "AliParticleContainer.h"
 #include "AliVEvent.h"
-#include "AliVParticle.h"
 #include "AliVTrack.h"
+#include "AliVVertex.h"
 
+#include "AliEMCalHistoContainer.h"
+#include "AliEMCalPtTaskVTrackSelection.h"
 #include "AliEMCalTriggerAnaTriggerDecision.h"
 #include "AliEMCalTriggerBinningComponent.h"
-#include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerKineCuts.h"
-#include "AliEMCalPtTaskVTrackSelection.h"
-#include "AliEMCalTriggerRecTrackAnalysisComponent.h"
+#include "AliEMCalTriggerEventData.h"
+#include "AliEMCalTriggerRecJetAnalysisComponent.h"
 
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent)
+ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent)
 
 namespace EMCalTriggerPtAnalysis {
 
 //______________________________________________________________________________
-AliEMCalTriggerRecTrackAnalysisComponent::AliEMCalTriggerRecTrackAnalysisComponent() :
+AliEMCalTriggerRecJetAnalysisComponent::AliEMCalTriggerRecJetAnalysisComponent() :
   AliEMCalTriggerTracksAnalysisComponent(),
   fTrackSelection(NULL),
-  fSwapEta(kFALSE),
-  fUsePatches(kFALSE),
-  fRequestMCtrue(kFALSE)
+  fMinimumJetPt(20.),
+  fRequestMCtrue(kFALSE),
+  fUsePatches(kFALSE)
 {
   /*
-   * Dummy (I/O) constructor
+   * Dummy (I/O) constructor, not to be used
    */
 }
 
 //______________________________________________________________________________
-AliEMCalTriggerRecTrackAnalysisComponent::AliEMCalTriggerRecTrackAnalysisComponent(const char *name) :
+AliEMCalTriggerRecJetAnalysisComponent::AliEMCalTriggerRecJetAnalysisComponent(const char* name) :
   AliEMCalTriggerTracksAnalysisComponent(name),
   fTrackSelection(NULL),
-  fSwapEta(kFALSE),
-  fUsePatches(kFALSE),
-  fRequestMCtrue(kFALSE)
+  fMinimumJetPt(20.),
+  fRequestMCtrue(kFALSE),
+  fUsePatches(kFALSE)
 {
   /*
-   * Main constructor
+   * Main constructor for the users
    */
 }
 
 //______________________________________________________________________________
-AliEMCalTriggerRecTrackAnalysisComponent::~AliEMCalTriggerRecTrackAnalysisComponent() {
+AliEMCalTriggerRecJetAnalysisComponent::~AliEMCalTriggerRecJetAnalysisComponent() {
   /*
-   * Destructor, taking care of the track selection
+   * Destructor
    */
   if(fTrackSelection) delete fTrackSelection;
 }
 
 //______________________________________________________________________________
-void AliEMCalTriggerRecTrackAnalysisComponent::CreateHistos() {
+void AliEMCalTriggerRecJetAnalysisComponent::CreateHistos() {
   /*
-   * Create histograms of the track analysis component. For each trigger class we have
-   * - tracks with esd information
-   * - tracks with MC information
-   * - tracks with clusters and esd information
-   * - tracks with clusters and MC information
+   * Create histrogram for the jet pt analysis
    */
   AliEMCalTriggerTracksAnalysisComponent::CreateHistos();
 
+  TString jetptstring = Form("jetPt%03d", int(fMinimumJetPt));
   // Create trigger definitions
   std::map<std::string, std::string> triggerCombinations;
   const char *triggernames[11] = {"MinBias", "EMCJHigh", "EMCJLow", "EMCGHigh",
@@ -113,8 +110,9 @@ void AliEMCalTriggerRecTrackAnalysisComponent::CreateHistos() {
       *phibinning = fBinning->GetBinning("phi"),
       *vertexbinning = fBinning->GetBinning("vertex");
 
-  const TAxis *trackaxes[5] = {
-      DefineAxis("pt", ptbinning),
+  const TAxis *trackaxes[6] = {
+      DefineAxis("trackpt", ptbinning),
+      DefineAxis("jettpt", ptbinning),
       DefineAxis("eta", etabinning),
       DefineAxis("phi", phibinning),
       DefineAxis("zvertex", vertexbinning),
@@ -124,56 +122,50 @@ void AliEMCalTriggerRecTrackAnalysisComponent::CreateHistos() {
   // Build histograms
   for(std::map<std::string,std::string>::iterator it = triggerCombinations.begin(); it != triggerCombinations.end(); ++it){
     const std::string name = it->first, &title = it->second;
-    fHistos->CreateTHnSparse(Form("hTrackHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 5, trackaxes, "s");
-    fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events  for tracks matched to EMCal clusters", title.c_str()), 5, trackaxes, "s");
-    fHistos->CreateTHnSparse(Form("hMCTrackHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics", title.c_str()), 5, trackaxes, "s");
-    fHistos->CreateTHnSparse(Form("hMCTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics for tracks matched to EMCal clusters", title.c_str()), 5, trackaxes, "s");
+    fHistos->CreateTHnSparse(Form("hTrackJetHist%s%s", jetptstring.Data(), name.c_str()), Form("Track-based data for tracks in jets in %s events", title.c_str()), 6, trackaxes, "s");
+    fHistos->CreateTHnSparse(Form("hMCTrackJetHist%s%s", jetptstring.Data(), name.c_str()), Form("Track-based data for tracks in jets in %s events with MC kinematics", title.c_str()), 6, trackaxes, "s");
   }
 
-  for(int iaxis = 0; iaxis < 5; iaxis++) delete trackaxes[iaxis];
+  for(int iaxis = 0; iaxis < 6; iaxis++) delete trackaxes[iaxis];
+
 }
 
 //______________________________________________________________________________
-void AliEMCalTriggerRecTrackAnalysisComponent::Process(const AliEMCalTriggerEventData* const data) {
+void AliEMCalTriggerRecJetAnalysisComponent::Process(const AliEMCalTriggerEventData* const data) {
   /*
-   * Run track loop on list of matching tracks
-   *
-   * @param data: the event data
+   * Analyse tracks from jets with a given minimum pt
    */
-
   std::vector<std::string> triggernames;
   this->GetMachingTriggerNames(triggernames, fUsePatches);
+  TString jetptstring = Form("jetPt%03d", int(fMinimumJetPt));
 
-  AliVTrack *track(NULL);
+  AliJetContainer *cont = data->GetJetContainerData();
+  AliEmcalJet *reconstructedJet = cont->GetNextAcceptJet(0);
+  AliVTrack *foundtrack(NULL);
   AliVParticle *assocMC(NULL);
-  TIter trackIter(data->GetMatchedTrackContainer());
-  while((track = dynamic_cast<AliVTrack *>(trackIter()))){
-    // Apply track selection
-    assocMC = NULL;
-    if(fKineCuts && !fKineCuts->IsSelected(track)) continue;
-    if(fTrackSelection && !fTrackSelection->IsTrackAccepted(track)) continue;
-    if(fRequestMCtrue && data->GetMCEvent() && !(assocMC = IsMCTrueTrack(track, data->GetMCEvent()))) continue;
-
-    // Try to match the cluster
-    Bool_t hasCluster = kFALSE;
-    AliVCluster *clust(NULL);
-    if(track->GetEMCALcluster() >= 0 && (clust = dynamic_cast<AliVCluster *>(data->GetClusterContainer()->At(track->GetEMCALcluster()))))
-      hasCluster = kTRUE;
-
-    // Fill histograms
-    for(std::vector<std::string>::iterator name = triggernames.begin(); name != triggernames.end(); name++){
-      FillHistogram(Form("hTrackHist%s", name->c_str()), track, NULL, data->GetRecEvent(), kFALSE);
-      if(hasCluster) FillHistogram(Form("hTrackInAcceptanceHist%s", name->c_str()), track, NULL, data->GetRecEvent(), kFALSE);
-      if(assocMC){
-        FillHistogram(Form("hMCTrackHist%s", name->c_str()), track, NULL, data->GetRecEvent(), kTRUE);
-        if(hasCluster) FillHistogram(Form("hMCTrackInAcceptanceHist%s", name->c_str()), track, NULL, data->GetRecEvent(), kTRUE);
+  while(reconstructedJet){
+    if(TMath::Abs(reconstructedJet->Pt()) > fMinimumJetPt){
+      // Jet selected, loop over particles
+      for(int ipart = 0; ipart < reconstructedJet->GetNumberOfTracks(); ipart++){
+        foundtrack = dynamic_cast<AliVTrack *>(reconstructedJet->TrackAt(ipart, cont->GetParticleContainer()->GetArray()));
+        if(!fKineCuts->IsSelected(foundtrack)) continue;
+        if(fRequestMCtrue && data->GetMCEvent() && (assocMC = IsMCTrueTrack(foundtrack, data->GetMCEvent()))) continue;
+        if(fTrackSelection && !fTrackSelection->IsTrackAccepted(foundtrack)) continue;
+        // track selected, fill histogram
+        for(std::vector<std::string>::iterator name = triggernames.begin(); name != triggernames.end(); ++name){
+          FillHistogram(Form("hTrackJetHist%s%s", jetptstring.Data(), name->c_str()), foundtrack,  reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ());
+          if(assocMC){
+            FillHistogram(Form("hTrackJetHist%s%s", jetptstring.Data(), name->c_str()), assocMC, reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ());
+          }
+        }
       }
     }
+    reconstructedJet = cont->GetNextAcceptJet();
   }
 }
 
 //______________________________________________________________________________
-AliVParticle * AliEMCalTriggerRecTrackAnalysisComponent::IsMCTrueTrack(
+AliVParticle * AliEMCalTriggerRecJetAnalysisComponent::IsMCTrueTrack(
     const AliVTrack* const trk, const AliMCEvent* evnt) const {
   /*
    * Check according to the associated MC information whether the track is a MC true track,
@@ -192,20 +184,14 @@ AliVParticle * AliEMCalTriggerRecTrackAnalysisComponent::IsMCTrueTrack(
 }
 
 //______________________________________________________________________________
-void AliEMCalTriggerRecTrackAnalysisComponent::FillHistogram(
-    const TString& histname, const AliVTrack* const trk,
-    const AliVParticle* assocMC, const AliVEvent* const recev,
-    Bool_t useMCkine) {
+void AliEMCalTriggerRecJetAnalysisComponent::FillHistogram(
+    const TString& histname, const AliVParticle* track, const AliEmcalJet* jet,
+    double vz) {
   /*
-   *
+   * Fill Histogram with relevant information
    */
-  if(useMCkine && !assocMC) return;
-  double data[5];
-  data[0] = useMCkine ? TMath::Abs(assocMC->Pt()) : TMath::Abs(trk->Pt());
-  data[1] = useMCkine ? assocMC->Eta() : trk->Eta();
-  data[2] = useMCkine ? assocMC->Phi() : trk->Phi();
-  data[3] = recev->GetPrimaryVertex()->GetZ();
-  data[4] = fTriggerDecision->IsMinBias();
+  if(!fTriggerDecision) return;
+  double data[6] = {TMath::Abs(track->Pt()), TMath::Abs(jet->Pt()), track->Eta(), track->Phi(), vz, fTriggerDecision->IsMinBias() ? 1. : 0.};
   fHistos->FillTHnSparse(histname.Data(), data);
 }
 
