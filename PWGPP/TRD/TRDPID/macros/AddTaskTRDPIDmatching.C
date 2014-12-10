@@ -6,10 +6,6 @@ AliAnalysisTask *AddTaskTRDPIDmatching(Int_t trigger=0, Int_t system=0){
     return 0;
   }
 
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-  Long_t r = gROOT->ProcessLine(Form("AddTaskPIDResponse(%d)", kFALSE));
-  AliAnalysisTask *pidTask = reinterpret_cast<AliAnalysisTask*>(r);
-  if(!pidTask) { printf("no pidTask"); exit(1); }
 
   //========= Add task to the ANALYSIS manager =====
   AliTRDPIDmatching *task = new AliTRDPIDmatching("TRDPIDmatching");

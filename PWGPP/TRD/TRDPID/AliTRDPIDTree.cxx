@@ -66,8 +66,7 @@ AliTRDPIDTree::AliTRDPIDTree(const char *name)
     fESDtrackCutsV0(0), fListQATRD(0x0), fListQATRDV0(0x0),
     fNumTagsStored(0), fCollisionSystem(3),
     fpdg(0), frun(0), frunnumber(0), fcentrality(0), fTRDNtracklets(0), fTRDNcls(0), fTRDntracklets(0), fTRDntrackletsPID(0),
-    fTRDtheta(0), fTRDsignal(0), fTRDnclsdEdx(0), fTRDnch(0), fPDG(0), fPDGTRUE(0), fChi2(0),
-    fhtrackCuts(0), fhArmenteros(0)
+    fTRDtheta(0), fTRDsignal(0), fTRDnclsdEdx(0), fTRDnch(0), fPDG(0), fPDGTRUE(0), fChi2(0), fhtrackCuts(0), fhArmenteros(0)
 {
 
   //
@@ -144,6 +143,9 @@ void AliTRDPIDTree::UserCreateOutputObjects()
     fTreeTRDPID->Branch("PDGTRUE",&fPDGTRUE);
     fTreeTRDPID->Branch("DCA[2]",fDCA);
     fTreeTRDPID->Branch("Chi2",&fChi2);
+    fTreeTRDPID->Branch("TRDsigma[5]",fsigmaTRD);
+    fTreeTRDPID->Branch("TRDdelta[5]",fdeltaTRD);
+    fTreeTRDPID->Branch("TRDratio[5]",fratioTRD);
 
     PostData(1,fTreeTRDPID);
 
@@ -295,9 +297,7 @@ void AliTRDPIDTree::FillTree(AliESDtrack *track, Int_t pdgfromv0, Int_t runnumbe
     UInt_t status = track->GetStatus();
     Bool_t hasTOFout  = status&AliESDtrack::kTOFout;
     Bool_t hasTOFtime = status&AliESDtrack::kTIME;
-    Bool_t hasTOF     = kFALSE;
-    if (hasTOFout && hasTOFtime) hasTOF = kTRUE;
-    else return;
+    if(!(hasTOFout && hasTOFtime)) return;
 
     // add kaons?
     Double_t nSigmaTPC, nSigmaTOF;
@@ -379,12 +379,11 @@ void AliTRDPIDTree::FillTree(AliESDtrack *track, Int_t pdgfromv0, Int_t runnumbe
 	}
     }
 
-    Double_t sigmaTRD[5], deltaTRD[5], ratioTRD[5];
     AliPID::EParticleType types[]={AliPID::kElectron, AliPID::kMuon, AliPID::kPion, AliPID::kKaon, AliPID::kProton};
     for(Int_t itrdpid=0; itrdpid<5; itrdpid++){
-	sigmaTRD[itrdpid]= fPIDResponse->NumberOfSigmas(AliPIDResponse::kTRD, track, types[itrdpid]); //  (signal-expsig)/(sigma), where sigma = mean*resolution
-	deltaTRD[itrdpid]= fPIDResponse->GetSignalDelta(AliPIDResponse::kTRD, track, types[itrdpid]);   // signal/(expsig)
-	ratioTRD[itrdpid]= fPIDResponse->GetSignalDelta(AliPIDResponse::kTRD, track, types[itrdpid], kTRUE);  // difference signal to theor. value divided by resolution
+	fsigmaTRD[itrdpid]= fPIDResponse->NumberOfSigmas(AliPIDResponse::kTRD, track, types[itrdpid]); //  (signal-expsig)/(sigma), where sigma = mean*resolution
+	fdeltaTRD[itrdpid]= fPIDResponse->GetSignalDelta(AliPIDResponse::kTRD, track, types[itrdpid]);   // signal/(expsig)
+	fratioTRD[itrdpid]= fPIDResponse->GetSignalDelta(AliPIDResponse::kTRD, track, types[itrdpid], kTRUE);  // difference signal to theor. value divided by resolution
     }
 
 
