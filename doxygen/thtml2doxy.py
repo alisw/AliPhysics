@@ -468,6 +468,12 @@ def refactor_comment(comment, do_strip_html=True):
   recomm = r'^(/{2,}|/\*)? ?(\s*.*?)\s*((/{2,})?\s*|\*/)$'
   regarbage = r'^(?i)\s*([\s*=-_#]+|(Begin|End)_Html)\s*$'
 
+  # Support for LaTeX blocks spanning on multiple lines
+  relatex = r'(?i)^((.*?)\s+)?(BEGIN|END)_LATEX([.,;:\s]+.*)?$'
+  in_latex = False
+  latex_block = False
+
+  # Support for LaTeX blocks on a single line
   reinline_latex = r'(?i)(.*)BEGIN_LATEX\s+(.*?)\s+END_LATEX(.*)$'
 
   new_comment = []
@@ -504,7 +510,68 @@ def refactor_comment(comment, do_strip_html=True):
           else:
             break
 
-        new_comment.append( new_line_comment )
+        # ROOT LaTeX: do we have a Begin/End_LaTeX block?
+        # Note: the presence of LaTeX "closures" does not exclude the possibility to have a begin
+        # block here left without a corresponding ending block
+        mlatex = re.search( relatex, new_line_comment )
+        if mlatex:
+
+          # before and after parts have been already stripped
+          l_before = mlatex.group(2)
+          l_after = mlatex.group(4)
+          is_begin = mlatex.group(3).upper() == 'BEGIN'  # if not, END
+
+          if l_before is None:
+            l_before = ''
+          if l_after is None:
+            l_after = ''
+
+          if is_begin:
+
+            # Begin of LaTeX part
+
+            in_latex = True
+            if l_before == '' and l_after == '':
+
+              # Opening tag alone: mark the beginning of a block: \f[ ... \f]
+              latex_block = True
+              new_comment.append( '\\f[' )
+
+            else:
+              # Mark the beginning of inline: \f$ ... \f$
+              latex_block = False
+              new_comment.append(
+                '%s \\f$%s' % ( l_before, l_after.replace('#', '\\') )
+              )
+
+          else:
+
+            # End of LaTeX part
+            in_latex = False
+
+            if latex_block:
+
+              # Closing a LaTeX block
+              if l_before != '':
+                new_comment.append( l_before.replace('#', '\\') )
+              new_comment.append( '\\f]' )
+              if l_after != '':
+                new_comment.append( l_after )
+
+            else:
+
+              # Closing a LaTeX inline
+              new_comment.append(
+                '%s\\f$%s' % ( l_before.replace('#', '\\'), l_after )
+              )
+
+          # Prevent appending lines (we have already done that)
+          new_line_comment = None
+
+        if new_line_comment is not None:
+          if in_latex:
+            new_line_comment = new_line_comment.replace('#', '\\')
+          new_comment.append( new_line_comment )
 
     else:
       assert False, 'Comment regexp does not match'
