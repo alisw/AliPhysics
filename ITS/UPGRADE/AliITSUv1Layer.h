@@ -91,6 +91,7 @@ class AliITSUv1Layer : public AliITSv11Geometry {
     TGeoVolume* CreateStaveModelInnerB21(Double_t x,Double_t z, const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateStaveModelInnerB22(Double_t x,Double_t z, const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateStaveModelInnerB3(Double_t x,Double_t z, const TGeoManager *mgr=gGeoManager);
+    TGeoVolume* CreateStaveModelInnerB4(Double_t x,Double_t z, const TGeoManager *mgr=gGeoManager);
 
     TGeoVolume* CreateStaveOuterB(const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateStaveModelOuterBDummy(const TGeoManager *mgr=gGeoManager) const;
@@ -141,6 +142,25 @@ class AliITSUv1Layer : public AliITSv11Geometry {
     // Inner Barrel Parameters
     static const Int_t    fgkIBChipsPerRow;      // IB chips per row in module
     static const Int_t    fgkIBNChipRows;        // IB chip rows in module
+
+    static const Double_t fgkIBFlexCableAlThick; // Thickness of FPC Aluminum
+    static const Double_t fgkIBFlexCableKapThick;// Thickness of FPC Kapton
+    static const Double_t fgkIBGlueThick;        // IB glue thickness
+    static const Double_t fgkIBCarbonFleeceThick;// IB carbon fleece thickness
+    static const Double_t fgkIBCarbonPaperThick; // IB Carbon Paper Thickness
+    static const Double_t fgkIBK13D2UThick;      // IB k13d2u prepreg thickness
+    static const Double_t fgkIBCoolPipeInnerD;   // IB cooling inner diameter
+    static const Double_t fgkIBCoolPipeThick;    // IB cooling pipe thickness
+    static const Double_t fgkIBCoolPipeXDist;    // IB cooling pipe separation
+    static const Double_t fgkIBTopVertexWidth;   // IB TopVertex width
+    static const Double_t fgkIBTopVertexHeight;  // IB TopVertex height
+    static const Double_t fgkIBSideVertexWidth;  // IB SideVertex width
+    static const Double_t fgkIBSideVertexHeight; // IB SideVertex height
+    static const Double_t fgkIBTopFilamentLength;// IB TopFilament length
+    static const Double_t fgkIBTopFilamentSide;  // IB TopFilament side
+    static const Double_t fgkIBTopFilamentAlpha; // IB TopFilament angle
+
+    static const Double_t fgkIBStaveHeight;      // IB Stave Total Y Height
 
     // Outer Barrel Parameters
     static const Int_t    fgkOBChipsPerRow;      // OB chips per row in module

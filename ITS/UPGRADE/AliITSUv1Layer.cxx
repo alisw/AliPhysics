@@ -54,6 +54,25 @@ const Double_t AliITSUv1Layer::fgkDefaultChipThick    =  50*fgkmicron;
 const Int_t    AliITSUv1Layer::fgkIBChipsPerRow       =   9;
 const Int_t    AliITSUv1Layer::fgkIBNChipRows         =   1;
 
+const Double_t AliITSUv1Layer::fgkIBFlexCableAlThick  =  50.0  *fgkmicron;
+const Double_t AliITSUv1Layer::fgkIBFlexCableKapThick = 125.0  *fgkmicron;
+const Double_t AliITSUv1Layer::fgkIBGlueThick         = 100.0  *fgkmicron;
+const Double_t AliITSUv1Layer::fgkIBCarbonFleeceThick =  20.0  *fgkmicron;
+const Double_t AliITSUv1Layer::fgkIBCarbonPaperThick  =  30.0  *fgkmicron;
+const Double_t AliITSUv1Layer::fgkIBK13D2UThick       =  70.0  *fgkmicron;
+const Double_t AliITSUv1Layer::fgkIBCoolPipeInnerD    =   1.024*fgkmm;
+const Double_t AliITSUv1Layer::fgkIBCoolPipeThick     =  25.4  *fgkmicron;
+const Double_t AliITSUv1Layer::fgkIBCoolPipeXDist     =   5.0  *fgkmm;
+const Double_t AliITSUv1Layer::fgkIBTopVertexWidth    =   0.072*fgkcm;
+const Double_t AliITSUv1Layer::fgkIBTopVertexHeight   =   0.04 *fgkcm;
+const Double_t AliITSUv1Layer::fgkIBSideVertexWidth   =   0.052*fgkcm;
+const Double_t AliITSUv1Layer::fgkIBSideVertexHeight  =   0.11 *fgkcm;
+const Double_t AliITSUv1Layer::fgkIBTopFilamentLength =   0.844*fgkcm;
+const Double_t AliITSUv1Layer::fgkIBTopFilamentSide   =   0.02 *fgkcm;
+const Double_t AliITSUv1Layer::fgkIBTopFilamentAlpha  =  57.0; // Deg
+
+const Double_t AliITSUv1Layer::fgkIBStaveHeight       =   0.283*fgkcm;
+
 // Outer Barrel Parameters
 const Int_t    AliITSUv1Layer::fgkOBChipsPerRow       =   7;
 const Int_t    AliITSUv1Layer::fgkOBNChipRows         =   2;
@@ -481,8 +500,9 @@ TGeoVolume* AliITSUv1Layer::CreateStave(const TGeoManager * /*mgr*/){
   // Mechanical stave structure
     mechStaveVol = CreateStaveStructInnerB(xlen,zlen); 
     if (mechStaveVol) {
-      ypos = ((TGeoBBox*)(modVol->GetShape()))->GetDY() +
-             ((TGeoBBox*)(mechStaveVol->GetShape()))->GetDY();
+      ypos = ((TGeoBBox*)(modVol->GetShape()))->GetDY();
+      if (fStaveModel != AliITSUv1::kIBModel4)
+	ypos += ((TGeoBBox*)(mechStaveVol->GetShape()))->GetDY();
       staveVol->AddNode(mechStaveVol, 1, new TGeoCombiTrans(0, -ypos, 0, new TGeoRotation("",0, 0, 180)));
     }
   }
@@ -649,6 +669,9 @@ TGeoVolume* AliITSUv1Layer::CreateStaveStructInnerB(const Double_t xsta,
       break;
     case AliITSUv1::kIBModel3:
       mechStavVol = CreateStaveModelInnerB3(xsta,zsta,mgr);
+      break;
+    case AliITSUv1::kIBModel4:
+      mechStavVol = CreateStaveModelInnerB4(xsta,zsta,mgr);
       break;
     default:
       AliFatal(Form("Unknown stave model %d",fStaveModel));
@@ -1294,6 +1317,7 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelInnerB21(const Double_t xsta,
   return mechStavVol;
   
 }
+
 // new model22
 //________________________________________________________________________
 TGeoVolume* AliITSUv1Layer::CreateStaveModelInnerB22(const Double_t xsta,
@@ -1912,6 +1936,368 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelInnerB3(const Double_t xsta,
   // Done, return the stave structur
     return mechStavVol;
  }
+
+// model4
+//________________________________________________________________________
+TGeoVolume* AliITSUv1Layer::CreateStaveModelInnerB4(const Double_t xstave,
+						    const Double_t zstave,
+						    const TGeoManager *mgr){
+//
+// Create the mechanical stave structure for Model 2.2 of TDR
+// Logic is similar to method CreateStaveModelInnerB22
+// but completely rewritten:
+// - code completely revised, made systematic and more similar to OB
+// - fix some inconsistencies (stave element sequence, empty space)
+// - use static const as parameters
+// - comply with latest (nov '14) C.Gargiulo data
+//
+// Input:
+//         xstave : stave X half length
+//         zstave : stave Z half length
+//         mgr    : the GeoManager (used only to get the proper material)
+//
+// Output:
+//
+// Return:
+//
+// Created:      04 Dec 2014  Mario Sitta
+//
+
+  
+  // Local parameters
+  Double_t layerHeight = 0.;
+
+  Double_t rPipeMin = fgkIBCoolPipeInnerD/2;
+  Double_t rPipeMax = rPipeMin + fgkIBCoolPipeThick;
+
+  Double_t topFilTheta = fgkIBTopFilamentAlpha*TMath::DegToRad();
+  Double_t topFilLProj = xstave/TMath::Sin(topFilTheta); // Top filament length projected on stave XZ plane
+  Double_t topFilYLen = xstave/TMath::Tan(topFilTheta); // Filament length on Y
+  Int_t  nFilaments = (Int_t)(zstave/topFilYLen);
+  // Question: would it be better to fix the number of filaments and
+  // compute the angle alpha from it, or leave as it is now, i.e. fix the
+  // filament inclination angle alpha and compute their number ?
+
+  const Int_t nv = 6;
+  Double_t xv[nv], yv[nv]; // The stave container Xtru
+  Double_t xlen;
+  Double_t xpos, ypos, zpos, ylay;
+  Double_t beta, gamma, theta;
+
+
+  // First create all needed shapes
+  TGeoBBox *kapCable = new TGeoBBox(xstave, fgkIBFlexCableKapThick/2, zstave);
+
+  TGeoBBox *aluCable = new TGeoBBox(xstave, fgkIBFlexCableAlThick/2, zstave);
+
+  TGeoBBox *glue     = new TGeoBBox(xstave, fgkIBGlueThick/2, zstave);
+
+  TGeoBBox *fleecbot = new TGeoBBox(xstave, fgkIBCarbonFleeceThick/2, zstave);
+
+  TGeoBBox *cfplate  = new TGeoBBox(xstave, fgkIBK13D2UThick/2, zstave);
+
+  TGeoTube *pipe     = new TGeoTube(rPipeMin, rPipeMax, zstave);
+
+  TGeoTube *water    = new TGeoTube(0., rPipeMin, zstave);
+
+  TGeoTubeSeg *cpaptub  = new TGeoTubeSeg(rPipeMax,
+					  rPipeMax + fgkIBCarbonPaperThick,
+					  zstave, 0, 180);
+
+  TGeoBBox *cpapvert = new TGeoBBox(fgkIBCarbonPaperThick/2,
+				    pipe->GetRmax()/2, zstave);
+
+  xlen = fgkIBCoolPipeXDist/2 - pipe->GetRmax() - fgkIBCarbonPaperThick;
+  TGeoBBox *cpapmid  = new TGeoBBox(xlen, fgkIBCarbonPaperThick/2, zstave);
+
+  xlen = xstave -fgkIBCoolPipeXDist/2 -pipe->GetRmax() -fgkIBCarbonPaperThick;
+  TGeoBBox *cpaplr   = new TGeoBBox(xlen/2, fgkIBCarbonPaperThick/2, zstave);
+
+  TGeoTubeSeg *fleecpipe = new TGeoTubeSeg(cpaptub->GetRmax(),
+			       cpaptub->GetRmax() + fgkIBCarbonFleeceThick,
+					   zstave, 0, 180); 
+
+  TGeoBBox *fleecvert = new TGeoBBox(fgkIBCarbonFleeceThick/2,
+			 	     (pipe->GetRmax()-fgkIBCarbonPaperThick)/2,
+				     zstave);
+
+  xlen = fgkIBCoolPipeXDist/2 - pipe->GetRmax() - fgkIBCarbonPaperThick
+       - fgkIBCarbonFleeceThick;
+  TGeoBBox *fleecmid  = new TGeoBBox(xlen, fgkIBCarbonFleeceThick/2, zstave);
+
+  xlen = xstave - fgkIBCoolPipeXDist/2 - pipe->GetRmax()
+       - fgkIBCarbonPaperThick - fgkIBCarbonFleeceThick;
+  TGeoBBox *fleeclr   = new TGeoBBox(xlen/2, fgkIBCarbonFleeceThick/2, zstave);
+
+  // The spaceframe structure
+  TGeoTrd1 *topv  = new TGeoTrd1(0, fgkIBTopVertexWidth/2, zstave,
+				    fgkIBTopVertexHeight/2);
+
+  TGeoTrd1 *sidev = new TGeoTrd1(0, fgkIBSideVertexWidth/2, zstave,
+				    fgkIBSideVertexHeight/2);
+
+  TGeoBBox *topfil = new TGeoBBox(fgkIBTopFilamentLength/2,
+				  fgkIBTopFilamentSide/2,
+				  fgkIBTopFilamentSide/2);
+
+  // The half stave container (an XTru to avoid overlaps between neighbours)
+  beta = TMath::ATan(2*sidev->GetDz()/sidev->GetDx2());
+  gamma = TMath::PiOver2() - beta;
+
+  layerHeight = 2*(  kapCable->GetDY() + aluCable->GetDY() +   glue->GetDY()
+	           + fleecbot->GetDY() +  cfplate->GetDY() + cpaplr->GetDY()
+	           +  fleeclr->GetDY() );
+
+  xv[0] = xstave;
+  yv[0] = 0;
+  xv[1] = xv[0];
+  yv[1] = layerHeight + fgkIBSideVertexHeight;
+  xv[2] = fgkIBTopVertexWidth/2;
+  yv[2] = fgkIBStaveHeight + 2*topfil->GetDZ();
+  for (Int_t i = 0; i<nv/2; i++) {
+    xv[3+i] = -xv[2-i];
+    yv[3+i] =  yv[2-i];
+  }
+
+  TGeoXtru *mechStruct = new TGeoXtru(2);
+  mechStruct->DefinePolygon(nv, xv, yv);
+  mechStruct->DefineSection(0,-zstave-topfil->GetDY());
+  mechStruct->DefineSection(1, zstave+topfil->GetDY());
+
+
+  // We have all shapes: now create the real volumes
+
+  TGeoMedium *medAir          = mgr->GetMedium("ITS_AIR$");
+  TGeoMedium *medWater        = mgr->GetMedium("ITS_WATER$");
+  TGeoMedium *medM55J6K       = mgr->GetMedium("ITS_M55J6K$"); 
+  TGeoMedium *medM60J3K       = mgr->GetMedium("ITS_M60J3K$"); 
+  TGeoMedium *medKapton       = mgr->GetMedium("ITS_KAPTON(POLYCH2)$");
+  TGeoMedium *medGlue         = mgr->GetMedium("ITS_GLUE$");
+  TGeoMedium *medK13D2U2k     = mgr->GetMedium("ITS_K13D2U2k$");
+  TGeoMedium *medFGS003       = mgr->GetMedium("ITS_FGS003$"); 
+  TGeoMedium *medCarbonFleece = mgr->GetMedium("ITS_CarbonFleece$"); 
+  TGeoMedium *medAluminum     = mgr->GetMedium("ITS_ALUMINUM$");
+
+
+  char volname[30];
+  snprintf(volname, 30, "%s%d_StaveStruct",
+	   AliITSUGeomTGeo::GetITSStavePattern(), fLayerNumber);
+  TGeoVolume *mechStavVol = new TGeoVolume(volname, mechStruct, medAir);
+  mechStavVol->SetLineColor(12);
+  mechStavVol->SetFillColor(12); 
+  mechStavVol->SetVisibility(kTRUE);  
+
+  TGeoVolume *kapCableVol = new TGeoVolume("FPCKapton", kapCable, medKapton);
+  kapCableVol->SetLineColor(kBlue);
+  kapCableVol->SetFillColor(kBlue);
+
+  TGeoVolume *aluCableVol = new TGeoVolume("FPCAluminum",
+					   aluCable, medAluminum);
+  aluCableVol->SetLineColor(kCyan);
+  aluCableVol->SetFillColor(kCyan);
+
+  TGeoVolume *glueVol = new TGeoVolume("Glue", glue, medGlue);
+  glueVol->SetLineColor(kBlack);
+  glueVol->SetFillColor(kBlack);
+
+  TGeoVolume *fleecbotVol = new TGeoVolume("CarbonFleeceBottom",
+					   fleecbot, medCarbonFleece);
+  fleecbotVol->SetFillColor(kViolet);
+  fleecbotVol->SetLineColor(kViolet);
+
+  TGeoVolume *cfplateVol = new TGeoVolume("CFPlate", cfplate, medK13D2U2k);
+  cfplateVol->SetFillColor(5);  // Yellow
+  cfplateVol->SetLineColor(5);
+
+  TGeoVolume *pipeVol = new TGeoVolume("PolyimidePipe", pipe, medKapton);
+  pipeVol->SetFillColor(35);  // Blue shade
+  pipeVol->SetLineColor(35);
+
+  TGeoVolume *waterVol= new TGeoVolume("Water", water, medWater);
+  waterVol->SetFillColor(4);  // Bright blue
+  waterVol->SetLineColor(4);
+
+  TGeoVolume *cpaptubVol = new TGeoVolume("ThermasolPipeCover",
+					  cpaptub, medFGS003);
+  cpaptubVol->SetFillColor(2);  // Red
+  cpaptubVol->SetLineColor(2);
+
+  TGeoVolume *cpapvertVol = new TGeoVolume("ThermasolVertical",
+					   cpapvert, medFGS003);
+  cpapvertVol->SetFillColor(2);  // Red
+  cpapvertVol->SetLineColor(2);
+
+  TGeoVolume *cpapmidVol = new TGeoVolume("ThermasolMiddle",
+					  cpapmid, medFGS003);
+  cpapmidVol->SetFillColor(2);  // Red
+  cpapmidVol->SetLineColor(2);
+
+  TGeoVolume *cpaplrVol = new TGeoVolume("ThermasolLeftRight",
+					 cpaplr, medFGS003);
+  cpaplrVol->SetFillColor(2);  // Red
+  cpaplrVol->SetLineColor(2);
+
+  TGeoVolume *fleecpipeVol = new TGeoVolume("CarbonFleecePipeCover",
+					    fleecpipe, medCarbonFleece);
+  fleecpipeVol->SetFillColor(28);  // Brown shade
+  fleecpipeVol->SetLineColor(28);
+
+  TGeoVolume *fleecvertVol = new TGeoVolume("CarbonFleeceVertical",
+					    fleecvert, medCarbonFleece);
+  fleecvertVol->SetFillColor(28);  // Brown shade
+  fleecvertVol->SetLineColor(28);
+
+  TGeoVolume *fleecmidVol = new TGeoVolume("CarbonFleeceMiddle",
+					   fleecmid, medCarbonFleece);
+  fleecmidVol->SetFillColor(28);  // Brown shade
+  fleecmidVol->SetLineColor(28);
+
+  TGeoVolume *fleeclrVol = new TGeoVolume("CarbonFleeceLeftRight",
+					  fleeclr, medCarbonFleece);
+  fleeclrVol->SetFillColor(28);  // Brown shade
+  fleeclrVol->SetLineColor(28);
+
+  TGeoVolume *topvVol = new TGeoVolume("TopVertex", topv, medM55J6K);
+  topvVol->SetFillColor(12);  // Gray shade
+  topvVol->SetLineColor(12);
+  
+  TGeoVolume *sidevVol = new TGeoVolume("SideVertex", sidev, medM55J6K);
+  sidevVol->SetFillColor(12);  // Gray shade
+  sidevVol->SetLineColor(12);
+  
+  TGeoVolume *topfilVol = new TGeoVolume("TopFilament", topfil, medM60J3K);
+  topfilVol->SetFillColor(12);  // Gray shade
+  topfilVol->SetLineColor(12);
+  
+
+  // Now build up the half stave
+  ypos = kapCable->GetDY();
+  if (fBuildLevel < 4)   // Kapton
+    mechStavVol->AddNode(kapCableVol, 1, new TGeoTranslation(0, ypos, 0));
+
+  ypos += (kapCable->GetDY() + aluCable->GetDY());
+  if (fBuildLevel < 1)   // Aluminum
+    mechStavVol->AddNode(aluCableVol, 1, new TGeoTranslation(0, ypos, 0));
+
+  ypos += (aluCable->GetDY() + glue->GetDY());
+  if (fBuildLevel < 2)   // Glue
+    mechStavVol->AddNode(glueVol, 1, new TGeoTranslation(0, ypos, 0));
+
+  ypos += (glue->GetDY() + fleecbot->GetDY());
+  if (fBuildLevel < 5)   // Carbon
+    mechStavVol->AddNode(fleecbotVol, 1, new TGeoTranslation(0, ypos, 0));
+
+  ypos += (fleecbot->GetDY() + cfplate->GetDY());
+  if (fBuildLevel < 5)   // Carbon
+    mechStavVol->AddNode(cfplateVol, 1, new TGeoTranslation(0, ypos, 0));
+
+  ylay = ypos + cfplate->GetDY(); // The level where tubes etc. lay
+
+  xpos = fgkIBCoolPipeXDist/2;
+  ypos = ylay + pipe->GetRmax();
+  if (fBuildLevel < 4) { // Kapton
+    mechStavVol->AddNode(pipeVol, 1, new TGeoTranslation(-xpos, ypos, 0));
+    mechStavVol->AddNode(pipeVol, 2, new TGeoTranslation( xpos, ypos, 0));
+  }
+
+  if (fBuildLevel < 3) { // Water
+    mechStavVol->AddNode(waterVol, 1, new TGeoTranslation(-xpos, ypos, 0));
+    mechStavVol->AddNode(waterVol, 2, new TGeoTranslation( xpos, ypos, 0));
+  }
+
+  if (fBuildLevel < 5) { // Carbon (stave components)
+    mechStavVol->AddNode(cpaptubVol, 1, new TGeoTranslation(-xpos, ypos, 0));
+    mechStavVol->AddNode(cpaptubVol, 2, new TGeoTranslation( xpos, ypos, 0));
+
+    mechStavVol->AddNode(fleecpipeVol,1, new TGeoTranslation(-xpos, ypos, 0));
+    mechStavVol->AddNode(fleecpipeVol,2, new TGeoTranslation( xpos, ypos, 0));
+
+    xpos = fgkIBCoolPipeXDist/2 - pipe->GetRmax() - cpapvert->GetDX();
+    ypos = ylay + cpapvert->GetDY();
+    mechStavVol->AddNode(cpapvertVol, 1, new TGeoTranslation(-xpos, ypos, 0));
+    mechStavVol->AddNode(cpapvertVol, 2, new TGeoTranslation( xpos, ypos, 0));
+
+    xpos = fgkIBCoolPipeXDist/2 + pipe->GetRmax() + cpapvert->GetDX();
+    mechStavVol->AddNode(cpapvertVol, 3, new TGeoTranslation(-xpos, ypos, 0));
+    mechStavVol->AddNode(cpapvertVol, 4, new TGeoTranslation( xpos, ypos, 0));
+
+    ypos = ylay + fgkIBCarbonPaperThick/2;
+    mechStavVol->AddNode(cpapmidVol, 1, new TGeoTranslation(0, ypos, 0));
+
+    xpos = xstave - cpaplr->GetDX();
+    mechStavVol->AddNode(cpaplrVol, 1, new TGeoTranslation(-xpos, ypos, 0));
+    mechStavVol->AddNode(cpaplrVol, 2, new TGeoTranslation( xpos, ypos, 0));
+
+    xpos = fgkIBCoolPipeXDist/2 - pipe->GetRmax() - 2*cpapvert->GetDX()
+         - fleecvert->GetDX();
+    ypos = ylay + fgkIBCarbonPaperThick + fleecvert->GetDY();
+    mechStavVol->AddNode(fleecvertVol, 1, new TGeoTranslation(-xpos, ypos, 0));
+    mechStavVol->AddNode(fleecvertVol, 2, new TGeoTranslation( xpos, ypos, 0));
+
+    xpos = fgkIBCoolPipeXDist/2 + pipe->GetRmax() + 2*cpapvert->GetDX()
+         + fleecvert->GetDX();
+    mechStavVol->AddNode(fleecvertVol, 3, new TGeoTranslation(-xpos, ypos, 0));
+    mechStavVol->AddNode(fleecvertVol, 4, new TGeoTranslation( xpos, ypos, 0));
+
+    ypos = ylay + fgkIBCarbonPaperThick + fgkIBCarbonFleeceThick/2;
+    mechStavVol->AddNode(fleecmidVol, 1, new TGeoTranslation(0, ypos, 0));
+
+    xpos = xstave - fleeclr->GetDX();
+    mechStavVol->AddNode(fleeclrVol, 1, new TGeoTranslation(-xpos, ypos, 0));
+    mechStavVol->AddNode(fleeclrVol, 2, new TGeoTranslation( xpos, ypos, 0));
+  }
+
+  ylay += (fgkIBCarbonPaperThick + fgkIBCarbonFleeceThick);
+
+  if (fBuildLevel < 5) { // Carbon (spaceframe)
+    ypos = fgkIBStaveHeight - topv->GetDz(); // Due to rotation, z is on Y
+    mechStavVol->AddNode(topvVol, 1,
+			 new TGeoCombiTrans(0, ypos, 0,
+					    new TGeoRotation("",0,-90,0)));
+
+    // beta and gamma were already computed when building mechStruct shape
+    xpos = xstave - TMath::Cos(gamma)*sidev->GetDz();
+    ypos = ylay + TMath::Sin(gamma)*sidev->GetDz();
+    beta *= TMath::RadToDeg();  // beta was rad, we need deg
+
+    mechStavVol->AddNode(sidevVol, 1,
+			 new TGeoCombiTrans(-xpos, ypos, 0,
+					new TGeoRotation("", 180-beta,90,0)));
+    mechStavVol->AddNode(sidevVol, 2,
+			 new TGeoCombiTrans( xpos, ypos, 0,
+					new TGeoRotation("",-180+beta,90,0)));
+
+    gamma *= TMath::RadToDeg();  // gamma was rad, we need deg
+    theta = 90. - fgkIBTopFilamentAlpha;
+    xpos = xstave/2 + topfil->GetDZ();
+    ypos = ( layerHeight + fgkIBStaveHeight )/2 +
+	   fgkIBSideVertexWidth*TMath::Sin(beta*TMath::DegToRad())/2 ;
+    for(int i=0; i<nFilaments; i++){ // i<28 (?)
+      // 1) Front Left Top Filament
+      zpos = -zstave + (i*2*topFilYLen) + topFilLProj/4; // ?????
+      mechStavVol->AddNode(topfilVol, i*4+1,
+			 new TGeoCombiTrans( xpos, ypos, zpos,
+			      new TGeoRotation("", 90, theta, 90-gamma)));
+      // 2) Front Right Top Filament
+      mechStavVol->AddNode(topfilVol, i*4+2,
+			 new TGeoCombiTrans(-xpos, ypos, zpos,
+			      new TGeoRotation("", 90,-theta,-90+gamma)));
+      // 3) Back Left  Top Filament
+      zpos += topFilYLen;
+      mechStavVol->AddNode(topfilVol, i*4+3,
+			 new TGeoCombiTrans( xpos, ypos, zpos,
+			      new TGeoRotation("", 90,-theta, 90-gamma)));
+      // 4) Back Right Top Filament
+      mechStavVol->AddNode(topfilVol, i*4+4,
+			 new TGeoCombiTrans(-xpos, ypos, zpos,
+			      new TGeoRotation("", 90, theta,-90+gamma)));
+    }
+  }
+
+
+  // Done, return the stave structure
+  return mechStavVol;
+}
 
 //________________________________________________________________________
 TGeoVolume* AliITSUv1Layer::CreateStaveOuterB(const TGeoManager *mgr){

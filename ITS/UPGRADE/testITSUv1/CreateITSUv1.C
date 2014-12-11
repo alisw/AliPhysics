@@ -77,7 +77,7 @@ void CreateITSUv1()
   int nStaveLr,nModPerStaveLr,idLr;
   //
   AliITSUv1 *ITS  = new AliITSUv1("ITS Upgrade",kNLr);
-  ITS->SetStaveModelIB(AliITSUv1::kIBModel22);
+  ITS->SetStaveModelIB(AliITSUv1::kIBModel4);
   ITS->SetStaveModelOB(AliITSUv1::kOBModel2);
   //
   const int kNWrapVol = 3;
