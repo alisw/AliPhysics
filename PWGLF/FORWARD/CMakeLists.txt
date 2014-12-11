@@ -289,4 +289,6 @@ install ( FILES analysis2/Run.sh
 install ( DIRECTORY analysis2/sim 
          DESTINATION PWGLF/FORWARD/analysis2)
 
+install(DIRECTORY macros DESTINATION PWGLF/FORWARD)
 # --------------------------------------------------------------------
+

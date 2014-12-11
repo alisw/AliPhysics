@@ -121,3 +121,8 @@ install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
+
+# Install the macros
+install(DIRECTORY macros DESTINATION PWGCF/EBYE)
+install(DIRECTORY PIDFluctuation/macros DESTINATION PWGCF/EBYE/PIDFluctuation)
+install(DIRECTORY NetParticle/macros DESTINATION PWGCF/EBYE/NetParticle)

@@ -126,3 +126,14 @@ install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
+
+# install macros
+install(DIRECTORY ChargedHadrons/dNdPt/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/dNdPt)
+install(DIRECTORY IdentifiedHighPt/train/macros DESTINATION  PWGLF/SPECTRA/IdentifiedHighPt/train)
+install(DIRECTORY Kinks/macros DESTINATION  PWGLF/SPECTRA/Kinks)
+install(DIRECTORY Nuclei/B2/macros DESTINATION PWGLF/SPECTRA/Nuclei/B2)
+install(DIRECTORY Nuclei/masses  DESTINATION PWGLF/SPECTRA/Nuclei)
+install(DIRECTORY PiKaPr/TestAOD DESTINATION PWGLF/SPECTRA/PiKaPr)
+install(FILES PiKaPr/TPCTOF/AddTaskCombinedHadronSpectra.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TPCTOF)
+install(FILES PiKaPr/TPCTOFpA/AddTaskTPCTOFpA.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TPCTOFpA)
+install(DIRECTORY XtAnalysis/macros DESTINATION PWGLF/SPECTRA/XtAnalysis)
