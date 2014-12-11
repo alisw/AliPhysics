@@ -23,23 +23,23 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t trainConfig = 1,
    cout<<"cutnumberAODBranch: "<<cutnumberAODBranch.Data()<<endl;
 
   // ================= Load Librariers =================================
-   gSystem->Load("libCore.so");  
-   gSystem->Load("libTree.so");
-   gSystem->Load("libGeom.so");
-   gSystem->Load("libVMC.so");
-   gSystem->Load("libPhysics.so");
+   gSystem->Load("libCore");  
+   gSystem->Load("libTree");
+   gSystem->Load("libGeom");
+   gSystem->Load("libVMC");
+   gSystem->Load("libPhysics");
    gSystem->Load("libMinuit");
    gSystem->Load("libSTEERBase");
    gSystem->Load("libESD");
    gSystem->Load("libAOD");
    gSystem->Load("libANALYSIS");
    gSystem->Load("libANALYSISalice");  
-   gSystem->Load("libPWGGAGammaConv.so");
-   gSystem->Load("libCDB.so");
-   gSystem->Load("libSTEER.so");
-   gSystem->Load("libSTEERBase.so");
-   gSystem->Load("libTENDER.so");
-   gSystem->Load("libTENDERSupplies.so");
+   gSystem->Load("libPWGGAGammaConv");
+   gSystem->Load("libCDB");
+   gSystem->Load("libSTEER");
+   gSystem->Load("libSTEERBase");
+   gSystem->Load("libTender");
+   gSystem->Load("libTenderSupplies");
    
   
   

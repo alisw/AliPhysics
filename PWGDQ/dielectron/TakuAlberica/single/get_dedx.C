@@ -28,8 +28,8 @@ void get_dedx(void){
   gSystem->Load("libPWG2flowCommon");
   gSystem->Load("libPWG2flowTasks");
 
-  gSystem->Load("libTENDER");
-  gSystem->Load("libTENDERSupplies");
+  gSystem->Load("libTender");
+  gSystem->Load("libTenderSupplies");
 
 
 
