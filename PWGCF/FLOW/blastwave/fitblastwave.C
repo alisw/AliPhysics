@@ -736,12 +736,12 @@ fitblastwave(Int_t ic=2){
 }
 
 LoadLib(){
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libTree.so");
-  gSystem->Load("libMinuit.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libPWGCFflowBW.so");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libTree");
+  gSystem->Load("libMinuit");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libPWGCFflowBW");
   kLoaded = kTRUE;
 
   Int_t check = gROOT->LoadMacro("v2All.C");

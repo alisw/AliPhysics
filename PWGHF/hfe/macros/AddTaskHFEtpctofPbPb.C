@@ -1,8 +1,8 @@
 AliAnalysisTask *AddTaskHFEtpctofPbPb(Bool_t isaod, Bool_t isMC,Int_t aodfilter=16,Int_t clusterdef=AliHFEextraCuts::kFoundAll, Int_t clusterrdef=AliHFEextraCuts::kFoundAllOverFindable,Int_t tpcCls=130,  Int_t tpcClsPID = 80, Double_t tpcClsRatio = 0.6, Double_t tpcClShared = 1.1, Bool_t rejectkinkmother = kFALSE, Int_t itsCls=4,Double_t itsChi2PerClusters=-1,Int_t itspixelcut=AliHFEextraCuts::kBoth, Double_t dcaxy=1.0, Double_t dcaz=2.0, Bool_t usetof=kTRUE, Double_t tofs=3.,Bool_t etacor=kFALSE,TString listname="",Double_t tpceff=0.5, Float_t prodlow=0., Float_t prodhigh=3.,Bool_t kNoPhotonic = kTRUE){
 
   // libraries in case
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
 
 
   //set config file name

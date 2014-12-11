@@ -10,8 +10,8 @@
 // Usage on the analysis train (default configuration):
 // gSystem->Load("libANALYSIS");
 // gSystem->Load("libANALYSISalice");
-// gSystem->Load("libTPCcalib.so");
-// gSystem->Load("libPWGPP.so");
+// gSystem->Load("libTPCcalib");
+// gSystem->Load("libPWGPP");
 //
 // gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskPerformanceTPCPtCalib.C");
 // AliPerformanceTask *tpcQA = AddTaskPerformanceTPCPtCalib("kTRUE","kTRUE","CINT1B-ABCE-NOPF-ALL"); 

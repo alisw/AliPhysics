@@ -31,12 +31,12 @@ void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root",
   //for reaction plane dependent analysis
   //Author: Panos.Christakoglou@nikhef.nl
   //Load the PWG2ebye library
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libEventMixing.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWGTools.so");
-  gSystem->Load("libPWGCFebye.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libEventMixing");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWGTools");
+  gSystem->Load("libPWGCFebye");
 
   //gROOT->LoadMacro("~/SetPlotStyle.C");
   //SetPlotStyle();
@@ -957,12 +957,12 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
   gSystem->Load("libESD");
   gSystem->Load("libAOD");
 
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libEventMixing.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWGTools.so");
-  gSystem->Load("libPWGCFebye.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libEventMixing");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWGTools");
+  gSystem->Load("libPWGCFebye");
 
   gStyle->SetOptStat(0);
 

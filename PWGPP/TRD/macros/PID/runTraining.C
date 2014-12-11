@@ -13,8 +13,8 @@
 
 Int_t runTraining(){
 
-  gSystem -> Load("libANALYSIS.so");
-  gSystem -> Load("libTRDqaRec.so");
+  gSystem -> Load("libANALYSIS");
+  gSystem -> Load("libTRDqaRec");
 
   AliTRDpidRefMaker *ref = new AliTRDpidRefMaker();
   ref->SetDebugLevel(2);

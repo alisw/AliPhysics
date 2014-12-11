@@ -51,24 +51,24 @@ TString Setup
    //
 
    // load analysis libraries
-   gSystem->Load("libSTEERBase.so");
-   gSystem->Load("libESD.so");
-   gSystem->Load("libAOD.so");
-   gSystem->Load("libANALYSIS.so");
-   gSystem->Load("libANALYSISalice.so");
-   gSystem->Load("libEventMixing.so");
-   gSystem->Load("libCORRFW.so");
+   gSystem->Load("libSTEERBase");
+   gSystem->Load("libESD");
+   gSystem->Load("libAOD");
+   gSystem->Load("libANALYSIS");
+   gSystem->Load("libANALYSISalice");
+   gSystem->Load("libEventMixing");
+   gSystem->Load("libCORRFW");
    
    // tender-related libraries
    if (isESD && useTender) {
       ::Info("AnalysisSetup", "Loading tender libraries");
-      gSystem->Load("libTender.so");
-      gSystem->Load("libTenderSupplies.so");
+      gSystem->Load("libTender");
+      gSystem->Load("libTenderSupplies");
    } else if (!isESD) {
       useTender = kFALSE;
    }
    
-   gSystem->Load("libPWGLFresonances.so");
+   gSystem->Load("libPWGLFresonances");
 
 //   // load development RSN library
 //   if (!AliAnalysisAlien::SetupPar("PWG2resonances.par")) return "";

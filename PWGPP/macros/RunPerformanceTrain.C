@@ -54,7 +54,7 @@ void RunPerformanceTrain(Char_t *file="esd.root", Int_t runNumber = 2, const cha
   gSystem->Load("libTender");
   gSystem->Load("libCORRFW");
 
-  gSystem->Load("libTPCcalib.so");
+  gSystem->Load("libTPCcalib");
   gSystem->Load("libPWGPP");
 
   gSystem->Load("libPHOSUtils");

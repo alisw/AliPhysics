@@ -19,7 +19,7 @@ void runLocalExample(const TString& dir="./")
 	gSystem->Load("libGeom");
 	gSystem->Load("libVMC");
 	gSystem->Load("libPhysics");
-	gSystem->Load("libMinuit.so");
+	gSystem->Load("libMinuit");
 	
 	gSystem->Load("libSTEERBase");
 	gSystem->Load("libESD");
@@ -27,12 +27,12 @@ void runLocalExample(const TString& dir="./")
 	
 	// Load analysis framework
 	
-	gSystem->Load("libANALYSIS.so");
+	gSystem->Load("libANALYSIS");
 	gSystem->Load("libANALYSISalice.so"); // alice specific, e.g. alien plugin
 	
 	// Load task
 	
-	gSystem->Load("libPWGLFspectra.so");
+	gSystem->Load("libPWGLFspectra");
 	
 	// Get input data
 	

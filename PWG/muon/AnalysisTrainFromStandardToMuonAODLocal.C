@@ -18,10 +18,10 @@ void AnalysisTrainFromStandardToMuonAODLocal(char* filein= "AliAODs.root",
 //   (defined in STEER/AliAODHandler.h)...
 
 
-    gSystem->Load("libTree.so");
-    gSystem->Load("libGeom.so");
-    gSystem->Load("libVMC.so");
-    gSystem->Load("libPhysics.so");
+    gSystem->Load("libTree");
+    gSystem->Load("libGeom");
+    gSystem->Load("libVMC");
+    gSystem->Load("libPhysics");
     gSystem->Load("libSTEER.so");              // for aliroot based analysis
     gSystem->Load("libPWGmuon.so");  // for aliroot based analysis
 

@@ -12,10 +12,10 @@ void AnalysisTrainCreateMixedDimuons(Char_t *nameTagDir = ".",
 				     Char_t *nameOutFileAOD = "AliAODsMixedEvents.root",
 				     Int_t   bufferSize = 2) {
   
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so"); 
-  gSystem->Load("libCORRFW.so"); 
-  gSystem->Load("libPWGmuon.so"); 
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWGmuon");
 
   AliMultiEventInputHandler *inputHandler  = new AliMultiEventInputHandler(bufferSize);
 

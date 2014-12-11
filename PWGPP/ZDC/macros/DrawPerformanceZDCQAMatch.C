@@ -35,10 +35,10 @@ gSystem->Load("libANALYSIS");
 gSystem->Load("libANALYSISalice");
 gSystem->Load("libANALYSIScalib");
 gSystem->Load("libCORRFW");
-gSystem->Load("libANALYSISalice.so");
-gSystem->Load("libANALYSIScalib.so");
-gSystem->Load("libTender.so");
-gSystem->Load("libPWGPP.so");
+gSystem->Load("libANALYSISalice");
+gSystem->Load("libANALYSIScalib");
+gSystem->Load("libTender");
+gSystem->Load("libPWGPP");
 
 gROOT->Reset();
 gROOT->SetStyle("Plain");

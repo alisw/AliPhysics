@@ -6,14 +6,14 @@
 void MakePerformanceSummary(const char *infile, Int_t run, const char* outfile) {
 
   gSystem->AddIncludePath("-I$ALICE_ROOT/PWGPP/TPC");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libTender.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWG0base.so");
-  gSystem->Load("libPWG0dep.so");
-  gSystem->Load("libPWG0selectors.so");
-  gSystem->Load("libPWGPP.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libTender");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWG0base");
+  gSystem->Load("libPWG0dep");
+  gSystem->Load("libPWG0selectors");
+  gSystem->Load("libPWGPP");
   gSystem->Load("libTPCcalib");  
   
   AliTPCPerformanceSummary::MakeReport(infile, outfile, run);

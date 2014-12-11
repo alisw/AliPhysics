@@ -29,8 +29,8 @@ UInt_t trkbit = 1024;
 void NumberOfEventsMCvsDATA(Int_t icut = 1, const Float_t nSigmaCut = 3)
 {  
   // load libraries (I'm not sure I need all of these...)
-  gSystem->Load("libCore.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libCore");
+  gSystem->Load("libPhysics");
   gSystem->Load("libTree");
   gSystem->Load("libMatrix");
   gSystem->Load("libSTEERBase");
@@ -43,7 +43,7 @@ void NumberOfEventsMCvsDATA(Int_t icut = 1, const Float_t nSigmaCut = 3)
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWGTools");
   gSystem->Load("libPWGLFspectra");
-  gSystem->Load("libProof.so");
+  gSystem->Load("libProof");
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
 
   // get number of runs used

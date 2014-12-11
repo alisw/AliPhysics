@@ -51,19 +51,19 @@ void testOutputSize(const char *filename="QA/QAresults.root")
    gSystem->Load("libANALYSISalice");
    gSystem->Load("libCORRFW");
 // Add aditional AliRoot libraries
-   gSystem->Load("libTender.so");
-   gSystem->Load("libPWG0base.so");
-   gSystem->Load("libPWG0dep.so");
-   gSystem->Load("libPWG0selectors.so");
-   gSystem->Load("libPWGPP.so");
-   gSystem->Load("libPWG2.so");
-   gSystem->Load("libPWG2forward.so");
-   gSystem->Load("libEMCALUtils.so");
-   gSystem->Load("libPWG4PartCorrBase.so");
-   gSystem->Load("libPWG4PartCorrDep.so");
-   gSystem->Load("libPWGHFbase.so");
-   gSystem->Load("libPWGmuon.so");
-   gSystem->Load("libPWGmuondep.so");
+   gSystem->Load("libTender");
+   gSystem->Load("libPWG0base");
+   gSystem->Load("libPWG0dep");
+   gSystem->Load("libPWG0selectors");
+   gSystem->Load("libPWGPP");
+   gSystem->Load("libPWG2");
+   gSystem->Load("libPWG2forward");
+   gSystem->Load("libEMCALUtils");
+   gSystem->Load("libPWG4PartCorrBase");
+   gSystem->Load("libPWG4PartCorrDep");
+   gSystem->Load("libPWGHFbase");
+   gSystem->Load("libPWGmuon");
+   gSystem->Load("libPWGmuondep");
    gSystem->Unlink("syswatch.log");
    AliSysInfo::AddStamp("Start", 0, 0);
  

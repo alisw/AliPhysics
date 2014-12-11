@@ -4,16 +4,16 @@ void runBatch() {
 
   printf("*** Connect to AliEn ***\n");
   TGrid::Connect("alien://");
-  gSystem->Load("libProofPlayer.so");
-  gSystem->Load("libVMC.so");
+  gSystem->Load("libProofPlayer");
+  gSystem->Load("libVMC");
 
   // Use precompiled libraries for the analysis framework
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libVMC");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
 
   // Use par files only for PWG2 code
 
@@ -21,19 +21,19 @@ void runBatch() {
   //_____________Setting up PWG2AOD.par_________________//
   //____________________________________________________//
   setupPar("PWG2AOD");
-  gSystem->Load("libPWG2AOD.so");
+  gSystem->Load("libPWG2AOD");
   
   //____________________________________________________//
   //_____________Setting up PWG2femtoscopy.par__________//
   //____________________________________________________//
   setupPar("PWG2femtoscopy");
-  gSystem->Load("libPWG2femtoscopy.so");
+  gSystem->Load("libPWG2femtoscopy");
   
   //____________________________________________________//
   //_____________Setting up PWG2femtoscopyUser.par______//
   //____________________________________________________//
   setupPar("PWG2femtoscopyUser");
-  gSystem->Load("libPWG2femtoscopyUser.so");
+  gSystem->Load("libPWG2femtoscopyUser");
   
   //ANALYSIS PART
   const char *collectionfile="wn.xml";

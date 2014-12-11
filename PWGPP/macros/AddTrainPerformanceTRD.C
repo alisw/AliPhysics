@@ -23,7 +23,7 @@
 // gSystem->Load("libMemStatGui.so")
 // gSystem->Load("libANALYSIS.so")
 // gSystem->Load("libANALYSISalice.so")
-// gSystem->Load("libPWGPP.so");
+// gSystem->Load("libPWGPP");
 //
 // Authors:
 //   Alex Bercuci (A.Bercuci@gsi.de) 

@@ -5,19 +5,19 @@ doeffAllSpecies(Int_t isp=1){
 }
 
 performAllPi(){
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libTree.so");
-  gSystem->Load("libMinuit.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libNetx.so");
-  gSystem->Load("libPWGPPpid.so");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libTree");
+  gSystem->Load("libMinuit");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libAOD");
+  gSystem->Load("libESD");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libNetx");
+  gSystem->Load("libPWGPPpid");
   
   gSystem->AddIncludePath("-I$ALICE_ROOT/PWGPP/pid");
   
@@ -113,19 +113,19 @@ performAllPi(){
 }
 
 performAllPr(){
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libTree.so");
-  gSystem->Load("libMinuit.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libNetx.so");
-  gSystem->Load("libPWGPPpid.so");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libTree");
+  gSystem->Load("libMinuit");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libAOD");
+  gSystem->Load("libESD");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libNetx");
+  gSystem->Load("libPWGPPpid");
   
   gSystem->AddIncludePath("-I$ALICE_ROOT/PWGPP/pid");
   
@@ -221,19 +221,19 @@ performAllPr(){
 }
 
 performAllKa(){
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libTree.so");
-  gSystem->Load("libMinuit.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libNetx.so");
-  gSystem->Load("libPWGPPpid.so");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libTree");
+  gSystem->Load("libMinuit");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libAOD");
+  gSystem->Load("libESD");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libNetx");
+  gSystem->Load("libPWGPPpid");
 
   gSystem->AddIncludePath("-I$ALICE_ROOT/PWGPP/pid");
 

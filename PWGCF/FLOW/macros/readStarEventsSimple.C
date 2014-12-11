@@ -4,9 +4,9 @@
 
 void  readStarEventsSimple()
 {
-  gSystem->Load("libTree.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
   gSystem->Load("libPWGflowBase");
 
   Int_t maxNumberOfEvents = 1000;

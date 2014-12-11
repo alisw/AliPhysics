@@ -201,7 +201,7 @@ void Load() {
   //load the required aliroot libraries
   gSystem->Load("libANALYSIS") ;
   gSystem->Load("libANALYSISalice") ;
-  gSystem->Load("libCORRFW.so") ;
+  gSystem->Load("libCORRFW") ;
 
   //compile online the task class
   gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include -I$ROOTSYS/include");

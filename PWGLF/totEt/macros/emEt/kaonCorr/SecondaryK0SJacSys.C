@@ -40,17 +40,17 @@ void SecondaryK0SJacSys(char *inputfilename = "../workingdir/rootFiles/LHC11a10a
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
   gROOT->ProcessLine(".L AliBWFunc.cxx+g");
   gROOT->ProcessLine(".L AliBWTools.cxx+g");
-  gSystem->Load("libTree.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libMinuit.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWGLFspectra.so");
-  gSystem->Load("libPWGTools.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libVMC");
+  gSystem->Load("libMinuit");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWGLFspectra");
+  gSystem->Load("libPWGTools");
   gROOT->LoadMacro("macros/FitParticle.C+");
   gROOT->LoadMacro("macros/GetLevidEtdptTimesPt.C");
   //inputting kaon errors from http://arxiv.org/abs/1303.0737

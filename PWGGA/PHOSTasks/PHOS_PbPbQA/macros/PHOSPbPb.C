@@ -1,15 +1,15 @@
 void PHOSPbPbQA(const char* dataset="collection.xml")
 {
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
   
   //load analysis framework
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice"); //AliAnalysisTaskSE
 
-  gSystem->Load("libPWGGAPHOSTasks.so");
+  gSystem->Load("libPWGGAPHOSTasks");
   
   gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/PHOS");
 

@@ -278,8 +278,8 @@ void loadLibraries()
   gSystem->Load("libESDfilter");
   gSystem->Load("libCORRFW");
   gSystem->Load("libTender");
-  gSystem->Load("libPWGPP.so");
-  gSystem->Load("libAliHLTTrigger.so");
+  gSystem->Load("libPWGPP");
+  gSystem->Load("libAliHLTTrigger");
   gSystem->Load("libPWGTools");
   gSystem->Load("libEMCALUtils");
   gSystem->Load("libPHOSUtils");

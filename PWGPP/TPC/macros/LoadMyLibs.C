@@ -28,7 +28,7 @@ void LoadMyLibs() {
   gSystem->Load("libPWG0dep");
   gSystem->Load("libPWG0selectors");
 
-  gSystem->Load("libTPCcalib.so");
+  gSystem->Load("libTPCcalib");
   gSystem->Load("libTender");
   gSystem->Load("libPWGPP");
   
