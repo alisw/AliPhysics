@@ -30,7 +30,9 @@
 #include "AliAODMCHeader.h"
 #include "AliMCEvent.h"
 #include "AliAnalysisManager.h"
+#include "AliParticleContainer.h"
 #include "AliJetContainer.h"
+#include "AliEmcalJetByJetCorrection.h"
 
 #include "AliAODEvent.h"
 
@@ -46,6 +48,8 @@ AliAnalysisTaskEmcalJetMassStructure::AliAnalysisTaskEmcalJetMassStructure() :
   fJetMassType(kRaw),
   fRandom(0),
   fEfficiencyFixed(1.),
+  fCorrType(kMeanPtR),
+  fEJetByJetCorr(0),
   fh3PtDRMass(0),
   fh3PtDRRho(0),
   fh3PtDRMassCorr(0),
@@ -87,6 +91,8 @@ AliAnalysisTaskEmcalJetMassStructure::AliAnalysisTaskEmcalJetMassStructure(const
   fJetMassType(kRaw),
   fRandom(0),
   fEfficiencyFixed(1.),
+  fCorrType(kMeanPtR),
+  fEJetByJetCorr(0),
   fh3PtDRMass(0),
   fh3PtDRRho(0),
   fh3PtDRMassCorr(0),
@@ -116,7 +122,6 @@ AliAnalysisTaskEmcalJetMassStructure::AliAnalysisTaskEmcalJetMassStructure(const
     fh2PtMassCorr[i]     = 0;
     fh3JetPtDRTrackPt[i] = 0;
   }
-
   SetMakeGeneralHistograms(kTRUE);
 }
 
@@ -124,7 +129,6 @@ AliAnalysisTaskEmcalJetMassStructure::AliAnalysisTaskEmcalJetMassStructure(const
 AliAnalysisTaskEmcalJetMassStructure::~AliAnalysisTaskEmcalJetMassStructure()
 {
   // Destructor.
-
   delete fRandom;
 }
 
@@ -136,6 +140,8 @@ void AliAnalysisTaskEmcalJetMassStructure::UserCreateOutputObjects()
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   if(!fRandom) fRandom = new TRandom3(0);
+
+  if(fCorrType==kMeanPtR && fEJetByJetCorr) fEJetByJetCorr->Init();
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
@@ -235,17 +241,6 @@ void AliAnalysisTaskEmcalJetMassStructure::UserCreateOutputObjects()
   fhnMassResponseCorr = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0,nBins0,xmin0,xmax0);
   fOutput->Add(fhnMassResponseCorr);
 
-  // =========== Switch on Sumw2 for all histos ===========
-  for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
-    TH1 *h1 = dynamic_cast<TH1*>(fOutput->At(i));
-    if (h1){
-      h1->Sumw2();
-      continue;
-    }
-    THnSparse *hn = dynamic_cast<THnSparse*>(fOutput->At(i));
-    if(hn)hn->Sumw2();
-  }
-
   TH1::AddDirectory(oldStatus);
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
@@ -268,9 +263,9 @@ Bool_t AliAnalysisTaskEmcalJetMassStructure::Run()
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetMassStructure::FillHistograms()
 {
-  // Fill histograms.
-
   // study how jet mass builds up as function of radial distance to jet axis
+
+  if(fCorrType==kMeanPtR && !fEJetByJetCorr) return kFALSE;
 
   AliEmcalJet* jet1 = NULL;
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
@@ -280,7 +275,14 @@ Bool_t AliAnalysisTaskEmcalJetMassStructure::FillHistograms()
 
       Double_t ptJet1 = jet1->Pt() - GetRhoVal(fContainerBase)*jet1->Area();
       Double_t mJet1 = GetJetMass(jet1);
-           
+      fh2PtMass[fCentBin]->Fill(ptJet1,mJet1);
+      AliEmcalJet *jPart = jet1->ClosestJet(); 
+      //fill detector response
+      if(jPart) {
+        Double_t var[4] = {mJet1,jPart->M(),ptJet1,jPart->Pt()};
+        fhnMassResponse->Fill(var);
+      }
+
       // if(jet1->GetTagStatus()<1 || !jet1->GetTaggedJet())
       // 	continue;
      
@@ -288,57 +290,63 @@ Bool_t AliAnalysisTaskEmcalJetMassStructure::FillHistograms()
       static Int_t indexes[9999] = {-1};
       static Float_t dr[9999] = {0};
       if(!GetSortedArray(indexes,dr,jet1)) continue;
- 
-      AliVParticle *vp;
-      TLorentzVector sumVec;      sumVec.SetPtEtaPhiM(0.,0.,0.,0.);
-      TLorentzVector corrVec;     corrVec.SetPtEtaPhiM(0.,0.,0.,0.);
-      TLorentzVector curVec;
+
       for(Int_t i=jet1->GetNumberOfTracks()-1; i>-1; i--) {
-	vp = static_cast<AliVParticle*>(jet1->TrackAt(indexes[i], fTracks));
-	if(!vp) continue;
-
-	fh3JetPtDRTrackPt[fCentBin]->Fill(ptJet1,dr[indexes[i]],vp->Pt());
-
-	curVec.SetPtEtaPhiM(vp->Pt(),vp->Eta(),vp->Phi(),vp->M());
-	sumVec+=curVec;
-	corrVec+=curVec;
-	//	Printf("%d  %f",i,dr[indexes[i]]);
-	fh3PtDRMass[fCentBin]->Fill(ptJet1,dr[indexes[i]],sumVec.M()/mJet1);
-	fh3PtDRRho[fCentBin]->Fill(ptJet1,dr[indexes[i]],sumVec.Pt()/ptJet1);
-
-	fh3PtDRMassCorr[fCentBin]->Fill(ptJet1,dr[indexes[i]],corrVec.M()/mJet1);
-	fh3PtDRRhoCorr[fCentBin]->Fill(ptJet1,dr[indexes[i]],corrVec.Pt()/ptJet1);
-
-	Double_t eff = GetEfficiency(vp->Pt());
-	Double_t rnd = fRandom->Uniform(1.);
-	if(rnd>eff) {//put particle back at random position in annulus; using now zero width for annulus
-	  Double_t t = TMath::TwoPi()*gRandom->Uniform(1.);
-	  Double_t rr = dr[indexes[i]];
-	  rr = fRandom->Uniform(0.,jetCont->GetJetRadius());
-	  Double_t deta = rr*TMath::Cos(t);
-	  Double_t dphi = rr*TMath::Sin(t);
-	  curVec.SetPtEtaPhiM(vp->Pt(),deta+jet1->Eta(),dphi+jet1->Phi(),vp->M());
-	  corrVec+=curVec;
-
-	  fh3PtDRMassCorr[fCentBin]->Fill(ptJet1,dr[indexes[i]],corrVec.M()/mJet1);
-	  fh3PtDRRhoCorr[fCentBin]->Fill(ptJet1,dr[indexes[i]],corrVec.Pt()/ptJet1);
-	}
+        AliVParticle *vp = static_cast<AliVParticle*>(jet1->TrackAt(indexes[i], fTracks));
+        if(!vp) continue;
+        fh3JetPtDRTrackPt[fCentBin]->Fill(ptJet1,dr[indexes[i]],vp->Pt());
       }
+ 
+      if(fCorrType==kAnnulus) {
+        TLorentzVector sumVec;      sumVec.SetPtEtaPhiM(0.,0.,0.,0.);
+        TLorentzVector corrVec;     corrVec.SetPtEtaPhiM(0.,0.,0.,0.);
+        TLorentzVector curVec;
+        for(Int_t i=jet1->GetNumberOfTracks()-1; i>-1; i--) {
+          AliVParticle *vp = static_cast<AliVParticle*>(jet1->TrackAt(indexes[i], fTracks));
+          if(!vp) continue;
+          
+          curVec.SetPtEtaPhiM(vp->Pt(),vp->Eta(),vp->Phi(),vp->M());
+          sumVec+=curVec;
+          corrVec+=curVec;
+          //	Printf("%d  %f",i,dr[indexes[i]]);
+          fh3PtDRMass[fCentBin]->Fill(ptJet1,dr[indexes[i]],sumVec.M()/mJet1);
+          fh3PtDRRho[fCentBin]->Fill(ptJet1,dr[indexes[i]],sumVec.Pt()/ptJet1);
+          
+          fh3PtDRMassCorr[fCentBin]->Fill(ptJet1,dr[indexes[i]],corrVec.M()/mJet1);
+          fh3PtDRRhoCorr[fCentBin]->Fill(ptJet1,dr[indexes[i]],corrVec.Pt()/ptJet1);
+          
+          Double_t eff = GetEfficiency(vp->Pt());
+          Double_t rnd = fRandom->Uniform(1.);
+          if(rnd>eff) {//put particle back at random position in annulus; using now zero width for annulus
+            Double_t t = TMath::TwoPi()*gRandom->Uniform(1.);
+            Double_t rr = dr[indexes[i]];
+            rr = fRandom->Uniform(0.,jetCont->GetJetRadius());
+            Double_t deta = rr*TMath::Cos(t);
+            Double_t dphi = rr*TMath::Sin(t);
+            curVec.SetPtEtaPhiM(vp->Pt(),deta+jet1->Eta(),dphi+jet1->Phi(),vp->M());
+            corrVec+=curVec;
+            
+            fh3PtDRMassCorr[fCentBin]->Fill(ptJet1,dr[indexes[i]],corrVec.M()/mJet1);
+            fh3PtDRRhoCorr[fCentBin]->Fill(ptJet1,dr[indexes[i]],corrVec.Pt()/ptJet1);
+          }
+        }//track loop
 
-      fh2PtMass[fCentBin]->Fill(ptJet1,mJet1);
-      fh2PtMassCorr[fCentBin]->Fill(corrVec.Pt(), corrVec.M());
-
-      //fill detector response
-      AliEmcalJet *jPart = jet1->ClosestJet();
-      if(jPart) {
-	Double_t var[4] = {mJet1,jPart->M(),ptJet1,jPart->Pt()};
-	fhnMassResponse->Fill(var);
-
-	Double_t varCorr[4] = {corrVec.M(),jPart->M(),corrVec.Pt(),jPart->Pt()};
-	fhnMassResponseCorr->Fill(varCorr);
-      }
-    }
-  }
+        fh2PtMassCorr[fCentBin]->Fill(corrVec.Pt(), corrVec.M());
+        if(jPart) {
+          Double_t varCorr[4] = {corrVec.M(),jPart->M(),corrVec.Pt(),jPart->Pt()};
+          fhnMassResponseCorr->Fill(varCorr);
+        }
+      }//kAnnulus method
+      else if(fCorrType==kMeanPtR) {
+        //jet-by-jet correction based on templates
+        AliEmcalJet *jetCorr = fEJetByJetCorr->Eval(jet1,jetCont->GetParticleContainer()->GetArray());
+        if(jPart && jetCorr) {
+          Double_t varCorr[4] = {jetCorr->M(),jPart->M(),jetCorr->Pt(),jPart->Pt()};
+          fhnMassResponseCorr->Fill(varCorr);
+        }
+      }//kMeanPtR method
+    }//jet loop
+  }//jet container
   
   return kTRUE;
 }
@@ -348,7 +356,7 @@ Double_t AliAnalysisTaskEmcalJetMassStructure::GetEfficiency(Double_t pt) {
   pt = 1.*pt;
   Double_t eff = 1.;
   if(fEfficiencyFixed<1.) return fEfficiencyFixed;
-
+  
   return eff;
 }
 
@@ -356,21 +364,15 @@ Double_t AliAnalysisTaskEmcalJetMassStructure::GetEfficiency(Double_t pt) {
 Bool_t AliAnalysisTaskEmcalJetMassStructure::GetSortedArray(Int_t indexes[], Float_t dr[], AliEmcalJet *jet) const
 {
   // sort array
-
   const Int_t n = (Int_t)jet->GetNumberOfTracks();//(Int_t)array.size();
-
-  if (n < 1)
-    return kFALSE;
-
-  AliVParticle *vp;
+  if (n < 1) return kFALSE;
+  
   for (Int_t i = 0; i < n; i++) {
-    vp = static_cast<AliVParticle*>(jet->TrackAt(i, fTracks));
+    AliVParticle *vp = static_cast<AliVParticle*>(jet->TrackAt(i, fTracks));
     if(!vp) continue;
     dr[i] = jet->DeltaR(vp);
   }
-   
   TMath::Sort(n, dr, indexes);
-
   return kTRUE;
 }
 

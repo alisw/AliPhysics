@@ -37,6 +37,7 @@ set ( SRCS
  EMCALJetTasks/AliAnalysisTaskLocalRho.cxx
  EMCALJetTasks/AliAnalysisTaskScale.cxx
  EMCALJetTasks/AliEmcalJet.cxx
+ EMCALJetTasks/AliEmcalJetByJetCorrection.cxx
  EMCALJetTasks/AliEmcalPicoTrackInGridMaker.cxx
  EMCALJetTasks/AliJetConstituentTagCopier.cxx
  EMCALJetTasks/AliJetContainer.cxx
