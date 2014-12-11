@@ -29,6 +29,7 @@ public:
   void SetSwapEta(Bool_t doSwap = kTRUE) { fSwapEta = doSwap; }
   void SetUsePatches(Bool_t doUse = kTRUE) { fUsePatches = doUse; }
   void SetRequestMCtrueTracks(Bool_t doRequest = kTRUE) { fRequestMCtrue = doRequest; }
+  void SetTrackSelection(AliEMCalPtTaskVTrackSelection *trackSel) { fTrackSelection = trackSel; }
 
 protected:
   AliVParticle *IsMCTrueTrack(const AliVTrack *const trk, const AliMCEvent *evnt) const;
