@@ -112,7 +112,7 @@ void LoadLibraries()
 	gSystem->Load("libANALYSIS");
 	gSystem->Load("libANALYSISalice");
 	gSystem->Load("libCORRFW");
-	gSystem->Load("libTENDER");
+	gSystem->Load("libTender");
 	gSystem->Load("libPWG0base.so");
 	gSystem->Load("libPWG0dep.so");
 	gSystem->Load("libPWG0selectors.so");
@@ -136,7 +136,7 @@ AliAnalysisAlien* CreateAlienHandler(const char* plugin_mode)
 	plugin->SetROOTVersion("v5-30-03-1");
 	plugin->SetAliROOTVersion("v5-02-08-AN");
 	plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD");   
-	plugin->SetAdditionalLibs("libCORRFW.so libTENDER.so libPWG0base.so libPWG0dep.so libPWG0selectors.so libPWGPP.so");
+	plugin->SetAdditionalLibs("libCORRFW.so libTender.so libPWG0base.so libPWG0dep.so libPWG0selectors.so libPWGPP.so");
 	// Declare input data to be processed.
 	plugin->SetGridDataDir(grid_datadir); // specify LHC period
 	plugin->SetDataPattern(data_pattern); // specify reco pass and AOD set
