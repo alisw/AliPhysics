@@ -16,7 +16,7 @@
 //
 // Jet fragmentation transverse momentum (j_T) analysis task
 //
-// Author: T.Snellman
+// Author: Beomkyu Kim, Beomsu Chang, Dongjo Kim
 
 #include <TClonesArray.h>
 #include <TH1F.h>
