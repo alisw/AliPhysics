@@ -7,19 +7,19 @@ void Load() {
   gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/STEER/ESD -I$ALICE_ROOT/STEER/AOD -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_ROOT/OADB -I$ALICE_ROOT/PWGPP -g"); 
 
   //load the required aliroot libraries
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libMinuit.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so"); 
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libOADB.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWGPP.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libVMC");
+  gSystem->Load("libMinuit");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libOADB");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWGPP");
 }
 
 //_______________________________| Running on Grid |________________________________

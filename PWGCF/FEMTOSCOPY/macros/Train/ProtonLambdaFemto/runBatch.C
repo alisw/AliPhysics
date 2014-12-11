@@ -12,8 +12,8 @@ void runBatch() {
   TGrid::Connect("alien://");
 
 
-  gSystem->Load("libProofPlayer.so");
-  gSystem->Load("libVMC.so");
+  gSystem->Load("libProofPlayer");
+  gSystem->Load("libVMC");
 
 
 //_______ Load libraries
@@ -48,7 +48,7 @@ void runBatch() {
     cout << "Cannot load libSTEERBase.so . Exiting" << endl;
     exit(0);
   }
-  gSystem->Load("libVMC.so");
+  gSystem->Load("libVMC");
 
   if (useParFiles)
     setupPar("ESD");

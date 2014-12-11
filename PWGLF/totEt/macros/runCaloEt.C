@@ -32,10 +32,10 @@ void runCaloEt(bool submit = false, // true or false
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
 
-    gSystem->Load("libTender.so");
-    gSystem->Load("libTenderSupplies.so"); 
-    gSystem->Load("libPWGTools.so");
-    gSystem->Load("libPWGEMCAL.so");
+    gSystem->Load("libTender");
+    gSystem->Load("libTenderSupplies");
+    gSystem->Load("libPWGTools");
+    gSystem->Load("libPWGEMCAL");
     gROOT->ProcessLine(".include $ALICE_ROOT/Tender/"); 
     //gSystem->AddIncludePath("-I$ALICE_ROOT/ANALYSIS "); 
 
@@ -48,7 +48,7 @@ void runCaloEt(bool submit = false, // true or false
   }
    
   if(runCompiledVersion){
-    gSystem->Load("libPWGLFtotEt.so");
+    gSystem->Load("libPWGLFtotEt");
   }
   else{
     gROOT->ProcessLine(".L AliAnalysisEtCuts.cxx+g");

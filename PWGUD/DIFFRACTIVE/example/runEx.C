@@ -34,8 +34,8 @@ void runEx(
 	Printf("%s analysis chosen",runtype);
 
 	// load libraries (to be optimized)
-	gSystem->Load("libCore.so");
-	gSystem->Load("libTree.so");
+	gSystem->Load("libCore");
+	gSystem->Load("libTree");
 	gSystem->Load("libPhysics");
 	gSystem->Load("libMinuit");
 	gSystem->Load("libProof");

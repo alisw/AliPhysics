@@ -58,23 +58,23 @@ void runLocal(const char* mode = "ESD",
   TString outputFilename5 = "Vertex.QA.root"; //vertex QA
   TString eventStatsFilename = "eventStats.root";//event stats
 
-  gSystem->Load("libProofPlayer.so");
+  gSystem->Load("libProofPlayer");
 
   //Setup the par files
   setupPar("STEERBase");
-  gSystem->Load("libSTEERBase.so");
+  gSystem->Load("libSTEERBase");
   setupPar("ESD");
-  gSystem->Load("libESD.so");
+  gSystem->Load("libESD");
   setupPar("AOD");
-  gSystem->Load("libAOD.so");
+  gSystem->Load("libAOD");
   setupPar("ANALYSIS");
-  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSIS");
   setupPar("ANALYSISalice");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libANALYSISalice");
   setupPar("CORRFW");
-  gSystem->Load("libCORRFW.so");
+  gSystem->Load("libCORRFW");
   setupPar("PWG2spectra");
-  gSystem->Load("libPWG2spectra.so");
+  gSystem->Load("libPWG2spectra");
 
    //____________________________________________//
   AliTagAnalysis *tagAnalysis = new AliTagAnalysis("ESD"); 
@@ -202,19 +202,19 @@ void runInteractive(const char* mode = "ESD",
 
   //Setup the par files
   setupPar("STEERBase");
-  gSystem->Load("libSTEERBase.so");
+  gSystem->Load("libSTEERBase");
   setupPar("ESD");
-  gSystem->Load("libESD.so");
+  gSystem->Load("libESD");
   setupPar("AOD");
-  gSystem->Load("libAOD.so");
+  gSystem->Load("libAOD");
   setupPar("ANALYSIS");
-  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSIS");
   setupPar("ANALYSISalice");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libANALYSISalice");
   setupPar("CORRFW");
-  gSystem->Load("libCORRFW.so");
+  gSystem->Load("libCORRFW");
   setupPar("PWG2spectra");
-  gSystem->Load("libPWG2spectra.so");
+  gSystem->Load("libPWG2spectra");
 
   //____________________________________________//
   AliTagAnalysis *tagAnalysis = new AliTagAnalysis("ESD");
@@ -342,23 +342,23 @@ void runBatch(const char* mode = "ESD",
   TString eventStatsFilename = "eventStats.root";//event stats
 
   TGrid::Connect("alien://");
-  gSystem->Load("libProofPlayer.so");
+  gSystem->Load("libProofPlayer");
 
   //Setup the par files
   setupPar("STEERBase");
-  gSystem->Load("libSTEERBase.so");
+  gSystem->Load("libSTEERBase");
   setupPar("ESD");
-  gSystem->Load("libESD.so");
+  gSystem->Load("libESD");
   setupPar("AOD");
-  gSystem->Load("libAOD.so");
+  gSystem->Load("libAOD");
   setupPar("ANALYSIS");
-  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSIS");
   setupPar("ANALYSISalice");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libANALYSISalice");
   setupPar("CORRFW");
-  gSystem->Load("libCORRFW.so");
+  gSystem->Load("libCORRFW");
   setupPar("PWG2spectra");
-  gSystem->Load("libPWG2spectra.so");
+  gSystem->Load("libPWG2spectra");
 
   //____________________________________________//
   //Usage of event tags

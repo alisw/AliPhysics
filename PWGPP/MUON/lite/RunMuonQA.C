@@ -34,11 +34,11 @@ void RunMuonQA(TString inputFileName = "AliESDs.root", Bool_t isMC = kFALSE,
   
   // Load common libraries
   gSystem->Load("libVMC");
-  gSystem->Load("libTree.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libMinuit.so");
-  gSystem->Load("libXMLParser.so");
-  gSystem->Load("libGui.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libMinuit");
+  gSystem->Load("libXMLParser");
+  gSystem->Load("libGui");
   gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");
   gSystem->Load("libAOD");

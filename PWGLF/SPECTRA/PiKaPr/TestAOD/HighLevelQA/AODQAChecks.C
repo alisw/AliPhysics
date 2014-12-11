@@ -68,8 +68,8 @@ void AODQAChecks(Bool_t useMC = 1, Int_t icut = 1, const Float_t nSigmaCut = 3)
 {
   Printf("\n\n--- Running AODQAChecks() with useMC = %i ---\n\n",useMC);
 
-  gSystem->Load("libCore.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libCore");
+  gSystem->Load("libPhysics");
   gSystem->Load("libTree");
   gSystem->Load("libMatrix");
   gSystem->Load("libSTEERBase");
@@ -82,7 +82,7 @@ void AODQAChecks(Bool_t useMC = 1, Int_t icut = 1, const Float_t nSigmaCut = 3)
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWGTools");
   gSystem->Load("libPWGLFspectra");
-  gSystem->Load("libProof.so");
+  gSystem->Load("libProof");
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
 
   TString fold = "AODQAChecks";

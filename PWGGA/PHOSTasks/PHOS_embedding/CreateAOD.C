@@ -4,18 +4,18 @@ void CreateAOD()
   // Main
   
   // LoadLibraries
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libXMLIO.so");
-  gSystem->Load("libMatrix.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libCORRFW.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libXMLIO");
+  gSystem->Load("libMatrix");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
 
 
   //Data

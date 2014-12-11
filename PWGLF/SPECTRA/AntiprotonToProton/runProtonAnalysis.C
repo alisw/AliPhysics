@@ -76,20 +76,20 @@ void runLocal(const char* mode = "ESD",
   //_____________Setting up the par files_______________//
   //____________________________________________________//
   setupPar("STEERBase");
-  gSystem->Load("libSTEERBase.so");
+  gSystem->Load("libSTEERBase");
   setupPar("ESD");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libESD.so");
+  gSystem->Load("libVMC");
+  gSystem->Load("libESD");
   setupPar("AOD");
-  gSystem->Load("libAOD.so");
+  gSystem->Load("libAOD");
   setupPar("ANALYSIS");
-  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSIS");
   setupPar("ANALYSISalice");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libANALYSISalice");
   setupPar("CORRFW");
-  gSystem->Load("libCORRFW.so");
+  gSystem->Load("libCORRFW");
   setupPar("PWG2spectra");
-  gSystem->Load("libPWG2spectra.so");
+  gSystem->Load("libPWG2spectra");
   //____________________________________________________//  
 
   //____________________________________________//
@@ -163,7 +163,7 @@ void runInteractive(const char* mode = "ESD",
 		    Bool_t kUseOfflineTrigger = kTRUE,
 		    Bool_t kRunQA = kFALSE,
 		    const char* collectionName = "tag.xml") {
-  gSystem->Load("libProofPlayer.so");
+  gSystem->Load("libProofPlayer");
   
   TString smode = mode;
   TString cutFilename = "ListOfCuts."; cutFilename += mode;
@@ -186,20 +186,20 @@ void runInteractive(const char* mode = "ESD",
   //_____________Setting up the par files_______________//
   //____________________________________________________//
   setupPar("STEERBase");
-  gSystem->Load("libSTEERBase.so");
+  gSystem->Load("libSTEERBase");
   setupPar("ESD");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libESD.so");
+  gSystem->Load("libVMC");
+  gSystem->Load("libESD");
   setupPar("AOD");
-  gSystem->Load("libAOD.so");
+  gSystem->Load("libAOD");
   setupPar("ANALYSIS");
-  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSIS");
   setupPar("ANALYSISalice");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libANALYSISalice");
   setupPar("CORRFW");
-  gSystem->Load("libCORRFW.so");
+  gSystem->Load("libCORRFW");
   setupPar("PWG2spectra");
-  gSystem->Load("libPWG2spectra.so");
+  gSystem->Load("libPWG2spectra");
   //____________________________________________________//  
   
   //____________________________________________//
@@ -293,26 +293,26 @@ void runBatch(const char* mode = "ESD",
 
   printf("*** Connect to AliEn ***\n");
   TGrid::Connect("alien://");
-  gSystem->Load("libProofPlayer.so");
+  gSystem->Load("libProofPlayer");
 
   //____________________________________________________//
   //_____________Setting up the par files_______________//
   //____________________________________________________//
   setupPar("STEERBase");
-  gSystem->Load("libSTEERBase.so");
+  gSystem->Load("libSTEERBase");
   setupPar("ESD");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libESD.so");
+  gSystem->Load("libVMC");
+  gSystem->Load("libESD");
   setupPar("AOD");
-  gSystem->Load("libAOD.so");
+  gSystem->Load("libAOD");
   setupPar("ANALYSIS");
-  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSIS");
   setupPar("ANALYSISalice");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libANALYSISalice");
   setupPar("CORRFW");
-  gSystem->Load("libCORRFW.so");
+  gSystem->Load("libCORRFW");
   setupPar("PWG2spectra");
-  gSystem->Load("libPWG2spectra.so");
+  gSystem->Load("libPWG2spectra");
   //____________________________________________________//  
 
   //____________________________________________//

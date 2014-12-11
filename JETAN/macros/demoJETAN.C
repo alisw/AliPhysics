@@ -76,9 +76,9 @@ Int_t demoJETAN() {
     gSystem->ChangeDirectory("../");
   }
 
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libESD.so"); 
-  gSystem->Load("libJETAN.so");
+  gSystem->Load("libVMC");
+  gSystem->Load("libESD");
+  gSystem->Load("libJETAN");
   
   
 

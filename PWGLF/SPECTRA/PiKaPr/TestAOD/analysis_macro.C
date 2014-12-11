@@ -13,15 +13,15 @@ using namespace std;
 
 void analysis_macro(const char * dataFile = "Pt.AOD.1._data_ptcut.root", const char * mcFile ="Pt.AOD.1._MC.root") {
    
-  // gSystem->Load("libTree.so");
-  // gSystem->Load("libGeom.so");
-  // gSystem->Load("libVMC.so");
-  // gSystem->Load("libPhysics.so");
-  // gSystem->Load("libSTEERBase.so");
-  // gSystem->Load("libESD.so");
-  // gSystem->Load("libAOD.so");
-  // gSystem->Load("libANALYSIS.so");
-  // gSystem->Load("libANALYSISalice.so");
+  // gSystem->Load("libTree");
+  // gSystem->Load("libGeom");
+  // gSystem->Load("libVMC");
+  // gSystem->Load("libPhysics");
+  // gSystem->Load("libSTEERBase");
+  // gSystem->Load("libESD");
+  // gSystem->Load("libAOD");
+  // gSystem->Load("libANALYSIS");
+  // gSystem->Load("libANALYSISalice");
   // gSystem->Load("libANALYSIS");
   // gSystem->Load("libANALYSISalice");
   // gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");

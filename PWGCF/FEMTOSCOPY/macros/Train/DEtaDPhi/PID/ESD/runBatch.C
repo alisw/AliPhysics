@@ -4,9 +4,9 @@ void runBatch() {
 
   printf("*** Connect to AliEn ***\n");
   //TGrid::Connect("alien://");
-  gSystem->Load("libProofPlayer.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libProofPlayer");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
 
   // Use par files only for PWG2 code
   int useParFiles = 0;
@@ -19,7 +19,7 @@ void runBatch() {
     cout << "Cannot load libSTEERBase.so . Exiting" << endl;
     exit(0);
   }
-  gSystem->Load("libVMC.so");
+  gSystem->Load("libVMC");
 
   if (useParFiles)
     setupPar("ESD");

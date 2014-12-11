@@ -17,28 +17,28 @@ int MakeTrend(char *infile,int run) {
   gSystem->Load("libTRDcalib");
   gSystem->Load("libT0calib");
   gSystem->Load("libTOFcalib");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libANALYSIScalib.so");
-  gSystem->Load("libTender.so");
-  gSystem->Load("libPWGPP.so");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libANALYSIScalib");
+  gSystem->Load("libTender");
+  gSystem->Load("libPWGPP");
                     
   
   /*
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libTender.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWG0base.so");
-  gSystem->Load("libPWG0dep.so");
-  gSystem->Load("libPWG0selectors.so");
-  gSystem->Load("libPWG1.so");
-    gSystem->Load("libPWG2.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libTender");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWG0base");
+  gSystem->Load("libPWG0dep");
+  gSystem->Load("libPWG0selectors");
+  gSystem->Load("libPWG1");
+    gSystem->Load("libPWG2");
   gSystem->Load("libPWG4base");
-  gSystem->Load("libPWG3muon.so");
-  gSystem->Load("libPWG3muondep.so");
-  gSystem->Load("libPWG2forward.so");
-   gSystem->Load("libPWG4PartCorrBase.so");
-   gSystem->Load("libPWG4PartCorrDep.so");
+  gSystem->Load("libPWG3muon");
+  gSystem->Load("libPWG3muondep");
+  gSystem->Load("libPWG2forward");
+   gSystem->Load("libPWG4PartCorrBase");
+   gSystem->Load("libPWG4PartCorrDep");
  
   */
 

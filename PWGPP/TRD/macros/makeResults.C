@@ -44,12 +44,12 @@
 // Don't forget to load first the libraries
 // gSystem->Load("libANALYSIS.so")
 // gSystem->Load("libANALYSISalice.so")
-// gSystem->Load("libTender.so");
-// gSystem->Load("libPWGPP.so");
-// gSystem->Load("libCORRFW.so");
-// gSystem->Load("libPWGmuon.so");
-// gSystem->Load("libNetx.so") ;
-// gSystem->Load("libRAliEn.so");
+// gSystem->Load("libTender");
+// gSystem->Load("libPWGPP");
+// gSystem->Load("libCORRFW");
+// gSystem->Load("libPWGmuon");
+// gSystem->Load("libNetx") ;
+// gSystem->Load("libRAliEn");
 
 // Authors:
 //   Alex Bercuci (A.Bercuci@gsi.de)

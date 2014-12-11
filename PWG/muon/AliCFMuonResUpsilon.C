@@ -84,11 +84,11 @@ Bool_t AliCFMuonResUpsilon(
 {
 
   //load the required aliroot libraries
-  gSystem->Load("libCore.so");  
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libCore");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
   gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");
   gSystem->Load("libAOD") ;
@@ -96,7 +96,7 @@ Bool_t AliCFMuonResUpsilon(
   gSystem->Load("libANALYSISalice") ;
 
 	//load correction framework library
-  gSystem->Load("libCORRFW.so") ;
+  gSystem->Load("libCORRFW") ;
 
   //compile online the task class
   gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include -I$ROOTSYS/include -I$ALICE_ROOT/PWG3/muon");

@@ -30,12 +30,12 @@
 // gSystem->Load("libMemStatGui.so")
 // gSystem->Load("libANALYSIS.so")
 // gSystem->Load("libANALYSISalice.so")
-// gSystem->Load("libTender.so");
-// gSystem->Load("libCORRFW.so");
-// gSystem->Load("libPWGPP.so");
-// gSystem->Load("libPWGmuon.so");
-// gSystem->Load("libNetx.so") ;
-// gSystem->Load("libRAliEn.so");
+// gSystem->Load("libTender");
+// gSystem->Load("libCORRFW");
+// gSystem->Load("libPWGPP");
+// gSystem->Load("libPWGmuon");
+// gSystem->Load("libNetx") ;
+// gSystem->Load("libRAliEn");
 //
 // Authors:
 //   Alex Bercuci (A.Bercuci@gsi.de) 

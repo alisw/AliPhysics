@@ -2,13 +2,13 @@ void run(const char* esdList = "esds.list", Bool_t bUseMCInfo = kFALSE, Int_t nF
   TStopwatch timer;
   timer.Start();
   gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT -I$ALICE_ROOT/TRD");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libTender.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWG0base.so");
-  gSystem->Load("libPWG0dep.so");
-  gSystem->Load("libPWG0selectors.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libTender");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWG0base");
+  gSystem->Load("libPWG0dep");
+  gSystem->Load("libPWG0selectors");
  
   Bool_t dodNdPtCutAnalysis = kTRUE;   // AlidNdPtTask (data/MCtruth)
 

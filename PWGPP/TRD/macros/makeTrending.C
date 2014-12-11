@@ -1,11 +1,11 @@
 void makeTrending(const Char_t *fl, Bool_t relative=kFALSE, const Char_t *db = "$ALICE_ROOT/PWGPP/TRD/data/TRD.Trend.root")
 {
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libTender.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWGPP.so");
-  gSystem->Load("libPWGmuon.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libTender");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWGPP");
+  gSystem->Load("libPWGmuon");
 
   AliTRDtrendingManager *tm = AliTRDtrendingManager::Instance();
   tm->Load(db);

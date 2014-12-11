@@ -33,10 +33,10 @@ void get_dedx(void){
 
 
 
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWG3base.so");
-  gSystem->Load("libPWG3dielectron.so");
-  gSystem->Load("libPWG3hfe.so");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWG3base");
+  gSystem->Load("libPWG3dielectron");
+  gSystem->Load("libPWG3hfe");
 
 
   TChain *chain = new TChain("esdTree");

@@ -11,12 +11,12 @@ void readTTree()
     gSystem->AddIncludePath("-I$ALICE_ROOT -I$ALICE_ROOT/include");
  
     // load libraries
-    gSystem->Load("libCore.so");        
-    gSystem->Load("libGeom.so");
-    gSystem->Load("libVMC.so");
-    gSystem->Load("libPhysics.so");
-    gSystem->Load("libTree.so");
-    gSystem->Load("libPWGflowBase.so");
+    gSystem->Load("libCore");
+    gSystem->Load("libGeom");
+    gSystem->Load("libVMC");
+    gSystem->Load("libPhysics");
+    gSystem->Load("libTree");
+    gSystem->Load("libPWGflowBase");
 
     // comile the encapsulated classes
     gROOT->LoadMacro("../objects/AliFlowTTreeEvent.cxx+");

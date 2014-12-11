@@ -63,8 +63,8 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 {
 gStyle->SetOptStat(0);	
 	TH1::AddDirectory(kFALSE);
-	gSystem->Load("libCore.so");  
-	gSystem->Load("libPhysics.so");
+	gSystem->Load("libCore");
+	gSystem->Load("libPhysics");
 	gSystem->Load("libTree");
 	gSystem->Load("libMatrix");
 	gSystem->Load("libSTEERBase");

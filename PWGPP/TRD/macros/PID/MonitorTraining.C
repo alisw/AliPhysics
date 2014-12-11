@@ -25,8 +25,8 @@
 
 Int_t MonitorTraining(Int_t bin, Int_t Date){
 
-  gSystem -> Load("libANALYSIS.so");
-  gSystem -> Load("libTRDqaRec.so");
+  gSystem -> Load("libANALYSIS");
+  gSystem -> Load("libTRDqaRec");
   
   AliTRDpidRefMaker *ref = new AliTRDpidRefMaker();
   ref->SetDebugLevel(2);

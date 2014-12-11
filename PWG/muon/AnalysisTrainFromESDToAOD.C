@@ -56,8 +56,8 @@ void AnalysisTrainFromESDToAOD(const char *analysisMode = "GRID", Bool_t usePLUG
     //=====================================================================
     if (iESDfilter) {
        if(!strcmp(analysisMode, "LOCAL")){
-         gSystem->Load("libPWGHFbase.so");
-         gSystem->Load("libPWGmuon.so");
+         gSystem->Load("libPWGHFbase");
+         gSystem->Load("libPWGmuon");
        } 
        else if(!strcmp(analysisMode, "GRID"))LoadAnalysisLibraries(analysisMode);
      }
@@ -146,10 +146,10 @@ Bool_t LoadCommonLibraries(const char *mode)
    }   
    Bool_t success = kTRUE;
    // ROOT libraries
-   gSystem->Load("libTree.so");
-   gSystem->Load("libGeom.so");
-   gSystem->Load("libVMC.so");
-   gSystem->Load("libPhysics.so");
+   gSystem->Load("libTree");
+   gSystem->Load("libGeom");
+   gSystem->Load("libVMC");
+   gSystem->Load("libPhysics");
    
    // Load framework classes. Par option ignored here.
    switch (imode) {

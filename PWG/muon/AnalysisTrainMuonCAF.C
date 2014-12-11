@@ -9,10 +9,10 @@ void AnalysisTrainMuonCAF(char* fileout = "AliAOD.root", char *datasetname = "my
 // This macro works on the CAF
 // R. Arnaldi 4/5/08
 
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
     
   // Reset user processes if CAF if not responding anymore
   // TProof::Reset("lxb6046");

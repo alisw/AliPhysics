@@ -16,14 +16,14 @@ void processHFEQAtask(const char *fnamedata = "AnalysisResults.root",
   const char *fnamelist = "list_t131073f16s0p1TPC110r60p80ITS4Pi2DCAr100z200TOF30TPCe50V0D2er8i0t-20t50";
 
 
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libTender.so");
-  gSystem->Load("libPWGPP.so");
-  gSystem->Load("libPWGflowBase.so");
-  gSystem->Load("libPWGflowTasks.so");
-  gSystem->Load("libPWGHFhfe.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libTender");
+  gSystem->Load("libPWGPP");
+  gSystem->Load("libPWGflowBase");
+  gSystem->Load("libPWGflowTasks");
+  gSystem->Load("libPWGHFhfe");
 
   
   gStyle->SetPalette(1);

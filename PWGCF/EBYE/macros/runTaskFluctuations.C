@@ -142,7 +142,7 @@ void LoadLibraries(const anaModes mode) {
     // Use AliRoot includes to compile our task                                   
     gROOT->ProcessLine(".include $ALICE_ROOT/include");
     if(mode==mLocal || mode==mGrid){
-      gSystem->Load("libEventMixing.so");
+      gSystem->Load("libEventMixing");
       gSystem->Load("libPWGCFebye");
     }
     if(mode==mGridPAR){

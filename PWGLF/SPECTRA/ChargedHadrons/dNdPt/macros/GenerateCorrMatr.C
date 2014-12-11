@@ -43,13 +43,13 @@ Double_t GenerateCorrMatr(const char* mcfile, const char* mctask, const char* id
 
     
     
-    gSystem->Load("libANALYSIS.so");
-    gSystem->Load("libANALYSISalice.so");
-    gSystem->Load("libTender.so");
-    gSystem->Load("libCORRFW.so");
-    gSystem->Load("libPWG0base.so");    
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
+    gSystem->Load("libTender");
+    gSystem->Load("libCORRFW");
+    gSystem->Load("libPWG0base");
     gSystem->Load("libPWG0dep"); 
-    gSystem->Load("libPWG0selectors.so");
+    gSystem->Load("libPWG0selectors");
     
 
 

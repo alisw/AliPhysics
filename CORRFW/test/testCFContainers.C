@@ -20,9 +20,9 @@ void testCFContainers(){
   gStyle->SetCanvasColor(0);
   gStyle->SetFrameFillColor(0);
 
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libCORRFW.so") ;
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW") ;
  
   //Setting up the container grid... 
 

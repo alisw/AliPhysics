@@ -7,26 +7,26 @@
 void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int_t test = 1, Int_t material = 0, Bool_t altV0Scale = kFALSE, bool runCompiledVersion = kFALSE, int simflag = 0) {
     TStopwatch timer;
     timer.Start();
-    gSystem->Load("libTree.so");
-    gSystem->Load("libGeom.so");
-    gSystem->Load("libVMC.so");
-    gSystem->Load("libPhysics.so");
-    gSystem->Load("libXMLIO.so");
+    gSystem->Load("libTree");
+    gSystem->Load("libGeom");
+    gSystem->Load("libVMC");
+    gSystem->Load("libPhysics");
+    gSystem->Load("libXMLIO");
 
-    gSystem->Load("libSTEERBase.so");
-    gSystem->Load("libESD.so");
-    gSystem->Load("libAOD.so");
+    gSystem->Load("libSTEERBase");
+    gSystem->Load("libESD");
+    gSystem->Load("libAOD");
 
     gSystem->Load("libANALYSIS");
-    gSystem->Load("libOADB.so");
+    gSystem->Load("libOADB");
     gSystem->Load("libANALYSISalice");
-    gSystem->Load("libPWGUDbase.so");
+    gSystem->Load("libPWGUDbase");
 
     gSystem->AddIncludePath("-I$ALICE_ROOT/include");
     gSystem->AddIncludePath("-I$ALICE_ROOT/PWGUD/base");
     if(runCompiledVersion){
       cout<<"Using compiled version"<<endl;
-      gSystem->Load("libPWGLFtotEt.so");
+      gSystem->Load("libPWGLFtotEt");
     }
     else{
       cout<<"Not using compiled version"<<endl;
@@ -43,9 +43,9 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int
   char *kTreeName = "esdTree" ;
   TChain * chain   = new TChain(kTreeName,"myESDTree") ;
   if(submit){      
-    gSystem->Load("libNetx.so") ; 
-    gSystem->Load("libgapiUI.so");
-    gSystem->Load("libRAliEn.so"); 
+    gSystem->Load("libNetx") ;
+    gSystem->Load("libgapiUI");
+    gSystem->Load("libRAliEn");
     TGrid::Connect("alien://") ;
   }
   bool PbPb = false;

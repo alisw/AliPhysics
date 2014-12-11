@@ -28,10 +28,10 @@ void plotMHCentrality(const char* filename = "AnalysisResults.root",
   gSystem->Load("libPhysics");
   
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libPWGflowBase.so");
-  gSystem->Load("libPWGflowTasks.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libPWGflowBase");
+  gSystem->Load("libPWGflowTasks");
 
   AliFlowTrackCuts::PIDsource sourcePID = AliFlowTrackCuts::kTOFbayesian;
   AliPID::EParticleType particleType=AliPID::kPion;

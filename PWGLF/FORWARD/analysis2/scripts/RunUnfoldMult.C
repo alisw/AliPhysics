@@ -22,7 +22,7 @@ RunUnfoldMult()
     gSystem->AddIncludePath(Form("-I%s/src", rooUnfold.Data()));
     gSystem->AddDynamicPath(rooUnfold);
   }
-  gSystem->Load("libRooUnfold.so");
+  gSystem->Load("libRooUnfold");
   gROOT->Macro("UnfoldMult.C++");
 }
 /*

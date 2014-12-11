@@ -147,8 +147,8 @@ void LoadLibraries()
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
   gSystem->Load("libTender");
-  gSystem->Load("libPWGPP.so");
-  gSystem->Load("libAliHLTTrigger.so");
+  gSystem->Load("libPWGPP");
+  gSystem->Load("libAliHLTTrigger");
 
   if (doEMCAL || doPHOS || doCALO) {
      gSystem->Load("libEMCALUtils");

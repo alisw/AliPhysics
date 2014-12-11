@@ -1,17 +1,17 @@
 
 
 void MakeSDDPoints(){
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
   gSystem->Load("libPhysics");
 
 // Common packages
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
 
   TChain *esdChain = new TChain("esdTree");
   esdChain->AddFile("/home/prino/alice/FirstPP/104044/09000104044018.10/AliESDs.root");

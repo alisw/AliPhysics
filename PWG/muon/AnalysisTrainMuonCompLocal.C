@@ -1,9 +1,9 @@
 void AnalysisTrainMuonCompLocal()
 {
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
   
   // Common packages
   SetupPar("STEERBase");

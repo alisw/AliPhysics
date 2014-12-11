@@ -1,31 +1,31 @@
 
 void AddTask_GammaConvV1AOD(TString mode){
 
-	gSystem->Load("libCore.so");  
-	gSystem->Load("libTree.so");
-	gSystem->Load("libGeom.so");
-	gSystem->Load("libVMC.so");
-	gSystem->Load("libPhysics.so");
+	gSystem->Load("libCore");
+	gSystem->Load("libTree");
+	gSystem->Load("libGeom");
+	gSystem->Load("libVMC");
+	gSystem->Load("libPhysics");
 	gSystem->Load("libMinuit");
 	gSystem->Load("libSTEERBase");
 	gSystem->Load("libESD");
 	gSystem->Load("libAOD");
 	gSystem->Load("libANALYSIS");
 	gSystem->Load("libANALYSISalice");  
-	gSystem->Load("libEve.so");   
-	gSystem->Load("libCDB.so");
-	gSystem->Load("libProof.so");
-	gSystem->Load("libRAWDatabase.so");
-	gSystem->Load("libSTEER.so");
-	gSystem->Load("libSTEERBase.so");
-	gSystem->Load("libTender.so");
-	gSystem->Load("libTRDbase.so");
-	gSystem->Load("libVZERObase.so");
-	gSystem->Load("libVZEROrec.so");
-	gSystem->Load("libTenderSupplies.so");
-   	gSystem->Load("libPWGflowBase.so");
-	gSystem->Load("libPWGflowTasks.so");
-	gSystem->Load("libPWGGAGammaConv.so");
+	gSystem->Load("libEve");
+	gSystem->Load("libCDB");
+	gSystem->Load("libProof");
+	gSystem->Load("libRAWDatabase");
+	gSystem->Load("libSTEER");
+	gSystem->Load("libSTEERBase");
+	gSystem->Load("libTender");
+	gSystem->Load("libTRDbase");
+	gSystem->Load("libVZERObase");
+	gSystem->Load("libVZEROrec");
+	gSystem->Load("libTenderSupplies");
+   	gSystem->Load("libPWGflowBase");
+	gSystem->Load("libPWGflowTasks");
+	gSystem->Load("libPWGGAGammaConv");
 
    Bool_t isMC	= kTRUE;
    Bool_t readTR = kTRUE;

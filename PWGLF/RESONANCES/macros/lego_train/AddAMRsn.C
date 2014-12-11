@@ -163,9 +163,9 @@ Bool_t AddAMRsnTrain(TString analysisSource = "proof", TString analysisMode = "t
 
    } else {
 
-      gSystem->Load("libEventMixing.so");
-      gSystem->Load("libCORRFW.so");
-      gSystem->Load("libPWGLFresonances.so");
+      gSystem->Load("libEventMixing");
+      gSystem->Load("libCORRFW");
+      gSystem->Load("libPWGLFresonances");
    }
 
    if (!input.CompareTo("esd")) rsnBaseSettings.Append("_ESD");
