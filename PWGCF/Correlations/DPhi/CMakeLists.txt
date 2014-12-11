@@ -117,3 +117,6 @@ install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
+
+# Macros
+install(FILES MuonHadron/AddAnalysisTaskMuonHadronCorrelations.C DESTINATION PWGCF/Correlations/DPhi/MuonHadron/)

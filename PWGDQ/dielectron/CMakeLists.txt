@@ -137,3 +137,10 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+
+# install the macros
+install(DIRECTORY
+                macros
+                macrosJPSI
+                macrosLMEE
+        DESTINATION PWGDQ/dielectron)
