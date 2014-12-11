@@ -1,0 +1,17 @@
+Don Dez 11 20:22:25 CET 2014
+
+FT2: semi-analitical fast MC
+
+See testF.C macro for example of running.
+With dndy>=0 fakes will be generated (if useKalmanOut==kTRUE - 
+with quasi-smoothing procedure)
+
+Before running the test, one should have in the working directory
+the files from fullMC:
+geometry.root
+itsSegmentations.root
+ITS // with ITSU specific stuff
+GRP // grp created by MC
+
+
+To be completed ...
