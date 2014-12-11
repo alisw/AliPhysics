@@ -29,6 +29,7 @@ class AliAODtrack;
 class AliHFEcontainer;
 class AliHFEcuts;
 class AliHFEpid;
+class AliHFEpidTPC;
 class AliHFEpidQAmanager;
 class AliCFManager;
 class AliFlowTrackCuts;
@@ -51,7 +52,7 @@ public:
     void                                 SetEnableDebugMode() {fDebug = kTRUE; };
     void                                 SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod); //select centrality
     void                                 CheckCentrality(AliAODEvent *event,Bool_t &centralitypass); //to use only events with the correct centrality....
-    void                                 SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track, Double_t eopinc, Double_t evPlAnglV0, Bool_t &fFlagPhotonicElec, Double_t weightEPflat);
+    void                                 SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track, Double_t eopinc, Double_t evPlAnglV0, Bool_t &fFlagPhotonicElec, Double_t weightEPflat, Double_t multev);
     void                                 SetInvariantMassCut(Double_t invmass) {fInvmassCut = invmass;};
     void                                 SetpTCuttrack(Double_t ptcut) {fpTCut = ptcut;};
     void                                 SetTrigger(Int_t trig) {fTrigger = trig;};
@@ -79,10 +80,12 @@ public:
     void                                 SetHistoForEPFlattWeights(TH1D *h);
     Double_t                             GiveMeWeight(Double_t EP);
     void                                 SetEPWeight(Bool_t epw){EPweights = epw;};
+    
+    void                                 SetTPCPID(AliHFEpidTPC *pidcorr){ftpcpid = pidcorr;};
+    void                                 SetMultCorrectionTheo(Bool_t mulcorr){multCorrection = mulcorr;}
 
-    
-    
-    
+    void                                 SetPtMinAssoCut(Double_t ptminimumasso) {fptminAsso = ptminimumasso;};
+
     AliHFEpid *GetPID() const { return fPID; };
     
 private:
@@ -91,6 +94,7 @@ private:
     
     Bool_t               fDebug; //! enable debug mode
     AliAODEvent          *fAOD;                     //AOD object
+    AliVEvent            *fVevent;			//ESD object
     AliEMCALGeometry     *fGeom;                // emcal geometry
     TList                *fOutputList;          //output list
     AliHFEcuts           *fCuts;                 //Cut Collection
@@ -98,6 +102,7 @@ private:
     Bool_t               fPassTheEventCut;       //Pass The Event Cut
     AliCFManager         *fCFM;                  //!Correction Framework Manager
     AliHFEpid            *fPID;                  //PID
+    AliHFEpidTPC         *ftpcpid;              // for TPC mult/eta correction, are done in the HFE class
     AliHFEpidQAmanager   *fPIDqa;               //! PID QA manager
     AliFlowTrackCuts     *fCutsRP; // track cuts for reference particles
     AliFlowTrackCuts     *fNullCuts; // dummy cuts for flow event tracks
@@ -185,7 +190,9 @@ private:
     Bool_t               EPweights;//for mult correlationcut
     TH1D                 *EPVzAftW;//!v0cep
 
-    
+    Bool_t                multCorrection;//Flag to activate mult/etacorrection
+    Double_t              fptminAsso;//minassopt
+
     
     AliAnalysisTaskFlowTPCEMCalQCSP(const AliAnalysisTaskFlowTPCEMCalQCSP&); // not implemented
     AliAnalysisTaskFlowTPCEMCalQCSP& operator=(const AliAnalysisTaskFlowTPCEMCalQCSP&); // not implemented
