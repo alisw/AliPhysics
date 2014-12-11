@@ -37,7 +37,7 @@ gSystem->Load("libANALYSIScalib");
 gSystem->Load("libCORRFW");
 gSystem->Load("libANALYSISalice.so");
 gSystem->Load("libANALYSIScalib.so");
-gSystem->Load("libTENDER.so");
+gSystem->Load("libTender.so");
 gSystem->Load("libPWGPP.so");
 
 gROOT->Reset();

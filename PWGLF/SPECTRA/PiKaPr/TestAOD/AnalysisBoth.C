@@ -73,7 +73,7 @@ gStyle->SetOptStat(0);
 	gSystem->Load("libANALYSIS");
 	gSystem->Load("libOADB");
 	gSystem->Load("libANALYSISalice");
-	gSystem->Load("libTENDER");
+	gSystem->Load("libTender");
 	gSystem->Load("libCORRFW");
 	gSystem->Load("libPWGTools");
 	gSystem->Load("libPWGLFspectra");

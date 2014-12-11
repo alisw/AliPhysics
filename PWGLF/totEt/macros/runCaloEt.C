@@ -32,8 +32,8 @@ void runCaloEt(bool submit = false, // true or false
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
 
-    gSystem->Load("libTENDER.so");
-    gSystem->Load("libTENDERSupplies.so"); 
+    gSystem->Load("libTender.so");
+    gSystem->Load("libTenderSupplies.so"); 
     gSystem->Load("libPWGTools.so");
     gSystem->Load("libPWGEMCAL.so");
     gROOT->ProcessLine(".include $ALICE_ROOT/Tender/"); 

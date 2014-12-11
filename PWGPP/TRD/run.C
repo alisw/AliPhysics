@@ -30,7 +30,7 @@
 // gSystem->Load("libMemStatGui.so")
 // gSystem->Load("libANALYSIS.so")
 // gSystem->Load("libANALYSISalice.so")
-// gSystem->Load("libTENDER.so");
+// gSystem->Load("libTender.so");
 // gSystem->Load("libCORRFW.so");
 // gSystem->Load("libPWGPP.so");
 // gSystem->Load("libPWGmuon.so");
@@ -105,7 +105,7 @@ void run(Char_t *optList="ALL", Int_t run=0, const Char_t *files=NULL, Long64_t 
   //AliLog::SetGlobalLogLevel(AliLog::kError);
   if(gSystem->Load("libANALYSIS.so")<0) return;
   if(gSystem->Load("libANALYSISalice.so")<0) return;
-  if(gSystem->Load("libTENDER.so")<0) return;
+  if(gSystem->Load("libTender.so")<0) return;
   if(gSystem->Load("libCORRFW.so")<0) return;
   if(gSystem->Load("libPWGPP.so")<0) return;
   if(gSystem->Load("libPWGmuon.so")<0) return;

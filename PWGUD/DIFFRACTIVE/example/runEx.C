@@ -55,7 +55,7 @@ void runEx(
 	gSystem->Load("libANALYSIS");
 	gSystem->Load("libANALYSISalice");
 	gSystem->Load("libSTEER");
-	gSystem->Load("libTENDER");
+	gSystem->Load("libTender");
 	gSystem->Load("libRAWDatasim");
 	gSystem->Load("libFASTSIM");
 	gSystem->Load("libEVGEN");

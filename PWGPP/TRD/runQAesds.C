@@ -17,7 +17,7 @@ void runQAesds(const char *esdlist)
 
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libTENDER");
+  gSystem->Load("libTender");
   gSystem->Load("libPWGPP");
   AliLog::SetGlobalLogLevel(AliLog::kError);
   gROOT->LoadMacro(Form("%s/PWG0/CreateESDChain.C", gSystem->ExpandPathName("$ALICE_ROOT")));

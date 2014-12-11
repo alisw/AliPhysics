@@ -44,7 +44,7 @@
 // Don't forget to load first the libraries
 // gSystem->Load("libANALYSIS.so")
 // gSystem->Load("libANALYSISalice.so")
-// gSystem->Load("libTENDER.so");
+// gSystem->Load("libTender.so");
 // gSystem->Load("libPWGPP.so");
 // gSystem->Load("libCORRFW.so");
 // gSystem->Load("libPWGmuon.so");
@@ -82,7 +82,7 @@
 #include "PWGPP/TRD/AliTRDinfoGen.h"
 #endif
 
-const Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libANALYSISalice.so", "libCORRFW", "libTENDER.so", "libPWGPP.so", "libPWGmuon.so"};
+const Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libANALYSISalice.so", "libCORRFW", "libTender.so", "libPWGPP.so", "libPWGmuon.so"};
 // define setup
 TCanvas *c(NULL);
 Bool_t mc(kFALSE), friends(kFALSE);

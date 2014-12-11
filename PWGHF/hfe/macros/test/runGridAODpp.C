@@ -22,7 +22,7 @@ void runGridAODpp()
    //lib necessary for dielectron
    gSystem->Load("libCORRFW.so");
 
-   gSystem->Load("libTENDER"); 
+   gSystem->Load("libTender"); 
    gSystem->Load("libProof.so");
    gSystem->Load("libRAWDatabase.so");
    gSystem->Load("libSTEER.so");
@@ -31,7 +31,7 @@ void runGridAODpp()
    gSystem->Load("libTRDbase.so");
    gSystem->Load("libVZERObase.so");
    gSystem->Load("libPWGHFhfe.so"); 
-   //gSystem->Load("libTENDERSupplies.so"); 
+   //gSystem->Load("libTenderSupplies.so"); 
 
    // Load common libraries
 

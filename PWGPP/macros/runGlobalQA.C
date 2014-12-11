@@ -11,7 +11,7 @@ void runLocal() {
 */
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libTENDER");
+  gSystem->Load("libTender");
   gSystem->Load("libPWGPP");
 
   AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");

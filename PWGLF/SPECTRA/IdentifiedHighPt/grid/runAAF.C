@@ -191,8 +191,8 @@ void runAAF(Int_t nFilesMax, char* type, char* textFileName, Int_t task)
   // tender
   Bool_t v0tender = kTRUE;
   if(v0tender) {
-    gSystem->Load("libTENDER.so");
-    gSystem->Load("libTENDERSupplies.so");
+    gSystem->Load("libTender.so");
+    gSystem->Load("libTenderSupplies.so");
   }
 
   gROOT->ProcessLine(Form(".include %s/include", gSystem->ExpandPathName("$ALICE_ROOT")));

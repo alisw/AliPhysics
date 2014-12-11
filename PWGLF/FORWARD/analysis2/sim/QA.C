@@ -180,7 +180,7 @@ void LoadLibraries()
   gSystem->Load("libOADB");
   gSystem->Load("libESDfilter.so");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libTENDER");
+  gSystem->Load("libTender");
   gSystem->Load("libPWGPP.so");
   gSystem->Load("libAliHLTTrigger.so");
 

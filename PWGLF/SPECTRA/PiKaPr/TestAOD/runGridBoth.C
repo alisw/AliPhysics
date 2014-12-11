@@ -104,8 +104,8 @@ cout<<mc<<" "<<aod<<" "<<griddatadir.Data()<<" "<<root.Data()<<" "<<datapattern.
   gSystem->Load("libProof.so");
   gSystem->Load("libRAWDatabase.so");
   gSystem->Load("libSTEER.so");
-  gSystem->Load("libTENDER.so");
-    gSystem->Load("libTENDERSupplies.so");
+  gSystem->Load("libTender.so");
+    gSystem->Load("libTenderSupplies.so");
 gSystem->Load("libPWGLFspectra.so");
   gROOT->ProcessLine(".include $ALICE_ROOT/include ");
   gSystem->SetIncludePath("-I.");
@@ -276,10 +276,10 @@ AliAnalysisGrid* CreateAlienHandler(TString mode="test",TString daystring)
 
   AliAnalysisAlien *plugin = new AliAnalysisAlien();
   //plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/TOF  -I$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD");
-  //plugin->SetAdditionalLibs("libSTEERBase.so libESD.so libAOD.so libANALYSISalice.so libPWGLFspectra.so libTENDER.so libTENDERSupplies.so");
+  //plugin->SetAdditionalLibs("libSTEERBase.so libESD.so libAOD.so libANALYSISalice.so libPWGLFspectra.so libTender.so libTenderSupplies.so");
   //plugin->SetAnalysisSource("AliSpectraBothHistoManager.cxx AliSpectraBothTrackCuts.cxx AliSpectraBothEventCuts.cxx AliSpectraBothPID.cxx AliAnalysisTaskSpectraBoth.cxx");
     plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/TOF ");
-  plugin->SetAdditionalLibs("libTENDER.so libTENDERSupplies.so libPWGLFspectra.so");
+  plugin->SetAdditionalLibs("libTender.so libTenderSupplies.so libPWGLFspectra.so");
  // plugin->SetAnalysisSource("AliSpectraBothHistoManager.cxx AliSpectraBothTrackCuts.cxx AliSpectraBothEventCuts.cxx AliSpectraBothPID.cxx AliAnalysisTaskSpectraBoth.cxx");
   plugin->SetOverwriteMode();
   plugin->SetExecutableCommand("aliroot -q -b");  

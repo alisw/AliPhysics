@@ -78,7 +78,7 @@ void AODQAChecks(Bool_t useMC = 1, Int_t icut = 1, const Float_t nSigmaCut = 3)
   gSystem->Load("libANALYSIS");
   gSystem->Load("libOADB");
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libTENDER");
+  gSystem->Load("libTender");
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWGTools");
   gSystem->Load("libPWGLFspectra");

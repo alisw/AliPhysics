@@ -54,8 +54,8 @@ void runLocal(TString inputFile = "fileList", TString options="")
   gSystem->Load("libVZERObase");
   gSystem->Load("libVZEROrec");
   gSystem->Load("libHMPIDbase");
-  gSystem->Load("libTENDER");
-  gSystem->Load("libTENDERSupplies");
+  gSystem->Load("libTender");
+  gSystem->Load("libTenderSupplies");
   gSystem->Load("libPWGPP");
 
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
@@ -177,8 +177,8 @@ void runAlienPlugin(const char* pluginmode="full")
   gSystem->Load("libVZERObase");
   gSystem->Load("libVZEROrec");
   gSystem->Load("libHMPIDbase");
-  gSystem->Load("libTENDER");
-  gSystem->Load("libTENDERSupplies");
+  gSystem->Load("libTender");
+  gSystem->Load("libTenderSupplies");
   gSystem->Load("libPWGPP");
 
   // Use AliRoot includes to compile our task

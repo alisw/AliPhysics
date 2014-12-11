@@ -42,7 +42,7 @@ Double_t ApplyCorrections(const char* datafile, const char* datatask, const char
     
     gSystem->Load("libANALYSIS.so");
     gSystem->Load("libANALYSISalice.so");
-    gSystem->Load("libTENDER.so");
+    gSystem->Load("libTender.so");
     gSystem->Load("libCORRFW.so");
     gSystem->Load("libPWG0base.so");    
     gSystem->Load("libPWG0dep"); 

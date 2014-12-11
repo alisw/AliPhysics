@@ -26,8 +26,8 @@ void AddTask_PhotonQA(	TString V0ReaderEventCutNumber 	= "0000000",
 	gSystem->Load("libCDB.so");
 	gSystem->Load("libSTEER.so");
 	gSystem->Load("libSTEERBase.so");
-	gSystem->Load("libTENDER.so");
-	gSystem->Load("libTENDERSupplies.so");
+	gSystem->Load("libTender.so");
+	gSystem->Load("libTenderSupplies.so");
 	gSystem->Load("libPWGflowBase.so");
 	gSystem->Load("libPWGflowTasks.so");
 	gSystem->Load("libPWGGAGammaConv.so");

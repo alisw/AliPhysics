@@ -25,8 +25,8 @@ void runGridPbPb()
    gSystem->Load("libPWGflowBase.so");
    gSystem->Load("libPWGflowTasks.so");
 
-   gSystem->Load("libTENDER"); 
-   gSystem->Load("libTENDERSupplies"); 
+   gSystem->Load("libTender"); 
+   gSystem->Load("libTenderSupplies"); 
    gSystem->Load("libProof.so");
    gSystem->Load("libRAWDatabase.so");
    gSystem->Load("libSTEER.so");
@@ -36,7 +36,7 @@ void runGridPbPb()
    gSystem->Load("libVZERObase.so");
    gSystem->Load("libPWGHFbase.so");
    gSystem->Load("libPWGHFhfe.so"); 
-   gSystem->Load("libTENDERSupplies.so"); 
+   gSystem->Load("libTenderSupplies.so"); 
 
    // Load common libraries
 

@@ -36,7 +36,7 @@ int MakeTrendZDC(char *infile, int run) {
   gSystem->Load("libCORRFW");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libANALYSIScalib.so");
-  gSystem->Load("libTENDER.so");
+  gSystem->Load("libTender.so");
   gSystem->Load("libPWGPP.so");
   
   char *outfile = "trending.root";

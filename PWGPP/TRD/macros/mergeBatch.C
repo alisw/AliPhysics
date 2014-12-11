@@ -4,7 +4,7 @@ void mergeBatch(const Char_t *mark, const Char_t *files, const Int_t nfiles=20, 
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libCORRFW.so");
-  gSystem->Load("libTENDER.so");
+  gSystem->Load("libTender.so");
   gSystem->Load("libPWGPP.so");
   gSystem->Load("libPWGmuon.so");
 

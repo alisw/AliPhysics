@@ -42,7 +42,7 @@ void LoadLibraries()
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libTENDER");
+  gSystem->Load("libTender");
   //  gSystem->Load("libPWG0base.so");
   //  gSystem->Load("libPWG0dep.so");
   //  gSystem->Load("libPWG0selectors.so");
