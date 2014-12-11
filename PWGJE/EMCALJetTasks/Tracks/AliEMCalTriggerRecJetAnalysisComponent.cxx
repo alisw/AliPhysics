@@ -50,6 +50,7 @@ AliEMCalTriggerRecJetAnalysisComponent::AliEMCalTriggerRecJetAnalysisComponent()
   fTrackSelection(NULL),
   fMinimumJetPt(20.),
   fRequestMCtrue(kFALSE),
+  fSwapEta(kFALSE),
   fUsePatches(kFALSE)
 {
   /*
@@ -63,6 +64,7 @@ AliEMCalTriggerRecJetAnalysisComponent::AliEMCalTriggerRecJetAnalysisComponent(c
   fTrackSelection(NULL),
   fMinimumJetPt(20.),
   fRequestMCtrue(kFALSE),
+  fSwapEta(kFALSE),
   fUsePatches(kFALSE)
 {
   /*
@@ -191,7 +193,7 @@ void AliEMCalTriggerRecJetAnalysisComponent::FillHistogram(
    * Fill Histogram with relevant information
    */
   if(!fTriggerDecision) return;
-  double data[6] = {TMath::Abs(track->Pt()), TMath::Abs(jet->Pt()), track->Eta(), track->Phi(), vz, fTriggerDecision->IsMinBias() ? 1. : 0.};
+  double data[6] = {TMath::Abs(track->Pt()), TMath::Abs(jet->Pt()), (fSwapEta ? -1. : 1.) * track->Eta(), track->Phi(), vz, fTriggerDecision->IsMinBias() ? 1. : 0.};
   fHistos->FillTHnSparse(histname.Data(), data);
 }
 

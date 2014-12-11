@@ -29,6 +29,7 @@ public:
   void SetUsePatches(Bool_t doUse = kTRUE) { fUsePatches = doUse; }
   void SetMinimumJetPt(Double_t minpt) { fMinimumJetPt = minpt; }
   void SetSingleTrackCuts(AliEMCalPtTaskVTrackSelection * trackcuts) { fTrackSelection = trackcuts; }
+  void SetSwapEta(Bool_t doSwap = kTRUE) { fSwapEta = doSwap; }
 
 protected:
   AliVParticle * IsMCTrueTrack(const AliVTrack* const trk, const AliMCEvent* evnt) const;
@@ -36,6 +37,7 @@ protected:
   AliEMCalPtTaskVTrackSelection     *fTrackSelection;         // Track selection cuts used in the analysis
   Double_t                          fMinimumJetPt;            // Minimum jet pt
   Bool_t                            fRequestMCtrue;           // Request MC true track
+  Bool_t                            fSwapEta;                 // Swap eta sign on request
   Bool_t                            fUsePatches;              // Use patches for trigger decision
 
   ClassDef(AliEMCalTriggerRecJetAnalysisComponent, 1);        // Analysis component for reconstructed Jets

@@ -202,7 +202,7 @@ void AliEMCalTriggerRecTrackAnalysisComponent::FillHistogram(
   if(useMCkine && !assocMC) return;
   double data[5];
   data[0] = useMCkine ? TMath::Abs(assocMC->Pt()) : TMath::Abs(trk->Pt());
-  data[1] = useMCkine ? assocMC->Eta() : trk->Eta();
+  data[1] = (fSwapEta ? -1. : 1.) * (useMCkine ? assocMC->Eta() : trk->Eta());
   data[2] = useMCkine ? assocMC->Phi() : trk->Phi();
   data[3] = recev->GetPrimaryVertex()->GetZ();
   data[4] = fTriggerDecision->IsMinBias();
