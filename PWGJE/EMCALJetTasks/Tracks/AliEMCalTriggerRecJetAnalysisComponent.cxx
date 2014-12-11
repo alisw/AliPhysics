@@ -110,7 +110,7 @@ void AliEMCalTriggerRecJetAnalysisComponent::CreateHistos() {
   const AliEMCalTriggerBinningDimension *ptbinning = fBinning->GetBinning("pt"),
       *etabinning = fBinning->GetBinning("eta"),
       *phibinning = fBinning->GetBinning("phi"),
-      *vertexbinning = fBinning->GetBinning("vertex");
+      *vertexbinning = fBinning->GetBinning("zvertex");
 
   const TAxis *trackaxes[6] = {
       DefineAxis("trackpt", ptbinning),

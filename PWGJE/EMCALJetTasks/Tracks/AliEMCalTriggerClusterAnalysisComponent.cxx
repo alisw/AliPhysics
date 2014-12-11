@@ -91,7 +91,13 @@ void AliEMCalTriggerClusterAnalysisComponent::CreateHistos() {
   const AliEMCalTriggerBinningDimension *ptbinning = fBinning->GetBinning("pt"),
       *etabinning = fBinning->GetBinning("eta"),
       *phibinning = fBinning->GetBinning("phi"),
-      *vertexbinning = fBinning->GetBinning("vertex");
+      *vertexbinning = fBinning->GetBinning("zvertex");
+  /*
+  ptbinning->Print();
+  etabinning->Print();
+  phibinning->Print();
+  vertexbinning->Print();
+  */
 
   const TAxis *clusteraxes[5] = {
       DefineAxis("energy", ptbinning),

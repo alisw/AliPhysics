@@ -62,6 +62,7 @@ AliAnalysisTaskPtEMCalTriggerV1::AliAnalysisTaskPtEMCalTriggerV1(const char* nam
    */
   fTaskGroups = new TObjArray;
   fTaskGroups->SetOwner();
+  fBinning = new AliEMCalTriggerBinningComponent();
   SetMakeGeneralHistograms(kTRUE);
 }
 

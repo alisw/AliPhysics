@@ -51,6 +51,8 @@ void AliEMCalTriggerPatchAnalysisComponent::CreateHistos() {
   /*
    * Create histograms for the trigger patch analysis
    */
+  AliEMCalTriggerTracksAnalysisComponent::CreateHistos();
+
   AliEMCalTriggerBinningDimension *etabinning = fBinning->GetBinning("eta"),
       *phibinning = fBinning->GetBinning("phi");
   const TAxis *patchenergyaxes[4] = {

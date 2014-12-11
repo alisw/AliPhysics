@@ -55,10 +55,10 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *noselect = new EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup("noselect");
   noselect->AddAnalysisComponent(new EMCalTriggerPtAnalysis::AliEMCalTriggerPatchAnalysisComponent("patchanalysis"));
 
-  double jetpt[4] = {40., 60., 80., 100.}
+  double jetpt[4] = {40., 60., 80., 100.};
   EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *defaultselect = new EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup("defaultselect");
-  defaultselect->SetEventSelection(new EMCalTriggerPtAnalysis::AliEMCalTriggerEventSelection("eventSelection"));
-  EMCalTriggerPtAnalysis::AliEMCalTriggerKineCuts *kineCuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerKineCuts("kinecuts");
+  defaultselect->SetEventSelection(new EMCalTriggerPtAnalysis::AliEMCalTriggerEventSelection());
+  EMCalTriggerPtAnalysis::AliEMCalTriggerKineCuts *kineCuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerKineCuts();
   kineCuts->SetPtRange(2., 100.);
   defaultselect->SetKineCuts(kineCuts);
   AddEventCounterComponent(defaultselect, isMC);
@@ -116,14 +116,14 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
 }
 
 void AddClusterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, bool isMC){
-  EMCalTriggerPtAnalysis::AliEMCalTriggerClusterAnalysisComponent *clusteranalysis = EMCalTriggerPtAnalysis::AliEMCalTriggerClusterAnalysisComponent("clusterAnalysis");
-  clusteranalysis->SetEnergyRange(2. 100.);
+  EMCalTriggerPtAnalysis::AliEMCalTriggerClusterAnalysisComponent *clusteranalysis = new EMCalTriggerPtAnalysis::AliEMCalTriggerClusterAnalysisComponent("clusterAnalysis");
+  clusteranalysis->SetEnergyRange(2., 100.);
   if(isMC) clusteranalysis->SetUsePatches();
   group->AddAnalysisComponent(clusteranalysis);
 }
 
 void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, AliESDtrackCuts * trackcuts, bool isMC, bool isSwapEta){
-  EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent *trackanalysis = EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent("trackAnalysisStandard");
+  EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent *trackanalysis = new EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent("trackAnalysisStandard");
   group->AddAnalysisComponent(trackanalysis);
   // Create charged hadrons pPb standard track cuts
   trackanalysis->SetTrackSelection(new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD(trackcuts));
@@ -136,7 +136,7 @@ void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, 
 }
 
 void AddEventCounterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, Bool_t isMC){
-  EMCalTriggerPtAnalysis::AliEMCalTriggerEventCounterAnalysisComponent * evcount = new EMCalTriggerPtAnalysis::AliEMCalTriggerEventCounterAnalysisComponent("eventCounter")
+  EMCalTriggerPtAnalysis::AliEMCalTriggerEventCounterAnalysisComponent * evcount = new EMCalTriggerPtAnalysis::AliEMCalTriggerEventCounterAnalysisComponent("eventCounter");
   evcount->SetUsePatches(isMC);
   group->AddAnalysisComponent(evcount);
 }

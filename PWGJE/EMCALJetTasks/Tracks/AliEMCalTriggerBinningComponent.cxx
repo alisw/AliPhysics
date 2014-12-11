@@ -17,6 +17,8 @@
  *
  *   Author: Markus Fasel
  */
+#include <iostream>
+
 #include <TObjArray.h>
 #include "AliEMCalTriggerBinningComponent.h"
 
@@ -124,6 +126,21 @@ void AliEMCalTriggerBinningComponent::SetBinning(const char* dimname, const TArr
     fDimensions->Add(dim);
   }
 }
+
+//______________________________________________________________________________
+void AliEMCalTriggerBinningDimension::Print(Option_t * /*option*/) const {
+  /*
+   * Print the bin limits for a given dimension
+   */
+  std::cout << "Binning for variable " << GetName() << ":" << std::endl;
+  std::cout << "================================================" << std::endl;
+  for(int ilim = 0; ilim < fBinning.GetSize(); ilim++){
+    std::cout << fBinning[ilim];
+    if(ilim < fBinning.GetSize() -1) std::cout << ", ";
+  }
+  std::cout << std::endl;
+}
+
 
 } /* namespace EMCalTriggerPtAnalysis */
 
