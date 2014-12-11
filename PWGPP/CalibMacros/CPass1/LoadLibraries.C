@@ -18,7 +18,7 @@ void LoadLibraries() {
     //    
     gSystem->Load("libANALYSISalice.so");
     gSystem->Load("libANALYSIScalib.so");
-    gSystem->Load("libTENDER.so");
+    gSystem->Load("libTender.so");
     gSystem->Load("libPWGPP.so");
     //gSystem->Load("libPWG4PartCorrBase.so");
     //gSystem->Load("libHMPIDbase.so");

@@ -42,7 +42,7 @@
 // gSystem->Load("libMemStatGui.so")
 // gSystem->Load("libANALYSIS.so")
 // gSystem->Load("libANALYSISalice.so")
-// gSystem->Load("libTENDER.so")
+// gSystem->Load("libTender.so")
 // gSystem->Load("libSTAT.so")
 // gSystem->Load("libPWGPP.so");
 // gSystem->Load("libNetx.so") ;
@@ -66,7 +66,7 @@
 
 #endif
 
-Char_t const *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libANALYSISalice.so", "libTENDER.so", "libSTAT.so", "libPWGPP.so", "libPWGmuon.so"};
+Char_t const *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libANALYSISalice.so", "libTender.so", "libSTAT.so", "libPWGPP.so", "libPWGmuon.so"};
 
 // define setup
 TClass *ctask = new TClass;

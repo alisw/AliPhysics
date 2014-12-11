@@ -277,7 +277,7 @@ void loadLibraries()
   gSystem->Load("libANALYSIScalib");
   gSystem->Load("libESDfilter");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libTENDER");
+  gSystem->Load("libTender");
   gSystem->Load("libPWGPP.so");
   gSystem->Load("libAliHLTTrigger.so");
   gSystem->Load("libPWGTools");

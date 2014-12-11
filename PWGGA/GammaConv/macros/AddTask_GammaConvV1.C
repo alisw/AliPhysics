@@ -19,11 +19,11 @@ void AddTask_GammaConvV1(TString mode){
    gSystem->Load("libRAWDatabase.so");
    gSystem->Load("libSTEER.so");
    gSystem->Load("libSTEERBase.so");
-   gSystem->Load("libTENDER.so");
+   gSystem->Load("libTender.so");
    gSystem->Load("libTRDbase.so");
    gSystem->Load("libVZERObase.so");
    gSystem->Load("libVZEROrec.so");
-   gSystem->Load("libTENDERSupplies.so");
+   gSystem->Load("libTenderSupplies.so");
    
    Bool_t isMC	= kTRUE;
    Bool_t readTR = kTRUE;

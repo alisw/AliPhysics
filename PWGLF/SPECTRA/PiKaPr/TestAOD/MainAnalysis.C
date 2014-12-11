@@ -29,7 +29,7 @@ void MainAnalysis()  {
   gSystem->Load("libANALYSIS");
   gSystem->Load("libOADB");
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libTENDER");
+  gSystem->Load("libTender");
   gSystem->Load("libCORRFW");
   //gSystem->Load("libPWG0base");
   //gSystem->Load("libMinuit");

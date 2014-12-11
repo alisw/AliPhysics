@@ -9,7 +9,7 @@ void RunIPTask(const char* mode)
   // Load analysis libraries
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libTENDER.so");
+  gSystem->Load("libTender.so");
   gSystem->Load("libPWGPP.so");
   //
   TChain *chainESD = 0;

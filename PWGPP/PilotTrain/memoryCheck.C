@@ -10,7 +10,7 @@ void memoryCheck()
    gSystem->Load("libCORRFW");
 
 // Add aditional AliRoot libraries
-   gSystem->Load("libTENDER.so");
+   gSystem->Load("libTender.so");
    gSystem->Load("libPWG0base.so");
    gSystem->Load("libPWG0dep.so");
    gSystem->Load("libPWG0selectors.so");

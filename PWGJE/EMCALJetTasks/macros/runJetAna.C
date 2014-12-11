@@ -191,8 +191,8 @@ void LoadLibs()
   gSystem->Load("libTRDbase");
   gSystem->Load("libVZERObase");
   gSystem->Load("libVZEROrec");
-  gSystem->Load("libTENDER");   
-  gSystem->Load("libTENDERSupplies"); 
+  gSystem->Load("libTender");   
+  gSystem->Load("libTenderSupplies"); 
  
   // load fastjet libraries
   gSystem->Load("libJETAN");

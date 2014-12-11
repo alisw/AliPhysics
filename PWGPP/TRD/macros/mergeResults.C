@@ -3,7 +3,7 @@ void mergeResults(Char_t *files, Char_t *file="QAresults.root")
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libCORRFW.so");
-  gSystem->Load("libTENDER.so");
+  gSystem->Load("libTender.so");
   gSystem->Load("libPWGPP.so");
   gSystem->Load("libPWGmuon.so");
 

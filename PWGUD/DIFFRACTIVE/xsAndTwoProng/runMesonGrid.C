@@ -55,7 +55,7 @@ void runMeson(
 	gSystem->Load("libANALYSIS");
 	gSystem->Load("libANALYSISalice");
 	gSystem->Load("libSTEER");
-	gSystem->Load("libTENDER");
+	gSystem->Load("libTender");
 	gSystem->Load("libRAWDatasim");
 	gSystem->Load("libFASTSIM");
 	gSystem->Load("libEVGEN");
@@ -328,7 +328,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname,
 
 	// Declare all libraries (other than the default ones for the framework. These will be
 	// loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-	plugin->SetAdditionalLibs("libGui.so libCore.so libTree.so libPhysics.so libMinuit.so libProof.so libmicrocern.so liblhapdf.so libpythia6.so libEG.so libGeom.so libVMC.so libEGPythia6.so libSTEERBase.so libESD.so libRAWDatabase.so libRAWDatarec.so libAOD.so libANALYSIS.so libANALYSISalice.so libCDB.so libSTEER.so libRAWDatasim.so libFASTSIM.so libEVGEN.so libAliPythia6.so libSTAT.so libhijing.so libTHijing.so libSTRUCT.so libPHOSUtils.so libPHOSbase.so libPHOSsim.so libPHOSrec.so libMUONcore.so libMUONmapping.so libMUONgeometry.so libMUONcalib.so libMUONraw.so libMUONtrigger.so libMUONbase.so libMUONsim.so libMUONrec.so libMUONevaluation.so libFMDbase.so libFMDsim.so libFMDrec.so libPMDbase.so libPMDsim.so libPMDrec.so libHMPIDbase.so libHMPIDsim.so libHMPIDrec.so libT0base.so libT0sim.so libT0rec.so libZDCbase.so libZDCsim.so libZDCrec.so libACORDEbase.so libACORDErec.so libACORDEsim.so libVZERObase.so libVZEROrec.so libVZEROsim.so libEMCALraw.so libEMCALUtils.so libEMCALbase.so libEMCALsim.so libEMCALrec.so libTPCbase.so libTPCrec.so libTPCsim.so libTPCfast.so libITSbase.so libITSsim.so libITSrec.so libTRDbase.so libTRDsim.so libTRDrec.so libTOFbase.so libTOFrec.so libTOFsim.so libHLTbase.so libHLTinterface.so libHLTsim.so libHLTrec.so libTENDER.so libTENDERSupplies.so libPWGPP.so AliCDMesonBase.h AliCDMesonBase.cxx AliCDMesonTracks.h AliCDMesonTracks.cxx AliCDMesonUtils.h AliCDMesonUtils.cxx AliAnalysisTaskCDMeson.h AliAnalysisTaskCDMeson.cxx");
+	plugin->SetAdditionalLibs("libGui.so libCore.so libTree.so libPhysics.so libMinuit.so libProof.so libmicrocern.so liblhapdf.so libpythia6.so libEG.so libGeom.so libVMC.so libEGPythia6.so libSTEERBase.so libESD.so libRAWDatabase.so libRAWDatarec.so libAOD.so libANALYSIS.so libANALYSISalice.so libCDB.so libSTEER.so libRAWDatasim.so libFASTSIM.so libEVGEN.so libAliPythia6.so libSTAT.so libhijing.so libTHijing.so libSTRUCT.so libPHOSUtils.so libPHOSbase.so libPHOSsim.so libPHOSrec.so libMUONcore.so libMUONmapping.so libMUONgeometry.so libMUONcalib.so libMUONraw.so libMUONtrigger.so libMUONbase.so libMUONsim.so libMUONrec.so libMUONevaluation.so libFMDbase.so libFMDsim.so libFMDrec.so libPMDbase.so libPMDsim.so libPMDrec.so libHMPIDbase.so libHMPIDsim.so libHMPIDrec.so libT0base.so libT0sim.so libT0rec.so libZDCbase.so libZDCsim.so libZDCrec.so libACORDEbase.so libACORDErec.so libACORDEsim.so libVZERObase.so libVZEROrec.so libVZEROsim.so libEMCALraw.so libEMCALUtils.so libEMCALbase.so libEMCALsim.so libEMCALrec.so libTPCbase.so libTPCrec.so libTPCsim.so libTPCfast.so libITSbase.so libITSsim.so libITSrec.so libTRDbase.so libTRDsim.so libTRDrec.so libTOFbase.so libTOFrec.so libTOFsim.so libHLTbase.so libHLTinterface.so libHLTsim.so libHLTrec.so libTender.so libTenderSupplies.so libPWGPP.so AliCDMesonBase.h AliCDMesonBase.cxx AliCDMesonTracks.h AliCDMesonTracks.cxx AliCDMesonUtils.h AliCDMesonUtils.cxx AliAnalysisTaskCDMeson.h AliAnalysisTaskCDMeson.cxx");
 
 	plugin->AddIncludePath("-I$ALICE_ROOT/ITS -I$ALICE_ROOT/PWGPP/ITS");
 

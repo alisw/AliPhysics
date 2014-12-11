@@ -8,7 +8,7 @@ void MakeTrendGraph(const char *infilelist, const char* outfile) {
   gSystem->AddIncludePath("-I$ALICE_ROOT/PWGPP/TPC");
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libTENDER.so");
+  gSystem->Load("libTender.so");
   gSystem->Load("libCORRFW.so");
   gSystem->Load("libPWG0base.so");
   gSystem->Load("libPWG0dep.so");

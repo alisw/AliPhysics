@@ -19,7 +19,7 @@ void processHFEQAtask(const char *fnamedata = "AnalysisResults.root",
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libCORRFW.so");
-  gSystem->Load("libTENDER.so");
+  gSystem->Load("libTender.so");
   gSystem->Load("libPWGPP.so");
   gSystem->Load("libPWGflowBase.so");
   gSystem->Load("libPWGflowTasks.so");

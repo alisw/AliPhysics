@@ -19,14 +19,14 @@ int MakeTrend(char *infile,int run) {
   gSystem->Load("libTOFcalib");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libANALYSIScalib.so");
-  gSystem->Load("libTENDER.so");
+  gSystem->Load("libTender.so");
   gSystem->Load("libPWGPP.so");
                     
   
   /*
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libTENDER.so");
+  gSystem->Load("libTender.so");
   gSystem->Load("libCORRFW.so");
   gSystem->Load("libPWG0base.so");
   gSystem->Load("libPWG0dep.so");

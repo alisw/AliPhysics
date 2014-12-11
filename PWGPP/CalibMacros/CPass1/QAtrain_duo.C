@@ -146,7 +146,7 @@ void LoadLibraries()
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libTENDER");
+  gSystem->Load("libTender");
   gSystem->Load("libPWGPP.so");
   gSystem->Load("libAliHLTTrigger.so");
 

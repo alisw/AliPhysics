@@ -25,8 +25,8 @@ void ProcessTRDRunQA(TString qaFile, Int_t runNumber, TString dataType,
   gSystem->Load("libSTAT");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libTENDER");
-  gSystem->Load("libTENDERSupplies");
+  gSystem->Load("libTender");
+  gSystem->Load("libTenderSupplies");
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWGPP");
   

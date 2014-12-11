@@ -38,7 +38,7 @@ Bool_t AnalysisSetup
    Bool_t isAOD      = opt.Contains("AOD");
    Bool_t central    = opt.Contains("CEN");
    Bool_t peripheral = opt.Contains("PER");
-   Bool_t useTender  = opt.Contains("TENDER");
+   Bool_t useTender  = opt.Contains("Tender");
    Bool_t usePhysSel = opt.Contains("PHYS");
    Bool_t noV0       = opt.Contains("NOV0");
    
@@ -63,8 +63,8 @@ Bool_t AnalysisSetup
    
    if (useTender) {
       ::Info("AnalysisSetup", "Loading tender libraries");
-      gSystem->Load("libTENDER.so");
-      gSystem->Load("libTENDERSupplies.so");
+      gSystem->Load("libTender.so");
+      gSystem->Load("libTenderSupplies.so");
    }
    
    if (!AliAnalysisAlien::SetupPar("PWG2resonances.par")) return kFALSE;
@@ -105,7 +105,7 @@ Bool_t AnalysisSetup
    }
 
    //
-   // === CONFIGURE AND INSERT PHYSICS SELECTION & TENDER SUPPLY ===================================
+   // === CONFIGURE AND INSERT PHYSICS SELECTION & Tender SUPPLY ===================================
    //
 
    // add event selection for data if running ESD

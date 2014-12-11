@@ -21,7 +21,7 @@ void LoadMyLibs() {
   
   CheckLoadLibrary("libANALYSIS");
   CheckLoadLibrary("libANALYSISalice");
-  CheckLoadLibrary("libTENDER");
+  CheckLoadLibrary("libTender");
   CheckLoadLibrary("libTPCbase");
   CheckLoadLibrary("libTPCsim");
   CheckLoadLibrary("libTPCrec");

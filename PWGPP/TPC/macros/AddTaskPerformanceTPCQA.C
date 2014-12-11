@@ -14,7 +14,7 @@
 // gSystem->Load("libANALYSIS");
 // gSystem->Load("libANALYSISalice");
 // gSystem->Load("libTPCcalib.so");
-// gSystem->Load("libTENDER.so");
+// gSystem->Load("libTender.so");
 // gSystem->Load("libPWGPP.so");
 //
 // gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskPerformanceTPCQA.C");

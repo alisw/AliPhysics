@@ -20,7 +20,7 @@ void makeTrendingDB(const Char_t *fl)
 // The trending file from the list should be found on a path formated "your path"/runId/TRD.PerformanceTrend.root 
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libTENDER.so");
+  gSystem->Load("libTender.so");
   gSystem->Load("libCORRFW.so");
   gSystem->Load("libPWGPP.so");
   gSystem->Load("libPWGmuon.so");

@@ -107,7 +107,7 @@ void corrusingfitsigma(TString nameFile1,TString outputname1,TString nameFile2,T
 	gSystem->Load("libANALYSIS");
 	gSystem->Load("libOADB");
 	gSystem->Load("libANALYSISalice");
-	gSystem->Load("libTENDER");
+	gSystem->Load("libTender");
 	gSystem->Load("libCORRFW");
 	gSystem->Load("libPWGTools");
 	gSystem->Load("libPWGLFspectra");

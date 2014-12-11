@@ -20,7 +20,7 @@ void LoadTrainLibs(){
   gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT -I$ALICE_ROOT/TRD -I$ALICE_ROOT/PWGPP/TRD/macros/ ");
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libTENDER.so");
+  gSystem->Load("libTender.so");
   gSystem->Load("libCORRFW.so");
   gSystem->Load("libPWG0base.so");
   gSystem->Load("libPWG0dep.so");

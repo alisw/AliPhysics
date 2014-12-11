@@ -2,7 +2,7 @@ void makeTrending(const Char_t *fl, Bool_t relative=kFALSE, const Char_t *db = "
 {
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libTENDER.so");
+  gSystem->Load("libTender.so");
   gSystem->Load("libCORRFW.so");
   gSystem->Load("libPWGPP.so");
   gSystem->Load("libPWGmuon.so");
