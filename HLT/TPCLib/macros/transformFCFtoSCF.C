@@ -94,7 +94,7 @@ void transformFCFtoSCF(const char* input="./",const char* dirName="./"){
   // 
   // init the HLT system in order to define the analysis chain below
   //
-  gSystem->Load("libHLTrec.so");
+  gSystem->Load("libHLTrec");
   AliHLTSystem *gHLT = AliHLTReconstructorBase::GetInstance();
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////

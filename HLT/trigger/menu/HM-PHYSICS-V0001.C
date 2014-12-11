@@ -63,7 +63,7 @@ void HM_PHYSICS_V0001(
 		      Int_t firstRun = 0,
 		      Int_t lastRun = AliCDBRunRange::Infinity()
 		      ) {
-  gSystem->Load("libAliHLTTrigger.so");
+  gSystem->Load("libAliHLTTrigger");
   
   // Setup the CDB default storage and run number.
   AliCDBManager* cdbManager = AliCDBManager::Instance();

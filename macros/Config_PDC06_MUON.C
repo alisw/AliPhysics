@@ -13,7 +13,7 @@ void Config(char directory[100]="", char option[6]="trg1mu")
 
   //=====================================================================
   LoadPythia();
-  gSystem->Load("libgeant321.so");
+  gSystem->Load("libgeant321");
   new TGeant3TGeo("C++ Interface to Geant3");
   
   //=======================================================================

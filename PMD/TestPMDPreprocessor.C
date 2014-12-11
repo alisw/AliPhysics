@@ -11,7 +11,7 @@
 void TestPMDPreprocessor()
 {
   // load library
-  gSystem->Load("libTestShuttle.so");
+  gSystem->Load("libTestShuttle");
 
   // TODO if needed, change location of OCDB and Reference test folders
   // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB and TestReference

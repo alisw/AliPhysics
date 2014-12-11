@@ -12,7 +12,7 @@ void loadlibs(const char *dir=".")
   gSystem->Load("libCore");
   gSystem->Load("libPhysics");
   gSystem->Load("libMinuit");
-  gSystem->Load("libGui.so");
+  gSystem->Load("libGui");
 
   gSystem->Load("libGeom");
   gSystem->Load("libVMC");

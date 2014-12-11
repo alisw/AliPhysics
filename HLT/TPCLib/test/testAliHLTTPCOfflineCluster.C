@@ -53,8 +53,8 @@ using namespace std;
 
 int testAliHLTTPCOfflineCluster(){
 //#ifdef __CINT__
-  //gSystem->Load("libAliHLTUtil.so");
-  gSystem->Load("libAliHLTTPC.so");
+  //gSystem->Load("libAliHLTUtil");
+  gSystem->Load("libAliHLTTPC");
 //#endif
 
   int iResult=0;

@@ -80,7 +80,7 @@ void MakeTrackTable(
 		cdbManager->SetRun(0);
 	}
 	
-	gSystem->Load("libAliHLTMUON.so");
+	gSystem->Load("libAliHLTMUON");
 	// Must pree load libAliHLTMUON.so before loading this macro and running it in compiled mode.
 
 	TString fieldnames = "event:isprimary:hastrack:cantrigger:pdgcode:sign:px:py:pz";

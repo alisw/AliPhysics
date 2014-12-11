@@ -4,10 +4,10 @@
   .x ~/NimStyle.C
   .x ~/rootlogon.C
   TProof::Open("");
-  gSystem->Load("libSTAT.so");
+  gSystem->Load("libSTAT");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib");
-  gSystem->Load("libSTAT.so");
+  gSystem->Load("libSTAT");
 
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");  
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+");

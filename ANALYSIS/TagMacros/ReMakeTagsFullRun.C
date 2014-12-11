@@ -22,21 +22,21 @@ AliGRPObject *GetGRPForRun(Int_t runno) {
 
 void ReMakeTagsFullRun(const char *esdfile, Int_t runno)
 {
-  gSystem->Load("libProofPlayer.so");
-  gSystem->Load("libVMC.so");  
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libANALYSIS.so");  
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libGui.so");
-  gSystem->Load("libCDB.so");
+  gSystem->Load("libProofPlayer");
+  gSystem->Load("libVMC");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libGui");
+  gSystem->Load("libCDB");
 
-  gSystem->Load("libMinuit.so");
-  gSystem->Load("libRAWDatabase.so");
+  gSystem->Load("libMinuit");
+  gSystem->Load("libRAWDatabase");
 
-  gSystem->Load("libSTEER.so");  
-  gSystem->Load("libXMLParser.so");
+  gSystem->Load("libSTEER");
+  gSystem->Load("libXMLParser");
 
   TGrid::Connect("alien://");
 

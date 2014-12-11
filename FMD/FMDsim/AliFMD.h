@@ -52,7 +52,7 @@
       data.  This library is @e not loaded by aliroot
       automatically. The user has to load it herself:
       @code 
-      gSystem->Load("libFMDutil.so");
+      gSystem->Load("libFMDutil");
       @endcode
     The content of these libraries is detailed more below. 
     

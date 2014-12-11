@@ -9,16 +9,16 @@ void runTRDqaAnalysis(const char *chainName, int limit = 0) {
   //
   
   /**/
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
   /**/
 
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libTRDqaAnalysis.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libTRDqaAnalysis");
   
   // Setup chain
   TChain *chain = new TChain("esdTree");

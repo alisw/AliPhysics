@@ -38,8 +38,8 @@
 
 void testpool(const char * dirname = ".", const char * pattern = "Run180001") {
 
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
 
   // Create a chain
   TChain * fChain = new TChain("T");

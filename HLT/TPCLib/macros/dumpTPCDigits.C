@@ -56,7 +56,7 @@ int dumpTPCDigits()
     return -1;
   }
 
-  gSystem->Load("libAliHLTTPC.so");
+  gSystem->Load("libAliHLTTPC");
 
   dumpDigits(rl, 0);
 

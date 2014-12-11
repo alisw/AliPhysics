@@ -15,7 +15,7 @@ void Config(char directory[100]="", char option[6]="trgAll")
     
   //=====================================================================
   //  Libraries required by geant321
-    gSystem->Load("libgeant321.so");
+    gSystem->Load("libgeant321");
     
     new TGeant3TGeo("C++ Interface to Geant3");
   //=======================================================================

@@ -17,7 +17,7 @@ void Config()
   //  Libraries required by geant321
   gSystem->Load("liblhapdf.so");      // Parton density functions
   gSystem->Load("libpythia6.so");     // Pythia
-  gSystem->Load("libgeant321.so");
+  gSystem->Load("libgeant321");
   gSystem->Load("libEG");
   gSystem->Load("libEGPythia6");
   gSystem->Load("libAliPythia6.so");  // ALICE specific implementations

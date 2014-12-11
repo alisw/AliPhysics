@@ -108,7 +108,7 @@ void alieve_loadlibs ()
   gSystem->Load("libAliHLTHough");
   gSystem->Load("libANALYSIS");
 
-  gSystem->Load("libAlieve.so");
+  gSystem->Load("libAlieve");
 
   printf(" done.\n");
 }

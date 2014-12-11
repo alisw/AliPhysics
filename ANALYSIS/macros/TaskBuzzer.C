@@ -243,12 +243,12 @@ void LoadLibraries()
   gSystem->Load("libCORRFW");
   gSystem->Load("libTender");
   gSystem->Load("libTenderSupplies");
-  gSystem->Load("libPWG0base.so");
-  gSystem->Load("libPWG0dep.so");
-  gSystem->Load("libPWG0selectors.so");
-  gSystem->Load("libPWGPP.so");
-  gSystem->Load("libPWG2.so");
-  gSystem->Load("libPWG2forward.so");
+  gSystem->Load("libPWG0base");
+  gSystem->Load("libPWG0dep");
+  gSystem->Load("libPWG0selectors");
+  gSystem->Load("libPWGPP");
+  gSystem->Load("libPWG2");
+  gSystem->Load("libPWG2forward");
   gSystem->Load("libEMCALUtils");
   gSystem->Load("libPWG4PartCorrBase");
   gSystem->Load("libPWG4PartCorrDep");

@@ -7,8 +7,8 @@ void testQAGuiBlackCh(const char *filename) {
   
   
 
-  gSystem->Load("libGui.so");
-  gSystem->Load("libTRDGui.so");
+  gSystem->Load("libGui");
+  gSystem->Load("libTRDGui");
   
   TGMainFrame *fMain = new TGMainFrame(gClient->GetRoot(), 400, 400);
   //TGuiDetector *det = new TGuiDetector((TGWindow*)fMain);

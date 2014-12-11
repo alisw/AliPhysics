@@ -1006,11 +1006,11 @@ Bool_t LoadCommonLibraries(const char *mode)
    }   
    Bool_t success = kTRUE;
    // ROOT libraries
-   gSystem->Load("libTree.so");
-   gSystem->Load("libGeom.so");
-   gSystem->Load("libVMC.so");
-   gSystem->Load("libPhysics.so");
-   gSystem->Load("libMinuit.so");
+   gSystem->Load("libTree");
+   gSystem->Load("libGeom");
+   gSystem->Load("libVMC");
+   gSystem->Load("libPhysics");
+   gSystem->Load("libMinuit");
    
    // Load framework classes. Par option ignored here.
    switch (imode) {

@@ -4,9 +4,9 @@
 void drawLr(int layMin=1,int layMax=1) 
 {
 
-  gSystem->Load("libITSUpgradeBase.so");
-  gSystem->Load("libITSUpgradeSim.so");
-  gSystem->Load("libITSUpgradeRec.so");
+  gSystem->Load("libITSUpgradeBase");
+  gSystem->Load("libITSUpgradeSim");
+  gSystem->Load("libITSUpgradeRec");
 
   AliGeomManager::LoadGeometry("geometry.root");
 

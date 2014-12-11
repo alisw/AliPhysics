@@ -1,7 +1,7 @@
 void monrec() {
   // MonaLisa monitoring
-  gSystem->Load("libNet.so");
-  gSystem->Load("libMonaLisa.so");
+  gSystem->Load("libNet");
+  gSystem->Load("libMonaLisa");
 
   new TMonaLisaWriter("aliendb3.cern.ch", "Reconstruction pp", gSystem->Getenv("TEST_PLATFORMID"), gSystem->Getenv("TEST_PLATFORMID"), "global");
 

@@ -15,8 +15,8 @@ void testQAGui(const char *filename) {
   gStyle->SetLabelFont(52, "XY");
 
 
-  gSystem->Load("libGui.so");
-  gSystem->Load("libTRDgui.so");
+  gSystem->Load("libGui");
+  gSystem->Load("libTRDgui");
   
   AliTRDqaGuiMain *fMain = new AliTRDqaGuiMain(gClient->GetRoot());
   fMain->SetQAFile(filename);

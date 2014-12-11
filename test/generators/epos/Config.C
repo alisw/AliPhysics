@@ -100,7 +100,7 @@ void Config()
     gSystem->Load("libpythia6");
     gSystem->Load("libAliPythia6");
     gSystem->Load("libgeant321");
-    gSystem->Load("libEPOS.so");
+    gSystem->Load("libEPOS");
 #endif
 
     new     TGeant3TGeo("C++ Interface to Geant3");

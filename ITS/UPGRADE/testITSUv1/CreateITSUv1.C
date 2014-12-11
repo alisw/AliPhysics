@@ -21,8 +21,8 @@ double radii2Phi(double rMin,double rMid,double rMax, double sensW)
 void CreateITSUv1()
 {
   //
-  gSystem->Load("libITSUpgradeBase.so");
-  gSystem->Load("libITSUpgradeSim.so");
+  gSystem->Load("libITSUpgradeBase");
+  gSystem->Load("libITSUpgradeSim");
   //
   // build ITS upgrade detector
   // sensitive area 13x15mm (X,Z) with 20x20 micron pitch, 2mm dead zone on readout side and 50 micron guardring

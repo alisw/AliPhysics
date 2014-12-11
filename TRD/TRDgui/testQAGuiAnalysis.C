@@ -12,8 +12,8 @@ void testQAGuiAnalysis() {
   gStyle->SetTitleH(0.05);
 
 
-  gSystem->Load("libGui.so");
-  gSystem->Load("libTRDgui.so");
+  gSystem->Load("libGui");
+  gSystem->Load("libTRDgui");
   
   AliTRDqaGuiMainAnalysis *fMain = new AliTRDqaGuiMainAnalysis(gClient->GetRoot());
   fMain->SetQAFile();

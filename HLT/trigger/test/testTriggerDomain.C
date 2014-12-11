@@ -450,7 +450,7 @@ bool testTriggerDomain(bool print = true, int numOfTests = 100, int seed = 0)
 {
 	if (gClassTable->GetID("AliHLTDomainEntry") < 0)
 	{
-		gSystem->Load("libAliHLTTrigger.so");
+		gSystem->Load("libAliHLTTrigger");
 	}
 	
 	gRandom->SetSeed(seed);

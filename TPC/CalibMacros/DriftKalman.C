@@ -7,7 +7,7 @@ gSystem->AddIncludePath("-I$ALICE_ROOT/STAT");
 gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
 gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
 gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
-gSystem->Load("libSTAT.so");
+gSystem->Load("libSTAT");
 
 .L $ALICE_ROOT/TPC/CalibMacros/DriftKalman.C++ 
   //

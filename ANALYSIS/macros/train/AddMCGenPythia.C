@@ -2,7 +2,7 @@ AliGenerator* AddMCGenPythia(Float_t e_cms = 2760., Double_t ptHardMin = 0., Dou
 {
   //Add Pythia generator: pt-hard bin or min bias
 
-  gSystem->Load("liblhapdf.so");
+  gSystem->Load("liblhapdf");
  
   AliGenerator *genP = NULL;
   genP = CreatePythia6Gen(e_cms, ptHardMin, ptHardMax, tune,cr,ptWeight);
@@ -13,8 +13,8 @@ AliGenerator* AddMCGenPythia(Float_t e_cms = 2760., Double_t ptHardMin = 0., Dou
 AliGenerator* CreatePythia6Gen(Float_t e_cms, Int_t ptHardMin, Int_t ptHardMax, Int_t tune, Int_t cr,Float_t ptWeight) {
     
   gSystem->Load("libpythia6.4.25.so");
-  gSystem->Load("libEGPythia6.so");
-  gSystem->Load("libAliPythia6.so");
+  gSystem->Load("libEGPythia6");
+  gSystem->Load("libAliPythia6");
 
   AliGenPythia* genP = new AliGenPythia(1);
 

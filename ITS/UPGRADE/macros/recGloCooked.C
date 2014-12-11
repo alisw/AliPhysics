@@ -18,9 +18,9 @@ extern TPluginManager *gPluginMgr;
 void recGloCooked() {
   AliLog::SetClassDebugLevel("AliITSUReconstructor",1);
 
-  gSystem->Load("libITSUpgradeBase.so");
-  gSystem->Load("libITSUpgradeSim.so");
-  gSystem->Load("libITSUpgradeRec.so");
+  gSystem->Load("libITSUpgradeBase");
+  gSystem->Load("libITSUpgradeSim");
+  gSystem->Load("libITSUpgradeRec");
 
   // Set ITS upgrade reconstructor
   gPluginMgr->AddHandler("AliReconstructor", "ITS",

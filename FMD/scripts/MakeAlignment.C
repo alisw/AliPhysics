@@ -17,7 +17,7 @@ MakeAlignment()
     cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
   AliLog::SetModuleDebugLevel("FMD", 1);
-  gSystem->Load("libFMDutil.so");
+  gSystem->Load("libFMDutil");
   AliFMDAlignFaker f(AliFMDAlignFaker::kAll, "geometry.root", 0);
   // f.RemoveAlign(AliFMDAlignFaker::kHalves);
   f.SetSensorDisplacement(0, 0, 0, 0, 0, 0);

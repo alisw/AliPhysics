@@ -1,7 +1,7 @@
 void rec(Int_t runNumber)
 {
-  gSystem->Load("libRAliEn.so");
-  gSystem->Load("libNet.so");
+  gSystem->Load("libRAliEn");
+  gSystem->Load("libNet");
 
   // Set the CDB storage location
   AliCDBManager * man = AliCDBManager::Instance();

@@ -30,7 +30,7 @@
 void AliTRDCheckPreprocessorold()
 {
   // load library
-  //gSystem->Load("libTestShuttle.so");
+  //gSystem->Load("libTestShuttle");
 
 
   AliTestShuttle::SetMainCDB("local://TestCDB");

@@ -62,8 +62,8 @@ TEvePointSet* hlt_tpc_clusters(const char* digitfile=NULL, TEveElement* cont=0, 
 
   TClass* pCl=NULL;
   int iLibResult=0;
-  gSystem->Load("libAliHLTUtil.so");
-  gSystem->Load("libAliHLTRCU.so");
+  gSystem->Load("libAliHLTUtil");
+  gSystem->Load("libAliHLTRCU");
   do {
     pCl=TClass::GetClass("AliHLTTPDefinitions");
   } while (!pCl && (iLibResult=gSystem->Load("libAliHLTTPC.so"))==0);

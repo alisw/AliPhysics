@@ -1,6 +1,6 @@
 void TestPreprocessor()
 {
-  gSystem->Load("libT0shuttle.so");
+  gSystem->Load("libT0shuttle");
   gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
   gSystem->Load("libSpectrum");
 

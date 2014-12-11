@@ -77,7 +77,7 @@ void DisplaydHLTData(const char* dHLTfilename = "output.root")
 	
 	if (gClassTable->GetID("AliHLTMUONEvent") < 0)
 	{
-		gSystem->Load("libAliHLTMUON.so");
+		gSystem->Load("libAliHLTMUON");
 	}
 	
 	if (AliEveEventManager::GetMaster() == NULL)

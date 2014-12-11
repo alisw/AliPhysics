@@ -3,7 +3,7 @@ void runAnalysis() {
   timer.Start();
 
   gSystem->AddIncludePath("-I\"$ALICE_ROOT/include\"");
-  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSIS");
 
   gROOT->LoadMacro("testEvent.C+");
 //  generate();

@@ -14,13 +14,13 @@ void monitor(Bool_t batchMode = kFALSE,
 {
   // load libraries
   if (!gROOT->GetClass("AliLevel3")) {
-    gSystem->Load("libAliHLTSrc.so");
-    gSystem->Load("libAliHLTMisc.so");
-    gSystem->Load("libAliHLTHough.so");
-    gSystem->Load("libAliHLTComp.so");
+    gSystem->Load("libAliHLTSrc");
+    gSystem->Load("libAliHLTMisc");
+    gSystem->Load("libAliHLTHough");
+    gSystem->Load("libAliHLTComp");
   }
   if (!gROOT->GetClass("AliMonitorProcess")) {
-    gSystem->Load("libMONITOR.so");
+    gSystem->Load("libMONITOR");
   }
 
   // make sure galice.root is there

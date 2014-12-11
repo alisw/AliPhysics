@@ -80,7 +80,7 @@ This also makes this macro much cleaner.
  */
 void CreateHitRecoLookupTables(const char* CDBPath = "local://$ALICE_ROOT/OCDB", Int_t run = 0)
 {
-	gSystem->Load("libAliHLTMUON.so");
+	gSystem->Load("libAliHLTMUON");
 
 	for (Int_t ddl = 0; ddl < 20; ddl++)
 	{

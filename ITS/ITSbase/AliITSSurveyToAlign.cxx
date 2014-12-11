@@ -602,7 +602,7 @@ void AliITSSurveyToAlign::CreateAlignObjSDDLadders(){
 
 /*
 TAlien::Connect("alien://");
-gSystem->Load("libXMLParser.so");
+gSystem->Load("libXMLParser");
 .x loadlibs.C 
 
 AliCDBManager *cdb = AliCDBManager::Instance();

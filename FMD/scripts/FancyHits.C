@@ -12,7 +12,7 @@ FancyHits()
 {
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  gSystem->Load("libFMDutil.so");
+  gSystem->Load("libFMDutil");
   AliFMDFancy* d = new AliFMDFancy;
   d->AddLoad(AliFMDInput::kHits);
   d->AddLoad(AliFMDInput::kKinematics);

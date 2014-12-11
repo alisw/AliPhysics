@@ -95,7 +95,7 @@ void LoadLibraries()
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
   gSystem->Load("libTender");
-  gSystem->Load("libPWGPP.so");      
+  gSystem->Load("libPWGPP");
 }
 //----------------------------------------------------------------------
 void RunAnalysisTOFqaGrid(TString pluginmode="test", Int_t ntestfiles = 10, TString filesPrefix = "", TString gridUser="fbellini") 

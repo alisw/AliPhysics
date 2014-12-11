@@ -6,16 +6,16 @@
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libTPCcalib");
-  gSystem->Load("libXrdClient.so");
-  gSystem->Load("libNetx.so");
+  gSystem->Load("libXrdClient");
+  gSystem->Load("libNetx");
   TGrid::Connect("alien://",0,0,"t");
   gSystem->Load("$ROOTSYS/lib/libXrdClient.so");
   //
   // 1. Make list of the files 
   //
   .L $ALICE_ROOT/TPC/macros/testTPC/AlienToolkit.cxx+
-  gSystem->Load("libXrdClient.so");
-  gSystem->Load("libNetx.so");
+  gSystem->Load("libXrdClient");
+  gSystem->Load("libNetx");
   AlienToolkit toolkit;
   char *path = "/alice/cern.ch/user/a/amatyja/alice/data/"
   toolkit.MakeCollection(path,"32129*Krypton.root");
