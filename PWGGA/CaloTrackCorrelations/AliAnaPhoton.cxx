@@ -60,7 +60,7 @@ fTimeCutMin(-10000),          fTimeCutMax(10000),
 fNCellsCut(0),
 fNLMCutMin(-1),               fNLMCutMax(10),
 fFillSSHistograms(kFALSE),    fFillOnlySimpleSSHisto(1),
-fNOriginHistograms(8),        fNPrimaryHistograms(4),
+fNOriginHistograms(9),        fNPrimaryHistograms(5),
 fMomentum(),                  fPrimaryMom(),
 // Histograms
 
@@ -113,7 +113,7 @@ fhPtClusterSM(0),                     fhPtPhotonSM(0)
 {
   //default ctor
   
-  for(Int_t i = 0; i < 14; i++)
+  for(Int_t i = 0; i < fgkNmcTypes; i++)
   {
     fhMCPt     [i] = 0;
     fhMCE      [i] = 0;
@@ -125,7 +125,7 @@ fhPtClusterSM(0),                     fhPtPhotonSM(0)
     fhMC2Pt    [i] = 0;
   }
   
-  for(Int_t i = 0; i < 7; i++)
+  for(Int_t i = 0; i < fgkNmcPrimTypes; i++)
   {
     fhPtPrimMC [i] = 0;
     fhEPrimMC  [i] = 0;
@@ -138,15 +138,18 @@ fhPtClusterSM(0),                     fhPtPhotonSM(0)
     fhPhiPrimMCAcc[i] = 0;
     fhEtaPrimMCAcc[i] = 0;
     fhYPrimMCAcc  [i] = 0;
-    
+  }
+  
+  for(Int_t i = 0; i < 7; i++)
+  {
     fhDispEtaDispPhi[i] = 0;
     fhLambda0DispPhi[i] = 0;
     fhLambda0DispEta[i] = 0;
-
+    
     fhPtPhotonPileUp[i] = 0;
     fhClusterTimeDiffPhotonPileUp [i] = 0;
-
-    for(Int_t j = 0; j < 6; j++)
+    
+    for(Int_t j = 0; j < fgkNssTypes; j++)
     {
       fhMCDispEtaDispPhi[i][j] = 0;
       fhMCLambda0DispEta[i][j] = 0;
@@ -154,7 +157,7 @@ fhPtClusterSM(0),                     fhPtPhotonSM(0)
     }
   }
   
-  for(Int_t i = 0; i < 6; i++)
+  for(Int_t i = 0; i < fgkNssTypes; i++)
   {
     fhMCELambda0    [i]                  = 0;
     fhMCELambda1    [i]                  = 0;
@@ -465,7 +468,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     Bool_t takeIt  = kFALSE ;
     if(status == 1 && GetMCAnalysisUtils()->GetMCGenerator() != AliMCAnalysisUtils::kBoxLike ) takeIt = kTRUE ;
 
-    if      (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) continue;
+    if     (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) continue;
     
     //Origin of photon
     if     (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt))
@@ -484,8 +487,11 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     {
       mcIndex = kmcPPi0Decay;
     }
-    else if( (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) ||
-              GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay)))
+    else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))
+    {
+      mcIndex = kmcPEtaDecay;
+    }
+    else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
     {
       mcIndex = kmcPOtherDecay;
     }
@@ -1781,13 +1787,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   
   if(IsDataMC())
   {
-    TString ptype[] = { "#gamma", "#gamma_{#pi decay}","#gamma_{other decay}", "#pi^{0}","#eta",
-      "e^{#pm}","#gamma->e^{#pm}","hadron?","Anti-N","Anti-P",
-      "#gamma_{prompt}","#gamma_{fragmentation}","#gamma_{ISR}","String"                                } ;
+    TString ptype[] = { "#gamma"         , "#gamma_{#pi decay}"    , "#gamma_{#eta decay}", "#gamma_{other decay}",
+                        "#pi^{0}"        , "#eta"                  , "e^{#pm}"            , "#gamma->e^{#pm}"     ,
+                        "hadron?"        , "Anti-N"                , "Anti-P"             ,
+                        "#gamma_{prompt}", "#gamma_{fragmentation}", "#gamma_{ISR}"       , "String"               } ;
     
-    TString pname[] = { "Photon","PhotonPi0Decay","PhotonOtherDecay","Pi0","Eta","Electron",
-      "Conversion", "Hadron", "AntiNeutron","AntiProton",
-      "PhotonPrompt","PhotonFragmentation","PhotonISR","String" } ;
+    TString pname[] = { "Photon"      , "PhotonPi0Decay"     , "PhotonEtaDecay", "PhotonOtherDecay",
+                        "Pi0"         , "Eta"                , "Electron"      , "Conversion"      ,
+                        "Hadron"      , "AntiNeutron"        , "AntiProton"    ,
+                        "PhotonPrompt", "PhotonFragmentation", "PhotonISR"     , "String"           } ;
     
     for(Int_t i = 0; i < fNOriginHistograms; i++)
     {
@@ -1849,11 +1857,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
     }
     
-    TString pptype[] = { "#gamma", "#gamma_{#pi decay}","#gamma_{other decay}",
-      "#gamma_{prompt}","#gamma_{fragmentation}","#gamma_{ISR}"} ;
+    TString pptype[] = { "#gamma"             , "#gamma_{#pi decay}"    ,
+                         "#gamma_{#eta decay}", "#gamma_{other decay}"  ,
+                         "#gamma_{prompt}"    , "#gamma_{fragmentation}", "#gamma_{ISR}" } ;
     
-    TString ppname[] = { "Photon","PhotonPi0Decay","PhotonOtherDecay",
-      "PhotonPrompt","PhotonFragmentation","PhotonISR"} ;
+    TString ppname[] = { "Photon"        , "PhotonPi0Decay"     ,
+                         "PhotonEtaDecay", "PhotonOtherDecay"   ,
+                         "PhotonPrompt"  , "PhotonFragmentation", "PhotonISR" } ;
     
     for(Int_t i = 0; i < fNPrimaryHistograms; i++)
     {
@@ -2586,50 +2596,52 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           fhMCDeltaPt[kmcConversion] ->Fill(ptcluster,ptprim-ptcluster);
         }
         
-        if     (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt))
+        if     ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) )
         {
           mcParticleTag = kmcPrompt;
         }
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation))
+        else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation) )
         {
           mcParticleTag = kmcFragmentation;
         }
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR))
+        else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR) )
         {
           mcParticleTag = kmcISR;
         }
-        else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) &&
-                !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0))
-        {
-          mcParticleTag = kmcPi0Decay;
-        }
-        else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0))
+        else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) )
         {
           mcParticleTag = kmcPi0;
         }
-        else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta) &&
-                !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))
+        else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta) )
         {
           mcParticleTag = kmcEta;
+        }
+        else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) )
+        {
+          mcParticleTag = kmcPi0Decay;
+        }
+        else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) )
+        {
+          mcParticleTag = kmcEtaDecay;
         }
         else
         {
           mcParticleTag = kmcOtherDecay;
         }
       }
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron))
+      else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron) )
       {
         mcParticleTag = kmcAntiNeutron;
       }
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton))
+      else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton) )
       {
         mcParticleTag = kmcAntiProton;
       }
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron))
+      else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron) )
       {
         mcParticleTag = kmcElectron;
       }
-      else if( fhMCE[kmcOther])
+      else if( fhMCE[kmcOther] )
       {
         mcParticleTag = kmcOther;
         

@@ -90,7 +90,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
                                                          Float_t deltaPhi);  
     
   Int_t        GetMCTagHistogramIndex(Int_t tag);
-  static const Int_t fgkNmcTypes = 8;
+  static const Int_t fgkNmcTypes = 10;
 
   Bool_t       IsTriggerTheEventLeadingParticle();
   
