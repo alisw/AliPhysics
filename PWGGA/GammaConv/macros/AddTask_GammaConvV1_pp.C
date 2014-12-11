@@ -402,8 +402,11 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  										// change differ
 		eventCutArray[ 1] = "0009411"; photonCutArray[ 1] = "002000093663003800000000"; mesonCutArray[1] = "01631031009000"; // trigger kEMCEJ1 + CINT8
 		eventCutArray[ 2] = "0009511"; photonCutArray[ 2] = "002000093663003800000000"; mesonCutArray[2] = "01631031009000"; // trigger kEMCEJ2 + CINT7
 		eventCutArray[ 3] = "0009611"; photonCutArray[ 3] = "002000093663003800000000"; mesonCutArray[3] = "01631031009000"; // trigger kEMCEJ2 + CINT8		
-
-		
+	} else if (trainConfig == 59) {
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "002000092570028250400000"; mesonCutArray[0] = "01521035000000"; //alpha meson 1
+		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "002000092173028250400000"; mesonCutArray[1] = "01521065000000"; //pion 0-sigma cut for 0.4GeV<p<3.5GeV above -10-sigma
+		eventCutArray[ 2] = "0000011"; photonCutArray[ 2] = "002000092273028250400000"; mesonCutArray[2] = "01521065000000"; //pion 1-sigma cut for 0.4GeV<p<3.5GeV above -10-sigma
+		eventCutArray[ 3] = "0000011"; photonCutArray[ 3] = "002000092873028250400000"; mesonCutArray[3] = "01521065000000"; //pion 2-sigma cut for 0.4GeV<p<3.5GeV above   1-sigma
 	} else {
 			Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 			return;
