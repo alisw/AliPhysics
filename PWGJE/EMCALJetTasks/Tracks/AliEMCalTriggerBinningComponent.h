@@ -27,14 +27,15 @@ public:
   {}
   AliEMCalTriggerBinningDimension(const char *name, const TArrayD &binning):
     TNamed(name, ""),
-    fBinning(binning.GetSize()-1, binning.GetArray())
+    fBinning(binning.GetSize(), binning.GetArray())
   {}
   ~AliEMCalTriggerBinningDimension() {}
 
   void Set(int nbins, double *binning) { fBinning.Set(nbins+1, binning); }
   void Set(const TArrayD &binning) { fBinning = binning; }
   const double *GetBinLimits() const { return fBinning.GetArray(); }
-  int GetNumberOfBins() const { return fBinning.GetSize(); }
+  int GetNumberOfBins() const { return fBinning.GetSize() - 1; }
+  virtual void Print(Option_t *option="") const;
 
 private:
   TArrayD fBinning;             // Bin limits

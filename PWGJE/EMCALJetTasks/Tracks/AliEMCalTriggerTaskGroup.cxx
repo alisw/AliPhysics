@@ -80,9 +80,9 @@ TList *AliEMCalTriggerTaskGroup::InitialiseAnalysisComponents() {
   TList *histlist = new TList;
   TObject *htmp(NULL);
   while((ana = dynamic_cast<AliEMCalTriggerTracksAnalysisComponent *>(compIter()))){
-    ana->CreateHistos();
     ana->SetBinning(fBinning);
     ana->SetKineCuts(fKineCuts);
+    ana->CreateHistos();
     TList *ltmp = ana->GetHistList();
     TIter hiter(ltmp);
     while((htmp = hiter())) histlist->Add(htmp);

@@ -101,7 +101,7 @@ void AliEMCalTriggerBinningFactory::CreateDefaultZVertexBinning(TArrayD &binning
   std::vector<double> mybinning;
   double currentval = -10;
   mybinning.push_back(currentval);
-  while(currentval <= 10.){
+  while(currentval < 10.){
     currentval += 5.;
     mybinning.push_back(currentval);
   }
@@ -121,7 +121,7 @@ void AliEMCalTriggerBinningFactory::CreateDefaultEtaBinning(TArrayD& binning) co
   std::vector<double> mybinning;
   double currentval = -0.8;
   mybinning.push_back(currentval);
-  while(currentval <= 0.8){
+  while(currentval < 0.8){
     currentval += 0.1;
     mybinning.push_back(currentval);
   }
