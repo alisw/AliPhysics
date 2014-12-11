@@ -456,7 +456,7 @@ def traverse_ast(cursor, filename, comments, recursion=0):
 #
 #  @param s Input string
 def strip_html(s):
-  rehtml = r'(?i)</?(P|H[0-9]|BR)/?>'
+  rehtml = r'(?i)</?(P|BR)/?>'
   return re.sub(rehtml, '', s)
 
 
