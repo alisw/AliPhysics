@@ -128,11 +128,11 @@ void LoadLibraries()
   gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/PWGPP -I$ALICE_ROOT/PWGPP/TRD");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libESDfilter.so");
+  gSystem->Load("libESDfilter");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libTENDER");
-  gSystem->Load("libPWGPP.so");
-  gSystem->Load("libAliHLTTrigger.so");
+  gSystem->Load("libTender");
+  gSystem->Load("libPWGPP");
+  gSystem->Load("libAliHLTTrigger");
 
   if (doEMCAL || doPHOS || doCALO) {
      gSystem->Load("libEMCALUtils");

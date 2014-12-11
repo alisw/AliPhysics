@@ -354,8 +354,8 @@ Bool_t LoadAnalysisLibraries()
 {
 // Load common analysis libraries.
    if (useTender || doCDBconnect) {
-      if (!LoadLibrary("TENDER") ||
-          !LoadLibrary("TENDERSupplies")) return kFALSE;
+      if (!LoadLibrary("Tender") ||
+          !LoadLibrary("TenderSupplies")) return kFALSE;
    }       
    // CDBconnect
    if (doCDBconnect && !useTender) {

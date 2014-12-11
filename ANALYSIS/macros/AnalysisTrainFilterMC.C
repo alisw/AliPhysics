@@ -1070,8 +1070,8 @@ Bool_t LoadAnalysisLibraries(const char *mode)
 // Load common analysis libraries.
    Bool_t success = kTRUE;
    if (useTender || doCDBconnect) {
-      if (!LoadLibrary("TENDER", mode, kTRUE) ||
-          !LoadLibrary("TENDERSupplies", mode, kTRUE)) return kFALSE;
+      if (!LoadLibrary("Tender", mode, kTRUE) ||
+          !LoadLibrary("TenderSupplies", mode, kTRUE)) return kFALSE;
    }       
    // CDBconnect
    if (doCDBconnect && !useTender) {
@@ -1160,7 +1160,7 @@ Bool_t LoadAnalysisLibraries(const char *mode)
       if (!LoadLibrary("PWGDQdielectron", mode, kTRUE)) return kFALSE;
    }   
    if (iPWGLF) {
-      if (!LoadLibrary("TENDER", mode, kTRUE)  || !LoadLibrary("PWGUDbase", mode, kTRUE)  ||
+      if (!LoadLibrary("Tender", mode, kTRUE)  || !LoadLibrary("PWGUDbase", mode, kTRUE)  ||
        !LoadLibrary("TPCcalib", mode, kTRUE)  ||
        !LoadLibrary("PWGPP", mode, kTRUE)  ||
        !LoadLibrary("PWGLFspectra", mode, kTRUE)) return kFALSE;

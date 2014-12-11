@@ -956,8 +956,8 @@ Bool_t LoadAnalysisLibraries(const char *mode)
 // Load common analysis libraries.
    Bool_t success = kTRUE;
    if (useTender) {
-      if (!LoadLibrary("TENDER", mode, kTRUE) ||
-          !LoadLibrary("TENDERSupplies", mode, kTRUE)) return kFALSE;
+      if (!LoadLibrary("Tender", mode, kTRUE) ||
+          !LoadLibrary("TenderSupplies", mode, kTRUE)) return kFALSE;
    }       
    if (iESDfilter || iPWG3MuonTrain) {
       if (!LoadLibrary("PWG3base", mode, kTRUE) ||

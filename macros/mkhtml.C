@@ -17,98 +17,98 @@ void mkhtml (char *macro=0, Int_t force=0) {
     gROOT->LoadMacro(macro);
     html.Convert(macro,"Example Macro");
   } else {
-    gSystem->Load("liblhapdf.so");      // Parton density functions
-    gSystem->Load("libEGPythia6.so");   // TGenerator interface
-    gSystem->Load("libpythia6.so");     // Pythia
-    gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
+    gSystem->Load("liblhapdf");      // Parton density functions
+    gSystem->Load("libEGPythia6");   // TGenerator interface
+    gSystem->Load("libpythia6");     // Pythia
+    gSystem->Load("libAliPythia6");  // ALICE specific implementations
 
     // ANALYSIS
-    gSystem->Load("libANALYSIS.so");
-    gSystem->Load("libANALYSISalice.so");
-    gSystem->Load("libANALYSIScalib.so");
-    gSystem->Load("libESDfilter.so");
-    gSystem->Load("libEventMixing.so");
-    gSystem->Load("libTENDER.so");
-    gSystem->Load("libTENDERSupplies.so");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
+    gSystem->Load("libANALYSIScalib");
+    gSystem->Load("libESDfilter");
+    gSystem->Load("libEventMixing");
+    gSystem->Load("libTender");
+    gSystem->Load("libTenderSupplies");
 
     // CORRFW
-    gSystem->Load("libCORRFW.so"); // 
+    gSystem->Load("libCORRFW"); // 
 
     // PWG
-    gSystem->Load("libPWGTools.so");
-    gSystem->Load("libPWGGlauber.so");
-    gSystem->Load("libPWGflowBase.so");
-    gSystem->Load("libPWGflowTasks.so");
-    gSystem->Load("libPWGmuon.so");
-    gSystem->Load("libPWGmuondep.so");
-    gSystem->Load("libPWGEMCAL.so");
-    gSystem->Load("libPWGCaloTrackCorrBase.so");
+    gSystem->Load("libPWGTools");
+    gSystem->Load("libPWGGlauber");
+    gSystem->Load("libPWGflowBase");
+    gSystem->Load("libPWGflowTasks");
+    gSystem->Load("libPWGmuon");
+    gSystem->Load("libPWGmuondep");
+    gSystem->Load("libPWGEMCAL");
+    gSystem->Load("libPWGCaloTrackCorrBase");
 
     // PWGCF
-    gSystem->Load("libPWGCFCorrelationsBase.so");
-    gSystem->Load("libPWGCFCorrelationsDPhi.so");
-    gSystem->Load("libPWGCFCorrelationsJCORRAN.so");
-    gSystem->Load("libPWGCFChaoticity.so");
-    gSystem->Load("libPWGCFFEMTOSCOPYAOD.so");
-    gSystem->Load("libPWGCFfemtoscopy.so");
-    gSystem->Load("libPWGCFfemtoscopyUser.so");
-    gSystem->Load("libPWGCFunicor.so");
-    gSystem->Load("libPWGCFebye.so");
-    //PH    gSystem->Load("libPWGCFK0Analysis.so");
+    gSystem->Load("libPWGCFCorrelationsBase");
+    gSystem->Load("libPWGCFCorrelationsDPhi");
+    gSystem->Load("libPWGCFCorrelationsJCORRAN");
+    gSystem->Load("libPWGCFChaoticity");
+    gSystem->Load("libPWGCFFEMTOSCOPYAOD");
+    gSystem->Load("libPWGCFfemtoscopy");
+    gSystem->Load("libPWGCFfemtoscopyUser");
+    gSystem->Load("libPWGCFunicor");
+    gSystem->Load("libPWGCFebye");
+    //PH    gSystem->Load("libPWGCFK0Analysis");
 
     // PWGDQ
-    gSystem->Load("libPWGDQbase.so");
-    gSystem->Load("libPWGDQdielectron.so");
+    gSystem->Load("libPWGDQbase");
+    gSystem->Load("libPWGDQdielectron");
 
     // PWGGA
-    gSystem->Load("libPWGGACaloTasks.so");
-    gSystem->Load("libPWGGACaloTrackCorrelations.so");
-    gSystem->Load("libPWGGAEMCALTasks.so");
-    gSystem->Load("libPWGGAGammaConv.so");
-    gSystem->Load("libPWGGAPHOSTasks.so");
+    gSystem->Load("libPWGGACaloTasks");
+    gSystem->Load("libPWGGACaloTrackCorrelations");
+    gSystem->Load("libPWGGAEMCALTasks");
+    gSystem->Load("libPWGGAGammaConv");
+    gSystem->Load("libPWGGAPHOSTasks");
 
     // PWGHF
-    gSystem->Load("libPWGHFbase.so");
-    gSystem->Load("libPWGHFhfe.so");
-    gSystem->Load("libPWGHFcorrelationHF.so");
-    gSystem->Load("libPWGHFvertexingHF.so");
+    gSystem->Load("libPWGHFbase");
+    gSystem->Load("libPWGHFhfe");
+    gSystem->Load("libPWGHFcorrelationHF");
+    gSystem->Load("libPWGHFvertexingHF");
 
     // PWGJE
-    gSystem->Load("libJETAN.so");
-    // gSystem->Load("libPWGJE.so");
-    // gSystem->Load("libPWGJEEMCALJetTasks.so");
+    gSystem->Load("libJETAN");
+    // gSystem->Load("libPWGJE");
+    // gSystem->Load("libPWGJEEMCALJetTasks");
 
     // PWGLF
-    gSystem->Load("libPWGLFSTRANGENESS.so");
-    gSystem->Load("libPWGLFforward2.so");
-    gSystem->Load("libPWGLFresonances.so");
-    gSystem->Load("libPWGLFrsnextra.so");
-    gSystem->Load("libPWGLFspectra.so");
-    // gSystem->Load("libPWGLFtotEt.so")
+    gSystem->Load("libPWGLFSTRANGENESS");
+    gSystem->Load("libPWGLFforward2");
+    gSystem->Load("libPWGLFresonances");
+    gSystem->Load("libPWGLFrsnextra");
+    gSystem->Load("libPWGLFspectra");
+    // gSystem->Load("libPWGLFtotEt")
 
     // PWGPP
-    gSystem->Load("libPWGPP.so");
-    gSystem->Load("libPWGPPMUONdep.so");
-    gSystem->Load("libPWGPPMUONlite.so");
-    gSystem->Load("libPWGPPevchar.so");
+    gSystem->Load("libPWGPP");
+    gSystem->Load("libPWGPPMUONdep");
+    gSystem->Load("libPWGPPMUONlite");
+    gSystem->Load("libPWGPPevchar");
 
     // PWGUD
 
-    gSystem->Load("libPWGUDbase.so");
-    gSystem->Load("libPWGUDFP.so");
-    gSystem->Load("libPWGUDdiffractive.so");
-    gSystem->Load("libPWGUDselectors.so");
+    gSystem->Load("libPWGUDbase");
+    gSystem->Load("libPWGUDFP");
+    gSystem->Load("libPWGUDdiffractive");
+    gSystem->Load("libPWGUDselectors");
 
     // ITS/UPGRADE
-    gSystem->Load("libITSUpgradeBase.so");
-    gSystem->Load("libITSUpgradeSim.so");
-    gSystem->Load("libITSUpgradeRec.so");
+    gSystem->Load("libITSUpgradeBase");
+    gSystem->Load("libITSUpgradeSim");
+    gSystem->Load("libITSUpgradeRec");
 
     // EVE
-    gSystem->Load("libEve.so");
-    gSystem->Load("libEveBase.so");
-    gSystem->Load("libEveDet.so");
-    gSystem->Load("libEveHLT.so");
+    gSystem->Load("libEve");
+    gSystem->Load("libEveBase");
+    gSystem->Load("libEveDet");
+    gSystem->Load("libEveHLT");
 
     html.MakeAll(force,"[A-Z]*");
   }

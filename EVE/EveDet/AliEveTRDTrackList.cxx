@@ -267,7 +267,7 @@ void AliEveTRDTrackList::AddStandardContent()
   // use the return value of AddMacro (NOT_EXIST_ERROR is returned, if file does not exist)
   // (-> You can also check for other return values (see AddMacro(...)))
 
-//   const Char_t *libs[] = {"libANALYSIS.so", "libANALYSISalice.so", "libCORRFW", "libTENDER.so", "libPWGPP.so"};
+//   const Char_t *libs[] = {"libANALYSIS.so", "libANALYSISalice.so", "libCORRFW", "libTender.so", "libPWGPP.so"};
 //   Int_t nlibs = static_cast<Int_t>(sizeof(libs)/sizeof(Char_t *));
 //   for(Int_t ilib=0; ilib<nlibs; ilib++){
 //     if(gSystem->Load(libs[ilib]) >= 0) continue;
