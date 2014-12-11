@@ -3046,7 +3046,7 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	
 	AliGRPObject * grpObj = new AliGRPObject();
 	grpObj->SetTimeStart(timeStart); 
-	grpObj->SetTimeStart((timeEnd!=0 && timeEnd>timeStart) ? timeEnd : timeStart+24*3600 ); 
+	grpObj->SetTimeEnd((timeEnd!=0 && timeEnd>timeStart) ? timeEnd : timeStart+24*3600 ); 
 	grpObj->SetRunType((TString)(row->GetField(1)));
 	grpObj->SetDetectorMask(detectorMask);
 	grpObj->SetL3Current(l3Current,(AliGRPObject::Stats)0);
