@@ -29,6 +29,7 @@ class AliJJetTask : public AliAnalysisTaskEmcalJet {
   void SetTrackArrayName( char *c ) { fTrackArrayName = c; }
   vector<TClonesArray>* GetAliJJetCollection() {return &fJJets;}
   TObjArray*           GetAliJJetList(int i) {return &fJJets[i]; }
+  TClonesArray*        GetJTracks()  {return &fJTracks;}
   int GetNumberOfJetCollections() {return fNJetFinder;}
   //void SetNumberOfJetCollections(const int n) {
   //    fJetsCont.resize(n); 
