@@ -53,6 +53,7 @@
  *            RD        15-Jan-14 Added FLUSHED_EVENT and INCOMPLETE_EVENT
  *    V03.14  RD        12-Feb-14 Changes for increased number of trigger classes
  *                                (old:50, new:100) and for CDH V3
+ *				  Added the possibility to compile with extra symbols
  *
  * Preprocessor definitions:
  *  NDEBUG  Define BEFORE including this file to disable run-time checks on
@@ -71,6 +72,18 @@
 /* ========== System includes ========= */
 #include <string.h> /* Needed by: memset, memcpy */
 #include <assert.h> /* Needed by: assert */
+
+/* ========== Data types ========= */
+/* These data types can be overridden via compile-time symbols */
+#ifndef long32
+# define long32 int
+#endif
+#ifndef long64
+# define long64 long long
+#endif
+#ifndef datePointer
+# define datePointer long
+#endif
 
 /* ========== Definitions for the event header ========== */
 
@@ -511,10 +524,10 @@ struct eventLocationDescriptorStruct {
 /* Macro to load the trigger classes of an event header
    using the cdhTriggerClasses* fields */
 #define CDH_LOAD_EVENT_TRIGGER_PATTERN( etp, l, ml, mh, h )	\
-  ( etp[0] = ((unsigned long32)(l)),					\
-    etp[1] = ((unsigned long32)(ml) & 0x0003ffff) | ((unsigned long32)(mh) << 18), \
-    etp[2] = ((unsigned long32)(mh) >> 14) | ((unsigned long32)(h) << 18), \
-    etp[3] = ((unsigned long32)(h)  >> 14) & 0xf)
+  ( etp[0] = ((unsigned long32)(l)),				\
+    etp[1] = ((unsigned long32)(ml)),				\
+    etp[2] = ((unsigned long32)(mh)),				\
+    etp[3] = ((unsigned long32)(h) & 0xf) )
 
 /* Please note how the above data structure has been
    defined for LE systems. Code running on BE systems
@@ -539,13 +552,12 @@ struct commonDataHeaderStruct {
   /* ------------------------------------- */
   unsigned cdhTriggerClassesLow         : 32; // Goes into eventTriggerPattern[0]
   /* ------------------------------------- */
-  unsigned cdhTriggerClassesMiddleLow   : 18; // Goes into eventTriggerPattern[1] (low)
-  unsigned cdhMBZ2                      : 14;
+  unsigned cdhTriggerClassesMiddleLow   : 32; // Goes into eventTriggerPattern[1]
   /* ------------------------------------- */
-  unsigned cdhTriggerClassesMiddleHigh  : 32; // Goes into eventTriggerPattern[1] (high) and [2] (low)
+  unsigned cdhTriggerClassesMiddleHigh  : 32; // Goes into eventTriggerPattern[2]
   /* ------------------------------------- */
-  unsigned cdhTriggerClassesHigh        : 18; // Goes into eventTriggerPattern[2] (high) and [3]
-  unsigned cdhMBZ4                      : 10;
+  unsigned cdhTriggerClassesHigh        :  4; // Goes into eventTriggerPattern[3] (zero-filled)
+  unsigned cdhMBZ4                      : 24;
   unsigned cdhRoiLow                    :  4;
   /* ------------------------------------- */
   unsigned cdhRoiHigh                   : 32;

@@ -579,9 +579,6 @@ void loadPayload( const char *fileName ) {
 	  printf( "\n" );
 	  printf( "      " );
 	  
-	  if ( cdh->cdhMBZ2 != 0 )
-	    printf( "MBZ2:0x%x ",
-		    cdh->cdhMBZ2 );
 	  printf( "Status/Error:0x%x", cdh->cdhStatusErrorBits );
 	  if ( cdh->cdhStatusErrorBits != 0 ) {
 	    printf( "=<" );
@@ -1584,12 +1581,11 @@ RoiHigh/Low reference:0x%x-%x current:0x%x-%x\n",
 	}
 	if ( cdh->cdhMBZ0 != 0
 	     || cdh->cdhMBZ1 != 0
-	     || cdh->cdhMBZ2 != 0
 	     || cdh->cdhMBZ4 != 0 ) {
 	  fprintf( stderr,
-		   "%s: CDH check failed. MBZ0:0x%x MBZ1:0x%x MBZ2:0x%x MBZ4:0x%x\n",
+		   "%s: CDH check failed. MBZ0:0x%x MBZ1:0x%x MBZ4:0x%x\n",
 		   myName,
-		   cdh->cdhMBZ0, cdh->cdhMBZ1, cdh->cdhMBZ2, cdh->cdhMBZ4 );
+		   cdh->cdhMBZ0, cdh->cdhMBZ1, cdh->cdhMBZ4 );
 	  exit( 1 );
 	}
       }
