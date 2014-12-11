@@ -537,16 +537,32 @@ Int_t AliRawReaderDate::CheckData() const
 	continue;
       }
 
+      // Here we have to check if we have header v2 or v3
       // check consistency of data size in the data header and in the sub event
       AliRawDataHeader* header = (AliRawDataHeader*) position;
-      if ((position + header->fSize) != end) {
-	if (header->fSize != 0xFFFFFFFF)
-	  Warning("ReadHeader",
-		  "raw data size found in the header is wrong (%d != %ld)! Using the equipment size instead !",
-		  header->fSize, end - position);
-	header->fSize = end - position;
-	result |= kErrSize;
+      UChar_t version = header->GetVersion();
+      if (version==2) {
+	if ((position + header->fSize) != end) {
+	  if (header->fSize != 0xFFFFFFFF)
+	    Warning("CheckData",
+		    "raw data size found in the header V2 is wrong (%d != %ld)! Using the equipment size instead !",
+		    header->fSize, end - position);
+	  header->fSize = end - position;
+	  result |= kErrSize;
+	}
       }
+      else if (version==3) {
+	AliRawDataHeaderV3 * headerV3 =  (AliRawDataHeaderV3*) position;
+	if ((position + headerV3->fSize) != end) {
+	  if (headerV3->fSize != 0xFFFFFFFF)
+	    Warning("CheckData",
+		    "raw data size found in the header V3 is wrong (%d != %ld)! Using the equipment size instead !",
+		    headerV3->fSize, end - position);
+	  headerV3->fSize = end - position;
+	  result |= kErrSize;
+	}
+      }
+
     }
     position = end;
   };
