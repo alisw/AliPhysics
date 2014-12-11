@@ -152,8 +152,8 @@ void LoadLibraries(const anaModes mode, Bool_t useFlowParFiles ) {
     gSystem->Load("libVZEROrec");
     gSystem->Load("libT0base");
     gSystem->Load("libT0rec");
-    gSystem->Load("libTENDER");
-    gSystem->Load("libTENDERSupplies");
+    gSystem->Load("libTender");
+    gSystem->Load("libTenderSupplies");
 
     if (useFlowParFiles)
     {
@@ -171,9 +171,9 @@ void LoadLibraries(const anaModes mode, Bool_t useFlowParFiles ) {
     TList* list = new TList();
     list->Add(new TNamed("ALIROOT_MODE", "ALIROOT"));
     if (useFlowParFiles)
-      list->Add(new TNamed("ALIROOT_EXTRA_LIBS", "ANALYSIS:ANALYSISalice:TENDER:TENDERSupplies"));
+      list->Add(new TNamed("ALIROOT_EXTRA_LIBS", "ANALYSIS:ANALYSISalice:Tender:TenderSupplies"));
     else
-      list->Add(new TNamed("ALIROOT_EXTRA_LIBS", "ANALYSIS:ANALYSISalice:TENDER:TENDERSupplies:PWG2flowCommon:PWG2flowTasks"));
+      list->Add(new TNamed("ALIROOT_EXTRA_LIBS", "ANALYSIS:ANALYSISalice:Tender:TenderSupplies:PWG2flowCommon:PWG2flowTasks"));
 
     //list->Add(new TNamed("ALIROOT_EXTRA_INCLUDES","PWG2/FLOW/AliFlowCommon:PWG2/FLOW/AliFlowTasks"));
 

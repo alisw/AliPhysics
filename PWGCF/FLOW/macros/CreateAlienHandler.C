@@ -51,23 +51,23 @@ AliAnalysisGrid* CreateAlienHandler(Bool_t bUseParFiles=kFALSE) {
 
   // Declare all libraries (other than the default ones for the framework. These will be
   // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-  //plugin->SetAdditionalLibs("libCORRFW.so libTOFbase.so libTOFrec.so");
+  //plugin->SetAdditionalLibs("libCORRFW libTOFbase libTOFrec");
   if(!bUseParFiles)
   {
-    plugin->SetAdditionalLibs("libGui.so libProof.so libMinuit.so libXMLParser.so "
-                              "libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEERBase.so "
-                              "libSTEER.so libTPCbase.so libTOFbase.so libTOFrec.so "
-                              "libTRDbase.so libVZERObase.so libVZEROrec.so libT0base.so "
-                              "libT0rec.so libTENDER.so libTENDERSupplies.so "
-                              "libPWGflowBase.so libPWGflowTasks.so");
+    plugin->SetAdditionalLibs("libGui libProof libMinuit libXMLParser "
+                              "libRAWDatabase libRAWDatarec libCDB libSTEERBase "
+                              "libSTEER libTPCbase libTOFbase libTOFrec "
+                              "libTRDbase libVZERObase libVZEROrec libT0base "
+                              "libT0rec libTender libTenderSupplies "
+                              "libPWGflowBase libPWGflowTasks");
   } 
   else // load libs via par files
   { 
-    plugin->SetAdditionalLibs("libGui.so libProof.so libMinuit.so libXMLParser.so "
-                              "libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEERBase.so "
-                              "libSTEER.so libTPCbase.so libTOFbase.so libTOFrec.so "
-                              "libTRDbase.so libVZERObase.so libVZEROrec.so libT0base.so "
-                              "libT0rec.so libTENDER.so libTENDERSupplies.so");
+    plugin->SetAdditionalLibs("libGui libProof libMinuit libXMLParser "
+                              "libRAWDatabase libRAWDatarec libCDB libSTEERBase "
+                              "libSTEER libTPCbase libTOFbase libTOFrec "
+                              "libTRDbase libVZERObase libVZEROrec libT0base "
+                              "libT0rec libTender libTenderSupplies");
     plugin->EnablePackage("PWGflowBase.par");
     plugin->EnablePackage("PWGflowTasks.par");
   }
