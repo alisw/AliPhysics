@@ -53,6 +53,7 @@ AliJJetCORRAnalysis::AliJJetCORRAnalysis():
     cBin(-1),
 	fcent(-999),
     zBin(-1),
+	zVert(-999),
     fevt(0),
 	fTargetJetIndex(0),
     fDebugMode(0)
@@ -79,6 +80,7 @@ AliJJetCORRAnalysis::AliJJetCORRAnalysis( AliJCard * card ):
     cBin(-1),
 	fcent(-999),
     zBin(-1),
+	zVert(-999),
     fevt(0),
 	fTargetJetIndex(0),
     fDebugMode(0)
@@ -105,6 +107,7 @@ AliJJetCORRAnalysis::AliJJetCORRAnalysis( const AliJJetCORRAnalysis & obj ):
     cBin(-1),
 	fcent(-999),
     zBin(-1),
+	zVert(-999),
     fevt(0),
 	fTargetJetIndex(0),
     fDebugMode(0)
@@ -118,6 +121,18 @@ AliJJetCORRAnalysis& AliJJetCORRAnalysis::operator=(const AliJJetCORRAnalysis & 
         new(this) AliJJetCORRAnalysis(obj);
     }
     return *this;
+}
+
+AliJJetCORRAnalysis::~AliJJetCORRAnalysis(){
+  // destructor
+	delete fInputList;
+	delete ftriggList;
+	delete fassocList;
+	delete fHistos;
+	delete fcorrelations;
+	delete fassocPool;
+	delete fEfficiency;
+	
 }
 
 void AliJJetCORRAnalysis::UserCreateOutputObjects(){
@@ -156,7 +171,7 @@ void AliJJetCORRAnalysis::ClearBeforeEvent(){
 }
 
 void AliJJetCORRAnalysis::UserExec(){
-
+	fevt++;
 	TObjArray *jets = (TObjArray*) fJetListOfList[fTargetJetIndex]; // only for one jet finder
 	if(!jets) 	return;
 	ftriggList->Clear();
@@ -185,8 +200,11 @@ void AliJJetCORRAnalysis::UserExec(){
 			}
 		}
 	}
-	if(fDebugMode>0) cout << "jetfinder " << ", noTrigg ="<< noTrigg <<", noAssoc = "<< noAssoc << endl; 
-	PlayCorrelation(ftriggList, fassocList);
+    // correlation loop
+    if(fDebugMode) cout << "Start of Correlation Loop noTrigg = "<< ftriggList->GetEntriesFast()<<"\t noAssoc="<<fassocList->GetEntriesFast()<<endl;
+    if(fassocList->GetEntriesFast()>0 ) fassocPool->AcceptList(fassocList, fcent, zVert, fInputList->GetEntriesFast(), fevt);
+    PlayCorrelation(ftriggList, fassocList);
+    fassocPool->Mix(ftriggList, kAzimuthFill, fcent, zVert, fInputList->GetEntriesFast(), fevt);
 }
 void AliJJetCORRAnalysis::Terminate() const{
 	// comment needed

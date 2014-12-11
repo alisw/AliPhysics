@@ -122,6 +122,7 @@ AliJJetCORRTask::~AliJJetCORRTask()
 	// destructor 
 
 	delete fJJetCORRAnalysis;
+	delete fAnaUtils;
 
 }
 
@@ -161,6 +162,7 @@ void AliJJetCORRTask::UserCreateOutputObjects()
 	}
 
 	fFirstEvent = kTRUE;
+	fevt = -1;
 
 	cout << "Add(fAliRunHeader) in UserCreateObject() ======= " << endl;
 }
@@ -172,6 +174,10 @@ void AliJJetCORRTask::UserExec(Option_t* /*option*/)
 	// Processing of one event
 	if(fDebugMode > 5) cout << "------- AliJJetCORRTask Exec-------"<<endl;
 	if( fJetTask->GetTaskEntry() != fEntry ) return; // Make sure if we loop over the same event
+
+	fevt++;
+	if(fevt % 1000 == 0) cout << "AliJJetCORRTask:: Numer of event scanned = "<< fevt << endl;
+	
 	fJJetCORRAnalysis->ClearBeforeEvent();
 
 	// Main loop
@@ -194,7 +200,7 @@ void AliJJetCORRTask::UserExec(Option_t* /*option*/)
 	}
 
 	if(!IsGoodEvent( event )) return; // zBin is set there
-	if(fDebugMode) cout << "zvtx = " << zVert << endl;
+	if(fDebugMode>5) cout << "zvtx = " << zVert << endl;
 
 	// centrality
 	float fcent = -999;
@@ -212,6 +218,7 @@ void AliJJetCORRTask::UserExec(Option_t* /*option*/)
 	fJJetCORRAnalysis->SetCentralityBin( cBin );
 	fJJetCORRAnalysis->SetCentrality( fcent );
 	fJJetCORRAnalysis->SetZVertexBin( cBin );
+	fJJetCORRAnalysis->SetZVertex( zVert );
 	fJJetCORRAnalysis->SetTargetJetIndex( fTargetJetIndex );
 
 	fJJetCORRAnalysis->UserExec();
