@@ -38,6 +38,7 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
                                                      Bool_t AssoITSref = kTRUE,
                                                      Double_t ptminassocut = 0.0,
                                                      Bool_t Weight = kFALSE,
+                                                     Bool_t withmultetacorrection=kFALSE,
                                                      Bool_t PhiCut = kFALSE,
                                                      Bool_t PhotonicElectronDCA = kFALSE,
                                                     // Bool_t QaPidSparse = kFALSE,
@@ -74,7 +75,7 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
     }
     
     //create a task
-    AliAnalysisTaskFlowITSTPCTOFQCSP *taskHFE = ConfigHFEStandardCuts(kFALSE, minTPCCluster, pixel);    //kTRUE if MC
+    AliAnalysisTaskFlowITSTPCTOFQCSP *taskHFE = ConfigHFEStandardCuts(kFALSE, minTPCCluster, pixel, withmultetacorrection);    //kTRUE if MC
     
     if(debug) cout << " === AliAnalysisTaskFlowITSTPCTOFQCSP === " << taskHFE << endl;
     if(!taskHFE) {
@@ -239,7 +240,7 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
 //_____________________________________________________________________________
 //_____________________________________________________________________________
 
-AliAnalysisTaskFlowITSTPCTOFQCSP* ConfigHFEStandardCuts(Bool_t useMC,Int_t minTPCCulster,AliHFEextraCuts::ITSPixel_t pixel){
+AliAnalysisTaskFlowITSTPCTOFQCSP* ConfigHFEStandardCuts(Bool_t useMC,Int_t minTPCCulster,AliHFEextraCuts::ITSPixel_t pixel, Bool_t withmultetacorrection1){
     //
     // HFE standard task configuration
     //
@@ -287,6 +288,28 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* ConfigHFEStandardCuts(Bool_t useMC,Int_t minTP
     pid->AddDetector("TOF", 1);
     pid->AddDetector("TPC", 2);
 
+    
+    if(withmultetacorrection1) {
+        AliHFEpidTPC *tpcpid = pid->GetDetPID(AliHFEpid::kTPCpid);
+        // Theo
+        //  task->GetPIDQAManager()->SetFillMultiplicity();
+        TF1 *etaCorrMean = GetEtaCorrection("LHC11h_etaCorrMean");
+        TF1 *etaCorrWdth = GetEtaCorrection("LHC11h_etaCorrWidth");
+        if(etaCorrMean && etaCorrWdth && withmultetacorrection1){
+            tpcpid->SetEtaCorrections(etaCorrMean, etaCorrWdth);
+            printf("TPC dE/dx Eta correction %p %p\n",etaCorrMean,etaCorrWdth);
+        }
+        TF1 *centCorrMean = GetCentralityCorrection("LHC11h_multCorrMean");
+        TF1 *centCorrWdth = GetCentralityCorrection("LHC11h_multCorrWidth");
+        if(centCorrMean && centCorrWdth && withmultetacorrection1){
+            tpcpid->SetCentralityCorrections(centCorrMean, centCorrWdth);
+            printf("TPC dE/dx multiplicity correction %p %p\n",centCorrMean,centCorrWdth);
+        }
+        task->SetMultCorrectionTheo(withmultetacorrection1);
+        task->SetTPCPID(tpcpid);
+    }
+
+    
        printf("*************************************\n");
        printf("Configuring standard Task:\n");
     //  task->PrintStatus();
@@ -368,4 +391,54 @@ namespace TPCTOFnew{
     }
     //_____________________________________________________________________________
 }
-
+//_____________________________________________________________________________
+TF1* GetCentralityCorrection(TString listname="LHC11h"){
+    
+    TString etaMap="$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/CentCorrMapsTPC.root";
+    
+    if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
+        Error("ConfigHFEpbpb","Eta map not found: %s",etaMap.Data());
+        return 0;
+    }
+    
+    TFile f(etaMap.Data());
+    if (!f.IsOpen()) return 0;
+    gROOT->cd();
+    TList *keys=f.GetListOfKeys();
+    
+    for (Int_t i=0; i<keys->GetEntries(); ++i){
+        TString kName=keys->At(i)->GetName();
+        TPRegexp reg(kName);
+        if (reg.MatchB(listname)){
+            printf("Using Eta Correction Function: %s\n",kName.Data());
+            return (TF1*)f.Get(kName.Data());
+        }
+    }
+    return 0;
+}
+//_____________________________________________________________________________
+TF1* GetEtaCorrection(TString listname="LHC11h"){
+    
+    TString etaMap="$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/EtaCorrMapsTPC.root";
+    
+    if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
+        Error("ConfigHFEpbpb","Eta map not found: %s",etaMap.Data());
+        return 0;
+    }
+    
+    TFile f(etaMap.Data());
+    if (!f.IsOpen()) return 0;
+    gROOT->cd();
+    TList *keys=f.GetListOfKeys();
+    
+    for (Int_t i=0; i<keys->GetEntries(); ++i){
+        TString kName=keys->At(i)->GetName();
+        TPRegexp reg(kName);
+        if (reg.MatchB(listname)){
+            printf("Using Eta Correction Function: %s\n",kName.Data());
+            return (TF1*)f.Get(kName.Data());
+        }
+    }
+    return 0;
+}
+//_____________________________________________________________________________

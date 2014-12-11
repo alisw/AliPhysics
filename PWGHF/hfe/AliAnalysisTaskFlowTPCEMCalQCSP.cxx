@@ -74,6 +74,7 @@
 #include "AliHFEcontainer.h"
 #include "AliHFEcuts.h"
 #include "AliHFEpid.h"
+#include "AliHFEpidTPC.h"
 #include "AliHFEpidBase.h"
 #include "AliHFEpidQAmanager.h"
 #include "AliHFEtools.h"
@@ -112,6 +113,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP(const char *nam
 : AliAnalysisTaskSE(name)
 ,fDebug(0)
 ,fAOD(0)
+,fVevent(0)
 ,fGeom(0)
 ,fOutputList(0)
 ,fCuts(0)
@@ -119,6 +121,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP(const char *nam
 ,fPassTheEventCut(kFALSE)
 ,fCFM(0)
 ,fPID(0)
+,ftpcpid(0)
 ,fPIDqa(0)
 ,fCutsRP(0)     // track cuts for reference particles
 ,fNullCuts(0) // dummy cuts for flow event tracks
@@ -204,6 +207,8 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP(const char *nam
 ,fHistEPDistrWeight(0)
 ,EPweights(0)
 ,EPVzAftW(0)
+,multCorrection(0)
+,fptminAsso(0)
 {
     //Named constructor
     
@@ -227,6 +232,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP()
 : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTaskFlowTPCEMCalQCSP")
 ,fDebug(0)
 ,fAOD(0)
+,fVevent(0)
 ,fGeom(0)
 ,fOutputList(0)
 ,fCuts(0)
@@ -234,6 +240,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP()
 ,fPassTheEventCut(kFALSE)
 ,fCFM(0)
 ,fPID(0)
+,ftpcpid(0)
 ,fPIDqa(0)
 ,fCutsRP(0)     // track cuts for reference particles
 ,fNullCuts(0) // dummy cuts for flow event tracks
@@ -319,6 +326,8 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP()
 ,fHistEPDistrWeight(0)
 ,EPweights(0)
 ,EPVzAftW(0)
+,multCorrection(0)
+,fptminAsso(0)
 {
     //Default constructor
     fPID = new AliHFEpid("hfePid");
@@ -364,6 +373,8 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
     // create pointer to event
     
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    fVevent = dynamic_cast<AliVEvent*>(InputEvent());
+
     if (!fAOD)
     {
         printf("ERROR: fAOD not available\n");
@@ -610,6 +621,19 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
         // dEdx = track->GetTPCsignal();
         fEovP = fClsE/p;
         fTPCnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
+
+        
+        Double_t CorrectTPCNSigma;
+        Double_t mult = fVevent->GetNumberOfESDTracks()/8;
+
+        if(multCorrection){
+            CorrectTPCNSigma = ftpcpid->GetCorrectedTPCnSigma(track->Eta(), mult, fTPCnSigma);
+            // cout <<fTPCnSigma << "   ====  " <<COrrectTPCNSigma<<endl;
+            fTPCnSigma = CorrectTPCNSigma;
+            // cout <<fTPCnSigma << "   ====  " <<COrrectTPCNSigma<<endl;
+        }
+
+        
         Double_t m20 =cluster->GetM20();
         Double_t m02 =cluster->GetM02();
         Double_t disp=cluster->GetDispersion();
@@ -776,7 +800,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
         if(!fDCA){
             //----------------------Selection of Photonic Electrons KFParticle-----------------------------
             Bool_t fFlagPhotonicElec = kFALSE;
-            SelectPhotonicElectron(iTracks,track,fEovP, evPlAngV0, fFlagPhotonicElec,weightEP);
+            SelectPhotonicElectron(iTracks,track,fEovP, evPlAngV0, fFlagPhotonicElec,weightEP,mult);
             if(fFlagPhotonicElec){fPhotoElecPt->Fill(pt);}
             // Semi inclusive electron
             if(!fFlagPhotonicElec){fSemiInclElecPt->Fill(pt);}
@@ -795,7 +819,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
     //----------hfe end---------
 }
 //_________________________________________
-void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track,Double_t fEovP,Double_t evPlAngV0, Bool_t &fFlagPhotonicElec, Double_t weightEPflat)
+void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track,Double_t fEovP,Double_t evPlAngV0, Bool_t &fFlagPhotonicElec, Double_t weightEPflat, Double_t multev)
 {
     //Identify non-heavy flavour electrons using Invariant mass method KF
     
@@ -829,13 +853,19 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const 
         Short_t chargeAsso = trackAsso->Charge();
         Short_t charge = track->Charge();
         
+        if(trackAsso->Eta()<-0.9 || trackAsso->Eta()>0.9) continue;
+        if(ptAsso <fptminAsso) continue;
         nsigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(trackAsso, AliPID::kElectron) : 1000;
+
+        Double_t CorrectTPCNSigma;
+        if(multCorrection){
+            CorrectTPCNSigma = ftpcpid->GetCorrectedTPCnSigma(trackAsso->Eta(), multev, nsigma);
+            nsigma = CorrectTPCNSigma;
+        }
         
         //80
         if(trackAsso->GetTPCNcls() < fAssoTPCCluster) continue;
         if(nsigma < -3 || nsigma > 3) continue;
-        if(trackAsso->Eta()<-0.9 || trackAsso->Eta()>0.9) continue;
-        if(ptAsso <0.3) continue;
         
         Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
         if(charge>0) fPDGe1 = -11;
