@@ -476,6 +476,9 @@ def refactor_comment(comment, do_strip_html=True):
   # Support for LaTeX blocks on a single line
   reinline_latex = r'(?i)(.*)BEGIN_LATEX\s+(.*?)\s+END_LATEX(.*)$'
 
+  # Match <pre> (to turn it into the ~~~ Markdown syntax)
+  reblock = r'(?i)^(\s*)</?PRE>\s*$'
+
   new_comment = []
   insert_blank = False
   wait_first_non_blank = True
@@ -567,6 +570,15 @@ def refactor_comment(comment, do_strip_html=True):
 
           # Prevent appending lines (we have already done that)
           new_line_comment = None
+
+        # If we are not in a LaTeX block, look for <pre> tags and transform them into Doxygen code
+        # blocks (using ~~~ ... ~~~). Only <pre> tags on a single line are supported
+        if new_line_comment is not None and not in_latex:
+
+          mblock = re.search( reblock, new_line_comment  )
+          if mblock:
+            new_comment.append( mblock.group(1)+'~~~' )
+            new_line_comment = None
 
         if new_line_comment is not None:
           if in_latex:
