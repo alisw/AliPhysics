@@ -190,7 +190,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode)
 
     // Declare all libraries (other than the default ones for the framework. These will be
     // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-    plugin->SetAdditionalLibs("libPWGLFspectra libPWGDevNanoAOD");
+    plugin->SetAdditionalLibs("libPWGLFspectra.so libPWGDevNanoAOD.so");
 
     // Declare the output file names separated by blancs.
     // (can be like: file.root or file.root@ALICE::Niham::File)

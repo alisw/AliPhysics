@@ -302,7 +302,7 @@ AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir,
   }
 
   TString tmpAdditionalLibs("");
-  tmpAdditionalLibs = Form("libTree libVMC libGeom libGui libXMLParser libMinuit libMinuit2 libProof libPhysics libSTEERBase libESD libAOD libOADB libANALYSIS libCDB libRAWDatabase libSTEER libANALYSISalice libCORRFW libTOFbase libRAWDatabase libRAWDatarec libTPCbase libTPCrec libITSbase libITSrec libTRDbase libTender libSTAT libTRDrec libHMPIDbase libPWGPP libPWGHFbase libPWGDQdielectron libPWGHFhfe libEMCALUtils libPHOSUtils libPWGCaloTrackCorrBase libEMCALraw libEMCALbase libEMCALrec libTRDbase libVZERObase libVZEROrec libTender libTenderSupplies libESDfilter libPWGTools libPWGEMCAL libPWGGAEMCALTasks libPWGCFCorrelationsBase libPWGCFCorrelationsDPhi  %s %s",additionalCode.Data(),additionalHeaders.Data());
+  tmpAdditionalLibs = Form("libTree.so libVMC.so libGeom.so libGui.so libXMLParser.so libMinuit.so libMinuit2.so libProof.so libPhysics.so libSTEERBase.so libESD.so libAOD.so libOADB.so libANALYSIS.so libCDB.so libRAWDatabase.so libSTEER.so libANALYSISalice.so libCORRFW.so libTOFbase.so libRAWDatabase.so libRAWDatarec.so libTPCbase.so libTPCrec.so libITSbase.so libITSrec.so libTRDbase.so libTender.so libSTAT.so libTRDrec.so libHMPIDbase.so libPWGPP.so libPWGHFbase.so libPWGDQdielectron.so libPWGHFhfe.so libEMCALUtils.so libPHOSUtils.so libPWGCaloTrackCorrBase.so libEMCALraw.so libEMCALbase.so libEMCALrec.so libTRDbase.so libVZERObase.so libVZEROrec.so libTender.so libTenderSupplies.so libESDfilter.so libPWGTools.so libPWGEMCAL.so libPWGGAEMCALTasks.so libPWGCFCorrelationsBase.so libPWGCFCorrelationsDPhi.so %s %s",additionalCode.Data(),additionalHeaders.Data());
 
 
   TString macroName("");
