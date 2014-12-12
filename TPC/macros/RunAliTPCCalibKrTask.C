@@ -31,9 +31,9 @@
   proof->SetParameter("PROOF_MaxSlavesPerNode", (Long_t)1000);
   .L /u/miranov/macros/ProofEnableAliRoot.C
   ProofEnableAliRoot("/usr/local/grid/AliRoot/HEAD0108");
-  gProof->Exec("gSystem->Load(\"libANALYSIS.so\")",kTRUE);
-  gProof->Exec("gSystem->Load(\"libSTAT.so\")",kTRUE);
-  gProof->Exec("gSystem->Load(\"libTPCcalib.so\")",kTRUE);
+  gProof->Exec("gSystem->Load(\"libANALYSIS\")",kTRUE);
+  gProof->Exec("gSystem->Load(\"libSTAT\")",kTRUE);
+  gProof->Exec("gSystem->Load(\"libTPCcalib\")",kTRUE);
   gProof->Exec(".x $ALICE_ROOT/TPC/macros/ConfigOCDB.C");
 
   //

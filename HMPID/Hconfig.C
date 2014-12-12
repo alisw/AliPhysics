@@ -747,10 +747,10 @@ void HmpConfig::WriteConfig()
   fprintf(pF,"  gAlice->SetRunLoader(pAL);\n\n");
 //Decayer  
   if(fDecayerB->GetState()==kButtonDown){
-    fprintf(pF,"  gSystem->Load(\"liblhapdf.so\"); // Parton density functions \n");
-    fprintf(pF,"  gSystem->Load(\"libEGPythia6.so\");   // TGenerator interface \n");
-    fprintf(pF,"  gSystem->Load(\"libpythia6.so\");   // Pythia \n");
-    fprintf(pF,"  gSystem->Load(\"libAliPythia6.so\");   // ALICE specifics implementations \n\n");
+    fprintf(pF,"  gSystem->Load(\"liblhapdf\"); // Parton density functions \n");
+    fprintf(pF,"  gSystem->Load(\"libEGPythia6\");   // TGenerator interface \n");
+    fprintf(pF,"  gSystem->Load(\"libpythia6\");   // Pythia \n");
+    fprintf(pF,"  gSystem->Load(\"libAliPythia6\");   // ALICE specifics implementations \n\n");
 //Geant  
     fprintf(pF,"  gSystem->Load(\"libgeant321\");\n");
     fprintf(pF,"  new TGeant3TGeo(\"C++ Interface to Geant3\");\n\n");
