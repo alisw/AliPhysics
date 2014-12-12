@@ -89,3 +89,6 @@ install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
+
+# install macros
+install(DIRECTORY macros DESTINATION PWGHF/correlationHF)
