@@ -68,3 +68,6 @@ install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
+
+# Installing the macros
+install (DIRECTORY macros DESTINATION PWG/TRD)
