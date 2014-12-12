@@ -158,7 +158,7 @@ Bool_t LoadLibrary(const char *module)
   // If a library is specified, just load it
   if (mod.EndsWith(".so")) {
     mod.Remove(mod.Index(".so"));
-    ::Info("LoadLibrary", "Loading .so: %s", mod.Data()); 
+    ::Info("LoadLibrary", "Loading library: %s", mod.Data()); 
     result = gSystem->Load(mod);
     if (result < 0) {
       ::Error("AnalysisTrainNew.C::LoadLibrary", 
@@ -169,12 +169,12 @@ Bool_t LoadLibrary(const char *module)
   }
   // Check if the library is already loaded
   if (strlen(gSystem->GetLibraries(module, "", kFALSE)) > 0) {
-    ::Info("LoadLibrary", "Module %s.so already loaded", module);
+    ::Info("LoadLibrary", "Module %s already loaded", module);
     gROOT->DecreaseDirLevel();      
     return kTRUE;
   }
 
-  ::Info("LoadLibrary", "Trying to load lib%s.so", module);
+  ::Info("LoadLibrary", "Trying to load lib%s", module);
   result = gSystem->Load(Form("lib%s", module));
   if (result < 0)
     ::Error("AnalysisTrainNew.C::LoadLibrary", 
