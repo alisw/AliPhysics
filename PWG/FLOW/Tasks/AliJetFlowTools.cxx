@@ -923,7 +923,7 @@ TH1D* AliJetFlowTools::FoldSpectrum(
 //_____________________________________________________________________________
 Bool_t AliJetFlowTools::PrepareForUnfolding(TH1* customIn, TH1* customOut)
 {
-    // prepare for unfolding
+    // prepare for unfolding. check if all the necessary input data is available, if not, retrieve it
     if(fRawInputProvided) return kTRUE;
     if(!fInputList) {
         printf(" AliJetFlowTools::PrepareForUnfolding() fInputList not found \n - Set a list using AliJetFlowTools::SetInputList() \n");
@@ -1384,11 +1384,16 @@ TH1D* AliJetFlowTools::RebinTH1D(TH1D* histo, TArrayD* bins, TString suffix, Boo
     TString name = histo->GetName();
     name+="_template";
     name+=suffix;
-    TH1D* rebinned = new TH1D(name.Data(), name.Data(), bins->GetSize()-1, bins->GetArray());
-    for(Int_t i(0); i < histo->GetXaxis()->GetNbins(); i++) {
-        // loop over the bins of the old histo and fill the new one with its data
-        rebinned->Fill(histo->GetBinCenter(i+1), histo->GetBinContent(i+1));
-    }
+    TH1D* rebinned = 0x0;
+    // check if the histogram is normalized. if so, fall back to ROOT style rebinning
+    // if not, rebin manually
+    if(histo->GetBinContent(1) > 1 ) {
+        rebinned = new TH1D(name.Data(), name.Data(), bins->GetSize()-1, bins->GetArray());
+        for(Int_t i(0); i < histo->GetXaxis()->GetNbins(); i++) {
+            // loop over the bins of the old histo and fill the new one with its data
+            rebinned->Fill(histo->GetBinCenter(i+1), histo->GetBinContent(i+1));
+        }
+    } else rebinned = reinterpret_cast<TH1D*>(histo->Rebin(bins->GetSize()-1, name.Data(), bins->GetArray()));
     if(kill) delete histo;
     return rebinned;
 }
@@ -3714,7 +3719,6 @@ Bool_t AliJetFlowTools::SetRawInput (
     fSpectrumOut        = jetPtOut;
     fDptInDist          = dptIn;
     fDptOutDist         = dptOut;
-    fRawInputProvided   = kTRUE;
     // check if all data is provided
     if(!fDetectorResponse) {
         printf(" fDetectorResponse not found \n ");
@@ -3756,7 +3760,10 @@ Bool_t AliJetFlowTools::SetRawInput (
     fDptOut->GetXaxis()->SetTitle("p_{T, jet}^{gen} [GeV/c]");
     fDptOut->GetYaxis()->SetTitle("p_{T, jet}^{rec} [GeV/c]");
     
-    return kTRUE;
+
+    // set the flag to let other functions to read data from input file
+    fRawInputProvided = kTRUE;
+    return fRawInputProvided;
 }
 //_____________________________________________________________________________
 TGraphErrors* AliJetFlowTools::GetRatio(TH1 *h1, TH1* h2, TString name, Bool_t appendFit, Int_t xmax) 

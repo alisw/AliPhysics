@@ -82,13 +82,13 @@ using namespace std;
 ClassImp(AliAnalysisTaskJetMatching)
 
 AliAnalysisTaskJetMatching::AliAnalysisTaskJetMatching() : AliAnalysisTaskEmcalJet("AliAnalysisTaskJetMatching", kTRUE), 
-    fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fSourceRho(0), fSourceRhoName(0), fTargetRho(0), fTargetRhoName(0), fUseScaledRho(0), fSourceRadius(0.3), fTargetRadius(0.3), fMatchingScheme(kGeoEtaPhi), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistMatchedSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistSourceMatchedJetPt(0), fHistDetectorResponseProb(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistDiJet(0), fHistDiJetLeadingJet(0), fHistDiJetDPhi(0), fHistDiJetDPt(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(200), fMatchEta(.3), fMatchPhi(.3), fMatchR(.08), fDoDetectorResponse(kFALSE), fMatchConstituents(kTRUE), fMinFracRecoveredConstituents(.5), fMinFracRecoveredConstituentPt(0.5), fGetBijection(kTRUE), fh1Trials(0x0), fh1AvgTrials(0x0), fh1Xsec(0x0), fAvgTrials(0) {
+    fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fSourceRho(0), fSourceRhoName(0), fTargetRho(0), fTargetRhoName(0), fUseScaledRho(0), fSourceRadius(0.3), fTargetRadius(0.3), fMatchingScheme(kGeoEtaPhi), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistMatchedSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistSourceMatchedJetPt(0), fHistDetectorResponseProb(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistDiJet(0), fHistDiJetLeadingJet(0), fHistDiJetDPhi(0), fHistDiJetDPt(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(200), fMatchEta(.3), fMatchPhi(.3), fMatchR(.08), fDoDetectorResponse(kFALSE), fMatchConstituents(kTRUE), fMinFracRecoveredConstituents(.5), fMinFracRecoveredConstituentPt(0.5), fGetBijection(kTRUE), fh1Trials(0x0), fh1AvgTrials(0x0), fh1Xsec(0x0), fAvgTrials(0) {
     // default constructor
     ClearMatchedJetsCache();
 }
 //_____________________________________________________________________________
 AliAnalysisTaskJetMatching::AliAnalysisTaskJetMatching(const char* name) : AliAnalysisTaskEmcalJet(name, kTRUE),
-    fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fSourceRho(0), fSourceRhoName(0), fTargetRho(0), fTargetRhoName(0), fUseScaledRho(0), fSourceRadius(0.3), fTargetRadius(0.3), fMatchingScheme(kGeoEtaPhi), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistMatchedSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistSourceMatchedJetPt(0), fHistDetectorResponseProb(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistDiJet(0), fHistDiJetLeadingJet(0), fHistDiJetDPhi(0), fHistDiJetDPt(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(200), fMatchEta(.3), fMatchPhi(.3), fMatchR(.08), fDoDetectorResponse(kFALSE), fMatchConstituents(kTRUE), fMinFracRecoveredConstituents(0.5), fMinFracRecoveredConstituentPt(0.5), fGetBijection(kTRUE), fh1Trials(0x0), fh1AvgTrials(0x0), fh1Xsec(0x0), fAvgTrials(0) {
+    fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fSourceRho(0), fSourceRhoName(0), fTargetRho(0), fTargetRhoName(0), fUseScaledRho(0), fSourceRadius(0.3), fTargetRadius(0.3), fMatchingScheme(kGeoEtaPhi), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistMatchedSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistSourceMatchedJetPt(0), fHistDetectorResponseProb(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistDiJet(0), fHistDiJetLeadingJet(0), fHistDiJetDPhi(0), fHistDiJetDPt(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(200), fMatchEta(.3), fMatchPhi(.3), fMatchR(.08), fDoDetectorResponse(kFALSE), fMatchConstituents(kTRUE), fMinFracRecoveredConstituents(0.5), fMinFracRecoveredConstituentPt(0.5), fGetBijection(kTRUE), fh1Trials(0x0), fh1AvgTrials(0x0), fh1Xsec(0x0), fAvgTrials(0) {
     // constructor
     ClearMatchedJetsCache();
     DefineInput(0, TChain::Class());
@@ -104,7 +104,9 @@ AliAnalysisTaskJetMatching::~AliAnalysisTaskJetMatching()
 void AliAnalysisTaskJetMatching::ExecOnce() 
 {
     // initialize the anaysis
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #ifdef DEBUGTASK
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
     // get the stand alone jets from the input event
     fSourceJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fSourceJetsName.Data()));
     if(!fSourceJets) AliFatal(Form("%s: Container with name %s not found. Aborting", GetName(), fSourceJetsName.Data()));
@@ -136,8 +138,10 @@ void AliAnalysisTaskJetMatching::ExecOnce()
 void AliAnalysisTaskJetMatching::UserCreateOutputObjects()
 {
     // create output objects
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-     // add the matched jets array to the event
+    #ifdef DEBUGTASK
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
+    // add the matched jets array to the event
     fMatchedJets = new TClonesArray("AliEmcalJet");
     fMatchedJets->SetName(fMatchedJetsName);
     fOutputList = new TList();
@@ -203,7 +207,9 @@ void AliAnalysisTaskJetMatching::UserCreateOutputObjects()
 TH1F* AliAnalysisTaskJetMatching::BookTH1F(const char* name, const char* x, Int_t bins, Double_t min, Double_t max, Bool_t append)
 {
     // book a TH1F and connect it to the output container
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #ifdef DEBUGTASK
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
     if(append && !fOutputList) return 0x0;
     TString title(name);
     title += Form(";%s;[counts]", x);
@@ -216,7 +222,9 @@ TH1F* AliAnalysisTaskJetMatching::BookTH1F(const char* name, const char* x, Int_
 TH2F* AliAnalysisTaskJetMatching::BookTH2F(const char* name, const char* x, const char*y, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Bool_t append)
 {
     // book a TH2F and connect it to the output container
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #ifdef DEBUGTASK
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
     if(append && !fOutputList) return 0x0;
     TString title(name);
     title += Form(";%s;%s", x, y);
@@ -229,7 +237,9 @@ TH2F* AliAnalysisTaskJetMatching::BookTH2F(const char* name, const char* x, cons
 TH3F* AliAnalysisTaskJetMatching::BookTH3F(const char* name, const char* x, const char* y, const char* z, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Int_t binsz, Double_t minz, Double_t maxz, Bool_t append)
 {
     // book a TH2F and connect it to the output container
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #ifdef DEBUGTASK
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
     if(append && !fOutputList) return 0x0;
     TString title(name);
     title += Form(";%s;%s;%s", x, y, z);
@@ -246,7 +256,9 @@ Bool_t AliAnalysisTaskJetMatching::Notify()
     //      $ALICE_ROOT/PWG/Tools/AliAnalysisHelperJetTasks.cxx
     // this function is implenented here temporarily to avoid introducing a dependency
     // later on this could just be a call to a static helper function
-    if(!fDoDetectorResponse) return kTRUE;
+    #ifdef DEBUGTASK
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
     Float_t xsection(0), ftrials(1);
     fAvgTrials = ftrials;
     TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
@@ -294,7 +306,9 @@ Bool_t AliAnalysisTaskJetMatching::Notify()
 Bool_t AliAnalysisTaskJetMatching::Run()
 {
     // execute once for each event
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #ifdef DEBUGTASK
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
     if(!(InputEvent() && fSourceJets && fTargetJets && IsEventSelected())) return kFALSE;
     if(fh1AvgTrials) fh1AvgTrials->Fill("#sum{avg ntrials}", fAvgTrials);
     // step one: do geometric matching 
@@ -323,7 +337,9 @@ Bool_t AliAnalysisTaskJetMatching::Run()
     // stream data to output
     PostMatchedJets();
     FillMatchedJetHistograms();
-    if(fDebug > 0) PrintInfo();
+    #ifdef DEBUGTASK
+        PrintInfo();
+    #endif
     PostData(1, fOutputList);
     return kTRUE;
 }
@@ -331,7 +347,9 @@ Bool_t AliAnalysisTaskJetMatching::Run()
 void AliAnalysisTaskJetMatching::DoGeometricMatchingEtaPhi()
 {
     // do geometric matching based on eta phi distance between jet centers
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #ifdef DEBUGTASK
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
     fNoMatchedJets = 0; // reset the matched jet counter
     Int_t iSource(fSourceJets->GetEntriesFast()), iTarget(fTargetJets->GetEntriesFast());
     for(Int_t i(0); i < iSource; i++) {
@@ -348,17 +366,23 @@ void AliAnalysisTaskJetMatching::DoGeometricMatchingEtaPhi()
                 if(TMath::Abs(sourcePhi-targetPhi) < fMatchPhi) {       // accept the jets as matching 
                 Bool_t isBestMatch(kTRUE);
                     if(fGetBijection) { // match has been found, for bijection only store it if there's no better match
-                        if(fDebug > 0) printf(" > Entering first bijection test \n");
+    #ifdef DEBUGTASK
+        printf(" > Entering first bijection test \n");
+    #endif
                         for(Int_t k(i); k < iSource; k++) {
                             AliEmcalJet* candidateSourceJet(static_cast<AliEmcalJet*>(fSourceJets->At(k)));
                             if(PassesCuts(candidateSourceJet, 0)) continue;
-                            if(fDebug > 0) printf("source distance %.2f \t candidate distance %.2f \n", GetR(sourceJet, targetJet),GetR(candidateSourceJet, targetJet));
+    #ifdef DEBUGTASK
+        printf("source distance %.2f \t candidate distance %.2f \n", GetR(sourceJet, targetJet),GetR(candidateSourceJet, targetJet));
+    #endif
                             if(GetR(sourceJet, targetJet) > GetR(candidateSourceJet, targetJet)) {
                                 isBestMatch = kFALSE;
                                 break;
                             }
                         }
-                        if(fDebug > 0) (isBestMatch) ? printf(" kept source \n ") : printf(" we can do better (rejected source) \n");
+    #ifdef DEBUGTASK
+        (isBestMatch) ? printf(" kept source \n ") : printf(" we can do better (rejected source) \n");
+    #endif
                     }
                     if(isBestMatch) {
                         fMatchedJetContainer[fNoMatchedJets][0] = sourceJet;
@@ -378,7 +402,9 @@ void AliAnalysisTaskJetMatching::DoGeometricMatchingEtaPhi()
 void AliAnalysisTaskJetMatching::DoGeometricMatchingR()
 {
     // do geometric matching based on shortest path between jet centers
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #ifdef DEBUGTASK
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
     fNoMatchedJets = 0; // reset the matched jet counter
     Int_t iSource(fSourceJets->GetEntriesFast()), iTarget(fTargetJets->GetEntriesFast());
     for(Int_t i(0); i < iSource; i++) {
@@ -391,17 +417,23 @@ void AliAnalysisTaskJetMatching::DoGeometricMatchingR()
             if(GetR(sourceJet, targetJet) <= fMatchR) {
                 Bool_t isBestMatch(kTRUE);
                 if(fGetBijection) { // match has been found, for bijection only store it if there's no better match
-                    if(fDebug > 0) printf(" > Entering first bijection test \n");
+    #ifdef DEBUGTASK
+        printf(" > Entering first bijection test \n");
+    #endif
                     for(Int_t k(i); k < iSource; k++) {
                         AliEmcalJet* candidateSourceJet(static_cast<AliEmcalJet*>(fSourceJets->At(k)));
                         if(!PassesCuts(candidateSourceJet, 0)) continue;
-                        if(fDebug > 0) printf("source distance %.2f \t candidate distance %.2f \n", GetR(sourceJet, targetJet),GetR(candidateSourceJet, targetJet));
+    #ifdef DEBUGTASK
+        printf("source distance %.2f \t candidate distance %.2f \n", GetR(sourceJet, targetJet),GetR(candidateSourceJet, targetJet));
+    #endif
                         if(GetR(sourceJet, targetJet) > GetR(candidateSourceJet, targetJet)) {
                             isBestMatch = kFALSE;
                             break;
                         }
                     }
-                    if(fDebug > 0) (isBestMatch) ? printf(" kept source \n ") : printf(" we can do better (rejected source) \n");
+    #ifdef DEBUGTASK
+        (isBestMatch) ? printf(" kept source \n ") : printf(" we can do better (rejected source) \n");
+    #endif
                 }
                 if(isBestMatch) {
                     fMatchedJetContainer[fNoMatchedJets][0] = sourceJet;
@@ -423,7 +455,9 @@ void AliAnalysisTaskJetMatching::DoDiJetMatching()
     // (target and source) are the same jet collection, matching will be performed on distribution in
     // azimuth
     // no ouptut array is produced, dedicated dijet histo's are filled in this function instead
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #ifdef DEBUGTASK
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
     // get the leading jet in a given acceptance (TPC is default)
     Int_t leadingJetIndex(-1), subLeadingJetIndex(-1);
     // retrieve the leading jet, leadingJetIndex points to the leading jet
@@ -453,7 +487,9 @@ void AliAnalysisTaskJetMatching::DoDiJetMatching()
 void AliAnalysisTaskJetMatching::DoConstituentMatching()
 {
     // match constituents within matched jets 
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #ifdef DEBUGTASK
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
     if(!fTracks) {
         AliFatal(Form("%s Fatal error! To do deep matching, supply jet constituents ! \n", GetName()));
         return; // coverity ...
@@ -480,8 +516,9 @@ void AliAnalysisTaskJetMatching::DoConstituentMatching()
                 }
             }
             if((float)overlap/(float)iSJ < fMinFracRecoveredConstituents || targetPt/sourceJet->Pt() < fMinFracRecoveredConstituentPt) {
-                if(fDebug > 0) printf("  \n > Purging jet, recovered constituents ratio  %i / %i = %.2f <  or pt ratio %.2f / %.2f = %.2f < %.2f", 
-                        overlap, iSJ, (float)overlap/(float)iSJ, targetPt, sourceJet->Pt(), targetPt/sourceJet->Pt(), fMinFracRecoveredConstituentPt);
+    #ifdef DEBUGTASK
+        printf("  \n > Purging jet, recovered constituents ratio  %i / %i = %.2f <  or pt ratio %.2f / %.2f = %.2f < %.2f", overlap, iSJ, (float)overlap/(float)iSJ, targetPt, sourceJet->Pt(), targetPt/sourceJet->Pt(), fMinFracRecoveredConstituentPt);
+    #endif
                 fMatchedJetContainer[i][0] = 0x0;
                 fMatchedJetContainer[i][1] = 0x0;
                 continue;
@@ -495,19 +532,23 @@ void AliAnalysisTaskJetMatching::DoConstituentMatching()
                 fProfFracNoMatched->Fill(sourceJet->Pt()-sourceRho, (double)overlap / (double)sourceJet->GetNumberOfTracks());
                 fProfFracNoJets->Fill(sourceJet->Pt()-sourceRho, (double)targetJet->GetNumberOfTracks() / (double)sourceJet->GetNumberOfTracks());
             }
-            if(fDebug > 0) {
-                printf("\n > Jet A: %i const\t", iSJ);
-                printf(" > Jet B %i const\t", iTJ);
-                printf(" -> OVERLAP: %i tracks <- \n", overlap);
-            }
+    #ifdef DEBUGTASK
+        if(fDebug > 0) {
+              printf("\n > Jet A: %i const\t", iSJ);
+              printf(" > Jet B %i const\t", iTJ);
+              printf(" -> OVERLAP: %i tracks <- \n", overlap);
         }
+    #endif
+       }
     }
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetMatching::GetBijection()
 {
     // bijection of source and matched jets, based on closest distance between jets
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #ifdef DEBUGTASK
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
     for(Int_t i(0); i < fNoMatchedJets; i++) {
         for(Int_t j(i+1); j < fNoMatchedJets; j++) {
             if(fMatchedJetContainer[i][0] == fMatchedJetContainer[j][0]) {
@@ -524,7 +565,9 @@ void AliAnalysisTaskJetMatching::GetBijection()
                     fMatchedJetContainer[j][0] = 0x0;                           // clear duplicate jet from cache
                     fMatchedJetContainer[j][1] = 0x0;
                 }
-                if(fDebug > 0) printf(" found duplicate jet, chose %.2f over %.2f \n" , (rB > rA) ? rA : rB, (rB > rA) ? rB : rA);
+    #ifdef DEBUGTASK
+         printf(" found duplicate jet, chose %.2f over %.2f \n" , (rB > rA) ? rA : rB, (rB > rA) ? rB : rA);
+    #endif
             }
         }
     }
@@ -533,7 +576,9 @@ void AliAnalysisTaskJetMatching::GetBijection()
 void AliAnalysisTaskJetMatching::PostMatchedJets()
 {
     // post matched jets
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #ifdef DEBUGTASK
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
     fMatchedJets->Delete();     // should be a NULL operation, but added just in case
     for(Int_t i(0), p(0); i < fNoMatchedJets; i++) {
         if(fMatchedJetContainer[i][1]) {        // duplicate jets will have NULL value here and are skipped
@@ -546,7 +591,9 @@ void AliAnalysisTaskJetMatching::PostMatchedJets()
 void AliAnalysisTaskJetMatching::FillAnalysisSummaryHistogram() const
 {
     // fill the analysis summary histrogram, saves all relevant analysis settigns
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #ifdef DEBUGTASK
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(1, "fUseScaledRho");
     fHistAnalysisSummary->SetBinContent(1, (int)fUseScaledRho);
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(2, "fMatchingScheme");
@@ -568,7 +615,9 @@ void AliAnalysisTaskJetMatching::FillAnalysisSummaryHistogram() const
 void AliAnalysisTaskJetMatching::FillMatchedJetHistograms() 
 {
     // fill matched jet histograms
-    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #ifdef DEBUGTASK
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
     for(Int_t i(0); i < fSourceJets->GetEntriesFast(); i++) {
         AliEmcalJet* source = static_cast<AliEmcalJet*>(fSourceJets->At(i));
         if(!source) continue;
@@ -665,7 +714,6 @@ void AliAnalysisTaskJetMatching::PrintInfo() const
     printf("\n > No. of source jets from %s \n \t %i \n ", fSourceJetsName.Data(), fSourceJets->GetEntriesFast());
     printf(" > No. of target jets from %s \n \t %i \n ", fTargetJetsName.Data(), fTargetJets->GetEntriesFast());
     printf(" > No. of matched jets from %s \n \t %i \n ", fMatchedJetsName.Data(), fMatchedJets->GetEntriesFast());
-    if(fDebug > 3) InputEvent()->GetList()->ls();
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetMatching::Terminate(Option_t *)
