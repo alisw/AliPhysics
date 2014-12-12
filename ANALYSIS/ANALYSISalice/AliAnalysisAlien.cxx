@@ -4106,9 +4106,14 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          TObjArray *list = fAdditionalRootLibs.Tokenize(" ");
          TIter next(list);
          TObjString *str;
+         TString buf;
          while((str=(TObjString*)next())) {
-            if (str->GetString().Contains(".so") || str->GetString().Contains(".dylib"))
-            out << "   gSystem->Load(\"" << str->GetString().Data() << "\");" << endl;
+            buf = str->GetString();
+            if (buf.Contains(".so") || buf.Contains(".dylib")) {
+               buf.ReplaceAll(".so", "");
+               buf.ReplaceAll(".dylib", "");
+               out << "   gSystem->Load(\"" << buf.Data() << "\");" << endl;
+            }
          }
          if (list) delete list;
       }
@@ -4216,11 +4221,16 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          TObjArray *list = additionalLibs.Tokenize(" ");
          TIter next(list);
          TObjString *str;
+         TString buf;
          while((str=(TObjString*)next())) {
-            if (str->GetString().Contains(".so") || str->GetString().Contains(".dylib"))
-               out << "   gSystem->Load(\"" << str->GetString().Data() << "\");" << endl;
-            if (str->GetString().Contains(".par"))
-               out << "   if (!" << setupPar << "(\"" << str->GetString() << "\")) return;" << endl;
+            buf = str->GetString();
+            if (buf.Contains(".so") || buf.Contains(".dylib")) {
+               buf.ReplaceAll(".so", "");
+               buf.ReplaceAll(".dylib", "");
+               out << "   gSystem->Load(\"" << buf.Data() << "\");" << endl;
+            }
+            if (buf.Contains(".par"))
+               out << "   if (!" << setupPar << "(\"" << buf.Data() << "\")) return;" << endl;
          }
          delete list;
       }
@@ -4500,9 +4510,14 @@ void AliAnalysisAlien::WriteMergingMacro()
          TObjArray *list = fAdditionalRootLibs.Tokenize(" ");
          TIter next(list);
          TObjString *str;
+         TString buf;
          while((str=(TObjString*)next())) {
-            if (str->GetString().Contains(".so") || str->GetString().Contains(".dylib"))
-            out << "   gSystem->Load(\"" << str->GetString().Data() << "\");" << endl;
+            buf = str->GetString();
+            if (buf.Contains(".so") || buf.Contains(".dylib")) {
+               buf.ReplaceAll(".so", "");
+               buf.ReplaceAll(".dylib", "");
+               out << "   gSystem->Load(\"" << buf.Data() << "\");" << endl;
+            }
          }
          if (list) delete list;
       }
@@ -4611,9 +4626,14 @@ void AliAnalysisAlien::WriteMergingMacro()
          TObjArray *list = additionalLibs.Tokenize(" ");
          TIter next(list);
          TObjString *str;
+         TString buf;
          while((str=(TObjString*)next())) {
-            if (str->GetString().Contains(".so") || str->GetString().Contains(".dylib"))
-               out << "   gSystem->Load(\"" << str->GetString().Data() << "\");" << endl;
+            buf = str->GetString();
+            if (buf.Contains(".so") || buf.Contains(".dylib")) {
+               buf.ReplaceAll(".so", "");
+               buf.ReplaceAll(".dylib", "");
+               out << "   gSystem->Load(\"" << buf.Data() << "\");" << endl;
+            }
          }
          if (list) delete list;
       }
