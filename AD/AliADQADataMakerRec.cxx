@@ -358,9 +358,9 @@ void AliADQADataMakerRec::InitRaws()
   	Add2RawsList(h2d,(iInt == 0 ? kChargeVsClockInt0 : kChargeVsClockInt1 ), expert, !image, !saveCorr); iHisto++;
 	}
   
-  h1d = new TH1F("H1D_BBFlagPerChannel", "BB-Flags Versus Channel;Channel;BB Flags Count",kNChannelBins, kChannelMin, kChannelMax );
-  h1d->SetMinimum(0);
-  Add2RawsList(h1d,kBBFlagsPerChannel, !expert, image, !saveCorr); iHisto++;
+  h2d = new TH2F("H2D_BBFlagPerChannel", "BB-Flags Versus Channel;Channel;BB Flags Count",kNChannelBins, kChannelMin, kChannelMax,22,-0.5,21.5);
+  //h2d->SetMinimum(0);
+  Add2RawsList(h2d,kBBFlagsPerChannel, !expert, image, !saveCorr); iHisto++;
   
   AliDebug(AliQAv1::GetQADebugLevel(), Form("%d Histograms has been added to the Raws List",iHisto));
   //
@@ -537,19 +537,22 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	FillRawsData(kWidthBG,offlineCh,width[offlineCh]);
       }
       
-         // Fill Flag and Charge Versus LHC-Clock histograms
-	   
+       // Fill Flag and Charge Versus LHC-Clock histograms
+      Int_t nbbFlag = 0;
+      
       for(Int_t iEvent=0; iEvent<21; iEvent++){
 	charge = rawStream->GetPedestal(iChannel,iEvent);
 	Int_t intgr = rawStream->GetIntegratorFlag(iChannel,iEvent);
 	Bool_t bbFlag	  = rawStream->GetBBFlag(iChannel, iEvent);
 	Bool_t bgFlag	  = rawStream->GetBGFlag(iChannel,iEvent );
-
+	if(bbFlag) nbbFlag++;
+	
 	FillRawsData((intgr == 0 ? kChargeVsClockInt0 : kChargeVsClockInt1 ), offlineCh,(float)iEvent-10,(float)charge);
 	FillRawsData(kBBFlagVsClock, offlineCh,(float)iEvent-10,(float)bbFlag);
 	FillRawsData(kBGFlagVsClock, offlineCh,(float)iEvent-10,(float)bgFlag);
-	if(iEvent==10) FillRawsData(kBBFlagsPerChannel, offlineCh,(float)bbFlag);
+	
       }
+      FillRawsData(kBBFlagsPerChannel, offlineCh,nbbFlag);
 
     }// END of Loop over channels
     
