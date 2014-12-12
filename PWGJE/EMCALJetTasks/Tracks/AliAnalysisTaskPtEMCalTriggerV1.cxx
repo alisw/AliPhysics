@@ -81,6 +81,7 @@ void AliAnalysisTaskPtEMCalTriggerV1::UserCreateOutputObjects() {
    * Initialise all analysis components
    */
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
+  SetCaloTriggerPatchInfoName("EmcalTriggers");
 
   AliEMCalTriggerBinningFactory binmaker;
   binmaker.Create(fBinning);

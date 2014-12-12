@@ -27,6 +27,7 @@
 #include <TMath.h>
 #include <TString.h>
 
+#include "AliLog.h"
 #include "AliMCEvent.h"
 #include "AliVCluster.h"
 #include "AliVEvent.h"
@@ -140,6 +141,7 @@ void AliEMCalTriggerRecTrackAnalysisComponent::Process(const AliEMCalTriggerEven
    *
    * @param data: the event data
    */
+  AliDebug(1, Form("Number of matched tracks: %d", data->GetMatchedTrackContainer()->GetEntries()));
 
   std::vector<std::string> triggernames;
   this->GetMachingTriggerNames(triggernames, fUsePatches);
@@ -152,8 +154,8 @@ void AliEMCalTriggerRecTrackAnalysisComponent::Process(const AliEMCalTriggerEven
     assocMC = NULL;
     if(fKineCuts && !fKineCuts->IsSelected(track)) continue;
     if(fTrackSelection && !fTrackSelection->IsTrackAccepted(track)) continue;
-    if(fRequestMCtrue && data->GetMCEvent() && !(assocMC = IsMCTrueTrack(track, data->GetMCEvent()))) continue;
 
+    if(fRequestMCtrue && data->GetMCEvent() && !(assocMC = IsMCTrueTrack(track, data->GetMCEvent()))) continue;
     // Try to match the cluster
     Bool_t hasCluster = kFALSE;
     AliVCluster *clust(NULL);

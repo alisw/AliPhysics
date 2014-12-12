@@ -39,7 +39,7 @@ bool AliEMCalTriggerKineCuts::IsSelected(const AliVParticle* const track) const 
    */
   if(!fPtCut.IsInRange(TMath::Abs(track->Pt()))) return false;
   if(!fEtaCut.IsInRange(track->Eta())) return false;
-  if(!fPhiCut.IsInRange(track->Eta())) return false;
+  if(!fPhiCut.IsInRange(track->Phi())) return false;
   return true;
 }
 
