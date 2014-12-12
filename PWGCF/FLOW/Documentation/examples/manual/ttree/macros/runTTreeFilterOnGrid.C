@@ -27,7 +27,7 @@ void runTTreeFilterOnGrid() {
     // create and customize the alien plugin
     AliAnalysisAlien *alienHandler = new AliAnalysisAlien();
     alienHandler->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_ROOT/OADB -I$ALICE_ROOT/PWG/FLOW/Base -I$ALICE_ROOT/PWG/FLOW/Tasks -g");
-    alienHandler->SetAdditionalLibs("libGui libProof libMinuit libXMLParser libRAWDatabase libRAWDatarec libCDB libSTEERBase libSTEER libTPCbase libTOFbase libTRDbase libVZERObase libVZEROrec libT0base libT0rec libTender libTenderSupplies libPWGflowBase libPWGflowTasks AliFlowTTreeEvent.cxx AliFlowTTreeTrack.cxx AliAnalysisTaskTTreeFilter.cxx AliFlowTTreeEvent.h AliFlowTTreeTrack.h AliAnalysisTaskTTreeFilter.h");
+    alienHandler->SetAdditionalLibs("libGui.so libProof.so libMinuit.so libXMLParser.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEERBase.so libSTEER.so libTPCbase.so libTOFbase.so libTRDbase.so libVZERObase.so libVZEROrec.so libT0base.so libT0rec.so libTender.so libTenderSupplies.so libPWGflowBase.so libPWGflowTasks.so AliFlowTTreeEvent.cxx AliFlowTTreeTrack.cxx AliAnalysisTaskTTreeFilter.cxx AliFlowTTreeEvent.h AliFlowTTreeTrack.h AliAnalysisTaskTTreeFilter.h");
     alienHandler->SetAnalysisSource("AliFlowTTreeEvent.cxx AliFlowTTreeTrack.cxx AliAnalysisTaskTTreeFilter.cxx");
     alienHandler->SetOverwriteMode();
     alienHandler->SetRunMode("full");

@@ -170,8 +170,8 @@ AliAnalysisGrid* CreateAlienHandler() {
   plugin->SetGridOutputDir("output");
   plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/PWG2/FLOW/AliFlowCommon -I$ALICE_ROOT/PWG2/FLOW/AliFlowTasks -I$ALICE_ROOT/PWG3/dielectron/ -g");
   plugin->SetAnalysisSource("AliDielectronHistosTaku.cxx AliDielectronDebugTreeTaku.cxx AliDielectronTaku.cxx AliAnalysisTaskMultiDielectronNewTaku.cxx");
-  //  plugin->SetAdditionalLibs("libCORRFW libPWG3base libPWG3dielectron libPWG3hfe libTender libTenderSupplies  AliAnalysisTaskMultiDielectronNew.h AliAnalysisTaskMultiDielectronNew.cxx");
-  plugin->SetAdditionalLibs("libCORRFW libPWG3base libPWG3dielectron libPWG3hfe AliDielectronHistosTaku.h AliDielectronHistosTaku.cxx AliDielectronDebugTreeTaku.h AliDielectronDebugTreeTaku.cxx AliDielectronTaku.h AliDielectronTaku.cxx AliAnalysisTaskMultiDielectronNewTaku.h AliAnalysisTaskMultiDielectronNewTaku.cxx");
+  //  plugin->SetAdditionalLibs("libCORRFW.so libPWG3base.so libPWG3dielectron.so libPWG3hfe.so libTender.so libTenderSupplies.so AliAnalysisTaskMultiDielectronNew.h AliAnalysisTaskMultiDielectronNew.cxx");
+  plugin->SetAdditionalLibs("libCORRFW.so libPWG3base.so libPWG3dielectron.so libPWG3hfe.so AliDielectronHistosTaku.h AliDielectronHistosTaku.cxx AliDielectronDebugTreeTaku.h AliDielectronDebugTreeTaku.cxx AliDielectronTaku.h AliDielectronTaku.cxx AliAnalysisTaskMultiDielectronNewTaku.h AliAnalysisTaskMultiDielectronNewTaku.cxx");
   plugin->SetDefaultOutputs(kTRUE);
   plugin->SetAnalysisMacro(Form("%s.C",workingDir));
   plugin->SetExecutable(Form("%s.sh",workingDir));
