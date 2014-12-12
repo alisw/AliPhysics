@@ -325,13 +325,13 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
     
     if(!isEvSel) {
         
-        if(fCuts->IsEventRejectedDueToPileup()) {((TH1D*)fOutput->FindObject("NofEvents"))->Fill(2);                        cout << "Reject PILEUP" << endl;}
-        if(fCuts->IsEventRejectedDueToCentrality()) {((TH1D*)fOutput->FindObject("NofEvents"))->Fill(3);                    cout << "Reject CENTRALITY" << endl;}
-        if(fCuts->IsEventRejectedDueToNotRecoVertex()) {((TH1D*)fOutput->FindObject("NofEvents"))->Fill(4);                 cout << "Reject NOT RECO VTX" << endl;}
-        if(fCuts->IsEventRejectedDueToVertexContributors()) {((TH1D*)fOutput->FindObject("NofEvents"))->Fill(5);            cout << "Reject VTX CONTRIB" << endl;}
-        if(fCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()) {((TH1D*)fOutput->FindObject("NofEvents"))->Fill(6);  cout << "Reject VTX no fid reg " << endl;}
-        if(fCuts->IsEventRejectedDueToTrigger()) {((TH1D*)fOutput->FindObject("NofEvents"))->Fill(7);                       cout << "Reject TRIGGER" << endl;}
-        if(fCuts->IsEventRejectedDuePhysicsSelection()) {((TH1D*)fOutput->FindObject("NofEvents"))->Fill(8);                cout << "Reject PHYS SEL" << endl;}
+        if(fCuts->IsEventRejectedDueToPileup()) {((TH1D*)fOutput->FindObject("NofEvents"))->Fill(2);                        /*cout << "Reject PILEUP" << endl;*/}
+        if(fCuts->IsEventRejectedDueToCentrality()) {((TH1D*)fOutput->FindObject("NofEvents"))->Fill(3);                    /*cout << "Reject CENTRALITY" << endl;*/}
+        if(fCuts->IsEventRejectedDueToNotRecoVertex()) {((TH1D*)fOutput->FindObject("NofEvents"))->Fill(4);                 /*cout << "Reject NOT RECO VTX" << endl;*/}
+        if(fCuts->IsEventRejectedDueToVertexContributors()) {((TH1D*)fOutput->FindObject("NofEvents"))->Fill(5);            /*cout << "Reject VTX CONTRIB" << endl;*/}
+        if(fCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()) {((TH1D*)fOutput->FindObject("NofEvents"))->Fill(6);  /*cout << "Reject VTX no fid reg " << endl;*/}
+        if(fCuts->IsEventRejectedDueToTrigger()) {((TH1D*)fOutput->FindObject("NofEvents"))->Fill(7);                       /*cout << "Reject TRIGGER" << endl;*/}
+        if(fCuts->IsEventRejectedDuePhysicsSelection()) {((TH1D*)fOutput->FindObject("NofEvents"))->Fill(8);                /*cout << "Reject PHYS SEL" << endl;*/}
         
         return;
     }
@@ -924,7 +924,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                  
                  
                  if(fmontecarlo) {trackOrigin = fAssocCuts->IsMCpartFromHF(label,fmcArray);
-                     if(trackOrigin[4]) {cout << "Something is wrong with hadron in MC - skipping" << endl; continue;}
+                     if(trackOrigin[4]) {/*cout << "Something is wrong with hadron in MC - skipping" << endl; */continue;}
                  }
                  // cout << "crash correlation 3" << endl;
                   
@@ -1190,7 +1190,7 @@ void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
         bkgSparseName+=Form("%d",iBin);
         MCSparseNameCharm+=Form("%d",iBin);
         MCSparseNameBeauty+=Form("%d",iBin);
-        cout << "ThNSparses name = " << signalSparseName << endl;
+        //cout << "ThNSparses name = " << signalSparseName << endl;
         
         // define thnsparses for signal candidates
         CorrelationsSignal = new THnSparseF(signalSparseName.Data(),"Correlations for signal; #Delta#Phi; invariant mass;  #Delta #eta;AssocTrk p_{T}",5,nbinsSparse,binLowLimitSparse,binUpLimitSparse);
@@ -1293,7 +1293,7 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
         if(ptbinlims[iBin]<fCuts->GetMinPtCandidate() || ptbinlims[iBin]>fCuts->GetMaxPtCandidate())continue;
         
         
-        std::cout << ">>> Ptbin = " << iBin << " limit = " << ptbinlims[iBin] << std::endl;
+      //  std::cout << ">>> Ptbin = " << iBin << " limit = " << ptbinlims[iBin] << std::endl;
         
         nameDZeroMass = "histDZeroMass_";
         nameDStarMass = "histDStarMass_";
@@ -1304,7 +1304,7 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
         nameDStarMass+=Form("%d",iBin);
         nameDStarFromSBMass+=Form("%d",iBin);
         nameDZerovsDStarMass+=Form("%d",iBin);
-        cout << "D vs D histogram: " << nameDZerovsDStarMass << endl;
+  //      cout << "D vs D histogram: " << nameDZerovsDStarMass << endl;
         
         D0mass = new TH1F(nameDZeroMass.Data(), Form("D^{0} invariant mass in bin %d; M(K#pi) GeV/c^{2};",iBin),200,1.75,1.95);
         DStarMass = new TH1F(nameDStarMass.Data(), Form("Delta invariant mass for candidates in bin %d; M(K#pi#pi)- M(K#pi) GeV/c^{2};",iBin),200,0.1,0.2);
@@ -1468,7 +1468,7 @@ void AliAnalysisTaskDStarCorrelations::EnlargeDZeroMassWindow(){
 	if(k==0)	{
 	  fD0Window[j] =fCuts->GetCutValue(0,j);
 	  rdcutsvalmine[k][j] = 5.* fCuts->GetCutValue(0,j);
-	  cout << "the set window = " << fD0Window[j] << " for ptbin " << j << endl;
+	//  cout << "the set window = " << fD0Window[j] << " for ptbin " << j << endl;
 	}
 	else rdcutsvalmine[k][j] =fCuts->GetCutValue(k,j);
 			
