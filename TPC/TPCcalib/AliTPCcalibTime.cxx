@@ -831,7 +831,10 @@ void AliTPCcalibTime::ProcessBeam(const AliVEvent *const event){
     AliVTrack *track = event->GetVTrack(itrack);
     AliVfriendTrack *friendTrack = const_cast<AliVfriendTrack*>(vFriend->GetTrack(itrack));
     if (!friendTrack) continue;
-    if (TMath::Abs(track->GetTgl())>kMaxTgl) continue;
+
+    AliExternalTrackParam trkprm;
+    track->GetTrackParam(trkprm);
+    if (TMath::Abs(trkprm.GetTgl())>kMaxTgl) continue;
     if (TMath::Abs(track->Pt())<kMinPt) continue;
 
     TObject *calibObject=0;
@@ -2286,7 +2289,9 @@ void        AliTPCcalibTime::FillResHistoTPC(const AliVTrack * pTrack){
   AliExternalTrackParam * constrainedParam = &cnstrPrm;
   AliExternalTrackParam lits(*constrainedParam);
 
-  if (TMath::Abs(pTrack->GetY())>3) return;  // beam pipe
+  AliExternalTrackParam ptrkprm;
+  pTrack->GetTrackParam(ptrkprm);
+  if (TMath::Abs(ptrkprm.GetY())>3) return;  // beam pipe
   pTPCvertex.Rotate(lits.GetAlpha());
   //pTPCvertex.PropagateTo(pTPCvertex->GetX(),fMagF);
   AliTracker::PropagateTrackToBxByBz(&pTPCvertex,lits.GetX(),0.1,2,kFALSE);

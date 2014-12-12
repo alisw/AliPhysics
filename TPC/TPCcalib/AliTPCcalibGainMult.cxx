@@ -551,8 +551,11 @@ void AliTPCcalibGainMult::Process(AliVEvent *event) {
 	//
 	// topology histogram (absolute)
 	//                        (0.) weighted dE/dx, (1.) 0:Qtot - 1:Qmax, (2.) tgl, (3.) 1./pT
-	Double_t vecTopolTot[4] = {meanTot, 0, dipAngleTgl, TMath::Abs(track->GetSigned1Pt())};
-	Double_t vecTopolMax[4] = {meanMax, 1, dipAngleTgl, TMath::Abs(track->GetSigned1Pt())};
+
+    AliExternalTrackParam trkprm;
+    track->GetTrackParam(trkprm);
+    Double_t vecTopolTot[4] = {meanTot, 0, dipAngleTgl, TMath::Abs(trkprm.GetSigned1Pt())};
+    Double_t vecTopolMax[4] = {meanMax, 1, dipAngleTgl, TMath::Abs(trkprm.GetSigned1Pt())};
 	fHistTopology->Fill(vecTopolTot);
 	fHistTopology->Fill(vecTopolMax);
       }
@@ -1537,10 +1540,14 @@ void AliTPCcalibGainMult::ProcessCosmic(const AliVEvent *event) {
 
     if (TMath::Abs(AliTracker::GetBz())>1&&track0->Pt()<kMinPt) continue;
     if (track0->GetTPCncls()<kMinNcl) continue;
-    if (TMath::Abs(track0->GetY())<2*kMaxDelta[0]) continue; 
-    if (TMath::Abs(track0->GetY())>kMaxImpact) continue; 
+
+    AliExternalTrackParam trkprm0;
+    track0->GetTrackParam(trkprm0);
+    if (TMath::Abs(trkprm0.GetY())<2*kMaxDelta[0]) continue;
+    if (TMath::Abs(trkprm0.GetY())>kMaxImpact) continue;
     if (track0->GetKinkIndex(0)>0) continue;
-    const Double_t * par0=track0->GetParameter(); //track param at rhe DCA
+    const Double_t * par0=trkprm0.GetParameter(); //track param at the DCA
+
     //rm primaries
     //
     for (Int_t itrack1=itrack0+1;itrack1<ntracks;itrack1++) {
@@ -1551,10 +1558,13 @@ void AliTPCcalibGainMult::ProcessCosmic(const AliVEvent *event) {
       if (TMath::Abs(AliTracker::GetBz())>1&&track1->Pt()<kMinPt) continue;
       if (track1->GetTPCncls()<kMinNcl) continue;
       if (TMath::Abs(AliTracker::GetBz())>1&&TMath::Max(track1->Pt(), track0->Pt())<kMinPtMax) continue;
-      if (TMath::Abs(track1->GetY())<2*kMaxDelta[0]) continue;
-      if (TMath::Abs(track1->GetY())>kMaxImpact) continue; 
+
+      AliExternalTrackParam trkprm1;
+      track1->GetTrackParam(trkprm1);
+      if (TMath::Abs(trkprm1.GetY())<2*kMaxDelta[0]) continue;
+      if (TMath::Abs(trkprm1.GetY())>kMaxImpact) continue;
       //
-      const Double_t* par1=track1->GetParameter(); //track param at rhe DCA
+      const Double_t* par1=trkprm1.GetParameter(); //track param at rhe DCA
       //
       Bool_t isPair=kTRUE;
       for (Int_t ipar=0; ipar<5; ipar++){
@@ -1667,7 +1677,10 @@ void AliTPCcalibGainMult::ProcessCosmic(const AliVEvent *event) {
       if (cosmicType<2) continue; // use only crossing tracks
       //
       Double_t deltaTimeCluster=0;
-      deltaTimeCluster=0.5*(track1->GetZ()-track0->GetZ())/param->GetZWidth();
+
+      //deltaTimeCluster=0.5*(track1->GetZ()-track0->GetZ())/param->GetZWidth();
+      deltaTimeCluster=0.5*(trkprm1.GetZ()-trkprm0.GetZ())/param->GetZWidth();
+
       if (nclA0>nclC0) deltaTimeCluster*=-1; // if A side track
       //
       for (Int_t irow=0; irow<kMaxRow; irow++){
@@ -1963,7 +1976,9 @@ void AliTPCcalibGainMult::ProcessTOF(const AliVEvent *event){
       AliVTrack *track = event->GetVTrack(i);
       if (!track) continue;
       if (!track->IsOn(AliVTrack::kTIME)) continue;
-      if (TMath::Abs(track->GetZ())>kMaxDCAZ) continue;         // remove overlaped events
+      AliExternalTrackParam trkprm;
+      track->GetTrackParam(trkprm);
+      if (TMath::Abs(trkprm.GetZ())>kMaxDCAZ) continue;         // remove overlaped events
       if (TMath::Abs(track->GetTOFsignalDz())>kMaxD) continue;
       Double_t times[1000];
       track->GetIntegratedTimes(times);
@@ -1996,7 +2011,9 @@ void AliTPCcalibGainMult::ProcessTOF(const AliVEvent *event){
     AliVTrack *track = event->GetVTrack(i);
     if (!track) continue;
     if (!track->IsOn(AliVTrack::kTIME)) continue;
-    if (TMath::Abs(track->GetZ())>kMaxDCAZ) continue;          //remove overlapped events
+    AliExternalTrackParam trkprm;
+    track->GetTrackParam(trkprm);
+    if (TMath::Abs(trkprm.GetZ())>kMaxDCAZ) continue;          //remove overlapped events
     if (TMath::Abs(track->GetTOFsignalDz())>kMaxD) continue;
     Double_t times[1000];
     track->GetIntegratedTimes(times);  

@@ -604,9 +604,12 @@ void AliTPCcalibLaser::Process(AliVEvent * event) {
   for (Int_t i=0;i<fV->GetNumberOfTracks();++i) {
     AliVTrack *track=fV->GetVTrack(i);
     if (!track) continue;
-    hisCE.Fill(track->GetZ());
-    hisCE.Fill(track->GetZ()+2);
-    hisCE.Fill(track->GetZ()-2);
+
+    AliExternalTrackParam trkprm;
+    track->GetTrackParam(trkprm);
+    hisCE.Fill(trkprm.GetZ());
+    hisCE.Fill(trkprm.GetZ()+2);
+    hisCE.Fill(trkprm.GetZ()-2);
   }
   //
   //
@@ -628,9 +631,9 @@ void AliTPCcalibLaser::Process(AliVEvent * event) {
     if (!friendTrack) continue;
     AliVTrack *track=fV->GetVTrack(i);
     if (!track) continue;
-    AliESDfriendTrack *friendTrack=(AliESDfriendTrack*)track->GetFriendTrack();
-    if (!friendTrack) continue;
-    Double_t binC = hisCE.GetBinContent(hisCE.FindBin(track->GetZ()));
+    AliExternalTrackParam prm;
+    track->GetTrackParam(prm);
+    Double_t binC = hisCE.GetBinContent(hisCE.FindBin(prm.GetZ()));
     if (binC>336) continue; //remove CE background
     TObject *calibObject=0;
     AliTPCseed *seed=0;

@@ -502,7 +502,10 @@ void AliTPCcalibAlign::Process(AliVEvent *event) {
     fCurrentSeed=seed0;
     fCurrentEvent=event;
 
-    Double_t scalept= TMath::Min(1./TMath::Abs(track0->GetParameter()[4]),2.);
+    AliExternalTrackParam prm0;
+    track0->GetTrackParam(prm0);
+    Double_t scalept= TMath::Min(1./TMath::Abs(prm0.GetParameter()[4]),2.);
+
     Bool_t   isSelected = (TMath::Exp(2*scalept)>kptDownscale*gRandom->Rndm());
     if (isSelected) ProcessSeed(seed0);
   }
@@ -526,7 +529,12 @@ void AliTPCcalibAlign::Process(AliVEvent *event) {
       // fast cuts on dca and theta
       //      if (TMath::Abs(dca1[0]+dca0[0])>15) continue;
       //      if (TMath::Abs(dca1[1]-dca0[1])>15) continue;
-      if (TMath::Abs(track0->GetParameter()[3]+track1->GetParameter()[3])>0.1) continue;
+      AliExternalTrackParam trkprm0;
+      track0->GetTrackParam(trkprm0);
+      AliExternalTrackParam trkprm1;
+      track1->GetTrackParam(trkprm1);
+
+      if (TMath::Abs(trkprm0.GetParameter()[3]+trkprm1.GetParameter()[3])>0.1) continue;
       //
       AliVfriendTrack *friendTrack = 0;
       TObject *calibObject=0;
@@ -697,8 +705,14 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliVEvent *event){
       //track1->GetImpactParameters(dca1[0],dca1[1]);
       //if (TMath::Abs(dca1[0]-dca0[0])>kDistY) continue;
       //if (TMath::Abs(dca1[1]-dca0[1])>kDistZ) continue;
-      if (TMath::Abs(track0->GetTgl()+track1->GetTgl())>kDistTh) continue;
-      if (TMath::Abs(track0->GetSigned1Pt()+track1->GetSigned1Pt())>kDist1Pt) continue;
+
+      AliExternalTrackParam trkprm0;
+      track0->GetTrackParam(trkprm0);
+      AliExternalTrackParam trkprm1;
+      track1->GetTrackParam(trkprm1);
+
+      if (TMath::Abs(trkprm0.GetTgl()+trkprm1.GetTgl())>kDistTh) continue;
+      if (TMath::Abs(trkprm0.GetSigned1Pt()+trkprm1.GetSigned1Pt())>kDist1Pt) continue;
       track1P = track1;
       index1=i1;
     }

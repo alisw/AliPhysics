@@ -1031,7 +1031,11 @@ void AliTPCcalibCosmic::FindCosmicPairs(const AliVEvent *event) {
     if (track0->GetTPCncls()<kMinNcl) continue;
     if (TMath::Abs(track0->GetY())<kMaxDelta[0]) continue; 
     if (track0->GetKinkIndex(0)>0) continue;
-    const Double_t * par0=track0->GetParameter(); //track param at rhe DCA
+
+    AliExternalTrackParam trkprm0;
+    track0->GetTrackParam(trkprm0);
+    const Double_t * par0=trkprm0.GetParameter(); //track param at the DCA
+
     //rm primaries
     //
     //track0->GetImpactParametersTPC(dcaTPC,covTPC);
@@ -1051,7 +1055,9 @@ void AliTPCcalibCosmic::FindCosmicPairs(const AliVEvent *event) {
       //      if (TMath::Abs(dcaTPC[0])<kMaxDelta[0]) continue;
       //if (TMath::Abs(dcaTPC[1])<kMaxDelta[0]*2) continue;
       //
-      const Double_t* par1=track1->GetParameter(); //track param at rhe DCA
+      AliExternalTrackParam trkprm1;
+      track1->GetTrackParam(trkprm1);
+      const Double_t* par1=trkprm1.GetParameter(); //track param at the DCA
       //
       Bool_t isPair=kTRUE;
       for (Int_t ipar=0; ipar<5; ipar++){
