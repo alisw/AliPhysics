@@ -103,3 +103,6 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+
+# Installing the macros
+install(DIRECTORY . DESTINATION PWGUD/DIFFRACTIVE FILES_MATCHING PATTERN "*.C")
