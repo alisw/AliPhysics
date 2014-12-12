@@ -135,20 +135,9 @@ install(TARGETS ${MODULE}
 
 install(FILES ${HDRS} DESTINATION include)
 
-install(FILES
-                CaloCellQA/macros/AddTaskCaloCellsQA.C
-                CaloCellQA/macros/AddTaskPHOSQA.C
-       DESTINATION
-                PWGGA/PHOSTasks/CaloCellQA/macros
-       )
-
-install(FILES
-                PHOS_TriggerQA/macros/AddTaskPHOSTriggerQA.C
-        DESTINATION
-                PWGGA/PHOSTasks/PHOS_TriggerQA/macros/
-       )
-
-install(FILES
-                PHOS_PbPbQA/macros/AddTaskPHOSPbPb.C
-        DESTINATION PWGGA/PHOSTasks/PHOS_PbPbQA/macros/
-       )
+# Install the macros
+install(DIRECTORY PHOS_PbPb DESTINATION PWGGA/PHOSTasks)
+install(DIRECTORY UserTasks/macros DESTINATION  PWGGA/PHOSTasks/UserTasks)
+install(FILES PHOS_Correlation/AddTaskPi0Correlations.C DESTINATION PWGGA/PHOSTasks/PHOS_Correlation)
+install(FILES PHOS_EpRatio/AddTaskPHOSEpRatio.C DESTINATION PWGGA/PHOSTasks/PHOS_EpRatio)
+install(FILES PHOS_Tagging/AddTaskPHOSTagging.C DESTINATION PWGGA/PHOSTasks/PHOS_Tagging)

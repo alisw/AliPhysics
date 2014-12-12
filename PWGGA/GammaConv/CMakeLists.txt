@@ -132,3 +132,6 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+
+# install macros
+install(DIRECTORY macros DESTINATION PWGGA/GammaConv)
