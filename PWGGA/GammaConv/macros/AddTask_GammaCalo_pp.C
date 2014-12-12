@@ -109,7 +109,7 @@ void AddTask_GammaCalo_pp(  Int_t trainConfig = 1,  //change different set of cu
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 2;
 	if (trainConfig == 2 || trainConfig == 3) numberOfCuts = 5;
-	if (trainConfig == 5) numberOfCuts = 5;
+	if (trainConfig == 5) numberOfCuts = 6;
 	if (trainConfig == 31) numberOfCuts = 4;
 	if (trainConfig == 32) numberOfCuts = 1;
 	
