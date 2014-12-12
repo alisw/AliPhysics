@@ -2,29 +2,29 @@
 // Base macro for submitting muon Resolution analysis.
 //
 // In case it is not run with full aliroot, it needs the following libraries:
-//  - libSTEERBase.so
-//  - libESD.so
-//  - libAOD.so
-//  - libANALYSIS.so
-//  - libANALYSISalice.so
-//  - libGui.so
-//  - libMinuit.so
-//  - libProofPlayer.so
-//  - libXMLParser.so
-//  - libRAWDatabase.so
-//  - libCDB.so
-//  - libSTEER.so
-//  - libMUONcore.so
-//  - libMUONmapping.so
-//  - libMUONcalib.so
-//  - libMUONgeometry.so
-//  - libMUONtrigger.so
-//  - libMUONraw.so
-//  - libMUONbase.so
-//  - libMUONrec.so
-//  - libCORRFW.so
-//  - libPWGHFbase.so
-//  - libPWGmuondep.so
+//  - libSTEERBase
+//  - libESD
+//  - libAOD
+//  - libANALYSIS
+//  - libANALYSISalice
+//  - libGui
+//  - libMinuit
+//  - libProofPlayer
+//  - libXMLParser
+//  - libRAWDatabase
+//  - libCDB
+//  - libSTEER
+//  - libMUONcore
+//  - libMUONmapping
+//  - libMUONcalib
+//  - libMUONgeometry
+//  - libMUONtrigger
+//  - libMUONraw
+//  - libMUONbase
+//  - libMUONrec
+//  - libCORRFW
+//  - libPWGHFbase
+//  - libPWGmuondep
 //
 // It also needs to load magnetic field, mapping, geometry (+alignment), and reconstruction parameters from the OCDB
 //

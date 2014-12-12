@@ -257,7 +257,7 @@ void LoadLibrariesFQD(const libModes mode) {
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libPWGflowBase");
-  cerr<<"libPWGflowBase.so loaded ..."<<endl;
+  cerr<<"libPWGflowBase loaded ..."<<endl;
   
   }
   

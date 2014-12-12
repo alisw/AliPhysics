@@ -109,7 +109,7 @@ performAllPi(){
   doeffPi(0,0.1,etamin,etamax);
   kOverAll2Sigma=kFALSE;
   kOverAll=kFALSE;
-  gSystem->Unload("$ALICE_ROOT/PWGPP/pid/doeffPi_C.so");
+  gSystem->Unload("$ALICE_ROOT/PWGPP/pid/doeffPi_C");
 }
 
 performAllPr(){
@@ -217,7 +217,7 @@ performAllPr(){
   doeffPr(0,0.1,etamin,etamax);
   kOverAll2Sigma=kFALSE;
   kOverAll=kFALSE;
-  gSystem->Unload("$ALICE_ROOT/PWGPP/pid/doeffPr_C.so");
+  gSystem->Unload("$ALICE_ROOT/PWGPP/pid/doeffPr_C");
 }
 
 performAllKa(){
@@ -325,7 +325,7 @@ performAllKa(){
   doeffKa(0,0.1,etamin,etamax);
   kOverAll2Sigma=kFALSE;
   kOverAll=kFALSE;
-  gSystem->Unload("$ALICE_ROOT/PWGPP/pid/doeffKa_C.so");
+  gSystem->Unload("$ALICE_ROOT/PWGPP/pid/doeffKa_C");
 }
 
 TGraphErrors *MakeRatio(const char *nf1,const char *nf2,const char *nfo=""/*output file*/,const char *title=""/*title*/){

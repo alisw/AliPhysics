@@ -82,7 +82,7 @@
 #include "PWGPP/TRD/AliTRDinfoGen.h"
 #endif
 
-const Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libANALYSISalice.so", "libCORRFW", "libTender.so", "libPWGPP.so", "libPWGmuon.so"};
+const Char_t *libs[] = {"libProofPlayer", "libANALYSIS", "libANALYSISalice", "libCORRFW", "libTender", "libPWGPP", "libPWGmuon"};
 // define setup
 TCanvas *c(NULL);
 Bool_t mc(kFALSE), friends(kFALSE);

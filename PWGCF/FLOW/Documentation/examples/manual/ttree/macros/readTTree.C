@@ -3,7 +3,7 @@ void readTTree()
 
     // example macro to read data from a ttree and perform a flow analysis using the flow pacakge
     // author: Redmer Alexander Bertens (rbertens@cern.ch)
-    // note: this macro can run in ROOT only provided libPWGflowBase.so is available
+    // note: this macro can run in ROOT only provided libPWGflowBase is available
 
     // compile the relevant classes
     // include paths, necessary for compilation
