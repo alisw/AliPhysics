@@ -37,6 +37,7 @@ import os
 import re
 import logging
 import getopt
+import hashlib
 import clang.cindex
 
 
@@ -200,7 +201,7 @@ def comment_method(cursor, comments):
 
       if comment_line_start > 0:
 
-        comment = refactor_comment( comment )
+        comment = refactor_comment( comment, infilename=str(cursor.location.file) )
 
         if len(comment) > 0:
           logging.debug("Comment found for function %s" % Colt(comment_function).magenta())
@@ -396,7 +397,7 @@ def comment_classdesc(filename, comments):
     if date is not None:
       comment_lines.append( '\\date ' + date )
 
-    comment_lines = refactor_comment(comment_lines, do_strip_html=False)
+    comment_lines = refactor_comment(comment_lines, do_strip_html=False, infilename=filename)
     logging.debug('Comment found for class %s' % Colt(class_name_doxy).magenta())
     comments.append(Comment(
       comment_lines,
@@ -463,7 +464,7 @@ def strip_html(s):
 ## Remove garbage from comments and convert special tags from THtml to Doxygen.
 #
 #  @param comment An array containing the lines of the original comment
-def refactor_comment(comment, do_strip_html=True):
+def refactor_comment(comment, do_strip_html=True, infilename=None):
 
   recomm = r'^(/{2,}|/\*)? ?(\s*.*?)\s*((/{2,})?\s*|\*/)$'
   regarbage = r'^(?i)\s*([\s*=-_#]+|(Begin|End)_Html)\s*$'
@@ -479,10 +480,38 @@ def refactor_comment(comment, do_strip_html=True):
   # Match <pre> (to turn it into the ~~~ Markdown syntax)
   reblock = r'(?i)^(\s*)</?PRE>\s*$'
 
+  # Macro blocks for pictures generation
+  in_macro = False
+  current_macro = []
+  remacro = r'(?i)^\s*(BEGIN|END)_MACRO(\((.*?)\))?\s*$'
+
   new_comment = []
   insert_blank = False
   wait_first_non_blank = True
   for line_comment in comment:
+
+    # Check if we are in a macro block
+    mmacro = re.search(remacro, line_comment)
+    if mmacro:
+      if in_macro:
+        in_macro = False
+
+        # Dump macro
+        outimg = write_macro(infilename, current_macro) + '.png'
+        current_macro = []
+
+        # Insert image
+        new_comment.append( '![Picture from ROOT macro](%s)' % (outimg) )
+
+        logging.debug( 'Found macro for generating image %s' % Colt(outimg).magenta() )
+
+      else:
+        in_macro = True
+
+      continue
+    elif in_macro:
+      current_macro.append( line_comment )
+      continue
 
     # Strip some HTML tags
     if do_strip_html:
@@ -589,6 +618,44 @@ def refactor_comment(comment, do_strip_html=True):
       assert False, 'Comment regexp does not match'
 
   return new_comment
+
+
+## Dumps an image-generating macro to the correct place. Returns a string with the image path,
+#  without the extension.
+#
+#  @param infilename  File name of the source file
+#  @param macro_lines Array of macro lines
+def write_macro(infilename, macro_lines):
+
+  # Calculate hash
+  digh = hashlib.sha1()
+  for l in macro_lines:
+    digh.update(l)
+    digh.update('\n')
+  short_digest = digh.hexdigest()[0:7]
+
+  outdir = '%s/imgdoc' % os.path.dirname(infilename)
+  outprefix = '%s/%s_%s' % (
+    outdir,
+    os.path.basename(infilename).replace('.', '_'),
+    short_digest
+  )
+  outmacro = '%s.C' % outprefix
+
+  # Make directory
+  if not os.path.isdir(outdir):
+    # do not catch: let everything die on error
+    logging.debug('Creating directory %s' % Colt(outdir).magenta())
+    os.mkdir(outdir)
+
+  # Create file (do not catch errors either)
+  with open(outmacro, 'w') as omfp:
+    logging.debug('Writing macro %s' % Colt(outmacro).magenta())
+    for l in macro_lines:
+      omfp.write(l)
+      omfp.write('\n')
+
+  return outprefix
 
 
 ## Rewrites all comments from the given file handler.
