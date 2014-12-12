@@ -126,6 +126,9 @@ set ( SRCS
 if (FASTJET_FOUND)
   LIST(APPEND SRCS
    EMCALJetTasks/AliFJWrapper.cxx
+   EMCALJetTasks/AliEmcalJetUtility.cxx
+   EMCALJetTasks/AliEmcalJetUtilityGenSubtractor.cxx
+   EMCALJetTasks/AliEmcalJetUtilityConstSubtractor.cxx
    EMCALJetTasks/AliEmcalJetTask.cxx
    EMCALJetTasks/AliEmcalJetFinder.cxx
    EMCALJetTasks/AliJetEmbeddingFromAODTask.cxx

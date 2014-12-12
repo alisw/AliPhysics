@@ -1,4 +1,3 @@
-// $Id$
 //
 // Emcal particle class, which can contain either an AliVTrack or an AliVCluster
 //
