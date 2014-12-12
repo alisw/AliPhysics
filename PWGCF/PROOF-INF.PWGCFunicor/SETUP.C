@@ -1,11 +1,11 @@
 //=============================================================================
 void SETUP() {
-  CheckLoadLibrary("libPhysics.so");
-  CheckLoadLibrary("libEG.so");
-  CheckLoadLibrary("libTree.so");
-  CheckLoadLibrary("libVMC.so"); 
-  CheckLoadLibrary("libSTEERBase.so");
-  CheckLoadLibrary("libESD.so");
+  CheckLoadLibrary("libPhysics");
+  CheckLoadLibrary("libEG");
+  CheckLoadLibrary("libTree");
+  CheckLoadLibrary("libVMC");
+  CheckLoadLibrary("libSTEERBase");
+  CheckLoadLibrary("libESD");
   CheckLoadLibrary("libANALYSIS");
   CheckLoadLibrary("libANALYSISalice");
   CheckLoadLibrary("libPWGCFunicor");
