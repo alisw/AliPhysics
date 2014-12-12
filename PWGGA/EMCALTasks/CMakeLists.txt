@@ -116,5 +116,5 @@ install(TARGETS ${MODULE}
 
 install(FILES ${HDRS} DESTINATION include)
 
-install (FILES macros/AddTaskEMCALTriggerQA.C
-         DESTINATION PWGGA/EMCALTasks/macros/ )
+# Install the macros
+install(DIRECTORY macros DESTINATION PWGGA/EMCALTasks)

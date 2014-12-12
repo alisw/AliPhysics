@@ -110,7 +110,5 @@ install(TARGETS ${MODULE}
 
 install(FILES ${HDRS} DESTINATION include)
 
-install(FILES macros/QA/AddTaskCalorimeterQA.C 
-              macros/QA/AddTaskPi0IMGammaCorrQA.C
-        DESTINATION PWGGA/CaloTrackCorrelations/macros/QA/
-       )
+# Install the macros
+install(DIRECTORY macros DESTINATION PWGGA/CaloTrackCorrelations)
