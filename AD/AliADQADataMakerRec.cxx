@@ -359,8 +359,10 @@ void AliADQADataMakerRec::InitRaws()
 	}
   
   h2d = new TH2F("H2D_BBFlagPerChannel", "BB-Flags Versus Channel;Channel;BB Flags Count",kNChannelBins, kChannelMin, kChannelMax,22,-0.5,21.5);
-  //h2d->SetMinimum(0);
-  Add2RawsList(h2d,kBBFlagsPerChannel, !expert, image, !saveCorr); iHisto++;
+  Add2RawsList(h2d,kBBFlagsPerChannel, !expert, image, saveCorr); iHisto++;
+  
+  h2d = new TH2F("H2D_BGFlagPerChannel", "BG-Flags Versus Channel;Channel;BG Flags Count",kNChannelBins, kChannelMin, kChannelMax,22,-0.5,21.5);
+  Add2RawsList(h2d,kBGFlagsPerChannel, !expert, image, saveCorr); iHisto++;
   
   AliDebug(AliQAv1::GetQADebugLevel(), Form("%d Histograms has been added to the Raws List",iHisto));
   //
@@ -526,19 +528,10 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  }
 	}
       }
-      FillRawsData(kHPTDCTime,offlineCh,timeCorr[offlineCh]);
-      FillRawsData(kWidth,offlineCh,width[offlineCh]);
-      if(flagBB[offlineCh]) {
-	FillRawsData(kHPTDCTimeBB,offlineCh,timeCorr[offlineCh]);
-	FillRawsData(kWidthBB,offlineCh,width[offlineCh]);
-      }
-      if(flagBG[offlineCh]) {
-	FillRawsData(kHPTDCTimeBG,offlineCh,timeCorr[offlineCh]);
-	FillRawsData(kWidthBG,offlineCh,width[offlineCh]);
-      }
       
-       // Fill Flag and Charge Versus LHC-Clock histograms
+      // Fill Flag and Charge Versus LHC-Clock histograms
       Int_t nbbFlag = 0;
+      Int_t nbgFlag = 0;
       
       for(Int_t iEvent=0; iEvent<21; iEvent++){
 	charge = rawStream->GetPedestal(iChannel,iEvent);
@@ -546,6 +539,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	Bool_t bbFlag	  = rawStream->GetBBFlag(iChannel, iEvent);
 	Bool_t bgFlag	  = rawStream->GetBGFlag(iChannel,iEvent );
 	if(bbFlag) nbbFlag++;
+	if(bgFlag) nbgFlag++;
 	
 	FillRawsData((intgr == 0 ? kChargeVsClockInt0 : kChargeVsClockInt1 ), offlineCh,(float)iEvent-10,(float)charge);
 	FillRawsData(kBBFlagVsClock, offlineCh,(float)iEvent-10,(float)bbFlag);
@@ -553,6 +547,21 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	
       }
       FillRawsData(kBBFlagsPerChannel, offlineCh,nbbFlag);
+      FillRawsData(kBGFlagsPerChannel, offlineCh,nbgFlag);
+      
+      FillRawsData(kHPTDCTime,offlineCh,timeCorr[offlineCh]);
+      FillRawsData(kWidth,offlineCh,width[offlineCh]);
+      //if(flagBB[offlineCh]) {
+      if(nbbFlag > 0){
+	FillRawsData(kHPTDCTimeBB,offlineCh,timeCorr[offlineCh]);
+	FillRawsData(kWidthBB,offlineCh,width[offlineCh]);
+      }
+      //if(flagBG[offlineCh]) {
+      if(nbgFlag > 0){
+	FillRawsData(kHPTDCTimeBG,offlineCh,timeCorr[offlineCh]);
+	FillRawsData(kWidthBG,offlineCh,width[offlineCh]);
+      }
+      
 
     }// END of Loop over channels
     

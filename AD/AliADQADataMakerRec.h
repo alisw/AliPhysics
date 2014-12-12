@@ -30,7 +30,7 @@ public:
   enum HRawType_t {kPedestalInt0,kPedestalInt1,
   		   kChargeEoI,kChargeEoIInt0,kChargeEoIInt1,
 		   kWidth,kHPTDCTime,kWidthBB,kWidthBG,kHPTDCTimeBB,kHPTDCTimeBG,
-		   kChargeVsClockInt0,kChargeVsClockInt1,kBBFlagVsClock,kBGFlagVsClock,kBBFlagsPerChannel,
+		   kChargeVsClockInt0,kChargeVsClockInt1,kBBFlagVsClock,kBGFlagVsClock,kBBFlagsPerChannel,kBGFlagsPerChannel,
 		   kMultiADA,kMultiADC,kChargeADA,kChargeADC,kChargeAD, 
 		   kADATime,kADCTime,kDiffTime,kTimeADAADC,
 		   kNCoincADA,kNCoincADC,kPairDiffTime,kPairDiffCharge};
