@@ -41,12 +41,12 @@
   TProof::Open("");
   .L /u/miranov/macros/ProofEnableAliRoot.C
   ProofEnableAliRoot("/usr/local/grid/AliRoot/HEAD0108");
-  gProof->Exec("gSystem->Load(\"libANALYSIS.so\")",kTRUE);
-  gProof->Exec("gSystem->Load(\"libAOD.so\")",kTRUE);
-  gProof->Exec("gSystem->Load(\"libANALYSISalice.so\")",kTRUE);
-  gProof->Exec("gSystem->Load(\"libPWG0base.so\")",kTRUE);
-  gProof->Exec("gSystem->Load(\"libPWG0dep.so\")",kTRUE);
-  gProof->Exec("gSystem->Load(\"libPWGPP.so\")",kTRUE);
+  gProof->Exec("gSystem->Load(\"libANALYSIS\")",kTRUE);
+  gProof->Exec("gSystem->Load(\"libAOD\")",kTRUE);
+  gProof->Exec("gSystem->Load(\"libANALYSISalice\")",kTRUE);
+  gProof->Exec("gSystem->Load(\"libPWG0base\")",kTRUE);
+  gProof->Exec("gSystem->Load(\"libPWG0dep\")",kTRUE);
+  gProof->Exec("gSystem->Load(\"libPWGPP\")",kTRUE);
   
   TString path=gSystem->pwd();
   TString execCDB="gROOT->Macro(\"";
