@@ -894,9 +894,15 @@ void AliEbyENetChargeFluctuationTask::SetAnal(Int_t i){
     fIsRatio = 1; fIsSub = 1; fIsBS  = 1; fIsPer = 1;
     break;
   case 12:
-   fIsPhy   = 1; fIsEff = 1; fIsDca = 1; fIsQa  = 1; 
-   fIsRatio = 1; fIsSub = 1; fIsBS  = 1; fIsPer = 1;
-   break;
+    fIsPhy   = 1; fIsEff = 1; fIsDca = 1; fIsQa  = 1; 
+    fIsRatio = 1; fIsSub = 1; fIsBS  = 1; fIsPer = 1;
+    break;
+  case 13:
+    fIsDca  = 1;  fIsEff = 1;
+    break;
+  case 14:
+    fIsQa  = 1; fIsDca  = 1;  fIsEff = 1;
+    break;
   default:
     cerr<<"Error:  cannot fill histograms!"<<endl;
     fIsPhy   = 0; fIsEff = 0; fIsDca = 0; fIsQa  = 0; 
@@ -2053,9 +2059,9 @@ void AliEbyENetChargeFluctuationTask::CalculateCE(Int_t gPid) {
 
 void AliEbyENetChargeFluctuationTask::CreateDED() {
 
- Int_t    bhepmc[7] =  {fGNBinsCent, fGNBinsSign,   2,   fGNBinsRap, fGNBinsPhi, fGNBinsPt,800};
-  Double_t mnhepmc[7] = {fGRngCent[0],fGRngSign[0],-0.5, fGRngRap[0],fGRngPhi[0],fGRngPt[0],-4};  
-  Double_t mxhepmc[7] = {fGRngCent[1],fGRngSign[1], 1.5, fGRngRap[1],fGRngPhi[1], fGRngPt[1], 4.};  
+ Int_t    bhepmc[7] =  {fGNBinsCent, fGNBinsSign,   2,   fGNBinsRap, fGNBinsPhi, fGNBinsPt,200};
+  Double_t mnhepmc[7] = {fGRngCent[0],fGRngSign[0],-0.5, fGRngRap[0],fGRngPhi[0],fGRngPt[0], -5.};  
+  Double_t mxhepmc[7] = {fGRngCent[1],fGRngSign[1], 1.5, fGRngRap[1],fGRngPhi[1], fGRngPt[1], 5.};  
   TString titilemc        = "cent:sign:accepted:y:phi:pt:dcar";
 
   TString tiltlelaxmc[7]  = {"Centrality", "sign", "Is Accepted","#it{y}","#varphi (rad)","#it{p}_{T} (GeV/#it{c})", "DCAr"};
@@ -2085,9 +2091,9 @@ void AliEbyENetChargeFluctuationTask::CreateDED() {
 }
 void AliEbyENetChargeFluctuationTask::CreateDEM() {
 
-  Int_t    bhepmc[8]  = {fGNBinsCent, fGNBinsSign,  2,     3, fGNBinsRap, fGNBinsPhi,fGNBinsPt,800};
-  Double_t mnhepmc[8] = {fGRngCent[0],fGRngSign[0],-0.5, 0.5, fGRngRap[0],fGRngPhi[0],fGRngPt[0],-4};  
-  Double_t mxhepmc[8] = {fGRngCent[1],fGRngSign[1],1.5,  3.5, fGRngRap[1],fGRngPhi[1],fGRngPt[1], 4.};  
+  Int_t    bhepmc[8]  = {fGNBinsCent, fGNBinsSign,  2,     3, fGNBinsRap, fGNBinsPhi,fGNBinsPt,200};
+  Double_t mnhepmc[8] = {fGRngCent[0],fGRngSign[0],-0.5, 0.5, fGRngRap[0],fGRngPhi[0],fGRngPt[0],-5};  
+  Double_t mxhepmc[8] = {fGRngCent[1],fGRngSign[1],1.5,  3.5, fGRngRap[1],fGRngPhi[1],fGRngPt[1], 5.};  
   TString titilemc    = "cent:sign:cont:accepted:y:phi:pt:dcar";
   TString tiltlelaxmc[8]  = {"Centrality", "sign", "Is Accepted", "1 primary | 2 from WeakDecay | 3 p from Material",
 			     "#it{y}","#varphi (rad)","#it{p}_{T} (GeV/#it{c})", "DCAr"};
@@ -2106,6 +2112,10 @@ void AliEbyENetChargeFluctuationTask::CreateDEM() {
     if (i == 4) tiltlelaxmc[4] = "#eta";
     static_cast<THnSparseF*>(fDcaList->FindObject("hmNchDca"))->GetAxis(i)->SetTitle(tiltlelaxmc[i].Data());
   }
+
+
+
+
   /*
   Double_t *binsPt = 0;
   binsPt = CreateLogAxis(fGNBinsPt,fGRngPt[0],fGRngPt[1]);
@@ -2125,7 +2135,6 @@ void AliEbyENetChargeFluctuationTask::CalculateDED(Int_t gPid) {
 
     if (track->Charge() == 0) continue; // No place for you my friend
 
-    
     if(!AcceptTrack(track)) {fCurRecD[2] = 0.;}       // 2
     else fCurRecD[2] = 1.;   
     
