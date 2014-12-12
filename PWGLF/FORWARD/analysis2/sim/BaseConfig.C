@@ -549,7 +549,7 @@ struct VirtualTrain
       return (result >= 0);
     }
     // Check if the library is already loaded
-    if (strlen(gSystem->GetLibraries(Form("%s.so", module), "", kFALSE)) > 0) {
+    if (strlen(gSystem->GetLibraries(module, "", kFALSE)) > 0) {
       ::Info("LoadLibrary", "Module %s.so already loaded", module);
       gROOT->DecreaseDirLevel();      
       return kTRUE;

@@ -11,7 +11,7 @@ void SETUP() {
 Int_t CheckLoadLibrary(const char* library) {
   // checks if a library is already loaded, if not loads the library
 
-  if (strlen(gSystem->GetLibraries(Form("%s.so", library), "", kFALSE)) > 0)
+  if (strlen(gSystem->GetLibraries(library, "", kFALSE)) > 0)
     return 1;
   // Make sure current directory is in the load path so we load the right 
   // library in case the target library already exist on the system (ProofLite)

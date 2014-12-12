@@ -18,7 +18,7 @@ Int_t CheckLoadLibrary(const char* library) {
 
   // load library if not yet done
 
-  if (strlen(gSystem->GetLibraries(Form("%s.so", library), "", kFALSE)) > 0) return 1;  
+  if (strlen(gSystem->GetLibraries(library, "", kFALSE)) > 0) return 1;  
   return gSystem->Load(library);
 }
 //=============================================================================
