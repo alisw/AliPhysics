@@ -32,7 +32,7 @@ void run_all(int id=0, int end=50, int pro=0, int icut=0, int itrig=0){
   gSystem->Load("libMinuit");
 
 
-  gSystem->Load("libana_sgl.so");
+  gSystem->Load("libana_sgl");
   ana_sgl *ana=new ana_sgl();
 
   char outputname[100];

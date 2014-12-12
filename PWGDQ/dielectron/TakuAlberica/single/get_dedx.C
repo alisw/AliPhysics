@@ -58,9 +58,9 @@ void get_dedx(void){
   gROOT->LoadMacro("AliAnalysisTaskMultiDielectronNewTaku.cxx++");
   */
 
-  gSystem->Load("./AliDielectronHistosTaku_cxx.so");
-  gSystem->Load("./AliDielectronDebugTreeTaku_cxx.so");
-  gSystem->Load("./AliDielectronTaku_cxx.so");
+  gSystem->Load("./AliDielectronHistosTaku_cxx");
+  gSystem->Load("./AliDielectronDebugTreeTaku_cxx");
+  gSystem->Load("./AliDielectronTaku_cxx");
 
 
   float mom[5][200];

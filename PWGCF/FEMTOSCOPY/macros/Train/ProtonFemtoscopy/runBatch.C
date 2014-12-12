@@ -15,7 +15,7 @@ void runBatch() {
   // Use precompiled libraries for the analysis framework
   if (useParFiles)
     setupPar("STEERBase");
-  if (gSystem->Load("libSTEERBase.so")<0) {
+  if (gSystem->Load("libSTEERBase")<0) {
     cout << "Cannot load libSTEERBase.so . Exiting" << endl;
     exit(0);
   }
@@ -23,28 +23,28 @@ void runBatch() {
 
   if (useParFiles)
     setupPar("ESD");
-  if (gSystem->Load("libESD.so")<0) {
+  if (gSystem->Load("libESD")<0) {
     cout << "Cannot load libESD.so . Exiting" << endl;
     exit(0);
   }
 
   if (useParFiles)
     setupPar("AOD");
-  if (gSystem->Load("libAOD.so")<0) {
+  if (gSystem->Load("libAOD")<0) {
     cout << "Cannot load libAOD.so . Exiting" << endl;
     exit(0);
   }
 
   if (useParFiles)
     setupPar("ANALYSIS");
-  if (gSystem->Load("libANALYSIS.so")<0) {
+  if (gSystem->Load("libANALYSIS")<0) {
     cout << "Cannot load libANALYSIS.so . Exiting" << endl;
     exit(0);
   }
 
   if (useParFiles)
     setupPar("ANALYSISalice");
-  if (gSystem->Load("libANALYSISalice.so")<0) {
+  if (gSystem->Load("libANALYSISalice")<0) {
     cout << "Cannot load libANALYSISalice.so . Exiting" << endl;
     exit(0);
   }
@@ -64,13 +64,13 @@ void runBatch() {
 
   if (usePWG2ParFiles) {
     setupPar("PWG2AOD");
-    if (gSystem->Load("./PWG2AOD/libPWG2AOD.so")<0) {
+    if (gSystem->Load("./PWG2AOD/libPWG2AOD")<0) {
       cout << "Cannot load local libPWG2AOD.so . Exiting" << endl;
       exit(0);
     }
   }
   else {
-    if (gSystem->Load("libPWG2AOD.so")<0) {
+    if (gSystem->Load("libPWG2AOD")<0) {
       cout << "Cannot load libPWG2AOD.so . Exiting" << endl;
       exit(0);
     }
@@ -81,13 +81,13 @@ void runBatch() {
   //____________________________________________________//
   if (usePWG2ParFiles) {
     setupPar("PWG2femtoscopy");
-    if (gSystem->Load("./PWG2femtoscopy/libPWG2femtoscopy.so")<0) {
+    if (gSystem->Load("./PWG2femtoscopy/libPWG2femtoscopy")<0) {
       cout << "Cannot load local libPWG2femtoscopy.so . Exiting" << endl;
       exit(0);
     }
   }
   else {
-    if (gSystem->Load("libPWG2femtoscopy.so")<0) {
+    if (gSystem->Load("libPWG2femtoscopy")<0) {
       cout << "Cannot load libPWG2femtoscopy.so . Exiting" << endl;
       exit(0);
     }
@@ -98,13 +98,13 @@ void runBatch() {
   //____________________________________________________//
   if (usePWG2ParFiles) {
     setupPar("PWG2femtoscopyUser");
-    if (gSystem->Load("./PWG2femtoscopyUser/libPWG2femtoscopyUser.so")<0) {
+    if (gSystem->Load("./PWG2femtoscopyUser/libPWG2femtoscopyUser")<0) {
       cout << "Cannot load libPWG2femtoscopyUser.so . Exiting" << endl;
       exit(0);
     }
   }
   else {
-    if (gSystem->Load("libPWG2femtoscopyUser.so")<0) {
+    if (gSystem->Load("libPWG2femtoscopyUser")<0) {
       cout << "Cannot load libPWG2femtoscopyUser.so . Exiting" << endl;
       exit(0);
     }

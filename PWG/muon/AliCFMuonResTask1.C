@@ -299,7 +299,7 @@ void Load() {
   gSystem->Load("libANALYSISalice") ;
 
 //  gSystem->Load("libCORRFW") ;
-  gSystem->Load("$ALICE_ROOT/lib/tgt_linux/libCORRFW.so") ;
+  gSystem->Load("$ALICE_ROOT/lib/tgt_linux/libCORRFW") ;
 
   //compile online the task class
   gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include -I$ROOTSYS/include");

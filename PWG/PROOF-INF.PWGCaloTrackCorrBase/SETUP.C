@@ -4,7 +4,7 @@ void SETUP()
    // Load the ESD library
    //gSystem->Load("libPWGCaloTrackCorrBase");
    TString ocwd = gSystem->WorkingDirectory();
-   gSystem->Load(ocwd+"/libPWGCaloTrackCorrBase.so");
+   gSystem->Load(ocwd+"/libPWGCaloTrackCorrBase");
 
    // Set the Include paths
    gSystem->SetIncludePath("-I$ROOTSYS/include -IPWGCaloTrackCorrBase");

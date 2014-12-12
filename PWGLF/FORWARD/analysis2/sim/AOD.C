@@ -175,7 +175,7 @@ Bool_t LoadLibrary(const char *module)
   }
 
   ::Info("LoadLibrary", "Trying to load lib%s.so", module);
-  result = gSystem->Load(Form("lib%s.so", module));
+  result = gSystem->Load(Form("lib%s", module));
   if (result < 0)
     ::Error("AnalysisTrainNew.C::LoadLibrary", 
 	    "Could not load module %s", module);

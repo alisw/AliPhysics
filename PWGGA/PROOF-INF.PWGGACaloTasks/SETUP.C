@@ -4,7 +4,7 @@ void SETUP()
    // Load the ESD library
    //gSystem->Load("libPWGGACaloTasks");
    TString ocwd = gSystem->WorkingDirectory();
-   gSystem->Load(ocwd+"/libPWGGACaloTasks.so");
+   gSystem->Load(ocwd+"/libPWGGACaloTasks");
 
    // Set the Include paths
    gSystem->SetIncludePath("-I$ROOTSYS/include -IPWGGACaloTasks");

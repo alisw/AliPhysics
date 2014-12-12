@@ -28,7 +28,7 @@ void runLocalExample(const TString& dir="./")
 	// Load analysis framework
 	
 	gSystem->Load("libANALYSIS");
-	gSystem->Load("libANALYSISalice.so"); // alice specific, e.g. alien plugin
+	gSystem->Load("libANALYSISalice"); // alice specific, e.g. alien plugin
 	
 	// Load task
 	

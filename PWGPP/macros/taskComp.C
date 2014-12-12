@@ -5,7 +5,7 @@
 
   //1. Load libraries if needed:
   //
-  gSystem->Load("/usr/local/grid/XRootd/GSI/lib/libXrdClient.so");  
+  gSystem->Load("/usr/local/grid/XRootd/GSI/lib/libXrdClient");  
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libPWG0base");
