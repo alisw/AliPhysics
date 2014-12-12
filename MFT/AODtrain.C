@@ -393,7 +393,7 @@ Bool_t LoadLibrary(const char *module)
       return kTRUE;
    } 
    // Check if the library is already loaded
-   if (strlen(gSystem->GetLibraries(Form("%s.so", module), "", kFALSE)) > 0) return kTRUE;    
+   if (strlen(gSystem->GetLibraries(module, "", kFALSE)) > 0) return kTRUE;    
    result = gSystem->Load(Form("lib%s", module));
    if (result < 0) {
       ::Error("AnalysisTrainNew.C::LoadLibrary", "Could not load module %s", module);

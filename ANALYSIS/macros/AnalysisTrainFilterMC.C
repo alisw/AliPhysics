@@ -1196,7 +1196,7 @@ Bool_t LoadLibrary(const char *module, const char *mode, Bool_t rec=kFALSE)
       return kTRUE;
    } 
    // Check if the library is already loaded
-   if (strlen(gSystem->GetLibraries(Form("%s.so", module), "", kFALSE)) > 0)
+   if (strlen(gSystem->GetLibraries(module, "", kFALSE)) > 0)
       return kTRUE;    
    switch (imode) {
       case 0:
