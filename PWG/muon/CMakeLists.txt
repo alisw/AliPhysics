@@ -116,3 +116,6 @@ install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
+
+# Installing the macros
+install(DIRECTORY . DESTINATION PWG/muon FILES_MATCHING PATTERN "*.C")
