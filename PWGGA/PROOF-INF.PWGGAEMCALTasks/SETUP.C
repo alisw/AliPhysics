@@ -4,7 +4,7 @@ void SETUP()
 {
   // Load the library
   TString ocwd = gSystem->WorkingDirectory();
-  gSystem->Load(ocwd+"/libPWGGAEMCALTasks.so");
+  gSystem->Load(ocwd+"/libPWGGAEMCALTasks");
 
   // Set the Include paths
  gSystem->SetIncludePath("-I$ROOTSYS/include -IPWGEMCAL -IPWGGAEMCALTasks");

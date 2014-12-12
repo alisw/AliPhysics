@@ -19,10 +19,10 @@
 //
 // In compiled mode : 
 // Don't forget to load first the libraries
-// gSystem->Load("libMemStat.so")
-// gSystem->Load("libMemStatGui.so")
-// gSystem->Load("libANALYSIS.so")
-// gSystem->Load("libANALYSISalice.so")
+// gSystem->Load("libMemStat")
+// gSystem->Load("libMemStatGui")
+// gSystem->Load("libANALYSIS")
+// gSystem->Load("libANALYSISalice")
 // gSystem->Load("libPWGPP");
 //
 // Authors:

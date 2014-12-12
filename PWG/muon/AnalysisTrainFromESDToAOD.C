@@ -260,7 +260,7 @@ Bool_t LoadLibrary(const char *module, const char *mode, Bool_t rec=kFALSE)
    switch (imode) {
       case 0:
       case 2:
-            result = gSystem->Load(Form("lib%s.so", module));
+            result = gSystem->Load(Form("lib%s", module));
             if (rec) anaLibs += Form("lib%s.so ", module);
          break;
       case 1:

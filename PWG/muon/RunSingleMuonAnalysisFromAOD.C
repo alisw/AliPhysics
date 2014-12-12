@@ -45,7 +45,7 @@ void RunSingleMuonAnalysisFromAOD(Int_t mode=kMlocal, Char_t *inputPath=".", Cha
     gSystem->Load("libSTEERBase");
     gSystem->Load("libAOD");
     gSystem->Load("libESD");  
-    gSystem->Load("${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}/libPWGmuon.so");
+    gSystem->Load("${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}/libPWGmuon");
   }
   else {
     const Int_t nNeededPar = 6;

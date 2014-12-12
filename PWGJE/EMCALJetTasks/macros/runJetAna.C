@@ -196,7 +196,7 @@ void LoadLibs()
  
   // load fastjet libraries
   gSystem->Load("libJETAN");
-  gSystem->Load("/usr/lib64/libCGAL.so");
+  gSystem->Load("/usr/lib64/libCGAL");
   gSystem->Load("$FASTJET/lib/libfastjet");
   gSystem->Load("$FASTJET/lib/libsiscone");
   gSystem->Load("$FASTJET/lib/libSISConePlugin");

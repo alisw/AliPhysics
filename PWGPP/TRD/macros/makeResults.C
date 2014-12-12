@@ -42,8 +42,8 @@
 //
 // In compiled mode :
 // Don't forget to load first the libraries
-// gSystem->Load("libANALYSIS.so")
-// gSystem->Load("libANALYSISalice.so")
+// gSystem->Load("libANALYSIS")
+// gSystem->Load("libANALYSISalice")
 // gSystem->Load("libTender");
 // gSystem->Load("libPWGPP");
 // gSystem->Load("libCORRFW");

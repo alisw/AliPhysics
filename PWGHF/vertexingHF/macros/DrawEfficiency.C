@@ -38,7 +38,7 @@ void DrawEfficiency(const char* channel, Int_t selection = 0, Int_t ieff = 7){
 	gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include  -I$ROOTSYS/include");
 	gSystem->Load("libANALYSIS");
 	gSystem->Load("libANALYSISalice");
-	gSystem->Load("$ALICE_ROOT/CORRFW/libCORRFW.so") ;
+	gSystem->Load("$ALICE_ROOT/CORRFW/libCORRFW") ;
 	gSystem->Load("libPWGHFbase");
 	gSystem->Load("libPWGHFvertexingHF");
 		

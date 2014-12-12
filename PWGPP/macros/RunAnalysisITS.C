@@ -39,7 +39,7 @@ void RunAnalysisITS(TString pluginmode="",Int_t firstrun=177173,Int_t lastrun=17
   // Load analysis libraries
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
-  if(uselibPWGPP) {gSystem->Load("libTender.so");gSystem->Load("libPWGPP.so");}
+  if(uselibPWGPP) {gSystem->Load("libTender");gSystem->Load("libPWGPP");}
 
   // Create Alien plugin, if requested
   if(useAlienPlugin) {  

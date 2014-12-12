@@ -303,7 +303,7 @@ void Load() {
     gSystem->AddIncludePath("-I$ALICE_ROOT/JETAN -I$ALICE_ROOT/JETAN/fastjet");
 
     // attempt to load RooUnfold libraries, 
-    gSystem->Load("/home/rbertens/Documents/CERN/alice/BUILDS/ROOUNFOLD/RooUnfold-1.1.1/libRooUnfold.so");
+    gSystem->Load("/home/rbertens/Documents/CERN/alice/BUILDS/ROOUNFOLD/RooUnfold-1.1.1/libRooUnfold");
     gSystem->AddIncludePath("-I/home/rbertens/Documents/CERN/alice/BUILDS/ROOUNFOLD/RooUnfold-1.1.1/src/");
     // compile unfolding class (only if there are local changes or the .o is not found)
     gROOT->LoadMacro("$ALICE_ROOT/PWG/FLOW/Tasks/AliJetFlowTools.cxx+");

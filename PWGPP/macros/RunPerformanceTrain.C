@@ -62,7 +62,7 @@ void RunPerformanceTrain(Char_t *file="esd.root", Int_t runNumber = 2, const cha
   gSystem->Load("libPWG4PartCorrBase");
   gSystem->Load("libPWG4PartCorrDep");
 
-  gSystem->Load("libPWGmuon.so"); // The class is here
+  gSystem->Load("libPWGmuon"); // The class is here
 
   //
   // OCDB Configuration 
