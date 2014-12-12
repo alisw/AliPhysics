@@ -101,5 +101,5 @@ install(TARGETS ${MODULE}
 
 install(FILES ${HDRS} DESTINATION include)
 
-# Install macros
-install(FILES AddTaskUpcPsi2s.C DESTINATION PWGUD/UPC)
+# Installing the macros
+install(DIRECTORY . DESTINATION PWGUD/UPC FILES_MATCHING PATTERN "*.C")
