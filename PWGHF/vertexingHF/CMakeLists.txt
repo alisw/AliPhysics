@@ -141,3 +141,5 @@ install(FILES
 install(DIRECTORY
             macros
         DESTINATION PWGHF/vertexingHF/)
+
+install(DIRECTORY charmFlow DESTINATION PWGHF/vertexingHF)
