@@ -111,6 +111,9 @@
 #pragma link C++ class AliAnalysisTaskEmcalTriggerTreeWriter+;
 
 #ifdef HAVE_FASTJET
+#pragma link C++ class AliEmcalJetUtility+;
+#pragma link C++ class AliEmcalJetUtilityGenSubtractor+;
+#pragma link C++ class AliEmcalJetUtilityConstSubtractor+;
 #pragma link C++ class AliEmcalJetTask+;
 #pragma link C++ class AliEmcalJetFinder+;
 #pragma link C++ class AliJetEmbeddingFromAODTask+;

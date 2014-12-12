@@ -1,8 +1,6 @@
 #ifndef ALIEMCALPARTICLE_H
 #define ALIEMCALPARTICLE_H
 
-// $Id$
-
 #include <TLorentzVector.h>
 #include <TMath.h>
 #include <TObjArray.h>
@@ -68,6 +66,10 @@ class AliEmcalParticle: public AliVParticle {
   void              SetIdInCollection(Int_t id)          { fId = id                                                                      ; }
   void              SetMatchedObj(Int_t id, Double_t d)  { ResetMatchedObjects(); fMatchedIds[0] = id; fMatchedDist[0] = d; fNMatched = 1; }
   void              SetMatchedPtr(TObjArray *arr)        { fMatchedPtr = arr; }
+
+  void              SetPt(Double_t pt)           { fPt  = pt ; }
+  void              SetPhi(Double_t phi)         { fPhi = phi; }
+  void              SetEta(Double_t eta)         { fEta = eta; }
 
  protected:
   TLorentzVector   &GetLorentzVector(const Double_t *vertex = 0)  const;
