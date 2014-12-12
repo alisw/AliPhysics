@@ -161,7 +161,15 @@ bool AliEMCalPtTaskTrackSelectionESD::IsTrackAccepted(AliVTrack* const trk) {
    * @return: true if selected, false otherwise
    */
   AliESDtrack *esdt = dynamic_cast<AliESDtrack *>(trk);
-  if(!esdt) return kFALSE;
+  if(!esdt){
+    AliPicoTrack *picoTrack = dynamic_cast<AliPicoTrack *>(trk);
+    if(picoTrack)
+      esdt = dynamic_cast<AliESDtrack*>(picoTrack->GetTrack());
+    else{
+      AliError("Neither Pico nor ESD track\n");
+      return kFALSE;
+    }
+  }
   return fTrackCuts->AcceptTrack(esdt);
 }
 

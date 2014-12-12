@@ -25,6 +25,7 @@
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 
+#include "AliLog.h"
 #include "AliVCluster.h"
 #include "AliVEvent.h"
 
@@ -70,8 +71,8 @@ void AliEMCalTriggerClusterAnalysisComponent::CreateHistos() {
 
   // Create trigger definitions
   std::map<std::string, std::string> triggerCombinations;
-  const char *triggernames[12] = {"MinBias", "EMCJHigh", "EMCJLow", "EMCGHigh",
-      "EMCGLow", "NoEMCal", "EMCHighBoth", "EMCHighGammaOnly", "EMCHighJetOnly",
+  const char *triggernames[11] = {"MinBias", "EMCJHigh", "EMCJLow", "EMCGHigh",
+      "EMCGLow", "EMCHighBoth", "EMCHighGammaOnly", "EMCHighJetOnly",
       "EMCLowBoth", "EMCLowGammaOnly", "EMCLowJetOnly"};
   // Define names and titles for different triggers in the histogram container
   triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[0], "min. bias events"));
@@ -79,13 +80,12 @@ void AliEMCalTriggerClusterAnalysisComponent::CreateHistos() {
   triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[2], "jet-triggered events (low threshold)"));
   triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[3], "gamma-triggered events (high threshold)"));
   triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[4], "gamma-triggered events (low threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[5], "non-EMCal-triggered events"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[6], "jet and gamma triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[7], "exclusively gamma-triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[8], "exclusively jet-triggered events (high threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[9], "jet and gamma triggered events (low threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[10], "exclusively gamma-triggered events (low threshold)"));
-  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[11], "exclusively-triggered events (low threshold)"));
+  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[5], "jet and gamma triggered events (high threshold)"));
+  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[6], "exclusively gamma-triggered events (high threshold)"));
+  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[7], "exclusively jet-triggered events (high threshold)"));
+  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[8], "jet and gamma triggered events (low threshold)"));
+  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[9], "exclusively gamma-triggered events (low threshold)"));
+  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[10], "exclusively-triggered events (low threshold)"));
 
   // Create axis definitions
   const AliEMCalTriggerBinningDimension *ptbinning = fBinning->GetBinning("pt"),
@@ -124,6 +124,8 @@ void AliEMCalTriggerClusterAnalysisComponent::Process(const AliEMCalTriggerEvent
    */
 
   // First loop over uncalibrated clusters
+  AliDebug(1, Form("Number of calibrated clusters: %d", data->GetClusterContainer()->GetEntries()));
+
   AliVCluster *clust(NULL);
   AliVEvent *recEv = data->GetRecEvent();
   std::vector<std::string> triggerNames;
@@ -137,12 +139,14 @@ void AliEMCalTriggerClusterAnalysisComponent::Process(const AliEMCalTriggerEvent
   }
 
   // Loop also over calibrated clusters
+  if(!data->GetClusterContainer())
+    printf("Cluster container not found \n");
   TIter clusterIter(data->GetClusterContainer());
   while((clust = dynamic_cast<AliVCluster *>(clusterIter()))){
     if(!clust->IsEMCAL()) continue;
     if(!fEnergyRange.IsInRange(clust->E())) continue;
     for(std::vector<std::string>::iterator name = triggerNames.begin(); name != triggerNames.end(); ++name)
-      FillHistogram(Form("hClusterUncalibHist%s", name->c_str()), clust, recEv, fTriggerDecision->IsMinBias());
+      FillHistogram(Form("hClusterCalibHist%s", name->c_str()), clust, recEv, fTriggerDecision->IsMinBias());
   }
 }
 
