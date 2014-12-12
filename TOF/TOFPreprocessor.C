@@ -13,7 +13,7 @@ $Id$
 extern TBenchmark *gBenchmark;
 void TOFPreprocessor(Char_t * RunType="PHYSICS")
 {
-  gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
+  gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle");
 
   AliLog::SetClassDebugLevel("AliTOFPreprocessor",2);
   // initialize location of CDB

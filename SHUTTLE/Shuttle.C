@@ -9,7 +9,7 @@ Bool_t Shuttle(const char* param = "listen", const char* dets=0) {
 	gSystem->Load("libMonaLisa");
 	gSystem->Load("libSHUTTLE");
 	gSystem->Load("libThread");
-//	gSystem->Load("$ALICE_ROOT/SHUTTLE/test/libTest.so");
+//	gSystem->Load("$ALICE_ROOT/SHUTTLE/test/libTest");
 
 	AliLog::SetGlobalDebugLevel(2);
 	

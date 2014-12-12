@@ -29,7 +29,7 @@
  * the following command can be executed in an alieve session to display both
  * MUON and dHLT data:
  * \code
- *   > gSystem->Load("libAliHLTMUON.so");
+ *   > gSystem->Load("libAliHLTMUON");
  *   > .L $ALICE_ROOT/EVE/macros/alieve_init.C
  *   > .L $ALICE_ROOT/EVE/alice-macros/event_goto.C
  *   > .L $ALICE_ROOT/EVE/alice-macros/MUON_displayData.C

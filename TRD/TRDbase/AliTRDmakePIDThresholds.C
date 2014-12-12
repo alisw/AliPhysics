@@ -1,7 +1,7 @@
 //_______________________________________________________
 void AliTRDmakePIDThresholds(TString filename){
-  if(gSystem->Load("libANALYSIS.so")<0) return;
-  if(gSystem->Load("libTRDqaRec.so")<0) return;
+  if(gSystem->Load("libANALYSIS")<0) return;
+  if(gSystem->Load("libTRDqaRec")<0) return;
 
   const TString histnames[4] = {"fHistThreshLQ", 
                                 "fHistThreshNN", 

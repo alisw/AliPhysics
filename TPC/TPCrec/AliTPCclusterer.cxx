@@ -1408,7 +1408,7 @@ Int_t AliTPCclusterer::ReadHLTClusters()
   ROOT::NewFunc_t pNewFunc=NULL;
   do {
     pCl=TClass::GetClass("AliHLTTPCClusterAccessHLTOUT");
-  } while (!pCl && gSystem->Load("libAliHLTTPC.so")==0);
+  } while (!pCl && gSystem->Load("libAliHLTTPC")==0);
   if (!pCl || (pNewFunc=pCl->GetNew())==NULL) {
     AliError("can not load class description of AliHLTTPCClusterAccessHLTOUT, aborting ...");
     return -1;

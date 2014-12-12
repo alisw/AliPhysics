@@ -54,7 +54,7 @@ void init()
 
   // Load libraries not linked with aliroot
   //
-  gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
+  gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle");
   gSystem->Load("libMUONshuttle");
   gSystem->Load("libMUONevaluation");
   gSystem->Load("liblhapdf");

@@ -77,7 +77,7 @@ int testAliHLTEsdManager()
 
   int iResult=0;
 #ifdef __CINT__
-  if (gSystem->Load("libHLTrec.so")<0) {
+  if (gSystem->Load("libHLTrec")<0) {
     cerr << "error: error loading libHLTrec.so library" << endl;
     return -1;
   }

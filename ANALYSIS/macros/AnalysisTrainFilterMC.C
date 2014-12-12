@@ -1205,7 +1205,7 @@ Bool_t LoadLibrary(const char *module, const char *mode, Bool_t rec=kFALSE)
             result = SetupPar(module);
             if (rec) anaPars += Form("%s.par ", module);
          } else {
-            result = gSystem->Load(Form("lib%s.so", module));
+            result = gSystem->Load(Form("lib%s", module));
             if (rec) anaLibs += Form("lib%s.so ", module);
          }   
          break;

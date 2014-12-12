@@ -55,10 +55,10 @@
   gSystem->Setenv("PYTHIA8DATA", gSystem->ExpandPathName("$ALICE_ROOT/PYTHIA8/pythia8175/xmldoc"));
 
  //----- load libraries
-  gSystem->Load("libHepMC.so");
-  gSystem->Load("libTauola.so");
-  gSystem->Load("libpythia8.so");
-  gSystem->Load("libPhotos.so");
+  gSystem->Load("libHepMC");
+  gSystem->Load("libTauola");
+  gSystem->Load("libpythia8");
+  gSystem->Load("libPhotos");
   gSystem->Load("libEvtGen");
   gSystem->Load("libEvtGenExternal");
   gSystem->Load("libTEvtGen");

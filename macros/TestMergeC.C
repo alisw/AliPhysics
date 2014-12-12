@@ -17,7 +17,7 @@ TestMergeC(Int_t nEvents = 2, Bool_t flagSim = kFALSE,
 	   Bool_t flagCmpMerged = kFALSE) {
 
   gInterpreter->ProcessLine(".L $(ALICE_ROOT)/STEER/AliMergeSteer.C++");
-//  gSystem->Load("$(ALICE_ROOT)/STEER/AliMergeSteer_C.so");
+//  gSystem->Load("$(ALICE_ROOT)/STEER/AliMergeSteer_C");
 
   AliMergeSteer* ms = new AliMergeSteer();
 

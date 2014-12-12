@@ -9,7 +9,7 @@
   gSystem->Load("libXrdClient");
   gSystem->Load("libNetx");
   TGrid::Connect("alien://",0,0,"t");
-  gSystem->Load("$ROOTSYS/lib/libXrdClient.so");
+  gSystem->Load("$ROOTSYS/lib/libXrdClient");
   //
   // 1. Make list of the files 
   //

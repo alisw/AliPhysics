@@ -20,7 +20,7 @@ void generatePIDDBLQ(const char *file = "TRD.CalibPIDrefMakerLQ.root")
   AliCDBStorage *gStorLoc = man->GetStorage("local://$ALICE_ROOT/OCDB");
   if (!gStorLoc) return;
 
-  if(gSystem->Load("libSTAT.so")<0) return;
+  if(gSystem->Load("libSTAT")<0) return;
   AliTRDCalPID *pid = new AliTRDCalPIDLQ("pidLQ", "LQ TRD PID object");    
   if(!pid->LoadReferences(file)) return;
   AliCDBMetaData *md= new AliCDBMetaData();

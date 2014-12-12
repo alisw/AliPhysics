@@ -44,9 +44,9 @@ void loadlibs(const char *dir=".")
 
   //gSystem->Exec(Form("cd %s/code; make",dir));
 
-  // gSystem->Load(Form("%s/code/libGEMEvent.so",dir));
+  // gSystem->Load(Form("%s/code/libGEMEvent",dir));
   //if (!gSystem->AccessPathName(Form("%s/code/libGEMtest.so",dir))){
-  //   gSystem->Load(Form("%s/code/libGEMtest.so",dir));
+  //   gSystem->Load(Form("%s/code/libGEMtest",dir));
   // }
   
 //   gROOT->LoadMacro(Form("%s/code/RawReader/AliRawReaderGEM.cxx+g",dir));

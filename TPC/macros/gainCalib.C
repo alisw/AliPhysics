@@ -4,11 +4,11 @@
  Supposing the 
 
 
- gSystem->Load("libSTAT.so")
+ gSystem->Load("libSTAT")
  .x ~/rootlogon.C
  .L $ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+
  AliXRDPROOFtoolkit tool;
- //gSystem->Load("/usr/local/grid/XRootd/GSI/lib/libXrdClient.so");
+ //gSystem->Load("/usr/local/grid/XRootd/GSI/lib/libXrdClient");
  //TProof * proof = TProof::Open("miranov@lxgrid2.gsi.de");
 
 */

@@ -3,7 +3,7 @@ void SETUP()
 
    // Load library
    TString ocwd = gSystem->WorkingDirectory();
-   gSystem->Load(ocwd+"/libEMCALsim.so");
+   gSystem->Load(ocwd+"/libEMCALsim");
 
    // Set the Include paths
 //   gSystem->SetIncludePath("-I$ROOTSYS/include -IEMCAL");

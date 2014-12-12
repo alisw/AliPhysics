@@ -2,8 +2,8 @@ void readJets( Char_t* fileName = "./analysis/EOR_analyze_100000_kPythia6Jets104
 
   if ( getenv("FASTJET") ) {
     gSystem->Load("libCGAL");
-    gSystem->Load("${FASTJET}/lib/libfastjet.so");
-    gSystem->Load("${FASTJET}/lib/libSISConePlugin.so");
+    gSystem->Load("${FASTJET}/lib/libfastjet");
+    gSystem->Load("${FASTJET}/lib/libSISConePlugin");
   }
 
   gSystem->Load("libTree");

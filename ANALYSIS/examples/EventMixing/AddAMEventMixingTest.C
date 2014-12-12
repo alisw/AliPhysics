@@ -17,7 +17,7 @@ Bool_t AddAMEventMixingTest(TString analysisSource = "proof", TString analysisMo
 
    TString myAdditionalLibs;
    if (useEventMixingPar) { AliAnalysisAlien::SetupPar("EventMixing"); myAdditionalLibs += " EventMixing.par"; }
-   else { gSystem->Load("libEventMixing.so"); myAdditionalLibs += " libEventMixing.so"; }
+   else { gSystem->Load("libEventMixing"); myAdditionalLibs += " libEventMixing"; }
    
    gROOT->LoadMacro("AliAnalysisTaskEx02.cxx++g");
    analysisPlugin->SetAnalysisSource("AliAnalysisTaskEx02.cxx+");

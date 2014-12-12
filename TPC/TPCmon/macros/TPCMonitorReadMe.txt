@@ -7,7 +7,7 @@ Start of the program:
 2. If monitoring library is not linked to aliroot 
    
        - Load monitoring library from $ALICE_ROOT/lib directory
-         gSystem->Load("./lib/tgt_linux/libTPCmon.so")
+         gSystem->Load("./lib/tgt_linux/libTPCmon")
 
    Exectute TPCMonitor macro
    .x ${ALICE_ROOT}/Monitor/macros/TPCMonitor.C   	 
