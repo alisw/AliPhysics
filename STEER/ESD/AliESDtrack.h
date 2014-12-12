@@ -467,7 +467,10 @@ public:
   //--to be used in online calibration/QA
   //--should also be implemented in ESD so it works offline as well
   //-----------
-  virtual Int_t GetTrackParam         ( AliExternalTrackParam &p ) const {p=*this; return 0;}
+  virtual Int_t GetTrackParam         ( AliExternalTrackParam &p ) const {
+      p=*(AliExternalTrackParam*)this;
+      return 0;}
+
   virtual Int_t GetTrackParamRefitted ( AliExternalTrackParam & ) const {return 0;}
   virtual Int_t GetTrackParamITSOut   ( AliExternalTrackParam & ) const {return 0;}
 
