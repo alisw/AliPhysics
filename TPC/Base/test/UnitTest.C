@@ -5,6 +5,8 @@
    
   .L $ALICE_ROOT/TPC/Base/test/UnitTest.C+ 
   UnitTestAliTPCCalPadTree();
+  TestCorrection_AliTPCExBTwistAddCorrectionCompact();
+  TestCorrection_AliTPCFCVoltError3DAddCorrectionCompact()
 
 */
 
@@ -20,11 +22,17 @@
 #include "AliTPCCalPad.h"
 #include "AliTPCCalibViewer.h"
 #include "AliTPCcalibDButil.h"
+#include "AliTPCCorrection.h"
+#include "AliTPCComposedCorrection.h"
+#include "AliTPCExBTwist.h"
+#include "AliTPCFCVoltError3D.h"
+//#include "AliTPCROCVoltError3D.h"
+//#include "AliTPCBoundaryVoltError.h"
 
 //
 // PARAMETERS to set from outside:
 //
-TString baseDir="/hera/alice/wiechula/calib/guiTrees";
+TString baseDir="/hera/alice/wiechula/calib/guiTrees";  // TO  FIX specification of inout data
 //
 //
 
@@ -39,14 +47,14 @@ void  UnitTestAliTPCCalPadTree(){
   TObjArray *fArray = new TObjArray(100);
   TTree * treePad=AliTPCcalibDButil::ConnectGainTrees(baseDir);
   for (Int_t i=0; i<5; i+=2){
-    AliTPCCalPad * padLx = AliTPCCalPad::MakePadFromTree(treePad,"lx.fElements","Lx");
-    AliTPCCalPad * padLy = AliTPCCalPad::MakePadFromTree(treePad,"ly.fElements","Ly");
-    AliTPCCalPad * padLLx = AliTPCCalPad::MakePadFromTree(treePad,"lx.fElements","LLx");
-    AliTPCCalPad * padLLy = AliTPCCalPad::MakePadFromTree(treePad,"ly.fElements","LLy");
-    AliTPCCalPad * padMax = AliTPCCalPad::MakePadFromTree(treePad,"QA.2010.LHC10d.MaxCharge.fElements","QMax");
-    AliTPCCalPad * padMean = AliTPCCalPad::MakePadFromTree(treePad,"QA.2010.LHC10d.MeanCharge.fElements","QTot");
-    AliTPCCalPad * padMaxL = AliTPCCalPad::MakePadFromTree(treePad,"QA.2010.LHC10d.MaxCharge.fElements","QMax");
-    AliTPCCalPad * padMeanL = AliTPCCalPad::MakePadFromTree(treePad,"QA.2010.LHC10d.MeanCharge.fElements","QTot");
+    AliTPCCalPad * padLx = AliTPCCalPad::MakePadFromTree(treePad,"lx.fElements","Lx",kTRUE);
+    AliTPCCalPad * padLy = AliTPCCalPad::MakePadFromTree(treePad,"ly.fElements","Ly",kTRUE);
+    AliTPCCalPad * padLLx = AliTPCCalPad::MakePadFromTree(treePad,"lx.fElements","LLx",kTRUE);
+    AliTPCCalPad * padLLy = AliTPCCalPad::MakePadFromTree(treePad,"ly.fElements","LLy",kTRUE);
+    AliTPCCalPad * padMax = AliTPCCalPad::MakePadFromTree(treePad,"QA.2010.LHC10d.MaxCharge.fElements","QMax",kTRUE);
+    AliTPCCalPad * padMean = AliTPCCalPad::MakePadFromTree(treePad,"QA.2010.LHC10d.MeanCharge.fElements","QTot",kTRUE);
+    AliTPCCalPad * padMaxL = AliTPCCalPad::MakePadFromTree(treePad,"QA.2010.LHC10d.MaxCharge.fElements","QMax",kTRUE);
+    AliTPCCalPad * padMeanL = AliTPCCalPad::MakePadFromTree(treePad,"QA.2010.LHC10d.MeanCharge.fElements","QTot",kTRUE);
     if (i>0) {
       padLx->MedianFilter(i,2*i);
       padLy->MedianFilter(i,2*i);
@@ -91,4 +99,130 @@ void  UnitTestAliTPCCalPadTree(){
   printf("IsOut=%d\t%d\n",isOutL0,isOutL1);
   if ((isOutL0+isOutL1)==0) ::Info("UnitTestAliTPCCalPadTree","LTMTest OK");
   if (isOutL0||isOutL1) ::Fatal("UnitTestAliTPCCalPadTree","LTMTest FAILED");
+}
+
+
+Bool_t  TestCorrection_AliTPCExBTwistAddCorrectionCompact(){
+  //
+  // 
+  //#include "AliTPCFCVoltError3D.h"
+  //#include "AliTPCROCVoltError3D.h"
+  //#include "AliTPCBoundaryVoltError.h"
+  // 1.) Test ExB twist AddCorrectionCompact
+  //
+  // 1.) Test ExB twist AddCorrectionCompact
+  //
+  Bool_t isOKTwist[10]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
+  AliTPCComposedCorrection *compCorrTwist = new AliTPCComposedCorrection();
+  AliTPCExBTwist  *twistX    = new  AliTPCExBTwist;
+  AliTPCExBTwist  *twistY    = new  AliTPCExBTwist;
+  twistX->SetXTwist(0.001);  // 1 mrad twist in x
+  twistY->SetYTwist(0.001);  // 1 mrad twist in x
+  isOKTwist[0]&=compCorrTwist->AddCorrectionCompact(twistX,1);
+  isOKTwist[0]&=compCorrTwist->AddCorrectionCompact(twistY,1);
+  isOKTwist[0]&=compCorrTwist->AddCorrectionCompact(twistY,-1);
+  isOKTwist[0]&=compCorrTwist->AddCorrectionCompact(twistX,-1);
+  isOKTwist[1]=compCorrTwist->GetCorrections()->GetEntries()==1;
+  AliTPCExBTwist  *twistRes=0;
+  if (isOKTwist[1]==kFALSE){
+    isOKTwist[2]=kFALSE;
+    isOKTwist[3]=kFALSE;
+    isOKTwist[4]=kFALSE;
+  }else{
+    twistRes=  dynamic_cast<AliTPCExBTwist *>(compCorrTwist->GetSubCorrection(0));
+    if (twistRes==NULL){
+      isOKTwist[2]=kFALSE;
+      isOKTwist[3]=kFALSE;
+      isOKTwist[4]=kFALSE;
+    }else{
+      isOKTwist[3] &= (twistRes->GetXTwist()==0);
+      isOKTwist[4] &= (twistRes->GetYTwist()==0);
+    }
+  }
+  Bool_t res=kTRUE;
+  for (Int_t i=0; i<5; i++) res&=isOKTwist[i];
+  {
+    if (isOKTwist[0]==kFALSE){
+      ::Error("TestCorrection_AddCorrectionCompact","AliTPCExBTwist -ADD FAILED");
+    }else{
+      ::Info("TestCorrection_AddCorrectionCompact","AliTPCExBTwist -ADD OK");
+    }
+    if (isOKTwist[1]==kFALSE){
+      ::Error("TestCorrection_AddCorrectionCompact","AliTPCExBTwist - wrong entries  FAILED");
+    }else{
+      ::Info("TestCorrection_AddCorrectionCompact","AliTPCExBTwist - entries  OK");
+    }
+    if (isOKTwist[2]==kFALSE || isOKTwist[3]==kFALSE ||isOKTwist[4]==kFALSE ){
+      ::Error("TestCorrection_AddCorrectionCompact","AliTPCExBTwist - inconsitent entries  FAILED");    
+    }else{
+      ::Info("TestCorrection_AddCorrectionCompact","AliTPCExBTwist - consistent entries  OK");    
+    }
+  }    
+  return res;
+} 
+
+
+Bool_t  TestCorrection_AliTPCFCVoltError3DAddCorrectionCompact(){
+  const Float_t kEpsilon=0.000001;
+  //
+  // 1.) Test ExB  AddCorrectionCompact
+  //
+  Bool_t isOK[10]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
+  AliTPCComposedCorrection *compCorrComp = new AliTPCComposedCorrection();
+  AliTPCFCVoltError3D  *corr0    = new  AliTPCFCVoltError3D;
+  AliTPCFCVoltError3D  *corr1    = new  AliTPCFCVoltError3D;
+  for (Int_t isec=0; isec<36; isec++){
+    corr0->SetRodVoltShiftA(isec,TMath::Cos(TMath::Pi()*isec/36),kFALSE);
+    corr0->SetRodVoltShiftC(isec,TMath::Cos(TMath::Pi()*isec/36),kFALSE);
+    corr1->SetRodVoltShiftA(isec,TMath::Sin(TMath::Pi()*isec/36),kFALSE);
+    corr1->SetRodVoltShiftC(isec,TMath::Sin(TMath::Pi()*isec/36),kFALSE);
+    corr1->SetCopperRodShiftA(isec,TMath::Sin(TMath::Pi()*isec/36),kFALSE);
+    corr1->SetCopperRodShiftC(isec,TMath::Sin(TMath::Pi()*isec/36),kFALSE);
+  }
+  //
+  isOK[0]&=compCorrComp->AddCorrectionCompact(corr0,1);
+  isOK[0]&=compCorrComp->AddCorrectionCompact(corr1,1);
+  isOK[0]&=compCorrComp->AddCorrectionCompact(corr1,-1);
+  isOK[0]&=compCorrComp->AddCorrectionCompact(corr0,-1);
+  isOK[1]=compCorrComp->GetCorrections()->GetEntries()==1;
+  AliTPCFCVoltError3D  *corrRes=0;
+  if (isOK[1]==kFALSE){
+    isOK[2]=kFALSE;
+    isOK[3]=kFALSE;
+    isOK[4]=kFALSE;
+  }else{
+    corrRes=  dynamic_cast<AliTPCFCVoltError3D *>(compCorrComp->GetSubCorrection(0));
+    if (corrRes==NULL){
+      isOK[2]=kFALSE;
+      isOK[3]=kFALSE;
+      isOK[4]=kFALSE;
+    }else{
+      for (Int_t isec=0; isec<36; isec++){
+	isOK[3] &=( TMath::Abs(corrRes->GetRodVoltShiftA(isec))<kEpsilon);
+	isOK[4] &=( TMath::Abs(corrRes->GetRodVoltShiftC(isec))<kEpsilon);
+	isOK[5] &=( TMath::Abs(corrRes->GetCopperRodShiftA(isec))<kEpsilon);
+	isOK[6] &=( TMath::Abs(corrRes->GetCopperRodShiftC(isec))<kEpsilon);
+      }
+    }
+  }
+  Bool_t res=kTRUE;
+  for (Int_t i=0; i<5; i++) res&=isOK[i];
+  {
+    if (isOK[0]==kFALSE){
+      ::Error("TestCorrection_AddCorrectionCompact","AliTPCFCVoltError3D -ADD FAILED");
+    }else{
+      ::Info("TestCorrection_AddCorrectionCompact","AliTPCFCVoltError3D -ADD OK");
+    }
+    if (isOK[1]==kFALSE){
+      ::Error("TestCorrection_AddCorrectionCompact","AliTPCFCVoltError3D - wrong entries  FAILED");
+    }else{
+      ::Info("TestCorrection_AddCorrectionCompact","AliTPCFCVoltError3D - entries  OK");
+    }
+    if (isOK[2]==kFALSE || isOK[3]==kFALSE ||isOK[4]==kFALSE ){
+      ::Error("TestCorrection_AddCorrectionCompact","AliTPCFCVoltError3D - inconsitent entries  FAILED");    
+    }else{
+      ::Info("TestCorrection_AddCorrectionCompact","AliTPCFCVoltError3D - consistent entries  OK");    
+    }
+  }    
+  return res;
 }

@@ -16,7 +16,7 @@ class AliTPCFCVoltError3D : public AliTPCCorrection {
 public:
   AliTPCFCVoltError3D();
   virtual ~AliTPCFCVoltError3D();
-
+  virtual Bool_t AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight);
   // initialization and update functions
   virtual void Init();
   virtual void Update(const TTimeStamp &timeStamp);

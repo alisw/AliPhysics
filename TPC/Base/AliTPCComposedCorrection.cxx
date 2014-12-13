@@ -109,6 +109,48 @@ AliTPCComposedCorrection::~AliTPCComposedCorrection() {
   if (fWeights) delete fWeights;
 }
 
+
+Bool_t AliTPCComposedCorrection::AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight){
+  //
+  // Add correction  - better name needed (left/right) - for the moment I assumme they commute
+  // Why not to just use array of corrections - CPU consideration
+  // Assumptions:
+  //  - origin of distortion/correction are additive
+  //  - corrections/distortion are small   and they commute
+  //  - only correction ot the same type supported 
+  const Int_t knCorr=100;
+  if (corr==NULL) {
+    AliError("Zerro pointer - correction");
+    return kFALSE;
+  }
+  if (!fCorrections) fCorrections= new TObjArray(knCorr);
+  // 1.) Case of  Composed correction
+  AliTPCComposedCorrection * corrC = dynamic_cast<AliTPCComposedCorrection *>(corr);
+  if (corrC){
+    Int_t ncorrs= corrC->fCorrections->GetEntries();
+    Bool_t isOK=kTRUE;
+    for (Int_t icorr=0; icorr<ncorrs; icorr++){
+      isOK&=AddCorrectionCompact(corrC->GetSubCorrection(icorr),weight*(*((corrC->fWeights)))[icorr]);
+    }
+    return isOK;
+  }
+  // 2.) Find subcorrection of the same type
+  AliTPCCorrection * toAdd=0;
+  Int_t ncorr=fCorrections->GetEntries();
+  for (Int_t icorr=0; icorr<ncorr; icorr++){
+    if (GetSubCorrection(icorr)==NULL)  continue;
+    if (GetSubCorrection(icorr)->IsA()==corr->IsA())  toAdd=GetSubCorrection(icorr);
+  }
+  // 3.) create of givent type  if does not exist 
+  if (toAdd==NULL){
+    toAdd= (AliTPCCorrection*)((corr->IsA())->New());
+    fCorrections->Add(toAdd);
+  }
+  // 4.) add to object of given type 
+  return toAdd->AddCorrectionCompact(corr, weight);
+}
+
+
 AliTPCCorrection * AliTPCComposedCorrection::GetSubCorrection(Int_t ipos){
   //
   //

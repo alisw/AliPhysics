@@ -176,6 +176,21 @@ AliTPCCorrection::~AliTPCCorrection() {
   //
 }
 
+Bool_t AliTPCCorrection::AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight){
+  //
+  // Add correction  and make them compact
+  // Assumptions:
+  //  - origin of distortion/correction are additive
+  //  - only correction ot the same type supported ()
+  if (corr==NULL) {
+    AliError("Zerro pointer - correction");
+    return kFALSE;
+  }  
+  AliError(TString::Format("Correction %s not implementend",IsA()->GetName()).Data());
+  return kFALSE;
+}
+
+
 void AliTPCCorrection::CorrectPoint(Float_t x[], Short_t roc) {
   //
   // Corrects the initial coordinates x (cartesian coordinates)

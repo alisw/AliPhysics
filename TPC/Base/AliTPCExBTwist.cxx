@@ -42,6 +42,23 @@ AliTPCExBTwist::~AliTPCExBTwist() {
   //
 }
 
+Bool_t AliTPCExBTwist::AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight){
+  //
+  // Add correction  and make them compact
+  // Assumptions:
+  //  - origin of distortion/correction are additive
+  //  - only correction ot the same type supported ()
+  if (corr==NULL) {
+    AliError("Zerro pointer - correction");
+    return kFALSE;
+  }  
+  AliTPCExBTwist * corrC = dynamic_cast< AliTPCExBTwist*>(corr);
+  if (corrC == NULL) return kFALSE;
+  fXTwist+=weight*corrC->fXTwist;        // Twist of E to B field in X-Z [rad]
+  fYTwist+=weight*corrC->fYTwist;        // Twist of E to B field in Y-Z [rad]
+  return kTRUE;
+}
+
 
 
 void AliTPCExBTwist::Init() {

@@ -30,7 +30,7 @@ public:
   AliTPCCorrection();
   AliTPCCorrection(const char *name,const char *title);
   virtual ~AliTPCCorrection();
-  
+  virtual Bool_t AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight);
 
   // functions to correct a space point
           void CorrectPoint (      Float_t x[], Short_t roc);

@@ -188,6 +188,36 @@ AliTPCFCVoltError3D::~AliTPCFCVoltError3D() {
   }
 }
 
+
+Bool_t AliTPCFCVoltError3D::AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight){
+  //
+  // Add correction  and make them compact
+  // Assumptions:
+  //  - origin of distortion/correction are additive
+  //  - only correction ot the same type supported ()
+  if (corr==NULL) {
+    AliError("Zerro pointer - correction");
+    return kFALSE;
+  }  
+  AliTPCFCVoltError3D * corrC = dynamic_cast<AliTPCFCVoltError3D *>(corr);
+  if (corrC == NULL) return kFALSE;
+  //
+  for (Int_t isec=0; isec<36; isec++){
+    fRodVoltShiftA[isec]+= weight*corrC->fRodVoltShiftA[isec];      // Rod (&strips) shift in Volt (40V~1mm) 
+    fRodVoltShiftC[isec]+=weight*corrC->fRodVoltShiftC[isec];      // Rod (&strips) shift in Volt (40V~1mm) 
+    fCopperRodShiftA[isec]+=weight*corrC->fCopperRodShiftA[isec];    // only Rod shift 
+    fCopperRodShiftC[isec]+=weight*corrC->fCopperRodShiftC[isec];    // only Rod shift 
+  }
+  for (Int_t isec=0; isec<2; isec++){  
+    fRotatedClipVoltA[isec]+= weight*corrC->fRotatedClipVoltA[isec];    // rotated clips at HV rod
+    fRotatedClipVoltC[isec]+= weight*corrC-> fRotatedClipVoltC[isec];    // rotated clips at HV rod
+  }
+
+  return kTRUE;
+}
+
+
+
 void AliTPCFCVoltError3D::Init() {
   //
   // Initialization funtion

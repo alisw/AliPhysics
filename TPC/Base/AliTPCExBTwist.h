@@ -35,6 +35,7 @@
 //   <p>
 // Date: 27/04/2010  <br>
 // Authors: Jim Thomas, Magnus Mager, Stefan Rossegger 
+// Support since 2010: mrain.ivanov@cern.ch
 // End_Html 
 // _________________________________________________________________
 
@@ -44,7 +45,7 @@ class AliTPCExBTwist : public AliTPCCorrection {
 public:
   AliTPCExBTwist();
   virtual ~AliTPCExBTwist();
-
+  virtual Bool_t AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight);
   // initialization and update functions
   virtual void Init();
   virtual void Update(const TTimeStamp &timeStamp);

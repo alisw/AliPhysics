@@ -39,7 +39,7 @@ public:
   AliTPCComposedCorrection();
   AliTPCComposedCorrection(TCollection *corrections,CompositionType mode);
   virtual ~AliTPCComposedCorrection();
-
+  virtual Bool_t AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight);
   void SetOmegaTauT1T2(Float_t omegaTau,Float_t t1,Float_t t2);
 
   TCollection* GetCorrections() const {return fCorrections;}
