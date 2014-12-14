@@ -20,7 +20,7 @@
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //            Version 1:  PbPb Added with AliVTrack (30/11/2014)           //
 //            Version 2:  pp Added with AliVTrack   (1/12/2014) - fixme    //            
-//            Version 3:  pp Added with AliVTrack   (2/12/2014) - fixme    //    
+//            Version 3:  pA Added with AliVTrack   (2/12/2014) - fixme    //    
 //=========================================================================//
 
 #include "TChain.h"
@@ -30,7 +30,7 @@
 #include "TH1D.h"
 #include "TH2F.h"
 #include "TH3F.h"
-#include "TCanvas.h"
+
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliVEvent.h"
@@ -103,7 +103,9 @@ AliEbyENetChargeFluctuationTask::AliEbyENetChargeFluctuationTask(const char *nam
   fEtaMin(-1.), 
   fEtaMax(1.),  
   fRapMin(-0.5),
-  fRapMax(0.5),   
+  fRapMax(0.5), 
+  fDcaXy(10.),
+  fDcaZ(10.),  
   fCentralityBin(-1.),    
   fCentralityPercentile(-1.),
 // fNp(NULL),
@@ -178,33 +180,18 @@ const Float_t fGBwPt      = 0.1;
 const Int_t   fGNBinsCent = 11 ;
 const Float_t fGRngCent[] = {-0.5, 10.5};
 const Float_t fGRngEta[]  = {-0.8, 0.8};
-const Int_t   fGNBinsEta  = Int_t((fGRngEta[1] - fGRngEta[0])/fGBwRap) +1;
+const Int_t   fGNBinsEta  = Int_t((fGRngEta[1] - fGRngEta[0])/fGBwRap);
 
-const Float_t fGRngRap[]  = {-0.8, 0.8};
-const Int_t   fGNBinsRap  = Int_t((fGRngRap[1] - fGRngRap[0])/fGBwRap) +1;
-const Float_t fGRngPhi[]  = {0.0, static_cast<Float_t>(TMath::TwoPi())};
-const Int_t   fGNBinsPhi  = 76;
+const Float_t fGRngRap[]  = {-0.5, 0.5};
+const Int_t   fGNBinsRap  = Int_t((fGRngRap[1] - fGRngRap[0])/fGBwRap);
+const Float_t fGRngPhi[]  = {0.0, 6.3};
+const Int_t   fGNBinsPhi  = 63;
 
-const Float_t fGRngPt[]    = {0.3, 3.0};
+const Float_t fGRngPt[]    = {0.2, 3.3};
 const Int_t   fGNBinsPt    = Int_t((fGRngPt[1] - fGRngPt[0])/fGBwPt); 
 
 const Int_t   fGNBinsSign  =  2;
 const Float_t fGRngSign[]  = {-0.5, 1.5};
-
-
-const Char_t* fGEvtNames[] = {"All", "IsTriggered", "HasVertex", "Vx<Vx_{Max}", "Vy<Vy_{Max}", "Vz<Vz_{Max}", "Centrality [0,100]%", "Centrality [<0,>100]%"};
-const Char_t* fGCMxNames[] = {"5", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"};
-const Char_t* fGTrgNames[] = {"kMB", "kCentral", "kSemiCentral", "kEMCEJE", "kEMCEGA" }; 
-const Char_t* fGCntNames[] = {"0-5%", "5-10%", "10-20%", "20-30%", "30-40%", "40-50%","50-60%", "60-70%", "70-80%", "80-90%", "90-100%"};
-
-const Char_t* fgkPidName[4] = {"Nch","Npi","Nka","Npr"};
-const Char_t* fgkPidShLatex[4] = {"N","#pi","K","p"};
-const Char_t* fgkPidLatex[4][2]= {{"N_{-}","N_{+}"}, {"N_{#pi^{-}}","N_{#pi^{+}}"},{"N_{K^{-}}","N_{K^{+}}"}, {"N_{#bar{p}}","N_{p}"}};
-const Char_t* fgkPidTitles[4][2]= {{"Negative","Positive"},{"Anti-Pions","Pions"},{"Anti-Kaons","Kaons"}, {"Anti-Protons","Protons"}};
-
-
-const Char_t* fgkNetHistName[4] = {"","Plus","Minus","Net"};
-const Char_t* fgkNetHistLatex[4]      = {"+ + +","+","-","+ - -"};
 
 
 //---------------------------------------------------------------------------------
@@ -224,7 +211,30 @@ void AliEbyENetChargeFluctuationTask::UserCreateOutputObjects() {
   fDcaList = new TList();
   fDcaList->SetOwner(kTRUE);
   
-    
+  if (!fIsAOD) {
+    if(!fESDtrackCuts)
+      fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    else 
+      Printf(" >>>>  User Track Cuts <<<< ");
+    fESDtrackCuts->Print();
+
+    Printf(" >>> DCAxy -- [%8.4f:%8.4f]", 
+	   fESDtrackCuts->GetMinDCAToVertexXY(), fESDtrackCuts->GetMaxDCAToVertexXY());
+    Printf(" >>> DCAz -- [%8.4f:%8.4f]", 
+	   fESDtrackCuts->GetMinDCAToVertexZ(), fESDtrackCuts->GetMaxDCAToVertexZ());
+	       
+    Float_t r1,r2;
+    fESDtrackCuts->GetPtRange(r1,r2);
+    Printf(" >>>> Pt Range [%10.4f:%10.4f]",r1,r2);
+
+    fESDtrackCuts->GetRapRange(r1,r2);
+    Printf(" >>>> Rapidty Range [%10.4f:%10.4f]",r1,r2);
+
+    fESDtrackCuts->GetEtaRange(r1,r2);
+    Printf(" >>>> Eta Range [%10.4f:%10.4f]",r1,r2);
+  }     
+
+
   fRan = new TRandom3();
   fRan->SetSeed();
   
@@ -244,8 +254,6 @@ void AliEbyENetChargeFluctuationTask::UserCreateOutputObjects() {
   if (fIsDca) CreateDED();  
 
   //  if (fIsQa) if (fESDtrackCuts) fQaList->Add(fESDtrackCuts);
-
-  // TH1::AddDirectory(oldStatus);
 
   PostData(1, fPhyList); 
   PostData(2, fQaList);
@@ -283,26 +291,16 @@ void AliEbyENetChargeFluctuationTask::UserExec( Option_t * ){
     for (Int_t jj = 0; jj < 2; ++jj)
       fMCNp[kk][jj] = 0;  
   
-  
- 
-
-  // Printf("Number of Track %d",fNTracks);
+   // Printf("Number of Track %d",fNTracks);
 
   fSubSampleIdx = fRanIdx->Integer(fNSubSamples);
-
-  
-
   fNTracks  = (fESD) ? fESD->GetNumberOfTracks() : fAOD->GetNumberOfTracks();  
-
-  
 
   if (fIsMC && fIsAOD) {
     fArrayMC = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
     if (!fArrayMC)
       AliFatal("No array of MC particles found !!!"); 
   }
-
-  
 
   //-- -  - - -  - - ---- -- - --- -- --- -- - --
   if(fSystemType == 0)      { 
@@ -667,7 +665,6 @@ Bool_t AliEbyENetChargeFluctuationTask::AcceptTrack(AliVTrack *track) const {
    if(!fESDtrackCuts->AcceptTrack(dynamic_cast<AliESDtrack*>(track)))  return kFALSE;
  }
 
-
  if(track->Pt() < fPtMin || track->Pt() > fPtMax )  return kFALSE; 
  if (TMath::Abs(track->Eta()) > fEtaMax) return kFALSE; 
  
@@ -708,8 +705,8 @@ Bool_t AliEbyENetChargeFluctuationTask::ParticleRapidity(AliVParticle *particle,
    return kTRUE;
  }
   
- Double_t mass = AliPID::ParticleMass(AliPID::kPion);
- if(gCurPid == 1) mass = AliPID::ParticleMass(AliPID::kPion);
+ Double_t              mass = AliPID::ParticleMass(AliPID::kPion);
+ if(gCurPid == 1)      mass = AliPID::ParticleMass(AliPID::kPion);
  else if(gCurPid == 2) mass = AliPID::ParticleMass(AliPID::kKaon);
  else if(gCurPid == 3) mass = AliPID::ParticleMass(AliPID::kProton);
  
@@ -755,6 +752,12 @@ Bool_t AliEbyENetChargeFluctuationTask::IsFindableInTPC(Int_t label) {
 }
 
 
+
+const Char_t* fGEvtNames[] = {"All", "IsTriggered", "HasVertex", "Vx<Vx_{Max}", "Vy<Vy_{Max}", "Vz<Vz_{Max}", "Centrality [0,100]%", "Centrality [<0,>100]%"};
+const Char_t* fGCMxNames[] = {"5", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"};
+const Char_t* fGTrgNames[] = {"kMB", "kCentral", "kSemiCentral", "kEMCEJE", "kEMCEGA" }; 
+const Char_t* fGCntNames[] = {"0-5%", "5-10%", "10-20%", "20-30%", "30-40%", "40-50%","50-60%", "60-70%", "70-80%", "80-90%", "90-100%"};
+
 //________________________________________________________________________
 void AliEbyENetChargeFluctuationTask::CreateQA() {
  
@@ -784,6 +787,12 @@ void AliEbyENetChargeFluctuationTask::CreateQA() {
     fQaList->Add(new THnSparseD("fHnNchTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
   }
 }
+
+
+
+const Char_t* fgkPidLatex[4][2]= {{"N_{-}","N_{+}"}, {"N_{#pi^{-}}","N_{#pi^{+}}"},{"N_{K^{-}}","N_{K^{+}}"}, {"N_{#bar{p}}","N_{p}"}};
+const Char_t* fgkPidTitles[4][2]= {{"Negative","Positive"},{"Anti-Pions","Pions"},{"Anti-Kaons","Kaons"}, {"Anti-Protons","Protons"}};
+
 
 //________________________________________________________________________
 void AliEbyENetChargeFluctuationTask::CreateBasicQA() {
@@ -913,11 +922,14 @@ void AliEbyENetChargeFluctuationTask::SetAnal(Int_t i){
   Printf(" >>> %d %d %d %d %d %d %d %d %d", 
 	 i, fIsPhy, fIsEff, fIsDca, fIsQa, 
 	 fIsRatio, fIsSub, fIsBS, fIsPer);
-  if (fIsEff) {fPtMin = 0.1; fPtMax = 3.;}  
+  if (fIsEff || fIsDca) {fPtMin = 0.2; fPtMax = 3.3;}  
 
 }
 
-
+const Char_t*      fgkPidName[4] = {"Nch","Npi","Nka","Npr"};
+const Char_t*   fgkPidShLatex[4] = {"N","#pi","K","p"};
+const Char_t*  fgkNetHistName[4] = {"","Plus","Minus","Net"};
+const Char_t* fgkNetHistLatex[4] = {"+ + +","+","-","+ - -"};
 
 //________________________________________________________________________
 void AliEbyENetChargeFluctuationTask::InitPhy() {
@@ -1774,7 +1786,7 @@ void AliEbyENetChargeFluctuationTask::FillRecDED(Int_t i) {
 
 void AliEbyENetChargeFluctuationTask::CreateCE() {
 
-  Int_t    bhepmc[8] = {fGNBinsCent,fGNBinsSign,2, 2, 2,fGNBinsRap,fGNBinsPhi,fGNBinsPt};
+  Int_t     bhepmc[8] = {fGNBinsCent,fGNBinsSign,2, 2, 2,fGNBinsRap,fGNBinsPhi,fGNBinsPt};
   Double_t mnhepmc[8] = {fGRngCent[0],fGRngSign[0],-0.5,-0.5,-0.5,fGRngRap[0],fGRngPhi[0],fGRngPt[0]};  
   Double_t mxhepmc[8] = {fGRngCent[1],fGRngSign[1],1.5,1.5,1.5,fGRngRap[1],fGRngPhi[1],fGRngPt[1]};  
   
@@ -1785,17 +1797,24 @@ void AliEbyENetChargeFluctuationTask::CreateCE() {
   fEffList->Add(new THnSparseF("hmNpiEffMc",titilemc.Data(),8,bhepmc,mnhepmc, mxhepmc));
   fEffList->Add(new THnSparseF("hmNkaEffMc",titilemc.Data(),8,bhepmc,mnhepmc, mxhepmc));
   fEffList->Add(new THnSparseF("hmNprEffMc",titilemc.Data(),8,bhepmc,mnhepmc, mxhepmc));
+
+  bhepmc[5]  = fGNBinsEta;
+  mnhepmc[5] = fGRngEta[0];
+  mxhepmc[5] = fGRngEta[1];
+  titilemc        = "cent:signMC:findable:recStatus:pidStatus:etaMC:phiMC:ptMC";
+  
   fEffList->Add(new THnSparseF("hmNchEffMc",titilemc.Data(),8,bhepmc,mnhepmc, mxhepmc));
   
  for (Int_t i = 0; i < 8; i++) { 
     static_cast<THnSparseF*>(fEffList->FindObject("hmNchEffMc"))->GetAxis(i)->SetTitle(tiltlelaxmc[i].Data());
    static_cast<THnSparseF*>(fEffList->FindObject("hmNpiEffMc"))->GetAxis(i)->SetTitle(tiltlelaxmc[i].Data());
    static_cast<THnSparseF*>(fEffList->FindObject("hmNkaEffMc"))->GetAxis(i)->SetTitle(tiltlelaxmc[i].Data());
+   if (i == 5) tiltlelaxmc[5] = "#it{#eta}_{Rec}";
    static_cast<THnSparseF*>(fEffList->FindObject("hmNprEffMc"))->GetAxis(i)->SetTitle(tiltlelaxmc[i].Data());
 
   }
   
-  Int_t    binhnep[5] = {fGNBinsCent,fGNBinsSign,fGNBinsRap,fGNBinsPhi,fGNBinsPt};
+  Int_t    binhnep[5] = {fGNBinsCent, fGNBinsSign, fGNBinsRap, fGNBinsPhi, fGNBinsPt};
   Double_t minhnep[5] = {fGRngCent[0],fGRngSign[0],fGRngRap[0],fGRngPhi[0],fGRngPt[0]};
   Double_t maxhnep[5] = {fGRngCent[1],fGRngSign[1],fGRngRap[1],fGRngPhi[1],fGRngPt[1]};
 
@@ -1806,15 +1825,33 @@ void AliEbyENetChargeFluctuationTask::CreateCE() {
   fEffList->Add(new THnSparseF("hmNpiEffRec",titilerec.Data(),5,binhnep, minhnep, maxhnep));
   fEffList->Add(new THnSparseF("hmNkaEffRec",titilerec.Data(),5,binhnep, minhnep, maxhnep));
   fEffList->Add(new THnSparseF("hmNprEffRec",titilerec.Data(),5,binhnep, minhnep, maxhnep));
+
+  fEffList->Add(new THnSparseF("hmNpiContRec",titilerec.Data(),5,binhnep,minhnep, maxhnep));
+  fEffList->Add(new THnSparseF("hmNkaContRec",titilerec.Data(),5,binhnep,minhnep, maxhnep));
+  fEffList->Add(new THnSparseF("hmNprContRec",titilerec.Data(),5,binhnep,minhnep, maxhnep));
+ 
+  binhnep[2] = fGNBinsEta;
+  minhnep[2] = fGRngEta[0];
+  maxhnep[2] = fGRngEta[1];
+
+  titilerec        = "cent:signRec:etaRec:phiRec:ptRec";
+    
   fEffList->Add(new THnSparseF("hmNchEffRec",titilerec.Data(),5,binhnep,minhnep, maxhnep));
+  fEffList->Add(new THnSparseF("hmNchContRec",titilerec.Data(),5,binhnep,minhnep, maxhnep));
 
   for (Int_t i = 0; i < 5; i++) { 
     static_cast<THnSparseF*>(fEffList->FindObject("hmNchEffRec"))->GetAxis(i)->SetTitle(tiltlelaxrec[i].Data());
     static_cast<THnSparseF*>(fEffList->FindObject("hmNchEffRec"))->GetAxis(i)->SetTitle(tiltlelaxrec[i].Data());
     static_cast<THnSparseF*>(fEffList->FindObject("hmNchEffRec"))->GetAxis(i)->SetTitle(tiltlelaxrec[i].Data());
+    
+    static_cast<THnSparseF*>(fEffList->FindObject("hmNpiContRec"))->GetAxis(i)->SetTitle(tiltlelaxrec[i].Data());
+    static_cast<THnSparseF*>(fEffList->FindObject("hmNkaContRec"))->GetAxis(i)->SetTitle(tiltlelaxrec[i].Data());
+ static_cast<THnSparseF*>(fEffList->FindObject("hmNprContRec"))->GetAxis(i)->SetTitle(tiltlelaxrec[i].Data());
+    if (i == 2) tiltlelaxrec[2] = "#it{#eta}_{Rec}";
     static_cast<THnSparseF*>(fEffList->FindObject("hmNchEffRec"))->GetAxis(i)->SetTitle(tiltlelaxrec[i].Data());
+static_cast<THnSparseF*>(fEffList->FindObject("hmNchContRec"))->GetAxis(i)->SetTitle(tiltlelaxrec[i].Data());
+   
   }  
-
 
   //----
   Int_t    binHnCont[6] = {fGNBinsCent,fGNBinsSign, 5,fGNBinsRap,fGNBinsPhi, fGNBinsPt};  
@@ -1828,49 +1865,22 @@ void AliEbyENetChargeFluctuationTask::CreateCE() {
   fEffList->Add(new THnSparseF("hmNpiContMc",titilecont.Data(),6,binHnCont,minHnCont, maxHnCont));
   fEffList->Add(new THnSparseF("hmNkaContMc",titilecont.Data(),6,binHnCont,minHnCont, maxHnCont));
   fEffList->Add(new THnSparseF("hmNprContMc",titilecont.Data(),6,binHnCont,minHnCont, maxHnCont));
+ 
+  binHnCont[3] = fGNBinsEta;
+  minHnCont[3] = fGRngEta[0];
+  maxHnCont[3] = fGRngEta[1];
+  titilecont     = "cent:signMC:contStatus:etaMC:phiMC:ptMC";
   fEffList->Add(new THnSparseF("hmNchContMc",titilecont.Data(),6,binHnCont,minHnCont, maxHnCont));
 
  for (Int_t i = 0; i < 6; i++) {  
     static_cast<THnSparseF*>(fEffList->FindObject("hmNchContMc"))->GetAxis(i)->SetTitle(tiltlelaxcont[i].Data());
     static_cast<THnSparseF*>(fEffList->FindObject("hmNpiContMc"))->GetAxis(i)->SetTitle(tiltlelaxcont[i].Data());
     static_cast<THnSparseF*>(fEffList->FindObject("hmNkaContMc"))->GetAxis(i)->SetTitle(tiltlelaxcont[i].Data());
+    if (i == 3) tiltlelaxcont[3] = "#it{#eta}_{Rec}";
     static_cast<THnSparseF*>(fEffList->FindObject("hmNprContMc"))->GetAxis(i)->SetTitle(tiltlelaxcont[i].Data());
   }
 
- fEffList->Add(new THnSparseF("hmNpiContRec",titilerec.Data(),5,binhnep,minhnep, maxhnep));
- fEffList->Add(new THnSparseF("hmNkaContRec",titilerec.Data(),5,binhnep,minhnep, maxhnep));
- fEffList->Add(new THnSparseF("hmNprContRec",titilerec.Data(),5,binhnep,minhnep, maxhnep));
- fEffList->Add(new THnSparseF("hmNchContRec",titilerec.Data(),5,binhnep,minhnep, maxhnep));
 
- for (Int_t i = 0; i < 5; i++) {  
-   static_cast<THnSparseF*>(fEffList->FindObject("hmNchContRec"))->GetAxis(i)->SetTitle(tiltlelaxrec[i].Data());
-   static_cast<THnSparseF*>(fEffList->FindObject("hmNpiContRec"))->GetAxis(i)->SetTitle(tiltlelaxrec[i].Data());
-   static_cast<THnSparseF*>(fEffList->FindObject("hmNkaContRec"))->GetAxis(i)->SetTitle(tiltlelaxrec[i].Data());
-   static_cast<THnSparseF*>(fEffList->FindObject("hmNprContRec"))->GetAxis(i)->SetTitle(tiltlelaxrec[i].Data());
- }  
-
- // Magic
- /*
- Double_t *binsPt = 0;
- binsPt = CreateLogAxis(fGNBinsPt,fGRngPt[0],fGRngPt[1]);
- 
- static_cast<THnSparseF*>(fEffList->FindObject("hmNchEffMc"))->SetBinEdges(7,binsPt);
- static_cast<THnSparseF*>(fEffList->FindObject("hmNpiEffMc"))->SetBinEdges(7,binsPt);
- static_cast<THnSparseF*>(fEffList->FindObject("hmNkaEffMc"))->SetBinEdges(7,binsPt);
- static_cast<THnSparseF*>(fEffList->FindObject("hmNprEffMc"))->SetBinEdges(7,binsPt);
- static_cast<THnSparseF*>(fEffList->FindObject("hmNchEffRec"))->SetBinEdges(4,binsPt);
- static_cast<THnSparseF*>(fEffList->FindObject("hmNchEffRec"))->SetBinEdges(4,binsPt);
- static_cast<THnSparseF*>(fEffList->FindObject("hmNchEffRec"))->SetBinEdges(4,binsPt);
- static_cast<THnSparseF*>(fEffList->FindObject("hmNchEffRec"))->SetBinEdges(4,binsPt);
- static_cast<THnSparseF*>(fEffList->FindObject("hmNchContMc"))->SetBinEdges(5,binsPt);
- static_cast<THnSparseF*>(fEffList->FindObject("hmNpiContMc"))->SetBinEdges(5,binsPt);
- static_cast<THnSparseF*>(fEffList->FindObject("hmNkaContMc"))->SetBinEdges(5,binsPt);
- static_cast<THnSparseF*>(fEffList->FindObject("hmNprContMc"))->SetBinEdges(5,binsPt);
- static_cast<THnSparseF*>(fEffList->FindObject("hmNchContRec"))->SetBinEdges(4,binsPt);
- static_cast<THnSparseF*>(fEffList->FindObject("hmNpiContRec"))->SetBinEdges(4,binsPt);
- static_cast<THnSparseF*>(fEffList->FindObject("hmNkaContRec"))->SetBinEdges(4,binsPt);
- static_cast<THnSparseF*>(fEffList->FindObject("hmNprContRec"))->SetBinEdges(4,binsPt);
- */
   return;
 }
 
@@ -1988,8 +1998,6 @@ void AliEbyENetChargeFluctuationTask::CalculateCE(Int_t gPid) {
    fStack->GetNprimary() : 
    fArrayMC->GetEntriesFast();
  
- 
-
  for (Int_t idxMC = 0; idxMC < nPart; ++idxMC) {
    AliVParticle* particle = (fESD) ? 
      static_cast<AliVParticle*>(fMCEvent->GetTrack(idxMC)) : 
@@ -2059,9 +2067,9 @@ void AliEbyENetChargeFluctuationTask::CalculateCE(Int_t gPid) {
 
 void AliEbyENetChargeFluctuationTask::CreateDED() {
 
- Int_t    bhepmc[7] =  {fGNBinsCent, fGNBinsSign,   2,   fGNBinsRap, fGNBinsPhi, fGNBinsPt,200};
-  Double_t mnhepmc[7] = {fGRngCent[0],fGRngSign[0],-0.5, fGRngRap[0],fGRngPhi[0],fGRngPt[0], -5.};  
-  Double_t mxhepmc[7] = {fGRngCent[1],fGRngSign[1], 1.5, fGRngRap[1],fGRngPhi[1], fGRngPt[1], 5.};  
+ Int_t      bhepmc[7] = {fGNBinsCent, fGNBinsSign,   2,   fGNBinsRap, fGNBinsPhi, fGNBinsPt,   140};
+  Double_t mnhepmc[7] = {fGRngCent[0],fGRngSign[0],-0.5, fGRngRap[0],fGRngPhi[0],fGRngPt[0], -3.5};  
+  Double_t mxhepmc[7] = {fGRngCent[1],fGRngSign[1], 1.5, fGRngRap[1],fGRngPhi[1], fGRngPt[1], 3.5};  
   TString titilemc        = "cent:sign:accepted:y:phi:pt:dcar";
 
   TString tiltlelaxmc[7]  = {"Centrality", "sign", "Is Accepted","#it{y}","#varphi (rad)","#it{p}_{T} (GeV/#it{c})", "DCAr"};
@@ -2069,6 +2077,9 @@ void AliEbyENetChargeFluctuationTask::CreateDED() {
   fDcaList->Add(new THnSparseF("hmNpiDcaRec",titilemc.Data(),7,bhepmc,mnhepmc, mxhepmc));
   fDcaList->Add(new THnSparseF("hmNkaDcaRec",titilemc.Data(),7,bhepmc,mnhepmc, mxhepmc));
   fDcaList->Add(new THnSparseF("hmNprDcaRec",titilemc.Data(),7,bhepmc,mnhepmc, mxhepmc));
+  bhepmc[3]  = fGNBinsEta;
+  mnhepmc[3] = fGRngEta[0];
+  mxhepmc[3] = fGRngEta[1];
   titilemc        = "cent:sign:accepted:eta:phi:pt:dcar";
   fDcaList->Add(new THnSparseF("hmNchDcaRec",titilemc.Data(),7,bhepmc,mnhepmc, mxhepmc));
    
@@ -2079,21 +2090,13 @@ void AliEbyENetChargeFluctuationTask::CreateDED() {
     if (i == 4) tiltlelaxmc[3] = "#eta";
     static_cast<THnSparseF*>(fDcaList->FindObject("hmNchDcaRec"))->GetAxis(i)->SetTitle(tiltlelaxmc[i].Data());
   }
-  /*
-  Double_t *binsPt = 0;
-  binsPt = CreateLogAxis(fGNBinsPt,fGRngPt[0],fGRngPt[1]);
-  static_cast<THnSparseF*>(fDcaList->FindObject("hmNpiDca"))->SetBinEdges(6,binsPt);
-  static_cast<THnSparseF*>(fDcaList->FindObject("hmNkaDca"))->SetBinEdges(6,binsPt);
-  static_cast<THnSparseF*>(fDcaList->FindObject("hmNprDca"))->SetBinEdges(6,binsPt);
-  static_cast<THnSparseF*>(fDcaList->FindObject("hmNchDca"))->SetBinEdges(6,binsPt);
-  */
-
+ 
 }
 void AliEbyENetChargeFluctuationTask::CreateDEM() {
 
-  Int_t    bhepmc[8]  = {fGNBinsCent, fGNBinsSign,  2,     3, fGNBinsRap, fGNBinsPhi,fGNBinsPt,200};
-  Double_t mnhepmc[8] = {fGRngCent[0],fGRngSign[0],-0.5, 0.5, fGRngRap[0],fGRngPhi[0],fGRngPt[0],-5};  
-  Double_t mxhepmc[8] = {fGRngCent[1],fGRngSign[1],1.5,  3.5, fGRngRap[1],fGRngPhi[1],fGRngPt[1], 5.};  
+  Int_t     bhepmc[8] = {fGNBinsCent, fGNBinsSign,  2,   3,   fGNBinsRap, fGNBinsPhi, fGNBinsPt,  140};
+  Double_t mnhepmc[8] = {fGRngCent[0],fGRngSign[0],-0.5, 0.5, fGRngRap[0],fGRngPhi[0],fGRngPt[0],-3.5};  
+  Double_t mxhepmc[8] = {fGRngCent[1],fGRngSign[1], 1.5, 3.5, fGRngRap[1],fGRngPhi[1],fGRngPt[1], 3.5};  
   TString titilemc    = "cent:sign:cont:accepted:y:phi:pt:dcar";
   TString tiltlelaxmc[8]  = {"Centrality", "sign", "Is Accepted", "1 primary | 2 from WeakDecay | 3 p from Material",
 			     "#it{y}","#varphi (rad)","#it{p}_{T} (GeV/#it{c})", "DCAr"};
@@ -2101,6 +2104,10 @@ void AliEbyENetChargeFluctuationTask::CreateDEM() {
   fDcaList->Add(new THnSparseF("hmNpiDca",titilemc.Data(),8,bhepmc,mnhepmc, mxhepmc));
   fDcaList->Add(new THnSparseF("hmNkaDca",titilemc.Data(),8,bhepmc,mnhepmc, mxhepmc));
   fDcaList->Add(new THnSparseF("hmNprDca",titilemc.Data(),8,bhepmc,mnhepmc, mxhepmc));
+
+  bhepmc[4]  = fGNBinsEta;
+  mnhepmc[4] = fGRngEta[0];
+  mxhepmc[4] = fGRngEta[1];
 
   titilemc        = "cent:sign:accepted:cont:eta:phi:pt:dcar";
   fDcaList->Add(new THnSparseF("hmNchDca",titilemc.Data(),8,bhepmc,mnhepmc, mxhepmc));
@@ -2112,18 +2119,6 @@ void AliEbyENetChargeFluctuationTask::CreateDEM() {
     if (i == 4) tiltlelaxmc[4] = "#eta";
     static_cast<THnSparseF*>(fDcaList->FindObject("hmNchDca"))->GetAxis(i)->SetTitle(tiltlelaxmc[i].Data());
   }
-
-
-
-
-  /*
-  Double_t *binsPt = 0;
-  binsPt = CreateLogAxis(fGNBinsPt,fGRngPt[0],fGRngPt[1]);
-  static_cast<THnSparseF*>(fDcaList->FindObject("hmNpiDca"))->SetBinEdges(6,binsPt);
-  static_cast<THnSparseF*>(fDcaList->FindObject("hmNkaDca"))->SetBinEdges(6,binsPt);
-  static_cast<THnSparseF*>(fDcaList->FindObject("hmNprDca"))->SetBinEdges(6,binsPt);
-  static_cast<THnSparseF*>(fDcaList->FindObject("hmNchDca"))->SetBinEdges(6,binsPt);
-  */
 }
 
 void AliEbyENetChargeFluctuationTask::CalculateDED(Int_t gPid) {
@@ -2132,12 +2127,9 @@ void AliEbyENetChargeFluctuationTask::CalculateDED(Int_t gPid) {
     AliVTrack *track = (fESD) ? 
       static_cast<AliVTrack*>(fESD->GetTrack(idxTrack)) : 
       static_cast<AliVTrack*>(fAOD->GetTrack(idxTrack)); 
-
-    if (track->Charge() == 0) continue; // No place for you my friend
-
-    if(!AcceptTrack(track)) {fCurRecD[2] = 0.;}       // 2
-    else fCurRecD[2] = 1.;   
-    
+   
+    if(!AcceptTrack(track)) continue; 
+     
     fCurRecD[1] = track->Charge() < 0 ? 0. : 1.;      // 1
     
     Int_t b = 0;
@@ -2149,8 +2141,8 @@ void AliEbyENetChargeFluctuationTask::CalculateDED(Int_t gPid) {
     }
     if (gPid != b) continue;
     Double_t rap;
-    if (!TrackRapidity(track,rap,b)) fCurRecD[2] = 0.; //2
-    else fCurRecD[2] = 1.;
+    if (!TrackRapidity(track,rap,b)) continue;
+   
     fCurRecD[3] = rap;                                 // 3 
     Float_t dca[2], cov[3]; // 
     if (fESD)
@@ -2165,6 +2157,9 @@ void AliEbyENetChargeFluctuationTask::CalculateDED(Int_t gPid) {
       else dca[0] = Float_t(dcaa[0]);
     }
 
+    if ( TMath::Abs(dca[0]) <= fDcaXy ) fCurRecD[2] = 1.;   // 2
+    else fCurRecD[2] = 0.;
+    
     fCurRecD[0] = fCentralityBin;                // 0
     fCurRecD[4] = track->Phi();                  // 4
     fCurRecD[5] = track->Pt();                   // 5
@@ -2181,12 +2176,9 @@ void AliEbyENetChargeFluctuationTask::CalculateDE(Int_t gPid) {
     AliVTrack *track = (fESD) ? 
       static_cast<AliVTrack*>(fESD->GetTrack(idxTrack)) : 
       static_cast<AliVTrack*>(fAOD->GetTrack(idxTrack)); 
-
-    if (track->Charge() == 0) continue; // No place for you my friend
-
-    if(!AcceptTrack(track)) fCurGenD[2] = 0.;             // 2
-    else fCurGenD[2] = 1.;                                // 2
     
+
+    if(!AcceptTrack(track)) continue;
     fCurGenD[1] = track->Charge() < 0 ? 0. : 1.;            // 1
     
     Int_t b = 0;
@@ -2200,12 +2192,9 @@ void AliEbyENetChargeFluctuationTask::CalculateDE(Int_t gPid) {
     if (gPid != b) continue;
     
     Double_t rap;
-    if (!TrackRapidity(track,rap,b)) fCurGenD[2] = 0.;   // 2
-    else fCurGenD[2] = 1.;                               // 2
+    if (!TrackRapidity(track,rap,b)) continue;
     
     fCurGenD[4] = rap;                                   // 4
-	   
-    
     
     Float_t dca[2], cov[3]; // 
     if (fESD)
@@ -2220,10 +2209,10 @@ void AliEbyENetChargeFluctuationTask::CalculateDE(Int_t gPid) {
       else dca[0] = Float_t(dcaa[0]);
     }
     
-    // Printf(" <<< %f  %f ", dca[0],dca[1]);     
-
-    fCurGenD[7] = Double_t(dca[0]);                    // 7
+    if ( TMath::Abs(dca[0]) <= fDcaXy ) fCurGenD[2] = 1.;   // 2
+    else fCurGenD[2] = 0.;
     
+    fCurGenD[7] = Double_t(dca[0]);                    // 7
     
     Int_t label  = TMath::Abs(track->GetLabel()); 
     
@@ -2245,7 +2234,7 @@ void AliEbyENetChargeFluctuationTask::CalculateDE(Int_t gPid) {
       fStack->IsSecondaryFromMaterial(label)  : 
       (static_cast<AliAODMCParticle*>(particle))->IsSecondaryFromMaterial();
     
-   
+    
     if (isPhysicalPrimary) fCurGenD[3] = 1.;           // 3
     else if(isSecondaryFromWeakDecay) fCurGenD[3] = 2.;
     else if (isSecondaryFromMaterial) fCurGenD[3] = 3.;
@@ -2253,7 +2242,7 @@ void AliEbyENetChargeFluctuationTask::CalculateDE(Int_t gPid) {
     fCurGenD[0] = fCentralityBin;                    // 0
     fCurGenD[5] = track->Phi();                      // 5
     fCurGenD[6] = track->Pt();                       // 6
- 
+    
     FillRecDE(gPid);
   }
 }
