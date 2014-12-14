@@ -200,7 +200,10 @@ Bool_t AliTPCFCVoltError3D::AddCorrectionCompact(AliTPCCorrection* corr, Double_
     return kFALSE;
   }  
   AliTPCFCVoltError3D * corrC = dynamic_cast<AliTPCFCVoltError3D *>(corr);
-  if (corrC == NULL) return kFALSE;
+  if (corrC == NULL)  {
+    AliError(TString::Format("Inconsistent class types: %s\%s",IsA()->GetName(),corr->IsA()->GetName()).Data());
+    return kFALSE;
+  }
   //
   for (Int_t isec=0; isec<36; isec++){
     fRodVoltShiftA[isec]+= weight*corrC->fRodVoltShiftA[isec];      // Rod (&strips) shift in Volt (40V~1mm) 

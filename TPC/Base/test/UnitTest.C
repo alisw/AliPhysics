@@ -1,12 +1,13 @@
 /*
-  Unit test for fucntions used in the Base directory:
+  Unit test for some functions classes  used in the $ALICE_ROOT/TPC/Base directory:
   gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_ROOT/STEER\
    -I$ALICE_ROOT/TPC -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/TOF -I$ALICE_ROOT/RAW -I$ALICE_ROOT/PWG1 -I$ALICE_ROOT/STAT -I$ALICE_ROOT/TPC/Base -I$ALICE_ROOT/TPC/Calib");
    
   .L $ALICE_ROOT/TPC/Base/test/UnitTest.C+ 
   UnitTestAliTPCCalPadTree();
   TestCorrection_AliTPCExBTwistAddCorrectionCompact();
-  TestCorrection_AliTPCFCVoltError3DAddCorrectionCompact()
+  TestCorrection_AliTPCFCVoltError3DAddCorrectionCompact();
+  TestCorrection_AliTPCRocVoltError3DAddCorrectionCompact();
 
 */
 
@@ -26,7 +27,7 @@
 #include "AliTPCComposedCorrection.h"
 #include "AliTPCExBTwist.h"
 #include "AliTPCFCVoltError3D.h"
-//#include "AliTPCROCVoltError3D.h"
+#include "AliTPCROCVoltError3D.h"
 //#include "AliTPCBoundaryVoltError.h"
 
 //
@@ -105,54 +106,49 @@ void  UnitTestAliTPCCalPadTree(){
 Bool_t  TestCorrection_AliTPCExBTwistAddCorrectionCompact(){
   //
   // 
-  //#include "AliTPCFCVoltError3D.h"
-  //#include "AliTPCROCVoltError3D.h"
-  //#include "AliTPCBoundaryVoltError.h"
   // 1.) Test ExB twist AddCorrectionCompact
   //
-  // 1.) Test ExB twist AddCorrectionCompact
-  //
-  Bool_t isOKTwist[10]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
+  Bool_t isOK[10]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
   AliTPCComposedCorrection *compCorrTwist = new AliTPCComposedCorrection();
   AliTPCExBTwist  *twistX    = new  AliTPCExBTwist;
   AliTPCExBTwist  *twistY    = new  AliTPCExBTwist;
   twistX->SetXTwist(0.001);  // 1 mrad twist in x
   twistY->SetYTwist(0.001);  // 1 mrad twist in x
-  isOKTwist[0]&=compCorrTwist->AddCorrectionCompact(twistX,1);
-  isOKTwist[0]&=compCorrTwist->AddCorrectionCompact(twistY,1);
-  isOKTwist[0]&=compCorrTwist->AddCorrectionCompact(twistY,-1);
-  isOKTwist[0]&=compCorrTwist->AddCorrectionCompact(twistX,-1);
-  isOKTwist[1]=compCorrTwist->GetCorrections()->GetEntries()==1;
+  isOK[0]&=compCorrTwist->AddCorrectionCompact(twistX,1);
+  isOK[0]&=compCorrTwist->AddCorrectionCompact(twistY,1);
+  isOK[0]&=compCorrTwist->AddCorrectionCompact(twistY,-1);
+  isOK[0]&=compCorrTwist->AddCorrectionCompact(twistX,-1);
+  isOK[1]=compCorrTwist->GetCorrections()->GetEntries()==1;
   AliTPCExBTwist  *twistRes=0;
-  if (isOKTwist[1]==kFALSE){
-    isOKTwist[2]=kFALSE;
-    isOKTwist[3]=kFALSE;
-    isOKTwist[4]=kFALSE;
+  if (isOK[1]==kFALSE){
+    isOK[2]=kFALSE;
+    isOK[3]=kFALSE;
+    isOK[4]=kFALSE;
   }else{
     twistRes=  dynamic_cast<AliTPCExBTwist *>(compCorrTwist->GetSubCorrection(0));
     if (twistRes==NULL){
-      isOKTwist[2]=kFALSE;
-      isOKTwist[3]=kFALSE;
-      isOKTwist[4]=kFALSE;
+      isOK[2]=kFALSE;
+      isOK[3]=kFALSE;
+      isOK[4]=kFALSE;
     }else{
-      isOKTwist[3] &= (twistRes->GetXTwist()==0);
-      isOKTwist[4] &= (twistRes->GetYTwist()==0);
+      isOK[3] &= (twistRes->GetXTwist()==0);
+      isOK[4] &= (twistRes->GetYTwist()==0);
     }
   }
   Bool_t res=kTRUE;
-  for (Int_t i=0; i<5; i++) res&=isOKTwist[i];
+  for (Int_t i=0; i<5; i++) res&=isOK[i];
   {
-    if (isOKTwist[0]==kFALSE){
+    if (isOK[0]==kFALSE){
       ::Error("TestCorrection_AddCorrectionCompact","AliTPCExBTwist -ADD FAILED");
     }else{
       ::Info("TestCorrection_AddCorrectionCompact","AliTPCExBTwist -ADD OK");
     }
-    if (isOKTwist[1]==kFALSE){
+    if (isOK[1]==kFALSE){
       ::Error("TestCorrection_AddCorrectionCompact","AliTPCExBTwist - wrong entries  FAILED");
     }else{
       ::Info("TestCorrection_AddCorrectionCompact","AliTPCExBTwist - entries  OK");
     }
-    if (isOKTwist[2]==kFALSE || isOKTwist[3]==kFALSE ||isOKTwist[4]==kFALSE ){
+    if (isOK[2]==kFALSE || isOK[3]==kFALSE ||isOK[4]==kFALSE ){
       ::Error("TestCorrection_AddCorrectionCompact","AliTPCExBTwist - inconsitent entries  FAILED");    
     }else{
       ::Info("TestCorrection_AddCorrectionCompact","AliTPCExBTwist - consistent entries  OK");    
@@ -163,10 +159,10 @@ Bool_t  TestCorrection_AliTPCExBTwistAddCorrectionCompact(){
 
 
 Bool_t  TestCorrection_AliTPCFCVoltError3DAddCorrectionCompact(){
+  //
+  // TestCorrection_AliTPCFCVoltError3DAddCorrectionCompact
+  //
   const Float_t kEpsilon=0.000001;
-  //
-  // 1.) Test ExB  AddCorrectionCompact
-  //
   Bool_t isOK[10]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
   AliTPCComposedCorrection *compCorrComp = new AliTPCComposedCorrection();
   AliTPCFCVoltError3D  *corr0    = new  AliTPCFCVoltError3D;
@@ -226,3 +222,66 @@ Bool_t  TestCorrection_AliTPCFCVoltError3DAddCorrectionCompact(){
   }    
   return res;
 }
+
+
+
+Bool_t  TestCorrection_AliTPCRocVoltError3DAddCorrectionCompact(){
+  //
+  // AliTPCRocVoltError3DAddCorrectionCompact
+  //
+  const Float_t kEpsilon=0.00000001;
+  Bool_t isOK[10]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
+  AliTPCComposedCorrection *compCorrROCVoltError3D = new AliTPCComposedCorrection();
+  AliTPCROCVoltError3D  *corr0    = new  AliTPCROCVoltError3D;
+  AliTPCROCVoltError3D  *corr1    = new  AliTPCROCVoltError3D;
+  TMatrixD matrixDz(72,3);
+  for (Int_t isec=0; isec<72; isec++){
+    matrixDz(isec,0)=gRandom->Rndm()*0.1;
+    matrixDz(isec,1)=gRandom->Rndm()*0.001;
+    matrixDz(isec,2)=gRandom->Rndm()*0.001;
+  }
+  corr0->SetROCData(&matrixDz);
+  matrixDz*=0.5;
+  corr1->SetROCData(&matrixDz);
+  //
+  isOK[0]&=compCorrROCVoltError3D->AddCorrectionCompact(corr0,1);
+  isOK[0]&=compCorrROCVoltError3D->AddCorrectionCompact(corr1,1);
+  isOK[0]&=compCorrROCVoltError3D->AddCorrectionCompact(corr1,-1);
+  isOK[0]&=compCorrROCVoltError3D->AddCorrectionCompact(corr0,-1);
+  isOK[1]=compCorrROCVoltError3D->GetCorrections()->GetEntries()==1;
+  AliTPCROCVoltError3D  *corrRes=0;
+  if (isOK[1]==kFALSE){
+    isOK[2]=kFALSE;
+    isOK[3]=kFALSE;
+    isOK[4]=kFALSE;
+  }else{
+    corrRes=  dynamic_cast<AliTPCROCVoltError3D *>(compCorrROCVoltError3D->GetSubCorrection(0));
+    if (corrRes==NULL){
+      isOK[2]=kFALSE;
+      isOK[3]=kFALSE;
+      isOK[4]=kFALSE;
+    }else{
+      isOK[3]=TMath::Abs(corrRes->GetMatrix()->Sum())<kEpsilon;
+    }
+  }
+  Bool_t res=kTRUE;
+  for (Int_t i=0; i<5; i++) res&=isOK[i];
+  {
+    if (isOK[0]==kFALSE){
+      ::Error("TestCorrection_AddCorrectionCompact","AliTPCROCVoltError3D -ADD FAILED");
+    }else{
+      ::Info("TestCorrection_AddCorrectionCompact","AliTPCROCVoltError3D -ADD OK");
+    }
+    if (isOK[1]==kFALSE){
+      ::Error("TestCorrection_AddCorrectionCompact","AliTPCROCVoltError3D - wrong entries  FAILED");
+    }else{
+      ::Info("TestCorrection_AddCorrectionCompact","AliTPCROCVoltError3D - entries  OK");
+    }
+    if (isOK[2]==kFALSE || isOK[3]==kFALSE ||isOK[4]==kFALSE ){
+      ::Error("TestCorrection_AddCorrectionCompact","AliTPCROCVoltError3D - inconsitent entries  FAILED");    
+    }else{
+      ::Info("TestCorrection_AddCorrectionCompact","AliTPCROCVoltError3D - consistent entries  OK");    
+    }
+  }    
+  return res;
+} 

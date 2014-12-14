@@ -17,7 +17,7 @@ class AliTPCROCVoltError3D : public AliTPCCorrection {
 public:
   AliTPCROCVoltError3D();
   virtual ~AliTPCROCVoltError3D();
-
+  virtual Bool_t AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight);
   // initialization and update functions
   virtual void Init();
   virtual void Update(const TTimeStamp &timeStamp);

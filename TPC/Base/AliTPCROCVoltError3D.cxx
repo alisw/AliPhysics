@@ -125,6 +125,39 @@ AliTPCROCVoltError3D::~AliTPCROCVoltError3D() {
   delete fdzDataLinFit;
 }
 
+
+
+Bool_t AliTPCROCVoltError3D::AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight){
+  //
+  // Add correction  and make them compact
+  // Assumptions:
+  //  - origin of distortion/correction are additive
+  //  - only correction ot the same type supported ()
+  if (corr==NULL) {
+    AliError("Zerro pointer - correction");
+    return kFALSE;
+  }  
+  AliTPCROCVoltError3D * corrC = dynamic_cast<AliTPCROCVoltError3D *>(corr);
+  if (corrC == NULL) {
+    AliError(TString::Format("Inconsistent class types: %s\%s",IsA()->GetName(),corr->IsA()->GetName()).Data());
+    return kFALSE;
+  }
+  //
+  TMatrixD matrixDz=*(corrC->fdzDataLinFit);
+  matrixDz*=weight;
+  if (fdzDataLinFit==NULL) {
+    fdzDataLinFit=new TMatrixD(matrixDz);
+  }
+  else{
+    (*fdzDataLinFit)+=matrixDz;
+  }
+  return kTRUE;
+}
+
+
+
+
+
 void AliTPCROCVoltError3D::SetROCData(TMatrixD * matrix){
   //
   // Set a z alignment map of the chambers not via a file, but
