@@ -6,13 +6,14 @@
 //                       Thu Dec 19 09:09:38 CET 2013
 //                                                                         //
 //=========================================================================//
-//class AliESDtrackCuts;
+
 void AddAliEbyENetChargeFluctuationTask(const Char_t *taskname="TOFTPC",
 					const Char_t *centralityEstimator = "V0M",
 					Bool_t isModeAOD    = 1,
 					Int_t  aodFilterBit = 768, 
 					Int_t  sysType      = 0,   // 0-pp,1-pA,2-AA, 3,4,5 mc
-					
+					Int_t  cuttype      = 9,   // esd cut type
+
 					Int_t pidtype       = 2, 
 					Int_t requestTofPid = 1,
 					Double_t nSigmaCut  = 3.,
@@ -23,10 +24,13 @@ void AddAliEbyENetChargeFluctuationTask(const Char_t *taskname="TOFTPC",
 					
 					Double_t gEta       = 0.8,
 					Double_t gRap       = 0.5,
+
+					Double_t dcaxy     = 2.4,
+					Double_t dcaz      = 3.2,
 					
 					Double_t vz         = 10.,
 					Int_t nSample       = 25,
-					Int_t analType      = 0) {
+					Int_t analType      = 1) {
 
   Double_t vx = 3.; Double_t vy = 3.; 
  
@@ -70,11 +74,13 @@ void AddAliEbyENetChargeFluctuationTask(const Char_t *taskname="TOFTPC",
   task->SetVertexDiamond(vx,vy,vz);
   task->SetKinematicsCuts(ptl,pth,gEta,gRap);
   task->SetNSubSamples(nSample);
+  task->SetDca(dcaxy,dcaz);
   
   if (!isModeAOD) {
     gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/PIDFluctuation/macros/configureNetChargeTrackCut.C"); 
-    AliESDtrackCuts *cuts = configureNetChargeTrackCut(10001006, gEta,ptl,pth); 
-    task->SetAnalysisCutObject(cuts);
+    // gROOT->LoadMacro("./configureNetChargeTrackCut.C"); 
+     AliESDtrackCuts *cuts = configureNetChargeTrackCut(cuttype,10001006, gEta, 5.,5.); 
+     task->SetAnalysisCutObject(cuts);
   }
 
   AliHelperPID* help = new AliHelperPID();

@@ -63,7 +63,7 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   void SetIsAOD() {fIsAOD = kTRUE;}
   void SetAnal(Int_t i);// {fAnalType = i; };
   void SetHelperPID(AliHelperPID* pid){ fHelperPID = pid; }
- 
+  void SetDca(Double_t dcaxy,Double_t dcaz) { fDcaXy = dcaxy; fDcaZ = dcaz;}
  
   void SetAnalysisCutObject(AliESDtrackCuts *const trackCuts) {
     fESDtrackCuts = trackCuts;}
@@ -166,6 +166,8 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   Double_t   fEtaMax;                       // Eta Maximum
   Double_t   fRapMin;                       // Rapidity Minimum
   Double_t   fRapMax;                       // Rapidity Maximum
+  Double_t   fDcaXy;                        // DCA Xy
+  Double_t   fDcaZ;                         // DCA Z
   Double_t   fCentralityBin;                // Centrality bin of current event within max centrality bin
   Double_t   fCentralityPercentile;         // Centrality percentile of current event
   Double_t   fNp[4][2];                     // Array of particle/anti-particle counts
