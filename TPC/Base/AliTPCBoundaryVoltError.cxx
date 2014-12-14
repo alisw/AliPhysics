@@ -103,6 +103,37 @@ AliTPCBoundaryVoltError::~AliTPCBoundaryVoltError() {
 
 
 
+
+Bool_t AliTPCBoundaryVoltError::AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight){
+  //
+  // Add correction  and make them compact
+  // Assumptions:
+  //  - origin of distortion/correction are additive
+  //  - only correction ot the same type supported ()
+  if (corr==NULL) {
+    AliError("Zerro pointer - correction");
+    return kFALSE;
+  }  
+  AliTPCBoundaryVoltError* corrC = dynamic_cast<AliTPCBoundaryVoltError *>(corr);
+  if (corrC == NULL) {
+    AliError(TString::Format("Inconsistent class types: %s\%s",IsA()->GetName(),corr->IsA()->GetName()).Data());
+    return kFALSE;
+  }
+  if (fROCdisplacement!=corrC->fROCdisplacement){
+    AliError(TString::Format("Inconsistent fROCdisplacement : %s\%s",IsA()->GetName(),corr->IsA()->GetName()).Data());
+    return kFALSE;    
+  }
+  for (Int_t i=0;i <8; i++){
+    fBoundariesA[i]+= corrC->fBoundariesA[i]*weight;
+    fBoundariesC[i]+= corrC->fBoundariesC[i]*weight;
+  }
+  //
+  return kTRUE;
+}
+
+
+
+
 void AliTPCBoundaryVoltError::Init() {
   //
   // Initialization funtion

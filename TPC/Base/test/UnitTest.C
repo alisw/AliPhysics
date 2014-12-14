@@ -8,6 +8,7 @@
   TestCorrection_AliTPCExBTwistAddCorrectionCompact();
   TestCorrection_AliTPCFCVoltError3DAddCorrectionCompact();
   TestCorrection_AliTPCRocVoltError3DAddCorrectionCompact();
+  TestCorrection_AliTPCBoundaryVoltErrorAddCorrectionCompact();
 
 */
 
@@ -28,8 +29,8 @@
 #include "AliTPCExBTwist.h"
 #include "AliTPCFCVoltError3D.h"
 #include "AliTPCROCVoltError3D.h"
-//#include "AliTPCBoundaryVoltError.h"
-
+#include "AliTPCBoundaryVoltError.h"
+ 
 //
 // PARAMETERS to set from outside:
 //
@@ -281,6 +282,71 @@ Bool_t  TestCorrection_AliTPCRocVoltError3DAddCorrectionCompact(){
       ::Error("TestCorrection_AddCorrectionCompact","AliTPCROCVoltError3D - inconsitent entries  FAILED");    
     }else{
       ::Info("TestCorrection_AddCorrectionCompact","AliTPCROCVoltError3D - consistent entries  OK");    
+    }
+  }    
+  return res;
+} 
+
+
+
+
+
+Bool_t  TestCorrection_AliTPCBoundaryVoltErrorAddCorrectionCompact(){
+  //
+  // AliTPCBoundaryVoltErrorAddCorrectionCompact
+  //
+  const Float_t kEpsilon=0.00000001;
+  Bool_t isOK[10]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
+  AliTPCComposedCorrection *compCorrBoundaryVoltError = new AliTPCComposedCorrection();
+  AliTPCBoundaryVoltError  *corr0    = new  AliTPCBoundaryVoltError;
+  AliTPCBoundaryVoltError  *corr1    = new  AliTPCBoundaryVoltError;
+  Float_t boundaries[8];
+  for (Int_t ibound=0; ibound<8; ibound++){ 
+    boundaries[ibound]=gRandom->Rndm()-0.5;
+  }
+  corr0->SetBoundariesA(boundaries);
+  corr1->SetBoundariesA(boundaries);  
+  //
+  isOK[0]&=compCorrBoundaryVoltError->AddCorrectionCompact(corr0,1);
+  isOK[0]&=compCorrBoundaryVoltError->AddCorrectionCompact(corr1,1);
+  isOK[0]&=compCorrBoundaryVoltError->AddCorrectionCompact(corr1,-1);
+  isOK[0]&=compCorrBoundaryVoltError->AddCorrectionCompact(corr0,-1);
+  isOK[1]=compCorrBoundaryVoltError->GetCorrections()->GetEntries()==1;
+  AliTPCBoundaryVoltError  *corrRes=0;
+  if (isOK[1]==kFALSE){
+    isOK[2]=kFALSE;
+    isOK[3]=kFALSE;
+    isOK[4]=kFALSE;
+  }else{
+    corrRes=  dynamic_cast<AliTPCBoundaryVoltError *>(compCorrBoundaryVoltError->GetSubCorrection(0));
+    if (corrRes==NULL){
+      isOK[2]=kFALSE;
+      isOK[3]=kFALSE;
+      isOK[4]=kFALSE;
+    }else{
+      for (Int_t ibound=0; ibound<8; ibound++){ 
+	isOK[3]&=TMath::Abs(corrRes->GetBoundariesA(ibound))<kEpsilon;
+	isOK[3]&=TMath::Abs(corrRes->GetBoundariesC(ibound))<kEpsilon;
+      }
+    }
+  }
+  Bool_t res=kTRUE;
+  for (Int_t i=0; i<5; i++) res&=isOK[i];
+  {
+    if (isOK[0]==kFALSE){
+      ::Error("TestCorrection_AddCorrectionCompact","AliTPCBoundaryVoltError -ADD FAILED");
+    }else{
+      ::Info("TestCorrection_AddCorrectionCompact","AliTPCBoundaryVoltError -ADD OK");
+    }
+    if (isOK[1]==kFALSE){
+      ::Error("TestCorrection_AddCorrectionCompact","AliTPCBoundaryVoltError - wrong entries  FAILED");
+    }else{
+      ::Info("TestCorrection_AddCorrectionCompact","AliTPCBoundaryVoltError - entries  OK");
+    }
+    if (isOK[2]==kFALSE || isOK[3]==kFALSE ||isOK[4]==kFALSE ){
+      ::Error("TestCorrection_AddCorrectionCompact","AliTPCBoundaryVoltError - inconsitent entries  FAILED");    
+    }else{
+      ::Info("TestCorrection_AddCorrectionCompact","AliTPCBoundaryVoltError - consistent entries  OK");    
     }
   }    
   return res;

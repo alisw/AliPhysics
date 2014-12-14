@@ -17,7 +17,7 @@ class AliTPCBoundaryVoltError : public AliTPCCorrection {
 public:
   AliTPCBoundaryVoltError();
   virtual ~AliTPCBoundaryVoltError();
-
+  virtual Bool_t AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight);
   // initialization and update functions
   virtual void Init();
   virtual void Update(const TTimeStamp &timeStamp);
