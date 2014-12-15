@@ -25,9 +25,14 @@ message(STATUS "CMake platform: ${CMAKE_SYSTEM}")
 message(STATUS "Build folder: ${AliRoot_BINARY_DIR}")
 message(STATUS "Source folder: ${AliRoot_SOURCE_DIR}")
 message(STATUS "Installation folder: ${CMAKE_INSTALL_PREFIX}")
-if(CMAKE_BUILD_TYPE)
-    message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-endif(CMAKE_BUILD_TYPE)
+
+# You can change the build type using 
+# cmake -DCMAKE_BUILD_TYPE=DEBUG | RELEASE | RELWITHDEBINFO | MINSIZEREL ...
+if (NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
+endif(NOT CMAKE_BUILD_TYPE)
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+
 
 if(CMAKE_INSTALL_PREFIX STREQUAL "${AliRoot_SOURCE_DIR}")
     message(FATAL_ERROR "Please choose a different installation point than the source tree!")
@@ -50,11 +55,10 @@ include(CheckGitVersion)
 #       - GCC_MAJOR.GCC_MINOR.GCC_PATCH
 include(CheckCompiler)
 
-# You can change the build type using 
-# cmake -DCMAKE_BUILD_TYPE=DEBUG|RELEASE|RELWITHDEBINFO|MINSIZEREL...
-if (NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
-endif(NOT CMAKE_BUILD_TYPE)
+# Shared library suffix
+if (NOT CMAKE_SYSTEM_NAME EQUAL Windows)
+  set(CMAKE_SHARED_LIBRARY_SUFFIX .so)
+endif (NOT CMAKE_SYSTEM_NAME EQUAL Windows)
 
 # ROOT dictionaries and maps
 include(CMakeALICE)
