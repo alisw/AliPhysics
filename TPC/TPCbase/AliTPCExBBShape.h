@@ -41,7 +41,8 @@ class AliMagF;
 class AliTPCExBBShape : public AliTPCCorrection {
 public:
   AliTPCExBBShape();
-  virtual ~AliTPCExBBShape();
+  virtual ~AliTPCExBBShape();  
+  virtual Bool_t AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight);
 
  // initialization and update functions
   virtual void Init();
@@ -66,11 +67,11 @@ public:
 
   virtual void Print(Option_t* option="") const;
   static Double_t GetBFieldXYZ(Double_t gx, Double_t gy, Double_t gz, Int_t axisType);
-
+  Double_t GetScaling() const {return fScaling;}
 private:
   Float_t fC1; // coefficient C1          (compare Jim Thomas's notes for definitions)
   Float_t fC2; // coefficient C2          (compare Jim Thomas's notes for definitions)
-
+  Float_t fScaling; // scaling factor to rescale distortion    - for tests purposes only
   AliMagF *fBField;       // pointer to magnetic field
 
   AliTPCExBBShape & operator =(const AliTPCExBBShape &); // dummy assignment operator
