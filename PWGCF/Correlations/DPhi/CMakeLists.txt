@@ -42,16 +42,16 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-    AliAnalysisTask3PCorrelations.cxx.
+    AliAnalysisTask3PCorrelations.cxx
     AliAnalysisTaskContMC.cxx
     AliAnalysisTaskDiHadron.cxx
     AliAnalysisTaskDiJetCorrelations.cxx
     AliAnalysisTaskDptDptCorrelations.cxx
     AliAnalysisTaskDptDptQA.cxx
-    AliAnalysisTaskLeadingTrackUE.cxx.
-    AliAnalysisTaskLongRangeCorrelations.cxx.
+    AliAnalysisTaskLeadingTrackUE.cxx
+    AliAnalysisTaskLongRangeCorrelations.cxx
     AliAnalysisTaskMinijet.cxx
-    AliAnalysisTaskPhiCorrelations.cxx.
+    AliAnalysisTaskPhiCorrelations.cxx
     AliAnalysisTaskpxpx.cxx
     AliAnalysisTaskpxpy.cxx
     AliAnalysisTaskpxpy.cxx
@@ -60,12 +60,12 @@ set(SRCS
     AliAnalysisTaskPythiaMpi.cxx
     AliAnalysisTaskpzpz.cxx
     AliAnalysisTaskpzpz.cxx
-    AliAnalysisTaskTwoPlusOne.cxx.
+    AliAnalysisTaskTwoPlusOne.cxx
     AliDptDptInMC.cxx
-    AliLeadingV0Correlation.cxx.
-    AliPhiCorrelationsQATask.cxx.
+    AliLeadingV0Correlation.cxx
+    AliPhiCorrelationsQATask.cxx
     DiHadronPID/AliAnalysisTaskCompareAODTrackCuts.cxx
-    DiHadronPID/AliAnalysisTaskDiHadronPID.cxx.
+    DiHadronPID/AliAnalysisTaskDiHadronPID.cxx
     DiHadronPID/AliAODEventCutsDiHadronPID.cxx
     DiHadronPID/AliAODTrackCutsDiHadronPID.cxx
     DiHadronPID/AliFunctionsDiHadronPID.cxx
@@ -77,7 +77,7 @@ set(SRCS
     FourierDecomposition/AliMuonEffMC.cxx
     FourierDecomposition/AliPool.cxx
     MuonHadron/AliAnalysisTaskDiMuonCorrelations.cxx
-    MuonHadron/AliAnalysisTaskMuonHadronCorrelations.cxx.
+    MuonHadron/AliAnalysisTaskMuonHadronCorrelations.cxx
     PhiEffMC/AliAnalysisTaskPhiEffMc.cxx
     PidPid/AliAnalysisTaskPidPidCorrelations.cxx
     TriggerPID/AliAnalysisTaskPIDCORR.cxx
