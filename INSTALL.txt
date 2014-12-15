@@ -23,6 +23,9 @@ In order to build and install AliRoot 3 folders need to be defined.
  all intermediary files and generated build files
  3. Installation folder - The folder when AliRoot libraries and binaries will be installed.
 
+Minimum version of CMake for AliRoot is 2.8.11, but we recommend to stay up to date with
+the latest stable version.
+
 Important Note: All these 3 folders have to be in different locations.
 Important Note: Developers information below
 
@@ -93,6 +96,14 @@ for the generation of DAs (full documentation HERE -> link to daq documentation)
     
     If we need to change any configuration paramenter, for example the Root installation point set by ROOTSYS it
     is mandatory to delete the $MY_WORK_DIR/build/CMakeCache.txt file and rerun the full "cmake" command
+    
+    CMake offers general configuration options that can be set using CMAKE_BUILD_TYPE.
+    Possible values are empty, Debug, Release, RelWithDebInfo and MinSizeRel. This variable is only supported for
+    make based generators. If this variable is supported, then CMake will also provide initial values for the variables
+    with the name CMAKE_C_FLAGS_[DEBUG|RELEASE|RELWITHDEBINFO|MINSIZEREL]. For example, if CMAKE_BUILD_TYPE is Debug,
+    then CMAKE_C_FLAGS_DEBUG will be added to the CMAKE_C_FLAGS.
+    
+    CMAKE_BUILD_TYPE for AliRoot Grid packages is RelWithDebInfo.
     
 5. Build AliRoot
     After the configuration is done the build can be started. Inside the build directory we type
