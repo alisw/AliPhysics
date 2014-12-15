@@ -6,6 +6,7 @@ AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
   TString suffix = "",
   TString jetArrname = "",
   TString trackArrname = "PicoTracks",
+  TString subwagons="",
   Bool_t triggerOnLeadingJet = kFALSE,
   Int_t leadingHadType = 0 /*0 = charged, 1 = neutral, 2 = both*/,
   Float_t R = 0.4,
@@ -104,6 +105,7 @@ AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
      //jetCont->SetJetAcceptanceType(cutType);
      jetCont->SetJetPtCut(jptcut);
      jetCont->SetPercAreaCut(percjetareacut);
+     jetCont->SetRhoName(rhoname);
   }
   taskCorr->SetMC(theMCon);
   taskCorr->SetUseReco(reco);
