@@ -31,7 +31,7 @@ using namespace std;
 
 void TestGRPPreprocessor(const char* runtype="PHYSICS", TString partition="ALICE", TString detector="", TString beamType = "p-p", Int_t errorLevel=0)
 {
-  gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
+  gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle");
 
   AliLog::SetClassDebugLevel("AliGRPPreprocessor",3);
   Int_t kRun = 7;

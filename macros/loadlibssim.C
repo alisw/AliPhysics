@@ -41,7 +41,7 @@ Int_t loadlibssim ()
   if ( gSystem->Load("libAliPythia6") < 0 ) return ret; ret--;
 
   if ( gSystem->Load("libhijing") < 0 ) return ret; ret--;
-  if ( gSystem->Load("libTHijing") < 0 ) return ret; ret--;// AliGenHijingEventHeader needed by libZDCsim.so
+  if ( gSystem->Load("libTHijing") < 0 ) return ret; ret--;// AliGenHijingEventHeader needed by libZDCsim
 
   if ( gSystem->Load("libSTRUCT") < 0 ) return ret; ret--;
   if ( gSystem->Load("libPHOSUtils") < 0 ) return ret; ret--;

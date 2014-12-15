@@ -2,11 +2,11 @@ void fastGenEMCocktail(Int_t nev = 1, char* filename = "galice.root")
 {
 // load libraries
 
-	gSystem->Load("liblhapdf.so");      // Parton density functions
-	gSystem->Load("libpythia6.so");     // Pythia
+	gSystem->Load("liblhapdf");      // Parton density functions
+	gSystem->Load("libpythia6");     // Pythia
 	gSystem->Load("libEG");
 	gSystem->Load("libEGPythia6");
-	gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
+	gSystem->Load("libAliPythia6");  // ALICE specific implementations
 
 	// Runloader
 		

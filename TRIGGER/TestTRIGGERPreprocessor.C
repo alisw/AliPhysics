@@ -6,7 +6,7 @@
 void TestTRIGGERPreprocessor()
 {
   // load library
-  gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
+  gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle");
 
   // Defining shuttle instance (run number, start time, end time) 
   AliTestShuttle* shuttle = new AliTestShuttle(7, 0, 1);

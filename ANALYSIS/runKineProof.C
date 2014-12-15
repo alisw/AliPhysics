@@ -1,5 +1,5 @@
 {
-    gSystem->Load("libPhysics.so");
+    gSystem->Load("libPhysics");
     // Connecting to the PROOF cluster
     TProof::Open("alicecaf");
 

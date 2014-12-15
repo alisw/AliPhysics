@@ -9,7 +9,7 @@
 
 #include "AliEveTPCSector2DGL.h"
 
-#include <EveDet/AliEveTPCSector2D.h>
+#include <AliEveTPCSector2D.h>
 
 #include <TGLRnrCtx.h>
 #include <TGLSelectRecord.h>

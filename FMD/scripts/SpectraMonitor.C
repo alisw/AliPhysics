@@ -15,9 +15,9 @@ SpectraMonitor(const char* file="",
 	       const char* cdbSrc="local://$ALICE_ROOT/OCDB", 
 	       UShort_t    over=0)
 {
-  // gSystem->Load("libANALYSIS.so");
-  // gSystem->Load("libFMDanalysis.so");
-  gSystem->Load("libFMDutil.so");
+  // gSystem->Load("libANALYSIS");
+  // gSystem->Load("libFMDanalysis");
+  gSystem->Load("libFMDutil");
   // AliLog::SetModuleDebugLevel("FMD", 8);
   TString fname(file);
   if (fname.CompareTo("help", TString::kIgnoreCase) == 0) { 

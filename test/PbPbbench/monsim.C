@@ -5,12 +5,12 @@ void monsim(Int_t nev=1){
   gSystem->Load("libAliPythia6");
   gSystem->Load("libgeant321");
   
-  gSystem->Load("libhijing");
+  gSystem->Load("libHIJING");
   gSystem->Load("libTHijing");
 
   // MonaLisa monitoring
-  gSystem->Load("libNet.so");
-  gSystem->Load("libMonaLisa.so");
+  gSystem->Load("libNet");
+  gSystem->Load("libMonaLisa");
 
   new TMonaLisaWriter("aliendb3.cern.ch", "Simulation PbPb", gSystem->Getenv("TEST_PLATFORMID"), gSystem->Getenv("TEST_PLATFORMID"), "global");
 

@@ -8,7 +8,7 @@
 void StoreObject(AliTPCClusterParam *param);
 
 void MakeClusterParam(const char *fnresolc="Output.root", const char *fnresolg="Output.root"){
-  gSystem->Load("libTPCcalib.so");
+  gSystem->Load("libTPCcalib");
   TFile fresolc(fnresolc);
   TFile fresolg(fnresolg);
   AliTPCcalibTracks *calibtracks = (AliTPCcalibTracks*)fresolc.Get("calibTracks");

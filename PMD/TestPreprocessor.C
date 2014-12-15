@@ -12,7 +12,7 @@
 void TestPreprocessor()
 {
     // load library
-    gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
+    gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle");
 
     // create AliTestShuttle instance
     // The parameters are run, startTime, endTime

@@ -9,8 +9,8 @@
 
 #include "AliEveTPCLoader.h"
 #include "AliEveTPCData.h"
-#include <EveDet/AliEveTPCSector2D.h>
-#include <EveDet/AliEveTPCSector3D.h>
+#include <AliEveTPCSector2D.h>
+#include <AliEveTPCSector3D.h>
 #include <TEveManager.h>
 #include <TEveGedEditor.h>
 

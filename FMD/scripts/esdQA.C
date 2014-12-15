@@ -2,8 +2,8 @@
 void 
 esdQA() 
 {  
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libAnalysisCheck.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libAnalysisCheck");
 
   // create the analysis goodies object
   AliAnalysisGoodies * master     = new AliAnalysisGoodies(); 

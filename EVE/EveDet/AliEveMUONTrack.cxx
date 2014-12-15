@@ -9,7 +9,7 @@
 
 #include "AliEveMUONTrack.h"
 
-#include <EveBase/AliEveEventManager.h>
+#include <AliEveEventManager.h>
 
 #include <AliMagF.h>
 #include <AliLog.h>

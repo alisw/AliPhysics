@@ -4,7 +4,7 @@
   //Initialization:
 
   gSystem->AddIncludePath("-I$ALICE_ROOT/STAT")
-  gSystem->Load("$ALICE_ROOT/lib/tgt_linux/libSTAT.so");
+  gSystem->Load("$ALICE_ROOT/lib/tgt_linux/libSTAT");
   .L $ALICE_ROOT/STAT/Macros/kDTreeTest.C+ 
 
   

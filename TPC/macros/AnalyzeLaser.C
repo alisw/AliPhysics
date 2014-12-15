@@ -1,5 +1,5 @@
 
-gSystem->Load("libSTAT.so");
+gSystem->Load("libSTAT");
 TStatToolkit stat;
 Int_t npoints;
 Double_t chi2;

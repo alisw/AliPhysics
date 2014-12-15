@@ -4,10 +4,10 @@ void runlocal() {
 
 
   gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include"); 
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
   
   //Enable the needed package
   gSystem->Load("libSTEERBase");

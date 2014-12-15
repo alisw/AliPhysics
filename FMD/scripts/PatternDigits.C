@@ -15,7 +15,7 @@ PatternDigits()
   cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
   AliFMDParameters::Instance()->Init();
-  gSystem->Load("libFMDutil.so");
+  gSystem->Load("libFMDutil");
   AliFMDPattern* d = new AliFMDPattern;
   d->AddLoad(AliFMDInput::kDigits);
   d->SetName("digit");

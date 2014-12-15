@@ -9,7 +9,7 @@
 
 #include "AliEveTRDModuleImp.h"
 #include "AliEveTRDData.h"
-#include "EveBase/AliEveEventManager.h"
+#include "AliEveEventManager.h"
 
 #include "TTree.h"
 #include "TGListTree.h"

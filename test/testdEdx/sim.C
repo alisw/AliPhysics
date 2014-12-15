@@ -29,7 +29,7 @@ void sim(Int_t nev, Bool_t useIonTail, Double_t crossTalkCorrection) {
   gSystem->Load("libEGPythia6");
   gSystem->Load("libpythia6");
   gSystem->Load("libAliPythia6");
-  gSystem->Load("libhijing");
+  gSystem->Load("libHIJING");
   gSystem->Load("libTHijing");
   gSystem->Load("libgeant321");
 

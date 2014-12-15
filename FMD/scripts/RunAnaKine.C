@@ -14,8 +14,8 @@ RunAnaKine(Bool_t primary_only=false, Bool_t segmented=true)
   //  true                | ok     | ok
   //  
   // gROOT->LoadMacro("Compile.C");
-  // gSystem->Unload("AliFMDAnaFlowKine_C.so");
-  // gSystem->Unload("AliFMDAnaFlowRing_h.so");
+  // gSystem->Unload("AliFMDAnaFlowKine_C");
+  // gSystem->Unload("AliFMDAnaFlowRing_h");
   if (!Compile("AliFMDAnaFlowRing.h")) return;
   if (!Compile("AliFMDAnaFlowKine.C")) return;
   AliFMDAnaFlowKine ak(1, segmented, primary_only); 

@@ -9,8 +9,8 @@
 
 #include "AliEveTPCLoaderEditor.h"
 
-#include <EveDet/AliEveTPCLoader.h>
-#include <EveDet/AliEveTPCData.h>
+#include <AliEveTPCLoader.h>
+#include <AliEveTPCData.h>
 
 #include <TEveScene.h>
 #include <TEveManager.h>

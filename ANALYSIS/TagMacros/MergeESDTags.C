@@ -15,9 +15,9 @@ void MergeESDTags()
 
   printf("*** Connect to AliEn ***\n");
   TGrid::Connect("alien://");
-  gSystem->Load("libProofPlayer.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libProofPlayer");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
   
   // Create A tag creator object 
   AliESDTagCreator *tagCre = new AliESDTagCreator();

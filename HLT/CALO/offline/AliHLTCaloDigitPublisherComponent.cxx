@@ -37,8 +37,8 @@
 #include "AliHLTTPCFileHandler.h"
 #include "AliHLTCaloDigitDataStruct.h"
 #include "AliHLTCaloDefinitions.h"
-#include "offline/AliHLTEMCALDigitHandler.h"
-#include "offline/AliHLTPHOSDigitHandler.h"
+#include "AliHLTEMCALDigitHandler.h"
+#include "AliHLTPHOSDigitHandler.h"
 #include "AliHLTEMCALDefinitions.h"
 #include "AliHLTPHOSDefinitions.h"
 

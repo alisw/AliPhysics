@@ -66,14 +66,14 @@ endfunction()
 
 foreach(oldetect ${ONLINEDETECTORS})
 detector_module(h_module ${oldetect})
-  list(APPEND mod "-I${CMAKE_SOURCE_DIR}/${h_module}")
+  list(APPEND mod "-I${AliRoot_SOURCE_DIR}/${h_module}")
 endforeach(oldetect ${ONLINEDETECTORS})
-list(APPEND mod "-I${CMAKE_SOURCE_DIR}/include" "-I${CMAKE_SOURCE_DIR}/STEER" "-I${CMAKE_SOURCE_DIR}/ANALYSIS" "-I${CMAKE_SOURCE_DIR}/RAW" "-I${CMAKE_SOURCE_DIR}/STEER/STEER" "-I${CMAKE_SOURCE_DIR}/STEER/CDB" "-I${ROOTINCDIR}" "-I${CMAKE_SOURCE_DIR}/STEER/STEERBase" "-I${CMAKE_SOURCE_DIR}/STEER/AOD" "-I${CMAKE_SOURCE_DIR}/STEER/ESD" "-I${CMAKE_SOURCE_DIR}/MUON/mapping" "-I${CMAKE_SOURCE_DIR}/TPC/Base" "-I$ENV{AMORE}/include/amore")
+list(APPEND mod "-I${AliRoot_SOURCE_DIR}/include" "-I${AliRoot_SOURCE_DIR}/STEER" "-I${AliRoot_SOURCE_DIR}/ANALYSIS" "-I${AliRoot_SOURCE_DIR}/RAW" "-I${AliRoot_SOURCE_DIR}/STEER/STEER" "-I${AliRoot_SOURCE_DIR}/STEER/CDB" "-I${ROOTINCDIR}" "-I${AliRoot_SOURCE_DIR}/STEER/STEERBase" "-I${AliRoot_SOURCE_DIR}/STEER/AOD" "-I${AliRoot_SOURCE_DIR}/STEER/ESD" "-I${AliRoot_SOURCE_DIR}/MUON/mapping" "-I${AliRoot_SOURCE_DIR}/TPC/Base" "-I$ENV{AMORE}/include/amore")
 
 # ----------Common stuff-------------------
 
 #file(GLOB_RECURSE _dafiles $ENV{ALICE_ROOT}/*da.cxx)
-file(GLOB_RECURSE _dafiles ${CMAKE_SOURCE_DIR}/*da.cxx)
+file(GLOB_RECURSE _dafiles ${AliRoot_SOURCE_DIR}/*da.cxx)
 
 set (DAINSTALL "$ENV{ALICE_INSTALL}/DA")
 if(DAINSTALL STREQUAL "/DA") 
@@ -130,7 +130,7 @@ else()
 endif(DAQDALIB_PATH)
 set(DAQDALIB "${DAQDADIR}/libdaqDA.a")
 
-include_directories(${DAQDADIR} ${CMAKE_SOURCE_DIR}/RAW ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/STEER)
+include_directories(${DAQDADIR} ${AliRoot_SOURCE_DIR}/RAW ${AliRoot_SOURCE_DIR}/include ${AliRoot_SOURCE_DIR}/STEER)
 include_directories(SYSTEM ${ROOTINCDIR})
 
 # ----------Create All Valid targets---------
@@ -171,10 +171,10 @@ foreach(detector ${ONLINEDETECTORS} )
 #Get detector algorithms for this detector
   foreach(dafile ${_dafiles})
 
-    string(REGEX MATCH "${CMAKE_SOURCE_DIR}/${DAMODULE}/${DAMODULE}${SUBDAMODULE}" match ${dafile})
+    string(REGEX MATCH "${AliRoot_SOURCE_DIR}/${DAMODULE}/${DAMODULE}${SUBDAMODULE}" match ${dafile})
 #Found a valid target name
 	if(match)
-      string(REGEX REPLACE "${CMAKE_SOURCE_DIR}/${DAMODULE}/${DAMODULE}${SUBDAMODULE}(.*)da\\.cxx" "\\1" DANAME ${dafile})
+      string(REGEX REPLACE "${AliRoot_SOURCE_DIR}/${DAMODULE}/${DAMODULE}${SUBDAMODULE}(.*)da\\.cxx" "\\1" DANAME ${dafile})
 #Check for default DA 
 	  if(DANAME)
 	    set(DATARGETNAME "daqDA-${ONLINEDETECTORNAME}-${DANAME}")
@@ -205,7 +205,7 @@ foreach(detector ${ONLINEDETECTORS} )
 	  set(DAMAKEFILE "${DATARGETDIR}/${DAMODULE}${SUBDAMODULE}${DANAME}da.make")
 
   
-      file(READ "${CMAKE_SOURCE_DIR}/${DASRC}" _dasrc)
+      file(READ "${AliRoot_SOURCE_DIR}/${DASRC}" _dasrc)
 	  getinfo(DACONTACT "Contact" ${_dasrc})
 	  getinfo(DALINKPAGE "Link" ${_dasrc})
 	  getinfo(DAREFRUN "Reference Run" ${_dasrc})
@@ -327,7 +327,7 @@ COMMAND @echo "***** Making archive ${DATAR} *****"
 COMMAND rm -rf ${DATAR}
 COMMAND rm -rf junk
 COMMAND mkdir junk && mkdir junk/${DAARC} 
-	COMMAND cp -a ${CMAKE_SOURCE_DIR}/${DASRC} junk/${DAARC} 
+	COMMAND cp -a ${AliRoot_SOURCE_DIR}/${DASRC} junk/${DAARC} 
 COMMAND cp -a ${DAMAKEFILE} junk/${DAARC}/Makefile 
 COMMAND cp -a ${DASPECFILE} junk/${DAARC}/${DAMODULE}${SUBDAMODULE}${DANAME}da.spec
 COMMAND cd junk && tar czf ${DATAR} * 
@@ -464,7 +464,7 @@ add_custom_command(
 TARGET DAOBJ_${DAEXE}_
 COMMAND echo "***** Compiling ${DASRC} *****"
 COMMAND echo "${DFLAGS}"
-	COMMAND g++ -c ${AMOREDEFINITIONS} -D${CMAKE_SYSTEM_NAME} ${DATE_CFLAGS} -I${DATE_ROOT}/infoLogger -I${DATE_ROOT}/logbook -I${DAQDADIR} -I${CMAKE_SOURCE_DIR}/RAW -I${CMAKE_BINARY_DIR}/include -I${ROOTINCDIR} ${mod} ${date_head} ${CMAKE_SOURCE_DIR}/${DASRC} -o ${DAOBJ}
+	COMMAND g++ -c ${AMOREDEFINITIONS} -D${CMAKE_SYSTEM_NAME} ${DATE_CFLAGS} -I${DATE_ROOT}/infoLogger -I${DATE_ROOT}/logbook -I${DAQDADIR} -I${AliRoot_SOURCE_DIR}/RAW -I${CMAKE_BINARY_DIR}/include -I${ROOTINCDIR} ${mod} ${date_head} ${AliRoot_SOURCE_DIR}/${DASRC} -o ${DAOBJ}
 	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}  
 )
 add_dependencies(DAOBJ_${DAEXE}_ DADEP_${DAEXE}_ )
@@ -474,7 +474,7 @@ add_custom_target(DADEP_${DAEXE}_)
 add_custom_command(
 TARGET DADEP_${DAEXE}_
 COMMAND echo "***** Making detector-algorithm dependencies ${DADEP} *****"
-	COMMAND g++ -MM ${DATE_CFLAGS} -I${DAQDADIR} -I${CMAKE_SOURCE_DIR}/RAW -I${CMAKE_BINARY_DIR}/include -I${ROOTINCDIR} ${mod} ${date_head} ${CMAKE_SOURCE_DIR}/${DASRC} > ${DADEP}
+	COMMAND g++ -MM ${DATE_CFLAGS} -I${DAQDADIR} -I${AliRoot_SOURCE_DIR}/RAW -I${CMAKE_BINARY_DIR}/include -I${ROOTINCDIR} ${mod} ${date_head} ${AliRoot_SOURCE_DIR}/${DASRC} > ${DADEP}
 	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}  
 )
 

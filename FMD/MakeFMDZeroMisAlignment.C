@@ -14,7 +14,7 @@ void MakeFMDZeroMisAlignment()
   TString   output  = "FMDfullMisalignment.root";
   if(toCdb) output  = storage;
   
-  gSystem->Load("libFMDutil.so");
+  gSystem->Load("libFMDutil");
   AliFMDAlignFaker::GetGeometry(toCdb, storage);
   AliFMDAlignFaker* faker = new AliFMDAlignFaker(AliFMDAlignFaker::kAll, 
 						 "geometry.root", 

@@ -42,8 +42,6 @@
 #include "AliMC.h"
 #include "AliRun.h"
 #include "AliStack.h"
-#include "AliDecayer.h"
-#include "AliDecayerPythia.h"
 #include "AliLog.h"
 #include "AliGenCorrHF.h"
 

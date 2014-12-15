@@ -8,7 +8,7 @@
  **************************************************************************/
 
 #include "AliEveITSDigitsInfo.h"
-#include <EveBase/AliEveEventManager.h>
+#include <AliEveEventManager.h>
 
 #include <AliITS.h>
 #include <AliITSInitGeometry.h>

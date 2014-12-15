@@ -49,29 +49,29 @@ void compare_HLT_offline_local( TString file
   TStopwatch timer;
   timer.Start();
 
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
  
   //----------- Loading the required libraries ---------//
 
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libHLTbase.so");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libHLTbase");
  
   gSystem->AddIncludePath("-I$ALICE_ROOT/HLT/BASE -I$ALICE_ROOT/PWGPP/TPC -I. -I$ALICE_ROOT/STEER -I$ALICE_ROOT/ANALYSIS");
   
-  gSystem->Load("libTPCcalib.so");
-  gSystem->Load("libTRDbase.so");
-  gSystem->Load("libTRDrec.so");
-  gSystem->Load("libITSbase.so");
-  gSystem->Load("libITSrec.so");
-  gSystem->Load("libTENDER.so");
-  gSystem->Load("libPWGPP.so");
+  gSystem->Load("libTPCcalib");
+  gSystem->Load("libTRDbase");
+  gSystem->Load("libTRDrec");
+  gSystem->Load("libITSbase");
+  gSystem->Load("libITSrec");
+  gSystem->Load("libTender");
+  gSystem->Load("libPWGPP");
  
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
   //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");

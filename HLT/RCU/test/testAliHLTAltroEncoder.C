@@ -285,7 +285,7 @@ int testAliHLTAltroEncoder()
   string ld_library_path="../.libs:";
   ld_library_path+=gSystem->GetDynamicPath();
   gSystem->SetDynamicPath(ld_library_path.c_str());
-  gSystem->Load("libAliHLTRCU.so");
+  gSystem->Load("libAliHLTRCU");
 #endif
   AliHLTSystem gHLT;
 

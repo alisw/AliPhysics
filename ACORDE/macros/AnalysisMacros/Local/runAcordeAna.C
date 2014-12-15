@@ -2,8 +2,8 @@ void runAcordeAna()
 {
   // load analysis framework
 
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
   gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
   TChain* chain = CreateESDChain("files.txt",1);
   // for includes use either global setting in $HOME/.rootrc

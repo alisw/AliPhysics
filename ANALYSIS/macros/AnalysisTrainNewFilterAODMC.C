@@ -892,11 +892,11 @@ Bool_t LoadCommonLibraries(const char *mode)
    }   
    Bool_t success = kTRUE;
    // ROOT libraries
-   gSystem->Load("libTree.so");
-   gSystem->Load("libGeom.so");
-   gSystem->Load("libVMC.so");
-   gSystem->Load("libPhysics.so");
-   gSystem->Load("libMinuit.so");
+   gSystem->Load("libTree");
+   gSystem->Load("libGeom");
+   gSystem->Load("libVMC");
+   gSystem->Load("libPhysics");
+   gSystem->Load("libMinuit");
    
    // Load framework classes. Par option ignored here.
    switch (imode) {
@@ -956,8 +956,8 @@ Bool_t LoadAnalysisLibraries(const char *mode)
 // Load common analysis libraries.
    Bool_t success = kTRUE;
    if (useTender) {
-      if (!LoadLibrary("TENDER", mode, kTRUE) ||
-          !LoadLibrary("TENDERSupplies", mode, kTRUE)) return kFALSE;
+      if (!LoadLibrary("Tender", mode, kTRUE) ||
+          !LoadLibrary("TenderSupplies", mode, kTRUE)) return kFALSE;
    }       
    if (iESDfilter || iPWG3MuonTrain) {
       if (!LoadLibrary("PWG3base", mode, kTRUE) ||
@@ -1072,7 +1072,7 @@ Bool_t LoadLibrary(const char *module, const char *mode, Bool_t rec=kFALSE)
       return kTRUE;
    } 
    // Check if the library is already loaded
-   if (strlen(gSystem->GetLibraries(Form("%s.so", module), "", kFALSE)) > 0)
+   if (strlen(gSystem->GetLibraries(module, "", kFALSE)) > 0)
       return kTRUE;    
    switch (imode) {
       case 0:
@@ -1081,7 +1081,7 @@ Bool_t LoadLibrary(const char *module, const char *mode, Bool_t rec=kFALSE)
             result = SetupPar(module);
             if (rec) anaPars += Form("%s.par ", module);
          } else {
-            result = gSystem->Load(Form("lib%s.so", module));
+            result = gSystem->Load(Form("lib%s", module));
             if (rec) anaLibs += Form("lib%s.so ", module);
          }   
          break;

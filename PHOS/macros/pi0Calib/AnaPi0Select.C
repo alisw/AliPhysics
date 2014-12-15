@@ -1,10 +1,10 @@
 void AnaPi0Select(const char* dataset="minbias_LHC09a4_81040_81050.xml")
 {
     
-    gSystem->Load("libTree.so");
-    gSystem->Load("libGeom.so");
-    gSystem->Load("libVMC.so");
-    gSystem->Load("libPhysics.so");
+    gSystem->Load("libTree");
+    gSystem->Load("libGeom");
+    gSystem->Load("libVMC");
+    gSystem->Load("libPhysics");
 
     //load analysis framework
     gSystem->Load("libANALYSIS");

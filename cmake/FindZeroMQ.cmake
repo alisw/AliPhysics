@@ -1,36 +1,85 @@
-# Copyright (c) 2010-2011 Phorm, Inc.
-# License: GNU LGPL v 3.0, see http://www.gnu.org/licenses/lgpl-3.0-standalone.html 
-# Author: Andrey Skryabin <andrew@zmqmessage.org>, et al.
+# **************************************************************************
+# * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+# *                                                                        *
+# * Author: The ALICE Off-line Project.                                    *
+# * Contributors are mentioned in the code where appropriate.              *
+# *                                                                        *
+# * Permission to use, copy, modify and distribute this software and its   *
+# * documentation strictly for non-commercial purposes is hereby granted   *
+# * without fee, provided that the above copyright notice appears in all   *
+# * copies and that both the copyright notice and this permission notice   *
+# * appear in the supporting documentation. The authors make no claims     *
+# * about the suitability of this software for any purpose. It is          *
+# * provided "as is" without express or implied warranty.                  *
+# **************************************************************************
 
-# - Find 0mq
-# Find the zeromq includes and library
-#
-#  ZEROMQ_INCLUDE_DIR - Where to find zeromq include sub-directory.
-#  ZEROMQ_LIBRARIES   - List of libraries when using zeromq.
-#  ZEROMQ_FOUND       - True if zeromq found.
+# Checks for a ZeroMQ installation
+# ZeroMQ custom installation can be pointed using -DZEROMQ
+#       - ZEROMQ_INCLUDE_DIR - Where to find zeromq include sub-directory.
+#       - ZEROMQ_LIBRARIES   - List of libraries when using zeromq.
+#       - ZEROMQ_LIBRARIES_STATIC   - List of static libraries when using zeromq.
+#       - ZEROMQ_FOUND       - True if zeromq found.
 
-IF (ZEROMQ_INCLUDE_DIR)
-  # Already in cache, be silent.
-  SET(ZEROMQ_FIND_QUIETLY TRUE)
-ENDIF (ZEROMQ_INCLUDE_DIR)
+message(STATUS "Checking for ZeroMQ ${ZEROMQ}")
 
-FIND_PATH(ZEROMQ_INCLUDE_DIR zmq.hpp)
+set(ZEROMQ_FOUND FALSE)
 
-SET(ZEROMQ_NAMES zmq)
-FIND_LIBRARY(ZEROMQ_LIBRARY NAMES ${ZEROMQ_NAMES} )
+if(ZEROMQ)
+    # ZeroMQ is installed in a custom place
+    find_library(ZEROMQ_LIBRARIES NAMES zmq
+                PATH ${ZEROMQ}/lib
+                NO_DEFAULT_PATH
+                DOC "Path to libzmq)"
+            )
 
-# Handle the QUIETLY and REQUIRED arguments and set ZEROMQ_FOUND to
-# TRUE if all listed variables are TRUE.
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(
-  ZEROMQ DEFAULT_MSG
-  ZEROMQ_LIBRARY ZEROMQ_INCLUDE_DIR 
-)
+    find_library(ZEROMQ_LIBRARIES_STATIC NAMES libzmq.a
+                PATH ${ZEROMQ}/lib
+                NO_DEFAULT_PATH
+                DOC "Path to libzmq)"
+            )
+            
+    find_path(ZEROMQ_INCLUDE_DIR NAMES zmq.hh zmq_utils.h}
+                PATHS ${ZEROMQ}/include
+                NO_DEFAULT_PATH
+                DOC "Path to ZeroMQ include header files."
+            )       
+else(ZEROMQ)
+    # Check is the library is installed on the system
+    find_library(ZEROMQ_LIBRARIES NAMES zmq
+                DOC "Path to libzmq)"
+            )
 
-IF(ZEROMQ_FOUND)
-  SET( ZEROMQ_LIBRARIES ${ZEROMQ_LIBRARY} )
-ELSE(ZEROMQ_FOUND)
-  SET( ZEROMQ_LIBRARIES )
-ENDIF(ZEROMQ_FOUND)
+    find_library(ZEROMQ_LIBRARIES_STATIC NAMES libzmq.a
+                DOC "Path to libzmq)"
+            )
+
+    find_path(ZEROMQ_INCLUDE_DIR NAMES zmq.hpp zmq_utils.h}
+                DOC "Path to ZeroMQ include header files."
+            )
+endif(ZEROMQ)
+
+set(ZEROMQ_DISABLED FALSE)
+
+if(NOT ZEROMQ_LIBRARIES)
+    message(STATUS "ZeroMQ library not found. Disabling ZeroMQ support")
+    set(ZEROMQ_DISABLED TRUE)
+endif()
+
+if(NOT ZEROMQ_LIBRARIES_STATIC AND NOT ZEROMQ_DISABLED)
+    message(STATUS "ZeroMQ static library not found. Disabling ZeroMQ support")
+    set(ZEROMQ_DISABLED TRUE)
+endif()
+
+if(NOT ZEROMQ_INCLUDE_DIR AND NOT ZEROMQ_DISABLED)
+    message(STATUS "ZeroMQ headers not found. Please install development package. Disabling ZeroMQ support")
+    set(ZEROMQ_DISABLED TRUE)
+endif()
+
+if(ZEROMQ_LIBRARIES AND ZEROMQ_LIBRARIES_STATIC AND ZEROMQ_INCLUDE_DIR)
+    message(STATUS "Found ZeroMQ ${ZEROMQ_LIBRARIES}")
+    set(ZEROMQ_FOUND TRUE)
+endif()
+
+
 
 

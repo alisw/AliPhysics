@@ -1,10 +1,23 @@
-# AliRoot Build System CMakeLists for AD
-#
-# Author: Johny Jose m(johny.jose@cern.ch)
-#         Port of previous Makefile build to cmake
+# **************************************************************************
+# * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+# *                                                                        *
+# * Author: The ALICE Off-line Project.                                    *
+# * Contributors are mentioned in the code where appropriate.              *
+# *                                                                        *
+# * Permission to use, copy, modify and distribute this software and its   *
+# * documentation strictly for non-commercial purposes is hereby granted   *
+# * without fee, provided that the above copyright notice appears in all   *
+# * copies and that both the copyright notice and this permission notice   *
+# * appear in the supporting documentation. The authors make no claims     *
+# * about the suitability of this software for any purpose. It is          *
+# * provided "as is" without express or implied warranty.                  *
+# **************************************************************************
 
-cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
+add_subdirectory(ADbase)
+add_subdirectory(ADrec)
+add_subdirectory(ADsim)
 
-file(GLOB PACKAGES CMake*.pkg)
+# Installing the macros
+install(DIRECTORY macros DESTINATION AD)
 
-ALICE_BuildModule()
+message(STATUS "AD enabled")

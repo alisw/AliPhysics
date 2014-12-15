@@ -1,459 +1,284 @@
-# -*- mode: cmake -*-/usr/share/applications/thunderbird.desktop 
+# **************************************************************************
+# * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+# *                                                                        *
+# * Author: The ALICE Off-line Project.                                    *
+# * Contributors are mentioned in the code where appropriate.              *
+# *                                                                        *
+# * Permission to use, copy, modify and distribute this software and its   *
+# * documentation strictly for non-commercial purposes is hereby granted   *
+# * without fee, provided that the above copyright notice appears in all   *
+# * copies and that both the copyright notice and this permission notice   *
+# * appear in the supporting documentation. The authors make no claims     *
+# * about the suitability of this software for any purpose. It is          *
+# * provided "as is" without express or implied warranty.                  *
+# **************************************************************************
 
-# Top level CMakeList.txt file for the AliRoot Build System
-#
-# Author: Johny Jose (johny.jose@cern.ch)
-#         Port of previous Makefile build to cmake
+#--------------------------------------------------------------------------#
+# Set Basic CMake Configuration                                            #
+#--------------------------------------------------------------------------#
 
+cmake_minimum_required(VERSION 2.8.11 FATAL_ERROR)
 
-cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
+project(AliRoot CXX C)
 
-#--------------------------------------------------------------------------------#
-# Set Basic CMake Configuration                                                  #
-#--------------------------------------------------------------------------------#
+message(STATUS "CMake platform: ${CMAKE_SYSTEM}")
+message(STATUS "Build folder: ${AliRoot_BINARY_DIR}")
+message(STATUS "Source folder: ${AliRoot_SOURCE_DIR}")
+message(STATUS "Installation folder: ${CMAKE_INSTALL_PREFIX}")
+if(CMAKE_BUILD_TYPE)
+    message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+endif(CMAKE_BUILD_TYPE)
 
-project(AliRoot CXX C Fortran)
-
-# Environment variables
-set(ALICE $ENV{ALICE})
-if(NOT ALICE)
-  message(WARNING "Environment variable ALICE is not set")
-endif(NOT ALICE)
-
-set(ALICE_ROOT $ENV{ALICE_ROOT})
-if(NOT ALICE_ROOT)
-  message(FATAL_ERROR "Please set ALICE_ROOT to the AliRoot source directory")
-endif(NOT ALICE_ROOT)
-
-set(ALICE_INSTALL $ENV{ALICE_INSTALL})
-# Set AliRoot Installation directory 
-# If CMAKE_INSTALL_PREFIX was not set, then we set it to ALICE_INSTALL. 
-# If ALICE_INSTALL was not defined, then it will default to the source directory
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    if(ALICE_INSTALL)
-	message(STATUS "AliRoot files will be installed in ${ALICE_INSTALL}")
-    else()
-	message(STATUS "AliRoot files will be installed in ${ALICE_ROOT}. You
-	can specify a different location by passing -DCMAKE_INSTALL_PREFIX or
-	by setting ALICE_INSTALL environment variable")
-	set(ALICE_INSTALL ${ALICE_ROOT})
-	if(${ALICE_INSTALL} STREQUAL ${CMAKE_BINARY_DIR})
-	    message(FATAL_ERROR "The install directory must differ from the
-	    build directory")
-	endif()
-    endif()
-    set(CMAKE_INSTALL_PREFIX ${ALICE_INSTALL} CACHE STRING "Install dir" FORCE)
+if(CMAKE_INSTALL_PREFIX STREQUAL "${AliRoot_SOURCE_DIR}")
+    message(FATAL_ERROR "Please choose a different installation point than the source tree!")
 endif()
 
+# Path to additonal modules
+set(CMAKE_MODULE_PATH "${AliRoot_SOURCE_DIR}/cmake")
 
-# Environment for SHUTTLE
-set(DIMDIR $ENV{DIMDIR})
-set(ODIR $ENV{ODIR})
-
-get_filename_component(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}" REALPATH)
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
-set(CPACK_COMPONENTS_ALL MDC)
-
-include(ALICE_CMake)
-
-#--------------------------------------------------------------------------------#
-# Find Packages                                                                  #
-#--------------------------------------------------------------------------------#
-
-# Subversion
-# ------------------------------
-
-find_package(Subversion REQUIRED)
-
-# ROOT
-# ------------------------------
-
-find_package(ROOT REQUIRED)
-
-# IRST Rule Checker 
-# ------------------------------
-
-find_package(RuleChecker)
-
-# DATE
-# ------------------------------ 
-
-find_package(DATE)
-
-# GEANT3
-# ------------------------------
-
-find_package(GEANT3)
-
-# AMORE
-# ------------------------------
-
-find_package(AMORE)
-
-# AliRoot CPack configuration                                                    
-#-------------------------------
-
-find_package(CPack)
-
-# ZeroMQ
-# ------------------------------
-find_package(ZeroMQ)
-
-# fastjet
-# ------------------------------
-find_package(FASTJET)
-
-#--------------------------------------------------------------------------------#
-# Environment/Compiler Configuration                                             #
-#--------------------------------------------------------------------------------#
-
-ALICE_CheckOutOfSourceBuild()
-ALICE_RootConfig(CMAKE_CXX_COMPILER --cxx)
-ALICE_RootConfig(CMAKE_C_COMPILER --cc)
-ALICE_RootConfig(CMAKE_Fortran_COMPILER --f77)
-ALICE_ConfigurePlatform()
-ALICE_ConfigureCompiler()
-
-
-#--------------------------------------------------------------------------------#
-# AliRoot Path Settings                                                          #
-#--------------------------------------------------------------------------------#
-
-ALICE_DevFlagsOutput()
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/tgt_${ALICE_TARGET}")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib/tgt_${ALICE_TARGET}")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib/tgt_${ALICE_TARGET}")
-set(CMAKE_INCLUDE_EXPORT_DIRECTORY "${PROJECT_BINARY_DIR}/include")
-file(MAKE_DIRECTORY ${CMAKE_INCLUDE_EXPORT_DIRECTORY})
-set(EXPORTDIRS "${ALICE_INSTALL}/include")
-set(BINLIBDIRS "-L${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
-
-
-#--------------------------------------------------------------------------------#
-# AliRoot Modules                                                                #
-#--------------------------------------------------------------------------------#
-
-# Exclude Module from all target
-# ------------------------------
-
-#set(EXCLUDEMODULES THydjet SHUTTLE)
-
-
-# Standard Modules
-# ------------------------------
-set(ALIROOTMODULES STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS AD ACORDE HMPID T0 BCM STRUCT VZERO THijing THbtp EMCAL THerwig TEPEMGEN FASTSIM TPHIC RAW MONITOR ANALYSIS JETAN HLT STAT TTherminator CORRFW DPMJET TDPMjet STARLIGHT PWGPP PWG PWGCF PWGGA PWGHF PWGDQ PWGJE PWGLF PWGUD TRIGGER PYTHIA8 TAmpt OADB MFT TEvtGen FIT)
-
-if(THydjet)
-  list(APPEND ALIROOTMODULES THydjet)
-endif(THydjet)
-
-if(SHUTTLE)
-  list(APPEND ALIROOTMODULES SHUTTLE)
-endif(SHUTTLE)
-
-# Additional Modules
-# ------------------------------
-list(APPEND ALIROOTMODULES TUHKMgen EPOS)
-
-# EVE
-# ------------------------------
-ALICE_RootConfig(EVE --has-opengl)
-if(NOT EVE STREQUAL "no")
-  list(APPEND ALIROOTMODULES EVE)
-endif(NOT EVE STREQUAL "no")
-
-# CERN Modules
-# ------------------------------
-set(CERNMODULES LHAPDF HIJING MICROCERN HERWIG)
-
-# Check for Pythia 6
-if(EXISTS ${ROOTINCDIR}/TPythia6.h)
-  set(PYTHIA6 TRUE)
-  list(APPEND CERNMODULES PYTHIA6 EVGEN)
-elseif(NOT NOPYTHIA)
-  message(FATAL_ERROR "ROOT must have Pythia6 enabled !")
-endif(EXISTS ${ROOTINCDIR}/TPythia6.h)
-
-# Set Final list of modules 
-set(MODULES ${ALIROOTMODULES} ${CERNMODULES} ALIROOT)
-
-# Set Module directories
-set(MODDIRS ${MODULES})
-
-# Libraries for Linking
-# ------------------------------
-set(ALILIBS MUON TPC PMD TRD FMD TOF ITS PHOS AD ACORDE HMPID VZERO ZDC STRUCT T0 EVGEN STEER TRIGGER MFT)
-set(LIBS ${ROOTCLIBS} ${ROOTPLIBS} ${SYSLIBS})
-
-# Configure ARVerion.h
-# ------------------------------
-# If the sources were taken from Git
-# Sets 3 git variables
+# AliRoot version extracted from Git repository
+# Sets 4 git variables
 #  - GIT_REFSPEC - complete name of the current reference
 #  - ALIROOT_BRANCH - name of the branch or tag extracted from the current reference
 #  - GIT_SHA1 - current hash in the long format
 #  - GIT_SHORT_SHA1 - current hash in the short format
-if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
- include(GetGitRevisionDescription)
- 
- find_package(Git)
- 
- if(GIT_FOUND)
-  get_git_head_revision(GIT_REFSPEC GIT_SHA1)
+#  - ALIROOT_VERSION = ALIROOT_BRANCH
+#  - ALIROOT_REVISION = GIT_SHORT_SHA1
+include(CheckGitVersion)
 
-  # GIT_REFSPEC is empty for detached mode = tags in detached mode or checkout to specific hash
- 
+#       - CLANG_MAJOR.CLANG_MINOR or
+#       - GCC_MAJOR.GCC_MINOR.GCC_PATCH
+include(CheckCompiler)
 
-  # returns the closest reference to the current hash
-  # name of the current tag or heads/branch in the case of branches
-  git_describe(ALIROOT_GIT_TAG "--all" "--abbrev=0")
+# You can change the build type using 
+# cmake -DCMAKE_BUILD_TYPE=DEBUG|RELEASE|RELWITHDEBINFO|MINSIZEREL...
+if (NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
+endif(NOT CMAKE_BUILD_TYPE)
 
-  STRING(REGEX REPLACE "^(.+/)(.+)/(.*)$" "\\2" BRANCH_TYPE "${GIT_REFSPEC}" )
+# ROOT dictionaries and maps
+include(CMakeALICE)
 
-  # the revision is not set in the case of a branch, it means we are doing development
-  # and the revision will trigger a reconfiguration
-  if(BRANCH_TYPE STREQUAL "heads")
-   set(ALIROOT_REVISION "ThisIsaBranchNoRevisionProvided")
-   STRING(REGEX REPLACE "^(.+/)(.+/)(.*)$" "\\3" SHORT_BRANCH "${GIT_REFSPEC}" )
-  else()
-   set(SHORT_BRANCH ${ALIROOT_GIT_TAG})
-   set(ALIROOT_REVISION ${GIT_SHA1})
-  endif()
+# Checking first for DIM, DATE, AMORE and daqDA 
+# in case ROOT Extra static library needs to be enabled
 
-  set(ALIROOT_BRANCH ${SHORT_BRANCH})
-  
-  # generate the short version of the revision hash
-  execute_process(COMMAND git rev-parse --short ${GIT_SHA1} 
-                          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} 
-                          OUTPUT_STRIP_TRAILING_WHITESPACE 
-                          RESULT_VARIABLE res
-                          OUTPUT_VARIABLE GIT_SHORT_SHA1)
+# DATE
+# date-config needs DIMDIR and ODIR set
+if(DATE_CONFIG)
+    if(DIMDIR AND ODIR)
+        find_package(DATE)
+    else()
+        message(FATAL_ERROR "DATE enabled but no DIMDIR and ODIR set. Please set DIMDIR and ODIR")
+    endif()
+endif()
 
-  # if the rev-parse fails we set the short sha to the long initial one
-  if(NOT res EQUAL 0)
-    set(GIT_SHORT_SHA1 ${GIT_SHA1})
-  endif()
-  
-  message(STATUS "Aliroot branch/tag: \"${ALIROOT_BRANCH}\" - Revision:  \"${GIT_SHORT_SHA1}\" ")
+# daqDA
+if(daqDA)
+    find_package(daqDA)
+endif(daqDA)
 
- else()
-  message("Git not installed. I can't tell you which revision you are using!")
-  endif(GIT_FOUND)
+# AMORE
+if(AMORE_CONFIG)
+    if(ROOTSYS)
+        find_package(AMORE)
+    else()
+        message(FATAL_ERROR "AMORE enabled but no ROOTSYS defined")
+    endif()
+endif(AMORE_CONFIG)
+
+# DA is enabled
+if(DA)
+    if(NOT DIMDIR AND NOT ODIR)
+        set(DA FALSE)
+        message(FATAL_ERROR "Das enabled but no DIMDIR and ODIR set. Please set DIMDIR to DIM installation and ODIR to platform (default linux)")
+    endif()
+
+    if(NOT DATE_FOUND)
+        set(DA FALSE)
+        message(FATAL_ERROR "DAs enabled but no DATE support found. Please point to your date installation using \"DATE_CONFIG\" variable")
+    endif()
+
+    if(NOT daqDA_FOUND)
+        set(DA FALSE)
+        message(FATAL_ERROR "DAs enabled but no daqDA support found. Please point to your daqDA installation using \"daqDA\" variable")
+    endif()
+
+    if(NOT AMORE_FOUND)
+        set(DA FALSE)
+        message(FATAL_ERROR "DAs enabled but no AMORE support found. Please point to your AMORE installation using \"AMORE_CONFIG\" variable")
+    endif()
+    
+    # Enable static libraries
+    set(ALIROOT_STATIC TRUE)
+    message(STATUS "DAs enabled")
+endif(DA)
+
+# MDC rpm creation enables the static build
+if(MDCRPM)
+    set(ALIROOT_STATIC TRUE)
+    message(STATUS "AliMDC RPM enabled. AliRoot static build enabled")
+endif(MDCRPM)
+
+# ROOT configuration mandatory
+if(ROOTSYS)
+    find_package(ROOT REQUIRED)
+
+    # ROOT must be build with XML2 support
+    if(NOT ROOT_HASXML)
+        message(FATAL_ERROR "ROOT was not build with xml2 support. Please reinstall or rebuild ROOT with xml2 support")
+    endif(NOT ROOT_HASXML)
 else()
- message("AliRoot sources not downloaded from a Version Control System. I can't tell which revision you are using!")
-endif(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
+    message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
+endif(ROOTSYS)
 
-configure_file(${PROJECT_SOURCE_DIR}/cmake/ARVersion.h.tmp ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/FromTemplate/ARVersion.h @ONLY)
+# If no Fortran, i.e on Windows
+# We need to specify ROOT fortran
+# (f95 comes before gfortran in default module)
+include(CheckLanguage)
 
-string (REPLACE "-" "." ALIROOT_BRANCH_SPEC "${ALIROOT_BRANCH}")
+if(ROOT_FORTRAN)
+    message(STATUS "Using the Fortran compiler defined by ROOT configuration: ${ROOT_FORTRAN}")
+    set(CMAKE_Fortran_COMPILER ${ROOT_FORTRAN})
+else()
+    message(STATUS "Using default system Fortran compiler")
+endif(ROOT_FORTRAN)
 
-#--------------------------------------------------------------------------------#
-# Build Modules                                                                  #
-#--------------------------------------------------------------------------------#
+check_language(Fortran)
+if(CMAKE_Fortran_COMPILER)
+    enable_language(Fortran OPTIONAL)
+else()
+    message(STATUS "No Fortran support. Disabling LHAPDF, PHYTIA6, MICROCERN, etc.")
+endif()
 
-# Module Variables
-# ------------------------------
-set(ALLLIBS)
-set(ALLEXECS)
-set(INCLUDEFILES)
-set(BINLIBS)
-set(EXPORTFILES)
+# DATE
+if(DATE_CONFIG)
+    find_package(DATE)
+endif(DATE_CONFIG)
 
-# Top Level Build Targets
-# ------------------------------
+# daqDA
+if(daqDA)
+    find_package(daqDA)
+endif(daqDA)
 
-add_custom_target(alilibs-static)
-add_custom_target(include-headers ALL)
-add_custom_target(DA-all)
-add_custom_target(check-all) 
-add_custom_target(check-hxml)
-add_custom_target(smell-all) 
-add_custom_target(htmldoc) 
-add_custom_target(par-all)
-add_custom_target(test-par-all)
+# DA is enabled
+if(DA)
+    if(NOT DATE_FOUND)
+        set(DA FALSE)
+        message(FATAL_ERROR "DAs enabled but no DATE support found. Please point to your date installation using \"DATE_CONFIG\"")
+    endif()
+    
+    if(NOT daqDA_FOUND)
+        set(DA FALSE)
+        message(FATAL_ERROR "DAs enabled but no daqDA support found. Please point to your daqDA installation using \"daqDA\" variable")
+    endif()
+    
+    # Enable static libraries
+    set(ALIROOT_STATIC TRUE)
+    message(STATUS "DAs enabled")
+endif(DA)
 
-#NY file(GLOB CFILES_LIST ${CMAKE_SOURCE_DIR}/macros/*.C)
+# FastJet
+find_package(FASTJET)
 
-add_custom_command(TARGET htmldoc
-		   PRE_BUILD
-		   COMMAND mkdir -p html
-		   COMMAND rm -rf html/roothtml
-		   COMMAND rm -f html/picts
-		   COMMAND cd html && aliroot -q -b mkhtml.C\\\(0,1\\\)
-		   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+# ZEROMQ
+find_package(ZeroMQ)
 
-# Include Vc, which provides the static libVc and the relevant CMake macros
+# General flags -> Should be moved into a configuration file
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+set(CMAKE_NO_SYSTEM_FROM_IMPORTED TRUE)
+
+# AliRoot base modules
+add_subdirectory(STEER)
+add_subdirectory(RAW)
+add_subdirectory(ANALYSIS)
+
+# Include Vc own cmake
 include(Vc/Vc.cmake)
 add_subdirectory(Vc)
 
-# Add Modules	
-# ------------------------------
-foreach(MODULE ${MODDIRS})
-  set(${MODULE}ALIBS)
-#RS  configure_file(${PROJECT_SOURCE_DIR}/cmake/Module.tmp ${PROJECT_SOURCE_DIR}/${MODULE}/CMakeLists.txt @ONLY)
-  add_custom_target(${MODULE}-all ALL)
-  add_custom_target(${MODULE}-par-all)
-  add_custom_target(test-${MODULE}-par-all)
-  add_custom_target(${MODULE}-all-static)
-  add_dependencies(alilibs-static "${MODULE}-static")
-  add_subdirectory(${MODULE})
-  
-#NY  set(dir "${CMAKE_SOURCE_DIR}/${MODULE}")
-#NY  if (EXISTS "${dir}")
-#NY      file(GLOB CFILES_MOD ${dir}/*.C)
-#NY      list(LENGTH CFILES_MOD len)
-#NY      if (${len} GREATER 0)
-#NY        list(APPEND CFILES_LIST "${CFILES_MOD}")
-#NY      endif (${len} GREATER 0)
-#NY  endif(EXISTS "${dir}")
-endforeach(MODULE)
+# AliRoot modules
+add_subdirectory(ACORDE)
+add_subdirectory(AD)
+add_subdirectory(BCM)
+add_subdirectory(CORRFW)
+add_subdirectory(EMCAL)
+add_subdirectory(EPOS)
+add_subdirectory(EVE)
+add_subdirectory(EVGEN)
+add_subdirectory(FASTSIM)
+add_subdirectory(FIT)
+add_subdirectory(FMD)
+add_subdirectory(HLT)
+add_subdirectory(HMPID)
+add_subdirectory(ITS)
+add_subdirectory(JETAN)
+add_subdirectory(MFT)
+add_subdirectory(MONITOR)
+add_subdirectory(MUON)
+add_subdirectory(OADB)
+add_subdirectory(PHOS)
+add_subdirectory(PMD)
+add_subdirectory(PYTHIA8)
+add_subdirectory(STARLIGHT)
+add_subdirectory(STAT)
+add_subdirectory(STRUCT)
+add_subdirectory(T0)
+add_subdirectory(TDPMjet)
+add_subdirectory(TEvtGen)
+add_subdirectory(THerwig)
+add_subdirectory(TOF)
+add_subdirectory(TPC)
+add_subdirectory(TRD)
+add_subdirectory(TRIGGER)
+add_subdirectory(TTherminator)
+add_subdirectory(VZERO)
+add_subdirectory(ZDC)
 
-#NY foreach(cfile ${CFILES_LIST})
-#NY     add_custom_command(TARGET htmldoc
-#NY 		       PRE_BUILD
-#NY 		       COMMAND cd html && 
-#NY 		    	       aliroot -b -q \"mkhtml.C(\"${cfile}\")\" > /dev/null
-#NY  		       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-#NY endforeach(cfile)
+# Fortran modules
+if(CMAKE_Fortran_COMPILER)
+  add_subdirectory(DIME)
+  add_subdirectory(DPMJET)
+  add_subdirectory(HERWIG)
+  add_subdirectory(HIJING)
+  add_subdirectory(LHAPDF)
+  add_subdirectory(MICROCERN)
+  add_subdirectory(PYTHIA6)
+  add_subdirectory(TEPEMGEN)
+  add_subdirectory(THbtp)
+  add_subdirectory(THijing)
+  add_subdirectory(THydjet)
+  add_subdirectory(TPHIC)
+  add_subdirectory(TUHKMgen)
+  add_subdirectory(TAmpt)
+endif(CMAKE_Fortran_COMPILER)
 
-if(DATE_FOUND)
-  include (CMakeDA)
-endif(DATE_FOUND)
+# PWG libraries
+add_subdirectory(PWG)
+add_subdirectory(PWGCF)
+# Depends on PWGCF - To fix dependencies
+add_subdirectory(PWGGA)
+# Depends on CF  - To fix the dependencies
+add_subdirectory(PWGDQ)
+add_subdirectory(PWGHF)
+# Depends on CF
+add_subdirectory(PWGJE)
+add_subdirectory(PWGLF)
+add_subdirectory(PWGPP)
+add_subdirectory(PWGUD)
+add_subdirectory(data)
 
-if(RULECHECKER_FOUND)
-    add_custom_target(factfile DEPENDS ${FACTFILE})
-    add_custom_command( OUTPUT ${FACTFILE}
-                        COMMAND ${CMAKE_COMMAND} -E echo "Re-generating factfile"
-                        COMMAND ${JAVA_RUNTIME}  -Xmx1024M -jar ${FACTEXTRACTOR_JAR} ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}			
-			DEPENDS check-hxml ${CMAKE_BINARY_DIR}/check-hxml-touchfile ${_factfile_deps} 
-                        WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-endif(RULECHECKER_FOUND)
+# Enable SHUTTLE compilation
+# Check if DIMDIR and ODIR are set
+if(SHUTTLE)
+    if(ROOT_HASALIEN STREQUAL "no")
+	message(FATAL_ERROR "Shuttle needs ROOT build with AliEn support. Please build ROOT with AliEn support. Do not forget to set ALIEN to your AliEn installation")
+    endif()
+    
+    if(DIMDIR AND ODIR AND ALIEN)
+        add_subdirectory(SHUTTLE)
+    else()
+        message(FATAL_ERROR "SHUTTLE enabled! Please specify DIMDIR, ODIR and ALIEN")
+    endif()
+endif(SHUTTLE)
 
-#--------------------------------------------------------------------------------#
-# Additional Targets                                                             #
-#--------------------------------------------------------------------------------#
-
-# AliMdc RPM
-# ------------------------------
-
-execute_process(
-COMMAND root-config --libdir 
-OUTPUT_VARIABLE ROOTALIBDIR)
-string(REPLACE "\n" "" ROOTALIBDIR ${ROOTALIBDIR}) 
-
-execute_process(
-COMMAND root-config --arch 
-OUTPUT_VARIABLE ARCHITECTURE)
-
-
-set(AEXT a)
-set(LIBPATH ${CMAKE_BINARY_DIR}/lib/tgt_${ALICE_TARGET})
-set(BINPATH ${CMAKE_BINARY_DIR}/bin/tgt_${ALICE_TARGET})
-set(EXPORTDIR ${ALICE_ROOT}/include)
-set(BINLIBDIRS -L${ALICE_ROOT}/${LIBPATH})
-set(RAWDIRO ${CMAKE_BINARY_DIR}/RAW)
-set(ALIMDCSPECFILE ${RAWDIRO}/alimdc.spec)
-set(RAWDatabaseALIB ${LIBPATH}/libRAWDatabase.${AEXT})
-set(ESDALIB ${LIBPATH}/libESD.${AEXT})
-set(STEERBaseALIB ${LIBPATH}/libSTEERBase.${AEXT})
-set(MDCALIB ${LIBPATH}/libMDC.${AEXT})
-set(MODDIRO RAW/tgt_${ALICE_TARGET})
-
-
-if( ${ARCHITECTURE} MATCHES "linuxx8664gcc" )
-set(ALIMDCARCHDIR x86_64)
-elseif( ${ARCHITECTURE} MATCHES "linux" )
-set(ALIMDCARCHDIR i386)
-elseif( ${ARCHITECTURE} MATCHES "linuxia64gcc" )
-set(ALIMDCARCHDIR ia64)
-elseif(NOT DEFINED ${ARCHITECTURE})
-message("alimdc-rpm: Unknown architecture" )
-else( ${ARCHITECTURE} MATCHES "linuxx8664gcc" )
-message("alimdc-rpm: Unknown architecture" )
-endif( ${ARCHITECTURE} MATCHES "linuxx8664gcc" )
-
-
-# Module version will be written in the generated header
-configure_file ("RAW/alimdc.spec.in" "${CMAKE_CURRENT_BINARY_DIR}/RAW/alimdc.spec" @ONLY)
-
-add_custom_target( alimdc-rpm
-DEPENDS alimdc-static
-)
-
-add_custom_command(
-TARGET alimdc-rpm
-POST_BUILD 
-COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root
-COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root/opt/alimdc/lib
-COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root/opt/alimdc/include
-COMMAND cp ${ALICE_ROOT}/RAW/mdc.h ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root/opt/alimdc/include
-COMMAND cp ${LIBPATH}/libAliMDC.a ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root/opt/alimdc/lib
-COMMAND cp ${ROOTALIBDIR}/libRoot.a ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root/opt/alimdc/lib
-COMMAND cp ${ROOTALIBDIR}/liblzma.a ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root/opt/alimdc/lib
-COMMAND cp ${ROOTALIBDIR}/libpcre.a ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root/opt/alimdc/lib
-COMMAND cp ${ROOTALIBDIR}/libfreetype.a ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root/opt/alimdc/lib
-COMMAND cp ${ROOTALIBDIR}/libpcre.a ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root/opt/alimdc/lib
-COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/RPMS
-COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/RPMS/${ALIMDCARCHDIR}/
-COMMAND rpmbuild --verbose --define "_topdir ${CMAKE_CURRENT_BINARY_DIR}" --define "%buildroot ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root" -bb ${ALIMDCSPECFILE} 
-COMMAND cp -p ${CMAKE_CURRENT_BINARY_DIR}/RPMS/${ALIMDCARCHDIR}/alimdc-*.rpm .
-COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root
-COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/RPMS
-COMMAND echo "***** alimdc RPM created and put in ${CMAKE_BINARY_DIR} folder *****"
-)
-
-add_custom_command(
-TARGET ${RAWDIRO}
-COMMAND mkdir-p ${RAWDIRO}
-)
-
-
-add_custom_target( alimdc-static
-DEPENDS ${LIBPATH} ${BINPATH} RAW-all-static STEER-all-static )
-
-add_custom_command( 
-TARGET alimdc-static
-POST_BUILD
-COMMAND ar r ${LIBPATH}/alimdccxxo.a ${CMAKE_BINARY_DIR}/RAW/CMakeFiles/alimdc.dir/alimdc_main.cxx.o
-COMMAND rm -rf ${LIBPATH}/libAliMDC.a
-COMMAND ar x ${RAWDatabaseALIB}
-COMMAND ar x ${MDCALIB}
-COMMAND ar x ${ESDALIB}
-COMMAND ar x ${STEERBaseALIB}
-COMMAND ar r ${LIBPATH}/libAliMDC.a *.o
-COMMAND ar t ${RAWDatabaseALIB} | xargs rm 
-COMMAND ar t ${MDCALIB} | xargs rm 
-COMMAND ar t ${ESDALIB} | xargs rm 
-COMMAND ar t ${STEERBaseALIB} | xargs rm 
-COMMAND ${CMAKE_CXX_COMPILER} ${LDFLAGS} -o ${BINPATH}/alimdca ${LIBPATH}/alimdccxxo.a ${LIBPATH}/libAliMDC.a ${ROOTALIBDIR}/libRoot.a ${ROOTALIBDIR}/libfreetype.a ${ROOTALIBDIR}/libpcre.a ${ROOTALIBDIR}/liblzma.a -pthread -lssl -ldl -lz
-COMMAND @echo "Target alimdc-static made"
-)
-
-add_custom_command(
-TARGET ${LIBPATH}
-COMMAND mkdir -p ${LIBPATH}
-)
-
-
-#include (MakefileDA) 
-include (InstallRequiredSystemLibraries)
-include (CPack)
-
-# Install data
-# ------------------------------
-install ( DIRECTORY data 
-          DESTINATION . )
-install ( DIRECTORY OCDB 
-	  DESTINATION . 
-	  PATTERN ".svn" EXCLUDE)
-install ( DIRECTORY QAref 
-	  DESTINATION . 
-	  PATTERN ".svn" EXCLUDE)
-install ( DIRECTORY GRP 
-	  DESTINATION . 
-	  PATTERN ".svn" EXCLUDE)
-
-#
-# EOF
-#
-
+add_subdirectory(ALIROOT)

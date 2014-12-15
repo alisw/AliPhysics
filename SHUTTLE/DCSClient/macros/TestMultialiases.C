@@ -1,7 +1,7 @@
 void TestMultialiases(){
 // Simple test for the multi request query
 
-gSystem->Load("$ALICE_ROOT/SHUTTLE/DCSClient/AliDCSClient.so");
+gSystem->Load("$ALICE_ROOT/SHUTTLE/DCSClient/AliDCSClient");
  AliDCSClient client("aldcs053.cern.ch",4242,1000,5,100);
 
 //TObjArray *arr = new TObjArray();

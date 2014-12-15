@@ -1,6 +1,6 @@
 void Hshuttle(Int_t runTime=1500)
 {// this macro is to simulate the functionality of SHUTTLE.
-  gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
+  gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle");
 //  AliTestShuttle::SetMainCDB(TString("local://$HOME/CDB"));
 //  AliTestShuttle::SetMainCDB(TString("local://$HOME"));
   AliTestShuttle::SetMainCDB(TString("local://$ALICE_ROOT/OCDB"));

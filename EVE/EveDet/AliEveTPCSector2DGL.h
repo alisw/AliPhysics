@@ -14,7 +14,7 @@
 class TGLViewer;
 class TGLScene;
 
-#include <EveDet/AliEveTPCSectorData.h>
+#include <AliEveTPCSectorData.h>
 class AliEveTPCSector2D;
 
 //------------------------------------------------------------------------------

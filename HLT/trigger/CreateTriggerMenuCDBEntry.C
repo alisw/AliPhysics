@@ -58,10 +58,10 @@ void CreateTriggerMenuCDBEntry(
 		Int_t lastRun = AliCDBRunRange::Infinity()
 	)
 {
-	gSystem->Load("libAliHLTUtil.so");
-	gSystem->Load("libAliHLTTRD.so");
-	gSystem->Load("libAliHLTMUON.so");
-	gSystem->Load("libAliHLTTrigger.so");
+	gSystem->Load("libAliHLTUtil");
+	gSystem->Load("libAliHLTTRD");
+	gSystem->Load("libAliHLTMUON");
+	gSystem->Load("libAliHLTTrigger");
 
 	// Setup the CDB default storage and run number.
 	AliCDBManager* cdbManager = AliCDBManager::Instance();

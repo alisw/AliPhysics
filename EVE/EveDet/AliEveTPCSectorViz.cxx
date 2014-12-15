@@ -9,8 +9,8 @@
 
 #include "AliEveTPCSectorViz.h"
 
-#include <EveDet/AliEveTPCData.h>
-#include <EveDet/AliEveTPCSectorData.h>
+#include <AliEveTPCData.h>
+#include <AliEveTPCSectorData.h>
 
 #include <TEveTrans.h>
 #include <TStyle.h>

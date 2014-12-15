@@ -8,7 +8,7 @@
  **************************************************************************/
 
 #include "AliEveITSModuleStepperEditor.h"
-#include <EveDet/AliEveITSModuleStepper.h>
+#include <AliEveITSModuleStepper.h>
 #include <TEveGridStepperEditor.h>
 #include <TEveManager.h>
 

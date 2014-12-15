@@ -418,12 +418,12 @@ c      call luedit(2)                      ! remove unstable particles and parto
 *     generate 'njet' number of hard parton-parton scatterings with PYTHIA 
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       double precision npar0,nbco0,npart,nbcol,npart0
-      double precision gaus
+      double precision qpgaus
       
       INTEGER PYK,PYCHGE,PYCOMP
       CHARACTER beam*2,targ*2
       external pydata 
-      external pyp,pyr,pyk,pyquen,shad1,gaus
+      external pyp,pyr,pyk,pyquen,shad1,qpgaus
       
       common /pyjets/ n,npad,k(4000,5),p(4000,5),v(4000,5)
       common /hyjets/ nhj,nhp,khj(150000,5),phj(150000,5),vhj(150000,5)
@@ -503,7 +503,7 @@ c        write(*,*)'in hyhard ',x,y
 
 c       write(*,*)'in hyhard tau',tau
 
-	etaLj=gaus(rm,sig) !fm
+	etaLj=qpgaus(rm,sig) !fm
 
 c       write(*,*)'in hyhard after gauss',tau
 	z=tau*sinh(etaLj)
@@ -1692,7 +1692,7 @@ c***************************************************************************
 
 
 * function to generate gauss distribution
-      double precision function gaus(x0,sig)
+      double precision function qpgaus(x0,sig)
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
  41   u1=pyr(0) 
       u2=pyr(0)  
@@ -1700,6 +1700,6 @@ c***************************************************************************
       v2=2.d0*u2-1.d0 
       s=v1**2+v2**2
       if(s.gt.1) go to 41
-      gaus=v1*dsqrt(-2.d0*dlog(s)/s)*sig+x0
+      qpgaus=v1*dsqrt(-2.d0*dlog(s)/s)*sig+x0
       return
       end    

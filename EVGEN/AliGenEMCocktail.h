@@ -11,7 +11,6 @@
 
 #include "AliGenCocktail.h"
 #include "AliGenEMlib.h"
-#include "AliPythia.h"
 #include "AliDecayer.h"
 #include "AliGenParam.h"
 

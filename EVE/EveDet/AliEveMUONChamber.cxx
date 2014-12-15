@@ -8,8 +8,8 @@
  **************************************************************************/
 #include "AliEveMUONChamber.h"
 
-#include <EveDet/AliEveMUONData.h>
-#include <EveDet/AliEveMUONChamberData.h>
+#include <AliEveMUONData.h>
+#include <AliEveMUONChamberData.h>
 
 #include <TBuffer3D.h>
 #include <TBuffer3DTypes.h>

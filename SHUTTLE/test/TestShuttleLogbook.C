@@ -282,7 +282,7 @@ Bool_t DeleteEntries(Int_t runNumber=-1)
 //______________________________________________________________________________________________
 void TestShuttleLogbook(){
 
-	gSystem->Load("libSHUTTLE.so");
+	gSystem->Load("libSHUTTLE");
 	
 	DeleteEntries();
 

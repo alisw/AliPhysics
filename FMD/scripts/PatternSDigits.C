@@ -15,10 +15,10 @@ PatternSDigits()
   cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
   AliFMDParameters::Instance()->Init();
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libFMDanalysis.so");
-  gSystem->Load("libFMDutil.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libFMDanalysis");
+  gSystem->Load("libFMDutil");
   AliFMDPattern* d = new AliFMDPattern;
   d->SetName("sdigit");
   d->SetTitle("Summable digits");

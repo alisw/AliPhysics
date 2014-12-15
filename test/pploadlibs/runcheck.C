@@ -1,4 +1,4 @@
 void runcheck(){
   gROOT->Macro("loadlibsrec.C");
-  gROOT->Macro("${ALICE_ROOT}/STEER/CheckESD.C");
+  gROOT->Macro("${ALICE_ROOT}/STEER/macros/CheckESD.C");
 }

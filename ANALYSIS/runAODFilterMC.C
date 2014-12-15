@@ -2,10 +2,10 @@ void runAODFilterMC()
 {
   // PROOF example
 
-      gSystem->Load("libTree.so");
-      gSystem->Load("libPhysics.so");
-      gSystem->Load("libGeom.so");
-      gSystem->Load("libVMC.so");
+      gSystem->Load("libTree");
+      gSystem->Load("libPhysics");
+      gSystem->Load("libGeom");
+      gSystem->Load("libVMC");
 
       bool bKineFilter = true;
       //      TProof::Mgr("alicecaf")->SetROOTVersion("v5-21-01-alice_dbg");

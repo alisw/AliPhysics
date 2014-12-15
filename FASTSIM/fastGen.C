@@ -3,10 +3,10 @@ AliGenerator*  CreateGenerator();
 void fastGen(Int_t nev = 1, char* filename = "galice.root")
 {
 //  Load libraries
-  gSystem->Load("liblhapdf.so");
-  gSystem->Load("libpythia6.so");
-  gSystem->Load("libEGPythia6.so");
-  gSystem->Load("libAliPythia6.so");
+  gSystem->Load("liblhapdf");
+  gSystem->Load("libpythia6");
+  gSystem->Load("libEGPythia6");
+  gSystem->Load("libAliPythia6");
 
 //  Runloader
     

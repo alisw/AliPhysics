@@ -188,25 +188,25 @@ void fastMcProduction(Int_t nev = 300) {
   }
     
   if (proc == kHijing || proc == kHijing2000 || proc == kHijing_pA ) {
-    gSystem->Load("libhijing");	
+    gSystem->Load("libHIJING");	
     gSystem->Load("libTHijing");
   } 
   
   else if ( proc == kDPMjet || proc== kDPMjet_pA ) {
-    gSystem->Load("libdpmjet"); 
+    gSystem->Load("libDPMJET"); 
     gSystem->Load("libTDPMjet");
   } 
   
   else if (proc == kAmptDefault || kAmptFlowStringMelting || proc ==  kAmptStringMeltingNoART || proc == kAmptpA || proc == kAmptReducedFlow) {
     gSystem->Load("libampt");  
     gSystem->Load("libTAmpt");
-    gSystem->Load("libpythia6.so");
-    gSystem->Load("libAliPythia6.so");
+    gSystem->Load("libpythia6");
+    gSystem->Load("libAliPythia6");
   } 
 
   if (proc == kPythia8) {
-    gSystem->Load("libpythia8.so");
-    gSystem->Load("libAliPythia8.so");
+    gSystem->Load("libpythia8");
+    gSystem->Load("libAliPythia8");
     gSystem->Setenv("PYTHIA8DATA", gSystem->ExpandPathName("$ALICE_ROOT/PYTHIA8/pythia8145/xmldoc"));
     gSystem->Setenv("LHAPDF",      gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF"));
     gSystem->Setenv("LHAPATH",     gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF/PDFsets"));
@@ -630,7 +630,7 @@ AliGenerator* MbPhojet()
 {
   comment = comment.Append(" pp: Pythia low-pt");
 #if defined(__CINT__)
-  gSystem->Load("libdpmjet");      // Parton density functions
+  gSystem->Load("libDPMJET");      // Parton density functions
   gSystem->Load("libTDPMjet");      // Parton density functions
 #endif
   AliGenDPMjet* dpmjet = new AliGenDPMjet(-1); 

@@ -161,7 +161,7 @@ void TestMUONPreprocessor(Int_t runNumber=80,
   // create AliTestShuttle instance
   // The parameters are run, startTime, endTime
   
-  gSystem->Load("libTestShuttle.so");
+  gSystem->Load("libTestShuttle");
 
   AliTestShuttle* shuttle = new AliTestShuttle(runNumber, 0, 1);
   

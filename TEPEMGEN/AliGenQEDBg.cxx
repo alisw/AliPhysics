@@ -54,7 +54,7 @@
   The most useful way of using it is in the overlay with other generators (using the cocktail):
   In the Config.C 
   // load the library:
-  gSystem->Load("libTEPEMGEN.so");
+  gSystem->Load("libTEPEMGEN");
   //
   // add to AliGenCocktail as:
   AliGenCocktail *cocktail = new AliGenCocktail();

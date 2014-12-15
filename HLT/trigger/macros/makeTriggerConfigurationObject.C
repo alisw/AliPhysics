@@ -40,10 +40,10 @@
 void makeTriggerConfigurationObject(const Char_t* triggerName, const Char_t* cdbUri=NULL, 
 				    Int_t runMin=0, Int_t runMax=AliCDBRunRange::Infinity() ) {
 
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libHLTbase.so");
-  gSystem->Load("libAliHLTUtil.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libHLTbase");
+  gSystem->Load("libAliHLTUtil");
 
   // --------------------------------------
   // -- Parse Trigger Name

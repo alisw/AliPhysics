@@ -22,7 +22,7 @@ Several fit methods implemented
 
 .x ~/rootlogon.C
 gSystem->AddIncludePath("-I$ALICE_ROOT/TPC -I$ALICE_ROOT/STAT");
-gSystem->Load("libSTAT.so");
+gSystem->Load("libSTAT");
 .L $ALICE_ROOT/TPC/CalibMacros/AnalyzeLaserCE.C+
 
 // setup aliases
