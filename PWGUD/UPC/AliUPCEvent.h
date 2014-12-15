@@ -9,6 +9,8 @@
 #define NTRG 24
 #include "TObject.h"
 
+class TParticle;
+
 class AliUPCEvent : public TObject
 {
 public:
