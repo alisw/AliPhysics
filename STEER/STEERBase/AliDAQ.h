@@ -69,8 +69,7 @@ class AliDAQ: public TObject {
   static const char *OnlineName(Int_t detectorID);
 
   enum {
- //   kNDetectors = 22,    // Number of detectors
-    kNDetectors = 23,    // Number of detectors //alla
+    kNDetectors = 25,    // Number of detectors
     kHLTId = 30          // HLT detector index
   };
 
@@ -79,7 +78,7 @@ class AliDAQ: public TObject {
 		     kPHOS = 0x0080, kCPV = 0x0100, kPMD = 0x0200, kMUONTRK = 0x0400,
 		     kMUONTRG = 0x0800, kMUON = 0x0c00, kFMD = 0x1000, kT0 = 0x2000, kVZERO = 0x4000,
 		     kZDC = 0x8000, kACORDE = 0x10000, kTRG = 0x20000, kEMCAL = 0x40000,
-		     kDAQTEST = 0x80000, kMFT = 0x100000, kFIT = 0x200000, kHLT = 0x40000000};
+		     kDAQTEST = 0x80000, kEMPTY= 0x100000, kAD = 0x200000, kMFT = 0x400000, kFIT = 0x800000, kHLT = 0x40000000};
 
   enum DetectorBitsQualityFlag {kACORDE_QF   = 0x000001, kAD_QF       = 0x000002, kCPV_QF  = 0x000004, kDAQ_TEST_QF = 0x000008, 
 				kEMCAL_QF    = 0x000010, kFMD_QF      = 0x000020, kHLT_QF  = 0x000040, kHMPID_QF    = 0x000080, 
@@ -96,7 +95,7 @@ class AliDAQ: public TObject {
   static const char* fgkOfflineModuleName[kNDetectors]; // Names of the offline modules corresponding to the detectors
   static const char* fgkOnlineName[kNDetectors]; // Online (DAQ/ECS) detector names
 
-  ClassDef(AliDAQ, 4)   // ALICE DAQ Configuration class
+  ClassDef(AliDAQ, 5)   // ALICE DAQ Configuration class
 };
 
 #endif
