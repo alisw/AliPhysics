@@ -19,7 +19,7 @@ echo "############## memory : ##############"
 free -m
 echo "========================================="
 
-aliroot -b -q AODtrain.C\($1\)
+aliroot -b -q AODtrainsim.C\($1\)
 echo "======== AODtrain_merge.C finished with exit code: $? ========"
 echo "############## memory after: ##############"
 free -m
