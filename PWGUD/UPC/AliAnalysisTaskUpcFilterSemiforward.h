@@ -9,9 +9,11 @@
 #define NTRG 24
 #include "AliAnalysisTaskSE.h"
 
-class AliUPCEvent;
-class AliTriggerAnalysis;
 class AliAODMCHeader;
+class AliMuonTrackCuts;
+class AliTriggerAnalysis;
+class AliESDtrackCuts;
+class AliUPCEvent;
 
 class AliAnalysisTaskUpcFilterSemiforward : public AliAnalysisTaskSE {
  public:
