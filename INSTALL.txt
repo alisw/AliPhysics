@@ -117,6 +117,14 @@ for the generation of DAs (full documentation HERE -> link to daq documentation)
     or
     $ make -j16 VERBOSE=1 # verbose mode enabled only for this make command
     
+    Running "make" inside the root of the build directory will trigger the build of the full AliRoot.
+    Building per folder is possible. Just switch to the folder in question and run "make". This will
+    trigger the build of the current folder plus all its dependencies.
+    
+    Example:
+    $ cd PWGJE/EMCALJetTasks
+    $ make -j16
+    
 6. Install AliRoot
     If the build finished successfuly than AliRoot can be properly installed inside "install" folder
     Inside the build folder run:
