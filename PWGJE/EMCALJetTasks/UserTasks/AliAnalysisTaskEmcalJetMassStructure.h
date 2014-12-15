@@ -82,7 +82,7 @@ class AliAnalysisTaskEmcalJetMassStructure : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetMassStructure(const AliAnalysisTaskEmcalJetMassStructure&);            // not implemented
   AliAnalysisTaskEmcalJetMassStructure &operator=(const AliAnalysisTaskEmcalJetMassStructure&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetMassStructure, 1)
+  ClassDef(AliAnalysisTaskEmcalJetMassStructure, 2)
 };
 #endif
 
