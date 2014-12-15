@@ -395,7 +395,7 @@ void AliTPCCalibGlobalMisalignment::GetCorrection(const Float_t x[],const Short_
   }
 }
 
-void AliTPCCalibGlobalMisalignment::Print(Option_t* /*option*/ ) const {
+void AliTPCCalibGlobalMisalignment::Print(Option_t* option )  const{
   //
   // Print function to check the settings 
   //
@@ -404,8 +404,21 @@ void AliTPCCalibGlobalMisalignment::Print(Option_t* /*option*/ ) const {
   printf(" - X-Shift: %1.3f cm, Y-Shift: %1.3f cm, Z-Shift: %1.3f cm \n",fXShift,fYShift,fZShift);
   printf(" - Phi-Rotations: A side: %1.5f rad, C side: %1.5f rad\n",fRotPhiA,fRotPhiC);
   printf(" - dRPhi offsets: A side: %1.5f cm, C side: %1.5f cm\n",fdRPhiOffsetA,fdRPhiOffsetC);
- 
- 
+  TString opt = option; opt.ToLower();
+  if (opt.Contains("a")){
+    if (GetAlignGlobal()){
+      printf("GetAlignGlobal()\n");
+      GetAlignGlobal()->Print();
+    }
+    if (GetAlignGlobalDelta()){
+      printf("GetAlignGlobalDelta()\n");
+      GetAlignGlobalDelta()->Print();
+    }
+    if (GetAlignSectors()){
+      printf("GetAlignSectors()\n");    
+      GetAlignSectors()->Print();
+    }
+  }
 }
 
 void AliTPCCalibGlobalMisalignment::AddAlign(const  AliTPCCalibGlobalMisalignment & add){

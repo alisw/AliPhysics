@@ -378,8 +378,8 @@ Bool_t  TestCorrection_AliTPCCalibGlobalMisalignmentAddCorrectionCompact(){
   //
   // AliTPCCalibGlobalMisalignmentAddCorrectionCompact
   // Invariant used in test is not exact it is only approximate - as matrix multiplication is not comulative
-  //  
-  //
+  //  !!!! BUG FOUND ????
+  //  hmatrix1->GetTranslation()[idelta]=xxx; // does not work as expected Translation is set,  visible in Print but not used  later
   const Float_t kEpsilon=0.0001;
   Bool_t isOK[10]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
   Double_t delta[3]={0.01,0.02,0.03};
@@ -535,6 +535,7 @@ Bool_t TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact(){
   //      This take time - dostortion has to be recalculated
   AliTPCComposedCorrection *compOutInverseCompact = new AliTPCComposedCorrection();
   compOutInverseCompact->AddCorrectionCompact(compInput,-1);
+  compOutInverseCompact->AddCorrectionCompact(compInput, 1);
   compOutInverseCompact->SetOmegaTauT1T2(0,1,1);
   compInput->SetOmegaTauT1T2(0,1,1);
   compOutInverseCompact->AddVisualCorrection(compOutInverseCompact,10);  
