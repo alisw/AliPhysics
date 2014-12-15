@@ -36,6 +36,8 @@ set ( SRCS
 	Correlations/JCORRAN/AliJDiJetTask.cxx
 	Correlations/JCORRAN/AliJJetCORRAnalysis.cxx
 	Correlations/JCORRAN/AliJJetCORRTask.cxx
+    Correlations/JCORRAN/AliJJetJtAnalysis.cxx
+    Correlations/JCORRAN/AliJJetJtTask.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}"  )
