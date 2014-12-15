@@ -103,6 +103,7 @@ ClassImp(AliSysInfo)
 
 AliSysInfo* AliSysInfo::fInstance=0;
 Bool_t AliSysInfo::fgVerbose = kTRUE;
+Bool_t AliSysInfo::fgDisabled = kFALSE;
 
 AliSysInfo::AliSysInfo():
     TObject(),
@@ -112,6 +113,7 @@ AliSysInfo::AliSysInfo():
     fCallBackFunc(0),
     fNCallBack(0)
 {
+  if (fgDisabled) return;
   fTimer = new TStopwatch;
   fSysWatch  = new fstream("syswatch.log", ios_base::out|ios_base::trunc);
 

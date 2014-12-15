@@ -248,7 +248,12 @@ void TTreeSRedirector::UnitTestSparse(Double_t scale, Int_t testEntries){
   //
   // 2.) check results
   //
+
   TFile* f = TFile::Open("testpcstreamSparse.root");
+  if (!f){
+    printf("FAILED: file: %p, TTreeSRedirector::IsDisabled()=%i\n",f,TTreeSRedirector::IsDisabled()?1:0);
+    return;
+  }
   TTree * treeFull = (TTree*)f->Get("Full");
   TTree * treeSparseSkip = (TTree*)f->Get("SparseSkip");
   TTree * treeSparseSkip0 = (TTree*)f->Get("SparseSkip0");
@@ -290,6 +295,7 @@ void TTreeSRedirector::UnitTestSparse(Double_t scale, Int_t testEntries){
 
 }
 
+Bool_t TTreeSRedirector::fgDisabled=kFALSE;
 TTreeSRedirector::TTreeSRedirector(const char *fname,const char * option) :
   fDirectory(NULL),
   fDirectoryOwner(kTRUE),
@@ -298,6 +304,8 @@ TTreeSRedirector::TTreeSRedirector(const char *fname,const char * option) :
   //
   // Constructor
   //
+  if (fgDisabled) {fDirectory=gDirectory;fDirectoryOwner=kFALSE;return;}
+
   TString name(fname);
   if (!name.IsNull()){
     fDirectory = new TFile(fname,option);
@@ -325,6 +333,7 @@ void TTreeSRedirector::StoreObject(TObject* object){
   //
   //
   //
+  if (fgDisabled) return;
   TDirectory * backup = gDirectory;
   fDirectory->cd();
   object->Write();
@@ -348,13 +357,13 @@ TTreeStream  & TTreeSRedirector::operator<<(Int_t id)
   //
   // return reference to the data layout with given identifier
   // if not existing - creates new
-  if (!fDataLayouts) fDataLayouts = new TObjArray(10000);
+  if (!fDataLayouts) fDataLayouts = new TObjArray(fgDisabled?1:10000);
   TTreeStream *clayout=0;
   Int_t entries = fDataLayouts->GetEntriesFast();
   for (Int_t i=0;i<entries;i++){
     TTreeStream * layout = (TTreeStream*)fDataLayouts->At(i);
     if (!layout) continue;
-    if (layout->fId==id) {
+    if (fgDisabled?kTRUE:layout->fId==id) {
       clayout = layout;
       break;
     }
@@ -424,7 +433,7 @@ void TTreeSRedirector::Close(){
     Int_t entries = fDataLayouts->GetEntriesFast();
     for (Int_t i=0;i<entries;i++){
       TTreeStream * layout = (TTreeStream*)fDataLayouts->At(i);
-      if (layout){
+      if (layout && !fgDisabled){
 	if (layout->fTree) layout->fTree->Write(layout->GetName());
       }
     }
@@ -505,6 +514,7 @@ void TTreeStream::Close()
   //
   // Flush data to disk and close
   //
+  if (TTreeSRedirector::IsDisabled()) return;
   fTree->Write();
 }
 
@@ -513,6 +523,7 @@ Int_t TTreeStream::CheckIn(Char_t type, void *pointer)
   //
   // Insert object of given type
   //
+  if (TTreeSRedirector::IsDisabled()) return 0;
   if (!fElements) fElements = new TObjArray(10000);
   if (fElements->GetSize()<=fCurrentIndex) fElements->Expand(fCurrentIndex*2);
   TTreeDataElement* element = (TTreeDataElement*)fElements->At(fCurrentIndex);
@@ -551,6 +562,7 @@ Int_t TTreeStream::CheckIn(TObject *pObject){
   //
   // Insert TObject
   //
+  if (TTreeSRedirector::IsDisabled()) return 0;
   TClass *pClass = 0;
   if (pObject) pClass=pObject->IsA();
   if (!fElements) fElements = new TObjArray(1000);
@@ -595,6 +607,7 @@ void TTreeStream::BuildTree(){
   // Build the Tree
   //
   //if (fTree && fTree->GetEntries()>0) return;
+  if (TTreeSRedirector::IsDisabled()) return;
   Int_t entriesFilled=0;
   if (!fTree)  {
     fTree = new TTree(GetName(),GetName());
@@ -654,6 +667,7 @@ void TTreeStream::Fill(){
   //
   // Fill the tree
   //
+  if (TTreeSRedirector::IsDisabled()) return;
   if (fTree) { 
     Int_t entries=fElements->GetEntriesFast();
     if (entries>fTree->GetNbranches()) BuildTree();
@@ -676,6 +690,7 @@ TTreeStream & TTreeStream::Endl()
   //
   // Perform pseudo endl operation
   //
+  if (TTreeSRedirector::IsDisabled()) return *this;
   if (fTree->GetNbranches()==0) BuildTree();
   Fill();
   fStatus =0;
