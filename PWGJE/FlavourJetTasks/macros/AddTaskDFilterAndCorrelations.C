@@ -105,7 +105,6 @@ AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
      //jetCont->SetJetAcceptanceType(cutType);
      jetCont->SetJetPtCut(jptcut);
      jetCont->SetPercAreaCut(percjetareacut);
-     jetCont->SetRhoName(rhoname);
   }
   taskCorr->SetMC(theMCon);
   taskCorr->SetUseReco(reco);
