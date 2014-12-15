@@ -528,9 +528,8 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
     //If there's no background subtraction rhoval=0 and momentum is simply not took into account
     AliRhoParameter *rho = 0;
     Double_t rhoval = 0;
-    TString sname("Rho");
-    if (!sname.IsNull()) {
-        rho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(sname));
+    if (!fJetCont->GetRhoName().IsNull()) {
+        rho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fJetCont->GetRhoName()));
         if(rho) rhoval = rho->GetVal();
     }
 
@@ -685,7 +684,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
             //It corrects the jet momentum due to D daughters out of the jet
       	    RecalculateMomentum(pjet,fPmissing);      	          	    
       	    fPtJet=TMath::Sqrt(pjet[0]*pjet[0]+pjet[1]*pjet[1]); //recalculated jet pt
-      	    
+      	    if((jet->Pt()-jet->Area()*rhoval)<0) fPtJet = -fPtJet;
       	    
       	    //debugging histograms
       	    Double_t pmissing=TMath::Sqrt(fPmissing[0]*fPmissing[0]+fPmissing[1]*fPmissing[1]+fPmissing[2]*fPmissing[2]); //recalculated jet total momentum
@@ -719,7 +718,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
                //It corrects the jet momentum due to D daughters out of the jet
       	       RecalculateMomentum(pjet,fPmissing);      	          	    
       	       fPtJet=TMath::Sqrt(pjet[0]*pjet[0]+pjet[1]*pjet[1]); //recalculated jet pt
-      	       
+      	       if((jet->Pt()-jet->Area()*rhoval)<0) fPtJet = -fPtJet;
      	       SideBandBackground(sbcand,jet);
      	       
       	    }
@@ -744,7 +743,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
                //It corrects the jet momentum due to D daughters out of the jet
       	       RecalculateMomentum(pjet,fPmissing);      	          	    
       	       fPtJet=TMath::Sqrt(pjet[0]*pjet[0]+pjet[1]*pjet[1]); //recalculated jet pt
-      	       
+      	       if((jet->Pt()-jet->Area()*rhoval)<0) fPtJet = -fPtJet;
       	       MCBackground(charmbg,jet);
       	    }
       	 }
@@ -838,9 +837,8 @@ Double_t AliAnalysisTaskFlavourJetCorrelations::Z(AliVParticle* part,AliEmcalJet
     //It corrects the each component of the jet momentum for Z calculation
     AliRhoParameter *rho = 0;
     Double_t rhoval = 0;
-    TString sname("Rho");
-    if (!sname.IsNull()) {
-        rho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(sname));
+    if (!fJetCont->GetRhoName().IsNull()) {
+        rho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fJetCont->GetRhoName()));
         if(rho){
             rhoval = rho->GetVal();
             pj[0] = jet->Px() - jet->Area()*(rhoval*TMath::Cos(jet->AreaPhi()));
@@ -917,6 +915,7 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    
    const Int_t nbinsmass=300;
    const Int_t nbinsptjet=500;
+   const Int_t nbinsptjetBG=400;
    const Int_t nbinsptD=100;
    const Int_t nbinsz=100;
    const Int_t nbinsphi=200;
@@ -933,6 +932,7 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    const Int_t nbinsSpsA=100;
     
    const Float_t ptjetlims[2]={0.,200.};
+   const Float_t ptjetlimsBG[2]={-200.,200.};
    const Float_t ptDlims[2]={0.,50.};
    const Float_t zlims[2]={0.,1.2};
    const Float_t philims[2]={0.,6.3};
@@ -957,7 +957,8 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    fhPhiJet->Sumw2();
    fhEtaJet    = new TH1F("hEtaJet","Jet #eta distribution; #eta", nbinseta,etalims[0],etalims[1]);
    fhEtaJet->Sumw2();
-   fhPtJet      = new TH1F("hPtJet",  "Jet Pt distribution; p_{T} (GeV/c)",nbinsptjet,ptjetlims[0],ptjetlims[1]);
+    if(!fJetCont->GetRhoName().IsNull()){ fhPtJet      = new TH1F("hPtJet",  "Jet Pt distribution; p_{T} (GeV/c)",nbinsptjetBG,ptjetlimsBG[0],ptjetlimsBG[1]);}
+    else{ fhPtJet      = new TH1F("hPtJet",  "Jet Pt distribution; p_{T} (GeV/c)",nbinsptjet,ptjetlims[0],ptjetlims[1]);}
    fhPtJet->Sumw2();
    
    fhdeltaRJetTracks=new TH1F("hdeltaRJetTracks","Delta R of tracks in the jets",200, 0.,10.);
@@ -1001,12 +1002,21 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    if(fJetOnlyMode && fSwitchOnSparses){
       //thnsparse for jets
       const Int_t nAxis=6;   
-      const Int_t nbinsSparse[nAxis]={nbinsSpsphi,nbinsSpseta, nbinsSpsptjet, nbinsSpsptjet,nbinsSpsContrib, nbinsSpsA};
-      const Double_t minSparse[nAxis]={philims[0],etalims[0],ptjetlims[0],ptjetlims[0],static_cast<Double_t>(nContriblims[0]),arealims[0]};
-      const Double_t 
-	maxSparse[nAxis]={philims[1],etalims[1],ptjetlims[1],ptjetlims[1],static_cast<Double_t>(nContriblims[1]),arealims[1]};
-      fhsJet=new THnSparseF("hsJet","#phi, #eta, p_{T}^{jet}, E^{jet}, N contrib, Area", nAxis, nbinsSparse, minSparse, maxSparse);
-      fhsJet->Sumw2();
+       if (!fJetCont->GetRhoName().IsNull()) {
+           const Int_t nbinsSparse[nAxis]={nbinsSpsphi,nbinsSpseta, nbinsptjetBG, nbinsSpsptjet,nbinsSpsContrib, nbinsSpsA};
+           const Double_t minSparse[nAxis]={philims[0],etalims[0],ptjetlimsBG[0],ptjetlims[0],static_cast<Double_t>(nContriblims[0]),arealims[0]};
+           const Double_t maxSparse[nAxis]={philims[1],etalims[1],ptjetlimsBG[1],ptjetlims[1],static_cast<Double_t>(nContriblims[1]),arealims[1]};
+           fhsJet=new THnSparseF("hsJet","#phi, #eta, p_{T}^{jet}, E^{jet}, N contrib, Area", nAxis, nbinsSparse, minSparse, maxSparse);
+           fhsJet->Sumw2();
+       }
+       else
+       {
+           const Int_t nbinsSparse[nAxis]={nbinsSpsphi,nbinsSpseta, nbinsSpsptjet, nbinsSpsptjet,nbinsSpsContrib, nbinsSpsA};
+           const Double_t minSparse[nAxis]={philims[0],etalims[0],ptjetlims[0],ptjetlims[0],static_cast<Double_t>(nContriblims[0]),arealims[0]};
+           const Double_t maxSparse[nAxis]={philims[1],etalims[1],ptjetlims[1],ptjetlims[1],static_cast<Double_t>(nContriblims[1]),arealims[1]};
+           fhsJet=new THnSparseF("hsJet","#phi, #eta, p_{T}^{jet}, E^{jet}, N contrib, Area", nAxis, nbinsSparse, minSparse, maxSparse);
+           fhsJet->Sumw2();
+       }
       
       fOutput->Add(fhsJet);
    
@@ -1187,9 +1197,18 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
       	 if(fSwitchOnSB && fSwitchOnPhiAxis && fSwitchOnOutOfConeAxis){
       	    AliInfo("Creating a 9 axes container: This might cause large memory usage");
       	    const Int_t nAxis=9;   
-      	    const Int_t nbinsSparse[nAxis]={nbinsSpsz,nbinsSpsphi,nbinsSpsptjet,nbinsSpsptD,nbinsSpsmass,2, 2, 2, 2};
-      	    const Double_t minSparse[nAxis]={zlims[0],philims2[0],ptjetlims[0],ptDlims[0],fMinMass,-0.5, -0.5,-0.5,-0.5};
-      	    const Double_t maxSparse[nAxis]={zlims[1],philims2[1],ptjetlims[1],ptDlims[1],fMaxMass, 1.5, 1.5, 1.5 , 1.5};
+             if(!fJetCont->GetRhoName().IsNull())
+             {
+                 const Int_t nbinsSparse[nAxis]={nbinsSpsz,nbinsSpsphi,nbinsptjetBG,nbinsSpsptD,nbinsSpsmass,2, 2, 2, 2};
+                 const Double_t minSparse[nAxis]={zlims[0],philims2[0],ptjetlimsBG[0],ptDlims[0],fMinMass,-0.5, -0.5,-0.5,-0.5};
+                 const Double_t maxSparse[nAxis]={zlims[1],philims2[1],ptjetlimsBG[1],ptDlims[1],fMaxMass, 1.5, 1.5, 1.5 , 1.5};
+             }
+             else
+             {
+                 const Int_t nbinsSparse[nAxis]={nbinsSpsz,nbinsSpsphi,nbinsSpsptjet,nbinsSpsptD,nbinsSpsmass,2, 2, 2, 2};
+                 const Double_t minSparse[nAxis]={zlims[0],philims2[0],ptjetlims[0],ptDlims[0],fMinMass,-0.5, -0.5,-0.5,-0.5};
+                 const Double_t maxSparse[nAxis]={zlims[1],philims2[1],ptjetlims[1],ptDlims[1],fMaxMass, 1.5, 1.5, 1.5 , 1.5};
+             }
       	    fNAxesBigSparse=nAxis;
       	    
       	    fhsDphiz=new THnSparseF("hsDphiz","Z and #Delta#phi vs p_{T}^{jet}, p_{T}^{D}, mass. SB? D within the jet cone?, D in EMCal acc?, jet in EMCal acc?", nAxis, nbinsSparse, minSparse, maxSparse);
@@ -1202,18 +1221,34 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
       	    if(fUseMCInfo){
       	       AliInfo("Creating a 7 axes container (MB background candidates)");
       	       const Int_t nAxis=7;   
-      	       const Int_t nbinsSparse[nAxis]={nbinsSpsz,nbinsSpsptjet,nbinsSpsptD,nbinsSpsmass,2, 2, 2};
-      	       const Double_t minSparse[nAxis]={zlims[0],ptjetlims[0],ptDlims[0],fMinMass, -0.5,-0.5,-0.5};
-      	       const Double_t maxSparse[nAxis]={zlims[1],ptjetlims[1],ptDlims[1],fMaxMass, 1.5, 1.5 , 1.5};
+                if (!fJetCont->GetRhoName().IsNull()) {
+                    const Int_t nbinsSparse[nAxis]={nbinsSpsz,nbinsptjetBG,nbinsSpsptD,nbinsSpsmass,2, 2, 2};
+                    const Double_t minSparse[nAxis]={zlims[0],ptjetlimsBG[0],ptDlims[0],fMinMass, -0.5,-0.5,-0.5};
+                    const Double_t maxSparse[nAxis]={zlims[1],ptjetlimsBG[1],ptDlims[1],fMaxMass, 1.5, 1.5 , 1.5};
+                }
+                else
+                {
+                    const Int_t nbinsSparse[nAxis]={nbinsSpsz,nbinsSpsptjet,nbinsSpsptD,nbinsSpsmass,2, 2, 2};
+                    const Double_t minSparse[nAxis]={zlims[0],ptjetlims[0],ptDlims[0],fMinMass, -0.5,-0.5,-0.5};
+                    const Double_t maxSparse[nAxis]={zlims[1],ptjetlims[1],ptDlims[1],fMaxMass, 1.5, 1.5 , 1.5};
+                }
       	       fNAxesBigSparse=nAxis;
       	       fhsDphiz=new THnSparseF("hsDphiz","Z vs p_{T}^{jet}, p_{T}^{D}, mass. Bkg?, D in EMCal acc?, jet in EMCal acc?", nAxis, nbinsSparse, minSparse, maxSparse);
       	       
       	    } else{
       	       AliInfo("Creating a 6 axes container");
       	       const Int_t nAxis=6;
-      	       const Int_t nbinsSparse[nAxis]={nbinsSpsz,nbinsSpsptjet,nbinsSpsptD,nbinsSpsmass, 2, 2};
-      	       const Double_t minSparse[nAxis]={zlims[0],ptjetlims[0],ptDlims[0],fMinMass,-0.5,-0.5};
-      	       const Double_t maxSparse[nAxis]={zlims[1],ptjetlims[1],ptDlims[1],fMaxMass, 1.5, 1.5};
+                if (!fJetCont->GetRhoName().IsNull()) {
+                    const Int_t nbinsSparse[nAxis]={nbinsSpsz,nbinsptjetBG,nbinsSpsptD,nbinsSpsmass, 2, 2};
+                    const Double_t minSparse[nAxis]={zlims[0],ptjetlimsBG[0],ptDlims[0],fMinMass,-0.5,-0.5};
+                    const Double_t maxSparse[nAxis]={zlims[1],ptjetlimsBG[1],ptDlims[1],fMaxMass, 1.5, 1.5};
+                }
+                else
+                {
+                    const Int_t nbinsSparse[nAxis]={nbinsSpsz,nbinsSpsptjet,nbinsSpsptD,nbinsSpsmass, 2, 2};
+                    const Double_t minSparse[nAxis]={zlims[0],ptjetlims[0],ptDlims[0],fMinMass,-0.5,-0.5};
+                    const Double_t maxSparse[nAxis]={zlims[1],ptjetlims[1],ptDlims[1],fMaxMass, 1.5, 1.5};
+                }
       	       fNAxesBigSparse=nAxis;      	 
       	       
       	       fhsDphiz=new THnSparseF("hsDphiz","Z vs p_{T}^{jet}, p_{T}^{D}, mass., D in EMCal acc?, jet in EMCal acc?", nAxis, nbinsSparse, minSparse, maxSparse);
@@ -1624,10 +1659,9 @@ Float_t AliAnalysisTaskFlavourJetCorrelations::DeltaR(AliEmcalJet *p1, AliVParti
     Double_t phi1=p1->Phi(),eta1=p1->Eta();
     
     //It subtracts the backgroud of jets if it was asked for it.
-    TString sname("Rho");
-    if (!sname.IsNull()) {
+    if (!fJetCont->GetRhoName().IsNull()) {
         AliRhoParameter *rho = 0;
-        rho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(sname));
+        rho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fJetCont->GetRhoName()));
         if(rho){
             Double_t pj[3];
             Bool_t okpj=p1->PxPyPz(pj);
