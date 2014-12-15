@@ -56,9 +56,9 @@ include(CheckGitVersion)
 include(CheckCompiler)
 
 # Shared library suffix
-if (NOT CMAKE_SYSTEM_NAME EQUAL Windows)
+if (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
   set(CMAKE_SHARED_LIBRARY_SUFFIX .so)
-endif (NOT CMAKE_SYSTEM_NAME EQUAL Windows)
+endif (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
 
 # ROOT dictionaries and maps
 include(CMakeALICE)
