@@ -42,11 +42,11 @@ void LoadLibraries()
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libTENDER");
-  //  gSystem->Load("libPWG0base.so");
-  //  gSystem->Load("libPWG0dep.so");
-  //  gSystem->Load("libPWG0selectors.so");
-  gSystem->Load("libPWGPP.so");
+  gSystem->Load("libTender");
+  //  gSystem->Load("libPWG0base");
+  //  gSystem->Load("libPWG0dep");
+  //  gSystem->Load("libPWG0selectors");
+  gSystem->Load("libPWGPP");
 }
 
 void AddAnalysisTasks(Bool_t writeITSTP, Bool_t useTPCcrv)

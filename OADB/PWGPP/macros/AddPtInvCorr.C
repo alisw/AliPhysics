@@ -15,10 +15,10 @@ void AddPtInvCorr(
 )
 {
   //
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libTENDER.so");
-  gSystem->Load("libOADB.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libTender");
+  gSystem->Load("libOADB");
   //
   //
   TString fileName = fileOADB;

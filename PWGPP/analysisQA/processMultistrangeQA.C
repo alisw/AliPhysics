@@ -92,9 +92,9 @@ void processMultistrangeQA(Int_t   icasType        = 0,                        /
       gStyle->SetTitleSize(0.05, "y");
       gStyle->SetTitleOffset(1.1, "x");
       gStyle->SetPadBottomMargin(0.14);
-      gSystem->Load("libANALYSIS.so");
-      gSystem->Load("libANALYSISalice.so");
-      gSystem->Load("libCORRFW.so");
+      gSystem->Load("libANALYSIS");
+      gSystem->Load("libANALYSISalice");
+      gSystem->Load("libCORRFW");
 
  
 

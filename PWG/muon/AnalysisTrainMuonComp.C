@@ -5,26 +5,26 @@ void AnalysisTrainMuonComp(){
   printf("*** Connect to AliEn ***\n");
   TGrid::Connect("alien://");
 
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
   
   // Common packages
   SetupPar("STEERBase");
-  gSystem->Load("libSTEERBase.so");
+  gSystem->Load("libSTEERBase");
   SetupPar("ESD");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libESD.so");
+  gSystem->Load("libVMC");
+  gSystem->Load("libESD");
   SetupPar("AOD");
-  gSystem->Load("libAOD.so");
+  gSystem->Load("libAOD");
   SetupPar("ANALYSIS");
-  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSIS");
   SetupPar("ANALYSISalice");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libANALYSISalice");
   // Analysis-specific packages
   SetupPar("PWG3muon");      
-  gSystem->Load("libPWGmuon.so");
+  gSystem->Load("libPWGmuon");
   
   gROOT->LoadMacro("AliAnalysisTaskAODvsESD.cxx+");  
 

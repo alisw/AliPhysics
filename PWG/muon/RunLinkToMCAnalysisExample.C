@@ -39,17 +39,17 @@
 void RunLinkToMCAnalysisExample(const char* esdFile = "./AliESDs.root")
 {
 	// Load needed libraries
-	gSystem->Load("libTree.so");
-	gSystem->Load("libGeom.so");
-	gSystem->Load("libVMC.so");
-	gSystem->Load("libPhysics.so");
-	gSystem->Load("libSTEERBase.so");
-	gSystem->Load("libESD.so");
-	gSystem->Load("libAOD.so");
-	gSystem->Load("libANALYSIS.so");
-	gSystem->Load("libANALYSISalice.so");
-	gSystem->Load("libPWGHFbase.so");
-	gSystem->Load("libPWGmuon.so");
+	gSystem->Load("libTree");
+	gSystem->Load("libGeom");
+	gSystem->Load("libVMC");
+	gSystem->Load("libPhysics");
+	gSystem->Load("libSTEERBase");
+	gSystem->Load("libESD");
+	gSystem->Load("libAOD");
+	gSystem->Load("libANALYSIS");
+	gSystem->Load("libANALYSISalice");
+	gSystem->Load("libPWGHFbase");
+	gSystem->Load("libPWGmuon");
 	
 	// Create the TChain for esdTrees in the AliESDs.root file.
 	TChain* chain = new TChain("esdTree");

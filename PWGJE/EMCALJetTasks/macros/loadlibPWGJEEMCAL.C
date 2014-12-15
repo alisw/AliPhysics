@@ -26,7 +26,7 @@ void loadlibPWGJEEMCAL()
   gSystem->Load("libANALYSISalice");
 
   gSystem->Load("libCDB");
-  gSystem->Load("libTENDER");
+  gSystem->Load("libTender");
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWGTools");
   gSystem->Load("libPWGEMCAL");

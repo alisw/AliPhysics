@@ -70,8 +70,8 @@ void loadlibs()
   gSystem->Load("libVMC");
 
   gSystem->Load("libSTEERBase");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libPWG0base");

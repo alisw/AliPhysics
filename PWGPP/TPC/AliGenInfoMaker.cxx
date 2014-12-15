@@ -25,8 +25,8 @@ How to use it?
 
 ---Usage outside of the analysis framework
 
-gSystem->Load("libANALYSIS.so")
-gSystem->Load("libPWGPP.so")
+gSystem->Load("libANALYSIS")
+gSystem->Load("libPWGPP")
 AliGenInfoMaker *t = new AliGenInfoMaker("galice.root","genTracks.root",0,0)
 t->Exec();
 

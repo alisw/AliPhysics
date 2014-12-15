@@ -4,56 +4,56 @@ void runBatch(const char *chainlistfile) {
 
   printf("*** Connect to AliEn ***\n");
   TGrid::Connect("alien://");
-  gSystem->Load("libProofPlayer.so");
+  gSystem->Load("libProofPlayer");
 
   //____________________________________________________//
   //_____________Setting up STEERBase.par_______________//
   //____________________________________________________//
   setupPar("STEERBase");
-  gSystem->Load("libSTEERBase.so");
+  gSystem->Load("libSTEERBase");
 
   //____________________________________________________//
   //_____________Setting up ESD.par_____________________//
   //____________________________________________________//
   setupPar("ESD");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libESD.so");
+  gSystem->Load("libVMC");
+  gSystem->Load("libESD");
 
   //____________________________________________________//
   //_____________Setting up AOD.par_____________________//
   //____________________________________________________//
   setupPar("AOD");
-  gSystem->Load("libAOD.so");
+  gSystem->Load("libAOD");
 
   //_________________________________________________________//
   //_____________Setting up ANALYSIS.par_____________________//
   //_________________________________________________________//
   setupPar("ANALYSIS");
-  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSIS");
 
   //_________________________________________________________//
   //_____________Setting up ANALYSISalice.par________________//
   //_________________________________________________________//
   setupPar("ANALYSISalice");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libANALYSISalice");
 
   //____________________________________________________//
   //_____________Setting up PWG2AOD.par_________________//
   //____________________________________________________//
   setupPar("PWG2AOD");
-  gSystem->Load("libPWG2AOD.so");
+  gSystem->Load("libPWG2AOD");
   
   //____________________________________________________//
   //_____________Setting up PWG2femtoscopy.par__________//
   //____________________________________________________//
   setupPar("PWG2femtoscopy");
-  gSystem->Load("libPWG2femtoscopy.so");
+  gSystem->Load("libPWG2femtoscopy");
   
   //____________________________________________________//
   //_____________Setting up PWG2femtoscopyUser.par______//
   //____________________________________________________//
   setupPar("PWG2femtoscopyUser");
-  gSystem->Load("libPWG2femtoscopyUser.so");
+  gSystem->Load("libPWG2femtoscopyUser");
   
   //ANALYSIS PART
   gSystem->SetIncludePath("-I$ROOTSYS/include  -I\"/usr/local/CERN/root/include\" -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser -I./ESD -I./AOD -I./ANALYSIS -I./PWG2AOD/AOD");

@@ -43,7 +43,7 @@ TString Setup
    Bool_t isMC      = opt.Contains("MC") || (!opt.Contains("DATA"));
    Bool_t isPP      = opt.Contains("PP") || (!opt.Contains("PBPB"));
    Bool_t isESD     = opt.Contains("ESD");
-   Bool_t useTender = opt.Contains("TENDER");
+   Bool_t useTender = opt.Contains("Tender");
    Bool_t noV0      = opt.Contains("NOV0");
    
    //
@@ -51,24 +51,24 @@ TString Setup
    //
 
    // load analysis libraries
-   gSystem->Load("libSTEERBase.so");
-   gSystem->Load("libESD.so");
-   gSystem->Load("libAOD.so");
-   gSystem->Load("libANALYSIS.so");
-   gSystem->Load("libANALYSISalice.so");
-   gSystem->Load("libEventMixing.so");
-   gSystem->Load("libCORRFW.so");
+   gSystem->Load("libSTEERBase");
+   gSystem->Load("libESD");
+   gSystem->Load("libAOD");
+   gSystem->Load("libANALYSIS");
+   gSystem->Load("libANALYSISalice");
+   gSystem->Load("libEventMixing");
+   gSystem->Load("libCORRFW");
    
    // tender-related libraries
    if (isESD && useTender) {
       ::Info("AnalysisSetup", "Loading tender libraries");
-      gSystem->Load("libTENDER.so");
-      gSystem->Load("libTENDERSupplies.so");
+      gSystem->Load("libTender");
+      gSystem->Load("libTenderSupplies");
    } else if (!isESD) {
       useTender = kFALSE;
    }
    
-   gSystem->Load("libPWGLFresonances.so");
+   gSystem->Load("libPWGLFresonances");
 
 //   // load development RSN library
 //   if (!AliAnalysisAlien::SetupPar("PWG2resonances.par")) return "";
@@ -114,7 +114,7 @@ TString Setup
 
 
    //
-   // === TENDER TASK (ESD only -- optional) =======================================================
+   // === Tender TASK (ESD only -- optional) =======================================================
    //
 
    if (isESD && useTender) {

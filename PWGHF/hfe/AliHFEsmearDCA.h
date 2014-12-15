@@ -30,7 +30,6 @@ class AliHFEsmearDCA : public TObject{
   public:
   AliHFEsmearDCA(const Char_t */*name*/, const char *resfileCurURI, const char *resfileUpgURI, const Char_t */*title*/);
     AliHFEsmearDCA(const AliHFEsmearDCA &c);
-    AliHFEsmearDCA &operator=(const AliHFEsmearDCA &);
     virtual ~AliHFEsmearDCA();
     
     virtual void SetRecEventInfo(const TObject *event);
@@ -41,6 +40,7 @@ class AliHFEsmearDCA : public TObject{
     
 
   private:
+    AliHFEsmearDCA &operator=(const AliHFEsmearDCA &);
  
     AliVEvent *fEvent;                //! working event
     AliMCEvent *fMCEvent;             //! MCEvent pointer

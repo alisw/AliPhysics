@@ -23,7 +23,7 @@ void runPIDqa(const char *treelist = 0x0, Bool_t hasMC = kTRUE, Int_t nFiles = 5
     SetupPar("Util");
   }
   //SetupPar("HFE");
-  gSystem->Load("libPWGHFhfe.so");
+  gSystem->Load("libPWGHFhfe");
   AliLog::SetClassDebugLevel("AliHFEV0pid", 0);
   AliLog::SetClassDebugLevel("AliHFEpidQA", 0);
   //  gROOT->LoadMacro("AliAnalysisTaskHFE.cxx++");
@@ -107,8 +107,8 @@ TChain * CreateXMLChain(char* xmlfile)
     printf("No collection file with name -- %s -- was found\n",kXML);
     return ;
   }
-  gSystem->Load("libNetx.so") ;
-  gSystem->Load("libRAliEn.so");
+  gSystem->Load("libNetx") ;
+  gSystem->Load("libRAliEn");
   TGrid::Connect("alien://") ;
 
 

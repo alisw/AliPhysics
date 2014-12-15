@@ -7,8 +7,8 @@ AliAnalysisTask* AddTaskTrackFixTenderSupply(const char* passName,
   //passName has to be provided as the correction are reconstruction pass dependent
   //the corresponding containers in OADB are named after the pass "passName"
   //TODO: make the pass detection automatic
-  gSystem->Load("libTENDER");
-  gSystem->Load("libTENDERSupplies");
+  gSystem->Load("libTender");
+  gSystem->Load("libTenderSupplies");
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   

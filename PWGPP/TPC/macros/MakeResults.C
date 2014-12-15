@@ -33,9 +33,9 @@ void MakeResults(const char* filename = "parf.list", const char* comp = "NO_MC",
 
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libTENDER");
+  gSystem->Load("libTender");
 
-  gSystem->Load("libTPCcalib.so");
+  gSystem->Load("libTPCcalib");
   gSystem->Load("libPWGPP");
 
   // Merge performance objects

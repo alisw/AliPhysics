@@ -28,8 +28,8 @@ void LoadMyLibs() {
   gSystem->Load("libPWG0dep");
   gSystem->Load("libPWG0selectors");
 
-  gSystem->Load("libTPCcalib.so");
-  gSystem->Load("libTENDER");
+  gSystem->Load("libTPCcalib");
+  gSystem->Load("libTender");
   gSystem->Load("libPWGPP");
   
   gSystem->Load("libPHOSUtils");
@@ -41,7 +41,7 @@ void LoadMyLibs() {
   CheckLoadLibrary("libANALYSIS");
   CheckLoadLibrary("libAOD");
   CheckLoadLibrary("libANALYSISalice");
-  CheckLoadLibrary("libTENDER");
+  CheckLoadLibrary("libTender");
   CheckLoadLibrary("libSTAT");
   */
 
@@ -67,7 +67,7 @@ void LoadMyLibs() {
 
 Int_t CheckLoadLibrary(const char* library) {
   // checks if a library is already loaded, if not loads the library
-  if (strlen(gSystem->GetLibraries(Form("%s.so", library), "", kFALSE)) > 0)
+  if (strlen(gSystem->GetLibraries(library, "", kFALSE)) > 0)
     return 1;
   return gSystem->Load(library);
 }

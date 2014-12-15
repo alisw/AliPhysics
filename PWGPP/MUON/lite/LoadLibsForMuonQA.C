@@ -19,17 +19,17 @@ void LoadRootAnalysis()
 //_____________________________
 void LoadAnalysis(const char* option = "")
 {
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libOADB.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libCORRFW.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libOADB");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
   TString opt(option);
   opt.ToUpper();
   if ( opt.Contains("PWG") ) {
-    gSystem->Load("libPWGmuon.so");
+    gSystem->Load("libPWGmuon");
   }
   if ( opt.Contains("PWGPP") ) {
-    gSystem->Load("libPWGPPMUONlite.so");
+    gSystem->Load("libPWGPPMUONlite");
   }
 }
 
@@ -65,7 +65,7 @@ void LoadLibsForMuonQA ( const char* option )
     IncludeAliroot();
     IncludeMuon();
     LoadAnalysis("PWG");
-    gSystem->Load("libPWGmuondep.so");
+    gSystem->Load("libPWGmuondep");
   }
   if (opt.Contains("tracktrend") ) {
     IncludeAliroot();

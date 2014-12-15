@@ -425,7 +425,7 @@ protected:
   /** 
    * Copy contructor - not defined
    */
-  AliBasedNdetaTask(const AliBasedNdetaTask&);
+  AliBasedNdetaTask(const AliBasedNdetaTask&){;}
   /** 
    * Assignment operator - not defined
    * 

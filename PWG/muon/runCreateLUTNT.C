@@ -1,12 +1,12 @@
 void runCreateLUTNT() {
 
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libMinuit.so");
+  gSystem->Load("libVMC");
+  gSystem->Load("libMinuit");
 
   printf("*** Connect to AliEn ***\n");
   TGrid::Connect("alien://");
  
-  gSystem->Load("libProofPlayer.so");
+  gSystem->Load("libProofPlayer");
 
   //____________________________________________________//
   //_____________Setting up STEERBase.par_____________________//

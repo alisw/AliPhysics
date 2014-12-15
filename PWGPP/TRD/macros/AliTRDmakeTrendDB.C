@@ -13,10 +13,10 @@ const Char_t *title[]={
 };
 void AliTRDmakeTrendDB()
 {
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libTENDER.so");
-  gSystem->Load("libPWGPP.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libTender");
+  gSystem->Load("libPWGPP");
 
 
 /*  AliCDBManager *cdb(AliCDBManager::Instance());

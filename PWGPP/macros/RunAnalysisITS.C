@@ -37,9 +37,9 @@ void RunAnalysisITS(TString pluginmode="",Int_t firstrun=177173,Int_t lastrun=17
   }
 
   // Load analysis libraries
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  if(uselibPWGPP) {gSystem->Load("libTENDER.so");gSystem->Load("libPWGPP.so");}
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  if(uselibPWGPP) {gSystem->Load("libTender");gSystem->Load("libPWGPP");}
 
   // Create Alien plugin, if requested
   if(useAlienPlugin) {  
@@ -226,7 +226,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",
      plugin->SetAdditionalLibs("AliAlignmentDataFilterITS.h AliAlignmentDataFilterITS.cxx AliAnalysisTaskITSTrackingCheck.h AliAnalysisTaskITSTrackingCheck.cxx AliAnalysisTaskSEImpParRes.h AliAnalysisTaskSEImpParRes.cxx AliAnalysisTaskVertexESD.h AliAnalysisTaskVertexESD.cxx libGui.so libProof.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so");
      //plugin->SetAdditionalLibs("AliAnalysisTaskVertexESD.h AliAnalysisTaskVertexESD.cxx libProof.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so");
    } else {
-     plugin->SetAdditionalLibs("libGui.so libProof.so libMinuit.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so libTPCbase.so libTPCrec.so libTRDbase.so libTRDrec.so libTENDER.so libPWGPP.so");
+     plugin->SetAdditionalLibs("libGui.so libProof.so libMinuit.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so libTPCbase.so libTPCrec.so libTRDbase.so libTRDrec.so libTender.so libPWGPP.so");
    }
    // Declare the output file names separated by blancs.
    // (can be like: file.root or file.root@ALICE::Niham::File)

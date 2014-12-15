@@ -26,9 +26,7 @@ void RunSingleMuonAnalysisFromAOD(Int_t mode=kMlocal, Char_t *inputPath=".", Cha
   timer.Start();
 
   // Check if user is running root or aliroot
-  TString checkString = gSystem->Getenv("ALICE_ROOT");
-  checkString.Append("/lib/tgt_linux/libSTEERBase.so");
-  TString foundLib = gSystem->GetLibraries(checkString.Data());
+  TString foundLib = gSystem->GetLibraries( "libSTEERBase", "", kFALSE );
   Bool_t isFullAliroot = (foundLib.Length()==0) ? kFALSE : kTRUE;
 
   // Load libraries
@@ -45,7 +43,7 @@ void RunSingleMuonAnalysisFromAOD(Int_t mode=kMlocal, Char_t *inputPath=".", Cha
     gSystem->Load("libSTEERBase");
     gSystem->Load("libAOD");
     gSystem->Load("libESD");  
-    gSystem->Load("${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}/libPWGmuon.so");
+    gSystem->Load("${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}/libPWGmuon");
   }
   else {
     const Int_t nNeededPar = 6;

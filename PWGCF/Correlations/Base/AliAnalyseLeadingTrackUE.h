@@ -38,7 +38,6 @@ class AliAnalyseLeadingTrackUE : public TObject {
  public: 
 
   AliAnalyseLeadingTrackUE();                                                   //constructor
-  AliAnalyseLeadingTrackUE(const AliAnalyseLeadingTrackUE & g);                 //copy constructor
   AliAnalyseLeadingTrackUE & operator = (const AliAnalyseLeadingTrackUE & g);   //assignment operator
   virtual ~AliAnalyseLeadingTrackUE();                                          //virtual destructor
 
@@ -83,6 +82,7 @@ protected:
   Bool_t CheckTrack(AliVParticle * part);
 
 private:
+  AliAnalyseLeadingTrackUE(const AliAnalyseLeadingTrackUE & g);                 //copy constructor, not implemented
   Int_t          fDebug;             // debug flag
   Int_t          fFilterBit;         // track selection cuts
   UInt_t         fTrackStatus;       // if non-0, the bits set in this variable are required for each track

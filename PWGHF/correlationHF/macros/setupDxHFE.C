@@ -59,9 +59,12 @@ void setupDxHFE(const char* localAodDirectory, int nofDirectories, const char* l
   gSystem->AddIncludePath(includePath);
   TString libraries=libraryDependencies;
   TObjArray* pTokens=libraries.Tokenize(" ");
+  TString buf;
   if (pTokens) {
     for (int i=0; i<pTokens->GetEntriesFast(); i++) {
-      if (gSystem->Load(pTokens->At(i)->GetName())==0) {
+      buf = pTokens->At(i)->GetName();
+      buf.ReplaceAll(".so", "");
+      if (gSystem->Load(buf)==0) {
 	cout << "loading " << pTokens->At(i)->GetName() << endl;
       }
     }

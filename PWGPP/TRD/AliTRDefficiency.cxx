@@ -49,7 +49,7 @@
 
 #include "AliTRDgeometry.h"
 #include "AliTRDtrackV1.h"
-#include "Cal/AliTRDCalPID.h"
+#include "AliTRDCalPID.h"
 #include "AliTRDefficiency.h"
 #include "info/AliTRDtrackInfo.h"
 

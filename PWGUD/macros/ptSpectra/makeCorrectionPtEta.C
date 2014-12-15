@@ -8,7 +8,7 @@ makeCorrectionPtEta(Char_t* dataDir, Int_t nRuns=20) {
 
   Char_t str[256];
 
-  gSystem->Load("../libPWG0base.so");
+  gSystem->Load("../libPWG0base");
   // ########################################################
   // selection of esd tracks
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();    

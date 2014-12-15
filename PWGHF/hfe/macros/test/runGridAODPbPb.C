@@ -3,35 +3,35 @@ Bool_t SetupPar(const char *parfile);
 void runGridAODPbPb()
 {
    // Load common libraries
-  gSystem->Load("libCore.so");  
-   gSystem->Load("libTree.so");
-   gSystem->Load("libGeom.so");
-   gSystem->Load("libVMC.so");
-   gSystem->Load("libPhysics.so");
-   gSystem->Load("libMinuit.so"); 
-   gSystem->Load("libGui.so");
-   gSystem->Load("libXMLParser.so");
-   //gSystem->Load("libSTEER.so");
-   gSystem->Load("libSTEERBase.so");
-   gSystem->Load("libESD.so");
-   gSystem->Load("libCDB.so");
-   gSystem->Load("libAOD.so");
-   gSystem->Load("libANALYSIS.so");
-   gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libCore");
+   gSystem->Load("libTree");
+   gSystem->Load("libGeom");
+   gSystem->Load("libVMC");
+   gSystem->Load("libPhysics");
+   gSystem->Load("libMinuit");
+   gSystem->Load("libGui");
+   gSystem->Load("libXMLParser");
+   //gSystem->Load("libSTEER");
+   gSystem->Load("libSTEERBase");
+   gSystem->Load("libESD");
+   gSystem->Load("libCDB");
+   gSystem->Load("libAOD");
+   gSystem->Load("libANALYSIS");
+   gSystem->Load("libANALYSISalice");
 
    //lib necessary for dielectron
-   gSystem->Load("libCORRFW.so");
+   gSystem->Load("libCORRFW");
 
-   gSystem->Load("libTENDER"); 
-   gSystem->Load("libProof.so");
-   gSystem->Load("libRAWDatabase.so");
-   gSystem->Load("libSTEER.so");
-   gSystem->Load("libTOFbase.so");
+   gSystem->Load("libTender"); 
+   gSystem->Load("libProof");
+   gSystem->Load("libRAWDatabase");
+   gSystem->Load("libSTEER");
+   gSystem->Load("libTOFbase");
 
-   gSystem->Load("libTRDbase.so");
-   gSystem->Load("libVZERObase.so");
-   gSystem->Load("libPWGHFhfe.so"); 
-   //gSystem->Load("libTENDERSupplies.so"); 
+   gSystem->Load("libTRDbase");
+   gSystem->Load("libVZERObase");
+   gSystem->Load("libPWGHFhfe");
+   //gSystem->Load("libTenderSupplies");
 
    // Load common libraries
 

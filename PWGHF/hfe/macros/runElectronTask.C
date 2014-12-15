@@ -23,7 +23,7 @@ void runElectronTask(const char *treelist = 0x0, Bool_t hasMC = kTRUE){
     SetupPar("Util");
   }
   //SetupPar("HFE");
-  gSystem->Load("libHFE.so");
+  gSystem->Load("libHFE");
 //  gROOT->LoadMacro("AliAnalysisTaskHFE.cxx++");
  // AliLog::SetGlobalLogLevel(AliLog::kError);
   
@@ -101,8 +101,8 @@ TChain * CreateXMLChain(char* xmlfile)
     printf("No collection file with name -- %s -- was found\n",kXML);
     return ;
   }
-  gSystem->Load("libNetx.so") ;
-  gSystem->Load("libRAliEn.so");
+  gSystem->Load("libNetx") ;
+  gSystem->Load("libRAliEn");
   TGrid::Connect("alien://") ;
 
 

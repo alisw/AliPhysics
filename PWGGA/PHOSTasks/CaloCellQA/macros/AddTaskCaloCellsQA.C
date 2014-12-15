@@ -5,7 +5,7 @@ AliAnalysisTaskCaloCellsQA* AddTaskCaloCellsQA(Int_t nmods = 10, Int_t det = 0,
   //
   // Usage example for EMCAL:
   //
-  //   gSystem->Load("libPWGGAPHOSTasks.so");
+  //   gSystem->Load("libPWGGAPHOSTasks");
   //   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/PHOSTasks/CaloCellQA/macros/AddTaskCaloCellsQA.C");
   //   AliAnalysisTaskCaloCellsQA *taskQA = AddTaskCaloCellsQA(10); // 10 supermodules
   //   taskQA->SelectCollisionCandidates(AliVEvent::kMB); // if necessary
@@ -16,7 +16,7 @@ AliAnalysisTaskCaloCellsQA* AddTaskCaloCellsQA(Int_t nmods = 10, Int_t det = 0,
   //
   // Usage example for PHOS:
   //
-  //   gSystem->Load("libPWGAPHOSTasks.so");
+  //   gSystem->Load("libPWGAPHOSTasks");
   //   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/PHOSTasks/CaloCellQA/macros/AddTaskCaloCellsQA.C");
   //   AliAnalysisTaskCaloCellsQA *taskQA = AddTaskCaloCellsQA(4, 1);
   //   taskQA->SelectCollisionCandidates(AliVEvent::kMB); // if necessary

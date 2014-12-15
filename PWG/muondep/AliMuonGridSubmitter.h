@@ -52,7 +52,7 @@ public:
   TString LocalDir() const { return GetMapValue("Local"); }
   TString TemplateDir() const { return GetMapValue("Template"); }
   
-  TString FilePath(const char* what) const;
+  //  TString FilePath(const char* what) const; // Not implemented
   
   UInt_t NofRuns() const;
   
@@ -87,7 +87,7 @@ public:
   Bool_t RemoteDirectoryExists(const char *dirname) const;
   Bool_t RemoteFileExists(const char *lfn);
   
-  Bool_t CopyLocalFilesToRemote(const TObjArray& localFiles);
+  //  Bool_t CopyLocalFilesToRemote(const TObjArray& localFiles); // Not implemented
 
   Bool_t CopyFile(const char* localFile);
   

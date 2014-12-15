@@ -1221,8 +1221,8 @@ TOFpid_fit(TH1 *hSignal, TH1 *hSigExp, TH1 *hBkgExp1, TH1 *hBkgExp2, TH1 *hBkgEx
   gSystem->Load("libRooFit");
   using namespace RooFit;
  /*** LOAD GAUSSIANTAIL CLASS ***/
-  gSystem->Load("RooFermiCutoff_cxx.so");
-  gSystem->Load("RooGaussianTail_cxx.so");
+  gSystem->Load("RooFermiCutoff_cxx");
+  gSystem->Load("RooGaussianTail_cxx");
 
   /*** DEFINE FIT RANGE ***/
 

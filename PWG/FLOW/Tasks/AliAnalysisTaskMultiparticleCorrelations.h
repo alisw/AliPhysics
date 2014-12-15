@@ -137,7 +137,7 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   // Differential correlations:
   void SetCalculateDiffCorrelations(Bool_t cdc) {this->fCalculateDiffCorrelations = cdc;};
   Bool_t GetCalculateDiffCorrelations() const {return this->fCalculateDiffCorrelations;};
-  void SetDiffHarmonics(Int_t order, Int_t *harmonics); // see implementation in .cxx file 
+  void SetDiffHarmonics(Int_t order, Int_t *harmonics){;} // not implemented 
   void SetCalculateDiffCos(Bool_t cdc) {this->fCalculateDiffCos = cdc;};
   Bool_t GetCalculateDiffCos() const {return this->fCalculateDiffCos;};
   void SetCalculateDiffSin(Bool_t cds) {this->fCalculateDiffSin = cds;};

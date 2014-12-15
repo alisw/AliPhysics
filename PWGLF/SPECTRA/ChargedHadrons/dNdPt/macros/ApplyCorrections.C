@@ -40,13 +40,13 @@ Double_t ApplyCorrections(const char* datafile, const char* datatask, const char
 
     
     
-    gSystem->Load("libANALYSIS.so");
-    gSystem->Load("libANALYSISalice.so");
-    gSystem->Load("libTENDER.so");
-    gSystem->Load("libCORRFW.so");
-    gSystem->Load("libPWG0base.so");    
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
+    gSystem->Load("libTender");
+    gSystem->Load("libCORRFW");
+    gSystem->Load("libPWG0base");
     gSystem->Load("libPWG0dep"); 
-    gSystem->Load("libPWG0selectors.so");
+    gSystem->Load("libPWG0selectors");
     
 
     // make plots nicer

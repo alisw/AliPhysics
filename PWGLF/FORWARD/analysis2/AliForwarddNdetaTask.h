@@ -122,7 +122,7 @@ protected:
      * 
      * @param other Object to copy from 
      */
-    CentralityBin(const CentralityBin& other);
+    CentralityBin(const CentralityBin& other){;}
     /** 
      * Destructor 
      */
@@ -133,7 +133,7 @@ protected:
      * 
      * @return 
      */
-    CentralityBin& operator=(const CentralityBin&);
+    CentralityBin& operator=(const CentralityBin&){return *this;}
     /** 
      * End of processing 
      * 

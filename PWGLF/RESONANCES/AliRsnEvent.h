@@ -61,11 +61,11 @@ public:
    void             SetDaughterESDtrack  (AliRsnDaughter &target, Int_t index);
    void             SetDaughterESDv0     (AliRsnDaughter &target, Int_t index);
    void             SetDaughterESDcascade(AliRsnDaughter &target, Int_t index);
-   void             SetDaughterESDMCtrack(AliRsnDaughter &target, Int_t index);
+   //   void             SetDaughterESDMCtrack(AliRsnDaughter &target, Int_t index); // Not implemented
    void             SetDaughterAODtrack  (AliRsnDaughter &target, Int_t index);
    void             SetDaughterAODv0     (AliRsnDaughter &target, Int_t index);
    void             SetDaughterAODcascade(AliRsnDaughter &target, Int_t index);
-   void             SetDaughterAODMCtrack(AliRsnDaughter &target, Int_t index);
+   //   void             SetDaughterAODMCtrack(AliRsnDaughter &target, Int_t index); //Not implemented
    Bool_t           SetMCInfoESD         (AliRsnDaughter &target);
    Bool_t           SetMCInfoAOD         (AliRsnDaughter &target);
 

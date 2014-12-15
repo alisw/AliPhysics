@@ -166,11 +166,11 @@ void LoadLibraries()
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libTENDER");
-  gSystem->Load("libPWG0base.so");
-  gSystem->Load("libPWG0dep.so");
-  gSystem->Load("libPWG0selectors.so");
-  gSystem->Load("libPWGPP.so");
+  gSystem->Load("libTender");
+  gSystem->Load("libPWG0base");
+  gSystem->Load("libPWG0dep");
+  gSystem->Load("libPWG0selectors");
+  gSystem->Load("libPWGPP");
 
   if (doCALO) {
      gSystem->Load("libEMCALUtils");
@@ -525,7 +525,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
    plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD");
    
-   plugin->SetAdditionalLibs("libCORRFW.so libTENDER.so libPWG0base.so libPWG0dep.so libPWG0selectors.so libPWGPP.so \
+   plugin->SetAdditionalLibs("libCORRFW.so libTender.so libPWG0base.so libPWG0dep.so libPWG0selectors.so libPWGPP.so \
                               libEMCALUtils.so libPHOSUtils.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so \
                               libPWGHFbase.so libPWGmuon.so libPWGmuondep.so libPWG2forward2.so");
      
