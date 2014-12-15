@@ -42,6 +42,7 @@
 #include "AliFlatESDFriend.h"
 #include "AliVEvent.h"
 #include "AliVfriendEvent.h"
+#include "AliSysInfo.h"
 
 #include "AliTPCcalibBase.h"
 
@@ -185,6 +186,11 @@ Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
 
   // Set run time ranges (time stamps)
   // doesn't really work at the moment, to be checked
+
+  //shut up AliSysInfo globally, prevents syswatch.log files from being created
+  AliSysInfo::SetDisabled(kTRUE);
+  //dont open the debug file
+  TTreeSRedirector::SetDisabled(kTRUE);
 
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
   if(!entry) {
