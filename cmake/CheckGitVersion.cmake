@@ -42,20 +42,38 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
         if(NOT res EQUAL 0)
             set(GIT_SHORT_SHA1 ${GIT_SHA1})
         endif()
+        
+        # generate the short version of the revision hash
+        execute_process(COMMAND git rev-list --count ${GIT_SHA1}
+                          WORKING_DIRECTORY ${AliRoot_SOURCE_DIR}
+                          OUTPUT_STRIP_TRAILING_WHITESPACE
+                          RESULT_VARIABLE revcount
+                          OUTPUT_VARIABLE ALIROOT_SERIAL)
+
 
         # GIT_REFSPEC is empty for detached mode = tags in detached mode or checkout to specific hash
 
         # returns the closest reference to the current hash
         # name of the current tag or heads/branch in the case of branches
+        # Older git version of Git report only the name of the tag
+        # Newer version report tags/vAN-20141215
+        # Just in case we replace tags/ with nothing
         git_describe(ALIROOT_GIT_TAG "--all" "--abbrev=0")
-
+        
+        if(ALIROOT_GIT_TAG)
+            string(STRIP ${ALIROOT_GIT_TAG} ALIROOT_GIT_TAG)
+            string(REPLACE "tags/" ""  ALIROOT_GIT_TAG ${ALIROOT_GIT_TAG})
+        endif(ALIROOT_GIT_TAG)
+        
         STRING(REGEX REPLACE "^(.+/)(.+)/(.*)$" "\\2" BRANCH_TYPE "${GIT_REFSPEC}" )
         
         # the revision is not set in the case of a branch, it means we are doing development
         # and the revision will trigger a reconfiguration
         if(BRANCH_TYPE STREQUAL "heads")
             set(ALIROOT_REVISION "ThisIsaBranchNoRevisionProvided")
+            set(ALIROOT_SERIAL 0)
             STRING(REGEX REPLACE "^(.+/)(.+/)(.*)$" "\\3" SHORT_BRANCH "${GIT_REFSPEC}" )
+            message(STATUS "This is a working branch, ARVersion will not contain the revision and the serial number")
         else()
             set(SHORT_BRANCH ${ALIROOT_GIT_TAG})
             set(ALIROOT_REVISION ${GIT_SHORT_SHA1})
@@ -67,7 +85,8 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
         # Replace - with . for rpm creation
         string(REPLACE "-" "." ALIROOT_VERSION_RPM ${ALIROOT_VERSION})
 
-        message(STATUS "Aliroot branch/tag: \"${ALIROOT_VERSION}\" - Revision:  \"${GIT_SHORT_SHA1}\" ")
+
+        message(STATUS "Aliroot branch/tag: \"${ALIROOT_VERSION}\" - Revision:  \"${GIT_SHORT_SHA1}\" - Serial: \"${ALIROOT_SERIAL}\"")
 
     else()
         message(STATUS "Git not installed. I can't tell you which revision you are using!")

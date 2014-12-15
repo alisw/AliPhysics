@@ -20,7 +20,9 @@ set (MODULE STEERBase)
 include_directories(${AliRoot_SOURCE_DIR}/STEER/${MODULE})
 
 # Additional includes - alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS})
+include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliRoot_BINARY_DIR}/version
+                   )
 
 # Sources - alphabetical order
 set(SRCS
@@ -107,6 +109,7 @@ set(SRCS
     AliVCaloTrigger.cxx
     AliVCluster.cxx
     AliVCuts.cxx
+    AliVersion.cxx
     AliVEvent.cxx
     AliVEventHandler.cxx
     AliVEventPool.cxx
