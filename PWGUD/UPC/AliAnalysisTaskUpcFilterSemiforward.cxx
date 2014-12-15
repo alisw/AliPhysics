@@ -343,7 +343,7 @@ Bool_t AliAnalysisTaskUpcFilterSemiforward::RunAOD()
   Int_t nmun=0, ncen=0;
   // AOD tracks loop
   for(Int_t itr=0; itr<aodEvent->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = aodEvent->GetTrack(itr);
+    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(itr));
     if( !trk ) continue;
 
     //muon track
