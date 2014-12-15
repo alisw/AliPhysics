@@ -68,8 +68,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   //double PhiStarDifferenceMinimum=0.017; //[radian]
  // double EtaDifferenceMinimum=0.015; //[radian]
  //for test
-   double PhiStarDifferenceMinimum=0.03; //[radian]
-  double EtaDifferenceMinimum=0.02; //[radian]
+   //double PhiStarDifferenceMinimum=0.03; //[radian]
+ // double EtaDifferenceMinimum=0.02; //[radian]
+   double PhiStarDifferenceMinimum=0.06; //[radian]
+   double EtaDifferenceMinimum=0.045; //[radian]
   
   
   
