@@ -25,11 +25,12 @@
 #include <TRandom.h>
 #include <TLegend.h>
 #include <TGraphErrors.h>
+#include "TStatToolkit.h"
 #endif
 
 TTree *tree;
 
-DrawPerformanceZDCQAMatchTrends(const char* inFile = "trending.root"){
+void DrawPerformanceZDCQAMatchTrends(const char* inFile = "trending.root"){
   
   /*set graphic style*/
   gStyle->SetCanvasColor(kWhite);
@@ -67,7 +68,7 @@ DrawPerformanceZDCQAMatchTrends(const char* inFile = "trending.root"){
   Int_t offset_centroids=3;
   Int_t offset_tdc=6;  
   
-  Int_t runNumber=0;
+  //Int_t runNumber=0;
   Double_t ZNC_mean=0;   Double_t ZNC_tot=0;    Double_t ZNC_avg=0;  
   Double_t ZNA_mean=0;   Double_t ZNA_tot=0;    Double_t ZNA_avg=0;
   Double_t ZPC_mean=0;   Double_t ZPC_tot=0;    Double_t ZPC_avg=0;     
