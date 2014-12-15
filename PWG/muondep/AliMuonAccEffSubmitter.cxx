@@ -297,13 +297,13 @@ fUseAODMerging(kFALSE)
   
   AddToTemplateFileList("CheckESD.C");
   AddToTemplateFileList("CheckAOD.C");
-  AddToTemplateFileList("AODtrain.C");
-  AddToTemplateFileList("validation.sh");
+  AddToTemplateFileList("AODtrainsim.C");
+//  AddToTemplateFileList("validation.sh");
   
   AddToTemplateFileList("Config.C");
   AddToTemplateFileList("rec.C");
   AddToTemplateFileList("sim.C");
-  AddToTemplateFileList("simrun.C");
+  AddToTemplateFileList("simrun.sh");
   AddToTemplateFileList(RunJDLName().Data());
   
   UseExternalConfig(fExternalConfig);
@@ -384,7 +384,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateMergeJDL(const char* name) const
   
   if ( !final )
   {
-    OutputToJDL(*os,"InputFile",Form("LF:%s/AODtrain.C",RemoteDir().Data()));
+    OutputToJDL(*os,"InputFile",Form("LF:%s/AODtrainsim.C",RemoteDir().Data()));
     OutputToJDL(*os,"OutputDir",Form("%s/$1/Stage_$2/#alien_counter_03i#",RemoteDir().Data()));
     OutputToJDL(*os,"InputDataCollection",Form("%s/$1/Stage_$2.xml,nodownload",RemoteDir().Data()));
     OutputToJDL(*os,"split","se");
@@ -394,7 +394,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateMergeJDL(const char* name) const
   }
   else
   {
-    OutputToJDL(*os,"InputFile",Form("LF:%s/AODtrain.C",RemoteDir().Data()),
+    OutputToJDL(*os,"InputFile",Form("LF:%s/AODtrainsim.C",RemoteDir().Data()),
            Form("LF:%s/$1/wn.xml",RemoteDir().Data()));
     OutputToJDL(*os,"OutputDir",Form("%s/$1",RemoteDir().Data()));
   }
@@ -480,13 +480,13 @@ Bool_t AliMuonAccEffSubmitter::GenerateRunJDL(const char* name) const
     return kFALSE;
   }
   
-  OutputToJDL(*os,"splitarguments","simrun.C --run $1 --chunk #alien_counter# --event $3");
+  OutputToJDL(*os,"splitarguments","--run $1 --chunk #alien_counter# --event $3");
   
   OutputToJDL(*os,"Workdirectorysize","5000MB");
   
   OutputToJDL(*os,"JDLVariables","Packages","OutputDir");
 
-  OutputToJDL(*os,"Validationcommand",Form("%s/validation.sh",RemoteDir().Data()));
+  OutputToJDL(*os,"Validationcommand","/alice/validation/validation.sh");
 
   if ( GetVar("VAR_GENERATOR").Contains("pythia",TString::kIgnoreCase) )
   {
@@ -533,7 +533,7 @@ Bool_t AliMuonAccEffSubmitter::MakeOCDBSnapshots()
     }
     else
     {
-      gSystem->Exec(Form("aliroot -b -q -x simrun.C --run %d --snapshot",runNumber));
+      gSystem->Exec(Form("simrun.sh --run %d --snapshot",runNumber));
     
       if ( gSystem->AccessPathName(ocdbSim.Data()) )
       {
@@ -942,15 +942,15 @@ Int_t AliMuonAccEffSubmitter::LocalTest()
     return 0;
   }
   
-  std::cout << "Generating script to execute : ./simrun.sh" << std::endl;
-  
-  std::ofstream out("simrun.sh");
-  
-  out << "#!/bin/bash" << std::endl;
-//  root.exe -b -q simrun.C  --run <x> --chunk <y> --event <n>
-  out << "root.exe -b -q simrun.C --run "<< runs[0] <<" --event " << fFixedNofEvents << std::endl;
-
-  out.close();
+//  std::cout << "Generating script to execute : ./simrun.sh" << std::endl;
+//
+//  std::ofstream out("simrun.sh");
+//
+//  out << "#!/bin/bash" << std::endl;
+////  root.exe -b -q simrun.C  --run <x> --chunk <y> --event <n>
+//  out << "root.exe -b -q simrun.C --run "<< runs[0] <<" --event " << fFixedNofEvents << std::endl;
+//
+//  out.close();
 
   gSystem->Exec("chmod +x simrun.sh");
 
@@ -958,10 +958,12 @@ Int_t AliMuonAccEffSubmitter::LocalTest()
   
   gSystem->Exec("rm -rf TrackRefs.root *.SDigits*.root Kinematics.root *.Hits.root geometry.root gphysi.dat Run*.tag.root HLT*.root *.ps *.Digits.root *.RecPoints.root galice.root *QA*.root Trigger.root *.log AliESD* AliAOD* *.d *.so *.stat");
 
-  std::cout << "Executing the script : ./simrun.sh" << std::endl;
+  TString command = Form("./simrun.sh --run %i --event %i", runs[0], fFixedNofEvents);
+
+  std::cout << "Executing the script : " << command.Data() << std::endl;
 
 
-  gSystem->Exec("./simrun.sh");
+  gSystem->Exec(command.Data());
   
   return 1;
 }
