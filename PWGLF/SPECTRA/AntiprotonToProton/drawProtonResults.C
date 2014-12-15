@@ -14,10 +14,10 @@ void drawProtonResults(const char* analysisOutput = 0x0,
 //___________________________________________________//
 void drawResults(const char* analysisOutput) {
   //Draws the main results from the ratio analysis
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWG2spectra.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWG2spectra");
 
   //Create the AliProtonAnalysis object
   AliProtonAnalysis *analysis = new AliProtonAnalysis();

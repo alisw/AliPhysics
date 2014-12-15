@@ -19,19 +19,19 @@ void plotQApid(Int_t ic,Float_t pt,Int_t addbin=0);
 
 void LoadLib(){
   if(! kLib){
-    gSystem->Load("libVMC.so");
-    gSystem->Load("libPhysics.so");
-    gSystem->Load("libTree.so");
-    gSystem->Load("libSTEERBase.so");
-    gSystem->Load("libANALYSIS.so");
-    gSystem->Load("libAOD.so");
-    gSystem->Load("libESD.so");
-    gSystem->Load("libANALYSIS.so");
-    gSystem->Load("libANALYSISalice.so");
-    gSystem->Load("libCORRFW.so");
-    gSystem->Load("libNetx.so");
-    gSystem->Load("libPWGflowBase.so");
-    gSystem->Load("libPWGflowTasks.so");
+    gSystem->Load("libVMC");
+    gSystem->Load("libPhysics");
+    gSystem->Load("libTree");
+    gSystem->Load("libSTEERBase");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libAOD");
+    gSystem->Load("libESD");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
+    gSystem->Load("libCORRFW");
+    gSystem->Load("libNetx");
+    gSystem->Load("libPWGflowBase");
+    gSystem->Load("libPWGflowTasks");
     
     kLib = kTRUE;
   }

@@ -12,22 +12,22 @@ void runFlowOnDataExample() {
     // rbertens@cern.ch , rbertens@nikhef.nl , r.a.bertens@uu.nl
 
   // load libraries
-  gSystem->Load("libCore.so");        
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libTree.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libEventMixing.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWGTools.so");
-  gSystem->Load("libPWGCFebye.so");
-  gSystem->Load("libPWGflowBase.so");
-  gSystem->Load("libPWGflowTasks.so");
+  gSystem->Load("libCore");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libTree");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libEventMixing");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWGTools");
+  gSystem->Load("libPWGCFebye");
+  gSystem->Load("libPWGflowBase");
+  gSystem->Load("libPWGflowTasks");
 
     // create the analysis manager
   AliAnalysisManager* mgr = new AliAnalysisManager("MyManager");

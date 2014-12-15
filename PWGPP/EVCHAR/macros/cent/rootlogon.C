@@ -1,32 +1,32 @@
 // $Id$
 {
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGui.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so"); 
+  gSystem->Load("libTree");
+  gSystem->Load("libGui");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libCDB.so");
-  gSystem->Load("libMinuit.so");
-  gSystem->Load("libMinuit2.so");
-  gSystem->Load("libProof.so");
-  gSystem->Load("libRAWDatabase.so");
-  gSystem->Load("libSTEER.so");
-  gSystem->Load("libEVGEN.so");
-  gSystem->Load("libFASTSIM.so");
+  gSystem->Load("libCDB");
+  gSystem->Load("libMinuit");
+  gSystem->Load("libMinuit2");
+  gSystem->Load("libProof");
+  gSystem->Load("libRAWDatabase");
+  gSystem->Load("libSTEER");
+  gSystem->Load("libEVGEN");
+  gSystem->Load("libFASTSIM");
   if (1) {
-    gSystem->Load("libhijing.so");
-    gSystem->Load("libTHijing.so");
+    gSystem->Load("libhijing");
+    gSystem->Load("libTHijing");
   } else {
-    gSystem->Load("libampt.so");
-    gSystem->Load("libTAmpt.so");
+    gSystem->Load("libampt");
+    gSystem->Load("libTAmpt");
   }
-  gSystem->Load("libEGPythia6.so");
-  gSystem->Load("libpythia6.so");
-  gSystem->Load("libAliPythia6.so");
+  gSystem->Load("libEGPythia6");
+  gSystem->Load("libpythia6");
+  gSystem->Load("libAliPythia6");
   gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT");
   if (gSystem->Getenv("TMPDIR")) 
     gSystem->SetBuildDir(gSystem->Getenv("TMPDIR"));

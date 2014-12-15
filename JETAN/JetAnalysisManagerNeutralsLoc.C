@@ -1,18 +1,18 @@
 void JetAnalysisManagerLoc()
 {
-      gSystem->Load("libTree.so");
-      gSystem->Load("libPhysics.so");
-      gSystem->Load("libGeom.so");
-      gSystem->Load("libVMC.so");
-      gSystem->Load("libANALYSIS.so");
-      gSystem->Load("libSTEERBase.so");
-      gSystem->Load("libAOD.so");
-      gSystem->Load("libESD.so");
-      gSystem->Load("libANALYSISalice.so");
-      gSystem->Load("libfastjet.so");
-      gSystem->Load("libsiscone.so");
-      gSystem->Load("libSISConePlugin.so");
-      gSystem->Load("libJETAN.so");
+      gSystem->Load("libTree");
+      gSystem->Load("libPhysics");
+      gSystem->Load("libGeom");
+      gSystem->Load("libVMC");
+      gSystem->Load("libANALYSIS");
+      gSystem->Load("libSTEERBase");
+      gSystem->Load("libAOD");
+      gSystem->Load("libESD");
+      gSystem->Load("libANALYSISalice");
+      gSystem->Load("libfastjet");
+      gSystem->Load("libsiscone");
+      gSystem->Load("libSISConePlugin");
+      gSystem->Load("libJETAN");
 
      
     if (gApplication) gApplication->InitializeGraphics();

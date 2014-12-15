@@ -19,12 +19,12 @@ using namespace std;
 void MergeCollectionFromGrid(const char * incollection = "test.xml", const char * outputfile= "dndeta_merged.root")
 {
   // for running with root only
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so"); 
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
 
   // load analysis framework
   gSystem->Load("libANALYSIS");

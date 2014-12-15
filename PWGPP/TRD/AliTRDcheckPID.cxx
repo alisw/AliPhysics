@@ -47,8 +47,8 @@
 #include "AliCDBManager.h"
 #include "AliTRDpidUtil.h"
 
-#include "Cal/AliTRDCalPID.h"
-#include "Cal/AliTRDCalPIDNN.h"
+#include "AliTRDCalPID.h"
+#include "AliTRDCalPIDNN.h"
 #include "AliTRDcheckPID.h"
 #include "AliTRDinfoGen.h"
 #include "AliAnalysisManager.h"

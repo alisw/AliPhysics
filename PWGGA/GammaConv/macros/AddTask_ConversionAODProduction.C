@@ -1,7 +1,7 @@
 AliAnalysisTask *AddTask_ConversionAODProduction(Int_t dataset=0, Bool_t isMC = kFALSE){
 
 	// Before doing anything, we load the needed library
-	gSystem->Load("libPWGGAGammaConv.so");
+	gSystem->Load("libPWGGAGammaConv");
 	// dataset 0: pp
 	// dataset 1: PbPb
 	// dataset 2: pPb

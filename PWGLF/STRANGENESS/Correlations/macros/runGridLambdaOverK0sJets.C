@@ -67,29 +67,29 @@ void runGridLambdaOverK0sJets(TString  runMode    = "full",
 
 void InitAndLoadLibs() {
   
-    gSystem->Load("libCore.so"); 
-    gSystem->Load("libTree.so");                 
-    gSystem->Load("libGeom.so");
-    gSystem->Load("libVMC.so");
+    gSystem->Load("libCore");
+    gSystem->Load("libTree");
+    gSystem->Load("libGeom");
+    gSystem->Load("libVMC");
     gSystem->Load("libPhysics");
-    gSystem->Load("libMinuit.so");  
-    gSystem->Load("libProof.so");
-    gSystem->Load("libGui.so");
-    gSystem->Load("libXMLParser.so");
-    gSystem->Load("libProofPlayer.so");
-    gSystem->Load("libXMLIO.so");
+    gSystem->Load("libMinuit");
+    gSystem->Load("libProof");
+    gSystem->Load("libGui");
+    gSystem->Load("libXMLParser");
+    gSystem->Load("libProofPlayer");
+    gSystem->Load("libXMLIO");
 
-    gSystem->Load("libSTEERBase.so");
-    gSystem->Load("libESD.so");
-    gSystem->Load("libAOD.so");
-    gSystem->Load("libCDB.so");
-    gSystem->Load("libANALYSIS.so");
-    gSystem->Load("libANALYSISalice.so");
-    gSystem->Load("libCORRFW.so");
-    gSystem->Load("libJETAN.so");
-    gSystem->Load("libRAWDatabase.so");
-    gSystem->Load("libSTEER.so");
-    gSystem->Load("libCORRFW.so");
+    gSystem->Load("libSTEERBase");
+    gSystem->Load("libESD");
+    gSystem->Load("libAOD");
+    gSystem->Load("libCDB");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
+    gSystem->Load("libCORRFW");
+    gSystem->Load("libJETAN");
+    gSystem->Load("libRAWDatabase");
+    gSystem->Load("libSTEER");
+    gSystem->Load("libCORRFW");
 
    
     gSystem->AddIncludePath("-I$ALICE_ROOT/include");

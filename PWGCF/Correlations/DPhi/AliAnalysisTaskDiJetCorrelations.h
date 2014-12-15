@@ -18,6 +18,7 @@
 #include "AliEventPoolManager.h"
 #include "AliAODMCParticle.h"
 #include "AliCentrality.h"
+#include "AliAODTrack.h"
 
 class AliAODEvent;
 class AliVParticle;
@@ -26,7 +27,6 @@ class AliEventPoolManager;
 class AliESDEvent;
 class AliESDtrackCuts;
 class AliMultiplicity;
-class AliAODTrack;
 class AliAODHandler;
 class AliAODInputHandler;
 class AliMCParticle;

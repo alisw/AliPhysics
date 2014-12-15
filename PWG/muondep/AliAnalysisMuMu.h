@@ -180,7 +180,7 @@ public:
   
   void ExecuteCanvasEvent(Int_t event, Int_t px, Int_t py, TObject *sel);
 
-  std::vector<Double_t> GetMCCB2Tails(const AliAnalysisMuMuBinning::Range& bin) const;
+  //  std::vector<Double_t> GetMCCB2Tails(const AliAnalysisMuMuBinning::Range& bin) const; // Not implemented
   
   AliAnalysisMuMu* SIM() const { return fAssociatedSimulation; }
   

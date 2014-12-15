@@ -31,12 +31,12 @@ void makeCentralityFitnozeri(const int nRun=195483, const char *system = "ZNA",
 {
  //load libraries
   gSystem->SetBuildDir(".");
-  gSystem->Load("libCore.so");  
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libSTEERBase.so");
+  gSystem->Load("libCore");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libSTEERBase");
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
   gROOT->LoadMacro("AliCentralityGlauberFit.cxx++g");
 

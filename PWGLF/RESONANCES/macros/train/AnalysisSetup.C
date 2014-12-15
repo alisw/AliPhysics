@@ -37,7 +37,7 @@ Bool_t AnalysisSetup
    Bool_t isMix      = (nmix > 0);
    Bool_t isESD      = opt.Contains("ESD");
    Bool_t isAOD      = opt.Contains("AOD");
-   Bool_t useTender  = opt.Contains("TENDER");
+   Bool_t useTender  = opt.Contains("Tender");
    Bool_t usePhysSel = opt.Contains("PHYS");
    Bool_t noV0       = opt.Contains("NOV0");
    Bool_t useCent    = opt.Contains("CENT");
@@ -46,25 +46,25 @@ Bool_t AnalysisSetup
    // === LOAD LIBRARIES ===========================================================================
    //
 
-   gSystem->Load("libVMC.so");
-   gSystem->Load("libTree.so");
-   gSystem->Load("libPhysics.so");
-   gSystem->Load("libMatrix.so");
-   gSystem->Load("libMinuit.so");
-   gSystem->Load("libXMLParser.so");
-   gSystem->Load("libGui.so");
-   gSystem->Load("libSTEERBase.so");
-   gSystem->Load("libESD.so");
-   gSystem->Load("libAOD.so");
-   gSystem->Load("libANALYSIS.so");
-   gSystem->Load("libANALYSISalice.so");
-   gSystem->Load("libEventMixing.so");
-   gSystem->Load("libCORRFW.so");
+   gSystem->Load("libVMC");
+   gSystem->Load("libTree");
+   gSystem->Load("libPhysics");
+   gSystem->Load("libMatrix");
+   gSystem->Load("libMinuit");
+   gSystem->Load("libXMLParser");
+   gSystem->Load("libGui");
+   gSystem->Load("libSTEERBase");
+   gSystem->Load("libESD");
+   gSystem->Load("libAOD");
+   gSystem->Load("libANALYSIS");
+   gSystem->Load("libANALYSISalice");
+   gSystem->Load("libEventMixing");
+   gSystem->Load("libCORRFW");
    
    if (useTender) {
       ::Info("AnalysisSetup", "Loading tender libraries");
-      gSystem->Load("libTENDER.so");
-      gSystem->Load("libTENDERSupplies.so");
+      gSystem->Load("libTender");
+      gSystem->Load("libTenderSupplies");
    }
    
    if (!AliAnalysisAlien::SetupPar("PWG2resonances.par")) return kFALSE;
@@ -134,7 +134,7 @@ Bool_t AnalysisSetup
    }
 
    //
-   // === CONFIGURE AND INSERT PHYSICS SELECTION & TENDER SUPPLY ===================================
+   // === CONFIGURE AND INSERT PHYSICS SELECTION & Tender SUPPLY ===================================
    //
 
    // add event selection for data if running ESD

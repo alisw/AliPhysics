@@ -3,7 +3,7 @@
   gSystem->Load("libPWGUDbase");
   //gSystem->Load("libPWGmuondep");
   gSystem->Load("libPWGUDselectors");
-  gSystem->Load("$HOME/Desktop/RooUnfold-1.0.3/libRooUnfold.so");
+  gSystem->Load("$HOME/Desktop/RooUnfold-1.0.3/libRooUnfold");
   gSystem->AddIncludePath("-I${ALICE_ROOT}/include -I${ALICE_ROOT}/PWGPP/");
 
   gROOT->LoadMacro("unfoldBase.C++g");

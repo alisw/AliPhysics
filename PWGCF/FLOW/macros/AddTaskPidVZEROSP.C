@@ -28,19 +28,19 @@ AddTaskPidVZEROSP(Int_t centralityselection=AliVEvent::kAny,Float_t etamin=-0.8,
 }
 
 createSPres(){
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libTree.so");
-  gSystem->Load("libMinuit.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libNetx.so");
-  gSystem->Load("libPWGflowBase.so");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libTree");
+  gSystem->Load("libMinuit");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libAOD");
+  gSystem->Load("libESD");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libNetx");
+  gSystem->Load("libPWGflowBase");
   
   char name[200];
   char *spe[4]={"pion","kaon","antipr","proton"};

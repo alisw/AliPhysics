@@ -142,10 +142,10 @@ void  LoadLibraries() {
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
   //--------------------------------------
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libXMLIO.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libXMLIO");
   if(kUsePAR){
     //--------------------------------------------------------
     //If you want to use root and par files from aliroot
@@ -268,8 +268,8 @@ void CreateChain(const anaModes mode, TChain * chain){//, TChain * chainxs){
   //-----------------------------
   else if(mode == mGRID){
     //Load necessary libraries and connect to the GRID
-    gSystem->Load("libNetx.so") ; 
-    gSystem->Load("libRAliEn.so"); 
+    gSystem->Load("libNetx") ;
+    gSystem->Load("libRAliEn");
     TGrid::Connect("alien://") ;
     
     //Feed Grid with collection file

@@ -43,14 +43,14 @@ void Init(){
   //
   //
   //
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libTENDER.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWG0base.so");
-  gSystem->Load("libPWG0dep.so");
-  gSystem->Load("libPWG0selectors.so");
-  gSystem->Load("libPWGPP.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libTender");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWG0base");
+  gSystem->Load("libPWG0dep");
+  gSystem->Load("libPWG0selectors");
+  gSystem->Load("libPWGPP");
   gSystem->Load("libTPCcalib"); 
 //   gSystem->Setenv("alien_CLOSE_SE","ALICE::GSI::SE");
 //   TGrid::Connect("alien://",0,0,"t"); 

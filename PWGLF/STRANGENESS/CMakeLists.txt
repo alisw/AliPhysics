@@ -1,0 +1,121 @@
+# **************************************************************************
+# * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+# *                                                                        *
+# * Author: The ALICE Off-line Project.                                    *
+# * Contributors are mentioned in the code where appropriate.              *
+# *                                                                        *
+# * Permission to use, copy, modify and distribute this software and its   *
+# * documentation strictly for non-commercial purposes is hereby granted   *
+# * without fee, provided that the above copyright notice appears in all   *
+# * copies and that both the copyright notice and this permission notice   *
+# * appear in the supporting documentation. The authors make no claims     *
+# * about the suitability of this software for any purpose. It is          *
+# * provided "as is" without express or implied warranty.                  *
+# **************************************************************************/
+
+#Module
+set (MODULE PWGLFSTRANGENESS)
+
+# Module include folder
+include_directories(${AliRoot_SOURCE_DIR}/PWGLF/STRANGENESS)
+
+# Additional includes - alphabetical order except ROOT
+include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/EventMixing
+                    ${AliRoot_SOURCE_DIR}/CORRFW
+                    ${AliRoot_SOURCE_DIR}/PWGCF/Correlations/Base
+                    ${AliRoot_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/lightvertexers
+                    ${AliRoot_SOURCE_DIR}/PWGLF/STRANGENESS/Hypernuclei
+                    ${AliRoot_SOURCE_DIR}/PWGUD/base
+                    ${AliRoot_SOURCE_DIR}/STEER/AOD
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+  )
+
+# Sources - alphabetical order
+set(SRCS
+  Cascades/AliAnalysisTaskCheckCascade.cxx
+  Cascades/AliAnalysisTaskCheckCascadePbPb.cxx
+  Cascades/AliAnalysisTaskCheckPerformanceCascade.cxx
+  Cascades/AliAnalysisTaskCheckPerformanceCascadePbPb.cxx
+  LambdaK0PbPb/AliAnalysisCentralitySelector.cxx
+  LambdaK0PbPb/AliAnalysisTaskCTauPbPb.cxx
+  LambdaK0PbPb/AliAnalysisTaskCTauPbPbaod.cxx
+  LambdaK0PbPb/AliAnalysisTaskLukeAOD.cxx
+  LambdaK0PbPb/AliAnalysisTaskLukeV0.cxx
+  LambdaK0PbPb/AliAnalysisTaskPerformanceStrange.cxx
+  LambdaK0PbPb/AliAnalysisTaskV0ForRAA.cxx
+  LambdaK0/AliAnalysisTaskExtractV0.cxx
+  LambdaK0/AliAnalysisTaskExtractV0pPb.cxx
+  LambdaK0/AliAnalysisTaskExtractV0AOD.cxx
+  LambdaK0/AliAnalysisTaskExtractPerformanceV0.cxx
+  LambdaK0/AliAnalysisTaskExtractPerformanceV0pPb.cxx
+  LambdaK0PbPb/AliAnalysisTaskLK0Spectra.cxx
+  Cascades/AliAnalysisTaskExtractCascade.cxx
+  Cascades/AliAnalysisTaskExtractPerformanceCascade.cxx
+  Cascades/AliAnalysisTaskStrangenessVsMultiplicity.cxx
+  Cascades/AliAnalysisTaskStrangenessVsMultiplicityMC.cxx
+  Correlations/AliAnalysisTaskLambdaOverK0sJets.cxx
+  Correlations/AliAnalysisTaskV0ChCorrelations.cxx
+  Cascades/AliAnalysisTaskCheckCascadepp276.cxx
+  Cascades/AliAnalysisTaskCheckPerformanceCascadepp276.cxx
+  Hypernuclei/AliAnalysisTaskLambdaNAOD.cxx
+  Hypernuclei/AliAnalysisTaskHdibaryonLPpi.cxx
+  Hypernuclei/AliAnalysisTaskHelium3Pi.cxx
+  Hypernuclei/AliAnalysisTaskHelium3PiAOD.cxx
+  Hypernuclei/AliAnalysisTaskHelium3PiMC.cxx
+  Hypernuclei/AliAODRecoDecayLF.cxx
+  Hypernuclei/AliAODRecoDecayLF2Prong.cxx
+  Hypernuclei/AliAODNuclExReplicator.cxx
+  Hypernuclei/AliAnalysisTaskESDNuclExFilter.cxx
+  Hypernuclei/AliAODMCNuclExReplicator.cxx
+  Hypernuclei/AliAnalysisTaskESDNuclExFilterMC.cxx
+  Hypernuclei/AliAnalysisTaskReadNuclexAOD.cxx
+  Hypernuclei/AliAnalysisTaskAntiHe4.cxx
+  Hypernuclei/AliAnalysisTaskNucleiv2.cxx
+  Hypernuclei/AliAnalysisTaskNucleiv2SP.cxx
+  Cascades/lightvertexers/AliLightV0vertexer.cxx
+  Cascades/lightvertexers/AliLightCascadeVertexer.cxx
+  )
+
+# Headers from sources
+string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+# Generate the dictionary
+# It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
+get_directory_property(incdirs INCLUDE_DIRECTORIES)
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+
+# Add a shared library
+add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
+
+# Generate the ROOT map
+# Dependecies
+set(LIBDEPS ANALYSISalice CORRFW PWGUDbase)
+generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
+# Linking the library
+target_link_libraries(${MODULE} ${LIBDEPS})
+
+# Public include folders that will be propagated to the dependecies
+target_include_directories(${MODULE} PUBLIC ${incdirs})
+
+# System dependent: Modify the way the library is build
+if(${CMAKE_SYSTEM} MATCHES Darwin)
+    set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+endif(${CMAKE_SYSTEM} MATCHES Darwin)
+
+# Installation
+install(TARGETS ${MODULE} 
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib)
+install(FILES ${HDRS} DESTINATION include)
+
+# install macros
+install(DIRECTORY Cascades/macros DESTINATION PWGLF/STRANGENESS/Cascades)
+install(DIRECTORY Correlations/macros DESTINATION PWGLF/STRANGENESS/Correlations)
+install(DIRECTORY Hypernuclei DESTINATION PWGLF/STRANGENESS)
+install(DIRECTORY LambdaK0/macros DESTINATION PWGLF/STRANGENESS/LambdaK0)
+install(DIRECTORY LambdaK0PbPb DESTINATION  PWGLF/STRANGENESS)

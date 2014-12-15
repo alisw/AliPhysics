@@ -3,7 +3,7 @@ void ana_example()
   // Example macro to run QA
 
   // load relevant library
-  gSystem->Load("libPWGGAPHOSTasks.so");
+  gSystem->Load("libPWGGAPHOSTasks");
 
   // change next line to a working code
   TChain* chain = NULL; //CreateChain("wn.xml");

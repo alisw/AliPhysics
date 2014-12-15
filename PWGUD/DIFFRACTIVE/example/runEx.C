@@ -34,8 +34,8 @@ void runEx(
 	Printf("%s analysis chosen",runtype);
 
 	// load libraries (to be optimized)
-	gSystem->Load("libCore.so");
-	gSystem->Load("libTree.so");
+	gSystem->Load("libCore");
+	gSystem->Load("libTree");
 	gSystem->Load("libPhysics");
 	gSystem->Load("libMinuit");
 	gSystem->Load("libProof");
@@ -55,7 +55,7 @@ void runEx(
 	gSystem->Load("libANALYSIS");
 	gSystem->Load("libANALYSISalice");
 	gSystem->Load("libSTEER");
-	gSystem->Load("libTENDER");
+	gSystem->Load("libTender");
 	gSystem->Load("libRAWDatasim");
 	gSystem->Load("libFASTSIM");
 	gSystem->Load("libEVGEN");

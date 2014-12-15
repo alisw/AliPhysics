@@ -17,8 +17,6 @@ class AliRsnCutDaughterSigmaStar2010PP : public AliRsnCut {
 public:
 
    AliRsnCutDaughterSigmaStar2010PP(const char *name = "", AliPID::EParticleType pid = AliPID::kPion);
-   AliRsnCutDaughterSigmaStar2010PP(const AliRsnCutDaughterSigmaStar2010PP &copy);
-   AliRsnCutDaughterSigmaStar2010PP &operator=(const AliRsnCutDaughterSigmaStar2010PP &copy);
    virtual ~AliRsnCutDaughterSigmaStar2010PP() { }
 
    AliRsnCutTrackQuality *CutQuality()                         {return &fCutQuality;}
@@ -31,6 +29,8 @@ public:
    void           SetDCARmax(Double_t value)                   {fDCARmax = value;}
     
 private:
+   AliRsnCutDaughterSigmaStar2010PP(const AliRsnCutDaughterSigmaStar2010PP &copy); // Not implemented
+   AliRsnCutDaughterSigmaStar2010PP &operator=(const AliRsnCutDaughterSigmaStar2010PP &copy); // Not implemented
 
    AliPID::EParticleType fPID;                  // PID for track
    AliRsnCutTrackQuality fCutQuality;           // track quality cut

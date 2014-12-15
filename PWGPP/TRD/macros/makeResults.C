@@ -42,14 +42,14 @@
 //
 // In compiled mode :
 // Don't forget to load first the libraries
-// gSystem->Load("libANALYSIS.so")
-// gSystem->Load("libANALYSISalice.so")
-// gSystem->Load("libTENDER.so");
-// gSystem->Load("libPWGPP.so");
-// gSystem->Load("libCORRFW.so");
-// gSystem->Load("libPWGmuon.so");
-// gSystem->Load("libNetx.so") ;
-// gSystem->Load("libRAliEn.so");
+// gSystem->Load("libANALYSIS")
+// gSystem->Load("libANALYSISalice")
+// gSystem->Load("libTender");
+// gSystem->Load("libPWGPP");
+// gSystem->Load("libCORRFW");
+// gSystem->Load("libPWGmuon");
+// gSystem->Load("libNetx") ;
+// gSystem->Load("libRAliEn");
 
 // Authors:
 //   Alex Bercuci (A.Bercuci@gsi.de)
@@ -82,7 +82,7 @@
 #include "PWGPP/TRD/AliTRDinfoGen.h"
 #endif
 
-const Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libANALYSISalice.so", "libCORRFW", "libTENDER.so", "libPWGPP.so", "libPWGmuon.so"};
+const Char_t *libs[] = {"libProofPlayer", "libANALYSIS", "libANALYSISalice", "libCORRFW", "libTender", "libPWGPP", "libPWGmuon"};
 // define setup
 TCanvas *c(NULL);
 Bool_t mc(kFALSE), friends(kFALSE);

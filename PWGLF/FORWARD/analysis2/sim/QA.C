@@ -178,11 +178,11 @@ void LoadLibraries()
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libOADB");
-  gSystem->Load("libESDfilter.so");
+  gSystem->Load("libESDfilter");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libTENDER");
-  gSystem->Load("libPWGPP.so");
-  gSystem->Load("libAliHLTTrigger.so");
+  gSystem->Load("libTender");
+  gSystem->Load("libPWGPP");
+  gSystem->Load("libAliHLTTrigger");
 
   if ((qaCfg->DoEMCAL() && detCfg->UseEMCAL()) || 
       ((qaCfg->DoPHOS() || qaCfg->DoPHOSTrig())  && detCfg->UsePHOS()) || 

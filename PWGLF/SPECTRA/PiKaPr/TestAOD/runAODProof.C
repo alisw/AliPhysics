@@ -8,28 +8,28 @@ void runAODProof(Int_t c=3, const char * proofMode = "full")
   //  gEnv->SetValue("XSec.GSI.DelegProxy", "2");
   
   // Load common libraries
-  gSystem->Load("libCore.so");
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libMinuit.so"); 
-  gSystem->Load("libGui.so");
-  gSystem->Load("libXMLParser.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libCDB.so");
+  gSystem->Load("libCore");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libMinuit");
+  gSystem->Load("libGui");
+  gSystem->Load("libXMLParser");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libCDB");
   gSystem->Load("libAOD");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libProof.so");
-  gSystem->Load("libRAWDatabase.so");
-  gSystem->Load("libSTEER.so");
+  gSystem->Load("libProof");
+  gSystem->Load("libRAWDatabase");
+  gSystem->Load("libSTEER");
   //__________________________________________________________________________
   // Use AliRoot includes to compile our task
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
-  gSystem->Load("libPWGLFspectra.so");
+  gSystem->Load("libPWGLFspectra");
   
   AliAnalysisAlien * handler = new AliAnalysisAlien("test");
   handler->SetOverwriteMode();

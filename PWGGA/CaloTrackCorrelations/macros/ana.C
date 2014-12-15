@@ -537,29 +537,29 @@ void  LoadLibraries(Int_t mode)
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
   //--------------------------------------
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libXMLIO.so");
-  gSystem->Load("libMatrix.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libMinuit.so"); // Root + libraries to if reclusterization is done
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libXMLIO");
+  gSystem->Load("libMatrix");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libMinuit"); // Root + libraries to if reclusterization is done
   
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libGui.so"); // Root + libraries to if reclusterization is done
-  gSystem->Load("libCDB.so"); // Root + libraries to if reclusterization is done
-  gSystem->Load("libESD.so"); // Root + libraries to if reclusterization is done
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libRAWDatabase.so"); // Root + libraries to if reclusterization is done
-  gSystem->Load("libProof.so"); 
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libGui"); // Root + libraries to if reclusterization is done
+  gSystem->Load("libCDB"); // Root + libraries to if reclusterization is done
+  gSystem->Load("libESD"); // Root + libraries to if reclusterization is done
+  gSystem->Load("libAOD");
+  gSystem->Load("libRAWDatabase"); // Root + libraries to if reclusterization is done
+  gSystem->Load("libProof"); 
   gSystem->Load("libOADB");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libSTEER.so"); // Root + libraries to if reclusterization is done
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libSTEER"); // Root + libraries to if reclusterization is done
   
-  gSystem->Load("libRAWDatarec.so"); // Root + libraries to if reclusterization is done
-  gSystem->Load("libRAWDatasim.so"); // Root + libraries to if reclusterization is done
-  gSystem->Load("libVZERObase.so");  // Root + libraries to if reclusterization is done
-  gSystem->Load("libVZEROrec.so");   // Root + libraries to if reclusterization is done
+  gSystem->Load("libRAWDatarec"); // Root + libraries to if reclusterization is done
+  gSystem->Load("libRAWDatasim"); // Root + libraries to if reclusterization is done
+  gSystem->Load("libVZERObase");  // Root + libraries to if reclusterization is done
+  gSystem->Load("libVZEROrec");   // Root + libraries to if reclusterization is done
 
   gSystem->Load("libPHOSUtils");
 
@@ -574,11 +574,11 @@ void  LoadLibraries(Int_t mode)
   //SetupPar("EMCALsim");
   //SetupPar("EMCALrec");
   
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libESDfilter.so");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libESDfilter");
 
-  gSystem->Load("libTENDER.so");
-  gSystem->Load("libTENDERSupplies.so");
+  gSystem->Load("libTender");
+  gSystem->Load("libTenderSupplies");
   
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWGTools");
@@ -597,8 +597,8 @@ void  LoadLibraries(Int_t mode)
   //gSystem->Load("FASTJETAN");
   //gSystem->Load("PWGJE");
 
-  //gSystem->Load("libCORRFW.so");
-  //gSystem->Load("libPWGGAGammaConv.so"); 
+  //gSystem->Load("libCORRFW");
+  //gSystem->Load("libPWGGAGammaConv"); 
   //SetupPar("PWGGAGammaConv"); 
   
   // needed for plugin?
@@ -768,8 +768,8 @@ void CheckInputData(const anaModes mode)
     else cout<<"XML file "<<kXML<<endl;
     
     //Load necessary libraries and connect to the GRID
-    gSystem->Load("libNetx.so") ; 
-    gSystem->Load("libRAliEn.so"); 
+    gSystem->Load("libNetx") ; 
+    gSystem->Load("libRAliEn"); 
     TGrid::Connect("alien://") ;
     
     //Feed Grid with collection file

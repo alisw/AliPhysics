@@ -272,29 +272,29 @@ void jetFlowTools() {
 
 //_____________________________________________________________________________
 void Load() {
-    gSystem->Load("libTree.so");
-    gSystem->Load("libGeom.so");
-    gSystem->Load("libVMC.so");
+    gSystem->Load("libTree");
+    gSystem->Load("libGeom");
+    gSystem->Load("libVMC");
     gSystem->Load("libPhysics");
 
-    gSystem->Load("libSTEERBase.so");
-    gSystem->Load("libESD.so");
-    gSystem->Load("libAOD.so");
-    gSystem->Load("libANALYSIS.so");
-    gSystem->Load("libANALYSISalice.so");
+    gSystem->Load("libSTEERBase");
+    gSystem->Load("libESD");
+    gSystem->Load("libAOD");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
 
-    gSystem->Load("libEMCALUtils.so");
-    gSystem->Load("libPHOSUtils.so");
-    gSystem->Load("libCGAL.so");
-    gSystem->Load("libfastjet.so");
-    gSystem->Load("libsiscone.so");
-    gSystem->Load("libSISConePlugin.so");
+    gSystem->Load("libEMCALUtils");
+    gSystem->Load("libPHOSUtils");
+    gSystem->Load("libCGAL");
+    gSystem->Load("libfastjet");
+    gSystem->Load("libsiscone");
+    gSystem->Load("libSISConePlugin");
 
-    gSystem->Load("libCORRFW.so");
-    gSystem->Load("libPWGTools.so");
-    gSystem->Load("libJETAN.so");
-    gSystem->Load("libFASTJETAN.so");
-    gSystem->Load("libPWGJE.so");
+    gSystem->Load("libCORRFW");
+    gSystem->Load("libPWGTools");
+    gSystem->Load("libJETAN");
+    gSystem->Load("libFASTJETAN");
+    gSystem->Load("libPWGJE");
 
     // include paths, necessary for compilation
     gSystem->AddIncludePath("-Wno-deprecated");
@@ -303,7 +303,7 @@ void Load() {
     gSystem->AddIncludePath("-I$ALICE_ROOT/JETAN -I$ALICE_ROOT/JETAN/fastjet");
 
     // attempt to load RooUnfold libraries, 
-    gSystem->Load("/home/rbertens/Documents/CERN/alice/BUILDS/ROOUNFOLD/RooUnfold-1.1.1/libRooUnfold.so");
+    gSystem->Load("/home/rbertens/Documents/CERN/alice/BUILDS/ROOUNFOLD/RooUnfold-1.1.1/libRooUnfold");
     gSystem->AddIncludePath("-I/home/rbertens/Documents/CERN/alice/BUILDS/ROOUNFOLD/RooUnfold-1.1.1/src/");
     // compile unfolding class (only if there are local changes or the .o is not found)
     gROOT->LoadMacro("$ALICE_ROOT/PWG/FLOW/Tasks/AliJetFlowTools.cxx+");

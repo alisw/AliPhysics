@@ -57,8 +57,8 @@
 #include "AliTRDCalibraVdriftLinearFit.h"
 #include "AliTRDCalibraMode.h"
 #include "AliTRDCalibraVector.h"
-#include "./Cal/AliTRDCalPad.h"
-#include "./Cal/AliTRDCalDet.h"
+#include "AliTRDCalPad.h"
+#include "AliTRDCalDet.h"
 
 #include "AliLog.h"
 

@@ -20,7 +20,7 @@ runV0Analysis(TString lV0Type = "Lambda", Bool_t doSystematics = kFALSE){
    }
 
   //Load Class
-  gSystem->Load("AliV0Module_cxx.so");
+  gSystem->Load("AliV0Module_cxx");
 
   //Initialize Analysis Object
   AliV0Module *v0 = new AliV0Module(lV0Type);

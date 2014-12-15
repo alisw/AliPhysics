@@ -34,7 +34,7 @@ void loadlibPWGJE()
   //
   // EMCAL jet framework
   //  if you only need the EMCAL jet framework, use $ALICE_ROOT/PWGJE/EMCALJetTasks/macros/loadlibPWGJEEMCAL.C
-  gSystem->Load("libTENDER");
+  gSystem->Load("libTender");
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWGTools");
   gSystem->Load("libCDB");

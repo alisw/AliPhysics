@@ -38,7 +38,7 @@
 
 #include "AliESDInputHandlerRP.h"
 #include "AliESDVZERO.h"
-#include "../ITS/AliITSRecPoint.h"
+#include "AliITSRecPoint.h"
 #include "AliCDBPath.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"

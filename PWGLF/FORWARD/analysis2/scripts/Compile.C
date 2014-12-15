@@ -22,9 +22,9 @@ Compile(const char* script, Option_t* option="g")
     std::cerr << "No script to compile!" << std::endl;
     return kFALSE;
   }
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libPWGLFforward2.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libPWGLFforward2");
   TString macroPath(gROOT->GetMacroPath());
   macroPath.Append(":${ALICE_ROOT}/PWGLF/FORWARD/analysis2");
   macroPath.Append(":${ALICE_ROOT}/PWGLF/FORWARD/analysis2/scripts");

@@ -1,5 +1,5 @@
 {
-    gSystem->Load("libPWG2LRC.so");
+    gSystem->Load("libPWG2LRC");
 Int_t errybins = 20000;
 	Double_t errymin = 0.000025,
 		  errymax = 1.000025;

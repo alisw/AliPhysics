@@ -11,10 +11,10 @@ void Pi0SpectrumLHC11h(const char* dataset="collection.xml",
   while( libs.NextToken() )
     gSystem->Load( Form("lib%s", libs.Data()) );
 
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
   
   //load analysis framework
   gSystem->Load("libANALYSIS");
@@ -29,7 +29,7 @@ void Pi0SpectrumLHC11h(const char* dataset="collection.xml",
     gROOT->LoadMacro("AliAnalysisTaskPi0Flow.cxx+g");
   }
   else {
-    gSystem->Load("libPWGGAPHOSTasks.so");
+    gSystem->Load("libPWGGAPHOSTasks");
   }
   
   // Connect to alien

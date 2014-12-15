@@ -19,8 +19,6 @@ class AliRsnCutDaughterD0 : public AliRsnCut {
  public:
 
   AliRsnCutDaughterD0(const char *name = "", AliPID::EParticleType pid = AliPID::kPion);
-  AliRsnCutDaughterD0(const AliRsnCutDaughterD0 &copy);
-  AliRsnCutDaughterD0 &operator=(const AliRsnCutDaughterD0 &copy);
   virtual ~AliRsnCutDaughterD0() { }
 
   void           SetNoPID(Bool_t yn = kTRUE)                  {fNoPID = yn;}
@@ -40,6 +38,8 @@ class AliRsnCutDaughterD0 : public AliRsnCut {
   virtual Bool_t         IsSelected(TObject *obj);
    
  private:
+  AliRsnCutDaughterD0(const AliRsnCutDaughterD0 &copy); // Not implemented
+  AliRsnCutDaughterD0 &operator=(const AliRsnCutDaughterD0 &copy); // Not implemented
   Bool_t                fNoPID;            // flag to switch off PID check
   //Bool_t                fIsCheckOnMother;  // flag to switch off tracks check
   AliPID::EParticleType fPID;              // PID for track
