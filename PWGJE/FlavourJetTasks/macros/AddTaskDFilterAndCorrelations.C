@@ -6,7 +6,7 @@ AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
   TString suffix = "",
   TString jetArrname = "",
   TString trackArrname = "PicoTracks",
-  TString subwagons="",
+  TString rhoname="",
   Bool_t triggerOnLeadingJet = kFALSE,
   Int_t leadingHadType = 0 /*0 = charged, 1 = neutral, 2 = both*/,
   Float_t R = 0.4,
