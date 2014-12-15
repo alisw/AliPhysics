@@ -48,6 +48,7 @@ set(SRCS
     AliAnalysisTaskRhoFlow.cxx
     AliAnalysisTaskRhoSparse.cxx
     AliAnalysisTaskScale.cxx
+    AliEmcalJetByJetCorrection.cxx
     AliEmcalJet.cxx
     AliEmcalPicoTrackInGridMaker.cxx
     AliJetConstituentTagCopier.cxx
@@ -65,6 +66,28 @@ set(SRCS
     AliLocalRhoParameter.cxx
     AliPythiaInfo.cxx
     AliRhoParameter.cxx
+    Tracks/AliAnalysisTaskPtEMCalTrigger.cxx
+    Tracks/AliAnalysisTaskPtEMCalTriggerV1.cxx
+    Tracks/AliCutValueRange.cxx
+    Tracks/AliEMCalHistoContainer.cxx
+    Tracks/AliEMCalPtTaskTrackSelectionAOD.cxx
+    Tracks/AliEMCalPtTaskTrackSelectionESD.cxx
+    Tracks/AliEMCalPtTaskVTrackSelection.cxx
+    Tracks/AliEMCalTriggerAnaTriggerDecision.cxx
+    Tracks/AliEMCalTriggerBinningComponent.cxx
+    Tracks/AliEMCalTriggerBinningFactory.cxx
+    Tracks/AliEMCalTriggerClusterAnalysisComponent.cxx
+    Tracks/AliEMCalTriggerEventCounterAnalysisComponent.cxx
+    Tracks/AliEMCalTriggerEventData.cxx
+    Tracks/AliEMCalTriggerEventSelection.cxx
+    Tracks/AliEMCalTriggerKineCuts.cxx
+    Tracks/AliEMCalTriggerMCJetAnalysisComponent.cxx
+    Tracks/AliEMCalTriggerMCParticleAnalysisComponent.cxx
+    Tracks/AliEMCalTriggerPatchAnalysisComponent.cxx
+    Tracks/AliEMCalTriggerRecJetAnalysisComponent.cxx
+    Tracks/AliEMCalTriggerRecTrackAnalysisComponent.cxx
+    Tracks/AliEMCalTriggerTaskGroup.cxx
+    Tracks/AliEMCalTriggerTracksAnalysisComponent.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx
     UserTasks/AliAnalysisTaskDcalDijetPerf.cxx
@@ -100,7 +123,6 @@ set(SRCS
     UserTasks/AliAnalysisTaskJetShapeDeriv.cxx
     UserTasks/AliAnalysisTaskJetShapeGR.cxx
     UserTasks/AliAnalysisTaskJetV2.cxx
-    UserTasks/AliAnalysisTaskPtEMCalTrigger.cxx
     UserTasks/AliAnalysisTaskRhoMassBase.cxx
     UserTasks/AliAnalysisTaskRhoMass.cxx
     UserTasks/AliAnalysisTaskRhoMassScale.cxx
@@ -109,17 +131,15 @@ set(SRCS
     UserTasks/AliAnalysisTaskSOH.cxx
     UserTasks/AliAnalysisTaskTriggerRejection.cxx
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
-    UserTasks/AliCutValueRange.cxx
-    UserTasks/AliEMCalHistoContainer.cxx
     UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
-    UserTasks/AliEMCalPtTaskTrackSelectionAOD.cxx
-    UserTasks/AliEMCalPtTaskTrackSelectionESD.cxx
-    UserTasks/AliEMCalPtTaskVTrackSelection.cxx
    )
 
 if(FASTJET_FOUND)
     set(SRCS ${SRCS}
         AliFJWrapper.cxx
+        AliEmcalJetUtility.cxx
+        AliEmcalJetUtilityGenSubtractor.cxx
+        AliEmcalJetUtilityConstSubtractor.cxx
         AliEmcalJetTask.cxx
         AliEmcalJetFinder.cxx
         AliJetEmbeddingFromAODTask.cxx
