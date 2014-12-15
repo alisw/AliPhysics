@@ -99,7 +99,7 @@ public:
   void      SetDirectory(TDirectory *sfile); 
   void      SetFile(TFile *sfile) {SetDirectory(sfile);} 
   void SetExternalTree(const char* name, TTree* externalTree);
-  static void SetDisabled(Bool_t b=kTRUE) {fgDisabled=b;}
+  static void SetDisabled(Bool_t b) {fgDisabled=b;}
   static Bool_t IsDisabled()        {return fgDisabled;}
  
 private:
