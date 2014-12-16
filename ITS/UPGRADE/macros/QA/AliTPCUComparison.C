@@ -35,12 +35,12 @@
   #include "AliESDEvent.h"
   #include "AliESDtrack.h"
 
-  #include "Base/AliSimDigits.h"
-  #include "Base/AliTPCParamSR.h"
-  #include "Base/AliTPCLoader.h"
-  #include "Base/AliTPCcalibDB.h"
-  #include "Sim/AliTPC.h"
-  #include "Rec/AliTPCClustersRow.h"
+  #include "AliSimDigits.h"
+  #include "AliTPCParamSR.h"
+  #include "AliTPCLoader.h"
+  #include "AliTPCcalibDB.h"
+//  #include "AliTPC.h"
+  #include "AliTPCClustersRow.h"
 
   #include "AliCDBManager.h"
 #endif
@@ -397,8 +397,8 @@ Int_t GoodTracksTPC(const Char_t *dir) {
       return 2;
    }
       
-   AliTPC *TPC=(AliTPC*)rl->GetAliRun()->GetDetector("TPC");
-   Int_t ver = TPC->IsVersion(); 
+   //AliTPC *TPC=(AliTPC*)rl->GetAliRun()->GetDetector("TPC");
+   Int_t ver = 2; //TPC->IsVersion(); 
    cout<<"TPC version "<<ver<<" has been found !\n";
    if (ver==1) tpcl->LoadRecPoints();
    else if (ver==2) tpcl->LoadDigits();
