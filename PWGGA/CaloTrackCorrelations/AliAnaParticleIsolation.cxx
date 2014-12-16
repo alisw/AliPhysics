@@ -3852,7 +3852,7 @@ Int_t AliAnaParticleIsolation::GetMCIndex(Int_t mcTag)
   {
     return kmcEtaDecay;
   }
-  else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCOtherDecay))
+  else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
   {
     return kmcOtherDecay;
   }
@@ -4314,7 +4314,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
             fhEtaIsoMC[kmcEtaDecayLostPair]->Fill(pt,eta);
           }
         }
-        
+
         fhPtIsoMC [mcIndex]->Fill(pt);
         fhPhiIsoMC[mcIndex]->Fill(pt,phi);
         fhEtaIsoMC[mcIndex]->Fill(pt,eta);
@@ -4489,7 +4489,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     }
     
     // Select only photons in the final state
-    if(pdg != 22  && pdg!=111) continue ;
+    if(pdg != 22  && pdg!=111 && pdg !=221) continue ;
     
     // Consider only final state particles, but this depends on generator,
     // status 1 is the usual one, in case of not being ok, leave the possibility
@@ -4611,7 +4611,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     {
       if(ip==i) continue;
       
-      if( pdg==111 && ( ip == pi0d1Label || ip == pi0d2Label ) )
+      if( (pdg==111 || pdg==221) && ( ip == pi0d1Label || ip == pi0d2Label ) )
       {
         //printf("Do not count pi0 decays in cone when isolating pi0 \n");
         continue;
