@@ -46,7 +46,11 @@ Int_t CpMacroWithFilter(TString from, TString to)
     TString part = from(ix,from.Length()-ix+1);
     TObjArray* tmp = part.Tokenize(".");
     TObjString* ostr = static_cast<TObjString*>(tmp->First());
-    if (!ostr) break;
+    if (!ostr)
+    {
+      std::cerr << "Could not get filter ??? Filename does not look right !!!" << std::endl;
+      return -2;
+    }
     filterName = ostr->String();
     delete tmp;
     ix = filterName.Index("_WITH_");

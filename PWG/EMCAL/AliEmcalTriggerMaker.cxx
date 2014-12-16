@@ -430,9 +430,6 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   else
     fSimpleOfflineTriggers->GetPosition(globCol, globRow);
 
-  // In case of level0 reject triggers with an odd row-col combination
-  // if(type == kTMEMCalLevel0 && (globRow % 2 != 0 || globCol % 2 != 0)) return 0;
-
   // get the absolute trigger ID
   Int_t absId=-1;
   fGeom->GetAbsFastORIndexFromPositionInEMCAL(globCol, globRow, absId);
@@ -790,7 +787,10 @@ Bool_t AliEmcalTriggerMaker::CheckForL0(const AliVCaloTrigger& trg) const {
     trg.GetTriggerBits(tbits);
     return tbits & (1 << fTriggerBitConfig->GetLevel0Bit());
   } else {
-    // For Data check from the level0 times if the trigger has fired at level0
+    // For Data check from the level0 times if the trigger has fired at level0,
+    // accept the patch only in case row and col are even
+    Int_t row, col;trg.GetPosition(row, col);   // @MF: temporarily for understanding, under the asumption that the L0 algorithm has no overlapping fast-ors, to be replaced by a refined trigger patch selection based on ADC above threshold
+    if(row %2 || col % 2) return false;
     Int_t nl0times(0);
     Bool_t l0fired(kFALSE);
     trg.GetNL0Times(nl0times);
