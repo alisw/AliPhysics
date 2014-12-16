@@ -789,7 +789,7 @@ Bool_t AliEmcalTriggerMaker::CheckForL0(const AliVCaloTrigger& trg) const {
   } else {
     // For Data check from the level0 times if the trigger has fired at level0,
     // accept the patch only in case row and col are even
-    Int_t row, col;trg.GetPosition(row, col);
+    Int_t row, col;trg.GetPosition(row, col);   // @MF: temporarily for understanding, under the asumption that the L0 algorithm has no overlapping fast-ors, to be replaced by a refined trigger patch selection based on ADC above threshold
     if(row %2 || col % 2) return false;
     Int_t nl0times(0);
     Bool_t l0fired(kFALSE);
