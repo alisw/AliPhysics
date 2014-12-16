@@ -107,48 +107,30 @@ Bool_t AliTPCCalibGlobalMisalignment::AddCorrectionCompact(AliTPCCorrection* cor
   // Quadrant alignment
   //
   if (add.fQuadrantQ0) {
-    if (fQuadrantQ0)  fQuadrantQ0->Add(weight*(*(add.fQuadrantQ0)));
-    if (!fQuadrantQ0) {
-      fQuadrantQ0 = (TVectorD*)(add.fQuadrantQ0->Clone());
-      (*fQuadrantQ0)*=weight;
-    }
+    if (!fQuadrantQ0)  fQuadrantQ0 = new TVectorD(add.fQuadrantQ0->GetNrows());
+    fQuadrantQ0->Add(weight*(*(add.fQuadrantQ0)));
   }
-  if (add.fQuadrantRQ0) {
-    if (fQuadrantRQ0) fQuadrantRQ0->Add(weight*(*(add.fQuadrantRQ0)));
-    if (!fQuadrantRQ0) {
-      fQuadrantRQ0 = (TVectorD*)(add.fQuadrantRQ0->Clone());
-      (*fQuadrantRQ0)*=weight;
-    }
+  if (add.fQuadrantRQ0) { 
+    if (!fQuadrantRQ0)  fQuadrantRQ0 = new TVectorD(add.fQuadrantRQ0->GetNrows());
+    fQuadrantRQ0->Add(weight*(*(add.fQuadrantRQ0)));
   }
   //
   if (add.fQuadrantQ1) {
-    if (fQuadrantQ1) fQuadrantQ1->Add(weight*(*(add.fQuadrantQ1)));
-    if (!fQuadrantQ1) {
-      fQuadrantQ1 = (TVectorD*)(add.fQuadrantQ1->Clone());
-       (*fQuadrantQ1)*=weight;
-    }
+    if (!fQuadrantQ1)  fQuadrantQ1 = new TVectorD(add.fQuadrantQ1->GetNrows());
+    fQuadrantQ1->Add(weight*(*(add.fQuadrantQ1)));
   }
   if (add.fQuadrantRQ1) {
-    if (fQuadrantRQ1) fQuadrantRQ1->Add(weight*(*(add.fQuadrantRQ1)));
-    if (!fQuadrantRQ1) {
-      fQuadrantRQ1 = (TVectorD*)(add.fQuadrantRQ1->Clone());
-       (*fQuadrantRQ1)*=weight;
-    }
+    if (!fQuadrantRQ1)  fQuadrantRQ1 = new TVectorD(add.fQuadrantRQ1->GetNrows());
+    fQuadrantRQ1->Add(weight*(*(add.fQuadrantRQ1)));
   }
   //
   if (add.fQuadrantQ2) {
-    if (fQuadrantQ2) fQuadrantQ2->Add(weight*(*(add.fQuadrantQ2)));
-    if (!fQuadrantQ2) {
-      fQuadrantQ2 = (TVectorD*)(add.fQuadrantQ2->Clone());
-      (*fQuadrantQ2)*=weight;
-    }
+    if (!fQuadrantQ2)  fQuadrantQ2 = new TVectorD(add.fQuadrantQ2->GetNrows());
+    fQuadrantQ2->Add(weight*(*(add.fQuadrantQ2)));
   }
   if (add.fQuadrantRQ2) {
-    if (fQuadrantRQ2) fQuadrantRQ2->Add(weight*(*(add.fQuadrantRQ2)));
-    if (!fQuadrantRQ2) {
-      fQuadrantRQ2 = (TVectorD*)(add.fQuadrantRQ2->Clone());
-      (*fQuadrantQ2)*=weight;
-    }
+    if (!fQuadrantRQ2)  fQuadrantRQ2 = new TVectorD(add.fQuadrantRQ2->GetNrows());
+    fQuadrantRQ2->Add(weight*(*(add.fQuadrantRQ2)));
   }
   //
   // Global alignment - use native ROOT representation
