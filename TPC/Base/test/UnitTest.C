@@ -48,7 +48,7 @@ Bool_t  TestCorrection_AliTPCRocVoltError3DAddCorrectionCompact();
 Bool_t  TestCorrection_AliTPCBoundaryVoltErrorAddCorrectionCompact();
 Bool_t  TestCorrection_AliTPCCalibGlobalMisalignmentAddCorrectionCompact();
 Bool_t  TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact();
-
+Bool_t TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact_TPCCalibCorrection(Bool_t fast=kFALSE);
 
 void  UnitTestAliTPCCalPadTree(){
   //
@@ -476,7 +476,7 @@ Bool_t  TestCorrection_AliTPCCorrection_AddCorrectionCompact(){
   TestCorrection_AliTPCCalibGlobalMisalignmentAddCorrectionCompact();
 }
 
-Bool_t TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact_TPCCalibCorrection(){
+Bool_t TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact_TPCCalibCorrection(Bool_t fast){
   //
   // Test the 
   //
@@ -498,8 +498,10 @@ Bool_t TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact_TPCCalibCorre
   //
   for (Int_t icorr=0; icorr<ncorrs; icorr++){
     TString clName=compInput->GetSubCorrection(icorr)->IsA()->GetName();
-    if ( clName.Contains("AliTPCFCVoltError3D"))continue;
-    if ( clName.Contains("AliTPCROCVoltError3D"))continue;
+    if (fast){ // skip slow correction
+      if ( clName.Contains("AliTPCFCVoltError3D"))continue;
+      if ( clName.Contains("AliTPCROCVoltError3D"))continue;
+    }
     //    if ( clName.Contains("AliTPCExBBShape"))continue;
     AliTPCCorrection *corrInput=compInput->GetSubCorrection(icorr);
     //
