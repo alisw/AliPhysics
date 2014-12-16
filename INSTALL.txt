@@ -69,7 +69,7 @@ for the generation of DAs (full documentation HERE -> link to daq documentation)
     The full list of AliRoot configuration parameters
     - CMAKE_INSTALL_PREFIX - mandatory standard CMake paramenter. It points to AliRoot installation directory.
     - ROOTSYS - mandatory Root installation directory.
-    - ALIEN - AliEn2 installation directory. This configuration parameter is mandatory if Root was build with 
+    - ALIEN - AliEn2 root installation directory. This configuration parameter is mandatory if Root was build with 
               AliEn2 support
     - FASTJET - FastJet installation point
     - ZEROMQ - ZeroMQ custom installation point. Not needed if ZeroMQ is installed on the system.
