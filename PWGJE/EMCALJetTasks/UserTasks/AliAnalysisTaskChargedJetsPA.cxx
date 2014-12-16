@@ -64,14 +64,19 @@ void AliAnalysisTaskChargedJetsPA::Init()
 
   SetCurrentOutputList(0);
 
-  // Cuts
+  TH1* tmpHisto = AddHistogram1D<TH1D>("hVertexAcceptance", "Accepted vertices for different conditions", "", 4, 0, 4, "stage","N^{Events}/cut");
+  tmpHisto->GetXaxis()->SetBinLabel(1, "Triggered all");
+  tmpHisto->GetXaxis()->SetBinLabel(2, "Triggered w/ vertex");
+  tmpHisto->GetXaxis()->SetBinLabel(3, "Pile-up corrected all");
+  tmpHisto->GetXaxis()->SetBinLabel(4, "Pile-up corrected w vertex");
+
   TH2* tmpHisto2D = AddHistogram2D<TH2D>("hCentrality", Form("Accepted events in centrality (%s)", fCentralityType.Data()), "COLZ", 102, 0., 102., 4, 0,4,"Centrality","Cut stage","dN^{Events}");
   tmpHisto2D->GetYaxis()->SetBinLabel(1, "Before cuts");
   tmpHisto2D->GetYaxis()->SetBinLabel(2, "After pile up");
   tmpHisto2D->GetYaxis()->SetBinLabel(3, "After vertex demand");
   tmpHisto2D->GetYaxis()->SetBinLabel(4, "After vertex cuts");
 
-  TH1* tmpHisto = AddHistogram1D<TH1D>("hTrackAcceptance", "Accepted tracks (0 = before cuts, 1 = after eta, 2 = after pT)", "", 3, 0, 3, "stage","N^{Tracks}/cut");
+  tmpHisto = AddHistogram1D<TH1D>("hTrackAcceptance", "Accepted tracks (0 = before cuts, 1 = after eta, 2 = after pT)", "", 3, 0, 3, "stage","N^{Tracks}/cut");
   tmpHisto->GetXaxis()->SetBinLabel(1, "Before cuts");
   tmpHisto->GetXaxis()->SetBinLabel(2, "After eta");
   tmpHisto->GetXaxis()->SetBinLabel(3, "After p_{T}");
@@ -1020,8 +1025,40 @@ inline Bool_t AliAnalysisTaskChargedJetsPA::IsEventInAcceptance(AliVEvent* event
   if (!event)
     return kFALSE;
 
-  // ### Get centrality values
+  fPrimaryVertex = event->GetPrimaryVertex();
 
+  // ### Create plot for vertex acceptance
+  fHelperClass->SetMaxVtxZ(10000.);
+
+  // Check vertex existance
+  Bool_t hasVertex = kFALSE;
+  if(fUseDefaultVertexCut)
+  {
+    if(fHelperClass->IsVertexSelected2013pA(event))
+      hasVertex = kTRUE;
+  }
+  else
+  {
+    if(!fPrimaryVertex || (fPrimaryVertex->GetNContributors()<2) || (TMath::Sqrt(fPrimaryVertex->GetX()*fPrimaryVertex->GetX() + fPrimaryVertex->GetY()*fPrimaryVertex->GetY()) > 1.0)) 
+      hasVertex = kTRUE;
+  }
+
+  // All triggered events
+  FillHistogram("hVertexAcceptance", 0.5); // all triggered events all
+  if(hasVertex)
+    FillHistogram("hVertexAcceptance", 1.5); // all triggered events w/ vertex
+
+  // Pile-up corrected events
+  if(!fHelperClass->IsPileUpEvent(event))
+  {
+    FillHistogram("hVertexAcceptance", 2.5); // pile-up corr. events all
+    if(hasVertex)
+      FillHistogram("hVertexAcceptance", 3.5); // pile-up corr. events w/ vertex
+  }
+
+  fHelperClass->SetMaxVtxZ(10.);
+
+  // ### Get centrality values
   AliCentrality* tmpCentrality = event->GetCentrality();
   Double_t centralityPercentile = -1.0;
   if (tmpCentrality != NULL)
@@ -1044,23 +1081,9 @@ inline Bool_t AliAnalysisTaskChargedJetsPA::IsEventInAcceptance(AliVEvent* event
   FillHistogram("hCentrality", centralityPercentile, 1.5); // after pileup cut
 
   // ### CUT STAGE 2: Existence of primary vertex
-  fPrimaryVertex = event->GetPrimaryVertex();
 
-  if(fUseDefaultVertexCut)
-  {
-    fHelperClass->SetMaxVtxZ(10000.);
-    if(!fHelperClass->IsVertexSelected2013pA(event))
-    {
-      fHelperClass->SetMaxVtxZ(10.);
-      return kFALSE; 
-    }
-    fHelperClass->SetMaxVtxZ(10.);
-  }
-  else // Vertex cut for pp
-  {
-    if(!fPrimaryVertex || (fPrimaryVertex->GetNContributors()<2) || (TMath::Sqrt(fPrimaryVertex->GetX()*fPrimaryVertex->GetX() + fPrimaryVertex->GetY()*fPrimaryVertex->GetY()) > 1.0)) 
-      return kFALSE;
-  }
+  if(!hasVertex)
+    return kFALSE; 
 
   FillHistogram("hVertexZ",fPrimaryVertex->GetZ());
   FillHistogram("hCentrality", centralityPercentile, 2.5); // after vertex existance cut

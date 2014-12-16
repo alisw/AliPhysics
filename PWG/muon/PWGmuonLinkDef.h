@@ -5,6 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAODEventInfo+;
+#pragma link C++ class AliAnalysisTaskAOD2MuonAOD+;
 #pragma link C++ class AliAnalysisTaskMuonAODfromGeneral+;
 #pragma link C++ class AliAnalysisTaskFromStandardToMuonAOD+;
 #pragma link C++ class AliAnalysisTaskSingleMu+;

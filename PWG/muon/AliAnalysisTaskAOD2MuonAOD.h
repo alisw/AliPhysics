@@ -18,7 +18,7 @@ class AliAODBranchReplicator;
 class AliAnalysisTaskAOD2MuonAOD : public AliAnalysisTaskSE
 {
 public:
-  AliAnalysisTaskAOD2MuonAOD(Int_t mcMode=1, Bool_t withSPDTracklets=kFALSE);
+  AliAnalysisTaskAOD2MuonAOD(Int_t mcMode=3, Bool_t withSPDTracklets=kTRUE);
   virtual ~AliAnalysisTaskAOD2MuonAOD();
 
   virtual void UserCreateOutputObjects();
