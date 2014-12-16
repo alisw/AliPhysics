@@ -148,12 +148,25 @@ if(ROOTSYS)
     	    if(ALIEN)
         	add_definitions(-DWITHALIEN)
         	
-        	# AliEn might bring some system libraries, we need to follow them
-        	link_directories(${ALIEN}/lib)
-        	link_directories(${ALIEN}/api/lib)
+        	# AliEn might bring some system libraries, we need to use them
+        	if(EXISTS "${ALIEN}/lib")
+        	    link_directories(${ALIEN}/lib)
+        	endif()
+        	
+        	# api/lib should always exists
+        	if(EXISTS "${ALIEN}/api/lib")
+        	    link_directories(${ALIEN}/api/lib)
+        	endif()
         	
         	# include for AliEn
-        	include_directories(${ALIEN}/include)
+        	if(EXISTS "${ALIEN}/include")
+        	    include_directories(${ALIEN}/include)
+        	endif()
+        	
+        	# api/include always exists
+        	if(EXISTS "${ALIEN}/api/include")
+        	    include_directories(${ALIEN}/api/include)
+        	endif()
         	
         	set(ROOT_HASALIEN TRUE)
     	    else(ALIEN)
