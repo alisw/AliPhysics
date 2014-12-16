@@ -32,7 +32,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskMuMu.cxx 
-  AliHistogramCollection.cxx 
+  AliHistogramCollection.cxx
+  AliAnalysisTaskAOD2MuonAOD.cxx
   AliAnalysisTaskESDMuonFilter.cxx 
   AliAnalysisTaskMuonAODfromGeneral.cxx 
   AliAnalysisTaskFromStandardToMuonAOD.cxx 
