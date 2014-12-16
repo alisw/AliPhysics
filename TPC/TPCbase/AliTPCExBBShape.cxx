@@ -28,6 +28,7 @@
 AliTPCExBBShape::AliTPCExBBShape()
   : AliTPCCorrection("exb_bshape","ExB B-shape"),
     fC1(0.),fC2(0.),
+    fScaling(1.),
     fBField(0)
 {
   //
@@ -40,6 +41,30 @@ AliTPCExBBShape::~AliTPCExBBShape() {
   // virtual destructor
   //
 }
+
+
+
+
+Bool_t AliTPCExBBShape::AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight){
+  //
+  // Add correction  and make them compact
+  // Assumptions:
+  //  - origin of distortion/correction are additive
+  //  - only correction ot the same type supported ()
+  if (corr==NULL) {
+    AliError("Zerro pointer - correction"); 
+    return kFALSE;
+  }  
+  AliTPCExBBShape* corrC = dynamic_cast<AliTPCExBBShape *>(corr);
+  if (corrC == NULL) {
+    AliError(TString::Format("Inconsistent class types: %s\%s",IsA()->GetName(),corr->IsA()->GetName()).Data());
+    return kFALSE;
+  }
+  fScaling= weight;
+  //
+  return kTRUE;
+}
+
 
 void AliTPCExBBShape::Init() {
   //
@@ -101,8 +126,8 @@ void AliTPCExBBShape::GetCorrection(const Float_t x[],const Short_t roc,Float_t 
   fBField->GetTPCRatInt(xStart,intBStart);
   fBField->GetTPCRatInt(xEnd,  intBEnd  );
 
-  const Float_t intBxOverBz=(intBEnd[0]-intBStart[0]);
-  const Float_t intByOverBz=(intBEnd[1]-intBStart[1]);
+  const Float_t intBxOverBz=fScaling*(intBEnd[0]-intBStart[0]);
+  const Float_t intByOverBz=fScaling*(intBEnd[1]-intBStart[1]);
   
   dx[0]=fC2*intBxOverBz-fC1*intByOverBz;
   dx[1]=fC1*intBxOverBz+fC2*intByOverBz;
@@ -131,8 +156,8 @@ void AliTPCExBBShape::GetBxAndByOverBz(const Float_t x[],const Short_t roc,Float
   fBField->GetTPCRatInt(xStart,intBStart);
   fBField->GetTPCRatInt(xEnd,  intBEnd  );
 
-  const Float_t intBxOverBz=(intBEnd[0]-intBStart[0]);
-  const Float_t intByOverBz=(intBEnd[1]-intBStart[1]);
+  const Float_t intBxOverBz=fScaling*(intBEnd[0]-intBStart[0]);
+  const Float_t intByOverBz=fScaling*(intBEnd[1]-intBStart[1]);
   
   BxByOverBz[0]=intBxOverBz;
   BxByOverBz[1]=intByOverBz;

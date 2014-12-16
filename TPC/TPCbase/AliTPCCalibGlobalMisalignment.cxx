@@ -76,6 +76,149 @@ AliTPCCalibGlobalMisalignment::~AliTPCCalibGlobalMisalignment() {
   delete fArraySector;  // sector matrices
 }
  
+
+
+Bool_t AliTPCCalibGlobalMisalignment::AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight){
+  //
+  // Add correction  and make them compact
+  // Assumptions:
+  //  - origin of distortion/correction are additive
+  //  - only correction ot the same type supported ()
+  if (corr==NULL) {
+    //AliError("Zerro pointer - correction");
+    return kFALSE;
+  }  
+  AliTPCCalibGlobalMisalignment* corrC = dynamic_cast<AliTPCCalibGlobalMisalignment *>(corr);
+  if (corrC == NULL) {
+    //AliError(TString::Format("Inconsistent class types: %s\%s",IsA()->GetName(),corr->IsA()->GetName()).Data());
+    return kFALSE;
+  }
+  //
+  AliTPCCalibGlobalMisalignment & add = *corrC;
+  fXShift+=weight*add.fXShift;               // Shift in global X [cm]
+  fYShift+=weight*add.fYShift;               // Shift in global Y [cm]
+  fZShift+=weight*add.fZShift;               // Shift in global Z [cm]
+
+  fRotPhiA+=weight*add.fRotPhiA;      // simple rotation of A side read-out plane around the Z axis [rad]
+  fRotPhiC+=weight*add.fRotPhiC;      // simple rotation of C side read-out plane around the Z axis [rad]
+  fdRPhiOffsetA+=weight*add.fdRPhiOffsetA;  // add a constant offset of dRPhi (or local Y) in [cm]: purely for calibration purposes!
+  fdRPhiOffsetC+=weight*add.fdRPhiOffsetC;  // add a constant offset of dRPhi (or local Y) in [cm]: purely for calibration purposes!
+  //
+  // Quadrant alignment
+  //
+  if (add.fQuadrantQ0) {
+    if (fQuadrantQ0)  fQuadrantQ0->Add(weight*(*(add.fQuadrantQ0)));
+    if (!fQuadrantQ0) {
+      fQuadrantQ0 = (TVectorD*)(add.fQuadrantQ0->Clone());
+      (*fQuadrantQ0)*=weight;
+    }
+  }
+  if (add.fQuadrantRQ0) {
+    if (fQuadrantRQ0) fQuadrantRQ0->Add(weight*(*(add.fQuadrantRQ0)));
+    if (!fQuadrantRQ0) {
+      fQuadrantRQ0 = (TVectorD*)(add.fQuadrantRQ0->Clone());
+      (*fQuadrantRQ0)*=weight;
+    }
+  }
+  //
+  if (add.fQuadrantQ1) {
+    if (fQuadrantQ1) fQuadrantQ1->Add(weight*(*(add.fQuadrantQ1)));
+    if (!fQuadrantQ1) {
+      fQuadrantQ1 = (TVectorD*)(add.fQuadrantQ1->Clone());
+       (*fQuadrantQ1)*=weight;
+    }
+  }
+  if (add.fQuadrantRQ1) {
+    if (fQuadrantRQ1) fQuadrantRQ1->Add(weight*(*(add.fQuadrantRQ1)));
+    if (!fQuadrantRQ1) {
+      fQuadrantRQ1 = (TVectorD*)(add.fQuadrantRQ1->Clone());
+       (*fQuadrantRQ1)*=weight;
+    }
+  }
+  //
+  if (add.fQuadrantQ2) {
+    if (fQuadrantQ2) fQuadrantQ2->Add(weight*(*(add.fQuadrantQ2)));
+    if (!fQuadrantQ2) {
+      fQuadrantQ2 = (TVectorD*)(add.fQuadrantQ2->Clone());
+      (*fQuadrantQ2)*=weight;
+    }
+  }
+  if (add.fQuadrantRQ2) {
+    if (fQuadrantRQ2) fQuadrantRQ2->Add(weight*(*(add.fQuadrantRQ2)));
+    if (!fQuadrantRQ2) {
+      fQuadrantRQ2 = (TVectorD*)(add.fQuadrantRQ2->Clone());
+      (*fQuadrantQ2)*=weight;
+    }
+  }
+  //
+  // Global alignment - use native ROOT representation
+  //
+  Double_t delta[3]={0};
+  if (add.fMatrixGlobal){
+    TGeoHMatrix matrixW=*(add.fMatrixGlobal);
+    TGeoHMatrix matrixScaled;
+    const Double_t *rotMatrix   = matrixW.GetRotationMatrix();
+    const Double_t *transMatrix = matrixW.GetTranslation();
+    matrixScaled.RotateZ(-rotMatrix[1]*TMath::RadToDeg()*weight);
+    matrixScaled.RotateY(rotMatrix[2]*TMath::RadToDeg()*weight);
+    matrixScaled.RotateX(-rotMatrix[5]*TMath::RadToDeg()*weight);
+    for (Int_t i=0; i<3; i++) delta[i]=weight*transMatrix[i];
+    matrixScaled.SetTranslation(delta);
+    // (matrixScaled*matrixW).Print(); in case weight -1 should be unit matrix
+    //
+    if (!fMatrixGlobal)  {
+      fMatrixGlobal = new TGeoHMatrix(matrixScaled); 
+    }else{
+      ((TGeoHMatrix*)fMatrixGlobal)->Multiply(&matrixScaled); 
+    }
+  }
+  if (add.fMatrixGlobalDelta){
+    TGeoHMatrix matrixW=*(add.fMatrixGlobalDelta);
+    TGeoHMatrix matrixScaled;
+    const Double_t *rotMatrix   = matrixW.GetRotationMatrix();
+    const Double_t *transMatrix = matrixW.GetTranslation();
+    matrixScaled.RotateZ(-rotMatrix[1]*TMath::RadToDeg()*weight);
+    matrixScaled.RotateY(rotMatrix[2]*TMath::RadToDeg()*weight);
+    matrixScaled.RotateX(-rotMatrix[5]*TMath::RadToDeg()*weight);
+    for (Int_t i=0; i<3; i++) delta[i]=weight*transMatrix[i];
+    matrixScaled.SetTranslation(delta);
+    // (matrixScaled*matrixW).Print(); in case weight -1 should be unit matrix
+    //
+    if (!fMatrixGlobalDelta)  {
+      fMatrixGlobalDelta = new TGeoHMatrix(matrixScaled); 
+    }else{
+      ((TGeoHMatrix*)fMatrixGlobalDelta)->Multiply(&matrixScaled); 
+    }
+  }
+  if (add.fArraySector){
+    if (!fArraySector) {
+      fArraySector = new TObjArray(72);
+      for (Int_t isec=0; isec<72; isec++) fArraySector->AddAt(new TGeoHMatrix,isec);
+    }
+    for (Int_t isec=0; isec<72; isec++){
+      TGeoHMatrix *mat0= (TGeoHMatrix*)fArraySector->At(isec);
+      TGeoHMatrix *mat1= (TGeoHMatrix*)add.fArraySector->At(isec);	
+      if (mat0&&mat1){
+	TGeoHMatrix matrixW=*(mat1);
+	TGeoHMatrix matrixScaled;
+	const Double_t *rotMatrix   = matrixW.GetRotationMatrix();
+	const Double_t *transMatrix = matrixW.GetTranslation();
+	matrixScaled.RotateZ(-rotMatrix[1]*TMath::RadToDeg()*weight);
+	matrixScaled.RotateY(rotMatrix[2]*TMath::RadToDeg()*weight);
+	matrixScaled.RotateX(-rotMatrix[5]*TMath::RadToDeg()*weight);
+	for (Int_t i=0; i<3; i++) delta[i]=weight*transMatrix[i];
+	matrixScaled.SetTranslation(delta); 
+	  mat0->Multiply(&matrixScaled);
+      }
+    }    
+  }
+  //
+  return kTRUE;
+}
+
+
+
+
 void AliTPCCalibGlobalMisalignment::SetQuadranAlign(const TVectorD *quadrantQ0, const TVectorD *quadrantRQ0, const TVectorD *quadrantQ1,const TVectorD *quadrantRQ1,  const TVectorD *quadrantQ2,  const TVectorD *quadrantRQ2){
   //
   // Set quadrant alignment
@@ -252,7 +395,7 @@ void AliTPCCalibGlobalMisalignment::GetCorrection(const Float_t x[],const Short_
   }
 }
 
-void AliTPCCalibGlobalMisalignment::Print(Option_t* /*option*/ ) const {
+void AliTPCCalibGlobalMisalignment::Print(Option_t* option )  const{
   //
   // Print function to check the settings 
   //
@@ -261,8 +404,21 @@ void AliTPCCalibGlobalMisalignment::Print(Option_t* /*option*/ ) const {
   printf(" - X-Shift: %1.3f cm, Y-Shift: %1.3f cm, Z-Shift: %1.3f cm \n",fXShift,fYShift,fZShift);
   printf(" - Phi-Rotations: A side: %1.5f rad, C side: %1.5f rad\n",fRotPhiA,fRotPhiC);
   printf(" - dRPhi offsets: A side: %1.5f cm, C side: %1.5f cm\n",fdRPhiOffsetA,fdRPhiOffsetC);
- 
- 
+  TString opt = option; opt.ToLower();
+  if (opt.Contains("a")){
+    if (GetAlignGlobal()){
+      printf("GetAlignGlobal()\n");
+      GetAlignGlobal()->Print();
+    }
+    if (GetAlignGlobalDelta()){
+      printf("GetAlignGlobalDelta()\n");
+      GetAlignGlobalDelta()->Print();
+    }
+    if (GetAlignSectors()){
+      printf("GetAlignSectors()\n");    
+      GetAlignSectors()->Print();
+    }
+  }
 }
 
 void AliTPCCalibGlobalMisalignment::AddAlign(const  AliTPCCalibGlobalMisalignment & add){

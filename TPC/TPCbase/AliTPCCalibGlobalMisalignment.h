@@ -26,7 +26,7 @@ class AliTPCCalibGlobalMisalignment : public AliTPCCorrection {
 public:
   AliTPCCalibGlobalMisalignment();
   virtual ~AliTPCCalibGlobalMisalignment();
-  
+  virtual Bool_t AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight);
   // initialization and update functions
   //  virtual void Init();
   //  virtual void Update(const TTimeStamp &timeStamp);
@@ -47,7 +47,7 @@ public:
   Float_t GetRotPhiC() const {return fRotPhiC;}
   Float_t GetdRPhiOffsetA() const {return fdRPhiOffsetA;}
   Float_t GetdRPhiOffsetC() const {return fdRPhiOffsetC;}
-  virtual void Print(Option_t* option="") const;
+  virtual void Print(Option_t* option="") const ;
   void SetQuadranAlign(const TVectorD *quadrantQ0, const TVectorD *quadrantRQ0, const TVectorD *quadrantQ1,const TVectorD *quadrantRQ1,  const TVectorD *quadrantQ2,  const TVectorD *quadrantRQ2);
   // 
   // Alignment manipulation using TGeoMatrix

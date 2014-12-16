@@ -130,7 +130,8 @@ Bool_t AliTPCComposedCorrection::AddCorrectionCompact(AliTPCCorrection* corr, Do
     Int_t ncorrs= corrC->fCorrections->GetEntries();
     Bool_t isOK=kTRUE;
     for (Int_t icorr=0; icorr<ncorrs; icorr++){
-      isOK&=AddCorrectionCompact(corrC->GetSubCorrection(icorr),weight*(*((corrC->fWeights)))[icorr]);
+      Double_t weight0=((corrC->fWeights)==NULL)?1:(*(corrC->fWeights))[icorr];
+      isOK&=AddCorrectionCompact(corrC->GetSubCorrection(icorr),weight*weight0);
     }
     return isOK;
   }

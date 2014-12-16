@@ -60,4 +60,6 @@ add_subdirectory(rec)
 add_subdirectory(shuttle)
 add_subdirectory(sim)
 
+include("CMakehltdoc.conf")
+
 message(STATUS "HLT enabled")

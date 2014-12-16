@@ -34,6 +34,13 @@ include_directories(
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
+option(USE_DLOPEN "Use \"dlopen()\" in favor of \"gSystem->Load()\" to load HLT component libraries." OFF)
+
+if(USE_DLOPEN)
+  add_definitions(-DHAVE_DLFCN_H)
+  message(STATUS "Using dlopen() for HLT component libs.")
+endif(USE_DLOPEN)
+
 # Sources in alphabetical order
 set(SRCS
     AliHLTBlockDataCollection.cxx

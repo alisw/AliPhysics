@@ -129,7 +129,7 @@ macro(getDAdescription _detector _daname)
         message(FATAL_ERROR "{_detector}${_daname}da.cxx does not contain a description. Please add the description as the first /*comment*/ in the file")
     else()
         string(SUBSTRING "${tmpinfo}" ${_first_position}  ${_second_position} _da_description)
-        string(STRIP ${_da_description} _da_description)
+        string(STRIP "${_da_description}" _da_description)
         
         # The variable can be accesed by the parent
         set(RPM_DESCRIPTION ${_da_description})

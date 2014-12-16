@@ -70,7 +70,7 @@ if(ROOTSYS)
     if(error)
         message(FATAL_ERROR "Error retrieving ROOT version : ${error}")
     endif(error)
-    string(STRIP ${ROOT_VERSION} ROOT_VERSION)
+    string(STRIP "${ROOT_VERSION}" ROOT_VERSION)
 
     # Extract major, minor, and patch versions from
     string(REGEX REPLACE "^([0-9]+)\\.[0-9][0-9]+\\/[0-9][0-9]+.*" "\\1" ROOT_VERSION_MAJOR "${ROOT_VERSION}")
@@ -85,28 +85,28 @@ if(ROOTSYS)
     else()
         message(STATUS "ROOT was build with the following features: ${ROOT_FEATURES}")
     endif(error)
-    string(STRIP ${ROOT_FEATURES} ROOT_FEATURES)
+    string(STRIP "${ROOT_FEATURES}" ROOT_FEATURES)
 
     # Checking for ROOT libdir
     execute_process(COMMAND ${ROOT_CONFIG} --libdir OUTPUT_VARIABLE ROOT_LIBDIR ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error retrieving ROOT libdir: ${error}")
     endif(error)
-    string(STRIP ${ROOT_LIBDIR} ROOT_LIBDIR)
+    string(STRIP "${ROOT_LIBDIR}" ROOT_LIBDIR)
 
     # Checking for ROOT libs
     execute_process(COMMAND ${ROOT_CONFIG} --noldflags --libs OUTPUT_VARIABLE ROOT_LIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error retrieving ROOT libdir: ${error}")
     endif(error)
-    string(STRIP ${ROOT_LIBS} ROOT_LIBS)
+    string(STRIP "${ROOT_LIBS}" ROOT_LIBS)
 
     foreach(lib ${ROOT_LIBS})
         string(REPLACE "-rdynamic" "" new_lib ${lib})
         string(REPLACE "-l" "" lib ${new_lib})
         set(ROOT_LIBRARIES ${ROOT_LIBRARIES} ${lib})
     endforeach()
-    string(STRIP ${ROOT_LIBRARIES} ROOT_LIBRARIES)
+    string(STRIP "${ROOT_LIBRARIES}" ROOT_LIBRARIES)
     separate_arguments(ROOT_LIBRARIES)
 
     # Checking for ROOT incdir
@@ -114,7 +114,7 @@ if(ROOTSYS)
     if(error)
         message(FATAL_ERROR "Error retrieving ROOT incdir: ${error}")
     endif(error)
-    string(STRIP ${ROOT_INCDIR} ROOT_INCDIR)
+    string(STRIP "${ROOT_INCDIR}" ROOT_INCDIR)
     set(ROOT_INCLUDE_DIR ${ROOT_INCDIR})
 
     # Checking for glibs
@@ -124,14 +124,14 @@ if(ROOTSYS)
     endif(error)
 
     # Checking for glibs
-    string(STRIP ${ROOT_GLIBS} ROOT_GLIBS)
+    string(STRIP "${ROOT_GLIBS}" ROOT_GLIBS)
 
     foreach(lib ${ROOT_GLIBS})
         string(REPLACE "-rdynamic" "" new_lib "${lib}")
         string(REPLACE "-l" "" lib "${new_lib}")
         set(ROOT_GLIBRARIES ${ROOT_GLIBRARIES} ${lib})
     endforeach()
-    string(STRIP ${ROOT_GLIBRARIES} ROOT_GLIBRARIES)
+    string(STRIP "${ROOT_GLIBRARIES}" ROOT_GLIBRARIES)
     separate_arguments(ROOT_GLIBRARIES)
 
     # Checking for AliEn support
@@ -143,17 +143,30 @@ if(ROOTSYS)
     
     #if defined
     if(ROOT_HASALIEN)
-        string(STRIP ${ROOT_HASALIEN} ROOT_HASALIEN)
+        string(STRIP "${ROOT_HASALIEN}" ROOT_HASALIEN)
         if(ROOT_HASALIEN STREQUAL "yes")
     	    if(ALIEN)
         	add_definitions(-DWITHALIEN)
         	
-        	# AliEn might bring some system libraries, we need to follow them
-        	link_directories(${ALIEN}/lib)
-        	link_directories(${ALIEN}/api/lib)
+        	# AliEn might bring some system libraries, we need to use them
+        	if(EXISTS "${ALIEN}/lib")
+        	    link_directories(${ALIEN}/lib)
+        	endif()
+        	
+        	# api/lib should always exists
+        	if(EXISTS "${ALIEN}/api/lib")
+        	    link_directories(${ALIEN}/api/lib)
+        	endif()
         	
         	# include for AliEn
-        	include_directories(${ALIEN}/include)
+        	if(EXISTS "${ALIEN}/include")
+        	    include_directories(${ALIEN}/include)
+        	endif()
+        	
+        	# api/include always exists
+        	if(EXISTS "${ALIEN}/api/include")
+        	    include_directories(${ALIEN}/api/include)
+        	endif()
         	
         	set(ROOT_HASALIEN TRUE)
     	    else(ALIEN)
@@ -172,7 +185,7 @@ if(ROOTSYS)
     
     # if defined
     if(ROOT_HASXML)
-        string(STRIP ${ROOT_HASXML} ROOT_HASXML)
+        string(STRIP "${ROOT_HASXML}" ROOT_HASXML)
         if(ROOT_HASXML STREQUAL "yes")
             add_definitions(-DWITHXML)
             set(ROOT_HASXML TRUE)
@@ -188,7 +201,7 @@ if(ROOTSYS)
     endif(error)
     
     if(ROOT_HASOPENGL)
-        string(STRIP ${ROOT_HASOPENGL} ROOT_HASOPENGL)
+        string(STRIP "${ROOT_HASOPENGL}" ROOT_HASOPENGL)
         if(ROOT_HASOPENGL STREQUAL "yes")
             set(ROOT_HASOPENGL TRUE)
         else()
@@ -202,7 +215,7 @@ if(ROOTSYS)
     if(error)
         message(FATAL_ERROR "Error checking ROOT fortran compiler: ${error}")
     endif(error)
-    string(STRIP ${ROOT_FORTRAN} ROOT_FORTRAN)
+    string(STRIP "${ROOT_FORTRAN}" ROOT_FORTRAN)
 
     # adding the libraries and the inc dir
     link_directories(${ROOT_LIBDIR})
