@@ -110,3 +110,4 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Installing the macros
 install (DIRECTORY macros DESTINATION PWG/EMCAL)
+install (DIRECTORY data DESTINATION PWG/EMCAL)
