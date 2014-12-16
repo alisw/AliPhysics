@@ -25,7 +25,7 @@ if(DA)
 endif(DA)
 
 # Install the macros, docs
-install(DIRECTORY macros DESTINATION ACORDE)
-install(DIRECTORY doc DESTINATION ACORDER)
+install(DIRECTORY macros DESTINATION EMCAL)
+install(DIRECTORY doc DESTINATION EMCAL)
 
 message(STATUS "EMCAL enabled")
