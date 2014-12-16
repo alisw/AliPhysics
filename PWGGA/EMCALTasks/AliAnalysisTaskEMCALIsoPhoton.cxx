@@ -1032,12 +1032,12 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
 	if(lpair.M()>0.11 && lpair.M()<0.165){
 	  fInConePairedClusEtVsCandEt->Fill(EtCl,Et);
 	  fInConePairClEt += Form("%f;",Et);
-	  continue;
+	  //continue;
 	}
 	else 
 	  fInConePairClEt += Form("%f;",0.0);
-	if(lpair.M()>0.52 && lpair.M()<0.58)
-	  continue;
+	/*if(lpair.M()>0.52 && lpair.M()<0.58)
+	  continue;*/
       }
       totiso += nEt;
       if(R<0.04)
