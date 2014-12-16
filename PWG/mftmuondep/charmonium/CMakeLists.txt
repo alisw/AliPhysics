@@ -11,51 +11,20 @@
 # * appear in the supporting documentation. The authors make no claims     *
 # * about the suitability of this software for any purpose. It is          *
 # * provided "as is" without express or implied warranty.                  *
-# **************************************************************************/
+# **************************************************************************
 
-#Module
-set(MODULE PWGSomething)
+# Module
+set (MODULE PWGmftmuondepCharmonium)
 
 # Module include folder
 include_directories(${AliRoot_SOURCE_DIR}/PWG/mftmuondep/charmonium)
 
-# Additional includes - alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
-  )
-
 # Sources - alphabetical order
 set(SRCS
+  AliAnalysisTaskDimuonBackground.cxx
   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
-# Generate the dictionary
-# It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
-get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
-
-# Add a shared library
-add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
-
-# Generate the ROOT map
-# Dependecies
-set(LIBDEPS)
-generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
-
-# Linking the library
-target_link_libraries(${MODULE} ${LIBDEPS})
-
-# Public include folders that will be propagated to the dependecies
-target_include_directories(${MODULE} PUBLIC ${incdirs})
-
-# System dependent: Modify the way the library is build
-if(${CMAKE_SYSTEM} MATCHES Darwin)
-    set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
-endif(${CMAKE_SYSTEM} MATCHES Darwin)
-
-# Installation
-install(TARGETS ${MODULE} 
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib)
-install(FILES ${HDRS} DESTINATION include)
+message(STATUS "PWG mftmuondep charmonium enabled")
