@@ -195,7 +195,7 @@ Double_t AliGenDeuteron::GetCoalescenceProbability(const TParticle* nucleon1, co
 	TVector3 v2(nucleon2->Vx(), nucleon2->Vy(), nucleon2->Vz());
 	TVector3 p2(nucleon2->Px(), nucleon2->Py(), nucleon2->Pz());
 	
-	Double_t deltaP = 2.*this->GetPcm(p1, kProtonMass, p2, kNeutronMass); // relative momentum in CM frame
+	Double_t deltaP = this->GetPcm(p1, kProtonMass, p2, kNeutronMass); // relative momentum in CM frame
 	if( deltaP >= fPmax) return -1.;
 	
 	Double_t deltaR = (v2-v1).Mag();       // relative distance (cm)
