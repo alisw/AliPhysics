@@ -528,9 +528,8 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
     //If there's no background subtraction rhoval=0 and momentum is simply not took into account
     AliRhoParameter *rho = 0;
     Double_t rhoval = 0;
-    TString sname("Rho");
-    if (!sname.IsNull()) {
-        rho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(sname));
+    if (!fJetCont->GetRhoName().IsNull()) {
+        rho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fJetCont->GetRhoName()));
         if(rho) rhoval = rho->GetVal();
     }
 
@@ -685,7 +684,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
             //It corrects the jet momentum due to D daughters out of the jet
       	    RecalculateMomentum(pjet,fPmissing);      	          	    
       	    fPtJet=TMath::Sqrt(pjet[0]*pjet[0]+pjet[1]*pjet[1]); //recalculated jet pt
-      	    
+      	    if((jet->Pt()-jet->Area()*rhoval)<0) fPtJet = -fPtJet;
       	    
       	    //debugging histograms
       	    Double_t pmissing=TMath::Sqrt(fPmissing[0]*fPmissing[0]+fPmissing[1]*fPmissing[1]+fPmissing[2]*fPmissing[2]); //recalculated jet total momentum
@@ -719,7 +718,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
                //It corrects the jet momentum due to D daughters out of the jet
       	       RecalculateMomentum(pjet,fPmissing);      	          	    
       	       fPtJet=TMath::Sqrt(pjet[0]*pjet[0]+pjet[1]*pjet[1]); //recalculated jet pt
-      	       
+      	       if((jet->Pt()-jet->Area()*rhoval)<0) fPtJet = -fPtJet;
      	       SideBandBackground(sbcand,jet);
      	       
       	    }
@@ -744,7 +743,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
                //It corrects the jet momentum due to D daughters out of the jet
       	       RecalculateMomentum(pjet,fPmissing);      	          	    
       	       fPtJet=TMath::Sqrt(pjet[0]*pjet[0]+pjet[1]*pjet[1]); //recalculated jet pt
-      	       
+      	       if((jet->Pt()-jet->Area()*rhoval)<0) fPtJet = -fPtJet;
       	       MCBackground(charmbg,jet);
       	    }
       	 }
@@ -838,9 +837,8 @@ Double_t AliAnalysisTaskFlavourJetCorrelations::Z(AliVParticle* part,AliEmcalJet
     //It corrects the each component of the jet momentum for Z calculation
     AliRhoParameter *rho = 0;
     Double_t rhoval = 0;
-    TString sname("Rho");
-    if (!sname.IsNull()) {
-        rho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(sname));
+    if (!fJetCont->GetRhoName().IsNull()) {
+        rho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fJetCont->GetRhoName()));
         if(rho){
             rhoval = rho->GetVal();
             pj[0] = jet->Px() - jet->Area()*(rhoval*TMath::Cos(jet->AreaPhi()));
@@ -916,7 +914,9 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    fOutput->Add(fhstat);
    
    const Int_t nbinsmass=300;
-   const Int_t nbinsptjet=500;
+   const Int_t nbinspttrack=500;
+   Int_t nbinsptjet=500;
+   if(!fJetCont->GetRhoName().IsNull()) nbinsptjet=400;
    const Int_t nbinsptD=100;
    const Int_t nbinsz=100;
    const Int_t nbinsphi=200;
@@ -932,7 +932,9 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    const Int_t nbinsSpsContrib=100;
    const Int_t nbinsSpsA=100;
     
-   const Float_t ptjetlims[2]={0.,200.};
+   const Float_t pttracklims[2]={0.,200.};
+   Float_t ptjetlims[2]={0.,200.};
+   if(!fJetCont->GetRhoName().IsNull()) ptjetlims[0]=-200.;
    const Float_t ptDlims[2]={0.,50.};
    const Float_t zlims[2]={0.,1.2};
    const Float_t philims[2]={0.,6.3};
@@ -948,7 +950,7 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    fhPhiJetTrks->Sumw2();
    fhEtaJetTrks    = new TH1F("hEtaJetTrks","Jet tracks #eta distribution; #eta",  nbinseta,etalims[0],etalims[1]);
    fhEtaJetTrks->Sumw2();
-   fhPtJetTrks     = new TH1F("hPtJetTrks",  "Jet tracks Pt distribution; p_{T} (GeV/c)",nbinsptjet,ptjetlims[0],ptjetlims[1]);
+   fhPtJetTrks     = new TH1F("hPtJetTrks",  "Jet tracks Pt distribution; p_{T} (GeV/c)",nbinspttrack,pttracklims[0],pttracklims[1]);
    fhPtJetTrks->Sumw2();
    
    fhEjet      = new TH1F("hEjet",  "Jet energy distribution;Energy (GeV)",500,0,200);
@@ -1624,10 +1626,10 @@ Float_t AliAnalysisTaskFlavourJetCorrelations::DeltaR(AliEmcalJet *p1, AliVParti
     Double_t phi1=p1->Phi(),eta1=p1->Eta();
     
     //It subtracts the backgroud of jets if it was asked for it.
-    TString sname("Rho");
-    if (!sname.IsNull()) {
+
+    if (!fJetCont->GetRhoName().IsNull()) {
         AliRhoParameter *rho = 0;
-        rho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(sname));
+        rho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fJetCont->GetRhoName()));
         if(rho){
             Double_t pj[3];
             Bool_t okpj=p1->PxPyPz(pj);
