@@ -1,8 +1,9 @@
 /*
   Unit test for some functions classes  used in the $ALICE_ROOT/TPC/Base directory:
-  gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_ROOT/STEER\
-   -I$ALICE_ROOT/TPC -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/TOF -I$ALICE_ROOT/RAW -I$ALICE_ROOT/PWG1 -I$ALICE_ROOT/STAT -I$ALICE_ROOT/TPC/Base -I$ALICE_ROOT/TPC/Calib");
-   
+    
+gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_ROOT/STEER   -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/TOF -I$ALICE_ROOT/RAW  -I$ALICE_ROOT/STAT -I$ALICE_ROOT/TPC/TPCbase -I$ALICE_ROOT/TPCcalib");
+
+
   .L $ALICE_ROOT/TPC/Base/test/UnitTest.C+ 
 G UnitTestAliTPCCalPadTree();
   TestCorrection_AliTPCCorrection_AddCorrectionCompact();
