@@ -507,7 +507,6 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       // ITS track parameters
       
       AliHLTGlobalBarrelTrack *itsRefit=0;
-      AliHLTGlobalBarrelTrack *itsOut=0;	
       
       // ITS Refit track
       
@@ -518,16 +517,6 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	itsIter++;
       }
       
-      // ITS Out track
-      
-      for(; itsOutIter< tracksITSOut.size() && tracksITSOut[itsOutIter].TrackID()< tpcID; itsOutIter++ );
-      
-      if( itsOutIter< tracksITSOut.size() && tracksITSOut[itsOutIter].TrackID() == tpcID ){
-	itsOut = &(tracksITSOut[itsOutIter]);
-	itsOutIter++;
-      }	
-	
-      // 
       
       if (fVerbosity>0) tpcTrack->Print();  
       
@@ -568,7 +557,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       
       new (flatTrack) AliFlatESDTrack;       
       
-      flatTrack->SetExternalTrackParam( itsRefit, tpcTrack, tpcInner, tpcOutTrack, tpcConstrained, itsOut );
+      flatTrack->SetExternalTrackParam( itsRefit, tpcTrack, tpcInner, tpcOutTrack, tpcConstrained );
       flatTrack->SetNumberOfTPCClusters( nClustersTPC );
       flatTrack->SetNumberOfITSClusters( nClustersITS );
       trackSize += flatTrack->GetSize();
@@ -584,16 +573,15 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       
     for (int itr=0;itr<ntrITSSAP;itr++) {
       const AliHLTITSSAPTrackerData& trcFlatSAP = dataSAP->fTracks[itr];	  
-      AliExternalTrackParam itsRefit, itsOut;
-      trcFlatSAP.paramInw.GetExternalTrackParam(itsRefit); // track at the vertex
-      trcFlatSAP.paramOut.GetExternalTrackParam(itsOut); // track at the ITS out      
+      AliExternalTrackParam itsRefit;
+      trcFlatSAP.paramInw.GetExternalTrackParam(itsRefit); // track at the vertex    
 
       // -- fill flat track structure      
       table[nTracks] = trackSize;
       err = ( freeSpace < flatTrack->EstimateSize() );
       if( err ) break;
       new (flatTrack) AliFlatESDTrack;             
-      flatTrack->SetExternalTrackParam( &itsRefit, NULL, NULL, NULL, NULL, &itsOut );
+      flatTrack->SetExternalTrackParam( &itsRefit, NULL, NULL, NULL, NULL );
       //inpESDtrc.SetStatus( (AliESDtrack::kITSin|AliESDtrack::kITSout|AliESDtrack::kITSpureSA) );
       //trcV2.SetLabel(trcFlatSAP.label);
       //trcV2.SetChi2(trcFlatSAP.chi2);

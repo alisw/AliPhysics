@@ -137,9 +137,6 @@ Int_t AliFlatESDTrack::SetExternalTrackParam(
   flag = 0x10;
   iResult = FillExternalTrackParam(constrainedParam, flag);
 
-  flag = 0x20;
-  iResult = FillExternalTrackParam(outerITS, flag);
-
   return iResult;
 }
 

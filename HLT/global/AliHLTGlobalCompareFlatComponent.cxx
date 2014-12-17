@@ -372,11 +372,11 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 				{track[0]->GetFlatTrackParamCp(), track[1]->GetFlatTrackParamCp()}
 			};
 			
-			for(int i = 0 ; i<7; i++){
+			for(int i = 0 ; i<6; i++){
 				printDiff( Form("GetFlatTrackParam%s",pNames[i]) ,(p[i][0] ? 1:0), (p[i][1] ? 1:0) );
 			}
 
-			for(int i = 0 ; i<7 ; i++){
+			for(int i = 0 ; i<6 ; i++){
 				if(p[i][0] && p[i][1]){
 				outFile<<"_FlatExternalTrackParam" << pNames[i] << "\n";
  fCurrentClass = "FlatExternalTrackParam";
