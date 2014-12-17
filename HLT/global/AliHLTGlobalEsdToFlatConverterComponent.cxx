@@ -279,19 +279,10 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
 		Int_t converted = flatFriend->SetFromESDfriend(AliFlatESDFriend::EstimateSize(esdFriend),esdFriend); 
 		
 		Int_t insizeEvent, insizeFriend, outsizeEvent, outsizeFriend =  0 ;
-
-		TFile * fTmp;
 		
+    insizeEvent = AliSysInfo::EstimateObjectSize(esd);
 		
-		esd->SaveAs("tmp.root");
-    fTmp = new TFile ("tmp.root");
-    insizeEvent = fTmp->GetSize();
-    delete fTmp;
-                  
-    esdFriend->SaveAs("tmp.root");
-    fTmp = new TFile("tmp.root");
-    insizeFriend = fTmp->GetSize();
-    delete fTmp;
+    insizeFriend = AliSysInfo::EstimateObjectSize(esdFriend);
 		
 		outsizeEvent = (int) flatEsd->GetSize();
 		outsizeFriend = (int) flatFriend->GetSize();

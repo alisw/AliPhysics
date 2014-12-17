@@ -58,7 +58,7 @@ Int_t AliFlatESDTrack::SetFromESDTrack(const AliESDtrack* track)
 					 track->GetInnerParam(),
 					 track->GetTPCInnerParam(),
 					 track->GetOuterParam(),
-					 track->GetConstrainedParam(), NULL );
+					 track->GetConstrainedParam() );
   fNTPCClusters = track->GetTPCNcls();
   fNITSClusters = track->GetITSNcls();
 
@@ -71,8 +71,7 @@ Int_t AliFlatESDTrack::SetExternalTrackParam(
 					     const AliExternalTrackParam* innerParam,
 					     const AliExternalTrackParam* innerTPC,
 					     const AliExternalTrackParam* outerParam,
-					     const AliExternalTrackParam* constrainedParam,
-					     const AliExternalTrackParam* outerITS
+					     const AliExternalTrackParam* constrainedParam
 					      ){
   // Fill external track parameters 
 
@@ -96,9 +95,6 @@ Int_t AliFlatESDTrack::SetExternalTrackParam(
 
   flag = 0x10;
   iResult = FillExternalTrackParam(constrainedParam, flag);
-
-  flag = 0x20;
-  iResult = FillExternalTrackParam(outerITS, flag);
 
   return iResult;
 }

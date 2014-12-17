@@ -408,7 +408,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			printDiff( "GetNumberOfTPCClusters",track[0]->GetNumberOfTPCClusters(),track[1]->GetNumberOfTPCClusters() ); 
 			printDiff( "GetNumberOfITSClusters",track[0]->GetNumberOfITSClusters(),track[1]->GetNumberOfITSClusters() ); 
 			
-			const char* pNames[7] = {"", "Refitted", "Ip", "TPCInner", "Op", "Cp", "ITSOUT"};
+			const char* pNames[6] =  {"", "Refitted", "Ip", "TPCInner", "Op", "Cp"};
 			
 			const AliFlatExternalTrackParam * p[7][2] = {
 				{track[0]->GetFlatTrackParam(), track[1]->GetFlatTrackParam()},
@@ -416,15 +416,14 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 				{track[0]->GetFlatTrackParamIp(), track[1]->GetFlatTrackParamIp()},
 				{track[0]->GetFlatTrackParamTPCInner(), track[1]->GetFlatTrackParamTPCInner()},
 				{track[0]->GetFlatTrackParamOp(), track[1]->GetFlatTrackParamOp()},
-				{track[0]->GetFlatTrackParamCp(), track[1]->GetFlatTrackParamCp()},
-				{track[0]->GetFlatTrackParamITSOut(), track[1]->GetFlatTrackParamITSOut()}
+				{track[0]->GetFlatTrackParamCp(), track[1]->GetFlatTrackParamCp()}
 			};
 			
-			for(int i = 0 ; i<7; i++){
+			for(int i = 0 ; i<6; i++){
 				printDiff( Form("GetFlatTrackParam%s",pNames[i]) ,(p[i][0] ? 1:0), (p[i][1] ? 1:0) );
 			}
 
-			for(int i = 0 ; i<7 ; i++){
+			for(int i = 0 ; i<6 ; i++){
 				if(p[i][0] && p[i][1]){
 				outFile<<"_FlatExternalTrackParam" << pNames[i] << "\n";
  fCurrentClass = "FlatExternalTrackParam";

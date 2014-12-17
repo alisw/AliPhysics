@@ -48,8 +48,7 @@ class AliFlatESDTrack :public AliVTrack {
 			      const AliExternalTrackParam* innerParam,
 			      const AliExternalTrackParam* innerTPC,
 			      const AliExternalTrackParam* outerParam,
-			      const AliExternalTrackParam* constrainedParam,
-			      const AliExternalTrackParam* outerITSParam
+			      const AliExternalTrackParam* constrainedParam
 			       );
 
   void SetNumberOfTPCClusters( Int_t nCl ) { fNTPCClusters = nCl; } 
@@ -65,7 +64,6 @@ class AliFlatESDTrack :public AliVTrack {
   const AliFlatExternalTrackParam* GetFlatTrackParamTPCInner() const { return GetFlatParam( 0x4  ); } 
   const AliFlatExternalTrackParam* GetFlatTrackParamOp()       const { return GetFlatParam( 0x8  ); }     
   const AliFlatExternalTrackParam* GetFlatTrackParamCp()       const { return GetFlatParam( 0x10 ); }
-  const AliFlatExternalTrackParam* GetFlatTrackParamITSOut()   const { return GetFlatParam( 0x20 ); }
 
   // --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  
 
@@ -81,7 +79,7 @@ class AliFlatESDTrack :public AliVTrack {
   // -- Size methods
 
   static size_t EstimateSize(){
-    return sizeof(AliFlatESDTrack) + 6*sizeof(AliFlatExternalTrackParam);
+    return sizeof(AliFlatESDTrack) + 5*sizeof(AliFlatExternalTrackParam);
   }
 
   size_t GetSize() const { return fContent -  reinterpret_cast<const Byte_t*>(this) + fContentSize; }
@@ -94,7 +92,6 @@ class AliFlatESDTrack :public AliVTrack {
   Int_t GetTrackParamTPCInner ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x4  ); }
   Int_t GetTrackParamOp       ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x8  ); }
   Int_t GetTrackParamCp       ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x10 ); }
-  Int_t GetTrackParamITSOut   ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x20 ); }
 
   void  ResetTrackParamIp( const AliExternalTrackParam *p ) { 
     AliFlatExternalTrackParam *f = GetFlatParamNonConst( 0x2 );
