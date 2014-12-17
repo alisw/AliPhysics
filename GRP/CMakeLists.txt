@@ -13,20 +13,7 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-# HMPID libraries
-add_subdirectory(EMCALbase)
-add_subdirectory(EMCALUtils)
-add_subdirectory(EMCALraw)
-add_subdirectory(EMCALrec)
-add_subdirectory(EMCALsim)
+# Installing GRP
+install(DIRECTORY . DESTINATION GRP)
 
-if(DA)
-    add_subdirectory(DA)
-endif(DA)
-
-# Install the macros, docs
-install(DIRECTORY macros DESTINATION EMCAL)
-install(DIRECTORY doc DESTINATION EMCAL)
-install(DIRECTORY mapping DESTINATION EMCAL)
-
-message(STATUS "EMCAL enabled")
+message(STATUS "GRP installed")

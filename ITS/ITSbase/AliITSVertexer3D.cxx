@@ -1046,8 +1046,11 @@ Int_t  AliITSVertexer3D::Prepare3DVertexPbPb(){
   Double_t zmi=-nz*f3DBinSize/2.;
   Double_t zma=nz*f3DBinSize/2.;
   Int_t nolines=fLines.GetEntriesFast();
-  if(!fH3dv)fH3dv = new TH3F("fH3dv","3d tracklets",nxy,xymi,xyma,nxy,xymi,xyma,nz,zmi,zma);
-  
+  if(!fH3dv) {
+    fH3dv = new TH3F("fH3dv","3d tracklets",nxy,xymi,xyma,nxy,xymi,xyma,nz,zmi,zma);
+    fH3dv->SetDirectory(0);
+  }
+  //
   for(Int_t itra=0; itra<nolines; itra++){
     Double_t wei = GetFraction(itra);
     //printf("tracklet %d ) - weight %f \n",itra,wei);

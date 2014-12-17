@@ -13,20 +13,20 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-# HMPID libraries
-add_subdirectory(EMCALbase)
-add_subdirectory(EMCALUtils)
-add_subdirectory(EMCALraw)
-add_subdirectory(EMCALrec)
-add_subdirectory(EMCALsim)
+# Module include folder - DO NOT FORGET TO EDIT
+include_directories(${AliRoot_SOURCE_DIR}/MUON/DA)
 
-if(DA)
-    add_subdirectory(DA)
-endif(DA)
+# Additional include folders in alphabetical order - DO NOT FORGET TO EDIT
+include_directories(
+#                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                   )
 
-# Install the macros, docs
-install(DIRECTORY macros DESTINATION EMCAL)
-install(DIRECTORY doc DESTINATION EMCAL)
-install(DIRECTORY mapping DESTINATION EMCAL)
+# Set the static dependencies for this DA
+# Make sure that static build is enabled for all the dependencies
+# If you are not sure what dependecies to put contact aliroot-git-admins@cern.ch
+set(STATIC_DEPENDENCIES MUONcalib-static MUONcore-static MUONmapping-static MUONraw-static RAWDatarec-static) # DO NOT FORGET TO EDIT
 
-message(STATUS "EMCAL enabled")
+# Generate the DA using DetectorName, Algortihm
+# The DA file has to be named DetectorNameAlgortihmda.cxx
+# generateDA("DetectorName" "Algorithm" "${STATIC_DEPENDENCIES}")
+generateDA("MUON" "TRG" "${STATIC_DEPENDENCIES}") # DO NOT FORGET TO EDIT

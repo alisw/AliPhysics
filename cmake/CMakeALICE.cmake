@@ -41,7 +41,7 @@ macro(generate_dictionary DNAME LDNAME DHDRS DINCDIRS)
     
     # Get the definitions from the directory to be sent to CINT
     get_directory_property(tmpdirdefs DEFINITIONS)
-    string(REPLACE " " ";" tmpdirdefs ${tmpdirdefs})
+    string(REPLACE " " ";" tmpdirdefs "${tmpdirdefs}")
 
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.h
                        COMMAND LD_LIBRARY_PATH=${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOT_CINT}
