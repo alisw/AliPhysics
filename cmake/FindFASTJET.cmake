@@ -59,7 +59,7 @@ if(FASTJET)
         message(FATAL_ERROR "FastJet ${FASTJET_VERSION_MAJOR}.${FASTJET_VERSION_MINOR}.${FASTJET_VERSION_PATCH} version is not suported. Please install a version >= 3.0.*")
     endif()
     
-    if(FASTJET_VERSION_MINOR NOT EQUAL 0)
+    if(FASTJET_VERSION_MINOR GREATER 0)
         message(FATAL_ERROR "FastJet ${FASTJET_VERSION_MAJOR}.${FASTJET_VERSION_MINOR}.${FASTJET_VERSION_PATCH} version is not suported.  Please install a version >= 3.0.*")
     endif()
 
