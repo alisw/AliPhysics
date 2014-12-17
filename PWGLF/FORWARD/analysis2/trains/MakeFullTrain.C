@@ -63,7 +63,7 @@ public:
     fOptions.Add("flow-qc-types", "[std,eta-gap,3cor,all]", 
 		 "Which types of QC's to do", "all");
     fOptions.Add("flow-eta-gap","DISTANCE",  "Size of eta gap",          "2.0");
-    fOptions.Add("flow-b-cent", "Use the impact parameter for centrality");
+    fOptions.Add("flow-use-cent", "Use centrality class for centrality");
     fOptions.Add("flow-afterburner","[eta,phi,b,pid]", "What to afterburn", "");
     fOptions.Add("flow-outlier-fmd", "NSIGMA", "Outlier cut for FMD", "4.0");
     fOptions.Add("flow-outlier-spd", "NSIGMA", "Outlier cut for SPD", "0.0");
@@ -169,7 +169,7 @@ protected:
       TString  types    = fOptions.Get     ("flow-qc-types");
       Double_t egValue  = fOptions.AsDouble("flow-eta-gap");
       TString  tracks   = fOptions.Get     ("flow-ref-tracks");
-      Bool_t   useCent  = fOptions.AsBool  ("flow-b-cent");
+      Bool_t   useCent  = fOptions.AsBool  ("flow-use-cent");
       Bool_t   useMCVtx = fOptions.AsBool  ("flow-mc-vtx");
       Bool_t   addFlow  = fOptions.AsBool  ("flow-afterburner");
       Double_t fmdCut   = fOptions.AsDouble("flow-outlier-fmd");
@@ -189,7 +189,7 @@ protected:
       // 
       //   2: Detector to use (FMD/VZERO)
       //   3: Whether to use eta gap (true/false)
-      //   4: Do 3-particle correlations (true/false)
+      //   4: Do 3-subevent correlations (true/false)
       //   9: Use tracks for referernce flow (true/false)
       TString args;
       args=TString::Format("%d,\"%%s\",%%d,%%d,%d,%f,%f,%f,%%d,%d,%d,%d,%d,%d",
