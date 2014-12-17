@@ -497,6 +497,12 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
+  rn->AddLine("1.16");
+  rn->AddLine("");
+  rn->AddLine("Default OCDB is now raw:// (following the fact that 'code' OCDB is not longer installed");
+  rn->AddLine("If you want a purely local execution you'll need a local copy of the OCDB and use the --ocdb option to point mchview to it");
+  rn->AddLine("");
+
   rn->AddLine("1.15");
   rn->AddLine("");
   rn->AddLine("Fixing display of data at pad level (pads were hollow)");

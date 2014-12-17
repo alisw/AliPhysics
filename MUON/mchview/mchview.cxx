@@ -40,6 +40,7 @@
 #include "AliMpDDLStore.h"
 #include "AliMpManuStore.h"
 #include "TEnv.h"
+#include "TGrid.h"
 
 //______________________________________________________________________________
 Int_t Usage()
@@ -78,9 +79,14 @@ int main(int argc, char** argv)
   Int_t gix(0),giy(0);
   Int_t gox(0),goy(0);
   Bool_t ASCIImapping(kFALSE);
-  TString defaultOCDB("local://$ALICE_ROOT/OCDB");
+  TString defaultOCDB("raw://");
   
-  for ( Int_t i = 0; i <= args.GetLast(); ++i ) 
+  if (!gGrid)
+  {
+    TGrid::Connect("alien://");
+  }
+  
+  for ( Int_t i = 0; i <= args.GetLast(); ++i )
   {
     TString a(static_cast<TObjString*>(args.At(i))->String());
     if ( a == "--version" ) 
@@ -132,8 +138,10 @@ int main(int argc, char** argv)
     return Usage();
   }
   
+  std::cout << "Using defaultOCDB=" << defaultOCDB.Data() << std::endl;
+  
   AliCDBManager::Instance()->SetDefaultStorage(defaultOCDB.Data());
-  AliCDBManager::Instance()->SetRun(0);
+  AliCDBManager::Instance()->SetRun(196792);
  
   if ( ASCIImapping ) 
   {
@@ -149,7 +157,7 @@ int main(int argc, char** argv)
       AliMpManuStore::ReadData(dataStreams);
     }
     
-    AliCDBManager::Instance()->SetSpecificStorage("MUON/Calib/Neighbours","local://$ALICE_ROOT/OCDB");
+//    AliCDBManager::Instance()->SetSpecificStorage("MUON/Calib/Neighbours","local://$ALICE_ROOT/OCDB");
 
   }
   
