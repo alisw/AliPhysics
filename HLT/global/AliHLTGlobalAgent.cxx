@@ -54,7 +54,6 @@
 // header file for preprocessor plugin
 #include "AliHLTGlobalPreprocessor.h"
 
-#define TESTING
 #define NOCOMPRESS
 
 /** global instance for agent registration */
@@ -84,11 +83,9 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   // see header file for class documentation
   assert(pHandler);
   if (!pHandler) return -EINVAL;
-#ifdef TESTING
   pHandler->AddComponent(new AliHLTGlobalEsdToFlatConverterComponent);
   pHandler->AddComponent(new AliHLTGlobalCompareFlatComponent);
   pHandler->AddComponent(new AliHLTGlobalFlatEsdTestComponent);
-#endif
   pHandler->AddComponent(new AliHLTGlobalTrackMergerComponent);
   pHandler->AddComponent(new AliHLTGlobalFlatEsdConverterComponent);
   pHandler->AddComponent(new AliHLTGlobalEsdConverterComponent);
@@ -185,12 +182,10 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
   pHandler->CreateConfiguration("GLOBAL-flat-esd-converter", "GlobalFlatEsdConverter", esdInputs.Data(), "");
   pHandler->CreateConfiguration("GLOBAL-esd-converter", "GlobalEsdConverter", esdInputs.Data(), "");
 #endif
-	
-#ifdef TESTING
   pHandler->CreateConfiguration("GLOBAL-flat-esd-test", "GlobalFlatEsdTest", "GLOBAL-esd-converter GLOBAL-flat-esd-converter", "");
   pHandler->CreateConfiguration("esd-to-flat-conversion", "GlobalEsdToFlatConverter", "GLOBAL-esd-converter", "");
   pHandler->CreateConfiguration("compare-flat", "GlobalCompareFlat", "GLOBAL-flat-esd-converter esd-to-flat-conversion", "");
-#endif
+
 	
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
