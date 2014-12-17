@@ -9,7 +9,7 @@ AliJEbeHistos::AliJEbeHistos(AliJCard* cardP):
 	ftriggFiducCut(0),
 	fhistoList(NULL),
 	fUseDirectory(true),
-	fTopDirectory(false)
+	fTopDirectory(NULL)
 {   // constructor
 
 	fcard=cardP;

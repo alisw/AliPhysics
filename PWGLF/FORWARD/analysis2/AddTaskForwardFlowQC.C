@@ -18,18 +18,18 @@
  * Add Flow task to train 
  * 
  * @param maxMom        Max moment to do 
+ * @param fwdDet        Which forward detector to use (FMD/VZERO)
  * @param useEtaGap     Whehter to use @f$\eta@f$ gaps
+ * @param use3cor       Wheter to use the 2 subevent method
  * @param mc            Monte-carlo input
  * @param outlierCutFMD Cut to remove events with outliers 
  * @param outlierCutSPD Cut to remove events with outliers 
  * @param etaGap        Size of @f$\eta@f$ gap
- * @param useTracksForRef  Use TPC tracks for reference flow
+ * @param useTracksForRef  Which tracks to use for reference flow
  * @param useCent       Whether to use centrality or impact parameter for MC 
  * @param useMCVtx      Whether to use vertex info from MC header
  * @param satVtx        Use satellite interactions 
- * @param addFlow       Afterburn what (MC only)
- * @param addFType      Afterburner parameterization
- * @param addFOrder     Afterburder order 
+ * @param addFlow       Add flow afterburner (only MC)
  *
  * @ingroup pwglf_forward_flow
  */

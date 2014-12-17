@@ -38,8 +38,6 @@
 #include "AliESDtrack.h"
 #include "AliAODTrack.h"
 #include "AliAnalysisFilter.h"
-#include "AliAODMCHeader.h"
-#include "AliForwardFlowWeights.h"
 
 ClassImp(AliForwardFlowTaskQC)
 #if 0
@@ -340,7 +338,7 @@ Bool_t AliForwardFlowTaskQC::Analyze()
   }
   else if ((fFlowFlags & kVZERO) && !vzero) {
     fHistEventSel->Fill(kNoForward);
-//    return kFALSE; 
+    return kFALSE; 
   }
   if (!aodcmult) fHistEventSel->Fill(kNoCentral);
 
@@ -901,10 +899,11 @@ void AliForwardFlowTaskQC::FillVZEROHist(AliVVZERO* vzero)
 		      0.521922, 0.785915, 0.703658, 0.832479, 0.77461, 0.73129, 0.778697, 0.710265, 
 		      0.89686, 0.967688, 0.974225, 0.873445, 0.811096, 0.828493, 0.889609, 0.586056, 
 		      1.15877, 0.954656, 0.914557, 0.979028, 1.04907, 0.748518, 0.928043, 0.98175 };
+
   for (Int_t i = 0; i < 64; i++) {
     if (i % 8 == 0) {
       ring++;
-      bin = (ring < 5 ? ring+1 : 15-ring);
+      bin = (ring < 5 ? 11-ring : ring-3);
       eta = fHistdNdedpV0.GetXaxis()->GetBinCenter(bin);
       fHistdNdedpV0.SetBinContent(bin, 0, 1);
     }
@@ -1054,7 +1053,7 @@ void AliForwardFlowTaskQC::VertexBin::AddOutput(TList* outputlist, TAxis* centAx
 
   // Get bin numbers and binning defined
   Int_t nHBins = GetBinNumberSin();
-  Int_t nEtaBins = 48; 
+  Int_t nEtaBins = 24; 
   if ((fFlags & k3Cor)) {
     if ((fFlags & kFMD)) nEtaBins = 24;
     else if ((fFlags & kVZERO)) nEtaBins = 19;
@@ -1338,11 +1337,7 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillTracks(TObjArray* trList, AliESDEven
     Double_t eta = tr->Eta();
     if (((fFlags & kSPD) || (fFlags & kEtaGap)) && TMath::Abs(eta) < fEtaGap) continue;
     Double_t phi = tr->Phi();
-//    Double_t pT = tr->Pt();
-//    AliAODMCHeader* head = static_cast<AliAODMCHeader*>(aod->FindListObject(AliAODMCHeader::StdBranchName()));
-//    Double_t rp = head->GetReactionPlaneAngle();
-//    Double_t b = head->GetImpactParameter();
-    Double_t weight = 1.;//AliForwardFlowWeights::Instance().CalcWeight(eta, pT, phi, 0, rp, b); 
+    Double_t weight = 1.;
 
     if ((mode & kFillRef)) {
       fCumuRef->Fill(eta, 0., weight);// mult goes in underflowbin - no visual, but not needed?
@@ -1385,7 +1380,7 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsAccumulate(Double_t cent)
   // Fill out NUA hists
   for (Int_t etaBin = 1; etaBin <= fCumuRef->GetNbinsX(); etaBin++) {
     Double_t eta = fCumuRef->GetXaxis()->GetBinCenter(etaBin);
-    if (fCumuRef->GetBinContent(etaBin, 0) == 0) continue;
+    if (fCumuRef->GetBinContent(etaBin, 0) <= 3) continue;
     if ((fFlags & kTracks) && (fFlags && kSPD) && !(fFlags & kEtaGap)) eta = -eta;
     for (Int_t qBin = 0; qBin <= fCumuRef->GetNbinsY(); qBin++) {
       fCumuNUARef->Fill(eta, cent, Double_t(qBin), fCumuRef->GetBinContent(etaBin, qBin));
@@ -1393,6 +1388,8 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsAccumulate(Double_t cent)
   }
   for (Int_t etaBin = 1; etaBin <= fCumuDiff->GetNbinsX(); etaBin++) {
     Double_t eta = fCumuDiff->GetXaxis()->GetBinCenter(etaBin);
+    Double_t refetaBin = fCumuRef->GetXaxis()->FindBin(eta);
+    if (fCumuRef->GetBinContent(refetaBin, 0) <= 3) continue;
     if (fCumuDiff->GetBinContent(etaBin, 0) == 0) continue;
     for (Int_t qBin = 0; qBin <= fCumuDiff->GetNbinsY(); qBin++) {
       fCumuNUADiff->Fill(eta, cent, Double_t(qBin), fCumuDiff->GetBinContent(etaBin, qBin));
@@ -1423,7 +1420,6 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsAccumulate(Double_t cent)
       if ((fFlags & kEtaGap)) refEta = -eta;
       Int_t refEtaBinB = fCumuRef->GetXaxis()->FindBin(refEta);
       if (refEtaBinA != prevRefEtaBin) {
-	prevRefEtaBin = refEtaBinA;
 	// Reference flow
 	multA  = fCumuRef->GetBinContent(refEtaBinA, 0);
 	dQnReA = fCumuRef->GetBinContent(refEtaBinA, GetBinNumberCos(n));
@@ -1435,7 +1431,7 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsAccumulate(Double_t cent)
 	dQnReB = fCumuRef->GetBinContent(refEtaBinB, GetBinNumberCos(n));
 	dQnImB = fCumuRef->GetBinContent(refEtaBinB, GetBinNumberSin(n));
 
-	if (multA <= 3 || multB <= 3) return; 
+	if (multA <= 3 || multB <= 3) continue; 
 	// The reference flow is calculated 
 	// 2-particle
 	if ((fFlags & kStdQC)) {
@@ -1477,6 +1473,7 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsAccumulate(Double_t cent)
 	  cumuRef->Fill(eta, cent, kSinphi1phi2phi3m, sinPhi1Phi2Phi3m);
 	  cumuRef->Fill(eta, cent, k3pWeight, multA*(multA-1.)*(multA-2.));
 	} // End of QC{4}
+	prevRefEtaBin = refEtaBinA;
       } // End of reference flow
       // For each etaBin bin the necessary values for differential flow is calculated
       Double_t mp = fCumuDiff->GetBinContent(etaBin, 0);
@@ -1991,7 +1988,7 @@ void AliForwardFlowTaskQC::VertexBin::CalculateReferenceFlow(CumuHistos& cumu2h,
 	  // The next line covers both cases.
 	  qc2 -= cosP1nPhiA*cosP1nPhiB + sinP1nPhiA*sinP1nPhiB;
 	  // Extra NUA term from 2n cosines and sines
-	  Double_t den = 1-(cos2nPhiA*cos2nPhiB + sin2nPhiA*sin2nPhiB);
+	  Double_t den = 1+(cos2nPhiA*cos2nPhiB + sin2nPhiA*sin2nPhiB);
 	  if (den != 0) qc2 /= den;
 	  else qc2 = 0;
 	}
@@ -2139,7 +2136,7 @@ void AliForwardFlowTaskQC::VertexBin::CalculateDifferentialFlow(CumuHistos& cumu
 	  // Old nua
 	  qc2Prime -= cosP1nPsi*cosP1nPhiB + sinP1nPsi*sinP1nPhiB;
 	  // Extra NUA term from 2n cosines and sines
-	  qc2Prime /= (1.-(cos2nPsi*cos2nPhiB + sin2nPsi*sin2nPhiB));
+	  qc2Prime /= (1.+(cos2nPsi*cos2nPhiB + sin2nPsi*sin2nPhiB));
 	}
 	if (!TMath::IsNaN(qc2Prime)) {
 	  quality->Fill((n-2)*qualityFactor+3, Int_t(cent));
@@ -2326,7 +2323,7 @@ void AliForwardFlowTaskQC::VertexBin::Calculate3CorFlow(CumuHistos& cumu2h, TH2I
 	  // Old nua
 	  qc2 -= cosP1nPhiA*cosP1nPhiB + sinP1nPhiA*sinP1nPhiB;
 	  // Extra NUA term from 2n cosines and sines
-	  qc2 /= (1-(cos2nPhiA*cos2nPhiB + sin2nPhiA*sin2nPhiB));
+	  qc2 /= (1+(cos2nPhiA*cos2nPhiB + sin2nPhiA*sin2nPhiB));
 	}
 	if (qc2 <= 0) { 
 	  if (fDebug > 0) 
@@ -2372,8 +2369,8 @@ void AliForwardFlowTaskQC::VertexBin::Calculate3CorFlow(CumuHistos& cumu2h, TH2I
 	  qc2PrimeA -= cosP1nPsi*cosP1nPhiA + sinP1nPsi*sinP1nPhiA;
 	  qc2PrimeB -= cosP1nPsi*cosP1nPhiB + sinP1nPsi*sinP1nPhiB; // Is this OK?
 	  // Extra NUA term from 2n cosines and sines
-	  if (cos2nPsi*cos2nPhiA + sin2nPsi*sin2nPhiA != 1.) qc2PrimeA /= (1.-(cos2nPsi*cos2nPhiA + sin2nPsi*sin2nPhiA));
-	  if (cos2nPsi*cos2nPhiB + sin2nPsi*sin2nPhiB != 1.) qc2PrimeB /= (1.-(cos2nPsi*cos2nPhiB + sin2nPsi*sin2nPhiB));
+	  if (cos2nPsi*cos2nPhiA + sin2nPsi*sin2nPhiA != -1.) qc2PrimeA /= (1.+(cos2nPsi*cos2nPhiA + sin2nPsi*sin2nPhiA));
+	  if (cos2nPsi*cos2nPhiB + sin2nPsi*sin2nPhiB != -1.) qc2PrimeB /= (1.+(cos2nPsi*cos2nPhiB + sin2nPsi*sin2nPhiB));
 	}
 	if (!TMath::IsNaN(qc2PrimeA) && !TMath::IsNaN(qc2PrimeB) && qc2 != 0) {
 	if (qc2PrimeA*qc2PrimeB >= 0) {

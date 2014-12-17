@@ -7,6 +7,7 @@
 #include <TClonesArray.h>
 
 class TH3;
+class TProfile;
 class AliEmcalJet;
 
 class AliEmcalJetByJetCorrection : public TNamed
@@ -21,13 +22,15 @@ class AliEmcalJetByJetCorrection : public TNamed
 
   void SetTemplate(TH3 *h)          { fh3JetPtDRTrackPt = h; }
   void SetJetPtBinWidth(Double_t w) { fBinWidthJetPt    = w; }
-  void SetJetPtRange(Double_t min, Double_t max) {fJetPtMin = min; fJetPtMax = max;};
+  void SetJetPtRange(Double_t min, Double_t max) {fJetPtMin = min; fJetPtMax = max;}
   void SetFixedTrackEfficiency(Double_t eff) { fEfficiencyFixed = eff; }
   void SetEfficiencyHist(TH1 *h)             { fhEfficiency     = h  ; }
 
   Int_t        GetJetPtBin(const Double_t jetpt) const;
   Double_t     GetEfficiency(const Double_t pt) const;
   Double_t     GetMeanPtConstituents(const AliEmcalJet *jet, TClonesArray *fTracks) const;
+
+  TProfile    *GetAppliedEfficiency() const {return fpAppliedEfficiency;}
 
   void         Init();
   AliEmcalJet *Eval(const AliEmcalJet *jet, TClonesArray *fTracks);
@@ -41,8 +44,11 @@ class AliEmcalJetByJetCorrection : public TNamed
   Bool_t    fInitialized;                      // status of initialization
   Double_t  fEfficiencyFixed;                  // fixed efficiency for all pT and all types of tracks
   TH1      *fhEfficiency;                      // single particle efficiency
- private:
 
-  ClassDef(AliEmcalJetByJetCorrection, 1) // jet-by-jet correction class
+  //book-keeping object filled inside Eval()
+  TProfile *fpAppliedEfficiency;               // Control profile efficiency
+
+ private:
+  ClassDef(AliEmcalJetByJetCorrection, 2) // jet-by-jet correction class
 };
 #endif
