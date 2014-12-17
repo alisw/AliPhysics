@@ -109,6 +109,9 @@ public:
   virtual Bool_t            CheckOwnership() const;
   // Reset task
   virtual void              Reset();
+  // full reset: discard all statistics, zero histograms, start again.
+  // called in online mode (HLT) after sending output for merging.
+  virtual Bool_t            ResetOutputData() {return kFALSE;}
   // Getters
   void                      GetBranches(const char *type, TString &result) const;
   Int_t                     GetNinputs() const  {return fNinputs;}
