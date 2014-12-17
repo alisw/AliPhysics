@@ -118,7 +118,7 @@ protected:
     // 
     //   2: Detector to use (FMD/VZERO)
     //   3: Whether to use eta gap (true/false)
-    //   4: Do 3-particle correlations (true/false)
+    //   4: Do 3-subevent correlations (true/false)
     //   9: Use tracks for referernce flow (true/false)
     TString args;
     args = TString::Format("%d,\"%%s\",%%d,%%d,%d,%f,%f,%f,%%d,%d,%d,%d,%d,%d",

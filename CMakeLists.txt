@@ -90,6 +90,13 @@ if(AMORE_CONFIG)
     endif()
 endif(AMORE_CONFIG)
 
+# id DARPM we enable DA if it is not set
+if(DARPM)
+    if(NOT DA)
+        set(DA ON)
+    endif(NOT DA)
+endif(DARPM)
+
 # DA is enabled
 if(DA)
     if(NOT DIMDIR AND NOT ODIR)
@@ -270,6 +277,9 @@ add_subdirectory(PWGLF)
 add_subdirectory(PWGPP)
 add_subdirectory(PWGUD)
 add_subdirectory(data)
+add_subdirectory(GRP)
+add_subdirectory(OCDB)
+add_subdirectory(QAref)
 
 # Enable SHUTTLE compilation
 # Check if DIMDIR and ODIR are set

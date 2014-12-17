@@ -6,6 +6,7 @@
 
 #include "TH2.h"
 #include "TH3.h"
+#include "TProfile.h"
 #include "TMath.h"
 #include "TRandom3.h"
 #include "TLorentzVector.h"
@@ -26,7 +27,8 @@ TNamed(),
   fCollTemplates(),
   fInitialized(kFALSE),
   fEfficiencyFixed(1.),
-  fhEfficiency(0)
+  fhEfficiency(0),
+  fpAppliedEfficiency(0)
 {
   // Dummy constructor.
   fCollTemplates.SetOwner(kTRUE);
@@ -42,10 +44,22 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const char* name) :
   fCollTemplates(),
   fInitialized(kFALSE),
   fEfficiencyFixed(1.),
-  fhEfficiency(0)
+  fhEfficiency(0),
+  fpAppliedEfficiency(0)
 {
   // Default constructor.
   fCollTemplates.SetOwner(kTRUE);
+
+  const Int_t nBinPt = 118; //0-2: 20 bins; 2-100: 98 bins
+  Double_t binLimitsPt[nBinPt+1];
+  for(Int_t iPt = 0;iPt <= nBinPt;iPt++){
+    if(iPt<20){
+      binLimitsPt[iPt] = 0. + (Double_t)iPt*0.15;
+    } else {// 1.0
+      binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 1.0;
+    }
+  }
+  fpAppliedEfficiency = new TProfile("fpAppliedEfficiency","fpAppliedEfficiency",nBinPt,binLimitsPt);
 }
 
 //__________________________________________________________________________
@@ -58,7 +72,8 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const AliEmcalJetByJetCor
   fCollTemplates(other.fCollTemplates),
   fInitialized(other.fInitialized),
   fEfficiencyFixed(other.fEfficiencyFixed),
-  fhEfficiency(other.fhEfficiency)
+  fhEfficiency(other.fhEfficiency),
+  fpAppliedEfficiency(other.fpAppliedEfficiency)
 {
   // Copy constructor.
 }
@@ -77,6 +92,7 @@ AliEmcalJetByJetCorrection& AliEmcalJetByJetCorrection::operator=(const AliEmcal
   fInitialized       = other.fInitialized;
   fEfficiencyFixed   = other.fEfficiencyFixed;
   fhEfficiency       = other.fhEfficiency;
+  fpAppliedEfficiency= other.fpAppliedEfficiency;
 
   return *this;
 }
@@ -96,9 +112,10 @@ AliEmcalJet* AliEmcalJetByJetCorrection::Eval(const AliEmcalJet *jet, TClonesArr
   
   Double_t meanPt = GetMeanPtConstituents(jet,fTracks);
   Double_t eff = GetEfficiency(meanPt);
+  fpAppliedEfficiency->Fill(meanPt,eff);
 
   Int_t np = TMath::FloorNint((double)jet->GetNumberOfTracks() * (1./eff -1.));
-
+  
   TLorentzVector corrVec; corrVec.SetPtEtaPhiM(jet->Pt(),jet->Eta(),jet->Phi(),jet->M());
 
   Double_t mass = 0.13957; //pion mass
