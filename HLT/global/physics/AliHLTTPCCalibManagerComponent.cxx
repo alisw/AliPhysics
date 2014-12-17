@@ -32,7 +32,7 @@
 #include "AliHLTDataTypes.h"
 #include "AliHLTTPCCalibManagerComponent.h"
 #include "AliHLTITSClusterDataFormat.h"
-#include "AliAnalysisManager.h"
+#include "AliHLTAnalysisManager.h"
 #include "AliHLTVEventInputHandler.h"
 #include "AliTPCAnalysisTaskcalib.h"
 #include "AliAnalysisDataContainer.h"
@@ -174,23 +174,152 @@ Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
   // see header file for class documentation
   printf("AliHLTTPCCalibManagerComponent::DoInit\n");
 
-  gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/LoadLibraries.C");
-
-  Int_t iResult=0;
+  //shut up AliSysInfo globally, prevents syswatch.log files from being created
+  //dont open any debug files
+  AliSysInfo::SetDisabled(kTRUE);
+  TTreeSRedirector::SetDisabled(kTRUE);
 
   Printf("----> AliHLTTPCCalibManagerComponent::DoInit");
-  fAnalysisManager = new AliAnalysisManager();
+  fAnalysisManager = new AliHLTAnalysisManager();
   fInputHandler    = new AliHLTVEventInputHandler("HLTinputHandler","HLT input handler");
   fAnalysisManager->SetInputEventHandler(fInputHandler);
-  fAnalysisManager->SetExternalLoop(kTRUE);
 
+  AddCalibTasks();
+
+  fAnalysisManager->InitAnalysis();
+
+  return 0;
+}
+
+// #################################################################################
+Int_t AliHLTTPCCalibManagerComponent::DoDeinit() {
+  // see header file for class documentation
+
+  fUID = 0;
+  fAnalysisManager->WriteAnalysisToFile();
+  delete fAnalysisManager;
+  return 0;
+}
+
+// #################################################################################
+Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& evtData,
+    AliHLTComponentTriggerData& /*trigData*/) {
+  // see header file for class documentation
+
+  printf("AliHLTTPCCalibManagerComponent::DoEvent\n");
+  Int_t iResult=0;
+
+  // -- Only use data event
+  if (!IsDataEvent()) 
+    return 0;
+
+  if( fUID == 0 ){
+    TTimeStamp t;
+    fUID = ( gSystem->GetPid() + t.GetNanoSec())*10 + evtData.fEventID;
+  }
+
+  // -- Get ESD object
+  // -------------------
+  AliVEvent* vEvent=NULL;
+  AliVfriendEvent* vFriend=NULL;
+
+  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
+    vEvent = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
+    if( !vEvent ){ 
+      HLTWarning("Wrong ESDEvent object received");
+      iResult = -1;
+      continue;
+    }
+    vEvent->GetStdContent();
+  }
+  if (vEvent) {printf("----> ESDEvent %p has %d tracks: \n", vEvent, vEvent->GetNumberOfTracks());}
+  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject); iter != NULL; iter = GetNextInputObject() ) {
+    vFriend = dynamic_cast<AliESDfriend*>(const_cast<TObject*>( iter ) );
+    if( !vFriend ){ 
+      HLTWarning("Wrong ESDFriend object received");
+      iResult = -1;
+      continue;
+    }
+  }
+  if(vFriend) {printf("----> ESDFriend %p has %d tracks: \n", vFriend, vFriend->GetNumberOfTracks());}
+
+  if (!vEvent){
+    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
+        pBlock!=NULL; pBlock=GetNextInputBlock()) {
+      AliFlatESDEvent* tmpFlatEvent=reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
+      if (tmpFlatEvent->GetSize()==pBlock->fSize ){
+        tmpFlatEvent->Reinitialize();
+      } else {
+        tmpFlatEvent = NULL;
+        HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESD information",
+            DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
+      }
+      vEvent = tmpFlatEvent;
+      break;
+    }
+
+    if( vEvent ){
+      for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
+          pBlock!=NULL; pBlock=GetNextInputBlock()) {
+        AliFlatESDFriend* tmpFlatFriend = reinterpret_cast<AliFlatESDFriend*>( pBlock->fPtr );
+        if (tmpFlatFriend->GetSize()==pBlock->fSize ){
+          tmpFlatFriend->Reinitialize();
+        } else {
+          tmpFlatFriend = NULL;
+          HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESDfriend information", 
+              DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
+        }
+        break;
+        vFriend = tmpFlatFriend;
+      }   
+    }
+  }
+
+  fInputHandler->InitTaskInputData(vEvent, vFriend, fAnalysisManager->GetTasks());
+  fAnalysisManager->ExecAnalysis();
+  fInputHandler->FinishEvent();
+
+  // -- Send histlist
+  //  PushBack(dynamic_cast<TObject*>(fCorrObj->GetHistList()),
+  //	   kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
+
+  return iResult;
+}
+
+// #################################################################################
+Int_t AliHLTTPCCalibManagerComponent::Reconfigure(const Char_t* cdbEntry, const Char_t* chainId) {
+  // see header file for class documentation
+
+  Int_t iResult=0;
+  TString cdbPath;
+  if (cdbEntry) {
+    cdbPath=cdbEntry;
+  } else {
+    cdbPath="HLT/ConfigGlobal/";
+    cdbPath+=GetComponentID();
+  }
+
+  AliInfoClass(Form("reconfigure '%s' from entry %s%s", chainId, cdbPath.Data(), cdbEntry?"":" (default)"));
+  iResult=ConfigureFromCDBTObjString(cdbPath);
+
+  return iResult;
+}
+
+// #################################################################################
+Int_t AliHLTTPCCalibManagerComponent::ReadPreprocessorValues(const Char_t* /*modules*/) {
+  // see header file for class documentation
+  ALIHLTERRORGUARD(5, "ReadPreProcessorValues not implemented for this component");
+  return 0;
+}
+
+// #################################################################################
+Int_t AliHLTTPCCalibManagerComponent::AddCalibTasks()
+{
+  //add tasks to the manager
   // Set run time ranges (time stamps)
   // doesn't really work at the moment, to be checked
 
-  //shut up AliSysInfo globally, prevents syswatch.log files from being created
-  AliSysInfo::SetDisabled(kTRUE);
-  //dont open the debug file
-  TTreeSRedirector::SetDisabled(kTRUE);
+  gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/LoadLibraries.C");
 
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
   if(!entry) {
@@ -323,191 +452,6 @@ Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
   }
   //fAnalysisManager->ConnectInput(taskCluster,0,cinput1);
   //--------------------------------------------------------------------------------------
-
-  fAnalysisManager->InitAnalysis();
-
-  //init stuff
-  Bool_t dirStatus = TH1::AddDirectoryStatus();  
-  TIter nextT(fAnalysisManager->GetTasks());
-  AliAnalysisTask* task=NULL;
-  while ((task=(AliAnalysisTask*)nextT())) 
-  {
-    TH1::AddDirectory(kFALSE);
-    task->CreateOutputObjects();
-  }
-  TH1::AddDirectory(dirStatus);
-
-  return iResult;
-}
-
-// #################################################################################
-Int_t AliHLTTPCCalibManagerComponent::DoDeinit() {
-  // see header file for class documentation
-
-  fUID = 0;
-  //write the data to file
-  TDirectory *opwd = gDirectory;  
-  TIter nextOutput(fAnalysisManager->GetOutputs());
-  TList listOfOpenFiles;
-  while (AliAnalysisDataContainer* output=(AliAnalysisDataContainer*)nextOutput())
-  {
-    const char* filename   = output->GetFileName();
-    const char* openoption = "RECREATE";
-    TFile* file=NULL;
-    if (!(file=(TFile*)listOfOpenFiles.FindObject(filename)))
-      { file = new TFile(filename,openoption); }
-    output->SetFile(file);
-    listOfOpenFiles.Add(file);
-    file->cd();
-    TString dir = output->GetFolderName();
-    if (!dir.IsNull())
-    {
-      if (!file->GetDirectory(dir)) file->mkdir(dir);
-      file->cd(dir);
-    }
-    TObject* outputData=output->GetData();
-    if (!outputData) 
-    {
-      continue;
-    }
-    outputData->Print();
-    if (outputData->InheritsFrom(TCollection::Class())) 
-    {
-      // If data is a collection, we set the name of the collection 
-      // as the one of the container and we save as a single key.
-      TCollection *coll = (TCollection*)output->GetData();
-      coll->SetName(output->GetName());
-      coll->Write(output->GetName(), TObject::kSingleKey);
-    } 
-    else 
-    {
-      if (outputData->InheritsFrom(TTree::Class())) 
-      {
-        TTree *tree = (TTree*)output->GetData();
-        tree->SetDirectory(gDirectory);
-        tree->AutoSave();
-      } 
-      else 
-      {
-        output->GetData()->Write();
-      }   
-    }
-    opwd->cd();
-  }
-
-  delete fAnalysisManager;
-
-  return 0;
-}
-
-// #################################################################################
-Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& evtData,
-    AliHLTComponentTriggerData& /*trigData*/) {
-  // see header file for class documentation
-
-  printf("AliHLTTPCCalibManagerComponent::DoEvent\n");
-  Int_t iResult=0;
-
-  // -- Only use data event
-  if (!IsDataEvent()) 
-    return 0;
-
-  if( fUID == 0 ){
-    TTimeStamp t;
-    fUID = ( gSystem->GetPid() + t.GetNanoSec())*10 + evtData.fEventID;
-  }
-
-  // -- Get ESD object
-  // -------------------
-  AliVEvent* vEvent=NULL;
-  AliVfriendEvent* vFriend=NULL;
-
-  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
-    vEvent = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
-    if( !vEvent ){ 
-      HLTWarning("Wrong ESDEvent object received");
-      iResult = -1;
-      continue;
-    }
-    vEvent->GetStdContent();
-  }
-  if (vEvent) {printf("----> ESDEvent %p has %d tracks: \n", vEvent, vEvent->GetNumberOfTracks());}
-  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject); iter != NULL; iter = GetNextInputObject() ) {
-    vFriend = dynamic_cast<AliESDfriend*>(const_cast<TObject*>( iter ) );
-    if( !vFriend ){ 
-      HLTWarning("Wrong ESDFriend object received");
-      iResult = -1;
-      continue;
-    }
-  }
-  if(vFriend) {printf("----> ESDFriend %p has %d tracks: \n", vFriend, vFriend->GetNumberOfTracks());}
-
-  if (!vEvent){
-    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
-        pBlock!=NULL; pBlock=GetNextInputBlock()) {
-      AliFlatESDEvent* tmpFlatEvent=reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
-      if (tmpFlatEvent->GetSize()==pBlock->fSize ){
-        tmpFlatEvent->Reinitialize();
-      } else {
-        tmpFlatEvent = NULL;
-        HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESD information",
-            DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
-      }
-      vEvent = tmpFlatEvent;
-      break;
-    }
-
-    if( vEvent ){
-      for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
-          pBlock!=NULL; pBlock=GetNextInputBlock()) {
-        AliFlatESDFriend* tmpFlatFriend = reinterpret_cast<AliFlatESDFriend*>( pBlock->fPtr );
-        if (tmpFlatFriend->GetSize()==pBlock->fSize ){
-          tmpFlatFriend->Reinitialize();
-        } else {
-          tmpFlatFriend = NULL;
-          HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESDfriend information", 
-              DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
-        }
-        break;
-        vFriend = tmpFlatFriend;
-      }   
-    }
-  }
-
-  fInputHandler->InitTaskInputData(vEvent, vFriend, fAnalysisManager->GetTasks());
-  fAnalysisManager->ExecAnalysis();
-  fInputHandler->FinishEvent();
-
-  // -- Send histlist
-  //  PushBack(dynamic_cast<TObject*>(fCorrObj->GetHistList()),
-  //	   kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
-
-  return iResult;
-}
-
-// #################################################################################
-Int_t AliHLTTPCCalibManagerComponent::Reconfigure(const Char_t* cdbEntry, const Char_t* chainId) {
-  // see header file for class documentation
-
-  Int_t iResult=0;
-  TString cdbPath;
-  if (cdbEntry) {
-    cdbPath=cdbEntry;
-  } else {
-    cdbPath="HLT/ConfigGlobal/";
-    cdbPath+=GetComponentID();
-  }
-
-  AliInfoClass(Form("reconfigure '%s' from entry %s%s", chainId, cdbPath.Data(), cdbEntry?"":" (default)"));
-  iResult=ConfigureFromCDBTObjString(cdbPath);
-
-  return iResult;
-}
-
-// #################################################################################
-Int_t AliHLTTPCCalibManagerComponent::ReadPreprocessorValues(const Char_t* /*modules*/) {
-  // see header file for class documentation
-  ALIHLTERRORGUARD(5, "ReadPreProcessorValues not implemented for this component");
   return 0;
 }
 

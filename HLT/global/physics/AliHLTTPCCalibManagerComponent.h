@@ -29,7 +29,7 @@ class TList;
 class AliHLTCTPData;
 //class AliHLTMultiplicityCorrelations;
 class AliHLTGlobalTriggerDecision;
-class AliAnalysisManager;
+class AliHLTAnalysisManager;
 class AliHLTVEventInputHandler;
 
 /**
@@ -157,6 +157,9 @@ public:
   /** interface function, see @ref AliHLTComponent for description */
   AliHLTComponent* Spawn();
 
+  /**  */
+  Int_t AddCalibTasks();
+  Int_t WriteAnalysisToFile();
  protected:
 
   /*
@@ -221,7 +224,7 @@ private:
   /** UID for merging */
   AliHLTUInt32_t fUID;                        // see above
 
-  AliAnalysisManager *fAnalysisManager;        // Manger
+  AliHLTAnalysisManager *fAnalysisManager;        // Manger
 
   AliHLTVEventInputHandler *fInputHandler;    // input handler
 

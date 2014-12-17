@@ -23,7 +23,6 @@ public:
   virtual ~AliHLTAnalysisManager();
   Bool_t InitAnalysis();
   Int_t WriteAnalysisToFile();
-  Int_t ResetOutputData();
 
 private:
   AliHLTAnalysisManager& operator=(const AliHLTAnalysisManager& that);
