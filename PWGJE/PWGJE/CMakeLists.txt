@@ -72,7 +72,7 @@ if(FASTJET_FOUND)
         ${AliRoot_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetHBOM.cxx
     )
 
-    include_directories(${FASTJET_INCLUDE_DIR})
+    include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})
     add_definitions(${FASTJET_DEFINITIONS})
 
