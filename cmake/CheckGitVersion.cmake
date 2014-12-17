@@ -48,7 +48,7 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
                           WORKING_DIRECTORY ${AliRoot_SOURCE_DIR}
                           OUTPUT_STRIP_TRAILING_WHITESPACE
                           RESULT_VARIABLE revcount
-                          OUTPUT_VARIABLE ALIROOT_SERIAL)
+                          OUTPUT_VARIABLE ALIROOT_SERIAL_ORIGINAL)
 
 
         # GIT_REFSPEC is empty for detached mode = tags in detached mode or checkout to specific hash
@@ -77,6 +77,7 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
         else()
             set(SHORT_BRANCH ${ALIROOT_GIT_TAG})
             set(ALIROOT_REVISION ${GIT_SHORT_SHA1})
+            set(ALIROOT_SERIAL ${ALIROOT_SERIAL_ORIGINAL})
         endif()
 
         set(ALIROOT_BRANCH ${SHORT_BRANCH})
@@ -86,7 +87,7 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
         string(REPLACE "-" "." ALIROOT_VERSION_RPM ${ALIROOT_VERSION})
 
 
-        message(STATUS "Aliroot branch/tag: \"${ALIROOT_VERSION}\" - Revision:  \"${GIT_SHORT_SHA1}\" - Serial: \"${ALIROOT_SERIAL}\"")
+        message(STATUS "Aliroot branch/tag: \"${ALIROOT_VERSION}\" - Revision:  \"${GIT_SHORT_SHA1}\" - Serial: \"${ALIROOT_SERIAL_ORIGINAL}\"")
 
     else()
         message(STATUS "Git not installed. I can't tell you which revision you are using!")
