@@ -285,13 +285,7 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
 		
 		outsizeEvent = (int) flatEsd->GetSize();
 		outsizeFriend = (int) flatFriend->GetSize();
-		
-		
-		cout<<"ESD size on file:" << (insizeEvent +insizeFriend ) <<endl;
-		cout<<"flat size on file:" << (outsizeEvent +outsizeFriend ) <<endl;
-		
-		
-  AliSysInfo::AddStamp("AliHLTGlobalEsdToFlatConverterComponent::DoEvent.Stop", insizeEvent, outsizeEvent, outsizeFriend, insizeFriend);
+		AliSysInfo::AddStamp("AliHLTGlobalEsdToFlatConverterComponent::DoEvent.Stop", insizeEvent, outsizeEvent, outsizeFriend, insizeFriend);
 	
 		    { // set up the output block description
     
