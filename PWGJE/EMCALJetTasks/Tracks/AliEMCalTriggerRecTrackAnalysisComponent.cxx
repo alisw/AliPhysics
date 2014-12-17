@@ -29,6 +29,7 @@
 
 #include "AliLog.h"
 #include "AliMCEvent.h"
+#include "AliPicoTrack.h"
 #include "AliVCluster.h"
 #include "AliVEvent.h"
 #include "AliVParticle.h"
@@ -159,7 +160,10 @@ void AliEMCalTriggerRecTrackAnalysisComponent::Process(const AliEMCalTriggerEven
     // Try to match the cluster
     Bool_t hasCluster = kFALSE;
     AliVCluster *clust(NULL);
-    if(track->GetEMCALcluster() >= 0 && (clust = dynamic_cast<AliVCluster *>(data->GetClusterContainer()->At(track->GetEMCALcluster()))))
+    AliVTrack *testtrack = track;
+    AliPicoTrack *pictrack = dynamic_cast<AliPicoTrack *>(track);
+    if(pictrack) testtrack = pictrack->GetTrack();
+    if(testtrack->GetEMCALcluster() >= 0 && (clust = dynamic_cast<AliVCluster *>(data->GetClusterContainer()->At(testtrack->GetEMCALcluster()))))
       hasCluster = kTRUE;
 
     // Fill histograms
