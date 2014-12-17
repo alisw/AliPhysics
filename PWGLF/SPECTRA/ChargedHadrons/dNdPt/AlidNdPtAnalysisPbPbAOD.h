@@ -297,7 +297,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     Double_t*   fBinsZv; //[fZvNbins]
     Double_t*   fBinsCentrality; //[fCentralityNbins]
     Double_t*   fBinsPhi; //[fPhiNbins]
-    Double_t*   fBinsDeltaphi; //[fPhiNbins]
+    Double_t*   fBinsDeltaphi; //[fDeltaphiNbins]
     Double_t*	fBinsRunNumber; //[fRunNumberNbins]
     
     AlidNdPtAnalysisPbPbAOD(const AlidNdPtAnalysisPbPbAOD&); // not implemented

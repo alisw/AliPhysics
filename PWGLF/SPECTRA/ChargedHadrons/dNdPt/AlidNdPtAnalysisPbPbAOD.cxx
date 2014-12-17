@@ -236,7 +236,14 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   if (!fBinsRunNumber) 	{ SetBinsRunNumber(186, binsRunNumbers2011); }
   
   Int_t binsZvPtEtaCent[4]={fZvNbins-1,fPtNbins-1,fEtaNbins-1,fCentralityNbins-1};
+  Double_t minbinsZvPtEtaCent[4]={-30.,0,-1.5,0};
+  Double_t maxbinsZvPtEtaCent[4]={30  ,200,1.5,100};
+  
   Int_t binsPhiPtEtaCent[5]={fDeltaphiNbins-1,fPtNbins-1,fEtaNbins-1,fPhiNbins-1,fCentralityNbins-1};
+  Double_t minbinsPhiPtEtaCent[5]={0,				0,-1.5,0 ,0};
+  Double_t maxbinsPhiPtEtaCent[5]={TMath::Pi()/2.,200,1.5,2.*TMath::Pi(),100};
+  
+  
   Int_t binsZvMultCent[3]={fZvNbins-1,fMultNbins-1,fCentralityNbins-1};
   
   Int_t binsPhiPtCorrEtaCent[4]={fPtCorrNbins-1,fEtaNbins-1,fPhiNbins-1,fCentralityNbins-1};
@@ -727,7 +734,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   // Main Loop
   // called for each event
   //
-  cout << fBinsPhi[fPhiNbins-1] << endl;
+  //cout << fBinsPhi[fPhiNbins-1] << endl;
   fEventStatistics->Fill("all events",1);
   
   // set ZERO pointers:
@@ -905,7 +912,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  dMCTrackZvPtEtaCent[3] = dCentrality;
 	  fMCGenZvPtEtaCent->Fill(dMCTrackZvPtEtaCent);
 	  
-	  dMCTrackDeltaphiPtEtaPhiCent[0] = RotatePhi(mcPart->Phi(), dEventplaneAngle, fBinsPhi[fPhiNbins-1]); // use eventplane and not reactionplan, similar to centrality vs impact paramter
+	  dMCTrackDeltaphiPtEtaPhiCent[0] = RotatePhi(mcPart->Phi(), dEventplaneAngle, fBinsDeltaphi[fDeltaphiNbins-1]); // use eventplane and not reactionplan, similar to centrality vs impact paramter
 	  // 	  if( dMCTrackDeltaphiPtEtaPhiCent[0] < 0) dMCTrackDeltaphiPtEtaPhiCent[0] += 2.*TMath::Pi();
 	  // 	  else if( dMCTrackDeltaphiPtEtaPhiCent[0] > 2.*TMath::Pi()) dMCTrackDeltaphiPtEtaPhiCent[0] -= 2.*TMath::Pi();
 	  dMCTrackDeltaphiPtEtaPhiCent[1] = mcPart->Pt();
@@ -1032,7 +1039,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	fCorrelEventplaneDefaultCorrected->Fill(dFillEPCorrectionCheck);
 	
 	
-	dTrackDeltaphiPtEtaPhiCent[0] = RotatePhi(track->Phi(), dEventplaneAngleCorrected, fBinsPhi[fPhiNbins-1]); 
+	dTrackDeltaphiPtEtaPhiCent[0] = RotatePhi(track->Phi(), dEventplaneAngleCorrected, fBinsDeltaphi[fDeltaphiNbins-1]); 
 	
 	dTrackDeltaphiPtEtaPhiCent[1] = track->Pt();
 	dTrackDeltaphiPtEtaPhiCent[2] = track->Eta();
@@ -1062,7 +1069,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  dMCTrackZvPtEtaCent[2] = mcPart->Eta();
 	  dMCTrackZvPtEtaCent[3] = dCentrality;
 	  
-	  dMCTrackDeltaphiPtEtaPhiCent[0] = RotatePhi(mcPart->Phi(), dEventplaneAngle, fBinsPhi[fPhiNbins-1]); // use eventplane and not reactionplan, similar to centrality vs impact paramter
+	  dMCTrackDeltaphiPtEtaPhiCent[0] = RotatePhi(mcPart->Phi(), dEventplaneAngle, fBinsDeltaphi[fDeltaphiNbins-1]); // use eventplane and not reactionplan, similar to centrality vs impact paramter
 	  
 	  dMCTrackDeltaphiPtEtaPhiCent[1] = mcPart->Pt();
 	  dMCTrackDeltaphiPtEtaPhiCent[2] = mcPart->Eta();
@@ -1196,7 +1203,10 @@ Double_t AlidNdPtAnalysisPbPbAOD::RotatePhi(Double_t phiTrack, Double_t phiEP, D
 	dPhi = 2.*dMaxDeltaPhi - dPhi;
   }
   
-  //   Printf("[E] dphi = %.4f , phiTrack = %.4f, phiEP = %.4f", dPhi, phiTrack, phiEP);
+  if(dPhi > dMaxDeltaPhi)
+  {
+    Printf("[E] dphi = %.4f , phiTrack = %.4f, phiEP = %.4f, maxDeltaPhi = %.4f", dPhi, phiTrack, phiEP, dMaxDeltaPhi);
+  }
   
 //   return -9999.;
   
