@@ -270,6 +270,7 @@ add_subdirectory(PWGLF)
 add_subdirectory(PWGPP)
 add_subdirectory(PWGUD)
 add_subdirectory(data)
+add_subdirectory(GRP)
 
 # Enable SHUTTLE compilation
 # Check if DIMDIR and ODIR are set
