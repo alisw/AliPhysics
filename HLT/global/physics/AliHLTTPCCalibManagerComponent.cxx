@@ -172,14 +172,14 @@ AliHLTComponent* AliHLTTPCCalibManagerComponent::Spawn() {
 // #################################################################################
 Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ ) {
   // see header file for class documentation
-  printf("AliHLTTPCCalibManagerComponent::DoInit\n");
+  ("AliHLTTPCCalibManagerComponent::DoInit\n");
 
   //shut up AliSysInfo globally, prevents syswatch.log files from being created
   //dont open any debug files
   AliSysInfo::SetDisabled(kTRUE);
   TTreeSRedirector::SetDisabled(kTRUE);
 
-  Printf("----> AliHLTTPCCalibManagerComponent::DoInit");
+  HLTInfo("----> AliHLTTPCCalibManagerComponent::DoInit");
   fAnalysisManager = new AliHLTAnalysisManager();
   fInputHandler    = new AliHLTVEventInputHandler("HLTinputHandler","HLT input handler");
   fAnalysisManager->SetInputEventHandler(fInputHandler);
@@ -206,7 +206,7 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
     AliHLTComponentTriggerData& /*trigData*/) {
   // see header file for class documentation
 
-  printf("AliHLTTPCCalibManagerComponent::DoEvent\n");
+  HLTInfo("AliHLTTPCCalibManagerComponent::DoEvent\n");
   Int_t iResult=0;
 
   // -- Only use data event
@@ -232,7 +232,6 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
     }
     vEvent->GetStdContent();
   }
-  if (vEvent) {printf("----> ESDEvent %p has %d tracks: \n", vEvent, vEvent->GetNumberOfTracks());}
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject); iter != NULL; iter = GetNextInputObject() ) {
     vFriend = dynamic_cast<AliESDfriend*>(const_cast<TObject*>( iter ) );
     if( !vFriend ){ 
@@ -241,11 +240,10 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
       continue;
     }
   }
-  if(vFriend) {printf("----> ESDFriend %p has %d tracks: \n", vFriend, vFriend->GetNumberOfTracks());}
 
-  if (!vEvent){
-    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
-        pBlock!=NULL; pBlock=GetNextInputBlock()) {
+  if (!vEvent){ 
+    {
+      const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
       AliFlatESDEvent* tmpFlatEvent=reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
       if (tmpFlatEvent->GetSize()==pBlock->fSize ){
         tmpFlatEvent->Reinitialize();
@@ -255,25 +253,24 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
             DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
       }
       vEvent = tmpFlatEvent;
-      break;
     }
 
     if( vEvent ){
-      for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
-          pBlock!=NULL; pBlock=GetNextInputBlock()) {
-        AliFlatESDFriend* tmpFlatFriend = reinterpret_cast<AliFlatESDFriend*>( pBlock->fPtr );
-        if (tmpFlatFriend->GetSize()==pBlock->fSize ){
-          tmpFlatFriend->Reinitialize();
-        } else {
-          tmpFlatFriend = NULL;
-          HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESDfriend information", 
-              DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
-        }
-        break;
-        vFriend = tmpFlatFriend;
-      }   
+      const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
+      AliFlatESDFriend* tmpFlatFriend = reinterpret_cast<AliFlatESDFriend*>( pBlock->fPtr );
+      if (tmpFlatFriend->GetSize()==pBlock->fSize ){
+        tmpFlatFriend->Reinitialize();
+      } else {
+        tmpFlatFriend = NULL;
+        HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESDfriend information", 
+            DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
+      }
+      vFriend = tmpFlatFriend;
     }
   }
+
+  if (vEvent) {HLTInfo("----> event %p has %d tracks: \n", vEvent, vEvent->GetNumberOfTracks());}
+  if(vFriend) {HLTInfo("----> friend %p has %d tracks: \n", vFriend, vFriend->GetNumberOfTracks());}
 
   fInputHandler->InitTaskInputData(vEvent, vFriend, fAnalysisManager->GetTasks());
   fAnalysisManager->ExecAnalysis();
@@ -410,11 +407,11 @@ Int_t AliHLTTPCCalibManagerComponent::AddCalibTasks()
   calibLaser->SetTriggerMask(-1,-1,kFALSE);        //accept everything
   taskAlign->AddJob(calibLaser);*/
 
-  AliTPCcalibCosmic *calibCosmic = new AliTPCcalibCosmic("cosmicTPC","cosmicTPC");
-  calibCosmic->SetDebugLevel(0);
-  calibCosmic->SetStreamLevel(1);
-  calibCosmic->SetTriggerMask(-1,-1,kTRUE);        //accept everything
-  taskAlign->AddJob(calibCosmic);
+  //AliTPCcalibCosmic *calibCosmic = new AliTPCcalibCosmic("cosmicTPC","cosmicTPC");
+  //calibCosmic->SetDebugLevel(0);
+  //calibCosmic->SetStreamLevel(1);
+  //calibCosmic->SetTriggerMask(-1,-1,kTRUE);        //accept everything
+  //taskAlign->AddJob(calibCosmic);
 
   fAnalysisManager->AddTask(taskAlign);
   for (Int_t i=0; i<taskAlign->GetJobs()->GetEntries(); i++) {
