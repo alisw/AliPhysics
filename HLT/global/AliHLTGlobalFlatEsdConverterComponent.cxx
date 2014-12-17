@@ -253,9 +253,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
   // see header file for class documentation
 
   AliSysInfo::AddStamp("AliHLTGlobalFlatEsdConverterComponent::DoEvent.Start");
-  TStopwatch stopwatch;
-  stopwatch.Start();
-	Int_t outsizeEvent = 0, outsizeFriend = 0;
+	Int_t outsizeEvent, outsizeFriend = 0;
 	
   int iResult=0;
 	bool benchmark = true;
