@@ -58,7 +58,6 @@ void AliHLTGlobalCompareFlatComponent::printDiff( string name, double val1, doub
 	else if(relDiff < -1e-3 && sum > 1e-6) diff = -1;
 	outFile<<name<<"\t" << val1 << "\t" << val2 <<"\t" << diff << "\n";
 	if(diff!=0){
-		cout<<"WWW conflict"<<endl;
 		conflictsFile<<fCurrentClass<<"\t"<<name<<"\t" << val1 << "\t" << val2  << "\n";
 	}
 }
@@ -86,7 +85,6 @@ void AliHLTGlobalCompareFlatComponent::printDiff( string name, int n , Float_t* 
 	}
 	outFile<<"\t" << diff << "\n";
 	if(diff!=0){
-		cout<<"WWW conflict"<<endl;
 		conflictsFile<<fCurrentClass<<"\t"<<name<< "\n";
 	}
 }
@@ -113,7 +111,6 @@ void AliHLTGlobalCompareFlatComponent::printDiff( string name, int n , Double_t*
 	}
 	outFile<<"\t" << diff << "\n";
 	if(diff!=0){
-		cout<<"WWW conflict"<<endl;
 		conflictsFile<<fCurrentClass<<"\t"<<name<< "\n";
 	}
 }
@@ -124,7 +121,6 @@ void AliHLTGlobalCompareFlatComponent::printDiff( string name, int n , Double_t*
 void AliHLTGlobalCompareFlatComponent::printDiff( string name, TString val1, TString val2){
 	outFile << name << "\t" << "\t\"" << val1 <<"\"\t\"" << val2 <<"\"\t" << (val1.EqualTo(val2) ?0:1)<<"\n";
 	if(! val1.EqualTo(val2) ){
-		cout<<"WWW conflict"<<endl;
 		conflictsFile<<fCurrentClass<<"\t"<<name<<"\t" << val1 << "\t" << val2 << "\n";
 	}
 }
@@ -212,41 +208,6 @@ Int_t AliHLTGlobalCompareFlatComponent::DoInit( Int_t argc, const Char_t** argv 
   printf("AliHLTGlobalCompareFlatComponent::DoInit\n");
   // see header file for class documentation
   int iResult=0;
-
-/*
-	
-		Int_t bins[fDim] = {3};
-		Double_t mins[fDim] = {0};
-		Double_t maxs[fDim] = {2};
-		fhDiff = new THnSparseD("Differences","Differences",fDim,bins,mins,maxs);
-		
-		
-		Int_t tmp = 0;
-		
-		fhDiff->GetAxis(tmp)->SetName("Overall");
-		fhDiff->GetAxis(tmp)->SetBinLabel(1,"no differences");
-		fhDiff->GetAxis(tmp)->SetBinLabel(2,"sizes differ");
-		fhDiff->GetAxis(tmp)->SetBinLabel(3,"other differences");
-		
-		fhDiff->GetAxis(++tmp)->SetName("GetSize");
-		fhDiff->GetAxis(++tmp)->SetName("GetMagneticField");
-		fhDiff->GetAxis(++tmp)->SetName("GetPeriodNumber");
-		fhDiff->GetAxis(++tmp)->SetName("GetRunNumber");
-		fhDiff->GetAxis(++tmp)->SetName("GetOrbitNumber");
-		fhDiff->GetAxis(++tmp)->SetName("GetBunchCrossNumber");
-		fhDiff->GetAxis(++tmp)->SetName("GetTriggerMask");
-		fhDiff->GetAxis(++tmp)->SetName("GetTriggerMaskNext50");
-		fhDiff->GetAxis(++tmp)->SetName("GetFiredTriggerClasses");
-		fhDiff->GetAxis(++tmp)->SetName("GetNumberOfTracks");
-		fhDiff->GetAxis(++tmp)->SetName("GetNumberOfV0s");
-		fhDiff->GetAxis(++tmp)->SetName("GetTimeStamp");
-		fhDiff->GetAxis(++tmp)->SetName("GetEventSpecie");
-	*/
-
-
-
-		
-		
   return iResult;
 }
 
@@ -255,17 +216,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoInit( Int_t argc, const Char_t** argv 
 // #################################################################################
 Int_t AliHLTGlobalCompareFlatComponent::DoDeinit() {
   // see header file for class documentation
-  printf("AliHLTGlobalCompareFlatComponent::DoDeInit\n");
-
 	Int_t iResult = 0;
-	/*
-	TFile * f = TFile::Open("histograms.root","RECREATE");
-	f->Add(fhDiff);
-	f->Write();
-	f->Close();
-	*/
-  //delete fhDiff;
-	
   return iResult;
 }
 
@@ -278,7 +229,6 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 						    AliHLTComponentBlockDataList& /*outputBlocks*/) {
   // see header file for class documentation
 
-  printf("AliHLTGlobalCompareFlatComponent::DoEvent\n");
   Int_t iResult=0;
 	
 	
@@ -286,40 +236,38 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
  if (!IsDataEvent()) 
    return 0;
 
-  printf("AliHLTGlobalCompareFlatComponent::IsDataEvent\n");
  AliFlatESDEvent *flatEsd[2] ={0,0};
  AliFlatESDFriend *flatFriend[2] ={0,0};
 	
 	{
-	 int i=0;
-	for ( const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
-    pBlock!=NULL && i<2; pBlock = GetNextInputBlock(),i++ ) {
-			flatEsd[i] = reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
-  }
-  i=0;
-	for ( const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
-    pBlock!=NULL && i<2; pBlock = GetNextInputBlock(),i++ ) {
-			flatFriend[i] = reinterpret_cast<AliFlatESDFriend*>( pBlock->fPtr );
-  }
-  
+		int i=0;
+		for ( const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
+			pBlock!=NULL && i<2; pBlock = GetNextInputBlock(),i++ ) {
+				flatEsd[i] = reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
+		}
+		i=0;
+		for ( const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
+			pBlock!=NULL && i<2; pBlock = GetNextInputBlock(),i++ ) {
+				flatFriend[i] = reinterpret_cast<AliFlatESDFriend*>( pBlock->fPtr );
+		}
 	}
 	
 	if( flatEsd[0] == NULL ){
-			cout<<"flatEsd[0] not set!"<<endl;
+			HLTError("flatEsd[0] not set!");
 			return 0;
 	}
 	if( flatEsd[1] == NULL ){
-			cout<<"flatEsd[1] not set!"<<endl;
+			HLTError("flatEsd[1] not set!");
 			return 0;
 	}
 	
 	if( flatFriend[0] == NULL  ){
-			cout<<"flatFriend[0] not set!"<<endl;
+			HLTError("flatFriend[0] not set!");
 			return 0;
 	}
 	
 	if( flatFriend[1] == NULL  ){
-			cout<<"flatFriend[1] not set!"<<endl;
+			HLTError("flatFriend[1] not set!");
 			return 0;
 	}
 	
@@ -356,7 +304,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 	
 	if(vertexTracks[0] && vertexTracks[1]){
       outFile<<"_FlatESDVertexTracks\n";
- fCurrentClass = "FlatESDVertexTracks";
+			fCurrentClass = "FlatESDVertexTracks";
 			printDiff( "GetSize",vertexTracks[0]->GetSize(),vertexTracks[1]->GetSize() ); 
 			printDiff( "GetX",vertexTracks[0]->GetX(),vertexTracks[1]->GetX() ); 
 			printDiff( "GetY",vertexTracks[0]->GetY(),vertexTracks[1]->GetY() ); 
@@ -365,7 +313,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
  
 	if(vertexSPD[0] && vertexSPD[1]){
       outFile<<"_FlatESDVertexSPD\n";
- fCurrentClass = "FlatESDVertexSPD";
+			fCurrentClass = "FlatESDVertexSPD";
 			printDiff( "GetSize",vertexSPD[0]->GetSize(),vertexSPD[1]->GetSize() ); 
 			printDiff( "GetX",vertexSPD[0]->GetX(),vertexSPD[1]->GetX() ); 
 			printDiff( "GetY",vertexSPD[0]->GetY(),vertexSPD[1]->GetY() ); 
@@ -379,7 +327,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
     AliFlatESDTrigger * trigger[2] = { const_cast<AliFlatESDTrigger*>(flatEsd[0]->GetTriggerClasses() ) , const_cast<AliFlatESDTrigger*>(flatEsd[1]->GetTriggerClasses() ) };
     for( Int_t i = 0; i < flatEsd[0]->GetNumberOfTriggerClasses()  && i < flatEsd[1]->GetNumberOfTriggerClasses()  ; i++ ){
       outFile<<"_FlatESDTrigger\n";
- fCurrentClass = "FlatESDTrigger";
+			fCurrentClass = "FlatESDTrigger";
 			printDiff( "GetSize",trigger[0]->GetSize(),trigger[1]->GetSize() ); 
 			printDiff( "GetTriggerIndex",trigger[0]->GetTriggerIndex(),trigger[1]->GetTriggerIndex() ); 
 			printDiff( "GetTriggerClassName",trigger[0]->GetTriggerClassName(),trigger[1]->GetTriggerClassName() ); 
@@ -395,7 +343,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
     AliFlatESDV0 * v0[2] = { const_cast<AliFlatESDV0*>(flatEsd[0]->GetV0s() ) , const_cast<AliFlatESDV0*>(flatEsd[1]->GetV0s() ) };
     for( Int_t i = 0; i < flatEsd[0]->GetNumberOfV0s()  && i < flatEsd[1]->GetNumberOfV0s()  ; i++ ){
       outFile<<"_FlatESDV0\n";
- fCurrentClass = "FlatESDV0";
+			fCurrentClass = "FlatESDV0";
 			printDiff( "GetSize",v0[0]->GetSize(),v0[1]->GetSize() ); 
 			printDiff( "GetNegTrackID",v0[0]->GetNegTrackID(),v0[1]->GetNegTrackID() ); 
 			printDiff( "GetPosTrackID",v0[0]->GetPosTrackID(),v0[1]->GetPosTrackID() ); 
@@ -411,7 +359,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
     AliFlatESDTrack * track[2] = { const_cast<AliFlatESDTrack*>(flatEsd[0]->GetTracks() ) , const_cast<AliFlatESDTrack*>(flatEsd[1]->GetTracks() ) };
     for( Int_t t = 0; t < flatEsd[0]->GetNumberOfTracks()  && t < flatEsd[1]->GetNumberOfTracks()  ; t++ ){
       outFile<<"_FlatESDTrack\n";
- fCurrentClass = "FlatESDTrack";
+			fCurrentClass = "FlatESDTrack";
 			printDiff( "GetSize",track[0]->GetSize(),track[1]->GetSize() ); 
 			printDiff( "GetNumberOfTPCClusters",track[0]->GetNumberOfTPCClusters(),track[1]->GetNumberOfTPCClusters() ); 
 			printDiff( "GetNumberOfITSClusters",track[0]->GetNumberOfITSClusters(),track[1]->GetNumberOfITSClusters() ); 
@@ -434,7 +382,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			for(int i = 0 ; i<6 ; i++){
 				if(p[i][0] && p[i][1]){
 				outFile<<"_FlatExternalTrackParam" << pNames[i] << "\n";
- fCurrentClass = "FlatExternalTrackParam";
+				fCurrentClass = "FlatExternalTrackParam";
 				printDiff( "GetAlpha",p[i][0]->GetAlpha(),p[i][1]->GetAlpha() ); 
 				printDiff( "GetX",p[i][0]->GetX(),p[i][1]->GetX() ); 
 				printDiff( "GetY",p[i][0]->GetY(),p[i][1]->GetY() ); 
@@ -442,19 +390,12 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 				printDiff( "GetSnp",p[i][0]->GetSnp(),p[i][1]->GetSnp() ); 
 				printDiff( "GetTgl",p[i][0]->GetTgl(),p[i][1]->GetTgl() ); 
 				printDiff( "GetSigned1Pt",p[i][0]->GetSigned1Pt(),p[i][1]->GetSigned1Pt() ); 
-				
-				
 				Float_t* cov[2] = { p[i][0]->GetCov() , p[i][1]->GetCov() };
 				printDiff( "GetCov", 15, cov[0], cov[1]); 
 				}
 			}
-			
-			
-			
-			
       track[0] = track[0]->GetNextTrackNonConst();
-			track[1] = track[1]->GetNextTrackNonConst();			
-			
+			track[1] = track[1]->GetNextTrackNonConst();
     }
 	}
 	
@@ -462,7 +403,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
  // Compare Friend variables
  
 	outFile<<"_FlatESDFriend\n";
- fCurrentClass = "FlatESDFriend";
+	fCurrentClass = "FlatESDFriend";
 	printDiff( "GetSize" ,flatFriend[0]->GetSize(), flatFriend[1]->GetSize() ) ;
 	printDiff( "GetNumberOfTracks" ,flatFriend[0]->GetNumberOfTracks(), flatFriend[1]->GetNumberOfTracks());
 	printDiff( "GetEntriesInTracks" ,flatFriend[0]->GetEntriesInTracks(), flatFriend[1]->GetEntriesInTracks());
@@ -491,15 +432,9 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 		
 		
     for( Int_t t = 0; t < flatFriend[0]->GetEntriesInTracks()  && t < flatFriend[1]->GetEntriesInTracks()  ; t++ ){
-			
-			
-		//	cout<<"track0.size"<<track[0]->GetSize()<<endl;
-	//		cout<<"track1.size"<<track[1]->GetSize()<<endl;
-			
-			
 			if(!track[0] || !track[1]) continue;
       outFile<<"_FlatESDFriendTrack\n";
- fCurrentClass = "FlatESDFriendTrack";
+			fCurrentClass = "FlatESDFriendTrack";
 			printDiff( "GetSize",track[0]->GetSize(),track[1]->GetSize() ); 
 			
 			AliExternalTrackParam p[3][2]; 
@@ -525,7 +460,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 				if(pp[i][0] && pp[i][1]){
 					
 				outFile<<"_ExternalTrackParam" << pNames[i] << "\n";
- fCurrentClass = "ExternalTrackParam";
+				fCurrentClass = "ExternalTrackParam";
 				printDiff( "GetAlpha" ,p[i][0].GetAlpha(),p[i][1].GetAlpha() ); 
 				printDiff( "GetX",p[i][0].GetX(),p[i][1].GetX() ); 
 				printDiff( "GetY",p[i][0].GetY(),p[i][1].GetY() ); 
@@ -547,7 +482,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			
 			
       outFile<<"_FlatTPCseed\n";
- fCurrentClass = "FlatTPCseed";
+			fCurrentClass = "FlatTPCseed";
 			
 			printDiff( "GetSize",s[0]->GetSize(),s[1]->GetSize() ); 
 			printDiff( "GetLabel",s[0]->GetLabel(),s[1]->GetLabel() ); 
@@ -578,8 +513,8 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 					
 						for(int irow= 0; irow<160;irow++){
 							if( cl[iSector][irow][0] && cl[iSector][irow][1] ){
-							outFile<<"_FlatTPCCluster\n";
-	fCurrentClass = "FlatTPCCluster";
+								outFile<<"_FlatTPCCluster\n";
+								fCurrentClass = "FlatTPCCluster";
 								printDiff( "GetX",cl[iSector][irow][0]->GetX(),cl[iSector][irow][1]->GetX() ); 
 								printDiff( "GetY",cl[iSector][irow][0]->GetY(),cl[iSector][irow][1]->GetY() ); 
 								printDiff( "GetZ",cl[iSector][irow][0]->GetZ(),cl[iSector][irow][1]->GetZ() ); 
@@ -601,17 +536,8 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 				}
 			
 			}
-			
-			
-			
-			
-			//printf("track0: %p next: %p", track[0], track[0]->GetNextTrackNonConst() );
-			//printf("track1: %p next: %p", track[1], track[1]->GetNextTrackNonConst() );
-			
       track[0] = track[0]->GetNextTrackNonConst();
 			track[1] = track[1]->GetNextTrackNonConst();	
-			
-			
 		}
 	
 	}
