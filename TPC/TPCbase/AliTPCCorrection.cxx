@@ -570,7 +570,7 @@ TH2F* AliTPCCorrection::CreateHistoDRinXY(Float_t z,Int_t nx,Int_t ny) {
   //
   AliTPCParam* tpcparam = new AliTPCParamSR;
 
-  TH2F *h=CreateTH2F("dr_xy",GetTitle(),"x [cm]","y [cm]","dr [cm]",
+  TH2F *h=CreateTH2F("dr_xy", TString::Format("%s: DRinXY Z=%2.0f", GetTitle(),z).Data(),"x [cm]","y [cm]","dr [cm]",
 		     nx,-250.,250.,ny,-250.,250.);
   Float_t x[3],dx[3];
   x[2]=z;
@@ -603,7 +603,7 @@ TH2F* AliTPCCorrection::CreateHistoDRPhiinXY(Float_t z,Int_t nx,Int_t ny) {
 
   AliTPCParam* tpcparam = new AliTPCParamSR;
 
-  TH2F *h=CreateTH2F("drphi_xy",GetTitle(),"x [cm]","y [cm]","drphi [cm]",
+  TH2F *h=CreateTH2F("drphi_xy",TString::Format("%s: DRPhiinXY Z=%2.0f", GetTitle(),z).Data(),"x [cm]","y [cm]","drphi [cm]",
 		     nx,-250.,250.,ny,-250.,250.);
   Float_t x[3],dx[3];
   x[2]=z;
@@ -642,7 +642,7 @@ TH2F* AliTPCCorrection::CreateHistoDZinXY(Float_t z,Int_t nx,Int_t ny) {
 
   AliTPCParam* tpcparam = new AliTPCParamSR;
  
-  TH2F *h=CreateTH2F("dz_xy",GetTitle(),"x [cm]","y [cm]","dz [cm]",
+  TH2F *h=CreateTH2F("dz_xy",TString::Format("%s: DZinXY Z=%2.0f", GetTitle(),z).Data(),"x [cm]","y [cm]","dz [cm]",
 		     nx,-250.,250.,ny,-250.,250.);
   Float_t x[3],dx[3];
   x[2]=z;
@@ -671,7 +671,7 @@ TH2F* AliTPCCorrection::CreateHistoDRinZR(Float_t phi,Int_t nz,Int_t nr) {
   // in respect to angle phi within the ZR plane.
   // The histogramm has nx times ny entries. 
   //
-  TH2F *h=CreateTH2F("dr_zr",GetTitle(),"z [cm]","r [cm]","dr [cm]",
+  TH2F *h=CreateTH2F("dr_zr",TString::Format("%s: DRinZR Phi=%2.2f", GetTitle(),phi).Data(),"z [cm]","r [cm]","dr [cm]",
 		     nz,-250.,250.,nr,85.,250.);
   Float_t x[3],dx[3];
   for (Int_t ir=1;ir<=nr;++ir) {
@@ -698,7 +698,7 @@ TH2F* AliTPCCorrection::CreateHistoDRPhiinZR(Float_t phi,Int_t nz,Int_t nr) {
   // in respect to angle phi within the ZR plane.
   // The histogramm has nx times ny entries. 
   //
-  TH2F *h=CreateTH2F("drphi_zr",GetTitle(),"z [cm]","r [cm]","drphi [cm]",
+  TH2F *h=CreateTH2F("drphi_zr", TString::Format("%s: DRPhiinZR R=%2.2f", GetTitle(),phi).Data(),"z [cm]","r [cm]","drphi [cm]",
 		     nz,-250.,250.,nr,85.,250.);
   Float_t x[3],dx[3];
   for (Int_t iz=1;iz<=nz;++iz) {
@@ -730,7 +730,7 @@ TH2F* AliTPCCorrection::CreateHistoDZinZR(Float_t phi,Int_t nz,Int_t nr) {
   // in respect to angle phi within the ZR plane.
   // The histogramm has nx times ny entries. 
   //
-  TH2F *h=CreateTH2F("dz_zr",GetTitle(),"z [cm]","r [cm]","dz [cm]",
+  TH2F *h=CreateTH2F("dz_zr",TString::Format("%s: DZinZR Z=%2.0f", GetTitle(),phi).Data(),"z [cm]","r [cm]","dz [cm]",
 		     nz,-250.,250.,nr,85.,250.);
   Float_t x[3],dx[3];
   for (Int_t ir=1;ir<=nr;++ir) {

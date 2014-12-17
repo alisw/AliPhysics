@@ -126,7 +126,7 @@ Bool_t AliADRawStream::Next()
   Int_t iCIU=0;
   for (Int_t  iV0CIU = 0; iV0CIU < 8; iV0CIU++) {
     
-    if(iV0CIU != 2 || iV0CIU != 5) {
+    if(iV0CIU != 2 && iV0CIU != 5) {
       for(Int_t iWord = 0; iWord<182; iWord++) GetNextWord();
       continue;
       	}
@@ -193,7 +193,7 @@ Bool_t AliADRawStream::Next()
     }
     iCIU++;
     // End of decoding of one CIU card
-    AliWarning(Form("Number of bytes used at end of reading CIU card number %d %d", iCIU+1, fPosition)); 
+    //AliWarning(Form("Number of bytes used at end of reading CIU card number %d %d", iCIU+1, fPosition)); 
     
   } // end of decoding the eight CIUs
     

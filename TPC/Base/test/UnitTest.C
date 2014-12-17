@@ -1,11 +1,11 @@
 /*
   Unit test for some functions classes  used in the $ALICE_ROOT/TPC/Base directory:
     
-gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_ROOT/STEER   -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/TOF -I$ALICE_ROOT/RAW  -I$ALICE_ROOT/STAT -I$ALICE_ROOT/TPC/TPCbase -I$ALICE_ROOT/TPCcalib");
+gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/ -I$ALICE_ROOT/install/include -I$ALICE_ROOT/STEER   -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/TOF -I$ALICE_ROOT/RAW  -I$ALICE_ROOT/STAT -I$ALICE_ROOT/TPC/TPCbase -I$ALICE_ROOT/TPCcalib"); 
 
-
+   
   .L $ALICE_ROOT/TPC/Base/test/UnitTest.C+ 
-G UnitTestAliTPCCalPadTree();
+ UnitTestAliTPCCalPadTree();
   TestCorrection_AliTPCCorrection_AddCorrectionCompact();
 
 */
@@ -32,7 +32,8 @@ G UnitTestAliTPCCalPadTree();
 #include "AliCDBEntry.h"
 #include "TStopwatch.h"
 #include "TGeoMatrix.h"
-
+#include "TGeoGlobalMagField.h"
+#include "AliMagF.h"
 //
 // PARAMETERS to set from outside:
 //
@@ -47,7 +48,7 @@ Bool_t  TestCorrection_AliTPCRocVoltError3DAddCorrectionCompact();
 Bool_t  TestCorrection_AliTPCBoundaryVoltErrorAddCorrectionCompact();
 Bool_t  TestCorrection_AliTPCCalibGlobalMisalignmentAddCorrectionCompact();
 Bool_t  TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact();
-
+Bool_t TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact_TPCCalibCorrection(Bool_t fast=kFALSE);
 
 void  UnitTestAliTPCCalPadTree(){
   //
@@ -475,6 +476,76 @@ Bool_t  TestCorrection_AliTPCCorrection_AddCorrectionCompact(){
   TestCorrection_AliTPCCalibGlobalMisalignmentAddCorrectionCompact();
 }
 
+Bool_t TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact_TPCCalibCorrection(Bool_t fast){
+  //
+  // Test the 
+  //
+  const Int_t npointsTest=10000;
+  const Float_t kEpsilon=0.001;  //10 microns
+  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG));
+  //
+  // 0.) Read an input OCDB entry 
+  //
+  TFile * f = TFile::Open("$ALICE_OCDB/alice/data/2010/OCDB/TPC/Calib/Correction/Run0_999999999_v8_s0.root");
+  AliCDBEntry * entry=(AliCDBEntry*)f->Get("AliCDBEntry");
+  TObjArray * corrArray  = (TObjArray *)entry->GetObject();
+  AliTPCComposedCorrection *compInput = (AliTPCComposedCorrection *)corrArray->At(0);  
+  AliTPCComposedCorrection *compInputFast = new AliTPCComposedCorrection;
+  Int_t ncorrs = compInput->GetCorrections()->GetEntries();
+  TObjArray arrayInputFast(ncorrs);
+  //
+  // 1.) Test each individual correction
+  //
+  for (Int_t icorr=0; icorr<ncorrs; icorr++){
+    TString clName=compInput->GetSubCorrection(icorr)->IsA()->GetName();
+    if (fast){ // skip slow correction
+      if ( clName.Contains("AliTPCFCVoltError3D"))continue;
+      if ( clName.Contains("AliTPCROCVoltError3D"))continue;
+    }
+    //    if ( clName.Contains("AliTPCExBBShape"))continue;
+    AliTPCCorrection *corrInput=compInput->GetSubCorrection(icorr);
+    //
+    ::Info("TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact_TPCCalibCorrection",TString::Format("%s\t%s",corrInput->IsA()->GetName(),corrInput->GetName()).Data());
+    AliTPCComposedCorrection *compTest0= new  AliTPCComposedCorrection;
+    AliTPCComposedCorrection *compTest1= new  AliTPCComposedCorrection;
+    compTest0->AddCorrectionCompact(corrInput,0.5);
+    compTest0->AddCorrectionCompact(corrInput,0.5);
+    compTest1->AddCorrectionCompact(corrInput,1);
+    compTest1->AddCorrectionCompact(corrInput,-1);
+    corrInput->AddVisualCorrection(corrInput,10);
+    compTest0->AddVisualCorrection(compTest0,11);
+    compTest1->AddVisualCorrection(compTest1,12);
+    compTest0->SetOmegaTauT1T2(0.35,1,1);
+    compTest1->SetOmegaTauT1T2(0.35,1,1);
+    corrInput->SetOmegaTauT1T2(0.35,1,1);
+    for (Int_t icoord=0; icoord<3; icoord++){
+      TVectorD dvecTest0(npointsTest);
+      TVectorD dvecTest1(npointsTest);
+      for (Int_t ipoint=0; ipoint<npointsTest; ipoint++){
+	Double_t r= 85.+gRandom->Rndm()*150;
+	Double_t phi= gRandom->Rndm()*TMath::TwoPi();
+	Double_t z=500*(gRandom->Rndm()-0.5);
+	dvecTest0[ipoint]=AliTPCCorrection::GetCorrXYZ(r*TMath::Cos(phi),r*TMath::Sin(phi),z, icoord, 11)-AliTPCCorrection::GetCorrXYZ(r*TMath::Cos(phi),r*TMath::Sin(phi),z, icoord, 10);
+	dvecTest1[ipoint]=AliTPCCorrection::GetCorrXYZ(r*TMath::Cos(phi),r*TMath::Sin(phi),z, icoord, 12);
+      }
+      Double_t mean0 = TMath::Mean(npointsTest, dvecTest0.GetMatrixArray());
+      Double_t rms0  = TMath::RMS(npointsTest, 	dvecTest0.GetMatrixArray());
+      Double_t mean1 = TMath::Mean(npointsTest, dvecTest1.GetMatrixArray());
+      Double_t rms1  = TMath::RMS(npointsTest, 	dvecTest1.GetMatrixArray());
+      if (TMath::Abs(rms0)>kEpsilon){
+	::Error("TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact_TPCCalibCorrection",TString::Format("Test0:\t%s\t%3.5f\t%3.5f FAILED",clName.Data(),mean0,rms0).Data());
+      }else{
+	::Info("TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact_TPCCalibCorrection",TString::Format("Test0:\t%s\t%3.5f\t%3.5f OK",clName.Data(),mean0,rms0).Data());
+      }
+      if (TMath::Abs(rms1)>kEpsilon){
+	::Error("TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact_TPCCalibCorrection",TString::Format("Test1:\t%s\t%3.5f\t%3.5f FAILED",clName.Data(),mean1,rms1).Data());
+      }else{
+	::Info("TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact_TPCCalibCorrection",TString::Format("Test1:\t%s\t%3.5f\t%3.5f OK",clName.Data(),mean1,rms1).Data());
+      }      
+    }
+  }
+}
+
 
 Bool_t TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact(){
   //
@@ -486,14 +557,27 @@ Bool_t TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact(){
   //          
   const Int_t npointsTest=10000;
   const Float_t kEpsilon=0.0001;  // using Floating point precission
-
   //
   // 0.) Read an input OCDB entry 
   //
   TFile * f = TFile::Open("$ALICE_OCDB/alice/data/2010/OCDB/TPC/Calib/Correction/Run0_999999999_v8_s0.root");
   AliCDBEntry * entry=(AliCDBEntry*)f->Get("AliCDBEntry");
   TObjArray * corrArray  = (TObjArray *)entry->GetObject();
-  AliTPCComposedCorrection *compInput = (AliTPCComposedCorrection *)corrArray->At(0);
+  AliTPCComposedCorrection *compInput = (AliTPCComposedCorrection *)corrArray->At(0);  
+  AliTPCComposedCorrection *compInputFast = new AliTPCComposedCorrection;
+  Int_t ncorrs = compInput->GetCorrections()->GetEntries();
+  TObjArray arrayInputFast(ncorrs);
+  for (Int_t icorr=0; icorr<ncorrs; icorr++){
+    TString clName=compInput->GetSubCorrection(icorr)->IsA()->GetName();
+    if ( clName.Contains("AliTPCFCVoltError3D"))continue;
+    if ( clName.Contains("AliTPCROCVoltError3D"))continue;
+    if ( clName.Contains("AliTPCExBBShape"))continue;
+    arrayInputFast.AddLast(compInput->GetSubCorrection(icorr));
+  }
+  compInputFast->SetCorrections(&arrayInputFast);
+  
+
+
   //
   // 1.) Make linear combination  correction example using weights.
   //     Test correction  checking invariant inverse x orig  (there are simpler way to do inversion using AliTPCInverseCorrection)
@@ -535,16 +619,16 @@ Bool_t TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact(){
   //  2.) Make compact for of the Composed correction. Test correction  checking invariant inverse x orig
   //      This take time - dostortion has to be recalculated
   AliTPCComposedCorrection *compOutInverseCompact = new AliTPCComposedCorrection();
-  compOutInverseCompact->AddCorrectionCompact(compInput,-1);
-  compOutInverseCompact->AddCorrectionCompact(compInput, 1);
+  compOutInverseCompact->AddCorrectionCompact(compInputFast,1);
+  compOutInverseCompact->AddCorrectionCompact(compInputFast,-1);
   compOutInverseCompact->SetOmegaTauT1T2(0,1,1);
-  compInput->SetOmegaTauT1T2(0,1,1);
+  compInputFast->SetOmegaTauT1T2(0,1,1);
   compOutInverseCompact->AddVisualCorrection(compOutInverseCompact,10);  
-  compInput->AddVisualCorrection(compInput,2);
+  compInputFast->AddVisualCorrection(compInput,3);
   TStopwatch timer;
   //
   TF1 fcomp("fcomp","AliTPCCorrection::GetCorrXYZ(x,x,100,0,10)",85,245);
-  TF1 forig("forig","-AliTPCCorrection::GetCorrXYZ(x,x,100,0,2)",85,245);
+  TF1 forig("forig","-AliTPCCorrection::GetCorrXYZ(x,x,100,0,3)",85,245);
   TF1 fdiff("fdiff","AliTPCCorrection::GetCorrXYZ(x,x,100,0,10)+AliTPCCorrection::GetCorrXYZ(x,x,100,0,2)",85,245);
   timer.Print();
 

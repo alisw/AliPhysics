@@ -147,6 +147,8 @@ Bool_t AliTPCROCVoltError3D::AddCorrectionCompact(AliTPCCorrection* corr, Double
   matrixDz*=weight;
   if (fdzDataLinFit==NULL) {
     fdzDataLinFit=new TMatrixD(matrixDz);
+    fROCdisplacement=corrC->fROCdisplacement;
+    fElectronArrivalCorrection=corrC->fElectronArrivalCorrection;
   }
   else{
     (*fdzDataLinFit)+=matrixDz;
@@ -553,6 +555,8 @@ void AliTPCROCVoltError3D::Print(const Option_t* option) const {
   printf(" - z aligmnet of the TPC Read-Out chambers \n");
   printf("   (linear interpolation within the chamber:  dz = z0 + kx*(lx-133) + ky*ly [cm] ) \n");
   printf("   Info: Check the following data-file for more details: %s \n",fROCDataFileName.Data());
+  printf("   fROCdisplacement\n",fROCdisplacement);
+  printf("   fElectronArrivalCorrection\n",fElectronArrivalCorrection);
 
   if (opt.Contains("a")) { // Print all details
     TMatrixD &fitData = *fdzDataLinFit;

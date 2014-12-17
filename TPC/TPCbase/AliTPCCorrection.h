@@ -13,6 +13,7 @@
 #include <TNamed.h>
 #include "TMatrixD.h"
 #include "TMatrixF.h"
+#include "TObjArray.h"
 class TH2F;
 class TTimeStamp;
 class TCollection;
@@ -87,6 +88,9 @@ public:
 
   static void AddVisualCorrection(AliTPCCorrection* corr, Int_t position);
   static AliTPCCorrection*  GetVisualCorrection(Int_t position);
+  static AliTPCCorrection*  GetVisualCorrection(const char *corName){return (fgVisualCorrection==NULL) ? 0: ( AliTPCCorrection*) fgVisualCorrection->FindObject(corName);}
+  static TObjArray*  GetVisualCorrections() { return fgVisualCorrection;}
+  
   static Double_t GetCorrSector(Double_t sector, Double_t r, Double_t kZ, Int_t axisType, Int_t corrType=0);
   static Double_t GetCorrXYZ(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType=0);
   //
