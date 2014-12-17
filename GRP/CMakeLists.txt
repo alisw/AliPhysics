@@ -13,7 +13,7 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-# Installing CTP
-install(DIRECTORY CTP DESTINATION GRP)
+# Installing GRP
+install(DIRECTORY . DESTINATION GRP)
 
-message(STATUS "GRP CTP installed")
+message(STATUS "GRP installed")
