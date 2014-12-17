@@ -24,8 +24,10 @@
 #include <TMath.h>
 #include <TString.h>
 
+#include "AliAODMCParticle.h"
 #include "AliEmcalJet.h"
 #include "AliJetContainer.h"
+#include "AliLog.h"
 #include "AliMCParticle.h"
 #include "AliMCEvent.h"
 #include "AliParticleContainer.h"
@@ -121,21 +123,25 @@ void AliEMCalTriggerMCJetAnalysisComponent::Process(const AliEMCalTriggerEventDa
   /*
    * Analyse particles in a jet with a given minimum jet pt
    */
+  if(!data->GetJetContainerMC()){
+    AliError("No Jet container for MC found");
+    return;
+  }
   std::vector<std::string> triggernames;
   this->GetMachingTriggerNames(triggernames, fUsePatches);
   TString jetptstring = Form("jetPt%03d", int(fMinimumJetPt));
 
-  AliJetContainer *cont = data->GetJetContainerData();
+  AliJetContainer *cont = data->GetJetContainerMC();
   AliEmcalJet *reconstructedJet = cont->GetNextAcceptJet(0);
-  AliVParticle *foundtrack(NULL);
+  AliAODMCParticle *foundtrack(NULL);
   while(reconstructedJet){
     if(TMath::Abs(reconstructedJet->Pt()) > fMinimumJetPt){
       // Jet selected, loop over particles
       for(int ipart = 0; ipart < reconstructedJet->GetNumberOfTracks(); ipart++){
-        foundtrack = dynamic_cast<AliVParticle *>(reconstructedJet->TrackAt(ipart, cont->GetParticleContainer()->GetArray()));
+        foundtrack = dynamic_cast<AliAODMCParticle *>(reconstructedJet->TrackAt(ipart, cont->GetParticleContainer()->GetArray()));
         if(!fKineCuts->IsSelected(foundtrack)) continue;
         if(!foundtrack->Charge()) continue;
-        if(!data->GetMCEvent()->IsPhysicalPrimary(foundtrack->GetLabel())) continue;
+        if(!foundtrack->IsPhysicalPrimary()) continue;
         // track selected, fill histogram
         for(std::vector<std::string>::iterator name = triggernames.begin(); name != triggernames.end(); ++name){
           FillHistogram(Form("hParticleJetHist%s%s", jetptstring.Data(), name->c_str()), foundtrack,  reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ());
