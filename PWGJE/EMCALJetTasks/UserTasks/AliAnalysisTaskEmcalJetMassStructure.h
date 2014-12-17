@@ -4,7 +4,7 @@
 class TH1;
 class TH2;
 class TH3;
-class TProfile2D;
+class TProfile;
 class THnSparse;
 class TClonesArray;
 class TArrayI;
@@ -75,14 +75,14 @@ class AliAnalysisTaskEmcalJetMassStructure : public AliAnalysisTaskEmcalJet {
   TH2F                              **fh2PtMassCorr;               //! jet pT vs mass corrected
   THnSparse                          *fhnMassResponse;             //! response matrix
   THnSparse                          *fhnMassResponseCorr;         //! response matrix corrected
-
   TH3F                              **fh3JetPtDRTrackPt;           //! jet pt vs dr(jet axis, constituent) vs pT,track
+  TProfile                           *fpUsedEfficiency;            //! efficiency used for correction
 
  private:
   AliAnalysisTaskEmcalJetMassStructure(const AliAnalysisTaskEmcalJetMassStructure&);            // not implemented
   AliAnalysisTaskEmcalJetMassStructure &operator=(const AliAnalysisTaskEmcalJetMassStructure&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetMassStructure, 2)
+  ClassDef(AliAnalysisTaskEmcalJetMassStructure, 3)
 };
 #endif
 

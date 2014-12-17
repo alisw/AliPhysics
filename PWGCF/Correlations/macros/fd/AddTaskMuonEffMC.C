@@ -1,11 +1,11 @@
 // $Id$
 
 AliMuonEffMC* AddTaskMuonEffMC(Bool_t IsMc = kTRUE,
-			       Bool_t MDProcess = kFALSE,
-			       Bool_t IsPythia = kFALSE,
-			       Int_t PlotMode = 0, 
+			       Int_t PlotMode = 1, 
 			       TString centralityEstimator = "V0M",
-			       const Int_t NEtaBins = 100,
+			       const char* maskKind = "wPdca",
+			       UInt_t MuonMask = AliMuonTrackCuts::kMuEta | AliMuonTrackCuts::kMuThetaAbs | AliMuonTrackCuts::kMuPdca | AliMuonTrackCuts::kMuMatchApt,
+			       const Int_t NEtaBins = 160,
 			       const Int_t NpTBins = 50,
 			       const Int_t NCentBins = 1,
 			       const Int_t NZvtxBins = 1,
@@ -37,8 +37,7 @@ AliMuonEffMC* AddTaskMuonEffMC(Bool_t IsMc = kTRUE,
   AliMuonEffMC *MuonEff = new AliMuonEffMC("MuonEffMC");
 
   MuonEff->SetMcAna(IsMc);
-  MuonEff->SetIsPYTHIA(IsPythia);
-  MuonEff->SetMDProcess(MDProcess);
+  MuonEff->SetMuonCutMask(MuonMask);
   MuonEff->SetPlotMode(PlotMode);
   MuonEff->SetCentEstimator(centralityEstimator);
   MuonEff->SetNEtaBins(NEtaBins);
@@ -55,7 +54,7 @@ AliMuonEffMC* AddTaskMuonEffMC(Bool_t IsMc = kTRUE,
   if (!outputFileName) 
     outputFileName = AliAnalysisManager::GetCommonFileName();
 
-  const char* ModeTitle[4] = {"Gen", "Mu", "MuMother", "Mother"};
+  const char* ModeTitle[5] = {"GenFM", "GenPP", "RecFM", "RecPP", "Rec"};
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutputpt = mgr->CreateContainer(Form("MuonEff_%s_%s",centralityEstimator.Data(), ModeTitle[PlotMode]), 
                                                              TList::Class(), 

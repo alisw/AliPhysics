@@ -152,7 +152,7 @@ if(FASTJET_FOUND)
     include_directories(#${AliRoot_SOURCE_DIR}/HLT/FJWrapper
                         ${AliRoot_SOURCE_DIR}/JETAN/JETAN
                        )
-    include_directories(${FASTJET_INCLUDE_DIR})
+    include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})
     add_definitions(${FASTJET_DEFINITIONS})
 endif(FASTJET_FOUND)

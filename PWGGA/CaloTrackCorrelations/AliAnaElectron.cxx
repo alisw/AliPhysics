@@ -1245,14 +1245,6 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
           fhMCEOverPvsE[kmcPi0Decay]->Fill(calo ->E(), eOverp);
           fhMCEOverPvsP[kmcPi0Decay]->Fill(track->P(), eOverp);
         }
-        else if( (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) ||
-                  GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) ) && fhMCE[pidIndex][kmcOtherDecay])
-        {
-          fhMCdEdxvsE  [kmcOtherDecay]->Fill(calo ->E(), dEdx);
-          fhMCdEdxvsP  [kmcOtherDecay]->Fill(track->P(), dEdx);
-          fhMCEOverPvsE[kmcOtherDecay]->Fill(calo ->E(), eOverp);
-          fhMCEOverPvsP[kmcOtherDecay]->Fill(track->P(), eOverp);
-        }
         else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) && fhMCE  [pidIndex][kmcPi0])
         {
           fhMCdEdxvsE  [kmcPi0]->Fill(calo ->E(), dEdx);
@@ -1266,6 +1258,13 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
           fhMCdEdxvsP  [kmcEta]->Fill(track->P(), dEdx);
           fhMCEOverPvsE[kmcEta]->Fill(calo ->E(), eOverp);
           fhMCEOverPvsP[kmcEta]->Fill(track->P(), eOverp);
+        }
+        else if( fhMCE[pidIndex][kmcOtherDecay] )
+        {
+          fhMCdEdxvsE  [kmcOtherDecay]->Fill(calo ->E(), dEdx);
+          fhMCdEdxvsP  [kmcOtherDecay]->Fill(track->P(), dEdx);
+          fhMCEOverPvsE[kmcOtherDecay]->Fill(calo ->E(), eOverp);
+          fhMCEOverPvsP[kmcOtherDecay]->Fill(track->P(), eOverp);
         }
       }
       else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron) && fhMCE[pidIndex][kmcAntiNeutron])
