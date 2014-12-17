@@ -46,7 +46,7 @@
 #include "AliADdigit.h"
 #include "AliADConst.h"
 #include "AliADReconstructor.h"
-//#include "AliADTrending.h"
+#include "AliADTrending.h"
 #include "AliADCalibData.h"
 #include "AliCTPTimeParams.h"
 #include "event.h"
@@ -355,7 +355,7 @@ void AliADQADataMakerRec::InitRaws()
 
   for(Int_t iInt=0;iInt<kNintegrator;iInt++){
   	h2d = new TH2F(Form("H2D_ChargeVsClock_Int%d",iInt), Form("Charge Versus LHC-Clock (Int%d);Channel;LHCClock;Charge [ADC counts]",iInt),kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
-  	Add2RawsList(h2d,(iInt == 0 ? kChargeVsClockInt0 : kChargeVsClockInt1 ), expert, !image, !saveCorr); iHisto++;
+  	Add2RawsList(h2d,(iInt == 0 ? kChargeVsClockInt0 : kChargeVsClockInt1 ), !expert, image, saveCorr); iHisto++;
 	}
   
   h2d = new TH2F("H2D_BBFlagPerChannel", "BB-Flags Versus Channel;Channel;BB Flags Count",kNChannelBins, kChannelMin, kChannelMax,22,-0.5,21.5);

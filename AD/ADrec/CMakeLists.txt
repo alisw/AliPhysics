@@ -37,6 +37,8 @@ set(SRCS
     AliADRecoParam.cxx
     AliADRawStream.cxx
     AliADQADataMakerRec.cxx
+    AliADTrending.cxx
+    AliADQAChecker.cxx
    )
 
 # Headers from sources
