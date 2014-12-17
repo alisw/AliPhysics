@@ -109,6 +109,9 @@ DAs build and rpm creation are enabled through the cmake configuration parameter
     -DDA=ON
     -DARPM=ON
 
+DA set to ON will enable only the build of the DAs, but not the creation of the RPMs
+If DARPM is set to ON than DA is automatically enabled.
+
 The mandatory requirements have to be specified
     -DAMORE_CONFIG=PATH_TO_amore-config
     -DDATE_CONFIG=PATH_TO_date-config

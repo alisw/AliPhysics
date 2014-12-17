@@ -90,6 +90,13 @@ if(AMORE_CONFIG)
     endif()
 endif(AMORE_CONFIG)
 
+# id DARPM we enable DA if it is not set
+if(DARPM)
+    if(NOT DA)
+        set(DA ON)
+    endif(NOT DA)
+endif(DARPM)
+
 # DA is enabled
 if(DA)
     if(NOT DIMDIR AND NOT ODIR)
