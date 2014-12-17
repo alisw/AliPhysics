@@ -278,6 +278,8 @@ add_subdirectory(PWGPP)
 add_subdirectory(PWGUD)
 add_subdirectory(data)
 add_subdirectory(GRP)
+add_subdirectory(OCDB)
+add_subdirectory(QAref)
 
 # Enable SHUTTLE compilation
 # Check if DIMDIR and ODIR are set
