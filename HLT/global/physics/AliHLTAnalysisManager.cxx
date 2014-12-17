@@ -115,3 +115,17 @@ Int_t AliHLTAnalysisManager::WriteAnalysisToFile()
   return 0;
 }
 
+//_____________________________________________________________________________
+Int_t AliHLTAnalysisManager::ResetOutputData()
+{
+  //call tasks ResetOutputData() methods to clear the stats in the output data
+  //after sending them out
+  TIter nextOutput(GetTasks());
+  Int_t n=0;
+  while (AliAnalysisTask* output=(AliAnalysisTask*)nextOutput())
+  {
+    output->ResetOutputData();
+    n++;
+  }
+  return n;
+}
