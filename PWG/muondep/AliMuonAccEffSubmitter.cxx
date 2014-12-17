@@ -148,6 +148,7 @@ fUseAODMerging(kFALSE)
   SetLocalDirectory("Snapshot",LocalDir());
   
   SetVar("VAR_OCDB_PATH",Form("\"%s\"",ocdbPath.Data()));
+  SetVar("VAR_AOD_MERGE_FILES","\"AliAOD.root,AliAOD.Muons.root\"");
 
   SetVar("VAR_GENPARAM_INCLUDE","AliGenMUONlib.h");
   SetVar("VAR_GENPARAM_NPART","1");
@@ -757,6 +758,8 @@ Bool_t AliMuonAccEffSubmitter::Run(const char* mode)
   
   if (!IsValid()) return kFALSE;
   
+  if ( fCompactMode == 1 ) SetVar("VAR_AOD_MERGE_FILES","\"AliAOD.Muons.root\"");
+
   TString smode(mode);
   smode.ToUpper();
   
