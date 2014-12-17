@@ -442,7 +442,7 @@ void AODmerge()
   TStopwatch timer;
   timer.Start();
   TString outputDir = "wn.xml";
-  TString outputFiles = "AliAOD.root,AliAOD.Muons.root";
+  TString outputFiles = VAR_AOD_MERGE_FILES;
   TString mergeExcludes = "";
   TObjArray *list = outputFiles.Tokenize(",");
   TIter *iter = new TIter(list);
