@@ -253,7 +253,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
   // see header file for class documentation
 
   AliSysInfo::AddStamp("AliHLTGlobalFlatEsdConverterComponent::DoEvent.Start");
-	
+	Int_t outsizeEvent, outsizeFriend = 0;
 	
   int iResult=0;
 	bool benchmark = true;
@@ -618,9 +618,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       } else {
 	HLTWarning("xxx No V0 data block");
       }
-
       flatEsd->SetV0sEnd( nV0s, v0size );
-      cout<<"\nxxxx Found "<<nV0s<<" V0's\n"<<endl;
     }
     
     if( err ) break;
@@ -640,6 +638,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     outputBlocks.push_back( outBlock );
     fBenchmark.AddOutput(outBlock.fSize);
     size += outBlock.fSize;
+			outsizeEvent = outBlock.fSize;
   }
   
 
@@ -894,7 +893,8 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       outBlock.fSize = flatFriend->GetSize();
       outBlock.fDataType = kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut;
       outputBlocks.push_back( outBlock );
-      fBenchmark.AddOutput(outBlock.fSize);      
+      fBenchmark.AddOutput(outBlock.fSize);   
+			outsizeFriend = outBlock.fSize;
       size += outBlock.fSize;
     }
     
@@ -915,7 +915,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     TString names[10];
     fBenchmark.GetStatisticsData(statistics, names);
     fBenchmark.Reset();
-    AliSysInfo::AddStamp("AliHLTGlobalFlatEsdConverterComponent::DoEvent.Stop", (int)(statistics[1]), (int)(statistics[2]),flatEsd->GetNumberOfTracks(),flatEsd->GetNumberOfV0s() );
+    AliSysInfo::AddStamp("AliHLTGlobalFlatEsdConverterComponent::DoEvent.Stop", (int)(statistics[1]), outsizeEvent, outsizeFriend );
   }
 
   return 0;
