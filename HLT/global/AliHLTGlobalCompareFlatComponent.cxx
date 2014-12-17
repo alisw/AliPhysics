@@ -57,8 +57,10 @@ void AliHLTGlobalCompareFlatComponent::printDiff( string name, double val1, doub
 	if (relDiff > 1e-3 && sum > 1e-6) diff = 1;
 	else if(relDiff < -1e-3 && sum > 1e-6) diff = -1;
 	outFile<<name<<"\t" << val1 << "\t" << val2 <<"\t" << diff << "\n";
-	if(diff!=0)
+	if(diff!=0){
+		cout<<"WWW conflict"<<endl;
 		conflictsFile<<fCurrentClass<<"\t"<<name<<"\t" << val1 << "\t" << val2  << "\n";
+	}
 }
 
 
@@ -83,8 +85,10 @@ void AliHLTGlobalCompareFlatComponent::printDiff( string name, int n , Float_t* 
 			outFile<<vals2[i]<<" ";
 	}
 	outFile<<"\t" << diff << "\n";
-	if(diff!=0)
+	if(diff!=0){
+		cout<<"WWW conflict"<<endl;
 		conflictsFile<<fCurrentClass<<"\t"<<name<< "\n";
+	}
 }
 
 void AliHLTGlobalCompareFlatComponent::printDiff( string name, int n , Double_t* vals1, Double_t* vals2 ){
@@ -108,8 +112,10 @@ void AliHLTGlobalCompareFlatComponent::printDiff( string name, int n , Double_t*
 			outFile<<vals2[i]<<" ";
 	}
 	outFile<<"\t" << diff << "\n";
-	if(diff!=0)
+	if(diff!=0){
+		cout<<"WWW conflict"<<endl;
 		conflictsFile<<fCurrentClass<<"\t"<<name<< "\n";
+	}
 }
 
 
@@ -117,8 +123,10 @@ void AliHLTGlobalCompareFlatComponent::printDiff( string name, int n , Double_t*
 
 void AliHLTGlobalCompareFlatComponent::printDiff( string name, TString val1, TString val2){
 	outFile << name << "\t" << "\t\"" << val1 <<"\"\t\"" << val2 <<"\"\t" << (val1.EqualTo(val2) ?0:1)<<"\n";
-	if(! val1.EqualTo(val2) )
+	if(! val1.EqualTo(val2) ){
+		cout<<"WWW conflict"<<endl;
 		conflictsFile<<fCurrentClass<<"\t"<<name<<"\t" << val1 << "\t" << val2 << "\n";
+	}
 }
 
 /*
@@ -548,45 +556,47 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			
 			
 				
-				// loop over clusters 
-				if(s[0]->GetNClusters() == s[1]->GetNClusters()){
-					int ncl = s[0]->GetNClusters();
-				//	cout<<"number of clusters: "<<ncl<<endl;
-					AliFlatTPCCluster* cl[160][2];
-      for( int i=0; i<160; i++ ) {
-				cl[i][0]=0;
-				cl[i][1]=0;
+			// loop over clusters 
+			if(s[0]->GetNClusters() == s[1]->GetNClusters()){
+			int ncl = s[0]->GetNClusters();
+			//	cout<<"number of clusters: "<<ncl<<endl;
+			AliFlatTPCCluster* cl[72][160][2];
+					
+			for(int j=0; j<72;j++){
+				for( int i=0; i<160; i++ ) {
+					cl[j][i][0]=0;
+					cl[j][i][1]=0;
+				}
 			}
-				for(int icl=0; icl < ncl; icl++){
-						
-						
+			for(int icl=0; icl < ncl; icl++){
 				//		if(cl[ (s[0]->GetClusters()[icl]).GetPadRow() ][0])  cout<<"ERROR: cluster " << icl <<" [0] already set!!!"<<endl;
 					//	if(cl[ (s[0]->GetClusters()[icl]).GetPadRow() ][1])  cout<<"ERROR: cluster " << icl <<" [1] already set!!!"<<endl;
-						cl[ (s[0]->GetClusters()[icl]).GetPadRow() ][0] = const_cast<AliFlatTPCCluster*>( &(s[0]->GetClusters()[icl])  );
-						cl[ (s[1]->GetClusters()[icl]).GetPadRow() ][1] = const_cast<AliFlatTPCCluster*>( &(s[1]->GetClusters()[icl])  );
+						cl[ (s[0]->GetClusters()[icl]).GetSector() ][ (s[0]->GetClusters()[icl]).GetPadRow() ][0] = const_cast<AliFlatTPCCluster*>( &(s[0]->GetClusters()[icl])  );
+						cl[ (s[1]->GetClusters()[icl]).GetSector() ][ (s[1]->GetClusters()[icl]).GetPadRow() ][1] = const_cast<AliFlatTPCCluster*>( &(s[1]->GetClusters()[icl])  );
 					}
-					for(int irow= 0; irow<160;irow++){
-						if( cl[irow][0] && cl[irow][1] ){
-						outFile<<"_FlatTPCCluster\n";
- fCurrentClass = "FlatTPCCluster";
-							printDiff( "GetX",cl[irow][0]->GetX(),cl[irow][1]->GetX() ); 
-							printDiff( "GetY",cl[irow][0]->GetY(),cl[irow][1]->GetY() ); 
-							printDiff( "GetZ",cl[irow][0]->GetZ(),cl[irow][1]->GetZ() ); 
-							printDiff( "GetSector",cl[irow][0]->GetSector(),cl[irow][1]->GetSector() ); 
-							printDiff( "GetPadRow",cl[irow][0]->GetPadRow(),cl[irow][1]->GetPadRow() ); 
-							printDiff( "GetSigmaY2",cl[irow][0]->GetSigmaY2(),cl[irow][1]->GetSigmaY2() ); 
-							printDiff( "GetSigmaZ2",cl[irow][0]->GetSigmaZ2(),cl[irow][1]->GetSigmaZ2() ); 
-							printDiff( "GetCharge",cl[irow][0]->GetCharge(),cl[irow][1]->GetCharge() ); 
-							printDiff( "GetQMax",cl[irow][0]->GetQMax(),cl[irow][1]->GetQMax() ); 
-							printDiff( "GetTrackAngleY",cl[irow][0]->GetTrackAngleY(),cl[irow][1]->GetTrackAngleY() ); 
-							printDiff( "GetTrackAngleZ",cl[irow][0]->GetTrackAngleZ(),cl[irow][1]->GetTrackAngleZ() ); 
-						}
-						else if( cl[irow][0] || cl[irow][1] ){
-							printDiff( "GetClusters(i)",  cl[irow][0] ?1:0 ,cl[irow][1] ?1:0 ); 
-						}
-						
-					}
+					for(int iSector=0; iSector<72; iSector++){
 					
+						for(int irow= 0; irow<160;irow++){
+							if( cl[iSector][irow][0] && cl[iSector][irow][1] ){
+							outFile<<"_FlatTPCCluster\n";
+	fCurrentClass = "FlatTPCCluster";
+								printDiff( "GetX",cl[iSector][irow][0]->GetX(),cl[iSector][irow][1]->GetX() ); 
+								printDiff( "GetY",cl[iSector][irow][0]->GetY(),cl[iSector][irow][1]->GetY() ); 
+								printDiff( "GetZ",cl[iSector][irow][0]->GetZ(),cl[iSector][irow][1]->GetZ() ); 
+								printDiff( "GetSector",cl[iSector][irow][0]->GetSector(),cl[iSector][irow][1]->GetSector() ); 
+								printDiff( "GetPadRow",cl[iSector][irow][0]->GetPadRow(),cl[iSector][irow][1]->GetPadRow() ); 
+								printDiff( "GetSigmaY2",cl[iSector][irow][0]->GetSigmaY2(),cl[iSector][irow][1]->GetSigmaY2() ); 
+								printDiff( "GetSigmaZ2",cl[iSector][irow][0]->GetSigmaZ2(),cl[iSector][irow][1]->GetSigmaZ2() ); 
+								printDiff( "GetCharge",cl[iSector][irow][0]->GetCharge(),cl[iSector][irow][1]->GetCharge() ); 
+								printDiff( "GetQMax",cl[iSector][irow][0]->GetQMax(),cl[iSector][irow][1]->GetQMax() ); 
+								printDiff( "GetTrackAngleY",cl[iSector][irow][0]->GetTrackAngleY(),cl[iSector][irow][1]->GetTrackAngleY() ); 
+								printDiff( "GetTrackAngleZ",cl[iSector][irow][0]->GetTrackAngleZ(),cl[iSector][irow][1]->GetTrackAngleZ() ); 
+							}
+							else if( cl[iSector][irow][0] || cl[iSector][irow][1] ){
+								printDiff( "GetClusters(i)",  cl[iSector][irow][0] ?1:0 ,cl[iSector][irow][1] ?1:0 ); 
+							}
+						}
+					}
 					
 				}
 			
@@ -607,6 +617,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 	}
 	
 	outFile.close();
+	conflictsFile.close();
  
  
 	return iResult;
