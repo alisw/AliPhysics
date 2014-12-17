@@ -1825,7 +1825,61 @@ Int_t AliVertexingHFUtils::CheckLcV0bachelorDecay(AliStack* stack, Int_t label, 
     else if(codeV0==3122) return 2;
   }
   return -1;
-  
+ 
 }
 
  
+//__________________________________xic______________________________________
+Int_t AliVertexingHFUtils::CheckXicXipipiDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab){
+  // Checks the Xic decay channel. Returns 1 for Xic->Xipipi, -1 in other cases
+
+  if(label<0) return -1;
+  TParticle* mcPart = stack->Particle(label);
+  Int_t pdgD=mcPart->GetPdgCode();
+  if(TMath::Abs(pdgD)!=4232) return -1;
+
+  Int_t nDau=mcPart->GetNDaughters();
+  if(nDau!=3) return -1;
+
+  Int_t labelFirstDau = mcPart->GetDaughter(0);
+  Int_t nXi=0;
+  Int_t nPions=0;
+  Double_t sumPxDau=0.;
+  Double_t sumPyDau=0.;
+  Double_t sumPzDau=0.;
+  Int_t nFoundXi=0;
+
+  for(Int_t iDau=0; iDau<nDau; iDau++){
+    Int_t indDau = labelFirstDau+iDau;
+    if(indDau<0) return -1;
+    TParticle* dau=stack->Particle(indDau);
+    if(!dau) return -1;
+    Int_t pdgdau=dau->GetPdgCode();
+    if(TMath::Abs(pdgdau)==3312){
+      if(pdgD*pdgdau<0) return -1;
+      sumPxDau+=dau->Px();
+      sumPyDau+=dau->Py();
+      sumPzDau+=dau->Pz();
+      nXi++;
+      arrayDauLab[nFoundXi++]=indDau;
+      
+    }
+    if(TMath::Abs(pdgdau)==211){
+      if(pdgD*pdgdau<0) return -1;
+      nPions++;
+      sumPxDau+=dau->Px();
+      sumPyDau+=dau->Py();
+      sumPzDau+=dau->Pz();
+      arrayDauLab[nFoundXi++]=indDau;
+      if(nFoundXi>3) return -1;
+    }
+  }
+  
+  if(nPions!=2) return -1;
+  if(nXi!=1) return -1;
+  if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
+  if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
+  if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
+  return 1;
+  
+}
