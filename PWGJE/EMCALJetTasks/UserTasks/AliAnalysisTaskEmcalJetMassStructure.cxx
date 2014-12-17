@@ -58,7 +58,8 @@ AliAnalysisTaskEmcalJetMassStructure::AliAnalysisTaskEmcalJetMassStructure() :
   fh2PtMassCorr(0),
   fhnMassResponse(0),
   fhnMassResponseCorr(0),
-  fh3JetPtDRTrackPt(0)
+  fh3JetPtDRTrackPt(0),
+  fpUsedEfficiency(0)
 {
   // Default constructor.
 
@@ -101,7 +102,8 @@ AliAnalysisTaskEmcalJetMassStructure::AliAnalysisTaskEmcalJetMassStructure(const
   fh2PtMassCorr(0),
   fhnMassResponse(0),
   fhnMassResponseCorr(0),
-  fh3JetPtDRTrackPt(0)
+  fh3JetPtDRTrackPt(0),
+  fpUsedEfficiency(0)
 {
   // Standard constructor.
 
@@ -241,6 +243,9 @@ void AliAnalysisTaskEmcalJetMassStructure::UserCreateOutputObjects()
   fhnMassResponseCorr = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0,nBins0,xmin0,xmax0);
   fOutput->Add(fhnMassResponseCorr);
 
+  if(fEJetByJetCorr) fpUsedEfficiency = fEJetByJetCorr->GetAppliedEfficiency();
+  fOutput->Add(fpUsedEfficiency);
+
   TH1::AddDirectory(oldStatus);
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
@@ -308,7 +313,7 @@ Bool_t AliAnalysisTaskEmcalJetMassStructure::FillHistograms()
           curVec.SetPtEtaPhiM(vp->Pt(),vp->Eta(),vp->Phi(),vp->M());
           sumVec+=curVec;
           corrVec+=curVec;
-          //	Printf("%d  %f",i,dr[indexes[i]]);
+
           fh3PtDRMass[fCentBin]->Fill(ptJet1,dr[indexes[i]],sumVec.M()/mJet1);
           fh3PtDRRho[fCentBin]->Fill(ptJet1,dr[indexes[i]],sumVec.Pt()/ptJet1);
           
