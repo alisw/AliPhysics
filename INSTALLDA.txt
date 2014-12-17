@@ -1,0 +1,147 @@
+############################################################################
+# * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+# *                                                                        *
+# * Author: The ALICE Off-line Project.                                    *
+# * Contributors are mentioned in the code where appropriate.              *
+############################################################################
+
+############################################################################
+#AliRoot Detector Algorithms build and install documentation               #
+############################################################################
+
+The instructions bellow describe how to build and install the DAs.
+For more information about the Detector Algoritms framework please follow
+https://aliceinfo.cern.ch/DAQ/products/da-information
+
+Before following the DA build and install intructions please read the general
+AliRoot build and install intructions from INSTALL.txt
+
+############################################################################
+#1. DA files and location                                                  #
+############################################################################
+    - Name - The file name has to follow a predefined pattern.
+        DetectorNameAlgorithmda.cxx
+    Example : EMCALLEDda.cxx
+        DetectorNAme = EMCAL
+        Algorithm = LED
+    Example: MUONTRKOCCda.cxx
+        DetectorName = MUON
+        Algortihm  = TRKOCC
+    - Location - The DA files have to be located inside the DetectorName/DA folder.
+    Example: EMCAL/DA/EMCALLEDda.cxx
+
+############################################################################
+2. DA file structure                                                       #
+############################################################################
+
+The DA file has to follow a certain structure that is used during the rpm creation.
+
+The DA rpm creation needs a description per algorithm. This description is mapped as the
+very first comment in the DA file. The full string between the first /* */ will be 
+extracted and set as the rpm description.
+
+Note that the description has to contain some standard fields. For more information
+about these fields please read the Detector Algorithm documentation.
+
+Example:
+/*
+MTR DA for online
+
+Contact: Franck Manso <manso@clermont.in2p3.fr>
+Link: http://aliceinfo.cern.ch/static/Offline/dimuon/muon_html/README_mtrda.html
+Reference run: 61898
+Run Type:  PHYSICS
+DA Type: MON
+Number of events needed: 1000 events
+Input files: MtgGlobalCrate.dat MtgRegionalCrate.dat MtgLocalMask.dat MtgLocalLut.dat MtgCurrent.dat DAConfig.dat
+Output Files: ExportedFiles.dat MtgGlobalCrate.dat
+Trigger types used: PHYSICS_EVENT CALIBRATION_EVENT
+*/
+
+
+############################################################################
+3. Adding a new DA to AliRoot CMake build system                           #
+############################################################################
+
+All the examples are using AliRoot source directory as root folder.
+
+3.1 Create the DA folder and add it to the detector CMakeLists.txt
+If the detector does not contain any DAs then the DA folder has to be created and
+CMake must be made aware of the new configuration.
+
+
+Example:
+    $ cd EMCAL
+    $ mkdir DA
+    $ vi/emacs/etc CMakeLists.txt
+    
+    Add the following lines at the end of the file. These lines will enable the build of the DAs when
+    DA cmake configure option is activated:
+    
+    if(DA)
+        add_subdirectory(DA)
+    endif(DA)
+
+3.2 Copy the "cmake/DACMakeLists.example" file inside the DA folder as CMakeLists.txt
+    $ cd EMCAL/DA
+    $ cp ../../make/DACMakeLists.example CMakeLists.txt
+    
+Edit the CMakeLists.txt file by following the instructions inside it.
+
+############################################################################
+4. Building, installing and running the DAs                                #
+############################################################################
+
+All the examples assume build directory as root directory.
+
+4.1 Build mandatory requirements
+    - DATE
+    - AMORE
+    - DIM
+    - daqDA
+
+4.2 Build Environement
+In order for the DAs to be build DATE environment has to be loaded
+    $ source /date/setup.sh
+    
+4.3 CMake configuration
+DAs build and rpm creation are enabled through the cmake configuration parameters
+    -DDA=ON
+    -DARPM=ON
+
+The mandatory requirements have to be specified
+    -DAMORE_CONFIG=PATH_TO_amore-config
+    -DDATE_CONFIG=PATH_TO_date-config
+    -DDIM=PATH_TO_DIM
+    -ODIR=linux
+    -daqDA=PATH_TO_daqDA
+    
+Example:
+A full configuration line that will enable DA build and rpm creation
+    $ cmake 
+        -DCMAKE_INSTALL_PREFIX=/home/offline/alice/install-splitdev
+        -DROOTSYS=/home/offline/alice/root
+        -DDA=ON
+        -DDARPM=ON
+        -DAMORE_CONFIG=/home/offline/amore/amore-config
+        -DDATE_CONFIG=/date/.commonScripts/date-config
+        -DDIMDIR=/opt/dim
+        -DODIR=linux
+        -DdaqDA=/opt/daqDA-lib
+        $ALIROOT_SRC
+
+4.4 Build individual or all DAs
+For invidual DA build it is enough to switch to the DetectorName/DA folder
+    Example
+    $ cd MUON/DA
+    $ make
+
+The "make" will create the DA executable inside the current folder.
+
+To trigger the build off all DA run make inside the root build folder
+
+4.5 Install the DAs
+
+"make install" will install the DA execuable inside $CMAKE_INSTALL_PREFIX/bin
+and the rpms inside the $CMAKE_INSTALL_PREFIX/darpms
+
