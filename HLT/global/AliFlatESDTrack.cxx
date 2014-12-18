@@ -76,6 +76,8 @@ void  AliFlatESDTrack::GetESDTrack( AliESDtrack* esdTrack ) const
 {
   // get esd track out of flat track
 
+  // not yet fully implemented!!! SG!!
+
   if( !esdTrack ) return;
 
   AliTPCseed p;
@@ -90,20 +92,11 @@ void  AliFlatESDTrack::GetESDTrack( AliESDtrack* esdTrack ) const
   if( GetTrackParamRefitted( p )>=0 ){
     esdTrack->UpdateTrackParams( &p, AliESDtrack::kTPCrefit );
   }
-  if( GetTrackParamIp( p )>=0 ){
-    p.SetNumberOfClusters( GetNumberOfITSClusters() );
-   esdTrack->UpdateTrackParams( &p, AliESDtrack::kITSin );
+  if( GetTrackParamRefitted( p )>=0 ){
+    esdTrack->UpdateTrackParams( &p, AliESDtrack::kTPCrefit );
   }
 
- if( GetTrackParamCp( p )>=0 ){
-   esdTrack->SetImpactParameters( fImp, fImp+2, fImp[5], &p);
- } else {
-   esdTrack->SetImpactParameters( fImp, fImp+2, fImp[5], NULL);
- }
- esdTrack->SetImpactParametersTPC( fImpTPC, fImpTPC+2, fImpTPC[5] );
-
 }
-
 
 
 // _______________________________________________________________________________________________________

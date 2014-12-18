@@ -377,9 +377,12 @@ AliVEvent::EDataLayoutType AliFlatESDEvent::GetDataLayoutType() const
   return AliVEvent::kFlat;
 }
 
+
 void  AliFlatESDEvent::GetESDEvent( AliESDEvent *esd ) const 
 {
   // Fill flat ESD event to ALiESDEvent
+
+  // not yet fully implemented!!! SG!!
 
   if( !esd ) return;  
   
@@ -411,9 +414,9 @@ void  AliFlatESDEvent::GetESDEvent( AliESDEvent *esd ) const
   // fill primary vertices
   {
     AliESDVertex v;
-    if( GetPrimaryVertexSPD( v ) >= 0 ) esd->SetPrimaryVertexSPD( &v );
-    if( GetPrimaryVertexTPC( v ) >= 0 ) esd->SetPrimaryVertexTPC( &v );
-    if( GetPrimaryVertexTracks( v ) >= 0 ) esd->SetPrimaryVertexTracks( &v );
+    if( GetPrimaryVertexSPD( v ) > 0 ) esd->SetPrimaryVertexSPD( &v );
+    if( GetPrimaryVertexTPC( v ) > 0 ) esd->SetPrimaryVertexTPC( &v );
+    if( GetPrimaryVertexTracks( v ) > 0 ) esd->SetPrimaryVertexTracks( &v );
   }
 
    // fill tracks 
@@ -427,52 +430,18 @@ void  AliFlatESDEvent::GetESDEvent( AliESDEvent *esd ) const
     }
   }
  
+  /* SG!!! TO DO
+
+
   // fill V0s
   {
     const AliFlatESDV0 *flatV0 = GetV0s();
     for( int i=0; i<GetNumberOfV0s(); i++ ){
-      Int_t negID = flatV0->GetNegTrackID();
-      Int_t posID = flatV0->GetPosTrackID();
-      const AliESDtrack *negTr = esd->GetTrack( negID );
-      const AliESDtrack *posTr = esd->GetTrack( posID );
-      if( negTr && posTr ){
-	AliESDv0 esdV0( *negTr, negID, *posTr, posID );
-	esd->AddV0( &esdV0 );
-      }
-      flatV0 = flatV0->GetNextV0();  
+      AliESDv0 esdV0;
+      flatV0->FillToESDv0( & esdV0 );
+      flatV0 = flatV0->GetNextV0();
+      esd->AddV0( &esdV0 );
     }
   }  
-  
+  */
 }
-
-//_____________________________________________________________________________
-//example static conversion functions, use with care!
-//
-AliESDEvent* AliFlatESDEvent::MakeESDevent(AliFlatESDEvent* flatEvent)
-{
-  //produce an AliESDEvent from a AliFlatESDEvent
-  //caller then owns the object
-  AliESDEvent* esdEvent = new AliESDEvent();
-  flatEvent->GetESDEvent(esdEvent);
-  return esdEvent;
-}
-
-AliFlatESDEvent* AliFlatESDEvent::MakeFlatEvent(AliESDEvent* esdEvent,Bool_t fillV0s)
-{
-  //produce an AliFlatESDEvent from en AliESDEvent
-  //caller then owns the object
-  //object has to be destroyed using DestroyFlatEvent
-  Int_t flatEventSize = AliFlatESDEvent::EstimateSize(esdEvent,fillV0s);
-  Byte_t *flatEventBuffer = new Byte_t[flatEventSize];
-  AliFlatESDEvent *flatEvent = reinterpret_cast<AliFlatESDEvent*>(flatEventBuffer);
-  Int_t err = flatEvent->SetFromESD(flatEventSize, esdEvent, fillV0s);
-  if (err!=0) { delete [] flatEventBuffer; return NULL; }
-  return flatEvent;
-}
-
-void AliFlatESDEvent::DestroyFlatEvent(AliFlatESDEvent* flatEvent)
-{
-  //destroy the object created with MakeFlatEvent
-  delete [] reinterpret_cast<Byte_t*>(flatEvent);
-}
-
