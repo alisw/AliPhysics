@@ -45,6 +45,7 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 *pttriggertask = new EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1("ptemcaltriggertask");
   //pttriggertask->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kEMC7);                          // Select both INT7 or EMC7 triggered events
   pttriggertask->SelectCollisionCandidates(AliVEvent::kAny);
+  if(isMC) pttriggertask->SetSwapThresholds();
 
   mgr->AddTask(pttriggertask);
   if(usePythiaHard){
