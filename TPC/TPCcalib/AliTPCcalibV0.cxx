@@ -172,11 +172,9 @@ void  AliTPCcalibV0::DumpToTreeHPT(AliVEvent *event){
     if (!isOK) continue;
     //
 
-    TObject *calibObject;
     AliTPCseed *seed = 0;
-    for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
-      if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
-    }
+    AliTPCseed tpcSeed;
+    if (friendTrack->GetTPCseed(tpcSeed)==0) seed=&tpcSeed;
     if (!seed) continue;
       if (!fHPTTree) {
       fHPTTree = new TTree("HPT","HPT");
@@ -258,15 +256,12 @@ void  AliTPCcalibV0::DumpToTree(AliVEvent *event){
     const AliVfriendTrack *ftrack1 = friendEvent->GetTrack(v0->GetIndex(1));
     if (!ftrack1) continue;
     //
-    TObject *calibObject;
     AliTPCseed *seed0 = 0;
     AliTPCseed *seed1 = 0;
-    for (Int_t l=0;(calibObject=ftrack0->GetCalibObject(l));++l) {
-      if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
-    }
-    for (Int_t l=0;(calibObject=ftrack1->GetCalibObject(l));++l) {
-      if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;
-    }
+    AliTPCseed tpcSeed0;
+    AliTPCseed tpcSeed1;
+    if (ftrack0->GetTPCseed(tpcSeed0)==0) seed0=&tpcSeed0;
+    if (ftrack1->GetTPCseed(tpcSeed1)==1) seed1=&tpcSeed1;
     if (!seed0) continue;
     if (!seed1) continue;
     AliExternalTrackParam * paramIn0 = (AliExternalTrackParam *)track0->GetInnerParam();

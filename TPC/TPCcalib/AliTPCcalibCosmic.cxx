@@ -499,12 +499,13 @@ void AliTPCcalibCosmic::FindPairs(const AliVEvent *event){
 
    const AliVfriendTrack *friendTrack = friendEvent->GetTrack(i);
    if (!friendTrack) continue;
-   TObject *calibObject;
-   AliTPCseed *seed = 0;   
-   for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
-     if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
+   AliTPCseed *seed = new AliTPCseed();   
+   if (friendTrack->GetTPCseed(*seed)==0) {
+     tpcSeeds.AddAt(seed,i);
+   } 
+   else {
+     delete seed;
    }
-   if (seed) tpcSeeds.AddAt(seed,i);
 
    Double_t meanP = 0.5*(trackIn->GetP() + trackOut->GetP());
    if (seed && track->GetTPCNcls() > 80 + 60/(1+TMath::Exp(-meanP+5))) {
@@ -709,6 +710,7 @@ void AliTPCcalibCosmic::FindPairs(const AliVEvent *event){
       delete par1U;
     }
   }  
+  tpcSeeds.Delete();
 }    
 
 
@@ -1094,16 +1096,13 @@ void AliTPCcalibCosmic::FindCosmicPairs(const AliVEvent *event) {
       if (!friendTrack0) continue;
       const AliVfriendTrack *friendTrack1 = friendEvent->GetTrack(itrack1);
       if (!friendTrack1) continue;
-      TObject *calibObject;
       AliTPCseed *seed0 = 0;   
       AliTPCseed *seed1 = 0;
+      AliTPCseed tpcSeed0;
+      AliTPCseed tpcSeed1;
       //
-      for (Int_t l=0;(calibObject=friendTrack0->GetCalibObject(l));++l) {
-	if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
-      }
-      for (Int_t l=0;(calibObject=friendTrack1->GetCalibObject(l));++l) {
-	if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;
-      }
+      if (friendTrack0->GetTPCseed(tpcSeed0)==0) seed0=&tpcSeed0;
+      if (friendTrack1->GetTPCseed(tpcSeed1)==0) seed1=&tpcSeed1;
 
       //
       if (pcstream){
@@ -1287,13 +1286,10 @@ void AliTPCcalibCosmic::MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstrea
     if (!ftrack1->GetTPCOut()) continue;
     AliTPCseed *seed0=0;
     AliTPCseed *seed1=0;
-    TObject *calibObject;
-    for (Int_t l=0;(calibObject=ftrack0->GetCalibObject(l));++l) {
-      if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
-    }
-    for (Int_t l=0;(calibObject=ftrack1->GetCalibObject(l));++l) {
-      if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;
-    }
+    AliTPCseed tpcSeed0;
+    AliTPCseed tpcSeed1;
+    if (ftrack0->GetTPCseed(tpcSeed0)==0) seed0=&tpcSeed0;
+    if (ftrack1->GetTPCseed(tpcSeed1)==1) seed1=&tpcSeed1;
     if (!seed0) continue;
     if (!seed1) continue;
     if (TMath::Abs(seed0->GetSnp())>kMaxSnp) continue;

@@ -486,20 +486,18 @@ void AliTPCcalibAlign::Process(AliVEvent *event) {
     AliVTrack *track0 = event->GetVTrack(i0);
     //if (!track0) Printf("ERROR! NO TRACK!!");
     AliVfriendTrack *friendTrack = 0;
-    TObject *calibObject=0;
     AliTPCseed *seed0 = 0;
     //
     friendTrack = const_cast<AliVfriendTrack*>(Vfriend->GetTrack(i0));
     if (!friendTrack) {
         //Printf("ERROR!! NO FRIEND TRACK!!"); //
         continue;}
-    for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
-      if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
-    }
+    AliTPCseed tpcSeed0;
+    if (friendTrack->GetTPCseed(tpcSeed0)==0) seed0=&tpcSeed0;
     if (!seed0) continue;
     fCurrentTrack=track0;
     fCurrentFriendTrack=friendTrack;
-    fCurrentSeed=seed0;
+    fCurrentSeed=seed0; //is this really necessary? might be a problem with scoping!
     fCurrentEvent=event;
 
     AliExternalTrackParam prm0;
@@ -537,19 +535,15 @@ void AliTPCcalibAlign::Process(AliVEvent *event) {
       if (TMath::Abs(trkprm0.GetParameter()[3]+trkprm1.GetParameter()[3])>0.1) continue;
       //
       AliVfriendTrack *friendTrack = 0;
-      TObject *calibObject=0;
       AliTPCseed *seed0 = 0,*seed1=0;
+      AliTPCseed tpcSeed0, tpcSeed1;
       //
       friendTrack = const_cast<AliVfriendTrack*>(Vfriend->GetTrack(i0));
       if (!friendTrack) continue;
-      for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
-	if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
-      }
+      if (friendTrack->GetTPCseed(tpcSeed0)==0) seed0=&tpcSeed0;
       friendTrack = const_cast<AliVfriendTrack*>(Vfriend->GetTrack(i1));
       if (!friendTrack) continue;
-      for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
-	if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;
-      }
+      if (friendTrack->GetTPCseed(tpcSeed1)==0) seed1=&tpcSeed1;
       if (!seed0) continue;
       //
       //
@@ -719,20 +713,16 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliVEvent *event){
       index1=i1;
     }
     AliVfriendTrack *friendTrack = 0;
-    TObject *calibObject=0;
     AliTPCseed *seed0 = 0,*seed1=0;
+    AliTPCseed tpcSeed0, tpcSeed1;
     //
     friendTrack = const_cast<AliVfriendTrack*>(Vfriend->GetTrack(index0));
     if (!friendTrack) continue;
-    for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
-      if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
-    }
+    if (friendTrack->GetTPCseed(tpcSeed0)==0) seed0=&tpcSeed0;
     if (index1>0){
       friendTrack = const_cast<AliVfriendTrack*>(Vfriend->GetTrack(index1));
       if (!friendTrack) continue;
-      for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
-	if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;
-      }
+      if (friendTrack->GetTPCseed(tpcSeed1)==0) seed1=&tpcSeed1;
     }
     //
     Int_t npoints=0, ncont=0;

@@ -405,11 +405,9 @@ void AliTPCcalibTimeGain::ProcessCosmicEvent(AliVEvent *event) {
     if (TMath::Abs(trackIn->GetSnp()) > 0.6) continue;
     
     // Get seeds
-    TObject *calibObject;
     AliTPCseed *seed = 0;
-    for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
-      if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
-    }    
+    AliTPCseed tpcSeed;
+    if (friendTrack->GetTPCseed(tpcSeed)==0) seed=&tpcSeed;
 
     if (seed) { 
       Double_t tpcSignal = GetTPCdEdx(seed);
@@ -501,11 +499,9 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
     Double_t eta = trackIn->Eta();
     
     // Get seeds
-    TObject *calibObject;
     AliTPCseed *seed = 0;
-    for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
-      if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
-    }
+    AliTPCseed tpcSeed;
+    if (friendTrack->GetTPCseed(tpcSeed)==0) seed=&tpcSeed;
 
     if (seed) {
       Int_t particleCase = 0;
@@ -586,11 +582,9 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
       if (nclsDeDx < 60) continue;     
       if (TMath::Abs(trackPIn->GetTgl()) > 1) continue;
       //
-      TObject *calibObject;
       AliTPCseed *seed = 0;
-      for (Int_t l=0;(calibObject=friendTrackP->GetCalibObject(l));++l) {
-      if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
-      }    
+      AliTPCseed tpcSeed;
+      if (friendTrackP->GetTPCseed(tpcSeed)==0) seed=&tpcSeed;
       if (seed) { 
 	if (fLowMemoryConsumption) {
 	  if (meanP > fMaxMomentumMIP || meanP < fMinMomentumMIP) continue;

@@ -635,11 +635,9 @@ void AliTPCcalibLaser::Process(AliVEvent * event) {
     track->GetTrackParam(prm);
     Double_t binC = hisCE.GetBinContent(hisCE.FindBin(prm.GetZ()));
     if (binC>336) continue; //remove CE background
-    TObject *calibObject=0;
     AliTPCseed *seed=0;
-    for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j)
-      if ((seed=dynamic_cast<AliTPCseed*>(calibObject)))
-	break;
+    AliTPCseed tpcSeed;
+    if (friendTrack->GetTPCseed(tpcSeed)==0) seed=&tpcSeed;
     if (track&&seed&&track->GetTPCNcls()>kMinClusters && seed->GetNumberOfClusters() >kMinClusters) {
       //filter CE tracks
       Int_t id = FindMirror(track,seed);

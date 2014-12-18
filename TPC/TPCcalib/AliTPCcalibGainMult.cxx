@@ -454,11 +454,9 @@ void AliTPCcalibGainMult::Process(AliVEvent *event) {
     //AliESDfriendTrack *friendTrack = friendEvent->GetTrack(i);
     const AliVfriendTrack *friendTrack = friendEvent->GetTrack(i);
     if (!friendTrack) continue;
-    TObject *calibObject;
     AliTPCseed *seed = 0;
-    for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
-      if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
-    }    
+    AliTPCseed tpcSeed;
+    if (friendTrack->GetTPCseed(tpcSeed)==0) seed=&tpcSeed;
     //if (seed) DumpTrack(track, friendTrack,seed,i); // MI implementation for the identified particles
     //
     if (seed) { // seed the container with track parameters and the clusters
@@ -1471,15 +1469,12 @@ void AliTPCcalibGainMult::ProcessV0s(AliVEvent *event){
     const AliVfriendTrack *friendTrackN = friendEvent->GetTrack(nindex);
     if (!friendTrackP) continue;
     if (!friendTrackN) continue;
-    TObject *calibObject;
-    AliTPCseed *seedP = 0;
-    AliTPCseed *seedN = 0;
-    for (Int_t l=0;(calibObject=friendTrackP->GetCalibObject(l));++l) {
-      if ((seedP=dynamic_cast<AliTPCseed*>(calibObject))) break;
-    }    
-    for (Int_t l=0;(calibObject=friendTrackN->GetCalibObject(l));++l) {
-      if ((seedN=dynamic_cast<AliTPCseed*>(calibObject))) break;
-    }   
+    //AliTPCseed *seedP = 0;
+    //AliTPCseed *seedN = 0;
+    //AliTPCseed tpcSeedP;
+    //AliTPCseed tpcSeedN;
+    //if (friendTrackP->GetTPCseed(tpcSeedP)==0) seedP=&tpcSeedP;
+    //if (friendTrackN->GetTPCseed(tpcSeedN)==0) seedN=&tpcSeedN;
     if (isGamma){
       if ( TMath::Abs((trackP->GetTPCsignal()/(trackN->GetTPCsignal()+0.0001)-1)>0.3)) continue;
     }
@@ -1617,16 +1612,13 @@ void AliTPCcalibGainMult::ProcessCosmic(const AliVEvent *event) {
       if (!friendTrack0) continue;
       const AliVfriendTrack *friendTrack1 = friendEvent->GetTrack(itrack1);
       if (!friendTrack1) continue;
-      TObject *calibObject;
       AliTPCseed *seed0 = 0;   
       AliTPCseed *seed1 = 0;
       //
-      for (Int_t l=0;(calibObject=friendTrack0->GetCalibObject(l));++l) {
-	if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
-      }
-      for (Int_t l=0;(calibObject=friendTrack1->GetCalibObject(l));++l) {
-	if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;
-      }
+      AliTPCseed tpcSeed0;
+      AliTPCseed tpcSeed1;
+      if (friendTrack0->GetTPCseed(tpcSeed0)==0) seed0=&tpcSeed0;
+      if (friendTrack1->GetTPCseed(tpcSeed1)==0) seed1=&tpcSeed1;
       //
       if (pcstream){
 	(*pcstream)<<"cosmicPairs"<<
@@ -1827,15 +1819,12 @@ void AliTPCcalibGainMult::ProcessKinks(const AliVEvent *event){
     const AliVfriendTrack *friendTrackD = friendEvent->GetTrack(kink->GetIndex(1));
     if (!friendTrackM) continue;
     if (!friendTrackD) continue;
-    TObject *calibObject;
-    AliTPCseed *seedM = 0;
-    AliTPCseed *seedD = 0;
-    for (Int_t l=0;(calibObject=friendTrackM->GetCalibObject(l));++l) {
-      if ((seedM=dynamic_cast<AliTPCseed*>(calibObject))) break;
-    }    
-    for (Int_t l=0;(calibObject=friendTrackD->GetCalibObject(l));++l) {
-      if ((seedD=dynamic_cast<AliTPCseed*>(calibObject))) break;
-    }    
+    //AliTPCseed *seedM = 0;
+    //AliTPCseed *seedD = 0;
+    //AliTPCseed tpcSeedM;
+    //AliTPCseed tpcSeedD;
+    //if (friendTrackM->GetTPCseed(tpcSeedM)==0) seedM=&tpcSeedM;
+    //if (friendTrackD->GetTPCseed(tpcSeedD)==0) seedD=&tpcSeedD;
   }
 }
 

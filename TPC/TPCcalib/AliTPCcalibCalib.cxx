@@ -166,11 +166,9 @@ void     AliTPCcalibCalib::Process(AliVEvent *event){
     AliExternalTrackParam prmtpcOut;
     if((friendTrack->GetTrackParamTPCOut(prmtpcOut)) < 0) continue;
 
-    TObject *calibObject;
+    AliTPCseed tpcSeed;
     AliTPCseed *seed = 0;
-    for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
-      if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
-    }
+    if (friendTrack->GetTPCseed(tpcSeed)==0) seed=&tpcSeed;
     if (!seed) continue;
     RefitTrack(track, seed, event->GetMagneticField());
     AliExternalTrackParam prmOut;
@@ -234,8 +232,8 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliVTrack * track, AliTPCseed *seed, Float_
     //
     // get position correction
     //
-    Int_t ipad=0;
-    if (cluster->GetDetector()>35) ipad=1;
+    //Int_t ipad=0;
+    //if (cluster->GetDetector()>35) ipad=1;
     Float_t dy =0;//AliTPCClusterParam::SPosCorrection(0,ipad,cluster->GetPad(),cluster->GetTimeBin(),cluster->GetZ(),cluster->GetSigmaY2(),cluster->GetSigmaZ2(),cluster->GetMax());
     Float_t dz =0;//AliTPCClusterParam::SPosCorrection(1,ipad,cluster->GetPad(),cluster->GetTimeBin(),cluster->GetZ(),cluster->GetSigmaY2(),cluster->GetSigmaZ2(),cluster->GetMax());
     //
