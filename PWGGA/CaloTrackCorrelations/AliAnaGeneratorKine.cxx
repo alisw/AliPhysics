@@ -47,39 +47,45 @@ fJet6(),             fJet7(),
 fTrigger(),          fLVTmp(),
 fPtHard(0),
 fhPtHard(0),         fhPtParton(0),    fhPtJet(0),
-fhPtPartonPtHard(0), fhPtJetPtHard(0), fhPtJetPtParton(0),
-fhPtPhoton(0),       fhPtPi0(0)
+fhPtPartonPtHard(0), fhPtJetPtHard(0), fhPtJetPtParton(0)
 {
   //Default Ctor
   
   //Initialize parameters
   InitParameters();
   
-  for(Int_t i = 0; i < 4; i++)
+ 
+
+  for(Int_t p = 0; p < fgkNmcPrimTypes; p++)
   {
-    fhPtPhotonLeading[i]          = fhPtPi0Leading[i]          = 0;
-    fhPtPhotonLeadingSumPt[i]     = fhPtPi0LeadingSumPt[i]     = 0;
-    fhPtPhotonLeadingIsolated[i]  = fhPtPi0LeadingIsolated[i]  = 0;
-    for(Int_t j = 0; j < 2; j++)
+    fhPt[p] = 0;
+    
+    for(Int_t i = 0; i < fgkNIso; i++)
     {
-    fhZHardPhoton[j][i]           = fhZHardPi0[j][i]           = 0;            
-    fhZHardPhotonIsolated[j][i]   = fhZHardPi0Isolated[j][i]   = 0; 
-    fhZPartonPhoton[j][i]         = fhZPartonPi0[j][i]         = 0;            
-    fhZPartonPhotonIsolated[j][i] = fhZPartonPi0Isolated[j][i] = 0; 
-    fhZJetPhoton[j][i]            = fhZJetPi0[j][i]            = 0;            
-    fhZJetPhotonIsolated[j][i]    = fhZJetPi0Isolated[j][i]    = 0; 
-    fhXEPhoton[j][i]              = fhXEPi0[j][i]              = 0;            
-    fhXEPhotonIsolated[j][i]      = fhXEPi0Isolated[j][i]      = 0; 
-    fhXEUEPhoton[j][i]            = fhXEUEPi0[j][i]            = 0;            
-    fhXEUEPhotonIsolated[j][i]    = fhXEUEPi0Isolated[j][i]    = 0; 
-
-    fhPtPartonTypeNearPhoton[j][i]         = fhPtPartonTypeNearPi0[j][i]         = 0;            
-    fhPtPartonTypeNearPhotonIsolated[j][i] = fhPtPartonTypeNearPi0Isolated[j][i] = 0; 
-
-    fhPtPartonTypeAwayPhoton[j][i]         = fhPtPartonTypeAwayPi0[j][i]         = 0;            
-    fhPtPartonTypeAwayPhotonIsolated[j][i] = fhPtPartonTypeAwayPi0Isolated[j][i] = 0;
-      
-    fhPtAcceptedGammaJet[j][i] = 0;
+      fhPtLeading[p][i]          = 0;
+      fhPtLeadingSumPt[p][i]     = 0;
+      fhPtLeadingIsolated[p][i]  = 0;
+      for(Int_t j = 0; j < 2; j++)
+      {
+        fhZHard[p][j][i]           = 0;
+        fhZHardIsolated[p][j][i]   = 0;
+        fhZParton[p][j][i]         = 0;
+        fhZPartonIsolated[p][j][i] = 0;
+        fhZJet[p][j][i]            = 0;
+        fhZJetIsolated[p][j][i]    = 0;
+        fhXE[p][j][i]              = 0;
+        fhXEIsolated[p][j][i]      = 0;
+        fhXEUE[p][j][i]            = 0;
+        fhXEUEIsolated[p][j][i]    = 0;
+        
+        fhPtPartonTypeNear[p][j][i]         = 0;
+        fhPtPartonTypeNearIsolated[p][j][i] = 0;
+        
+        fhPtPartonTypeAway[p][j][i]         = 0;
+        fhPtPartonTypeAwayIsolated[p][j][i] = 0;
+        
+        if( p == 0 )  fhPtAcceptedGammaJet[j][i] = 0;
+      }
     }
   }
   
@@ -87,9 +93,9 @@ fhPtPhoton(0),       fhPtPi0(0)
 
 //___________________________________________________________________________
 Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
-                                                      Int_t   pdgTrig,
-                                                      Bool_t  leading[4],
-                                                      Bool_t  isolated[4],
+                                                      Int_t   partType,
+                                                      Bool_t  leading [fgkNIso],
+                                                      Bool_t  isolated[fgkNIso],
                                                       Int_t & iparton )  
 {
   // Correlate trigger with partons or jets, get z
@@ -114,7 +120,7 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
   
   if(iparton < 6)
   {
-    //printf("This particle is not from hard process - pdg %d, parton index %d\n",pdgTrig, iparton);
+    //printf("This particle is not from hard process - pdg %d, parton index %d\n",partType, iparton);
     return kFALSE; 
   }
   
@@ -168,7 +174,7 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
   //printf("parton 6 pdg = %d, parton 7 pdg = %d\n",fParton6->GetPdgCode(),fParton7->GetPdgCode());
 
   AliDebug(1,Form("Trigger pdg %d, (Trigger,JetNear, JetAway): pT (%2.2f,%2.2f,%2.2f), phi (%2.2f,%2.2f,%2.2f), eta (%2.2f,%2.2f,%2.2f); Delta phi trigger-away jet %f; parton type: away side %d; near side %d",
-                  pdgTrig,
+                  partType,
                   ptTrig,jetPt,awayJetPt,
                   phiTrig*TMath::RadToDeg(),jetPhi*TMath::RadToDeg(),awayJetPhi*TMath::RadToDeg(),
                   etaTrig,jetEta,awayJetEta,
@@ -185,57 +191,33 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
   //printf("Z: hard %2.2f, parton %2.2f, jet %2.2f\n",zHard,zPart,zJet);
 
   // conditions loop
-  for( Int_t i = 0; i < 4; i++ )
+  for( Int_t i = 0; i < fgkNIso ; i++ )
   {
-    // pi0
-    if(pdgTrig==111)
+    fhPtPartonTypeNear[partType][leading[i]][i]->Fill(ptTrig,near);
+    fhPtPartonTypeAway[partType][leading[i]][i]->Fill(ptTrig,away);
+    
+    fhZHard  [partType][leading[i]][i]->Fill(ptTrig,zHard);
+    fhZParton[partType][leading[i]][i]->Fill(ptTrig,zPart);
+    fhZJet   [partType][leading[i]][i]->Fill(ptTrig,zJet );
+    
+    if(isolated[i])
     {
-      fhPtPartonTypeNearPi0[leading[i]][i]->Fill(ptTrig,near);
-      fhPtPartonTypeAwayPi0[leading[i]][i]->Fill(ptTrig,away);
+      fhPtPartonTypeNearIsolated[partType][leading[i]][i]->Fill(ptTrig,near);
+      fhPtPartonTypeAwayIsolated[partType][leading[i]][i]->Fill(ptTrig,away);
       
-      fhZHardPi0  [leading[i]][i]->Fill(ptTrig,zHard);
-      fhZPartonPi0[leading[i]][i]->Fill(ptTrig,zPart);
-      fhZJetPi0   [leading[i]][i]->Fill(ptTrig,zJet );
-      
-      if(isolated[i])
-      {
-        fhPtPartonTypeNearPi0Isolated[leading[i]][i]->Fill(ptTrig,near);
-        fhPtPartonTypeAwayPi0Isolated[leading[i]][i]->Fill(ptTrig,away);
-        
-        fhZHardPi0Isolated  [leading[i]][i]->Fill(ptTrig,zHard);
-        fhZPartonPi0Isolated[leading[i]][i]->Fill(ptTrig,zPart);
-        fhZJetPi0Isolated   [leading[i]][i]->Fill(ptTrig,zJet);
-      }
-    }// pi0
-    // gamma
-    else if(pdgTrig==22)
+      fhZHardIsolated  [partType][leading[i]][i]->Fill(ptTrig,zHard);
+      fhZPartonIsolated[partType][leading[i]][i]->Fill(ptTrig,zPart);
+      fhZJetIsolated   [partType][leading[i]][i]->Fill(ptTrig,zJet);
+    }
+    
+    if(partType == kmcPrimPhoton && deltaPhi < 220 && deltaPhi > 140 && TMath::Abs(awayJetEta) < 0.6)
     {
-      fhPtPartonTypeNearPhoton[leading[i]][i]->Fill(ptTrig,near);
-      fhPtPartonTypeAwayPhoton[leading[i]][i]->Fill(ptTrig,away);
-      
-      fhZHardPhoton  [leading[i]][i]->Fill(ptTrig,zHard);
-      fhZPartonPhoton[leading[i]][i]->Fill(ptTrig,zPart);
-      fhZJetPhoton   [leading[i]][i]->Fill(ptTrig,zJet );
-      
-      if(deltaPhi < 220 && deltaPhi > 140 && TMath::Abs(awayJetEta) < 0.6)
-      {
-        //printf("Accept jet\n");
-        fhPtAcceptedGammaJet[leading[i]][i]->Fill(ptTrig,away);
-      }
-      //else printf("Reject jet!!!\n");
-      
-      if(isolated[i])
-      {
-        fhPtPartonTypeNearPhotonIsolated[leading[i]][i]->Fill(ptTrig,near);
-        fhPtPartonTypeAwayPhotonIsolated[leading[i]][i]->Fill(ptTrig,away);
-        
-        fhZHardPhotonIsolated  [leading[i]][i]->Fill(ptTrig,zHard);
-        fhZPartonPhotonIsolated[leading[i]][i]->Fill(ptTrig,zPart);
-        fhZJetPhotonIsolated   [leading[i]][i]->Fill(ptTrig,zJet);
-      }
-    } // gamma
+      //printf("Accept jet\n");
+      fhPtAcceptedGammaJet[leading[i]][i]->Fill(ptTrig,away);
+    }
+    //else printf("Reject jet!!!\n");
+    
   } // conditions loop
-  
   
   AliDebug(1,"End TRUE");
   
@@ -287,313 +269,186 @@ TList *  AliAnaGeneratorKine::GetCreateOutputObjects()
   fhPtJetPtParton->SetYTitle("#it{p}_{T}^{jet}/#it{p}_{T}^{parton}");
   outputContainer->Add(fhPtJetPtParton);
   
-  fhPtPhoton  = new TH1F("hPtPhoton","Input #gamma",nptbins,ptmin,ptmax);
-  fhPtPhoton->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-  outputContainer->Add(fhPtPhoton);
-
-  fhPtPi0  = new TH1F("hPtPi0","Input #pi^{0}",nptbins,ptmin,ptmax);
-  fhPtPi0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-  outputContainer->Add(fhPtPi0);
-  
   TString name   [] = {"","_EMC","_Photon","_EMC_Photon"};
   TString title  [] = {"",", neutral in EMCal",", neutral only #gamma-like",", neutral in EMCal and only #gamma-like"};
   TString leading[] = {"NotLeading","Leading"};
   
-  for(Int_t i = 0; i < 4; i++)
+  TString partTitl[] = {"#gamma_{direct}","#gamma_{decay}^{#pi}","#gamma_{decay}^{#eta}","#gamma_{decay}^{other}","#pi^{0}","#eta"};
+  TString particle[] = {"DirectPhoton"   ,"Pi0DecayPhoton"      ,"EtaDecayPhoton"       ,"OtherDecayPhoton"      ,"Pi0"    ,"Eta"};
+
+  for(Int_t p = 0; p < fgkNmcPrimTypes; p++)
   {
+    fhPt[p]  = new TH1F(Form("h%sPt",particle[p].Data()),Form("Input %s p_{T}",partTitl[p].Data()),nptbins,ptmin,ptmax);
+    fhPt[p]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPt[p]);
     
-    // Pt
-    
-    fhPtPhotonLeading[i]  = new TH1F(Form("hPtPhotonLeading%s",name[i].Data()),
-                                     Form("#gamma: Leading of all particles%s",title[i].Data()),
-                                     nptbins,ptmin,ptmax);
-    fhPtPhotonLeading[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPtPhotonLeading[i]);
-    
-    fhPtPi0Leading[i]  = new TH1F(Form("hPtPi0Leading%s",name[i].Data()),
-                                  Form("#pi^{0}: Leading of all particles%s",title[i].Data()),
-                                  nptbins,ptmin,ptmax);
-    fhPtPi0Leading[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPtPi0Leading[i]);
-    
-    fhPtPhotonLeadingIsolated[i]  = new TH1F(Form("hPtPhotonLeadingIsolated%s",name[i].Data()),
-                                             Form("#gamma: Leading of all particles%s, isolated",title[i].Data()),
-                                             nptbins,ptmin,ptmax);
-    fhPtPhotonLeadingIsolated[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPtPhotonLeadingIsolated[i]);
-    
-    fhPtPi0LeadingIsolated[i]  = new TH1F(Form("hPtPi0LeadingIsolated%s",name[i].Data()),
-                                          Form("#pi^{0}: Leading of all particles%s, isolated",title[i].Data()),
-                                          nptbins,ptmin,ptmax);
-    fhPtPi0LeadingIsolated[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPtPi0LeadingIsolated[i]);
-    
-    fhPtPhotonLeadingSumPt[i]  = new TH2F(Form("hPtPhotonLeadingSumPt%s",name[i].Data()),
-                                     Form("#gamma: Leading of all particles%s",title[i].Data()),
-                                     nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
-    fhPtPhotonLeadingSumPt[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPtPhotonLeadingSumPt[i]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPtPhotonLeadingSumPt[i]);
-    
-    fhPtPi0LeadingSumPt[i]  = new TH2F(Form("hPtPi0LeadingSumPt%s",name[i].Data()),
-                                  Form("#pi^{0}: Leading of all particles%s",title[i].Data()),
-                                  nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
-    fhPtPi0LeadingSumPt[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPtPi0LeadingSumPt[i]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPtPi0LeadingSumPt[i]);
-
-    
-    // Leading or not loop
-    for(Int_t j = 0; j < 2; j++)
+    for(Int_t i = 0; i < fgkNIso; i++)
     {
+      // Pt
       
-      fhPtAcceptedGammaJet[j][i]  = new TH2F(Form("hPtAcceptedGammaJet%s%s",leading[j].Data(),name[i].Data()),
-                                            Form("#gamma-jet: %s of all particles%s",leading[j].Data(),title[i].Data()),
-                                            nptbins,ptmin,ptmax,3,0,3);
-      fhPtAcceptedGammaJet[j][i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPtAcceptedGammaJet[j][i]->SetYTitle("Parton type");
-      fhPtAcceptedGammaJet[j][i]->GetYaxis()->SetBinLabel(1,"#gamma");
-      fhPtAcceptedGammaJet[j][i]->GetYaxis()->SetBinLabel(2,"g");
-      fhPtAcceptedGammaJet[j][i]->GetYaxis()->SetBinLabel(3,"q");
-      outputContainer->Add(fhPtAcceptedGammaJet[j][i]);
-
-      // Near side parton
+      fhPtLeading[p][i]  = new TH1F(Form("h%sPtLeading%s", particle[p].Data(), name[i].Data()),
+                                    Form("%s: Leading of all particles%s",partTitl[p].Data(),title[i].Data()),
+                                    nptbins,ptmin,ptmax);
+      fhPtLeading[p][i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPtLeading[p][i]);
       
-      fhPtPartonTypeNearPhoton[j][i]  = new TH2F(Form("hPtPartonTypeNearPhoton%s%s",leading[j].Data(),name[i].Data()),
-                                                 Form("#gamma: %s of all particles%s",leading[j].Data(),title[i].Data()),
+      fhPtLeadingIsolated[p][i]  = new TH1F(Form("h%sPtLeadingIsolated%s", particle[p].Data(), name[i].Data()),
+                                            Form("%s: Leading of all particles%s, isolated",partTitl[p].Data(),title[i].Data()),
+                                            nptbins,ptmin,ptmax);
+      fhPtLeadingIsolated[p][i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPtLeadingIsolated[p][i]);
+      
+      fhPtLeadingSumPt[p][i]  = new TH2F(Form("h%sPtLeadingSumPt%s", particle[p].Data(), name[i].Data()),
+                                         Form("%s: Leading of all particles%s",partTitl[p].Data(),title[i].Data()),
+                                         nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+      fhPtLeadingSumPt[p][i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPtLeadingSumPt[p][i]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPtLeadingSumPt[p][i]);
+      
+      
+      // Leading or not loop
+      for(Int_t j = 0; j < fgkNLead; j++)
+      {
+        if(p==0)
+        {
+          fhPtAcceptedGammaJet[j][i]  = new TH2F(Form("hPtAcceptedGammaJet%s%s",           leading[j].Data(), name[i].Data()),
+                                                 Form("#gamma-jet: %s of all particles%s", leading[j].Data(), title[i].Data()),
                                                  nptbins,ptmin,ptmax,3,0,3);
-      fhPtPartonTypeNearPhoton[j][i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPtPartonTypeNearPhoton[j][i]->SetYTitle("Parton type");
-      fhPtPartonTypeNearPhoton[j][i]->GetYaxis()->SetBinLabel(1,"#gamma");
-      fhPtPartonTypeNearPhoton[j][i]->GetYaxis()->SetBinLabel(2,"g");
-      fhPtPartonTypeNearPhoton[j][i]->GetYaxis()->SetBinLabel(3,"q");
-      outputContainer->Add(fhPtPartonTypeNearPhoton[j][i]);
-      
-      fhPtPartonTypeNearPi0[j][i]  = new TH2F(Form("hPtPartonTypeNearPi0%s%s",leading[j].Data(),name[i].Data()),
-                                              Form("#pi^{0}: %s of all particles%s",leading[j].Data(),title[i].Data()),
-                                              nptbins,ptmin,ptmax,3,0,3);
-      fhPtPartonTypeNearPi0[j][i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPtPartonTypeNearPi0[j][i]->SetYTitle("Parton type");
-      fhPtPartonTypeNearPi0[j][i]->GetYaxis()->SetBinLabel(1,"#gamma");
-      fhPtPartonTypeNearPi0[j][i]->GetYaxis()->SetBinLabel(2,"g");
-      fhPtPartonTypeNearPi0[j][i]->GetYaxis()->SetBinLabel(3,"q");
-      outputContainer->Add(fhPtPartonTypeNearPi0[j][i]);
-      
-      fhPtPartonTypeNearPhotonIsolated[j][i]  = new TH2F(Form("hPtPartonTypeNearPhoton%sIsolated%s",leading[j].Data(),name[i].Data()),
-                                                         Form("#gamma: %s of all particles%s, isolated",leading[j].Data(),title[i].Data()),
-                                                         nptbins,ptmin,ptmax,3,0,3);
-      fhPtPartonTypeNearPhotonIsolated[j][i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPtPartonTypeNearPhotonIsolated[j][i]->SetYTitle("Parton type");
-      fhPtPartonTypeNearPhotonIsolated[j][i]->GetYaxis()->SetBinLabel(1,"#gamma");
-      fhPtPartonTypeNearPhotonIsolated[j][i]->GetYaxis()->SetBinLabel(2,"g");
-      fhPtPartonTypeNearPhotonIsolated[j][i]->GetYaxis()->SetBinLabel(3,"q");
-      outputContainer->Add(fhPtPartonTypeNearPhotonIsolated[j][i]);
-      
-      fhPtPartonTypeNearPi0Isolated[j][i]  = new TH2F(Form("hPtPartonTypeNearPi0%sIsolated%s",leading[j].Data(),name[i].Data()),
-                                                      Form("#pi^{0}: %s of all particles%s, isolated",leading[j].Data(),title[i].Data()),
-                                                      nptbins,ptmin,ptmax,3,0,3);
-      fhPtPartonTypeNearPi0Isolated[j][i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPtPartonTypeNearPi0Isolated[j][i]->SetYTitle("Parton type");
-      fhPtPartonTypeNearPi0Isolated[j][i]->GetYaxis()->SetBinLabel(1,"#gamma");
-      fhPtPartonTypeNearPi0Isolated[j][i]->GetYaxis()->SetBinLabel(2,"g");
-      fhPtPartonTypeNearPi0Isolated[j][i]->GetYaxis()->SetBinLabel(3,"q");
-      outputContainer->Add(fhPtPartonTypeNearPi0Isolated[j][i]);
-      
-      
-      // Away side parton
-      
-      fhPtPartonTypeAwayPhoton[j][i]  = new TH2F(Form("hPtPartonTypeAwayPhoton%s%s",leading[j].Data(),name[i].Data()),
-                                                 Form("#gamma: %s of all particles%s",leading[j].Data(),title[i].Data()),
-                                                 nptbins,ptmin,ptmax,3,0,3);
-      fhPtPartonTypeAwayPhoton[j][i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPtPartonTypeAwayPhoton[j][i]->SetYTitle("Parton type");
-      fhPtPartonTypeAwayPhoton[j][i]->GetYaxis()->SetBinLabel(1,"#gamma");
-      fhPtPartonTypeAwayPhoton[j][i]->GetYaxis()->SetBinLabel(2,"g");
-      fhPtPartonTypeAwayPhoton[j][i]->GetYaxis()->SetBinLabel(3,"q");
-      outputContainer->Add(fhPtPartonTypeAwayPhoton[j][i]);
-      
-      fhPtPartonTypeAwayPi0[j][i]  = new TH2F(Form("hPtPartonTypeAwayPi0%s%s",leading[j].Data(),name[i].Data()),
-                                              Form("#pi^{0}: %s of all particles%s",leading[j].Data(),title[i].Data()),
-                                              nptbins,ptmin,ptmax,3,0,3);
-      fhPtPartonTypeAwayPi0[j][i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPtPartonTypeAwayPi0[j][i]->SetYTitle("Parton type");
-      fhPtPartonTypeAwayPi0[j][i]->GetYaxis()->SetBinLabel(1,"#gamma");
-      fhPtPartonTypeAwayPi0[j][i]->GetYaxis()->SetBinLabel(2,"g");
-      fhPtPartonTypeAwayPi0[j][i]->GetYaxis()->SetBinLabel(3,"q");
-      outputContainer->Add(fhPtPartonTypeAwayPi0[j][i]);
-      
-      fhPtPartonTypeAwayPhotonIsolated[j][i]  = new TH2F(Form("hPtPartonTypeAwayPhoton%sIsolated%s",leading[j].Data(),name[i].Data()),
-                                                         Form("#gamma: %s of all particles%s, isolated",leading[j].Data(),title[i].Data()),
-                                                         nptbins,ptmin,ptmax,3,0,3);
-      fhPtPartonTypeAwayPhotonIsolated[j][i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPtPartonTypeAwayPhotonIsolated[j][i]->SetYTitle("Parton type");
-      fhPtPartonTypeAwayPhotonIsolated[j][i]->GetYaxis()->SetBinLabel(1,"#gamma");
-      fhPtPartonTypeAwayPhotonIsolated[j][i]->GetYaxis()->SetBinLabel(2,"g");
-      fhPtPartonTypeAwayPhotonIsolated[j][i]->GetYaxis()->SetBinLabel(3,"q");
-      outputContainer->Add(fhPtPartonTypeAwayPhotonIsolated[j][i]);
-      
-      fhPtPartonTypeAwayPi0Isolated[j][i]  = new TH2F(Form("hPtPartonTypeAwayPi0%sIsolated%s",leading[j].Data(),name[i].Data()),
-                                                      Form("#pi^{0}: %s of all particles%s, isolated",leading[j].Data(),title[i].Data()),
-                                                      nptbins,ptmin,ptmax,3,0,3);
-      fhPtPartonTypeAwayPi0Isolated[j][i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPtPartonTypeAwayPi0Isolated[j][i]->SetYTitle("Parton type");
-      fhPtPartonTypeAwayPi0Isolated[j][i]->GetYaxis()->SetBinLabel(1,"#gamma");
-      fhPtPartonTypeAwayPi0Isolated[j][i]->GetYaxis()->SetBinLabel(2,"g");
-      fhPtPartonTypeAwayPi0Isolated[j][i]->GetYaxis()->SetBinLabel(3,"q");
-      outputContainer->Add(fhPtPartonTypeAwayPi0Isolated[j][i]);
-      
-      // zHard
-      
-      fhZHardPhoton[j][i]  = new TH2F(Form("hZHardPhoton%s%s",leading[j].Data(),name[i].Data()),
-                                      Form("#it{z}_{Hard} of #gamma: %s of all particles%s",leading[j].Data(),title[i].Data()),
-                                      nptbins,ptmin,ptmax,200,0,2);
-      fhZHardPhoton[j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
-      fhZHardPhoton[j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
-      outputContainer->Add(fhZHardPhoton[j][i]);
-      
-      fhZHardPi0[j][i]  = new TH2F(Form("hZHardPi0%s%s",leading[j].Data(),name[i].Data()),
-                                   Form("#it{z}_{Hard} of #pi^{0}: %s of all particles%s",leading[j].Data(),title[i].Data()),
-                                   nptbins,ptmin,ptmax,200,0,2);
-      fhZHardPi0[j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
-      fhZHardPi0[j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
-      outputContainer->Add(fhZHardPi0[j][i]);
-      
-      fhZHardPhotonIsolated[j][i]  = new TH2F(Form("hZHardPhoton%sIsolated%s",leading[j].Data(),name[i].Data()),
-                                              Form("#it{z}_{Hard} of #gamma: %s of all particles%s, isolated",leading[j].Data(),title[i].Data()),
-                                              nptbins,ptmin,ptmax,200,0,2);
-      fhZHardPhotonIsolated[j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
-      fhZHardPhotonIsolated[j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
-      outputContainer->Add(fhZHardPhotonIsolated[j][i]);
-      
-      fhZHardPi0Isolated[j][i]  = new TH2F(Form("hZHardPi0%sIsolated%s",leading[j].Data(),name[i].Data()),
-                                           Form("#it{z}_{Hard} of #pi^{0}: %s of all particles%s, isolated",leading[j].Data(),title[i].Data()),
-                                           nptbins,ptmin,ptmax,200,0,2);
-      fhZHardPi0Isolated[j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
-      fhZHardPi0Isolated[j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
-      outputContainer->Add(fhZHardPi0Isolated[j][i]);
-      
-      // zHard
-      
-      fhZPartonPhoton[j][i]  = new TH2F(Form("hZPartonPhoton%s%s",leading[j].Data(),name[i].Data()),
-                                        Form("#it{z}_{Parton} of #gamma: %s of all particles%s",leading[j].Data(),title[i].Data()),
-                                        nptbins,ptmin,ptmax,200,0,2);
-      fhZPartonPhoton[j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
-      fhZPartonPhoton[j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
-      outputContainer->Add(fhZPartonPhoton[j][i]);
-      
-      fhZPartonPi0[j][i]  = new TH2F(Form("hZPartonPi0%s%s",leading[j].Data(),name[i].Data()),
-                                     Form("#it{z}_{Parton} of #pi^{0}: %s of all particles%s",leading[j].Data(),title[i].Data()),
+          fhPtAcceptedGammaJet[j][i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhPtAcceptedGammaJet[j][i]->SetYTitle("Parton type");
+          fhPtAcceptedGammaJet[j][i]->GetYaxis()->SetBinLabel(1,"#gamma");
+          fhPtAcceptedGammaJet[j][i]->GetYaxis()->SetBinLabel(2,"g");
+          fhPtAcceptedGammaJet[j][i]->GetYaxis()->SetBinLabel(3,"q");
+          outputContainer->Add(fhPtAcceptedGammaJet[j][i]);
+        }
+        // Near side parton
+        
+        fhPtPartonTypeNear[p][j][i]  = new TH2F(Form("h%sPtPartonTypeNear%s%s",   particle[p].Data(), leading[j].Data(), name[i].Data()),
+                                                Form("%s: %s of all particles%s", partTitl[p].Data(), leading[j].Data(), title[i].Data()),
+                                                nptbins,ptmin,ptmax,3,0,3);
+        fhPtPartonTypeNear[p][j][i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhPtPartonTypeNear[p][j][i]->SetYTitle("Parton type");
+        fhPtPartonTypeNear[p][j][i]->GetYaxis()->SetBinLabel(1,"#gamma");
+        fhPtPartonTypeNear[p][j][i]->GetYaxis()->SetBinLabel(2,"g");
+        fhPtPartonTypeNear[p][j][i]->GetYaxis()->SetBinLabel(3,"q");
+        outputContainer->Add(fhPtPartonTypeNear[p][j][i]);
+        
+        fhPtPartonTypeNearIsolated[p][j][i]  = new TH2F(Form("h%sPtPartonTypeNear%sIsolated%s",     particle[p].Data(), leading[j].Data(), name[i].Data()),
+                                                        Form("%s: %s of all particles%s, isolated", partTitl[p].Data(), leading[j].Data(), title[i].Data()),
+                                                        nptbins,ptmin,ptmax,3,0,3);
+        fhPtPartonTypeNearIsolated[p][j][i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhPtPartonTypeNearIsolated[p][j][i]->SetYTitle("Parton type");
+        fhPtPartonTypeNearIsolated[p][j][i]->GetYaxis()->SetBinLabel(1,"#gamma");
+        fhPtPartonTypeNearIsolated[p][j][i]->GetYaxis()->SetBinLabel(2,"g");
+        fhPtPartonTypeNearIsolated[p][j][i]->GetYaxis()->SetBinLabel(3,"q");
+        outputContainer->Add(fhPtPartonTypeNearIsolated[p][j][i]);
+        
+        
+        // Away side parton
+        
+        fhPtPartonTypeAway[p][j][i]  = new TH2F(Form("h%sPtPartonTypeAway%s%s",   particle[p].Data(), leading[j].Data(), name[i].Data()),
+                                                Form("%s: %s of all particles%s", partTitl[p].Data(), leading[j].Data(), title[i].Data()),
+                                                nptbins,ptmin,ptmax,3,0,3);
+        fhPtPartonTypeAway[p][j][i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhPtPartonTypeAway[p][j][i]->SetYTitle("Parton type");
+        fhPtPartonTypeAway[p][j][i]->GetYaxis()->SetBinLabel(1,"#gamma");
+        fhPtPartonTypeAway[p][j][i]->GetYaxis()->SetBinLabel(2,"g");
+        fhPtPartonTypeAway[p][j][i]->GetYaxis()->SetBinLabel(3,"q");
+        outputContainer->Add(fhPtPartonTypeAway[p][j][i]);
+        
+        fhPtPartonTypeAwayIsolated[p][j][i]  = new TH2F(Form("h%sPtPartonTypeAway%sIsolated%s",     particle[p].Data(), leading[j].Data(), name[i].Data()),
+                                                        Form("%s: %s of all particles%s, isolated", partTitl[p].Data(), leading[j].Data(), title[i].Data()),
+                                                        nptbins,ptmin,ptmax,3,0,3);
+        fhPtPartonTypeAwayIsolated[p][j][i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhPtPartonTypeAwayIsolated[p][j][i]->SetYTitle("Parton type");
+        fhPtPartonTypeAwayIsolated[p][j][i]->GetYaxis()->SetBinLabel(1,"#gamma");
+        fhPtPartonTypeAwayIsolated[p][j][i]->GetYaxis()->SetBinLabel(2,"g");
+        fhPtPartonTypeAwayIsolated[p][j][i]->GetYaxis()->SetBinLabel(3,"q");
+        outputContainer->Add(fhPtPartonTypeAwayIsolated[p][j][i]);
+        
+        // zHard
+        
+        fhZHard[p][j][i]  = new TH2F(Form("h%sZHard%s%s",                               particle[p].Data(), leading[j].Data(), name[i].Data()),
+                                     Form("#it{z}_{Hard} of %s: %s of all particles%s", partTitl[p].Data(), leading[j].Data(), title[i].Data()),
                                      nptbins,ptmin,ptmax,200,0,2);
-      fhZPartonPi0[j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
-      fhZPartonPi0[j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
-      outputContainer->Add(fhZPartonPi0[j][i]);
-      
-      fhZPartonPhotonIsolated[j][i]  = new TH2F(Form("hZPartonPhoton%sIsolated%s",leading[j].Data(),name[i].Data()),
-                                                Form("#it{z}_{Parton} of #gamma: %s of all particles%s, isolated",leading[j].Data(),title[i].Data()),
-                                                nptbins,ptmin,ptmax,200,0,2);
-      fhZPartonPhotonIsolated[j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
-      fhZPartonPhotonIsolated[j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
-      outputContainer->Add(fhZPartonPhotonIsolated[j][i]);
-      
-      fhZPartonPi0Isolated[j][i]  = new TH2F(Form("hZPartonPi0%sIsolated%s",leading[j].Data(),name[i].Data()),
-                                             Form("#it{z}_{Parton} of #pi^{0}: %s of all particles%s, isolated",leading[j].Data(),title[i].Data()),
+        fhZHard[p][j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
+        fhZHard[p][j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
+        outputContainer->Add(fhZHard[p][j][i]);
+        
+        fhZHardIsolated[p][j][i]  = new TH2F(Form("h%sZHard%sIsolated%s",                                 particle[p].Data(), leading[j].Data(), name[i].Data()),
+                                             Form("#it{z}_{Hard} of %s: %s of all particles%s, isolated", partTitl[p].Data(), leading[j].Data(), title[i].Data()),
                                              nptbins,ptmin,ptmax,200,0,2);
-      fhZPartonPi0Isolated[j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
-      fhZPartonPi0Isolated[j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
-      outputContainer->Add(fhZPartonPi0Isolated[j][i]);
-      
-      
-      // zJet
-      
-      fhZJetPhoton[j][i]  = new TH2F(Form("hZJetPhoton%s%s",leading[j].Data(),name[i].Data()),
-                                     Form("#it{z}_{Jet} of #gamma: %s of all particles%s",leading[j].Data(),title[i].Data()),
-                                     nptbins,ptmin,ptmax,200,0,2);
-      fhZJetPhoton[j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
-      fhZJetPhoton[j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
-      outputContainer->Add(fhZJetPhoton[j][i]);
-      
-      fhZJetPi0[j][i]  = new TH2F(Form("hZJetPi0%s%s",leading[j].Data(),name[i].Data()),
-                                  Form("#it{z}_{Jet} of #pi^{0}: %s of all particles%s",leading[j].Data(),title[i].Data()),
+        fhZHardIsolated[p][j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
+        fhZHardIsolated[p][j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
+        outputContainer->Add(fhZHardIsolated[p][j][i]);
+        
+        // zHard
+        
+        fhZParton[p][j][i]  = new TH2F(Form("h%sZParton%s%s",                               particle[p].Data(), leading[j].Data(), name[i].Data()),
+                                       Form("#it{z}_{Parton} of %s: %s of all particles%s", partTitl[p].Data(), leading[j].Data(), title[i].Data()),
+                                       nptbins,ptmin,ptmax,200,0,2);
+        fhZParton[p][j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
+        fhZParton[p][j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
+        outputContainer->Add(fhZParton[p][j][i]);
+        
+        fhZPartonIsolated[p][j][i]  = new TH2F(Form("h%sZParton%sIsolated%s",                                 particle[p].Data(), leading[j].Data(), name[i].Data()),
+                                               Form("#it{z}_{Parton} of %s: %s of all particles%s, isolated", partTitl[p].Data(), leading[j].Data(), title[i].Data()),
+                                               nptbins,ptmin,ptmax,200,0,2);
+        fhZPartonIsolated[p][j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
+        fhZPartonIsolated[p][j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
+        outputContainer->Add(fhZPartonIsolated[p][j][i]);
+        
+        
+        // zJet
+        
+        fhZJet[p][j][i]  = new TH2F(Form("h%sZJet%s%s",                               particle[p].Data(), leading[j].Data(), name[i].Data()),
+                                    Form("#it{z}_{Jet} of %s: %s of all particles%s", partTitl[p].Data(), leading[j].Data(), title[i].Data()),
+                                    nptbins,ptmin,ptmax,200,0,2);
+        fhZJet[p][j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
+        fhZJet[p][j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
+        outputContainer->Add(fhZJet[p][j][i]);
+        
+        fhZJetIsolated[p][j][i]  = new TH2F(Form("h%sZJet%sIsolated%s",                                 particle[p].Data(), leading[j].Data(), name[i].Data()),
+                                            Form("#it{z}_{Jet} of %s: %s of all particles%s, isolated", partTitl[p].Data(), leading[j].Data(), title[i].Data()),
+                                            nptbins,ptmin,ptmax,200,0,2);
+        fhZJetIsolated[p][j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
+        fhZJetIsolated[p][j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
+        outputContainer->Add(fhZJetIsolated[p][j][i]);
+        
+        
+        // XE
+        
+        fhXE[p][j][i]  = new TH2F(Form("h%sXE%s%s",                                 particle[p].Data(), leading[j].Data(), name[i].Data()),
+                                  Form("#it{z}_{Jet} of %s: %s of all particles%s", partTitl[p].Data(), leading[j].Data(), title[i].Data()),
                                   nptbins,ptmin,ptmax,200,0,2);
-      fhZJetPi0[j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
-      fhZJetPi0[j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
-      outputContainer->Add(fhZJetPi0[j][i]);
-      
-      fhZJetPhotonIsolated[j][i]  = new TH2F(Form("hZJetPhoton%sIsolated%s",leading[j].Data(),name[i].Data()),
-                                             Form("#it{z}_{Jet} of #gamma: %s of all particles%s, isolated",leading[j].Data(),title[i].Data()),
-                                             nptbins,ptmin,ptmax,200,0,2);
-      fhZJetPhotonIsolated[j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
-      fhZJetPhotonIsolated[j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
-      outputContainer->Add(fhZJetPhotonIsolated[j][i]);
-      
-      fhZJetPi0Isolated[j][i]  = new TH2F(Form("hZJetPi0%sIsolated%s",leading[j].Data(),name[i].Data()),
-                                          Form("#it{z}_{Jet} of #pi^{0}: %s of all particles%s, isolated",leading[j].Data(),title[i].Data()),
+        fhXE[p][j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
+        fhXE[p][j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
+        outputContainer->Add(fhXE[p][j][i]);
+        
+        fhXEIsolated[p][j][i]  = new TH2F(Form("h%sXE%sIsolated%s",                                   particle[p].Data(), leading[j].Data(), name[i].Data()),
+                                          Form("#it{z}_{Jet} of %s: %s of all particles%s, isolated", partTitl[p].Data(), leading[j].Data(), title[i].Data()),
                                           nptbins,ptmin,ptmax,200,0,2);
-      fhZJetPi0Isolated[j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
-      fhZJetPi0Isolated[j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
-      outputContainer->Add(fhZJetPi0Isolated[j][i]);
-      
-      
-      // XE
-      
-      fhXEPhoton[j][i]  = new TH2F(Form("hXEPhoton%s%s",leading[j].Data(),name[i].Data()),
-                                   Form("#it{z}_{Jet} of #gamma: %s of all particles%s",leading[j].Data(),title[i].Data()),
-                                   nptbins,ptmin,ptmax,200,0,2);
-      fhXEPhoton[j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
-      fhXEPhoton[j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
-      outputContainer->Add(fhXEPhoton[j][i]);
-      
-      fhXEPi0[j][i]  = new TH2F(Form("hXEPi0%s%s",leading[j].Data(),name[i].Data()),
-                                Form("#it{z}_{Jet} of #pi^{0}: %s of all particles%s",leading[j].Data(),title[i].Data()),
-                                nptbins,ptmin,ptmax,200,0,2);
-      fhXEPi0[j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
-      fhXEPi0[j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
-      outputContainer->Add(fhXEPi0[j][i]);
-      
-      fhXEPhotonIsolated[j][i]  = new TH2F(Form("hXEPhoton%sIsolated%s",leading[j].Data(),name[i].Data()),
-                                           Form("#it{z}_{Jet} of #gamma: %s of all particles%s, isolated",leading[j].Data(),title[i].Data()),
-                                           nptbins,ptmin,ptmax,200,0,2);
-      fhXEPhotonIsolated[j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
-      fhXEPhotonIsolated[j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
-      outputContainer->Add(fhXEPhotonIsolated[j][i]);
-      
-      fhXEPi0Isolated[j][i]  = new TH2F(Form("hXEPi0%sIsolated%s",leading[j].Data(),name[i].Data()),
-                                        Form("#it{z}_{Jet} of #pi^{0}: %s of all particles%s, isolated",leading[j].Data(),title[i].Data()),
-                                        nptbins,ptmin,ptmax,200,0,2);
-      fhXEPi0Isolated[j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
-      fhXEPi0Isolated[j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
-      outputContainer->Add(fhXEPi0Isolated[j][i]);
-      
-      
-      // XE from UE
-      
-      fhXEUEPhoton[j][i]  = new TH2F(Form("hXEUEPhoton%s%s",leading[j].Data(),name[i].Data()),
-                                     Form("#it{z}_{Jet} of #gamma: %s of all particles%s",leading[j].Data(),title[i].Data()),
-                                     nptbins,ptmin,ptmax,200,0,2);
-      fhXEUEPhoton[j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
-      fhXEUEPhoton[j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
-      outputContainer->Add(fhXEUEPhoton[j][i]);
-      
-      fhXEUEPi0[j][i]  = new TH2F(Form("hXEUEPi0%s%s",leading[j].Data(),name[i].Data()),
-                                  Form("#it{z}_{Jet} of #pi^{0}: %s of all particles%s",leading[j].Data(),title[i].Data()),
-                                  nptbins,ptmin,ptmax,200,0,2);
-      fhXEUEPi0[j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
-      fhXEUEPi0[j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
-      outputContainer->Add(fhXEUEPi0[j][i]);
-      
-      fhXEUEPhotonIsolated[j][i]  = new TH2F(Form("hXEUEPhoton%sIsolated%s",leading[j].Data(),name[i].Data()),
-                                             Form("#it{z}_{Jet} of #gamma: %s of all particles%s, isolated",leading[j].Data(),title[i].Data()),
-                                             nptbins,ptmin,ptmax,200,0,2);
-      fhXEUEPhotonIsolated[j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
-      fhXEUEPhotonIsolated[j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
-      outputContainer->Add(fhXEUEPhotonIsolated[j][i]);
-      
-      fhXEUEPi0Isolated[j][i]  = new TH2F(Form("hXEUEPi0%sIsolated%s",leading[j].Data(),name[i].Data()),
-                                          Form("#it{z}_{Jet} of #pi^{0}: %s of all particles%s, isolated",leading[j].Data(),title[i].Data()),
-                                          nptbins,ptmin,ptmax,200,0,2); 
-      fhXEUEPi0Isolated[j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
-      fhXEUEPi0Isolated[j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
-      outputContainer->Add(fhXEUEPi0Isolated[j][i]);          
+        fhXEIsolated[p][j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
+        fhXEIsolated[p][j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
+        outputContainer->Add(fhXEIsolated[p][j][i]);
+        
+        
+        // XE from UE
+        
+        fhXEUE[p][j][i]  = new TH2F(Form("h%sXEUE%s%s",                               particle[p].Data(), leading[j].Data(), name[i].Data()),
+                                    Form("#it{z}_{Jet} of %s: %s of all particles%s", partTitl[p].Data(), leading[j].Data(), title[i].Data()),
+                                    nptbins,ptmin,ptmax,200,0,2);
+        fhXEUE[p][j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
+        fhXEUE[p][j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
+        outputContainer->Add(fhXEUE[p][j][i]);
+        
+        fhXEUEIsolated[p][j][i]  = new TH2F(Form("h%sXEUE%sIsolated%s",                                 particle[p].Data(), leading[j].Data(), name[i].Data()),
+                                            Form("#it{z}_{Jet} of %s: %s of all particles%s, isolated", partTitl[p].Data(), leading[j].Data(), title[i].Data()),
+                                            nptbins,ptmin,ptmax,200,0,2); 
+        fhXEUEIsolated[p][j][i]->SetYTitle("#it{p}_{T}^{particle}/#it{p}_{T}^{hard}");
+        fhXEUEIsolated[p][j][i]->SetXTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
+        outputContainer->Add(fhXEUEIsolated[p][j][i]);
+      }
     }
   }
   
@@ -694,9 +549,9 @@ void  AliAnaGeneratorKine::GetPartonsAndJets()
 
 //_____________________________________________________
 void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
-                                Int_t   pdgTrig,
-                                Bool_t  leading[4],
-                                Bool_t  isolated[4],
+                                Int_t   partType,
+                                Bool_t  leading [fgkNIso],
+                                Bool_t  isolated[fgkNIso],
                                 Int_t   iparton)
 {
 
@@ -756,28 +611,14 @@ void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
     // on the opposite side of the trigger
     if((ipartonAway==6 || ipartonAway==7) && iparton!=ipartonAway) 
     {
-      for( Int_t i = 0; i < 4; i++ )
+      for( Int_t i = 0; i < fgkNIso; i++ )
       {
-        if(pdgTrig==111)
+        fhXE[partType][leading[i]][i]  ->Fill(ptTrig,xe);
+        
+        if(isolated[i])
         {
-          fhXEPi0[leading[i]][i]  ->Fill(ptTrig,xe);
-          
-          if(isolated[i])
-          {
-            fhXEPi0Isolated[leading[i]][i]  ->Fill(ptTrig,xe);
-          }
-          
-        }// pi0
-        else if(pdgTrig==22)
-        {
-          fhXEPhoton[leading[i]][i]  ->Fill(ptTrig,xe);
-          
-          if(isolated[i])
-          {
-            fhXEPhotonIsolated[leading[i]][i]  ->Fill(ptTrig,xe);
-          }
-          
-        } // photon
+          fhXEIsolated[partType][leading[i]][i]  ->Fill(ptTrig,xe);
+        }
       } // conditions loop
     } // Away side
 
@@ -785,29 +626,15 @@ void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
     // Get the XE from particles not attached to any of the jets
     if(ipartonAway!=6 && ipartonAway!=7)
     {
-      for( Int_t i = 0; i < 4; i++ )
+      for( Int_t i = 0; i < fgkNIso; i++ )
       {
-        if(pdgTrig==111)
+        fhXEUE[partType][leading[i]][i]  ->Fill(ptTrig,xe);
+        
+        if(isolated[i])
         {
-          fhXEUEPi0[leading[i]][i]  ->Fill(ptTrig,xe);
-          
-          if(isolated[i])
-          {
-            fhXEUEPi0Isolated[leading[i]][i]  ->Fill(ptTrig,xe);
-          }
-          
-        }// pi0
-        else if(pdgTrig==22)
-        {
-          fhXEUEPhoton[leading[i]][i]  ->Fill(ptTrig,xe);
-          
-          if(isolated[i])
-          {
-            fhXEUEPhotonIsolated[leading[i]][i]  ->Fill(ptTrig,xe);
-          }
-          
-        } // photon
-      } // conditions loop  
+          fhXEUEIsolated[partType][leading[i]][i]  ->Fill(ptTrig,xe);
+        }
+      } // conditions loop
     } // Away side    
     
   } // primary loop
@@ -832,9 +659,9 @@ void AliAnaGeneratorKine::InitParameters()
 
 //_____________________________________________________________________
 void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
-                                                Int_t pdgTrig,
-                                                Bool_t leading[4],
-                                                Bool_t isolated[4]) 
+                                                Int_t partType,
+                                                Bool_t leading[fgkNIso],
+                                                Bool_t isolated[fgkNIso]) 
 {
   // Check if the trigger is the leading particle and if it is isolated
   // In case of neutral particles check all neutral or neutral in EMCAL acceptance
@@ -890,10 +717,11 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
     if(ipr == indexTrig) continue;
     TParticle * particle = fStack->Particle(ipr) ;
     
-    Int_t   imother= particle->GetFirstMother();
+    Int_t   imother = particle->GetFirstMother();
     //printf("Leading ipr %d - mother %d\n",ipr, imother);
     
-    if(imother==indexTrig)  continue ;
+    // Do not consider the photon decays from pi0 and eta
+    if( imother == indexTrig)  continue ;
     
     Int_t   pdg    = particle->GetPdgCode();
     Int_t   status = particle->GetStatusCode();
@@ -1017,36 +845,19 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
   
   //----------------------------------------------------
   // Fill histograms if conditions apply for all 4 cases
-  for( Int_t i = 0; i < 4; i++ )
+  for( Int_t i = 0; i < fgkNIso; i++ )
   {
-    if(pdgTrig==111)
+    if(leading[i])
     {
-      if(leading[i])
-      { 
-        fhPtPi0Leading[i]->Fill(ptTrig);
-        
-        if     (i == 0) fhPtPi0LeadingSumPt[i]->Fill(ptTrig, sumChPt + sumNePt);
-        else if(i == 1) fhPtPi0LeadingSumPt[i]->Fill(ptTrig, sumChPt + sumNePtEMC);
-        else if(i == 2) fhPtPi0LeadingSumPt[i]->Fill(ptTrig, sumChPt + sumNePtPhot);
-        else if(i == 3) fhPtPi0LeadingSumPt[i]->Fill(ptTrig, sumChPt + sumNePtEMCPhot);
-
-        if(isolated[i]) fhPtPi0LeadingIsolated[i]->Fill(ptTrig);
-      }
-    }// pi0
-    else if(pdgTrig==22)
-    {
-      if(leading[i])
-      { 
-        fhPtPhotonLeading[i]->Fill(ptTrig);
-        
-        if     (i == 0) fhPtPhotonLeadingSumPt[i]->Fill(ptTrig, sumChPt + sumNePt);
-        else if(i == 1) fhPtPhotonLeadingSumPt[i]->Fill(ptTrig, sumChPt + sumNePtEMC);
-        else if(i == 2) fhPtPhotonLeadingSumPt[i]->Fill(ptTrig, sumChPt + sumNePtPhot);
-        else if(i == 3) fhPtPhotonLeadingSumPt[i]->Fill(ptTrig, sumChPt + sumNePtEMCPhot);
-        
-        if(isolated[i]) fhPtPhotonLeadingIsolated[i]->Fill(ptTrig);
-      }
-    } // photon
+      fhPtLeading[partType][i]->Fill(ptTrig);
+      
+      if     (i == 0) fhPtLeadingSumPt[partType][i]->Fill(ptTrig, sumChPt + sumNePt);
+      else if(i == 1) fhPtLeadingSumPt[partType][i]->Fill(ptTrig, sumChPt + sumNePtEMC);
+      else if(i == 2) fhPtLeadingSumPt[partType][i]->Fill(ptTrig, sumChPt + sumNePtPhot);
+      else if(i == 3) fhPtLeadingSumPt[partType][i]->Fill(ptTrig, sumChPt + sumNePtEMCPhot);
+      
+      if(isolated[i]) fhPtLeadingIsolated[partType][i]->Fill(ptTrig);
+    }
   } // conditions loop
  
   AliDebug(1,"End");
@@ -1071,47 +882,78 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     Int_t   imother    = particle->GetFirstMother();
     Float_t ptTrig     = particle->Pt(); 
 
-    // Select final state photons (prompt, fragmentation) or pi0s
-    
-    //Check the origin of the photon, accept if prompt or initial/final state radiation
-    if(pdgTrig == 22 && statusTrig == 1)
-    {
-      if(imother > 8) continue;
-    }
-    // If not photon, trigger on pi0
-    else if(pdgTrig != 111) continue;
-    
     // Acceptance and kinematical cuts
     if( ptTrig < GetMinPt() ) continue ;
+
+    // Select final state photons or pi0s or eta's
     
+    if( pdgTrig == 22 && statusTrig != 1 ) continue ;
+    
+    if( pdgTrig != 111 && pdgTrig != 22 && pdgTrig !=221 ) continue ;
+    
+    // Acceptance and kinematical cuts
     // Recover the kinematics:
     particle->Momentum(fTrigger);
     
     Bool_t in = GetFiducialCutForTrigger()->IsInFiducialCut(fTrigger.Eta(),fTrigger.Phi(),fTriggerDetector) ;
-    if(! in ) continue ;
+    if(! in )  continue ;
 
-    AliDebug(1,Form("Select trigger particle %d: pdg %d status %d, mother index %d, pT %2.2f, eta %2.2f, phi %2.2f",
-                    ipr, pdgTrig, statusTrig, imother, ptTrig, particle->Eta(), particle->Phi()*TMath::RadToDeg()));
+    // Identify the particle to fill appropriate histogram
+    Int_t partType = -1;
     
-//    if(pdgTrig==111)
-//    {
-//      printf("\t pi0 daughters %d, %d\n", particle->GetDaughter(0), particle->GetDaughter(1));
-//    }
+    if     (pdgTrig==22 )
+    {
+      if(imother > 0 )
+      {
+        Int_t momStatus = (fStack->Particle(imother))->GetStatusCode();
+        Int_t momPdg    = (fStack->Particle(imother))->GetPdgCode();
+        
+        if     (imother < 8 && statusTrig == 1)  partType = kmcPrimPhoton ;
+        else if(momPdg == 111 ) partType = kmcPrimPi0Decay   ;
+        else if(momPdg == 221 ) partType = kmcPrimEtaDecay   ;
+        else if(momStatus > 0 ) partType = kmcPrimOtherDecay ;
+      }
+    }
+    else if(pdgTrig==111 && particle->GetNDaughters() == 2)
+    {
+      Int_t pdg0 = fStack->Particle(particle->GetDaughter(0))->GetPdgCode();
+      Int_t pdg1 = fStack->Particle(particle->GetDaughter(1))->GetPdgCode();
+      
+      if(pdg0 == 22 && pdg1== 22 ) partType = kmcPrimPi0;
+    }
+    else if(pdgTrig==221 && particle->GetNDaughters() == 2)
+    {
+      Int_t pdg0 = fStack->Particle(particle->GetDaughter(0))->GetPdgCode();
+      Int_t pdg1 = fStack->Particle(particle->GetDaughter(1))->GetPdgCode();
+      
+      if(pdg0 == 22 && pdg1== 22 ) partType = kmcPrimEta;
+    }
+    
+    if(partType < 0 ) continue ;
 
-    if     (pdgTrig==22 ) fhPtPhoton->Fill(ptTrig);
-    else if(pdgTrig==111) fhPtPi0   ->Fill(ptTrig);
+    AliDebug(1,Form("Select trigger particle %d: pdg %d, type %d, status %d, mother index %d, pT %2.2f, eta %2.2f, phi %2.2f",
+                    ipr, pdgTrig, partType, statusTrig, imother, ptTrig, particle->Eta(), particle->Phi()*TMath::RadToDeg()));
+    
+    //    if(pdgTrig==111)
+    //    {
+    //      printf("\t pi0 daughters %d, %d\n", particle->GetDaughter(0), particle->GetDaughter(1));
+    //    }
+
+    // Fill histograms do analysis
+    
+    fhPt[partType]->Fill(ptTrig);
     
     // Check if it is leading
-    Bool_t leading[4] ;
-    Bool_t isolated[4] ;
+    Bool_t leading [fgkNIso] ;
+    Bool_t isolated[fgkNIso] ;
 
-    IsLeadingAndIsolated(ipr, pdgTrig, leading, isolated);
+    IsLeadingAndIsolated(ipr, partType, leading, isolated);
     
     Int_t iparton = -1;
-    Int_t ok = CorrelateWithPartonOrJet(ipr, pdgTrig, leading, isolated, iparton);
+    Int_t ok = CorrelateWithPartonOrJet(ipr, partType, leading, isolated, iparton);
     if(!ok) continue;
     
-    GetXE(ipr,pdgTrig,leading,isolated,iparton) ;    
+    GetXE(ipr,partType,leading,isolated,iparton) ;
     
   }
   
