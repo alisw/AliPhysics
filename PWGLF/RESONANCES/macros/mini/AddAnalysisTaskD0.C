@@ -141,9 +141,11 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    // - 3rd argument --> minimum required number of contributors
    // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
    AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", cutV, 1, kFALSE, kFALSE);
+   AliRsnCutEventUtils *cutEventUtils = new AliRsnCutEventUtils("cutEventUtils", kFALSE, kTRUE);
+   
    if(checkpileup == kTRUE){
-   	AliRsnCutEventUtils *cutEventUtils = new AliRsnCutEventUtils("cutEventUtils", kFALSE, kTRUE); 
-	if(SPDpileup == kTRUE) {cutEventUtils->SetRemovePileUppA2013(kTRUE); 
+
+      if(SPDpileup == kTRUE) {cutEventUtils->SetRemovePileUppA2013(kTRUE); 
 				//cutEventUtils->SetRemoveFirstEvtInChunk(kTRUE);
 				//cutEventUtils->SetUseVertexSelection2013pA(kTRUE);
 				cutEventUtils->SetUseMVPlpSelection(kFALSE); 
@@ -252,7 +254,8 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigD0.C");
+   //gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigD0.C");
+   gROOT->LoadMacro("$ALICE_ROOT/../src/PWGLF/RESONANCES/macros/mini/ConfigD0.C");
 
    if (isMC) {
        Printf("========================== MC analysis - PID cuts used");
