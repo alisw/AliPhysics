@@ -351,7 +351,7 @@ void AliTOFReconstructor::FillEventTimeWithTOF(AliESDEvent *event, AliESDpid *es
 
   event->GetTOFHeader()->SetNumberOfTOFclusters(fNumberOfTofClusters);
   event->GetTOFHeader()->SetNumberOfTOFtrgPads(fNumberOfTofTrgPads);
-  event->GetTOFHeader()->SetTriggerMask(mapTrigger);
+  if(mapTrigger)  event->GetTOFHeader()->SetTriggerMask(mapTrigger);
   AliInfo(Form(" Number of readout cluster in trigger window = %d ; number of trgPads from Trigger map = %d",
 	       event->GetTOFHeader()->GetNumberOfTOFtrgPads(),
 	       event->GetTOFHeader()->GetNumberOfTOFmaxipad()));
