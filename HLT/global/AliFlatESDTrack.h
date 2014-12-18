@@ -42,6 +42,7 @@ class AliFlatESDTrack :public AliVTrack {
   // -- Set methods
  
   Int_t SetFromESDTrack( const AliESDtrack* track );
+  void  GetESDTrack( AliESDtrack* track ) const;
 
   Int_t SetExternalTrackParam( 
 			      const AliExternalTrackParam* refittedParam,

@@ -75,6 +75,7 @@ class AliFlatESDEvent :public AliVEvent {
   // -- Set methods
 
   Int_t SetFromESD( size_t allocatedMemorySize, const AliESDEvent *esd, const Bool_t fillV0s=kTRUE );
+  void  GetESDEvent( AliESDEvent *esd ) const;
 
   void SetFriendEvent( AliVfriendEvent *f ) { fFriendEvent=dynamic_cast<AliFlatESDFriend*>(f); }
 

@@ -35,6 +35,7 @@
 #include "AliFlatExternalTrackParam.h"
 #include "AliESDtrack.h"
 #include "AliExternalTrackParam.h"
+#include "AliTPCseed.h"
 #include "Riostream.h"
 
 
@@ -70,6 +71,33 @@ Int_t AliFlatESDTrack::SetFromESDTrack(const AliESDtrack* track)
 
   return iResult;
 }
+
+void  AliFlatESDTrack::GetESDTrack( AliESDtrack* esdTrack ) const
+{
+  // get esd track out of flat track
+
+  // not yet fully implemented!!! SG!!
+
+  if( !esdTrack ) return;
+
+  AliTPCseed p;
+  p.SetNumberOfClusters( GetNumberOfTPCClusters() );
+
+  if( GetTrackParamOp( p )>=0 ){
+    esdTrack->UpdateTrackParams( &p, AliESDtrack::kTPCout );
+  }
+  if( GetTrackParamTPCInner( p )>=0 ){
+    esdTrack->UpdateTrackParams( &p, AliESDtrack::kTPCin );
+  }
+  if( GetTrackParamRefitted( p )>=0 ){
+    esdTrack->UpdateTrackParams( &p, AliESDtrack::kTPCrefit );
+  }
+  if( GetTrackParamRefitted( p )>=0 ){
+    esdTrack->UpdateTrackParams( &p, AliESDtrack::kTPCrefit );
+  }
+
+}
+
 
 // _______________________________________________________________________________________________________
 Int_t AliFlatESDTrack::SetExternalTrackParam( 

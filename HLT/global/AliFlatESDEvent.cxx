@@ -236,7 +236,7 @@ Int_t AliFlatESDEvent::SetPrimaryVertexSPD( const AliESDVertex *vtx, size_t allo
 // _______________________________________________________________________________________________________
 Int_t AliFlatESDEvent::SetFromESD( const size_t allocatedMemorySize, const AliESDEvent *esd, const Bool_t fillV0s)
 {
-  // Fill flat ESD event from normal ALiESDEvent
+  // Fill flat ESD event from  ALiESDEvent
   // - Fill tracks + v0s
   // -> Added objects have to be added here as well
  
@@ -354,3 +354,71 @@ AliVEvent::EDataLayoutType AliFlatESDEvent::GetDataLayoutType() const
   return AliVEvent::kFlat;
 }
 
+
+void  AliFlatESDEvent::GetESDEvent( AliESDEvent *esd ) const 
+{
+  // Fill flat ESD event to ALiESDEvent
+
+  // not yet fully implemented!!! SG!!
+
+  if( !esd ) return;  
+  
+  esd->Reset(); 
+  esd->CreateStdContent();
+
+  // fill run info
+  {  
+    esd->SetMagneticField( GetMagneticField() );
+    esd->SetRunNumber( GetRunNumber() );
+    esd->SetPeriodNumber( GetPeriodNumber() );
+    esd->SetOrbitNumber( GetOrbitNumber() );
+    esd->SetBunchCrossNumber( GetBunchCrossNumber() );
+    esd->SetTimeStamp( GetTimeStamp() );
+    esd->SetEventSpecie( GetEventSpecie() );
+  }
+
+  // Fill trigger information  
+  {
+    for( int i=0; i<GetNumberOfTriggerClasses(); i++ ){
+      const AliFlatESDTrigger &trg = GetTriggerClasses()[i];    
+      esd->SetTriggerClass( trg.GetTriggerClassName(), trg.GetTriggerIndex() );
+    }
+    
+    esd->SetTriggerMask( GetTriggerMask() );
+    esd->SetTriggerMaskNext50( GetTriggerMaskNext50() );
+  }
+
+  // fill primary vertices
+  {
+    AliESDVertex v;
+    if( GetPrimaryVertexSPD( v ) > 0 ) esd->SetPrimaryVertexSPD( &v );
+    if( GetPrimaryVertexTPC( v ) > 0 ) esd->SetPrimaryVertexTPC( &v );
+    if( GetPrimaryVertexTracks( v ) > 0 ) esd->SetPrimaryVertexTracks( &v );
+  }
+
+   // fill tracks 
+  {
+    const AliFlatESDTrack *flatTrack = GetTracks();
+    for( int i=0; i<GetNumberOfTracks(); i++ ){
+      AliESDtrack esdtrack;
+      flatTrack->GetESDTrack( &esdtrack );
+      esd->AddTrack( &esdtrack );
+      flatTrack = flatTrack->GetNextTrack();
+    }
+  }
+ 
+  /* SG!!! TO DO
+
+
+  // fill V0s
+  {
+    const AliFlatESDV0 *flatV0 = GetV0s();
+    for( int i=0; i<GetNumberOfV0s(); i++ ){
+      AliESDv0 esdV0;
+      flatV0->FillToESDv0( & esdV0 );
+      flatV0 = flatV0->GetNextV0();
+      esd->AddV0( &esdV0 );
+    }
+  }  
+  */
+}
