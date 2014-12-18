@@ -55,33 +55,32 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   double PionMass = 0.13956995;
   double KaonMass = 0.493677;
-  const int cMu=3;
+  const int cMu=1;
   const int cKt=3;
 
   //-------Single track cuts------------------------------------------------->
-  //STANDART
   double DCAxy=2.4;//cm // our standard is 0.20 cm; super narrow was 0.015cm
   double DCAz =3.0;//cm // our standard is 0.15 cm;
- //test //ptdependent cut
-  //double DCAxy=2.4;//cm // our standard is 0.20 cm; super narrow was 0.015cm
-  //double DCAz =2.0;//cm // our standard is 0.15 cm;
-  
-  
   //-------Single track cuts-------------------------------------------------<
   //=======Double track cuts=================================================>
   //Dhevan's : PhiStarDifferenceMinimum=0.06; EtaDifferenceMinimum=0.02;
-  //double PhiStarDifferenceMinimum=0.03;//0.017; //[radian]
-  //double EtaDifferenceMinimum=0.02;//0.015; //[radian]
+  //standart
+  //double PhiStarDifferenceMinimum=0.017; //[radian]
+ // double EtaDifferenceMinimum=0.015; //[radian]
+ //for test
+   //double PhiStarDifferenceMinimum=0.03; //[radian]
+ // double EtaDifferenceMinimum=0.02; //[radian]
    double PhiStarDifferenceMinimum=0.04; //[radian]
    double EtaDifferenceMinimum=0.02; //[radian]
+  
   
   
   //=======Double track cuts=================================================<
 
   // Switches for QA analyses
  
-  int runmults[4] = {0, 1, 1, 1};
-  int multbins[5] = {0, 100, 300, 500, 900};
+  int runmults[4] = {1, 0, 0, 0};
+  int multbins[5] = {0, 50, 300, 500, 900};
 
   //.................................................
 
@@ -138,8 +137,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
     Reader->SetFilterBit(7);
-//    Reader->SetCentralityPreSelection(0, 100);
-    Reader->SetCentralityPreSelection(100, 900);
+    Reader->SetCentralityPreSelection(0, 50);
     Reader->SetDCAglobalTrack(kTRUE);//option the DCA information from global tracks (ITS+TPC)
     
   AliFemtoManager* Manager=new AliFemtoManager();
@@ -290,8 +288,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	    //    dtc1etaphitpc[aniter]->SetMaxITSChiNdof(6.0);
 	    dtc1etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);
 	    dtc1etaphitpc[aniter]->SetMaxImpactXY(DCAxy);
-//for TEST !!!!
-	//    dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
+	    //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
 	    dtc1etaphitpc[aniter]->SetMaxImpactZ(DCAz);  //3.0
 	    //      dtc1etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
 	  }
