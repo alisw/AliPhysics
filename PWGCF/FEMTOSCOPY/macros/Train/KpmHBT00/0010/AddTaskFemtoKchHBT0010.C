@@ -55,10 +55,12 @@ AliAnalysisTaskFemto *AddTaskFemtoKchHBT0010(TString configMacroName, const char
   //in $ALICE_ROOT/PWGCF/FEMTOSCOPY/macros/Train/
   //[root@alicethinks Train]# ln -s /scratch/AliWork/PbPb2.76/Train2013/KchHBT KchHBT
   //
-  //local
+  //local------>
   //AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE);
-  //train
+  //local------<
+  //train::::::::::::::::::::::::::::>
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_ROOT/"+configMacroName,configMacroParameters,kFALSE);
+  //train::::::::::::::::::::::::::::<
   taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);// this a new line for train
   mgr->AddTask(taskfemto);
 
@@ -71,7 +73,7 @@ AliAnalysisTaskFemto *AddTaskFemtoKchHBT0010(TString configMacroName, const char
   //==============================================================================
   TString outputfile = AliAnalysisManager::GetCommonFileName();  
   outputfile += ":PWG2FEMTO";
-  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("femtolist1",  TList::Class(),
+  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("femtolistKpm1",  TList::Class(),
   							       AliAnalysisManager::kOutputContainer,outputfile);
 
 
