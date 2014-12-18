@@ -441,7 +441,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateRunJDL(const char* name) const
   
   while ( ( file = static_cast<TObjString*>(next())) )
   {
-    if ( !file->String().Contains(".jdl",TString::kIgnoreCase) ||
+    if ( !file->String().Contains(".jdl",TString::kIgnoreCase) &&
          !file->String().Contains("OCDB_") )
     {
       files.Add(new TObjString(Form("LF:%s/%s",RemoteDir().Data(),file->String().Data())));
