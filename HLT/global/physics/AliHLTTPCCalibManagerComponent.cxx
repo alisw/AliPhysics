@@ -172,7 +172,7 @@ AliHLTComponent* AliHLTTPCCalibManagerComponent::Spawn() {
 // #################################################################################
 Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ ) {
   // see header file for class documentation
-  ("AliHLTTPCCalibManagerComponent::DoInit\n");
+  HLTInfo("AliHLTTPCCalibManagerComponent::DoInit\n");
 
   //shut up AliSysInfo globally, prevents syswatch.log files from being created
   //dont open any debug files
@@ -223,51 +223,7 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
   AliVEvent* vEvent=NULL;
   AliVfriendEvent* vFriend=NULL;
 
-  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
-    vEvent = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
-    if( !vEvent ){ 
-      HLTWarning("Wrong ESDEvent object received");
-      iResult = -1;
-      continue;
-    }
-    vEvent->GetStdContent();
-  }
-  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject); iter != NULL; iter = GetNextInputObject() ) {
-    vFriend = dynamic_cast<AliESDfriend*>(const_cast<TObject*>( iter ) );
-    if( !vFriend ){ 
-      HLTWarning("Wrong ESDFriend object received");
-      iResult = -1;
-      continue;
-    }
-  }
-
-  if (!vEvent){ 
-    {
-      const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
-      AliFlatESDEvent* tmpFlatEvent=reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
-      if (tmpFlatEvent->GetSize()==pBlock->fSize ){
-        tmpFlatEvent->Reinitialize();
-      } else {
-        tmpFlatEvent = NULL;
-        HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESD information",
-            DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
-      }
-      vEvent = tmpFlatEvent;
-    }
-
-    if( vEvent ){
-      const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
-      AliFlatESDFriend* tmpFlatFriend = reinterpret_cast<AliFlatESDFriend*>( pBlock->fPtr );
-      if (tmpFlatFriend->GetSize()==pBlock->fSize ){
-        tmpFlatFriend->Reinitialize();
-      } else {
-        tmpFlatFriend = NULL;
-        HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESDfriend information", 
-            DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
-      }
-      vFriend = tmpFlatFriend;
-    }
-  }
+  ReadInput(vEvent,vFriend);
 
   if (vEvent) {HLTInfo("----> event %p has %d tracks: \n", vEvent, vEvent->GetNumberOfTracks());}
   if(vFriend) {HLTInfo("----> friend %p has %d tracks: \n", vFriend, vFriend->GetNumberOfTracks());}
@@ -276,9 +232,8 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
   fAnalysisManager->ExecAnalysis();
   fInputHandler->FinishEvent();
 
-  // -- Send histlist
-  //  PushBack(dynamic_cast<TObject*>(fCorrObj->GetHistList()),
-  //	   kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
+  PushBack(dynamic_cast<TObject*>(fAnalysisManager->GetOutputs()), 
+      kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
 
   return iResult;
 }
@@ -369,12 +324,12 @@ Int_t AliHLTTPCCalibManagerComponent::AddCalibTasks()
   task1->AddJob(calibGainMult);
 
   //caliTime crashes at the moment, more investigation is needed
-  /*AliTPCcalibTime *calibTime = new AliTPCcalibTime("calibTime","calibTime",  startTime.GetSec(), stopTime.GetSec(), 10*60, 2);
+  AliTPCcalibTime *calibTime = new AliTPCcalibTime("calibTime","calibTime",  startTime.GetSec(), stopTime.GetSec(), 10*60, 2);
   calibTime->SetDebugLevel(0);
   calibTime->SetStreamLevel(0);
   calibTime->SetTriggerMask(-1,-1,kFALSE);        //accept everything
   calibTime->SetCutTracks(15000);              // max 15000 tracks per event
-  task1->AddJob(calibTime);*/
+  task1->AddJob(calibTime);
 
   fAnalysisManager->AddTask(task1);
   //AliAnalysisDataContainer *cinput1 = fAnalysisManager->GetCommonInputContainer();
@@ -392,13 +347,13 @@ Int_t AliHLTTPCCalibManagerComponent::AddCalibTasks()
   //fAnalysisManager->ConnectInput(task1,0,cinput1);
 
   // setup task TPCAlign--------------------------------------------------------------------------
-  AliTPCAnalysisTaskcalib *taskAlign=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
+  //AliTPCAnalysisTaskcalib *taskAlign=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
 
-  AliTPCcalibAlign *calibAlign = new AliTPCcalibAlign("alignTPC","Alignment of the TPC sectors"); 
-  calibAlign->SetDebugLevel(0);
-  calibAlign->SetStreamLevel(0);
-  calibAlign->SetTriggerMask(-1,-1,kTRUE);        //accept everything
-  taskAlign->AddJob(calibAlign);
+  //AliTPCcalibAlign *calibAlign = new AliTPCcalibAlign("alignTPC","Alignment of the TPC sectors"); 
+  //calibAlign->SetDebugLevel(0);
+  //calibAlign->SetStreamLevel(0);
+  //calibAlign->SetTriggerMask(-1,-1,kTRUE);        //accept everything
+  //taskAlign->AddJob(calibAlign);
 
   //Laser crashes, more investigation is needed
   /*AliTPCcalibLaser *calibLaser = new AliTPCcalibLaser("laserTPC","laserTPC");
@@ -413,42 +368,93 @@ Int_t AliHLTTPCCalibManagerComponent::AddCalibTasks()
   //calibCosmic->SetTriggerMask(-1,-1,kTRUE);        //accept everything
   //taskAlign->AddJob(calibCosmic);
 
-  fAnalysisManager->AddTask(taskAlign);
-  for (Int_t i=0; i<taskAlign->GetJobs()->GetEntries(); i++) {
-    if (taskAlign->GetJobs()->At(i)) {
-      AliAnalysisDataContainer* coutput = fAnalysisManager->CreateContainer(taskAlign->GetJobs()->At(i)->GetName(),
-                                                               AliTPCcalibBase::Class(),
-                                                               AliAnalysisManager::kOutputContainer,
-                                                               "AliESDfriends_v1.root:TPCAlign");
-      fAnalysisManager->ConnectOutput(taskAlign,i,coutput);
-    }
-  }
+  //fAnalysisManager->AddTask(taskAlign);
+  //for (Int_t i=0; i<taskAlign->GetJobs()->GetEntries(); i++) {
+  //  if (taskAlign->GetJobs()->At(i)) {
+  //    AliAnalysisDataContainer* coutput = fAnalysisManager->CreateContainer(taskAlign->GetJobs()->At(i)->GetName(),
+  //                                                             AliTPCcalibBase::Class(),
+  //                                                             AliAnalysisManager::kOutputContainer,
+  //                                                             "AliESDfriends_v1.root:TPCAlign");
+  //    fAnalysisManager->ConnectOutput(taskAlign,i,coutput);
+  //  }
+  //}
   //fAnalysisManager->ConnectInput(taskAlign,0,cinput1);
 
   // setup task TPCCluster----------------------------------------------------------------
-  AliTPCAnalysisTaskcalib *taskCluster=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
+  //AliTPCAnalysisTaskcalib *taskCluster=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
 
-  AliTPCClusterParam * clusterParam = AliTPCcalibDB::Instance()->GetClusterParam();
-  AliTPCcalibTracksCuts *cuts = new AliTPCcalibTracksCuts(30, 0.4, 5, 0.13, 0.018);
+  //AliTPCClusterParam * clusterParam = AliTPCcalibDB::Instance()->GetClusterParam();
+  //AliTPCcalibTracksCuts *cuts = new AliTPCcalibTracksCuts(30, 0.4, 5, 0.13, 0.018);
   //
-  AliTPCcalibTracks *calibTracks =  new AliTPCcalibTracks("calibTracks", "Resolution calibration object for tracks", clusterParam, cuts);
-  calibTracks->SetDebugLevel(0);
-  calibTracks->SetStreamLevel(0);
-  calibTracks->SetTriggerMask(-1,-1,kTRUE);
-  taskCluster->AddJob(calibTracks);
+  //AliTPCcalibTracks *calibTracks =  new AliTPCcalibTracks("calibTracks", "Resolution calibration object for tracks", clusterParam, cuts);
+  //calibTracks->SetDebugLevel(0);
+  //calibTracks->SetStreamLevel(0);
+  //calibTracks->SetTriggerMask(-1,-1,kTRUE);
+  //taskCluster->AddJob(calibTracks);
 
-  fAnalysisManager->AddTask(taskCluster);
-  for (Int_t i=0; i<taskCluster->GetJobs()->GetEntries(); i++) {
-    if (taskCluster->GetJobs()->At(i)) {
-      AliAnalysisDataContainer* coutput = fAnalysisManager->CreateContainer(taskCluster->GetJobs()->At(i)->GetName(),
-                                                               AliTPCcalibBase::Class(),
-                                                               AliAnalysisManager::kOutputContainer,
-                                                               "AliESDfriends_v1.root:TPCCluster");
-      fAnalysisManager->ConnectOutput(taskCluster,i,coutput);
-    }
-  }
+  //fAnalysisManager->AddTask(taskCluster);
+  //for (Int_t i=0; i<taskCluster->GetJobs()->GetEntries(); i++) {
+  //  if (taskCluster->GetJobs()->At(i)) {
+  //    AliAnalysisDataContainer* coutput = fAnalysisManager->CreateContainer(taskCluster->GetJobs()->At(i)->GetName(),
+  //                                                             AliTPCcalibBase::Class(),
+  //                                                             AliAnalysisManager::kOutputContainer,
+  //                                                             "AliESDfriends_v1.root:TPCCluster");
+  //    fAnalysisManager->ConnectOutput(taskCluster,i,coutput);
+  //  }
+  //}
   //fAnalysisManager->ConnectInput(taskCluster,0,cinput1);
   //--------------------------------------------------------------------------------------
   return 0;
 }
 
+// #################################################################################
+Int_t AliHLTTPCCalibManagerComponent::ReadInput(AliVEvent*& vEvent, AliVfriendEvent*& vFriend)
+{
+  Int_t iResult=0;
+  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
+    vEvent = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
+    if( !vEvent ){ 
+      HLTWarning("Wrong ESDEvent object received");
+      iResult = -1;
+      continue;
+    }
+    vEvent->GetStdContent();
+  }
+  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject); iter != NULL; iter = GetNextInputObject() ) {
+    vFriend = dynamic_cast<AliESDfriend*>(const_cast<TObject*>( iter ) );
+    if( !vFriend ){ 
+      HLTWarning("Wrong ESDFriend object received");
+      iResult = -1;
+      continue;
+    }
+  }
+
+  if (!vEvent){ 
+    {
+      const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
+      AliFlatESDEvent* tmpFlatEvent=reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
+      if (tmpFlatEvent->GetSize()==pBlock->fSize ){
+        tmpFlatEvent->Reinitialize();
+      } else {
+        tmpFlatEvent = NULL;
+        HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESD information",
+            DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
+      }
+      vEvent = tmpFlatEvent;
+    }
+
+    if( vEvent ){
+      const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
+      AliFlatESDFriend* tmpFlatFriend = reinterpret_cast<AliFlatESDFriend*>( pBlock->fPtr );
+      if (tmpFlatFriend->GetSize()==pBlock->fSize ){
+        tmpFlatFriend->Reinitialize();
+      } else {
+        tmpFlatFriend = NULL;
+        HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESDfriend information", 
+            DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
+      }
+      vFriend = tmpFlatFriend;
+    }
+  }
+  return iResult;
+}

@@ -23,6 +23,8 @@
 
 class TH1F;
 class TList;
+class AliVEvent;
+class AliVfriendEvent;
 
 //class AliESDVZERO;
 //class AliESDtrackCuts;
@@ -160,6 +162,7 @@ public:
   /**  */
   Int_t AddCalibTasks();
   Int_t WriteAnalysisToFile();
+  Int_t ReadInput(AliVEvent*& vEvent, AliVfriendEvent*& vFriend);
  protected:
 
   /*
