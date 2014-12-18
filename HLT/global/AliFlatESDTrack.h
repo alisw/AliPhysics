@@ -53,7 +53,8 @@ class AliFlatESDTrack :public AliVTrack {
 
   void SetNumberOfTPCClusters( Int_t nCl ) { fNTPCClusters = nCl; } 
   void SetNumberOfITSClusters( Int_t nCl ) { fNITSClusters = nCl; } 
-
+  void SetImpactParameters( Float_t p[6] ) { for( int i=0; i<6; i++ ) fImp[i] = p[i]; }
+  void SetImpactParametersTPC( Float_t p[6] ) { for( int i=0; i<6; i++ ) fImpTPC[i] = p[i]; }
   
   // --------------------------------------------------------------------------------
   // -- Getter methods
@@ -131,12 +132,10 @@ class AliFlatESDTrack :public AliVTrack {
   // ---------------------------------------------------------------------------------
   // AliVParticle interface
   ULong_t  GetStatus() const ;
-  Bool_t IsOn(Int_t mask) const;
  virtual Double_t Pt() const {const AliFlatExternalTrackParam* p=GetFlatTrackParam(); return (p)?p->GetPt():kVeryBig;}
   virtual Double_t GetTgl()  const {const AliFlatExternalTrackParam* p=GetFlatTrackParam(); return (p)?p->GetTgl():kVeryBig;}
   using AliVTrack::GetImpactParameters;
   
-  virtual Bool_t  IsPureITSStandalone() const {return GetStatus()&kITSpureSA;}
   virtual Double_t Px() const {return 0.;}
   virtual Double_t Py() const {return 0.;}
   virtual Double_t Pz() const {return 0.;}
@@ -153,12 +152,12 @@ class AliFlatESDTrack :public AliVTrack {
   virtual Double_t M() const {return 0.;}
   virtual Double_t Eta() const {return 0.;}
   virtual Double_t Y() const {return 0.;}
-  virtual Short_t Charge() const {return 0;}
-  virtual Int_t GetLabel() const {return 0;}
-  virtual Int_t PdgCode() const {return 0;}
+  virtual Short_t Charge() const {return 0.;}
+  virtual Int_t GetLabel() const {return 0.;}
+  virtual Int_t PdgCode() const {return 0.;}
   virtual const Double_t* PID() const {return NULL;} 
-  virtual Int_t    GetID() const {return 0;}
-  virtual UChar_t  GetITSClusterMap() const {return 0;}
+  virtual Int_t    GetID() const {return 0.;}
+  virtual UChar_t  GetITSClusterMap() const {return 0.;}
   virtual Bool_t   GetCovarianceXYZPxPyPz(Double_t cv[21]) const {if (cv[0]){}; return kFALSE;}
   virtual Bool_t   PropagateToDCA(const AliVVertex* /*vtx*/, Double_t /*b*/, Double_t /*maxd*/, Double_t dz[2], Double_t covar[3]) {if (dz[0]==covar[3]){}; return kFALSE;}
 
@@ -239,6 +238,17 @@ inline Int_t AliFlatESDTrack::GetExternalTrackParam( AliExternalTrackParam &p, U
   if( !f ) return -1;
   f->GetExternalTrackParam( p );
   return 0;
+}
+
+inline ULong_t  AliFlatESDTrack::GetStatus() const {
+  ULong_t x=0;
+  if( fNTPCClusters>0 ){
+    x|= kTPCrefit | kTPCin| kTPCout;    
+  } else x|= kITSpureSA;
+  if( fNITSClusters>0 ){
+    x |= kITSin | kITSout | kITSrefit;
+  }
+  return x;
 }
 
 #endif
