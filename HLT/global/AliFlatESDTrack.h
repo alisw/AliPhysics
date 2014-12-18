@@ -53,7 +53,8 @@ class AliFlatESDTrack :public AliVTrack {
 
   void SetNumberOfTPCClusters( Int_t nCl ) { fNTPCClusters = nCl; } 
   void SetNumberOfITSClusters( Int_t nCl ) { fNITSClusters = nCl; } 
-
+  void SetImpactParameters( Float_t p[6] ) { for( int i=0; i<6; i++ ) fImp[i] = p[i]; }
+  void SetImpactParametersTPC( Float_t p[6] ) { for( int i=0; i<6; i++ ) fImpTPC[i] = p[i]; }
   
   // --------------------------------------------------------------------------------
   // -- Getter methods
@@ -113,14 +114,26 @@ class AliFlatESDTrack :public AliVTrack {
     return (f) ?f->GetPt() : kVeryBig;
   }
   virtual Bool_t GetXYZ(Double_t *p) const;
+
+  void GetImpactParametersTPC(Float_t &xy,Float_t &z) const {xy=fImpTPC[0]; z=fImpTPC[1];}
+  void GetImpactParametersTPC(Float_t p[2], Float_t cov[3]) const {
+    p[0]=fImpTPC[0]; p[1]=fImpTPC[1]; cov[0]=fImpTPC[2]; cov[1]=fImpTPC[3]; cov[2]=fImpTPC[4];
+  }
+  void GetImpactParameters(Float_t &xy,Float_t &z) const {xy=fImp[0]; z=fImp[1];}
+  void GetImpactParameters(Float_t p[2], Float_t cov[3]) const {
+    p[0]=fImp[0]; p[1]=fImp[1]; cov[0]=fImp[2]; cov[1]=fImp[3]; cov[2]=fImp[4];
+  }
+
+
   // -------------------------------------------------------------------------------
 
   // ---------------------------------------------------------------------------------
   // AliVParticle interface
-  virtual Double_t Pt() const {const AliFlatExternalTrackParam* p=GetFlatTrackParam(); return (p)?p->GetPt():kVeryBig;}
+  ULong_t  GetStatus() const ;
+ virtual Double_t Pt() const {const AliFlatExternalTrackParam* p=GetFlatTrackParam(); return (p)?p->GetPt():kVeryBig;}
   virtual Double_t GetTgl()  const {const AliFlatExternalTrackParam* p=GetFlatTrackParam(); return (p)?p->GetTgl():kVeryBig;}
   using AliVTrack::GetImpactParameters;
-  virtual void GetImpactParameters(Float_t &xy,Float_t &z) const {xy=0.; z=0.;}
+  
   virtual Double_t Px() const {return 0.;}
   virtual Double_t Py() const {return 0.;}
   virtual Double_t Pz() const {return 0.;}
@@ -137,13 +150,12 @@ class AliFlatESDTrack :public AliVTrack {
   virtual Double_t M() const {return 0.;}
   virtual Double_t Eta() const {return 0.;}
   virtual Double_t Y() const {return 0.;}
-  virtual Short_t Charge() const {return 0;}
-  virtual Int_t GetLabel() const {return 0;}
-  virtual Int_t PdgCode() const {return 0;}
+  virtual Short_t Charge() const {return 0.;}
+  virtual Int_t GetLabel() const {return 0.;}
+  virtual Int_t PdgCode() const {return 0.;}
   virtual const Double_t* PID() const {return NULL;} 
-  virtual Int_t    GetID() const {return 0;}
-  virtual UChar_t  GetITSClusterMap() const {return 0;}
-  virtual ULong_t  GetStatus() const {return 0;}
+  virtual Int_t    GetID() const {return 0.;}
+  virtual UChar_t  GetITSClusterMap() const {return 0.;}
   virtual Bool_t   GetCovarianceXYZPxPyPz(Double_t cv[21]) const {if (cv[0]){}; return kFALSE;}
   virtual Bool_t   PropagateToDCA(const AliVVertex* /*vtx*/, Double_t /*b*/, Double_t /*maxd*/, Double_t dz[2], Double_t covar[3]) {if (dz[0]==covar[3]){}; return kFALSE;}
 
@@ -176,6 +188,9 @@ class AliFlatESDTrack :public AliVTrack {
   Int_t    fNTPCClusters;                 // Number of TPC clusters in track
   Int_t    fNITSClusters;                 // Number of ITS clusters in track
   // Bool_t   fMCLabels;
+   
+  Float_t   fImp[6];
+  Float_t   fImpTPC[6];
 
   ULong64_t fContentSize;                      // Size of this object
   
@@ -195,6 +210,7 @@ inline AliFlatESDTrack::AliFlatESDTrack() :
   fContentSize(0)
 {
   // Default constructor
+  for( int i=0; i<6; i++){ fImp[i] = 0; fImpTPC[0] = 0; }
 }
 
 #pragma GCC diagnostic ignored "-Weffc++" 
@@ -220,6 +236,17 @@ inline Int_t AliFlatESDTrack::GetExternalTrackParam( AliExternalTrackParam &p, U
   if( !f ) return -1;
   f->GetExternalTrackParam( p );
   return 0;
+}
+
+inline ULong_t  AliFlatESDTrack::GetStatus() const {
+  ULong_t x=0;
+  if( fNTPCClusters>0 ){
+    x|= kTPCrefit | kTPCin| kTPCout;    
+  } else x|= kITSpureSA;
+  if( fNITSClusters>0 ){
+    x |= kITSin | kITSout | kITSrefit;
+  }
+  return x;
 }
 
 #endif

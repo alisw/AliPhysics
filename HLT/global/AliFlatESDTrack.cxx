@@ -62,6 +62,12 @@ Int_t AliFlatESDTrack::SetFromESDTrack(const AliESDtrack* track)
   fNTPCClusters = track->GetTPCNcls();
   fNITSClusters = track->GetITSNcls();
 
+  track->GetImpactParameters(fImp, fImp+2 );
+  fImp[5] = track->GetConstrainedChi2();
+
+  track->GetImpactParametersTPC(fImpTPC, fImpTPC+2 );
+  fImpTPC[5] = track->GetConstrainedChi2TPC();
+
   return iResult;
 }
 

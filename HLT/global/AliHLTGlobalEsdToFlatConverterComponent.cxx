@@ -218,40 +218,40 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
   AliSysInfo::AddStamp("AliHLTGlobalEsdToFlatConverterComponent::DoEvent.Start");
   Int_t iResult=0;
 
-	Bool_t err = kFALSE;
+  Bool_t err = kFALSE;
 	
 	
   size_t maxOutputSize = size;
   size = 0;
 	
   // -- Only use data event
-  if (!IsDataEvent()) 
-    return 0;
-	AliESDEvent *esd =0;
-	AliESDfriend *esdFriend=0;
+  if( !IsDataEvent() ) return 0;
+
+  AliESDEvent *esd =0;
+  AliESDfriend *esdFriend=0;
 	
 	
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject | kAliHLTDataOriginOut); iter != NULL; iter = GetNextInputObject() ) {
     esd =dynamic_cast<AliESDEvent*>(const_cast<TObject*>(iter));
     if( esd ){
-			esd->GetStdContent();
-			iResult=1;
+      esd->GetStdContent();
+      iResult=1;
     } else {
     }
   }
 
-   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject | kAliHLTDataOriginOut); iter != NULL; iter = GetNextInputObject() ) {     
-   esdFriend = dynamic_cast<AliESDfriend*>(const_cast<TObject*>(iter));
+  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject | kAliHLTDataOriginOut); iter != NULL; iter = GetNextInputObject() ) {     
+    esdFriend = dynamic_cast<AliESDfriend*>(const_cast<TObject*>(iter));
     if( esdFriend ){
     } else {
     }
   }
-	AliFlatESDEvent *flatEsd = reinterpret_cast<AliFlatESDEvent*>(outputPtr);
-	new (flatEsd) AliFlatESDEvent;
-	
-	Int_t converted1 = flatEsd->SetFromESD(AliFlatESDEvent::EstimateSize(esd),esd, kTRUE); 
-	
-	if( maxOutputSize > flatEsd->GetSize() ){
+  AliFlatESDEvent *flatEsd = reinterpret_cast<AliFlatESDEvent*>(outputPtr);
+  new (flatEsd) AliFlatESDEvent;
+  
+  Int_t converted1 = flatEsd->SetFromESD(AliFlatESDEvent::EstimateSize(esd),esd, kTRUE); 
+  
+  if( converted1>=0 && maxOutputSize > flatEsd->GetSize() ){
     AliHLTComponentBlockData outBlock;
     FillBlockData( outBlock );
     outBlock.fOffset = size;
@@ -259,37 +259,36 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
     outBlock.fDataType = kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut;
     outputBlocks.push_back( outBlock );
     size += outBlock.fSize;
-	}
-	
-	else {
-		
-	return 0;	
-	}
- if(esdFriend){
-		AliFlatESDFriend *flatFriend = reinterpret_cast<AliFlatESDFriend*>(outputPtr + size); 
-		size_t freeSpaceTotal = maxOutputSize - size;
+  }	
+  else {    
+    return 0;	
+  }
+
+  if(esdFriend){
+    AliFlatESDFriend *flatFriend = reinterpret_cast<AliFlatESDFriend*>(outputPtr + size); 
+    size_t freeSpaceTotal = maxOutputSize - size;
     size_t freeSpace = freeSpaceTotal;
 
     err = ( freeSpace < sizeof( AliFlatESDEvent ) );    
     if( err ) return 0;
-
+    
     new (flatFriend) AliFlatESDFriend;
     freeSpace = freeSpaceTotal - flatFriend->GetSize();
-		
-		Int_t converted = flatFriend->SetFromESDfriend(AliFlatESDFriend::EstimateSize(esdFriend),esdFriend); 
-		
-		Int_t insizeEvent, insizeFriend, outsizeEvent, outsizeFriend =  0 ;
-		
-    insizeEvent = AliSysInfo::EstimateObjectSize(esd);
-		
-    insizeFriend = AliSysInfo::EstimateObjectSize(esdFriend);
-		
-		outsizeEvent = (int) flatEsd->GetSize();
-		outsizeFriend = (int) flatFriend->GetSize();
-		AliSysInfo::AddStamp("AliHLTGlobalEsdToFlatConverterComponent::DoEvent.Stop", insizeEvent, outsizeEvent, outsizeFriend, insizeFriend);
-	
-		    { // set up the output block description
     
+    Int_t converted = flatFriend->SetFromESDfriend(AliFlatESDFriend::EstimateSize(esdFriend),esdFriend); 
+    
+    Int_t insizeEvent, insizeFriend, outsizeEvent, outsizeFriend =  0 ;
+    
+    insizeEvent = AliSysInfo::EstimateObjectSize(esd);
+    
+    insizeFriend = AliSysInfo::EstimateObjectSize(esdFriend);
+    
+    outsizeEvent = (int) flatEsd->GetSize();
+    outsizeFriend = (int) flatFriend->GetSize();
+    AliSysInfo::AddStamp("AliHLTGlobalEsdToFlatConverterComponent::DoEvent.Stop", insizeEvent, outsizeEvent, outsizeFriend, insizeFriend);
+    
+    if( converted>=0 ){ // set up the output block description
+      
       AliHLTComponentBlockData outBlock;
       FillBlockData( outBlock );
       outBlock.fOffset = size;
@@ -298,7 +297,7 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
       outputBlocks.push_back( outBlock );
       size += outBlock.fSize;
     }
- }
+  }
   return iResult;
 }
 
