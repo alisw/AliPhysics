@@ -43,6 +43,7 @@ CONFIG_PTHARDMAX=""
 CONFIG_QUENCHING=""
 DC_RUN=""
 DC_EVENT=""
+EVENTS_PER_JOB=""
 
 RUNMODE=""
 
@@ -82,6 +83,9 @@ while [ ! -z "$1" ]; do
             shift
     elif [ "$option" = "--sdd" ]; then
             RUNMODE="SDD"
+    elif [ "$option" = "--eventsPerJob" ]; then
+            EVENTS_PER_JOB="$1"
+            shift
     fi
 done
 
@@ -129,7 +133,12 @@ fi
 
 echo "SIMRUN:: Run $DC_RUN Event $DC_EVENT Generator $CONFIG_RUN_TYPE Field $CONFIG_FIELD Energy $CONFIG_ENERGY Physicslist $CONFIG_PHYSICSLIST"
 
-runcommand "SIMULATION" "sim.C" sim.log 5
+simCommand="sim.C"
+if [ ! -z $EVENTS_PER_JOB ]; then
+  simCommand="sim.C($EVENTS_PER_JOB)"
+fi
+
+runcommand "SIMULATION" "$simCommand" sim.log 5
 mv syswatch.log simwatch.log
 
 runcommand "RECONSTRUCTION" "rec.C" rec.log 10
