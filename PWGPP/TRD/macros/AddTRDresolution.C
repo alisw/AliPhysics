@@ -4,7 +4,7 @@
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
-#include "TRD/AliTRDgeometry.h"
+#include "AliTRDgeometry.h"
 #include "PWGPP/TRD/AliTRDpwgppHelper.h"
 #include "PWGPP/TRD/AliTRDresolution.h"
 #include "PWGPP/TRD/AliTRDclusterResolution.h"
