@@ -232,8 +232,8 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
   fAnalysisManager->ExecAnalysis();
   fInputHandler->FinishEvent();
 
-  PushBack(dynamic_cast<TObject*>(fAnalysisManager->GetOutputs()), 
-      kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
+  //PushBack(dynamic_cast<TObject*>(fAnalysisManager->GetOutputs()), 
+  //    kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
 
   return iResult;
 }
