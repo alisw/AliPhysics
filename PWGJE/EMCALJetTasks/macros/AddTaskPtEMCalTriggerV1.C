@@ -86,21 +86,19 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
 
   // Handle Jet Containers
   if(strlen(njetcontainerData)){
-    AliJetContainer *jetcontainerData = pttriggertask->AddJetContainer(njetcontainerData, "TPC", jetradius);
+    AliJetContainer *jetcontainerData = pttriggertask->AddJetContainer(njetcontainerData, "EMCAL", jetradius);
     pttriggertask->SetDataJetContainerName("PtTriggerTaskJetsData");
     jetcontainerData->ConnectParticleContainer(trackContainer);
     jetcontainerData->SetName("PtTriggerTaskJetsData");
     jetcontainerData->SetJetPtCut(20.);
-    jetcontainerData->SetJetEtaPhiEMCAL();
     printf("jet container added for Data\n");
   }
   if(isMC && strlen(njetcontainerMC)){
-    AliJetContainer *jetcontainerMC = pttriggertask->AddJetContainer(njetcontainerMC, "TPC", jetradius);
+    AliJetContainer *jetcontainerMC = pttriggertask->AddJetContainer(njetcontainerMC, "EMCAL", jetradius);
     pttriggertask->SetMCJetContainerName("PtTriggerTaskJetsMC");
     jetcontainerMC->ConnectParticleContainer(mcpartcont);
     jetcontainerMC->SetName("PtTriggerTaskJetsMC");
     jetcontainerMC->SetJetPtCut(20.);
-    jetcontainerMC->SetJetEtaPhiEMCAL();
     printf("Jet container added for MC");
   }
 
