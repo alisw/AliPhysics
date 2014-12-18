@@ -180,8 +180,8 @@ setYear()
   local yearTarget=$(guessYearFast ${2})
   local path=${2}
   [[ ${yearSource} -ne ${yearTarget} && -n ${yearTarget} && -n ${yearSource} ]] \
-    && path=${2/\/"${yearTarget}"\//\/"${yearSource}"\/}
-  echo ${path}
+    && path=${2/\/"${yearTarget}"/\/"${yearSource}"}
+  echo ${path/\/\//\/}
   return 0
 }
 
