@@ -565,6 +565,78 @@ void  AliMC::AddParticles()
   
   TVirtualMC::GetMC()->SetDecayMode(225,bratio,mode);
 
+  // Lambda1520/Lambda1520bar
+
+  TVirtualMC::GetMC()->DefineParticle(3124, "Lambda1520", kPTNeutron, 1.5195 , 0.0, 4.22e-23,"Hadron", 0.0156, 3, -1, 0, 0, 0, 0, 3, 0, kTRUE);
+  TVirtualMC::GetMC()->DefineParticle(-3124, "Lambda1520bar", kPTNeutron, 1.5195 , 0.0, 4.22e-23,"Hadron", 0.0156, 3, -1, 0, 0, 0, 0, 3, 0, kTRUE);
+
+  // Lambda1520 decay modes
+
+  // L(1520) -> p K-
+  bratio[0] = 0.223547;
+  mode[0][0] = 2212;
+  mode[0][1] = -321;
+
+  // L(1520) -> n K0
+  bratio[1] = 0.223547;
+  mode[1][0] = 2112;
+  mode[1][1] = -311;
+
+  // L(1520) -> Sigma+ pi-
+  bratio[2] = 0.139096;
+  mode[2][0] = 3222;
+  mode[2][1] = -211;
+
+  // L(1520) -> Sigma0 pi0
+  bratio[3] = 0.139096;
+  mode[3][0] = 3212;
+  mode[3][1] = 111;
+
+  // L(1520) -> Sigma- pi+
+  bratio[4] = 0.139096;
+  mode[4][0] = 3112;
+  mode[4][1] = 211;
+
+  // The other decay modes are neglected
+  bratio[5] = 0.;
+  mode[5][0] = 0;
+  mode[5][1] = 0;
+
+  TVirtualMC::GetMC()->SetDecayMode(3124,bratio,mode);
+
+  // Lambda1520bar decay modes
+
+  // L(1520)bar -> p- K+
+  bratio[0] = 0.223547;
+  mode[0][0] = -2212;
+  mode[0][1] = 321;
+
+  // L(1520)bar -> nbar K0bar
+  bratio[1] = 0.223547;
+  mode[1][0] = -2112;
+  mode[1][1] = 311;
+
+  // L(1520)bar -> Sigmabar- pi+
+  bratio[2] = 0.139096;
+  mode[2][0] = -3222;
+  mode[2][1] = 211;
+
+  // L(1520)bar -> Sigma0bar pi0
+  bratio[3] = 0.139096;
+  mode[3][0] = -3212;
+  mode[3][1] = 111;
+
+  // L(1520)bar -> Sigmabar+ pi-
+  bratio[4] = 0.139096;
+  mode[4][0] = -3112;
+  mode[4][1] = -211;
+
+  // The other decay modes are neglected
+  bratio[5] = 0.;
+  mode[5][0] = 0;
+  mode[5][1] = 0;
+
+  TVirtualMC::GetMC()->SetDecayMode(-3124,bratio,mode);
 
   // --------------------------------------------------------------------
 }  
