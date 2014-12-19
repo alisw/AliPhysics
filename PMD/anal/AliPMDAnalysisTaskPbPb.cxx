@@ -178,6 +178,9 @@ void AliPMDAnalysisTaskPbPb::Exec(Option_t *)
     Float_t clsX    = pmdtr->GetClusterX();
     Float_t clsY    = pmdtr->GetClusterY();
     
+    Float_t adc   = pmdtr->GetClusterADC();
+    if(adc>1200)  continue;
+        
     if ( det == 0 ) {
       fhEsdXYP->Fill(clsX,clsY);
     }
