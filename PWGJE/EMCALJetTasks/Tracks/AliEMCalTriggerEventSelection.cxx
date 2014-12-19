@@ -52,6 +52,7 @@ bool AliEMCalTriggerEventSelection::IsEventSelected(const AliEMCalTriggerEventDa
   AliAnalysisUtils evutils;
   AliVEvent *recEvent = ev->GetRecEvent();
   if(!evutils.IsVertexSelected2013pA(recEvent)) return kFALSE;
+  if(evutils.IsPileUpEvent(recEvent)) return kFALSE;
   if(!fVertexCut.IsInRange(recEvent->GetPrimaryVertex()->GetZ())) return kFALSE;
   return true;
 }
