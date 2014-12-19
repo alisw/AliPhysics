@@ -146,12 +146,12 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
     fHistClusterdEtadPhiNegTracksBeforeQA(NULL),
     fHistClusterdEtadPhiPosTracksAfterQA(NULL),
     fHistClusterdEtadPhiNegTracksAfterQA(NULL),
-    fHistClusterdEtadPhiPosTracks_P1_BeforeQA(NULL),
-    fHistClusterdEtadPhiPosTracks_P14_BeforeQA(NULL),
-    fHistClusterdEtadPhiPosTracks_P4_BeforeQA(NULL),
-    fHistClusterdEtadPhiNegTracks_P1_BeforeQA(NULL),
-    fHistClusterdEtadPhiNegTracks_P14_BeforeQA(NULL),
-    fHistClusterdEtadPhiNegTracks_P4_BeforeQA(NULL),
+    fHistClusterdEtadPhiPosTracksP_00_05BeforeQA(NULL),
+    fHistClusterdEtadPhiPosTracksP_05_15BeforeQA(NULL),
+    fHistClusterdEtadPhiPosTracksP_15_99BeforeQA(NULL),
+    fHistClusterdEtadPhiNegTracksP_00_05BeforeQA(NULL),
+    fHistClusterdEtadPhiNegTracksP_05_15BeforeQA(NULL),
+    fHistClusterdEtadPhiNegTracksP_15_99BeforeQA(NULL),
     fHistClusterdEtadPtBeforeQA(NULL),
     fHistClusterdPhidPtBeforeQA(NULL),
     fHistClusterM20Pt_dPhiBeforeQA(NULL),
@@ -236,12 +236,12 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
     fHistClusterdEtadPhiNegTracksBeforeQA(NULL),
     fHistClusterdEtadPhiPosTracksAfterQA(NULL),
     fHistClusterdEtadPhiNegTracksAfterQA(NULL),
-    fHistClusterdEtadPhiPosTracks_P1_BeforeQA(NULL),
-    fHistClusterdEtadPhiPosTracks_P14_BeforeQA(NULL),
-    fHistClusterdEtadPhiPosTracks_P4_BeforeQA(NULL),
-    fHistClusterdEtadPhiNegTracks_P1_BeforeQA(NULL),
-    fHistClusterdEtadPhiNegTracks_P14_BeforeQA(NULL),
-    fHistClusterdEtadPhiNegTracks_P4_BeforeQA(NULL),
+    fHistClusterdEtadPhiPosTracksP_00_05BeforeQA(NULL),
+    fHistClusterdEtadPhiPosTracksP_05_15BeforeQA(NULL),
+    fHistClusterdEtadPhiPosTracksP_15_99BeforeQA(NULL),
+    fHistClusterdEtadPhiNegTracksP_00_05BeforeQA(NULL),
+    fHistClusterdEtadPhiNegTracksP_05_15BeforeQA(NULL),
+    fHistClusterdEtadPhiNegTracksP_15_99BeforeQA(NULL),
     fHistClusterdEtadPtBeforeQA(NULL),
     fHistClusterdPhidPtBeforeQA(NULL),
     fHistClusterM20Pt_dPhiBeforeQA(NULL),
@@ -320,12 +320,42 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 	fHistograms->Add(fHistClusterIdentificationCuts);
 
 	// Acceptance related histogramms
-    fHistClusterEtavsPhiBeforeAcc=new TH2F(Form("EtaPhi_beforeAcceptance %s",GetCutNumber().Data()),"EtaPhi_beforeAcceptance",430,0,2*TMath::Pi(),96,-0.7,0.7); // 462->430, 110->96
-	fHistograms->Add(fHistClusterEtavsPhiBeforeAcc);
-    fHistClusterEtavsPhiAfterAcc=new TH2F(Form("EtaPhi_afterAcceptance %s",GetCutNumber().Data()),"EtaPhi_afterAcceptance",430,0,2*TMath::Pi(),96,-0.7,0.7); // 462->430, 110->96
-	fHistograms->Add(fHistClusterEtavsPhiAfterAcc);
-    fHistClusterEtavsPhiAfterQA=new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",430,0,2*TMath::Pi(),96,-0.7,0.7); // 462->430, 110->96
-	fHistograms->Add(fHistClusterEtavsPhiAfterQA);
+    const Int_t nEmcalEtaBins = 96;
+    const Int_t nEmcalPhiBins = 124;
+    Float_t EmcalEtaBins[nEmcalEtaBins+1] = {-0.66687,-0.653,-0.63913,-0.62526,-0.61139,-0.59752,-0.58365,-0.56978,-0.55591,-0.54204,-0.52817,-0.5143,-0.50043,-0.48656,-0.47269,-0.45882,-0.44495,-0.43108,-0.41721,-0.40334,-0.38947,-0.3756,-0.36173,-0.34786,-0.33399,-0.32012,-0.30625,-0.29238,-0.27851,-0.26464,-0.25077,-0.2369,-0.22303,-0.20916,-0.19529,-0.18142,-0.16755,-0.15368,-0.13981,-0.12594,-0.11207,-0.0982,-0.08433,-0.07046,-0.05659,-0.04272,-0.02885,-0.01498,-0.00111,0.01276,0.02663,0.0405,0.05437,0.06824,0.08211,0.09598,0.10985,0.12372,0.13759,0.15146,0.16533,0.1792,0.19307,0.20694,0.22081,0.23468,0.24855,0.26242,0.27629,0.29016,0.30403,0.3179,0.33177,0.34564,0.35951,0.37338,0.38725,0.40112,0.41499,0.42886,0.44273,0.4566,0.47047,0.48434,0.49821,0.51208,0.52595,0.53982,0.55369,0.56756,0.58143,0.5953,0.60917,0.62304,0.63691,0.65078,0.66465};
+    Float_t EmcalPhiBins[nEmcalPhiBins+1] = {1.408,1.4215,1.435,1.4485,1.462,1.4755,1.489,1.5025,1.516,1.5295,1.543,1.5565,1.57,1.5835,1.597,1.6105,1.624,1.6375,1.651,1.6645,1.678,1.6915,1.705,1.7185,1.732,1.758,1.7715,1.785,1.7985,1.812,1.8255,1.839,1.8525,1.866,1.8795,1.893,1.9065,1.92,1.9335,1.947,1.9605,1.974,1.9875,2.001,2.0145,2.028,2.0415,2.055,2.0685,2.082,2.108,2.1215,2.135,2.1485,2.162,2.1755,2.189,2.2025,2.216,2.2295,2.243,2.2565,2.27,2.2835,2.297,2.3105,2.324,2.3375,2.351,2.3645,2.378,2.3915,2.405,2.4185,2.432,2.456,2.4695,2.483,2.4965,2.51,2.5235,2.537,2.5505,2.564,2.5775,2.591,2.6045,2.618,2.6315,2.645,2.6585,2.672,2.6855,2.699,2.7125,2.726,2.7395,2.753,2.7665,2.78,2.804,2.8175,2.831,2.8445,2.858,2.8715,2.885,2.8985,2.912,2.9255,2.939,2.9525,2.966,2.9795,2.993,3.0065,3.02,3.0335,3.047,3.0605,3.074,3.0875,3.101,3.1145,3.128};
+
+    const Int_t nPhosEtaBins = 56;
+    const Int_t nPhosPhiBins = 192;
+    const Float_t PhosEtaRange[2] = {-0.16, 0.16};
+    const Float_t PhosPhiRange[2] = {4.5, 5.6};
+
+    if( GetClusterType() == 1 ){ //EMCAL
+        fHistClusterEtavsPhiBeforeAcc=new TH2F(Form("EtaPhi_beforeAcceptance %s",GetCutNumber().Data()),"EtaPhi_beforeAcceptance",nEmcalPhiBins,EmcalPhiBins,nEmcalEtaBins,EmcalEtaBins);
+        fHistograms->Add(fHistClusterEtavsPhiBeforeAcc);
+        fHistClusterEtavsPhiAfterAcc=new TH2F(Form("EtaPhi_afterAcceptance %s",GetCutNumber().Data()),"EtaPhi_afterAcceptance",nEmcalPhiBins,EmcalPhiBins,nEmcalEtaBins,EmcalEtaBins);
+        fHistograms->Add(fHistClusterEtavsPhiAfterAcc);
+        fHistClusterEtavsPhiAfterQA=new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",nEmcalPhiBins,EmcalPhiBins,nEmcalEtaBins,EmcalEtaBins);
+        fHistograms->Add(fHistClusterEtavsPhiAfterQA);
+    }
+    else if( GetClusterType() == 2 ){ //PHOS
+        fHistClusterEtavsPhiBeforeAcc=new TH2F(Form("EtaPhi_beforeAcceptance %s",GetCutNumber().Data()),"EtaPhi_beforeAcceptance",nPhosPhiBins,PhosPhiRange[0],PhosPhiRange[1],nPhosEtaBins,PhosEtaRange[0],PhosEtaRange[1]);
+        fHistograms->Add(fHistClusterEtavsPhiBeforeAcc);
+        fHistClusterEtavsPhiAfterAcc=new TH2F(Form("EtaPhi_afterAcceptance %s",GetCutNumber().Data()),"EtaPhi_afterAcceptance",nPhosPhiBins,PhosPhiRange[0],PhosPhiRange[1],nPhosEtaBins,PhosEtaRange[0],PhosEtaRange[1]);
+        fHistograms->Add(fHistClusterEtavsPhiAfterAcc);
+        fHistClusterEtavsPhiAfterQA=new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",nPhosPhiBins,PhosPhiRange[0],PhosPhiRange[1],nPhosEtaBins,PhosEtaRange[0],PhosEtaRange[1]);
+        fHistograms->Add(fHistClusterEtavsPhiAfterQA);
+    }
+    else if( GetClusterType() == 0 ){ //all
+        fHistClusterEtavsPhiBeforeAcc=new TH2F(Form("EtaPhi_beforeAcceptance %s",GetCutNumber().Data()),"EtaPhi_beforeAcceptance",462,0,2*TMath::Pi(),110,-0.7,0.7);
+        fHistograms->Add(fHistClusterEtavsPhiBeforeAcc);
+        fHistClusterEtavsPhiAfterAcc=new TH2F(Form("EtaPhi_afterAcceptance %s",GetCutNumber().Data()),"EtaPhi_afterAcceptance",462,0,2*TMath::Pi(),110,-0.7,0.7);
+        fHistograms->Add(fHistClusterEtavsPhiAfterAcc);
+        fHistClusterEtavsPhiAfterQA=new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",462,0,2*TMath::Pi(),110,-0.7,0.7);
+        fHistograms->Add(fHistClusterEtavsPhiAfterQA);
+    }
+    else{AliError(Form("Cluster Type is not EMCAL nor PHOS: %i",GetClusterType()));}
+
     //fHistDistanceToBadChannelBeforeAcc = new TH1F(Form("DistanceToBadChannel_beforeAcceptance %s",GetCutNumber().Data()),"DistanceToBadChannel_beforeAcceptance",200,0,40);
     //fHistograms->Add(fHistDistanceToBadChannelBeforeAcc);
     //fHistDistanceToBadChannelAfterAcc = new TH1F(Form("DistanceToBadChannel_afterAcceptance %s",GetCutNumber().Data()),"DistanceToBadChannel_afterAcceptance",200,0,40);
@@ -334,10 +364,11 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 	// Cluster quality related histograms
     Double_t timeMin = -2e-6;
     Double_t timeMax = 8e-6;
-	if (GetClusterType() == 1){
+    if( GetClusterType() == 1 ){
 		timeMin = -2e-7;
 		timeMax = 12e-7;
-	}	
+    }
+
     fHistClusterTimevsEBeforeQA=new TH2F(Form("ClusterTimeVsE_beforeClusterQA %s",GetCutNumber().Data()),"ClusterTimeVsE_beforeClusterQA",800,timeMin,timeMax,100,0,40);
 	fHistograms->Add(fHistClusterTimevsEBeforeQA);
     fHistClusterTimevsEAfterQA=new TH2F(Form("ClusterTimeVsE_afterClusterQA %s",GetCutNumber().Data()),"ClusterTimeVsE_afterClusterQA",800,timeMin,timeMax,100,0,40);
@@ -375,13 +406,18 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 
     //TrackMatching histograms
     if(fUseDistTrackToCluster) {
+        const Int_t nEtaBins = 300;
+        const Int_t nPhiBins = 300;
+        const Float_t EtaRange[2] = {-0.3, 0.3};
+        const Float_t PhiRange[2] = {-0.3, 0.3};
+
         fHistClusterRBeforeQA = new TH1F(Form("R_Cluster_beforeClusterQA %s",GetCutNumber().Data()),"R of cluster",200,400,500);
         fHistograms->Add(fHistClusterRBeforeQA);
         fHistClusterRAfterQA = new TH1F(Form("R_Cluster_afterClusterQA %s",GetCutNumber().Data()),"R of cluster_matched",200,400,500);
         fHistograms->Add(fHistClusterRAfterQA);
-        fHistClusterdEtadPhiBeforeQA=new TH2F(Form("dEtaVsdPhi_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_beforeClusterQA",240,-0.3,0.3,240,-0.3,0.3);
+        fHistClusterdEtadPhiBeforeQA=new TH2F(Form("dEtaVsdPhi_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
         fHistograms->Add(fHistClusterdEtadPhiBeforeQA);
-        fHistClusterdEtadPhiAfterQA=new TH2F(Form("dEtaVsdPhi_afterClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_afterClusterQA",240,-0.3,0.3,240,-0.3,0.3);
+        fHistClusterdEtadPhiAfterQA=new TH2F(Form("dEtaVsdPhi_afterClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_afterClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
         fHistograms->Add(fHistClusterdEtadPhiAfterQA);
         fHistDistanceTrackToClusterBeforeQA = new TH1F(Form("DistanceToTrack_beforeClusterQA %s",GetCutNumber().Data()),"DistanceToTrack_beforeClusterQA",200,0,2);
         fHistograms->Add(fHistDistanceTrackToClusterBeforeQA);
@@ -389,29 +425,29 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistograms->Add(fHistDistanceTrackToClusterAfterQA);
 	
         if(fExtendedMatching){
-            fHistClusterdEtadPhiPosTracksBeforeQA = new TH2F(Form("dEtaVsdPhi_posTracks_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_posTracks_beforeClusterQA",240,-0.3,0.3,240,-0.3,0.3);
+            fHistClusterdEtadPhiPosTracksBeforeQA = new TH2F(Form("dEtaVsdPhi_posTracks_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_posTracks_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
             fHistograms->Add(fHistClusterdEtadPhiPosTracksBeforeQA);
-            fHistClusterdEtadPhiNegTracksBeforeQA = new TH2F(Form("dEtaVsdPhi_negTracks_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTracks_beforeClusterQA",240,-0.3,0.3,240,-0.3,0.3);
+            fHistClusterdEtadPhiNegTracksBeforeQA = new TH2F(Form("dEtaVsdPhi_negTracks_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTracks_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
             fHistograms->Add(fHistClusterdEtadPhiNegTracksBeforeQA);
-            fHistClusterdEtadPhiPosTracksAfterQA = new TH2F(Form("dEtaVsdPhi_posTracks_afterClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_posTracks_afterClusterQA",240,-0.3,0.3,240,-0.3,0.3);
+            fHistClusterdEtadPhiPosTracksAfterQA = new TH2F(Form("dEtaVsdPhi_posTracks_afterClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_posTracks_afterClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
             fHistograms->Add(fHistClusterdEtadPhiPosTracksAfterQA);
-            fHistClusterdEtadPhiNegTracksAfterQA = new TH2F(Form("dEtaVsdPhi_negTracks_afterClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTracks_afterClusterQA",240,-0.3,0.3,240,-0.3,0.3);
+            fHistClusterdEtadPhiNegTracksAfterQA = new TH2F(Form("dEtaVsdPhi_negTracks_afterClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTracks_afterClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
             fHistograms->Add(fHistClusterdEtadPhiNegTracksAfterQA);
-            fHistClusterdEtadPhiPosTracks_P1_BeforeQA = new TH2F(Form("dEtaVsdPhi_posTracks_P<1_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_posTracks_P<1_beforeClusterQA",240,-0.3,0.3,240,-0.3,0.3);
-            fHistograms->Add(fHistClusterdEtadPhiPosTracks_P1_BeforeQA);
-            fHistClusterdEtadPhiPosTracks_P14_BeforeQA = new TH2F(Form("dEtaVsdPhi_posTracks_1<P<4_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_posTracks_1<P<4_beforeClusterQA",240,-0.3,0.3,240,-0.3,0.3);
-            fHistograms->Add(fHistClusterdEtadPhiPosTracks_P14_BeforeQA);
-            fHistClusterdEtadPhiPosTracks_P4_BeforeQA = new TH2F(Form("dEtaVsdPhi_posTracks_P>4_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_posTracks_P>4_beforeClusterQA",240,-0.3,0.3,240,-0.3,0.3);
-            fHistograms->Add(fHistClusterdEtadPhiPosTracks_P4_BeforeQA);
-            fHistClusterdEtadPhiNegTracks_P1_BeforeQA= new TH2F(Form("dEtaVsdPhi_negTrack_P<1s_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTrack_P<1s_beforeClusterQA",240,-0.3,0.3,240,-0.3,0.3);
-            fHistograms->Add(fHistClusterdEtadPhiNegTracks_P1_BeforeQA);
-            fHistClusterdEtadPhiNegTracks_P14_BeforeQA = new TH2F(Form("dEtaVsdPhi_negTracks_1<P<4_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTracks_1<P<4_beforeClusterQA",240,-0.3,0.3,240,-0.3,0.3);
-            fHistograms->Add(fHistClusterdEtadPhiNegTracks_P14_BeforeQA);
-            fHistClusterdEtadPhiNegTracks_P4_BeforeQA = new TH2F(Form("dEtaVsdPhi_negTracks_P>4_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTracks_P>4_beforeClusterQA",240,-0.3,0.3,240,-0.3,0.3);
-            fHistograms->Add(fHistClusterdEtadPhiNegTracks_P4_BeforeQA);
-            fHistClusterdEtadPtBeforeQA = new TH2F(Form("dEtaVsPt_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsPt_beforeClusterQA",240,-0.3,0.3,250,0,25);
+            fHistClusterdEtadPhiPosTracksP_00_05BeforeQA = new TH2F(Form("dEtaVsdPhi_posTracks_P<0.5_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_posTracks_P<0.5_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
+            fHistograms->Add(fHistClusterdEtadPhiPosTracksP_00_05BeforeQA);
+            fHistClusterdEtadPhiPosTracksP_05_15BeforeQA = new TH2F(Form("dEtaVsdPhi_posTracks_0.5<P<1.5_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_posTracks_0.5<P<1.5_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
+            fHistograms->Add(fHistClusterdEtadPhiPosTracksP_05_15BeforeQA);
+            fHistClusterdEtadPhiPosTracksP_15_99BeforeQA = new TH2F(Form("dEtaVsdPhi_posTracks_P>1.5_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_posTracks_P>1.5_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
+            fHistograms->Add(fHistClusterdEtadPhiPosTracksP_15_99BeforeQA);
+            fHistClusterdEtadPhiNegTracksP_00_05BeforeQA= new TH2F(Form("dEtaVsdPhi_negTrack_P<0.5_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTrack_P<0.5_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
+            fHistograms->Add(fHistClusterdEtadPhiNegTracksP_00_05BeforeQA);
+            fHistClusterdEtadPhiNegTracksP_05_15BeforeQA = new TH2F(Form("dEtaVsdPhi_negTracks_0.5<P<1.5_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTracks_0.5<P<1.5_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
+            fHistograms->Add(fHistClusterdEtadPhiNegTracksP_05_15BeforeQA);
+            fHistClusterdEtadPhiNegTracksP_15_99BeforeQA = new TH2F(Form("dEtaVsdPhi_negTracks_P>1.5_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTracks_P>1.5_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
+            fHistograms->Add(fHistClusterdEtadPhiNegTracksP_15_99BeforeQA);
+            fHistClusterdEtadPtBeforeQA = new TH2F(Form("dEtaVsPt_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsPt_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],250,0,25);
             fHistograms->Add(fHistClusterdEtadPtBeforeQA);
-            fHistClusterdPhidPtBeforeQA = new TH2F(Form("dPhiVsPt_beforeClusterQA %s",GetCutNumber().Data()),"dPhiVsPt_beforeClusterQA",480,-0.6,0.6,250,0,25);
+            fHistClusterdPhidPtBeforeQA = new TH2F(Form("dPhiVsPt_beforeClusterQA %s",GetCutNumber().Data()),"dPhiVsPt_beforeClusterQA",2*nPhiBins,2*PhiRange[0],2*PhiRange[1],250,0,25);
             fHistograms->Add(fHistClusterdPhidPtBeforeQA);
             fHistClusterM20Pt_dPhiBeforeQA = new TH2F(Form("M20VsPt_dPhi_beforeClusterQA %s",GetCutNumber().Data()),"M20VsPt_dPhi_beforeClusterQA",200,0,2.5,250,0,25);
             fHistograms->Add(fHistClusterM20Pt_dPhiBeforeQA);
@@ -882,15 +918,15 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
             if(fExtendedMatching){
                 if(inTrack->Charge() > 0) {
                     fHistClusterdEtadPhiPosTracksBeforeQA->Fill(dEta, dPhi);
-                    if(inTrack->P() < 1) fHistClusterdEtadPhiPosTracks_P1_BeforeQA->Fill(dEta, dPhi);
-                    else if(inTrack->P() < 4) fHistClusterdEtadPhiPosTracks_P14_BeforeQA->Fill(dEta, dPhi);
-                    else fHistClusterdEtadPhiPosTracks_P4_BeforeQA->Fill(dEta, dPhi);
+                    if(inTrack->P() < 0.5) fHistClusterdEtadPhiPosTracksP_00_05BeforeQA->Fill(dEta, dPhi);
+                    else if(inTrack->P() < 1.5) fHistClusterdEtadPhiPosTracksP_05_15BeforeQA->Fill(dEta, dPhi);
+                    else fHistClusterdEtadPhiPosTracksP_15_99BeforeQA->Fill(dEta, dPhi);
                 }
                 else{
                     fHistClusterdEtadPhiNegTracksBeforeQA->Fill(dEta, dPhi);
-                    if(inTrack->P() < 1) fHistClusterdEtadPhiNegTracks_P1_BeforeQA->Fill(dEta, dPhi);
-                    else if(inTrack->P() < 4) fHistClusterdEtadPhiNegTracks_P14_BeforeQA->Fill(dEta, dPhi);
-                    else fHistClusterdEtadPhiNegTracks_P4_BeforeQA->Fill(dEta, dPhi);
+                    if(inTrack->P() < 0.5) fHistClusterdEtadPhiNegTracksP_00_05BeforeQA->Fill(dEta, dPhi);
+                    else if(inTrack->P() < 1.5) fHistClusterdEtadPhiNegTracksP_05_15BeforeQA->Fill(dEta, dPhi);
+                    else fHistClusterdEtadPhiNegTracksP_15_99BeforeQA->Fill(dEta, dPhi);
                 }
                 fHistClusterdEtadPtBeforeQA->Fill(dEta, inTrack->Pt());
                 fHistClusterdPhidPtBeforeQA->Fill(dPhi, inTrack->Pt());
@@ -1346,57 +1382,57 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
 		break;
 	case 1: 
 		if (!fUseDistTrackToCluster) fUseDistTrackToCluster=1;
-        fMaxDistTrackToClusterEta = 0.015;
-        fMinDistTrackToClusterPhi = -0.01;
-        fMaxDistTrackToClusterPhi = 0.03;	//0.04;
+        fMaxDistTrackToClusterEta = 0.008;      //0.015;
+        fMinDistTrackToClusterPhi = -0.03;      //-0.01;
+        fMaxDistTrackToClusterPhi = 0.03;       //0.03;	//0.04;
 		break;
 	case 2: 
 		if (!fUseDistTrackToCluster) fUseDistTrackToCluster=1;
-        fMaxDistTrackToClusterEta = 0.015;
-        fMinDistTrackToClusterPhi = -0.01;
-        fMaxDistTrackToClusterPhi = 0.035;	//0.05;
+        fMaxDistTrackToClusterEta = 0.012;      //0.015;
+        fMinDistTrackToClusterPhi = -0.05;      //-0.01;
+        fMaxDistTrackToClusterPhi = 0.04;       //0.035;	//0.05;
 		break;
 	case 3: 
 		if (!fUseDistTrackToCluster) fUseDistTrackToCluster=1;
-        fMaxDistTrackToClusterEta = 0.015;
-        fMinDistTrackToClusterPhi = -0.015;
-        fMaxDistTrackToClusterPhi = 0.04; 	//0.1;
+        fMaxDistTrackToClusterEta = 0.016;      //0.015;
+        fMinDistTrackToClusterPhi = -0.09;      //-0.015;
+        fMaxDistTrackToClusterPhi = 0.06;       //0.04; 	//0.1;
 		break;
 	case 4: 
 		if (!fUseDistTrackToCluster) fUseDistTrackToCluster=1;
-        fMaxDistTrackToClusterEta = 0.015;
-        fMinDistTrackToClusterPhi = -0.015;
-        fMaxDistTrackToClusterPhi = 0.045;	//0.13;
+        fMaxDistTrackToClusterEta = 0.018;      //0.015;
+        fMinDistTrackToClusterPhi = -0.11;      //-0.015;
+        fMaxDistTrackToClusterPhi = 0.07;       //0.045;	//0.13;
 		break;
 	case 5: 
 		if (!fUseDistTrackToCluster) fUseDistTrackToCluster=1;
-        fMaxDistTrackToClusterEta = 0.015;
-        fMinDistTrackToClusterPhi = -0.02;
-        fMaxDistTrackToClusterPhi = 0.05;	//0.15
+        fMaxDistTrackToClusterEta = 0.02;       //0.015;
+        fMinDistTrackToClusterPhi = -0.13;      //-0.02;
+        fMaxDistTrackToClusterPhi = 0.08;       //0.05;	//0.15
 		break;
 	case 6: 
 		if (!fUseDistTrackToCluster) fUseDistTrackToCluster=1;
-        fMaxDistTrackToClusterEta = 0.015;
-        fMinDistTrackToClusterPhi = -0.02;
-        fMaxDistTrackToClusterPhi = 0.055;	//0.2;
+        fMaxDistTrackToClusterEta = 0.022;      //0.015;
+        fMinDistTrackToClusterPhi = -0.15;      //-0.02;
+        fMaxDistTrackToClusterPhi = 0.10;       //0.055;	//0.2;
 		break;
-	case 7: 
+    case 7: //PHOS
 		if (!fUseDistTrackToCluster) fUseDistTrackToCluster=1;
-        fMaxDistTrackToClusterEta = 0.015;
-        fMinDistTrackToClusterPhi = -0.025;
-        fMaxDistTrackToClusterPhi = 0.06; 	//0.3;
+        fMaxDistTrackToClusterEta = 0.005;      //0.015;
+        fMinDistTrackToClusterPhi = -0.03;      //-0.025;
+        fMaxDistTrackToClusterPhi = 0.03;       //0.06; 	//0.3;
 		break;
-	case 8: 
+    case 8: //PHOS
 		if (!fUseDistTrackToCluster) fUseDistTrackToCluster=1;
-        fMaxDistTrackToClusterEta = 0.015;
-        fMinDistTrackToClusterPhi = -0.025;
-        fMaxDistTrackToClusterPhi = 0.07;	//0.4;
+        fMaxDistTrackToClusterEta = 0.01;       //0.015;
+        fMinDistTrackToClusterPhi = -0.09;      //-0.025;
+        fMaxDistTrackToClusterPhi = 0.07;       //0.07;	//0.4;
 		break;
-	case 9: 
+    case 9: //PHOS
 		if (!fUseDistTrackToCluster) fUseDistTrackToCluster=1;
-        fMaxDistTrackToClusterEta = 0.02;
-        fMinDistTrackToClusterPhi = -0.03;
-        fMaxDistTrackToClusterPhi = 0.1;	//0.5;
+        fMaxDistTrackToClusterEta = 0.015;      //0.02;
+        fMinDistTrackToClusterPhi = -0.15;      //-0.03;
+        fMaxDistTrackToClusterPhi = 0.11;       //0.1;	//0.5;
 		break;
 
 	default:
