@@ -30,6 +30,7 @@ public:
   void SetDataJetContainerName(const char *name)        { fDataJetContainer = name; }
   void SetBinning(const char *dimname, int nbins, double *binning);
   void SetBinning(const char *dimname, const TArrayD &binning);
+  void SetSwapThresholds(Bool_t doSwap = kTRUE) { fSwapTriggerThresholds = kTRUE; }
 
 protected:
   AliEMCalTriggerEventData *BuildEvent() const;
@@ -38,6 +39,7 @@ protected:
   AliEMCalTriggerBinningComponent     *fBinning;            // Global binning component
   TString                              fMCJetContainer;     // Name of the Monte-Carlo jet container
   TString                              fDataJetContainer;   // Data jet container name
+  Bool_t                               fSwapTriggerThresholds;    // Swap thresholds of the low and high threshold trigger
 
 private:
   AliAnalysisTaskPtEMCalTriggerV1(const AliAnalysisTaskPtEMCalTriggerV1 &);

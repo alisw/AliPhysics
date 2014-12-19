@@ -167,7 +167,7 @@ void AliAnalysisTaskUpcFilterSemiforward::UserCreateOutputObjects()
   fHistList->SetOwner();
   fCounter = new TH1I("fCounter", "fCounter", 30, 1, 31);
   fHistList->Add(fCounter);
-  fTriggerCounter = new TH2I("fTriggerCounter", "fTriggerCounter", 3000, 195000, 198000, NTRG+1, 0, NTRG+1);
+  fTriggerCounter = new TH2I("fTriggerCounter", "fTriggerCounter", 44000, 154000, 198000, NTRG+1, 0, NTRG+1);
   fHistList->Add(fTriggerCounter);
 
   //output tree
@@ -230,6 +230,8 @@ void AliAnalysisTaskUpcFilterSemiforward::UserExec(Option_t *)
   trgClasses[8] = trigger.Contains("CMUP7-ACE");
   trgClasses[9] = trigger.Contains("CMUP5-ACE");
   trgClasses[10]= trigger.Contains("CMUP9-ACE");
+
+  trgClasses[11]= trigger.Contains("CMUP1-B"); // PbPb FW
 
   Bool_t isTrg = kFALSE;
   for(Int_t itrg=1; itrg<NTRG; itrg++) {

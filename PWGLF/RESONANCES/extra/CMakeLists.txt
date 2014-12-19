@@ -31,6 +31,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                     ${AliRoot_SOURCE_DIR}/TOF/TOFbase
                     ${AliRoot_SOURCE_DIR}/TOF/TOFrec
+		    ${AliRoot_SOURCE_DIR}/PWG/Tools
   )
 
 # Sources - alphabetical order
@@ -42,6 +43,7 @@ set(SRCS
   AliAnalysisTaskSigma1385.cxx
   AliXiStar.cxx
   AliXiStarEventCollection.cxx
+  AliAnalysisTaskLambdaStar.cxx
   )
 
 # Headers from sources

@@ -171,27 +171,34 @@ guessPeriod()
 
 setYear()
 {
-  #set the year
+  #set the year in the string
+  #usualy used to modify the year in $ocdbStorage
   #  ${1} - year to be set
   #  ${2} - where to set the year
-  local year1=$(guessYearFast ${1})
-  local year2=$(guessYearFast ${2})
+  #if AUTOYEAR is present in target - it will be replaced by the year
+  local yearSource=$(guessYearFast ${1})
+  local yearTarget=$(guessYearFast ${2})
   local path=${2}
-  [[ ${year1} -ne ${year2} && -n ${year2} && -n ${year1} ]] && path=${2/\/${year2}\//\/${year1}\/}
-  echo ${path}
+  [[ ${yearSource} -ne ${yearTarget} && -n ${yearTarget} && -n ${yearSource} ]] \
+    && path=${2/\/"${yearTarget}"/\/"${yearSource}"}
+  echo ${path/\/\//\/}
   return 0
 }
 
 guessYearFast()
 {
   #guess the year from the path, pick the rightmost one
+  #is string AUTOYEAR present, will be returned
   local IFS="/"
   declare -a pathArray=( ${1} )
-  local field
-  local year
+  local field=""
+  local year=""
+  local autoYear=""
   for field in ${pathArray[@]}; do
-    [[ ${field} =~ ^20[0-9][0-9]$ ]] && year=${field}
+    [[ ${field} =~ ^20[0-9][0-9]$ ]] && year="${field}"
+    [[ ${field} == AUTOYEAR ]] && autoYear="${field}"
   done
+  [[ -n ${autoYear} ]] && year="${autoYear}"
   echo ${year}
   return 0
 }

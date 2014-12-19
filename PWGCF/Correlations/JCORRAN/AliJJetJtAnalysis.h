@@ -16,6 +16,7 @@
 #include "AliJCard.h"
 #include "AliJJet.h"
 #include "AliJHistManager.h"
+#include "AliJJetAnalysis.h"
 
 class AliJEfficiency;
 class TString;
@@ -100,9 +101,11 @@ class AliJJetJtAnalysis{
         TVector  *fJetTriggPtBorders;
         TVector  *fJetConstPtLowLimits;
         TVector  *fJetAssocPtBorders;
+        TVector  *fDeltaRBorders;
 		int nJetContainer;
 
         AliJCard * fCard; // comment needed
+        AliJJetAnalysis *fJJetAnalysis;
 		vector<TString> fJetFinderName;
         vector<double>  fConeSizes;
 		// Need for events
@@ -119,6 +122,7 @@ class AliJJetJtAnalysis{
         AliJBin fJetTriggerBin; 
         AliJBin fTrkPtBin; 
         AliJBin fTrkLimPtBin; 
+        AliJBin fdRBin;
         AliJTH1D fhJetPt ;
         AliJTH1D fhJetPtBin;
         AliJTH1D fhZ ;
@@ -144,6 +148,12 @@ class AliJJetJtAnalysis{
         AliJTH1D fhBgLogJtWeightBin;
         AliJTH1D fhBgJtWithPtCutWeightBinBin;
         AliJTH1D fhBgLogJtWithPtCutWeightBinBin;
+        
+        AliJTH1D fhdeltaE;
+        AliJTH1D fhdeltaN;
+        AliJTH1D fhFullJetEChJetBin;
+        AliJTH1D fhFullChdRChJetBin;
+
 
 		//double   fJetPtMinCut;
 };

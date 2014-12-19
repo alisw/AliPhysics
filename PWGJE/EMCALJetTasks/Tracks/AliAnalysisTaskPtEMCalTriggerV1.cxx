@@ -42,7 +42,8 @@ AliAnalysisTaskPtEMCalTriggerV1::AliAnalysisTaskPtEMCalTriggerV1() :
     fTaskGroups(NULL),
     fBinning(NULL),
     fMCJetContainer(),
-    fDataJetContainer()
+    fDataJetContainer(),
+    fSwapTriggerThresholds(kFALSE)
 {
   /*
    * Dummy constructor
@@ -55,7 +56,8 @@ AliAnalysisTaskPtEMCalTriggerV1::AliAnalysisTaskPtEMCalTriggerV1(const char* nam
     fTaskGroups(NULL),
     fBinning(NULL),
     fMCJetContainer(),
-    fDataJetContainer()
+    fDataJetContainer(),
+    fSwapTriggerThresholds(kFALSE)
 {
   /*
    * Main Constructor
@@ -112,6 +114,7 @@ Bool_t AliAnalysisTaskPtEMCalTriggerV1::Run() {
    */
   AliEMCalTriggerEventData *event = BuildEvent();
   AliEMCalTriggerAnaTriggerDecision triggerDecision;
+  if(fSwapTriggerThresholds) triggerDecision.SetSwapThresholds();
   triggerDecision.Create(event);
   triggerDecision.SetIsMinBias(fInputHandler->IsEventSelected() & AliVEvent::kINT7);
   TIter groupIter(fTaskGroups);
