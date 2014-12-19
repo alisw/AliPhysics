@@ -1,11 +1,11 @@
 void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  										// change different set of cuts
-                              Bool_t isMC   = kFALSE, 										// run MC 
-                              Int_t enableQAMesonTask = 0, 									// enable meson QA in AliAnalysisTaskGammaConvV1
-                              Int_t enableQAPhotonTask = 0, 								// enable photon QA in AliAnalysisTaskGammaConvV1
-                              TString fileNameInputForWeighting = "MCSpectraInput.root", 	// path to file for weigting input
-                              TString cutnumberAODBranch = "0000000060084001001500000", 	// cutnumber for AOD branch
+							  Bool_t isMC   = kFALSE, 										// run MC 
+							  Int_t enableQAMesonTask = 0, 									// enable meson QA in AliAnalysisTaskGammaConvV1
+							  Int_t enableQAPhotonTask = 0, 								// enable photon QA in AliAnalysisTaskGammaConvV1
+							  TString fileNameInputForWeighting = "MCSpectraInput.root", 	// path to file for weigting input
+							  TString cutnumberAODBranch = "0000000060084001001500000", 	// cutnumber for AOD branch
 							  TString periodname = "LHC12f1x" 								// period name
-                           ) {
+							) {
 
 	// ================= Load Librariers =================================
 	gSystem->Load("libCore");
@@ -107,7 +107,8 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  										// change differ
 	task->SetIsMC(isMC);
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 4;
-
+	if ( trainConfig == 60) numberOfCuts = 2;
+	
 	TString *eventCutArray = new TString[numberOfCuts];
 	TString *photonCutArray = new TString[numberOfCuts];
 	TString *mesonCutArray = new TString[numberOfCuts];
@@ -407,9 +408,12 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  										// change differ
 		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "002000092173028250400000"; mesonCutArray[1] = "01521065000000"; //pion 0-sigma cut for 0.4GeV<p<3.5GeV above -10-sigma
 		eventCutArray[ 2] = "0000011"; photonCutArray[ 2] = "002000092273028250400000"; mesonCutArray[2] = "01521065000000"; //pion 1-sigma cut for 0.4GeV<p<3.5GeV above -10-sigma
 		eventCutArray[ 3] = "0000011"; photonCutArray[ 3] = "002000092873028250400000"; mesonCutArray[3] = "01521065000000"; //pion 2-sigma cut for 0.4GeV<p<3.5GeV above   1-sigma
+	} else if (trainConfig == 60) {
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "002000092273028250400000"; mesonCutArray[0] = "01521035000000"; //New standard cut for eta analysis
+		eventCutArray[ 1] = "0000012"; photonCutArray[ 1] = "002000092273028250400000"; mesonCutArray[1] = "01521035000000"; //New standard cut for eta analysis
 	} else {
-			Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
-			return;
+		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
+		return;
 	}
 
 	TList *EventCutList = new TList();
