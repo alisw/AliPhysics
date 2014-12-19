@@ -9,7 +9,7 @@
 //class AliESDtrackCuts;
 // If used for Marta's cuts: no eta not dca accepted
 //
-AliESDtrackCuts *configureNetChargeTrackCut(Int_t imode = 5, Int_t cutMode = 1000, Double_t eta = 1.0, Double_t dcaxy = 5., Double_t dcaz = 5.) {
+AliESDtrackCuts *configureNetChargeTrackCut(const Char_t *tname = "sjenaTracksCf", Int_t imode = 5, Int_t cutMode = 1000, Double_t eta = 1.0, Double_t dcaxy = 5., Double_t dcaz = 5.) {
 
   Double_t gEtaMin = -1*eta;
   Double_t gEtaMax = eta;
@@ -18,7 +18,7 @@ AliESDtrackCuts *configureNetChargeTrackCut(Int_t imode = 5, Int_t cutMode = 100
   Double_t gPtMax = 100.;
 
   TString tag = Form(" %d : %d : %4.1f : %4.1f %4.1 =>", imode, cutMode, eta, dcaxy, dcaz);
-  AliESDtrackCuts *trackCuts  = new AliESDtrackCuts("sjenaTracksCf","satya");
+  AliESDtrackCuts *trackCuts  = new AliESDtrackCuts(Form("sjena_%s",tname),Form("satya_%s",tname));
 
   
 
