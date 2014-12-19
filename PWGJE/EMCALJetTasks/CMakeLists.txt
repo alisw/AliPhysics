@@ -46,6 +46,8 @@ set(SRCS
     AliAnalysisTaskRhoBase.cxx
     AliAnalysisTaskRho.cxx
     AliAnalysisTaskRhoFlow.cxx
+    AliAnalysisTaskRhoMassBase.cxx
+    AliAnalysisTaskRhoMass.cxx
     AliAnalysisTaskRhoSparse.cxx
     AliAnalysisTaskScale.cxx
     AliEmcalJetByJetCorrection.cxx
@@ -123,8 +125,6 @@ set(SRCS
     UserTasks/AliAnalysisTaskJetShapeDeriv.cxx
     UserTasks/AliAnalysisTaskJetShapeGR.cxx
     UserTasks/AliAnalysisTaskJetV2.cxx
-    UserTasks/AliAnalysisTaskRhoMassBase.cxx
-    UserTasks/AliAnalysisTaskRhoMass.cxx
     UserTasks/AliAnalysisTaskRhoMassScale.cxx
     UserTasks/AliAnalysisTaskSAJF.cxx
     UserTasks/AliAnalysisTaskSAQA.cxx

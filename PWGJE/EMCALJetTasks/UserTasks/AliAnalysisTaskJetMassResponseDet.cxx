@@ -101,7 +101,7 @@ void AliAnalysisTaskJetMassResponseDet::UserCreateOutputObjects()
   const Double_t minPt = 0.;
   const Double_t maxPt = 200.;
 
-  const Int_t nBinsM  = 100;
+  const Int_t nBinsM  = 200;
   const Double_t minM = 0.;
   const Double_t maxM = 50.;
 
