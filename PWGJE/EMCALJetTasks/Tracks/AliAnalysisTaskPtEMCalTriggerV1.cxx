@@ -66,6 +66,7 @@ AliAnalysisTaskPtEMCalTriggerV1::AliAnalysisTaskPtEMCalTriggerV1(const char* nam
   fTaskGroups->SetOwner();
   fBinning = new AliEMCalTriggerBinningComponent();
   SetMakeGeneralHistograms(kTRUE);
+  SetCaloTriggerPatchInfoName("EmcalTriggers");   // Default settings here, to be able to override it in the wagon configuration
 }
 
 //______________________________________________________________________________
@@ -83,7 +84,6 @@ void AliAnalysisTaskPtEMCalTriggerV1::UserCreateOutputObjects() {
    * Initialise all analysis components
    */
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
-  SetCaloTriggerPatchInfoName("EmcalTriggers");
 
   AliEMCalTriggerBinningFactory binmaker;
   binmaker.Create(fBinning);
