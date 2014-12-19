@@ -11,6 +11,8 @@
 #pragma link C++ class AliAnalysisTaskRho+;
 #pragma link C++ class AliAnalysisTaskRhoFlow+;
 #pragma link C++ class AliAnalysisTaskRhoAverage+;
+#pragma link C++ class AliAnalysisTaskRhoMass+;
+#pragma link C++ class AliAnalysisTaskRhoMassBase+;
 #pragma link C++ class AliAnalysisTaskRhoSparse+;
 #pragma link C++ class AliAnalysisTaskLocalRho+;
 #pragma link C++ class AliAnalysisTaskDeltaPt+;
@@ -71,8 +73,6 @@
 #pragma link C++ class AliAnalysisTaskJetMatching+;
 #pragma link C++ class AliAnalysisTaskJetV2+;
 #pragma link C++ class AliAnalysisTaskEmcalJetv2QA+;
-#pragma link C++ class AliAnalysisTaskRhoMass+;
-#pragma link C++ class AliAnalysisTaskRhoMassBase+;
 #pragma link C++ class AliAnalysisTaskRhoMassScale+;
 #pragma link C++ class AliAnalysisTaskSAJF+;
 #pragma link C++ class AliAnalysisTaskSAQA+;

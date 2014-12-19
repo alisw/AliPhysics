@@ -154,8 +154,8 @@ void AliAnalysisTaskEmcalJetMassStructure::UserCreateOutputObjects()
   Double_t *binsPt = new Double_t[nBinsPt+1];
   for(Int_t i=0; i<=nBinsPt; i++) binsPt[i]=(Double_t)minPt + (maxPt-minPt)/nBinsPt*(Double_t)i ;
 
-  const Int_t nBinsM  = 120;
-  const Double_t minM = -20.;
+  const Int_t nBinsM  = 200;
+  const Double_t minM = -10.;
   const Double_t maxM = 40.;
   Double_t *binsM = new Double_t[nBinsM+1];
   for(Int_t i=0; i<=nBinsM; i++) binsM[i]=(Double_t)minM + (maxM-minM)/nBinsM*(Double_t)i ;
