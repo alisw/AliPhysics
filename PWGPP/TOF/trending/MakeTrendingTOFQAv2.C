@@ -724,20 +724,12 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
   trendFile->Close();
   
   if (drawAll){
-    // TLegend * lSigmaPid=new TLegend(0.75,0.75,0.95,0.95,"#sigma_{PID}");
-    // lSigmaPid->AddEntry(profSigmaPi,"#pi^{#pm}","l");
-    // lSigmaPid->AddEntry(profSigmaKa,"K^{#pm}","l");
-    // lSigmaPid->AddEntry(profSigmaPro,"p^{#pm}","l");
-
-    // TString plotDir(Form("Plots_run%d",runNumber));
-    // gSystem->Exec(Form("mkdir %s",plotDir.Data()));
     TCanvas *cTrackProperties= new TCanvas("cTrackProperties","summary of matched tracks properties", 1200, 500);
     cTrackProperties->Divide(3,1);
     cTrackProperties->cd(1);
     gPad->SetLogy();
     hTime->Draw("");
     hRawTime ->Draw("same");
-    lTime->Draw();  
     cTrackProperties->cd(2);
     gPad->SetLogy();
     hTot->Draw("");
