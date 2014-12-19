@@ -1683,22 +1683,29 @@ sFileName[iDir] += momDirectory;
   //Open the file
   fBF[iDir] = TFile::Open(sFileName[iDir].Data());
   if((!fBF[iDir])||(!fBF[iDir]->IsOpen())) {
-    Printf("The file %s is not found. Not used...",sFileName[iDir]);
+    Printf("The file %s is not found. Not used...",sFileName[iDir].Data());
     continue;
   }
   //fBF[iDir]->ls();
 
   hBF[iDir]     = (TH2D*)fBF[iDir]->Get("gHistBalanceFunctionSubtracted");
   if(!hBF[iDir]) continue;
-  entries[iDir] = (Double_t) hBF[iDir]->GetEntries();
+  entries[iDir] = (Double_t) hBF[iDir]->GetEffectiveEntries(); // weighted histograms
   entriesOut += entries[iDir];
   cout<<" BF histogram "<<iDir<<" has "<<entries[iDir] <<" entries."<<endl;
+ }
 
-  // scaling and adding (for average)
-  hBF[iDir]->SetBit(TH1::kIsAverage);
-  if(!hBFOut) hBFOut = (TH2D*)hBF[iDir]->Clone("gHistBalanceFunctionSubtractedOut");
-  else hBFOut->Add(hBF[iDir]);
-  
+  // second loop for scaling and adding (for average)
+ for(Int_t iDir = 0; iDir < nDirectories; iDir++){
+
+   if((!fBF[iDir])||(!fBF[iDir]->IsOpen())) {
+     Printf("The file %s is not found. Not used...",sFileName[iDir].Data());
+     continue;
+   }
+
+   hBF[iDir]->Scale(entries[iDir]/entriesOut);
+   if(!hBFOut) hBFOut = (TH2D*)hBF[iDir]->Clone("gHistBalanceFunctionSubtractedOut");
+   else hBFOut->Add(hBF[iDir]); 
  }
 
  drawProjections(hBFOut,
