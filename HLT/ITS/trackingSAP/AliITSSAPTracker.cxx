@@ -92,6 +92,9 @@ AliITSSAPTracker::AliITSSAPTracker() :
   ,fAddErr2YspdVtx(0.02*0.02)
   ,fAddErr2ZspdVtx(0.04*0.04)
   //
+  ,fMaxDRPhi(1.0)
+  ,fMaxDZ(1.0)
+  //
   ,fMissChi2Penalty(3)
   ,fMaxMissedLayers(1)
   ,fNTracks(0)
@@ -142,6 +145,8 @@ void AliITSSAPTracker::Init()
     fZToler2[i] = 0.2*0.2;
     fChi2TotCut[i] = 0;
   }  
+  fMaxDRPhi = 1.;
+  fMaxDZ    = 1.;
   fChi2TotCut[1] = 40; // 2 cl+vtx -> NDF=1
   fChi2TotCut[2] = 40; 
   fChi2TotCut[3] = 30; 
@@ -640,8 +645,11 @@ Bool_t AliITSSAPTracker::FollowToLayer(AliITSSAPTracker::ITStrack_t& track, Int_
   double phi=TMath::ATan2(xyz[1],xyz[0]),z=trCopy.GetZ();
   // we need track errors in the plane nearly tangential to crossing point
   if (!trCopy.Rotate(phi)) return kFALSE;
-  double dphi = TMath::Sqrt(trCopy.GetSigmaY2()*fNSigma2[lrIDA]+fYToler2[lrIDA])/fgkRLayITS[lrID];
+  double drphi = TMath::Sqrt(trCopy.GetSigmaY2()*fNSigma2[lrIDA]+fYToler2[lrIDA]);
+  if (drphi>fMaxDRPhi) drphi = fMaxDRPhi;
+  double dphi = drphi/fgkRLayITS[lrID];
   double dz   = TMath::Sqrt(trCopy.GetSigmaZ2()*fNSigma2[lrIDA]+fZToler2[lrIDA]);
+  if (dz>fMaxDZ) dz = fMaxDZ;
   AliITSSAPLayer* lrA = fLayers[lrIDA];
   int nCl = lrA->SelectClusters(z-dz,z+dz,phi-dphi,phi+dphi);
   Bool_t updDone = kFALSE;
