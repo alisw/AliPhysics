@@ -73,6 +73,11 @@ set(SRCS
   AliEMCALConfiguration.cxx
   AliEMCALConfigHandler.cxx
   AliEMCALConfigurationMatcher.cxx
+  AliEmcalTriggerDecision.cxx
+  AliEmcalTriggerDecisionContainer.cxx
+  AliEmcalTriggerSelectionCuts.cxx
+  AliEmcalTriggerSelection.cxx
+  AliAnalysisTaskEmcalTriggerSelection.cxx
   )
 
 # Headers from sources
