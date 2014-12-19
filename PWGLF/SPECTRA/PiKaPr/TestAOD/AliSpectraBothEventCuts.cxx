@@ -41,6 +41,7 @@
 #include "AliGenPythiaEventHeader.h"
 //#include "AliSpectraBothHistoManager.h"
 #include <iostream>
+#include "TParameter.h"
 
 using namespace std;
 
@@ -348,19 +349,37 @@ Bool_t AliSpectraBothEventCuts::CheckCentralityCut()
   // Check centrality cut
  if ( fCentralityCutMax<0.0  &&  fCentralityCutMin<0.0 )  
 	return kTRUE;
-  Double_t cent=0;	
-  if(fUseAliPPVsMultUtils)
+  Double_t cent=0;
+  Bool_t validcent=kFALSE;	
+  if(fAODEvent==AliSpectraBothTrackCuts::kESDobject)
   {
-	if(!fAliPPVsMultUtils)
-		fAliPPVsMultUtils=new AliPPVsMultUtils();
-	cent=fAliPPVsMultUtils->GetMultiplicityPercentile(fAOD,fCentEstimator.Data());
-  }	
-  else
-  {
-  	if(!fUseCentPatchAOD049)
-		cent=fAOD->GetCentrality()->GetCentralityPercentile(fCentEstimator.Data());
-  	else 
-		cent=ApplyCentralityPatchAOD049();
+	
+	TString par1name("cent");
+	par1name+=fCentEstimator;
+	cout<<par1name.Data()<<endl;
+	TParameter<Double_t>* par= dynamic_cast<TParameter<Double_t>*>(fAOD->FindListObject(par1name.Data()));
+	if(par)
+	{
+		validcent=kTRUE;
+		cent=par->GetVal();
+	}
+
+  }
+  if(!validcent)
+  {			
+  	if(fUseAliPPVsMultUtils)
+  	{
+		if(!fAliPPVsMultUtils)
+			fAliPPVsMultUtils=new AliPPVsMultUtils();
+		cent=fAliPPVsMultUtils->GetMultiplicityPercentile(fAOD,fCentEstimator.Data());
+  	}	
+  	else
+  	{
+  		if(!fUseCentPatchAOD049)
+			cent=fAOD->GetCentrality()->GetCentralityPercentile(fCentEstimator.Data());
+  		else 
+			cent=ApplyCentralityPatchAOD049();
+  	}
   }	
   fHistoCentrality->Fill(0.5,cent);	
   if ( (cent < fCentralityCutMax)  &&  (cent >= fCentralityCutMin) )  
@@ -381,10 +400,23 @@ Bool_t AliSpectraBothEventCuts::CheckMultiplicityCut()
 		return kTRUE;
 	Int_t Ncharged=-1;
 	if(fAODEvent==AliSpectraBothTrackCuts::kESDobject)
-	{	
-		  AliESDEvent* esdevent=dynamic_cast<AliESDEvent*>(fAOD);
-		 AliESDtrackCuts::MultEstTrackType estType = esdevent->GetPrimaryVertexTracks()->GetStatus() ? AliESDtrackCuts::kTrackletsITSTPC : AliESDtrackCuts::kTracklets;
-		Ncharged=AliESDtrackCuts::GetReferenceMultiplicity(esdevent,estType,fetarangeofmultiplicitycut);
+	{
+	
+		TParameter<Int_t>* par=0;
+		if(TMath::Abs(0.8-fetarangeofmultiplicitycut)<0.1)
+			par= dynamic_cast<TParameter<Int_t>*>(fAOD->FindListObject("Ncheta0dot8"));
+		else  
+			par= dynamic_cast<TParameter<Int_t>*>(fAOD->FindListObject("Ncheta0dot5"));	
+		if(par)
+		{
+			Ncharged=par->GetVal();
+		}	
+		else
+		{
+			AliESDEvent* esdevent=dynamic_cast<AliESDEvent*>(fAOD);
+			AliESDtrackCuts::MultEstTrackType estType = esdevent->GetPrimaryVertexTracks()->GetStatus() ? AliESDtrackCuts::kTrackletsITSTPC : AliESDtrackCuts::kTracklets;
+			Ncharged=AliESDtrackCuts::GetReferenceMultiplicity(esdevent,estType,fetarangeofmultiplicitycut);
+		}
 	}
 	else if(fAODEvent==AliSpectraBothTrackCuts::kAODobject)
 	{

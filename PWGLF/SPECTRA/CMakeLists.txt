@@ -77,6 +77,7 @@ set(SRCS
   PiKaPr/TestAOD/AliSpectraBothHistoManager.cxx
   PiKaPr/TestAOD/AliSpectraBothPID.cxx
   PiKaPr/TestAOD/AliAnalysisTaskSpectraBoth.cxx
+  PiKaPr/TestAOD/AliMultiplictyLoaderTask.cxx
   Nuclei/B2/AliLnID.cxx
   Nuclei/B2/AliLnHistoMap.cxx
   Nuclei/B2/AliLnAODtrackCuts.cxx

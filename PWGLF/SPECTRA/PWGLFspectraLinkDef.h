@@ -40,6 +40,7 @@
 #pragma link C++ class AliSpectraBothHistoManager+;
 #pragma link C++ class AliSpectraBothPID+;
 #pragma link C++ class AliSpectraBothTrackCuts+;
+#pragma link C++ class AliMultiplictyLoaderTask+;
 
 #pragma link C++ class AliLnID+;
 #pragma link C++ class AliLnHistoMap+;
