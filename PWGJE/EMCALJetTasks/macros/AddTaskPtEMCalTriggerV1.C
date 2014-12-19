@@ -25,6 +25,7 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
     const char *nclusterContainer = "",
     const char *njetcontainerData = "",
     const char *njetcontainerMC = "",
+    const char *ntriggerContainer = "",
     double jetradius = 0.5
 )
 {
@@ -53,8 +54,14 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   }
 
   // Add components
-  EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *noselect = new EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup("noselect");
-  noselect->AddAnalysisComponent(new EMCalTriggerPtAnalysis::AliEMCalTriggerPatchAnalysisComponent("patchanalysis"));
+  if(strlen(ntriggerContainer)){
+    pttriggertask->SetCaloTriggerPatchInfoName(ntriggerContainer);
+    EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *noselect = new EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup("noselect");
+    noselect->AddAnalysisComponent(new EMCalTriggerPtAnalysis::AliEMCalTriggerPatchAnalysisComponent("patchanalysis"));
+    pttriggertask->AddAnalysisGroup(noselect);
+  } else {
+    pttriggertask->SetCaloTriggerPatchInfoName("");
+  }
 
   double jetpt[4] = {40., 60., 80., 100.};
   EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *defaultselect = new EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup("defaultselect");
@@ -73,7 +80,6 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   for(int ijpt = 0; ijpt < 4; ijpt++)
     AddRecJetComponent(defaultselect, CreateDefaultTrackCuts(), jetpt[ijpt], isMC, isSwapEta);
 
-  pttriggertask->AddAnalysisGroup(noselect);
   pttriggertask->AddAnalysisGroup(defaultselect);
 
   // Add containers
