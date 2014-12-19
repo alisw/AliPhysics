@@ -3364,7 +3364,10 @@ TTree* AliTPCcalibDButil::ConnectDistortionTrees(TString baseDir, TString  selec
       if (!tree) continue;
       TString friendName=TString::Format("%s.%s.%s",path->At(plength-3)->GetName(),path->At(plength-2)->GetName(), tree->GetName()); 
       ::Info("AliTPCcalibDButil::ConnectDistortionTrees","%s",friendName.Data());  
-      if (tMain==0) tMain=tree;
+      if (tMain==0) {
+	tMain=tree;
+	tree  = dynamic_cast<TTree*>(finput->Get(list->At(ikey)->GetName()));
+      }
       tMain->AddFriend(tree,friendName.Data());  
     }
   }
