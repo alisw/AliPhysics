@@ -134,6 +134,7 @@ AliEbyENetChargeFluctuationTask::AliEbyENetChargeFluctuationTask(const char *nam
   fIsQa(kFALSE),
   fIsPhy(kFALSE),
   fIsDca(kFALSE),
+  fIsNu(kFALSE),
   
   fRan(0),             
   fRanIdx(0),                        
@@ -178,7 +179,7 @@ AliEbyENetChargeFluctuationTask::~AliEbyENetChargeFluctuationTask() {
 const Float_t fGBwRap     = 0.1;
 const Float_t fGBwPt      = 0.1; 
 const Int_t   fGNBinsCent = 11 ;
-const Float_t fGRngCent[] = {-0.5, 10.5};
+const Float_t fGRngCent[] = {0.5, 11.5};
 const Float_t fGRngEta[]  = {-0.8, 0.8};
 const Int_t   fGNBinsEta  = Int_t((fGRngEta[1] - fGRngEta[0])/fGBwRap);
 
@@ -523,16 +524,16 @@ void AliEbyENetChargeFluctuationTask::ExecAA(){
 
     Int_t icharge = track->Charge() < 0 ? 0 : 1;
     fNp[0][icharge] += 1.; 
-    if (fIsQa) FillQAThnRec(track,0,0);
+    if (!fIsNu && fIsQa) FillQAThnRec(track,0,0);
     
     Int_t a = fHelperPID->GetParticleSpecies(track,kTRUE);
     if(a < 0 || a > 2) continue;
     Int_t b = a + 1;
 
     Double_t rap;
-    if (!TrackRapidity(track,rap,b)) continue;
+    if (!fIsNu && !TrackRapidity(track,rap,b)) continue;
     fNp[b][icharge] += 1.; 
-    if (fIsQa) FillQAThnRec(track, b,rap);
+    if (!fIsNu && fIsQa) FillQAThnRec(track, b,rap);
 
   }
   
@@ -566,7 +567,7 @@ void AliEbyENetChargeFluctuationTask::ExecAA(){
 	if (!AcceptTrackMC((AliVParticle*)particle, idxMC)) continue;
 	Int_t icharge = (particle->PdgCode() < 0) ? 0 : 1;
 	fMCNp[0][icharge]    += 1.;    	   
-	if(fIsQa)FillQAThnMc((AliVParticle*)particle,0,0);
+	if(!fIsNu && fIsQa)FillQAThnMc((AliVParticle*)particle,0,0);
 	Int_t iPid = 0;  
 	if      (TMath::Abs(particle->PdgCode()) ==  211) iPid = 1; // pion
 	else if (TMath::Abs(particle->PdgCode()) ==  321) iPid = 2; // kaon
@@ -576,9 +577,9 @@ void AliEbyENetChargeFluctuationTask::ExecAA(){
 	if(iPid < 1 || iPid > 3) continue;
 
 	Double_t rap;
-	if (!ParticleRapidity((AliVParticle*)particle, rap, iPid)) continue;
+	if (!fIsNu && !ParticleRapidity((AliVParticle*)particle, rap, iPid)) continue;
 	fMCNp[iPid][icharge] += 1.;    
-	if(fIsQa)FillQAThnMc((AliVParticle*)particle,iPid,rap);   
+	if(!fIsNu && fIsQa)FillQAThnMc((AliVParticle*)particle,iPid,rap);   
       }
 
     } else if (fESD) {
@@ -590,7 +591,7 @@ void AliEbyENetChargeFluctuationTask::ExecAA(){
 	   if (!AcceptTrackMC(particle, idxMC)) continue;
 	   Int_t icharge = (particle->PdgCode() < 0) ? 0 : 1;
 	   fMCNp[0][icharge]  += 1.;    	   
-	   if(fIsQa)FillQAThnMc(particle, 0, 0);
+	   if(!fIsNu && fIsQa)FillQAThnMc(particle, 0, 0);
 
 	   Int_t iPid = 0;  
 	   if      (TMath::Abs(particle->PdgCode()) ==  211) iPid = 1; // pion
@@ -599,9 +600,9 @@ void AliEbyENetChargeFluctuationTask::ExecAA(){
 	   else  iPid = 0;
 	   if(iPid < 1 || iPid > 3) continue;
 	   Double_t rap;
-	   if (!ParticleRapidity(particle, rap, iPid)) continue;
+	   if (!fIsNu && !ParticleRapidity(particle, rap, iPid)) continue;
 	   fMCNp[iPid][icharge] += 1.;    
-	   if(fIsQa)FillQAThnMc(particle, iPid, rap);    
+	   if(!fIsNu && fIsQa)FillQAThnMc(particle, iPid, rap);    
 	 }
     }
     
@@ -856,74 +857,55 @@ void AliEbyENetChargeFluctuationTask::CreateBasicQA() {
 
 //----------------------------------------------------------------------------------
 void AliEbyENetChargeFluctuationTask::SetAnal(Int_t i){
-  switch(i){
-  case 0:
+  if      (i == 0 )   
     fIsQa  = 1; 
-    break;
-  case 1:
-    fIsDca = 1; 
-    break;
-  case 2:
+  else if (i == 1 )   
+    fIsDca  = 1; 
+  else if (i == 2 )   
     fIsEff = 1; 
-    break;
-  case 3:
-    fIsPhy   = 1; 
-    fIsRatio = 1; 
-    break;
-  case 4:
-    fIsPhy   = 1; 
-    fIsRatio = 1; fIsPer = 1;
-    break;
-  case 5:
-    fIsPhy = 1; 
-    fIsSub = 1; 
-    break;
-  case 6:
-    fIsPhy = 1; 
-    fIsSub = 1; fIsPer = 1; 
-    break;
-  case 7:
-    fIsPhy = 1; 
-    fIsBS = 1; fIsPer = 1;
-    break;
-  case 8:
-    fIsPhy = 1; 
-    fIsSub = 1; fIsBS = 1; 
-    break;
-  case 9:
-    fIsPhy = 1; 
-    fIsSub = 1; fIsBS = 1; fIsPer = 1;
-    break;
-  case 10:
-    fIsPhy   = 1;
-    fIsRatio = 1; fIsSub = 1; fIsBS  = 1; 
-    break;
-  case 11:
-    fIsPhy   = 1;
-    fIsRatio = 1; fIsSub = 1; fIsBS  = 1; fIsPer = 1;
-    break;
-  case 12:
-    fIsPhy   = 1; fIsEff = 1; fIsDca = 1; fIsQa  = 1; 
-    fIsRatio = 1; fIsSub = 1; fIsBS  = 1; fIsPer = 1;
-    break;
-  case 13:
-    fIsDca  = 1;  fIsEff = 1;
-    break;
-  case 14:
-    fIsQa  = 1; fIsDca  = 1;  fIsEff = 1;
-    break;
-  default:
-    cerr<<"Error:  cannot fill histograms!"<<endl;
+  else if (i == 3 )
+    { fIsPhy = 1; fIsRatio = 1; }   
+  else if (i == 4 )   
+    { fIsPhy = 1; fIsRatio = 1; fIsPer = 1; }
+  else if (i == 5 )
+    { fIsPhy = 1; fIsSub = 1; }
+  else if (i == 6 )  
+    {  fIsPhy = 1; fIsSub = 1; fIsPer = 1; } 
+  else if (i == 7 ) 
+    {  fIsPhy = 1; 
+      fIsBS = 1; fIsPer = 1;}  
+  else if (i == 8 )  
+    { fIsPhy = 1; 
+      fIsSub = 1; fIsBS = 1; }
+  else if (i == 9 )   
+    { fIsPhy = 1; 
+      fIsSub = 1; fIsBS = 1; fIsPer = 1;}
+  else if (i == 10) 
+    {   fIsPhy   = 1;
+    fIsRatio = 1; fIsSub = 1; fIsBS  = 1; }  
+  else if (i == 11)   
+    { fIsPhy   = 1;
+    fIsRatio = 1; fIsSub = 1; fIsBS  = 1; fIsPer = 1;}
+  else if (i == 12) 
+    { fIsPhy   = 1; fIsEff = 1; fIsDca = 1; fIsQa  = 1; 
+      fIsRatio = 1; fIsSub = 1; fIsBS  = 1; fIsPer = 1;}  
+  else if (i == 13) 
+    { fIsDca  = 1;  fIsEff = 1; }  
+  else if (i == 14)  
+    {    fIsQa  = 1; fIsDca  = 1;  fIsEff = 1;} 
+  else if (i == 15) 
+    { fIsNu    = 1; fIsPhy   = 1;
+      fIsRatio = 1; fIsSub = 1; fIsBS  = 1; }  
+  else {
     fIsPhy   = 0; fIsEff = 0; fIsDca = 0; fIsQa  = 0; 
     fIsRatio = 0; fIsSub = 0; fIsBS  = 0; fIsPer = 0;
-    break;
   }
-
-  Printf(" >>> %d %d %d %d %d %d %d %d %d", 
+  
+  Printf(" >>> %d %d %d %d %d %d %d %d %d %d", 
 	 i, fIsPhy, fIsEff, fIsDca, fIsQa, 
-	 fIsRatio, fIsSub, fIsBS, fIsPer);
+	 fIsRatio, fIsSub, fIsBS, fIsPer, fIsNu);
   if (fIsEff || fIsDca) {fPtMin = 0.2; fPtMax = 3.3;}  
-
+ 
 }
 
 const Char_t*      fgkPidName[4] = {"Nch","Npi","Nka","Npr"};
@@ -984,71 +966,70 @@ void  AliEbyENetChargeFluctuationTask::CreateBasicHistos(const Char_t *name, con
   Int_t nBinsCent         =  fGNBinsCent;
   Double_t centBinRange[] = {fGRngCent[0], fGRngCent[1]};
 
- 
-  for (Int_t iPid = 0; iPid < 4; ++iPid) {
-    TString sNetTitle(Form("%s - %s", fgkPidLatex[iPid][1], fgkPidLatex[iPid][0]));
 
-    sTitle = (iPid != 0 ) ? Form("|y| < %.1f", fRapMax) : Form(" |#eta|<%.1f", etaRange[1]);
-
-    list->Add(new TProfile(Form("fProfTot%sPlus%s", fgkPidName[iPid],name), 
-			   Form("(%s) : %s;Centrality(100);(%s)",fgkPidName[iPid], sTitle.Data(), sNetTitle.Data()),
-			   100,-0.5,99.5));
-
-    list->Add(new TProfile(Form("fProfTot%sMinus%s", fgkPidName[iPid],name), 
-			   Form("(%s) : %s;Centrality(100);(%s)",fgkPidName[iPid], sTitle.Data(), sNetTitle.Data()),
-			   100,-0.5,99.5));
-
-
-    
-
-    for (Int_t idx = 1; idx <= fOrder; ++idx) {
-      list->Add(new TProfile(Form("fProf%s%sNet%dM", fgkPidName[iPid],name, idx), 
-			     Form("(%s)^{%d} : %s;Centrality(100);(%s)^{%d}",sNetTitle.Data(), idx, sTitle.Data(), sNetTitle.Data(), idx),
-			     100,-0.5,99.5));
-    }
-    
-    for (Int_t ii = 0; ii <= fOrder; ++ii) {
-      for (Int_t kk = 0; kk <= fOrder; ++kk) {
-	list->Add(new TProfile(Form("fProf%s%sNetF%02d%02d", fgkPidName[iPid], name, ii, kk),
-			       Form("f_{%02d%02d} : %s;Centrality(100);f_{%02d%02d}", ii, kk, sTitle.Data(), ii, kk),
-			       100,-0.5,99.5));
+  if (!fIsNu) {
+    for (Int_t iPid = 0; iPid < 4; ++iPid) {
+      TString sNetTitle(Form("%s - %s", fgkPidLatex[iPid][1], fgkPidLatex[iPid][0]));
+      
+      sTitle = (iPid != 0 ) ? Form("|y| < %.1f", fRapMax) : Form(" |#eta|<%.1f", etaRange[1]);
+      
+      list->Add(new TProfile(Form("fProfTot%sPlus%s", fgkPidName[iPid],name), 
+			     Form("(%s) : %s;Centrality(100);(%s)",fgkPidName[iPid], sTitle.Data(), sNetTitle.Data()),
+			     100,0.5,100.5));
+      
+      list->Add(new TProfile(Form("fProfTot%sMinus%s", fgkPidName[iPid],name), 
+			     Form("(%s) : %s;Centrality(100);(%s)",fgkPidName[iPid], sTitle.Data(), sNetTitle.Data()),
+			     100,0.5,100.5));
+      
+      for (Int_t idx = 1; idx <= fOrder; ++idx) {
+	list->Add(new TProfile(Form("fProf%s%sNet%dM", fgkPidName[iPid],name, idx), 
+			       Form("(%s)^{%d} : %s;Centrality(100);(%s)^{%d}",sNetTitle.Data(), idx, sTitle.Data(), sNetTitle.Data(), idx),
+			       100,0.5,100.5));
       }
-    }
-  
-  }  
-   
-  for (Int_t iPid = 0; iPid < 4; ++iPid) {
-    TString sNetTitle(Form("%s - %s", fgkPidLatex[iPid][1], fgkPidLatex[iPid][0]));
-    sTitle = (iPid != 0 ) ? Form(" |y|<%.1f", fRapMax) : Form(" |#eta| < %.1f", etaRange[1]);
-
-    list->Add(new TProfile(Form("fProfBinTot%sPlus%s", fgkPidName[iPid],name), 
-			   Form("(%s) : %s;Centrality(11);(%s)",fgkPidName[iPid], sTitle.Data(), sNetTitle.Data()),
-			   nBinsCent, centBinRange[0], centBinRange[1]));
-
-    list->Add(new TProfile(Form("fProfBinTot%sMinus%s", fgkPidName[iPid],name), 
-			   Form("(%s) : %s;Centrality(11);(%s)",fgkPidName[iPid], sTitle.Data(), sNetTitle.Data()),
-			   nBinsCent, centBinRange[0], centBinRange[1]));
-
-
-
-    for (Int_t idx = 1; idx <= fOrder; ++idx) {
-      list->Add(new TProfile(Form("fProfBin%s%sNet%dM", fgkPidName[iPid],name, idx), 
-			     Form("(%s)^{%d} : %s;Centrality(11);(%s)^{%d}", sNetTitle.Data(), idx, sTitle.Data(), sNetTitle.Data(), idx),
-			     nBinsCent, centBinRange[0], centBinRange[1]));
-    }
+      
+      for (Int_t ii = 0; ii <= fOrder; ++ii) {
+	for (Int_t kk = 0; kk <= fOrder; ++kk) {
+	  list->Add(new TProfile(Form("fProf%s%sNetF%02d%02d", fgkPidName[iPid], name, ii, kk),
+				 Form("f_{%02d%02d} : %s;Centrality(100);f_{%02d%02d}", ii, kk, sTitle.Data(), ii, kk),
+				 100,0.5,100.5));
+	}
+      }
+      
+    } 
     
-    for (Int_t ii = 0; ii <= fOrder; ++ii) {
-      for (Int_t kk = 0; kk <= fOrder; ++kk) {
-	list->Add(new TProfile(Form("fProfBin%s%sNetF%02d%02d", fgkPidName[iPid], name, ii, kk),
-			       Form("f_{%02d%02d} : %s;Centrality(11);f_{%02d%02d}", ii, kk, sTitle.Data(), ii, kk),
+    for (Int_t iPid = 0; iPid < 4; ++iPid) {
+      TString sNetTitle(Form("%s - %s", fgkPidLatex[iPid][1], fgkPidLatex[iPid][0]));
+      sTitle = (iPid != 0 ) ? Form(" |y|<%.1f", fRapMax) : Form(" |#eta| < %.1f", etaRange[1]);
+      
+      list->Add(new TProfile(Form("fProfBinTot%sPlus%s", fgkPidName[iPid],name), 
+			     Form("(%s) : %s;Centrality(11);(%s)",fgkPidName[iPid], sTitle.Data(), sNetTitle.Data()),
+			     nBinsCent, centBinRange[0], centBinRange[1]));
+      
+      list->Add(new TProfile(Form("fProfBinTot%sMinus%s", fgkPidName[iPid],name), 
+			     Form("(%s) : %s;Centrality(11);(%s)",fgkPidName[iPid], sTitle.Data(), sNetTitle.Data()),
+			     nBinsCent, centBinRange[0], centBinRange[1]));
+      
+      
+      
+      for (Int_t idx = 1; idx <= fOrder; ++idx) {
+	list->Add(new TProfile(Form("fProfBin%s%sNet%dM", fgkPidName[iPid],name, idx), 
+			       Form("(%s)^{%d} : %s;Centrality(11);(%s)^{%d}", sNetTitle.Data(), idx, sTitle.Data(), sNetTitle.Data(), idx),
 			       nBinsCent, centBinRange[0], centBinRange[1]));
       }
-    }
-  
-  }  
+      
+      for (Int_t ii = 0; ii <= fOrder; ++ii) {
+	for (Int_t kk = 0; kk <= fOrder; ++kk) {
+	  list->Add(new TProfile(Form("fProfBin%s%sNetF%02d%02d", fgkPidName[iPid], name, ii, kk),
+				 Form("f_{%02d%02d} : %s;Centrality(11);f_{%02d%02d}", ii, kk, sTitle.Data(), ii, kk),
+				 nBinsCent, centBinRange[0], centBinRange[1]));
+	}
+      }
+      
+    }  
+  }
   
   for (Int_t iPhy = 0; iPhy < 46; ++iPhy) { 
-    list->Add(new TProfile(Form("fProf%sNu%02d",name,iPhy),Form("Physics Variable for index %d | %s ; Centrality;",iPhy,name),100,-0.5,99.5));
+    list->Add(new TProfile(Form("fProf%sNu%02d",name,iPhy),Form("Physics Variable for index %d | %s ; Centrality;",iPhy,name),100,0.5,100.5));
   }
   for (Int_t iPhy = 0; iPhy < 46; ++iPhy) { 
     list->Add(new TProfile(Form("fProfBin%sNu%02d",name,iPhy),Form("Physics Variable for index %d | %s ; Centrality;",iPhy,name),nBinsCent, centBinRange[0], centBinRange[1]));
@@ -1074,8 +1055,8 @@ void  AliEbyENetChargeFluctuationTask::CreateRatioHistos(const Char_t *name, con
 
   Int_t nBinsCent         =  (isPer) ? 100 : fGNBinsCent;
   Double_t centBinRange[2];  
-  centBinRange[0]  =  (isPer) ?  0   : fGRngCent[0];
-  centBinRange[1]  =  (isPer) ?  100 : fGRngCent[1];
+  centBinRange[0]  =  (isPer) ?  0.5   : fGRngCent[0];
+  centBinRange[1]  =  (isPer) ?  100.5 : fGRngCent[1];
 
   TString xyz = Form("|y| < %.1f",fRapMax); 
 
@@ -1133,6 +1114,9 @@ void  AliEbyENetChargeFluctuationTask::CreateRatioHistos(const Char_t *name, con
   
 
   //------- - - -  -  -   -   - - -   - --- - - --- - - - - - -- --------
+
+  if (!fIsNu) {
+
   Int_t bin[4] = {2800,2200,1200,600}; 
   Int_t bd[] = {1,2,2,2};
   for (Int_t iPid = 0; iPid < 4; ++iPid) {
@@ -1151,7 +1135,7 @@ void  AliEbyENetChargeFluctuationTask::CreateRatioHistos(const Char_t *name, con
     }
   }
   
-
+  }
 
 
 return;
@@ -1174,58 +1158,61 @@ void AliEbyENetChargeFluctuationTask::FillBasicHistos(const Char_t *name, Bool_t
     }
   }
 
-  Float_t centralityBin = fCentralityBin;
-  Float_t centralityPer = fCentralityPercentile;
+  Float_t centralityBin = fCentralityBin + 1;
+  Float_t centralityPer = fCentralityPercentile + 1;
   
   TList *list = static_cast<TList*>(fPhyList->FindObject(Form("f%s",name)));
   
-  for (Int_t iPid = 0; iPid < 4; ++iPid) {
-    Int_t deltaNp = np[iPid][1]-np[iPid][0];  
-    Double_t delta = 1.;
+  if (!fIsNu) {
 
-    (static_cast<TProfile*>(list->FindObject(Form("fProfBinTot%sPlus%s", fgkPidName[iPid], name))))->Fill(centralityBin, np[iPid][1]);
-    (static_cast<TProfile*>(list->FindObject(Form("fProfTot%sPlus%s", fgkPidName[iPid], name))))->Fill(centralityPer, np[iPid][1]);
-
-    (static_cast<TProfile*>(list->FindObject(Form("fProfBinTot%sMinus%s", fgkPidName[iPid], name))))->Fill(centralityBin, np[iPid][0]);
-    (static_cast<TProfile*>(list->FindObject(Form("fProfTot%sMinus%s", fgkPidName[iPid], name))))->Fill(centralityPer, np[iPid][0]);
-
-
-    for (Int_t idxOrder = 1; idxOrder <= fOrder; ++idxOrder) {
-      delta *= deltaNp;
-
-      (static_cast<TProfile*>(list->FindObject(Form("fProfBin%s%sNet%dM", fgkPidName[iPid], name, idxOrder))))->Fill(centralityBin, delta);
-      (static_cast<TProfile*>(list->FindObject(Form("fProf%s%sNet%dM", fgkPidName[iPid], name, idxOrder))))->Fill(centralityPer, delta);
-    }
+    for (Int_t iPid = 0; iPid < 4; ++iPid) {
+      Int_t deltaNp = np[iPid][1]-np[iPid][0];  
+      Double_t delta = 1.;
+      
+      (static_cast<TProfile*>(list->FindObject(Form("fProfBinTot%sPlus%s", fgkPidName[iPid], name))))->Fill(centralityBin, np[iPid][1]);
+      (static_cast<TProfile*>(list->FindObject(Form("fProfTot%sPlus%s", fgkPidName[iPid], name))))->Fill(centralityPer, np[iPid][1]);
+      
+      (static_cast<TProfile*>(list->FindObject(Form("fProfBinTot%sMinus%s", fgkPidName[iPid], name))))->Fill(centralityBin, np[iPid][0]);
+      (static_cast<TProfile*>(list->FindObject(Form("fProfTot%sMinus%s", fgkPidName[iPid], name))))->Fill(centralityPer, np[iPid][0]);
+      
+      
+      for (Int_t idxOrder = 1; idxOrder <= fOrder; ++idxOrder) {
+	delta *= deltaNp;
+	
+	(static_cast<TProfile*>(list->FindObject(Form("fProfBin%s%sNet%dM", fgkPidName[iPid], name, idxOrder))))->Fill(centralityBin, delta);
+	(static_cast<TProfile*>(list->FindObject(Form("fProf%s%sNet%dM", fgkPidName[iPid], name, idxOrder))))->Fill(centralityPer, delta);
+      }
     
-    for (Int_t idxOrder = 0; idxOrder <= fOrder; ++ idxOrder) {
-      fRedFactp[idxOrder][0]  = 1.;
-      fRedFactp[idxOrder][1]  = 1.;
-    }
-    
-    for (Int_t idxOrder = 1; idxOrder <= fOrder; ++ idxOrder) {
-      fRedFactp[idxOrder][0]  = fRedFactp[idxOrder-1][0]  * Double_t(np[iPid][0]-(idxOrder-1));
-      fRedFactp[idxOrder][1]  = fRedFactp[idxOrder-1][1]  * Double_t(np[iPid][1]-(idxOrder-1));
-    }
-    
-    for (Int_t ii = 0; ii <= fOrder; ++ii) {  
-      for (Int_t kk = 0; kk <= fOrder; ++kk) { 
-	Double_t fik = fRedFactp[ii][1] * fRedFactp[kk][0];   
-	(static_cast<TProfile*>(list->FindObject(Form("fProfBin%s%sNetF%02d%02d", fgkPidName[iPid], name, ii, kk))))->Fill(centralityBin, fik);
-	(static_cast<TProfile*>(list->FindObject(Form("fProf%s%sNetF%02d%02d", fgkPidName[iPid], name, ii, kk))))->Fill(centralityPer, fik);
+      for (Int_t idxOrder = 0; idxOrder <= fOrder; ++ idxOrder) {
+	fRedFactp[idxOrder][0]  = 1.;
+	fRedFactp[idxOrder][1]  = 1.;
+      }
+      
+      for (Int_t idxOrder = 1; idxOrder <= fOrder; ++ idxOrder) {
+	fRedFactp[idxOrder][0]  = fRedFactp[idxOrder-1][0]  * Double_t(np[iPid][0]-(idxOrder-1));
+	fRedFactp[idxOrder][1]  = fRedFactp[idxOrder-1][1]  * Double_t(np[iPid][1]-(idxOrder-1));
+      }
+      
+      for (Int_t ii = 0; ii <= fOrder; ++ii) {  
+	for (Int_t kk = 0; kk <= fOrder; ++kk) { 
+	  Double_t fik = fRedFactp[ii][1] * fRedFactp[kk][0];   
+	  (static_cast<TProfile*>(list->FindObject(Form("fProfBin%s%sNetF%02d%02d", fgkPidName[iPid], name, ii, kk))))->Fill(centralityBin, fik);
+	  (static_cast<TProfile*>(list->FindObject(Form("fProf%s%sNetF%02d%02d", fgkPidName[iPid], name, ii, kk))))->Fill(centralityPer, fik);
+	}
       }
     }
   }
- 
-  //Printf("%6d %20s %6.2f %6d %6d %6d %6d  %6d %6d %6d %6d", idx, name, centralityBin,
-  //	 np[0][1],  np[0][0], 
-  //	 np[1][1],  np[1][0], 
-  ///	 np[2][1],  np[2][0], 
+    
+    //Printf("%6d %20s %6.2f %6d %6d %6d %6d  %6d %6d %6d %6d", idx, name, centralityBin,
+    //	 np[0][1],  np[0][0], 
+    //	 np[1][1],  np[1][0], 
+    ///	 np[2][1],  np[2][0], 
   //	 np[3][1],  np[3][0]);
   //
 
-   Int_t a[6][4]; Int_t b[22];
-   for (Int_t iPid = 0; iPid < 4; ++iPid) {
-     a[0][iPid] = np[iPid][1]+np[iPid][0];       // 0  n+ + n-
+    Int_t a[6][4]; Int_t b[22];
+    for (Int_t iPid = 0; iPid < 4; ++iPid) {
+      a[0][iPid] = np[iPid][1]+np[iPid][0];       // 0  n+ + n-
      a[1][iPid] = np[iPid][1];                        // 1  n+
      a[2][iPid] = np[iPid][0];                        // 2  n-
      a[3][iPid] = np[iPid][1]*np[iPid][0];       // 3  n+ . n-
@@ -1301,7 +1288,7 @@ void AliEbyENetChargeFluctuationTask::FillRatioHistos(const Char_t *name, Bool_t
 
 
 
-  Float_t centralityBin = (isPer) ? fCentralityPercentile : fCentralityBin;
+  Float_t centralityBin = (isPer) ? (fCentralityPercentile + 1) : (fCentralityBin + 1);
 
   TList *list = static_cast<TList*>(fPhyList->FindObject(Form("f%s",name)));
     
@@ -1350,13 +1337,14 @@ void AliEbyENetChargeFluctuationTask::FillRatioHistos(const Char_t *name, Bool_t
    (static_cast<TH2F*>(list->FindObject(Form("fHistRatioPmKm%s",name))))->Fill(centralityBin, PmKm);
   }
   
-  for (Int_t iPid = 0; iPid < 4; ++iPid) {
-    (static_cast<TH2F*>(list->FindObject(Form("fHistDist%s%s%s",name, fgkPidName[iPid], fgkNetHistName[0]))))->Fill(centralityBin, np[iPid][1]+np[iPid][0]); 
-    (static_cast<TH2F*>(list->FindObject(Form("fHistDist%s%s%s",name, fgkPidName[iPid], fgkNetHistName[1]))))->Fill(centralityBin, np[iPid][1]); 
-    (static_cast<TH2F*>(list->FindObject(Form("fHistDist%s%s%s",name, fgkPidName[iPid], fgkNetHistName[2]))))->Fill(centralityBin,                  np[iPid][0]); 
-    (static_cast<TH2F*>(list->FindObject(Form("fHistDist%s%s%s",name, fgkPidName[iPid], fgkNetHistName[3]))))->Fill(centralityBin, np[iPid][1]-np[iPid][0]); 
+  if (!fIsNu) {
+    for (Int_t iPid = 0; iPid < 4; ++iPid) {
+      (static_cast<TH2F*>(list->FindObject(Form("fHistDist%s%s%s",name, fgkPidName[iPid], fgkNetHistName[0]))))->Fill(centralityBin, np[iPid][1]+np[iPid][0]); 
+      (static_cast<TH2F*>(list->FindObject(Form("fHistDist%s%s%s",name, fgkPidName[iPid], fgkNetHistName[1]))))->Fill(centralityBin, np[iPid][1]); 
+      (static_cast<TH2F*>(list->FindObject(Form("fHistDist%s%s%s",name, fgkPidName[iPid], fgkNetHistName[2]))))->Fill(centralityBin,                  np[iPid][0]); 
+      (static_cast<TH2F*>(list->FindObject(Form("fHistDist%s%s%s",name, fgkPidName[iPid], fgkNetHistName[3]))))->Fill(centralityBin, np[iPid][1]-np[iPid][0]); 
+    }
   }
-  
 
   return;
 }
@@ -1382,8 +1370,8 @@ void  AliEbyENetChargeFluctuationTask::CreateGroupHistos(const Char_t *name, con
   TString tname = Form("%s", name);
   Int_t nBinsCent         =  (isPer) ? 100 : fGNBinsCent;
   Double_t centBinRange[2];  
-  centBinRange[0]  =  (isPer) ?  0   : fGRngCent[0];
-  centBinRange[1]  =  (isPer) ?  100 : fGRngCent[1];
+  centBinRange[0]  =  (isPer) ?  0.5   : fGRngCent[0];
+  centBinRange[1]  =  (isPer) ?  100.5 : fGRngCent[1];
  
   for (Int_t iSub = 0; iSub <= nSample; ++iSub) {
     
@@ -1391,39 +1379,40 @@ void  AliEbyENetChargeFluctuationTask::CreateGroupHistos(const Char_t *name, con
     TList *listSub = static_cast<TList*>(list->Last());
     listSub->SetName(Form("%s%02d",name, iSub));
     listSub->SetOwner(kTRUE);
-    
-    for (Int_t iPid = 0; iPid < 4; ++iPid) {
-    
-      TString sNetTitle(Form("%s - %s", fgkPidLatex[iPid][1], fgkPidLatex[iPid][0]));
-      sTitle = (iPid != 0 ) ? Form("|y| < %.1f", fRapMax) : Form(" |#eta|<%.1f", etaRange[1]);
-      
-      listSub->Add(new TProfile(Form("fProfS%02dTot%sPlus%s", iSub, fgkPidName[iPid],tname.Data()), 
-				Form("(%s) : %s;Centrality(11);(%s)",fgkPidName[iPid], sTitle.Data(), sNetTitle.Data()),
-				nBinsCent, centBinRange[0], centBinRange[1]));
-      
-      listSub->Add(new TProfile(Form("fProfS%02dTot%sMinus%s",iSub, fgkPidName[iPid],tname.Data()), 
-				Form("(%s) : %s;Centrality(11);(%s)",fgkPidName[iPid], sTitle.Data(), sNetTitle.Data()),
-				nBinsCent, centBinRange[0], centBinRange[1]));
-      
-      
-      
-      for (Int_t idx = 1; idx <= fOrder; ++idx) {
-	listSub->Add(new TProfile(Form("fProfS%02d%s%sNet%dM",iSub, fgkPidName[iPid],tname.Data(), idx), 
-				  Form("(%s)^{%d} : %s;Centrality(11);(%s)^{%d}", sNetTitle.Data(), idx, sTitle.Data(), sNetTitle.Data(), idx),
+    if (!fIsNu) {
+      for (Int_t iPid = 0; iPid < 4; ++iPid) {
+	
+	TString sNetTitle(Form("%s - %s", fgkPidLatex[iPid][1], fgkPidLatex[iPid][0]));
+	sTitle = (iPid != 0 ) ? Form("|y| < %.1f", fRapMax) : Form(" |#eta|<%.1f", etaRange[1]);
+	
+	listSub->Add(new TProfile(Form("fProfS%02dTot%sPlus%s", iSub, fgkPidName[iPid],tname.Data()), 
+				  Form("(%s) : %s;Centrality(11);(%s)",fgkPidName[iPid], sTitle.Data(), sNetTitle.Data()),
 				  nBinsCent, centBinRange[0], centBinRange[1]));
-      }
-      
-      for (Int_t ii = 0; ii <= fOrder; ++ii) {
-	for (Int_t kk = 0; kk <= fOrder; ++kk) {
-	  listSub->Add(new TProfile(Form("fProfS%02d%s%sNetF%02d%02d",iSub, fgkPidName[iPid], tname.Data(), ii, kk),
-				    Form("f_{%02d%02d} : %s;Centrality(11);f_{%02d%02d}", ii, kk, sTitle.Data(), ii, kk),
+	
+	listSub->Add(new TProfile(Form("fProfS%02dTot%sMinus%s",iSub, fgkPidName[iPid],tname.Data()), 
+				  Form("(%s) : %s;Centrality(11);(%s)",fgkPidName[iPid], sTitle.Data(), sNetTitle.Data()),
+				  nBinsCent, centBinRange[0], centBinRange[1]));
+	
+	
+	
+	for (Int_t idx = 1; idx <= fOrder; ++idx) {
+	  listSub->Add(new TProfile(Form("fProfS%02d%s%sNet%dM",iSub, fgkPidName[iPid],tname.Data(), idx), 
+				    Form("(%s)^{%d} : %s;Centrality(11);(%s)^{%d}", sNetTitle.Data(), idx, sTitle.Data(), sNetTitle.Data(), idx),
 				    nBinsCent, centBinRange[0], centBinRange[1]));
 	}
-      }
-                  
-    }  // iPid
-    //-------------------------------------------
-       
+	
+	for (Int_t ii = 0; ii <= fOrder; ++ii) {
+	  for (Int_t kk = 0; kk <= fOrder; ++kk) {
+	    listSub->Add(new TProfile(Form("fProfS%02d%s%sNetF%02d%02d",iSub, fgkPidName[iPid], tname.Data(), ii, kk),
+				      Form("f_{%02d%02d} : %s;Centrality(11);f_{%02d%02d}", ii, kk, sTitle.Data(), ii, kk),
+				      nBinsCent, centBinRange[0], centBinRange[1]));
+	  }
+	}
+	
+      }  // iPid
+      //-------------------------------------------
+    } 
+    
     for (Int_t iPhy = 0; iPhy < 46; ++iPhy) { 
       listSub->Add(new TProfile(Form("fProfS%02d%sNu%02d",iSub,tname.Data(),iPhy),
 				Form("Physics Variable for index %d | %s | Sub S%02d; Centrality;",iPhy,tname.Data(), iSub),
@@ -1438,7 +1427,7 @@ void  AliEbyENetChargeFluctuationTask::CreateGroupHistos(const Char_t *name, con
 //________________________________________________________________________
 void AliEbyENetChargeFluctuationTask::FillGroupHistos(const Char_t *name,Int_t iSub, Bool_t isMC,Bool_t isPer)  {
 
-  Float_t centralityBin = (isPer) ? fCentralityPercentile : fCentralityBin;
+  Float_t centralityBin = (isPer) ? (fCentralityPercentile + 1) : (fCentralityBin + 1);
   TString tname = Form("%s", name);
   
   TList *list    = static_cast<TList*>(fPhyList->FindObject(Form("f%s",name)));
@@ -1458,37 +1447,37 @@ void AliEbyENetChargeFluctuationTask::FillGroupHistos(const Char_t *name,Int_t i
       np[i][1] = fNp[i][1];
     }
   }
- 
-  for (Int_t iPid = 0; iPid < 4; ++iPid) {
-    Int_t deltaNp = np[iPid][1]-np[iPid][0];  
-    Double_t delta = 1.;
-    
-    (static_cast<TProfile*>(listSub->FindObject(Form("fProfS%02dTot%sPlus%s",iSub, fgkPidName[iPid], tname.Data()))))->Fill(centralityBin, np[iPid][1]);
-    (static_cast<TProfile*>(listSub->FindObject(Form("fProfS%02dTot%sMinus%s",iSub, fgkPidName[iPid], tname.Data()))))->Fill(centralityBin, np[iPid][0]);
-    
-    for (Int_t idxOrder = 1; idxOrder <= fOrder; ++idxOrder) {
-      delta *= deltaNp;
-      (static_cast<TProfile*>(listSub->FindObject(Form("fProfS%02d%s%sNet%dM",iSub, fgkPidName[iPid], tname.Data(), idxOrder))))->Fill(centralityBin, delta);
-    }
-    
-    for (Int_t idxOrder = 0; idxOrder <= fOrder; ++ idxOrder) {
-      fRedFactp[idxOrder][0]  = 1.;
-      fRedFactp[idxOrder][1]  = 1.;
-    }
-    
-    for (Int_t idxOrder = 1; idxOrder <= fOrder; ++ idxOrder) {
-      fRedFactp[idxOrder][0]  = fRedFactp[idxOrder-1][0]  * Double_t(np[iPid][0]-(idxOrder-1));
-      fRedFactp[idxOrder][1]  = fRedFactp[idxOrder-1][1]  * Double_t(np[iPid][1]-(idxOrder-1));
-    }
-    
-    for (Int_t ii = 0; ii <= fOrder; ++ii) {  
-      for (Int_t kk = 0; kk <= fOrder; ++kk) { 
-	Double_t fik = fRedFactp[ii][1] * fRedFactp[kk][0];   
+  if (!fIsNu) {
+    for (Int_t iPid = 0; iPid < 4; ++iPid) {
+      Int_t deltaNp = np[iPid][1]-np[iPid][0];  
+      Double_t delta = 1.;
+      
+      (static_cast<TProfile*>(listSub->FindObject(Form("fProfS%02dTot%sPlus%s",iSub, fgkPidName[iPid], tname.Data()))))->Fill(centralityBin, np[iPid][1]);
+      (static_cast<TProfile*>(listSub->FindObject(Form("fProfS%02dTot%sMinus%s",iSub, fgkPidName[iPid], tname.Data()))))->Fill(centralityBin, np[iPid][0]);
+      
+      for (Int_t idxOrder = 1; idxOrder <= fOrder; ++idxOrder) {
+	delta *= deltaNp;
+	(static_cast<TProfile*>(listSub->FindObject(Form("fProfS%02d%s%sNet%dM",iSub, fgkPidName[iPid], tname.Data(), idxOrder))))->Fill(centralityBin, delta);
+      }
+      
+      for (Int_t idxOrder = 0; idxOrder <= fOrder; ++ idxOrder) {
+	fRedFactp[idxOrder][0]  = 1.;
+	fRedFactp[idxOrder][1]  = 1.;
+      }
+      
+      for (Int_t idxOrder = 1; idxOrder <= fOrder; ++ idxOrder) {
+	fRedFactp[idxOrder][0]  = fRedFactp[idxOrder-1][0]  * Double_t(np[iPid][0]-(idxOrder-1));
+	fRedFactp[idxOrder][1]  = fRedFactp[idxOrder-1][1]  * Double_t(np[iPid][1]-(idxOrder-1));
+      }
+      
+      for (Int_t ii = 0; ii <= fOrder; ++ii) {  
+	for (Int_t kk = 0; kk <= fOrder; ++kk) { 
+	  Double_t fik = fRedFactp[ii][1] * fRedFactp[kk][0];   
        	(static_cast<TProfile*>(listSub->FindObject(Form("fProfS%02d%s%sNetF%02d%02d",iSub, fgkPidName[iPid], tname.Data(), ii, kk))))->Fill(centralityBin, fik);
+	}
       }
     }
   }
- 
   //Printf("%6d %20s %6.2f %6d %6d %6d %6d  %6d %6d %6d %6d", idx, name, centralityBin,
   //	 np[0][1],  np[0][0], 
   //	 np[1][1],  np[1][0], 
