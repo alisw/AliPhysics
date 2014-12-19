@@ -1455,7 +1455,13 @@ void AliTPCcalibGainMult::ProcessV0s(AliVEvent *event){
     Int_t nclP= (Int_t)trackP->GetTPCClusterInfo(2,1);
     Int_t nclN= (Int_t)trackN->GetTPCClusterInfo(2,1);
     if (TMath::Min(nclP,nclN)<kMinNcl) continue;
-    Double_t eta = TMath::Max(TMath::Abs(trackP->Eta()), TMath::Abs(trackN->Eta()));
+
+    AliExternalTrackParam trkprmP;
+    trackP->GetTrackParam(trkprmP);
+    AliExternalTrackParam trkprmN;
+    trackN->GetTrackParam(trkprmN);
+
+    Double_t eta = TMath::Max(TMath::Abs(trkprmP.Eta()), TMath::Abs(trkprmN.Eta()));
     if (TMath::Abs(eta)>1) continue;
     //
     //
@@ -1765,7 +1771,13 @@ void AliTPCcalibGainMult::ProcessKinks(const AliVEvent *event){
     if (!trackD) continue;
     Int_t nclM= (Int_t)trackM->GetTPCClusterInfo(2,1);
     Int_t nclD= (Int_t)trackD->GetTPCClusterInfo(2,1);
-    Double_t eta = TMath::Max(TMath::Abs(trackM->Eta()), TMath::Abs(trackD->Eta()));
+
+    AliExternalTrackParam trkprmM;
+    trackM->GetTrackParam(trkprmM);
+    AliExternalTrackParam trkprmD;
+    trackD->GetTrackParam(trkprmD);
+
+    Double_t eta = TMath::Max(TMath::Abs(trkprmM.Eta()), TMath::Abs(trkprmD.Eta()));
     Double_t kx= v0KF->GetX();
     Double_t ky= v0KF->GetY();
     Double_t kz= v0KF->GetZ();

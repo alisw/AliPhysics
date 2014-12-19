@@ -987,7 +987,13 @@ void AliTPCcalibV0::FilterV0s(AliVEvent *event){
       Int_t nclP= (Int_t)trackP->GetTPCClusterInfo(2,1);
       Int_t nclN= (Int_t)trackN->GetTPCClusterInfo(2,1);
       if (TMath::Min(nclP,nclN)<kMinNcl) continue;
-      Double_t eta = TMath::Max(TMath::Abs(trackP->Eta()), TMath::Abs(trackN->Eta()));
+
+      AliExternalTrackParam trkprmP;
+      trackP->GetTrackParam(trkprmP);
+      AliExternalTrackParam trkprmN;
+      trackN->GetTrackParam(trkprmN);
+
+      Double_t eta = TMath::Max(TMath::Abs(trkprmP.Eta()), TMath::Abs(trkprmN.Eta()));
       Double_t ncls = TMath::Min(TMath::Abs(trackP->GetNcls(0)), TMath::Abs(trackN->GetNcls(0)));
       if (eta<0.8&&ncls>2){
 	//	printf("%d\t%f\t%f\t%d\t%d\t%f\t%f\n",i, v0->Pt(), maxPt, v0->GetNindex(),v0->GetPindex(),v0->GetRr(),effMass22);	
