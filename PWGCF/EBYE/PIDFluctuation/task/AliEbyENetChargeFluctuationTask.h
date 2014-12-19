@@ -201,6 +201,7 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   Bool_t     fIsQa;                         // Check for QA
   Bool_t     fIsPhy;                        // Check for QA
   Bool_t     fIsDca;                        // Check for QA
+  Bool_t     fIsNu;                         // Check for QA
 
   TRandom3  *fRan;                          // Radom Number BS
   TRandom3  *fRanIdx;                       // Random Number SS
