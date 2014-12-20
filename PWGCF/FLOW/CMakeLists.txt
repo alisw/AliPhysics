@@ -19,3 +19,6 @@ add_subdirectory(CME)
 
 # Install the macros
 install(DIRECTORY macros DESTINATION PWGCF/FLOW)
+
+# Install calibration data
+install(DIRECTORY database DESTINATION PWGCF/FLOW)
