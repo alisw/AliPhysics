@@ -71,6 +71,7 @@ install(DIRECTORY COMMON
                   EMCAL
                   PHOS
                   PWG
+                  PWGCF
                   PWGPP
                   PWGLF
                   PWGJE
