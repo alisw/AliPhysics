@@ -1,5 +1,7 @@
-void testconfigCalib(const char* parent = "GLOBAL-esd-converter")
+void testconfigCalib(const char* parent = "GLOBAL-esd-converter", const char* tpcConfig="fTPCcalibConfigString='TPCCalib TPCAlign' ")
 {
+  //load the libraries needed by the calib code
+  gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/LoadLibraries.C");
   // set up HLT system to enable configuration registration
   AliHLTSystem* pHLT=AliHLTPluginBase::GetInstance();
 
@@ -43,7 +45,7 @@ void testconfigCalib(const char* parent = "GLOBAL-esd-converter")
 
 
   // writer configuration
-  AliHLTConfiguration calib("test" , "TPCCalibManagerComponent" , parent , "");
+  AliHLTConfiguration calib("test" , "TPCCalibManagerComponent" , parent , tpcConfig);
 
   TString writerArg(Form("-directory testDir -datafile test.root"));
 
