@@ -56,6 +56,7 @@
 #include "AliTPCcalibTime.h"
 
 #include "AliTPCcalibTracks.h"
+#include "TPRegexp.h"
 
 #include "AliTPCParam.h"
 #include "AliMagF.h"
@@ -87,7 +88,10 @@ AliHLTTPCCalibManagerComponent::AliHLTTPCCalibManagerComponent() :
   AliHLTProcessor(),
   fUID(0),
   fAnalysisManager(NULL),
-  fInputHandler(NULL){
+  fInputHandler(NULL),
+  fTPCcalibConfigString("ALL"),
+  fEnableDebug(kFALSE)
+{
   // an example component which implements the ALICE HLT processor
   // interface and does some analysis on the input raw data
   //
@@ -170,21 +174,34 @@ AliHLTComponent* AliHLTTPCCalibManagerComponent::Spawn() {
  */
 
 // #################################################################################
-Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ ) {
+Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t argc, const Char_t** argv ) {
   // see header file for class documentation
-  HLTInfo("AliHLTTPCCalibManagerComponent::DoInit\n");
-
-  //shut up AliSysInfo globally, prevents syswatch.log files from being created
-  //dont open any debug files
-  AliSysInfo::SetDisabled(kTRUE);
-  TTreeSRedirector::SetDisabled(kTRUE);
-
   HLTInfo("----> AliHLTTPCCalibManagerComponent::DoInit");
+
+  //default values
+  TString tpcAddTaskMacro="$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C";
+  TString tpcAddTaskMacroArgs=TString::Itoa(GetRunNo(),10);
+  tpcAddTaskMacroArgs+=",";
+  tpcAddTaskMacroArgs+="\""+fTPCcalibConfigString+"\"";
+
+  //process arguments
+  //ConfigureFromArgumentString(argc,argv);
+  ProcessArgumentString(argc,argv);
+
+  if (!fEnableDebug)
+  {
+    //shut up AliSysInfo globally, prevents syswatch.log files from being created
+    //dont open any debug files
+    AliSysInfo::SetDisabled(kTRUE);
+    TTreeSRedirector::SetDisabled(kTRUE);
+  }
+
   fAnalysisManager = new AliHLTAnalysisManager();
   fInputHandler    = new AliHLTVEventInputHandler("HLTinputHandler","HLT input handler");
   fAnalysisManager->SetInputEventHandler(fInputHandler);
 
-  AddCalibTasks();
+  TString macro=tpcAddTaskMacro+"("+tpcAddTaskMacroArgs+")";
+  gROOT->Macro(macro);
 
   fAnalysisManager->InitAnalysis();
 
@@ -201,6 +218,17 @@ Int_t AliHLTTPCCalibManagerComponent::DoDeinit() {
   return 0;
 }
 
+// #################################################################################
+int AliHLTTPCCalibManagerComponent::ProcessArgumentString(int argc, const char** argv)
+{
+  //process passed options
+  for (int i=0; i<argc; i++)
+  {
+    TString argument(argv[i]);
+    TPRegexp r("");
+  }
+  return 1; 
+}
 // #################################################################################
 Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& evtData,
     AliHLTComponentTriggerData& /*trigData*/) {
