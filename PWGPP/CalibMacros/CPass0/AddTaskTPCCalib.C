@@ -18,7 +18,20 @@ Int_t debugLevel=0;
 Int_t streamLevel=0;
 
 //_____________________________________________________________________________
-AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber)
+Bool_t isOptionSelected(const char* optionstr, const char* optionsstr, const char* allstr="ALL")
+{
+  //check if option is enabled and not disabled in options
+  TString option=optionstr;
+  TString options=optionsstr;
+  TString all=allstr;
+  TString notOption="-";
+  notOption+=option;
+  if (options.Contains(notOption)) return kFALSE;
+  return (options.Contains(option) || options.Contains(all));
+}
+
+//_____________________________________________________________________________
+AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber, const char* options="ALL")
 {
   //
   // add calibration task
@@ -39,6 +52,8 @@ AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber)
   ConfigOCDB(runNumber);
 
   // setup task TPCCalib
+  if (isOptionSelected("TPCCalib",options))
+  {
   TString outputFileName=mgr->GetCommonFileName();
   AliTPCAnalysisTaskcalib *task1=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
   SetupCalibTaskTrain1(task1);
@@ -54,10 +69,13 @@ AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber)
                                                                "CalibObjects.root:TPCCalib"); 
       mgr->ConnectOutput(task1,i,coutput);
     }
+    mgr->ConnectInput(task1,0,cinput1);
   }
-  mgr->ConnectInput(task1,0,cinput1);
+  }
   //
   // setup task TPCAlign
+  if (isOptionSelected("TPCAlign",options))
+  {
   AliTPCAnalysisTaskcalib *taskAlign=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
   SetupCalibTaskTrainAlign(taskAlign);
   mgr->AddTask(taskAlign);
@@ -72,10 +90,13 @@ AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber)
                                                                "CalibObjects.root:TPCAlign"); 
       mgr->ConnectOutput(taskAlign,i,coutput);
     }
+    mgr->ConnectInput(taskAlign,0,cinput1);
   }
-  mgr->ConnectInput(taskAlign,0,cinput1);
+  }
   //
   // setup task TPCCluster
+  if (isOptionSelected("TPCCluster",options))
+  {
   AliTPCAnalysisTaskcalib *taskCluster=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
   SetupCalibTaskTrainCluster(taskCluster);
   mgr->AddTask(taskCluster);
@@ -90,8 +111,9 @@ AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber)
                                                                "CalibObjects.root:TPCCluster"); 
       mgr->ConnectOutput(taskCluster,i,coutput);
     }
+    mgr->ConnectInput(taskCluster,0,cinput1);
   }
-  mgr->ConnectInput(taskCluster,0,cinput1);
+  }
   //
 
   return task1;
@@ -111,6 +133,7 @@ void AddCalibCalib(TObject* task){
   calibCalib->SetStreamLevel(0);
   calibCalib->SetTriggerMask(-1,-1,kFALSE);        //accept everything 
   myTask->AddJob(calibCalib);
+  Printf("AddTaskTPCCalib:AddCalibCalib");
 }
 
 //_____________________________________________________________________________
@@ -232,6 +255,7 @@ void AddCalibTime(TObject* task){
   calibTime->SetCutTracks(15000);
 
   myTask->AddJob(calibTime);
+  Printf("AddTaskTPCCalib:AddCalibTime");
 }
 
 
@@ -251,6 +275,7 @@ void AddCalibTracks(TObject* task){
   calibTracks->SetStreamLevel(streamLevel);
   calibTracks->SetTriggerMask(-1,-1,kTRUE);       
   myTask->AddJob(calibTracks); 
+  Printf("AddTaskTPCCalib:AddCalibTracks");
 }
 
 
@@ -265,6 +290,7 @@ void AddCalibAlign(TObject* task){
   calibAlign->SetStreamLevel(streamLevel);
   calibAlign->SetTriggerMask(-1,-1,kTRUE);        //accept everything
   myTask->AddJob(calibAlign);
+  Printf("AddTaskTPCCalib:AddCalibAlign");
 }
 
 void AddCalibAlignInterpolation(TObject* task){
@@ -300,6 +326,7 @@ void AddCalibLaser(TObject* task){
   calibLaser->SetStreamLevel(streamLevel);
   calibLaser->SetTriggerMask(-1,-1,kFALSE);        //accept everything
   myTask->AddJob(calibLaser);
+  Printf("AddTaskTPCCalib:AddCalibLaser");
 }
 
 
@@ -316,35 +343,36 @@ void AddCalibCosmic(TObject* task){
   calibCosmic->SetStreamLevel(1);
   calibCosmic->SetTriggerMask(-1,-1,kTRUE);        //accept everything
   myTask->AddJob(calibCosmic);
+  Printf("AddTaskTPCCalib:AddCalibCosmic");
 }
 
 
 
 //_____________________________________________________________________________
-void SetupCalibTaskTrain1(TObject* task){
+void SetupCalibTaskTrain1(TObject* task, const char* options="ALL"){
   //
   // Setup tasks for calibration train
   //
-  AddCalibCalib(task);
-  AddCalibTimeGain(task);
-  AddCalibTime(task);
-  AddCalibAlignInterpolation(task);
+  if (isOptionSelected(":CalibCalib",options)) AddCalibCalib(task);
+  if (isOptionSelected(":CalibTimeGain",options)) AddCalibTimeGain(task);
+  if (isOptionSelected(":CalibTimeDrift",options)) AddCalibTime(task);
+  if (isOptionSelected(":CalibAlignInterpolation",options)) AddCalibAlignInterpolation(task);
 }
 
-void SetupCalibTaskTrainAlign(TObject* task){
+void SetupCalibTaskTrainAlign(TObject* task, const char* options="ALL"){
   //
   // Setup tasks for calibration train
   //
-  //AddCalibAlign(task);
-  AddCalibLaser(task);
+  //if (isOptionSelected(":CalibAlign",options)) AddCalibAlign(task);
+  if (isOptionSelected(":CalibLaser",options)) AddCalibLaser(task);
   //AddCalibCosmic(task);
 }
 
-void SetupCalibTaskTrainCluster(TObject* task){
+void SetupCalibTaskTrainCluster(TObject* task, const char* options="ALL"){
   //
   // Setup tasks for calibration train
   //
-  AddCalibTracks(task);
+  if (isOptionSelected(":CalibTracks",options)) AddCalibTracks(task);
 }
 
 //_____________________________________________________________________________
