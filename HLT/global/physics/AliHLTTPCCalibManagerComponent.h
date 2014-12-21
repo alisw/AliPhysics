@@ -159,6 +159,8 @@ public:
   /** interface function, see @ref AliHLTComponent for description */
   AliHLTComponent* Spawn();
 
+  int ProcessArgumentString(int argc, const char** argv);
+
   /**  */
   Int_t AddCalibTasks();
   Int_t WriteAnalysisToFile();
@@ -230,6 +232,10 @@ private:
   AliHLTAnalysisManager *fAnalysisManager;        // Manger
 
   AliHLTVEventInputHandler *fInputHandler;    // input handler
+
+  //config stuff
+  TString fTPCcalibConfigString;
+  Bool_t fEnableDebug;
 
   ClassDef(AliHLTTPCCalibManagerComponent, 0)
 };
