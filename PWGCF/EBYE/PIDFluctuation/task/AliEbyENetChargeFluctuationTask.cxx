@@ -1031,10 +1031,10 @@ void  AliEbyENetChargeFluctuationTask::CreateBasicHistos(const Char_t *name, con
     }  
   }
   
-  for (Int_t iPhy = 0; iPhy < 46; ++iPhy) { 
+  for (Int_t iPhy = 0; iPhy < 54; ++iPhy) { 
     list->Add(new TProfile(Form("fProf%sNu%02d",name,iPhy),Form("Physics Variable for index %d | %s ; Centrality;",iPhy,name),100,0.5,100.5));
   }
-  for (Int_t iPhy = 0; iPhy < 46; ++iPhy) { 
+  for (Int_t iPhy = 0; iPhy < 54; ++iPhy) { 
     list->Add(new TProfile(Form("fProfBin%sNu%02d",name,iPhy),Form("Physics Variable for index %d | %s ; Centrality;",iPhy,name),nBinsCent, centBinRange[0], centBinRange[1]));
   }
   
@@ -1212,61 +1212,77 @@ void AliEbyENetChargeFluctuationTask::FillBasicHistos(const Char_t *name, Bool_t
     ///	 np[2][1],  np[2][0], 
   //	 np[3][1],  np[3][0]);
   //
-
-    Int_t a[6][4]; Int_t b[22];
+  Bool_t isZero = kTRUE;
+  if ((np[0][0] == 0) || (np[0][1] == 0))
+    isZero = kFALSE;
+  else if ((np[1][0] == 0) || (np[1][1] == 0))
+    isZero = kFALSE;
+  else if ((np[2][0] == 0) || (np[2][1] == 0))
+    isZero = kFALSE;
+  else if ((np[3][0] == 0) || (np[3][1] == 0))
+    isZero = kFALSE;
+  else isZero = kTRUE;
+  
+  if (isZero) {
+    Double_t a[8][4]; Double_t b[22];
     for (Int_t iPid = 0; iPid < 4; ++iPid) {
       a[0][iPid] = np[iPid][1]+np[iPid][0];       // 0  n+ + n-
-     a[1][iPid] = np[iPid][1];                        // 1  n+
-     a[2][iPid] = np[iPid][0];                        // 2  n-
-     a[3][iPid] = np[iPid][1]*np[iPid][0];       // 3  n+ . n-
-     a[4][iPid] = np[iPid][1]*(np[iPid][1]-1);   // 4  n+ (n+ - 1)
-     a[5][iPid] = np[iPid][0]*(np[iPid][0]-1);   // 5  n- (n- - 1)
-     
-     // Printf("%6d %20s %6.2f %6d %6d %6d ", idx, name, centralityBin,
-     //	   a[0][iPid], a[1][iPid], a[2][iPid]);
+      
+      a[1][iPid] = np[iPid][1];                   // 1  n+
+      a[2][iPid] = np[iPid][0];                   // 2  n-
+      
+      a[3][iPid] = np[iPid][1] * np[iPid][1];     // 1  n+^2
+      a[4][iPid] = np[iPid][0] * np[iPid][0];     // 2  n-^2
+      
+      a[5][iPid] = np[iPid][1] * np[iPid][0];     // 3  n+ . n-
+      a[6][iPid] = np[iPid][1] * (np[iPid][1]-1); // 4  n+ . (n+ - 1)
+      a[7][iPid] = np[iPid][0] * (np[iPid][0]-1); // 5  n- . (n- - 1)
+      
+      // Printf("%6d %20s %6.2f %6d %6d %6d ", idx, name, centralityBin,
+      //	   a[0][iPid], a[1][iPid], a[2][iPid]);
+    }
+    
+    
+    b[0]  = a[0][0]*a[0][2];       // 24 N   K
+    b[1]  = a[0][1]*a[0][2];       // 25 Pi  K
+    b[2]  = a[1][1]*a[1][2];       // 26 pi+ k+
+    b[3]  = a[1][1]*a[2][2];       // 27 pi+ k-
+    b[4]  = a[2][1]*a[1][2];       // 28 pi- k+  
+    b[5]  = a[2][1]*a[2][2];       // 29 pi- k-
+    
+    b[6]  = a[0][0]*a[0][3];       // 30 N   P
+    b[7]  = a[0][2]*a[0][3];       // 31 K   P
+    b[8]  = a[1][2]*a[1][3];       // 32 k+  p+
+    b[9]  = a[1][2]*a[2][3];       // 33 k+  p-
+    b[10] = a[2][2]*a[1][3];       // 34 k-  p+
+    b[11] = a[2][2]*a[2][3];       // 35 k-  p-
+    
+    b[12] = a[0][0]*a[0][1];       // 36 N  Pi
+    b[13] = a[0][3]*a[0][1];       // 37 P  Pi
+    b[14] = a[1][3]*a[1][1];       // 38 p+ pi+
+    b[15] = a[1][3]*a[2][1];       // 39 p+ pi-
+    b[16] = a[2][3]*a[1][1];       // 40 p- pi+
+    b[17] = a[2][3]*a[2][1];       // 41 p- pi-
+    
+    b[18] = a[0][0]*(a[0][0] - 1); // 42 N ( N - 1 )
+    b[19] = a[0][1]*(a[0][1] - 1); // 43 Pi( Pi- 1 )
+    b[20] = a[0][2]*(a[0][1] - 1); // 44 K ( K - 1 )
+    b[21] = a[0][3]*(a[0][3] - 1); // 45 P ( P - 1 )
 
-  }
-  
-  b[0]  = a[0][0]*a[0][2];       // 24 N   K
-  b[1]  = a[0][1]*a[0][2];       // 25 Pi  K
-  b[2]  = a[1][1]*a[1][2];       // 26 pi+ k+
-  b[3]  = a[1][1]*a[2][2];       // 27 pi+ k-
-  b[4]  = a[2][1]*a[1][2];       // 28 pi- k+  
-  b[5]  = a[2][1]*a[2][2];       // 29 pi- k-
-  
-  b[6]  = a[0][0]*a[0][3];       // 30 N   P
-  b[7]  = a[0][2]*a[0][3];       // 31 K   P
-  b[8]  = a[1][2]*a[1][3];       // 32 k+  p+
-  b[9]  = a[1][2]*a[2][3];       // 33 k+  p-
-  b[10] = a[2][2]*a[1][3];       // 34 k-  p+
-  b[11] = a[2][2]*a[2][3];       // 35 k-  p-
-  
-  b[12] = a[0][0]*a[0][1];       // 36 N  Pi
-  b[13] = a[0][3]*a[0][1];       // 37 P  Pi
-  b[14] = a[1][3]*a[1][1];       // 38 p+ pi+
-  b[15] = a[1][3]*a[2][1];       // 39 p+ pi-
-  b[16] = a[2][3]*a[1][1];       // 40 p- pi+
-  b[17] = a[2][3]*a[2][1];       // 41 p- pi-
-  
-  b[18] = a[0][0]*(a[0][0] - 1); // 42 N ( N - 1 )
-  b[19] = a[0][1]*(a[0][1] - 1); // 43 Pi( Pi- 1 )
-  b[20] = a[0][2]*(a[0][1] - 1); // 44 K ( K - 1 )
-  b[21] = a[0][3]*(a[0][3] - 1); // 45 P ( P - 1 )
-  // TList *list_nu = static_cast<TList*>(fPhyList->FindObject(Form("f%s_nu",name)));
-  Int_t k = 0;
-  for (Int_t j = 0; j < 4; j++) {
-    for (Int_t i = 0; i < 6; i++) {
-      (static_cast<TProfile*>(list->FindObject(Form("fProfBin%sNu%02d", name,k))))->Fill(centralityBin,a[i][j]); 
-      (static_cast<TProfile*>(list->FindObject(Form("fProf%sNu%02d", name,k))))->Fill(centralityPer,a[i][j]); 
-      k++;
+    Int_t k = 0;
+    for (Int_t j = 0; j < 4; j++) {
+      for (Int_t i = 0; i < 8; i++) {
+	(static_cast<TProfile*>(list->FindObject(Form("fProfBin%sNu%02d", name,k))))->Fill(centralityBin,a[i][j]); 
+	(static_cast<TProfile*>(list->FindObject(Form("fProf%sNu%02d", name,k))))->Fill(centralityPer,a[i][j]); 
+	k++;
+      }
+    }
+    
+    for (Int_t j = 0; j < 22; j++) {
+      (static_cast<TProfile*>(list->FindObject(Form("fProfBin%sNu%02d", name,j + 32))))->Fill(centralityBin,b[j]); 
+      (static_cast<TProfile*>(list->FindObject(Form("fProf%sNu%02d", name,j + 32))))->Fill(centralityPer,b[j]); 
     }
   }
-
-  for (Int_t j = 0; j < 22; j++) {
-    (static_cast<TProfile*>(list->FindObject(Form("fProfBin%sNu%02d", name,j+24))))->Fill(centralityBin,b[j]); 
-    (static_cast<TProfile*>(list->FindObject(Form("fProf%sNu%02d", name,j+24))))->Fill(centralityPer,b[j]); 
-  }
-  
   return;
 }
 
@@ -1416,7 +1432,7 @@ void  AliEbyENetChargeFluctuationTask::CreateGroupHistos(const Char_t *name, con
       //-------------------------------------------
     } 
     
-    for (Int_t iPhy = 0; iPhy < 46; ++iPhy) { 
+    for (Int_t iPhy = 0; iPhy < 54; ++iPhy) { 
       listSub->Add(new TProfile(Form("fProfS%02d%sNu%02d",iSub,tname.Data(),iPhy),
 				Form("Physics Variable for index %d | %s | Sub S%02d; Centrality;",iPhy,tname.Data(), iSub),
 				nBinsCent, centBinRange[0], centBinRange[1]));
@@ -1488,58 +1504,77 @@ void AliEbyENetChargeFluctuationTask::FillGroupHistos(const Char_t *name,Int_t i
   //	 np[3][1],  np[3][0]);
   //
 
-   Int_t a[6][4]; Int_t b[22];
-   for (Int_t iPid = 0; iPid < 4; ++iPid) {
-     a[0][iPid] = np[iPid][1]+np[iPid][0];       // 0  n+ + n-
-     a[1][iPid] = np[iPid][1];                        // 1  n+
-     a[2][iPid] = np[iPid][0];                        // 2  n-
-     a[3][iPid] = np[iPid][1]*np[iPid][0];       // 3  n+ . n-
-     a[4][iPid] = np[iPid][1]*(np[iPid][1]-1);   // 4  n+ (n+ - 1)
-     a[5][iPid] = np[iPid][0]*(np[iPid][0]-1);   // 5  n- (n- - 1)
-     
-     // Printf("%6d %20s %6.2f %6d %6d %6d ", idx, name, centralityBin,
-     //	   a[0][iPid], a[1][iPid], a[2][iPid]);
+  Bool_t isZero = kTRUE;
+  if ((np[0][0] == 0) || (np[0][1] == 0))
+    isZero = kFALSE;
+  else if ((np[1][0] == 0) || (np[1][1] == 0))
+    isZero = kFALSE;
+  else if ((np[2][0] == 0) || (np[2][1] == 0))
+    isZero = kFALSE;
+  else if ((np[3][0] == 0) || (np[3][1] == 0))
+    isZero = kFALSE;
+  else isZero = kTRUE;
+  
+  if (isZero) {
+    
+    Double_t a[8][4]; Double_t b[22];
+    for (Int_t iPid = 0; iPid < 4; ++iPid) {
+      a[0][iPid] = np[iPid][1]+np[iPid][0];       // 0  n+ + n-
+      
+      a[1][iPid] = np[iPid][1];                   // 1  n+
+      a[2][iPid] = np[iPid][0];                   // 2  n-
+      
+      a[3][iPid] = np[iPid][1] * np[iPid][1];     // 1  n+^2
+      a[4][iPid] = np[iPid][0] * np[iPid][0];     // 2  n-^2
+      
+      a[5][iPid] = np[iPid][1] * np[iPid][0];     // 3  n+ . n-
+      a[6][iPid] = np[iPid][1] * (np[iPid][1]-1); // 4  n+ . (n+ - 1)
+      a[7][iPid] = np[iPid][0] * (np[iPid][0]-1); // 5  n- . (n- - 1)
+    
+    // Printf("%6d %20s %6.2f %6d %6d %6d ", idx, name, centralityBin,
+    //	   a[0][iPid], a[1][iPid], a[2][iPid]);
+    }
+    
+    
+    b[0]  = a[0][0]*a[0][2];       // 24 N   K
+    b[1]  = a[0][1]*a[0][2];       // 25 Pi  K
+    b[2]  = a[1][1]*a[1][2];       // 26 pi+ k+
+    b[3]  = a[1][1]*a[2][2];       // 27 pi+ k-
+    b[4]  = a[2][1]*a[1][2];       // 28 pi- k+  
+    b[5]  = a[2][1]*a[2][2];       // 29 pi- k-
+    
+    b[6]  = a[0][0]*a[0][3];       // 30 N   P
+    b[7]  = a[0][2]*a[0][3];       // 31 K   P
+    b[8]  = a[1][2]*a[1][3];       // 32 k+  p+
+    b[9]  = a[1][2]*a[2][3];       // 33 k+  p-
+    b[10] = a[2][2]*a[1][3];       // 34 k-  p+
+    b[11] = a[2][2]*a[2][3];       // 35 k-  p-
+    
+    b[12] = a[0][0]*a[0][1];       // 36 N  Pi
+    b[13] = a[0][3]*a[0][1];       // 37 P  Pi
+    b[14] = a[1][3]*a[1][1];       // 38 p+ pi+
+    b[15] = a[1][3]*a[2][1];       // 39 p+ pi-
+    b[16] = a[2][3]*a[1][1];       // 40 p- pi+
+    b[17] = a[2][3]*a[2][1];       // 41 p- pi-
+    
+    b[18] = a[0][0]*(a[0][0] - 1); // 42 N ( N - 1 )
+    b[19] = a[0][1]*(a[0][1] - 1); // 43 Pi( Pi- 1 )
+    b[20] = a[0][2]*(a[0][1] - 1); // 44 K ( K - 1 )
+    b[21] = a[0][3]*(a[0][3] - 1); // 45 P ( P - 1 )
 
-  }
-  
-  b[0]  = a[0][0]*a[0][2];       // 24 N   K
-  b[1]  = a[0][1]*a[0][2];       // 25 Pi  K
-  b[2]  = a[1][1]*a[1][2];       // 26 pi+ k+
-  b[3]  = a[1][1]*a[2][2];       // 27 pi+ k-
-  b[4]  = a[2][1]*a[1][2];       // 28 pi- k+  
-  b[5]  = a[2][1]*a[2][2];       // 29 pi- k-
-  
-  b[6]  = a[0][0]*a[0][3];       // 30 N   P
-  b[7]  = a[0][2]*a[0][3];       // 31 K   P
-  b[8]  = a[1][2]*a[1][3];       // 32 k+  p+
-  b[9]  = a[1][2]*a[2][3];       // 33 k+  p-
-  b[10] = a[2][2]*a[1][3];       // 34 k-  p+
-  b[11] = a[2][2]*a[2][3];       // 35 k-  p-
-  
-  b[12] = a[0][0]*a[0][1];       // 36 N  Pi
-  b[13] = a[0][3]*a[0][1];       // 37 P  Pi
-  b[14] = a[1][3]*a[1][1];       // 38 p+ pi+
-  b[15] = a[1][3]*a[2][1];       // 39 p+ pi-
-  b[16] = a[2][3]*a[1][1];       // 40 p- pi+
-  b[17] = a[2][3]*a[2][1];       // 41 p- pi-
-  
-  b[18] = a[0][0]*(a[0][0] - 1); // 42 N ( N - 1 )
-  b[19] = a[0][1]*(a[0][1] - 1); // 43 Pi( Pi- 1 )
-  b[20] = a[0][2]*(a[0][1] - 1); // 44 K ( K - 1 )
-  b[21] = a[0][3]*(a[0][3] - 1); // 45 P ( P - 1 )
-  // TList *list_nu = static_cast<TList*>(fOutlistSub->FindObject(Form("f%s_nu",name)));
-  Int_t k = 0;
-  for (Int_t j = 0; j < 4; j++) {
-    for (Int_t i = 0; i < 6; i++) {
-      (static_cast<TProfile*>(listSub->FindObject(Form("fProfS%02d%sNu%02d",iSub, tname.Data(),k))))->Fill(centralityBin,a[i][j]); 
-       k++;
+      // TList *list_nu = static_cast<TList*>(fOutlistSub->FindObject(Form("f%s_nu",name)));
+    Int_t k = 0;
+    for (Int_t j = 0; j < 4; j++) {
+      for (Int_t i = 0; i < 8; i++) {
+	(static_cast<TProfile*>(listSub->FindObject(Form("fProfS%02d%sNu%02d",iSub, tname.Data(),k))))->Fill(centralityBin,a[i][j]); 
+	k++;
+      }
+    }
+    
+    for (Int_t j = 0; j < 22; j++) {
+      (static_cast<TProfile*>(listSub->FindObject(Form("fProfS%02d%sNu%02d",iSub, tname.Data(),j+32))))->Fill(centralityBin,b[j]); 
     }
   }
-
-  for (Int_t j = 0; j < 22; j++) {
-    (static_cast<TProfile*>(listSub->FindObject(Form("fProfS%02d%sNu%02d",iSub, tname.Data(),j+24))))->Fill(centralityBin,b[j]); 
-  }
-
   return;
 }
 
