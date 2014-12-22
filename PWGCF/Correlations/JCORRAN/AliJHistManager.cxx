@@ -556,7 +556,7 @@ TString AliJTH1::BuildName(){
 TString AliJTH1::BuildTitle(){
     TString title = fTitle;
     for( int i=0;i<Dimension();i++ )
-        title+=((int(fBins.size()) > i && fBins[i] != NULL)?" "+fBins[i]->BuildTitle(i):"")
+        title+=((int(fBins.size()) > i && fBins[i] != NULL)?" "+fBins[i]->BuildTitle(Index(i)):"")
             +Form("%02d",Index(i));
     return title;
 }
@@ -622,6 +622,20 @@ bool AliJTH1::IsLoadMode(){
 }
 
 
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// AliJTH1Derived                                                       //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+template< typename T>
+AliJTH1Derived<T>::AliJTH1Derived():
+    AliJTH1(), fPlayer(this)
+{
+}
+template< typename T>
+AliJTH1Derived<T>::~AliJTH1Derived(){
+}
+
 
 
 
@@ -647,6 +661,32 @@ AliJHistManager::AliJHistManager(TString name):
 {
     // constructor
     fDirectory = gDirectory;
+    this->cd();
+}
+
+AliJHistManager::AliJHistManager(TString name, TString dirname):
+    AliJNamed(name,"","",0),
+    fIsLoadMode(false),
+    fDirectory(gDirectory),
+    fConfigStr(),
+    fBin(0),
+    fHist(0),
+    fManager(0),
+    fBinNames(0),
+    fBinConfigs(0),
+    fHistNames(0),
+    fHistConfigs(0)
+{
+    // constructor
+    if( dirname.Length() > 0 ) {
+        fDirectory = (TDirectory*)gDirectory->Get(dirname);
+        if( !fDirectory ){
+            fDirectory = gDirectory->mkdir( dirname );
+        }
+    }
+    if( !fDirectory ){
+        fDirectory = gDirectory;
+    }
     this->cd();
 }
 
@@ -752,6 +792,8 @@ void AliJHistManager::Write(){
 
 void AliJHistManager::WriteConfig(){
     TDirectory *owd = gDirectory;
+    cout<<"DEBUG_T1: "<<gDirectory<<endl;
+    gDirectory->Print();
     TDirectory * fHistConfigDir = fDirectory->mkdir("HistManager");
     fHistConfigDir->cd();
     TObjString * config = new TObjString(GetString().Data());
