@@ -1922,17 +1922,8 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
 //_________________________________________________________________________
 Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, AliVEvent *InputEvent){
 
-	// Not Accepted == kFALSE == 0
-	//     Accepted ==  kTRUE == 1
-	//  FirstHeader ==  kTRUE == 3
 	if(index < 0) return 0; // No Particle
 
-// 	if (index == 100){
-// 		cout << "possible headers" << endl;
-// 		for(Int_t i = 0;i<fnHeaders;i++){
-// 			cout << i << "\t" <<fGeneratorNames[i] << "\t" << fNotRejectedStart[i] << "\t" <<fNotRejectedEnd[i] << endl;
-// 		}
-// 	}	
 	Int_t accepted = 0;
 	if(!InputEvent || InputEvent->IsA()==AliESDEvent::Class()){
 		if( index >= MCStack->GetNprimary()){ // Secondary Particle
@@ -2131,10 +2122,6 @@ Float_t AliConvEventCuts::GetWeightForMeson(TString period, Int_t index, AliStac
 	} else if (PDGCode ==  310 && functionResultMC != 0 && isfinite(functionResultMC)){
 			weight = functionResultMC;
 	}
-
-	//    if (fModCentralityClass == 0 && fCentralityMin == 4 && fCentralityMax == 6 && PDGCode ==  111){
-	//        cout << period.Data() << "\t" << kCaseGen << "\t" <<fModCentralityClass<< "\t" <<fCentralityMin<< "\t" <<fCentralityMax << "\t" << mesonPt << "\t" <<mesonMass<< "\t"<<functionResultData << "\t"<< functionResultMC << "\t" << weight <<endl;
-	//    }
 	return weight;
 }
 
