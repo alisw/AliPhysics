@@ -96,8 +96,10 @@ class AliJJetJtAnalysis{
         TObjArray * fInputList; // comment needed
         TObjArray * fJetList; // comment needed
         TObjArray fJetListOfList; // !comment needed
-        TObjArray * fJetBgList; // comment needed
-        TObjArray fJetBgListOfList; // !comment needed
+        //TObjArray * fJetBgList; // comment needed
+        //TObjArray fJetBgListOfList; // !comment needed
+        vector<TClonesArray>      fJetBgListOfList;
+
         TVector  *fJetTriggPtBorders;
         TVector  *fJetConstPtLowLimits;
         TVector  *fJetAssocPtBorders;
@@ -118,11 +120,14 @@ class AliJJetJtAnalysis{
 
         //Histograms
         AliJHistManager * fHMG;
+
         AliJBin fJetFinderBin; 
         AliJBin fJetTriggerBin; 
         AliJBin fTrkPtBin; 
         AliJBin fTrkLimPtBin; 
         AliJBin fdRBin;
+        AliJTH1D fhNumber;
+        AliJTH1D fhKNumber;
         AliJTH1D fhJetPt ;
         AliJTH1D fhJetPtBin;
         AliJTH1D fhZ ;
@@ -153,6 +158,8 @@ class AliJJetJtAnalysis{
         AliJTH1D fhdeltaN;
         AliJTH1D fhFullJetEChJetBin;
         AliJTH1D fhFullChdRChJetBin;
+        AliJTH2D fh2DFullEvsChEdN0;
+        AliJTH2D fh2DFullEvsChEdNnot0;
 
 
 		//double   fJetPtMinCut;

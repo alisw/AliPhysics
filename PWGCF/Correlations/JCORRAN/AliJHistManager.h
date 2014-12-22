@@ -307,15 +307,10 @@ template< typename T >
 class AliJTH1Derived : public AliJTH1 {
     protected:
     public:
-
-    AliJTH1Derived(): AliJTH1(), fPlayer(this) {}
-    virtual ~AliJTH1Derived(){}
-
-
-        /* AliJTH1Derived(); */
+        AliJTH1Derived();
         AliJTH1Derived(TString config, AliJHistManager *hmg):
             AliJTH1(config, hmg),fPlayer(this){}
-        /* virtual ~AliJTH1Derived(); */
+        virtual ~AliJTH1Derived();
 
         //AliJTH1DerivedPlayer<T> & operator[](int i){ fPlayer.Init();return fPlayer[i]; }
    //     AliJTH1DerivedPlayer<T> & operator[](int i){ fPlayer.Init();fPlayer[i];return fPlayer; }
@@ -375,6 +370,7 @@ typedef AliJTH1Derived<TProfile> AliJTProfile;
 class AliJHistManager: public AliJNamed{
     public:
         AliJHistManager(TString name );
+        AliJHistManager(TString name, TString dirname );
         AliJHistManager(const AliJHistManager& obj);
         AliJHistManager& operator=(const AliJHistManager& obj);
         void Add( AliJBin * o );

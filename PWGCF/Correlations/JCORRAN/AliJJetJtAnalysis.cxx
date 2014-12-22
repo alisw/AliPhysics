@@ -36,7 +36,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
 	fInputList(NULL)
 	, fJetList(NULL)
 	, fJetListOfList()
-	, fJetBgList(NULL)
+	//, fJetBgList(NULL)
 	, fJetBgListOfList()
     , fJetTriggPtBorders(NULL)
     , fJetConstPtLowLimits(NULL)
@@ -59,6 +59,8 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
     , fTrkPtBin()
     , fTrkLimPtBin()
     , fdRBin()
+    , fhNumber()
+    , fhKNumber()
     , fhJetPt()
     , fhJetPtBin()
     , fhZ()
@@ -86,6 +88,8 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
     , fhdeltaN()
     , fhFullJetEChJetBin()
     , fhFullChdRChJetBin()
+    , fh2DFullEvsChEdN0()
+    , fh2DFullEvsChEdNnot0()
 {
 
 }
@@ -94,7 +98,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
 	fInputList(NULL)
 	, fJetList(NULL)
 	, fJetListOfList()
-	, fJetBgList(NULL)
+	//, fJetBgList(NULL)
 	, fJetBgListOfList()
     , fJetTriggPtBorders(NULL)
     , fJetConstPtLowLimits(NULL)
@@ -117,6 +121,8 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
     , fTrkPtBin()
     , fTrkLimPtBin()
     , fdRBin()
+    , fhNumber()
+    , fhKNumber()
     , fhJetPt()
     , fhJetPtBin()
     , fhZ()
@@ -144,6 +150,8 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
     , fhdeltaN()
     , fhFullJetEChJetBin()
     , fhFullChdRChJetBin()
+    , fh2DFullEvsChEdN0()
+    , fh2DFullEvsChEdNnot0()
 {
 
 }
@@ -152,7 +160,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
 	fInputList(ap.fInputList)
 	, fJetList(ap.fJetList)
 	, fJetListOfList(ap.fJetListOfList)
-	, fJetBgList(ap.fJetBgList)
+	//, fJetBgList(ap.fJetBgList)
 	, fJetBgListOfList(ap.fJetBgListOfList)
     , fJetTriggPtBorders(ap.fJetTriggPtBorders)
     , fJetConstPtLowLimits(ap.fJetConstPtLowLimits)
@@ -175,6 +183,8 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
     , fTrkPtBin(ap.fTrkPtBin)
     , fTrkLimPtBin(ap.fTrkLimPtBin)
     , fdRBin(ap.fdRBin)
+    , fhNumber(ap.fhNumber)
+    , fhKNumber(ap.fhKNumber)
     , fhJetPt(ap.fhJetPt)
     , fhJetPtBin(ap.fhJetPtBin)
     , fhZ(ap.fhZ)
@@ -202,6 +212,8 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
     , fhdeltaN(ap.fhdeltaN)
     , fhFullJetEChJetBin(ap.fhFullJetEChJetBin)
     , fhFullChdRChJetBin(ap.fhFullChdRChJetBin)
+    , fh2DFullEvsChEdN0(ap.fh2DFullEvsChEdN0)
+    , fh2DFullEvsChEdNnot0(ap.fh2DFullEvsChEdNnot0)
 {
 
 }
@@ -254,6 +266,7 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
     //container name has information of cone size like **R040**
     //this cone size information will be pulled to a numerical variable
     nJetContainer = fJetFinderName.size();
+    fJetBgListOfList.resize(nJetContainer, TClonesArray("AliJJet",100));
 	for (int i=0; i<nJetContainer; i++){
 		//AliJJetJtHistos *histo = new AliJJetJtHistos(fCard);
 		//histo->CreateJetJtHistos();
@@ -279,6 +292,13 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
     fTrkLimPtBin .Set("TrkLimitPtBin","TrkLimitPt","p_{T,Limit}<%.1f", AliJBin::kSingle).SetBin(fJetConstPtLowLimits->GetNoElements());
     fdRBin.Set("dRBin","dR","dR : %.1f - %.1f ").SetBin(fCard->GetVector("DeltaRBorders"));
 
+    fhNumber
+        << TH1D("hNumber","Number",6,0,6) << fJetFinderBin
+        <<"END";
+
+    fhKNumber
+        << TH1D("hKNumber","KNumber",17,0,17) << fJetFinderBin
+        <<"END";
 
     fhJetPt 
         << TH1D("JetPt","",NBINS, LogBinsX ) << fJetFinderBin
@@ -323,7 +343,7 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
         << TH1D("JtWithPtCutWeightBinBin","",NBINSJt, LogBinsJt ) << fJetFinderBin << fJetTriggerBin << fTrkPtBin
         <<"END";
     fhLogJtWithPtCutWeightBinBin 
-        << TH1D("LogJtWeightBin","",NBINSJtW, LimLJtW, LimHJtW ) << fJetFinderBin << fJetTriggerBin << fTrkPtBin
+        << TH1D("LogJtWeightBinBin","",NBINSJtW, LimLJtW, LimHJtW ) << fJetFinderBin << fJetTriggerBin << fTrkPtBin
         <<"END";
 
     fhJtBinLimBin 
@@ -393,7 +413,13 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
         << TH1D("hFullChdRChJetBin","",nDR,xDR0,xDR1)  << fJetTriggerBin
         <<"END";
 
+    fh2DFullEvsChEdN0
+        << TH2D("h2DFullEvsChEdN0","",NBINS, LogBinsX, NBINS, LogBinsX )  
+        <<"END";
 
+    fh2DFullEvsChEdNnot0
+        << TH2D("h2DFullEvsChEdNnot0","",NBINS, LogBinsX, NBINS, LogBinsX )  
+        <<"END";
     fHMG->Print();
     fHMG->WriteConfig();
 
@@ -418,8 +444,8 @@ void AliJJetJtAnalysis::UserExec(){
     }
 
 
-    int iS1 = 0;
-    int iS2 = 3;
+    int iS1 = 0; //full 0.4
+    int iS2 = 3; //Ch   0.4
     TObjArray * jetfinder1 = (TObjArray*) fJetListOfList[iS1];
     TObjArray * jetfinder2 = (TObjArray*) fJetListOfList[iS2];
     AliJJet *jet1 = NULL;
@@ -432,17 +458,24 @@ void AliJJetJtAnalysis::UserExec(){
         jet1 = dynamic_cast<AliJJet*>( jetfinder1->At(ijet) );
         if (!jet1) continue;
         for (int jjet = 0; jjet<jetfinder2->GetEntriesFast(); jjet++){
+            cout<<"Check new system is working"<<endl;
+            cout<<"Check new system is working2"<<endl;
             jet2 = dynamic_cast<AliJJet*>( jetfinder2->At(jjet) );
             if (!jet2) continue;
-            chEbin = GetBin(fJetTriggPtBorders,jet2->Pt());
+            chEbin = GetBin(fJetTriggPtBorders,jet2->E());
             deltaeta = TMath::Abs(jet1->Eta()-jet2->Eta());
             rbin   = GetBin(fDeltaRBorders,deltaeta); 
             fJJetAnalysis->CompareTwoJets(jet1, jet2, dE, dN);
             if (chEbin < 0 || rbin < 0 ) continue;
             fhdeltaE[chEbin][rbin]->Fill(dE);
             fhdeltaN[chEbin][rbin]->Fill(dN);
-            if (dN ==0) fhFullJetEChJetBin[chEbin]->Fill(jet1->E());
-            if (dN ==0) fhFullChdRChJetBin[chEbin]->Fill(jet1->DeltaR(*jet2));
+            if (dN ==0) { 
+                fhFullJetEChJetBin[chEbin]->Fill(jet1->E());
+                fhFullChdRChJetBin[chEbin]->Fill(jet1->DeltaR(*jet2));
+                fh2DFullEvsChEdN0->Fill(jet1->E(), jet2->E());
+            } else { 
+                fh2DFullEvsChEdNnot0->Fill(jet1->E(), jet2->E());
+            }
 
         }
     }
@@ -489,6 +522,8 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
     //cout<<"histogram filling number of jets : "<<Jets->GetEntriesFast()<<endl;
 
     TLorentzVector  vOrtho;
+    fJetBgListOfList[iContainer].Clear();
+    TClonesArray & bgjets = fJetBgListOfList[iContainer];
 
 
 
@@ -498,6 +533,7 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
     double deltaPhi = -999;
     double effCorrection = -1;
     double thisConeSize = fConeSizes[iContainer] ;
+    int iBgJet = 0;
 
     // iJet loop for an event
     for (int i = 0; i<Jets->GetEntries(); i++){
@@ -568,11 +604,13 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
         //Background jet (iBgJet) will be produced. This background jet is orthogonal to the iJet.  
         //If there is another jJet, then iBgJet will be consecutevely moved not to have jJet in the cone size. 
         if (Jets->GetEntries()>1){
+            fhNumber[iContainer]->Fill(3.5);
             for (int j = 0; j<Jets->GetEntries(); j++){
                 if (i == j) continue;
                 AliJJet *jet2 = dynamic_cast<AliJJet*>( Jets->At(j) );
 
                 if (k>15) {
+                    fhNumber[iContainer]->Fill(5.5);
                     break;
                 }
 
@@ -585,15 +623,22 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
                     vOrtho.Rotate(TMath::Pi()/8, jet->Vect());
                     j=0;
                     k++;
+                    fhNumber[iContainer]->Fill(4.5);
                 }
 
             }
+            fhKNumber[iContainer]->Fill(k);
         }
 
         // Filling iBgJet,  Bgjt and Bgz
         // "k<16" means that we will select a iBgJet which hasn't moved 
         // more than 16 times by the process above
+        double maxconpt = 0;
         if ( k<16 ){
+            new (bgjets[iBgJet]) AliJJet(vOrtho.Px(),vOrtho.Py(), vOrtho.Pz(), vOrtho.E(), i ,0,0);
+            AliJJet * jbg = (AliJJet*) fJetBgListOfList[iContainer][iBgJet];
+            iBgJet++;
+
             pT = vOrtho.Pt(); 
             if (pT<(*fJetTriggPtBorders)[1]) continue;
 
@@ -611,8 +656,11 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
                 deltaPhi = vOrtho.Phi() - track->Phi();
                 deltaR   = TMath::Sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
                 if ( deltaR > thisConeSize) continue;
+        
+                jbg->AddConstituent(track);
 
                 pta = track->Pt();
+                if (pta > maxconpt) maxconpt = pta;
                 track->SetTrackEff( fEfficiency->GetCorrection( pta, 5, fcent) );
                 effCorrection = 1.0/track->GetTrackEff();
                 iptaBin = GetBin(fJetAssocPtBorders, pta);
@@ -631,8 +679,7 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
 
                 if (iptaBin < 0) continue;
                 fhBgJtWithPtCutWeightBinBin[iContainer][iBin][iptaBin]->Fill( jt, 1.0/jt * effCorrection );
-                fhBgLogJtWithPtCutWeightBinBin[iContainer][iBin][iptaBin]->Fill( TMath::Log(jt), 2.0/jt * effCorrection );
-
+                fhBgLogJtWithPtCutWeightBinBin[iContainer][iBin][iptaBin]->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
             } 
         }
 
