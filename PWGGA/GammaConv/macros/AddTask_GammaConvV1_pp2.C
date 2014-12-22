@@ -144,6 +144,9 @@ void AddTask_GammaConvV1_pp2(  Int_t trainConfig = 1,  //change different set of
 		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[0] = "01525065000000"; //standard cut LHC11h pp 2.76TeV 
 	} else if (trainConfig == 16) { 
 		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "002000092570028250400000"; mesonCutArray[0] = "01521065000000"; //standard cut pp 8 TeV		
+	} else if (trainConfig == 17){
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "002000092273028250400000"; mesonCutArray[0] = "01521035000000"; //New standard cut for eta analysis 8 TeV
+		
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
