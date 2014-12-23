@@ -19,6 +19,15 @@ set (MODULE PWGmftmuondepCharmonium)
 # Module include folder
 include_directories(${AliRoot_SOURCE_DIR}/PWG/mftmuondep/charmonium)
 
+# Aditional include directories in alphabetical order
+include_directories(${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/EventMixing
+                    ${AliRoot_SOURCE_DIR}/MFT/MFTbase
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONrec
+                    ${AliRoot_SOURCE_DIR}/STEER/AOD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                   )
 # Sources - alphabetical order
 set(SRCS
     AliAnalysisTaskDimuonBackground.cxx
@@ -32,8 +41,8 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
-set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES)
+set(ROOT_DEPENDENCIES Core EG Hist MathCore)
+set(ALIROOT_DEPENDENCIES STEERBase AOD ANALYSIS ANALYSISalice EventMixing MUONrec MFTbase)
 
 # Generate the ROOT map
 # Dependecies
