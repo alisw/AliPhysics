@@ -21,10 +21,45 @@ include_directories(${AliRoot_SOURCE_DIR}/PWG/mftmuondep/charmonium)
 
 # Sources - alphabetical order
 set(SRCS
-  AliAnalysisTaskDimuonBackground.cxx
-  )
+    AliAnalysisTaskDimuonBackground.cxx
+   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+# Generate the dictionary
+# It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
+get_directory_property(incdirs INCLUDE_DIRECTORIES)
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+
+set(ROOT_DEPENDENCIES)
+set(ALIROOT_DEPENDENCIES)
+
+# Generate the ROOT map
+# Dependecies
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
+add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+target_link_libraries(${MODULE} ${LIBDEPS})
+
+# Custom compilation flags if needed
+set(MODULE_COMPILE_FLAGS)
+set(MODULE_LINK_FLAGS)
+
+# Setting custom compilation flags for the object
+set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
+# Setting customlinking flags for the library
+set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
+
+# Installation
+install(TARGETS ${MODULE}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib)
+
+install(FILES ${HDRS} DESTINATION include)
+
+# Install the macros
+install(FILES AddTaskDimuonBackground.C DESTINATION PWG/mftmuondep/charmonium)
 
 message(STATUS "PWG mftmuondep charmonium enabled")
