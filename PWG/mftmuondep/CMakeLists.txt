@@ -14,7 +14,7 @@
 # **************************************************************************
 
 # Include the libraries
-#add_subdirectory(charmonium)
+add_subdirectory(charmonium)
 #add_subdirectory(openHF)
 
 message(STATUS "PWG mftmuondep enabled")
