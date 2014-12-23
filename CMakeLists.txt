@@ -207,6 +207,9 @@ add_subdirectory(ANALYSIS)
 include(Vc/Vc.cmake)
 add_subdirectory(Vc)
 
+# AliRoot common macros
+add_subdirectory(macros)
+
 # AliRoot modules
 add_subdirectory(ACORDE)
 add_subdirectory(AD)
