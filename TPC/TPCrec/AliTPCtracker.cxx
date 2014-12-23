@@ -3571,7 +3571,8 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
       // add seed to the esd track in Calib level
       //
       Bool_t storeFriend = gRandom->Rndm()<(kMaxFriendTracks)/Float_t(nseed);
-      if (AliTPCReconstructor::StreamLevel()>0 &&storeFriend){
+      //      if (AliTPCReconstructor::StreamLevel()>0 &&storeFriend){
+      if (storeFriend){ // RS: seed is needed for calibration, regardless on streamlevel
 	// RS: this is the only place where the seed is created not in the pool, 
 	// since it should belong to ESDevent
 	AliTPCseed * seedCopy = new AliTPCseed(*seed, kTRUE); 
