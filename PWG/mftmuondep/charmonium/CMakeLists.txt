@@ -13,7 +13,7 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-# Module
+# Module name -> library name
 set (MODULE PWGmftmuondepCharmonium)
 
 # Module include folder
@@ -38,21 +38,29 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
+# It expect the name of the LinkDef file to be ${MODULE}LinkDef.h
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+# VERY IMPORTANT - ADD the correct dependecies
+# Seach any Root class you use inside the ROOT rootmaps and add Root library to the dependency
+# AliRoot classes are usually located in the name of the include
+# Ex: ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS -> ANALYSIS
+#     ${AliRoot_SOURCE_DIR}/ANALYSIS/EventMixing - EventMixing
 set(ROOT_DEPENDENCIES Core EG Hist MathCore)
 set(ALIROOT_DEPENDENCIES STEERBase AOD ANALYSIS ANALYSISalice EventMixing MUONrec MFTbase)
 
-# Generate the ROOT map
-# Dependecies
+# Generate the ROOT map used to automatically load the dependecies
+# Load only the upper level libraries, there is no need to load the dependecies
+# If symbols are not found it means that the dependecies are not correctly defined
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
+# Creating the actual library
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 target_link_libraries(${MODULE} ${LIBDEPS})
 
-# Custom compilation flags if needed
+# Custom compilation and linking flags if needed
 set(MODULE_COMPILE_FLAGS)
 set(MODULE_LINK_FLAGS)
 
@@ -61,11 +69,12 @@ set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS
 # Setting customlinking flags for the library
 set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
 
-# Installation
+# Library installation
 install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
 
+# Headers installation
 install(FILES ${HDRS} DESTINATION include)
 
 # Install the macros
