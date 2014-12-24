@@ -69,6 +69,11 @@ set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS
 # Setting customlinking flags for the library
 set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
 
+# System dependent: Modify the way the library is build
+if(${CMAKE_SYSTEM} MATCHES Darwin)
+    set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+endif(${CMAKE_SYSTEM} MATCHES Darwin)
+
 # Library installation
 install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
