@@ -198,20 +198,39 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       if (!jet1) continue;
       AliEmcalJet* jet2 = 0x0;
       fPtJet->Fill(jet1->Pt());
+      AliEmcalJet *jetUS = NULL;
+      Int_t ifound=0;
+      Int_t ilab=-1;
 
-      if (!(fJetShapeType == kData)) {
+        if (!(fJetShapeType == kData)) {
 	AliPythiaInfo *partonsInfo = 0x0;
+
 	if((fJetShapeType == kTrueDet) || (fJetShapeType == kDetEmb)){
 	  AliJetContainer *jetContTrue = GetJetContainer(1);
-	  jet2 = jet1->ClosestJet();
+          AliJetContainer *jetContUS = GetJetContainer(2);
+          if(fJetShapeSub==kConstSub){
+    	  for(Int_t i = 0; i<jetContUS->GetNJets(); i++) {
+	  jetUS = jetContUS->GetJet(i);
+	  if(jetUS->GetLabel()==jet1->GetLabel()) {
+	    ifound++;
+	    if(ifound==1) ilab = i;
+	  }
+	}   
+          if(ilab==-1) continue;
+	  jetUS=jetContUS->GetJet(ilab);
+
+	    jet2=jetUS->ClosestJet();}
+	  if(!(fJetShapeSub==kConstSub)) jet2 = jet1->ClosestJet();
 	  if (!jet2) {
 	    Printf("jet2 not exists, returning");
 	    continue;
 	  }
+
           fh2ResponseUW->Fill(jet1->Pt(),jet2->Pt());	  
 
-
-	  Double_t fraction = jetCont->GetFractionSharedPt(jet1);
+          Double_t fraction=0;
+	  if(!(fJetShapeSub==kConstSub))  fraction = jetCont->GetFractionSharedPt(jet1);
+          if(fJetShapeSub==kConstSub) fraction = jetContUS->GetFractionSharedPt(jetUS);
           cout<<"hey a jet"<<fraction<<" "<<jet1->Pt()<<" "<<jet2->Pt()<<" "<<fCent<<endl;
           
 	  if(fraction<fMinFractionShared) continue;
