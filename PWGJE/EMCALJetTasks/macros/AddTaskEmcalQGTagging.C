@@ -116,6 +116,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
     }
     if(jetShapeSub==AliAnalysisTaskEmcalQGTagging::kConstSub){
   if(jetContUS) {
+    jetContUS=task->AddJetContainer(njetsUS,strType,R);
       jetContUS->SetRhoName(nrhoBase);
       jetContUS->ConnectParticleContainer(trackContUS);
       jetContUS->SetPercAreaCut(0.6); 
