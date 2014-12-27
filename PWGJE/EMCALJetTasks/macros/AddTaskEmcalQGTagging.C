@@ -115,8 +115,8 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
       jetContTrue->SetPythiaInfoName("PythiaInfo");
     }
     if(jetShapeSub==AliAnalysisTaskEmcalQGTagging::kConstSub){
+     jetContUS=task->AddJetContainer(njetsUS,strType,R);
   if(jetContUS) {
-    jetContUS=task->AddJetContainer(njetsUS,strType,R);
       jetContUS->SetRhoName(nrhoBase);
       jetContUS->ConnectParticleContainer(trackContUS);
       jetContUS->SetPercAreaCut(0.6); 
