@@ -32,6 +32,7 @@
 #include "AliLog.h"
 #include "TObjArray.h"
 #include "TDecompLU.h"
+#include "TRandom.h"
 
 #include "AliMFTAnalysisTools.h"
 
@@ -239,6 +240,25 @@ Bool_t AliMFTAnalysisTools::GetAODMuonOffset(AliAODTrack *muon, Double_t xv, Dou
 
   Double_t xy[2] = {0};
   ExtrapAODMuonToZ(muon, zv, xy);
+  
+  offset = TMath::Sqrt((xv-xy[0])*(xv-xy[0]) + (yv-xy[1])*(yv-xy[1]));
+
+  return kTRUE;
+
+}
+
+//====================================================================================================================================================
+
+Bool_t AliMFTAnalysisTools::GetAODMuonOffsetSmeared(AliAODTrack *muon, Double_t xv, Double_t yv, Double_t zv,
+						    Double_t smearOffsetX, Double_t smearOffsetY, Double_t &offset) {
+
+  // Evaluate transverse offset adding to it an additional smearing (independently along the x and y directions)
+  
+  Double_t xy[2] = {0};
+  ExtrapAODMuonToZ(muon, zv, xy);
+
+  xy[0] = gRandom->Gaus(xy[0], smearOffsetX);
+  xy[1] = gRandom->Gaus(xy[1], smearOffsetY);
   
   offset = TMath::Sqrt((xv-xy[0])*(xv-xy[0]) + (yv-xy[1])*(yv-xy[1]));
 
