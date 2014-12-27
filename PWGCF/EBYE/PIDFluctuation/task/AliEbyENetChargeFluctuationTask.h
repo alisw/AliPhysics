@@ -103,11 +103,11 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   void InitPhy();  
   void CreateQA();
   void CreateBasicQA();
-  void CreateBasicHistos(const Char_t *name, const Char_t *title);
-  void CreateRatioHistos(const Char_t *name, const Char_t *title,Bool_t isPer);
+  void CreateBasicHistos(const Char_t *title, Bool_t isMC, Bool_t isPer);
+  void CreateRatioHistos(const Char_t *title,Bool_t isMC, Bool_t isPer);
   void CreateGroupHistos(const Char_t *name, const Char_t *title, Int_t nSample,Bool_t isPer);
-  void FillBasicHistos(const Char_t *name, Bool_t isMC);
-  void FillRatioHistos(const Char_t *name,Bool_t isMC,Bool_t isPer);
+  void FillBasicHistos(Bool_t isMC, Bool_t isPer);
+  void FillRatioHistos(Bool_t isMC,Bool_t isPer);
   void FillGroupHistos(const Char_t *name, Int_t iSub, Bool_t isMC,Bool_t isPer);
   
  
