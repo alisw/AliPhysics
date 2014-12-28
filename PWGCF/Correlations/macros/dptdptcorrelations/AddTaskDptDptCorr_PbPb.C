@@ -12,14 +12,14 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_PbPb
  int    useWeights              = 1, 
  int    centralityMethod        = 4,
  int    chargeSet               = 1,
- double zMin                   = -10.,
- double zMax                   =  10.,
+ double zMin                    = -10.,
+ double zMax                    =  10.,
  int    trackFilterBit          = 128,
  int    nClusterMin             = 80, 
  double eta1Min                 = -0.8,
- double eta1Max                 = 0.8,
+ double eta1Max                 =  0.8,
  double eta2Min                 = -0.8,
- double eta2Max                 = 0.8,
+ double eta2Max                 =  0.8,
  double dcaZMin                 = -3.2,
  double dcaZMax                 =  3.2,
  double dcaXYMin                = -2.4,
@@ -48,7 +48,7 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_PbPb
 	minCentrality[0] = 0.0;   maxCentrality[0]  = 5.0;
         minCentrality[1] = 5.0;  maxCentrality[1]  = 10.;
         minCentrality[2] = 20.;   maxCentrality[2]  = 30.;
-
+       
       }
     else
       {
@@ -59,9 +59,13 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_PbPb
     {
     if (centralityMethod == 4)
       {
-	minCentrality[0] = 30.0;   maxCentrality[0]  = 40.0;
-	minCentrality[1] = 50.0;   maxCentrality[1]  = 60.0;
-	minCentrality[2] = 70.0;   maxCentrality[2]  = 80.0;
+	//minCentrality[0] = 30.0;   maxCentrality[0]  = 40.0;
+	//minCentrality[1] = 50.0;   maxCentrality[1]  = 60.0;
+	//minCentrality[2] = 70.0;   maxCentrality[2]  = 80.0;
+
+	minCentrality[0] = 10.0;   maxCentrality[0]  = 20.0;
+	minCentrality[1] = 40.0;   maxCentrality[1]  = 50.0;
+	minCentrality[2] = 60.0;   maxCentrality[2]  = 70.0;
       }
     else
       {
@@ -72,16 +76,12 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_PbPb
     {
     return 0;
     }
-
-  //double zMin                   = -10.;
-  //double zMax                   =  10.;
   double ptMin                  =  0.2;
   double ptMax                  =  2.0;
   double dedxMin                =  0.0;
   double dedxMax                =  20000.0;
   int    requestedCharge1       =  1; //default
   int    requestedCharge2       = -1; //default
-  
   
   // Get the pointer to the existing analysis manager via the static access method.
   // ==============================================================================
