@@ -74,10 +74,10 @@ void AddAliEbyENetChargeFluctuationBinTask(const Char_t *taskname="TOFTPC",
   AliAnalysisDataContainer *cout2[8];
   AliAnalysisDataContainer *cout3[8];
   AliAnalysisDataContainer *cout4[8];
-  if (!isModeAOD) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/PIDFluctuation/macros/configureNetChargeTrackCut.C"); 
-      AliESDtrackCuts *cuts[8];
-  }
+  
+  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/PIDFluctuation/macros/configureNetChargeTrackCut.C"); 
+  AliESDtrackCuts *cuts[8];
+
   for (Int_t iEta = 0; iEta < 8; iEta++ ) {
 
     TString taskname_ctr = Form("E%d",iEta);
@@ -90,7 +90,7 @@ void AddAliEbyENetChargeFluctuationBinTask(const Char_t *taskname="TOFTPC",
       return NULL;
     }
     
-    Printf("=========== I am here very great %s ==========",taskname_ctr.Data());
+    Printf("=========== Run For the Eta Window %s ==========",taskname_ctr.Data());
     
     if (isMC) task[iEta]->SetIsMC();
     
@@ -110,7 +110,8 @@ void AddAliEbyENetChargeFluctuationBinTask(const Char_t *taskname="TOFTPC",
     
     if (!isModeAOD) {
         cuts[iEta] = configureNetChargeTrackCut(taskname_ctr.Data(),cuttype,10001006, eEta, 5.,5.); 
-       task[iEta]->SetAnalysisCutObject(cuts[iEta]);
+        task[iEta]->SetAnalysisCutObject(cuts[iEta]);
+	Printf("=========== Cut Applied %s ==========",taskname_ctr.Data());
     }
     
     
