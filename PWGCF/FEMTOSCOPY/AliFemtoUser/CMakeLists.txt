@@ -82,6 +82,7 @@ set(SRCS
   AliFemtoCorrFctnMinvMonitor.cxx
   AliFemtoCorrFctnPairFractions.cxx
   AliAnalysisTaskParticleEfficiency.cxx
+  AliFemtoPairOriginMonitor.cxx
   )
 
 # Headers from sources
