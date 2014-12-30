@@ -4,7 +4,8 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  										// change differ
 							  Int_t enableQAPhotonTask = 0, 								// enable photon QA in AliAnalysisTaskGammaConvV1
 							  TString fileNameInputForWeighting = "MCSpectraInput.root", 	// path to file for weigting input
 							  TString cutnumberAODBranch = "0000000060084001001500000", 	// cutnumber for AOD branch
-							  TString periodname = "LHC12f1x" 								// period name
+							  TString periodname = "LHC12f1x", 								// period name
+							  Bool_t doWeighting = kFALSE									// enables weighting
 							) {
 
 	// ================= Load Librariers =================================
@@ -421,7 +422,7 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  										// change differ
 	TList *MesonCutList = new TList();
 
 	TList *HeaderList = new TList();
-	if (periodname.CompareTo("LHC12i3") == 0){	
+	if (periodname.Contains("LHC12i3")){	
 		TObjString *Header2 = new TObjString("BOX");
 		HeaderList->Add(Header2);
 	} else if (periodname.CompareTo("LHC14e2b")==0){
@@ -430,7 +431,35 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  										// change differ
 		TObjString *Header3 = new TObjString("eta_2");
 		HeaderList->Add(Header3);
 	}	
-		
+	
+	TString energy = "";
+	TString mcName = "";
+	TString mcNameAdd = "";
+	if (periodname.Contains("WOSDD")){
+		mcNameAdd = "_W0SDD";
+	} else if (periodname.Contains("WSDD")){
+		mcNameAdd = "_WSDD";
+	} 	
+	if (periodname.Contains("LHC12i3")){
+		energy = "2760GeV";
+		mcName = "Pythia8_LHC12i3";
+	} else if (periodname.Contains("LHC12f1a")){	
+		energy = "2760GeV";
+		mcName = "Pythia8_LHC12f1a";	
+	} else if (periodname.Contains("LHC12f1b")){	
+		energy = "2760GeV";
+		mcName = "Phojet_LHC12f1b";			
+	} else if (periodname.Contains("LHC14e2a")){	
+		energy = "8TeV";
+		mcName = "Pythia8_LHC14e2a";			
+	} else if (periodname.Contains("LHC14e2b")){	
+		energy = "8TeV";
+		mcName = "Pythia8_LHC14e2b";				
+	} else if (periodname.Contains("LHC14e2c")){		
+		energy = "8TeV";
+		mcName = "Phojet_LHC14e2c";					
+	}	
+	
 	EventCutList->SetOwner(kTRUE);
 	AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
 	ConvCutList->SetOwner(kTRUE);
@@ -438,9 +467,23 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  										// change differ
 	MesonCutList->SetOwner(kTRUE);
 	AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
 
-
 	for(Int_t i = 0; i<numberOfCuts; i++){
 		analysisEventCuts[i] = new AliConvEventCuts();
+		TString fitNamePi0 = Form("Pi0_Fit_Data_%s",energy.Data());
+		TString fitNameEta = Form("Eta_Fit_Data_%s",energy.Data());
+		fAddedSignal = eventCutArray[ i](6,1);
+		TString mcInputNamePi0 = "";
+		TString mcInputNameEta = "";
+		if (fAddedSignal.CompareTo("2") == 0 && (periodname.Contains("LHC12i3") || periodname.CompareTo("LHC14e2b")==0)){
+			mcInputNamePi0 = Form("Pi0_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
+			mcInputNameEta = Form("Eta_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
+		} else {
+			mcInputNamePi0 = Form("Pi0_%s%s_addSig_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
+			mcInputNameEta = Form("Eta_%s%s_addSig_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
+		}	
+		
+		if (doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
+		
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		EventCutList->Add(analysisEventCuts[i]);
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
