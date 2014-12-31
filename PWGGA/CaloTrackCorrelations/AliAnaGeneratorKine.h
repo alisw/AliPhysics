@@ -4,9 +4,10 @@
  * See cxx source for full Copyright notice     */
 
 //___________________________________________________________________________
-// Do photon/pi0 analysis for isolation and correlation
-// at the generator level. Only for kine stack (ESDs)
-//
+// Do direct photon/decay photon (eta, pi0, other)/pi0/eta isolation
+// and correlation with partons/jets/hadrons analysis at the generator level.
+// For MC kinematics at ESD and AOD level
+// Jets only considered in the case of Pythia, check what to do with others.//
 //
 //-- Author: Gustavo Conesa (LPSC-CNRS-Grenoble)
 
