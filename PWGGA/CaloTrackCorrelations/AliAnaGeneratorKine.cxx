@@ -40,12 +40,12 @@ AliAnaCaloTrackCorrBaseClass(),
 fTriggerDetector(),  fTriggerDetectorString(),
 fFidCutTrigger(0),
 fMinChargedPt(0),    fMinNeutralPt(0),
-fStack(0),
+fStack(0),           fAODMCparticles(0),
 //fParton2(0),         fParton3(0),
 fParton6(0),         fParton7(0),
 fJet6(),             fJet7(),
 fTrigger(),          fLVTmp(),
-fPtHard(0),
+fNPrimaries(0),      fPtHard(0),
 fhPtHard(0),         fhPtParton(0),    fhPtJet(0),
 fhPtPartonPtHard(0), fhPtJetPtHard(0), fhPtJetPtParton(0)
 {
@@ -102,7 +102,11 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
   
   AliDebug(1,"Start");
   
-  if( fStack->GetNprimary() < 7 ) return kFALSE ;
+  if( fNPrimaries < 7 )
+  {
+    AliDebug(1,Form("End, not enough partons, n primaries %d",fNPrimaries));
+    return kFALSE ;
+  }
   
   //Get the index of the mother
   iparton =  (fStack->Particle(indexTrig))->GetFirstMother();
@@ -122,7 +126,7 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
   
   if(iparton < 6)
   {
-    //printf("This particle is not from hard process - pdg %d, parton index %d\n",partType, iparton);
+    AliDebug(1,Form("This particle is not from hard process - pdg %d, parton index %d\n",partType, iparton));
     return kFALSE; 
   }
   
@@ -465,8 +469,6 @@ void  AliAnaGeneratorKine::GetPartonsAndJets()
   
   AliDebug(1,"Start");
   
-  Int_t nPrimary = fStack->GetNprimary();
-  
 //  if( nPrimary > 2 ) fParton2 = fStack->Particle(2) ;
 //  if( nPrimary > 3 ) fParton3 = fStack->Particle(3) ;
   
@@ -474,7 +476,8 @@ void  AliAnaGeneratorKine::GetPartonsAndJets()
   Float_t p6eta = -10;
   Float_t p6pt  =  0 ;
   fParton6 = 0x0;
-  if( nPrimary > 6 )
+  
+  if( fNPrimaries > 6 )
   {
     fParton6 = fStack->Particle(6) ;
     p6pt  = fParton6->Pt();
@@ -482,12 +485,12 @@ void  AliAnaGeneratorKine::GetPartonsAndJets()
     p6phi = fParton6->Phi();
     if(p6phi < 0) p6phi +=TMath::TwoPi();
   }
-  
+
   Float_t p7phi = -1 ;
   Float_t p7eta = -10;
   Float_t p7pt  =  0 ;
   fParton7 = 0x0;
-  if( nPrimary > 7 )
+  if( fNPrimaries > 7 )
   {
     fParton7 = fStack->Particle(7) ;
     p7pt  = fParton7->Pt();
@@ -495,8 +498,7 @@ void  AliAnaGeneratorKine::GetPartonsAndJets()
     p7phi = fParton7->Phi();
     if(p7phi < 0) p7phi +=TMath::TwoPi();
   }
-
-
+  
   //printf("parton6: pt %2.2f, eta %2.2f, phi %2.2f with pdg %d\n",fParton6->Pt(),fParton6->Eta(),p6phi, fParton6->GetPdgCode());
   //printf("parton7: pt %2.2f, eta %2.2f, phi %2.2f with pdg %d\n",fParton7->Pt(),fParton7->Eta(),p7phi, fParton7->GetPdgCode());
   
@@ -583,7 +585,7 @@ void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
   if(phiTrig < 0 ) phiTrig += TMath::TwoPi();
   
   //Loop on primaries, start from position 8, no partons
-  for(Int_t ipr = 8; ipr < fStack->GetNprimary(); ipr ++ )
+  for(Int_t ipr = 8; ipr < fNPrimaries; ipr ++ )
   {
     TParticle * particle = fStack->Particle(ipr) ;
     
@@ -615,7 +617,11 @@ void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
     // ---------------------------------------------------
     // Get the index of the mother, get from what parton
     Int_t ipartonAway =  particle->GetFirstMother();
-    if(ipartonAway < 0) return;
+    if(ipartonAway < 0)
+    {
+      AliDebug(1,"End, no mother index");
+      return;
+    }
     
     TParticle * mother = fStack->Particle(ipartonAway);
     while (ipartonAway > 7) 
@@ -731,7 +737,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
   Float_t sumChPt         = 0;
   
   //Loop on primaries, start from position 8, no partons
-  for(Int_t ipr = 8; ipr < fStack->GetNprimary(); ipr ++ )
+  for(Int_t ipr = 8; ipr < fNPrimaries; ipr ++ )
   {
     if(ipr == indexTrig) continue;
     TParticle * particle = fStack->Particle(ipr) ;
@@ -890,14 +896,37 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
   
   AliDebug(1,"Start");
   
-  fStack =  GetMCStack() ;
   
-  if( !fStack )
-    AliFatal("No Stack available, STOP");
+  // Get the ESD MC particles container
+  fStack = 0;
+  if( GetReader()->ReadStack() )
+  {
+    fStack = GetMCStack();
+    if( !fStack )
+    {
+      AliFatal("Stack not available, is the MC handler called? STOP");
+      return;
+    }
+    fNPrimaries = fStack->GetNprimary(); // GetNtrack();
+  }
+  
+  // Get the AOD MC particles container
+  fAODMCparticles = 0;
+  if( GetReader()->ReadAODMCParticles() )
+  {
+    fAODMCparticles = GetReader()->GetAODMCParticles();
+    if( !fAODMCparticles )
+    {
+      AliFatal("Standard MCParticles not available!");
+      return;
+    }
+    fNPrimaries = fAODMCparticles->GetEntriesFast();
+  }
+
 
   GetPartonsAndJets();
   
-  for(Int_t ipr = 0; ipr < fStack->GetNprimary(); ipr ++ )
+  for(Int_t ipr = 0; ipr < fNPrimaries; ipr ++ )
   {
     TParticle * particle = fStack->Particle(ipr) ;
     

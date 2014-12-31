@@ -73,29 +73,31 @@ public:
   
 private:
 
-  Int_t       fTriggerDetector ;            // Detector : EMCAL, PHOS, CTS
-  TString     fTriggerDetectorString ;      // Detector : EMCAL, PHOS, CTS
+  Int_t            fTriggerDetector ;       // Detector : EMCAL, PHOS, CTS
+  TString          fTriggerDetectorString ; // Detector : EMCAL, PHOS, CTS
 
-  AliFiducialCut* fFidCutTrigger;           //! fiducial cut for the trigger detector
+  AliFiducialCut * fFidCutTrigger;          //! fiducial cut for the trigger detector
   
-  Float_t     fMinChargedPt;                //! Minimum energy for charged particles in correlation
-  Float_t     fMinNeutralPt;                //! Minimum energy for neutral particles in correlation
+  Float_t          fMinChargedPt;           //! Minimum energy for charged particles in correlation
+  Float_t          fMinNeutralPt;           //! Minimum energy for neutral particles in correlation
   
-  AliStack  * fStack;                       //! access stack
-  
-//  TParticle * fParton2;                     //! Initial state Parton
-//  TParticle * fParton3;                     //! Initial state Parton
-  
-  TParticle * fParton6;                     //! Final state Parton
-  TParticle * fParton7;                     //! Final state Parton
-  
-  TLorentzVector fJet6;                     //! Pythia jet close to parton in position 6
-  TLorentzVector fJet7;                     //! Pythia jet close to parton in position 7
+  AliStack       * fStack;                  //! access ESD stack
+  TClonesArray   * fAODMCparticles ;        //! access AOD stack
 
-  TLorentzVector fTrigger;                  //! Trigger momentum, avoid generating TLorentzVectors per event
-  TLorentzVector fLVTmp;                    //! momentum, avoid generating TLorentzVectors per event
+//  TParticle      * fParton2;              //! Initial state Parton
+//  TParticle      * fParton3;              //! Initial state Parton
   
-  Float_t     fPtHard;                      //! Generated pT hard
+  TParticle      * fParton6;                //! Final state Parton
+  TParticle      * fParton7;                //! Final state Parton
+  
+  TLorentzVector   fJet6;                   //! Pythia jet close to parton in position 6
+  TLorentzVector   fJet7;                   //! Pythia jet close to parton in position 7
+
+  TLorentzVector   fTrigger;                //! Trigger momentum, avoid generating TLorentzVectors per event
+  TLorentzVector   fLVTmp;                  //! momentum, avoid generating TLorentzVectors per event
+  
+  Int_t            fNPrimaries;             //! N primaries
+  Float_t          fPtHard;                 //! Generated pT hard
   
   // Histograms
   
@@ -152,7 +154,7 @@ private:
   AliAnaGeneratorKine              (const AliAnaGeneratorKine & gk) ; // cpy ctor
   AliAnaGeneratorKine & operator = (const AliAnaGeneratorKine & gk) ; // cpy assignment
   
-  ClassDef(AliAnaGeneratorKine,5)
+  ClassDef(AliAnaGeneratorKine,6)
   
 } ;
 
