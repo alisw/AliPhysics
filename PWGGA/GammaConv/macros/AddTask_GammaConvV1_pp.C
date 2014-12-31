@@ -436,7 +436,7 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  										// change differ
 	TString mcName = "";
 	TString mcNameAdd = "";
 	if (periodname.Contains("WOSDD")){
-		mcNameAdd = "_W0SDD";
+		mcNameAdd = "_WOSDD";
 	} else if (periodname.Contains("WSDD")){
 		mcNameAdd = "_WSDD";
 	} 	
@@ -471,15 +471,15 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  										// change differ
 		analysisEventCuts[i] = new AliConvEventCuts();
 		TString fitNamePi0 = Form("Pi0_Fit_Data_%s",energy.Data());
 		TString fitNameEta = Form("Eta_Fit_Data_%s",energy.Data());
-		TString fAddedSignal = eventCutArray[ i](6,1);
+		Bool_t fAddedSignal = eventCutArray[i].EndsWith("2");
 		TString mcInputNamePi0 = "";
 		TString mcInputNameEta = "";
-		if (fAddedSignal.CompareTo("2") == 0 && (periodname.Contains("LHC12i3") || periodname.CompareTo("LHC14e2b")==0)){
-			mcInputNamePi0 = Form("Pi0_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
-			mcInputNameEta = Form("Eta_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
-		} else {
+		if (fAddedSignal && (periodname.Contains("LHC12i3") || periodname.CompareTo("LHC14e2b")==0)){
 			mcInputNamePi0 = Form("Pi0_%s%s_addSig_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
 			mcInputNameEta = Form("Eta_%s%s_addSig_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
+		} else {
+			mcInputNamePi0 = Form("Pi0_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
+			mcInputNameEta = Form("Eta_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
 		}	
 		
 		if (doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
