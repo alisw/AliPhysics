@@ -87,8 +87,11 @@ private:
 //  TParticle      * fParton2;              //! Initial state Parton
 //  TParticle      * fParton3;              //! Initial state Parton
   
-  TParticle      * fParton6;                //! Final state Parton
-  TParticle      * fParton7;                //! Final state Parton
+  TLorentzVector   fParton6;                //! Final state Parton
+  TLorentzVector   fParton7;                //! Final state Parton
+  
+  Int_t            fParton6PDG;             //! Final state Parton PDG
+  Int_t            fParton7PDG;             //! Final state Parton PDG
   
   TLorentzVector   fJet6;                   //! Pythia jet close to parton in position 6
   TLorentzVector   fJet7;                   //! Pythia jet close to parton in position 7
