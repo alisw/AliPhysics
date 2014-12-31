@@ -56,6 +56,9 @@ class AliFemtoSimpleAnalysis : public AliFemtoAnalysis {
   void SetV0SharedDaughterCut(Bool_t aPerform);
   bool V0SharedDaughterCut();
 
+  void SetEnablePairMonitors(Bool_t aEnable);
+  Bool_t EnablePairMonitors();
+
   unsigned int NumEventsToMix() const;
   void SetNumEventsToMix(const unsigned int& NumberOfEventsToMix);
   AliFemtoPicoEvent* CurrentPicoEvent();
@@ -84,7 +87,8 @@ class AliFemtoSimpleAnalysis : public AliFemtoAnalysis {
   void AddEventProcessed();
   void MakePairs(const char* type, 
 		 AliFemtoParticleCollection* ParticlesPassingCut1,
-		 AliFemtoParticleCollection* ParticlesPssingCut2=0);
+		 AliFemtoParticleCollection* ParticlesPssingCut2=0,
+		 Bool_t enablePairMonitors=kFALSE);
 
   AliFemtoPicoEventCollectionVectorHideAway* fPicoEventCollectionVectorHideAway; //! Mixing Buffer used for Analyses which wrap this one 
 
@@ -102,6 +106,7 @@ class AliFemtoSimpleAnalysis : public AliFemtoAnalysis {
 
   Bool_t fVerbose;
   Bool_t fPerformSharedDaughterCut;
+  Bool_t fEnablePairMonitors;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoSimpleAnalysis, 0)
@@ -122,6 +127,7 @@ inline AliFemtoPicoEventCollection*  AliFemtoSimpleAnalysis::MixingBuffer() {ret
 
 inline bool AliFemtoSimpleAnalysis::AnalyzeIdenticalParticles() const { return (fFirstParticleCut==fSecondParticleCut); }
 inline bool AliFemtoSimpleAnalysis::V0SharedDaughterCut() { return fPerformSharedDaughterCut; }
+inline bool AliFemtoSimpleAnalysis::EnablePairMonitors() { return fEnablePairMonitors; }
 
 // Set's
 inline void AliFemtoSimpleAnalysis::SetPairCut(AliFemtoPairCut* x) { fPairCut = x; x->SetAnalysis((AliFemtoAnalysis*)this);}
@@ -138,5 +144,5 @@ inline void AliFemtoSimpleAnalysis::SetMinSizePartCollection(unsigned int minSiz
 
 inline void AliFemtoSimpleAnalysis::SetVerboseMode(Bool_t aVerbose){fVerbose = aVerbose;}
 inline void AliFemtoSimpleAnalysis::SetV0SharedDaughterCut(Bool_t aPerform) { fPerformSharedDaughterCut = aPerform; }
-
+inline void AliFemtoSimpleAnalysis::SetEnablePairMonitors(Bool_t aEnable) { fEnablePairMonitors = aEnable; }
 #endif
