@@ -41,7 +41,7 @@ fTriggerDetector(),  fTriggerDetectorString(),
 fFidCutTrigger(0),
 fMinChargedPt(0),    fMinNeutralPt(0),
 fStack(0),
-fParton2(0),         fParton3(0), 
+//fParton2(0),         fParton3(0),
 fParton6(0),         fParton7(0),
 fJet6(),             fJet7(),
 fTrigger(),          fLVTmp(),
@@ -101,6 +101,8 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
   // Correlate trigger with partons or jets, get z
   
   AliDebug(1,"Start");
+  
+  if( fStack->GetNprimary() < 7 ) return kFALSE ;
   
   //Get the index of the mother
   iparton =  (fStack->Particle(indexTrig))->GetFirstMother();
@@ -462,22 +464,39 @@ void  AliAnaGeneratorKine::GetPartonsAndJets()
   // Fill data members with partons,jets and generated pt hard 
   
   AliDebug(1,"Start");
+  
+  Int_t nPrimary = fStack->GetNprimary();
+  
+//  if( nPrimary > 2 ) fParton2 = fStack->Particle(2) ;
+//  if( nPrimary > 3 ) fParton3 = fStack->Particle(3) ;
+  
+  Float_t p6phi = -1 ;
+  Float_t p6eta = -10;
+  Float_t p6pt  =  0 ;
+  fParton6 = 0x0;
+  if( nPrimary > 6 )
+  {
+    fParton6 = fStack->Particle(6) ;
+    p6pt  = fParton6->Pt();
+    p6eta = fParton6->Eta();
+    p6phi = fParton6->Phi();
+    if(p6phi < 0) p6phi +=TMath::TwoPi();
+  }
+  
+  Float_t p7phi = -1 ;
+  Float_t p7eta = -10;
+  Float_t p7pt  =  0 ;
+  fParton7 = 0x0;
+  if( nPrimary > 7 )
+  {
+    fParton7 = fStack->Particle(7) ;
+    p7pt  = fParton7->Pt();
+    p7phi = fParton7->Eta();
+    p7phi = fParton7->Phi();
+    if(p7phi < 0) p7phi +=TMath::TwoPi();
+  }
 
-  fStack =  GetMCStack() ;
-  
-  if(!fStack) 
-    AliFatal("No Stack available, STOP");
-  
-  fParton2 = fStack->Particle(2) ;
-  fParton3 = fStack->Particle(3) ;
-  fParton6 = fStack->Particle(6) ;
-  fParton7 = fStack->Particle(7) ;
-  
-  Float_t p6phi = fParton6->Phi();
-  if(p6phi < 0) p6phi +=TMath::TwoPi();
-  Float_t p7phi = fParton7->Phi();
-  if(p7phi < 0) p7phi +=TMath::TwoPi();  
-  
+
   //printf("parton6: pt %2.2f, eta %2.2f, phi %2.2f with pdg %d\n",fParton6->Pt(),fParton6->Eta(),p6phi, fParton6->GetPdgCode());
   //printf("parton7: pt %2.2f, eta %2.2f, phi %2.2f with pdg %d\n",fParton7->Pt(),fParton7->Eta(),p7phi, fParton7->GetPdgCode());
   
@@ -506,8 +525,8 @@ void  AliAnaGeneratorKine::GetPartonsAndJets()
       Float_t jphi = fLVTmp.Phi();
       if(jphi < 0) jphi +=TMath::TwoPi();
       
-      Double_t radius6 = GetIsolationCut()->Radius(fParton6->Eta(), p6phi, fLVTmp.Eta() , jphi) ;
-      Double_t radius7 = GetIsolationCut()->Radius(fParton7->Eta(), p7phi, fLVTmp.Eta() , jphi) ;
+      Double_t radius6 = GetIsolationCut()->Radius(p6eta, p6phi, fLVTmp.Eta() , jphi) ;
+      Double_t radius7 = GetIsolationCut()->Radius(p7eta, p7phi, fLVTmp.Eta() , jphi) ;
       
       //printf("jet %d: pt %2.2f, eta %2.2f, phi %2.2f, r6 %2.2f, r7 %2.2f\n",ijet,jet.Pt(),jet.Eta(),jphi,radius6, radius7);
       
@@ -533,15 +552,15 @@ void  AliAnaGeneratorKine::GetPartonsAndJets()
   fhPtHard   ->Fill(fPtHard);
   fhPtJet    ->Fill(fJet6.Pt());
   fhPtJet    ->Fill(fJet7.Pt());
-  fhPtParton ->Fill(fParton6->Pt());
-  fhPtParton ->Fill(fParton7->Pt());
+  fhPtParton ->Fill(p6pt);
+  fhPtParton ->Fill(p7pt);
 
-  fhPtPartonPtHard->Fill(fPtHard, fParton6->Pt()/fPtHard);
-  fhPtPartonPtHard->Fill(fPtHard, fParton7->Pt()/fPtHard);
+  fhPtPartonPtHard->Fill(fPtHard, p6pt/fPtHard);
+  fhPtPartonPtHard->Fill(fPtHard, p7pt/fPtHard);
   fhPtJetPtHard   ->Fill(fPtHard, fJet6.Pt()/fPtHard);
   fhPtJetPtHard   ->Fill(fPtHard, fJet7.Pt()/fPtHard);
-  fhPtJetPtParton ->Fill(fPtHard, fJet6.Pt()/fParton6->Pt());
-  fhPtJetPtParton ->Fill(fPtHard, fJet7.Pt()/fParton7->Pt());
+  if( p6pt > 0 ) fhPtJetPtParton ->Fill(fPtHard, fJet6.Pt()/p6pt);
+  if( p7pt > 0 ) fhPtJetPtParton ->Fill(fPtHard, fJet7.Pt()/p7pt);
   
   AliDebug(1,"End");
 
@@ -871,6 +890,11 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
   
   AliDebug(1,"Start");
   
+  fStack =  GetMCStack() ;
+  
+  if( !fStack )
+    AliFatal("No Stack available, STOP");
+
   GetPartonsAndJets();
   
   for(Int_t ipr = 0; ipr < fStack->GetNprimary(); ipr ++ )

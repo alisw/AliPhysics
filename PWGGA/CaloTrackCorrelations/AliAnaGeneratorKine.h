@@ -83,8 +83,8 @@ private:
   
   AliStack  * fStack;                       //! access stack
   
-  TParticle * fParton2;                     //! Initial state Parton
-  TParticle * fParton3;                     //! Initial state Parton
+//  TParticle * fParton2;                     //! Initial state Parton
+//  TParticle * fParton3;                     //! Initial state Parton
   
   TParticle * fParton6;                     //! Final state Parton
   TParticle * fParton7;                     //! Final state Parton
