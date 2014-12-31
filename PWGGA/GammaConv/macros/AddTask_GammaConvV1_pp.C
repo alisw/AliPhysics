@@ -471,7 +471,7 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  										// change differ
 		analysisEventCuts[i] = new AliConvEventCuts();
 		TString fitNamePi0 = Form("Pi0_Fit_Data_%s",energy.Data());
 		TString fitNameEta = Form("Eta_Fit_Data_%s",energy.Data());
-		fAddedSignal = eventCutArray[ i](6,1);
+		TString fAddedSignal = eventCutArray[ i](6,1);
 		TString mcInputNamePi0 = "";
 		TString mcInputNameEta = "";
 		if (fAddedSignal.CompareTo("2") == 0 && (periodname.Contains("LHC12i3") || periodname.CompareTo("LHC14e2b")==0)){
