@@ -32,7 +32,6 @@
 
 #include "AliAnalysisTaskLambdaStar.h"
 #include <AliCentrality.h>
-#include "AliHelperPID.h"
 #include <AliPID.h>
 #include <AliPIDResponse.h>
 #include <AliExternalTrackParam.h>

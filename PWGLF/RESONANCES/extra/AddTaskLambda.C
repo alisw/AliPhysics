@@ -1,6 +1,7 @@
 AliAnalysisTaskLambdaStar *AddTaskLambda
 (
-      ULong64_t Triggermask = AliVEvent::kCentral,
+ //ULong64_t Triggermask = AliVEvent::kCentral,
+      UInt_t Triggermask = AliVEvent::kCentral,
       Bool_t Cirpid = kFALSE,
       Int_t Centmin = 0,
       Int_t Centmax =10,
@@ -27,7 +28,7 @@ AliAnalysisTaskLambdaStar *AddTaskLambda
     Printf("ERROR! This task can only run on AODs!");}
 
   // Configure analysis
-   AliAnalysisTaskLambdaStar *task = new AliAnalysisTaskLambdaStar("LStar");
+  AliAnalysisTaskLambdaStar *task = new AliAnalysisTaskLambdaStar("LStar");
   task->SelectCollisionCandidates(Triggermask);
   task->SetCentrality(Centmin,Centmax );
   task->UseCircPID(Cirpid);
