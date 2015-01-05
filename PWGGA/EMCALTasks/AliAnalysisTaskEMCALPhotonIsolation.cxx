@@ -751,8 +751,10 @@ Int_t index;
       //    AliMCEventHandler *eventHandler;
     AliAODMCHeader *mcHeader;
 
-    fAODMCParticles = dynamic_cast <TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
-    mcHeader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+  //  fAODMCParticles = dynamic_cast <TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+  fAODMCParticles = static_cast <TClonesArray*>(InputEvent()->FindListObject(AliAODMCParticle::StdBranchName()));
+  //  mcHeader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+  mcHeader = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindObject(AliAODMCHeader::StdBranchName()));
 
     AnalyzeMC();
   }
@@ -1945,7 +1947,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
   Float_t perpConesArea = 2.*isoConeArea;
   Float_t fullTPCArea = 1.8*2.*TMath::Pi()-fIsoConeRadius*(TMath::Pi()*fIsoConeRadius + 3.6);
 
-  Float_t isolation, ue;
+  Float_t isolation=0, ue=0;
 
   if(!fTPC4Iso){ //EMCAL Only for Acceptance of Clusters
     switch(fIsoMethod)
@@ -1999,6 +2001,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
           ue = ue * (isoConeArea / etaBandArea);
           fEtaBandUEClust->Fill(vecCOI.Pt() , ue);
           break;
+      }
 
           fEtIsoClust->Fill(vecCOI.Pt(),isolation);
           if(isolation<eTThreshold)
@@ -2022,7 +2025,6 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
               fPtnoisoT=vecCOI.Pt();
               fM02noisoT=m02COI;
           }
-      }
       break;
 
       case 2: //TRACKS (TBD which tracks) //EMCAL tracks
@@ -2046,9 +2048,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
             // PtIsoTrackFullTPC(vecCOI, absId, isolation, ue);
             // break;
       }
-      break;
-
-    // Fill histograms for isolation
+          // Fill histograms for isolation
           fPtIsoTrack->Fill(vecCOI.Pt() , isolation);
           if(isolation<eTThreshold)
           {
@@ -2070,6 +2070,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
               fPtnoisoT=vecCOI.Pt();
               fM02noisoT=m02COI;
           }
+      break;
     }
   }
   else{  //EMCAL + TPC (Only tracks for the Isolation since IsoCone Goes Out of EMCAL)
@@ -2080,28 +2081,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
           //Normalisation ue wrt Area - TO DO-
         ue = ue * (isoConeArea / phiBandAreaTr);
         fPhiBandUETracks->Fill(vecCOI.Pt() , ue);
-        break;
-      case 1: //eta band
-        PtIsoTrackEtaBand(vecCOI, isolation, ue);
-          //Normalisation ue wrt Area - TO DO-
-        ue = ue * (isoConeArea / etaBandAreaTr);
-        fEtaBandUETracks->Fill(vecCOI.Pt() , ue);
-        break;
-      case 2: //Cones
-        PtIsoTrackOrthCones(vecCOI, isolation, ue);
-          //Normalisation ue wrt Area - TO DO-
-        ue = ue * (isoConeArea / perpConesArea);
-        fPerpConesUETracks ->Fill(vecCOI.Pt() , ue);
-        break;
-      case 3: //Full TPC
-        PtIsoTrackFullTPC(vecCOI, isolation, ue);
-          //Normalisation ue wrt Area - TO DO-
-        ue = ue * (isoConeArea / fullTPCArea);
-        fTPCWithoutIsoConeB2BbandUE->Fill(vecCOI.Pt() , ue);
-        break;
-
-// fill histograms for isolation
-        fPtIsoTrack->Fill(vecCOI.Pt() , isolation);
+            // fill histograms for isolation
+        fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
         if(isolation<eTThreshold)
         {
             fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
@@ -2122,7 +2103,93 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
             fPtnoisoT=vecCOI.Pt();
             fM02noisoT=m02COI;
         }
+        break;
+      case 1: //eta band
+        PtIsoTrackEtaBand(vecCOI, isolation, ue);
+          //Normalisation ue wrt Area - TO DO-
+        ue = ue * (isoConeArea / etaBandAreaTr);
+        fEtaBandUETracks->Fill(vecCOI.Pt() , ue);
+            // fill histograms for isolation
+        fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
+        if(isolation<eTThreshold)
+        {
+            fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
+            fPtIsolatedNTracks->Fill(vecCOI.Pt());
+            fPtisoT=vecCOI.Pt();
+            fM02isoT=m02COI;
+
+            if(fM02mincut < m02COI && m02COI < fM02maxcut)
+            {
+                fEtIsolatedTracks->Fill(eTCOI);
+                fEtisolatedT=eTCOI;
+                fPtisolatedT=vecCOI.Pt();
+            }
+        }
+        else
+        {
+            fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
+            fPtnoisoT=vecCOI.Pt();
+            fM02noisoT=m02COI;
+        }
+        break;
+      case 2: //Cones
+        PtIsoTrackOrthCones(vecCOI, isolation, ue);
+          //Normalisation ue wrt Area - TO DO-
+        ue = ue * (isoConeArea / perpConesArea);
+        fPerpConesUETracks ->Fill(vecCOI.Pt() , ue);
+            // fill histograms for isolation
+        fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
+        if(isolation<eTThreshold)
+        {
+            fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
+            fPtIsolatedNTracks->Fill(vecCOI.Pt());
+            fPtisoT=vecCOI.Pt();
+            fM02isoT=m02COI;
+
+            if(fM02mincut < m02COI && m02COI < fM02maxcut)
+            {
+                fEtIsolatedTracks->Fill(eTCOI);
+                fEtisolatedT=eTCOI;
+                fPtisolatedT=vecCOI.Pt();
+            }
+        }
+        else
+        {
+            fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
+            fPtnoisoT=vecCOI.Pt();
+            fM02noisoT=m02COI;
+        }
+        break;
+      case 3: //Full TPC
+        PtIsoTrackFullTPC(vecCOI, isolation, ue);
+          //Normalisation ue wrt Area - TO DO-
+        ue = ue * (isoConeArea / fullTPCArea);
+        fTPCWithoutIsoConeB2BbandUE->Fill(vecCOI.Pt() , ue);
+            // fill histograms for isolation
+        fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
+        if(isolation<eTThreshold)
+        {
+            fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
+            fPtIsolatedNTracks->Fill(vecCOI.Pt());
+            fPtisoT=vecCOI.Pt();
+            fM02isoT=m02COI;
+
+            if(fM02mincut < m02COI && m02COI < fM02maxcut)
+            {
+                fEtIsolatedTracks->Fill(eTCOI);
+                fEtisolatedT=eTCOI;
+                fPtisolatedT=vecCOI.Pt();
+            }
+        }
+        else
+        {
+            fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
+            fPtnoisoT=vecCOI.Pt();
+            fM02noisoT=m02COI;
+        }
+        break;
     }
+
   }
 
 
