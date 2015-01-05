@@ -142,7 +142,7 @@ void AliSHILv3::CreateGeometry()
 //    Outer radius at the end of the tail 
       Float_t rOuFaWTailE  = 31.6/2.;
 //    Total length of the tail
-      Float_t dzFaWTail    = 70.7;
+      const Float_t dzFaWTail    = 70.7;
 
       TGeoPcon* shFaWTail = new TGeoPcon(0., 360., 10);
       z    = 0.;
@@ -298,7 +298,7 @@ void AliSHILv3::CreateGeometry()
 // Inner radius of flange FA side
       Float_t rInFaSaa1F2 = 25.2/2.;
 // Length of joint
-      Float_t dzFaSaa1    = 34.8;
+      const Float_t dzFaSaa1    = 34.8;
 // Outer Radius at the end of the joint
       Float_t rOuFaSaa1E  = 41.93/2.;
       
@@ -609,7 +609,7 @@ void AliSHILv3::CreateGeometry()
 //    Drawing ALIP2A__0107       //
 ///////////////////////////////////
       // Total length 
-      Float_t dzSaa1 = 659.2;
+      const Float_t dzSaa1 = 659.2;
       //
       TGeoPcon* shSaa1M  = new TGeoPcon(0., 360., 20);
       Float_t kSec = 0.2; // security distance to avoid trivial extrusions
@@ -706,8 +706,8 @@ void AliSHILv3::CreateGeometry()
       Float_t saa1Wring3Rinner  = 20.31;
       Float_t saa1Wring3Router  = 23.40;
       Float_t saa1Wring3HWidth  =  3.75;
-      Float_t saa1Wring3Cutoffx =  4.80;
-      Float_t saa1Wring3Cutoffy =  4.80;
+      Float_t saa1Wring3Cutoffx =  4.50;
+      Float_t saa1Wring3Cutoffy =  4.50;
       TGeoTubeSeg* shSaa1Wring3a  = new TGeoTubeSeg(saa1Wring3Rinner, saa1Wring3Router, saa1Wring3HWidth, 0., 90.);
       shSaa1Wring3a->SetName("shSaa1Wring3a");
       TGeoBBox* shSaa1Wring3b  = new TGeoBBox(saa1Wring3Router / 2., saa1Wring3Router / 2., saa1Wring3HWidth);
@@ -807,7 +807,7 @@ void AliSHILv3::CreateGeometry()
       Float_t dzSaa1Saa2F2     =  3.1;
       Float_t rInSaa1Saa2F2    = 54.1/2.;
 // Total length
-      Float_t dzSaa1Saa2       = 34.9;
+      const Float_t dzSaa1Saa2       = 34.9;
       
       
       TGeoPcon* shSaa1Saa2Pb = new TGeoPcon(0., 360., 8);
@@ -915,7 +915,7 @@ void AliSHILv3::CreateGeometry()
       tanAlpha = TMath::Tan(1.89 / 2. * kDegRad);
       TGeoPcon* shSaa2PbComp  = new TGeoPcon(0., 360., 16);
       // Total length 
-      Float_t dzSaa2PbComp    = 512.;
+      const Float_t dzSaa2PbComp    = 512.;
       // Length of 1st bellow recess
       Float_t dzSaa2PbCompB1  =  24.;
       // Length of 2nd bellow recess
@@ -1130,14 +1130,15 @@ void AliSHILv3::CreateGeometry()
 //    Drawing ALIP2A__0284       //
 ///////////////////////////////////
 //    Block
-      TGeoBBox* shSaa3CCBlockO   = new TGeoBBox(80./2., 80./2., 100./2.);
+      TGeoBBox* shSaa3CCBlockO   = new TGeoBBox(80./2., 80./2., 80./2.);  // modified by ernesto.calvo@pucp.edu.pe
       shSaa3CCBlockO->SetName("Saa3CCBlockO");
 
       TGeoPcon* shSaa3InnerRegion  = new TGeoPcon(0., 360., 4);
-      shSaa3InnerRegion->DefineSection( 0, -60.0, 0., 27.1);
-      shSaa3InnerRegion->DefineSection( 1, -23.0, 0., 27.1);
-      shSaa3InnerRegion->DefineSection( 2,  29.1, 0., 12.3);
-      shSaa3InnerRegion->DefineSection( 3,  60.0, 0., 12.3);
+      // + 10.0 cm // ecv
+      shSaa3InnerRegion->DefineSection( 0, -50.0, 0., 27.1);
+      shSaa3InnerRegion->DefineSection( 1, -13.0, 0., 27.1);
+      shSaa3InnerRegion->DefineSection( 2,  39.1, 0., 12.3);
+      shSaa3InnerRegion->DefineSection( 3,  80.0, 0., 12.3);
       shSaa3InnerRegion->SetName("Saa3InnerRegion");
 
       TGeoCompositeShape* shSaa3CCBlock = new TGeoCompositeShape("Saa3CCBlock", "Saa3CCBlockO-Saa3InnerRegion");
@@ -1146,29 +1147,32 @@ void AliSHILv3::CreateGeometry()
       
       voSaa3->AddNode(voSaa3CCBlock, 1, gGeoIdentity);
       
-//    Plate 1: 240 cm x 80 cm x 100 cm (x 2)
+//    Plate 1: 240 cm x 80 cm x  80 cm (x 2)
       TGeoVolume* voSaa3SteelPlate1  =  new TGeoVolume("YSAA3SteelPlate1", 
-						       new TGeoBBox(240./2., 80./2., 100./2.),
+						       new TGeoBBox(240./2., 80./2.,  80./2.),
 						       kMedSteelSh);
       TGeoVolume* voSaa3SteelPlate11 =  new TGeoVolume("YSAA3SteelPlate11", 
 						       new TGeoBBox(240./2., 80./2., 10./2.),
 						       kMedSteel);
-      voSaa3SteelPlate1->AddNode(voSaa3SteelPlate11, 1, new TGeoTranslation(0., 0., -45.));
+      voSaa3SteelPlate11->SetVisContainers(kTRUE);
+      voSaa3SteelPlate1 ->SetVisibility(kTRUE);
+      voSaa3SteelPlate1->AddNode(voSaa3SteelPlate11, 1, new TGeoTranslation(0., 0., -35.));
       voSaa3->AddNode(voSaa3SteelPlate1, 1, new TGeoTranslation(0., +80., 0.));
       voSaa3->AddNode(voSaa3SteelPlate1, 2, new TGeoTranslation(0., -80., 0.));
 
 
-//    Plate 2:  80 cm x 80 cm x 100 cm (x 2)
+//    Plate 2:  80 cm x 80 cm x  80 cm (x 2)
       TGeoVolume* voSaa3SteelPlate2  =  new TGeoVolume("YSAA3SteelPlate2", 
-						       new TGeoBBox( 80./2., 80./2., 100./2.),
+						       new TGeoBBox( 80./2., 80./2.,  80./2.),
 						       kMedSteelSh);
       TGeoVolume* voSaa3SteelPlate21 =  new TGeoVolume("YSAA3SteelPlate21", 
 						       new TGeoBBox( 80./2., 80./2., 10./2.),
 						       kMedSteel);
-      voSaa3SteelPlate2->AddNode(voSaa3SteelPlate21, 1, new TGeoTranslation(0., 0., -45.));
-
+      voSaa3SteelPlate2->AddNode(voSaa3SteelPlate21, 1, new TGeoTranslation(0., 0., -35.));
       voSaa3->AddNode(voSaa3SteelPlate2, 1, new TGeoTranslation(+80, 0., 0.));
       voSaa3->AddNode(voSaa3SteelPlate2, 2, new TGeoTranslation(-80, 0., 0.));
+
+
 
 
 ///////////////////////////////////
@@ -1176,7 +1180,7 @@ void AliSHILv3::CreateGeometry()
 //    Drawing ALIP2A__0105       //
 ///////////////////////////////////
       // Half Length 
-      Float_t dzMuonFilter = 60.;
+      const Float_t dzMuonFilter = 60.;
       
       TGeoBBox*   shMuonFilterO  = new TGeoBBox(550./2., 620./2., dzMuonFilter);
       shMuonFilterO->SetName("FilterO");
@@ -1202,47 +1206,51 @@ void AliSHILv3::CreateGeometry()
 //  
       TGeoVolumeAssembly* voSaa  = new TGeoVolumeAssembly("YSAA");
 //
-//    
-//    
-//
-//
 //    Starting position of the FA Flange/Tail 
-      Float_t ziFaWTail   = 499.0;
+      const Float_t ziFaWTail   = 499.0;
 //    End of the FA Flange/Tail
-      Float_t zoFaWTail   = ziFaWTail + dzFaWTail;
+      const Float_t zoFaWTail   = ziFaWTail + dzFaWTail;
 //    Starting position of the FA/SAA1 Joint (2.8 cm overlap with tail)
-      Float_t ozFaSaa1    = 2.8;
-      Float_t ziFaSaa1    = zoFaWTail - ozFaSaa1;
+      const Float_t ozFaSaa1    = 2.8;
+      const Float_t ziFaSaa1    = zoFaWTail - ozFaSaa1;
 //    End of the FA/SAA1 Joint
-      Float_t zoFaSaa1    = ziFaSaa1 +  dzFaSaa1;
+      const Float_t zoFaSaa1    = ziFaSaa1 +  dzFaSaa1;
 //    Starting position of SAA1 (2.0 cm overlap with joint)     
-      Float_t ozSaa1      = 2.;
-      Float_t ziSaa1      = zoFaSaa1 - ozSaa1;
+      const Float_t ozSaa1      = 2.;
+      const Float_t ziSaa1      = zoFaSaa1 - ozSaa1;
 //    End of SAA1
-      Float_t zoSaa1      = ziSaa1 + dzSaa1;
+      const Float_t zoSaa1      = ziSaa1 + dzSaa1;
 //    Starting position of SAA1/SAA2 Joint (1.95 cm overlap with SAA1)
-      Float_t ziSaa1Saa2  = zoSaa1 - 1.95;
+      const Float_t ziSaa1Saa2  = zoSaa1 - 1.95;
 //    End of SAA1/SAA2 Joint
-      Float_t zoSaa1Saa2  = ziSaa1Saa2 + dzSaa1Saa2;
+      const Float_t zoSaa1Saa2  = ziSaa1Saa2 + dzSaa1Saa2;
 //    Starting position of SAA2 (3.1 cm overlap with the joint)
-      Float_t ziSaa2      = zoSaa1Saa2 - 3.1;
+      const Float_t ziSaa2      = zoSaa1Saa2 - 3.1;
 //    End of SAA2
-      Float_t zoSaa2      = ziSaa2 + dzSaa2PbComp;
+      const Float_t zoSaa2      = ziSaa2 + dzSaa2PbComp;
 //    Position of SAA3
-      Float_t zcSaa3      = zoSaa2 + 50.;
+      const Float_t zcSaa3      = zoSaa2 + 40.; // ecv (put the CC block 5cm closer to the Wall)  // <--cancell that!! (cancelled)
 //    Position of the Muon Filter
-      Float_t zcFilter    = 1465.9 + dzMuonFilter;
+      const Float_t zcFilter    = 1465.9 + dzMuonFilter;
 
       voSaa->AddNode(voFaWTail,    1, new TGeoTranslation(0., 0., ziFaWTail));
       voSaa->AddNode(voFaSaa1,     1, new TGeoTranslation(0., 0., ziFaSaa1));
       voSaa->AddNode(voSaa1 ,      1, new TGeoTranslation(0., 0., ziSaa1));
       voSaa->AddNode(voSaa1Saa2,   1, new TGeoTranslation(0., 0., ziSaa1Saa2 - 0.1));
       voSaa->AddNode(voSaa2 ,      1, new TGeoTranslation(0., 0., ziSaa2));
+
+//
+//    Add Saa3 to Saa and Saa to top volume
+//
+      printf("zcSaa3: %8.2f\n", zcSaa3);
       voSaa->AddNode(voSaa3,       1, new TGeoTranslation(0., 0., zcSaa3));
       
 
       TGeoRotation* rotxz  = new TGeoRotation("rotxz",   90.,   0., 90.,  90., 180., 0.);
       top->AddNode(voSaa, 1, new TGeoCombiTrans(0., 0., 0., rotxz));
+
+
+
 //
 //  Mother volume for muon stations 1+2 and shielding material placed between the quadrants
 //
