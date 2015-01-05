@@ -30,21 +30,19 @@ public:
   AliDigitizer*  CreateDigitizer(AliDigitizationInput* digInput) const;
   virtual AliTriggerDetector* CreateTriggerDetector() const { return new AliADTrigger();}
   
-  virtual    void   	Hits2Digits();
-  virtual    void   	Hits2SDigits();
-  virtual    void     	Digits2Raw();
+  virtual      void     Digits2Raw();
   virtual    Bool_t     Raw2SDigits(AliRawReader*);
-  virtual    void 	SetADAToInstalled(Bool_t b){fSetADAToInstalled = b;}
-  virtual    void  	SetADCToInstalled(Bool_t b){fSetADCToInstalled = b;}
-  virtual    Bool_t 	GetADAToInstalled() const {return fSetADAToInstalled;}
-  virtual    Bool_t 	GetADCToInstalled() const {return fSetADCToInstalled;}
+  virtual    void 	SetADATwoInstalled(Bool_t b){fSetADATwoInstalled = b;} // ecv
+  virtual    void  	SetADCTwoInstalled(Bool_t b){fSetADCTwoInstalled = b;} // ecv
+  virtual    Bool_t 	GetADATwoInstalled() const {return fSetADATwoInstalled;}  // ecv
+  virtual    Bool_t 	GetADCTwoInstalled() const {return fSetADCTwoInstalled;}  // ecv
 
 
 private:
                        AliAD(const AliAD&); 
                        AliAD& operator = (const AliAD&); 
-  Bool_t	fSetADAToInstalled; 
-  Bool_t	fSetADCToInstalled; 
+  Bool_t	fSetADATwoInstalled; 
+  Bool_t	fSetADCTwoInstalled; 
 
 
   ClassDef(AliAD,1)  // Base Class for the AD detector
