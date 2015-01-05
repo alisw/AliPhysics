@@ -29,7 +29,7 @@
 
 ClassImp(AliITSPIDResponse)
 
-AliITSPIDResponse::AliITSPIDResponse(Bool_t isMC): 
+AliITSPIDResponse::AliITSPIDResponse(Bool_t isMC):
   fRes(0.13),
   fKp1(15.77),
   fKp2(4.95),
@@ -71,11 +71,11 @@ AliITSPIDResponse::AliITSPIDResponse(Bool_t isMC):
     fBBsaElectron[1]=38.5713;
     fBBsaElectron[2]=1.46462E-7;
     fBBsaElectron[3]=1.46462E-7;
-    fBBsaElectron[4]=4.40284E-7; 
+    fBBsaElectron[4]=4.40284E-7;
     fResolSA[0]=1.;   // 0 cluster tracks should not be used
     fResolSA[1]=0.25;  // rough values for tracks with 1
     fResolSA[2]=0.131;   // value from pp 2010 run (L. Milano, 16-Jun-11)
-    fResolSA[3]=0.113; // value from pp 2010 run 
+    fResolSA[3]=0.113; // value from pp 2010 run
     fResolSA[4]=0.104; // value from pp 2010 run
     for(Int_t i=0; i<5;i++) fResolTPCITS[i]=0.13;
     fResolTPCITSDeu3[0]=0.06918; // deuteron resolution vs p
@@ -126,7 +126,7 @@ AliITSPIDResponse::AliITSPIDResponse(Bool_t isMC):
 
 /*
 //_________________________________________________________________________
-AliITSPIDResponse::AliITSPIDResponse(Double_t *param): 
+AliITSPIDResponse::AliITSPIDResponse(Double_t *param):
   fRes(param[0]),
   fKp1(15.77),
   fKp2(4.95),
@@ -138,9 +138,9 @@ AliITSPIDResponse::AliITSPIDResponse(Double_t *param):
   //  The main constructor
   //
   for (Int_t i=0; i<5;i++) {
-      fBBsa[i]=0.; 
+      fBBsa[i]=0.;
       fBBtpcits[i]=0.;
-      fResolSA[i]=0.; 
+      fResolSA[i]=0.;
       fResolTPCITS[i]=0.;
   }
 }
@@ -149,10 +149,10 @@ AliITSPIDResponse::AliITSPIDResponse(Double_t *param):
 //_________________________________________________________________________
 Double_t AliITSPIDResponse::BetheAleph(Double_t p, Double_t mass) const {
   //
-  // returns AliExternalTrackParam::BetheBloch normalized to 
+  // returns AliExternalTrackParam::BetheBloch normalized to
   // fgMIP at the minimum
   //
-  
+
   Double_t bb=
     AliExternalTrackParam::BetheBlochAleph(p/mass,fKp1,fKp2,fKp3,fKp4,fKp5);
   return bb;
@@ -171,7 +171,7 @@ Double_t AliITSPIDResponse::Bethe(Double_t bg, const Double_t * const par, Bool_
     eff=(bg-par[3])*(bg-par[3])+par[4];
   else
     eff=(par[2]-par[3])*(par[2]-par[3])+par[4];
-  
+
   if(gamma>=0. && beta>0.){
     if(isNuclei){
       //Parameterization for deuteron between 0.4 - 1.5 GeV/c; triton between 0.58 - 1.65 GeV/c
@@ -180,7 +180,7 @@ Double_t AliITSPIDResponse::Bethe(Double_t bg, const Double_t * const par, Bool_
       bb=(par[1]+2.0*TMath::Log(gamma)-beta*beta)*(par[0]/(beta*beta))*eff;
     }
   }
-  
+
   return bb;
 }
 
@@ -188,11 +188,11 @@ Double_t AliITSPIDResponse::Bethe(Double_t bg, const Double_t * const par, Bool_
 Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA) const {
 
   //OLD - Mantained for backward compatibility
-  //from the mass check --> Set the Particle Type
+  //from the MASS check --> Set the Particle Type
   //at the end use the method Bethe(Double_t p, AliPID::EParticleType species, Bool_t isSA) const to set the right parameter
 
   //
-  // returns AliExternalTrackParam::BetheBloch normalized to 
+  // returns AliExternalTrackParam::BetheBloch normalized to
   // fgMIP at the minimum
   //
 
@@ -205,16 +205,17 @@ Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA) const 
   //NOTE
 
   AliPID::EParticleType species = AliPID::kPion;
-
-    if(TMath::AreEqualAbs(mass,AliPID::ParticleMass(0),0.00001)){
-      //if is an electron use a specific BB parameterization
-      //To be used only between 100 and 160 MeV/c
-      species=AliPID::kElectron;
+  Bool_t foundMatchingSpecies = kFALSE;
+  for (Int_t spec = 0; spec < AliPID::kSPECIESC; spec++) {
+    if (TMath::AreEqualAbs(mass,AliPID::ParticleMassZ(spec),0.001)){
+      species = (AliPID::EParticleType)spec;
+      foundMatchingSpecies = kTRUE;
+      break;
     }
+  }
+  if (!foundMatchingSpecies)
+    printf("Error AliITSPIDResponse::Bethe: Mass does not match any species. Assuming pion! Note that this function is deprecated!\n");
 
-    if(TMath::AreEqualAbs(mass,AliPID::ParticleMass(5),0.002)) species=AliPID::kDeuteron;
-    if(TMath::AreEqualAbs(mass,AliPID::ParticleMass(6),0.001)) species=AliPID::kTriton;
-  
     return Bethe(p,species,isSA);
 }
 
@@ -222,6 +223,7 @@ Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA) const 
 Double_t AliITSPIDResponse::Bethe(Double_t p, AliPID::EParticleType species, Bool_t isSA) const
 {
   // NEW - to be used
+  // **** ATTENTION: the second parameter must be the PARTICLE TYPE you want to identify ****
   // Alternative bethe function assuming a particle type not a mass
   // should be slightly faster
   //
@@ -229,7 +231,7 @@ Double_t AliITSPIDResponse::Bethe(Double_t p, AliPID::EParticleType species, Boo
   const Double_t m=AliPID::ParticleMassZ(species);
   const Double_t bg=p/m;
   Bool_t isNuclei=kFALSE;
-  
+
   //NOTE
   //NOTE: if changes are made here, please also check the alternative function above
   //NOTE
@@ -259,23 +261,23 @@ Double_t AliITSPIDResponse::Bethe(Double_t p, AliPID::EParticleType species, Boo
 //_________________________________________________________________________
 Double_t AliITSPIDResponse::BetheITSsaHybrid(Double_t p, Double_t mass) const {
   //
-  // returns AliExternalTrackParam::BetheBloch normalized to 
-  // fgMIP at the minimum. The PHOBOS parameterization is used for beta*gamma>0.76. 
+  // returns AliExternalTrackParam::BetheBloch normalized to
+  // fgMIP at the minimum. The PHOBOS parameterization is used for beta*gamma>0.76.
   // For beta*gamma<0.76 a polinomial function is used
-  
+
   Double_t bg=p/mass;
   Double_t beta = bg/TMath::Sqrt(1.+ bg*bg);
   Double_t gamma=bg/beta;
   Double_t bb=1.;
-  
+
   Double_t par[9];
   //parameters for pi, K, p
   for(Int_t ip=0; ip<9;ip++) par[ip]=fBBsaHybrid[ip];
   //if it is an electron the PHOBOS part of the parameterization is tuned for e
   //in the range used for identification beta*gamma is >0.76 for electrons
   //To be used only between 100 and 160 MeV/c
-  if(mass>0.0005 && mass<0.00052)for(Int_t ip=0; ip<5;ip++) par[ip]=fBBsaElectron[ip]; 
-  
+  if(mass>0.0005 && mass<0.00052)for(Int_t ip=0; ip<5;ip++) par[ip]=fBBsaElectron[ip];
+
   if(gamma>=0. && beta>0. && bg>0.1){
     if(bg>0.76){//PHOBOS
       Double_t eff=1.0;
@@ -283,18 +285,18 @@ Double_t AliITSPIDResponse::BetheITSsaHybrid(Double_t p, Double_t mass) const {
 	eff=(bg-par[3])*(bg-par[3])+par[4];
       else
 	eff=(par[2]-par[3])*(par[2]-par[3])+par[4];
-      
+
       bb=(par[1]+2.0*TMath::Log(gamma)-beta*beta)*(par[0]/(beta*beta))*eff;
     }else{//Polinomial
       bb=par[5] + par[6]/bg + par[7]/(bg*bg) + par[8]/(bg*bg*bg);
     }
   }
-  return bb; 
+  return bb;
 }
 
 //_________________________________________________________________________
 Double_t AliITSPIDResponse::GetResolution(Double_t bethe,
-					  Int_t nPtsForPid, 
+					  Int_t nPtsForPid,
                                          Bool_t isSA,
                                          Double_t p,
                                          AliPID::EParticleType type) const {
@@ -314,13 +316,13 @@ Double_t AliITSPIDResponse::GetResolution(Double_t bethe,
   else{
     const Double_t *par=0x0;
     if(type==AliPID::kDeuteron){
-      if(nPtsForPid==3) par = fResolTPCITSDeu3;
       if(nPtsForPid==4) par = fResolTPCITSDeu4;
+      else par = fResolTPCITSDeu3;
       c=par[2];
       r=par[0]+par[1]*p;
     } else if(type==AliPID::kTriton){
-      if(nPtsForPid==3) par = fResolTPCITSTri3;
       if(nPtsForPid==4) par = fResolTPCITSTri4;
+      else par = fResolTPCITSTri3;
       c=par[2];
       r=par[0]+par[1]*p;
     } else{
@@ -342,7 +344,7 @@ void AliITSPIDResponse::GetITSProbabilities(Float_t mom, Double_t qclu[4], Doubl
   const Int_t nPart= 4;
 
   static AliITSPidParams pars(isMC);  // Pid parametrisation parameters
-  
+
   Double_t itsProb[nPart] = {1,1,1,1}; // e, p, K, pi
 
   for (Int_t iLay = 0; iLay < nLay; iLay++) {
@@ -352,13 +354,13 @@ void AliITSPIDResponse::GetITSProbabilities(Float_t mom, Double_t qclu[4], Doubl
     Float_t dedx = qclu[iLay];
     Float_t layProb = pars.GetLandauGausNorm(dedx,AliPID::kProton,mom,iLay+3);
     itsProb[0] *= layProb;
-    
+
     layProb = pars.GetLandauGausNorm(dedx,AliPID::kKaon,mom,iLay+3);
     itsProb[1] *= layProb;
-    
+
     layProb = pars.GetLandauGausNorm(dedx,AliPID::kPion,mom,iLay+3);
     itsProb[2] *= layProb;
-   
+
     layProb = pars.GetLandauGausNorm(dedx,AliPID::kElectron,mom,iLay+3);
     itsProb[3] *= layProb;
   }
@@ -397,9 +399,9 @@ Double_t AliITSPIDResponse::GetNumberOfSigmas( const AliVTrack* track, AliPID::E
   //check for ITS standalone tracks
   Bool_t isSA=kTRUE;
   if( track->GetStatus() & AliVTrack::kTPCin ) isSA=kFALSE;
-  
+
   const Float_t dEdx=track->GetITSsignal();
-  
+
   //TODO: in case of the electron, use the SA parametrisation,
   //      this needs to be changed if ITS provides a parametrisation
   //      for electrons also for ITS+TPC tracks
@@ -416,19 +418,19 @@ Double_t AliITSPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
   const Double_t chargeFactor = TMath::Power(AliPID::ParticleCharge(type),2.);
   Bool_t isSA=kTRUE;
   if( track->GetStatus() & AliVTrack::kTPCin ) isSA=kFALSE;
-  
+
   const Float_t dEdx=track->GetITSsignal();
-  
+
   //TODO: in case of the electron, use the SA parametrisation,
   //      this needs to be changed if ITS provides a parametrisation
   //      for electrons also for ITS+TPC tracks
-  
-  const Float_t bethe = Bethe(mom,AliPID::ParticleMassZ(type), isSA || (type==AliPID::kElectron))*chargeFactor;
+
+  const Float_t bethe = Bethe(mom,type, isSA || (type==AliPID::kElectron))*chargeFactor;
 
   Double_t delta=-9999.;
   if (!ratio) delta=dEdx-bethe;
   else if (bethe>1.e-20) delta=dEdx/bethe;
-  
+
   return delta;
 }
 
@@ -445,5 +447,5 @@ Int_t AliITSPIDResponse::GetParticleIdFromdEdxVsP(Float_t mom, Float_t signal, B
   Double_t bethepi=Bethe(mom,masspi,isSA);
   if(signal>(0.5*(bethepi+bethek))) return AliPID::kKaon;
   return AliPID::kPion;
-    
+
 }
