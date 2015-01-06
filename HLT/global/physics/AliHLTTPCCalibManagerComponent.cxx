@@ -26,6 +26,12 @@
 #include "TObjString.h"
 #include "TH1F.h"
 #include "TList.h"
+
+#include <map>
+#include <string>
+#include "TString.h"
+#include "TArrayI.h"
+
 //#include "AliESDtrackCuts.h"
 #include "AliESDEvent.h"
 #include "AliHLTErrorGuard.h"
@@ -89,7 +95,8 @@ AliHLTTPCCalibManagerComponent::AliHLTTPCCalibManagerComponent() :
   fUID(0),
   fAnalysisManager(NULL),
   fInputHandler(NULL),
-  fTPCcalibConfigString("ALL"),
+  fTPCcalibConfigString("ALL-TPCCalib-:CalibTracks-:CalibCalib-:CalibTimeDrift"),
+  fWriteAnalysisToFile(kFALSE),
   fEnableDebug(kFALSE)
 {
   // an example component which implements the ALICE HLT processor
@@ -186,7 +193,7 @@ Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t argc, const Char_t** argv ) 
 
   //process arguments
   //ConfigureFromArgumentString(argc,argv);
-  ProcessArgumentString(argc,argv);
+  ProcessOptionString(argc,argv);
 
   if (!fEnableDebug)
   {
@@ -213,22 +220,12 @@ Int_t AliHLTTPCCalibManagerComponent::DoDeinit() {
   // see header file for class documentation
 
   fUID = 0;
-  fAnalysisManager->WriteAnalysisToFile();
+  if (fWriteAnalysisToFile && fAnalysisManager) 
+    fAnalysisManager->WriteAnalysisToFile();
   delete fAnalysisManager;
   return 0;
 }
 
-// #################################################################################
-int AliHLTTPCCalibManagerComponent::ProcessArgumentString(int argc, const char** argv)
-{
-  //process passed options
-  for (int i=0; i<argc; i++)
-  {
-    TString argument(argv[i]);
-    TPRegexp r("");
-  }
-  return 1; 
-}
 // #################################################################################
 Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& evtData,
     AliHLTComponentTriggerData& /*trigData*/) {
@@ -485,4 +482,102 @@ Int_t AliHLTTPCCalibManagerComponent::ReadInput(AliVEvent*& vEvent, AliVfriendEv
     }
   }
   return iResult;
+}
+
+// #################################################################################
+int AliHLTTPCCalibManagerComponent::ProcessOption(TString option, TString value)
+{
+  //process option
+  //to be implemented by the user
+  if (option.Contains("TPCcalibConfigString")) 
+    fTPCcalibConfigString=value;
+  if (option.Contains("WriteAnalysisToFile")) 
+    fWriteAnalysisToFile=(value.Contains("0"))?kFALSE:kTRUE;
+  return 1; 
+}
+
+// #################################################################################
+int AliHLTTPCCalibManagerComponent::ProcessOptionString(int argc, const char** argv)
+{
+  //process passed options
+  for (int arg=0; arg<argc; arg++)
+  {
+    stringMap* options = TokenizeOptionString(argv[arg]);
+    for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
+    {
+      Printf("%s : %s", i->first.data(), i->second.data());
+      ProcessOption(i->first,i->second);
+    }
+  }
+
+  return 1; 
+}
+
+// #################################################################################
+AliHLTTPCCalibManagerComponent::stringMap* AliHLTTPCCalibManagerComponent::TokenizeOptionString(const TString str)
+{
+  
+  //options have the form:
+  // -o value
+  // -o=value
+  // -ovalue
+  // -o
+  // --option value
+  // --option=value
+  // --option
+  // option=value
+  // option value
+  // (value can also be a string like 'some string')
+  //
+  // options can be separated bu ' ' or ',' arbitrarily combined, e.g:
+  //"-ovalue option1=value1 --option2 value2 --option4=\'some string\'"
+  
+  //optionRE by construction contains a pure option name as 4th submatch (without --,-, =)
+  //valueRE does NOT match options
+  TPRegexp optionRE("(?:((?='?\\w+=?))|(-)|(--))((?(1)(?:(?(?=')'(?:[^'\\\\]++|\\.)*+'|\\w+))(?==?))(?(2)\\w(?=[= ,$]|\\w+))(?(3)\\w+(?=[= ,$])?))");
+  TPRegexp valueRE("(?(?!(-{1,2}|\\w+=))(?(?=')'(?:[^'\\\\]++|\\.)*+'|\\w+))");
+
+  stringMap* options = new stringMap;
+
+  TArrayI pos;
+  const TString mods="";
+  Int_t start = 0;
+  while (1) {
+    Int_t prevStart=start;
+    TString optionStr="";
+    TString valueStr="";
+    
+    //check if we have a new option in this field
+    Int_t nOption=optionRE.Match(str,mods,start,10,&pos);
+    if (nOption>0)
+    {
+      optionStr = str(pos[8],pos[9]-pos[8]);
+      optionStr=optionStr.Strip(TString::kBoth,'\'');
+      start=pos[1]; //update the current character to the end of match
+    }
+
+    //check if the next field is a value
+    Int_t nValue=valueRE.Match(str,mods,start,10,&pos);
+    if (nValue>0)
+    {
+      valueStr = str(pos[0],pos[1]-pos[0]);
+      valueStr=valueStr.Strip(TString::kBoth,'\'');
+      start=pos[1]; //update the current character to the end of match
+    }
+    
+    //skip empty entries
+    if (nOption>0 || nValue>0)
+    {
+      (*options)[optionStr.Data()] = valueStr.Data();
+    }
+    
+    if (start>=str.Length()-1 || start==prevStart ) break;
+  }
+
+  //for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
+  //{
+  //  Printf("%s : %s", i->first.data(), i->second.data());
+  //  ProcessOption(i->first,i->second);
+  //}
+  return options;
 }
