@@ -160,12 +160,12 @@ if(ROOTSYS)
         	
         	# include for AliEn
         	if(EXISTS "${ALIEN}/include")
-        	    include_directories(${ALIEN}/include)
+        	    include_directories(SYSTEM ${ALIEN}/include)
         	endif()
         	
         	# api/include always exists
         	if(EXISTS "${ALIEN}/api/include")
-        	    include_directories(${ALIEN}/api/include)
+        	    include_directories(SYSTEM ${ALIEN}/api/include)
         	endif()
         	
         	set(ROOT_HASALIEN TRUE)
@@ -219,7 +219,7 @@ if(ROOTSYS)
 
     # adding the libraries and the inc dir
     link_directories(${ROOT_LIBDIR})
-    include_directories(${ROOT_INCLUDE_DIR})
+    include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
     set(ROOT_FOUND TRUE)
 
     # Workaround misssing XML, VMC, Minuit from ROOT static library
