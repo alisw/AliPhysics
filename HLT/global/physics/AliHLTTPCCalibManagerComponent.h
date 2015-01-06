@@ -20,6 +20,8 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTProcessor.h"
+#include <map>
+#include <string>
 
 class TH1F;
 class TList;
@@ -128,6 +130,8 @@ public:
    * ---------------------------------------------------------------------------------
    */
 
+  typedef map<std::string,std::string> stringMap;
+
   /** constructor */
   AliHLTTPCCalibManagerComponent();
   
@@ -159,7 +163,10 @@ public:
   /** interface function, see @ref AliHLTComponent for description */
   AliHLTComponent* Spawn();
 
-  int ProcessArgumentString(int argc, const char** argv);
+  //new option parser
+  static stringMap* TokenizeOptionString(const TString str);
+  int ProcessOptionString(int argc, const char** argv);
+  int ProcessOption(TString option, TString value);
 
   /**  */
   Int_t AddCalibTasks();
@@ -235,6 +242,7 @@ private:
 
   //config stuff
   TString fTPCcalibConfigString;
+  Bool_t fWriteAnalysisToFile;
   Bool_t fEnableDebug;
 
   ClassDef(AliHLTTPCCalibManagerComponent, 0)
