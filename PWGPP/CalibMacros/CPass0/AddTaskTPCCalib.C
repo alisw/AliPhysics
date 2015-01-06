@@ -51,72 +51,77 @@ AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber, const char* options="ALL")
   // set TPC OCDB parameters
   ConfigOCDB(runNumber);
 
+  AliTPCAnalysisTaskcalib *task=NULL;
+  
   // setup task TPCCalib
   if (isOptionSelected("TPCCalib",options))
   {
-  TString outputFileName=mgr->GetCommonFileName();
-  AliTPCAnalysisTaskcalib *task1=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
-  SetupCalibTaskTrain1(task1);
-  mgr->AddTask(task1);
-  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-  if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
-                                      AliAnalysisManager::kInputContainer);
-  for (Int_t i=0; i<task1->GetJobs()->GetEntries(); i++) {
-    if (task1->GetJobs()->At(i)) {
-      AliAnalysisDataContainer* coutput = mgr->CreateContainer(task1->GetJobs()->At(i)->GetName(),
-                                                               AliTPCcalibBase::Class(), 
-                                                               AliAnalysisManager::kOutputContainer, 
-                                                               "CalibObjects.root:TPCCalib"); 
-      mgr->ConnectOutput(task1,i,coutput);
+    Printf("Adding TPCCalib");
+    TString outputFileName=mgr->GetCommonFileName();
+    task=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
+    SetupCalibTaskTrain1(task,options);
+    mgr->AddTask(task);
+    AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+    if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
+        AliAnalysisManager::kInputContainer);
+    for (Int_t i=0; i<task->GetJobs()->GetEntries(); i++) {
+      if (task->GetJobs()->At(i)) {
+        AliAnalysisDataContainer* coutput = mgr->CreateContainer(task->GetJobs()->At(i)->GetName(),
+            AliTPCcalibBase::Class(), 
+            AliAnalysisManager::kOutputContainer, 
+            "CalibObjects.root:TPCCalib"); 
+        mgr->ConnectOutput(task,i,coutput);
+      }
     }
-    mgr->ConnectInput(task1,0,cinput1);
-  }
+    mgr->ConnectInput(task,0,cinput1);
   }
   //
   // setup task TPCAlign
   if (isOptionSelected("TPCAlign",options))
   {
-  AliTPCAnalysisTaskcalib *taskAlign=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
-  SetupCalibTaskTrainAlign(taskAlign);
-  mgr->AddTask(taskAlign);
-  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-  if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
-                                      AliAnalysisManager::kInputContainer);
-  for (Int_t i=0; i<taskAlign->GetJobs()->GetEntries(); i++) {
-    if (taskAlign->GetJobs()->At(i)) {
-      AliAnalysisDataContainer* coutput = mgr->CreateContainer(taskAlign->GetJobs()->At(i)->GetName(),
-                                                               AliTPCcalibBase::Class(), 
-                                                               AliAnalysisManager::kOutputContainer, 
-                                                               "CalibObjects.root:TPCAlign"); 
-      mgr->ConnectOutput(taskAlign,i,coutput);
+    Printf("Adding TPCAlign");
+    task=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
+    SetupCalibTaskTrainAlign(task,options);
+    mgr->AddTask(task);
+    AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+    if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
+        AliAnalysisManager::kInputContainer);
+    for (Int_t i=0; i<task->GetJobs()->GetEntries(); i++) {
+      if (task->GetJobs()->At(i)) {
+        AliAnalysisDataContainer* coutput = mgr->CreateContainer(task->GetJobs()->At(i)->GetName(),
+            AliTPCcalibBase::Class(), 
+            AliAnalysisManager::kOutputContainer, 
+            "CalibObjects.root:TPCAlign"); 
+        mgr->ConnectOutput(task,i,coutput);
+      }
     }
-    mgr->ConnectInput(taskAlign,0,cinput1);
-  }
+    mgr->ConnectInput(task,0,cinput1);
   }
   //
   // setup task TPCCluster
   if (isOptionSelected("TPCCluster",options))
   {
-  AliTPCAnalysisTaskcalib *taskCluster=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
-  SetupCalibTaskTrainCluster(taskCluster);
-  mgr->AddTask(taskCluster);
-  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-  if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
-                                      AliAnalysisManager::kInputContainer);
-  for (Int_t i=0; i<taskCluster->GetJobs()->GetEntries(); i++) {
-    if (taskCluster->GetJobs()->At(i)) {
-      AliAnalysisDataContainer* coutput = mgr->CreateContainer(taskCluster->GetJobs()->At(i)->GetName(),
-                                                               AliTPCcalibBase::Class(), 
-                                                               AliAnalysisManager::kOutputContainer, 
-                                                               "CalibObjects.root:TPCCluster"); 
-      mgr->ConnectOutput(taskCluster,i,coutput);
+    Printf("Adding TPCCluster");
+    task=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
+    SetupCalibTaskTrainCluster(task,options);
+    mgr->AddTask(task);
+    AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+    if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
+        AliAnalysisManager::kInputContainer);
+    for (Int_t i=0; i<task->GetJobs()->GetEntries(); i++) {
+      if (task->GetJobs()->At(i)) {
+        AliAnalysisDataContainer* coutput = mgr->CreateContainer(task->GetJobs()->At(i)->GetName(),
+            AliTPCcalibBase::Class(), 
+            AliAnalysisManager::kOutputContainer, 
+            "CalibObjects.root:TPCCluster"); 
+        mgr->ConnectOutput(task,i,coutput);
+      }
     }
-    mgr->ConnectInput(taskCluster,0,cinput1);
-  }
+    mgr->ConnectInput(task,0,cinput1);
   }
   //
 
-  return task1;
+  return task;
 }
 
 //_____________________________________________________________________________
