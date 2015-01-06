@@ -5,7 +5,7 @@
  * See cxx source for full Copyright notice     */
 
 // Analysis task for identifion PHOS cluster from Pi0 and extracting pi0-hadron correlation.
-// Author: 	Daniil Ponomarenko <Daniil.Ponomarenko@cern.ch>
+// Author:  Daniil Ponomarenko <Daniil.Ponomarenko@cern.ch>
 // 20-Sept-2014
 
 class TClonesArray;
@@ -50,7 +50,7 @@ public:
   virtual void   UserExec(Option_t *option) ;
 
   void SetPeriodName(const TString str)                                           { fPeriod = str                    ; }
-  TString GetPeriod()                                                   const { return fPeriod                   ; }
+  TString GetPeriod()                                                       const { return fPeriod                   ; }
 
   void SetCentralityEstimator(const char * centr)                                 { fCentralityEstimator = centr         ; }
   void SetEventMixingRPBinning(const UInt_t nBins)                                { fNEMRPBins = nBins                   ; }

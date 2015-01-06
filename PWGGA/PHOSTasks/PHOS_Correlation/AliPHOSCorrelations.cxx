@@ -80,11 +80,11 @@ AliPHOSCorrelations::AliPHOSCorrelations()
     fPeriod("0x0"),
     fPHOSEvent(false),
     fMBEvent(false),
-    fNVtxZBins(10),
+    fNVtxZBins(1),
     fVtxEdges(10),
     fCentEdges(10),
     fCentNMixed(),
-    fNEMRPBins(6),
+    fNEMRPBins(3),
     fAssocBins(),
     fVertexVector(),
     fVtxBin(0),
@@ -163,11 +163,11 @@ AliPHOSCorrelations::AliPHOSCorrelations(const char *name)
     fPeriod("0x0"),
     fPHOSEvent(false),
     fMBEvent(false),
-    fNVtxZBins(10),
+    fNVtxZBins(1),
     fVtxEdges(10),
     fCentEdges(10),
     fCentNMixed(),
-    fNEMRPBins(6),
+    fNEMRPBins(3),
     fAssocBins(),
     fVertexVector(),
     fVtxBin(0),
@@ -272,7 +272,7 @@ void AliPHOSCorrelations::UserCreateOutputObjects()
     // Create histograms
     // Called once
     const Int_t     nRuns   = 200 ;
-    const Int_t     ptMult  = 300 ;
+    const Int_t     ptMult  = 30 ;
     const Double_t  ptMin   = 0.  ;
     const Double_t  ptMax   = 30. ;
 
@@ -351,7 +351,7 @@ void AliPHOSCorrelations::SetHistPtNumTrigger(const Int_t& ptMult, const Double_
     {
         fOutputContainer->Add(new TH1F(    Form("nTrigger_%s", spid[ipid].Data()), 
                                         Form("Num of trigger particle %s", spid[ipid].Data()), 
-                                        ptMult+300, ptMin, ptMax ) );
+                                        ptMult, ptMin, ptMax ) );
         TH1F *h = static_cast<TH1F*>(fOutputContainer->Last()) ;
         h->Sumw2();
         h->GetXaxis()->SetTitle("Pt [GEV]");
@@ -360,7 +360,7 @@ void AliPHOSCorrelations::SetHistPtNumTrigger(const Int_t& ptMult, const Double_
     {
         fOutputContainer->Add(new TH1F( Form("nTrigger_%s_MB", spid[ipid].Data()), 
                                         Form("Num of trigger particle %s", spid[ipid].Data()), 
-                                        ptMult+300, ptMin, ptMax ) );
+                                        ptMult, ptMin, ptMax ) );
         TH1F *h = static_cast<TH1F*>(fOutputContainer->Last()) ;
         h->Sumw2();
         h->GetXaxis()->SetTitle("Pt [GEV]");
@@ -465,12 +465,12 @@ void AliPHOSCorrelations::SetHistPtAssoc(const Int_t& ptMult, const Double_t& pt
 {
     Double_t pi = TMath::Pi();
 
-    Int_t PhiMult  =  100        ;
-    Float_t PhiMin =  -0.5*pi    ;
-    Float_t PhiMax =  1.5*pi    ;
-    Int_t EtaMult  =  20        ; 
-    Float_t EtaMin = -1.        ;
-    Float_t EtaMax =  1.        ;
+    Int_t PhiMult  =  60      ;
+    Float_t PhiMin =  -0.5*pi ;
+    Float_t PhiMax =  1.5*pi  ;
+    Int_t EtaMult  =  20      ; 
+    Float_t EtaMin = -1.      ;
+    Float_t EtaMax =  1.      ;
 
     TString spid[4]={"all","cpv","disp","both"} ;
 
@@ -2428,5 +2428,3 @@ void AliPHOSCorrelations::FillEventBiningProperties() const
         }
     }
 }
-
-
