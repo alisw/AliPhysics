@@ -508,6 +508,7 @@ int AliHLTTPCCalibManagerComponent::ProcessOptionString(int argc, const char** a
       Printf("%s : %s", i->first.data(), i->second.data());
       ProcessOption(i->first,i->second);
     }
+    stringMap->clear(); //tidy up
   }
 
   return 1; 
