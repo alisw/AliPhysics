@@ -192,7 +192,7 @@ int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environ
   fPushbackPeriod=0;
   fLastPushBackTime=-1;
 
-  fComponentArgs="";
+  //fComponentArgs="";
   const char** pArguments=NULL;
   int iNofChildArgs=0;
   TString argument="";
@@ -201,8 +201,8 @@ int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environ
     pArguments=new const char*[argc];
     if (pArguments) {
       for (int i=0; i<argc && iResult>=0; i++) {
-	if (fComponentArgs.size()>0) fComponentArgs+=" ";
-	fComponentArgs+=argv[i];
+	//if (fComponentArgs.size()>0) fComponentArgs+=" ";
+	//fComponentArgs+=argv[i];
 	argument=argv[i];
 	if (argument.IsNull()) continue;
 
