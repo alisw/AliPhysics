@@ -157,7 +157,7 @@ void AliEMCalTriggerRecJetAnalysisComponent::Process(const AliEMCalTriggerEventD
         for(std::vector<std::string>::iterator name = triggernames.begin(); name != triggernames.end(); ++name){
           FillHistogram(Form("hTrackJetHist%s%s", jetptstring.Data(), name->c_str()), foundtrack,  reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ());
           if(assocMC){
-            FillHistogram(Form("hTrackJetHist%s%s", jetptstring.Data(), name->c_str()), assocMC, reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ());
+            FillHistogram(Form("hMCTrackJetHist%s%s", jetptstring.Data(), name->c_str()), assocMC, reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ());
           }
         }
       }
