@@ -18,8 +18,8 @@
 #include <TParticle.h>
 #include <TDatabasePDG.h>
 #include <TRandom.h>
-#include <../TPC/Base/AliTPCcalibDB.h>
-#include <../TPC/Base/AliTPCParam.h>
+#include <../TPC/TPCbase/AliTPCcalibDB.h>
+#include <../TPC/TPCbase/AliTPCParam.h>
 #include "AliPIDResponse.h"
 #include "AliDetectorPID.h"
 
@@ -666,6 +666,7 @@ Bool_t FT2::ReconstructProbe()
 #endif
     }
     if (!PropagateToX(sens->GetXTF(),-1,kTRUE, kFALSE, kTRUE)) return kFALSE; // account for materials
+    //    double chi = UpdateKalman(&fProbe,fITSHitYZ[ilr][iht][0],fITSHitYZ[ilr][iht][1],fSigYITS,fSigZITS,kTRUE,ilr<2/*kTRUE*/);
     double chi = UpdateKalman(&fProbe,fITSHitYZ[ilr][iht][0],fITSHitYZ[ilr][iht][1],fSigYITS,fSigZITS,kTRUE,kTRUE);
  #if DEBUG>5
     AliInfoF("Updated at ITS Lr%d, chi2:%f NclITS:%d Fakes: %d",ilr,chi,fNClITS,fNClITSFakes);
@@ -756,15 +757,29 @@ Double_t FT2::UpdateKalman(AliExternalTrackParam* trc, double y,double z,double 
     trc->GetXYZ(xyz);
     double rho = HitDensity(xyz[0]*xyz[0]+xyz[1]*xyz[1],trc->GetTgl());
     //
-    // prob. of good hit (http://rnc.lbl.gov/~wieman/HitFinding2D.htm)
+    /*
+    // prob. of good hit (http://rnc.lbl.gov/~wieman/HitFinding2D.htm for closest hit)
     Double_t sx2, sy2, probFake;
     sx2 = 2 * TMath::Pi()*err2a*rho;
     sy2 = 2 * TMath::Pi()*err2b*rho;
     probFake = 1.-TMath::Sqrt(1./((1+sx2)*(1+sy2)));
+    */
+    
+    // prob. of good hit (http://rnc.lbl.gov/~wieman/HitFinding2DXsq.htm for hit with best chi2)
+    Double_t probFake;
+    probFake = 1.-1./(1.+TMath::Pi()*2*TMath::Sqrt(err2a*err2b)*rho);
+    //    
+    Bool_t prevFake = kFALSE;  // if prev updated layer produced fake, this one also will likely be a fake
+    for (int j=fCurrITSLr+1;j<fITS->GetNLayersActive();j++) {
+      if (!(fITSPattern & (0x1<<j))) continue;
+      if (fITSPatternFake & (0x1<<j)) prevFake = kTRUE;
+      break;
+    }
 #if DEBUG
-    printf("DiagErr: %e %e Rho:%e PFake: %e\n",err2a,err2b, rho, probFake);
+    printf("DiagErr@%d: %e %e Rho:%e PFake: %e PrevFake: %d\n",fCurrITSLr,err2a,err2b, rho, probFake, prevFake);
+    trc->Print();
 #endif
-    if (gRandom->Rndm()<probFake) { // need to fake the hit
+    if (prevFake || gRandom->Rndm()<probFake) { // need to fake the hit
       BiasAsFake(meas, trPos, trCov);
       if (fCurrITSLr>=0) {
 	fITSPatternFake |= 0x1<<fCurrITSLr;
