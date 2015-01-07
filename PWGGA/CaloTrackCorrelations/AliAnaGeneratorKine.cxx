@@ -162,18 +162,27 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
   Float_t phiTrig  = fTrigger.Phi();
   Float_t etaTrig  = fTrigger.Eta();
   
-  Float_t partonPt = fParton6.Pt();
+  AliDebug(1,Form("Trigger pdg %d pT %2.2f, phi %2.2f, eta %2.2f", partType,ptTrig,phiTrig*TMath::RadToDeg(),etaTrig));
   
   Float_t jetPt    = fJet6.Pt();
   Float_t jetPhi   = fJet6.Phi();
   Float_t jetEta   = fJet6.Eta();
   
+  AliDebug(1,Form("Jet 6 pT %2.2f, phi %2.2f, eta %2.2f",jetPt,jetPhi*TMath::RadToDeg(),jetEta));
+  
   Float_t awayJetPt  = fJet7.Pt();
   Float_t awayJetEta = fJet7.Eta();
   Float_t awayJetPhi = fJet7.Phi();
   
+  AliDebug(1,Form("Jet 7 pT %2.2f, phi %2.2f, eta %2.2f",awayJetPt,awayJetPhi*TMath::RadToDeg(),awayJetEta));
+  
+  Float_t partonPt = fParton6.Pt();
+
   Int_t nearPDG = fParton6PDG;
   Int_t awayPDG = fParton7PDG;
+  
+  AliDebug(1,Form("Parton6 pT pT %2.2f, pdg %d",fParton6.Pt(),fParton6PDG));
+  AliDebug(1,Form("Parton7 pT pT %2.2f, pdg %d",fParton7.Pt(),fParton7PDG));
   
   if ( iparton == 7 )
   {
@@ -192,9 +201,11 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
   }
 
   Float_t deltaPhi = TMath::Abs(phiTrig-awayJetPhi) *TMath::RadToDeg();
-  //printf("Trigger Away jet phi %2.2f\n",deltaPhi);
+  AliDebug(1,Form("Trigger Away jet phi %2.2f\n",deltaPhi));
   
-  //Get id of parton in near and away side
+  //
+  // Get id of parton in near and away side
+  //
   Int_t away = -1;
   Int_t near = -1;
   if     (nearPDG == 22) near = 0;
@@ -204,20 +215,16 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
   if     (awayPDG == 22) away = 0;
   else if(awayPDG == 21) away = 1;
   else                   away = 2;
-  //printf("parton 6 pdg = %d, parton 7 pdg = %d\n",fParton6PDG,fParton7PDG);
-
-  AliDebug(1,Form("Trigger pdg %d, (Trigger,JetNear, JetAway): pT (%2.2f,%2.2f,%2.2f), phi (%2.2f,%2.2f,%2.2f), eta (%2.2f,%2.2f,%2.2f); Delta phi trigger-away jet %f; parton type: away side %d; near side %d",
-                  partType,
-                  ptTrig,jetPt,awayJetPt,
-                  phiTrig*TMath::RadToDeg(),jetPhi*TMath::RadToDeg(),awayJetPhi*TMath::RadToDeg(),
-                  etaTrig,jetEta,awayJetEta,
-                  deltaPhi,away,near));
   
   // RATIOS
   
-  Float_t zHard = ptTrig / fPtHard;
-  Float_t zPart = ptTrig / partonPt;
-  Float_t zJet  = ptTrig / jetPt;
+  Float_t zHard = -1;
+  Float_t zPart = -1;
+  Float_t zJet  = -1;
+  
+  if( fPtHard  > 0 ) zHard = ptTrig / fPtHard ;
+  if( partonPt > 0 ) zPart = ptTrig / partonPt;
+  if( jetPt    > 0 ) zJet  = ptTrig / jetPt   ;
   
   //if(zHard > 1 ) printf("*** Particle energy larger than pT hard z=%f\n",zHard);
   
@@ -560,6 +567,7 @@ void  AliAnaGeneratorKine::GetPartonsAndJets()
         fJet6 = fLVTmp;
         
       }
+      
       if (radius7 < jet7R) 
       {
         jet7R = radius7;
@@ -579,10 +587,14 @@ void  AliAnaGeneratorKine::GetPartonsAndJets()
   fhPtParton ->Fill(p6pt);
   fhPtParton ->Fill(p7pt);
 
-  fhPtPartonPtHard->Fill(fPtHard, p6pt/fPtHard);
-  fhPtPartonPtHard->Fill(fPtHard, p7pt/fPtHard);
-  fhPtJetPtHard   ->Fill(fPtHard, fJet6.Pt()/fPtHard);
-  fhPtJetPtHard   ->Fill(fPtHard, fJet7.Pt()/fPtHard);
+  if( fPtHard > 0 )
+  {
+    fhPtPartonPtHard->Fill(fPtHard, p6pt/fPtHard);
+    fhPtPartonPtHard->Fill(fPtHard, p7pt/fPtHard);
+    fhPtJetPtHard   ->Fill(fPtHard, fJet6.Pt()/fPtHard);
+    fhPtJetPtHard   ->Fill(fPtHard, fJet7.Pt()/fPtHard);
+  }
+  
   if( p6pt > 0 ) fhPtJetPtParton ->Fill(fPtHard, fJet6.Pt()/p6pt);
   if( p7pt > 0 ) fhPtJetPtParton ->Fill(fPtHard, fJet7.Pt()/p7pt);
   
