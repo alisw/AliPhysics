@@ -73,7 +73,8 @@ struct FastMonitor : public TObject, public TQObject
     if (gProof) {
       fName = gProof->GetSessionTag();
       gDirectory->Add(this);
-      Bool_t ret = gProof->Connect("Feedback(TList *objs)", "FastMonitor", this, 
+      Bool_t ret = gProof->Connect("Feedback(TList *objs)",
+				   "FastMonitor", this, 
 				   "Feedback(TList *objs)");
       if (!ret) {
 	Warning("FastMonitor", "Failed to connect to Proof");
@@ -205,8 +206,8 @@ struct FastMonitor : public TObject, public TQObject
 	c->SetDirectory(0);
 	c->SetBit(TObject::kCanDelete);
 	if (p->TestBit(BIT(15))) {
-	  Info("Feedback", "Scaling %s by 1./%d and width",
-	       c->GetName(), nEvents);
+	  // Info("Feedback", "Scaling %s by 1./%d and width",
+	  //      c->GetName(), nEvents);
 	  c->Scale(1./nEvents, "width");
 	}
       }
@@ -274,6 +275,8 @@ struct FastSim : public TSelector
       fBMax(bMax),
       fGRP(0),
       fNEvents(nEvents),
+      fIsTgtA(false),
+      fIsProjA(false),
       fGenerator(0),
       fRunLoader(0),
       fStack(0),
@@ -302,6 +305,15 @@ struct FastSim : public TSelector
 			      fGenerator->GetName() :
 			      fEGName.Data());
 	fn = Form("%s_%09d", egName, fRunNo);
+	if (fGenerator) {
+	  TString tgt, proj;
+	  Int_t   tgtA, tgtZ, projA, projZ;
+	  fGenerator->GetTarget(tgt, tgtA, tgtZ);
+	  fGenerator->GetProjectile(proj, projA, projZ);
+	  fn.Append(Form("_%s%s", tgt.Data(), proj.Data()));
+	  fn.Append(Form("_%05d", Int_t(fGenerator->GetEnergyCMS())));
+	}
+
 	if (fNEvents > 0) {
 	  if (fNEvents >= 1000000)
 	    fn.Append(Form("_%lldM", fNEvents/1000000));
@@ -348,7 +360,7 @@ struct FastSim : public TSelector
     fTree      = new TTree("T", "T");
     fParticles = new TClonesArray("TParticle");
     fTree->Branch("header", &fShortHead,
-		  "run/i:event:npart:nbin:type:ipx/D:ipy:ipz:b:c:phir");
+		  "run/i:event:ntgt:nproj:nbin:type:ipx/D:ipy:ipz:b:c:phir");
     fTree->Branch("particles", &fParticles);
     fTree->AutoSave();
     fTree->SetDirectory(fFile);
@@ -369,6 +381,7 @@ struct FastSim : public TSelector
     fTree->SetAlias("other",   "(!pion&&!kaon&&!proton&&!electron)");
     fTree->SetAlias("beta",    "(particles.P()/particle.Energy())");
     fTree->SetAlias("gamma",   "(1./sqrt(1-beta*beta))");
+    fTree->SetAlias("npart",   "(header.ntgt+header.nproj)");
 
     Info("SetupOutput", "Making histograms");
     Double_t maxEta = 10;
@@ -487,7 +500,12 @@ struct FastSim : public TSelector
       return false;
     }
     fGenerator = reinterpret_cast<AliGenerator*>(egPtr);
-
+    TString tgt, proj;
+    Int_t   tgtA=0, tgtZ=0, projA=0, projZ=0;
+    fGenerator->GetTarget(tgt, tgtA, tgtZ);
+    fGenerator->GetProjectile(proj, projA, projZ);
+    fIsTgtA  = (tgtA  == tgtZ  && tgtA == 1);
+    fIsProjA = (projA == projZ && projZ == 1);
 
     if (fFileName.IsNull()) FileName();
     Info("SetupRun", "File name is '%s'", fFileName.Data());
@@ -612,11 +630,12 @@ struct FastSim : public TSelector
     fShortHead.fIpX     = 1024;
     fShortHead.fIpY     = 1024;
     fShortHead.fIpZ     = 1024;
-    fShortHead.fNpart   = -1;
+    fShortHead.fNtgt    = -1;
+    fShortHead.fNproj   = -1;
     fShortHead.fNbin    = -1;
     fShortHead.fPhiR    = -1;
     fShortHead.fB       = -1;
-    fShortHead.fC       = -1; 
+    fShortHead.fC       = -1;
     fParticles->Clear();
     // --- Reset header, etc.  ---------------------------------------
     fHeader->Reset(fRunNo, iEv);
@@ -656,8 +675,8 @@ struct FastSim : public TSelector
       dynamic_cast<AliGenHerwigEventHeader*>(genHeader);
     if (geometry) {
       fShortHead.fB     = geometry->ImpactParameter();
-      fShortHead.fNpart = (geometry->ProjectileParticipants() + 
-			   geometry->TargetParticipants());
+      fShortHead.fNtgt  = geometry->TargetParticipants();
+      fShortHead.fNproj = geometry->ProjectileParticipants();
       fShortHead.fNbin  = geometry->NN();
       fShortHead.fPhiR  = geometry->ReactionPlaneAngle();
     }
@@ -679,16 +698,36 @@ struct FastSim : public TSelector
 	}
       }
       fShortHead.fB     = pythia->GetImpactParameter();
-      fShortHead.fNpart = 2;
+      fShortHead.fNtgt  = 1;
+      fShortHead.fNproj = 1;
       fShortHead.fNbin  = 1;
     }
     if (dpm) {
       Int_t type = dpm->ProcessType();
+#ifndef NO_DPMJET_TYPE
       switch (type) {
       case 5: case 6: sd = true;
-
       case 7:         dd = true;
-      }
+      }      
+#else
+      // The below - or rather a different implementation with some
+      // errors - was proposed by Cvetan - I don't think it's right
+      // though.  See also
+      //
+      //   https://cern.ch/twiki/pub/ALICE/PAPaperCentrality/normalization.pdf
+      //   https://cern.ch/twiki/bin/view/ALICE/PAMCProductionStudies
+      //
+      Int_t nsd1=0, nsd2=0, ndd=0;
+      Int_t npP = dpm->ProjectileParticipants();
+      Int_t npT = dpm->TargetParticipants();
+      // Get the numbeer of single and double diffractive participants
+      dpm->GetNDiffractive(nsd1,nsd2,ndd);
+      // Check if all partipants are single/double diffractive 
+      if      ((ndd == 0) && ((npP == nsd1) || (npT == nsd2)))	sd = true;
+      else if (ndd == (npP + npT))                       	dd = true;
+      Printf("Projectile: %3d (%3d) Target: %3d (%3d) DD: %3d Process: %d",
+	     npP, nsd1, npT, nsd2, ndd, type);
+#endif 
     }
     if (gev) fShortHead.fPhiR = gev->GetEventPlane();
     if (herwig) {
@@ -696,20 +735,23 @@ struct FastSim : public TSelector
       switch (type) {
       case 5: case 6: sd = true; break;
       }
-      fShortHead.fNpart = 2;
+      fShortHead.fNtgt  = 1;
+      fShortHead.fNproj = 1;
       fShortHead.fNbin  = 1;
     }
     fShortHead.fType = (sd ? 0x1 : 0) | (dd ? 0x2 : 0);
 
     // --- Check centrality -----------------------------------------
-    // PbPb only 
-    // Updated 4th of November 2014 from 
-    // cern.ch/twiki/bin/view/ALICE/CentStudies#Tables_with_centrality_bins_AN1
-    Float_t  np = 0;
-    UInt_t   nc = 0;
+    Float_t  np = -1;
+    Float_t  nc = -1;
     Double_t c  = -1;
     Double_t b  = fShortHead.fB;
-    if (b >= 0) {
+    if (b >= 0 && fIsProjA && fIsTgtA &&
+	TMath::Abs(fGenerator->GetEnergyCMS()-2760) < 10) {
+      // PbPb @ 2.76TeV only 
+      // Updated 4th of November 2014 from 
+      // cern.ch/twiki/bin/view/ALICE/CentStudies
+      //        #Tables_with_centrality_bins_AN1
       if      (0.00 >= b  && b < 1.57)  { c=0.5;  np=403.8; nc=1861; } 
       else if (1.57 >= b  && b < 2.22)  { c=1.5;  np=393.6; nc=1766; } 
       else if (2.22 >= b  && b < 2.71)  { c=2.5;  np=382.9; nc=1678; } 
@@ -734,11 +776,34 @@ struct FastSim : public TSelector
       else if (14.43 >= b && b < 14.96) { c=87.5; np=6.158; nc=4.904; }
       else if (14.96 >= b && b < 15.67) { c=92.5; np=4.376; nc=3.181; }
       else if (15.67 >= b && b < 20.00) { c=97.5; np=3.064; nc=1.994; }
-      fShortHead.fC = c;
-      // Be careful to round off
-      if (fShortHead.fNpart <= 0) fShortHead.fNpart = Int_t(np+.5);
-      if (fShortHead.fNbin  <= 0) fShortHead.fNbin  = Int_t(nc+.5)/2;
     }
+    else if (b >= 0 && (fIsTgtA || fIsProjA) &&
+	     TMath::Abs(fGenerator->GetEnergyCMS()-5023) < 10) {
+      // pPb/Pbp @ 5.02TeV 
+      // From Glauber
+      // cern.ch/twiki/bin/viewauth/ALICE/PACentStudies
+      //          #Ncoll_in_centrality_bins_from_CL
+      Double_t ac[] = { 2.5, 7.5, 15., 30., 50., 70., 90. };
+      Double_t ab[] = { 100., 14.4, 13.8, 12.7, 10.2, 6.30, 3.10, 1.44, 0 };
+      for (Int_t i = 0; i < 7; i++) {
+	Double_t bC = ab[i+1];
+	Double_t bH = bC + (ab[i]   - bC) / 2;
+	Double_t bL = bC - (bC - ab[i+2]) / 2;
+	if (b >= bL && b < bH)  {
+	  c = ac[i];
+	  break;
+	}
+      }
+    }
+    if (c >= 0) fShortHead.fC = c;
+    Double_t nb   = nc/2;
+    // Be careful to round off
+    if ((fShortHead.fNtgt+fShortHead.fNproj) <= 0 && np >= 0) {
+      fShortHead.fNtgt  = Int_t(np-nb+.5);
+      fShortHead.fNproj = Int_t(nb+.5);
+    }
+    if (fShortHead.fNbin  <= 0 && nb >= 0)
+      fShortHead.fNbin  = Int_t(nb+.5);
     
     // --- Check if within vertex cut -------------------------------
     Bool_t selected = (fShortHead.fIpZ <= fHIpz->GetXaxis()->GetXmax() &&
@@ -749,7 +814,9 @@ struct FastSim : public TSelector
       fHPhiR->Fill(fShortHead.fPhiR*TMath::RadToDeg());
       fHB->Fill(fShortHead.fB);
       fHIpz->Fill(fShortHead.fIpZ);
-      fHType->Fill(dd ? 3 : sd ? 2 : 1);
+      if (dd) fHType->Fill(3);
+      if (sd) fHType->Fill(2);
+      if (!dd && !sd) fHType->Fill(1);
       fHCent->Fill(c);
     }
     return selected;
@@ -946,6 +1013,8 @@ struct FastSim : public TSelector
   Double_t fBMax;                 // Largest impact parameter
   TObject* fGRP;                  //! GRP in one line
   Long64_t fNEvents;              //  Number of requested events
+  Bool_t   fIsTgtA;               //! True if target beam is nuclei
+  Bool_t   fIsProjA;              //! True if projectile beam is nuclei
   /* @} */
   /** 
    * @{ 
@@ -989,7 +1058,8 @@ struct FastSim : public TSelector
   struct ShortHeader {
     UInt_t   fRunNo;
     UInt_t   fEventId;
-    UInt_t   fNpart;
+    UInt_t   fNtgt;
+    UInt_t   fNproj;
     UInt_t   fNbin;
     UInt_t   fType;
     Double_t fIpX;
