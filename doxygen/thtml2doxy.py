@@ -688,6 +688,17 @@ def rewrite_comments(fhin, fhout, comments):
 
   rindent = r'^(\s*)'
 
+
+  def dump_comment_block(cmt):
+   text_indent = ''
+   for i in range(0, cmt.indent):
+     text_indent = text_indent + ' '
+
+   for lc in cmt.lines:
+     fhout.write( "%s/// %s\n" % (text_indent, lc) );
+   fhout.write('\n')
+
+
   for line in fhin:
 
     line_num = line_num + 1
@@ -702,6 +713,12 @@ def rewrite_comments(fhin, fhout, comments):
     if comm:
 
       if isinstance(comm, MemberComment):
+
+        # end comment block
+        if in_comment:
+          dump_comment_block(prev_comm)
+          in_comment = False
+
         non_comment = line[ 0:comm.first_col-1 ]
 
         if comm.array_size is not None or comm.is_dontsplit() or comm.is_ptr():
@@ -751,10 +768,13 @@ def rewrite_comments(fhin, fhout, comments):
           ))
 
       elif isinstance(comm, RemoveComment):
-        # Do nothing: just skip line
-        pass
+        # End comment block and skip this line
+        if in_comment:
+          dump_comment_block(prev_comm)
+          in_comment = False
 
       elif prev_comm is None:
+
         # Beginning of a new comment block of type Comment
         in_comment = True
 
@@ -768,17 +788,8 @@ def rewrite_comments(fhin, fhout, comments):
       if in_comment:
 
         # We have just exited a comment block of type Comment
+        dump_comment_block(prev_comm)
         in_comment = False
-
-        # Dump revamped comment, if applicable
-        text_indent = ''
-
-        for i in range(0,prev_comm.indent):
-          text_indent = text_indent + ' '
-
-        for lc in prev_comm.lines:
-          fhout.write( "%s/// %s\n" % (text_indent, lc) );
-        fhout.write('\n')
         skip_empty = True
 
       line_out = line.rstrip('\n')
