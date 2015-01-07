@@ -242,6 +242,7 @@ private:
 
   //config stuff
   TString fTPCcalibConfigString;
+  TString fAddTaskMacro;
   Bool_t fWriteAnalysisToFile;
   Bool_t fEnableDebug;
 
