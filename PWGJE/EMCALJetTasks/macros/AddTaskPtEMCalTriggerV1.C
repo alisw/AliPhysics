@@ -14,7 +14,7 @@ void AddMCParticleComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *gr
 void AddEventCounterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, bool isMC);
 void AddMCJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, double minJetPt);
 void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, AliESDtrackCuts *trackcuts, double minJetPt, bool isMC, bool isSwapEta);
-void CreateJetPtBinning(EMCalTriggerPtAnalysis::AliEMCalTriggerBinningComponent *binning);
+void CreateJetPtBinning(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 *task);
 AliESDtrackCuts *CreateDefaultTrackCuts();
 AliESDtrackCuts *CreateHybridTrackCuts();
 AliESDtrackCuts *TrackCutsFactory(const char *trackCutsName);
@@ -50,6 +50,7 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   //pttriggertask->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kEMC7);                          // Select both INT7 or EMC7 triggered events
   pttriggertask->SelectCollisionCandidates(AliVEvent::kAny);
   if(isMC) pttriggertask->SetSwapThresholds();
+  CreateJetPtBinning(pttriggertask);
 
   mgr->AddTask(pttriggertask);
   if(usePythiaHard){
@@ -176,11 +177,11 @@ void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group,
   group->AddAnalysisComponent(jetana);
 }
 
-void CreateJetPtBinning(EMCalTriggerPtAnalysis::AliEMCalTriggerBinningComponent *binning){
+void CreateJetPtBinning(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 *task){
   // Linear binning in steps of 10 GeV/c up to 200 GeV/c
   TArrayD binlimits(21);
   for(int i = 0; i < 21; i++) binlimits[i] = 10.*i;
-  binning->SetBinning("jetpt", binlimits);
+  task->SetBinning("jetpt", binlimits);
 }
 
 AliESDtrackCuts *CreateDefaultTrackCuts(){
