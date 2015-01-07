@@ -96,23 +96,32 @@ void AliEMCalTriggerMCJetAnalysisComponent::CreateHistos() {
 
   // Create axis definitions
   const AliEMCalTriggerBinningDimension *ptbinning = fBinning->GetBinning("pt"),
+      *jetptbinning = fBinning->GetBinning("jetpt"),
       *etabinning = fBinning->GetBinning("eta"),
       *phibinning = fBinning->GetBinning("phi"),
       *vertexbinning = fBinning->GetBinning("zvertex");
 
   const TAxis *trackaxes[6] = {
       DefineAxis("trackpt", ptbinning),
-      DefineAxis("jettpt", ptbinning),
+      DefineAxis("jettpt", jetptbinning ? jetptbinning : ptbinning),
       DefineAxis("eta", etabinning),
       DefineAxis("phi", phibinning),
       DefineAxis("zvertex", vertexbinning),
       DefineAxis("mbtrigger", 2, -0.5, 1.5)
   };
 
+  const TAxis *jetaxes[4] = {
+      DefineAxis("jetpt", jetptbinning ? jetptbinning : ptbinning),
+      DefineAxis("jeteta", etabinning),
+      DefineAxis("jetphi", phibinning),
+      DefineAxis("zvertex", vertexbinning)
+  };
+
   // Build histograms
   for(std::map<std::string,std::string>::iterator it = triggerCombinations.begin(); it != triggerCombinations.end(); ++it){
     const std::string name = it->first, &title = it->second;
     fHistos->CreateTHnSparse(Form("hParticleJetHist%s%s", jetptstring.Data(), name.c_str()), Form("Track-based data for tracks in jets in %s events", title.c_str()), 6, trackaxes, "s");
+    fHistos->CreateTHnSparse(Form("hMCJetHist%s%s", jetptstring.Data(), name.c_str()), Form("Reconstructed jets in %s-triggered events", name.c_str()), 4, jetaxes);
   }
 
   for(int iaxis = 0; iaxis < 6; iaxis++) delete trackaxes[iaxis];
@@ -136,6 +145,8 @@ void AliEMCalTriggerMCJetAnalysisComponent::Process(const AliEMCalTriggerEventDa
   AliAODMCParticle *foundtrack(NULL);
   while(reconstructedJet){
     if(TMath::Abs(reconstructedJet->Pt()) > fMinimumJetPt){
+      for(std::vector<std::string>::iterator name = triggernames.begin(); name != triggernames.end(); ++name)
+        FillJetHistogram(Form("hMCJetHist%s%s", jetptstring.Data(), name->c_str()), reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ());
       // Jet selected, loop over particles
       for(int ipart = 0; ipart < reconstructedJet->GetNumberOfTracks(); ipart++){
         foundtrack = dynamic_cast<AliAODMCParticle *>(reconstructedJet->TrackAt(ipart, cont->GetParticleContainer()->GetArray()));
@@ -164,4 +175,13 @@ void AliEMCalTriggerMCJetAnalysisComponent::FillHistogram(
   fHistos->FillTHnSparse(histname.Data(), data);
 }
 
+//______________________________________________________________________________
+void AliEMCalTriggerMCJetAnalysisComponent::FillJetHistogram(
+    const TString& histname, const AliEmcalJet* recjet, double vz) {
+  /*
+   * Fill histogram for reconstructed jets with the relevant information
+   */
+  double data[4] = {TMath::Abs(recjet->Pt()), recjet->Eta(), recjet->Phi(), vz};
+  fHistos->FillTHnSparse(histname.Data(), data);
+}
 } /* namespace EMCalTriggerPtAnalysis */

@@ -134,7 +134,7 @@ void AliEMCalTriggerRecJetAnalysisComponent::CreateHistos() {
     const std::string name = it->first, &title = it->second;
     fHistos->CreateTHnSparse(Form("hTrackJetHist%s%s", jetptstring.Data(), name.c_str()), Form("Track-based data for tracks in jets in %s events", title.c_str()), 6, trackaxes, "s");
     fHistos->CreateTHnSparse(Form("hMCTrackJetHist%s%s", jetptstring.Data(), name.c_str()), Form("Track-based data for tracks in jets in %s events with MC kinematics", title.c_str()), 6, trackaxes, "s");
-    fHistos->CreateTHnSparse(Form("hJetHist%s%s", jetptstring.Data(), name.c_str()), Form("Reconstructed jets in %s-triggered events", name.c_str()), 4, jetaxes);
+    fHistos->CreateTHnSparse(Form("hRecJetHist%s%s", jetptstring.Data(), name.c_str()), Form("Reconstructed jets in %s-triggered events", name.c_str()), 4, jetaxes);
   }
 
   for(int iaxis = 0; iaxis < 6; iaxis++) delete trackaxes[iaxis];
@@ -157,7 +157,7 @@ void AliEMCalTriggerRecJetAnalysisComponent::Process(const AliEMCalTriggerEventD
   while(reconstructedJet){
     if(TMath::Abs(reconstructedJet->Pt()) > fMinimumJetPt){
       for(std::vector<std::string>::iterator name = triggernames.begin(); name != triggernames.end(); ++name)
-        FillJetHistogram(Form("hJetHist%s%s", jetptstring.Data(), name->c_str()), reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ());
+        FillJetHistogram(Form("hRecJetHist%s%s", jetptstring.Data(), name->c_str()), reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ());
       // Jet selected, loop over particles
       for(int ipart = 0; ipart < reconstructedJet->GetNumberOfTracks(); ipart++){
         foundtrack = dynamic_cast<AliVTrack *>(reconstructedJet->TrackAt(ipart, cont->GetParticleContainer()->GetArray()));
