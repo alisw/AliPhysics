@@ -506,7 +506,7 @@ int AliHLTTPCCalibManagerComponent::ProcessOptionString(TString arguments)
     //Printf("  %s : %s", i->first.data(), i->second.data());
     ProcessOption(i->first,i->second);
   }
-  options->clear(); //tidy up
+  delete options; //tidy up
 
   return 1; 
 }
