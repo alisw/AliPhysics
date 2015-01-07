@@ -358,7 +358,7 @@ def comment_classdesc(filename, comments):
             author = mauthor.group(1)
             if date is None:
               # Date specified in the standalone \date field has priority
-              date = mauthor.group(2)
+              date = mauthor.group(3)
             append = False
           else:
             mdate = re.search(redate, mcomm.group(1))
