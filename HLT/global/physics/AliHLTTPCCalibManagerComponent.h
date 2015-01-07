@@ -165,7 +165,7 @@ public:
 
   //new option parser
   static stringMap* TokenizeOptionString(const TString str);
-  int ProcessOptionString(int argc, const char** argv);
+  int ProcessOptionString(TString arguments);
   int ProcessOption(TString option, TString value);
 
   /**  */
