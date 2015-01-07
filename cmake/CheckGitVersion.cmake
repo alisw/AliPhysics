@@ -58,7 +58,8 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
                             OUTPUT_VARIABLE ALIROOT_SERIAL_ORIGINAL)
         else()
             # generate the short version of the revision hash using -wc -l
-            execute_process(COMMAND git rev-list ${GIT_SHA1} | wc -l
+            execute_process(COMMAND git rev-list ${GIT_SHA1}
+                            COMMAND wc -l
                             WORKING_DIRECTORY ${AliRoot_SOURCE_DIR}
                             OUTPUT_STRIP_TRAILING_WHITESPACE
                             RESULT_VARIABLE revcount
