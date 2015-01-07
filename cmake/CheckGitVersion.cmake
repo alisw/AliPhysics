@@ -29,6 +29,8 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
     find_package(Git)
     
     if(GIT_FOUND)
+        message(STATUS "Git version = ${GIT_VERSION_STRING}")
+        
         get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 
         # generate the short version of the revision hash
@@ -42,14 +44,26 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
         if(NOT res EQUAL 0)
             set(GIT_SHORT_SHA1 ${GIT_SHA1})
         endif()
-        
-        # generate the short version of the revision hash
-        execute_process(COMMAND git rev-list --count ${GIT_SHA1}
-                          WORKING_DIRECTORY ${AliRoot_SOURCE_DIR}
-                          OUTPUT_STRIP_TRAILING_WHITESPACE
-                          RESULT_VARIABLE revcount
-                          OUTPUT_VARIABLE ALIROOT_SERIAL_ORIGINAL)
 
+        # Older Git version < 1.7.3 do not have --count option for rev-list
+        # We use simple rev-list and we count the lines of the output
+        string(COMPARE GREATER "${GIT_VERSION_STRING}" "1.7.3" NEWGIT)
+        
+        if(NEWGIT)
+            # generate the short version of the revision hash using --count
+            execute_process(COMMAND git rev-list --count ${GIT_SHA1}
+                            WORKING_DIRECTORY ${AliRoot_SOURCE_DIR}
+                            OUTPUT_STRIP_TRAILING_WHITESPACE
+                            RESULT_VARIABLE revcount
+                            OUTPUT_VARIABLE ALIROOT_SERIAL_ORIGINAL)
+        else()
+            # generate the short version of the revision hash using -wc -l
+            execute_process(COMMAND git rev-list ${GIT_SHA1} | wc -l
+                            WORKING_DIRECTORY ${AliRoot_SOURCE_DIR}
+                            OUTPUT_STRIP_TRAILING_WHITESPACE
+                            RESULT_VARIABLE revcount
+                            OUTPUT_VARIABLE ALIROOT_SERIAL_ORIGINAL)
+        endif()
 
         # GIT_REFSPEC is empty for detached mode = tags in detached mode or checkout to specific hash
 
