@@ -50,7 +50,7 @@ AliEmcalTriggerBitConfig::AliEmcalTriggerBitConfig(
     Int_t ghighbit,
     Int_t glowbit,
     Int_t mcoffset):
-    TObject(),
+    TNamed("EmcalTriggerBitConfigUninit", ""),
     fL0Bit(l0bit),
     fJHighBit(jhighbit),
     fJLowBit(jlowbit),
@@ -68,6 +68,7 @@ void AliEmcalTriggerBitConfig::Initialise(const AliEmcalTriggerBitConfig& ref) {
   /*
    * Initialise from other object
    */
+  SetName(ref.GetName());
   fL0Bit = ref.GetLevel0Bit();
   fJHighBit = ref.GetJetHighBit();
   fJLowBit = ref.GetJetLowBit();
@@ -83,6 +84,7 @@ AliEmcalTriggerBitConfigOld::AliEmcalTriggerBitConfigOld():
   /*
    * Settings for the 2-bit configuration
    */
+  SetName("EmcalTriggerBitConfigOld");
 }
 
 //________________________________________________________________________
@@ -92,5 +94,6 @@ AliEmcalTriggerBitConfigNew::AliEmcalTriggerBitConfigNew():
   /*
    * Settings for the 4-bit configuration
    */
+  SetName("EmcalTriggerBitConfigNew");
 }
 

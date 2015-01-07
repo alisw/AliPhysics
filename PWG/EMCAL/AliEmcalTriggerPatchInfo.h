@@ -83,6 +83,7 @@ class AliEmcalTriggerPatchInfo: public TObject {
   void SetOffSet(Int_t i)        { fOffSet      = i; }
 
   void SetTriggerBitConfig(const AliEmcalTriggerBitConfig * ref) { fTriggerBitConfig.Initialise(*ref); }
+  const AliEmcalTriggerBitConfig *GetTriggerBitConfig() const { return &fTriggerBitConfig; }
 
 
  protected:
