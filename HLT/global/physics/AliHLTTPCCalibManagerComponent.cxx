@@ -192,8 +192,7 @@ Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t argc, const Char_t** argv ) 
   tpcAddTaskMacroArgs+="\""+fTPCcalibConfigString+"\"";
 
   //process arguments
-  //ConfigureFromArgumentString(argc,argv);
-  ProcessOptionString(argc,argv);
+  ProcessOptionString(GetComponentArgs());
 
   if (!fEnableDebug)
   {
@@ -497,19 +496,17 @@ int AliHLTTPCCalibManagerComponent::ProcessOption(TString option, TString value)
 }
 
 // #################################################################################
-int AliHLTTPCCalibManagerComponent::ProcessOptionString(int argc, const char** argv)
+int AliHLTTPCCalibManagerComponent::ProcessOptionString(TString arguments)
 {
   //process passed options
-  for (int arg=0; arg<argc; arg++)
+  //Printf("Argument string: %s", arguments.Data());
+  stringMap* options = TokenizeOptionString(arguments);
+  for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
   {
-    stringMap* options = TokenizeOptionString(argv[arg]);
-    for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
-    {
-      Printf("%s : %s", i->first.data(), i->second.data());
-      ProcessOption(i->first,i->second);
-    }
-    options->clear(); //tidy up
+    //Printf("  %s : %s", i->first.data(), i->second.data());
+    ProcessOption(i->first,i->second);
   }
+  options->clear(); //tidy up
 
   return 1; 
 }
@@ -517,7 +514,6 @@ int AliHLTTPCCalibManagerComponent::ProcessOptionString(int argc, const char** a
 // #################################################################################
 AliHLTTPCCalibManagerComponent::stringMap* AliHLTTPCCalibManagerComponent::TokenizeOptionString(const TString str)
 {
-  
   //options have the form:
   // -o value
   // -o=value
@@ -578,7 +574,6 @@ AliHLTTPCCalibManagerComponent::stringMap* AliHLTTPCCalibManagerComponent::Token
   //for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
   //{
   //  Printf("%s : %s", i->first.data(), i->second.data());
-  //  ProcessOption(i->first,i->second);
   //}
   return options;
 }
