@@ -498,6 +498,10 @@ int AliHLTTPCCalibManagerComponent::ProcessOption(TString option, TString value)
     fWriteAnalysisToFile=(value.Contains("0"))?kFALSE:kTRUE;
     HLTInfo("fWriteAnalysisToFile=%i\n",(fWriteAnalysisToFile)?1:0);
   }
+  if (option.Contains("AddTaskMacro"))
+  {
+    fAddTaskMacro=value;
+  }
   return 1; 
 }
 
