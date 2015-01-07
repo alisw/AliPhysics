@@ -89,22 +89,36 @@ class Comment:
 ## A data member comment.
 class MemberComment:
 
-  def __init__(self, text, is_transient, array_size, first_line, first_col, func):
+  def __init__(self, text, comment_flag, array_size, first_line, first_col, func):
     assert first_line > 0, 'Wrong line number'
+    assert comment_flag is None or comment_flag == '!' or comment_flag in [ '!', '||', '->' ]
     self.lines = [ text ]
-    self.is_transient = is_transient
+    self.comment_flag = comment_flag
     self.array_size = array_size
     self.first_line = first_line
     self.first_col = first_col
     self.func = func
+
+  def is_transient(self):
+    return self.comment_flag == '!'
+
+  def is_dontsplit(self):
+    return self.comment_flag == '||'
+
+  def is_ptr(self):
+    return self.comment_flag == '->'
 
   def has_comment(self, line):
     return line == self.first_line
 
   def __str__(self):
 
-    if self.is_transient:
+    if self.is_transient():
       tt = '!transient! '
+    elif self.is_dontsplit():
+      tt = '!dontsplit! '
+    elif self.is_ptr():
+      tt = '!ptr! '
     else:
       tt = ''
 
@@ -241,7 +255,7 @@ def comment_datamember(cursor, comments):
   prev = None
   found = False
 
-  # Huge overkill
+  # Huge overkill: current line saved in "raw", previous in "prev"
   with open(str(cursor.location.file)) as fp:
     cur_line = 0
     for raw in fp:
@@ -253,14 +267,14 @@ def comment_datamember(cursor, comments):
 
   assert found, 'A line that should exist was not found in file' % cursor.location.file
 
-  recomm = r'(//(!)|///?)(\[(.*?)\])?<?\s*(.*?)\s*$'
-  recomm_doxyary = r'^\s*///\s*(.*?)\s*$'
+  recomm = r'(//(!|\|\||->)|///?)(\[([0-9,]+)\])?<?\s*(.*?)\s*$'
+  recomm_prevline = r'^\s*///\s*(.*?)\s*$'
 
   mcomm = re.search(recomm, raw)
   if mcomm:
     # If it does not match, we do not have a comment
     member_name = cursor.spelling;
-    is_transient = mcomm.group(2) is not None
+    comment_flag = mcomm.group(2)
     array_size = mcomm.group(4)
     text = mcomm.group(5)
 
@@ -269,16 +283,16 @@ def comment_datamember(cursor, comments):
     if array_size is not None and prev is not None:
       # ROOT arrays with comments already converted to Doxygen have the member description on the
       # previous line
-      mcomm_doxyary = re.search(recomm_doxyary, prev)
-      if mcomm_doxyary:
-        text = mcomm_doxyary.group(1)
+      mcomm_prevline = re.search(recomm_prevline, prev)
+      if mcomm_prevline:
+        text = mcomm_prevline.group(1)
         comments.append(RemoveComment(line_num-1, line_num-1))
 
     logging.debug('Comment found for member %s' % Colt(member_name).magenta())
 
     comments.append( MemberComment(
       text,
-      is_transient,
+      comment_flag,
       array_size,
       line_num,
       col_num,
@@ -689,26 +703,42 @@ def rewrite_comments(fhin, fhout, comments):
       if isinstance(comm, MemberComment):
         non_comment = line[ 0:comm.first_col-1 ]
 
-        if comm.array_size is not None:
+        if comm.array_size is not None or comm.is_dontsplit() or comm.is_ptr():
 
+          # This is a special case: comment will be split in two lines: one before the comment for
+          # Doxygen as "member description", and the other right after the comment on the same line
+          # to be parsed by ROOT's C++ parser
+
+          # Keep indent on the generated line of comment before member definition
           mindent = re.search(rindent, line)
-          if comm.is_transient:
-            tt = '!'
-          else:
-            tt = ''
 
-          # Special case: we need multiple lines not to confuse ROOT's C++ parser
-          fhout.write('%s/// %s\n%s//%s[%s]\n' % (
+          # Get correct comment flag, if any
+          if comm.comment_flag is not None:
+            cflag = comm.comment_flag
+          else:
+            cflag = ''
+
+          # Get correct array size, if any
+          if comm.array_size is not None:
+            asize = '[%s]' % comm.array_size
+          else:
+            asize = ''
+
+          # Write on two lines
+          fhout.write('%s/// %s\n%s//%s%s\n' % (
             mindent.group(1),
             comm.lines[0],
             non_comment,
-            tt,
-            comm.array_size
+            cflag,
+            asize
           ))
 
         else:
 
-          if comm.is_transient:
+          # Single-line comments with the "transient" flag can be kept on one line in a way that
+          # they are correctly interpreted by both ROOT and Doxygen
+
+          if comm.is_transient():
             tt = '!'
           else:
             tt = '/'
@@ -834,10 +864,14 @@ def main(argv):
 
       if isinstance(c, MemberComment):
 
-        if c.is_transient:
-          transient_text = Colt('transient ').yellow()
+        if c.is_transient():
+          flag_text = Colt('transient ').yellow()
+        elif c.is_dontsplit():
+          flag_text = Colt('dontsplit ').yellow()
+        elif c.is_ptr():
+          flag_text = Colt('ptr ').yellow()
         else:
-          transient_text = ''
+          flag_text = ''
 
         if c.array_size is not None:
           array_text = Colt('arraysize=%s ' % c.array_size).yellow()
@@ -847,7 +881,7 @@ def main(argv):
         logging.debug(
           "%s %s%s{%s}" % ( \
             Colt("[%d,%d]" % (c.first_line, c.first_col)).green(),
-            transient_text,
+            flag_text,
             array_text,
             Colt(c.lines[0]).cyan()
         ))
