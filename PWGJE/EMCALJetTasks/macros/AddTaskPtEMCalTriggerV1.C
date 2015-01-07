@@ -118,7 +118,7 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   }
 
   TString containerName = mgr->GetCommonFileName();
-  containerName += ":PtEMCalTriggerTask" + ntrackcuts;
+  containerName += ":PtEMCalTriggerTask" + TString(ntrackcuts);
   printf("container name: %s\n", containerName.Data());
 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
