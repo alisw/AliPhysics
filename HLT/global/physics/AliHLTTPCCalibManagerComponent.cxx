@@ -181,7 +181,7 @@ AliHLTComponent* AliHLTTPCCalibManagerComponent::Spawn() {
  */
 
 // #################################################################################
-Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t argc, const Char_t** argv ) {
+Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ ) {
   // see header file for class documentation
   HLTInfo("----> AliHLTTPCCalibManagerComponent::DoInit");
 
@@ -517,7 +517,6 @@ AliHLTTPCCalibManagerComponent::stringMap* AliHLTTPCCalibManagerComponent::Token
   //options have the form:
   // -o value
   // -o=value
-  // -ovalue
   // -o
   // --option value
   // --option=value
@@ -531,8 +530,8 @@ AliHLTTPCCalibManagerComponent::stringMap* AliHLTTPCCalibManagerComponent::Token
   
   //optionRE by construction contains a pure option name as 4th submatch (without --,-, =)
   //valueRE does NOT match options
-  TPRegexp optionRE("(?:((?='?\\w+=?))|(-)|(--))((?(1)(?:(?(?=')'(?:[^'\\\\]++|\\.)*+'|\\w+))(?==?))(?(2)\\w(?=[= ,$]|\\w+))(?(3)\\w+(?=[= ,$])?))");
-  TPRegexp valueRE("(?(?!(-{1,2}|\\w+=))(?(?=')'(?:[^'\\\\]++|\\.)*+'|\\w+))");
+  TPRegexp optionRE("(?:((?='?\\w+=?))|(-{1,2}))((?(1)(?:(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^, =]+))(?==?))(?(2)[^, =]+(?=[= ,$])))");
+  TPRegexp valueRE("(?(?!(-{1,2}|[^, =]+=))(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^, =]+))");
 
   stringMap* options = new stringMap;
 
@@ -548,7 +547,7 @@ AliHLTTPCCalibManagerComponent::stringMap* AliHLTTPCCalibManagerComponent::Token
     Int_t nOption=optionRE.Match(str,mods,start,10,&pos);
     if (nOption>0)
     {
-      optionStr = str(pos[8],pos[9]-pos[8]);
+      optionStr = str(pos[6],pos[7]-pos[6]);
       optionStr=optionStr.Strip(TString::kBoth,'\'');
       start=pos[1]; //update the current character to the end of match
     }
