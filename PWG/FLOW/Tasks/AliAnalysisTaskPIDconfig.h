@@ -81,6 +81,10 @@ private:
     Double_t               fFilterBit;                  // filterbit
     Double_t               fDCAxyCut;           // dca cut
     Double_t               fDCAzCut;            // dcz z
+    Double_t               fLowPtPIDTPCnsigLow_Pion[6]; //nsig low cut Pion
+    Double_t               fLowPtPIDTPCnsigHigh_Pion[6]; //nsig high cut Pion
+    Double_t               fLowPtPIDTPCnsigLow_Kaon[6]; //nsig low cut Kaon
+    Double_t               fLowPtPIDTPCnsigHigh_Kaon[6]; //nsig high cut Kaon
     Bool_t                 fData2011;           // 2011 data
     Bool_t                 fTriggerMB;          // minB trigger
     Bool_t                 fTriggerCentral;     // cen trigger
@@ -111,6 +115,8 @@ private:
     TH2F                  *fhistTPCnSigmavsP;   //! another hist
     TH2F                  *fHistBetavsPTOFafterPID;     //! another hist
     TH2F                  *fHistdEdxvsPTPCafterPID;     //! another hist
+    TH2F                  *fHistBetavsPTOFafterPID_2;     //! another hist
+    TH2F                  *fHistdEdxvsPTPCafterPID_2;     //! another hist
     TH2F                  *fHistBetavsPTOFafterPIDTPCTOF; //! another hist
     TH2F                  *fHistdEdxvsPTPCafterPIDTPCTOF; //! another hist
     TH2F                  *fHistBetavsPTOFafterPIDTPConly; //! another hist
