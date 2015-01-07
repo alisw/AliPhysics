@@ -29,7 +29,7 @@ ClassImp(AliEmcalTriggerBitConfigNew)
 
 //________________________________________________________________________
 AliEmcalTriggerBitConfig::AliEmcalTriggerBitConfig():
-    TObject(),
+    TNamed(),
     fL0Bit(-1),
     fJHighBit(-1),
     fJLowBit(-1),
@@ -73,7 +73,7 @@ void AliEmcalTriggerBitConfig::Initialise(const AliEmcalTriggerBitConfig& ref) {
   fJHighBit = ref.GetJetHighBit();
   fJLowBit = ref.GetJetLowBit();
   fGHighBit = ref.GetGammaHighBit();
-  fGLowBit = ref.GetJetLowBit();
+  fGLowBit = ref.GetGammaLowBit();
   fTriggerTypesEnd = ref.GetTriggerTypesEnd();
 }
 
