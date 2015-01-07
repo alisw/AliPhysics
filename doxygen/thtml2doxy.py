@@ -444,13 +444,14 @@ def traverse_ast(cursor, filename, comments, recursion=0):
   for i in range(0, recursion):
     indent = indent + '  '
 
-  if cursor.kind == clang.cindex.CursorKind.CXX_METHOD or cursor.kind == clang.cindex.CursorKind.CONSTRUCTOR or cursor.kind == clang.cindex.CursorKind.DESTRUCTOR:
+  if cursor.kind in [ clang.cindex.CursorKind.CXX_METHOD, clang.cindex.CursorKind.CONSTRUCTOR,
+    clang.cindex.CursorKind.DESTRUCTOR ]:
 
     # cursor ran into a C++ method
     logging.debug( "%5d %s%s(%s)" % (cursor.location.line, indent, Colt(kind).magenta(), Colt(text).blue()) )
     comment_method(cursor, comments)
 
-  elif cursor.kind == clang.cindex.CursorKind.FIELD_DECL:
+  elif cursor.kind in [ clang.cindex.CursorKind.FIELD_DECL, clang.cindex.CursorKind.VAR_DECL ]:
 
     # cursor ran into a data member declaration
     logging.debug( "%5d %s%s(%s)" % (cursor.location.line, indent, Colt(kind).magenta(), Colt(text).blue()) )
@@ -771,6 +772,7 @@ def rewrite_comments(fhin, fhout, comments):
 
         # Dump revamped comment, if applicable
         text_indent = ''
+
         for i in range(0,prev_comm.indent):
           text_indent = text_indent + ' '
 
