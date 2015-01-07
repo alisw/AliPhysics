@@ -159,8 +159,8 @@ void AliPHOSAodCluster::EvalCoord(Float_t logWeight, TVector3 &vtx)
     xMean /= wtot ;
     zMean /= wtot ;
   }
-  else
-    AliError(Form("Wrong weight %f\n", wtot));
+//  else
+//    AliError(Form("Wrong weight %f\n", wtot));
 
 
 // Calculates the dispersion and second momenta
@@ -197,7 +197,7 @@ void AliPHOSAodCluster::EvalCoord(Float_t logWeight, TVector3 &vtx)
     SetM20(0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz ));
   }
   else{
-    AliError(Form("Wrong weight %f\n", wtot));
+//    AliError(Form("Wrong weight %f\n", wtot));
     d=0. ;
     SetM20(0.) ;
     SetM02(0.) ;
