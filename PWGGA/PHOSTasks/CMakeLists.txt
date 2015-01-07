@@ -20,6 +20,7 @@ set(MODULE PWGGAPHOSTasks)
 include_directories(${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks
                     ${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks/CaloCellQA
                     ${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks/omega3pi
+                    ${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks/ClusterSelection
                     ${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Correlation
                     ${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_embedding
                     ${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_EpRatio
@@ -54,6 +55,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
     CaloCellQA/AliAnalysisTaskCaloCellsQA.cxx
     CaloCellQA/AliCaloCellsQA.cxx
+    ClusterSelection/AliPHOSTriggerUtils.cxx
     omega3pi/AliAnalysisTaskOmegaPi0PiPi.cxx
     PHOS_Correlation/AliPHOSCorrelations.cxx
     PHOS_embedding/AliAnalysisTaskPi0DiffEfficiency.cxx
