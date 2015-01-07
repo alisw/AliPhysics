@@ -10,7 +10,7 @@ AliGenerator *AddMCGenAmpt(
 {
   // User defined generator
 
-  gSystem->Load("libampt");
+  gSystem->Load("libAMPT");
   gSystem->Load("libTAmpt");
   gSystem->Load("libEGPythia6"); 
   gSystem->Load("libpythia6");
