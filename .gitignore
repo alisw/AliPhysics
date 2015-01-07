@@ -1,10 +1,6 @@
 EVE/macros/saveViews.C
 MONITOR/alistoragemanager/clearAll.sh
 MONITOR/alistoragemanager/setupStorageDatabase.sh
-.gitignore
-AliRootXcode/
-AliRootXcode.xcodeproj/
-AliRootXcode/**
 *.DS_Store
 *.xworkspace
 *.xcodeproj
