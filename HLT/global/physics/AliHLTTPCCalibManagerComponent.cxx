@@ -95,7 +95,8 @@ AliHLTTPCCalibManagerComponent::AliHLTTPCCalibManagerComponent() :
   fUID(0),
   fAnalysisManager(NULL),
   fInputHandler(NULL),
-  fTPCcalibConfigString("ALL-TPCCalib-:CalibTracks-:CalibCalib-:CalibTimeDrift"),
+  fTPCcalibConfigString("TPCCalib:CalibTimeDrift"),
+  fAddTaskMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C"),
   fWriteAnalysisToFile(kFALSE),
   fEnableDebug(kFALSE)
 {
@@ -185,12 +186,6 @@ Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
   // see header file for class documentation
   HLTInfo("----> AliHLTTPCCalibManagerComponent::DoInit");
 
-  //default values
-  TString tpcAddTaskMacro="$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C";
-  TString tpcAddTaskMacroArgs=TString::Itoa(GetRunNo(),10);
-  tpcAddTaskMacroArgs+=",";
-  tpcAddTaskMacroArgs+="\""+fTPCcalibConfigString+"\"";
-
   //process arguments
   ProcessOptionString(GetComponentArgs());
 
@@ -206,7 +201,12 @@ Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
   fInputHandler    = new AliHLTVEventInputHandler("HLTinputHandler","HLT input handler");
   fAnalysisManager->SetInputEventHandler(fInputHandler);
 
-  TString macro=tpcAddTaskMacro+"("+tpcAddTaskMacroArgs+")";
+  TString addTaskMacroArgs=TString::Itoa(GetRunNo(),10);
+  addTaskMacroArgs+=",";
+  addTaskMacroArgs+="\""+fTPCcalibConfigString+"\"";
+
+  TString macro=fAddTaskMacro+"("+addTaskMacroArgs+")";
+  HLTInfo("Executing: %s\n",macro.Data());
   gROOT->Macro(macro);
 
   fAnalysisManager->InitAnalysis();
@@ -489,9 +489,15 @@ int AliHLTTPCCalibManagerComponent::ProcessOption(TString option, TString value)
   //process option
   //to be implemented by the user
   if (option.Contains("TPCcalibConfigString")) 
+  {
     fTPCcalibConfigString=value;
+    HLTInfo("fTPCcalibConfigString=%s\n",fTPCcalibConfigString.Data());
+  }
   if (option.Contains("WriteAnalysisToFile")) 
+  {
     fWriteAnalysisToFile=(value.Contains("0"))?kFALSE:kTRUE;
+    HLTInfo("fWriteAnalysisToFile=%i\n",(fWriteAnalysisToFile)?1:0);
+  }
   return 1; 
 }
 
@@ -499,11 +505,11 @@ int AliHLTTPCCalibManagerComponent::ProcessOption(TString option, TString value)
 int AliHLTTPCCalibManagerComponent::ProcessOptionString(TString arguments)
 {
   //process passed options
-  //Printf("Argument string: %s", arguments.Data());
+  HLTInfo("Argument string: %s\n", arguments.Data());
   stringMap* options = TokenizeOptionString(arguments);
   for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
   {
-    //Printf("  %s : %s", i->first.data(), i->second.data());
+    HLTInfo("  %s : %s\n", i->first.data(), i->second.data());
     ProcessOption(i->first,i->second);
   }
   delete options; //tidy up
@@ -515,9 +521,9 @@ int AliHLTTPCCalibManagerComponent::ProcessOptionString(TString arguments)
 AliHLTTPCCalibManagerComponent::stringMap* AliHLTTPCCalibManagerComponent::TokenizeOptionString(const TString str)
 {
   //options have the form:
-  // -o value
-  // -o=value
-  // -o
+  // -option value
+  // -option=value
+  // -option
   // --option value
   // --option=value
   // --option
@@ -525,12 +531,12 @@ AliHLTTPCCalibManagerComponent::stringMap* AliHLTTPCCalibManagerComponent::Token
   // option value
   // (value can also be a string like 'some string')
   //
-  // options can be separated bu ' ' or ',' arbitrarily combined, e.g:
-  //"-ovalue option1=value1 --option2 value2 --option4=\'some string\'"
+  // options can be separated by ' ' or ',' arbitrarily combined, e.g:
+  //"-option option1=value1 --option2 value2, -option4=\'some string\'"
   
-  //optionRE by construction contains a pure option name as 4th submatch (without --,-, =)
+  //optionRE by construction contains a pure option name as 3rd submatch (without --,-, =)
   //valueRE does NOT match options
-  TPRegexp optionRE("(?:((?='?\\w+=?))|(-{1,2}))((?(1)(?:(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^, =]+))(?==?))(?(2)[^, =]+(?=[= ,$])))");
+  TPRegexp optionRE("(?:((?='?[^, =]+=?))|(-{1,2}))((?(1)(?:(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^, =]+))(?==?))(?(2)[^, =]+(?=[= ,$])))");
   TPRegexp valueRE("(?(?!(-{1,2}|[^, =]+=))(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^, =]+))");
 
   stringMap* options = new stringMap;
