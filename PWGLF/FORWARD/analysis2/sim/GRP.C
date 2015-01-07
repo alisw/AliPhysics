@@ -83,12 +83,12 @@ struct GRPData
       }
     }
   };
-  UInt_t  beamEnergy;
-  UInt_t  energy;
-  TString period;
-  UInt_t  run;
-  Beam    beam1;
-  Beam    beam2;
+  UInt_t  beamEnergy; // Total energy in center of mass
+  UInt_t  energy; // Center of mass energy per nucleon
+  TString period; // The period 
+  UInt_t  run;   // The run number 
+  Beam    beam1; // Target beam 
+  Beam    beam2; // Projectile beam
   /** 
    * Constructor. 
    * 
@@ -230,8 +230,8 @@ struct GRPData
        cdb->SetRun(-1);
        return false;
      }
-     Info("GRP", "Got GRP:");
-     ent->PrintMetaData();
+     // Info("GRP", "Got GRP");
+     // ent->PrintMetaData();
 
      AliGRPObject*  obj        = static_cast<AliGRPObject*>(ent->GetObject());
      obj->Print();

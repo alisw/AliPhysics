@@ -336,7 +336,7 @@ protected:
     }
     else if (grp->IsPA() || grp->IsAP()) { 
       // dpmjet->SetTriggerParticle(3312, 1.2, 2.0);
-      dpmjet->SetFragmentProd(fragments); // Alwas disabled 
+      dpmjet->SetFragmentProd(false/*fragments*/); // Alwas disabled 
     }
     else if (grp->IsPP()) { // PhoJet
       dpmjet->SetMomentumRange(0, 999999.);

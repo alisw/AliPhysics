@@ -5,7 +5,8 @@ RunFast(Bool_t      proof=false,
 	Double_t    bMin=0,
 	Double_t    bMax=20,
 	const char* eg="default",
-	Int_t       monitor=5)
+	Int_t       monitor=5,
+	const char* opt="")
 {
   TString ali = gSystem->ExpandPathName("${ALICE_ROOT}");
   // TString fwd = gSystem->ExpandPathName("$ANA_SRC");
@@ -38,7 +39,7 @@ RunFast(Bool_t      proof=false,
     gROOT->LoadClass(obj->GetName(), obj->GetTitle());
   }
 
-  const char* opt="";
+
   gROOT->LoadMacro(Form("%s/sim/FastSim.C+%s",fwd.Data(),opt));
 
   const char* cleanFiles[] = { "grp.dat",
@@ -52,9 +53,12 @@ RunFast(Bool_t      proof=false,
     gSystem->Unlink(*pClean);
     pClean++;
   }
-
+  // Uncomment next line to use number of diffractive processes for SD
+  // detection.
+  // gSystem->AddIncludePath("-DNO_DPMJET_TYPE");
+  
   const char* url = "lite:///?workers=8";
   ::Info("runFast", "Monitor=%d", monitor);
-  if (proof) FastSim::Proof(url,maxEvents, runNo, eg, bMin, bMax, monitor);
+  if (proof) FastSim::Proof(url,maxEvents,runNo,eg,bMin,bMax,monitor,opt);
   else       FastSim::Run(maxEvents, runNo, eg, bMin, bMax, monitor);
 }
