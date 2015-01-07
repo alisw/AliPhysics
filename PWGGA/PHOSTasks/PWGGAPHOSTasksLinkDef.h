@@ -4,6 +4,9 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+// ClusterSelection
+#pragma link C++ class AliPHOSTriggerUtils+;
+
 // PHOS_pp_pi0
 #pragma link C++ class AliCaloPhoton+;
 #pragma link C++ class AliAnalysisTaskPi0+;
