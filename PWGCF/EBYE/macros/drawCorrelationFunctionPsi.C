@@ -311,6 +311,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   hPP = (AliTHn*) list->FindObject(gHistPPname.Data());
   hNN = (AliTHn*) list->FindObject(gHistNNname.Data());
   hNN->Print();
+  hN->Print();
 
 
   //Create the AliBalancePsi object and fill it with the AliTHn objects
@@ -423,6 +424,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   TH2D *gHistNP[4];
   TH2D *gHistPP[4];
   TH2D *gHistNN[4];
+  TH2D *gHistTriggerPN;
+  TH2D *gHistTriggerNP;
+  TH2D *gHistTriggerPP;
+  TH2D *gHistTriggerNN;
   
   TCanvas *cPN[4];
   TCanvas *cNP[4];
@@ -491,6 +496,8 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     else 
       histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   }
+
+  gHistTriggerPN = b->GetTriggers("PN",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax);
   gHistPN[0] = b->GetCorrelationFunctionPN(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   if(rebinEta > 1 || rebinPhi > 1){
     gHistPN[0]->Rebin2D(rebinEta,rebinPhi);
@@ -706,6 +713,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
       histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   }
 
+  gHistTriggerNP = b->GetTriggers("NP",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax);
   gHistNP[0] = b->GetCorrelationFunctionNP(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   if(rebinEta > 1 || rebinPhi > 1){
     gHistNP[0]->Rebin2D(rebinEta,rebinPhi);
@@ -921,6 +929,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
       histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   }
 
+  gHistTriggerPP = b->GetTriggers("PP",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax);
   gHistPP[0] = b->GetCorrelationFunctionPP(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   if(rebinEta > 1 || rebinPhi > 1){
     gHistPP[0]->Rebin2D(rebinEta,rebinPhi);
@@ -1134,6 +1143,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
       histoTitle += " (0^{o} < #varphi^{t} - #Psi_{2} < 180^{o})"; 
   } 
 
+  gHistTriggerNN = b->GetTriggers("NN",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax);
   gHistNN[0] = b->GetCorrelationFunctionNN(psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   if(rebinEta > 1 || rebinPhi > 1){
     gHistNN[0]->Rebin2D(rebinEta,rebinPhi);
@@ -1347,7 +1357,13 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   newFileName += ".root";
 
   TFile *newFile = TFile::Open(newFileName.Data(),"recreate");
-  gHistPN[0]->SetName("gHistPNRaw"); gHistPN[0]->Write();
+
+  gHistTriggerPN->SetName("gHistPNTrigger"); gHistTriggerPN->Write();
+  gHistTriggerNP->SetName("gHistNPTrigger"); gHistTriggerNP->Write();
+  gHistTriggerPP->SetName("gHistPPTrigger"); gHistTriggerPP->Write();
+  gHistTriggerNN->SetName("gHistNNTrigger"); gHistTriggerNN->Write();
+
+  gHistPN[0]->SetName("gHistPNRaw"); gHistPN[0]->Write(); 
   gHistNP[0]->SetName("gHistNPRaw"); gHistNP[0]->Write();
   gHistPP[0]->SetName("gHistPPRaw"); gHistPP[0]->Write();
   gHistNN[0]->SetName("gHistNNRaw"); gHistNN[0]->Write();
