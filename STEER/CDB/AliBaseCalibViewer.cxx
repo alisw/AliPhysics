@@ -301,11 +301,11 @@ Double_t AliBaseCalibViewer::GetLTM(Int_t n, Double_t *array, Double_t *sigma, D
   Double_t *ddata = new Double_t[n];
   Double_t mean = 0, lsigma = 0;
   UInt_t nPoints = 0;
-  for (UInt_t i = 0; i < (UInt_t)n; i++) {
+  for (Int_t i = 0; i < n; i++) {
     ddata[nPoints]= array[nPoints];
     nPoints++;
   }
-  Int_t hh = TMath::Min(TMath::Nint(fraction * nPoints), Int_t(n));
+  Int_t hh = TMath::Min(TMath::Nint(fraction * nPoints), n);
   AliMathBase::EvaluateUni(nPoints, ddata, mean, lsigma, hh);
   if (sigma) *sigma = lsigma;
   delete [] ddata;
