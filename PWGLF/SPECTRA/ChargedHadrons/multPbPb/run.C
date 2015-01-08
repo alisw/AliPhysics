@@ -311,11 +311,11 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
 
       //      TProof::Mgr("alice-caf.cern.ch")->SetROOTVersion("VO_ALICE@ROOT::v5-28-00f");
       gProof->EnablePackage("VO_ALICE@AliRoot::v5-02-12-AN");
-      gSystem->Load("libCore.so");  
-      gSystem->Load("libTree.so");
-      gSystem->Load("libGeom.so");
-      gSystem->Load("libVMC.so");
-      gSystem->Load("libPhysics.so");
+      gSystem->Load("libCore");
+      gSystem->Load("libTree");
+      gSystem->Load("libGeom");
+      gSystem->Load("libVMC");
+      gSystem->Load("libPhysics");
       gSystem->Load("libMinuit");
       gSystem->Load("libSTEERBase");
       gSystem->Load("libESD");
@@ -361,11 +361,11 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
   else
     {
       cout << "Init in Local or Grid mode" << endl;
-      gSystem->Load("libCore.so");  
-      gSystem->Load("libTree.so");
-      gSystem->Load("libGeom.so");
-      gSystem->Load("libVMC.so");
-      gSystem->Load("libPhysics.so");
+      gSystem->Load("libCore");
+      gSystem->Load("libTree");
+      gSystem->Load("libGeom");
+      gSystem->Load("libVMC");
+      gSystem->Load("libPhysics");
       gSystem->Load("libMinuit");
       gSystem->Load("libSTEERBase");
       gSystem->Load("libESD");

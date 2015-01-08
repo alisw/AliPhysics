@@ -115,6 +115,8 @@
 #pragma link C++ class  AliTRDv0Monitor+;
 #pragma link C++ class  AliTRDonlineTrackletFilter;
 #pragma link C++ class  AliTRDonlineTrackletQA;
+#pragma link C++ class  AliTRDPIDTree+;
+#pragma link C++ class  AliTRDPIDmatching+;
 
 // TRD offline calibration classes
 #pragma link C++ class  AliTRDmultiplicity+;

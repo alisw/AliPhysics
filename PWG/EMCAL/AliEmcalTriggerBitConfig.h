@@ -6,8 +6,9 @@
 // Author: Markus Fasel
 
 #include "AliLog.h"
+#include <TNamed.h>
 
-class AliEmcalTriggerBitConfig  : public TObject {
+class AliEmcalTriggerBitConfig  : public TNamed {
 public:
   AliEmcalTriggerBitConfig();
   AliEmcalTriggerBitConfig(Int_t l0bit, Int_t j1bit, Int_t j2bit, Int_t g1bit, Int_t g2bit, Int_t mcoffset);

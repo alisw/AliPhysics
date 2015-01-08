@@ -7,10 +7,10 @@ void RunIPTask(const char* mode)
 			  "-I$ALICE_ROOT/ANALYSIS -g"); 
   //
   // Load analysis libraries
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libTENDER.so");
-  gSystem->Load("libPWGPP.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libTender");
+  gSystem->Load("libPWGPP");
   //
   TChain *chainESD = 0;
   gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");

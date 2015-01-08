@@ -56,6 +56,7 @@ AliEbyEPidRatioTaskOnFly::AliEbyEPidRatioTaskOnFly( const char *name )
   fPtHigherLimit(5.),
   fEtaLowerLimit(-1.),
   fEtaHigherLimit(1.),
+  fCentrality(-1),
   fOrder(8),
   fRedFactp(NULL)
   

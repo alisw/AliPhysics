@@ -1,11 +1,11 @@
 void mergeResults(Char_t *files, Char_t *file="QAresults.root")
 {
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libTENDER.so");
-  gSystem->Load("libPWGPP.so");
-  gSystem->Load("libPWGmuon.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libTender");
+  gSystem->Load("libPWGPP");
+  gSystem->Load("libPWGmuon");
 
   TDatime dt; gRandom->SetSeed(dt.Get());
   gSystem->Exec("mkdir -p merge; rm -rf merge/*");

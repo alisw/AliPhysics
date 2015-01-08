@@ -77,7 +77,7 @@ AliAnalysisGrid* CreateAlienHandlerAODPbPb()
 // using ACLiC on the worker nodes.
 //   plugin->SetAnalysisSource("AliAnalysisHelperJetTasks.cxx AliAnalysisTaskPartonDisc.cxx");
    plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/Tender -I$ALICE_ROOT/TenderSupplies -I$ALICE_ROOT/PWGHF/ -I$ALICE_ROOT/PWGHF/hfe/macros -I$ALICE_ROOT/PWGHF/hfe -I$ALICE_ROOT/PWG/ -I$ALICE_ROOT/PWG/FLOW -I$ALICE_ROOT/PWG/Base -I$ALICE_ROOT/PWG/Tasks");
-   plugin->SetAdditionalLibs("libGui.so  libXMLParser.so libSTEERBase.so libAOD.so libCDB.so libANALYSIS.so libANALYSISalice.so libCORRFW.so  libTENDER.so libProof.so libRAWDatabase.so libSTEER.so libTOFbase.so libPWGflowBase.so libPWGflowTasks.so libPWGHFhfe.so");// ConfigLowMassDiE.C")
+   plugin->SetAdditionalLibs("libGui.so  libXMLParser.so libSTEERBase.so libAOD.so libCDB.so libANALYSIS.so libANALYSISalice.so libCORRFW.so  libTender.so libProof.so libRAWDatabase.so libSTEER.so libTOFbase.so libPWGflowBase.so libPWGflowTasks.so libPWGHFhfe.so");// ConfigLowMassDiE.C")
    
 // Declare all libraries (other than the default ones for the framework. These will be
 // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.

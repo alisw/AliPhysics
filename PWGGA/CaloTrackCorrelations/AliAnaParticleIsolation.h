@@ -133,6 +133,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOffDecayTaggedHistoFill()       { fFillTaggedDecayHistograms = kFALSE; }
   void         SetNDecayBits(Int_t n)                { fNDecayBits = n               ; }
   void         SetDecayBits(Int_t i, UInt_t bit)     { if(i < 4) fDecayBits[i] = bit ; }
+  void         SetM02CutForTaggedDecays(Float_t m02) { fDecayTagsM02Cut        = m02 ; }
   
   void         SwitchOnBackgroundBinHistoFill()      { fFillBackgroundBinHistograms = kTRUE ; }
   void         SwitchOffBackgroundBinHistoFill()     { fFillBackgroundBinHistograms = kFALSE; }
@@ -151,16 +152,19 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOffPrimariesPi0DecayStudy()     { fMakePrimaryPi0DecayStudy = kFALSE; }
   
   // For primary histograms in arrays, index in the array, corresponding to a photon origin
-  enum mcPrimTypes { kmcPrimPhoton = 0, kmcPrimPi0Decay = 1, kmcPrimOtherDecay  = 2,
-                     kmcPrimPrompt = 3, kmcPrimFrag     = 4, kmcPrimISR         = 5, kmcPrimPi0 = 6 } ;
-  static const Int_t fgkNmcPrimTypes = 7;
+  enum mcPrimTypes { kmcPrimPhoton = 0, kmcPrimPi0Decay = 1, kmcPrimEtaDecay  = 2, kmcPrimOtherDecay  = 3,
+                     kmcPrimPrompt = 4, kmcPrimFrag     = 5, kmcPrimISR       = 6,
+                     kmcPrimPi0    = 7, kmcPrimEta      = 8                                               } ;
+  
+  static const Int_t fgkNmcPrimTypes = 9;
   
   // For histograms in arrays, index in the array, corresponding to any particle origin
   enum mcTypes     { kmcPhoton   = 0, kmcPrompt     = 1, kmcFragment         = 2,
                      kmcPi0      = 3, kmcPi0Decay   = 4, kmcPi0DecayLostPair = 5,
-                     kmcEtaDecay = 6, kmcOtherDecay = 7,
-                     kmcElectron = 8, kmcHadron     = 9                          } ;
-  static const Int_t fgkNmcTypes = 10;
+                     kmcEta      = 6, kmcEtaDecay   = 7, kmcEtaDecayLostPair = 8,
+                     kmcOtherDecay=9, kmcElectron   =10, kmcHadron           =11  } ;
+  
+  static const Int_t fgkNmcTypes = 12;
 
  private:
   
@@ -172,9 +176,12 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillSSHisto;                          // Fill Shower shape plots
   Bool_t   fFillUEBandSubtractHistograms;         // Fill histograms working on the UE subtraction
   Bool_t   fFillCellHistograms;                   // Fill cell histograms
+  
   Bool_t   fFillTaggedDecayHistograms;            // Fill histograms for clusters tagged as decay
   Int_t    fNDecayBits ;                          // in case of study of decay triggers, select the decay bit
   UInt_t   fDecayBits[4] ;                        // in case of study of decay triggers, select the decay bit
+  Float_t  fDecayTagsM02Cut ;                     // Apply a m02 cut to clusters tagged as decay
+  
   Bool_t   fFillNLMHistograms;                    // Fill NLM histograms
   Bool_t   fLeadingOnly;                          // Do isolation with leading particle
   Bool_t   fCheckLeadingWithNeutralClusters;      // Compare the trigger candidate to Leading pT with the clusters pT, by default only charged
@@ -376,6 +383,27 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPtPrimMCPi0IsoOverlap;               //! Pi0 isolated with overlapped decay photons
 
   
+  TH1F *   fhPtPrimMCEtaDecayPairOutOfCone;       //! Eta decay photons, with decay pair out of isolation cone
+  TH1F *   fhPtPrimMCEtaDecayPairOutOfAcceptance; //! Eta decay photons, with decay pair out of detector acceptance
+  TH1F *   fhPtPrimMCEtaDecayPairOutOfAcceptanceNoOverlap; //! Eta decay photons, with decay pair out of detector acceptance
+  TH1F *   fhPtPrimMCEtaDecayPairAcceptInConeLowPt;//! Eta decay photons, with decay pair in cone and acceptance and lower pT than threshold
+  TH1F *   fhPtPrimMCEtaDecayPairAcceptInConeLowPtNoOverlap; //! Eta decay photons, with decay pair in cone and acceptance and lower pT than threshold, and do not overlap
+  TH1F *   fhPtPrimMCEtaDecayPairAcceptInConeLowPtNoOverlapCaloE; //! Eta decay photons, with decay pair in cone and acceptance and lower pT than threshold, and larger than detector threshold, and do not overlap
+  TH1F *   fhPtPrimMCEtaDecayPairNoOverlap;        //! Eta decay photons, not overlapped decay
+  
+  TH1F *   fhPtPrimMCEtaDecayIsoPairOutOfCone;       //! Eta decay photons, with decay pair out of isolation cone, isolated
+  TH1F *   fhPtPrimMCEtaDecayIsoPairOutOfAcceptance; //! Eta decay photons, with decay pair out of detector acceptance, isolated
+  TH1F *   fhPtPrimMCEtaDecayIsoPairOutOfAcceptanceNoOverlap; //! Eta decay photons, with decay pair out of detector acceptance, isolated
+  TH1F *   fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPt;//! Eta decay photons, with decay pair in cone and acceptance and lower pT than threshold, isolated
+  TH1F *   fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPtNoOverlap; //! Eta decay photons, with decay pair in cone and acceptance and lower pT than threshold, and do not overlap, isolated
+  TH1F *   fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPtNoOverlapCaloE; //! Eta decay photons, with decay pair in cone and acceptance and lower pT than threshold, and larger than detector threshold, and do not overlap, isolated
+  TH1F *   fhPtPrimMCEtaDecayIsoPairNoOverlap;    //! Eta decay photons isolated, not overlapped decay
+  
+  TH1F *   fhPtPrimMCEtaOverlap;                  //! Eta with overlapped decay photons
+  TH1F *   fhPtPrimMCEtaIsoOverlap;               //! Eta isolated with overlapped decay photons
+
+  
+  
   TH1F *   fhPtNoIsoMC  [fgkNmcTypes];            //! Number of not isolated mcTypes particle
   TH1F *   fhPtIsoMC    [fgkNmcTypes];            //! Number of isolated mcTypes particle
   TH2F *   fhPhiIsoMC   [fgkNmcTypes];            //! Phi of isolated mcTypes particle
@@ -491,7 +519,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,32)
+  ClassDef(AliAnaParticleIsolation,34)
 } ;
 
 

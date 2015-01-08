@@ -101,6 +101,9 @@ AliHFPtSpectrum::AliHFPtSpectrum(const char* name, const char* title, Int_t opti
   fIsStatUncEff(kTRUE),
   fParticleAntiParticle(2),
   fIsEventPlane(kFALSE),
+  fnPtBins(0),
+  fPtBinLimits(NULL),
+  fPtBinWidths(NULL),
   fhStatUncEffcSigma(NULL),
   fhStatUncEffbSigma(NULL),
   fhStatUncEffcFD(NULL),
@@ -164,6 +167,9 @@ AliHFPtSpectrum::AliHFPtSpectrum(const AliHFPtSpectrum &rhs):
   fIsStatUncEff(rhs.fIsStatUncEff),
   fParticleAntiParticle(rhs.fParticleAntiParticle),
   fIsEventPlane(rhs.fIsEventPlane),
+  fnPtBins(rhs.fnPtBins),
+  fPtBinLimits(),
+  fPtBinWidths(),
   fhStatUncEffcSigma(NULL),
   fhStatUncEffbSigma(NULL),
   fhStatUncEffcFD(NULL),
@@ -179,6 +185,12 @@ AliHFPtSpectrum::AliHFPtSpectrum(const AliHFPtSpectrum &rhs):
     fGlobalEfficiencyUncertainties[i] = rhs.fGlobalEfficiencyUncertainties[i];
     fTab[i] = rhs.fTab[i];
   }
+
+  for(Int_t i=0; i<fnPtBins; i++){
+    fPtBinLimits[i] = rhs.fPtBinLimits[i];
+    fPtBinWidths[i] = rhs.fPtBinWidths[i];
+  }
+  fPtBinLimits[fnPtBins] = rhs.fPtBinLimits[fnPtBins];
 
 }
 
@@ -237,6 +249,13 @@ AliHFPtSpectrum &AliHFPtSpectrum::operator=(const AliHFPtSpectrum &source){
     fGlobalEfficiencyUncertainties[i] = source.fGlobalEfficiencyUncertainties[i];
     fTab[i] = source.fTab[i];
   }
+
+  fnPtBins = source.fnPtBins;
+  for(Int_t i=0; i<fnPtBins; i++){
+    fPtBinLimits[i] = source.fPtBinLimits[i];
+    fPtBinWidths[i] = source.fPtBinWidths[i];
+  }
+  fPtBinLimits[fnPtBins] = source.fPtBinLimits[fnPtBins];
 
   return *this;
 }

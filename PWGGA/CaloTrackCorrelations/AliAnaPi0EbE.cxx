@@ -2613,8 +2613,7 @@ Int_t AliAnaPi0EbE::GetMCIndex(const Int_t tag)
   {
     return kmcEtaDecay ;
   }//decay photon from eta
-  else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) &&
-             GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) )
+  else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) )
   {
     return kmcOtherDecay ;
   }//decay photon from other than eta or pi0
@@ -3773,7 +3772,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
             fhMCEtaDecayPtFraction ->Fill(pt,efracMC);
           }
         }
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
         {
           fhMCOtherDecayPt->Fill(pt);
         }

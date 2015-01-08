@@ -4,16 +4,16 @@ How to make a comparison using MC information:
 
 
 0. Build the MC info tree
-gSystem->Load("libANALYSIS.so");
-gSystem->Load("libPWGPP.so")
+gSystem->Load("libANALYSIS");
+gSystem->Load("libPWGPP")
 AliGenInfoMaker *t = new AliGenInfoMaker("galice.root","genTracks.root",0,0)
 t->Exec();
 
 
 1. Build the reconstructed info tree
 
-gSystem->Load("libANALYSIS.so");
-gSystem->Load("libPWGPP.so");
+gSystem->Load("libANALYSIS");
+gSystem->Load("libPWGPP");
 //
 AliRecInfoMaker *t2 = new AliRecInfoMaker("genTracks.root","cmpESDTracks.root","galice.root",0,0);
 t2->Exec();
@@ -21,9 +21,9 @@ t2->Exec();
 
 
 2. Make a chain of the information tree
-gSystem->Load("libANALYSIS.so");
+gSystem->Load("libANALYSIS");
 
-gSystem->Load("libPWGPP.so");
+gSystem->Load("libPWGPP");
 
 //GSI example
 .x ~/rootlogon.C
@@ -40,7 +40,7 @@ gSystem->Load("libPWGPP.so");
 
 a.) Use AliTreeDraw for fast prototyping the queries - analysis type:
 
-gSystem->Load("libPWGPP.so");
+gSystem->Load("libPWGPP");
 AliTreeDraw comp;
 comp.SetTree(tree)
 

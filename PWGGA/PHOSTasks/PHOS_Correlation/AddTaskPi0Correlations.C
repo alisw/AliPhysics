@@ -85,7 +85,7 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 		const int nbins = 5;
 		Double_t cbin[nbins+1] = {0., 2., 4., 6., 8., 10.};
 		TArrayD tbin(nbins+1, cbin);
-		Int_t    nMixed[nbins] = {100, 100, 100, 100, 100};
+		Int_t    nMixed[nbins] = {10, 10, 10, 10, 10};
 		TArrayI tNMixed(nbins, nMixed);
 		task->SetCentralityBinning(tbin, tNMixed);
 	}
@@ -95,7 +95,7 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 		const int nbins = 6;
 		Double_t cbin[nbins+1] = {20., 25., 30., 35., 40., 45., 50.};
 		TArrayD tbin(nbins+1, cbin);
-		Int_t    nMixed[nbins] = {100, 100, 100, 100, 100, 100};
+		Int_t    nMixed[nbins] = {10, 10, 10, 10, 10, 10};
 		TArrayI tNMixed(nbins, nMixed);
 		task->SetCentralityBinning(tbin, tNMixed);
 	}

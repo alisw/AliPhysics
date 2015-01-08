@@ -1063,8 +1063,8 @@ void  AliAnalysisTaskpxpx::UserExec(Option_t */*option*/)
   float trkCentr = -999.;
   float spdCentr = -999.;
   
-  float vertexX  = -999;
-  float vertexY  = -999;
+  //float vertexX  = -999;
+  //float vertexY  = -999;
   float vertexZ  = -999;
   //float vertexXY = -999;
   //float dcaZ     = -999;
@@ -1128,8 +1128,8 @@ void  AliAnalysisTaskpxpx::UserExec(Option_t */*option*/)
 	    {
 	      if(fCov[5] != 0)
 		{
-		  vertexX = vertex->GetX();
-		  vertexY = vertex->GetY();
+		  //vertexX = vertex->GetX();
+		  //vertexY = vertex->GetY();
 		  vertexZ = vertex->GetZ();
 		  
 		  if(TMath::Abs(vertexZ) > 10)
@@ -1189,28 +1189,18 @@ void  AliAnalysisTaskpxpx::UserExec(Option_t */*option*/)
 	  q      = t->Charge();
 	  charge = int(q);
 	  phi    = t->Phi();
-	  pt     = t->Px(); //Pt->Px to check pxpx correlation//prabhat test
-	  px     = t->Px();
-	  py     = t->Py();
+	  pt     = t->Pt(); 
+	  //px     = t->Px();
+	  //py     = t->Py();
 	  pz     = t->Pz();
 	  eta    = t->Eta();
 	  dedx   = t->GetTPCsignal();
-	  //dcaXY = t->DCA(); 
-	  //dcaZ  = t->ZAtDCA();  
-	  //nClus  = t->GetTPCNcls();	  
-	  
-	  //if ( nClus<_nClusterMin ) continue;
-	  
-	  //_Ncluster1->Fill(nClus);
-	  
-	  /*
-	  //cuts on more than 0 shared cluster (suggested by Michael)
-	  if(t->GetTPCnclsS() > 0){
-	  continue;
-	  }*/
+	  	  
+	  px     = pt*cos(phi);
+	  py     = pt*sin(phi);
 	  
 	  //for Global tracks
-	   Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kElectron));
+	  Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kElectron));
 	  Double_t nsigmapion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kPion));
 	  Double_t nsigmakaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kKaon));
 	  Double_t nsigmaproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kProton));
@@ -1225,37 +1215,11 @@ void  AliAnalysisTaskpxpx::UserExec(Option_t */*option*/)
 
 	  if(charge == 0) continue;
 	  // Kinematics cuts used                                                                                        
-	  if( pt < _min_pt_1 || pt > _max_pt_1) continue;
+	  if( px < _min_pt_1 || px > _max_pt_1) continue; //condition on px and py
+	  
 	  if( eta < _min_eta_1 || eta > _max_eta_1) continue;
 	  
-	  /*	  Double_t pos[3];
-	  newAodTrack->GetXYZ(pos);
-
-	  Double_t DCAX = pos[0] - vertexX;
-	  Double_t DCAY = pos[1] - vertexY;
-	  Double_t DCAZ = pos[2] - vertexZ;
-	  	
-	  Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
- 	  
-	  if (DCAZ     <  _dcaZMin || 
-	      DCAZ     >  _dcaZMax ||
-	      DCAXY    >  _dcaXYMax ) continue; 
-	  */
-
-	    //------- Eff. test---------- //just for checking
-	  //Double_t yy = (1 - 0.7)/1.8;
-	  //Double_t zz = (pt - 0.2);
-	  //Double_t effValue = 0.7 + yy*zz;
-	  //Double_t R = gRandom->Rndm();
-          //if(R > effValue) continue;
-	  //---------------------------	  
 	  
-	  //==== QA ===========================
-	  //_dcaz->Fill(DCAZ);
-	  //_dcaxy->Fill(DCAXY);
-	  //_etadis->Fill(eta);
-	  //_phidis->Fill(phi);
-	  //===================================
 	  //*************************************************
 	  	  
 	  //Particle 1
@@ -1309,7 +1273,7 @@ void  AliAnalysisTaskpxpx::UserExec(Option_t */*option*/)
 		  _charge_1[k1]               = charge;
 		  _iEtaPhi_1[k1]              = iEtaPhi; 
 		  _iPt_1[k1]                  = iPt;   
-		  _pt_1[k1]                   = pt;   
+		  _pt_1[k1]                   = px; //pt is now px   
 		  _px_1[k1]                   = px;   
 		  _py_1[k1]                   = py;   
 		  _pz_1[k1]                   = pz;   
@@ -1377,20 +1341,20 @@ void  AliAnalysisTaskpxpx::UserExec(Option_t */*option*/)
 	      else
 		{
 		  corrPt                      = corr*pt;
-		  _id_2[k2]                   = iTrack;         //cout << "step 1" << endl;
-		  _charge_2[k2]               = charge;         //cout << "step 2" << endl;
-		  _iEtaPhi_2[k2]              = iEtaPhi;        //cout << "step 3" << endl;
-		  _iPt_2[k2]                  = iPt;            //cout << "step 4" << endl;
-		  _pt_2[k2]                   = pt;             //cout << "step 5" << endl;
-		  _px_2[k2]                   = px;             //cout << "step 6" << endl;
-		  _py_2[k2]                   = py;             //cout << "step 7" << endl;
-		  _pz_2[k2]                   = pz;             //cout << "step 8" << endl;
-		  _correction_2[k2]           = corr;           //cout << "step 9" << endl;
-		  __n1_2                      += corr;          //cout << "step 10" << endl;
-		  __s1pt_2                    += corrPt;        //cout << "step 13" << endl;
+		  _id_2[k2]                   = iTrack;         
+		  _charge_2[k2]               = charge;         
+		  _iEtaPhi_2[k2]              = iEtaPhi;        
+		  _iPt_2[k2]                  = iPt;            
+		  _pt_2[k2]                   = px; //pt is px for particle 2             
+		  _px_2[k2]                   = px;             
+		  _py_2[k2]                   = py;             
+		  _pz_2[k2]                   = pz;             
+		  _correction_2[k2]           = corr;           
+		  __n1_2                      += corr;          
+		  __s1pt_2                    += corrPt;        
 		  __n1Nw_2                    += 1;
-		  __n1_2_vsEtaPhi[iEtaPhi]    += corr;          //cout << "step 11" << endl;
-		  __s1pt_2_vsEtaPhi[iEtaPhi]  += corrPt;        //cout << "step 14" << endl;
+		  __n1_2_vsEtaPhi[iEtaPhi]    += corr;          
+		  __s1pt_2_vsEtaPhi[iEtaPhi]  += corrPt;        
 		  __s1ptNw_2                  += pt;
 		  ++k2;
 		  if (k2>=arraySize)

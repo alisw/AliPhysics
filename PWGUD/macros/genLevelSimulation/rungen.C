@@ -5,25 +5,25 @@ void rungen(Tune_t tune = kPyTuneCDFA, Float_t energy, Int_t nev=1, TString proc
   TStopwatch timer;
   timer.Start();
   gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT");
-  gSystem->Load("liblhapdf.so");      // Parton density functions
+  gSystem->Load("liblhapdf");      // Parton density functions
   if (tune == kPhojet) {
     cout << "Loading phojet" << endl;
     
     // => phojet
-    gSystem->Load("libpythia6.so");     // Pythia
-    gSystem->Load("libdpmjet.so");     // 
-    gSystem->Load("libTDPMjet.so");     // 
+    gSystem->Load("libpythia6");     // Pythia
+    gSystem->Load("libdpmjet");     // 
+    gSystem->Load("libTDPMjet");     // 
   } 
   else if (tune == kPyTunePerugia0) {
-    gSystem->Load("libEGPythia6.so");   // TGenerator interface 
-    gSystem->Load("libpythia6.4.21.so");     // Pythia
-    gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
+    gSystem->Load("libEGPythia6");   // TGenerator interface 
+    gSystem->Load("libpythia6.4.21");     // Pythia
+    gSystem->Load("libAliPythia6");  // ALICE specific implementations
   }
 
   else {
-    gSystem->Load("libEGPythia6.so");   // TGenerator interface 
-    gSystem->Load("libqpythia.so");     // Pythia
-    gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
+    gSystem->Load("libEGPythia6");   // TGenerator interface 
+    gSystem->Load("libqpythia");     // Pythia
+    gSystem->Load("libAliPythia6");  // ALICE specific implementations
    }
   gROOT->LoadMacro("fastGen.C");
   fastGen(tune, energy, nev, process);

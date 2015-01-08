@@ -654,11 +654,23 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   TString clusArrayName = "";
   if(fESD){
     l = fESD->GetList();
+    if(fDebug)
+      l->Print();
     for(int nk=0;nk<l->GetEntries();nk++){
       TObject *obj = (TObject*)l->At(nk);
       TString oname = obj->GetName();
       if(oname.Contains("CaloClus"))
 	clusArrayName = oname;
+      else
+	continue;
+      if(clusArrayName=="CaloClusters")
+	fClusArrayNames->Fill(0);
+      else{
+	if(clusArrayName=="EmcCaloClusters")
+	  fClusArrayNames->Fill(1);
+	else
+	  fClusArrayNames->Fill(2);
+      }
     }
     fESDClusters =  dynamic_cast<TClonesArray*>(l->FindObject(clusArrayName));
     fESDCells = fESD->GetEMCALCells();
@@ -667,32 +679,35 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   }
   else if(fAOD){
     l = fAOD->GetList();
-    //l->Print();
+    if(fDebug)
+      l->Print();
     //fAODClusters = dynamic_cast<TClonesArray*>(fAOD->GetCaloClusters());
     for(int nk=0;nk<l->GetEntries();nk++){
       TObject *obj = (TObject*)l->At(nk);
       TString oname = obj->GetName();
       if(oname.Contains("aloClus"))
 	clusArrayName = oname;
+      else
+	continue;
+      if(clusArrayName=="caloClusters")
+	fClusArrayNames->Fill(0);
+      else{
+	if(clusArrayName=="EmcCaloClusters")
+	  fClusArrayNames->Fill(1);
+	else
+	  fClusArrayNames->Fill(2);
+      }
     }
     fAODClusters = dynamic_cast<TClonesArray*>(l->FindObject(clusArrayName));
     fAODCells = fAOD->GetEMCALCells();
     if(fDebug)
       printf("AOD cluster mult= %d\n",fAODClusters->GetEntriesFast());
   }
-  if(clusArrayName=="CaloClusters")
-    fClusArrayNames->Fill(0);
-  else{
-    if(clusArrayName=="EmcCaloClusters")
-      fClusArrayNames->Fill(1);
-    else
-      fClusArrayNames->Fill(2);
-  }
   if(fDebug){
-	printf("clus array is named %s +++++++++\n",clusArrayName.Data());
+    printf("clus array is named %s +++++++++\n",clusArrayName.Data());
   }
-    
-
+  
+  
   fMCEvent = MCEvent();
   if(fMCEvent){
     if(fDebug)
@@ -818,27 +833,29 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     GetTrIso(clsVec, triso, trphiband, trcore);
     Int_t nInConePairs = 0;
     Double_t onePairMass = 0;
-    if(c->GetM02()>0.1 && c->GetM02()<0.3 && isCPV){
-      TObjArray *inConeInvMassArr = (TObjArray*)fInConeInvMass.Tokenize(";");
-      TObjArray *inConePairClEt =  (TObjArray*)fInConePairClEt.Tokenize(";");
-      nInConePairs = inConeInvMassArr->GetEntriesFast();
-      Int_t nInConePi0 = inConePairClEt->GetEntriesFast();
-      if(nInConePairs != nInConePi0)
-	printf("Inconsistent number of in cone pairs!!!\n");
-      for(int ipair=0;ipair<nInConePairs;ipair++){
-	TObjString *obs = (TObjString*)inConeInvMassArr->At(ipair);
-	TObjString *obet = (TObjString*)inConePairClEt->At(ipair);
-	TString smass = obs->GetString();
-	TString spairEt = obet->GetString();
-	Double_t pairmass = smass.Atof();
-	Double_t pairEt = spairEt.Atof();//this must be zero when inv mass outside pi0 range
-	if(0==ipair && nInConePairs==1)
-	  onePairMass = pairmass;
-	if(fDebug)
-	  printf("=================+++++++++++++++Inv mass inside the cone for photon range: %1.1f,%1.1f,%1.1f+-++++-+-+-+-++-+-+-\n",Et,pairmass,ceiso+triso);
-	fEtCandIsoAndIsoWoPairEt->Fill(Et,ceiso+triso,ceiso+triso-pairEt);
-      }
+    //---
+    //if(c->GetM02()>0.1 && c->GetM02()<0.3 && isCPV){
+    TObjArray *inConeInvMassArr = (TObjArray*)fInConeInvMass.Tokenize(";");
+    TObjArray *inConePairClEt =  (TObjArray*)fInConePairClEt.Tokenize(";");
+    nInConePairs = inConeInvMassArr->GetEntriesFast();
+    Int_t nInConePi0 = inConePairClEt->GetEntriesFast();
+    if(nInConePairs != nInConePi0)
+      printf("Inconsistent number of in cone pairs!!!\n");
+    for(int ipair=0;ipair<nInConePairs;ipair++){
+      TObjString *obs = (TObjString*)inConeInvMassArr->At(ipair);
+      TObjString *obet = (TObjString*)inConePairClEt->At(ipair);
+      TString smass = obs->GetString();
+      TString spairEt = obet->GetString();
+      Double_t pairmass = smass.Atof();
+      Double_t pairEt = spairEt.Atof();//this must be zero when inv mass outside pi0 range
+      if(0==ipair && nInConePairs==1)
+	onePairMass = pairmass;
+      if(fDebug)
+	printf("=================+++++++++++++++Inv mass inside the cone for photon range: %1.1f,%1.1f,%1.1f+-++++-+-+-+-++-+-+-\n",Et,pairmass,ceiso+triso);
+      fEtCandIsoAndIsoWoPairEt->Fill(Et,ceiso+triso,ceiso+triso-pairEt);
     }
+    //}
+    //---
     Double_t dr = TMath::Sqrt(c->GetTrackDx()*c->GetTrackDx() + c->GetTrackDz()*c->GetTrackDz());
     if(Et>10 && Et<15 && dr>0.025){
       fHigherPtConeM02->Fill(fHigherPtCone,c->GetM02());
@@ -1017,12 +1034,12 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
 	if(lpair.M()>0.11 && lpair.M()<0.165){
 	  fInConePairedClusEtVsCandEt->Fill(EtCl,Et);
 	  fInConePairClEt += Form("%f;",Et);
-	  continue;
+	  //continue;
 	}
 	else 
 	  fInConePairClEt += Form("%f;",0.0);
-	if(lpair.M()>0.52 && lpair.M()<0.58)
-	  continue;
+	/*if(lpair.M()>0.52 && lpair.M()<0.58)
+	  continue;*/
       }
       totiso += nEt;
       if(R<0.04)

@@ -1,8 +1,8 @@
 AliAnalysisTask *AddTaskHFEdebugTreeAOD(){
 
   // libraries in case
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
 
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

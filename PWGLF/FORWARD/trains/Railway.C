@@ -156,11 +156,11 @@ struct Railway
    */
   virtual Bool_t LoadROOT()
   {
-    if (gSystem->Load("libTree.so")    < 0) return false;
-    if (gSystem->Load("libGeom.so")    < 0) return false;
-    if (gSystem->Load("libVMC.so")     < 0) return false;
-    if (gSystem->Load("libPhysics.so") < 0) return false;
-    if (gSystem->Load("libMinuit.so")  < 0) return false;
+    if (gSystem->Load("libTree")    < 0) return false;
+    if (gSystem->Load("libGeom")    < 0) return false;
+    if (gSystem->Load("libVMC")     < 0) return false;
+    if (gSystem->Load("libPhysics") < 0) return false;
+    if (gSystem->Load("libMinuit")  < 0) return false;
     return true;
   }
   /** 

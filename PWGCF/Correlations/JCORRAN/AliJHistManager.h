@@ -98,6 +98,8 @@ class AliJBin : public AliJNamed {
         AliJBin & SetBin( const TString  v );
         AliJBin & SetBin( const int n );
 
+        int GetBin( double x );
+
         double GetMin(){ return fBinD[0]; }
         double GetMax(){ return fBinD[RawSize()-1]; }
 
@@ -368,6 +370,7 @@ typedef AliJTH1Derived<TProfile> AliJTProfile;
 class AliJHistManager: public AliJNamed{
     public:
         AliJHistManager(TString name );
+        AliJHistManager(TString name, TString dirname );
         AliJHistManager(const AliJHistManager& obj);
         AliJHistManager& operator=(const AliJHistManager& obj);
         void Add( AliJBin * o );

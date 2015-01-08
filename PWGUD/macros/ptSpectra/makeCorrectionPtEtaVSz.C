@@ -10,7 +10,7 @@ makeCorrectionPtEtaVSz(Char_t* dataDir, Int_t nRuns=20) {
 static const Int_t  NZbin=5;
 Float_t Zbin[]={-10., -3.,0., 3., 10.};
 
-  gSystem->Load("../libPWG0base.so");
+  gSystem->Load("../libPWG0base");
   // ########################################################
   // selection of esd tracks
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();    

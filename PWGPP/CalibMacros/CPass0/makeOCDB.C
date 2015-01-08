@@ -178,6 +178,9 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
     Printf("\n******* NOT Calibrating TRD: detStr = %s, TRD_qf = %d *******", detStr.Data(), (Int_t)TRD_qf);
   }
   
+  TF1 *gsf = (TF1 *)gROOT->GetFunction("gaus");
+  if (gsf) for (int i=gsf->GetNpar();i--;) gsf->SetParError(i,0); // reset errors from previous fits
+  
   //Mean Vertex
   AliMeanVertexPreprocessorOffline * procesMeanVtx=0;
   if (detStr.Contains("ITSSPD") && SPD_qf) {

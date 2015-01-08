@@ -190,7 +190,8 @@ AliAnalysisTaskSE(),
   fKeepingOnlyPYTHIABkg(kFALSE),
   fHistoMCLcK0SpGen(0x0),
   fHistoMCLcK0SpGenAcc(0x0),
-  fHistoMCLcK0SpGenLimAcc(0x0)
+  fHistoMCLcK0SpGenLimAcc(0x0),
+  fTriggerMask(0)
 {
   //
   // Default ctor
@@ -313,8 +314,8 @@ AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA(const Cha
   fKeepingOnlyPYTHIABkg(kFALSE),
   fHistoMCLcK0SpGen(0x0),
   fHistoMCLcK0SpGenAcc(0x0),
-  fHistoMCLcK0SpGenLimAcc(0x0)
-
+  fHistoMCLcK0SpGenLimAcc(0x0),
+  fTriggerMask(0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -890,7 +891,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
   
   if ( !fUseMCInfo && fIspA) {
     fAnalCuts->SetTriggerClass("");
-    fAnalCuts->SetTriggerMask(AliVEvent::kINT7);
+    fAnalCuts->SetTriggerMask(fTriggerMask);
   }
   
   Int_t runnumber = aodEvent->GetRunNumber();

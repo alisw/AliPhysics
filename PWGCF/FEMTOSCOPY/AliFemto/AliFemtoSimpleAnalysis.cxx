@@ -148,7 +148,8 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis() :
   fNeventsProcessed(0),
   fMinSizePartCollection(0),
   fVerbose(kTRUE),
-  fPerformSharedDaughterCut(kFALSE)
+  fPerformSharedDaughterCut(kFALSE),
+  fEnablePairMonitors(kFALSE)
 {
   // Default constructor
   //  mControlSwitch     = 0;
@@ -171,7 +172,8 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a) 
   fNeventsProcessed(0),
   fMinSizePartCollection(0),
   fVerbose(kTRUE),
-  fPerformSharedDaughterCut(kFALSE)
+  fPerformSharedDaughterCut(kFALSE),
+  fEnablePairMonitors(kFALSE)
 {
   // Copy constructor
   //AliFemtoSimpleAnalysis();
@@ -300,6 +302,8 @@ AliFemtoSimpleAnalysis& AliFemtoSimpleAnalysis::operator=(const AliFemtoSimpleAn
 
   fPerformSharedDaughterCut = aAna.fPerformSharedDaughterCut;
 
+  fEnablePairMonitors = aAna.fEnablePairMonitors;
+
   return *this;
 }
 //______________________
@@ -392,11 +396,11 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
       //------ Make real pairs. If identical, make pairs for one collection ------//
 
       if (AnalyzeIdenticalParticles()) {
-        MakePairs("real", fPicoEvent->FirstParticleCollection() );
+        MakePairs("real", fPicoEvent->FirstParticleCollection(), 0, EnablePairMonitors());
       }
       else {
         MakePairs("real", fPicoEvent->FirstParticleCollection(),
-                          fPicoEvent->SecondParticleCollection() );
+		  fPicoEvent->SecondParticleCollection(), EnablePairMonitors() );
       }
 
       if (fVerbose)
@@ -451,7 +455,7 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
 }
 //_________________________
 void AliFemtoSimpleAnalysis::MakePairs(const char* typeIn, AliFemtoParticleCollection *partCollection1,
-				       AliFemtoParticleCollection *partCollection2){
+				       AliFemtoParticleCollection *partCollection2, Bool_t enablePairMonitors){
 // Build pairs, check pair cuts, and call CFs' AddRealPair() or
 // AddMixedPair() methods. If no second particle collection is
 // specfied, make pairs within first particle collection.
@@ -471,11 +475,11 @@ void AliFemtoSimpleAnalysis::MakePairs(const char* typeIn, AliFemtoParticleColle
   AliFemtoParticleIterator tEndOuterLoop   = partCollection1->end();    // will be one less if identical
   AliFemtoParticleIterator tStartInnerLoop;
   AliFemtoParticleIterator tEndInnerLoop;
-  if (partCollection2) {                        // Two collections:
+  if (partCollection2) {                         // Two collections:
     tStartInnerLoop = partCollection2->begin();  //   Full inner & outer loops
     tEndInnerLoop   = partCollection2->end();    //
   }
-  else {                                        // One collection:
+  else {                                         // One collection:
     tEndOuterLoop--;                             //   Outer loop goes to next-to-last particle
     tEndInnerLoop = partCollection1->end() ;     //   Inner loop goes to last particle
   }
@@ -490,8 +494,10 @@ void AliFemtoSimpleAnalysis::MakePairs(const char* typeIn, AliFemtoParticleColle
 
       // The following lines have to be uncommented if you want pairCutMonitors
       // they are not in // for speed reasons
-      //bool tmpPassPair = fPairCut->Pass(tPair);
-      //fPairCut->FillCutMonitor(tPair, tmpPassPair);
+      if(enablePairMonitors) {
+	bool tmpPassPair = fPairCut->Pass(tPair);
+	fPairCut->FillCutMonitor(tPair, tmpPassPair);
+      }
       // // if ( tmpPassPair )
 
       //---- If pair passes cut, loop over CF's and add pair to real/mixed ----//

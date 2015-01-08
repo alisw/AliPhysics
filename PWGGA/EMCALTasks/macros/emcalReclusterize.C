@@ -177,12 +177,12 @@ void  LoadLibraries(const anaModes mode) {
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
   //--------------------------------------
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libXMLIO.so");
-  gSystem->Load("libMatrix.so");
-  gSystem->Load("libPhysics.so");  
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libXMLIO");
+  gSystem->Load("libMatrix");
+  gSystem->Load("libPhysics");
 
   //----------------------------------------------------------
   // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
@@ -193,20 +193,20 @@ void  LoadLibraries(const anaModes mode) {
     // in the aliroot distribution
     //--------------------------------------------------------
 
-    gSystem->Load("libSTEERBase.so");
-    gSystem->Load("libESD.so");
-    gSystem->Load("libAOD.so");
-    gSystem->Load("libANALYSIS.so");
-    gSystem->Load("libANALYSISalice.so");
-    gSystem->Load("libANALYSISalice.so");
+    gSystem->Load("libSTEERBase");
+    gSystem->Load("libESD");
+    gSystem->Load("libAOD");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
+    gSystem->Load("libANALYSISalice");
 
     //SetupPar("EMCALUtils"); 
     //SetupPar("PWGEMCAL");
     //SetupPar("PWGGAEMCALTasks"); 
     
-    gSystem->Load("libEMCALUtils.so");  
+    gSystem->Load("libEMCALUtils");
     gSystem->Load("libPWGEMCAL");
-    gSystem->Load("libPWGGAEMCALTasks.so");
+    gSystem->Load("libPWGGAEMCALTasks");
    
   }
 
@@ -397,8 +397,8 @@ void CreateChain(const anaModes mode, TChain * chain){
     else cout<<"XML file "<<kXML<<endl;
 
     //Load necessary libraries and connect to the GRID
-    gSystem->Load("libNetx.so") ; 
-    gSystem->Load("libRAliEn.so"); 
+    gSystem->Load("libNetx") ;
+    gSystem->Load("libRAliEn");
     TGrid::Connect("alien://") ;
 
     //Feed Grid with collection file

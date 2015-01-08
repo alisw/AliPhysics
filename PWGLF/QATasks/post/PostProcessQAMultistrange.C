@@ -121,9 +121,9 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
 
      //_______________________
      //SOURCE USEFUL LIBRARIES
-     gSystem->Load("libANALYSIS.so");
-     gSystem->Load("libANALYSISalice.so");
-     gSystem->Load("libCORRFW.so");
+     gSystem->Load("libANALYSIS");
+     gSystem->Load("libANALYSISalice");
+     gSystem->Load("libCORRFW");
 
      //_________________________________
      //SOURCE THE FILE AND THE CONTAINER

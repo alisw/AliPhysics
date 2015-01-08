@@ -1,12 +1,12 @@
 void runTask(Float_t etamax=0.5,const char * incollection = 0, const char * outfile = "dndeta.root", Bool_t skipNorm = kFALSE)
 {
   // for running with root only
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so"); 
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
 
   // load analysis framework
   gSystem->Load("libANALYSIS");

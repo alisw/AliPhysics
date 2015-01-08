@@ -1,8 +1,11 @@
-// MUON tracking efficiency + (mother hadron):(daughter muon) kinematic relation + x_F analysis
 // Author : Saehanseul Oh
 
 #ifndef AliMuonEffMC_h
 #define AliMuonEffMC_h
+
+#include "AliAnalysisTaskSE.h"
+#include "AliPool.h"
+#include "AliMuonTrackCuts.h"
 
 class TH1F;
 class TH1D;
@@ -22,8 +25,6 @@ class AliESDMuonTrack;
 class AliAODTrack;
 class AliMCParticle;
 
-#include "AliAnalysisTaskSE.h"
-
 class AliMuonEffMC : public AliAnalysisTaskSE {
  public:
   AliMuonEffMC();
@@ -33,11 +34,8 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   void         UserCreateOutputObjects();
   void         UserExec(Option_t *option);
   void         Terminate(Option_t *);
-  virtual Bool_t    Notify();
- 
+
   void         SetMcAna(Bool_t IsMc)           { fIsMc = IsMc;               }
-  void         SetIsPYTHIA(Bool_t IsPythia)    { fIsPythia = IsPythia;       }
-  void         SetMDProcess(Bool_t kMDProcess) { fMDProcess = kMDProcess;    }
   void         SetPlotMode(Int_t kPlotMode)    { fPlotMode = kPlotMode;      }
   void         SetCentEstimator(TString Cent)  { fCentralityEstimator = Cent;}
   void         SetNEtaBins(Int_t NEtaBins)     { fNEtaBins = NEtaBins;       }
@@ -45,17 +43,17 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   void         SetNCentBins(Int_t NCentBins)   { fNCentBins = NCentBins;     }
   void         SetNZvtxBins(Int_t NZvtxBins)   { fNZvtxBins = NZvtxBins;     }
   void         SetNPhiBins(Int_t NPhiBins)     { fNPhiBins = NPhiBins;       }
-
-  void         MDProcess(Int_t isprimary, Int_t cutNum, Double_t trackpt, Double_t trackphi, Double_t tracketa, Double_t motherpt, Double_t motherphi, Double_t mothereta);
+ 
   Double_t     deltaphi(Double_t phi);
-  Int_t        GetFirstPrimaryMother(Int_t muonlabel);
+  Int_t        GetFirstMother(Int_t muonlabel);
   Int_t        GetFirstPPMother(Int_t muonlabel);
   Double_t     GetSpecies(Int_t PdgCode);
+  void         SetMuonCutMask(UInt_t mask = AliMuonTrackCuts::kMuEta | AliMuonTrackCuts::kMuThetaAbs | AliMuonTrackCuts::kMuPdca | AliMuonTrackCuts::kMuMatchApt ) { fMuonCutMask = mask; }
 
  protected:
   Bool_t       VertexOk(TObject* obj) const;
-  Int_t        GetMUONCutType(AliESDMuonTrack &track);
-  Int_t        GetMUONCutType(AliAODTrack &track);
+  Bool_t       IsGoodMUONtrack(AliESDMuonTrack &track);
+  Bool_t       IsGoodMUONtrack(AliAODTrack &track);
   Double_t     GetMuonTrackType(AliMCParticle &track);
 
  private:
@@ -67,15 +65,12 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   Double_t     fZVertex;           //! Of current event
   TList       *fOutputList;        //! Output list
   TH1D        *fHEventStat;        //! statistics histo
-  TH1F        *fHXsec;             //! sum of cross section value for hard bins
-  TH1F        *fHTrials;           //! N_trial
   TH2F        *fHEvt;              //! Cent, vtx
 
   Bool_t       fIsMc;              //
-  Bool_t       fIsPythia;          //
-  Bool_t       fMDProcess;         // (mother hadron) : (daughter muon) QA
   Int_t        fPlotMode;          //
-
+  UInt_t       fMuonCutMask;       //  muon cut mask for above
+  AliMuonTrackCuts *fMuonTrackCuts;//  muon track cut object
   TString      fCentralityEstimator;//
   Int_t        fNEtaBins;          // number of eta bins
   Int_t        fNpTBins;           // number of p_T bins
@@ -83,28 +78,18 @@ class AliMuonEffMC : public AliAnalysisTaskSE {
   Int_t        fNZvtxBins;         // number of Z-vertex bins
   Int_t        fNPhiBins;          // number of phi bins
 
-  THn         *fHFPM;              //! first primary mother of all charged particles with centrality and z-vertex bin
-  THn         *fHPP;               //! physical primary mothers with centrality and z-vertex bin
-  THn         *fHDetRecMu[2];      //! reconstructed MUON track, detector level with centrality and z-vertex bin
-  THn         *fHDetRecMuFPM[2];   //! reconstructed MUON track, detector level with FPM species
-  THn         *fHDetRecMuPP[2];    //! reconstructed MUON track, detector level with PP species
-  THn         *fHMuFPM[2];         //! reconstructed MUON track's first primary mother
-  THn         *fHMuPP[2];          //! reconstructed MUON track's first physical primary mother
-
-  TH2F        *fHMuMotherRecPt[5][3]; //! detector-level muon p_T vs. mother p_T
-  TH2F        *fHMuMotherRecPhi[5][3];//! detector-level muon phi vs. mother phi
-  TH2F        *fHMuMotherRecEta[5][3];//! detector-level muon eta vs. mother eta
-  TH1F        *fHMuMohterPtDifRec[5][3][3]; //!
-  TH1F        *fHMuMohterPhiDifRec[5][3][3]; //!
-  TH1F        *fHMuMohterEtaDifRec[5][3][3]; //!
-
-  TH2F        *fHZvRv[3];         //! muon decay Vertex Z-R for primary muon 
-  TH2F        *fHXvYv[3];         //! muon decay Vertex x-y for primary muon 
-
+  THn         *fHFM;               //! first mother 
+  THn         *fHPP;               //! physical primary mother
+  THn         *fHMuFM;             //! first mother of MUON track
+  THn         *fHMuFMrec;          //! reconstructed MUON track with first mother species 
+  THn         *fHMuPP;             //! physical primary mother of MUON track 
+  THn         *fHMuPPrec;          //! reconstructed MUON track with physical primary mother species
+  THn         *fHMuRec;            //! reconstructed MUON track
+  
   AliMuonEffMC(const AliMuonEffMC&);            // not implemented
   AliMuonEffMC &operator=(const AliMuonEffMC&); // not implemented
 
-  ClassDef(AliMuonEffMC, 14);
+  ClassDef(AliMuonEffMC, 15);
 };
 
 #endif

@@ -11,25 +11,25 @@ void AddTask_GammaConvV1_pPb3(  Int_t trainConfig = 1,  //change different set o
 	Int_t isHeavyIon = 2;
 	
 	// ================= Load Librariers =================================
-	gSystem->Load("libCore.so");  
-	gSystem->Load("libTree.so");
-	gSystem->Load("libGeom.so");
-	gSystem->Load("libVMC.so");
-	gSystem->Load("libPhysics.so");
+	gSystem->Load("libCore");
+	gSystem->Load("libTree");
+	gSystem->Load("libGeom");
+	gSystem->Load("libVMC");
+	gSystem->Load("libPhysics");
 	gSystem->Load("libMinuit");
 	gSystem->Load("libSTEERBase");
 	gSystem->Load("libESD");
 	gSystem->Load("libAOD");
 	gSystem->Load("libANALYSIS");
 	gSystem->Load("libANALYSISalice");  
-	gSystem->Load("libCDB.so");
-	gSystem->Load("libSTEER.so");
-	gSystem->Load("libSTEERBase.so");
-	gSystem->Load("libTENDER.so");
-	gSystem->Load("libTENDERSupplies.so");
-	gSystem->Load("libPWGflowBase.so");
-	gSystem->Load("libPWGflowTasks.so");
-	gSystem->Load("libPWGGAGammaConv.so");
+	gSystem->Load("libCDB");
+	gSystem->Load("libSTEER");
+	gSystem->Load("libSTEERBase");
+	gSystem->Load("libTender");
+	gSystem->Load("libTenderSupplies");
+	gSystem->Load("libPWGflowBase");
+	gSystem->Load("libPWGflowTasks");
+	gSystem->Load("libPWGGAGammaConv");
 
 	// ================== GetAnalysisManager ===============================
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -49,7 +49,7 @@ void AddTask_GammaConvV1_pPb3(  Int_t trainConfig = 1,  //change different set o
 
 	//=========  Set Cutnumber for V0Reader ================================
 	//offline V0Finder
-	TString cutnumberPhoton = "160084001001500000000";
+	TString cutnumberPhoton = "160000084001001500000000";
 	TString cutnumberEvent = "8000000";
 	Bool_t doEtaShift = kFALSE;
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
@@ -121,15 +121,15 @@ void AddTask_GammaConvV1_pPb3(  Int_t trainConfig = 1,  //change different set o
 	TString stringShift = "";
 	
 	if (trainConfig == 1) {
-		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "102092170008260400000"; mesonCutArray[ 0] = "01621035009000";  // all Photon Qualities  //offline V0Finder
-		eventCutArray[ 1] = "8000011"; photonCutArray[ 1] = "102092170008260420000"; mesonCutArray[ 1] = "01621035009000";  // only photon quality 1  //offline V0Finder
-		eventCutArray[ 2] = "8000011"; photonCutArray[ 2] = "102092170008260430000"; mesonCutArray[ 2] = "01621035009000";  // only photon quality 2  //offline V0Finder
-		eventCutArray[ 3] = "8000011"; photonCutArray[ 3] = "102092170008260440000"; mesonCutArray[ 3] = "01621035009000";  // only photon quality 3  //offline V0Finder
+		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "102000092170008260400000"; mesonCutArray[ 0] = "01621035009000";  // all Photon Qualities  //offline V0Finder
+		eventCutArray[ 1] = "8000011"; photonCutArray[ 1] = "102000092170008260420000"; mesonCutArray[ 1] = "01621035009000";  // only photon quality 1  //offline V0Finder
+		eventCutArray[ 2] = "8000011"; photonCutArray[ 2] = "102000092170008260430000"; mesonCutArray[ 2] = "01621035009000";  // only photon quality 2  //offline V0Finder
+		eventCutArray[ 3] = "8000011"; photonCutArray[ 3] = "102000092170008260440000"; mesonCutArray[ 3] = "01621035009000";  // only photon quality 3  //offline V0Finder
 	} else if (trainConfig == 2) {
-		eventCutArray[ 0] = "8000012"; photonCutArray[ 0] = "102092170008260400000"; mesonCutArray[ 0] = "01621035009000";  // all Photon Qualities  //offline V0Finder
-		eventCutArray[ 0] = "8000012"; photonCutArray[ 1] = "102092170008260420000"; mesonCutArray[ 1] = "01621035009000";  // only photon quality 1  //offline V0Finder
-		eventCutArray[ 0] = "8000012"; photonCutArray[ 2] = "102092170008260430000"; mesonCutArray[ 2] = "01621035009000";  // only photon quality 2  //offline V0Finder
-		eventCutArray[ 0] = "8000012"; photonCutArray[ 3] = "102092170008260440000"; mesonCutArray[ 3] = "01621035009000";  // only photon quality 3  //offline V0Finder
+		eventCutArray[ 0] = "8000012"; photonCutArray[ 0] = "102000092170008260400000"; mesonCutArray[ 0] = "01621035009000";  // all Photon Qualities  //offline V0Finder
+		eventCutArray[ 0] = "8000012"; photonCutArray[ 1] = "102000092170008260420000"; mesonCutArray[ 1] = "01621035009000";  // only photon quality 1  //offline V0Finder
+		eventCutArray[ 0] = "8000012"; photonCutArray[ 2] = "102000092170008260430000"; mesonCutArray[ 2] = "01621035009000";  // only photon quality 2  //offline V0Finder
+		eventCutArray[ 0] = "8000012"; photonCutArray[ 3] = "102000092170008260440000"; mesonCutArray[ 3] = "01621035009000";  // only photon quality 3  //offline V0Finder
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;

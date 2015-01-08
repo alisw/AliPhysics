@@ -26,24 +26,24 @@ void runGridCascadePbPb( Bool_t   useMC               = kTRUE,  // kTRUE if anal
                          const char *plugin_mode      = "test") {
 
   // Load common libraries
-  gSystem->Load("libCore.so");
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libMinuit.so"); 
-  gSystem->Load("libGui.so");
-  gSystem->Load("libXMLParser.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libCDB.so");
+  gSystem->Load("libCore");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libMinuit");
+  gSystem->Load("libGui");
+  gSystem->Load("libXMLParser");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libCDB");
   gSystem->Load("libAOD");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libProof.so");
-  gSystem->Load("libRAWDatabase.so");
-  gSystem->Load("libSTEER.so");
+  gSystem->Load("libProof");
+  gSystem->Load("libRAWDatabase");
+  gSystem->Load("libSTEER");
 
    //__________________________________________________________________________
   // Use AliRoot includes to compile our task

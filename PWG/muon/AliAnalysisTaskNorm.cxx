@@ -51,7 +51,7 @@
 #include "AliMuonEventCuts.h"
 
 //PWGmuondep include
-#include "AliAnalysisTriggerScalers.h"
+// #include "AliAnalysisTriggerScalers.h"
 
 #include "AliAnalysisTaskNorm.h"
 

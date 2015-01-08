@@ -139,7 +139,7 @@ fHistEventsProcessed->Fill(1.0);
 
   Double_t gImpactParameter = 0.;
   //Double_t  gMultiplicity = 0.;
-  Double_t gReactionPlane=0.0;
+  //Double_t gReactionPlane=0.0;
   //Double_t gCentrality=0.0;
 
  AliMCEvent *gMCEvent = dynamic_cast<AliMCEvent*>(fEvent);
@@ -148,7 +148,7 @@ AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(gMCEvent->Ge
     if(headerH){
       gImpactParameter = headerH->ImpactParameter();
       //gMultiplicity =    GenMultiplicity(event); //calculate the multiplicity depending on the choice of centrality estimator                                           
-      gReactionPlane=     headerH->ReactionPlaneAngle();
+      // gReactionPlane=     headerH->ReactionPlaneAngle();
      // gCentrality = (CentralityFrom =="Multiplicity") ? gImpactParameter :gMultiplicity;
     }
 }

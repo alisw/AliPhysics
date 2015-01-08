@@ -6,9 +6,9 @@ CheckLoadLibrary("libPWG0dep");
 CheckLoadLibrary("libPWG0selectors");
 */
 
-  gSystem->Load("libPWG0base.so");
-  gSystem->Load("libPWG0dep.so");
-  gSystem->Load("libPWG0selectors.so");
+  gSystem->Load("libPWG0base");
+  gSystem->Load("libPWG0dep");
+  gSystem->Load("libPWG0selectors");
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 

@@ -9,7 +9,7 @@
 //***********************************************************
 //// Class AliAODPidHF
 //// class for PID with AliAODRecoDecayHF
-//// Authors: D. Caffarri caffarri@pd.infn.it, A.Dainese andrea.dainese@pd.infn.it, S. Dash dash@to.infn.it, F. Prino prino@to.infn.it, R. Romita r.romita@gsi.de, Y. Wang yifei@pi0.physi.uni-heidelberg.de
+//// Authors: D. Caffarri caffarri@pd.infn.it, A.Dainese andrea.dainese@pd.infn.it, S. Dash dash@to.infn.it, F. Prino prino@to.infn.it, R. Romita r.romita@gsi.de, Y. Wang yifei@pi0.physi.uni-heidelberg.de,  J. van der Maarel j.vandermaarel@cern.ch
 ////***********************************************************
 
 #include <TString.h>
@@ -33,7 +33,6 @@ public:
   
   AliAODPidHF();
   AliAODPidHF(const AliAODPidHF& pid);
-  AliAODPidHF& operator=(const AliAODPidHF& pid);
   virtual ~AliAODPidHF();
   
   //Setters
@@ -204,11 +203,32 @@ public:
   Int_t ApplyTOFCompatibilityBand(AliAODTrack *track,Int_t specie) const;
   
   void PrintAll() const;
+
+  //Assymetric PID using histograms
+  void SetIdBand(AliPID::EParticleType specie, AliPIDResponse::EDetector detector, TH1F *min, TH1F *max);
+  void SetIdBand(AliPID::EParticleType specie, AliPIDResponse::EDetector detector, TF1 *min, TF1 *max);
+  void SetCompBand(AliPID::EParticleType specie, AliPIDResponse::EDetector detector, TH1F *min, TH1F *max);
+  void SetCompBand(AliPID::EParticleType specie, AliPIDResponse::EDetector detector, TF1 *min, TF1 *max);
+  Bool_t CheckDetectorPIDStatus(AliPIDResponse::EDetector detector, AliAODTrack *track);
+  Float_t NumberOfSigmas(AliPID::EParticleType specie, AliPIDResponse::EDetector detector, AliAODTrack *track);
+  Int_t CheckBands(AliPID::EParticleType specie, AliPIDResponse::EDetector detector, AliAODTrack *track);
+  TF1 *GetIdBandMin(AliPID::EParticleType specie, AliPIDResponse::EDetector detector) { return fIdBandMin[((int) specie)][((int) detector)]; }
+  TF1 *GetIdBandMax(AliPID::EParticleType specie, AliPIDResponse::EDetector detector) { return fIdBandMax[((int) specie)][((int) detector)]; }
+  TF1 *GetCompBandMin(AliPID::EParticleType specie, AliPIDResponse::EDetector detector) { return fCompBandMin[((int) specie)][((int) detector)]; }
+  TF1 *GetCompBandMax(AliPID::EParticleType specie, AliPIDResponse::EDetector detector) { return fCompBandMax[((int) specie)][((int) detector)]; }
+
+  //Some suggested asymmetric PID
+  void SetShiftedAsymmetricPID();
+  void SetIdAsymmetricPID();
+  void SetIdCompAsymmetricPID();
   
 protected:
   
   
 private:
+
+  AliAODPidHF& operator=(const AliAODPidHF& pid);
+
   Int_t fnNSigma; // number of sigmas
   Double_t *fnSigma; // [fnNSigma], sigma for the raw signal PID: 0-2 for TPC, 3 for TOF, 4 for ITS
   Double_t fTOFSigma; // TOF precision
@@ -257,9 +277,29 @@ private:
   ECombDetectors fCombDetectors; // detectors to be involved for combined PID
   Bool_t fUseCombined; // detectors to be involved for combined PID
   Bool_t fDefaultPriors; // use default priors for combined PID
-  
-  ClassDef(AliAODPidHF,23) // AliAODPid for heavy flavor PID
-  
+
+  //Storage of identification/compatibility band for different species and detectors:
+  TF1 *fIdBandMin[AliPID::kSPECIES][4];
+  TF1 *fIdBandMax[AliPID::kSPECIES][4];
+  TF1 *fCompBandMin[AliPID::kSPECIES][4];
+  TF1 *fCompBandMax[AliPID::kSPECIES][4];
+
+  ClassDef(AliAODPidHF,24) // AliAODPid for heavy flavor PID
+
+};
+
+struct HistFunc {
+   HistFunc(TH1F *f): fHist(f) {}
+   double operator() (double *x, double * ) const {
+      TAxis *axis = fHist->GetXaxis();
+      Int_t bin = axis->FindBin(x[0]);
+      if (x[0] == axis->GetXmax()) {
+        bin = axis->GetNbins();
+      }
+      return fHist->GetBinContent(bin);
+
+   }
+   TH1F *fHist;
 };
 
 #endif

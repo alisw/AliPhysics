@@ -2128,16 +2128,16 @@ void PrintCanvas(TCanvas* c,const TString formats) {
 
 void LoadLibs(){
 
-  gSystem->Load("libTree.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libMinuit.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWG2spectra.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libVMC");
+  gSystem->Load("libMinuit");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWG2spectra");
 
 }
 

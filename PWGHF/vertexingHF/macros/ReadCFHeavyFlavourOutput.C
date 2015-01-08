@@ -19,9 +19,9 @@ void ReadCFHeavyFlavourOutput() {
 	gStyle->SetOptTitle(0);
 	
 	gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include  -I$ROOTSYS/include");
-	gSystem->Load("libANALYSIS.so");
-	gSystem->Load("libANALYSISalice.so");
-	gSystem->Load("$ALICE_ROOT/CORRFW/libCORRFW.so") ;
+	gSystem->Load("libANALYSIS");
+	gSystem->Load("libANALYSISalice");
+	gSystem->Load("$ALICE_ROOT/CORRFW/libCORRFW") ;
 	
 	// Setting up the container grid... 
 	

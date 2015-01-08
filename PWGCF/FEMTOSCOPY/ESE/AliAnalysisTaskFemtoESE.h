@@ -64,6 +64,10 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
   void SetEventSelectionBit( UInt_t val ) {fSelectBit = val;}
   void SetIsLHC10h(Bool_t val) {bIsLHC10h = val;}
   void SetMinSepPair(Double_t eta,Double_t phi){fMinSepPairEta = eta; fMinSepPairPhi = phi;}
+  void SetMinQinv(Double_t min){fQinvMin = min;}
+  void SetMaxDCA(Double_t maxxy, Double_t maxz){fMaxDcaXY = maxxy; fMaxDcaZ = maxz;}
+  void SetPtCuts(Double_t min, Double_t max){fPtMin = min; fPtMax = max;}
+  void SetMaxEta(Double_t eta){fEtaMax = eta;}
   void SetShareFraction(Double_t val) {fShareFraction = val;}
   Double_t GetShareFraction() {return fShareFraction;}
   void SetShareQuality(Double_t val) {fShareQuality = val;}
@@ -112,6 +116,12 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
   Double_t fBfield;
   Double_t fMinSepPairEta;
   Double_t fMinSepPairPhi;
+  Double_t fQinvMin;
+  Double_t fMaxDcaXY;
+  Double_t fMaxDcaZ;
+  Double_t fPtMin;
+  Double_t fPtMax;
+  Double_t fEtaMax;
   Double_t fShareQuality;
   Double_t fShareFraction;
 

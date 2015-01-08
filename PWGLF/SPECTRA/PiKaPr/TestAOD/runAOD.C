@@ -4,15 +4,15 @@ void runAOD(Bool_t isMC = 0)
 //gEnv->SetValue("XSec.GSI.DelegProxy", "2");
 //TProof::Open("pverstee@alice-caf.cern.ch");
 
-   gSystem->Load("libTree.so");
-   gSystem->Load("libGeom.so");
-   gSystem->Load("libVMC.so");
-   gSystem->Load("libPhysics.so");
-   gSystem->Load("libSTEERBase.so");
-   gSystem->Load("libESD.so");
-   gSystem->Load("libAOD.so");
-   gSystem->Load("libANALYSIS.so");
-   gSystem->Load("libANALYSISalice.so");
+   gSystem->Load("libTree");
+   gSystem->Load("libGeom");
+   gSystem->Load("libVMC");
+   gSystem->Load("libPhysics");
+   gSystem->Load("libSTEERBase");
+   gSystem->Load("libESD");
+   gSystem->Load("libAOD");
+   gSystem->Load("libANALYSIS");
+   gSystem->Load("libANALYSISalice");
    gSystem->Load("libANALYSIS");
    gSystem->Load("libANALYSISalice");
    gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");

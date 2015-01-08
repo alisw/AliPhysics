@@ -46,9 +46,11 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   };
 
   enum TriggerCategory {
-    kTriggerLevel0 = 0,
+    kTriggerLevel0 = 0,      // Online trigger categories
     kTriggerLevel1Jet = 1,
-    kTriggerLevel1Gamma=2
+    kTriggerLevel1Gamma=2,
+    kTriggerRecalcJet = 3,   // Recalculated max trigger patch; does not need to be above trigger threshold
+    kTriggerRecalcGamma = 4
   };
 
   AliAnalysisTaskEmcal();

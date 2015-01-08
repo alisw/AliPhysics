@@ -18,8 +18,8 @@ void drawCorrection(const char* filenameEffCont = "mergedAnalysisResults_proofPb
 
   gStyle->SetOptTitle(1);
   gStyle->SetOptStat(0);
-  //gSystem->Load("libANALYSIS.so");
-  //gSystem->Load("libANALYSISalice.so");
+  //gSystem->Load("libANALYSIS");
+  //gSystem->Load("libANALYSISalice");
   Int_t markerStyle = 20;
   Int_t markerColor = 1;
   Int_t fillColor   = 9;

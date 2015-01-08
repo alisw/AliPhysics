@@ -76,15 +76,15 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
   else       printf(":: debugging FALSE\n");
     
   // Load common libraries
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
   if(iFASTJET){
-    gSystem->Load("libCGAL.so");
-    gSystem->Load("libfastjet.so");
-    gSystem->Load("libsiscone.so");
-    gSystem->Load("libSISConePlugin.so");  
+    gSystem->Load("libCGAL");
+    gSystem->Load("libfastjet");
+    gSystem->Load("libsiscone");
+    gSystem->Load("libSISConePlugin");
   }
 
 
@@ -235,8 +235,8 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
 
 
     if (iESDfilter && !iAODanalysis) {
-      gSystem->Load("libCORRFW.so");
-      gSystem->Load("libPWGmuon.so");
+      gSystem->Load("libCORRFW");
+      gSystem->Load("libPWGmuon");
 
       gROOT->LoadMacro(Form("%s/ANALYSIS/macros/AddTaskESDFilter.C",gSystem->ExpandPathName("${ALICE_ROOT}")));
       //      gROOT->LoadMacro("AddTaskESDfilter.C");

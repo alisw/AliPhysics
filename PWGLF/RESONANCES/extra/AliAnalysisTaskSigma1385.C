@@ -6,19 +6,19 @@ void AliAnalysisTaskSigma1385()
    printf("*** Connect to AliEn ***\n");
    TGrid::Connect("alien://");
 
-   gSystem->Load("libTree.so");
-   gSystem->Load("libGeom.so");
-   gSystem->Load("libVMC.so");
-   gSystem->Load("libPhysics.so");
+   gSystem->Load("libTree");
+   gSystem->Load("libGeom");
+   gSystem->Load("libVMC");
+   gSystem->Load("libPhysics");
    //____________________________________________________//
    //_____________Setting up required packages___________//
    //____________________________________________________//
-   gSystem->Load("libSTEERBase.so");
-   gSystem->Load("libSTEER.so");
-   gSystem->Load("libESD.so");
-   gSystem->Load("libAOD.so");
-   gSystem->Load("libANALYSIS.so");
-   gSystem->Load("libANALYSISalice.so");
+   gSystem->Load("libSTEERBase");
+   gSystem->Load("libSTEER");
+   gSystem->Load("libESD");
+   gSystem->Load("libAOD");
+   gSystem->Load("libANALYSIS");
+   gSystem->Load("libANALYSISalice");
    gROOT->ProcessLine(".include $ALICE_ROOT/include");
    gROOT->ProcessLine(".include $ALICE_ROOT/TOF");
    //ANALYSIS PART

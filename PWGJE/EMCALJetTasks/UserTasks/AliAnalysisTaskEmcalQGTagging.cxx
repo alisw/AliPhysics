@@ -57,6 +57,8 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fShapesVar(0),
   fPtThreshold(-9999.),
   fRMatching(0.3),
+  fh2ResponseUW(0x0),
+  fh2ResponseW(0x0), 
   fPhiJetCorr6(0x0), 
   fPhiJetCorr7(0x0),
   fEtaJetCorr6(0x0),
@@ -79,6 +81,8 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fShapesVar(0),
   fPtThreshold(-9999.),
   fRMatching(0.3),
+  fh2ResponseUW(0x0),
+  fh2ResponseW(0x0),
   fPhiJetCorr6(0x0), 
   fPhiJetCorr7(0x0),
   fEtaJetCorr6(0x0),
@@ -144,7 +148,11 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
     //if( ivar == 4 )  fTreeObservableTagging->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar], Form("%s/I", fShapesVarNames[ivar].Data()));
 
   }
-  
+
+  fh2ResponseUW= new TH2F("fh2ResponseUW", "fh2ResponseUW", 100, 0, 200,  100, 0, 200); 
+  fOutput->Add(fh2ResponseUW);
+   fh2ResponseW= new TH2F("fh2ResponseW", "fh2ResponseW", 100, 0, 200,  100, 0, 200); 
+   fOutput->Add(fh2ResponseW);
   fPhiJetCorr6= new TH2F("fPhiJetCorr6", "fPhiJetCorr6", 50, 0, 2*TMath::Pi(), 50, 0, 2*TMath::Pi());
   fOutput->Add(fPhiJetCorr6);
   fEtaJetCorr6= new TH2F("fEtaJetCorr6", "fEtaJetCorr6", 50, -1.5, 1.5, 50, -1.5, 1.5);
@@ -183,25 +191,48 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
   AliEmcalJet* jet1 = NULL;
   AliJetContainer *jetCont = GetJetContainer(0);
   Float_t kWeight=1;
+  if(fCent>10) return 0;
   if(jetCont) {
     jetCont->ResetCurrentID();
     while((jet1 = jetCont->GetNextAcceptJet())) {
       if (!jet1) continue;
       AliEmcalJet* jet2 = 0x0;
       fPtJet->Fill(jet1->Pt());
+      AliEmcalJet *jetUS = NULL;
+      Int_t ifound=0;
+      Int_t ilab=-1;
 
-      if (!(fJetShapeType == kData)) {
+        if (!(fJetShapeType == kData)) {
 	AliPythiaInfo *partonsInfo = 0x0;
+
 	if((fJetShapeType == kTrueDet) || (fJetShapeType == kDetEmb)){
 	  AliJetContainer *jetContTrue = GetJetContainer(1);
-	  jet2 = jet1->ClosestJet();
+          AliJetContainer *jetContUS = GetJetContainer(2);
+          if(fJetShapeSub==kConstSub){
+    	  for(Int_t i = 0; i<jetContUS->GetNJets(); i++) {
+	  jetUS = jetContUS->GetJet(i);
+	  if(jetUS->GetLabel()==jet1->GetLabel()) {
+	    ifound++;
+	    if(ifound==1) ilab = i;
+	  }
+	}   
+          if(ilab==-1) continue;
+	  jetUS=jetContUS->GetJet(ilab);
+
+	    jet2=jetUS->ClosestJet();}
+	  if(!(fJetShapeSub==kConstSub)) jet2 = jet1->ClosestJet();
 	  if (!jet2) {
 	    Printf("jet2 not exists, returning");
 	    continue;
 	  }
-	  
-	  Double_t fraction = jetCont->GetFractionSharedPt(jet1);
-          cout<<"hey a jet"<<fraction<<" "<<jet1->Pt()<<" "<<jet2->Pt()<<endl;
+
+          fh2ResponseUW->Fill(jet1->Pt(),jet2->Pt());	  
+
+          Double_t fraction=0;
+	  if(!(fJetShapeSub==kConstSub))  fraction = jetCont->GetFractionSharedPt(jet1);
+          if(fJetShapeSub==kConstSub) fraction = jetContUS->GetFractionSharedPt(jetUS);
+          cout<<"hey a jet"<<fraction<<" "<<jet1->Pt()<<" "<<jet2->Pt()<<" "<<fCent<<endl;
+          
 	  if(fraction<fMinFractionShared) continue;
 	  partonsInfo = (AliPythiaInfo*) jetContTrue->GetPythiaInfo();     
 	  if(!partonsInfo) return 0;
@@ -216,6 +247,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
 	Double_t jp1=(jet2->Phi())-(partonsInfo->GetPartonPhi6()); 
 	Double_t detap1=(jet2->Eta())-(partonsInfo->GetPartonEta6());
      	kWeight=partonsInfo->GetPythiaEventWeight();
+        fh2ResponseW->Fill(jet1->Pt(),jet2->Pt(),kWeight);
 	if (jp1< -1*TMath::Pi()) jp1 = (-2*TMath::Pi())-jp1;
 	else if (jp1 > TMath::Pi()) jp1 = (2*TMath::Pi())-jp1;
 	Float_t dRp1 = TMath::Sqrt(jp1 * jp1 + detap1 * detap1);

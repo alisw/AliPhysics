@@ -29,7 +29,7 @@ Usage:
  
 
 
-gSystem->Load("libPWGPP.so");
+gSystem->Load("libPWGPP");
 //
 AliRecInfoMaker *t2 = new AliRecInfoMaker("genTracks.root","cmpESDTracks.root","galice.root",0,0);
 t2->Exec();

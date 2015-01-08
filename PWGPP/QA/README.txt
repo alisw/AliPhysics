@@ -28,6 +28,11 @@ https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentralQaRepository
 |  ZDC  |  aliqazdc  |  Chiara Oppedisano, Marco Leoncino  |
 |  PID  |  aliqapid  |  Jens Wiechula, alice-pwg-pp-pid-qa@cern.ch (Jens Wiechula, Pietro Antonioli)  |
 |  Tracking  |  aliqatrk  |  Ruben Shahoyan, Marian Ivanov, Philippe Pillot  |
-|  Event Selection  |  aliqaevs  |  Alexander Kalweit, Sandro Bjelogrlic, Zaida Conesa del Valle  |
+|  Event Selection  |  aliqaevs  |  Alexander Kalweit, Sandro Bjelogrlic, Zaida Conesa del Valle  
 |  Calibration  |  aliqacal  |  Marian Ivanov, Chiara Zampolli  |
+
+2. Mailing list for responsible  for automatic messages in case of failure
+=====================================
+Full list maintained can be found  on 
+https://twiki.cern.ch/twiki/pub/ALICE/PWGPPQualityAssurance/ListOfDetectorMailsForAutomaticQA.txt
 

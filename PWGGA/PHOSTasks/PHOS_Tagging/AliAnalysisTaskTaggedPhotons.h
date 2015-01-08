@@ -23,6 +23,7 @@ class AliAODMCParticle ;
 class AliVCluster ;
 class AliTriggerAnalysis ;
 class TParticle ;
+class AliPHOSTriggerUtils ;
 
 class AliAnalysisTaskTaggedPhotons : public AliAnalysisTaskSE {
 
@@ -70,15 +71,16 @@ protected:
 
 private:
 
-  AliPHOSGeometry  *fPHOSgeom;   //!PHOS geometry
-  THashList *   fOutputContainer ;   //! List of output histograms
-  TClonesArray *fStack ;             //!Pointer to MC stack
-  TClonesArray * fTrackEvent ;   //!List of tracks in the event
-  TClonesArray * fPHOSEvent ;    //!List of tracks in the event
-  TList   * fPHOSEvents[10][5] ; //!Previous events for mixing
-  TList   * fCurrentMixedList;   //! list of previous evetns for given centrality
+  AliPHOSGeometry  *fPHOSgeom;      //!PHOS geometry
+  THashList *   fOutputContainer ;  //!List of output histograms
+  TClonesArray *fStack ;            //!Pointer to MC stack (AOD)
+  TClonesArray * fTrackEvent ;      //!List of tracks in the event
+  TClonesArray * fPHOSEvent ;       //!List of tracks in the event
+  TList   * fPHOSEvents[10][5] ;    //!Previous events for mixing
+  TList   * fCurrentMixedList;      //! list of previous evetns for given centrality
   AliTriggerAnalysis * fTriggerAnalysis ; //!
   AliAnalysisUtils * fUtils ;
+  AliPHOSTriggerUtils * fPHOSTrigUtils ; //! utils to analyze PHOS trigger
  
   //Fiducial area parameters
   Float_t fZmax ;               //Rectangular
@@ -90,11 +92,11 @@ private:
   //
   Double_t fCentrality;
   Int_t fCentBin ;
-  Bool_t fIsMB ; //which trigger to use
-  Bool_t fIsMC ; //Is this is MC
-  Bool_t fIsFastMC; //This is fast MC, bypass event checks
+  Bool_t fIsMB ;          //which trigger to use
+  Bool_t fIsMC ;          //Is this is MC
+  Bool_t fIsFastMC;       //This is fast MC, bypass event checks
   TH2I * fPHOSBadMap[6] ; 
     
-  ClassDef(AliAnalysisTaskTaggedPhotons, 3);   // a PHOS photon analysis task 
+  ClassDef(AliAnalysisTaskTaggedPhotons, 4);   // a PHOS photon analysis task 
 };
 #endif // ALIANALYSISTASKTAGGEDPHOTONS_H

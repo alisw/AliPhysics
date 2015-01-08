@@ -14,9 +14,11 @@ class AliClusterContainer;
 class AliLocalRhoParameter;
 class AliPythiaInfo;
 
+#include <TMath.h>
 #include "AliRhoParameter.h"
-
 #include "AliEmcalContainer.h"
+#include "AliLog.h"
+#include "AliVEvent.h"
 
 class AliJetContainer : public AliEmcalContainer {
  public:

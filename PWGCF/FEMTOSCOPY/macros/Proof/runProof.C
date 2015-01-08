@@ -8,9 +8,9 @@ void runProof(const char *chainlistfile, int nEvents=0, int offset=0, int domc=0
   else
     TProof::Open("alicecaf");
 
-  gSystem->Load("libProofPlayer.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libXMLIO.so");
+  gSystem->Load("libProofPlayer");
+  gSystem->Load("libVMC");
+  gSystem->Load("libXMLIO");
 
   gProof->UploadPackage("STEERBase.par");
   gProof->EnablePackage("STEERBase");

@@ -62,7 +62,7 @@ AliAnalysisKinkESDat::AliAnalysisKinkESDat(const char *name)
        fRatioCrossedRows(0), fRatioCrossedRowsKink(0),fRadiusPt(0), fRadiusPtcln(0),  fInvMassMuNuPt(0), fInvMassMuNuPtAll(0),fPtCut1(0), fPtCut2(0), 
       fPtCut3(0), fAngMomKKinks(0),
  f1(0), f2(0),
-      fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1), fKinkRadUp(210), fKinkRadLow(120), fLowCluster(20), fLowQt(.12), fRapiK(0.5),  fCutsMul(0),   fMaxDCAtoVtxCut(0),  fPIDResponse(0)
+      fListOfHistos(0),fLowMulcut(-1),fUpMulcut(-1), fKinkRadUp(210.), fKinkRadLow(120.), fLowCluster(20), fLowQt(.12), fRapiK(0.5),  fCutsMul(0),   fMaxDCAtoVtxCut(0),  fPIDResponse(0)
 {
   // Constructor
 

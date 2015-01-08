@@ -66,7 +66,7 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   rec.SetWriteESDfriend(kTRUE);
   rec.SetWriteAlignmentData();
   rec.SetUseTrackingErrorsForAlignment("ITS");
-  rec.SetRunReconstruction("ALL -HLT");
+  rec.SetRunReconstruction("ALL");
   rec.SetCleanESD(kFALSE);
 
   //Ignore SetStopOnError

@@ -1,0 +1,15 @@
+#ifdef __CINT__
+#pragma link off all globals;
+#pragma link off all classes;
+#pragma link off all functions;
+
+#pragma link C++ class AliJEbECORRTask+;
+#pragma link C++ class AliJJetTask+;
+#pragma link C++ class AliJDiJetTask+;
+#pragma link C++ class AliJDiJetAnalysis+;
+#pragma link C++ class AliJJetCORRTask+;
+#pragma link C++ class AliJJetCORRAnalysis+;
+#pragma link C++ class AliJJetJtTask+;
+#pragma link C++ class AliJJetJtAnalysis+;
+#pragma link C++ class AliJJetAnalysis+;
+#endif /* __CINT__ */

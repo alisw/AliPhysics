@@ -3,12 +3,30 @@
 
 /* $Id$ */
 
-AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarCorrelations::CollSyst syst, 
-                                                            Bool_t theMCon, Bool_t mixing, Bool_t UseReco=kTRUE,Bool_t UseHadChannelinMC,Bool_t fullmode = kFALSE,Bool_t UseEffic=kFALSE,Bool_t UseDEffic = kFALSE, Bool_t useDStarSidebands = kFALSE,
-                                                        AliAnalysisTaskDStarCorrelations::DEffVariable var,
-                                                            Int_t trackselect =1, Int_t usedispl =0, Int_t nbins, Float_t DStarSigma, Float_t D0Sigma, Float_t D0SBSigmaLow, Float_t D0SBSigmaHigh, Float_t eta,
-                                                                     TString DStarCutsFile, TString TrackCutsFile,
-                                                                     TString suffix = "")
+AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarCorrelations::CollSyst syst, // set collisional system (pp, pA, AA)
+                                                           Bool_t theMCon, // flag for Data (kFALSE) or MC (kTRUE) analysis
+                                                           Bool_t mixing, // flag for Single Event (kFALSE) or Mixed Event (kTRUE) analysis
+                                                           Bool_t UseReco=kTRUE, // flag for Kine/pure MC (kFALSE) or Reconstruction (kTRUE) analysis - in data, kTRUE by default
+                                                           Bool_t UseHadChannelinMC, // flag to use D*->Kpipi (kTRUE) or any decay (kFALSE) in MC kine
+                                                           Bool_t fullmode = kFALSE, // flag to run in fast mode (kFALSE) or slow and detailed (kTRUE)
+                                                           Bool_t UseEffic=kFALSE, // flag to use associated track eff (kTRUE = YES, kFALSE = NO)
+                                                           Bool_t UseDEffic = kFALSE, // flag to use Dmeson track eff (kTRUE = YES, kFALSE = NO)
+                                                           Bool_t useDStarSidebands = kFALSE, // flag to use sidebands from D0 (kFALSE) or sidebands from Dstar (kTRUE)
+                                                           Bool_t useOnlyOneDStarPerEvent, // use only one D* per event (kTRUE) or all of them (kFALSE)
+                                                           AliAnalysisTaskDStarCorrelations::DEffVariable var, // variable to use in D mesn efficiency correction besides pt
+                                                           Int_t trackselect =1, // correlate with hadrons (1), kaons (2), kzeros (3)
+                                                           Int_t usedispl =0, // don't use displacement (0), use absolute displacement (1) or relative (normalized by impac.par resol.) displacement (2)
+                                                           Int_t nbins, //number of bins in correlations histo
+                                                           Float_t DStarSigma, // number of sigmas in dstar selection (for pt shape, eta, phi distr. studies)
+                                                           Float_t D0Sigma, // number of sigmas in dzero selection (for pt shape, eta, phi distr. studies)
+                                                           Float_t D0SBSigmaLow, // number of sigmas in dzero sb selection (for pt shape, eta, phi distr. studies)
+                                                           Float_t D0SBSigmaHigh, // number of sigmas in dzero sb selection (for pt shape, eta, phi distr. studies)
+                                                           Float_t eta, // maximum D* eta
+                                                           Float_t minDStarPt, // set minimum pt for Dstar
+                                                           TString DStarCutsFile, // path of Dmeson cut object
+                                                           TString TrackCutsFile, // path of associated cut object
+                                                           TString suffix = "" // suffix for output
+                                                           )
 {
 
  
@@ -100,7 +118,10 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
        // RDHFDStartoKpipi->SetTriggerClass("");
        // RDHFDStartoKpipi->SetTriggerMask(AliVEvent::kCentral);
     
-    
+    if(minDStarPt>RDHFDStartoKpipi->GetMinPtCandidate()){
+        cout << "Changing minimum pT of DStar from " << RDHFDStartoKpipi->GetMinPtCandidate() << " to " << minDStarPt << endl;
+        RDHFDStartoKpipi->SetMinPtCandidate(minDStarPt);
+    }
 	
 // ******************************** OPENING THE ASSOCIATED TRACK CUTS ************************************
 	cout << "Getting associated track cut object from file \n" << TrackCutsFile.Data() << "\n " << endl;
@@ -118,7 +139,23 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
 		return;
 	}
 	
+    if(UseEffic && !corrCuts->IsTrackEffMap()){
+        cout << "You are trying to use the single track efficiency, but there is no map loaded in the cut object " << endl;
+        return;
+    }
+    
 
+    
+    if(UseDEffic && var == AliAnalysisTaskDStarCorrelations::kNone && (!corrCuts->IsTrigEffMap1D()&&(!corrCuts->IsTrigEffMap1DB()))){
+        cout << "You are trying to use the DStar efficiency vs pt only, but there is no map loaded in the cut object " << endl;
+        return;
+    }
+    
+    if(UseDEffic && (var != AliAnalysisTaskDStarCorrelations::kNone) && (!corrCuts->IsTrigEffMap2D()&&(!corrCuts->IsTrigEffMap2DB()))){
+        cout << "You are trying to use the DStar efficiency vs pt only, but there is no map loaded in the cut object " << endl;
+        return;
+    }
+    
 // ******************************** SELECTING THE MC PROCESS  ************************************
 
 	TString selectMCproc = "";
@@ -164,6 +201,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     //task->SetDMesonSigmas(sigmas);
     task->SetUseEfficiencyCorrection(UseEffic);
     task->SetUseDmesonEfficiencyCorrection(UseDEffic);
+    task->SetUseRemoveMoreThanOneCDmesonCandidate(useOnlyOneDStarPerEvent);
     
     task->SetEfficiencyVariable(var);
     task->SetMaxDStarEta(eta);

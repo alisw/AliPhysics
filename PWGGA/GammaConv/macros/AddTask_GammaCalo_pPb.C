@@ -10,25 +10,25 @@ void AddTask_GammaCalo_pPb(
 						   ) {
 
 	// ================= Load Librariers =================================
-	gSystem->Load("libCore.so");  
-	gSystem->Load("libTree.so");
-	gSystem->Load("libGeom.so");
-	gSystem->Load("libVMC.so");
-	gSystem->Load("libPhysics.so");
+	gSystem->Load("libCore");  
+	gSystem->Load("libTree");
+	gSystem->Load("libGeom");
+	gSystem->Load("libVMC");
+	gSystem->Load("libPhysics");
 	gSystem->Load("libMinuit");
 	gSystem->Load("libSTEERBase");
 	gSystem->Load("libESD");
 	gSystem->Load("libAOD");
 	gSystem->Load("libANALYSIS");
 	gSystem->Load("libANALYSISalice");  
-	gSystem->Load("libCDB.so");
-	gSystem->Load("libSTEER.so");
-	gSystem->Load("libSTEERBase.so");
-	gSystem->Load("libTENDER.so");
-	gSystem->Load("libTENDERSupplies.so");
-	gSystem->Load("libPWGflowBase.so");
-	gSystem->Load("libPWGflowTasks.so");
-	gSystem->Load("libPWGGAGammaConv.so");
+	gSystem->Load("libCDB");
+	gSystem->Load("libSTEER");
+	gSystem->Load("libSTEERBase");
+	gSystem->Load("libTender");
+	gSystem->Load("libTenderSupplies");
+	gSystem->Load("libPWGflowBase");
+	gSystem->Load("libPWGflowTasks");
+	gSystem->Load("libPWGGAGammaConv");
 
 	Int_t isHeavyIon = 2;
 	
@@ -51,7 +51,7 @@ void AddTask_GammaCalo_pPb(
 	Printf("here \n");
 	
 	//=========  Set Cutnumber for V0Reader ================================
-	TString cutnumberPhoton = "060084001001500000000";
+	TString cutnumberPhoton = "060000084001001500000000";
 	TString cutnumberEvent = "8000000";
 	Bool_t doEtaShift = kFALSE;
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();

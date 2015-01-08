@@ -5,12 +5,12 @@
 
   //1. Load libraries if needed:
   //
-  gSystem->Load("/usr/local/grid/XRootd/GSI/lib/libXrdClient.so");  
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libPWG0base.so");
-  gSystem->Load("libPWG0dep.so");
-  gSystem->Load("libPWGPP.so");
+  gSystem->Load("/usr/local/grid/XRootd/GSI/lib/libXrdClient");  
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libPWG0base");
+  gSystem->Load("libPWG0dep");
+  gSystem->Load("libPWGPP");
 
   AliLog::SetGlobalLogLevel(AliLog::kError);
 
@@ -41,12 +41,12 @@
   TProof::Open("");
   .L /u/miranov/macros/ProofEnableAliRoot.C
   ProofEnableAliRoot("/usr/local/grid/AliRoot/HEAD0108");
-  gProof->Exec("gSystem->Load(\"libANALYSIS.so\")",kTRUE);
-  gProof->Exec("gSystem->Load(\"libAOD.so\")",kTRUE);
-  gProof->Exec("gSystem->Load(\"libANALYSISalice.so\")",kTRUE);
-  gProof->Exec("gSystem->Load(\"libPWG0base.so\")",kTRUE);
-  gProof->Exec("gSystem->Load(\"libPWG0dep.so\")",kTRUE);
-  gProof->Exec("gSystem->Load(\"libPWGPP.so\")",kTRUE);
+  gProof->Exec("gSystem->Load(\"libANALYSIS\")",kTRUE);
+  gProof->Exec("gSystem->Load(\"libAOD\")",kTRUE);
+  gProof->Exec("gSystem->Load(\"libANALYSISalice\")",kTRUE);
+  gProof->Exec("gSystem->Load(\"libPWG0base\")",kTRUE);
+  gProof->Exec("gSystem->Load(\"libPWG0dep\")",kTRUE);
+  gProof->Exec("gSystem->Load(\"libPWGPP\")",kTRUE);
   
   TString path=gSystem->pwd();
   TString execCDB="gROOT->Macro(\"";

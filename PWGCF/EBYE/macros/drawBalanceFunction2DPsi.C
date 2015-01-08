@@ -1,5 +1,5 @@
-const Int_t numberOfCentralityBins = 12;
-TString centralityArray[numberOfCentralityBins] = {"0-80","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
+const Int_t numberOfCentralityBins = 14;
+TString centralityArray[numberOfCentralityBins] = {"0-80","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3","92-8500","0-10000"};
 
 // reduced ranges for moments determination
 // (Average over all event classes of 3 sigma of Gauss + Pol0 Fit) 
@@ -31,12 +31,12 @@ void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root",
   //for reaction plane dependent analysis
   //Author: Panos.Christakoglou@nikhef.nl
   //Load the PWG2ebye library
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libEventMixing.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWGTools.so");
-  gSystem->Load("libPWGCFebye.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libEventMixing");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWGTools");
+  gSystem->Load("libPWGCFebye");
 
   //gROOT->LoadMacro("~/SetPlotStyle.C");
   //SetPlotStyle();
@@ -957,12 +957,12 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
   gSystem->Load("libESD");
   gSystem->Load("libAOD");
 
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libEventMixing.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWGTools.so");
-  gSystem->Load("libPWGCFebye.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libEventMixing");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWGTools");
+  gSystem->Load("libPWGCFebye");
 
   gStyle->SetOptStat(0);
 
@@ -1683,26 +1683,30 @@ sFileName[iDir] += momDirectory;
   //Open the file
   fBF[iDir] = TFile::Open(sFileName[iDir].Data());
   if((!fBF[iDir])||(!fBF[iDir]->IsOpen())) {
-    Printf("The file %s is not found. Not used...",sFileName[iDir]);
+    Printf("The file %s is not found. Not used...",sFileName[iDir].Data());
     continue;
   }
   //fBF[iDir]->ls();
 
   hBF[iDir]     = (TH2D*)fBF[iDir]->Get("gHistBalanceFunctionSubtracted");
   if(!hBF[iDir]) continue;
-  entries[iDir] = (Double_t) hBF[iDir]->GetEntries();
+  entries[iDir] = (Double_t) hBF[iDir]->GetEffectiveEntries(); // weighted histograms
   entriesOut += entries[iDir];
   cout<<" BF histogram "<<iDir<<" has "<<entries[iDir] <<" entries."<<endl;
-
-  // scaling and adding (for average)
-  hBF[iDir]->Scale(entries[iDir]);
-  if(!hBFOut) hBFOut = (TH2D*)hBF[iDir]->Clone("gHistBalanceFunctionSubtractedOut");
-  else hBFOut->Add(hBF[iDir]);
-  
  }
 
- // scaling with all entries
- hBFOut->Scale(1./entriesOut);
+  // second loop for scaling and adding (for average)
+ for(Int_t iDir = 0; iDir < nDirectories; iDir++){
+
+   if((!fBF[iDir])||(!fBF[iDir]->IsOpen())) {
+     Printf("The file %s is not found. Not used...",sFileName[iDir].Data());
+     continue;
+   }
+
+   hBF[iDir]->Scale(entries[iDir]/entriesOut);
+   if(!hBFOut) hBFOut = (TH2D*)hBF[iDir]->Clone("gHistBalanceFunctionSubtractedOut");
+   else hBFOut->Add(hBF[iDir]); 
+ }
 
  drawProjections(hBFOut,
 		 kTRUE,

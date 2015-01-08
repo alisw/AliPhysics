@@ -50,7 +50,7 @@
 #include "AliESDInputHandlerRP.h"
 #include "AliESDtrackCuts.h"
 #include "AliTrackPointArray.h"
-#include "../ITS/AliITSRecPoint.h"
+#include "AliITSRecPoint.h"
 
 #include "AliInputEventHandler.h"
 #include "AliMCEventHandler.h"

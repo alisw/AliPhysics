@@ -28,15 +28,15 @@ void get_dedx(void){
   gSystem->Load("libPWG2flowCommon");
   gSystem->Load("libPWG2flowTasks");
 
-  gSystem->Load("libTENDER");
-  gSystem->Load("libTENDERSupplies");
+  gSystem->Load("libTender");
+  gSystem->Load("libTenderSupplies");
 
 
 
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWG3base.so");
-  gSystem->Load("libPWG3dielectron.so");
-  gSystem->Load("libPWG3hfe.so");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWG3base");
+  gSystem->Load("libPWG3dielectron");
+  gSystem->Load("libPWG3hfe");
 
 
   TChain *chain = new TChain("esdTree");
@@ -58,9 +58,9 @@ void get_dedx(void){
   gROOT->LoadMacro("AliAnalysisTaskMultiDielectronNewTaku.cxx++");
   */
 
-  gSystem->Load("./AliDielectronHistosTaku_cxx.so");
-  gSystem->Load("./AliDielectronDebugTreeTaku_cxx.so");
-  gSystem->Load("./AliDielectronTaku_cxx.so");
+  gSystem->Load("./AliDielectronHistosTaku_cxx");
+  gSystem->Load("./AliDielectronDebugTreeTaku_cxx");
+  gSystem->Load("./AliDielectronTaku_cxx");
 
 
   float mom[5][200];

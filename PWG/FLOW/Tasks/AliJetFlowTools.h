@@ -9,6 +9,7 @@
 #define AliJetFlowTools_H
 
 // root forward declarations
+class TH1;
 class TF2;
 class TH2D;
 class TCanvas;
@@ -35,7 +36,7 @@ class AliUnfolding;
 #include "TH1D.h"
 //_____________________________________________________________________________
 class AliJetFlowTools {
-    public: 
+    public:
         AliJetFlowTools();
     protected:
         ~AliJetFlowTools();     // not implemented (deliberately). object ownership is a bit messy in this class
@@ -47,6 +48,7 @@ class AliJetFlowTools {
             kBayesian,                  // Bayesian unfolding, implemented in RooUnfold
             kBayesianAli,               // Bayesian unfolding, implemented in AliUnfolding
             kSVD,                       // SVD unfolding, implemented in RooUnfold
+            kFold,                      // instead of unfolding, fold the input with the response
             kNone };                    // no unfolding
         enum prior {                    // prior that is used for unfolding
             kPriorChi2,                 // prior from chi^2 method
@@ -65,6 +67,9 @@ class AliJetFlowTools {
             kDeltaPhi,                  // default for delta phi
             kEmpty };                   // default style
         // setters, interface to the class
+        void            SetOffsetStart(Int_t g)         {gOffsetStop            = g;}
+        void            SetOffsetStop(Int_t g)          {gOffsetStart           = g;}
+        void            SetReductionFactor(Float_t g)   {gReductionFactor       = g;}
         void            SetSaveFull(Bool_t b)           {fSaveFull              = b;}
         void            SetInputList(TList* list)       {
             fInputList          = list;
@@ -153,14 +158,15 @@ class AliJetFlowTools {
             // note that setting this option will not lead to true resampling
             // but rather to randomly drawing a new distribution from a pdf
             // of the measured distribution
-            fBootstrap             = r;
+            fBootstrap             = b;
             // by default fully randomize randomizer from system time
             if(r) {
                 delete gRandom;
                 gRandom = new TRandom3(0);
             }
         }
-        void            Make();
+        // main function. buffers about 5mb per call!
+        void            Make(TH1* customIn = 0x0, TH1* customOut = 0x0);
         void            MakeAU();       // test function, use with caution (09012014)
         void            Finish() {
             fOutputFile->cd();
@@ -201,7 +207,6 @@ class AliJetFlowTools {
                 Float_t rangeLow = 20,
                 Float_t rangeUp = 80,
                 Float_t corr = .5,
-                Float_t reductionPct = 1.,
                 TString in = "UnfoldedSpectra.root", 
                 TString out = "CorrelatedUncertainty.root") const;
         void            GetShapeUncertainty(
@@ -219,7 +224,6 @@ class AliJetFlowTools {
                 Float_t rangeLow = 20,
                 Float_t rangeUp = 80,
                 Float_t corr = .0,
-                Float_t reductionPct = 1.,
                 TString in = "UnfoldedSpectra.root", 
                 TString out = "ShapeUncertainty.root") const;
         Bool_t          SetRawInput (
@@ -260,7 +264,7 @@ class AliJetFlowTools {
         static void     MinimizeChi2nd();
         static Double_t PhenixChi2nd(const Double_t *xx );
         static Double_t ConstructFunctionnd(Double_t *x, Double_t *par);
-        static TF2*     ReturnFunctionnd();
+        static TF2*     ReturnFunctionnd(Double_t &p);
         static void     WriteObject(TObject* object, TString suffix = "", Bool_t kill = kTRUE);
         static TH2D*    ConstructDPtResponseFromTH1D(TH1D* dpt, Bool_t AvoidRoundingError);
         static TH2D*    GetUnityResponse(TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
@@ -323,6 +327,7 @@ class AliJetFlowTools {
             if(logo == 0) return AddTLatex(xmin, ymax, "ALICE");
             else if (logo == 1) return AddTLatex(xmin, ymax, "ALICE Preliminary");
             else if (logo == 2) return AddTLatex(xmin, ymax, "ALICE Simulation");
+            else if (logo == 3) return AddTLatex(xmin, ymax, "work in progress");
             return 0x0;
         }
         static TLatex*          AddSystem() {
@@ -344,7 +349,7 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         static void     SetMinuitStrategy(Double_t s)   {AliUnfolding::SetMinuitStrategy(s);}
         static void     SetDebug(Int_t d)               {AliUnfolding::SetDebug(d);}
     private:
-        Bool_t          PrepareForUnfolding(); 
+        Bool_t          PrepareForUnfolding(TH1* customIn = 0x0, TH1* customOut = 0x0); 
         Bool_t          PrepareForUnfolding(Int_t low, Int_t up);
         TH1D*           GetPrior(                       const TH1D* measuredJetSpectrum,
                                                         const TH2D* resizedResponse,
@@ -377,6 +382,12 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
                                                         const TString suffix,
                                                         const TH1D* jetFindingEfficiency = 0x0);
         TH1D*           UnfoldSpectrumBayesian(         const TH1D* measuredJetSpectrum, 
+                                                        const TH2D* resizedResponse,
+                                                        const TH1D* kinematicEfficiency,
+                                                        const TH1D* measuredJetSpectrumTrueBins,
+                                                        const TString suffix,
+                                                        const TH1D* jetFindingEfficiency = 0x0);
+        TH1D*           FoldSpectrum(                   const TH1D* measuredJetSpectrum, 
                                                         const TH2D* resizedResponse,
                                                         const TH1D* kinematicEfficiency,
                                                         const TH1D* measuredJetSpectrumTrueBins,
@@ -479,9 +490,28 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         TH2D*                   fFullResponseIn;        // full response matrix, in plane
         TH2D*                   fFullResponseOut;       // full response matrix, out of plane
 
+        static TArrayD*         gV2;                    // internal use only, do not touch these
+        static TArrayD*         gStat;                  // internal use only, do not touch these
+        static TArrayD*         gShape;                 // internal use only, do not touch these
+        static TArrayD*         gCorr;                  // internal use only, do not touch these
+        
+        static Int_t            gOffsetStart;           // see initialization below
+        static Int_t            gOffsetStop;            // see initialization below
+        static Float_t          gReductionFactor;       // multiply shape uncertainty by this factor
+
         // copy and assignment 
         AliJetFlowTools(const AliJetFlowTools&);             // not implemented
         AliJetFlowTools& operator=(const AliJetFlowTools&);  // not implemented
+
 };
+// initialize the static members
+TArrayD* AliJetFlowTools::gV2           = new TArrayD(6);       // DO NOT TOUCH - these arrays are filled by the
+TArrayD* AliJetFlowTools::gStat         = new TArrayD(6);       // 'GetSignificance' function and
+TArrayD* AliJetFlowTools::gShape        = new TArrayD(6);       // then used in the chi2 minimization routine
+TArrayD* AliJetFlowTools::gCorr         = new TArrayD(6);       // to calculate the significance of the results
+Int_t    AliJetFlowTools::gOffsetStart  =  1;           // start chi2 fit from this bin w.r.t. the binning supplied in the 'GetCorr/GetShape' functions
+Int_t    AliJetFlowTools::gOffsetStop   = -1;           // stop chi2 fit at this bin w.r.t. the binning supplied in the 'GetCorr/GetShape' functions
+Float_t  AliJetFlowTools::gReductionFactor      = .5;   // multiply shape uncertainty by this factor
+
 #endif
 //_____________________________________________________________________________

@@ -1195,7 +1195,6 @@ void AliRDHFCutsLctoV0::PrintAll() const {
   printf("High value for pT %f\n",fHighPtCut);
   printf("Low and high values for pT cuts: %f %f\n",fLowPtCut,fHighPtCut);
   printf("Remove daughters from vtx %d\n",(Int_t)fRemoveDaughtersFromPrimary);
-  printf("Recompute primary vertex %d\n",(Int_t)fRecomputePrimVertex);
   printf("Physics selection: %s\n",fUsePhysicsSelection ? "Yes" : "No");
   printf("Pileup rejection: %s\n",(fOptPileup > 0) ? "Yes" : "No");
   printf("UseTrackSelectionWithFilterBits: %s\n",fUseTrackSelectionWithFilterBits ? "Yes" : "No");

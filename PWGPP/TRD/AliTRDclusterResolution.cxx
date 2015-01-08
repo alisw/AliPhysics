@@ -137,8 +137,8 @@
 // Example how to retrive reference plots from the task
 // void steerClErrParam(Int_t fig=0)
 // {
-//   gSystem->Load("libANALYSIS.so");
-//   gSystem->Load("libTRDqaRec.so");
+//   gSystem->Load("libANALYSIS");
+//   gSystem->Load("libTRDqaRec");
 // 
 //   // initialize DB manager
 //   AliCDBManager *cdb = AliCDBManager::Instance();
@@ -174,8 +174,8 @@
 #include "info/AliTRDeventInfo.h"
 
 #include "AliTRDcalibDB.h"
-#include "Cal/AliTRDCalROC.h"
-#include "Cal/AliTRDCalDet.h"
+#include "AliTRDCalROC.h"
+#include "AliTRDCalDet.h"
 #include "AliTRDCommonParam.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDpadPlane.h"
