@@ -922,7 +922,7 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
       
 
       Int_t ipt = 0;
-      while(fPtLambdaMin[ipt] < fPtLambdaC && ipt < nPtBin){
+      while(ipt < nPtBin && fPtLambdaMin[ipt] < fPtLambdaC){
 	ipt++;
       }
       ipt--;
