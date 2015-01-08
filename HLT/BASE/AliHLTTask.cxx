@@ -126,8 +126,6 @@ int AliHLTTask::CreateComponent(AliHLTConfiguration* pConfiguration, AliHLTCompo
 	  TString description;
 	  description.Form("chainid=%s", GetName());
 	  pComponent->SetComponentDescription(description.Data());
-    //set the full original configuration string in the component
-    pComponent->SetComponentArgs(pConfiguration->GetArgumentSettings());
 	  const AliHLTAnalysisEnvironment* pEnv=pCH->GetEnvironment();
 	  if ((iResult=pComponent->Init(pEnv, NULL, argc, argv))>=0) {
 	    //HLTDebug("component %s (%p) created", pComponent->GetComponentID(), pComponent); 
