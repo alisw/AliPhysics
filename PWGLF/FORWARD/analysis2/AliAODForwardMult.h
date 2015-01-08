@@ -198,7 +198,9 @@ public:
     /** Event has no interaction point information */
     kNoVertex, 
     /** Event interaction point is out of range */
-    kWrongVertex
+    kWrongVertex,
+    /** Outlier */
+    kOutlierEvent
   };
     
   /** 
