@@ -512,7 +512,10 @@ void AliTOFT0::Exec(Option_t *option)
 
   /*const*/ Int_t kSize = 70+fHeadersFile.Length()+1;
   char outFileName[kSize];
-  strncpy(outFileName,"ht010tr120ps",kSize); // global time resolution has to be converted from Int_t to char
+  
+  //strncpy(outFileName,"ht010tr120ps",kSize); // global time resolution has to be converted from Int_t to char
+                                      // in order to have in the output filename this parameter
+  strncpy(outFileName, "ht010tr120ps", sizeof("ht010tr120ps")); // global time resolution has to be converted from Int_t to char
                                       // in order to have in the output filename this parameter
   strncat(outFileName,fHeadersFile,kSize);
 
