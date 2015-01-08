@@ -540,7 +540,7 @@ AliHLTTPCCalibManagerComponent::stringMap* AliHLTTPCCalibManagerComponent::Token
   
   //optionRE by construction contains a pure option name as 3rd submatch (without --,-, =)
   //valueRE does NOT match options
-  TPRegexp optionRE("(?:((?='?[^, =]+=?))|(-{1,2}))((?(1)(?:(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^, =]+))(?==?))(?(2)[^, =]+(?=[= ,$])))");
+  TPRegexp optionRE("(?:(-{1,2})|((?='?[^,=]+=?)))((?(2)(?:(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^, =]+))(?==?))(?(1)[^, =]+(?=[= ,$])))");
   TPRegexp valueRE("(?(?!(-{1,2}|[^, =]+=))(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^, =]+))");
 
   stringMap* options = new stringMap;
