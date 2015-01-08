@@ -294,6 +294,8 @@ AliBaseMCCorrectionsTask::Event(AliESDEvent& esd)
   fInspector.CompareResults(ip.Z(),    vZMc, 
 			    cent,      cMC, 
 			    b, nPart,  nBin);
+  // Only allow NSD events to contribute 
+  // if (!(triggers & AliAODForwardMult::kMCNSD)) return false;
 
   Bool_t isInel   = triggers & AliAODForwardMult::kInel;
   Bool_t hasVtx   = retESD == AliFMDMCEventInspector::kOk;
