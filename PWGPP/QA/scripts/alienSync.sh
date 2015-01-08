@@ -236,7 +236,6 @@ main()
     #fi
     
     export copyMethod
-    export copyScript
     export copyTimeout
     export copyTimeoutHard
     echo copyFromAlien "$alienFile" "$tmpdestination"
@@ -506,11 +505,18 @@ copyFromAlien()
   dst=$2
   if [[ "$copyMethod" == "tfilecp" ]]; then
     if which timeout &>/dev/null; then
-      echo timeout $copyTimeout root -b -q "$copyScript(\"$src\",\"$dst\")"
-      timeout $copyTimeout root -b -q "$copyScript(\"$src\",\"$dst\")"
+      echo timeout $copyTimeout "TFile::Cp(\"$src\",\"$dst\")"
+      timeout $copyTimeout root -b <<EOF
+TGrid::Connect("alien://");
+TFile::Cp("${src}","${dst}");
+EOF
+
     else
-      echo root -b -q "$copyScript(\"$src\",\"$dst\")"
-      root -b -q "$copyScript(\"$src\",\"$dst\")"
+      echo "TFile::Cp(\"$src\",\"$dst\")"
+      root -b <<EOF
+TGrid::Connect("alien://");
+TFile::Cp("${src}","${dst}");
+EOF
     fi
   else
     if which timeout &>/dev/null; then
