@@ -1,10 +1,10 @@
 /*
   .x ~/UliStyle.C
   .x ~/rootlogon.C
-  gSystem->Load("libSTAT.so");
+  gSystem->Load("libSTAT");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib"); 
-  gSystem->Load("libSTAT.so");
+  gSystem->Load("libSTAT");
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
   
 

@@ -47,10 +47,10 @@ void gen(Int_t nev = 1,
 {
   // Load libraries
   // gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT");
-  gSystem->Load("liblhapdf.so");      // Parton density functions
-  gSystem->Load("libEGPythia6.so");   // TGenerator interface
-  gSystem->Load("libpythia6.so");     // Pythia
-  gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
+  gSystem->Load("liblhapdf");      // Parton density functions
+  gSystem->Load("libEGPythia6");   // TGenerator interface
+  gSystem->Load("libpythia6");     // Pythia
+  gSystem->Load("libAliPythia6");  // ALICE specific implementations
 
   AliPDG::AddParticlesToPdgDataBase();
   TDatabasePDG::Instance();

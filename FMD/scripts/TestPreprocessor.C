@@ -267,7 +267,7 @@ void TestPreprocessor(const char* runType="PEDESTAL",
   }
   
   // load library - needs to be built using make
-  gSystem->Load("libTestSHUTTLE.so"); 
+  gSystem->Load("libTestSHUTTLE");
 
    // create AliTestShuttle instance
   // The parameters are run, startTime, endTime

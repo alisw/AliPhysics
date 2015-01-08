@@ -329,7 +329,7 @@ drawPerformanceTPCQAofflineHLT(const Char_t* folder = "../..") {
 
   gSystem->Load("libANALYSIS");                        
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libTENDER");
+  gSystem->Load("libTender");
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWGPP");
 

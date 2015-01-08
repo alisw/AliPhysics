@@ -52,12 +52,12 @@ void Config()
 #if defined(__CINT__)
   gSystem->Load("libgeant321");
 #endif
-gSystem->Load("libherwig.so");
-gSystem->Load("libTHerwig.so");
-gSystem->Load("libisajet.so");
-gSystem->Load("libTIsajet.so");
-gSystem->Load("libdpmjet.so");
-gSystem->Load("libTDPMjet.so");
+gSystem->Load("libherwig");
+gSystem->Load("libTHerwig");
+gSystem->Load("libisajet");
+gSystem->Load("libTIsajet");
+gSystem->Load("libdpmjet");
+gSystem->Load("libTDPMjet");
 
   new TGeant3TGeo("C++ Interface to Geant3");
 

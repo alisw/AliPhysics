@@ -54,20 +54,20 @@ void init()
 
   // Load libraries not linked with aliroot
   //
-  gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
-  gSystem->Load("libMUONshuttle.so");
-  gSystem->Load("libMUONevaluation.so");
-  gSystem->Load("liblhapdf.so");
-  gSystem->Load("libpythia6.so");
-  gSystem->Load("libgeant321.so");
+  gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle");
+  gSystem->Load("libMUONshuttle");
+  gSystem->Load("libMUONevaluation");
+  gSystem->Load("liblhapdf");
+  gSystem->Load("libpythia6");
+  gSystem->Load("libgeant321");
   gSystem->Load("libEG");
   gSystem->Load("libEGPythia6");
-  gSystem->Load("libAliPythia6.so");
+  gSystem->Load("libAliPythia6");
 
   // libraries needed for Config.C
-  gSystem->Load("libSTRUCT.so");
-  gSystem->Load("libITSbase.so");
-  gSystem->Load("libITSsim.so");
+  gSystem->Load("libSTRUCT");
+  gSystem->Load("libITSbase");
+  gSystem->Load("libITSsim");
 }
 
 void loadmacro(const TString& macroName)

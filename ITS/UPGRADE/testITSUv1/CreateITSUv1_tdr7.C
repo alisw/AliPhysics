@@ -31,8 +31,8 @@ void CreateITSUv1_tdr7()
   const Int_t    dltNsta=6;   // increment in the number of staves 
   const Int_t    dltNmod=1;   // increment in the number of modules in Z 
   //
-  gSystem->Load("libITSUpgradeBase.so");
-  gSystem->Load("libITSUpgradeSim.so");
+  gSystem->Load("libITSUpgradeBase");
+  gSystem->Load("libITSUpgradeSim");
   //
   // build ITS upgrade detector
   // sensitive area 13x15mm (X,Z) with 20x20 micron pitch, 2mm dead zone on readout side and 50 micron guardring

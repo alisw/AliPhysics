@@ -21,10 +21,10 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include <AliLog.h>
-#include <EveDet/AliEveTRDData.h>
-#include <EveDet/AliEveTRDTrackList.h>
+#include <AliEveTRDData.h>
+#include <AliEveTRDTrackList.h>
 #include "AliEveTRDTrackListEditor.h"
-#include <EveBase/AliEveEventManager.h>
+#include <AliEveEventManager.h>
 #include <AliTRDReconstructor.h>
 #include <AliTRDtrackV1.h>
 

@@ -13,7 +13,7 @@ DisplayDigits()
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
-  gSystem->Load("libFMDutil.so");
+  gSystem->Load("libFMDutil");
   AliFMDDisplay* d = new AliFMDDisplay;
   d->AddLoad(AliFMDInput::kDigits);
   // d->AddLoad(AliFMDInput::kKinematics);

@@ -246,8 +246,8 @@ pluginHandler = pluginManager->FindHandler("AliReconstructor", "ITS");
   if (!pluginHandler) {
     printf("defining plugin for ITS\n");
     TString libs = gSystem->GetLibraries();
-    if (libs.Contains("lib" + detName + "base.so") ||
-	(gSystem->Load("lib" + detName + "base.so") >= 0)) {pluginManager->AddHandler("AliReconstructor", detName,recName, detName + "rec", recName + "()");}
+    if (libs.Contains("lib" + detName + "base") ||
+	(gSystem->Load("lib" + detName + "base") >= 0)) {pluginManager->AddHandler("AliReconstructor", detName,recName, detName + "rec", recName + "()");}
     else {pluginManager->AddHandler("AliReconstructor", detName,recName, detName, recName + "()");}
     pluginHandler = pluginManager->FindHandler("AliReconstructor", detName);
   }

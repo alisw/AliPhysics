@@ -70,6 +70,9 @@ AliLego::AliLego():
   fHistAbso(0),
   fHistGcm2(0),
   fHistReta(0),
+  fRZR(0),
+  fRZA(0),
+  fRZG(0),
   fVolumesFwd(0),
   fVolumesBwd(0),
   fStepBack(0),
@@ -95,6 +98,9 @@ AliLego::AliLego(const AliLego &lego):
   fHistAbso(0),
   fHistGcm2(0),
   fHistReta(0),
+  fRZR(0),
+  fRZA(0),
+  fRZG(0),
   fVolumesFwd(0),
   fVolumesBwd(0),
   fStepBack(0),
@@ -124,6 +130,9 @@ AliLego::AliLego(const char *title, Int_t ntheta, Float_t thetamin,
   fHistAbso(0),
   fHistGcm2(0),
   fHistReta(0),
+  fRZR(0),
+  fRZA(0),
+  fRZG(0),
   fVolumesFwd(0),
   fVolumesBwd(0),
   fStepBack(0),
@@ -144,6 +153,15 @@ AliLego::AliLego(const char *title, Int_t ntheta, Float_t thetamin,
 			ntheta,thetamin,thetamax,nphi,phimin,phimax);
    fHistGcm2 = new TH2F("hgcm2","g/cm2 length map",        
 			ntheta,thetamin,thetamax,nphi,phimin,phimax);
+   fRZR      = new TH2F("rzR","Radiation length @ (r,z)",
+			zmax,-zmax,zmax,(rmax-rmin),rmin,rmax);
+   fRZR->SetXTitle("#it{z} [cm]");
+   fRZR->SetYTitle("#it{r} [cm]");
+   fRZA     = static_cast<TH2F*>(fRZR->Clone("rzA"));
+   fRZA->SetTitle("Interaction length @ (r,z)");
+   fRZG     = static_cast<TH2F*>(fRZR->Clone("rzG"));
+   fRZG->SetTitle("g/cm^{2} @ (r,z)");
+   
 //
    fVolumesFwd     = new TClonesArray("AliDebugVolume",1000);
    fVolumesBwd     = new TClonesArray("AliDebugVolume",1000);
@@ -161,6 +179,9 @@ AliLego::AliLego(const char *title, AliLegoGenerator* generator):
   fHistAbso(0),
   fHistGcm2(0),
   fHistReta(0),
+  fRZR(0),
+  fRZA(0),
+  fRZG(0),
   fVolumesFwd(0),
   fVolumesBwd(0),
   fStepBack(0),
@@ -187,6 +208,17 @@ AliLego::AliLego(const char *title, AliLegoGenerator* generator):
                        n2, c2min, c2max, n1, c1min, c1max);
   fHistGcm2 = new TH2F("hgcm2","g/cm2 length map",        
                        n2, c2min, c2max, n1, c1min, c1max);
+  Double_t rmax = generator->RadMax();
+  Double_t rmin = 0;
+  Double_t zmax = generator->ZMax();
+  fRZR      = new TH2F("rzR","Radiation length @ (r,z)",
+		       2*zmax,-zmax,zmax,(rmax-rmin),rmin,rmax);
+  fRZR->SetXTitle("#it{z} [cm]");
+  fRZR->SetYTitle("#it{r} [cm]");
+  fRZA     = static_cast<TH2F*>(fRZR->Clone("rzA"));
+  fRZA->SetTitle("Interaction length @ (r,z)");
+  fRZG     = static_cast<TH2F*>(fRZR->Clone("rzG"));
+  fRZG->SetTitle("g/cm^{2} @ (r,z)");
   //
   //
 
@@ -254,6 +286,9 @@ void AliLego::FinishRun()
   fHistRadl->Write();
   fHistAbso->Write();
   fHistGcm2->Write();
+  fRZR->Write();
+  fRZA->Write();
+  fRZG->Write();
 
   // Delete histograms from memory
   fHistRadl->Delete(); fHistRadl=0;
@@ -329,13 +364,17 @@ void AliLego::StepManager()
 	// Get current material properties
 	
 	TVirtualMC::GetMC()->CurrentMaterial(a,z,dens,radl,absl);
-
+	Double_t r = TMath::Sqrt(pos[0]*pos[0] +pos[1]*pos[1]);
+	fRZR->Fill(pos[2], r, step/radl);
+	fRZA->Fill(pos[2], r ,step/absl);
+	fRZG->Fill(pos[2], r, step*dens);
+	
 	
 	if (z < 1) return;
 
 	// --- See if we have to stop now
 	if (TMath::Abs(pos[2]) > TMath::Abs(fGener->ZMax())  || 
-	    pos[0]*pos[0] +pos[1]*pos[1] > fGener->RadMax()*fGener->RadMax()) {
+	    r > fGener->RadMax()) {
 	    if (!TVirtualMC::GetMC()->IsNewTrack()) {
 		// Not the first step, add past contribution
 		if (!fStopped) {

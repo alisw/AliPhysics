@@ -98,7 +98,7 @@ bool CheckIfOutputIsOk()
 bool testGeomTrigger()
 {
   gRandom->SetSeed(123);
-  gSystem->Load("libAliHLTTrigger.so");
+  gSystem->Load("libAliHLTTrigger");
   CreateInput("FullTriggerTestInput1.root", 5, 0.1, 1.9, 0, 0.1, 0.9);
   CreateInput("FullTriggerTestInput2.root", 3, 2.1, 4.0, 0, 0.1, 0.9);
   CreateInput("FullTriggerTestInput3.root", 6, 0.1, 1.9, 0, 1.1, 2.0);

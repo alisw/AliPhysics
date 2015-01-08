@@ -31,9 +31,9 @@ Compile(const char* script=0, Option_t* option="g")
     std::cerr << "No script to compile!" << std::endl;
     return kFALSE;
   }
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libFMDutil.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libFMDutil");
   TString macroPath(gROOT->GetMacroPath());
   macroPath.Append(":${ALICE_ROOT}/FMD/scripts");
   gROOT->SetMacroPath(macroPath.Data());

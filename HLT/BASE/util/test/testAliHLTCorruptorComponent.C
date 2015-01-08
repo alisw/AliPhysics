@@ -939,7 +939,7 @@ bool testAliHLTCorruptorComponent(bool debug = false)
 	
 	if (gClassTable->GetID("AliHLTCorruptorComponent") < 0)
 	{
-		gSystem->Load("libAliHLTUtil.so");
+		gSystem->Load("libAliHLTUtil");
 	}
 	
 	GenerateInputData(debug);

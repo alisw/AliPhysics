@@ -1,8 +1,8 @@
 void simTGeoUpgrade(Int_t nev=10) {
 
   gSystem->Exec(" rm *.root ");
-  gSystem->Load("libITSUpgradeBase.so");
-  gSystem->Load("libITSUpgradeSim.so");
+  gSystem->Load("libITSUpgradeBase");
+  gSystem->Load("libITSUpgradeSim");
   AliSimulation simulator("ConfigTgeoUpgrade.C");
   simulator.SetMakeSDigits("");
 

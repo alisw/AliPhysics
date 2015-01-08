@@ -14,7 +14,7 @@
 
 #include <TH1.h>
 #include <TEveManager.h>
-#include <EveBase/AliEveEventManager.h>
+#include <AliEveEventManager.h>
 #include <TEveTrans.h>
 
 #include <AliRawReader.h>

@@ -12,7 +12,7 @@ void TestPreprocessor(const int physics = 1)
 {
   // load library 
   // [compiled with: cd $ALICE_ROOT/SHUTTLE/TestShuttle/; make; cd -]
-  gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
+  gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle");
 
    // create AliTestShuttle instance
   // The parameters are run, startTime, endTime

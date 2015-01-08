@@ -5,7 +5,7 @@
  **************************************************************************/
 
 #include "AliEveVZEROModuleEditor.h"
-#include <EveDet/AliEveVZEROModule.h>
+#include <AliEveVZEROModule.h>
 
 #include <AliVZERORawStream.h>
 

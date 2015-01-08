@@ -11,7 +11,7 @@
 void TestZDCPreprocessor(const char* runType="PHYSICS")
 {
   // load library
-  gSystem->Load("libTestShuttle.so");
+  gSystem->Load("libTestShuttle");
 
   // create AliTestShuttle instance
   // The parameters are run, startTime, endTime

@@ -6,8 +6,8 @@ void fastGenDPMjet(Int_t nev = 1, char* filename = "dpmjet.root")
 #if defined(__CINT__)
     gSystem->Load("liblhapdf"); 
     gSystem->Load("libpythia6");     
-    gSystem->Load("libdpmjet.so");
-    gSystem->Load("libTDPMjet.so");
+    gSystem->Load("libdpmjet");
+    gSystem->Load("libTDPMjet");
 #endif
 
     AliPDG::AddParticlesToPdgDataBase();

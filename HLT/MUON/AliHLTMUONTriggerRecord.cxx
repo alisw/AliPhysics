@@ -28,7 +28,7 @@
 
 #include "AliHLTMUONTriggerRecord.h"
 #include "AliLog.h"
-#include "mapping/AliMpDEManager.h"
+#include "AliMpDEManager.h"
 #include <cstring>
 #include <iostream>
 #include <iomanip>

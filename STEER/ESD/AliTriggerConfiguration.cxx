@@ -562,7 +562,7 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
      switch (level) {
      case 1:
        // Read inputs
-       if (ntokens != 5) {
+       if ((ntokens != 5) && (ntokens !=6)) {
 	 AliError(Form("Invalid trigger input syntax (%s)!",strLine.Data()));
 	 delete tokens;
 	 return kFALSE;

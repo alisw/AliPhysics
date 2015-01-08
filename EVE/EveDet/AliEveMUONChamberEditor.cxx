@@ -9,7 +9,7 @@
 
 #include "AliEveMUONChamberEditor.h"
 
-#include <EveDet/AliEveMUONChamber.h>
+#include <AliEveMUONChamber.h>
 
 #include <TEveGValuators.h>
 #include <TGSlider.h>

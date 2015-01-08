@@ -8,7 +8,7 @@
  **************************************************************************/
 
 #include "AliEveTPCSector3DEditor.h"
-#include <EveDet/AliEveTPCSector3D.h>
+#include <AliEveTPCSector3D.h>
 
 #include <TEveGValuators.h>
 

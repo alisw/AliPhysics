@@ -54,8 +54,8 @@
 	macroPath        += "${ALICE_ROOT}/HLT/MUON/macros:";
 	gROOT->SetMacroPath(macroPath);
 	
-	gSystem->Load("libAliHLTMUON.so");
-	gSystem->Load("libAliHLTHOMER.so");
+	gSystem->Load("libAliHLTMUON");
+	gSystem->Load("libAliHLTHOMER");
 	
 	// Setup the CDB default storage and run number if nothing was set.
 	AliCDBManager* cdbManager = AliCDBManager::Instance();

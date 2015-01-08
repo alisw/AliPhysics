@@ -8,7 +8,7 @@
  **************************************************************************/
 
 #include "AliEvePMDModuleEditor.h"
-#include <EveDet/AliEvePMDModule.h>
+#include <AliEvePMDModule.h>
 
 #include <TVirtualPad.h>
 #include <TH1F.h>

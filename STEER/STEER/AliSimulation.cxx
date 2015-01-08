@@ -866,7 +866,6 @@ Bool_t AliSimulation::RunLego(const char *setup, Int_t nc1, Float_t c1min,
     AliError("gAlice was already run. Restart aliroot and try again.");
     return kFALSE;
   }
-
   AliInfo(Form("initializing gAlice with config file %s",
           fConfigFileName.Data()));
 
@@ -894,6 +893,17 @@ Bool_t AliSimulation::RunLego(const char *setup, Int_t nc1, Float_t c1min,
 
   gAlice->Announce();
 
+  // - cholm - Add this here for consitency 
+  // If requested set the mag. field from the GRP entry.
+  // After this the field is loccked and cannot be changed by Config.C
+  if (fUseMagFieldFromGRP) {
+    AliGRPManager grpM;
+    grpM.ReadGRPEntry();
+    grpM.SetMagField();
+    AliInfo("Field is locked now. It cannot be changed in Config.C");
+  
+  }
+  
   gROOT->LoadMacro(setup);
   gInterpreter->ProcessLine(gAlice->GetConfigFunction());
 

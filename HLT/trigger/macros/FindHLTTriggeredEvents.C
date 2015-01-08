@@ -78,14 +78,14 @@ bool FindHLTTriggeredEvents(
 		bool print = true
 	)
 {
-	gSystem->Load("libHLTrec.so");
+	gSystem->Load("libHLTrec");
 	// FIXME: Loading the following libraries is a workaround to get rid of warnings from AliHLTOUT.
-	gSystem->Load("libANALYSIS.so");
-	gSystem->Load("libANALYSISalice.so");
-	gSystem->Load("libAliHLTUtil.so");
-	gSystem->Load("libAliHLTTRD.so");
-	gSystem->Load("libAliHLTMUON.so");
-	gSystem->Load("libAliHLTTrigger.so");
+	gSystem->Load("libANALYSIS");
+	gSystem->Load("libANALYSISalice");
+	gSystem->Load("libAliHLTUtil");
+	gSystem->Load("libAliHLTTRD");
+	gSystem->Load("libAliHLTMUON");
+	gSystem->Load("libAliHLTTrigger");
 	
 	TString strfile = dataSource;
 	if(strfile.BeginsWith("alien://") || strfile.BeginsWith("raw://")) TGrid::Connect("alien");

@@ -211,7 +211,7 @@ Config()
       //
       // Libraries needed by GEANT 3.21 
       //
-      gSystem->Load("$ALICE_ROOT/lib/tgt_$ALICE_TARGET/libpythia6.so");
+      gSystem->Load("$ALICE_ROOT/lib/tgt_$ALICE_TARGET/libpythia6");
       gSystem->Load("libgeant321");
       
       // 
@@ -226,10 +226,10 @@ Config()
       //
       // Libraries needed by GEANT 3.21 
       //
-      gSystem->Load("$ALICE_ROOT/lib/tgt_$ALICE_TARGET/liblhapdf.so");
-      gSystem->Load("$ALICE_ROOT/lib/tgt_$ALICE_TARGET/libpythia6.so");
-      gSystem->Load("libEGPythia6.so"); //<- For non-debian (sigh!)
-      // gSystem->Load("EGPythia6.so");
+      gSystem->Load("$ALICE_ROOT/lib/tgt_$ALICE_TARGET/liblhapdf");
+      gSystem->Load("$ALICE_ROOT/lib/tgt_$ALICE_TARGET/libpythia6");
+      gSystem->Load("libEGPythia6"); //<- For non-debian (sigh!)
+      // gSystem->Load("EGPythia6");
       gSystem->Load("libgeant321");
     
       // 
@@ -469,10 +469,10 @@ GeneratorFactory(EG_t eg, Rad_t rad)
   case kPythia6Jets104_125:
   case kPythia6Jets125_150:
   case kPythia6Jets150_180:
-    gSystem->Load("liblhapdf.so");
-    // gSystem->Load("/usr/lib/libpythia.so");
+    gSystem->Load("liblhapdf");
+    // gSystem->Load("/usr/lib/libpythia");
     // gSystem->ListLibraries();
-    gSystem->Load("EGPythia6.so");
+    gSystem->Load("EGPythia6");
     gSystem->Load("libAliPythia6");
     break;
   }

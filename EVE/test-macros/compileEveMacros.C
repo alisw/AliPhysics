@@ -52,7 +52,7 @@ void compileEveMacros( const char * macDir="", Option_t *opt="")
 
    // solves current issue in ROOT when pre-compiling with ACLiC
    gSystem->Load("libCint");
-   gSystem->Load("libTENDER");
+   gSystem->Load("libTender");
    gSystem->Load("libPWGPP");
 
   if(macDir == "")

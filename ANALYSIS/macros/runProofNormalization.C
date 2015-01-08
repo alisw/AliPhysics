@@ -20,7 +20,7 @@ void runProofNormalization(const char * dataset = "LHC09b12_7TeV_0.5T", TString 
  
     TString extraLibs;
     extraLibs= ""; // not needed in default aliroot mode
-    extraLibs+="CDB:RAWDatabase:STEER:TENDER:TRDbase:STAT:TRDrec:VZERObase:VZEROsim:VZEROrec:RAWDatarec:TPCbase:TPCrec:TPCcalib:TENDERSupplies:RAWDatabase:RAWDatarec:RAWDatasim:TOFbase:TOFrec";
+    extraLibs+="CDB:RAWDatabase:STEER:Tender:TRDbase:STAT:TRDrec:VZERObase:VZEROsim:VZEROrec:RAWDatarec:TPCbase:TPCrec:TPCcalib:TenderSupplies:RAWDatabase:RAWDatarec:RAWDatasim:TOFbase:TOFrec";
     TList *list = new TList();
     // sets $ALIROOT_MODE on each worker to let proof to know to run in special mode
     list->Add(new TNamed("ALIROOT_MODE", alirootMode.Data()));

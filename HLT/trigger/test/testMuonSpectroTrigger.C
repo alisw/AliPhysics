@@ -71,9 +71,9 @@ void GenerateInputData()
 {
 	if (gClassTable->GetID("AliHLTMuonSpectroTriggerComponent") < 0)
 	{
-		gSystem->Load("libAliHLTUtil.so");
-		gSystem->Load("libAliHLTTRD.so");
-		gSystem->Load("libAliHLTTrigger.so");
+		gSystem->Load("libAliHLTUtil");
+		gSystem->Load("libAliHLTTRD");
+		gSystem->Load("libAliHLTTrigger");
 	}
 	
 	// Allocate two 1 MByte buffers, this will be more than enough space.

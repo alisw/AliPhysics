@@ -7,7 +7,7 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#include <EveBase/AliEveConfigManager.h>
+#include <AliEveConfigManager.h>
 
 #include <TInterpreter.h>
 #include <TRint.h>

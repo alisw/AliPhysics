@@ -81,8 +81,8 @@
 
 #include <AliTRDReconstructor.h>
 
-#include <EveDet/AliEveListAnalyser.h>
-#include <EveDet/AliEveListAnalyserEditor.h>
+#include <AliEveListAnalyser.h>
+#include <AliEveListAnalyserEditor.h>
 
 ClassImp(AliEveListAnalyser)
 

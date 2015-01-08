@@ -192,7 +192,7 @@ class AliHLTPluginBase;
  * mode. Remember to Init() the reconstructor.
  * <pre>
  * {
- * gSystem->Load("libHLTrec.so");
+ * gSystem->Load("libHLTrec");
  * AliHLTReconstructor rec;
  * rec.Init();
  * // do something

@@ -415,7 +415,7 @@ AliLoader * AliQAManager::GetLoader(Int_t iDet)
   if (!pluginHandler) {
     AliDebug(AliQAv1::GetQADebugLevel(), Form("defining plugin for %s", loaderName.Data())) ;
     TString libs = gSystem->GetLibraries() ;
-    if (libs.Contains("lib" + detName + "base.so") || (gSystem->Load("lib" + detName + "base.so") >= 0)) {
+    if (libs.Contains("lib" + detName + "base") || (gSystem->Load("lib" + detName + "base") >= 0)) {
       pluginManager->AddHandler("AliQADataMaker", detName, loaderName, detName + "loader", loaderName + "()") ;
     } else {
       pluginManager->AddHandler("AliLoader", detName, loaderName, detName, loaderName + "()") ;
@@ -506,7 +506,7 @@ AliQADataMaker * AliQAManager::GetQADataMaker(const Int_t iDet)
       TString libs = gSystem->GetLibraries() ;
       TString temp(smode) ;
       temp.ToLower() ; 
-      if (libs.Contains("lib" + detName + smode + ".so") || (gSystem->Load("lib" + detName + temp.Data() + ".so") >= 0)) {
+      if (libs.Contains("lib" + detName + smode + ".so") || (gSystem->Load("lib" + detName + temp.Data()) >= 0)) {
         if ( iDet == AliQAv1::kMUON ) {
           pluginManager->AddHandler("AliQADataMaker", detName, qadmName, detName + "qadm", qadmName + "(Bool_t,Bool_t)");
         } else {
@@ -777,7 +777,7 @@ Bool_t AliQAManager::InitRunLoader()
 	  continue;
 	if (libs.Contains("lib" + detName + "base.so")) 
 	  continue;
-	gSystem->Load("lib" + detName + "base.so");
+	gSystem->Load("lib" + detName + "base");
       }
       fRunLoader = AliRunLoader::Open(fGAliceFileName.Data());
       if (!fRunLoader) {

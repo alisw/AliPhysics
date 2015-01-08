@@ -9,7 +9,7 @@
 
 #include "AliEveTRDLoaderImp.h"
 #include "AliEveTRDModuleImp.h"
-#include "EveBase/AliEveEventManager.h"
+#include "AliEveEventManager.h"
 
 #include <TEveManager.h>
 

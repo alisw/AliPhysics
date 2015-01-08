@@ -6,9 +6,9 @@ Int_t GetLayer(AliTrackReference *ref, TObject *obj);
 
 void residuals(){
 
-  gSystem->Load("libITSUpgradeBase.so");
-  gSystem->Load("libITSUpgradeRec.so");
-  gSystem->Load("libITSUpgradeSim.so");
+  gSystem->Load("libITSUpgradeBase");
+  gSystem->Load("libITSUpgradeRec");
+  gSystem->Load("libITSUpgradeSim");
 
   gROOT->SetStyle("Plain");
   gStyle->SetOptStat(1111111);

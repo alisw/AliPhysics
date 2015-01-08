@@ -6,7 +6,7 @@
 void TestPreprocessorSSD()
 {
   // load library
-  gSystem->Load("libTestShuttle.so");
+  gSystem->Load("libTestShuttle");
 
   // initialize location of CDB
   //  AliCDBManager::Instance()->SetDefaultStorage("local://${ALICE_ROOT}/SHUTTLE/TestShuttle/TestCDB");

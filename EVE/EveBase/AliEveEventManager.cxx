@@ -145,6 +145,7 @@ AliEveEventManager::AliEveEventManager(const TString& name, Int_t ev) :
     fEventInUse(1),
     fWritingToEventIndex(0),
     fIsNewEventAvaliable(false),
+	fOnlineMode(kFALSE),
     fStorageDown(false),
     fFinished(false)
 {
@@ -167,12 +168,15 @@ AliEveEventManager::AliEveEventManager(const TString& name, Int_t ev) :
 
 
 #ifdef ZMQ
+    if(fOnlineMode)
+      {
     cout<<"ZMQ FOUND. Starting subscriber thread."<<endl;
     fEventListenerThread = new TThread("fEventListenerThread",DispatchEventListener,(void*)this);
     fEventListenerThread->Run();
     
     fStorageManagerWatcherThread = new TThread("fStorageManagerWatcherThread",DispatchStorageManagerWatcher,(void*)this);
     fStorageManagerWatcherThread->Run();
+      }
 #else
     cout<<"NO ZMQ FOUND. Online events not avaliable."<<endl;
 #endif
@@ -218,6 +222,7 @@ AliEveEventManager::~AliEveEventManager()
 void AliEveEventManager::GetNextEvent()
 {
 #ifdef ZMQ
+  if(!fOnlineMode){return;}
   cout<<"\n\nGet next event called\n\n"<<endl;
 
     AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
@@ -318,6 +323,8 @@ void AliEveEventManager::GetNextEvent()
 void AliEveEventManager::CheckStorageStatus()
 {
 #ifdef ZMQ
+  if(!fOnlineMode){return;}
+
     AliEveConfigManager *configManager = AliEveConfigManager::GetMaster();
     configManager->ConnectEventManagerSignals();
     
@@ -941,82 +948,85 @@ void AliEveEventManager::GotoEvent(Int_t event)
     {
       // throw (kEH + "Event-loop is under external control.");
 #ifdef ZMQ
-      if (fStorageDown && -1 == event) 
-      {
-	NextEvent();
-	return;
-      }
+      if(fOnlineMode)
+	{
+	  if (fStorageDown && -1 == event) 
+	    {
+	      NextEvent();
+	      return;
+	    }
 
-      if (fESD)
-      {
-	  // create new server request:
-	  struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
+	  if (fESD)
+	    {
+	      // create new server request:
+	      struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
             
-	  // set request type:
-	  if (event == -1)      {requestMessage->messageType = REQUEST_GET_LAST_EVENT;}
-	  else  if (event == 0) {requestMessage->messageType = REQUEST_GET_FIRST_EVENT;}
-	  else  if (event == 1) {requestMessage->messageType = REQUEST_GET_PREV_EVENT;}
-	  else  if (event == 2) {requestMessage->messageType = REQUEST_GET_NEXT_EVENT;}
+	      // set request type:
+	      if (event == -1)      {requestMessage->messageType = REQUEST_GET_LAST_EVENT;}
+	      else  if (event == 0) {requestMessage->messageType = REQUEST_GET_FIRST_EVENT;}
+	      else  if (event == 1) {requestMessage->messageType = REQUEST_GET_PREV_EVENT;}
+	      else  if (event == 2) {requestMessage->messageType = REQUEST_GET_NEXT_EVENT;}
             
-	  // set event struct:
-	  struct eventStruct eventToLoad;
-	  eventToLoad.runNumber = fESD->GetRunNumber();
-	  eventToLoad.eventNumber = fESD->GetEventNumberInFile();
-	  requestMessage->event = eventToLoad;
+	      // set event struct:
+	      struct eventStruct eventToLoad;
+	      eventToLoad.runNumber = fESD->GetRunNumber();
+	      eventToLoad.eventNumber = fESD->GetEventNumberInFile();
+	      requestMessage->event = eventToLoad;
             
-	  // create event manager:
-	  AliStorageEventManager *eventManager =
-            AliStorageEventManager::GetEventManagerInstance();
-	  AliESDEvent *resultEvent = NULL;
+	      // create event manager:
+	      AliStorageEventManager *eventManager =
+		AliStorageEventManager::GetEventManagerInstance();
+	      AliESDEvent *resultEvent = NULL;
             
-	  eventManager->CreateSocket(SERVER_COMMUNICATION_REQ);
-	  fMutex->Lock();
+	      eventManager->CreateSocket(SERVER_COMMUNICATION_REQ);
+	      fMutex->Lock();
             
-	  // send request and receive event:
-	  eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
-	  resultEvent = eventManager->GetEvent(SERVER_COMMUNICATION_REQ);
+	      // send request and receive event:
+	      eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
+	      resultEvent = eventManager->GetEvent(SERVER_COMMUNICATION_REQ);
             
-	  if(resultEvent)
-          {
-	      DestroyElements();
-	      InitOCDB(resultEvent->GetRunNumber());
-	      SetEvent(0,0,resultEvent,0);
-          }
+	      if(resultEvent)
+		{
+		  DestroyElements();
+		  InitOCDB(resultEvent->GetRunNumber());
+		  SetEvent(0,0,resultEvent,0);
+		}
+	      else
+		{
+		  if(event==-1){cout<<"\n\nWARNING -- No last event is avaliable.\n\n"<<endl;}
+		  if(event==0){cout<<"\n\nWARNING -- No first event is avaliable.\n\n"<<endl;}
+		  if(event==1){cout<<"\n\nWARNING -- No previous event is avaliable.\n\n"<<endl;}
+		  if(event==2){cout<<"\n\nWARNING -- No next event is avaliable.\n\n"<<endl;}
+		}
+            
+	      fMutex->UnLock();
+	    }
 	  else
-          {
-	      if(event==-1){cout<<"\n\nWARNING -- No last event is avaliable.\n\n"<<endl;}
-	      if(event==0){cout<<"\n\nWARNING -- No first event is avaliable.\n\n"<<endl;}
-	      if(event==1){cout<<"\n\nWARNING -- No previous event is avaliable.\n\n"<<endl;}
-	      if(event==2){cout<<"\n\nWARNING -- No next event is avaliable.\n\n"<<endl;}
-          }
-            
-	  fMutex->UnLock();
-        }
-      else
-      {
-	  cout<<"\n\nWARNING -- No event has been already loaded. Loading the most recent event...\n\n"<<endl;
+	    {
+	      cout<<"\n\nWARNING -- No event has been already loaded. Loading the most recent event...\n\n"<<endl;
 
-	  struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
-	  requestMessage->messageType = REQUEST_GET_LAST_EVENT;
+	      struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
+	      requestMessage->messageType = REQUEST_GET_LAST_EVENT;
             
-	  AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
-	  eventManager->CreateSocket(SERVER_COMMUNICATION_REQ);
-	  AliESDEvent *resultEvent = NULL;
+	      AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
+	      eventManager->CreateSocket(SERVER_COMMUNICATION_REQ);
+	      AliESDEvent *resultEvent = NULL;
             
-	  fMutex->Lock();
-	  eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
-	  resultEvent = eventManager->GetEvent(SERVER_COMMUNICATION_REQ);
+	      fMutex->Lock();
+	      eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
+	      resultEvent = eventManager->GetEvent(SERVER_COMMUNICATION_REQ);
             
-	  if(resultEvent)
-          {
-	      fESD=resultEvent;
-	      DestroyElements();
-	      InitOCDB(resultEvent->GetRunNumber());
-	      SetEvent(0,0,resultEvent,0);
-          }
-	  else{cout<<"\n\nWARNING -- The most recent event is not avaliable.\n\n"<<endl;}
-	  fMutex->UnLock();
-      }
+	      if(resultEvent)
+		{
+		  fESD=resultEvent;
+		  DestroyElements();
+		  InitOCDB(resultEvent->GetRunNumber());
+		  SetEvent(0,0,resultEvent,0);
+		}
+	      else{cout<<"\n\nWARNING -- The most recent event is not avaliable.\n\n"<<endl;}
+	      fMutex->UnLock();
+	    }
+	}
 #endif	
 
     }
@@ -1203,32 +1213,35 @@ void AliEveEventManager::NextEvent()
     if (fExternalCtrl)
     {
 #ifdef ZMQ
-        if(fIsNewEventAvaliable)
-        {
-            fMutex->Lock();
-            if(fWritingToEventIndex == 0) fEventInUse = 0;
-            else if(fWritingToEventIndex == 1) fEventInUse = 1;
+      if(fOnlineMode)
+	{
+	  if(fIsNewEventAvaliable)
+	    {
+	      fMutex->Lock();
+	      if(fWritingToEventIndex == 0) fEventInUse = 0;
+	      else if(fWritingToEventIndex == 1) fEventInUse = 1;
             
-            if(fCurrentEvent[fEventInUse])
-            {
-                if(fCurrentEvent[fEventInUse]->GetRunNumber() >= 0)
-                {
-		  printf("======================= setting event to %d\n", fCurrentEvent[fEventInUse]->GetEventNumberInFile());
+	      if(fCurrentEvent[fEventInUse])
+		{
+		  if(fCurrentEvent[fEventInUse]->GetRunNumber() >= 0)
+		    {
+		      printf("======================= setting event to %d\n", fCurrentEvent[fEventInUse]->GetEventNumberInFile());
                     
-                    DestroyElements();
-                    InitOCDB(fCurrentEvent[fEventInUse]->GetRunNumber());
-                    SetEvent(0,0,fCurrentEvent[fEventInUse],0);
+		      DestroyElements();
+		      InitOCDB(fCurrentEvent[fEventInUse]->GetRunNumber());
+		      SetEvent(0,0,fCurrentEvent[fEventInUse],0);
                     
-                }
-            }
-            fIsNewEventAvaliable = false;
-            fMutex->UnLock();
-        }
-        else
-        {
-            cout<<"No new event is avaliable."<<endl;
-            NoEventLoaded();
-        }
+		    }
+		}
+	      fIsNewEventAvaliable = false;
+	      fMutex->UnLock();
+	    }
+	  else
+	    {
+	      cout<<"No new event is avaliable."<<endl;
+	      NoEventLoaded();
+	    }
+	}
 #endif
     }
     else if ((fESDTree!=0) || (fHLTESDTree!=0))
@@ -1288,6 +1301,8 @@ void AliEveEventManager::PrevEvent()
 void AliEveEventManager::MarkCurrentEvent()
 {
 #ifdef ZMQ
+  if(!fOnlineMode){return;}
+
 	struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
 	struct eventStruct mark;
 	mark.runNumber = fESD->GetRunNumber();

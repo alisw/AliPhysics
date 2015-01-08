@@ -5,8 +5,8 @@ int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://") {
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libTENDER");
-  gSystem->Load("libPWGPP.so");
+  gSystem->Load("libTender");
+  gSystem->Load("libPWGPP");
 
   char *outfile = "trending.root";
  

@@ -6,7 +6,7 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-#include <EveBase/AliEveConfigManager.h>
+#include <AliEveConfigManager.h>
 
 #include <TInterpreter.h>
 #include <TRint.h>
@@ -27,8 +27,8 @@
 #include <Getline.h>
 
 // DEV Version includes
-#include <EveBase/AliEveApplication.h>
-#include <EveBase/AliEveMainWindow.h>
+#include <AliEveApplication.h>
+#include <AliEveMainWindow.h>
 
 
 #include <iostream>

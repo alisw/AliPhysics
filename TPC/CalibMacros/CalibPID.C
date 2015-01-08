@@ -5,7 +5,7 @@
 //
 gSystem->Load("libANALYSIS");
 gSystem->Load("libTPCcalib");
-gSystem->Load("libSTAT.so");
+gSystem->Load("libSTAT");
 
 .L $ALICE_ROOT/TPC/CalibMacros/CalibPID.C+
 .x ../ConfigOCDB.C
@@ -21,7 +21,7 @@ LookupHisto() // change SetRange in LookupHisto if needed !, check with pid->Get
 
 gSystem->Load("libANALYSIS");
 gSystem->Load("libTPCcalib");
-gSystem->Load("libSTAT.so");
+gSystem->Load("libSTAT");
 
 .L $ALICE_ROOT/TPC/CalibMacros/CalibPID.C+
 .x ../ConfigOCDB.C

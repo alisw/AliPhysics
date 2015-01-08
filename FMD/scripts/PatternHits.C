@@ -12,7 +12,7 @@ PatternHits()
 {
   // AliCDBManager* cdb = AliCDBManager::Instance();
   // cdb->SetDefaultStorage("local://cdb");
-  gSystem->Load("libFMDutil.so");
+  gSystem->Load("libFMDutil");
   AliFMDPattern* d = new AliFMDPattern;
   d->AddLoad(AliFMDInput::kHits);
   d->SetName("hit");

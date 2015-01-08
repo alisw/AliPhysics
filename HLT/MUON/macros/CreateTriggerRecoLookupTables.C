@@ -62,7 +62,7 @@ void CreateTriggerRecoLookupTables(
 		bool useCrateId = true
 	)
 {
-	gSystem->Load("libAliHLTMUON.so");
+	gSystem->Load("libAliHLTMUON");
 
 	for (Int_t ddl = 20; ddl < 22; ddl++)
 	{

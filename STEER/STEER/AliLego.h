@@ -48,6 +48,9 @@ private:
    TH2F      *fHistAbso;         //Interaction length map
    TH2F      *fHistGcm2;         //g/cm2 length map
    TH2F      *fHistReta;         //Radiation length map as a function of eta
+   TH2F      *fRZR;              // Radiation lenghts at (R.Z)
+   TH2F      *fRZA;              // Absorbtion lengths at (R,Z)
+   TH2F      *fRZG;              // Density at (R,Z)
    TClonesArray *fVolumesFwd;    //!Volume sequence forward
    TClonesArray *fVolumesBwd;    //!Volume sequence backward   
    Int_t      fStepBack;         //!Flag for backstepping

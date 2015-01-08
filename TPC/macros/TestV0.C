@@ -3,9 +3,9 @@
   //
   //0. Setup memory chcecker if you want 
   //
-  gSystem->Load("$ROOTSYS/lib/libGui.so");
-  gSystem->Load("$ROOTSYS/lib/libTree.so");
-  gSystem->Load("$MEMSTAT/libMemStat.so");
+  gSystem->Load("$ROOTSYS/lib/libGui");
+  gSystem->Load("$ROOTSYS/lib/libTree");
+  gSystem->Load("$MEMSTAT/libMemStat");
   TMemStat *memstat = new TMemStat(100000000,10000000,kTRUE);
   AliSysInfo::AddCallBack(TMemStatManager::GetInstance()->fStampCallBack);
   AliSysInfo::AddStamp("Start");  

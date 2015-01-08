@@ -453,7 +453,7 @@ AliGenerator* MbPhojet()
   comment = comment.Append(" pp at 14 TeV: Phojet low-pt");
 
 #if defined(__CINT__)
-  gSystem->Load("libdpmjet"); // Parton density functions
+  gSystem->Load("libDPMJET"); // Parton density functions
   gSystem->Load("libTDPMjet"); // Parton density functions
 #endif
 
@@ -474,7 +474,7 @@ AliGenerator* Herwig()
   comment = comment.Append("pp at 14 TeV: Herwig");
 
 #if defined(__CINT__)
-  gSystem->Load("libherwig"); // HERWIG library
+  gSystem->Load("libHERWIG"); // HERWIG library
   gSystem->Load("libTHerwig"); // HERWIG library
 #endif
 

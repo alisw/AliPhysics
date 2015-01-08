@@ -23,7 +23,7 @@ void ProcessDatasets(){
   }
   
   //Load Class
-  gSystem->Load("ProcessBadChunks02_C.so");
+  gSystem->Load("ProcessBadChunks02_C");
   
   
   //Process Datasets, dataset list

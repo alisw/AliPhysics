@@ -28,7 +28,7 @@
 
 void Init(){
 
-  gSystem->Load("libSTAT.so");
+  gSystem->Load("libSTAT");
   TStatToolkit toolkit;
   Double_t chi2;
   TVectorD fitParam, fitParam1,fitParam2;

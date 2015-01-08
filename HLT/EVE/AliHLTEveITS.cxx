@@ -26,7 +26,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TEvePointSet.h"
-#include "ITS/AliHLTITSClusterDataFormat.h"
+#include "AliHLTITSClusterDataFormat.h"
 #include "AliITSRecPoint.h"
 #include "TCanvas.h"
 

@@ -6,7 +6,7 @@ void RetrieveDPs(const char* detector, int tsFrom, int tsTo)
 	// date --> unix date
 	// date --date='2008-02-28' '+%s'
 	
-	gSystem->Load("libRLDAP.so");
+	gSystem->Load("libRLDAP");
 	gSystem->Load("libMonaLisa");
 	gSystem->Load("libSHUTTLE");
 

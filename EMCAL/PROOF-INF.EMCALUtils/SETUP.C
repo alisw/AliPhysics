@@ -1,10 +1,10 @@
 void SETUP()
 {
-  gSystem->Load("libMatrix.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libMatrix");
+  gSystem->Load("libPhysics");
    // Load library
    TString ocwd = gSystem->WorkingDirectory();
-   gSystem->Load(ocwd+"/libEMCALUtils.so");
+   gSystem->Load(ocwd+"/libEMCALUtils");
 
    // Set the Include paths
 //   gSystem->SetIncludePath("-I$ROOTSYS/include -IEMCAL");

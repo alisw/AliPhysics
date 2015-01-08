@@ -17,7 +17,7 @@ class AliGenDeuteron: public AliGenerator
 
  public:
 
-	AliGenDeuteron(Int_t sign=1, Double_t pmax=0.2, Double_t rmax=2.1, Int_t cluster=0 );
+	AliGenDeuteron(Int_t sign=1, Double_t pmax=0.1, Double_t rmax=2.1, Int_t cluster=0 );
 	virtual ~AliGenDeuteron();
 
 	virtual void Init();

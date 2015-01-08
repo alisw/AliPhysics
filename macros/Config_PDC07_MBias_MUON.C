@@ -15,7 +15,7 @@ void Config(char directory[100]="", char option[6]="trgAll")
     
   //=====================================================================
   //  Libraries required by geant321
-    gSystem->Load("libgeant321.so");
+    gSystem->Load("libgeant321");
     
     new TGeant3TGeo("C++ Interface to Geant3");
   //=======================================================================
@@ -222,8 +222,8 @@ Float_t EtaToTheta(Float_t arg){
 void LoadPythia()
 {
     // Load Pythia related libraries
-    gSystem->Load("liblhapdf.so");      // Parton density functions
-    gSystem->Load("libEGPythia6.so");   // TGenerator interface
-    gSystem->Load("libpythia6.so");     // Pythia
-    gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
+    gSystem->Load("liblhapdf");      // Parton density functions
+    gSystem->Load("libEGPythia6");   // TGenerator interface
+    gSystem->Load("libpythia6");     // Pythia
+    gSystem->Load("libAliPythia6");  // ALICE specific implementations
 }

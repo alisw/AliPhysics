@@ -11,6 +11,7 @@
 
 #include "AliDecayer.h"
 
+class TParticle;
 
 class AliDecayerPolarized : public AliDecayer
 {

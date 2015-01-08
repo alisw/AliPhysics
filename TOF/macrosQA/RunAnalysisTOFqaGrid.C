@@ -94,8 +94,8 @@ void LoadLibraries()
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libTENDER");
-  gSystem->Load("libPWGPP.so");      
+  gSystem->Load("libTender");
+  gSystem->Load("libPWGPP");
 }
 //----------------------------------------------------------------------
 void RunAnalysisTOFqaGrid(TString pluginmode="test", Int_t ntestfiles = 10, TString filesPrefix = "", TString gridUser="fbellini") 
@@ -192,7 +192,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="full")
   plugin->SetNrunsPerMaster(1);
 
   plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/PWGPP -I$ALICE_ROOT/PWGPP/TRD");   
-  plugin->SetAdditionalLibs("libANALYSIS.so libANALYSISalice.so libCORRFW.so libTENDER.so libPWGPP.so ");//libTRDbase.so libTRDrec.so
+  plugin->SetAdditionalLibs("libANALYSIS.so libANALYSISalice.so libCORRFW.so libTender.so libPWGPP.so ");//libTRDbase.so libTRDrec.so
   plugin->SetDefaultOutputs(kTRUE);
   plugin->SetAnalysisMacro("AnalysisTOFqaSigned.C"); //MODIFICA se vuoi
   plugin->SetExecutable("analysisTOFqaSigned.sh"); //MODIFICA se vuoi

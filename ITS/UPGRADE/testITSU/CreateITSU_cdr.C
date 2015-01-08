@@ -8,8 +8,8 @@ Int_t getNStaves(AliITSUSegmentationPix* seg, double tilt, double r0, double min
 void CreateITSU()
 {
   //
-  gSystem->Load("libITSUpgradeBase.so");
-  gSystem->Load("libITSUpgradeSim.so");
+  gSystem->Load("libITSUpgradeBase");
+  gSystem->Load("libITSUpgradeSim");
 
 
   // build ITS upgrade detector

@@ -4,12 +4,12 @@ Bool_t Shuttle(const char* param = "listen", const char* dets=0) {
 	// AliEn interface. If this happens, grid storage activation must be done BEFORE 
 	// loading LDAP libraries!!!
 
-	gSystem->Load("libRAliEn.so");
-	gSystem->Load("libRLDAP.so");
+	gSystem->Load("libRAliEn");
+	gSystem->Load("libRLDAP");
 	gSystem->Load("libMonaLisa");
 	gSystem->Load("libSHUTTLE");
 	gSystem->Load("libThread");
-//	gSystem->Load("$ALICE_ROOT/SHUTTLE/test/libTest.so");
+//	gSystem->Load("$ALICE_ROOT/SHUTTLE/test/libTest");
 
 	AliLog::SetGlobalDebugLevel(2);
 	

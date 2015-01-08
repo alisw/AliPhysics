@@ -1,10 +1,47 @@
-# AliRoot Build System CMakeLists for TPC
-#
-# Author: Johny Jose m(johny.jose@cern.ch)
-#         Port of previous Makefile build to cmake
+# **************************************************************************
+# * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+# *                                                                        *
+# * Author: The ALICE Off-line Project.                                    *
+# * Contributors are mentioned in the code where appropriate.              *
+# *                                                                        *
+# * Permission to use, copy, modify and distribute this software and its   *
+# * documentation strictly for non-commercial purposes is hereby granted   *
+# * without fee, provided that the above copyright notice appears in all   *
+# * copies and that both the copyright notice and this permission notice   *
+# * appear in the supporting documentation. The authors make no claims     *
+# * about the suitability of this software for any purpose. It is          *
+# * provided "as is" without express or implied warranty.                  *
+# **************************************************************************
 
-cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
+add_subdirectory(TPCbase)
+add_subdirectory(TPCutil)
+add_subdirectory(TPCcalib)
+add_subdirectory(TPCrec)
+add_subdirectory(TPCsim)
+add_subdirectory(TPCmon)
+add_subdirectory(TPCupgrade)
 
-file(GLOB PACKAGES CMake*.pkg)
+if(DA)
+    add_subdirectory(DA)
+endif(DA)
 
-ALICE_BuildModule()
+# Installing the mapping
+install(DIRECTORY mapping DESTINATION TPC)
+
+# Installing the macros
+install(DIRECTORY macros DESTINATION TPC)
+
+# Install root & dat files
+set(ROOTFILES 
+    AliTPCprf2dGEM.root
+    AliTPCprf2d.root
+    CovMatrixDB_PbPb6000_B0.4T.root
+    CovMatrixDB_pp_B0.4T.root
+   )
+
+set(DATFILES
+    conn_iroc.dat
+    conn_oroc.dat
+   )
+
+install(FILES ${ROOTFILES} ${DATFILES} DESTINATION TPC)

@@ -4,7 +4,6 @@ Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdFilter);
 Bool_t AddTrackCutsLHC11h(AliAnalysisTaskESDfilter* esdFilter);
 Bool_t enableTPCOnlyAODTracksLocalFlag=kFALSE;
 
-
 AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE, 
                                            Bool_t writeMuonAOD=kFALSE,
                                            Bool_t writeDimuonAOD=kFALSE,
@@ -14,8 +13,9 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
                                            Bool_t disableCascades=kFALSE,
                                            Bool_t disableKinks=kFALSE, 
                                            Int_t runFlag = 1100,
-                                           Int_t  muonMCMode = 2, 
-                                           Bool_t useV0Filter=kTRUE)
+                                           Int_t  muonMCMode = 3  ,
+                                           Bool_t useV0Filter=kTRUE,
+                                           Bool_t muonWithSPDTracklets=kTRUE)
 {
   // Creates a filter task and adds it to the analysis manager.
    // Get the pointer to the existing analysis manager via the static access method.
@@ -59,10 +59,11 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    // Muons
    Bool_t onlyMuon=kTRUE;
    Bool_t keepAllEvents=kTRUE;
-   Int_t mcMode= useKineFilter ? muonMCMode : 0; // use 1 instead of 2 to get all MC information instead of just ancestors of mu tracks
-   AliAnalysisTaskESDMuonFilter *esdmuonfilter = new AliAnalysisTaskESDMuonFilter("ESD Muon Filter",onlyMuon,keepAllEvents,mcMode);
+   Int_t mcMode= useKineFilter ? muonMCMode : 0;
+   AliAnalysisTaskESDMuonFilter *esdmuonfilter = new AliAnalysisTaskESDMuonFilter("ESD Muon Filter",onlyMuon,keepAllEvents,mcMode,muonWithSPDTracklets);
    mgr->AddTask(esdmuonfilter);
-   if(usePhysicsSelection){
+   if(usePhysicsSelection)
+   {
      esdfilter->SelectCollisionCandidates(AliVEvent::kAny);
      esdmuonfilter->SelectCollisionCandidates(AliVEvent::kAny);
    }  
