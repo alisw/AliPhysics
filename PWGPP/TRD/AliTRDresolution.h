@@ -94,8 +94,6 @@ public:
 
   AliTRDresolution();
   AliTRDresolution(char* name, Bool_t xchange=kTRUE);
-  AliTRDresolution(const AliTRDresolution&);
-  AliTRDresolution& operator=(const AliTRDresolution&);
   virtual ~AliTRDresolution();
   
   static Bool_t   FitTrack(const Int_t np, AliTrackPoint *points, Float_t params[10]);
@@ -183,6 +181,10 @@ protected:
   // calibration containers
   TObjArray            *fCl;              //! cluster2track calib
   TObjArray            *fMCcl;            //! cluster2mc calib
+
+ private:
+  AliTRDresolution(const AliTRDresolution&);
+  AliTRDresolution& operator=(const AliTRDresolution&);
   
   ClassDef(AliTRDresolution, 11) // TRD tracking resolution task
 };

@@ -104,7 +104,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   //const Int_t nptBins=44;
 
   //dimensions of THnSparse for tracks
-  const Int_t nvartrk=8;
+  //const Int_t nvartrk=8;
   //                                             pt          cent          Q vec       IDrec          IDgen        isph         y             DCA 
   //  Int_t    binsHistRealTrk[nvartrk] = {      nptBins, fnCentBins,     fnQvecBins,        4,             3,          3,        2,        fnDCABins};
   //  Double_t xminHistRealTrk[nvartrk] = {         0.,          0.,              0.,       -.5,          -0.5,        0.5,      -0.5,          fDCAmin};
@@ -127,6 +127,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   //  NSparseHistTrk->GetAxis(6)->SetName("y");
   //  NSparseHistTrk->GetAxis(7)->SetTitle("dca");
   //  NSparseHistTrk->GetAxis(7)->SetName("dca");
+  const Int_t nvartrk=7;
   Int_t    binsHistRealTrk[nvartrk] = {      nptBins, fnCentBins,     fnQvecBins,        4,             3,          3,        2};
   Double_t xminHistRealTrk[nvartrk] = {         0.,          0.,              0.,       -.5,          -0.5,        0.5,      -0.5};
   Double_t xmaxHistRealTrk[nvartrk] = {       10.,       100.,     fQvecUpperLim,       3.5,      2.5,        3.5,      0.5};

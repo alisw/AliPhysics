@@ -198,6 +198,8 @@ class AliHFSystErr : public TNamed
 
   void InitDstoKKpi2010pp();
   void InitDstoKKpi2011PbPb07half();
+  void InitDstoKKpi2011PbPb010();
+  void InitDstoKKpi2011PbPb2050();
 
   void InitLctopKpi2010pp();
 

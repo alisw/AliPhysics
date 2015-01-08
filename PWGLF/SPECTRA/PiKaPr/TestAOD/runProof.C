@@ -181,11 +181,11 @@ void InitAndLoadLibs(Int_t runMode = kMyRunModeLocal, Int_t workers = 0, Bool_t 
       p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE);
 
       gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-29-AN");
-      gSystem->Load("libCore.so");
-      gSystem->Load("libTree.so");
-      gSystem->Load("libGeom.so");
-      gSystem->Load("libVMC.so");
-      gSystem->Load("libPhysics.so");
+      gSystem->Load("libCore");
+      gSystem->Load("libTree");
+      gSystem->Load("libGeom");
+      gSystem->Load("libVMC");
+      gSystem->Load("libPhysics");
       gSystem->Load("libSTEERBase");
       gSystem->Load("libESD");
       gSystem->Load("libAOD");
@@ -214,11 +214,11 @@ void InitAndLoadLibs(Int_t runMode = kMyRunModeLocal, Int_t workers = 0, Bool_t 
    else
    {
       cout << "Init in Local or Grid mode" << endl;
-      gSystem->Load("libCore.so");
-      gSystem->Load("libTree.so");
-      gSystem->Load("libGeom.so");
-      gSystem->Load("libVMC.so");
-      gSystem->Load("libPhysics.so");
+      gSystem->Load("libCore");
+      gSystem->Load("libTree");
+      gSystem->Load("libGeom");
+      gSystem->Load("libVMC");
+      gSystem->Load("libPhysics");
       gSystem->Load("libSTEERBase");
       gSystem->Load("libESD");
       gSystem->Load("libAOD");

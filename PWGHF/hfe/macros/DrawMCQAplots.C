@@ -7,11 +7,11 @@ void DrawMCQAplots(Int_t imode){
   // if you want to compare differetail cross section together with NLO prediction, set imode==12
 
   // load libs
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWG0base.so");
-  gSystem->Load("libPWGHFhfe.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWG0base");
+  gSystem->Load("libPWGHFhfe");
 
   // put input file name
   //char filename[]="./HFEtask.root";

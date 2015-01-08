@@ -212,7 +212,6 @@ class AliRDHFCuts : public AliAnalysisCuts
     fPidHF=new AliAODPidHF(*pidObj);
   }
   void SetRemoveDaughtersFromPrim(Bool_t removeDaughtersPrim) {fRemoveDaughtersFromPrimary=removeDaughtersPrim;}
-  void SetRecomputePrimaryVertex(Bool_t opt) {fRecomputePrimVertex=opt;}
   void SetMinPtCandidate(Double_t ptCand=-1.) {fMinPtCand=ptCand; return;}
   void SetMaxPtCandidate(Double_t ptCand=1000.) {fMaxPtCand=ptCand; return;}
   void SetMaxRapidityCandidate(Double_t ycand) {fMaxRapidityCand=ycand; return;}
@@ -392,7 +391,6 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t fWhyRejection; // used to code the step at which candidate was rejected
   UInt_t fEvRejectionBits; //bit map storing the full info about event rejection
   Bool_t fRemoveDaughtersFromPrimary; // flag to switch on the removal of duaghters from the primary vertex computation
-  Bool_t fRecomputePrimVertex; // flag to recompute primary vertex
   Bool_t fUseMCVertex; // use MC primary vertex 
   Bool_t fUsePhysicsSelection; // use Physics selection criteria
   Int_t  fOptPileup;      // option for pielup selection
@@ -429,7 +427,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   TFormula *f1CutMinNCrossedRowsTPCPtDep; // pT-dep cut in TPC minimum n crossed rows
  
 
-  ClassDef(AliRDHFCuts,35);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,36);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif

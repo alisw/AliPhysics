@@ -1,6 +1,9 @@
-// $Id$
 //
-// Emcal particle trigger class, which can contain either
+// Emcal trigger patch information class
+// Can contain three types of information, distinguished by the various bits in the bit field:
+//  1) online trigger information (no extra bits set)
+//  2) offline recalculated trigger patches (bit 25, kSimpleOfflineTriggerBit set)
+//  3) highest patch energy, also for events that did not fire the trigger (bits 22, 23 kRecalc... (using both online and offline info, use bit 25 to distinguish)
 //
 // Author: J.Kral
 
@@ -17,8 +20,10 @@ AliEmcalTriggerPatchInfo::AliEmcalTriggerPatchInfo() :
   fEdge1(),
   fEdge2(),
   fADCAmp(0),
+  fADCOfflineAmp(0),
   fTriggerBits(0),
-  fOffSet(0)            // To be set explictly by the trigger maker in order to avoid hard coding
+  fOffSet(0),            // To be set explictly by the trigger maker in order to avoid hard coding
+  fTriggerBitConfig()
 {
   // Default constructor.
   fEdgeCell[0] = -1;
@@ -34,8 +39,10 @@ AliEmcalTriggerPatchInfo::AliEmcalTriggerPatchInfo(const AliEmcalTriggerPatchInf
   fEdge1(p.fEdge1),
   fEdge2(p.fEdge2),
   fADCAmp(p.fADCAmp),
+  fADCOfflineAmp(p.fADCOfflineAmp),
   fTriggerBits(p.fTriggerBits),
-  fOffSet(p.fOffSet)
+  fOffSet(p.fOffSet),
+  fTriggerBitConfig(p.fTriggerBitConfig)
 {
   // Copy constructor.
   fEdgeCell[0] = p.fEdgeCell[0];
@@ -59,6 +66,7 @@ AliEmcalTriggerPatchInfo &AliEmcalTriggerPatchInfo::operator=(const AliEmcalTrig
     fEdge1 = p.fEdge1;
     fEdge2 = p.fEdge2;
     fADCAmp = p.fADCAmp;
+    fADCOfflineAmp = p.fADCOfflineAmp;
     fTriggerBits = p.fTriggerBits;
     fEdgeCell[0] = p.fEdgeCell[0];
     fEdgeCell[1] = p.fEdgeCell[1];

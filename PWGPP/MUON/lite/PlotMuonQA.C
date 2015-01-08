@@ -2,13 +2,13 @@
 // Macro for QA monitoring.
 //
 // In case it is not run with full aliroot, it needs the following libraries to compile:
-//  - libSTEERBase.so
-//  - libESD.so
-//  - libAOD.so
-//  - libANALYSIS.so
-//  - libANALYSISalice.so
-//  - libCORRFW.so
-//  - libPWGmuon.so
+//  - libSTEERBase
+//  - libESD
+//  - libAOD
+//  - libANALYSIS
+//  - libANALYSISalice
+//  - libCORRFW
+//  - libPWGmuon
 //
 // TString includePath = "-I${ALICE_ROOT}/PWGmuon ";  gSystem->SetIncludePath(includePath.Data());
 //

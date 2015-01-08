@@ -157,11 +157,11 @@ void LoadLibraries(const analysisModes mode) {
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
   //--------------------------------------
-  gSystem->Load("libCore.so");        
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libTree.so");
+  gSystem->Load("libCore");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libTree");
 
   //----------------------------------------------------------
   // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
@@ -171,13 +171,13 @@ void LoadLibraries(const analysisModes mode) {
     // If you want to use already compiled libraries 
     // in the aliroot distribution
     //--------------------------------------------------------
-    gSystem->Load("libSTEERBase.so");
-    gSystem->Load("libESD.so");
-    gSystem->Load("libAOD.so");
-    gSystem->Load("libANALYSIS.so");
-    gSystem->Load("libANALYSISalice.so");
-    gSystem->Load("libEventMixing.so");
-    gSystem->Load("libPWGCFebye.so");
+    gSystem->Load("libSTEERBase");
+    gSystem->Load("libESD");
+    gSystem->Load("libAOD");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
+    gSystem->Load("libEventMixing");
+    gSystem->Load("libPWGCFebye");
     // Use AliRoot includes to compile our task
     gROOT->ProcessLine(".include $ALICE_ROOT/include");
   }

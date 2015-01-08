@@ -1,9 +1,9 @@
 void runLocal() {
 /*
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
 
   gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");
@@ -11,7 +11,7 @@ void runLocal() {
 */
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libTENDER");
+  gSystem->Load("libTender");
   gSystem->Load("libPWGPP");
 
   AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
@@ -49,10 +49,10 @@ void runLocal() {
 void runProof() {
     TProof::Open("belikov@localhost"); 
   /*
-    gSystem->Load("libTree.so");
-    gSystem->Load("libGeom.so");
-    gSystem->Load("libVMC.so");
-    gSystem->Load("libPhysics.so");
+    gSystem->Load("libTree");
+    gSystem->Load("libGeom");
+    gSystem->Load("libVMC");
+    gSystem->Load("libPhysics");
   */
     gProof->UploadPackage("STEERBase");
     gProof->EnablePackage("STEERBase");

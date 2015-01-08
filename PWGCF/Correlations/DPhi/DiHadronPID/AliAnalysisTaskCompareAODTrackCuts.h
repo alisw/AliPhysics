@@ -1,5 +1,8 @@
 #ifndef ALIANALYSISTASKCOMPAREAODTRACKCUTS_H
 #define ALIANALYSISTASKCOMPAREAODTRACKCUTS_H
+
+#include "AliAODEventCutsDiHadronPID.h"
+#include "AliAODTrackCutsDiHadronPID.h"
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. * 
 * See cxx source for full Copyright notice */ 
 /* $Id$ */

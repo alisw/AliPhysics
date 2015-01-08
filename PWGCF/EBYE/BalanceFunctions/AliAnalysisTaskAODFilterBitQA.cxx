@@ -4,6 +4,7 @@
 
 
 #include "AliAODEvent.h"
+#include "AliAODRecoDecay.h"
 #include "AliAODTrack.h"
 #include "AliLog.h"
 
@@ -25,7 +26,12 @@ AliAnalysisTaskAODFilterBitQA::AliAnalysisTaskAODFilterBitQA(const char *name)
   : AliAnalysisTaskSE(name),
   fArrayMC(0x0),
   fListQA(0x0),
+  useCentrality(kFALSE),
   fillOnlySecondaries(kFALSE),
+  fillHFVertexingTracks(kFALSE),
+  fHFBranchName("D0toKpi"),
+  fBitIgnore1(-1),
+  fBitIgnore2(-1),
   fCentralityPercentileMin(0.),
   fCentralityPercentileMax(80.), 
   fPtMin(0),
@@ -117,10 +123,14 @@ void AliAnalysisTaskAODFilterBitQA::UserExec(Option_t *) {
     return;
   }
 
-  
-  // get the accepted tracks in main event
-  GetAcceptedTracks(event,lMultiplicityVar);
-
+  // fill HF vertexing tracks
+  if(fillHFVertexingTracks){
+    GetAcceptedHFVertexingTracks(event,lMultiplicityVar);
+  }
+  else{
+    // get the accepted tracks in main event
+    GetAcceptedTracks(event,lMultiplicityVar);
+  }
 }
 
 //________________________________________________________________________
@@ -160,16 +170,24 @@ Double_t AliAnalysisTaskAODFilterBitQA::IsEventAccepted(AliVEvent *event){
 	if(TMath::Abs(vertex->GetX()) < fVxMax) {
 	  if(TMath::Abs(vertex->GetY()) < fVyMax) {
 	    if(TMath::Abs(vertex->GetZ()) < fVzMax) {
+
+	      // get the reference multiplicty or centrality (if required)
+	      if(useCentrality){
 	      
-	      // get the reference multiplicty or centrality
-	      AliAODHeader *header = (AliAODHeader*) event->GetHeader();
-	      gCentrality = header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
-	      
-	      if((gCentrality > fCentralityPercentileMin) && (gCentrality < fCentralityPercentileMax)){
+		AliAODHeader *header = (AliAODHeader*) event->GetHeader();
+		gCentrality = header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
 		
-		return gCentrality;
-		
-	      }//centrality range
+		if((gCentrality > fCentralityPercentileMin) && (gCentrality < fCentralityPercentileMax)){		  
+		  return gCentrality;
+		}
+		else{
+		  return -1;
+		}//centrality range
+	      }//use centrality
+
+	      // if not using centrality/multiplicty, return 1
+	      return 1;
+
 	    }//Vz cut
 	  }//Vy cut
 	}//Vx cut
@@ -258,7 +276,7 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
 
     // AOD track cuts
     if(iCharge > -1){
-      for(Int_t iTrackBit = 0; iTrackBit < gBitMax; iTrackBit++){
+      for(Int_t iTrackBit = 0; iTrackBit < gBitMax-1; iTrackBit++){
 	fHistTrackStats->Fill(gCentrality,iTrackBit,aodTrack->TestFilterBit(1<<iTrackBit));
 	
 	if(aodTrack->TestFilterBit(1<<iTrackBit)){
@@ -268,8 +286,172 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
 	  fHistChiClus[iCharge][iTrackBit]->Fill(vChi2,vClus);
 	} 
       }//bit loop
+      
+      // fill all tracks in last bit
+      fHistTrackStats->Fill(gCentrality,gBitMax-1,1);
+      fHistKinematics[iCharge][gBitMax-1]->Fill(vEta,vPhi,vPt);
+      fHistDCAconstrained[iCharge][gBitMax-1]->Fill(vDCAconstrainedxy,vDCAconstrainedz);
+      fHistDCAglobal[iCharge][gBitMax-1]->Fill(vDCAglobalx,vDCAglobaly,vDCAglobalz);
+      fHistChiClus[iCharge][gBitMax-1]->Fill(vChi2,vClus);
+      
     }//charge positive or negative
   }//track loop
   
+  return;  
+}
+
+
+//________________________________________________________________________
+void AliAnalysisTaskAODFilterBitQA::GetAcceptedHFVertexingTracks(AliVEvent *event, Double_t gCentrality){
+  // Checks track cuts (filter bits)
+  // from daughters of HF candidates
+  // Fills QA histograms
+
+  Double_t vEta;
+  Double_t vPhi;
+  Double_t vPt;
+  Double_t vDCAconstrainedxy;
+  Double_t vDCAconstrainedz; 
+  Double_t vDCAglobalx;
+  Double_t vDCAglobaly;
+  Double_t vDCAglobalz;
+  Double_t vChi2;
+  Double_t vClus;
+
+  Double_t pos[3];
+  Double_t v[3];
+
+  Int_t IDList[1000];
+  Int_t IDListLength = 0;
+  for(Int_t i = 0; i < 1000; i++){
+    IDList[i] = -5;
+  }
+
+  const AliVVertex *vertex = event->GetPrimaryVertex();
+  vertex->GetXYZ(v);
+
+  // =================================================================================
+  // HF part (taken from AliAnalysisTaskSEDmesonsFilterCJ)
+
+  TClonesArray *arrayDStartoD0pi = (TClonesArray*)event->GetList()->FindObject(fHFBranchName.Data());
+   
+  if (!arrayDStartoD0pi) {
+    AliInfo(Form("Could not find array %s, skipping the event",fHFBranchName.Data()));
+    return;
+  } else {
+    AliDebug(2, Form("Found %d vertices",arrayDStartoD0pi->GetEntriesFast()));   
+  }
+
+  // loop over tracks
+   const Int_t NVertices = arrayDStartoD0pi->GetEntriesFast();
+
+   for (Int_t iVertex = 0; iVertex < NVertices; ++iVertex) {
+     
+     AliAODRecoDecay *HFvertex = static_cast<AliAODRecoDecay*>(arrayDStartoD0pi->At(iVertex));
+   
+     // Loop over tracks (daughters of D candidates)
+     for (Int_t iProng = 0; iProng<HFvertex->GetNProngs(); iProng++) { 
+       
+       AliAODTrack *daughter = (AliAODTrack*)HFvertex->GetDaughter(iProng);
+       if (!daughter){
+	 AliError(Form("Could not receive track %d %d", iVertex, iProng));
+	 continue;
+       }
+
+
+       // get MC information (if available)
+       if(fArrayMC && fillOnlySecondaries){
+	 
+	 Int_t label = daughter->GetLabel();
+	 AliAODMCParticle *mcTrack = (AliAODMCParticle *)fArrayMC->At(TMath::Abs(label));
+	 
+	 if(mcTrack->IsPhysicalPrimary())
+	   continue;      
+       }
+
+       // track parameters
+       vEta    = daughter->Eta();
+       vPhi    = daughter->Phi();// * TMath::RadToDeg();
+       vPt     = daughter->Pt();
+       vDCAconstrainedxy  = daughter->DCA();     
+       vDCAconstrainedz   = daughter->ZAtDCA();   
+       vChi2   = daughter->Chi2perNDF(); 
+       vClus   = daughter->GetTPCNcls(); 
+       
+       // kinematic cuts
+       if( vPt > fPtMax || vPt < fPtMin )
+	 continue;
+       if( vEta > fEtaMax || vEta < fEtaMin )
+	 continue;
+
+       // avoid double counting (can be optimized)
+       Bool_t doubleCount = kFALSE;
+       Int_t  daughterID  = daughter->GetID();
+       for(Int_t idx = 0; idx < IDListLength; idx++){
+	 if(IDList[idx]==daughterID){
+	   doubleCount = kTRUE;
+	   break;
+	 }
+       }
+       if(!doubleCount){
+	 IDList[IDListLength] = daughterID;
+	 IDListLength++;
+       }
+       else{
+	 continue;
+       }
+
+       
+       // if not constrained track the position is stored (primary vertex to be subtracted)
+       daughter->GetXYZ(pos);
+       vDCAglobalx  = pos[0] - v[0];
+       vDCAglobaly  = pos[1] - v[1];
+       vDCAglobalz  = pos[2] - v[2];
+       
+       // fill for separately for positive and negative charges
+       Int_t iCharge = -1;
+       // positive 
+       if(daughter->Charge() > 0)
+	 iCharge = 0;
+       else if(daughter->Charge() < 0)
+	 iCharge = 1;
+       else{
+	 AliError("Charge==0?");
+	 iCharge = -1;
+       }
+       
+       
+       // AOD track cuts
+       if(iCharge > -1){
+
+	 // if some filter bits should be ignored, skip them here
+	 if(fBitIgnore1 > -1 && daughter->TestFilterBit(1<<fBitIgnore1))
+	   continue;
+	 if(fBitIgnore2 > -1 && daughter->TestFilterBit(1<<fBitIgnore2))
+	   continue;
+
+	 for(Int_t iTrackBit = 0; iTrackBit < gBitMax; iTrackBit++){
+	   fHistTrackStats->Fill(gCentrality,iTrackBit,daughter->TestFilterBit(1<<iTrackBit));
+	   
+	   if(daughter->TestFilterBit(1<<iTrackBit)){
+	     fHistKinematics[iCharge][iTrackBit]->Fill(vEta,vPhi,vPt);
+	     fHistDCAconstrained[iCharge][iTrackBit]->Fill(vDCAconstrainedxy,vDCAconstrainedz);
+	     fHistDCAglobal[iCharge][iTrackBit]->Fill(vDCAglobalx,vDCAglobaly,vDCAglobalz);
+	     fHistChiClus[iCharge][iTrackBit]->Fill(vChi2,vClus);
+	   } 
+	 }//bit loop
+
+	 // fill all tracks in last bit
+	 fHistTrackStats->Fill(gCentrality,gBitMax-1,1);
+	 fHistKinematics[iCharge][gBitMax-1]->Fill(vEta,vPhi,vPt);
+	 fHistDCAconstrained[iCharge][gBitMax-1]->Fill(vDCAconstrainedxy,vDCAconstrainedz);
+	 fHistDCAglobal[iCharge][gBitMax-1]->Fill(vDCAglobalx,vDCAglobaly,vDCAglobalz);
+	 fHistChiClus[iCharge][gBitMax-1]->Fill(vChi2,vClus);
+	 
+       }//charge positive or negative
+       
+     }//prong loop
+   }//HF vertex loop
+   
   return;  
 }

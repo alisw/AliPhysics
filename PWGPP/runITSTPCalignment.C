@@ -21,16 +21,16 @@ void runLocal(const char* filenamestr = "AliESDs.root" ) {
   //_____________Setting up the par files_______________//
   //____________________________________________________//
   setupPar("STEERBase");
-  gSystem->Load("libSTEERBase.so");
+  gSystem->Load("libSTEERBase");
   setupPar("ESD");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libESD.so");
+  gSystem->Load("libVMC");
+  gSystem->Load("libESD");
   setupPar("AOD");
-  gSystem->Load("libAOD.so");
+  gSystem->Load("libAOD");
   setupPar("ANALYSIS");
-  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSIS");
   setupPar("ANALYSISalice");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libANALYSISalice");
   //____________________________________________________//  
 
   //add input files from dirs
@@ -98,7 +98,7 @@ void runLocal(const char* filenamestr = "AliESDs.root" ) {
 
 //_________________________________________________//
 void runInteractive(const char* collectionName = "tag.xml") {
-  gSystem->Load("libProofPlayer.so");
+  gSystem->Load("libProofPlayer");
 
   TString outputArrayFilename = "ITSTPCalignmentArray.root";
   TString outputHistFilename = "ITSTPCalignmentHist.root";
@@ -110,16 +110,16 @@ void runInteractive(const char* collectionName = "tag.xml") {
   //_____________Setting up the par files_______________//
   //____________________________________________________//
   setupPar("STEERBase");
-  gSystem->Load("libSTEERBase.so");
+  gSystem->Load("libSTEERBase");
   setupPar("ESD");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libESD.so");
+  gSystem->Load("libVMC");
+  gSystem->Load("libESD");
   setupPar("AOD");
-  gSystem->Load("libAOD.so");
+  gSystem->Load("libAOD");
   setupPar("ANALYSIS");
-  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSIS");
   setupPar("ANALYSISalice");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libANALYSISalice");
   //____________________________________________________//  
   
   //____________________________________________//

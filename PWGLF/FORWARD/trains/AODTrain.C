@@ -85,8 +85,8 @@ public:
       fRailway->LoadLibrary("libTPCbase");
       fRailway->LoadLibrary("libITSbase");
       fRailway->LoadLibrary("libHMPIDbase");
-      fRailway->LoadLibrary("libTENDER");
-      fRailway->LoadLibrary("libTENDERSupplies");
+      fRailway->LoadLibrary("libTender");
+      fRailway->LoadLibrary("libTenderSupplies");
     }
 
     if (fOptions.Has("sys-info")) mgr->SetNSysInfo(100);

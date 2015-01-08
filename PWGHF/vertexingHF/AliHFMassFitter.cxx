@@ -706,7 +706,7 @@ Double_t AliHFMassFitter::FitFunction4Sgn (Double_t *x, Double_t *par){
   // * [2] = sigma
   //gaussian = [0]/TMath::Sqrt(2.*TMath::Pi())/[2]*exp[-(x-[1])*(x-[1])/(2*[2]*[2])]
 
-  AliInfo("Signal function set to: Gaussian");
+  //  AliInfo("Signal function set to: Gaussian");
   return par[0]/TMath::Sqrt(2.*TMath::Pi())/par[2]*TMath::Exp(-(x[0]-par[1])*(x[0]-par[1])/2./par[2]/par[2]);
 
 }
@@ -745,7 +745,7 @@ Double_t AliHFMassFitter::FitFunction4Bkg (Double_t *x, Double_t *par){
     // * [1] = B;
     //exponential = [1]*[0]/(exp([1]*max)-exp([1]*min))*exp([1]*x)
     total = par[0+firstPar]*par[1+firstPar]/(TMath::Exp(par[1+firstPar]*fmaxMass)-TMath::Exp(par[1+firstPar]*fminMass))*TMath::Exp(par[1+firstPar]*x[0]);
-    AliInfo("Background function set to: exponential");
+    //    AliInfo("Background function set to: exponential");
     break;
   case 1:
     //linear
@@ -753,7 +753,7 @@ Double_t AliHFMassFitter::FitFunction4Bkg (Double_t *x, Double_t *par){
     // * [0] = integralBkg;
     // * [1] = b;
     total= par[0+firstPar]/(fmaxMass-fminMass)+par[1+firstPar]*(x[0]-0.5*(fmaxMass+fminMass));
-    AliInfo("Background function set to: linear");
+    //    AliInfo("Background function set to: linear");
     break;
   case 2:
     //polynomial
@@ -764,7 +764,7 @@ Double_t AliHFMassFitter::FitFunction4Bkg (Double_t *x, Double_t *par){
     // * [1] = b;
     // * [2] = c;
     total = par[0+firstPar]/(fmaxMass-fminMass)+par[1]*(x[0]-0.5*(fmaxMass+fminMass))+par[2+firstPar]*(x[0]*x[0]-1/3.*(fmaxMass*fmaxMass*fmaxMass-fminMass*fminMass*fminMass)/(fmaxMass-fminMass));
-    AliInfo("Background function set to: polynomial");
+    //    AliInfo("Background function set to: polynomial");
     break;
   case 3:
     total=par[0+firstPar];
@@ -781,7 +781,7 @@ Double_t AliHFMassFitter::FitFunction4Bkg (Double_t *x, Double_t *par){
     Double_t mpi = TDatabasePDG::Instance()->GetParticle(211)->Mass();
 
     total = par[0+firstPar]*(par[1+firstPar]+1.)/(TMath::Power(fmaxMass-mpi,par[1+firstPar]+1.)-TMath::Power(fminMass-mpi,par[1+firstPar]+1.))*TMath::Power(x[0]-mpi,par[1+firstPar]);
-    AliInfo("Background function set to: powerlaw");
+    //    AliInfo("Background function set to: powerlaw");
     }
     break;
   case 5:
@@ -791,7 +791,7 @@ Double_t AliHFMassFitter::FitFunction4Bkg (Double_t *x, Double_t *par){
     Double_t mpi = TDatabasePDG::Instance()->GetParticle(211)->Mass();
 
     total = par[1+firstPar]*TMath::Sqrt(x[0] - mpi)*TMath::Exp(-1.*par[2+firstPar]*(x[0]-mpi));
-    AliInfo("Background function set to: wit exponential");
+    //    AliInfo("Background function set to: wit exponential");
     } 
     break;
 //   default:
@@ -2030,6 +2030,11 @@ void AliHFMassFitter::Significance(Double_t nOfSigma,Double_t &significance,Doub
 
 void AliHFMassFitter::Significance(Double_t min, Double_t max, Double_t &significance,Double_t &errsignificance) const {
   // Return significance integral in a range
+
+  if(fcounter==0){
+    AliError("Number of fits is zero, check whether you made the fit before computing the significance!\n");
+    return;
+  }
 
   Double_t signal,errsignal,background,errbackground;
   Signal(min, max,signal,errsignal);

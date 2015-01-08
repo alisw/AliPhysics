@@ -68,6 +68,12 @@ AliAnalysisTaskSE(),
     fBfield(0.),
     fMinSepPairEta(0.),
     fMinSepPairPhi(0.),
+    fQinvMin(-1.),
+    fMaxDcaXY(1000.),
+    fMaxDcaZ(1000.),
+    fPtMin(0.14),
+    fPtMax(1.5),
+    fEtaMax(0.8),
     fShareQuality(0.5),
     fShareFraction(0.05),
     nCountSamePairs(0),
@@ -176,6 +182,12 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE(const char* name) :
   fBfield(0.),
   fMinSepPairEta(0.),
   fMinSepPairPhi(0.),
+  fQinvMin(-1.),
+  fMaxDcaXY(1000.),
+  fMaxDcaZ(1000.),
+  fPtMin(0.14),
+  fPtMax(1.5),
+  fEtaMax(0.8),
   fShareQuality(0.5),
   fShareFraction(0.05),
   nCountSamePairs(0),
@@ -319,6 +331,12 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE(const AliAnalysisTaskFemtoESE &
   fBfield(0.),
   fMinSepPairEta(0.),
   fMinSepPairPhi(0.),
+  fQinvMin(-1.),
+  fMaxDcaXY(1000.),
+  fMaxDcaZ(1000.),
+  fPtMin(0.14),
+  fPtMax(1.5),
+  fEtaMax(0.8),
   fShareQuality(0.5),
   fShareFraction(0.05),
   nCountSamePairs(0),
@@ -456,7 +474,7 @@ void AliAnalysisTaskFemtoESE::UserCreateOutputObjects()
   hpt_pid = new TH1D("hpt_pid","PID check -- #Delta p_{t}",100,-0.5,0.5);
   hpt_pid->GetXaxis()->SetTitle("#Delta p_{t}");
   fOutputList->Add(hpt_pid);
-  hvzcent = new TH2D("hvzcent","vz vs cent",nVzBins,vzBins,nCentBins,centBins);
+  hvzcent = new TH2D("hvzcent","vz vs cent",20,-10,10,nCentBins,centBins);
   hvzcent->GetXaxis()->SetTitle("v_{z}");
   hvzcent->GetYaxis()->SetTitle("centrality");
   fOutputList->Add(hvzcent);
@@ -655,6 +673,7 @@ void AliAnalysisTaskFemtoESE::UserCreateOutputObjects()
 		{
 		  //hq[z][k][e][c] = new TH3F(Form("hq%i_k%i_e%i_c%i",z,k,e,c),Form("hq%i_k%i_e%i_c%i",z,k,e,c),60,-0.21,0.21,60,-0.21,0.21,60,-0.21,0.21);
 		  hq[z][k][e][c] = new TH3F(Form("hq%i_k%i_e%i_c%i",z,k,e,c),Form("hq%i_k%i_e%i_c%i",z,k,e,c),qbins,-1.*qlimit,qlimit,qbins,-1.*qlimit,qlimit,qbins,-1.*qlimit,qlimit);
+		  hq[z][k][e][c]->GetXaxis()->SetTitle("qout"); hq[z][k][e][c]->GetYaxis()->SetTitle("qside"); hq[z][k][e][c]->GetZaxis()->SetTitle("qlong");
 		  if(!(centBins[c]>limit2 || centBins[c+1]<limit1))
 		    hq[z][k][e][c]->Sumw2();
 		  // set sumw2 only for the correlation histograms which are filled with centrality weights (around cent=10)
@@ -1305,20 +1324,21 @@ Bool_t AliAnalysisTaskFemtoESE::TrackCut(AliAODTrack* ftrack){
 
   if (!ftrack->TestFilterBit(fFilterBit)) return kFALSE;
 
-  if(ftrack->Pt() < 0.14) return kFALSE;
-  if(ftrack->Pt() > 1.5) return kFALSE;
-  if(fabs(ftrack->Eta()) > 0.8) return kFALSE;
+  if(ftrack->Pt() < fPtMin) return kFALSE;
+  if(ftrack->Pt() > fPtMax) return kFALSE;
+  if(fabs(ftrack->Eta()) > fEtaMax) return kFALSE;
  
   if(ftrack->GetTPCNcls() < 80) return kFALSE;// TPC nCluster cut
 
-  Double_t trackdca[3] = {ftrack->XAtDCA(),ftrack->YAtDCA(),ftrack->ZAtDCA()};
-  //ftrack->XYZAtDCA(trackdca);
-  //Double_t dcaxy = sqrt( pow(trackpos[0] - vertex[0],2) + pow(trackpos[1] - vertex[1],2));
-  //Double_t dcaz = sqrt( pow(trackpos[2] - vertex[2],2));
-  hdcaxy->Fill(trackdca[0],trackdca[1]);
-  hdcaz->Fill(trackdca[2]);
-  //if(dcaxy > 0.2) return kFALSE;
-  //if(dcaz > 0.15) return kFALSE;
+  //Double_t trackdca[3] = {ftrack->XAtDCA(),ftrack->YAtDCA(),ftrack->ZAtDCA()};
+  //Double_t dcaxy = sqrt( pow(trackdca[0] - vertex[0],2) + pow(trackdca[1] - vertex[1],2));
+  //Double_t dcaz = sqrt( pow(trackdca[2] - vertex[2],2));
+  Double_t dcaxy = sqrt( pow(ftrack->XAtDCA(),2) + pow(ftrack->YAtDCA(),2));
+  Double_t dcaz = fabs(ftrack->ZAtDCA());
+  if(dcaxy > fMaxDcaXY) return kFALSE;
+  if(dcaz > fMaxDcaZ) return kFALSE;
+  hdcaxy->Fill(ftrack->XAtDCA(),ftrack->YAtDCA());
+  hdcaz->Fill(ftrack->ZAtDCA());
 
 
   //// FilterBit Overlap Check
@@ -1348,18 +1368,20 @@ Bool_t AliAnalysisTaskFemtoESE::PairCut(AliFemtoESEBasicParticle* ftrack1, AliFe
   if(ftrack2->Charge() != ftrack1->Charge()) return kFALSE;
   
   // qinv cut
-  Double_t trackvec1[4] = {ftrack1->E(),ftrack1->Px(),ftrack1->Py(),ftrack1->Pz()};
-  Double_t trackvec2[4] = {ftrack2->E(),ftrack2->Px(),ftrack2->Py(),ftrack2->Pz()};
-  Double_t qinv = GetQinv(trackvec1,trackvec2);
-  if(qinv < 0.005) return kFALSE; // qinv < 0.005
-
+  if(fQinvMin > 0)
+    {
+      Double_t trackvec1[4] = {ftrack1->E(),ftrack1->Px(),ftrack1->Py(),ftrack1->Pz()};
+      Double_t trackvec2[4] = {ftrack2->E(),ftrack2->Px(),ftrack2->Py(),ftrack2->Pz()};
+      Double_t qinv = GetQinv(trackvec1,trackvec2);
+      if(qinv < fQinvMin) return kFALSE; // qinv < 0.005
+    }
   // deltaEta x deltaPhi* cut
   if(fabs(ftrack1->Eta()-ftrack2->Eta()) < fMinSepPairEta)
     {
-      Double_t deltaphistar = DeltaPhiStar(ftrack1,ftrack2,1.0); // angular separation at r=1m
-      deltaphistar = fabs(deltaphistar);
-      if(deltaphistar < fMinSepPairPhi) return kFALSE;
-      deltaphistar = DeltaPhiStar(ftrack1,ftrack2,1.6); // angular separation at r=1.6m
+      //Double_t deltaphistar = DeltaPhiStar(ftrack1,ftrack2,1.0); // angular separation at r=1m
+      //deltaphistar = fabs(deltaphistar);
+      //if(deltaphistar < fMinSepPairPhi) return kFALSE;
+      Double_t deltaphistar = DeltaPhiStar(ftrack1,ftrack2,1.6); // angular separation at r=1.6m
       deltaphistar = fabs(deltaphistar);
       if(deltaphistar < fMinSepPairPhi) return kFALSE;
     }

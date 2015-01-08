@@ -10,8 +10,7 @@ AliEmcalPhysicsSelectionTask* AddTaskEmcalPhysicsSelection(
   Double_t cmax    = -1,
   Double_t minCellTrackScale = -1,
   Double_t maxCellTrackScale = -1,
-  Bool_t byPassPhysSelTask = kFALSE,
-  Bool_t skip1024Bug = kFALSE
+  Bool_t byPassPhysSelTask = kFALSE
 )
 {
   if(byPassPhysSelTask)
@@ -45,7 +44,6 @@ AliEmcalPhysicsSelectionTask* AddTaskEmcalPhysicsSelection(
     physSel->SetZVertex(vz);
     physSel->SetCheckZvertexDiff(vzdiff);
     physSel->SetCellTrackScale(minCellTrackScale,maxCellTrackScale);
-    physSel->SetSkip1024Bug(skip1024Bug);
   } else {
     ::Error("AddTaskEmcalPhysicsSelection", "No AliEmcalPhysicsSelection object found.");
   }

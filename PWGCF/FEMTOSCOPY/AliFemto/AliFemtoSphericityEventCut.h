@@ -24,7 +24,7 @@ public:
   int NEventsPassed() const;
   int NEventsFailed() const;
   bool GetAcceptBadVertex();
-  bool GetAcceptOnlyPhysics();
+  bool GetAcceptOnlyPhysics() {return kFALSE;} // Not implemented
   void SetStMin(double stMin );
   void SetStMax(double stMax );
   void SetTriggerSelection(int trig);

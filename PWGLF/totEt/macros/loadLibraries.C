@@ -1,17 +1,17 @@
 //Useful macro when you just want to open files
 void loadLibraries(){
-    gSystem->Load("libTree.so");
-    gSystem->Load("libGeom.so");
-    gSystem->Load("libVMC.so");
-    gSystem->Load("libXMLIO.so");
+    gSystem->Load("libTree");
+    gSystem->Load("libGeom");
+    gSystem->Load("libVMC");
+    gSystem->Load("libXMLIO");
 
-    gSystem->Load("libSTEERBase.so");
-    gSystem->Load("libESD.so");
-    gSystem->Load("libAOD.so");
+    gSystem->Load("libSTEERBase");
+    gSystem->Load("libESD");
+    gSystem->Load("libAOD");
 
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
-    gSystem->Load("libPWGUDbase.so");
+    gSystem->Load("libPWGUDbase");
 
     gSystem->AddIncludePath("-I$ALICE_ROOT/include");
     gSystem->AddIncludePath("-I$ALICE_ROOT/PWGUD");

@@ -132,9 +132,9 @@ void runLocalESE(
 //______________________________________________________________________________
 
 void LoadLibs() {
-  gSystem->Load("libCore.so");  
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libCore");  
+  gSystem->Load("libGeom");
+  gSystem->Load("libPhysics");
   gSystem->Load("libVMC");
   gSystem->Load("libTree");
   gSystem->Load("libProof");
@@ -147,10 +147,10 @@ void LoadLibs() {
   //  return;
   gSystem->Load("libOADB");
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libTENDER");
+  gSystem->Load("libTender");
   gSystem->Load("libCORRFW");
 
-  //  gSystem->Load("libNanoAOD.so");
+  //  gSystem->Load("libNanoAOD");
   gSystem->Load("libPWGLFspectra");
   gSystem->Load("libPWGDevNanoAOD");
 

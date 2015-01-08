@@ -4,14 +4,14 @@ void analyzeJpsiME(TString tag="./"){
   timer.Start();
   
   //_____________Setting up libraries_______________
-  gSystem->Load("libTree.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libVMC");
+  gSystem->Load("libESD");
+  gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libPWGDQdielectron.so");
+  gSystem->Load("libPWGDQdielectron");
   gSystem->AddIncludePath("-I$ALICE_ROOT/PWGDQ/dielectron/ -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/CORRFW");
 
   //_____________Load Macro_____________________________

@@ -257,10 +257,10 @@ Bool_t AliHFAssociatedTrackCuts::CheckHadronKinematic(Double_t pt, Double_t d0)
 	
 	
 	
-	if(pt < fAODTrackCuts[0]) return kFALSE;
-	if(pt > fAODTrackCuts[1]) return kFALSE;
-	if(d0 < fAODTrackCuts[2]) return kFALSE;
-	if(d0 > fAODTrackCuts[3]) return kFALSE;
+    if(pt < fAODTrackCuts[0]) {return kFALSE; cout << "reject min pt" << endl;}
+	if(pt > fAODTrackCuts[1]) {return kFALSE; cout << "reject max pt" << endl;}
+	if(d0 < fAODTrackCuts[2]) {return kFALSE; cout << "reject min d0" << endl;}
+	if(d0 > fAODTrackCuts[3]) {return kFALSE; cout << "reject max d0" << endl;}
 	
 	return kTRUE;
 
@@ -351,44 +351,45 @@ Bool_t AliHFAssociatedTrackCuts::IsKZeroSelected(AliAODv0 *vzero, AliAODVertex *
 //--------------------------------------------------------------------------
 Bool_t *AliHFAssociatedTrackCuts::IsMCpartFromHF(Int_t label, TClonesArray*mcArray){
   // Check origin in MC
-
-  AliAODMCParticle* mcParticle;
-  Int_t pdgCode = -1;
-	
+    
   Bool_t isCharmy = kFALSE;
   Bool_t isBeauty = kFALSE;
   Bool_t isD = kFALSE;
   Bool_t isB = kFALSE;
     
-     Bool_t *originvect = new Bool_t[4];
+     Bool_t *originvect = new Bool_t[5];
     
-    originvect[0] = kFALSE;
-	originvect[1] = kFALSE;
-	originvect[2] = kFALSE;
-	originvect[3] = kFALSE;
+    originvect[0] = kFALSE; // is from charm
+	originvect[1] = kFALSE; // is from beauty
+	originvect[2] = kFALSE; // is from D
+	originvect[3] = kFALSE; // is from B
+    originvect[4] = kFALSE; // did something go wrong? (kTRUE yes, kFALSE no))
+    
+    //__________________________________
 
-	if (label<0) return originvect;
-  
-	while(pdgCode!=2212){ // loops back to the collision to check the particle source
-
-    mcParticle = dynamic_cast<AliAODMCParticle*>(mcArray->At(label));
-    if(!mcParticle) {AliError("NO MC PARTICLE"); break;}
-    pdgCode =  TMath::Abs(mcParticle->GetPdgCode());
-
-    label = mcParticle->GetMother();
-
-
-    if((pdgCode>=400 && pdgCode <500) || (pdgCode>=4000 && pdgCode<5000 )) isD = kTRUE;
-    if((pdgCode>=500 && pdgCode <600) || (pdgCode>=5000 && pdgCode<6000 )) {isD = kFALSE; isB = kTRUE;}
-
-
-    if(pdgCode == 4) isCharmy = kTRUE;
-    if(pdgCode == 5) {isBeauty = kTRUE; isCharmy = kFALSE;}
-    if(label<0) break;
-
-  }
-
-	
+    if (label<0) {originvect[4] = kTRUE; return originvect;}
+    
+    AliAODMCParticle* mcParticle = dynamic_cast<AliAODMCParticle*>(mcArray->At(label));
+    if(!mcParticle) {originvect[4] = kTRUE; return originvect;}
+    Int_t pdgCode = -1;
+    Int_t  mother = mcParticle->GetMother();
+    
+    if(mother <0) {originvect[4] = kTRUE; return originvect;}
+    
+    while (mother >= 0){
+        mcParticle = dynamic_cast<AliAODMCParticle*>(mcArray->At(mother));
+        if(!mcParticle) {AliError("NO MC PARTICLE"); break;}
+        pdgCode =  TMath::Abs(mcParticle->GetPdgCode());
+        
+        mother = mcParticle->GetMother();
+        
+        if((pdgCode>=400 && pdgCode <500) || (pdgCode>=4000 && pdgCode<5000 )) isD = kTRUE;
+        if((pdgCode>=500 && pdgCode <600) || (pdgCode>=5000 && pdgCode<6000 )) {isD = kFALSE; isB = kTRUE;}
+        if(pdgCode == 4) isCharmy = kTRUE;
+        if(pdgCode == 5) {isBeauty = kTRUE; isCharmy = kFALSE;}
+        if(mother<0) break;
+    }
+    
 	originvect[0] = isCharmy;
 	originvect[1] = isBeauty;
 	originvect[2] = isD;

@@ -1,8 +1,8 @@
 void  runFlowReaderExample( Int_t maxNumberOfEvents = 1000, const char* inputDataFiles="/Users/snelling/alice_data/jthomas/testData/")
 {
-  gSystem->Load("libTree.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
   gSystem->Load("libPWGflowBase");
 
   TStopwatch timer;

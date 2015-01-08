@@ -51,18 +51,18 @@ void runBalanceFunction(
     Printf("%s analysis chosen",runtype);
   
     // load libraries
-    gSystem->Load("libCore.so");        
-    gSystem->Load("libGeom.so");
-    gSystem->Load("libVMC.so");
-    gSystem->Load("libPhysics.so");
-    gSystem->Load("libTree.so");
-    gSystem->Load("libSTEERBase.so");
-    gSystem->Load("libESD.so");
-    gSystem->Load("libAOD.so");
-    gSystem->Load("libANALYSIS.so");
-    gSystem->Load("libANALYSISalice.so");
-    gSystem->Load("libEventMixing.so");
-    gSystem->Load("libPWGCFebye.so");
+    gSystem->Load("libCore");
+    gSystem->Load("libGeom");
+    gSystem->Load("libVMC");
+    gSystem->Load("libPhysics");
+    gSystem->Load("libTree");
+    gSystem->Load("libSTEERBase");
+    gSystem->Load("libESD");
+    gSystem->Load("libAOD");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
+    gSystem->Load("libEventMixing");
+    gSystem->Load("libPWGCFebye");
 
     // additional
 

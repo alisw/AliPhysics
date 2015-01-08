@@ -30,12 +30,12 @@ void LoadLibs()
   gSystem->Load("libPhysics");
   gSystem->Load("libProof");
 
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libOADB.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWGmuon.so");
-  gSystem->Load("libPWGPPMUONlite.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libOADB");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWGmuon");
+  gSystem->Load("libPWGPPMUONlite");
 }
 
 

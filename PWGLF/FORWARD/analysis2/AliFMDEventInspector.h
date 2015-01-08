@@ -477,7 +477,7 @@ protected:
    * 
    * @param o Object to copy from 
    */
-  AliFMDEventInspector(const AliFMDEventInspector& o);
+  AliFMDEventInspector(const AliFMDEventInspector& o){;}
   /** 
    * Assignement operator - not implemented
    * 
@@ -485,7 +485,7 @@ protected:
    * 
    * @return Reference to this object
    */
-  AliFMDEventInspector& operator=(const AliFMDEventInspector& o);
+  AliFMDEventInspector& operator=(const AliFMDEventInspector& o){return *this;}
   Bool_t AllowDisplaced() const { return fVtxMethod == kDisplaced; }
   /** 
    * Cache the configure trigger classes from the physis selection.  

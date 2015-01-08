@@ -6,7 +6,7 @@
 #include <TFile.h>
 
 #include "AliAnalysisManager.h"
-#include "TenderSupplies/AliPHOSTenderSupply.h"
+#include "AliPHOSTenderSupply.h"
 #include "AliAODEvent.h"
 
 #include "AliPHOSTenderTask.h"

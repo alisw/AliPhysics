@@ -210,7 +210,7 @@ Bool_t ConfigD0
          
       
       if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
-       		   else out->AddAxis(trackletsID, 400, 0.0, 400.0);}
+       		   else out->AddAxis(trackletsID, 400, -0.5, 400.0);}
       else out->AddAxis(centID, 400, 0.0, 400.0);
    }
 
@@ -241,7 +241,7 @@ Bool_t ConfigD0
 
 
    if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
-       		else out->AddAxis(trackletsID, 400, 0.0, 400.0);}
+       		else out->AddAxis(trackletsID, 400, -0.5, 400.0);}
    else out->AddAxis(centID, 400, 0.0, 400.0);
    
    // create output
@@ -264,7 +264,7 @@ Bool_t ConfigD0
    //out->AddAxis(etaID, 100, -1, 1);
 
    if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
-       		else out->AddAxis(trackletsID, 400, 0.0, 400.0);}
+       		else out->AddAxis(trackletsID, 400, -0.5, 400.0);}
    else out->AddAxis(centID, 400, 0.0, 400.0);
 
 
@@ -324,7 +324,7 @@ Bool_t ConfigD0
    //out->AddAxis(nsistID, 10, 0, 5);
 
    if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
-       		else out->AddAxis(trackletsID, 400, 0.0, 400.0);}
+       		else out->AddAxis(trackletsID, 400, -0.5, 400.0);}
    else out->AddAxis(centID, 400, 0.0, 400.0);
    
    // create output
@@ -353,7 +353,7 @@ Bool_t ConfigD0
    //out->AddAxis(nsistID, 10, 0, 5);
 
    if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
-       		else out->AddAxis(trackletsID, 400, 0.0, 400.0);}
+       		else out->AddAxis(trackletsID, 400, -0.5, 400.0);}
    else out->AddAxis(centID, 400, 0.0, 400.0);
    
    
@@ -376,7 +376,7 @@ Bool_t ConfigD0
    //out->AddAxis(yID, 100, -1, 1);
 
    if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
-       		else out->AddAxis(trackletsID, 400, 0.0, 400.0);}
+       		else out->AddAxis(trackletsID, 400, -0.5, 400.0);}
    else out->AddAxis(centID, 400, 0.0, 400.0);
    
    // create output
@@ -394,7 +394,7 @@ Bool_t ConfigD0
    //out->AddAxis(yID, 100, -1, 1);
 
    if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
-       		else out->AddAxis(trackletsID, 400, 0.0, 400.0);}
+       		else out->AddAxis(trackletsID, 400, -0.5, 400.0);}
    else out->AddAxis(centID, 400, 0.0, 400.0);
    
    
@@ -417,7 +417,7 @@ Bool_t ConfigD0
    //out->AddAxis(yID, 100, -1, 1);
 
   if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
-       	       else out->AddAxis(trackletsID, 400, 0.0, 400.0);}
+       	       else out->AddAxis(trackletsID, 400, -0.5, 400.0);}
    else out->AddAxis(centID, 400, 0.0, 400.0);
    
    // create output
@@ -435,7 +435,7 @@ Bool_t ConfigD0
    //out->AddAxis(yID, 100, -1, 1);
 
    if (!isPP)  {if(!centortracklets) out->AddAxis(centID, 100, 0.0, 100.0);
-       		else out->AddAxis(trackletsID, 400, 0.0, 400.0);}
+       		else out->AddAxis(trackletsID, 400, -0.5, 400.0);}
    else out->AddAxis(centID, 400, 0.0, 400.0);
    
    

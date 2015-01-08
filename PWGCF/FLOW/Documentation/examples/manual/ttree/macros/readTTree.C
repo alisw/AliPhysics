@@ -3,7 +3,7 @@ void readTTree()
 
     // example macro to read data from a ttree and perform a flow analysis using the flow pacakge
     // author: Redmer Alexander Bertens (rbertens@cern.ch)
-    // note: this macro can run in ROOT only provided libPWGflowBase.so is available
+    // note: this macro can run in ROOT only provided libPWGflowBase is available
 
     // compile the relevant classes
     // include paths, necessary for compilation
@@ -11,12 +11,12 @@ void readTTree()
     gSystem->AddIncludePath("-I$ALICE_ROOT -I$ALICE_ROOT/include");
  
     // load libraries
-    gSystem->Load("libCore.so");        
-    gSystem->Load("libGeom.so");
-    gSystem->Load("libVMC.so");
-    gSystem->Load("libPhysics.so");
-    gSystem->Load("libTree.so");
-    gSystem->Load("libPWGflowBase.so");
+    gSystem->Load("libCore");
+    gSystem->Load("libGeom");
+    gSystem->Load("libVMC");
+    gSystem->Load("libPhysics");
+    gSystem->Load("libTree");
+    gSystem->Load("libPWGflowBase");
 
     // comile the encapsulated classes
     gROOT->LoadMacro("../objects/AliFlowTTreeEvent.cxx+");

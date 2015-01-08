@@ -519,6 +519,9 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     if(multbins) delete [] multbins; 
     if(vtxbins)  delete [] vtxbins; 
     if(psibins)  delete [] psibins; 
+
+    // set minimum values for track depth, fraction, and number of events
+    fPoolMgr->SetTargetValues(fMixingTracks, 0.1, 5);
     
     // check pool manager
     if(!fPoolMgr){
@@ -768,7 +771,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 	
 	//pool->SetDebug(1);
 
-	if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5){ 
+	if (pool->IsReady()){ 
 	  
 	  
 	  Int_t nMix = pool->GetCurrentNEvents();

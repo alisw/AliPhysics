@@ -25,6 +25,7 @@ AliParticleContainer::AliParticleContainer():
   fTrackBitMap(0),
   fMCTrackBitMap(0),
   fMinMCLabel(0),
+  fMinMCLabelAccept(-1),
   fMCFlag(0),
   fGeneratorIndex(-1),
   fCharge(-1)
@@ -46,6 +47,7 @@ AliParticleContainer::AliParticleContainer(const char *name):
   fTrackBitMap(0),
   fMCTrackBitMap(0),
   fMinMCLabel(0),
+  fMinMCLabelAccept(-1),
   fMCFlag(0),
   fGeneratorIndex(-1),
   fCharge(-1)
@@ -203,6 +205,12 @@ Bool_t AliParticleContainer::AcceptParticle(AliVParticle *vp)
       fRejectionReason |= kMinDistanceTPCSectorEdgeCut;
       return kFALSE;
     }
+  }
+
+  if (TMath::Abs(vp->GetLabel()) < fMinMCLabelAccept) {
+    AliDebug(2,"Particle not accepted because label too small.");
+    fRejectionReason |= kMinMCLabelAccept;
+    return kFALSE;
   }
 
   if (TMath::Abs(vp->GetLabel()) > fMinMCLabel) {

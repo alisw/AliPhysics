@@ -12,6 +12,7 @@
 //*************************************************************************
 
 #include "AliAnalysisTaskSE.h"
+#include "AliPHOSpPbPi0Header.h"
 
 class TH2I;
 class TList;
@@ -19,7 +20,6 @@ class TString;
 class TArray;
 class TClonesArray;
 class AliPHOSGeoUtils;
-class AliPHOSpPbPi0Header;
 
 class AliAnalysisTaskSEPHOSpPbPi0 : public AliAnalysisTaskSE {
  public:

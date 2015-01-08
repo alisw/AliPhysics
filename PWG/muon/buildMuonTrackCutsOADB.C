@@ -9,7 +9,7 @@
 #endif
 
 // Needed libraries:
-// gSystem->Load("libANALYSIS.so");gSystem->Load("libOADB.so");gSystem->Load("libANALYSISalice.so");gSystem->Load("libCORRFW.so");gSystem->Load("libPWGmuon.so");
+// gSystem->Load("libANALYSIS");gSystem->Load("libOADB");gSystem->Load("libANALYSISalice");gSystem->Load("libCORRFW");gSystem->Load("libPWGmuon");
 
 //________________________________________________________
 AliOADBMuonTrackCutsParam* CreateOADBObject ( TString periodName, Double_t meanDcaX, Double_t meanDcaY, Double_t meanDcaZ, Double_t meanPCorr23, Double_t meanPCorr310, Double_t sigmaPdca23, Double_t sigmaPdca310, Double_t nSigmaPdca, Double_t chi2NormCut, Double_t relPResolution, Double_t slopeResolution, Double_t sharpPtApt, Double_t sharpPtLpt, Double_t sharpPtHpt )

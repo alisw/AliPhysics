@@ -199,24 +199,25 @@ Int_t AliHelperPID::GetParticleSpecies(AliVTrack * trk, Bool_t FIllQAHistos){
       }
     }
   }
-  
-  //Fill PID signal plot
-  if(ID != kSpUndefined){
+
+  if(FIllQAHistos){
+    //Fill PID signal plot
+    if(ID != kSpUndefined){
+      for(Int_t idet=0;idet<kNDetectors;idet++){
+	TH2F *h=GetHistogram2D(Form("PID_%d_%d",idet,ID));
+	if(idet==kITS)h->Fill(trk->P(),trk->GetITSsignal()*trk->Charge());
+	if(idet==kTPC)h->Fill(trk->P(),trk->GetTPCsignal()*trk->Charge());
+	if(idet==kTOF && fHasTOFPID)h->Fill(trk->P(),TOFBetaCalc(trk)*trk->Charge());
+      }
+    }
+    //Fill PID signal plot without cuts
     for(Int_t idet=0;idet<kNDetectors;idet++){
-      TH2F *h=GetHistogram2D(Form("PID_%d_%d",idet,ID));
+      TH2F *h=GetHistogram2D(Form("PIDAll_%d",idet));
       if(idet==kITS)h->Fill(trk->P(),trk->GetITSsignal()*trk->Charge());
       if(idet==kTPC)h->Fill(trk->P(),trk->GetTPCsignal()*trk->Charge());
       if(idet==kTOF && fHasTOFPID)h->Fill(trk->P(),TOFBetaCalc(trk)*trk->Charge());
     }
   }
-  //Fill PID signal plot without cuts
-  for(Int_t idet=0;idet<kNDetectors;idet++){
-    TH2F *h=GetHistogram2D(Form("PIDAll_%d",idet));
-    if(idet==kITS)h->Fill(trk->P(),trk->GetITSsignal()*trk->Charge());
-    if(idet==kTPC)h->Fill(trk->P(),trk->GetTPCsignal()*trk->Charge());
-    if(idet==kTOF && fHasTOFPID)h->Fill(trk->P(),TOFBetaCalc(trk)*trk->Charge());
-  }
-  
   return ID;
 }
 

@@ -62,13 +62,13 @@ if ( id.Contains("c90-100") ) { c_first = c_last = 11; }
 
     
     
-    gSystem->Load("libANALYSIS.so");
-    gSystem->Load("libANALYSISalice.so");
-    gSystem->Load("libTENDER.so");
-    gSystem->Load("libCORRFW.so");
-    gSystem->Load("libPWG0base.so");    
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
+    gSystem->Load("libTender");
+    gSystem->Load("libCORRFW");
+    gSystem->Load("libPWG0base");
     gSystem->Load("libPWG0dep"); 
-    gSystem->Load("libPWG0selectors.so");
+    gSystem->Load("libPWG0selectors");
     
 
 
@@ -618,7 +618,7 @@ Int_t CheckLoadLibrary(const char* library)
 {
   // checks if a library is already loaded, if not loads the library
 
-  if (strlen(gSystem->GetLibraries(Form("%s.so", library), "", kFALSE)) > 0)
+  if (strlen(gSystem->GetLibraries(library, "", kFALSE)) > 0)
     return 1;
 
   return gSystem->Load(library);

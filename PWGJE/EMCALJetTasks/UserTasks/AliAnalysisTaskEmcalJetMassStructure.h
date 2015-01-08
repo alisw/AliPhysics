@@ -4,7 +4,7 @@
 class TH1;
 class TH2;
 class TH3;
-class TProfile2D;
+class TProfile;
 class THnSparse;
 class TClonesArray;
 class TArrayI;
@@ -13,6 +13,7 @@ class TRandom3;
 class AliAnalysisManager;
 class AliJetContainer;
 class AliEmcalJet;
+class AliEmcalJetByJetCorrection;
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -21,6 +22,12 @@ class AliAnalysisTaskEmcalJetMassStructure : public AliAnalysisTaskEmcalJet {
   enum JetMassType {
     kRaw   = 0,  //mass form anti-kt 4-vector
     kDeriv = 1   //area based subtracted jet mass
+  };
+
+  enum JetByJetCorrType {
+    kNoCorr  = 0,
+    kAnnulus = 1, //reproduce existing particles (over-corrects)
+    kMeanPtR = 2
   };
 
   AliAnalysisTaskEmcalJetMassStructure();
@@ -35,6 +42,11 @@ class AliAnalysisTaskEmcalJetMassStructure : public AliAnalysisTaskEmcalJet {
   void SetMinFractionShared(Double_t f)                         { fMinFractionShared = f   ; }
   void SetJetMassType(JetMassType t)                            { fJetMassType       = t   ; }
   void SetFixedTrackEfficiency(Double_t eff)                    { fEfficiencyFixed   = eff ; }
+  void SetJetByJetCorrType(JetByJetCorrType t)                  { fCorrType          = t   ; }
+  void SetJetByJetCorrObject(AliEmcalJetByJetCorrection *a)     { fEJetByJetCorr     = a   ; }
+
+  //Getters
+  AliEmcalJetByJetCorrection *GetJetByJetCorrObject() const     { return fEJetByJetCorr    ; }
 
  protected:
   Bool_t                              RetrieveEventObjects();
@@ -51,6 +63,9 @@ class AliAnalysisTaskEmcalJetMassStructure : public AliAnalysisTaskEmcalJet {
 
   TRandom3                           *fRandom;                     //! random number generator
   Double_t                            fEfficiencyFixed;            // fixed efficiency for all pT and all types of tracks
+
+  JetByJetCorrType                    fCorrType;                   // jet-by-jet correction method
+  AliEmcalJetByJetCorrection         *fEJetByJetCorr;              // object to do jet-by-jet correction
  
   TH3F                              **fh3PtDRMass;                 //! jet pT vs dr(jet axis, constituent) vs cumulative mass density
   TH3F                              **fh3PtDRRho;                  //! jet pT vs dr(jet axis, constituent) vs cumulative pt density
@@ -60,14 +75,14 @@ class AliAnalysisTaskEmcalJetMassStructure : public AliAnalysisTaskEmcalJet {
   TH2F                              **fh2PtMassCorr;               //! jet pT vs mass corrected
   THnSparse                          *fhnMassResponse;             //! response matrix
   THnSparse                          *fhnMassResponseCorr;         //! response matrix corrected
-
   TH3F                              **fh3JetPtDRTrackPt;           //! jet pt vs dr(jet axis, constituent) vs pT,track
+  TProfile                           *fpUsedEfficiency;            //! efficiency used for correction
 
  private:
   AliAnalysisTaskEmcalJetMassStructure(const AliAnalysisTaskEmcalJetMassStructure&);            // not implemented
   AliAnalysisTaskEmcalJetMassStructure &operator=(const AliAnalysisTaskEmcalJetMassStructure&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetMassStructure, 1)
+  ClassDef(AliAnalysisTaskEmcalJetMassStructure, 3)
 };
 #endif
 

@@ -74,20 +74,6 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   else if(colltype == "p-A") beam = 2;
   else beam = -1;
 
-/*
-  Double_t EffFunc(Double_t *x, Double_t *par) {
-    Double_t pTAxis = par[0]*exp(-pow(par[1]/x[0], par[2])) + par[3]*x[0];  // function for x-axis
-    Double_t etaAxis = (x[1]>-0.07)*(par[4] + par[5]*x[1] + par[6]*x[1]*x[1]) + (x[1]<=-0.07)*(par[7] + par[8]*x[1] + par[9]*x[1]*x[1]);  // function for y-axis
-    return pTAxis*etaAxis;
-  }
-
-  Double_t EffFunctionSet(Double_t *x, Double_t *par) {
-    Double_t *p1 = &par[0];
-    Double_t result = EffFunc(x, p1);
-    return result;
-  }
-*/
-
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------

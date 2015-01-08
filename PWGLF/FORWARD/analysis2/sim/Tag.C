@@ -14,8 +14,8 @@ void Tag()
 {
   const char* turl = gSystem->Getenv("ALIEN_JDL_OUTPUTDIR");
 
-  gSystem->Load("libNet.so");
-  //  gSystem->Load("libMonaLisa.so");
+  gSystem->Load("libNet");
+  //  gSystem->Load("libMonaLisa");
   //  new TMonaLisaWriter(0, "GridAliRoot-tag.C", 0, 0, "global");
   
   TString fESDFileName = "alien://";

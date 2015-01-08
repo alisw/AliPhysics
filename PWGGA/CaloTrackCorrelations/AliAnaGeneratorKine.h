@@ -4,9 +4,10 @@
  * See cxx source for full Copyright notice     */
 
 //___________________________________________________________________________
-// Do photon/pi0 analysis for isolation and correlation
-// at the generator level. Only for kine stack (ESDs)
-//
+// Do direct photon/decay photon (eta, pi0, other)/pi0/eta isolation
+// and correlation with partons/jets/hadrons analysis at the generator level.
+// For MC kinematics at ESD and AOD level
+// Jets only considered in the case of Pythia, check what to do with others.//
 //
 //-- Author: Gustavo Conesa (LPSC-CNRS-Grenoble)
 
@@ -24,12 +25,20 @@ class AliAnaGeneratorKine : public AliAnaCaloTrackCorrBaseClass {
 public:
   
   AliAnaGeneratorKine() ; // default ctor
+
   virtual ~AliAnaGeneratorKine() { delete fFidCutTrigger ; } //virtual dtor
   
+  enum mcPrimTypes { kmcPrimPhoton = 0, kmcPrimPi0Decay = 1, kmcPrimEtaDecay  = 2, kmcPrimOtherDecay  = 3,
+                     kmcPrimPi0    = 4, kmcPrimEta      = 5                                               } ;
+  
+  static const Int_t fgkNmcPrimTypes = 6;
+  static const Int_t fgkNLead = 2;
+  static const Int_t fgkNIso  = 4;
+
   Bool_t CorrelateWithPartonOrJet(Int_t   indexTrig,
                                   Int_t   pdgTrig,
-                                  Bool_t  leading[4],
-                                  Bool_t  isolated[4],
+                                  Bool_t  leading [fgkNIso],
+                                  Bool_t  isolated[fgkNIso],
                                   Int_t & iparton) ; 
   
   TList * GetCreateOutputObjects() ;
@@ -38,16 +47,16 @@ public:
     
   void    GetXE(Int_t   indexTrig,
                 Int_t   pdgTrig,
-                Bool_t  leading[4],
-                Bool_t  isolated[4],
+                Bool_t  leading [fgkNIso],
+                Bool_t  isolated[fgkNIso],
                 Int_t   iparton) ;
   
   void    InitParameters() ;
   
   void    IsLeadingAndIsolated(Int_t  indexTrig,
                                Int_t  pdgTrig,
-                               Bool_t leading[4],     
-                               Bool_t isolated[4]) ;
+                               Bool_t leading [fgkNIso],     
+                               Bool_t isolated[fgkNIso]) ;
     
   void    MakeAnalysisFillHistograms() ;
   
@@ -65,31 +74,38 @@ public:
   
 private:
 
-  Int_t       fTriggerDetector ;            // Detector : EMCAL, PHOS, CTS
-  TString     fTriggerDetectorString ;      // Detector : EMCAL, PHOS, CTS
+  Int_t            fTriggerDetector ;       // Detector : EMCAL, PHOS, CTS
+  TString          fTriggerDetectorString ; // Detector : EMCAL, PHOS, CTS
 
-  AliFiducialCut* fFidCutTrigger;           //! fiducial cut for the trigger detector
+  AliFiducialCut * fFidCutTrigger;          //! fiducial cut for the trigger detector
   
-  Float_t     fMinChargedPt;                //! Minimum energy for charged particles in correlation
-  Float_t     fMinNeutralPt;                //! Minimum energy for neutral particles in correlation
+  Float_t          fMinChargedPt;           //! Minimum energy for charged particles in correlation
+  Float_t          fMinNeutralPt;           //! Minimum energy for neutral particles in correlation
   
-  AliStack  * fStack;                       //! access stack
-  
-  TParticle * fParton2;                     //! Initial state Parton
-  TParticle * fParton3;                     //! Initial state Parton
-  
-  TParticle * fParton6;                     //! Final state Parton
-  TParticle * fParton7;                     //! Final state Parton
-  
-  TLorentzVector fJet6;                     //! Pythia jet close to parton in position 6
-  TLorentzVector fJet7;                     //! Pythia jet close to parton in position 7
+  AliStack       * fStack;                  //! access ESD stack
+  TClonesArray   * fAODMCparticles ;        //! access AOD stack
 
-  TLorentzVector fTrigger;                  //! Trigger momentum, avoid generating TLorentzVectors per event
-  TLorentzVector fLVTmp;                    //! momentum, avoid generating TLorentzVectors per event
+//  TParticle      * fParton2;              //! Initial state Parton
+//  TParticle      * fParton3;              //! Initial state Parton
   
-  Float_t     fPtHard;                      //! Generated pT hard
+  TLorentzVector   fParton6;                //! Final state Parton
+  TLorentzVector   fParton7;                //! Final state Parton
+  
+  Int_t            fParton6PDG;             //! Final state Parton PDG
+  Int_t            fParton7PDG;             //! Final state Parton PDG
+  
+  TLorentzVector   fJet6;                   //! Pythia jet close to parton in position 6
+  TLorentzVector   fJet7;                   //! Pythia jet close to parton in position 7
 
-  TH1F      * fhPtHard;                     //! pt of parton 
+  TLorentzVector   fTrigger;                //! Trigger momentum, avoid generating TLorentzVectors per event
+  TLorentzVector   fLVTmp;                  //! momentum, avoid generating TLorentzVectors per event
+  
+  Int_t            fNPrimaries;             //! N primaries
+  Float_t          fPtHard;                 //! Generated pT hard
+  
+  // Histograms
+  
+  TH1F      * fhPtHard;                     //! pt of parton
   TH1F      * fhPtParton;                   //! pt of parton  
   TH1F      * fhPtJet;                      //! pt of jet 
   
@@ -97,61 +113,52 @@ private:
   TH2F      * fhPtJetPtHard;                //! pt of jet divided to pt hard, trigger is photon 
   TH2F      * fhPtJetPtParton;              //! pt of parton divided to pt parton, trigger is photon 
 
-  TH1F      * fhPtPhoton;                   //! Input photon
-  TH1F      * fhPtPi0;                      //! Input pi0
+  TH1F      * fhPt[fgkNmcPrimTypes];        //! Input particle
   
   // Histograms arrays for 4 isolation options and 2 options on leading or not leading particle
-  
-  TH1F      * fhPtPhotonLeading[4];         //! Leading photon pT
-  TH1F      * fhPtPi0Leading[4];            //! Leading pi0 pT
 
-  TH2F      * fhPtPhotonLeadingSumPt[4];    //! Leading photon pT vs sum in cone
-  TH2F      * fhPtPi0LeadingSumPt[4];       //! Leading pi0 pT vs sum in cone
-  
-  TH1F      * fhPtPhotonLeadingIsolated[4]; //! Leading photon, isolated
-  TH1F      * fhPtPi0LeadingIsolated[4];    //! Leading pi0, isolated
+  TH2F      * fhPtAcceptedGammaJet                      [fgkNLead][fgkNIso]; //! gamma-jet pair in acceptance (jet in good eta window)
 
-  TH2F      * fhPtPartonTypeNearPhoton[2][4];           //! Leading photon, particle pt versus originating parton type
-  TH2F      * fhPtPartonTypeNearPi0[2][4];              //! Leading pi0, particle pt versus originating parton type
-  TH2F      * fhPtPartonTypeNearPhotonIsolated[2][4];   //! Leading photon, particle pt versus originating parton type
-  TH2F      * fhPtPartonTypeNearPi0Isolated[2][4];      //! Leading pi0, particle pt versus originating parton type
   
-  TH2F      * fhPtPartonTypeAwayPhoton[2][4];           //! Leading photon, particle pt versus away side parton type
-  TH2F      * fhPtPartonTypeAwayPi0[2][4];              //! Leading pi0, particle pt versus away side parton type
-  TH2F      * fhPtPartonTypeAwayPhotonIsolated[2][4];   //! Leading photon, isolated, particle pt versus away side parton type 
-  TH2F      * fhPtPartonTypeAwayPi0Isolated[2][4];      //! Leading pi0, isolated, particle pt versus away side parton type
-  
-  TH2F      * fhZHardPhoton[2][4];           //! Leading photon, zHard
-  TH2F      * fhZHardPi0[2][4];              //! Leading pi0, zHard
-  TH2F      * fhZHardPhotonIsolated[2][4];   //! Leading photon, isolated, zHard
-  TH2F      * fhZHardPi0Isolated[2][4];      //! Leading pi0, isolated, zHard
-  
-  TH2F      * fhZPartonPhoton[2][4];         //! Leading photon, zHard
-  TH2F      * fhZPartonPi0[2][4];            //! Leading pi0, zHard
-  TH2F      * fhZPartonPhotonIsolated[2][4]; //! Leading photon, isolated, zHard
-  TH2F      * fhZPartonPi0Isolated[2][4];    //! Leading pi0, isolated, zHard
+  TH1F      * fhPtLeading               [fgkNmcPrimTypes]          [fgkNIso]; //! pT
 
-  TH2F      * fhZJetPhoton[2][4];            //! Leading photon, zHard
-  TH2F      * fhZJetPi0[2][4];               //! Leading pi0, zHard
-  TH2F      * fhZJetPhotonIsolated[2][4];    //! Leading photon, isolated, zHard
-  TH2F      * fhZJetPi0Isolated[2][4];       //! Leading pi0, isolated, zHard
+  TH2F      * fhPtLeadingSumPt          [fgkNmcPrimTypes]          [fgkNIso]; //! pT vs sum in cone
   
-  TH2F      * fhXEPhoton[2][4];              //! Leading photon, xE away side
-  TH2F      * fhXEPi0[2][4];                 //! Leading pi0, xE away side
-  TH2F      * fhXEPhotonIsolated[2][4];      //! Leading photon, xE away side
-  TH2F      * fhXEPi0Isolated[2][4];         //! Leading pi0, isolated, xE away side
+  TH1F      * fhPtLeadingIsolated       [fgkNmcPrimTypes]          [fgkNIso]; //! isolated
+
+  TH2F      * fhPtPartonTypeNear        [fgkNmcPrimTypes][fgkNLead][fgkNIso]; //! particle pt versus originating parton type
   
-  TH2F      * fhXEUEPhoton[2][4];            //! Leading photon, xE away side
-  TH2F      * fhXEUEPi0[2][4];               //! Leading pi0, xE away side
-  TH2F      * fhXEUEPhotonIsolated[2][4];    //! Leading photon, xE away side
-  TH2F      * fhXEUEPi0Isolated[2][4];       //! Leading pi0, isolated, xE away side
+  TH2F      * fhPtPartonTypeNearIsolated[fgkNmcPrimTypes][fgkNLead][fgkNIso]; //! pt versus originating parton type
+
+  TH2F      * fhPtPartonTypeAway        [fgkNmcPrimTypes][fgkNLead][fgkNIso]; //! pt versus away side parton type
+
+  TH2F      * fhPtPartonTypeAwayIsolated[fgkNmcPrimTypes][fgkNLead][fgkNIso]; //! isolated, particle pt versus away side parton type
   
-  TH2F      * fhPtAcceptedGammaJet[2][4];    //! gamma-jet pair in acceptance (jet in good eta window)
+  TH2F      * fhZHard                   [fgkNmcPrimTypes][fgkNLead][fgkNIso]; //! zHard
+ 
+  TH2F      * fhZHardIsolated           [fgkNmcPrimTypes][fgkNLead][fgkNIso]; //! isolated, zHard
+  
+  TH2F      * fhZParton                 [fgkNmcPrimTypes][fgkNLead][fgkNIso]; //! zHard
+
+  TH2F      * fhZPartonIsolated         [fgkNmcPrimTypes][fgkNLead][fgkNIso]; //! isolated, zHard
+
+  TH2F      * fhZJet                    [fgkNmcPrimTypes][fgkNLead][fgkNIso]; //! zHard
+
+  TH2F      * fhZJetIsolated            [fgkNmcPrimTypes][fgkNLead][fgkNIso]; //! isolated, zHard
+  
+  TH2F      * fhXE                      [fgkNmcPrimTypes][fgkNLead][fgkNIso]; //! xE away side
+
+  TH2F      * fhXEIsolated              [fgkNmcPrimTypes][fgkNLead][fgkNIso]; //! xE away side
+  
+  TH2F      * fhXEUE                    [fgkNmcPrimTypes][fgkNLead][fgkNIso]; //! xE away side
+
+  TH2F      * fhXEUEIsolated            [fgkNmcPrimTypes][fgkNLead][fgkNIso]; //! xE away side
+  
   
   AliAnaGeneratorKine              (const AliAnaGeneratorKine & gk) ; // cpy ctor
   AliAnaGeneratorKine & operator = (const AliAnaGeneratorKine & gk) ; // cpy assignment
   
-  ClassDef(AliAnaGeneratorKine,4)
+  ClassDef(AliAnaGeneratorKine,6)
   
 } ;
 

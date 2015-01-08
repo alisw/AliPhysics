@@ -25,8 +25,8 @@ void AliKFParticleTest(const char *dirname="/d/alice09/sma/v4-05-Rev-03/charmwmi
   cout <<"Using events : "<<dirname<<endl;
   
   gSystem->AddIncludePath("-I\"$ALICE_ROOT/include\"");   
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISRL.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISRL");
   gROOT->LoadMacro("$ALICE_ROOT/STEER/AliKFParticleTest.h+");
   
   //

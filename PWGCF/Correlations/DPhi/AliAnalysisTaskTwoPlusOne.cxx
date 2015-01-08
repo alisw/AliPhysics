@@ -53,7 +53,8 @@ AliAnalysisTaskTwoPlusOne::AliAnalysisTaskTwoPlusOne(const char *name)
   fThreeParticleMixed(0),
   fUseEventCombination(0),
   fCustomBinning(),
-  fAlpha(0.2)
+  fAlpha(0.2),
+  fUseLeadingPt(1)
 {
 
   DefineOutput(1, TList::Class());
@@ -85,6 +86,7 @@ void AliAnalysisTaskTwoPlusOne::UserCreateOutputObjects()
 
   fHistos = new AliTwoPlusOneContainer("AliTwoPlusOneContainer", fCustomBinning, fAlpha);
   fHistos->GetData()->SetTrackEtaCut(fTrackEtaCut);
+  fHistos->SetUseLeadingPt(fUseLeadingPt);
 
   fListOfHistos->Add(fHistos);
 
@@ -176,15 +178,15 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
   //at this point of the code the event is acctepted
   //if this run is used to add 30-50% centrality events to the multiplicity of central events this is done here, all other events are skipped. 
   if(fUseEventCombination){
-    if(centrality<30||centrality>50)
-      return;
+    if(centrality>30&&centrality<=50){
 
-    AddEventCombination(tracksClone);
-    //do only continue if there are 4 events in the fEventCombination
-    if(fUsedEvents==4)
-      tracksClone = fEventCombination;
-    else
-      return;
+      AddEventCombination(tracksClone);
+      //do only continue if there are 4 events in the fEventCombination
+      if(fUsedEvents==4)
+	tracksClone = fEventCombination;
+      else
+	return;
+    }
   }
 
   fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kSameNS, tracksClone, tracksClone, tracksClone, tracksClone, 1.0, kFALSE, kFALSE);//same event for near and away side

@@ -79,7 +79,6 @@ fPidHF(0),
 fWhyRejection(0),
 fEvRejectionBits(0),
 fRemoveDaughtersFromPrimary(kFALSE),
-fRecomputePrimVertex(kFALSE),
 fUseMCVertex(kFALSE),
 fUsePhysicsSelection(kTRUE),
 fOptPileup(0),
@@ -144,7 +143,6 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fWhyRejection(source.fWhyRejection),
   fEvRejectionBits(source.fEvRejectionBits),
   fRemoveDaughtersFromPrimary(source.fRemoveDaughtersFromPrimary),
-  fRecomputePrimVertex(source.fRecomputePrimVertex),
   fUseMCVertex(source.fUseMCVertex),
   fUsePhysicsSelection(source.fUsePhysicsSelection),
   fOptPileup(source.fOptPileup),
@@ -225,7 +223,6 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fWhyRejection=source.fWhyRejection;
   fEvRejectionBits=source.fEvRejectionBits;
   fRemoveDaughtersFromPrimary=source.fRemoveDaughtersFromPrimary;
-  fRecomputePrimVertex=source.fRecomputePrimVertex;
   fUseMCVertex=source.fUseMCVertex;
   fUsePhysicsSelection=source.fUsePhysicsSelection;
   fOptPileup=source.fOptPileup;
@@ -459,13 +456,6 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   fEvRejectionBits=0;
   Bool_t accept=kTRUE;
 
-  if(fRecomputePrimVertex){
-    Bool_t vertOK= RecomputePrimaryVertex((AliAODEvent*)event);
-    if(!vertOK){
-      fWhyRejection=6;
-      return kFALSE;
-    }
-  }
 
   // check if it's MC
   Bool_t isMC=kFALSE;
@@ -1013,7 +1003,6 @@ void AliRDHFCuts::PrintAll() const {
   printf("Min SPD mult %d\n",fMinSPDMultiplicity);
   printf("Use PID %d  OldPid=%d\n",(Int_t)fUsePID,fPidHF ? fPidHF->GetOldPid() : -1);
   printf("Remove daughters from vtx %d\n",(Int_t)fRemoveDaughtersFromPrimary);
-  printf("Recompute primary vertex %d\n",(Int_t)fRecomputePrimVertex);
   printf("Physics selection: %s\n",fUsePhysicsSelection ? "Yes" : "No");
   printf("Pileup rejection: %s\n",(fOptPileup > 0) ? "Yes" : "No");
   if(fOptPileup==1) printf(" -- Reject pileup event");
