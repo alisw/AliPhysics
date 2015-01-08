@@ -248,7 +248,12 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
       // (before ISR, FSR and kt kick) and the final state one.
       // The first muon is of course there only for information and should be rejected.
       // The Pythia code for initial state particles is 21
-      Bool_t isSelected = ( istep == kStepReconstructed ) ? fMuonTrackCuts->IsSelected(track) : ( TMath::Abs(track->PdgCode()) == 13 && AliAnalysisMuonUtility::GetStatusCode(track) != 21 );
+      // When running with POWHEG, Pythia puts the hard process input of POWHEG in the stack
+      // with state 21, and then re-add it to stack before applying ISR, FSR and kt kick.
+      // This muon produces the final state muon, and its status code is 11
+      // To avoid all problems, keep only final state muon (status code <10)
+      // FIXME: is the convention valid for other generators as well?
+      Bool_t isSelected = ( istep == kStepReconstructed ) ? fMuonTrackCuts->IsSelected(track) : ( TMath::Abs(track->PdgCode()) == 13 && AliAnalysisMuonUtility::GetStatusCode(track) < 10 );
       if ( ! isSelected ) continue;
       
       selectedTracks.AddAt(track,itrack);
@@ -456,10 +461,12 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
         }
         TH1* histo = gridSparseArray[igrid]->Project(kHvarPt, kHvarEta);
         histo->SetName(Form("hPtEta_%s_%s_%s", gridSparseName[igrid].Data(), srcAxis->GetBinLabel(isrc), chargeNames[icharge].Data()));
+        histo->SetDirectory(0);
         if ( histo->Integral() > 0 ) histoList[icharge].Add(histo);
         for ( Int_t iproj=0; iproj<4; ++iproj ) {
           histo = gridSparseArray[igrid]->Project(iproj);
           histo->SetName(Form("proj%i_%s_%s_%s", iproj, gridSparseName[igrid].Data(), srcAxis->GetBinLabel(isrc), chargeNames[icharge].Data()));
+          histo->SetDirectory(0);
           if ( histo->Integral() > 0 ) histoList[icharge].Add(histo);
         } // loop on projections
       } // loop on grid sparse
@@ -493,6 +500,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
     axisTitle.ReplaceAll("MuMinus","#mu^{-}");
     histo->GetYaxis()->SetTitle(axisTitle.Data());
     histo->SetStats(kFALSE);
+    histo->SetDirectory(0);
     histoListRatio.Add(histo);
   }
   
@@ -574,16 +582,14 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   evtSel = Form("trigger:%s/%s", trigClassName.Data(), countPhysSel.Data());
   fEventCounters->Print("centrality",evtSel.Data(),kTRUE);
   
-  
   TString outFilename = Form("/tmp/out%s.root", GetName());
+  printf("\nCreating file %s\n", outFilename.Data());
   TFile* outFile = new TFile(outFilename.Data(),"RECREATE");
   for ( Int_t icharge=0; icharge<3; icharge++ ) {
     histoList[icharge].Write();
   }
   histoListRatio.Write();
   outFile->Close();
-  printf("\nCreating file %s\n", outFilename.Data(
-         ));
   
   ///////////////////
   // Vertex method //
