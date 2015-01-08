@@ -181,7 +181,10 @@ setYear()
   local path=${2}
   [[ ${yearSource} -ne ${yearTarget} && -n ${yearTarget} && -n ${yearSource} ]] \
     && path=${2/\/"${yearTarget}"/\/"${yearSource}"}
-  echo ${path/\/\//\/}
+  path=${path/\/\//\/}
+  # The previous line would transform raw:// in raw:/
+  # The next fixes this
+  echo ${path/%:\//:\/\/}
   return 0
 }
 
