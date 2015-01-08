@@ -3763,7 +3763,7 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchForCommonMother(TClonesArray *mcArra
   AliDebug(2,Form("%s \n",stringaCheck2.Data()));
 
   delete [] labelMother;
-  delete pdgDg;
+  delete [] pdgDg;
 
   return pdgToBeReturned;
 
