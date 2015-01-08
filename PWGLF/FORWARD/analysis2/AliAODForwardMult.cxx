@@ -277,8 +277,8 @@ AliAODForwardMult::MakeStatusHistogram(const char* name)
   // Return:
   //    Newly allocated histogram 
   //
-  TH1I* ret = new TH1I(name, "Event selection status", 
-		       kWrongVertex+1, -.5, kWrongVertex+.5);
+  Int_t nBins = kOutlierEvent;
+  TH1I* ret = new TH1I(name, "Event selection status", nBins+1, -.5, nBins+.5);
   ret->SetYTitle("Events");
   ret->SetFillColor(kBlue+1);
   ret->SetFillStyle(3001);
@@ -288,7 +288,8 @@ AliAODForwardMult::MakeStatusHistogram(const char* name)
   ret->GetXaxis()->SetBinLabel(kIsPileup+1,        "Pile-up");
   ret->GetXaxis()->SetBinLabel(kNoVertex+1,        "No IP_{z}");
   ret->GetXaxis()->SetBinLabel(kWrongVertex+1,     "Out-or-range IP_{z}");
-  ret->GetXaxis()->SetNdivisions(kWrongVertex, false);
+  ret->GetXaxis()->SetBinLabel(kOutlierEvent+1,    "SPD Outlier");
+  ret->GetXaxis()->SetNdivisions(nBins, false);
   ret->SetStats(0);
   return ret;
 }
@@ -396,7 +397,11 @@ AliAODForwardMult::CheckEvent(Int_t    triggerMask,
     if (status) status->Fill(kWrongTrigger);
     return false;
   }
-  
+  // Check if event is SPD outlier
+  if (IsTriggerBits(kSPDOutlier)) {
+    if (status) status->Fill(kOutlierEvent);
+    return false;
+  }
   // Check for pileup
   if (IsTriggerBits(kPileUp)) {
     if (status) status->Fill(kIsPileup);
