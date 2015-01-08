@@ -915,6 +915,11 @@ class AliHLTComponent : public AliHLTLogging {
   /// get the compression level for TObjects
   int GetCompressionLevel() const {return fCompressionLevel;}
 
+  /**
+   * get the full configuration string
+   */
+  string GetComponentArgs() const { return fComponentArgs; }
+
  protected:
 
   /**
