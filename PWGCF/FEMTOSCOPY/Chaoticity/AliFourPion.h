@@ -62,7 +62,7 @@ class AliFourPion : public AliAnalysisTaskSE {
 
   static const Int_t fKbinsT   = 4;// Set fKstep as well !!!!
   static const Int_t fKbinsY   = 1;// Set fKstep as well !!!!
-  static const Int_t fEDbins   = 2;
+  static const Int_t fEDbins   = 4;
   static const Int_t fCentBins = 10;// 0-50%
   static const Int_t fMbinsMixing = 10;// 5% widths
   static const Int_t fRVALUES  = 7;// 7 EW radii (5-11) , was 8 Gaussian radii (3-10fm)
@@ -76,7 +76,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2DSC=0x0, TH2D *temp2DMC=0x0);
   void SetFSICorrelations(Bool_t legoCase=kTRUE, TH1D *tempss[12]=0x0, TH1D *tempos[12]=0x0);
   void SetMuonCorrections(Bool_t legoCase=kTRUE, TH2D *tempMuon=0x0);
-  void Setc3FitEAs(Bool_t legoCase=kTRUE, TH3D *histoPbPb=0x0, TH3D *histopPb=0x0, TH3D *histopp=0x0);
+  void Setc3FitEAs(Bool_t legoCase=kTRUE, TH3D *histoPbPb[2]=0x0, TH3D *histopPb[2]=0x0, TH3D *histopp[2]=0x0);
   //
   void SetMCdecision(Bool_t mc) {fMCcase = mc;}
   void SetTabulatePairs(Bool_t tabulate) {fTabulatePairs = tabulate;}
@@ -105,6 +105,10 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetNormLow(Float_t nl) {fNormQcutLow = nl;}
   void SetNormHigh(Float_t nh) {fNormQcutHigh = nh;}
   void SetFSIindexSmallSystem(Int_t ind) {fFSIindexSmallSystem = ind;}
+  void Setq2Binning(Bool_t qb) {fq2Binning = qb;}
+  void Setq2Index(Int_t q2i) {fq2Index = q2i;}
+  void Setq2CutLow(Float_t q2l) {fq2CutLow = q2l;}
+  void Setq2CutHigh(Float_t q2h) {fq2CutHigh = q2h;}
   //
   
 
@@ -219,10 +223,10 @@ class AliFourPion : public AliAnalysisTaskSE {
     //
     TH2D *fBuildErr; //!
     //
-    TH2D *fBuildFromFits; //!
-    TH2D *fPrimeBuildFromFits; //!
-    TH2D *fPrimePrimeBuildFromFits; //!
-    TH2D *fCumulantBuildFromFits; //!
+    TH3D *fBuildFromFits; //!
+    TH3D *fPrimeBuildFromFits; //!
+    TH3D *fPrimePrimeBuildFromFits; //!
+    TH3D *fCumulantBuildFromFits; //!
   };
   struct St_EDB {
     struct St5 TwoPT[2];
@@ -318,7 +322,10 @@ class AliFourPion : public AliAnalysisTaskSE {
   Float_t fQmean[kQbinsWeights];
   Float_t fDampStart;
   Float_t fDampStep;
-  
+  Bool_t fq2Binning;
+  Int_t fq2Index;
+  Float_t fq2CutLow;
+  Float_t fq2CutHigh;
   Float_t fTPCTOFboundry;
   Float_t fTOFboundry;
   Float_t fSigmaCutTPC;
@@ -372,13 +379,13 @@ class AliFourPion : public AliAnalysisTaskSE {
   TH2D *fMomResC2SC;
   TH2D *fMomResC2MC;
   TH2D *fWeightmuonCorrection;
-  TH3D *fPbPbc3FitEA;
-  TH3D *fpPbc3FitEA;
-  TH3D *fppc3FitEA;
+  TH3D *fPbPbc3FitEA[2];
+  TH3D *fpPbc3FitEA[2];
+  TH3D *fppc3FitEA[2];
   TH1D *fFSIss[13];
   TH1D *fFSIos[13];
   TH3F *fNormWeight[fKbinsT][fCentBins];
-  TF1 *ExchangeAmp[6][50];
+  TF1 *ExchangeAmp[7][50][2];
 
   ClassDef(AliFourPion, 1); 
 };
