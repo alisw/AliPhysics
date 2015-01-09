@@ -161,6 +161,15 @@ else()
     message(STATUS "No Fortran support. Disabling LHAPDF, PHYTIA6, MICROCERN, etc.")
 endif()
 
+# Optional: Doxygen for reference doc generation
+find_package(Doxygen)
+if(DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND)
+    message(STATUS "Doxygen ${DOXYGEN_VERSION} and Graphviz found: ${DOXYGEN_EXECUTABLE}, ${DOXYGEN_DOT_EXECUTABLE}")
+    set(CAN_GENERATE_DOC TRUE)
+else()
+    message(STATUS "Doxygen and Graphviz not found. Disabling support for documentation generation")
+endif(DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND)
+
 # DATE
 if(DATE_CONFIG)
     find_package(DATE)
@@ -247,6 +256,7 @@ add_subdirectory(TRIGGER)
 add_subdirectory(TTherminator)
 add_subdirectory(VZERO)
 add_subdirectory(ZDC)
+add_subdirectory(doxygen)
 
 # Fortran modules
 if(CMAKE_Fortran_COMPILER)
