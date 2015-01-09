@@ -261,9 +261,9 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   TH1F* fHistoMCLcK0SpGenAcc;         //! histo with MC Lc --> K0S + p
   TH1F* fHistoMCLcK0SpGenLimAcc;      //! histo with MC Lc --> K0S + p
 
-  ULong64_t fTriggerMask;			  //! mask to the trigger word returned by the physics selection
+  ULong64_t fTriggerMask;			  // mask to the trigger word returned by the physics selection
 	
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVA, 7); // class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVA, 8); // class for Lc->p K0
 };
 
 #endif
