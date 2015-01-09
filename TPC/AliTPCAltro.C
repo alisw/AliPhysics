@@ -8,20 +8,24 @@
 #include "AliTPCBuffer160.h"
 #endif
 
+/// \file AliTPCAltro.C
+
 int AliTPCAltro(Int_t eth=0){
-  //eth is a threshold.
-  //Digits stored into a file have an amplitude value greater than "eth"
-  Int_t offset=1; //this should be equal to the threshold
+
+  /// eth is a threshold.
+  /// Digits stored into a file have an amplitude value greater than "eth"
+
+  Int_t offset=1; ///< this should be equal to the threshold
   /*
     NB the amplitude values stored in the ALTRO file are shifted  by offset 
     because the range for each word goes from 0 to 1023, now due to zero suppression 
     values lower that the threshold never appear.
    */
 
-  Int_t PSecNumber=-1;  //Previous Sector number
-  Int_t PRowNumber=-1;  //Previous Row number  
-  Int_t PPadNumber=-1;  //Previous Pad number
-  Int_t PTimeBin=-1;    //Previous Time-Bin
+  Int_t PSecNumber=-1;  ///< Previous Sector number
+  Int_t PRowNumber=-1;  ///< Previous Row number
+  Int_t PPadNumber=-1;  ///< Previous Pad number
+  Int_t PTimeBin=-1;    ///< Previous Time-Bin
   Int_t BunchLength=0;
   //AliTPCBuffer160 is used in write mode to generate AltroFormat.dat file
   AliTPCBuffer160 Buffer("AltroFormat.dat",1); 
@@ -58,7 +62,7 @@ int AliTPCAltro(Int_t eth=0){
   digarr->ConnectTree(digitsTree);
   //ofstream ftxt("Data.txt");
   for (Int_t n=0; n<nrows; n++) {
-    Int_t sec,row; // sector and row number (in the TPC)
+    Int_t sec,row; ///< sector and row number (in the TPC)
     AliSimDigits *digrow=(AliSimDigits*)digarr->LoadEntry(n);
     param->AdjustSectorRow(digrow->GetID(),sec,row);   
 

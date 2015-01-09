@@ -1,6 +1,8 @@
+/// \file MakeTPCFullMisAlignment.C
+/// \brief Create TClonesArray of full misalignment objects for TPC
+
 void MakeTPCFullMisAlignment(){
-  // Create TClonesArray of full misalignment objects for TPC
-  //
+
   const char* macroname = "MakeTPCFullMisAlignment.C";
   // Activate CDB storage and load geometry from CDB
   AliCDBManager* cdb = AliCDBManager::Instance();

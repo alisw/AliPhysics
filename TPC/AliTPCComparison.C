@@ -1,13 +1,11 @@
-/****************************************************************************
- *           Very important, delicate and rather obscure macro.             *
- *                                                                          *
- *               Creates list of "trackable" tracks,                        *
- *             calculates efficiency, resolutions etc.                      *
- *     There is a possibility to run this macro over several events.         *
- *                                                                          *
- *           Origin: I.Belikov, CERN, Jouri.Belikov@cern.ch                 *
- * with several nice improvements by: M.Ivanov, GSI, m.ivanov@gsi.de        *
- ****************************************************************************/
+/// \file AliTPCComparison.C
+/// \brief Very important, delicate and rather obscure macro
+///
+/// Creates list of "trackable" tracks, calculates efficiency, resolutions etc.
+///
+/// There is a possibility to run this macro over several events.
+///
+/// \author I.Belikov, CERN, Jouri.Belikov@cern.ch, M.Ivanov, GSI, m.ivanov@gsi.de
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
   #include <TMath.h>
@@ -158,7 +156,8 @@ Int_t AliTPCComparison
    event->ReadFromTree(esdTree);
 
 
-   //******* Loop over events *********
+  // ******* Loop over events *********
+
    Int_t e=0;
    while (esdTree->GetEvent(e)) {
       cout<<endl<<endl<<"********* Processing event number: "<<e<<"*******\n";

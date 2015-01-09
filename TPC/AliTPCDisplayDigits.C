@@ -1,6 +1,5 @@
-/****************************************************************************
- *           Origin: I.Belikov, CERN, Jouri.Belikov@cern.ch                 *
- ****************************************************************************/
+/// \file AliTPCDisplayDigits.C
+/// \author I.Belikov, CERN, Jouri.Belikov@cern.ch
 
 #ifndef __CINT__
 #include <Riostream.h>

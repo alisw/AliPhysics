@@ -1,6 +1,8 @@
+/// \file MakeTPCZeroMisAlignment.C
+/// \brief Create TClonesArray of zero misalignment objects for TPC
+
 void MakeTPCZeroMisAlignment(){
-  // Create TClonesArray of zero misalignment objects for TPC
-  //
+
   const char* macroname = "MakeTPCZeroMisAlignment.C";
 
   TClonesArray *array = new TClonesArray("AliAlignObjParams",100);

@@ -2,20 +2,8 @@
 
 cd "${ALICE_ROOT}"/../src/
 
-# find TPC/ -maxdepth 1 -name '*.h' -or -name '*.cxx'
-
-#Files=$( find TPC/ -name '*.C' -or -name '*.h' -or -name '*.cxx' )
-
-# Files=(
-#   'TPC/LandauTest.C'
-#   #'TPC/Attic/AliTPCCalibTCF.h'
-# )
-
-# Files=(
-#   'EVE/EveDet/AliEveEMCALSModuleData.h'
-# )
-
-Files=$( find TPC/ -maxdepth 1 -name '*.h' -or -name '*.cxx' )
+# TPC
+Files=$( find TPC/ -maxdepth 1 -name '*.h' -or -name '*.cxx' -or -name '*.C' )
 
 while [[ $# -gt 0 ]] ; do
   case "$1" in

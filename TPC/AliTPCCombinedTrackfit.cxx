@@ -12,13 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-//
-// Combine cosmic track pairs (upper, lower) and do track fitting
-// oooooOOOOOooooo
-// oooooOOOOOooooo
-// oooooOOOOOooooo
-//
-//  Xianguo Lu <lu@physi.uni-heidelberg.de>
+
+/// \class AliTPCCombinedTrackfit
+/// 
+/// Combine cosmic track pairs (upper, lower) and do track fitting
+/// 
+/// \author Xianguo Lu <lu@physi.uni-heidelberg.de>
 
 #include <TAxis.h>
 #include <TCanvas.h>
@@ -43,9 +42,8 @@ AliTPCCombinedTrackfit::AliTPCCombinedTrackfit(const Int_t dlev, const TString t
   , fLeverArm(-999)
   , fFitNcls(-999), fMissNcls(-999), fPreChi2(-999)
 {
-  //
-  //Constructor
-  //
+  /// Constructor
+
   fInnerClusterUp.SetXYZ(-999,-999,-999);
   fInnerClusterLow.SetXYZ(-999,-999,-999);
 
@@ -55,9 +53,7 @@ AliTPCCombinedTrackfit::AliTPCCombinedTrackfit(const Int_t dlev, const TString t
 
 AliTPCCombinedTrackfit::~AliTPCCombinedTrackfit()
 {
-  //
-  //Destructor
-  //
+  /// Destructor
 
   delete fStreamer;
   
@@ -67,10 +63,8 @@ AliTPCCombinedTrackfit::~AliTPCCombinedTrackfit()
 
 Bool_t AliTPCCombinedTrackfit::CombineESDtracks(AliESDtrack * &trk0, AliESDtrack *&trk1)
 {
-  //
-  //Get TPCseeds from the 2 ESDtracks, swap TPCseeds and ESDTracks (if necessary) according to y (0:upper 1:lower), perform trackfit using TPCseeds
-  //if fStatus==0, i.e. combine is successful, swap of the ESDtracks is kept since pointer *& is used
-  //
+  /// Get TPCseeds from the 2 ESDtracks, swap TPCseeds and ESDTracks (if necessary) according to y (0:upper 1:lower), perform trackfit using TPCseeds
+  /// if fStatus==0, i.e. combine is successful, swap of the ESDtracks is kept since pointer *& is used
 
   IniCombineESDtracks();
 
@@ -95,10 +89,9 @@ Bool_t AliTPCCombinedTrackfit::CombineESDtracks(AliESDtrack * &trk0, AliESDtrack
 
 Bool_t AliTPCCombinedTrackfit::CombineTPCseeds(AliTPCseed * &seed0, AliTPCseed *&seed1)
 {
-  //
-  //same as AliTPCCombinedTrackfit::CombineESDtracks, except that the seeds are passed in from outside, which can be still unordered
-  //if fStatus==0, i.e. combine is successful, swap of the TPCseeds is kept since pointer *& is used
-  //
+  /// same as AliTPCCombinedTrackfit::CombineESDtracks, except that the seeds are passed in from outside, which can be still unordered
+  /// if fStatus==0, i.e. combine is successful, swap of the TPCseeds is kept since pointer *& is used
+
   IniCombineESDtracks();
 
   fSeedUp  = seed0;
@@ -121,17 +114,15 @@ Bool_t AliTPCCombinedTrackfit::CombineTPCseeds(AliTPCseed * &seed0, AliTPCseed *
 
 void AliTPCCombinedTrackfit::Print() const
 {
-  //
-  //print out variable values
-  //
+  /// print out variable values
+
   printf("Status %2d NclsU %3d NclsD %3d ZinnerU %7.2f ZinnerD %7.2f LeverArm %7.2f\n", fStatus, fSeedUp->GetNumberOfClusters(), fSeedLow->GetNumberOfClusters(), fInnerClusterUp.Z(), fInnerClusterLow.Z(), fLeverArm);
 }
 
 Double_t AliTPCCombinedTrackfit::ImpactParameter() const
 {
-  //
-  //calculate the impactparameter from (0,0,0)
-  //
+  /// calculate the impactparameter from (0,0,0)
+
   const TVector3 p0(0,0,0);
   const TVector3 va = p0 - fInnerClusterUp;
   const TVector3 vb = fInnerClusterLow - fInnerClusterUp;
@@ -143,9 +134,8 @@ Double_t AliTPCCombinedTrackfit::ImpactParameter() const
 
 Double_t AliTPCCombinedTrackfit::MinPhi() const
 {
-  //
-  //the smaller phi of the two tracks w.r.t. horizon
-  //
+  /// the smaller phi of the two tracks w.r.t. horizon
+
   Double_t fsp[] = {fabs(sin(fTrackparUp->Phi())), fabs(sin(fTrackparLow->Phi()))};;
   return asin(TMath::Min(fsp[0], fsp[1])) * TMath::RadToDeg();
 }
@@ -154,9 +144,7 @@ Double_t AliTPCCombinedTrackfit::MinPhi() const
 
 void AliTPCCombinedTrackfit::IniCombineESDtracks()
 {
-  //
-  //initialization, for reuse of the same AliTPCCombinedTrackfit instance
-  //
+  /// initialization, for reuse of the same AliTPCCombinedTrackfit instance
 
   fSeedUp = 0x0;
   fSeedLow = 0x0;
@@ -170,9 +158,7 @@ void AliTPCCombinedTrackfit::IniCombineESDtracks()
 
 void AliTPCCombinedTrackfit::CombineTPCseeds(Bool_t &kswap)
 {
-  //
-  //do combined trackfit using TPCseeds
-  //
+  /// do combined trackfit using TPCseeds
 
   if(
      !CheckNcls()
@@ -205,9 +191,7 @@ void AliTPCCombinedTrackfit::CombineTPCseeds(Bool_t &kswap)
 
 void AliTPCCombinedTrackfit::Update()
 {
-  //
-  //Update variables depending on the fit result
-  //
+  /// Update variables depending on the fit result
 
   if(fMissNcls || fFitNcls==0){
     fStatus = kFailPropagation;
@@ -245,11 +229,10 @@ void AliTPCCombinedTrackfit::Update()
 
 Bool_t AliTPCCombinedTrackfit::CheckLeverArm()
 {
-  //
-  //if lever arm is too short, no need to use combined track fit. 
-  //On the other hand, short lever arm from two tracks mostly means they are fake pairs.
-  //lever arm extents over one quadrant, e.g. (0,250)-(250,0): 250*sqrt(2)~350
-  //
+  /// if lever arm is too short, no need to use combined track fit.
+  /// On the other hand, short lever arm from two tracks mostly means they are fake pairs.
+  /// lever arm extents over one quadrant, e.g. (0,250)-(250,0): 250*sqrt(2)~350
+
   if(fLeverArm<fgkCutLeverArm){
     fStatus = kFailLeverArm;
     return kFALSE;
@@ -260,9 +243,7 @@ Bool_t AliTPCCombinedTrackfit::CheckLeverArm()
 
 Bool_t AliTPCCombinedTrackfit::AnaSeeds(Bool_t &kswap)
 {
-  //
-  //swap seeds (if necessary) so that (y of fSeedUp) > (y of fSeedLow)
-  //
+  /// swap seeds (if necessary) so that (y of fSeedUp) > (y of fSeedLow)
 
   //---------------------------------- navigate through all clusters ----------------------------------
   AliTPCseed ** seeds[]={&fSeedUp, &fSeedLow};
@@ -342,9 +323,8 @@ Bool_t AliTPCCombinedTrackfit::AnaSeeds(Bool_t &kswap)
 
 Bool_t AliTPCCombinedTrackfit::CheckNcls()
 {
-  //
-  //check number of clusters in TPCseed, for too small number MakeSeed will fail
-  //
+  /// check number of clusters in TPCseed, for too small number MakeSeed will fail
+
   if( fSeedUp->GetNumberOfClusters()<AliTPCCosmicUtils::fgkNclsMin || fSeedLow->GetNumberOfClusters()<AliTPCCosmicUtils::fgkNclsMin ){
     fStatus = kFailNclsMin;
     return kFALSE;
@@ -355,9 +335,8 @@ Bool_t AliTPCCombinedTrackfit::CheckNcls()
 
 Bool_t AliTPCCombinedTrackfit::GetTPCseeds(const AliESDtrack *trk0,  const AliESDtrack *trk1)
 {
-  //
-  //Get TPC seeds from ESDfriendTrack
-  //
+  /// Get TPC seeds from ESDfriendTrack
+
   fSeedUp  = AliTPCCosmicUtils::GetTPCseed(trk0);
   fSeedLow = AliTPCCosmicUtils::GetTPCseed(trk1);
 

@@ -13,16 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  Calculation of the Electric field:
-  Sollution of laplace equation in cartezian system, with boundary condition.
-  Se details:
-  http://web.mit.edu/6.013_book/www/chapter5/5.10.html
 
-
-*/
-
-/* $Id: AliTPCEfield.cxx 41275 2010-05-16 22:23:06Z marian $ */
+/// \class AliTPCEfield
+///
+/// Solution of Laplace equation in cartesian system, with boundary condition.
+///
+/// See details:
+/// http://web.mit.edu/6.013_book/www/chapter5/5.10.html
 
 #include "TTreeStream.h"
 #include "TMath.h"
@@ -30,8 +27,9 @@
 #include "TRandom.h"
 #include "AliTPCEfield.h"
 
+/// \cond CLASSIMP
 ClassImp(AliTPCEfield)
-
+/// \endcond
 
 AliTPCEfield* AliTPCEfield::fgInstance=0;
 
@@ -42,7 +40,8 @@ AliTPCEfield::AliTPCEfield():
   fIs2D(kTRUE),
   fWorkspace(0)   // file with trees, pictures ...
 {
-  //
+  /// 
+
   for (Int_t i=0; i<3; i++){
     fMin[i]=0; fMax[i]=0;
   }
@@ -57,7 +56,8 @@ AliTPCEfield::AliTPCEfield(const char* name, Int_t maxFreq, Bool_t is2D, Bool_t 
   fUseLinear(useLinear),
   fWorkspace(0)   // file with trees, pictures ...
 {
-  //
+  /// 
+
   for (Int_t i=0; i<3; i++){
     fMin[i]=0; fMax[i]=0;
   }
@@ -67,15 +67,14 @@ AliTPCEfield::AliTPCEfield(const char* name, Int_t maxFreq, Bool_t is2D, Bool_t 
 }
 
 void AliTPCEfield::MakeFitFunctions(Int_t maxFreq){
-  //
-  // fit functions = f(x,y,z) = fx(x)*fy(y)*fz(z)
-  // function can be of following types: 
-  // 0 - constant
-  // 1 - linear
-  // 2 - hypx
-  // 3 - hypy
-  // 4 - hypz
-  //
+  /// fit functions = \f$ f(x,y,z) = fx(x)*fy(y)*fz(z) \f$
+  /// function can be of following types:
+  /// 0 - constant
+  /// 1 - linear
+  /// 2 - hypx
+  /// 3 - hypy
+  /// 4 - hypz
+
   Int_t nfunctions=0;
   if (fIs2D)     nfunctions = 1+(maxFreq)*8;
   if (!fIs2D)    nfunctions = 1+(maxFreq)*8;
@@ -123,17 +122,15 @@ void AliTPCEfield::MakeFitFunctions(Int_t maxFreq){
 
 
 AliTPCEfield::~AliTPCEfield() {
-  //
-  // Destructor
-  //
+  /// Destructor
+
   if (fWorkspace) delete fWorkspace;
 }
 
 void AliTPCEfield::SetRange(Double_t x0, Double_t x1, Double_t y0, Double_t y1, Double_t z0,Double_t z1){
-  //
-  // Set the ranges - coordinates are rescaled in order to use proper
-  // cos,sin expansion in scaled space
-  //
+  /// Set the ranges - coordinates are rescaled in order to use proper
+  /// cos,sin expansion in scaled space
+
   fMin[0]=x0; fMax[0]=x1;
   fMin[1]=y0; fMax[1]=y1;
   fMin[2]=z0; fMax[2]=z1;
@@ -143,13 +140,12 @@ void AliTPCEfield::SetRange(Double_t x0, Double_t x1, Double_t y0, Double_t y1, 
 
 
 void AliTPCEfield::AddBoundaryLine(Double_t x0,Double_t y0,Double_t z0,  Double_t v0, Double_t x1, Double_t y1, Double_t z1,Double_t v1, Int_t id, Int_t npoints){
-  //
-  // Add a e field boundary line
-  // From point (x0,y0) to point (x1,y1)
-  // Linear decrease of potential is assumed
-  // Boundary can be identified using boundary ID
-  // The line is written into tree Boundary
-  // 
+  /// Add a e field boundary line
+  /// From point (x0,y0) to point (x1,y1)
+  /// Linear decrease of potential is assumed
+  /// Boundary can be identified using boundary ID
+  /// The line is written into tree Boundary
+
   Double_t deltaX = (x1-x0);
   Double_t deltaY = (y1-y0);
   Double_t deltaZ = (z1-z0);
@@ -171,16 +167,15 @@ void AliTPCEfield::AddBoundaryLine(Double_t x0,Double_t y0,Double_t z0,  Double_
 }
 
 TTree * AliTPCEfield::GetTree(const char * tname){
-  //  
-  //
-  //
+  /// 
+
   return ((*fWorkspace)<<tname).GetTree();
 }
 
 Double_t AliTPCEfield::Field(Int_t ftype,  Double_t ifx, Double_t ify, Double_t ifz, Double_t x, Double_t y, Double_t z){
-  //
-  // Field component in 
-  // f frequency
+  /// Field component in
+  /// f frequency
+
   Double_t fx=1,fy=1,fz=1;
   const Double_t kEps=0.01;
   //
@@ -216,12 +211,9 @@ Double_t AliTPCEfield::Field(Int_t ftype,  Double_t ifx, Double_t ify, Double_t 
 
 
 Double_t AliTPCEfield::FieldDn(Int_t ftype, Double_t ifx, Double_t ify, Double_t ifz, Int_t dn, Double_t x, Double_t y, Double_t z){
-  //
-  //
-  //
- //
-  // Field component in 
-  // f frequency
+ /// Field component in
+ /// f frequency
+
   Double_t fx=1,fy=1,fz=1;
   const Double_t kEps=0.01;
   //
@@ -266,12 +258,12 @@ Double_t AliTPCEfield::FieldDn(Int_t ftype, Double_t ifx, Double_t ify, Double_t
 
 
 Double_t AliTPCEfield::EvalField(Int_t ifun, Double_t x, Double_t y, Double_t z, Int_t type){
-  //
-  // Evaluate function ifun at position gx amd gy
-  // type == 0 - field
-  //      == 1 - Ex
-  //      == 2 - Ey
-  //      == 3 - Ez
+  /// Evaluate function ifun at position gx amd gy
+  /// type == 0 - field
+  ///      == 1 - Ex
+  ///      == 2 - Ey
+  ///      == 3 - Ez
+
   TMatrixD &mat    = *fFitFunctions;
   Int_t     fid   = TMath::Nint(mat(ifun,0));
   Double_t   ifx   = (mat(ifun,1));
@@ -284,12 +276,12 @@ Double_t AliTPCEfield::EvalField(Int_t ifun, Double_t x, Double_t y, Double_t z,
 }
 
 Double_t AliTPCEfield::Eval(Double_t x, Double_t y, Double_t z, Int_t type){
-  //
-  // Evaluate function ifun at position gx amd gy
-  // type == 0 - field
-  //      == 1 - Ex
-  //      == 2 - Ey
-  //      == 3 - Ez
+  /// Evaluate function ifun at position gx amd gy
+  /// type == 0 - field
+  ///      == 1 - Ex
+  ///      == 2 - Ey
+  ///      == 3 - Ez
+
   Double_t value=0;   
   Double_t lx= 2.*(x-(fMin[0]+fMax[0])*0.5)/fScale;
   Double_t ly= 2.*(y-(fMin[1]+fMax[1])*0.5)/fScale;
@@ -304,18 +296,16 @@ Double_t AliTPCEfield::Eval(Double_t x, Double_t y, Double_t z, Int_t type){
 }
 
 Double_t AliTPCEfield::EvalS(Double_t x, Double_t y, Double_t z,  Int_t type){
-  //
-  // static evaluation - possible to use it in the TF1 
-  //
+  /// static evaluation - possible to use it in the TF1
+
   return fgInstance->Eval(x,y,z,type);
 }
 
 void AliTPCEfield::FitField(){
-  //
-  // Fit the e field
-  // Minimize chi2 residuals at the boundary points 
-  // ?Tempoary sollution - integrals can be calculated analytically -
-  //
+  /// Fit the e field
+  /// Minimize chi2 residuals at the boundary points
+  /// ?Tempoary sollution - integrals can be calculated analytically -
+
   Int_t nfun=fFitFunctions->GetNrows();
   Double_t *fun =new Double_t[nfun];
   fFitter= new TLinearFitter(nfun, Form("hyp%d", nfun-1));
@@ -373,9 +363,8 @@ void AliTPCEfield::FitField(){
 
 
 TMatrixD* AliTPCEfield::MakeCorrelation(TMatrixD &matrix){
-  //
-  //
-  //
+  /// 
+
   Int_t nrows = matrix.GetNrows();
   TMatrixD * mat = new TMatrixD(nrows,nrows);
   for (Int_t irow=0; irow<nrows; irow++)
@@ -389,9 +378,8 @@ TMatrixD* AliTPCEfield::MakeCorrelation(TMatrixD &matrix){
 
 
 void AliTPCEfield::DumpField(Double_t gridSize, Double_t step){
-  //
-  //
-  //
+  /// 
+
   Double_t stepSize=0.001*fScale/fMaxFreq;
   //
   for (Double_t x = fMin[0]+stepSize; x<=fMax[0]-stepSize; x+=gridSize){

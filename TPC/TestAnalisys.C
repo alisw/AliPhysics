@@ -1,10 +1,12 @@
-/*
- .L AliGenInfo.C+
- .L TestAnalisys.C+
- AddChains(868);    // AddChains(runNumber);
-  Select();          // make default selection of data
-  MakePictures("pic868");
-*/
+/// \file TestAnalisys.C
+///
+/// ~~~{.cxx}
+/// .L AliGenInfo.C+
+/// .L TestAnalisys.C+
+/// AddChains(868);    // AddChains(runNumber);
+///  Select();          // make default selection of data
+///  MakePictures("pic868");
+/// ~~~
 
 #include "TFile.h"
 #include "TTree.h"
@@ -49,7 +51,7 @@ void P3Z(TCut cut0, TCut cut1,  char * description);
 void ResYZ(TCut cut0, TCut cut1,  char * description);
 void SysYX(TCut cut0,  char * description);
 void SysZX(TCut cut0,  char * description);
-//
+
 TProfile * ProfileMaxRow(TCut cut0, char *name, Int_t max);
 TProfile * ProfileMaxPhi(TCut cut0, char *name, Int_t max);
 TProfile * ProfileMaxZ(TCut cut0, char *name, Int_t max);

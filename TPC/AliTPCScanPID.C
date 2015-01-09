@@ -1,7 +1,8 @@
-///////////////////////////////////////////////////////////
-// Test macro for AliTPCtracksPid.root file            //
-// JINR Dubna Aug 2002                                   //
-///////////////////////////////////////////////////////////
+/// \file AliTPCScanPID.C
+/// \brief Test macro for AliTPCtracksPid.root file
+///
+/// \author JINR Dubna Aug 2002
+
 void
 AliTPCScanPID(Int_t evNumber2=3) {
   //................. Prepare histogramms ................
