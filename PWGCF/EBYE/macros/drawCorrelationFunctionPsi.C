@@ -424,10 +424,10 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   TH2D *gHistNP[4];
   TH2D *gHistPP[4];
   TH2D *gHistNN[4];
-  TH2D *gHistTriggerPN;
-  TH2D *gHistTriggerNP;
-  TH2D *gHistTriggerPP;
-  TH2D *gHistTriggerNN;
+  TH1D *gHistTriggerPN;
+  TH1D *gHistTriggerNP;
+  TH1D *gHistTriggerPP;
+  TH1D *gHistTriggerNN;
   
   TCanvas *cPN[4];
   TCanvas *cNP[4];
