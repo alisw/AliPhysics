@@ -315,7 +315,7 @@ def comment_classdesc(filename, comments):
 
   recomm = r'^\s*///?(\s*.*?)\s*/*\s*$'
 
-  reclass_doxy = r'(?i)^\s*\\class:?\s*(.*?)\s*$'
+  reclass_doxy = r'(?i)^\s*\\(class|file):?\s*([^.]*)'
   class_name_doxy = None
 
   reauthor = r'(?i)^\s*\\?authors?:?\s*(.*?)\s*(,?\s*([0-9./-]+))?\s*$'
@@ -329,6 +329,8 @@ def comment_classdesc(filename, comments):
   end_line = -1
 
   line_num = 0
+
+  is_macro = filename.endswith('.C')
 
   with open(filename, 'r') as fp:
 
@@ -364,7 +366,7 @@ def comment_classdesc(filename, comments):
 
         mclass_doxy = re.search(reclass_doxy, mcomm.group(1))
         if mclass_doxy:
-          class_name_doxy = mclass_doxy.group(1)
+          class_name_doxy = mclass_doxy.group(2)
           append = False
         else:
           mauthor = re.search(reauthor, mcomm.group(1))
@@ -399,8 +401,11 @@ def comment_classdesc(filename, comments):
 
   if start_line > 0:
 
-    # Prepend \class specifier (and an empty line)
-    comment_lines[:0] = [ '\\class ' + class_name_doxy ]
+    # Prepend \class or \file specifier (and an empty line)
+    if is_macro:
+      comment_lines[:0] = [ '\\file ' + class_name_doxy + '.C' ]
+    else:
+      comment_lines[:0] = [ '\\class ' + class_name_doxy ]
 
     # Append author and date if they exist
     comment_lines.append('')
@@ -440,6 +445,8 @@ def traverse_ast(cursor, filename, comments, recursion=0):
   text = cursor.spelling or cursor.displayname
   kind = str(cursor.kind)[str(cursor.kind).index('.')+1:]
 
+  is_macro = filename.endswith('.C')
+
   indent = ''
   for i in range(0, recursion):
     indent = indent + '  '
@@ -451,7 +458,7 @@ def traverse_ast(cursor, filename, comments, recursion=0):
     logging.debug( "%5d %s%s(%s)" % (cursor.location.line, indent, Colt(kind).magenta(), Colt(text).blue()) )
     comment_method(cursor, comments)
 
-  elif cursor.kind in [ clang.cindex.CursorKind.FIELD_DECL, clang.cindex.CursorKind.VAR_DECL ]:
+  elif not is_macro and cursor.kind in [ clang.cindex.CursorKind.FIELD_DECL, clang.cindex.CursorKind.VAR_DECL ]:
 
     # cursor ran into a data member declaration
     logging.debug( "%5d %s%s(%s)" % (cursor.location.line, indent, Colt(kind).magenta(), Colt(text).blue()) )
