@@ -406,7 +406,9 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorTPC(Double_t etaMin,Double_t et
 	        AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iT));
                if(!aodTrack) AliFatal("Not a standard AOD");
 		if (!aodTrack->TestFilterBit(128)) continue;  //FIXME track type hard coded -> TPC only constrained to the vertex
-		if (aodTrack->Eta() <etaMin || aodTrack->Eta() > etaMax)continue;
+		if (aodTrack->Eta() <etaMin || aodTrack->Eta() > etaMax)continue; //default: etaMin=-0.5. etaMax=0.5
+		if (aodTrack->Pt()<0.2 || aodTrack->Pt()>20.)continue; //FIXME add variable pt cut, pt cut as in https://aliceinfo.cern.ch/Notes/node/71
+		
 		mult++;
 		Qx2 += TMath::Cos(2*aodTrack->Phi());
 		Qy2 += TMath::Sin(2*aodTrack->Phi());
