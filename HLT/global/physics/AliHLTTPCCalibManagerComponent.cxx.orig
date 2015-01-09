@@ -26,12 +26,6 @@
 #include "TObjString.h"
 #include "TH1F.h"
 #include "TList.h"
-
-#include <map>
-#include <string>
-#include "TString.h"
-#include "TArrayI.h"
-
 //#include "AliESDtrackCuts.h"
 #include "AliESDEvent.h"
 #include "AliHLTErrorGuard.h"
@@ -95,9 +89,7 @@ AliHLTTPCCalibManagerComponent::AliHLTTPCCalibManagerComponent() :
   fUID(0),
   fAnalysisManager(NULL),
   fInputHandler(NULL),
-  fTPCcalibConfigString("TPCCalib:CalibTimeDrift"),
-  fAddTaskMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C"),
-  fWriteAnalysisToFile(kFALSE),
+  fTPCcalibConfigString("ALL"),
   fEnableDebug(kFALSE)
 {
   // an example component which implements the ALICE HLT processor
@@ -182,12 +174,19 @@ AliHLTComponent* AliHLTTPCCalibManagerComponent::Spawn() {
  */
 
 // #################################################################################
-Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ ) {
+Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t argc, const Char_t** argv ) {
   // see header file for class documentation
   HLTInfo("----> AliHLTTPCCalibManagerComponent::DoInit");
 
+  //default values
+  TString tpcAddTaskMacro="$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C";
+  TString tpcAddTaskMacroArgs=TString::Itoa(GetRunNo(),10);
+  tpcAddTaskMacroArgs+=",";
+  tpcAddTaskMacroArgs+="\""+fTPCcalibConfigString+"\"";
+
   //process arguments
-  ProcessOptionString(GetComponentArgs());
+  //ConfigureFromArgumentString(argc,argv);
+  ProcessArgumentString(argc,argv);
 
   if (!fEnableDebug)
   {
@@ -201,9 +200,7 @@ Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
   fInputHandler    = new AliHLTVEventInputHandler("HLTinputHandler","HLT input handler");
   fAnalysisManager->SetInputEventHandler(fInputHandler);
 
-  TString addTaskMacroArgs="\""+fTPCcalibConfigString+"\"";
-  TString macro=fAddTaskMacro+"("+addTaskMacroArgs+")";
-  HLTInfo("Executing: %s\n",macro.Data());
+  TString macro=tpcAddTaskMacro+"("+tpcAddTaskMacroArgs+")";
   gROOT->Macro(macro);
 
   fAnalysisManager->InitAnalysis();
@@ -216,12 +213,22 @@ Int_t AliHLTTPCCalibManagerComponent::DoDeinit() {
   // see header file for class documentation
 
   fUID = 0;
-  if (fWriteAnalysisToFile && fAnalysisManager) 
-    fAnalysisManager->WriteAnalysisToFile();
+  fAnalysisManager->WriteAnalysisToFile();
   delete fAnalysisManager;
   return 0;
 }
 
+// #################################################################################
+int AliHLTTPCCalibManagerComponent::ProcessArgumentString(int argc, const char** argv)
+{
+  //process passed options
+  for (int i=0; i<argc; i++)
+  {
+    TString argument(argv[i]);
+    TPRegexp r("");
+  }
+  return 1; 
+}
 // #################################################################################
 Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& evtData,
     AliHLTComponentTriggerData& /*trigData*/) {
@@ -479,6 +486,8 @@ Int_t AliHLTTPCCalibManagerComponent::ReadInput(AliVEvent*& vEvent, AliVfriendEv
   }
   return iResult;
 }
+<<<<<<< HEAD
+=======
 
 // #################################################################################
 int AliHLTTPCCalibManagerComponent::ProcessOption(TString option, TString value)
@@ -486,34 +495,25 @@ int AliHLTTPCCalibManagerComponent::ProcessOption(TString option, TString value)
   //process option
   //to be implemented by the user
   if (option.Contains("TPCcalibConfigString")) 
-  {
     fTPCcalibConfigString=value;
-    HLTInfo("fTPCcalibConfigString=%s\n",fTPCcalibConfigString.Data());
-  }
   if (option.Contains("WriteAnalysisToFile")) 
-  {
     fWriteAnalysisToFile=(value.Contains("0"))?kFALSE:kTRUE;
-    HLTInfo("fWriteAnalysisToFile=%i\n",(fWriteAnalysisToFile)?1:0);
-  }
-  if (option.Contains("AddTaskMacro"))
-  {
-    fAddTaskMacro=value;
-  }
   return 1; 
 }
 
 // #################################################################################
-int AliHLTTPCCalibManagerComponent::ProcessOptionString(TString arguments)
+int AliHLTTPCCalibManagerComponent::ProcessOptionString(int argc, const char** argv)
 {
   //process passed options
-  HLTInfo("Argument string: %s\n", arguments.Data());
-  stringMap* options = TokenizeOptionString(arguments);
-  for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
+  for (int arg=0; arg<argc; arg++)
   {
-    HLTInfo("  %s : %s\n", i->first.data(), i->second.data());
-    ProcessOption(i->first,i->second);
+    stringMap* options = TokenizeOptionString(argv[arg]);
+    for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
+    {
+      Printf("%s : %s", i->first.data(), i->second.data());
+      ProcessOption(i->first,i->second);
+    }
   }
-  delete options; //tidy up
 
   return 1; 
 }
@@ -521,10 +521,12 @@ int AliHLTTPCCalibManagerComponent::ProcessOptionString(TString arguments)
 // #################################################################################
 AliHLTTPCCalibManagerComponent::stringMap* AliHLTTPCCalibManagerComponent::TokenizeOptionString(const TString str)
 {
+  
   //options have the form:
-  // -option value
-  // -option=value
-  // -option
+  // -o value
+  // -o=value
+  // -ovalue
+  // -o
   // --option value
   // --option=value
   // --option
@@ -532,13 +534,13 @@ AliHLTTPCCalibManagerComponent::stringMap* AliHLTTPCCalibManagerComponent::Token
   // option value
   // (value can also be a string like 'some string')
   //
-  // options can be separated by ' ' or ',' arbitrarily combined, e.g:
-  //"-option option1=value1 --option2 value2, -option4=\'some string\'"
+  // options can be separated bu ' ' or ',' arbitrarily combined, e.g:
+  //"-ovalue option1=value1 --option2 value2 --option4=\'some string\'"
   
-  //optionRE by construction contains a pure option name as 3rd submatch (without --,-, =)
+  //optionRE by construction contains a pure option name as 4th submatch (without --,-, =)
   //valueRE does NOT match options
-  TPRegexp optionRE("(?:(-{1,2})|((?='?[^,=]+=?)))((?(2)(?:(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^, =]+))(?==?))(?(1)[^, =]+(?=[= ,$])))");
-  TPRegexp valueRE("(?(?!(-{1,2}|[^, =]+=))(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^, =]+))");
+  TPRegexp optionRE("(?:((?='?\\w+=?))|(-)|(--))((?(1)(?:(?(?=')'(?:[^'\\\\]++|\\.)*+'|\\w+))(?==?))(?(2)\\w(?=[= ,$]|\\w+))(?(3)\\w+(?=[= ,$])?))");
+  TPRegexp valueRE("(?(?!(-{1,2}|\\w+=))(?(?=')'(?:[^'\\\\]++|\\.)*+'|\\w+))");
 
   stringMap* options = new stringMap;
 
@@ -554,7 +556,7 @@ AliHLTTPCCalibManagerComponent::stringMap* AliHLTTPCCalibManagerComponent::Token
     Int_t nOption=optionRE.Match(str,mods,start,10,&pos);
     if (nOption>0)
     {
-      optionStr = str(pos[6],pos[7]-pos[6]);
+      optionStr = str(pos[8],pos[9]-pos[8]);
       optionStr=optionStr.Strip(TString::kBoth,'\'');
       start=pos[1]; //update the current character to the end of match
     }
@@ -580,6 +582,8 @@ AliHLTTPCCalibManagerComponent::stringMap* AliHLTTPCCalibManagerComponent::Token
   //for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
   //{
   //  Printf("%s : %s", i->first.data(), i->second.data());
+  //  ProcessOption(i->first,i->second);
   //}
   return options;
 }
+>>>>>>> add comments to the new option parser
