@@ -1585,6 +1585,11 @@ void AliAnalysisTaskSEPicoV0Maker::FillHistogramsMC()
 
   THnSparseD *hsV0 = dynamic_cast<THnSparseD*>(fOutputListMC->FindObject("hsV0"));
   THnSparseD *hsXi = dynamic_cast<THnSparseD*>(fOutputListMC->FindObject("hsXi"));
+
+  if (hsV0 == 0 || hsXi == 0) { // Keep Coverity happy
+    AliFatal("Cannot find hsV0 or hsXi; should not happen");
+    return;
+  }  // Keep Coverity happy
 //=============================================================================
 
   TParticle        *pESD = 0;
