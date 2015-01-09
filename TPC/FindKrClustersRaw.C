@@ -1,4 +1,4 @@
-//
+/// \file FindKrClustersRaw.C
 
 Int_t FindKrClusterCheck(const char *fileName="data.root");
 

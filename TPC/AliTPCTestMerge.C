@@ -8,41 +8,39 @@
 
 #endif
 
-// Marian Ivanov
-// test of the tpc merging using AliRunDigitizer and 
-// TPC  Hits2Digits, Hits2SDigits and SDigits2Digits macros
-
-// preparation  
-// 0. make 2 directorys - ev1 and ev2
-
-// 1.make hits, digits,sdigits and sdigits-digits in both directories 
-//  1.a  galice -b -q grun.C and produce hits
-//  1.b. cp galice.root galice.root.hits
-//  1.c  run AliTPCHits2Digits.C
-//  1.d  cp galice.root galice.root.digits
-//  1.e  copy back cp galice.root.hits galice.root
-//  1.f  run AliTPCSDigits2Digits.C
-//  1.g  cp galice.root  galice.root.sdigits
-//  1.h  run AliTPCSDigits2Digit.C 
-//  1.i  cp galice.root galice.root.dig2
-
-// 2. cp ev1/galice.root/galice.root.sdigit galice.root
-// 3. load this macro and run testmerge()
-
-// 4. run test function bellow to compare merged digits with original one
-// 5. to be  noticed output ftom testx() function - should be bigger than
-//    noise because in proces of digitisation we use different seed
-//    of random numbers for diffusion and gas gain
-//    -anyway in place where we have the signal should occur the signal in both casses
-//    - only the amplitude should be different - by factor of sqrt
-
+/// \file AliTPCTestMerge.C
+///
+/// test of the tpc merging using AliRunDigitizer and
+/// TPC  Hits2Digits, Hits2SDigits and SDigits2Digits macros
+/// preparation
+/// 0. make 2 directorys - ev1 and ev2
+/// 1.make hits, digits,sdigits and sdigits-digits in both directories
+///  1.a  galice -b -q grun.C and produce hits
+///  1.b. cp galice.root galice.root.hits
+///  1.c  run AliTPCHits2Digits.C
+///  1.d  cp galice.root galice.root.digits
+///  1.e  copy back cp galice.root.hits galice.root
+///  1.f  run AliTPCSDigits2Digits.C
+///  1.g  cp galice.root  galice.root.sdigits
+///  1.h  run AliTPCSDigits2Digit.C
+///  1.i  cp galice.root galice.root.dig2
+/// 2. cp ev1/galice.root/galice.root.sdigit galice.root
+/// 3. load this macro and run testmerge()
+/// 4. run test function bellow to compare merged digits with original one
+/// 5. to be  noticed output ftom testx() function - should be bigger than
+///    noise because in proces of digitisation we use different seed
+///    of random numbers for diffusion and gas gain
+///    -anyway in place where we have the signal should occur the signal in both casses
+///    - only the amplitude should be different - by factor of sqrt
+///
+/// \author Marian Ivanov
       
 void testmerge()
 {
-  // merge two example events
-  //
-  //it merge two events -one from current directory -second from directory ev2
-  
+  /// merge two example events
+  /// 
+  /// it merge two events -one from current directory -second from directory ev2
+
   if(gAlice) delete gAlice;
   AliRunDigitizer * manager = new AliRunDigitizer(2,1);
   manager->SetTreeDTPCBaseName("TreeD_75x40_100x60_150x60_");
@@ -62,9 +60,10 @@ void testmerge()
 
 void drawmerged(Int_t sec, Int_t row, Int_t x1=-1, Int_t x2=-1, Int_t y1=-1, Int_t y2=-1)
 {
-  //if you think that there is memory leak -
-  //you are tru but othervise graphic doesn't work
-  // sec=0; row =0;
+  /// if you think that there is memory leak -
+  /// you are tru but othervise graphic doesn't work
+  /// sec=0; row =0;
+
   TFile * f = new TFile("galice.root");
   TFile * f1= new TFile("ev1/galice.root.digits");
   TFile * f2= new TFile("ev2/galice.root.digits");
@@ -140,8 +139,9 @@ void drawd(TFile * f, Int_t amp1, Int_t amp2)
 }
 
 void test1(){
-  //test of the merged digits
-  //compare merged digits with standard digits
+  /// test of the merged digits
+  /// compare merged digits with standard digits
+
   TFile f("galice.root");
   TFile f1("ev1/galice.root.digits");
   TFile f2("ev2/galice.root.digits");
@@ -180,8 +180,8 @@ void test1(){
 }
 
 void test5(){
-  //
-  //compare merged digits with digits obtained hits2sdig->sdigtodig
+  /// compare merged digits with digits obtained hits2sdig->sdigtodig
+
   TFile f("galice.root");
   TFile f1("ev1/galice.root.dig2");
   TFile f2("ev2/galice.root.dig2");
@@ -225,7 +225,8 @@ void test5(){
 }
 
 void test3(){
-  //test of the merged digits
+  /// test of the merged digits
+
   TFile f("galice.root");
   TFile f1("ev1/galice.root.sdigits");
   TFile f2("ev2/galice.root.sdigits");
@@ -270,8 +271,9 @@ void test3(){
 
 
 void TestSDigitsDig2(){
-  //test of the digits produced by the Hits2Digits 
-  //and Hits2SDigits - SDigits2Digits chain
+  /// test of the digits produced by the Hits2Digits
+  /// and Hits2SDigits - SDigits2Digits chain
+
   TFile f1("galice.root.digits");
   TFile f2("galice.root.dig2");
   //
@@ -323,8 +325,9 @@ void TestSDigitsDig2(){
 }
 
 void TestSDigitsDig1(){
-  //test of the digits produced by the Hits2Digits 
-  //and Hits2SDigits - SDigits2Digits chain
+  /// test of the digits produced by the Hits2Digits
+  /// and Hits2SDigits - SDigits2Digits chain
+
   TFile f1("galice.root.digits");
   TFile f2("galice.root.dig2");
   //
@@ -370,7 +373,8 @@ void TestSDigitsDig1(){
 
 
 void test4(){
-  //TPC internal test
+  /// TPC internal test
+
   TFile f1("galice.root.sdigits");
   TFile f2("galice.root.digits");
   TTree * tree1 = (TTree*)f1.Get("TreeS_75x40_100x60_150x60_0");

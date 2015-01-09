@@ -1,23 +1,19 @@
-
-/****************************************************************************
- *           Origin: A.Matyja amatyja@cern.ch                               *
- ****************************************************************************/
-
-/*
-
-  macro to create array of clusters from TPC digits
-  input files - galice.root 
-                digits.root - file with digits - usualy use link to galice.root
-		            - in splitted mode - neccesary to create link to proper file
-			    
-   output file - TPC.RecPoints.root
-
-
-//  Warning - if cluster file AliTPCclusters.root already exist - macro exit and don't produce anything
-	       
- 
-*/
-
+/// \file FindKrClusters.C
+/// \brief Macro to create array of clusters from TPC digits
+///
+/// Input files:
+///
+/// * galice.root 
+/// * digits.root: file with digits - usualy use link to galice.root
+///   in splitted mode - neccesary to create link to proper file
+///
+/// Output file:
+///
+/// * TPC.RecPoints.root
+///
+/// Warning - if cluster file AliTPCclusters.root already exist - macro exit and don't produce anything
+///
+/// \author A.Matyja amatyja@cern.ch
 
 #ifndef __CINT__
 #include <iostream.h>

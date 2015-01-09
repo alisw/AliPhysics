@@ -1,106 +1,100 @@
-////////////////////////////////////////////////////////////////////////
-//
-// name: AliTPCCmpNG.C 
-//
-// date: 24.09.2002
-// author: Jiri Chudoba
-// version: 1.0
-// description: 
-//        define a class TPCGenTrack
-//        save TPC related properties of tracks into a single tree
-//
-// input: 
-//        Int_t nEvents      ... nr of events to process
-//        Int_t firstEventNr ... first event number (starts from 0)
-//        char* fnRecTracks .. name of file with reconstructed tracks
-//        char* fnHits ... name of file with hits and Kine Tree
-//        char* fnDigits  ... name of file with digits
-//        char* fnTracks .. output file name, default genTracks.root
-//
-// How to use:
-//  Typical usage:
-//    .L AliTPCCmpNG.C+
-//    TPCFindGenTracks *t = new TPCFindGenTracks("galice.root","tpc.digits.root")
-//    t->Exec();
-//    .q
-//    aliroot
-//    .L  AliTPCCmpNG.C+
-//    TPCCmpTr *t2 = new TPCCmpTr("tpc.tracks.root","genTracks.root","cmpTracks.root");
-//    t2->Exec();
-//
-//  Details:
-//  ========
-//
-//  Step 1 - summurize information from simulation
-//  ===============================================
-//  Compile macro with ACLIC:
-//     .L AliTPCCmpNG.C+
-//  create an object TPCFindGenTracks, which processes information
-//  from simulations. As input it needs:
-//     object gAlice: to get magnetic field
-//     TreeK: to get parameters of generated particles
-//     TreeTR: to get track parameters at the TPC entry
-//     TreeD: to get number of digits and digits pattern
-//                for a given track in TPC
-//  These input objects can be in different files, gAlice, TreeK and
-//  TreeTR are in the file fnHits, TreeD in the file fnDigits (can be
-//  the same as fnHits. Output is written to the file fnRes 
-//  ("genTracks.root" by default). Use can specify number of 
-//  events to process and the first event number:
-//    TPCFindGenTracks *t = new TPCFindGenTracks("galice.root","tpc.digits.root","genTracks.root",1,0)
-//  The filenames in the example on previous line are defaults, user can 
-//  specify just the file name with gAlice object (and TreeTR and TreeK), 
-//  so equivalent shorter initialization is:
-//    TPCFindGenTracks *t = new TPCFindGenTracks("galice.root")
-//  The task is done by calling Exec() method:
-//    t->Exec();
-//  User can set different debug levels by invoking:
-//    t->SetDebug(debugLevel)
-//  Number of events to process and the first event number can be
-//  specified as parameters to Exec:
-//    t->Exec(nEvents, firstEvent)
-//  Then you have to quit root to get rid of problems with deleting gAlice
-//  object (it is not deleted, but read again in the following step):
-//
-//  Step 2 - compare reconstructed tracks with simulated
-//  ====================================================
-//
-//  Load (and compile) the macro:
-//   .L AliTPCCmpNG.C+
-//  Create object TPCCmpTr, which does the comparison. As input it requires 
-//  name of the file with reconstructed TPC tracks. You can specify 
-//  name of the file with genTrack tree (summarized info about simulation),
-//  file with gAlice object, output file name, number of events to process
-//  and first event number:
-//  TPCCmpTr *t2 = new TPCCmpTr("tpc.tracks.root","genTracks.root","cmpTracks.root","galice.root",1,0);
-//  The interface is quite similar to the TPCFindGenTracks class.
-//  Then just invoke Exec() method:
-//  t2->Exec();
-//
-//  Step 3 - study the results
-//  ==========================
-//  Load the outoput TTree and you can do Draw(), Scan() or other
-//  usual things to do with TTree:
-//  TFile *f = new TFile("cmpTracks.root")
-//  TTree *t = (TTree*)f->Get("TPCcmpTracks")
-//  t->Draw("fVDist[3]","fReconstructed")
-//
-// History:
-//
-// 24.09.02 - first version
-// 24.01.03 - v7, before change from TPC Special Hits to TrackReferences
-// 26.01.03 - change from TPC Special Hits to TrackReferences
-//            (loop over TreeTR instead of TreeH)
-// 28.01.03 - v8 last version before removing TPC special point
-// 28.01.03 - remove TPC special point, loop over TreeH 
-//            store TParticle and AliTrack
-// 29.01.03 - v9 last version before moving the loop over rec. tracks
-//            into separate step
-// 03.02.03 - rename to AliTPCCmpNG.C, remove the part with rec. tracks
-//            (will be addded in a macro AliTPCCmpTr.C
-//
-//
-////////////////////////////////////////////////////////////////////////
+/// \file AliTPCCmpNG.C
+/// 
+/// version: 1.0
+/// description:
+///        define a class TPCGenTrack
+///        save TPC related properties of tracks into a single tree
+/// 
+/// input:
+///        Int_t nEvents      ... nr of events to process
+///        Int_t firstEventNr ... first event number (starts from 0)
+///        char* fnRecTracks .. name of file with reconstructed tracks
+///        char* fnHits ... name of file with hits and Kine Tree
+///        char* fnDigits  ... name of file with digits
+///        char* fnTracks .. output file name, default genTracks.root
+/// 
+/// How to use:
+///  Typical usage:
+///    .L AliTPCCmpNG.C+
+///    TPCFindGenTracks *t = new TPCFindGenTracks("galice.root","tpc.digits.root")
+///    t->Exec();
+///    .q
+///    aliroot
+///    .L  AliTPCCmpNG.C+
+///    TPCCmpTr *t2 = new TPCCmpTr("tpc.tracks.root","genTracks.root","cmpTracks.root");
+///    t2->Exec();
+/// 
+///  Details:
+/// 
+///  Step 1 - summurize information from simulation
+/// 
+///  Compile macro with ACLIC:
+///     .L AliTPCCmpNG.C+
+///  create an object TPCFindGenTracks, which processes information
+///  from simulations. As input it needs:
+///     object gAlice: to get magnetic field
+///     TreeK: to get parameters of generated particles
+///     TreeTR: to get track parameters at the TPC entry
+///     TreeD: to get number of digits and digits pattern
+///                for a given track in TPC
+///  These input objects can be in different files, gAlice, TreeK and
+///  TreeTR are in the file fnHits, TreeD in the file fnDigits (can be
+///  the same as fnHits. Output is written to the file fnRes
+///  ("genTracks.root" by default). Use can specify number of
+///  events to process and the first event number:
+///    TPCFindGenTracks *t = new TPCFindGenTracks("galice.root","tpc.digits.root","genTracks.root",1,0)
+///  The filenames in the example on previous line are defaults, user can
+///  specify just the file name with gAlice object (and TreeTR and TreeK),
+///  so equivalent shorter initialization is:
+///    TPCFindGenTracks *t = new TPCFindGenTracks("galice.root")
+///  The task is done by calling Exec() method:
+///    t->Exec();
+///  User can set different debug levels by invoking:
+///    t->SetDebug(debugLevel)
+///  Number of events to process and the first event number can be
+///  specified as parameters to Exec:
+///    t->Exec(nEvents, firstEvent)
+///  Then you have to quit root to get rid of problems with deleting gAlice
+///  object (it is not deleted, but read again in the following step):
+/// 
+///  Step 2 - compare reconstructed tracks with simulated
+/// 
+///  Load (and compile) the macro:
+///   .L AliTPCCmpNG.C+
+///  Create object TPCCmpTr, which does the comparison. As input it requires
+///  name of the file with reconstructed TPC tracks. You can specify
+///  name of the file with genTrack tree (summarized info about simulation),
+///  file with gAlice object, output file name, number of events to process
+///  and first event number:
+///  TPCCmpTr *t2 = new TPCCmpTr("tpc.tracks.root","genTracks.root","cmpTracks.root","galice.root",1,0);
+///  The interface is quite similar to the TPCFindGenTracks class.
+///  Then just invoke Exec() method:
+///  t2->Exec();
+/// 
+///  Step 3 - study the results
+/// 
+///  Load the outoput TTree and you can do Draw(), Scan() or other
+///  usual things to do with TTree:
+///  TFile *f = new TFile("cmpTracks.root")
+///  TTree *t = (TTree*)f->Get("TPCcmpTracks")
+///  t->Draw("fVDist[3]","fReconstructed")
+/// 
+/// History:
+/// 
+/// 24.09.02 - first version
+/// 24.01.03 - v7, before change from TPC Special Hits to TrackReferences
+/// 26.01.03 - change from TPC Special Hits to TrackReferences
+///            (loop over TreeTR instead of TreeH)
+/// 28.01.03 - v8 last version before removing TPC special point
+/// 28.01.03 - remove TPC special point, loop over TreeH
+///            store TParticle and AliTrack
+/// 29.01.03 - v9 last version before moving the loop over rec. tracks
+///            into separate step
+/// 03.02.03 - rename to AliTPCCmpNG.C, remove the part with rec. tracks
+///            (will be addded in a macro AliTPCCmpTr.C
+/// 
+/// \author Jiri Chudoba
+/// \date 24.09.2002
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "iostream.h"
@@ -246,14 +240,14 @@ class TPCGenInfo: public TObject {
 
 public:
   TPCGenInfo();
-  AliTrackReference *fTrackRef;   // track reference saved in the output tree
-  TParticle *fParticle;           // generated particle 
-  Int_t fLabel;                   // track label
+  AliTrackReference *fTrackRef;   ///< track reference saved in the output tree
+  TParticle *fParticle;           ///< generated particle
+  Int_t fLabel;                   ///< track label
 
-  Int_t fRowsWithDigitsInn;    // number of rows with digits in the inner sectors
-  Int_t fRowsWithDigits;       // number of rows with digits in the outer sectors
-  Int_t fRowsTrackLength;      // last - first row with digit
-  Int_t fDigitsInSeed;         // digits in the default seed rows
+  Int_t fRowsWithDigitsInn;    ///< number of rows with digits in the inner sectors
+  Int_t fRowsWithDigits;       ///< number of rows with digits in the outer sectors
+  Int_t fRowsTrackLength;      ///< last - first row with digit
+  Int_t fDigitsInSeed;         ///< digits in the default seed rows
 
   ClassDef(TPCGenInfo,1)  // container for 
 };
@@ -327,9 +321,8 @@ void digitRow::SetRow(Int_t row)
 ////////////////////////////////////////////////////////////////////////
 Bool_t digitRow::TestRow(Int_t row)
 {
-//
-// return kTRUE if row is on
-//
+/// return kTRUE if row is on
+
   Int_t iC = row/8;
   Int_t iB = row%8;
   return TESTBIT(fDig[iC],iB);
@@ -337,10 +330,9 @@ Bool_t digitRow::TestRow(Int_t row)
 ////////////////////////////////////////////////////////////////////////
 Int_t digitRow::RowsOn(Int_t upto)
 {
-//
-// returns number of rows with a digit  
-// count only rows less equal row number upto
-//
+/// returns number of rows with a digit
+/// count only rows less equal row number upto
+
   Int_t total = 0;
   for (Int_t i = 0; i<kgRowBytes; i++) {
     for (Int_t j = 0; j < 8; j++) {
@@ -353,9 +345,8 @@ Int_t digitRow::RowsOn(Int_t upto)
 ////////////////////////////////////////////////////////////////////////
 void digitRow::Reset()
 {
-//
-// resets all rows to zero
-//
+/// resets all rows to zero
+
   for (Int_t i = 0; i<kgRowBytes; i++) {
     fDig[i] <<= 8;
   }
@@ -363,10 +354,9 @@ void digitRow::Reset()
 ////////////////////////////////////////////////////////////////////////
 Int_t digitRow::Last()
 {
-//
-// returns the last row number with a digit
-// returns -1 if now digits 
-//
+/// returns the last row number with a digit
+/// returns -1 if now digits
+
   for (Int_t i = kgRowBytes-1; i>=0; i--) {
     for (Int_t j = 7; j >= 0; j--) {
       if TESTBIT(fDig[i],j) return i*8+j;
@@ -377,10 +367,9 @@ Int_t digitRow::Last()
 ////////////////////////////////////////////////////////////////////////
 Int_t digitRow::First()
 {
-//
-// returns the first row number with a digit
-// returns -1 if now digits 
-//
+/// returns the first row number with a digit
+/// returns -1 if now digits
+
   for (Int_t i = 0; i<kgRowBytes; i++) {
     for (Int_t j = 0; j < 8; j++) {
       if (TESTBIT(fDig[i],j)) return i*8+j;
@@ -425,50 +414,50 @@ public:
 		    AliTPCParam *paramTPC);
 
 public:
-  Int_t fDebug;                   //! debug flag  
-  Int_t fEventNr;                 //! current event number
-  Int_t fLabel;                   //! track label
-  Int_t fNEvents;                 //! number of events to process
-  Int_t fFirstEventNr;            //! first event to process
-  Int_t fNParticles;              //! number of particles in TreeK
-  TTree *fTreeGenTracks;          //! output tree with generated tracks
-  char *fFnRes;                   //! output file name with stored tracks
-  char *fFnHits;                  //! input file name with hits
-  char *fFnDigits;                //! input file name with digits
-  TFile *fFileGenTracks;             //! output file with stored fTreeGenTracks
-  TFile *fFileHits;               //! input file with hits
-  TFile *fFileTreeD;              //! input file with digits
-  digitRow *fDigitRow;            //! pointer to the object saved in Branch
-  digitRow *fContainerDigitRow;   //! big container for partial information
-  AliTrackReference *fTrackRef;   //! track reference saved in the output tree
-  AliTrackReference *fContainerTR;//! big container for partial information
-  Int_t *fIndexTR;                //! index of particle label in the fContainerTR
-  Int_t fLastIndexTR;             //! last used index in fIndexTR
+  Int_t fDebug;                   //!< debug flag
+  Int_t fEventNr;                 //!< current event number
+  Int_t fLabel;                   //!< track label
+  Int_t fNEvents;                 //!< number of events to process
+  Int_t fFirstEventNr;            //!< first event to process
+  Int_t fNParticles;              //!< number of particles in TreeK
+  TTree *fTreeGenTracks;          //!< output tree with generated tracks
+  char *fFnRes;                   //!< output file name with stored tracks
+  char *fFnHits;                  //!< input file name with hits
+  char *fFnDigits;                //!< input file name with digits
+  TFile *fFileGenTracks;             //!< output file with stored fTreeGenTracks
+  TFile *fFileHits;               //!< input file with hits
+  TFile *fFileTreeD;              //!< input file with digits
+  digitRow *fDigitRow;            //!< pointer to the object saved in Branch
+  digitRow *fContainerDigitRow;   //!< big container for partial information
+  AliTrackReference *fTrackRef;   //!< track reference saved in the output tree
+  AliTrackReference *fContainerTR;//!< big container for partial information
+  Int_t *fIndexTR;                //!< index of particle label in the fContainerTR
+  Int_t fLastIndexTR;             //!< last used index in fIndexTR
 
-  AliTPCParam* fParamTPC;         //! AliTPCParam
+  AliTPCParam* fParamTPC;         //!< AliTPCParam
 
-  Double_t fVPrim[3];             //! primary vertex position
-  Double_t fVDist[4];             //! distance of the particle vertex from primary vertex
+  Double_t fVPrim[3];             //!< primary vertex position
+  Double_t fVDist[4];             //!< distance of the particle vertex from primary vertex
                                   // the fVDist[3] contains size of the 3-vector
-  TParticle *fParticle;           //! generated particle 
+  TParticle *fParticle;           //!< generated particle
 
-  Int_t fRowsWithDigitsInn;       //! number of rows with digits in the inner sectors
-  Int_t fRowsWithDigits;          //! number of rows with digits in the outer sectors
-  Int_t fRowsTrackLength;         //! last - first row with digit
-  Int_t fDigitsInSeed;            //! digits in the default seed rows
+  Int_t fRowsWithDigitsInn;       //!< number of rows with digits in the inner sectors
+  Int_t fRowsWithDigits;          //!< number of rows with digits in the outer sectors
+  Int_t fRowsTrackLength;         //!< last - first row with digit
+  Int_t fDigitsInSeed;            //!< digits in the default seed rows
 
 private:
 
 // some constants for the original non-pareller tracking (by Y.Belikov)
-  static const Int_t seedRow11 = 158;  // nRowUp - 1
-  static const Int_t seedRow12 = 139;  // nRowUp - 1 - (Int_t) 0.125*nRowUp
-  static const Int_t seedRow21 = 149;  // seedRow11 - shift
-  static const Int_t seedRow22 = 130;  // seedRow12 - shift
+  static const Int_t seedRow11 = 158;  ///< nRowUp - 1
+  static const Int_t seedRow12 = 139;  ///< nRowUp - 1 - (Int_t) 0.125*nRowUp
+  static const Int_t seedRow21 = 149;  ///< seedRow11 - shift
+  static const Int_t seedRow22 = 130;  ///< seedRow12 - shift
   static const Double_t kRaddeg = 180./TMath::Pi();
 
-  static const Int_t fgMaxIndexTR = 50000; // maximum number of tracks with a track ref
-  static const Int_t fgMaxParticles = 2000000; // maximum number of generated particles
-  static const Double_t fgPtCut = .001; // do not store particles with generated pT less than this
+  static const Int_t fgMaxIndexTR = 50000; ///< maximum number of tracks with a track ref
+  static const Int_t fgMaxParticles = 2000000; ///< maximum number of generated particles
+  static const Double_t fgPtCut = .001; ///< do not store particles with generated pT less than this
   static const Float_t fgTrackRefLocalXMax = 82.95;
   static const Float_t fgTrackRefLocalXMaxDelta = 500.; 
 
@@ -642,11 +631,9 @@ void TPCFindGenTracks::CloseOutputFile()
 ////////////////////////////////////////////////////////////////////////
 Int_t TPCFindGenTracks::TreeKLoop()
 {
-//
-// open the file with treeK
-// loop over all entries there and save information about some tracks
-//
-  
+/// open the file with treeK
+/// loop over all entries there and save information about some tracks
+
   fFileHits->cd();
   if (fDebug > 0) {
     cout<<"There are "<<fNParticles<<" primary and secondary particles in event "
@@ -714,10 +701,8 @@ Int_t TPCFindGenTracks::TreeKLoop()
 ////////////////////////////////////////////////////////////////////////
 Int_t TPCFindGenTracks::TreeDLoop()
 {
-//
-// open the file with treeD
-// loop over all entries there and save information about some tracks
-//
+/// open the file with treeD
+/// loop over all entries there and save information about some tracks
 
 
 //  Int_t nrow_up=fParamTPC->GetNRowUp();
@@ -783,10 +768,8 @@ Int_t TPCFindGenTracks::TreeDLoop()
 ////////////////////////////////////////////////////////////////////////
 Int_t TPCFindGenTracks::TreeTRLoop()
 {
-//
-// loop over TrackReferences and store the first one for each track
-//
-  
+/// loop over TrackReferences and store the first one for each track
+
   TTree *treeTR=gAlice->TreeTR();
   if (!treeTR) {
     cerr<<"TreeTR not found"<<endl;
@@ -893,51 +876,51 @@ public:
 		    AliTPCParam *paramTPC);
 
 private:
-  digitRow *fDigitRow;            //! pointer to the object saved in Branch
-  Int_t fEventNr;                 //! current event number
-  Int_t fLabel;                   //! track label
-  Int_t fNEvents;                 //! number of events to process
-  Int_t fFirstEventNr;            //! first event to process
+  digitRow *fDigitRow;            //!< pointer to the object saved in Branch
+  Int_t fEventNr;                 //!< current event number
+  Int_t fLabel;                   //!< track label
+  Int_t fNEvents;                 //!< number of events to process
+  Int_t fFirstEventNr;            //!< first event to process
 
-  char *fFnCmp;                   //! output file name with cmp tracks
-  TFile *fFileCmp;                //! output file with cmp tracks
-  TTree *fTreeCmp;                //! output tree with cmp tracks
+  char *fFnCmp;                   //!< output file name with cmp tracks
+  TFile *fFileCmp;                //!< output file with cmp tracks
+  TTree *fTreeCmp;                //!< output tree with cmp tracks
 
-  char *fFnGenTracks;             //! input file name with gen tracks
+  char *fFnGenTracks;             //!< input file name with gen tracks
   TFile *fFileGenTracks;
   TTree *fTreeGenTracks;
 
-  char *fFnHits;                  //! input file name with gAlice object (needed for B)
-  TFile *fFileHits;               //! input file with gAlice
+  char *fFnHits;                  //!< input file name with gAlice object (needed for B)
+  TFile *fFileHits;               //!< input file with gAlice
 
-  char *fFnRecTracks;             //! input file name with tpc rec. tracks
-  TFile *fFileRecTracks;          //! input file with reconstructed tracks
-  TTree *fTreeRecTracks;          //! tree with reconstructed tracks
+  char *fFnRecTracks;             //!< input file name with tpc rec. tracks
+  TFile *fFileRecTracks;          //!< input file with reconstructed tracks
+  TTree *fTreeRecTracks;          //!< tree with reconstructed tracks
 
-  AliTPCtrack *fTPCTrack;         //! pointer to TPC track to connect branch
-  Int_t *fIndexRecTracks;         //! index of particle label in the TreeT_TPC
+  AliTPCtrack *fTPCTrack;         //!< pointer to TPC track to connect branch
+  Int_t *fIndexRecTracks;         //!< index of particle label in the TreeT_TPC
 
-  Int_t fRowsWithDigitsInn;       //! number of rows with digits in the inner sectors
-  Int_t fRowsWithDigits;          //! number of rows with digits in the outer sectors
-  Int_t fRowsTrackLength;         //! last - first row with digit
-  Int_t fDigitsInSeed;            //! digits in the default seed rows
-  TParticle *fParticle;           //! generated particle 
-  Double_t fVDist[4];             //! distance of the particle vertex from primary vertex
+  Int_t fRowsWithDigitsInn;       //!< number of rows with digits in the inner sectors
+  Int_t fRowsWithDigits;          //!< number of rows with digits in the outer sectors
+  Int_t fRowsTrackLength;         //!< last - first row with digit
+  Int_t fDigitsInSeed;            //!< digits in the default seed rows
+  TParticle *fParticle;           //!< generated particle
+  Double_t fVDist[4];             //!< distance of the particle vertex from primary vertex
                                   // the fVDist[3] contains size of the 3-vector
-  AliTrackReference *fTrackRef;   //! track reference saved in the output tree
-  Int_t   fReconstructed;         //! flag if track was reconstructed
-  AliTPCParam* fParamTPC;         //! AliTPCParam
+  AliTrackReference *fTrackRef;   //!< track reference saved in the output tree
+  Int_t   fReconstructed;         //!< flag if track was reconstructed
+  AliTPCParam* fParamTPC;         //!< AliTPCParam
 
-  Int_t fNParticles;              //! number of particles in the input tree genTracks
-  Int_t fDebug;                   //! debug flag  
+  Int_t fNParticles;              //!< number of particles in the input tree genTracks
+  Int_t fDebug;                   //!< debug flag
 
-  Int_t fNextTreeGenEntryToRead;    //! last entry already read from genTracks tree
-  TPCGenInfo *fGenInfo;           //! container for all the details
+  Int_t fNextTreeGenEntryToRead;    //!< last entry already read from genTracks tree
+  TPCGenInfo *fGenInfo;           //!< container for all the details
 
-  Double_t fRecPhi;         // reconstructed phi angle (0;2*kPI)
-  Double_t fLambda;         // reconstructed 
-  Double_t fRecPt_1;        // reconstructed 
-  Float_t fdEdx;           // reconstructed  dEdx      
+  Double_t fRecPhi;         ///< reconstructed phi angle (0;2*kPI)
+  Double_t fLambda;         ///< reconstructed
+  Double_t fRecPt_1;        ///< reconstructed
+  Float_t fdEdx;           ///< reconstructed  dEdx
 
 
   ClassDef(TPCCmpTr,1)    // class which creates and fills tree with TPCGenTrack objects
@@ -1077,10 +1060,9 @@ Int_t TPCCmpTr::Exec()
 ////////////////////////////////////////////////////////////////////////
 Bool_t TPCCmpTr::ConnectGenTree()
 {
-//
-// connect all branches from the genTracksTree
-// use the same variables as for the new cmp tree, it may work
-//
+/// connect all branches from the genTracksTree
+/// use the same variables as for the new cmp tree, it may work
+
   fFileGenTracks = TFile::Open(fFnGenTracks,"READ");
   if (!fFileGenTracks) {
     cerr<<"Error in ConnectGenTree: cannot open file "<<fFnGenTracks<<endl;
@@ -1168,9 +1150,7 @@ Float_t TPCCmpTr::TR2LocalX(AliTrackReference *trackRef,
 
 Int_t TPCCmpTr::TreeTLoop(Int_t eventNr)
 {
-//
-// loop over all TPC reconstructed tracks and store info in memory
-//
+/// loop over all TPC reconstructed tracks and store info in memory
 
   
   if (!fFileRecTracks) fFileRecTracks = TFile::Open(fFnRecTracks,"read");
@@ -1208,11 +1188,9 @@ Int_t TPCCmpTr::TreeTLoop(Int_t eventNr)
 ////////////////////////////////////////////////////////////////////////
 Int_t TPCCmpTr::TreeGenLoop(Int_t eventNr)
 {
-//
-// loop over all entries for a given event, find corresponding 
-// rec. track and store in the fTreeCmp
-//
-  
+/// loop over all entries for a given event, find corresponding
+/// rec. track and store in the fTreeCmp
+
   fFileGenTracks->cd();
   Int_t entry = fNextTreeGenEntryToRead;
   Double_t nParticlesTR = fTreeGenTracks->GetEntriesFast();

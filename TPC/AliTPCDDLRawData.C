@@ -4,6 +4,7 @@
 #include "AliTPCCompression.h"
 #endif
 
+/// \file AliTPCDDLRawData.C
 
 void AliTPCDDLRawData(Int_t eventNumber=0, Int_t LDCsNumber=12){
   AliTPCDDLRawData *util=new AliTPCDDLRawData();
@@ -14,9 +15,9 @@ void AliTPCDDLRawData(Int_t eventNumber=0, Int_t LDCsNumber=12){
   util->SetVerbose(1);
   u->SetVerbose(1);  
   
-  //The Altro File "AltroFormatDDL.dat" is built from "AliTPCDDL.dat"
-  //util->RawDataAltro();
-  
+  // The Altro File "AltroFormatDDL.dat" is built from "AliTPCDDL.dat"
+  // util->RawDataAltro();
+
   /*
   //The file "AltroFormatDDL.dat" is converted in a txt file "AltroFormatDDL.txt"
   //that is used for debugging

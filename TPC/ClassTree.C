@@ -1,7 +1,12 @@
+/// \file ClassTree.C
+/// \brief Macro generated from canvas: ClassTree
+///
+/// \author ROOT version 2.21/07
+/// \date Tue Jun 1 17:01:38 1999
+
 void ClassTree()
 {
-//=========Macro generated from canvas: ClassTree/
-//=========  (Tue Jun  1 17:01:38 1999) by ROOT version 2.21/07
+
    TCanvas *ClassTree = new TCanvas("ClassTree", "",186,135,594,449);
    ClassTree->SetHighLightColor(2);
    ClassTree->Range(0,5,20,20);

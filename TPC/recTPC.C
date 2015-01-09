@@ -1,10 +1,8 @@
-//
-// example macro for reconstruction of the TPC raw data
-//
-// The path to the Calibration parameters is for the moment hard-wired in the code
-// Taken from /afs/
-//
-//
+/// \file recTPC.C
+/// \brief Example macro for reconstruction of the TPC raw data
+/// 
+/// The path to the Calibration parameters is for the moment hard-wired in the code
+/// Taken from /afs
 
 void recTPC(Int_t type, const char *filename="data.root")
 {
