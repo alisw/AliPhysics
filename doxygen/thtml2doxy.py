@@ -452,7 +452,7 @@ def traverse_ast(cursor, filename, comments, recursion=0):
     indent = indent + '  '
 
   if cursor.kind in [ clang.cindex.CursorKind.CXX_METHOD, clang.cindex.CursorKind.CONSTRUCTOR,
-    clang.cindex.CursorKind.DESTRUCTOR ]:
+    clang.cindex.CursorKind.DESTRUCTOR, clang.cindex.CursorKind.FUNCTION_DECL ]:
 
     # cursor ran into a C++ method
     logging.debug( "%5d %s%s(%s)" % (cursor.location.line, indent, Colt(kind).magenta(), Colt(text).blue()) )
