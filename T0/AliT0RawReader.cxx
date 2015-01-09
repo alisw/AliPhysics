@@ -152,6 +152,7 @@ Bool_t  AliT0RawReader::Next()
       {
 	//TRMheader  
 	word = GetNextWord();
+	if (word == filler )  word = GetNextWord(); 
 	//	cout<<" TRM "<<word<<endl;
 	header = AliBitPacking::UnpackWord(word,28,31);
 	if ( header != 4 )
