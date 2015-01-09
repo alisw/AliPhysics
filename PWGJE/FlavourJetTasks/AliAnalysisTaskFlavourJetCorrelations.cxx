@@ -1330,7 +1330,10 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsD0JetCorr(AliAODRecoDe
       point[6]=static_cast<Double_t>(bJetInEMCalAcc ? 1 : 0);
 
    }
-   
+   if(!point){
+      AliError(Form("Numer of THnSparse entries %d not valid", fNAxesBigSparse));
+      return;
+   }
    
    //Printf("Candidate in FillHistogramsD0JetCorr IsA %s", (candidate->IsA())->GetName());   
    Int_t isselected=fCuts->IsSelected(candidate,AliRDHFCuts::kAll,aodEvent);
@@ -1349,7 +1352,7 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsD0JetCorr(AliAODRecoDe
       if(fNAxesBigSparse==6 || fNAxesBigSparse==7) point[3]=masses[1];
       if(fSwitchOnSparses && (fSwitchOnOutOfConeAxis || fIsDInJet)) fhsDphiz->Fill(point,1.);
    }
-   
+   delete point;
 }
 
 //_______________________________________________________________________________
@@ -1401,11 +1404,16 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsDstarJetCorr(AliAODRec
       point[6]=static_cast<Double_t>(bJetInEMCalAcc ? 1 : 0);
    }
 
+   if(!point){
+      AliError(Form("Numer of THnSparse entries %d not valid", fNAxesBigSparse));
+      return;
+   }
+
    //if(fIsDInJet) hPtJetWithD->Fill(ptj,deltamass,ptD);
    
    FillMassHistograms(deltamass, ptD);
    if(fSwitchOnSparses && (fSwitchOnOutOfConeAxis || fIsDInJet)) fhsDphiz->Fill(point,1.);
-   
+   delete point;
 }
 
 //_______________________________________________________________________________
@@ -1452,6 +1460,10 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsMCGenDJetCorr(Double_t
       point[6]=static_cast<Double_t>(bJetInEMCalAcc ? 1 : 0);
    }
 
+   if(!point){
+      AliError(Form("Numer of THnSparse entries %d not valid", fNAxesBigSparse));
+      return;
+   }
 
    
    if(fNAxesBigSparse==9) point[4]=pdgmass;
@@ -1460,7 +1472,7 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsMCGenDJetCorr(Double_t
    //if(fIsDInJet) {
    //  hPtJetWithD->Fill(ptjet,pdgmass,ptD); // candidates within a jet
    //}
-   
+   delete point;
 }
 
 //_______________________________________________________________________________
@@ -1576,6 +1588,10 @@ void AliAnalysisTaskFlavourJetCorrelations::MCBackground(AliAODRecoDecayHF *cand
       point[5]=static_cast<Double_t>(bDInEMCalAcc ? 1 : 0);
       point[6]=static_cast<Double_t>(bJetInEMCalAcc ? 1 : 0);
    }
+   if(!point){
+      AliError(Form("Numer of THnSparse entries %d not valid", fNAxesBigSparse));
+      return;
+   }
 
    if(fCandidateType==kDstartoKpipi){
       AliAODRecoCascadeHF* dstarbg = (AliAODRecoCascadeHF*)candbg;
@@ -1614,6 +1630,7 @@ void AliAnalysisTaskFlavourJetCorrelations::MCBackground(AliAODRecoDecayHF *cand
       
       
    }
+   delete point;
 }
 
 //_______________________________________________________________________________
@@ -1848,7 +1865,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::IsDInJet(AliEmcalJet *thejet, AliA
       	    }
       	 }      
       }
-      
+      delete daughOutOfJet;
       correction=newjet-thejetv;
       fPmissing[0]=correction(0);
       fPmissing[1]=correction(1);
