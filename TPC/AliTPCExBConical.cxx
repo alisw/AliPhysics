@@ -13,31 +13,30 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-// AliTPCExBConical class                                                   //
-// The class calculates the space point distortions due to the conical shape 
-// of ALICE TPC:
-//
-// Becasue of mechanical deformation ALICE TPC, chambers are misaligned in z direction
-// TPC has roughly conical shape
-//
-// For the moment ONLY efective correction used - NOT EDGE EFFECT calcualted //  
-//                                                           //
-//                     //
-// The class allows "effective Omega Tau" corrections.                    // 
-// 
-//                                                                        //
-// date: 02/05/2010                                                       //
-// Authors: Marian Ivanov, Jim Thomas, Magnus Mager, Stefan Rossegger     //
-//                                                                        //
-// Example usage:                                                         //
-//  AliTPCExBConical conical;                                                //
-//  conical.SetOmegaTauT1T2(0.32,1.,1.); // values ideally from OCDB         //
-//  conical.SetXConical(0.001);   // set conical in X direction (in rad)     //
-//  // plot dRPhi distortions ...                                            //
-//  conical.CreateHistoDRPhiinZR(1.,100,100)->Draw("surf2");                //
-////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCExBConical
+/// 
+/// Calculates the space point distortions due to the conical shape of ALICE TPC.
+/// 
+/// Becasue of mechanical deformation ALICE TPC, chambers are misaligned in z direction
+/// TPC has roughly conical shape
+/// 
+/// For the moment ONLY efective correction used - NOT EDGE EFFECT calcualted
+/// 
+/// The class allows "effective Omega Tau" corrections.
+/// 
+/// Example usage:
+///
+/// ~~~{.cxx}
+/// AliTPCExBConical conical;
+/// conical.SetOmegaTauT1T2(0.32,1.,1.); // values ideally from OCDB
+/// conical.SetXConical(0.001);   // set conical in X direction (in rad)
+/// // plot dRPhi distortions ...
+/// conical.CreateHistoDRPhiinZR(1.,100,100)->Draw("surf2");
+/// ~~~
+/// 
+/// \author Marian Ivanov, Jim Thomas, Magnus Mager, Stefan Rossegger
+/// \date 02/05/2010
+
 #include "AliMagF.h"
 #include "TGeoGlobalMagField.h"
 #include "AliTPCcalibDB.h"
@@ -63,25 +62,22 @@ AliTPCExBConical::AliTPCExBConical()
 }
 
 AliTPCExBConical::~AliTPCExBConical() {
-  //
-  // default destructor
-  //
+  /// default destructor
+
 }
 
 
 
 void AliTPCExBConical::Init() {
-  //
-  // Initialization funtion
-  //
-  
+  /// Initialization funtion
+
   AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!magF) AliError("Magneticd field - not initialized");
-  Double_t bzField = magF->SolenoidField()/10.; //field in T
+  Double_t bzField = magF->SolenoidField()/10.; ///< field in T
   AliTPCParam *param= AliTPCcalibDB::Instance()->GetParameters();
   if (!param) AliError("Parameters - not initialized");
-  Double_t vdrift = param->GetDriftV()/1000000.; // [cm/us]   // From dataBase: to be updated: per second (ideally)
-  Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
+  Double_t vdrift = param->GetDriftV()/1000000.; ///< [cm/us]   // From dataBase: to be updated: per second (ideally)
+  Double_t ezField = 400; ///< [V/cm]   // to be updated: never (hopefully)
   Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
   // Correction Terms for effective omegaTau; obtained by a laser calibration run
   SetOmegaTauT1T2(wt,fT1,fT2);
@@ -90,16 +86,15 @@ void AliTPCExBConical::Init() {
 }
 
 void AliTPCExBConical::Update(const TTimeStamp &/*timeStamp*/) {
-  //
-  // Update function 
-  //
+  /// Update function
+
   AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!magF) AliError("Magneticd field - not initialized");
-  Double_t bzField = magF->SolenoidField()/10.; //field in T
+  Double_t bzField = magF->SolenoidField()/10.; ///< field in T
   AliTPCParam *param= AliTPCcalibDB::Instance()->GetParameters();
   if (!param) AliError("Parameters - not initialized");
-  Double_t vdrift = param->GetDriftV()/1000000.; // [cm/us]   // From dataBase: to be updated: per second (ideally)
-  Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
+  Double_t vdrift = param->GetDriftV()/1000000.; ///< [cm/us]   // From dataBase: to be updated: per second (ideally)
+  Double_t ezField = 400; ///< [V/cm]   // to be updated: never (hopefully)
   Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
   // Correction Terms for effective omegaTau; obtained by a laser calibration run
   SetOmegaTauT1T2(wt,fT1,fT2);
@@ -110,9 +105,8 @@ void AliTPCExBConical::Update(const TTimeStamp &/*timeStamp*/) {
 
 
 void AliTPCExBConical::GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]) {
-  //
-  // Calculates the correction due conical shape
-  //   
+  /// Calculates the correction due conical shape
+
   AliTPCROC * calROC = AliTPCROC::Instance();
   const Double_t kRTPC0  =calROC->GetPadRowRadii(0,0);
   const Double_t kRTPC1  =calROC->GetPadRowRadii(36,calROC->GetNRows(36)-1);
@@ -136,10 +130,8 @@ void AliTPCExBConical::GetCorrection(const Float_t x[],const Short_t roc,Float_t
 }
 
 void AliTPCExBConical::Print(const Option_t* option) const {
-  //
-  // Print function to check the settings (e.g. the conical in the X direction)
-  // option=="a" prints the C0 and C1 coefficents for calibration purposes
-  //
+  /// Print function to check the settings (e.g. the conical in the X direction)
+  /// option=="a" prints the C0 and C1 coefficents for calibration purposes
 
   TString opt = option; opt.ToLower();
   printf("%s:%s\n",GetTitle(), GetName());
@@ -152,17 +144,15 @@ void AliTPCExBConical::Print(const Option_t* option) const {
 
 
 void AliTPCExBConical::SetConicalA(Float_t conicalA[3]){
-  //
-  // set paramters of conical shape - A side - obtained from alignment
-  //
+  /// set paramters of conical shape - A side - obtained from alignment
+
   fConicalA[0]= conicalA[0];  // constant
   fConicalA[1]= conicalA[1];  // cos 
   fConicalA[2]= conicalA[2];  // sin
 }
 void AliTPCExBConical::SetConicalC(Float_t conicalC[3]){
-  //
-  // set paramters of conical shape -C side obtained form the alignemnt
-  // 
+  /// set paramters of conical shape -C side obtained form the alignemnt
+
   fConicalC[0]= conicalC[0];  // constant
   fConicalC[1]= conicalC[1];  // cos 
   fConicalC[2]= conicalC[2];  // sin
