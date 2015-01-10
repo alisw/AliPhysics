@@ -255,10 +255,12 @@ void AliPHOSClusterizerv1::Digits2Clusters(Option_t *option)
 
   MakeClusters() ;
     
-  AliDebug(2,Form(" ---- Printing clusters (%d)\n",
-		  fEMCRecPoints->GetEntries()));
-  if(AliLog::GetGlobalDebugLevel()>1)
+  AliDebug(2,Form("Number of EMC clusters: %d, CPV clusters: %d\n",
+		  fEMCRecPoints->GetEntriesFast(), fCPVRecPoints->GetEntriesFast()));
+  if(AliLog::GetGlobalDebugLevel()>1) {
     fEMCRecPoints->Print();
+    fCPVRecPoints->Print();
+  }
 
   if(fToUnfold)             
     MakeUnfolding();
@@ -595,6 +597,7 @@ void AliPHOSClusterizerv1::MakeClusters()
     Int_t index ;
 
     //is this digit so energetic that start cluster?
+    AliDebug(2,Form("Digit %d, energy=%f, ID=%d",i,digit->GetEnergy(),digit->GetId()));
     if (( IsInEmc(digit) &&  Calibrate(digit->GetEnergy(),digit->GetId()) > fEmcClusteringThreshold ) || 
         ( IsInCpv(digit) &&  Calibrate(digit->GetEnergy(),digit->GetId()) > fCpvClusteringThreshold ) ) {
       Int_t iDigitInCluster = 0 ; 

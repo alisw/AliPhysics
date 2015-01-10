@@ -54,6 +54,7 @@
 #include "AliPHOSRawFitterv3.h"
 #include "AliPHOSRawFitterv4.h"
 #include "AliPHOSRawDigiProducer.h"
+#include "AliPHOSCpvRawDigiProducer.h"
 #include "AliPHOSPulseGenerator.h"
 #include "AliPHOSTriggerRawDigit.h"
 #include "AliPHOSTriggerRawDigiProducer.h"
@@ -408,45 +409,18 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   // Works on a single-event basis
   rawReader->Reset() ; 
 
-  AliPHOSRawFitterv0 * fitter ;
-
-  const TObjArray* maps = AliPHOSRecoParam::GetMappings();
-  if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
-
-  AliAltroMapping *mapping[20];
-  for(Int_t i = 0; i < 20; i++) {
-    mapping[i] = (AliAltroMapping*)maps->At(i);
-  }
-
-  if      (strcmp(GetRecoParam()->EMCFitterVersion(),"v0")==0) 
-    fitter=new AliPHOSRawFitterv0();
-  else if (strcmp(GetRecoParam()->EMCFitterVersion(),"v1")==0) 
-    fitter=new AliPHOSRawFitterv1();
-  else if (strcmp(GetRecoParam()->EMCFitterVersion(),"v2")==0) 
-    fitter=new AliPHOSRawFitterv2();
-  else if (strcmp(GetRecoParam()->EMCFitterVersion(),"v3")==0) 
-    fitter=new AliPHOSRawFitterv3();
-  else
-    fitter=new AliPHOSRawFitterv4();
-
-  fitter->SubtractPedestals(GetRecoParam()->EMCSubtractPedestals());
-  fitter->SetAmpOffset     (GetRecoParam()->GetGlobalAltroOffset());
-  fitter->SetAmpThreshold  (GetRecoParam()->GetGlobalAltroThreshold());
-
+  // Create a new array of PHOS and CPV digits and fill it in PHOS and CPV raw data decoders
   TClonesArray *digits = new TClonesArray("AliPHOSDigit",1);
   digits->SetName("DIGITS");
   Int_t bufsize = 32000;
   digitsTree->Branch("PHOS", &digits, bufsize);
 
-  AliPHOSRawDigiProducer rdp(rawReader,mapping);
+  ConvertDigitsEMC(rawReader,digits);
+  ConvertDigitsCPV(rawReader,digits);
 
-  rdp.SetEmcMinAmp(GetRecoParam()->GetEMCRawDigitThreshold()); // in ADC
-  rdp.SetCpvMinAmp(GetRecoParam()->GetCPVMinE());
-  rdp.SetSampleQualityCut(GetRecoParam()->GetEMCSampleQualityCut());
-  rdp.MakeDigits(digits,fTmpDigLG,fitter);
+  AliDebug(2,Form("Number of created digits = %d",digits->GetEntriesFast()));
 
-  delete fitter ;
-
+  // Create a new array of PHOS trigger digits and fill it from raw data
   TClonesArray *tdigits = new TClonesArray("AliPHOSTriggerRawDigit",1);
   tdigits->SetName("TDIGITS");
   digitsTree->Branch("TPHOS", &tdigits, bufsize);  
@@ -489,6 +463,56 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   
   tdigits->Delete();
   delete tdigits;
+}
+//==================================================================================
+void  AliPHOSReconstructor::ConvertDigitsEMC(AliRawReader* rawReader, TClonesArray* digits) const
+{
+  // Converts CPV raw data to PHOS EMC digits
+  // Works on a single-event basis
+  AliPHOSRawFitterv0 * fitter ;
+
+  const TObjArray* maps = AliPHOSRecoParam::GetMappings();
+  if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
+
+  AliAltroMapping *mapping[20];
+  for(Int_t i = 0; i < 20; i++) {
+    mapping[i] = (AliAltroMapping*)maps->At(i);
+  }
+
+  if      (strcmp(GetRecoParam()->EMCFitterVersion(),"v0")==0) 
+    fitter=new AliPHOSRawFitterv0();
+  else if (strcmp(GetRecoParam()->EMCFitterVersion(),"v1")==0) 
+    fitter=new AliPHOSRawFitterv1();
+  else if (strcmp(GetRecoParam()->EMCFitterVersion(),"v2")==0) 
+    fitter=new AliPHOSRawFitterv2();
+  else if (strcmp(GetRecoParam()->EMCFitterVersion(),"v3")==0) 
+    fitter=new AliPHOSRawFitterv3();
+  else
+    fitter=new AliPHOSRawFitterv4();
+
+  fitter->SubtractPedestals(GetRecoParam()->EMCSubtractPedestals());
+  fitter->SetAmpOffset     (GetRecoParam()->GetGlobalAltroOffset());
+  fitter->SetAmpThreshold  (GetRecoParam()->GetGlobalAltroThreshold());
+
+  AliPHOSRawDigiProducer rdp(rawReader,mapping);
+
+  rdp.SetEmcMinAmp(GetRecoParam()->GetEMCRawDigitThreshold()); // in ADC
+  rdp.SetCpvMinAmp(GetRecoParam()->GetCPVMinE());
+  rdp.SetSampleQualityCut(GetRecoParam()->GetEMCSampleQualityCut());
+  rdp.MakeDigits(digits,fTmpDigLG,fitter);
+
+  delete fitter ;
+}
+//==================================================================================
+void  AliPHOSReconstructor::ConvertDigitsCPV(AliRawReader* rawReader, TClonesArray* digits) const
+{
+  // Converts CPV raw data to PHOS CPV digits
+  // Works on a single-event basis
+  AliPHOSCpvRawDigiProducer rdp(rawReader);
+  rdp.SetCpvMinAmp(GetRecoParam()->GetCPVMinE());
+  rdp.SetTurbo(kTRUE);
+  rdp.MakeDigits(digits);
+
 }
 //==================================================================================
 Float_t AliPHOSReconstructor::Calibrate(Float_t amp, Int_t absId)const{

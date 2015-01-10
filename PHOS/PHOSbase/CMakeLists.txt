@@ -41,6 +41,7 @@ set(SRCS
     AliPHOSCpvRecPoint.cxx
     AliPHOSCpv3GConnection.cxx
     AliPHOSCpvParam.cxx
+    AliPHOSCpvRawDigiProducer.cxx
     AliPHOSCpvRawStream.cxx
     AliPHOSDigit.cxx
     AliPHOSDigitizer.cxx

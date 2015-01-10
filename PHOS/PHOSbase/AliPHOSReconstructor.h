@@ -83,7 +83,9 @@ public:
   virtual void               Reconstruct(TTree* digitsTree, TTree* clustersTree) const;
 
   virtual Bool_t             HasDigitConversion() const {return kTRUE;};
-  virtual void               ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const;
+  virtual void               ConvertDigits   (AliRawReader* rawReader, TTree* digitsTree) const;
+  virtual void               ConvertDigitsEMC(AliRawReader* rawReader, TClonesArray* digits) const;
+  virtual void               ConvertDigitsCPV(AliRawReader* rawReader, TClonesArray* digits) const;
   virtual Float_t            Calibrate(Float_t amp, Int_t absId) const ;
   virtual Float_t            CalibrateT(Float_t time, Int_t absId, Bool_t isLG) const ;
 

@@ -88,11 +88,11 @@ AliPHOSCpvRawStream::AliPHOSCpvRawStream() :
   // Default constructor
   //
   Int_t kNDDL = AliPHOSCpvParam::kNDDL;
-  fNumOfErr = new Int_t*[kNDDL];     // Store the number of errors for a given error type and a given DD                                               
+  fNumOfErr = new Int_t*[kNDDL]; // Store the number of errors for a given error type and a given DDL
   for(Int_t iddl=0; iddl<kNDDL; iddl++) {
     fNumOfErr[iddl] = new Int_t [kSumErr];
     for(Int_t ierr=0; ierr < kSumErr; ierr++) {
-      fNumOfErr[iddl][ierr]=0;       // reset errors                                                                                                   
+      fNumOfErr[iddl][ierr]=0;   // reset errors
     }
   }
 
@@ -151,15 +151,16 @@ Bool_t AliPHOSCpvRawStream::Turbo()
     if (!GetWord(1)) return kFALSE;
     //std::cout<<"i've passed getWord(1)"<<std::endl;
     if (fPosition/4 <= 5) continue; // Skip first 5 words 
-
-        row = ((fWord >> kbit22) & 0x1f) - 1;
-        _3G = ((fWord >> kbit18) & 0xf) - 1; // 3GASSIPLEX info in raw word is between bits: 18...21    
-        pad = (fWord >> kbit12) & 0x3f;      // pad info in raw word is between bits: 12...17
-	//std::cout<<"row = "<<row<<", 3Gassiplex = "<<_3G<<", pad info = "<<pad<<std::endl;
-
+    
+    row = ((fWord >> kbit22) & 0x1f) - 1;
+    _3G = ((fWord >> kbit18) & 0xf) - 1; // 3GASSIPLEX info in raw word is between bits: 18...21    
+    pad = (fWord >> kbit12) & 0x3f;      // pad info in raw word is between bits: 12...17
+    //std::cout<<"row = "<<row<<", 3Gassiplex = "<<_3G<<", pad info = "<<pad<<std::endl;
+    
     Int_t charge, abs, eType;
     if(!AliPHOSCpvParam::DecodeRawWord(fDDLNumber,fWord,abs,charge,eType)) {
-      if(eType > 0){ fNumOfErr[fDDLNumber][eType]++;
+      if (eType > 0) {
+	fNumOfErr[fDDLNumber][eType]++;
 	//std::cout<<"AliPHOSCpvRawStream::Turbo(): I cannot decode word!"<<std::endl;
 	//cout<<"DDL = "<<  fDDLNumber << "; word = "<< fWord <<"; abs = " << abs 
 	//    <<"; charge = "<< charge <<"; etype = "<< eType << endl;

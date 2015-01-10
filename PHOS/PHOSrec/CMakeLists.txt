@@ -37,7 +37,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
     AliPHOSAodCluster.cxx
     AliPHOSClusterizerv2.cxx
-    AliPHOSCpvRawDigiProducer.cxx
     AliPHOSEsdCluster.cxx
     AliPHOSEvalRecPoint.cxx
     AliPHOSGridFile.cxx

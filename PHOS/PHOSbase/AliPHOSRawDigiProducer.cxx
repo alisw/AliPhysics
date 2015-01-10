@@ -168,8 +168,6 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, TClonesArray *tmpD
   //Makes the job.
   //TClonesArray *digits, *tmpDigLG and raw data fitter should be provided by calling function.
 
-  digits->Clear();
- 
   Int_t iDigit=0 ;
   Int_t relId[4], absId=-1, caloFlag=-1;
   
@@ -193,10 +191,10 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, TClonesArray *tmpD
   while (fRawStream->NextDDL()) {
     while (fRawStream->NextChannel()) {
       relId[0] = 5 - fRawStream->GetModule() ; // counts from 1 to 5
-      relId[1] = 0;
-      relId[2] = fRawStream->GetCellX()  + 1; // counts from 1 to 64
-      relId[3] = fRawStream->GetCellZ()  + 1; // counts from 1 to 56
-      caloFlag = fRawStream->GetCaloFlag();   // 0=LG, 1=HG, 2=TRU
+      relId[1] = 0;                            // 0=EMC
+      relId[2] = fRawStream->GetCellX()  + 1;  // counts from 1 to 64
+      relId[3] = fRawStream->GetCellZ()  + 1;  // counts from 1 to 56
+      caloFlag = fRawStream->GetCaloFlag();    // 0=LG, 1=HG, 2=TRU
       
       if(caloFlag!=0 && caloFlag!=1) continue; //TRU data!
       

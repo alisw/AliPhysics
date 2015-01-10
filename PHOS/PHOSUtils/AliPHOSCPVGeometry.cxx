@@ -36,9 +36,9 @@ ClassImp(AliPHOSCPVGeometry)
 AliPHOSCPVGeometry::AliPHOSCPVGeometry()
   : fNumberOfCPVLayers(1),
     fNumberOfCPVPadsPhi(128),
-    fNumberOfCPVPadsZ(56),
+    fNumberOfCPVPadsZ(60),
     fCPVPadSizePhi(1.13),
-    fCPVPadSizeZ(2.26),
+    fCPVPadSizeZ(2.1093),
     fNumberOfCPVChipsPhi(8),
     fNumberOfCPVChipsZ(8),
     fCPVGasThickness(1.3),
