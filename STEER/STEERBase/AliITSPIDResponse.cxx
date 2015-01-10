@@ -96,6 +96,16 @@ AliITSPIDResponse::AliITSPIDResponse(Bool_t isMC):
     fBBtpcits[2]=1.00;
     fBBtpcits[3]=0.964;
     fBBtpcits[4]=2.59;
+    fBBdeu[0]=88.22; // parameters for the deuteron - MC (LHC14a6)
+    fBBdeu[1]=-40.74;
+    fBBdeu[2]=107.2;
+    fBBdeu[3]=-8.962;
+    fBBdeu[4]=-0.766;
+    fBBtri[0]=100.7; //parameters for the triton - MC (LHC14a6)
+    fBBtri[1]=-68.56;
+    fBBtri[2]=128.2;
+    fBBtri[3]=-15.5;
+    fBBtri[4]=0.1833;
     fBBsa[0]=2.02078E7; //pure PHOBOS parameterization
     fBBsa[1]=14.0724;
     fBBsa[2]=3.84454E-7;
@@ -121,6 +131,18 @@ AliITSPIDResponse::AliITSPIDResponse(Bool_t isMC):
     fResolSA[3]=0.109; // value from pp 2010 simulations
     fResolSA[4]=0.097; // value from pp 2010 simulations
     for(Int_t i=0; i<5;i++) fResolTPCITS[i]=0.13;
+    fResolTPCITSDeu3[0]=0.06853; // deuteron resolution vs p
+    fResolTPCITSDeu3[1]=0.01607; // 3 ITS clusters for PId
+    fResolTPCITSDeu3[2]=1.08; // value from PbPb 2010 run (July 2014)
+    fResolTPCITSDeu4[0]=0.06853;
+    fResolTPCITSDeu4[1]=0.01607;
+    fResolTPCITSDeu4[2]=1.08;
+    fResolTPCITSTri3[0]=0.07239; // triton resolution vs p
+    fResolTPCITSTri3[1]=0.0192; // 3 ITS clusters for PId
+    fResolTPCITSTri3[2]=1.12; // value from PbPb 2010 run (July 2014)
+    fResolTPCITSTri4[0]=0.07239; // triton resolution vs p
+    fResolTPCITSTri4[1]=0.0192; // 3 ITS clusters for PId
+    fResolTPCITSTri4[2]=1.12;
   }
 }
 
