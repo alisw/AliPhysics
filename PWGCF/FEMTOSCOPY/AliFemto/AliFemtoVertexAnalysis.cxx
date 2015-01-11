@@ -69,11 +69,6 @@
 ClassImp(AliFemtoVertexAnalysis)
 #endif
 
-extern void FillHbtParticleCollection(AliFemtoParticleCut*         partCut,
-				     AliFemtoEvent*               hbtEvent,
-				     AliFemtoParticleCollection*  partCollection);
-
-
 //____________________________
 AliFemtoVertexAnalysis::AliFemtoVertexAnalysis(unsigned int bins, double min, double max):
   fVertexBins(0),

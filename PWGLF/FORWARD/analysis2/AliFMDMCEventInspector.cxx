@@ -407,7 +407,7 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
     // Updated 4th of November 2014 from 
     // cern.ch/twiki/bin/view/ALICE/CentStudies#Tables_with_centrality_bins_AN1
     Float_t np=0;
-    UInt_t  nc=0;
+    Float_t nc=0;
     if      (0.00 >= b  && b < 1.57)  { c=0.5;  np=403.8; nc=1861; } 
     else if (1.57 >= b  && b < 2.22)  { c=1.5;  np=393.6; nc=1766; } 
     else if (2.22 >= b  && b < 2.71)  { c=2.5;  np=382.9; nc=1678; } 
@@ -444,6 +444,25 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
     // 5 & 6 are SD 
     // 7 is DD 
     if (processType == 5 || processType == 6)  sd = kTRUE;
+#if 0
+      // The below - or rather a different implementation with some
+      // errors - was proposed by Cvetan - I don't think it's right
+      // though.  See also
+      //
+      //   https://cern.ch/twiki/pub/ALICE/PAPaperCentrality/normalization.pdf
+      //   https://cern.ch/twiki/bin/view/ALICE/PAMCProductionStudies
+      //
+      Int_t nsd1=0, nsd2=0, ndd=0;
+      Int_t npP = dpm->ProjectileParticipants();
+      Int_t npT = dpm->TargetParticipants();
+      // Get the numbeer of single and double diffractive participants
+      dpm->GetNDiffractive(nsd1,nsd2,ndd);
+      // Check if all partipants are single/double diffractive 
+      if      ((ndd == 0) && ((npP == nsd1) || (npT == nsd2)))	sd = true;
+      else if (ndd == (npP + npT))                       	dd = true;
+      // Printf("Projectile: %3d (%3d) Target: %3d (%3d) DD: %3d Process: %d",
+      // 	     npP, nsd1, npT, nsd2, ndd, type);
+#endif 
   }
   if (gevHeader) { 
     phi  = gevHeader->GetEventPlane();

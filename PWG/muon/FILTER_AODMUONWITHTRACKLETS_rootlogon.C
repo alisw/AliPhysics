@@ -15,13 +15,6 @@
   gSystem->Load("libCDB");
   gSystem->Load("libSTEER");
   gSystem->Load("libANALYSISalice");
-  
-  //    gSystem->Load("libCORRFW");
-  //    gSystem->Load("libPWGmuon");
-  
-  gROOT->LoadMacro("AliAnalysisNonMuonTrackCuts.cxx+");
-  gROOT->LoadMacro("AliAnalysisNonPrimaryVertices.cxx+");
-  gROOT->LoadMacro("AliAODMuonReplicator.cxx+");
-  gROOT->LoadMacro("AliAnalysisTaskESDMuonFilter.cxx+");
-  gROOT->LoadMacro("AliAnalysisTaskAOD2MuonAOD.cxx+");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWGmuon");
 }

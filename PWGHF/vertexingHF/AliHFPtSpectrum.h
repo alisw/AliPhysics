@@ -221,10 +221,12 @@ class AliHFPtSpectrum: public TNamed
   
   // Basic functions
   //
-  // Compute the feed-down correction via fc-method
-  void CalculateFeedDownCorrectionFc(); 
   // Correct the yield for feed-down correction via fc-method
-  void CalculateFeedDownCorrectedSpectrumFc(); 
+  void CalculateCorrectedSpectrumNoFeedDown();
+  // Compute the feed-down correction via fc-method
+  void CalculateFeedDownCorrectionFc();
+  // Correct the yield for feed-down correction via fc-method
+  void CalculateFeedDownCorrectedSpectrumFc();
   // Correct the yield for feed-down correction via Nb-method
   void CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Double_t branchingRatioBintoFinalDecay); 
 
@@ -296,13 +298,17 @@ class AliHFPtSpectrum: public TNamed
   Int_t fParticleAntiParticle;      // 1: only one sign, 2: yield is for particle+anti-particle
   Bool_t fIsEventPlane;             // flag : when the analysis is done for In/Out of plane, divide the B-prediction by two
 
+  Int_t     fnPtBins;      // number of pt bins
+  Double_t *fPtBinLimits;  //[fnPtBins+1] limits of the pt intervals
+  Double_t *fPtBinWidths;  //[fnPtBins] width of the pt intervals
+
   //
   TH1D *fhStatUncEffcSigma;       // Uncertainty on the cross-section due to the prompt efficiency statistical uncertainty
   TH1D *fhStatUncEffbSigma;       // Uncertainty on the cross-section due to the feed-down efficiency statistical uncertainty
   TH1D *fhStatUncEffcFD;          // Uncertainty on the feed-down correction due to the prompt efficiency statistical uncertainty
   TH1D *fhStatUncEffbFD;          // Uncertainty on the feed-down correction due to the feed-down efficiency statistical uncertainty
 
-  ClassDef(AliHFPtSpectrum,4) // Class for Heavy Flavor spectra corrections
+  ClassDef(AliHFPtSpectrum,5) // Class for Heavy Flavor spectra corrections
 };
 
 #endif

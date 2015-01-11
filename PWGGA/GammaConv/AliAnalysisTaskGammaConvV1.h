@@ -98,6 +98,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		TH1F 								**hESDConvGammaPt;									//!
 		TH1F 								**hESDConvGammaR;									//!
 		TH1F 								**hESDConvGammaEta;									//!
+		TH1F 								**hESDConvGammaPhi;									//!
 		TTree 								**tESDConvGammaPtDcazCat;							//!
 		Float_t 							fPtGamma;											//!
 		Float_t 							fDCAzPhoton;										//!

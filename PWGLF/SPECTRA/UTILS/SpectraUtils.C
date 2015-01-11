@@ -1127,10 +1127,10 @@ IntegratedProduction(const Char_t *filename, Int_t ipart, Int_t icharge, Int_t i
   gStyle->SetOptFit(1);
   
   /* PWGTools */
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWGTools.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWGTools");
   AliPWGFunc pwgfunc;
   pwgfunc.SetVarType(AliPWGFunc::kdNdpt);
 

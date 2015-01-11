@@ -52,7 +52,7 @@ generateMC()
   #generate one raw chunk in current directory
   SEED=${JOB_ID}${SGE_TASK_ID}
   export CONFIG_SEED=${SEED}
-  runNumber=${1}
+  export runNumber=${1}
   OCDBpath=${2}
   nEventsim=${3}
   if [[ -n ${pretend} ]]; then
@@ -75,11 +75,11 @@ goCPass0()
   nEvents=${3}
   ocdbPath=${4}
   configFile=${5}
-  runNumber=${6}
+  export runNumber=${6}
   jobindex=${7}
   shift 7
   if ! parseConfig ${configFile} "$@"; then return 1; fi
-
+  echo Start: goCPass0
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
 
@@ -299,6 +299,7 @@ goCPass0()
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath} && echo "removing ${runpath}"
   cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
   [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
+  echo End: goCPass0
   return 0
 )
 
@@ -311,11 +312,12 @@ goCPass1()
   nEvents=${3}
   ocdbPath=${4}
   configFile=${5}
-  runNumber=${6}
+  export runNumber=${6}
   jobindex=${7}
   shift 7
   extraOpts=("$@")
   if ! parseConfig ${configFile} "$@"; then return 1; fi
+  echo Start: goCPass1
 
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
@@ -614,6 +616,7 @@ goCPass1()
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
   cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
   [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
+  echo End: goCPass1
   return 0
 )
 
@@ -627,10 +630,11 @@ goMergeCPass0()
   outputDir=${1}
   ocdbStorage=${2}
   configFile=${3}
-  runNumber=${4}
+  export runNumber=${4}
   calibrationFilesToMerge=${5}  #can be a non-existent file, will then be produced on the fly
   shift 5
   if ! parseConfig ${configFile} "$@"; then return 1; fi
+  echo Start: goMergeCPass0
 
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
@@ -775,6 +779,7 @@ goMergeCPass0()
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
   cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
   [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
+  echo End: goMergeCPass0
   return 0
 )
 
@@ -787,12 +792,13 @@ goMergeCPass1()
   outputDir=${1}
   ocdbStorage=${2}
   configFile=${3}
-  runNumber=${4}
+  export runNumber=${4}
   calibrationFilesToMerge=${5}
   qaFilesToMerge=${6}
   filteredFilesToMerge=${7}
   shift 7
   if ! parseConfig ${configFile} "$@"; then return 1; fi
+  echo Start: goMergeCPass1
 
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
@@ -985,6 +991,7 @@ goMergeCPass1()
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
   cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
   [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
+  echo End: goMergeCPass1
   return 0
 )
 
@@ -1384,18 +1391,11 @@ guessYear()
 guessRunNumber()
 (
   #guess the run number from the path, pick the rightmost one
-  #works for /path/foo/000123456/bar/...
-  #and       /path/foo.run123456.bar
-  local IFS="/."
-  declare -a path=( ${1} )
-  local dirDepth=${#path[*]}
-  for ((x=${dirDepth}-1;x>=0;x--)); do
-    local field=${path[${x}]}
-    field=${field/run/000}
-    [[ ${field} =~ [0-9][0-9][0-9][0-9][0-9][0-9]$ ]] && runNumber=${field#000} && break
-  done
-  echo ${runNumber}
-  return 0
+  if guessRunData "${1}"; then
+    echo ${runNumber}
+    return 0
+  fi
+  return 1
 )
 
 validateLog()
@@ -2102,6 +2102,7 @@ goWaitForOutput()
 (
   umask 0002
   [[ $# -lt 3 ]] && echo "goWaitForOutput() wrong number of arguments, exiting.." && return 1
+  echo Start:goWaitForOutput
   echo searchPath=${1}
   echo fileName=${2}
   echo numberOfFiles=${3}
@@ -2120,6 +2121,7 @@ goWaitForOutput()
     sleep 60
   done
   echo "DONE! exiting..."
+  echo End:goWaitForOutput
   return 0
 )
 
@@ -2570,6 +2572,7 @@ goMakeSummaryTree()
 
 parseConfig()
 {
+  echo Start: parseConfig
   configFile=${1}
   shift
   args=("$@")
@@ -2645,7 +2648,7 @@ parseConfig()
 
   #export the aliroot function if defined to override normal behaviour
   [[ $(type -t aliroot) =~ "function" ]] && export -f aliroot && echo "exporting aliroot() function..."
-
+  echo End: parseConfig
   return 0
 }
 
@@ -2747,14 +2750,18 @@ paranoidCopyFile()
   #copy a single file to a target in an existing dir
   #repeat a few times if copy fails
   #returns 1 on failure, 0 on success
-  src="${1}"
-  dst="${2}"
+  src=$(get_realpath "${1}")
+  dst=$(get_realpath "${2}")
+  #some sanity check
+  [[ -z "${src}" ]] && return 1
+  [[ -z "${dst}" ]] && return 1
+  #check if we are not trying to copy to the same file
+  [[ "${src}" == "${dst}" ]] && echo "$dst==$src, not copying" && return 0
   ok=0
   [[ -d "${dst}" ]] && dst="${dst}/${src##*/}"
   [[ -z "${maxCopyTries}" ]] && maxCopyTries=10
 
   echo "paranoid copy started: $src -> $dst"
-
   for (( i=1 ; i<=maxCopyTries ; i++ )) ; do
 
     echo "...attempt $i of $maxCopyTries"
@@ -2777,6 +2784,37 @@ paranoidCopyFile()
   echo "paranoid copy FAILED after $maxCopyTries attempt(s): $src -> $dst"
   return 1
 )
+
+get_realpath() 
+{
+  if [[ $# -lt 1 ]]; then
+    echo "print the full path of a file, like \"readlink -f\" on linux"
+    echo "Usage:"
+    echo "  get_realpath <someFile>"
+    return 0
+  fi
+  if [[ -f "$1" ]]
+  then
+    # file *must* exist
+    if cd "$(echo "${1%/*}")" &>/dev/null
+    then
+      # file *may* not be local
+      # exception is ./file.ext
+      # try 'cd .; cd -;' *works!*
+      local tmppwd="$PWD"
+      cd - &>/dev/null
+    else
+      # file *must* be local
+      local tmppwd="$PWD"
+    fi
+  else
+    # file *cannot* exist
+    return 1 # failure
+  fi
+  # reassemble realpath
+  echo "$tmppwd"/"${1##*/}"
+  return 0 # success
+}
 
 guessRunData()
 {

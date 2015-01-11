@@ -94,9 +94,9 @@ void TriggerStudyResults(const char * filename = "outTrigger/collection_136854.x
 
 LoadLibs() {
 
-  gSystem->Load("libCore.so");  
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libCore");
+  gSystem->Load("libGeom");
+  gSystem->Load("libPhysics");
   gSystem->Load("libVMC");
   gSystem->Load("libTree");
   gSystem->Load("libProof");
@@ -107,7 +107,7 @@ LoadLibs() {
   gSystem->Load("libANALYSIS");
   gSystem->Load("libOADB");
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libTENDER");
+  gSystem->Load("libTender");
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWG0base");
   gSystem->Load("libMinuit");

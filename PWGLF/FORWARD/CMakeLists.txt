@@ -1,0 +1,294 @@
+# **************************************************************************
+# * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+# *                                                                        *
+# * Author: The ALICE Off-line Project.                                    *
+# * Contributors are mentioned in the code where appropriate.              *
+# *                                                                        *
+# * Permission to use, copy, modify and distribute this software and its   *
+# * documentation strictly for non-commercial purposes is hereby granted   *
+# * without fee, provided that the above copyright notice appears in all   *
+# * copies and that both the copyright notice and this permission notice   *
+# * appear in the supporting documentation. The authors make no claims     *
+# * about the suitability of this software for any purpose. It is          *
+# * provided "as is" without express or implied warranty.                  *
+# **************************************************************************/
+
+#Module
+set (MODULE PWGLFforward2)
+
+# Module include folder
+include_directories(${AliRoot_SOURCE_DIR}/PWGLF/FORWARD)
+
+# Additional includes - alphabetical order except ROOT
+include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliRoot_SOURCE_DIR}/OADB
+                    ${AliRoot_SOURCE_DIR}/PWGLF/FORWARD/analysis2
+                    ${AliRoot_SOURCE_DIR}/STEER/AOD
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+  )
+
+# Sources - alphabetical order
+set(SRCS
+  # ZDC tasks
+  GEO/AliAnalysisTaskZDCPbPb.cxx
+  GEO/AliAnalysisTaskZDCTreeMaker.cxx
+  GEO/AliAnalysisTaskZDCpAcalib.cxx
+  # AOD objects
+  analysis2/AliAODCentralMult.cxx
+  analysis2/AliAODForwardEP.cxx
+  analysis2/AliAODForwardMult.cxx
+  # Interface to OADB backed by a TTree 
+  analysis2/AliOADBForward.cxx
+  # Correction managers 
+  analysis2/AliCorrectionManagerBase.cxx 
+  analysis2/AliForwardCorrectionManager.cxx
+  analysis2/AliCentralCorrectionManager.cxx
+  # Central (SPD) code 
+  analysis2/AliCentralCorrAcceptance.cxx 
+  analysis2/AliCentralCorrSecondaryMap.cxx
+  analysis2/AliCentraldNdetaTask.cxx
+  analysis2/AliCentralMCCorrectionsTask.cxx
+  analysis2/AliCentralMCMultiplicityTask.cxx
+  analysis2/AliCentralMultiplicityTask.cxx
+  analysis2/AliSPDMCTrackDensity.cxx
+  # Aux tasks and code 
+  analysis2/AliCopyHeaderTask.cxx
+  analysis2/AliBasedNdetaTask.cxx
+  analysis2/AliBaseMCTrackDensity.cxx
+  analysis2/AliMCTruthdNdetaTask.cxx
+  analysis2/AliDisplacedVertexSelection.cxx
+  analysis2/AliPoissonCalculator.cxx
+  analysis2/AliMCAuxHandler.cxx
+  # Forward Aux
+  analysis2/AliForwardFlowWeights.cxx
+  analysis2/AliForwardUtil.cxx
+  analysis2/AliFMDMultCuts.cxx
+  # FMD corrections
+  analysis2/AliFMDCorrAcceptance.cxx
+  analysis2/AliFMDCorrDoubleHit.cxx
+  analysis2/AliFMDCorrector.cxx 
+  analysis2/AliFMDCorrELossFit.cxx 
+  analysis2/AliFMDCorrMergingEfficiency.cxx
+  analysis2/AliFMDCorrSecondaryMap.cxx 
+  analysis2/AliFMDCorrVertexBias.cxx
+  # FMD algortithmns 
+  analysis2/AliFMDDensityCalculator.cxx
+  analysis2/AliFMDEnergyFitter.cxx
+  analysis2/AliFMDEventInspector.cxx
+  analysis2/AliFMDEventPlaneFinder.cxx
+  analysis2/AliFMDHistCollector.cxx
+  analysis2/AliFMDESDFixer.cxx
+  analysis2/AliFMDSharingFilter.cxx
+  # FMD MC algorithms
+  analysis2/AliFMDMCCorrector.cxx
+  analysis2/AliFMDMCDensityCalculator.cxx
+  analysis2/AliFMDMCEventInspector.cxx
+  analysis2/AliFMDMCSharingFilter.cxx
+  analysis2/AliFMDMCTrackDensity.cxx
+  # Forward tasks 
+  analysis2/AliBaseESDTask.cxx
+  analysis2/AliBaseAODTask.cxx
+  analysis2/AliBaseMCCorrectionsTask.cxx
+  analysis2/AliFMDEnergyFitterTask.cxx 
+  analysis2/AliFMDEventPlaneTask.cxx
+  analysis2/AliForwarddNdetaTask.cxx
+  analysis2/AliForwardFlowTaskQC.cxx
+  analysis2/AliForwardMCCorrectionsTask.cxx
+  analysis2/AliForwardMCFlowTaskQC.cxx
+  analysis2/AliForwardMCMultiplicityTask.cxx 
+  analysis2/AliForwardMultiplicityBase.cxx
+  analysis2/AliForwardMultiplicityTask.cxx
+  analysis2/AliForwardQATask.cxx
+  analysis2/AliForwardCreateResponseMatrices.cxx
+  analysis2/AliForwardMultiplicityDistribution.cxx
+  analysis2/AliForwardMultDists.cxx
+  # MC investigations 
+  analysis2/AliFMDMCTrackELoss.cxx
+  analysis2/AliFMDMCTrackInspector.cxx 
+  analysis2/AliFMDMCTrackInspectorTask.cxx 
+  # Photons 
+  photons/AliAnalysisTaskPMD.cxx
+  photons/AliAnalysisTaskPMDSim.cxx
+  )
+
+# Headers from sources
+string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+# Additional headers
+set ( HDRS ${HDRS} 
+  analysis2/AliFMDStripIndex.h 
+  analysis2/AliFMDEncodedEdx.h 
+  analysis2/AliLandauGaus.h 
+  analysis2/AliLandauGausFitter.h 
+  analysis2/AliFMDCorrNoiseGain.h
+  )
+
+# Additional definitions
+if((DEFINED ALIROOT_SVN_REVISION)) 
+  add_definitions(-DALIROOT_SVN_REVISION=${ALIROOT_SVN_REVISION})
+elseif((DEFINED ALIROOT_REVISION)) 
+  add_definitions(-DALIROOT_REVISION=\"${ALIROOT_REVISION}\")
+endif((DEFINED ALIROOT_SVN_REVISION)) 
+if((DEFINED ALIROOT_SVN_BRANCH)) 
+  add_definitions(-DALIROOT_SVN_BRANCH=\"${ALIROOT_SVN_BRANCH}\")
+elseif((DEFINED ALIROOT_BRANCH)) 
+  add_definitions(-DALIROOT_BRANCH=\"${ALIROOT_BRANCH}\")
+endif((DEFINED ALIROOT_SVN_BRANCH))
+
+# Generate the dictionary
+# It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
+get_directory_property(incdirs INCLUDE_DIRECTORIES)
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+
+# Add a shared library
+add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
+
+# Generate the ROOT map
+# Dependecies
+set(LIBDEPS ANALYSISalice)
+generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
+# Linking the library
+target_link_libraries(${MODULE} ${LIBDEPS})
+
+# Public include folders that will be propagated to the dependecies
+target_include_directories(${MODULE} PUBLIC ${incdirs})
+
+# System dependent: Modify the way the library is build
+if(${CMAKE_SYSTEM} MATCHES Darwin)
+    set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+endif(${CMAKE_SYSTEM} MATCHES Darwin)
+
+# Installation
+install(TARGETS ${MODULE} 
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib)
+install(FILES ${HDRS} DESTINATION include)
+
+# Extra executable
+add_executable(runTrain
+  trains/trainMain.cxx
+  )
+target_link_libraries(runTrain ANALYSISalice Rint)
+install(TARGETS runTrain 
+  RUNTIME DESTINATION bin)
+
+# --------------------------------------------------------------------
+# Extra targets 
+#
+add_custom_command( OUTPUT doc/alice-int-2012-040.pdf 
+                    COMMAND pdflatex alice-int-2012-040
+		    COMMAND pdflatex alice-int-2012-040
+		    COMMAND pdflatex alice-int-2012-040
+		    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/doc
+		    COMMAND mv alice-int-2012-040.pdf ${CMAKE_CURRENT_BINARY_DIR}/doc/
+		    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc
+		    MAIN_DEPENDENCY doc/alice-int-2012-040.tex)
+
+add_custom_command( OUTPUT doc/html/index.html 
+		    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/doc
+                    COMMAND sed -e 's,\\.\\./,${CMAKE_CURRENT_SOURCE_DIR}/,' -e 's,OUTPUT_DIRECTORY *=.*,OUTPUT_DIRECTORY = doc/,' < ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile > ${CMAKE_CURRENT_BINARY_DIR}/doc/Doxyfile
+		    COMMAND doxygen ${CMAKE_CURRENT_BINARY_DIR}/doc/Doxyfile
+		    DEPENDS ${SRCS} ${HDRS})
+
+add_custom_target( PWGLFforward-doc DEPENDS doc/alice-int-2012-040.pdf )
+add_custom_target( PWGLFforward-doxy DEPENDS doc/html/index.html )
+
+add_custom_target( install-PWGLFforward2.par 
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/${PACKAGE}.par ${CMAKE_INSTALL_PREFIX}
+  COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green --bold "${PACKAGE}.par installed in ${CMAKE_INSTALL_PREFIX}"
+  DEPENDS ${CMAKE_BINARY_DIR}/${PACKAGE}.par
+  DEPENDS test-${PACKAGE}.par)
+
+# --------------------------------------------------------------------
+# Extra installation targets 
+#
+# Install scripts 
+install ( DIRECTORY analysis2/scripts 
+	  DESTINATION PWGLF/FORWARD/analysis2 
+	  USE_SOURCE_PERMISSIONS
+	  PATTERN "*~"    EXCLUDE)
+	  
+# install QA scripts 
+install ( DIRECTORY analysis2/qa
+	  DESTINATION PWGLF/FORWARD/analysis2 
+	  USE_SOURCE_PERMISSIONS
+	  PATTERN "*~"    EXCLUDE)
+# install correction scripts 
+install ( DIRECTORY analysis2/corrs
+	  DESTINATION PWGLF/FORWARD/analysis2 
+	  PATTERN "*~"    EXCLUDE)
+# install trains 
+install ( DIRECTORY analysis2/trains 
+	  DESTINATION PWGLF/FORWARD/analysis2 
+	  PATTERN "*~"   EXCLUDE)
+# install trains 
+install ( DIRECTORY trains 
+	  DESTINATION PWGLF/FORWARD 
+	  FILES_MATCHING PATTERN "*.C"
+	  PATTERN "*~"        EXCLUDE)
+# Install other scripts
+install ( FILES analysis2/AddTaskCentraldNdeta.C
+  		analysis2/AddTaskCentralMCCorr.C
+		analysis2/AddTaskCentralMult.C
+  		analysis2/AddTaskCentralTracks.C
+                analysis2/AddTaskCopyHeader.C
+		analysis2/AddTaskFMDELoss.C
+		analysis2/AddTaskFMDEventPlane.C
+		analysis2/AddTaskFMDMCTracks.C
+		analysis2/AddTaskForwardFlowQC.C
+  		analysis2/AddTaskForwardMCCorr.C
+                analysis2/AddTaskForwardMult.C
+                analysis2/AddTaskForwardMultDists.C
+                analysis2/AddTaskForwardQA.C
+		analysis2/AddTaskForwarddNdeta.C
+		analysis2/AddTaskMCTruthdNdeta.C
+		analysis2/AddTaskMCParticleFilter.C
+		analysis2/DrawdNdeta.C
+		analysis2/DrawdNdetaSummary.C
+		analysis2/DrawMCCorrSummary.C
+		analysis2/DrawAODSummary.C
+		analysis2/DrawMultDistsSummary.C
+		analysis2/DrawUnfoldedSummary.C
+		analysis2/ForwardAODConfig.C
+		analysis2/CentralAODConfig.C
+		analysis2/dNdetaConfig.C
+                analysis2/MakeAOD.C
+		analysis2/MakedNdeta.C
+                analysis2/MakeELossFits.C
+		analysis2/MakeEvaluateTriggers.C
+		analysis2/MakeFlow.C
+		analysis2/MakeFMDEventPlane.C
+                analysis2/MakeForwardQA.C
+		analysis2/MakeMCCorr.C		
+                analysis2/OtherData.C
+                analysis2/other.root
+           DESTINATION PWGLF/FORWARD/analysis2 )
+
+# Install corrections 
+install ( DIRECTORY corrections/Empirical
+		    corrections/Normalization
+          DESTINATION PWGLF/FORWARD/corrections 
+	  PATTERN "*~"   EXCLUDE
+	  PATTERN ".svn" EXCLUDE)
+
+# Install shell script 
+install ( FILES analysis2/Run.sh 
+		analysis2/liteAnalysis.sh
+		analysis2/gridAnalysis.sh
+		analysis2/baseAnalysis.sh
+	  DESTINATION PWGLF/FORWARD/analysis2 
+	  PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+                      GROUP_EXECUTE GROUP_READ
+		      WORLD_EXECUTE WORLD_READ )
+
+# install sim 
+install ( DIRECTORY analysis2/sim 
+         DESTINATION PWGLF/FORWARD/analysis2)
+
+install(DIRECTORY macros DESTINATION PWGLF/FORWARD)
+# --------------------------------------------------------------------
+

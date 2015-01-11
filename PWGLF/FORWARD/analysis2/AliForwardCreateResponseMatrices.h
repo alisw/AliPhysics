@@ -65,7 +65,7 @@ public:
     /**
      * Copy Constructor
      */ 
-    Bin(const Bin&);
+    Bin(const Bin&){;}
     /**
      * Assignment Operator
      */

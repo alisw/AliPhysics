@@ -35,6 +35,9 @@
 //                        - cut on TPC clusters as a parameter
 //                        - cut on min pt of daughter tracks added (parameter+control histos)
 //                        - cut on pseudorapidity for daughter tracks as a parameter (+control histos for Xi-)  
+//               December2014
+//                - de-commented the v0 and cascade revertexers
+//                - added methods to define the set of cuts used in the V0 and cascade re-vertexers
 //-----------------------------------------------------------------
 
 
@@ -69,8 +72,8 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliESDtrackCuts.h"
 #include "AliPIDResponse.h"
-//#include "AliV0vertexer.h"
-//#include "AliCascadeVertexer.h"
+#include "AliV0vertexer.h"
+#include "AliCascadeVertexer.h"
 #include "AliESDEvent.h"
 #include "AliESDcascade.h"
 #include "AliAODEvent.h"
@@ -320,8 +323,8 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
 
 {
 // Dummy constructor
-        for(Int_t iV0selIdx   = 0; iV0selIdx   < 7; iV0selIdx++   ) { fV0Sels          [iV0selIdx   ] = -1.; }
-        for(Int_t iCascSelIdx = 0; iCascSelIdx < 8; iCascSelIdx++ ) { fCascSels        [iCascSelIdx ] = -1.; }
+        for(Int_t iV0selIdx   = 0; iV0selIdx   < 7; iV0selIdx++   ) { fV0VertexerSels          [iV0selIdx   ] = -1.; }
+        for(Int_t iCascSelIdx = 0; iCascSelIdx < 8; iCascSelIdx++ ) { fCascadeVertexerSels        [iCascSelIdx ] = -1.; }
 }
      
        
@@ -568,26 +571,38 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
   // Input slot #0 works with a TChain
   // Output slot #1 writes into a TList container (cascade)
         
-        
-        // PbPb default cuts
-        
-        fV0Sels[0] =  33.  ;  // max allowed chi2
-        fV0Sels[1] =   0.1; // min allowed impact parameter for the 1st daughter 
-        fV0Sels[2] =   0.1; // min allowed impact parameter for the 2nd daughter 
-        fV0Sels[3] =   1.0 ;  // max allowed DCA between the daughter tracks       
-        fV0Sels[4] =   0.998 ;  // min allowed cosine of V0's pointing angle         
-        fV0Sels[5] =   0.9;  // min radius of the fiducial volume                 
-        fV0Sels[6] = 100.  ;  // max radius of the fiducial volume                 
-        
-        fCascSels[0] =  33.   ;  // max allowed chi2 
-        fCascSels[1] =   0.05;  // min allowed V0 impact parameter                    
-        fCascSels[2] =   0.008;  // "window" around the Lambda mass                    
-        fCascSels[3] =   0.03;  // min allowed bachelor's impact parameter            
-        fCascSels[4] =   0.3  ;  // max allowed DCA between the V0 and the bachelor    
-        fCascSels[5] =   0.999;  // min allowed cosine of the cascade pointing angle   
-        fCascSels[6] =   0.9  ;  // min radius of the fiducial volume                  
-        fCascSels[7] = 100.   ;  // max radius of the fiducial volume                  
-        
+        // - default PbPb cuts
+        //fV0VertexerSels[0] =  33.  ;  // max allowed chi2
+        //fV0VertexerSels[1] =   0.1; // min allowed impact parameter for the 1st daughter 
+        //fV0VertexerSels[2] =   0.1; // min allowed impact parameter for the 2nd daughter 
+        //fV0VertexerSels[3] =   1.0 ;  // max allowed DCA between the daughter tracks       
+        //fV0VertexerSels[4] =   0.998 ;  // min allowed cosine of V0's pointing angle         
+        //fV0VertexerSels[5] =   0.9;  // min radius of the fiducial volume                 
+        //fV0VertexerSels[6] = 100.  ;  // max radius of the fiducial volume                 
+        //fCascVertexerSels[0] =  33.   ;  // max allowed chi2 
+        //fCascVertexerSels[1] =   0.05;  // min allowed V0 impact parameter                    
+        //fCascVertexerSels[2] =   0.008;  // "window" around the Lambda mass                    
+        //fCascVertexerSels[3] =   0.03;  // min allowed bachelor's impact parameter            
+        //fCascVertexerSels[4] =   0.3  ;  // max allowed DCA between the V0 and the bachelor    
+        //fCascVertexerSels[5] =   0.999;  // min allowed cosine of the cascade pointing angle   
+        //fCascVertexerSels[6] =   0.9  ;  // min radius of the fiducial volume                  
+        //fCascVertexerSels[7] = 100.   ;  // max radius of the fiducial volume                  
+        // - default pp values
+        fV0VertexerSels[0] =  33.  ;        // max allowed chi2
+        fV0VertexerSels[1] =   0.05;        // min allowed impact parameter for the 1st daughter 
+        fV0VertexerSels[2] =   0.05;        // min allowed impact parameter for the 2nd daughter 
+        fV0VertexerSels[3] =   1.5 ;        // max allowed DCA between the daughter tracks       
+        fV0VertexerSels[4] =   0.9 ;        // min allowed cosine of V0's pointing angle         
+        fV0VertexerSels[5] =   0.2 ;        // min radius of the fiducial volume                 
+        fV0VertexerSels[6] = 100.  ;        // max radius of the fiducial volume                 
+        fCascadeVertexerSels[0] =  33.   ;  // max allowed chi2 (same as PDC07)
+        fCascadeVertexerSels[1] =   0.01 ;  // min allowed V0 impact parameter                    
+        fCascadeVertexerSels[2] =   0.008;  // "window" around the Lambda mass                    
+        fCascadeVertexerSels[3] =   0.01 ;  // min allowed bachelor's impact parameter 
+        fCascadeVertexerSels[4] =   2.0  ;  // max allowed DCA between the V0 and the bachelor    
+        fCascadeVertexerSels[5] =   0.98 ;  // min allowed cosine of the cascade pointing angle   
+        fCascadeVertexerSels[6] =   0.9  ;  // min radius of the fiducial volume                  
+        fCascadeVertexerSels[7] = 100.   ;  // max radius of the fiducial volume 
         
   DefineOutput(1, TList::Class());
   DefineOutput(2, AliCFContainer::Class());
@@ -1828,17 +1843,30 @@ void AliAnalysisTaskCheckPerformanceCascadePbPb::UserExec(Option_t *) {
           }
 
           if (fkRerunV0CascVertexers) { // relaunch V0 and Cascade vertexer
-           /* lESDevent->ResetCascades();
-            lESDevent->ResetV0s();
-
-            AliV0vertexer lV0vtxer;
-            AliCascadeVertexer lCascVtxer;
-
-            lV0vtxer.SetCuts(fV0Sels);
-            lCascVtxer.SetCuts(fCascSels);
-
-            lV0vtxer.Tracks2V0vertices(lESDevent);
-            lCascVtxer.V0sTracks2CascadeVertices(lESDevent);*/
+              cout<<" ---- Re-vertexing ---- "<<endl;
+              lESDevent->ResetCascades();
+              lESDevent->ResetV0s();
+              AliV0vertexer lV0vtxer;
+              AliCascadeVertexer lCascVtxer;
+              lV0vtxer.SetCuts(fV0VertexerSels);
+              lCascVtxer.SetCuts(fCascadeVertexerSels);
+              cout<<"  - V0 #chi^{2} _________________ <"<<fV0VertexerSels[0]<<endl;
+              cout<<"  - DCA(prim. Vtx/ 1^{st} daughter) ___ >"<<fV0VertexerSels[1]<<endl;
+              cout<<"  - DCA(prim. Vtx/ 2^{nd} daughter) __  >"<<fV0VertexerSels[2]<<endl;
+              cout<<"  - DCA between V0 daughters ___ <"<<fV0VertexerSels[3]<<endl;
+              cout<<"  - cos(V0 pointing angle) _______ >"<<fV0VertexerSels[4]<<endl;
+              cout<<"  - R_{transv}(V0 decay) ________ >"<<fV0VertexerSels[5]<<endl;
+              cout<<"  - R_{transv}(V0 decay) ________ <"<<fV0VertexerSels[6]<<endl;
+              cout<<"  - Casc. #chi^{2} ______________  <"<<fCascadeVertexerSels[0]<<endl;
+              cout<<"  - DCA(prim. Vtx/ V0) _________ >"<<fCascadeVertexerSels[1]<<endl;
+              cout<<"  - | M_{#Lambda}(reco) - M_{#Lambda}(pdg) | _______ <"<<fCascadeVertexerSels[2]<<endl;
+              cout<<"  - DCA(prim. Vtx/ Bach) _______ >"<<fCascadeVertexerSels[3]<<endl;
+              cout<<"  - DCA between Bach/ #Lambda ______ <"<<fCascadeVertexerSels[4]<<endl;
+              cout<<"  - cos(Casc. pointing angle) ____ >"<<fCascadeVertexerSels[5]<<endl;
+              cout<<"  - R_{transv}(Casc. decay) ______ >"<<fCascadeVertexerSels[6]<<endl;
+              cout<<"  - R_{transv}(Casc. decay) ______ <"<<fCascadeVertexerSels[7]<<endl;
+              lV0vtxer.Tracks2V0vertices(lESDevent);
+              lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
           }
 
 	} else if (fAnalysisType == "AOD") {  

@@ -90,7 +90,7 @@ AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(Int_t trigger=0,Int_t aodfilter=16,Boo
   //task->SetBinCentralityLess(5,60.0);
   //task->SetBinCentralityLess(7,80.0);
 
-  if(debuglevel==3) {
+  if(debuglevel==6) {
     
     //***************************************//
     //    test   Configure NPE plugin        //
@@ -107,7 +107,7 @@ AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(Int_t trigger=0,Int_t aodfilter=16,Boo
     hfeBackgroundCuts->SetMinNClustersTPC(100);
     hfeBackgroundCuts->SetMinNClustersTPCPID(80);
     hfeBackgroundCuts->SetMaxImpactParam(1.,2.);
-    hfeBackgroundCuts->SetAODFilterBit(4);
+    hfeBackgroundCuts->SetAODFilterBit(0);
     //hfeBackgroundCuts->SetQAOn();			        // QA break
     
     AliHFEpid *pidbackground = backe->GetPIDBackground();

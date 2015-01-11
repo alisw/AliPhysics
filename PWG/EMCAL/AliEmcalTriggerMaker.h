@@ -9,16 +9,25 @@ class AliAODCaloTrigger;
 class AliVVZERO;
 class THistManager;
 
-#include "AliEMCALTriggerTypes.h"
+#include "AliLog.h"
+#include "AliEmcalTriggerBitConfig.h"
 #include "AliAnalysisTaskEmcal.h"
+
 
 class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
  public:
   enum TriggerMakerTriggerType_t {
     kTMEMCalJet = 0,
     kTMEMCalGamma = 1,
-    kTMEMCalLevel0 = 2
+    kTMEMCalLevel0 = 2,
+    kTMEMCalRecalcJet = 3,
+    kTMEMCalRecalcGamma = 4
   };
+  enum TriggerMakerBitConfig_t {
+    kOldConfig = 0,
+    kNewConfig = 1
+  };
+
   AliEmcalTriggerMaker();
   AliEmcalTriggerMaker(const char *name, Bool_t doQA = kFALSE);
   virtual ~AliEmcalTriggerMaker();
@@ -33,10 +42,12 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   void SetV0InName(const char *name) { fV0InName      = name; }
 
   void SetRunTriggerType(TriggerMakerTriggerType_t type, Bool_t doTrigger = kTRUE) { fRunTriggerType[type] = doTrigger; }
+  void SetUseTriggerBitConfig(TriggerMakerBitConfig_t bitConfig) { fUseTriggerBitConfig = bitConfig; }
+  void SetTriggerBitConfig(const AliEmcalTriggerBitConfig *conf) { fTriggerBitConfig = conf; }
 
-  Bool_t IsEJE(Int_t tBits) const { if( tBits & ( 1 << (kTriggerTypeEnd + kL1JetLow) | 1 << (kTriggerTypeEnd + kL1JetHigh) | 1 << (kL1JetLow) | 1 << (kL1JetHigh) )) return kTRUE; else return kFALSE; }
-  Bool_t IsEGA(Int_t tBits) const { if( tBits & ( 1 << (kTriggerTypeEnd + kL1GammaLow) | 1 << (kTriggerTypeEnd + kL1GammaHigh) | 1 << (kL1GammaLow) | 1 << (kL1GammaHigh) )) return kTRUE; else return kFALSE; }
-  Bool_t IsLevel0(Int_t tBits) const { if( tBits & (1 << (kTriggerTypeEnd + kL0) | (1 << kL0))) return kTRUE; return kFALSE; }
+  Bool_t IsEJE(Int_t tBits) const { if( tBits & ( 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetLowBit()) | 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetHighBit()) | 1 << (fTriggerBitConfig->GetJetLowBit()) | 1 << (fTriggerBitConfig->GetJetHighBit()) )) return kTRUE; else return kFALSE; }
+  Bool_t IsEGA(Int_t tBits) const { if( tBits & ( 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaLowBit()) | 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaHighBit()) | 1 << (fTriggerBitConfig->GetGammaLowBit()) | 1 << (fTriggerBitConfig->GetGammaHighBit()) )) return kTRUE; else return kFALSE; }
+  Bool_t IsLevel0(Int_t tBits) const { if( tBits & (1 << (fTriggerBitConfig->GetLevel0Bit() + fTriggerBitConfig->GetLevel0Bit()) | (1 << fTriggerBitConfig->GetLevel0Bit()))) return kTRUE; return kFALSE; }
 
  protected:  
   enum{
@@ -54,7 +65,9 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   TString                    fCaloTriggersOutName;      // name of output track array
   TString                    fCaloTriggerSetupOutName;  // name of output track array
   TString                    fV0InName;                 // name of output track array
+  TriggerMakerBitConfig_t    fUseTriggerBitConfig;      // type of trigger config
   Int_t                      fThresholdConstants[4][3]; // simple offline trigger thresholds constants
+  const AliEmcalTriggerBitConfig  *fTriggerBitConfig;         // Trigger bit configuration, aliroot-dependent
   TClonesArray              *fCaloTriggersOut;          //!trigger array out
   AliEmcalTriggerSetupInfo  *fCaloTriggerSetupOut;      //!trigger setup
   AliAODCaloTrigger         *fSimpleOfflineTriggers;    //!simple offline trigger
@@ -62,14 +75,14 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   Double_t                   fPatchADCSimple[kPatchCols][kPatchRows];   //!patch map for simple offline trigger
   Int_t                      fPatchADC[kPatchCols][kPatchRows];         //!ADC values map
   Int_t                      fITrigger;                 //!trigger counter
-  Bool_t                     fRunTriggerType[3];        // Run patch maker for a given trigger type
+  Bool_t                     fRunTriggerType[5];        // Run patch maker for a given trigger type
   Bool_t                     fDoQA;                     // Fill QA histograms
   THistManager              *fQAHistos;                 //! Histograms for QA
-
+  static const TString       fgkTriggerTypeNames[5];    //! Histogram name tags
  private:
   AliEmcalTriggerMaker(const AliEmcalTriggerMaker&);            // not implemented
   AliEmcalTriggerMaker &operator=(const AliEmcalTriggerMaker&); // not implemented
 
-  ClassDef(AliEmcalTriggerMaker, 4) // Task to make array of EMCAL trigger patches
+  ClassDef(AliEmcalTriggerMaker, 5) // Task to make array of EMCAL trigger patches
 };
 #endif

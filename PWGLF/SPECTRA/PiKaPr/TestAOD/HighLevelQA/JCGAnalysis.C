@@ -26,8 +26,8 @@ TString Names[nCharge*nPart] = {"#pi^{+}",
 void JCGAnalysis()
 {
   // load libraries 'n such
-  gSystem->Load("libCore.so");  
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libCore");
+  gSystem->Load("libPhysics");
   gSystem->Load("libTree");
   gSystem->Load("libMatrix");
   gSystem->Load("libSTEERBase");
@@ -36,7 +36,7 @@ void JCGAnalysis()
   gSystem->Load("libANALYSIS");
   gSystem->Load("libOADB");
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libTENDER");
+  gSystem->Load("libTender");
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWGTools");
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");

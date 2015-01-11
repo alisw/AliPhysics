@@ -69,7 +69,7 @@ class AliCaloPID : public TObject {
   
   // Main methods
   
-  TList *   GetCreateOutputObjects();
+  //  TList *   GetCreateOutputObjects(); // Not implemented
 
   void      InitParameters();
   

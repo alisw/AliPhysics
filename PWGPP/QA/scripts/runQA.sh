@@ -8,6 +8,13 @@ if [ ${BASH_VERSINFO} -lt 4 ]; then
   exit 1
 fi
 
+#include $ALICE_ROOT/PWGPP/scripts/utilities.sh
+if ! source $ALICE_ROOT/PWGPP/scripts/utilities.sh; then 
+  [[ -z "${ALICE_ROOT}" ]] && echo "\$ALICE_ROOT not defined!"
+  echo "exiting..."
+  exit 1
+fi
+
 ##############################
 #default values:
 ##############################
@@ -28,12 +35,11 @@ logDirectory=${workingDirectory}/logs
 ocdbStorage="raw://"
 #email to
 #MAILTO="fbellini@cern.ch"
-runMap="
-2010 108350 139517
-2011 140441 170593
-2012 171590 193766
-2013 194482 197692
-"
+#MAILTO_TPC="mivanov@cern.ch"
+#attach full debug info
+MAILdebugInfo=1
+MAILproductionSummary=1
+productionID="default"
 
 main()
 {
@@ -98,13 +104,14 @@ updateQA()
 
   dateString=$(date +%Y-%m-%d-%H-%M-%S-%N)
   echo "Start time QA process: $dateString"
+  uniquePID=$(createUniquePID "${productionID}")
 
   #logging
   mkdir -p $logDirectory
   [[ ! -d $logDirectory ]] && echo "no log dir $logDirectory" && return 1
   logFile="$logDirectory/${0##*/}.${dateString}.log"
   touch ${logFile}
-  [[ ! -f ${logFile} ]] && echo "cannot write logfile $logfile" && return 1
+  [[ ! -f ${logFile} ]] && echo "cannot write logFile $logFile" && return 1
   echo "logFile = $logFile"
 
   #check lock
@@ -117,6 +124,8 @@ updateQA()
 
   ################################################################
   #ze detector loop
+  declare -A arrLogSummary
+  declare -A arrPlanB
   for detectorScript in $ALICE_ROOT/PWGPP/QA/detectorQAscripts/*; do
     echo
     echo "##############################################"
@@ -140,7 +149,7 @@ updateQA()
       echo "${detector} not included in includeDetectors, skipping..."
       continue
     fi
-
+    
     logSummary=${logDirectory}/summary-${detector}-${dateString}.log
     hostInfo >> ${logSummary}
     outputDir=$(substituteDetectorName ${detector} ${outputDirectory})
@@ -149,6 +158,10 @@ updateQA()
       echo "cannot create the temp dir $tmpDetectorRunDir"
       continue
     fi
+    #at this point we can store the detector name and the logSummary location
+    #in arrLogSummary
+    arrLogSummary[${detector}]=${logSummary}
+
     cd ${tmpDetectorRunDir}
 
     tmpPrefix=${tmpDetectorRunDir}/${outputDir}
@@ -306,7 +319,9 @@ updateQA()
       #perform some default actions:
       #if trending.root not created, create a default one
       if [[ ! -f trending.root ]]; then
-        aliroot -b -q -l "$ALICE_ROOT/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detectorQAcontainerName}\",\"trending.root\",\"trending\",\"recreate\")" 2>&1 | tee -a runLevelQA.log
+        echo "trending.root not provided, falling back to:"
+        echo "aliroot -b -q -l $ALICE_ROOT/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detectorQAcontainerName}\",\"trending.root\",\"trending\",\"recreate\") 2>&1 | tee -a runLevelQA.log > simpleTrending.log"
+        aliroot -b -q -l "$ALICE_ROOT/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detectorQAcontainerName}\",\"trending.root\",\"trending\",\"recreate\")" 2>&1 | tee -a runLevelQA.log > simpleTrending.log
       fi
       if [[ ! -f trending.root ]]; then
         echo "trending.root not created"
@@ -397,7 +412,7 @@ updateQA()
         #some of the output could be a directory, so handle that
         #TODO: maybe use rsync?
         #lock to avoid conflicts:
-        echo "${HOSTNAME} ${dateString}" > ${periodLevelLock}
+        echo "${uniquePID}" > ${periodLevelLock}
         for x in ${tmpPeriodLevelQAdir}/*; do  
           if [[ -d ${x} ]]; then
             echo "removing ${productionDir}/${x##*/}"
@@ -422,19 +437,46 @@ updateQA()
         planB=1
       fi
 
-    done
+    done #end of merging/trending loop
 
     cd ${workingDirectory}
 
+    #set the planB flag for the detector and proceed with cleanup
+    arrPlanB[${detector}]=${planB}
     if [[ -z ${planB} ]]; then
       echo
       echo removing ${tmpDetectorRunDir}
       rm -rf ${tmpDetectorRunDir}
-    else
-      executePlanB
     fi
   done #end of detector loop
 
+  #make a run/log summary
+  #make one big stacktrace tree for core files
+  stackTraceArr=($(awk '/stacktrace\.log/ {print $1}' ${logDirectory}/summary-*-${dateString}.log)) 
+  if [[ ${#stackTraceArr[@]} > 0 ]]; then
+    stackTraceTree "${stackTraceArr[@]}" > ${logDirectory}/stacktrace-core-${dateString}.tree
+  fi
+  #sometimes core files are not available, use the root logs, which sometimes do have a stacktrace
+  stackTraceArr=($(awk '/log[[:space:]]*BAD / {print $1}' ${logDirectory}/summary-*-${dateString}.log)) 
+  if [[ ${#stackTraceArr[@]} > 0 ]]; then
+    stackTraceTree "${stackTraceArr[@]}" > ${logDirectory}/stacktrace-log-${dateString}.tree
+  fi
+  #make stacktrace plots
+  plotStackTraceTree ${logDirectory}/stacktrace-core-${dateString}.tree ${logDirectory}/stacktrace-core-${dateString}.png
+  plotStackTraceTree ${logDirectory}/stacktrace-log-${dateString}.tree ${logDirectory}/stacktrace-log-${dateString}.png
+  
+  #process alarms, send emails etc, for each detector separately
+  echo ""
+  echo "log statistics:"
+  for detector in "${!arrLogSummary[@]}"; do
+    echo "${detector}"
+    logSummary="${arrLogSummary[${detector}]}"
+    printLogStatistics "${logSummary}"
+    if [[ ${arrPlanB[${detector}]} == 1 ]]; then
+      executePlanB
+    fi
+  done
+  
   #remove lock
   rm -f ${lockFile}
   return 0
@@ -445,20 +487,39 @@ executePlanB()
   #in case of emergency
   #first check if we have the email of the detector expert defined,
   #if yes, append to the mailing list
+  #NEEDS: $detector, $logSummary, $MAILTO, $MAILTO_DET
+
   local mailTo=${MAILTO}
   local detExpertEmailVar="MAILTO_${detector}"
   [[ -n "${!detExpertEmailVar}" ]] && mailTo+=" ${!detExpertEmailVar}"
-  if [[ -n ${mailTo} ]]; then 
-    echo
-    echo "trouble detected, sending email to ${mailTo}"
-    cat ${logSummary} | mail -s "${detector} QA in need of assistance" ${mailTo}
+  [[ -z ${mailTo} ]] && return 1
+  
+  echo
+  echo "trouble detected, sending email to ${mailTo}"
+  local mailoptions=" -a ${logSummary}"
+  local file=""
+  if [[ "${MAILdebugInfo}" == 1 ]]; then
+    file="${logDirectory}/stacktrace-log-${dateString}.tree"
+    [[ -f ${file} ]] && mailoptions+=" -a ${file}"
+    file="${logDirectory}/stacktrace-log-${dateString}.png"
+    [[ -f ${file} ]] && mailoptions+=" -a ${file}"
+    file="${logDirectory}/stacktrace-core-${dateString}.tree"
+    [[ -f ${file} ]] && mailoptions+=" -a ${file}"
+    file="${logDirectory}/stacktrace-core-${dateString}.png"
+    [[ -f ${file} ]] && mailoptions+=" -a ${file}"
   fi
+  if [[ "${MAILproductionSummary}" == 1 ]]; then
+    file="${logFile}"
+    [[ -f ${file} ]] && mailoptions+=" -a ${file}"
+  fi
+  printLogStatistics ${logSummary} | mail -s "${detector} QA in need of assistance" ${mailoptions} ${mailTo}
+  
   return 0
 }
 
 validate()
 {
-  summarizeLogs ${1} >> ${logSummary}
+  summarizeLogs ${1}/* >> ${logSummary}
   logStatus=$?
   if [[ ${logStatus} -ne 0 ]]; then 
     echo "WARNING not validated: ${1}"
@@ -468,339 +529,12 @@ validate()
   return 0
 }
 
-summarizeLogs()
-{
-  local dir=$1
-  [[ ! -d ${dir} ]] && dir=${PWD}
-
-  #print a summary of logs
-  logFiles=(
-      "*.log"
-      "stdout"
-      "stderr"
-  )
-
-  #check logs
-  local logstatus=0
-  for log in ${dir}/${logFiles[*]}; do
-    [[ ! -f ${log} ]] && continue
-    errorSummary=$(validateLog ${log})
-    validationStatus=$?
-    [[ validationStatus -ne 0 ]] && logstatus=1
-    if [[ ${validationStatus} -eq 0 ]]; then 
-      #in pretend mode randomly report an error in rec.log some cases
-      if [[ -n ${pretend} && "${log}" == "rec.log" ]]; then
-        [[ $(( ${RANDOM}%2 )) -ge 1 ]] && echo "${log} BAD random error" || echo "${log} OK"
-      else
-        echo "${log} OK"
-      fi
-    elif [[ ${validationStatus} -eq 1 ]]; then
-      echo "${log} BAD ${errorSummary}"
-    elif [[ ${validationStatus} -eq 2 ]]; then
-      echo "${log} OK MWAH ${errorSummary}"
-    fi
-  done
-
-  #report core files
-  while read x; do
-    echo ${x}
-    chmod 644 ${x}
-    gdb --batch --quiet -ex "bt" -ex "quit" aliroot ${x} > stacktrace_${x//\//_}.log
-  done < <(/bin/ls ${PWD}/*/core 2>/dev/null; /bin/ls ${PWD}/core 2>/dev/null)
-
-  return ${logstatus}
-}
-
-validateLog()
-{
-  log=${1}
-  errorConditions=(
-            'There was a crash'
-            'floating'
-            'error while loading shared libraries'
-            'std::bad_alloc'
-            's_err_syswatch_'
-            'Thread [0-9]* (Thread'
-            'AliFatal'
-            'core dumped'
-            '\.C.*error:.*\.h: No such file'
-            'segmentation'
-            'Interpreter error recovered'
-            ': command not found'
-            ': comando non trovato'
-  )
-
-  warningConditions=(
-            'This is serious'
-  )
-
-  local logstatus=0
-  local errorSummary=""
-  local warningSummary=""
-
-  for ((i=0; i<${#errorConditions[@]};i++)); do
-    local tmp=$(grep -m1 -e "${errorConditions[${i}]}" ${log})
-    [[ -n ${tmp} ]] && tmp+=" : "
-    errorSummary+=${tmp}
-  done
-
-  for ((i=0; i<${#warningConditions[@]};i++)); do
-    local tmp=$(grep -m1 -e "${warningConditions[${i}]}" ${log})
-    [[ -n ${tmp} ]] && tmp+=" : "
-    warningSummary+=${tmp}
-  done
-
-  if [[ -n ${errorSummary} ]]; then 
-    echo "${errorSummary}"
-    return 1
-  fi
-
-  if [[ -n ${warningSummary} ]]; then
-    echo "${warningSummary}"
-    return 2
-  fi
-
-  return 0
-}
-
-parseConfig()
-{
-  args=("$@")
-
-  #first, check if the config file is configured
-  #is yes - source it so that other options can override it
-  #if any
-  for opt in "${args[@]}"; do
-    if [[ ${opt} =~ configFile=.* ]]; then
-      eval "${opt}"
-      [[ ! -f ${configFile} ]] && echo "configFile ${configFile} not found, exiting..." && return 1
-      echo "using config file: ${configFile}"
-      source "${configFile}"
-      break
-    fi
-  done
-
-  #then, parse the options as they override the options from file
-  for opt in "${args[@]}"; do
-    if [[ ! "${opt}" =~ .*=.* ]]; then
-      echo "badly formatted option ${var}, should be: option=value, stopping..."
-      return 1
-    fi
-    local var="${opt%%=*}"
-    local value="${opt#*=}"
-    echo "${var}=${value}"
-    export ${var}="${value}"
-  done
-  return 0
-}
-
-guessRunData()
-{
-  #guess the period from the path, pick the rightmost one
-  period=""
-  runNumber=""
-  year=""
-  pass=""
-  legoTrainRunNumber=""
-  dataType=""
-  originalPass=""
-  originalPeriod=""
-  anchorYear=""
-
-  shortRunNumber=""
-  oldIFS=${IFS}
-  local IFS="/"
-  declare -a path=( $1 )
-  IFS="${oldIFS}"
-  local dirDepth=$(( ${#path[*]}-1 ))
-  i=0
-  for ((x=${dirDepth};x>=0;x--)); do
-
-    [[ $((x-1)) -ge 0 ]] && local fieldPrev=${path[$((x-1))]}
-    local field=${path[${x}]}
-    local fieldNext=${path[$((x+1))]}
-
-    [[ ${field} =~ ^[0-9]*$ && ${fieldNext} =~ (.*\.zip$|.*\.root$) ]] && legoTrainRunNumber=${field}
-    [[ -n ${legoTrainRunNumber} && -z ${pass} ]] && pass=${fieldPrev}
-    [[ ${field} =~ ^LHC[0-9][0-9][a-z].*$ ]] && period=${field%_*} && originalPeriod=${field}
-    [[ ${field} =~ ^000[0-9][0-9][0-9][0-9][0-9][0-9]$ ]] && runNumber=${field#000}
-    [[ ${field} =~ ^[0-9][0-9][0-9][0-9][0-9][0-9]$ ]] && shortRunNumber=${field}
-    [[ ${field} =~ ^20[0-9][0-9]$ ]] && year=${field}
-    [[ ${field} =~ ^(^sim$|^data$) ]] && dataType=${field}
-    (( i++ ))
-  done
-  originalPass=${pass}
-  [[ -n ${shortRunNumber} && "${legoTrainRunNumber}" =~ ${shortRunNumber} ]] && legoTrainRunNumber=""
-  [[ -z ${legoTrainRunNumber} ]] && pass=${path[$((dirDepth-1))]}
-  [[ "${dataType}" =~ ^sim$ ]] && pass="passMC" && runNumber=${shortRunNumber} && originalPass="" #for MC not from lego, the runnumber is identified as lego train number, thus needs to be nulled
-  [[ -n ${legoTrainRunNumber} ]] && pass+="_lego${legoTrainRunNumber}"
-  
-  #modify the OCDB: set the year
-  if [[ ${dataType} =~ sim ]]; then 
-    anchorYear=$(run2year $runNumber)
-    if [[ -z "${anchorYear}" ]]; then
-      echo "WARNING: anchorYear not available for this production: ${originalPeriod}, runNumber: ${runNumber}. Cannot set the OCDB."
-      return 1
-    fi
-    ocdbStorage=$(setYear ${anchorYear} ${ocdbStorage})
-  else
-    ocdbStorage=$(setYear ${year} ${ocdbStorage})
-  fi
-
-  #if [[ -z ${dataType} || -z ${year} || -z ${period} || -z ${runNumber}} || -z ${pass} ]];
-  if [[ -z ${runNumber} ]]
-  then
-    #error condition
-    return 1
-  fi
-  
-  #ALL OK
-  return 0
-}
-
-run2year()
-{
-  #for a given run print the year.
-  #the run-year table is ${runMap} (a string)
-  #defined in the config file
-  #one line per year, format: year runMin runMax
-  local run=$1
-  [[ -z ${run} ]] && return 1
-  local year=""
-  local runMin=""
-  local runMax=""
-  while read year runMin runMax; do
-    [[ -z ${year} || -z ${runMin} || -z ${runMax} ]] && continue
-    [[ ${run} -ge ${runMin} && ${run} -le ${runMax} ]] && echo ${year} && break
-  done < <(echo "${runMap}")
-  return 0
-}
-
 substituteDetectorName()
 {
   local det=$1
   local dir=$2
   [[ ${dir} =~ \%det ]] && det=${det,,} && echo ${dir/\%det/${det}}
   [[ ${dir} =~ \%DET ]] && det=${det} && echo ${dir/\%DET/${det}}
-  return 0
-}
-
-get_realpath() 
-{
-  if [[ -f "$1" ]]
-  then
-    # file *must* exist
-    if cd "$(echo "${1%/*}")" &>/dev/null
-    then
-      # file *may* not be local
-      # exception is ./file.ext
-      # try 'cd .; cd -;' *works!*
-      local tmppwd="$PWD"
-      cd - &>/dev/null
-    else
-      # file *must* be local
-      local tmppwd="$PWD"
-    fi
-  else
-    # file *cannot* exist
-    return 1 # failure
-  fi
-  # reassemble realpath
-  echo "$tmppwd"/"${1##*/}"
-  return 0 # success
-}
-
-setYear()
-{
-  #set the year
-  #  ${1} - year to be set
-  #  ${2} - where to set the year
-  local year1=$(guessYear ${1})
-  local year2=$(guessYear ${2})
-  local path=${2}
-  [[ ${year1} -ne ${year2} && -n ${year2} && -n ${year1} ]] && path=${2/\/${year2}\//\/${year1}\/}
-  echo ${path}
-  return 0
-}
-
-guessYear()
-{
-  #guess the year from the path, pick the rightmost one
-  local IFS="/"
-  declare -a pathArray=( ${1} )
-  local field
-  local year
-  for field in ${pathArray[@]}; do
-    [[ ${field} =~ ^20[0-9][0-9]$ ]] && year=${field}
-  done
-  echo ${year}
-  return 0
-}
-
-hostInfo(){
-#
-# Hallo world -  Print AliRoot/Root/Alien system info
-#
-
-#
-# HOST info
-#
-    echo --------------------------------------
-        echo 
-        echo HOSTINFO
-        echo 
-        echo HOSTINFO HOSTNAME"      "$HOSTNAME
-        echo HOSTINFO DATE"          "`date`
-        echo HOSTINFO gccpath"       "`which gcc` 
-        echo HOSTINFO gcc version"   "`gcc --version | grep gcc`
-        echo --------------------------------------    
-
-#
-# ROOT info
-#
-        echo --------------------------------------
-        echo
-        echo ROOTINFO
-        echo 
-        echo ROOTINFO ROOT"           "`which root`
-        echo ROOTINFO VERSION"        "`root-config --version`
-        echo 
-        echo --------------------------------------
-
-
-#
-# ALIROOT info
-#
-        echo --------------------------------------
-        echo
-        echo ALIROOTINFO
-        echo 
-        echo ALIROOTINFO ALIROOT"        "`which aliroot`
-        echo ALIROOTINFO VERSION"        "`echo $ALICE_LEVEL`
-        echo ALIROOTINFO TARGET"         "`echo $ALICE_TARGET`
-        echo 
-        echo --------------------------------------
-
-#
-# Alien info
-#
-#echo --------------------------------------
-#echo
-#echo ALIENINFO
-#for a in `alien --printenv`; do echo ALIENINFO $a; done 
-#echo
-#echo --------------------------------------
-
-#
-# Local Info
-#
-        echo PWD `pwd`
-        echo Dir 
-        ls -al
-        echo
-        echo
-        echo
-  
   return 0
 }
 

@@ -160,6 +160,7 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(const char * njetsBase,
     jetContBase->SetRhoName(nrhoBase);
     jetContBase->ConnectParticleContainer(trackCont);
     jetContBase->ConnectClusterContainer(clusterCont);
+    jetContBase->SetMaxTrackPt(10000.);
   }
 
   AliJetContainer *jetContTag = task->AddJetContainer(njetsTag,"TPC",R);
@@ -167,9 +168,10 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(const char * njetsBase,
     jetContTag->SetRhoName(nrhoTag);
     jetContTag->ConnectParticleContainer(trackCont);
     jetContTag->ConnectClusterContainer(clusterCont);
+    jetContTag->SetMaxTrackPt(10000.);
   }
   for(Int_t i=0; i<2; i++) {
-    task->SetPercAreaCut(0.6, i);
+    task->SetPercAreaCut(0.6, i); //keep?
   }
   task->SetCaloTriggerPatchInfoName(kEmcalTriggers.Data());
   task->SetCentralityEstimator(CentEst);

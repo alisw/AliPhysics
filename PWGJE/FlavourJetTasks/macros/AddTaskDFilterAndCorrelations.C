@@ -1,4 +1,4 @@
-void *AddTaskDFilterAndCorrelations(
+AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
   AliAnalysisTaskSEDmesonsFilterCJ::ECandidateType cand = AliAnalysisTaskSEDmesonsFilterCJ::kDstartoKpipi,
   TString filename = "DStartoKpipiCuts.root",
   Bool_t theMCon = kFALSE,
@@ -6,6 +6,7 @@ void *AddTaskDFilterAndCorrelations(
   TString suffix = "",
   TString jetArrname = "",
   TString trackArrname = "PicoTracks",
+  TString rhoname="",
   Bool_t triggerOnLeadingJet = kFALSE,
   Int_t leadingHadType = 0 /*0 = charged, 1 = neutral, 2 = both*/,
   Float_t R = 0.4,
@@ -14,7 +15,8 @@ void *AddTaskDFilterAndCorrelations(
   Int_t thnsparse=1, /*-1 = no thnsparse, 0 = heavy, 1 = light*/
   Double_t percjetareacut = -1.,
   AliAnalysisTaskEmcal::TriggerType trType=AliAnalysisTaskEmcal::kND,
-  Int_t typeDjet=2
+  Int_t typeDjet=2,
+  TString subwagons=""
 )
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -86,7 +88,8 @@ void *AddTaskDFilterAndCorrelations(
   taskCorrName+=cutType;
   taskCorrName+=Form("PTj%.0f",jptcut);
   taskCorrName+=sR;
-  
+  taskCorrName+=Form("Typ%d",typeDjet);
+
   AliAnalysisTaskFlavourJetCorrelations *taskCorr = new AliAnalysisTaskFlavourJetCorrelations(taskCorrName.Data(), 
      analysiscuts, cand);
   
@@ -102,6 +105,7 @@ void *AddTaskDFilterAndCorrelations(
      //jetCont->SetJetAcceptanceType(cutType);
      jetCont->SetJetPtCut(jptcut);
      jetCont->SetPercAreaCut(percjetareacut);
+     jetCont->SetRhoName(rhoname); 
   }
   taskCorr->SetMC(theMCon);
   taskCorr->SetUseReco(reco);
@@ -157,6 +161,13 @@ void *AddTaskDFilterAndCorrelations(
   
   nameContainerC0+=sR;
   nameContainerC1+=sR;
+  if(typeDjet!=2) { //no particular name for default
+     nameContainerC0+=Form("Typ%d",typeDjet);
+     nameContainerC1+=Form("Typ%d",typeDjet);
+  }
+  
+  nameContainerC0 += subwagons;
+  nameContainerC1 += subwagons;
   
   // ------ input data ------
   AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
@@ -206,6 +217,6 @@ void *AddTaskDFilterAndCorrelations(
   //if(cand==1) mgr->ConnectOutput(task,4,coutput4);
 
   Printf("Input and Output connected to the manager");
-  return; 
+  return taskCorr; 
 }
 

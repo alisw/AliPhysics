@@ -16,10 +16,10 @@ void LoadLibraries() {
     //
     // PWGPP libraries
     //    
-    gSystem->Load("libANALYSISalice.so");
-    gSystem->Load("libANALYSIScalib.so");
-    gSystem->Load("libTENDER.so");
-    gSystem->Load("libPWGPP.so");
-    //gSystem->Load("libPWG4PartCorrBase.so");
-    //gSystem->Load("libHMPIDbase.so");
+    gSystem->Load("libANALYSISalice");
+    gSystem->Load("libANALYSIScalib");
+    gSystem->Load("libTender");
+    gSystem->Load("libPWGPP");
+    //gSystem->Load("libPWG4PartCorrBase");
+    //gSystem->Load("libHMPIDbase");
 }

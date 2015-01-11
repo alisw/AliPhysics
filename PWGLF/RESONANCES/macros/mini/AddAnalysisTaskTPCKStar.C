@@ -27,12 +27,13 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTPCKStar
    Bool_t      enableMonitor = kTRUE,
    Bool_t      IsMcTrueOnly = kFALSE,
    UInt_t      triggerMask = AliVEvent::kMB,
-   Int_t      PbPb2011CentFlat = 0,
+   Int_t       PbPb2011CentFlat = 0,
    Int_t       nmix = 0,
    Float_t     maxDiffVzMix = 1.0,
    Float_t     maxDiffMultMix = 10.0,
    Float_t     maxDiffAngleMixDeg = 20.0,
    Int_t       aodN = 0,
+   Int_t       StdQualityCut_filterbit==10,
    TString     outNameSuffix = ""
 )
 {  
@@ -128,12 +129,12 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTPCKStar
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    if(!isMC){
      gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigTPCanalysisKStar.C");
-     if (!ConfigTPCanalysisKStar(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, aodN)) return 0x0;
+     if (!ConfigTPCanalysisKStar(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, aodN, StdQualityCut_filterbit)) return 0x0;
    }
    else {
      gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigTPCanalysisKStarMC.C");
-     if (!ConfigTPCanalysisKStarMC(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, 313, aodN)) return 0x0; //K*
-     if (!ConfigTPCanalysisKStarMC(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, -313, aodN)) return 0x0; //anti-K* 
+     if (!ConfigTPCanalysisKStarMC(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, 313, aodN,StdQualityCut_filterbit)) return 0x0; //K*
+     if (!ConfigTPCanalysisKStarMC(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, -313, aodN,StdQualityCut_filterbit)) return 0x0; //anti-K* 
    }
    
    

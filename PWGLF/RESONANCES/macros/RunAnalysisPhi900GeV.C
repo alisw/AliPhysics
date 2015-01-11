@@ -36,9 +36,9 @@ void RunAnalysisPhi900GeV
   cout << "Input = " << (isTXT ? "TXT" : "XML") << endl;
 
   // load compiled libraries (for aliroot session)
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libPWG2resonances.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libPWG2resonances");
 
   // if input is XML, connect to AliEn
   if (!isTXT) TGrid::Connect("alien://");

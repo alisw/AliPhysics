@@ -40,14 +40,14 @@ void LoadAnalysisLibs(Bool_t LoadTaskLocal=kFALSE)
   cout<<"  # Loadnig libs...\n";
  
 
- gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
+ gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
   if(!LoadTaskLocal){
-	gSystem->Load("libEventMixing.so");
-	gSystem->Load("libPWGCFebye.so");
+	gSystem->Load("libEventMixing");
+	gSystem->Load("libPWGCFebye");
   }
   
   //___________Compile analysis task using AClic____________//

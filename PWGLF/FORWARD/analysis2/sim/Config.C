@@ -346,11 +346,12 @@ void Config()
   // 
   // Generator Configuration 
   //
-  // --- Make the generator - this loads libraries 
+  // --- Make the generator - this loads libraries
   AliGenerator* gener = egCfg->MakeGenerator(s.runType,
 					     s.minB,
 					     s.maxB);
-  gener->Init();
+  if (!egCfg->IsLego()) 
+    gener->Init();
 
   // --- Go back to galice.root --------------------------------------
   rl->CdGAFile();
@@ -447,7 +448,13 @@ void Config()
   if (detCfg->UsePHOS())   new AliPHOSv1("PHOS", "noCPV_Modules123");
   if (detCfg->UsePMD())    new AliPMDv1("PMD", "normal PMD");
   if (detCfg->UseT0())     new AliT0v1("T0", "T0 Detector");
-  if (detCfg->UseEMCAL())  new AliEMCALv2("EMCAL", "EMCAL_COMPLETE12SMV1");
+  if (detCfg->UseEMCAL())  {
+    TString var;
+    if       (grp->run <= 140000) var="EMCAL_FIRSTYEARV1";
+    else if  (grp->run <= 170593) var="COMPLETEV1";
+    else                          var="EMCAL_COMPLETE12SMV1";
+    new AliEMCALv2("EMCAL", var.Data());
+  }
   if (detCfg->UseACORDE()) new AliACORDEv1("ACORDE", "normal ACORDE");
   if (detCfg->UseVZERO())  new AliVZEROv7("VZERO", "normal VZERO");
 }

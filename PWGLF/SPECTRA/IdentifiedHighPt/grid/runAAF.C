@@ -178,21 +178,21 @@ void runAAF(Int_t nFilesMax, char* type, char* textFileName, Int_t task)
 
 
   // Load common libraries   
-  gSystem->Load("libTree.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libCDB.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
+  gSystem->Load("libCDB");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
   // tender
   Bool_t v0tender = kTRUE;
   if(v0tender) {
-    gSystem->Load("libTENDER.so");
-    gSystem->Load("libTENDERSupplies.so");
+    gSystem->Load("libTender");
+    gSystem->Load("libTenderSupplies");
   }
 
   gROOT->ProcessLine(Form(".include %s/include", gSystem->ExpandPathName("$ALICE_ROOT")));
@@ -606,16 +606,16 @@ TChain* CreateChainLocal(Int_t nFilesMax, char* filename, char* treeName)
   TFileCollection* stagedColl = proofColl->GetStagedSubset();
   .L runAAF.C 
   TChain* chain = CreateChainCAF(10, stagedColl, "esdTree")
-  gSystem->Load("libTree.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libCDB.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
+  gSystem->Load("libCDB");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
   gROOT->ProcessLine(Form(".include %s/include", gSystem->ExpandPathName("$ALICE_ROOT")));
   AliAnalysisManager* mgr = new AliAnalysisManager("PID histos", "testing analysis");
   AliESDInputHandler *esdHandler = new AliESDInputHandler();

@@ -4,7 +4,7 @@ void SETUP()
 {
   // Load the library
   TString ocwd = gSystem->WorkingDirectory();
-  gSystem->Load(ocwd+"/libPWGEMCAL.so");
+  gSystem->Load(ocwd+"/libPWGEMCAL");
 
   // Set the Include paths
   gSystem->SetIncludePath("-I$ROOTSYS/include -IPWGEMCAL");

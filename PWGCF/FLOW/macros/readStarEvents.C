@@ -12,9 +12,9 @@
 
 void  readStarEvents()
 {
-  gSystem->Load("libTree.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
   gSystem->Load("libPWGflowBase");
 
   Long64_t EventCounter = 0 ;

@@ -1,7 +1,7 @@
 enum AlgoType {kKT, kANTIKT};
 enum JetType  {kFULLJETS, kCHARGEDJETS, kNEUTRALJETS};
 
-AliAnalysisTaskTriggerRejection* AddTaskTriggerRejection(TString     kTracksName         = "PicoTracks", 
+JETriggerRejectionAna::AliAnalysisTaskTriggerRejection* AddTaskTriggerRejection(TString     kTracksName         = "PicoTracks", 
 							  TString     kClusName           = "caloClustersCorr",
 							  Double_t    R                   = 0.4, 
 							  Double_t    ptminTrack          = 0.15, 
@@ -75,7 +75,7 @@ AliAnalysisTaskTriggerRejection* AddTaskTriggerRejection(TString     kTracksName
   TString wagonName = Form("TriggerRejectionQA_%s_%s_%s",strJets1.Data(),strJets2.Data(),tag.Data());
 
   //Configure TriggerQA task
-  AliAnalysisTaskTriggerRejection *task = new AliAnalysisTaskTriggerRejection(wagonName);
+  JETriggerRejectionAna::AliAnalysisTaskTriggerRejection *task = new JETriggerRejectionAna::AliAnalysisTaskTriggerRejection(wagonName);
   AliParticleContainer *trackCont  = task->AddParticleContainer(kTracksName.Data());
   AliClusterContainer *clusterCont = task->AddClusterContainer(kClusName.Data());
 

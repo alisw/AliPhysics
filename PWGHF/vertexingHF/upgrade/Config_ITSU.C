@@ -157,8 +157,8 @@ void Config()
 
   gRandom->SetSeed(seed);
   cerr<<"Seed for random number generation= "<<seed<<endl; 
-  gSystem->Load("libITSUpgradeBase.so");
-  gSystem->Load("libITSUpgradeSim.so");
+  gSystem->Load("libITSUpgradeBase");
+  gSystem->Load("libITSUpgradeSim");
   gSystem->Load("libEVGEN");
   // Libraries required by geant321
 #if defined(__CINT__)

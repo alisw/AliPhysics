@@ -94,22 +94,28 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOffTrackMatchRejection()         { fRejectTrackMatch = kFALSE ; }  
   
   void         FillNOriginHistograms(Int_t n)         { fNOriginHistograms = n ; 
-    if(n > 14) fNOriginHistograms = 14; }
+    if(n > fgkNmcTypes    ) fNOriginHistograms  = fgkNmcTypes     ; }
   void         FillNPrimaryHistograms(Int_t n)        { fNPrimaryHistograms= n ;
-    if(n > 6)  fNPrimaryHistograms = 6; }
+    if(n > fgkNmcPrimTypes) fNPrimaryHistograms = fgkNmcPrimTypes ; }
 
   // For histograms in arrays, index in the array, corresponding to a particle
-  enum mcTypes    { kmcPhoton = 0,        kmcPi0Decay = 1,       kmcOtherDecay = 2,  
-                    kmcPi0 = 3,           kmcEta = 4,            kmcElectron = 5,       
-                    kmcConversion = 6,    kmcOther = 7,          kmcAntiNeutron = 8,    
-                    kmcAntiProton = 9,    kmcPrompt = 10,        kmcFragmentation = 11, 
-                    kmcISR = 12,          kmcString = 13                               };  
+  enum mcTypes    { kmcPhoton     =  0,    kmcPi0Decay = 1,       kmcEtaDecay      = 2,  kmcOtherDecay = 3,
+                    kmcPi0        =  4,    kmcEta      = 5,       kmcElectron      = 6,
+                    kmcConversion =  7,    kmcOther    = 8,       kmcAntiNeutron   = 9,
+                    kmcAntiProton = 10,    kmcPrompt   = 11,      kmcFragmentation = 12,
+                    kmcISR        = 13,    kmcString   = 14  };
 
-  enum mcPTypes   { kmcPPhoton = 0,       kmcPPi0Decay = 1,       kmcPOtherDecay = 2,
-                    kmcPPrompt = 3,       kmcPFragmentation = 4,  kmcPISR = 5           };
+  static const Int_t fgkNmcTypes = 15;
+
+  enum mcPTypes   { kmcPPhoton = 0,       kmcPPi0Decay      = 1,  kmcPEtaDecay = 2,     kmcPOtherDecay = 3,
+                    kmcPPrompt = 4,       kmcPFragmentation = 5,  kmcPISR      = 6 };
+  
+  static const Int_t fgkNmcPrimTypes = 7;
   
   enum mcssTypes  { kmcssPhoton = 0,      kmcssOther = 1,       kmcssPi0 = 2,         
                     kmcssEta = 3,         kmcssConversion = 4,  kmcssElectron = 5       };  
+  
+  static const Int_t fgkNssTypes = 6 ;
   
   private:
  
@@ -202,54 +208,54 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   //Fill MC dependent histograms, Origin of this cluster is ...
 
-  TH2F * fhMCDeltaE[14]  ;                          //! MC-Reco E distribution coming from MC particle
-  TH2F * fhMCDeltaPt[14] ;                          //! MC-Reco pT distribution coming from MC particle
-  TH2F * fhMC2E[14]  ;                              //! E distribution, Reco vs MC coming from MC particle
-  TH2F * fhMC2Pt[14] ;                              //! pT distribution, Reco vs MC coming from MC particle
+  TH2F * fhMCDeltaE [fgkNmcTypes];                  //! MC-Reco E distribution coming from MC particle
+  TH2F * fhMCDeltaPt[fgkNmcTypes];                  //! MC-Reco pT distribution coming from MC particle
+  TH2F * fhMC2E     [fgkNmcTypes];                  //! E distribution, Reco vs MC coming from MC particle
+  TH2F * fhMC2Pt    [fgkNmcTypes];                  //! pT distribution, Reco vs MC coming from MC particle
   
-  TH1F * fhMCE[14];                                 //! Number of identified photon vs cluster energy coming from MC particle
-  TH1F * fhMCPt[14];                                //! Number of identified photon vs cluster pT     coming from MC particle
-  TH2F * fhMCPhi[14];                               //! Phi of identified photon coming from MC particle
-  TH2F * fhMCEta[14];                               //! eta of identified photon coming from MC particle
+  TH1F * fhMCE  [fgkNmcTypes];                      //! Number of identified photon vs cluster energy coming from MC particle
+  TH1F * fhMCPt [fgkNmcTypes];                      //! Number of identified photon vs cluster pT     coming from MC particle
+  TH2F * fhMCPhi[fgkNmcTypes];                      //! Phi of identified photon coming from MC particle
+  TH2F * fhMCEta[fgkNmcTypes];                      //! eta of identified photon coming from MC particle
 
-  TH1F * fhEPrimMC[7];                              //! Number of generated photon vs energy
-  TH1F * fhPtPrimMC[7];                             //! Number of generated photon vs pT
-  TH2F * fhPhiPrimMC[7];                            //! Phi of generted photon
-  TH2F * fhYPrimMC[7];                              //! Rapidity of generated photon
-  TH2F * fhEtaPrimMC[7];                            //! Eta of generated photon
+  TH1F * fhEPrimMC  [fgkNmcPrimTypes];              //! Number of generated photon vs energy
+  TH1F * fhPtPrimMC [fgkNmcPrimTypes];              //! Number of generated photon vs pT
+  TH2F * fhPhiPrimMC[fgkNmcPrimTypes];              //! Phi of generted photon
+  TH2F * fhYPrimMC  [fgkNmcPrimTypes];              //! Rapidity of generated photon
+  TH2F * fhEtaPrimMC[fgkNmcPrimTypes];              //! Eta of generated photon
   
-  TH1F * fhEPrimMCAcc[7];                           //! Number of generated photon vs energy, in calorimeter acceptance
-  TH1F * fhPtPrimMCAcc[7];                          //! Number of generated photon vs pT, in calorimeter acceptance
-  TH2F * fhPhiPrimMCAcc[7];                         //! Phi of generted photon, in calorimeter acceptance
-  TH2F * fhEtaPrimMCAcc[7];                         //! Phi of generted photon, in calorimeter acceptance
-  TH2F * fhYPrimMCAcc[7];                           //! Rapidity of generated photon, in calorimeter acceptance
+  TH1F * fhEPrimMCAcc  [fgkNmcPrimTypes];           //! Number of generated photon vs energy, in calorimeter acceptance
+  TH1F * fhPtPrimMCAcc [fgkNmcPrimTypes];           //! Number of generated photon vs pT, in calorimeter acceptance
+  TH2F * fhPhiPrimMCAcc[fgkNmcPrimTypes];           //! Phi of generted photon, in calorimeter acceptance
+  TH2F * fhEtaPrimMCAcc[fgkNmcPrimTypes];           //! Phi of generted photon, in calorimeter acceptance
+  TH2F * fhYPrimMCAcc  [fgkNmcPrimTypes];           //! Rapidity of generated photon, in calorimeter acceptance
   
   // Shower Shape MC
-  TH2F * fhMCELambda0[6] ;                          //! E vs Lambda0     from MC particle
-  TH2F * fhMCELambda1[6] ;                          //! E vs Lambda1     from MC particle
-  TH2F * fhMCEDispersion[6] ;                       //! E vs Dispersion  from MC particle
+  TH2F * fhMCELambda0   [fgkNssTypes] ;             //! E vs Lambda0     from MC particle
+  TH2F * fhMCELambda1   [fgkNssTypes] ;             //! E vs Lambda1     from MC particle
+  TH2F * fhMCEDispersion[fgkNssTypes] ;             //! E vs Dispersion  from MC particle
   
   TH2F * fhMCPhotonELambda0NoOverlap ;              //! E vs Lambda0     from MC photons, no overlap
   TH2F * fhMCPhotonELambda0TwoOverlap ;             //! E vs Lambda0     from MC photons, 2 particles overlap
   TH2F * fhMCPhotonELambda0NOverlap ;               //! E vs Lambda0     from MC photons, N particles overlap
   
-  TH2F * fhMCLambda0vsClusterMaxCellDiffE0[6];      //! Lambda0 vs fraction of energy of max cell for E < 2 GeV
-  TH2F * fhMCLambda0vsClusterMaxCellDiffE2[6];      //! Lambda0 vs fraction of energy of max cell for 2< E < 6 GeV
-  TH2F * fhMCLambda0vsClusterMaxCellDiffE6[6];      //! Lambda0 vs fraction of energy of max cell for E > 6 GeV
-  TH2F * fhMCNCellsvsClusterMaxCellDiffE0[6];       //! NCells  vs fraction of energy of max cell for E < 2
-  TH2F * fhMCNCellsvsClusterMaxCellDiffE2[6];       //! NCells  vs fraction of energy of max cell for 2 < E < 6 GeV
-  TH2F * fhMCNCellsvsClusterMaxCellDiffE6[6];       //! NCells  vs fraction of energy of max cell for E > 6
-  TH2F * fhMCNCellsE[6];                            //! NCells per cluster vs energy
-  TH2F * fhMCMaxCellDiffClusterE[6];                //! Fraction of energy carried by cell with maximum energy
+  TH2F * fhMCLambda0vsClusterMaxCellDiffE0[fgkNssTypes]; //! Lambda0 vs fraction of energy of max cell for E < 2 GeV
+  TH2F * fhMCLambda0vsClusterMaxCellDiffE2[fgkNssTypes]; //! Lambda0 vs fraction of energy of max cell for 2< E < 6 GeV
+  TH2F * fhMCLambda0vsClusterMaxCellDiffE6[fgkNssTypes]; //! Lambda0 vs fraction of energy of max cell for E > 6 GeV
+  TH2F * fhMCNCellsvsClusterMaxCellDiffE0 [fgkNssTypes]; //! NCells  vs fraction of energy of max cell for E < 2
+  TH2F * fhMCNCellsvsClusterMaxCellDiffE2 [fgkNssTypes]; //! NCells  vs fraction of energy of max cell for 2 < E < 6 GeV
+  TH2F * fhMCNCellsvsClusterMaxCellDiffE6 [fgkNssTypes]; //! NCells  vs fraction of energy of max cell for E > 6
+  TH2F * fhMCNCellsE            [fgkNssTypes];           //! NCells per cluster vs energy
+  TH2F * fhMCMaxCellDiffClusterE[fgkNssTypes];           //! Fraction of energy carried by cell with maximum energy
 
-  TH2F * fhMCEDispEta[6] ;                          //! shower dispersion in eta direction
-  TH2F * fhMCEDispPhi[6] ;                          //! shower dispersion in phi direction
-  TH2F * fhMCESumEtaPhi[6] ;                        //! shower dispersion in eta vs phi direction
-  TH2F * fhMCEDispEtaPhiDiff[6] ;                   //! shower dispersion in eta -phi direction
-  TH2F * fhMCESphericity[6] ;                       //! shower sphericity, eta vs phi
-  TH2F * fhMCDispEtaDispPhi[7][6] ;                 //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
-  TH2F * fhMCLambda0DispEta[7][6] ;                 //! shower shape correlation l0 vs disp eta
-  TH2F * fhMCLambda0DispPhi[7][6] ;                 //! shower shape correlation l0 vs disp phi
+  TH2F * fhMCEDispEta       [fgkNssTypes] ;              //! shower dispersion in eta direction
+  TH2F * fhMCEDispPhi       [fgkNssTypes] ;              //! shower dispersion in phi direction
+  TH2F * fhMCESumEtaPhi     [fgkNssTypes] ;              //! shower dispersion in eta vs phi direction
+  TH2F * fhMCEDispEtaPhiDiff[fgkNssTypes] ;              //! shower dispersion in eta -phi direction
+  TH2F * fhMCESphericity    [fgkNssTypes] ;              //! shower sphericity, eta vs phi
+  TH2F * fhMCDispEtaDispPhi [7][fgkNssTypes] ;           //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
+  TH2F * fhMCLambda0DispEta [7][fgkNssTypes] ;           //! shower shape correlation l0 vs disp eta
+  TH2F * fhMCLambda0DispPhi [7][fgkNssTypes] ;           //! shower shape correlation l0 vs disp phi
 
   //Embedding
   TH2F * fhEmbeddedSignalFractionEnergy ;           //! Fraction of photon energy of embedded signal vs cluster energy
@@ -315,7 +321,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,39)
+  ClassDef(AliAnaPhoton,40)
 
 } ;
  

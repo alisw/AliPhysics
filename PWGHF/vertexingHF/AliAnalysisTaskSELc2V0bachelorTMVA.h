@@ -121,7 +121,9 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
 
   void SetKeepingKeepingOnlyPYTHIABkg(Bool_t a) { fKeepingOnlyPYTHIABkg = a;}
   Bool_t GetKeepingOnlyPYTHIABkg() {return fKeepingOnlyPYTHIABkg;}
-
+	
+  void SetTriggerMask(ULong64_t c) { fTriggerMask = c;}	
+	
  private:
   
   EBachelor CheckBachelor(AliAODRecoCascadeHF *part, AliAODTrack* bachelor, TClonesArray *mcArray);
@@ -259,7 +261,9 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   TH1F* fHistoMCLcK0SpGenAcc;         //! histo with MC Lc --> K0S + p
   TH1F* fHistoMCLcK0SpGenLimAcc;      //! histo with MC Lc --> K0S + p
 
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVA, 6); // class for Lc->p K0
+  ULong64_t fTriggerMask;			  // mask to the trigger word returned by the physics selection
+	
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVA, 8); // class for Lc->p K0
 };
 
 #endif

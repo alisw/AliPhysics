@@ -183,8 +183,8 @@ class AliAnalysisKinkESDMC : public AliAnalysisTaskSE {
 
  Int_t fLowMulcut; //
 Int_t fUpMulcut;
-Int_t fKinkRadUp;
-Int_t fKinkRadLow;
+Float_t fKinkRadUp;
+Float_t fKinkRadLow;
     Int_t fLowCluster;
 Float_t  fLowQt;
  Float_t  fRapiK;

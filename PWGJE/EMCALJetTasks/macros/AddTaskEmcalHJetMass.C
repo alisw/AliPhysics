@@ -1,4 +1,4 @@
-AliAnalysisTaskEmcalHJetMass* AddTaskEmcalHJetMass(const char * njetsBase,
+EmcalHJetMassAnalysis::AliAnalysisTaskEmcalHJetMass* AddTaskEmcalHJetMass(const char * njetsBase,
 						   const Double_t R,
 						   const char * nrhoBase,
 						   const char * ntracks,
@@ -33,7 +33,7 @@ AliAnalysisTaskEmcalHJetMass* AddTaskEmcalHJetMass(const char * njetsBase,
   TString wagonName = Form("HJetMass_%s_TC%s%s",njetsBase,trigClass.Data(),tag.Data());
 
   //Configure jet tagger task
-  AliAnalysisTaskEmcalHJetMass *task = new AliAnalysisTaskEmcalHJetMass(wagonName.Data());
+  EmcalHJetMassAnalysis::AliAnalysisTaskEmcalHJetMass *task = new EmcalHJetMassAnalysis::AliAnalysisTaskEmcalHJetMass(wagonName.Data());
   task->SetNCentBins(4);
   task->SetMaxDeltaPhi(maxDPhi);
   

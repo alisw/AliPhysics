@@ -765,6 +765,11 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 	TH1F* hptFakeTrFromDaugh=new TH1F(hname.Data(),"Pt distribution of fake tracks from daughters;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
 	hptFakeTrFromDaugh->SetTitleOffset(1.3,"Y");
 	fOutputTrack->Add(hptFakeTrFromDaugh);
+
+	hname="hptFakeTrFromDaugh_filt";
+	TH1F* hptFakeTrFromDaughFilt=new TH1F(hname.Data(),"Pt distribution of fake tracks from daughters, cut level;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
+	hptFakeTrFromDaughFilt->SetTitleOffset(1.3,"Y");
+	fOutputTrack->Add(hptFakeTrFromDaughFilt);
       }
 
       fOutputTrack->Add(hptFakeTr);

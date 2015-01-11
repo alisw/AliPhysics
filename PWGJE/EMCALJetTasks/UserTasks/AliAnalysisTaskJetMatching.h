@@ -1,6 +1,8 @@
 #ifndef AliAnalysisTaskJetMatching_H
 #define AliAnalysisTaskJetMatching_H
 
+//#define DEBUGTASK
+
 #include <AliAnalysisTaskEmcalJet.h>
 #include <AliEmcalJet.h>
 #include <AliVTrack.h>
@@ -59,7 +61,6 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
                return TMath::Sqrt(TMath::Abs((etaA-etaB)*(etaA-etaB)+(phiA-phiB)*(phiA-phiB))); }
 
         // setters - setup how to run
-        void                    SetDebugMode(Int_t d)                           {fDebug = d;}
         void                    SetMatchingScheme(matchingSceme m)              {fMatchingScheme = m;}
         void                    SetMatchConstituents(Bool_t m)                  {fMatchConstituents = m;}
         void                    SetMinFracRecoveredConstituents(Float_t f)      {fMinFracRecoveredConstituents = f;}
@@ -105,7 +106,6 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
         virtual void            Terminate(Option_t* option);
 
     private: 
-        Int_t                   fDebug;                 // debug level (0 none, 1 fcn calls, 2 verbose)
         TClonesArray*           fSourceJets;            //! array with source jets
         TString                 fSourceJetsName;        // name of array with source jets
         TClonesArray*           fTargetJets;            //! array with target jets

@@ -239,16 +239,16 @@ AliJHistos::AliJHistos(AliJCard* cardP) :
     fHMG = new AliJHistManager( "HistManager");
     //for (int hiklong = 0; hiklong < fCard->GetNoOfBins(kLongType); hiklong++)
     //kRGapType kEtaGapType
-    fCentBin   .Set("Cent",   "C", "C %2.0f-%2.0f%%" ).SetBin( fCard->GetVector("CentBinBorders"));
-    fVtxBin    .Set("Vtx",    "V", "" ).SetBin(fCard->GetVector("zVertBins"));
-    fPTtBin    .Set("PTt",    "T", "").SetBin(fCard->GetVector("TriggPtBorders"));
-    fPTaBin    .Set("PTa",    "A", "").SetBin(fCard->GetVector("AssocPtBorders"));
-    fXEBin     .Set("XE",     "X", "x_{E}: %2.1f-%2.1f" ).SetBin(fCard->GetVector("xEBorders"));
-    fKLongBin  .Set("KLong", "L", "k_{#parallel}: %2.1f-%2.1f").SetBin(fCard->GetVector("KlongBorders"));
-    fRGapBin   .Set("RGap",  "R",  "").SetBin(fCard->GetVector("RGapThresholds"));
-    fEtaGapBin .Set("EtaGap", "E", "").SetBin(fCard->GetVector("EtaGapThresholds"));
-    fPhiGapBin .Set("PhiGap", "P", "" ).SetBin(fCard->GetVector("EtaGapThresholds"));
-    fMassBin   .Set("Mass",   "M", "Mass").SetBin(fCard->GetVector("PairInvariantMassBins"));
+    fCentBin   .Set("Cent",   "C", "Cend:%2.0f-%2.0f%%" ).SetBin( fCard->GetVector("CentBinBorders"));
+    fVtxBin    .Set("Vtx",    "V", "Vtx:%2.0f-%2.0f" ).SetBin(fCard->GetVector("zVertBins"));
+    fPTtBin    .Set("PTt",    "T", "%.2f<p_{Tt}<%.2f").SetBin(fCard->GetVector("TriggPtBorders"));
+    fPTaBin    .Set("PTa",    "A", "%.2f<p_{Ta}<%.2f").SetBin(fCard->GetVector("AssocPtBorders"));
+    fXEBin     .Set("XE",     "X", "%.1f<x_{E}<%.1f" ).SetBin(fCard->GetVector("xEBorders"));
+    fKLongBin  .Set("KLong", "L",  "%.1f<k_{#parallel}<%.1f").SetBin(fCard->GetVector("KlongBorders"));
+    fRGapBin   .Set("RGap",  "R",  "%.1f<R_{gap}<%.1f").SetBin(fCard->GetVector("RGapThresholds"));
+    fEtaGapBin .Set("EtaGap", "E", "%.1f<#eta_{gap}<%.1f").SetBin(fCard->GetVector("EtaGapThresholds"));
+    fPhiGapBin .Set("PhiGap", "P", "%.1f<#phi_{gap}<%.1f" ).SetBin(fCard->GetVector("EtaGapThresholds"));
+    fMassBin   .Set("Mass",   "M", "%.1f<M_{jj}<%.1f").SetBin(fCard->GetVector("PairInvariantMassBins"));
     fTypBin    .Set("Type",   "D", "", AliJBin::kSingle ).SetBin( "0 1" );
     fTypBin3    .Set("Type3",   "D", "", AliJBin::kSingle ).SetBin( "0 1 2 3" );
     //card->IsLessThanUpperPairPtCut(-ipairpt)

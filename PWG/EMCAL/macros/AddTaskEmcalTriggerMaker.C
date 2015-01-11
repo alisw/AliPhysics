@@ -12,6 +12,7 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMaker(
   int jetHighA                    = 0,
   int jetHighB                    = 0,
   int jetHighC                    = 0,
+  bool useOldBitConfig            = kFALSE,
   bool doQA                       = kFALSE
 )
 {  
@@ -80,6 +81,8 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMaker(
   eTask->SetV0InName(v0Name);
   eTask->SetTriggerThresholdJetLow( jetLowA, jetLowB, jetLowC );
   eTask->SetTriggerThresholdJetHigh( jetHighA, jetHighB, jetHighC );
+  if (useOldBitConfig)
+    eTask->SetUseTriggerBitConfig(AliEmcalTriggerMaker::kOldConfig);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

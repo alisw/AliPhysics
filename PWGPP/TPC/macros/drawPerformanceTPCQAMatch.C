@@ -13,10 +13,10 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   gSystem->Load("libTRDcalib");
   gSystem->Load("libT0calib");
   gSystem->Load("libTOFcalib");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libANALYSIScalib.so");
-  gSystem->Load("libTENDER.so");
-  gSystem->Load("libPWGPP.so");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libANALYSIScalib");
+  gSystem->Load("libTender");
+  gSystem->Load("libPWGPP");
                     
   gROOT->Reset();
   gROOT->SetStyle("Plain");

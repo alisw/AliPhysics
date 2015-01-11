@@ -1,12 +1,12 @@
 //=============================================================================
 void runAsTask(int grid=0) {
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libEG.so");
-  gSystem->Load("libTree.so");
-  gSystem->Load("libVMC.so"); 
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libEG");
+  gSystem->Load("libTree");
+  gSystem->Load("libVMC");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libPWG2unicor");

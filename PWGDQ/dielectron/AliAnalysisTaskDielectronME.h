@@ -18,10 +18,10 @@
 #include "TList.h"
 
 #include "AliAnalysisTaskME.h"
-
+#include "AliDielectron.h"
 #include "AliDielectronPID.h"
 
-class AliDielectron;
+//class AliDielectron;
 class TH1D;
 
 class AliAnalysisTaskDielectronME : public AliAnalysisTaskME {

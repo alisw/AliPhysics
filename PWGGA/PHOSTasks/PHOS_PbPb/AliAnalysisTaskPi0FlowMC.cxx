@@ -505,7 +505,7 @@ void AliAnalysisTaskPi0FlowMC::ConsiderPi0s()
       }
       if(ph2->IsDispOK()){
         FillHistogram(Form("hSingleDisp_cen%d",fCentBin),m,pt2, w) ;
-        if(ph1->IsntUnfolded()){
+        if(ph2->IsntUnfolded()){
           FillHistogram(Form("hSingleDispwou_cen%d",fCentBin),m,pt2, w) ;
 	}
         FillHistogram(Form("hSingleDispcore_cen%d",fCentBin),mcore,ptcore2, w) ;
@@ -770,7 +770,7 @@ void AliAnalysisTaskPi0FlowMC::ConsiderPi0sMix()
         }
         if(ph2->IsDispOK()){
           FillHistogram(Form("hMiSingleDisp_cen%d",fCentBin),m,pt2, w) ;
-          if(ph1->IsntUnfolded()){
+          if(ph2->IsntUnfolded()){
             FillHistogram(Form("hMiSingleDispwou_cen%d",fCentBin),m,pt2, w) ;
 	  }
           FillHistogram(Form("hMiSingleDispcore_cen%d",fCentBin),mcore,ptcore2, w) ;

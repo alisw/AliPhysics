@@ -3,16 +3,16 @@ void JetAnalysisManager()
     //
     // Load relevant libraries
     //
-    gSystem->Load("libTree.so");
-    gSystem->Load("libNetx.so");
-    gSystem->Load("libProof.so");
-    gSystem->Load("libProofPlayer.so");
-    gSystem->Load("libGeom.so");
+    gSystem->Load("libTree");
+    gSystem->Load("libNetx");
+    gSystem->Load("libProof");
+    gSystem->Load("libProofPlayer");
+    gSystem->Load("libGeom");
     gSystem->Load("libEG");
 
-    gSystem->Load("libANALYSIS.so");
-    gSystem->Load("libESD.so"); 
-    gSystem->Load("libJETAN.so");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libESD");
+    gSystem->Load("libJETAN");
     //
     // Connect to alien
     //

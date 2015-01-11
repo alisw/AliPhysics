@@ -37,8 +37,8 @@ void LoadLibraries()
   gSystem->Load("libVZEROrec");
   gSystem->Load("libT0base");
   gSystem->Load("libT0rec");
-  gSystem->Load("libTENDER");
-  gSystem->Load("libTENDERSupplies");
+  gSystem->Load("libTender");
+  gSystem->Load("libTenderSupplies");
 
   gSystem->Load("libPWGflowBase");
   gSystem->Load("libPWGflowTasks");

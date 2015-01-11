@@ -37,6 +37,7 @@
 // to see an example of how to use this class, see $ALICE_ROOT/PWGCF/FLOW/macros/jetFlowTools.C
 
 // root includes
+#include "TH1.h"
 #include "TF2.h"
 #include "TH2D.h"
 #include "TGraph.h"
@@ -145,7 +146,7 @@ AliJetFlowTools::AliJetFlowTools() :
         for(Int_t i(0); i < fPower->GetNpar(); i++) fPower->SetParameter(i, 0.);
 }
 //_____________________________________________________________________________
-void AliJetFlowTools::Make() {
+void AliJetFlowTools::Make(TH1* customIn, TH1* customOut) {
     // core function of the class
     if(fDphiDptUnfolding) {
         // to extract the yield as function of Dphi, Dpt - experimental
@@ -160,7 +161,7 @@ void AliJetFlowTools::Make() {
     // 1) manipulation of input histograms
     // check if the input variables are present
     if(fRefreshInput) {
-        if(!PrepareForUnfolding()) {
+        if(!PrepareForUnfolding(customIn, customOut)) {
             printf(" AliJetFlowTools::Make() Fatal error \n - couldn't prepare for unfolding ! \n");
             return;
         }
@@ -387,6 +388,7 @@ TH1D* AliJetFlowTools::UnfoldWrapper(
     else if(fUnfoldingAlgorithm == kBayesian)           myFunction = &AliJetFlowTools::UnfoldSpectrumBayesian;
     else if(fUnfoldingAlgorithm == kBayesianAli)        myFunction = &AliJetFlowTools::UnfoldSpectrumBayesianAli;
     else if(fUnfoldingAlgorithm == kSVD)                myFunction = &AliJetFlowTools::UnfoldSpectrumSVD;
+    else if(fUnfoldingAlgorithm == kFold)               myFunction = &AliJetFlowTools::FoldSpectrum;
     else if(fUnfoldingAlgorithm == kNone) {
         TH1D* clone((TH1D*)measuredJetSpectrum->Clone("clone"));
         clone->SetNameTitle(Form("MeasuredJetSpectrum%s", suffix.Data()), Form("measuredJetSpectrum %s", suffix.Data()));
@@ -875,9 +877,53 @@ TH1D* AliJetFlowTools::UnfoldSpectrumBayesian(
     return  unfoldedLocalBayes; 
 }
 //_____________________________________________________________________________
-Bool_t AliJetFlowTools::PrepareForUnfolding()
+TH1D* AliJetFlowTools::FoldSpectrum(
+        const TH1D* measuredJetSpectrum,      // truncated raw jets (same binning as pt rec of response) 
+        const TH2D* resizedResponse,          // response matrix
+        const TH1D* kinematicEfficiency,      // kinematic efficiency
+        const TH1D* measuredJetSpectrumTrueBins,        // unfolding template: same binning is pt gen of response
+        const TString suffix,                 // suffix (in or out of plane)
+        const TH1D* jetFindingEfficiency)     // jet finding efficiency (optional)
 {
-    // prepare for unfolding
+    // simple function to fold the given spectrum with the in-plane and out-of-plane response
+
+    // 0) for consistency with the other methods, keep the same nomenclature which admittedly is a bit confusing 
+    // what is 'unfolded' here, is just a clone of the input spectrum, binned to the 'unfolded' binning
+    TH1D* unfoldedLocal((TH1D*)measuredJetSpectrum->Clone(Form("unfoldedLocal_%s", suffix.Data())));
+
+    // 1) full response matrix and kinematic efficiency
+    TH2D* resizedResponseLocal = (TH2D*)resizedResponse->Clone(Form("resizedResponseLocal_%s", suffix.Data()));
+    TH1D* kinematicEfficiencyLocal = (TH1D*)kinematicEfficiency->Clone(Form("kinematicEfficiencyLocal_%s", suffix.Data()));
+
+    // step 2) fold the 'unfolded' spectrum and save the ratio measured / refolded
+    TH1D *foldedLocal(fResponseMaker->MultiplyResponseGenerated(unfoldedLocal, resizedResponseLocal,kinematicEfficiencyLocal));
+    foldedLocal->SetNameTitle(Form("RefoldedSpectrum_%s", suffix.Data()), Form("Refolded jet spectrum, %s plane", suffix.Data()));
+    unfoldedLocal->SetNameTitle(Form("UnfoldedSpectrum_%s", suffix.Data()), Form("Unfolded jet spectrum, %s plane", suffix.Data()));
+ 
+    // step 3) write histograms to file. to ensure that these have unique identifiers on the heap, 
+    // objects are cloned using 'ProtectHeap()'
+    TH1D* measuredJetSpectrumLocal((TH1D*)(measuredJetSpectrum->Clone("tempObject")));
+    measuredJetSpectrumLocal->SetNameTitle(Form("InputSpectrum_%s", suffix.Data()), Form("InputSpectrum_%s", suffix.Data()));
+    measuredJetSpectrumLocal = ProtectHeap(measuredJetSpectrumLocal);
+    measuredJetSpectrumLocal->Write(); 
+
+    resizedResponseLocal = ProtectHeap(resizedResponseLocal);
+    resizedResponseLocal->Write();
+
+    unfoldedLocal = ProtectHeap(unfoldedLocal);
+    if(jetFindingEfficiency) unfoldedLocal->Divide(jetFindingEfficiency);
+    unfoldedLocal->Write();
+
+    foldedLocal = ProtectHeap(foldedLocal);
+    foldedLocal->Write();
+
+    // return the folded result
+    return foldedLocal;
+}
+//_____________________________________________________________________________
+Bool_t AliJetFlowTools::PrepareForUnfolding(TH1* customIn, TH1* customOut)
+{
+    // prepare for unfolding. check if all the necessary input data is available, if not, retrieve it
     if(fRawInputProvided) return kTRUE;
     if(!fInputList) {
         printf(" AliJetFlowTools::PrepareForUnfolding() fInputList not found \n - Set a list using AliJetFlowTools::SetInputList() \n");
@@ -933,6 +979,10 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
         fSpectrumOut = fJetPtDeltaPhi->ProjectionY(Form("_py_out_%s", spectrumName.Data()), 11, 30, "e");
         fSpectrumOut = ProtectHeap(fSpectrumOut);
     }
+    // if a custom input is passed, overwrite existing histograms
+    if(customIn)        fSpectrumIn = dynamic_cast<TH1D*>(customIn);
+    if(customOut)       fSpectrumOut = dynamic_cast<TH1D*>(customOut);
+
     // normalize spectra to event count if requested
     if(fNormalizeSpectra) {
         TH1* rho((TH1*)fInputList->FindObject(Form("fHistRho_%i", fCentralityArray->At(0))));
@@ -1334,11 +1384,16 @@ TH1D* AliJetFlowTools::RebinTH1D(TH1D* histo, TArrayD* bins, TString suffix, Boo
     TString name = histo->GetName();
     name+="_template";
     name+=suffix;
-    TH1D* rebinned = new TH1D(name.Data(), name.Data(), bins->GetSize()-1, bins->GetArray());
-    for(Int_t i(0); i < histo->GetXaxis()->GetNbins(); i++) {
-        // loop over the bins of the old histo and fill the new one with its data
-        rebinned->Fill(histo->GetBinCenter(i+1), histo->GetBinContent(i+1));
-    }
+    TH1D* rebinned = 0x0;
+    // check if the histogram is normalized. if so, fall back to ROOT style rebinning
+    // if not, rebin manually
+    if(histo->GetBinContent(1) > 1 ) {
+        rebinned = new TH1D(name.Data(), name.Data(), bins->GetSize()-1, bins->GetArray());
+        for(Int_t i(0); i < histo->GetXaxis()->GetNbins(); i++) {
+            // loop over the bins of the old histo and fill the new one with its data
+            rebinned->Fill(histo->GetBinCenter(i+1), histo->GetBinContent(i+1));
+        }
+    } else rebinned = reinterpret_cast<TH1D*>(histo->Rebin(bins->GetSize()-1, name.Data(), bins->GetArray()));
     if(kill) delete histo;
     return rebinned;
 }
@@ -2043,6 +2098,7 @@ void AliJetFlowTools::GetShapeUncertainty(
         Int_t columns,                  // divide the output canvasses in this many columns
         Float_t rangeLow,               // lower pt range
         Float_t rangeUp,                // upper pt range
+        Float_t corr,                   // correlation strength
         TString in,                     // input file name (created by this unfolding class)
         TString out                     // output file name (which will hold results of the systematic test)
         ) const
@@ -2335,7 +2391,8 @@ void AliJetFlowTools::GetShapeUncertainty(
                     relativeErrorInUp,
                     relativeErrorInLow,
                     relativeErrorOutUp,
-                    relativeErrorOutLow));
+                    relativeErrorOutLow,
+                    corr));
         shapeV2 = (TGraphAsymmErrors*)nominalV2Error->Clone();
         TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, fEventPlaneRes, "v_{2}"));
         nominalCanvas->cd(2);
@@ -3662,7 +3719,6 @@ Bool_t AliJetFlowTools::SetRawInput (
     fSpectrumOut        = jetPtOut;
     fDptInDist          = dptIn;
     fDptOutDist         = dptOut;
-    fRawInputProvided   = kTRUE;
     // check if all data is provided
     if(!fDetectorResponse) {
         printf(" fDetectorResponse not found \n ");
@@ -3704,7 +3760,10 @@ Bool_t AliJetFlowTools::SetRawInput (
     fDptOut->GetXaxis()->SetTitle("p_{T, jet}^{gen} [GeV/c]");
     fDptOut->GetYaxis()->SetTitle("p_{T, jet}^{rec} [GeV/c]");
     
-    return kTRUE;
+
+    // set the flag to let other functions to read data from input file
+    fRawInputProvided = kTRUE;
+    return fRawInputProvided;
 }
 //_____________________________________________________________________________
 TGraphErrors* AliJetFlowTools::GetRatio(TH1 *h1, TH1* h2, TString name, Bool_t appendFit, Int_t xmax) 
@@ -4217,47 +4276,52 @@ void AliJetFlowTools::GetSignificance(
         Int_t up                        // upper bin
         )
 {
-    // calculate confidence level based on statistical uncertainty only
-    Double_t statE(0), shapeE(0), corrE(0), totalE(0), y(0), x(0), chi2(0);
+    // main use of this function is filling the static buffers
+    Double_t statE(0), shapeE(0), corrE(0), y(0), x(0), chi2(0);
 
     // print some stuff
+    printf(" double v2[] = {\n");
+    Int_t iterator(0);
     for(Int_t i(low); i < up+1; i++) { 
         n->GetPoint(i, x, y);
-        printf(" > v2 \t %.4f \n", y);
+        if(i==up) printf("%.4f}; \n\n", y);
+        else printf("%.4f, \n", y);
+        gV2->SetAt(y, iterator);
+        iterator++;
     }
+    iterator = 0;
+    printf(" double stat[] = {\n");
     for(Int_t i(low); i < up+1; i++) { 
-        statE = n->GetErrorYlow(i);
-        printf(" > stat \t %.4f \n", statE);
+        y = n->GetErrorYlow(i);
+        if(i==up) printf("%.4f}; \n\n", y);
+        else printf("%.4f, \n", y);
+        gStat->SetAt(y, iterator);
+        iterator++;
     }
+    iterator = 0;
+    printf(" double shape[] = {\n");
     for(Int_t i(low); i < up+1; i++) { 
-        shapeE = n->GetErrorYlow(i);
-        printf(" > shape \t %.4f \n", shapeE);
+        y = shape->GetErrorYhigh(i);
+        y*=gReductionFactor;
+        shape->SetPointEYhigh(i, y);
+        y = shape->GetErrorYlow(i);
+        y*=gReductionFactor;
+        shape->SetPointEYlow(i, y);
+        if(i==up) printf("%.4f}; \n\n", y);
+        else printf("%.4f, \n", y);
+        gShape->SetAt(y, iterator);
+        iterator++;
     }
+    iterator = 0;
+    printf(" double corr[] = {\n");
     for(Int_t i(low); i < up+1; i++) { 
-        corrE = n->GetErrorYlow(i);
-        printf(" > corr \t %.4f \n", corrE);
+        y = corr->GetErrorYlow(i);
+        if(i==up) printf("%.4f}; \n\n", y);
+        else printf("%.4f, \n", y);
+        gCorr->SetAt(y, iterator);
+        iterator++;
     }
 
-
-    // get the p value based solely on statistical uncertainties
-    for(Int_t i(low); i < up+1; i++) {
-        // set some flags to 0
-        x = 0.;
-        y = 0.;
-        // get the nominal point
-        n->GetPoint(i, x, y);
-        statE = n->GetErrorYlow(i);
-        // combine the errors
-        chi2 += TMath::Power(y/statE, 2);
-    }
-    cout << "p-value: p(" << chi2 << ", 6) " << TMath::Prob(chi2, 6) << endl;
-    cout << "  so the probability of finding data at least as imcompatible with 0 as the actually" << endl;
-    cout << "  observed data, using only statistical uncertainties, is " << TMath::Prob(chi2, 2) << endl << endl << endl ; 
-
-    statE = 0.;
-    shapeE = 0.;
-    corrE = 0;
-    totalE = 0;
     // to plot the average error as function of number of events
     Float_t ctr(0);
     for(Int_t i(low); i < up+1; i++) {
@@ -4271,8 +4335,9 @@ void AliJetFlowTools::GetSignificance(
         shapeE += shape->GetErrorY(i);
         corrE += corr->GetErrorY(i);
         // combine the errors
-//        totalE += TMath::Sqrt(corrE*corrE+shapeE*shapeE);// + TMath::Sqrt(corrE*corrE);
     }
+    printf(" ======================================\n");
+    printf("  > between %i and %i GeV/c \n", low, up);
     cout << " AVERAGE_SHAPE " << shapeE/ctr << endl;
     cout << " AVERAGE_CORR " << corrE/ctr << endl;
     cout << " AVERAGE_STAT " << statE/ctr << endl;
@@ -4299,65 +4364,31 @@ void AliJetFlowTools::MinimizeChi2nd()
 
 
     min.Minimize(); 
-    const double *xs = min.X();
-    Int_t DOF(6);
-    cout << endl << endl <<  "Minimum: Chi2nd(" << xs[0] << ", " << xs[1] <<"):"  << PhenixChi2nd(xs) << endl;
-    cout << "p-value: p(" << PhenixChi2nd(xs) << ", " << DOF << ") " << TMath::Prob(PhenixChi2nd(xs), DOF) << endl;
-    cout << "  so the probability of finding data at least as imcompatible with 0 as the actually" << endl;
-    cout << "  observed data is " << TMath::Prob(PhenixChi2nd(xs), DOF) << endl << endl << endl ; 
 }
 //_____________________________________________________________________________
 Double_t AliJetFlowTools::PhenixChi2nd(const Double_t *xx )
 {
     // define arrays with results and errors here, see example at PhenixChi2()
-    Double_t v2[] = {
-        0.0816,
-        0.0955, 
-        0.0808, 
-        0.0690, 
-        0.0767, 
-        0.1005 
-    };
-    Double_t stat[] = {
-     0.0065, 
-     0.0099, 
-     0.0127, 
-     0.0183, 
-     0.0271, 
-     0.0401};
-    Double_t shape[] = {
-     0.0065, 
-     0.0099, 
-     0.0127, 
-     0.0183, 
-     0.0271, 
-     0.0401};
-    Double_t corr[] = {
-     0.01, 
-     0.01, 
-     0.01, 
-     0.01, 
-     0.01, 
-     0.01};
 
     // return the function value at certain epsilon
     const Double_t epsc = xx[0];
     const Double_t epsb = xx[1];
     Double_t chi2(0);
-    Int_t counts = (Int_t)(sizeof(v2)/sizeof(v2[0]));
+    Int_t counts(gV2->GetSize() + gOffsetStop);
 
     // altered implemtation of eq 3 of arXiv:0801.1665v2
     // see analysis note and QM2014 poster for validation
-    for(Int_t i(0); i < counts; i++) {
+    for(Int_t i(gOffsetStart); i < counts; i++) {
+
         // quadratic sum of statistical and uncorrelated systematic error
-        Double_t e = stat[i];
+        Double_t e = gStat->At(i);;
 
         // sum of v2 plus epsilon times correlated error minus hypothesis (0)
         // also the numerator of equation 3 of phenix paper
-        Double_t numerator = TMath::Power(v2[i]+epsc*corr[i]+epsb, 2);
+        Double_t numerator = TMath::Power(gV2->At(i)+epsc*gCorr->At(i)+epsb, 2);
 
-        // denominator of equation 3 of phenix paper
-        Double_t denominator = e*e;//TMath::Power((e*(v2[i]+epsc*corr[i]+epsb*shape[i]))/v2[i], 2);
+        // modified denominator of equation 3 of phenix paper
+        Double_t denominator = e*e;
 
         // add to the sum
         chi2 += numerator/denominator;
@@ -4365,7 +4396,7 @@ Double_t AliJetFlowTools::PhenixChi2nd(const Double_t *xx )
     // add the square of epsilon to the total chi2 as penalty
 
     Double_t sumEpsb(0);
-    for(Int_t j(0); j < counts; j++) sumEpsb += (epsb*epsb)/(shape[j]*shape[j]);
+    for(Int_t j(gOffsetStart); j < counts; j++) sumEpsb += (epsb*epsb)/(gShape->At(j)*gShape->At(j));
     chi2 += epsc*epsc + sumEpsb/((float)counts);
 
     return chi2;
@@ -4373,29 +4404,30 @@ Double_t AliJetFlowTools::PhenixChi2nd(const Double_t *xx )
 //_____________________________________________________________________________
 Double_t AliJetFlowTools::ConstructFunctionnd(Double_t *x, Double_t *par)
 {
-       return AliJetFlowTools::PhenixChi2nd(x);
+    // internal use only: evaluate the function at a given point
+    return AliJetFlowTools::PhenixChi2nd(x);
 }
 //_____________________________________________________________________________
-TF2* AliJetFlowTools::ReturnFunctionnd()
+TF2* AliJetFlowTools::ReturnFunctionnd(Double_t &p)
 {
-      TF2 *f1 = new TF2("ndhist",AliJetFlowTools::ConstructFunctionnd, -100, 100, -100, 100, 0);
-      printf(" > locating minima < \n");
-      Double_t chi2(f1->GetMinimum());
-      Double_t x(0), y(0);
-      f1->GetMinimumXY(x, y);
-      f1->GetXaxis()->SetTitle("#epsilon{b}");
-      f1->GetXaxis()->SetTitle("#epsilon_{c}");
-      f1->GetZaxis()->SetTitle("#chi^{2}");
+    // return the fitting function, pass the p-value w.r.t. 0 by reference
+    const Int_t DOF(4);
+    TF2 *f1 = new TF2("ndhist",AliJetFlowTools::ConstructFunctionnd, -100, 100, -100, 100, 0);
+    printf(" > locating minima < \n");
+    Double_t x(0), y(0);
+    f1->GetMinimumXY(x, y);
+    f1->GetXaxis()->SetTitle("#epsilon{b}");
+    f1->GetXaxis()->SetTitle("#epsilon_{c}");
+    f1->GetZaxis()->SetTitle("#chi^{2}");
 
-      printf(" > minimal chi2 f(%.8f, %.8f) = %.8f  (i'm a wrong value for some reason?) \n", x, y, chi2);
-      cout << "  so the probability of finding data at least as imcompatible with 0 as the actually" << endl;
-      cout << "  observed data is " << TMath::Prob(chi2, 6) << endl; 
+    printf(" ===============================================================================\n");
+    printf(" > minimal chi2 f(%.8f, %.8f) = %.8f  (i should be ok ... ) \n", x, y, f1->Eval(x, y));
+    cout << "  so the probability of finding data at least as imcompatible with 0 as the actually" << endl;
+    cout << "  observed data is " << TMath::Prob(f1->Eval(x, y), DOF) << endl; 
+    printf(" ===============================================================================\n");
 
-      printf(" > minimal chi2 f(%.8f, %.8f) = %.8f  (i should be ok ... ) \n", x, y, f1->Eval(x, y));
-      cout << "  so the probability of finding data at least as imcompatible with 0 as the actually" << endl;
-      cout << "  observed data is " << TMath::Prob(f1->Eval(x, y), 6) << endl; 
-
-
-      return f1;
+    // pass the p-value by reference and return the function
+    p = TMath::Prob(f1->Eval(x, y), DOF);
+    return f1;
 }
 //_____________________________________________________________________________

@@ -218,24 +218,24 @@ void LoadLibs()
   gSystem->Load("libCORRFW");
   //gSystem->Load("libTOFbase");
   //gSystem->Load("libTOFrec");
-  //gSystem->Load("libRAWDatabase.so");
-  //gSystem->Load("libRAWDatarec.so");
-  //gSystem->Load("libTPCbase.so");
-  //gSystem->Load("libTPCrec.so");
-  //gSystem->Load("libITSbase.so");
-  //gSystem->Load("libITSrec.so");
-  //gSystem->Load("libTRDbase.so");
-  //gSystem->Load("libTENDER.so");
-  //gSystem->Load("libSTAT.so");
-  //gSystem->Load("libTRDrec.so");
-  //gSystem->Load("libHMPIDbase.so");
-  gSystem->Load("libPWGTools.so");
-  //gSystem->Load("libPWGPP.so");
+  //gSystem->Load("libRAWDatabase");
+  //gSystem->Load("libRAWDatarec");
+  //gSystem->Load("libTPCbase");
+  //gSystem->Load("libTPCrec");
+  //gSystem->Load("libITSbase");
+  //gSystem->Load("libITSrec");
+  //gSystem->Load("libTRDbase");
+  //gSystem->Load("libTender");
+  //gSystem->Load("libSTAT");
+  //gSystem->Load("libTRDrec");
+  //gSystem->Load("libHMPIDbase");
+  gSystem->Load("libPWGTools");
+  //gSystem->Load("libPWGPP");
   gSystem->Load("libPWGHFbase");
   //gSystem->Load("libPWGDQdielectron");
   //gSystem->Load("libPWGHFhfe");
-  gSystem->Load("libPWGflowBase.so");
-  gSystem->Load("libPWGflowTasks.so");
+  gSystem->Load("libPWGflowBase");
+  gSystem->Load("libPWGflowTasks");
   gSystem->Load("libPWGHFvertexingHF");
   gSystem->Load("libEMCALUtils");
   //gSystem->Load("libPHOSUtils");
@@ -246,8 +246,8 @@ void LoadLibs()
   //gSystem->Load("libTRDbase");
   //gSystem->Load("libVZERObase");
   //gSystem->Load("libVZEROrec");
-  gSystem->Load("libTENDER");
-  gSystem->Load("libTENDERSupplies");
+  gSystem->Load("libTender");
+  gSystem->Load("libTenderSupplies");
   gSystem->Load("libESDfilter");
   gSystem->Load("libPWGEMCAL");
   gSystem->Load("libPWGGAEMCALTasks");
@@ -296,7 +296,7 @@ AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir,
   }else tmpName +="_20130412_122423";
   */
   TString tmpAdditionalLibs("");
-  tmpAdditionalLibs = Form("libTree.so libVMC.so libGeom.so libGui.so libXMLParser.so libMinuit.so libMinuit2.so libProof.so libPhysics.so libSTEERBase.so libESD.so libESDfilter.so libAOD.so libOADB.so libANALYSIS.so libCDB.so libRAWDatabase.so libSTEER.so libANALYSISalice.so libCORRFW.so libPWGTools.so libPWGHFbase.so libPWGflowBase.so libPWGflowTasks.so libPWGHFvertexingHF.so libEMCALUtils.so libEMCALraw.so libEMCALbase.so libTENDER.so libPWGEMCAL.so libPWGGAEMCALTasks.so libPWGTools.so libCGAL.so libfastjet.so libsiscone.so libsiscone_spherical.so libfastjetplugins.so libfastjettools.so libfastjetcontribfragile.so libJETAN.so libFASTJETAN.so  libPWGJE.so libPWGJEEMCALJetTasks.so libPWGJEFlavourJetTasks.so %s %s",additionalCode.Data(),additionalHeaders.Data());
+  tmpAdditionalLibs = Form("libTree.so libVMC.so libGeom.so libGui.so libXMLParser.so libMinuit.so libMinuit2.so libProof.so libPhysics.so libSTEERBase.so libESD.so libESDfilter.so libAOD.so libOADB.so libANALYSIS.so libCDB.so libRAWDatabase.so libSTEER.so libANALYSISalice.so libCORRFW.so libPWGTools.so libPWGHFbase.so libPWGflowBase.so libPWGflowTasks.so libPWGHFvertexingHF.so libEMCALUtils.so libEMCALraw.so libEMCALbase.so libTender.so libPWGEMCAL.so libPWGGAEMCALTasks.so libPWGTools.so libCGAL.so libfastjet.so libsiscone.so libsiscone_spherical.so libfastjetplugins.so libfastjettools.so libfastjetcontribfragile.so libJETAN.so libFASTJETAN.so  libPWGJE.so libPWGJEEMCALJetTasks.so libPWGJEFlavourJetTasks.so %s %s",additionalCode.Data(),additionalHeaders.Data());
 
 
   TString macroName("");

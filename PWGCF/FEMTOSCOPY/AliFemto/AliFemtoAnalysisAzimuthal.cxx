@@ -24,8 +24,9 @@ ClassImp(AliFemtoAnalysisAzimuthal)
 #endif
 
 extern void FillHbtParticleCollection(AliFemtoParticleCut*         partCut,
-				      AliFemtoEvent*               hbtEvent,
-				      AliFemtoParticleCollection*  partCollection);
+			       AliFemtoEvent*               hbtEvent,
+			       AliFemtoParticleCollection*  partCollection,
+			       bool performSharedDaughterCut=kFALSE);
 
 
 //____________________________

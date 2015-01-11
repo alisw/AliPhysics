@@ -31,10 +31,13 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
                                                           Double_t Dispersion,
                                                           Int_t minTPCCluster,
                                                           AliHFEextraCuts::ITSPixel_t pixel,
+                                                          Bool_t Weight = kFALSE,
+                                                          Bool_t withmultetacorrection=kFALSE,
                                                           Bool_t NUA = kTRUE,
                                                           Bool_t PhotonicElectronDCA = kFALSE,
                                                           Int_t TPCClusterforAsso = 80,
                                                           Bool_t AssoITSref = kTRUE,
+                                                          Double_t ptminassocut = 0.3,
                                                           Bool_t purity = kTRUE,
                                                           Bool_t SideBandsFlow = kFALSE,
                                                           Bool_t Phi_minus_psi = kFALSE,
@@ -48,8 +51,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
                                                           Bool_t debug = kFALSE,
                                                           Int_t RPFilterBit = 1,
                                                           Bool_t op_ang = kFALSE,
-                                                          Double_t op_angle_cut=3.,
-                                                          TString histoflatname = "alien:///alice/cern.ch/user/a/adubla/CentrDistrBins005.root"
+                                                          Double_t op_angle_cut=3.
                                                           )
 
 {
@@ -72,7 +74,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
     }
     
     //create a task
-    AliAnalysisTaskFlowTPCEMCalQCSP *taskHFE = ConfigHFEemcalMod(kFALSE, minTPCCluster, pixel);    //kTRUE if MC
+    AliAnalysisTaskFlowTPCEMCalQCSP *taskHFE = ConfigHFEemcalMod(kFALSE, minTPCCluster, pixel, withmultetacorrection);    //kTRUE if MC
     
     if(debug) cout << " === AliAnalysisElectronFlow === " << taskHFE << endl;
     if(!taskHFE) {
@@ -80,13 +82,27 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
         return 0x0;
     }
     taskHFE->SetTrigger(Trigger);
+    taskHFE->SetEPWeight(Weight);
+
     
+    TString histoflatname = "alien:///alice/cern.ch/user/a/adubla/CentrDistrBins005.root";
     if(Trigger==0 || Trigger==4){
         TFile *fFlat=TFile::Open(histoflatname.Data());
         TCanvas *c=fFlat->Get("cintegral");
         TH1F *hfl=(TH1F*)c->FindObject("hint");
         taskHFE->SetHistoForCentralityFlattening(hfl,centrMin,centrMax,0.,0);
     }
+    
+    
+    TString histoflatnameEP = "alien:///alice/cern.ch/user/a/adubla/EPVZero010_Smart.root";
+    if(Weight){
+        TFile *fFlatEP=TFile::Open(histoflatnameEP,"READ");
+        TCanvas *cEP=fFlatEP->Get("c1_n7");
+        TH1D *hEPfl=(TH1D*)cEP->FindObject("EPVz");
+        taskHFE->SetHistoForEPFlattWeights(hEPfl);
+    }
+    
+
     
     // Set centrality percentiles and method V0M, FMD, TRK, TKL, CL0, CL1, V0MvsFMD, TKLvsV0M, ZEMvsZDC
     taskHFE->SetCentralityParameters(centrMin, centrMax, Cent);
@@ -102,6 +118,8 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
     taskHFE->SetAssoTPCCluster(TPCClusterforAsso);
     taskHFE->SetAssoITSRefit(AssoITSref);
     taskHFE->SetMultCorrelationCut(multCorrcut);
+    taskHFE->SetPtMinAssoCut(ptminassocut);
+
     //set RP cuts for flow package analysis
     cutsRP = new AliFlowTrackCuts(Form("RFPcuts%s",uniqueID));
     if(!cutsRP) {
@@ -313,7 +331,7 @@ void AddQCmethod(char *name, int harmonic, AliAnalysisDataContainer *flowEvent, 
 
 //_____________________________________________________________________________
 
-AliAnalysisTaskFlowTPCEMCalQCSP* ConfigHFEemcalMod(Bool_t useMC,Int_t minTPCCulster,AliHFEextraCuts::ITSPixel_t pixel){
+AliAnalysisTaskFlowTPCEMCalQCSP* ConfigHFEemcalMod(Bool_t useMC,Int_t minTPCCulster,AliHFEextraCuts::ITSPixel_t pixel, Bool_t withmultetacorrection1){
     //
     // HFE standard task configuration
     //
@@ -358,6 +376,30 @@ AliAnalysisTaskFlowTPCEMCalQCSP* ConfigHFEemcalMod(Bool_t useMC,Int_t minTPCCuls
     pid->AddDetector("TPC", 0);
     pid->AddDetector("EMCAL", 1);
     
+    
+    if(withmultetacorrection1) {
+        AliHFEpidTPC *tpcpid = pid->GetDetPID(AliHFEpid::kTPCpid);
+        // Theo
+        //  task->GetPIDQAManager()->SetFillMultiplicity();
+        TF1 *etaCorrMean = GetEtaCorrectionEMCal("LHC11h_etaCorrMean");
+        TF1 *etaCorrWdth = GetEtaCorrectionEMCal("LHC11h_etaCorrWidth");
+        if(etaCorrMean && etaCorrWdth && withmultetacorrection1){
+            tpcpid->SetEtaCorrections(etaCorrMean, etaCorrWdth);
+            printf("TPC dE/dx Eta correction %p %p\n",etaCorrMean,etaCorrWdth);
+        }
+        TF1 *centCorrMean = GetCentralityCorrectionEMCal("LHC11h_multCorrMean");
+        TF1 *centCorrWdth = GetCentralityCorrectionEMCal("LHC11h_multCorrWidth");
+        if(centCorrMean && centCorrWdth && withmultetacorrection1){
+            tpcpid->SetCentralityCorrections(centCorrMean, centCorrWdth);
+            printf("TPC dE/dx multiplicity correction %p %p\n",centCorrMean,centCorrWdth);
+        }
+        task->SetMultCorrectionTheo(withmultetacorrection1);
+        task->SetTPCPID(tpcpid);
+    }
+    
+
+    
+    
     printf("*************************************\n");
     printf("Configuring standard Task:\n");
     //  task->PrintStatus();
@@ -367,5 +409,58 @@ AliAnalysisTaskFlowTPCEMCalQCSP* ConfigHFEemcalMod(Bool_t useMC,Int_t minTPCCuls
     
     
 }
-
 //_____________________________________________________________________________
+//_____________________________________________________________________________
+TF1* GetCentralityCorrectionEMCal(TString listname="LHC11h"){
+    
+    TString etaMap="$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/CentCorrMapsTPC.root";
+    
+    if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
+        Error("ConfigHFEpbpb","Eta map not found: %s",etaMap.Data());
+        return 0;
+    }
+    
+    TFile f(etaMap.Data());
+    if (!f.IsOpen()) return 0;
+    gROOT->cd();
+    TList *keys=f.GetListOfKeys();
+    
+    for (Int_t i=0; i<keys->GetEntries(); ++i){
+        TString kName=keys->At(i)->GetName();
+        TPRegexp reg(kName);
+        if (reg.MatchB(listname)){
+            printf("Using Eta Correction Function: %s\n",kName.Data());
+            return (TF1*)f.Get(kName.Data());
+        }
+    }
+    return 0;
+}
+//_____________________________________________________________________________
+TF1* GetEtaCorrectionEMCal(TString listname="LHC11h"){
+    
+    TString etaMap="$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/EtaCorrMapsTPC.root";
+    
+    if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
+        Error("ConfigHFEpbpb","Eta map not found: %s",etaMap.Data());
+        return 0;
+    }
+    
+    TFile f(etaMap.Data());
+    if (!f.IsOpen()) return 0;
+    gROOT->cd();
+    TList *keys=f.GetListOfKeys();
+    
+    for (Int_t i=0; i<keys->GetEntries(); ++i){
+        TString kName=keys->At(i)->GetName();
+        TPRegexp reg(kName);
+        if (reg.MatchB(listname)){
+            printf("Using Eta Correction Function: %s\n",kName.Data());
+            return (TF1*)f.Get(kName.Data());
+        }
+    }
+    return 0;
+}
+//_____________________________________________________________________________
+
+
+

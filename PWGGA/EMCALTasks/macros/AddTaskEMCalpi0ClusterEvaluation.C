@@ -21,31 +21,31 @@ void load_libraries( void )
     gSystem->Load("libANALYSISalice");
 
     // AliRoot libraries
-    gSystem->Load("libGui.so");
-    gSystem->Load("libXMLParser.so");
-    gSystem->Load("libCDB.so");
-    gSystem->Load("libProof.so");
-    gSystem->Load("libRAWDatabase.so");
-    gSystem->Load("libRAWDatarec.so");
-    gSystem->Load("libSTEERBase.so");
-    gSystem->Load("libSTEER.so");
-    gSystem->Load("libTRDbase.so");
-    gSystem->Load("libTOFbase.so");
-    gSystem->Load("libTOFrec.so");
-    gSystem->Load("libVZERObase.so");
-    gSystem->Load("libVZEROrec.so");
-    gSystem->Load("libMinuit.so");
-    gSystem->Load("libEMCALUtils.so");
-    gSystem->Load("libEMCALraw.so");
-    gSystem->Load("libEMCALbase.so");
-    gSystem->Load("libEMCALrec.so");
-    gSystem->Load("libANALYSIS.so");
-    gSystem->Load("libANALYSISalice.so");
-    gSystem->Load("libPHOSUtils.so");
-    gSystem->Load("libTENDER.so");
-    gSystem->Load("libTENDERSupplies.so");
-    gSystem->Load("libPWGflowBase.so");
-    gSystem->Load("libPWGflowTasks.so");
+    gSystem->Load("libGui");
+    gSystem->Load("libXMLParser");
+    gSystem->Load("libCDB");
+    gSystem->Load("libProof");
+    gSystem->Load("libRAWDatabase");
+    gSystem->Load("libRAWDatarec");
+    gSystem->Load("libSTEERBase");
+    gSystem->Load("libSTEER");
+    gSystem->Load("libTRDbase");
+    gSystem->Load("libTOFbase");
+    gSystem->Load("libTOFrec");
+    gSystem->Load("libVZERObase");
+    gSystem->Load("libVZEROrec");
+    gSystem->Load("libMinuit");
+    gSystem->Load("libEMCALUtils");
+    gSystem->Load("libEMCALraw");
+    gSystem->Load("libEMCALbase");
+    gSystem->Load("libEMCALrec");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
+    gSystem->Load("libPHOSUtils");
+    gSystem->Load("libTender");
+    gSystem->Load("libTenderSupplies");
+    gSystem->Load("libPWGflowBase");
+    gSystem->Load("libPWGflowTasks");
 
 }
 

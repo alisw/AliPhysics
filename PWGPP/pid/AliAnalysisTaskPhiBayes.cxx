@@ -907,7 +907,7 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
       Float_t xTOfill2[] = {static_cast<Float_t>(fPtPhi),static_cast<Float_t>(KpTrack->Eta()),static_cast<Float_t>(fPtKp),static_cast<Float_t>(fPtKn),static_cast<Float_t>((fPidKp%128)*0.01),static_cast<Float_t>((fPidKn%128)*0.01),static_cast<Float_t>(tofMatch1),static_cast<Float_t>(tofMatch2),static_cast<Float_t>(isTrue),static_cast<Float_t>(nSigmaComb),static_cast<Float_t>(nSigmaComb2),static_cast<Float_t>(deltaphi1),static_cast<Float_t>(deltaphi2),static_cast<Float_t>(fPsi)};
       
       Int_t ipt = 0;
-      while(fPtPhiMin[ipt] < fPtPhi && ipt < nPtBin){
+      while(ipt < nPtBin && fPtPhiMin[ipt] < fPtPhi){
 	ipt++;
       }
       ipt--;

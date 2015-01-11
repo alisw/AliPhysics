@@ -75,6 +75,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     void SetBinsZv(Int_t nbins, Double_t* edges) 			{ Printf("[I] Setting Zv Bins"); fZvNbins = nbins; fBinsZv= GetArrayClone(nbins,edges); }
     void SetBinsCentrality(Int_t nbins, Double_t* edges) 	{ Printf("[I] Setting Cent Bins"); fCentralityNbins = nbins; fBinsCentrality = GetArrayClone(nbins,edges); }
     void SetBinsPhi(Int_t nbins, Double_t* edges) 			{ Printf("[I] Setting Phi Bins"); fPhiNbins = nbins; fBinsPhi = GetArrayClone(nbins,edges); }
+    void SetBinsDeltaphi(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting Deltaphi Bins"); fDeltaphiNbins = nbins; fBinsDeltaphi = GetArrayClone(nbins,edges); }
     void SetBinsRunNumber(Int_t nbins, Double_t* edges) 	{ Printf("[I] Setting RunNumber Bins"); fRunNumberNbins = nbins; fBinsRunNumber = GetArrayClone(nbins,edges); }
     
     // set event cut variables
@@ -157,7 +158,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AliGenHijingEventHeader* GetHijingEventHeader(AliAODMCHeader *header);
     AliGenPythiaEventHeader* GetPythiaEventHeader(AliAODMCHeader *header);
     
-	Double_t RotatePhi(Double_t phiTrack, Double_t phiEP);
+	Double_t RotatePhi(Double_t phiTrack, Double_t phiEP, Double_t dMaxDeltaPhi);
 // 	Double_t MoveEventplane(Double_t dMCEP);
     
     Bool_t SetRelativeCuts(AliAODEvent *event);
@@ -182,14 +183,15 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH1F	    *fPt; // simple pT histogramm
     TH1F	    *fMCPt; // simple pT truth histogramm
     THnSparseF 	*fZvPtEtaCent; //-> Zv:Pt:Eta:Cent
-    THnSparseF 	*fDeltaphiPtEtaCent; //-> DeltaPhi:Pt:Eta:Cent
+    THnSparseF 	*fDeltaphiPtEtaPhiCent; //-> DeltaPhi:Pt:Eta:Phi:Cent, was fDeltaphiPtEtaCent
     THnSparseF 	*fPtResptCent; //-> 1/pt:ResolutionPt:Cent
     THnSparseF 	*fMCRecPrimZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
     THnSparseF 	*fMCGenZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
     THnSparseF 	*fMCRecSecZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent, only secondaries
-    THnSparseF 	*fMCRecPrimDeltaphiPtEtaCent; //-> MC Phi:Pt:Eta:Cent
-    THnSparseF 	*fMCGenDeltaphiPtEtaCent; //-> MC Phi:Pt:Eta:Cent
-    THnSparseF 	*fMCRecSecDeltaphiPtEtaCent; //-> MC Phi:Pt:Eta:Cent, only secondaries
+    THnF		*fMCPtEtaPhiCent; //-> MC Pt:Eta:Phi:Cent
+    THnF 		*fMCRecPrimPtEtaPhiCent; //-> MC Pt:Eta:Phi:Cent, was fMCRecPrimDeltaphiPtEtaCent
+    THnF 		*fMCGenPtEtaPhiCent; //-> MC Pt:Eta:Phi:Cent, was fMCGenDeltaphiPtEtaCent
+    THnF 		*fMCRecSecPtEtaPhiCent; //-> MC Pt:Eta:Phi:Cent, only secondaries, was fMCRecSecDeltaphiPtEtaCent
     TH1F	    *fEventStatistics; // contains statistics of number of events after each cut
     TH1F        *fEventStatisticsCentrality; // contains number of events vs centrality, events need to have a track in kinematic range
     TH1F	    *fMCEventStatisticsCentrality; // contains MC number of events vs centrality, events need to have a track in kinematic range
@@ -284,6 +286,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     Int_t       fZvNbins;
     Int_t       fCentralityNbins;
     Int_t       fPhiNbins;
+	Int_t       fDeltaphiNbins;
 	Int_t		fRunNumberNbins;
     Double_t*   fBinsMult; //[fMultNbins]
     Double_t*   fBinsPt; //[fPtNbins]
@@ -294,6 +297,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     Double_t*   fBinsZv; //[fZvNbins]
     Double_t*   fBinsCentrality; //[fCentralityNbins]
     Double_t*   fBinsPhi; //[fPhiNbins]
+    Double_t*   fBinsDeltaphi; //[fDeltaphiNbins]
     Double_t*	fBinsRunNumber; //[fRunNumberNbins]
     
     AlidNdPtAnalysisPbPbAOD(const AlidNdPtAnalysisPbPbAOD&); // not implemented

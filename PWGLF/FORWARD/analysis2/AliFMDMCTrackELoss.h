@@ -52,7 +52,7 @@ public:
    * 
    * @param o Object to copy from 
    */
-  AliFMDMCTrackELoss(const AliFMDMCTrackELoss& o);
+  AliFMDMCTrackELoss(const AliFMDMCTrackELoss& o){;}
   /** 
    * Assignment operator
    * 
@@ -60,7 +60,7 @@ public:
    * 
    * @return Reference to this 
    */
-  AliFMDMCTrackELoss& operator=(const AliFMDMCTrackELoss& o);
+  AliFMDMCTrackELoss& operator=(const AliFMDMCTrackELoss& o){return *this;}
   /** 
    * Destructor. 
    */

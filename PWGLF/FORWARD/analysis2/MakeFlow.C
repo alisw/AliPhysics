@@ -22,7 +22,7 @@
 void MakeFlow(TString name    = "flow", 
 	      TString options = "help",
 	      TString mode    = "lite",
-	      TString datadir = "/mnt/Disk2/LHC10h_pass2_flowNoSecCorr/",
+	      TString datadir = "",
 	      TString urlOpts = "workers=10&recursive") 
 {
   if (name.IsNull()) Fatal("MakeFlow", "Must specify a name");

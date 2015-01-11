@@ -1,114 +1,98 @@
 //
 //  CpMacroWithFilter.C
 //
-//  Created by Laurent Aphecetche on 30-sep-2013.
+//  Created by Laurent Aphecetche
 //
 
-Int_t CpMacroWithFilter(TString from, TString to)
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "Riostream.h"
+#include "TString.h"
+#include "TSystem.h"
+#include "TROOT.h"
+#include "TGrid.h"
+#include "TFile.h"
+#include "TObjString.h"
+
+#endif
+
+Int_t CpMacroWithFilter(TString from, const TString& to, 
+			TString filterName,
+			const TString& filterMacroFullPath,
+			const TString& filterRootLogonFullPath,
+			const TString& alirootPath)
 {
-  /// Copy one file from url "from" into url "to".
   ///
-  /// If from contains one of the filter keywords
-  /// (in the form of e.g. AliAOD.FILTER_ZZZZ.root)
-  /// then we call the external filter macro
-  ///
-  /// otherwise we do a simple TFile::Cp(from,to)
+  /// Copy one file from url "from" into url "to", while filtering it at the same time.
   ///
   
-  if (from.IsNull() || to.IsNull()) return 1;
-  
-  std::cout << Form("Entering CpMacroWithFilter(\"%s\",\"%s\")",from.Data(),to.Data()) << std::endl;
-  
-  TObjArray filters;
-  filters.SetOwner(kTRUE);
-  
-  filters.Add(new TObjString("FILTER_AODMUONWITHTRACKLETS"));
-  filters.Add(new TObjString("FILTER_RAWMUON"));
-  
-  TIter next(&filters);
-  TObjString* s;
-  TString filter;
-  
-  while ( ( s = static_cast<TObjString*>(next())) )
-  {
-      if ( from.Contains(s->String()) )
-      {
-        filter = s->String();
-        break;
-      }
-  }
-  
-  if (from.Contains("alien:\/\/")) TGrid::Connect("alien:\/\/");
+  std::cout << "CpMacroWithFilter from : " << from.Data() << std::endl << " to : " << to.Data() << std::endl
+	    << " with filter " << filterName.Data() << std::endl;
 
-  if ( filter.Length() > 0 )
-  {
-    // check the required filter is actually available
-    
-    from.ReplaceAll(filter.Data(),"");
-    from.ReplaceAll("..",".");
-    
-    if ( gSystem->AccessPathName(Form("%s/etc/%s.C",gSystem->Getenv("XRDDMSYS"),filter.Data()) ) )
+  if (from.IsNull() || to.IsNull()) return -1;
+  
+    if ( gSystem->AccessPathName(filterMacroFullPath.Data()) )
     {
-      std::cout << Form("ERROR: could not find a filter named %s.C",filter.Data()) << std::endl;
-      return 2;
+      std::cerr << "Could not find requested filter macro (looking into " << filterMacroFullPath.Data() << ")" << std::endl;
+      return -3;
     }
-    else
+
+    // check that the companion macro (to load the relevant libraries 
+    // and set the additional include paths, if needed) exists
+
+    if ( gSystem->AccessPathName(filterRootLogonFullPath.Data()) )
     {
-      // check also we have a companion macro (to load the relevant libraries and
-      // set the additional include paths, if needed)
-      
-      if ( gSystem->AccessPathName(Form("%s/etc/%s_rootlogon.C",gSystem->Getenv("XRDDMSYS"),filter.Data()) ) )
-      {
-        std::cout << Form("ERROR: could not find the companion macro %s_rootlogon.C for the filter named %s.C",filter.Data(),filter.Data()) << std::endl;
-        return 3;
-      }
-
-      else
-      {
-        // most probably the filter will require AliRoot libs, so add the dynamic path here
-        // as well as the include path and the macro path.
-        //
-        gSystem->AddDynamicPath(Form("%s/aliroot/lib/tgt_%s",gSystem->Getenv("ALICE_PROOF_AAF_DIR"),gSystem->GetBuildArch()));
-        gSystem->SetIncludePath(Form("-I%s/etc -I%s/aliroot/include",gSystem->Getenv("XRDDMSYS"),gSystem->Getenv("ALICE_PROOF_AAF_DIR")));
-        gROOT->SetMacroPath(Form("%s:%s/etc",gROOT->GetMacroPath(),gSystem->Getenv("XRDDMSYS")));
-        
-//        gSystem->AddDynamicPath(Form("/pool/PROOF-AAF/aliroot/lib/tgt_%s",gSystem->GetBuildArch()));
-//        gSystem->SetIncludePath("-I/pool/PROOF-AAF/xrootd_1.0.50/etc -I/pool/PROOF-AAF/aliroot/include");
-//        gROOT->SetMacroPath(Form("%s:%s/etc",gROOT->GetMacroPath(),gSystem->Getenv("XRDDMSYS")));
-
-        // execute the companion macro
-
-        std::cout << Form("Will load companion macro %s_rootlogon.C(\"%s\",\"%s\")",filter.Data(),from.Data(),to.Data()) << std::endl;
-
-        gROOT->Macro(Form("%s_rootlogon.C",filter.Data()));
-        
-        std::cout << gSystem->GetIncludePath() << std::endl;
-        
-        // finally delegate the work to the required filter
-      
-        std::cout << Form("Will compile filter %s.C+(\"%s\",\"%s\")",filter.Data(),from.Data(),to.Data()) << std::endl;
-
-        Int_t fail = gROOT->LoadMacro(Form("%s.C+",filter.Data()));
-      
-        if ( fail )
-        {
-          std::cout << Form("Failed to load/compile macro %s.C+",filter.Data()) << std::endl;
-          return 4;
-        }
-        
-        std::cout << Form("Will execute filter %s(\"%s\",\"%s\")",filter.Data(),from.Data(),to.Data()) << std::endl;
-
-        return (Int_t)gROOT->ProcessLine(Form("%s(\"%s\",\"%s\")",filter.Data(),from.Data(),to.Data()));
-      }
+      std::cerr << "Could not find requested filter companion macro (looking into " << filterRootLogonFullPath.Data() << ")" << std::endl;
+      return -4;
     }
-  }
-  else
+  
+  if (from.Contains("alien://")) 
   {
-    // "normal" case of a simple copy
+      TGrid::Connect("alien://");
+
+      if (!gGrid)
+	{
+	  std::cerr << "Cannot get gGrid !" << std::endl;
+	  return -5;
+	}
+  }
+
+  if ( !filterName.IsNull() ) 
+  {
+    // most probably the filter will require AliRoot libs, so add the dynamic path here
+    // as well as the include path and the macro path.
     //
-    // ! operator since TFile::Cp returns kTRUE(1) in case of success
-    std::cout << "Performing a simple TFile::Cp" << std::endl;
-    return (!TFile::Cp(from.Data(),to.Data()));
+    gSystem->AddDynamicPath(Form("%s/lib/tgt_%s",alirootPath.Data(),gSystem->GetBuildArch()));
+    gSystem->SetIncludePath(Form("-I%s/include -I%s/PWG/muon",alirootPath.Data(),alirootPath.Data()));
+    gROOT->SetMacroPath(Form("%s:%s/PWG/muon",gROOT->GetMacroPath(),alirootPath.Data()));
+        
+    // execute the companion macro
+    std::cout << Form("Will load companion macro %s(\"%s\",\"%s\")",filterRootLogonFullPath.Data(),from.Data(),to.Data()) << std::endl;
+
+    gROOT->Macro(filterRootLogonFullPath.Data());
+        
+    std::cout << gSystem->GetIncludePath() << std::endl;
+        
+    // finally delegate the work to the required filter
+      
+    std::cout << Form("Will compile filter %s+(\"%s\",\"%s\")",filterMacroFullPath.Data(),from.Data(),to.Data()) << std::endl;
+
+    TString compile(filterMacroFullPath.Data());
+
+    compile += "+";
+
+    Int_t fail = gROOT->LoadMacro(compile.Data());
+      
+    if ( fail )
+    {
+      std::cout << Form("Failed to load/compile macro %s+",filterMacroFullPath.Data()) << std::endl;
+      return -6;
+    }
+        
+    std::cout << Form("Will execute filter %s(\"%s\",\"%s\")",filterName.Data(),from.Data(),to.Data()) << std::endl;
+
+    return (Int_t)gROOT->ProcessLine(Form("%s(\"%s\",\"%s\")",filterName.Data(),from.Data(),to.Data()));
   }
-  
+
+  return 0;
 }

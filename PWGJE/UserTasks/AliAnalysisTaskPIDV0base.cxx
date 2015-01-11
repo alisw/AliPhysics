@@ -136,11 +136,11 @@ AliAnalysisTaskPIDV0base::~AliAnalysisTaskPIDV0base()
   delete fV0KineCuts;
   fV0KineCuts = 0;
   
-  delete fV0tags;
+  delete [] fV0tags;
   fV0tags = 0;
   fNumTagsStored = 0;
   
-  delete fV0motherIndex;
+  delete [] fV0motherIndex;
   fV0motherIndex = 0;
   
   delete fAnaUtils;
@@ -469,10 +469,10 @@ void AliAnalysisTaskPIDV0base::ClearV0PIDlist()
   // Clear the PID tag list
   //
 
-  delete fV0tags;
+  delete [] fV0tags;
   fV0tags = 0;
   
-  delete fV0motherIndex;
+  delete [] fV0motherIndex;
   fV0motherIndex = 0;
   
   fNumTagsStored = 0;

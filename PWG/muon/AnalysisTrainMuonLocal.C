@@ -15,11 +15,11 @@ void AnalysisTrainMuonLocal(char* filein = "AliESDs.root",
 // This macro works locally
 
 {
-    gSystem->Load("libTree.so");
-    gSystem->Load("libGeom.so");
-    gSystem->Load("libVMC.so");
-    gSystem->Load("libPhysics.so");
-    gSystem->Load("${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}/libPWGmuon.so");  // for aliroot based analysis
+    gSystem->Load("libTree");
+    gSystem->Load("libGeom");
+    gSystem->Load("libVMC");
+    gSystem->Load("libPhysics");
+    gSystem->Load("${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}/libPWGmuon");  // for aliroot based analysis
 
     // Par files for a par based analysis 
     // SetupPar("STEERBase");

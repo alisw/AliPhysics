@@ -1,6 +1,9 @@
 #!/bin/bash
 #
 # Shell script to compare content of the OCDB entries.
+# Usage:
+# 1) source functios 
+# source $ALICE_ROOT/PWGPP/CalibMacros/AliOCDBtoolkit.sh
 #
 # ocdbMakeTable() 
 #       Usage: bash $inputFile $flag $outputFile
@@ -9,6 +12,9 @@
 # diffObject
 #       Usage: bash $inputFile1 $inputFile2 $object_name $dump_type [XML/MI] $outfile
 # Example usage:  see example functions below
+
+# Origin marian.ivanov@cern.ch,  j.wagner@cern.ch
+
 
 ocdbMakeTable(){
 #
@@ -72,10 +78,10 @@ dumpObject(){
     local ftype=${3}
     local outFile=${4}
     shift 4
-    if [ ! -f ${inFile} ] ; then 
-        echo ${inFile} not found!
-        return 1
-    fi
+#    if [ ! -f ${inFile} ] ; then 
+#        echo ${inFile} not found!
+#        return 1
+#    fi
     if [ -f ${outFile} ] ; then 
         >${outFile}
     fi
@@ -198,4 +204,18 @@ developerTest(){
     example1
     example2
     example3
+}
+
+
+diffConfig(){
+    #
+    # diff configuaration files ignoring trivial differences between the OCDBprefixes 
+    #
+    file1=$1
+    file2=$2
+
+    cat $file1 | sed s_"alien://folder="_"ocdbprefix"_g | sed s_"alien://Folder="_"ocdbprefix"_g | sed s_"local://\${ALICE\_OCDB}"_"ocdbprefix"_g  >${file1}_ocdbstripped
+    cat $file2 | sed s_"alien://folder="_"ocdbprefix"_g | sed s_"alien://Folder="_"ocdbprefix"_g | sed s_"local://\${ALICE\_OCDB}"_"ocdbprefix"_g   >${file2}_ocdbstripped
+    diff  ${file1}_ocdbstripped  ${file2}_ocdbstripped  > ${file1}_ocdbstrippeddiff
+
 }

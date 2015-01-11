@@ -4,9 +4,9 @@
 RunMakers()
 {
 // load AliRoot libraries
-gSystem->Load("libANALYSIS.so");
-gSystem->Load("libANALYSISalice.so");
-gSystem->Load("libPWGPP.so");
+gSystem->Load("libANALYSIS");
+gSystem->Load("libANALYSISalice");
+gSystem->Load("libPWGPP");
 
 // collect MC information
 AliGenInfoMaker *infoMC = new AliGenInfoMaker("galice.root","genTracks.root",0,0);

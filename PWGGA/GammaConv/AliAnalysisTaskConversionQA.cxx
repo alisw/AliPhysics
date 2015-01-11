@@ -61,6 +61,8 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
 	hITSClusterPhi(NULL),
 	hGammaPt(NULL),
 	hGammaPhi(NULL),
+	hGammaPhi_Pos(NULL),
+	hGammaPhi_Neg(NULL),
 	hGammaEta(NULL),
 	hGammaChi2perNDF(NULL),
 	hGammaPsiPair(NULL),
@@ -149,6 +151,8 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
 	hITSClusterPhi(NULL),
 	hGammaPt(NULL),
 	hGammaPhi(NULL),
+	hGammaPhi_Pos(NULL),
+	hGammaPhi_Neg(NULL),
 	hGammaEta(NULL),
 	hGammaChi2perNDF(NULL),
 	hGammaPsiPair(NULL),
@@ -262,6 +266,11 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
 		fESDList->Add(hGammaPt);
 		hGammaPhi = new TH1F("Gamma_Phi","Gamma_Phi",360,0,2*TMath::Pi());
 		fESDList->Add(hGammaPhi);
+		hGammaPhi_Pos = new TH1F("GammaPhi_EtaPos","GammaPhi_EtaPos",360,0,2*TMath::Pi());
+		fESDList->Add(hGammaPhi_Pos);
+		hGammaPhi_Neg = new TH1F("GammaPhi_EtaNeg","GammaPhi_EtaNeg",360,0,2*TMath::Pi());
+		fESDList->Add(hGammaPhi_Neg);
+	
 		hGammaEta = new TH1F("Gamma_Eta","Gamma_Eta",600,-1.5,1.5);
 		fESDList->Add(hGammaEta);
 		hGammaChi2perNDF = new TH1F("Gamma_Chi2perNDF","Gamma_Chi2perNDF",500,0,100);
@@ -638,6 +647,8 @@ void AliAnalysisTaskConversionQA::ProcessQA(AliAODConversionPhoton *gamma){
 
 	hGammaPt->Fill(gamma->GetPhotonPt());
 	hGammaPhi->Fill(gamma->GetPhotonPhi());
+	if(gamma->Eta() >= 0.00001){hGammaPhi_Pos->Fill(gamma->Phi());}
+	if(gamma->Eta() <= 0.00001){hGammaPhi_Neg->Fill(gamma->Phi());}
 	hGammaEta->Fill(gamma->Eta());
 	hGammaChi2perNDF->Fill(gamma->GetChi2perNDF());
 	hGammaPsiPair->Fill(gamma->GetPsiPair());

@@ -19,6 +19,7 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliGenEventHeaderTunedPbPb.h"
+#include "AliCollisionGeometry.h"
 
 ClassImp(AliForwardMCFlowTaskQC)
 #if 0
@@ -227,6 +228,7 @@ Bool_t AliForwardMCFlowTaskQC::Analyze()
   }
   // Run analysis on MC branch
   if (!FillMCHist()) return kFALSE;
+
   if ((fFlowFlags & kStdQC)) {
     FillVtxBinList(fBinsMC, fHistdNdedpMC, vtx, kMC);
   } else if ((fFlowFlags & kEtaGap)) {
@@ -372,10 +374,10 @@ Bool_t AliForwardMCFlowTaskQC::FillMCHist()
   if (!fAODMCHeader) AliWarning("No MC header found.");
 
   Int_t ntracks = mcArray->GetEntriesFast();
-//  Double_t rp = -1, b = -1;
+  Double_t rp = -1, b = -1;
   if (fAODMCHeader) {
-//    rp = fAODMCHeader->GetReactionPlaneAngle();
-//    b = fAODMCHeader->GetImpactParameter();
+    rp = fAODMCHeader->GetReactionPlaneAngle();
+    b = fAODMCHeader->GetImpactParameter();
     if (fAODMCHeader->GetNCocktailHeaders() > 1) {
       ntracks = fAODMCHeader->GetCocktailHeader(0)->NProduced();
     }
@@ -390,14 +392,13 @@ Bool_t AliForwardMCFlowTaskQC::FillMCHist()
     }
     if (!particle->IsPrimary()) continue;
     if (particle->Charge() == 0) continue;
-//    Double_t pT = particle->Pt();
+    Double_t pT = particle->Pt();
     Double_t eta = particle->Eta();
     Double_t phi = particle->Phi();
     if (eta >= minEta && eta < maxEta) {
       // Add flow if it is in the argument
-      // FLOW WEIGHTS DISABLED IN THE VERSION - COMING BACK SOON
       if (fUseFlowWeights && fWeights) { 
-        weight = 1.;//fWeights->CalcWeight(eta, pT, phi, particle->PdgCode(), rp, b); 
+        weight = fWeights->CalcWeight(eta, pT, phi, particle->PdgCode(), rp, b); 
 //      Printf("%f", weight);
       }
       fHistdNdedpMC.Fill(eta, phi, weight);

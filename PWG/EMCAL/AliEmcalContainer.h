@@ -27,7 +27,7 @@ class AliEmcalContainer : public TNamed {
     kMCGeneratorCut = 1<<9,
     kChargeCut = 1<<10,
     kMinDistanceTPCSectorEdgeCut = 1<<11,
-    // leave bit 12 free for future implementations
+    kMinMCLabelAccept = 1<<12,
 
     // AliClusterContainer
     kIsEMCalCut = 1<<13,

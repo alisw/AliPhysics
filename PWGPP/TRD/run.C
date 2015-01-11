@@ -26,16 +26,16 @@
 //
 // In compiled mode :
 // Don't forget to load first the libraries
-// gSystem->Load("libMemStat.so")
-// gSystem->Load("libMemStatGui.so")
-// gSystem->Load("libANALYSIS.so")
-// gSystem->Load("libANALYSISalice.so")
-// gSystem->Load("libTENDER.so");
-// gSystem->Load("libCORRFW.so");
-// gSystem->Load("libPWGPP.so");
-// gSystem->Load("libPWGmuon.so");
-// gSystem->Load("libNetx.so") ;
-// gSystem->Load("libRAliEn.so");
+// gSystem->Load("libMemStat")
+// gSystem->Load("libMemStatGui")
+// gSystem->Load("libANALYSIS")
+// gSystem->Load("libANALYSISalice")
+// gSystem->Load("libTender");
+// gSystem->Load("libCORRFW");
+// gSystem->Load("libPWGPP");
+// gSystem->Load("libPWGmuon");
+// gSystem->Load("libNetx") ;
+// gSystem->Load("libRAliEn");
 //
 // Authors:
 //   Alex Bercuci (A.Bercuci@gsi.de) 
@@ -93,8 +93,8 @@ void run(Char_t *optList="ALL", Int_t run=0, const Char_t *files=NULL, Long64_t 
 {
   TMemStat *mem = NULL;
   if(MEM){ 
-    if(gSystem->Load("libMemStat.so")<0) return;
-    if(gSystem->Load("libMemStatGui.so")<0) return;
+    if(gSystem->Load("libMemStat")<0) return;
+    if(gSystem->Load("libMemStatGui")<0) return;
     mem = new TMemStat("new, gnubuildin");
     mem->AddStamp("Start");
   }
@@ -103,12 +103,12 @@ void run(Char_t *optList="ALL", Int_t run=0, const Char_t *files=NULL, Long64_t 
 
   // VERY GENERAL SETTINGS
   //AliLog::SetGlobalLogLevel(AliLog::kError);
-  if(gSystem->Load("libANALYSIS.so")<0) return;
-  if(gSystem->Load("libANALYSISalice.so")<0) return;
-  if(gSystem->Load("libTENDER.so")<0) return;
-  if(gSystem->Load("libCORRFW.so")<0) return;
-  if(gSystem->Load("libPWGPP.so")<0) return;
-  if(gSystem->Load("libPWGmuon.so")<0) return;
+  if(gSystem->Load("libANALYSIS")<0) return;
+  if(gSystem->Load("libANALYSISalice")<0) return;
+  if(gSystem->Load("libTender")<0) return;
+  if(gSystem->Load("libCORRFW")<0) return;
+  if(gSystem->Load("libPWGPP")<0) return;
+  if(gSystem->Load("libPWGmuon")<0) return;
 
   Bool_t fHasMCdata = UseMC(optList);
   Bool_t fHasFriends = UseFriends(optList);
@@ -200,8 +200,8 @@ TChain* MakeChainLST(const char* filename)
   while(esdFile.Gets(fp)){
     if (!esdFile.Contains("root")) continue; // protection
     if(esdFile.BeginsWith("alien://") && !gGrid){
-      if(gSystem->Load("libNetx.so")<0) return NULL;
-      if(gSystem->Load("libRAliEn.so")<0) return NULL;
+      if(gSystem->Load("libNetx")<0) return NULL;
+      if(gSystem->Load("libRAliEn")<0) return NULL;
       TGrid::Connect("alien://");
     }
     chain->Add(esdFile.Data());
@@ -219,8 +219,8 @@ TChain* MakeChainXML(const char* xmlfile)
     return NULL;
   }
 
-  if(gSystem->Load("libNetx.so")<0) return NULL;
-  if(gSystem->Load("libRAliEn.so")<0) return NULL;
+  if(gSystem->Load("libNetx")<0) return NULL;
+  if(gSystem->Load("libRAliEn")<0) return NULL;
   TGrid::Connect("alien://") ;
 
   TGridCollection *collection = (TGridCollection*) TAlienCollection::Open(xmlfile);

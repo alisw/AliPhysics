@@ -191,12 +191,12 @@ void LoadLibs()
   gSystem->Load("libTRDbase");
   gSystem->Load("libVZERObase");
   gSystem->Load("libVZEROrec");
-  gSystem->Load("libTENDER");   
-  gSystem->Load("libTENDERSupplies"); 
+  gSystem->Load("libTender");   
+  gSystem->Load("libTenderSupplies"); 
  
   // load fastjet libraries
   gSystem->Load("libJETAN");
-  gSystem->Load("/usr/lib64/libCGAL.so");
+  gSystem->Load("/usr/lib64/libCGAL");
   gSystem->Load("$FASTJET/lib/libfastjet");
   gSystem->Load("$FASTJET/lib/libsiscone");
   gSystem->Load("$FASTJET/lib/libSISConePlugin");

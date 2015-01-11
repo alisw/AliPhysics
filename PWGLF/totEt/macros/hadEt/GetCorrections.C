@@ -58,14 +58,14 @@ const char *reweightedYes = "Reweighted";
 void GetCorrections(char *prodname = "Enter Production Name", char *shortprodname = "EnterProductionName", bool ispp = true, bool forSim = true, bool TPC = true, char *infilename="Et.ESD.new.sim.merged.root", int dataset = 2009){
     TStopwatch timer;
     timer.Start();
-    gSystem->Load("libTree.so");
-    gSystem->Load("libGeom.so");
-    gSystem->Load("libVMC.so");
-    gSystem->Load("libXMLIO.so");
+    gSystem->Load("libTree");
+    gSystem->Load("libGeom");
+    gSystem->Load("libVMC");
+    gSystem->Load("libXMLIO");
 
-    gSystem->Load("libSTEERBase.so");
-    gSystem->Load("libESD.so");
-    gSystem->Load("libAOD.so");
+    gSystem->Load("libSTEERBase");
+    gSystem->Load("libESD");
+    gSystem->Load("libAOD");
 
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
